@@ -3,7 +3,7 @@
 //   → 은행 답(되묻기면 그 순간의 되묻기 줄, 생성이면 gpt-6-luna가 시제품 지시문으로 한 줄). 고른 하온 말은 Gemini 3.8 Live Kore가 글자 그대로
 //   읽는다 — 실시간판과 같은 목소리라 내용만 비교된다(실제 앱이면 미리 구운 소리를 바로 튼다).
 // · 실시간판 = 시제품과 같은 지시문(../../lib/장면.mjs)으로 Gemini 3.8 Live Kore가 자유롭게 받아친다.
-// 쓰는 법: node 나란히듣기.mjs <학습자|은행|은행2|실시간|엮기|전부>  (은행2 = 답 은행 2판 — 2판 AI 고르기 + 은행2 조립, 11-01 2판 시험)
+// 쓰는 법: node 나란히듣기.mjs <학습자|은행|은행2|은행3|실시간|엮기|전부>  (은행2 · 은행3 = 답 은행 2판 · 3판 — 그 판의 AI 고르기 + 조립, 3판은 생성 차례도 생성.mjs로)
 // 소리 · 기록은 git 밖 .tmp/답은행시험-20261101/. 키: Gemini 「글」 무료 키(지어낸 대본만) · OpenAI 상황극 키 목록(결제 수단 없는 월 크레딧).
 // Gemini 연결 · 소리 펌프 · 답 끝 재기는 듣기 시험 녹음.mjs(10-29 실측 9판)에서 옮겼다.
 import fs from 'node:fs';
@@ -157,6 +157,38 @@ async function 은행2길() {
     기록[대] = { 첫인사: 팬사인회.첫인사, 차례 };
   }
   fs.writeFileSync(path.join(작업, '은행2길.json'), JSON.stringify(기록, null, 1));
+}
+// ── 답 은행 3판 길: 받아 적기 → 3판 AI 고르기 → 은행3 조립, 생성으로 넘긴 차례는 생성.mjs(끝에 은행과 같은 규칙의 다음 질문) ──
+async function 은행3길() {
+  const { AI고르기3 } = await import('./고르기3.mjs');
+  const 은행3 = await import('./은행3.mjs');
+  const { 생성답 } = await import('./생성.mjs');
+  const 다음미션 = (단계id, 들은) => {
+    if (단계id === '끝') return '마무리';
+    if (단계id === '작별뒤') return '작별';
+    const 끝난 = new Set([...은행3.끝난미션[단계id], ...들은]);
+    return ['이름', '나라', '좋아함', '사인'].find((m) => !끝난.has(m)) || '사인끝';
+  };
+  const 기록 = {};
+  for (const [대, d] of Object.entries(대화들)) {
+    let 단계id = '처음';
+    const 차례 = [];
+    for (const [i, 말] of d.줄.entries()) {
+      if (단계id === '끝남') { 차례.push({ 말, 건너뜀: '대화가 이미 끝남' }); continue; }
+      const 들음 = await 받아적기(pcm24(대, i));
+      const 고름 = await AI고르기3({ 단계: 단계id, 받아적기: 들음.글 });
+      if (고름.오류) throw new Error(`3판 고르기 실패: ${고름.오류}`);
+      let 하온; let 다음 = 단계id; let 생성ms = null;
+      if (고름.판단 === '고름') { const r = 은행3.조립(단계id, 고름.반응, i, 고름.들은것); 하온 = r.글; 다음 = 이끔다음순간[r.이끔미션] || 단계id; }
+      else if (고름.판단 === '되묻기') { const 줄들 = 은행3.되묻기(단계id); 하온 = 줄들[i % 줄들.length]; }
+      else { const g = await 생성답(은행3, { 단계: 단계id, 받아적기: 들음.글 }, 고름.들은것); 하온 = g.글; 생성ms = g.생성ms; 다음 = 이끔다음순간[다음미션(단계id, 고름.들은것)] || 단계id; }
+      차례.push({ 말, 받아적기: 들음.글, 받아적기ms: 들음.ms, 순간: 단계id, 판단: 고름.판단, 반응: 고름.반응, 들은것: 고름.들은것, 확신: 고름.확신, 고르기ms: 고름.ms, 생성ms, 하온 });
+      console.log(`[나란히] 은행3 ${대}_${i + 1} ${단계id} 「${들음.글}」 → ${고름.판단} ${(고름.반응 || []).join('+')} (${고름.ms}ms) 「${하온}」`);
+      단계id = 다음;
+    }
+    기록[대] = { 첫인사: 팬사인회.첫인사, 차례 };
+  }
+  fs.writeFileSync(path.join(작업, '은행3길.json'), JSON.stringify(기록, null, 1));
 }
 
 async function 은행길() {
@@ -326,10 +358,11 @@ async function 실시간판() {
   fs.writeFileSync(path.join(작업, '실시간판.json'), JSON.stringify(기록, null, 1));
 }
 
-async function 은행판(이름 = '은행', 길파일 = '은행길.json') {
+async function 은행판(이름 = '은행', 길파일 = '은행길.json', 대들 = Object.keys(대화들)) {
   const 길 = JSON.parse(fs.readFileSync(path.join(작업, 길파일), 'utf8'));
-  const 기록 = {};
-  for (const [대, d] of Object.entries(대화들)) {
+  const 판파일 = path.join(작업, `${이름}판.json`);
+  const 기록 = 대들.length < Object.keys(대화들).length && fs.existsSync(판파일) ? JSON.parse(fs.readFileSync(판파일, 'utf8')) : {}; // 한 대화만 다시 구울 때 다른 대화 기록은 둔다
+  for (const 대 of 대들) {
     const 차례 = 길[대].차례.filter((t) => !t.건너뜀);
     const 상대줄 = [길[대].첫인사, ...차례.map((t) => t.하온)];
     const 대본 = [`상대역: ${상대줄[0]}`, ...차례.flatMap((t, i) => [`학습자: ${t.말}`, `상대역: ${상대줄[i + 1]}`])].join('\n');
@@ -338,7 +371,24 @@ async function 은행판(이름 = '은행', 길파일 = '은행길.json') {
     const 결과 = await gemini돌리기({ 지시, 첫지시: `(상황극 시작) 지금 상대역 1번 줄을 글자 그대로 말한다: 「${상대줄[0]}」 그다음 학습자가 말할 때까지 기다린다.`, 학습자줄: 차례.map((_, i) => 학습자16k(대, i)) });
     기록[대] = { ...판저장(이름, 대, 결과), 대본줄: 상대줄 };
   }
-  fs.writeFileSync(path.join(작업, `${이름}판.json`), JSON.stringify(기록, null, 1));
+  fs.writeFileSync(판파일, JSON.stringify(기록, null, 1));
+}
+
+// Gemini가 대본 줄을 빠뜨리면(대화 끝 짧은 줄에서 종종) 그 줄만 새 세션에서 읽힌다
+async function 빠진줄굽기(이름, 대) {
+  const 판파일 = path.join(작업, `${이름}판.json`);
+  const 기록 = JSON.parse(fs.readFileSync(판파일, 'utf8'));
+  for (const l of 기록[대].줄.filter((x) => x.빠짐 || x.잘림)) {
+    const 말 = 기록[대].대본줄[l.번호];
+    const 지시 = `${듣기대본.공통지시}\n\n장면: 팬사인회. 너의 역할: 하온(가상 아이돌). 연기: ${팬사인회.상대.연기}`;
+    const 결과 = await gemini돌리기({ 지시, 첫지시: `(상황극) 지금 이 줄을 글자 그대로 한 번만 말한다: 「${말}」`, 학습자줄: [] });
+    const pcm = Buffer.concat(결과.답들[0].소리);
+    if (!pcm.length) throw new Error(`${대}_${l.번호}도 못 구웠다`);
+    fs.writeFileSync(path.join(작업, 이름, `${대}_${l.번호}.wav`), wav(pcm));
+    Object.assign(l, { 하온: 결과.답들[0].글.trim(), 초: Number((pcm.length / 2 / 표본율).toFixed(2)), 빠짐: false, 잘림: false, 따로구움: true });
+    console.log(`[나란히] ${이름} ${대}_${l.번호} 따로 구움 「${l.하온}」`);
+  }
+  fs.writeFileSync(판파일, JSON.stringify(기록, null, 1));
 }
 
 // ── 엮기: 같은 간격(0.45초)으로 하온 · 학습자 줄을 이어 mp3 한 판씩 ──
@@ -346,8 +396,8 @@ function 엮기() {
   const 간격 = Buffer.alloc(Math.round(표본율 * 0.45) * 2);
   const 나갈폴더 = path.join(작업, '엮음');
   fs.mkdirSync(나갈폴더, { recursive: true });
-  const 길들 = Object.fromEntries([['은행', '은행길.json'], ['은행2', '은행2길.json']].filter(([, f]) => fs.existsSync(path.join(작업, f))).map(([판, f]) => [판, JSON.parse(fs.readFileSync(path.join(작업, f), 'utf8'))]));
-  for (const 판 of ['은행', '은행2', '실시간'].filter((p) => p === '실시간' || 길들[p])) {
+  const 길들 = Object.fromEntries([['은행', '은행길.json'], ['은행2', '은행2길.json'], ['은행3', '은행3길.json']].filter(([, f]) => fs.existsSync(path.join(작업, f))).map(([판, f]) => [판, JSON.parse(fs.readFileSync(path.join(작업, f), 'utf8'))]));
+  for (const 판 of ['은행', '은행2', '은행3', '실시간'].filter((p) => p === '실시간' || 길들[p])) {
     for (const [대, d] of Object.entries(대화들)) {
       const n = 판 === '실시간' ? d.줄.length : 길들[판][대].차례.filter((t) => !t.건너뜀).length;
       const 조각 = [];
@@ -368,6 +418,8 @@ const 명령 = process.argv[2];
 if (명령 === '학습자' || 명령 === '전부') await 학습자굽기();
 if (명령 === '은행' || 명령 === '전부') { await 은행길(); await 은행판(); }
 if (명령 === '은행2' || 명령 === '전부') { await 은행2길(); await 은행판('은행2', '은행2길.json'); }
+if (명령 === '은행3' || 명령 === '전부') { await 은행3길(); await 은행판('은행3', '은행3길.json'); }
+if (명령 === '은행3판') { await 은행판('은행3', '은행3길.json', [process.argv[3]]); await 빠진줄굽기('은행3', process.argv[3]); } // Gemini가 대본 줄을 빠뜨렸을 때 그 대화만 다시 굽는다
 if (명령 === '실시간' || 명령 === '전부') await 실시간판();
 if (명령 === '엮기' || 명령 === '전부') 엮기();
-if (!['학습자', '은행', '은행2', '실시간', '엮기', '전부'].includes(명령)) 멈춤('명령: 학습자 | 은행 | 은행2 | 실시간 | 엮기 | 전부', 1);
+if (!['학습자', '은행', '은행2', '은행3', '은행3판', '실시간', '엮기', '전부'].includes(명령)) 멈춤('명령: 학습자 | 은행 | 은행2 | 은행3 | 은행3판 <A|B> | 실시간 | 엮기 | 전부', 1);

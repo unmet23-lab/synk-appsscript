@@ -1,16 +1,16 @@
-// 답 은행 시험(2026-11-01) — 결과 · 들어 보기 페이지. 2판 시험 뒤 판: 1판 · 2판을 같은 잣대(블라인드)로 견주고, 세 판을 나란히 듣는다.
+// 답 은행 시험(2026-11-01) — 결과 · 들어 보기 페이지. 3판 시험 뒤 판: 처음 보는 다판에서 2판 · 3판을 같은 잣대(블라인드, 생성 답까지)로 견주고,
+// 2판 · 3판 · 실시간을 나란히 듣고, 학습자 말 끝에서 하온 첫 소리까지의 시간을 나눠 보인다. 2판 판 페이지는 git 기록과 README 「2판 시험」에 있다.
 // 숫자와 대사는 결과 파일에서 읽고 손으로 옮기지 않는다.
-// 읽는 것: .tmp/답은행시험-20261101/{판정2요약.json, 채점요약.json, 은행길.json, 은행2길.json, 실시간판.json, 엮음/*.mp3}
-//          · 이 폴더의 고르기2_B_AI.jsonl · 고르기B_gpt-6.1-terra_none.jsonl(차례당 값 · 시간) · 빠른길.mjs
+// 읽는 것: .tmp/답은행시험-20261101/{판정3요약.json, 판정2요약.json, 받아적기속도.json, 은행2길.json, 은행3길.json, 실시간판.json, 엮음/*.mp3}
+//          · 이 폴더의 고르기2_C_AI.jsonl · 고르기3_C.jsonl(차례당 값 · 시간)
 // 내는 것: .tmp/답은행시험-20261101/페이지/{index.html(SUIT 심음), *.mp3} → 아티팩트로 올린다(같은 주소).
 // 쓰는 법: node 듣기페이지.mjs
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { fileURLToPath, pathToFileURL } from 'node:url';
-import { 녹음줄수 as 녹음줄수1 } from './은행.mjs';
-import { 녹음줄수 as 녹음줄수2, 반응들 } from './은행2.mjs';
-import { X는2판 } from './판정2.mjs';
+import { fileURLToPath } from 'node:url';
+import { 녹음줄수 as 녹음줄수3, 반응들 as 반응들3 } from './은행3.mjs';
+import { X는3판 } from './판정3.mjs';
 
 const require = createRequire(import.meta.url);
 const 여기 = path.dirname(fileURLToPath(import.meta.url));
@@ -18,54 +18,115 @@ const 저장소 = path.resolve(여기, '../../../..');
 const 작업 = path.join(저장소, '.tmp', '답은행시험-20261101');
 const 읽기 = (f) => JSON.parse(fs.readFileSync(path.join(작업, f), 'utf8'));
 const jsonl = (f) => fs.readFileSync(path.join(여기, f), 'utf8').split('\n').filter((l) => l.trim()).map((l) => JSON.parse(l));
-const 판정 = 읽기('판정2요약.json');
-const 처음요약 = 읽기('채점요약.json').판['gpt-6.1-terra_none'];
-const 은행길 = 읽기('은행길.json');
+const 판정 = 읽기('판정3요약.json');
+const 판정2 = 읽기('판정2요약.json');
+const 속도 = 읽기('받아적기속도.json');
 const 은행2길 = 읽기('은행2길.json');
+const 은행3길 = 읽기('은행3길.json');
 const 실시간 = 읽기('실시간판.json');
-const 고2B = jsonl('고르기2_B_AI.jsonl');
-const 고1B = jsonl('고르기B_gpt-6.1-terra_none.jsonl');
-const 빠른길 = (await import(pathToFileURL(path.join(여기, '빠른길.mjs')).href)).default;
+const 고2C = jsonl('고르기2_C_AI.jsonl');
+const 고3C = jsonl('고르기3_C.jsonl');
 
 const 퍼 = (n, d) => (d ? (100 * n) / d : 0);
 const 퍼글 = (n, d, 자리 = 1) => `${퍼(n, d).toFixed(자리)}%`;
 const 글 = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const 원 = (usd) => Math.round(usd * 1400);
+const 초 = (ms, 자리 = 1) => (ms / 1000).toFixed(자리);
 const 중앙 = (a) => { const b = a.filter((x) => x != null).sort((x, y) => x - y); return b[Math.floor(b.length / 2)]; };
 const 위10 = (a) => { const b = a.filter((x) => x != null).sort((x, y) => x - y); return b[Math.floor(b.length * 0.9)]; };
 const 검판들 = ['페이블', 'GPT', '엄격', '너그러움'];
 const 검이름 = { 페이블: 'Fable', GPT: 'GPT', 엄격: '둘 다 자연일 때만', 너그러움: '하나라도 자연이면' };
-const t = (판, 판본, 검판 = '페이블') => 판정.판[판].판본[판본].전체[검판];
-const 받률 = (c) => 퍼(c.맞게받음, c.n);
-const 엉률 = (c) => 퍼(c.엉뚱, c.n);
-const 범위 = (판, 판본, f) => { const v = 검판들.map((k) => f(t(판, 판본, k))); return [Math.min(...v), Math.max(...v)]; };
-const 통과 = (판, 판본) => 검판들.filter((k) => 받률(t(판, 판본, k)) >= 80 && 엉률(t(판, 판본, k)) <= 5);
+const t = (판본, 검판 = '페이블') => 판정.판본[판본].전체[검판];
+const 받률 = (c) => 퍼(c.자연, c.n);
+const 엉률 = (c) => 퍼(c.어색, c.n);
+const 범위 = (판본, f) => { const v = 검판들.map((k) => f(t(판본, k))); return [Math.min(...v), Math.max(...v)]; };
+const 범위글 = (판본, f) => 범위(판본, f).map((v) => v.toFixed(1)).join('~');
+const 통과 = (판본) => 검판들.filter((k) => 받률(t(판본, k)) >= 80 && 엉률(t(판본, k)) <= 5);
+const 나판 = (판본, 검판 = '페이블') => 판정2.판.B.판본[판본].전체[검판];
+const 판단수 = (줄, 판단) => 줄.filter((r) => r.판단 === 판단).length;
 
-// ── 값과 속도 ──
+// ── 값 ──
 const 평균 = (a) => a.reduce((s, x) => s + x, 0) / a.length;
 const 값 = {
   실시간: 4 * 0.05 + 0.003, // GPT-Live 분당 $0.05(시제품 README 실측) + 돌아보기
-  받아적기: 0.0003, // 드라마 리허설 실측 한 테이크
-  고르기1: 평균(고1B.filter((r) => !r.오류).map((r) => r.USD || 0)),
-  고르기2: 평균(고2B.filter((r) => !r.오류).map((r) => r.USD || 0)),
+  흘려받아적기: 4 * 0.003, // gpt-4o-mini-transcribe 실시간 받아쓰기 분당 $0.003(server.mjs의 어림) — 4분 내내 흘려 보낸다고 친 위 끝
+  통째받아적기: 8 * 0.0003, // 드라마 리허설 실측 한 테이크 × 8
+  차례3: 평균(고3C.filter((r) => !r.오류).map((r) => r.USD || 0)), // 3판 고르기 + 생성 차례의 생성 값(다판 200줄 실측)
+  차례2: 평균(고2C.filter((r) => !r.오류).map((r) => (r.USD || 0) + (r.생성USD || 0))),
+  목소리: 4 / 60 * 0.015, // 생성 답 하나(약 4초)를 gpt-4o-mini-tts로 읽는 값 — 분당 약 $0.015(가격표 어림)
   돌아보기: 0.003,
 };
-const 한판 = (고르기) => 8 * (값.받아적기 + 고르기) + 값.돌아보기;
-const 생성률 = (줄) => 퍼(줄.filter((r) => r.판단 === '생성').length, 줄.length);
+const 생성률3 = 퍼(판단수(고3C, '생성'), 고3C.length);
+const 생성률2 = 퍼(판단수(고2C, '생성'), 고2C.length);
+const 한판3 = 8 * 값.차례3 + 8 * (생성률3 / 100) * 값.목소리 + 값.통째받아적기 + 값.돌아보기;
+const 한판2 = 8 * 값.차례2 + 8 * (생성률2 / 100) * 값.목소리 + 값.통째받아적기 + 값.돌아보기;
+
+// ── 속도: 학습자 소리 마지막 표본을 보낸 때부터 하온 첫 소리까지(중앙값을 더한 어림) ──
 const 실시간지연 = 중앙([...실시간.A.줄, ...실시간.B.줄].map((l) => l.지연ms));
-const 차례2 = Object.values(은행2길).flatMap((d) => d.차례.filter((x) => x.받아적기ms));
-const 받아적기ms = 중앙(차례2.map((x) => x.받아적기ms));
-const 고르기ms2 = 중앙(고2B.map((r) => r.ms));
-const 고르기ms2위 = 위10(고2B.map((r) => r.ms));
-const 은행2지연 = 중앙(차례2.map((x) => x.받아적기ms + x.고르기ms));
+const 흘려 = Object.fromEntries((속도.흘려 || []).filter((r) => !r.오류).map((r) => [`${r.모델}|${r.설정}`, r]));
+// 어림에 쓰는 설정은 의미 VAD — 침묵만 보는 설정은 더 빠르지만 초보의 머뭇거림에서 말을 자주 끊었다(아래 표). 실시간 미니 길도 의미 VAD를 쓴다
+const 고른흘려 = 흘려['gpt-4o-mini-transcribe|의미 VAD 보통'];
+const 침묵500 = 흘려['gpt-4o-mini-transcribe|서버 VAD 500ms']; const 침묵300 = 흘려['gpt-4o-mini-transcribe|서버 VAD 300ms'];
+const 고르기ms3 = 중앙(고3C.map((r) => r.ms));
+const 고르기ms3위 = 위10(고3C.map((r) => r.ms));
+const 단계들 = [
+  { 이름: '말 끝 알아채기', 키: '알아챔', 무늬: '회색' },
+  { 이름: '받아 적기 마무리', 키: '받아적기', 무늬: '회색옅음' },
+  { 이름: '답 고르기', 키: '고르기', 무늬: '코랄' },
+  { 이름: '첫 반응까지 고르기(흘려 받기)', 키: '첫반응', 무늬: '코랄' },
+  { 이름: '생성 첫 문장', 키: '생성', 무늬: '진함' },
+  { 이름: '목소리 첫 소리', 키: '목소리', 무늬: '진함옅음' },
+];
+const 조각 = {
+  알아챔: 고른흘려.알아챔중앙ms,
+  받아적기: 고른흘려.완료중앙ms - 고른흘려.알아챔중앙ms,
+  고르기: 고르기ms3,
+  첫반응: 속도.고르기흘려.첫반응중앙ms,
+  생성: 속도.생성.첫문장중앙ms,
+  목소리: 속도.목소리.첫소리중앙ms,
+};
+const 길들 = [
+  { 이름: '실시간(Gemini Live)', 통: 실시간지연 },
+  { 이름: '3판 · 은행 답', 키들: ['알아챔', '받아적기', '고르기'] },
+  { 이름: '고르기 흘려 받기(설계)', 키들: ['알아챔', '받아적기', '첫반응'], 설계: true },
+  { 이름: '3판 · 생성 답', 키들: ['알아챔', '받아적기', '고르기', '생성', '목소리'] },
+  { 이름: '맞장구 먼저 틀기(설계)', 키들: ['알아챔'], 설계: true },
+];
+const 합 = (g) => g.통 ?? g.키들.reduce((s, k) => s + 조각[k], 0);
+const 은행답지연 = 합(길들[1]); const 첫반응지연 = 합(길들[2]); const 생성답지연 = 합(길들[3]);
+function 속도막대({ 폭 = 680, 왼 = 170, 좁음 = false } = {}) {
+  const 오 = 좁음 ? 44 : 60; const 줄높이 = 좁음 ? 46 : 40; const 위 = 30; const 끝초 = Math.ceil(Math.max(...길들.map(합)) / 1000);
+  const x = (ms) => 왼 + (ms / (끝초 * 1000)) * (폭 - 왼 - 오);
+  const 높이 = 위 + 길들.length * 줄높이 + 10;
+  let s = `<svg viewBox="0 0 ${폭} ${높이}" role="img" aria-label="학습자 말 끝에서 하온 첫 소리까지 걸리는 시간을 단계별로 나눈 막대" class="속도 ${좁음 ? '좁은판' : '넓은판'}">
+  <defs>${[['회색', 'var(--grey-mark)', 5], ['회색옅음', 'var(--grey-mark)', 9], ['코랄', 'var(--accent)', 5], ['진함', 'var(--fg)', 5], ['진함옅음', 'var(--fg)', 9]].map(([이름, 색, 간격]) => `<pattern id="빗금${이름}${좁음 ? '좁' : ''}" width="${간격}" height="${간격}" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="${간격}" style="stroke:${색}" stroke-width="1.6"/></pattern>`).join('')}</defs>`;
+  for (let v = 0; v <= 끝초; v++) {
+    s += `<line x1="${x(v * 1000)}" x2="${x(v * 1000)}" y1="${위 - 6}" y2="${높이 - 4}" class="눈금선"/>`;
+    s += `<text x="${x(v * 1000)}" y="${위 - 12}" class="눈금글" text-anchor="middle">${v}초</text>`;
+  }
+  s += `<line x1="${x(실시간지연)}" x2="${x(실시간지연)}" y1="${위 - 6}" y2="${높이 - 4}" class="기준선"/>`;
+  let y = 위;
+  for (const g of 길들) {
+    // 좁은 화면은 이름을 막대 위에 얹는다(왼쪽 칸이 없다)
+    const cy = 좁음 ? y + 20 : y + 6; const h = 좁음 ? 16 : 18;
+    s += `<text x="${좁음 ? 0 : 6}" y="${좁음 ? y + 14 : cy + 14}" class="판이름${g.설계 ? '' : ' 굵게'}">${글(g.이름)}</text>`;
+    if (g.통 != null) s += `<rect x="${x(0)}" y="${cy}" width="${x(g.통) - x(0)}" height="${h}" fill="url(#빗금회색${좁음 ? '좁' : ''})" class="조각틀"/>`;
+    else { let 앞 = 0; for (const k of g.키들) { const d = 단계들.find((u) => u.키 === k); s += `<rect x="${x(앞)}" y="${cy}" width="${x(앞 + 조각[k]) - x(앞)}" height="${h}" fill="url(#빗금${d.무늬}${좁음 ? '좁' : ''})" class="조각틀"><title>${d.이름} ${초(조각[k])}초</title></rect>`; 앞 += 조각[k]; } }
+    s += `<text x="${x(합(g)) + 6}" y="${cy + 14}" class="점글">${초(합(g))}초</text>`;
+    y += 줄높이;
+  }
+  return `${s}</svg>`;
+}
+// 범례 견본은 CSS 빗금 — 넓은 막대 SVG가 좁은 화면에서 숨으면 그 안의 무늬를 다른 곳에서 못 끌어 쓴다
+const 범례 = 단계들.filter((d) => d.키 !== '첫반응').map((d) => `<span class="범례칸"><span class="견본 ${d.무늬}" aria-hidden="true"></span>${d.이름} ${초(조각[d.키])}초</span>`).join('');
 
 // ── 편차 점: 기준 대비 여유(고른 눈금 ±), 점 = Fable · 옅은 줄 = 네 정답 판의 범위 ──
-const 행들 = [['B', 2, '2판 · 나판'], ['B', 1, '1판 · 나판'], ['A', 2, '2판 · 가판'], ['A', 1, '1판 · 가판']];
+const 행들 = [[3, '3판'], [2, '2판']];
 const 지표 = [
   { 이름: '맞게 받음', 기준: '80% 이상', 여유: (c) => 받률(c) - 80, 보임: (c) => `${받률(c).toFixed(1)}%` },
   { 이름: '엉뚱한 답', 기준: '5% 이하', 여유: (c) => 5 - 엉률(c), 보임: (c) => `${엉률(c).toFixed(1)}%` },
 ];
-function 편차점({ 폭 = 640, 왼 = 150, 좁음 = false } = {}) {
+function 편차점({ 폭 = 640, 왼 = 120, 좁음 = false } = {}) {
   const 오 = 좁음 ? 46 : 70; const 줄높이 = 32; const 위 = 34; const 범 = 15;
   const x = (v) => 왼 + ((Math.max(-범, Math.min(범, v)) + 범) / (2 * 범)) * (폭 - 왼 - 오);
   const 높이 = 위 + 지표.length * (행들.length + 1) * 줄높이 + 8;
@@ -78,10 +139,10 @@ function 편차점({ 폭 = 640, 왼 = 150, 좁음 = false } = {}) {
   for (const g of 지표) {
     s += `<text x="0" y="${y + 18}" class="행머리">${g.이름} <tspan class="행기준">기준 ${g.기준}</tspan></text>`;
     y += 줄높이;
-    for (const [판, 판본, 이름] of 행들) {
-      const c = t(판, 판본); const v = g.여유(c); const 넘 = v >= 0; const cy = y + 12;
-      const vs = 검판들.map((k) => g.여유(t(판, 판본, k)));
-      s += `<text x="${좁음 ? 2 : 10}" y="${cy + 5}" class="판이름${판본 === 2 ? ' 굵게' : ''}">${이름}</text>`;
+    for (const [판본, 이름] of 행들) {
+      const c = t(판본); const v = g.여유(c); const 넘 = v >= 0; const cy = y + 12;
+      const vs = 검판들.map((k) => g.여유(t(판본, k)));
+      s += `<text x="${좁음 ? 2 : 10}" y="${cy + 5}" class="판이름${판본 === 3 ? ' 굵게' : ''}">${이름} · 다판</text>`;
       s += `<line x1="${x(Math.min(...vs))}" x2="${x(Math.max(...vs))}" y1="${cy}" y2="${cy}" class="범위선"/>`;
       s += `<line x1="${x(0)}" x2="${x(v)}" y1="${cy}" y2="${cy}" class="편차선 ${넘 ? '넘김' : '모자람'}"/>`;
       s += `<circle cx="${x(v)}" cy="${cy}" r="5" class="점 ${넘 ? '넘김' : '모자람'}"/>`;
@@ -92,60 +153,53 @@ function 편차점({ 폭 = 640, 왼 = 150, 좁음 = false } = {}) {
   return `${s}</svg>`;
 }
 
-// ── 빗금 막대: 2판 나판의 약한 곳 ──
+// ── 빗금 막대: 3판 다판의 약한 곳 ──
 function 막대줄(이름, c, 강조 = false) {
   return `<div class="막대줄"><div class="막대이름">${글(이름)} <span class="작게">${c.n}줄</span></div>
     <div class="막대칸"><div class="막대 ${강조 ? '강조' : ''}" style="width:${받률(c).toFixed(1)}%"></div></div>
     <div class="막대값">${받률(c).toFixed(1)}%</div><div class="막대값 엉뚱값">${엉률(c).toFixed(1)}%</div></div>`;
 }
-const B2 = 판정.판.B.판본[2]; const B1 = 판정.판.B.판본[1];
+const 삼 = 판정.판본[3]; const 이 = 판정.판본[2];
 const 순간이름 = { 처음: '이름 묻기', 나라: '나라 묻기', 좋아함: '좋아하는 노래', 사인: '뭐 해 줄까요', 끝: '사인 끝', 작별뒤: '작별 뒤' };
+const 길이름 = { 은행: '은행 답', 되묻기: '되묻기', 생성: '생성 답' };
+const 길줄수 = (판본, 길) => 판정.판본[판본].길별[길].페이블.n;
+const 길줄 = (판본, 길) => { const g = 판정.판본[판본].길별[길]; return `<td>${g.페이블.n}줄</td><td>${퍼글(g.페이블.어색, g.페이블.n)}</td><td>${퍼글(g.GPT.어색, g.GPT.n)}</td>`; };
 
 // ── 세 판 대사 ──
+const 표 = (b) => (b?.판단 === '고름' ? (b.반응 || []).map((r) => `<span class="묶음표">${글(r)}</span>`).join(' ') : `<span class="묶음표 넘김표">${글(b?.판단)}</span>`);
 function 대화표(대) {
-  const 일 = 은행길[대].차례; const 이 = 은행2길[대].차례; const 실 = 실시간[대].줄;
-  const 줄 = [`<tr><td class="학습자">—</td><td colspan="2">${글(은행길[대].첫인사)}</td><td>${글(실[0]?.하온)}</td></tr>`];
-  일.forEach((a, i) => {
-    const b = 이[i];
-    const 표1 = a.판단 === '고름' ? `<span class="묶음표">${글(a.묶음)}</span>` : `<span class="묶음표 넘김표">${글(a.판단)}</span>`;
-    const 표2 = b?.판단 === '고름' ? (b.반응 || []).map((r) => `<span class="묶음표">${글(r)}</span>`).join(' ') : `<span class="묶음표 넘김표">${글(b?.판단)}</span>`;
-    줄.push(`<tr><td class="학습자">${글(a.말)}<div class="작게">받아 적기: ${글(a.받아적기)}</div></td><td>${글(a.하온)}<div>${표1}</div></td><td>${글(b?.하온)}<div>${표2}</div></td><td>${글(실[i + 1]?.하온)}</td></tr>`);
+  const 둘 = 은행2길[대].차례; const 셋 = 은행3길[대].차례; const 실 = 실시간[대].줄;
+  const 줄 = [`<tr><td class="학습자">—</td><td colspan="2">${글(은행3길[대].첫인사)}</td><td>${글(실[0]?.하온)}</td></tr>`];
+  셋.forEach((c, i) => {
+    const b = 둘[i];
+    줄.push(`<tr><td class="학습자">${글(c.말)}<div class="작게">받아 적기: ${글(c.받아적기)}</div></td><td>${글(c.하온 ?? (c.건너뜀 ? '(대화가 이미 끝남)' : ''))}<div>${c.건너뜀 ? '' : 표(c)}</div></td><td>${글(b?.하온 ?? (b?.건너뜀 ? '(대화가 이미 끝남)' : ''))}<div>${b && !b.건너뜀 ? 표(b) : ''}</div></td><td>${글(실[i + 1]?.하온)}</td></tr>`);
   });
-  return `<div class="표틀"><table class="대사"><thead><tr><th>학습자</th><th>1판 하온</th><th>2판 하온</th><th>실시간 하온</th></tr></thead><tbody>${줄.join('')}</tbody></table></div>`;
+  return `<div class="표틀"><table class="대사"><thead><tr><th>학습자</th><th>3판 하온</th><th>2판 하온</th><th>실시간 하온</th></tr></thead><tbody>${줄.join('')}</tbody></table></div>`;
 }
 
-const 엉뚱2 = 판정.판.B.엉뚱2.filter((e) => e.F === '어색' || e.G === '어색');
-const 둘다 = 엉뚱2.filter((e) => e.F === '어색' && e.G === '어색');
-// 검수자 메모의 X · Y를 읽는 사람이 알 수 있게 1판 · 2판으로 바꿔 보인다(블라인드는 판정 때만)
-const 판이름바꿈 = (id, s) => { const 둘X = X는2판(id); return String(s || '').replace(/\bX\b/g, 둘X ? '2판' : '1판').replace(/\bY\b/g, 둘X ? '1판' : '2판'); };
-const 엉목록 = 엉뚱2.slice(0, 12).map((e) => `<li><div class="엉뚱말">「${글(e.학습자말)}」</div>
+const 엉뚱3 = 판정.엉뚱3;
+const 둘다 = 엉뚱3.filter((e) => e.F === '어색' && e.G === '어색');
+// 검수자 메모의 X · Y를 읽는 사람이 알 수 있게 2판 · 3판으로 바꿔 보인다(블라인드는 판정 때만)
+const 판이름바꿈 = (id, s) => { const 셋X = X는3판(id); return String(s || '').replace(/\bX\b/g, 셋X ? '3판' : '2판').replace(/\bY\b/g, 셋X ? '2판' : '3판'); };
+const 엉목록 = [...둘다, ...엉뚱3.filter((e) => !(e.F === '어색' && e.G === '어색'))].slice(0, 14).map((e) => `<li><div class="엉뚱말">「${글(e.학습자말)}」</div>
   <div class="작게">받아 적기(${글(e.오류정도)}): ${글(e.받아적기)}</div>
-  <div>2판 답 → 「${글(e.답)}」</div>
-  <div class="작게">Fable ${글(e.F)} · GPT ${글(e.G)}${e.메모F ? ` — Fable 메모: ${글(판이름바꿈(e.id, e.메모F))}` : ''}</div></li>`).join('');
-
-// 2판 엉뚱이 어디서 났나 — 사인 순간의 「부탁한 것도 같이 써 줄게요」(그냥 사인 부탁에도 나감)와 말 겹침
-const 겹침 = (s) => (s.match(/고마워요/g) || []).length >= 2 || /안녕~ 안녕~|헤헤.*헤헤|그럼요!.*그럼요!|짠! 짠!/.test(s);
-const 원인 = Object.fromEntries(['A', 'B'].map((판) => {
-  const 검 = (k) => new Map(jsonl(`판정2_${판}_${k}.jsonl`).map((r) => [r.id, r]));
-  const f = 검('페이블'); const g = 검('GPT');
-  const 줄 = jsonl(`고르기2_${판}_AI.jsonl`);
-  const 셈 = (m) => { const o = { 엉뚱: 0, 한줄: 0, 겹침: 0 }; for (const r of 줄) { const v = X는2판(r.id) ? m.get(r.id).X : m.get(r.id).Y; if (v !== '어색') continue; o.엉뚱++; if ((r.글 || '').includes('부탁한 것도')) o.한줄++; else if (겹침(r.글 || '')) o.겹침++; } return o; };
-  return [판, { F: 셈(f), G: 셈(g) }];
-}));
-const 놓침범위 = (판본) => { const v = 검판들.map((k) => 퍼(t('B', 판본, k).놓침, t('B', 판본, k).n)); return `${Math.min(...v).toFixed(1)}~${Math.max(...v).toFixed(1)}%`; };
+  <div>3판 ${글(길이름[e.길] || e.길)} → 「${글(e.답)}」</div>
+  <div class="작게">Fable ${글(e.F)} · GPT ${글(e.G)}${e.메모F ? ` — Fable 메모: ${글(판이름바꿈(e.id, e.메모F))}` : e.메모G ? ` — GPT 메모: ${글(판이름바꿈(e.id, e.메모G))}` : ''}</div></li>`).join('');
 
 const 판정글 = (() => {
-  const 통 = 통과('B', 2); const [받0, 받1] = 범위('B', 2, 받률); const [엉0, 엉1] = 범위('B', 2, 엉률);
-  const 앞 = 통.length === 4 ? '2판은 처음 보는 200줄(나판)에서 네 정답 판 모두 두 기준을 넘었어요.'
-    : 통.length ? `2판은 처음 보는 200줄(나판)에서 네 정답 판 가운데 ${통.length}판이 두 기준을 넘었어요(${통.map((k) => 검이름[k]).join(' · ')}).`
-      : '2판도 처음 보는 200줄(나판)에서는 두 기준을 함께 넘지 못했어요.';
-  return `${앞} 맞게 받음 ${받0.toFixed(1)}~${받1.toFixed(1)}% · 엉뚱 ${엉0.toFixed(1)}~${엉1.toFixed(1)}%예요.`;
+  const 통 = 통과(3);
+  const 앞 = 통.length === 4 ? '3판은 처음 보는 200줄(다판)에서 네 정답 판 모두 두 기준을 넘었어요.'
+    : 통.length ? `3판은 처음 보는 200줄(다판)에서 네 정답 판 가운데 ${통.length}판이 두 기준을 넘었어요(${통.map((k) => 검이름[k]).join(' · ')}).`
+      : '3판도 처음 보는 200줄(다판)에서는 두 기준을 함께 넘지 못했어요.';
+  return `${앞} 이번에는 생성으로 넘긴 차례도 실제로 답을 만들어 함께 매겼어요 — 맞게 받음 ${범위글(3, 받률)}% · 엉뚱 ${범위글(3, 엉률)}%(같은 다판에서 2판은 ${범위글(2, 받률)}% · ${범위글(2, 엉률)}%)예요.`;
 })();
+const 흘려표 = (속도.흘려 || []).map((r) => (r.오류 ? `<tr><td>${글(r.모델)}</td><td>${글(r.설정)}</td><td colspan="4" class="작게">안 됨: ${글(r.오류)}</td></tr>`
+  : `<tr><td>${글(r.모델)}</td><td>${글(r.설정)}</td><td>${초(r.알아챔중앙ms)}초</td><td>${초(r.완료중앙ms)}초</td><td>${초(r.완료위10ms)}초</td><td>${r.갈린말}/${r.줄.length}</td></tr>`)).join('');
 
 const html = `<title>하온 답 은행 시험</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
-/* 실험 노트: 판정 → 1판과 2판을 같은 잣대로 → 귀로 듣기 → 남은 흠 → 속도 → 잰 방법. 바탕은 종이 흰색 · 검정, 사업 색은 코랄 하나. */
+/* 실험 노트: 판정 → 2판과 3판을 같은 잣대로 → 답이 나온 길 → 귀로 듣기 → 남은 흠 → 속도 → 값 → 잰 방법. 바탕은 종이 흰색 · 검정, 사업 색은 코랄 하나. */
 :root{
   --bg:#FFFFFF;--fg:#171412;--muted:#6E6661;--line:#E7E1DC;--soft:#F6F2EF;
   --accent:#F96859;--accent-text:#AE322A;--grey-mark:#A39B95;--range:#D9D2CC;
@@ -171,12 +225,11 @@ p{margin:0;max-width:65ch}
 .숫자 .큰{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .숫자 .큰 small{font-size:15px;font-weight:600;color:var(--muted)}
 .숫자 .설명{font-size:13px;color:var(--muted)}
-.통과{color:var(--accent-text);font-weight:700}
-.모자람{color:var(--muted);font-weight:700}
 section{display:grid;gap:16px}
+main>*,section>*{min-width:0}
 .작게{font-size:13px;color:var(--muted)}
-svg.편차{width:100%;height:auto;max-width:46rem}
-svg.편차 text{font-family:var(--font);fill:var(--fg)}
+svg.편차,svg.속도{width:100%;height:auto;max-width:46rem}
+svg.편차 text,svg.속도 text{font-family:var(--font);fill:var(--fg)}
 .눈금글{font-size:11px;fill:var(--muted)!important}
 .눈금선{stroke:var(--line);stroke-width:1}
 .기준선{stroke:var(--muted);stroke-width:1.2;stroke-dasharray:4 4}
@@ -191,6 +244,11 @@ svg.편차 text{font-family:var(--font);fill:var(--fg)}
 .점.넘김{fill:var(--accent)}
 .점.모자람{fill:var(--bg);stroke:var(--grey-mark);stroke-width:2}
 .점글{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.조각틀{stroke:var(--fg);stroke-width:.8}
+.범례{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted)}
+.범례칸{display:inline-flex;align-items:center;gap:6px}
+.견본{display:inline-block;width:22px;height:12px;border:.8px solid var(--fg);--c:var(--grey-mark);--g:5px;background:repeating-linear-gradient(135deg,var(--c) 0 1.6px,transparent 1.6px var(--g))}
+.견본.회색옅음{--g:9px}.견본.코랄{--c:var(--accent)}.견본.진함{--c:var(--fg)}.견본.진함옅음{--c:var(--fg);--g:9px}
 svg.좁은판,.좁은판만{display:none}
 @media (max-width:34rem){svg.넓은판{display:none}svg.좁은판{display:block;max-width:360px}.좁은판만{display:block}}
 .들기{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:18px}
@@ -219,106 +277,135 @@ td.학습자{width:24%}
 .엉뚱값{color:var(--muted)}
 .엉뚱들{display:grid;gap:14px;padding-left:18px;margin:0}
 .엉뚱말{font-weight:650}
-.고칠것{display:grid;gap:10px;padding-left:20px;margin:0}
-.값표 td:nth-child(2),.값표 th:nth-child(2){text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.수표 td:not(:first-child),.수표 th:not(:first-child),.값표 td:nth-child(2),.값표 th:nth-child(2){text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 @media (max-width:30rem){.막대줄{grid-template-columns:1fr 3.4rem 3.4rem}.막대칸{grid-column:1/-1;order:2}.숫자+.숫자{padding-left:0;border-left:0;border-top:1px solid var(--line)}}
 </style>
 <main>
 <header class="머리">
-  <div class="작은머리">실시간 음성 상황극 · 하온 팬사인회 · 2026년 11월 1일 · 2판</div>
+  <div class="작은머리">실시간 음성 상황극 · 하온 팬사인회 · 2026년 11월 1일 · 3판</div>
   <h1>미리 써 둔 답으로 하온이 받아칠 수 있을까</h1>
-  <p class="판정">${판정글} 답 짜임을 「반응 + 아직 안 들은 질문」으로 바꾸니 <b>괜히 생성으로 넘기던 일(놓침)이 ${놓침범위(1)} → ${놓침범위(2)}로 줄고 맞게 받음은 올랐지만, 엉뚱한 답은 줄지 않았어요.</b> 2판 엉뚱의 3분의 1은 사인 순간의 한 줄(「부탁한 것도 같이 써 줄게요」가 그냥 사인 부탁에도 나감)에서 나왔어요. 값은 4분 한 판에 약 ${원(한판(값.고르기2))}원(실시간 ${원(값.실시간)}원)이고, 답까지 걸리는 시간은 ${(은행2지연 / 1000).toFixed(1)}초로 실시간(${(실시간지연 / 1000).toFixed(1)}초)보다 아직 느려요.</p>
+  <p class="판정">${판정글} <b>평범한 답은 두 검수자 모두 엉뚱 ${엉률(삼.평범.페이블).toFixed(1)}% · ${엉률(삼.평범.GPT).toFixed(1)}%로 기준을 넘었어요.</b> 남은 엉뚱은 예외인 말(${엉률(삼.예외.페이블).toFixed(1)} · ${엉률(삼.예외.GPT).toFixed(1)}%)에서 나오고, 그 말을 맡긴 생성 답(${삼.길별.생성.페이블.n}줄, 엉뚱 ${엉률(삼.길별.생성.페이블).toFixed(1)} · ${엉률(삼.길별.생성.GPT).toFixed(1)}%)이 오히려 가장 약했어요. 값은 4분 한 판에 약 ${원(한판3)}원(실시간 ${원(값.실시간)}원)이고, 말 끝에서 첫 소리까지는 은행 답 ${초(은행답지연)}초 · 생성 답 ${초(생성답지연)}초로 실시간(${초(실시간지연)}초)보다 아직 느려요.</p>
   <div class="숫자들">
-    <div class="숫자"><div class="작게">2판 · 맞게 받음 · 기준 80% 이상</div><div class="큰">${받률(t('B', 2)).toFixed(1)}%</div><div class="설명">나판 · Fable · 판마다 ${범위('B', 2, 받률).map((v) => v.toFixed(1)).join('~')}%</div></div>
-    <div class="숫자"><div class="작게">2판 · 엉뚱한 답 · 기준 5% 이하</div><div class="큰">${엉률(t('B', 2)).toFixed(1)}%</div><div class="설명">나판 · Fable · 판마다 ${범위('B', 2, 엉률).map((v) => v.toFixed(1)).join('~')}%</div></div>
-    <div class="숫자"><div class="작게">4분 한 판 값</div><div class="큰">${원(한판(값.고르기2))}<small>원</small></div><div class="설명">실시간 ${원(값.실시간)}원 · 생성으로 넘김 ${생성률(고2B).toFixed(1)}%(1판 ${생성률(고1B).toFixed(1)}%)</div></div>
-    <div class="숫자"><div class="작게">답까지(받아 적기 + 고르기, 중앙)</div><div class="큰">${(은행2지연 / 1000).toFixed(1)}<small>초</small></div><div class="설명">실시간 ${(실시간지연 / 1000).toFixed(1)}초 · 빠른 길은 안전선에 못 미쳐 안 씀</div></div>
+    <div class="숫자"><div class="작게">3판 · 맞게 받음 · 기준 80% 이상</div><div class="큰">${받률(t(3)).toFixed(1)}%</div><div class="설명">다판 · Fable · 판마다 ${범위글(3, 받률)}%</div></div>
+    <div class="숫자"><div class="작게">3판 · 엉뚱한 답 · 기준 5% 이하</div><div class="큰">${엉률(t(3)).toFixed(1)}%</div><div class="설명">다판 · Fable · 판마다 ${범위글(3, 엉률)}%</div></div>
+    <div class="숫자"><div class="작게">4분 한 판 값</div><div class="큰">${원(한판3)}<small>원</small></div><div class="설명">실시간 ${원(값.실시간)}원 · 생성 차례 ${생성률3.toFixed(1)}% 포함</div></div>
+    <div class="숫자"><div class="작게">말 끝 → 첫 소리(은행 답 · 중앙)</div><div class="큰">${초(은행답지연)}<small>초</small></div><div class="설명">생성 답 ${초(생성답지연)}초 · 실시간 ${초(실시간지연)}초</div></div>
   </div>
 </header>
 
 <section>
-  <h2>1판과 2판, 같은 잣대로</h2>
-  <p>두 검수자(Fable · GPT)가 학습자 말마다 1판 답과 2판 답을 X · Y로 섞어 받아, 어느 쪽인지 모른 채 「자연 · 어색」을 따로 매겼어요. <b>나판</b>은 2판이 한 번도 본 적 없는 새 200줄이라 기준 통과는 이 판으로 봐요. 가판은 1판 시험과 같은 200줄이고, 2판이 그 실패를 보고 고친 판이라 점수가 좋게 나올 수밖에 없어요.</p>
+  <h2>2판과 3판, 같은 잣대로</h2>
+  <p>두 검수자(Fable · GPT)가 학습자 말마다 2판 답과 3판 답을 X · Y로 섞어 받아, 어느 쪽인지 모른 채 「자연 · 어색」을 따로 매겼어요. <b>다판</b>은 3판 은행을 굳힌 뒤에 만든 새 200줄이에요. 이번에는 두 판 모두 생성으로 넘긴 차례에도 실제 답을 만들어 넣었고, 검수자는 어느 답이 미리 써 둔 답인지도 몰랐어요.</p>
   ${편차점()}
-  ${편차점({ 폭: 360, 왼: 78, 좁음: true })}
-  <p class="작게">점은 Fable 판정, 옅은 막대는 네 정답 판(Fable · GPT · 둘 다 자연일 때만 · 하나라도 자연이면)의 범위예요. 오른쪽이 기준을 넘긴 쪽이에요. 두 검수자의 판정이 같았던 비율은 나판 ${퍼글(판정.판.B.일치.같음, 판정.판.B.일치.둘, 0)}, 가판 ${퍼글(판정.판.A.일치.같음, 판정.판.A.일치.둘, 0)}예요.</p>
-  <p class="작게">1판 처음 시험(미리 매긴 정답 방식, 가판)은 맞게 받음 ${(100 * 처음요약.정답별.페이블.맞게받음 / 처음요약.정답별.페이블.n).toFixed(1)}% · 엉뚱 ${(100 * 처음요약.정답별.페이블.엉뚱 / 처음요약.정답별.페이블.n).toFixed(1)}%(Fable)였고, 같은 1판을 이번 블라인드 방식으로 다시 매긴 값이 위의 「1판 · 가판」이에요.</p>
+  ${편차점({ 폭: 360, 왼: 72, 좁음: true })}
+  <p class="작게">점은 Fable 판정, 옅은 막대는 네 정답 판(Fable · GPT · 둘 다 자연일 때만 · 하나라도 자연이면)의 범위예요. 오른쪽이 기준을 넘긴 쪽이에요. 두 검수자의 판정이 같았던 비율은 ${퍼글(판정.일치.같음, 판정.일치.둘, 0)}예요. 2판 시험의 나판(생성 차례는 「넘길 만했나」로만 셈)에서 2판은 맞게 받음 ${받률({ 자연: 나판(2).맞게받음, n: 나판(2).n }).toFixed(1)}% · 엉뚱 ${엉률({ 어색: 나판(2).엉뚱, n: 나판(2).n }).toFixed(1)}%(Fable)였어요.</p>
+</section>
+
+<section>
+  <h2>답이 나온 길</h2>
+  <p>3판은 고르기가 셋 중 하나로 보내요 — 미리 녹음한 반응을 이어 붙인 <b>은행 답</b>, 다시 말해 달라는 <b>되묻기</b>, 실시간으로 만든 <b>생성 답</b>.</p>
+  <div class="표틀"><table class="수표"><thead><tr><th>다판 200줄</th><th>줄</th><th>엉뚱 · Fable</th><th>엉뚱 · GPT</th></tr></thead><tbody>
+    ${['은행', '되묻기', '생성'].map((g) => `<tr><td>3판 · ${길이름[g]}</td>${길줄(3, g)}</tr>`).join('\n    ')}
+    ${['은행', '되묻기', '생성'].map((g) => `<tr><td class="작게">2판 · ${길이름[g]}</td>${길줄(2, g)}</tr>`).join('\n    ')}
+  </tbody></table></div>
+  <ul class="관찰">
+    <li><b>은행 답이 가장 나아졌어요.</b> 2판 ${길줄수(2, '은행')}줄 엉뚱 ${엉률(이.길별.은행.페이블).toFixed(1)} · ${엉률(이.길별.은행.GPT).toFixed(1)}% → 3판 ${길줄수(3, '은행')}줄 ${엉률(삼.길별.은행.페이블).toFixed(1)} · ${엉률(삼.길별.은행.GPT).toFixed(1)}%. 사인 한 줄을 고치고 말 겹침을 막고, 은행이 못 받는 말을 생성으로 보낸 효과예요.</li>
+    <li><b>생성으로 넘긴다고 풀리지 않았어요.</b> 「저 기억나요?」 · 「노래 이름 뭐예요?」처럼 콕 집어 묻는 말을 넘겨도, 생성 답이 고맙다고만 하고 다음 질문으로 가 버린 경우가 많았어요. 넘기는 판단은 맞았고 생성 지시문이 약한 거예요.</li>
+    <li><b>되묻기는 두 검수자가 갈렸어요.</b> 받아 적기가 크게 틀린 말에 다시 말해 달라고 한 답을 Fable은 모두 자연으로, GPT는 뜻을 짐작할 수 있었다며 어색으로 본 줄이 있어요.</li>
+  </ul>
 </section>
 
 <section>
   <h2>세 판을 들어 보세요</h2>
-  <p>같은 학습자 소리에 1판 · 2판 · 실시간 답을 붙였고, 셋 다 같은 목소리(Kore)로 녹음해 내용만 비교되게 했어요. 차례 사이는 똑같이 0.45초로 맞췄어요.</p>
+  <p>같은 학습자 소리에 3판 · 2판 · 실시간 답을 붙였고, 셋 다 같은 목소리(Kore)로 녹음해 내용만 비교되게 했어요. 차례 사이는 똑같이 0.45초로 맞췄어요.</p>
   <h3>평범한 판</h3>
   <div class="들기">
-    <figure><figcaption>1판 <span>묶음 하나 고르기</span></figcaption><audio controls preload="none" src="은행_A.mp3"></audio></figure>
-    <figure><figcaption>2판 <span>반응 + 아직 안 들은 질문</span></figcaption><audio controls preload="none" src="은행2_A.mp3"></audio></figure>
+    <figure><figcaption>3판 <span>반응 + 안 들은 질문 · 넘길 말은 생성</span></figcaption><audio controls preload="none" src="은행3_A.mp3"></audio></figure>
+    <figure><figcaption>2판 <span>반응 + 안 들은 질문</span></figcaption><audio controls preload="none" src="은행2_A.mp3"></audio></figure>
     <figure><figcaption>실시간 <span>Gemini 3.8 Live가 새로 말함</span></figcaption><audio controls preload="none" src="실시간_A.mp3"></audio></figure>
   </div>
   ${대화표('A')}
   <h3>까다로운 판</h3>
   <div class="들기">
-    <figure><figcaption>1판</figcaption><audio controls preload="none" src="은행_B.mp3"></audio></figure>
+    <figure><figcaption>3판</figcaption><audio controls preload="none" src="은행3_B.mp3"></audio></figure>
     <figure><figcaption>2판</figcaption><audio controls preload="none" src="은행2_B.mp3"></audio></figure>
     <figure><figcaption>실시간</figcaption><audio controls preload="none" src="실시간_B.mp3"></audio></figure>
   </div>
   ${대화표('B')}
-  <ul class="관찰">
-    <li>2판은 「사랑해요! 콘서트 꼭 갈게요」에 둘 다 받았어요(1판은 응원만). 「안녕하세요… 이름이 투야예요」처럼 영어가 섞인 말에는 이름을 받고 「한국어로도 잘했어요!」를 붙였어요.</li>
-    <li>실시간판은 이름을 불러 주지만, 두 대화 모두 작별 인사를 두 번 되풀이했고 이미 들은 이름을 다시 물었어요.</li>
-    <li>2판에도 흠이 하나 들렸어요 — 작별 뒤 「안녕히 계세요」에 「안녕~ 안녕~ 조심히 가요!」처럼 「안녕」이 겹쳤어요(작별 반응과 작별 질문의 이음). 3판에서 고쳐요.</li>
-  </ul>
 </section>
 
 <section>
-  <h2>2판이 아직 약한 곳</h2>
-  <p class="작게">나판 · Fable 정답 기준. 막대는 맞게 받은 비율, 오른쪽 회색 숫자는 엉뚱한 답 비율이에요.</p>
+  <h2>3판이 아직 약한 곳</h2>
+  <p class="작게">다판 · Fable 정답 기준. 막대는 맞게 받은 비율, 오른쪽 회색 숫자는 엉뚱한 답 비율이에요.</p>
   <div class="막대표">
     <div class="막대줄 막대머리"><div></div><div></div><div class="막대값">맞게</div><div class="막대값">엉뚱</div></div>
-    ${막대줄('평범한 답', B2.평범.페이블, true)}
-    ${막대줄('예외인 말', B2.예외.페이블)}
-    ${막대줄('받아 적기 오류 없음', B2.오류별.없음.페이블)}
-    ${막대줄('받아 적기 가벼운 오류', B2.오류별.가벼움.페이블)}
-    ${막대줄('받아 적기 심한 오류', B2.오류별.심함.페이블)}
-    ${Object.entries(B2.순간별).filter(([, c]) => c.페이블.n).map(([s, c]) => 막대줄(`순간: ${순간이름[s]}`, c.페이블)).join('\n    ')}
+    ${막대줄('평범한 답', 삼.평범.페이블, true)}
+    ${막대줄('예외인 말', 삼.예외.페이블)}
+    ${막대줄('받아 적기 오류 없음', 삼.오류별.없음.페이블)}
+    ${막대줄('받아 적기 가벼운 오류', 삼.오류별.가벼움.페이블)}
+    ${막대줄('받아 적기 심한 오류', 삼.오류별.심함.페이블)}
+    ${Object.entries(삼.순간별).filter(([, c]) => c.페이블.n).map(([s, c]) => 막대줄(`순간: ${순간이름[s]}`, c.페이블)).join('\n    ')}
   </div>
-  <p class="작게">같은 나판에서 1판은 평범한 답 ${받률(B1.평범.페이블).toFixed(1)}% · 예외 ${받률(B1.예외.페이블).toFixed(1)}%였어요.</p>
-  <h3>엉뚱은 왜 줄지 않았나</h3>
+  <p class="작게">같은 다판에서 2판은 평범한 답 ${받률(이.평범.페이블).toFixed(1)}% · 예외 ${받률(이.예외.페이블).toFixed(1)}%였어요.</p>
+  <h3>엉뚱은 어디서 났나</h3>
   <ul class="관찰">
-    <li><b>한 줄이 3분의 1.</b> 사인 순간 반응의 변형 「그럼요! 부탁한 것도 같이 써 줄게요.」가 그냥 「사인해 주세요」에도 나가, 다른 부탁이 있었던 것처럼 들렸어요. 2판 엉뚱 가운데 나판 Fable ${원인.B.F.엉뚱}줄 중 ${원인.B.F.한줄} · GPT ${원인.B.G.엉뚱}줄 중 ${원인.B.G.한줄}, 가판 Fable ${원인.A.F.엉뚱}줄 중 ${원인.A.F.한줄} · GPT ${원인.A.G.엉뚱}줄 중 ${원인.A.G.한줄}이 이 줄이에요. 평범한 답에서 2판이 1판보다 엉뚱이 많았던 것(나판 Fable ${엉률(B1.평범.페이블).toFixed(1)}% → ${엉률(B2.평범.페이블).toFixed(1)}%)도 대부분 이 줄 때문이에요.</li>
-    <li><b>말 겹침은 덜 걸렸어요.</b> 「고마워요 … 고마워요」처럼 반응 둘이 겹친 답은 나판에서 여러 번 나왔지만 어색 판정은 Fable ${원인.B.F.겹침} · GPT ${원인.B.G.겹침}줄이었어요.</li>
-    <li><b>나머지는 은행이 못 받는 말.</b> 하트 · 응원 문구 · 고양이 그림 같은 덧붙인 부탁, 「볼로르 맞아요?」 · 「코 수술 안 했어요?」 같은 구체적인 질문, 받아 적기가 크게 틀린 말이에요. GPT는 이런 말을 두루뭉술하게 받는 것도 어색으로 봐서 Fable보다 엉뚱을 두 배쯤 많이 셌어요.</li>
-    <li><b>고치면(추정).</b> 그 한 줄을 「좋아요! 예쁘게 써 줄게요.」로 바꾸고 겹침을 막으면 나판 엉뚱이 Fable ${(100 * (원인.B.F.엉뚱 - 원인.B.F.한줄 - 원인.B.F.겹침) / 200).toFixed(1)}% · GPT ${(100 * (원인.B.G.엉뚱 - 원인.B.G.한줄 - 원인.B.G.겹침) / 200).toFixed(1)}% 안팎이 돼요 — 고친 줄이 모두 자연이 된다고 본 어림이고, 나판은 이미 본 말이라 새 판으로 다시 재야 해요. GPT 잣대까지 맞추려면 구체적인 질문 · 덧붙인 부탁은 생성으로 넘겨야 해요.</li>
+    <li><b>생성 답이 질문 · 장난을 안 받음.</b> 받아 적기까지 멀쩡한데도 「노래 이름 뭐예요?」에 노래 얘기로 넘어가고, 「통장 0원 됐어요, 책임지세요!」 같은 장난을 받지 않았어요.</li>
+    <li><b>지나가며 말한 것을 놓침.</b> 「제 친구도 팬이에요! 몽골에 팬 많아요」 뒤에 어느 나라에서 왔냐고 묻고, 「시간이 없어요, 안녕히 계세요」에 노래를 물었어요. 고르기가 「들은 것」에 넣지 못했거나 작별로 건너뛰지 못한 경우예요.</li>
+    <li><b>은행 줄의 흠.</b> 「그 약속 말고요」(학습자가 말하지 않은 것을 부정), 혼자 도는 「아, 그렇구나!」, 「「사인해 주세요」 하고 말해 봐요!」(상황극에서 따라 말하라고 시킴), 겹침 목록에 없던 「괜찮아요 … 괜찮아요」. 맞장구를 둘째 자리에서 뺀 탓에 사연이 안 받아진 줄도 있어요.</li>
+    <li><b>받아 적기가 크게 틀린 말.</b> 「에어컨 타이완입니다 사이 여기에 저요」처럼 뜻이 사라진 말이에요. 몽골 학습자의 실제 받아 적기가 어떤지는 실제 기록으로만 알 수 있어요.</li>
   </ul>
-  <h3>2판 답을 어색하다고 본 줄 ${엉뚱2.length}개(둘 다 어색 ${둘다.length})</h3>
+  <h3>3판 답을 어색하다고 본 줄 ${엉뚱3.length}개(둘 다 어색 ${둘다.length})</h3>
   <ol class="엉뚱들">${엉목록}</ol>
 </section>
 
 <section>
-  <h2>빠른 고르기</h2>
+  <h2>속도 — 말 끝에서 첫 소리까지</h2>
+  <p>학습자 소리 14개를 실제 속도로 흘려 보내며, 마지막 소리를 보낸 때부터 하나씩 쟀어요. 2판까지 적은 「받아 적기 1.5초」는 두 가지가 틀렸어요 — 크레딧이 바닥난 앞 키를 두드리는 헛걸음이 들어 있었고(성공한 요청만 재면 ${초(속도.통째.중앙ms)}초), 말이 끝났는지 알아채는 시간은 빠져 있었어요. 실시간판의 ${초(실시간지연)}초에는 그 시간이 들어 있어서, 이번에 같은 출발점으로 맞췄어요.</p>
+  ${속도막대()}
+  ${속도막대({ 폭: 360, 왼: 14, 좁음: true })}
+  <div class="범례">${범례}</div>
+  <p class="작게">점선은 실시간판의 첫 소리(${초(실시간지연)}초). 단계마다 중앙값을 더한 어림이에요. 고르기 위 10%는 ${초(고르기ms3위)}초예요.</p>
   <ul class="관찰">
-    <li><b>지금 걸리는 시간.</b> 받아 적기 중앙 ${(받아적기ms / 1000).toFixed(1)}초 + AI 고르기 중앙 ${(고르기ms2 / 1000).toFixed(1)}초(위 10% ${(고르기ms2위 / 1000).toFixed(1)}초). 1판 때 잰 3.0초에는 키 차례가 바닥난 앞 조직을 두드리고 넘어가는 헛걸음이 섞여 있었어요 — 이번에는 성공한 요청 하나만 쟀어요.</li>
-    <li><b>임베딩 빠른 길은 안 썼어요.</b> 학습자 말과 가장 가까운 예시를 찾아 AI를 건너뛰는 길을 만들고 반응마다 예시를 15개씩 늘려 봤지만, 가판에서 AI 고르기와 같은 판단을 하는 비율이 안전선(97%)에 못 미쳤어요 — 그 선을 지키면 200줄 중 ${빠른길.가판.받음}줄만 받을 수 있었어요.</li>
-    <li><b>다음에 줄일 곳.</b> 받아 적기를 말하는 동안 흘려 받기(끝난 뒤 0.3초 안팎), 말이 끝나기 전에 고르기를 미리 시작하기, 그사이 미리 구운 맞장구 소리를 바로 틀기. 이 셋을 붙여 다시 재요.</li>
+    <li><b>흘려 받아도 빨라지지 않았어요.</b> 말 끝을 알아채는 데 ${초(조각.알아챔)}초, 글이 마무리되는 데 ${초(조각.받아적기)}초가 들어요. 앱에서 침묵 0.5초로 말 끝을 잡고 파일을 올려도(${초(속도.통째.중앙ms)}초) 어림으로 1.2초대라 거의 같아요. 2판 때 「끝난 뒤 0.3초 안팎」이라 적은 기대는 말 끝 알아채기를 빠뜨린 값이었어요.</li>
+    <li><b>남은 큰 덩어리는 답 고르기(${초(조각.고르기)}초)예요.</b> 고르기를 흘려 받으면 첫 반응을 ${초(조각.첫반응)}초에 알 수 있어요(다판 40줄, 위 10% ${초(속도.고르기흘려.첫반응위10ms)}초). 그때부터 녹음을 틀면 은행 답이 ${초(첫반응지연)}초로 줄어요. 첫 반응 뒤 둘째 반응 · 질문을 고르는 순서만 맞추면 되는 일이라 값이 늘지 않아요.</li>
+    <li><b>생성 답은 ${초(조각.생성 + 조각.목소리)}초가 더 들어요</b>(첫 문장 ${초(조각.생성)}초 + 목소리 첫 소리 ${초(조각.목소리)}초, 흘려 받기로 첫 문장부터 읽기 시작한다고 쳤어요).</li>
+    <li><b>침묵만 보면 더 빠르지만 말을 끊어요.</b> 침묵 0.3초 기준은 글 마무리가 ${초(침묵300.완료중앙ms)}초로 가장 빨랐지만 14개 중 ${침묵300.갈린말}개를 머뭇거림(「저는… 볼로르예요」)에서 둘 이상으로 갈랐고, 0.5초 기준은 ${침묵500.갈린말}개, 의미 VAD는 ${고른흘려.갈린말}개였어요. 앱이 첫 조각에 바로 답하면 학습자 말을 끊게 돼요 — 초보일수록 말 끝 판단을 넉넉히 둬야 해서 이 시간은 더 줄이기 어려워요.</li>
+    <li><b>맞장구 먼저 틀기(설계).</b> 말 끝을 알아챈 순간 미리 녹음한 짧은 소리(「아~」 · 「오~」)를 바로 틀고 고른 답을 이어 틀면, 첫 소리는 ${초(조각.알아챔)}초로 실시간과 비슷해져요. 매번 같은 소리가 반복되면 티가 나니 몇 가지를 돌려 써야 하고, 아직 들어 보며 시험하지 않았어요.</li>
   </ul>
+  <div class="표틀"><table class="수표"><thead><tr><th>받아쓰기 모델</th><th>말 끝 알아채기</th><th>알아챔(중앙)</th><th>글 마무리(중앙)</th><th>위 10%</th><th>갈린 말</th></tr></thead><tbody>${흘려표}
+    <tr><td>gpt-transcribe(파일 통째)</td><td>—</td><td>—</td><td>${초(속도.통째.중앙ms)}초</td><td>${초(속도.통째.위10ms)}초</td><td>—</td></tr>
+  </tbody></table></div>
+  <p class="작게">「바로 커밋」은 앱이 말 끝을 정확히 안다고 친 아래 한계예요. 파일 통째 줄은 올리고 받는 시간만이라, 실제로는 말 끝 알아채기 시간을 더해야 해요.</p>
 </section>
 
 <section>
   <h2>값</h2>
   <div class="표틀"><table class="값표"><thead><tr><th>4분 한 판(학습자 8차례)</th><th>값</th><th>셈</th></tr></thead><tbody>
     <tr><td>실시간 GPT-Live</td><td>${원(값.실시간)}원</td><td class="작게">분당 $0.05(시제품 실측) + 돌아보기 $0.003</td></tr>
-    <tr><td>답 은행 2판</td><td>${원(한판(값.고르기2))}원</td><td class="작게">차례마다 받아 적기 $0.0003 + 2판 고르기 $${값.고르기2.toFixed(4)}(나판 200줄 실측) + 돌아보기 · 생성으로 넘김 ${생성률(고2B).toFixed(1)}%는 따로</td></tr>
-    <tr><td>답 은행 1판</td><td>${원(한판(값.고르기1))}원</td><td class="작게">1판 고르기 $${값.고르기1.toFixed(4)}(나판 200줄 실측) · 생성으로 넘김 ${생성률(고1B).toFixed(1)}%는 따로</td></tr>
+    <tr><td>답 은행 3판</td><td>${원(한판3)}원</td><td class="작게">차례마다 고르기 · 생성 평균 $${값.차례3.toFixed(4)}(다판 200줄 실측, 생성 ${생성률3.toFixed(1)}% 포함) + 생성 답 목소리 + 파일 받아 적기 8번 + 돌아보기</td></tr>
+    <tr><td>답 은행 2판</td><td>${원(한판2)}원</td><td class="작게">차례마다 $${값.차례2.toFixed(4)}(다판 실측, 생성 ${생성률2.toFixed(1)}%) + 파일 받아 적기 8번 + 돌아보기</td></tr>
   </tbody></table></div>
-  <p class="작게">1달러 1,400원(BM 문서의 계산용 환율). 2판은 반응 목록이 길어 고르기 한 번의 값이 1판보다 조금 크지만, 실시간 생성으로 넘기는 차례가 크게 줄었어요.</p>
+  <p class="작게">1달러 1,400원(BM 문서의 계산용 환율). 목소리 읽기는 분당 약 $0.015로 어림했어요. 흘려 받아 적기를 4분 내내 쓰면 $${값.흘려받아적기.toFixed(3)}(약 ${원(값.흘려받아적기 - 값.통째받아적기)}원)가 더 들어요 — 더 빠르지 않아 셈에서 뺐어요.</p>
+</section>
+
+<section>
+  <h2>다음에 고칠 곳</h2>
+  <ul class="관찰">
+    <li><b>생성 지시문.</b> 묻는 말이 있으면 그 말부터 답하고, 모르는 사실은 지어내지 말고 하온답게 둘러대요. 장난에는 장난으로 받아요.</li>
+    <li><b>「들은 것」.</b> 지나가며 말한 나라 · 이름도 넣고, 작별 신호가 있으면 질문을 멈춰요.</li>
+    <li><b>은행 줄.</b> 위에 적은 네 줄을 고치고, 맞장구는 사연이 있을 때 둘째 자리에도 쓸 수 있게 풀어요.</li>
+    <li><b>속도.</b> 고르기 흘려 받기와 맞장구 먼저 틀기를 붙여 귀로 들어 봐요.</li>
+    <li><b>기준선.</b> 지금까지 은행 쪽만 매겼어요. 5%가 어느 정도의 잣대인지 알려면 매 차례 생성하는 답도 같은 200줄 · 같은 블라인드로 매겨 봐야 해요.</li>
+  </ul>
 </section>
 
 <section>
   <h2>어떻게 쟀나</h2>
   <ul class="관찰">
-    <li>은행 1판(묶음 47 · 녹음 줄 ${녹음줄수1()})과 2판(반응 ${반응들.length} · 녹음 줄 ${녹음줄수2()})은 각각 시험 말을 보기 전에 확정했어요(파일 지문을 README에 남김). 2판은 반응 + 이끔을 잇는 규칙에 「들은 것」을 더해 한 번 다시 굳혔어요 — 그때 나판은 개수 · 분포와 가판과 겹치는 8줄만 본 상태였어요.</li>
-    <li>학습자 말 두 판(가판 · 나판, 각 200줄)은 은행을 보지 않은 Gemini 3.8 Flash가 같은 지시로 만들었어요. 받아 적기 오류(없음 · 가벼움 · 심함 = 대략 55 · 30 · 15)도 함께 흉내 냈어요.</li>
-    <li>고르기는 받아 적은 글만 봤어요(1판 · 2판 모두 GPT-6.1 Terra, 생각 끔). 판정은 Fable(세 조씩)과 GPT가 같은 기준으로 블라인드로 매겼어요.</li>
-    <li>한계: 학습자 말과 받아 적기 오류는 지어낸 것이라 실제 몽골 학습자에게서는 더 나쁘게 나올 수 있어요. 한 차례씩 매겼고, 대화 흐름은 들어 보기 두 판으로만 봤어요.</li>
+    <li>은행 3판(반응 ${반응들3.length} · 녹음 줄 ${녹음줄수3()})은 다판을 만들기 전에 확정했어요(파일 지문을 README에 남김). 2판 시험에서 본 흠 — 사인 순간 「부탁한 것도 같이 써 줄게요」, 말 겹침, 맞장구 둘째 자리 — 을 고쳤어요.</li>
+    <li>다판 200줄은 은행을 보지 않은 Gemini 3.8 Flash가 가판 · 나판과 같은 지시로 만들었어요(받아 적기 오류 없음 · 가벼움 · 심함 = 109 · 60 · 31줄). 앞 두 판과 글자까지 같은 줄은 「네!」 같은 짧은 말 6줄이에요.</li>
+    <li>고르기는 받아 적은 글만 봤어요(2판 · 3판 모두 GPT-6.1 Terra, 생각 끔). 생성 답도 같은 모델이 시제품 지시문으로 만들고, 끝에는 은행과 같은 규칙의 다음 질문을 붙였어요. 판정은 Fable(세 조)과 GPT가 같은 기준으로 블라인드로 매겼어요.</li>
+    <li>한계: 학습자 말과 받아 적기 오류는 지어낸 것이라 실제 몽골 학습자에게서는 더 나쁘게 나올 수 있어요. 한 차례씩 매겼고, 대화 흐름은 들어 보기 두 판으로만 봤어요. 속도는 학습자 소리 14개로 잰 작은 표본이에요.</li>
   </ul>
   <p class="작게">자료와 스크립트: 저장소 experiences/realtime-roleplay/qa/답은행시험-20261101/</p>
 </section>
@@ -330,5 +417,6 @@ fs.mkdirSync(폴더, { recursive: true });
 const { 심기 } = require(path.join(저장소, 'tools/lib/브랜드폰트.js'));
 const 심음 = 심기(html);
 fs.writeFileSync(path.join(폴더, 'index.html'), 심음.html);
-for (const f of ['은행_A.mp3', '은행_B.mp3', '은행2_A.mp3', '은행2_B.mp3', '실시간_A.mp3', '실시간_B.mp3']) fs.copyFileSync(path.join(작업, '엮음', f), path.join(폴더, f));
+for (const f of ['은행3_A.mp3', '은행3_B.mp3', '은행2_A.mp3', '은행2_B.mp3', '실시간_A.mp3', '실시간_B.mp3']) fs.copyFileSync(path.join(작업, '엮음', f), path.join(폴더, f));
+for (const f of ['은행_A.mp3', '은행_B.mp3']) fs.rmSync(path.join(폴더, f), { force: true }); // 1판 소리는 이번 페이지에 안 싣는다
 console.log(`페이지 → ${path.join(폴더, 'index.html')} (${Math.round(심음.html.length / 1024)}KB)`);

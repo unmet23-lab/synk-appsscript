@@ -23,7 +23,7 @@ const 고르기모델 = 'gpt-6.1-terra';
 const 임베딩모델 = 'text-embedding-3-large';
 const 임베딩값 = 0.13e-6; // USD / 토큰(공개 값표 — 차례당 10토큰 안팎이라 0.000002 USD 아래)
 
-export const 자료읽기 = async (판) => (await import(pathToFileURL(path.join(여기, 판 === 'B' ? '학습자말B.mjs' : '학습자말.mjs')).href)).default;
+export const 자료읽기 = async (판) => (await import(pathToFileURL(path.join(여기, /^[B-Z]$/.test(판) ? `학습자말${판}.mjs` : '학습자말.mjs')).href)).default; // A = 가판, B = 나판, C = 다판(3판 시험)
 export const 변형번호 = (id) => createHash('sha1').update(id).digest()[0];
 
 /** 성공한 요청 하나의 시간을 잰다 — 키로부르기가 앞 키를 넘기는 동안의 시간은 빼고 마지막 시도만 */
