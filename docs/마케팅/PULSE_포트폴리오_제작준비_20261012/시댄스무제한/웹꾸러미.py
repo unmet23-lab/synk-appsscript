@@ -62,6 +62,62 @@ VOICE_FROM.update({
     "p6-목소리-엄마": (P6_SAMPLES + "/eomma.mp3", "냉장고에 수박 썰어 놨어. 공부하다 출출하면 나와서 먹어."),
     "p6-목소리-딸": (P6_SAMPLES + "/ttal.mp3", "역 앞에 새로 생긴 국숫집, 생각보다 맛있더라."),   # 11-01 Fable — 25음절은 7초 판에 빠듯해 줄임
 })
+# 여섯 편 화면 밖 목소리(11-01 유호님 「시댄스 목소리로 붙여」) — 매진 HS_CASTING · HS_LINES와 같은 길: 배역마다 목소리 판(견본 없이 일상 한 줄,
+#   시댄스가 처음 낸 목소리 → 견본떼기.py) → 그 견본의 결로 시댄스가 연기하는 화면 밖 대사 판(소리만 쓰고 화면은 안 씀, 방식 B · VOICE 줄 한 번).
+#   줄은 편 02_콘티 대사 칸 글자 그대로. 6번 엄마 · 딸 목소리 판은 6번 지시문 「목소리판」 칸(입 보이는 7 · 11 B 판과 같은 견본)이라 여기엔 대사 판만.
+#   먹먹함 · 문 너머 · 울림은 후반 몫(판 소리는 깨끗하게). 어색하면 대안은 일레븐 v4(결정 10-29). 내레이터(6번 끝 문구 · 8번 · 스나이퍼 가게 목소리)는 넣지 않는다.
+SIX_SAMPLE_DIR = {
+    "s3": "C:/Users/q1212/Documents/synk-vendor/pulse-season4-20261025/소리/bf-sale/시댄스견본",
+    "s4": "C:/Users/q1212/Documents/synk-vendor/pulse-season4-20261025/소리/bf-sniper/시댄스견본",
+    "p10": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p10/시댄스견본",
+}
+SIX_CASTING = [   # (편, 배역, 견본 파일, 그림(그 편 그림 폴더), 화면 속 사람, 대명사, 말할 글 — 대본에 없는 일상 한 줄 15~20음절)
+    ("s3", "채원", "chaewon", "C04.png", "The young Korean woman with a short black pixie cut, faint freckles and a thin black headset with a small boom mic, "
+     "in an orange-red half-zip training top", "her", "오늘 수업 끝나고 단백질 셰이크 한 잔 하려고요."),
+    ("s4", "준호", "junho", "S11.jpg", "The Korean man in his late thirties with short, neatly side-parted black hair, in a heather-grey sweatshirt, "
+     "sitting at the laptop", "his", "주말엔 아이들이랑 공원에 가기로 했어요."),
+    ("p10", "준호", "junho", "S36.jpg", "The Korean man in his early forties with short, neat black hair, in a navy zip-up work jacket over a grey T-shirt",
+     "his", "점심 먹고 나서 조립동 회의실에서 봅시다."),
+]
+VOICE_FROM.update({f"{k}-목소리-{r}": (f"{SIX_SAMPLE_DIR[k]}/{fn}.mp3", txt) for k, r, fn, _, _, _, txt in SIX_CASTING})
+P6_MOM = ("S07.jpg", "The Korean woman in her forties with wavy, shoulder-length dark-brown hair, in a white sleeveless top, sitting on the bamboo mat", "her")
+P6_DAUGHTER = ("C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p6/시댄스/S11_딸목소리판.jpg",
+               "The young Korean woman in the white blouse standing in the doorway, her dark hair tied back low", "her")
+SIX_LINES = [   # (편, 꼬리, 배역(견본 = <편>-목소리-<배역>), (그림, 화면 속 사람, 대명사) — None이면 그 배역 목소리 판과 같은 그림, 길이, 소리를 쓰는 컷, 목소리, 연기 · 줄)
+    ("p6", "엄마-1", "엄마", P6_MOM, 7, ["2", "4"], "her voice",
+     'calls out loudly in Korean, warm but nagging, as if from the kitchen to a daughter rushing out the door in the morning: "아침은 먹고 가, 버스 놓친다!" — '
+     'then, after a pause of about one second, cheerful and loud, calling her to dinner: "밥 먹자, 김치찌개 했어!"'),
+    ("p6", "엄마-2", "엄마", P6_MOM, 6, ["4", "11"], "her voice",
+     'scolds in Korean toward a closed door, half annoyed: "다 식는다, 너!" — then, after a pause of about one second, defensive and a little hurt, as if caught '
+     'out: "이불만 갈았어, 이불만!"'),
+    ("p6", "엄마-3", "엄마", P6_MOM, 7, ["12", "14"], "her voice",
+     'says in Korean, low and gentle at night, comforting someone on the other side of a closed door: "그 회사가 사람 볼 줄 모르네" — then, after a pause of about '
+     'one second, grumbling but secretly delighted, as if holding a gift: "첫 월급에 내복은 무슨…"'),
+    ("p6", "엄마-4", "엄마", P6_MOM, 5, ["21"], "her quiet voice",
+     'says very softly in Korean, almost to herself, a small hopeful thought in an empty room, with a short pause where the dots are: "이번 겨울엔… 오려나."'),
+    ("p6", "딸-1", "딸", P6_DAUGHTER, 6, ["4", "22"], "her voice",
+     'answers in Korean, sulky and flat, like a teenager talking through a closed door without opening it: "배 안 고파, 이따 먹을게" — then, after a pause of '
+     'about one and a half seconds, in a completely different mood, bright and warm, calling out on coming home after a long time away: "엄마!"'),
+    ("s3", "채원-1", "채원", None, 8, ["1", "2", "3", "4", "5", "6", "7", "8"], "her voice",
+     'shouts in Korean like a spin instructor firing up the class through her headset mic, bright, loud and fast: "자정까지! 전 품목 칠십 퍼센트!" — then, after a '
+     'quick breath, pushing them harder: "일 년에 딱 한 번, 힘껏 밟아요!"'),
+    ("s3", "채원-2", "채원", None, 6, ["9", "10", "11"], "her voice",
+     'shouts in Korean through her headset mic, bright and fast, ticking the items off with a grin: "레깅스도, 바람막이도, 전부 칠십 퍼센트!"'),
+    ("s3", "채원-3", "채원", None, 6, ["11", "12", "13"], "her voice",
+     'calls out in Korean through her headset mic, urgent and cheerful, the final push: "자정 전에 끝나요, 지금 힘껏 앱에서!"'),
+    ("s4", "준호-1", "준호", None, 6, ["1", "7", "9"], "his whispered voice",
+     "whispers in Korean, low, breathy and dead serious, very close to the microphone, like a sniper's inner voice before a mission — three short lines with "
+     'about one second of silence between them: "작전명… 블프." … "반값…" … "이번엔… 이긴다."'),
+    ("s4", "준호-2", "준호", None, 6, ["16", "17", "18"], "his whispered voice",
+     "whispers in Korean, slow and steady, like a sniper controlling his breath before the shot, very close to the microphone, with short silences between the "
+     'three lines: "들이쉬고…" … "반 내쉬고…" … "멈추고…"'),
+    ("p10", "준호-1", "준호", None, 6, ["25", "26", "27", "28"], "his calm narrating voice",
+     "narrates in Korean, calm, low and steady, with the quiet pride of a factory team lead looking back, a short pause after the first sentence: "
+     '"한 대를 만드는 데 삼 년. 볼트 하나도 그냥 넘어가지 않았습니다."'),
+    ("p10", "준호-2", "준호", None, 5, ["30", "31", "33"], "his calm narrating voice",
+     "says in Korean, quietly and slowly, holding back emotion — a short, firm first word, then, after a pause of about one second, the last line, his voice "
+     'catching just slightly: "오늘은," … "이 아이를 보냅니다."'),
+]
 
 # 굽는 차례 — 짧은 편부터 끝까지 마쳐 하루가 모자라도 완성 편이 남게 한다. 「시험」은 맨 앞에서 길을 확인하는 판.
 PIECES = [  # (편, 원천 폴더) — 매진 임박(hs)은 따로
@@ -623,10 +679,59 @@ def six_casting(key, spec, r):
     L.append(f"SOUND: only {r['소리']} saying this one Korean line, over quiet room tone — no music, no narration, no other voices, no sound effects.")
     pid = f"{key}-목소리-{r['배역']}"
     assert pid in VOICE_FROM, f"{pid}의 견본 자리가 VOICE_FROM에 없다"
+    assert VOICE_FROM[pid][1] == r["글"], f"{pid}: 지시문 글과 VOICE_FROM 글(견본떼기 받아쓰기 대조)이 다르다"
     return {"id": pid, "편": key, "편이름": spec["이름"], "컷": [r["컷"]], "길이": CASTING_LEN, "비율": spec["비율"], "소리": "켬",
             "설명": f"{r['배역']} 목소리 판 — 견본 없이 일상 문장 한 줄({r['컷']} 그림), 시댄스가 처음 낸 목소리를 {r['배역']} 목소리로 삼는다(소리만 씀)",
             "파일": [("1_시작.jpg", os.path.join(spec["그림"], r["그림"]), "시작")], "지시문": "\n".join(L), "묶음": False, "대안": False,
             "방식": "목소리 판", "메모": [f"받으면 견본떼기.py {pid} → {VOICE_FROM[pid][0].split('/synk-vendor/')[-1]}, 그 뒤 웹꾸러미.py --여섯편을 다시 돌린다"]}
+
+
+def six_voice(key, spec, row):
+    # 여섯 편 새 배역 목소리 판(11-01) — 매진 hs_casting_prompt와 같은 꼴, 장르 · 비율 · LOOK만 그 편 것으로. 소리만 쓴다
+    _, role, _, pic, who, pos, text = row
+    c = spec["공통"]
+    pid = f"{key}-목소리-{role}"
+    L = [first_line(False),
+         f"ONE SINGLE CONTINUOUS SHOT of {c['장르']}, {RATIO_EN[spec['비율']]} — no cuts, no camera switch, no slow motion, no speed ramp, no end card.",
+         f"ACTION: {who} closes {pos} mouth and lets {pos} face settle into a calm, easy expression in silence — no sound — then looks just past the "
+         f"camera and says in Korean, in {pos} own natural everyday speaking voice — relaxed and conversational, as if chatting with a friend; not shouting, "
+         f"not whispering, not crying, not announcing: \"{text}\" {pos.capitalize()} lips clearly form the Korean words. Everyone else in the frame keeps "
+         "still with lips closed.",
+         "CAMERA: the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
+         c["보기"],
+         f"SOUND: only {pos} natural speaking voice saying this one Korean line, over quiet room tone — no music, no narration, no other voices, no sound effects."]
+    return {"id": pid, "편": key, "편이름": spec["이름"], "컷": [os.path.splitext(pic)[0]], "길이": CASTING_LEN, "비율": spec["비율"], "소리": "켬",
+            "설명": f"{role} 목소리 판 — 견본 없이 일상 문장 한 줄({pic} 그림), 시댄스가 처음 낸 목소리를 {role} 목소리로 삼는다(소리만 씀 · 화면 밖 대사 판의 견본)",
+            "파일": [("1_시작.jpg", os.path.join(spec["그림"], pic), "시작")], "지시문": "\n".join(L), "묶음": False, "대안": False, "방식": "목소리 판",
+            "메모": [f"받으면 견본떼기.py {pid} → {VOICE_FROM[pid][0].split('/synk-vendor/')[-1]}, 그 뒤 웹꾸러미.py --여섯편을 다시 돌린다"]}
+
+
+def six_line(key, spec, row):
+    # 여섯 편 화면 밖 대사 판(11-01) — 매진 hs_line_prompt와 같은 꼴: 그 배역 그림 · 견본으로 시댄스가 연기, 소리만 쓰고 화면은 안 씀
+    _, tail, role, look, n, used, voice, act = row
+    if look is None:   # 그 배역 목소리 판과 같은 그림 · 사람(같은 목소리 결)
+        r = next(x for x in SIX_CASTING if x[0] == key and x[1] == role)
+        look = (r[3], r[4], r[5])
+    pic, who, pos = look
+    c = spec["공통"]
+    vid = f"{key}-목소리-{role}"
+    assert vid in VOICE_FROM, f"{vid}의 견본 자리가 VOICE_FROM에 없다"
+    assert 4 <= n <= 8, f"{key}-말-{tail} 길이 {n}"
+    L = [first_line(False),
+         f"ONE SINGLE CONTINUOUS SHOT of {c['장르']}, {RATIO_EN[spec['비율']]} — no cuts, no camera switch, no slow motion, no speed ramp, no end card.",
+         f"ACTION: {who}, looking just past the camera, {act} {pos.capitalize()} lips clearly form the Korean words. Everyone else in the frame keeps still "
+         "with lips closed.",
+         "CAMERA: the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.",
+         c["보기"],
+         f"SOUND: only {voice} saying these Korean lines, over quiet room tone — no music, no other voices, no sound effects.",
+         VOICE_LINES]
+    lines = re.findall(r'"([^"]*[가-힣][^"]*)"', act)
+    return {"id": f"{key}-말-{tail}", "편": key, "편이름": spec["이름"], "컷": used, "길이": n, "비율": spec["비율"], "소리": "켬",
+            "설명": f"{role} 화면 밖 말 — " + " · ".join(f"「{x}」" for x in lines) + f"(컷 {' · '.join(used)}에 씀 — 소리만 씀, {role} 견본으로 시댄스가 연기)",
+            "파일": [("1_시작.jpg", os.path.join(spec["그림"], pic), "시작"), ("3_목소리견본.mp3", VOICE_FROM[vid][0], "목소리 견본")],
+            "지시문": "\n".join(L), "묶음": False, "대안": False, "방식": "B",
+            "메모": [f"소리만 씀 — 화면은 안 쓴다. 3_목소리견본 = {vid}를 받아 견본떼기.py로 뗀 목소리(그 전엔 「파일 아직」)",
+                    "먹먹함 · 문 너머 · 울림 · 거리감은 후반에서(판 소리는 깨끗하게)"]}
 
 
 def build_six():
@@ -639,7 +744,9 @@ def build_six():
             continue
         spec = json.load(open(f, encoding="utf-8"))
         casts += [six_casting(key, spec, r) for r in spec.get("목소리판", [])]
+        casts += [six_voice(key, spec, r) for r in SIX_CASTING if r[0] == key]   # 11-01 화면 밖 목소리 — 새 배역 목소리 판
         items += [six_item(key, spec, p) for p in spec["판"]]
+        items += [six_line(key, spec, r) for r in SIX_LINES if r[0] == key]   # 그 편 화면 밖 대사 판 — 그 편 주판 끝(견본은 맨 앞 목소리 판에서)
     by_id = {it["id"]: it for it in casts + items}
     assert len(by_id) == len(casts + items), "여섯 편 판 id 겹침"
     tests = [by_id[i] for i in TESTS6 if i in by_id]
@@ -886,9 +993,9 @@ SIX_HEAD = DAY2_HEAD[:DAY2_HEAD.index("<h1>")].replace("둘째 날 순서표", "
 <li>판마다 미디어 칸을 비우고 폴더의 그림을 <b>이름 차례대로</b> 올립니다 — 칸이 「시작 / 끝 프레임」이면 1_시작 → 시작, 2_끝 → 끝. 칸이 하나면 올린 차례대로 「@이미지 1 · 2」가 되고, 글자 「@이미지 1」이 꼬리표로 안 바뀌면 지우고 @로 올린 그림을 고릅니다.</li>
 <li>「두 샷」 판은 옴니 레퍼런스(참조) 모드에서 그림 둘을 참조로 올려 한 판에 두 컷을 냅니다 — 안 되면 맨 아래 「대안」의 낱판 둘로 냅니다.</li>
 <li><b>「_참고」 그림이 있는 판</b>(10번 19 — 2_참고.jpg)은 끝 그림이 아닙니다 — 옴니 레퍼런스(참조) 모드에서 1_시작 다음 참고로 올리고, 시작 / 끝 프레임 칸의 끝 칸에 넣지 않습니다.</li>
-<li>맨 앞 <b>목소리 판 둘</b>(6번 엄마 · 딸 — 소리 켬, 견본 없이 일상 문장 한 줄)을 먼저 내고, 받은 목소리를 견본으로 떼어 6번 대사 판(7 · 11 — 「새 방식」 표시)에 <b>3_목소리견본.mp3</b>로 넣습니다. 견본이 들어오기 전 그 두 판에는 「파일 아직」이 붙어 있습니다 — 6번은 맨 뒤 편이라 그때까지 시간이 넉넉합니다.</li>
+<li>맨 앞 <b>목소리 판 다섯</b>(블프 세일 채원 · 블프 스나이퍼 준호 · 6번 엄마 · 딸 · 10번 준호 — 소리 켬, 견본 없이 일상 문장 한 줄)을 먼저 내고, 받은 목소리를 견본으로 떼어 「새 방식」 판(6번 입 보이는 대사 7 · 11과 편마다 끝의 <b>화면 밖 대사 판</b>)에 <b>3_목소리견본.mp3</b>로 넣습니다. 견본이 들어오기 전 그 판들에는 「파일 아직」이 붙어 있습니다 — 모두 그 편 차례 끝이라 그때까지 시간이 넉넉합니다.</li>
 <li>이어서 <b>시험</b> 판(편마다 가장 불확실한 길)을 내고 받아 봅니다 — 되면 그 편 차례로, 안 되면 지시문을 고쳐 꾸러미를 다시 만든 뒤 잇습니다. 시험 판은 그 컷의 주판을 겸합니다.</li>
-<li>입이 보이는 대사(6번 7 · 11)와 8번 19 손님 한 줄만 판에서 소리를 냅니다. 그 밖의 대사 · 내레이션 · 폰 화면 녹화(8번 초록 화면) · 화면 글자 · 가격 · 로고는 모두 후반에서 얹습니다 — 판에는 없습니다.</li>
+<li>소리를 내는 판은 목소리 판 다섯 · 입이 보이는 대사(6번 7 · 11) · <b>화면 밖 대사 판 열둘</b>(6번 엄마 · 딸, 채원 내레이션, 스나이퍼 준호 속삭임, 10번 준호 내레이션 — 소리만 쓰고 화면은 안 씀) · 8번 19 손님 한 줄입니다. 그 밖의 내레이터 목소리(6번 끝 문구 · 8번 · 스나이퍼 가게 목소리) · 폰 화면 녹화(8번 초록 화면) · 화면 글자 · 가격 · 로고는 후반에서 얹습니다.</li>
 </ol></div>
 """
 

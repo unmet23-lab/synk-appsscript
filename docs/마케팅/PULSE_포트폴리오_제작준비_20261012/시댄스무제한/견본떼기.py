@@ -4,7 +4,8 @@
 #     7번      p7-목소리-<배역> → synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/<ian · seojin · minjae · soyeon>.mp3
 #     오미톡   om2-2(10-31 — 한결이 직접 말하는 판, 헐떡임이 섞이니 --demucs) → 웹꾸러미.py의 VOICE_FROM 자리(om2-끝말 판 견본)
 #     로맨스   rs-목소리-<배역>(10-31) → synk-vendor/pulse-portfolio12-20261024/소리/romance/소리참고/B/<yuna · taejun · minjae>.mp3
-#     6번      p6-목소리-<엄마 · 딸>(10-31 밤 — 여섯 편 꾸러미) → synk-vendor/pulse-portfolio12-20261024/소리/p6/시댄스견본/<eomma · ttal>.mp3(VOICE_FROM, 7 · 11 B 판 견본)
+#     6번      p6-목소리-<엄마 · 딸>(10-31 밤 — 여섯 편 꾸러미) → synk-vendor/pulse-portfolio12-20261024/소리/p6/시댄스견본/<eomma · ttal>.mp3(VOICE_FROM, 7 · 11 B 판 · 화면 밖 대사 판 견본)
+#     여섯 편  s3-목소리-채원 · s4-목소리-준호 · p10-목소리-준호(11-01 — 화면 밖 대사 판 견본, 웹꾸러미 SIX_CASTING) → 그 편 소리/…/시댄스견본/<chaewon · junho>.mp3
 #              (태준 C03 그림은 처마 밑 비가 보여 빗소리가 섞였으면 --demucs)
 # 받기.py가 받은 받음/<판>.mp4(다시 낸 판이 있으면 가장 나중 것)에서 소리를 꺼내 앞뒤 무음을 자르고 −17 LUFS로 둔다. --demucs면 먼저 Demucs로
 # 목소리만 뗀다(C:/SYNK-LoRA/tools/demucs — 현장노트 영상 「대사 클립의 목소리만 떼기」, CPU로 11초 클립에 41초). 받아쓰기(faster-whisper medium, VAD 끔)로 그 판에 적은
