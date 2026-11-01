@@ -4,7 +4,7 @@ const fs = require('node:fs'), path = require('node:path'), os = require('node:o
 const { pathToFileURL } = require('node:url');
 const root = path.resolve(__dirname, '..'), c = require('../tools/conditional-qa/contract.cjs');
 const { check } = require('../tools/conditional-qa/guard.cjs');
-const { childRun } = require('../tools/conditional-qa/run.cjs');
+const { childRun, temporaryEnvironment } = require('../tools/conditional-qa/run.cjs');
 const { materialize } = require('../tools/conditional-qa/inputs.cjs');
 const { extendQueue, acquire } = require('../tools/conditional-qa/worker.cjs');
 const github = require('../tools/conditional-qa/github.cjs');
@@ -18,6 +18,12 @@ function scratch(t) { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'conditi
 test('all 113 original cases have one concrete route and a live source file', () => {
   assert.equal(check(root), 113);
   assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 28, linux: 7, local: 78 });
+});
+test('every route owns a real temporary path instead of an inherited 8.3 or virtual alias', t => {
+  const dir = scratch(t), env = temporaryEnvironment(dir);
+  assert.equal(env.TEMP, fs.realpathSync.native(path.join(dir, 'temp')));
+  assert.equal(env.TMP, env.TEMP);
+  assert.ok(fs.statSync(env.TEMP).isDirectory());
 });
 test('manifest binding is stable across checkout line endings, but not across dropped cases', t => {
   const dir = scratch(t), file = path.join(dir, 'tools/conditional-qa/cases.json'); fs.mkdirSync(path.dirname(file), { recursive: true });

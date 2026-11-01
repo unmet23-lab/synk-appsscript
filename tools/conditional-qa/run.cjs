@@ -4,6 +4,12 @@ const { pathToFileURL } = require('node:url');
 const { readManifest, sha256, judge } = require('./contract.cjs');
 const ROOT = path.resolve(__dirname, '../..');
 const OUTPUT_VARS = ['SYNK_ACCOUNT_BROWSER_QA_OUT', 'SYNK_CAFE_STATIC_QA_RUN', 'SYNK_DAILY_TUTOR_STATIC_QA_RUN', 'SYNK_HOME_TUTOR_STATIC_RUN', 'SYNK_LIFE_TUTOR_STATIC_RUN', 'SYNK_HOMEWORK_QA_OUT', 'SYNK_CLASSROOM_QA_OUT', 'SYNK_EXAM_LINK_QA_OUT', 'SYNK_PUSH_QA_OUT', 'SYNK_REMINDERS_QA_OUT', 'SYNK_SPEAKING_QA_OUT', 'SYNK_WRITING_QA_OUT', 'SYNK_HOMEWORK_REVIEW_QA_OUT', 'SYNK_TOWN_CHECK_SHOTS'];
+function temporaryEnvironment(folder) {
+  const temp = path.join(folder, 'temp'); fs.mkdirSync(temp, { recursive: true });
+  // Git and PowerShell expand 8.3 aliases; os.tmpdir() otherwise preserves RUNNER~1.
+  const canonical = fs.realpathSync.native(temp);
+  return { TEMP: canonical, TMP: canonical };
+}
 function sourceState(root, files) {
   return { commit: cp.execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', windowsHide: true }).trim(),
     trackedDiff: sha256(cp.execFileSync('git', ['diff', '--binary', 'HEAD'], { cwd: root, windowsHide: true, maxBuffer: 64 << 20 })),
@@ -66,6 +72,7 @@ async function run({ route, output, context, root = ROOT }) {
   if (!cases.length) throw Error('Empty test selection');
   const files = [...new Set(cases.map(row => row.file))];
   const before = sourceState(root, [...files, 'tools/conditional-qa/cases.json']);
+  if (before.trackedDiff !== sha256('') && !context?.candidate) throw Error('Tracked source differs from the requested commit');
   const receipt = { version: 1, commit: before.commit, manifestDigest: manifest.digest, route, startedAt: new Date().toISOString(), platform: process.platform, node: process.version,
     inputDigest: context?.inputDigest || null, candidate: Boolean(context?.candidate), expected: cases.length, passed: 0, ok: false, rows: [], phases: [], sourceBefore: before };
   fs.writeFileSync(path.join(output, 'started.json'), JSON.stringify(receipt, null, 2));
@@ -78,11 +85,10 @@ async function run({ route, output, context, root = ROOT }) {
       delete env.NODE_TEST_CONTEXT;
       // CI credentials and operating-service switches are not inputs to a test process.
       for (const key of Object.keys(env)) if (/^(?:GH_TOKEN|GITHUB_TOKEN|SYNK_)/.test(key)) delete env[key];
+      Object.assign(env, temporaryEnvironment(folder));
       if (context) {
         delete env.CI;
-        Object.assign(env, context.env, { TEMP: path.join(folder, 'temp'), TMP: path.join(folder, 'temp'),
-          SYNK_TALK_ROOT: profile === 'homework' ? context.homeworkTalk : context.localTalk });
-        fs.mkdirSync(env.TEMP, { recursive: true });
+        Object.assign(env, context.env, { SYNK_TALK_ROOT: profile === 'homework' ? context.homeworkTalk : context.localTalk });
         env.SYNK_BACKUP_KEY_DIR = path.join(folder, 'synthetic-keys-only');
         for (const key of OUTPUT_VARS) env[key] = path.join(folder, key.toLowerCase());
       }
@@ -118,4 +124,4 @@ if (require.main === module) {
     .then(result => { console.log(JSON.stringify({ commit: result.commit, route: result.route, passed: result.passed, expected: result.expected, ok: result.ok })); process.exitCode = result.ok ? 0 : 1; })
     .catch(error => { console.error(error); process.exitCode = 1; });
 }
-module.exports = { sourceState, childRun, run };
+module.exports = { sourceState, childRun, run, temporaryEnvironment };
