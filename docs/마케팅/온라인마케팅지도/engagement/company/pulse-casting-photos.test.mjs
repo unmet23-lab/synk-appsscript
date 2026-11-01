@@ -9,12 +9,15 @@ import {esc} from './public/pulse-app/api.mjs';
 // 10-22 모델은 사진만(유호님): 모델 칸에서 광고 기획안(10-12 「7개 광고 기획」)·영상을 거두고 사진 넉 장만 둔다.
 test('withdrawn production plans and the library page never reach a model card',async()=>{
   for(const model of CASTING_MODELS){
+    // 10-12 기획안은 처음 일곱 명에게만 있었다 — 11-02에 더한 여섯 명은 처음부터 사진만이다.
     const plan=PRODUCTION_PLANS.find(item=>item.modelId===model.id),html=castingView({modelId:model.id});
-    assert.ok(plan,model.id+' plan still exists in its own module');
-    assert.equal(html.includes(esc(plan.title)),false,model.id+' plan title');
-    assert.equal(html.includes(esc(plan.memory)),false,model.id+' memory hook');
+    if(plan){
+      assert.equal(html.includes(esc(plan.title)),false,model.id+' plan title');
+      assert.equal(html.includes(esc(plan.memory)),false,model.id+' memory hook');
+    }
     assert.doesNotMatch(html,/production-library|assets\/production\/|제작 예시 · 기획안|광고 기획·콘티 보기|7개 광고 기획|<video\b/,model.id);
   }
+  assert.deepEqual(PRODUCTION_PLANS.map(item=>item.modelId).sort(),['F01','F02','F03','F04','M01','M02','M03'],'the withdrawn plans still exist in their own module');
   const view=await readFile(new URL('./public/pulse-app/casting-view.mjs',import.meta.url),'utf8');
   assert.doesNotMatch(view,/production-catalog|PRODUCTION_|castingProductionPlan|castingPortfolio|mediaCard|workCard/);
 });

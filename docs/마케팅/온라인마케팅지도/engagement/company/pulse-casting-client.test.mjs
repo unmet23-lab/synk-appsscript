@@ -22,9 +22,9 @@ test('read-only fields still produce an accurate selection and submission strips
   const values={product:'기존 제품',cast_modelId:'F01',cast_voice:'B',cast_notes:'메모'},selection=takeCastingValues(values);
   assert.deepEqual(values,{product:'기존 제품'});assert.equal(selection.modelId,'F01');assert.equal(selection.voice,'B');
 });
-test('seven model portraits, four photos of the chosen model, playable selected voices, no film slots and escaped notes appear in summaries',()=>{
+test('every casting-book model portrait (thirteen), four photos of the chosen model, playable selected voices, no film slots and escaped notes appear in summaries',()=>{
   const selection=normalizeDemoCasting({modelId:'F01',voice:'B',jacket:'blazer',notes:'<img src=x onerror=alert(1)>'});
-  const html=castingView(selection);assert.equal((html.match(/class="casting-model-card"/g)||[]).length,7);assert.equal((html.match(/alt="[^"]+ 대표 사진" loading="lazy"/g)||[]).length,7);assert.doesNotMatch(html,/대표 사진 준비 중|음성 샘플 준비 중/);assert.doesNotMatch(html,/영상 준비 중|casting-media-pending|영상은 만들고 있어요/);assert.equal((html.match(/class="casting-photo" data-action="image"/g)||[]).length,4);assert.equal((html.match(/<audio preload="none" src="[^"]+" hidden><\/audio>/g)||[]).length,3);assert.equal((html.match(/<button type="button" class="voice-play" data-action="voice-play" aria-label="[^"]+ 듣기">듣기<\/button>/g)||[]).length,3);assert.doesNotMatch(html,/<video|src=""/);assert.doesNotMatch(castingSummary(selection),/<img/);
+  const html=castingView(selection);assert.equal((html.match(/class="casting-model-card"/g)||[]).length,13);assert.equal(CASTING_MODELS.length,13);assert.equal((html.match(/alt="[^"]+ 대표 사진" loading="lazy"/g)||[]).length,13);assert.match(html,/모델 선택 <small>13명<\/small>/);assert.doesNotMatch(html,/대표 사진 준비 중|음성 샘플 준비 중/);assert.doesNotMatch(html,/영상 준비 중|casting-media-pending|영상은 만들고 있어요/);assert.equal((html.match(/class="casting-photo" data-action="image"/g)||[]).length,4);assert.equal((html.match(/<audio preload="none" src="[^"]+" hidden><\/audio>/g)||[]).length,3);assert.equal((html.match(/<button type="button" class="voice-play" data-action="voice-play" aria-label="[^"]+ 듣기">듣기<\/button>/g)||[]).length,3);assert.doesNotMatch(html,/<video|src=""/);assert.doesNotMatch(castingSummary(selection),/<img/);
   assert.match(castingVoices({}),/disabled/);assert.match(castingVoices({modelId:'M01'}),/부드럽고 차분한/);
   assert.doesNotMatch(html,/샘플 음원은 연결 준비 중/);assert.match(html,/샘플을 듣고 원하는 목소리/);
   assert.match(castingVoices({modelId:'M03'}),/실제 목소리 · 인터뷰 원음\(배경음악 포함\)/);assert.doesNotMatch(castingVoices({modelId:'F01'}),/인터뷰 원음/);
@@ -43,6 +43,7 @@ test('demo saves casting without network, reloads it and keeps an earlier select
 
 // Same bytes as the casting book's site/voice (copied 2026-10-19) so a client hears the voices the book plays;
 // M03 keeps the interview originals and f04 the approved portrait. No cross-model substitutions or transcoding.
+// 11-02: the casting book's later six (F05 · M04 · F06 · F07 · M05 · M06) — portrait = site/img/<code>/hero-s.webp, voices = site/voice.
 const RESTORED_MEDIA_SHA256={
   "assets/casting/f04.webp": "2e58b62ce8039865bc4ed2a6165300c7a1147d5aabd745079c134bbe1d75cdfb",
   "assets/casting/voice/F01-1.mp3": "0e1c1628659661857aaedcd29cae64e4dafdba61496ceb1270c467282ad18f7f",
@@ -65,7 +66,31 @@ const RESTORED_MEDIA_SHA256={
   "assets/casting/voice/M02-3.mp3": "18b1bf45fad1d73b166c9cde5ed0ed6fe166907f3c68d40a91916d84fb1ed835",
   "assets/casting/voice/M03-1.mp3": "417c1e652e70478c373a2c357ce1a7db1539b56e004ea5f582ddd558f40e24c8",
   "assets/casting/voice/M03-2.mp3": "44de06897bc9b3225c7c1907631f32c8f074b620934a4e040751fb82c4cdaaec",
-  "assets/casting/voice/M03-3.mp3": "e2f3af34009c810bfaf9022ae002d8db3ab5cfa1e7c38cf9c0de2b8b5a3c1e94"
+  "assets/casting/voice/M03-3.mp3": "e2f3af34009c810bfaf9022ae002d8db3ab5cfa1e7c38cf9c0de2b8b5a3c1e94",
+  "assets/casting/f05.webp": "a9684afff3c8809e87d08aee4ff2e07317981eef6c3c3499cd6095761c59c510",
+  "assets/casting/voice/F05-1.mp3": "d1cafcd70deea0d6962687005794869df9819051257d105aacb7f207596f285a",
+  "assets/casting/voice/F05-2.mp3": "3ef39d7dfda8c0e5661029bed5f63287a5ed7ac6b57046b7a78fcb6e9b7579ac",
+  "assets/casting/voice/F05-3.mp3": "f28e00a028ce9def2b9f204f9f2e6a22bbca83b6a72fdae9bbabedb9ce80f598",
+  "assets/casting/m04.webp": "5358bc8215ff9c7498f363dfaa3f8f833d7861a2d732c2eb27a8c627936fda2b",
+  "assets/casting/voice/M04-1.mp3": "08551d6a4a1f729b218e833ac91a5652137c4d0e18b39b46e5286d59c13364c2",
+  "assets/casting/voice/M04-2.mp3": "d4813633dbd40c3000b72e5871b61985c7850e0faa47d5fcad9f4d34ba985c5f",
+  "assets/casting/voice/M04-3.mp3": "8f39e619c8ded952bf8c055b039eb3e02344abfd8ced53f610355fe37c31cb3c",
+  "assets/casting/f06.webp": "4bd53a238cf35bb0085e9a965137368086257a4607ef504a8a923dbaeff63a70",
+  "assets/casting/voice/F06-1.mp3": "1d7203780107881b8f226761dc9dc23da52bc87fab4004ae869ba18eda4cc4f8",
+  "assets/casting/voice/F06-2.mp3": "9f13c79673b3de0176743b7e34ca3ad193dd614c6b78ca0c7069e327425c971c",
+  "assets/casting/voice/F06-3.mp3": "ed0d1b91843789b88a465e350d2110ec04fb8d91bf6ae6e75ca0e56ae02097a6",
+  "assets/casting/f07.webp": "86aa5743d6b69c3bc1617b72487b1ccdad4c9edf291910f627f953cc5127dc94",
+  "assets/casting/voice/F07-1.mp3": "e9d1a4c114f6f82af9eaa7e1697d47f1403c62235c18e757048ac224f3e9911d",
+  "assets/casting/voice/F07-2.mp3": "450d95706dc8ffcd412ecb7d372a4107d772d095728fc1e76f54c690000cbdb6",
+  "assets/casting/voice/F07-3.mp3": "81a7d29be539aacfd07d6607bf9df3fa5cfd4eeedfacb3fe81458db9ab361534",
+  "assets/casting/m05.webp": "494d073a8dfb8244ef0d491604737f09ff5fdf039d9984332bfcf1ebaaf37309",
+  "assets/casting/voice/M05-1.mp3": "49474dd0fc9bb033688391976aa443ab9cbc398dcfe76bbb04cc66a7b9a9a6f0",
+  "assets/casting/voice/M05-2.mp3": "4c7fc3d145f7af70ed7858ad16f09f4ac7f849dc059647afa3bc8406e9a46621",
+  "assets/casting/voice/M05-3.mp3": "4bc832b1c86dcd542091b78fa5031770f58081e6a37b44e382976a07789e8c14",
+  "assets/casting/m06.webp": "c54d656635aced652fb80f714330ba0f8645604f3eee05a1b7d9de3347b7f15c",
+  "assets/casting/voice/M06-1.mp3": "9799ef9012afb040cdcc0a109598c64372fa4795ac47638adde4eea08832bb38",
+  "assets/casting/voice/M06-2.mp3": "105ab3512f0f6e4bf5424c6e463fbef443116748739c78e617a9d010dba85baf",
+  "assets/casting/voice/M06-3.mp3": "14e3d9cf13f59d75ad77f6efc0f893dd07c87a514e5bc8a12764ade031038155"
 };
 
 test('restored samples retain exact approved portrait and canonical per-model A/B/C audio bytes',async()=>{
@@ -83,7 +108,7 @@ test('restored samples retain exact approved portrait and canonical per-model A/
     }
     assert.doesNotMatch(html,/autoplay|preload="auto"|src=""/);
   }
-  assert.equal(urls.size,21);
+  assert.equal(urls.size,39);
   assert.equal(CASTING_MODELS.find(m=>m.id==='F04').image,'./assets/casting/f04.webp');
   for(const [relative,expected]of Object.entries(RESTORED_MEDIA_SHA256)){
     const bytes=await readFile(new URL('./public/pulse-app/'+relative,import.meta.url));
@@ -120,9 +145,33 @@ const PHOTO_SHA256={
   "m03-context.webp": "e827cbea8b4a7573a0075e93b3e1bc2ea37aa3d4316f5cfea188df9daba9a7f3",
   "m03-fullbody.webp": "ce9c979feabbf7feae2ce0573594a4ba3b68c46a0bce63b2a94e753cb864be53",
   "m03-look-1.webp": "bbb2abf98a24f60ce859613d9b806d88f92e1ff0f14623e851acaaacbf89fa88",
-  "m03-look-2.webp": "2a9a136c96c719f1a1e2a6567ede5bbc70f87e44b5b1a375c584fa38b711da89"
+  "m03-look-2.webp": "2a9a136c96c719f1a1e2a6567ede5bbc70f87e44b5b1a375c584fa38b711da89",
+  "f05-context.webp": "74cf4ee9a1421bbfb69f939db1ca2f44992950385420cd121dabf7cd0c0f30d2",
+  "f05-fullbody.webp": "c6776a0fe37a88ed0e3cf298c6b4063c5ba2a3c4ac58663351c33236db2e961e",
+  "f05-look-1.webp": "aeb43ee560662f4b21bd509ae8cca680d002cd6626d01a0a00f607c974880642",
+  "f05-look-2.webp": "443187371697d48da3b07f16cda0e7100b59aa6f22c0b66ae2f04fa56c6ea781",
+  "m04-context.webp": "fef781c7c71bd47ef033376ea523dd0e262f761c6bf9a6ee5ca3a984ffac8cf2",
+  "m04-fullbody.webp": "7717ab1a2ffa564f9b9d4a0c1f09f852bf317ae3b1f1cc936c970ec0025d3110",
+  "m04-look-1.webp": "d14cbb08f0c288f468b154c27840c7019baa1b210cb6f8f36a2a3a51ce57ffb2",
+  "m04-look-2.webp": "a4f9d85c353c56aaaf6989d2c1391eed690f5ee272a529c02b9eaa4becf81ad5",
+  "f06-context.webp": "57b39619dd8301b70207b5e5b630aabb3b68f0c64ca00f4a834d601978597bf8",
+  "f06-fullbody.webp": "565494f1d180a0da9e85a46febbdadc2a1bb2f85e584d7e76fbcfc7fd6a38005",
+  "f06-look-1.webp": "0991b5b722d03b73abe5c0e5f455bf45c4c3b42772a61e5532a249f74e8089d1",
+  "f06-look-2.webp": "5c506306b24314b5be3a5477aeba21daa97bc99fa5ed9befff726c7bd736e16c",
+  "f07-context.webp": "72c089af32c029f4b1422f1bf50361800b6fd3f18010359d130c895ae3fb7601",
+  "f07-fullbody.webp": "be058fbccc32a278c8202432cc7634f606e39f645c5c2055700380a1269e6792",
+  "f07-look-1.webp": "89027c57676f47ad0abc698b957900db904fd96057394f23c261ca57cc8eea58",
+  "f07-look-2.webp": "334ea63eb83154247c06b4e316c8828450e91a6d1d97a909007e84712e40795e",
+  "m05-context.webp": "50a68a58633b424c58a47eebdaf53b15a954dd106def49b431fcf98bfb52cf72",
+  "m05-fullbody.webp": "b01b463c5eb9b5aaea5d9ba19667fe9b7ab7fb533209e4f6394fdd2ebb3b3639",
+  "m05-look-1.webp": "ad59e3cdb9e4f594b4d1b4346aa18afa147e30097c7e1b6d2578e679afd33f94",
+  "m05-look-2.webp": "410d2faa524f828e31c79260be0be8e88a650f7f4f2ec241e21d12c3369ec82a",
+  "m06-context.webp": "bb23adefacc6720560692cd7cfdebf7fcbdc5ca277a431e9bb153ce3ab0b5b0d",
+  "m06-fullbody.webp": "8a40706e05589a9b615f0980a32a90d60557154b138e06aba34d4bbf8239bd6c",
+  "m06-look-1.webp": "5be6c78f06df17fb6c48a6cdcf8110fa403c60ca824c387c56e739b75b6e5546",
+  "m06-look-2.webp": "297f8166a949b64bbc9e11f3d19bb07844130936c91a71f316f5f17970c1c04d"
 };
-const LOOKS={M01:['셔츠 오피스','레더 스트리트','창가 카페 · 커피잔'],F01:['슬립 드레스','트렌치 캐주얼','화장대 · 립스틱 바르기'],F02:['파스텔 캐주얼','스트라이프 원피스','카페 카운터 · 딸기 라떼'],F03:['네이비 수트','코트 포멀','회의실 · 발표'],M02:['차콜 수트','스웨이드 캐주얼','바 라운지 · 위스키'],F04:['린넨 내추럴','니트 스커트','바닷가 산책로 · 탄산수'],M03:['스트리트','세미 포멀','음악 작업실 · 믹싱 데스크']};
+const LOOKS={M01:['셔츠 오피스','레더 스트리트','창가 카페 · 커피잔'],F01:['슬립 드레스','트렌치 캐주얼','화장대 · 립스틱 바르기'],F02:['파스텔 캐주얼','스트라이프 원피스','카페 카운터 · 딸기 라떼'],F03:['네이비 수트','코트 포멀','회의실 · 발표'],M02:['차콜 수트','스웨이드 캐주얼','바 라운지 · 위스키'],F04:['린넨 내추럴','니트 스커트','바닷가 산책로 · 탄산수'],M03:['스트리트','세미 포멀','음악 작업실 · 믹싱 데스크'],F05:['카디건 · 줄무늬 티','샴브레이 셔츠 · 앞치마','아침 주방 · 요리'],M04:['후드 집업 · 조거 팬츠','옥스퍼드 셔츠 · 치노(첫 출근)','원룸 · 택배 상자 열기'],F06:['캐멀 코트 · 터틀넥','실크 블라우스 · 진주 목걸이','창가 카페 · 책과 차'],F07:['크롭 스웻셔츠 · 레깅스','윈드브레이커 · 러닝 쇼츠','강변 러닝 뒤 · 스트레칭'],M05:['옥스퍼드 셔츠 · 치노(평일)','퀼팅 조끼 · 헨리넥(캠핑)','캠핑장 아침 · 커피 물 붓기'],M06:['러닝 윈드브레이커 · 쇼츠(운동)','오버핏 후드 · 카고 팬츠(캠퍼스)','농구장 벤치 · 경기 뒤 물 한 병']};
 
 test('every model shows exactly its four casting-book photos as zoomable buttons with labels, sizes and a casting book link, in editable and saved views',async()=>{
   const seen=new Set();
@@ -153,7 +202,7 @@ test('every model shows exactly its four casting-book photos as zoomable buttons
     }
     assert.deepEqual(selection,before);
   }
-  assert.equal(seen.size,28);
+  assert.equal(seen.size,52);
   assert.equal(CASTING_BOOK_URL,'https://synk.im/pulse/casting/');
   for(const [name,digest]of Object.entries(PHOTO_SHA256)){
     const bytes=await readFile(new URL('./public/pulse-app/assets/casting/photos/'+name,import.meta.url));

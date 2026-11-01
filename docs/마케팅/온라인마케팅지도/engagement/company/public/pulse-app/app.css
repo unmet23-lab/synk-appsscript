@@ -293,6 +293,10 @@ details[open]>summary::after{transform:rotate(180deg)}
 .demo-entry p{margin:0 0 6px;color:var(--ink-2);font-size:var(--t-body)}
 .demo-entry small{font-size:13px;color:var(--ink-3)}
 .demo-entry.is-compact{margin:0 0 18px}
+.demo-entry-actions{display:grid;gap:6px;justify-items:end;flex:none}
+.demo-entry .demo-entry-inquiry{margin:0;font-size:13px;color:var(--ink-3)}
+.inquiry-link{display:inline-flex;align-items:center;gap:4px;min-height:40px;color:var(--ink);font-weight:var(--w-label);text-decoration:underline;text-decoration-color:var(--line-2);text-underline-offset:4px}
+.inquiry-link:hover{text-decoration-color:currentColor}
 .entry-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 8px}
 .entry-footer p{margin:0}
 
@@ -575,8 +579,8 @@ details[open]>summary::after{transform:rotate(180deg)}
 .reference-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin:14px 0}
 .reference-card{min-width:0;border-radius:16px;overflow:hidden;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line)}
 .reference-media,.concept-image,.scene-image{display:block;width:100%;padding:0;border:0;background:var(--surface-3);cursor:zoom-in}
-.reference-media img{width:100%;aspect-ratio:16/10;object-fit:cover}
-.reference-file{display:grid;place-items:center;aspect-ratio:16/10;background:var(--surface-3);color:var(--ink-3);font-size:14px;font-weight:var(--w-label)}
+.reference-media img{display:block;width:100%;aspect-ratio:16/9;object-fit:contain}
+.reference-file{display:grid;place-items:center;aspect-ratio:16/9;background:var(--surface-3);color:var(--ink-3);font-size:14px;font-weight:var(--w-label)}
 .reference-copy{padding:13px 15px 15px}
 .reference-copy h4{font-size:15.5px;margin:2px 0 4px}
 .reference-copy p{margin:0 0 6px;font-size:14px;color:var(--ink-2)}
@@ -595,8 +599,8 @@ details[open]>summary::after{transform:rotate(180deg)}
 .concept-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
 .concept-card{display:flex;flex-direction:column;min-width:0;border-radius:var(--r-lg);overflow:hidden;background:var(--surface-1);box-shadow:inset 0 0 0 1px var(--line);transition:box-shadow .18s}
 .concept-card.is-selected{box-shadow:inset 0 0 0 2px var(--ink)}
-.concept-image img{width:100%;aspect-ratio:16/10;object-fit:cover}
-.concept-card>.empty-visual{border-radius:0;min-height:0;aspect-ratio:16/10}
+.concept-image img{display:block;width:100%;aspect-ratio:16/9;object-fit:contain}
+.concept-card>.empty-visual{border-radius:0;min-height:0;aspect-ratio:16/9}
 .image-source-link{padding:8px 16px 0}
 .concept-copy{display:flex;flex-direction:column;flex:1;padding:20px 22px 22px}
 .concept-copy h3{font-size:20px;margin:4px 0 8px}
@@ -617,8 +621,12 @@ details[open]>summary::after{transform:rotate(180deg)}
 .scene-card{min-width:0;padding:20px;border-radius:var(--r-lg);background:var(--surface-1);box-shadow:var(--card-edge);scroll-margin-top:110px}
 .scene-main{display:grid;grid-template-columns:minmax(220px,340px) minmax(0,1fr);gap:24px;align-items:start}
 .scene-image{border-radius:14px;overflow:hidden}
-.scene-image img{width:100%;aspect-ratio:16/10;object-fit:cover}
-.scene-main>.empty-visual{min-height:0;aspect-ratio:16/10}
+.scene-image img{display:block;width:100%;aspect-ratio:16/9;object-fit:contain}
+.scene-main>.empty-visual{min-height:0;aspect-ratio:16/9}
+/* 11-02 그림은 자르지 않는다: 16:9는 칸을 꽉 채우고, 세로 콘티(app.mjs가 단 .is-portrait)는 높이를 주어 띠처럼 작아지지 않게 한다. */
+.scene-image.is-portrait img,.concept-image.is-portrait img{aspect-ratio:auto;height:min(460px,70vh)}
+.reference-media.is-portrait img{aspect-ratio:auto;height:min(360px,60vh)}
+.focus-media.is-portrait>img,.focus-media.is-portrait>video{object-fit:contain}
 .scene-copy{min-width:0}
 .scene-kicker{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:8px}
 .scene-number{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:var(--track-mono);color:var(--tint)}
@@ -942,6 +950,7 @@ form:has([name=confirmed]:not(:checked)) button[type=submit]{background:transpar
   .welcome-steps{grid-template-columns:minmax(0,1fr)}
   .welcome-steps>div{padding:12px 14px}
   .demo-entry{flex-direction:column;align-items:stretch;padding:22px}
+  .demo-entry-actions{justify-items:stretch;text-align:center}
   .header-actions .button[data-action=logout]{display:none}
   .header-actions .demo-tag{display:none}
   .panel-logout{display:inline-flex}
@@ -1062,3 +1071,6 @@ body:has(.approval-card.is-floating) .notice{bottom:112px}
 .film-card--portrait{grid-template-columns:minmax(0,300px) minmax(0,1fr)}
 .film-card--portrait .film-media video{aspect-ratio:9/16}
 @media (max-width:860px){.film-card{grid-template-columns:minmax(0,1fr);gap:16px;padding:14px}.film-full{width:100%}.film-card--portrait .film-media{width:min(100%,340px);justify-self:center}}
+/* 11-02 저장 알림은 누를 곳을 가리지 않는다: 클릭은 그대로 아래로 지나가고, 넓은 화면에서는 머리 막대 바로 아래에 뜬다(콘셉트 고르기 단추 · 영상 재생 막대를 가리던 것). */
+.notice{pointer-events:none}
+@media (min-width:861px){.notice,body:has(.approval-card.is-floating) .notice{top:72px;bottom:auto}}

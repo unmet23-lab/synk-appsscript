@@ -32,7 +32,7 @@ test('all prepared model, style and model-specific voice options normalize witho
 });
 
 test('invalid nested keys, types, options, control characters and voices without a model are rejected',()=>{
-  for(const input of [undefined,null,[],false,7,'F01',{extra:'hidden'},{notes:{private:'hidden'}},{notes:null},{notes:undefined},{notes:'x'.repeat(1001)},{notes:'bad\u0000value'},{notes:'bad\u001fvalue'},{modelId:'M04'},{voice:'D'},{voice:'A'},{modelId:'',voice:'B'}])rejects(()=>normalizeStrategyData({castingSelection:input}));
+  for(const input of [undefined,null,[],false,7,'F01',{extra:'hidden'},{notes:{private:'hidden'}},{notes:null},{notes:undefined},{notes:'x'.repeat(1001)},{notes:'bad\u0000value'},{notes:'bad\u001fvalue'},{modelId:'M99'},{voice:'D'},{voice:'A'},{modelId:'',voice:'B'}])rejects(()=>normalizeStrategyData({castingSelection:input}));
   for(const key of ['modelId','hair','makeup','jacket','top','bottom','voice','earrings','ring'])for(const value of [null,undefined,0,false,[],{},'unknown'])rejects(()=>normalizeCastingSelection({modelId:'M01',[key]:value}));
   rejects(()=>save(null,{...data,castingSelection:{...selection,privateAssetUrl:'https://example.test/private'}}));
 });

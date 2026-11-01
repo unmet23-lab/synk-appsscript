@@ -208,3 +208,21 @@ test('legacy studio and project fields survive strategy edits while scene mappin
  assert.equal(row.studio.scenes[0].strategyRevision,2);assert.deepEqual(row.studio.scenes[0].valueLabels,[{number:1,text:'새로운 편리함'}]);assert.deepEqual(row.studio.cardRevisions[0].valueLabels,scene.valueLabels);
  const persisted=f.app.store.get('clientProjects',row.id);assert.deepEqual(persisted.legacyExtra,{keep:true});assert.deepEqual(persisted.studio.legacyExtra,{keep:true});assert.equal(persisted.studio.preferences.brand,'이전 브랜드');assert.equal(persisted.studio.preferences.goal,'이전 목적');assert.equal(persisted.terms,draft.terms);
 });
+
+// 11-02 PULSE 고객 검토: 확인한 장면 판을 다시 「확인」해도 기록 · 버전 · 이력이 늘지 않는다. 의견 뒤의 확인과 고친 판의 확인은 그대로 남는다.
+test('a second confirmation of the same scene revision changes nothing, while a confirmation after a comment or on a revised scene is recorded',async t=>{
+  const f=await fixture(t);let row=await f.create(),customer=await f.invite(row);row=customer.project;
+  let result=await f.studio(row,{action:'save_scene',title:'첫 장면',description:'제품 등장',narration:'안녕하세요',screenText:'제품명',duration:3,imageUrl:'https://example.test/scene.jpg',visibility:'customer'});assert.equal(result.status,200);row=result.data.project;const scene=row.studio.scenes[0];
+  const confirm=(sceneRevision=scene.revision)=>f.customerStudio(customer,row,{action:'review_scene',sceneId:scene.id,sceneRevision,status:'confirmed',text:''});
+  result=await confirm();assert.equal(result.status,200);row=result.data.project;assert.equal(row.studio.sceneReviews.length,1);
+  const settled=row.revision,history=f.app.store.get('clientProjects',row.id).history.length;
+  result=await confirm();assert.equal(result.status,200,'a repeated confirmation is accepted as already done');row=result.data.project;
+  assert.equal(row.studio.sceneReviews.length,1,'no second record');assert.equal(row.revision,settled,'no new project revision');assert.equal(f.app.store.get('clientProjects',row.id).history.length,history,'no history entry');
+  result=await f.customerStudio(customer,row,{action:'review_scene',sceneId:scene.id,sceneRevision:scene.revision,status:'comment',text:'색만 조금 더 밝게'});assert.equal(result.status,200);row=result.data.project;
+  result=await confirm();assert.equal(result.status,200);row=result.data.project;
+  assert.deepEqual(row.studio.sceneReviews.map(review=>review.status),['confirmed','comment','confirmed'],'confirming again after a comment is a new decision');
+  result=await f.studio(row,{action:'save_scene',id:scene.id,title:'첫 장면',description:'제품 등장',narration:'안녕하세요',screenText:'큰 제품명',duration:3,imageUrl:'https://example.test/scene-v2.jpg',visibility:'customer'});assert.equal(result.status,200);row=result.data.project;
+  result=await confirm(2);assert.equal(result.status,200);row=result.data.project;
+  assert.deepEqual(row.studio.sceneReviews.filter(review=>review.current).map(review=>review.status),['confirmed'],'the revised scene gets its own confirmation');
+  result=await confirm(2);assert.equal(result.status,200);row=result.data.project;assert.equal(row.studio.sceneReviews.length,4);
+});

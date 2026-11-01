@@ -45,6 +45,7 @@ import { createDeliveryFileInspector } from './delivery-file-inspection.mjs';
 import {receiveDeliveryMedia,commitDeliveryMedia,discardDeliveryMedia,serveDeliveryMedia} from './client-delivery-media.mjs';
 import { createPulseStudioService } from './pulse-studio.mjs';
 import { createPulseAutoReplyService } from './pulse-auto-reply.mjs';
+import { CASTING_MODELS } from './public/pulse-app/casting-catalog.mjs';
 import { createClientIntake,discardIntakeFiles,serveIntakeFile } from './client-intake.mjs';
 import { createBrandQualityService } from './brand-quality-service.mjs';
 import { createStaticResponder, publicScriptAndStylePaths } from './static-response.mjs';
@@ -1791,10 +1792,12 @@ export function createCompanyApp(options={}) {
     for(const file of ['production.css','preview.css'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/css; charset=utf-8'];
     files['/pulse-app/app.css']=['public/pulse-app/app.css','text/css; charset=utf-8'];
     files['/pulse-app/casting.css']=['public/pulse-app/casting.css','text/css; charset=utf-8'];
-    for(const id of ['m01','f01','f02','f03','m02','m03','f04'])files['/pulse-app/assets/casting/'+id+'.webp']=['public/pulse-app/assets/casting/'+id+'.webp','image/webp'];
-    for(const id of ['M01','F01','F02','F03','M02','F04','M03'])for(const sample of [1,2,3])files['/pulse-app/assets/casting/voice/'+id+'-'+sample+'.mp3']=['public/pulse-app/assets/casting/voice/'+id+'-'+sample+'.mp3','audio/mpeg'];
+    // 모델 목록은 고객 앱 카탈로그(casting-catalog.mjs) 하나에서 읽는다 — 캐스팅북에 모델이 늘면 카탈로그만 고친다(11-02 일곱 → 열세 명).
+    const castingIds=CASTING_MODELS.map(model=>model.id);
+    for(const id of castingIds.map(value=>value.toLowerCase()))files['/pulse-app/assets/casting/'+id+'.webp']=['public/pulse-app/assets/casting/'+id+'.webp','image/webp'];
+    for(const id of castingIds)for(const sample of [1,2,3])files['/pulse-app/assets/casting/voice/'+id+'-'+sample+'.mp3']=['public/pulse-app/assets/casting/voice/'+id+'-'+sample+'.mp3','audio/mpeg'];
     // 10-22 모델은 사진만: 영상 칸·기획 모음(production-library)·하린 영상은 공개 목록에서 뺀다(파일은 저장소에 그대로). 모델마다 사진 넉 장.
-    for(const id of ['m01','f01','f02','f03','m02','f04','m03'])for(const shot of ['fullbody','look-1','look-2','context'])files['/pulse-app/assets/casting/photos/'+id+'-'+shot+'.webp']=['public/pulse-app/assets/casting/photos/'+id+'-'+shot+'.webp','image/webp'];
+    for(const id of castingIds.map(value=>value.toLowerCase()))for(const shot of ['fullbody','look-1','look-2','context'])files['/pulse-app/assets/casting/photos/'+id+'-'+shot+'.webp']=['public/pulse-app/assets/casting/photos/'+id+'-'+shot+'.webp','image/webp'];
     // 완성 광고(films-view.mjs): 갱스터 뮤직비디오와 화성 세 편(10-22 더함, 1분 안쪽이라 발췌 없이 포스터·본편만 — mp4는 git 밖).
     for(const file of ['M03-mv-happy-gangster-poster-v1.webp','M03-mv-happy-gangster-excerpt-20s-v1.mp4','M03-mv-happy-gangster-full-v1.mp4'])files['/pulse-app/assets/casting/video/'+file]=['public/pulse-app/assets/casting/video/'+file,file.endsWith('.webp')?'image/webp':'video/mp4'];
     for(const name of ['hwaseong-cf-light','hwaseong-short-first','hwaseong-cm-song'])for(const [file,mime] of [[name+'-poster-v1.webp','image/webp'],[name+'-v1.mp4','video/mp4']])files['/pulse-app/assets/films/'+file]=['public/pulse-app/assets/films/'+file,mime];

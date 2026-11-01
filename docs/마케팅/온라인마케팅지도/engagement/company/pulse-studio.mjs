@@ -105,9 +105,13 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
       const concept=published(studio,'concepts',input.conceptId,input.conceptRevision);if(!concept.assetId&&!concept.imageUrl)throw fail('그림이 준비된 콘셉트만 고를 수 있어요.',409);capacity(studio.conceptSelections,120);
       studio.selectedConcept={id:randomUUID(),conceptId:concept.id,conceptRevision:concept.revision,title:concept.title,text:text(input.text),...stamp};studio.conceptSelections.push(studio.selectedConcept);
     }else if(action==='review_scene'){
-      const scene=published(studio,'scenes',input.sceneId,input.sceneRevision);if(!['confirmed','changes','comment'].includes(input.status))throw fail('장면 의견 종류를 골라 주세요.');capacity(studio.sceneReviews,240);
-      const review={id:randomUUID(),sceneId:scene.id,sceneRevision:scene.revision,title:scene.title,status:input.status,text:text(input.text,3000,input.status!=='confirmed'),...stamp};studio.sceneReviews.push(review);
-      const sceneRequestWorkflows=recordSceneReview({...row,studio},review,{...clientProjects.sceneRequestContext(row),at});if(sceneRequestWorkflows)row={...row,sceneRequestWorkflows};
+      const scene=published(studio,'scenes',input.sceneId,input.sceneRevision);if(!['confirmed','changes','comment'].includes(input.status))throw fail('장면 의견 종류를 골라 주세요.');
+      const review={id:randomUUID(),sceneId:scene.id,sceneRevision:scene.revision,title:scene.title,status:input.status,text:text(input.text,3000,input.status!=='confirmed'),...stamp},context={...clientProjects.sceneRequestContext(row),at};
+      // 이 장면 판의 마지막 기록이 이미 확인이고 이 확인을 기다리는 수정 요청도 없으면, 같은 확인은 기록·버전·알림을 만들지 않는다(11-02 — 누를 때마다 같은 확인이 쌓였다).
+      // 담당자 제출 전에 미리 확인해 둔 판이라도, 제출 뒤의 확인은 수정 요청을 끝내는 새 확인이다(client-scene-requests).
+      if(input.status==='confirmed'&&studio.sceneReviews.filter(value=>value.sceneId===scene.id&&value.sceneRevision===scene.revision).at(-1)?.status==='confirmed'&&recordSceneReview({...row,studio},review,context)===row.sceneRequestWorkflows)return;
+      capacity(studio.sceneReviews,240);studio.sceneReviews.push(review);
+      const sceneRequestWorkflows=recordSceneReview({...row,studio},review,context);if(sceneRequestWorkflows)row={...row,sceneRequestWorkflows};
     }else if(action==='comment'){
       if(!['project','concept','scene'].includes(input.targetType))throw fail('의견을 남길 곳을 찾지 못했어요.');
       let target=null;if(input.targetType!=='project'){

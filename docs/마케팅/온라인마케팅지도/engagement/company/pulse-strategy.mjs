@@ -1,3 +1,5 @@
+import {CASTING_MODELS} from './public/pulse-app/casting-catalog.mjs';
+
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const TEXT_FIELDS=['product','audience','situation','barrier','targetNotes','successMetric','successTarget','measurementWindow','baseline','measurementSource','primaryPromise','value1','evidence1','value2','evidence2','value3','evidence3','memoryHook','desiredAction','channelNotes','budgetNotes','mood','visualStyle','dialogue','voice','wardrobe','casting','subtitles','screenCopy','scope','rightsNotes','scheduleNotes','revisionNotes','notes'];
@@ -5,7 +7,8 @@ const ENUMS={objective:['','sales','brand','both'],distribution:['','owned','pai
 const CHANNELS=['instagram','youtube','facebook','tiktok','website','blog','offline','tv','other'];
 const NUMBERS={durationSeconds:[1,600],budgetProduction:[0,1e12],budgetMedia:[0,1e12]};
 // hair: 'original'·'look-2'·'look-3'은 고른 모델의 헤어 1·2·3(casting-catalog의 hairLabels)이다. 옛 공통 값은 저장된 선택을 읽으려고 남긴다.
-const CASTING_ENUMS={modelId:['','M01','F01','F02','F03','M02','F04','M03'],hair:['','original','look-2','look-3','short','bob','long-straight','wave','updo','custom'],makeup:['','natural','clean','glow','smoky','custom'],jacket:['','none','blazer','casual','leather','custom'],top:['','tshirt','shirt','knit','blouse','custom'],bottom:['','trousers','denim','skirt','custom'],voice:['','A','B','C'],earrings:['','none','stud','hoop','drop','custom'],ring:['','none','simple','layered','custom']};
+// modelId는 고객 앱 카탈로그와 같은 목록이다(11-02 캐스팅북 열세 명).
+const CASTING_ENUMS={modelId:['',...CASTING_MODELS.map(model=>model.id)],hair:['','original','look-2','look-3','short','bob','long-straight','wave','updo','custom'],makeup:['','natural','clean','glow','smoky','custom'],jacket:['','none','blazer','casual','leather','custom'],top:['','tshirt','shirt','knit','blouse','custom'],bottom:['','trousers','denim','skirt','custom'],voice:['','A','B','C'],earrings:['','none','stud','hoop','drop','custom'],ring:['','none','simple','layered','custom']};
 const CASTING_FIELDS=[...Object.keys(CASTING_ENUMS),'notes'];
 const FIELDS=[...TEXT_FIELDS,...Object.keys(ENUMS),...Object.keys(NUMBERS),'channels','destinationUrl','proposedDeadline','castingSelection'];
 const HISTORY_LIMIT=20;

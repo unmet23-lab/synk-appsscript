@@ -42,7 +42,7 @@ const UNDECIDED=`[고른 모델]
 const ORDER=`[진행할 모델] M02 태준 (남 · 30대 후반 · 섹시 · 183cm)
 헤어: 3번 짧은 크롭컷
 대사: 오늘 밤, 한 잔의 깊이를
-[함께 고민 중인 모델] F05 소연 (여 · 30대 중반)
+[함께 고민 중인 모델] F99 다온 (여 · 20대 후반)
 헤어: 1번 기본
 목소리: 2번 차분한
 [광고] 프리미엄 위스키`;
@@ -52,7 +52,7 @@ test('the inquiry the client sends reads into the app values, with the model the
   assert.deepEqual(picks(KMONG),[['F04','original','C',true],['F02','look-2','A',false]],'numbers in people lines start at 1; a memo saying 헤어 3번 does not override');
   assert.deepEqual(picks(UNDECIDED),[['F02','look-2','A',false],['F04','original','C',false]],'compared-only models are not picks');
   const order=readCastingCode(ORDER);
-  assert.deepEqual(order.unknown,['F05'],'a model the casting book added before the app is reported, not guessed');assert.deepEqual(picks(ORDER),[['M02','look-3','',true]],'a missing voice stays open');
+  assert.deepEqual(order.unknown,['F99'],'a model the casting book added before the app is reported, not guessed');assert.deepEqual(picks(ORDER),[['M02','look-3','',true]],'a missing voice stays open');
   const [missing]=order.items;assert.equal(missing.code,'M02.2.9');assert.deepEqual(readCastingCode(missing.code).items[0],{...missing,lead:false},'the button code reads back to the same open choice');
   assert.deepEqual(picks('1. F02 하린\n   헤어 9번 / 목소리 7번'),[['F02','','',false]]);
   for(const noise of ['','F02','F2.1.0','F002.1.0','AF02.1.0','F02.1.0x','F02.1.0.5','v1.2.3','1.0.0','1. 제품 소개','[함께 비교한 모델] F02 하린',null,undefined])assert.deepEqual(readCastingCode(noise),{items:[],unknown:[],codes:[]},String(noise));
@@ -96,8 +96,8 @@ test('an imported brief carries the picks to the staff box as short people lines
   const text=intakeCastingText({reportText:`[표현·장면]\n장면·모델 메모:\n${KMONG}`});
   assert.equal(text,'[진행하고 싶은 모델]\n1. F04 지유\n   헤어 1번 기본 · 긴 흑발 생머리 / 목소리 3번 가까이 속삭이는\n\n[함께 고민 중인 모델]\n2. F02 하린\n   헤어 2번 하이 포니테일 / 목소리 1번 밝고 상큼한');
   assert.deepEqual(picks(text),picks(KMONG),'and the box reads them back the same');
-  assert.equal(intakeCastingText({reportText:ORDER}),'[진행하고 싶은 모델]\n1. M02 태준\n   헤어 3번 짧은 크롭컷\n\n[함께 고민 중인 모델]\n2. F05');
-  assert.deepEqual(readCastingCode(intakeCastingText({reportText:ORDER})).unknown,['F05'],'a model the app does not have yet still shows as not available');
+  assert.equal(intakeCastingText({reportText:ORDER}),'[진행하고 싶은 모델]\n1. M02 태준\n   헤어 3번 짧은 크롭컷\n\n[함께 고민 중인 모델]\n2. F99');
+  assert.deepEqual(readCastingCode(intakeCastingText({reportText:ORDER})).unknown,['F99'],'a model the app does not have yet still shows as not available');
   assert.equal(intakeCastingText({reportText:'장면·모델 메모: 캐스팅북 코드: F02.1.0',notes:''}),'[고른 모델]\n1. F02 하린\n   헤어 2번 하이 포니테일 / 목소리 1번 밝고 상큼한');
   for(const intake of [null,undefined,{},{reportText:'모델은 상담으로 정해요.'},{reportText:42}])assert.equal(intakeCastingText(intake),'');
 });
@@ -114,8 +114,8 @@ test('the staff box shows what will be saved and never sends its text with the p
   assert.match(castingCodeResult({text:'1. F02 하린\n   헤어 2번 / 목소리 1번\n\n[진행하고 싶은 모델]\n2. M01 이안'}),/고객은 이안으로 진행하고 싶어 해요/,'으로/로 follows the name');
   assert.doesNotMatch(castingCodeBox({text:KMONG,open:false}),/ open>/,'a box the staff folded stays folded on redraw');assert.match(castingCodeBox({text:'',open:true}),/ open>/,'and one they opened stays open');
   const saved=castingCodeResult({text:'F02.1.0',saved:{modelId:'F02',hair:'look-2',voice:'A'}});assert.match(saved,/지금 저장된 조합/);assert.doesNotMatch(saved,/casting-code-save/);
-  assert.match(castingCodeResult({text:ORDER}),/작업 공간에 아직 없는 모델\(F05\)은 빼고 읽었어요/);
-  assert.doesNotMatch(castingCodeResult({text:'1. F05 소연'}),/casting-code-save/);
+  assert.match(castingCodeResult({text:ORDER}),/작업 공간에 아직 없는 모델\(F99\)은 빼고 읽었어요/);
+  assert.doesNotMatch(castingCodeResult({text:'1. F99 다온'}),/casting-code-save/);
   assert.match(castingCodeResult({text:'아무 글'}),/캐스팅북 조합을 찾지 못했어요/);
   assert.match(castingCodeResult({text:'F02.1.0',fromIntake:true}),/발주서 접수 글에서 찾은 조합이에요/);
   assert.match(castingCodeResult({text:'F02.1.0',review:'confirmed'}),/고객이 새 버전을 다시 확인해요/);assert.match(castingCodeResult({text:'F02.1.0',review:'requested'}),/요청이 취소되니/);
@@ -159,7 +159,7 @@ test('the client room wires the box: save fills the casting form, submits it, an
   assert.match(view,/pick\('cast_modelId',item\.modelId\)&&pick\('cast_hair',item\.hair\)&&pick\('cast_voice',item\.voice\)/,'model first, then hair and voice, like a person would');
   assert.match(castingView({modelId:'F02'}),/data-choices-model="F02"/);assert.match(castingView({}),/data-choices-model=""/);
   assert.doesNotMatch(view.split('\n').filter(line=>!line.trim().startsWith('//')).join('\n'),/\(\?<[!=]/,'no regex lookbehind: Safari before 16.4 would fail to load the whole client room');
-  assert.match(readFileSync(new URL('sw.js',appDir),'utf8'),/const CACHE = 'synk-pulse-shell-v21-photos-films-20261022';/);
+  assert.match(readFileSync(new URL('sw.js',appDir),'utf8'),/const CACHE = 'synk-pulse-shell-v22-client-fixes-20261102';/);
 });
 
 async function fixture(t){

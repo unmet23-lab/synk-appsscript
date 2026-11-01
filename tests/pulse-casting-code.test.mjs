@@ -70,3 +70,19 @@ test('캐스팅북에 먼저 들어온 새 모델은 담당자 칸이 짐작하�
   assert.deepEqual(unknown, [...later, 'F09']);
   assert.deepEqual(items.map((x) => x.code), ['F02.1.0']);
 });
+
+// 11-02 PULSE 고객 검토: 캐스팅북은 13명인데 고객 앱 모델 고르기는 7명이라, 뒤 여섯 명을 고른 고객이 자기 프로젝트에서 그 모델을 못 골랐다.
+// 캐스팅북을 먼저 올리는 흐름은 막지 않되, 앱에 아직 없는 모델은 아래 목록에 이름을 적어야 통과한다 — 앱에 넣으면 지운다.
+const APP_PENDING = new Set([]);
+const { models: bookShots } = JSON.parse(readFileSync(new URL('catalog.json', book), 'utf8'));
+test('캐스팅북 명단의 모델은 「앱 대기」로 적은 것 말고는 모두 앱에도 같은 차례 · 인상 · 사진 이름으로 있다', () => {
+  assert.deepEqual(CASTING_MODELS.map((m) => m.id), roster.map((m) => m.code).filter((code) => !APP_PENDING.has(code)), '앱 모델 고르기와 캐스팅북 명단의 차례');
+  for (const code of APP_PENDING) assert.ok(roster.some((m) => m.code === code), `${code}는 캐스팅북에 없는데 앱 대기에 적혀 있다`);
+  for (const m of roster.filter((x) => !APP_PENDING.has(x.code))) {
+    const app = CASTING_MODELS.find((x) => x.id === m.code);
+    assert.ok(app.description.startsWith(m.impression.join(' · ')), `${m.code} 인상: ${app.description}`);
+    assert.deepEqual(app.photos.map((p) => p.label), ['전신', ...m.looks.map((l) => l.label), bookShots[m.code].shotLabels.context], `${m.code} 사진 이름`);
+    assert.equal(app.image, `./assets/casting/${m.code.toLowerCase()}.webp`);
+    assert.equal(app.gender, m.gender, `${m.code} 성별(의상 선택지를 가른다)`);
+  }
+});

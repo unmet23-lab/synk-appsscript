@@ -219,7 +219,7 @@ test('the films page has its own head, the next step and the film list, and no p
 test('live refresh waits while a film excerpt plays, and the offline shell caches the films module instead of the withdrawn plan module',()=>{
   const app=readFileSync(new URL('app.mjs',appDir),'utf8'),sw=readFileSync(new URL('sw.js',appDir),'utf8');
   assert.match(app,/Array\.from\(document\.querySelectorAll\('\[data-preview-test\],\[data-film-player\]'\)\)\.some\(video=>!video\.paused&&!video\.ended\)/);
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v21-photos-films-20261022';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v22-client-fixes-20261102';/);
   assert.match(sw,/'casting-catalog\.mjs','films-view\.mjs',/);
   assert.doesNotMatch(sw,/production-catalog/);
 });
