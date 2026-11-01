@@ -368,6 +368,15 @@ class Restore(Base):
         self.server.page_size = 1  # paging
         code, out, _ = self.run_tool('verify', '--snapshot', str(self.snapshot), '--source', DEST, '--download')
         self.assertEqual((code, out['status'], out['missing'], out['mismatched'], out['setClosed']), (0, 'verified', 0, 0, True))
+        # A completion object that closes another list (one file dropped from the local list) is not this set's close.
+        done = 'company/production/' + SECOND + '.media-complete'
+        generation, body, created = self.server.objects[done]
+        other = json.loads(body)
+        other['manifestSha256'] = 'f' * 64
+        self.server.objects[done] = (generation, json.dumps(other, sort_keys=True).encode(), created)
+        code, out, _ = self.run_tool('verify', '--snapshot', str(self.snapshot), '--source', DEST, '--download')
+        self.assertEqual((code, out['status'], out['missing'], out['setClosed']), (1, 'incomplete', 0, False))
+        self.server.objects[done] = (generation, body, created)
         self.server.mode['corrupt'] = sidecar(SECOND, self.bodies[B])
         code, out, _ = self.run_tool('verify', '--snapshot', str(self.snapshot), '--source', DEST, '--download')
         self.assertEqual((code, out['status'], out['mismatched']), (1, 'incomplete', 1))

@@ -606,7 +606,18 @@ def verify(args, token):
     storage = Storage(token, args.endpoint)
     own = prefix + manifest['name'] + '.media-'
     items = storage.list(bucket, own)
-    closed = any(item.get('name') == own + 'complete' for item in items)
+    # The completion object must close this exact list, not just exist: its body names the list sha256 and its counts.
+    closed = False
+    complete = [item for item in items if item.get('name') == own + 'complete']
+    if len(complete) == 1 and str(complete[0].get('size', '')).isdigit() and int(complete[0]['size']) <= 1 << 20:
+        chunks = []
+        try:
+            storage.download(bucket, complete[0], chunks.append, int(complete[0]['size']))
+            closed = json.loads(b''.join(chunks)) == {
+                'schema': COMPLETE_SCHEMA, 'backup': manifest['name'], 'manifestSha256': manifest['sha256'], 'files': len(manifest['files']),
+                'contents': len(manifest['contents']), 'bytes': sum(manifest['contents'].values())}
+        except (Failure, ValueError, TypeError):
+            closed = False
     listed = sidecars(items, prefix)
     missing = mismatched = 0
     for sha256, size in manifest['contents'].items():
