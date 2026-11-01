@@ -81,6 +81,8 @@ test('shared statement code preserves the canonical API and document validation'
   assert.equal(row.parserVersion,'member-statement-ko-13');assert.ok(row.meanings.length);
   assert.equal(outcome(()=>schema.validateMemberUnderstanding(currentDocument)).ok,true);
   assert.deepEqual(outcome(()=>schema.validateMemberUnderstanding(currentDocument)),outcome(()=>canonicalSchema.validateMemberUnderstanding(currentDocument)));
+  assert.throws(()=>schema.validateMemberUnderstanding({...currentDocument,version:13}),{code:'INVALID_PERSONAL_STATE'},'a new ko13 row cannot masquerade as an old document13');
+  assert.equal(schema.updateMemberUnderstanding(currentDocument,{type:'clear'},row.at).version,14,'clearing retains the version required by the server write fence');
   // This deployed ko12 row used p0 for music; ko13 adds a preceding support
   // meaning. A generated consumer must replay the old IDs without relabelling
   // the saved statement or silently promoting its document.
