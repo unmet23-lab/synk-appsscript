@@ -113,6 +113,8 @@ class Base(unittest.TestCase):
         self.endpoint = 'http://127.0.0.1:%d' % self.server.server_address[1]
         self.volume = self.root / 'company'
         (self.volume / 'studio-media').mkdir(parents=True)
+        self.archives = self.root / 'archives'
+        self.archives.mkdir(mode=0o700)
         self.bodies = {A: b'synthetic video body', B: b'synthetic image body!', TWIN: b'synthetic video body'}
         for name, body in self.bodies.items():
             (self.volume / 'studio-media' / name).write_bytes(body)
@@ -128,7 +130,7 @@ class Base(unittest.TestCase):
         folder.mkdir(parents=True)
         rows = files if files is not None else [{'diskName': n, 'sha256': sha(b), 'bytes': len(b)} for n, b in self.bodies.items()]
         (folder / 'media-manifest.json').write_text(json.dumps({'schema': 'synk-workspace-media/v1', 'createdAt': '2026-11-01T18:30:00.123Z', 'bytesIncluded': included, 'files': rows}))
-        manifest = {'version': 1, 'mediaCount': len(rows), 'mediaManifest': 'media-manifest.json', 'mediaBytesIncluded': included}
+        manifest = {'version': 1, 'createdAt': '2026-11-01T18:30:00.123Z', 'mediaCount': len(rows), 'mediaManifest': 'media-manifest.json', 'mediaBytesIncluded': included}
         manifest.update(extra or {})
         (folder / 'integration-manifest.json').write_text(json.dumps(manifest))
         (folder / 'company').mkdir()
@@ -149,9 +151,13 @@ class Base(unittest.TestCase):
             sys.stdin = stdin
         return code, json.loads(out.getvalue()) if out.getvalue() else None, err.getvalue()
 
+    def receipt(self, snapshot):
+        return self.archives / (pathlib.Path(snapshot).name + '.tar.gz.media.json')
+
     def upload(self, snapshot=None, destination=DEST, extra=()):
-        return self.run_tool('upload', '--snapshot', str(snapshot or self.snapshot), '--volume', str(self.volume), '--destination', destination,
-                             '--owner-uid', str(os.getuid() if hasattr(os, 'getuid') else -1), *extra)
+        snapshot = snapshot or self.snapshot
+        return self.run_tool('upload', '--snapshot', str(snapshot), '--volume', str(self.volume), '--destination', destination,
+                             '--receipt', str(self.receipt(snapshot)), '--owner-uid', str(os.getuid() if hasattr(os, 'getuid') else -1), *extra)
 
 
 class Upload(Base):
@@ -170,10 +176,25 @@ class Upload(Base):
                          {'schema': 'synk-workspace-media-complete/v1', 'backup': FIRST, 'files': 3, 'contents': 2, 'bytes': 41})
         self.assertEqual(closing['manifestSha256'], sha((self.snapshot / 'media-manifest.json').read_bytes()))
         self.assertEqual(self.server.objects[complete][0], max(g for g, _, _ in self.server.objects.values()))  # the last object
+        receipt = json.loads(self.receipt(self.snapshot).read_text())
+        self.assertEqual({k: receipt[k] for k in ('schema', 'backup', 'createdAt', 'bytesIncluded', 'bucket', 'prefix')},
+                         {'schema': 'synk-backup-media-receipt/v1', 'backup': FIRST, 'createdAt': '2026-11-01T18:30:00.123Z', 'bytesIncluded': False,
+                          'bucket': BUCKET, 'prefix': 'company/production/'})
+        self.assertEqual(sorted(row['diskName'] for row in receipt['files']), sorted(self.bodies))
+        for row in receipt['objects']:
+            generation, body, _ = self.server.objects[row['object']]
+            self.assertEqual((row['generation'], row['md5Hash'], row['sha256'], row['bytes']), (str(generation), md5(body), sha(body), len(body)))
+        self.assertEqual(receipt['complete'], {'object': complete, 'generation': str(self.server.objects[complete][0])})
+        self.assertNotIn('_objects', out)
         # The next backup does not lean on the first one's copies: they end with the first archive.
         code, out, _ = self.upload(self.backup(True, SECOND))
         self.assertEqual((code, out['uploaded'], out['mode']), (0, 2, 'both'))
         self.assertEqual(len(self.server.objects), 6)
+
+    def test_an_existing_receipt_stops_the_run_before_anything_is_sent(self):
+        self.receipt(self.snapshot).write_text('{}')
+        self.assertEqual(self.upload()[2], 'SYNK_BACKUP_MEDIA RECEIPT_EXISTS\n')
+        self.assertEqual(self.server.objects, {})
 
     def test_with_bytes_in_the_archive_the_bodies_come_from_the_snapshot_copy_not_the_live_volume(self):
         snapshot = self.backup(True, SECOND)
@@ -236,7 +257,8 @@ class Upload(Base):
         self.assertTrue(all(r[2] == 'Bearer ' + TOKEN for r in self.server.requests))
         for bad in ('x', TOKEN + '"', TOKEN + ' header'):
             self.server.requests.clear()
-            code, out, err = self.run_tool('upload', '--snapshot', str(self.snapshot), '--volume', str(self.volume), '--destination', DEST, token=bad)
+            code, out, err = self.run_tool('upload', '--snapshot', str(self.snapshot), '--volume', str(self.volume), '--destination', DEST,
+                                           '--receipt', str(self.root / 'r.json'), token=bad)
             self.assertEqual((code, err, self.server.requests), (1, 'SYNK_BACKUP_MEDIA TOKEN_INVALID\n', []))
 
     def test_a_list_that_disagrees_with_itself_or_the_integration_manifest_is_refused(self):
@@ -250,6 +272,7 @@ class Upload(Base):
             ([dict(good[2], bytes=99)] + good[:2], {}),                            # same sha, two sizes
             (good, {'mediaCount': 2}),                                             # count differs
             (good, {'mediaBytesIncluded': False}),                                 # mode differs
+            (good, {'createdAt': '2026-11-01T18:30:00.999Z'}),                     # another snapshot's list
         ]
         for index, (rows, extra) in enumerate(cases):
             snapshot = self.backup(True, 'synk-workspace-2026-11-01T18-30-00-%03dZ' % index, rows, extra)
@@ -323,6 +346,23 @@ class Restore(Base):
         self.assertEqual((self.prepared / 'studio-media' / A).read_bytes(), b'keep me')
         self.snapshot = self.root / 'backups' / 'synk-workspace-2026-10-31T18-30-00-000Z'
         self.assertEqual(self.hydrate(False)[2], 'SYNK_BACKUP_MEDIA BYTES_ALREADY_INCLUDED\n')
+
+    def test_hydrate_from_a_local_folder_matches_bodies_by_sha256_without_a_token(self):
+        bodies = self.root / 'decrypted'
+        bodies.mkdir()
+        (bodies / 'drive-file-1.bin').write_bytes(self.bodies[A])
+        (bodies / 'drive-file-2.bin').write_bytes(self.bodies[B])
+        (bodies / 'noise.bin').write_bytes(b'synthetic image BODY!')  # same size as B, other content
+        self.server.requests.clear()
+        code, out, err = self.run_tool('hydrate', '--snapshot', str(self.snapshot), '--from-dir', str(bodies), '--prepared', str(self.prepared), token='')
+        self.assertEqual((code, err, out['fromOtherBackups']), (0, '', 0))
+        self.assertEqual(self.server.requests, [])
+        for folder in (self.snapshot / 'company' / 'studio-media', self.prepared / 'studio-media'):
+            self.assertEqual({p.name: p.read_bytes() for p in folder.iterdir()}, self.bodies)
+        self.snapshot = self.backup(False, 'synk-workspace-2026-11-05T18-30-00-000Z')
+        os.unlink(bodies / 'drive-file-2.bin')
+        code, out, err = self.run_tool('hydrate', '--snapshot', str(self.snapshot), '--from-dir', str(bodies), token='')
+        self.assertEqual((code, err), (1, 'SYNK_BACKUP_MEDIA MEDIA_OFFSITE_MISSING\n'))
 
     def test_verify_wants_this_backups_own_sidecars_and_catches_corrupt_ones(self):
         self.server.page_size = 1  # paging

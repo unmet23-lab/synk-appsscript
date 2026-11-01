@@ -41,7 +41,7 @@ name="${snapshot##*/}"; directory="$COMPANY_BACKUP_DIR/$name"
 [[ -d "$directory" && ! -L "$directory" && -f "$directory/COMPLETE" && ! -L "$directory/COMPLETE" ]] || fail BACKUP_INCOMPLETE
 [[ "$(cat -- "$directory/COMPLETE")" = ok ]] || fail BACKUP_INCOMPLETE
 archive="$archive_directory/$name.tar.gz"
-for target in "$archive" "$archive.partial" "$archive.sha256" "$archive.uploaded"; do
+for target in "$archive" "$archive.partial" "$archive.sha256" "$archive.uploaded" "$archive.media.json"; do
   [[ ! -e "$target" && ! -L "$target" ]] || fail BACKUP_ARCHIVE_EXISTS
 done
 [[ -f "$directory/media-manifest.json" && ! -L "$directory/media-manifest.json" ]] || fail BACKUP_INCOMPLETE
@@ -78,7 +78,8 @@ unset access_token
 # created, so bodies created after their archive never expire before it. The
 # helper sends the bodies as <name>.media-<sha256> and closes the set with
 # <name>.media-complete; it reads the token from stdin and prints only counts or
-# a code. If it fails, GCS keeps an archive without (all) its media and this node
+# a code, and leaves <archive>.media.json (each sidecar's generation and md5) for
+# the server-only Drive copy. If it fails, GCS keeps an archive without (all) its media and this node
 # writes no upload marker, so DR capture, the backup watch and local retention
 # never treat that run as a backup.
 unset access_token
@@ -86,7 +87,7 @@ access_token="$(gcloud auth print-access-token --quiet 2>/dev/null)" || fail MED
 [[ ${#access_token} -ge 20 && ${#access_token} -le 16384 && "$access_token" =~ ^[A-Za-z0-9._~+/-]+={0,2}$ ]] || fail MEDIA_OFFSITE_FAILED
 media_result=''
 if ! media_result="$(printf '%s\n' "$access_token" | python3 -I -B "$DEPLOY_DIR/backup-media.py" upload --snapshot "$directory" \
-    --volume "$COMPANY_VOLUME_DIR" --destination "gs://$bucket${prefix:+/$prefix}")"; then
+    --volume "$COMPANY_VOLUME_DIR" --destination "gs://$bucket${prefix:+/$prefix}" --receipt "$archive.media.json")"; then
   unset access_token
   fail MEDIA_OFFSITE_FAILED
 fi

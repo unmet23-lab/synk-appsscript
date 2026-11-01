@@ -13,9 +13,14 @@
            disk-hungry part (bodies inside every local archive and recovery
            capsule) is what this replaces. With bytes in the archive (both) the
            bodies are read from the snapshot copy, so they equal the archive.
+           It also leaves a local receipt (--receipt, the archive folder) naming
+           each sidecar's generation and md5, so the server-only Drive copy
+           (tools/server-backup) can carry the same bytes without reading GCS.
   hydrate  restore: fill <snapshot>/company/studio-media (and a prepared company
            volume) for a backup made with --media=manifest. Its own sidecars
            first; a body with the same sha256 from another backup is accepted.
+           --from-dir takes the bodies from a local folder instead (bodies
+           decrypted from the server-only Drive copy), matched by sha256.
   verify   read only: every listed sha256 has a sidecar of this backup with the
            right size and the set is closed; --download also streams each one
            and checks its sha256.
@@ -45,6 +50,7 @@ SNAPSHOT = re.compile(r'^synk-workspace-[0-9TZ-]+$')
 SHA = re.compile(r'^[0-9a-f]{64}$')
 SIDECAR = re.compile(r'^(synk-workspace-[0-9TZ-]+)\.media-([0-9a-f]{64})$')
 COMPLETE_SCHEMA = 'synk-workspace-media-complete/v1'
+RECEIPT_SCHEMA = 'synk-backup-media-receipt/v1'
 TOKEN = re.compile(r'^[A-Za-z0-9._~+/-]+={0,2}$')
 BUCKET = re.compile(r'^[a-z0-9][a-z0-9._-]{1,61}[a-z0-9]$')
 PREFIX = re.compile(r'^([A-Za-z0-9_-][A-Za-z0-9._-]*/)*[A-Za-z0-9_-][A-Za-z0-9._-]*$')
@@ -210,6 +216,7 @@ def load_manifest(snapshot_path):
         close_directory(snapshot)
     need(isinstance(manifest, dict) and manifest.get('schema') == MANIFEST_SCHEMA, 'MANIFEST_INVALID')
     need(type(manifest.get('bytesIncluded')) is bool, 'MANIFEST_INVALID')
+    need(isinstance(manifest.get('createdAt'), str) and re.fullmatch(r'[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.]+Z', manifest['createdAt']), 'MANIFEST_INVALID')
     files = manifest.get('files')
     need(isinstance(files, list) and len(files) <= MAX_FILES, 'MANIFEST_INVALID')
     seen = set()
@@ -220,12 +227,14 @@ def load_manifest(snapshot_path):
         need(type(item['bytes']) is int and 0 <= item['bytes'] <= MAX_BODY, 'MANIFEST_INVALID')
         seen.add(item['diskName'])
     need(isinstance(integration, dict) and integration.get('version') == 1 and integration.get('mediaCount') == len(files)
+         and integration.get('createdAt') == manifest['createdAt']
          and integration.get('mediaManifest') == MANIFEST and integration.get('mediaBytesIncluded') is manifest['bytesIncluded'], 'MANIFEST_INVALID')
     contents = {}
     for item in files:
         previous = contents.setdefault(item['sha256'], item['bytes'])
         need(previous == item['bytes'], 'MANIFEST_INVALID')
-    return {'name': name, 'bytesIncluded': manifest['bytesIncluded'], 'files': files, 'contents': contents, 'sha256': manifest_sha}
+    return {'name': name, 'bytesIncluded': manifest['bytesIncluded'], 'files': files, 'contents': contents, 'sha256': manifest_sha,
+            'createdAt': manifest['createdAt']}
 
 
 # ---- GCS JSON API over one HTTPS host ---------------------------------------------
@@ -359,11 +368,13 @@ def sidecars(items, prefix):
 def upload(args, token):
     bucket, prefix = destination(args.destination)
     manifest = load_manifest(args.snapshot)
+    need(not os.path.lexists(args.receipt), 'RECEIPT_EXISTS')
     budget = Budget(args.budget_seconds)
     storage = Storage(token, args.endpoint, budget)
     owner = None if args.owner_uid < 0 else args.owner_uid
     summary = {'status': 'complete', 'mode': 'both' if manifest['bytesIncluded'] else 'manifest', 'files': len(manifest['files']),
-               'contents': len(manifest['contents']), 'bytes': sum(manifest['contents'].values()), 'uploaded': 0, 'uploadedBytes': 0}
+               'contents': len(manifest['contents']), 'bytes': sum(manifest['contents'].values()), 'uploaded': 0, 'uploadedBytes': 0,
+               '_objects': []}
     if manifest['files']:
         # both: the snapshot's own copy, the same bytes as the archive. manifest: the live
         # volume (container-written folders either way: never follow a link).
@@ -374,7 +385,30 @@ def upload(args, token):
             close_directory(media)
     close_set(storage, bucket, prefix, manifest, summary)
     budget.check()
+    write_receipt(args.receipt, bucket, prefix, manifest, summary)
     return summary
+
+
+def write_receipt(path, bucket, prefix, manifest, summary):
+    """Host-only record of the closed set, written once (never over an old one)."""
+    folder = os.path.dirname(os.path.abspath(path))
+    if os.name == 'posix':
+        info = os.stat(folder)
+        need(info.st_uid == os.geteuid() and not info.st_mode & 0o022, 'RECEIPT_FOLDER_INVALID')
+    body = {'schema': RECEIPT_SCHEMA, 'backup': manifest['name'], 'createdAt': manifest['createdAt'], 'manifestSha256': manifest['sha256'],
+            'bytesIncluded': manifest['bytesIncluded'], 'bucket': bucket, 'prefix': prefix,
+            'files': [{'diskName': item['diskName'], 'sha256': item['sha256'], 'bytes': item['bytes']} for item in manifest['files']],
+            'objects': summary.pop('_objects'), 'complete': summary.pop('_complete')}
+    data = json.dumps(body, sort_keys=True).encode()
+    try:
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, 'O_NOFOLLOW', 0) | BINARY, 0o600)
+    except FileExistsError:
+        raise Failure('RECEIPT_EXISTS')
+    try:
+        os.write(fd, data)
+        os.fsync(fd)
+    finally:
+        os.close(fd)
 
 
 def media_directory(root, in_snapshot):
@@ -401,7 +435,9 @@ def close_set(storage, bucket, prefix, manifest, summary):
         remote_md5 = base64.b64decode(reply.get('md5Hash', ''), validate=True)
     except (ValueError, TypeError):
         raise Failure('MEDIA_UPLOAD_MISMATCH')
-    need(reply.get('name') == name and str(reply.get('size')) == str(len(body)) and remote_md5 == hashlib.md5(body).digest(), 'MEDIA_UPLOAD_MISMATCH')
+    need(reply.get('name') == name and str(reply.get('size')) == str(len(body)) and remote_md5 == hashlib.md5(body).digest()
+         and str(reply.get('generation', '')).isdigit(), 'MEDIA_UPLOAD_MISMATCH')
+    summary['_complete'] = {'object': name, 'generation': str(reply['generation'])}
     summary['setClosed'] = True
 
 
@@ -430,6 +466,7 @@ def send_bodies(storage, bucket, prefix, manifest, media, owner, budget, summary
                  and reader.sha.hexdigest() == sha256 and reader.md5.digest() == first_md5 == remote_md5, 'MEDIA_UPLOAD_MISMATCH')
             summary['uploaded'] += 1
             summary['uploadedBytes'] += size
+            summary['_objects'].append({'sha256': sha256, 'bytes': size, 'object': name, 'generation': str(body['generation']), 'md5Hash': body['md5Hash']})
             sent.add(sha256)
         finally:
             os.close(fd)
@@ -497,12 +534,36 @@ def ordered(rows, own):
     return [row for row in rows if row[0] == own] + [row for row in rows if row[0] != own]
 
 
+def local_bodies(folder, wanted):
+    """sha256 -> a regular file in `folder` (not below it) with those bytes; names do not matter."""
+    found = {}
+    sizes = set(wanted.values())
+    for entry in sorted(os.listdir(folder)):
+        path = os.path.join(folder, entry)
+        info = os.lstat(path)
+        if not stat.S_ISREG(info.st_mode) or info.st_size not in sizes:
+            continue
+        fd = os.open(path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0) | BINARY)
+        try:
+            digest = digests(fd, Budget())[0]
+        finally:
+            os.close(fd)
+        if wanted.get(digest) == info.st_size:
+            found.setdefault(digest, path)
+    return found
+
+
 def hydrate(args, token):
-    bucket, prefix = destination(args.source)
     manifest = load_manifest(args.snapshot)
     need(not manifest['bytesIncluded'], 'BYTES_ALREADY_INCLUDED')
-    storage = Storage(token, args.endpoint)
-    listed = sidecars(storage.list(bucket, prefix + 'synk-workspace-'), prefix)
+    if args.from_dir:
+        local = local_bodies(args.from_dir, manifest['contents'])
+        bucket = storage = None
+        listed = {}
+    else:
+        bucket, prefix = destination(args.source)
+        storage = Storage(token, args.endpoint)
+        listed = sidecars(storage.list(bucket, prefix + 'synk-workspace-'), prefix)
     snapshot_media = os.path.join(args.snapshot, 'company', 'studio-media')
     targets = [snapshot_media] + ([os.path.join(args.prepared, 'studio-media')] if args.prepared else [])
     if args.prepared:
@@ -516,7 +577,17 @@ def hydrate(args, token):
     for sha256, items in by_sha.items():
         rows = ordered(listed.get(sha256, []), manifest['name'])
         staging = os.path.join(snapshot_media, '.' + sha256 + '.part')
-        source = fetch(storage, bucket, rows, items[0]['bytes'], sha256, staging)
+        if args.from_dir:
+            need(sha256 in local, 'MEDIA_OFFSITE_MISSING')
+            place(local[sha256], staging, link=False)
+            fd = os.open(staging, os.O_RDONLY | BINARY)
+            try:
+                need(digests(fd, Budget())[0] == sha256, 'MEDIA_COPY_MISMATCH')
+            finally:
+                os.close(fd)
+            source = manifest['name']
+        else:
+            source = fetch(storage, bucket, rows, items[0]['bytes'], sha256, staging)
         need(source is not None, 'MEDIA_OFFSITE_MISSING')
         borrowed += source != manifest['name']
         try:
@@ -566,22 +637,26 @@ def main(argv=None):
     up.add_argument('--snapshot', required=True)
     up.add_argument('--volume', required=True)
     up.add_argument('--destination', required=True)
+    up.add_argument('--receipt', required=True)
     up.add_argument('--owner-uid', type=int, default=1000)
     up.add_argument('--budget-seconds', type=float, default=1200)
     for name in ('hydrate', 'verify'):
         sub = commands.add_parser(name)
         sub.add_argument('--snapshot', required=True)
-        sub.add_argument('--source', required=True)
         if name == 'hydrate':
+            source = sub.add_mutually_exclusive_group(required=True)
+            source.add_argument('--source')
+            source.add_argument('--from-dir')
             sub.add_argument('--prepared')
         else:
+            sub.add_argument('--source', required=True)
             sub.add_argument('--download', action='store_true')
     for sub in commands.choices.values():
         sub.add_argument('--endpoint', help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
     try:
         os.umask(0o077)
-        token = read_token()
+        token = None if getattr(args, 'from_dir', None) else read_token()
         if args.command == 'upload':
             result = upload(args, token)
         elif args.command == 'hydrate':

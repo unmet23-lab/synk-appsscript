@@ -34,6 +34,15 @@ async function upload(d,parent,file,identity){const bytes=fs.statSync(file).size
 function child(command,args,input){const p=spawn(command,args,{stdio:['pipe','pipe','pipe']});let errorBytes=0;p.stderr.on('data',b=>{errorBytes+=b.length;});p.on('error',()=>{});const done=new Promise(resolve=>p.on('close',(code)=>resolve(code)));if(input!==undefined)p.stdin.end(input);else p.stdin.end();return{p,done};}
 async function commandJson(command,args,input,limit=16*1024*1024){const {p,done}=child(command,args,input),parts=[];let bytes=0;for await(const b of p.stdout){bytes+=b.length;need(bytes<=limit,'COMMAND_OUTPUT_TOO_LARGE');parts.push(b);}need(await done===0,'COMMAND_FAILED');return JSON.parse(Buffer.concat(parts).toString('utf8'));}
 function freeEnough(bytes){const s=fs.statfsSync(STATE);need(s.bavail*s.bsize>bytes+768*1024*1024,'LOCAL_SPACE_LOW');}
+// Studio media of a list-only data backup: its GCS sidecars, carried as the same bytes read from the live
+// volume (media-read.py, never following a link). Checked against the backup node's sidecar receipt.
+function mediaPlan(media,archive){
+ if(media===null||media===undefined)return null;
+ need(media&&typeof media==='object'&&/^synk-workspace-[0-9TZ-]+$/.test(media.backup)&&media.bucket===archive?.bucket&&typeof media.dataDir==='string'&&media.dataDir.startsWith('/srv/synk/')&&!media.dataDir.split('/').includes('..')&&Array.isArray(media.objects),'MEDIA_PLAN_INVALID');
+ const seen=new Set();
+ for(const o of media.objects){need(o&&/^[0-9a-f]{64}$/.test(o.sha256)&&!seen.has(o.sha256)&&Number.isSafeInteger(o.bytes)&&o.bytes>=0&&typeof o.object==='string'&&(o.object===media.backup+'.media-'+o.sha256||o.object.endsWith('/'+media.backup+'.media-'+o.sha256))&&/^[0-9]+$/.test(o.generation)&&/^[A-Za-z0-9+/]{22}==$/.test(o.md5Hash)&&/^[0-9a-f-]{36}\.(mp4|webm|png|jpg|mp3|wav|srt|vtt|intake)$/i.test(o.diskName),'MEDIA_PLAN_INVALID');seen.add(o.sha256);}
+ return media;
+}
 async function execute(config,secrets){
  fs.mkdirSync(STATE,{recursive:true,mode:0o700});const out=path.join(STATE,'staging');fs.mkdirSync(out,{recursive:true,mode:0o700});
  const pub=fs.readFileSync(path.join(CONF,'public.pem'),'utf8'),keyId=cipher.keyId(pub),runId=crypto.randomUUID();
@@ -69,6 +78,10 @@ async function execute(config,secrets){
    const sqlArgs=['-I',pgClient,'psql','-h',config.dbHost,'-p','5432','-U',config.dbUser,'-d','postgres','-w','-X','-q','-At','-c',query];
    const objects=await commandJson('/usr/bin/python3',sqlArgs);for(const o of objects){need(o.size>=0&&o.size<=2*1024*1024*1024&&o.etag,'STORAGE_METADATA_INVALID');let responseTag;await backup('supabase/'+config.dbRef+'/storage/'+o.bucket_id+'/'+o.name,JSON.stringify([o.etag,o.size,o.updated_at]),async()=>{const r=await http('https://'+config.dbRef+'.supabase.co/storage/v1/object/authenticated/'+encodeURIComponent(o.bucket_id)+'/'+o.name.split('/').map(encodeURIComponent).join('/'),{headers:{Authorization:'Bearer '+secrets.storageKey,apikey:secrets.storageKey}});need(r.ok,'STORAGE_BODY_FAILED');responseTag=r.headers.get('etag');storageIdentity(o,responseTag);return Readable.fromWeb(r.body);},async e=>{storageIdentity(o,responseTag,e);},{expectedBytes:o.size,bucket:o.bucket_id,objectName:o.name,etag:o.etag,updatedAt:o.updated_at});}
    const afterObjects=await commandJson('/usr/bin/python3',sqlArgs);need(JSON.stringify(objects)===JSON.stringify(afterObjects),'STORAGE_CHANGED_DURING_BACKUP');status.sourceChecks.push({kind:'supabase-storage',checkedAt:NOW(),objects:objects.length,beforeAfterMatched:true});
+   // Last for the company role: a body deleted from the live volume since the backup fails the run only after the DB and Storage copies are in.
+   const media=mediaPlan(refs.media,refs.archives[0]);
+   if(media){let carried=0;for(const o of media.objects){let proc;await backup('gcs/'+media.bucket+'/'+o.object,o.generation,async()=>{proc=spawn('/usr/bin/python3',['-I',path.join(__dirname,'media-read.py'),media.dataDir,o.diskName,String(o.bytes)],{stdio:['ignore','pipe','ignore']});proc.done=new Promise(r=>proc.on('close',r));return proc.stdout;},async e=>{need(await proc.done===0,'MEDIA_READ_FAILED');need(e.bytes===o.bytes&&e.sha256===o.sha256&&e.md5b64===o.md5Hash,'MEDIA_BODY_MISMATCH');},{expectedBytes:o.bytes,mediaOf:media.backup,mediaSha256:o.sha256});carried+=o.bytes;}
+    status.sourceChecks.push({kind:'studio-media',backup:media.backup,dataBackupCreatedAt:media.createdAt,contents:media.objects.length,bytes:carried,checkedAt:NOW()});}
   }else if(config.role==='research'){
    const raw=await commandJson('/usr/bin/python3',['-I',path.join(__dirname,'docs-read.py')]);const b=Buffer.from(raw.bodyBase64,'base64');need(sha(b)===raw.proof.sha256&&b.length===raw.proof.bytes,'RESEARCH_DOC_BODY_MISMATCH');await backup('drive/unmet23/'+raw.proof.documentId,raw.proof.revisionHash,async()=>Readable.from([b]),null,{sourceAccount:'unmet23@gmail.com',fileId:raw.proof.documentId,mimeType:'application/vnd.google-apps.document+json',sourceProof:raw.proof});b.fill(0);
    const manifest=await commandJson('/usr/bin/python3',['-I',path.join(__dirname,'argon-capture.py'),'inspect']);let proc,receipt='';
@@ -90,6 +103,6 @@ async function execute(config,secrets){
   console.log(JSON.stringify({status:status.status,role:config.role,items:status.items.length,folderId:dest,runId}));return status;
  }catch(error){status.status='failed';status.error=safe(error);status.completedAt=NOW();save();try{const file=path.join(out,'receipt-failed-'+runId+'.json');fs.writeFileSync(file,JSON.stringify(status),{mode:0o600});status.failureReceipt=await upload(d,dest,file,{sourceKey:'receipt/'+config.role,version:'failed-'+runId});fs.unlinkSync(file);save();}catch{}throw error;}
 }
-module.exports={matches,owned,safe,drive,oauth,execute,storageIdentity,verifyKeyDependency,upload,privateFolder};
+module.exports={matches,owned,safe,drive,oauth,execute,storageIdentity,verifyKeyDependency,upload,privateFolder,mediaPlan};
 async function main(){const config=json(CONF+'/config.json'),secrets=json(CONF+'/credentials.json');if(process.argv.includes('--check-key-dependency')){need(config.role==='company','VAULT_KEY_ROLE_INVALID');const d=drive(oauth(secrets.drive77,'77yuhbs@gmail.com'));await d.identity();const result=await verifyKeyDependency(d,json(CONF+'/vault-key-dependency.json'),config.dbRef,cipher.keyId(fs.readFileSync(CONF+'/public.pem','utf8')));atomic(STATE+'/key-dependency-check.json',result);console.log(JSON.stringify(result));return result;}return execute(config,secrets);}
 if(require.main===module)main().catch(e=>{console.error(safe(e));process.exitCode=1;});

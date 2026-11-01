@@ -6,7 +6,7 @@
 
 | 역할 / 실행 서버 | 보존 범위 | 실제 예약·첫 확인 |
 |---|---|---|
-| company / `synk-company-1` | Supabase PostgreSQL 전체 custom dump와 Storage 객체, unmet23 현재 조사 Docs 3개·팁 Sheet 1개·등록 첨부, 기존 GCS 업로드가 성공한 최신 회사 DR 묶음의 동일 사본, 이 백업 장치 자체 | 매일 07:10 KST + 0~120초. 10-18 15:44 완료 8개, 다음 10-19 07:11:57 |
+| company / `synk-company-1` | Supabase PostgreSQL 전체 custom dump와 Storage 객체, unmet23 현재 조사 Docs 3개·팁 Sheet 1개·등록 첨부, 기존 GCS 업로드가 성공한 최신 회사 DR 묶음의 동일 사본과(2026-11 판부터) 그 묶음의 데이터 백업이 목록만 담았을 때 그 백업의 작업실 영상 곁 객체와 같은 바이트, 이 백업 장치 자체 | 매일 07:10 KST + 0~120초. 10-18 15:44 완료 8개, 다음 10-19 07:11:57 |
 | research / `synk-company-2` | synkbrief Doc, Argon 설정·인증·소스·예약·입력·조사 원문 백업과 교정 영수증 53개, 이 백업 장치 자체 | 같은 주기. 10-18 15:43 완료 3개, 다음 10-19 07:11:42 |
 | radio / `synk-radio-1` | 방송 서버의 설정·소스·synk crontab 129개, 이 백업 장치 자체 | 같은 주기. 10-18 15:42 완료 2개, 다음 10-19 07:10:13 |
 
@@ -92,4 +92,14 @@ Supabase `vault.secrets` 복원에는 DB dump 외에 해당 프로젝트의 pgso
 
 10-18 15:59:45 최종 재조회에서 세 역할의 본 백업·영수증·최종 runtime·네이티브 보완을 포함한 원격 사본 20개를 다시 대조했다. 최종 runtime은 company 93,044B·research 72,565B·radio 52,082B이며, 영구 상태의 `nodes[].runtimeRefresh.ciphertext`로 찾는다. 네이티브 DB 보완은 `nodes[].nativeClient.ciphertext`에 있다.
 
-검증: `node --test tools/server-backup/backup.test.cjs`, `python -B tools/server-backup/watch.test.py`. 최초 실증 원문은 `.tmp/backup-remaining-20261018/server/`와 원본창고의 별도 상태 영수증에 있다.
+## 작업실 영상(2026-11 회사 판부터)
+
+회사 백업이 작업실 영상을 압축본 밖 GCS 곁 객체 `company/production/<스냅숏>.media-<sha256>`로 두고, DR 묶음에는 목록만 담는다([영상 곁 객체](../../docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md#media-once-20261101)). 이 장치는 GCS를 읽지 못하므로, 주 노드가 남긴 호스트 전용 영수증 `/srv/synk/backup-archives/<스냅숏>.tar.gz.media.json`(곁 객체마다 generation·md5)을 따른다.
+
+- `company-sources.py`가 고른 DR 묶음 안 데이터 압축본의 `media-manifest.json`을 흘려 읽어 판정한다(GPT 검수 GA1 — 영수증 유무로 미루어 보지 않음). 목록이 없거나(옛 백업) `bytesIncluded`면 할 일이 없다. 목록만이면 같은 스냅숏·같은 `createdAt`·같은 목록 sha256의 영수증이 꼭 있어야 하고, 없으면 `MEDIA_RECEIPT_MISSING`으로 멈춘다 — 영상 없는 사본이 「성공」이 되는 길이 없다.
+- `backup.cjs`는 회사 역할의 맨 끝(DB·Storage 다음)에 곁 객체마다 `media-read.py`로 라이브 볼륨의 그 파일을 읽는다. 링크를 따라가지 않고, FIFO에 막히지 않고, uid 1000·링크 하나·같은 장치·크기를 본다. 읽은 바이트의 sha256·md5가 영수증과 같아야 sourceKey `gcs/<버킷>/<곁 객체>`·generation으로 암호화해 올린다. 백업 뒤 라이브에서 지운 영상이면 그 회차가 실패한다(경보) — DB·Storage는 이미 올라간 뒤다.
+- 이 사본은 `gcs/` 원본이라 원본창고 `보존규칙.py`가 실행 단위(30일 하루·90일 주·1년 달)로 줄인다.
+- 복원: 그 회차 영수증 items에서 sourceKey가 `….media-<sha256>`인 것을 내려받아 복호화해 한 폴더에 두고, `backup-media.py hydrate --snapshot <데이터 스냅숏> --from-dir <그 폴더> --prepared <준비된 회사 볼륨>`(sha256으로 짝지음, 토큰 없음).
+- 설치: `backup.cjs`·`company-sources.py`·새 `media-read.py`를 `synk-company-1`의 `/opt/synk-server-backup/`에 root 0644로 바꿔 넣는다(다른 파일·설정·타이머 그대로, 실행 중이 아닐 때). 자기 백업(`self-capture.py`)이 폴더 전체를 담는다. 영수증이 없으면(회사 판 전) 동작은 지금과 같다.
+
+검증: `node --test tools/server-backup/backup.test.cjs`, `python -B tools/server-backup/watch.test.py`, `python -B tools/server-backup/media-sources.test.py`. 최초 실증 원문은 `.tmp/backup-remaining-20261018/server/`와 원본창고의 별도 상태 영수증에 있다.

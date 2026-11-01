@@ -389,7 +389,7 @@ test('backup sends its studio media as archive sidecars after the archive and be
   const media = lines.findIndex(line => line.startsWith('python3 ')), upload = lines.findIndex(line => line.startsWith('curl '));
   assert.ok(upload > 0 && media > upload, 'bodies are created after their archive, so they never expire first');
   assert.equal(lines[media], 'python3 -I -B ' + unix(deploy) + 'backup-media.py upload --snapshot ' + f.env.COMPANY_BACKUP_DIR + '/synk-workspace-2026-10-08T00-00-00-000Z --volume '
-    + f.env.COMPANY_VOLUME_DIR + ' --destination gs://synthetic-fixture/backups');
+    + f.env.COMPANY_VOLUME_DIR + ' --destination gs://synthetic-fixture/backups --receipt ' + f.env.COMPANY_ARCHIVE_DIR + '/synk-workspace-2026-10-08T00-00-00-000Z.tar.gz.media.json');
   assert.match(calls, /PYTHON_TOKEN_STDIN_OK/); assert.equal((calls.match(/^gcloud /gm) || []).length, 2);
   assert.doesNotMatch(calls + result.stdout + result.stderr, /synthetic.fixture-token/);
 });

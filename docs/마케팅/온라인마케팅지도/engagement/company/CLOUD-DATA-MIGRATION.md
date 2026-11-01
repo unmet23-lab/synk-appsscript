@@ -30,7 +30,7 @@
    python3 disaster-restore.py prepare recovery.tar.gz --sha256 "$expected_sha" --destination "$PWD/restored-new"
    ```
 
-   **작업실 영상(2026-11 회사 판부터):** 데이터 스냅숏 맨 위의 `media-manifest.json`이 `"bytesIncluded": false`이면 영상 본문은 묶음에 없고 같은 버킷의 그 데이터 백업 곁 객체 `company/production/<스냅숏 이름>.media-<sha256>`에 있다([영상 곁 객체](CLOUD-OPERATIONS.md#media-once-20261101)). 묶음 안 릴리스의 `deploy/backup-media.py`로 스냅숏과 준비된 회사 볼륨을 함께 채운 뒤 다음 단계로 간다. 자기 곁 객체를 먼저 쓰고 같은 내용이면 다른 백업의 곁 객체도 받는다. 목록의 sha256이 맞는 사본만 쓰고, 틀린 사본은 건너뛰며, 하나라도 없으면 멈춘다.
+   **작업실 영상(2026-11 회사 판부터):** 데이터 스냅숏 맨 위의 `media-manifest.json`이 `"bytesIncluded": false`이면 영상 본문은 묶음에 없고 같은 버킷의 그 데이터 백업 곁 객체 `company/production/<스냅숏 이름>.media-<sha256>`에 있다([영상 곁 객체](CLOUD-OPERATIONS.md#media-once-20261101)). 묶음 안 릴리스의 `deploy/backup-media.py`로 스냅숏과 준비된 회사 볼륨을 함께 채운 뒤 다음 단계로 간다. 자기 곁 객체를 먼저 쓰고 같은 내용이면 다른 백업의 곁 객체도 받는다. 목록의 sha256이 맞는 사본만 쓰고, 틀린 사본은 건너뛰며, 하나라도 없으면 멈춘다. GCS가 없을 때(77yuhbs 서버 직접 백업에서 되살릴 때)는 그 회차 영수증의 `….media-<sha256>` 사본을 복호화해 한 폴더에 두고 `--source` 대신 `--from-dir <그 폴더>`를 준다([서버 직접 백업 README](../../../../../tools/server-backup/README.md)).
 
    ```sh
    media_tool="$(find "$PWD/restored-new/host/opt/synk/releases" -path '*/engagement/company/deploy/backup-media.py' | head -n 1)"
