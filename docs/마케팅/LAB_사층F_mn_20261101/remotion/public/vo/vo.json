@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1031,
+  "lufs": -17
+ },
+ "made": "2026-10-31T06:53:09.629Z",
+ "lines": [
+  {
+   "id": "c1",
+   "text": "일.",
+   "dur": 0.364,
+   "syllablesPerSec": 2.75,
+   "src": "c1.wav",
+   "key": "37285461682b4648be7a45d31e2dcc3b",
+   "words": 1
+  },
+  {
+   "id": "c2",
+   "text": "이.",
+   "dur": 0.359,
+   "syllablesPerSec": 2.79,
+   "src": "c2.wav",
+   "key": "5c4dd1254ad539c91ab9523e5656d117",
+   "words": 1
+  },
+  {
+   "id": "c3",
+   "text": "삼.",
+   "dur": 0.427,
+   "syllablesPerSec": 2.34,
+   "src": "c3.wav",
+   "key": "dabb6d916a9fe579f616bc05f7d8fe05",
+   "words": 1
+  },
+  {
+   "id": "c4",
+   "text": "사.",
+   "dur": 0.604,
+   "syllablesPerSec": 1.66,
+   "src": "c4.wav",
+   "key": "d72d9200d8a79b5311d77976b06959eb",
+   "words": 1
+  }
+ ]
+}
