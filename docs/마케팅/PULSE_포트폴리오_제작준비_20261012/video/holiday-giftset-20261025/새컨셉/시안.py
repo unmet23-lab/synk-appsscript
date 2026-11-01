@@ -766,7 +766,9 @@ def cream_jar(loc=(0, 0, 0), rot=(0, 0, 0), relief_step=2):
     # 뚜껑: 남색 광택 몸(1.2 cm) 위에 얇은 맑은 크리스털 판(4 mm) — 두꺼운 맑은 뚜껑은 윗면 결정이 속에서 한 번 더 비쳤다
     inner = hex_solid("뚜껑몸", rf + 0.0006, z0, z0 + 0.012, mat_simple("뚜껑몸", base=JAR_NAVY, rough=0.08, coat=1.0, coat_rough=0.03),
                       bevel=0.0018, segs=4)
-    lid = hex_solid("단지뚜껑", rf - 0.0006, z0 + 0.012, z0 + 0.016, mat_glass("뚜껑크리스털", rough=0.0, tint=(0.97, 0.985, 1.0)),
+    # 맑은 판 밑면을 몸 윗면과 같은 높이에 두면 두 면이 겹쳐 광선이 맞는 순서가 자리마다 뒤바뀐다 — 뚜껑 판에 장마다 다른 물결 · 격자
+    # 무늬(기프트 세트 15초 뚜껑 접사, 현장노트). 판을 몸속으로 0.2 mm 묻는다
+    lid = hex_solid("단지뚜껑", rf - 0.0006, z0 + 0.0118, z0 + 0.016, mat_glass("뚜껑크리스털", rough=0.0, tint=(0.97, 0.985, 1.0)),
                     bevel=0.0012, segs=3)
     flake = relief_sheet("뚜껑결정", macro_height(), 0.056, z0 + 0.016, 0.00030,
                          mat_frost("뚜껑결정", glow=(1.0, 0.95, 0.88), body=0.9, sparkle=0.4), step=relief_step)
