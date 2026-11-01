@@ -4,7 +4,9 @@
 // - 목소리마다 여덟 줄을 한 번에 이어 읽혀(10-29 「AI티」 고침 — 줄마다 따로 구우면 억양이 줄마다 새로 시작한다) 받아쓰기 낱말 시각으로 자른다(드라마 목소리후보 나누기.py).
 // - 하온은 성별이 아직 정해지지 않았다(시제품은 Kore 여성 · cedar 남성, 학습자 말 자료는 「오빠」) — 여성 둘 · 남성 둘. 태오 선배(Julian) · 교수(Elena)는 다른 배역이라 뺀다.
 // - 힉스필드 founder 계정 CLI. 값은 접수 전에 묻고(목표 50크레딧 안), 이미 받은 판은 다시 굽지 않는다.
-// 쓰는 법: node 일레븐굽기.mjs <줄|값|굽기|자르기|엮기|전부> [--판 2]   → .tmp/답은행시험-20261101/일레븐/
+// - --조각(11-02, 유호님 「하나랑 zoe가 좋네」 뒤): 은행 답의 절반이 반응 둘을 이은 답이라 통째 줄만으로는 은행을 다 못 덮는다(반응 하나 통째 답만 512줄).
+//   같은 평범한 판을 은행처럼 조각(반응 · 질문 따로, 열네 조각)으로 구워 이어 붙인 판을 만들어, 좋다고 하신 목소리로 이어 붙여도 괜찮은지 귀로 본다.
+// 쓰는 법: node 일레븐굽기.mjs <줄|값|굽기|자르기|엮기> [--판 2] [--조각 --목소리 Zoe]   → .tmp/답은행시험-20261101/일레븐/ · 일레븐조각/
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -15,7 +17,8 @@ import { 차례들 } from './이어붙이기.mjs';
 const 여기 = path.dirname(fileURLToPath(import.meta.url));
 const 저장소 = path.resolve(여기, '../../../..');
 const 작업 = path.join(저장소, '.tmp', '답은행시험-20261101');
-const 폴더 = path.join(작업, '일레븐');
+const 조각판 = process.argv.includes('--조각');
+const 폴더 = path.join(작업, 조각판 ? '일레븐조각' : '일레븐');
 const 기록파일 = path.join(폴더, '기록.json');
 const 힉스집 = path.join(os.homedir(), '.ai-accounts', 'higgsfield-founder');
 const 힉스실행 = path.join(process.env.APPDATA, 'npm', 'higgsfield.exe');
@@ -28,13 +31,20 @@ export const 목소리들 = {
   Kevin: { id: 'f1373f24-3b96-433f-9a68-e595810ef608', 결: '남성 · 20대' },
   Cillian: { id: 'd8ba9f14-8a24-44db-932b-99e16c45bd32', 결: '남성 · 20대' },
 };
-// 차례마다 연기 꼬리표 — 팬을 만나 반갑고 들뜬 20대 아이돌(장면.mjs 연기)
+// 차례마다 연기 꼬리표 — 팬을 만나 반갑고 들뜬 20대 아이돌(장면.mjs 연기). 조각판은 반응은 통째 판과 같은 결, 질문은 묻는 결
 const 꼬리표 = ['[excited]', '[delighted]', '[amazed]', '[happy]', '[cheerful]', '[proud]', '[laughs]', '[warmly]'];
+const 조각꼬리표 = ['[excited]', '[delighted]', '[curious]', '[amazed]', '[curious]', '[happy]', '[friendly]', '[cheerful]', '[proud]', '[laughs]', '[warmly]', '[cheerful]', '[warmly]', '[warmly]'];
+const 고른목소리 = process.argv.includes('--목소리') ? process.argv[process.argv.indexOf('--목소리') + 1].split(',') : null;
 
 /** 평범한 판의 하온 줄 — 첫인사 + 차례마다 통째 한 줄(사인 줄은 「그럼요! 예쁘게 써 줄게요.」 · 「짠! …」 둘) */
 export function 줄들() {
   const 길 = JSON.parse(fs.readFileSync(path.join(작업, '은행3길.json'), 'utf8'));
   const 줄 = [{ 차례: -1, 말: 길.A.첫인사 }];
+  if (조각판) {
+    for (const t of 차례들('A')) t.조각.forEach((g) => 줄.push({ 차례: t.번호, 말: g, ...(g.startsWith('짠!') ? { 쉼앞: 1.2 } : {}) }));
+    if (줄.length !== 조각꼬리표.length) throw new Error(`조각 ${줄.length}개인데 꼬리표 ${조각꼬리표.length}개`);
+    return 줄.map((l, i) => ({ ...l, 번호: i + 1, 꼬리표: 조각꼬리표[i] }));
+  }
   for (const t of 차례들('A')) {
     const 짠 = t.조각.findIndex((g) => g.startsWith('짠!'));
     if (짠 > 0) { 줄.push({ 차례: t.번호, 말: t.조각.slice(0, 짠).join(' ') }, { 차례: t.번호, 말: t.조각.slice(짠).join(' '), 쉼앞: 1.2 }); }
@@ -55,7 +65,7 @@ const 번호찾기 = (o) => { if (!o || typeof o !== 'object') return null; for 
 const 주소찾기 = (o) => { if (!o || typeof o !== 'object') return null; if (typeof o.result_url === 'string') return o.result_url; if (typeof o.url === 'string' && /^https?:/.test(o.url)) return o.url; for (const v of Object.values(o)) { const x = 주소찾기(v); if (x) return x; } return null; };
 const 기록 = () => (fs.existsSync(기록파일) ? JSON.parse(fs.readFileSync(기록파일, 'utf8')) : { 판: {} });
 const 저장 = (b) => { fs.mkdirSync(폴더, { recursive: true }); fs.writeFileSync(기록파일, JSON.stringify(b, null, 1)); };
-const 할일 = () => Object.keys(목소리들).flatMap((이름) => Array.from({ length: 판수 }, (_, k) => ({ 이름, 열쇠: `${이름}_${k + 1}` })));
+const 할일 = () => Object.keys(목소리들).filter((이름) => !고른목소리 || 고른목소리.includes(이름)).flatMap((이름) => Array.from({ length: 판수 }, (_, k) => ({ 이름, 열쇠: `${이름}_${k + 1}` })));
 
 function 값() {
   const 한판 = 힉스(['generate', 'cost', 'elevenlabs_v4', '--dialogue', 대화(목소리들.Hana.id), '--stability', '0.5']);
@@ -149,16 +159,19 @@ function 엮기() {
   const 나감폴더 = path.join(폴더, '대화'); fs.mkdirSync(나감폴더, { recursive: true });
   const 학습자 = (i) => 맞춘pcm(path.join(작업, '학습자', `A_${i + 1}.wav`));
   const 요약 = {}; const 엉 = 엉킴표();
-  for (const 이름 of Object.keys(목소리들)) {
+  for (const 이름 of Object.keys(목소리들).filter((n) => !고른목소리 || 고른목소리.includes(n))) {
     const 줄 = 고른줄(이름, 엉);
     const 칸 = []; let 학습자차례 = 0;
     줄.forEach((l, i) => {
-      if (l.쉼앞) 칸.push(무음(l.쉼앞));
-      else if (i > 0) { 칸.push(학습자(학습자차례++), 무음(0.45)); }
-      칸.push(맞춘pcm(l.파일), 무음(0.45));
+      const 앞 = 줄[i - 1];
+      if (i > 0 && l.차례 !== 앞.차례) 칸.push(무음(0.45), 학습자(학습자차례++), 무음(0.45));
+      else if (l.쉼앞) 칸.push(무음(l.쉼앞));
+      else if (i > 0) 칸.push(무음(0.2));
+      칸.push(맞춘pcm(l.파일));
     });
+    칸.push(무음(0.45));
     const 임시 = path.join(나감폴더, `${이름}.wav`); fs.writeFileSync(임시, wav(Buffer.concat(칸)));
-    const 나감 = path.join(나감폴더, `평범한판_일레븐_${이름}.mp3`);
+    const 나감 = path.join(나감폴더, `평범한판_일레븐_${이름}${조각판 ? '_이어붙인판' : ''}.mp3`);
     const r = spawnSync('ffmpeg', ['-hide_banner', '-nostdin', '-y', '-i', 임시, '-af', 'loudnorm=I=-18:TP=-1.5:LRA=11', '-ar', '44100', '-ac', '1', '-b:a', '96k', 나감], { encoding: 'utf8' });
     if (r.status !== 0) throw new Error(`ffmpeg 실패 ${나감}\n${r.stderr.slice(-400)}`);
     요약[이름] = 줄.map((l) => ({ 번호: l.번호, 말: l.말, 고른판: l.열쇠, 맞음: l.맞음, 엉킴: l.엉킴, 받아쓰기: l.받아쓰기, 판별: l.판별 }));
