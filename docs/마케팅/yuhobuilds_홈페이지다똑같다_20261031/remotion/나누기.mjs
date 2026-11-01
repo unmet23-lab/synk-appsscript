@@ -11,7 +11,8 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const VOICE = path.join(HERE, '..', '음성', '범수');
 // 원고는 세 번(all1 · all2 · all3)에 나눠 굽는다 — 333자 한 번(v8)과 「…우체통의 색과 글씨로. 이번엔…」 뒤에 한 줄을 더한 165자(v11)는
 // Typecast가 같은 구절을 되풀이했다(받아쓰기로 확인). all2는 멀쩡했던 v9 판 그대로, 끝 두 문장은 all3.
-const TAKES = ['all1', 'all2', 'all3'].map((id) => ({ id, ...JSON.parse(fs.readFileSync(path.join(VOICE, `${id}.json`), 'utf8')) }));
+// all4(v14)는 끝 줄 뒤 가져갈 한 줄 카드에서 읽는 세 줄 — 장면이 카드로 바뀌는 자리라 따로 구웠다.
+const TAKES = ['all1', 'all2', 'all3', 'all4'].map((id) => ({ id, ...JSON.parse(fs.readFileSync(path.join(VOICE, `${id}.json`), 'utf8')) }));
 
 // 줄마다 그 줄의 첫 낱말 · 끝 낱말(받아쓰기 글에 들어 있는 말). 원고가 바뀌면 여기도 고친다.
 export const SEGS = [
@@ -27,6 +28,9 @@ export const SEGS = [
   ['s7', 'all2', '하늘색', '필라테스.'],
   ['s7b', 'all3', '색을', '달라요.'],
   ['s8', 'all3', '물건은', '고르세요.'],
+  ['s9', 'all4', '홈페이지', '붙이세요.'],
+  ['s10', 'all4', '빈칸엔,', '하나.'],
+  ['s11', 'all4', '문', '간판처럼.'],
 ];
 
 // 받아쓰기 낱말을 굽기마다 차례로 줄에 나눈다(첫 낱말부터 끝 낱말까지 순서대로 찾는다).

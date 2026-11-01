@@ -11,6 +11,8 @@
 //  · v11(유호님 「A 범수판」 뒤 A판만, 넷째 시험 반영): 방법 2 · 3을 한 칸으로(방법 셋) · 끝에 「색을 빼도 이번엔 다 다르다」로 첫 장면과 맞물림.
 //  · v12(다섯째 시험 반영): 우체통 결과 화면을 우체통까지 내려 보이고(「우체통 그림이 없다」), 끝 줄에서 우체통 세무사 한 장이 화면 가득.
 //  · v13(올리기 전 검사 ②): 끝 벽이 색을 뺐다 입히는 3초 동안 8% 다가간다 — 거의 멈춘 시간 19% → 기준 15% 아래.
+//  · v14(유호님 「그래서 어떤 프롬프트나 쉬운 방법을 왜 최종적으로 알려주지 않은 거야」): 끝 줄 뒤에 가져갈 한 줄 카드 — 「우리 가게 [빈칸]의
+//    색과 글씨로 화면을 만들어 줘.」, 빈칸이 우체통 · 바구니 · 네온으로 채워지며 그 물건으로 나온 화면 셋이 아래에 선다(원본 37.8초 받는 길 자리).
 import { Audio } from '@remotion/media';
 import React from 'react';
 import { AbsoluteFill, Easing, Img, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
@@ -163,7 +165,8 @@ const Heads: React.FC = () => (
     <Kicker text="@yuhobuilds" a={B.end} b={B.total} font={MONO} />
     <Head lines={['같은 7개에', '물건만 하나씩 정해 주면']} accent="물건만 하나씩" a={B.end + 4} b={B.desat} />
     <Head lines={['색을 빼도', '이번엔 다 다르다']} accent="다 다르다" a={B.desat} b={B.colorBack} />
-    <Head lines={['물건은 AI 말고', '사장님이 고르세요']} accent="사장님이" a={B.endLine} b={B.total + 1} />
+    <Head lines={['물건은 AI 말고', '사장님이 고르세요']} accent="사장님이" a={B.endLine} b={B.cta} />
+    <Head lines={['부탁 끝에', '이 한 줄만 붙이세요']} accent="이 한 줄" a={B.cta} b={B.total + 1} />
   </>
 );
 
@@ -308,8 +311,10 @@ const Promise: React.FC = () => {
     </div>
   );
 };
-/** 끝: 일곱 칸 가운데 빨간 우체통 세무사(위 줄 둘째 칸) 한 장이 화면 가득 커지고, 우체통까지 천천히 내려간다. */
+/** 끝: 일곱 칸 가운데 빨간 우체통 세무사(위 줄 둘째 칸) 한 장이 화면 가득 커지고, 우체통까지 천천히 내려간다.
+ *  v14: 한 줄 카드가 들어오면 카드 아래로 내려가 옅어졌다가(CTA_MID), 「빈칸엔」에서 첫 예시 칸(CTA_TILE 0)으로 줄어든다. */
 const HERO: Box = { x: 60, y: 470, w: 960, h: 1450 };
+const CTA_MID: Box = { x: 190, y: 850, w: 700, h: 1130 };
 const Hero: React.FC = () => {
   const f = useCurrentFrame();
   if (f < B.colorBack) return null;
@@ -317,16 +322,91 @@ const Hero: React.FC = () => {
   const t = tileXY(1);
   const zoom = endZoom(f); // 끝 벽이 다가간 만큼(커지기 시작할 때 벽 칸과 겹친다)
   const from: Box = { x: 540 + (t.x - 540) * zoom, y: 890 + (t.y - 890) * zoom, w: TILE.w * zoom, h: TILE.h * zoom };
-  const box = lerpBox(from, HERO, p);
-  const scroll = interpolate(f, [B.colorBack + 18, B.total - 6], [0, 175], { ...clamp, easing: Easing.inOut(Easing.sin) });
+  const c = ease(f, B.cta, 14, EASE_MOVE);
+  const q = ease(f, B.shrink, 14, EASE_MOVE);
+  const box = lerpBox(lerpBox(lerpBox(from, HERO, p), CTA_MID, c), CTA_TILE(0), q);
+  // 카드 뒤에서도 우체통 화면은 계속 내려가고(멈춘 화면 막기), 예시 칸이 되면 제목부터 우체통까지 보이는 자리로 돌아온다
+  const scrollA = interpolate(f, [B.colorBack + 18, B.shrink], [0, 300], { ...clamp, easing: Easing.inOut(Easing.sin) });
+  const scroll = lerp(scrollA, 120, q);
+  const dim = 0.35 * c * (1 - q);
   const k = box.w / 390;
   return (
     <div style={{ position: 'absolute', left: box.x, top: box.y, width: box.w, height: box.h, zIndex: 4 }}>
-      <div style={{ position: 'absolute', inset: 0, borderRadius: lerp(18, 24, p), overflow: 'hidden', background: '#fff', boxShadow: `0 0 0 ${lerp(4, 0, p)}px ${BEZEL}, 0 40px 90px rgba(20,20,18,0.3)` }}>
+      <div style={{ position: 'absolute', inset: 0, borderRadius: lerp(lerp(18, 24, p), 18, q), overflow: 'hidden', background: '#fff', boxShadow: `0 0 0 ${lerp(lerp(4, 0, p), 4, q)}px ${BEZEL}, 0 40px 90px rgba(20,20,18,${lerp(0.3, 0.18, q)})` }}>
         <Img src={staticFile(END_SHOT)} style={{ position: 'absolute', left: 0, top: -scroll * k, width: box.w }} />
+        <div style={{ position: 'absolute', inset: 0, background: STAGE, opacity: dim }} />
       </div>
-      {p > 0.6 ? <Tag text="세무사 하나 · 문 앞 빨간 우체통" at={B.colorBack + 10} /> : null}
+      {p > 0.6 && f < B.cta ? <Tag text="세무사 하나 · 문 앞 빨간 우체통" at={B.colorBack + 10} /> : null}
     </div>
+  );
+};
+
+// ───────────── 가져갈 한 줄(v14) ─────────────
+/** 예시 칸 셋: 오른쪽 끝 892(릴스 단추 자리 920 밖) · 이름표 아래 끝 약 1380(아래 앱 글자 자리 1428 위). */
+const CTA_TILE = (i: number): Box => ({ x: 72 + i * 280, y: 834, w: 260, h: 506 });
+const EXAMPLES: { at: number; word: string; src?: string }[] = [
+  { at: B.ex1, word: '문 앞 빨간 우체통' },
+  { at: B.ex2, word: '노란 빵 바구니', src: shot('한줄E', '빵집_s_2') },
+  { at: B.ex3, word: '분홍 네온 간판', src: shot('한줄E', '필라테스_s_2') },
+];
+/** 빈칸: 비면 점선 칸에 「물건」, 예시 차례가 오면 형광펜 칸에 그 물건이 톡 들어온다. 끝에는 다시 비어 틀만 남는다. */
+const Blank: React.FC = () => {
+  const f = useCurrentFrame();
+  const cur = f >= B.blankBack ? undefined : [...EXAMPLES].reverse().find((x) => f >= x.at);
+  const hitAt = cur ? cur.at : f >= B.blankBack ? B.blankBack : B.shrink;
+  const pop = ease(f, hitAt, 4) * (1 - ease(f, hitAt + 4, 10));
+  return (
+    <span style={{ display: 'inline-block', padding: '0 14px', margin: '0 4px', borderRadius: 12, background: cur ? MARK : 'rgba(245,196,69,0.16)', border: cur ? '3px solid transparent' : `3px dashed ${MUTED}`, color: cur ? INK : MUTED, transform: `scale(${1 + 0.08 * pop})`, lineHeight: 1.25 }}>
+      {cur ? cur.word : '물건'}
+    </span>
+  );
+};
+const CtaCard: React.FC = () => {
+  const f = useCurrentFrame();
+  if (f < B.cta) return null;
+  const p = ease(f, B.cta, 10);
+  return (
+    <div style={{ position: 'absolute', left: 72, top: 500, width: 836, opacity: p, transform: `translateY(${(1 - p) * 30}px)`, zIndex: 5 }}>
+      <div style={{ borderRadius: 30, background: '#FFFFFF', boxShadow: '0 0 0 2px rgba(21,21,19,0.10), 0 30px 70px rgba(20,20,18,0.20)', padding: '28px 36px 30px' }}>
+        <div style={{ fontFamily: KO, fontWeight: 660, fontSize: 28, color: '#8E8A80', letterSpacing: '-0.02em' }}>홈페이지 부탁 끝에 붙일 한 줄</div>
+        <div style={{ marginTop: 10, fontFamily: KO, fontWeight: 720, fontSize: 48, color: INK, letterSpacing: '-0.03em', lineHeight: 1.5, wordBreak: 'keep-all' }}>
+          우리 가게 <Blank />의 색과 글씨로 화면을 만들어 줘.
+        </div>
+        <div style={{ marginTop: 14, fontFamily: KO, fontWeight: 620, fontSize: 28, color: '#8E8A80', letterSpacing: '-0.02em' }}>빈칸 = 가게에 실제로 있는, 색이 또렷한 물건 하나</div>
+      </div>
+    </div>
+  );
+};
+/** 예시 칸: 첫 칸은 줄어든 우체통 화면(Hero), 둘째 · 셋째는 「물건 하나」에 점선 빈 칸으로 섰다가 그 물건 차례에 화면이 위에서 덮는다. */
+const CtaTiles: React.FC = () => {
+  const f = useCurrentFrame();
+  if (f < B.slots) return null;
+  return (
+    <>
+      {EXAMPLES.map((x, i) => {
+        const b = CTA_TILE(i);
+        const s = ease(f, B.slots + 2 * i, 10);
+        const fill = x.src ? ease(f, x.at, 9, EASE_MOVE) : 0;
+        const lab = ease(f, x.at, 8);
+        const live = f >= x.at && (i === EXAMPLES.length - 1 || f < EXAMPLES[i + 1].at) && f < B.blankBack;
+        return (
+          <React.Fragment key={i}>
+            {x.src ? (
+              <div style={{ position: 'absolute', left: b.x, top: b.y, width: b.w, height: b.h, zIndex: 4, opacity: s, transform: `scale(${lerp(0.94, 1, s)})` }}>
+                <div style={{ position: 'absolute', inset: 0, borderRadius: 18, border: `3px dashed ${MUTED}`, background: 'rgba(255,255,255,0.35)' }} />
+                <div style={{ position: 'absolute', inset: 0, borderRadius: 18, overflow: 'hidden', clipPath: `inset(0 0 ${(1 - fill) * 100}% 0)`, boxShadow: `0 0 0 4px ${BEZEL}` }}>
+                  <Img src={staticFile(x.src)} style={{ position: 'absolute', left: 0, top: 0, width: b.w }} />
+                </div>
+              </div>
+            ) : null}
+            {live ? <div style={{ position: 'absolute', left: b.x - 8, top: b.y - 8, width: b.w + 16, height: b.h + 16, borderRadius: 24, boxShadow: `0 0 0 5px ${MARK}`, zIndex: 4 }} /> : null}
+            <div style={{ position: 'absolute', left: b.x, top: b.y + b.h + 12, width: b.w, textAlign: 'center', fontFamily: KO, fontWeight: 720, fontSize: 27, letterSpacing: '-0.03em', color: INK, whiteSpace: 'nowrap', opacity: lab, transform: `translateY(${(1 - lab) * 10}px)`, zIndex: 4 }}>
+              {x.word}
+            </div>
+          </React.Fragment>
+        );
+      })}
+    </>
   );
 };
 const Walls: React.FC = () => (
@@ -336,7 +416,7 @@ const Walls: React.FC = () => (
     <Round list={RB} t0={B.flipsB} step={B.flipB} wall={1} hits={RB_HIT} out={B.card2} clump={B.clumpB} />
     <Round list={RD} t0={B.revealD} step={3} wall={2} hits={RD_HIT} out={B.cut5} clump={B.thesis + 4} />
     <Round list={RE} t0={B.flipsE} out={B.cut7} />
-    <Round list={R0} t0={B.end} step={2} wall={3} gray={[B.end - 30, 1]} out={B.total + 30} to={RE_END} toAt={B.endFlip} toStep={4} toGray={[B.desat, B.colorBack]} fadeAt={B.colorBack + 4} />
+    <Round list={R0} t0={B.end} step={2} wall={3} gray={[B.end - 30, 1]} out={B.cta} to={RE_END} toAt={B.endFlip} toStep={4} toGray={[B.desat, B.colorBack]} fadeAt={B.colorBack + 4} />
     <Hero />
   </>
 );
@@ -491,6 +571,9 @@ const hits = (cut: Cut): Hit[] => {
     ...[B.desat, B.colorBack].map((a) => ({ at: a, src: 'sfx/whoosh-short.mp3', v: 0.14 * k })),
     ...[B.cut5, B.cut7].map((a) => ({ at: a - 2, src: 'sfx/whoosh-short.mp3', v: 0.18 * k })),
     ...[B.chip2, B.chip3].map((a) => ({ at: a, src: 'sfx/click-soft.mp3', v: 0.3 * k })),
+    { at: B.cta, src: 'sfx/whoosh-short.mp3', v: 0.18 * k },
+    { at: B.slots, src: 'sfx/pop.mp3', v: 0.2 * k },
+    ...[B.ex1, B.ex2, B.ex3].map((a) => ({ at: a, src: 'sfx/click-soft.mp3', v: 0.3 * k })),
   ];
 };
 
@@ -533,6 +616,8 @@ export const Y29Film: React.FC<{ cut: Cut }> = ({ cut }) => {
       <Walls />
       <Cards />
       <Chips />
+      <CtaTiles />
+      <CtaCard />
       <Heads />
       <Sounds cut={cut} />
     </AbsoluteFill>

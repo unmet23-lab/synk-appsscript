@@ -1,0 +1,135 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "all4",
+ "text": "홈페이지 부탁 끝에, 이 한 줄만 붙이세요. 빈칸엔, 가게에 실제로 있는 물건 하나. 문 앞 우체통, 빵 바구니, 네온 간판처럼.",
+ "dur": 7.606,
+ "words": [
+  {
+   "text": "홈페이지",
+   "start": 0.05,
+   "end": 0.511
+  },
+  {
+   "text": "부탁",
+   "start": 0.571,
+   "end": 0.751
+  },
+  {
+   "text": "끝에,",
+   "start": 0.811,
+   "end": 1.072
+  },
+  {
+   "text": "이",
+   "start": 1.473,
+   "end": 1.493
+  },
+  {
+   "text": "한",
+   "start": 1.553,
+   "end": 1.633
+  },
+  {
+   "text": "줄만",
+   "start": 1.693,
+   "end": 1.913
+  },
+  {
+   "text": "붙이세요.",
+   "start": 1.974,
+   "end": 2.334
+  },
+  {
+   "text": "빈칸엔,",
+   "start": 2.695,
+   "end": 3.156
+  },
+  {
+   "text": "가게에",
+   "start": 3.256,
+   "end": 3.556
+  },
+  {
+   "text": "실제로",
+   "start": 3.617,
+   "end": 3.877
+  },
+  {
+   "text": "있는",
+   "start": 3.957,
+   "end": 4.137
+  },
+  {
+   "text": "물건",
+   "start": 4.198,
+   "end": 4.358
+  },
+  {
+   "text": "하나.",
+   "start": 4.458,
+   "end": 4.638
+  },
+  {
+   "text": "문",
+   "start": 4.919,
+   "end": 5.019
+  },
+  {
+   "text": "앞",
+   "start": 5.079,
+   "end": 5.119
+  },
+  {
+   "text": "우체통,",
+   "start": 5.179,
+   "end": 5.58
+  },
+  {
+   "text": "빵",
+   "start": 5.881,
+   "end": 6.081
+  },
+  {
+   "text": "바구니,",
+   "start": 6.141,
+   "end": 6.402
+  },
+  {
+   "text": "네온",
+   "start": 6.782,
+   "end": 6.963
+  },
+  {
+   "text": "간판처럼.",
+   "start": 7.023,
+   "end": 7.606
+  }
+ ],
+ "source": {
+  "key": "a78740d40c23e70412d3c7c0a50e0bc9",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 186
+ }
+}
