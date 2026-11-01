@@ -1,9 +1,10 @@
 # 시댄스 2.5 무제한 날 — 받은 판을 먼저 재서 검수한다(2026-10-29). 재기만 하고 고치지 않는다(후보정 없음 — 틀린 판은 지시문을 고쳐 다시 낸다).
 #   python -X utf8 재기.py [<판 id…>]          → 받음/_검수/<판>.jpg(얼굴 띠) · 받음/_검수/_재기.json · 한 줄 표
 #   python -X utf8 재기.py --클립 <mp4> <판 id>  → 아무 클립이나 그 판의 그림 · 지시문과 견준다(시험용)
-# 받기.py가 받은 받음/<판>.mp4(다시 낸 판은 <판>__2.mp4)를 웹올리기 · 웹올리기_둘째날(7번) · 7번비교 · 프리비즈 · 로맨스 · 여섯편/<폴더>의 그림 · 지시문과 견준다:
+# 받기.py가 받은 받음/<판>.mp4(다시 낸 판은 <판>__2.mp4)를 웹올리기 · 웹올리기_둘째날(7번) · 7번비교 · 프리비즈 · 로맨스 · 여섯편 · 한강/<폴더>의 그림 · 지시문과 견준다:
 #   첫 장 — 첫 장이 시작 그림과 같은가(작게 줄인 Lab 평균 차이 · 구도가 같으면 작다). 끝 그림 판은 끝 장도, 두 샷 판은 컷 뒤 첫 장을 @이미지 2와.
-#   컷 — 이웃 장의 색 분포(HSV 히스토그램)가 크게 바뀐 곳. 한 샷 판은 0이어야, 두 샷 판은 지시문 「ONE hard cut at N s」 근처에 하나.
+#   컷 — 이웃 장의 색 분포(HSV 히스토그램)가 크게 바뀐 곳. 한 샷 판은 0이어야, 두 샷 판은 지시문 「ONE hard cut at N s」 근처에 하나,
+#     한강 여러 샷 판(11-01)은 「… hard cuts, at a s, b s and c s」의 초마다 하나(그림이 없는 글 샷은 첫 장을 견주지 않는다).
 #   카메라 — 샷마다 0.2초 간격으로 SIFT 특징점 맞춤(estimateAffinePartial2D · RANSAC 2px, 현장노트 영상 「위상 상관으로 재면 다가가는 컷을
 #     고정으로 적는다」의 고침)을 쌓아 배율 · 이동(화면 %) · 회전을 낸다. CAMERA 줄이 고정이면 배율 3% · 이동 3% · 회전 1.5°를 넘을 때,
 #     다가감이면 배율이 1.02보다 작을 때 알린다(글로 적은 나머지 움직임은 숫자와 그림을 눈으로 본다).
@@ -16,7 +17,7 @@ import cv2
 import numpy as np
 
 DAY = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028"
-WEBS, GOT = [os.path.join(DAY, d) for d in ("웹올리기", "웹올리기_둘째날", "웹올리기_7번비교", "웹올리기_프리비즈", "웹올리기_로맨스", "웹올리기_여섯편")], os.path.join(DAY, "받음")
+WEBS, GOT = [os.path.join(DAY, d) for d in ("웹올리기", "웹올리기_둘째날", "웹올리기_7번비교", "웹올리기_프리비즈", "웹올리기_로맨스", "웹올리기_여섯편", "웹올리기_한강")], os.path.join(DAY, "받음")
 OUT = os.path.join(GOT, "_검수")
 MOD = os.path.join(os.path.expanduser("~"), ".rembg", "models", "yunet")
 SAME = 0.363
@@ -147,7 +148,9 @@ def measure(clip, board):
     spikes = [round((i + 1) / fps, 2) for i in range(len(g)) if g[i] > 6 * med and (i + 1) not in cut_i]
     frozen = int(np.sum(g < 0.05))
     m = re.search(r"ONE hard cut at ([\d.]+) s", prompt)
-    want_cut = float(m.group(1)) if m else None
+    many = re.search(r"\w+ hard cuts, at ((?:[\d.]+ s(?:, | and ))+[\d.]+ s)", prompt)   # 한강 여러 샷 판(11-01)
+    want_cuts = [float(m.group(1))] if m else [float(v) for v in re.findall(r"([\d.]+) s", many.group(1))] if many else []
+    want_cut = want_cuts[0] if want_cuts else None
     # 샷 나누기와 첫 장
     starts = [0] + cut_i
     shots = []
@@ -208,10 +211,10 @@ def measure(clip, board):
     if want_cut is None and cut_i:
         alerts.append(f"한 샷인데 컷 {[round(i / fps, 2) for i in cut_i]}")
     if want_cut is not None:
-        if len(cut_i) != 1:
-            alerts.append(f"두 샷인데 컷 {len(cut_i)}개 {[round(i / fps, 2) for i in cut_i]}")
-        elif abs(cut_i[0] / fps - want_cut) > 0.5:
-            alerts.append(f"컷이 {cut_i[0] / fps:.2f}초(지시 {want_cut:g}초)")
+        if len(cut_i) != len(want_cuts):
+            alerts.append(f"{ {1: '두', 2: '세', 3: '네'}.get(len(want_cuts), '여러')} 샷인데 컷 {len(cut_i)}개 {[round(i / fps, 2) for i in cut_i]}")
+        else:
+            alerts += [f"컷이 {c / fps:.2f}초(지시 {w:g}초)" for c, w in zip(cut_i, want_cuts) if abs(c / fps - w) > 0.5]
     # 프리비즈 판(id pv…, 팁 장부 36행)은 시작 프레임 칸을 비우고 그림을 생김새 참고로만 준다 — 첫 장 숫자는 남기되 불일치 알림은 내지 않는다
     previz = board["id"].startswith("pv")
     for s in shots:
@@ -227,7 +230,7 @@ def measure(clip, board):
     if frozen > 6:   # 정말 고정인 컷은 이웃 장이 거의 같을 수 있다 — 많을 때만 알리고 그림으로 본다
         alerts.append(f"같은 장 {frozen}(고정 컷이면 괜찮음)")
     return {"판": board["id"], "클립": os.path.basename(clip), "길이": round(info["dur"], 2), "fps": round(fps, 2), "크기": f"{info['w']}x{info['h']}",
-            "소리": info["audio"], "컷": [round(i / fps, 2) for i in cut_i], "지시컷": want_cut, "샷": shots, "끝장차이": end_diff, "끝장SSIM": end_ssim,
+            "소리": info["audio"], "컷": [round(i / fps, 2) for i in cut_i], "지시컷": want_cut if len(want_cuts) < 2 else want_cuts, "샷": shots, "끝장차이": end_diff, "끝장SSIM": end_ssim,
             "얼굴": face, "급한변화": spikes, "멈춘장": frozen, "알림": alerts}
 
 

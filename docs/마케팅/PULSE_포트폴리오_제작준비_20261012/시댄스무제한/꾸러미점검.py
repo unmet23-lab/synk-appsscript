@@ -7,6 +7,8 @@
 # 판 ②의 1_프리비즈.mp4는 판 ① 받기 전이라 「프리비즈 기다림」으로 따로 센다.
 # 로맨스(웹올리기_로맨스, 10-31)는 두 사람 판이 견본 둘(3_ · 4_목소리견본_<배역>.mp3 = @오디오 1 · 2)이고, rs-C53b의 1_시작.jpg는 rs-C53a를 받은 뒤
 # 생기는 끝 프레임이라 _순서.json 「기다림」 칸에 든 파일은 기다림으로 센다. 목소리 규칙(소리 켬 = B · 목소리 판, 소리 끔 판엔 대사 없음)도 매진 · 7번처럼 건다.
+# 한강(웹올리기_한강, 11-01)은 시작 그림 하나에서 하드컷 여럿을 뽑는 여러 샷 판(「THREE SHOTS … joined by TWO hard cuts, at 2.3 s and 3.4 s」)이 있어
+# 머리의 샷 수 · 컷 초 수 · SHOT 줄 수를 _순서.json 「샷수」와 견주고, 한강 소리 켬 판은 모두 B(v34 견본)여야 한다.
 # 판 id 겹침 · 순서 끊김 · 순서표 밖 폴더도 본다. 숫자는 거르기용 — 지시문이 장면에 맞는지는 사람(검수자)이 본다.
 import json, os, re, sys
 
@@ -17,6 +19,7 @@ HEAD = "@이미지 1 is the exact first frame of this video"
 OLD = ["Typecast", "타입캐스트", "후보판", "in sync with the reference audio"]
 LIMIT = 8   # 하루권 한 판 길이 상한(카드에서 7초 이상인지 본다 — 가장 긴 판 7초)
 KEEP = {"_순서.json", "순서표.html"}
+WORD = {"TWO": 2, "THREE": 3, "FOUR": 4, "FIVE": 5, "SIX": 6}
 
 
 def ratio(s):
@@ -77,7 +80,12 @@ def check(name):
                 no(f"{f} 작음 {w}x{h}")
         t = open(os.path.join(d, "지시문.txt"), encoding="utf-8").read()
         longest = max(longest, (len(t), pid))
-        if x.get("묶음"):
+        many = re.search(r"(\w+) SHOTS of .+?joined by (\w+) hard cuts, at ((?:[\d.]+ s(?:, | and ))+[\d.]+ s)", t)   # 한강 여러 샷 판(11-01)
+        if x.get("묶음") and many:
+            n = len(re.findall(r"[\d.]+ s", many.group(3))) + 1
+            if (WORD.get(many.group(1)), WORD.get(many.group(2), 0) + 1, len(re.findall(r"^SHOT \d+ \(", t, re.M))) != (n, n, n) or x.get("샷수") != n:
+                no(f"여러 샷 머리 · 컷 초 · SHOT 줄 · 샷수가 어긋남({many.group(1)} · {many.group(2)} · 컷 {n - 1} · 샷수 {x.get('샷수')})")
+        elif x.get("묶음"):
             if "TWO SHOTS" not in t or not re.search(r"ONE hard cut at [\d.]+ ?s", t):
                 no("두 샷 머리 · 컷 초 없음")
         elif pv:
@@ -109,6 +117,8 @@ def check(name):
             no("소리 끔 판인데 따옴표 안 한국어(대사?)")
         if strict and x["소리"] == "켬" and x.get("방식") not in ("B", "목소리 판"):
             no("소리 켬인데 B · 목소리 판이 아님")
+        if x["편"] == "hg" and (x["소리"] == "켬") != (x.get("방식") == "B"):   # 한강 — 견본(v34 목소리)이 있는 판만 소리 켬, 그의 얼굴 줄 주판은 소리 끔(11-01)
+            no("한강 소리 켬 · B가 어긋남")
         if not re.search(r"CAMERA|Camera|camera", t):
             no("카메라 줄 없음")
         if not 4 <= x["길이"] <= LIMIT:
@@ -127,7 +137,7 @@ def check(name):
 
 
 if __name__ == "__main__":
-    names = [a for a in sys.argv[1:] if not a.startswith("--")] or [n for n in ("웹올리기", "웹올리기_둘째날", "웹올리기_7번비교", "웹올리기_프리비즈", "웹올리기_로맨스", "웹올리기_여섯편")
+    names = [a for a in sys.argv[1:] if not a.startswith("--")] or [n for n in ("웹올리기", "웹올리기_둘째날", "웹올리기_7번비교", "웹올리기_프리비즈", "웹올리기_로맨스", "웹올리기_여섯편", "웹올리기_한강")
                                                                    if os.path.exists(os.path.join(BASE, n, "_순서.json"))]
     ok = [check(n) for n in names]
     sys.exit(0 if all(ok) else 1)

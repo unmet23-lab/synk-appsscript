@@ -5,6 +5,7 @@
 #   python -X utf8 웹꾸러미.py --프리비즈   → 5번 8행 프리비즈 시험 두 판만 웹올리기_프리비즈/에(팁 장부 36행 — 맨 끝 선택 판, 다른 꾸러미는 건드리지 않음)
 #   python -X utf8 웹꾸러미.py --로맨스 [B|A|없음] [--보기 <판>]   → 로맨스 단편 「다 비침」만 웹올리기_로맨스/에(따로 꾸러미 — 다른 꾸러미는 건드리지 않음, 방식은 결정 10-29대로 B)
 #   python -X utf8 웹꾸러미.py --여섯편 [--보기 <판>]   → 6 · 8 · 10번 · 블프 두 편 · 1번만 웹올리기_여섯편/에(10-31 밤 — 다른 꾸러미는 건드리지 않음)
+#   python -X utf8 웹꾸러미.py --한강 [--보기 <판>]   → 한강2126 브랜드 필름 재촬영만 웹올리기_한강/에(11-01 — 다른 꾸러미는 건드리지 않음)
 # 편마다 지시문 원천은 video/<편>/지시문/영상_시댄스웹.json(아래 「편」 표). 매진 임박은 이미 만든 웹올리기_v5 폴더를 그대로 옮긴다.
 # 무제한은 웹에서 사람이 한 판씩 누르는 것만 허용된다(자동화 금지 — 결정 10-26) — 이 도구는 폴더와 순서표만 만들고 누르지 않는다.
 import copy, html, json, os, re, shutil, subprocess, sys
@@ -205,6 +206,17 @@ PIECES6 = [   # (편, 원천 폴더, 지시문 파일) — 짧은 편부터 끝�
 #   블프 스나이퍼 19는 19a · 19b(이동 0.83초 + 잠든 얼굴 4.11초 하드 컷 길)와 같은 묶음에서 굽고 고른다(10-31 Fable P1 — S19a 담요 자리와 S19b가
 #   한 카메라 길로 안 이어져 끝 그림 판이 녹을 위험)
 TESTS6 = ["p1-04", "s3-06", "p8-03", "s4-19", "s4-19a", "s4-19b", "p6-22", "p10-19"]
+# 한강2126 브랜드 필름 재촬영(11-01) — 따로 낸다(웹올리기_한강/ — 다른 꾸러미의 판 · 차례는 건드리지 않음, 굽기 시트 「한강2126」 절).
+#   지시문은 한강 생성기(docs/마케팅/한강2126_포트폴리오_20260930/시댄스/시댄스지시문.py)의 preview()를 그대로 불러 만든다 — 시작 그림 하나에서 뒤 샷을
+#   글로만 쓰는 멀티샷(장부 S14 · 04 샷표 생성 단위) · 세 샷 넘는 판 · 그의 줄을 후반에 얹는 소리 끔 판이 생성기에 있다. 생성기 JSON이 코드와 다르면 멈춘다.
+#   목소리(10-19 결정): 조연은 v34 목소리 견본(재촬영_v40/시댄스/견본/<배역>.mp3 — 견본만들기.py)을 3_목소리견본.mp3로 넣는 B라 목소리 판이 없다.
+#   그의 얼굴 줄은 v34 녹음을 얹는 소리 끔 판이 주판이고, 그 목소리 견본으로 연기하는 B 판(-B)은 대안 — F2-B(새 대사)만 시험에 올려 일찍 듣는다.
+HG_DIR = os.path.join(os.path.dirname(os.path.dirname(HERE)), "한강2126_포트폴리오_20260930", "시댄스")
+OUT7 = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028/웹올리기_한강"
+# 맨 앞 시험 — 한강에만 있는 길: 그림 하나 + 글 샷 셋(로비) · 8초 원테이크 + 도착 참고(T1) · 슬로모션(O4) · 그림 둘 두 샷 + 견본 목소리(2A+2B) ·
+#   고정 대사 컷 견본 목소리(F1) · 그 얼굴 + 그 목소리 견본(F2-B — 얼굴이 지켜지는지와 새 대사 목소리 후보) · 그 얼굴 소리 끔 대사(F2 — 소리 끔
+#   판에서 입이 움직이는지 먼저 봄, 11-01 Fable, F6이 이 판의 끝 프레임에서 시작). 시험 판이 그 컷의 주판을 겸한다.
+HG_TESTS = ["hg-S1a-S1d", "hg-T1", "hg-O4", "hg-2A-2B", "hg-F1", "hg-F2-B", "hg-F2"]
 
 
 def first_line(has_end):
@@ -776,6 +788,79 @@ def build_six():
         print("  지시문이 3,800자를 넘는 판:", too_long)
 
 
+def hg_gen():
+    # 한강 생성기 모듈 — preview() · spec()을 빌린다(불러올 때 아무것도 쓰지 않는다)
+    import importlib.util
+    sp = importlib.util.spec_from_file_location("hg_gen", os.path.join(HG_DIR, "시댄스지시문.py"))
+    g = importlib.util.module_from_spec(sp)
+    sp.loader.exec_module(g)
+    return g
+
+
+def hg_item(spec, G, p):
+    # 한강 판 하나 — 그림이 하나면 1_시작(+ 2_끝), 그림이 둘인 두 샷 판은 1_샷1 · 2_샷2, 도착 참고는 _참고, 견본은 3_목소리견본(B)
+    shots = p["샷"]
+    pics = [s for s in shots if s.get("그림")]
+    files = []
+    if p.get("앞토막"):   # F6 — F2 받은 영상의 끝 프레임으로 시작(로맨스 rs-C53b와 같은 길, 받기 전엔 「파일 아직」 · 망가졌으면 그 자리에 K41)
+        files.append(("1_시작.jpg", rs_tail_frame(p["앞토막"]), "시작"))
+    elif len(pics) == 1:
+        files.append(("1_시작.jpg", os.path.join(spec["그림"], pics[0]["그림"]), "시작"))
+        if pics[0].get("끝그림"):
+            files.append(("2_끝.jpg", os.path.join(spec["그림"], pics[0]["끝그림"]), "끝"))
+    else:
+        for i, s in enumerate(pics):
+            files.append((f"{i + 1}_샷{i + 1}.jpg", os.path.join(spec["그림"], s["그림"]), f"샷{i + 1}"))
+    if p.get("참고그림"):
+        files.append((f"{len(files) + 1}_참고.jpg", os.path.join(spec["그림"], p["참고그림"]), "참고"))
+    if p.get("목소리견본"):
+        files.append(("3_목소리견본.mp3", os.path.join(spec["견본"], p["목소리견본"] + ".mp3"), "목소리 견본"))
+    memo = list(p.get("메모") or [])
+    if len(shots) > 1 and len(pics) == 1:
+        memo.insert(0, f"샷 {len(shots)}개를 시작 그림 하나에서 한 번에 — 그림은 1_시작 하나만 올린다(둘째 샷부터는 글로 쓴 새 각도)")
+    if p.get("소리") == "켬" and not p.get("목소리견본"):
+        memo.append("소리 켬 — 견본 없이 시댄스가 지어내는 소리")
+    return {"id": p["id"], "편": "hg", "편이름": spec["이름"], "컷": p["컷"], "길이": p["길이"], "비율": spec["비율"],
+            "소리": p.get("소리") or "끔", "설명": p["설명"], "파일": files, "지시문": G.preview(spec, p), "묶음": len(shots) > 1,
+            "샷수": len(shots), "대안": bool(p.get("대안")), "낱판": p.get("낱판") or [], "쓰는초": [s["쓰는초"] for s in shots],
+            **({"방식": "B"} if p.get("목소리견본") else {}), "메모": memo,
+            **({"기다림": ["1_시작.jpg"], "기다림글": f"파일 아직 — {p['앞토막']}를 받은 뒤 다시 만듦"} if p.get("앞토막") else {})}
+
+
+def build_hangang():
+    # 한강 꾸러미 — 시험(한강에만 있는 길) → 이야기 차례(O1 → E4) → 화면 밖 대사 판 → 대안
+    G = hg_gen()
+    spec = json.load(open(os.path.join(HG_DIR, "지시문", "영상_시댄스웹.json"), encoding="utf-8"))
+    if json.loads(json.dumps(G.spec(), ensure_ascii=False)) != spec:
+        raise SystemExit("한강 지시문 JSON이 생성기 코드와 다르다 — 먼저 python -X utf8 시댄스지시문.py로 JSON을 다시 만든다")
+    items = {p["id"]: hg_item(spec, G, p) for p in spec["판"]}
+    assert len(items) == len(spec["판"]), "한강 판 id 겹침"
+    tests = [dict(items[k], 시험=True, 구역="시험 — 한강에만 있는 길(여러 샷 · 원테이크 · 슬로 · 두 샷 + 견본 목소리 · 그 얼굴 + 그 목소리 · 소리 끔 입)")
+             for k in HG_TESTS]
+    first = set(HG_TESTS)
+    story = [dict(it, 구역="이야기 차례 — 오프닝부터 엔딩까지") for k, it in items.items()
+             if k not in first and not it["대안"] and not k.startswith("hg-말-")]
+    off = [dict(it, 구역="화면 밖 대사 판 — 소리만 씀(v34 견본으로 시댄스가 연기, v34 녹음과 들어 보고 고름)") for k, it in items.items()
+           if k.startswith("hg-말-")]
+    alts = [dict(it, 구역="대안 — 끝 그림 길 · 그 목소리로 연기(B) · 면접관 끝 그림 닻 · 두 샷 낱판") for k, it in items.items() if it["대안"] and k not in first]
+    order = tests + story + off + alts
+    if "--보기" in sys.argv:
+        k = sys.argv[sys.argv.index("--보기") + 1]
+        it = items[k]
+        print(it["지시문"])
+        print(f"\n({len(it['지시문'])}자 · {it['길이']}초 · 소리 {it['소리']} · 올릴 것 {[f[0] for f in it['파일']]})")
+        return
+    missing = write_pack(order, OUT7, "한강")
+    n_alt = sum(1 for it in order if it["대안"])
+    main = [it for it in order if not it["대안"]]
+    print(f"한강2126: 판 {len(order)}개(시험 {len(tests)} · 주판 {len(order) - n_alt} · 대안 {n_alt}) → {OUT7}")
+    print(f"  주판 {sum(it['길이'] for it in main)}초 · 소리 켬 {sum(1 for it in order if it['소리'] == '켬')}판 · "
+          f"여러 샷 {sum(it['묶음'] for it in order)}판 · 끝 그림 {sum(1 for it in order if any(f[0] == '2_끝.jpg' for f in it['파일']))}판 · "
+          f"가장 긴 지시문 {max(len(it['지시문']) for it in order)}자")
+    if missing:
+        print(f"  ⚠ 없는 파일 {len(missing)}개: {missing[:4]}{' …' if len(missing) > 4 else ''}")
+
+
 def write_pack(order, out, day2):
     missing = sorted({src for it in order for _, src, _ in it["파일"] if not os.path.exists(src)})
     if os.path.isdir(out):
@@ -797,13 +882,16 @@ def write_pack(order, out, day2):
                      "소리": it["소리"], "묶음": it["묶음"], "대안": it["대안"], "방식": it.get("방식"), "시험": bool(it.get("시험")),
                      "낱판": it.get("낱판", []), "쓰는초": it.get("쓰는초"), "파일": [f[0] for f in it["파일"]],
                      "빠진 파일": [f[0] for f in it["파일"] if not os.path.exists(f[1])], "지시문 머리": it["지시문"][:160], "지시문 글자 수": len(it["지시문"]),
-                     **({"기다림": it["기다림"]} if it.get("기다림") else {})})   # 받은 뒤에야 생기는 그림(로맨스 rs-C53b — 꾸러미점검이 기다림으로 셈)
+                     **({"기다림": it["기다림"]} if it.get("기다림") else {}),   # 받은 뒤에야 생기는 그림(로맨스 rs-C53b — 꾸러미점검이 기다림으로 셈)
+                     **({"샷수": it["샷수"]} if it.get("샷수") else {})})   # 한강 여러 샷 판(11-01) — 꾸러미점검이 머리의 샷 · 컷 수와 견줌
     json.dump(rows, open(os.path.join(out, "_순서.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     open(os.path.join(out, "순서표.html"), "w", encoding="utf-8").write(page(order, day2=day2))
     return missing
 
 
 def build():
+    if "--한강" in sys.argv:
+        return build_hangang()
     if "--여섯편" in sys.argv:
         return build_six()
     if "--로맨스" in sys.argv:
@@ -1000,10 +1088,24 @@ SIX_HEAD = DAY2_HEAD[:DAY2_HEAD.index("<h1>")].replace("둘째 날 순서표", "
 """
 
 
+HG_HEAD = DAY2_HEAD[:DAY2_HEAD.index("<h1>")].replace("둘째 날 순서표", "한강2126 순서표") + """<h1>SYNK 브랜드 필름 「한강2126」 재촬영 · 시댄스 2.5 무제한(따로 꾸러미)</h1>
+<div class="card"><b>시작 전에</b><ol>
+<li>다른 꾸러미(첫날 · 둘째 날 · 로맨스 · 여섯 편)와 따로 묶은 판입니다 — 그쪽 순서 · 판 수는 그대로이고, 남는 시간이나 다음 날 몫입니다. 판은 오프닝부터 엔딩까지 이야기 차례입니다.</li>
+<li>모델 Seedance 2.5 · <b>Unlimited 스위치 켬</b>(생성 단추에 「Unlimited」가 보일 때만) · 화질 720p · 비율 <b>9:16</b>(모든 판) · 소리는 판마다 적힌 대로(「소리 켬」 판만 켭니다).</li>
+<li>판마다 미디어 칸을 비우고 폴더의 파일을 <b>이름 차례대로</b> 올립니다 — 그림(1_ · 2_) 다음에 소리(<b>3_목소리견본.mp3</b>). 칸이 「시작 / 끝 프레임」이면 1_시작 → 시작, 2_끝 → 끝. 「@이미지 1」 · 「@오디오 1」 글자가 꼬리표로 안 바뀌면 지우고 @로 올린 파일을 고릅니다.</li>
+<li><b>「_참고」 그림이 있는 판</b>(T0 · T1 · T5 — 도착 구도)은 끝 그림이 아닙니다 — 옴니 레퍼런스(참조) 모드에서 1_시작 다음 참고로 올리고, 끝 칸에 넣지 않습니다.</li>
+<li><b>「여러 샷」 판</b> — 그림이 하나뿐인 판(로비 둘 · LAB 입장 · PATH 헤드셋 · VR 방 둘)은 시작 그림 하나에서 하드컷 여럿을 한 번에 뽑는 판입니다(옛 한강 판이 만족받은 방식) — 그림 하나만 올립니다. 그림이 둘인 판(2A+2B · F8)은 옴니 레퍼런스 모드에서 둘을 올리고, 안 되면 맨 아래 대안 낱판으로 냅니다.</li>
+<li>목소리 — 조연(감독 · 접수원 · 빨간머리 · 선생님 · 상담사 · 면접관)은 v34 영상 속 그 배역 목소리를 떼어 만든 견본이 이미 들어 있습니다(목소리 판 없음) — 시댄스가 그 결로 연기합니다. <b>그의 얼굴 대사 판은 소리 끔</b>으로 내고 v34 녹음을 후반에 얹습니다(그 목소리 견본으로 연기하는 판은 대안 「-B」). 인사 다섯도 소리 끔(원어민 목소리는 유호님이 고른 Gemini 목소리를 후반에).</li>
+<li>맨 앞 <b>시험 일곱</b>을 내고 받아 봅니다 — 로비 네 샷(그림 하나 + 글 샷 셋) · T1 8초 원테이크 · O4 슬로모션 · 2A+2B 그림 둘 두 샷과 접수원 목소리 · F1 면접관 목소리 · F2-B 그 얼굴과 그 목소리(새 대사 목소리 후보) · F2 소리 끔(입이 움직이는지). 되면 이야기 차례로, 안 되면 생성기를 고쳐 꾸러미를 다시 만든 뒤 잇습니다. 시험 판은 그 컷의 주판을 겸합니다. <b>F6</b>은 F2를 받은 뒤 그 끝 프레임으로 시작합니다 — 받기.py 뒤 웹꾸러미.py --한강을 다시 돌리면 「파일 아직」이 사라집니다.</li>
+<li>굽지 않는 것: 1층 옷 교차 몽타주 S2c~S2e(v20 장면 1080p 업스케일본을 씀) · O8 타이틀 글자 · 층 자막 · 2B 화면판 숫자 · VR STAGE 글자 · Q 카드 · F3 크래시 줌 · 로고 카드(모두 후반).</li>
+</ol></div>
+"""
+
+
 def page(order, day2=None):
     def esc(s):
         return html.escape(s)
-    head = SIX_HEAD if day2 == "여섯편" else RS_HEAD if day2 == "로맨스" else PV_HEAD if day2 == "프리비즈" else CMP_HEAD if day2 == "비교" else DAY2_HEAD if day2 else """<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    head = HG_HEAD if day2 == "한강" else SIX_HEAD if day2 == "여섯편" else RS_HEAD if day2 == "로맨스" else PV_HEAD if day2 == "프리비즈" else CMP_HEAD if day2 == "비교" else DAY2_HEAD if day2 else """<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PULSE 시댄스 순서표</title><style>
 :root{--bg:#f6f4ef;--card:#fff;--ink:#1d1c1a;--mute:#6b6760;--line:#e2ddd3;--acc:#2f5bd3;--warn:#b4532a}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#17171a;--card:#212125;--ink:#ecebe8;--mute:#a19d95;--line:#33333a;--acc:#8aa6ff;--warn:#f0a07a}}
@@ -1047,7 +1149,7 @@ h2{font-size:18px;margin:24px 0 6px}
         if it.get("방식") == "B":
             tags += '<span class="tag b">새 방식</span>'
         if it["묶음"]:
-            tags += '<span class="tag b">두 샷</span>'
+            tags += f'<span class="tag b">{ {3: "세", 4: "네"}.get(it.get("샷수"), "두")} 샷</span>'   # 한강 여러 샷 판(11-01) — 다른 편은 늘 「두 샷」
         if it.get("방식") == "목소리 판":
             tags += '<span class="tag b">목소리 판</span>'
         if it["대안"]:
