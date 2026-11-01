@@ -57,6 +57,13 @@ export default {
  'opening.startProduct':{ko:'{product} 시작하기',en:'Start {product}',mn:'{product} эхлүүлэх'},
  'opening.soundOn':{ko:'소리 켜기',en:'Turn sound on',mn:'Дууг асаах'},
  'opening.soundOff':{ko:'소리 끄기',en:'Turn sound off',mn:'Дууг унтраах'},
+ // 11-01 실사 입구 임시 판(opening.mjs): 1화 장면 2 사진 위의 두 길. 3급이 아는 쉬운 말로, 펠트 동네는 「이전 판」이라고 적는다.
+ 'opening.entrance.alt':{ko:'학생 식당에서 식판을 내려놓으며 반갑게 손을 드는 권태오 선배',en:'Taeo setting his tray down in the student cafeteria and raising a hand in greeting',mn:'Оюутны хоолны газарт тавиураа тавингаа баяртайгаар гараа өргөж мэндэлж буй ахлах курсийн Квон Тэо'},
+ 'opening.entrance.subtitle':{ko:'드라마 속 유학생이 되어 한국어로 말해요',en:'Be the international student in the drama and speak Korean',mn:'Драмын гадаад оюутан болж, солонгос хэлээр ярина'},
+ 'opening.entrance.drama':{ko:'드라마로 말해 보기',en:'Try speaking in the drama',mn:'Драмд орж ярьж үзэх'},
+ 'opening.entrance.dramaNote':{ko:'시범판 · 1화를 바로 해 볼 수 있어요',en:'Pilot · try Episode 1 right now',mn:'Туршилтын хувилбар · 1-р ангийг шууд туршиж болно'},
+ 'opening.entrance.town':{ko:'우리 동네로 가기',en:'Go to our town',mn:'Манай хотхон руу очих'},
+ 'opening.entrance.townNote':{ko:'이전 판 · 로그인해서 이어 하기',en:'Previous version · sign in to continue',mn:'Өмнөх хувилбар · нэвтэрч үргэлжлүүлэх'},
 
  // ── 홈: 장소·머리·상태 ──
  'home.place.town':{ko:'우리 동네',en:'Our town',mn:'Манай хотхон'},

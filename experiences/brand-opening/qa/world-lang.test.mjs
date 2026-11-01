@@ -234,7 +234,7 @@ test('화면 파일이 t()로 부르는 키는 모두 표에 있다(삼항의 �
  const used=new Map();
  for(const file of SCREEN_FILES){
   const source=read(file);
-  for(const [,key]of source.matchAll(/\b(?:t|tr)\('([a-zA-Z][\w.-]*)'/g))used.set(key,file);
+  for(const [,key]of source.matchAll(/\b(?:t|tr|say)\('([a-zA-Z][\w.-]*)'/g))used.set(key,file);
   for(const [,a,b]of source.matchAll(/\b(?:t|tr)\([^()]*?\?\s*'([a-zA-Z][\w.-]*)'\s*:\s*'([a-zA-Z][\w.-]*)'/g)){used.set(a,file);used.set(b,file);}
   for(const [,a,b,c]of source.matchAll(/\b(?:t|tr)\([^()]*?\?\s*'([\w.-]+)'\s*:[^()]*?\?\s*'([\w.-]+)'\s*:\s*'([\w.-]+)'/g))for(const key of [a,b,c])used.set(key,file);
  }
