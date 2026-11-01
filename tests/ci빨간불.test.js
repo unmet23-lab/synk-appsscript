@@ -88,7 +88,7 @@ test('실패읽기 — 깨진 시험 이름·위치·「→」 안내를 뽑고,
   });
 });
 
-test('알림계획 — 빨개질 때 한 통, 같은 줄은 3시간·12시간 뒤에만 다시, 초록이 되면 한 통', () => {
+test('알림계획 — 새 실패와 복구만 한 통, 같은 실패는 시간이 지나도 다시 알리지 않는다', () => {
   const t0 = Date.parse('2026-10-21T08:10:00Z');
   const 빨강 = (첫run, 시각 = '2026-10-21T08:05:00Z') => ({
     상태: '빨강', 확인시각: '', 워크플로: [{ 워크플로: 'syntax-check', 상태: '빨강', 회수: 3, 첫빨강확실: true,
@@ -103,11 +103,17 @@ test('알림계획 — 빨개질 때 한 통, 같은 줄은 3시간·12시간 �
   const 곧 = ci.알림계획(처음.새상태, 빨강(10), t0 + 2 * 3600e3);
   assert.equal(곧.글, null);
   const 세시간 = ci.알림계획(곧.새상태, 빨강(10), t0 + 3 * 3600e3);
-  assert.match(세시간.글, /아직 빨갛습니다/);
-  assert.match(세시간.글, /빨간 지 3시간 5분/);
-  assert.equal(세시간.새상태.워크플로['syntax-check'].다시알린수, 1);
+  assert.equal(세시간.글, null);
+  assert.equal(세시간.새상태.워크플로['syntax-check'].다시알린수, 0);
   assert.equal(ci.알림계획(세시간.새상태, 빨강(10), t0 + 14 * 3600e3).글, null);
-  assert.match(ci.알림계획(세시간.새상태, 빨강(10), t0 + 15 * 3600e3).글, /아직 빨갛습니다/);
+  assert.equal(ci.알림계획(세시간.새상태, 빨강(10), t0 + 48 * 3600e3).글, null);
+
+  const 추가 = 빨강(10);
+  추가.워크플로[0].자세히 = { 시험: [{ 이름: '새 오류', 위치: 'tests/new.js:20', 안내: [] }], 시험수: 1 };
+  const 바뀜 = ci.알림계획(세시간.새상태, 추가, t0 + 4 * 3600e3);
+  assert.match(바뀜.글, /새 실패/);
+  assert.equal(ci.알림계획(바뀜.새상태, 추가, t0 + 5 * 3600e3).글, null);
+  assert.equal(ci.알림계획(바뀜.새상태, 빨강(10), t0 + 6 * 3600e3).글, null, 'an already announced failure returning within the same incident is quiet');
 
   const 새줄 = ci.알림계획(곧.새상태, 빨강(20, '2026-10-21T09:00:00Z'), t0 + 3600e3);
   assert.match(새줄.글, /빨개졌습니다/, '초록을 거치지 않았어도 첫 빨강 run이 바뀌면 새 빨강이다');
@@ -243,7 +249,7 @@ test('예약명령 — 운영 사본이 있으면(공용 git 폴더의 synk-ops-
   } finally { fs.rmSync(방, { recursive: true, force: true }); }
 });
 
-test('재알림 — 창이 밀려 첫 빨강이 바뀌어 보여도 처음 적어 둔 첫 빨강 커밋·시각을 쓰고, 상태에 커밋·제목·횟수를 남긴다(아르곤 10-22 P2)', () => {
+test('창이 밀려 첫 빨강이 바뀌어 보여도 처음 기록은 보존하고 재알림하지 않는다', () => {
   const t0 = Date.parse('2026-10-21T08:10:00Z');
   const 빨강 = (첫run, 시각, sha, 확실 = true) => ({ 상태: '빨강', 확인시각: '', 워크플로: [{ 워크플로: 'syntax-check', 상태: '빨강', 회수: 100, 첫빨강확실: 확실,
     첫빨강: { run: 첫run, sha, 제목: `커밋 ${첫run}`, 시각 }, 최신: { run: 999, 시각, url: 'u' }, 자세히: { 시험: [], 시험수: 0, 단계: [] } }] });
@@ -252,9 +258,7 @@ test('재알림 — 창이 밀려 첫 빨강이 바뀌어 보여도 처음 적�
   assert.deepEqual([칸.첫빨강sha, 칸.첫빨강제목, 칸.회수, 칸.첫빨강확실], ['aaaaaaaaa1', '커밋 10', 100, true]);
   // 3시간 뒤 — 창이 밀려 창 맨 끝 run(70)이 첫 빨강처럼 보인다(확실 아님)
   const 뒤 = ci.알림계획(처음.새상태, 빨강(70, '2026-10-21T10:30:00Z', 'bbbbbbbbb7', false), t0 + 3 * 3600e3);
-  assert.match(뒤.글, /아직 빨갛습니다/);
-  assert.match(뒤.글, /첫 빨강 10-21 17:05 aaaaaaaaa 「커밋 10」/, '창 끝이 아니라 처음 적은 첫 빨강');
-  assert.match(뒤.글, /빨간 지 3시간 5분/);
+  assert.equal(뒤.글, null);
   assert.equal(뒤.새상태.워크플로['syntax-check'].첫빨강run, 10);
 });
 
@@ -277,13 +281,41 @@ test('실패읽기 — CI 로그의 describe 안 하위 시험은 잎으로 읽�
   assert.deepEqual(r.시험.map((x) => [x.이름, x.위치]), [['묶음 › 잎', 'tests/x.test.js:9']]);
 });
 
-test('재알림 — 창보다 길어진 빨강은 회수를 「적어도」로 쓴다', () => {
+test('과거 검사의 복구로 첫 빨강 경계가 이동해도 같은 원인은 다시 알리지 않는다', () => {
   const t0 = Date.parse('2026-10-21T08:10:00Z');
   const 빨강 = (첫run, 확실) => ({ 상태: '빨강', 확인시각: '', 워크플로: [{ 워크플로: 'syntax-check', 상태: '빨강', 회수: 50, 첫빨강확실: 확실,
     첫빨강: { run: 첫run, sha: 'aaaaaaaaa1', 제목: '첫', 시각: '2026-10-21T08:05:00Z' }, 최신: { run: 999, 시각: '2026-10-21T08:05:00Z', url: 'u' }, 자세히: { 시험: [], 시험수: 0, 단계: [] } }] });
   const 처음 = ci.알림계획(null, 빨강(10, true), t0);
   const 뒤 = ci.알림계획(처음.새상태, 빨강(60, false), t0 + 3 * 3600e3);
-  assert.match(뒤.글, /적어도 50회 연속 빨강 — 첫 빨강 10-21 17:05 aaaaaaaaa/);
+  assert.equal(뒤.글, null);
+  const 경계이동 = ci.알림계획(뒤.새상태, 빨강(70, true), t0 + 4 * 3600e3);
+  assert.equal(경계이동.글, null);
+});
+
+test('기존 빨강 상태는 재전송 없이 이관하고 로그 위치 줄 이동도 같은 시험으로 본다', () => {
+  const now = Date.parse('2026-11-02T00:00:00Z');
+  const current = ci.판정하기([run(10, 'failure', '2026-11-01T23:00:00Z')]);
+  current[0].자세히 = ci.실패읽기(로그);
+  const old = { 워크플로: { 'syntax-check': { 상태: '빨강', 첫빨강run: 1, 첫빨강시각: '2026-11-01T20:00:00Z', 최신run: 9 } } };
+  const migrated = ci.알림계획(old, { 워크플로: current }, now);
+  assert.equal(migrated.글, null);
+  current[0].자세히 = ci.실패읽기(로그.replaceAll('test.js:356', 'test.js:999'));
+  assert.equal(ci.알림계획(migrated.새상태, { 워크플로: current }, now + 86400000).글, null);
+  current[0].자세히 = { 로그못읽음: 'network', 시험: [], 단계: [] };
+  const unreadable = ci.알림계획(migrated.새상태, { 워크플로: current }, now + 2 * 86400000);
+  assert.equal(unreadable.글, null);
+  assert.deepEqual(unreadable.새상태.워크플로['syntax-check'].알린실패, migrated.새상태.워크플로['syntax-check'].알린실패);
+});
+
+test('본문에 다섯 개만 표시해도 여섯 번째 새 실패를 감지하고 같은 묶음은 다시 보내지 않는다', () => {
+  const logs = tail => [...Array.from({ length: 5 }, (_, i) => `known-${i}`), tail]
+    .map((name, i) => `not ok ${i + 1} - ${name}\n  ---\n  location: '/repo/SYNK-appsscript/tests/a.js:${i + 1}:1'\n  ...`).join('\n');
+  const current = tail => ({ 워크플로: [{ 워크플로: 'syntax-check', 상태: '빨강', 회수: 2, 첫빨강확실: true,
+    첫빨강: { run: 1, 시각: '2026-11-01T20:00:00Z' }, 최신: { run: 2, 시각: '2026-11-01T21:00:00Z' }, 자세히: ci.실패읽기(logs(tail)) }] });
+  const first = ci.알림계획(null, current('old-sixth'));
+  const changed = ci.알림계획(first.새상태, current('new-sixth'));
+  assert.match(changed.글, /새 실패/);
+  assert.equal(ci.알림계획(changed.새상태, current('new-sixth')).글, null);
 });
 
 test('공용git폴더 — git이 답을 못 해도 도구가 든 작업본의 .git 폴더를 쓰고, .git이 파일(워크트리)이면 null(10-22 회차 실패)', () => {

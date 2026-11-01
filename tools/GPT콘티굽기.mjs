@@ -107,7 +107,7 @@ async function 구독굽기(API까닭) {
   const 초 = Math.round((Date.now() - 시작) / 1000);
   if (r.code === 3) 멈춤(`API 크레딧이 없어 구독 경로로 넘겼지만 쓸 수 있는 구독 굽기 계정도 없다(codex계정 종료 3 — node tools/codex계정.js로 본다). API: ${API까닭}`, 3);
   const 답 = fs.existsSync(답파일) ? fs.readFileSync(답파일, 'utf8') : '';
-  const 그림 = (`${답}\n${r.로그}`.match(/[A-Za-z]:[\\/][^\s"'`]+?\.png/g) || []).reverse()
+  const 그림 = (`${답}\n${r.로그}`.match(/(?:[A-Za-z]:[\\/]|\/)[^\r\n"'`]*?\.png/g) || []).reverse()
     .find((p) => p.includes('generated_images') && fs.existsSync(p));
   if (!그림) 멈춤(`구독 경로에서 그림을 받지 못했다(종료 ${r.code}): ${(답 || r.로그).slice(-400)}`, 1);
   fs.mkdirSync(path.dirname(path.resolve(나갈)), { recursive: true });

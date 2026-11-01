@@ -8,7 +8,7 @@
  *
  *   node tools/ci빨간불.js                    지금 master 상태(워크플로마다 초록·빨강, 빨강이면 언제부터·첫 빨강 커밋·깨진 시험)
  *   node tools/ci빨간불.js --json
- *   node tools/ci빨간불.js --알림             바뀐 것이 있으면 텔레그램 한 통(빨개짐 · 3시간째 · 다시 초록). 작업 스케줄러가 10분마다.
+ *   node tools/ci빨간불.js --알림             새 실패 · 복구 때 텔레그램 한 통. 같은 실패의 시간 경과 · run 이동은 다시 알리지 않는다.
  *                                            같은 회차에 앱 예약 작업 감시(tools/예약멈춤.js --알림)도 돈다 — 예약을 따로 늘리지 않으려고(10-22)
  *   node tools/ci빨간불.js 예약등록 [--실행]  그 예약을 Windows 작업 스케줄러에 건다(기본은 미리 보기). 공용 작업본 경로로 건다
  *
@@ -25,6 +25,7 @@
 const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
+const { createHash } = require('node:crypto');
 const { tap실패 } = require('./lib/tap실패.js');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -32,7 +33,6 @@ const 가지 = 'master';
 const 창 = 100;
 const 빨강결론 = new Set(['failure', 'timed_out', 'startup_failure']);
 const 셈밖결론 = new Set(['cancelled', 'skipped', 'neutral', 'stale', 'action_required']);
-const 다시알림ms = [3 * 3600e3, 12 * 3600e3]; // 처음 알린 뒤 3시간에 한 번, 그 뒤로는 12시간마다
 const 빠른상태신선ms = 10 * 60e3;
 const 예약이름 = 'SYNK CI 빨간불 알림';
 const 예약간격분 = 10;
@@ -171,7 +171,18 @@ function 실패읽기(로그) {
     if (!시험들.has(x.시험)) 시험들.set(x.시험, { 이름: x.시험.slice(0, 200), 위치: x.위치, 안내: x.안내 });
   }
   const 단계들 = [...new Set(줄들.map((x) => x.단계).filter(Boolean))];
-  return { 시험: [...시험들.values()].slice(0, 5), 시험수: 시험들.size, 단계: 단계들.slice(0, 5) };
+  return { 시험: [...시험들.values()].slice(0, 5), 시험수: 시험들.size, 단계: 단계들.slice(0, 5),
+    실패식별자: [...시험들.values()].map(시험식별자) };
+}
+
+const 식별해시 = value => createHash('sha256').update(value).digest('hex');
+function 시험식별자(t) { return 식별해시(`test:${String(t.위치 || '').replace(/:\d+(?::\d+)?$/, '')}:${t.이름}`); }
+function 실패식별자(w) {
+  const x = w.자세히 || {};
+  if (x.실패식별자?.length) return x.실패식별자;
+  if (x.시험?.length) return x.시험.map(시험식별자);
+  if (x.미기동) return [식별해시('startup_failure')];
+  return (x.단계 || []).map(s => 식별해시(`step:${s}`));
 }
 
 function 실패자세히(gh, repo, runId) {
@@ -271,28 +282,34 @@ function 알림계획(앞, 지금, 지금ms = Date.now()) {
       if (o && o.상태 === '빨강') 풀림.push({ w, o });
       continue;
     }
-    // 창보다 긴 빨강이면 창 끝이 밀리며 첫 빨강 run이 바뀌어 보인다 — 그때는 같은 줄로 보고, 처음 적어 둔 첫 빨강을 쓴다.
-    const 같은줄 = o && o.상태 === '빨강' && (o.첫빨강run === w.첫빨강.run || !w.첫빨강확실);
+    // Older local jobs can finish later and move the first-red boundary. A run
+    // ID is not a new failure. A newer red streak after an unseen green is.
+    const 식별자 = 실패식별자(w);
+    const 재발 = o?.최신시각 && w.첫빨강확실 && Date.parse(w.첫빨강.시각) > Date.parse(o.최신시각);
+    const 같은줄 = o && o.상태 === '빨강' && !재발;
     if (!같은줄) {
       새[w.워크플로] = { 상태: '빨강', 첫빨강run: w.첫빨강.run, 첫빨강시각: w.첫빨강.시각, 첫빨강sha: w.첫빨강.sha, 첫빨강제목: w.첫빨강.제목,
-        첫빨강확실: w.첫빨강확실, 회수: w.회수, 알린시각: new Date(지금ms).toISOString(), 다시알린수: 0, 최신run: w.최신.run };
+        첫빨강확실: w.첫빨강확실, 회수: w.회수, 알린시각: new Date(지금ms).toISOString(), 다시알린수: 0,
+        최신run: w.최신.run, 최신시각: w.최신.시각, 알린실패: 식별자 };
       빨개짐.push(w);
       continue;
     }
     const 첫 = { run: o.첫빨강run, 시각: o.첫빨강시각 || w.첫빨강.시각, sha: o.첫빨강sha || w.첫빨강.sha, 제목: o.첫빨강제목 || w.첫빨강.제목 };
     const 이어진 = { ...w, 첫빨강: 첫, 첫빨강확실: o.첫빨강확실 ?? w.첫빨강확실, 회수확실: w.첫빨강확실, 회수: Math.max(w.회수, o.회수 || 0) };
-    const 남길 = { ...o, 첫빨강sha: 첫.sha, 첫빨강제목: 첫.제목, 회수: 이어진.회수, 최신run: w.최신.run };
-    const 다음 = 다시알림ms[Math.min(o.다시알린수 || 0, 다시알림ms.length - 1)];
-    const 지난 = 지금ms - Date.parse(o.알린시각);
-    if (지난 >= 다음) {
-      새[w.워크플로] = { ...남길, 알린시각: new Date(지금ms).toISOString(), 다시알린수: (o.다시알린수 || 0) + 1 };
+    // Seed old state without re-sending an already announced incident on upgrade.
+    const 알린 = new Set(o.알린실패 || 식별자);
+    const 새실패 = 식별자.some(id => !알린.has(id));
+    const 남길 = { ...o, 첫빨강sha: 첫.sha, 첫빨강제목: 첫.제목, 회수: 이어진.회수, 최신run: w.최신.run,
+      최신시각: w.최신.시각, 알린실패: [...new Set([...알린, ...식별자])] };
+    if (새실패) {
+      새[w.워크플로] = { ...남길, 알린시각: new Date(지금ms).toISOString() };
       계속.push(이어진);
     } else 새[w.워크플로] = 남길;
   }
   for (const [이름, o] of Object.entries(옛)) if (!(이름 in 새)) 새[이름] = o; // 이번 창에 안 보인 워크플로는 그대로 둔다
   const 줄 = [];
   if (빨개짐.length || 계속.length) {
-    줄.push(빨개짐.length ? '🔴 master CI가 빨개졌습니다' : '🔴 master CI가 아직 빨갛습니다');
+    줄.push(빨개짐.length ? '🔴 master CI가 빨개졌습니다' : '🔴 master CI에 새 실패가 있습니다');
     for (const w of [...빨개짐, ...계속]) {
       줄.push(...빨강줄(w));
       if (계속.includes(w)) 줄.push(`  빨간 지 ${동안(지금ms - Date.parse(w.첫빨강.시각))}`);

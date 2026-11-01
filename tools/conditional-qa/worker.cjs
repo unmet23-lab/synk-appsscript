@@ -8,7 +8,13 @@ const defaultState = () => path.join(os.homedir(), 'security-audit-skill/SYNK-co
 // A tick opens new verifications only within this budget: one verification may take 50 minutes,
 // and both the scheduled task and its hidden launcher stop a tick after two hours.
 const BUDGET_MS = 60 * 60_000;
-const due = row => ['queued', 'running', 'publish-pending'].includes(row.status) || (row.status === 'retry' && Date.now() >= row.retryAt);
+const due = (row, now = Date.now()) => ['queued', 'running', 'publish-pending'].includes(row.status) || (row.status === 'retry' && now >= row.retryAt);
+// Publish an already verified receipt first, then verify current master before
+// the historical backlog. Selection never deletes or passes an older commit.
+function nextItem(queue, head, attempted = new Set(), now = Date.now()) {
+  const ready = queue.items.filter(row => due(row, now) && !attempted.has(row.commit));
+  return ready.find(row => row.status === 'publish-pending') || ready.find(row => row.commit === head) || ready[0];
+}
 // A lid-close sleep interrupts a run instead of failing a test (2026-11-01: two tutor tests ended at 606 s across a ten-minute sleep).
 // Kernel-Power 42 (entering sleep) or 107 (resume) inside the run marks it interrupted; an unreadable log counts as no sleep.
 function sleptDuring(from, to, { platform = process.platform, run = cp.execFileSync } = {}) {
@@ -79,7 +85,7 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring } = {}
     // An interrupted process or network publication is resumed; a failed test stays explicitly failed.
     // Each commit is attempted once per tick, so an unavailable API cannot spin on the same publication.
     const attempted = new Set();
-    for (let item; Date.now() - started < budgetMs && (item = queue.items.find(row => due(row) && !attempted.has(row.commit))); refresh()) {
+    for (let item; Date.now() - started < budgetMs && (item = nextItem(queue, head, attempted)); refresh()) {
       attempted.add(item.commit);
       git(root, ['merge-base', '--is-ancestor', item.commit, head]);
       try {
@@ -126,4 +132,4 @@ if (require.main === module) {
   const promise = args.includes('--initialize') ? Promise.resolve(initialize(stateDir, args[args.indexOf('--initialize') + 1])) : tick(stateDir);
   promise.catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { extendQueue, acquire, initialize, verify, tick, defaultState, sleptDuring, due };
+module.exports = { extendQueue, nextItem, acquire, initialize, verify, tick, defaultState, sleptDuring, due };

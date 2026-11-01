@@ -6,7 +6,7 @@ const root = path.resolve(__dirname, '..'), c = require('../tools/conditional-qa
 const { check } = require('../tools/conditional-qa/guard.cjs');
 const { childRun, temporaryEnvironment } = require('../tools/conditional-qa/run.cjs');
 const { materialize, write } = require('../tools/conditional-qa/inputs.cjs');
-const { extendQueue, acquire, sleptDuring, due } = require('../tools/conditional-qa/worker.cjs');
+const { extendQueue, nextItem, acquire, sleptDuring, due } = require('../tools/conditional-qa/worker.cjs');
 const { plan } = require('../tools/conditional-qa/install.cjs');
 const github = require('../tools/conditional-qa/github.cjs');
 const { wait } = require('../tools/conditional-qa/wait-local.cjs');
@@ -93,6 +93,27 @@ test('the scheduled worker runs at normal priority, and only a logged sleep turn
   assert.deepEqual(['queued', 'running', 'publish-pending', 'passed', 'failed'].map(status => due({ status })), [true, true, true, false, false]);
   assert.equal(due({ status: 'retry', retryAt: Date.now() + 60_000 }), false); assert.equal(due({ status: 'retry', retryAt: Date.now() - 1 }), true);
 });
+test('the newest commit runs before the backlog; historical entries and failed proof are preserved', () => {
+  const commits = ['a', 'b', 'c', 'd', 'e'].map(x => x.repeat(40));
+  const queue = { seen: commits[2], items: [
+    { commit: commits[0], status: 'queued' }, { commit: commits[1], status: 'failed' },
+    { commit: commits[2], status: 'queued' },
+  ] };
+  const attempted = new Set(), before = JSON.stringify(queue);
+  assert.equal(nextItem(queue, commits[2], attempted).commit, commits[2]);
+  assert.equal(JSON.stringify(queue), before, 'selection does not change old results');
+  attempted.add(commits[2]);
+  assert.equal(nextItem(queue, commits[2], attempted).commit, commits[0]);
+  extendQueue(queue, commits[3], [commits[3]]);
+  assert.equal(nextItem(queue, commits[3], attempted).commit, commits[3], 'a push during verification gets priority next');
+  queue.items.push({ commit: commits[4], status: 'publish-pending' });
+  assert.equal(nextItem(queue, commits[3], attempted).commit, commits[4]);
+  queue.items[4].status = 'retry'; queue.items[4].retryAt = 200;
+  assert.equal(nextItem(queue, commits[4], attempted, 100).commit, commits[0], 'future retry does not spin');
+  assert.equal(nextItem(queue, commits[4], attempted, 200).commit, commits[4]);
+  assert.equal(queue.items[1].status, 'failed');
+});
+
 test('remote local-status evidence is exact and malformed requests never reach the API', () => {
   const value = { state: 'success', description: github.description(78, manifest.digest) };
   assert.ok(github.accepted(value, 78, manifest.digest)); assert.equal(github.accepted(value, 78, 'b'.repeat(64)), false);

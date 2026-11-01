@@ -2,7 +2,9 @@
 const path = require('node:path');
 const { readManifest } = require('./contract.cjs');
 const { REPO, validCommit, status, accepted, publish } = require('./github.cjs');
-async function wait({ commit, root, timeoutMs = 40 * 60_000, intervalMs = 30_000, read = status, write = publish }) {
+// Allow the current (<=50 min) verification to finish, then this head's own
+// <=50 min run and the five-minute scheduler interval. Pending never means pass.
+async function wait({ commit, root, timeoutMs = 110 * 60_000, intervalMs = 30_000, read = status, write = publish }) {
   validCommit(commit);
   const manifest = readManifest(root), count = manifest.cases.filter(row => row.route === 'local').length;
   const start = Date.now(); let initialized = false;

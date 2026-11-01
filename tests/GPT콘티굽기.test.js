@@ -51,7 +51,7 @@ let 입력 = ''; process.stdin.on('data', (d) => { 입력 += d; });
 process.stdin.on('end', () => {
   if (process.env.FAKE_CODEX_LOG) fs.writeFileSync(process.env.FAKE_CODEX_LOG, JSON.stringify({ 인자: a, 입력 }));
   if (process.env.FAKE_CODEX !== 'ok') { process.stderr.write('[codex계정] 쓸 수 있는 굽기 계정이 없다\\n'); process.exit(3); }
-  const 그림 = path.join(값('-C'), 'generated_images', 'fake.png');
+  const 그림 = path.join(값('-C'), 'generated_images', '한글 image.png');
   fs.mkdirSync(path.dirname(그림), { recursive: true });
   fs.writeFileSync(그림, Buffer.from(process.env.FAKE_CODEX_PNG, 'base64'));
   fs.writeFileSync(값('-o'), 그림 + '\\n');
