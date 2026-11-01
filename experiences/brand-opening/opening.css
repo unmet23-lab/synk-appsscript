@@ -131,6 +131,8 @@
 .synk-opening[data-concert][data-stage=title] .opening-copyright{left:16px;right:auto;bottom:calc(10px + env(safe-area-inset-bottom));text-align:left;font-size:10px;letter-spacing:.12em;color:rgba(255,255,255,.68)}
 /* WORLD 「움직임 줄이기」(:root[data-motion=reduced])도 기기 설정처럼 밀어 들어감 · 숨쉬기를 멈춘다(캔버스는 motionOn()이 멈춘다). */
 :root[data-motion=reduced] .concert-cam,:root[data-motion=reduced] .synk-opening[data-stage=title] .concert-start{animation:none}
+/* 동작 줄이기면 캔버스는 그리지 않아 늘 비어 있다 — 숨겨서 배포 점검(캔버스를 자홍색으로 가림)이 무대 사진 · 글을 그대로 찍게 한다. */
+.synk-opening[data-reduced=true] .concert-fx,.synk-opening[data-reduced=true] .concert-top,:root[data-motion=reduced] .concert-fx,:root[data-motion=reduced] .concert-top{display:none}
 @keyframes concert-push{from{transform:scale(1)}to{transform:scale(1.03)}}
 @keyframes concert-breathe{0%,100%{opacity:1}50%{opacity:.55}}
 @media(orientation:landscape){
