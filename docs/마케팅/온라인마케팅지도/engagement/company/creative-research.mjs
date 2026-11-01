@@ -219,6 +219,8 @@ export function createCreativeResearchService({store,clock=()=>new Date().toISOS
   store.transaction(()=>{for(const saved of store.db.prepare('SELECT entry_id FROM creative_research_usage WHERE source_key IS NULL ORDER BY claimed_at').all()){const row=store.get(KIND,saved.entry_id);if(!row||!companyGuide(row))continue;try{const key=guideIdentity(row);if(!usageBySource.get(key))store.db.prepare('UPDATE creative_research_usage SET source_key=? WHERE entry_id=? AND source_key IS NULL').run(key,saved.entry_id);}catch{}}});
   const inflight=new Set(),revisionSalt=randomUUID();let stopped=false,cachedSnapshot=null;
   const totalChanges=store.db.prepare('SELECT total_changes() AS count'),dataVersion=store.db.prepare('PRAGMA data_version');
+  const snapshotDocuments=store.db.prepare('SELECT id,body FROM documents WHERE kind=? ORDER BY rowid'),snapshotDay=store.db.prepare('SELECT body FROM documents WHERE kind=? AND id=?');
+  const snapshotUsage=store.db.prepare('SELECT entry_id AS entryId,source_key AS sourceKey,user_id AS userId,claimed_at AS claimedAt FROM creative_research_usage');
   function current(user){const live=user?.id&&store.get('users',user.id);if(!live?.active)throw fail('먼저 로그인해 주세요.',401);return live;}
   function writable(user){user=current(user);if(user.role==='viewer')throw fail('보기 전용 계정이라 자료를 바꿀 수 없어요.',403);if(stopped)throw fail('서버를 다시 시작하는 중이에요. 잠시 뒤 다시 해 주세요.',503);return user;}
   function sameTeam(user,row,readStore=store){return !!user.teamId&&user.teamId===row.teamId&&readStore.get('teams',row.teamId)?.active===true;}
@@ -281,14 +283,23 @@ export function createCreativeResearchService({store,clock=()=>new Date().toISOS
   function snapshot(){
     const date=kstDate(instant(clock())),stamp=totalChanges.get().count+':'+dataVersion.get().data_version+':'+date;
     if(cachedSnapshot?.stamp===stamp)return cachedSnapshot;
-    const kinds=[KIND,REPORT_KIND,'users','teams','channels'],lists=new Map(kinds.map(kind=>[kind,store.all(kind)])),maps=new Map([...lists].map(([kind,rows])=>[kind,new Map(rows.map(row=>[row.id,row]))]));
+    const kinds=[KIND,REPORT_KIND,'users','teams','channels'],documents=kinds.flatMap(kind=>snapshotDocuments.all(kind).map(row=>({...row,kind}))),reservations=snapshotUsage.all();
+    documents.push({kind:GUIDE_DAYS,id:date,body:snapshotDay.get(GUIDE_DAYS,date)?.body??null});
+    // Unrelated token/collector writes change SQLite's counters too. Compare
+    // exact dependency bytes before decoding or rebuilding permissions. Raw SQL
+    // and external writes still take effect immediately, without a cache TTL.
+    const sameDocuments=cachedSnapshot?.documents.length===documents.length&&documents.every((row,i)=>{const old=cachedSnapshot.documents[i];return row.kind===old.kind&&row.id===old.id&&row.body===old.body;});
+    const sameUsage=cachedSnapshot?.reservations.length===reservations.length&&reservations.every((row,i)=>{const old=cachedSnapshot.reservations[i];return row.entryId===old.entryId&&row.sourceKey===old.sourceKey&&row.userId===old.userId&&row.claimedAt===old.claimedAt;});
+    if(cachedSnapshot?.date===date&&sameDocuments&&sameUsage){cachedSnapshot.stamp=stamp;return cachedSnapshot;}
+    const lists=new Map(kinds.map(kind=>[kind,[]]));for(const row of documents)if(lists.has(row.kind))lists.get(row.kind).push(JSON.parse(row.body));
+    const maps=new Map([...lists].map(([kind,rows])=>[kind,new Map(rows.map(row=>[row.id,row]))]));
     const readStore={get:(kind,id)=>maps.get(kind)?.get(id)||null,all:kind=>lists.get(kind)||[]},entries=lists.get(KIND),reports=lists.get(REPORT_KIND),entryHashes=new Map(),guideKeys=new Map(),encodedEntries=new Map();
     // Claims, permission changes and audit records usually leave the large
     // guide bodies untouched. Reuse their content digests across snapshots;
     // changed rows still get an exact hash, including same-length edits.
     for(const row of entries){const encoded=JSON.stringify(row),previous=cachedSnapshot?.encodedEntries.get(row.id);let hash,key;if(previous?.encoded===encoded){({hash,key}=previous);}else{const {automaticSourceId,...publicRow}=row;hash=createHash('sha256').update(stableJson(publicRow)).digest('hex');if(companyGuide(row))try{key=guideIdentity(row);}catch{}}entryHashes.set(row.id,hash);if(key)guideKeys.set(row.id,key);encodedEntries.set(row.id,{encoded,hash,key});}
-    const reservations=store.db.prepare('SELECT entry_id AS entryId,source_key AS sourceKey,user_id AS userId,claimed_at AS claimedAt FROM creative_research_usage').all(),day=guideDay(date),pool={date,limit:GUIDE_DAILY_LIMIT,addedCount:day.entryIds.length,remainingCount:Math.max(0,GUIDE_DAILY_LIMIT-day.entryIds.length),deferredCount:day.deferredCount||0,capacity:GUIDE_CAPACITY,storedCount:entries.filter(companyGuide).length};
-    return cachedSnapshot={stamp,entries,reports,readStore,entryHashes,guideKeys,encodedEntries,pool,usageByEntry:new Map(reservations.map(row=>[row.entryId,row])),usageBySource:new Map(reservations.filter(row=>row.sourceKey).map(row=>[row.sourceKey,row])),profiles:new Map()};
+    const dayBody=documents.find(row=>row.kind===GUIDE_DAYS)?.body,day=dayBody?JSON.parse(dayBody):{date,entryIds:[],deferredCount:0},pool={date,limit:GUIDE_DAILY_LIMIT,addedCount:day.entryIds.length,remainingCount:Math.max(0,GUIDE_DAILY_LIMIT-day.entryIds.length),deferredCount:day.deferredCount||0,capacity:GUIDE_CAPACITY,storedCount:entries.filter(companyGuide).length};
+    return cachedSnapshot={stamp,date,documents,reservations,entries,reports,readStore,entryHashes,guideKeys,encodedEntries,pool,usageByEntry:new Map(reservations.map(row=>[row.entryId,row])),usageBySource:new Map(reservations.filter(row=>row.sourceKey).map(row=>[row.sourceKey,row])),profiles:new Map()};
   }
   function profile(user){
     user=current(user);const saved=snapshot(),key=user.id+'\n'+user.role+'\n'+(user.teamId||'');if(saved.profiles.has(key))return saved.profiles.get(key);

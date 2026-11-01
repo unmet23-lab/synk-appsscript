@@ -6,6 +6,7 @@ import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { Store, now, today, token, hash, publicUser, passwordMatches, passwordHashAsync } from './store.mjs';
+import {createJsonCompressor} from './json-compression.mjs';
 import { createClientAddress, createAttemptLimiter, reserveAttempts, createConcurrencyGuard, publicRequestError } from './request-security.mjs';
 import { normalizeChannelUrl, collectChannel, PLATFORM_CAPABILITIES } from './collectors.mjs';
 import { analyze, companyOverview, analyticsCsv, shiftDate, dateRange, METRICS, metricPoint, compareMetric, metricIndex } from '../analytics.mjs';
@@ -457,7 +458,7 @@ export function createCompanyApp(options={}) {
   const automationHealthSchedule=options.automationHealthSchedule??(workroomScheduleEnabled&&options.schedule!==false);
   if(typeof automationHealthSchedule!=='boolean')throw httpError('자동화 상태 확인 설정을 확인해 주세요.');
   const automationHealthSource=createAutomationHealthService({store,studio,publicationPackages,publicationInbox,postPerformance,publicationLinks,publicationWorkflow,publicationLearning,clientProjects,clientWorkflow,clientDelivery,clientRights,weeklySummary,clock,runtime:()=>Object.fromEntries(Object.entries(automationRuntime).map(([id,row])=>[id,{...row,...(row.projects?{projects:Object.fromEntries(Object.entries(row.projects).map(([projectId,project])=>[projectId,{...project}]))}:{})}]))});
-  const automationHealth={get:user=>automationReadScope.run(()=>automationHealthSource.get(user))};
+  const automationHealth={get:user=>automationReadScope.run(()=>automationHealthSource.get(user)),getForNotifications:(user,ids)=>automationReadScope.run(()=>automationHealthSource.getForNotifications(user,ids))};
   automationNotifications=createAutomationNotificationsService({store,automationHealth,clock,onChange:ids=>messenger.notifyCompanyUsers(ids)});
   const automationMonitor={enabled:automationHealthSchedule,lastScanAt:null,status:automationHealthSchedule?'pending':'disabled',intervalMs:60000};
   function scanAutomationHealth(){if(stopRequested)return;try{const result=automationNotifications.scan();automationMonitor.lastScanAt=clock();automationMonitor.status=result.failedUsers?'error':automationHealthSchedule?'enabled':'disabled';return result;}catch{automationMonitor.status='error';}}
@@ -801,6 +802,7 @@ export function createCompanyApp(options={}) {
   function responseHeaders(type){return{'Content-Type':type,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','X-Frame-Options':'DENY','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; connect-src 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"};}
   function writeResponse(res,status,body,type='application/json; charset=utf-8'){res.writeHead(status,responseHeaders(type));res.end(type.startsWith('application/json')?JSON.stringify(body):body);}
   function send(res,status,body,type='application/json; charset=utf-8'){messenger.disconnectRevoked();writeResponse(res,status,body,type);}
+  const encodeResearchJson=createJsonCompressor();
   async function body(req,{maxBytes=768000,maxChars=256000}={}){
     if(!req.headers['content-type']?.startsWith('application/json'))throw httpError('JSON 입력이 필요합니다.');
     const chunks=[];let bytes=0;
@@ -1696,7 +1698,7 @@ export function createCompanyApp(options={}) {
         if(path==='/api/demo/export.csv'){res.setHeader('Content-Disposition','attachment; filename="synk-demo-growth.csv"');return send(res,200,demo.report(url.searchParams)._csv(),'text/csv; charset=utf-8');}
         throw httpError('데모 요청을 찾을 수 없습니다.',404);
       }
-      if(path==='/api/workspace-summary')return send(res,200,{messenger:messenger.summary(req)});
+      if(path==='/api/workspace-summary')return send(res,200,{messenger:store.readScope(()=>messenger.summary(req))});
       if(path==='/api/crew-profile'){if(url.search)throw httpError('본인의 업무카드만 조회할 수 있습니다.',400);return send(res,200,crewProfiles.own(user));}
       if(path==='/api/crew-work/roster'){if(url.search)throw httpError('조회할 조직 범위는 현재 계정 권한으로 정해집니다.',400);return send(res,200,crewProfiles.roster(user));}
       if(path==='/api/workroom-guide')return send(res,200,workroomGuide(clock()));
@@ -1710,7 +1712,18 @@ export function createCompanyApp(options={}) {
       if(path==='/api/creative-research/sync-status'){if(demoRequest||url.search)throw httpError('실제 작업실의 자동 반영 상태 주소를 확인해 주세요.');creativeResearch.revision(user);return send(res,200,creativeResearchSync.state(user));}
       if(path==='/api/creative-research/revision'){if(demoRequest||url.search)throw httpError('실제 작업실의 자료 변경 주소를 확인해 주세요.');return send(res,200,{revision:creativeResearch.revision(user)});}
       if(path==='/api/creative-research/events'){if(demoRequest||url.search)throw httpError('실제 작업실의 자료 변경 주소를 확인해 주세요.');researchEventAuth.set(req,{hash:auth.hash,userId:user.id});return creativeResearchEvents.connect(req,res);}
-      if(path==='/api/creative-research'){if(demoRequest)throw httpError('제작 참고 자료는 실제 작업실에서 확인해 주세요.',400);const archived=url.searchParams.get('includeArchived')??url.searchParams.get('archived');if(archived!==null&&!['0','1'].includes(archived))throw httpError('보관 자료 조회 여부를 확인해 주세요.');const result=creativeResearch.workspace(user,{includeArchived:archived==='1'});result.automation.sync=creativeResearchSync.state(user);return send(res,200,result);}
+      if(path==='/api/creative-research'){
+        if(demoRequest)throw httpError('제작 참고 자료는 실제 작업실에서 확인해 주세요.',400);
+        const archived=url.searchParams.get('includeArchived')??url.searchParams.get('archived');if(archived!==null&&!['0','1'].includes(archived))throw httpError('보관 자료 조회 여부를 확인해 주세요.');
+        const workspace=viewer=>{const result=creativeResearch.workspace(viewer,{includeArchived:archived==='1'});result.automation.sync=creativeResearchSync.state(viewer);return result;};
+        const result=workspace(user);res.setHeader('Vary','Accept-Encoding');
+        const encoded=await encodeResearchJson(result,req.headers['accept-encoding']);
+        // Compression yields to other requests. Never return an old permission
+        // projection after logout, role/team changes, or source access changes.
+        const latest=session(req);if(!latest||latest.hash!==auth.hash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);
+        if(latest.user.role!==user.role||latest.user.teamId!==user.teamId||creativeResearch.revision(latest.user)!==result.revision)return send(res,200,workspace(latest.user));
+        messenger.disconnectRevoked();res.writeHead(200,{...responseHeaders('application/json; charset=utf-8'),'Content-Length':encoded.body.length,...(encoded.encoding?{'Content-Encoding':encoded.encoding}:{})});return res.end(encoded.body);
+      }
       if(path==='/api/company-guide')return send(res,200,companyGuide());
       const workroomDocument=path.match(/^\/api\/workroom-source\/([a-z0-9-]+)$/);
       if(workroomDocument)return send(res,200,workroomSource(workroomDocument[1]));

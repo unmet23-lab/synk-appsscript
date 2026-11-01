@@ -15,9 +15,9 @@ export function createAutomationNotificationsService({store,automationHealth,clo
   function current(user){const live=store.get('users',typeof user==='string'?user:user?.id);if(!live?.active)throw fail('먼저 로그인해 주세요.',401);return live;}
   function now(){const value=clock(),at=new Date(value);if(!Number.isFinite(at.getTime()))throw new Error('자동화 알림 시각을 확인하지 못했습니다.');return at.toISOString();}
   const notify=ids=>{if(!ids.length)return;try{onChange([...new Set(ids)]);}catch{/* Durable state remains available on the next read. */}};
-  function snapshot(user){
+  function snapshot(user,automationIds=null){
     let result;
-    try{result=automationHealth.get(user);}catch{throw fail('자동화 상태를 확인하지 못했습니다. 잠시 뒤 다시 확인해 주세요.',503);}
+    try{result=automationIds&&typeof automationHealth.getForNotifications==='function'?automationHealth.getForNotifications(user,automationIds):automationHealth.get(user);}catch{throw fail('자동화 상태를 확인하지 못했습니다. 잠시 뒤 다시 확인해 주세요.',503);}
     if(!result||!Array.isArray(result.cards)||!Array.isArray(result.issues))throw fail('자동화 상태를 확인하지 못했습니다. 잠시 뒤 다시 확인해 주세요.',503);
     const cards=new Map(result.cards.filter(card=>validId(card?.id)).map(card=>[card.id,card]));
     const issues=new Map();
@@ -96,8 +96,8 @@ export function createAutomationNotificationsService({store,automationHealth,clo
     // Reads cannot create alerts. With no saved receipt for this user, there is
     // nothing to project; existing (including suppressed) receipts still get
     // live source/permission validation and retain their error behavior.
-    if(!store.all(KIND).some(row=>row.ownerId===user.id))return [];
-    const view=snapshot(user),items=[];
+    const saved=store.all(KIND).filter(row=>row.ownerId===user.id);if(!saved.length)return [];
+    const view=snapshot(user,[...new Set(saved.map(row=>row.automationId))]),items=[];
     for(const [key,issue]of view.issues){
       const row=store.get(KIND,key);
       if(!row||row.ownerId!==user.id||row.state!=='active'||row.issueId!==issue.id||row.automationId!==issue.automationId)continue;

@@ -21,12 +21,13 @@ const plan={schema:'synk-ha-plan/v1',project:'synk-bake-unmet27',region:'asia-no
 const failure=code=>Object.assign(new Error(code),{code});
 const configFor=n=>({schema:'synk-ha-node/v1',nodeId:n.instanceId,nodeName:n.name,zone:n.zone,planPath:'/etc/synk/ha/plan.json',helperPath:'/opt/synk/ha/node-host.py',activationAllowed:true,diskId:plan.data.diskId,diskName:plan.data.name,releaseSha256:plan.release.manifestSha256});
 
-function fixture({role='primary',light=true}={}){
+function fixture({role='primary',light=true,hostHook=()=>{},readHook=()=>{},ownershipHook=()=>{}}={}){
   let now=1_000_000,mono=0,running=true,lightFailure=null,healthFailures=0,guards=true;
   const node=plan.nodes[role],config=configFor(node),state=initialControlState(plan,now),calls=[],logs=[];
-  const google={readState:async()=>{calls.push('state');return {generation:'1',value:structuredClone(state)};},diskOwnership:async()=>{calls.push('disk');return true;},readReceipt:async()=>null,putReceipt:async()=>{calls.push('receipt');}};
+  const google={readState:async()=>{calls.push('state');await readHook();return {generation:'1',value:structuredClone(state)};},diskOwnership:async()=>{calls.push('disk');await ownershipHook();return true;},readReceipt:async()=>null,putReceipt:async()=>{calls.push('receipt');}};
   const host=async action=>{
     calls.push(action);
+    await hostHook(action);
     if(action==='stop')running=false;
     if(action==='start')running=true;
     if(action==='health'&&(!running||healthFailures-->0))throw failure('HOST_HEALTH_FAILED');
@@ -40,6 +41,59 @@ function fixture({role='primary',light=true}={}){
 }
 const full=tick=>tick.includes('guards')&&tick.includes('health')&&!tick.includes('live');
 const lightOnly=tick=>tick.includes('live')&&!tick.includes('guards')&&!tick.includes('health');
+
+test('long full checks renew real control reads between phases without relaxing freshness or integrity',async()=>{
+  let slow=false,f;f=fixture({hostHook:action=>{if(!slow)return;if(action==='release')f.advance(5000);if(action==='guards')f.advance(9000);if(action==='health'){f.advance(10000);assert.equal(f.agent.status().ready,true,'fresh actual authority remains valid during the full DB check');}}});
+  await f.agent.tick();f.advance(DEEP_HOST_MS);slow=true;const from=f.calls.length;await f.agent.tick();
+  const calls=f.calls.slice(from);assert.ok(full(calls));assert.equal(calls.filter(x=>x==='state').length,3);assert.equal(f.agent.status().ready,true);assert.ok(!calls.includes('stop'));
+  assert.equal(f.agent.status().activeEpoch,f.state.activeEpoch);
+  f.advance(15001);assert.equal(f.agent.status().ready,false,'the unchanged 15-second control freshness limit still applies');
+});
+
+test('withdrawn exposure is immediately unready while the ownership lookup remains pending',async()=>{
+  let withdraw=false,revocationRead=false,f,releaseOwnership,enteredOwnership;
+  const pendingOwnership=new Promise(resolve=>{releaseOwnership=resolve;}),entered=new Promise(resolve=>{enteredOwnership=resolve;});
+  f=fixture({hostHook:action=>{if(withdraw&&action==='guards')f.state.readyAllowed=[];},readHook:()=>{if(withdraw&&!f.state.readyAllowed.length)revocationRead=true;},ownershipHook:async()=>{if(revocationRead){enteredOwnership();await pendingOwnership;}}});
+  await f.agent.tick();assert.equal(f.agent.status().ready,true);f.advance(DEEP_HOST_MS);withdraw=true;
+  const pendingTick=f.agent.tick();await entered;
+  try{assert.equal(f.agent.status().ready,false);assert.equal(f.agent.status().activeEpoch,f.state.activeEpoch);assert.equal(f.running,true);assert.ok(!f.calls.includes('stop'));}
+  finally{releaseOwnership();await pendingTick;}
+});
+
+test('write authority revoked during guards fences before health and never restarts the writer',async()=>{
+  let revoke=false,f;f=fixture({hostHook:action=>{if(revoke&&action==='guards'){f.state.bootAllowed=[];f.state.readyAllowed=[];}}});
+  await f.agent.tick();f.advance(DEEP_HOST_MS);revoke=true;const from=f.calls.length;await f.agent.tick();
+  const calls=f.calls.slice(from);assert.equal(f.agent.status().ready,false);assert.ok(calls.includes('stop'));assert.ok(!calls.includes('health')&&!calls.includes('start'));
+});
+
+test('exposure, maintenance, API, deployment and command changes yield without stopping an authorized writer',async()=>{
+  for(const change of [s=>{s.readyAllowed=[];},s=>{s.maintenanceUntil=2000000;},s=>{s.api={kind:'stop',requestId:'cccccccc-cccc-4ccc-8ccc-cccccccccccc'};},s=>{s.deployment={id:'synthetic-deployment'};},s=>{s.command={nonce:'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'};}]){
+    let changed=false,f;f=fixture({hostHook:action=>{if(changed&&action==='guards')change(f.state);}});
+    await f.agent.tick();f.advance(DEEP_HOST_MS);changed=true;const from=f.calls.length;await f.agent.tick();
+    const calls=f.calls.slice(from);assert.equal(f.agent.status().ready,false);assert.equal(f.running,true);assert.ok(!calls.includes('stop')&&!calls.includes('start')&&!calls.includes('health'));
+    changed=false;f.state.readyAllowed=[f.config.nodeId];f.state.maintenanceUntil=0;delete f.state.api;delete f.state.deployment;delete f.state.command;
+    const resume=f.calls.length;await f.agent.tick();assert.equal(f.agent.status().ready,true);assert.ok(full(f.calls.slice(resume)));assert.ok(!f.calls.slice(resume).includes('start'));
+  }
+});
+
+test('unknown control during phase refresh preserves fail-closed stop and later authorized recovery',async()=>{
+  let failRead=false,inject=false,f;f=fixture({hostHook:action=>{if(inject&&action==='guards')failRead=true;},readHook:()=>{if(failRead)throw failure('CONTROL_READ_FAILED');}});
+  await f.agent.tick();f.advance(DEEP_HOST_MS);inject=true;const from=f.calls.length;await f.agent.tick();const calls=f.calls.slice(from);
+  assert.equal(f.agent.status().ready,false);assert.ok(calls.includes('stop'));assert.ok(!calls.includes('health')&&!calls.includes('start'));
+  failRead=false;inject=false;await f.agent.tick();assert.equal(f.agent.status().ready,true);assert.equal(f.running,true);
+});
+
+test('harmless control metadata refresh during a full check preserves all full host checks',async()=>{
+  let f;f=fixture({hostHook:action=>{if(action==='guards')f.state.updatedAt+=1;}});await f.agent.tick();
+  assert.equal(f.agent.status().ready,true);assert.ok(full(f.calls));assert.equal(f.calls.filter(x=>x==='state').length,3);
+});
+
+test('a recovered durable-health failure retains its bounded diagnostic before returning READY',async()=>{
+  const f=fixture();f.healthFailures=1;await f.agent.tick();
+  assert.deepEqual(f.logs.filter(row=>row.event==='SYNK_HA_NODE_HEALTH'),[{event:'SYNK_HA_NODE_HEALTH',code:'HOST_HEALTH_FAILED',deep:true}]);
+  assert.equal(f.agent.status().ready,true);assert.equal(f.agent.status().reason,'READY');
+  assert.ok(f.calls.indexOf('stop')<f.calls.indexOf('start'));
+});
 
 test('without a light probe every tick keeps the full guards and health path',async()=>{
   const f=fixture({light:false}),ticks=await f.every(5000,4);

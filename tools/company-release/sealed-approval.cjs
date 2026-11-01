@@ -44,13 +44,41 @@ function validateChain(r, { release, previousRelease, chainLength }) {
   a.ok(hex(release) && hex(previousRelease) && Number.isSafeInteger(chainLength) && chainLength >= 2, 'SEALED_CHAIN_EXPECTATION');
   const chain = r && r.deploymentChain, p = r && r.priorArm, done = Date.parse(r && r.actualDeploymentAt);
   a.ok(Array.isArray(chain) && chain.length === chainLength, 'SEALED_CHAIN_LENGTH');
-  a.ok(p && p.releaseSha256 === previousRelease && /^[a-f0-9-]{36}$/.test(p.requestId || '') && hex(p.contractSha256) && hex(p.postcheckSha256) && Number.isSafeInteger(p.armedAt) && equal(p.sourceHashes, r.runtime), 'SEALED_PRIOR_ARM');
+  const runtimeMap = v => v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length > 0 && Object.values(v).every(hex);
+  a.ok(p && p.releaseSha256 === previousRelease && typeof p.requestId === 'string' && /^[a-f0-9-]{36}$/.test(p.requestId) && hex(p.contractSha256) && hex(p.postcheckSha256) && Number.isSafeInteger(p.armedAt) && runtimeMap(p.sourceHashes) && runtimeMap(r.runtime), 'SEALED_PRIOR_ARM');
+  // runtimeUpdate is the original single-transition format. Later releases may
+  // retain it as the first entry of an ordered runtimeUpdates history.
+  const updates = r.runtimeUpdates === undefined ? (r.runtimeUpdate === undefined ? [] : [r.runtimeUpdate]) : r.runtimeUpdates;
+  a.ok(Array.isArray(updates), 'SEALED_RUNTIME_UPDATES');
+  if (r.runtimeUpdate !== undefined) a.ok(equal(updates[0], r.runtimeUpdate), 'SEALED_RUNTIME_UPDATE_LEGACY_BINDING');
+  const identities = new Set();
+  for (const u of updates) {
+    a.ok(u && runtimeMap(u.before) && runtimeMap(u.after) && equal(Object.keys(u.before).sort(), Object.keys(r.runtime).sort()) && equal(Object.keys(u.after).sort(), Object.keys(r.runtime).sort()) && hex(u.packageSha256) && hex(u.postcheckSha256), 'SEALED_RUNTIME_UPDATE_SCOPE');
+    const changed = Object.keys(u.before).filter(k => u.before[k] !== u.after[k]).sort();
+    a.ok(changed.length > 0 && Array.isArray(u.changedFiles) && equal([...u.changedFiles].sort(), changed), 'SEALED_RUNTIME_UPDATE_FILES');
+    const id = u.packageSha256 + ':' + u.postcheckSha256;
+    a.ok(!identities.has(id), 'SEALED_RUNTIME_UPDATE_DUPLICATE'); identities.add(id);
+  }
+  let runtime = updates.length ? updates[0].before : r.runtime, used = 0, priorChecked = false;
+  const deploymentIds = new Set();
+  a.ok(chain[0].completedAt < p.armedAt, 'SEALED_CHAIN_PRIOR_PREFIX');
   chain.forEach((row, i) => {
-    a.ok(row && /^[a-f0-9]{32}$/.test(row.id || '') && row.mode === 'company-release-only' && Number.isSafeInteger(row.completedAt) && ['contractSha256', 'packageSha256', 'postcheckSha256', 'oldReleaseSha256', 'newReleaseSha256'].every(k => hex(row[k])), 'SEALED_CHAIN_ROW ' + i);
+    a.ok(row && typeof row.id === 'string' && /^[a-f0-9]{32}$/.test(row.id) && ['company-release-only', 'infrastructure-only'].includes(row.mode) && Number.isSafeInteger(row.completedAt) && ['contractSha256', 'packageSha256', 'postcheckSha256', 'oldReleaseSha256', 'newReleaseSha256'].every(k => hex(row[k])), 'SEALED_CHAIN_ROW ' + i);
+    a.ok(!deploymentIds.has(row.id), 'SEALED_CHAIN_DUPLICATE_ID ' + i); deploymentIds.add(row.id);
     if (i) a.ok(chain[i - 1].newReleaseSha256 === row.oldReleaseSha256 && chain[i - 1].completedAt < row.completedAt, 'SEALED_CHAIN_LINK ' + i);
-    if (i < chain.length - 1) a.ok(row.completedAt < p.armedAt, 'SEALED_CHAIN_BEFORE_PRIOR_ARM ' + i);
+    if (!priorChecked && row.completedAt >= p.armedAt) {
+      a.ok(equal(runtime, p.sourceHashes), 'SEALED_PRIOR_ARM_RUNTIME'); priorChecked = true;
+    }
+    if (i < chain.length - 1 && row.completedAt >= p.armedAt) a.ok(row.mode === 'infrastructure-only' && row.completedAt > p.armedAt && row.oldReleaseSha256 === previousRelease, 'SEALED_CHAIN_AFTER_PRIOR_ARM ' + i);
+    if (row.mode === 'infrastructure-only') {
+      const u = updates[used++];
+      a.ok(row.oldReleaseSha256 === row.newReleaseSha256 && u && u.packageSha256 === row.packageSha256 && u.postcheckSha256 === row.postcheckSha256 && equal(u.before, runtime), 'SEALED_INFRASTRUCTURE_BINDING ' + i);
+      runtime = u.after;
+    }
   });
+  a.ok(priorChecked && used === updates.length && equal(runtime, r.runtime), 'SEALED_RUNTIME_CHAIN_TIP');
   const tip = chain[chain.length - 1];
+  a.equal(tip.mode, 'company-release-only', 'SEALED_CHAIN_APPLICATION_TIP');
   a.ok(tip.completedAt >= p.armedAt && tip.completedAt === done, 'SEALED_CHAIN_TIP_TIME');
   a.ok(tip.oldReleaseSha256 === previousRelease && tip.newReleaseSha256 === release && r.releaseSha256 === release, 'SEALED_CHAIN_TIP_RELEASES');
   a.ok(r.contract && tip.id === r.contract.id && tip.contractSha256 === shaValue(r.contract) && r.evidence && tip.packageSha256 === r.evidence.packageSha256 && tip.postcheckSha256 === r.evidence.runtimeProofSha256, 'SEALED_CHAIN_TIP_BINDING');
@@ -73,6 +101,7 @@ function bind(r, base, expect) {
   a.ok(r.contract && equal(c.deployment, { ...r.evidence, id: r.contract.id, contractSha256: shaValue(r.contract) }), 'SEALED_RESULT_ARMED_DEPLOYMENT');
   a.ok(r.history && equal(c.history, r.history) && equal(c.expected && c.expected.history, { lastCompletedOperation: r.history.returnOperation, lastCompletedHistory: r.history.returnHistory, lastRearm: r.history.lastRearm }), 'SEALED_RESULT_ARMED_HISTORY');
   a.ok(equal(c.runtimeTransition, r.runtimeTransition) && equal(c.priorArm, r.priorArm) && equal(c.expected && c.expected.sourceHashes, r.runtime), 'SEALED_RESULT_ARMED_RUNTIME');
+  a.ok(equal(c.runtimeUpdate, r.runtimeUpdate) && equal(c.runtimeUpdates, r.runtimeUpdates), 'SEALED_RESULT_ARMED_RUNTIME_UPDATES');
   a.equal(expect.release, base.manifestSha256, 'SEALED_RESULT_EXPECTED_RELEASE');
   validateChain(r, expect);
 }

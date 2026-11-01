@@ -11,8 +11,21 @@ const S = require('../tools/company-release/sealed-approval.cjs');
 const P = require('../tools/company-release/trusted-parent-port.cjs');
 
 const H = c => c.repeat(64);
+function addRuntimeUpdate(r, armed, { historical = false } = {}) {
+  const before = structuredClone(r.runtime), after = { 'node-agent.mjs': H('e') };
+  const update = { before, after, changedFiles: ['node-agent.mjs'], packageSha256: H('c'), postcheckSha256: H('d') };
+  const row = { id: 'b'.repeat(32), mode: 'infrastructure-only', completedAt: r.priorArm.armedAt + 1000, oldReleaseSha256: r.priorArm.releaseSha256, newReleaseSha256: r.priorArm.releaseSha256, contractSha256: H('a'), packageSha256: update.packageSha256, postcheckSha256: update.postcheckSha256 };
+  r.deploymentChain.splice(-1, 0, row); r.runtime = after; armed.expected.sourceHashes = after;
+  r.runtimeUpdate = update; armed.runtimeUpdate = update;
+  if (historical) {
+    const first = { before: { 'node-agent.mjs': H('2') }, after: before, changedFiles: ['node-agent.mjs'], packageSha256: H('7'), postcheckSha256: H('8') };
+    r.deploymentChain.splice(1, 0, { ...row, id: 'c'.repeat(32), completedAt: r.priorArm.armedAt - 1000, packageSha256: first.packageSha256, postcheckSha256: first.postcheckSha256 });
+    r.runtimeUpdate = first; armed.runtimeUpdate = first;
+    r.runtimeUpdates = [first, update]; armed.runtimeUpdates = r.runtimeUpdates;
+  }
+}
 // 합성 부모 판 P: 완료 보존본 하나와, 그 보존본의 승인 입력을 읽어 결과를 내는 승인 모듈.
-function fixture(t, { result: change } = {}) {
+function fixture(t, { result: change, beforeSeal } = {}) {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-sealed-'));
   t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
   const tmp = path.join(temp, '.tmp'), root = path.join(tmp, 'p-release-20261030'); fs.mkdirSync(root, { recursive: true });
@@ -44,6 +57,7 @@ function fixture(t, { result: change } = {}) {
   };
   // 부모 무장 계약 — 그 판 core.prepare처럼 a에서 옮겨 적은 칸들(deployment·history·runtimeTransition·priorArm·expected).
   const armed = { requestId: 'request', expected: { sourceHashes: runtime, history: { lastCompletedOperation: a0.history.returnOperation, lastCompletedHistory: a0.history.returnHistory, lastRearm: a0.history.lastRearm } }, nextPlan: { ...plan, armed: true }, history: a0.history, runtimeTransition: a0.runtimeTransition, priorArm: a0.priorArm, deploymentChain: chain, deployment: { ...a0.evidence, id: deploymentContract.id, contractSha256: S.shaValue(deploymentContract) }, acceptance: { evidence: [evidencePin] } };
+  if (beforeSeal) beforeSeal(a0, armed);
   const contractRaw = R.encode(armed), check = { status: 'passed', armed: true, releaseSha256: release };
   const post = { ...check, contractSha256: R.sha(contractRaw), requestId: 'request', readOnlySnapshot: { collectionTiming: { localAfter: 42 }, acceptance: armed.acceptance } };
   const pins = {
@@ -69,9 +83,75 @@ function fixture(t, { result: change } = {}) {
   const mod = { path: moduleFile, sha256: R.sha(fs.readFileSync(moduleFile)) };
   const output = path.join(tmp, 'company-approval-p-20261030');
   const sealIt = () => S.seal({ completed, completedSealSha256: kept.sealSha256, module: mod, output });
-  const parent = sealed => P.sealedParent({ completed: { root: completed, sealSha256: kept.sealSha256 }, approval: { root: output, sealSha256: sealed.sealSha256 }, release, previousRelease: grand, chainLength: 2 });
+  const parent = sealed => P.sealedParent({ completed: { root: completed, sealSha256: kept.sealSha256 }, approval: { root: output, sealSha256: sealed.sealSha256 }, release, previousRelease: grand, chainLength: a0.deploymentChain.length });
   return { temp, tmp, root, completed, kept, mod, output, sealIt, parent, release, grand, a0, evidenceFile, sealedInput: path.join(completed, 'evidence', 'approval.json') };
 }
+
+test('앱 사이 HA 교체는 무장 계약의 전이 증거에 묶어 봉인하고 다시 읽는다', t => {
+  const f = fixture(t, { beforeSeal: addRuntimeUpdate }), sealed = f.sealIt();
+  a.equal(sealed.chainLength, 3);
+  const got = S.load(f.parent(sealed), { path: f.sealedInput, sha256: R.sha(fs.readFileSync(f.sealedInput)) });
+  a.deepEqual(got.runtimeUpdate, f.a0.runtimeUpdate); a.deepEqual(got.runtime, f.a0.runtime);
+});
+
+test('앞 무장 전의 HA 이력과 그 뒤 새 교체를 순서대로 보존한다', t => {
+  const f = fixture(t, { beforeSeal: (r, c) => addRuntimeUpdate(r, c, { historical: true }) }), sealed = f.sealIt();
+  a.equal(sealed.chainLength, 4);
+  const got = S.load(f.parent(sealed), { path: f.sealedInput, sha256: R.sha(fs.readFileSync(f.sealedInput)) });
+  a.equal(got.runtimeUpdates.length, 2); a.deepEqual(got.priorArm.sourceHashes, got.runtimeUpdates[0].after);
+});
+
+test('무장 계약에 없거나 바뀐 런타임 전이 증거는 봉인하지 않는다', t => {
+  for (const mutate of [r => { r.runtimeUpdate.packageSha256 = H('0'); }, r => { r.runtimeUpdates = [r.runtimeUpdate]; }, r => { delete r.runtimeUpdate; }]) {
+    const f = fixture(t, { beforeSeal: addRuntimeUpdate, result: r => { mutate(r); return r; } });
+    a.throws(f.sealIt, /SEALED_RESULT_ARMED_RUNTIME_UPDATES/); a.equal(fs.existsSync(f.output), false);
+  }
+});
+
+test('HA 이력의 증거·파일·순서·앞 무장·앱 경계를 엄격하게 확인한다', t => {
+  const f = fixture(t, { beforeSeal: (r, c) => addRuntimeUpdate(r, c, { historical: true }) });
+  const expect = { release: f.release, previousRelease: f.grand, chainLength: 4 };
+  a.equal(S.validateChain(f.a0, expect).length, 4);
+  const changes = [
+    [r => { delete r.runtimeUpdates; }, /SEALED_INFRASTRUCTURE_BINDING 2/],
+    [r => { r.runtimeUpdates[1].packageSha256 = H('0'); }, /SEALED_INFRASTRUCTURE_BINDING 2/],
+    [r => { r.runtimeUpdates[1].postcheckSha256 = H('0'); }, /SEALED_INFRASTRUCTURE_BINDING 2/],
+    [r => { r.runtimeUpdates[1].before['node-agent.mjs'] = H('0'); }, /SEALED_INFRASTRUCTURE_BINDING 2/],
+    [r => { r.runtimeUpdates[1].changedFiles = []; }, /SEALED_RUNTIME_UPDATE_FILES/],
+    [r => { r.runtimeUpdates.push(structuredClone(r.runtimeUpdates[1])); }, /SEALED_RUNTIME_UPDATE_DUPLICATE/],
+    [r => { r.runtimeUpdates.reverse(); }, /SEALED_RUNTIME_UPDATE_LEGACY_BINDING/],
+    [r => { r.priorArm.sourceHashes['node-agent.mjs'] = H('0'); }, /SEALED_PRIOR_ARM_RUNTIME/],
+    [r => { r.deploymentChain[2].mode = 'company-release-only'; }, /SEALED_CHAIN_AFTER_PRIOR_ARM 2/],
+    [r => { r.deploymentChain[2].newReleaseSha256 = H('0'); }, /SEALED_INFRASTRUCTURE_BINDING 2/],
+    [r => { r.deploymentChain[2].completedAt = r.priorArm.armedAt; }, /SEALED_CHAIN_AFTER_PRIOR_ARM 2/],
+    [r => { r.runtime['node-agent.mjs'] = H('0'); }, /SEALED_RUNTIME_CHAIN_TIP/],
+  ];
+  for (const [change, error] of changes) { const r = JSON.parse(JSON.stringify(f.a0)); change(r); a.throws(() => S.validateChain(r, expect), error); }
+});
+
+test('계약과 증거가 달라도 한 배포 ID를 HA 이력 두 곳에 다시 쓰면 봉인을 거절한다', t => {
+  const f = fixture(t, { beforeSeal(r, c) {
+    addRuntimeUpdate(r, c, { historical: true });
+    r.deploymentChain[2].id = r.deploymentChain[1].id;
+    r.deploymentChain[2].contractSha256 = H('0');
+  } });
+  a.throws(f.sealIt, /SEALED_CHAIN_DUPLICATE_ID/); a.equal(fs.existsSync(f.output), false);
+});
+
+test('문자열로 강제 변환되는 배열 ID로 배포 ID 중복 검사를 우회할 수 없다', t => {
+  const f = fixture(t, { beforeSeal(r, c) {
+    addRuntimeUpdate(r, c, { historical: true });
+    r.deploymentChain[1].id = ['b'.repeat(32)];
+    r.deploymentChain[2].id = ['b'.repeat(32)];
+    r.deploymentChain[2].contractSha256 = H('0');
+  } });
+  a.throws(f.sealIt, /SEALED_CHAIN_ROW 1/); a.equal(fs.existsSync(f.output), false);
+});
+
+test('앞 무장의 요청 ID도 문자열로 강제 변환하지 않고 검증한다', t => {
+  const f = fixture(t, { beforeSeal(r) { r.priorArm.requestId = [r.priorArm.requestId]; } });
+  a.throws(f.sealIt, /SEALED_PRIOR_ARM/); a.equal(fs.existsSync(f.output), false);
+});
 
 test('부모 결과를 봉인하면 자식은 부모 모듈 없이 같은 결과를 받는다 — 원래 판 폴더와 옛 증거 폴더가 없어도', t => {
   const f = fixture(t), sealed = f.sealIt();

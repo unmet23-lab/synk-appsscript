@@ -229,6 +229,25 @@ export function createNodeAgent({config:c,plan,google,host,now=Date.now,clock=()
     check((!q||latest&&fields.every(k=>latest[k]===q[k]))&&current.value.activeId===state.activeId&&current.value.activeEpoch===state.activeEpoch&&current.value.maintenanceUntil===state.maintenanceUntil&&['bootAllowed','readyAllowed'].every(k=>JSON.stringify(current.value[k])===JSON.stringify(state[k])),'COMMAND_REPLACED');
     state=current.value;lastRead=now();return current;
   }
+  async function refreshSteadyAuthority(shape){
+    // Full release/guard/SQLite checks can each fit the freshness budget while
+    // their combined duration does not. Renew only from a real control read.
+    const current=await google.readState();check(current,'CONTROL_STATE_MISSING');
+    validateControlState(current.value,plan);const nextEpoch=bootAuthorized(current.value,c,plan);
+    check(!closing,'AGENT_STOPPING');
+    const authorityChanged=authority(current.value)!==shape||current.value.api||current.value.deployment;
+    // Publish the new authority and its readiness invalidation synchronously.
+    // No awaited ownership read may expose old readiness with a renewed clock.
+    if(authorityChanged){ready=false;lastDeep=null;deepWall=null;deepShape=null;reason='CONTROL_CHANGED';}
+    state=current.value;lastRead=now();epoch=nextEpoch;
+    if(authorityChanged){
+      // Exposure, maintenance and new work can change while this writer stays
+      // authorized. Yield to the next tick; only lost/unknown write authority
+      // takes the existing fail-closed stop path.
+      await google.diskOwnership();return false;
+    }
+    return true;
+  }
   let idle=Promise.resolve(),finishTick,shutdownPromise;
   function shutdown(){
     closing=true;ready=false;alive=false;reason='STOPPING';
@@ -258,6 +277,7 @@ export function createNodeAgent({config:c,plan,google,host,now=Date.now,clock=()
       // Evidence age is the larger of its monotonic and wall clock ages: neither a
       // stepped wall clock nor a paused VM stretches it past DEEP_HOST_MS.
       const deep=!liveProbe||!steady||lastDeep===null||t<deepWall||Math.max(clock()-lastDeep,t-deepWall)>=DEEP_HOST_MS||shape!==deepShape;
+      if(deep&&steady&&state.bootAllowed.includes(c.nodeId)&&!await refreshSteadyAuthority(shape))return;
       if(deep){guardsAccepted=(await host('guards')).guardsAccepted===true;check(guardsAccepted,'GUARDS_NOT_ACCEPTED');}
       const owns=state.bootAllowed.includes(c.nodeId);
       if(!owns){await confirmedStop();}
@@ -304,8 +324,9 @@ export function createNodeAgent({config:c,plan,google,host,now=Date.now,clock=()
         }
       }
       if(owns&&state.readyAllowed.includes(c.nodeId)){
+        if(deep&&steady&&!await refreshSteadyAuthority(shape))return;
         try{check(!stopFailed,'STOP_NOT_CONFIRMED');if(deep)await host('health');else await liveHealth();}catch(e){
-          ready=false;
+          ready=false;reason=safe(e);log({event:'SYNK_HA_NODE_HEALTH',code:reason,deep});
           // Recover an authorized owner after a transient control/API failure
           // stopped its stack. Never restart during maintenance or promotion.
           if(closing||state.activeId!==c.nodeId||state.maintenanceUntil>now()||state.operation&&state.operation.phase!=='COMPLETE'||lastRecovery!==null&&now()-lastRecovery<60000)throw e;

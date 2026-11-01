@@ -20,6 +20,24 @@ function fixture(overrides={}){
 }
 const MINUTE=60000;
 
+test('performance receipt projection matches full live health across ownership, timing and source failure',()=>{
+  const f=fixture(),post=f.post(),user=f.data.users[0];
+  const compare=()=>{const full=f.get(),part=f.service.getForNotifications(user,['performance']);assert.deepEqual(part,{cards:full.cards.filter(row=>row.id==='performance'),issues:full.issues.filter(row=>row.automationId==='performance'),observedIssueIds:full.observedIssueIds.filter(id=>id.startsWith('performance:'))});};
+  compare();f.state.runtime.performance.lastSuccessAt=null;compare();f.state.at=FUTURE;compare();
+  post.active=false;compare();post.active=true;f.data.channels[0].ownerIds=['peer'];compare();
+  f.data.channels[0].ownerIds=['owner'];f.services.postPerformance.list=()=>{throw Error('Source unavailable');};compare();
+  user.active=false;assert.throws(()=>f.service.getForNotifications(user,['performance']),{status:401});
+});
+
+test('performance receipt reads avoid unrelated sources without narrowing mixed or unknown receipt sets',()=>{
+  const f=fixture(),user=f.data.users[0];f.post();let projectReads=0,linkReads=0;
+  f.services.clientProjects.workspace=()=>{projectReads++;return {projects:[]};};
+  f.services.publicationLinks.get=()=>{linkReads++;return {check:{canCheck:false}};};
+  f.service.getForNotifications(user,['performance']);assert.equal(projectReads,0);assert.equal(linkReads,0);
+  for(const ids of [[],['performance','links'],['unknown'],null])assert.deepEqual(f.service.getForNotifications(user,ids),f.get());
+  assert.ok(projectReads>0);assert.ok(linkReads>0);
+});
+
 test('seventeen source cards are read-only; no targets is idle even after a runner failure',()=>{
   const f=fixture();f.state.weekly={};for(const state of Object.values(f.state.runtime))state.lastErrorAt='2026-10-12T02:30:00Z',state.lastSuccessAt=null;
   const before=JSON.stringify(f.data),result=f.get();assert.equal(result.cards.length,17);assert.equal(result.issues.length,0);assert.equal(result.counts.partial,0);assert.ok(result.cards.every(row=>row.status==='idle'));assert.equal(JSON.stringify(f.data),before);

@@ -50,14 +50,17 @@ function projectGroupSummary(group){
 
 export function createAutomationHealthService({store,studio,publicationPackages,publicationInbox,postPerformance,publicationLinks,publicationWorkflow,publicationLearning,clientProjects,clientWorkflow,clientDelivery,clientRights=null,weeklySummary,clock=()=>new Date().toISOString(),runtime=()=>({})}={}){
   if(!store)throw new Error('Automation health requires a store.');
-  function get(user){
+  function build(user,performanceOnly=false){
     user=user?.id&&store.get('users',user.id);if(!user?.active)throw fail('먼저 로그인해 주세요.',401);
     const now=instant(clock());if(now===null)throw fail('서버 시계를 읽지 못했어요. 잠시 뒤 다시 해 주세요.',500);
     const refreshedAt=new Date(now).toISOString(),cards=definitions.map(([id,number,title,mode,href,text])=>({id,number,title,mode,href,text,status:'idle',statusLabel:labels.idle,lastAttemptAt:null,lastSuccessAt:null,lastSuccessLabel:mode==='scheduled'?'최근 성공':'최근 결과',lastResultAt:null,nextRunAt:null,nextDueAt:null,checkedAt:null,counts:{targets:0,issues:0,manual:0,paused:0,customerWaiting:0,staffWaiting:0}})),byId=Object.fromEntries(cards.map(row=>[row.id,row])),issues=[],manual=[],partialIds=new Set(),observedIssueIds=new Set(),pending={performance:0,inbox:0,links:0,weekly:0};
     const observed=(automationId,kinds,id)=>{for(const kind of kinds)observedIssueIds.add(`${automationId}:${kind}:${id}`);};
     const mark=ids=>{for(const id of ids)partialIds.add(id);};
-    const read=(ids,fn,fallback)=>{try{const value=fn();if(value===undefined||value===null||value?.then||Array.isArray(fallback)&&!Array.isArray(value)||!Array.isArray(fallback)&&(typeof value!=='object'||Array.isArray(value)))throw new Error('Invalid source response');return value;}catch{mark(ids);return fallback;}};
-    const accessible=(ids,fn)=>{try{return fn();}catch(error){if(![403,404,409,422].includes(error.status))mark(ids);return null;}};
+    // Performance-only notification receipts need the same live performance
+    // projection, but none of the unrelated project, link or weekly projections.
+    const needed=ids=>!performanceOnly||ids.includes('performance');
+    const read=(ids,fn,fallback)=>{if(!needed(ids))return fallback;try{const value=fn();if(value===undefined||value===null||value?.then||Array.isArray(fallback)&&!Array.isArray(value)||!Array.isArray(fallback)&&(typeof value!=='object'||Array.isArray(value)))throw new Error('Invalid source response');return value;}catch{mark(ids);return fallback;}};
+    const accessible=(ids,fn)=>{if(!needed(ids))return null;try{return fn();}catch(error){if(![403,404,409,422].includes(error.status))mark(ids);return null;}};
     const add=(list,automationId,kind,id,values)=>list.push(item({automationId,kind,id:`${automationId}:${kind}:${id}`,...values}));
     const problem=(automationId,kind,id,values)=>add(issues,automationId,kind,id,values);
     const human=(automationId,kind,id,values)=>add(manual,automationId,kind,id,{status:'manual',...values});
@@ -302,5 +305,13 @@ export function createAutomationHealthService({store,studio,publicationPackages,
     }
     return {refreshedAt,cards,issues:issueRows,manual:manualRows,projectGroups,...(projectGroups===null?{projectGroupsError:'프로젝트별 할 일을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요.'}:{}),observedIssueIds:[...observedIssueIds],counts:{issues:issueRows.length,manual:manualRows.length,running:cards.filter(row=>row.status==='running').length,paused:cards.filter(row=>row.status==='paused').length,partial:partialIds.size},note:'내가 맡은 작업만 봐요. 「최근 성공」은 자동 실행이 끝났다는 뜻이지, 항목이 다 처리됐다는 뜻은 아니에요. 이 화면은 읽기만 해요. 기록을 바꾸거나 숫자를 새로 모으거나 다시 시도하지 않아요.'};
   }
-  return {get};
+  function get(user){return build(user);}
+  function getForNotifications(user,automationIds){
+    // Only this proven dependency subset is narrowed. Mixed/unknown receipts
+    // retain the full projection; no cross-request cache or permission reuse.
+    if(!Array.isArray(automationIds)||!automationIds.length||automationIds.some(id=>id!=='performance'))return get(user);
+    const result=build(user,true);
+    return {cards:result.cards.filter(row=>row.id==='performance'),issues:result.issues.filter(row=>row.automationId==='performance'),observedIssueIds:result.observedIssueIds.filter(id=>id.startsWith('performance:'))};
+  }
+  return {get,getForNotifications};
 }

@@ -1,0 +1,30 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtemp,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join,dirname,resolve} from 'node:path';
+import {Store} from './store.mjs';
+import {createCreativeResearchService} from './creative-research.mjs';
+
+test('research cache skips unrelated writes but immediately observes raw/external dependencies and Korean day changes',async t=>{
+ const dir=await mkdtemp(join(tmpdir(),'synk-research-dependencies-')),store=new Store(dir),external=new Store(dir);
+ let at='2026-11-01T14:59:00.000Z';const service=createCreativeResearchService({store,clock:()=>at});
+ t.after(async()=>{await service.stop();external.close();store.close();assert.equal(dirname(resolve(dir)),resolve(tmpdir()));assert.ok(dir.includes('synk-research-dependencies-'));await rm(dir,{recursive:true,force:true});});
+ const owner=store.createUser({name:'Owner',email:'owner@cache.test',role:'member',teamId:'a'}),reader=store.createUser({name:'Reader',email:'reader@cache.test',role:'member',teamId:'a'});
+ store.put('teams','a',{id:'a',name:'Team',active:true});
+ const entry=service.add(owner,{source:'facebook',kind:'reel',title:'CACHE_BODY_SENTINEL',sourceUrl:'https://www.facebook.com/reel/123456789012345/',hook:'Synthetic '.repeat(150),visibility:'team',shareConfirmed:true}).entry;
+ const original=JSON.parse;let bodyParses=0;
+ t.mock.method(JSON,'parse',function(value,...args){if(typeof value==='string'&&value.includes('CACHE_BODY_SENTINEL'))bodyParses++;return original(value,...args);});
+ const first=service.revision(reader);assert.ok(bodyParses>0);bodyParses=0;
+ store.mint('session',reader.id,{csrfToken:'synthetic'},5);store.put('audit','local',{id:'local',text:'unrelated'});
+ assert.equal(service.revision(reader),first);assert.equal(bodyParses,0);
+ external.put('audit','external',{id:'external',text:'unrelated'});assert.equal(service.revision(reader),first);assert.equal(bodyParses,0);
+ const changed={...entry,hook:'Different'};store.db.prepare('UPDATE documents SET body=? WHERE kind=? AND id=?').run(JSON.stringify(changed),'creativeResearchEntries',entry.id);
+ assert.notEqual(service.revision(reader),first);assert.ok(bodyParses>0);assert.equal(service.workspace(reader).entries[0].hook,'Different');
+ external.put('users',reader.id,{...reader,teamId:'b'});assert.equal(service.workspace(reader).entries.length,0);
+ external.put('users',reader.id,reader);assert.equal(service.workspace(reader).entries.length,1);
+ store.put('creativeResearchGuideDays','2026-11-01',{date:'2026-11-01',entryIds:['synthetic-guide'],deferredCount:2});assert.equal(service.workspace(reader).automation.pool.addedCount,1);
+ at='2026-11-01T15:01:00.000Z';assert.equal(service.workspace(reader).automation.pool.date,'2026-11-02');assert.equal(service.workspace(reader).automation.pool.addedCount,0);
+ const result=service.workspace(reader);result.entries[0].hook='caller mutation';assert.equal(service.workspace(reader).entries[0].hook,'Different');
+ external.put('users',reader.id,{...reader,active:false});assert.throws(()=>service.workspace(reader),{status:401});
+});
