@@ -15,25 +15,35 @@ const script = fileURLToPath(new URL('../tools/작업실예약.js', import.meta.
 const local = fs.mkdtempSync(path.join(os.tmpdir(), 'booking-links-'));
 process.env.SYNK_WORKSPACE_LINK_DIR = local;
 const booking = require(script);
+const receiverScript = fileURLToPath(new URL('./_notification-receiver.cjs', import.meta.url));
+const receiver = require(receiverScript);
 test.after(() => fs.rmSync(local, { recursive: true, force: true }));
 function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'booking-safety-'));
   const dir = path.join(root, 'fixture'); fs.mkdirSync(path.join(dir, '게시'), { recursive: true });
   const prep = { 작업실등록: true, 상태: '올릴 준비', 검사: { 결과: '정상' } };
   fs.writeFileSync(path.join(dir, '게시', '준비.json'), JSON.stringify(prep));
-  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  t.after(() => {
+    for (const kind of ['일시실패', '확인필요']) fs.rmSync(noticeFile(dir, kind), { force: true });
+    fs.rmSync(root, { recursive: true, force: true });
+  });
   return { root, bundle: { dir, name: 'fixture', prep }, state: path.join(dir, '게시', '작업실.json'), marker: path.join(dir, '게시', '작업실_자동등록중지.json') };
 }
 const rows = () => [{ eligible: true, video: { rel: 'fixture.mp4', path: 'fixture.mp4' }, variant: {}, channel: { id: 'fixture' }, notes: [] }];
 const fakeCancel = { get: async u => u.endsWith('/review') ? { links: [] } : { post: { status: 'draft' }, jobs: [] }, post: async () => ({}) };
 const notStarted = () => Object.assign(Error('send not started'), { delivery: 'not-started' });
-function noticeFile(dir) {
+function noticeFile(dir, kind = '일시실패') {
   const resolved = fs.realpathSync(dir);
-  return path.join(local, '등록실패알림', `${createHash('sha256').update(process.platform === 'win32' ? resolved.toLowerCase() : resolved).digest('hex')}-일시실패.sqlite`);
+  return path.join(local, '등록실패알림', `${createHash('sha256').update(process.platform === 'win32' ? resolved.toLowerCase() : resolved).digest('hex')}-${kind}.sqlite`);
 }
 function noticeState(dir) {
   const db = new DatabaseSync(noticeFile(dir));
   try { return db.prepare('SELECT sent FROM notice WHERE id=1').get()?.sent; }
+  finally { db.close(); }
+}
+function outbox(dir) {
+  const db = new DatabaseSync(noticeFile(dir));
+  try { return db.prepare('SELECT * FROM notice_outbox ORDER BY rowid').all(); }
   finally { db.close(); }
 }
 
@@ -142,33 +152,38 @@ test('같은 편의 실패 알림이 동시에 시작돼도 한 통만 보낸다
   release(); assert.equal(await first, true); assert.equal(sent, 1);
 });
 
-test('기본 헤르메스 경로도 실행 전 실패만 재시도하고 시간 초과는 미확인으로 남긴다', async t => {
-  const hermes = require('../tools/lib/헤르메스보내기.js'), original = hermes.보내기;
-  t.after(() => { hermes.보내기 = original; });
+test('기본 MTProto 경로도 설정 오류·시간 초과 뒤 같은 ID로 다시 보낸다', async t => {
+  const telegram = require('../tools/lib/텔레그램_한번보내기.js'), original = { ...telegram };
+  t.after(() => { Object.assign(telegram, original); });
+  telegram.identity = () => ({ botId: 'injected', target: 'injected' });
   const retryable = fixture(t);
-  hermes.보내기 = () => hermes.결과({ pid: 0, status: null, error: { code: 'ENOENT', message: 'not installed' } });
+  telegram.send = () => { throw Error('not installed'); };
   await assert.rejects(booking.notifyFailureOnce(retryable.bundle.dir, Error('failure')), /not installed/);
   assert.equal(noticeState(retryable.bundle.dir), 0);
-  hermes.보내기 = () => ({ ok: true });
+  telegram.send = () => ({ messageId: '1' });
   assert.equal(await booking.notifyFailureOnce(retryable.bundle.dir, Error('failure')), true);
   const uncertain = fixture(t);
-  hermes.보내기 = () => hermes.결과({ pid: 20, status: null, error: { code: 'ETIMEDOUT', message: 'timed out' } });
-  await assert.rejects(booking.notifyFailureOnce(uncertain.bundle.dir, Error('failure')), { code: 'NOTICE_UNCERTAIN' });
-  assert.equal(noticeState(uncertain.bundle.dir), 2);
-  hermes.보내기 = () => { assert.fail('미확인 알림을 다시 보내면 안 된다'); };
-  assert.equal(await booking.notifyFailureOnce(uncertain.bundle.dir, Error('failure')), false);
+  telegram.send = () => { throw Error('timed out'); };
+  await assert.rejects(booking.notifyFailureOnce(uncertain.bundle.dir, Error('failure')), /timed out/);
+  const id = outbox(uncertain.bundle.dir)[0].random_id;
+  telegram.send = (text, delivery) => { assert.equal(delivery.randomId, id); return { messageId: '2' }; };
+  assert.equal(await booking.notifyFailureOnce(uncertain.bundle.dir, Error('failure')), true);
+  assert.equal(noticeState(uncertain.bundle.dir), 1);
 });
 
-test('미전송 뒤 재시도 기록까지 잠기면 전송 실패와 기록 실패를 함께 알리고 중복 방지를 유지한다', async t => {
-  const f = fixture(t), original = notStarted(); let blocker;
+test('수신 뒤 결과 기록이 잠겨도 같은 ID가 남아 중복 없이 재시도한다', async t => {
+  const f = fixture(t), receive = receiver(path.join(f.root, 'received.sqlite')); let blocker;
   try {
-    await assert.rejects(booking.notifyFailureOnce(f.bundle.dir, Error('failure'), async () => {
+    await assert.rejects(booking.notifyFailureOnce(f.bundle.dir, Error('failure'), async (text, delivery) => {
+      const receipt = await receive(text, delivery);
       blocker = new DatabaseSync(noticeFile(f.bundle.dir)); blocker.exec('BEGIN IMMEDIATE');
-      throw original;
-    }), error => error.code === 'NOTICE_RETRY_BLOCKED' && error.cause === original && /send not started/.test(error.message) && /database is locked/.test(error.message));
+      return receipt;
+    }), /database is locked/);
   } finally { blocker?.close(); }
-  assert.equal(noticeState(f.bundle.dir), 2);
-  assert.equal(await booking.notifyFailureOnce(f.bundle.dir, Error('failure'), async () => assert.fail('재시도 기록이 불확실하면 전송하지 않는다')), false);
+  assert.equal(noticeState(f.bundle.dir), 0);
+  assert.equal(await booking.notifyFailureOnce(f.bundle.dir, Error('failure'), receive), true);
+  assert.equal(receive.rows().length, 1);
+  assert.equal(noticeState(f.bundle.dir), 1);
 });
 
 test('등록 성공 뒤 새 알림이 생겨도 옛 전송 완료가 새 알림의 재시도를 막지 않는다', async t => {
@@ -176,7 +191,7 @@ test('등록 성공 뒤 새 알림이 생겨도 옛 전송 완료가 새 알림�
   const wait = new Promise(resolve => { release = resolve; });
   const sending = booking.notifyFailureOnce(f.bundle.dir, Error('failure'), async () => { sent++; await wait; });
   await booking.clearFailureNotice(f.bundle.dir);
-  await assert.rejects(booking.notifyFailureOnce(f.bundle.dir, Error('new failure'), async () => { throw notStarted(); }), /send not started/);
+  assert.equal(await booking.notifyFailureOnce(f.bundle.dir, Error('new failure'), async () => assert.fail('앞 전송 동안에는 기록만 한다')), false);
   release(); await sending;
   assert.equal(noticeState(f.bundle.dir), 0);
   assert.equal(await booking.notifyFailureOnce(f.bundle.dir, Error('new failure'), async () => { sent++; }), true);
@@ -193,74 +208,101 @@ test('업로드 실패 뒤 원고 결과가 불확실해지면 별도로 알린�
   assert.equal(messages.length, 2);
 });
 
-test('대기열이 비어도 전송을 시작하지 못한 알림을 다음 회차에 보낸다', async t => {
+test('대기열이 비고 텔레그램 검토 링크 설정이 꺼져 있어도 이미 요청된 실패 알림은 이어 보낸다', async t => {
   const f = fixture(t);
   await assert.rejects(booking.notifyFailureOnce(f.bundle.dir, Error('failure'), async () => { throw notStarted(); }), /send not started/);
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'booking-empty-queue-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   fs.mkdirSync(path.join(root, 'tools')); fs.mkdirSync(path.join(root, 'docs', '마케팅'), { recursive: true });
   const calls = path.join(root, 'calls.txt'), guard = path.join(root, 'guard.cjs');
-  fs.writeFileSync(guard, `const fs=require('node:fs');global.fetch=async()=>{throw Error('NETWORK_BLOCKED')};require(${JSON.stringify(fileURLToPath(new URL('../tools/lib/헤르메스보내기.js', import.meta.url)))}).보내기=()=>{fs.appendFileSync(${JSON.stringify(calls)},'sent\\n');return {ok:true}};`);
+  fs.writeFileSync(guard, `const fs=require('node:fs');global.fetch=async()=>{throw Error('NETWORK_BLOCKED')};const telegram=require(${JSON.stringify(fileURLToPath(new URL('../tools/lib/텔레그램_한번보내기.js', import.meta.url)))});telegram.identity=()=>({botId:'injected',target:'injected'});telegram.send=()=>{fs.appendFileSync(${JSON.stringify(calls)},'sent\\n');return {messageId:'1'}};`);
   const env = { ...process.env, SYNK_WORKSPACE_SESSION: '', SYNK_WORKSPACE_LINK_DIR: local };
-  const run = () => spawnSync(process.execPath, ['--require', guard, script, '--대기열', '--실행', '--텔레그램'], { cwd: root, encoding: 'utf8', env });
+  const run = () => spawnSync(process.execPath, ['--require', guard, script, '--대기열', '--실행'], { cwd: root, encoding: 'utf8', env });
   const first = run(); assert.equal(first.status, 0, first.stderr); assert.match(first.stdout, /등록할 편이 없다/);
   assert.equal(fs.readFileSync(calls, 'utf8'), 'sent\n');
   assert.equal(run().status, 0); assert.equal(fs.readFileSync(calls, 'utf8'), 'sent\n');
+  await booking.clearFailureNotice(f.bundle.dir);
+  await assert.rejects(booking.notifyFailureOnce(f.bundle.dir, Error('new failure'), async () => { throw Error('offline'); }), /offline/);
+  fs.appendFileSync(guard, `;require(${JSON.stringify(fileURLToPath(new URL('../tools/lib/텔레그램_한번보내기.js', import.meta.url)))}).send=()=>{throw Error('offline')};`);
+  const failed = run();
+  assert.equal(failed.status, 1);
+  assert.match(failed.stderr, /전송 대기 기록/);
+  assert.match(failed.stdout, /등록할 편이 없다/);
+  assert.equal(outbox(f.bundle.dir).at(-1).status, 'pending');
 });
 
 test('전송 직후 프로세스를 강제 종료하고 여러 번 재시작해도 같은 알림은 한 통만 간다', async t => {
   const f = fixture(t);
-  const calls = path.join(f.root, 'delivered.txt');
+  const calls = path.join(f.root, 'received.sqlite'), receive = receiver(calls);
   const env = { ...process.env, SYNK_WORKSPACE_LINK_DIR: local };
-  const program = `const fs=require('node:fs'),b=require(process.argv[1]);setInterval(()=>{},1000);b.notifyFailureOnce(process.argv[2],Error('failure'),()=>new Promise(()=>{fs.appendFileSync(process.argv[3],'delivered\\n');process.send('delivered')}));`;
-  const child = spawn(process.execPath, ['-e', program, script, f.bundle.dir, calls], { stdio: ['ignore', 'ignore', 'pipe', 'ipc'], env });
+  const program = `const b=require(process.argv[1]),receive=require(process.argv[4])(process.argv[3]);setInterval(()=>{},1000);b.notifyFailureOnce(process.argv[2],Error('failure'),async(text,delivery)=>{await receive(text,delivery);process.send('delivered');await new Promise(()=>{})});`;
+  const child = spawn(process.execPath, ['-e', program, script, f.bundle.dir, calls, receiverScript], { stdio: ['ignore', 'ignore', 'pipe', 'ipc'], env });
   t.after(() => { if (child.exitCode === null && child.signalCode === null) child.kill(); });
   assert.equal((await once(child, 'message'))[0], 'delivered');
-  assert.equal(noticeState(f.bundle.dir), 2, '수신 직후 성공 기록 전에도 전송 시도가 디스크에 확정돼 있다');
+  const firstId = outbox(f.bundle.dir)[0].random_id;
+  assert.equal(noticeState(f.bundle.dir), 0, '수신 직후에는 아직 수신 확인을 확정하지 않았다');
   child.kill(); await once(child, 'exit');
-  const retry = `const fs=require('node:fs'),b=require(process.argv[1]);const send=async()=>fs.appendFileSync(process.argv[3],'duplicate\\n');(async()=>{await b.notifyFailureOnce(process.argv[2],Error('failure'),send);await b.resendFailureNotices(send)})().catch(()=>process.exit(1));`;
+  const retry = `const b=require(process.argv[1]),receive=require(process.argv[4])(process.argv[3]);(async()=>{await b.notifyFailureOnce(process.argv[2],Error('failure'),receive);await b.resendFailureNotices(receive)})().catch(()=>process.exit(1));`;
   for (let i = 0; i < 3; i++) {
-    const run = spawnSync(process.execPath, ['-e', retry, script, f.bundle.dir, calls], { encoding: 'utf8', env });
+    const run = spawnSync(process.execPath, ['-e', retry, script, f.bundle.dir, calls, receiverScript], { encoding: 'utf8', env });
     assert.equal(run.status, 0, run.stderr);
-    assert.match(run.stderr, /전송 결과 미확인/);
   }
-  assert.equal(fs.readFileSync(calls, 'utf8'), 'delivered\n');
-  assert.equal(noticeState(f.bundle.dir), 2, '미확인을 성공으로 바꾸지 않는다');
+  assert.equal(receive.rows().length, 1);
+  assert.equal(receive.rows()[0].random_id, firstId);
+  assert.equal(noticeState(f.bundle.dir), 1);
 });
 
-test('응답이 유실된 전송은 성공으로 기록하지 않고 자동 재전송을 막는다', async t => {
-  const f = fixture(t); let delivered = 0;
-  await assert.rejects(booking.notifyFailureOnce(f.bundle.dir, Error('failure'), async () => {
-    delivered++; throw Error('response lost');
-  }), { code: 'NOTICE_UNCERTAIN' });
-  assert.equal(noticeState(f.bundle.dir), 2);
-  await booking.resendFailureNotices(async () => { delivered++; });
-  assert.equal(delivered, 1);
+test('응답이 유실돼도 같은 ID로 재시도해 누락과 중복을 함께 막는다', async t => {
+  const f = fixture(t), receive = receiver(path.join(f.root, 'received.sqlite'));
+  await assert.rejects(booking.notifyFailureOnce(f.bundle.dir, Error('failure'), async (text, delivery) => {
+    await receive(text, delivery); throw Error('response lost');
+  }), /response lost/);
+  assert.equal(noticeState(f.bundle.dir), 0);
+  await booking.resendFailureNotices(receive);
+  assert.equal(receive.rows().length, 1);
+  assert.equal(noticeState(f.bundle.dir), 1);
 });
 
-test('전송 직전 종료도 미확인으로 보존하므로 자동 재시도로 중복 위험을 만들지 않는다', async t => {
+test('전송 직전 종료도 같은 ID로 다시 보내므로 알림이 누락되지 않는다', async t => {
   const f = fixture(t);
   const program = `const b=require(process.argv[1]);setInterval(()=>{},1000);b.notifyFailureOnce(process.argv[2],Error('failure'),()=>new Promise(()=>{process.send('claimed')}));`;
   const child = spawn(process.execPath, ['-e', program, script, f.bundle.dir], { stdio: ['ignore', 'ignore', 'pipe', 'ipc'], env: { ...process.env, SYNK_WORKSPACE_LINK_DIR: local } });
   t.after(() => { if (child.exitCode === null && child.signalCode === null) child.kill(); });
   assert.equal((await once(child, 'message'))[0], 'claimed');
   child.kill(); await once(child, 'exit');
-  let sent = 0;
-  assert.equal(await booking.notifyFailureOnce(f.bundle.dir, Error('failure'), async () => { sent++; }), false);
-  assert.equal(sent, 0);
-  assert.equal(noticeState(f.bundle.dir), 2);
+  const receive = receiver(path.join(f.root, 'received.sqlite')), id = outbox(f.bundle.dir)[0].random_id;
+  assert.equal(await booking.notifyFailureOnce(f.bundle.dir, Error('failure'), receive), true);
+  await booking.resendFailureNotices(receive);
+  assert.equal(receive.rows().length, 1);
+  assert.equal(receive.rows()[0].random_id, id);
+  assert.equal(noticeState(f.bundle.dir), 1);
 });
 
 test('기존 SQLite의 미발송·발송 기록을 보존하며 새 전송 방식으로 이어 간다', async t => {
-  for (const oldSent of [0, 1]) {
+  for (const oldSent of [0, 1, 2]) {
     const f = fixture(t), file = noticeFile(f.bundle.dir);
     fs.mkdirSync(path.dirname(file), { recursive: true });
     const db = new DatabaseSync(file);
     db.exec('CREATE TABLE notice (id INTEGER PRIMARY KEY CHECK(id=1), message TEXT NOT NULL, sent INTEGER NOT NULL)');
     db.prepare('INSERT INTO notice VALUES (1, ?, ?)').run('legacy failure', oldSent); db.close();
     const messages = [];
-    assert.equal(await booking.notifyFailureOnce(f.bundle.dir, Error('new text'), async text => { messages.push(text); }), !oldSent);
+    assert.equal(await booking.notifyFailureOnce(f.bundle.dir, Error('new text'), async text => { messages.push(text); }), oldSent === 0);
     assert.deepEqual(messages, oldSent ? [] : ['legacy failure']);
-    assert.equal(noticeState(f.bundle.dir), 1);
+    assert.equal(noticeState(f.bundle.dir), oldSent === 2 ? 2 : 1);
   }
+});
+
+test('한 편의 중복 경로 충돌이 다른 편의 알림 전송을 막지 않는다', () => {
+  const program = `const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),b=require(process.argv[1]);
+    const good='a'.repeat(64)+'-일시실패.sqlite',bad='b'.repeat(64)+'-일시실패.sqlite';
+    const packages=path.join(process.env.LOCALAPPDATA,'Packages');
+    const cache=path.join(packages,'OpenAI.Codex_fixture','LocalCache','Local','synk','작업실예약','등록실패알림');
+    const originalRead=fs.readdirSync,originalStat=fs.statSync;
+    fs.readdirSync=dir=>dir===b.FAILURE_DIR?[good,bad]:dir===packages?['OpenAI.Codex_fixture']:dir===cache?[bad]:dir===path.join(b.LOCAL_DIR,'등록실패알림')?[]:originalRead(dir);
+    fs.statSync=(file,options)=>[good,bad].includes(path.basename(file))?{dev:1n,ino:path.basename(file)===good?1n:path.dirname(file)===b.FAILURE_DIR?2n:3n}:originalStat(file,options);
+    const sent=[];require(process.argv[2]).dispatch=async file=>{sent.push(path.basename(file));return 1};
+    b.resendFailureNotices().then(()=>{throw Error('expected partial failure')}).catch(error=>{assert.equal(error.sent,1);assert.deepEqual(sent,[good]);console.log('PARTIAL_SUCCESS_CONFIRMED')}).catch(()=>process.exit(1));`;
+  const run = spawnSync(process.execPath, ['-e', program, script, fileURLToPath(new URL('../tools/lib/등록실패알림.js', import.meta.url))], { encoding: 'utf8', env: { ...process.env, LOCALAPPDATA: path.join(local, '가상AppData'), SYNK_WORKSPACE_LINK_DIR: '' } });
+  assert.equal(run.status, 0, run.stderr);
+  assert.match(run.stdout, /PARTIAL_SUCCESS_CONFIRMED/);
 });

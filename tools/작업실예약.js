@@ -34,10 +34,12 @@ const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { Readable } = require('node:stream');
-const { createHash, randomUUID } = require('node:crypto');
+const { createHash } = require('node:crypto');
 const 묶음 = require('./lib/게시묶음.js');
 const { 공용작업본 } = require('./lib/공용작업본.js');
 const 헤르메스 = require('./lib/헤르메스보내기.js');
+const 실패알림 = require('./lib/등록실패알림.js');
+const 텔레그램한번 = require('./lib/텔레그램_한번보내기.js');
 
 const ORIGIN = 'https://workspace.synk.im';
 const CREDENTIAL = 'SYNK/SNS/workspace-automation';
@@ -46,6 +48,8 @@ const MAX_BYTES = 100 * 1024 * 1024;
 const TIMEZONE = 'Asia/Seoul';
 const LANG = /^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$/;
 const LOCAL_DIR = process.env.SYNK_WORKSPACE_LINK_DIR || path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'), 'synk', '작업실예약');
+// MSIX 앱 안과 Windows 예약 작업이 같은 outbox를 읽어야 한다. AppData 가상화를 피한다.
+const FAILURE_DIR = process.env.SYNK_WORKSPACE_LINK_DIR ? path.join(LOCAL_DIR, '등록실패알림') : path.join(os.homedir(), '.synk', '작업실예약', '등록실패알림');
 const HERMES = path.join(process.env.LOCALAPPDATA || '', 'hermes', 'bin', 'hermes.exe');
 const TELEGRAM = 'telegram:6017495834';
 
@@ -313,108 +317,69 @@ async function sendTelegram(text) {
 }
 
 // 알림은 편과 실패 단계별로 보관한다. 원고 결과가 불확실해진 경우는 앞선 업로드 실패와 별도로 알린다.
+function existingFailureNoticeFiles() {
+  const folders = [FAILURE_DIR];
+  if (!process.env.SYNK_WORKSPACE_LINK_DIR) {
+    const appData = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local');
+    const packages = path.join(appData, 'Packages');
+    let names = [];
+    try { names = fs.readdirSync(packages).filter(name => /^(OpenAI\.Codex_|Claude_|Anthropic\.Claude_)/i.test(name)); }
+    catch (error) { if (error.code !== 'ENOENT') throw error; }
+    for (const name of names) folders.push(path.join(packages, name, 'LocalCache', 'Local', 'synk', '작업실예약', '등록실패알림'));
+    folders.push(path.join(LOCAL_DIR, '등록실패알림'));
+  }
+  const files = new Map(), physical = new Map(), conflicts = new Set();
+  for (const folder of folders) {
+    let names;
+    try { names = fs.readdirSync(folder).filter(name => /^[a-f0-9]{64}-(일시실패|확인필요)\.sqlite$/.test(name)); }
+    catch (error) { if (error.code === 'ENOENT') continue; throw error; }
+    for (const name of names) {
+      const file = path.join(folder, name), stat = fs.statSync(file, { bigint: true });
+      const id = `${stat.dev}:${stat.ino}`;
+      if (physical.has(name) && physical.get(name) !== id) { conflicts.add(name); files.delete(name); continue; }
+      if (conflicts.has(name)) continue;
+      if (!files.has(name)) { files.set(name, file); physical.set(name, id); }
+    }
+  }
+  return { files, conflicts };
+}
 function failureNoticeFile(dir, kind) {
   const resolved = fs.realpathSync(dir);
   const key = createHash('sha256').update(process.platform === 'win32' ? resolved.toLowerCase() : resolved).digest('hex');
-  return path.join(LOCAL_DIR, '등록실패알림', `${key}-${kind}.sqlite`);
+  const name = `${key}-${kind}.sqlite`;
+  const { files, conflicts } = existingFailureNoticeFiles();
+  if (conflicts.has(name)) throw new Error(`실패 알림 ${name}의 기록이 여러 위치에 있다 — 중복 전송 전에 대조해야 한다`);
+  return files.get(name) || path.join(FAILURE_DIR, name);
 }
 function noticeKind(dir, error) {
   return error.code === 'UNCERTAIN' || fs.existsSync(path.join(dir, '게시', '작업실.json')) ? '확인필요' : '일시실패';
 }
-const sqliteBusy = error => error?.errcode === 5 || /database is locked/i.test(error?.message || '');
-function openNotice(file, busyMs = 0) {
-  const { DatabaseSync } = require('node:sqlite');
-  const db = new DatabaseSync(file);
-  try {
-    db.exec(`PRAGMA busy_timeout=${busyMs}; PRAGMA synchronous=FULL`);
-    // sent: 0=아직 시도 안 함, 1=전송 확인, 2=시도 기록 확정·결과 미확인. 기존 0/1 기록은 그대로 읽는다.
-    db.exec('CREATE TABLE IF NOT EXISTS notice (id INTEGER PRIMARY KEY CHECK(id=1), message TEXT NOT NULL, sent INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS notice_claim (id INTEGER PRIMARY KEY CHECK(id=1), token TEXT NOT NULL)');
-    return db;
-  }
-  catch (error) { db.close(); throw error; }
-}
-async function dispatchFailureNotice(file, send = sendTelegram) {
-  if (!fs.existsSync(file)) return false;
-  let db, started = false, notice, token;
-  try {
-    db = openNotice(file);
-    db.exec('BEGIN IMMEDIATE'); started = true;
-    notice = db.prepare('SELECT message, sent FROM notice WHERE id=1').get();
-    if (!notice || notice.sent) {
-      db.exec('COMMIT'); started = false;
-      if (notice?.sent === 2) console.error('  ! 알림 전송 결과 미확인 — 중복 방지를 위해 자동 재전송하지 않는다');
-      return false;
-    }
-    token = randomUUID();
-    db.prepare('INSERT INTO notice_claim (id, token) VALUES (1, ?) ON CONFLICT(id) DO UPDATE SET token=excluded.token').run(token);
-    db.prepare('UPDATE notice SET sent=2 WHERE id=1').run();
-    // 외부 전송보다 먼저 확정한다. 여기서부터 종료·응답 유실이 나도 같은 알림을 자동으로 다시 보내지 않는다.
-    db.exec('COMMIT'); started = false;
-  } catch (error) {
-    if (started) { db.exec('ROLLBACK'); started = false; }
-    if (sqliteBusy(error)) return false;
-    throw error;
-  } finally { db?.close(); }
-
-  const finish = sent => {
-    const result = openNotice(file, 5000);
-    try {
-      // 등록 성공으로 초기화된 뒤 새 실패가 생겼어도 옛 전송의 완료·실패가 새 기록을 바꾸지 못하게 한다.
-      result.prepare('UPDATE notice SET sent=? WHERE id=1 AND sent=2 AND EXISTS (SELECT 1 FROM notice_claim WHERE id=1 AND token=?)').run(sent, token);
-    } finally { result.close(); }
-  };
-  try { await send(notice.message); }
-  catch (error) {
-    if (error?.delivery === 'not-started') {
-      try { finish(0); }
-      catch (recordError) {
-        throw Object.assign(new Error(`알림 전송을 시작하지 못했고 재시도 기록도 복구하지 못했다 — 자동 재전송하지 않는다: ${error.message} / 기록: ${recordError.message}`),
-          { code: 'NOTICE_RETRY_BLOCKED', cause: error, recordError });
-      }
-      throw error;
-    }
-    throw Object.assign(new Error(`알림 전송 결과 미확인 — 중복 방지를 위해 자동 재전송하지 않는다: ${error?.message || error}`), { code: 'NOTICE_UNCERTAIN', cause: error });
-  }
-  try { finish(1); }
-  catch (error) { throw Object.assign(new Error(`알림은 보냈지만 결과 기록을 마치지 못했다 — 자동 재전송하지 않는다: ${error.message}`), { code: 'NOTICE_UNCERTAIN', cause: error }); }
-  return true;
-}
-async function notifyFailureOnce(dir, error, send = sendTelegram) {
+async function sendFailureTelegram(text, delivery) { return 텔레그램한번.send(text, delivery); }
+sendFailureTelegram.identity = () => 텔레그램한번.identity(TELEGRAM);
+async function notifyFailureOnce(dir, error, send = sendFailureTelegram) {
   const file = failureNoticeFile(dir, noticeKind(dir, error));
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  const text = `[작업실 등록 실패] ${path.basename(dir)}\n${String(error.message).slice(0, 300)}\n「오늘 편 게시」 세션이 기록과 작업실 원고를 확인합니다.`;
-  let db;
-  try { db = openNotice(file); db.prepare('INSERT OR IGNORE INTO notice (id, message, sent) VALUES (1, ?, 0)').run(text); }
-  catch (e) { if (sqliteBusy(e)) return false; throw e; }
-  finally { db?.close(); }
-  return dispatchFailureNotice(file, send);
+  const text = `[작업실 등록 실패] ${path.basename(dir)}\n발생: ${kst(new Date().toISOString())} (KST)\n${String(error.message).slice(0, 300)}\n「오늘 편 게시」 세션이 기록과 작업실 원고를 확인합니다.`;
+  실패알림.enqueue(file, text);
+  return (await 실패알림.dispatch(file, send)) > 0;
 }
-async function resendFailureNotices(send = sendTelegram) {
-  const dir = path.join(LOCAL_DIR, '등록실패알림');
-  let names;
-  try { names = fs.readdirSync(dir).filter(name => /^[a-f0-9]{64}-(일시실패|확인필요)\.sqlite$/.test(name)); }
-  catch (e) { if (e.code === 'ENOENT') return 0; throw e; }
+async function resendFailureNotices(send = sendFailureTelegram) {
+  const { files, conflicts } = existingFailureNoticeFiles();
   let sent = 0;
-  for (const name of names) {
-    try { if (await dispatchFailureNotice(path.join(dir, name), send)) sent++; }
-    catch (error) { console.error(`  ! 등록 실패 알림을 처리하지 못했다: ${error.message}`); }
+  const errors = [];
+  for (const name of conflicts) errors.push(new Error(`실패 알림 ${name}의 여러 기록을 대조해야 한다`));
+  for (const file of files.values()) {
+    try { sent += await 실패알림.dispatch(file, send); }
+    catch (error) { sent += Number.isSafeInteger(error.sent) ? error.sent : 0; errors.push(error); console.error(`  ! 등록 실패 알림을 처리하지 못했다: ${error.message}`); }
   }
+  if (errors.length) throw Object.assign(new AggregateError(errors, `등록 실패 알림 ${sent}건 확인·${errors.length}개 기록이 전송 대기 기록에 남아 있다`), { sent });
   return sent;
 }
 async function clearFailureNotice(dir) {
+  const errors = [];
   for (const kind of ['일시실패', '확인필요']) {
-    const file = failureNoticeFile(dir, kind);
-    if (!fs.existsSync(file)) continue;
-    const deadline = Date.now() + 190000;
-    for (;;) {
-      let db;
-      try { db = openNotice(file); db.prepare('DELETE FROM notice WHERE id=1').run(); break; }
-      catch (error) {
-        if (!sqliteBusy(error) || Date.now() >= deadline) throw error;
-        await new Promise(resolve => setTimeout(resolve, 200));
-      } finally { db?.close(); }
-    }
+    try { 실패알림.clear(failureNoticeFile(dir, kind)); } catch (error) { errors.push(error); }
   }
+  if (errors.length) throw new AggregateError(errors, '일부 실패 회차 표식을 초기화하지 못했다 — 전송 기록은 보존했다');
 }
 
 const kst = (iso) => new Date(Date.parse(iso) + 9 * 3600000).toISOString().slice(5, 16).replace('T', ' ');
@@ -713,7 +678,11 @@ async function main() {
   // 등록할 편이 없는 회차는 자격·서버를 읽지 않는다. 이미 등록했으나 못 보낸 검토 링크는 그대로 이어 보낸다.
   const queueDirs = o.queue && !['상태', '취소'].includes(명령)
     ? readyFolders(path.join(공용작업본(묶음.repoOf(process.cwd())), 'docs', '마케팅')) : null;
-  if (queueDirs && o.run && o.telegram) await resendFailureNotices();
+  // 이미 전송 요청돼 보관된 실패 알림은 검토 링크 알림 설정과 관계없이 이어 보낸다.
+  if (queueDirs && o.run) {
+    try { await resendFailureNotices(); }
+    catch (error) { console.error(`  ! ${error.message}`); process.exitCode = 1; }
+  }
   if (queueDirs && !queueDirs.length) {
     if (o.run && o.telegram) await resendPending();
     console.log('등록할 편이 없다');
@@ -750,4 +719,4 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.message); process.exitCode = error.code === 'NO_CREDENTIAL' ? 3 : error.code === 'USAGE' ? 2 : 1; });
 
-module.exports = { Workspace, connect, planBundle, register, handleOne, status, cancel, matchChannel, checkedFile, readyFolders, sharedBundle, cachedJobs, sendLink, resendPending, notifyFailureOnce, resendFailureNotices, clearFailureNotice, companions, 명령이름, STATUS, LOCAL_DIR, mergeResults };
+module.exports = { Workspace, connect, planBundle, register, handleOne, status, cancel, matchChannel, checkedFile, readyFolders, sharedBundle, cachedJobs, sendLink, resendPending, notifyFailureOnce, resendFailureNotices, clearFailureNotice, checkFailureTelegram: () => 텔레그램한번.check(TELEGRAM), companions, 명령이름, STATUS, LOCAL_DIR, FAILURE_DIR, mergeResults };
