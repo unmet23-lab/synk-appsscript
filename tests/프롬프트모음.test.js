@@ -93,6 +93,64 @@ test('그린 페이지 — 항목 id 앵커, 빈칸 표시, 복사 단추, 체�
   assert.match(html, /<link rel="canonical" href="https:\/\/synk\.im\/prompts\/">/);
 });
 
+test('11-01 아르곤 A1 — 같은 종류 블록 둘은 「넣는 곳」 「 — 」 뒤로 제목·복사 단추 이름을 가르고, 같으면 막는다', () => {
+  const two = item({ id: 'one-line', 블록: [
+    { 종류: '프롬프트', '넣는 곳': '채팅 AI — 요청 끝에 붙이기', 본문: '【내 영상 파일】의 색으로' },
+    { 종류: '프롬프트', '넣는 곳': '채팅 AI — 처음부터 통째로', 본문: '홈페이지를 만들어 줘. 【내 영상 파일】의 색으로' },
+    { 종류: '명령', '넣는 곳': '직접 — 터미널', 본문: 'ls 【내 영상 파일】' },
+  ] });
+  assert.deepEqual(page.checkPrompts({ 항목: [two] }), []);
+  const html = page.renderPage({ 항목: [two, item()] }, { now: Date.parse('2026-10-24T09:00+09:00') });
+  assert.match(html, /<h3 id="one-line-1-h">프롬프트<span class="sr">\(요청 끝에 붙이기\)<\/span><\/h3>/);
+  assert.match(html, /<h3 id="one-line-2-h">프롬프트<span class="sr">\(처음부터 통째로\)<\/span><\/h3>/);
+  assert.match(html, /data-for="one-line-1" aria-label="[^"]* — 프롬프트\(요청 끝에 붙이기\) 복사"/);
+  assert.match(html, /data-for="one-line-2" aria-label="[^"]* — 프롬프트\(처음부터 통째로\) 복사"/);
+  assert.match(html, /<h3 id="one-line-3-h">명령<\/h3>/, '종류가 하나뿐인 블록은 그대로');
+  assert.match(html, /data-for="still-time-1" aria-label="[^"]* — 프롬프트 복사"/, '블록이 하나인 항목도 그대로');
+  const labels = [...html.matchAll(/class="copy"[^>]*aria-label="([^"]*)"/g)].map((m) => m[1]);
+  assert.equal(new Set(labels).size, labels.length, '복사 단추 이름이 쪽 안에서 겹치지 않는다');
+  const same = item({ 블록: [
+    { 종류: '프롬프트', '넣는 곳': '채팅 AI — 처음부터 통째로', 본문: '【내 영상 파일】' },
+    { 종류: '프롬프트', '넣는 곳': '코딩 AI — 처음부터 통째로', 본문: '【내 영상 파일】 다시' },
+  ] });
+  assert.ok(page.checkPrompts({ 항목: [same] }).some((p) => /블록 2: 같은 프롬프트 블록과 「넣는 곳」.*겹친다/.test(p)));
+  // Fable F2 — 「 — 」로 끝나도 가르기가 꺼지지 않는다
+  const bare = item({ 블록: [
+    { 종류: '프롬프트', '넣는 곳': '채팅 AI — ', 본문: '【내 영상 파일】' },
+    { 종류: '프롬프트', '넣는 곳': '코딩 AI — ', 본문: '【내 영상 파일】 다시' },
+  ] });
+  const bareHtml = page.renderPage({ 항목: [bare] }, { now: Date.parse('2026-10-24T09:00+09:00') });
+  assert.match(bareHtml, /aria-label="[^"]* — 프롬프트\(채팅 AI\) 복사"/);
+  assert.match(bareHtml, /aria-label="[^"]* — 프롬프트\(코딩 AI\) 복사"/);
+  const sameBare = item({ 블록: [
+    { 종류: '프롬프트', '넣는 곳': '채팅 AI — ', 본문: '【내 영상 파일】' },
+    { 종류: '프롬프트', '넣는 곳': '채팅 AI —', 본문: '【내 영상 파일】 다시' },
+  ] });
+  assert.ok(page.checkPrompts({ 항목: [sameBare] }).some((p) => /겹친다/.test(p)), '뒤가 빈 둘이 같아도 막는다');
+});
+
+test('11-01 — 왜·확인의 [글](#id)는 같은 쪽 다른 항목 링크로 그리고, 없는 id · 자기 id · 다른 칸은 막는다', () => {
+  const from = item({ id: 'old-one', 왜: '물건을 정해 주면 돼요.', 확인: '10월 25일 돌려 봤어요 — [새 한 줄](#new-one).' });
+  const to = item({ id: 'new-one' });
+  assert.deepEqual(page.checkPrompts({ 항목: [to, from] }), []);
+  const html = page.renderPage({ 항목: [to, from] }, { now: Date.parse('2026-10-24T09:00+09:00') });
+  assert.match(html, /<p class="tried"><b>직접 돌려 봤어요<\/b> 10월 25일 돌려 봤어요 — <a href="#new-one">새 한 줄<\/a>\.<\/p>/);
+  assert.doesNotMatch(html, /\]\(#new-one\)/, '링크 표기가 글로 남지 않는다');
+  const bad = page.checkPrompts({ 항목: [
+    item({ id: 'a-one', 확인: '봤어요 [없는 곳](#nowhere)', 왜: '[나](#a-one)' }),
+    item({ id: 'b-one', 설명: '[여기](#a-one) 보세요' }),
+  ] });
+  assert.ok(bad.some((p) => /a-one\) 확인: 링크 #nowhere/.test(p)), '없는 id');
+  assert.ok(bad.some((p) => /a-one\) 왜: 링크 #a-one/.test(p)), '자기 id');
+  assert.ok(bad.some((p) => /b-one\) 설명: 링크는 「왜」·「확인」에 \[글\]\(#id\) 꼴로만/.test(p)), '다른 칸');
+  assert.ok(page.checkPrompts({ 항목: [to, item({ id: 'c-one', 확인: 'gpt로 [새](#new-one)' })] }).some((p) => /c-one\) 확인: AI 이름 「gpt」/.test(p)), '링크를 빼고 나머지 글은 그대로 검사한다');
+  // Fable F1 — 꼴이 어긋나 글자 그대로 공개될 표기를 막는다
+  for (const typo of ['[새 줄] (#new-one)', '[새 줄](#new-one )', '[새 줄](#New-One)', '[새 줄](#new_one)', '[새 줄](new-one)']) {
+    assert.ok(page.checkPrompts({ 항목: [to, item({ id: 'd-one', 확인: `봤어요 ${typo}.` })] }).some((p) => /d-one\) 확인: 링크는/.test(p)), typo);
+  }
+  assert.deepEqual(page.checkPrompts({ 항목: [item({ 블록: [{ 종류: '프롬프트', '넣는 곳': '코딩 AI', 본문: '[빈칸](예시)로 남기고 【내 영상 파일】' }] })] }), [], '복사되는 본문은 보지 않는다');
+});
+
 test('도구(선택) — 같은 문제를 코딩 없이 푸는 맞춤 프로그램을 설명 아래 「코딩 없이 쓰려면」으로 잇는다(10-30)', () => {
   const tool = { 주소: '/builds/voice-check/', 글: '파일만 넣으면 바로 재 줘요.' };
   assert.deepEqual(page.checkPrompts({ 항목: [item({ 도구: tool })] }), []);

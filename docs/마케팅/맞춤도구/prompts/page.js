@@ -12,6 +12,11 @@ const BLOCK_KEYS = ['종류', '넣는 곳', '본문', '메모'];
 const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 // 빈칸: 【이름】 또는 기본값이 있는 【이름=기본값】. 기본값이 있으면 화면에 기본값이 보이고, 안 채우고 복사해도 그대로 쓸 수 있다.
 const BLANK = /【([^【】=\n]+?)(?:=([^【】\n]+))?】/g;
+// 왜·확인 글의 [보이는 글](#id)는 같은 쪽 다른 항목으로 가는 링크다(11-01 — 앞 편 항목에서 뒤 편이 밝힌 결과로 잇기).
+const LINK = /\[([^[\]\n]+)\]\(#([a-z0-9]+(?:-[a-z0-9]+)*)\)/g;
+const LINK_FIELDS = ['왜', '확인'];
+// 꼴이 어긋난 링크(「] (#」·대문자 id·# 빠짐)는 LINK에 안 맞아 글자 그대로 공개된다 — 검사가 막는다(11-01 Fable F1).
+const LOOSE_LINK = /\]\s*\(/;
 const SITE = 'https://synk.im/prompts/';
 // 이 페이지는 AI 이름 대신 쓰임새로 적는다(README 「표기」). 게시글 규칙의 AI·제작 도구 목록에 맨 이름 몇 개를 더 막는다.
 // 뒤에는 라틴 글자만 막는다 — 「gpt로」처럼 조사가 붙어도 잡는다.
@@ -21,10 +26,21 @@ const SOURCES = [['yuhobuilds-youtube', '유튜브 쇼츠'], ['yuhobuilds-instag
 const CHANNELS = [['https://www.youtube.com/@yuhobuilds', '유튜브 @yuhobuilds'], ['https://www.instagram.com/yuhobuilds/', '인스타 @yuhobuilds']];
 
 const blanksOf = (text) => [...String(text || '').matchAll(BLANK)].map((m) => ({ name: m[1].trim(), value: m[2] ? m[2].trim() : '' }));
+const plain = (text) => String(text || '').replace(LINK, '$1');
+
+// 한 항목에 같은 종류 블록이 둘 이상이면 「넣는 곳」의 「 — 」 뒤(없으면 전체)로 블록 제목·복사 단추 이름을 가른다 —
+// 「프롬프트」 제목과 「… 프롬프트 복사」 단추가 둘씩 똑같이 읽혀 스크린 리더로 구분이 안 됐다(11-01 아르곤 A1).
+function blockPart(blocks, b) {
+  if (blocks.filter((x) => x.종류 === b.종류).length < 2) return '';
+  const where = String(b['넣는 곳'] || '').trim().replace(/\s*—$/, '');
+  const cut = where.indexOf(' — ');
+  return cut < 0 ? where : where.slice(cut + 3);
+}
 
 // 보이는 글(본문 포함)에 AI·제작 도구 이름, 내부 번호를 쓰지 않는다. 상대 날짜는 설명 글만 본다 —
 // 프롬프트 본문의 「이번 달」은 붙여 넣는 사람의 때라 맞는 말이다.
 function textProblems(text, where, { body = false } = {}) {
+  if (!body && LOOSE_LINK.test(String(text || ''))) return [`${where}: 링크는 「${LINK_FIELDS.join('」·「')}」에 [글](#id) 꼴로만 쓴다`];
   const codes = body ? ['ai-name', 'maker-tool'] : ['ai-name', 'maker-tool', 'relative-date', 'internal-code'];
   const out = 규칙.checkText(text, { where, brand: 'LAB', language: 'ko', platform: 'web' })
     .filter((f) => f.level === 규칙.FIX && codes.includes(f.code))
@@ -52,6 +68,7 @@ function checkPrompts(data, { repo } = {}) {
   const items = data && Array.isArray(data.항목) ? data.항목 : null;
   if (!items || !items.length) return ['「항목」이 비었다'];
   const ids = new Set();
+  const known = new Set(items.map((it) => it.id));
   items.forEach((it, i) => {
     const at = `항목 ${i + 1}(${it.id || '아이디 없음'})`;
     for (const key of Object.keys(it)) if (!ITEM_KEYS.includes(key) && !(key === '날짜' && !repo)) out.push(`${at}: 모르는 칸 「${key}」(README 「항목 꼴」)`);
@@ -70,7 +87,10 @@ function checkPrompts(data, { repo } = {}) {
       if (!String(it[key] || '').trim()) out.push(`${at}: 「${key}」가 없다`);
       else out.push(...textProblems(it[key], `${at} ${key}`));
     }
-    if (it.왜) out.push(...textProblems(it.왜, `${at} 왜`));
+    if (it.왜) out.push(...textProblems(plain(it.왜), `${at} 왜`));
+    for (const key of LINK_FIELDS) {
+      for (const m of String(it[key] || '').matchAll(LINK)) if (m[2] === it.id || !known.has(m[2])) out.push(`${at} ${key}: 링크 #${m[2]}는 이 쪽의 다른 항목 id여야 한다`);
+    }
     // 도구(선택): 같은 문제를 코딩 없이 푸는 synk.im 맞춤 프로그램 — {주소: '/builds/…/', 글: '한 줄'}
     if (it.도구 !== undefined) {
       const t = it.도구 || {};
@@ -80,16 +100,20 @@ function checkPrompts(data, { repo } = {}) {
       else out.push(...textProblems(t.글, `${at} 도구`));
     }
     if (!String(it.확인 || '').trim()) out.push(`${at}: 「확인」(직접 붙여 넣어 돌려 본 결과)이 없다 — 돌려 본 것만 올린다`);
-    else out.push(...textProblems(it.확인, `${at} 확인`));
+    else out.push(...textProblems(plain(it.확인), `${at} 확인`));
     const blocks = Array.isArray(it.블록) ? it.블록 : [];
     if (!blocks.length) out.push(`${at}: 「블록」이 없다`);
     const used = new Map();
+    const parts = new Set();
     blocks.forEach((b, j) => {
       const where = `${at} 블록 ${j + 1}`;
       for (const key of Object.keys(b)) if (!BLOCK_KEYS.includes(key)) out.push(`${where}: 모르는 칸 「${key}」`);
       if (!KINDS.includes(b.종류)) out.push(`${where}: 종류는 ${KINDS.join('·')} 가운데 하나`);
       if (!String(b['넣는 곳'] || '').trim()) out.push(`${where}: 「넣는 곳」이 없다`);
       else out.push(...textProblems(b['넣는 곳'], `${where} 넣는 곳`));
+      const part = blockPart(blocks, b);
+      if (part && parts.has(`${b.종류}\n${part}`)) out.push(`${where}: 같은 ${b.종류} 블록과 「넣는 곳」(「 — 」 뒤)이 같아 제목·복사 단추 이름이 겹친다`);
+      parts.add(`${b.종류}\n${part}`);
       if (!String(b.본문 || '').trim()) out.push(`${where}: 「본문」이 없다`);
       else out.push(...textProblems(b.본문, `${where} 본문`, { body: true }));
       if (b.메모) out.push(...textProblems(b.메모, `${where} 메모`));
@@ -134,19 +158,22 @@ const withBlanks = (text) => esc(text).replace(BLANK, (m, name, value) => {
   const v = value ? value.trim() : '';
   return `<mark class="blank${v ? ' default' : ''}" data-blank="${name.trim()}" data-default="${v}">${v || `【${name.trim()}】`}</mark>`;
 });
+const withLinks = (text) => esc(text).replace(LINK, (m, label, id) => `<a href="#${id}">${label}</a>`);
 const kindLabel = (it) => [...new Set(it.블록.map((b) => b.종류))].join(' + ');
 const whereShort = (it) => it.블록.find((b) => b.종류 !== '체크리스트')?.['넣는 곳'].split(' — ')[0] || '직접';
 
 function renderBlock(it, b, j) {
   const id = `${it.id}-${j + 1}`;
-  const head = `<div class="block-head"><div><h3 id="${id}-h">${esc(b.종류)}</h3><p class="where">넣는 곳 · ${esc(b['넣는 곳'])}</p></div>`;
+  const part = blockPart(it.블록, b);
+  const name = `${esc(b.종류)}${part ? `(${esc(part)})` : ''}`;
+  const head = `<div class="block-head"><div><h3 id="${id}-h">${esc(b.종류)}${part ? `<span class="sr">(${esc(part)})</span>` : ''}</h3><p class="where">넣는 곳 · ${esc(b['넣는 곳'])}</p></div>`;
   const memo = b.메모 ? `<p class="memo">${esc(b.메모)}</p>` : '';
   // 블록은 영역(landmark)이 아니다 — 이름 붙은 section으로 두면 「프롬프트」 영역이 여럿 겹친다(배포 점검 axe landmark-unique, 10-22).
   if (b.종류 === '체크리스트') {
     const steps = String(b.본문).split('\n').filter((l) => l.trim()).map((l) => `<li>${withBlanks(l.trim())}</li>`).join('');
     return `<div class="block list">${head}</div><ol class="steps">${steps}</ol>${memo}</div>`;
   }
-  const copy = `<button class="copy" type="button" data-for="${id}" aria-label="${esc(it.제목)} — ${esc(b.종류)} 복사"><span>복사</span></button>`;
+  const copy = `<button class="copy" type="button" data-for="${id}" aria-label="${esc(it.제목)} — ${name} 복사"><span>복사</span></button>`;
   return `<div class="block">${head}${copy}</div>`
     + `<pre class="text${b.종류 === '명령' ? ' cmd' : ''}" id="${id}" tabindex="0">${withBlanks(b.본문)}</pre>${memo}</div>`;
 }
@@ -170,10 +197,10 @@ function renderItem(it, links, soon) {
   return `<article class="item" id="${it.id}" data-date="${it.날짜}" aria-labelledby="${it.id}-t">`
     + `<header class="item-head"><p class="meta"><span>${dotDate(it.날짜)}</span><span class="tag">${esc(kindLabel(it))}</span><span class="tag soon"${soon ? '' : ' hidden'}>곧 나올 영상</span></p>`
     + `<h2 id="${it.id}-t"><a href="#${it.id}">${esc(it.제목)}</a></h2><p class="video">영상 「${esc(it.영상제목)}」</p>`
-    + `<p class="desc">${esc(it.설명)}</p>${it.왜 ? `<p class="why"><b>왜 되나</b> ${esc(it.왜)}</p>` : ''}`
+    + `<p class="desc">${esc(it.설명)}</p>${it.왜 ? `<p class="why"><b>왜 되나</b> ${withLinks(it.왜)}</p>` : ''}`
     + (it.도구 ? `<a class="tool" href="${esc(it.도구.주소)}"><b>코딩 없이 쓰려면</b><span>${esc(it.도구.글)}</span><i aria-hidden="true">→</i></a>` : '') + '</header>'
     + fill + it.블록.map((b, j) => renderBlock(it, b, j)).join('')
-    + `<p class="tried"><b>직접 돌려 봤어요</b> ${esc(it.확인)}</p><p class="src">${src}</p></article>`;
+    + `<p class="tried"><b>직접 돌려 봤어요</b> ${withLinks(it.확인)}</p><p class="src">${src}</p></article>`;
 }
 
 function tocItem(it, soon) {
