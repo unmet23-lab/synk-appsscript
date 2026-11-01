@@ -1,7 +1,7 @@
 # 10번 B2B 기업 홍보영상 「도담중공업」 60초 — 시댄스 2.5 1일 무제한 웹 판 지시문(2026-10-31).
 #   python -X utf8 지시문_시댄스웹.py           → 지시문/영상_시댄스웹.json(굽기 시트의 웹꾸러미.py가 읽는 꼴 — 11번 · 옆집과 같음)
 #   python -X utf8 지시문_시댄스웹.py --그림    → 확정 시작 그림 37장 + 참고 R5를 git 밖 콘티/p10/시댄스/에 깨끗한 이름으로 복사(원본은 그대로)
-# 그림: 10-27 이미지 콘티 보드(콘티/p10/보드/p10_이미지콘티_1~4.jpg, 이미지콘티_보드.py)와 같은 고르기 — 고름/S##.png가 있으면 그것(30 · 33),
+# 그림: 10-27 이미지 콘티 보드(콘티/p10/보드/p10_이미지콘티_1~4.jpg, 이미지콘티_보드.py)와 같은 고르기 — 고름/S##.png가 있으면 그것(29 · 30 · 33 · 37 — 29는 11-02 한 판 안 고침, 37은 11-01 어스름 판),
 #   없으면 받음/ · 받음_gpt/판/의 그 컷 가장 최근 판. 모두 16:9(그림은 후반에서 원본처럼 약 2:1 띠로 자른다).
 # 카메라: 02_콘티 2절 카메라 칸(= 01 2절, 특징점 · 촘촘한 흐름 · ECC로 잰 원본 실측)과 10절 「영상 지시문에 그대로」. 고정은 4 · 6 · 17 · 21 · 24 · 30 · 32뿐,
 #   3 · 11 · 25 · 29 · 33은 「거의 고정」, 손떨림은 3 · 12 · 13 · 15 · 20 · 34 · 36만. 방향은 01의 말과 원본 흐름(카메라_흐름.json — 이동x%가 음수면
@@ -257,8 +257,8 @@ CUT = {
          ["JUNHO_HAND", "TURBINE"],
          lambda o: "Side view in the bright assembly hall, only his hand and arm in the frame: Junho's hand, in the navy work-jacket sleeve, rests flat with the palm on the "
                    "smooth cream-white casing beside a row of bolts and stays there — only his fingers press a little flatter against the casing "
-                   "once — a quiet goodbye. The black blades and "
-                   "cone at the left edge.",
+                   "once — a quiet goodbye. This is the rear, exhaust end of the turbine, where he stands in the next shot: left of his hand "
+                   "the casing runs on past a ring of round bolts and curves away — no blades or cone in this shot.",   # 11-02 한 판 안: S29를 배기 쪽 케이스로 고침
          lambda o: f"almost still — only a tiny handheld float in place; in the last half second, from {s(o + 0.8)} s, it moves in very "
                    "slightly."),
     30: (1.83, "흰 조립동 — 다 만든 터빈 옆면 와이드, 준호가 작게 서서 케이스에 손을 댄 채 → 0.7초 손을 내리고 올려다봄 — 고정",
@@ -399,7 +399,7 @@ def build():
     return {
         "메모": ("10번 B2B 기업 홍보영상 「도담중공업」 — 시댄스 2.5 1일 무제한 웹 판 지시문(2026-10-31, 지시문_시댄스웹.py가 만듦). 10-29 결정 "
                  "「포트폴리오도 손님 납품도 Seedance 2.5 720p」로 9절 견적의 Omni 길 대신 이 판으로 낸다. 시작 그림은 10-27 이미지 콘티 보드와 같은 "
-                 "고르기(고름/ 30 · 33, 나머지는 받음/ · 받음_gpt/판/의 가장 최근 판)를 git 밖 콘티/p10/시댄스/에 모은 것(--그림), 모두 16:9 — "
+                 "고르기(고름/ 29 · 30 · 33 · 37, 나머지는 받음/ · 받음_gpt/판/의 가장 최근 판)를 git 밖 콘티/p10/시댄스/에 모은 것(--그림), 모두 16:9 — "
                  "후반에서 원본처럼 약 2:1 띠로 자른다. 카메라는 02_콘티 2절 카메라 칸 · 10절(원본 실측) 그대로이고 장비 이름 · 오빗 말 · 1.5° 아래 "
                  "롤은 쓰지 않았다. 10절이 「영상 단계에서 굽는다」고 한 끝 그림(7 · 12 · 19 · 20 · 35 · 37)은 아직 없어 끝 모습을 글로 쓰고, 19만 "
                  "기준 그림 R5(트레일러 · 터빈)를 참고로 넣는다(참고 없는 19b는 대안). 얼굴은 준호뿐이고 입은 늘 다문다. 소리 끔 — 내레이션 · "
