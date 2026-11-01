@@ -346,7 +346,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
   }
 
   /* 자동 읽기 */
-  // 지금 읽을 때인지: 마지막 전체 확인에서 6시간 · 결제일 아침 9시 뒤 첫 확인 → 전체, 주간 초기화 10분 전에 그 뒤로 안 읽은 계정 → 그 계정만.
+  // 지금 읽을 때인지: 마지막 전체 확인에서 6시간 · 결제일 아침 9시 뒤 첫 확인 · 자정 10분 전 · 날짜가 바뀐 뒤 첫 때 → 전체, 주간 초기화 10분 전에 그 뒤로 안 읽은 계정 → 그 계정만.
   // 앱이 꺼져 있던 동안은 읽지 않는다(그 구간은 기록에서 「모르는 구간」으로 남는다).
   function autoDue(at=now()){
     const b=load(),autos=b.rows.filter(row=>row.source==='auto');
@@ -356,6 +356,12 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     const morning=new Date(at);morning.setHours(BILL_HOUR,0,0,0);
     const billToday=day=>{const d=new Date(at),lastDay=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();return d.getDate()===Math.min(Number(day),lastDay);};
     if(at>=morning.getTime()&&last<morning.getTime()&&b.rows.some(row=>row.billDay&&billToday(row.billDay)))return {};
+    // 하루 막대(11-02 Fable F1): 자정 10분 전에 한 번, 날짜가 바뀐 뒤 첫 때에 한 번 전체를 읽는다 —
+    // 6시간마다만 읽으면 자정 앞 마지막 읽기 뒤의 저녁 소비가 다음 날 막대에 실린다(경계 오차를 2분 tick + 10분 안으로).
+    const today=new Date(at);today.setHours(0,0,0,0);
+    const nextDay=new Date(today);nextDay.setDate(nextDay.getDate()+1);
+    if(at>=nextDay.getTime()-PRE_RESET&&last<nextDay.getTime()-PRE_RESET)return {};
+    if(last<today.getTime())return {};
     // 지금 로그인되지 않은 Gemini 계정(elsewhere)은 읽어도 다른 계정이 읽히므로 초기화 전 읽기를 하지 않는다.
     const pre=autos.filter(row=>{const reset=row.live?.weekly?.resetsAt;return row.state!=='elsewhere'&&reset&&at>=reset-PRE_RESET&&at<reset&&(row.stateAt||0)<reset-PRE_RESET;}).map(row=>row.id);
     return pre.length?{ids:pre}:null;

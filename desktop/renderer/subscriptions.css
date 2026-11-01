@@ -383,6 +383,8 @@
 .member-subs .mu-meta .ms-link{min-height:0;color:var(--ink-2,rgba(250,250,249,.72))}
 .member-subs .mu-why-note{margin:0;color:var(--ink-2,rgba(250,250,249,.72));font-size:.8125rem;font-weight:450;line-height:1.55}
 .member-subs .mu-weeks{display:grid;grid-template-columns:repeat(5,1fr);column-gap:8px;align-items:end}
+/* 하루 막대(11-02): 일곱 날 — 칸 사이를 조금 좁힌다. */
+.member-subs .mu-days{grid-template-columns:repeat(7,1fr);column-gap:6px}
 .member-subs .mu-week{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
 .member-subs .mu-week em{font-style:normal;color:var(--ink-3,rgba(250,250,249,.52));font-family:'Inter Tight',var(--sans,SUIT,sans-serif);font-size:.8125rem;font-weight:600;font-feature-settings:'tnum';white-space:nowrap}
 .member-subs .mu-week small{color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:550;white-space:nowrap}
@@ -421,6 +423,9 @@
   .member-subs .mu-why-note{flex-basis:100%}
   .member-subs .mu-weeks{grid-area:weeks;column-gap:6px}
   .member-subs .mu-week small{display:none}
+  /* 하루 막대 일곱(11-02 Fable F3): 360px에서 다섯 자리 크레딧 값이 이웃과 겹쳐 값 글자를 줄이고 칸 사이를 좁힌다. */
+  .member-subs .mu-days{column-gap:3px}
+  .member-subs .mu-days .mu-week em{font-size:.6875rem;letter-spacing:-.02em}
   .member-subs .mu-axis{grid-column:1/-1;display:flex;justify-content:space-between;color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:550}
   .member-subs .mu-axis span:last-child{color:var(--ink,#FAFAF9);font-weight:650}
   .member-subs .mu-cmp{grid-area:cmp;flex-direction:row;align-items:baseline;gap:8px}

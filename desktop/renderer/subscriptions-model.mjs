@@ -109,10 +109,11 @@ export function limitGauge(row, now) {
 export const gaugeLevel = w => (!w ? null : w.left <= 0 ? 'out' : w.left <= 10 ? 'low' : 'ok');
 
 // 공식 출력의 요금제 이름(prolite 등)을 사람이 읽는 이름으로. 남은 %가 같을 때는 큰 요금제를 먼저 추천한다.
-// Claude Max는 본체가 등급을 붙여 max_5x·max_20x로 준다(등급을 못 읽으면 max).
+// Claude Max는 본체가 등급을 붙여 max_5x·max_20x로 준다(등급을 못 읽으면 max). 10-30 Anthropic이 Max 5x → Max, Max 20x → Ultra로 이름만 바꿨다
+// (요금 · 한도 그대로, Claude Code 설정 파일의 등급 값은 default_claude_max_20x 그대로) — 열쇠는 그대로 두고 보이는 이름만 공식 새 이름으로(11-02 유호님).
 // GPT Pro 세 등급(10-29)은 OpenAI 공식 이름 Pro 100 · 200 · 500으로 — Codex 이름 prolite · pro · promax(ai-prices.cjs GPT 줄의 근거). Claude의 pro와 열쇠가 같아 서비스로 가른다.
 // Gemini 요금제(11-02)는 회원이 고른다(agy는 등급을 알려 주지 않는다): 공식 이름 Ultra 5x · Ultra 20x, 가족 공유로 받는 계정(family), ultra는 등급을 모르는 옛 값.
-const PLAN = { max20x: 'Max 20x', max5x: 'Max 5x', max: 'Max', ultra20x: 'Ultra 20x', ultra5x: 'Ultra 5x', ultra: 'Ultra', family: '가족 공유', pro: 'Pro', plus: 'Plus', prolite: 'Pro Lite', lite: 'Lite', free: 'Free', team: 'Team', business: 'Business', enterprise: 'Enterprise' };
+const PLAN = { max20x: 'Ultra', max5x: 'Max', max: 'Max · Ultra', ultra20x: 'Ultra 20x', ultra5x: 'Ultra 5x', ultra: 'Ultra', family: '가족 공유', pro: 'Pro', plus: 'Plus', prolite: 'Pro Lite', lite: 'Lite', free: 'Free', team: 'Team', business: 'Business', enterprise: 'Enterprise' };
 const GPT_PLAN = { prolite: 'Pro 100', pro: 'Pro 200', promax: 'Pro 500' };
 // 같은 서비스 안에서만 견준다: Claude max20x > max5x > max > pro, GPT promax > pro > prolite > plus, Gemini ultra20x > ultra · family > ultra5x > pro > plus, Higgsfield ultra > plus, Typecast plus > lite.
 const TIER = { max20x: 10, max5x: 9, max: 8, promax: 7, ultra20x: 6.6, ultra: 6, family: 6, ultra5x: 5.9, pro: 5, prolite: 4, plus: 3, lite: 1 };
@@ -400,6 +401,19 @@ export function usageBars(usage, group) {
   const bars = raw.map(b => (b ? { ...b, height: Math.min(100, Math.max(b.v > 0 ? 3 : 0, Math.round((b.v / max) * 100))), level: kind === 'pct' && b.v >= 90 ? 'low' : 'ok' } : null));
   const has = !!u && u.base !== null && !!raw[4];
   return { u, kind, buckets, bars, has, diff: has ? raw[4].v - u.base : 0 };
+}
+// 하루 막대(11-02): 본체가 센 달력 하루 일곱(마지막이 오늘). 한도형 값은 그날 쓴 주간 한도의 %p다.
+// 한도형은 주간 한도를 7로 나눈 하루 몫(약 14%)을 넘긴 날을 주의 색으로 — 그 속도면 초기화 전에 막힌다. 꼭대기는 가장 많이 쓴 날(하루 몫의 1.5배보다 작으면 그 값).
+// 크레딧은 가장 많이 쓴 날이 꼭대기. 하루 평균은 오늘을 뺀 지난 엿새, 그 전 7일 평균이 있을 때만 차이를 낸다 —
+// 차이는 화면에 보이는 두 정수끼리 뺀다(소수 차이를 반올림하면 「9% · 그 전 10%」 옆에 −0%p가 섰다, 아르곤 A1).
+export const DAY_SHARE = 100 / 7;
+export function usageDays(usage, group) {
+  const u = usage?.services?.[group.service] || null, kind = group.kind === 'credit' ? 'credit' : 'pct', days = usage?.days || [];
+  const raw = Array.from({ length: 7 }, (_, i) => u?.days?.[i] || null);
+  const max = Math.max(kind === 'pct' ? DAY_SHARE * 1.5 : 1, ...raw.map(b => b?.v || 0));
+  const bars = raw.map(b => (b ? { ...b, height: Math.min(100, Math.max(b.v > 0 ? 3 : 0, Math.round((b.v / max) * 100))), level: kind === 'pct' && b.v > DAY_SHARE ? 'low' : 'ok' } : null));
+  const avg = u?.dayAvg ?? null, base = u?.dayBase ?? null, has = avg !== null && base !== null;
+  return { u, kind, days, bars, avg, base, has, diff: has ? Math.round(avg) - Math.round(base) : 0 };
 }
 // 그 전 평균의 무게: Claude는 요금제 배수, 나머지는 같은 무게.
 const weightOf = row => (row.service === 'claude' ? CLAUDE_WEIGHT[planKey(row.plan)] || 1 : 1);

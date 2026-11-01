@@ -6,6 +6,9 @@
 //    처음 읽은 값은 그 창이 시작된 뒤의 소비다. 창은 7일이고 아직 안 끝났으니 첫 읽기 시각의 구간에 넣는다.
 //  · 크레딧형(Higgsfield·Typecast): 잔액이 줄어든 만큼이 소비, 늘어난 것은 충전으로 따로 둔다(한 구간에 둘이 겹치면 소비가 덜 잡힌다).
 // 구간은 달력 주가 아니라 지금 기준 7일씩이다(계정마다 초기화 요일이 다르다 — Fable 검수 10-19 P1-2).
+// 하루 막대(11-02 유호님 「1주일말고 1일 기준으로」)는 이 PC 시각 0시로 자른 달력 하루다. 처음 읽은 값(창 시작부터 쌓인 %)은 어느 날 쓴 건지 몰라 넣지 않는다.
+// 날 경계는 본체가 자정 10분 전과 날짜가 바뀐 뒤 첫 때에 읽어 맞춘다(ai-subscriptions.cjs autoDue — 6시간 읽기만으로는 저녁 소비가 다음 날로 넘어갔다, Fable F1).
+// 앱이 꺼져 있던 동안 같은 창에서 쓴 양은 다시 읽은 날에 잡힌다(그 사이 초기화가 끼면 빠진다).
 const DAY = 864e5, WEEK = 7 * DAY, SAME_WINDOW = 15 * 60e3, KEEP = 180 * DAY;
 const WEEKLY = new Set(['claude', 'gpt', 'gemini']), CREDIT = new Set(['higgsfield', 'typecast']);
 // Claude 요금제 배수(claude.com/pricing 10-19: Max는 Pro의 5배·20배). GPT·Gemini는 공식 배수가 없어 같은 무게로 센다.
@@ -84,12 +87,15 @@ function steadyTiers(samples) {
   return samples.map(s => { if (tier(s)) last = s.p; return loose(s) ? { ...s, p: last } : s; });
 }
 
-// rows: 지금 판의 계정 줄(지운 계정의 기록은 세지 않는다). 반환: 구간 다섯(오래된 → 지난 7일), 서비스별 막대, 계정별 통계.
+// rows: 지금 판의 계정 줄(지운 계정의 기록은 세지 않는다). 반환: 구간 다섯(오래된 → 지난 7일), 하루 일곱(오래된 → 오늘), 서비스별 막대, 계정별 통계.
 function usageSummary({ rows = [], history = [], now = Date.now() } = {}) {
   const live = new Map(rows.filter(r => r && r.source === 'auto' && (WEEKLY.has(r.service) || CREDIT.has(r.service))).map(r => [r.id, r]));
   const byId = new Map();
   for (const s of history) { if (!live.has(s.id) || s.t > now) continue; if (!byId.has(s.id)) byId.set(s.id, []); byId.get(s.id).push(s); }
   const buckets = [4, 3, 2, 1, 0].map(k => ({ start: now - (k + 1) * WEEK, end: now - k * WEEK }));
+  // 하루 열넷: 앞 일곱은 비교용(그 전 7일), 뒤 일곱이 화면 막대(마지막이 오늘 — 지금까지).
+  const dayAt = k => { const d = new Date(now); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - k); return d.getTime(); };
+  const allDays = Array.from({ length: 14 }, (_, i) => ({ start: dayAt(13 - i), end: i === 13 ? now : dayAt(12 - i) }));
   const accounts = {}, perService = new Map();
   let since = null;
   for (const [id, read] of byId) {
@@ -135,9 +141,25 @@ function usageSummary({ rows = [], history = [], now = Date.now() } = {}) {
     const base = bars[3] && !bars[3].partial && full.length ? Math.round(full.reduce((n, b) => n + b.v, 0) / full.length) : null;
     // 「왜 이 숫자?」: 계정끼리든 한 계정이 요금제를 바꿔서든 무게가 둘 이상 섞였을 때.
     const plans = new Set(list.flatMap(a => [...a.weights]));
-    services[service] = { kind: pct ? 'pct' : 'credit', accounts: list.length, since: Math.min(...list.map(a => a.firstAt)), bars, base, baseWeeks: base === null ? 0 : full.length, mixed: pct && plans.size > 1 };
+    // 하루 막대: 처음 읽은 값은 빼므로 그날 0시 전에 읽기 시작한 계정끼리 낸다(없으면 있는 계정으로 「일부」). 한도형은 그날 쓴 주간 %p의 요금제 무게 평균, 크레딧은 합.
+    const dayBars = allDays.map(({ start, end }) => {
+      const present = list.filter(a => a.firstAt < end || (end === now && a.firstAt <= now));
+      if (!present.length) return null;
+      const inDay = e => !e.first && e.t >= start && (e.t < end || (end === now && e.t <= end));
+      const whole = present.filter(a => a.firstAt <= start), use = whole.length ? whole : present;
+      const v = pct
+        ? use.reduce((n, a) => n + a.events.reduce((m, e) => (inDay(e) ? m + e.v * (e.wt || 1) : m), 0), 0) / use.reduce((n, a) => n + a.weightAt(end), 0)
+        : present.reduce((n, a) => n + a.events.reduce((m, e) => (inDay(e) ? m + e.v : m), 0), 0);
+      return { v: Math.round(v * 10) / 10, partial: !whole.length };
+    });
+    // 하루 평균: 화면의 지난 엿새(오늘은 아직 안 끝나 뺀다)와 그 전 7일 가운데 꽉 찬 날끼리. 그 전 7일은 사흘 넘게 꽉 차야 견준다.
+    const mean = list => (list.length ? Math.round((list.reduce((n, b) => n + b.v, 0) / list.length) * 10) / 10 : null);
+    const fullDays = range => range.filter(b => b && !b.partial);
+    const recent = fullDays(dayBars.slice(7, 13)), before = fullDays(dayBars.slice(0, 7));
+    services[service] = { kind: pct ? 'pct' : 'credit', accounts: list.length, since: Math.min(...list.map(a => a.firstAt)), bars, base, baseWeeks: base === null ? 0 : full.length, mixed: pct && plans.size > 1,
+      days: dayBars.slice(7), dayAvg: mean(recent), dayAvgDays: recent.length, dayBase: before.length >= 3 ? mean(before) : null, dayBaseDays: before.length >= 3 ? before.length : 0 };
   }
-  return { since, buckets, services, accounts };
+  return { since, buckets, days: allDays.slice(7), services, accounts };
 }
 
 // 계정 하나의 지난 4주(구간 1~4, 7일씩): 요금제 맞추기·안 쓰는 구독(10-19 2차, Fable 1차 아이디어 3·4)이 쓴다.

@@ -911,6 +911,13 @@ test('reads by itself every 6 hours, 10 minutes before a weekly reset and on a b
   const bill=new Date(2026,9,20,9,30).getTime();
   assert.deepEqual(await make({check:new Date(2026,9,20,8,0).getTime(),clock:bill}).autoDue(bill),{});
   assert.equal(await make({check:new Date(2026,9,20,9,10).getTime(),clock:bill}).autoDue(bill),null);
+  // 하루 막대(11-02 Fable F1): 자정 10분 전 안이면 그 뒤로 안 읽었을 때 전체를, 날짜가 바뀐 뒤 첫 때에 또 전체를 읽는다(그날 이미 읽었으면 6시간을 기다린다).
+  const evening=new Date(2026,9,20,20,0).getTime(),late=new Date(2026,9,20,23,55).getTime(),after=new Date(2026,9,21,0,2).getTime();
+  assert.equal(await make({check:evening,clock:evening+HOUR}).autoDue(evening+HOUR),null);
+  assert.deepEqual(await make({check:evening,clock:late}).autoDue(late),{});
+  assert.equal(await make({check:new Date(2026,9,20,23,51).getTime(),clock:late}).autoDue(late),null);
+  assert.deepEqual(await make({check:new Date(2026,9,20,23,51).getTime(),clock:after}).autoDue(after),{});
+  assert.equal(await make({check:new Date(2026,9,21,0,1).getTime(),clock:after}).autoDue(after),null);
   // 계정을 하나도 연결하지 않았으면 읽지 않는다.
   const empty=fakeSystem();assert.equal(await empty.service.autoDue(NOW),null);
 });

@@ -9,7 +9,7 @@ const tick=()=>new Promise(r=>setImmediate(r));
 test('each account lands in one state and each service recommends its roomiest confirmed account',async()=>{
   const {accountState,serviceGroups,planName}=await import('../renderer/subscriptions.mjs');
   // Claude Max는 등급까지(본체가 max_5x·max_20x로 준다), 같은 %면 20x를 먼저 추천한다.
-  assert.deepEqual([planName('max_20x'),planName('max_5x'),planName('max'),planName('prolite')],['Max 20x','Max 5x','Max','Pro Lite']);
+  assert.deepEqual([planName('max_20x'),planName('max_5x'),planName('max'),planName('prolite')],['Ultra','Max','Max · Ultra','Pro Lite']);
   const five=row({id:'five',email:'five@example.com',plan:'max_5x',live:{readAt:NOW,weekly:{usedPercent:30,resetsAt:NOW+864e5}}}),twenty=row({id:'twenty',email:'twenty@example.com',plan:'max_20x',live:{readAt:NOW,weekly:{usedPercent:30,resetsAt:NOW+864e5}}});
   assert.equal(serviceGroups([five,twenty],NOW)[0].best.row.id,'twenty');
   const rows=[
@@ -97,7 +97,7 @@ test('the glance board shows one row per service and rolls each number only when
     await tick();
     // 서비스마다 한 줄: 추천 계정 이름, 개수 글, 덜 남은 창의 고리 하나.
     assert.equal((el.innerHTML.match(/class="ms-svc /g)||[]).length,4);
-    assert.match(el.innerHTML,/<span class="ms-pick-label">추천<\/span><span class="ms-pick-name"><span>roomy<\/span><small>Max<\/small>/);
+    assert.match(el.innerHTML,/<span class="ms-pick-label">추천<\/span><span class="ms-pick-name"><span>roomy<\/span><small>Max · Ultra<\/small>/);
     assert.match(el.innerHTML,/2개 중 <em>1개<\/em> 바로 써요 <span class="ms-soft">1개 다 씀<\/span>/);
     // 숫자·고리는 쓴 만큼(다른 AI처럼 꽉 차면 그 창은 다 씀).
     // 큰 숫자 바로 위에 그 창 이름, 옆에 「사용」, 아래에 같은 창의 남은 %(합이 100, 10-31).
@@ -125,7 +125,7 @@ test('the glance board shows one row per service and rolls each number only when
     // 펼친 줄은 계정 전체: 오른쪽 값에 창 이름, 보조 글은 나머지 창과 주간 초기화 때. 숫자는 굴리지 않는다.
     await el.handlers.get('click')({target:{closest:()=>({disabled:false,dataset:{subs:'toggle',id:'g-claude'}})}});
     assert.deepEqual(drawn,[]);
-    assert.match(el.innerHTML,/<h3>바로 쓸 수 있어요<\/h3><div class="ms-acc"[^>]*><i class="ms-dot" data-state="ok" aria-hidden="true"><\/i><span class="ms-acc-name">roomy<small>Max<\/small><\/span><span class="ms-acc-sub"><span class="ms-win-meta"><span>초기화 주간\u00a0[^<]+<\/span><span class="ms-win-read">마지막 확인\u00a0[\d:]+<\/span><\/span><\/span>/);
+    assert.match(el.innerHTML,/<h3>바로 쓸 수 있어요<\/h3><div class="ms-acc"[^>]*><i class="ms-dot" data-state="ok" aria-hidden="true"><\/i><span class="ms-acc-name">roomy<small>Max · Ultra<\/small><\/span><span class="ms-acc-sub"><span class="ms-win-meta"><span>초기화 주간\u00a0[^<]+<\/span><span class="ms-win-read">마지막 확인\u00a0[\d:]+<\/span><\/span><\/span>/);
     assert.match(el.innerHTML,/<span class="ms-bar" data-state="ok" aria-hidden="true"><i style="width:78%"><\/i><\/span><span class="ms-acc-val"><b class="ms-num">78%\u00a0사용<\/b><small>주간\u00a0·\u00a022%\u00a0남음<\/small><\/span>/);
     // 「주간 51% 사용」 한 덩이는 줄바꿈 없는 빈칸으로 붙어 좁은 창에서도 갈라지지 않는다.
     assert.match(el.innerHTML,/<h3>막혀 있어요<\/h3>.*5시간 한도 · <b>[^<]+<\/b>에 풀려요\(36분 뒤\) · 주간\u00a051%\u00a0사용\(49%\u00a0남음\) · [^<]+ 주간 초기화<\/span>/);
@@ -366,7 +366,7 @@ test('a Gemini pace tip counts only the signed-in account, not the one waiting f
   const main=row({id:'g-main',service:'gemini',label:'Gemini',email:'77yuhbs@example.com',live:{readAt:fresh,weekly:{usedPercent:82,resetsAt:fresh+2*D}}});
   const family=row({id:'g-family',service:'gemini',label:'Gemini',email:'unmet25@example.com',state:'elsewhere',stateMessage:AWAY,live:{readAt:fresh-D,weekly:{usedPercent:5,resetsAt:fresh+4*D}}});
   const buckets=[0,1,2,3,4].map(i=>({start:fresh-(5-i)*7*D,end:fresh-(4-i)*7*D}));
-  const usage={since:fresh-10*D,buckets,services:{gemini:{kind:'pct',accounts:2,bars:[null,null,{v:40,partial:true},{v:50,partial:false},{v:65,partial:false}],base:50,baseWeeks:1,mixed:false}},accounts:{'g-main':{since:fresh-10*D,used7:40,rate3:30,perDay:6,refillAt:null}}};
+  const usage={since:fresh-10*D,buckets,services:{gemini:{kind:'pct',accounts:2,bars:[null,null,{v:40,partial:true},{v:50,partial:false},{v:65,partial:false}],base:50,baseWeeks:1,mixed:false,days:[8,9,10,9,11,10,4].map(v=>({v,partial:false})),dayAvg:9.5,dayAvgDays:6,dayBase:7,dayBaseDays:7}},accounts:{'g-main':{since:fresh-10*D,used7:40,rate3:30,perDay:6,refillAt:null}}};
   const snapshot={ok:true,seq:1,tools:{},rows:[main,family],settings:{usdKrw:1400},check:{at:fresh,total:1,ok:1},login:null,checking:false,usage};
   const el=fakeContainer(),board=createSubscriptionsBoard({bridge:{subscriptions:{snapshot:async()=>snapshot,onChanged:()=>()=>{}}}});
   board.render(el,{signedIn:true,native:true});await tick();board.dispose();
@@ -568,7 +568,7 @@ test('account management keeps healthy rows quiet and opens each row menu in pla
   assert.match(el.innerHTML,/class="ms-button ms-foot-button" data-subs="manage" data-to="ms-cost"><b>요금·결제일<\/b><span>한 달 약 ₩43,000\(요금 모르는 2개 빼고\) · 다음 결제 /);
   await click({subs:'manage',to:'ms-cost'});
   // 정상 계정은 점만, 문제 계정만 칩. 확인 때 읽은 계정은 시각을 줄마다 쓰지 않는다.
-  assert.match(el.innerHTML,/<span class="ms-mname">fine@example.com<\/span><span class="ms-mplan">Max<\/span><span class="ms-ok-mark">/);
+  assert.match(el.innerHTML,/<span class="ms-mname">fine@example.com<\/span><span class="ms-mplan">Max · Ultra<\/span><span class="ms-ok-mark">/);
   assert.match(el.innerHTML,/<span class="ms-mname">gone@example.com<\/span><span class="ms-mplan"><\/span><span class="ms-chip ms-chip-alert">다시 로그인<\/span>/);
   assert.ok(!el.innerHTML.includes('에 읽음'));assert.match(el.innerHTML,/<span class="ms-mtool">Claude Code · <span class="ms-num">2\.1\.302<\/span><\/span>/);
   assert.match(el.innerHTML,/id="ms-cost"/);assert.match(el.innerHTML,/한 달 구독료/);assert.match(el.innerHTML,/<span class="ms-tag">Suno<\/span><span class="ms-bill-name">월 구독만<\/span>/);
@@ -617,7 +617,8 @@ function usageFixture({withOut=true,usage,tips={}}={}){
   const low=row({id:'h-low',service:'higgsfield',label:'Higgsfield',kind:'credit',email:'h1@example.com',plan:'ultra',live:{readAt:fresh,credits:0.22},credits:0.22,creditsAt:fresh});
   const buckets=[0,1,2,3,4].map(i=>({start:fresh-(5-i)*7*D,end:fresh-(4-i)*7*D}));
   const full=values=>values.map(v=>({v,partial:false}));
-  const filled={since:fresh-40*D,buckets,services:{claude:{kind:'pct',accounts:3,bars:full([62,68,74,83,79]),base:72,baseWeeks:4,mixed:true},higgsfield:{kind:'credit',accounts:2,bars:full([620,540,710,650,1450]),base:630,baseWeeks:4,mixed:false}},accounts:{founder:{since:fresh-40*D,used7:1450,rate3:null,perDay:207.14,refillAt:fresh-21*D}}};
+  const days=[6,5,4,3,2,1,0].map(k=>{const s=new Date(fresh);s.setHours(0,0,0,0);s.setDate(s.getDate()-k);const e=new Date(s);e.setDate(e.getDate()+1);return {start:s.getTime(),end:k===0?fresh:e.getTime()};});
+  const filled={since:fresh-40*D,buckets,days,services:{claude:{kind:'pct',accounts:3,bars:full([62,68,74,83,79]),base:72,baseWeeks:4,mixed:true,days:full([12,18,9,21,14,10,6]),dayAvg:14,dayAvgDays:6,dayBase:20,dayBaseDays:7},higgsfield:{kind:'credit',accounts:2,bars:full([620,540,710,650,1450]),base:630,baseWeeks:4,mixed:false,days:[null,{v:90,partial:true},...full([310,0,260,280,301.6])],dayAvg:207,dayAvgDays:5,dayBase:null,dayBaseDays:0}},accounts:{founder:{since:fresh-40*D,used7:1450,rate3:null,perDay:207.14,refillAt:fresh-21*D}}};
   const snapshot={ok:true,seq:1,tools:{},rows:[soon,roomy,...(withOut?[out]:[]),founder,low],settings:{usdKrw:1400,tips},check:{at:fresh,total:5,ok:5},login:null,checking:false,usage:usage===undefined?filled:usage(buckets,fresh)};
   const saves=[];
   const bridge={subscriptions:{snapshot:async()=>snapshot,onChanged:()=>()=>{},save:async patch=>{saves.push(patch);return {...snapshot,seq:snapshot.seq+1};},help:async()=>({ok:true})}};
@@ -631,14 +632,22 @@ test('the glance board puts today\'s account first and shows the last 7 days aft
   board.render(el,{signedIn:true,native:true});await tick();
   const html=el.innerHTML;
   // 01: 초기화가 하루 안인 계정을 먼저, 주간 초기화 때와 주간 쓴 %로(큰 숫자는 5시간 창일 수 있어 창 이름을 밝힌다, 10-31).
-  assert.match(html,/<span class="ms-pick-label is-today">오늘은 이 계정부터<\/span><span class="ms-pick-name"><span>soon<\/span><small>Max 5x<\/small><\/span><span class="ms-pick-note">[^<]*\u00a0주간\u00a0초기화 · 아직 주간\u00a014%만\u00a0썼어요<\/span>/);
-  // 01 → 02 다음에 풀려요 → 03 지난 7일 사용량.
-  const order=['01</span>지금 쓸 계정','02</span>다음에 풀려요','03</span>지난 7일 사용량'].map(t=>html.indexOf(t));
+  assert.match(html,/<span class="ms-pick-label is-today">오늘은 이 계정부터<\/span><span class="ms-pick-name"><span>soon<\/span><small>Max<\/small><\/span><span class="ms-pick-note">[^<]*\u00a0주간\u00a0초기화 · 아직 주간\u00a014%만\u00a0썼어요<\/span>/);
+  // 01 → 02 다음에 풀려요 → 03 하루 사용량.
+  const order=['01</span>지금 쓸 계정','02</span>다음에 풀려요','03</span>하루 사용량'].map(t=>html.indexOf(t));
   assert.ok(order.every(i=>i>0)&&order[0]<order[1]&&order[1]<order[2]);
-  // 막대 다섯(마지막이 지난 7일)과 그 전 4주 평균·차이. 큰 숫자 열은 없다.
-  assert.match(html,/<em>79%<\/em><span class="mu-bar"><i style="height:79%" data-level="ok"><\/i><\/span><small>지난 7일<\/small>/);
-  assert.match(html,/<span class="mu-cmp"><span>그 전 4주 평균 72%<\/span><b class="ms-num">\+7%p<\/b><\/span>/);
-  assert.match(html,/<span class="mu-cmp"><span>그 전 4주 평균 630<\/span><b class="ms-num">\+820<\/b><\/span>/);
+  // 하루 막대 일곱(11-02, 마지막이 오늘): 한도형 꼭대기는 하루 몫의 1.5배(약 21.4%)와 가장 많이 쓴 날 가운데 큰 값, 하루 몫(약 14%)을 넘긴 날만 주의 색.
+  assert.equal((html.match(/<span class="mu-week[ "]/g)||[]).length,14);
+  assert.match(html,/<em>6%<\/em><span class="mu-bar"><i style="height:28%" data-level="ok"><\/i><\/span><small>오늘<\/small>/);
+  assert.match(html,/<em>21%<\/em><span class="mu-bar"><i style="height:98%" data-level="low"><\/i><\/span><small>[일월화수목금토]<\/small>/);
+  assert.match(html,/<em>14%<\/em><span class="mu-bar"><i style="height:65%" data-level="ok"><\/i><\/span>/);
+  // 하루 평균(오늘 뺀 지난 엿새)과 그 전 7일 하루 평균·차이. 그 전 7일이 아직 없으면 그렇게 말한다.
+  assert.match(html,/<span class="mu-cmp"><span>하루 평균<\/span><b class="ms-num">14%<\/b><span>그 전 7일 20% · −6%p<\/span><\/span>/);
+  assert.match(html,/<span class="mu-cmp"><span>하루 평균<\/span><b class="ms-num">207<\/b><span>그 전 7일은 기록 모으는 중<\/span><\/span>/);
+  // 크레딧 막대는 가장 많이 쓴 날이 꼭대기, 중간부터 기록이 있는 날은 흐리게, 기록 없는 날은 빈 막대.
+  assert.match(html,/<em>302<\/em><span class="mu-bar is-credit"><i style="height:97%" data-level="ok"><\/i><\/span><small>오늘<\/small>/);
+  assert.match(html,/<span class="mu-week is-partial" title="\d+\/\d+ · 이날 중간부터 기록이 있어요"><em>90<\/em>/);
+  assert.match(html,/<span class="ms-sr">Claude 오늘 6%, 하루 평균 14%, 그 전 7일 하루 평균 20%<\/span>/);
   assert.ok(!html.slice(html.indexOf('id="ms-usage"')).includes('ms-big-num'));
   // 요금제가 섞인 Claude에만 「왜 이 숫자?」.
   assert.match(html,/계정 3개 · 주간 한도 대비<\/small><button type="button" class="ms-link mu-why" data-subs="why"/);
@@ -677,9 +686,9 @@ test('a new board says it is collecting records and numbers the section by what 
   const f=usageFixture({withOut:false,usage:buckets=>({since:null,buckets,services:{},accounts:{}})}),el=fakeContainer(),board=createSubscriptionsBoard({bridge:f.bridge});
   board.render(el,{signedIn:true,native:true});await tick();
   assert.ok(!el.innerHTML.includes('다음에 풀려요'));
-  assert.match(el.innerHTML,/<span class="ms-section-number">02<\/span>지난 7일 사용량/);
+  assert.match(el.innerHTML,/<span class="ms-section-number">02<\/span>하루 사용량/);
   assert.equal((el.innerHTML.match(/<span class="mu-cmp is-empty"><span>기록 모으는 중<\/span><span>\d+\/\d+부터<\/span><\/span>/g)||[]).length,2);
-  assert.equal((el.innerHTML.match(/class="mu-bar[^"]*is-empty"/g)||[]).length,10);
+  assert.equal((el.innerHTML.match(/class="mu-bar[^"]*is-empty"/g)||[]).length,14);
   assert.ok(!el.innerHTML.includes('왜 이 숫자'));
   assert.equal((el.innerHTML.match(/<div class="ms-tip[ "]/g)||[]).length,0);
   board.dispose();
@@ -693,17 +702,19 @@ test('a weekly service warns only when every usable account would run out before
   const b=row({id:'g-b',service:'gpt',label:'ChatGPT · Codex',email:'b@example.com',plan:'pro',live:{readAt:fresh,weekly:{usedPercent:70,resetsAt:fresh+5*D}}});
   const draw=async rate=>{
     const buckets=[0,1,2,3,4].map(i=>({start:fresh-(5-i)*7*D,end:fresh-(4-i)*7*D}));
-    const usage={since:fresh-10*D,buckets,services:{gpt:{kind:'pct',accounts:2,bars:[null,null,{v:40,partial:true},{v:50,partial:false},{v:65,partial:false}],base:50,baseWeeks:1,mixed:false}},accounts:{'g-a':{since:fresh-10*D,used7:40,rate3:rate,perDay:6,refillAt:null},'g-b':{since:fresh-10*D,used7:40,rate3:rate,perDay:6,refillAt:null}}};
+    const usage={since:fresh-10*D,buckets,services:{gpt:{kind:'pct',accounts:2,bars:[null,null,{v:40,partial:true},{v:50,partial:false},{v:65,partial:false}],base:50,baseWeeks:1,mixed:false,days:[8,9,10,9,11,10,4].map(v=>({v,partial:false})),dayAvg:9.5,dayAvgDays:6,dayBase:7,dayBaseDays:7}},accounts:{'g-a':{since:fresh-10*D,used7:40,rate3:rate,perDay:6,refillAt:null},'g-b':{since:fresh-10*D,used7:40,rate3:rate,perDay:6,refillAt:null}}};
     const snapshot={ok:true,seq:1,tools:{},rows:[a,b],settings:{usdKrw:1400},check:{at:fresh,total:2,ok:2},login:null,checking:false,usage};
     const el=fakeContainer(),board=createSubscriptionsBoard({bridge:{subscriptions:{snapshot:async()=>snapshot,onChanged:()=>()=>{}}}});
     board.render(el,{signedIn:true,native:true});await tick();board.dispose();return el.innerHTML;
   };
   // 남은 40%+30%를 하루 20%p씩 두 계정이 쓰면 이틀이 안 돼 다 막히는데, 먼저 풀리는 건 나흘 뒤다.
   assert.match(await draw(20),/이 속도면 <b class="ms-num">[^<]+(오전|오후)쯤<\/b> GPT 계정이 모두 막혀요\. 가장 먼저 풀리는 건 [^<]+예요\./);
-  // 하루 5%p씩이면 풀리기 전에 막히지 않아 말하지 않는다. 그 전 7일 하나로 비교하면 「그 전 7일」.
+  // 하루 5%p씩이면 풀리기 전에 막히지 않아 말하지 않는다. 하루 평균은 정수로(9.5 → 10%), 차이는 보이는 두 정수끼리(10 − 7 → +3%p).
   const calm=await draw(5);
   assert.equal((calm.match(/<div class="ms-tip[ "]/g)||[]).length,0);
-  assert.match(calm,/<span class="mu-cmp"><span>그 전 7일 50%<\/span><b class="ms-num">\+15%p<\/b><\/span>/);
+  assert.match(calm,/<span class="mu-cmp"><span>하루 평균<\/span><b class="ms-num">10%<\/b><span>그 전 7일 7% · \+3%p<\/span><\/span>/);
+  // 날짜 목록(usage.days)이 없어도 막대 일곱은 그려진다(요일 글자만 빈다).
+  assert.equal((calm.match(/<span class="mu-week[ "]/g)||[]).length,7);
 });
 
 test('rested tips leave one line to bring them back',async()=>{
@@ -961,16 +972,16 @@ test('a Max account that stayed low for four weeks without a 5-hour block is off
   // 20x는 4주 모두 20% 이하, 5x는 16% 이하 — 덜 내는 액수가 큰 20x를 먼저 권한다.
   // 금액·결제 주기는 요금표(3차, 한국 결제 값 — 기본값 $200·$100에 부가세 10%)에서, 확인한 지 60일 안에만.
   let f=phase3([big,five],{big:{weeks4:four([12,15,9,11],{hPeak:18})},five:{weeks4:four([10,12,14,8])}},{settings:{goal:'save'}}),{el,board,d}=await draw2(f);
-  assert.match(el.innerHTML,/<b>big<\/b> 계정\(Max 20x\)은 4주 내내 주간 한도를 20%도 안 썼어요\. Max 5x로 낮춰도 넉넉할 가능성이 커요 · 공식 요금으로 한 달 \$110 덜 내요\./);
+  assert.match(el.innerHTML,/<b>big<\/b> 계정\(Ultra\)은 4주 내내 주간 한도를 20%도 안 썼어요\. Max로 낮춰도 넉넉할 가능성이 커요 · 공식 요금으로 한 달 \$110 덜 내요\./);
   await d.click({subs:'tip-open',key:'size:claude'});
   // 공식 배수는 5시간 창 기준이라 그렇게 말하고, 주간은 공식 자료가 없다고 밝힌다.
-  assert.match(el.innerHTML,/<li>Max 5x는 5시간마다 쓸 수 있는 양이 Max 20x의 1\/4이에요\(공식 배수 5배 대 20배\)\. 한 번에 길게 쓰는 날이 있으면 그날 막힐 수 있어요\.<\/li><li>주간 한도가 얼마나 줄어드는지는 공식 자료에 없어요\. 그래서 4주 모두 20% 이하일 때만 알려 드려요\.<\/li><li>Max 요금제는 월 결제만 있어요\.<\/li><\/ol>/);
-  assert.match(el.innerHTML,/<b>왜 이 팁\?<\/b> 지난 4주 7일씩 12% · 15% · 9% · 11% · 읽은 5시간 창 최고 18%\(Max 5x로 치면 72%\)<br>기준: 4주 모두 20% 이하이고 읽을 때마다 5시간 창이 25% 미만이었을 때 · 요금 확인 \d+\/\d+\(한국 결제 · 부가세 10% 포함\)/);
+  assert.match(el.innerHTML,/<li>Max는 5시간마다 쓸 수 있는 양이 Ultra의 1\/4이에요\(공식 배수 5배 대 20배\)\. 한 번에 길게 쓰는 날이 있으면 그날 막힐 수 있어요\.<\/li><li>주간 한도가 얼마나 줄어드는지는 공식 자료에 없어요\. 그래서 4주 모두 20% 이하일 때만 알려 드려요\.<\/li><li>Max · Ultra 요금제는 월 결제만 있어요\.<\/li><\/ol>/);
+  assert.match(el.innerHTML,/<b>왜 이 팁\?<\/b> 지난 4주 7일씩 12% · 15% · 9% · 11% · 읽은 5시간 창 최고 18%\(Max로 치면 72%\)<br>기준: 4주 모두 20% 이하이고 읽을 때마다 5시간 창이 25% 미만이었을 때 · 요금 확인 \d+\/\d+\(한국 결제 · 부가세 10% 포함\)/);
   assert.match(el.innerHTML,/data-subs="help" data-link="claude-plans">공식 안내<\/button>/);
   board.dispose();
   // 요금표를 확인한 지 60일이 지나면 금액도 「월 결제만」도 말하지 않는다(팁 자체는 남는다).
   f=phase3([big],{big:{weeks4:four([12,15,9,11],{hPeak:18})}},{prices:priceBook(fresh-61*D)});({el,board,d}=await draw2(f));
-  assert.match(el.innerHTML,/Max 5x로 낮춰도 넉넉할 가능성이 커요\.<\/span>/);
+  assert.match(el.innerHTML,/Max로 낮춰도 넉넉할 가능성이 커요\.<\/span>/);
   await d.click({subs:'tip-open',key:'size:claude'});
   assert.ok(!el.innerHTML.includes('월 결제만')&&!el.innerHTML.includes('요금 확인')&&!/\$\d/.test(el.innerHTML));board.dispose();
   // 5x → Pro는 한 달 $88(= ($100 − $20) × 1.1) 덜 내고, Pro 연간 결제는 한 달 $18꼴(1년 치 $220).
@@ -988,7 +999,7 @@ test('a Max account that stayed low for four weeks without a 5-hour block is off
   }
   // 5x는 16% 이하이고 5시간 창이 20% 미만일 때만 Pro를 권한다.
   f=phase2([five],{five:{weeks4:four([10,12,14,8])}});({el,board}=await draw2(f));
-  assert.match(el.innerHTML,/<b>five<\/b> 계정\(Max 5x\)은 4주 내내 주간 한도를 16%도 안 썼어요\. Pro로 낮춰도 넉넉할 가능성이 커요/);board.dispose();
+  assert.match(el.innerHTML,/<b>five<\/b> 계정\(Max\)은 4주 내내 주간 한도를 16%도 안 썼어요\. Pro로 낮춰도 넉넉할 가능성이 커요/);board.dispose();
   for (const w4 of [four([10,17,14,8]),four([10,12,14,8],{hPeak:20})]){
     f=phase2([five],{five:{weeks4:w4}});({el,board}=await draw2(f));
     assert.ok(!el.innerHTML.includes('data-key="size:claude"'));board.dispose();
@@ -1069,7 +1080,7 @@ test('the monthly summary prices the last four weeks, says where the room is and
   const won=v=>`₩${(Math.round(v/1000)*1000).toLocaleString('ko-KR')}`;
   assert.match(el.innerHTML,new RegExp(`<p class="ms-sum-big">쓴 만큼으로 치면 <b class="ms-num">약 ${won(worth)}<\\/b>어치예요<\\/p><p class="ms-sum-sub">구독료 약 ₩${total.toLocaleString('ko-KR')} 중 ${Math.round(worth/total*100)}% · 쓴 몫을 아는 계정 3개 기준<\\/p>`));
   // 가장 여유가 많은 계정(30% 넘게 남음)만 말하고, 「낭비」·「남겼다」는 쓰지 않는다.
-  assert.match(el.innerHTML,/가장 여유가 많았던 건 <b>calm<\/b> 계정\(Claude Max 5x\)이에요 · 쓴 만큼 2%/);
+  assert.match(el.innerHTML,/가장 여유가 많았던 건 <b>calm<\/b> 계정\(Claude Max\)이에요 · 쓴 만큼 2%/);
   assert.doesNotMatch(textOf(el.innerHTML),/낭비|남겼|아깝/);
   // GPT는 Codex 한도라 요약에 넣지 않는다(계정별 목록에도 없다). 휴대폰에서도 남는 출처 낱말은 따로 감싼다.
   await d.click({subs:'sum-open'});
@@ -1145,7 +1156,7 @@ test('a Claude Pro account used steadily for twelve weeks gets one yearly-billin
   assert.match(el.innerHTML,/<b>pro<\/b> 계정\(Pro\)을 12주 내내 꾸준히 썼어요\. 월 결제라면 연간 결제로 1년에 <b class="ms-num">\$44<\/b> 덜 내요\./);
   assert.equal((el.innerHTML.match(/data-key="annual:claude"/g)||[]).length,1);
   await d.click({subs:'tip-open',key:'annual:claude'});
-  assert.match(el.innerHTML,/<li>연간 결제는 1년 치를 한 번에 내요: \$220\(한 달 \$18꼴, 한국 결제 · 부가세 10% 포함\)\. 월 결제는 한 달 \$22예요\.<\/li><li>1년 동안 계속 쓸 계획일 때만 바꿔 보세요\. Max 요금제에는 연간 결제가 없어요\.<\/li>/);
+  assert.match(el.innerHTML,/<li>연간 결제는 1년 치를 한 번에 내요: \$220\(한 달 \$18꼴, 한국 결제 · 부가세 10% 포함\)\. 월 결제는 한 달 \$22예요\.<\/li><li>1년 동안 계속 쓸 계획일 때만 바꿔 보세요\. Max · Ultra 요금제에는 연간 결제가 없어요\.<\/li>/);
   assert.match(el.innerHTML,/지난 12주 4주씩 주간 한도 평균 50% · 59% · 63%<br>기준: 12주 내내 같은 요금제로 4주씩 평균 40% 넘게 썼을 때 · 요금 확인/);
   // 「이미 연간이에요」는 그 계정을 연간으로 표시해 다시 말하지 않게 한다.
   await d.click({subs:'cycle',id:'pro',cycle:'annual'});
@@ -1260,7 +1271,7 @@ test('the captured scene adds up: 1,727,600 a month, about 1,183,000 used, 68%, 
     const prices=priceBook(new Date(2026,9,19).getTime(),[{service:'higgsfield',plans:['plus','ultra'],cycle:'year',from:'2026-11-27',until:'2026-12-01',checked:'2026-11-10',source:'higgsfield-pricing',off:30}]);
     const f=phase3(rows,accounts,{prices}),{el,board}=await manageCost(f);
     assert.match(el.innerHTML,/쓴 만큼으로 치면 <b class="ms-num">약 ₩1,183,000<\/b>어치예요<\/p><p class="ms-sum-sub">구독료 약 ₩1,727,600 중 68% · 쓴 몫을 아는 계정 11개 기준/);
-    assert.match(el.innerHTML,/가장 여유가 많았던 건 <b>u27<\/b> 계정\(Claude Max 5x\)이에요 · 쓴 만큼 2%/);
+    assert.match(el.innerHTML,/가장 여유가 많았던 건 <b>u27<\/b> 계정\(Claude Max\)이에요 · 쓴 만큼 2%/);
     assert.match(el.innerHTML,/<strong class="ms-num">약 ₩1,727,600<\/strong><small>₩21,000 \+ \$1,219 · 구독 11개 · 공식 요금 10개<\/small>/);
     assert.match(el.innerHTML,/<b>u29<\/b> 계정\(Pro\)을 12주 내내 꾸준히 썼어요\. 월 결제라면 연간 결제로 1년에 <b class="ms-num">\$44<\/b> 덜 내요\./);
     assert.match(el.innerHTML,/<b>hf<\/b> 계정\(Ultra\)을 12주 내내 꾸준히 썼어요\. 월 결제라면 연간 결제로 1년에 <b class="ms-num">\$360<\/b> 덜 내요\. 다만 중간에 월 결제로 못 돌아와요\. <b class="ms-num">11\/27<\/b>부터 연간 결제 할인\(30%\)이 있어요/);
@@ -1300,7 +1311,7 @@ test('Claude API credits are counted in the bills screen with the day they were 
   assert.match(el.innerHTML,new RegExp(`<span class="ms-next-time ms-num">${md(fresh+3*D)}</span><span class="ms-next-rel">D-3</span><span class="ms-next-who"><b>a</b> Claude · API 크레딧 \\$199 사라져요</span>`));
   await d.click({subs:'manage',to:'ms-cost'});
   // 요금·결제일 칸: 넣은 값의 합에는 넣은 날(처음~끝)을, 가장 먼저 사라지는 계정과 요금제로 매달 들어오는 금액을 같이. 한 달 구독료 합계에는 섞지 않는다.
-  assert.match(el.innerHTML,new RegExp(`<div class="ms-metric ms-metric-api"><span>Claude API 크레딧</span><strong class="ms-num">\\$349.5 남음</strong><small>${md(fresh-2*D)}~${md(fresh-D)}에 넣은 값 · 계정 2개 · <b>a</b> ${md(fresh+3*D)}에 가장 먼저 사라져요 · 매달 \\$800\\(Max 4개\\)</small></div>`));
+  assert.match(el.innerHTML,new RegExp(`<div class="ms-metric ms-metric-api"><span>Claude API 크레딧</span><strong class="ms-num">\\$349.5 남음</strong><small>${md(fresh-2*D)}~${md(fresh-D)}에 넣은 값 · 계정 2개 · <b>a</b> ${md(fresh+3*D)}에 가장 먼저 사라져요 · 매달 \\$800\\(Ultra 4개\\)</small></div>`));
   // 결제 목록의 Claude 줄마다 남은 금액과 사라지는 날(넣은 값이 있고 아직 안 사라진 계정만).
   assert.match(el.innerHTML,new RegExp(`<span class="ms-bill-name has-api"><span class="ms-bill-who">a</span><small class="ms-bill-api">API 크레딧 \\$199 · ${md(fresh+3*D)}에 사라져요</small></span>`));
   assert.match(el.innerHTML,/<span class="ms-bill-name">c<\/span>/);assert.match(el.innerHTML,/<span class="ms-bill-name">x<\/span>/);
@@ -1313,11 +1324,11 @@ test('Claude API credits are counted in the bills screen with the day they were 
   await d.click({subs:'menu',id:'p'});
   assert.ok(!el.innerHTML.includes('data-subs="api-edit" data-id="p"'));
   await d.click({subs:'menu',id:'c'});
-  assert.match(el.innerHTML,/<p class="ms-soft">Max 20x 요금제는 Claude Console 조직을 연결하면 API 크레딧이 매달 \$200씩 들어와요\(결제일에 남은 건 사라져요\)\. 남은 금액을 넣으면 사라지기 전에 알려 드려요\.<\/p>/);
+  assert.match(el.innerHTML,/<p class="ms-soft">Ultra 요금제는 Claude Console 조직을 연결하면 API 크레딧이 매달 \$200씩 들어와요\(결제일에 남은 건 사라져요\)\. 남은 금액을 넣으면 사라지기 전에 알려 드려요\.<\/p>/);
   // 넣는 칸: 그 계정으로 로그인한 브라우저에서 Console 결제 화면의 그 요금제 줄을 보고 넣는다(산 잔액은 빼고).
   await d.click({subs:'api-edit',id:'c'});
   assert.match(el.innerHTML,/<form class="ms-form ms-pass-form ms-api-form" data-subs-form="api" data-id="c">/);
-  assert.match(el.innerHTML,/<b>c<\/b> 계정으로 로그인한 브라우저에서 Claude Console\(platform\.claude\.com\) 결제 화면을 열고 Promotional credits의 「API credit \(Max 20x\)」 줄에 보이는 금액과 만료 날짜를 넣어 주세요\. 직접 산 잔액은 빼요\./);
+  assert.match(el.innerHTML,/<b>c<\/b> 계정으로 로그인한 브라우저에서 Claude Console\(platform\.claude\.com\) 결제 화면을 열고 Promotional credits의 「API credit」으로 시작하는 줄에 보이는 금액과 만료 날짜를 넣어 주세요\. 직접 산 잔액은 빼요\./);
   await d.click({subs:'help',link:'claude-console-billing'});assert.deepEqual(helps,['claude-console-billing']);
   const submit=async values=>{await el.handlers.get('submit')({preventDefault(){},target:{closest:()=>({dataset:{subsForm:'api',id:'c'},querySelector:sel=>{const m=/\[name="([^"]+)"\]/.exec(sel);return m&&Object.hasOwn(values,m[1])?{value:values[m[1]]}:null;}})}});await tick();await tick();};
   const ymd=t=>{const d=new Date(t);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
@@ -1420,13 +1431,13 @@ test('a stale price table hides what arrives each month but keeps what the membe
   f=phase3([typed],{},{prices:priceBook(fresh-61*D)});({el,board}=await manageCost(f));
   assert.match(el.innerHTML,/<strong class="ms-num">\$50 남음<\/strong><small>[^<]*에 넣은 값 · 계정 1개 · <b>t<\/b> [^<]*에 가장 먼저 사라져요<\/small>/);board.dispose();
   f=phase3([c,row({id:'m',email:'m@example.com',plan:'max',live:{readAt:fresh,weekly:{usedPercent:30,resetsAt:fresh+4*D}}})],{});({el,board}=await manageCost(f));
-  assert.match(el.innerHTML,/<strong class="ms-num">매달 \$200<\/strong><small>Max 계정 1개\(등급 모르는 Max 1개 빼고\) · Claude Console 조직을 연결한 계정에 들어와요/);board.dispose();
+  assert.match(el.innerHTML,/<strong class="ms-num">매달 \$200<\/strong><small>Ultra 계정 1개\(Max인지 Ultra인지 모르는 계정 1개 빼고\) · Claude Console 조직을 연결한 계정에 들어와요/);board.dispose();
   // 등급 모르는 Max뿐이면 금액 없이 그 수와 까닭, ⋯ 패널에도 단추가 무엇인지 한 줄(Fable 최종 P3).
   const unknown=row({id:'m',email:'m@example.com',plan:'max',live:{readAt:fresh,weekly:{usedPercent:30,resetsAt:fresh+4*D}}});
   f=phase3([unknown],{});({el,board,d}=await manageCost(f));
-  assert.match(el.innerHTML,/<strong class="ms-num">Max 1개<\/strong><small>요금제 등급\(5x·20x\)을 아직 못 읽어 매달 들어오는 금액을 몰라요/);
+  assert.match(el.innerHTML,/<strong class="ms-num">Max · Ultra 1개<\/strong><small>Max인지 Ultra인지 아직 못 읽어 매달 들어오는 금액을 몰라요/);
   await d.click({subs:'menu',id:'m'});
-  assert.match(el.innerHTML,/<p class="ms-soft">Max 요금제는 Claude Console 조직을 연결하면 API 크레딧이 매달 들어와요\(결제일에 남은 건 사라져요\)\. 요금제 등급\(5x·20x\)을 아직 못 읽어 금액은 말하지 못해요/);
+  assert.match(el.innerHTML,/<p class="ms-soft">Max · Ultra 요금제는 Claude Console 조직을 연결하면 API 크레딧이 매달 들어와요\(결제일에 남은 건 사라져요\)\. Max인지 Ultra인지 아직 못 읽어 금액은 말하지 못해요/);
   assert.match(el.innerHTML,/data-subs="api-edit" data-id="m"/);board.dispose();
 });
 

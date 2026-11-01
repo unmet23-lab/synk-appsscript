@@ -246,3 +246,29 @@ test('keeps twelve weeks of plain use per account for the yearly-billing tip',()
   u=usageSummary({rows:[auto('r-h','higgsfield','plus')],history:credit.map(s=>(s.t>=NOW-4*WEEK?{...s,p:'plus'}:s)),now:NOW});
   assert.equal(u.accounts['r-h'].weeks12.samePlan,false);
 });
+
+test('counts each calendar day from midnight, leaves out first reads and weighs plans like the weekly bars',()=>{
+  // 11-02 유호님 「1주일말고 1일 기준으로」: 이 PC 시각 0시로 자른 하루 일곱(마지막이 오늘 — 지금까지)과 비교용 그 앞 일곱.
+  const dayStart=k=>{const d=new Date(NOW);d.setHours(0,0,0,0);d.setDate(d.getDate()-k);return d.getTime();};
+  const wr=NOW+DAY,line=(id,s,p,t,w)=>({t,id,s,p,w,wr,c:null});
+  const history=[
+    line('a','claude','max_20x',NOW-20*DAY,0),line('a','claude','max_20x',dayStart(2)+10*HOUR,10),line('a','claude','max_20x',dayStart(1)+10*HOUR,30),line('a','claude','max_20x',NOW-HOUR,33),
+    line('b','claude','max_5x',NOW-20*DAY,0),line('b','claude','max_5x',dayStart(1)+12*HOUR,40),
+    // 어제 오후에 연결한 계정: 처음 읽은 50%는 어느 날 쓴 건지 몰라 빼고, 어제는 0시 전부터 읽던 계정끼리 낸다. 오늘은 함께 센다.
+    line('c','claude','pro',dayStart(1)+15*HOUR,50),line('c','claude','pro',NOW-2*HOUR,60),
+    {t:dayStart(3)+HOUR,id:'h',s:'higgsfield',p:'ultra',w:null,wr:null,c:1000},{t:dayStart(1)+5*HOUR,id:'h',s:'higgsfield',p:'ultra',w:null,wr:null,c:800},{t:NOW-HOUR,id:'h',s:'higgsfield',p:'ultra',w:null,wr:null,c:850},
+  ];
+  const u=usageSummary({rows:[auto('a','claude','max_20x'),auto('b','claude','max_5x'),auto('c','claude','pro'),auto('h','higgsfield','ultra')],history,now:NOW});
+  assert.equal(u.days.length,7);
+  assert.deepEqual([u.days[0].start,u.days[6].start,u.days[6].end],[dayStart(6),dayStart(0),NOW]);
+  const c=u.services.claude;
+  // 그제 10×20/25 = 8 · 어제 (20×20 + 40×5)/25 = 24 · 오늘 (3×20 + 10×1)/26 ≈ 2.7.
+  assert.deepEqual(c.days.map(d=>d.v),[0,0,0,0,8,24,2.7]);
+  assert.ok(c.days.every(d=>!d.partial));
+  // 하루 평균은 오늘을 뺀 엿새, 그 전 7일은 꽉 찬 날이 사흘 넘을 때만.
+  assert.deepEqual([c.dayAvg,c.dayAvgDays,c.dayBase,c.dayBaseDays],[5.3,6,0,7]);
+  // 크레딧: 줄어든 만큼이 그날 쓴 양, 충전은 빼고, 기록이 그날 중간부터면 「일부」, 기록 전 날은 비운다.
+  const h=u.services.higgsfield;
+  assert.deepEqual(h.days,[null,null,null,{v:0,partial:true},{v:0,partial:false},{v:200,partial:false},{v:0,partial:false}]);
+  assert.deepEqual([h.dayAvg,h.dayBase,h.dayBaseDays],[100,null,0]);
+});
