@@ -383,7 +383,7 @@ cut("C64", [CU, BU],
     "side; water splashes up around them, droplets hanging in the air.",
     "the camera holds still, low at the puddle; real high-speed slow motion for this shot only.")
 cut("C66", [TJ, CU],
-    "Under the awning, seen from below: Taejun, already looking up past the awning edge with his right hand held out toward the camera, palm up and "
+    "Under the awning, seen from below: Taejun, already looking up past the awning edge with his left hand held out toward the camera, palm up and "
     "large in the frame: his eyes drop to the open palm — no rain lands on it — and lift back to the sky as sunlight breaks through; at about 1.8 s he says softly in Korean, a little surprised: \"어, 비 그쳤네.\"",
     still(), [(TJ, "어, 비 그쳤네.", 1.8, "입")], post="검은 화면에서 페이드 인(0–0.95초)")
 cut("C67", [CU],

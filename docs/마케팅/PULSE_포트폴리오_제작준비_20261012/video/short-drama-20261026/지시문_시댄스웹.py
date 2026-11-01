@@ -262,10 +262,10 @@ cut("1-38", ["IAN (office)", "MINJAE"],
     jit("1-38"),
     ("IAN (office)", "이러다 계획표에 나도 한 줄로 들어가겠어.", 0.2, "입"))
 cut("1-39", ["MINJAE", "IAN (office)"],
-    "Close: Minjae's head rests on the desk under Ian's arm, which covers his mouth; Minjae's eyes look up toward Ian at the top edge. Under the shot Minjae's muffled voice "
-    "says in Korean: \"너 그러다 진짜 놓친다?\"",
+    "Close: Minjae's head rests on the desk with Ian's arm draped over him, the sleeve just under his chin; Minjae's eyes look up toward Ian at the top edge "
+    "and, his cheek still on the desk, he says in Korean: \"너 그러다 진짜 놓친다?\"",   # 11-02 정밀 검수: 정지컷은 입이 다 보인다 — 「팔이 입을 가림」을 그림대로 고치고 입 맞춤으로
     jit("1-39"),
-    ("MINJAE", "너 그러다 진짜 놓친다?", 0.2, "가림"))
+    ("MINJAE", "너 그러다 진짜 놓친다?", 0.2, "입"))
 cut("1-40", ["IAN (office)", "MINJAE"],
     "Close: Ian, chin propped on his hands on top of Minjae's head, scoffs and says in Korean, a bit too confident: \"놓치긴. 육 년인데.\" Minjae, face down, keeps his "
     "lips closed.",

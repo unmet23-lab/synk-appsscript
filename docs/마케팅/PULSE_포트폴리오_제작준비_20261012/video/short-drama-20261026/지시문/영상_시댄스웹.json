@@ -1319,7 +1319,7 @@
    ],
    "길이": 4,
    "설명": "클로즈업 · 책상에 머리를 댄 민재(입은 이안 팔에 가림), 위 가장자리에 이안",
-   "소리": "B만 켬",
+   "소리": "켬",
    "샷": [
     {
      "컷": "1-39",
@@ -1329,13 +1329,13 @@
       "MINJAE",
       "IAN (office)"
      ],
-     "동작": "Close: Minjae's head rests on the desk under Ian's arm, which covers his mouth; Minjae's eyes look up toward Ian at the top edge. Under the shot Minjae's muffled voice says in Korean: \"너 그러다 진짜 놓친다?\"",
+     "동작": "Close: Minjae's head rests on the desk with Ian's arm draped over him, the sleeve just under his chin; Minjae's eyes look up toward Ian at the top edge and, his cheek still on the desk, he says in Korean: \"너 그러다 진짜 놓친다?\"",
      "카메라": "handheld, the camera stays in place: small constant handheld jitters of about 0.2% of the frame width — it shakes but does not travel, no push-in, no zoom, holding the same framing to the end.",
      "말": {
       "누가": "MINJAE",
       "대사": "너 그러다 진짜 놓친다?",
       "시작초": 0.2,
-      "꼴": "입 가림 · 화면 밖",
+      "꼴": "입 맞춤",
       "음절": 9,
       "어림초": 1.75
      }
@@ -1347,9 +1347,9 @@
     "없음": null
    },
    "소리줄": {
-    "A": "SOUND: silent clip — no dialogue, no narration, no music.",
-    "B": "SOUND: only Minjae's voice saying this one Korean line, with the timing written in ACTION; Minjae's mouth is not seen, exactly as written in ACTION. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
-    "없음": "SOUND: silent clip — no dialogue, no narration, no music."
+    "A": "SOUND: the reference audio is the exact recorded line for this video — Minjae's lips move exactly with it, word for word, wherever the mouth is visible; do not re-voice, re-time or change it. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.",
+    "B": "SOUND: Minjae speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time.\nVOICE: @오디오 1 is only a sample of the speaking person's voice — copy its timbre, age, pitch and Korean accent exactly, but never play it and never say its words; perform only the Korean line written above, the way this moment demands. Only that dialogue and quiet room sound — no music, no other voices.",
+    "없음": "SOUND: Minjae speaks only this one Korean line with natural Korean pronunciation and the timing written in ACTION, the lips clearly forming the Korean words wherever the mouth is visible. No music, no narration, no other voices; Ian keeps his lips closed and silent the whole time."
    }
   },
   {
