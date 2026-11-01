@@ -71,17 +71,21 @@ test('리허설 WORLD 「말하기 연습」: 기본 켜짐·끄는 스위치·�
   });
   page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   // 입장: 화면 상태를 보며 언어 고르기 → 한글 질문 → 튜터 고르기 → 합성 계정 player-a로 로그인 → 「한글 기록 옮기기」는 이 기기에만 두기 → 준비 끝.
+  // 단계마다 한 번만 답하고 그 창이 물러날 때까지 기다린다 — 답을 저장하는 동안 창은 단추를 끈 채 남는다. 0.25초 뒤 다시 보면 바쁜 PC에서는
+  // 같은 단계로 읽혀 꺼진 단추를 또 누르다, 다음 창으로 바뀌며 사라진 단추를 30초 기다렸다(11-02 로컬 조건부 시험 574f7c5a9).
   const enter=async(query='')=>{
    await page.goto(url+'/mobile.html?opening=off'+query,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.__synkWorld?.client);
+   const leave=(name,selector)=>page.waitForFunction(s=>![...document.querySelectorAll(s)].some(n=>n.getClientRects().length>0),selector,{timeout:60000})
+    .catch(e=>{throw Error(`입장 「${name}」 창이 물러나지 않았다 — ${e.message.split('\n')[0]}`);});
    for(let i=0;i<120;i++){
     const state=await page.evaluate(()=>{const vis=s=>[...document.querySelectorAll(s)].some(n=>n.getClientRects().length>0);
      return vis('[data-lang-picker]')?'lang':vis('dialog[open] [data-world="device-records"][data-choice="keep"]')?'records':vis('dialog[open] [data-first-hangul="reads"]')?'hangul':vis('dialog[open] .tutor-option')?'tutor':vis('[data-world="guest"]')?'welcome'
       :window.__synkWorld.client.snapshot&&document.querySelector('.world-shell')?.dataset.entry==='ready'&&!document.querySelector('dialog[open]')?'ready':!window.__synkWorld.client.snapshot&&document.querySelector('.world-shell')?.dataset.entry==='ready'?'guest':'wait';});
     if(state==='ready')return;
-    if(state==='lang'){await page.locator('[data-lang-choice="ko"]').click();await page.locator('[data-lang-confirm]').click();}
-    else if(state==='hangul')await page.locator('dialog[open] [data-first-hangul="reads"]').click();
-    else if(state==='records')await page.locator('dialog[open] [data-world="device-records"][data-choice="keep"]').click();
-    else if(state==='tutor'){await page.locator('dialog[open] .tutor-option[data-tutor-id="mongle"]').click();await page.locator('.tutor-primary').click();await page.locator('.tutor-primary[data-tutor-action="finish"]').click();}
+    if(state==='lang'){await page.locator('[data-lang-choice="ko"]').click();await page.locator('[data-lang-confirm]').click();await leave(state,'[data-lang-picker]');}
+    else if(state==='hangul'){await page.locator('dialog[open] [data-first-hangul="reads"]').click();await leave(state,'dialog[open] [data-first-hangul]');}
+    else if(state==='records'){await page.locator('dialog[open] [data-world="device-records"][data-choice="keep"]').click();await leave(state,'dialog[open] [data-world="device-records"]');}
+    else if(state==='tutor'){await page.locator('dialog[open] .tutor-option[data-tutor-id="mongle"]').click();await page.locator('.tutor-primary').click();await page.locator('.tutor-primary[data-tutor-action="finish"]').click();await leave(state,'dialog[open] :is(.tutor-option,[data-tutor-action])');}
     else if(state==='welcome'||state==='guest'){await page.evaluate(()=>{document.querySelector('#qa-login')?.remove();document.body.insertAdjacentHTML('beforeend','<button data-world="login-a" id="qa-login" hidden></button>');document.getElementById('qa-login').click();});await page.waitForFunction(()=>window.__synkWorld.client.snapshot!==null,null,{timeout:60000});}
     await page.waitForTimeout(250);
    }
@@ -107,8 +111,13 @@ test('리허설 WORLD 「말하기 연습」: 기본 켜짐·끄는 스위치·�
   const shoot=async name=>{await page.evaluate(()=>document.fonts.ready);const file=path.join(out,`${name}.png`);await page.locator('#world-panel').screenshot({path:file});shots.push(path.basename(file));};
   const record=async name=>{measures[name]=await measure();await shoot(name);};
   const speakingLog=()=>page.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('synk.world.speaking.v1:')).flatMap(k=>JSON.parse(localStorage.getItem(k)).log||[]));
+  // 녹음은 벽시계가 아니라 소리 막대가 실제로 들은 만큼 한다 — 앱은 화면 그림 한 장마다 많아야 0.2초씩 「목소리 난 시간」을 쌓고 0.7초가 넘어야
+  // 보내기·다음 차례를 연다(world-speaking-practice.mjs startRecorder · MIN_VOICED_MS). 바쁜 PC에서 그림이 드물게 오면 1.6초를 기다려도 0.7초가
+  // 안 쌓여 「말소리가 거의 들리지 않았어요」로 끝나고 보낼 단추가 안 생겼다(11-02 로컬 조건부 시험 5802b910e). 같은 셈을 페이지에서 해 그만큼 기다린다.
+  const speakFor=ms=>page.evaluate(ms=>new Promise(done=>{const start=Date.now();let heard=0,last=start;
+   const frame=()=>{const now=Date.now();heard+=Math.min(200,now-last);last=now;if(heard>=ms||now-start>30000)done();else requestAnimationFrame(frame);};requestAnimationFrame(frame);}),ms);
   const answerOnce=async()=>{await page.locator('#panel-content [data-wsp-start]').click();await page.waitForSelector('#panel-content [data-wsp-skip]');await page.locator('#panel-content [data-wsp-skip]').click();
-   await page.waitForSelector('#panel-content [data-wsp-stop]');await page.waitForTimeout(1600);await page.locator('#panel-content [data-wsp-stop]').click();await page.waitForSelector('#panel-content [data-wsp-retry]');};
+   await page.waitForSelector('#panel-content [data-wsp-stop]');await speakFor(1600);await page.locator('#panel-content [data-wsp-stop]').click();await page.waitForSelector('#panel-content [data-wsp-retry]');};
 
   // 1. 플래그 없이(10-21 공개 판): 모듈을 부르고, 문항을 읽으면 배우기 판에 말하기 줄이 생긴다.
   const moduleLoaded=()=>page.evaluate(()=>performance.getEntriesByType('resource').some(r=>r.name.includes('world-speaking-practice.mjs')));
@@ -132,7 +141,7 @@ test('리허설 WORLD 「말하기 연습」: 기본 켜짐·끄는 스위치·�
    if(tag==='390'){await page.waitForSelector('#panel-content .wsp-consent');await record(`${tag}-consent`);await page.locator('#panel-content [data-wsp-consent]').click();}
    await page.waitForSelector('#panel-content [data-wsp-skip]');await record(`${tag}-task1-prep`);
    checks[`${tag}-prepClock`]=await page.locator('#panel-content [data-wsp-clock]').textContent();assert.match(checks[`${tag}-prepClock`],/준비 시간 · \d+초 남음/);
-   await page.locator('#panel-content [data-wsp-skip]').click();await page.waitForSelector('#panel-content [data-wsp-stop]');await page.waitForTimeout(2600);
+   await page.locator('#panel-content [data-wsp-skip]').click();await page.waitForSelector('#panel-content [data-wsp-stop]');await speakFor(2600);
    await record(`${tag}-task1-rec`);
    await page.locator('#panel-content [data-wsp-stop]').click();await page.waitForSelector('#panel-content [data-wsp-send]');
    checks[`${tag}-micReleased`]=await page.evaluate(()=>window.__micStreams.length>0&&window.__micStreams.every(s=>s.getTracks().every(tr=>tr.readyState==='ended')));
@@ -165,7 +174,7 @@ test('리허설 WORLD 「말하기 연습」: 기본 켜짐·끄는 스위치·�
   for(const [turnNo,step] of ['order','confirm','place','place'].entries()){
    await page.waitForSelector('#panel-content [data-wsp-rp-speak]',{timeout:30000});
    if(step==='order')await record('390-roleplay-turn');
-   await page.locator('#panel-content [data-wsp-rp-speak]').click();await page.waitForSelector('#panel-content [data-wsp-rp-stop]');await page.waitForTimeout(1600);
+   await page.locator('#panel-content [data-wsp-rp-speak]').click();await page.waitForSelector('#panel-content [data-wsp-rp-stop]');await speakFor(1600);
    await page.locator('#panel-content [data-wsp-rp-stop]').click();
    // 이 차례의 서버 몫(가짜)이 답할 때까지 기다린다(다음 차례 판단이 그 답에 달려 있다).
    for(let w=0;calls.filter(c=>c.action==='turn').length<turnNo+1&&w<300;w++)await page.waitForTimeout(100);
@@ -196,7 +205,7 @@ test('리허설 WORLD 「말하기 연습」: 기본 켜짐·끄는 스위치·�
   // 4-3. 역할극 서버 사정: 따라 말하기로 넘겨 예시 문장과 「다음 말 듣기」를 연다.
   step('roleplay trouble');await page.locator('#panel-content [data-wsp-back]').click();await page.locator('#panel-content [data-wsp-roleplay="rp-cafe-tea"]').click();await page.waitForSelector('#panel-content [data-wsp-rp-start]');
   await page.locator('#panel-content [data-wsp-rp-start]').click();await page.waitForSelector('#panel-content [data-wsp-rp-speak]',{timeout:30000});fake.turn='limit';
-  await page.locator('#panel-content [data-wsp-rp-speak]').click();await page.waitForSelector('#panel-content [data-wsp-rp-stop]');await page.waitForTimeout(1600);await page.locator('#panel-content [data-wsp-rp-stop]').click();
+  await page.locator('#panel-content [data-wsp-rp-speak]').click();await page.waitForSelector('#panel-content [data-wsp-rp-stop]');await speakFor(1600);await page.locator('#panel-content [data-wsp-rp-stop]').click();
   await page.waitForSelector('#panel-content [data-wsp-rp-next]');await record('390-roleplay-self');
   // 화면에 보이는 안내만 센다 — 화면 읽기용 알림 칸(data-wsp-live)은 150ms 뒤 같은 글을 받으므로 빼고 센다(캡처가 늦으면 둘로 세던 것).
   checks.selfNowCount=await page.evaluate(()=>{const root=document.querySelector('#panel-content').cloneNode(true);root.querySelectorAll('[data-wsp-live]').forEach(n=>n.remove());return (root.textContent.match(/지금은 자동 대답을 쓸 수 없어요/g)||[]).length;});assert.equal(checks.selfNowCount,1,'막힌 안내는 한 곳에만(10-21 Fable 검수)');
@@ -204,7 +213,7 @@ test('리허설 WORLD 「말하기 연습」: 기본 켜짐·끄는 스위치·�
   checks.selfNext=await page.evaluate(()=>document.querySelectorAll('#panel-content .wsp-say[data-who="staff"]').length);assert.equal(checks.selfNext,2);fake.turn='ok';
   // 4-4. 역할극이 횟수·금액으로 막힌 뒤에는 다음 차례부터 서버로 보내지 않고 따라 말하기로 간다(10-21 아르곤 검수).
   const turnsBefore=calls.filter(c=>c.action==='turn').length;
-  await page.locator('#panel-content [data-wsp-rp-speak]').click();await page.waitForSelector('#panel-content [data-wsp-rp-stop]');await page.waitForTimeout(1600);await page.locator('#panel-content [data-wsp-rp-stop]').click();
+  await page.locator('#panel-content [data-wsp-rp-speak]').click();await page.waitForSelector('#panel-content [data-wsp-rp-stop]');await speakFor(1600);await page.locator('#panel-content [data-wsp-rp-stop]').click();
   await page.waitForSelector('#panel-content [data-wsp-rp-next]');
   assert.equal(calls.filter(c=>c.action==='turn').length,turnsBefore,'막힌 뒤의 차례는 서버로 보내지 않는다');
   // 5. 영어·몽골어: 화면 글은 그 언어, 한국어는 lang="ko" 칸에만
@@ -214,7 +223,7 @@ test('리허설 WORLD 「말하기 연습」: 기본 켜짐·끄는 스위치·�
    await page.evaluate(async lang=>{const m=await import('/brand-opening/world-lang.mjs');m.setLang(lang);},lang);await page.waitForFunction(lang=>document.documentElement.lang===lang,lang);
    await openSpeaking();await record(`390-${lang}-list`);
    await page.locator('#panel-content [data-wsp-open="s1-weekend"]').click();await page.waitForSelector('#panel-content [data-wsp-start]');await page.locator('#panel-content [data-wsp-start]').click();
-   await page.waitForSelector('#panel-content [data-wsp-skip]');await page.locator('#panel-content [data-wsp-skip]').click();await page.waitForSelector('#panel-content [data-wsp-stop]');await page.waitForTimeout(1600);
+   await page.waitForSelector('#panel-content [data-wsp-skip]');await page.locator('#panel-content [data-wsp-skip]').click();await page.waitForSelector('#panel-content [data-wsp-stop]');await speakFor(1600);
    await page.locator('#panel-content [data-wsp-stop]').click();await page.waitForSelector('#panel-content [data-wsp-send]');await page.locator('#panel-content [data-wsp-send]').click();await page.waitForSelector('#panel-content .wsp-els');
    assert.equal(calls.filter(c=>c.action==='feedback').at(-1).lang,lang);
    await page.evaluate(()=>document.querySelector('#panel-content .wsp-feedback')?.scrollIntoView({block:'start'}));await record(`390-${lang}-feedback`);

@@ -1,10 +1,22 @@
 'use strict';
-const fs = require('node:fs'), path = require('node:path'), cp = require('node:child_process');
+const fs = require('node:fs'), path = require('node:path'), cp = require('node:child_process'), os = require('node:os');
 const { readManifest, coverage, sha256 } = require('./contract.cjs');
 const { read, write, git, loadConfig, clone, prepare, postcheck } = require('./inputs.cjs');
 const github = require('./github.cjs');
 const { childRun } = require('./run.cjs');
-const defaultState = () => path.join(require('node:os').homedir(), 'security-audit-skill/SYNK-conditional-qa');
+const defaultState = () => path.join(os.homedir(), 'security-audit-skill/SYNK-conditional-qa');
+// A tick opens new verifications only within this budget: one verification may take 50 minutes,
+// and both the scheduled task and its hidden launcher stop a tick after two hours.
+const BUDGET_MS = 60 * 60_000;
+const due = row => ['queued', 'running', 'publish-pending'].includes(row.status) || (row.status === 'retry' && Date.now() >= row.retryAt);
+// A lid-close sleep interrupts a run instead of failing a test (2026-11-01: two tutor tests ended at 606 s across a ten-minute sleep).
+// Kernel-Power 42 (entering sleep) or 107 (resume) inside the run marks it interrupted; an unreadable log counts as no sleep.
+function sleptDuring(from, to, { platform = process.platform, run = cp.execFileSync } = {}) {
+  if (platform !== 'win32') return false;
+  const range = `@SystemTime>='${new Date(from).toISOString()}' and @SystemTime<='${new Date(to).toISOString()}'`;
+  try { return /<Event[\s>]/.test(run('wevtutil.exe', ['qe', 'System', `/q:*[System[Provider[@Name='Microsoft-Windows-Kernel-Power'] and (EventID=42 or EventID=107) and TimeCreated[${range}]]]`, '/c:1', '/f:xml'], { encoding: 'utf8', windowsHide: true, timeout: 30_000 })); }
+  catch { return false; }
+}
 function extendQueue(state, head, commits) {
   github.validCommit(head);
   for (const commit of commits) {
@@ -47,20 +59,28 @@ async function verify(config, commit, output) {
   if (!coverage(receipt, { commit, digest: manifest.digest, cases })) { const error = Error(`Local tests incomplete: ${receipt.passed}/${cases.length}`); error.code = 'TEST_FAILURE'; throw error; }
   return { receipt, count: cases.length, digest: manifest.digest };
 }
-async function tick(stateDir, { limit = 3 } = {}) {
-  const config = loadConfig(stateDir), release = acquire(stateDir), queueFile = path.join(stateDir, 'queue.json');
+async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring } = {}) {
+  const config = loadConfig(stateDir), release = acquire(stateDir), queueFile = path.join(stateDir, 'queue.json'), started = Date.now();
   try {
-    const root = clone(config); git(root, ['fetch', 'origin', 'master']);
-    const head = git(root, ['rev-parse', 'origin/master']), queue = read(queueFile);
-    if (queue.version !== 1 || !Array.isArray(queue.items)) throw Error('Invalid local queue');
-    github.validCommit(queue.seen); git(root, ['merge-base', '--is-ancestor', queue.seen, head]);
-    const commits = git(root, ['rev-list', '--reverse', '--first-parent', `${queue.seen}..${head}`]).split(/\r?\n/).filter(Boolean);
-    extendQueue(queue, head, commits); write(queueFile, queue);
+    const root = clone(config); let head, queue;
+    // Refetched after every verification, so commits pushed meanwhile join this tick instead of waiting for the next one.
+    const refresh = () => {
+      git(root, ['fetch', 'origin', 'master']); head = git(root, ['rev-parse', 'origin/master']); queue = read(queueFile);
+      if (queue.version !== 1 || !Array.isArray(queue.items)) throw Error('Invalid local queue');
+      github.validCommit(queue.seen); git(root, ['merge-base', '--is-ancestor', queue.seen, head]);
+      const commits = git(root, ['rev-list', '--reverse', '--first-parent', `${queue.seen}..${head}`]).split(/\r?\n/).filter(Boolean);
+      extendQueue(queue, head, commits); write(queueFile, queue);
+    };
+    refresh();
     for (const item of queue.items.filter(row => row.status === 'passed' && row.resumePending).slice(0, 10)) {
       try { item.resumePending = !github.resumeWaitingWorkflow(item.commit); } catch (error) { item.resumeError = error.message.slice(0, 500); }
     }
+    write(queueFile, queue);
     // An interrupted process or network publication is resumed; a failed test stays explicitly failed.
-    for (const item of queue.items.filter(row => ['queued', 'running', 'publish-pending'].includes(row.status) || (row.status === 'retry' && Date.now() >= row.retryAt)).slice(0, limit)) {
+    // Each commit is attempted once per tick, so an unavailable API cannot spin on the same publication.
+    const attempted = new Set();
+    for (let item; Date.now() - started < budgetMs && (item = queue.items.find(row => due(row) && !attempted.has(row.commit))); refresh()) {
+      attempted.add(item.commit);
       git(root, ['merge-base', '--is-ancestor', item.commit, head]);
       try {
         if (item.status !== 'publish-pending') {
@@ -81,13 +101,16 @@ async function tick(stateDir, { limit = 3 } = {}) {
         try { item.resumePending = !github.resumeWaitingWorkflow(item.commit); } catch (error) { item.resumeError = error.message.slice(0, 500); }
       } catch (error) {
         item.error = error.message.slice(0, 1000);
-        if (item.status !== 'publish-pending') { item.status = error.code === 'TEST_FAILURE' ? 'failed' : 'retry'; item.retryAt = Date.now() + 15 * 60_000; }
+        if (item.status !== 'publish-pending') {
+          const interrupted = error.code === 'TEST_FAILURE' && slept(item.startedAt, new Date());
+          if (interrupted) item.error = `Interrupted by system sleep; verifying again. ${item.error}`.slice(0, 1000);
+          item.status = error.code === 'TEST_FAILURE' && !interrupted ? 'failed' : 'retry'; item.retryAt = Date.now() + 15 * 60_000;
+        }
         try { github.publish(item.commit, 'failure', 'Local verification incomplete; inspect the private worker receipt'); } catch { item.publicationError = true; }
         write(queueFile, queue);
       }
       write(queueFile, queue);
     }
-    write(queueFile, queue);
     const summary = { checkedAt: new Date().toISOString(), head, queued: queue.items.filter(row => row.status === 'queued').length,
       incomplete: queue.items.filter(row => row.status !== 'passed').length,
       passed: queue.items.filter(row => row.status === 'passed').length, failed: queue.items.filter(row => row.status === 'failed').length,
@@ -96,8 +119,11 @@ async function tick(stateDir, { limit = 3 } = {}) {
   } finally { release(); }
 }
 if (require.main === module) {
+  // Task Scheduler starts the worker below normal priority and every test, server and browser under it inherits that;
+  // on a busy PC they starved (a browser launch exceeded 30 s). Children started after this run at normal priority.
+  try { if (os.getPriority() > os.constants.priority.PRIORITY_NORMAL) os.setPriority(os.constants.priority.PRIORITY_NORMAL); } catch {}
   const args = process.argv.slice(2), stateDir = args.includes('--state') ? args[args.indexOf('--state') + 1] : defaultState();
   const promise = args.includes('--initialize') ? Promise.resolve(initialize(stateDir, args[args.indexOf('--initialize') + 1])) : tick(stateDir);
   promise.catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { extendQueue, acquire, initialize, verify, tick, defaultState };
+module.exports = { extendQueue, acquire, initialize, verify, tick, defaultState, sleptDuring, due };

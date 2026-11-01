@@ -9,9 +9,11 @@ function plan({ state = defaultState(), ops, pythonw }) {
   for (const file of [pythonw, path.join(ops, 'tools/숨김실행.py'), path.join(ops, 'tools/conditional-qa/worker.cjs')]) if (!fs.existsSync(file)) throw Error(`Required installed file is absent: ${file}`);
   if (!path.isAbsolute(state) || !path.isAbsolute(ops) || !path.isAbsolute(pythonw) || [state, ops, pythonw].some(x => /["\r\n]/.test(x))) throw Error('Use absolute Windows paths without quotes/newlines');
   const args = `-X utf8 -B "${path.join(ops, 'tools/숨김실행.py')}" --한도 7200 "${path.join(ops, 'tools/conditional-qa/worker.cjs')}" --state "${state}"`;
+  // Priority 4 is normal CPU, I/O and memory priority. The default 7 is below-normal CPU, low I/O and memory priority 2,
+  // which every test, server and browser inherits; on a busy PC those processes starved and timed out.
   const script = `$ErrorActionPreference='Stop'\n$action=New-ScheduledTaskAction -Execute ${quote(pythonw)} -Argument ${quote(args)} -WorkingDirectory ${quote(ops)}\n` +
     `$trigger=New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes 5)\n` +
-    `$settings=New-ScheduledTaskSettingsSet -StartWhenAvailable -DontStopIfGoingOnBatteries -AllowStartIfOnBatteries -ExecutionTimeLimit (New-TimeSpan -Hours 2) -MultipleInstances IgnoreNew\n` +
+    `$settings=New-ScheduledTaskSettingsSet -StartWhenAvailable -DontStopIfGoingOnBatteries -AllowStartIfOnBatteries -ExecutionTimeLimit (New-TimeSpan -Hours 2) -MultipleInstances IgnoreNew -Priority 4\n` +
     `$principal=New-ScheduledTaskPrincipal -UserId ([Security.Principal.WindowsIdentity]::GetCurrent().Name) -LogonType Interactive -RunLevel Limited\n` +
     `Register-ScheduledTask -TaskName ${quote(TASK)} -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Description 'SYNK trusted master: complete registered local test coverage and publish exact-commit status' -Force | Out-Null\n` +
     `Get-ScheduledTask -TaskName ${quote(TASK)} | Select-Object TaskName,State | ConvertTo-Json -Compress\n`;

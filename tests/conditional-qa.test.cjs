@@ -5,8 +5,9 @@ const { pathToFileURL } = require('node:url');
 const root = path.resolve(__dirname, '..'), c = require('../tools/conditional-qa/contract.cjs');
 const { check } = require('../tools/conditional-qa/guard.cjs');
 const { childRun, temporaryEnvironment } = require('../tools/conditional-qa/run.cjs');
-const { materialize } = require('../tools/conditional-qa/inputs.cjs');
-const { extendQueue, acquire } = require('../tools/conditional-qa/worker.cjs');
+const { materialize, write } = require('../tools/conditional-qa/inputs.cjs');
+const { extendQueue, acquire, sleptDuring, due } = require('../tools/conditional-qa/worker.cjs');
+const { plan } = require('../tools/conditional-qa/install.cjs');
 const github = require('../tools/conditional-qa/github.cjs');
 const { wait } = require('../tools/conditional-qa/wait-local.cjs');
 const manifest = c.readManifest(root), selected = manifest.cases.filter(row => row.route === 'local');
@@ -76,6 +77,21 @@ test('queue preserves every discovered commit and a live worker cannot be replac
   const release = acquire(scratch(t));
   // Same directory is intentionally reused; the owner is this still-live process.
   const lockDir = scratch(t), unlock = acquire(lockDir); assert.throws(() => acquire(lockDir), /already running/); unlock(); release();
+});
+test('the scheduled worker runs at normal priority, and only a logged sleep turns a failed run into a retry', t => {
+  const dir = scratch(t), state = path.join(dir, 'state'), ops = path.join(dir, 'ops'), pythonw = path.join(dir, 'pythonw.exe');
+  for (const file of [pythonw, path.join(ops, 'tools/숨김실행.py'), path.join(ops, 'tools/conditional-qa/worker.cjs')]) { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, ''); }
+  write(path.join(state, 'owner.json'), { version: 1, purpose: 'synk-conditional-qa', state });
+  write(path.join(state, 'config.json'), { version: 1, repo: github.REPO, state, root: path.join(state, 'workspace/SYNK-appsscript') });
+  assert.match(plan({ state, ops, pythonw }).script, /New-ScheduledTaskSettingsSet [^\n]* -Priority 4\n/);
+  const asked = [], run = (command, args) => { asked.push(args.join(' ')); return asked.length === 1 ? "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System/></Event>" : ''; };
+  assert.equal(sleptDuring('2026-11-01T12:55:27.726Z', '2026-11-01T13:12:00.909Z', { platform: 'win32', run }), true);
+  assert.match(asked[0], /Microsoft-Windows-Kernel-Power'\] and \(EventID=42 or EventID=107\) and TimeCreated\[@SystemTime>='2026-11-01T12:55:27\.726Z' and @SystemTime<='2026-11-01T13:12:00\.909Z'\]/);
+  assert.equal(sleptDuring(0, 1, { platform: 'win32', run }), false);
+  assert.equal(sleptDuring(0, 1, { platform: 'win32', run: () => { throw Error('event log unavailable'); } }), false);
+  assert.equal(sleptDuring(0, 1, { platform: 'linux', run: () => assert.fail('no event log off Windows') }), false);
+  assert.deepEqual(['queued', 'running', 'publish-pending', 'passed', 'failed'].map(status => due({ status })), [true, true, true, false, false]);
+  assert.equal(due({ status: 'retry', retryAt: Date.now() + 60_000 }), false); assert.equal(due({ status: 'retry', retryAt: Date.now() - 1 }), true);
 });
 test('remote local-status evidence is exact and malformed requests never reach the API', () => {
   const value = { state: 'success', description: github.description(78, manifest.digest) };
