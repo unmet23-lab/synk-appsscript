@@ -117,7 +117,9 @@
     "그의 「읍!」은 이 판에서 시댄스가 낸 소리를 먼저 쓴다(11-01 저녁) — 얼굴이 바뀌면 대비책 hg-O2-O3-무음 + v34 녹음 01"
    ],
    "소리": "켬",
-   "목소리견본": "him"
+   "목소리견본": "him",
+   "소리줄": "SOUND: only his own voice - one short, choked grunt \"읍!\" at the instant of the bump, no words at all - over the open riverside air; no music, no narration, no other voices.",
+   "목소리줄": "VOICE: @오디오 1 is a sample of this speaker's own voice from earlier takes - copy its timbre, age and pitch exactly, but never play the sample itself; produce only that one short grunt \"읍!\" written above, once, live in this shot, at the moment of impact."
   },
   {
    "id": "hg-O4",
@@ -198,7 +200,7 @@
    "컷": [
     "O7"
    ],
-   "길이": 5,
+   "길이": 6,
    "설명": "누운 얼굴 클로즈업 — 눈을 감았다 뜨고 긴 한숨(K04 · 3:4 자름)",
    "샷": [
     {
@@ -209,7 +211,7 @@
       "HIM",
       "KKAMONG"
      ],
-     "동작": "Close-up from slightly above: he lies flat on his back on the granite pavers, his thick black glasses lying beside his head, no cup. He keeps still, closes his eyes for about one second, opens them and stares straight up at the sky; then, from about 2.0 s, he lets out one long, slow, defeated sigh out loud, \"하아……\" - his chest sinks, his lips part slightly and close again - with no other expression. He keeps lying still to the end.",
+     "동작": "Close-up from slightly above: he lies flat on his back on the granite pavers, his thick black glasses lying beside his head, no cup. He keeps still, closes his eyes for about one second, opens them and stares straight up at the sky; then, from about 2.0 s, he lets out one long, slow, defeated sigh out loud, \"하아……\", lasting about two and a half seconds - his chest sinks, his lips part slightly and close again - with no other expression. He keeps lying still to the end.",
      "카메라": "no push-in: the frame stays where it is with only a breath-like sway, and the glasses beside his head stay fully in the frame to the end."
     }
    ],
@@ -217,7 +219,9 @@
     "얼굴 컷(3:4 → 9:16, 옆 안경이 다 들어오게 cx 0.42) — 한숨 「하아……」는 이 판에서 시댄스가 낸 소리를 먼저 쓴다(11-01 저녁), 얼굴이 바뀌면 대비책 hg-O7-무음 + v34 녹음 02. 정적 1초 이상 · 한숨 여유 1초(03 대본)"
    ],
    "소리": "켬",
-   "목소리견본": "him"
+   "목소리견본": "him",
+   "소리줄": "SOUND: only his own breath - one long, slow, defeated sigh \"하아……\" from about 2.0 s, lasting about two and a half seconds, no spoken words - over the open riverside air; no music, no narration, no other voices.",
+   "목소리줄": "VOICE: @오디오 1 is a sample of this speaker's own voice from earlier takes - copy its timbre, age and pitch exactly, but never play the sample itself; produce only that one long sigh written above, once, live in this shot, in sync with his lips and chest."
   },
   {
    "id": "hg-O8",
@@ -1292,7 +1296,8 @@
     "절 끝 구도 = P7 첫 구도(매치컷)"
    ],
    "소리": "켬",
-   "목소리견본": "him"
+   "목소리견본": "him",
+   "목소리줄": "VOICE: @오디오 1 is a sample of this speaker's own voice from earlier takes - copy its timbre, age, pitch, pace and Korean accent exactly, but never play the sample itself; perform only the Korean words written above, once, live in this shot, as he bows - his face stays turned away from the camera the whole time."
   },
   {
    "id": "hg-P7",
@@ -1531,7 +1536,8 @@
    "앞토막": "hg-F2",
    "메모": [
     "11-01 콘티 검수: F2의 끝 프레임에서 시작한다(같은 K41에서 시작하면 F5 → F6 컷에서 자세가 F2 첫 자세로 되돌아감) — hg-F2를 받은 뒤 웹꾸러미.py --한강을 다시 돌리면 1_시작이 채워진다(끝 프레임이 망가졌으면 K41)",
-    "얼굴 컷 — 첫 시도는 이 판에서 시댄스가 낸 목소리(11-01 저녁), 얼굴이 바뀌면 대비책 hg-F6-무음 + v34 녹음 22"
+    "얼굴 컷 — 첫 시도는 이 판에서 시댄스가 낸 목소리(11-01 저녁), 얼굴이 바뀌면 대비책 hg-F6-무음 + v34 녹음 22",
+    "F2를 -E나 -무음으로 쓰면 앞토막을 그 판으로 바꿔 꾸러미를 다시 만든 뒤 낸다(Fable ㉟)"
    ],
    "소리": "켬",
    "목소리견본": "him"
@@ -1831,13 +1837,167 @@
    ]
   },
   {
+   "id": "hg-O7-E",
+   "컷": [
+    "O7"
+   ],
+   "길이": 6,
+   "설명": "누운 얼굴 클로즈업 — 눈을 감았다 뜨고 긴 한숨(K04 · 3:4 자름) — 대비책 1: 시작과 같은 그림을 끝 그림으로(소리 켬 판이 첫 화면을 다시 짤 때, 시댄스 목소리를 지키는 닻)",
+   "샷": [
+    {
+     "그림": "K04.jpg",
+     "K": "K04",
+     "쓰는초": 3.5,
+     "누구": [
+      "HIM",
+      "KKAMONG"
+     ],
+     "동작": "Close-up from slightly above: he lies flat on his back on the granite pavers, his thick black glasses lying beside his head, no cup. He keeps still, closes his eyes for about one second, opens them and stares straight up at the sky; then, from about 2.0 s, he lets out one long, slow, defeated sigh out loud, \"하아……\", lasting about two and a half seconds - his chest sinks, his lips part slightly and close again - with no other expression. He keeps lying still to the end. The shot ends on exactly the first frame's framing and his resting pose.",
+     "카메라": "no push-in: the frame stays where it is with only a breath-like sway, and the glasses beside his head stay fully in the frame to the end.",
+     "끝그림": "K04.jpg"
+    }
+   ],
+   "메모": [
+    "차례: 소리 켬 주판 → (얼굴이 바뀜) 이 판 → (그래도 바뀌거나 목소리가 어색) -무음. 끝에 처음 자세로 되감길 수 있으나 가만히 있는 얼굴 컷이라 무해(현장노트 higgsfield 10-31)"
+   ],
+   "소리": "켬",
+   "목소리견본": "him",
+   "소리줄": "SOUND: only his own breath - one long, slow, defeated sigh \"하아……\" from about 2.0 s, lasting about two and a half seconds, no spoken words - over the open riverside air; no music, no narration, no other voices.",
+   "목소리줄": "VOICE: @오디오 1 is a sample of this speaker's own voice from earlier takes - copy its timbre, age and pitch exactly, but never play the sample itself; produce only that one long sigh written above, once, live in this shot, in sync with his lips and chest.",
+   "대안": true
+  },
+  {
+   "id": "hg-2E-E",
+   "컷": [
+    "2E"
+   ],
+   "길이": 4,
+   "설명": "그 정면 미디엄 — 무표정 「…모악산 배네치아요.」 → 초점이 뒤 접수대 위 마린으로(K20 · 3:4 자름) — 대비책 1: 시작과 같은 그림을 끝 그림으로(소리 켬 판이 첫 화면을 다시 짤 때, 시댄스 목소리를 지키는 닻)",
+   "샷": [
+    {
+     "그림": "K20.jpg",
+     "K": "K20",
+     "쓰는초": 1.792,
+     "누구": [
+      "HIM",
+      "GLASSES",
+      "KKAMONG",
+      "CUP",
+      "MARIN_S"
+     ],
+     "동작": "Front medium shot in the bright office: he stands still, completely expressionless; after a short pause (at about 0.6 s) he says the Korean words, flat and expressionless, his lips moving clearly but only a little: \"…모악산 배네치아요.\" The shot ends on exactly the first frame's framing and his resting pose.",
+     "카메라": "85 mm, handheld with only a breath-like sway, drifting in by about 3%.",
+     "끝그림": "K20.jpg"
+    }
+   ],
+   "메모": [
+    "차례: 소리 켬 주판 → (얼굴이 바뀜) 이 판 → (그래도 바뀌거나 목소리가 어색) -무음. 끝에 처음 자세로 되감길 수 있으나 가만히 있는 얼굴 컷이라 무해(현장노트 higgsfield 10-31)",
+    "2E의 초점 넘김(마린)은 이 판에선 뺐다 — 쓰면 후반에서"
+   ],
+   "소리": "켬",
+   "목소리견본": "him",
+   "대안": true
+  },
+  {
+   "id": "hg-L6-E",
+   "컷": [
+    "L6"
+   ],
+   "길이": 4,
+   "설명": "LAB 그 정면 — 무표정 「네.」(시선은 화면 오른쪽)(K30 · 3:4 자름) — 대비책 1: 시작과 같은 그림을 끝 그림으로(소리 켬 판이 첫 화면을 다시 짤 때, 시댄스 목소리를 지키는 닻)",
+   "샷": [
+    {
+     "그림": "K30.jpg",
+     "K": "K30",
+     "쓰는초": 0.792,
+     "누구": [
+      "HIM",
+      "GLASSES",
+      "KKAMONG",
+      "CUP"
+     ],
+     "동작": "Front medium shot: he stands still, expressionless, his eyes turned to the right of the frame, the coral steering wheel low in his hands; at about 0.3 s he says one flat Korean word, his lips barely moving: \"네.\" Then he stays still. The shot ends on exactly the first frame's framing and his resting pose.",
+     "카메라": "85 mm, handheld, with only a breath-like sway in place.",
+     "끝그림": "K30.jpg"
+    }
+   ],
+   "메모": [
+    "차례: 소리 켬 주판 → (얼굴이 바뀜) 이 판 → (그래도 바뀌거나 목소리가 어색) -무음. 끝에 처음 자세로 되감길 수 있으나 가만히 있는 얼굴 컷이라 무해(현장노트 higgsfield 10-31)"
+   ],
+   "소리": "켬",
+   "목소리견본": "him",
+   "대안": true
+  },
+  {
+   "id": "hg-F2-E",
+   "컷": [
+    "F2"
+   ],
+   "길이": 4,
+   "설명": "창 쪽에서 본 그의 오른쪽 옆얼굴 — 0.6초 무표정 뒤 「…상어랑 어깨빵했어요.」(K41 · 3:4 자름) — 대비책 1: 시작과 같은 그림을 끝 그림으로(소리 켬 판이 첫 화면을 다시 짤 때, 시댄스 목소리를 지키는 닻)",
+   "샷": [
+    {
+     "그림": "K41.jpg",
+     "K": "K41",
+     "쓰는초": 2.792,
+     "누구": [
+      "HIM_ROOM",
+      "GLASSES",
+      "CUP_DESK",
+      "MARIN_S"
+     ],
+     "동작": "His right profile, seen from the window side: he sits at the desk, completely expressionless, and holds still for about 0.6 s; then he says the Korean words, very seriously, like a factual report, his lips moving clearly but only a little: \"…상어랑 어깨빵했어요.\" Then he holds still again. Behind him Marin sits on the felt stool by the wall. The shot ends on exactly the first frame's framing and his resting pose.",
+     "카메라": "85 mm, handheld, with only a breath-like sway in place, drifting in by about 3%.",
+     "끝그림": "K41.jpg"
+    }
+   ],
+   "메모": [
+    "차례: 소리 켬 주판 → (얼굴이 바뀜) 이 판 → (그래도 바뀌거나 목소리가 어색) -무음. 끝에 처음 자세로 되감길 수 있으나 가만히 있는 얼굴 컷이라 무해(현장노트 higgsfield 10-31)"
+   ],
+   "소리": "켬",
+   "목소리견본": "him",
+   "대안": true
+  },
+  {
+   "id": "hg-F6-E",
+   "컷": [
+    "F6"
+   ],
+   "길이": 4,
+   "설명": "그 옆얼굴 — 한 박 쉬고 「…아니요.」(F2 받은 영상의 끝 프레임에서 시작 · 받기 전 자리는 K41) — 대비책 1: 시작과 같은 그림을 끝 그림으로(소리 켬 판이 첫 화면을 다시 짤 때, 시댄스 목소리를 지키는 닻)",
+   "샷": [
+    {
+     "그림": "K41.jpg",
+     "K": "K41",
+     "쓰는초": 1.208,
+     "누구": [
+      "HIM_ROOM",
+      "GLASSES",
+      "CUP_DESK",
+      "MARIN_S"
+     ],
+     "동작": "His right profile, seen from the window side: after a beat of stillness (about 0.6 s) he says the Korean words, flatly, his lips moving only a little: \"…아니요.\" Then he holds still. The shot ends on exactly the first frame's framing and his resting pose.",
+     "카메라": "85 mm, handheld, with only a breath-like sway in place, drifting in by about 3%.",
+     "끝그림": "앞토막"
+    }
+   ],
+   "앞토막": "hg-F2",
+   "메모": [
+    "차례: 소리 켬 주판 → (얼굴이 바뀜) 이 판 → (그래도 바뀌거나 목소리가 어색) -무음. 끝에 처음 자세로 되감길 수 있으나 가만히 있는 얼굴 컷이라 무해(현장노트 higgsfield 10-31)",
+    "시작 · 끝 그림 = 앞토막(F2에서 쓰기로 한 판의 끝 프레임)"
+   ],
+   "소리": "켬",
+   "목소리견본": "him",
+   "대안": true
+  },
+  {
    "id": "hg-O2-O3-무음",
    "컷": [
     "O2",
     "O3"
    ],
    "길이": 4,
-   "설명": "옆에서 본 투샷 — 폰만 보는 상어와 컵을 내려다보며 걷는 그가 가운데서 어깨빵(K01b, 한 샷을 O2 · O3로 자름) — 대비책: 소리 끔(소리 켬 판이 얼굴을 바꿀 때), 소리는 v34 녹음 01를 입에 맞춰 얹음",
+   "설명": "옆에서 본 투샷 — 폰만 보는 상어와 컵을 내려다보며 걷는 그가 가운데서 어깨빵(K01b, 한 샷을 O2 · O3로 자름) — 대비책 2: 소리 끔(-E로도 얼굴이 바뀌거나 목소리가 어색할 때), 소리는 v34 녹음 01를 입에 맞춰 얹음",
    "샷": [
     {
      "그림": "K01b.jpg",
@@ -1855,7 +2015,7 @@
     }
    ],
    "메모": [
-    "소리 켬 주판 hg-O2-O3의 얼굴이 바뀌거나 목소리가 어색할 때만 낸다 — 소리는 v34 녹음 01"
+    "소리 켬 주판 hg-O2-O3 · -E가 얼굴을 바꾸거나 목소리가 어색할 때만 낸다 — 소리는 v34 녹음 01"
    ],
    "대안": true
   },
@@ -1865,7 +2025,7 @@
     "O7"
    ],
    "길이": 5,
-   "설명": "누운 얼굴 클로즈업 — 눈을 감았다 뜨고 긴 한숨(K04 · 3:4 자름) — 대비책: 소리 끔(소리 켬 판이 얼굴을 바꿀 때), 소리는 v34 녹음 02를 입에 맞춰 얹음",
+   "설명": "누운 얼굴 클로즈업 — 눈을 감았다 뜨고 긴 한숨(K04 · 3:4 자름) — 대비책 2: 소리 끔(-E로도 얼굴이 바뀌거나 목소리가 어색할 때), 소리는 v34 녹음 02를 입에 맞춰 얹음",
    "샷": [
     {
      "그림": "K04.jpg",
@@ -1880,7 +2040,7 @@
     }
    ],
    "메모": [
-    "소리 켬 주판 hg-O7의 얼굴이 바뀌거나 목소리가 어색할 때만 낸다 — 소리는 v34 녹음 02"
+    "소리 켬 주판 hg-O7 · -E가 얼굴을 바꾸거나 목소리가 어색할 때만 낸다 — 소리는 v34 녹음 02"
    ],
    "대안": true
   },
@@ -1890,7 +2050,7 @@
     "2E"
    ],
    "길이": 4,
-   "설명": "그 정면 미디엄 — 무표정 「…모악산 배네치아요.」 → 초점이 뒤 접수대 위 마린으로(K20 · 3:4 자름) — 대비책: 소리 끔(소리 켬 판이 얼굴을 바꿀 때), 소리는 v34 녹음 09를 입에 맞춰 얹음",
+   "설명": "그 정면 미디엄 — 무표정 「…모악산 배네치아요.」 → 초점이 뒤 접수대 위 마린으로(K20 · 3:4 자름) — 대비책 2: 소리 끔(-E로도 얼굴이 바뀌거나 목소리가 어색할 때), 소리는 v34 녹음 09를 입에 맞춰 얹음",
    "샷": [
     {
      "그림": "K20.jpg",
@@ -1908,7 +2068,7 @@
     }
    ],
    "메모": [
-    "소리 켬 주판 hg-2E의 얼굴이 바뀌거나 목소리가 어색할 때만 낸다 — 소리는 v34 녹음 09"
+    "소리 켬 주판 hg-2E · -E가 얼굴을 바꾸거나 목소리가 어색할 때만 낸다 — 소리는 v34 녹음 09"
    ],
    "대안": true
   },
@@ -1918,7 +2078,7 @@
     "L6"
    ],
    "길이": 4,
-   "설명": "LAB 그 정면 — 무표정 「네.」(시선은 화면 오른쪽)(K30 · 3:4 자름) — 대비책: 소리 끔(소리 켬 판이 얼굴을 바꿀 때), 소리는 v34 녹음 14를 입에 맞춰 얹음",
+   "설명": "LAB 그 정면 — 무표정 「네.」(시선은 화면 오른쪽)(K30 · 3:4 자름) — 대비책 2: 소리 끔(-E로도 얼굴이 바뀌거나 목소리가 어색할 때), 소리는 v34 녹음 14를 입에 맞춰 얹음",
    "샷": [
     {
      "그림": "K30.jpg",
@@ -1935,7 +2095,7 @@
     }
    ],
    "메모": [
-    "소리 켬 주판 hg-L6의 얼굴이 바뀌거나 목소리가 어색할 때만 낸다 — 소리는 v34 녹음 14"
+    "소리 켬 주판 hg-L6 · -E가 얼굴을 바꾸거나 목소리가 어색할 때만 낸다 — 소리는 v34 녹음 14"
    ],
    "대안": true
   },
@@ -1945,7 +2105,7 @@
     "F2"
    ],
    "길이": 4,
-   "설명": "창 쪽에서 본 그의 오른쪽 옆얼굴 — 0.6초 무표정 뒤 「…상어랑 어깨빵했어요.」(K41 · 3:4 자름) — 대비책: 소리 끔(소리 켬 판이 얼굴을 바꿀 때), 소리는 화면 밖 대사 판 hg-말-그의 소리를 입에 맞춰 얹음",
+   "설명": "창 쪽에서 본 그의 오른쪽 옆얼굴 — 0.6초 무표정 뒤 「…상어랑 어깨빵했어요.」(K41 · 3:4 자름) — 대비책 2: 소리 끔(-E로도 얼굴이 바뀌거나 목소리가 어색할 때), 소리는 화면 밖 대사 판 hg-말-그의 소리를 입에 맞춰 얹음",
    "샷": [
     {
      "그림": "K41.jpg",
@@ -1962,7 +2122,7 @@
     }
    ],
    "메모": [
-    "소리 켬 주판 hg-F2의 얼굴이 바뀌거나 목소리가 어색할 때만 낸다 — 소리는 화면 밖 대사 판 hg-말-그의 소리"
+    "소리 켬 주판 hg-F2 · -E가 얼굴을 바꾸거나 목소리가 어색할 때만 낸다 — 소리는 화면 밖 대사 판 hg-말-그의 소리"
    ],
    "대안": true
   },
@@ -1972,7 +2132,7 @@
     "F6"
    ],
    "길이": 4,
-   "설명": "그 옆얼굴 — 한 박 쉬고 「…아니요.」(F2 받은 영상의 끝 프레임에서 시작 · 받기 전 자리는 K41) — 대비책: 소리 끔(소리 켬 판이 얼굴을 바꿀 때), 소리는 v34 녹음 22를 입에 맞춰 얹음",
+   "설명": "그 옆얼굴 — 한 박 쉬고 「…아니요.」(F2 받은 영상의 끝 프레임에서 시작 · 받기 전 자리는 K41) — 대비책 2: 소리 끔(-E로도 얼굴이 바뀌거나 목소리가 어색할 때), 소리는 v34 녹음 22를 입에 맞춰 얹음",
    "샷": [
     {
      "그림": "K41.jpg",
@@ -1990,8 +2150,8 @@
    ],
    "앞토막": "hg-F2",
    "메모": [
-    "소리 켬 주판 hg-F6의 얼굴이 바뀌거나 목소리가 어색할 때만 낸다 — 소리는 v34 녹음 22",
-    "F2도 소리 끔 판으로 가면 앞토막을 hg-F2-무음으로 바꿔 꾸러미를 다시 만든다"
+    "소리 켬 주판 hg-F6 · -E가 얼굴을 바꾸거나 목소리가 어색할 때만 낸다 — 소리는 v34 녹음 22",
+    "앞토막은 F2에서 쓰기로 한 판(주판 · -E · -무음)으로 바꿔 꾸러미를 다시 만든다"
    ],
    "대안": true
   },
@@ -2129,6 +2289,7 @@
    ],
    "소리": "켬",
    "목소리견본": "him",
+   "목소리줄": "VOICE: @오디오 1 is a sample of this speaker's own voice from earlier takes - copy its timbre, age, pitch, pace and Korean accent exactly, but never play the sample itself; perform only the Korean words written above, once, live in this shot, as he bows - his face stays turned away from the camera the whole time.",
    "대안": true
   },
   {

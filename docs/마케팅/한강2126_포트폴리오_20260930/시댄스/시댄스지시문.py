@@ -727,22 +727,55 @@ for tail, role, k, keys, who, used, act, how in OFF:
 SAYS = {   # 판 → (소리 끔 글, 소리 켬 글) — 나머지 얼굴 판은 「silently mouths … (no sound is recorded)」를 「says」로
     "hg-O2-O3": ("his head snaps back and the cup jerks up in his hand.",
                  "his head snaps back, the cup jerks up in his hand and he lets out one short, choked grunt: \"읍!\""),
-    "hg-O7": ("he lets out one long, slow, defeated sigh - ", "he lets out one long, slow, defeated sigh out loud, \"하아……\" - "),
+    "hg-O7": ("he lets out one long, slow, defeated sigh - ",
+              "he lets out one long, slow, defeated sigh out loud, \"하아……\", lasting about two and a half seconds - "),
     "hg-P6": ("bows deeply from the waist to a full 90 degrees toward them and holds the bow",
               "bows deeply from the waist to a full 90 degrees toward them, saying loudly and earnestly in Korean as he goes down: "
               "\"잘 부탁드립니다!\" - and holds the bow"),
 }
+VOICED = {   # 말이 아닌 소리 · 얼굴이 안 보이는 판의 SOUND · VOICE(11-01 저녁 Fable ㉙ ㉚ ㉝ — 공통 꼴이면 「읍」 · 「하아」를 낱말로 읽을 수 있다)
+    "hg-O2-O3": {"소리줄": "SOUND: only his own voice - one short, choked grunt \"읍!\" at the instant of the bump, no words at all - over the open "
+                         "riverside air; no music, no narration, no other voices.",
+                 "목소리줄": "VOICE: @오디오 1 is a sample of this speaker's own voice from earlier takes - copy its timbre, age and pitch exactly, but "
+                          "never play the sample itself; produce only that one short grunt \"읍!\" written above, once, live in this shot, at the "
+                          "moment of impact."},
+    "hg-O7": {"소리줄": "SOUND: only his own breath - one long, slow, defeated sigh \"하아……\" from about 2.0 s, lasting about two and a half "
+                      "seconds, no spoken words - over the open riverside air; no music, no narration, no other voices.",
+              "목소리줄": "VOICE: @오디오 1 is a sample of this speaker's own voice from earlier takes - copy its timbre, age and pitch exactly, but "
+                       "never play the sample itself; produce only that one long sigh written above, once, live in this shot, in sync with his lips "
+                       "and chest."},
+    "hg-P6": {"목소리줄": "VOICE: @오디오 1 is a sample of this speaker's own voice from earlier takes - copy its timbre, age, pitch, pace and Korean "
+                       "accent exactly, but never play the sample itself; perform only the Korean words written above, once, live in this shot, as "
+                       "he bows - his face stays turned away from the camera the whole time."},
+}
+QUIET = []   # 소리 끔 대비책 — 주판을 바꾸기 전 모습 그대로 담아 두었다가 -E 다음 차례로 낸다
 for src, n in ((o23, "01"), (o7, "02"), (e2, "09"), (l6, "14"), (f2, None), (f6, "22"), (p6, "17")):
-    over = f"v34 녹음 {n}" if n else "화면 밖 대사 판 hg-말-그의 소리"
     if src is not p6:   # P6은 얼굴이 안 보여 같은 영상에 소리만 바꾼다
-        alt(src, src["id"][3:] + "-무음", src["설명"] + f" — 대비책: 소리 끔(소리 켬 판이 얼굴을 바꿀 때), 소리는 {over}를 입에 맞춰 얹음",
-            메모=[f"소리 켬 주판 {src['id']}의 얼굴이 바뀌거나 목소리가 어색할 때만 낸다 — 소리는 {over}"]
-            + (["F2도 소리 끔 판으로 가면 앞토막을 hg-F2-무음으로 바꿔 꾸러미를 다시 만든다"] if src is f6 else []))
+        QUIET.append((json.loads(json.dumps(src, ensure_ascii=False)), f"v34 녹음 {n}" if n else "화면 밖 대사 판 hg-말-그의 소리"))
     a, b = SAYS.get(src["id"], ("silently mouths", "says"))
     s0 = src["샷"][0]
     assert s0["동작"].count(a) == 1, src["id"]
     s0["동작"] = s0["동작"].replace(a, b).replace(" (no sound is recorded)", "")
-    src.update(소리="켬", 목소리견본="him")
+    src.update(소리="켬", 목소리견본="him", **VOICED.get(src["id"], {}))
+o7["길이"] = 6   # 한숨 2.5~3초(03 대사 2)가 이 판의 최종 소리 — 2.0초 + 지연 0.7초부터 다 담기게(Fable ㉚)
+f6["메모"].append("F2를 -E나 -무음으로 쓰면 앞토막을 그 판으로 바꿔 꾸러미를 다시 만든 뒤 낸다(Fable ㉟)")
+RACK = " Then the focus racks from him to Marin standing on the reception counter behind him, which comes sharp while he softens."
+for src in (o7, e2, l6, f2, f6):   # Fable ㉛ — 셋째 길: 시작과 같은 그림을 끝 그림으로 닻(현장노트 higgsfield 10-31), 소리 켬 그대로
+    s0 = dict(src["샷"][0], 끝그림="앞토막" if src.get("앞토막") else src["샷"][0]["그림"])
+    if src is e2:   # 끝 그림의 마린은 흐려 있어 초점 넘김과 부딪힌다 — 이 판에선 뺌
+        assert s0["동작"].count(RACK) == 1
+        s0["동작"] = s0["동작"].replace(RACK, "")
+        s0["카메라"] = "85 mm, handheld with only a breath-like sway, drifting in by about 3%."
+    s0["동작"] += " The shot ends on exactly the first frame's framing and his resting pose."
+    alt(src, src["id"][3:] + "-E", src["설명"] + " — 대비책 1: 시작과 같은 그림을 끝 그림으로(소리 켬 판이 첫 화면을 다시 짤 때, 시댄스 목소리를 지키는 닻)",
+        샷=[s0], 메모=["차례: 소리 켬 주판 → (얼굴이 바뀜) 이 판 → (그래도 바뀌거나 목소리가 어색) -무음. 끝에 처음 자세로 되감길 수 있으나 가만히 있는 얼굴 컷이라 "
+                     "무해(현장노트 higgsfield 10-31)"]
+        + (["2E의 초점 넘김(마린)은 이 판에선 뺐다 — 쓰면 후반에서"] if src is e2 else [])
+        + (["시작 · 끝 그림 = 앞토막(F2에서 쓰기로 한 판의 끝 프레임)"] if src.get("앞토막") else []))
+for quiet, over in QUIET:
+    alt(quiet, quiet["id"][3:] + "-무음", quiet["설명"] + f" — 대비책 2: 소리 끔(-E로도 얼굴이 바뀌거나 목소리가 어색할 때), 소리는 {over}를 입에 맞춰 얹음",
+        메모=[f"소리 켬 주판 {quiet['id']} · -E가 얼굴을 바꾸거나 목소리가 어색할 때만 낸다 — 소리는 {over}"]
+        + (["앞토막은 F2에서 쓰기로 한 판(주판 · -E · -무음)으로 바꿔 꾸러미를 다시 만든다"] if quiet.get("앞토막") else []))
 
 # ── 대안 ──────────────────────────────────────────────────────────────────────────────────────
 for src, k in ((t0, "K09"), (t1, "K15"), (t5, "K45")):   # 도착 구도를 참고 대신 끝 그림으로 잠금(하드컷 위험 — 현장노트)
