@@ -1,0 +1,20 @@
+{
+ "id": "01-youtube-en",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "audioLanguage": "ko",
+ "title": "ㅋㅋㅋ = LOL… but ONE ㅋ = 'k.' 🥶 #learnkorean",
+ "caption": "ㅋ is the Korean 'k' sound (keu). Type it again and again and it turns into a laugh:\n\nㅋㅋ = haha\nㅋㅋㅋ = LOL\nㅋㅋㅋㅋㅋㅋ = LMAO\nㅋㅋㅋㅋㅋㅋㅋㅋㅋ… = I'm dead\n\nBut just ONE ㅋ reads cold — like texting \"k.\" to a friend. Send at least two!\n\nSYNK LAB\n#learnkorean #studykorean #koreanlanguage #koreanslang",
+ "pinnedComment": "How many ㅋ do you usually send? Show me 👇",
+ "alt": [
+  "A needle-felted cafe counter with a big felt phone and the coral felt mascot. Title: Korean friends laugh in ㅋ… but how many? The friend's reply pours out of the phone as cream felt ㅋ letters. One big ㅋ lands on the counter: = a 'k' sound (keu), type it again and again = a laugh. Chat bubbles count up: ㅋㅋ = haha, ㅋㅋㅋ = LOL, ㅋㅋㅋㅋㅋㅋ = LMAO, a long row = I'm DEAD, while the letters pile up and the mascot laughs. The camera dives into the phone: the mascot asks \"Want another joke?\" and the friend answers with just one ㅋ. Just ONE ㅋ…? A wave of cold spreads from the phone and the whole cafe freezes; the mascot is stuck in a block of ice. ㅋ = 'k.' = cold. The ice cracks, then the friend sends ㅋㅋㅋㅋㅋㅋㅋ jk (just kidding), the ice shatters and the mascot laughs again."
+ ],
+ "madeForKids": false,
+ "alteredContent": false,
+ "category": "Education",
+ "_비고": "video.mp4 = e24 v10(17.7초 · 관문 못 넘음 — 기획.md 「판정」) → 음량마감 −14.6 LUFS / −1.3 dBFS(리미터 0.76) → CBR 10M 다시 담기. 10MB 올림판 upload_10MB.mp4(8.3MB). 표지 cover.png = 9.9초(카페를 덮으며 쏟아지는 ㅋ · 크게 웃는 몽글 · I'm DEAD). 어린이 전용 아님. 합성 표시: 필수 아님 — 장면은 GPT 이미지로 구운 펠트 그림, 목소리는 특정인이 아닌 TTS 웃음소리(E22와 같은 판단).",
+ "version": "e24-en-v10"
+}

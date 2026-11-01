@@ -1,0 +1,9 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Scene: a cozy handmade needle-felt cafe counter seen at counter height, warm amber afternoon lamplight, softly blurred cafe shelves with felt cups and a small plant behind. On the LEFT-CENTER of the counter stands a big felt smartphone, upright and facing the camera straight on (front view, not angled, not tilted), about 36 percent of the image width, its screen a plain softly glowing warm cream rectangle with NOTHING on it. A felt latte cup sits at the bottom-left foreground, slightly cut off. Mongle sits on the counter on the RIGHT, about 34 percent of the image width, turned a little toward the phone, bead eyes bright, a small hopeful smile, as if it just sent a message and is waiting for the reply. Keep the top 22 percent calm, plain warm cream wall (space for a title later). Keep the counter surface between the phone and Mongle and in front of them open and uncluttered.
+
+Character: Mongle, the coral needle-felted wool ghost-shaped mascot in the attached reference photos (use them ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy black bead eyes with NO white in them). No arms, no legs, no hands, ever. Re-create it inside the scene so it sits naturally in the light; do not paste or cut it out.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, warm amber cafe light, gentle depth of field, cute but not babyish (for university students and young workers). No text, letters, numbers, logos or symbols anywhere in the image, including on the phone screen.

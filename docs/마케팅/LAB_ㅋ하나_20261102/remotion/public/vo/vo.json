@@ -1,0 +1,66 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "happy",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1102,
+  "lufs": -17
+ },
+ "made": "2026-11-01T22:23:59.247Z",
+ "lines": [
+  {
+   "id": "k2",
+   "text": "크크.",
+   "dur": 0.594,
+   "syllablesPerSec": 3.37,
+   "src": "k2.wav",
+   "key": "0d5e957e1a6d3708d4bc8c80d9d74bfd",
+   "words": 1
+  },
+  {
+   "id": "k3",
+   "text": "크크크!",
+   "dur": 0.661,
+   "syllablesPerSec": 4.54,
+   "src": "k3.wav",
+   "key": "bb18eae69ea772ad1b98ae6d5bc27323",
+   "words": 1
+  },
+  {
+   "id": "k6",
+   "text": "크크크크크크!",
+   "dur": 1.313,
+   "syllablesPerSec": 4.57,
+   "src": "k6.wav",
+   "key": "09d43984d90f9c2332a853b1a2b02aab",
+   "words": 1
+  },
+  {
+   "id": "k10",
+   "text": "크크크크크크크크크크!",
+   "dur": 1.518,
+   "syllablesPerSec": 6.59,
+   "src": "k10.wav",
+   "key": "3cdea53ea263f1b4b7e1d33879a5e685",
+   "words": 1
+  },
+  {
+   "id": "k1",
+   "text": "크.",
+   "dur": 0.408,
+   "syllablesPerSec": 2.45,
+   "src": "k1.wav",
+   "key": "6a2d09fa64827e086383c7ea879d19db",
+   "words": 1
+  }
+ ]
+}

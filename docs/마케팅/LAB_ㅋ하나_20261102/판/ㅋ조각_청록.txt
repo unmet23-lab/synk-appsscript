@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE square image, 1:1, sharp and detailed.
+
+Make a single thick, puffy, cream-white needle-felted wool letter piece in the exact shape of the Korean letter shown in the FIRST attached image (the Korean consonant ㅋ). Copy that letter's shape exactly: a horizontal bar on top that turns down into a vertical bar on the right side, plus one shorter horizontal bar in the middle that touches the vertical bar and points left. Do not add, remove or mirror any stroke.
+
+The piece lies flat, seen straight from the front, with soft rounded edges, slight 3D thickness, visible wool fibers and a few tiny stray fibers, soft even studio light from the top left. It is centered and fills about 70 percent of the image, on a plain flat solid deep teal background (#1F5C5C) with no shadow, no gradient and nothing else. No other letters, words, numbers or logos.

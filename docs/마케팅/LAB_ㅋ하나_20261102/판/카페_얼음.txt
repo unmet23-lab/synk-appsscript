@@ -1,0 +1,9 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed, same framing as the FIRST attached image.
+
+Use the FIRST attached image as the exact scene and camera: same cafe, shelves, lamp, counter, the felt phone in the same place and size (front view), and the latte cup. But the whole cafe has suddenly FROZEN: cold blue winter light, the lamp dim and frosty, white frost and tiny ice crystals over the counter, the phone frame, the cup and the shelves, icicles hanging from the counter edge and the shelf edges, a light dusting of snow in the air. The phone screen stays a plain softly glowing pale blue-white rectangle with NOTHING on it. Mongle sits in the same spot and the same size, completely frozen inside a clear glossy block of ice with frosty edges, bead eyes wide open in shock, a tiny stitched frown, little icicles hanging from its wavy hem. Comic and cute, not scary.
+
+Character: Mongle, the coral needle-felted wool ghost-shaped mascot (the other attached photos are ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy black bead eyes with NO white in them). No arms, no legs, no hands, ever.
+
+Style: same real handmade needle-felt craft photo as the first image, now in cold blue light. No text, letters, numbers, logos or symbols anywhere, including on the phone screen.

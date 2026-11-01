@@ -1,0 +1,14 @@
+{
+  "note": "LAB 영어 E24 「ㅋ 하나」 — 말은 웃음소리 「크」만(ㅋ를 소리 내 읽은 것, 영어 목소리 없음 — 그래서 두 채널로 옮겨도 같은 소리). 사다리 넷은 점점 크게 웃고, 끝 「크.」 하나는 무심하게. 해설 소진 세기 1.0. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_ㅋ하나_20261102/음성/계획.json --굽기",
+  "voice": { "id": "tc_666a9871abcf27a5169850d0", "name": "소진" },
+  "defaults": { "model": "ssfm-v30", "lang": "ko", "emotion": "normal", "intensity": 1, "tempo": 1, "seed": 1102, "lufs": -17 },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    { "id": "k2", "text": "크크.", "emotion": "happy" },
+    { "id": "k3", "text": "크크크!", "emotion": "happy" },
+    { "id": "k6", "text": "크크크크크크!", "emotion": "happy", "tempo": 1.15 },
+    { "id": "k10", "text": "크크크크크크크크크크!", "emotion": "happy", "tempo": 1.3 },
+    { "id": "k1", "text": "크.", "emotion": "tonedown" }
+  ]
+}
