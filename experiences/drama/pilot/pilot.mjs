@@ -2,11 +2,13 @@
 // 지키는 것(Fable 설계 검토 반영 — .tmp/drama-pilot-20261031/fable-design.md):
 //  · 녹음·받아 적은 글은 이 창의 메모리에만. 콘솔·저장소·내려받기 없음. ObjectURL은 세션 보관함에서만 만들고 비우기·다시하기·창 닫기에 해제.
 //  · 장면 안에서는 판정을 말로 보여 주지 않는다 — 인물 되묻기 → 카드 펼침 → 통과(어긋남 셋까지). 안 들림(unclear·no_speech)은 따로 세어 되묻기만, 세 번이면 스스로 확인.
-//  · 감독 노트는 장면이 끝난 뒤 하나만: 줄마다 마지막 판정 테이크의 note만 후보. 없으면 「다른 말로 한번 더」 연습(교정 아님).
+//  · 코치 노트는 장면이 끝난 뒤 하나만: 줄마다 마지막 판정 테이크의 note만 후보. 없으면 「다른 말로 한번 더」 연습(교정 아님).
+//  · 바깥 틀은 이야기 속 유학생 + 이야기 밖 코치(결정 10-31 「싱크타운 다시 짜기」 ③). 컷·촬영·감독 말과 소리를 쓰지 않는다.
+//    코치 목소리는 녹음 전이면(audio null) 소리·자막 없이 패널 글만 둔다.
 //  · 녹음 중에는 어떤 소리도 틀지 않고, 소리가 나는 동안에는 녹음을 시작하지 않는다(스피커 소리가 「내 대답」으로 받아 적히지 않게).
 //  · 새 상황의 한국어 모범은 /api/reveal 응답으로만 보인다. 첫 제출 전 화면에 한국어 답·첫 글자가 없다.
 //  · 마이크 거절·미지원은 한 번만 묻고, 이후엔 녹음 없이 따라 읽기로 이어 간다. 받아쓰기가 안 되면 자동으로 잘했다고 하지 않는다.
-import { STR } from './strings.mjs';
+import { STR, endingFix } from './strings.mjs';
 
 const $ = (id) => document.getElementById(id);
 const ui = { stage: $('stage'), still: $('still'), loop: $('loop'), reply: $('reply'), subs: $('subs'), slate: $('slate'), panel: $('panel'), dialog: $('dialog'), voice: $('voice'), chip: $('analysisChip'), lang: $('langBtn') };
@@ -18,11 +20,10 @@ const FALLBACK = {
   { text: '미안해요, 여기가 시끄러워서 잘 못 들었어요.', audio: '/media/senior-ask-2.mp3' },
   { text: '천천히 해도 돼요.', audio: '/media/senior-ask-3.mp3' },
  ],
- director: {
-  cut: { text: '컷! 좋아요.', audio: '/media/director-cut.mp3' },
-  again: { text: '한 번만 더 갈게요.', audio: '/media/director-again.mp3' },
-  wrap: { text: '오늘 촬영 여기까지! 수고했어요.', audio: '/media/director-wrap.mp3' },
-  betterEnding: { text: '지난번엔 끝이 빠졌는데, 이번엔 다 붙었어요. 좋아요.', audio: '/media/director-better-ending.mp3' },
+ coach: {
+  noteEnding: { text: '끝에 \'요\'를 붙여 봐요. 이 장면을 다시 해 볼까요?', audio: null },
+  noteOther: { text: '이 장면을 다시 해 볼까요?', audio: null },
+  wrap: { text: '오늘은 여기까지! 수고했어요.', audio: null },
  },
  assets: { listenLoop: '/media/taeo-listen.mp4', poster: '/media/taeo-still.webp', backdrop: '/media/taeo-still-blur.webp' },
 };
@@ -43,7 +44,7 @@ const S = {
  // 새 상황 모범을 이 창에서 본 적이 있는지(다시하기에도 남김 — 서버 transferRevealed와 같은 뜻, 새 보관 없음).
  revealedEver: false,
  firstExposure: null,      // bootstrap·reset이 준 값(이번 실행 시작 때 새 상황이 처음인지)
- upload: null, rec: null, micWait: null, playing: false,
+ upload: null, rec: null, micWait: null, playing: false, listenLoop: '', loopHeld: false,
  step: 'boot', render: null,
 };
 const t = () => STR[S.lang];
@@ -127,10 +128,34 @@ function playVideo(url, from, to, s) {
   if (v.readyState >= 1) go(); else v.addEventListener('loadedmetadata', go, { once: true });
  });
 }
-function stageMode(mode) {
+// listen: 그 줄의 듣는 고리(쇼케이스 영상을 넣었으면 그 장면의 고리, 아니면 기본 고리).
+// 쇼케이스 고리는 첫 그림에 멈춰 두었다가 녹음을 시작할 때 처음부터 돈다(startHeldLoop) — 영상판에서 학습자 줄과 듣는 반응이 맞게.
+// 녹음을 못 하는 차례(마이크 거절·미지원 — 따라 읽기)는 녹음 시작이 없으므로 멈춰 두지 않고 바로 돌린다.
+// 고리 파일을 바꿀 때는 첫 그림이 뜰 때까지 정지 사진 층을 두어 검은 깜빡임이 녹화에 들어가지 않게 한다.
+function stageMode(mode, listen = null) {
+ const token = (stageMode.n = (stageMode.n || 0) + 1);
  ui.stage.dataset.mode = mode;
- if (mode === 'listen') { ui.loop.muted = true; ui.loop.play().catch(() => {}); } else { try { ui.loop.pause(); } catch {} }
+ S.loopHeld = false;
+ if (mode === 'listen') {
+  const url = listen || S.listenLoop;
+  if (url && !ui.loop.src.endsWith(url)) {
+   ui.loop.src = url;
+   ui.stage.dataset.mode = 'still';
+   ui.loop.addEventListener('loadeddata', () => { if (stageMode.n === token) ui.stage.dataset.mode = 'listen'; }, { once: true });
+  }
+  ui.loop.muted = true;
+  if (listen && !micUnusable()) { S.loopHeld = true; try { ui.loop.pause(); ui.loop.currentTime = 0; } catch {} }
+  else ui.loop.play().catch(() => {});
+ } else { try { ui.loop.pause(); } catch {} }
 }
+function startHeldLoop() {
+ if (!S.loopHeld) return;
+ S.loopHeld = false;
+ try { ui.loop.currentTime = 0; } catch {}
+ ui.loop.play().catch(() => {});
+}
+// 그 차례의 쇼케이스 고리: 장면에서 아직 어긋남이 없는 첫 시도면 listenFirst(C3), 그다음은 listen(C2·C4).
+const listenOf = (item, ctx) => (ctx.phase === 'scene' && !line(item.id).misses && item.listenFirst) || item.listen || null;
 const subsShowing = (ko) => !!ko && ui.subs.querySelector('.ko')?.textContent === ko;
 function subs(ko, meaning, who) {
  if (!ko) { ui.subs.replaceChildren(); return; }
@@ -389,7 +414,7 @@ async function boot() {
   return;
  }
  const a = { ...FALLBACK.assets, ...(S.boot.lesson.assets || {}) };
- ui.still.src = a.poster; ui.loop.src = a.listenLoop;
+ ui.still.src = a.poster; ui.loop.src = a.listenLoop; S.listenLoop = a.listenLoop;
  document.documentElement.style.setProperty('--backdrop', `url("${a.backdrop}")`);
  const firstVideo = sceneItems().find((x) => x.video); if (firstVideo) { ui.reply.src = firstVideo.video; ui.reply.preload = 'auto'; }
  updateChip();
@@ -401,14 +426,14 @@ function intro() {
  stageMode('still'); subs(null);
  panel(h('div', { class: 'intro' },
   h('p', { class: 'eyebrow' }, tx('episode')),
-  h('h1', {}, tx('todayRole')),
+  h('h1', {}, tx('heroLine')),
   h('dl', { class: 'cast' },
-   h('div', {}, h('dt', {}, tx('me')), h('dd', {}, tx('roleMe'))),
    h('div', {}, h('dt', {}, tx('partner')), h('dd', {}, tx('rolePartner'))),
+   h('div', {}, h('dt', {}, tx('placeLabel')), h('dd', {}, tx('place'))),
   ),
   h('p', { class: 'lead' }, tx('logline')),
   h('p', { class: 'fine synth' }, tx('synthetic')),
-  h('button', { type: 'button', class: 'pill big', on: { click: () => { if (live(s)) runScene(0); } } }, h('span', { class: 'ic clap', 'aria-hidden': 'true' }), tx('start')),
+  h('button', { type: 'button', class: 'pill big', on: { click: () => { if (live(s)) runScene(0); } } }, h('span', { class: 'ic play', 'aria-hidden': 'true' }), tx('start')),
  ));
 }
 
@@ -416,7 +441,7 @@ function intro() {
 async function runScene(i) {
  const s = newScope(); S.step = 'scene'; S.render = () => runScene(i); hideSlate();
  const item = sceneItems()[i];
- if (!item) return directorCut();
+ if (!item) return afterScene();
  if (item.type === 'actor') {
   await actorBeat(item, s);
   if (!live(s)) return;
@@ -442,14 +467,16 @@ async function actorBeat(item, s, { from } = {}) {
  return true;
 }
 
-async function reask(s, idx) {
+// 첫 되묻기는 그 줄에 쇼케이스 되묻기 영상(reaskVideo)이 있으면 영상으로, 없으면 정지 사진 + 녹음으로.
+async function reask(s, idx, item) {
  const r = lessonExtra('reasks')[Math.min(idx, 2)];
  if (!r) return;
- stageMode('still');
  subs(r.text, null);
- await playUrl(r.audio, s);
+ let ok = false;
+ if (idx === 0 && item?.reaskVideo) { stageMode('reply'); ok = await playVideo(item.reaskVideo, 0, null, s); }
+ if (!ok && live(s)) { stageMode('still'); await playUrl(r.audio, s); }
  if (!live(s)) return;
- subs(null); stageMode('listen');
+ subs(null); // 듣는 고리는 다음 차례 패널을 그릴 때 다시 건다(studentTurn).
 }
 
 // 내 차례 패널. 돌려줌: 'record' | 'next' | 'skip' | 'mic' | 'open' | null
@@ -528,7 +555,7 @@ function micWaitPanel() {
 async function captureAndSend(item, ctx, s) {
  micWaitPanel();
  let tick = null;
- const out = await recordOnce(s, { onStart: () => { if (live(s)) tick = recordingPanel(s); }, onTick: (sec) => tick?.(sec) });
+ const out = await recordOnce(s, { onStart: () => { if (live(s)) { tick = recordingPanel(s); startHeldLoop(); } }, onTick: (sec) => tick?.(sec) });
  if (!live(s)) return null;
  if (!out) return null;
  if (out.mic === false) return { mic: false };
@@ -546,10 +573,11 @@ async function studentTurn(item, s, ctx) {
  const L = line(item.id);
  await ensureConsent(s);
  if (!live(s)) return;
- stageMode('listen'); subs(null);
+ subs(null);
  const stepKey = ctx.phase === 'scene' ? 'scene' : 'take2';
  let invalid = 0;   // 이 차례에서 서버가 받지 않은 녹음(413·422) 수
  while (live(s)) {
+  stageMode('listen', listenOf(item, ctx));
   const action = await turnPanel(item, s, ctx);
   if (!live(s) || action == null) return;
   if (action === 'open') { if (ctx.mode === 'practice') L.practiceOpened = true; L.opened = true; L.helped = true; continue; }
@@ -590,7 +618,7 @@ async function studentTurn(item, s, ctx) {
     if (v == null) return;
     return ctx.onDone({ take });
    }
-   await reask(s, L.unheard === 1 ? 1 : 2);
+   await reask(s, L.unheard === 1 ? 1 : 2, item);
    continue;
   }
   // status ok — 판정이 있는 테이크
@@ -600,7 +628,7 @@ async function studentTurn(item, s, ctx) {
   L.last = { obs, takeId: take.id, transcript: d.transcript || '' };
   if (obs.kind === 'note' && obs.note) {
    L.misses += 1;
-   if (L.misses === 1) { await reask(s, 0); continue; }
+   if (L.misses === 1) { await reask(s, 0, item); continue; }
    if (L.misses === 2) { L.opened = true; L.helped = true; continue; }
   }
   // pass · pending · 세 번째 어긋남 → 진행
@@ -608,7 +636,7 @@ async function studentTurn(item, s, ctx) {
  }
 }
 
-/* ───────── 컷 → 감독 노트 하나 ───────── */
+/* ───────── 장면 끝 → 코치 노트 하나 ───────── */
 function pickNote() {
  const cands = [];
  studentItems().forEach((it, order) => {
@@ -619,17 +647,25 @@ function pickNote() {
  cands.sort((a, b) => (NOTE_ORDER[a.note.kind] - NOTE_ORDER[b.note.kind]) || (b.goal - a.goal) || (a.order - b.order));
  return cands[0] || null;
 }
+// [카드 글, 굵은 둘째 줄]. 끝맺음은 「헤맸어 → 헤맸어요」처럼 고칠 꼴을 보이고, 꼴을 확실히 못 만들면 다시 해 보자는 말로.
 function noteLines(note) {
- if (note.kind === 'ending') return [tx('noteEnding'), tx('noteEndingFix')];
+ if (note.kind === 'ending') return [tx('noteEnding'), endingFix(note) || tx('noteEndingFix')];
  if (note.kind === 'length') return [tx('noteLength'), tx('noteLengthFix')];
  return [tx('noteMissing', note.word || '…'), tx('noteMissingFix')];
 }
+// 코치 목소리를 틀고 자막을 단다. 녹음 전(audio null)이면 아무것도 하지 않는다 — 패널 글로 충분하고, 들리지 않는 말을 자막으로 띄우지 않는다.
+function coachSay(cue, s, { replay = true } = {}) {
+ if (!cue?.audio) { subs(null); return; }
+ if (replay) { subs(cue.text, null, tx('coach')); playUrl(cue.audio, s); }
+ else if (subsShowing(cue.text)) subs(cue.text, null, tx('coach'));
+ else subs(null);
+}
 
-async function directorCut() {
- const s = newScope(); S.step = 'cut'; S.render = directorCut;
- const d = lessonExtra('director');
+async function afterScene() {
+ const s = newScope(); S.step = 'cut'; S.render = afterScene;
+ const c = lessonExtra('coach');
  stageMode('still'); subs(null);
- slate(tx('cutTitle'));
+ slate(tx('sceneEnd'));
  const cand = pickNote();
  const goal = goalItem();
  if (cand) {
@@ -640,16 +676,16 @@ async function directorCut() {
  }
  await sleep(s, 500);
  if (!live(s)) return;
- subs(cand ? d.again.text : d.cut.text, null, tx('director'));
- // 감독 말은 기다리지 않는다. 단추를 누르면 다음 단계의 newScope()가 지금 소리와 리스너를 정리한다.
- playUrl(cand ? d.again.audio : d.cut.audio, s);
+ // 코치 말은 노트가 있을 때만(연습 「다른 말로 한번 더」는 글 카드만). 기다리지 않는다 — 단추를 누르면 다음 단계의 newScope()가 소리를 정리한다.
+ if (cand) coachSay(cand.note.kind === 'ending' ? c.noteEnding : c.noteOther, s);
  const item = studentItems().find((x) => x.id === S.retake.lineId);
  const noteTake = takeById(S.retake.noteTakeId);
+ const [noteText, noteFix] = cand ? noteLines(cand.note) : [];
  const v = await choose(s, (go) => [stepper('take2'), h('div', { class: 'director' },
-  h('p', { class: 'eyebrow' }, cand ? tx('directorNote') : h('span', { class: 'tag' }, tx('practiceTag'))),
-  h('h2', {}, cand ? tx('directorNote') : tx('practiceTitle')),
+  h('p', { class: 'eyebrow' }, cand ? tx('sceneEnd') : h('span', { class: 'tag' }, tx('practiceTag'))),
+  h('h2', {}, cand ? tx('coachNote') : tx('practiceTitle')),
   h('div', { class: 'card' }, h('p', { class: 'ko line', lang: 'ko' }, item.text), item.meaning ? h('p', { class: 'mean' }, item.meaning) : null),
-  cand ? [h('p', { class: 'lead' }, noteLines(cand.note)[0]), h('p', { class: 'lead strong' }, noteLines(cand.note)[1]), h('p', { class: 'fine' }, tx('noteHedge'))]
+  cand ? [h('p', { class: 'lead' }, noteText), h('p', { class: 'lead strong', lang: endingFix(cand.note) ? 'ko' : null }, noteFix), h('p', { class: 'fine' }, tx('noteHedge'))]
    : [h('p', { class: 'lead' }, tx('practiceBody'))],
   h('div', { class: 'row aux' }, noteTake ? mineBtn(noteTake, s) : null, item.modelAudio ? soundBtn(tx('modelListen'), item.modelAudio, s) : null),
   h('p', { class: 'fine' }, tx('take2Lead')),
@@ -672,33 +708,29 @@ async function runRetake() {
  return studentTurn(item, s, { phase: 'retake', mode: R.mode, onDone: (r) => retakeResult(item, r || {}) });
 }
 
-async function retakeResult(item, r, { replay = true } = {}) {
- const s = newScope(); S.step = 'take2-done'; S.render = () => retakeResult(item, r, { replay: false });
- const R = S.retake; const d = lessonExtra('director');
+async function retakeResult(item, r) {
+ const s = newScope(); S.step = 'take2-done'; S.render = () => retakeResult(item, r);
+ const R = S.retake;
  if (r.take) R.take2Id = r.take.id;
- stageMode('still');
+ stageMode('still'); subs(null);
  const data = r.data; const obs = data?.observation;
- let msg = null; let cue = null; let hedge = false;
- // 연습 모드도 판정 종류를 그대로 따른다. 컷 소리는 pass에서만, 「고쳤다」 문구·칭찬 녹음은 노트를 받은 줄이 pass일 때만.
+ let msg = null; let hedge = false;
+ // 연습 모드도 판정 종류를 그대로 따른다. 「고쳤다」 문구는 노트를 받은 줄이 pass일 때만.
+ // 통과는 코치 목소리 없이 화면 ✓만 둔다(쇼케이스 새글 G6 — 「지난번엔…」 칭찬 녹음은 감독 틀이라 쓰지 않는다).
+ const passed = !!data && obs?.kind === 'pass';
  if (data) {
-  if (obs?.kind === 'pass') {
-   if (R.mode === 'note') { msg = tx('t2Fixed'); cue = R.note?.kind === 'ending' ? d.betterEnding : d.cut; }
-   else { msg = tx('t2PracticePass'); cue = d.cut; }
-  } else if (obs?.kind === 'note' && R.mode === 'note') msg = tx('t2Again');
+  if (passed) msg = R.mode === 'note' ? tx('t2Fixed') : tx('t2PracticePass');
+  else if (obs?.kind === 'note' && R.mode === 'note') msg = tx('t2Again');
   else if (obs?.kind === 'note' && obs.note) { msg = noteLines(obs.note)[0]; hedge = true; }
   else msg = tx('t2Pending');
  }
- // 언어 전환(replay:false)은 소리를 다시 틀지 않고, 떠 있던 자막의 화자 표식만 지금 언어로 바꾼다.
- if (cue && replay) { subs(cue.text, null, tx('director')); playUrl(cue.audio, s); }
- else if (cue && subsShowing(cue.text)) subs(cue.text, null, tx('director'));
- else subs(null);
  const noteTake = takeById(R.noteTakeId); const t2 = takeById(R.take2Id);
  let checked = null;
  const render = () => choose(s, (go) => [stepper('take2'), h('div', { class: 'director' },
   h('p', { class: 'eyebrow' }, R.mode === 'practice' ? h('span', { class: 'tag' }, tx('practiceTag')) : tx('take2')),
   h('h2', {}, R.mode === 'practice' ? tx('practiceTitle') : tx('take2')),
   data?.transcript ? h('div', { class: 'heard' }, h('p', { class: 'fine' }, tx('heardAs')), h('p', { class: 'ko', lang: 'ko' }, data.transcript)) : null,
-  msg ? h('p', { class: 'lead' }, msg) : null,
+  msg ? h('p', { class: passed ? 'lead passed' : 'lead' }, passed ? h('span', { class: 'tick on', 'aria-hidden': 'true' }) : null, msg) : null,
   hedge ? h('p', { class: 'fine' }, tx('noteHedge')) : null,
   !data && r.take ? h('p', { class: 'fine' }, tx(r.invalid ? 'invalidSelf' : analysisOn() ? 'apiDown' : 'practiceOnly')) : null,
   data?.transcript ? (checked ? h('p', { class: 'fine' }, tx(checked === 'differs' ? 'differsAck' : 'sameAck'))
@@ -823,11 +855,9 @@ async function revealModel(s, T) {
 /* ───────── 마침 ───────── */
 async function wrap({ replay = true } = {}) {
  const s = newScope(); S.step = 'wrap'; S.render = () => wrap({ replay: false }); hideSlate();
- const d = lessonExtra('director');
  stageMode('still');
- // 언어 전환·실패 화면에서 돌아올 때는 감독 마침 말을 다시 틀지 않는다.
- if (replay) { subs(d.wrap.text, null, tx('director')); playUrl(d.wrap.audio, s); }
- else if (subsShowing(d.wrap.text)) subs(d.wrap.text, null, tx('director'));
+ // 언어 전환·실패 화면에서 돌아올 때는 코치 마침 말을 다시 틀지 않는다.
+ coachSay(lessonExtra('coach').wrap, s, { replay });
  const items = studentItems();
  // 녹음 비우기와 상관없이 촬영 중 소리가 들린 줄을 센다.
  const spoken = items.filter((x) => line(x.id).spoken).length;

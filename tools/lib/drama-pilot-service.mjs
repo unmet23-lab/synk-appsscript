@@ -5,7 +5,7 @@ import {PilotError,TRANSCRIBE_USD_PER_MINUTE} from './drama-pilot-audio.mjs';
 
 export function publicLesson(lesson) {
   return {id:lesson.id,title:lesson.title,notices:lesson.notices,role:lesson.role,
-    reasks:lesson.reasks,director:lesson.director,nextEpisode:lesson.nextEpisode,
+    reasks:lesson.reasks,coach:lesson.coach,nextEpisode:lesson.nextEpisode,
     assets:lesson.assets?{listenLoop:lesson.assets.listenLoop,poster:lesson.assets.poster,backdrop:lesson.assets.backdrop}:undefined,
     scene:lesson.scene.map(({spec,...line})=>line),
     transfer:{id:lesson.transfer.id,prompt:lesson.transfer.prompt}};

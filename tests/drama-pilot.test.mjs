@@ -164,3 +164,45 @@ test('무음과 공급자 오류를 성공으로 만들지 않으며 예산을 �
   assert.equal(JSON.stringify(error).includes('PRIVATE'),false);assert.equal(JSON.stringify(down.events).includes('PRIVATE'),false);
   assert.equal((await down.take()).status,429);assert.equal(down.budget.snapshot().calls,1);
 });
+
+// 11-02 코치 틀(결정 10-31 「싱크타운 다시 짜기」 ③) — 화면 말·목소리에 감독·촬영·컷이 없고, 녹음 전 코치 자리는 비어 있다.
+test('시범판 화면 말과 목소리는 코치 틀이고 「AI로 만든」 표기가 없다',async()=>{
+  const {STR,endingFix}=await import('../experiences/drama/pilot/strings.mjs');
+  const {PILOT,COACH_VOICE}=await import('../experiences/drama/pilot/content.mjs');
+  for(const [lang,table] of Object.entries(STR)){
+    for(const [key,value] of Object.entries(table)){
+      const text=typeof value==='function'?String(value('x',1)):JSON.stringify(value);
+      assert.doesNotMatch(text,/감독|촬영|컷|배역|배우|오디션|[Dd]irector|[Ff]ilm|[Ss]hoot|\bCut\b|[Aa]udition/,`${lang}.${key}`);
+      // 받아쓰기 동의 글의 「외부 AI 서비스」는 녹음이 어디로 가는지 알리는 말이라 둔다. 인물·목소리 표시는 「AI로 만든」을 쓰지 않는다.
+      if(!/^consent/.test(key))assert.doesNotMatch(text,/AI/,`${lang}.${key}`);
+    }
+  }
+  assert.equal(STR.ko.synthetic,'인물은 지어냈고, 목소리는 모두 합성했어요.');
+  assert.equal(PILOT.notices.synthetic,STR.ko.synthetic);
+  assert.equal(STR.ko.noteEnding,"처음 만난 선배에게는 끝에 '요'를 붙여 봐요.");
+  assert.equal(endingFix({kind:'ending',want:'polite',got:'plain',at:'헤맸어'}),'헤맸어 → 헤맸어요');
+  assert.equal(endingFix({kind:'ending',want:'polite',got:'plain',at:'있어?'}),'있어 → 있어요');
+  for(const at of ['어디야','간다','몰라',''])assert.equal(endingFix({kind:'ending',want:'polite',got:'plain',at}),null,at);
+  assert.equal(endingFix({kind:'length'}),null);
+  assert.equal(PILOT.director,undefined);
+  assert.equal(COACH_VOICE.noteEnding.text,"끝에 '요'를 붙여 봐요. 이 장면을 다시 해 볼까요?");
+  assert.equal(COACH_VOICE.wrap.text,'오늘은 여기까지! 수고했어요.');
+  for(const [key,cue] of Object.entries(PILOT.coach)){
+    assert.doesNotMatch(cue.text,/컷|촬영|감독|테이크|지난번/,key);
+    assert.equal(cue.audio===null||cue.audio==='/media/'+COACH_VOICE[key].file,true,key);
+  }
+  assert.equal(publicLesson(PILOT).coach,PILOT.coach);
+  assert.equal(JSON.stringify(PILOT).includes('director-'),false);
+});
+test('쇼케이스 영상 자리는 학생 목소리 구간 뒤에서만 선배 구간을 자른다',async()=>{
+  const {showcaseJobs}=await import('../tools/build-drama-pilot-assets.mjs');
+  const {SHOWCASE_CUTS}=await import('../experiences/drama/pilot/content.mjs');
+  assert.deepEqual(SHOWCASE_CUTS.map(c=>c.cut),['C1','C3','C2','C4']);
+  assert.throws(()=>showcaseJobs([{cut:'C2',src:'C2.mp4',listen:[0.3,4.2],reply:[4.0,null]}]),/끝난 뒤부터/);
+  assert.throws(()=>showcaseJobs([{cut:'C4',src:'C4.mp4',listen:[0.3,null]}]),/끝\(초\)/);
+  // 학생 목소리가 든 자리에서 listen 없이 선배 구간만 채우면 Hana 소리가 실릴 수 있어 막는다(Fable P2). C1은 학생 목소리가 없다.
+  assert.throws(()=>showcaseJobs([{cut:'C2',src:'C2.mp4',listenFor:'s1e01-6',listen:null,reply:[0,null]}]),/listen/);
+  assert.deepEqual(showcaseJobs([{cut:'C1',src:'C1.mp4',reply:[0.3,null]}]).map(j=>j.out),['c1-reply.mp4']);
+  const jobs=showcaseJobs([{cut:'C2',src:'C2.mp4',listen:[0.3,4.2],reply:[4.3,null],reask:null}]);
+  assert.deepEqual(jobs.map(j=>[j.out,j.kind]),[['c2-listen.mp4','video-silent'],['c2-reply.mp4','video']]);
+});
