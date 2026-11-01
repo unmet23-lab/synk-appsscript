@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Scene: a cozy small neighborhood cafe made of needle felt. Eye-level macro shot of the wooden cafe counter top (cream felt counter runner). In the exact center stands ONE large round clear glass fishbowl, filled to 80 percent with clear, slightly blue-tinted water, a thin layer of small round felt pebbles at the bottom, nothing else inside the bowl — no fish, no plants, completely empty water. The bowl is big: it fills about 70 percent of the image width, its center at about 55 percent of the image height. Background: softly blurred felt cafe shelves with cups and a warm pendant lamp. Keep the top 22 percent of the image calm (soft blurred wall) and the bottom 18 percent plain counter felt — captions will go there. No characters, no animals, no people.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, warm amber cafe light, gentle depth of field, cute but not babyish (for university students and young workers). No text, letters, numbers, logos or symbols anywhere in the image.

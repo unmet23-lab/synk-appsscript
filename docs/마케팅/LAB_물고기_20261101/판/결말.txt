@@ -1,0 +1,10 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Scene: use the FIRST attached image for the cafe counter, the light and the same big round glass fishbowl full of water and felt pebbles, in the same place in the frame but shifted a little to the LEFT.
+A cute grey needle-felt harbor seal (SECOND attached image: use it for the seal's look) has burst up out of the fishbowl: its lower body is in the water, its upper body rises high above the rim, nose pointing up, and it balances the felt marbled ribeye steak (THIRD attached image: use it for the steak's look) perfectly flat on the tip of its nose, like a circus seal. Flippers raised in a clap, mouth open and happy. Water droplets fly around it. An orange felt goldfish peeks from inside the bowl.
+On the RIGHT, on the counter beside the bowl, Mongle bounces up overjoyed: bead eyes squeezed into happy upward arcs, wide open smiling stitched mouth (use the FOURTH attached image for its look: coral needle-felted wool ghost shape, scalloped bottom hem with a cream running stitch, no arms, no legs, no hands).
+Keep the top 20 percent of the image calm (soft blurred wall) so the steak does not reach it, and the bottom 15 percent plain counter felt.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, warm amber cafe light, gentle depth of field, joyful, cute but not babyish (for university students and young workers). No text, letters, numbers, logos or symbols anywhere in the image.
