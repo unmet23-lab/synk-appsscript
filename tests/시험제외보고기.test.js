@@ -48,11 +48,15 @@ test('실제 node:test 이벤트의 네 제외만 위치·이유와 보존하고
 
 test('넓은 시험 CLI가 제외 목록을 기존 실패 후보와 함께 저장하고 실패 래칫을 유지한다', t => {
   const dir = fixture(t);
-  for (const rel of ['tools/ci넓은시험.js', 'tools/lib/tap실패.js', 'tools/lib/시험제외보고기.cjs']) {
+  for (const rel of ['tools/ci넓은시험.js', 'tools/lib/tap실패.js', 'tools/lib/시험제외보고기.cjs', 'tools/conditional-qa/contract.cjs', 'tools/conditional-qa/cases.json']) {
     fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true });
     fs.copyFileSync(path.join(root, rel), path.join(dir, rel));
   }
   fs.mkdirSync(path.join(dir, 'tests'));
+  const inventoryPath = path.join(dir, 'tools/conditional-qa/cases.json');
+  const inventory = JSON.parse(fs.readFileSync(inventoryPath, 'utf8'));
+  for (const [index, name] of ['명시적 제외', '자료 없음', '실행 중 판단', '중첩 제외'].entries()) inventory.cases.push({ id: `S${114 + index}`, file: 'tests/fixture.test.cjs', name, route: 'local', profile: 'default' });
+  inventory.expectedCount = inventory.cases.length; fs.writeFileSync(inventoryPath, JSON.stringify(inventory));
   fs.writeFileSync(path.join(dir, 'tests/fixture.test.cjs'), source);
   fs.writeFileSync(path.join(dir, 'tests/ci넓은시험_알려진실패.json'), JSON.stringify({ 묶음: { 루트: [] } }));
   for (const args of [['init', '-q'], ['add', 'tests/fixture.test.cjs']]) {
@@ -69,4 +73,11 @@ test('넓은 시험 CLI가 제외 목록을 기존 실패 후보와 함께 저�
   assert.ok(saved.제외.every(r => r.파일 === 'tests/fixture.test.cjs'));
   const gate = require('../tools/ci넓은시험.js').종료판정;
   assert.equal(gate({ 파일: 1, 시험: 4, 통과: 0, 실패수: 0, 건너뜀: 4, 실패: [], 제외: saved.제외.slice(1) }, []).코드, 1);
+  fs.appendFileSync(path.join(dir, 'tests/fixture.test.cjs'), "\ntest.skip('등록되지 않은 새 조건',()=>{});\n");
+  const unregistered = spawnSync(process.execPath, ['tools/ci넓은시험.js', '루트', '--후보', 'unregistered.json'], {
+    cwd: dir, encoding: 'utf8', windowsHide: true, env: { ...process.env, NODE_TEST_CONTEXT: '' },
+  });
+  assert.equal(unregistered.status, 1, unregistered.stdout + unregistered.stderr);
+  assert.match(unregistered.stderr, /등록되지 않은 조건부 제외/);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'unregistered.json'))).제외.length, 5, 'failed gates still preserve every original skip');
 });

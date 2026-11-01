@@ -5,7 +5,7 @@ const policy = require('../tools/이어하기꾸러미.js');
 const backup = require('../tools/onedrive-backup.cjs');
 const { sourceLocation, preserveSource, receiptPaths, reconcile } = require('../tools/보호소스보관.cjs');
 const { fileDigest, verifyDriveCoverage } = require('../tools/Git보관묶음.cjs');
-const cryptFile = path.join(os.homedir(), 'Documents/SYNK_원본창고/암호.js');
+const cryptFile = process.env.SYNK_QA_CRYPTO_MODULE || path.join(os.homedir(), 'Documents/SYNK_원본창고/암호.js');
 const crypt = fs.existsSync(cryptFile) ? require(cryptFile) : null;
 const sha = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 

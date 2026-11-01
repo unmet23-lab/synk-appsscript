@@ -250,11 +250,15 @@ function main(argv = process.argv.slice(2)) {
       제외: r.제외, 제외묶음: r.제외묶음 }, null, 2));
   }
   if (처음후보) {
+    const unknown = require('./conditional-qa/contract.cjs').unknownSkips(require('./conditional-qa/contract.cjs').readManifest(ROOT), r.제외 || [], ROOT);
+    if (unknown.length) { console.error('등록되지 않은 조건부 제외:', JSON.stringify(unknown)); return 1; }
     console.log(`  기준선 후보 ${r.실패.length}줄 → ${처음후보} (기준선이 없어 이번 판정은 막지 않는다)`);
     for (const x of r.실패) console.log(`  · ${x.파일 || 파일모름} — ${x.시험}`);
     return 0;
   }
   const 기준 = 기준선읽기();
+  const unknown = require('./conditional-qa/contract.cjs').unknownSkips(require('./conditional-qa/contract.cjs').readManifest(ROOT), r.제외 || [], ROOT);
+  if (unknown.length) { console.error('등록되지 않은 조건부 제외:', JSON.stringify(unknown)); return 1; }
   if (!기준) console.log('  기준선 파일이 없다 — 이번 실패를 모두 새 실패로 친다');
   const 판 = 종료판정(r, 기준 && 기준.묶음 ? 기준.묶음[묶음] : []);
   for (const 줄 of 판.줄들) console.log(`  ${줄}`);

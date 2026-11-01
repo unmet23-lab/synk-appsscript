@@ -1,0 +1,103 @@
+'use strict';
+const fs = require('node:fs'), path = require('node:path'), cp = require('node:child_process');
+const { readManifest, coverage, sha256 } = require('./contract.cjs');
+const { read, write, git, loadConfig, clone, prepare, postcheck } = require('./inputs.cjs');
+const github = require('./github.cjs');
+const { childRun } = require('./run.cjs');
+const defaultState = () => path.join(require('node:os').homedir(), 'security-audit-skill/SYNK-conditional-qa');
+function extendQueue(state, head, commits) {
+  github.validCommit(head);
+  for (const commit of commits) {
+    github.validCommit(commit);
+    if (!state.items.some(item => item.commit === commit)) state.items.push({ commit, status: 'queued' });
+  }
+  state.seen = head; return state;
+}
+function acquire(state) {
+  const file = path.join(state, 'worker.lock');
+  if (fs.existsSync(file)) {
+    const owner = read(file); let alive = true;
+    try { process.kill(owner.pid, 0); } catch (error) { if (error.code === 'ESRCH') alive = false; else throw error; }
+    if (alive) throw Error('Local verifier is already running');
+    // Remove only the dead worker's exact lock, never a process selected by its name.
+    fs.unlinkSync(file);
+  }
+  const fd = fs.openSync(file, 'wx'); fs.writeFileSync(fd, JSON.stringify({ pid: process.pid, createdAt: new Date().toISOString() })); fs.closeSync(fd);
+  return () => { if (read(file).pid !== process.pid) throw Error('Worker lock ownership changed'); fs.unlinkSync(file); };
+}
+function initialize(stateDir, firstCommit) {
+  github.validCommit(firstCommit); const config = loadConfig(stateDir), root = clone(config);
+  git(root, ['fetch', 'origin', 'master']);
+  git(root, ['merge-base', '--is-ancestor', firstCommit, 'origin/master']);
+  const file = path.join(stateDir, 'queue.json');
+  if (fs.existsSync(file)) return read(file);
+  const seen = git(root, ['rev-parse', `${firstCommit}^`]);
+  const state = { version: 1, activatedAt: new Date().toISOString(), seen, items: [] };
+  write(file, state); return state;
+}
+async function verify(config, commit, output) {
+  const context = prepare(config, commit), manifest = readManifest(config.root), cases = manifest.cases.filter(row => row.route === 'local');
+  fs.mkdirSync(output, { recursive: true });
+  const execution = await childRun([path.join(config.root, 'tools/conditional-qa/run.cjs'), '--route', 'local', '--output', output, '--context', path.join(config.state, 'context.json')],
+    { cwd: config.root, env: { ...process.env }, log: path.join(output, 'runner.log'), timeoutMs: 50 * 60_000 });
+  const receipt = read(path.join(output, 'result.json'));
+  receipt.inputsUnchanged = postcheck(context);
+  receipt.ok = receipt.ok && execution.exitCode === 0 && !execution.timedOut && receipt.inputDigest === context.inputDigest && !git(config.root, ['status', '--porcelain', '--untracked-files=no']);
+  write(path.join(output, 'result.json'), receipt);
+  if (!coverage(receipt, { commit, digest: manifest.digest, cases })) { const error = Error(`Local tests incomplete: ${receipt.passed}/${cases.length}`); error.code = 'TEST_FAILURE'; throw error; }
+  return { receipt, count: cases.length, digest: manifest.digest };
+}
+async function tick(stateDir, { limit = 3 } = {}) {
+  const config = loadConfig(stateDir), release = acquire(stateDir), queueFile = path.join(stateDir, 'queue.json');
+  try {
+    const root = clone(config); git(root, ['fetch', 'origin', 'master']);
+    const head = git(root, ['rev-parse', 'origin/master']), queue = read(queueFile);
+    if (queue.version !== 1 || !Array.isArray(queue.items)) throw Error('Invalid local queue');
+    github.validCommit(queue.seen); git(root, ['merge-base', '--is-ancestor', queue.seen, head]);
+    const commits = git(root, ['rev-list', '--reverse', '--first-parent', `${queue.seen}..${head}`]).split(/\r?\n/).filter(Boolean);
+    extendQueue(queue, head, commits); write(queueFile, queue);
+    for (const item of queue.items.filter(row => row.status === 'passed' && row.resumePending).slice(0, 10)) {
+      try { item.resumePending = !github.resumeWaitingWorkflow(item.commit); } catch (error) { item.resumeError = error.message.slice(0, 500); }
+    }
+    // An interrupted process or network publication is resumed; a failed test stays explicitly failed.
+    for (const item of queue.items.filter(row => ['queued', 'running', 'publish-pending'].includes(row.status) || (row.status === 'retry' && Date.now() >= row.retryAt)).slice(0, limit)) {
+      git(root, ['merge-base', '--is-ancestor', item.commit, head]);
+      try {
+        if (item.status !== 'publish-pending') {
+          item.status = 'running'; item.startedAt = new Date().toISOString(); write(queueFile, queue);
+          github.publish(item.commit, 'pending', 'Running the registered local conditional tests');
+          item.output = path.join(stateDir, 'runs', `${item.commit}-${Date.now()}`);
+          const result = await verify(config, item.commit, item.output);
+          item.count = result.count; item.digest = result.digest; item.status = 'publish-pending'; write(queueFile, queue);
+        }
+        // Re-read the receipt after a process restart, rather than trusting queue.json's success flag.
+        const receipt = read(path.join(item.output, 'result.json'));
+        const savedManifest = JSON.parse(git(root, ['show', `${item.commit}:tools/conditional-qa/cases.json`]));
+        const expected = savedManifest.cases.filter(row => row.route === 'local'), digest = sha256(JSON.stringify(savedManifest));
+        if (item.digest !== digest || item.count !== expected.length || !receipt.inputsUnchanged || !coverage(receipt, { commit: item.commit, digest, cases: expected })) throw Error('Saved local proof is incomplete');
+        github.publish(item.commit, 'success', github.description(item.count, item.digest));
+        item.status = 'passed'; item.endedAt = new Date().toISOString(); delete item.error; write(queueFile, queue);
+        item.resumePending = true;
+        try { item.resumePending = !github.resumeWaitingWorkflow(item.commit); } catch (error) { item.resumeError = error.message.slice(0, 500); }
+      } catch (error) {
+        item.error = error.message.slice(0, 1000);
+        if (item.status !== 'publish-pending') { item.status = error.code === 'TEST_FAILURE' ? 'failed' : 'retry'; item.retryAt = Date.now() + 15 * 60_000; }
+        try { github.publish(item.commit, 'failure', 'Local verification incomplete; inspect the private worker receipt'); } catch { item.publicationError = true; }
+        write(queueFile, queue);
+      }
+      write(queueFile, queue);
+    }
+    write(queueFile, queue);
+    const summary = { checkedAt: new Date().toISOString(), head, queued: queue.items.filter(row => row.status === 'queued').length,
+      incomplete: queue.items.filter(row => row.status !== 'passed').length,
+      passed: queue.items.filter(row => row.status === 'passed').length, failed: queue.items.filter(row => row.status === 'failed').length,
+      items: queue.items.slice(-5).map(({ commit, status, error }) => ({ commit, status, error })) };
+    write(path.join(stateDir, 'last-run.json'), summary); console.log(JSON.stringify(summary)); return summary;
+  } finally { release(); }
+}
+if (require.main === module) {
+  const args = process.argv.slice(2), stateDir = args.includes('--state') ? args[args.indexOf('--state') + 1] : defaultState();
+  const promise = args.includes('--initialize') ? Promise.resolve(initialize(stateDir, args[args.indexOf('--initialize') + 1])) : tick(stateDir);
+  promise.catch(error => { console.error(error.message); process.exitCode = 1; });
+}
+module.exports = { extendQueue, acquire, initialize, verify, tick, defaultState };

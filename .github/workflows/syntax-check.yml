@@ -155,7 +155,9 @@ jobs:
           set -o pipefail
           rc=0
           test_log="$RUNNER_TEMP/synk-test.txt"
-          node --test --test-reporter=tap tests/*.test.js 2>&1 | tee "$test_log" || rc=$?
+          skip_log="$RUNNER_TEMP/synk-skipped.jsonl"
+          node --test --test-reporter=tap --test-reporter-destination=stdout --test-reporter=./tools/lib/시험제외보고기.cjs --test-reporter-destination="$skip_log" tests/*.test.js 2>&1 | tee "$test_log" || rc=$?
+          node tools/conditional-qa/guard.cjs --skips "$skip_log" || rc=1
           if [ "$rc" -eq 0 ]; then
             exit 0
           fi

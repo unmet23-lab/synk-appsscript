@@ -7,7 +7,7 @@ const { Readable } = require('node:stream');
 const { createBundle, preserveRecord, BundleInspector, fileDigest, verifyDriveCoverage, selection, isolatedBundleRepository, archiveRefs,
   verifyPrerequisites } = require('../tools/Git보관묶음.cjs');
 const { reconcileEncryptedArchives, onlyArchiveTransferPending, deferNewSinceApply, PREFIX } = require('../tools/GitHub백업.cjs');
-const cryptoPath = path.join(os.homedir(), 'Documents/SYNK_원본창고/암호.js');
+const cryptoPath = process.env.SYNK_QA_CRYPTO_MODULE || path.join(os.homedir(), 'Documents/SYNK_원본창고/암호.js');
 const crypt = fs.existsSync(cryptoPath) ? require(cryptoPath) : null;
 function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'git-bundle-test-'));

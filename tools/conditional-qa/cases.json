@@ -1,0 +1,914 @@
+{
+  "version": 1,
+  "expectedCount": 113,
+  "sourceRuns": [
+    41277757203,
+    41284837729
+  ],
+  "cases": [
+    {
+      "id": "S001",
+      "file": "tests/Git보관묶음.test.cjs",
+      "name": "stdout bundle is encrypted, header and pack validated, and fixture history restores exactly",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S002",
+      "file": "tests/Git보관묶음.test.cjs",
+      "name": "detached commits bundle from isolated refs without changing any original ref, HEAD, index, or files",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S003",
+      "file": "tests/Git보관묶음.test.cjs",
+      "name": "public unpublished heads, stash, and detached history archive only what the public origin lacks, without a remote write (10-19)",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S004",
+      "file": "tests/Git보관묶음.test.cjs",
+      "name": "a new branch name on a bundled commit stays covered by the last verified bundle; a newer commit waits for the next apply",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S005",
+      "file": "tests/Git보관묶음.test.cjs",
+      "name": "a branch that moves after the scan still bundles the scanned commit without touching the original refs (10-19)",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S006",
+      "file": "tests/Git보관묶음.test.cjs",
+      "name": "a public origin with no refs yet still gets a self-contained bundle that restores into an empty repository (10-19)",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S007",
+      "file": "tests/Git보관묶음.test.cjs",
+      "name": "a Drive-verified bundle becomes the base: the next bundle holds only new objects, names its chain, and restores after it (10-20)",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S008",
+      "file": "tests/Git보관묶음.test.cjs",
+      "name": "public prerequisites take the first reaching remote ref (branches first, then ls-remote order) from one rev-list, however many remote refs (10-20)",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S009",
+      "file": "tests/Git보관묶음.test.cjs",
+      "name": "chain prerequisites take the earliest reaching earlier bundle from one graph, however many receipts and prerequisites (10-20)",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S010",
+      "file": "tests/atlas-dating-deploy.test.mjs",
+      "name": "actual Caddy template validates and enforces the standalone TLS, persistence and redacted failure contracts",
+      "group": "Caddy 또는 Rust/WASM 실행물",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S011",
+      "file": "tests/hermes-synk-integration.test.cjs",
+      "name": "Windows exclusive apply preserves branch, staged index, current dirty bytes and durable backup; retry does not reapply",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S012",
+      "file": "tests/hermes-synk-integration.test.cjs",
+      "name": "changed source after validation holds all writes including additions",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S013",
+      "file": "tests/hermes-synk-integration.test.cjs",
+      "name": "Windows applies bounded additions/deletions through owned handles",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S014",
+      "file": "tests/hermes-synk-integration.test.cjs",
+      "name": "Windows actual open writer prevents application and preserves bytes",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S015",
+      "file": "tests/hermes-synk-integration.test.cjs",
+      "name": "Windows journal restart resumes only unapplied deltas and keeps original preimage backup",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S016",
+      "file": "tests/hermes-synk-integration.test.cjs",
+      "name": "Windows partial journal bytes or external recovery edits hold without overwriting them",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S017",
+      "file": "tests/hermes-synk-integration.test.cjs",
+      "name": "Windows source index movement after validation holds before touching content",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S018",
+      "file": "tests/hermes-synk-integration.test.cjs",
+      "name": "Windows hardlink target holds before changing any linked file",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S019",
+      "file": "tests/hermes-synk-integration.test.cjs",
+      "name": "Windows final locked source-set check catches files added after Node recapture",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S020",
+      "file": "tests/hermes-synk-recovery.test.cjs",
+      "name": "a gateway still on the generation it booted with is not touched",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S021",
+      "file": "tests/hermes-synk-recovery.test.cjs",
+      "name": "the 10-19 case: anthropic published a new generation after the gateway booted",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S022",
+      "file": "tests/hermes-synk-recovery.test.cjs",
+      "name": "drift that cannot be proven leaves the gateway alone",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S023",
+      "file": "tests/hermes-synk-recovery.test.cjs",
+      "name": "restart waits for Hermes to report no active agents, background processes or tool children",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S024",
+      "file": "tests/hermes-synk-recovery.test.cjs",
+      "name": "a running tool child process counts as busy",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S025",
+      "file": "tests/hermes-synk-recovery.test.cjs",
+      "name": "a drifted gateway is restarted once: after a second sighting, only while idle, never twice",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S026",
+      "file": "tests/hermes-synk-recovery.test.cjs",
+      "name": "a restart that times out or fails is reported and not retried",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S027",
+      "file": "tests/hermes-synk-recovery.test.cjs",
+      "name": "a gateway that stays busy for half an hour is still left alone but no longer reported as routine",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S028",
+      "file": "tests/hermes-synk-recovery.test.cjs",
+      "name": "dot-sourcing loads the functions without running recovery, and a missing gateway is still reported",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S029",
+      "file": "tests/hermes-synk-recovery.test.cjs",
+      "name": "each check leaves a small ASCII status record that the AI-free monitor reads as is",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S030",
+      "file": "tests/large-backup-receipt.test.cjs",
+      "name": "large upload receipt encrypts exact bytes and rejects remote checksum mismatch and unsafe prior copies",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S031",
+      "file": "tests/large-backup-receipt.test.cjs",
+      "name": "changed large receipt is reclassified and encrypted; concurrent edits and size overflow fail closed",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S032",
+      "file": "tests/onedrive-backup.test.cjs",
+      "name": "the folder-listing link check over many paths still blocks a junction like the per-path check (10-19)",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S033",
+      "file": "tests/onedrive-backup.test.cjs",
+      "name": "an unchanged worktree reuses its last git result and any file, index or head change runs git again (10-19)",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S034",
+      "file": "tests/text-compare-bench.test.mjs",
+      "name": "Rust/WASM candidate exactly matches frozen baseline (requires release WASM build)",
+      "group": "Caddy 또는 Rust/WASM 실행물",
+      "route": "linux",
+      "profile": "default"
+    },
+    {
+      "id": "S035",
+      "file": "tests/보호소스보관.test.cjs",
+      "name": "protected source encrypts and restores exact bytes; same content reuses and changed content appends",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S036",
+      "file": "tests/보호소스보관.test.cjs",
+      "name": "protected-source inventory cannot expand a scope or pass a stale fingerprint/reparse flag",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S037",
+      "file": "tests/보호소스보관.test.cjs",
+      "name": "a source changing during encryption never becomes an accepted destination",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S038",
+      "file": "tests/보호소스보관.test.cjs",
+      "name": "embedded media source can be encrypted only with a matching prior OneDrive copy receipt",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S039",
+      "file": "tests/보호소스보관.test.cjs",
+      "name": "a check run counts a protected version first seen after the last apply as waiting, never an apply run or a seen version",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S040",
+      "file": "tests/보호소스보관.test.cjs",
+      "name": "a source edited after the inventory is re-classified once and kept under its current fingerprint only",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S041",
+      "file": "tests/보호소스보관.test.cjs",
+      "name": "a removed worktree skips only its rows while an existing unauthorized root still stops the batch",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S042",
+      "file": "tests/보호소스보관.test.cjs",
+      "name": "a temporary repository folder removed after the inventory skips only its rows; a remaining one stops and names the row (10-19)",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S043",
+      "file": "tests/보호소스보관.test.cjs",
+      "name": "prior OneDrive copy re-reads a ctime-only change once but never accepts persistent or content drift",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S044",
+      "file": "tests/보호소스보관.test.cjs",
+      "name": "a reconcile checks reparse points in four batches and reads the copy manifest once, however many media and edited rows it has (10-21)",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S045",
+      "file": "tests/보호소스보관.test.cjs",
+      "name": "the status file keeps the previous evidence until every row is done, also when a run stops early (10-21)",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S046",
+      "file": "tests/보호소스보관.test.cjs",
+      "name": "a stale inventory waits for a running OneDrive run to write the new one, and stops at once when none is running (10-21)",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S047",
+      "file": "tests/음량마감.test.mjs",
+      "name": "기존 회차 재현: 세션 공유 v14 확정본을 그 회차 설정으로 다시 만들면 바이트까지 같다",
+      "group": "영상과 음성 모델 원본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S048",
+      "file": "docs/마케팅/온라인마케팅지도/engagement/company/deploy-operations.test.mjs",
+      "name": "Caddy adapter advertises only reachable TCP protocols and clears cached alternatives",
+      "group": "Caddy 또는 Rust/WASM 실행물",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S049",
+      "file": "docs/마케팅/온라인마케팅지도/engagement/company/deploy-operations.test.mjs",
+      "name": "Caddy runtime proxy error redacts a synthetic media capability URI",
+      "group": "Caddy 또는 Rust/WASM 실행물",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S050",
+      "file": "desktop/tests/installations-asar.test.cjs",
+      "name": "Electron inspects physical ASAR bytes while preserving pins and path boundaries",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S051",
+      "file": "desktop/tests/lifecycle.test.cjs",
+      "name": "newer launch-only pins preserve available installers without offering a downgrade as an update",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S052",
+      "file": "desktop/tests/program-root.test.cjs",
+      "name": "missing LocalAppData finds a real pinned fixture and still rejects changed bytes",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S053",
+      "file": "experiences/beginner-games/qa/scene-keepsake-release-20261009/public-route.test.mjs",
+      "name": "actual public-transformed bundles never prefix the next learning route twice",
+      "group": "과거 출시 및 재현 사본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S054",
+      "file": "experiences/beginner-games/qa/scene-keepsake-release-20261009/public-route.test.mjs",
+      "name": "public daily experiment and free fallback use exactly one /try prefix",
+      "group": "과거 출시 및 재현 사본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S055",
+      "file": "experiences/beginner-games/qa/scene-keepsake-release-20261009/public-route.test.mjs",
+      "name": "source hosting and public nested racing hosting remain valid after canonical generation",
+      "group": "과거 출시 및 재현 사본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S056",
+      "file": "experiences/beginner-games/qa/scene-keepsake-release-20261009/public-route.test.mjs",
+      "name": "last local source reconstructs the double-prefix failure before the release fix",
+      "group": "과거 출시 및 재현 사본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S057",
+      "file": "experiences/beginner-games/qa/scene-keepsake-release-20261009/reward-cas.test.mjs",
+      "name": "the prior guidance read reproduces a silently accepted stale first-shop overwrite",
+      "group": "과거 출시 및 재현 사본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S058",
+      "file": "experiences/brand-opening/qa/home-room-first-frame.test.mjs",
+      "name": "셰이더를 엮는 동안 방을 닫으면 오류 없이 접히고 캔버스도 남지 않는다",
+      "group": "GPU 또는 실제 브라우저 실행 조건",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S059",
+      "file": "experiences/daily-fortune/tests/account-contract.test.mjs",
+      "name": "실제 운세 서버 계약과 브라우저 클라이언트로 두 계정·두 기기의 저장과 복원을 왕복한다",
+      "group": "SYNK-talk 및 로컬 WORLD 연동 자료",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S060",
+      "file": "experiences/path-vr/tests/interview-mount.test.mjs",
+      "name": "every published video quality and reference resolves inside root and nested deployments",
+      "group": "영상과 음성 모델 원본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S061",
+      "file": "experiences/path-vr/tests/interview-mount.test.mjs",
+      "name": "room and comparison pages keep images, styles and media under the deployment mount",
+      "group": "영상과 음성 모델 원본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S062",
+      "file": "experiences/path-vr/tests/interview-mount.test.mjs",
+      "name": "speech model, microphone worklet and worker retain their deployment directory",
+      "group": "영상과 음성 모델 원본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S063",
+      "file": "experiences/path-vr/tests/interview-pages.test.mjs",
+      "name": "public manifest preserves exact continuity, clip hashes and both qualities",
+      "group": "영상과 음성 모델 원본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S064",
+      "file": "experiences/path-vr/tests/interview-pages.test.mjs",
+      "name": "Pages overlay is minimal, deterministic and source-audited",
+      "group": "영상과 음성 모델 원본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S065",
+      "file": "experiences/path-vr/tests/interview-pages.test.mjs",
+      "name": "Pages rebuild refuses to overwrite an unexpected PATH introduction",
+      "group": "영상과 음성 모델 원본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S066",
+      "file": "experiences/path-vr/tests/interview-pages.test.mjs",
+      "name": "published imports, stylesheet URLs and fixed room textures resolve inside the minimal overlay",
+      "group": "영상과 음성 모델 원본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S067",
+      "file": "experiences/path-vr/tests/interview-pages.test.mjs",
+      "name": "Pages verification detects changed published bytes",
+      "group": "영상과 음성 모델 원본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S068",
+      "file": "experiences/path-vr/tests/interview-server-package.test.mjs",
+      "name": "model GET and HEAD ranges return exact bytes and denied sources stay private",
+      "group": "영상과 음성 모델 원본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S069",
+      "file": "experiences/path-vr/tests/interview-server-package.test.mjs",
+      "name": "standalone package copies current runtime exactly, keeps credit files, and excludes private artifacts",
+      "group": "영상과 음성 모델 원본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S070",
+      "file": "experiences/synk-world-app/qa/account-browser.test.mjs",
+      "name": "actual Chromium account-mode Maru preserves life progress, guarded games, Town, enrollment and logout",
+      "group": "SYNK-talk 및 로컬 WORLD 연동 자료",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S071",
+      "file": "experiences/synk-world-app/qa/cafe-static.test.mjs",
+      "name": "frozen /world cafe completes and restores the physical checkpoint through the official account transport",
+      "group": "과거 출시 및 재현 사본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S072",
+      "file": "experiences/synk-world-app/qa/classroom-homework-browser.test.mjs",
+      "name": "계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·읽기 내기·쓰기 내기·첨삭 보기·상태별 화면 (390·1280)",
+      "group": "SYNK-talk 및 로컬 WORLD 연동 자료",
+      "route": "local",
+      "profile": "homework"
+    },
+    {
+      "id": "S073",
+      "file": "experiences/synk-world-app/qa/classroom-homework.test.mjs",
+      "name": "주차·마감이 SYNK-talk 과제 서버와 같다",
+      "group": "SYNK-talk 및 로컬 WORLD 연동 자료",
+      "route": "local",
+      "profile": "homework"
+    },
+    {
+      "id": "S074",
+      "file": "experiences/synk-world-app/qa/classroom-lessons-browser.test.mjs",
+      "name": "계정 모드 WORLD 내 계정 시트의 「우리 반 수업」: 상태별 화면·재조회·탭 복귀·로그인 유지 (390·1280)",
+      "group": "SYNK-talk 및 로컬 WORLD 연동 자료",
+      "route": "local",
+      "profile": "homework"
+    },
+    {
+      "id": "S075",
+      "file": "experiences/synk-world-app/qa/classroom-lessons.test.mjs",
+      "name": "상태 이름·안내·화면 문구가 학생 앱 원문과 같다",
+      "group": "SYNK-talk 및 로컬 WORLD 연동 자료",
+      "route": "local",
+      "profile": "homework"
+    },
+    {
+      "id": "S076",
+      "file": "experiences/synk-world-app/qa/classroom-lessons.test.mjs",
+      "name": "계약판과 회의 주소 규칙이 학생 앱·서버 원문과 같다",
+      "group": "SYNK-talk 및 로컬 WORLD 연동 자료",
+      "route": "local",
+      "profile": "homework"
+    },
+    {
+      "id": "S077",
+      "file": "experiences/synk-world-app/qa/classroom-lessons.test.mjs",
+      "name": "서버 presentClass가 낼 수 있는 상태는 모두 이름이 있고, 안내가 필요한 상태는 학생 앱과 같은 안내를 단다",
+      "group": "SYNK-talk 및 로컬 WORLD 연동 자료",
+      "route": "local",
+      "profile": "homework"
+    },
+    {
+      "id": "S078",
+      "file": "experiences/synk-world-app/qa/client.test.mjs",
+      "name": "real browser tabs retain separate accounts across reload and logout",
+      "group": "GPU 또는 실제 브라우저 실행 조건",
+      "route": "local",
+      "profile": "client"
+    },
+    {
+      "id": "S079",
+      "file": "experiences/synk-world-app/qa/daily-tutor-static.test.mjs",
+      "name": "frozen /world daily tutor stores assisted practice and recap, resumes on a fresh visit and isolates owner history",
+      "group": "과거 출시 및 재현 사본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S080",
+      "file": "experiences/synk-world-app/qa/home-tutor-static.test.mjs",
+      "name": "frozen /world home tutor uses actual owner history, preserves guided progress and clears it on logout",
+      "group": "과거 출시 및 재현 사본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S081",
+      "file": "experiences/synk-world-app/qa/life-tutor-static.test.mjs",
+      "name": "frozen /world tutor follows owner choice, preserves guided records and disposes on logout",
+      "group": "과거 출시 및 재현 사본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S082",
+      "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
+      "name": "동기화를 끈 학습자: 잠긴 시트가 이유를 나눠 알리고, 준비 확인을 마치면 마을이 열린다(390·1440 캡처)",
+      "group": "GPU 또는 실제 브라우저 실행 조건",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S083",
+      "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
+      "name": "준비 확인이 아직이면 숫자 없이 다시 볼 수 있다고 알리고 연습 하나를 권한다 — 「확인 그만하기」는 마을 시트로 돌아간다",
+      "group": "GPU 또는 실제 브라우저 실행 조건",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S084",
+      "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
+      "name": "확인은 마쳤는데 체험·이용권이 없으면 학습 미통과가 아니라 이용권 범위로 알린다",
+      "group": "GPU 또는 실제 브라우저 실행 조건",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S085",
+      "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
+      "name": "동기화를 켠 학습자: 시트를 열 때 서버에 모인 답으로 먼저 확인하고(답을 싣지 않고), 고지 줄이 없다",
+      "group": "GPU 또는 실제 브라우저 실행 조건",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S086",
+      "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
+      "name": "준비 확인을 통과했는데 체험·이용권이 없으면 미통과가 아니라 「마쳤어요」와 이용권 범위로 알린다(아르곤 A1)",
+      "group": "GPU 또는 실제 브라우저 실행 조건",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S087",
+      "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
+      "name": "동기화를 켠 학습자: 준비 확인을 마친 뒤 같은 확인을 조용히 다시 부르지 않는다(아르곤 A3)",
+      "group": "GPU 또는 실제 브라우저 실행 조건",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S088",
+      "file": "experiences/synk-world-app/qa/town-check-browser.test.mjs",
+      "name": "동기화를 켠 학습자: 시트를 연 직후 시작해도 30초 규칙에 멈추지 않고 바로 문항을 낸다(Fable F1)",
+      "group": "GPU 또는 실제 브라우저 실행 조건",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S089",
+      "file": "experiences/synk-world-app/qa/tutor-switch-20261011/backend-life-20261012/candidate-contract.test.cjs",
+      "name": "candidate differs from deployed v9 only by the canonical life record allowlist entry",
+      "group": "과거 출시 및 재현 사본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S090",
+      "file": "experiences/synk-world-app/qa/tutor-switch-20261011/backend-life-20261012/candidate-contract.test.cjs",
+      "name": "exact deployable ESM imports and its model matches the tested CJS module",
+      "group": "과거 출시 및 재현 사본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S091",
+      "file": "experiences/synk-world-app/qa/tutor-switch-20261011/backend-life-20261012/candidate-contract.test.cjs",
+      "name": "deployed v9 rejects the life record before reaching database storage",
+      "group": "과거 출시 및 재현 사본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S092",
+      "file": "experiences/synk-world-app/qa/tutor-switch-20261011/backend-life-20261012/candidate-contract.test.cjs",
+      "name": "new life record keeps previous bounds, secret rejection and CAS value validation",
+      "group": "과거 출시 및 재현 사본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S093",
+      "file": "experiences/synk-world-app/qa/tutor-switch-20261011/backend-life-20261012/candidate-contract.test.cjs",
+      "name": "exact candidate retains disabled-by-default feature gating without storage access",
+      "group": "과거 출시 및 재현 사본",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S094",
+      "file": "experiences/synk-world-app/qa/world-exam-link-browser.test.mjs",
+      "name": "WORLD ?exam=topik2: 첫 실행 뒤 TOPIK II를 채운 목표 창 → 켜고 저장 → 이번 주 계획(쓰기 칸 → 쓰기 목록 · 배우기 판 생활 팩 위 쓰기 줄), 다시 열면 계획, 한글 단계·주소 없음은 그대로 (375·1280 × 몽골어·한국어)",
+      "group": "SYNK-talk 및 로컬 WORLD 연동 자료",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S095",
+      "file": "experiences/synk-world-app/qa/world-push-browser.test.mjs",
+      "name": "WORLD 학습 알림 2단: 동의 → 켜기 → 서비스 워커 알림 → 누름 → 끄기, 휴대폰 묻는 카드, 아이폰 안내, 세 언어 (390·1280)",
+      "group": "SYNK-talk 및 로컬 WORLD 연동 자료",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S096",
+      "file": "experiences/synk-world-app/qa/world-reminders-browser.test.mjs",
+      "name": "WORLD 학습 알림: 앱 안 묻기 → OS 권한 → 예약 → 알림 → 누르면 그 자리, 거절·끄기·막힘, 시험일 점검, 세 언어 (390·1280)",
+      "group": "SYNK-talk 및 로컬 WORLD 연동 자료",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S097",
+      "file": "experiences/synk-world-app/qa/world-speaking-browser.test.mjs",
+      "name": "리허설 WORLD 「말하기 연습」: 기본 켜짐·끄는 스위치·동의·녹음·자동 피드백(가짜)·역할극·세 언어 (390·1280)",
+      "group": "SYNK-talk 및 로컬 WORLD 연동 자료",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S098",
+      "file": "experiences/synk-world-app/qa/world-writing-browser.test.mjs",
+      "name": "계정 모드 WORLD의 「TOPIK II 쓰기 연습」: 목록·51·53·54·규칙 점검·자동 피드백·예시답·한 가지 고치기·세 언어 (390·1280·1440)",
+      "group": "SYNK-talk 및 로컬 WORLD 연동 자료",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S099",
+      "file": "experiences/teacher-world/homework-review.test.mjs",
+      "name": "주차·마감이 SYNK-talk 과제 서버와 같다",
+      "group": "SYNK-talk 및 로컬 WORLD 연동 자료",
+      "route": "local",
+      "profile": "homework"
+    },
+    {
+      "id": "S100",
+      "file": "experiences/teacher-world/homework-review.test.mjs",
+      "name": "첨삭 꼴은 서버(validFeedback)가 받는 꼴이고, 회사 중계의 본문 상한 아래다",
+      "group": "SYNK-talk 및 로컬 WORLD 연동 자료",
+      "route": "local",
+      "profile": "homework"
+    },
+    {
+      "id": "S101",
+      "file": "experiences/teacher-world/qa/homework-review-browser.test.mjs",
+      "name": "과제 첨삭: 계획 → 주별 목록 → 기호·판정·한마디 → 임시 저장·돌려주기 → 학생이 받는 첨삭, 판 겹침, 390·1280",
+      "group": "SYNK-talk 및 로컬 WORLD 연동 자료",
+      "route": "local",
+      "profile": "homework"
+    },
+    {
+      "id": "S102",
+      "file": "tests/prism래칫회귀.test.js",
+      "name": "Windows의 같은 파일을 대소문자만 바꿔 중복 등록하면 거절한다",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S103",
+      "file": "tests/prism래칫회귀.test.js",
+      "name": "Windows의 다른 대소문자 경로에서도 등록한 갈래로 참조를 판정한다",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S104",
+      "file": "tests/prism래칫회귀.test.js",
+      "name": "Windows의 기본 범위를 대문자 확장자로 더해도 파일과 참조를 중복 집계하지 않는다",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S105",
+      "file": "tests/sns-발행.test.js",
+      "name": "Windows 자격 어댑터의 저장·회수·삭제를 메모리 mock으로 격리한다",
+      "group": "Windows 전용",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S106",
+      "file": "tests/town-music-build.test.js",
+      "name": "Suno 표지가 있는 원곡에서 앱 파일과 목록 항목을 만든다 — 음량 맞춤·해시 이름·검사기 통과",
+      "group": "ffmpeg 실행 조건",
+      "route": "linux",
+      "profile": "default"
+    },
+    {
+      "id": "S107",
+      "file": "tests/town-music-build.test.js",
+      "name": "Suno 표지가 없는 원곡은 만들지 않는다 — 권리를 확인할 수 없다",
+      "group": "ffmpeg 실행 조건",
+      "route": "linux",
+      "profile": "default"
+    },
+    {
+      "id": "S108",
+      "file": "tests/town-music-build.test.js",
+      "name": "Suno 스튜디오 내보내기본의 표지도 받고 그 종류를 남긴다(유호님 10-27)",
+      "group": "ffmpeg 실행 조건",
+      "route": "linux",
+      "profile": "default"
+    },
+    {
+      "id": "S109",
+      "file": "tests/town-scope.test.js",
+      "name": "talk 범위 표와 같다(형제 저장소 SYNK-talk가 이 판을 가졌을 때)",
+      "group": "SYNK-talk 범위 표",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S110",
+      "file": "tests/목소리깨짐검사.test.js",
+      "name": "예시 두 파일이 파이썬 검사기(tools/목소리엉킴.py)와 같은 숫자를 낸다",
+      "group": "ffmpeg 실행 조건",
+      "route": "linux",
+      "profile": "default"
+    },
+    {
+      "id": "S111",
+      "file": "tests/목소리깨짐검사.test.js",
+      "name": "브라우저 경로(48kHz 한 판 → decimate3로 16kHz)도 파이썬과 창 수까지 같다",
+      "group": "ffmpeg 실행 조건",
+      "route": "linux",
+      "profile": "default"
+    },
+    {
+      "id": "S112",
+      "file": "tests/오마주.test.js",
+      "name": "합성 영상 — 빨강 1.2초 · 파랑 1.5초 · 무늬 1.3초의 컷을 잰다",
+      "group": "ffmpeg 실행 조건",
+      "route": "linux",
+      "profile": "default"
+    },
+    {
+      "id": "S113",
+      "file": "tests/이어하기꾸러미.test.js",
+      "name": "검토한 문서 예제 예외는 정확한 경로와 원문 SHA에만 적용한다",
+      "group": "문서 원문 해시",
+      "route": "local",
+      "profile": "default"
+    }
+  ]
+}

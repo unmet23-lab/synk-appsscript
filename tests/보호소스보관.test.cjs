@@ -3,7 +3,7 @@ const test = require('node:test'), assert = require('node:assert/strict');
 const fs = require('node:fs'), os = require('node:os'), path = require('node:path'), crypto = require('node:crypto');
 const { preserveSource, sourceLocation, receiptPaths, reconcile } = require('../tools/보호소스보관.cjs');
 const { fileDigest } = require('../tools/Git보관묶음.cjs');
-const cryptPath = path.join(os.homedir(), 'Documents/SYNK_원본창고/암호.js');
+const cryptPath = process.env.SYNK_QA_CRYPTO_MODULE || path.join(os.homedir(), 'Documents/SYNK_원본창고/암호.js');
 const crypt = fs.existsSync(cryptPath) ? require(cryptPath) : null;
 async function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'protected-source-test-'));

@@ -1,0 +1,106 @@
+name: conditional-qa
+
+# All pushes on the operating branch get an exact-commit receipt. No fork/PR code is sent to the PC.
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: conditional-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  hosted:
+    if: ${{ github.repository == 'unmet23-lab/synk-appsscript' && github.ref == 'refs/heads/master' && (github.event.repository.private == false || vars.SYNK_HOSTED_CI == 'on') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            route: windows
+          - os: ubuntu-24.04
+            route: linux
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    steps:
+      - name: support long Windows source paths
+        if: runner.os == 'Windows'
+        run: git config --global core.longpaths true
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !*.[pP][nN][gG]
+            !*.[jJ][pP][gG]
+            !*.[jJ][pP][eE][gG]
+            !*.[wW][eE][bB][pP]
+            !*.[wW][aA][vV]
+            !*.[mM][pP]3
+            !*.[mM]4[aA]
+            !*.[mM][pP]4
+            !*.[mM][oO][vV]
+            !*.[wW][eE][bB][mM]
+            !*.[oO][nN][nN][xX]
+            !*.[wW][aA][sS][mM]
+            !*.[pP][dD][fF]
+            !*.[hH][dD][rR]
+            !*.[gG][lL][bB]
+            !*.[bB][lL][eE][nN][dD]
+            /desktop/assets/**
+            /docs/마케팅/맞춤도구/voice/samples/**
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: install the Windows archive test dependency
+        if: runner.os == 'Windows'
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+        run: npm ci --prefix desktop --ignore-scripts --no-audit --no-fund
+      - name: install the actual Electron runtime for ASAR virtualization
+        if: runner.os == 'Windows'
+        run: node desktop/node_modules/electron/install.js
+      - name: build current Rust source and install media tools
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          rustup target add wasm32-unknown-unknown
+          cargo build --locked --release --target wasm32-unknown-unknown --manifest-path tools/text-compare-bench/rust/Cargo.toml
+      - name: verify exact registered cases, with no skips
+        run: node tools/conditional-qa/run.cjs --route ${{ matrix.route }} --output "${{ runner.temp }}/conditional-${{ matrix.route }}"
+      - name: save the actual event ledger
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: conditional-${{ matrix.route }}
+          path: ${{ runner.temp }}/conditional-${{ matrix.route }}
+          retention-days: 14
+          if-no-files-found: error
+
+  local-coverage:
+    if: ${{ github.repository == 'unmet23-lab/synk-appsscript' && github.ref == 'refs/heads/master' && (github.event.repository.private == false || vars.SYNK_HOSTED_CI == 'on') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          sparse-checkout: tools/conditional-qa
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - name: wait for the exact commit's complete local result
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node tools/conditional-qa/wait-local.cjs
