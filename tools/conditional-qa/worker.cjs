@@ -10,10 +10,10 @@ const defaultState = () => path.join(os.homedir(), 'security-audit-skill/SYNK-co
 const BUDGET_MS = 60 * 60_000;
 const due = (row, now = Date.now()) => ['queued', 'running', 'publish-pending'].includes(row.status) || (row.status === 'retry' && now >= row.retryAt);
 // Publish an already verified receipt first, then verify current master before
-// the historical backlog. Selection never deletes or passes an older commit.
+// other recent commits and then the historical backlog. Selection never deletes or passes an older commit.
 function nextItem(queue, head, attempted = new Set(), now = Date.now()) {
   const ready = queue.items.filter(row => due(row, now) && !attempted.has(row.commit));
-  return ready.find(row => row.status === 'publish-pending') || ready.find(row => row.commit === head) || ready[0];
+  return ready.find(row => row.status === 'publish-pending') || ready.find(row => row.commit === head) || ready.at(-1);
 }
 // A lid-close sleep interrupts a run instead of failing a test (2026-11-01: two tutor tests ended at 606 s across a ten-minute sleep).
 // Kernel-Power 42 (entering sleep) or 107 (resume) inside the run marks it interrupted; an unreadable log counts as no sleep.

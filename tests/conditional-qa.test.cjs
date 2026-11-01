@@ -109,9 +109,18 @@ test('the newest commit runs before the backlog; historical entries and failed p
   queue.items.push({ commit: commits[4], status: 'publish-pending' });
   assert.equal(nextItem(queue, commits[3], attempted).commit, commits[4]);
   queue.items[4].status = 'retry'; queue.items[4].retryAt = 200;
-  assert.equal(nextItem(queue, commits[4], attempted, 100).commit, commits[0], 'future retry does not spin');
+  assert.equal(nextItem(queue, commits[4], attempted, 100).commit, commits[3], 'future retry does not spin or bury another recent commit');
   assert.equal(nextItem(queue, commits[4], attempted, 200).commit, commits[4]);
   assert.equal(queue.items[1].status, 'failed');
+});
+
+test('after the newest commit passes, recent commits drain before the historical backlog without dropping any item', () => {
+  const items = ['a', 'b', 'c', 'd'].map(x => ({ commit: x.repeat(40), status: 'queued' }));
+  items[3].status = 'passed';
+  const queue = { items }, attempted = new Set(), order = [];
+  for (let item; (item = nextItem(queue, items[3].commit, attempted));) { order.push(item.commit); attempted.add(item.commit); }
+  assert.deepEqual(order, [items[2].commit, items[1].commit, items[0].commit]);
+  assert.deepEqual(items.map(item => item.status), ['queued', 'queued', 'queued', 'passed']);
 });
 
 test('remote local-status evidence is exact and malformed requests never reach the API', () => {
