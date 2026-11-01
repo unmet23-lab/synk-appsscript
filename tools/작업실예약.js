@@ -5,7 +5,7 @@
  *
  *   node tools/작업실예약.js <편 폴더>                     미리 보기 — 어느 판을 어느 계정으로 무엇을 보낼지(서버는 읽기만)
  *   node tools/작업실예약.js <편 폴더> --실행 [--텔레그램]   등록하고, --텔레그램이면 검토 링크를 유호님께 보낸다
- *   node tools/작업실예약.js --대기열 [--실행] [--텔레그램]   docs/마케팅 아래 준비.json에 「작업실등록」: true를 단 「올릴 준비」 편 가운데 아직 안 한 것
+ *   node tools/작업실예약.js --대기열 [--실행] [--텔레그램]   docs/마케팅 아래 준비.json에 「작업실등록」: true를 단 「올릴 준비」·「완성」 편 가운데 아직 안 한 것
  *                                                        (사람 없는 정기 작업 「SYNK 예약큐」가 30분마다 부른다 — tools/예약큐예약/)
  *   node tools/작업실예약.js 상태 <편 폴더> --캐시           예약큐 서버 캐시로 게시결과.json을 맞춘다(서버에 묻지 않는다 — Claude 세션은 이것)
  *   node tools/작업실예약.js 상태 <편 폴더>                 서버에 직접 물어 맞춘다(--저장안함)
@@ -529,6 +529,9 @@ async function cancelLocked(bundle, ws) {
 
 // ── 대기열 ──
 // 07시 작업이 올리기 전 검사를 마치고 준비.json에 「작업실등록」: true를 단 편만 — 아직 고치는 중인 편이 먼저 올라가지 않게.
+// 상태는 「올릴 준비」·「완성」으로 시작하면 받는다(11-02: 「올릴 준비 — 완성(관문 못 넘음)」 synkbrief 편과 「완성」 yuhobuilds 편이
+// 같음 비교에 걸려 한 번도 등록되지 않아 매일 판이 비었다). 등록해도 유호님 검토 승인 전에는 보내지 않는다.
+const READY_STATE = /^(올릴 준비|완성)/;
 function readyFolders(root) {
   const out = [];
   for (const e of fs.readdirSync(root, { withFileTypes: true })) {
@@ -537,7 +540,7 @@ function readyFolders(root) {
     if (!fs.existsSync(path.join(dir, '게시', '준비.json')) || fs.existsSync(path.join(dir, '게시', '작업실.json')) || fs.existsSync(cancelMarker({ dir }))) continue;
     try {
       const prep = 묶음.readJson(path.join(dir, '게시', '준비.json'));
-      if (prep.작업실등록 === true && prep.상태 === '올릴 준비' && prep.검사 && prep.검사.결과 !== '고칠 것') out.push(dir);
+      if (prep.작업실등록 === true && READY_STATE.test(String(prep.상태 || '')) && prep.검사 && prep.검사.결과 !== '고칠 것') out.push(dir);
     } catch { /* 깨진 준비.json은 건너뛴다 — 예약큐가 보인다 */ }
   }
   return out;
