@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>og · homepage</title>
+<!-- 링크 미리보기(1200×630) 원고. build.mjs homepage가 Chrome으로 og.png를 찍는다.
+     싱ㅋ 시그널(voice/og.html과 같은 문법): 근사 검정 판 · 두 줄 큰 제목(둘째 줄 회색) · 흰 알약 주소 ·
+     청금석 포스터 + 큰 「물건」 + 펠트 우체통 + 네 단계 결과 줄. 숫자는 내용.json과 같다. -->
+<style>
+@font-face{font-family:'SUIT Variable';font-weight:100 900;src:url(../../../브랜드_폰트/SUIT/SUIT-Variable.woff2) format('woff2')}
+@font-face{font-family:'DM Mono';font-weight:500;src:url(../../../브랜드_폰트/DM_Mono/DMMono-Medium.ttf);unicode-range:U+0021-007E}
+@font-face{font-family:'Inter Tight';font-weight:600;src:url(../../../브랜드_폰트/InterTight/InterTight-Medium.ttf);unicode-range:U+0021-007E}
+*{box-sizing:border-box}
+html,body{margin:0;width:1200px;height:630px;overflow:hidden;background:#060709}
+body{font-family:'SUIT Variable',sans-serif;color:#FAFAF9;word-break:keep-all;-webkit-font-smoothing:antialiased}
+.panel{position:absolute;inset:22px;display:grid;grid-template-columns:1fr 380px;gap:40px;align-items:stretch;padding:34px;border-radius:30px;background:#0C0D10;box-shadow:inset 0 0 0 1px rgba(255,255,255,.075)}
+.left{display:flex;flex-direction:column;justify-content:space-between;padding:6px 0 4px 8px}
+.top{display:flex;align-items:center;gap:16px}
+.bead{display:grid;place-items:center;height:48px;padding:0 20px;border-radius:999px;background:#FAFAF9}
+.bead img{height:28px}
+.crumb{font:500 15px/1 'DM Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:rgba(250,250,249,.52)}
+h1{margin:0;font-size:56px;font-weight:680;line-height:1.1;letter-spacing:-.035em}
+h1 span{color:rgba(250,250,249,.52)}
+.rows{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:22px 0 0}
+.row{display:flex;flex-direction:column;gap:6px;height:112px;padding:14px;border-radius:16px;background:#121317;box-shadow:inset 0 0 0 1px rgba(255,255,255,.075)}
+.row b{font:600 30px/1 'Inter Tight',sans-serif;letter-spacing:-.02em}
+.row span{font-size:17px;font-weight:600;line-height:1.25;color:rgba(250,250,249,.76)}
+.row.win{background:#3D6BC9;box-shadow:none}
+.row.win span{color:#fff}
+.url{display:inline-flex;align-items:center;gap:12px;align-self:flex-start;height:54px;padding:0 24px;border-radius:999px;background:#FAFAF9;color:#08090C;font:600 23px/1 'SUIT Variable',sans-serif}
+.url::before{content:'';width:10px;height:10px;border-radius:50%;background:#3D6BC9;box-shadow:0 0 0 4px rgba(61,107,201,.25)}
+.poster{position:relative;overflow:hidden;border-radius:26px;background:radial-gradient(120% 85% at 28% -10%,rgba(255,255,255,.16),transparent 58%),linear-gradient(180deg,transparent 55%,rgba(0,0,0,.1)),#3D6BC9;box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+.poster .label{position:absolute;left:24px;top:22px;font:500 14px/1 'DM Mono',monospace;letter-spacing:.16em;color:rgba(255,255,255,.82)}
+.poster img{position:absolute;top:42px;right:16px;height:400px;filter:drop-shadow(0 22px 26px rgba(0,0,0,.3)) drop-shadow(0 4px 6px rgba(0,0,0,.18));transform:rotate(-3deg)}
+.word{position:absolute;left:20px;bottom:14px;font-size:140px;font-weight:900;line-height:.84;letter-spacing:-.065em;color:#fff}
+</style>
+</head>
+<body>
+<div class="panel">
+  <div class="left">
+    <div class="top"><span class="bead"><img src="../assets/brand-shift.webp" alt="synk SHIFT"></span><span class="crumb">yuhobuilds / homepage</span></div>
+    <div>
+      <h1>AI 홈페이지가 다 똑같을 때<br><span>물건 하나 직접 적기</span></h1>
+      <div class="rows">
+        <div class="row"><b>7/7</b><span>같은 틀</span></div>
+        <div class="row"><b>6/7</b><span>종이 · 크라프트</span></div>
+        <div class="row"><b>5/7</b><span>초록 · 금색</span></div>
+        <div class="row win"><b>7/7</b><span>그 물건대로</span></div>
+      </div>
+    </div>
+    <span class="url">synk.im/builds/homepage</span>
+  </div>
+  <div class="poster"><span class="label">HOMEPAGE</span><img src="../assets/homepage-art-intro.webp" alt=""><span class="word">물건</span></div>
+</div>
+</body>
+</html>

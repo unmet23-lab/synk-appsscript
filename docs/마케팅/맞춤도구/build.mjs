@@ -60,22 +60,40 @@ const PAGES = {
 // 그림은 펠트 마이크(GPT 이미지 2.5로 청금석 판에 구워 오림, 판·지시문 .tmp/voice-check-felt-20261030/). samples = 영상 속 그 한 줄의 목소리 A · B.
 const STATIC = {
   voice: { out: 'builds/voice-check', files: ['index.html', 'crackle.js', 'view.js'], assets: ['favicon-32.png', 'brand-shift.webp', 'voice-art-intro.webp'], keep: ['samples/voice-a.wav', 'samples/voice-b.wav'] },
+  // homepage = synk.im/builds/homepage(11-01, yuhobuilds Y29 「AI 홈페이지가 다 똑같은 이유」 나눔 자료) — render(page.js)가 내용.json 하나로 쪽(index.html)과 PDF 원고를 그린다.
+  // keepDirs = 폴더째 싣는 그림(실험 화면 28장 · 작은 그림과 큰 그림). 펠트 우체통은 GPT 이미지 2.5로 청금석 판에 구워 오림(판·지시문 .tmp/homepage-felt-20261101/).
+  homepage: { out: 'builds/homepage', render: 'page.js', files: ['request.js', 'view.js'], assets: ['favicon-32.png', 'brand-shift.webp', 'homepage-art-intro.webp'], keepDirs: ['shots'] },
 };
 
 async function buildStatic(name) {
   const tool = STATIC[name];
   const src = path.join(HERE, name);
   const out = path.join(HERE, 'dist', tool.out);
+  const require = createRequire(import.meta.url);
+  const page = tool.render ? require(path.join(src, tool.render)) : null;
+  const data = page ? page.read() : null;
+  if (page) {
+    const problems = [...page.check(data), ...page.missingShots(data).map(f => `그림이 없어요: ${f}`)];
+    if (problems.length) throw new Error(`${name}: 내용 검사에서 ${problems.length}곳이 걸렸어요.\n- ${problems.join('\n- ')}`);
+  }
   fs.rmSync(out, { recursive: true, force: true });
   fs.mkdirSync(path.join(out, 'assets'), { recursive: true });
   for (const f of tool.files) fs.copyFileSync(path.join(src, f), path.join(out, f));
+  const rendered = page ? { index: path.join(out, 'index.html'), guide: path.join(out, 'guide.html') } : null;
+  if (page) { fs.writeFileSync(rendered.index, page.renderPage(data)); fs.writeFileSync(rendered.guide, page.renderGuide(data)); }
   fs.writeFileSync(path.join(out, 'app.css'), THEMES.signal());
   for (const f of tool.assets) fs.copyFileSync(path.join(HERE, 'assets', f), path.join(out, 'assets', f));
   for (const f of tool.keep || []) { fs.mkdirSync(path.dirname(path.join(out, f)), { recursive: true }); fs.copyFileSync(path.join(src, f), path.join(out, f)); }
+  for (const d of tool.keepDirs || []) fs.cpSync(path.join(src, d), path.join(out, d), { recursive: true });
   const og = path.join(src, 'og.html');
-  const font = subsetFont([...tool.files.map(f => path.join(src, f)), ...(fs.existsSync(og) ? [og] : [])], path.join(out, 'assets/SUIT-subset.woff2'));
+  const font = subsetFont([...tool.files.map(f => path.join(src, f)), ...(rendered ? Object.values(rendered) : []), ...(fs.existsSync(og) ? [og] : [])], path.join(out, 'assets/SUIT-subset.woff2'));
   console.log(`${name}: 글자 ${font.chars}개로 폰트를 줄임${font.missing ? ` (폰트에 없어 시스템 글꼴로 보일 기호: ${font.missing})` : ''}`);
   subsetLatin(path.join(out, 'assets'));
+  if (rendered) {
+    printOnePage(rendered.guide, path.join(out, 'guide.pdf'), page.WIDTH);
+    fs.rmSync(rendered.guide);
+    console.log(`${name}: PDF 한 장 생성`);
+  }
   if (fs.existsSync(og) && chrome(['--window-size=1200,630', `--screenshot=${path.join(out, 'og.png')}`, pathToFileURL(og).href])) console.log(`${name}: 링크 미리보기 이미지 생성`);
   console.log(`${name}: ${writeManifest(name, out)}개 파일 → dist/${tool.out}/`);
 }
@@ -128,9 +146,18 @@ function subsetLatin(outDir) {
 function chrome(args) {
   if (!CHROME) { console.warn('  Chrome을 찾지 못해 PDF·이미지는 건너뜀'); return false; }
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-chrome-'));
-  try { run(CHROME, ['--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check', `--user-data-dir=${profile}`, '--hide-scrollbars', '--virtual-time-budget=4000', ...args]); }
+  try { return run(CHROME, ['--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check', `--user-data-dir=${profile}`, '--hide-scrollbars', '--virtual-time-budget=4000', ...args]); }
   finally { fs.rmSync(profile, { recursive: true, force: true }); }
-  return true;
+}
+
+// 쪽 나눔 없는 긴 한 장 PDF. 원고가 재 둔 높이(data-height)를 읽어 __HEIGHT__ 자리에 넣고 인쇄한다.
+function printOnePage(html, pdf, width) {
+  const url = pathToFileURL(html).href;
+  const dom = chrome([`--window-size=${width},1000`, '--dump-dom', url]);
+  const height = dom && Number((/data-height="(\d+)"/.exec(dom.stdout) || [])[1]);
+  if (!height) throw new Error('PDF 원고의 높이를 재지 못했어요.');
+  fs.writeFileSync(html, fs.readFileSync(html, 'utf8').replace('__HEIGHT__', String(height + 2)));
+  chrome(['--no-pdf-header-footer', `--print-to-pdf=${pdf}`, url]);
 }
 
 function writeManifest(name, out, extra = {}) {
