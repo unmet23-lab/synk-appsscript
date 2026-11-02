@@ -1,0 +1,48 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1103,
+  "lufs": -17
+ },
+ "made": "2026-11-02T21:51:12.290Z",
+ "lines": [
+  {
+   "id": "A",
+   "text": "에이아이 목소리로 원고를 읽혔는데요, 받아쓰기를 돌려 보니까 이상한 게 나왔어요. 원고엔 분명, 한 번뿐인 문장인데.",
+   "dur": 6.36,
+   "syllablesPerSec": 7.39,
+   "src": "A.wav",
+   "key": "d892273c22e8ec18d5074edc7d8b461a",
+   "words": 15
+  },
+  {
+   "id": "B",
+   "text": "없는 말을 섞어서, 한 번 더 읽었어요. 길이는 겨우 일 초쯤 늘어서, 그냥 들으면 지나칠 뻔했고요. 받아쓰기를 원고랑 한 줄씩 맞춰 보고서야 찾았어요. 그래서 둘로 나눠 다시 만들었죠.",
+   "dur": 9.626,
+   "syllablesPerSec": 7.38,
+   "src": "B.wav",
+   "key": "42fbdabfba64730dce86a958b00790eb",
+   "words": 28
+  },
+  {
+   "id": "C",
+   "text": "에이아이 목소리는, 꼭 받아쓰기로 원고랑 맞춰 보세요.",
+   "dur": 3.021,
+   "syllablesPerSec": 7.28,
+   "src": "C.wav",
+   "key": "c68cfce77ea179904b2bda72099ce833",
+   "words": 7
+  }
+ ]
+}

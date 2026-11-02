@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "C",
+ "text": "다 믿고 고쳤으면, 멀쩡한 걸 고칠 뻔했어요.",
+ "dur": 2.668,
+ "words": [
+  {
+   "text": "다",
+   "start": 0.02,
+   "end": 0.103
+  },
+  {
+   "text": "믿고",
+   "start": 0.186,
+   "end": 0.407
+  },
+  {
+   "text": "고쳤으면,",
+   "start": 0.463,
+   "end": 1.044
+  },
+  {
+   "text": "멀쩡한",
+   "start": 1.265,
+   "end": 1.667
+  },
+  {
+   "text": "걸",
+   "start": 1.708,
+   "end": 1.805
+  },
+  {
+   "text": "고칠",
+   "start": 1.846,
+   "end": 2.068
+  },
+  {
+   "text": "뻔했어요.",
+   "start": 2.109,
+   "end": 2.668
+  }
+ ],
+ "source": {
+  "key": "298405fd0da54982ede0325f04c1e3ee",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 146
+ }
+}

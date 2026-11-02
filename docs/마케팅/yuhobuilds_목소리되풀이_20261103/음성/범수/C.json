@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "C",
+ "text": "에이아이 목소리는, 꼭 받아쓰기로 원고랑 맞춰 보세요.",
+ "dur": 3.021,
+ "words": [
+  {
+   "text": "에이아이",
+   "start": 0.02,
+   "end": 0.242
+  },
+  {
+   "text": "목소리는,",
+   "start": 0.323,
+   "end": 0.806
+  },
+  {
+   "text": "꼭",
+   "start": 1.209,
+   "end": 1.35
+  },
+  {
+   "text": "받아쓰기로",
+   "start": 1.41,
+   "end": 1.894
+  },
+  {
+   "text": "원고랑",
+   "start": 1.954,
+   "end": 2.277
+  },
+  {
+   "text": "맞춰",
+   "start": 2.337,
+   "end": 2.518
+  },
+  {
+   "text": "보세요.",
+   "start": 2.579,
+   "end": 3.021
+  }
+ ],
+ "source": {
+  "key": "c68cfce77ea179904b2bda72099ce833",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 155
+ }
+}

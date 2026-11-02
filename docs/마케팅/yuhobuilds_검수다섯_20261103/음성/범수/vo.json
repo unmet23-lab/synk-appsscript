@@ -1,0 +1,66 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1103,
+  "lufs": -17
+ },
+ "made": "2026-11-02T22:12:36.370Z",
+ "lines": [
+  {
+   "id": "A1",
+   "text": "에이아이 검수가 제 영상 문제를 초까지 짚었는데요, 고치기 전에 재 봤어요. 단정하듯 말한 다섯 개, 하나씩이요.",
+   "dur": 6.061,
+   "syllablesPerSec": 7.26,
+   "src": "A1.wav",
+   "key": "006f26181b158a366e9c33281607dce8",
+   "words": 16
+  },
+  {
+   "id": "A2",
+   "text": "심하게 지지직? 다른 줄이랑 똑같았고. 귀를 찌르는 소리? 말소리보다 작았고. 목소리가 절반? 앞 문장이랑 같았고. 오타? 확대하니 맞게 써 있었고. 소리가 일 초 먼저? 거의 딱 맞았어요.",
+   "dur": 11.034,
+   "syllablesPerSec": 6.34,
+   "src": "A2.wav",
+   "key": "9fe855d2f224490f7d98eddf45f02098",
+   "words": 27
+  },
+  {
+   "id": "B",
+   "text": "다섯 개 다, 사실이 아니었어요. 맞힌 건 따로 둘이었어요. 배경음이 끊긴 거, 진동음이 말을 덮은 거. 그래서 이제 에이아이가 짚으면, 숫자랑 확대 화면으로 직접 재요. 확신에 찬 말투가, 증거는 아니더라고요.",
+   "dur": 11.538,
+   "syllablesPerSec": 6.93,
+   "src": "B.wav",
+   "key": "e6482c34928a2df81e8e1ed5cf8e7e86",
+   "words": 30
+  },
+  {
+   "id": "C",
+   "text": "다 믿고 고쳤으면, 멀쩡한 걸 고칠 뻔했어요.",
+   "dur": 2.668,
+   "syllablesPerSec": 6.37,
+   "src": "C.wav",
+   "key": "298405fd0da54982ede0325f04c1e3ee",
+   "words": 7
+  },
+  {
+   "id": "D",
+   "text": "배경음악이 끊긴 거, 휴대폰 진동 소리가 말을 덮은 거.",
+   "dur": 2.975,
+   "syllablesPerSec": 7.06,
+   "src": "D.wav",
+   "key": "45cca5a984828ee4b67228044537f2d2",
+   "words": 9
+  }
+ ]
+}

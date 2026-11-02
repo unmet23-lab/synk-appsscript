@@ -1,0 +1,115 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "A1",
+ "text": "에이아이 검수가 제 영상 문제를 초까지 짚었는데요, 고치기 전에 재 봤어요. 단정하듯 말한 다섯 개, 하나씩이요.",
+ "dur": 6.061,
+ "words": [
+  {
+   "text": "에이아이",
+   "start": 0.02,
+   "end": 0.281
+  },
+  {
+   "text": "검수가",
+   "start": 0.325,
+   "end": 0.644
+  },
+  {
+   "text": "제",
+   "start": 0.876,
+   "end": 0.977
+  },
+  {
+   "text": "영상",
+   "start": 1.05,
+   "end": 1.296
+  },
+  {
+   "text": "문제를",
+   "start": 1.34,
+   "end": 1.586
+  },
+  {
+   "text": "초까지",
+   "start": 1.63,
+   "end": 1.934
+  },
+  {
+   "text": "짚었는데요,",
+   "start": 1.978,
+   "end": 2.514
+  },
+  {
+   "text": "고치기",
+   "start": 2.877,
+   "end": 3.138
+  },
+  {
+   "text": "전에",
+   "start": 3.181,
+   "end": 3.312
+  },
+  {
+   "text": "재",
+   "start": 3.355,
+   "end": 3.428
+  },
+  {
+   "text": "봤어요.",
+   "start": 3.471,
+   "end": 3.79
+  },
+  {
+   "text": "단정하듯",
+   "start": 4.153,
+   "end": 4.588
+  },
+  {
+   "text": "말한",
+   "start": 4.631,
+   "end": 4.791
+  },
+  {
+   "text": "다섯",
+   "start": 4.834,
+   "end": 5.037
+  },
+  {
+   "text": "개,",
+   "start": 5.08,
+   "end": 5.153
+  },
+  {
+   "text": "하나씩이요.",
+   "start": 5.457,
+   "end": 6.061
+  }
+ ],
+ "source": {
+  "key": "006f26181b158a366e9c33281607dce8",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 174
+ }
+}

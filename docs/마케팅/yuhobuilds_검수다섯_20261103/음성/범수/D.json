@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "D",
+ "text": "배경음악이 끊긴 거, 휴대폰 진동 소리가 말을 덮은 거.",
+ "dur": 2.975,
+ "words": [
+  {
+   "text": "배경음악이",
+   "start": 0.05,
+   "end": 0.543
+  },
+  {
+   "text": "끊긴",
+   "start": 0.584,
+   "end": 0.872
+  },
+  {
+   "text": "거,",
+   "start": 0.913,
+   "end": 0.981
+  },
+  {
+   "text": "휴대폰",
+   "start": 1.378,
+   "end": 1.693
+  },
+  {
+   "text": "진동",
+   "start": 1.734,
+   "end": 1.994
+  },
+  {
+   "text": "소리가",
+   "start": 2.036,
+   "end": 2.255
+  },
+  {
+   "text": "말을",
+   "start": 2.323,
+   "end": 2.487
+  },
+  {
+   "text": "덮은",
+   "start": 2.528,
+   "end": 2.761
+  },
+  {
+   "text": "거.",
+   "start": 2.802,
+   "end": 2.975
+  }
+ ],
+ "source": {
+  "key": "45cca5a984828ee4b67228044537f2d2",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 159
+ }
+}

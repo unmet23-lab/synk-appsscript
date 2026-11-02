@@ -1,0 +1,175 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "B",
+ "text": "없는 말을 섞어서, 한 번 더 읽었어요. 길이는 겨우 일 초쯤 늘어서, 그냥 들으면 지나칠 뻔했고요. 받아쓰기를 원고랑 한 줄씩 맞춰 보고서야 찾았어요. 그래서 둘로 나눠 다시 만들었죠.",
+ "dur": 9.626,
+ "words": [
+  {
+   "text": "없는",
+   "start": 0.02,
+   "end": 0.264
+  },
+  {
+   "text": "말을",
+   "start": 0.303,
+   "end": 0.483
+  },
+  {
+   "text": "섞어서,",
+   "start": 0.522,
+   "end": 0.831
+  },
+  {
+   "text": "한",
+   "start": 0.946,
+   "end": 1.049
+  },
+  {
+   "text": "번",
+   "start": 1.088,
+   "end": 1.165
+  },
+  {
+   "text": "더",
+   "start": 1.204,
+   "end": 1.255
+  },
+  {
+   "text": "읽었어요.",
+   "start": 1.32,
+   "end": 1.719
+  },
+  {
+   "text": "길이는",
+   "start": 2.118,
+   "end": 2.427
+  },
+  {
+   "text": "겨우",
+   "start": 2.465,
+   "end": 2.658
+  },
+  {
+   "text": "일",
+   "start": 2.736,
+   "end": 2.8
+  },
+  {
+   "text": "초쯤",
+   "start": 2.864,
+   "end": 3.109
+  },
+  {
+   "text": "늘어서,",
+   "start": 3.148,
+   "end": 3.405
+  },
+  {
+   "text": "그냥",
+   "start": 3.662,
+   "end": 3.894
+  },
+  {
+   "text": "들으면",
+   "start": 3.971,
+   "end": 4.242
+  },
+  {
+   "text": "지나칠",
+   "start": 4.28,
+   "end": 4.576
+  },
+  {
+   "text": "뻔했고요.",
+   "start": 4.615,
+   "end": 4.988
+  },
+  {
+   "text": "받아쓰기를",
+   "start": 5.4,
+   "end": 5.889
+  },
+  {
+   "text": "원고랑",
+   "start": 5.928,
+   "end": 6.263
+  },
+  {
+   "text": "한",
+   "start": 6.301,
+   "end": 6.391
+  },
+  {
+   "text": "줄씩",
+   "start": 6.43,
+   "end": 6.636
+  },
+  {
+   "text": "맞춰",
+   "start": 6.674,
+   "end": 6.868
+  },
+  {
+   "text": "보고서야",
+   "start": 6.906,
+   "end": 7.241
+  },
+  {
+   "text": "찾았어요.",
+   "start": 7.292,
+   "end": 7.704
+  },
+  {
+   "text": "그래서",
+   "start": 8.129,
+   "end": 8.348
+  },
+  {
+   "text": "둘로",
+   "start": 8.386,
+   "end": 8.592
+  },
+  {
+   "text": "나눠",
+   "start": 8.631,
+   "end": 8.798
+  },
+  {
+   "text": "다시",
+   "start": 8.837,
+   "end": 9.017
+  },
+  {
+   "text": "만들었죠.",
+   "start": 9.056,
+   "end": 9.626
+  }
+ ],
+ "source": {
+  "key": "42fbdabfba64730dce86a958b00790eb",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 162
+ }
+}
