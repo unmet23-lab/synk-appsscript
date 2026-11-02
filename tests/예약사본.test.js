@@ -34,7 +34,8 @@ function 판() {
   const 메인 = path.join(뿌리, 'main');
   깃(뿌리)('init', '-q', '--bare', '-b', 'master', 원격);
   깃(뿌리)('clone', '-q', 원격, 메인);
-  쓰기(메인, '.gitignore', 'out/\n*.mp4\nnode_modules/\n.tmp/\n');
+  // node_modules에 빗금을 붙이지 않는다 — 빗금 꼴은 폴더에만 맞아 Linux의 심볼릭 링크가 무시 대상에서 빠진다(Windows junction은 폴더로 보인다)
+  쓰기(메인, '.gitignore', 'out/\n*.mp4\nnode_modules\n.tmp/\n');
   쓰기(메인, 'docs/마케팅/편A/기획.md', '기획\n');
   쓰기(메인, 'node_modules/표지/index.js', 'module.exports = 1;\n');
   const g = 깃(메인);
@@ -125,7 +126,7 @@ test('넘기기 — 워크트리 안을 가리키는 링크는 공용 쪽 같은
     fs.mkdirSync(path.join(t.사본, 'docs/마케팅/편A/assets'), { recursive: true });
     fs.mkdirSync(path.join(t.메인, 'docs/마케팅/편A/assets'), { recursive: true });
     fs.mkdirSync(path.join(t.사본, 'docs/마케팅/편A/remotion'), { recursive: true });
-    // .gitignore가 node_modules/만 잡으므로 링크 이름을 그것으로
+    // .gitignore가 잡는 링크 이름으로
     fs.symlinkSync(path.join(t.사본, 'docs/마케팅/편A/assets'), path.join(t.사본, 'docs/마케팅/편A/remotion/node_modules'), 'junction');
     const r = 도구.넘기기({ 저장소: t.사본, 실행: true });
     assert.equal(path.resolve(r.링크[0].대상), path.join(t.메인, 'docs/마케팅/편A/assets'));
