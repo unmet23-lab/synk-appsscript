@@ -9,20 +9,20 @@ const cryptFile = process.env.SYNK_QA_CRYPTO_MODULE || path.join(os.homedir(), '
 const crypt = fs.existsSync(cryptFile) ? require(cryptFile) : null;
 const sha = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 
-async function fixture(t) {
+async function fixture(t, { source = '상태/Documents/upload-done.jsonl', reason = 'over-10MiB', original = null, safe = null } = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'large-receipt-test-'));
   t.after(() => {
     assert.equal(path.dirname(fs.realpathSync(root)), fs.realpathSync(os.tmpdir()));
     assert.ok(path.basename(root).startsWith('large-receipt-test-'));
     fs.rmSync(root, { recursive: true, force: true });
   });
-  const vault = path.join(root, 'SYNK_원본창고'), source = '상태/Documents/upload-done.jsonl';
+  const vault = path.join(root, 'SYNK_원본창고');
   const sourcePath = path.join(vault, source), target = path.join(root, 'onedrive', source);
   fs.mkdirSync(path.dirname(sourcePath), { recursive: true }); fs.mkdirSync(path.dirname(target), { recursive: true });
-  const original = Buffer.from('{"ok":true}\n'.repeat(Math.ceil((policy.MAX_TEXT_BYTES + 1) / 12)));
-  const safe = Buffer.from('{"ok":true}\n'); fs.writeFileSync(sourcePath, original); fs.writeFileSync(target, safe);
-  const prior = { source: sourcePath, target, expectedBytes: safe.length, sha256: sha(safe), protectedSource: 'over-10MiB' };
-  const row = { sourceScope: 'SYNK_원본창고', sourceRoot: vault, sourcePath, source, reason: 'over-10MiB',
+  original ||= Buffer.from('{"ok":true}\n'.repeat(Math.ceil((policy.MAX_TEXT_BYTES + 1) / 12)));
+  safe ||= Buffer.from('{"ok":true}\n'); fs.writeFileSync(sourcePath, original); fs.writeFileSync(target, safe);
+  const prior = { source: sourcePath, target, expectedBytes: safe.length, sha256: sha(safe), protectedSource: reason };
+  const row = { sourceScope: 'SYNK_원본창고', sourceRoot: vault, sourcePath, source, reason,
     ...await fileDigest(sourcePath), priorOneDriveCopy: { target, bytes: safe.length, sha256: sha(safe) } };
   const put = (file, value) => { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, JSON.stringify(value)); };
   put(path.join(vault, '상태/OneDrive/copy-manifest.json'), { oneDriveRoot: path.join(root, 'onedrive'), files: [prior] });
@@ -113,4 +113,35 @@ test('changed large receipt is reclassified and encrypted; concurrent edits and 
   const oversized = await reconcile({ ...f.options, root: f.root });
   assert.ok(oversized.issues.some(issue => issue.code === 'PROTECTED_SOURCE_SIZE_LIMIT'));
   assert.deepEqual(fs.readFileSync(f.target), f.safe);
+});
+
+// 11-03: 상태/Documents/목록.json(같은 묶음의 장부)이 10-26에 10MiB를 넘었는데 영수증 이름만 받아, 보관될 길이 없이 OneDrive가 매회 실패했다.
+test('the other ledgers of an upload bundle enter the encrypted inventory like its receipt; other names and bundles stay out', async t => {
+  for (const name of ['목록.json', '같은파일.json', 'upload-dirs.json'])
+    assert.equal(policy.largeBackupReceipt('SYNK_원본창고', '상태/Documents/' + name, policy.MAX_TEXT_BYTES + 1), true, name);
+  for (const source of ['상태/Documents/목록2.json', '상태/Other/목록.json', '상태/Documents/sub/목록.json', '상태/OneDrive/copy-manifest.json'])
+    assert.equal(policy.largeBackupReceipt('SYNK_원본창고', source, policy.MAX_TEXT_BYTES + 1), false, source);
+  const original = Buffer.from('[' + '{"path":"a"},'.repeat(Math.ceil((policy.MAX_TEXT_BYTES + 1) / 13)) + '{}]');
+  const f = await fixture(t, { source: '상태/Documents/목록.json', original, safe: Buffer.from('[{"path":"a"}]') });
+  assert.equal(policy.textPolicy(f.row.source, f.original), 'over-10MiB');
+  const inventory = backup.protectedSourceInventory(f.root, f.vault, [{ name: 'SYNK_원본창고', root: f.vault }], [f.row], [f.prior]);
+  assert.equal(inventory.files.length, 1); assert.deepEqual(inventory.files[0].priorOneDriveCopy, f.row.priorOneDriveCopy);
+  const coverage = backup.encryptedProtectionCoverage(f.vault, [f.prior])[0];
+  assert.equal(coverage.error, undefined, 'a ledger under 64MiB is read, not source-type-changed'); assert.equal(coverage.sha256, sha(original));
+});
+
+// 11-02: 인계 메모를 쓰며 경로의 \v가 세로탭이 됐다(binary-control-bytes). 그런 판도 옛 사본을 확인한 뒤 바이트 그대로 암호문으로 남는다.
+test('a previously copied note that gained control bytes is encrypted byte for byte; a changed prior copy still stops it', { skip: !crypt }, async t => {
+  const safe = Buffer.from('# 인계\n' + String.raw`C:\SYNK-LoRA\validation\a.jpg` + '\n');
+  const original = Buffer.from(safe.toString().replace('\\validation', '\x0balidation'));
+  const f = await fixture(t, { source: 'notes/인계.md', reason: 'binary-control-bytes', original, safe });
+  assert.equal(policy.textPolicy(f.row.source, original), 'binary-control-bytes'); assert.equal(policy.textPolicy(f.row.source, safe), null);
+  const inventory = backup.protectedSourceInventory(f.root, f.vault, [{ name: 'SYNK_원본창고', root: f.vault }], [f.row], [f.prior]);
+  assert.equal(inventory.files.length, 1); assert.equal(inventory.files[0].reason, 'binary-control-bytes');
+  assert.throws(() => sourceLocation({ ...f.row, priorOneDriveCopy: undefined }, f.options.roots), /INVENTORY_INVALID/);
+  const receipt = await preserveSource(f.row, f.options), restored = path.join(f.root, 'restored.md');
+  await crypt.decryptFile(f.pair.privateKey, receipt.filePath, restored);
+  assert.deepEqual(fs.readFileSync(restored), original); assert.deepEqual(fs.readFileSync(f.target), safe);
+  fs.writeFileSync(f.target, original);
+  await assert.rejects(preserveSource(f.row, f.options), /PRIOR_COPY_CHANGED/);
 });

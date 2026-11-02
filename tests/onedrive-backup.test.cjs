@@ -282,7 +282,12 @@ test('long phases keep the running receipt heartbeat fresh so the monitor does n
   assert.ok(copyBeats.every(row => row.status === 'running' && row.pid === process.pid));
 });
 
-test('a formerly safe source becoming protected keeps old bytes and fails until resolved', t => {
+// 보호 원본이 암호문 보관을 기다리는 회차: 실패가 아니라 대기(종료 2)이고, 보관 미확인은 그대로 적는다(11-03).
+const waiting = (result, runs) => {
+  assert.equal(result.status, 'pending'); assert.equal(result.exitCode, 2); assert.equal(result.error, undefined);
+  assert.equal(result.protectedSources[0].preservedBy, 'unconfirmed'); assert.equal(result.protectedSources[0].awaiting.runs, runs);
+};
+test('a formerly safe source becoming protected keeps old bytes and waits for its encrypted copy until resolved', t => {
   const f = fixture(t); f.put(f.root, 'source.js', 'module.exports = 1;'); f.put(f.root, 'keep.md', '# Keep');
   const rows = () => ['source.js', 'keep.md'].filter(name => fs.existsSync(path.join(f.root, name)))
     .map(source => ({ brand: 'SYNK', source, target: source, kind: 'system' }));
@@ -290,27 +295,28 @@ test('a formerly safe source becoming protected keeps old bytes and fails until 
   const first = backup.run(options); assert.equal(first.status, 'healthy');
   f.put(f.root, 'source.js', 'const pass' + 'word = "unreviewed-private-value";');
   const second = backup.run(options);
-  assert.equal(second.status, 'failed'); assert.equal(second.error, 'previously-backed-source-now-protected');
-  assert.equal(second.protectedSources.length, 1); assert.equal(second.lastSuccessAt, first.lastSuccessAt);
+  waiting(second, 1); assert.equal(second.protectedSources.length, 1);
+  assert.ok(second.lastSuccessAt > first.lastSuccessAt, 'every plaintext copy was verified, so the stale-backup clock does not run');
   const inventory = backup.readJson(path.join(f.stateDir, 'protected-sources.json'));
   assert.equal(inventory.status, 'success'); assert.equal(inventory.files.length, 1);
   assert.equal(inventory.files[0].sourcePath, path.join(f.root, 'source.js'));
   assert.equal(inventory.files[0].reason, 'secret-literal'); assert.match(inventory.files[0].sha256, /^[a-f0-9]{64}$/);
   assert.ok(!JSON.stringify(inventory).includes('unreviewed-private-value'));
   assert.equal(fs.readFileSync(path.join(f.destination, 'SYNK/source.js'), 'utf8'), 'module.exports = 1;');
-  assert.equal(backup.run(options).status, 'failed', 'the next run must not forget excluded current content');
-  assert.equal(backup.run({ ...options, checkOnly: true }).status, 'failed');
+  waiting(backup.run(options), 2); // the next run must not forget excluded current content
+  waiting(backup.run({ ...options, checkOnly: true }), 3);
   const proofFile = path.join(f.temp, 'SYNK_원본창고/protected-source-backup-status.json');
   const proof = { files: [{ ...inventory.files[0], status: 'encrypted-drive-verified', coverage: {
     ok: true, account: '77yuhbs@gmail.com', checkedAt: new Date().toISOString(), files: [{ id: 'fixture-remote-id', bytes: 100, sha256: 'a'.repeat(64) }] } }] };
   backup.writeJson(proofFile, proof);
   const covered = backup.run({ ...options, checkOnly: true });
   assert.equal(covered.status, 'healthy'); assert.equal(covered.protectedSources[0].preservedBy, 'encrypted-drive');
+  assert.deepEqual(covered.protectedAwaiting, {}, 'a confirmed copy ends the wait');
   proof.files[0].sha256 = 'b'.repeat(64); backup.writeJson(proofFile, proof);
-  assert.equal(backup.run({ ...options, checkOnly: true }).status, 'failed', 'different source bytes cannot reuse old remote proof');
+  waiting(backup.run({ ...options, checkOnly: true }), 1); // different source bytes cannot reuse old remote proof
   proof.files[0].sha256 = inventory.files[0].sha256;
   proof.files[0].coverage.checkedAt = new Date(Date.now() - 37 * 3600000).toISOString(); backup.writeJson(proofFile, proof);
-  assert.equal(backup.run({ ...options, checkOnly: true }).status, 'failed', 'stale coverage is not current remote proof');
+  waiting(backup.run({ ...options, checkOnly: true }), 2); // stale coverage is not current remote proof
   f.put(f.root, 'source.js', 'module.exports = 2;'); assert.equal(backup.run(options).status, 'healthy');
   fs.unlinkSync(path.join(f.root, 'source.js'));
   assert.equal(backup.run(options).status, 'healthy');
@@ -325,18 +331,51 @@ test('previously copied CSS with new embedded media keeps safe bytes and needs e
   const options = { ...f, getRows: rows, collectWorktrees: () => ({}), checkProvider: healthy };
   assert.equal(backup.run(options).status, 'healthy');
   f.put(f.root, 'style.css', embedded); f.put(f.root, 'never-copied.css', embedded);
-  const failed = backup.run(options); assert.equal(failed.error, 'previously-backed-source-now-protected');
+  waiting(backup.run(options), 1);
   const inventory = backup.readJson(path.join(f.stateDir, 'protected-sources.json'));
   assert.equal(inventory.files.length, 1); const row = inventory.files[0];
   assert.equal(row.sourcePath, path.join(f.root, 'style.css')); assert.equal(row.reason, 'embedded-media-or-base64');
   assert.equal(row.priorOneDriveCopy.sha256, require('node:crypto').createHash('sha256').update(safe).digest('hex'));
   assert.equal(fs.readFileSync(path.join(f.destination, 'SYNK/style.css'), 'utf8'), safe);
   assert.equal(fs.readFileSync(path.join(f.root, 'style.css'), 'utf8'), embedded);
-  assert.equal(backup.run({ ...options, checkOnly: true }).status, 'failed');
+  waiting(backup.run({ ...options, checkOnly: true }), 2);
   backup.writeJson(path.join(f.temp, 'SYNK_원본창고/protected-source-backup-status.json'), { files: [{ ...row, status: 'encrypted-drive-verified', coverage: {
     ok: true, account: '77yuhbs@gmail.com', checkedAt: new Date().toISOString(), files: [{ id: 'fixture-remote-id', bytes: 100, sha256: 'a'.repeat(64) }] } }] });
   assert.equal(backup.run({ ...options, checkOnly: true }).status, 'healthy');
   assert.equal(fs.readFileSync(path.join(f.destination, 'SYNK/style.css'), 'utf8'), safe);
+});
+
+// 11-02 13:36 인계 메모의 경로 \v가 세로탭이 되자(binary-control-bytes) 보관될 길이 없어 OneDrive가 매회 실패했다(10-26부터는 커진 창고 목록.json).
+// 고치기 전 코드는 둘째 실행부터 곧바로 failed다. 이제는 목록에 들어 보관을 기다리는 동안 대기, 깨어 있는 16회를 넘기면 실패로 남는다.
+test('a source that turned protected waits only while queued for encryption, then stays failed past 16 runs; an unqueued one fails at once (11-03)', t => {
+  const f = fixture(t), safe = '# 인계\nC:\\SYNK-LoRA\\validation\\a.jpg\n', broken = '# 인계\nC:\\SYNK-LoRA\x0balidation\\a.jpg\n';
+  f.put(f.root, 'note.md', safe); f.put(f.root, 'big.md', '# small'); f.put(f.root, 'keep.md', '# Keep');
+  const rows = () => ['note.md', 'big.md', 'keep.md'].map(source => ({ brand: 'SYNK', source, target: source, kind: 'system' }));
+  const options = { ...f, getRows: rows, collectWorktrees: () => ({}), checkProvider: healthy };
+  assert.equal(backup.run(options).status, 'healthy');
+  f.put(f.root, 'note.md', broken);
+  const first = backup.run(options); waiting(first, 1);
+  const inventory = backup.readJson(path.join(f.stateDir, 'protected-sources.json'));
+  assert.equal(inventory.files.length, 1); assert.equal(inventory.files[0].reason, 'binary-control-bytes');
+  assert.equal(inventory.files[0].priorOneDriveCopy.bytes, Buffer.byteLength(safe));
+  assert.equal(fs.readFileSync(path.join(f.destination, 'SYNK/note.md'), 'utf8'), safe, 'the safe old copy stays, the new bytes never go to OneDrive');
+  waiting(backup.run(options), 2);
+  // 다른 이유로 일찍 끝난 회차도 센 회차를 지우지 않는다.
+  const early = backup.run({ ...options, getRows: () => { throw new Error('listing-failed'); } });
+  assert.equal(early.status, 'failed'); assert.equal(early.protectedAwaiting[path.join(f.root, 'note.md').toLowerCase()].runs, 2);
+  for (let runs = 3; runs <= backup.PROTECTED_AWAIT_RUNS; runs++) waiting(backup.run(options), runs);
+  const late = backup.run(options);
+  assert.equal(late.status, 'failed'); assert.equal(late.error, 'previously-backed-source-now-protected');
+  assert.equal(late.protectedSources[0].awaitedRuns, backup.PROTECTED_AWAIT_RUNS); assert.equal(late.protectedSources[0].awaiting, undefined);
+  assert.equal(backup.run(options).status, 'failed', 'an expired wait does not start over');
+  f.put(f.root, 'note.md', safe);
+  const fixed = backup.run(options); assert.equal(fixed.status, 'healthy'); assert.deepEqual(fixed.protectedAwaiting, {});
+  // 평문 한도를 넘은 일반 문서는 암호문으로 보관될 길이 없다(목록에 안 든다). 기다리지 않고 바로 실패한다.
+  f.put(f.root, 'big.md', 'x'.repeat(policy.MAX_TEXT_BYTES + 1));
+  const unqueued = backup.run(options);
+  assert.equal(unqueued.status, 'failed'); assert.equal(unqueued.error, 'previously-backed-source-now-protected');
+  assert.equal(backup.readJson(path.join(f.stateDir, 'protected-sources.json')).files.length, 0);
+  assert.equal(unqueued.protectedSources[0].awaiting, undefined);
 });
 
 test('current native app, game project and subtitle text survives while compiled or embedded media stays blocked', t => {
@@ -491,7 +530,7 @@ test('an intact read cache lets the next run skip rereading unchanged sources, w
   changedReads.restore();
   assert.ok(changedReads.seen.includes(path.join(f.root, 'a.js')));
   assert.ok(!changedReads.seen.includes(path.join(f.root, 'same.md')));
-  assert.equal(changed.status, 'failed'); assert.equal(changed.error, 'previously-backed-source-now-protected');
+  waiting(changed, 1);
   assert.equal(fs.readFileSync(path.join(f.destination, 'SYNK/a.js'), 'utf8'), 'module.exports = 1;');
 });
 

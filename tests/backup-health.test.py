@@ -379,6 +379,19 @@ class HealthTests(unittest.TestCase):
         task={'exists':True,'enabled':True,'result':2,'lastRunAt':lib.stamp(self.now)}
         self.assertEqual(self.evaluate({'status':'pending'},task=task,installed_at=self.now)['status'],'pending')
 
+    def test_onedrive_waiting_for_a_protected_source_archive_is_pending_not_an_alert(self):
+        # 11-03: 보호 원본이 암호문 보관을 기다리는 회차(onedrive-backup.cjs, 종료 2). 평문 사본은 다 확인돼 마지막 성공 시각이 새롭다.
+        task={'exists':True,'enabled':True,'result':2,'state':'Ready','lastRunAt':lib.stamp(self.now)}
+        receipt={'status':'pending','exitCode':2,'checkedAt':lib.stamp(self.now),'lastSuccessAt':lib.stamp(self.now),
+                 'protectedSources':[{'source':'C:/x/note.md','reason':'binary-control-bytes','preservedBy':'unconfirmed',
+                                      'awaiting':{'since':lib.stamp(self.now-dt.timedelta(hours=3)),'runs':6}}]}
+        row=self.evaluate(receipt,task=task,installed_at=self.now-dt.timedelta(days=1))
+        self.assertEqual((row['status'], row['codes']), ('pending', []))
+        # 기한을 넘기면 OneDrive가 failed(종료 1)로 쓰고, 감시는 예전처럼 알린다.
+        failed=dict(receipt, status='failed', exitCode=1, error='previously-backed-source-now-protected')
+        row=self.evaluate(failed,task=dict(task,result=1),installed_at=self.now-dt.timedelta(days=1))
+        self.assertIn(row['status'], ('failed', 'attention'))
+
     def test_intentional_pause_is_not_overridden_by_old_task_failure(self):
         task={'exists':True,'enabled':True,'result':1,'lastRunAt':lib.stamp(self.now-dt.timedelta(hours=1))}
         row=self.evaluate({'status':'paused','issues':[{'code':'BACKUP_STOPPED'}]},task=task)

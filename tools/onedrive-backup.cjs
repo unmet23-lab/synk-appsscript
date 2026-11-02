@@ -665,13 +665,13 @@ function protectedPriorSources(root, scopes, rejected, previousFiles) {
 function protectedSourceInventory(root, vault, scopes, rejected, protectedPrior = [], { cache = null } = {}) {
   const roots = new Map(scopes.map(scope => [scope.name, scope.root])); roots.set('SYNK-appsscript', root);
   const secretReason = reason => ['secret-literal', 'secret-signature'].includes(reason);
-  const priorMedia = new Map(protectedPrior.filter(row => ['embedded-media-or-base64', 'over-10MiB'].includes(row.protectedSource) && row.source && row.target && /^[a-f0-9]{64}$/.test(row.sha256) && Number.isSafeInteger(row.expectedBytes))
+  const priorMedia = new Map(protectedPrior.filter(row => policy.priorCopyReason(row.protectedSource) && row.source && row.target && /^[a-f0-9]{64}$/.test(row.sha256) && Number.isSafeInteger(row.expectedBytes))
     .map(row => [path.resolve(row.source).toLowerCase(), { target: row.target, bytes: row.expectedBytes, sha256: row.sha256 }]));
   const largeReceipt = (row, bytes) => row.reason === 'over-10MiB' &&
     path.resolve(row.sourceRoot) === path.resolve(vault) && policy.largeBackupReceipt(row.sourceScope, row.source, bytes);
   const accepted = (reason, file, row, bytes = policy.MAX_TEXT_BYTES + 1) => secretReason(reason) ||
     (priorMedia.has(path.resolve(file).toLowerCase()) &&
-      (reason === 'embedded-media-or-base64' || (reason === 'over-10MiB' && largeReceipt(row, bytes))));
+      (reason === 'over-10MiB' ? largeReceipt(row, bytes) : policy.priorCopyReason(reason)));
   const candidates = rejected.filter(row => roots.has(row.sourceScope) && policy.문서인가(row.source))
     .map(row => ({ ...row, sourceRoot: roots.get(row.sourceScope), sourcePath: path.resolve(roots.get(row.sourceScope), row.source) }))
     .filter(row => accepted(row.reason, row.sourcePath, row));
@@ -712,7 +712,7 @@ function protectedSourceInventory(root, vault, scopes, rejected, protectedPrior 
       item.originalSha256 === digest && fs.existsSync(item.safeCopyPath || item.safeCopy) && hash(fs.readFileSync(item.safeCopyPath || item.safeCopy)) === item.safeCopySha256);
     files.push({ sourceScope: row.sourceScope, sourceRoot: path.resolve(row.sourceRoot), sourcePath: row.sourcePath,
       source: row.source, bytes, sha256: digest, reason, ...(row.worktree ? { worktree: true } : {}),
-      ...(['embedded-media-or-base64', 'over-10MiB'].includes(reason) ? { priorOneDriveCopy: priorMedia.get(row.sourcePath.toLowerCase()) } : {}),
+      ...(policy.priorCopyReason(reason) ? { priorOneDriveCopy: priorMedia.get(row.sourcePath.toLowerCase()) } : {}),
       ...(safe ? { safeCopyPath: safe.safeCopyPath || safe.safeCopy, safeCopySha256: safe.safeCopySha256 } : {}) });
   }
   return { schemaVersion: 1, checkedAt: new Date().toISOString(), status: 'success', files };
@@ -741,6 +741,32 @@ function encryptedProtectionCoverage(vault, files) {
     if (matching) { result.preservedBy = 'encrypted-drive'; result.coverageCheckedAt = matching.coverage.checkedAt; }
     return result;
   });
+}
+// 보호 원본의 새 판은 GitHub 적용 실행(2시간마다)이 암호화하고 Git 암호문 작업을 불러, 그 작업이 Drive에 올리고 대조한 뒤 GitHub 확인 실행까지
+// 끝내야 encrypted-drive가 된다 — 다음 적용까지 2시간에 작업 제한 3시간. 다른 세션이 CSS·도구를 평범하게 고칠 때마다(10-20 공개.js, 10-21 CSS 둘)
+// 그동안 매 회차가 실패라 거짓 알림이 됐다. 이번 목록(protected-sources.json)에 들어 보관을 기다리는 줄만, 깨어 있는 동안 도는 이 회차로
+// 16회(약 8시간, 적용이 한 번 더 어긋나도 닿는다)까지 대기로 둔다 — 절전한 시간은 회차가 없어 세지 않는다. 목록에 없는 줄(보관될 길이 없음)·오류 줄·기한 넘은 줄은 예전처럼 실패다.
+const PROTECTED_AWAIT_RUNS = 16;
+// carried: 지난 영수증의 protectedAwaiting(원본 경로 → 처음 본 시각·센 회차). 다른 이유로 일찍 끝난 회차도 이 칸은 그대로 넘겨 셈이 풀리지 않고,
+// 기한을 넘긴 원본은 보관이 확인되거나 보호 대상에서 빠질 때까지 실패로 남는다(다시 1회차부터 세지 않는다).
+function awaitProtectedArchive(rows, inventoryFiles, carried, now = new Date().toISOString()) {
+  const queued = new Set((inventoryFiles || []).map(row => row.sourcePath && path.resolve(row.sourcePath).toLowerCase()));
+  const before = carried && typeof carried === 'object' ? carried : {}, awaiting = {};
+  const sources = rows.map(row => {
+    const key = path.resolve(row.source).toLowerCase();
+    if (row.preservedBy === 'encrypted-drive') return row;
+    const last = before[key], runs = (Number.isSafeInteger(last?.runs) ? last.runs : 0) + 1;
+    const since = typeof last?.since === 'string' ? last.since : now;
+    // 보관될 길이 없거나(목록에 없음) 이번에 읽지 못한 줄은 이 회차만 실패다. 센 회차는 그대로 둔다.
+    if (row.error || !queued.has(key)) { if (last) awaiting[key] = last; return row; }
+    if (last?.exhausted || runs > PROTECTED_AWAIT_RUNS) {
+      awaiting[key] = { since, runs: PROTECTED_AWAIT_RUNS, exhausted: true };
+      return { ...row, awaitedRuns: PROTECTED_AWAIT_RUNS };
+    }
+    awaiting[key] = { since, runs };
+    return { ...row, awaiting: { since, runs } };
+  });
+  return { sources, awaiting };
 }
 // entries: 이번 실행의 작업트리 수집이 방금 쓴 목록(메모리). 없으면(확인 전용 실행 등) 창고의 색인과 목록 파일을 읽는다.
 function worktreePrimaryDrift(root, vault, files, entries = null) {
@@ -795,7 +821,7 @@ function run({ root = ROOT, destination = process.env.OneDrive, stateDir, dryRun
   const state = { schemaVersion: 1, runId, pid: process.pid, startedAt: new Date().toISOString(), checkedAt: null,
     heartbeatAt: new Date().toISOString(), status: 'running',
     lastSuccessAt: previous.lastSuccessAt || null, copySucceededAt: previous.copySucceededAt || null,
-    providerVerifiedAt: previous.providerVerifiedAt || null, destination, deletes: 0, directCloudCalls: 0,
+    providerVerifiedAt: previous.providerVerifiedAt || null, protectedAwaiting: previous.protectedAwaiting || {}, destination, deletes: 0, directCloudCalls: 0,
     remoteChecksumVerified: false, note: 'Local SHA checks and Windows provider metadata; no independent remote checksum claim.' };
   // 내용(시각 칸을 뺀 부분)이 지난 실행과 같으면 다시 쓰지 않는다(10-20) — 복사 목록(18.9MB)·제외 목록(3.8MB)을 실행마다 통째로
   // 다시 쓰던 것. 같은지는 지난 영수증의 stateFiles(내용 지문·쓴 크기)와 지금 파일 크기로 본다. 다른 도구가 시각으로 신선함을 보는
@@ -943,10 +969,13 @@ function run({ root = ROOT, destination = process.env.OneDrive, stateDir, dryRun
         oldestObservedAt: provider.oldestObservedAt, settleRounds: provider.settleRounds } : {}) };
     state.checkedAt = new Date().toISOString();
     state.heartbeatAt = state.checkedAt;
-    state.protectedSources = encryptedProtectionCoverage(vault, manifest.files);
-    if (state.protectedSources.some(row => row.preservedBy !== 'encrypted-drive')) throw new Error('previously-backed-source-now-protected');
+    ({ sources: state.protectedSources, awaiting: state.protectedAwaiting } = awaitProtectedArchive(encryptedProtectionCoverage(vault, manifest.files),
+      readJson(path.join(stateDir, 'protected-sources.json'), { files: [] }).files, previous.protectedAwaiting, state.checkedAt));
+    if (state.protectedSources.some(row => row.preservedBy !== 'encrypted-drive' && !row.awaiting)) throw new Error('previously-backed-source-now-protected');
     if (state.worktreePrimaryDrift?.length) throw new Error('worktree-primary-source-changed-during-copy');
+    // 평문 사본은 모두 확인됐으니 마지막 성공 시각은 그대로 잰다(감시의 2시간 지연 기준). 남은 암호문 보관은 위 회차 수가 따로 잰다.
     if (state.status === 'healthy') { state.lastSuccessAt = state.checkedAt; state.providerVerifiedAt = state.checkedAt; }
+    if (state.status === 'healthy' && state.protectedSources.some(row => row.awaiting)) state.status = 'pending';
     state.exitCode = state.status === 'healthy' ? 0 : state.status === 'pending' ? 2 : 1;
     writeJson(latestFile, state);
     return state;
@@ -972,5 +1001,5 @@ if (require.main === module) {
   }
   const result = run(options); console.log(JSON.stringify(result)); process.exitCode = result.exitCode;
 }
-module.exports = { worktrees, opsCopyRecords, changedWorktreeSources, preserveWorktreeDocuments, preserveDriftedWorktreeVersions, copyRetryingDrift, classifyProvider, protectedPriorSources, protectedSourceInventory, encryptedProtectionCoverage, worktreePrimaryDrift, providerFocus, mergeProviderReport, providerStatus, scanWorktrees, run, readJson, writeJson,
+module.exports = { worktrees, opsCopyRecords, changedWorktreeSources, preserveWorktreeDocuments, preserveDriftedWorktreeVersions, copyRetryingDrift, classifyProvider, protectedPriorSources, protectedSourceInventory, encryptedProtectionCoverage, awaitProtectedArchive, PROTECTED_AWAIT_RUNS, worktreePrimaryDrift, providerFocus, mergeProviderReport, providerStatus, scanWorktrees, run, readJson, writeJson,
   PROVIDER_SLOTS, PROVIDER_MAX_CARRY_MS };

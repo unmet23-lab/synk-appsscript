@@ -20,7 +20,7 @@ function authorizedRoots(root) {
 }
 function sourceLocation(row, roots) {
   const largeReceipt = row.reason === 'over-10MiB' && policy.largeBackupReceipt(row.sourceScope, row.source, row.bytes);
-  const previousMedia = (row.reason === 'embedded-media-or-base64' || largeReceipt) && row.priorOneDriveCopy &&
+  const previousMedia = policy.priorCopyArchivable(row.reason, row.sourceScope, row.source, row.bytes) && row.priorOneDriveCopy &&
     SHA.test(row.priorOneDriveCopy.sha256) && Number.isSafeInteger(row.priorOneDriveCopy.bytes) && row.priorOneDriveCopy.bytes >= 0 && row.priorOneDriveCopy.bytes <= policy.MAX_TEXT_BYTES &&
     typeof row.priorOneDriveCopy.target === 'string' && path.isAbsolute(row.priorOneDriveCopy.target);
   if ((!['secret-literal', 'secret-signature'].includes(row.reason) && !previousMedia) || !SHA.test(row.sha256) ||
@@ -56,14 +56,14 @@ function priorCopies(vault) {
   };
 }
 function priorLinks(rows, manifest) {
-  const targets = rows.filter(row => ['embedded-media-or-base64', 'over-10MiB'].includes(row.reason) && typeof row.priorOneDriveCopy?.target === 'string')
+  const targets = rows.filter(row => policy.priorCopyReason(row.reason) && typeof row.priorOneDriveCopy?.target === 'string')
     .map(row => row.priorOneDriveCopy.target);
   if (!targets.length || typeof manifest.oneDriveRoot !== 'string' || !path.isAbsolute(manifest.oneDriveRoot)) return null;
   return { root: manifest.oneDriveRoot, targets: new Set(targets.map(folded)),
     linked: policy.linkPaths(targets, { cloudDestinationRoot: manifest.oneDriveRoot }) };
 }
 function verifyPriorMedia(row, vault, prior = null) {
-  if (!['embedded-media-or-base64', 'over-10MiB'].includes(row.reason)) return;
+  if (!policy.priorCopyReason(row.reason)) return;
   const manifest = prior ? prior.copies() : JSON.parse(fs.readFileSync(path.join(vault, '상태/OneDrive/copy-manifest.json'), 'utf8'));
   const previous = manifest.files;
   const proof = row.priorOneDriveCopy;
@@ -152,7 +152,7 @@ function refreshedRow(row) {
   if (!stable(before, fs.statSync(row.sourcePath))) throw new Error('PROTECTED_SOURCE_INVENTORY_STALE');
   const reason = policy.textPolicy(row.source, data);
   if (!['secret-literal', 'secret-signature'].includes(reason) &&
-      !((reason === 'embedded-media-or-base64' || (reason === 'over-10MiB' && policy.largeBackupReceipt(row.sourceScope, row.source, data.length))) && row.priorOneDriveCopy)) return null;
+      !(policy.priorCopyArchivable(reason, row.sourceScope, row.source, data.length) && row.priorOneDriveCopy)) return null;
   return { ...row, reason, bytes: data.length, sha256: crypto.createHash('sha256').update(data).digest('hex'), inventorySha256: row.sha256 };
 }
 // 절전이나 핫스팟 멈춤(10-21 10:12~)으로 OneDrive 실행이 3시간 넘게 없다가 두 예약이 같이 시작하면, 이 단계가 OneDrive의 새 목록보다
@@ -208,7 +208,7 @@ async function reconcile({ vault, root, apply, onProgress = () => {}, roots: sup
     const inventory = await currentInventory(inventoryFile, vault, inventoryWait);
     const roots = suppliedRoots || authorizedRoots(root);
     const prior = { copies: priorCopies(vault) };
-    if (inventory.files.some(row => ['embedded-media-or-base64', 'over-10MiB'].includes(row.reason))) prior.links = priorLinks(inventory.files, prior.copies());
+    if (inventory.files.some(row => policy.priorCopyReason(row.reason))) prior.links = priorLinks(inventory.files, prior.copies());
     for (const row of inventory.files) verifyPriorMedia(row, vault, prior);
     // 목록 뒤에 원본이나 그 범위 폴더가 통째로 지워진 줄. 읽을 것이 없으므로 그 줄만 source-disappeared로 남긴다.
     // 범위 폴더는 작업트리이거나, Documents 바로 아래에 만든 임시 작업트리처럼 자기 이름의 저장소 범위로 잡힌 폴더다(10-19 talk-wt-path).
@@ -277,7 +277,7 @@ async function reconcile({ vault, root, apply, onProgress = () => {}, roots: sup
     // 미디어 줄의 이전 OneDrive 사본도 줄마다가 아니라 끝에서 한 번 더 묶어 본다(위 prior).
     if (prior.links) {
       const after = priorLinks(inventory.files, prior.copies());
-      for (const row of inventory.files) if (['embedded-media-or-base64', 'over-10MiB'].includes(row.reason) && (!after || after.linked(row.priorOneDriveCopy.target)))
+      for (const row of inventory.files) if (policy.priorCopyReason(row.reason) && (!after || after.linked(row.priorOneDriveCopy.target)))
         report.issues.push({ code: 'PROTECTED_SOURCE_PRIOR_COPY_ESCAPE', source: row.source });
     }
     report.status = report.issues.length ? 'attention' : 'success';

@@ -56,10 +56,20 @@ const 금지인가 = p => forbidden.some(re => re.test(p)) || (!sourceCode.test(
 const MAX_TEXT_BYTES = 10 * 1024 * 1024;
 // 평문 사본 한도는 그대로다. 이미 사본이 있는 창고 업로드 영수증만 암호문으로 이어 보존한다.
 const MAX_ENCRYPTED_RECEIPT_BYTES = 64 * 1024 * 1024;
+// 영수증과 함께 OneDrive에 드는 같은 묶음의 장부(목록·같은파일·올린 폴더)도 커진다 — 상태/Documents/목록.json이 10-26에 10MiB를
+// 넘자 이 길에 없어 OneDrive 실행이 11-03까지 매회 실패했다. 다른 묶음·다른 이름은 그대로 막는다.
 function largeBackupReceipt(scope, source, bytes) {
   return scope === 'SYNK_원본창고' && typeof source === 'string' &&
-    /^상태\/(?:Videos|Documents|SYNK-LoRA|SYNK-appsscript|SYNK-talk|작업트리-미디어|Git-보관)\/upload-done\.jsonl$/.test(source) &&
+    /^상태\/(?:Videos|Documents|SYNK-LoRA|SYNK-appsscript|SYNK-talk|작업트리-미디어|Git-보관)\/(?:upload-done\.jsonl|목록\.json|같은파일\.json|upload-dirs\.json)$/.test(source) &&
     Number.isSafeInteger(bytes) && bytes > MAX_TEXT_BYTES && bytes <= MAX_ENCRYPTED_RECEIPT_BYTES;
+}
+// 평문 사본이 이미 있는 원본이 나중에 평문 규칙에 걸리면, 옛 사본이 그대로인지 확인한 뒤 새 판을 암호문으로 이어 보존한다(비밀값은 옛 사본 없이도).
+// 처음엔 내장 미디어(10-19)와 큰 영수증(10-23)만 받아, 경로의 \v가 세로탭으로 바뀐 인계 메모(11-02 binary-control-bytes)는 보관될 길이
+// 없어 매회 실패였다. 글자 깨짐·제어 문자도 같은 길로 보낸다. 10MiB 넘는 것은 위 장부만이다.
+const PRIOR_COPY_REASONS = ['embedded-media-or-base64', 'binary-control-bytes', 'not-utf8-text', 'over-10MiB'];
+const priorCopyReason = reason => PRIOR_COPY_REASONS.includes(reason);
+function priorCopyArchivable(reason, scope, source, bytes) {
+  return reason === 'over-10MiB' ? largeBackupReceipt(scope, source, bytes) : priorCopyReason(reason);
 }
 const 문서인가 = p => /\.(?:md|txt|js|cjs|mjs|jsx|ts|tsx|gs|cs|csproj|sln|xaml|asmdef|asmref|unity|prefab|meta|lua|nsh|manifest|webmanifest|uss|uxml|uproject|shader|hlsl|patch|srt|vtt|ass|ffconcat|ipynb|css|scss|sass|less|html?|jsonl?|ya?ml|toml|ini|conf|cfg|service|timer|slice|logrotate|xml|csv|tsv|py|ps1|sh|bat|cmd|sql|graphql|gql|vue|svelte|gitignore|gitattributes|editorconfig)$/i.test(p) ||
   /(?:^|[\\/])(?:Dockerfile|Makefile|Caddyfile|CNAME|LICENSE|NOTICE|\.prettierrc|\.dockerignore|\.claspignore)$/i.test(p) ||
@@ -696,4 +706,4 @@ const policyFingerprint = () => crypto.createHash('sha256').update(JSON.stringif
   [...forbidden, sourceCode, credentialName, excluded, generatedDirectory].map(String), MAX_TEXT_BYTES,
   reviewedDocumentExamples, reviewedSourceLiterals, reviewedExactSources])).digest('hex');
 const POLICY_FINGERPRINT = policyFingerprint();
-module.exports = { 금지인가, 문서인가, within, rowRoot, 목록, 시스템목록, systemScopes, writeSafeRecoveryIndex, workTextFiles, creationSources, excludedPath, oneDrivePlan, textPolicy, linkPaths, cloudDestinationAllows, copy, payload, MAX_TEXT_BYTES, MAX_ENCRYPTED_RECEIPT_BYTES, largeBackupReceipt, POLICY_FINGERPRINT, policyFingerprint, GENERATED_DIRECTORY: generatedDirectory };
+module.exports = { 금지인가, 문서인가, within, rowRoot, 목록, 시스템목록, systemScopes, writeSafeRecoveryIndex, workTextFiles, creationSources, excludedPath, oneDrivePlan, textPolicy, linkPaths, cloudDestinationAllows, copy, payload, MAX_TEXT_BYTES, MAX_ENCRYPTED_RECEIPT_BYTES, largeBackupReceipt, priorCopyReason, priorCopyArchivable, POLICY_FINGERPRINT, policyFingerprint, GENERATED_DIRECTORY: generatedDirectory };
