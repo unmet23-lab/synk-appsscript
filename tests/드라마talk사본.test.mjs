@@ -42,10 +42,10 @@ test('판정 사본은 옮길 수 없는 꼴에서 멈추고, 한 줄에 여럿�
  assert.throws(()=>judgeModule(`${text}\nexport default 1;\n`),/옮기지 못하는/);
 });
 
-test('대사 은행: 대본의 학생 줄 9(scene) + 처음 보는 대사 8(unseen), 판정 명세는 대본 그대로 · 검수 상태는 대본의 검수지문이 지금 내용과 같은 줄만 passed · 녹음 상한 8~30초', async()=>{
+test('대사 은행: 대본의 학생 줄 9(scene) + 처음 보는 대사 9(unseen — t9는 11-02 시범판 새 상황), 판정 명세는 대본 그대로 · 검수 상태는 대본의 검수지문이 지금 내용과 같은 줄만 passed · 녹음 상한 8~30초', async()=>{
  const episodes=await readEpisodes(),lines=dramaLines(episodes);
  const rows=episodes.flatMap(ep=>dramaReviewRows(ep).map(entry=>({entry,ep})));
- assert.deepEqual([lines.filter(l=>l.kind==='scene').length,lines.filter(l=>l.kind==='unseen').length],[9,8]);
+ assert.deepEqual([lines.filter(l=>l.kind==='scene').length,lines.filter(l=>l.kind==='unseen').length],[9,9]);
  for(const [i,line] of lines.entries()){
   assert.deepEqual(judge.checkSpec(line.spec),[],line.id);
   const {entry,ep}=rows[i];

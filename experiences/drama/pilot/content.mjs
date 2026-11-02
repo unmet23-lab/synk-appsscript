@@ -4,6 +4,7 @@
 // 미디어는 tools/build-drama-pilot-assets.mjs가 승인 자산에서 정리한 것(새 생성 0). 음성만 있는 대사는 정지 사진+원래 녹음이며 립싱크 영상이 아니다.
 import fs from 'node:fs';
 import ep01 from '../s1/ep01.mjs';
+import { dramaReviewRows, dramaReviewStatus, dramaSpecOf } from '../../../tools/lib/drama-spec-review-unit.mjs';
 
 // 빌드가 만든 재생 사본이 있을 때만 주소를 준다. 아직 없는 자리(코치 녹음·쇼케이스 영상)는 null — 화면은 글만, 장면은 지금 판 그대로 돈다.
 const MEDIA_DIR = new URL('./media/', import.meta.url);
@@ -65,6 +66,7 @@ const actor = (id, i, media) => {
 };
 
 const STILL = '/media/taeo-still.webp';
+const TRANSFER = dramaReviewRows(ep01).find((e) => e.row.id === 's1e01-t9');
 
 export const PILOT = {
  id: 's1e01-pilot',
@@ -91,23 +93,17 @@ export const PILOT = {
  reasks: ep01.되묻기.선배.map((text, i) => ({ text, audio: `/media/senior-ask-${i + 1}.mp3` })),
  // audio가 null이면 녹음 전 — 화면에 코치 글만 보이고 소리는 내지 않는다.
  coach: Object.fromEntries(Object.entries(COACH_VOICE).map(([k, v]) => [k, { text: v.text, audio: built(v.file) }])),
- // 새 상황 B — ep01 처음보는대사 t4(복사실·교직원)를 참고해 상대(처음 만난 같은 과 선배)·낱말(편의점) 난이도를 맞춘 **검수 전 연습 예시**.
- // 공식 검수 통과 문항·검증된 평가가 아니다. prompt는 학습자 언어(영어)로 상황과 필요한 정보만 — 한국어 답·첫 글자 없음.
+ // 새 상황 B — 대사 · 명세 · 검수 상태는 ep01 처음 보는 대사 t9(편의점 위치를 처음 인사한 다른 선배께, 11-02 시범판에서 옮김)에서 그대로 가져온다.
+ // 명세는 처음 보는 대사 판정(free — 빠진 말 노트 없음)이고, 대본의 검수지문이 지금 내용과 맞을 때만 reviewed다(AI 2중 검수, 결정 10-31 ③).
+ // prompt는 학습자 언어(영어)로 상황과 필요한 정보만 — 한국어 답 · 첫 글자 없음.
  transfer: {
-  id: 'transfer-location',
-  skill: 'ko.speaking.ask', // 학습 기록의 능력 이름(말하기 지도). 한국어 답의 실마리가 아니라 화면에 보낸다.
+  id: TRANSFER.row.id,
+  skill: TRANSFER.row.능력, // 학습 기록의 능력 이름(말하기 지도). 한국어 답의 실마리가 아니라 화면에 보낸다.
   prompt: 'Before your next class you want to buy a drink, but you can\'t find the convenience store. Another senior from your department, whom you met for the first time today, is standing nearby. Politely ask them where the convenience store is.',
   promptKo: '다음 수업 전에 마실 것을 사고 싶은데 가게를 못 찾았어요. 오늘 처음 인사한 같은 과의 다른 선배가 옆에 있어요. 공손하게 그 가게가 어디 있는지 물어보세요. (가게 이름은 영어 설명을 보세요.)',
-  to: 'senior',
-  text: '선배님, 혹시 편의점이 어디에 있는지 아세요?',
-  spec: {
-   line: '선배님, 혹시 편의점이 어디에 있는지 아세요?',
-   to: 'senior',
-   keys: [{ word: '편의점' }, { word: '어디에 있는지', alts: ['어디 있는지', '어디예요', '어디에 있어요', '어딘지', '어디에 있나요', '어디 있어요'] }],
-   ending: ['polite', 'formal'],
-   variants: ['선배님, 편의점이 어디예요?', '선배님, 편의점이 어디에 있어요?', '혹시 편의점이 어디 있는지 아세요?'],
-   reviewed: false,
-  },
+  to: TRANSFER.row.명세.to,
+  text: TRANSFER.row.말,
+  spec: { ...dramaSpecOf(TRANSFER), reviewed: dramaReviewStatus(TRANSFER, ep01.id).status === 'passed' },
  },
  nextEpisode: { title: ep01.예고.제목, line: '태오 선배가 데려간 동아리 박람회에서 동갑내기 친구를 만난다. 처음으로 말을 놓아 볼까?' },
  assets: {

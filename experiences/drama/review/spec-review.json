@@ -1083,7 +1083,74 @@
       },
       "packet": "drama-ep01-r10",
       "reviewedAt": "2026-10-31T16:12:43.141Z"
+    },
+    {
+      "id": "s1e01-t9",
+      "episode": "s1e01",
+      "kind": "unseen",
+      "hash": "4b600a5a27fb2107",
+      "verdict": "pass",
+      "rubric": "drama-spec-r4",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ],
+      "reasons": {
+        "claude": "This is an unseen line asking a senior about a location. The keys (편의점 · 어디에 있는지), the alts, the polite/formal ending and minSyllables 6 all fit. In the blind tests, correct polite questions are sure passes, banmal and one-word answers get notes, and changing the place stays unsure. No false notes or leniency, so it passes. Adding a few common alts is optional. / 시험 말 9 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 2 · 다른 노트 0",
+        "argon": "처음 인사한 선배에게 편의점 위치를 공손하게 묻는 처음 보는 대사(s1e01-t9)로, 장면 대사 s1e01-7의 능력을 다른 상황·다른 인물에게 잘 옮겼다. 핵심 말('편의점', '어디에 있는지')과 24개 허용 표현·최소 6음절 설정이 균형 잡혀 있어 오노트와 너그러움 없이 학습 근거로 쓸 수 있다(pass). / 시험 말 9 — 오노트 0 · 너그러움 0 · 확신 아님 0 · 노트 없음 3 · 다른 노트 0"
+      },
+      "fixes": [
+        "선택: add 「어디서」 and 「찾고 있」 to keys[1].alts, so common phrasings such as 「편의점 어디서 찾을 수 있어요?」 and 「편의점을 찾고 있는데요」 also count as sure passes.",
+        "선택: consider removing the alt 「편의점 있어요」 and leaving it only in variants (「이 근처에 편의점 있어요?」), to keep the statement 「편의점에 있어요」 from becoming a sure pass. It is unlikely in this situation, so this is not required.",
+        "선택: keys[1].alts에 『어디에 있을까요』, 『어디 있을까요』 더함"
+      ],
+      "grammarLevels": {
+        "claude": [
+          {
+            "tag": "-는지 알다 (indirect question)",
+            "level": "topik2-3",
+            "note": "Embedding a question in 「어디에 있는지 아세요?」. Basic grammar at the start of TOPIK II."
+          },
+          {
+            "tag": "-(으)세요 (subject honorific)",
+            "level": "topik1",
+            "note": "아세요 — the honorific question ending toward a senior."
+          },
+          {
+            "tag": "혹시 (softening question)",
+            "level": "topik1",
+            "note": "An adverb that makes the question polite."
+          },
+          {
+            "tag": "N이/가 어디에 있어요",
+            "level": "topik1",
+            "note": "A basic location question. Easy fallback pattern used in the variants."
+          }
+        ],
+        "argon": [
+          {
+            "level": "topik1",
+            "note": "초급 2급 간접의문문 문형이나, '혹시 … 어디에 있는지 아세요?'처럼 완곡하고 공손하게 묻는 말하기 과제로서 1화 도입부의 3~4급 학습자에게 알맞다.",
+            "tag": "-는지 알다"
+          },
+          {
+            "level": "topik1",
+            "note": "처음 인사한 선배에게 쓰는 주체 높임 의문형('아세요?')으로 상대와 상황에 맞는 기본 높임 문형이다.",
+            "tag": "-(으)시-"
+          }
+        ]
+      },
+      "packet": "drama-ep01-r13",
+      "reviewedAt": "2026-11-02T09:19:03.352Z"
     }
   ],
-  "updatedAt": "2026-10-31T16:12:43.776Z"
+  "updatedAt": "2026-11-02T09:19:03.352Z"
 }

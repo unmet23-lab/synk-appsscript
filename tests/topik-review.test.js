@@ -241,7 +241,7 @@ test('드라마 대사 — 블라인드 몫에는 명세 · 판정 시험이 없
   const { dramaReviewRows, dramaSpecUnit, dramaSpecHash } = await import(pathToFileURL(path.join(root, 'tools/lib/drama-spec-review-unit.mjs')));
   const ep = (await freshImport(episodeFile)).default;
   const units = await t.dramaUnits(null, { episodes: [ep] });
-  assert.deepEqual([units.filter(u => u.role === 'scene').length, units.filter(u => u.role === 'unseen').length], [9, 8]);
+  assert.deepEqual([units.filter(u => u.role === 'scene').length, units.filter(u => u.role === 'unseen').length], [9, 9]); // 처음 보는 대사 t9는 11-02 시범판 새 상황
   const rows = dramaReviewRows(ep);
   for (const [i, u] of units.entries()) {
     assert.equal(u.hash, dramaSpecHash(dramaSpecUnit(rows[i], ep.id)), u.id);
@@ -253,7 +253,7 @@ test('드라마 대사 — 블라인드 몫에는 명세 · 판정 시험이 없
   units.forEach((u, i) => { u.ref = `u${String(i + 1).padStart(3, '0')}`; });
   const p = { name: 'drama', rubric: { id: t.DRAMA_RUBRIC_ID, sha: '0'.repeat(16) }, units };
   const reqs = t.claudeRequests(p);
-  assert.equal(reqs.length, 34);
+  assert.equal(reqs.length, 36);
   assert.deepEqual(reqs.slice(0, 2).map(r => r.custom_id), ['u001-blind', 'u001-review']);
   assert.ok(reqs.filter(r => r.custom_id.endsWith('-blind')).every(r => !r.params.messages[0].content.includes('"명세"') && !r.params.messages[0].content.includes('판정_시험')), '블라인드 요청에는 명세를 주지 않는다');
   assert.ok(reqs.every(r => r.params.system[0].text.includes(t.DRAMA_RUBRIC_ID) && !r.params.system[0].cache_control), '드라마 일괄은 캐시를 쓰지 않는다(동시에 돌아 캐시 쓰기만 늘었다)');

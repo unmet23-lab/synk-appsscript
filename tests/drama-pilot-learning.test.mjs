@@ -50,7 +50,9 @@ test('시범 대사에는 말하기 지도의 능력 이름이 있고, 새 상�
   const map=require('../strata').createMap(require('../strata/maps/ko-speaking.json'));
   for(const line of [...PILOT.scene.filter(x=>x.type==='student'),PILOT.transfer])assert.equal(map.getNode(line.skill)?.kind,'skill',line.id);
   const pub=publicLesson(PILOT);
-  assert.deepEqual(Object.keys(pub.transfer).sort(),['id','prompt','skill']);
+  assert.deepEqual(Object.keys(pub.transfer).sort(),['id','prompt','reviewed','skill']);
+  // 새 상황은 ep01 처음 보는 대사 t9 — AI 2중 검수(drama-ep01-r13)를 통과해 「혼자 해 봄」을 셀 수 있다. 대본을 고치면 검수지문이 풀려 false가 된다.
+  assert.equal(PILOT.transfer.id,'s1e01-t9');assert.equal(PILOT.transfer.spec.reviewed,true);assert.equal(pub.transfer.reviewed,true);assert.equal(PILOT.transfer.spec.free,true);
   assert.ok(pub.scene.filter(x=>x.type==='student').every(x=>x.skill&&!x.spec));
 });
 
@@ -115,8 +117,7 @@ async function serve(t,overrides={}){
   await fs.writeFile(path.join(root,'atlas-learning.js'),'var DramaLearning={};');
   const probe=await import('node:net');const socket=probe.createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r));
   const port=socket.address().port;await new Promise(r=>socket.close(r));
-  const lesson={...PILOT,transfer:{...PILOT.transfer,spec:{...PILOT.transfer.spec,reviewed:true}}};
-  const app=createPilotServer({lesson,root,port,analysis:true,
+  const app=createPilotServer({lesson:PILOT,root,port,analysis:true,
     decode:async()=>({wav:Buffer.from('x'),seconds:4,speechSeconds:3,silent:false}),
     transcribe:async()=>({text:'선배님, 혹시 편의점이 어디에 있는지 아세요?',languages:[{code:'ko'}]}),...overrides});
   await new Promise(r=>app.server.listen(port,'127.0.0.1',r));
@@ -135,9 +136,9 @@ test('서버: 테이크 응답의 trail이 판정 · 검수 · 첫 노출을 따
   const {bootstrap,take,learn}=await serve(t);
   assert.equal(bootstrap.learning,null);
   assert.deepEqual((await take('s1e01-7','scene')).trail,{correct:false,assessable:false});
-  const first=await take('transfer-location','transfer');
+  const first=await take(PILOT.transfer.id,'transfer');
   assert.equal(first.observation.kind,'pass');assert.deepEqual(first.trail,{correct:true,assessable:true});
-  assert.deepEqual((await take('transfer-location','transfer')).trail,{correct:true,assessable:false},'두 번째는 첫 응답이 아니다');
+  assert.deepEqual((await take(PILOT.transfer.id,'transfer')).trail,{correct:true,assessable:false},'두 번째는 첫 응답이 아니다');
   assert.equal((await learn({op:'get',after:0,revision:1})).status,404);
 });
 

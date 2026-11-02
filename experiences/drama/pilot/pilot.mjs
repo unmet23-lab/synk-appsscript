@@ -1030,7 +1030,7 @@ function transferPanel(s, tr, T) {
   h('p', { class: 'lead' }, tx('transferLead')),
   h('div', { class: 'card situation' }, h('p', { class: 'fine' }, tx('transferPromptLabel')), h('p', { class: 'mean big', lang: 'en' }, tr.prompt), promptKo ? h('p', { class: 'fine' }, promptKo) : null),
   micNotice(),
-  T.revealed ? h('div', { class: 'card model' }, h('p', { class: 'fine' }, tx('modelLabel')), h('p', { class: 'ko line', lang: 'ko' }, T.revealed.text), h('p', { class: 'fine' }, tx('modelUnreviewed')),
+  T.revealed ? h('div', { class: 'card model' }, h('p', { class: 'fine' }, tx('modelLabel')), h('p', { class: 'ko line', lang: 'ko' }, T.revealed.text), h('p', { class: 'fine' }, tx(tr.reviewed ? 'modelOther' : 'modelUnreviewed')),
    T.revealed.modelAudio ? h('div', { class: 'row' }, soundBtn(tx('modelListen'), T.revealed.modelAudio, s)) : null) : null,
   outcome,
   d?.transcript && !T.selfCheck ? h('div', { class: 'row' }, h('button', { type: 'button', class: 'ghost', on: { click: () => go('same') } }, tx('same')), h('button', { type: 'button', class: 'ghost', on: { click: () => go('differs') } }, tx('differs'))) : null,

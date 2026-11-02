@@ -8,7 +8,7 @@ export function publicLesson(lesson) {
     reasks:lesson.reasks,coach:lesson.coach,nextEpisode:lesson.nextEpisode,
     assets:lesson.assets?{listenLoop:lesson.assets.listenLoop,poster:lesson.assets.poster,backdrop:lesson.assets.backdrop}:undefined,
     scene:lesson.scene.map(({spec,...line})=>line),
-    transfer:{id:lesson.transfer.id,prompt:lesson.transfer.prompt,skill:lesson.transfer.skill}};
+    transfer:{id:lesson.transfer.id,prompt:lesson.transfer.prompt,skill:lesson.transfer.skill,reviewed:lesson.transfer.spec?.reviewed===true}};
 }
 
 // 테이크 하나를 학습 기록(Atlas Trail, 응답 꼴 spoken)에 어떻게 남길지 — 판정과 명세 검수 여부를 아는 서버가 정하고 화면은 적기만 한다.
