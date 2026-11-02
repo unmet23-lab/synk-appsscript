@@ -1,0 +1,837 @@
+{
+  "schema": "synk-company-social47-operating-evidence/v1",
+  "at": "2026-11-02T17:07:49.679Z",
+  "status": "deployed-rearmed-sealed-and-measured",
+  "chain": 47,
+  "manifest": "7367f9d19d5282a345ee8a97d299c8dc2c8f947290049a57282a5474de365887",
+  "image": "sha256:cd7bcf48a880e6db8147ae857391f46e5e237a86be12aae1d020e848e893af3c",
+  "runtime": {
+    "at": "2026-11-02T16:44:31.952Z",
+    "status": "passed",
+    "hosts": {
+      "primary": {
+        "status": "passed",
+        "sharedRuntimePinned": true,
+        "deploymentCodePinned": true
+      },
+      "standby": {
+        "status": "passed",
+        "sharedRuntimePinned": true,
+        "deploymentCodePinned": true
+      },
+      "controller": {
+        "status": "passed",
+        "sharedRuntimePinned": true,
+        "deploymentCodePinned": true
+      }
+    },
+    "exactPreStartPreservationProven": true,
+    "postStartSessionAndTokenTablesExact": false,
+    "postStartSchemasUnchanged": true,
+    "note": "Live session and token tables changed after startup; the proof does not claim every historical row is unchanged. The matched browser test separately checks the existing login."
+  },
+  "public": {
+    "status": "passed",
+    "files": 294,
+    "matched": 294,
+    "withdrawnMatched": 21,
+    "health": {
+      "status": 200,
+      "ready": true
+    },
+    "anonymousSocialStatus": 401
+  },
+  "qa": {
+    "production": {
+      "tests": 3372,
+      "pass": 3372,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "compatibility": {
+      "tests": 2,
+      "pass": 2,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "productionDataMounted": false,
+    "hostServiceAndConfigPreserved": true,
+    "rearm": {
+      "node": 155,
+      "python": 51,
+      "deployment": 127,
+      "failed": 0,
+      "skipped": 0,
+      "protectedUnchanged": true
+    }
+  },
+  "backup": {
+    "bytes": 538957936,
+    "dataBackupCreatedAt": "2026-11-02T16:47:13.339Z",
+    "generation": "1793638219424879",
+    "sha256": "0d7d842cdbad1ab753244e94eb4b67870af35c43f3b9989242a0cdbcc842d6f0",
+    "md5Verified": true,
+    "sidecarMd5Verified": true,
+    "completedExactInvocation": true,
+    "protectedSourcesUnchanged": true,
+    "originalKeyUnchanged": true,
+    "applicationRestarts": 0
+  },
+  "restore": {
+    "predecessor46": {
+      "status": "passed",
+      "releaseSha256": "857324da6a3c863a1a617d795fd885675e3e362c5557522d3b52705c373ce90c",
+      "backupCreatedAt": 1793621528834,
+      "dataBackupCreatedAt": "2026-11-02T12:12:08.834Z",
+      "archiveMd5Verified": true,
+      "media": {
+        "mode": "manifest-hydrated",
+        "helperSha256": "851dc81d9ce06105e176717c5cf1685e981a176b4d1e26c623dbb3a0121b3b05",
+        "manifestSha256": "101dea63b4da542b754c6e2bb510a45da33b19a8a4e6eb245510f99cd24bc79b",
+        "files": 77,
+        "contents": 59,
+        "logicalBytes": 2072055027,
+        "contentBytes": 1811648689,
+        "privateDerivedOnly": true,
+        "fromOtherBackups": 0
+      },
+      "archiveUnchanged": true,
+      "originalPreparedMarkerPreserved": true,
+      "standbyConfigRuntimeGuardEnvUnchanged": true,
+      "standbyProductionContainersUnchanged": true,
+      "logicalCopiesMatch": true,
+      "activeSessionAndTokenRowsPreserved": true,
+      "expiredTokenCleanup": {
+        "boundary": "before-server-import",
+        "cutoffAt": "2026-11-02T12:24:13.856Z",
+        "tokenRowsBefore": 424,
+        "tokenRowsAfter": 416,
+        "removedRows": 8,
+        "removedByPurpose": {
+          "session": 8
+        },
+        "allRemovedExpiredBeforeStartup": true,
+        "unexpiredRemovedRows": 0,
+        "addedRows": 0,
+        "changedRows": 0
+      },
+      "realUserLoginTest": false,
+      "productionTraffic": false,
+      "newVmProvisioned": false,
+      "qaContainersRemoved": true
+    },
+    "current47": {
+      "status": "passed",
+      "releaseSha256": "7367f9d19d5282a345ee8a97d299c8dc2c8f947290049a57282a5474de365887",
+      "backupCreatedAt": 1793638033339,
+      "dataBackupCreatedAt": "2026-11-02T16:47:13.339Z",
+      "archiveMd5Verified": true,
+      "media": {
+        "mode": "manifest-hydrated",
+        "helperSha256": "851dc81d9ce06105e176717c5cf1685e981a176b4d1e26c623dbb3a0121b3b05",
+        "manifestSha256": "c1d96ce00f728474e7b5d9c84da94a2bf7821005c238455adb04a769dbd1ab4e",
+        "files": 77,
+        "contents": 59,
+        "logicalBytes": 2072055027,
+        "contentBytes": 1811648689,
+        "privateDerivedOnly": true,
+        "fromOtherBackups": 0
+      },
+      "archiveUnchanged": true,
+      "originalPreparedMarkerPreserved": true,
+      "standbyConfigRuntimeGuardEnvUnchanged": true,
+      "standbyProductionContainersUnchanged": true,
+      "logicalCopiesMatch": true,
+      "activeSessionAndTokenRowsPreserved": true,
+      "expiredTokenCleanup": {
+        "boundary": "before-server-import",
+        "cutoffAt": "2026-11-02T16:57:26.121Z",
+        "tokenRowsBefore": 417,
+        "tokenRowsAfter": 416,
+        "removedRows": 1,
+        "removedByPurpose": {
+          "session": 1
+        },
+        "allRemovedExpiredBeforeStartup": true,
+        "unexpiredRemovedRows": 0,
+        "addedRows": 0,
+        "changedRows": 0
+      },
+      "realUserLoginTest": false,
+      "productionTraffic": false,
+      "newVmProvisioned": false,
+      "qaContainersRemoved": true
+    },
+    "accountBindingPassed": true
+  },
+  "rearm": {
+    "status": "passed",
+    "at": 1793638929543,
+    "armed": true,
+    "epoch": 7,
+    "replicaHealthy": true,
+    "releaseSha256": "7367f9d19d5282a345ee8a97d299c8dc2c8f947290049a57282a5474de365887",
+    "contractSha256": "ec70167a907eb2b245a9052f9881b4016cb447779c91b8fd0771612b07dbac33",
+    "completedSealSha256": "fccd27878b89a5d45c06a62bddba1f6109d63736512987d5364977b9b05633cb",
+    "approvalSealSha256": "66625ad7466b3ee224a463094889d1cea1158c9868bf73ba5767177f3b0be83a"
+  },
+  "standbyDuringBackupAndRestore": {
+    "startedAt": "2026-11-02T16:47:22.484Z",
+    "finishedAt": "2026-11-02T17:03:41.817Z",
+    "samples": 190,
+    "unexpected": 0,
+    "maxRequestMs": 28.5,
+    "maxControlAgeMs": 10,
+    "maxIoSomeAvg10Percent": 82.94,
+    "maxIoFullAvg10Percent": 76.72,
+    "note": "Standby ready=false with STANDBY reason is expected; alive and fresh accepted guards are required. This bounded observation is not a universal reliability claim."
+  },
+  "health": {
+    "before44": {
+      "sha256": "fa0e6fdad575bd8d0c51d4afe94ee912d3e26a330c11b78827f9d855b54b203a",
+      "samples": 305,
+      "failed": 133,
+      "clusters": [
+        {
+          "firstFailedAt": "2026-11-01T19:46:24.424Z",
+          "lastFailedAt": "2026-11-01T19:52:56.809Z",
+          "failures": 133,
+          "firstRecoveredAt": "2026-11-01T19:52:59.832Z",
+          "observedFailureToRecoveryMs": 395408
+        }
+      ]
+    },
+    "after47": {
+      "sha256": "6640cb22c140cadc7531be3f25f50429d3ad55538c8c9c991c0342d4e1662152",
+      "samples": 379,
+      "failed": 113,
+      "clusters": [
+        {
+          "firstFailedAt": "2026-11-02T16:38:09.071Z",
+          "lastFailedAt": "2026-11-02T16:43:37.546Z",
+          "failures": 113,
+          "firstRecoveredAt": "2026-11-02T16:43:40.572Z",
+          "observedFailureToRecoveryMs": 331501
+        }
+      ]
+    }
+  },
+  "shutdown": {
+    "caddySigtermToExitMs": 691.490048,
+    "exitCode": 0,
+    "sigkill": false,
+    "phases": [
+      {
+        "role": "primary",
+        "phase": "PREPARE",
+        "at": 1793637481193,
+        "status": "passed"
+      },
+      {
+        "role": "primary",
+        "phase": "STOP",
+        "at": 1793637494537,
+        "status": "passed"
+      },
+      {
+        "role": "primary",
+        "phase": "CAPTURE",
+        "at": 1793637522078,
+        "status": "passed"
+      },
+      {
+        "role": "primary",
+        "phase": "APPLY_PRIMARY",
+        "at": 1793637648616,
+        "status": "passed"
+      },
+      {
+        "role": "primary",
+        "phase": "VERIFY_STOPPED",
+        "at": 1793637686050,
+        "status": "passed"
+      },
+      {
+        "role": "primary",
+        "phase": "RELEASE_LOCKS",
+        "at": 1793637692992,
+        "status": "passed"
+      },
+      {
+        "role": "primary",
+        "phase": "START_PRIMARY",
+        "at": 1793637791217,
+        "status": "passed"
+      },
+      {
+        "role": "primary",
+        "phase": "PUBLIC",
+        "at": 1793637800131,
+        "status": "passed"
+      },
+      {
+        "role": "primary",
+        "phase": "FINALIZE",
+        "at": 1793637822528,
+        "status": "passed"
+      },
+      {
+        "role": "standby",
+        "phase": "PREPARE",
+        "at": 1793637478270,
+        "status": "passed"
+      },
+      {
+        "role": "standby",
+        "phase": "STOP",
+        "at": 1793637490754,
+        "status": "passed"
+      },
+      {
+        "role": "standby",
+        "phase": "APPLY_STANDBY",
+        "at": 1793637553953,
+        "status": "passed"
+      },
+      {
+        "role": "standby",
+        "phase": "VERIFY_STOPPED",
+        "at": 1793637664315,
+        "status": "passed"
+      },
+      {
+        "role": "standby",
+        "phase": "RELEASE_LOCKS",
+        "at": 1793637693611,
+        "status": "passed"
+      },
+      {
+        "role": "standby",
+        "phase": "START_STANDBY",
+        "at": 1793637711231,
+        "status": "passed"
+      },
+      {
+        "role": "standby",
+        "phase": "PUBLIC",
+        "at": 1793637798529,
+        "status": "passed"
+      },
+      {
+        "role": "standby",
+        "phase": "FINALIZE",
+        "at": 1793637823718,
+        "status": "passed"
+      }
+    ],
+    "note": "The remaining planned interruption includes stopped-writer preservation checks, applying both nodes and guarded startup; this is not a zero-downtime release."
+  },
+  "api": {
+    "method": {
+      "taskSpaceId": 62,
+      "sessionSha256": "970784cb2d9e39a8fc14dede383166ff9be3259778a5b5e4206691328c2ee591",
+      "requestsPerEndpoint": 30,
+      "firstSamplesRetained": true,
+      "bodyComplete": true,
+      "gapMs": 200,
+      "deadlineMs": 2000,
+      "search": {
+        "query": "프로젝트",
+        "limit": 20
+      },
+      "limitations": [
+        "Small sequential sample; no p95, RAM or rendered UI claim.",
+        "Production data and network may vary; identical-response proof is from the separate isolated ABBA fixture."
+      ]
+    },
+    "before": {
+      "startedAt": "2026-11-02T16:32:55.403Z",
+      "finishedAt": "2026-11-02T16:35:18.118Z",
+      "total": 210,
+      "failed": 0,
+      "endpoints": [
+        {
+          "name": "health",
+          "n": 30,
+          "successes": 30,
+          "failures": 0,
+          "attemptMedianMs": 32.35,
+          "successMedianMs": 32.35,
+          "successHeaderMedianMs": 30.85,
+          "minMs": 16.7,
+          "maxMs": 102.1,
+          "bytes": [
+            85
+          ],
+          "encodings": [
+            null
+          ],
+          "statuses": {
+            "200": 30
+          }
+        },
+        {
+          "name": "identity",
+          "n": 30,
+          "successes": 30,
+          "failures": 0,
+          "attemptMedianMs": 27.200000000000003,
+          "successMedianMs": 27.200000000000003,
+          "successHeaderMedianMs": 26.799999999999997,
+          "minMs": 16.7,
+          "maxMs": 272,
+          "bytes": [
+            345
+          ],
+          "encodings": [
+            null
+          ],
+          "statuses": {
+            "200": 30
+          }
+        },
+        {
+          "name": "projects",
+          "n": 30,
+          "successes": 30,
+          "failures": 0,
+          "attemptMedianMs": 66.65,
+          "successMedianMs": 66.65,
+          "successHeaderMedianMs": 45.25,
+          "minMs": 39.8,
+          "maxMs": 230.2,
+          "bytes": [
+            109359
+          ],
+          "encodings": [
+            null
+          ],
+          "statuses": {
+            "200": 30
+          }
+        },
+        {
+          "name": "research",
+          "n": 30,
+          "successes": 30,
+          "failures": 0,
+          "attemptMedianMs": 94.25,
+          "successMedianMs": 94.25,
+          "successHeaderMedianMs": 58,
+          "minMs": 67.5,
+          "maxMs": 208.4,
+          "bytes": [
+            747349,
+            747361,
+            747359,
+            747358,
+            747351,
+            747352,
+            747360,
+            747350
+          ],
+          "encodings": [
+            "gzip"
+          ],
+          "statuses": {
+            "200": 30
+          }
+        },
+        {
+          "name": "social",
+          "n": 30,
+          "successes": 30,
+          "failures": 0,
+          "attemptMedianMs": 118.55,
+          "successMedianMs": 118.55,
+          "successHeaderMedianMs": 109.75,
+          "minMs": 93.9,
+          "maxMs": 343.4,
+          "bytes": [
+            67536
+          ],
+          "encodings": [
+            null
+          ],
+          "statuses": {
+            "200": 30
+          }
+        },
+        {
+          "name": "messenger-summary",
+          "n": 30,
+          "successes": 30,
+          "failures": 0,
+          "attemptMedianMs": 123.65,
+          "successMedianMs": 123.65,
+          "successHeaderMedianMs": 122.65,
+          "minMs": 84.8,
+          "maxMs": 416.4,
+          "bytes": [
+            84
+          ],
+          "encodings": [
+            null
+          ],
+          "statuses": {
+            "200": 30
+          }
+        },
+        {
+          "name": "search",
+          "n": 30,
+          "successes": 30,
+          "failures": 0,
+          "attemptMedianMs": 54.75,
+          "successMedianMs": 54.75,
+          "successHeaderMedianMs": 49.099999999999994,
+          "minMs": 24.2,
+          "maxMs": 378,
+          "bytes": [
+            2561
+          ],
+          "encodings": [
+            null
+          ],
+          "statuses": {
+            "200": 30
+          }
+        }
+      ]
+    },
+    "after": {
+      "startedAt": "2026-11-02T17:04:36.460Z",
+      "finishedAt": "2026-11-02T17:05:56.806Z",
+      "total": 210,
+      "failed": 0,
+      "endpoints": [
+        {
+          "name": "health",
+          "n": 30,
+          "successes": 30,
+          "failures": 0,
+          "attemptMedianMs": 23.299999999999997,
+          "successMedianMs": 23.299999999999997,
+          "successHeaderMedianMs": 23.1,
+          "minMs": 14.4,
+          "maxMs": 278.9,
+          "bytes": [
+            85
+          ],
+          "encodings": [
+            null
+          ],
+          "statuses": {
+            "200": 30
+          }
+        },
+        {
+          "name": "identity",
+          "n": 30,
+          "successes": 30,
+          "failures": 0,
+          "attemptMedianMs": 32.35,
+          "successMedianMs": 32.35,
+          "successHeaderMedianMs": 32.05,
+          "minMs": 16.6,
+          "maxMs": 207.6,
+          "bytes": [
+            345
+          ],
+          "encodings": [
+            null
+          ],
+          "statuses": {
+            "200": 30
+          }
+        },
+        {
+          "name": "projects",
+          "n": 30,
+          "successes": 30,
+          "failures": 0,
+          "attemptMedianMs": 65.19999999999999,
+          "successMedianMs": 65.19999999999999,
+          "successHeaderMedianMs": 42,
+          "minMs": 41,
+          "maxMs": 167,
+          "bytes": [
+            109359
+          ],
+          "encodings": [
+            null
+          ],
+          "statuses": {
+            "200": 30
+          }
+        },
+        {
+          "name": "research",
+          "n": 30,
+          "successes": 30,
+          "failures": 0,
+          "attemptMedianMs": 95.35,
+          "successMedianMs": 95.35,
+          "successHeaderMedianMs": 78.6,
+          "minMs": 68.3,
+          "maxMs": 402.6,
+          "bytes": [
+            747360,
+            747359,
+            747349,
+            747350,
+            747352
+          ],
+          "encodings": [
+            "gzip"
+          ],
+          "statuses": {
+            "200": 30
+          }
+        },
+        {
+          "name": "social",
+          "n": 30,
+          "successes": 30,
+          "failures": 0,
+          "attemptMedianMs": 105.8,
+          "successMedianMs": 105.8,
+          "successHeaderMedianMs": 101.75,
+          "minMs": 76.1,
+          "maxMs": 250.1,
+          "bytes": [
+            67536,
+            67538,
+            67540
+          ],
+          "encodings": [
+            null
+          ],
+          "statuses": {
+            "200": 30
+          }
+        },
+        {
+          "name": "messenger-summary",
+          "n": 30,
+          "successes": 30,
+          "failures": 0,
+          "attemptMedianMs": 96.65,
+          "successMedianMs": 96.65,
+          "successHeaderMedianMs": 96.4,
+          "minMs": 78,
+          "maxMs": 260.1,
+          "bytes": [
+            84
+          ],
+          "encodings": [
+            null
+          ],
+          "statuses": {
+            "200": 30
+          }
+        },
+        {
+          "name": "search",
+          "n": 30,
+          "successes": 30,
+          "failures": 0,
+          "attemptMedianMs": 30.75,
+          "successMedianMs": 30.75,
+          "successHeaderMedianMs": 29.65,
+          "minMs": 21.5,
+          "maxMs": 258.4,
+          "bytes": [
+            2561
+          ],
+          "encodings": [
+            null
+          ],
+          "statuses": {
+            "200": 30
+          }
+        }
+      ]
+    },
+    "comparison": [
+      {
+        "name": "health",
+        "beforeMs": 32.35,
+        "afterMs": 23.299999999999997,
+        "deltaPercent": -27.975270479134483,
+        "beforeFailures": 0,
+        "afterFailures": 0
+      },
+      {
+        "name": "identity",
+        "beforeMs": 27.200000000000003,
+        "afterMs": 32.35,
+        "deltaPercent": 18.933823529411754,
+        "beforeFailures": 0,
+        "afterFailures": 0
+      },
+      {
+        "name": "projects",
+        "beforeMs": 66.65,
+        "afterMs": 65.19999999999999,
+        "deltaPercent": -2.1755438859715204,
+        "beforeFailures": 0,
+        "afterFailures": 0
+      },
+      {
+        "name": "research",
+        "beforeMs": 94.25,
+        "afterMs": 95.35,
+        "deltaPercent": 1.1671087533156488,
+        "beforeFailures": 0,
+        "afterFailures": 0
+      },
+      {
+        "name": "social",
+        "beforeMs": 118.55,
+        "afterMs": 105.8,
+        "deltaPercent": -10.754955714888236,
+        "beforeFailures": 0,
+        "afterFailures": 0
+      },
+      {
+        "name": "messenger-summary",
+        "beforeMs": 123.65,
+        "afterMs": 96.65,
+        "deltaPercent": -21.83582693085321,
+        "beforeFailures": 0,
+        "afterFailures": 0
+      },
+      {
+        "name": "search",
+        "beforeMs": 54.75,
+        "afterMs": 30.75,
+        "deltaPercent": -43.83561643835616,
+        "beforeFailures": 0,
+        "afterFailures": 0
+      }
+    ],
+    "context": {
+      "beforeStart": {
+        "startedAt": "2026-11-02T16:29:14.695Z",
+        "finishedAt": "2026-11-02T16:29:19.756Z",
+        "armedAndCorrectRelease": true,
+        "quiescent": true,
+        "backgroundServices": {
+          "primary": [],
+          "standby": []
+        }
+      },
+      "beforeEnd": {
+        "startedAt": "2026-11-02T16:35:18.647Z",
+        "finishedAt": "2026-11-02T16:35:25.067Z",
+        "armedAndCorrectRelease": true,
+        "quiescent": true,
+        "backgroundServices": {
+          "primary": [],
+          "standby": []
+        }
+      },
+      "afterStart": {
+        "startedAt": "2026-11-02T17:04:23.967Z",
+        "finishedAt": "2026-11-02T17:04:28.170Z",
+        "armedAndCorrectRelease": true,
+        "quiescent": true,
+        "backgroundServices": {
+          "primary": [],
+          "standby": []
+        }
+      },
+      "afterEnd": {
+        "startedAt": "2026-11-02T17:06:26.991Z",
+        "finishedAt": "2026-11-02T17:06:31.439Z",
+        "armedAndCorrectRelease": true,
+        "quiescent": false,
+        "backgroundServices": {
+          "primary": [
+            "synk-company-health.service"
+          ],
+          "standby": []
+        }
+      }
+    },
+    "armedAndQuiescentAtBothEnds": false,
+    "contextLimitation": "The immediate after-measurement snapshot observed the scheduled company health service active. It is retained; this is not a continuously idle or identical-load causal comparison."
+  },
+  "evidence": [
+    {
+      "file": "runtime-live-postcheck-1793637871952.json",
+      "sha256": "0147b058285d6eb01deb1f5d2393e4e9088197c698a04d91544fda042ce8fd5d"
+    },
+    {
+      "file": "public-verification-1793637964355.json",
+      "sha256": "dfe23f9d50fb35592e13180494671f59e1aa0640f2011a6ae0d26d214db3b606"
+    },
+    {
+      "file": "arm-postcheck-normal-v3.json",
+      "sha256": "399a3a293b9a7ec1ad72914f1b7097dda56752ac2868ff2fe9d20ab7c098c5f3"
+    },
+    {
+      "file": "seal47-result.json",
+      "sha256": "a1b5a7acd732e685f8c5ac74a7f95c448a1c4a866c99c158c00029cbf606c37c"
+    },
+    {
+      "file": "result.json",
+      "sha256": "a08c9f603814189df71d8426aeba6ff3cdf1267d0863161d4cbee0d2bc8c4f0a"
+    },
+    {
+      "file": "linux-qa-result-v12.json",
+      "sha256": "2e7f9b1dc50377255249b5f444fa838a157291f74f2e78c13e44371d5bf431d4"
+    },
+    {
+      "file": "backup-completed-pin-v1.json",
+      "sha256": "9c3ae23c9fb06b6187daf797e8e2bdd1220af76997e4d48d63897f906c3f706c"
+    },
+    {
+      "file": "backup-status-1793638244371.json",
+      "sha256": "6c4e0ac6db1e90475ead2a1e3b5de37f9f062ec85508cde65f4c38fee9dac0f3"
+    },
+    {
+      "file": "restore-v1.json",
+      "sha256": "67df680034e6d7e8905f3e1e3ab7ff81fda60be8e58db8619e170848d73f31bb"
+    },
+    {
+      "file": "restore-v1.json",
+      "sha256": "e4fec0d2a68d56fe0d4dfba86c0b2434581b859a11e58c1a56f957c989e9611f"
+    },
+    {
+      "file": "binding-v1.json",
+      "sha256": "20386b94d79f81c50208152f66bf19869afd43a89e35033d26ed117e013dcee8"
+    },
+    {
+      "file": "browser47-state-after47-start-1793639068170.json",
+      "sha256": "5f725908bade2c9759b0d64aa113f0bd31b740776939227ec279c9c227b750cc"
+    },
+    {
+      "file": "browser47-state-after47-end-1793639191439.json",
+      "sha256": "7bb21747f20f52d6d8d4274e5afbf687d9fa64365dc5808de6b425101fc56d92"
+    },
+    {
+      "file": "browser47-state-before46-start-1793636959756.json",
+      "sha256": "23370cfd270d0bc966a808d87b10e828d000f9429cc993903f109fac1b0002cf"
+    },
+    {
+      "file": "browser47-state-before46-end-1793637325067.json",
+      "sha256": "5eab4846e4b578dfeaf262e20cbea081f1af29852bcc1063ece2fddd2e7af782"
+    },
+    {
+      "file": "matched-browser47-1793639186974.json",
+      "sha256": "37e21bc39ca70dc1e4ffce60f3b02b973768d5cd471e08449f1c03b7ad48fb0f"
+    },
+    {
+      "file": "release47-phase-details-1793637938736.json",
+      "sha256": "d8894ab8e5d35e4b448446dd6b2cdd1f4394c237a9fad4c9a5f8716640656609"
+    },
+    {
+      "file": "media-rearm47-ha-1793638042484.json",
+      "sha256": "7e221b688013e33dc8e9b0642e4871d6631b5f9cdea4c4c83d985710e5c2db0d"
+    }
+  ]
+}

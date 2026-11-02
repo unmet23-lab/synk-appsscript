@@ -1,6 +1,6 @@
 {
-  "schema": "synk-company-media-dr-local-evidence/v1",
-  "status": "local-tests-and-cross-review-passed-not-deployed",
+  "schema": "synk-company-media-dr-evidence/v2",
+  "status": "actual-46-and-47-isolated-restores-passed",
   "sourceBase": "d1566e54a99889980f582b4b5d1e8298ea2c9df7",
   "sourceHead": "5946c129474b3b30d543320e8a5dd0be2f3c2983",
   "files": [
@@ -51,7 +51,7 @@
     "p0p1": 0
   },
   "productionChanges": 0,
-  "liveRestoreVerified": false,
+  "liveRestoreVerified": true,
   "isolatedLinux": {
     "tests": 14,
     "failures": 0,
@@ -60,5 +60,94 @@
     "protectedUnchanged": true,
     "operatingRestore": false,
     "evidenceSha256": "fbcfbd16c5f30f58b5e939b515126661eb1dbde9a20da103d33c696fd07fe926"
+  },
+  "liveRestoreScope": "Actual operating backups restored only into isolated derived volumes; no production restore or real-user login claim.",
+  "operatingEvidence": "operating47.json",
+  "actualRestores": {
+    "predecessor46": {
+      "status": "passed",
+      "releaseSha256": "857324da6a3c863a1a617d795fd885675e3e362c5557522d3b52705c373ce90c",
+      "backupCreatedAt": 1793621528834,
+      "dataBackupCreatedAt": "2026-11-02T12:12:08.834Z",
+      "archiveMd5Verified": true,
+      "media": {
+        "mode": "manifest-hydrated",
+        "helperSha256": "851dc81d9ce06105e176717c5cf1685e981a176b4d1e26c623dbb3a0121b3b05",
+        "manifestSha256": "101dea63b4da542b754c6e2bb510a45da33b19a8a4e6eb245510f99cd24bc79b",
+        "files": 77,
+        "contents": 59,
+        "logicalBytes": 2072055027,
+        "contentBytes": 1811648689,
+        "privateDerivedOnly": true,
+        "fromOtherBackups": 0
+      },
+      "archiveUnchanged": true,
+      "originalPreparedMarkerPreserved": true,
+      "standbyConfigRuntimeGuardEnvUnchanged": true,
+      "standbyProductionContainersUnchanged": true,
+      "logicalCopiesMatch": true,
+      "activeSessionAndTokenRowsPreserved": true,
+      "expiredTokenCleanup": {
+        "boundary": "before-server-import",
+        "cutoffAt": "2026-11-02T12:24:13.856Z",
+        "tokenRowsBefore": 424,
+        "tokenRowsAfter": 416,
+        "removedRows": 8,
+        "removedByPurpose": {
+          "session": 8
+        },
+        "allRemovedExpiredBeforeStartup": true,
+        "unexpiredRemovedRows": 0,
+        "addedRows": 0,
+        "changedRows": 0
+      },
+      "realUserLoginTest": false,
+      "productionTraffic": false,
+      "newVmProvisioned": false,
+      "qaContainersRemoved": true
+    },
+    "current47": {
+      "status": "passed",
+      "releaseSha256": "7367f9d19d5282a345ee8a97d299c8dc2c8f947290049a57282a5474de365887",
+      "backupCreatedAt": 1793638033339,
+      "dataBackupCreatedAt": "2026-11-02T16:47:13.339Z",
+      "archiveMd5Verified": true,
+      "media": {
+        "mode": "manifest-hydrated",
+        "helperSha256": "851dc81d9ce06105e176717c5cf1685e981a176b4d1e26c623dbb3a0121b3b05",
+        "manifestSha256": "c1d96ce00f728474e7b5d9c84da94a2bf7821005c238455adb04a769dbd1ab4e",
+        "files": 77,
+        "contents": 59,
+        "logicalBytes": 2072055027,
+        "contentBytes": 1811648689,
+        "privateDerivedOnly": true,
+        "fromOtherBackups": 0
+      },
+      "archiveUnchanged": true,
+      "originalPreparedMarkerPreserved": true,
+      "standbyConfigRuntimeGuardEnvUnchanged": true,
+      "standbyProductionContainersUnchanged": true,
+      "logicalCopiesMatch": true,
+      "activeSessionAndTokenRowsPreserved": true,
+      "expiredTokenCleanup": {
+        "boundary": "before-server-import",
+        "cutoffAt": "2026-11-02T16:57:26.121Z",
+        "tokenRowsBefore": 417,
+        "tokenRowsAfter": 416,
+        "removedRows": 1,
+        "removedByPurpose": {
+          "session": 1
+        },
+        "allRemovedExpiredBeforeStartup": true,
+        "unexpiredRemovedRows": 0,
+        "addedRows": 0,
+        "changedRows": 0
+      },
+      "realUserLoginTest": false,
+      "productionTraffic": false,
+      "newVmProvisioned": false,
+      "qaContainersRemoved": true
+    },
+    "accountBindingPassed": true
   }
 }
