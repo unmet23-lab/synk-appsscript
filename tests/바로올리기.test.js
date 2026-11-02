@@ -1931,6 +1931,38 @@ test('가볍게: 워크트리에서만 큰 미디어 폴더를 작업본에서 �
   assert.ok(워.있나('docs/캐릭터/정본_4K/까몽.png'));
 });
 
+test('가볍게: docs/마케팅은 소리·그림만 빼고, 되살림은 폴더 안 파일까지, 다시 구운 파일은 올리기가 꺼내 올린다', async (t) => {
+  const 판 = 새판(t, { 파일: {
+    'docs/마케팅/LAB_가/remotion/public/vo/s1.wav': Buffer.alloc(10, 1), 'docs/마케팅/LAB_가/remotion/public/vo/s1.json': '{"t":1}\n',
+    'docs/마케팅/LAB_가/표지.PNG': Buffer.alloc(10, 2), 'docs/마케팅/LAB_나/기획.md': '기획\n', 'docs/마케팅/LAB_나/컷.jpg': Buffer.alloc(10, 3),
+  } });
+  const 워 = 판.워크트리('wt');
+  const r = await 도구.가볍게({ 저장소: 워.폴더, 실행: true });
+  assert.equal(r.결과, '가볍게 함', JSON.stringify(r));
+  assert.equal(r.파일, 3, '소리·그림 셋(확장자 대소문자 무관)');
+  for (const p of ['docs/마케팅/LAB_가/remotion/public/vo/s1.wav', 'docs/마케팅/LAB_가/표지.PNG', 'docs/마케팅/LAB_나/컷.jpg']) assert.equal(워.있나(p), false, p);
+  assert.equal(워.읽기('docs/마케팅/LAB_가/remotion/public/vo/s1.json'), '{"t":1}\n', '글·json은 남는다');
+  assert.equal(워.읽기('docs/마케팅/LAB_나/기획.md'), '기획\n');
+  assert.deepEqual(워.상태(), []);
+  // 세션이 VO를 다시 구우면(빠진 자리에 새 파일) 올리기가 그 파일만 꺼내 함께 올린다 — 소리 없이 빠지지 않는다(Fable 설계 검토 P1-2)
+  워.쓰기('docs/마케팅/LAB_가/remotion/public/vo/s1.wav', Buffer.alloc(12, 9));
+  워.쓰기('docs/마케팅/LAB_가/remotion/public/vo/s1.json', '{"t":2}\n');
+  워.쓰기('docs/마케팅/LAB_가/remotion/public/vo/s2.wav', Buffer.alloc(8, 7));
+  const 올림 = await 도구.올리기({ 저장소: 워.폴더, 경로들: ['docs/마케팅/LAB_가'], 메시지: 'vo 다시', 실행: true });
+  assert.equal(올림.결과, '올림', JSON.stringify(올림));
+  assert.deepEqual(판.원격바이트('docs/마케팅/LAB_가/remotion/public/vo/s1.wav'), Buffer.alloc(12, 9));
+  assert.deepEqual(판.원격바이트('docs/마케팅/LAB_가/remotion/public/vo/s2.wav'), Buffer.alloc(8, 7));
+  assert.equal(판.원격파일('docs/마케팅/LAB_가/remotion/public/vo/s1.json'), '{"t":2}\n');
+  assert.equal(판.원격에있나('docs/마케팅/LAB_나/컷.jpg'), true, '빠진 다른 파일은 origin에서 지워지지 않는다');
+  assert.equal(판.원격에있나('docs/마케팅/LAB_가/표지.PNG'), true);
+  assert.equal(워.있나('docs/마케팅/LAB_가/표지.PNG'), false, '꺼낸 것은 바뀐 파일뿐');
+  // 폴더 되살림은 그 안 파일 무늬 제외까지 이긴다(`/폴더/`만으로는 안 됨 — P1-1)
+  const 되 = await 도구.가볍게({ 저장소: 워.폴더, 되살림: true, 폴더들: ['docs/마케팅/LAB_나'], 실행: true });
+  assert.equal(되.결과, '되살림', JSON.stringify(되));
+  assert.ok(워.있나('docs/마케팅/LAB_나/컷.jpg'));
+  assert.equal(워.있나('docs/마케팅/LAB_가/표지.PNG'), false);
+});
+
 // ── 명령줄 ──────────────────────────────────────────────────────────────────
 
 test('인자 읽기: 명령마다 받는 인자만 받고 틀리면 사용법 오류', () => {

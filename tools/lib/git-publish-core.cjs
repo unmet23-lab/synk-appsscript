@@ -23,6 +23,14 @@ const {
 const 다시한도 = 5;
 /** 가볍게가 빼는 폴더(10-20 origin 추적 크기: 캐릭터 1.35GB · 홍보물 0.56GB · 라디오 0.22GB, 전체 4.15GB). */
 const 가볍게뺄 = ['docs/캐릭터', 'docs/홍보물', 'docs/라디오'];
+/**
+ * 폴더째가 아니라 소리·그림 파일만 빼는 곳(11-02 유호님 「세 가지 다 해」 — 사본이 하루 수십 GB씩 쌓임). docs/마케팅 추적 1.99GB 가운데
+ * 이 확장자가 1.79GB다. 글·코드·json은 남겨 마케팅 문서·스크립트를 고치는 세션은 그대로 일한다. 다시 구운 파일은 올리기가 꺼내 올린다(가린자리꺼내기).
+ */
+const 가볍게미디어 = { 폴더: 'docs/마케팅', 확장자: ['wav', 'png', 'jpg', 'jpeg', 'webp', 'mp3', 'm4a', 'mp4', 'mov'] };
+const 가볍게미디어식 = new RegExp(`^${가볍게미디어.폴더}/.+\\.(${가볍게미디어.확장자.join('|')})$`, 'i');
+/** 가볍게가 작업본에서 빼는 자리인가(되살렸는지는 보지 않는다). */
+const 가볍게가린자리 = (p) => 가볍게뺄.some((d) => p.startsWith(`${d}/`)) || 가볍게미디어식.test(p);
 const 백업보관일 = 7;
 /** 따라가기가 짝을 찾아 볼 「이 가지에만 있는 커밋」 수. 넘으면 짝을 찾지 않고 멈춘다. */
 const 가지만한도 = 200;
@@ -88,9 +96,28 @@ function 진행중작업(c) {
  * B 바탕 별도 인덱스에 준 경로(모두면 바뀐 것 전부)를 얹어 커밋 C를 만든다. ref는 건드리지 않는다.
  * → {결과:'만듦', C, 바뀜, 조각보기} | {결과:'올릴 것 없음'|'멈춤', …}
  */
+/**
+ * 가볍게로 뺀 자리에 바뀌거나 새로 생긴 파일이 있으면 그 파일만 sparse 무늬에 더해 꺼낸다(덮어쓰지 않는다 — 11-02 재현).
+ * 그러지 않으면 별도 인덱스의 `add -A`가 sparse 밖 경로를 소리 없이 건너뛰어, 다시 구운 vo wav가 커밋에서 빠진다(Fable 설계 검토 P1-2).
+ * 경로들을 주면 그 안만 본다. 꺼낸 경로 목록을 돌려준다.
+ */
+function 가린자리꺼내기(git, 경로들) {
+  const 켜짐 = git.돌리기(['config', '--get', 'core.sparseCheckout'], { 허용: null });
+  if (String(켜짐.stdout).trim() !== 'true') return [];
+  const 범위 = 경로들 ? ['--', ...경로들] : [];
+  const 꺼낼 = git(['--no-optional-locks', 'status', '--porcelain=v1', '-z', '--no-renames', '--untracked-files=all', ...범위]).toString('utf8')
+    .split('\0').filter(Boolean).map((줄) => 줄.slice(3)).filter((p) => 가볍게가린자리(p) && !p.endsWith('/'));
+  if (!꺼낼.length) return [];
+  const 무늬 = 꺼낼.map((p) => `/${p.replace(/[[\]*?\\!#]/g, '\\$&')}`);
+  const r = git.돌리기(['sparse-checkout', 'add', '--stdin'], { input: `${무늬.join('\n')}\n`, 허용: null });
+  if (r.status !== 0) throw new 멈춤(`가볍게로 뺀 자리의 바뀐 파일 ${꺼낼.length}개를 꺼내지 못했다 — ${String(r.stderr).trim()} · \`node tools/바로올리기.js 가볍게 --되살림 <폴더> --실행\` 뒤 다시`);
+  return 꺼낼;
+}
+
 function C만들기(c, B, 일) {
   const { git } = c;
   const 저장 = c.저장;
+  가린자리꺼내기(git, 일.모두 ? null : 일.경로들);
   const 인덱스 = 별도인덱스(git, B);
   try {
     const 통째 = 일.경로들.filter((p) => !일.조각.has(p) || 일.조각.get(p) === '전부');
@@ -1283,21 +1310,25 @@ async function 가볍게(옵션 = {}) {
       const 폴더들 = (옵션.폴더들 || []).map((p) => 경로맞추기(c.저장소, p, c.기준폴더).replace(/\/+$/, ''));
       const 할일 = 폴더들.length ? `git sparse-checkout add — ${폴더들.join(' · ')}만 다시 꺼낸다` : 'git sparse-checkout disable — 뺀 폴더를 모두 다시 꺼낸다';
       if (!옵션.실행) return { 결과: '미리 보기', 할일 };
+      // `/<폴더>/`만으로는 파일 무늬 제외(`!/docs/마케팅/**/*.wav`)를 못 이긴다 — 폴더 무늬는 파일에 대지 않아서다(Fable 설계 검토 P1-1).
+      // `/<폴더>/**`를 함께 더해 안쪽 파일마다 뒤 무늬가 이기게 한다. 파일 하나를 줘도 `/<파일>`이 맞는다.
       const r = 폴더들.length
-        ? git.돌리기(['sparse-checkout', 'add', '--stdin'], { input: `${폴더들.map((p) => `/${p}/`).join('\n')}\n`, 허용: null })
+        ? git.돌리기(['sparse-checkout', 'add', '--stdin'], { input: `${폴더들.flatMap((p) => [`/${p}`, `/${p}/**`]).join('\n')}\n`, 허용: null })
         : git.돌리기(['sparse-checkout', 'disable'], { 허용: null });
       if (r.status !== 0) throw new 멈춤(`되살리지 못했다 — ${String(r.stderr).trim()}`);
       return { 결과: '되살림', 할일 };
     }
-    const 고침 = git(['--no-optional-locks', 'status', '--porcelain=v1', '-z', '--untracked-files=all', '--', ...가볍게뺄]).toString('utf8').split('\0').filter(Boolean);
-    if (고침.length) return { 결과: '멈춤', 이유: `뺄 폴더에 아직 커밋하지 않은 파일이 ${고침.length}개 있다 — 먼저 올리거나 옮긴다`, 걸림: 고침.slice(0, 10) };
+    const 뺄곳 = [...가볍게뺄, 가볍게미디어.폴더];
+    const 고침 = git(['--no-optional-locks', 'status', '--porcelain=v1', '-z', '--no-renames', '--untracked-files=all', '--', ...뺄곳]).toString('utf8')
+      .split('\0').filter(Boolean).filter((줄) => 가볍게가린자리(줄.slice(3)));
+    if (고침.length) return { 결과: '멈춤', 이유: `뺄 자리에 아직 커밋하지 않은 파일이 ${고침.length}개 있다 — 먼저 올리거나 옮긴다`, 걸림: 고침.slice(0, 10) };
     let 바이트 = 0, 수 = 0;
-    for (const 줄 of git(['ls-tree', '-r', '-l', '-z', 'HEAD', '--', ...가볍게뺄]).toString('utf8').split('\0')) {
-      const m = /^\d+ blob [0-9a-f]+\s+(\d+)\t/.exec(줄);
-      if (m) { 바이트 += Number(m[1]); 수++; }
+    for (const 줄 of git(['-c', 'core.quotepath=off', 'ls-tree', '-r', '-l', '-z', 'HEAD', '--', ...뺄곳]).toString('utf8').split('\0')) {
+      const m = /^\d+ blob [0-9a-f]+\s+(\d+)\t(.*)$/s.exec(줄);
+      if (m && 가볍게가린자리(m[2])) { 바이트 += Number(m[1]); 수++; }
     }
-    const 무늬 = ['/*', ...가볍게뺄.map((p) => `!/${p}/`)];
-    const 요약 = { 뺄폴더: 가볍게뺄, 파일: 수, 바이트, 무늬 };
+    const 무늬 = ['/*', ...가볍게뺄.map((p) => `!/${p}/`), ...가볍게미디어.확장자.map((e) => `!/${가볍게미디어.폴더}/**/*.${e}`)];
+    const 요약 = { 뺄폴더: 가볍게뺄, 뺄미디어: 가볍게미디어, 파일: 수, 바이트, 무늬 };
     if (!옵션.실행) return { 결과: '미리 보기', ...요약 };
     const r = git.돌리기(['sparse-checkout', 'set', '--no-cone', '--stdin'], { input: `${무늬.join('\n')}\n`, 허용: null });
     if (r.status !== 0) throw new 멈춤(`가볍게 하지 못했다 — ${String(r.stderr).trim()}`);
@@ -1312,4 +1343,4 @@ async function 가볍게(옵션 = {}) {
 // ── 명령줄 ──────────────────────────────────────────────────────────────────
 
 
-module.exports = { 올리기, 따라가기, 가볍게, 가볍게뺄, 좋은결과, 따라가기계획, 따라가기실행, 공용따라가기, 상태읽기, 맥락, origin판들, 가까운바탕, 받은것만바탕 };
+module.exports = { 올리기, 따라가기, 가볍게, 가볍게뺄, 가볍게미디어, 가볍게가린자리, 좋은결과, 따라가기계획, 따라가기실행, 공용따라가기, 상태읽기, 맥락, origin판들, 가까운바탕, 받은것만바탕 };
