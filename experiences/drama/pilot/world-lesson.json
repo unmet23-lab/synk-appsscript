@@ -31,15 +31,15 @@
   "coach": {
    "noteEnding": {
     "text": "끝에 '요'를 붙여 봐요. 이 장면을 다시 해 볼까요?",
-    "audio": null
+    "audio": "media/coach-note-ending.mp3"
    },
    "noteOther": {
     "text": "이 장면을 다시 해 볼까요?",
-    "audio": null
+    "audio": "media/coach-note.mp3"
    },
    "wrap": {
     "text": "오늘은 여기까지! 수고했어요.",
-    "audio": null
+    "audio": "media/coach-wrap.mp3"
    }
   },
   "nextEpisode": {
@@ -58,8 +58,12 @@
     "speaker": "senior",
     "text": "저기, 혹시 신입생이에요? 아까 정문 안내 지도 앞에서 빙빙 돌고 있었죠?",
     "meaning": "Hey, are you a freshman by any chance? You were circling around the campus map by the main gate earlier, right?",
-    "audio": "media/senior-01.mp3",
-    "image": "media/taeo-still.webp"
+    "audio": null,
+    "image": "media/taeo-still.webp",
+    "video": "media/c1-reply.mp4",
+    "videoStart": 0,
+    "videoEnd": null,
+    "retakeStart": 0
    },
    {
     "type": "student",
@@ -72,6 +76,9 @@
      "길을 잃어서",
      "헤맸어요"
     ],
+    "listenFirst": "media/c3-listen.mp4",
+    "reaskVideo": "media/c3-reask.mp4",
+    "listen": "media/c2-listen.mp4",
     "answerSec": 12,
     "reviewed": true
    },
@@ -83,10 +90,10 @@
     "meaning": "Haha, everyone gets lost here at first. I'm Taeo, a third-year. Just call me sunbae (senior).",
     "audio": null,
     "image": "media/taeo-still.webp",
-    "video": "media/taeo-reply.mp4",
+    "video": "media/c2-reply.mp4",
     "videoStart": 0,
-    "videoEnd": 9.99,
-    "retakeStart": 2.25
+    "videoEnd": null,
+    "retakeStart": 2
    },
    {
     "type": "student",
@@ -100,6 +107,7 @@
      "어디에 있는지"
     ],
     "goal": true,
+    "listen": "media/c4-listen.mp4",
     "answerSec": 15,
     "reviewed": true
    },
@@ -109,8 +117,12 @@
     "speaker": "senior",
     "text": "선배님은 좀 부담스러운데… 뭐, 편한 대로 해요. 도서관? 밥 먹고 같이 가요. 내가 데려다줄게요.",
     "meaning": "\"Sunbae-nim\" feels like a bit much... well, whatever you're comfortable with. The library? Let's go together after we eat. I'll take you there.",
-    "audio": "media/senior-03.mp3",
-    "image": "media/taeo-still.webp"
+    "audio": null,
+    "image": "media/taeo-still.webp",
+    "video": "media/c4-reply.mp4",
+    "videoStart": 0,
+    "videoEnd": null,
+    "retakeStart": 0
    },
    {
     "type": "student",

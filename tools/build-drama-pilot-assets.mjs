@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 // 드라마 말하기 로컬 시범판 — 승인 자산을 재생용으로 정리한다(2026-10-31). 새 생성 없음: 복사·자르기·메타 지우기만.
-// 쓰기: node tools/build-drama-pilot-assets.mjs [--원천 <태오 원테이크 폴더>] [--쇼케이스원천 <구운 영상 폴더>] [--확인]
+// 쓰기: node tools/build-drama-pilot-assets.mjs [--쇼케이스원천 <구운 영상 폴더>] [--원천 <정지 사진 · 듣는 고리 원천, 기본은 쇼케이스 폴더>] [--확인]
 //  · 코치 녹음(content.mjs COACH_VOICE)과 쇼케이스 영상(SHOWCASE_CUTS)은 원천·구간이 있을 때만 만든다 — 없으면 건너뛰고 화면은 지금 판 그대로.
 //    감독 녹음은 쓰지 않는다(결정 10-31 「싱크타운 다시 짜기」 ③). 앞 빌드가 남긴 director-*.mp3 사본은 지운다(재생 사본일 뿐, 원천은 s1/소리에 그대로).
-//  · 원천 영상 0.3~4.0초에는 학생 모범(Hana) 소리가 구워져 있다. 그 구간은 소리 트랙 없는 듣기 고리로만 내보내고
+//  · 쇼케이스 영상 앞부분(listen 구간)에는 학생 모범(Hana) 소리가 구워져 있다. 그 구간은 소리 트랙 없는 듣기 고리로만 내보내고
 //    (앞으로 갔다 거꾸로 돌아오는 고리 — 고정 길이로 끊지 않고 학습자가 말하는 동안 계속 돈다),
-//    선배의 대답(웃음+대사)은 학생 소리가 끝난 뒤(4.05초)부터 따로 자른다. 어떤 경로로도 Hana 소리가 「내 대답」처럼 나지 않는다.
+//    선배의 대답(웃음+대사)은 학생 소리가 끝난 뒤부터 따로 자른다. 어떤 경로로도 Hana 소리가 「내 대답」처럼 나지 않는다.
 //  · mp3는 소리를 다시 인코딩하지 않는다(승인 목소리 그대로). ID3·인코더 표식만 뺀다.
 //  · 결과: experiences/drama/pilot/media/ + manifest.json(파일·바이트·sha256). 원천은 덮지 않는다.
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -31,8 +31,8 @@ const LATIN_RANGE = 'U+0020-007E,U+00A0-00FF,U+2010-2027,U+2030-203A,U+2190-2193
 
 const argv = process.argv.slice(2);
 const opt = (name) => { const i = argv.indexOf(name); return i >= 0 ? argv[i + 1] : null; };
-const VENDOR = opt('--원천') || path.join(os.homedir(), 'Documents/synk-vendor/drama-taeo-onetake-20261031');
 const SHOWCASE_SRC = opt('--쇼케이스원천') || path.join(os.homedir(), 'Documents/synk-vendor/drama-showcase-20261031');
+const VENDOR = opt('--원천') || SHOWCASE_SRC; // 정지 사진 · 기본 듣는 고리의 원천(11-03부터 쇼케이스 폴더와 같다)
 const CHECK_ONLY = argv.includes('--확인');
 
 const sha = (p) => crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
@@ -41,9 +41,7 @@ const ff = (args) => execFileSync('ffmpeg', ['-hide_banner', '-v', 'error', '-no
 // 메타데이터를 남기지 않는 공통 꼬리(인코더 이름·만든 도구·원천 경로 없음).
 const CLEAN = ['-map_metadata', '-1', '-map_chapters', '-1', '-fflags', '+bitexact', '-metadata:s', 'encoder=', '-metadata:s', 'handler_name='];
 
-const LISTEN = { from: 0.30, to: 3.90 };   // 듣는 연기(입 다묾). 이 구간의 소리는 버린다.
-const REPLY_FROM = 4.05;                   // Hana 소리 끝(3.99초 무음 시작) 뒤
-if (REPLY_FROM < 4.0) throw new Error('선배 대답은 학생 모범 소리(3.99초에 끝)가 끝난 뒤부터 잘라야 합니다');
+const LISTEN = { from: 0.30, to: 3.90 };   // 듣는 연기(입 다묾 — C4는 7.78초에 선배가 말하기 시작). 이 구간의 소리는 버린다.
 
 // 듣는 고리: [from, to] 구간을 소리 없이 앞으로 갔다 거꾸로 돌아오게. 선배 목소리 구간: from부터 to(없으면 끝)까지, 소리 포함.
 const listenLoop = (from, to) => (src, dst) => ff(['-i', src, '-filter_complex',
@@ -58,15 +56,16 @@ const voicedCut = (from, to = null) => (src, dst) => {
   '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart', '-flags:v', '+bitexact', '-bsf:v', 'filter_units=remove_types=6', '-flags:a', '+bitexact', ...CLEAN, dst]);
 };
 
+// 11-03 태오 = 덧니 선배(결정 11-02 「쇼케이스 태오 얼굴 = 덧니 선배」): 정지 사진은 C4 끝 그림, 기본 듣는 고리는 C4의 듣는 구간.
+// 옛 승인 원테이크(vid-senior-real · onetake3)는 쓰지 않는다 — 선배 2 영상은 쇼케이스 C2가 맡는다.
 export const JOBS = [
- { out: 'taeo-listen.mp4', kind: 'video-silent', note: '듣는 연기 고리(소리 없음, 앞뒤 왕복)', run: listenLoop(LISTEN.from, LISTEN.to), src: 'onetake3-original.mp4' },
- { out: 'taeo-reply.mp4', kind: 'video', note: '선배 웃음+대사(승인 원테이크, 원래 녹음 정렬판)', run: voicedCut(REPLY_FROM), src: 'onetake3-original.mp4' },
- { out: 'taeo-still.webp', kind: 'image', note: '같은 인물 정지 사진(음성만 있는 대사에 쓴다 — 립싱크 아님)',
-   run: (src, dst) => ff(['-i', src, '-vf', 'scale=720:1280:flags=lanczos', '-c:v', 'libwebp', '-quality', '82', ...CLEAN, dst]),
-   src: 'vid-senior-real.png' },
+ { out: 'taeo-listen.mp4', kind: 'video-silent', note: '듣는 연기 고리(소리 없음, 앞뒤 왕복) — 쇼케이스 C4의 듣는 구간', run: listenLoop(LISTEN.from, LISTEN.to), src: 'C4.mp4' },
+ { out: 'taeo-still.webp', kind: 'image', note: '같은 인물 정지 사진(음성만 있는 대사에 쓴다 — 립싱크 아님) — C4 끝 그림',
+   run: (src, dst) => ff(['-i', src, '-vf', 'scale=720:-2:flags=lanczos,crop=720:1280', '-c:v', 'libwebp', '-quality', '82', ...CLEAN, dst]),
+   src: 'taeo-still.png' },
  { out: 'taeo-still-blur.webp', kind: 'image', note: '데스크톱 바탕용 흐린 사진',
    run: (src, dst) => ff(['-i', src, '-vf', 'scale=144:256,gblur=sigma=6,scale=288:512', '-c:v', 'libwebp', '-quality', '60', ...CLEAN, dst]),
-   src: 'vid-senior-real.png' },
+   src: 'taeo-still.png' },
 ];
 
 const MP3 = [
@@ -76,7 +75,7 @@ const MP3 = [
 ];
 // 코치 녹음(Harrison) — 녹음 전이면 원천이 없어 건너뛴다.
 const COACH_MP3 = Object.values(COACH_VOICE).map((v) => [v.source, v.file]);
-const STALE = ['director-cut.mp3', 'director-again.mp3', 'director-wrap.mp3', 'director-better-ending.mp3'];
+const STALE = ['director-cut.mp3', 'director-again.mp3', 'director-wrap.mp3', 'director-better-ending.mp3', 'taeo-reply.mp4']; // taeo-reply: 11-03 옛 얼굴 원테이크(선배 2는 쇼케이스 C2)
 
 // 쇼케이스 영상: 구간을 채운 자리만. 듣는 고리는 학생 목소리 구간이라 소리를 버리고, 선배 구간은 그 뒤부터여야 한다.
 export function showcaseJobs(cuts = SHOWCASE_CUTS) {

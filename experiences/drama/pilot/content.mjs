@@ -20,7 +20,7 @@ const built = (file) => (fs.existsSync(new URL(file, MEDIA_DIR)) ? `/media/${fil
 
 // 이야기 밖 코치(결정 10-31 「싱크타운 다시 짜기」 ③). 목소리는 감독으로 골랐던 Harrison 그대로 쓴다.
 // 감독 녹음(s1/소리/ep01-director-*)은 컷·촬영·「지난번엔」을 말해서 쓰지 않는다.
-// 아직 녹음 전이다 — 힉스필드 크레딧이 들어 유호님 승인 뒤 쇼케이스 녹음과 한 번에 굽는다. s1/소리/<source>에 두고 빌드하면 자리에 붙는다.
+// 11-03 일레븐 v4 Harrison으로 세 줄을 한 번에 굽고 줄 사이에서 잘랐다(s1/소리/ep01-coach.json). s1/소리/<source>에 두고 빌드하면 자리에 붙는다.
 // 테이크 2 통과에는 목소리를 두지 않고 화면 ✓만 둔다(쇼케이스 새글 G6). 장면 뒤 「다른 말로 한번 더」도 쇼케이스 흐름대로 글 카드만이다.
 export const COACH_VOICE = {
  noteEnding: { text: '끝에 \'요\'를 붙여 봐요. 이 장면을 다시 해 볼까요?', source: 'ep01-coach-01.mp3', file: 'coach-note-ending.mp3' }, // 새글 G4
@@ -28,17 +28,17 @@ export const COACH_VOICE = {
  wrap: { text: '오늘은 여기까지! 수고했어요.', source: 'ep01-coach-03.mp3', file: 'coach-wrap.mp3' }, // 새글 G13
 };
 
-// 쇼케이스 한 테이크 넷(명세 qa/쇼케이스-20261031/지시문.mjs) — 아직 굽지 않았다(얼굴 결정·견적 승인 뒤).
-// 구운 파일을 빌드의 --쇼케이스원천 폴더에 <src>로 두고, 받은 파일에서 잰 구간(초, [시작, 끝])으로 null을 채운 뒤 빌드하면 만들어진 사본만 장면에 붙는다.
+// 쇼케이스 한 테이크 넷(명세 qa/쇼케이스-20261031/지시문.mjs) — 11-03 덧니 선배로 구워 원래 녹음(Hana · Julian)을 문장 시작에 맞춰 얹은 판(시댄스 2.5 무제한).
+// 원천은 빌드의 --쇼케이스원천 폴더의 <src>, 구간(초, [시작, 끝])은 원래 녹음 판에서 잰 것. 구간을 채운 자리만 장면에 붙는다.
 //  listen: 학생(Hana) 목소리 구간 — 소리를 버리고 듣는 연기 고리로만 쓴다(학생 소리가 「내 대답」처럼 나지 않게).
 //    쇼케이스 고리는 녹음을 누를 때 처음부터 돈다(pilot.mjs) — 영상판에서 Hana 줄과 듣는 반응이 맞게.
 //    first: 그 줄의 첫 시도(아직 어긋남 없음)에만 쓰는 고리 — C3은 「헤맸어」에 눈이 반짝이는 반응이라 첫 시도용, 되물은 뒤에는 C2 고리.
 //  reply·reask: 선배 목소리 구간(학생 소리가 끝난 뒤부터). retakeFrom: 테이크 2에서 웃음 뒤 대사를 시작할 곳(reply 사본 안의 초).
 export const SHOWCASE_CUTS = [
- { cut: 'C1', src: 'C1.mp4', onto: 'a1', reply: null }, // 선배 1
- { cut: 'C3', src: 'C3.mp4', onto: 's1e01-6', listenFor: 's1e01-6', first: true, listen: null, reask: null }, // 「…헤맸어.」 → 「응? 응? 뭐라고요?」 — 6번 줄 첫 시도 · 첫 되묻기
- { cut: 'C2', src: 'C2.mp4', onto: 'a2', listenFor: 's1e01-6', listen: null, reply: null, retakeFrom: null }, // 6번 줄 + 선배 2
- { cut: 'C4', src: 'C4.mp4', onto: 'a3', listenFor: 's1e01-7', listen: null, reply: null }, // 7번 줄 + 선배 3
+ { cut: 'C1', src: 'C1.mp4', onto: 'a1', reply: [0, null] }, // 선배 1
+ { cut: 'C3', src: 'C3.mp4', onto: 's1e01-6', listenFor: 's1e01-6', first: true, listen: [0.2, 4.0], reask: [4.05, null] }, // 「…헤맸어.」 → 「응? 응? 뭐라고요?」 — 6번 줄 첫 시도 · 첫 되묻기
+ { cut: 'C2', src: 'C2.mp4', onto: 'a2', listenFor: 's1e01-6', listen: [0.3, 4.6], reply: [4.65, null], retakeFrom: 2.0 }, // 6번 줄 + 선배 2(테이크2는 웃음 뒤 「여기」부터)
+ { cut: 'C4', src: 'C4.mp4', onto: 'a3', listenFor: 's1e01-7', listen: [0.3, 7.2], reply: [7.3, null] }, // 7번 줄 + 선배 3(영상에 「도서관?」 한 마디가 없어 원래 녹음에서도 뺐다)
 ];
 export const cutFile = (c, part) => `${c.cut.toLowerCase()}-${part}.mp4`;
 export const cutParts = (c) => ['listen', 'reply', 'reask'].filter((p) => Array.isArray(c[p]));
@@ -89,8 +89,7 @@ export const PILOT = {
  scene: withShowcase([
   actor('a1', 0, { audio: '/media/senior-01.mp3', image: STILL }),
   student('s1e01-6', '/media/model-6.mp3'),
-  // 승인 원테이크의 선배 대답 구간(웃음 + 대사). 학생 모범 소리가 구워진 앞부분은 잘라 냈다.
-  actor('a2', 1, { audio: null, image: STILL, video: '/media/taeo-reply.mp4', videoStart: 0, videoEnd: 9.99, retakeStart: 2.25 }), // 테이크2에선 웃음 뒤 대사부터(원본 6.3초)
+  actor('a2', 1, { audio: null, image: STILL }), // 선배 2는 쇼케이스 C2 영상(웃음 + 대사)으로만 — withShowcase가 붙인다
   student('s1e01-7', '/media/model-7.mp3', { goal: true }),
   actor('a3', 2, { audio: '/media/senior-03.mp3', image: STILL }),
   student('s1e01-8', '/media/model-8.mp3'),
@@ -117,7 +116,7 @@ export const PILOT = {
  assets: {
   manifest: '/media/manifest.json',
   // 재생에 쓰는 파일 전부(제작 도구가 만들고 manifest.json에 바이트·sha256을 적는다). 코치 녹음·쇼케이스 영상은 만들어진 것만.
-  media: ['taeo-listen.mp4', 'taeo-reply.mp4', 'taeo-still.webp', 'taeo-still-blur.webp',
+  media: ['taeo-listen.mp4', 'taeo-still.webp', 'taeo-still-blur.webp',
    'senior-01.mp3', 'senior-03.mp3', 'senior-04.mp3', 'senior-ask-1.mp3', 'senior-ask-2.mp3', 'senior-ask-3.mp3',
    'model-6.mp3', 'model-7.mp3', 'model-8.mp3', 'SUIT-Variable.woff2',
    ...['InterTight-Medium.woff2', 'InterTight-Bold.woff2', 'DMMono-Regular.woff2', 'DMMono-Medium.woff2', ...Object.values(COACH_VOICE).map((v) => v.file), ...SHOWCASE_CUTS.flatMap((c) => cutParts(c).map((p) => cutFile(c, p)))].filter(built)],
