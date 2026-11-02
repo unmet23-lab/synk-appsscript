@@ -761,7 +761,7 @@
 ### 새 노트북(RTX 5090 24GB)은 블렌더 한 장이 ZeroGPU보다 빠르다
 - 증상: 10-08·10-14의 「로컬은 느리니 ZeroGPU로」 판단은 옛 노트북 기준이었다(10-08 450장 3시간 25분 렉).
 - 원인: 10-16 리전 프로 7(RTX 5090 Laptop 24GB, OptiX)로 옮겼다. 10-18 같은 장면·같은 설정으로 다시 잼(펠트 찻집 `.tmp/argon-blender-20261017/scene_v3.blend`, 물체 211·면 8.9만, Cycles). 1024² 샘플 72: 로컬 렌더 5.3~5.6초(블렌더 띄우기 포함 7초) 대 ZeroGPU 9.8초(올리고 받기 포함 왕복 35초). 1080×1920 샘플 512: 로컬 16~22초(18~25초) 대 ZeroGPU 19.3초(49초). 결과 그림은 같다(평균 화소 차이 0.52/255). ZeroGPU Space는 반쪽 RTX Pro 6000에서 CUDA로 그린다.
-- 고침: 블렌더 렌더는 로컬이 기본이다. ZeroGPU(`cpuai/blender-render-studio`)는 노트북을 다른 일에 비워 둬야 할 때, 로컬과 나눠 동시에 돌릴 때만 쓴다(하루 40분이면 무거운 컷 약 120장). 재는 도구 `.tmp/bench-5090-local/cafe/render_local.py`·`render_zerogpu.py`.
+- 고침: 11-03부터 여러 장은 `python -X utf8 tools/허깅페이스.py 블렌더렌더 … --남에게보내도됨`이 허깅페이스 먼저 · 몫 밖은 로컬로 나눠 동시에 그린다([허깅페이스 노트](허깅페이스.md#블렌더-렌더는-space와-같은-설정을-로컬에도-걸어야-섞어-그려도-같은-그림이다-2026-11-03-claude)). 그 전 판단: 블렌더 렌더는 로컬이 기본이다. ZeroGPU(`cpuai/blender-render-studio`)는 노트북을 다른 일에 비워 둬야 할 때, 로컬과 나눠 동시에 돌릴 때만 쓴다(하루 40분이면 무거운 컷 약 120장). 재는 도구 `.tmp/bench-5090-local/cafe/render_local.py`·`render_zerogpu.py`.
 - 다시 확인: 같은 .blend를 `render_local.py`와 `render_zerogpu.py`로 한 번씩 돌려 렌더 초를 견준다.
 
 ### 남의 이미지·업스케일 Space는 GPU 몇 초에 왕복 몇 분이고, 공식 SeedVR2 Space는 깨져 있다

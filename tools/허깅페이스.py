@@ -23,6 +23,9 @@
   python -X utf8 tools/허깅페이스.py 목소리떼기 <출력폴더> <입력…> --남에게보내도됨 [--로컬만] [--cpu]
          → <이름>_목소리.wav · <이름>_바탕.wav(로컬 Demucs 목소리떼기.py와 같은 이름), 엔진은 떼기기록.json
   python -X utf8 tools/허깅페이스.py 받아쓰기 <파일…> --남에게보내도됨 [--로컬만] [--언어 ko] [--json]
+  python -X utf8 tools/허깅페이스.py 블렌더렌더 <packed.blend> <출력폴더> --프레임 1-48 --남에게보내도됨
+         [--가로 1280 --세로 720 --샘플 64 --장당초 20 --묶음 4] [--허깅페이스최대 N] [--로컬만] [--cpu]
+         → frame_000001.png …(Space와 로컬이 같은 설정 · 같은 이름), 엔진은 렌더기록.json. 몫이 모자랄 게 보이면 앞은 Space, 뒤는 로컬 동시에
          (--남에게보내도됨이 없으면 모두 로컬. 몫 밖 · 멈춤 · Space 두 번 잇단 실패면 남은 것만 로컬 — 떼기는 공용 GPU 줄로)
   python -X utf8 tools/허깅페이스.py 기록 [--날 2026-11-02]
   python -X utf8 tools/허깅페이스.py 풀기 --확인
@@ -509,6 +512,174 @@ def 받아쓰기(파일들: list, 로컬만=False, 남에게보내도됨=False, 
     return {'결과': sorted(해냄, key=lambda x: 차례[x['파일']]), '로컬로간까닭': 까닭 if 남음 else ''}
 
 
+블렌더space = 'cpuai/blender-render-studio'
+블렌더띄우기초 = 25    # 조각마다 Space 안에서 블렌더를 띄우고 장면을 읽는 몫(GPU를 쥔 채 센다)
+로컬['블렌더'] = _경로('SYNK_BLENDER', r'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe')
+로컬['블렌더렌더'] = 여기 / 'lib' / '블렌더로컬렌더.py'
+
+
+def 프레임풀기(글: str) -> list:
+    """'1' · '1-48' · '1-48:2'(2장마다) → 프레임 번호 목록."""
+    m = re.fullmatch(r'\s*(\d+)\s*(?:-\s*(\d+)\s*(?::\s*(\d+))?)?\s*', str(글))
+    if not m:
+        raise ValueError(f'프레임은 1 · 1-48 · 1-48:2 꼴이다: {글}')
+    처음, 끝, 걸음 = int(m.group(1)), int(m.group(2) or m.group(1)), int(m.group(3) or 1)
+    if 끝 < 처음 or 걸음 < 1:
+        raise ValueError(f'프레임 범위가 거꾸로이거나 걸음이 0이다: {글}')
+    return list(range(처음, 끝 + 1, 걸음))
+
+
+def _블렌더설정(프레임: list, a: dict) -> dict:
+    """Space render.schema.json 설정 — 로컬 블렌더로컬렌더.py에도 같은 값을 건다."""
+    한장 = len(프레임) == 1
+    걸음 = 프레임[1] - 프레임[0] if len(프레임) > 1 else 1
+    return {'schema_version': 1, 'mode': 'image' if 한장 else 'frames', 'frame': 프레임[0],
+            'frame_start': 프레임[0], 'frame_end': 프레임[-1], 'frame_step': 걸음,
+            'width': a['가로'], 'height': a['세로'], 'samples': a['샘플'], 'denoise': True, 'adaptive_threshold': 0.02,
+            'seed': 0, 'engine': a['엔진'], 'device': 'CUDA' if a['엔진'] == 'CYCLES' else 'AUTO', 'gpu_size': 'large',
+            'format': 'PNG', 'color_depth': 8, 'batch_size': a['묶음'], 'strict_assets': True, 'camera': a.get('카메라'),
+            'gpu_seconds': int(min(600, max(10, a['장당초'] * a['묶음'] + 블렌더띄우기초)))}
+
+
+def _로컬블렌더명령(장면, 출력폴더, 프레임: list, a: dict, cpu: bool) -> list:
+    설정 = {'출력': str(출력폴더), '프레임': 프레임, '가로': a['가로'], '세로': a['세로'], '샘플': a['샘플'],
+          'denoise': True, 'adaptive_threshold': 0.02, 'seed': 0, '엔진': a['엔진'], '장치': 'CPU' if cpu else 'OPTIX',
+          'camera': a.get('카메라')}
+    return [str(로컬['블렌더']), '-b', str(장면), '-P', str(로컬['블렌더렌더']), '--', json.dumps(설정, ensure_ascii=False)]
+
+
+def _로컬블렌더돌리기(장면, 출력폴더, 프레임: list, a: dict, cpu: bool) -> int:
+    명령 = _로컬블렌더명령(장면, 출력폴더, 프레임, a, cpu)
+    if cpu:
+        return _낮게돌리기(명령)
+    상한 = 10 + int(len(프레임) * max(a['장당초'], 10) * 2 / 60)
+    return _줄서서돌리기('블렌더-허깅페이스밖', f'블렌더 {len(프레임)}장(허깅페이스 몫 밖)', 상한, 명령)
+
+
+def _허깅페이스블렌더(장면, 출력폴더, 프레임: list, a: dict, 메모: str) -> list:
+    """Space에 한 일감으로 올려 조각(묶음 장)마다 한도지키기 안에서 그리고, 다 그린 장을 받아 출력폴더에 둔다.
+    돌려주는 것: 해낸 프레임 번호. 몫 밖 · 멈춤 · 두 번 잇단 실패면 거기서 멈춘다(남은 장은 부른 쪽이 로컬로)."""
+    import tempfile
+    import zipfile
+    from gradio_client import handle_file
+    설정 = _블렌더설정(프레임, a)
+    필요초 = 설정['gpu_seconds'] * (2 if 설정['gpu_size'] == 'xlarge' else 1)
+    토큰 = _토큰()
+    with tempfile.TemporaryDirectory() as 임시:
+        client = _클라이언트만들기(블렌더space, 토큰, Path(임시))
+        job, _ = client.predict(files=[handle_file(str(장면))], config_json=json.dumps(설정), config_file=None,
+                                api_name='/prepare_job')
+        살핌 = client.predict(job, api_name='/inspect_job')
+        if not isinstance(살핌, dict) or 살핌.get('status') != 'ready' or not (살핌.get('inspection') or {}).get('ok'):
+            raise RuntimeError(f'Space가 장면을 못 읽었다(GPU는 안 씀): {str(살핌)[:300]}')
+        잇단실패, 오류 = 0, None
+        try:
+            for _ in range(len(프레임) + 2):
+                with 한도지키기(블렌더space, 필요초, f'{블렌더space}/render_chunk', 메모=메모 or f'블렌더 {Path(장면).name}', 토큰=토큰):
+                    상태 = client.predict(job, api_name='/render_chunk')
+                if 상태.get('status') == 'complete':
+                    break
+                마지막 = 상태.get('last_render') or {}
+                잇단실패 = 0 if 마지막.get('ok') else 잇단실패 + 1
+                if 잇단실패 >= 2:
+                    raise RuntimeError(f'블렌더 Space 두 번 잇단 실패: {str(상태.get("error"))[:200]}')
+        except Exception as e:  # noqa: BLE001 — 이미 그린 장은 받아 두고 남은 장은 부른 쪽이 로컬로
+            오류 = e
+        끝, 파일들, *_ = client.predict(job, api_name='/finalize_job')
+        묶음 = next((f for f in 파일들 or [] if str(f).endswith('render-output.zip')), None)
+        해냄 = []
+        if 묶음:
+            with zipfile.ZipFile(묶음) as z:
+                for 이름 in z.namelist():
+                    m = re.fullmatch(r'frames/frame_(\d{6})\.png', 이름)
+                    if m:
+                        (Path(출력폴더) / f'frame_{m.group(1)}.png').write_bytes(z.read(이름))
+                        해냄.append(int(m.group(1)))
+        return sorted(set(해냄) & set(프레임)), 오류
+
+
+def 블렌더렌더(장면, 출력폴더, 프레임: list, 가로=1280, 세로=720, 샘플=64, 장당초=20, 묶음=4, 엔진='CYCLES',
+           카메라=None, 허깅페이스최대=None, 로컬만=False, cpu=False, 남에게보내도됨=False, 메모='') -> dict:
+    """허깅페이스 Space 먼저(몫 안에서 앞쪽 장), 남은 장은 로컬 블렌더(공용 GPU 줄 · --cpu면 낮은 우선순위 CPU).
+    몫이 모자랄 게 처음부터 보이면 앞쪽은 허깅페이스, 뒤쪽은 로컬로 나눠 동시에 돌린다. 장 이름은 둘 다 frame_000001.png.
+    장면은 바깥 파일을 묶은(packed) .blend 하나여야 한다 — Space가 strict_assets로 빠진 그림을 거절한다."""
+    import threading
+    장면, 출력폴더 = Path(장면).resolve(), Path(출력폴더).resolve()   # 블렌더는 상대 경로를 드라이브 맨 위(C:\.tmp…)로 읽는다
+    if not 장면.is_file():
+        raise FileNotFoundError(f'장면 파일이 없다: {장면}')
+    if 엔진 not in ('CYCLES', 'EEVEE'):
+        raise ValueError('엔진은 CYCLES 또는 EEVEE')
+    출력폴더.mkdir(parents=True, exist_ok=True)
+    a = {'가로': int(가로), '세로': int(세로), '샘플': int(샘플), '장당초': float(장당초), '묶음': max(1, min(64, int(묶음))),
+         '엔진': 엔진, '카메라': 카메라}
+    필요초 = _블렌더설정(프레임, a)['gpu_seconds']
+    조각실제초 = a['장당초'] * a['묶음'] + 8   # 깎이는 몫은 실제 GPU 초라 선언(필요초)보다 적다 — 앞 조각은 이만큼으로 셈
+
+    까닭 = ''
+    허깅몫 = []
+    if 로컬만:
+        까닭 = '--로컬만'
+    elif not 남에게보내도됨:
+        까닭 = '남의 Space에 보내도 되는 장면이라는 --남에게보내도됨이 없어 로컬로(얼굴 · 고객 · 학생 자료는 보내지 않는다)'
+    else:
+        try:
+            멈춤 = 멈춤보기()
+            if 멈춤:
+                raise 멈춰있음(멈춤.get('까닭'))
+            한도 = 한도읽기()
+            with _잠금(상태폴더()):
+                잡힌 = sum(x['초'] for x in _예약읽기(상태폴더(), time.time()))
+            쓸초 = 한도['남은'] - 잡힌 - 기본여유초
+            조각수 = 0 if 쓸초 < 필요초 else 1 + int((쓸초 - 필요초) // 조각실제초)   # 마지막 조각은 선언만큼 남아야 부른다
+            허깅몫 = 프레임[:조각수 * a['묶음']]
+            if 허깅페이스최대 is not None:
+                허깅몫 = 허깅몫[:int(허깅페이스최대)]
+            if not 허깅몫:
+                까닭 = f'허깅페이스 몫 밖(남은 {한도["남은"]:.0f}초, 조각 하나 {필요초}초)'
+        except (한도모자람, 멈춰있음) as e:
+            까닭 = f'허깅페이스 몫 밖: {e}'
+    로컬몫 = [f for f in 프레임 if f not in set(허깅몫)]
+
+    로컬결과 = {}
+    일꾼 = None
+    if 로컬몫 and 허깅몫:   # 처음부터 나뉘면 동시에
+        print(f'앞 {len(허깅몫)}장은 허깅페이스, 뒤 {len(로컬몫)}장은 로컬로 동시에', file=sys.stderr)
+        일꾼 = threading.Thread(target=lambda: 로컬결과.update(코드=_로컬블렌더돌리기(장면, 출력폴더, 로컬몫, a, cpu)))
+        일꾼.start()
+    해낸허깅 = []
+    if 허깅몫:
+        try:
+            해낸허깅, 오류 = _허깅페이스블렌더(장면, 출력폴더, 허깅몫, a, 메모)
+        except Exception as e:  # noqa: BLE001 — 올리기 · 장면 읽기부터 실패하면 모두 로컬로
+            해낸허깅, 오류 = [], e
+        if 오류 is not None:
+            까닭 = (f'허깅페이스 몫 밖: {오류}' if isinstance(오류, (한도모자람, 멈춰있음))
+                  else f'블렌더 Space 실패: {type(오류).__name__}: {str(오류)[:200]}')
+            print(까닭, file=sys.stderr)
+    if 일꾼:
+        일꾼.join()
+    else:
+        if 로컬몫:
+            print(f'로컬 블렌더로 {len(로컬몫)}장 — {까닭}', file=sys.stderr)
+            로컬결과['코드'] = _로컬블렌더돌리기(장면, 출력폴더, 로컬몫, a, cpu)
+    못한허깅 = [f for f in 허깅몫 if f not in set(해낸허깅)]
+    if 못한허깅:
+        print(f'허깅페이스가 못 그린 {len(못한허깅)}장을 로컬로 — {까닭 or "Space 실패"}', file=sys.stderr)
+        로컬결과['코드2'] = _로컬블렌더돌리기(장면, 출력폴더, 못한허깅, a, cpu)
+    엔진글 = '로컬 블렌더 ' + ('CPU' if cpu else 'OPTIX')
+    줄 = [{'프레임': f, '엔진': '허깅페이스 ' + 블렌더space if f in set(해낸허깅) else 엔진글,
+          '있음': (출력폴더 / f'frame_{f:06d}.png').is_file()} for f in 프레임]
+    기록파일 = 출력폴더 / '렌더기록.json'
+    try:
+        옛 = json.loads(기록파일.read_text(encoding='utf-8'))
+    except (FileNotFoundError, json.JSONDecodeError):
+        옛 = []
+    _json쓰기(기록파일, 옛 + [{**x, '장면': str(장면), '때': dt.datetime.now(KST).isoformat(timespec='seconds')} for x in 줄])
+    빠짐 = [x['프레임'] for x in 줄 if not x['있음']]
+    return {'결과': 줄, '허깅페이스장수': len(해낸허깅), '로컬장수': len(프레임) - len(해낸허깅), '빠진프레임': 빠짐,
+            '로컬로간까닭': 까닭, '코드': 0 if not 빠짐 else 1}
+
+
 # ── 명령줄 ─────────────────────────────────────────────────────────────
 
 def _명령_한도(a) -> int:
@@ -566,6 +737,13 @@ def _명령_받아쓰기(a) -> int:
         for x in out['결과']:
             print(f'{Path(x["파일"]).name}  [{x["엔진"]} · {x["왕복초"]}초]  {x["글"]}')
     return 0
+
+
+def _명령_블렌더렌더(a) -> int:
+    out = 블렌더렌더(a.장면, a.출력폴더, 프레임풀기(a.프레임), a.가로, a.세로, a.샘플, a.장당초, a.묶음, a.엔진, a.카메라,
+                 a.허깅페이스최대, a.로컬만, a.cpu, a.남에게보내도됨, a.메모)
+    print(f'허깅페이스 {out["허깅페이스장수"]}장 · 로컬 {out["로컬장수"]}장' + (f' · 빠진 프레임 {out["빠진프레임"]}' if out['빠진프레임'] else ''))
+    return out['코드']
 
 
 def _명령_기록(a) -> int:
@@ -637,6 +815,23 @@ def main(argv=None) -> int:
     s.add_argument('--메모', default='')
     s.add_argument('--json', action='store_true')
     s.set_defaults(fn=_명령_받아쓰기)
+    s = sub.add_parser('블렌더렌더', help='허깅페이스 먼저(몫 안의 앞쪽 장), 남은 장은 로컬 블렌더')
+    s.add_argument('장면', help='바깥 파일을 묶은(packed) .blend')
+    s.add_argument('출력폴더')
+    s.add_argument('--프레임', default='1', help='1 · 1-48 · 1-48:2')
+    s.add_argument('--가로', type=int, default=1280)
+    s.add_argument('--세로', type=int, default=720)
+    s.add_argument('--샘플', type=int, default=64)
+    s.add_argument('--장당초', type=float, default=20, help='Space에서 한 장 그리는 데 드는 GPU 초 어림(조각 GPU 시간 = 장당초 × 묶음 + 10)')
+    s.add_argument('--묶음', type=int, default=4, help='Space 조각 하나에 그릴 장 수')
+    s.add_argument('--엔진', default='CYCLES', choices=['CYCLES', 'EEVEE'])
+    s.add_argument('--카메라')
+    s.add_argument('--허깅페이스최대', type=int, help='허깅페이스로 그릴 장 수 상한(나머지는 처음부터 로컬로 동시에)')
+    s.add_argument('--로컬만', action='store_true')
+    s.add_argument('--cpu', action='store_true', help='로컬로 갈 때 공용 GPU 줄 대신 낮은 우선순위 CPU')
+    s.add_argument('--남에게보내도됨', action='store_true', help='얼굴 · 고객 · 학생 자료가 아니라는 확인(없으면 모두 로컬)')
+    s.add_argument('--메모', default='')
+    s.set_defaults(fn=_명령_블렌더렌더)
     s = sub.add_parser('기록'); s.add_argument('--날'); s.set_defaults(fn=_명령_기록)
     s = sub.add_parser('풀기'); s.add_argument('--확인', action='store_true'); s.set_defaults(fn=_명령_풀기)
     a = p.parse_args(argv)

@@ -324,6 +324,164 @@ class 허깅페이스먼저시험(바탕):
         self.assertEqual(self.불린space, [])
 
 
+class 블렌더시험(바탕):
+    """블렌더렌더 — 몫 안의 앞쪽 장은 Space, 뒤쪽 · 못 그린 장은 로컬. 망 · 블렌더 안 씀."""
+    def setUp(self):
+        super().setUp()
+        self.폴더 = Path(self.temp.name)
+        self.장면 = self.폴더 / '장면.blend'
+        self.장면.write_bytes(b'BLENDER')
+        self.출력 = self.폴더 / '출력'
+        self.허깅부름, self.로컬부름 = [], []
+        self.허깅못함 = set()          # Space가 못 그릴 프레임
+        self.허깅오류 = None
+
+        def 가짜허깅(장면, 출력폴더, 프레임, a, 메모):
+            self.허깅부름.append(list(프레임))
+            해냄 = [f for f in 프레임 if f not in self.허깅못함]
+            for f in 해냄:
+                (Path(출력폴더) / f'frame_{f:06d}.png').write_bytes(b'hf')
+            return 해냄, self.허깅오류
+
+        def 가짜로컬(장면, 출력폴더, 프레임, a, cpu):
+            self.로컬부름.append((list(프레임), cpu))
+            for f in 프레임:
+                (Path(출력폴더) / f'frame_{f:06d}.png').write_bytes(b'local')
+            return 0
+
+        self.patches3 = [patch.object(hf, '_허깅페이스블렌더', 가짜허깅), patch.object(hf, '_로컬블렌더돌리기', 가짜로컬)]
+        for p in self.patches3:
+            p.start()
+
+    def tearDown(self):
+        for p in self.patches3:
+            p.stop()
+        super().tearDown()
+
+    def 렌더(self, **덧):
+        인자 = dict(장면=self.장면, 출력폴더=self.출력, 프레임=hf.프레임풀기('1-8'), 장당초=10, 묶음=2, 남에게보내도됨=True)
+        인자.update(덧)
+        with contextlib.redirect_stderr(io.StringIO()):
+            return hf.블렌더렌더(**인자)
+
+    def test_프레임풀기(self):
+        self.assertEqual(hf.프레임풀기('3'), [3])
+        self.assertEqual(hf.프레임풀기('1-5'), [1, 2, 3, 4, 5])
+        self.assertEqual(hf.프레임풀기('1-9:4'), [1, 5, 9])
+        for 틀림 in ('5-1', '1-4:0', 'a'):
+            with self.assertRaises(ValueError):
+                hf.프레임풀기(틀림)
+
+    def test_몫이_넉넉하면_모두_허깅페이스(self):
+        self.한도들 = [원본(2000)]
+        out = self.렌더()
+        self.assertEqual(self.허깅부름, [list(range(1, 9))])
+        self.assertEqual(self.로컬부름, [])
+        self.assertEqual((out['허깅페이스장수'], out['로컬장수'], out['코드']), (8, 0, 0))
+        기록 = json.loads((self.출력 / '렌더기록.json').read_text(encoding='utf-8'))
+        self.assertTrue(all(x['엔진'].startswith('허깅페이스') and x['있음'] for x in 기록))
+
+    def test_몫이_모자라면_앞은_허깅페이스_뒤는_로컬로_나눈다(self):
+        # 조각 선언 = 10×2+25 = 45초, 실제 셈 = 10×2+8 = 28초. 쓸 초 = 150 − 30 = 120 → 1 + (120−45)//28 = 3조각 = 6장
+        self.한도들 = [원본(150)]
+        out = self.렌더()
+        self.assertEqual(self.허깅부름, [[1, 2, 3, 4, 5, 6]])
+        self.assertEqual(self.로컬부름, [([7, 8], False)])
+        self.assertEqual(out['빠진프레임'], [])
+
+    def test_허깅페이스가_중간에_멈추면_못_그린_장만_로컬로(self):
+        self.한도들 = [원본(2000)]
+        self.허깅못함 = {5, 6, 7, 8}
+        self.허깅오류 = hf.한도모자람('몫 모자람')
+        out = self.렌더(cpu=True)
+        self.assertEqual(self.로컬부름, [([5, 6, 7, 8], True)])
+        self.assertIn('몫 밖', out['로컬로간까닭'])
+        self.assertEqual((out['허깅페이스장수'], out['로컬장수']), (4, 4))
+
+    def test_확인이_없거나_멈춤이면_모두_로컬(self):
+        self.한도들 = [원본(2000)]
+        self.렌더(남에게보내도됨=False)
+        hf.멈추기('시험')
+        self.렌더()
+        self.assertEqual(self.허깅부름, [])
+        self.assertEqual([x[0] for x in self.로컬부름], [list(range(1, 9))] * 2)
+
+    def test_허깅페이스최대는_앞쪽_장수만_허깅페이스로(self):
+        self.한도들 = [원본(2000)]
+        self.렌더(허깅페이스최대=3)
+        self.assertEqual(self.허깅부름, [[1, 2, 3]])
+        self.assertEqual(self.로컬부름, [([4, 5, 6, 7, 8], False)])
+
+    def test_로컬_명령은_space와_같은_설정을_건다(self):
+        a = {'가로': 640, '세로': 360, '샘플': 32, '장당초': 10, '묶음': 2, '엔진': 'CYCLES', '카메라': None}
+        명령 = hf._로컬블렌더명령(self.장면, self.출력, [7, 8], a, cpu=False)
+        설정 = json.loads(명령[-1])
+        self.assertEqual(명령[1:3], ['-b', str(self.장면)])
+        self.assertEqual((설정['프레임'], 설정['장치'], 설정['seed'], 설정['adaptive_threshold'], 설정['denoise']),
+                         ([7, 8], 'OPTIX', 0, 0.02, True))
+        space = hf._블렌더설정([7, 8], a)
+        self.assertEqual((space['seed'], space['adaptive_threshold'], space['denoise'], space['samples']), (0, 0.02, True, 32))
+        self.assertEqual((space['mode'], space['frame_start'], space['frame_end'], space['frame_step']), ('frames', 7, 8, 1))
+        self.assertEqual(space['gpu_seconds'], 10 * 2 + hf.블렌더띄우기초)
+
+
+class 블렌더space시험(바탕):
+    """_허깅페이스블렌더 — 가짜 Space: 조각마다 한도지키기 · 다 그린 장을 묶음에서 꺼낸다 · 실패해도 그린 장은 받는다."""
+    def 가짜space(self, 조각결과):
+        시험 = self
+        class 가짜:
+            def __init__(self):
+                self.그림 = []
+                self.조각 = list(조각결과)
+            def predict(self, *인자, api_name=None, **이름):
+                if api_name == '/prepare_job':
+                    return 'job1', {'status': 'prepared'}
+                if api_name == '/inspect_job':
+                    return {'status': 'ready', 'inspection': {'ok': True}}
+                if api_name == '/render_chunk':
+                    상태, 새장 = self.조각.pop(0)
+                    self.그림 += 새장
+                    return {'status': 상태, 'last_render': {'ok': 상태 != 'failed'}, 'error': 'x' if 상태 == 'failed' else None}
+                if api_name == '/finalize_job':
+                    import zipfile
+                    z경로 = Path(시험.temp.name) / 'render-output.zip'
+                    with zipfile.ZipFile(z경로, 'w') as z:
+                        z.writestr('manifest.json', '{}')
+                        for f in self.그림:
+                            z.writestr(f'frames/frame_{f:06d}.png', b'png')
+                    return {'status': 'x'}, [str(z경로)], None, None
+        return 가짜()
+
+    def setUp(self):
+        super().setUp()
+        self.장면 = Path(self.temp.name) / '장면.blend'
+        self.장면.write_bytes(b'BLENDER')
+        self.출력 = Path(self.temp.name) / '출력'
+        self.출력.mkdir()
+        self.a = {'가로': 64, '세로': 64, '샘플': 4, '장당초': 5, '묶음': 2, '엔진': 'CYCLES', '카메라': None}
+        self.p = patch('gradio_client.handle_file', lambda x: x)
+        self.p.start()
+
+    def tearDown(self):
+        self.p.stop()
+        super().tearDown()
+
+    def test_조각마다_한도를_보고_다_그린_장을_꺼낸다(self):
+        self.클라 = self.가짜space([('partial', [1, 2]), ('complete', [3, 4])])
+        self.한도들 = [원본(1000), 원본(990), 원본(990), 원본(980)]
+        해냄, 오류 = hf._허깅페이스블렌더(self.장면, self.출력, [1, 2, 3, 4], self.a, '시험')
+        self.assertEqual((해냄, 오류), ([1, 2, 3, 4], None))
+        self.assertTrue((self.출력 / 'frame_000004.png').exists())
+        self.assertEqual(len([x for x in self.기록() if x['space'] == hf.블렌더space]), 2)   # 조각 둘 다 기록
+
+    def test_두_번_잇단_실패여도_그린_장은_받는다(self):
+        self.클라 = self.가짜space([('partial', [1, 2]), ('failed', []), ('failed', [])])
+        self.한도들 = [원본(1000)]
+        해냄, 오류 = hf._허깅페이스블렌더(self.장면, self.출력, [1, 2, 3, 4], self.a, '시험')
+        self.assertEqual(해냄, [1, 2])
+        self.assertIn('두 번 잇단 실패', str(오류))
+
+
 class 명령줄시험(바탕):
     def test_한도_모자람은_끝_코드_2(self):
         self.한도들 = [원본(10)]
