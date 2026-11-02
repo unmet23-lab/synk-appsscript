@@ -207,8 +207,8 @@ function episodeOf(file) {
 }
 
 // 같은 계정의 지난 편 — 판에 그 계정이 있고 영상이 있는 편 가운데 이 편 말고 「시각」이 가장 늦은 n편.
-// 영상은 git 밖이라 공용 작업본에만 있다(워크트리에서 돌려도 공용 작업본의 편을 본다).
-function pickPrevious(account, { exclude = null, roots = [공용작업본(ROOT)], n = 2 } = {}) {
+// 영상은 git 밖이라 공용 작업본에 있고(묶음의 mediaRoot가 찾는다), 준비.json은 이 작업본이 더 새로울 수 있어 먼저 본다(11-03 예약 작업 워크트리 — 공용 작업본이 뒤처지면 지난 편을 놓친다).
+function pickPrevious(account, { exclude = null, roots = [ROOT, 공용작업본(ROOT)], n = 2 } = {}) {
   if (!account) return [];
   const 묶음 = require('./lib/게시묶음.js');
   const found = new Map();

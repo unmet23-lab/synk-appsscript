@@ -131,6 +131,86 @@ test('워크트리 편을 조용히 공용의 다른 판으로 바꿔 등록하�
   }
 });
 
+test('운영 사본 대기열 — origin 판의 편을 보고, 공용 작업본에 등록 · 중지 기록이 있는 편은 두 번 등록하지 않는다(11-03)', async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'booking-ops-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const main = path.join(root, 'main'), ops = path.join(root, 'ops'), tree = path.join(root, 'tree');
+  const git = (cwd, ...args) => spawnSync('git', ['-c', 'user.name=시험', '-c', 'user.email=test@example.invalid', ...args], { cwd, encoding: 'utf8' });
+  fs.mkdirSync(main, { recursive: true });
+  git(main, 'init', '-q', '-b', 'master');
+  const 편 = (base, name, extra = {}) => {
+    const dir = path.join(base, 'docs', '마케팅', name, '게시');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, '준비.json'), JSON.stringify({ 제목: name, 작업실등록: true, 상태: '올릴 준비', 검사: { 결과: '정상' }, ...extra }));
+    return dir;
+  };
+  for (const name of ['새편', '공용등록', '공용중지', '이미등록']) 편(main, name);
+  fs.writeFileSync(path.join(편(main, '이미등록'), '작업실.json'), '{"postId":"이미"}');
+  git(main, 'add', '-A');
+  git(main, 'commit', '-q', '-m', '처음');
+  assert.equal(git(main, 'worktree', 'add', '-q', '--detach', ops).status, 0);
+  assert.equal(git(main, 'worktree', 'add', '-q', '-b', 'tree', tree).status, 0);
+  fs.writeFileSync(path.join(main, '.git', 'synk-ops-path'), `${ops}\n`);
+  for (const base of [main, ops, tree]) fs.mkdirSync(path.join(base, 'tools'), { recursive: true }); // 게시묶음 repoOf는 tools 폴더로 뿌리를 찾는다
+  // 공용 작업본에서 등록하고 못 올린 기록 · 자동 등록 중지 표식 · 공용 작업본이 아직 못 받은 편의 차이
+  fs.writeFileSync(path.join(main, 'docs', '마케팅', '공용등록', '게시', '작업실.json'), '{"postId":"공용"}');
+  fs.writeFileSync(path.join(main, 'docs', '마케팅', '공용중지', '게시', '작업실_자동등록중지.json'), '{"중지":true}');
+  편(ops, '운영에만');
+
+  const 이름 = (dirs) => dirs.map((d) => path.basename(d)).sort();
+  assert.deepEqual(이름(booking.queueFolders(ops)), ['새편', '운영에만']);
+
+  // 운영 사본의 편만 받는다 — 세션 워크트리 · 공용 작업본의 편은 운영 사본 경로를 알려 주고 멈춘다(등록 잠금 · 기록이 한 자리)
+  const 운영편 = path.join(ops, 'docs', '마케팅', '공용등록');
+  const bundle = booking.sharedBundle(운영편);
+  assert.equal(path.resolve(bundle.mediaRoot), path.resolve(main));
+  for (const base of [tree, main]) {
+    assert.throws(() => booking.sharedBundle(path.join(base, 'docs', '마케팅', '새편')), (e) => e.code === 'WORKTREE_BUNDLE' && e.message.includes(path.join(ops, 'docs', '마케팅', '새편')));
+  }
+  const 묶음 = require(fileURLToPath(new URL('../tools/lib/게시묶음.js', import.meta.url)));
+
+  // 손으로 부른 등록도 공용 쪽 기록이 있으면 서버에 아무것도 보내지 않는다
+  let sent = 0;
+  const ws = { origin: 'fixture', upload: async () => { sent++; throw Error('unexpected'); } };
+  await assert.rejects(booking.register(bundle, ws, rows(), {}), { code: 'ALREADY' });
+  assert.equal(sent, 0);
+  assert.equal(fs.existsSync(path.join(운영편, '게시', '작업실.json')), false, '독점 기록도 남기지 않는다');
+
+  // 공용에만 기록이 있는 편의 상태 · 취소는 「기록 없음」으로 끝내지 않고 그 자리를 알린다(실제 예약이 살아 있을 수 있다)
+  fs.mkdirSync(path.join(root, '캐시'), { recursive: true });
+  fs.writeFileSync(path.join(root, '캐시', '서버.json'), JSON.stringify({ channels: [], jobs: [], posts: [] }));
+  const 알림 = spawnSync(process.execPath, [script, '상태', 운영편, '--캐시'], { cwd: ops, encoding: 'utf8', env: { ...process.env, SYNK_WORKSPACE_LINK_DIR: local, SYNK_QUEUE_DIR: path.join(root, '캐시') } });
+  assert.equal(알림.status, 1, `${알림.stdout}${알림.stderr}`);
+  assert.match(알림.stderr, /공용 작업본에 있다/);
+  assert.doesNotMatch(알림.stdout, /등록한 기록이 없다/);
+  // 그 공용 경로에서는 상태 · 취소가 된다(실제 예약을 볼 수 있고 거둘 수 있다). 새 등록은 막는다. 운영 사본에도 기록이 생기면 공용 경로는 다시 막힌다
+  const 공용등록 = path.join(main, 'docs', '마케팅', '공용등록');
+  assert.equal(booking.sharedBundle(공용등록, '상태 확인').name, '공용등록');
+  assert.equal(booking.sharedBundle(공용등록, '취소').name, '공용등록');
+  assert.throws(() => booking.sharedBundle(공용등록), { code: 'WORKTREE_BUNDLE' });
+  assert.throws(() => booking.sharedBundle(path.join(main, 'docs', '마케팅', '새편'), '취소'), { code: 'WORKTREE_BUNDLE' }, '공용에 기록이 없으면 운영 사본으로');
+  assert.equal((await booking.cancel(booking.sharedBundle(공용등록, '취소'), fakeCancel)).postId, '공용', '공용 경로에서 거둘 수 있다');
+  fs.writeFileSync(path.join(공용등록, '게시', '작업실.json'), '{"postId":"공용"}');
+  fs.rmSync(path.join(공용등록, '게시', '작업실_자동등록중지.json'), { force: true });
+
+  // 반대 방향 — 관문을 거치지 않고 공용 편으로 register를 불러도 운영 사본 기록이 있으면 두 번 등록하지 않는다(그물)
+  fs.writeFileSync(path.join(ops, 'docs', '마케팅', '새편', '게시', '작업실.json'), JSON.stringify({ postId: '운영에서등록' }));
+  const 공용새편 = 묶음.load(path.join(main, 'docs', '마케팅', '새편'));
+  await assert.rejects(booking.register(공용새편, ws, rows(), {}), (e) => e.code === 'ALREADY' && /운영 사본/.test(e.message));
+  fs.rmSync(path.join(ops, 'docs', '마케팅', '새편', '게시', '작업실.json'));
+  git(main, 'update-ref', 'refs/remotes/origin/master', 'HEAD');
+  // origin에만 있는 기록 — 이미등록 편은 커밋돼 있어 origin 판에 작업실.json이 있다. 운영 사본 · 공용의 파일을 지워도 origin을 보고 멈춘다
+  fs.rmSync(path.join(main, 'docs', '마케팅', '이미등록', '게시', '작업실.json'));
+  fs.rmSync(path.join(ops, 'docs', '마케팅', '이미등록', '게시', '작업실.json'));
+  await assert.rejects(booking.register(booking.sharedBundle(path.join(ops, 'docs', '마케팅', '이미등록')), ws, rows(), {}), (e) => e.code === 'ALREADY' && /origin/.test(e.message));
+  assert.equal(sent, 0);
+  // 이 편 폴더의 취소 기록과 같은 원고는 이미 거둔 것이다 — 다시 등록할 수 있다
+  fs.writeFileSync(path.join(main, 'docs', '마케팅', '공용등록', '게시', '작업실_취소_x.json'), '{}');
+  fs.writeFileSync(path.join(ops, 'docs', '마케팅', '공용등록', '게시', '작업실_취소_20261103.json'), JSON.stringify({ postId: '공용' }));
+  await assert.rejects(booking.register(booking.sharedBundle(운영편), ws, rows(), {}), /unexpected/);
+  assert.equal(sent, 1, '거둔 원고만 남았으면 등록으로 간다');
+});
+
 test('연속 등록 실패는 한 번만 알리고, 전송을 시작하지 못했거나 복구 뒤 새 실패면 다시 알린다', async t => {
   const f = fixture(t); let sent = 0;
   const send = async () => { sent++; };

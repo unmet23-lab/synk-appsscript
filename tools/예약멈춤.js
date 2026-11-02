@@ -87,8 +87,9 @@ function 경로들(환경 = process.env) {
     실행중: 환경.SYNK_CLAUDE_REGISTRY || path.join(집, 'sessions'),
     지시문: path.join(집, 'scheduled-tasks'),
     승인: 환경.SYNK_APPROVAL_DIR || path.join(환경.LOCALAPPDATA || '', 'hermes', 'runtime', 'synk-approvals'),
-    // 앱 예약 작업은 공용 작업본에서 편을 만든다 — 이 도구가 운영 사본(tools/운영사본.js)에서 돌아도 거기를 본다(10-22)
-    마케팅: 환경.SYNK_예약멈춤_마케팅 || path.join(공용작업본(ROOT), 'docs', '마케팅'),
+    // 11-03부터 앱 예약 작업은 회차마다 origin 판 워크트리에서 편을 만들어 올린다(tools/예약사본.js) — 올린 편은 이 사본(운영 사본이면
+    // origin 판)에 먼저 보이고, 옛 회차가 공용 작업본에 남긴 편은 그다음에 본다(10-22에는 공용 작업본만 봤다)
+    마케팅: 환경.SYNK_예약멈춤_마케팅 || [...new Set([ROOT, 공용작업본(ROOT)].map((r) => path.join(r, 'docs', '마케팅')))],
   };
 }
 
@@ -307,11 +308,14 @@ function 지시문읽기(정의, 작업, 지시문폴더) {
   return { 텔레그램: 텔레그램꼴.test(글), 브랜드: m ? m[1] : null };
 }
 
-/** 편 폴더마다 { 브랜드, 날짜, 준비 } — 게시/준비.json(올릴 묶음까지 끝)이 먼저, 없으면 기획.md 첫 줄(시작만 함). */
+/** 편 폴더마다 { 브랜드, 날짜, 준비 } — 게시/준비.json(올릴 묶음까지 끝)이 먼저, 없으면 기획.md 첫 줄(시작만 함).
+ *  마케팅 폴더를 여럿 주면 같은 이름의 편은 앞 폴더 것만 본다. */
 function 편목록(마케팅) {
   const 결과 = [];
-  for (const d of 목록(마케팅)) {
-    const 폴더 = path.join(마케팅, d);
+  const 본편 = new Set();
+  const 쌍 = [].concat(마케팅).flatMap((뿌리) => 목록(뿌리).map((d) => [뿌리, d])).filter(([, d]) => !본편.has(d) && 본편.add(d));
+  for (const [뿌리, d] of 쌍) {
+    const 폴더 = path.join(뿌리, d);
     let 준비 = null;
     try { 준비 = JSON.parse(fs.readFileSync(path.join(폴더, '게시', '준비.json'), 'utf8').trimStart()); } catch { /* 없음 — trimStart는 BOM도 지운다 */ }
     if (준비 && 준비.브랜드 && 준비.날짜) { 결과.push({ 브랜드: 준비.브랜드, 날짜: String(준비.날짜).slice(0, 10), 준비: true }); continue; }

@@ -451,3 +451,20 @@ test('「다시 읽습니다」 보내기가 실패해도 읽힌 회차에서 �
   assert.match(보낸것(p)[2], /✅ 앱 예약 작업 감시가 다시 앱 기록을 읽습니다\(6회 못 읽은 뒤\)/);
   assert.equal(fs.existsSync(path.join(path.dirname(p.상태), '못읽음.json')), false);
 });
+
+test('편목록 — 마케팅 폴더를 여럿 주면 같은 이름의 편은 앞 폴더(origin 판 사본) 것만 본다(11-03 예약 작업 워크트리)', () => {
+  const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), '예약멈춤-편-'));
+  try {
+    const 운영 = path.join(뿌리, '운영'), 공용 = path.join(뿌리, '공용');
+    const 쓰기 = (곳, 편, 파일, 글) => { fs.mkdirSync(path.dirname(path.join(곳, 편, 파일)), { recursive: true }); fs.writeFileSync(path.join(곳, 편, 파일), 글); };
+    쓰기(운영, 'yuhobuilds_새편_20261103', '게시/준비.json', JSON.stringify({ 브랜드: 'yuhobuilds', 날짜: '2026-11-03' }));
+    쓰기(공용, 'yuhobuilds_새편_20261103', '기획.md', '1일 1편 · yuhobuilds · 2026-11-02 · 옛 판\n');
+    쓰기(공용, 'synkbrief_옛편_20261022', '기획.md', '1일 1편 · synkbrief · 2026-10-22 · 슬롯\n');
+    const r = 멈춤.편목록([운영, 공용, path.join(뿌리, '없음')]);
+    assert.deepEqual(r, [
+      { 브랜드: 'yuhobuilds', 날짜: '2026-11-03', 준비: true },
+      { 브랜드: 'synkbrief', 날짜: '2026-10-22', 준비: false },
+    ]);
+    assert.deepEqual(멈춤.편목록(공용).length, 2, '폴더 하나도 그대로 받는다');
+  } finally { fs.rmSync(뿌리, { recursive: true, force: true }); }
+});

@@ -1,0 +1,30 @@
+{
+  "도구": "tools/작업실예약.js",
+  "작업실": "https://workspace.synk.im",
+  "시작": "2026-11-01T18:35:26.300Z",
+  "자산": {
+    "docs/마케팅/yuhobuilds_PC정리맡겼더니_20261031/remotion/out/y27_final.mp4": "e0c5dad4-1ccd-44a7-a26a-d57a542c3200"
+  },
+  "판": [
+    {
+      "계정": "yuhobuilds-instagram",
+      "채널": "8d6d4d37-5a44-47ce-a757-9411ed15523c",
+      "작업": "f8ea230795f615c78e10bc2c57a96aebe6ff067dceed42b173e14847cc68ce45",
+      "시각": "2026-11-03T21:00+09:00",
+      "영상": "docs/마케팅/yuhobuilds_PC정리맡겼더니_20261031/remotion/out/y27_final.mp4"
+    },
+    {
+      "계정": "yuhobuilds-youtube",
+      "채널": "452a3e17-7ec1-4f1e-8dbb-fe5d34380a9f",
+      "작업": "b8c9b399c52e902a113ca5fb885875afeab90f3de922f34d165804b8b36c3dcd",
+      "시각": "2026-11-03T21:00+09:00",
+      "영상": "docs/마케팅/yuhobuilds_PC정리맡겼더니_20261031/remotion/out/y27_final.mp4"
+    }
+  ],
+  "postId": "f4efebc0-1d85-4734-aba8-9d73332d69fb",
+  "링크": {
+    "id": "1ed6e5ef-7ef9-4fcb-9fc2-d00ce68a052f",
+    "만료": "2026-11-04T12:35:49.323Z"
+  },
+  "끝": "2026-11-01T18:35:54.474Z"
+}

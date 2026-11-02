@@ -397,6 +397,8 @@ async function registerLocked(bundle, ws, rows, opts = {}) {
   const old = readState(bundle);
   if (fs.existsSync(stateFile(bundle)) && !old?.postId) throw Object.assign(new Error('이전 등록의 결과가 불확실하다 — 작업실 원고와 기록을 확인하기 전에는 다시 등록하지 않는다'), { code: 'UNCERTAIN' });
   if (old?.postId) throw Object.assign(new Error(`이미 작업실에 등록한 편이다(원고 ${old.postId}${old.실패 ? ` · 실패: ${old.실패.이유}` : ''}) — 상태는 \`상태\`, 다시 올리려면 \`취소\` 뒤에`), { code: 'ALREADY' });
+  const 곁기록 = 다른자리등록(bundle);
+  if (곁기록) throw Object.assign(new Error(`${곁기록.이름}에 이 편의 작업실 기록이 있다(${곁기록.경로}) — 두 번 등록하지 않는다. 상태 · 취소는 운영 사본의 도구와 편 경로로 부른다`), { code: 'ALREADY' });
   const state = { 도구: 'tools/작업실예약.js', 작업실: ws.origin, 시작: new Date().toISOString(), 자산: {}, 판: [] };
   if (opts.queue && fs.existsSync(cancelMarker(bundle))) throw Object.assign(new Error('취소한 편의 자동 등록이 중지되어 있다'), { code: 'CANCELLED' });
   // 첫 외부 요청 전에 독점 기록을 남긴다. 응답을 잃거나 프로세스가 죽어도 자동 재등록하지 않는다.
@@ -546,13 +548,75 @@ function readyFolders(root) {
   return out;
 }
 
+// 운영 사본(origin 판만 따라감, tools/운영사본.js)인가 — 가리지 못하면 아니라고 본다(옛 동작: 공용 작업본 기준).
+function 운영사본에서(repo) {
+  try { return require('./운영사본.js').운영사본인가(repo); } catch { return false; }
+}
+
+// 이 저장소의 운영 사본 경로(없으면 null)
+function 운영사본경로(repo) {
+  try { return require('./운영사본.js').찾기(repo).운영사본 || null; } catch { return null; }
+}
+
 // 다른 작업본에서 직접 지정한 편을 조용히 공용 판으로 바꾸면 낡은 원고가 올라갈 수 있어 멈춘다.
+// 11-03부터 운영 사본이 있으면 등록 · 상태 · 취소는 운영 사본의 편으로만 받는다 — origin 판이고, 등록 잠금 · 기록이 한 자리라 같은 편을 두 번 등록할 틈이 없다(git 밖 영상은 묶음의 mediaRoot = 공용 작업본).
 function sharedBundle(dir, action = '등록') {
   const repo = 묶음.repoOf(dir), main = 공용작업본(repo);
   const rel = path.relative(path.join(repo, 'docs', '마케팅'), path.resolve(dir));
   const inMarketing = rel !== '..' && !rel.startsWith(`..${path.sep}`) && !path.isAbsolute(rel);
-  if (main !== repo && inMarketing) throw Object.assign(new Error(`워크트리 편의 ${action}은 공용 편 경로를 확인해 명시한다: ${path.join(main, 'docs', '마케팅', rel)}`), { code: 'WORKTREE_BUNDLE' });
+  if (inMarketing && !운영사본에서(repo)) {
+    const ops = 운영사본경로(repo);
+    // 공용 작업본에서 등록하고 못 올린 옛 기록 — 운영 사본엔 없으니 그 자리에서 상태를 보고 거둘 수 있어야 한다(실제 예약이 살아 있다). 새 등록은 여전히 막는다
+    const 옛기록 = main === repo && action !== '등록' && ops && fs.existsSync(stateFile({ dir })) && !fs.existsSync(stateFile({ dir: path.join(ops, 'docs', '마케팅', rel) }));
+    if (옛기록) return 묶음.load(dir);
+    if (ops) throw Object.assign(new Error(`편의 ${action}은 운영 사본의 도구와 편 경로로 부른다: node "${path.join(ops, 'tools', '작업실예약.js')}" "${path.join(ops, 'docs', '마케팅', rel)}"`), { code: 'WORKTREE_BUNDLE' });
+    if (main !== repo) throw Object.assign(new Error(`워크트리 편의 ${action}은 공용 편 경로를 확인해 명시한다: ${path.join(main, 'docs', '마케팅', rel)}`), { code: 'WORKTREE_BUNDLE' });
+  }
   return 묶음.load(dir);
+}
+
+// 공용 작업본 쪽 같은 편에 등록 기록이나 자동 등록 중지 표식이 있나 — 공용 작업본에서 등록하고 못 올린 기록은 운영 사본에 안 보인다(11-03 세 편).
+function 공용쪽기록(bundleName, main) {
+  const dir = path.join(main, 'docs', '마케팅', bundleName);
+  return fs.existsSync(stateFile({ dir })) || fs.existsSync(cancelMarker({ dir }));
+}
+
+// 이 편이 다른 자리에 이미 등록돼 있나 — 공용 작업본 · 운영 사본 · origin 가운데 어디든 살아 있는 작업실.json이 있으면 그 자리 이름을 준다.
+// 등록은 어느 작업본 경로로 불러도 한 번이어야 한다(두 번이면 같은 계정에 두 번 나간다). 이 편 폴더의 취소 기록과 같은 원고는 이미 거둔 것으로 본다.
+function 다른자리등록(bundle) {
+  if (!bundle.repo) return null;
+  const rel = `docs/마케팅/${bundle.name}/게시/작업실.json`;
+  const 거둠 = new Set();
+  let 이름들 = [];
+  try { 이름들 = fs.readdirSync(path.join(bundle.dir, '게시')).filter((f) => /^작업실_취소_.*\.json$/.test(f)); } catch { /* 게시 폴더 없음 */ }
+  for (const f of 이름들) { try { const id = 묶음.readJson(path.join(bundle.dir, '게시', f)).postId; if (id) 거둠.add(id); } catch { /* 깨진 취소 기록은 세지 않는다 */ } }
+  // 원고 번호가 없는 기록(등록 중 독점 기록 · 깨진 파일)은 산 것으로 본다 — 등록 결과가 불확실하면 두 번 등록하지 않는다
+  const 살아있나 = (글) => { try { const id = JSON.parse(String(글).trimStart()).postId; return !id || !거둠.has(id); } catch { return true; } };
+  const 자리 = [['공용 작업본', 공용작업본(bundle.repo)]];
+  try { const f = require('./운영사본.js').찾기(bundle.repo); if (f.운영사본) 자리.push(['운영 사본', f.운영사본]); } catch { /* 저장소 밖 · 가리킴 없음 */ }
+  for (const [이름, 뿌리] of 자리) {
+    if (path.resolve(뿌리).toLowerCase() === path.resolve(bundle.repo).toLowerCase()) continue;
+    const file = path.join(뿌리, ...rel.split('/'));
+    if (fs.existsSync(file) && 살아있나(fs.readFileSync(file, 'utf8'))) return { 이름, 경로: file };
+  }
+  const r = spawnSync('git', ['-c', 'core.quotepath=false', 'show', `refs/remotes/origin/master:${rel}`], { cwd: bundle.repo, encoding: 'utf8', windowsHide: true });
+  if (r.status === 0 && 살아있나(r.stdout)) return { 이름: 'origin', 경로: rel };
+  return null;
+}
+
+// 「기록 없음」을 곧이듣지 않게 — 이 자리엔 없어도 다른 자리에 등록 기록이 있으면 실제 예약이 살아 있을 수 있다. 그 자리를 알리고 실패로 끝낸다.
+function 기록없음(bundle) {
+  const 곁 = 다른자리등록(bundle);
+  if (!곁) { console.log('작업실에 등록한 기록이 없다'); return; }
+  console.error(`이 자리에는 작업실 기록이 없지만 ${곁.이름}에 있다(${곁.경로}) — 실제 예약이 살아 있을 수 있다. 공용 작업본 기록이면 그 편 경로로 상태 · 취소를 부르고, origin 기록이면 운영 사본이 받은 뒤 다시 부른다`);
+  process.exitCode = 1;
+}
+
+// 대기열 — 운영 사본에서 돌면 그 사본(origin 판)의 편을 보고, 공용 작업본 쪽에 기록이 있는 편은 뺀다(두 번 등록하지 않게). 그 밖에서는 공용 작업본의 편.
+function queueFolders(repo) {
+  const main = 공용작업본(repo);
+  if (main === repo || !운영사본에서(repo)) return readyFolders(path.join(main, 'docs', '마케팅'));
+  return readyFolders(path.join(repo, 'docs', '마케팅')).filter((dir) => !공용쪽기록(path.basename(dir), main));
 }
 
 // 예약큐 정기 작업이 남긴 서버 캐시(tools/lib/작업실읽기.cjs 모양)의 작업 목록.
@@ -607,13 +671,27 @@ async function handleOne(dir, ws, o) {
   if (o.telegram) await sendLink(localLinkFile(bundle));
   else console.log(`  검토 링크는 ${localLinkFile(bundle)}에 있다(저장소에 넣지 않는다)`);
   // 공용 작업본에서 정기 작업이 돌았으면 그 편 기록(작업실.json·게시결과.json, 링크 열쇠 없음)만 곧바로 올린다. 워크트리에서는 하지 않는다.
+  await 편기록올리기(bundle, ['작업실.json', '게시결과.json', '작업실_자동등록중지.json'], `chore(작업실 예약): ${bundle.name} 등록 — 유호님 검토 링크 승인 대기`);
+  return { bundle: bundle.name, registered: true, postId: done.post.id };
+}
+
+// 편 기록을 곧바로 올린다(도구 안에서 — 실패해도 등록 · 취소를 실패로 바꾸지 않는다). 파일도 없고 추적도 안 된 경로는 뺀다(git add가 멈춘다).
+async function 편기록올리기(bundle, names, message) {
   try {
     const { 장부올리기, 장부올리기글 } = require('./lib/장부올리기.js');
-    const rels = ['작업실.json', '게시결과.json'].map((name) => 묶음.rel(bundle, path.join(bundle.dir, '게시', name)));
-    const pushed = 장부올리기글(await 장부올리기(rels, `chore(작업실 예약): ${bundle.name} 등록 — 유호님 검토 링크 승인 대기`, { 저장소: bundle.repo }), '편 기록');
+    const 있는길 = names.filter((name) => {
+      const file = path.join(bundle.dir, '게시', name);
+      return fs.existsSync(file) || spawnSync('git', ['--literal-pathspecs', 'ls-files', '--error-unmatch', '--', file], { cwd: bundle.repo, windowsHide: true }).status === 0;
+    });
+    const rels = 있는길.map((name) => 묶음.rel(bundle, path.join(bundle.dir, '게시', name)));
+    const pushed = 장부올리기글(await 장부올리기(rels, message, { 저장소: bundle.repo }), '편 기록');
     if (pushed) console.log('  ' + pushed);
   } catch (error) { console.error(`  ! 편 기록 올리기 실패(작업본에 남음 — 다음 올리기에 같이): ${error.message}`); }
-  return { bundle: bundle.name, registered: true, postId: done.post.id };
+}
+
+// 운영 사본에서 부른 상태 · 취소의 기록을 올린다 — 안 올리면 그 사본만 고쳐져 세션 워크트리 · origin과 어긋난다(공용 작업본 · 워크트리는 세션이 제 커밋에 올린다).
+async function 운영사본기록올리기(bundle, names, message) {
+  if (운영사본에서(bundle.repo)) await 편기록올리기(bundle, names, message);
 }
 
 // 검토 링크 승인 하나로 함께 거는 판(유호님 10-26 「검토 링크 하나로 같은 영상 판 함께 승인」): 작업실에 올린 판과 같은 원본 영상 파일을
@@ -669,9 +747,11 @@ async function main() {
   if (명령 === '상태' && argv.includes('--캐시')) {
     const cached = cachedJobs();
     if (!cached) { console.log('예약큐 서버 캐시가 없다 — 정기 작업 「SYNK 예약큐」가 아직 안 돌았다'); process.exitCode = 1; return; }
-    const r = await status(sharedBundle(o.rest[1], '상태 확인'), null, { save: !o.noSave, jobs: cached.jobs });
-    if (!r) { console.log('작업실에 등록한 기록이 없다'); return; }
+    const target = sharedBundle(o.rest[1], '상태 확인');
+    const r = await status(target, null, { save: !o.noSave, jobs: cached.jobs });
+    if (!r) { 기록없음(target); return; }
     for (const row of r.rows) console.log(`  ${row.계정} · ${row.상태} · ${kst(row.시각)}${row.주소 ? ` · ${row.주소}` : ''}`);
+    if (!o.noSave) await 운영사본기록올리기(target, ['게시결과.json'], `chore(작업실 예약): ${target.name} 상태 맞춤`);
     return;
   }
   // 명령도 편 폴더도 아니면 자격을 읽기 전에 멈춘다 — 그대로 가면 「자격이 없습니다」로 보여 까닭을 가렸다.
@@ -680,7 +760,7 @@ async function main() {
   }
   // 등록할 편이 없는 회차는 자격·서버를 읽지 않는다. 이미 등록했으나 못 보낸 검토 링크는 그대로 이어 보낸다.
   const queueDirs = o.queue && !['상태', '취소'].includes(명령)
-    ? readyFolders(path.join(공용작업본(묶음.repoOf(process.cwd())), 'docs', '마케팅')) : null;
+    ? queueFolders(묶음.repoOf(process.cwd())) : null;
   // 이미 전송 요청돼 보관된 실패 알림은 검토 링크 알림 설정과 관계없이 이어 보낸다.
   if (queueDirs && o.run) {
     try { await resendFailureNotices(); }
@@ -695,18 +775,21 @@ async function main() {
   const ws = await connect({ origin: o.origin });
   if (명령 === '상태') {
     const r = await status(target, ws, { save: !o.noSave });
-    if (!r) { console.log('작업실에 등록한 기록이 없다'); return; }
+    if (!r) { 기록없음(target); return; }
     for (const row of r.rows) console.log(`  ${row.계정} · ${row.상태} · ${kst(row.시각)}${row.주소 ? ` · ${row.주소}` : ''}`);
+    if (!o.noSave) await 운영사본기록올리기(target, ['게시결과.json'], `chore(작업실 예약): ${target.name} 상태 맞춤`);
     return;
   }
   if (명령 === '취소') {
     const r = await cancel(target, ws);
-    console.log(r ? `  작업실 원고 ${r.postId}의 예약과 검토 링크를 거뒀다 — 고친 뒤 다시 등록한다` : '작업실에 등록한 기록이 없다');
+    if (!r) { 기록없음(target); return; }
+    console.log(`  작업실 원고 ${r.postId}의 예약과 검토 링크를 거뒀다 — 고친 뒤 다시 등록한다`);
+    await 운영사본기록올리기(target, ['작업실.json', `작업실_취소_${r.at.replace(/[:.]/g, '')}.json`, '작업실_자동등록중지.json', '게시결과.json'], `chore(작업실 예약): ${target.name} 등록 거둠`);
     return;
   }
   // 지난 회차에 등록은 됐는데 텔레그램을 못 보낸 링크부터 다시 보낸다.
   if (o.queue && o.run && o.telegram) await resendPending();
-  const dirs = o.queue ? readyFolders(path.join(공용작업본(묶음.repoOf(process.cwd())), 'docs', '마케팅')) : o.rest.slice(0, 1);
+  const dirs = o.queue ? queueFolders(묶음.repoOf(process.cwd())) : o.rest.slice(0, 1);
   if (!dirs.length) { console.log(o.queue ? '등록할 편이 없다' : '사용: node tools/작업실예약.js <편 폴더> [--실행] [--텔레그램]'); if (!o.queue) process.exitCode = 2; return; }
   const results = [];
   for (const dir of dirs) {
@@ -722,4 +805,4 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.message); process.exitCode = error.code === 'NO_CREDENTIAL' ? 3 : error.code === 'USAGE' ? 2 : 1; });
 
-module.exports = { Workspace, connect, planBundle, register, handleOne, status, cancel, matchChannel, checkedFile, readyFolders, sharedBundle, cachedJobs, sendLink, resendPending, notifyFailureOnce, resendFailureNotices, clearFailureNotice, checkFailureTelegram: () => 텔레그램한번.check(TELEGRAM), companions, 명령이름, STATUS, LOCAL_DIR, FAILURE_DIR, mergeResults };
+module.exports = { Workspace, connect, planBundle, register, handleOne, status, cancel, matchChannel, checkedFile, readyFolders, queueFolders, 다른자리등록, sharedBundle, cachedJobs, sendLink, resendPending, notifyFailureOnce, resendFailureNotices, clearFailureNotice, checkFailureTelegram: () => 텔레그램한번.check(TELEGRAM), companions, 명령이름, STATUS, LOCAL_DIR, FAILURE_DIR, mergeResults };
