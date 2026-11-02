@@ -26,7 +26,7 @@ const need = createRequire(path.join(talk, 'package.json'));
 const runtime = need('./lib/world-speaking-runtime.js'), voiceLink = need('./lib/voice-link.js'), prices = need('./lib/ai-spend.js');
 const LINES = need('./lib/world-drama-lines.js');
 const spendConfig = prices.parseSpendConfig((name) => (name === 'SYNK_AI_PRICES' ? fs.readFileSync(path.join(talk, 'config/ai-prices-20261003.json'), 'utf8') : undefined));
-const 키들 = 키차례().map((k) => fs.readFileSync(k.파일, 'utf8').replace(/^﻿/, '').trim()).filter((v) => /^sk-\S+$/.test(v));
+const 키들 = 키차례('말하기').map((k) => fs.readFileSync(k.파일, 'utf8').replace(/^﻿/, '').trim()).filter((v) => /^sk-\S+$/.test(v));
 if (!키들.length) { console.error('[로컬왕복] OpenAI 키가 없다'); process.exit(2); }
 
 const 기록 = { usage: [], spend: [], logs: [] };

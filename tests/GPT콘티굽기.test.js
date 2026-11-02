@@ -281,3 +281,18 @@ test('키 목록 — 속도 제한(429 rate_limit_exceeded)은 다음 키로 넘
     s.close();
   }
 });
+
+test('OpenAI 크레딧은 말하기 받아 적기 몫 — 가짜 서버 · 임시 목록이 없으면 다른 용도에는 키를 내주지 않는다(11-03)', async () => {
+  const 옛 = { 목록: process.env.SYNK_OPENAI_KEYLIST, 바탕: process.env.SYNK_OPENAI_BASE, 파일: process.env.OPENAI_KEY_FILE };
+  delete process.env.SYNK_OPENAI_KEYLIST; delete process.env.SYNK_OPENAI_BASE; delete process.env.OPENAI_KEY_FILE;
+  try {
+    const { 키차례, 차례로부르기, 부르기오류 } = await import(require('node:url').pathToFileURL(path.join(REPO, 'tools', 'lib', '오픈AI키.mjs')).href);
+    for (const 용도 of ['콘티', undefined]) {
+      assert.throws(() => 키차례(용도), (e) => e instanceof 부르기오류 && e.코드 === 3 && /받아 적기에만/.test(e.message));
+      await assert.rejects(차례로부르기(() => { throw new Error('부르면 안 된다'); }, { 용도 }), (e) => e.코드 === 3);
+    }
+    assert.ok(Array.isArray(키차례('말하기')));
+  } finally {
+    for (const [이름, 값] of [['SYNK_OPENAI_KEYLIST', 옛.목록], ['SYNK_OPENAI_BASE', 옛.바탕], ['OPENAI_KEY_FILE', 옛.파일]]) if (값 !== undefined) process.env[이름] = 값;
+  }
+});

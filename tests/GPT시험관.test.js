@@ -1,5 +1,5 @@
 /* GPT시험관 — 낯선 사람 이해 시험의 셋째 시험관(다른 회사 눈, 2026-10-29). 낯선이시험.js가 만든 폴더의 질문 · 말 · 장면을
- * 그 순서 그대로 OpenAI Responses API에 보내 답_GPT.md로 받는다. 크레딧이 바닥나면 종료 3 — 돈 드는 길로 돌리지 않는다. 키는 찍지 않는다.
+ * 그 순서 그대로 OpenAI Responses API에 보내 답_GPT.md로 받는다. 쓸 크레딧이 없으면 구독 경로(가짜 codex계정)로 묻고, 그것도 없으면 종료 3 — 돈 드는 길로 돌리지 않는다. 키는 찍지 않는다.
  * 가짜 서버(SYNK_OPENAI_BASE)와 임시 키 파일(OPENAI_KEY_FILE)만 쓴다 — 실제 API · ~/SYNK_보안은 건드리지 않는다. */
 'use strict';
 
@@ -32,9 +32,22 @@ function 서버(답) {
   });
 }
 
+/* 가짜 codex계정(구독 경로): FAKE_CODEX=ok면 -o 파일에 글 답을 쓴다. 그 밖이면 계정이 없을 때처럼 종료 3. 받은 인자 · 표준입력은 FAKE_CODEX_LOG에. 진짜 Codex는 부르지 않는다. */
+const 가짜구독 = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'gpt-tester-fake-codex-')), 'codex계정.js');
+fs.writeFileSync(가짜구독, `
+const fs = require('fs');
+const a = process.argv.slice(2); const 값 = (f) => a[a.indexOf(f) + 1];
+let 입력 = ''; process.stdin.on('data', (d) => { 입력 += d; });
+process.stdin.on('end', () => {
+  if (process.env.FAKE_CODEX_LOG) fs.writeFileSync(process.env.FAKE_CODEX_LOG, JSON.stringify({ 인자: a, 입력 }));
+  if (process.env.FAKE_CODEX !== 'ok') { process.stderr.write('[codex계정] 쓸 수 있는 계정이 없다\\n'); process.exit(3); }
+  fs.writeFileSync(값('-o'), '1. 구독으로 받은 답.\\n');
+});
+`);
+
 function 돌리기(인자, env) {
   return new Promise((resolve) => {
-    const c = spawn(process.execPath, [도구, ...인자], { cwd: REPO, env: { ...process.env, ...env } });
+    const c = spawn(process.execPath, [도구, ...인자], { cwd: REPO, env: { ...process.env, SYNK_CODEX_ROTATE: 가짜구독, ...env } });
     let 출력 = '';
     let 오류 = '';
     c.stdout.on('data', (d) => { 출력 += d; });
@@ -87,14 +100,27 @@ test('질문 · 말 · 장면(이름 순) · 지난 편 순서로 Responses API�
   }
 });
 
-test('크레딧이 바닥나면 종료 3이고 답 파일을 만들지 않는다', async () => {
-  const { s, 바탕 } = await 서버(() => ({ 상태: 429, json: { error: { code: 'credit_balance_exhausted', message: 'exhausted' } } }));
+test('크레딧이 바닥나면 구독 경로로 같은 질문 · 말 · 장면(붙인 순서)을 묻고, 구독 계정도 없으면 종료 3 · 답 파일 없음', async () => {
+  const { s, 받은, 바탕 } = await 서버(() => ({ 상태: 429, json: { error: { code: 'credit_balance_exhausted', message: 'exhausted' } } }));
   try {
+    const 없음 = 시험폴더();
+    const r0 = await 돌리기([없음.d], { SYNK_OPENAI_BASE: 바탕, OPENAI_KEY_FILE: 없음.키 });
+    assert.strictEqual(r0.code, 3, r0.오류);
+    assert.match(r0.오류, /구독 계정도 없다/);
+    assert.ok(!fs.existsSync(path.join(없음.d, '답_GPT.md')));
     const t = 시험폴더();
-    const r = await 돌리기([t.d], { SYNK_OPENAI_BASE: 바탕, OPENAI_KEY_FILE: t.키 });
-    assert.strictEqual(r.code, 3, r.오류);
-    assert.match(r.오류, /크레딧이 바닥났다/);
-    assert.ok(!fs.existsSync(path.join(t.d, '답_GPT.md')));
+    const 로그 = path.join(t.d, '구독받음.json');
+    const r = await 돌리기([t.d], { SYNK_OPENAI_BASE: 바탕, OPENAI_KEY_FILE: t.키, FAKE_CODEX: 'ok', FAKE_CODEX_LOG: 로그 });
+    assert.strictEqual(r.code, 0, r.오류);
+    assert.strictEqual(받은.length, 2, 'API는 폴더마다 한 번만');
+    assert.match(fs.readFileSync(path.join(t.d, '답_GPT.md'), 'utf8'), /구독\(Codex\)[\s\S]*구독으로 받은 답/);
+    const 기록 = JSON.parse(fs.readFileSync(path.join(t.d, '답_GPT_기록.json'), 'utf8'));
+    assert.deepStrictEqual([기록.키, 기록.어림값USD], ['구독', 0]);
+    const 넘김 = JSON.parse(fs.readFileSync(로그, 'utf8'));
+    assert.strictEqual(넘김.인자[넘김.인자.indexOf('-s') + 1], 'read-only');
+    assert.deepStrictEqual(넘김.인자.filter((_, i, a) => a[i - 1] === '-i').map((p) => path.basename(p)), ['정지컷_01.jpg', '정지컷_02.jpg', '지난1_E8.jpg']);
+    assert.ok(넘김.입력.includes('1. 이 영상이 말하려는 것') && 넘김.입력.includes('아니?!'));
+    assert.ok(!`${r.출력}${r.오류}${JSON.stringify(기록)}${넘김.입력}`.includes(가짜키), '키가 출력 · 기록 · 구독 글에 들어갔다');
   } finally {
     s.close();
   }

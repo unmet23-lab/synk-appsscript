@@ -7,6 +7,9 @@
  * 한 키가 크레딧 바닥(429 credit_balance_exhausted) · 키 거절(401) · 권한 없음(403)이면 다음 키로 다시 부른다 — 모두 결제 수단 없는
  * 무료 크레딧 조직이라 돈 드는 길이 아니다. 속도 제한 · 서버 오류 · 그 밖의 오류는 넘기지 않고 멈춘다. 마지막 키까지 바닥이면 코드 3.
  * 시험은 SYNK_OPENAI_BASE로 가짜 서버를, SYNK_OPENAI_KEYLIST로 임시 키 목록을 준다.
+ * 2026-11-03 유호님 「openai크레딧은 다른데 쓰지말고 여기에만 써」: 월 API 크레딧은 WORLD 말하기 받아 적기 몫이다. 용도 '말하기'가 아니면
+ * 키를 내주지 않고 코드 3(쓸 크레딧 없음)으로 멈춘다 — 콘티 굽기는 그 자리에서 구독 경로로 넘어가고, 시험관 · 상황극 시제품은 부르지 않는다.
+ * 가짜 서버 · 임시 키 목록을 준 시험은 크레딧을 쓰지 않으므로 막지 않는다.
  */
 import fs from 'node:fs';
 import os from 'node:os';
@@ -29,8 +32,14 @@ export function 키차례(용도) {
   return 목록키(용도).쓸;
 }
 
+/** OpenAI 월 API 크레딧을 쓸 수 있는 용도 — WORLD 말하기 받아 적기(운영 talk 비밀값과 같은 몫)만 */
+export const 크레딧용도 = Object.freeze(['말하기']);
+
 /** 키 목록에서 쓸 키와, 용도 때문에 뺀 키 이름을 함께 낸다 */
 function 목록키(용도) {
+  if (!크레딧용도.includes(용도) && !process.env.SYNK_OPENAI_BASE && !process.env.SYNK_OPENAI_KEYLIST) {
+    throw new 부르기오류(3, `OpenAI API 크레딧은 WORLD 말하기 받아 적기에만 쓴다(2026-11-03 유호님) — 용도 「${용도 || '없음'}」에는 키를 내주지 않는다(docs/AI_계정과_크레딧.md 「GPT」)`);
+  }
   if (process.env.OPENAI_KEY_FILE) return { 쓸: [{ 이름: path.basename(process.env.OPENAI_KEY_FILE), 파일: process.env.OPENAI_KEY_FILE }], 뺌: [] };
   const 목록경로 = 목록파일();
   if (!fs.existsSync(목록경로)) return { 쓸: [{ 이름: 'openai.txt', 파일: path.join(보안(), 'openai.txt') }], 뺌: [] };

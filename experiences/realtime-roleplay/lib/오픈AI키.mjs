@@ -36,6 +36,8 @@ export function 키읽기({ 이름, 파일 }) {
 
 /** 부르기(키값)는 fetch Response를 돌려준다. 성공한 Response와 쓴 키 이름을 돌려주고, 넘길 수 있는 실패만 다음 키로 다시 부른다. */
 export async function 키로부르기(부르기, 키들 = 키차례()) {
+  // 2026-11-03 유호님 「openai크레딧은 다른데 쓰지말고 여기에만 써」 — 월 API 크레딧은 WORLD 말하기 받아 적기 몫이라 이 시제품은 실제 OpenAI를 부르지 않는다(가짜 서버 시험만)
+  if (!process.env.SYNK_OPENAI_BASE) throw Object.assign(new Error('OpenAI API 크레딧은 WORLD 말하기 받아 적기에만 쓴다(2026-11-03) — 상황극 시제품은 부르지 않는다'), { 상태: 503 });
   if (!키들.length) throw Object.assign(new Error('쓸 수 있는 OpenAI 키가 없다'), { 상태: 503 });
   let 마지막;
   for (const [i, 키] of 키들.entries()) {

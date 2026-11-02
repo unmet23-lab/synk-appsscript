@@ -70,7 +70,7 @@ export async function callOpenAITranscribe({model='gpt-transcribe',audio,seconds
   for(const code of hear.languages||[])fd.append('languages[]',code);
   if(hear.chunking)fd.append('chunking_strategy',hear.chunking);
   return {주소:`${바탕주소()}/audio/transcriptions`,몸:fd,json:false};};
- const t0=Date.now(),{답,쓴키,요청}=await 차례로부르기(만들기,{제한ms:timeoutMs}),ms=Date.now()-t0;
+ const t0=Date.now(),{답,쓴키,요청}=await 차례로부르기(만들기,{용도:'말하기',제한ms:timeoutMs}),ms=Date.now()-t0;
  const usage=답.usage||null,billed=usage?.type==='duration'&&Number.isFinite(Number(usage.seconds))?Number(usage.seconds):null;
  return {json:heardFromTranscription(답),vendor:{text:답.text??null,languages:답.languages??null},usage,ms,retries:0,location:null,keyName:쓴키,requestId:요청,
   finish:null,cost:priceTranscription(model,billed??seconds)};

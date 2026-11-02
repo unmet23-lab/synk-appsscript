@@ -7,11 +7,17 @@
  *   node tools/GPT시험관.mjs <밖 폴더> [--모델 gpt-6.1-sol]
  *
  * - 키 차례 · 넘기기는 tools/lib/오픈AI키.mjs(GPT Pro 구독의 월 API 크레딧, 마지막 키까지 바닥이면 종료 3 — 돈 드는 길 없음). 키는 찍지 않는다.
+ * - 2026-11-03부터 월 API 크레딧은 WORLD 말하기 받아 적기 몫이라(유호님 「openai크레딧은 다른데 쓰지말고 여기에만 써」) 키를 받지 못한다 —
+ *   그 자리(종료 3)에서 같은 질문 · 말 · 장면을 구독 경로(`tools/codex계정.js exec`, 셸 · 파일 손대지 않기)로 보내 답을 받는다.
+ *   모델은 지정하지 못하고 기록 「키」가 「구독」이다. 구독 계정도 없으면 종료 3. 시험은 SYNK_CODEX_ROTATE로 가짜 codex계정을 준다.
  * - 한 번에 몇 센트(그림 4~8장 + 글). <밖>/답_GPT_기록.json에 모델 · 쓴 키 이름 · 초 · 토큰 · 어림 값 · 보낸 그림을 남긴다.
  * - 시험은 SYNK_OPENAI_BASE로 가짜 서버를 준다(tests/GPT시험관.test.js).
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
+import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { 바탕주소, 차례로부르기, 부르기오류 } from './lib/오픈AI키.mjs';
 
 const 값표 = { 'gpt-6.1-sol': { 입력: 2e-6, 출력: 10e-6 } };  // 토큰당 USD — tools/learning-blind/providers.mjs와 같은 값
@@ -59,10 +65,58 @@ const 요청몸 = () => ({
   json: true,
 });
 
+/* 구독 경로 — 같은 질문 · 말을 표준입력으로, 장면 · 지난 그림을 붙인 순서대로 -i로 준다. 답은 마지막 메시지(-o) 그대로 */
+async function 구독시험(API까닭) {
+  const 그림들 = [...장면, ...지난];
+  const 글 = 'Do not run any shell commands, do not open, create or edit any files and do not use any tools. Answer only from the text '
+    + `and images in this message.
+
+(첨부 그림은 이 순서로 붙였다: ${그림들.join(', ')})
+${안내}
+
+${질문}
+
+[말.txt]
+${말}`;
+  const 작업 = fs.mkdtempSync(path.join(os.tmpdir(), 'gpt-examiner-sub-'));
+  const 답파일 = path.join(작업, 'last.txt');
+  const 돌림 = process.env.SYNK_CODEX_ROTATE || path.join(path.dirname(fileURLToPath(import.meta.url)), 'codex계정.js');
+  const 인자 = [돌림, 'exec', '--skip-git-repo-check', '-C', 작업, '-s', 'read-only', ...그림들.flatMap((f) => ['-i', path.resolve(밖, f)]), '-o', 답파일, '-'];
+  const 시작 = Date.now();
+  const r = await new Promise((resolve) => {
+    const c = spawn(process.execPath, 인자, { timeout: 15 * 60 * 1000 });
+    let 로그 = '';
+    c.stdout.on('data', (d) => { 로그 += d; });
+    c.stderr.on('data', (d) => { 로그 += d; });
+    c.on('error', (e) => resolve({ code: 1, 로그: `${로그}
+${e.message}` }));
+    c.on('close', (code) => resolve({ code, 로그 }));
+    c.stdin.end(글);
+  });
+  const 초 = Math.round((Date.now() - 시작) / 1000);
+  if (r.code === 3) 멈춤(`API 크레딧을 쓰지 않아 구독 경로로 넘겼지만 쓸 수 있는 구독 계정도 없다(codex계정 종료 3 — node tools/codex계정.js로 본다). API: ${API까닭}`, 3);
+  const 답글 = fs.existsSync(답파일) ? fs.readFileSync(답파일, 'utf8').trim() : '';
+  if (r.code !== 0 || !답글) 멈춤(`구독 경로에서 답을 받지 못했다(종료 ${r.code}): ${(답글 || r.로그).slice(-400)}`, 1);
+  fs.writeFileSync(path.join(밖, '답_GPT.md'), `# GPT 시험관 답 · 구독(Codex) · ${new Date().toISOString()}
+
+${답글}
+`);
+  fs.writeFileSync(path.join(밖, '답_GPT_기록.json'), `${JSON.stringify({ 모델: '구독(Codex — 모델 지정 못함)', 키: '구독', 초, 어림값USD: 0, API넘긴까닭: API까닭, 장면, 지난 }, null, 2)}
+`);
+  console.log(답글);
+  console.log(`
+[GPT시험관] ${path.join(밖, '답_GPT.md')} · 구독(Codex) · ${초}초 · API 크레딧 0`);
+}
+
 let 결과;
 try {
   결과 = await 차례로부르기(요청몸, { 알림: (m) => console.error(`[GPT시험관] ${m}`), 제한ms: 5 * 60 * 1000 });
 } catch (e) {
+  if (e instanceof 부르기오류 && e.코드 === 3) {
+    console.error(`[GPT시험관] API 크레딧을 쓰지 않고 구독 경로(Codex)로 묻는다: ${e.message}`);
+    await 구독시험(e.message);
+    process.exit(0);
+  }
   if (e instanceof 부르기오류) 멈춤(e.message, e.코드);
   throw e;
 }
