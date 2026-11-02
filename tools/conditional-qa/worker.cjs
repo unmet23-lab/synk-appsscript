@@ -14,8 +14,13 @@ const due = (row, now = Date.now()) => ['queued', 'running', 'publish-pending'].
 // Selection never deletes or passes an older commit.
 function nextItem(queue, head, attempted = new Set(), now = Date.now()) {
   const ready = queue.items.filter(row => due(row, now) && !attempted.has(row.commit));
+  const oldest = queue.nextTurn === undefined ? attempted.size % 2 === 1 : queue.nextTurn === 'oldest';
   return ready.find(row => row.status === 'publish-pending') ||
-    (attempted.size % 2 === 1 ? ready[0] : ready.find(row => row.commit === head) || ready.at(-1));
+    (oldest ? ready[0] : ready.find(row => row.commit === head) || ready.at(-1));
+}
+function advanceTurn(queue) {
+  if (!['recent', 'oldest'].includes(queue.nextTurn)) throw Error('Invalid queue turn');
+  queue.nextTurn = queue.nextTurn === 'recent' ? 'oldest' : 'recent';
 }
 // A lid-close sleep interrupts a run instead of failing a test (2026-11-01: two tutor tests ended at 606 s across a ten-minute sleep).
 // Kernel-Power 42 (entering sleep) or 107 (resume) inside the run marks it interrupted; an unreadable log counts as no sleep.
@@ -52,7 +57,7 @@ function initialize(stateDir, firstCommit) {
   const file = path.join(stateDir, 'queue.json');
   if (fs.existsSync(file)) return read(file);
   const seen = git(root, ['rev-parse', `${firstCommit}^`]);
-  const state = { version: 1, activatedAt: new Date().toISOString(), seen, items: [] };
+  const state = { version: 1, activatedAt: new Date().toISOString(), seen, items: [], nextTurn: 'recent' };
   write(file, state); return state;
 }
 async function verify(config, commit, output) {
@@ -75,6 +80,9 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring } = {}
     const refresh = () => {
       git(root, ['fetch', 'origin', 'master']); head = git(root, ['rev-parse', 'origin/master']); queue = read(queueFile);
       if (queue.version !== 1 || !Array.isArray(queue.items)) throw Error('Invalid local queue');
+      // Upgrade an existing queue once. Its next turn then survives every tick/restart.
+      if (queue.nextTurn === undefined) queue.nextTurn = 'recent';
+      if (!['recent', 'oldest'].includes(queue.nextTurn)) throw Error('Invalid queue turn');
       github.validCommit(queue.seen); git(root, ['merge-base', '--is-ancestor', queue.seen, head]);
       const commits = git(root, ['rev-list', '--reverse', '--first-parent', `${queue.seen}..${head}`]).split(/\r?\n/).filter(Boolean);
       extendQueue(queue, head, commits); write(queueFile, queue);
@@ -92,6 +100,7 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring } = {}
       git(root, ['merge-base', '--is-ancestor', item.commit, head]);
       try {
         if (item.status !== 'publish-pending') {
+          advanceTurn(queue);
           item.status = 'running'; item.startedAt = new Date().toISOString(); write(queueFile, queue);
           github.publish(item.commit, 'pending', 'Running the registered local conditional tests');
           item.output = path.join(stateDir, 'runs', `${item.commit}-${Date.now()}`);
@@ -134,4 +143,4 @@ if (require.main === module) {
   const promise = args.includes('--initialize') ? Promise.resolve(initialize(stateDir, args[args.indexOf('--initialize') + 1])) : tick(stateDir);
   promise.catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { extendQueue, nextItem, acquire, initialize, verify, tick, defaultState, sleptDuring, due };
+module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, due };

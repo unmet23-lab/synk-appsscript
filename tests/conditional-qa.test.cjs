@@ -6,7 +6,7 @@ const root = path.resolve(__dirname, '..'), c = require('../tools/conditional-qa
 const { check } = require('../tools/conditional-qa/guard.cjs');
 const { childRun, temporaryEnvironment } = require('../tools/conditional-qa/run.cjs');
 const { materialize, write } = require('../tools/conditional-qa/inputs.cjs');
-const { extendQueue, nextItem, acquire, sleptDuring, due } = require('../tools/conditional-qa/worker.cjs');
+const { extendQueue, nextItem, advanceTurn, acquire, sleptDuring, due } = require('../tools/conditional-qa/worker.cjs');
 const { plan } = require('../tools/conditional-qa/install.cjs');
 const github = require('../tools/conditional-qa/github.cjs');
 const { wait } = require('../tools/conditional-qa/wait-local.cjs');
@@ -137,6 +137,20 @@ test('continuous new pushes cannot starve older pending commits or automatically
   assert.deepEqual(order.slice(0, 4), ['1'.repeat(40), old[0], '3'.repeat(40), old[1]]);
   assert.equal(order.includes(failed), false);
   assert.deepEqual(queue.items[2], { commit: failed, status: 'failed', output: 'original-proof' });
+});
+
+test('the oldest turn survives a restart even when only one verification fits in each tick', () => {
+  const old = 'a'.repeat(40), first = 'b'.repeat(40), next = 'c'.repeat(40);
+  let queue = { items: [{ commit: old, status: 'queued' }, { commit: first, status: 'queued' }], nextTurn: 'recent' };
+  assert.equal(nextItem(queue, first).commit, first);
+  advanceTurn(queue); queue.items[1].status = 'passed';
+  queue = JSON.parse(JSON.stringify(queue));
+  extendQueue(queue, next, [next]);
+  assert.equal(nextItem(queue, next, new Set()).commit, old, 'a new tick cannot reset the pending historical turn');
+  const original = JSON.stringify(queue.items);
+  advanceTurn(queue); assert.equal(JSON.stringify(queue.items), original, 'only the scheduling turn changes');
+  assert.equal(nextItem(JSON.parse(JSON.stringify(queue)), next).commit, next);
+  assert.throws(() => advanceTurn({ nextTurn: 'invalid' }), /Invalid queue turn/);
 });
 
 test('remote local-status evidence is exact and malformed requests never reach the API', () => {
