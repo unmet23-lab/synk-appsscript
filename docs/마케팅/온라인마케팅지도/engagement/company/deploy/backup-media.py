@@ -553,6 +553,21 @@ def local_bodies(folder, wanted):
     return found
 
 
+def placed_before(path, sha256, size):
+    """A rerun after a partial failure keeps a file an earlier run placed when its bytes are right; anything else at the name stops."""
+    try:
+        info = os.lstat(path)
+    except FileNotFoundError:
+        return False
+    need(stat.S_ISREG(info.st_mode) and info.st_size == size, 'TARGET_EXISTS')
+    fd = os.open(path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0) | BINARY)
+    try:
+        need(digests(fd, Budget())[0] == sha256, 'TARGET_EXISTS')
+    finally:
+        os.close(fd)
+    return True
+
+
 def hydrate(args, token):
     manifest = load_manifest(args.snapshot)
     need(not manifest['bytesIncluded'], 'BYTES_ALREADY_INCLUDED')
@@ -561,6 +576,7 @@ def hydrate(args, token):
         bucket = storage = None
         listed = {}
     else:
+        local = None
         bucket, prefix = destination(args.source)
         storage = Storage(token, args.endpoint)
         listed = sidecars(storage.list(bucket, prefix + 'synk-workspace-'), prefix)
@@ -571,12 +587,63 @@ def hydrate(args, token):
         need(stat.S_ISDIR(info.st_mode) and not stat.S_ISLNK(info.st_mode), 'TARGET_INVALID')
     for folder in targets:
         make_directory(folder)
-    by_sha, borrowed = {}, 0
+    lock = one_run(args.snapshot)
+    try:
+        return hydrate_locked(args, manifest, local, storage, bucket, listed, snapshot_media, targets)
+    finally:
+        release(*lock)
+
+
+def one_run(snapshot):
+    """One hydrate per snapshot at a time (GPT GA1): a second run stops before it can touch the first run's staging."""
+    path = os.path.join(snapshot, '.hydrate.lock')
+    fd = os.open(path, os.O_RDWR | os.O_CREAT | getattr(os, 'O_NOFOLLOW', 0) | BINARY, 0o600)
+    try:
+        if os.name == 'posix':
+            import fcntl
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        else:
+            import msvcrt
+            msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+    except OSError:
+        os.close(fd)
+        raise Failure('HYDRATE_BUSY')
+    if os.name == 'posix':  # GPT r2 GA1: a lock won on a file the holder already unlinked is no lock
+        held = os.fstat(fd)
+        try:
+            now = os.lstat(path)
+        except FileNotFoundError:
+            now = None
+        if now is None or (now.st_dev, now.st_ino) != (held.st_dev, held.st_ino):
+            os.close(fd)
+            raise Failure('HYDRATE_BUSY')
+    return fd, path
+
+
+def release(fd, path):
+    if os.name == 'posix':  # unlink while still holding it, so no later run locks the old file
+        os.unlink(path)
+        os.close(fd)
+    else:
+        os.close(fd)
+        os.unlink(path)
+
+
+def hydrate_locked(args, manifest, local, storage, bucket, listed, snapshot_media, targets):
+    by_sha, borrowed, kept = {}, 0, 0
     for item in manifest['files']:
         by_sha.setdefault(item['sha256'], []).append(item)
     for sha256, items in by_sha.items():
+        missing = [(item, folder) for item in items for folder in targets
+                   if not placed_before(os.path.join(folder, item['diskName']), sha256, item['bytes'])]
+        kept += len(items) * len(targets) - len(missing)
+        if not missing:
+            continue
         rows = ordered(listed.get(sha256, []), manifest['name'])
         staging = os.path.join(snapshot_media, '.' + sha256 + '.part')
+        if os.path.lexists(staging):  # left by a run that stopped mid-body; only this tool writes the name
+            need(stat.S_ISREG(os.lstat(staging).st_mode), 'TARGET_INVALID')
+            os.unlink(staging)
         if args.from_dir:
             need(sha256 in local, 'MEDIA_OFFSITE_MISSING')
             place(local[sha256], staging, link=False)
@@ -591,13 +658,12 @@ def hydrate(args, token):
         need(source is not None, 'MEDIA_OFFSITE_MISSING')
         borrowed += source != manifest['name']
         try:
-            for item in items:
-                for folder in targets:
-                    place(staging, os.path.join(folder, item['diskName']), link=True)
+            for item, folder in missing:
+                place(staging, os.path.join(folder, item['diskName']), link=True)
         finally:
             os.unlink(staging)
     return {'status': 'hydrated', 'files': len(manifest['files']), 'contents': len(by_sha),
-            'bytes': sum(manifest['contents'].values()), 'targets': len(targets), 'fromOtherBackups': borrowed}
+            'bytes': sum(manifest['contents'].values()), 'targets': len(targets), 'fromOtherBackups': borrowed, 'alreadyPlaced': kept}
 
 
 def verify(args, token):

@@ -83,6 +83,24 @@ class LocalRetention(unittest.TestCase):
         self.assertEqual(backups, [self.names[-1]])
         self.assertTrue(self.idle, 'manual runs check that no backup or release runs')
 
+    def test_studio_media_receipt_leaves_with_its_archive_before_the_marker(self):
+        for name in self.names:
+            pathlib.Path(self.archives, name + '.tar.gz.media.json').write_text('{}\n')
+        orphan = stamp(19, 3) + '.tar.gz.media.json'  # its archive already gone
+        pathlib.Path(self.archives, orphan).write_text('{}\n')
+        p = self.plan()
+        self.assertEqual(p['kept']['archives'], list(reversed(self.names))[:3])
+        kinds = [t['kind'] for t in p['targets'] if t['name'] == self.names[0] and t['kind'] != 'snapshot']
+        self.assertEqual(kinds, ['archive.tar.gz', 'archive.sha256', 'archive.media.json', 'archive.uploaded'])
+        out = lr.run({'op': 'apply', 'manual': True, 'planSha256': p['planSha256'], 'remoteMd5': self.md5}, self.env)
+        self.assertEqual(out['status'], 'applied')
+        self.assertEqual(self.present()[0], sorted([orphan] + [n + s for n in self.names[-3:]
+                                                             for s in ('.tar.gz', '.tar.gz.sha256', '.tar.gz.uploaded', '.tar.gz.media.json')]))
+        os.unlink(os.path.join(self.archives, self.names[-1] + '.tar.gz.media.json'))
+        os.symlink(os.path.join(self.root, 'elsewhere'), os.path.join(self.archives, self.names[-1] + '.tar.gz.media.json')) if os.name == 'posix' else None
+        if os.name == 'posix':
+            self.assertEqual({a['name']: a['problem'] for a in self.plan()['kept']['archivesNotUploaded']}[self.names[-1]], 'NOT_PRIVATE_REGULAR_FILES')
+
     def test_dry_run_and_remote_check_remove_nothing(self):
         p = self.plan()
         out = lr.run({'op': 'apply', 'manual': True, 'planSha256': p['planSha256'], 'dry': True, 'remoteMd5': self.md5}, self.env)

@@ -15,7 +15,8 @@ How it runs:
     checks everything and removes nothing.
 
 What it may remove, nothing else:
-  * workspace archive sets <ARCHIVES>/synk-workspace-<T>.tar.gz{,.sha256,.uploaded} whose upload marker names
+  * workspace archive sets <ARCHIVES>/synk-workspace-<T>.tar.gz{,.sha256,.uploaded} (with .media.json when the
+    backup wrote its studio-media receipt) whose upload marker names
     exactly this node's GCS destination object, beyond the newest KEEP_ARCHIVES such sets;
   * expanded snapshots <BACKUPS>/synk-workspace-<T>/ that are COMPLETE and whose archive set is such an
     uploaded set, beyond the newest KEEP_SNAPSHOTS complete snapshots.
@@ -29,9 +30,10 @@ KEEP_SNAPSHOTS = 1
 GIB = 1024 ** 3
 NAME = r'synk-workspace-[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{3}Z'
 SNAPSHOT = re.compile('^(' + NAME + ')$')
-ARCHIVE = re.compile('^(' + NAME + r')\.tar\.gz(\.sha256|\.uploaded)?$')
+ARCHIVE = re.compile('^(' + NAME + r')\.tar\.gz(\.sha256|\.uploaded|\.media\.json)?$')
 DESTINATION = re.compile(r'^gs://[a-z0-9][a-z0-9._-]{1,61}[a-z0-9](/[A-Za-z0-9_-][A-Za-z0-9._-]*)*/?$')
 SIDECARS = ('', '.sha256', '.uploaded')
+OPTIONAL = ('.media.json',)  # backup-media.py receipt for the server-only Drive copy; leaves with its archive
 OPERATIONS_LOCK = '/var/lib/synk-company-ops/operations.lock'
 RELEASE_LOCK = '/run/lock/synk-ha-deploy.lock'
 BACKUP_UNIT = 'synk-company-backup.service'
@@ -102,10 +104,10 @@ def read_small(path, limit=1024):
 
 def archive_problem(cfg, name, files):
     """None when the set is a complete archive whose upload to this destination succeeded, else why not."""
-    if set(files) != set(SIDECARS):
+    if set(files) - set(OPTIONAL) != set(SIDECARS):
         return 'SET_INCOMPLETE'
     archive, checksum, marker = (files[s] for s in SIDECARS)
-    if not all(regular(p) for p in (archive, checksum, marker)):
+    if not all(regular(p) for p in [archive, checksum, marker] + [files[s] for s in OPTIONAL if s in files]):
         return 'NOT_PRIVATE_REGULAR_FILES'
     if os.lstat(archive).st_size <= 0:
         return 'ARCHIVE_EMPTY'
@@ -151,7 +153,7 @@ def plan(cfg):
             row = ident(s['path'])
             targets.append({'kind': 'snapshot', 'name': s['name'], 'path': s['path'], **row, 'bytes': tree_bytes(s['path'])})
     for a in reversed(uploaded[KEEP_ARCHIVES:]):  # oldest first
-        for suffix in SIDECARS:  # the archive before its checksum, the upload marker last
+        for suffix in ('', '.sha256') + tuple(s for s in OPTIONAL if s in a['files']) + ('.uploaded',):  # the upload marker last
             path = a['files'][suffix]
             targets.append({'kind': 'archive' + (suffix or '.tar.gz'), 'name': a['name'], 'path': path, **ident(path)})
     kept = {'archives': [a['name'] for a in uploaded[:KEEP_ARCHIVES]],

@@ -320,7 +320,7 @@ class Restore(Base):
     def test_hydrate_fills_the_snapshot_and_the_prepared_volume_from_its_own_sidecars(self):
         code, out, err = self.hydrate()
         self.assertEqual((code, err), (0, ''))
-        self.assertEqual(out, {'status': 'hydrated', 'files': 3, 'contents': 2, 'bytes': 41, 'targets': 2, 'fromOtherBackups': 0})
+        self.assertEqual(out, {'status': 'hydrated', 'files': 3, 'contents': 2, 'bytes': 41, 'targets': 2, 'fromOtherBackups': 0, 'alreadyPlaced': 0})
         for folder in (self.snapshot / 'company' / 'studio-media', self.prepared / 'studio-media'):
             self.assertEqual({p.name: p.read_bytes() for p in folder.iterdir()}, self.bodies)
         fetched = [urllib.parse.unquote(r[1].split('?')[0]) for r in self.server.requests if 'alt=media' in r[1]]
@@ -346,6 +346,50 @@ class Restore(Base):
         self.assertEqual((self.prepared / 'studio-media' / A).read_bytes(), b'keep me')
         self.snapshot = self.root / 'backups' / 'synk-workspace-2026-10-31T18-30-00-000Z'
         self.assertEqual(self.hydrate(False)[2], 'SYNK_BACKUP_MEDIA BYTES_ALREADY_INCLUDED\n')
+
+    def test_a_rerun_after_a_partial_failure_keeps_right_files_and_fetches_only_the_rest(self):
+        media = (self.snapshot / 'company' / 'studio-media', self.prepared / 'studio-media')
+        for folder in media:
+            folder.mkdir(exist_ok=True)
+            for name in (A, TWIN):
+                (folder / name).write_bytes(self.bodies[name])  # placed by a run that stopped before B
+        (media[0] / ('.' + sha(self.bodies[B]) + '.part')).write_bytes(b'half')  # its unfinished staging
+        self.server.requests.clear()
+        code, out, err = self.hydrate()
+        self.assertEqual((code, err), (0, ''))
+        self.assertEqual(out['alreadyPlaced'], 2 * sum(1 for name, body in self.bodies.items() if body == self.bodies[A]))
+        for folder in media:
+            self.assertEqual({p.name: p.read_bytes() for p in folder.iterdir()}, self.bodies)
+        fetched = [urllib.parse.unquote(r[1].split('?')[0]) for r in self.server.requests if 'alt=media' in r[1]]
+        self.assertFalse(any(sha(self.bodies[A]) in path for path in fetched))
+        self.assertTrue(any(sha(self.bodies[B]) in path for path in fetched))
+        held = bm.one_run(str(self.snapshot))  # GPT GA1: a second run on the same snapshot stops before touching staging
+        try:
+            (media[0] / ('.' + sha(self.bodies[B]) + '.part')).write_bytes(b'in use')
+            self.assertEqual(self.hydrate()[2], 'SYNK_BACKUP_MEDIA HYDRATE_BUSY\n')
+            self.assertEqual((media[0] / ('.' + sha(self.bodies[B]) + '.part')).read_bytes(), b'in use')
+        finally:
+            bm.release(*held)
+        self.assertFalse((self.snapshot / '.hydrate.lock').exists())
+        if os.name == 'posix':  # a run that opened the lock file just before the holder unlinked it must not count its lock
+            real_open = bm.os.open
+
+            def swapped(path, *rest):
+                fd = real_open(path, *rest)
+                if str(path).endswith('.hydrate.lock'):
+                    os.unlink(path)
+                    real_open(path, os.O_RDWR | os.O_CREAT, 0o600)
+                return fd
+            bm.os.open = swapped
+            try:
+                with self.assertRaises(bm.Failure):
+                    bm.one_run(str(self.snapshot))
+            finally:
+                bm.os.open = real_open
+                os.unlink(self.snapshot / '.hydrate.lock')
+        (media[1] / B).unlink()
+        (media[1] / B).write_bytes(self.bodies[A][:len(self.bodies[B])].ljust(len(self.bodies[B]), b'x'))  # same size, other bytes
+        self.assertEqual(self.hydrate()[2], 'SYNK_BACKUP_MEDIA TARGET_EXISTS\n')
 
     def test_hydrate_from_a_local_folder_matches_bodies_by_sha256_without_a_token(self):
         bodies = self.root / 'decrypted'
