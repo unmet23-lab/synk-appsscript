@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m2b",
+ "text": "입지 마!",
+ "dur": 0.585,
+ "words": [
+  {
+   "text": "입지",
+   "start": 0.02,
+   "end": 0.164
+  },
+  {
+   "text": "마!",
+   "start": 0.226,
+   "end": 0.585
+  }
+ ],
+ "source": {
+  "key": "49bea90eee10ecb85d6bc27b149fc019",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1031,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": null
+ }
+}

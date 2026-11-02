@@ -1,0 +1,20 @@
+{
+ "id": "01-youtube-en",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "audioLanguage": "ko",
+ "title": "Every day he told me 먹지 마 (don't eat it)… until his last day 🥺 #learnkorean",
+ "caption": "-지 마 = don't. Put it right after a verb stem:\n\n먹지 마 (meok-ji ma) = Don't eat it!\n입지 마 (ip-ji ma) = Don't wear it!\n열지 마 (yeol-ji ma) = Don't open it!\n가지 마 (ga-ji ma) = Don't go…\n울지 마 (ul-ji ma) = Don't cry.\n\nDrop 지 마 and add 어 — the \"don't\" turns into a yes: 먹어 (meo-geo) = Eat it.\n\n-지 마 is casual, for friends and family. To someone older or your boss, say 먹지 마세요.\n\nSYNK LAB\n#learnkorean #studykorean #koreanlanguage #koreangrammar",
+ "pinnedComment": "Who would you say 가지 마 (don't go) to? 👇",
+ "alt": [
+  "A needle-felted cafe. The coral felt mascot sneaks toward a strawberry cake; the barista's palm cuts in: 먹지 마! (meok-ji ma) = Don't eat it! Behind the counter the mascot wears his huge green apron: 입지 마! (ip-ji ma) = Don't wear it! By the back door it pries open his packed suitcase: 열지 마! (yeol-ji ma) = Don't open it! (지 마 and Don't share one color.) Evening: in his coat, the barista hangs that green apron on a hook for the last time, his suitcase at his feet — his last day at the cafe. At the door the mascot says 가지 마… (ga-ji ma) = Don't go… He pats its head: 울지 마. (ul-ji ma) = Don't cry. Night, the cafe is empty: he left a note by a slice of cake. The note grows into his first scold 먹지 마! — then 지 마 and Don't fall off and it becomes 먹어. (meo-geo) = Eat it. The mascot takes a bite, crying and smiling."
+ ],
+ "madeForKids": false,
+ "alteredContent": false,
+ "category": "Education",
+ "_비고": "video.mp4 = e21 v6(20.2초 · 관문 못 넘음 — 기획.md 「판정」, 원천은 v6 상태로 되돌려 다시 렌더한 e21_v6r · 첫 v6과 PSNR 50dB) → 음량마감 −14.6 LUFS / −1.5 dBFS(리미터 0.72) → CBR 10M 다시 담기. 10MB 올림판 upload_10MB.mp4(6.9MB). 표지 cover.png = 3.0초(계산대 안 — 그의 큰 앞치마를 뒤집어쓴 몽글 · 「입지 마!」). 어린이 전용 아님. 합성 표시: 필수 아님 — 장면은 GPT 이미지로 구운 펠트 그림(실존 인물 · 실제 사건처럼 보이는 장면 없음), 목소리는 특정인이 아닌 TTS(E22 · E24와 같은 판단).",
+ "version": "e21-en-v6"
+}

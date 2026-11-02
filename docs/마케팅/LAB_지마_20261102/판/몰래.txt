@@ -1,0 +1,13 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit the FIRST attached image. Keep the same café, counter, espresso machine, plants, warm daylight, camera angle, and the same strawberry shortcake on its plate on the counter. Change only:
+1. The barista is gone — the space behind the counter is empty (nobody watching).
+2. Mongle is sneaking toward the cake: it floats low over the counter, leaning its whole body forward toward the cake, mouth open wide in a hungry little "aaah", bead eyes glancing sideways (checking nobody is looking). Its body is almost touching the cake. A sly, mischievous, very cute moment.
+Keep the top 24% of the image calm (plain wall).
+
+Mongle: the coral needle-felted wool ghost-shaped mascot (use the attached reference photos ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy solid black bead eyes with NO white in them). No arms, no legs, no hands, ever.
+Barista: the same needle-felted doll as in the first attached scene — curly brown wool hair, peach felt face, solid black bead eyes, cream shirt, green apron, real little felt arms and hands.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, soft natural light, gentle depth of field, cute but not babyish (for university students and young workers). Absolutely no text, letters, numbers, logos, symbols or speech bubbles anywhere.

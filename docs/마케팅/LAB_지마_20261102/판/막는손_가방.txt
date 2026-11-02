@@ -1,0 +1,6 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit the FIRST attached image. Keep absolutely everything exactly the same — the café, the light, the camera angle, every character, pose, expression, the cake and every object. Add only ONE thing in the background, small but clearly visible (about 10% of the image height), standing on the floor against the back wall in the café room behind the counter: the barista's small brown leather suitcase (the same one as in the SECOND attached image) standing upright, with his brown wool coat and green knitted scarf draped over it — packed and ready to leave. It must stay in the background, slightly soft in focus, not covering any character.
+Absolutely no text, letters, numbers, logos, symbols or speech bubbles anywhere. Keep Mongle's glossy solid black bead eyes with NO white in them.

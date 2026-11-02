@@ -1,0 +1,70 @@
+{
+  "note": "LAB 영어 E21 「-지 마 = don't」 — 몽골판 M22와 같은 한국어 말(바리스타 = 범수, 몽글의 「가지 마…」는 해설 소진). 둘째 잔소리만 「눕지 마!」 → 「입지 마!」(앞치마 장면, 11-02 볼 이유 심사 「소파는 이야기와 상관없다」). 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_지마_20261102/음성/계획.json --굽기",
+  "voice": {
+    "id": "tc_666a9871abcf27a5169850d0",
+    "name": "소진"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "ko",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1031,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "m1",
+      "text": "먹지 마!",
+      "voice": {
+        "id": "tc_5c3c52cb5827e00008dd7f3b",
+        "name": "범수"
+      }
+    },
+    {
+      "id": "m2b",
+      "text": "입지 마!",
+      "voice": {
+        "id": "tc_5c3c52cb5827e00008dd7f3b",
+        "name": "범수"
+      }
+    },
+    {
+      "id": "m3",
+      "text": "열지 마!",
+      "voice": {
+        "id": "tc_5c3c52cb5827e00008dd7f3b",
+        "name": "범수"
+      }
+    },
+    {
+      "id": "m4",
+      "text": "가지 마…",
+      "emotion": "sad",
+      "tempo": 0.85
+    },
+    {
+      "id": "m5",
+      "text": "울지 마.",
+      "voice": {
+        "id": "tc_5c3c52cb5827e00008dd7f3b",
+        "name": "범수"
+      },
+      "emotion": "tonedown",
+      "tempo": 0.9
+    },
+    {
+      "id": "m6",
+      "text": "먹어.",
+      "voice": {
+        "id": "tc_5c3c52cb5827e00008dd7f3b",
+        "name": "범수"
+      },
+      "emotion": "tonedown",
+      "tempo": 0.9
+    }
+  ]
+}
