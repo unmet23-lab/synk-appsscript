@@ -489,6 +489,8 @@
 .member-subs .ms-bill-api{color:var(--ink-3,rgba(250,250,249,.52));font-size:.8125rem;font-weight:450}
 /* 좁은 폭에서는 사라지는 날이 말줄임에 잘리지 않게 조각만 줄을 바꾼다. */
 @container subs (max-width:700px){.member-subs .ms-bill-name.has-api>.ms-bill-api{white-space:normal}}
+/* 좁은 폭 결제 줄(11-02): 「공식 요금」은 값 아래로 내려 오른쪽에 맞추고 결제일은 줄을 바꿀 수 있게 한다 — 값이 긴 줄(Gemini ₩300,000)에서 결제일이 「고치기」 밑으로 들어가던 것. */
+@container subs (max-width:700px){.member-subs .ms-bill-price{text-align:right}.member-subs .ms-bill-price small{display:block;margin-left:0}.member-subs .ms-bill-day{min-width:0;white-space:normal}.member-subs .ms-bill>.ms-link{justify-self:end}}
 @container subs (max-width:700px){
   .member-subs .ms-sum{padding:16px 18px}
   .member-subs .ms-sum-big{font-size:1.125rem}

@@ -1480,6 +1480,8 @@ test('the big number names its window, pairs used with left, and never turns a g
   const css=require('node:fs').readFileSync(require('node:path').join(__dirname,'../renderer/subscriptions.css'),'utf8');
   const narrow=css.slice(css.indexOf('@container subs (max-width:700px){'));
   assert.ok(narrow.includes(".ms-svc-row:has(.ms-big-win,.ms-value.is-limit){grid-template-areas:'pool pool' 'pick pick' 'value value'}"));
+  // 좁은 판 결제 줄은 「공식 요금」을 값 아래로 내리고 결제일이 줄을 바꿀 수 있다 — 360px Gemini ₩300,000 줄에서 결제일이 「고치기」 밑으로 들어가던 것(11-02).
+  assert.ok(narrow.includes('.member-subs .ms-bill-price small{display:block;margin-left:0}.member-subs .ms-bill-day{min-width:0;white-space:normal}'));
   // 크레딧 줄의 대기 값은 한도형 배치에 넣지 않는다.
   const hf=row({id:'hf',service:'higgsfield',label:'Higgsfield',kind:'credit',email:'h@example.com',live:null});
   board.setVisible(false);snapshot.rows=[both,hf];board.render(el,{signedIn:true,native:true});
