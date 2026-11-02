@@ -787,7 +787,7 @@
 - 증상: 10-18 MiniMax H3 로컬 6컷(2시간)과 LoRA 학습(4시간, 15GB)이 GPU를 차례로 잡는 동안, 다른 세션들은 「GPU 비었어요」 메시지만 기다렸다. 노트북이 바쁘면 ZeroGPU로 넘기는 장치는 없다.
 - 원인: GPU 하나(24GB)를 여러 세션이 나눠 쓴다. 유호님 10-18: 넘기는 도구는 만들지 않고 규칙으로 한다(「가벼운게 낫겠다」).
 - 고침: GPU 작업을 넣기 전에 `nvidia-smi --query-gpu=memory.used,memory.total --format=csv,noheader`와 `nvidia-smi --query-compute-apps=pid,used_memory --format=csv`, 세션 메시지로 다른 작업이 잡고 있는지 본다. 남은 메모리가 이번 작업에 모자라고(FLUX 약 12GB, SeedVR2 영상 23GB) 그 작업이 30분 넘게 이어지면 기다리지 말고 되는 것은 ZeroGPU로 돌린다: 블렌더 `cpuai/blender-render-studio`(`render_zerogpu.py`), FLUX 3 Klein `black-forest-labs/flux-3-image-klein`, Qwen-Image `hugging-apps/qwen-qwen-image-2-1-turbo`(`zerogpu_image_bench.py`), SeedVR2 그림 `Upsampler/seedvr2-3b`(`zerogpu_seedvr2_alt.py`), MiniMax H3 복제본 `<허깅페이스 계정>/h3-conditioner`·`h3-generator`(5초 한 편 할당량 233초, 부르는 법은 아래 「둘로 나뉜 ZeroGPU Space」 항목). SeedVR2 영상과 LoRA 학습은 ZeroGPU로 안 되니 기다린다. 유호님 얼굴·고객 자료는 남의 Space에 올리지 않는다. 하루 2,400초를 넘기면 선불 잔액에서 빠지니 넘기 전에 멈추고, 결과 보고에 ZeroGPU로 돌렸다고 적는다. 10-29부터 비었는지 보고 기다리는 일은 위 「공용 GPU 차례」가 한다 — 여기서는 줄 밖 작업이 30분 넘게 쥘 때 ZeroGPU로 넘길지만 정한다.
-- 다시 확인: 남은 할당량을 [결제 페이지 데이터](#zerogpu-남은-할당량은-결제-페이지-데이터에-초-단위로-있다)로 읽고, 돌린 뒤 줄어든 초가 GPU 초 × 크기 배수와 맞는지 본다.
+- 다시 확인: 남은 할당량을 `python -X utf8 tools/허깅페이스.py 한도`([허깅페이스 노트](허깅페이스.md#zerogpu-남은-한도는-api로-초-단위로-읽힌다--결제-화면을-열-필요가-없다-2026-11-02-claude))로 읽고, 돌린 뒤 줄어든 초가 GPU 초 × 크기 배수와 맞는지 본다.
 
 ### 「GPU가 비면」 기다리는 사슬이 밤샘 학습 사슬 전체를 기다리고, nvidia-smi 일시 오류 한 번에 죽는다
 - 증상: 10-20 지유 손 장면 사슬(`synk-vendor/…/영상_H3/손_사슬.py` 첫 판)이 13:48에 「invalid literal for int() … NVIDIA-SMI has failed because you do not have sufficient permissions」로 죽어 있었다(그 전엔 15분마다 「GPU 기다림」). 또 기다리는 조건이 「`학습_사슬.py` · `run.py` 프로세스가 없을 것」이라, 남은 학습 넷(9시간 남짓)이 다 끝나야 출발하게 되어 있었다.
@@ -844,7 +844,7 @@
 ### 무거운 렌더를 이 PC에서 몇 시간 돌리기 전에 빌려 쓰는 길이 있다
 - 증상: 블렌더 450장을 옛 노트북에서 3시간 25분 돌려 PC가 렉이 났다(10-08, 새 노트북 수치는 위 항목). 허깅페이스 Jobs는 「Pre-paid credit balance is insufficient」 402로 거절됐다(10-08·10-14, 잔액 0).
 - 원인: Jobs는 선불 잔액에서 분 단위로 빠진다(10-11 공식 요금표: CPU Upgrade $0.03/h, T4 $0.40, L4 $0.80, RTX PRO 6000 $2.75, 시작·받기 4~6분도 값에 든다). 잔액 충전은 결제라 유호님 몫이다. 거절돼도 `-v` 폴더는 먼저 버킷에 올라간다.
-- 고침: 한 시간 넘는 렌더 전에 장비별 어림값을 보여 주고 잔액이 있는지 묻는다. 잔액이 0이면 유호님이 말하는 「구독 무료 GPU(30~40분)」인 ZeroGPU 길이 기본이다: Blender 짓기·내보내기는 이 PC에서 `render=0`으로(10초 안팎) → 카메라별 .blend → `docs/마케팅/한강2126_포트폴리오_20260930/blender/render_zerogpu.py`(결과 폴더가 고정이라 `--out`을 붙인 사본으로)로 장당 GPU 5초·왕복 30~40초. 남은 할당량 읽기는 [아래 항목](#zerogpu-남은-할당량은-결제-페이지-데이터에-초-단위로-있다). 남의 Space라 얼굴·고객 자료는 올리지 않는다. Jobs를 Git Bash에서 띄우면 `-v` 경로가 깨지니 PowerShell로 띄운다([윈도우 셸 노트](윈도우_셸.md#로-시작하는-인자가-윈도우-경로로-바뀐다)).
+- 고침: 한 시간 넘는 렌더 전에 장비별 어림값을 보여 주고 잔액이 있는지 묻는다. 잔액이 0이면 유호님이 말하는 「구독 무료 GPU(30~40분)」인 ZeroGPU 길이 기본이다: Blender 짓기·내보내기는 이 PC에서 `render=0`으로(10초 안팎) → 카메라별 .blend → `docs/마케팅/한강2126_포트폴리오_20260930/blender/render_zerogpu.py`(결과 폴더가 고정이라 `--out`을 붙인 사본으로)로 장당 GPU 5초·왕복 30~40초. 남은 할당량 읽기와 넘기 전에 멈추기는 `tools/허깅페이스.py`([허깅페이스 노트](허깅페이스.md#zerogpu-남은-한도는-api로-초-단위로-읽힌다--결제-화면을-열-필요가-없다-2026-11-02-claude)). 남의 Space라 얼굴·고객 자료는 올리지 않는다. Jobs를 Git Bash에서 띄우면 `-v` 경로가 깨지니 PowerShell로 띄운다([윈도우 셸 노트](윈도우_셸.md#로-시작하는-인자가-윈도우-경로로-바뀐다)).
 - 다시 확인: Jobs는 L4 10장 시험으로 장당 시간을 먼저 잰다(장당 GPU 시간은 아직 어림값이다).
 
 ### 남의 ZeroGPU Space를 복제하면 빌드가 spaces 판 충돌로 실패한다
@@ -859,12 +859,6 @@
 - 고침: 생성 Space 복제본에 조건값 파일을 직접 받는 `generate_from_embeds` 입구를 더하고, 이 PC에서 조건 `/encode` → 생성 `/generate_from_embeds`를 차례로 부른다(`.tmp/h3-rehearsal-20261017/run_h3.py`). 로컬 로그인 토큰으로 부른 두 호출 모두 유호님 할당량에서 빠진다(조건 Space 기록 「the caller's own quota」).
 - 다시 확인: 조건 Space 실행 기록의 `[cond] /encode on …` 줄.
 - 10-19 한강 v40 시험 ⑧: 시작·끝 그림 둘(`last_image_path`)로 175프레임(7.3초)도 됐다. 조건 GPU 6.8초, 생성 164초(27.3초/스텝 × 6), 할당량은 둘 합쳐 341초. 첫 `encode`는 그림을 올리다 `httpx.WriteTimeout`으로 끊겼고, `Client(..., httpx_kwargs={'timeout': httpx.Timeout(600)})`로 다시 돌리자 됐다. 도구 `%USERPROFILE%\Videos\한강2126_새판_20261009\재촬영_v40\시험\8_영상모델\run_h3_G12.py`.
-
-### ZeroGPU 남은 할당량은 결제 페이지 데이터에 초 단위로 있다
-- 증상: 「남은 할당량은 API로 안 나온다」로 알고 있었다(10-14).
-- 원인: 크롬 로그인 `huggingface.co/settings/billing` 화면은 분 단위(0/40분)지만, 페이지 `data-props` 안 `"zeroGpu":{"current":<남은 초>,"base":2400,"resetsAt":…}`는 초 단위다. 차감은 예약 시간이 아니라 실제 GPU 초 × 크기 배수(xlarge 2배)다: 10-17 조건 7.5초 → 14.8초, 생성 109초 → 218.1초. 다 쓰면 선불 잔액에서 자동으로 빠진다(10분 $1). `resetsAt`은 첫 사용 24시간 뒤.
-- 고침: 돌리기 전후로 결제 페이지를 새로 열어 zeroGpu.current를 읽고 뺀다.
-- 다시 확인: 같은 읽기를 한 번 더 해 current가 줄었는지 본다.
 
 ### 영상에 맞춘 효과음은 MMAudio를 따로 만든 venv에서 돌린다
 - 증상: 10-18 하린 광고 효과음(매미·얼음 「탁」·붓기·잔 「톡」)이 저장소에 없었다(사운드킷은 앱 소리, `SYNK-talk/assets/sfx`는 게임 소리). 다빈치 리졸브 21.1은 깔려 있지만 Fairlight Sound Library(폴리 500여 개, 약 1.5GB)는 따로 받는 패키지라 설치돼 있지 않았다(블랙매직 지원 페이지 등록 양식 뒤 내려받기).

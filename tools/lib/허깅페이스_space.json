@@ -1,0 +1,65 @@
+{
+ "설명": "tools/허깅페이스.py가 부를 ZeroGPU Space 목록(2026-11-02). 예상초 = 그 Space가 @spaces.GPU에 적은 duration의 최댓값(서버가 부를 때 이만큼 남았는지 본다), 배수 = 크기(large 1 · xlarge 2). 새로 넣을 때는 `python -X utf8 tools/허깅페이스.py 살펴보기 <space>`로 duration · api를 보고 적는다. 어디에 무엇을 쓰는지는 docs/AI_계정과_크레딧.md 「허깅페이스」.",
+ "space": [
+  {
+   "id": "hugging-apps/bs-roformer-leap-audio-separator",
+   "용도": "목소리 떼기(대사 · 노래 ↔ 바탕) — 집 GPU가 바빠 Demucs가 CPU로 갈 때",
+   "api": "/separate",
+   "예상초": 120,
+   "배수": 1,
+   "인자": "[{\"$파일\": 소리}, \"Standard — Vocals\"] → (목소리 wav, 나머지 wav)",
+   "실측": "11-02 20초 쇼츠 한 편(첫 실사용 — 현장노트 허깅페이스)",
+   "근거": "docs/현장노트/허깅페이스.md"
+  },
+  {
+   "id": "hf-audio/whisper-large-v3",
+   "용도": "받아쓰기 글만(낱말 시각 없음) — 떼어 낸 목소리 · 남의 원본 대사 확인",
+   "api": "/transcribe",
+   "예상초": 60,
+   "배수": 1,
+   "인자": "[{\"$파일\": 소리}, \"transcribe\"] → 글",
+   "실측": "11-02 첫 실사용(현장노트 허깅페이스)",
+   "근거": "docs/현장노트/허깅페이스.md"
+  },
+  {
+   "id": "Upsampler/seedvr2-3b",
+   "용도": "그림 업스케일(SeedVR2-3B) — 영상은 안 된다",
+   "api": "/upscale_image",
+   "예상초": 90,
+   "배수": 1,
+   "인자": "[{\"$파일\": 그림}, 1, 0] (steps, seed) → 그림",
+   "실측": "10-18 480×854 → 1072×1920 왕복 61초. 로컬보다 또렷하지만 주근깨 · 눈매를 더 지어낸다",
+   "근거": "docs/현장노트/영상_ffmpeg_자막.md"
+  },
+  {
+   "id": "hugging-apps/qwen-qwen-image-2-1-turbo",
+   "용도": "Qwen-Image 2.1 Turbo(집 GPU 24GB에 안 들어감) — 역할 표의 그림(마스코트 · 실사 정지컷 · 광고 콘티)에는 쓰지 않는다",
+   "api": "/generate",
+   "예상초": 180,
+   "배수": 1,
+   "인자": "[글, [], seed, 1024, \"Auto\"] (resolution은 숫자) → 그림",
+   "실측": "10-18 세 장 할당량 11.2초(장당 3.7초), 왕복 126~193초",
+   "근거": "docs/현장노트/영상_ffmpeg_자막.md"
+  },
+  {
+   "id": "hkchengrex/MMAudio",
+   "용도": "영상에 맞춘 효과음 — 집 GPU가 바쁠 때. CC-BY-NC라 공모 · 광고에는 못 쓴다",
+   "api": "/video_to_audio",
+   "예상초": 120,
+   "배수": 1,
+   "인자": "[{\"$파일\": 영상}, 글, \"music\", -1, 25, 4.5, 8] → 소리 붙은 영상",
+   "실측": "로컬 구간당 13~65초 · 5.8GB(Space는 아직 안 잼)",
+   "근거": "docs/현장노트/영상_ffmpeg_자막.md"
+  },
+  {
+   "id": "q121235/pulse-lora-render",
+   "용도": "PULSE 아이돌 멤버 LoRA 그림(우리 비공개 Space, PULSE 세션 몫)",
+   "api": "/render",
+   "예상초": 170,
+   "배수": 1,
+   "인자": "[줄마다 한 장 글, LoRA 이름, 세기, seed, 가로, 세로, 스텝]",
+   "실측": "11-02 두 장 17초",
+   "근거": "C:/SYNK-LoRA/hf_space/pulse-lora-render/app.py (_dur 최대 170)"
+  }
+ ]
+}

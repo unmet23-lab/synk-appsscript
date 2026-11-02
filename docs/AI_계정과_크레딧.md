@@ -75,3 +75,35 @@ Claude의 무인 작업(예약·헤르메스 /synk_claude)도 2026-10-18 요청�
 Gemini는 2026-10-17 사용자 결정으로, 무료 API 문이 몫 상한(429)에 막히면 같은 모델·사고 수준으로 Google AI 구독 통로(agy에 로그인한 계정, 지금 Ultra)를 한 번 부른다(`tools/lib/제미나이호출.js`의 구독대체). 유료 Vertex로는 넘어가지 않고, CI와 대량 검문 도구는 기본으로 넘기지 않는다.
 
 무료 문의 키(「글」 무료 키 `~/SYNK_보안/제미나이_무료.txt`)는 새 노트북에 없다가 2026-10-29 유호님 「응 만들어서 받아」로 Claude가 ego에서 77yuhbs의 AI Studio에 결제를 붙이지 않은 새 프로젝트 「SYNK Free Voice Test」와 같은 이름의 키를 만들어 그 자리에 두었다(무료 등급, 실시간 음성 상황극 듣기 시험의 Gemini 3.8 Live 녹음에 처음 씀). 무료 등급은 보낸 내용이 구글 학습에 쓰이므로 지어낸 내부 글 · 대본만 넣고, 학생 · 고객 자료는 넣지 않는다. 이 파일이 생겨 무료 문을 먼저 부르는 기존 도구(몽골어 검문 · `제미나이호출.js`)도 다시 무료 문부터 쓴다. 처음 만든 같은 이름의 키는 새 키 꼴(`AQ.`로 시작)이 화면 가림에 안 걸려 작업 기록에 값이 찍혀서 그 자리에서 지웠다([현장 노트](현장노트/AI_CLI.md#새-gemini-api-키는-aq로-시작해-aiza만-가리면-값이-찍힌다-2026-10-29-claude)). 같은 화면에서 본 다른 키: unmet23 AI Studio의 옛 무료 키 「SYNK Free Text Gate」(무료 등급, 09-03)와 결제 계정이 붙은 Tier 1 키(Default Gemini Project) — 유료 키는 쓰지 않는다. Google AI Ultra에 딸린 월 클라우드 크레딧(5x $40 · 11-02부터 20x $100)은 개발자 프로그램 가입과 AI Studio 선불 결제에 $5를 먼저 넣어야 켜지고 가족 계정(unmet25)에는 안 나눠진다 — 켤지는 유호님 결정(약관 동의 · 돈이 나가는 일)이다([조사](../experiences/synk-world-app/qa/realtime-roleplay-20261029/조사.md), 11-02 위 「아르곤 계정」 끝 문단).
+
+## 허깅페이스
+
+2026-11-02 정리(유호님 「허깅페이스 매월 결제하고 있는데 기능을 하나도 이용 안 하고 있어 … 최대한 잘 이용하고 싶어」). 계정은 `q121235`(PRO 월 $9, [돈장부](_ops/돈장부.json))이고, 이 PC의 `hf` CLI에 OAuth로 로그인돼 있다(`~/.cache/huggingface/token`, 결제 읽기 권한 있음 — 값은 찍지 않는다). 도구 함정과 실측은 [현장 노트 · 허깅페이스](현장노트/허깅페이스.md)에 있다.
+
+**PRO가 주는 것(11-02 결제 화면 · API 실측):** ZeroGPU 하루 2,400초(40분, 그 창의 첫 사용 24시간 뒤 다시 참)를 반쪽 RTX Pro 6000(48GB)으로 쓰고, `size="xlarge"` 함수는 온쪽(96GB)이라 2배로 깎인다. 자기 ZeroGPU Space는 10개까지다 — 지금 비공개 셋(`h3-conditioner` · `h3-generator` · `pulse-lora-render`). 선불 잔액은 $2이고 이것이 PRO에 딸린 월 몫이다. Inference Providers · ZeroGPU 넘침(10분 $1) · Jobs가 모두 이 잔액에서 깎인다. 자동 충전은 꺼져 있고(화면 「Automatic Recharge -」), 카드가 붙어 있어 「Add Credits」를 누르면 카드로 산다. 저장은 비공개 1TB(지금 0.35GB — Space 셋과 옛 Jobs 버킷 `jobs-artifacts`) · 공개 11.2TB다. 11월 사용은 11-02까지 Inference $0 · Jobs $0 · ZeroGPU 넘침 0초다.
+
+**돈이 나가는 길과 막는 법:**
+- ZeroGPU는 `python -X utf8 tools/허깅페이스.py 부르기 <space> …`로 부른다. 도구는 남은 초(`/api/spaces/zero-gpu/quota`)에서 다른 세션 예약과 여유 30초를 빼고, 그 Space가 적은 duration × 배수가 안 들어가면 부르지 않는다(끝 코드 2). 부른 뒤 넘친 초가 늘면 멈춤을 걸어(끝 코드 3) 사람이 결제 화면을 보고 `풀기 --확인`할 때까지 모든 호출을 막는다 — 한도가 크레딧으로 넘어가지 않게 하는 것이다. 자기 gradio 호출이 있는 스크립트(블렌더 `render_zerogpu.py`, PULSE 호출기)는 `with 한도지키기(space, 필요초):`로 감싼다. 쓸 Space와 예상초는 [Space 목록](../tools/lib/허깅페이스_space.json), 남은 몫은 `… 한도`, 쓴 초는 `… 기록`이다.
+- 남의 Space에는 유호님 얼굴 · 고객 · 학생 자료를 올리지 않는다. 도구가 남의 Space에 파일을 보낼 때 `--남에게보내도됨`을 받아야 보낸다(우리 `q121235/…` Space는 막지 않는다).
+- Jobs(유료 GPU)는 쓰기 전에 유호님께 금액과 함께 여쭌다 — $2 잔액 안이어도 같고, 그 너머는 카드 충전이다. 값은 11-02 `hf jobs hardware` 기준 L4 24GB $0.80/시 · L40S 48GB $1.80/시 · A100 80GB $2.50/시 · RTX PRO 6000 96GB $2.75/시 · H200 141GB $5.00/시다. 시작 · 받기 4~6분도 값에 든다([영상 노트](현장노트/영상_ffmpeg_자막.md#무거운-렌더를-이-pc에서-몇-시간-돌리기-전에-빌려-쓰는-길이-있다)).
+- Inference Providers는 월 $2 몫 안에서 시험용으로만 쓰고 큰 일괄은 넣지 않는다(11-02 아직 안 씀 · 안 재 봄). 잔액 · Inference · Jobs 쓴 돈은 토큰으로 안 읽혀 ego에서 결제 화면을 읽는다([현장 노트](현장노트/허깅페이스.md#선불-잔액inferencejobs-쓴-돈은-토큰으로-안-읽힌다--ego에서-결제-화면을-읽는다-2026-11-02-claude)).
+
+**어디에 무엇을 쓰나(11-02).** 기본은 「집 GPU(RTX 5090 24GB)가 LoRA 학습 같은 긴 일에 잡혀 있을 때 다른 GPU 일을 ZeroGPU로 옆으로 뺀다」와 「24GB에 안 드는 모델」 둘이다. 어느 그림 · 영상 · 목소리에 어떤 도구를 쓰는지는 [운영 원칙 역할 표](AI_운영원칙.md#역할)와 [만족 사례 장부](마케팅/제작양식/만족사례_장부.md)가 정하고, 이 표는 그 밖의 보조 일만 옮긴다.
+
+| 일 | 지금 | 허깅페이스로 | 언제 · 실측 |
+|---|---|---|---|
+| 대사 · 노래 목소리 떼기 | Demucs htdemucs_ft 집 GPU(바쁘면 CPU로 가 크롬이 멈춤) | `hugging-apps/bs-roformer-leap-audio-separator` | 집 GPU가 바쁠 때 기본. 11-02 20초 한 편 왕복 41.5초 · 한도 12.1초(첫 실사용) |
+| 받아쓰기 확인(글만) | faster-whisper CPU int8(30초 소리에 1분 안팎) | `hf-audio/whisper-large-v3` | 떼어 낸 대사 · 남의 원본 대사 확인. 11-02 20초 왕복 11~22초 · 한도 4~5초, 원고와 다 맞음. 낱말 시각이 드는 줄 나누기는 로컬 그대로 |
+| 그림 업스케일 | SeedVR2-3B 로컬(한 장 37초) | `Upsampler/seedvr2-3b` | 집 GPU가 바쁠 때. 10-18 왕복 61초, 얼굴을 더 지어내니 사람 얼굴 최종본은 로컬. 영상 업스케일은 공개 Space가 안 됨 |
+| 블렌더 렌더 | 로컬 OptiX(더 빠름) | `cpuai/blender-render-studio`(`render_zerogpu.py`) | 노트북을 비워야 할 때 · 나눠 돌릴 때(하루 무거운 컷 약 120장) |
+| 영상에 맞춘 효과음 | MMAudio · HunyuanFoley 로컬 | `hkchengrex/MMAudio` | 집 GPU가 바쁠 때. CC-BY-NC라 공모 · 광고에는 안 됨 |
+| 24GB에 안 드는 그림 모델 | — | `hugging-apps/qwen-qwen-image-2-1-turbo` | 역할 표 밖의 시험 그림만(마스코트 · 실사 정지컷 · 광고 콘티는 역할 표대로). 10-18 장당 3.7초 |
+| 우리 LoRA 그림 | — | 비공개 `q121235/pulse-lora-render` | PULSE 세션 몫(11-02 두 장 17초) |
+| 그림 → 3D | 보류 | `microsoft/TRELLIS.2`(형상+텍스처) · `tencent/Hunyuan3D-2.1`(형상) | 보류 중인 마스코트 3D를 다시 열 때(`tools/보류_3D/`) |
+| 영상(H3) | 안 씀(10-29) | 비공개 `h3-conditioner` · `h3-generator`(5초 한 편 233초) | 지금 안 씀(라이선스가 한국 이용 제외) |
+| 대본 TTS · 목소리 복제 | 시댄스 생성본 → 일레븐 v4 | `Qwen/Qwen3-TTS` · `k2-fsa/OmniVoice`가 돌지만 쓰지 않는다 | 목소리는 정한 규칙대로 |
+| 배경 지우기 | rembg 로컬(장당 4~5초) | 옮기지 않는다 | `briaai/BRIA-RMBG-2.0`은 비상업 라이선스 |
+| LoRA 학습 | AI-Toolkit 집 GPU(한 번 약 4시간) | ZeroGPU로는 안 됨 · Jobs는 돈 | 학습이 밀려 기다리는 일이 생기면 Jobs 금액을 들고 여쭌다 |
+| 금고 세 번째 사본 | Drive 둘 | 비공개 모델 · 데이터셋 저장소(1TB) | LoRA 최종 가중치를 우리 Space가 바로 읽게 둘 때. 실제 사람 얼굴 LoRA · 데이터셋은 올리기 전에 여쭌다 |
+
+새 Space는 `python -X utf8 tools/허깅페이스.py 살펴보기 <space>`로 duration · api를 보고 목록에 한 줄 더한 뒤 쓴다. 남의 Space는 예고 없이 멈추거나 깨진다(09-03 여섯 중 둘, 10-18 공식 SeedVR2) — 안 되면 다른 Space로 넘어가지 말고 로컬로 돌아온다.
