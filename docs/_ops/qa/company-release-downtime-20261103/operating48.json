@@ -1,0 +1,445 @@
+{
+  "schema": "synk-company-release48-operating-evidence/v1",
+  "at": "2026-11-02T22:08:07.918Z",
+  "status": "deployed-rearmed-sealed-and-measured",
+  "chain": 48,
+  "manifest": "789046085dba7fea641c310606fa9d3488f4f38e8dc920ca9a98ebce2947f452",
+  "image": "sha256:e6c3fc45a06158ed615c2397bf5f0e070172e1ec213795f479977ae924c9bfd0",
+  "source": {
+    "files": 1280,
+    "preservedParentApplicationFiles": 1279,
+    "haRuntime": "unchanged-B3",
+    "scope": "Native deployment worker changes and one source-only patch artifact; existing application code preserved."
+  },
+  "deployment": {
+    "id": "eacaa84aa6f304ad6ea0816baba66d13",
+    "complete": true,
+    "recovered": false,
+    "finalizedNodes": 2,
+    "failedReceipts": 0,
+    "publicProbeTransientErrors": [
+      {
+        "at": "1793655503269598",
+        "message": {
+          "status": "waiting-or-held",
+          "code": "URLError"
+        }
+      }
+    ]
+  },
+  "runtime": {
+    "at": "2026-11-02T21:39:35.268Z",
+    "status": "passed",
+    "hosts": {
+      "primary": {
+        "status": "passed",
+        "sharedRuntimePinned": true,
+        "deploymentCodePinned": true
+      },
+      "standby": {
+        "status": "passed",
+        "sharedRuntimePinned": true,
+        "deploymentCodePinned": true
+      },
+      "controller": {
+        "status": "passed",
+        "sharedRuntimePinned": true,
+        "deploymentCodePinned": true
+      }
+    },
+    "exactPreStartPreservationProven": true,
+    "postStartSessionAndTokenTablesExact": false,
+    "postStartSchemasUnchanged": true,
+    "note": "Session and token tables changed after startup. This is not a claim that all historical session rows remained or an authenticated browser-session test."
+  },
+  "public": {
+    "status": "passed",
+    "files": 294,
+    "matched": 294,
+    "withdrawnMatched": 21,
+    "health": {
+      "status": 200,
+      "ready": true
+    },
+    "anonymousSocialStatus": 401
+  },
+  "health": {
+    "schema": "synk-company-release48-health-observation/v1",
+    "at": "2026-11-02T21:39:52.992Z",
+    "startedAt": "2026-11-02T21:30:16.585Z",
+    "completedAt": "2026-11-02T21:39:46.839Z",
+    "endReason": "operator-ended-observation",
+    "targetIntervalMs": 1000,
+    "requestDeadlineMs": 3000,
+    "samples": 418,
+    "failed": 78,
+    "clusters": [
+      {
+        "previousReady": "2026-11-02T21:34:38.299Z",
+        "firstFailedAt": "2026-11-02T21:34:39.310Z",
+        "lastFailedAt": "2026-11-02T21:38:23.561Z",
+        "firstRecoveredAt": "2026-11-02T21:38:26.591Z",
+        "failedProbes": 78,
+        "observedFailureToRecoveryMs": 227281,
+        "maxProbeGapMs": 3036
+      }
+    ],
+    "comparison": {
+      "prior47ObservedMs": 331501,
+      "current48ObservedMs": 227281,
+      "reductionMs": 104220,
+      "reductionPercent": 31.44
+    },
+    "method": "First failed probe start to first subsequent ready probe start; 1-second target interval, body-complete timeout 3 seconds. This is one deployment observation, not a general availability guarantee."
+  },
+  "phaseCompletion": {
+    "before47": [
+      {
+        "seq": 1,
+        "phase": "PREPARE",
+        "at": 1793637481193,
+        "sincePreviousReceiptMs": null
+      },
+      {
+        "seq": 2,
+        "phase": "STOP",
+        "at": 1793637494537,
+        "sincePreviousReceiptMs": 13344
+      },
+      {
+        "seq": 3,
+        "phase": "CAPTURE",
+        "at": 1793637522078,
+        "sincePreviousReceiptMs": 27541
+      },
+      {
+        "seq": 4,
+        "phase": "APPLY_STANDBY",
+        "at": 1793637553953,
+        "sincePreviousReceiptMs": 31875
+      },
+      {
+        "seq": 5,
+        "phase": "APPLY_PRIMARY",
+        "at": 1793637648616,
+        "sincePreviousReceiptMs": 94663
+      },
+      {
+        "seq": 7,
+        "phase": "VERIFY_STOPPED",
+        "at": 1793637686050,
+        "sincePreviousReceiptMs": 37434
+      },
+      {
+        "seq": 8,
+        "phase": "RELEASE_LOCKS",
+        "at": 1793637693611,
+        "sincePreviousReceiptMs": 7561
+      },
+      {
+        "seq": 9,
+        "phase": "START_STANDBY",
+        "at": 1793637711231,
+        "sincePreviousReceiptMs": 17620
+      },
+      {
+        "seq": 10,
+        "phase": "START_PRIMARY",
+        "at": 1793637791217,
+        "sincePreviousReceiptMs": 79986
+      },
+      {
+        "seq": 11,
+        "phase": "PUBLIC",
+        "at": 1793637800131,
+        "sincePreviousReceiptMs": 8914
+      },
+      {
+        "seq": 12,
+        "phase": "FINALIZE",
+        "at": 1793637823718,
+        "sincePreviousReceiptMs": 23587
+      }
+    ],
+    "after48": [
+      {
+        "seq": 1,
+        "phase": "PREPARE",
+        "at": 1793655271758,
+        "sincePreviousReceiptMs": null
+      },
+      {
+        "seq": 2,
+        "phase": "STOP",
+        "at": 1793655283433,
+        "sincePreviousReceiptMs": 11675
+      },
+      {
+        "seq": 3,
+        "phase": "CAPTURE",
+        "at": 1793655306871,
+        "sincePreviousReceiptMs": 23438
+      },
+      {
+        "seq": 4,
+        "phase": "APPLY_NODES",
+        "at": 1793655354283,
+        "sincePreviousReceiptMs": 47412
+      },
+      {
+        "seq": 6,
+        "phase": "VERIFY_STOPPED",
+        "at": 1793655396043,
+        "sincePreviousReceiptMs": 41760
+      },
+      {
+        "seq": 7,
+        "phase": "RELEASE_LOCKS",
+        "at": 1793655404835,
+        "sincePreviousReceiptMs": 8792
+      },
+      {
+        "seq": 8,
+        "phase": "START_NODES",
+        "at": 1793655480133,
+        "sincePreviousReceiptMs": 75298
+      },
+      {
+        "seq": 9,
+        "phase": "PUBLIC",
+        "at": 1793655489814,
+        "sincePreviousReceiptMs": 9681
+      },
+      {
+        "seq": 10,
+        "phase": "FINALIZE",
+        "at": 1793655513380,
+        "sincePreviousReceiptMs": 23566
+      }
+    ],
+    "method": "Intervals between the latest receipt of successive node phases include scheduling and polling. These are observations, not isolated CPU timings. The full health reduction cannot be attributed solely to parallelism."
+  },
+  "retainedInitialFailures": [
+    {
+      "attempt": "attempt1",
+      "failedProbes": 121,
+      "windows": [
+        {
+          "previousReady": "2026-11-02T19:48:04.063Z",
+          "firstFailed": "2026-11-02T19:48:05.108Z",
+          "lastFailed": "2026-11-02T19:53:52.917Z",
+          "firstReadyAfter": "2026-11-02T19:53:55.933Z",
+          "observedUnavailableMs": 350825,
+          "failedProbes": 121,
+          "maxProbeGapMs": 3047
+        }
+      ]
+    },
+    {
+      "attempt": "attempt2",
+      "failedProbes": 347,
+      "windows": [
+        {
+          "previousReady": "2026-11-02T20:09:40.591Z",
+          "firstFailed": "2026-11-02T20:09:41.608Z",
+          "lastFailed": "2026-11-02T20:27:14.233Z",
+          "firstReadyAfter": "2026-11-02T20:27:17.286Z",
+          "observedUnavailableMs": 1055678,
+          "failedProbes": 347,
+          "maxProbeGapMs": 14143
+        }
+      ]
+    }
+  ],
+  "recovery": {
+    "priorReleaseRestored": true,
+    "dataRestoredFromBackup": false,
+    "originalFailureReceiptsPreserved": true,
+    "secondAttemptRecoveredWithinOriginalWindow": true
+  },
+  "qa": {
+    "native": {
+      "tests": 213,
+      "failures": 0,
+      "skipped": 0,
+      "linux": true
+    },
+    "production": {
+      "tests": 3372,
+      "pass": 3372,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "compatibility": {
+      "tests": 2,
+      "pass": 2,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "productionDataMounted": false,
+    "hostServiceAndConfigPreserved": true,
+    "rearm": {
+      "node": 155,
+      "python": 51,
+      "deployment": 127,
+      "failed": 0,
+      "skipped": 0,
+      "protectedUnchanged": true
+    }
+  },
+  "review": {
+    "native": {
+      "GPT": 0,
+      "Claude": 2,
+      "treatment": "P2 endpoint/attempt diagnostics deferred; P3 caller-budget concern not reproduced with actual callsites and Linux tests."
+    },
+    "finalTools": {
+      "GPT": 0,
+      "Claude": 0,
+      "files": 133,
+      "inputSha256": "75d1a4b122a5c425eb464467bbc7250ec3f121644655f09073f7eec5960cae89"
+    }
+  },
+  "backup": {
+    "bytes": 539064134,
+    "dataBackupCreatedAt": "2026-11-02T21:46:01.990Z",
+    "generation": "1793656144382367",
+    "sha256": "5ca99c1c09e49eac0e85191bbf7a101f425eb3dcacc039e5fb42d3359824a4b1",
+    "md5Verified": true,
+    "sidecarMd5Verified": true,
+    "completedExactInvocation": true,
+    "protectedSourcesUnchanged": true,
+    "originalKeyUnchanged": true,
+    "applicationRestarts": 0
+  },
+  "restore": {
+    "status": "passed",
+    "releaseSha256": "789046085dba7fea641c310606fa9d3488f4f38e8dc920ca9a98ebce2947f452",
+    "backupCreatedAt": 1793655961990,
+    "dataBackupCreatedAt": "2026-11-02T21:46:01.990Z",
+    "archiveMd5Verified": true,
+    "media": {
+      "mode": "manifest-hydrated",
+      "helperSha256": "851dc81d9ce06105e176717c5cf1685e981a176b4d1e26c623dbb3a0121b3b05",
+      "manifestSha256": "7d2be040a24607910a75a44fe196ec9e3942bd68fe6a8358192c693504660046",
+      "files": 78,
+      "contents": 60,
+      "logicalBytes": 2107242322,
+      "contentBytes": 1846835984,
+      "privateDerivedOnly": true,
+      "fromOtherBackups": 0
+    },
+    "archiveUnchanged": true,
+    "originalPreparedMarkerPreserved": true,
+    "standbyConfigRuntimeGuardEnvUnchanged": true,
+    "standbyProductionContainersUnchanged": true,
+    "logicalCopiesMatch": true,
+    "activeSessionAndTokenRowsPreserved": true,
+    "expiredTokenCleanup": {
+      "boundary": "before-server-import",
+      "cutoffAt": "2026-11-02T21:56:30.841Z",
+      "tokenRowsBefore": 415,
+      "tokenRowsAfter": 414,
+      "removedRows": 1,
+      "removedByPurpose": {
+        "session": 1
+      },
+      "allRemovedExpiredBeforeStartup": true,
+      "unexpiredRemovedRows": 0,
+      "addedRows": 0,
+      "changedRows": 0
+    },
+    "realUserLoginTest": false,
+    "productionTraffic": false,
+    "newVmProvisioned": false,
+    "qaContainersRemoved": true,
+    "accountBindingPassed": true
+  },
+  "rearm": {
+    "status": "passed",
+    "at": 1793657223164,
+    "armed": true,
+    "epoch": 7,
+    "replicaHealthy": true,
+    "releaseSha256": "789046085dba7fea641c310606fa9d3488f4f38e8dc920ca9a98ebce2947f452",
+    "contractSha256": "ff2c88eb00496fb32158142afa1d8309f642ce6d7ff04e0e911d18cda7251f01",
+    "completedSealSha256": "3f29d762ba4a5166b2026a5b73bdde5d4e003e10e3a61a39e101c5ca492b255c",
+    "approvalSealSha256": "8a5961f9d172483301484f577d264803edcca44796913692aa4185c4db525a90"
+  },
+  "synchronization": {
+    "fixCommit": "77349a5a887a2670c45177a67f69dcddb2e0aa3f",
+    "method": "Canonical follow with byte-verified original backups and restoration of shared drafts; final synchronization evidence is kept separately after publication."
+  },
+  "evidence": [
+    {
+      "file": ".tmp/company-downtime48-release-20261103-v2/deployment/runtime-live-postcheck-1793655575268.json",
+      "sha256": "9068baf8f30d0261b60ce846133c1e7fac1d4304b761f95b34dffd6ad7c7f4a7"
+    },
+    {
+      "file": ".tmp/company-downtime48-release-20261103-v2/deployment/public-verification-1793655564004.json",
+      "sha256": "a55bc03e7d6c5e578c3443e8b3f936cbb2e237a5750c228715d4dc4fe0429410"
+    },
+    {
+      "file": ".tmp/company-release-downtime-20261103/revision2-completion-1793655562943.json",
+      "sha256": "ff3fa45cbcad13d825f9d0c0a0d39b9c7084ba9946b81c4ca243bee8bb638fa6"
+    },
+    {
+      "file": ".tmp/company-release-downtime-20261103/revision2-health-summary-1793655592993.json",
+      "sha256": "715803f2ae3fb66642267e2932a792f4b5200215ee6a8929914ef5819e52cd23"
+    },
+    {
+      "file": ".tmp/company-release-downtime-20261103/health-incidents-1793653140579.json",
+      "sha256": "4b41d1f24dffdfaf7ac3916e712c1159365c060eb541831874aca9725923b9d3"
+    },
+    {
+      "file": ".tmp/company-release-downtime-20261103/recovery48-1793651277183.json",
+      "sha256": "fa7c0ca1c79bd89db85cd22b20c0ccdea86d1713018b96e7309fcfa385d62945"
+    },
+    {
+      "file": ".tmp/company-downtime48-release-20261103-v2/deployment/rootqa/linux-1793654612964/result.json",
+      "sha256": "9f6e485ddbdb4953d46bec4cdc676f7ff1cbf8c7310fc864587b8e93bad68bf0"
+    },
+    {
+      "file": ".tmp/company-downtime48-release-20261103-v2/deployment/deployment-validation.json",
+      "sha256": "6fc95e180ef6d5fe30c5a69c55116f7ad72eaf2e2f63e6b0c4a99f75cb3b5923"
+    },
+    {
+      "file": ".tmp/company-downtime48-release-20261103-v2/rearm/linux-qa-result-v12.json",
+      "sha256": "46105eba7364acb3429a213269724dd9c2261f83e7ebea9c59b4af72b6e4f69d"
+    },
+    {
+      "file": ".tmp/company-release-downtime-20261103/tools-binding-v3-1793654108789.json",
+      "sha256": "172f9e7e49d592a5d309b3e6bd31b3b79a1550e50905e785b7134ecb68c4e5e3"
+    },
+    {
+      "file": ".tmp/company-downtime48-release-20261103-v2/rearm/dr/backup-completed-pin-v1.json",
+      "sha256": "d191ff3c4d8cd04bbad07877914cbee5a7dc7112e06ba31d353ec0867e6d2740"
+    },
+    {
+      "file": ".tmp/company-downtime48-release-20261103-v2/rearm/dr/backup-status-1793656137683.json",
+      "sha256": "fe8b384b1f621addc03d927498bea9536a217cc4f1ba82f0bf29eae1a3cedb83"
+    },
+    {
+      "file": ".tmp/company-downtime48-release-20261103-v2/rearm/dr/restore-v1.json",
+      "sha256": "951ca11a1e8060d02e65eb9860840d82b79a1e642dcb61fc206edfa884cbca4b"
+    },
+    {
+      "file": ".tmp/company-downtime48-release-20261103-v2/rearm/dr/binding-v1.json",
+      "sha256": "7ea1ac8787c6f4ae4b353f06f051db4e722ef2d796e1ccd1827780045c55dbcd"
+    },
+    {
+      "file": ".tmp/company-downtime48-release-20261103-v2/rearm/arm-postcheck-normal-v3.json",
+      "sha256": "35cf1e09319a4f8d51e7c2b7c53a8dd4ea1f980874c028d437c7fc707ec8536b"
+    },
+    {
+      "file": ".tmp/company-release-downtime-20261103/seal48-v2-result.json",
+      "sha256": "76af1c448a0af075260a7fceec7186fa7629c9524dfe9392bd0183ab4817c946"
+    },
+    {
+      "file": ".tmp/company-social-health-20261102/release47-phase-details-1793637938736.json",
+      "sha256": "d8894ab8e5d35e4b448446dd6b2cdd1f4394c237a9fad4c9a5f8716640656609"
+    }
+  ]
+}

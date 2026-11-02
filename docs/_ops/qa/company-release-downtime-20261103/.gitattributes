@@ -1,0 +1,2 @@
+native-deployment.patch -text
+operating48.json text eol=lf

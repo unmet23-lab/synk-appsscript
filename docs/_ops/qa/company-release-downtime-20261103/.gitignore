@@ -1,0 +1,3 @@
+# 검수한 배포 코드 차이와 비식별 운영 집계만 보존한다.
+!native-deployment.patch
+!operating48.json

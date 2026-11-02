@@ -1,0 +1,502 @@
+diff --git a/native/cloud-read-retry.test.py b/native/cloud-read-retry.test.py
+new file mode 100644
+index 0000000..7a561f2
+--- /dev/null
++++ b/native/cloud-read-retry.test.py
+@@ -0,0 +1,113 @@
++"""Fault-injected GET transport checks. No real network or service actions."""
++import contextlib,importlib.util,json,pathlib,types,unittest,urllib.error
++from unittest.mock import patch
++
++def load(name,file):
++ spec=importlib.util.spec_from_file_location(name,pathlib.Path(__file__).with_name(file));module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);return module
++h=load('retry_host','deployment-host.py');w=load('retry_worker','maintenance-entry-worker.py');n=load('retry_release','release-node.py')
++URL='https://storage.googleapis.com/storage/v1/b/example/o/state'
++class Worker:
++ def meta(self,p):return {'project/project-id':h.PROJECT.encode(),'instance/id':h.IDS['primary'].encode(),'instance/service-accounts/default/token':b'{"token_type":"Bearer","access_token":"synthetic-only","expires_in":300}'}[p]
++class Response:
++ status=200;headers={'Metadata-Flavor':'Google'}
++ def __init__(self,body=b'{"ok":true}',error=None,read_elapsed=0):self.body=body;self.error=error;self.read_elapsed=read_elapsed;self.closed=False
++ def __enter__(self):return self
++ def __exit__(self,*args):self.closed=True
++ def read(self,size):
++  self.clock.now+=self.read_elapsed
++  if self.error:raise self.error
++  return self.body[:size]
++class Harness:
++ def __init__(self,kind,actions):self.kind=kind;self.module={'host':h,'worker':w,'release':n}[kind];self.actions=list(actions);self.calls=[];self.sleeps=[];self.now=100;self.cloud=h.Cloud(h.IDS['primary'],Worker())
++ def open(self,req,timeout):
++  self.calls.append({'url':req.full_url,'headers':dict(req.header_items()),'method':req.get_method(),'data':req.data,'timeout':timeout});action=self.actions.pop(0)
++  if isinstance(action,tuple):elapsed,action=action;self.now+=elapsed
++  if isinstance(action,BaseException):raise action
++  action.clock=self;return action
++ def sleep(self,delay):self.sleeps.append(delay);self.now+=delay
++ def __enter__(self):
++  self.ctx=contextlib.ExitStack();self.ctx.enter_context(patch.object(self.module.urllib.request,'build_opener',return_value=self));self.ctx.enter_context(patch.object(self.module.time,'monotonic',lambda:self.now));self.ctx.enter_context(patch.object(self.module.time,'sleep',self.sleep));return self
++ def __exit__(self,*args):self.ctx.close()
++ def call(self,method='GET',body=None):return self.cloud.request(URL,method,body) if self.kind=='host' else self.module.fetch(URL,{'Authorization':'Bearer synthetic-only'})
++
++class ReadRetryTests(unittest.TestCase):
++ def kinds(self):return ('host','worker','release')
++ def test_timeout_retries_identical_read_then_succeeds(self):
++  for kind in self.kinds():
++   with self.subTest(kind=kind),Harness(kind,[TimeoutError(),Response()]) as x:
++    x.call();self.assertEqual(len(x.calls),2);self.assertEqual({k:v for k,v in x.calls[0].items() if k!='timeout'},{k:v for k,v in x.calls[1].items() if k!='timeout'});self.assertEqual(x.sleeps,[.25])
++ def test_ten_second_timeout_leaves_only_original_remaining_budget(self):
++  for kind in self.kinds():
++   with self.subTest(kind=kind),Harness(kind,[(10,TimeoutError()),Response()]) as x:x.call();self.assertEqual([c['timeout'] for c in x.calls],[10,3.75]);self.assertEqual(x.now,110.25)
++ def test_reset_and_wrapped_timeout_can_recover(self):
++  for kind in self.kinds():
++   with self.subTest(kind=kind),Harness(kind,[ConnectionResetError(),urllib.error.URLError(TimeoutError()),Response()]) as x:x.call();self.assertEqual(len(x.calls),3);self.assertEqual(x.sleeps,[.25,.5])
++ def test_three_failures_fail_closed_without_leaking_error_text(self):
++  for kind in self.kinds():
++   with self.subTest(kind=kind),Harness(kind,[TimeoutError('private-value') for _ in range(3)]) as x:
++    with self.assertRaisesRegex(x.module.Hold,'GET_TIMEOUT_EXHAUSTED$') as result:x.call()
++    self.assertNotIn('private-value',str(result.exception));self.assertEqual(len(x.calls),3)
++ def test_original_budget_is_not_reset_after_slow_failure(self):
++  for kind in self.kinds():
++   with self.subTest(kind=kind),Harness(kind,[(13.8,TimeoutError())]) as x:
++    with self.assertRaisesRegex(x.module.Hold,'EXHAUSTED$'):x.call()
++    self.assertEqual(len(x.calls),1);self.assertEqual(x.sleeps,[])
++ def test_late_success_is_rejected_and_response_closed(self):
++  for kind in self.kinds():
++   response=Response(read_elapsed=15)
++   with self.subTest(kind=kind),Harness(kind,[response]) as x:
++    with self.assertRaisesRegex(x.module.Hold,'GET_BUDGET_EXHAUSTED$'):x.call()
++    self.assertEqual(len(x.calls),1);self.assertTrue(response.closed)
++ def test_response_body_timeout_reissues_same_get(self):
++  for kind in self.kinds():
++   response=Response(error=TimeoutError())
++   with self.subTest(kind=kind),Harness(kind,[response,Response()]) as x:x.call();self.assertTrue(response.closed);self.assertEqual(len(x.calls),2)
++ def test_only_selected_transient_http_statuses_retry(self):
++  for kind in self.kinds():
++   for code in (429,502,503,504):
++    with self.subTest(kind=kind,code=code),Harness(kind,[urllib.error.HTTPError(URL,code,'synthetic',{},None),Response()]) as x:x.call();self.assertEqual(len(x.calls),2)
++ def test_auth_and_other_http_errors_are_never_retried(self):
++  for kind in self.kinds():
++   for code in (401,403,500):
++    with self.subTest(kind=kind,code=code),Harness(kind,[urllib.error.HTTPError(URL,code,'synthetic',{},None)]) as x:
++     with self.assertRaises((x.module.Hold,urllib.error.HTTPError)):x.call()
++     self.assertEqual(len(x.calls),1)
++ def test_dns_tls_and_unknown_urlerror_reasons_are_not_retried(self):
++  for kind in self.kinds():
++   for reason in ('timed out',OSError('dns'),ConnectionAbortedError()):
++    with self.subTest(kind=kind,reason=type(reason).__name__),Harness(kind,[urllib.error.URLError(reason)]) as x:
++     with self.assertRaises(urllib.error.URLError):x.call()
++     self.assertEqual(len(x.calls),1)
++ def test_body_size_bound_is_unchanged(self):
++  for kind in self.kinds():
++   with self.subTest(kind=kind),Harness(kind,[Response(b'x'*1048577)]) as x:
++    with self.assertRaises(x.module.Hold):x.call()
++    self.assertEqual(len(x.calls),1)
++ def test_post_timeout_never_retries(self):
++  with Harness('host',[TimeoutError()]) as x:
++   with self.assertRaises(TimeoutError):x.call('POST',b'{}')
++   self.assertEqual(len(x.calls),1);self.assertEqual(x.sleeps,[])
++ def test_post_transient_http_never_retries(self):
++  with Harness('host',[urllib.error.HTTPError(URL,503,'synthetic',{},None)]) as x:
++   with self.assertRaisesRegex(h.Hold,'CLOUD_HTTP_503'):x.call('POST',b'{}')
++   self.assertEqual(len(x.calls),1)
++ def test_get_with_body_and_head_never_retry(self):
++  for method,body in [('GET',b'{}'),('HEAD',None)]:
++   with Harness('host',[ConnectionResetError()]) as x:
++    with self.assertRaises(ConnectionResetError):x.call(method,body)
++    self.assertEqual(len(x.calls),1)
++ def test_cas_collision_and_missing_object_keep_original_semantics(self):
++  for code in (404,412):
++   for method,body in [('GET',None),('POST',b'{}')]:
++    with Harness('host',[urllib.error.HTTPError(URL,code,'synthetic',{},None)]) as x:self.assertEqual(x.call(method,body),(code,b''));self.assertEqual(len(x.calls),1)
++ def test_versioned_body_retry_never_switches_generation(self):
++  with Harness('host',[Response(b'{"generation":"17"}'),TimeoutError(),Response(b'{"x":1}')]) as x:
++   result=x.cloud.read(h.OBJECT);self.assertEqual(result['generation'],'17');self.assertEqual(x.calls[1]['url'],x.calls[2]['url']);self.assertTrue(x.calls[1]['url'].endswith('?alt=media&generation=17'))
++ def test_retry_success_still_rejects_foreign_authority(self):
++  adapter=h.Base.__new__(h.Base);adapter.code=lambda:None;adapter.read_state=lambda:{'generation':'18','sha256':'new','value':{}}
++  with self.assertRaisesRegex(h.Hold,'AUTHORITY_CHANGED'):adapter.fresh({'generation':'17','sha256':'old'})
++ def test_expired_original_contract_still_rejects_before_next_action(self):
++  adapter=h.Base.__new__(h.Base);adapter.code=lambda:None;record={'generation':'17','sha256':'same','value':{}};adapter.read_state=lambda:record;adapter.c={'expiresAt':1000,'recoveryUntil':2000};adapter.job=types.SimpleNamespace(deployment=lambda *a:None);adapter.cloud=types.SimpleNamespace(sole_owner=lambda c:None);adapter.now=lambda:2001
++  for recovery in (False,True):
++   with self.subTest(recovery=recovery),self.assertRaisesRegex(h.Hold,'JOB_DEADLINE'):adapter.fresh(record,recovery)
++if __name__=='__main__':unittest.main()
+diff --git a/native/deployment-host.py b/native/deployment-host.py
+index b63b4f8..0995630 100644
+--- a/native/deployment-host.py
++++ b/native/deployment-host.py
+@@ -56,12 +56,32 @@ class Cloud:
+         class NoRedirect(urllib.request.HTTPRedirectHandler):
+             def redirect_request(self,*args,**kwargs):return None
+         req=urllib.request.Request(url,data=body,headers=h,method=method)
+-        try:
+-            with urllib.request.build_opener(NoRedirect).open(req,timeout=10) as r:
+-                b=r.read(1048577);require(len(b)<=1048576,'CLOUD_BODY_SIZE');return r.status,b
+-        except urllib.error.HTTPError as e:
+-            if e.code in (404,412):return e.code,b''
+-            raise Hold('CLOUD_HTTP_'+str(e.code))
++        retry_get=method=='GET' and body is None
++        end=time.monotonic()+14
++        attempts=3 if retry_get else 1
++        for attempt in range(attempts):
++            remaining=end-time.monotonic()
++            require(not retry_get or remaining>0,'CLOUD_GET_BUDGET_EXHAUSTED')
++            try:
++                with urllib.request.build_opener(NoRedirect).open(req,timeout=min(10,remaining) if retry_get else 10) as r:
++                    b=r.read(1048577);require(len(b)<=1048576,'CLOUD_BODY_SIZE')
++                    require(not retry_get or time.monotonic()<end,'CLOUD_GET_BUDGET_EXHAUSTED')
++                    return r.status,b
++            except urllib.error.HTTPError as e:
++                if e.code in (404,412):
++                    code=e.code;e.close()
++                    require(not retry_get or time.monotonic()<end,'CLOUD_GET_BUDGET_EXHAUSTED')
++                    return code,b''
++                if not retry_get or e.code not in (429,502,503,504):
++                    code=e.code;e.close();raise Hold('CLOUD_HTTP_'+str(code)) from None
++                exhausted='CLOUD_GET_HTTP_'+str(e.code)+'_EXHAUSTED';e.close()
++            except (TimeoutError,ConnectionResetError,urllib.error.URLError) as e:
++                reason=e.reason if isinstance(e,urllib.error.URLError) else e
++                if not retry_get or not isinstance(reason,(TimeoutError,ConnectionResetError)):raise
++                exhausted='CLOUD_GET_'+('TIMEOUT' if isinstance(reason,TimeoutError) else 'CONNECTION_RESET')+'_EXHAUSTED'
++            delay=(attempt+1)*.25
++            if attempt+1==attempts or time.monotonic()+delay>=end:raise Hold(exhausted) from None
++            time.sleep(delay)
+     def read(self,name):
+         require(name==OBJECT or re.fullmatch(r'company/ha-control/receipts/[0-9]+/deployment/[a-f0-9]{32}/[0-9]+\.json',name),'OBJECT_ALLOWLIST')
+         url='https://storage.googleapis.com/storage/v1/b/'+BUCKET+'/o/'+urllib.parse.quote(name,safe='');code,raw=self.request(url)
+@@ -376,6 +396,13 @@ class NodeAdapter(Base):
+                 time.sleep(min(3,remaining))
+     def execute(self,phase,record,recovery):
+         self.command=record;self.recovery=recovery;s=self.fresh(record,recovery);old=recovery or self.c['mode']=='same-release-noop';release=self.c['oldReleaseSha256'] if old else self.c['newReleaseSha256']
++        if phase in ('APPLY_NODES','START_NODES'):
++            d=s['deployment']
++            require(self.c['mode']=='company-release-only' and not recovery and d['recovering'] is False and d['phase']==phase and d['targets']==list(self.job.NODES),'PARALLEL_PHASE_SCOPE')
++            require(d['newStartDispatched'] is (phase=='START_NODES'),'PARALLEL_START_BARRIER')
++            # Keep the same role-specific actions and fresh authority checks.
++            # Mapping a phase does not grant the standby permission to start data.
++            phase=('APPLY_' if phase=='APPLY_NODES' else 'START_')+('PRIMARY' if self.n==self.c['ownerId'] else 'STANDBY')
+         if phase=='PREPARE':
+             if self.c['mode']=='company-release-only':self.prepare_lock(record,recovery)
+             else:self.lock()
+diff --git a/native/deployment-host.test.py b/native/deployment-host.test.py
+index 276f660..42f2d22 100644
+--- a/native/deployment-host.test.py
++++ b/native/deployment-host.test.py
+@@ -250,4 +250,35 @@ class StreamStopTests(unittest.TestCase):
+         n.h.unit_properties=lambda *a:{u:{'ActiveState':'active' if u=='company' else 'inactive'} for u in units}
+         with self.assertRaisesRegex(h.Hold,'UNIT_STILL_ACTIVE'):n.stopped_gate()
+ 
++class ParallelPhaseTests(unittest.TestCase):
++    def fixture(self,phase,node,owner=None):
++        owner=owner or h.IDS['primary'];pair=[h.IDS['primary'],h.IDS['standby']]
++        n=h.NodeAdapter.__new__(h.NodeAdapter);n.n=node;n.c={'mode':'company-release-only','oldReleaseSha256':'old','newReleaseSha256':'new','ownerId':owner,'standbyId':next(x for x in pair if x!=owner)}
++        state={'bootAllowed':[owner] if phase=='START_NODES' else [],'readyAllowed':[],'deployment':{'phase':phase,'targets':pair,'recovering':False,'newStartDispatched':phase=='START_NODES'}}
++        n.job=type('J',(),{'NODES':tuple(pair)})();n.fresh=lambda *a:state;n.held=None;n.ops=None;calls=[]
++        n.lock=lambda:calls.append('lock');n.stopped_gate=lambda:calls.append('stopped');n.software=lambda:{'nodeId':node}
++        n.t=type('T',(),{'apply_stopped':staticmethod(lambda p,fds,verify:(verify(),calls.append('apply'),{'applied':True})[-1])})()
++        n.guarded_release_start=lambda *a:calls.append('guarded-start') or {'ownerAccepted':node==owner,'nonownerAccepted':node!=owner}
++        return n,state,calls
++    def test_parallel_apply_uses_original_locked_and_stopped_transaction_on_each_node(self):
++        for node in (h.IDS['primary'],h.IDS['standby']):
++            n,s,calls=self.fixture('APPLY_NODES',node);self.assertTrue(n.execute('APPLY_NODES',{},False)['applied'])
++            self.assertEqual(calls,['lock','stopped','stopped','apply','stopped'])
++    def test_parallel_start_preserves_each_logical_role_for_both_owners(self):
++        for owner in (h.IDS['primary'],h.IDS['standby']):
++            for node in (h.IDS['primary'],h.IDS['standby']):
++                n,s,calls=self.fixture('START_NODES',node,owner);r=n.execute('START_NODES',{},False)
++                self.assertEqual(r['ownerAccepted'],node==owner);self.assertEqual(calls,['guarded-start'])
++    def test_parallel_bad_scope_or_barrier_fails_before_any_action(self):
++        for phase in ('APPLY_NODES','START_NODES'):
++            for field,value in (('targets',[h.IDS['primary']]),('targets',[h.IDS['primary']]*2),('recovering',True),('newStartDispatched',phase!='START_NODES')):
++                n,s,calls=self.fixture(phase,h.IDS['primary']);s['deployment'][field]=value
++                with self.assertRaises(h.Hold):n.execute(phase,{},False)
++                self.assertEqual(calls,[])
++    def test_parallel_modes_cannot_reach_legacy_or_recovery_actions(self):
++        for mode,recovery in (('dr-helper-only',False),('same-release-noop',False),('company-release-only',True)):
++            n,s,calls=self.fixture('APPLY_NODES',h.IDS['primary']);n.c['mode']=mode
++            with self.assertRaisesRegex(h.Hold,'PARALLEL_PHASE_SCOPE'):n.execute('APPLY_NODES',{},recovery)
++            self.assertEqual(calls,[])
++
+ if __name__=='__main__':unittest.main()
+diff --git a/native/deployment-job.py b/native/deployment-job.py
+index 5fb01d8..c612b36 100644
+--- a/native/deployment-job.py
++++ b/native/deployment-job.py
+@@ -98,13 +98,15 @@ class Controller:
+             return self.begin(r)
+         d=deployment(r['value'],c);phase=d['phase'];self.j['phase']=phase;self.save()
+         release=c['oldReleaseSha256'] if d['recovering'] else c['newReleaseSha256']
+-        expected_controller=c['oldReleaseSha256'] if phase in ('PREPARE','STOP','CAPTURE','APPLY_STANDBY','APPLY_PRIMARY') else release
++        expected_controller=c['oldReleaseSha256'] if phase in ('PREPARE','STOP','CAPTURE','APPLY_STANDBY','APPLY_PRIMARY','APPLY_NODES') else release
+         if phase in ('APPLY_PRIMARY','ROLLBACK'):expected_controller=(c['oldReleaseSha256'],c['newReleaseSha256'])
+         # The reader may be stopped or the fixed pair half-written following
+         # process loss. Only the pinned controller transaction can reconcile it.
+         # Node software rollback does not depend on a running controller; cloud
+         # deployment ownership and empty boot/ready authority remain mandatory.
+         transitioning=c['mode']=='company-release-only' and phase in ('COMMIT_CONTROLLER','ROLLBACK_CONTROLLER','ROLLBACK')
++        if phase in ('APPLY_NODES','START_NODES'):
++            require(c['mode']=='company-release-only' and not d['recovering'] and d['targets']==list(NODES),'PARALLEL_PHASE_SCOPE')
+         if not transitioning:self.controller_proof(expected_controller)
+         if self.a.now()>=c['expiresAt'] and not d['recovering']:return self.recover(r,'FORWARD_DEADLINE')
+         if d['recovering'] and self.a.now()>=c['recoveryUntil']:return self.hold(r,'RECOVERY_WINDOW_EXPIRED')
+@@ -140,9 +142,14 @@ class Controller:
+         elif phase=='STOP':
+             require(all(v['proof']['writersStopped'] and v['proof']['agentStopped'] and v['proof']['timersStopped'] for v in receipts.values()),'WRITER_STOP_UNPROVEN');self.emit(r,'CAPTURE',[c['ownerId']])
+         elif phase=='CAPTURE':
+-            require(receipts[c['ownerId']]['proof']['dataAccepted'] and receipts[c['ownerId']]['proof']['logicalReceiptSha256'],'CURRENT_DATA_NOT_ACCEPTED');self.j['dataProof']=receipts[c['ownerId']]['proof'];self.save();self.emit(r,'APPLY_STANDBY',[c['standbyId']])
++            require(receipts[c['ownerId']]['proof']['dataAccepted'] and receipts[c['ownerId']]['proof']['logicalReceiptSha256'],'CURRENT_DATA_NOT_ACCEPTED');self.j['dataProof']=receipts[c['ownerId']]['proof'];self.save()
++            # Both writers are fenced and the owner's complete data receipt is
++            # durable. Only host-local software changes run concurrently; both
++            # immutable acknowledgements are required before controller commit.
++            if c['mode']=='company-release-only':self.emit(r,'APPLY_NODES',NODES)
++            else:self.emit(r,'APPLY_STANDBY',[c['standbyId']])
+         elif phase=='APPLY_STANDBY':self.emit(r,'APPLY_PRIMARY',[c['ownerId']])
+-        elif phase=='APPLY_PRIMARY':
++        elif phase in ('APPLY_PRIMARY','APPLY_NODES'):
+             self.controller_proof(c['oldReleaseSha256'])
+             self.emit(r,'COMMIT_CONTROLLER' if c['mode']=='company-release-only' else 'VERIFY_STOPPED',[] if c['mode']=='company-release-only' else NODES)
+         elif phase=='VERIFY_STOPPED':
+@@ -153,9 +160,16 @@ class Controller:
+         elif phase=='RELEASE_LOCKS':
+             require(all(v['proof']['childrenJoined'] and v['proof']['lockReleased'] for v in receipts.values()),'LOCK_RELEASE_UNPROVEN')
+             fields={'newStartDispatched':not d['recovering']} if c['mode']=='company-release-only' else {}
+-            self.emit(r,'START_STANDBY',[c['standbyId']],bootAllowed=[c['ownerId']],readyAllowed=[],deploymentFields=fields)
++            parallel=c['mode']=='company-release-only' and not d['recovering']
++            self.emit(r,'START_NODES' if parallel else 'START_STANDBY',NODES if parallel else [c['standbyId']],bootAllowed=[c['ownerId']],readyAllowed=[],deploymentFields=fields)
+         elif phase=='START_STANDBY':
+             require(receipts[c['standbyId']]['proof']['nonownerAccepted'],'STANDBY_NOT_ACCEPTED');self.emit(r,'START_PRIMARY',[c['ownerId']],deploymentFields={'newStartDispatched':not d['recovering']})
++        elif phase=='START_NODES':
++            # The standby only starts its observer. Writer permission remains
++            # exclusive to the current regional-disk owner throughout this phase.
++            require(receipts[c['standbyId']]['proof']['nonownerAccepted'],'STANDBY_NOT_ACCEPTED')
++            require(receipts[c['ownerId']]['proof']['ownerAccepted'] and receipts[c['ownerId']]['proof']['dataAccepted'],'OWNER_NOT_ACCEPTED')
++            self.emit(r,'PUBLIC',NODES,readyAllowed=[c['ownerId']])
+         elif phase=='START_PRIMARY':
+             require(receipts[c['ownerId']]['proof']['ownerAccepted'] and receipts[c['ownerId']]['proof']['dataAccepted'],'OWNER_NOT_ACCEPTED');self.emit(r,'PUBLIC',NODES,readyAllowed=[c['ownerId']])
+         elif phase=='PUBLIC':
+diff --git a/native/deployment-job.test.py b/native/deployment-job.test.py
+index 33561a8..fa54433 100644
+--- a/native/deployment-job.test.py
++++ b/native/deployment-job.test.py
+@@ -100,11 +100,11 @@ class Tests(unittest.TestCase):
+         for n in j.NODES:self.assertEqual(j.Node(w.c,n,Adapter(w,n)).tick()['status'],'complete')
+     def test_company_release_commits_controller_before_start(self):
+         w=World('company-release-only');r=w.run();self.assertEqual(r['status'],'complete');self.assertFalse(r['recovered']);self.assertTrue(w.invalidated)
+-        phases=[x[1] for x in w.log];self.assertLess(phases.index('APPLY_PRIMARY'),phases.index('COMMIT_CONTROLLER'));self.assertLess(phases.index('COMMIT_CONTROLLER'),phases.index('START_PRIMARY'));self.assertEqual(w.controllerRelease,w.c['newReleaseSha256'])
++        phases=[x[1] for x in w.log];self.assertLess(phases.index('APPLY_NODES'),phases.index('COMMIT_CONTROLLER'));self.assertLess(phases.index('COMMIT_CONTROLLER'),phases.index('START_NODES'));self.assertEqual(w.controllerRelease,w.c['newReleaseSha256'])
+     def test_company_controller_ambiguous_commit_recovers_software_only(self):
+         w=World('company-release-only');w.controllerFail='commit';r=w.run();self.assertTrue(r['recovered']);self.assertEqual(w.controllerRelease,w.c['oldReleaseSha256']);self.assertFalse(any(w.changed.values()))
+     def test_company_controller_rollback_failure_holds_before_start(self):
+-        w=World('company-release-only');w.controllerFail='rollback';w.fail=(j.PRIMARY,'APPLY_PRIMARY');r=w.run();self.assertEqual(r['status'],'hold');self.assertEqual(r['code'],'CONTROLLER_ROLLBACK_FAILED');self.assertFalse(any(w.running.values()))
++        w=World('company-release-only');w.controllerFail='rollback';w.fail=(j.PRIMARY,'APPLY_NODES');r=w.run();self.assertEqual(r['status'],'hold');self.assertEqual(r['code'],'CONTROLLER_ROLLBACK_FAILED');self.assertFalse(any(w.running.values()))
+     def test_company_process_reconstruction_each_phase(self):
+         w=World('company-release-only')
+         for _ in range(50):
+@@ -112,7 +112,7 @@ class Tests(unittest.TestCase):
+             if w.tick()['status']=='complete':break
+         self.assertEqual(w.journals['controller']['phase'],'complete');self.assertEqual(w.controllerRelease,w.c['newReleaseSha256'])
+     def test_company_start_standby_uncertainty_already_blocks_rollback(self):
+-        w=World('company-release-only');w.fail=(j.STANDBY,'START_STANDBY');r=w.run();self.assertEqual(r['status'],'hold');self.assertTrue(r['applicationStartDispatched']);self.assertFalse(any(x[1]=='ROLLBACK' for x in w.log))
++        w=World('company-release-only');w.fail=(j.STANDBY,'START_NODES');r=w.run();self.assertEqual(r['status'],'hold');self.assertTrue(r['applicationStartDispatched']);self.assertFalse(any(x[1]=='ROLLBACK' for x in w.log))
+     def test_company_existing_finalizing_deployment_cannot_be_replaced(self):
+         w=World('company-release-only');w.state['deployment']={'schema':'synk-ha-deployment/v1','id':'foreign','phase':'FINALIZE'};w.c['initialControl']['sha256']=j.sha(w.state)
+         with self.assertRaisesRegex(j.Hold,'DEPLOYMENT_CONTRACT_CHANGED'):w.controller.tick()
+@@ -128,7 +128,7 @@ class Tests(unittest.TestCase):
+     def test_company_prepare_failure_finalizes_old_running_release(self):
+         w=World('company-release-only');w.fail=(j.PRIMARY,'PREPARE');r=w.run();self.assertTrue(r['recovered']);self.assertEqual(w.controllerRelease,w.c['oldReleaseSha256']);self.assertEqual(w.running,{j.PRIMARY:True,j.STANDBY:False});self.assertFalse(any(x[1]=='STOP' for x in w.log))
+     def test_company_early_failures_restore_untouched_nodes_without_new_start(self):
+-        for node,phase in ((j.STANDBY,'STOP'),(j.PRIMARY,'STOP'),(j.PRIMARY,'CAPTURE'),(j.STANDBY,'APPLY_STANDBY')):
++        for node,phase in ((j.STANDBY,'STOP'),(j.PRIMARY,'STOP'),(j.PRIMARY,'CAPTURE'),(j.STANDBY,'APPLY_NODES')):
+             w=World('company-release-only');w.fail=(node,phase)
+             # The rollback verb itself first stops both nodes; represent that
+             # concrete host behavior even when STOP failed before one ack.
+@@ -143,11 +143,52 @@ class Tests(unittest.TestCase):
+         for owner in j.NODES:
+             for mode in ('same-release-noop','dr-helper-only','company-release-only'):
+                 w=World(mode,owner);self.assertEqual(w.run()['status'],'complete');self.assertEqual(w.running,{n:n==owner for n in j.NODES});self.assertEqual(w.state['readyAllowed'],[owner])
+-                if mode!='same-release-noop':self.assertIn((owner,'CAPTURE',False),w.log);self.assertIn((w.c['standbyId'],'START_STANDBY',False),w.log)
++                if mode!='same-release-noop':self.assertIn((owner,'CAPTURE',False),w.log);self.assertIn((w.c['standbyId'],'START_NODES' if mode=='company-release-only' else 'START_STANDBY',False),w.log)
+     def test_both_owners_rollback_and_start_barrier(self):
+         for owner in j.NODES:
+-            w=World('company-release-only',owner);w.fail=(owner,'APPLY_PRIMARY');self.assertTrue(w.run()['recovered']);self.assertEqual(w.running,{n:n==owner for n in j.NODES})
+-            w=World('company-release-only',owner);w.fail=(owner,'START_PRIMARY');self.assertEqual(w.run()['status'],'hold');self.assertFalse(any(x[1]=='ROLLBACK' for x in w.log))
++            w=World('company-release-only',owner);w.fail=(owner,'APPLY_NODES');self.assertTrue(w.run()['recovered']);self.assertEqual(w.running,{n:n==owner for n in j.NODES})
++            w=World('company-release-only',owner);w.fail=(owner,'START_NODES');self.assertEqual(w.run()['status'],'hold');self.assertFalse(any(x[1]=='ROLLBACK' for x in w.log))
++    def test_parallel_apply_waits_for_each_node_in_either_owner_direction(self):
++        for owner in j.NODES:
++            for first in j.NODES:
++                w=World('company-release-only',owner)
++                while w.state.get('deployment',{}).get('phase')!='CAPTURE':w.tick()
++                w.controller.tick();self.assertEqual(w.state['deployment']['phase'],'APPLY_NODES')
++                self.assertEqual(w.state['deployment']['targets'],list(j.NODES));self.assertEqual(w.state['bootAllowed'],[])
++                w.nodes[first].tick();self.assertEqual(w.controller.tick()['status'],'waiting')
++                self.assertEqual(w.controllerRelease,w.c['oldReleaseSha256']);self.assertFalse(any(w.running.values()))
++                other=next(n for n in j.NODES if n!=first);w.nodes[other].tick();w.controller.tick()
++                self.assertEqual(w.state['deployment']['phase'],'COMMIT_CONTROLLER')
++                self.assertEqual(w.run()['status'],'complete')
++    def test_parallel_start_withholds_public_until_both_process_proofs(self):
++        for first in j.NODES:
++            w=World('company-release-only')
++            while w.state.get('deployment',{}).get('phase')!='RELEASE_LOCKS':w.tick()
++            w.controller.tick();self.assertEqual(w.state['deployment']['phase'],'START_NODES')
++            self.assertTrue(w.state['deployment']['newStartDispatched']);self.assertFalse(any(w.locks.values()))
++            w.nodes[first].tick();self.assertEqual(w.controller.tick()['status'],'waiting')
++            self.assertEqual(w.state['readyAllowed'],[]);self.assertEqual(w.state['bootAllowed'],[w.c['ownerId']])
++            w.nodes[next(n for n in j.NODES if n!=first)].tick();w.controller.tick()
++            self.assertEqual(w.state['deployment']['phase'],'PUBLIC');self.assertEqual(w.state['readyAllowed'],[w.c['ownerId']])
++    def test_either_parallel_apply_failure_recovers_both_without_data_restore(self):
++        for node in j.NODES:
++            w=World('company-release-only');w.fail=(node,'APPLY_NODES');r=w.run()
++            self.assertTrue(r['recovered']);self.assertFalse(any(w.changed.values()));self.assertEqual(w.running,{n:n==w.c['ownerId'] for n in j.NODES})
++    def test_either_parallel_start_failure_holds_without_software_rollback(self):
++        for node in j.NODES:
++            w=World('company-release-only');w.fail=(node,'START_NODES');r=w.run()
++            self.assertEqual(r['status'],'hold');self.assertTrue(r['applicationStartDispatched']);self.assertFalse(any(x[1]=='ROLLBACK' for x in w.log))
++            self.assertEqual(w.state['readyAllowed'],[])
++    def test_parallel_phase_rejects_partial_or_duplicate_targets_and_recovery(self):
++        for update in ({'targets':[j.PRIMARY]},{'targets':[j.PRIMARY,j.PRIMARY]},{'recovering':True}):
++            w=World('company-release-only')
++            while w.state.get('deployment',{}).get('phase')!='APPLY_NODES':w.tick()
++            w.state['deployment'].update(update)
++            with self.assertRaisesRegex(j.Hold,'PARALLEL_PHASE_SCOPE'):w.controller.tick()
++    def test_parallel_apply_timeout_preserves_existing_prestart_recovery(self):
++        w=World('company-release-only')
++        while w.state.get('deployment',{}).get('phase')!='APPLY_NODES':w.tick()
++        w.time=w.c['expiresAt'];r=w.run();self.assertTrue(r['recovered']);self.assertFalse(any(w.changed.values()))
+     def test_unknown_or_duplicated_physical_node_is_refused(self):
+         for owner,standby in ((j.PRIMARY,j.PRIMARY),('foreign',j.STANDBY)):
+             w=World('company-release-only');w.c.update(ownerId=owner,standbyId=standby)
+diff --git a/native/maintenance-entry-worker.py b/native/maintenance-entry-worker.py
+index 3df3aa5..9a9a588 100644
+--- a/native/maintenance-entry-worker.py
++++ b/native/maintenance-entry-worker.py
+@@ -6,7 +6,7 @@ can be requested over stdin. Only proof and finish with exact GCS receipts are
+ accepted. The caller handles the controller and maintenance CAS. EOF, timeout
+ and signals terminate/join probe children before releasing the deployment lock.
+ """
+-import ctypes,datetime,fcntl,hashlib,importlib.util,json,os,pathlib,re,signal,stat,subprocess,sys,time,urllib.parse,urllib.request
++import ctypes,datetime,fcntl,hashlib,importlib.util,json,os,pathlib,re,signal,stat,subprocess,sys,time,urllib.error,urllib.parse,urllib.request
+ sys.dont_write_bytecode=True
+ BASE=pathlib.Path('/opt/synk/ha-maintenance')
+ LOCK=pathlib.Path('/run/lock/synk-ha-deploy.lock')
+@@ -72,8 +72,26 @@ def fetch(url,headers):
+     # redirect carrying a metadata token to another origin.
+     class NoRedirect(urllib.request.HTTPRedirectHandler):
+         def redirect_request(self,*args,**kwargs):return None
+-    with urllib.request.build_opener(NoRedirect).open(request,timeout=10) as r:
+-        body=r.read(1048577);require(len(body)<=1048576,'RESPONSE_SIZE');return body,dict(r.headers)
++    # Reissue only the identical read; tokens, control generation and authority
++    # are never cached across gates. Exhaustion stays a failed deployment check.
++    end=time.monotonic()+14
++    for attempt in range(3):
++        remaining=end-time.monotonic();require(remaining>0,'WORKER_GET_BUDGET_EXHAUSTED')
++        try:
++            with urllib.request.build_opener(NoRedirect).open(urllib.request.Request(url,headers=headers),timeout=min(10,remaining)) as response:
++                data=response.read(1048577);require(len(data)<=1048576,'RESPONSE_SIZE')
++                require(time.monotonic()<end,'WORKER_GET_BUDGET_EXHAUSTED')
++                return data,dict(response.headers)
++        except urllib.error.HTTPError as e:
++            if e.code not in (429,502,503,504):raise
++            exhausted='WORKER_GET_HTTP_'+str(e.code)+'_EXHAUSTED';e.close()
++        except (TimeoutError,ConnectionResetError,urllib.error.URLError) as e:
++            reason=e.reason if isinstance(e,urllib.error.URLError) else e
++            if not isinstance(reason,(TimeoutError,ConnectionResetError)):raise
++            exhausted='WORKER_GET_'+('TIMEOUT' if isinstance(reason,TimeoutError) else 'CONNECTION_RESET')+'_EXHAUSTED'
++        delay=(attempt+1)*.25
++        if attempt==2 or time.monotonic()+delay>=end:raise Hold(exhausted) from None
++        time.sleep(delay)
+ def meta(path):
+     b,h=fetch('http://169.254.169.254/computeMetadata/v1/'+path,{'Metadata-Flavor':'Google'})
+     require(next((v for k,v in h.items() if k.lower()=='metadata-flavor'),None)=='Google','METADATA_HEADER');return b
+diff --git a/native/release-node.py b/native/release-node.py
+index e3052bc..9c76d68 100644
+--- a/native/release-node.py
++++ b/native/release-node.py
+@@ -6,7 +6,7 @@ acquisition. Only the pinned, stopped company container may be retired by ID,
+ without force or volume removal. The caller retains exclusive descriptors and supplies
+ its fresh stopped-node proof. Every software replacement rechecks those proofs.
+ """
+-import base64,hashlib,importlib.util,json,os,pathlib,re,stat,subprocess,sys,time,urllib.parse,urllib.request
++import base64,hashlib,importlib.util,json,os,pathlib,re,stat,subprocess,sys,time,urllib.error,urllib.parse,urllib.request
+ sys.dont_write_bytecode=True
+ try:import fcntl
+ except ImportError:fcntl=None
+@@ -79,8 +79,26 @@ def inherited_locks(fds):
+ def fetch(url,headers):
+     class NoRedirect(urllib.request.HTTPRedirectHandler):
+         def redirect_request(self,*args,**kwargs):return None
+-    with urllib.request.build_opener(NoRedirect).open(urllib.request.Request(url,headers=headers),timeout=10) as response:
+-        data=response.read(1048577);require(len(data)<=1048576,'CLOUD_BODY_LIMIT');return data,dict(response.headers)
++    # Reissue only the identical read; tokens, control generation and authority
++    # are never cached across gates. Exhaustion stays a failed deployment check.
++    end=time.monotonic()+14
++    for attempt in range(3):
++        remaining=end-time.monotonic();require(remaining>0,'RELEASE_GET_BUDGET_EXHAUSTED')
++        try:
++            with urllib.request.build_opener(NoRedirect).open(urllib.request.Request(url,headers=headers),timeout=min(10,remaining)) as response:
++                data=response.read(1048577);require(len(data)<=1048576,'CLOUD_BODY_LIMIT')
++                require(time.monotonic()<end,'RELEASE_GET_BUDGET_EXHAUSTED')
++                return data,dict(response.headers)
++        except urllib.error.HTTPError as e:
++            if e.code not in (429,502,503,504):raise
++            exhausted='RELEASE_GET_HTTP_'+str(e.code)+'_EXHAUSTED';e.close()
++        except (TimeoutError,ConnectionResetError,urllib.error.URLError) as e:
++            reason=e.reason if isinstance(e,urllib.error.URLError) else e
++            if not isinstance(reason,(TimeoutError,ConnectionResetError)):raise
++            exhausted='RELEASE_GET_'+('TIMEOUT' if isinstance(reason,TimeoutError) else 'CONNECTION_RESET')+'_EXHAUSTED'
++        delay=(attempt+1)*.25
++        if attempt==2 or time.monotonic()+delay>=end:raise Hold(exhausted) from None
++        time.sleep(delay)
+ def meta(path):
+     raw,headers=fetch('http://169.254.169.254/computeMetadata/v1/'+path,{'Metadata-Flavor':'Google'})
+     require(any(k.lower()=='metadata-flavor' and v=='Google' for k,v in headers.items()),'METADATA_HEADER');return raw
+@@ -97,10 +115,15 @@ def control(p,allow_start=False):
+     d=s.get('deployment',{});require(d.get('schema')=='synk-ha-deployment/v1' and d.get('id')==c['id'] and d.get('contractSha256')==p['deploymentContractSha256'] and d.get('oldReleaseSha256')==c['oldReleaseSha256'] and d.get('newReleaseSha256')==c['newReleaseSha256'] and d.get('deadline')==p['expiresAt'] and d.get('recoveryUntil')==p['recoveryUntil'] and node in d.get('targets',[]),'DEPLOYMENT_CONTRACT_CHANGED')
+     now=int(time.time()*1000);limit=p['recoveryUntil'] if p.get('rollback') else p['expiresAt']
+     require(now<limit and now<s.get('maintenanceUntil',0)<=p['recoveryUntil'],'DEPLOYMENT_EXPIRED')
++    parallel=d.get('phase') in ('APPLY_NODES','START_NODES')
++    if parallel:
++        require(not p.get('rollback') and d.get('recovering') is False and d.get('targets')==[PRIMARY,STANDBY],'PARALLEL_PHASE_SCOPE')
+     if allow_start:
+-        require(d.get('phase')==('START_PRIMARY' if node==p['ownerId'] else 'START_STANDBY') and s.get('bootAllowed')==[p['ownerId']] and s.get('readyAllowed')==[],'START_DISPATCH_NOT_AUTHORIZED')
++        phase='START_NODES' if parallel else ('START_PRIMARY' if node==p['ownerId'] else 'START_STANDBY')
++        require(d.get('phase')==phase and s.get('bootAllowed')==[p['ownerId']] and s.get('readyAllowed')==[],'START_DISPATCH_NOT_AUTHORIZED')
++        if parallel:require(d.get('newStartDispatched') is True,'START_DISPATCH_NOT_AUTHORIZED')
+     else:
+-        phase='ROLLBACK' if p.get('rollback') else ('APPLY_PRIMARY' if node==p['ownerId'] else 'APPLY_STANDBY')
++        phase='ROLLBACK' if p.get('rollback') else 'APPLY_NODES' if parallel else ('APPLY_PRIMARY' if node==p['ownerId'] else 'APPLY_STANDBY')
+         require(d.get('phase')==phase and d.get('newStartDispatched') is False and s.get('bootAllowed')==[] and s.get('readyAllowed')==[],'STOPPED_DEPLOYMENT_REQUIRED')
+     disk_url='https://compute.googleapis.com/compute/v1/projects/'+PROJECT+'/regions/asia-northeast3/disks/synk-company-data-ha'
+     disk=json.loads(fetch(disk_url,headers)[0]);zone,name=INSTANCES[p['ownerId']];owner='https://www.googleapis.com/compute/v1/projects/'+PROJECT+'/zones/'+zone+'/instances/'+name
+diff --git a/native/release-node.test.py b/native/release-node.test.py
+index 73d047c..e6be68d 100644
+--- a/native/release-node.test.py
++++ b/native/release-node.test.py
+@@ -103,6 +103,31 @@ class ControlTests(unittest.TestCase):
+     def test_start_barrier_requires_exact_start_authority(self):
+         _,p,_=fixture();s=self.state(p);s['bootAllowed']=[m.PRIMARY];s['deployment'].update(phase='START_PRIMARY',newStartDispatched=True)
+         self.assertEqual(self.probe(p,s,{'allow_start':True}),s)
++    def test_parallel_apply_requires_exact_pair_no_start_and_no_recovery(self):
++        for node in (m.PRIMARY,m.STANDBY):
++            _,p,_=fixture();p['newNode']['nodeId']=node;s=self.state(p)
++            s['deployment'].update(phase='APPLY_NODES',targets=[m.PRIMARY,m.STANDBY],recovering=False)
++            self.assertEqual(self.probe(p,s),s)
++            for changes in ({'targets':[node]},{'targets':[m.PRIMARY,m.PRIMARY]},{'recovering':True},{'newStartDispatched':True}):
++                bad=copy.deepcopy(s);bad['deployment'].update(changes)
++                with self.assertRaises(m.Hold):self.probe(p,bad)
++            p['rollback']=True
++            with self.assertRaisesRegex(m.Hold,'PARALLEL_PHASE_SCOPE'):self.probe(p,s)
++    def test_parallel_start_keeps_exclusive_writer_permission_and_barrier(self):
++        for node in (m.PRIMARY,m.STANDBY):
++            _,p,_=fixture();p['newNode']['nodeId']=node;s=self.state(p);s['bootAllowed']=[p['ownerId']]
++            s['deployment'].update(phase='START_NODES',targets=[m.PRIMARY,m.STANDBY],recovering=False,newStartDispatched=True)
++            self.assertEqual(self.probe(p,s,{'allow_start':True}),s)
++            for field,value in (('bootAllowed',[m.PRIMARY,m.STANDBY]),('readyAllowed',[m.PRIMARY])):
++                bad=copy.deepcopy(s);bad[field]=value
++                with self.assertRaises(m.Hold):self.probe(p,bad,{'allow_start':True})
++            s['deployment']['newStartDispatched']=False
++            with self.assertRaisesRegex(m.Hold,'START_DISPATCH_NOT_AUTHORIZED'):self.probe(p,s,{'allow_start':True})
++    def test_parallel_apply_cannot_authorize_start_and_start_cannot_authorize_replace(self):
++        _,p,_=fixture();s=self.state(p);s['deployment'].update(phase='APPLY_NODES',targets=[m.PRIMARY,m.STANDBY],recovering=False)
++        with self.assertRaisesRegex(m.Hold,'START_DISPATCH_NOT_AUTHORIZED'):self.probe(p,s,{'allow_start':True})
++        s['deployment'].update(phase='START_NODES',newStartDispatched=True);s['bootAllowed']=[m.PRIMARY]
++        with self.assertRaisesRegex(m.Hold,'STOPPED_DEPLOYMENT_REQUIRED'):self.probe(p,s)
+     def test_vm2_can_be_current_owner_without_weakening_epoch_or_phase(self):
+         _,p,_=fixture();p.update(ownerId=m.STANDBY,standbyId=m.PRIMARY);p['newNode']['nodeId']=m.STANDBY;s=self.state(p);s['activeId']=m.STANDBY;s['deployment']['targets']=[m.STANDBY]
+         self.assertEqual(self.probe(p,s),s);s['activeId']=m.PRIMARY
