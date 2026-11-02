@@ -655,6 +655,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 다시 확인: `node tools/새워크트리가볍게.js --상태`가 「깔림」이고 최근 기록에 새 워크트리가 「가볍게 함」으로 남는다(10-31 22:21 실제 저장소 임시 판 시험: 파일 2,637개 · 2.18GiB 빠짐, 상태 0줄, 공용 작업본 그대로, `--되살림 docs/캐릭터` 15초). 새 워크트리에서 `git config --show-scope --get core.sparseCheckout`이 `worktree true`.
 - 10-31 덧붙임(Claude, 로맨스 꾸러미 세션): 가볍게 한 워크트리에서는 앱의 바탕 맞추기(`sync_with_base_branch`)가 「The worktree is a sparse checkout … the app won't merge into it. Merge yourself」로 거절한다. 내 커밋이 아직 없으면 `git fetch origin` 뒤 `git merge --ff-only origin/master`로 앞당긴다 — 빨리 감기만이라 사본에서 뺀 폴더는 그대로 빠진 채다(10-31 8779c6418 → d8010d439, 상태 0줄).
 
+### 미디어 가볍게 시험이 Windows에서 통과하고 Linux에서 대문자 확장자로 깨진다 (2026-11-02 GPT)
+- 증상: `890f58862` 이후 syntax-check가 `표지.PNG`가 남았다며 실패했다(실행 `41452985614`, `tests/바로올리기.test.js`).
+- 원인: 파일 수·변경 보호 판정은 대소문자 무관 정규식인데 Git sparse 무늬는 소문자 확장자만 썼다. Windows의 `core.ignorecase=true`가 차이를 가렸다.
+- 고침: 정해진 확장자의 글자마다 `[pP][nN][gG]`처럼 짝을 넣는다. 작업본 범위·미커밋 보호·복원·원격 보존은 기존 흐름을 따른다. 시험용 Git 설정만 `core.ignorecase=false`로 두고 `.PNG`·`.PnG`·소문자를 함께 검사한다.
+- 다시 확인: 같은 Windows 격리 시험에서 고치기 전 `표지.PNG` 실패를 재현했고, 고친 판의 가볍게·복원·다시 구운 미디어 올리기 두 흐름은 2/2 통과·제외 0이다. 원격 파일 바이트 보존도 같은 시험에서 확인한다. 실제 Linux 성공은 새 커밋의 syntax-check에서 따로 확인한다.
+
 ### 공간 정리가 추적 파일을 지운다
 - 증상: PC 공간 정리 뒤 시험이 「파일 없음」으로 깨진다. 10-03 정리가 추적 파일 185개(142MB)를, 10-10 정리가 메인 추적 파일 217개 + 워크트리 10곳 약 8,900개를 지웠다(같은 SHA가 Drive에 있으면 로컬 삭제). 10-14에는 폴더 통째 삭제가 안쪽에 둔 git 클론까지 지웠다.
 - 원인: 정리 목록이 `git ls-files`를 거르지 않았다. 추적 파일은 이미 `.git`에 있어 지워도 백업이 늘지 않는데, 작업본이 「삭제됨」으로 남아 누가 `git add -A`·`commit -a`를 하면 그 삭제가 저장소에 들어간다. 맨 위 `.git`만 보고 거르면 한 단계 안의 클론은 못 거른다.

@@ -1935,12 +1935,14 @@ test('가볍게: docs/마케팅은 소리·그림만 빼고, 되살림은 폴더
   const 판 = 새판(t, { 파일: {
     'docs/마케팅/LAB_가/remotion/public/vo/s1.wav': Buffer.alloc(10, 1), 'docs/마케팅/LAB_가/remotion/public/vo/s1.json': '{"t":1}\n',
     'docs/마케팅/LAB_가/표지.PNG': Buffer.alloc(10, 2), 'docs/마케팅/LAB_나/기획.md': '기획\n', 'docs/마케팅/LAB_나/컷.jpg': Buffer.alloc(10, 3),
+    'docs/마케팅/LAB_나/혼합.PnG': Buffer.alloc(10, 4),
   } });
+  판.공용.g('config', 'core.ignorecase', 'false');
   const 워 = 판.워크트리('wt');
   const r = await 도구.가볍게({ 저장소: 워.폴더, 실행: true });
   assert.equal(r.결과, '가볍게 함', JSON.stringify(r));
-  assert.equal(r.파일, 3, '소리·그림 셋(확장자 대소문자 무관)');
-  for (const p of ['docs/마케팅/LAB_가/remotion/public/vo/s1.wav', 'docs/마케팅/LAB_가/표지.PNG', 'docs/마케팅/LAB_나/컷.jpg']) assert.equal(워.있나(p), false, p);
+  assert.equal(r.파일, 4, '소리·그림 넷(확장자 대소문자 무관)');
+  for (const p of ['docs/마케팅/LAB_가/remotion/public/vo/s1.wav', 'docs/마케팅/LAB_가/표지.PNG', 'docs/마케팅/LAB_나/컷.jpg', 'docs/마케팅/LAB_나/혼합.PnG']) assert.equal(워.있나(p), false, p);
   assert.equal(워.읽기('docs/마케팅/LAB_가/remotion/public/vo/s1.json'), '{"t":1}\n', '글·json은 남는다');
   assert.equal(워.읽기('docs/마케팅/LAB_나/기획.md'), '기획\n');
   assert.deepEqual(워.상태(), []);

@@ -1327,7 +1327,8 @@ async function 가볍게(옵션 = {}) {
       const m = /^\d+ blob [0-9a-f]+\s+(\d+)\t(.*)$/s.exec(줄);
       if (m && 가볍게가린자리(m[2])) { 바이트 += Number(m[1]); 수++; }
     }
-    const 무늬 = ['/*', ...가볍게뺄.map((p) => `!/${p}/`), ...가볍게미디어.확장자.map((e) => `!/${가볍게미디어.폴더}/**/*.${e}`)];
+    // sparse 무늬도 위 /i 파일 판정과 맞춘다. core.ignorecase=false인 Linux에서 .PNG·.PnG도 포함한다.
+    const 무늬 = ['/*', ...가볍게뺄.map((p) => `!/${p}/`), ...가볍게미디어.확장자.map((e) => `!/${가볍게미디어.폴더}/**/*.${e.replace(/[a-z]/g, (c) => `[${c}${c.toUpperCase()}]`)}`)];
     const 요약 = { 뺄폴더: 가볍게뺄, 뺄미디어: 가볍게미디어, 파일: 수, 바이트, 무늬 };
     if (!옵션.실행) return { 결과: '미리 보기', ...요약 };
     const r = git.돌리기(['sparse-checkout', 'set', '--no-cone', '--stdin'], { input: `${무늬.join('\n')}\n`, 허용: null });
