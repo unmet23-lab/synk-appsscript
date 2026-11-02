@@ -109,7 +109,7 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
  const server=spawn(process.execPath,[path.join(root,'experiences/synk-world-app/server.mjs')],{cwd:root,stdio:'pipe',env:{...process.env,SYNK_TALK_ROOT:talkRoot,SYNK_WORLD_PORT:String(port),
   SYNK_WORLD_MODE:'account',SYNK_WORLD_BASE_PATH:'/world/',SYNK_WORLD_ACCOUNT_CONFIG:path.join(directory,'config.json'),SYNK_WORLD_DATA_DIR:path.join(directory,'must-not-create')}});
  let serverOutput='';server.stderr.on('data',c=>serverOutput+=c);server.stdout.on('data',c=>serverOutput+=c);
- const url=`http://127.0.0.1:${port}`,origin=new URL(config.accountApiUrl).origin,homeworkCalls=[],keyCalls=[],contentLoads=[],unexpected=[],errors=[],external=[],shots=[],checks={},measures={};
+ const url=`http://127.0.0.1:${port}`,origin=new URL(config.accountApiUrl).origin,homeworkCalls=[],keyCalls=[],contentLoads=[],unexpected=[],errors=[],external=[],shots=[],checks={},measures={},captureTimes={};
  const fake=createHomeworkServer();let browser,page,context,clock=CLOCK.week;fake.setClock(()=>clock.getTime());
  t.signal.addEventListener('abort',()=>{server.kill('SIGKILL');},{once:true});
  const playState=emptyPlayState(),played=new Map();let playRevision=0;
@@ -117,7 +117,7 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
   await serverReady(url+'/world/health',{signal:t.signal,exited:()=>server.exitCode!==null,output:()=>serverOutput});
   browser=await playwright.chromium.launch({channel:'msedge',headless:true,timeout:30000});
   context=await browser.newContext({viewport:VIEWPORTS[0].size,locale:'ko-KR',timezoneId:'Asia/Seoul',reducedMotion:'reduce'});context.setDefaultTimeout(25000);
-  await context.clock.setFixedTime(clock);
+  await context.clock.install({time:clock});await context.clock.setFixedTime(clock);
   await context.route('**/*',route=>{if(new URL(route.request().url()).origin===url)return route.continue();external.push(route.request().url());return route.abort('blockedbyclient');});
   await context.addInitScript(()=>{if(window.top===window&&!sessionStorage.getItem('synk.oauth.session.world'))sessionStorage.setItem('synk.oauth.session.world',JSON.stringify({access_token:'synthetic-browser-token',refresh_token:null,expires_at:Date.now()+3600000}));});
   const cors={'Access-Control-Allow-Origin':'*'};
@@ -414,10 +414,25 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
    assert.equal(await card.locator('.ws-hw-alert p').textContent(),'과제를 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.');
    await record(tag,'error');
    fake.setMode('ok');await press('retry');await settle('ready');checks[`${tag}-retry-after-error`]=true;
-   const gate=deferred();fake.hold(gate);await press('refresh');await settle('loading');
-   assert.equal(await card.locator('.ws-hw-status').textContent(),'과제를 불러오는 중이에요.');
-   await record(tag,'loading');
-   gate.resolve();await settle('ready');
+   // 느린 이미지 합성 동안 합성 서버의 응답을 붙잡아 두어도 실제 앱의 12초 요청 제한을 소비하지 않는다.
+   // 앱의 제한은 그대로 두고 이 로딩 화면 캡처 동안만 브라우저 시계를 멈춘다.
+   const gate=deferred();await context.clock.pauseAt(clock);
+   try{
+    fake.hold(gate);await press('refresh');await settle('loading');
+    assert.equal(await card.locator('.ws-hw-status').textContent(),'과제를 불러오는 중이에요.');
+    await page.evaluate(()=>{window.__qaCaptureTimer=false;setTimeout(()=>window.__qaCaptureTimer=true,1);});
+    const captureStarted=Date.now();await record(tag,'loading');captureTimes[tag]=Date.now()-captureStarted;
+    assert.equal(await page.evaluate(()=>window.__qaCaptureTimer),false,'실제 캡처 동안 브라우저 타이머가 멈춰 있다');
+    assert.equal(await cardState(),'loading');
+   }finally{gate.resolve();await context.clock.resume();}
+   await settle('ready');await page.waitForFunction(()=>window.__qaCaptureTimer===true);checks[`${tag}-loading-capture-clock`]=true;
+   // 정말 응답이 12초를 넘기면 오류를 보이고 다시 불러오기로 복구해야 한다(캡처 수정이 시간 제한을 숨기지 않음).
+   const timeoutGate=deferred();fake.hold(timeoutGate);await press('refresh');await settle('loading');
+   try{
+    await context.clock.fastForward(12001);await settle('error');
+    assert.equal(await card.locator('.ws-hw-alert p').textContent(),'과제를 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.');
+   }finally{timeoutGate.resolve();}
+   await press('retry');await settle('ready');checks[`${tag}-request-timeout-recovers`]=true;
    // 정답 서버가 실패하면 쓰기 예시답 자리에도 사실대로 알리고, 새로고침으로 다시 받는다.
    fake.setKeyMode('error');await openProfile();await settle('ready');
    await card.locator(`[data-homework-key="past:${C}:3"]`).click();await open(3,'writing');
@@ -471,7 +486,7 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
   assert.deepEqual(errors,[]);assert.deepEqual(unexpected,[]);assert.deepEqual(external,[]);assert.equal(fs.existsSync(path.join(directory,'must-not-create')),false);
   fs.writeFileSync(path.join(out,'result.json'),JSON.stringify({ok:true,date:new Date().toISOString(),syntheticAccount:true,syntheticClass:true,syntheticStudentText:true,liveProviderCalls:false,
    browser:'Edge headless (Playwright '+(()=>{try{return require('playwright/package.json').version;}catch{return '?';}})()+')',placement:'내 계정 시트 · 우리 반 수업 아래, 반 연결 위(#world-classroom-homework)',
-   clock:Object.fromEntries(Object.entries(CLOCK).map(([k,v])=>[k,v.toISOString()])),contentVersion:content.version,viewports:VIEWPORTS,checks,measures,shots,homeworkRequests:homeworkCalls.length,keyRequests:keyCalls.length,contentLoads:contentLoads.length,
+   clock:Object.fromEntries(Object.entries(CLOCK).map(([k,v])=>[k,v.toISOString()])),contentVersion:content.version,viewports:VIEWPORTS,checks,measures,captureTimes,shots,homeworkRequests:homeworkCalls.length,keyRequests:keyCalls.length,contentLoads:contentLoads.length,
    requestShape:{get:homeworkCalls.find(c=>c.method==='GET'),post:{...posts()[0],body:{...posts()[0].body,answers:'(합성)'}}},errors,unexpected,external},null,2)+'\n');
  }catch(error){
   if(page)await page.screenshot({path:path.join(out,'failure.png')}).catch(()=>{});
