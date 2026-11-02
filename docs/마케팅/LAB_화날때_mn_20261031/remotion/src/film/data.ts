@@ -84,3 +84,81 @@ export const SFX: { file: string; at: number; vol: number }[] = [
   { file: 'boom.wav', at: 23.7, vol: 0.7 },
   { file: 'crash.wav', at: 27.5, vol: 1 },
 ];
+
+// ── 두 채널 판(11-02, 기획장부/LAB.md 머리말 「두 채널 판」) — 샤오훙수 간체 · 틱톡 버마어. 같은 정본에서 렌더하고 판끼리 따로 고치지 않는다.
+// 한국어(말풍선 한글 · 소진 목소리)는 그대로, 읽는 법은 영어 로마자(발음대로), 뜻 · 상황 · 머리 글 · 맺음 줄은 그 나라 말로 다시 썼다(현지어 세 겹 검수 — ../../게시/검문/zhs.txt · my.txt).
+export type Loc = 'mn' | 'zhs' | 'my';
+export type LocPack = {
+  font: string; // 그 나라 글 서체 줄(한글 · 키릴 · 로마자는 SUIT · Inter Tight)
+  lineH: number;
+  hook: string;
+  hookSize: number;
+  gauge: string;
+  sits: string[]; // 상황 칸 넷(차례대로)
+  sitSize: number;
+  reads: string[]; // 말풍선 읽는 법 넷
+  means: string[]; // 말풍선 뜻 넷
+  meanSize: number;
+  endRead: string;
+  endMn: string;
+  end1: string;
+  end2: string;
+  endSize: number;
+  inner: string; // 끝 화산 옆 「속으로」 딱지(두 채널 판 v5 — 시험관 둘 「속으로만이 어디와 잇나」)
+};
+export const LOCS: Record<Loc, LocPack> = {
+  mn: {
+    font: "'Inter Tight', 'SUIT', sans-serif",
+    lineH: 1.14,
+    hook: TEXT.hook,
+    hookSize: 92,
+    gauge: TEXT.gauge,
+    sits: CELLS.filter((c) => c.sit).map((c) => c.sit as string),
+    sitSize: 60,
+    reads: CELLS.filter((c) => c.bubble).map((c) => (c.bubble as Bubble).read),
+    means: CELLS.filter((c) => c.bubble).map((c) => (c.bubble as Bubble).mn),
+    meanSize: 50,
+    endRead: TEXT.endRead,
+    endMn: TEXT.endMn,
+    end1: TEXT.end1,
+    end2: TEXT.end2,
+    endSize: 84,
+    inner: 'дотроо',
+  },
+  zhs: {
+    font: "'Inter Tight', 'Microsoft YaHei', 'SUIT', sans-serif",
+    lineH: 1.2,
+    hook: '生气时说的\n4句韩语',
+    hookSize: 96,
+    gauge: '怒气',
+    sits: ['公交车就在我眼前开走了…', '最后一个紫菜包饭被别人拿走了…', '向我借钱的朋友\n居然买了新鞋…', '杯子明明不是我打碎的…'],
+    sitSize: 58,
+    reads: ['jja-jeung na', 'yeol-ba-da', 'eo-i-eop-sseo', 'eo-gul-hae'],
+    means: ['烦死了！', '气到冒烟了！', '无语了……', '太冤枉了！'],
+    meanSize: 58,
+    endRead: 'ne, sa-jang-nim',
+    endMn: '好的，老板～',
+    end1: '在长辈和上司面前——',
+    end2: '只能在心里说！',
+    endSize: 80,
+    inner: '心里',
+  },
+  my: {
+    font: "'Inter Tight', 'SUIT', 'Myanmar Text', sans-serif",
+    lineH: 1.45,
+    hook: 'စိတ်ဆိုးတဲ့အခါ ပြောတဲ့\nကိုရီးယားစကား ၄ ခွန်း',
+    hookSize: 64,
+    gauge: 'ဒေါသ',
+    sits: ['ဘတ်စ်ကားက မျက်စိရှေ့မှာတင်\nထွက်သွားတယ်…', 'နောက်ဆုံးကျန်တဲ့ ကင်မ်ဘပ်ကို\nတခြားလူ ယူသွားတယ်…', 'ငါ့ဆီက ပိုက်ဆံချေးသွားတဲ့ သူငယ်ချင်းက\nဖိနပ်အသစ် ဝယ်ထားတယ်…', 'ခွက်ကို ငါခွဲတာ မဟုတ်ဘူးလေ…'],
+    sitSize: 52,
+    reads: ['jja-jeung na', 'yeol-ba-da', 'eo-i-eop-sseo', 'eo-gul-hae'],
+    means: ['စိတ်ညစ်လိုက်တာ!', 'ဒေါသထွက်\nလိုက်တာ!', 'ဘာပြောရမှန်းတောင်\nမသိတော့ဘူး…', 'မတရားဘူး!'],
+    meanSize: 48,
+    endRead: 'ne, sa-jang-nim',
+    endMn: 'ဟုတ်ကဲ့ပါ သူဌေး~',
+    end1: 'လူကြီးတွေရှေ့မှာ —',
+    end2: 'စိတ်ထဲမှာပဲ ပြောပါ!',
+    endSize: 68,
+    inner: 'စိတ်ထဲမှာ',
+  },
+};

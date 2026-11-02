@@ -1,0 +1,102 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1101,
+  "lufs": -17
+ },
+ "made": "2026-11-01T06:37:04.418Z",
+ "lines": [
+  {
+   "id": "w",
+   "text": "물.",
+   "dur": 0.415,
+   "syllablesPerSec": 2.41,
+   "src": "w.wav",
+   "key": "183282078581bd0dbe4b1013272f2980",
+   "words": 1
+  },
+  {
+   "id": "g",
+   "text": "고기.",
+   "dur": 0.569,
+   "syllablesPerSec": 3.51,
+   "src": "g.wav",
+   "key": "e69e12f98f190107ec88d44921b4ae87",
+   "words": 1
+  },
+  {
+   "id": "fq",
+   "text": "물고기?",
+   "dur": 0.753,
+   "syllablesPerSec": 3.98,
+   "src": "fq.wav",
+   "key": "2399e309aca78873dd6439f2bed821ee",
+   "words": 1
+  },
+  {
+   "id": "f",
+   "text": "물고기!",
+   "dur": 0.731,
+   "syllablesPerSec": 4.1,
+   "src": "f.wav",
+   "key": "a9a02db8250c0353a335528609154c69",
+   "words": 1
+  },
+  {
+   "id": "n",
+   "text": "눈.",
+   "dur": 0.686,
+   "syllablesPerSec": 1.46,
+   "src": "n.wav",
+   "key": "643337f8abd04300dc3866c64d57836a",
+   "words": 1
+  },
+  {
+   "id": "t",
+   "text": "눈물…",
+   "dur": 0.871,
+   "syllablesPerSec": 2.3,
+   "src": "t.wav",
+   "key": "d8613806a6acc9097a7969fd7732be83",
+   "words": 1
+  },
+  {
+   "id": "d",
+   "text": "개.",
+   "dur": 0.444,
+   "syllablesPerSec": 2.25,
+   "src": "d.wav",
+   "key": "6fecdaa0a3b16d03ac687027ee38c61f",
+   "words": 1
+  },
+  {
+   "id": "sq",
+   "text": "물개?",
+   "dur": 0.594,
+   "syllablesPerSec": 3.37,
+   "src": "sq.wav",
+   "key": "e46caccfe1c1c7d793e377e9408a05cf",
+   "words": 1
+  },
+  {
+   "id": "s",
+   "text": "물개!",
+   "dur": 0.792,
+   "syllablesPerSec": 2.53,
+   "src": "s.wav",
+   "key": "481ea51c1896dadf61e8041646465bf7",
+   "words": 1
+  }
+ ]
+}
