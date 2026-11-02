@@ -160,6 +160,12 @@ function 기본표(root = 뿌리) {
     원천: ['docs/온라인반_TOPIK4급/쓰기과제.md', 'docs/온라인반_TOPIK4급/읽기연습.md'], 낡음: /Stale TOPIK4 course/,
   });
   표.push({
+    // 검수를 통과한 문항이 늘면 공개 은행도 같은 커밋에서 다시 만든다 — 11-03 U14 문항을 올린 push가 wide-tests를 빨갛게 했다.
+    이름: 'WORLD TOPIK 은행', 단계: 'experiences/synk-world-app/qa/world-exam-form.test.mjs', 시험: ['experiences/synk-world-app/qa/world-exam-form.test.mjs', '^공개 TOPIK 은행은'],
+    고침: 'node tools/build-world-topik-items.mjs --write', 결과물: ['experiences/synk-world-app/world-topik-items.json', 'experiences/synk-world-app/world-followup-items.json'],
+    원천: ['experiences/topik-items/items/*.json', 'experiences/topik-items/bank*.mjs', 'experiences/topik-items/holdout.mjs', 'tools/build-world-topik-items.mjs'],
+  });
+  표.push({
     // 원고(data/lines)와 허용 목록은 생성물에 들지 않는다 — 검사기(tests/town-content.test.js)만 읽는다.
     이름: '싱크타운 데이터 생성물', 단계: 'tests/town-places.test.js', 시험: ['tests/town-places.test.js', '^생성물이 원천과 같다'],
     고침: 'node tools/town-data-build.mjs', 결과물: ['experiences/synk-town/town/data.gen.mjs'],

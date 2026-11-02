@@ -83,8 +83,11 @@ if (OUT) {
   process.on('exit', () => {
     try {
       fs.mkdirSync(OUT, { recursive: true });
-      fs.writeFileSync(path.join(OUT, `${process.pid}-${Date.now()}.json`), JSON.stringify({ pid: process.pid, ppid: process.ppid,
+      // 다 쓴 뒤 이름을 바꾼다 — 시험이 자기 서버를 끝낼 때 쓰다 죽으면 잘린 .json이 남아 대조가 「손상」으로 멈췄다(11-03).
+      const 파일 = path.join(OUT, `${process.pid}-${Date.now()}.json`);
+      fs.writeFileSync(`${파일}.tmp`, JSON.stringify({ pid: process.pid, ppid: process.ppid,
         argv: process.argv, cwd: process.cwd(), reads: [...reads].map(([p, kinds]) => [p, [...kinds]]), spawns }));
+      fs.renameSync(`${파일}.tmp`, 파일);
     } catch { /* 위와 같다 */ }
   });
 }

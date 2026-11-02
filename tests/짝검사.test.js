@@ -200,7 +200,7 @@ test('기본표 — WORLD 묶음 전부 · 스크립트·결과물·정확한 �
       const 이름식 = new RegExp(`\\btest\\(\\s*['"\`]${줄.시험[1].replace(/^\^/, '')}`);
       assert.match(fs.readFileSync(path.join(REPO, 줄.시험[0]), 'utf8'), 이름식, `${줄.이름}: ${줄.시험[0]}에 이름 무늬 ${줄.시험[1]}에 맞는 시험이 없다`);
     }
-    assert.ok(줄.단계.startsWith('tests/') ? fs.existsSync(path.join(REPO, 줄.단계)) : 흐름.includes(`name: ${줄.단계}`), `${줄.이름}: CI 단계 「${줄.단계}」가 워크플로에 없다`);
+    assert.ok(/^(?:tests|experiences)\//.test(줄.단계) ? fs.existsSync(path.join(REPO, 줄.단계)) : 흐름.includes(`name: ${줄.단계}`), `${줄.이름}: CI 단계 「${줄.단계}」가 워크플로에 없다`);
   }
   // CI가 그 단계에서 실제로 부르는 명령과 같은 스크립트다(package.json → sync-atlas · check-account-bundles · build-topik4-course).
   const 사슬 = ['package.json', 'tools/lib/atlas-copies.js', 'tools/check-account-bundles.js'].map((p) => fs.readFileSync(path.join(REPO, p), 'utf8')).join('\n');
@@ -223,6 +223,7 @@ test('기본표 — 10-20~10-22 master 빨강을 낸 push의 경로는 골리고
   // 1eb18efdb·3a669019e — SUIT를 이름으로 부르는 새 지면
   assert.ok(이름(['docs/마케팅/PULSE_포트폴리오_제작준비_20261012/video/jiyu-skincare-20261018/v7/모션/모션.html']).includes('지면 SUIT 싣기(지면폰트 ⑦)'));
   assert.ok(이름(['docs/온라인반_TOPIK4급/쓰기과제.md']).includes('TOPIK4 수업 문항'));
+  assert.ok(이름(['experiences/topik-items/items/tii-u14.json']).includes('WORLD TOPIK 은행'));
   assert.ok(이름(['atlas/engine.js']).includes('raw consumers and engine metadata'));
   assert.deepEqual(이름(['docs/_ops/트랙.md', 'docs/_ops/결정.md', 'docs/현장노트/git_줄끝_잠금.md', 'README.md', 'AGENTS.md']), []);
   assert.deepEqual(이름(['docs/마케팅/제작양식/만족사례_장부.md', 'tools/바로올리기.js']), []);

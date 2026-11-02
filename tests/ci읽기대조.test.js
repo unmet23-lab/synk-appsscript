@@ -105,6 +105,18 @@ test('읽기 기록은 실제 프로세스의 읽기·자식 명령을 남기고
   assert.equal(부모.spawns[0].args[0], '-e');
 });
 
+test('읽기 기록은 다 쓴 뒤에야 .json이 된다 — 쓰다 죽은 프로세스가 잘린 기록을 남기지 않는다', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ci읽기기록-'));
+  try {
+    const 기록폴더 = path.join(dir, '기록');
+    const r = spawnSync(process.execPath, ['-e', "require('node:fs').renameSync=()=>{throw new Error('이름 바꾸기 전에 죽음')};"], { encoding: 'utf8',
+      env: { ...process.env, SYNK_READ_TRACE_DIR: 기록폴더, NODE_OPTIONS: `--require "${path.join(ROOT, 'tools', 'ci읽기기록.cjs').split(path.sep).join('/')}"` } });
+    assert.equal(r.status, 0, r.stderr);
+    const 파일들 = fs.readdirSync(기록폴더);
+    assert.ok(파일들.length >= 1 && 파일들.every((f) => f.endsWith('.json.tmp')), 파일들.join(' '));
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
 test('wide 희소 검사는 exists와 자식 도구의 파일 인자도 막고, 다른 저장소·폴더 나열은 섞지 않는다', () => {
   const root = path.join(os.tmpdir(), 'wide-sparse-root');
   const 파일 = 'docs/캐릭터/unused.png';
