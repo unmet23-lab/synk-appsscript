@@ -48,7 +48,7 @@ test('WORLD ?exam=topik2: 첫 실행 뒤 TOPIK II를 채운 목표 창 → 켜�
  t.signal.addEventListener('abort',()=>{server.kill('SIGKILL');},{once:true});
  try{
   await serverReady(url+'/world/health',{signal:t.signal,exited:()=>server.exitCode!==null,output:()=>serverOutput});
-  browser=await playwright.chromium.launch({channel:'msedge',headless:true,timeout:30000});
+  browser=await playwright.chromium.launch({channel:process.platform==='win32'?'msedge':'chrome',headless:true,timeout:30000});
   // 기기 하나. seed가 있으면 첫 실행을 마친 생활 진도와 화면 언어를 심는다. 목표 창이 한 번이라도 뜨면 window.__qaGoalSeen에 남는다.
   async function device({seed=null,lang=null,viewport=VIEWPORTS.phone}={}){
    const context=await browser.newContext({viewport,locale:'ko-KR',timezoneId:'Asia/Seoul',reducedMotion:'reduce'});context.setDefaultTimeout(25000);

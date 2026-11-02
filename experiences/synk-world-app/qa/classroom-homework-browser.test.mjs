@@ -115,7 +115,7 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
  const playState=emptyPlayState(),played=new Map();let playRevision=0;
  try{
   await serverReady(url+'/world/health',{signal:t.signal,exited:()=>server.exitCode!==null,output:()=>serverOutput});
-  browser=await playwright.chromium.launch({channel:'msedge',headless:true,timeout:30000});
+  browser=await playwright.chromium.launch({channel:process.platform==='win32'?'msedge':'chrome',headless:true,timeout:30000});
   context=await browser.newContext({viewport:VIEWPORTS[0].size,locale:'ko-KR',timezoneId:'Asia/Seoul',reducedMotion:'reduce'});context.setDefaultTimeout(25000);
   await context.clock.install({time:clock});await context.clock.setFixedTime(clock);
   await context.route('**/*',route=>{if(new URL(route.request().url()).origin===url)return route.continue();external.push(route.request().url());return route.abort('blockedbyclient');});
@@ -485,7 +485,7 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
   }
   assert.deepEqual(errors,[]);assert.deepEqual(unexpected,[]);assert.deepEqual(external,[]);assert.equal(fs.existsSync(path.join(directory,'must-not-create')),false);
   fs.writeFileSync(path.join(out,'result.json'),JSON.stringify({ok:true,date:new Date().toISOString(),syntheticAccount:true,syntheticClass:true,syntheticStudentText:true,liveProviderCalls:false,
-   browser:'Edge headless (Playwright '+(()=>{try{return require('playwright/package.json').version;}catch{return '?';}})()+')',placement:'내 계정 시트 · 우리 반 수업 아래, 반 연결 위(#world-classroom-homework)',
+   browser:(process.platform==='win32'?'Edge':'Chrome')+' headless (Playwright '+(()=>{try{return require('playwright/package.json').version;}catch{return '?';}})()+')',placement:'내 계정 시트 · 우리 반 수업 아래, 반 연결 위(#world-classroom-homework)',
    clock:Object.fromEntries(Object.entries(CLOCK).map(([k,v])=>[k,v.toISOString()])),contentVersion:content.version,viewports:VIEWPORTS,checks,measures,captureTimes,shots,homeworkRequests:homeworkCalls.length,keyRequests:keyCalls.length,contentLoads:contentLoads.length,
    requestShape:{get:homeworkCalls.find(c=>c.method==='GET'),post:{...posts()[0],body:{...posts()[0].body,answers:'(합성)'}}},errors,unexpected,external},null,2)+'\n');
  }catch(error){

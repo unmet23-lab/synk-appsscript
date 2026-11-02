@@ -64,7 +64,7 @@ test('계정 모드 WORLD 내 계정 시트의 「우리 반 수업」: 상태�
  const playState=emptyPlayState(),played=new Map();let playRevision=0;
  try{
   await serverReady(url+'/world/health',{signal:t.signal,exited:()=>server.exitCode!==null,output:()=>serverOutput});
-  browser=await playwright.chromium.launch({channel:'msedge',headless:true,timeout:30000});
+  browser=await playwright.chromium.launch({channel:process.platform==='win32'?'msedge':'chrome',headless:true,timeout:30000});
   const context=await browser.newContext({viewport:VIEWPORTS[0].size,locale:'ko-KR',timezoneId:'Asia/Seoul',reducedMotion:'reduce'});context.setDefaultTimeout(25000);
   await context.route('**/*',route=>{if(new URL(route.request().url()).origin===url)return route.continue();external.push(route.request().url());return route.abort('blockedbyclient');});
   await context.addInitScript(()=>{if(window.top===window&&!sessionStorage.getItem('synk.oauth.session.world'))sessionStorage.setItem('synk.oauth.session.world',JSON.stringify({access_token:'synthetic-browser-token',refresh_token:null,expires_at:Date.now()+3600000}));});
@@ -242,7 +242,7 @@ test('계정 모드 WORLD 내 계정 시트의 「우리 반 수업」: 상태�
    assert.equal(m.layout,key.startsWith('1280')?'landscape':'portrait',key);
   }
   assert.deepEqual(errors,[]);assert.deepEqual(unexpected,[]);assert.deepEqual(external,[]);assert.equal(fs.existsSync(path.join(directory,'must-not-create')),false);
-  fs.writeFileSync(path.join(out,'result.json'),JSON.stringify({ok:true,date:new Date().toISOString(),syntheticAccount:true,syntheticClassroom:true,liveProviderCalls:false,browser:'Edge headless (Playwright '+(()=>{try{return require('playwright/package.json').version;}catch{return '?';}})()+')',
+  fs.writeFileSync(path.join(out,'result.json'),JSON.stringify({ok:true,date:new Date().toISOString(),syntheticAccount:true,syntheticClassroom:true,liveProviderCalls:false,browser:(process.platform==='win32'?'Edge':'Chrome')+' headless (Playwright '+(()=>{try{return require('playwright/package.json').version;}catch{return '?';}})()+')',
    placement:'내 계정 시트 · 반 연결 카드 위(#world-classroom-lessons)',scenarios:ORDER,viewports:VIEWPORTS,checks,measures,shots,classroomRequests:classroomCalls.length,requestShape:classroomCalls[0],errors,unexpected,external},null,2)+'\n');
  }catch(error){
   if(page)await page.screenshot({path:path.join(out,'failure.png')}).catch(()=>{});

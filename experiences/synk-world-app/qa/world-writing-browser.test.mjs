@@ -44,7 +44,7 @@ test('계정 모드 WORLD의 「TOPIK II 쓰기 연습」: 목록·51·53·54·�
  const playState=emptyPlayState();let playRevision=0;
  try{
   await serverReady(url+'/world/health',{signal:t.signal,exited:()=>server.exitCode!==null,output:()=>serverOutput});
-  browser=await playwright.chromium.launch({channel:'msedge',headless:true,timeout:30000});
+  browser=await playwright.chromium.launch({channel:process.platform==='win32'?'msedge':'chrome',headless:true,timeout:30000});
   context=await browser.newContext({viewport:VIEWPORTS[0].size,locale:'ko-KR',timezoneId:'Asia/Seoul',reducedMotion:'reduce'});context.setDefaultTimeout(25000);
   await context.route('**/*',route=>{if(new URL(route.request().url()).origin===url)return route.continue();external.push(route.request().url());return route.abort('blockedbyclient');});
   await context.route('**/world-writing-items.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(opened)}));

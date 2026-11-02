@@ -58,7 +58,7 @@ test('리허설 WORLD 「말하기 연습」: 기본 켜짐·끄는 스위치·�
   await serverReady(url+'/health',{signal:t.signal,exited:()=>server.exitCode!==null,output:()=>serverOutput});
   // 개발 서버 몫 자체: 플래그 없는 기본 실행은 꺼짐으로 답한다(로그인 없이 부르면 401).
   assert.equal((await fetch(url+'/api/world/speaking',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'status'})})).status,401);
-  browser=await playwright.chromium.launch({channel:'msedge',headless:true,timeout:30000,args:['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream',`--use-file-for-fake-audio-capture=${wav}`,'--autoplay-policy=no-user-gesture-required']});
+  browser=await playwright.chromium.launch({channel:process.platform==='win32'?'msedge':'chrome',headless:true,timeout:30000,args:['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream',`--use-file-for-fake-audio-capture=${wav}`,'--autoplay-policy=no-user-gesture-required']});
   context=await browser.newContext({viewport:VIEWPORTS[0].size,locale:'ko-KR',timezoneId:'Asia/Seoul',reducedMotion:'reduce',permissions:['microphone']});context.setDefaultTimeout(30000);
   await context.route('**/*',route=>{if(new URL(route.request().url()).origin===url)return route.continue();external.push(route.request().url());return route.abort('blockedbyclient');});
   // 마이크 스트림을 모아 두고, 녹음이 끝난 뒤 모든 트랙이 꺼졌는지 본다.

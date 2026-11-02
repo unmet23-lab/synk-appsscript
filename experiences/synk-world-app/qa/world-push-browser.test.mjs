@@ -73,7 +73,7 @@ test('WORLD 학습 알림 2단: 동의 → 켜기 → 서비스 워커 알림 �
  t.signal.addEventListener('abort',()=>{server.kill('SIGKILL');},{once:true});
  try{
   await serverReady(url+'/world/health',{signal:t.signal,exited:()=>server.exitCode!==null,output:()=>serverOutput});
-  browser=await playwright.chromium.launch({channel:'msedge',headless:true,timeout:30000});
+  browser=await playwright.chromium.launch({channel:process.platform==='win32'?'msedge':'chrome',headless:true,timeout:30000});
   // 새 기기 하나: 로그인한 계정(합성 토큰), 화면 언어, 가짜 푸시 구독(브라우저 저장소에 남는다 — 다시 열어도 같은 구독).
   async function device({lang='ko',viewport=VIEWPORTS.desk,userAgent,notifications=true,features=true}={}){
    const context=await browser.newContext({viewport,locale:'ko-KR',timezoneId:'Asia/Seoul',reducedMotion:'reduce',...(userAgent?{userAgent,isMobile:viewport.width<600,hasTouch:viewport.width<600}:{})});

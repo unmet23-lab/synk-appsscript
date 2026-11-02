@@ -145,19 +145,34 @@ function 후보받기(runId, root = ROOT) {
   } finally { fs.rmSync(임시, { recursive: true, force: true }); }
 }
 
-/* git이 무시하는(*.glb) 출시 자산 가운데 공개 저장소 synk-policy에 같은 바이트로 실린 것 — 저장소의 출시 목록(sha256·bytes)과
- * 맞을 때만 제자리에 놓는다. 이미 있는 파일은 건드리지 않는다. 받지 못하면 그 시험이 그대로 깨져 보인다(숨기지 않는다). */
+/* git 밖 출시 자산 가운데 공개 저장소 synk-policy에 같은 바이트로 실린 것 — 저장소의 출시 목록(sha256·bytes)과
+ * 맞을 때만 제자리에 놓는다. 이미 있는 파일은 건드리지 않는다. 받지 못하면 그 시험이 그대로 깨져 보인다(숨기지 않는다).
+ * 칸: 목록 JSON 안의 칸 이름(없으면 목록 그대로). 전부: 한 벌이 다 맞을 때만 놓는다 — 일부만 놓이면 시험이 「있음」으로 보고
+ * 켜졌다가 빠진 파일 404로 깨진다. 한 벌을 못 받으면 아무것도 놓지 않고, 시험은 빠진 자산을 이름 대고 건너뛴다(11-03). */
 const 공개자산 = {
   experiences: [{ 목록: 'experiences/korean-racing/qa/package-manifest.json', 자리: 'experiences/korean-racing',
-    원본: 'https://raw.githubusercontent.com/unmet23-lab/synk-policy/main/try/racing', 경로: ['assets/car.glb', 'assets/coastal-rocks-v6.glb'] }],
+    원본: 'https://raw.githubusercontent.com/unmet23-lab/synk-policy/main/try/racing', 경로: ['assets/car.glb', 'assets/coastal-rocks-v6.glb'] },
+  // WORLD 계정 모드 실제 브라우저 시험(account-browser)이 여는 옷감 그림·구운 마을(휴대폰 판) — WORLD 공개본에 실린 그대로.
+  { 목록: 'experiences/synk-world-app/qa/git-outside-assets.json', 칸: 'textiles', 전부: true, 자리: 'experiences/synk-world-home/assets/avatar-textiles-v1',
+    원본: 'https://raw.githubusercontent.com/unmet23-lab/synk-policy/main/world/assets/avatar-textiles-v1' },
+  { 목록: 'experiences/synk-world-app/qa/git-outside-assets.json', 칸: 'district', 전부: true, 자리: 'experiences/synk-town/assets/district',
+    원본: 'https://raw.githubusercontent.com/unmet23-lab/synk-policy/main/world/town/assets/district' }],
 };
 
 async function 공개자산받기(묶음, { root = ROOT, 받기 = (url) => fetch(url) } = {}) {
   const 줄들 = [];
   for (const 판 of 공개자산[묶음] || []) {
-    const 목록 = JSON.parse(fs.readFileSync(path.join(root, 판.목록), 'utf8'));
-    for (const rel of 판.경로) {
-      const 자리 = path.join(root, 판.자리, rel), 기대 = (목록.files || []).find((x) => x.path === rel);
+    let 목록;
+    try { 목록 = JSON.parse(fs.readFileSync(path.join(root, 판.목록), 'utf8')); } catch (e) { 줄들.push(`✗ 출시 목록을 못 읽었다 — ${판.목록}: ${e.code || e.message}`); continue; }
+    const 표 = (판.칸 ? 목록[판.칸] : 목록)?.files || [];
+    const 놓을 = [], 처음 = 줄들.length;
+    const 놓기 = ({ 자리, rel, 바이트 }) => {
+      fs.mkdirSync(path.dirname(자리), { recursive: true });
+      fs.writeFileSync(자리, 바이트);
+      줄들.push(`받음 — ${판.자리}/${rel} (${바이트.length}바이트, 출시 목록 해시 일치)`);
+    };
+    for (const rel of 판.경로 || 표.map((x) => x.path)) {
+      const 자리 = path.join(root, 판.자리, rel), 기대 = 표.find((x) => x.path === rel);
       if (fs.existsSync(자리)) { 줄들.push(`있음 — ${판.자리}/${rel}`); continue; }
       if (!기대) { 줄들.push(`✗ 출시 목록에 없다 — ${판.목록}의 ${rel}`); continue; }
       try {
@@ -166,11 +181,12 @@ async function 공개자산받기(묶음, { root = ROOT, 받기 = (url) => fetch
         const 바이트 = Buffer.from(await 답.arrayBuffer());
         const 해시 = crypto.createHash('sha256').update(바이트).digest('hex');
         if (바이트.length !== 기대.bytes || 해시 !== 기대.sha256) throw new Error(`출시 목록과 다르다(${바이트.length}바이트 ${해시.slice(0, 12)})`);
-        fs.mkdirSync(path.dirname(자리), { recursive: true });
-        fs.writeFileSync(자리, 바이트);
-        줄들.push(`받음 — ${판.자리}/${rel} (${바이트.length}바이트, 출시 목록 해시 일치)`);
-      } catch (e) { 줄들.push(`✗ 못 받음 — ${판.자리}/${rel}: ${e.message}`); }
+        if (판.전부) 놓을.push({ 자리, rel, 바이트 }); else 놓기({ 자리, rel, 바이트 });
+      } catch (e) { 줄들.push(`✗ 못 받음 — ${판.자리}/${rel}: ${e.message}`); if (판.전부) break; }
     }
+    if (!판.전부) continue;
+    if (!표.length || 줄들.slice(처음).some((줄) => 줄.startsWith('✗'))) { 줄들.push(`✗ 한 벌을 다 받지 못해 놓지 않았다 — ${판.자리}`); continue; }
+    놓을.forEach(놓기);
   }
   return 줄들;
 }

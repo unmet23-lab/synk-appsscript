@@ -51,7 +51,7 @@ test('WORLD 학습 알림: 앱 안 묻기 → OS 권한 → 예약 → 알림 �
  t.signal.addEventListener('abort',()=>{server.kill('SIGKILL');},{once:true});
  try{
   await serverReady(url+'/world/health',{signal:t.signal,exited:()=>server.exitCode!==null,output:()=>serverOutput});
-  browser=await playwright.chromium.launch({channel:'msedge',headless:true,timeout:30000});
+  browser=await playwright.chromium.launch({channel:process.platform==='win32'?'msedge':'chrome',headless:true,timeout:30000});
   // 새 기기 하나: 심은 생활 진도·화면 언어와 가짜 OS 알림(권한은 이 기기의 localStorage에 남는다 — 다시 열어도 같다).
   async function device({lang='ko',exam=null,answer='granted',viewport=VIEWPORTS.phone}={}){
    const context=await browser.newContext({viewport,locale:'ko-KR',timezoneId:'Asia/Seoul',reducedMotion:'reduce'});context.setDefaultTimeout(25000);

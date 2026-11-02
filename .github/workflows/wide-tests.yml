@@ -58,7 +58,8 @@ jobs:
             /docs/라디오/DJ장면_20261019/구운판/**
             /docs/라디오/무대/**
       # 형제 저장소 SYNK-talk에서 시험이 읽는 파일만 받는다(syntax-check.yml과 같은 읽기 열쇠, 2026-10-22). 형제를 쓰는 시험은
-      # 저마다 특정 파일이 있을 때만 켜진다 — 이 목록에 없는 파일(예: lib/world-v1-server.js)을 찾는 WORLD 실제 브라우저 시험은 그대로 건너뛴다.
+      # 저마다 특정 파일이 있을 때만 켜진다. WORLD · 교사 앱 실제 브라우저 시험(11-03)이 읽는 파일까지 넣었다 — 목록은 SYNK-talk origin/master 판으로 시험을 돌려 실제 require · 읽기를 재서 정했고,
+      # lib/world-v1-server.js 등 켜짐 조건 파일을 더하면 그 조건을 보는 다른 시험도 함께 켜지니 더하기 전에 찾는다(현장노트 시험_화면확인).
       - name: checkout SYNK-talk test inputs
         if: ${{ vars.SYNK_TALK_CI == 'on' && (matrix.bundle == '루트' || matrix.bundle == 'desktop' || matrix.bundle == 'experiences') }}
         uses: actions/checkout@v5
@@ -73,19 +74,57 @@ jobs:
           sparse-checkout: |
             /package.json
             /package-lock.json
+            /lib/atlas-memory-rules.js
+            /lib/atlas/education.js
+            /lib/atlas/engine.js
+            /lib/atlas/flow.js
+            /lib/atlas/game-flow.js
+            /lib/atlas/game-learning.js
+            /lib/atlas/learning-ledger.js
+            /lib/atlas/learning-pages.js
+            /lib/atlas/learning-sync.js
+            /lib/atlas/learning.js
+            /lib/atlas/memory-sync.js
+            /lib/atlas/strata/index.js
+            /lib/atlas/strata/maps/topik-i.json
+            /lib/atlas/temper.js
+            /lib/atlas/trail.js
+            /lib/atlas/vellum-flow.js
+            /lib/atlas/vellum.js
+            /lib/generated/topik4-homework-key.json
+            /lib/modern-town-export.js
             /lib/sha256.js
-            /lib/플래그.js
+            /lib/study-progress-rules.js
             /lib/synk-account-lifecycle.js
             /lib/synk-account-restore-export.js
+            /lib/synk-auth.js
             /lib/synk-care-push-worker.js
+            /lib/synk-classroom-enrollment.js
+            /lib/synk-classroom-homework.js
+            /lib/synk-classroom-server.js
+            /lib/synk-classroom-store.js
+            /lib/synk-classroom-teaching.js
+            /lib/synk-server.js
+            /lib/synk-store.js
+            /lib/synk-summary-history.js
             /lib/world-v1-catalog.js
+            /lib/world-v1-domain.js
+            /lib/world-v1-export.js
+            /lib/world-v1-learning.js
+            /lib/world-v1-server.js
+            /lib/world-v1-store.js
+            /lib/내정보규칙.js
             /lib/자격증명.js
+            /lib/플래그.js
+            /supabase/functions/_shared/synk-classroom-runtime.js
             /supabase/functions/_shared/synk-play-runtime.js
             /supabase/migrations/
             /tests/lib/account-lifecycle-fixture.js
             /tests/lib/play-fixture.js
             /tests/lib/postgres-json-fixture.js
+            /tools/qa-synk-classroom-fixture.cjs
             /tools/synk-account-restore-export.js
+            /tools/world-v1-local-db.js
       - uses: actions/setup-node@v5
         with:
           node-version: 24

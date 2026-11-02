@@ -185,3 +185,24 @@ test('자산받기 — 출시 목록의 해시·크기와 맞을 때만 놓고, 
     assert.deepEqual(await 넓은.공개자산받기('회사', { root: 방, 받기 }), [], '받을 것이 없는 묶음');
   } finally { fs.rmSync(방, { recursive: true, force: true }); }
 });
+
+test('자산받기 — WORLD git 밖 자산은 한 벌이 다 맞을 때만 놓고, 하나라도 다르면 한 벌째 놓지 않는다', async () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-ci넓은시험-'));
+  try {
+    const 해시 = (b) => require('node:crypto').createHash('sha256').update(b).digest('hex');
+    const 옷감 = Buffer.from('png 가짜'), 마을 = Buffer.from('{"parts":[]}'), 조각 = Buffer.from('glb 가짜');
+    const 목록 = path.join(방, 'experiences/synk-world-app/qa/git-outside-assets.json');
+    fs.mkdirSync(path.dirname(목록), { recursive: true });
+    fs.writeFileSync(목록, JSON.stringify({
+      textiles: { files: [{ path: 'wool-colour.png', bytes: 옷감.length, sha256: 해시(옷감) }] },
+      district: { files: [{ path: 'townwide-merged.json', bytes: 마을.length, sha256: 해시(마을) }, { path: 'townwide-merged-ring-phone.glb', bytes: 3, sha256: 'b'.repeat(64) }] },
+    }));
+    const 받기 = async (url) => ({ ok: true, status: 200, arrayBuffer: async () => (url.endsWith('.png') ? 옷감 : url.endsWith('.json') ? 마을 : 조각) });
+    const 줄들 = await 넓은.공개자산받기('experiences', { root: 방, 받기 });
+    assert.ok(줄들.some((줄) => /^받음 — experiences\/synk-world-home\/assets\/avatar-textiles-v1\/wool-colour\.png/.test(줄)));
+    assert.deepEqual(fs.readFileSync(path.join(방, 'experiences/synk-world-home/assets/avatar-textiles-v1/wool-colour.png')), 옷감);
+    assert.ok(줄들.some((줄) => /^✗ 못 받음 — .*townwide-merged-ring-phone\.glb: 출시 목록과 다르다/.test(줄)));
+    assert.ok(줄들.includes('✗ 한 벌을 다 받지 못해 놓지 않았다 — experiences/synk-town/assets/district'));
+    assert.equal(fs.existsSync(path.join(방, 'experiences/synk-town/assets/district')), false, '맞은 townwide-merged.json도 놓지 않아 시험이 이름 대고 건너뛴다');
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
