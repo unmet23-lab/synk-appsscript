@@ -173,6 +173,10 @@ function main() {
  }
  const manifest = { made: new Date().toISOString(), note: '승인 자산 재사용(새 생성 0). 원천 경로·생성 도구 이름은 싣지 않는다.', files: files.map(({ sourceSha256, ...rest }) => ({ ...rest, sourceSha256 })) };
  if (!CHECK_ONLY) fs.writeFileSync(path.join(OUT, 'manifest.json'), JSON.stringify(manifest, null, 1) + '\n');
+ // 어떤 재생 사본이 있는지는 커밋하는 목록으로 — content.mjs가 파일 유무 대신 이것을 본다(media/는 git 밖이라 CI · 낡은 사본에서 강의가 달라졌다, 11-03).
+ const listFile = path.join(OUT, '..', 'media-list.json'), listText = JSON.stringify(files.map((f) => f.file).sort(), null, 1) + '\n';
+ if (!CHECK_ONLY) fs.writeFileSync(listFile, listText);
+ else if (!fs.existsSync(listFile) || fs.readFileSync(listFile, 'utf8').replace(/\r\n/g, '\n') !== listText) problems.push('media-list.json이 재생 사본과 다르다 — --확인 없이 다시 만든다');
  const total = files.reduce((s, f) => s + (f.bytes || 0), 0);
  console.log(`파일 ${files.length}개 · ${(total / 1024 / 1024).toFixed(2)}MB`);
  if (waiting.length) console.log(`아직 없는 자리(녹음·굽기 전 — 화면은 지금 판 그대로): ${waiting.join(' · ')}`);

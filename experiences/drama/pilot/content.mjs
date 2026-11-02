@@ -22,9 +22,10 @@ export const DELAYED_PROMPT = {
 };
 const T6 = ep01.처음보는대사.find((x) => x.id === 's1e01-t6');
 
-// 빌드가 만든 재생 사본이 있을 때만 주소를 준다. 아직 없는 자리(코치 녹음·쇼케이스 영상)는 null — 화면은 글만, 장면은 지금 판 그대로 돈다.
-const MEDIA_DIR = new URL('./media/', import.meta.url);
-const built = (file) => (fs.existsSync(new URL(file, MEDIA_DIR)) ? `/media/${file}` : null);
+// 재생 사본 목록(media-list.json, 커밋 — build-drama-pilot-assets.mjs가 쓴다)에 있는 파일만 주소를 준다. 아직 없는 자리(코치 녹음·쇼케이스 영상)는 null — 화면은 글만.
+// media/는 git 밖 생성물이라 파일 유무로 정하면 CI · 미디어가 낡은 사본에서 강의가 달라지고 공개본의 영상 참고가 빠진다(11-03).
+const MEDIA_LIST = new Set(JSON.parse(fs.readFileSync(new URL('./media-list.json', import.meta.url), 'utf8')));
+const built = (file) => (MEDIA_LIST.has(file) ? `/media/${file}` : null);
 
 // 이야기 밖 코치(결정 10-31 「싱크타운 다시 짜기」 ③). 목소리는 감독으로 골랐던 Harrison 그대로 쓴다.
 // 감독 녹음(s1/소리/ep01-director-*)은 컷·촬영·「지난번엔」을 말해서 쓰지 않는다.

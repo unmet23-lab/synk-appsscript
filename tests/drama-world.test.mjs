@@ -69,6 +69,15 @@ test('기록기: 혼자 해 봄은 그 차례의 첫 시도만(Trail은 앞 시�
   assert.deepEqual([calls[1].attemptNo, calls[1].assessable], [2, false]);
 });
 
+test('강의의 미디어 주소는 커밋한 목록에서만 온다 — 로컬 media/ 유무로 달라지지 않는다(CI · 낡은 사본, 11-03)', () => {
+  const content = read('experiences/drama/pilot/content.mjs');
+  assert.doesNotMatch(content, /existsSync/);
+  const list = new Set(JSON.parse(read('experiences/drama/pilot/media-list.json')));
+  const urls = JSON.stringify(JSON.parse(read('experiences/drama/pilot/world-lesson.json'))).match(/media\/[^"]+/g) || [];
+  assert.ok(urls.length > 10);
+  for (const url of urls) assert.ok(list.has(url.slice('media/'.length)), url);
+});
+
 test('화면용 강의는 원천에서 다시 만든 것과 같고, 지문 · 녹음 상한이 talk 대사 은행과 같다', async () => {
   const built = await buildWorldLesson();
   assert.equal(fs.readFileSync(DESTINATION, 'utf8').replace(/\r\n/g, '\n'), serialize(built), 'node tools/build-drama-world.mjs');
