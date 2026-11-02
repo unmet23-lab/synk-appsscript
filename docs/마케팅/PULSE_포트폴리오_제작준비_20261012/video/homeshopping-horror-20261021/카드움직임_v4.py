@@ -84,11 +84,26 @@ def layers(hand, prop, narrow, tint, bottom_align, split_pointer=False):
     band[max(gy - 60, 0): min(gy + gh + 60, H), : max(gx + 30, 0)] = 1
     n, lab, st, _ = cv2.connectedComponentsWithStats(skin & band)
     extra = np.zeros_like(skin)
-    for i in range(1, n):
-        x, y, w, h, area = st[i]
-        if area > 1500 and (x <= 4 or x + w >= gx - 6):
-            extra[lab == i] = 1
-    extra = cv2.morphologyEx(extra, cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8))
+    if split_pointer:   # 왼쪽 팔은 카드 2에만 있다 — 카드 ? · 3(H3)은 이 조건이 벽난로 선반을 팔로 잡아 왼쪽 바탕이 찢어져 보였다(11-03)
+        for i in range(1, n):
+            x, y, w, h, area = st[i]
+            if area > 1500 and (x <= 4 or x + w >= gx - 6):
+                extra[lab == i] = 1
+        extra = cv2.morphologyEx(extra, cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8))
+        # 상자를 대역보다 1.06배 앉혀 윗모서리를 잡은 손가락이 상자에 끊겨 떠 보였다(11-03) — 대역 위쪽 가까이의 살빛 덩어리를 통째로 상자 앞에 되살리고 그림자를 깐다
+        fh = ((hsv[..., 0] < 22) | (hsv[..., 0] > 168)) & (hsv[..., 1] > 40) & (hsv[..., 2] > 110)
+        area_top = np.zeros_like(skin)
+        area_top[max(gy - 110, 0): gy + 150, 455: 640] = 1   # 앞에서 감싼 네 손가락만 — 왼쪽 엄지는 상자 뒤로 그대로 둔다
+        n2, lab2, st2, _ = cv2.connectedComponentsWithStats((fh.astype(np.uint8) & area_top))
+        if n2 > 1:
+            big = 1 + int(np.argmax(st2[1:, cv2.CC_STAT_AREA]))
+            fm = cv2.morphologyEx((lab2 == big).astype(np.uint8), cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8))
+            fm = cv2.erode(fm, np.ones((3, 3), np.uint8))   # 가장자리 초록 반사를 뺀다
+            fa = cv2.GaussianBlur(fm.astype(np.float32), (0, 0), 1.0)
+            shadow = cv2.GaussianBlur(cv2.warpAffine(fm.astype(np.float32), np.float32([[1, 0, -4], [0, 1, 12]]), (W, H)), (0, 0), 9)[..., None]
+            comp = comp * (1 - 0.45 * shadow * pa[..., None])
+            comp = comp * (1 - fa[..., None]) + plate.astype(np.float32) * fa[..., None]
+            ha = np.maximum(ha, fa)
     pointer = np.zeros((H, W), np.float32)
     main_hand = np.maximum(ha, extra.astype(np.float32))
     if split_pointer:   # 아래 가장자리에 닿는 손(가리키는 손)은 따로

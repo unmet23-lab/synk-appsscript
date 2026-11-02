@@ -911,11 +911,12 @@ def shot_s18():
     studio(low=(0.022, 0.13, 0.75), high=(0.0005, 0.003, 0.025), strength=0.35 + 0.65 * T, dist=0.9, height=0.35)
     bpy.data.objects["backdrop"].location.z -= 0.18
     fl = bpy.data.materials["floor"].node_tree.nodes["Principled BSDF"]
-    fl.inputs["Roughness"].default_value = float(arg("--바닥거칠기", "0.4"))
     fl.inputs["Coat Weight"].default_value = 0.0
-    fl.inputs["Base Color"].default_value = (0.004, 0.014, 0.045, 1) if arg("--검은바닥", "0") == "0" else (0, 0, 0, 1)   # 띠가 바닥을 곧장 비춰 청록 웅덩이가 졌다 — 바닥을 어둡게
-    fl.inputs["Specular IOR Level"].default_value = float(arg("--바닥반사", "0.35"))   # 0.25는 바닥 반사가 원본보다 어두웠다(86/124)
-    fl.inputs["Specular Tint"].default_value = (0.55, 0.78, 1.0, 1)   # 흰 띠가 회색 바닥으로 비쳤다 — 원본처럼 옅은 파랑으로
+    # 15판(11-03 최종 편집, 원본 끝 프레임 대조): 끝에서 바닥이 회색(낮은 각도라 흰 띠를 그대로 반사)이라 차갑고 싸 보였다 — 원본 바닥은 맑은 파랑.
+    # 유리 반사 색은 스치는 각도에서 하얘지니 금속 파랑으로 두어 반사 자체를 파랗게, 거칠게 흐린다
+    fl.inputs["Base Color"].default_value = (0.05, 0.20, 0.70, 1) if arg("--검은바닥", "0") == "0" else (0, 0, 0, 1)
+    fl.inputs["Metallic"].default_value = 1.0
+    fl.inputs["Roughness"].default_value = float(arg("--바닥거칠기", "0.5"))
     # 띠 두 끝(m): 원본 프레임에서 오른쪽 끝이 화면 폭의 0.52(15.88초) → 0.77(16.34) → 0.91(16.6) → 17초쯤 화면 끝, 왼쪽 끝은 병 뒤에서 나와 17초쯤 화면 왼쪽 끝
     # 12판(Fable P2-11): T=0.30에서 3 m로 바꾸면 화면 왼쪽 끝이 한 프레임 튄다 — 0.36까지 이어 두 끝이 화면 밖으로 나간 뒤 바꾼다
     # 12판(P2-10): 띠를 바닥에서 띄우면 띠와 바닥 반사 사이가 검게 비고, 붙이면 바닥 반사까지 띠로 읽혀 아래 끝이 0.07 낮았다 —
@@ -926,6 +927,10 @@ def shot_s18():
     if grow >= 1.0:
         glow_plane(-1.5, 1.5, 0.352, 0.030, 0.085, 0.9)   # 14판(4차 P2-3): 원본은 띠 위 0.1 H에 걸쳐 번진다 — 띠 바로 위 은은한 번짐 판
     root = bottle((0, 0, 0), rot_z=-6)
+    # 15판(11-03): 띠가 뒤에서 비쳐 향수가 옅은 하늘색으로 떠 라벨 대비가 사라졌다 — 이 컷만 향수를 더 짙게(2 · 3 · 17번의 짙은 파랑과 맞음, 원본도 병 속이 가장 짙다)
+    va = bpy.data.materials["liquid"].node_tree.nodes["Volume Absorption"]
+    va.inputs["Color"].default_value = (0.12, 0.48, 0.88, 1)
+    va.inputs["Density"].default_value = float(arg("--향수밀도", "300"))
     # ⑤ 원본은 병 밑에서 서리 · 냉기가 병을 타고 차오른다(끝에서 라벨 바로 아래까지) — 서리 껍질 높이를 --t로
     frost_shell(BH * (0.12 + 0.21 * T), root)   # 12판(Fable P3-4): 원본 끝은 몸통 아래 0.31쯤
     # 12판(Fable 2차 P1-2): 첫 프레임 뚜껑이 255로 타 흰 덩어리였다(≥250 7.3%) — key 9 → 6 · 테두리 55 → 30
@@ -938,6 +943,10 @@ def shot_s18():
             lit.objects.link(ob)
     for nm in ("rimL", "rimR"):
         bpy.data.objects[nm].light_linking.receiver_collection = lit
+    # 15판(11-03): 향수를 짙게 하니 흰 잉크가 회색으로 죽어 이름이 안 읽혔다 — 라벨만 비추는 앞 빛(반사에는 안 보이게)
+    front = area_light("front", (0.0, -0.40, 0.055), (0, 0, 0.055), float(arg("--앞빛", "14")), 0.35, (0.92, 0.96, 1.0))
+    front.visible_glossy = False
+    front.light_linking.receiver_collection = lit
     # 9판(Fable 원본 대조 1차 P0-1 · 2): 원본은 서지 않고 20.0초까지 점점 느리게 물러나고, 병은 끝까지 화면 왼쪽 1/3에 선다.
     # 원본 끝 프레임(19.96초): 병 높이가 화면 높이의 0.80(위 0.14 ~ 아래 0.94) · 병 가운데가 너비의 0.30 → 화면 폭 0.264 m(렌즈 70 → 0.513 m).
     # 첫 프레임은 그 0.51배 화면(폭 0.135 m · 0.262 m) · 뚜껑 가운데가 너비의 0.215 · 뚜껑 위가 화면 위 끝.
@@ -954,7 +963,7 @@ def shot_s18():
     tx = 0.033 + (0.045 - 0.033) * k      # 겨냥점을 병 오른쪽으로(병이 왼쪽에 서게)
     tz = 0.078 + (0.0646 - 0.078) * k     # 12판(Fable 2차 P2-7 ⒝): 첫 키를 0.0867 → 0.078로 내려 뚜껑이 원본처럼 위에서 잘리고 이름 윗줄이 들게
     d = w * 70 / 36
-    camera((tx, -d - BD / 2, tz + 0.004), (tx, 0, tz), lens=70, fstop=1.6 + 4.0 * k)   # 11판: 원본 첫 프레임의 빛 덩이는 더 둥글게 번진다 · 13판 2.0 → 1.6
+    camera((tx, -d - BD / 2, tz + 0.004), (tx, 0, tz), lens=70, fstop=1.6 + float(arg("--끝조리개", "1.2")) * k)   # 11판: 원본 첫 프레임의 빛 덩이는 더 둥글게 번진다 · 13판 2.0 → 1.6 · 15판(11-03): 끝까지 띠 가장자리가 부드럽게(4.0은 띠가 딱딱한 흰 막대로 굳었다, 원본 끝도 번짐)
 
 
 def shot_s17():

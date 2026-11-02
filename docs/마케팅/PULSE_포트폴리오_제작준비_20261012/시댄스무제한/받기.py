@@ -8,7 +8,7 @@
 import difflib, json, os, re, shutil, subprocess, sys
 
 DAY = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028"
-WEBS = [os.path.join(DAY, d) for d in ("웹올리기", "웹올리기_둘째날", "웹올리기_7번비교", "웹올리기_프리비즈", "웹올리기_로맨스", "웹올리기_여섯편", "웹올리기_한강")]   # 첫날 · 둘째 날 · 7번 그림 비교(10-30) · 5번 프리비즈 시험 · 로맨스(10-31) · 여섯 편(10-31 밤) · 한강2126(11-01) — 판 id는 서로 겹치지 않는다
+WEBS = [os.path.join(DAY, d) for d in ("웹올리기", "웹올리기_둘째날", "웹올리기_7번비교", "웹올리기_프리비즈", "웹올리기_로맨스", "웹올리기_여섯편", "웹올리기_한강", "웹올리기_수정20261103")]   # 첫날 · 둘째 날 · 7번 그림 비교(10-30) · 5번 프리비즈 시험 · 로맨스(10-31) · 여섯 편(10-31 밤) · 한강2126(11-01) — 판 id는 서로 겹치지 않는다
 OUT = os.path.join(DAY, "받음")
 HOME = os.path.join(os.path.expanduser("~"), ".ai-accounts", "higgsfield-founder")
 MATCH = 0.85   # 이보다 낮으면 판을 정하지 않고 「못 찾음」으로 둔다

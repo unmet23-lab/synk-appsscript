@@ -17,7 +17,7 @@ import cv2
 import numpy as np
 
 DAY = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028"
-WEBS, GOT = [os.path.join(DAY, d) for d in ("웹올리기", "웹올리기_둘째날", "웹올리기_7번비교", "웹올리기_프리비즈", "웹올리기_로맨스", "웹올리기_여섯편", "웹올리기_한강")], os.path.join(DAY, "받음")
+WEBS, GOT = [os.path.join(DAY, d) for d in ("웹올리기", "웹올리기_둘째날", "웹올리기_7번비교", "웹올리기_프리비즈", "웹올리기_로맨스", "웹올리기_여섯편", "웹올리기_한강", "웹올리기_수정20261103")], os.path.join(DAY, "받음")
 OUT = os.path.join(GOT, "_검수")
 MOD = os.path.join(os.path.expanduser("~"), ".rembg", "models", "yunet")
 SAME = 0.363

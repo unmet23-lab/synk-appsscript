@@ -79,6 +79,18 @@
 - 고침: xfade·acrossfade 시간선의 클립 길이는 `ffprobe -select_streams v:0 -show_entries stream=duration`(영상 스트림)으로 잰다. 중간 파일을 만들 때도 `-t`를 영상 길이로 준다. 화면 글자(대사·자막·끝 카드)는 클립마다 overlay하지 말고 시간선을 만든 뒤 ASS 한 파일로 `subtitles=filename=…:fontsdir=…`에 마지막에 한 번 굽는다(글꼴 otf를 fontsdir에 복사, 한글 경로도 된다).
 - 다시 확인: 조립 결과의 `ffprobe -count_packets -select_streams v:0 -show_entries stream=nb_read_packets`가 길이×fps와 같다. 길이만 보지 않는다 — `-ss` 탐색은 끊긴 파일에서도 마지막 프레임을 돌려줘 멈춘 것처럼 보인다.
 
+### 믹스를 모노에서 스테레오로 바꾸자 같은 소리인데 LUFS가 3 올라갔다 (2026-11-03 Claude)
+- 증상: 매진 임박 믹스를 모노 합에서 음악만 스테레오로 바꿨더니 크기가 −13.7에서 −10.6 LUFS로 뛰었다. 봉우리는 그대로였다.
+- 원인: ebur128은 채널 에너지를 더한다. 같은 신호를 두 채널에 넣으면 모노 파일보다 3 LU 크게 잰다.
+- 고침: 목표값은 스테레오 파일로 맞추고, 모노로 잰 값과 견주지 않는다(`최종편집공통.py` finish의 boost_db로 맞춤).
+- 다시 확인: `ffprobe -show_entries stream=channels`로 채널 수를 본 뒤 `ebur128=peak=true` 요약을 읽는다.
+
+### `-fps_mode passthrough`와 `-r`을 같이 주면 종료 코드 4294967274로 끝난다 (2026-11-03 Claude)
+- 증상: `select`로 프레임을 고른 뒤 `-fps_mode passthrough -r 24`로 내보내자 파이썬에서 CalledProcessError(4294967274 = −22)만 보였다. 뒤이어 없는 출력을 여는 명령은 `Illegal byte sequence`라고 엉뚱하게 알렸다.
+- 원인: 둘은 서로 맞지 않는 설정이다. 한글 윈도우 ffmpeg 9는 파일 없음도 그 문구로 낸다.
+- 고침: `select=…,setpts=N/24/TB`에 `-r 24`만 준다.
+- 다시 확인: 나온 파일 프레임 수를 `-count_frames`로 재 원본 컷 수와 맞춰 본다.
+
 ### `-c copy`로 프레임 수를 맞춰 자르면 끝 몇 장이 빠지고 겹친다
 - 증상: 361프레임 컷을 `-c copy -frames:v 358`로 잘랐더니 디코드하면 360장이고 356·358이 빠지고 357·359가 두 번씩이었다. 그 조각 때문에 완성본이 2프레임 짧은 VFR이 되고 자막이 컷보다 2프레임 먼저 떴다(10-12).
 - 원인: x264 결과에는 B프레임이 있어 저장 순서와 화면 순서가 다르다. 패킷 N개에서 끊으면 화면 순서로는 중간이 빠진다. `-shortest`도 같다.
