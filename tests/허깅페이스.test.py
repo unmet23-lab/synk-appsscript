@@ -227,6 +227,103 @@ class 목록시험(unittest.TestCase):
                 self.assertTrue(x['용도'])
 
 
+class 허깅페이스먼저시험(바탕):
+    """목소리떼기 · 받아쓰기 — 허깅페이스 먼저, 몫 밖 · 실패 · 확인 없음이면 남은 것만 로컬."""
+    def setUp(self):
+        super().setUp()
+        self.폴더 = Path(self.temp.name)
+        self.입력 = []
+        for 이름 in ('가', '나', '다'):
+            p = self.폴더 / f'{이름}.wav'
+            p.write_bytes(b'RIFF')
+            self.입력.append(str(p))
+        self.불린space = []
+        self.로컬명령 = []
+        self.hf결과 = []     # 차례대로: 'ok' · '한도' · '실패'
+
+        def 가짜부르기(space, 인자=None, 받을곳=None, 남에게보내도됨=False, 메모='', **덧):
+            self.불린space.append(space)
+            일 = self.hf결과.pop(0) if self.hf결과 else 'ok'
+            if 일 == '한도':
+                raise hf.한도모자람('몫 모자람')
+            if 일 == '실패':
+                raise RuntimeError('AppError')
+            if space == hf.떼기space:
+                Path(받을곳).mkdir(parents=True, exist_ok=True)
+                v, b = Path(받을곳) / 'v.wav', Path(받을곳) / 'b.wav'
+                v.write_bytes(b'v'); b.write_bytes(b'b')
+                return {'결과': [str(v), str(b)], '왕복초': 10.0, '쓴초': 3.0}
+            return {'결과': ' 잠이 와요 ', '왕복초': 5.0, '쓴초': 1.0}
+
+        self.patches2 = [
+            patch.object(hf, '지키며_부르기', 가짜부르기),
+            patch.object(hf, '_소리맞추기', lambda 입력, 출력, *a: Path(출력).write_bytes(Path(입력).read_bytes())),
+            patch.object(hf, '_줄서서돌리기', lambda 이름, 할일, 상한, 명령: self.로컬명령.append(('줄', 명령)) or 0),
+            patch.object(hf, '_낮게돌리기', lambda 명령: self.로컬명령.append(('cpu', 명령)) or 0),
+            patch.object(hf, '_로컬받아쓰기', lambda 파일들, 언어, 모델='large-v3': [
+                {'파일': str(f), '글': '로컬 글', '엔진': '로컬', '왕복초': 1.0} for f in 파일들]),
+        ]
+        for p in self.patches2:
+            p.start()
+
+    def tearDown(self):
+        for p in self.patches2:
+            p.stop()
+        super().tearDown()
+
+    def test_다_되면_로컬은_안_돈다_파일이름은_로컬_도구와_같다(self):
+        out = hf.목소리떼기(self.폴더 / '떼기', self.입력, 남에게보내도됨=True)
+        self.assertEqual(self.로컬명령, [])
+        self.assertEqual(len(self.불린space), 3)
+        for 이름 in ('가', '나', '다'):
+            self.assertTrue((self.폴더 / '떼기' / f'{이름}_목소리.wav').exists())
+            self.assertTrue((self.폴더 / '떼기' / f'{이름}_바탕.wav').exists())
+        기록 = json.loads((self.폴더 / '떼기' / '떼기기록.json').read_text(encoding='utf-8'))
+        self.assertEqual({x['엔진'] for x in 기록}, {'허깅페이스 BS-RoFormer'})
+        self.assertEqual(out['코드'], 0)
+
+    def test_몫이_모자라면_그_뒤는_허깅페이스를_안_부르고_줄로(self):
+        self.hf결과 = ['ok', '한도']
+        with contextlib.redirect_stderr(io.StringIO()):
+            out = hf.목소리떼기(self.폴더 / '떼기', self.입력, 남에게보내도됨=True)
+        self.assertEqual(len(self.불린space), 2)                       # 셋째는 부르지 않는다
+        self.assertEqual(len(self.로컬명령), 1)
+        종류, 명령 = self.로컬명령[0]
+        self.assertEqual(종류, '줄')
+        self.assertEqual(명령[-3:], [self.입력[1], self.입력[2], '--gpu'])   # 남은 둘만 · GPU로
+        self.assertIn('몫 밖', out['로컬로간까닭'])
+
+    def test_두_번_잇달아_실패하면_나머지는_로컬로(self):
+        self.hf결과 = ['실패', '실패']
+        with contextlib.redirect_stderr(io.StringIO()):
+            hf.목소리떼기(self.폴더 / '떼기', self.입력, 남에게보내도됨=True, cpu=True)
+        self.assertEqual(len(self.불린space), 2)
+        종류, 명령 = self.로컬명령[0]
+        self.assertEqual(종류, 'cpu')
+        self.assertEqual(명령[-3:], self.입력)
+        self.assertNotIn('--gpu', 명령)
+
+    def test_확인이_없으면_모두_로컬(self):
+        with contextlib.redirect_stderr(io.StringIO()):
+            out = hf.목소리떼기(self.폴더 / '떼기', self.입력)
+        self.assertEqual(self.불린space, [])
+        self.assertEqual(self.로컬명령[0][1][-4:], [*self.입력, '--gpu'])
+        self.assertIn('--남에게보내도됨', out['로컬로간까닭'])
+
+    def test_받아쓰기는_허깅페이스_먼저_남은_것은_로컬_차례는_그대로(self):
+        self.hf결과 = ['ok', '한도']
+        with contextlib.redirect_stderr(io.StringIO()):
+            out = hf.받아쓰기(self.입력, 남에게보내도됨=True)
+        self.assertEqual([x['파일'] for x in out['결과']], self.입력)
+        self.assertEqual([x['글'] for x in out['결과']], ['잠이 와요', '로컬 글', '로컬 글'])
+        self.assertEqual(out['결과'][0]['엔진'], '허깅페이스 whisper-large-v3')
+
+    def test_없는_파일은_아무것도_부르기_전에_막는다(self):
+        with self.assertRaises(FileNotFoundError):
+            hf.받아쓰기([self.입력[0], 'Z:/없다.wav'], 남에게보내도됨=True)
+        self.assertEqual(self.불린space, [])
+
+
 class 명령줄시험(바탕):
     def test_한도_모자람은_끝_코드_2(self):
         self.한도들 = [원본(10)]

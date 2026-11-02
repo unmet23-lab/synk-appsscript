@@ -19,6 +19,11 @@
   python -X utf8 tools/허깅페이스.py 부르기 <space> [--api /이름] [--인자 '<JSON 배열>'] [--이름인자 '<JSON 객체>']
          [--예상초 N] [--배수 1|2] [--여유 30] [--받을곳 폴더] [--남에게보내도됨] [--메모 글] [--json]
          (파일은 JSON 안에 {"$파일": "경로"}로 적는다)
+  허깅페이스 먼저 · 남은 것만 로컬(결과가 같은 일 — 11-02 유호님 「가능한것들은 전부 먼저 허깅페이스 gpu 먼저」):
+  python -X utf8 tools/허깅페이스.py 목소리떼기 <출력폴더> <입력…> --남에게보내도됨 [--로컬만] [--cpu]
+         → <이름>_목소리.wav · <이름>_바탕.wav(로컬 Demucs 목소리떼기.py와 같은 이름), 엔진은 떼기기록.json
+  python -X utf8 tools/허깅페이스.py 받아쓰기 <파일…> --남에게보내도됨 [--로컬만] [--언어 ko] [--json]
+         (--남에게보내도됨이 없으면 모두 로컬. 몫 밖 · 멈춤 · Space 두 번 잇단 실패면 남은 것만 로컬 — 떼기는 공용 GPU 줄로)
   python -X utf8 tools/허깅페이스.py 기록 [--날 2026-11-02]
   python -X utf8 tools/허깅페이스.py 풀기 --확인
   (모듈로) sys.path에 tools를 넣고 from 허깅페이스 import 지키며_부르기, 한도지키기, 한도읽기
@@ -357,6 +362,153 @@ def 살펴보기(space: str) -> dict:
             '비공개': 정보.private, 'duration': duration줄[:20], 'api': api목록}
 
 
+# ── 허깅페이스 먼저 · 남은 것만 로컬 ──────────────────────────────────────
+# 11-02 유호님 「가능한것들은 전부 먼저 허깅페이스 gpu 먼저 사용하고나서 남은걸 로컬로」. 허깅페이스로 해도 결과가 같은
+# 일만 여기 둔다(목소리 떼기 · 받아쓰기 확인). 결과가 달라지는 일(얼굴 업스케일 · 그림 생성)은 로컬이 주력이다.
+# 몫이 모자라거나 · 멈춤이거나 · Space가 두 번 잇달아 실패하면(실패도 몫을 깎는다) 남은 것을 로컬로 돌린다.
+
+def _경로(환경, 기본) -> Path:
+    return Path(os.environ.get(환경) or 기본)
+
+
+로컬 = {
+    'demucs파이썬': _경로('SYNK_DEMUCS_PY', r'C:\SYNK-LoRA\tools\demucs\venv\Scripts\python.exe'),
+    'demucs떼기': _경로('SYNK_DEMUCS_SCRIPT', r'C:\SYNK-LoRA\tools\demucs\목소리떼기.py'),
+    '차례': _경로('SYNK_GPU_QUEUE', Path.home() / 'Documents' / 'synk-vendor' / '_공용차례' / '차례.py'),
+}
+떼기space = 'hugging-apps/bs-roformer-leap-audio-separator'
+받아쓰기space = 'hf-audio/whisper-large-v3'
+
+
+def _소리맞추기(입력, 출력, 표본율=44100, 채널=2) -> None:
+    """로컬 목소리떼기.py와 같은 꼴(44.1kHz 스테레오 16비트 wav)로 — 영상 파일도 소리만 뽑는다."""
+    import subprocess
+    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(입력), '-vn', '-ac', str(채널), '-ar', str(표본율),
+                    '-c:a', 'pcm_s16le', str(출력)], check=True, stdin=subprocess.DEVNULL)
+
+
+def _낮게돌리기(명령: list) -> int:
+    """CPU로 돌 때 다른 세션 브라우저가 멈추지 않게 가장 낮은 우선순위로(현장노트 영상 「Demucs CPU」)."""
+    import subprocess
+    return subprocess.run(명령, stdin=subprocess.DEVNULL, creationflags=getattr(subprocess, 'IDLE_PRIORITY_CLASS', 0)).returncode
+
+
+def _줄서서돌리기(이름: str, 할일: str, 상한분: int, 명령: list) -> int:
+    """공용 GPU 줄(synk-vendor/_공용차례/차례.py gpu 돌리기)에 서서 돌린다 — 차례가 오면 돌고 끝나면 결과 코드를 준다."""
+    import subprocess
+    return subprocess.run([sys.executable, '-X', 'utf8', str(로컬['차례']), 'gpu', '돌리기', 이름, 할일,
+                           '--상한', str(max(1, min(240, 상한분))), '--', *명령], stdin=subprocess.DEVNULL).returncode
+
+
+def _허깅페이스먼저(입력들: list, 한개: callable, 로컬만: bool, 남에게보내도됨: bool, 일이름: str):
+    """입력마다 허깅페이스로 해 보고 (해낸 것, 남은 것, 까닭)을 준다. 한개(입력)는 해낸 결과를 돌려준다."""
+    if 로컬만:
+        return [], list(입력들), '--로컬만'
+    if not 남에게보내도됨:
+        return [], list(입력들), '남의 Space에 보내도 되는 자료라는 --남에게보내도됨이 없어 로컬로(얼굴 · 고객 · 학생 자료는 보내지 않는다)'
+    해냄, 남음, 까닭, 잇단실패 = [], [], '', 0
+    for i, 입력 in enumerate(입력들):
+        if 까닭:
+            남음.append(입력)
+            continue
+        try:
+            해냄.append(한개(입력))
+            잇단실패 = 0
+        except (한도모자람, 멈춰있음) as e:
+            까닭 = f'허깅페이스 몫 밖: {e}'
+            남음.append(입력)
+        except Exception as e:  # noqa: BLE001 — Space 쪽 실패는 로컬로 넘긴다
+            잇단실패 += 1
+            남음.append(입력)
+            print(f'{일이름} 허깅페이스 실패({Path(str(입력)).name}): {type(e).__name__}: {str(e)[:200]}', file=sys.stderr)
+            if 잇단실패 >= 2:
+                까닭 = 'Space가 두 번 잇달아 실패해 나머지는 로컬로(실패한 호출도 몫을 깎는다)'
+    return 해냄, 남음, 까닭
+
+
+def 목소리떼기(출력폴더, 입력들: list, 로컬만=False, cpu=False, 남에게보내도됨=False, 메모='') -> dict:
+    """허깅페이스 BS-RoFormer 먼저, 남은 것만 로컬 Demucs(공용 GPU 줄 · --cpu면 낮은 우선순위 CPU).
+    결과는 로컬 목소리떼기.py와 같은 이름 `<이름>_목소리.wav` · `<이름>_바탕.wav`, 엔진은 `떼기기록.json`에 남긴다."""
+    import tempfile
+    출력폴더 = Path(출력폴더)
+    출력폴더.mkdir(parents=True, exist_ok=True)
+    for x in 입력들:
+        if not Path(x).is_file():
+            raise FileNotFoundError(f'뗄 파일이 없다: {x}')
+
+    def 한개(입력):
+        이름 = Path(입력).stem
+        with tempfile.TemporaryDirectory() as 임시:
+            wav = Path(임시) / f'{이름}.wav'
+            _소리맞추기(입력, wav)
+            out = 지키며_부르기(떼기space, 인자=[{'$파일': str(wav)}, 'Standard — Vocals'], 받을곳=Path(임시) / '받음',
+                            남에게보내도됨=True, 메모=메모 or f'목소리떼기 {이름}')
+            목소리, 바탕 = out['결과']
+            _소리맞추기(목소리, 출력폴더 / f'{이름}_목소리.wav')
+            _소리맞추기(바탕, 출력폴더 / f'{이름}_바탕.wav')
+        return {'파일': str(입력), '엔진': '허깅페이스 BS-RoFormer', '왕복초': out['왕복초'], '쓴초': out['쓴초']}
+
+    해냄, 남음, 까닭 = _허깅페이스먼저(입력들, 한개, 로컬만, 남에게보내도됨, '목소리떼기')
+    코드 = 0
+    if 남음:
+        print(f'로컬 Demucs로 {len(남음)}개 — {까닭 or "허깅페이스 실패"}', file=sys.stderr)
+        명령 = [str(로컬['demucs파이썬']), '-X', 'utf8', str(로컬['demucs떼기']), str(출력폴더), *map(str, 남음)]
+        if cpu:
+            코드 = _낮게돌리기(명령)
+        else:
+            코드 = _줄서서돌리기('목소리떼기-허깅페이스밖', f'목소리 떼기 {len(남음)}개(허깅페이스 몫 밖)', 10 + 2 * len(남음),
+                           [*명령, '--gpu'])
+        엔진 = '로컬 Demucs htdemucs_ft' + (' CPU' if cpu else ' GPU')
+        해냄 += [{'파일': str(x), '엔진': 엔진 if 코드 == 0 else f'{엔진} 실패(코드 {코드})'} for x in 남음]
+    기록파일 = 출력폴더 / '떼기기록.json'
+    try:
+        옛 = json.loads(기록파일.read_text(encoding='utf-8'))
+    except (FileNotFoundError, json.JSONDecodeError):
+        옛 = []
+    _json쓰기(기록파일, 옛 + [{**x, '때': dt.datetime.now(KST).isoformat(timespec='seconds')} for x in 해냄])
+    return {'결과': 해냄, '로컬로간까닭': 까닭 if 남음 else '', '코드': 코드}
+
+
+def _로컬받아쓰기(파일들: list, 언어: str | None, 모델: str = 'large-v3') -> list:
+    """faster-whisper CPU int8(이 PC는 CUDA 12 dll이 없어 GPU로 못 돈다 — 현장노트 영상) · 이 프로세스를 낮은 우선순위로."""
+    if sys.platform == 'win32':
+        import ctypes
+        ctypes.windll.kernel32.SetPriorityClass(ctypes.windll.kernel32.GetCurrentProcess(), 0x40)   # IDLE_PRIORITY_CLASS
+    from faster_whisper import WhisperModel
+    m = WhisperModel(모델, device='cpu', compute_type='int8')
+    out = []
+    for f in 파일들:
+        시작 = time.time()
+        조각, _ = m.transcribe(str(f), language=언어, beam_size=5)
+        out.append({'파일': str(f), '글': ' '.join(s.text.strip() for s in 조각).strip(),
+                    '엔진': f'로컬 faster-whisper {모델} CPU', '왕복초': round(time.time() - 시작, 1)})
+    return out
+
+
+def 받아쓰기(파일들: list, 로컬만=False, 남에게보내도됨=False, 언어: str | None = None, 메모='') -> dict:
+    """허깅페이스 whisper-large-v3 먼저, 남은 것만 로컬 faster-whisper large-v3. 글만(낱말 시각 없음)."""
+    import tempfile
+    for x in 파일들:
+        if not Path(x).is_file():
+            raise FileNotFoundError(f'받아쓸 파일이 없다: {x}')
+
+    def 한개(입력):
+        with tempfile.TemporaryDirectory() as 임시:
+            wav = Path(임시) / f'{Path(입력).stem}.wav'
+            _소리맞추기(입력, wav, 16000, 1)   # 올리는 양을 줄인다(whisper는 16kHz 모노로 듣는다)
+            out = 지키며_부르기(받아쓰기space, 인자=[{'$파일': str(wav)}, 'transcribe'], 받을곳=Path(임시) / '받음',
+                            남에게보내도됨=True, 메모=메모 or f'받아쓰기 {Path(입력).name}')
+        return {'파일': str(입력), '글': str(out['결과']).strip(), '엔진': '허깅페이스 whisper-large-v3',
+                '왕복초': out['왕복초'], '쓴초': out['쓴초']}
+
+    해냄, 남음, 까닭 = _허깅페이스먼저(파일들, 한개, 로컬만, 남에게보내도됨, '받아쓰기')
+    if 남음:
+        print(f'로컬 받아쓰기로 {len(남음)}개 — {까닭 or "허깅페이스 실패"}', file=sys.stderr)
+        해냄 += _로컬받아쓰기(남음, 언어)
+    차례 = {str(x): i for i, x in enumerate(파일들)}
+    return {'결과': sorted(해냄, key=lambda x: 차례[x['파일']]), '로컬로간까닭': 까닭 if 남음 else ''}
+
+
 # ── 명령줄 ─────────────────────────────────────────────────────────────
 
 def _명령_한도(a) -> int:
@@ -396,6 +548,23 @@ def _명령_부르기(a) -> int:
     if out['넘침']:
         print('넘친 초가 늘었다 — 멈춤을 걸었다. 결제 화면에서 크레딧이 나갔는지 보고 `풀기 --확인`', file=sys.stderr)
         return 3
+    return 0
+
+
+def _명령_목소리떼기(a) -> int:
+    out = 목소리떼기(a.출력폴더, a.입력, a.로컬만, a.cpu, a.남에게보내도됨, a.메모)
+    for x in out['결과']:
+        print(f'{Path(x["파일"]).name}  {x["엔진"]}' + (f' · 왕복 {x["왕복초"]}초 · 쓴 {x["쓴초"]}초' if '왕복초' in x else ''))
+    return out['코드']
+
+
+def _명령_받아쓰기(a) -> int:
+    out = 받아쓰기(a.파일, a.로컬만, a.남에게보내도됨, a.언어, a.메모)
+    if a.json:
+        print(json.dumps(out, ensure_ascii=False))
+    else:
+        for x in out['결과']:
+            print(f'{Path(x["파일"]).name}  [{x["엔진"]} · {x["왕복초"]}초]  {x["글"]}')
     return 0
 
 
@@ -452,6 +621,22 @@ def main(argv=None) -> int:
     s.add_argument('--메모', default='')
     s.add_argument('--json', action='store_true')
     s.set_defaults(fn=_명령_부르기)
+    s = sub.add_parser('목소리떼기', help='허깅페이스 먼저, 남은 것만 로컬 Demucs')
+    s.add_argument('출력폴더')
+    s.add_argument('입력', nargs='+')
+    s.add_argument('--로컬만', action='store_true')
+    s.add_argument('--cpu', action='store_true', help='로컬로 갈 때 공용 GPU 줄 대신 낮은 우선순위 CPU')
+    s.add_argument('--남에게보내도됨', action='store_true', help='얼굴 · 고객 · 학생 자료가 아니라는 확인(없으면 모두 로컬)')
+    s.add_argument('--메모', default='')
+    s.set_defaults(fn=_명령_목소리떼기)
+    s = sub.add_parser('받아쓰기', help='허깅페이스 먼저, 남은 것만 로컬 faster-whisper')
+    s.add_argument('파일', nargs='+')
+    s.add_argument('--로컬만', action='store_true')
+    s.add_argument('--남에게보내도됨', action='store_true', help='얼굴 · 고객 · 학생 자료가 아니라는 확인(없으면 모두 로컬)')
+    s.add_argument('--언어', help='로컬로 갈 때 언어(ko 등, 없으면 알아서)')
+    s.add_argument('--메모', default='')
+    s.add_argument('--json', action='store_true')
+    s.set_defaults(fn=_명령_받아쓰기)
     s = sub.add_parser('기록'); s.add_argument('--날'); s.set_defaults(fn=_명령_기록)
     s = sub.add_parser('풀기'); s.add_argument('--확인', action='store_true'); s.set_defaults(fn=_명령_풀기)
     a = p.parse_args(argv)

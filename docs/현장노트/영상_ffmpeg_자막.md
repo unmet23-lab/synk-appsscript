@@ -25,7 +25,7 @@
 - 멈춘 렌더의 자식 프로세스가 살아남아 새 렌더와 겹친다 → 멈춘 뒤 `taskkill /PID <pid> /T /F`로 끝낸다 ([자세히](#멈춘-렌더-스크립트의-자식-프로세스가-살아남아-새-렌더와-겹친다))
 - 원본 카메라를 컷 처음 · 끝 두 장으로 재면 천천히 다가감 · 초점 들어옴을 「고정」으로 적는다 → 이웃 프레임마다 쌓아 시작 · 멈춤 · 빠르기 · 흔들림 · 초점까지 재고 여섯 프레임을 눈으로 본다 ([자세히](#원본-광고의-카메라-움직임을-위상-상관으로-재면-다가가는-컷을-고정으로-적는다--특징점-맞춤으로-배율까지-잰다-2026-10-25-claude))
 - 로컬 MiniMax H3 공개판은 대한민국이 이용 제외 지역이다(10-07 신청은 심사 대기) → 공모 · 공개 결과물에 쓰기 전에 허가 상태부터 본다. 가중치는 10-29 공간 정리로 지웠으니 쓰려면 `h3_받기.sh`(37GiB)부터 ([결정](../_ops/결정.md) 10-29) ([자세히](#로컬-minimax-h3-공개판은-대한민국이-이용-제외-지역이다--공모--공개-결과물에-쓰기-전에-허가-상태부터-본다-2026-10-29-claude))
-- GPU 작업을 줄 없이 띄우면 남의 작업과 VRAM을 나눠 둘 다 멈춘다(10-29 36분) → `synk-vendor/_공용차례/차례.py gpu 돌리기`로 줄을 서고, 줄 밖 작업이 오래 잡고 있으면 ZeroGPU로 ([자세히](#gpu-작업을-줄-없이-띄우면-남의-작업과-vram을-나눠-둘-다-멈춘다--공용-gpu-차례로-하나씩-돌린다-2026-10-29-claude))
+- GPU 작업을 줄 없이 띄우면 남의 작업과 VRAM을 나눠 둘 다 멈춘다(10-29 36분) → `synk-vendor/_공용차례/차례.py gpu 돌리기`로 줄을 서고, 목소리 떼기 · 받아쓰기 확인은 줄에 서기 전에 허깅페이스 먼저(`tools/허깅페이스.py 목소리떼기|받아쓰기`, [허깅페이스 노트](허깅페이스.md#목소리-떼기받아쓰기는-허깅페이스-먼저-남은-것만-로컬로-돈다-2026-11-02-claude)) ([자세히](#gpu-작업을-줄-없이-띄우면-남의-작업과-vram을-나눠-둘-다-멈춘다--공용-gpu-차례로-하나씩-돌린다-2026-10-29-claude))
 - 남이 쓰는 ComfyUI 환경에 노드를 깔면 패키지 수십 개가 바뀐다 → `--no-deps --target`으로 따로 깔아 돌린다 ([자세히](#comfyui-노드-패키지를-남이-쓰는-comfyui-환경에-깔지-않고-따로-돌린다))
 
 ## 목차
@@ -988,7 +988,7 @@
 ### 대사 클립의 목소리만 떼기(Demucs 4.1) — CPU로 돌리면 크롬이 멈춘다
 - 증상: 10-19 한강 v34 대사 클립 14개(4~11초)를 Demucs로 떼는 동안 크롬 확장의 스크린샷·확대가 「Script injection timed out」·「Page.captureScreenshot timed out」으로 연달아 실패했다(Gemini 작업이 멈춤).
 - 원인: GPU를 다른 작업(LoRA 학습, 15.7GB·100%)이 쓰고 있어 Demucs를 CPU로 돌렸고, `htdemucs_ft`(모델 넷 묶음)·`shifts=2`가 코어를 다 썼다(4분에 CPU 1,300초). 클립 하나에 30~60초.
-- 고침: 깔기는 `C:/SYNK-LoRA/tools/demucs/`에 `python -m venv --system-site-packages venv`(시스템 torch 공유) → `pip install demucs`(4.1.0, 파이썬 3.14 휠 있음 — lameenc·sphn, torchaudio를 안 씀). 가중치는 첫 실행에 허깅페이스 `adefossez/HTDemucs-ft`에서 받는다(심볼릭 링크 경고는 `HF_HUB_DISABLE_SYMLINKS_WARNING=1`). 실행 `venv/Scripts/python.exe -X utf8 목소리떼기.py <출력 폴더> <입력…> [--gpu]` — ffmpeg로 44.1kHz 스테레오를 읽고 `<이름>_목소리.wav`(vocals)·`_바탕.wav`(나머지 셋 합)를 쓴다. 브라우저 작업과 겹치면 시작 직후 `(Get-Process -Id <pid>).PriorityClass='Idle'`로 우선순위를 낮춘다 — 그러자 크롬이 바로 돌아왔고 떼기는 그대로 끝났다.
+- 고침: 11-02부터는 `python -X utf8 tools/허깅페이스.py 목소리떼기 <출력폴더> <입력…> --남에게보내도됨`이 허깅페이스 BS-RoFormer로 먼저 떼고 남은 것만 이 도구로 넘긴다(같은 파일 이름, [허깅페이스 노트](허깅페이스.md#목소리-떼기받아쓰기는-허깅페이스-먼저-남은-것만-로컬로-돈다-2026-11-02-claude)). 깔기는 `C:/SYNK-LoRA/tools/demucs/`에 `python -m venv --system-site-packages venv`(시스템 torch 공유) → `pip install demucs`(4.1.0, 파이썬 3.14 휠 있음 — lameenc·sphn, torchaudio를 안 씀). 가중치는 첫 실행에 허깅페이스 `adefossez/HTDemucs-ft`에서 받는다(심볼릭 링크 경고는 `HF_HUB_DISABLE_SYMLINKS_WARNING=1`). 실행 `venv/Scripts/python.exe -X utf8 목소리떼기.py <출력 폴더> <입력…> [--gpu]` — ffmpeg로 44.1kHz 스테레오를 읽고 `<이름>_목소리.wav`(vocals)·`_바탕.wav`(나머지 셋 합)를 쓴다. 브라우저 작업과 겹치면 시작 직후 `(Get-Process -Id <pid>).PriorityClass='Idle'`로 우선순위를 낮춘다 — 그러자 크롬이 바로 돌아왔고 떼기는 그대로 끝났다.
 - 다시 확인: 원래 소리와 `_목소리.wav`를 같은 받아쓰기 모델로 받아써 대사가 같은지 본다.
 
 ### 타이포그래피 타이틀은 HTML + 시각 함수 + Playwright 프레임 찍기로 만든다
