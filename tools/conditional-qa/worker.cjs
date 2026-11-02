@@ -30,6 +30,12 @@ function sleptDuring(from, to, { platform = process.platform, run = cp.execFileS
   try { return /<Event[\s>]/.test(run('wevtutil.exe', ['qe', 'System', `/q:*[System[Provider[@Name='Microsoft-Windows-Kernel-Power'] and (EventID=42 or EventID=107) and TimeCreated[${range}]]]`, '/c:1', '/f:xml'], { encoding: 'utf8', windowsHide: true, timeout: 30_000 })); }
   catch { return false; }
 }
+function failureDisposition(error, startedAt, { slept = sleptDuring, now = new Date() } = {}) {
+  const interrupted = error.code === 'TEST_FAILURE' && slept(startedAt, now);
+  return { interrupted, status: error.code === 'TEST_FAILURE' && !interrupted ? 'failed' : 'retry',
+    publicationState: interrupted ? 'pending' : 'failure',
+    description: interrupted ? 'System sleep interrupted verification; awaiting a fresh complete run' : 'Local verification incomplete; inspect the private worker receipt' };
+}
 function extendQueue(state, head, commits) {
   github.validCommit(head);
   for (const commit of commits) {
@@ -118,12 +124,14 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring } = {}
         try { item.resumePending = !github.resumeWaitingWorkflow(item.commit); } catch (error) { item.resumeError = error.message.slice(0, 500); }
       } catch (error) {
         item.error = error.message.slice(0, 1000);
+        let publicationState = 'failure', description = 'Local verification incomplete; inspect the private worker receipt';
         if (item.status !== 'publish-pending') {
-          const interrupted = error.code === 'TEST_FAILURE' && slept(item.startedAt, new Date());
-          if (interrupted) item.error = `Interrupted by system sleep; verifying again. ${item.error}`.slice(0, 1000);
-          item.status = error.code === 'TEST_FAILURE' && !interrupted ? 'failed' : 'retry'; item.retryAt = Date.now() + 15 * 60_000;
+          const disposition = failureDisposition(error, item.startedAt, { slept });
+          if (disposition.interrupted) item.error = `Interrupted by system sleep; verifying again. ${item.error}`.slice(0, 1000);
+          item.status = disposition.status; item.retryAt = Date.now() + 15 * 60_000;
+          ({ publicationState, description } = disposition);
         }
-        try { github.publish(item.commit, 'failure', 'Local verification incomplete; inspect the private worker receipt'); } catch { item.publicationError = true; }
+        try { github.publish(item.commit, publicationState, description); } catch { item.publicationError = true; }
         write(queueFile, queue);
       }
       write(queueFile, queue);
@@ -143,4 +151,4 @@ if (require.main === module) {
   const promise = args.includes('--initialize') ? Promise.resolve(initialize(stateDir, args[args.indexOf('--initialize') + 1])) : tick(stateDir);
   promise.catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, due };
+module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, failureDisposition, due };

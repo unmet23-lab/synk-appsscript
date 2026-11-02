@@ -6,7 +6,7 @@ const root = path.resolve(__dirname, '..'), c = require('../tools/conditional-qa
 const { check } = require('../tools/conditional-qa/guard.cjs');
 const { childRun, temporaryEnvironment } = require('../tools/conditional-qa/run.cjs');
 const { materialize, write } = require('../tools/conditional-qa/inputs.cjs');
-const { extendQueue, nextItem, advanceTurn, acquire, sleptDuring, due } = require('../tools/conditional-qa/worker.cjs');
+const { extendQueue, nextItem, advanceTurn, acquire, sleptDuring, failureDisposition, due } = require('../tools/conditional-qa/worker.cjs');
 const { plan } = require('../tools/conditional-qa/install.cjs');
 const github = require('../tools/conditional-qa/github.cjs');
 const { wait } = require('../tools/conditional-qa/wait-local.cjs');
@@ -93,6 +93,24 @@ test('the scheduled worker runs at normal priority, and only a logged sleep turn
   assert.deepEqual(['queued', 'running', 'publish-pending', 'passed', 'failed'].map(status => due({ status })), [true, true, true, false, false]);
   assert.equal(due({ status: 'retry', retryAt: Date.now() + 60_000 }), false); assert.equal(due({ status: 'retry', retryAt: Date.now() - 1 }), true);
 });
+test('only an event-backed sleep interruption is pending; real failures are still red and neither can pass', () => {
+  const from = '2026-11-02T13:01:39.573Z', now = new Date('2026-11-02T13:13:35.839Z');
+  for (const [code, loggedSleep, expectedStatus, expectedPublication] of [
+    ['TEST_FAILURE', true, 'retry', 'pending'], ['TEST_FAILURE', false, 'failed', 'failure'],
+    ['EIO', true, 'retry', 'failure'], [undefined, false, 'retry', 'failure'],
+  ]) {
+    let asked = 0;
+    const error = Object.freeze({ code, message: 'original failure' });
+    const result = failureDisposition(error, from, { now, slept: (start, end) => {
+      asked++; assert.equal(start, from); assert.equal(end, now); return loggedSleep;
+    } });
+    assert.equal(asked, code === 'TEST_FAILURE' ? 1 : 0);
+    assert.equal(result.status, expectedStatus); assert.equal(result.publicationState, expectedPublication);
+    assert.notEqual(result.status, 'passed'); assert.notEqual(result.publicationState, 'success');
+    assert.equal(error.message, 'original failure');
+  }
+});
+
 test('the newest commit runs before the backlog; historical entries and failed proof are preserved', () => {
   const commits = ['a', 'b', 'c', 'd', 'e'].map(x => x.repeat(40));
   const queue = { seen: commits[2], items: [
