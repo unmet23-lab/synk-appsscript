@@ -617,6 +617,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 흉내 클론의 `remote.origin.uploadpack`에 필터를 허락하는 설정을 실은 upload-pack 명령을 줬다. sparse 패턴은 `git sparse-checkout set --stdin`으로 넣는다.
 - 다시 확인: 같은 흉내 클론으로 personal_source 세 단계(고정 커밋 확보 · 릴리스 --check · 시험 65/65)가 CI 초록과 같은 결과를 냈다(talk `78b237b2` 굽기).
 
+### 올리기 끝에 「따라가기: 실패 — git cat-file … 실패(3221225794)」와 「운영 사본: 실패 — git 저장소가 아니다」가 같이 나오면 push는 된 것이다 (2026-11-03 Claude)
+- 증상: 옛 제안 카드 13개를 한꺼번에 연 새벽, 바로올리기가 push까지 마친 뒤 공용 작업본 따라가기에서 `git cat-file --filters`가 코드 3221225794(0xC0000142)로 죽고, 운영 사본 갱신도 같은 회차에 실패로 찍혔다. 다른 세션도 같은 코드를 만났다. 그때 `conhost.exe` 145개 · `node.exe` 66개 · `claude.exe` 43개가 떠 있었다.
+- 원인: 프로세스가 DLL 초기화에 실패한 것이다. 동시 프로세스가 너무 많아 데스크톱 쪽 자원이 모자랐다고 본다(추정, 재현 안 함). 저장소가 깨진 것은 아니다.
+- 고침: 커밋을 다시 올리지 않는다. 동시 세션을 줄이거나 PC를 다시 시작한 뒤 `node tools/운영사본.js`와 `node tools/바로올리기.js 따라가기`(미리 보기)로 다시 본다.
+- 다시 확인: 11-03 05:45 재시작 뒤 운영 사본은 origin과 0커밋 차이로 돌아왔고, 따라가기 미리 보기도 이 코드 없이 끝났다.
+
 ## 워크트리·연결 폴더·공간 정리
 
 ### 워크트리에서 `sync-atlas --all --local`이 Study 묶음의 `Cannot find module …/node_modules/esbuild`로 멈춰 날 사본(path-vr trail 등)을 쓰지 않는다 — Study 빌드만 esbuild를 저장소 뿌리 경로로 찾는다 (2026-10-31 Claude)
