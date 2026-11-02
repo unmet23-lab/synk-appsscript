@@ -168,7 +168,15 @@ a.pill { display: inline-flex; align-items: center; justify-content: center; tex
 .tick.on::after { content: ''; position: absolute; left: 6px; top: 3px; width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
 .lead.passed { display: flex; gap: 10px; align-items: flex-start; color: var(--ink); }
 .lead.passed .tick { margin-top: 3px; }
-.next-ep { border-radius: 14px; padding: 11px 13px; margin-bottom: 12px; background: linear-gradient(135deg, rgba(139,123,255,.16), rgba(111,211,255,.05)); box-shadow: inset 0 0 0 1px rgba(139,123,255,.25); }
+.next-ep { border-radius: 14px; overflow: hidden; margin: 6px 0 10px; background: linear-gradient(135deg, rgba(139,123,255,.16), rgba(111,211,255,.05)); box-shadow: inset 0 0 0 1px rgba(139,123,255,.25); }
+.next-img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; object-position: 50% 30%; }
+.next-body { padding: 10px 13px 11px; }
+.next-body .strong { font-size: 17px; margin: 0 0 2px; }
+.memo, .learned { border-radius: 14px; padding: 10px 13px; margin-bottom: 8px; background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 1px rgba(255,255,255,.09); }
+.memo .line, .learned .line { margin: 0; font-weight: 650; color: var(--ink); }
+.memo .mean, .learned .mean { margin: 3px 0 0; }
+.takes summary { cursor: pointer; }
+.takes[open] summary { margin-bottom: 8px !important; }
 .take-list { display: flex; flex-wrap: wrap; gap: 6px; }
 .take-list .ghost { height: 32px; font-size: 12px; }
 .foot { margin-top: 8px; }

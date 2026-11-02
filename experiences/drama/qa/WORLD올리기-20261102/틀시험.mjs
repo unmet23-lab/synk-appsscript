@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // 드라마를 WORLD 게임 틀 안에서 여는 길의 브라우저 리허설(2026-11-02). 운영 계정 · talk · DB를 건드리지 않는다.
-//   node experiences/drama/qa/WORLD올리기-20261102/틀시험.mjs [--port 8797] [--후보 <공개 후보 폴더 …/world>]
+//   node experiences/drama/qa/WORLD올리기-20261102/틀시험.mjs [--port 8797] [--후보 <공개 후보 폴더 …/world>] [--받아적기 <json>]
 // · / = 부모 창(WORLD 대역): 합성 계정의 학습 호스트(SYNKLearningHost — 드라마 묶음의 createRehearsalHost, 서버 대신 이 창 메모리)와
 //   드라마 통로(SYNKDramaHost)를 세운 뒤 /drama/를 같은 출처 게임 틀로 연다(app-shell launchGame과 같은 allow).
 // · 드라마 통로의 take는 /fake/take로 간다: talk와 같은 판정기(tools/lib/드라마판정.mjs judgeLine · nextTake)와 같은 대사 은행(dramaLines)으로
@@ -31,6 +31,8 @@ const TRANSCRIPTS = {
  's1e01-t9': ['선배님, 혹시 편의점이 어디에 있는지 아세요?'], // 11-03 새 상황 t4 → t9
  's1e01-t6': ['길을 잃었어요. 새솔대 정문이 어디에 있는지 아세요?'], // 11-03 C(7~10일 뒤 문항, 설계 §17)
 };
+// --받아적기 <json>: 대사마다의 받아 적힌 글 차례를 바꾼다(쇼케이스 영상판 녹화 — 콘티 흐름의 말을 그대로, 판정은 같은 판정기).
+if (opt('--받아적기')) Object.assign(TRANSCRIPTS, JSON.parse(fs.readFileSync(opt('--받아적기'), 'utf8')));
 const used = new Map();
 const log = [];
 const TYPES = new Map([['.html', 'text/html; charset=utf-8'], ['.mjs', 'text/javascript; charset=utf-8'], ['.js', 'text/javascript; charset=utf-8'], ['.css', 'text/css; charset=utf-8'], ['.json', 'application/json'],

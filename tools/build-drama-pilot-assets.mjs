@@ -66,6 +66,9 @@ export const JOBS = [
  { out: 'taeo-still-blur.webp', kind: 'image', note: '데스크톱 바탕용 흐린 사진',
    run: (src, dst) => ff(['-i', src, '-vf', 'scale=144:256,gblur=sigma=6,scale=288:512', '-c:v', 'libwebp', '-quality', '60', ...CLEAN, dst]),
    src: 'taeo-still.png' },
+ { out: 'next-fair.webp', kind: 'image', note: '오늘 기록의 다음 회 예고 그림 — 1화 칸 15(박람회, 태오 없음)',
+   run: (src, dst) => ff(['-i', src, '-vf', 'scale=720:-2:flags=lanczos', '-c:v', 'libwebp', '-quality', '80', ...CLEAN, dst]),
+   src: '칸15_박람회.webp' },
 ];
 
 const MP3 = [

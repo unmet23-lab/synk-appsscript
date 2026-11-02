@@ -137,7 +137,7 @@ export const PILOT = {
  assets: {
   manifest: '/media/manifest.json',
   // 재생에 쓰는 파일 전부(제작 도구가 만들고 manifest.json에 바이트·sha256을 적는다). 코치 녹음·쇼케이스 영상은 만들어진 것만.
-  media: ['taeo-listen.mp4', 'taeo-still.webp', 'taeo-still-blur.webp',
+  media: ['taeo-listen.mp4', 'taeo-still.webp', 'taeo-still-blur.webp', 'next-fair.webp', // next-fair: 오늘 기록 예고 그림 — 화면은 pilot.mjs FALLBACK 경로로 부른다
    'senior-01.mp3', 'senior-03.mp3', 'senior-04.mp3', 'senior-ask-1.mp3', 'senior-ask-2.mp3', 'senior-ask-3.mp3',
    'model-6.mp3', 'model-7.mp3', 'model-8.mp3', 'SUIT-Variable.woff2',
    ...['InterTight-Medium.woff2', 'InterTight-Bold.woff2', 'DMMono-Regular.woff2', 'DMMono-Medium.woff2', ...Object.values(COACH_VOICE).map((v) => v.file), ...SHOWCASE_CUTS.flatMap((c) => cutParts(c).map((p) => cutFile(c, p)))].filter(built)],

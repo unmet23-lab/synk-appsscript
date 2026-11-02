@@ -51,7 +51,7 @@ const FALLBACK = {
   noteOther: { text: '이 장면을 다시 해 볼까요?', audio: null },
   wrap: { text: '오늘은 여기까지! 수고했어요.', audio: null },
  },
- assets: { listenLoop: 'media/taeo-listen.mp4', poster: 'media/taeo-still.webp', backdrop: 'media/taeo-still-blur.webp' },
+ assets: { listenLoop: 'media/taeo-listen.mp4', poster: 'media/taeo-still.webp', backdrop: 'media/taeo-still-blur.webp', nextImage: 'media/next-fair.webp' },
 };
 const NOTE_ORDER = { ending: 0, length: 1, missing: 2 };
 
@@ -943,7 +943,7 @@ async function studentTurn(item, s, ctx) {
    revealBlanks(!!L.endingMissed);
    orbMode('success', 'Nice');
    if (L.misses) celebrate(s);
-   await sleep(s, L.misses ? 1500 : 800);
+   await sleep(s, L.misses ? 2000 : 1200);
    if (!live(s)) return;
   }
   // pass · pending · 세 번째 어긋남 → 진행
@@ -1153,7 +1153,7 @@ function transferPanel(s, tr, T) {
  const promptKo = S.lang === 'ko' && tr.promptKo ? tr.promptKo : null;
  const p = choose(s, (go) => {
   if (micUnusable()) hideMic();
-  else orbMode('listening', T.tries ? 'Say it again' : 'Tap to speak', { action: () => go('record'), aria: T.tries ? tx('tryAgain') : tx('record') });
+  else orbMode('listening', obs?.kind === 'pass' && T.selfCheck !== 'differs' ? 'One more' : T.tries ? 'Say it again' : 'Tap to speak', { action: () => go('record'), aria: T.tries ? tx('tryAgain') : tx('record') });
   return [stepper('transfer'), h('div', { class: 'transfer' },
   h('p', { class: 'k' }, h('span', { class: 'dot', 'aria-hidden': 'true' }), 'New situation', h('b', {}, tx(isDelayed(tr.id) ? 'delayedTitle' : 'transferTitle'))),
   h('p', { class: 'lead' }, tx('transferLead')),
@@ -1224,6 +1224,12 @@ async function wrap({ replay = true } = {}) {
   const p = choose(s, (go) => [stepper('wrap'), h('div', { class: 'wrap' },
   h('p', { class: 'k' }, 'Today', h('b', {}, tx('episode'))),
   h('h2', {}, tx('wrapTitle')),
+  // 끝 그림 = 다음 회(콘티 56–60초). 칸 15에는 태오가 없다.
+  h('div', { class: 'next-ep' }, h('img', { class: 'next-img', src: { ...FALLBACK.assets, ...(S.boot.lesson.assets || {}) }.nextImage, alt: '', decoding: 'async' }),
+   h('div', { class: 'next-body' }, h('p', { class: 'eyebrow' }, tx('wrapNext')), h('p', { class: 'strong' }, tx('nextTitle')), h('p', { class: 'fine' }, tx('nextLine')))),
+  // 선배의 메모 · 오늘 배운 표현 — 쇼케이스 콘티 「오늘의 끝」 글(10-31 굽기 전 검수 반영본).
+  h('div', { class: 'memo' }, h('p', { class: 'eyebrow' }, tx('wrapMemoFrom')), h('p', { class: 'ko line', lang: 'ko' }, '처음엔 \'선배님\'이 안전해요. 나한텐 그냥 \'선배\'! —\u00a0태오'), S.lang === 'ko' ? null : h('p', { class: 'mean' }, tx('wrapMemoMean'))),
+  h('div', { class: 'learned' }, h('p', { class: 'eyebrow' }, tx('wrapLearned')), h('p', { class: 'ko line', lang: 'ko' }, '혹시 (장소)이/가 어디에 있는지 아세요?'), S.lang === 'ko' ? null : h('p', { class: 'mean' }, tx('wrapLearnedMean'))),
   h('ul', { class: 'log' },
    h('li', {}, tick(spoken > 0), h('div', {}, h('b', {}, tx('wrapSpoken')), h('p', {}, tx('wrapLines', spoken, items.length)),
     readAlong ? h('p', { class: 'fine' }, tx('wrapReadAlong', readAlong)) : null, h('p', { class: 'fine' }, tx('wrapAnalysis')[mode]),
@@ -1233,8 +1239,7 @@ async function wrap({ replay = true } = {}) {
    h('li', {}, tick(!!T?.spoke), h('div', {}, h('b', {}, tx('wrapTransfer')), h('p', {}, T?.spoke ? tx('wrapTransferTried') : T?.tries ? tx('wrapTransferUnheard') : T?.invalid ? tx('wrapTransferInvalid') : tx('wrapTransferNot')),
     hintState ? h('p', { class: 'fine' }, tx(hintState)) : null)),
   ),
-  h('div', { class: 'next-ep' }, h('p', { class: 'eyebrow' }, tx('wrapNext')), h('p', { class: 'strong' }, tx('nextTitle')), h('p', { class: 'fine' }, tx('nextLine'))),
-  h('div', { class: 'takes' }, h('p', { class: 'eyebrow' }, tx('myTakes')),
+  h('details', { class: 'takes', open: msg ? '' : null }, h('summary', { class: 'eyebrow' }, tx('myTakes')),
    S.takes.length ? h('div', { class: 'take-list' }, S.takes.map((k) => {
     const it = items.find((x) => x.id === k.lineId);
     const label = it ? `${it.text.slice(0, 14)}… · ${tx('takeLabel', k.n)}` : `${tx(isDelayed(k.lineId) ? 'delayedTitle' : 'transferTitle')} · ${tx('takeLabel', k.n)}`;

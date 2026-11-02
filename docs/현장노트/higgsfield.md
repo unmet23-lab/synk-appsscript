@@ -355,6 +355,24 @@
 - 고침: 머리 · 옷의 흠은 영상에서 고쳐지지 않으니 시작 그림에서 고친다([Gemini 사진](gemini_사진.md) 「AI 콘티 그림의 투블록 옆머리를…」). 고개를 돌리거나 옆얼굴이 드러나는 판은 사람 줄에 안경 · 머리 장신구를 빼지 않는다. 다가감은 쓰는 길이 안에서 1.2배쯤 될 수 있다고 보고 편집 창을 고른다.
 - 다시 확인: `재촬영_v40/_고침_1101b_옆머리/시댄스시험/재기.py <영상>`의 첫 장 배율 · `_머리.jpg`(0.25초마다 머리 둘레 + 실제 옆모습), 결론 모르는 Fable 검수.
 
+### 두 사람 대사 판이 nsfw로 막힌다 — 「freshman」 · 「body」가 미성년으로 읽힌 오탐, 어른이라고 사실대로 쓰면 지나간다 (2026-11-03 Claude)
+- 증상: 11-02 드라마 쇼케이스 식당 대사 판 C3 · C2 · C4가 웹 무제한에서 셋 다 nsfw 거절(0크레딧), 같은 인물의 C1만 통과.
+- 원인: 거절 판에만 「a young woman off-camera — the freshman」과 「the freshman's body」가 있었다. 대학 신입생 표현이 미성년으로 읽힌 것으로 보인다(추정).
+- 고침: 장면 · 대사 · 동작은 그대로 두고 머리에 「두 사람 모두 20대 성인 대학생」을 쓰고 body 표현을 뺐다(`experiences/drama/qa/쇼케이스-20261031/웹꾸러미.mjs`의 b판). 사실을 바로잡는 고침이지 정책을 피하는 고침이 아니다.
+- 다시 확인: b판 C4b · C3b · C2b 셋 다 통과, 받은 영상의 장면이 처음 지시와 같다.
+
+### 시댄스 웹은 시작 프레임을 무시하거나 대사 한 마디를 빼고 연기할 때가 있다 (2026-11-03 Claude)
+- 증상: C1이 시작 그림이 아니라 끝 그림 쪽 구도로 시작했다. C4는 대사 가운데 「도서관?」을 빼고 연기했다.
+- 원인: 모른다. 지시문과 소리 참고에는 그 말이 있었다.
+- 고침: 받은 뒤 첫 프레임과 받아쓰기를 확인한다. 뺀 말은 얹는 원래 녹음과 자막에서도 뺀다(`experiences/drama/pilot/content.mjs` SHOWCASE_CUTS의 text · meaning, 소리 참고 `ref-C4-도서관뺌.mp3`).
+- 다시 확인: 완성본 받아쓰기와 화면 자막이 같은 말이다.
+
+### node에서 부른 힉스필드 CLI만 「No workspace selected」로 멈춘다 — founder 환경은 셸에서 바꿔 부른다 (2026-11-03 Claude)
+- 증상: `spawnSync('higgsfield', …, {env: {...process.env, HOME: <founder>, USERPROFILE: <founder>}})`의 `account status`가 「No workspace selected」, 같은 값을 Git Bash에서 `export`한 뒤 부르면 founder 잔액이 나왔다.
+- 원인: 모른다(Windows에서 npm 전역 명령을 부르는 길이 달라 보인다). 설정 파일은 고치지 않았다.
+- 고침: 작은 굽기는 Bash에서 `export HOME=… USERPROFILE=…` 뒤 `higgsfield generate create …`로 부른다.
+- 다시 확인: 같은 셸의 `higgsfield account status --json` 메일이 founder@synk.im이다.
+
 ## Wan 3.0
 
 ### 끝 그림만, 또는 시작 그림 + 참고 미디어를 주면 422로 거절된다
