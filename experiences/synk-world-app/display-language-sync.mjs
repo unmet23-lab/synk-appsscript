@@ -3,14 +3,17 @@ import {savedLang,setLang} from '../brand-opening/world-lang.mjs';
 // 화면 언어의 계정 저장(10-19 1판). 고른 언어는 늘 이 기기(world-lang의 저장 키)에 있고, 계정이면 튜터 선택처럼
 // 생활 기록(synk.life-korean.progress.v1)의 display 칸에도 둔다. 서버의 Play 계약은 값 속 이름을 보지 않고,
 // 옛 판은 이 칸을 몰라도 보존한다(life-progress.mjs validate가 모르는 칸을 막지 않는다).
-// choice: 이 페이지에서 계정 기록이 서기 전에 고른 화면 언어를 담는 상자 {language}(첫 화면 언어 단추 · 첫 실행 · 설정, 결정 11-02).
-// 첫 계정 복원(scoped)이 한 번만 꺼내 쓰고 비운다 — 그 선택이 계정 값을 한 번 이기고 계정 칸에 쓰이며,
-// 손님일 때 고른 언어가 그 뒤 다른 계정들을 덮지 않는다. 범위 밖(손님 · 불러오는 중) 기록에서는 꺼내지 않는다.
-export function restoreDisplayLanguage({progress,choice=null}){
+// choice: 이 페이지에서 계정 기록이 서기 전에 고른 화면 언어를 담는 상자 {language,owner}(첫 화면 언어 단추 · 첫 실행 · 설정, 결정 11-02).
+// 손님일 때 고른 것(owner 없음)은 처음 서는 계정 기록이, 계정일 때 고른 것은 그 주인의 기록만 한 번 꺼내 쓰고 비운다 —
+// 그 선택이 계정 값을 한 번 이기고 계정 칸에 쓰인다. 다른 주인의 상자는 쓰지 않고 버려 다른 계정을 덮지 않는다.
+// 세대(WorldClient.generation)는 보지 않는다 — 재확인 · 다시 로그인에서도 올라 같은 계정의 선택을 잃게 한다.
+// 범위 밖(손님 · 불러오는 중) 기록에서는 꺼내지도 버리지도 않는다. owner는 지금 기록의 주인.
+export function restoreDisplayLanguage({progress,choice=null,owner=null}){
  const status=progress.status();
  if(!status.scoped||['loading','conflict','unreadable','stopped'].includes(status.phase)||status.rejected)return null;
- const preferred=choice?.language||null;
- if(choice)choice.language=null;
+ const mine=choice?.owner==null||choice.owner===owner;
+ const preferred=mine&&choice?.language||null;
+ if(choice)Object.assign(choice,{language:null,owner:null});
  if(preferred){
   setLang(preferred);
   if(progress.displayLanguage()!==preferred)try{progress.setDisplayLanguage(preferred);}catch{/* 저장 확인 화면이 따로 알린다. */}

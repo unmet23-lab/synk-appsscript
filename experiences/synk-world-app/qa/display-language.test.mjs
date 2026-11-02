@@ -62,6 +62,7 @@ test('계정: 다른 기기에서 고른 계정 언어가 이 기기 언어를 �
 });
 
 // 11-02 첫 화면 언어 단추(opening.mjs onLanguage → app-shell selectLanguage → choice 상자): 회사 화면 동안 고른 언어가 늦게 올라온 계정 기록에 덮이지 않는다.
+// 아래 두 시험의 상자는 owner가 없는 꼴이다 — 손님 때 고른 상자이자, 공개 직후 캐시에 남은 옛 app-shell이 넘기는 상자({language})와 같다.
 test('이번 페이지에서 고른 언어가 계정 복원을 한 번 이기고 계정 칸에 쓰인 뒤 상자를 비운다',async t=>{
  const f=await fixture({display:{version:1,language:'mn'}});t.after(()=>f.port.dispose());
  lang.setLang('en');const choice={language:'en'};
@@ -79,26 +80,64 @@ test('고른 언어가 계정 언어와 같으면 다시 쓰지 않는다',async
 });
 
 test('손님일 때 고른 언어는 첫 계정 복원에만 한 번 쓰이고, 다음 계정은 자기 언어로 돌아온다',async t=>{
- const choice={language:'en'};
+ const choice={language:'en',owner:null};
  const guest=createLifeProgress({owner:'guest',storage:memory()});
- assert.equal(restoreDisplayLanguage({progress:guest,choice}),null,'손님 생활 기록(범위 밖)은 꺼내지 않는다');
+ assert.equal(restoreDisplayLanguage({progress:guest,choice,owner:'guest'}),null,'손님 생활 기록(범위 밖)은 꺼내지 않는다');
  assert.equal(choice.language,'en');
  const a=await fixture({display:{version:1,language:'mn'}});t.after(()=>a.port.dispose());
- assert.equal(restoreDisplayLanguage({progress:a.progress,choice}),'en','첫 계정은 방금 고른 언어');
+ assert.equal(restoreDisplayLanguage({progress:a.progress,choice,owner:OWNER}),'en','첫 계정은 방금 고른 언어');
  assert.equal(choice.language,null,'한 번 쓰면 비운다');
  const b=await fixture({display:{version:1,language:'mn'}});t.after(()=>b.port.dispose());
- assert.equal(restoreDisplayLanguage({progress:b.progress,choice}),'mn','다음 계정은 자기 저장 언어');
+ assert.equal(restoreDisplayLanguage({progress:b.progress,choice,owner:'33333333-3333-4333-8333-333333333333'}),'mn','다음 계정은 자기 저장 언어');
  assert.equal(b.progress.displayLanguage(),'mn');
 });
 
-test('app-shell: 첫 화면 언어 단추를 selectLanguage로 잇고, 고른 언어를 choice 상자로 복원에 넘기며, 계정에 쓴 뒤 비운다',async()=>{
+// 검수 FA1(11-02): 상자에 고른 때의 주인을 두어, 기록이 범위 밖일 때 고른 언어를 잃지 않고 다른 계정에 쓰지도 않는다.
+// 세대는 보지 않는다 — 재확인 · 다시 로그인에서도 올라(검수 world-concert-next-20261102 Fable F2) 같은 계정의 선택을 잃게 하므로.
+test('계정 기록이 범위 밖일 때 고른 언어는 상자에 남아, 같은 주인의 기록이 다시 서면 그 복원이 쓴다',async t=>{
+ const choice={language:'en',owner:OWNER};
+ // 생활 포트를 못 열어 기기 기록으로 이어 간 판(world-session fallback → mode 'local', scoped 아님)
+ const local=createLifeProgress({owner:OWNER,storage:memory()});
+ assert.equal(restoreDisplayLanguage({progress:local,choice,owner:OWNER}),null);
+ assert.deepEqual(choice,{language:'en',owner:OWNER},'범위 밖에서는 꺼내지도 버리지도 않는다');
+ const f=await fixture({display:{version:1,language:'mn'}});t.after(()=>f.port.dispose());
+ assert.equal(restoreDisplayLanguage({progress:f.progress,choice,owner:OWNER}),'en','다시 선 기록은 방금 고른 언어');
+ assert.equal(f.progress.displayLanguage(),'en');assert.deepEqual(choice,{language:null,owner:null});
+ await f.progress.flush();
+ assert.deepEqual(f.server().display,{version:1,language:'en'});
+});
+
+test('다른 주인이 고른 상자는 쓰지 않고 버린다',async t=>{
+ const f=await fixture({display:{version:1,language:'mn'}});t.after(()=>f.port.dispose());
+ const choice={language:'en',owner:'22222222-2222-4222-8222-222222222222'};
+ lang.setLang('en');
+ assert.equal(restoreDisplayLanguage({progress:f.progress,choice,owner:OWNER}),'mn');
+ assert.equal(lang.currentLang(),'mn','지금 계정의 저장 언어');
+ assert.deepEqual(choice,{language:null,owner:null},'버린다');
+ await f.progress.flush();
+ assert.equal(f.calls.length,0,'계정 칸을 다시 쓰지 않는다');
+});
+
+// 검수 world-concert-next-20261102 Fable F1: 다른 기기가 먼저 써서 계정 쓰기가 거절되면 commitDisplayLanguage는 saved:false를 돌려준다 —
+// app-shell은 saved일 때만 상자를 비우므로, 이 선택은 상자에 남아 저장 확인 창 뒤 다시 선 기록의 복원이 쓴다.
+test('다른 기기가 먼저 써서 계정 쓰기가 거절되면 saved:false로 돌려준다',async t=>{
+ const f=await fixture({display:{version:1,language:'mn'}});t.after(()=>f.port.dispose());
+ f.state.records[LIFE_PROGRESS_KEY]=JSON.stringify(record({display:{version:1,language:'mn'},tutor:{version:1,selected:'marin'}}));// 다른 기기의 쓰기
+ const result=await commitDisplayLanguage({progress:f.progress,language:'en'});
+ assert.equal(result.mode,'account');assert.equal(result.saved,false);assert.equal(result.pending,true);
+ assert.deepEqual(f.server().display,{version:1,language:'mn'},'서버 값은 다른 기기 것 그대로');
+});
+
+test('app-shell: 첫 화면 언어 단추를 selectLanguage로 잇고, 고른 언어를 주인과 함께 choice 상자로 복원에 넘기며, 계정에 저장이 확인됐거나 계정이 바뀌었을 때만 비운다',async()=>{
  const fs=await import('node:fs');
  const shell=fs.readFileSync(new URL('../app-shell.mjs',import.meta.url),'utf8');
  assert.match(shell,/mountBrandOpening\(\{[^}]*onLanguage:language=>\{void selectLanguage\(language\)/);
- assert.match(shell,/const languageChoice=\{language:null\};/);
- assert.match(shell,/restoreDisplayLanguage\(\{progress:life\.progress,choice:languageChoice\}\)/);
- assert.match(shell,/async function selectLanguage\(language\)\{\r?\n languageChoice\.language=language;/);
- assert.match(shell,/finally\{if\(languageChoice\.language===language\)languageChoice\.language=null;\}/);
+ assert.match(shell,/const languageChoice=\{language:null,owner:null\};/);
+ assert.match(shell,/restoreDisplayLanguage\(\{progress:life\.progress,choice:languageChoice,owner:life\.owner\}\)/);
+ assert.match(shell,/const pick=\{language,owner:owner==='guest'\?null:owner\};\r?\n Object\.assign\(languageChoice,pick\);/);
+ assert.match(shell,/if\(result\.mode==='account'&&result\.saved===true\)settle\(\);/);
+ assert.match(shell,/catch\(error\)\{if\(error\.code==='ACCOUNT_CHANGED'\)settle\(\);throw error;\}/);
+ assert.doesNotMatch(shell,/finally\{if\(languageChoice\.language===language\)/,'범위 밖 · 쓰기가 막힌 길에서 고른 언어를 비우지 않는다(검수 FA1)');
  assert.doesNotMatch(shell,/createLanguageChoice/,'캐시에 남은 옛 display-language-sync.mjs에 없는 이름을 부르지 않는다');
 });
 

@@ -50,8 +50,6 @@ export default {
  // ── 첫 화면(오프닝) ──
  'opening.dialog':{ko:'{product} 시작 화면',en:'{product} start screen',mn:'{product} эхлэлийн дэлгэц'},
  'opening.company':{ko:'제작사 SYNK',en:'Made by SYNK',mn:'SYNK-ийн бүтээл'},
- 'opening.titleAlt':{ko:'커다란 펠트 한글 조각 사이에서 노는 까몽·몽글·마린',en:'Kkamong, Mongle and Marin playing among big felt Hangul letters',mn:'Том эсгий солонгос үсгүүдийн дунд тоглож буй Камон, Монгль, Марин'},
- 'opening.subtitle':{ko:'세 친구와 배우는 한국어',en:'Learn Korean with three friends',mn:'Гурван найзтай хамт сурах солонгос хэл'},
  'opening.skip':{ko:'오프닝 건너뛰기',en:'Skip the opening',mn:'Оршлыг алгасах'},
  'opening.start':{ko:'시작하기',en:'Start',mn:'Эхлэх'},
  'opening.startProduct':{ko:'{product} 시작하기',en:'Start {product}',mn:'{product} эхлүүлэх'},
