@@ -1,6 +1,7 @@
 // 드라마 말하기 로컬 시범판 — 1화 「개강 첫날」 학생 식당 장면 일부(2026-10-31).
 // 이 모듈은 **서버만** import한다. 브라우저는 /api/bootstrap이 transfer.text·spec·modelAudio를 뺀 것만 받는다(새 상황 정답 보호).
-// 대사·명세 원천은 experiences/drama/s1/ep01.mjs. 여기서 글을 고치지 않고 그대로 가져온다.
+// 대사·명세 원천은 experiences/drama/s1/ep01.mjs. 여기서 글을 고치지 않고 그대로 가져온다 — 예외는 쇼케이스 영상이 붙는 자리의
+// SHOWCASE_CUTS text · meaning뿐이다(영상이 대본의 말을 빼고 연기한 곳을 들리는 말에 맞춤, 11-03 Fable FA1).
 // 미디어는 tools/build-drama-pilot-assets.mjs가 승인 자산에서 정리한 것(새 생성 0). 음성만 있는 대사는 정지 사진+원래 녹음이며 립싱크 영상이 아니다.
 import fs from 'node:fs';
 import ep01 from '../s1/ep01.mjs';
