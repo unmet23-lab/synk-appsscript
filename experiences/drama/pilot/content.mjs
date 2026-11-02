@@ -6,12 +6,13 @@ import fs from 'node:fs';
 import ep01 from '../s1/ep01.mjs';
 import { dramaSpecOf, dramaReviewStatus } from '../../../tools/lib/drama-spec-review-unit.mjs';
 
-// 새 상황 카드(도움 언어). 대본 상황 「복사실을 못 찾아, 처음 본 교직원께」를 옮긴 것 — 설계 qa/WORLD올리기-20261102/설계.md §5.
+// 새 상황 카드(도움 언어). 대본 상황 「다음 수업 전에 마실 것을 사려는데 편의점을 못 찾아, 오늘 처음 인사한 같은 과의 다른 선배께」를 옮긴 것
+// — 설계 qa/WORLD올리기-20261102/설계.md §5 · §14(11-03 t4 → t9). 한국어 줄에는 답 낱말(편의점)과 위치 묻는 꼴(어디 있는지 · 위치 등 허용 표현)을 쓰지 않는다.
 export const TRANSFER_PROMPT = {
- en: 'You can\'t find the copy room. Politely ask a staff member you don\'t know where it is.',
- ko: '프린트를 해야 하는데 그 방을 못 찾았어요. 처음 뵙는 교직원께 공손하게 여쭤보세요. (장소 이름은 영어 설명을 보세요.)',
+ en: 'Before your next class you want to buy a drink, but you can\'t find the convenience store. Politely ask another senior from your department, whom you met for the first time today, where it is.',
+ ko: '다음 수업 전에 마실 것을 사고 싶은데 그 가게를 못 찾았어요. 오늘 처음 인사한 같은 과의 다른 선배께 공손하게 여쭤보세요. (가게 이름은 영어 설명을 보세요.)',
 };
-const T4 = ep01.처음보는대사.find((x) => x.id === 's1e01-t4');
+const T9 = ep01.처음보는대사.find((x) => x.id === 's1e01-t9');
 
 // 빌드가 만든 재생 사본이 있을 때만 주소를 준다. 아직 없는 자리(코치 녹음·쇼케이스 영상)는 null — 화면은 글만, 장면은 지금 판 그대로 돈다.
 const MEDIA_DIR = new URL('./media/', import.meta.url);
@@ -99,18 +100,18 @@ export const PILOT = {
  reasks: ep01.되묻기.선배.map((text, i) => ({ text, audio: `/media/senior-ask-${i + 1}.mp3` })),
  // audio가 null이면 녹음 전 — 화면에 코치 글만 보이고 소리는 내지 않는다.
  coach: Object.fromEntries(Object.entries(COACH_VOICE).map(([k, v]) => [k, { text: v.text, audio: built(v.file) }])),
- // 새 상황 B(11-02) — ep01 처음보는대사 s1e01-t4(복사실 위치 묻기 · 처음 본 교직원). 장면 7번 줄(도서관 위치 묻기)과 같은 목적의 다른 문항이고,
- // 칸 명세 AI 2중 검수를 통과했다(검수지문이 지금 내용과 같을 때만 reviewed — 고치면 풀린다). talk 대사 은행(world-drama-lines)과 같은 줄이라
- // WORLD 안 화면은 talk take로 판정한다. prompt는 학습자 언어로 상황과 필요한 정보만 — 한국어 답 · 첫 글자 없음(기획 §3-5 B).
- // promptKo도 답 낱말(복사실)을 쓰지 않는다 — 장소 이름은 영어 설명에서 본다(편의점 예시 때와 같다).
+ // 새 상황 B — ep01 처음보는대사 s1e01-t9(편의점 위치를 오늘 처음 인사한 다른 선배께 · 11-03에 t4 복사실에서 옮김). 장면 7번 줄(도서관 위치를
+ // 태오 선배께)과 같은 목적을 다른 장소 · 다른 선배로 묻는 다른 문항이고, 칸 명세 AI 2중 검수(drama-ep01-r13)를 통과했다(검수지문이 지금 내용과
+ // 같을 때만 reviewed — 고치면 풀린다). talk 대사 은행(world-drama-lines)과 같은 줄이라 WORLD 안 화면은 talk take로 판정한다.
+ // prompt는 학습자 언어로 상황과 필요한 정보만 — 한국어 답 · 첫 글자 없음(기획 §3-5 B). promptKo도 답 낱말(편의점)을 쓰지 않는다 — 장소 이름은 영어 설명에서 본다.
  transfer: {
-  id: T4.id,
-  skill: T4.능력, // 학습 기록의 능력 이름(말하기 지도). 한국어 답의 실마리가 아니라 화면에 보낸다.
+  id: T9.id,
+  skill: T9.능력, // 학습 기록의 능력 이름(말하기 지도). 한국어 답의 실마리가 아니라 화면에 보낸다.
   prompt: TRANSFER_PROMPT.en,
   promptKo: TRANSFER_PROMPT.ko,
-  to: T4.명세.to,
-  text: T4.말,
-  spec: { ...dramaSpecOf({ row: T4, kind: 'unseen' }), reviewed: dramaReviewStatus({ row: T4, kind: 'unseen', day: null, before: null }, ep01.id).status === 'passed' },
+  to: T9.명세.to,
+  text: T9.말,
+  spec: { ...dramaSpecOf({ row: T9, kind: 'unseen' }), reviewed: dramaReviewStatus({ row: T9, kind: 'unseen', day: null, before: null }, ep01.id).status === 'passed' },
  },
  nextEpisode: { title: ep01.예고.제목, line: '태오 선배가 데려간 동아리 박람회에서 동갑내기 친구를 만난다. 처음으로 말을 놓아 볼까?' },
  assets: {

@@ -72,7 +72,7 @@ test('차례 하나 = 보임 하나, 테이크 = 시도(spoken). 서버 trail ·
   const retake=recorder.open({lineId:'s1e01-7',skillId:'ko.speaking.ask',phase:'retake'});
   retake.take({kind:'result',data:{status:'ok',transcript:TRANSCRIPT,trail:{correct:true,assessable:false}}});
   retake.excludeLast();retake.excludeLast();
-  const transfer=recorder.open({lineId:'s1e01-t4',skillId:'ko.speaking.ask',phase:'transfer'});
+  const transfer=recorder.open({lineId:'s1e01-t9',skillId:'ko.speaking.ask',phase:'transfer'});
   transfer.take({kind:'result',data:{status:'ok',transcript:TRANSCRIPT,trail:{correct:true,assessable:true}}});
   transfer.help('answer');
   transfer.take({kind:'down'});
@@ -119,7 +119,7 @@ async function serve(t,overrides={}){
   const port=socket.address().port;await new Promise(r=>socket.close(r));
   const app=createPilotServer({lesson:PILOT,root,port,analysis:true,
     decode:async()=>({wav:Buffer.from('x'),seconds:4,speechSeconds:3,silent:false}),
-    transcribe:async()=>({text:'선생님, 혹시 복사실이 어디에 있는지 아세요?',languages:[{code:'ko'}]}),...overrides});
+    transcribe:async()=>({text:'선배님, 혹시 편의점이 어디에 있는지 아세요?',languages:[{code:'ko'}]}),...overrides});
   await new Promise(r=>app.server.listen(port,'127.0.0.1',r));
   t.after(async()=>{app.server.closeAllConnections();await new Promise(r=>app.server.close(r));await fs.rm(root,{recursive:true,force:true});});
   const init=await fetch(`${app.origin}/api/bootstrap`);const cookie=init.headers.get('set-cookie').split(';')[0];
@@ -136,8 +136,8 @@ test('서버: 테이크 응답의 trail이 판정 · 검수 · 첫 노출을 따
   const {bootstrap,take,learn}=await serve(t);
   assert.equal(bootstrap.learning,null);
   assert.deepEqual((await take('s1e01-7','scene')).trail,{correct:false,assessable:false});
-  // 새 상황은 검수를 통과한 처음 보는 대사 s1e01-t4(11-02, 운영 talk 대사 은행에 있는 줄 — WORLD 공개판과 같다). t9(편의점)는 talk 은행 재배포 뒤 다음 판.
-  assert.equal(PILOT.transfer.id,'s1e01-t4');assert.equal(PILOT.transfer.spec.reviewed,true);assert.equal(PILOT.transfer.spec.free,true);
+  // 새 상황은 검수를 통과한 처음 보는 대사 s1e01-t9(편의점 · 11-03에 t4 복사실에서 옮김 — talk 대사 은행 1b1afc801764882a · WORLD 공개판과 같다).
+  assert.equal(PILOT.transfer.id,'s1e01-t9');assert.equal(PILOT.transfer.spec.reviewed,true);assert.equal(PILOT.transfer.spec.free,true);
   const first=await take(PILOT.transfer.id,'transfer');
   assert.equal(first.observation.kind,'pass');assert.deepEqual(first.trail,{correct:true,assessable:true});
   assert.deepEqual((await take(PILOT.transfer.id,'transfer')).trail,{correct:true,assessable:false},'두 번째는 첫 응답이 아니다');

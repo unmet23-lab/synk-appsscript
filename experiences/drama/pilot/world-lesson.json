@@ -138,17 +138,17 @@
    }
   ],
   "transfer": {
-   "id": "s1e01-t4",
-   "prompt": "You can't find the copy room. Politely ask a staff member you don't know where it is.",
-   "promptKo": "프린트를 해야 하는데 그 방을 못 찾았어요. 처음 뵙는 교직원께 공손하게 여쭤보세요. (장소 이름은 영어 설명을 보세요.)",
+   "id": "s1e01-t9",
+   "prompt": "Before your next class you want to buy a drink, but you can't find the convenience store. Politely ask another senior from your department, whom you met for the first time today, where it is.",
+   "promptKo": "다음 수업 전에 마실 것을 사고 싶은데 그 가게를 못 찾았어요. 오늘 처음 인사한 같은 과의 다른 선배께 공손하게 여쭤보세요. (가게 이름은 영어 설명을 보세요.)",
    "skill": "ko.speaking.ask",
    "reviewed": true,
    "answerSec": 13
   }
  },
  "reveal": {
-  "lineId": "s1e01-t4",
-  "text": "선생님, 혹시 복사실이 어디에 있는지 아세요?",
+  "lineId": "s1e01-t9",
+  "text": "선배님, 혹시 편의점이 어디에 있는지 아세요?",
   "modelAudio": null
  }
 }

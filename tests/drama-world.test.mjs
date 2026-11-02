@@ -40,7 +40,7 @@ test('talk에 알리는 앞 테이크 수는 0~20 안이다(talk readTake는 넘
 test('혼자 해 봄: 검수 통과 새 상황 · 모범 전 · 첫 판정만, 다시 시작해도 되살아나지 않는다', () => {
   const pass = talkObservation({ status: 'ok', verdict: 'pass', sure: true, heard: '선생님, 혹시 복사실이 어디에 있는지 아세요?' });
   const pending = talkObservation({ status: 'ok', verdict: 'pass', sure: false, heard: '복사실' });
-  const go = (state, out, { phase = 'transfer', reviewed = true } = {}) => settleTake(state, { phase, out, reviewed, turn: beginTake(state, { lineId: 's1e01-t4', phase, requestId: 'r' }) }).trail;
+  const go = (state, out, { phase = 'transfer', reviewed = true } = {}) => settleTake(state, { phase, out, reviewed, turn: beginTake(state, { lineId: 's1e01-t9', phase, requestId: 'r' }) }).trail;
   let st = newAttemptState();
   assert.deepEqual(go(st, pass), { correct: true, assessable: true });
   assert.deepEqual(go(st, pass), { correct: true, assessable: false }, '두 번째 판정');
@@ -62,7 +62,7 @@ test('기록기: 혼자 해 봄은 그 차례의 첫 시도만(Trail은 앞 시�
   const calls = [];
   const coach = { present: () => 'p1', help() {}, answer: (pid, r) => { calls.push(r); return { eventId: `e${calls.length}` }; }, exclude() {}, flush() {} };
   const recorder = Drama.createRecorder({ owner: { createGame: () => coach } });
-  const turn = recorder.open({ lineId: 's1e01-t4', skillId: 'ko.speaking.ask', phase: 'transfer' });
+  const turn = recorder.open({ lineId: 's1e01-t9', skillId: 'ko.speaking.ask', phase: 'transfer' });
   turn.take({ kind: 'unheard' });
   turn.take({ kind: 'result', data: { trail: { correct: true, assessable: true } } });
   assert.equal(calls[0].attemptNo, 1); assert.equal(calls[0].reason, 'unanswered');
@@ -73,14 +73,14 @@ test('화면용 강의는 원천에서 다시 만든 것과 같고, 지문 · �
   const built = await buildWorldLesson();
   assert.equal(fs.readFileSync(DESTINATION, 'utf8').replace(/\r\n/g, '\n'), serialize(built), 'node tools/build-drama-world.mjs');
   // 강의 지문은 원천 대사 은행(talk world-drama-lines를 만드는 같은 셈)과 같다. 운영 talk가 이 지문과 다르면 WORLD 화면은 받아쓰기를 켜지 않는다(스스로 확인) —
-  // 11-02: 공개 WORLD 강의 · 운영 talk v18은 e668961843825080, 원천은 t9를 더해 달라졌다 → 강의 재공개는 talk 대사 은행 재배포 뒤(트랙).
+  // 11-03: 새 상황 t4 → t9. 운영 talk 대사 은행을 t9가 든 판(1b1afc801764882a)으로 배포한 뒤 이 강의를 공개한다 — 순서가 거꾸로면 받아쓰기가 꺼진다.
   assert.equal(built.linesVersion, linesHash(dramaLines(await readEpisodes())));
   const lines = new Map(dramaLines(await readEpisodes()).map((l) => [l.id, l]));
   for (const item of built.lesson.scene.filter((x) => x.type === 'student')) {
     assert.equal(item.answerSec, lines.get(item.id).answerSec, item.id); assert.equal(item.reviewed, true, item.id);
   }
-  assert.equal(built.lesson.transfer.id, 's1e01-t4'); assert.equal(built.lesson.transfer.reviewed, true);
-  assert.equal(lines.get('s1e01-t4').kind, 'unseen');
+  assert.equal(built.lesson.transfer.id, 's1e01-t9'); assert.equal(built.lesson.transfer.reviewed, true);
+  assert.equal(lines.get('s1e01-t9').kind, 'unseen');
   // 판정 명세 · 정답 낱말 목록은 싣지 않는다. 새 상황 모범 글은 reveal 칸에만.
   const text = JSON.stringify(built.lesson);
   assert.doesNotMatch(text, /"(?:spec|keys|alts|variants)"/);
