@@ -488,6 +488,12 @@
 - 고침: 굽기 감싸개 맨 앞에 「굽는 중」 파일 가드 — PID가 살아 있으면 「이미 굽는 중」으로 종료 3, 끝나면 trap으로 지운다. 다음 회차는 앞 회차 단계 기록의 「끝」 줄을 본 뒤 띄운다. 이미 겹쳤으면 남은 스크립트가 「끝」을 적을 때까지 같은 이름으로 줄을 다시 쥐고(`기다리기`) 기다린 뒤 이어서 굽는다.
 - 다시 확인: 회차가 도는 중에 `bash ego/굽기.sh '"x"' round-99`가 「이미 굽는 중(PID …)」으로 끝난다.
 
+### 유호님 얼굴 지시문에서 「well-rested and freshly groomed」 손질 문장을 빼면 같은 참고 사진으로도 늙고 못생겨 보인다 (2026-11-02 Claude)
+- 증상: yuhobuilds 진행자 얼굴 시험(git 밖 `yuhobuilds-face-test-20261102/`)의 B 콘로우 판 — 한강 v40과 같은 참고 다섯 장(확정 B · C 크롭 · pro02 · V181 · V204)으로 구웠는데, Flow로 움직인 판을 보시고 유호님 「지금 나같지가 않아. 너무 못생겼고 너무 늙어보여」. 얼굴 인식 닮음(승인 얼굴 0.77)은 오히려 가장 높았다.
+- 원인: 판끼리 공정하게 맞추려고 지시문을 바꿨다 — 한강 문단의 「Show him well-rested and freshly groomed, clear healthy skin with a fine natural texture」를 빼고 「natural skin texture (not airbrushed, not plastic, no beauty filter)」 · 35mm · 정면 평평한 빛 · 「eyebrows lifted」 반응 · 안경 없음으로 썼다. 손질 문장이 빠지자 얼굴이 길고 피곤해 보였고, 눈썹을 올리게 하자 이마 주름까지 생겼다.
+- 고침: 한강 지시문 원문(`[새판]재촬영_v40/이미지콘티/_지시문_원문.md`)의 HIS FACE · HIM 문단을 그대로 옮겨(손질 문장 · 85mm f/2 · 창빛이 얼굴에 비스듬히) 다시 구우니 「C랑 H3가 가장 좋아 보인다」. 유호님 얼굴은 「보정 없는 맨 피부」를 따로 시키지 않는다 — 한강 문단의 「fine natural texture」로 충분하다. 반응 표정은 「eyebrows lifted」 대신 「a small, genuine reaction」처럼 쓴다.
+- 다시 확인: 새 정지컷 지시문에 「well-rested and freshly groomed」가 있는지, 받은 판을 승인 시안 B · 한강 T1 · T2와 나란히 놓고 나이 · 얼굴 길이를 본다(얼굴 인식 점수로 넘기지 않는다).
+
 ### 지시문에 빈 줄(문단 나눔)을 넣으면 입력창 글 길이가 늘어 실행기의 「보내기 전 확인」이 멈춘다 — 지시문은 한 줄로 이어 쓴다 (2026-11-02 Claude)
 - 증상: yuhobuilds 진행자 얼굴 시험(git 밖 `yuhobuilds-face-test-20261102/ego/`) 첫 장 — 문단 넷을 `\n\n`으로 나눈 1,366자 지시문이 입력창에서 1,375자로 읽혀 「글 길이가 다르다 — 지우고 다시」 뒤에도 같아, `확인 … ok:false` → b 줄이라 「stop b 확인 실패(모드 잠김?)」로 멈췄다. 비율 9:16 · Argon 높음 · 참조 1장은 맞았고 보내지 않았다.
 - 원인: 입력창(Quill)이 빈 줄 하나를 문단 둘로 바꿔 `innerText`에 줄바꿈을 더 낸다 — 실행기는 3자 넘게 다르면 보내지 않는다. b 줄 실패 문구는 모드 잠김을 짐작한 말이라 까닭이 아니다.
