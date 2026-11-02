@@ -1,0 +1,131 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1102,
+  "lufs": -17
+ },
+ "made": "2026-11-02T00:06:08.949Z",
+ "lines": [
+  {
+   "id": "n01",
+   "text": "흐릿한 공문을 AI한테 요약시켰더니, 이렇게 나왔어요.",
+   "show": "흐릿한 공문, AI 요약에 이렇게 나왔어요",
+   "scene": "0초 AI 요약의 굵은 줄",
+   "dur": 3.194,
+   "syllablesPerSec": 6.57,
+   "src": "n01.wav",
+   "key": "2eebbcd4761441c88bb55ffc087b0c8b",
+   "words": 6
+  },
+  {
+   "id": "n02",
+   "text": "그런데 원문엔, 이런 말이 없어요.",
+   "show": "그런데 원문엔 이런 말이 없어요",
+   "scene": "빨간 줄",
+   "dur": 1.601,
+   "syllablesPerSec": 8.12,
+   "src": "n02.wav",
+   "key": "346267608e7dc44db2dfab30472f2b6a",
+   "words": 5
+  },
+  {
+   "id": "n03",
+   "text": "같은 공문을 새 대화로 여덟 번 물었더니, 여섯 번이 이 줄을 다른 조건으로 바꿨어요.",
+   "show": "새 대화로 여덟 번 → 여섯 번이 조건을 바꿈",
+   "scene": "바뀐 줄 몽타주",
+   "dur": 4.378,
+   "syllablesPerSec": 7.54,
+   "src": "n03.wav",
+   "key": "518d5b25e4d3b79eca6a299849f943f9",
+   "words": 14
+  },
+  {
+   "id": "n04",
+   "text": "확인은 한 줄이면 돼요. 6개월이 나오는 줄을, 원문 그대로 옮겨 줘.",
+   "show": "「'6개월'이 나오는 줄을 원문 그대로 옮겨 줘」",
+   "scene": "확인 한 줄 — 치는 화면",
+   "dur": 3.786,
+   "syllablesPerSec": 6.6,
+   "src": "n04.wav",
+   "key": "3a620d1c1abae1464f7e1796db759a79",
+   "words": 11
+  },
+  {
+   "id": "n08",
+   "text": "6개월 자리엔, 마감일이나 금액을 넣어도 돼요.",
+   "show": "'6개월' 자리엔 마감일 · 금액을 넣어도",
+   "scene": "확인 한 줄 카드 — 바꿔 넣을 낱말",
+   "dur": 2.72,
+   "syllablesPerSec": 6.62,
+   "src": "n08.wav",
+   "key": "4d4ec2f4624490c196735f9c3492a568",
+   "words": 6
+  },
+  {
+   "id": "n05",
+   "text": "요약할 땐 AI가, 그럴듯한 말로 바꿔 쓰기도 하거든요.",
+   "show": "요약은 그럴듯한 말로 바꿔 쓰기도",
+   "scene": "흐린 스캔 글자",
+   "dur": 3.336,
+   "syllablesPerSec": 6,
+   "src": "n05.wav",
+   "key": "0bb298b6aa8346a39c3802f2a6d48792",
+   "words": 8
+  },
+  {
+   "id": "n09",
+   "text": "같은 6개월인데, 전혀 다른 조건이에요.",
+   "show": "같은 6개월인데, 전혀 다른 조건",
+   "scene": "원문 종이 · 걸린 돈",
+   "dur": 2.321,
+   "syllablesPerSec": 6.46,
+   "src": "n09.wav",
+   "key": "93ecc482cfef48f90a097db5eb05ef33",
+   "words": 5
+  },
+  {
+   "id": "n06",
+   "text": "요약만 믿었다면, 6개월 안에 문을 닫으면 지원금을 돌려줘야 한다는 걸 몰랐을 거예요.",
+   "show": "요약만 믿었다면 몰랐을 조건",
+   "scene": "사장님 · 걸린 돈",
+   "dur": 4.479,
+   "syllablesPerSec": 7.59,
+   "src": "n06.wav",
+   "key": "b58712fa44b27d095d8a791b4c6dfbf2",
+   "words": 12
+  },
+  {
+   "id": "n10",
+   "text": "6개월 안에 문 닫으면, 키오스크값을 고스란히 떠안는 셈이에요.",
+   "show": "6개월 안에 문 닫으면, 키오스크값을 고스란히 떠안는 셈",
+   "scene": "키오스크를 돌아보는 사장님(재연)",
+   "dur": 3.253,
+   "syllablesPerSec": 7.69,
+   "src": "n10.wav",
+   "key": "1758148d5f0595734c990999d69ca622",
+   "words": 8
+  },
+  {
+   "id": "n07",
+   "text": "지원금이 걸린 줄은, 원문 그대로 한 번 더.",
+   "show": "지원금이 걸린 줄은, 원문 그대로 한 번 더",
+   "scene": "끝 — 뒤집힌 두 줄",
+   "dur": 2.223,
+   "syllablesPerSec": 7.2,
+   "src": "n07.wav",
+   "key": "85b2bff62f20e94d5ff9cae68f54ace9",
+   "words": 8
+  }
+ ]
+}

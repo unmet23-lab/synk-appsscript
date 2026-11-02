@@ -1,0 +1,76 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n10",
+ "text": "6개월 안에 문 닫으면, 키오스크값을 고스란히 떠안는 셈이에요.",
+ "show": "6개월 안에 문 닫으면, 키오스크값을 고스란히 떠안는 셈",
+ "dur": 3.253,
+ "words": [
+  {
+   "text": "6개월",
+   "start": 0.02,
+   "end": 0.342
+  },
+  {
+   "text": "안에",
+   "start": 0.386,
+   "end": 0.489
+  },
+  {
+   "text": "문",
+   "start": 0.533,
+   "end": 0.635
+  },
+  {
+   "text": "닫으면,",
+   "start": 0.694,
+   "end": 1.045
+  },
+  {
+   "text": "키오스크값을",
+   "start": 1.381,
+   "end": 1.981
+  },
+  {
+   "text": "고스란히",
+   "start": 2.025,
+   "end": 2.391
+  },
+  {
+   "text": "떠안는",
+   "start": 2.435,
+   "end": 2.728
+  },
+  {
+   "text": "셈이에요.",
+   "start": 2.772,
+   "end": 3.253
+  }
+ ],
+ "source": {
+  "key": "1758148d5f0595734c990999d69ca622",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1102,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 154
+ }
+}

@@ -162,6 +162,12 @@
 - 다시 확인: `대조`의 보정 뒤 줄 나눔이 392/396·84/88이고 다른 문단 목록에 3쪽 표 칸이 없다. `--규칙 '휴먼명조:·=152,~=122,₮=128;맑은 고딕:→=63,₮=91'`로 돌리면 390/396이 되고 3쪽 표 칸 둘이 「rhwp가 더 넣음」으로 나온다.
 
 
+### 시험용 공문 HWP를 한컴 없이 새로 만든다 — rhwp `scaffold`(명세 JSON) → `convert`로 HWP5 (2026-11-02 Claude)
+- 증상: synkbrief B23 결과 화면 시험에 「지어낸 구청 공문」 HWP · PDF · 스캔본이 필요했다. 한컴은 없고(위 「판」), hwplib으로 문단을 새로 짜기는 번거로웠다.
+- 원인: rhwp 0.8.7에 문서를 *만드는* 명령(`scaffold`)이 있지만 도움말에 명세 꼴이 없고 `capabilities`에도 필드 목록뿐이다. 첫 시도는 「missing field `version`」 → 「invalid type: integer, expected a string」으로 막혔다.
+- 고침: 명세는 `{"version": "1", "title": "...", "blocks": [{"type": "paragraph"|"heading"|"table", "text": "...", "level"?, "rows"?, "cell_align"?}]}`(최상위 칸은 version · title · font · page_size · blocks뿐). `rhwp scaffold 공문.json -o 공문.hwpx --json` → `rhwp convert 공문.hwpx 공문.hwp --verify --json`(IR 차이 0) → `export-pdf` · `export-png`. 스캔본은 PDF 쪽을 150dpi로 떠서 PIL로 0.8° 돌리고 잡티 · 흐림을 준 JPEG 한 장짜리 PDF(글자 층 없음), 암호 PDF는 PyMuPDF `save(encryption=AES_256, user_pw=…)`. 만든 것: `docs/마케팅/synkbrief_셋째줄그대로_20261102/공문/`.
+- 다시 확인: `python -X utf8 tools/hwp읽기.py 공문.hwp`가 본문 열네 줄을 그대로 읽고, rhwp PNG가 제목 · 본문을 바르게 그렸다(D2Coding 없음 경고는 모노 글꼴 대체뿐).
+
 ## 양식 채우기
 
 ### XML로 고친 문단의 줄 배치가 옛 글 그대로 남는다

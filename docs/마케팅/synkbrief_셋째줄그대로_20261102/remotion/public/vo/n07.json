@@ -1,0 +1,76 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n07",
+ "text": "지원금이 걸린 줄은, 원문 그대로 한 번 더.",
+ "show": "지원금이 걸린 줄은, 원문 그대로 한 번 더",
+ "dur": 2.223,
+ "words": [
+  {
+   "text": "지원금이",
+   "start": 0,
+   "end": 0.416
+  },
+  {
+   "text": "걸린",
+   "start": 0.47,
+   "end": 0.685
+  },
+  {
+   "text": "줄은,",
+   "start": 0.725,
+   "end": 0.953
+  },
+  {
+   "text": "원문",
+   "start": 1.087,
+   "end": 1.342
+  },
+  {
+   "text": "그대로",
+   "start": 1.409,
+   "end": 1.638
+  },
+  {
+   "text": "한",
+   "start": 1.705,
+   "end": 1.799
+  },
+  {
+   "text": "번",
+   "start": 1.839,
+   "end": 1.933
+  },
+  {
+   "text": "더.",
+   "start": 1.973,
+   "end": 2.223
+  }
+ ],
+ "source": {
+  "key": "85b2bff62f20e94d5ff9cae68f54ace9",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1102,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 140
+ }
+}

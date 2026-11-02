@@ -1,0 +1,106 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n03",
+ "text": "같은 공문을 새 대화로 여덟 번 물었더니, 여섯 번이 이 줄을 다른 조건으로 바꿨어요.",
+ "show": "새 대화로 여덟 번 → 여섯 번이 조건을 바꿈",
+ "dur": 4.378,
+ "words": [
+  {
+   "text": "같은",
+   "start": 0.02,
+   "end": 0.252
+  },
+  {
+   "text": "공문을",
+   "start": 0.29,
+   "end": 0.625
+  },
+  {
+   "text": "새",
+   "start": 0.702,
+   "end": 0.792
+  },
+  {
+   "text": "대화로",
+   "start": 0.844,
+   "end": 1.127
+  },
+  {
+   "text": "여덟",
+   "start": 1.178,
+   "end": 1.384
+  },
+  {
+   "text": "번",
+   "start": 1.422,
+   "end": 1.525
+  },
+  {
+   "text": "물었더니,",
+   "start": 1.564,
+   "end": 1.911
+  },
+  {
+   "text": "여섯",
+   "start": 2.336,
+   "end": 2.529
+  },
+  {
+   "text": "번이",
+   "start": 2.567,
+   "end": 2.747
+  },
+  {
+   "text": "이",
+   "start": 2.863,
+   "end": 2.876
+  },
+  {
+   "text": "줄을",
+   "start": 2.94,
+   "end": 3.133
+  },
+  {
+   "text": "다른",
+   "start": 3.198,
+   "end": 3.403
+  },
+  {
+   "text": "조건으로",
+   "start": 3.442,
+   "end": 3.751
+  },
+  {
+   "text": "바꿨어요.",
+   "start": 3.789,
+   "end": 4.378
+  }
+ ],
+ "source": {
+  "key": "518d5b25e4d3b79eca6a299849f943f9",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1102,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 144
+ }
+}

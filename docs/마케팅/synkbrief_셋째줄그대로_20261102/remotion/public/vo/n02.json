@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n02",
+ "text": "그런데 원문엔, 이런 말이 없어요.",
+ "show": "그런데 원문엔 이런 말이 없어요",
+ "dur": 1.601,
+ "words": [
+  {
+   "text": "그런데",
+   "start": 0.02,
+   "end": 0.254
+  },
+  {
+   "text": "원문엔,",
+   "start": 0.298,
+   "end": 0.649
+  },
+  {
+   "text": "이런",
+   "start": 0.693,
+   "end": 0.839
+  },
+  {
+   "text": "말이",
+   "start": 0.883,
+   "end": 1.03
+  },
+  {
+   "text": "없어요.",
+   "start": 1.073,
+   "end": 1.601
+  }
+ ],
+ "source": {
+  "key": "346267608e7dc44db2dfab30472f2b6a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1102,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 143
+ }
+}

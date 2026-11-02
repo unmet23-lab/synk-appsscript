@@ -1,0 +1,76 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n05",
+ "text": "요약할 땐 AI가, 그럴듯한 말로 바꿔 쓰기도 하거든요.",
+ "show": "요약은 그럴듯한 말로 바꿔 쓰기도",
+ "dur": 3.336,
+ "words": [
+  {
+   "text": "요약할",
+   "start": 0.02,
+   "end": 0.362
+  },
+  {
+   "text": "땐",
+   "start": 0.406,
+   "end": 0.555
+  },
+  {
+   "text": "AI가,",
+   "start": 0.6,
+   "end": 1.017
+  },
+  {
+   "text": "그럴듯한",
+   "start": 1.552,
+   "end": 1.999
+  },
+  {
+   "text": "말로",
+   "start": 2.043,
+   "end": 2.192
+  },
+  {
+   "text": "바꿔",
+   "start": 2.237,
+   "end": 2.43
+  },
+  {
+   "text": "쓰기도",
+   "start": 2.475,
+   "end": 2.728
+  },
+  {
+   "text": "하거든요.",
+   "start": 2.772,
+   "end": 3.336
+  }
+ ],
+ "source": {
+  "key": "0bb298b6aa8346a39c3802f2a6d48792",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1102,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 148
+ }
+}

@@ -1,0 +1,96 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n06",
+ "text": "요약만 믿었다면, 6개월 안에 문을 닫으면 지원금을 돌려줘야 한다는 걸 몰랐을 거예요.",
+ "show": "요약만 믿었다면 몰랐을 조건",
+ "dur": 4.479,
+ "words": [
+  {
+   "text": "요약만",
+   "start": 0.02,
+   "end": 0.357
+  },
+  {
+   "text": "믿었다면,",
+   "start": 0.396,
+   "end": 0.914
+  },
+  {
+   "text": "6개월",
+   "start": 1.186,
+   "end": 1.485
+  },
+  {
+   "text": "안에",
+   "start": 1.537,
+   "end": 1.64
+  },
+  {
+   "text": "문을",
+   "start": 1.692,
+   "end": 1.874
+  },
+  {
+   "text": "닫으면",
+   "start": 1.912,
+   "end": 2.288
+  },
+  {
+   "text": "지원금을",
+   "start": 2.405,
+   "end": 2.859
+  },
+  {
+   "text": "돌려줘야",
+   "start": 2.898,
+   "end": 3.235
+  },
+  {
+   "text": "한다는",
+   "start": 3.274,
+   "end": 3.52
+  },
+  {
+   "text": "걸",
+   "start": 3.559,
+   "end": 3.624
+  },
+  {
+   "text": "몰랐을",
+   "start": 3.663,
+   "end": 3.987
+  },
+  {
+   "text": "거예요.",
+   "start": 4.039,
+   "end": 4.479
+  }
+ ],
+ "source": {
+  "key": "b58712fa44b27d095d8a791b4c6dfbf2",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1102,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 141
+ }
+}
