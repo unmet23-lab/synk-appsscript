@@ -30,7 +30,7 @@
   html{-webkit-text-size-adjust:100%}
   body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--en); font-weight:500;
     letter-spacing:-0.015em; line-height:1.65; -webkit-font-smoothing:antialiased}
-  .kr{font-family:var(--kr); letter-spacing:-0.03em}
+  .kr{font-family:var(--kr); letter-spacing:-0.03em; word-break:keep-all}
   a{color:var(--rim)}
   .bar{position:sticky; top:0; z-index:9; background:rgba(251,247,240,.94); backdrop-filter:blur(8px);
     border-bottom:1px solid var(--stitch)}
@@ -86,15 +86,15 @@
   .note .pair{font-family:var(--kr); font-weight:750}
   .note .roman{font-family:var(--mono); font-size:12.5px; color:var(--ash); display:block; margin-top:4px}
   .rules{display:grid; gap:10px; margin-top:14px}
-  .rule{display:grid; grid-template-columns:72px 1fr; gap:12px; align-items:start; background:#fff;
+  .rule{display:grid; grid-template-columns:minmax(72px,max-content) 1fr; gap:12px; align-items:start; background:#fff;
     border:1px solid var(--stitch); border-radius:14px; padding:12px 14px}
-  .rule .ex{font-family:var(--kr); font-size:24px; font-weight:800; letter-spacing:-0.03em; text-align:center}
+  .rule .ex{font-family:var(--kr); font-size:24px; font-weight:800; letter-spacing:-0.03em; text-align:center; white-space:nowrap}
   .rule .ex small{display:block; font-family:var(--mono); font-size:12px; font-weight:500; color:var(--ash); letter-spacing:0}
-  .rule p{margin:0; font-size:14.5px}
+  .rule p{margin:0; font-size:14.5px; word-break:keep-all}
   .mine{display:flex; flex-wrap:wrap; gap:7px; margin-top:10px}
   .src{font-size:13px; color:var(--ash); line-height:1.6; padding-left:18px}
   .src li{margin:3px 0}
-  @media (max-width:420px){ .hero img{width:72px} .rule{grid-template-columns:58px 1fr} }
+  @media (max-width:420px){ .hero img{width:72px} .rule{grid-template-columns:minmax(58px,max-content) 1fr} }
 </style>
 </head>
 <body>
@@ -110,7 +110,7 @@
         <h1><span class="kr">ㄹ</span> — R or L?</h1>
         <p class="lead">Type any Korean word. See how every <span class="kr">ㄹ</span> in it sounds: a quick tap (r), a clear L, a double L — or even an N, or nothing at all.</p>
       </div>
-      <img src="img/mongle-curious.webp" alt="Felt mascot Mongle, curious" width="96" height="96">
+      <img src="img/mongle-rl.webp" alt="Felt mascot Mongle looking curiously at a felt ㄹ" width="96" height="96">
     </div>
 
     <div class="box">

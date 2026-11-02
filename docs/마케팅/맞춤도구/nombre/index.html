@@ -28,7 +28,7 @@
   html{-webkit-text-size-adjust:100%}
   body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--en); font-weight:500;
     letter-spacing:-0.015em; line-height:1.65; -webkit-font-smoothing:antialiased}
-  .kr{font-family:var(--kr); letter-spacing:-0.03em}
+  .kr{font-family:var(--kr); letter-spacing:-0.03em; word-break:keep-all}
   a{color:var(--rim)}
   .bar{position:sticky; top:0; z-index:9; background:rgba(251,247,240,.94); backdrop-filter:blur(8px); border-bottom:1px solid var(--stitch)}
   .bar .inner{max-width:720px; margin:0 auto; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; gap:8px}
@@ -60,7 +60,7 @@
   .chip{font-family:var(--en); font-size:13.5px; font-weight:650; color:var(--deepwool); background:var(--oat);
     border:1px solid var(--stitch); border-radius:99px; padding:5px 13px; cursor:pointer}
   .chip:hover,.chip:focus-visible{background:var(--coral-wash); border-color:var(--coral); color:var(--rim); outline:none}
-  .out{margin-top:20px; padding-top:20px; border-top:1px solid var(--stitch)}
+  .out{margin-top:20px; padding-top:20px; border-top:1px solid var(--stitch); overflow-wrap:anywhere}
   .out[hidden]{display:none}
   .hangul{font-family:var(--kr); font-size:clamp(40px,11vw,60px); font-weight:800; letter-spacing:-0.04em; line-height:1.15; word-break:keep-all}
   .read{font-family:var(--mono); font-size:14px; color:var(--ash); margin-top:6px}
@@ -73,14 +73,14 @@
   .alts button[aria-pressed="true"]{background:var(--coral); color:var(--ink); border-color:var(--coral)}
   .alts small{display:block; font-family:var(--en); font-size:12px; font-weight:600; letter-spacing:0; opacity:.85}
   .why{list-style:none; margin:16px 0 0; padding:0; display:grid; gap:7px}
-  .why li{background:var(--paper); border:1px solid var(--stitch); border-radius:12px; padding:10px 13px; font-size:14.5px}
+  .why li{background:var(--paper); border:1px solid var(--stitch); border-radius:12px; padding:10px 13px; font-size:14.5px; word-break:keep-all}
   .why b{font-weight:750}
   .ar{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; font-weight:600}
   .lt{font-family:var(--mono); font-weight:700; letter-spacing:0}
   .other{margin-top:14px; font-size:14px; color:var(--deepwool)}
   .other .kr{font-weight:750}
   .intro{margin-top:18px; padding:16px; background:var(--ink); color:var(--paper); border-radius:16px}
-  .intro .ko{font-family:var(--kr); font-size:24px; font-weight:800; letter-spacing:-0.03em}
+  .intro .ko{font-family:var(--kr); font-size:24px; font-weight:800; letter-spacing:-0.03em; word-break:keep-all}
   .intro .tr{font-size:14px; color:#D8D0C6; margin-top:4px}
   .intro .rd{font-family:var(--mono); font-size:12.5px; color:#bdb3a6; margin-top:6px}
   .actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
