@@ -5,6 +5,39 @@
 
 ## 1. 무엇이고 무엇이 아닌가
 
+<a id="topik-ii-units-20261102"></a>
+### 2026-11-02 U13~U16 단원 연결
+
+[TOPIK 3→4급 뼈대 v0.3](TOPIK_3to4급_뼈대_시안_20261102.md)의 확정된 첫 넷을 기존 Strata·Core·Trail 계약으로 읽는 선택형 지도다. 원천은 `strata/topik-ii.units.json`·`topik-ii.grammar.json`·`topik-types.json`, 생성물은 [`maps/topik-ii-units.json`](../strata/maps/topik-ii-units.json), 조립·조회는 [`topik-ii.js`](../strata/topik-ii.js)다. 기존 `build-game-learning.js`가 함께 만들고 `--check`·짝검사가 원천과 대조한다. 원천 해시는 LF로 정규화하며 단원 지도 판에는 출처와 조립 결과 전체를 포함한다.
+
+- 기존 TOPIK II 능력 15개를 그대로 싣고 `topic` 4개, `task` 22개, 단원이 쓰는 `grammar_point` 15개, `word` 61개를 더한다. 기존 `KINDS`·지도 봉투·`part_of` 의미(문법→능력)는 바꾸지 않는다. 문법 전체 134개의 원천은 유지하고 이번 넷이 쓰는 것만 지도에 넣는다.
+- 단원은 `ko2.unit.U14`, 과제는 `ko2.task.U14.reading`, 문법은 원천의 `S461`, 낱말은 `ko2.word.<원자료 등급>.<등급별 번호>`다. TOPIK I 낱말 ID와 섞이지 않는다. 단원의 원자료·복습(`review`)·같은 급 되풀이(`again`)·온라인 반 주차·꿈 갈래·B/C 측정 글은 `topic.material`에 그대로 둔다. U16의 읽기·쓰기 `null`은 과제로 만들지 않는다.
+- `map.forGoal('topik-4')`는 U13→U16 주제를, `map.forGoal('U14')`는 그 단원의 과제를 준다. `unitPath(map, 'U14')`는 `{unit, tasks, grammar, words, skills}`를 반환한다. 없는 단원은 `null`, 없는 목표는 빈 배열이며 비슷한 단원으로 대신하지 않는다. 조회 결과는 중첩 자료까지 불변이다.
+- 추가한 모든 마디·목표 연결은 **교원 검수 전**인 `confidence:'ai_draft', reviewed:false`다. 원자료의 공식 등급과 단원 배정 가안을 `level.basis`로 구분한다. 단원 차례를 필수 선행 관계로 만들지 않고, 그릇의 과제 설명을 검수된 문항·채점 기준으로 간주하지 않는다. 원천의 검수 상태가 바뀌면 기존 빌더는 거절하므로 증거 계약을 먼저 보완해야 한다.
+
+기존 학습 경로에서 여는 예(저장소 루트 기준):
+
+```js
+const { createMap } = require('./strata');
+const { unitPath } = require('./strata/topik-ii');
+const map = createMap(require('./strata/maps/topik-ii-units.json'));
+const unit = unitPath(map, 'U14');
+const coach = require('./atlas/game-learning').createGame({ gameId: 'unit-practice', map });
+// 실제 문항은 기존 skillId/modality/difficulty/responseFormat과,
+// 그 문항에서 실제로 쓰는 문법·낱말 ID만 conceptIds로 지정한다.
+// unit의 모든 문법·낱말을 한 답의 수행 증거로 넣지 않는다.
+```
+
+`topic`·`task`는 조회·구성용이고 학습 증거의 `conceptIds`는 기존처럼 문법·낱말만 받는다. 과제 ID는 기존 `taskId`에 실을 수 있다. 실제 말하기 능력 연결·새 문항·화면의 단원 선택은 이번 범위에 없다. WORLD의 기존 `worldMapData({second: 단원지도})` 조합도 유효함을 시험하며 기본 호출은 그대로다.
+
+**호환성과 확인 범위:** 기존 `maps/topik-i.json`·`topik-ii.json`·`ko-speaking.json`, WORLD 기본 지도판, 화면·게임 묶음, `synk.atlas.learning.v1.device` 저장 형식은 유지한다. 새 지도를 명시한 소비처만 별도 지도판을 쓴다. `tests/strata-topik-ii-path.test.js`는 원천/생성물 대조, 잘못된 참조 거절, 검수 상태, 불변 조회, WORLD 조합, 기존 기록→단원 문항 합성 수행→구형/신형 코치 재읽기를 확인한다. 실제 학생 수행·교원 검수·화면 공개의 증거는 아니다.
+
+**검증·검수(11-02):** 단원·Strata·말하기·WORLD 조합·짝검사 51건 통과, 처음 건너뛴 형제 Talk 원천 대조 1건은 실제 경로를 지정해 따로 통과, 학습·저장 호환·활동 추천 20건 통과(합계 72건). 생성 대조·문법 검사·공개 전 짝검사도 통과했다. 검수 묶음 `topik-ii-unit-backend-20261102`의 A/B를 GPT·Claude가 모두 끝까지 읽고 입력 해시·최종 파일 대조까지 통과: **GPT 0건(반영 0) · Claude 1건(반영 0, P3 후속 1)**, 재현 P0·P1 0. 원문·응답·TAP는 공용 작업본 `.tmp/검수/topik-ii-unit-backend-20261102/`와 `.tmp/topik-ii-unit-backend-20261102/`에 보존한다.
+
+후속 P3는 어휘 ID를 평상 빌드에서도 공식 어휘 원자료와 재대조하는 보강이다. 기존 `build-topik-ii-grammar.py --check`는 해시가 고정된 원자료의 낱말·급·등급별 번호를 대조하지만, 이번 빌드는 이미 정리된 v0.3 JSON을 입력으로 삼는다. 원자료 엑셀은 이번에 다시 열지 않았으며, 이번 작업에서 어휘를 교정하거나 기존 ID를 바꾸지는 않았다. 이후 원천 교정 때는 원자료 재대조와 과거 사건의 ID 대응을 함께 확인해야 한다.
+
+### 앞선 지도 구현 기록
+
 **2026-10-28 권장 준비 관계:** [topik-i.recommendations.json](../strata/topik-i.recommendations.json)에 듣기·읽기 각각 `detail → negation/sequence/reason/condition` 8개를 추가했다. `recommended_before`는 항상 `blocking:false`이며 필수 선행 관계가 아니다. 공식 근거는 [한국어 표준 교육과정 고시](https://www.korean.go.kr/front/etcData/etcDataView.do?etc_seq=657&mn_id=46&pageIndex=2)의 성취 목표 범위이고, 구체 정보 확인을 먼저 연습하자는 순서는 SYNK의 설계 해석이다. `basis.official_scope`와 `basis.interpretation`을 나눠 저장하며 효과가 검증된 학습 순서라고 주장하지 않는다.
 
 `map.recommendedBefore(targetId)`는 검수 통과한 직접 관계만 `{node,target,blocking:false,reason_ko,basis,source_refs,review}`로 돌려준다. 목표와 무관한 선행 능력을 가산하지 않으며, 소비자는 이미 독립 증거가 있는 준비 능력을 제외한다. `candidates()`의 `advisory`도 `mastered`를 제외하고 `blocked_by`는 늘리지 않는다. 이 원천도 TOPIK I 지도의 버전 해시에 포함한다. 실제 검수는 이번 작업에 사용자가 승인한 작성자·검수자 분리 GPT 예외로 수행했고 [문항 검수 기록](../experiences/topik-items/review/atlas-world-learning-20261028.json)에 남겼다.

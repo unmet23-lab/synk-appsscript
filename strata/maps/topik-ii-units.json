@@ -1,0 +1,3178 @@
+{
+  "map_ver": "topik-ii-units-1-a15de85dc2ab",
+  "subject": "ko",
+  "sources": {
+    "practice-taxonomy": {
+      "path": "strata/topik-ii.skills.json",
+      "sha256": "47d0a0c1915834979d4eb07420214da084987699ae2e4c59057b1de4cfb1da8d"
+    },
+    "unit-curriculum": {
+      "path": "strata/topik-ii.units.json",
+      "sha256": "9a5c307c89b90b316a18dd111a893479178d92fe4f8f395e9e2048369366675c"
+    },
+    "unit-grammar": {
+      "path": "strata/topik-ii.grammar.json",
+      "sha256": "13180c9dcdf73e21e3971bea39e7e1cbfceba3c22d678a8740d99b82cdc48e2e"
+    },
+    "unit-exam-types": {
+      "path": "strata/topik-types.json",
+      "sha256": "32ee61cbd6124ce3279930e686eebd07abd712cf8e7efe573a0c7e931589d8cd"
+    }
+  },
+  "nodes": [
+    {
+      "id": "ko2.listening.response",
+      "kind": "skill",
+      "label_ko": "듣고 알맞게 대답하기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.listening.detail",
+      "kind": "skill",
+      "label_ko": "듣고 세부 내용 파악하기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.listening.main",
+      "kind": "skill",
+      "label_ko": "듣고 중심 생각 파악하기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.listening.inference",
+      "kind": "skill",
+      "label_ko": "듣고 상황 짐작하기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.listening.attitude",
+      "kind": "skill",
+      "label_ko": "듣고 의도·태도 파악하기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.reading.grammar",
+      "kind": "skill",
+      "label_ko": "문법 표현 읽기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.reading.vocabulary",
+      "kind": "skill",
+      "label_ko": "어휘·관용 표현 읽기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.reading.detail",
+      "kind": "skill",
+      "label_ko": "읽고 세부 내용 파악하기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.reading.main",
+      "kind": "skill",
+      "label_ko": "읽고 중심 내용 파악하기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.reading.context",
+      "kind": "skill",
+      "label_ko": "문맥으로 내용 짐작하기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.reading.structure",
+      "kind": "skill",
+      "label_ko": "글의 흐름 파악하기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.reading.attitude",
+      "kind": "skill",
+      "label_ko": "필자·인물의 태도와 심정 파악하기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.writing.sentence",
+      "kind": "skill",
+      "label_ko": "문맥에 맞는 문장 쓰기",
+      "domain": "writing",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.writing.description",
+      "kind": "skill",
+      "label_ko": "자료를 설명하는 글 쓰기",
+      "domain": "writing",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko2.writing.argument",
+      "kind": "skill",
+      "label_ko": "주장하는 글 쓰기",
+      "domain": "writing",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "S416",
+      "kind": "grammar_point",
+      "label_ko": "-고자",
+      "forms": [
+        "-고자"
+      ],
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "category": "연결어미",
+      "meaning": null,
+      "bank": null,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-grammar",
+          "selector": "S416"
+        }
+      ]
+    },
+    {
+      "id": "S447",
+      "kind": "grammar_point",
+      "label_ko": "-는 대로",
+      "forms": [
+        "-는 대로",
+        "-ㄴ 대로1",
+        "-ㄴ 대로2",
+        "-은 대로1",
+        "-은 대로2"
+      ],
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "category": "표현",
+      "meaning": null,
+      "bank": null,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-grammar",
+          "selector": "S447"
+        }
+      ]
+    },
+    {
+      "id": "S430",
+      "kind": "grammar_point",
+      "label_ko": "-으며",
+      "forms": [
+        "-으며",
+        "-며2"
+      ],
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "category": "연결어미",
+      "meaning": "나열/동시",
+      "bank": null,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-grammar",
+          "selector": "S430"
+        }
+      ]
+    },
+    {
+      "id": "S330",
+      "kind": "grammar_point",
+      "label_ko": "-는다",
+      "forms": [
+        "-는다",
+        "-ㄴ다",
+        "-다2"
+      ],
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "category": "종결어미",
+      "meaning": null,
+      "bank": null,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-grammar",
+          "selector": "S330"
+        }
+      ]
+    },
+    {
+      "id": "S461",
+      "kind": "grammar_point",
+      "label_ko": "에 비하여",
+      "forms": [
+        "에 비하여",
+        "에 비하면"
+      ],
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "category": "표현",
+      "meaning": null,
+      "bank": null,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-grammar",
+          "selector": "S461"
+        }
+      ]
+    },
+    {
+      "id": "S460",
+      "kind": "grammar_point",
+      "label_ko": "에 따라",
+      "forms": [
+        "에 따라",
+        "에 따르면"
+      ],
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "category": "표현",
+      "meaning": null,
+      "bank": null,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-grammar",
+          "selector": "S460"
+        }
+      ]
+    },
+    {
+      "id": "S343",
+      "kind": "grammar_point",
+      "label_ko": "-는 반면",
+      "forms": [
+        "-는 반면",
+        "-ㄴ 반면에",
+        "-은 반면에"
+      ],
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "category": "표현",
+      "meaning": null,
+      "bank": "G713",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-grammar",
+          "selector": "S343"
+        }
+      ]
+    },
+    {
+      "id": "S339",
+      "kind": "grammar_point",
+      "label_ko": "-은 결과",
+      "forms": [
+        "-은 결과",
+        "-ㄴ 결과"
+      ],
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "category": "표현",
+      "meaning": null,
+      "bank": null,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-grammar",
+          "selector": "S339"
+        }
+      ]
+    },
+    {
+      "id": "S422",
+      "kind": "grammar_point",
+      "label_ko": "-으므로",
+      "forms": [
+        "-으므로",
+        "-므로"
+      ],
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "category": "연결어미",
+      "meaning": null,
+      "bank": null,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-grammar",
+          "selector": "S422"
+        }
+      ]
+    },
+    {
+      "id": "S411",
+      "kind": "grammar_point",
+      "label_ko": "으로서",
+      "forms": [
+        "으로서",
+        "로서"
+      ],
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "category": "조사",
+      "meaning": null,
+      "bank": null,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-grammar",
+          "selector": "S411"
+        }
+      ]
+    },
+    {
+      "id": "S346",
+      "kind": "grammar_point",
+      "label_ko": "-기 위해",
+      "forms": [
+        "-기 위해",
+        "-기 위해서",
+        "-기 위한",
+        "을 위해",
+        "를 위해"
+      ],
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "category": "표현",
+      "meaning": null,
+      "bank": null,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-grammar",
+          "selector": "S346"
+        }
+      ]
+    },
+    {
+      "id": "S466",
+      "kind": "grammar_point",
+      "label_ko": "-는대2",
+      "forms": [
+        "-는대2",
+        "-ㄴ대2",
+        "-는대요2",
+        "-대2",
+        "-대요2",
+        "-래2",
+        "-래요2",
+        "-으래2",
+        "-으래요2",
+        "-래4",
+        "-재",
+        "-재요"
+      ],
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "category": "표현",
+      "meaning": "인용",
+      "bank": "G609",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-grammar",
+          "selector": "S466"
+        }
+      ]
+    },
+    {
+      "id": "S436",
+      "kind": "grammar_point",
+      "label_ko": "-는다면서1",
+      "forms": [
+        "-는다면서1",
+        "-ㄴ다면서1",
+        "-다면서1",
+        "-라면서1",
+        "-는다면서요",
+        "-다면서요",
+        "-라면서요"
+      ],
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "category": "종결어미",
+      "meaning": "의문",
+      "bank": null,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-grammar",
+          "selector": "S436"
+        }
+      ]
+    },
+    {
+      "id": "S426",
+      "kind": "grammar_point",
+      "label_ko": "-더니",
+      "forms": [
+        "-더니"
+      ],
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "category": "연결어미",
+      "meaning": null,
+      "bank": "G724",
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-grammar",
+          "selector": "S426"
+        }
+      ]
+    },
+    {
+      "id": "S446",
+      "kind": "grammar_point",
+      "label_ko": "-는 김에",
+      "forms": [
+        "-는 김에",
+        "-ㄴ 김에",
+        "-은 김에"
+      ],
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "category": "표현",
+      "meaning": null,
+      "bank": null,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-grammar",
+          "selector": "S446"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.1.731",
+      "kind": "word",
+      "label_ko": "회의",
+      "level": {
+        "intro": 1,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 731,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13.words.1.731"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.1641",
+      "kind": "word",
+      "label_ko": "회의실",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1641,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13.words.3.1641"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.613",
+      "kind": "word",
+      "label_ko": "보고",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 613,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13.words.3.613"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.1439",
+      "kind": "word",
+      "label_ko": "참석",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1439,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13.words.3.1439"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.1169",
+      "kind": "word",
+      "label_ko": "의견",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1169,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13.words.3.1169"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.1335",
+      "kind": "word",
+      "label_ko": "제안",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1335,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13.words.3.1335"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.2.50",
+      "kind": "word",
+      "label_ko": "결정",
+      "level": {
+        "intro": 2,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 50,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13.words.2.50"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.1214",
+      "kind": "word",
+      "label_ko": "일정",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1214,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13.words.3.1214"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.1412",
+      "kind": "word",
+      "label_ko": "진행",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1412,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13.words.3.1412"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.1009",
+      "kind": "word",
+      "label_ko": "업무",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1009,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13.words.3.1009"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.1628",
+      "kind": "word",
+      "label_ko": "확인",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1628,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13.words.3.1628"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.4.465",
+      "kind": "word",
+      "label_ko": "담당",
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 465,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13.words.4.465"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.4.1467",
+      "kind": "word",
+      "label_ko": "운영",
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1467,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13.words.4.1467"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.4.394",
+      "kind": "word",
+      "label_ko": "논의",
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 394,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13.words.4.394"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.4.164",
+      "kind": "word",
+      "label_ko": "공지",
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 164,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13.words.4.164"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.768",
+      "kind": "word",
+      "label_ko": "설문",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 768,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14.words.3.768"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.4.1513",
+      "kind": "word",
+      "label_ko": "응답",
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1513,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14.words.4.1513"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.1343",
+      "kind": "word",
+      "label_ko": "조사",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1343,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14.words.3.1343"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.315",
+      "kind": "word",
+      "label_ko": "대상",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 315,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14.words.3.315"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.2.47",
+      "kind": "word",
+      "label_ko": "결과",
+      "level": {
+        "intro": 2,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 47,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14.words.2.47"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.4.965",
+      "kind": "word",
+      "label_ko": "비율",
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 965,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14.words.4.965"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.4.1715",
+      "kind": "word",
+      "label_ko": "절반",
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1715,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14.words.4.1715"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.1390",
+      "kind": "word",
+      "label_ko": "증가",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1390,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14.words.3.1390"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.4.42",
+      "kind": "word",
+      "label_ko": "감소",
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 42,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14.words.4.42"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.1433",
+      "kind": "word",
+      "label_ko": "차이",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1433,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14.words.3.1433"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.2.453",
+      "kind": "word",
+      "label_ko": "비교",
+      "level": {
+        "intro": 2,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 453,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14.words.2.453"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.4.1083",
+      "kind": "word",
+      "label_ko": "선호",
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1083,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14.words.4.1083"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.4.239",
+      "kind": "word",
+      "label_ko": "그래프",
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 239,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14.words.4.239"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.4.1175",
+      "kind": "word",
+      "label_ko": "순위",
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1175,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14.words.4.1175"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.1233",
+      "kind": "word",
+      "label_ko": "자료",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1233,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14.words.3.1233"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.606",
+      "kind": "word",
+      "label_ko": "변화",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 606,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14.words.3.606"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.902",
+      "kind": "word",
+      "label_ko": "신청서",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 902,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15.words.3.902"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.4.1822",
+      "kind": "word",
+      "label_ko": "지원",
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1822,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15.words.4.1822"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.4.1412",
+      "kind": "word",
+      "label_ko": "예산",
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1412,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15.words.4.1412"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.165",
+      "kind": "word",
+      "label_ko": "금액",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 165,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15.words.3.165"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.2.354",
+      "kind": "word",
+      "label_ko": "목적",
+      "level": {
+        "intro": 2,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 354,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15.words.2.354"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.1.42",
+      "kind": "word",
+      "label_ko": "계획",
+      "level": {
+        "intro": 1,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 42,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15.words.1.42"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.4.289",
+      "kind": "word",
+      "label_ko": "기획",
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 289,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15.words.4.289"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.1635",
+      "kind": "word",
+      "label_ko": "활동",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1635,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15.words.3.1635"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.1644",
+      "kind": "word",
+      "label_ko": "효과",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1644,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15.words.3.1644"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.4.2150",
+      "kind": "word",
+      "label_ko": "홍보",
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 2150,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15.words.4.2150"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.1336",
+      "kind": "word",
+      "label_ko": "제출",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1336,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15.words.3.1336"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.2.503",
+      "kind": "word",
+      "label_ko": "서류",
+      "level": {
+        "intro": 2,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 503,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15.words.2.503"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.48",
+      "kind": "word",
+      "label_ko": "검토",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 48,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15.words.3.48"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.476",
+      "kind": "word",
+      "label_ko": "모집",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 476,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15.words.3.476"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.4.254",
+      "kind": "word",
+      "label_ko": "근거",
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 254,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15.words.4.254"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.1640",
+      "kind": "word",
+      "label_ko": "회식",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1640,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U16.words.3.1640"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.2.508",
+      "kind": "word",
+      "label_ko": "선배",
+      "level": {
+        "intro": 2,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 508,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U16.words.2.508"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.2.444",
+      "kind": "word",
+      "label_ko": "분위기",
+      "level": {
+        "intro": 2,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 444,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U16.words.2.444"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.548",
+      "kind": "word",
+      "label_ko": "반말",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 548,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U16.words.3.548"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.4.1338",
+      "kind": "word",
+      "label_ko": "어색하다",
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1338,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U16.words.4.1338"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.790",
+      "kind": "word",
+      "label_ko": "소감",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 790,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U16.words.3.790"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.1460",
+      "kind": "word",
+      "label_ko": "첫인상",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1460,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U16.words.3.1460"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.1260",
+      "kind": "word",
+      "label_ko": "장점",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1260,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U16.words.3.1260"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.908",
+      "kind": "word",
+      "label_ko": "실력",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 908,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U16.words.3.908"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.480",
+      "kind": "word",
+      "label_ko": "목표",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 480,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U16.words.3.480"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.4.1637",
+      "kind": "word",
+      "label_ko": "자신감",
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1637,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U16.words.4.1637"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.4.112",
+      "kind": "word",
+      "label_ko": "겸손",
+      "level": {
+        "intro": 4,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 112,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U16.words.4.112"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.1063",
+      "kind": "word",
+      "label_ko": "예의",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 1063,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U16.words.3.1063"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.264",
+      "kind": "word",
+      "label_ko": "높임말",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 264,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U16.words.3.264"
+        }
+      ]
+    },
+    {
+      "id": "ko2.word.3.205",
+      "kind": "word",
+      "label_ko": "꾸준히",
+      "level": {
+        "intro": 3,
+        "basis": "standard_curriculum"
+      },
+      "standard_no": 205,
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U16.words.3.205"
+        }
+      ]
+    },
+    {
+      "id": "ko2.unit.U13",
+      "kind": "topic",
+      "label_ko": "운영진 첫 회의",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13"
+        }
+      ],
+      "material": {
+        "id": "U13",
+        "title": "운영진 첫 회의",
+        "semester": "autumn",
+        "level": 4,
+        "event": "가을 학기 첫 운영진 회의 — 지난 학기 결정을 이어받아 이번 학기 안건을 정하고, 내가 맡은 일을 짧게 보고한 뒤 회의 결과를 회의록으로 남긴다",
+        "dream": null,
+        "functions": [
+          "회의에서 안건 듣기",
+          "맡은 일 짧게 보고하기",
+          "말을 글(회의록)로 옮기기"
+        ],
+        "text_types": [
+          "회의 대화",
+          "짧은 보고",
+          "회의록"
+        ],
+        "grammar": [
+          {
+            "id": "S416",
+            "form": "-고자",
+            "use": "안건 · 목적 제시(「이번 학기에는 아침 메뉴를 늘리고자 합니다」)"
+          },
+          {
+            "id": "S447",
+            "form": "-는 대로",
+            "use": "일이 끝나는 즉시(「회의가 끝나는 대로 결과를 공지하겠습니다」)"
+          },
+          {
+            "id": "S430",
+            "form": "-으며",
+            "use": "회의록에서 결정 사항 나열(「아침 메뉴를 시범 판매하며 홍보 담당은 포스터를 만든다」)"
+          },
+          {
+            "id": "S330",
+            "form": "-는다",
+            "use": "회의록 문어 종결(「다음 주부터 아침 메뉴를 판매한다」)",
+            "review": true
+          }
+        ],
+        "words": [
+          {
+            "word": "회의",
+            "level": "1",
+            "no": 731,
+            "review": true
+          },
+          {
+            "word": "회의실",
+            "level": "3",
+            "no": 1641
+          },
+          {
+            "word": "보고",
+            "level": "3",
+            "no": 613
+          },
+          {
+            "word": "참석",
+            "level": "3",
+            "no": 1439
+          },
+          {
+            "word": "의견",
+            "level": "3",
+            "no": 1169
+          },
+          {
+            "word": "제안",
+            "level": "3",
+            "no": 1335
+          },
+          {
+            "word": "결정",
+            "level": "2",
+            "no": 50,
+            "review": true
+          },
+          {
+            "word": "일정",
+            "level": "3",
+            "no": 1214
+          },
+          {
+            "word": "진행",
+            "level": "3",
+            "no": 1412
+          },
+          {
+            "word": "업무",
+            "level": "3",
+            "no": 1009
+          },
+          {
+            "word": "확인",
+            "level": "3",
+            "no": 1628
+          },
+          {
+            "word": "담당",
+            "level": "4",
+            "no": 465
+          },
+          {
+            "word": "운영",
+            "level": "4",
+            "no": 1467
+          },
+          {
+            "word": "논의",
+            "level": "4",
+            "no": 394
+          },
+          {
+            "word": "공지",
+            "level": "4",
+            "no": 164
+          }
+        ],
+        "roots": [
+          {
+            "root": "회",
+            "meaning": "모이다",
+            "words": [
+              "회의",
+              "회의실",
+              "회식",
+              "회원"
+            ]
+          }
+        ],
+        "skills": [
+          "ko2.listening.detail",
+          "ko2.listening.inference",
+          "ko2.writing.sentence"
+        ],
+        "topik_types": [
+          "TII-L-22",
+          "TII-L-23",
+          "TII-W-52"
+        ],
+        "course": {
+          "writing": "W2",
+          "note": "W2의 「말을 글로 바꾸기」를 회의록 쓰기로 받는다"
+        },
+        "containers": {
+          "drama": "회의실 — 태오 선배가 안건을 내고 내 차례에 「제가 맡은 홍보는 …」으로 짧게 보고(측정 B는 이날 카페 짧은 교대)",
+          "cafe": "회의에서 정한 아침 메뉴 시범 판매 — 손님 둘에게 바뀐 점을 안내",
+          "club": "회의 녹음 2분 듣고 결정 사항 고르기 · 단톡방에 회의 결과 공지 세 문장",
+          "reading": "지난 학기 회의록(가상) — 결정 사항 · 남은 일 찾기",
+          "listening": "회의 대화 — 누가 무엇을 맡았나(세부)",
+          "writing": "회의에서 오간 말 다섯 줄을 회의록 문장(-는다)으로 바꾸기"
+        },
+        "measure": {
+          "B": "이야기 당일 짧은 교대 — 손님(교수님)이 동아리 회의에서 정한 것을 묻는다",
+          "C": "6~9일 창 — 다른 손님(학생회 학생)이 카페 앞 공지에 적힌 회의 결정(다음 달 영업 시간)을 묻는다"
+        },
+        "word_ids": [
+          "ko2.word.1.731",
+          "ko2.word.3.1641",
+          "ko2.word.3.613",
+          "ko2.word.3.1439",
+          "ko2.word.3.1169",
+          "ko2.word.3.1335",
+          "ko2.word.2.50",
+          "ko2.word.3.1214",
+          "ko2.word.3.1412",
+          "ko2.word.3.1009",
+          "ko2.word.3.1628",
+          "ko2.word.4.465",
+          "ko2.word.4.1467",
+          "ko2.word.4.394",
+          "ko2.word.4.164"
+        ],
+        "task_ids": [
+          "ko2.task.U13.drama",
+          "ko2.task.U13.cafe",
+          "ko2.task.U13.club",
+          "ko2.task.U13.reading",
+          "ko2.task.U13.listening",
+          "ko2.task.U13.writing"
+        ]
+      }
+    },
+    {
+      "id": "ko2.task.U13.drama",
+      "kind": "task",
+      "label_ko": "회의실 — 태오 선배가 안건을 내고 내 차례에 「제가 맡은 홍보는 …」으로 짧게 보고(측정 B는 이날 카페 짧은 교대)",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13"
+        }
+      ],
+      "material": {
+        "unit_id": "U13",
+        "container": "drama",
+        "brief": "회의실 — 태오 선배가 안건을 내고 내 차례에 「제가 맡은 홍보는 …」으로 짧게 보고(측정 B는 이날 카페 짧은 교대)"
+      }
+    },
+    {
+      "id": "ko2.task.U13.cafe",
+      "kind": "task",
+      "label_ko": "회의에서 정한 아침 메뉴 시범 판매 — 손님 둘에게 바뀐 점을 안내",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13"
+        }
+      ],
+      "material": {
+        "unit_id": "U13",
+        "container": "cafe",
+        "brief": "회의에서 정한 아침 메뉴 시범 판매 — 손님 둘에게 바뀐 점을 안내"
+      }
+    },
+    {
+      "id": "ko2.task.U13.club",
+      "kind": "task",
+      "label_ko": "회의 녹음 2분 듣고 결정 사항 고르기 · 단톡방에 회의 결과 공지 세 문장",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13"
+        }
+      ],
+      "material": {
+        "unit_id": "U13",
+        "container": "club",
+        "brief": "회의 녹음 2분 듣고 결정 사항 고르기 · 단톡방에 회의 결과 공지 세 문장"
+      }
+    },
+    {
+      "id": "ko2.task.U13.reading",
+      "kind": "task",
+      "label_ko": "지난 학기 회의록(가상) — 결정 사항 · 남은 일 찾기",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13"
+        }
+      ],
+      "material": {
+        "unit_id": "U13",
+        "container": "reading",
+        "brief": "지난 학기 회의록(가상) — 결정 사항 · 남은 일 찾기"
+      }
+    },
+    {
+      "id": "ko2.task.U13.listening",
+      "kind": "task",
+      "label_ko": "회의 대화 — 누가 무엇을 맡았나(세부)",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13"
+        }
+      ],
+      "material": {
+        "unit_id": "U13",
+        "container": "listening",
+        "brief": "회의 대화 — 누가 무엇을 맡았나(세부)"
+      }
+    },
+    {
+      "id": "ko2.task.U13.writing",
+      "kind": "task",
+      "label_ko": "회의에서 오간 말 다섯 줄을 회의록 문장(-는다)으로 바꾸기",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U13"
+        }
+      ],
+      "material": {
+        "unit_id": "U13",
+        "container": "writing",
+        "brief": "회의에서 오간 말 다섯 줄을 회의록 문장(-는다)으로 바꾸기"
+      }
+    },
+    {
+      "id": "ko2.unit.U14",
+      "kind": "topic",
+      "label_ko": "설문 결과 브리핑",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14"
+        }
+      ],
+      "material": {
+        "id": "U14",
+        "title": "설문 결과 브리핑",
+        "semester": "autumn",
+        "level": 4,
+        "event": "학생 300명 설문(가상 자료)을 정리해 운영진에게 브리핑하고, 그 결과로 메뉴와 영업 시간을 고른다",
+        "dream": null,
+        "functions": [
+          "자료를 비교 · 대조로 설명하기",
+          "출처를 밝혀 말하기"
+        ],
+        "text_types": [
+          "설문 결과 표 · 그래프",
+          "브리핑",
+          "자료 설명문"
+        ],
+        "grammar": [
+          {
+            "id": "S461",
+            "form": "에 비하여",
+            "use": "두 수치 견주기(「작년에 비하여 아침 시간에 오는 학생이 크게 늘었다」, 관련형 에 비하면)"
+          },
+          {
+            "id": "S460",
+            "form": "에 따라",
+            "use": "출처 밝히기 — 이 뜻은 관련형 「에 따르면」으로만 쓴다(「설문 결과에 따르면 응답자의 절반이 아침 메뉴를 원했다」)"
+          },
+          {
+            "id": "S343",
+            "form": "-는 반면",
+            "use": "대조(「아침에는 식사 메뉴를 선호하는 반면 저녁에는 음료를 선호한다」)",
+            "review": true
+          },
+          {
+            "id": "S339",
+            "form": "-은 결과",
+            "use": "조사 결과 말하기(「학생 300명을 대상으로 조사한 결과 아침 메뉴 선호가 가장 높았다」)",
+            "review": true
+          }
+        ],
+        "words": [
+          {
+            "word": "설문",
+            "level": "3",
+            "no": 768
+          },
+          {
+            "word": "응답",
+            "level": "4",
+            "no": 1513
+          },
+          {
+            "word": "조사",
+            "level": "3",
+            "no": 1343
+          },
+          {
+            "word": "대상",
+            "level": "3",
+            "no": 315
+          },
+          {
+            "word": "결과",
+            "level": "2",
+            "no": 47,
+            "review": true
+          },
+          {
+            "word": "비율",
+            "level": "4",
+            "no": 965
+          },
+          {
+            "word": "절반",
+            "level": "4",
+            "no": 1715
+          },
+          {
+            "word": "증가",
+            "level": "3",
+            "no": 1390
+          },
+          {
+            "word": "감소",
+            "level": "4",
+            "no": 42
+          },
+          {
+            "word": "차이",
+            "level": "3",
+            "no": 1433
+          },
+          {
+            "word": "비교",
+            "level": "2",
+            "no": 453,
+            "review": true
+          },
+          {
+            "word": "선호",
+            "level": "4",
+            "no": 1083
+          },
+          {
+            "word": "그래프",
+            "level": "4",
+            "no": 239
+          },
+          {
+            "word": "순위",
+            "level": "4",
+            "no": 1175
+          },
+          {
+            "word": "자료",
+            "level": "3",
+            "no": 1233
+          },
+          {
+            "word": "변화",
+            "level": "3",
+            "no": 606
+          }
+        ],
+        "roots": [
+          {
+            "root": "응",
+            "meaning": "답하다",
+            "words": [
+              "응답"
+            ]
+          },
+          {
+            "root": "비",
+            "meaning": "견주다",
+            "words": [
+              "비교",
+              "비율"
+            ]
+          }
+        ],
+        "skills": [
+          "ko2.writing.description",
+          "ko2.reading.detail",
+          "ko2.listening.detail"
+        ],
+        "topik_types": [
+          "TII-W-53",
+          "TII-R-09",
+          "TII-L-22"
+        ],
+        "course": {
+          "writing": "W3",
+          "note": "첫 주는 W3 「53번 설문 비교」를 동아리 설문으로, 둘째 주는 W4 「53번 변화 · 원인 · 전망」을 작년과 견준 이용 변화로 받는다"
+        },
+        "containers": {
+          "drama": "회의 — 태오 선배 「지난주 설문 정리됐어?」 → 결과를 두 문장으로 보고(측정 B는 이날 짧은 교대)",
+          "cafe": "영업 전 확인 자료가 설문 그래프 — 아침 메뉴를 고르고 단골손님 둘에게 두 메뉴의 차이를 「…반면」 꼴로 안내",
+          "club": "단톡방에 설문 결과 공지 세 문장",
+          "reading": "학보 기사 「학생 식당과 동아리 카페, 무엇이 다를까」(비교 · 대조 설명문)",
+          "listening": "학생회 회의 녹음 2분 — 수치 세부",
+          "writing": "설문 그래프 설명 200~300자(53번 꼴, 문어 종결)"
+        },
+        "measure": {
+          "B": "이야기 당일 — 교수님이 「요즘 학생들은 아침에 뭘 많이 찾아요?」",
+          "C": "6~9일 창 — 다른 손님이 다른 자료(시험 기간 이용 시간)에 대해 묻는다"
+        },
+        "word_ids": [
+          "ko2.word.3.768",
+          "ko2.word.4.1513",
+          "ko2.word.3.1343",
+          "ko2.word.3.315",
+          "ko2.word.2.47",
+          "ko2.word.4.965",
+          "ko2.word.4.1715",
+          "ko2.word.3.1390",
+          "ko2.word.4.42",
+          "ko2.word.3.1433",
+          "ko2.word.2.453",
+          "ko2.word.4.1083",
+          "ko2.word.4.239",
+          "ko2.word.4.1175",
+          "ko2.word.3.1233",
+          "ko2.word.3.606"
+        ],
+        "task_ids": [
+          "ko2.task.U14.drama",
+          "ko2.task.U14.cafe",
+          "ko2.task.U14.club",
+          "ko2.task.U14.reading",
+          "ko2.task.U14.listening",
+          "ko2.task.U14.writing"
+        ]
+      }
+    },
+    {
+      "id": "ko2.task.U14.drama",
+      "kind": "task",
+      "label_ko": "회의 — 태오 선배 「지난주 설문 정리됐어?」 → 결과를 두 문장으로 보고(측정 B는 이날 짧은 교대)",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14"
+        }
+      ],
+      "material": {
+        "unit_id": "U14",
+        "container": "drama",
+        "brief": "회의 — 태오 선배 「지난주 설문 정리됐어?」 → 결과를 두 문장으로 보고(측정 B는 이날 짧은 교대)"
+      }
+    },
+    {
+      "id": "ko2.task.U14.cafe",
+      "kind": "task",
+      "label_ko": "영업 전 확인 자료가 설문 그래프 — 아침 메뉴를 고르고 단골손님 둘에게 두 메뉴의 차이를 「…반면」 꼴로 안내",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14"
+        }
+      ],
+      "material": {
+        "unit_id": "U14",
+        "container": "cafe",
+        "brief": "영업 전 확인 자료가 설문 그래프 — 아침 메뉴를 고르고 단골손님 둘에게 두 메뉴의 차이를 「…반면」 꼴로 안내"
+      }
+    },
+    {
+      "id": "ko2.task.U14.club",
+      "kind": "task",
+      "label_ko": "단톡방에 설문 결과 공지 세 문장",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14"
+        }
+      ],
+      "material": {
+        "unit_id": "U14",
+        "container": "club",
+        "brief": "단톡방에 설문 결과 공지 세 문장"
+      }
+    },
+    {
+      "id": "ko2.task.U14.reading",
+      "kind": "task",
+      "label_ko": "학보 기사 「학생 식당과 동아리 카페, 무엇이 다를까」(비교 · 대조 설명문)",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14"
+        }
+      ],
+      "material": {
+        "unit_id": "U14",
+        "container": "reading",
+        "brief": "학보 기사 「학생 식당과 동아리 카페, 무엇이 다를까」(비교 · 대조 설명문)"
+      }
+    },
+    {
+      "id": "ko2.task.U14.listening",
+      "kind": "task",
+      "label_ko": "학생회 회의 녹음 2분 — 수치 세부",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14"
+        }
+      ],
+      "material": {
+        "unit_id": "U14",
+        "container": "listening",
+        "brief": "학생회 회의 녹음 2분 — 수치 세부"
+      }
+    },
+    {
+      "id": "ko2.task.U14.writing",
+      "kind": "task",
+      "label_ko": "설문 그래프 설명 200~300자(53번 꼴, 문어 종결)",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U14"
+        }
+      ],
+      "material": {
+        "unit_id": "U14",
+        "container": "writing",
+        "brief": "설문 그래프 설명 200~300자(53번 꼴, 문어 종결)"
+      }
+    },
+    {
+      "id": "ko2.unit.U15",
+      "kind": "topic",
+      "label_ko": "지원금 신청서",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15"
+        }
+      ],
+      "material": {
+        "id": "U15",
+        "title": "지원금 신청서",
+        "semester": "autumn",
+        "level": 4,
+        "event": "학교 창업 지원 사업에 동아리 카페 신청서를 낸다 — 목적 · 계획 · 쓸 곳 · 기대 효과를 문어로 쓴다",
+        "dream": null,
+        "functions": [
+          "목적 · 근거를 밝혀 계획 쓰기",
+          "공식 문서의 격식체(-습니다)로 쓰기"
+        ],
+        "text_types": [
+          "신청서",
+          "공지(사업 안내)",
+          "실용문"
+        ],
+        "grammar": [
+          {
+            "id": "S416",
+            "form": "-고자",
+            "use": "목적(「학생들의 아침 식사를 돕고자 합니다」)",
+            "again": true
+          },
+          {
+            "id": "S422",
+            "form": "-으므로",
+            "use": "근거(「아침 이용 학생이 늘었으므로 조리 기구를 더 마련하고자 합니다」)"
+          },
+          {
+            "id": "S411",
+            "form": "으로서",
+            "use": "자격 밝히기(「동아리 카페 대표로서 신청합니다」)"
+          },
+          {
+            "id": "S346",
+            "form": "-기 위해",
+            "use": "목적(「식사 준비 시간을 줄이기 위해 간편 메뉴를 만듭니다」, 관련형 「학생들의 편의를 위해」)",
+            "review": true
+          }
+        ],
+        "words": [
+          {
+            "word": "신청서",
+            "level": "3",
+            "no": 902
+          },
+          {
+            "word": "지원",
+            "level": "4",
+            "no": 1822
+          },
+          {
+            "word": "예산",
+            "level": "4",
+            "no": 1412
+          },
+          {
+            "word": "금액",
+            "level": "3",
+            "no": 165
+          },
+          {
+            "word": "목적",
+            "level": "2",
+            "no": 354,
+            "review": true
+          },
+          {
+            "word": "계획",
+            "level": "1",
+            "no": 42,
+            "review": true
+          },
+          {
+            "word": "기획",
+            "level": "4",
+            "no": 289
+          },
+          {
+            "word": "활동",
+            "level": "3",
+            "no": 1635
+          },
+          {
+            "word": "효과",
+            "level": "3",
+            "no": 1644
+          },
+          {
+            "word": "홍보",
+            "level": "4",
+            "no": 2150
+          },
+          {
+            "word": "제출",
+            "level": "3",
+            "no": 1336
+          },
+          {
+            "word": "서류",
+            "level": "2",
+            "no": 503,
+            "review": true
+          },
+          {
+            "word": "검토",
+            "level": "3",
+            "no": 48
+          },
+          {
+            "word": "모집",
+            "level": "3",
+            "no": 476
+          },
+          {
+            "word": "근거",
+            "level": "4",
+            "no": 254
+          }
+        ],
+        "roots": [
+          {
+            "root": "신",
+            "meaning": "아뢰다",
+            "words": [
+              "신청서"
+            ]
+          },
+          {
+            "root": "효",
+            "meaning": "나타나는 보람(효험)",
+            "words": [
+              "효과"
+            ]
+          }
+        ],
+        "skills": [
+          "ko2.writing.sentence",
+          "ko2.reading.detail",
+          "ko2.reading.grammar"
+        ],
+        "topik_types": [
+          "TII-W-51",
+          "TII-W-52",
+          "TII-R-01",
+          "TII-R-09"
+        ],
+        "course": {
+          "writing": "W1",
+          "note": "W1 「51번 실용문 · 안내문 · 이메일의 격식 표현 -고자 · -(으)므로」를 신청서로 받는다"
+        },
+        "containers": {
+          "drama": "학생지원팀 — 담당 선생님께 신청 조건을 여쭙고 확인(격식)",
+          "cafe": "신청서에 쓸 근거 모으기 — 단골손님 둘에게 아침 메뉴를 찾는 이유를 묻는다",
+          "club": "사업 안내 공지 읽고 마감 · 서류 고르기 · 단톡방에 역할 나누기",
+          "reading": "학교 창업 지원 사업 공지(가상) — 조건 · 마감 · 금액",
+          "listening": "안내 방송 1분 — 바뀐 마감",
+          "writing": "신청서 빈칸 두 곳(51번 꼴, -습니다체 — W1과 같은 문체) + 목적 · 계획 두 문장"
+        },
+        "measure": {
+          "B": "특별한 날 — 신청서 빈칸을 도움 없이 채우기",
+          "C": "6~9일 창 — 다른 공지를 보고 쓰는 축제 부스 신청서의 빈칸"
+        },
+        "word_ids": [
+          "ko2.word.3.902",
+          "ko2.word.4.1822",
+          "ko2.word.4.1412",
+          "ko2.word.3.165",
+          "ko2.word.2.354",
+          "ko2.word.1.42",
+          "ko2.word.4.289",
+          "ko2.word.3.1635",
+          "ko2.word.3.1644",
+          "ko2.word.4.2150",
+          "ko2.word.3.1336",
+          "ko2.word.2.503",
+          "ko2.word.3.48",
+          "ko2.word.3.476",
+          "ko2.word.4.254"
+        ],
+        "task_ids": [
+          "ko2.task.U15.drama",
+          "ko2.task.U15.cafe",
+          "ko2.task.U15.club",
+          "ko2.task.U15.reading",
+          "ko2.task.U15.listening",
+          "ko2.task.U15.writing"
+        ]
+      }
+    },
+    {
+      "id": "ko2.task.U15.drama",
+      "kind": "task",
+      "label_ko": "학생지원팀 — 담당 선생님께 신청 조건을 여쭙고 확인(격식)",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15"
+        }
+      ],
+      "material": {
+        "unit_id": "U15",
+        "container": "drama",
+        "brief": "학생지원팀 — 담당 선생님께 신청 조건을 여쭙고 확인(격식)"
+      }
+    },
+    {
+      "id": "ko2.task.U15.cafe",
+      "kind": "task",
+      "label_ko": "신청서에 쓸 근거 모으기 — 단골손님 둘에게 아침 메뉴를 찾는 이유를 묻는다",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15"
+        }
+      ],
+      "material": {
+        "unit_id": "U15",
+        "container": "cafe",
+        "brief": "신청서에 쓸 근거 모으기 — 단골손님 둘에게 아침 메뉴를 찾는 이유를 묻는다"
+      }
+    },
+    {
+      "id": "ko2.task.U15.club",
+      "kind": "task",
+      "label_ko": "사업 안내 공지 읽고 마감 · 서류 고르기 · 단톡방에 역할 나누기",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15"
+        }
+      ],
+      "material": {
+        "unit_id": "U15",
+        "container": "club",
+        "brief": "사업 안내 공지 읽고 마감 · 서류 고르기 · 단톡방에 역할 나누기"
+      }
+    },
+    {
+      "id": "ko2.task.U15.reading",
+      "kind": "task",
+      "label_ko": "학교 창업 지원 사업 공지(가상) — 조건 · 마감 · 금액",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15"
+        }
+      ],
+      "material": {
+        "unit_id": "U15",
+        "container": "reading",
+        "brief": "학교 창업 지원 사업 공지(가상) — 조건 · 마감 · 금액"
+      }
+    },
+    {
+      "id": "ko2.task.U15.listening",
+      "kind": "task",
+      "label_ko": "안내 방송 1분 — 바뀐 마감",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15"
+        }
+      ],
+      "material": {
+        "unit_id": "U15",
+        "container": "listening",
+        "brief": "안내 방송 1분 — 바뀐 마감"
+      }
+    },
+    {
+      "id": "ko2.task.U15.writing",
+      "kind": "task",
+      "label_ko": "신청서 빈칸 두 곳(51번 꼴, -습니다체 — W1과 같은 문체) + 목적 · 계획 두 문장",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U15"
+        }
+      ],
+      "material": {
+        "unit_id": "U15",
+        "container": "writing",
+        "brief": "신청서 빈칸 두 곳(51번 꼴, -습니다체 — W1과 같은 문체) + 목적 · 계획 두 문장"
+      }
+    },
+    {
+      "id": "ko2.unit.U16",
+      "kind": "topic",
+      "label_ko": "선배들과 회식",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U16"
+        }
+      ],
+      "material": {
+        "id": "U16",
+        "title": "선배들과 회식",
+        "semester": "autumn",
+        "level": 4,
+        "event": "신청서를 낸 날 동아리 선배들과 회식 — 처음 온 선배 · 졸업한 선배 앞에서 존댓말과 반말을 가려 쓰고, 들은 소식을 전한다",
+        "dream": {
+          "beat": "pr",
+          "idol": "기획사 연습생 회식에서 대표님 · 선배 연습생 앞 자기 PR",
+          "actor": "제작사 회식에서 감독님 · 선배 배우 앞 자기 PR"
+        },
+        "functions": [
+          "격식이 낮은 공식 자리에서 격식 · 비격식 가르기",
+          "들은 말 전하기",
+          "자기 PR"
+        ],
+        "text_types": [
+          "회식 대화",
+          "건배사 · 인사말"
+        ],
+        "grammar": [
+          {
+            "id": "S466",
+            "form": "-는대2",
+            "use": "들은 말 전하기(「선배가 다음 주에 온대요」)"
+          },
+          {
+            "id": "S436",
+            "form": "-는다면서1",
+            "use": "들은 것 확인하며 묻기(「준비 많이 했다면서요?」)"
+          },
+          {
+            "id": "S426",
+            "form": "-더니",
+            "use": "보고 겪은 변화(「처음엔 분위기가 어색하더니 이제 많이 편해졌어요」)"
+          },
+          {
+            "id": "S446",
+            "form": "-는 김에",
+            "use": "기회 삼아 하기(「인사드리는 김에 제 목표도 말씀드리겠습니다」)"
+          }
+        ],
+        "words": [
+          {
+            "word": "회식",
+            "level": "3",
+            "no": 1640
+          },
+          {
+            "word": "선배",
+            "level": "2",
+            "no": 508,
+            "review": true
+          },
+          {
+            "word": "분위기",
+            "level": "2",
+            "no": 444,
+            "review": true
+          },
+          {
+            "word": "반말",
+            "level": "3",
+            "no": 548
+          },
+          {
+            "word": "어색하다",
+            "level": "4",
+            "no": 1338
+          },
+          {
+            "word": "소감",
+            "level": "3",
+            "no": 790
+          },
+          {
+            "word": "첫인상",
+            "level": "3",
+            "no": 1460
+          },
+          {
+            "word": "장점",
+            "level": "3",
+            "no": 1260
+          },
+          {
+            "word": "실력",
+            "level": "3",
+            "no": 908
+          },
+          {
+            "word": "목표",
+            "level": "3",
+            "no": 480
+          },
+          {
+            "word": "자신감",
+            "level": "4",
+            "no": 1637
+          },
+          {
+            "word": "겸손",
+            "level": "4",
+            "no": 112
+          },
+          {
+            "word": "예의",
+            "level": "3",
+            "no": 1063
+          },
+          {
+            "word": "높임말",
+            "level": "3",
+            "no": 264
+          },
+          {
+            "word": "꾸준히",
+            "level": "3",
+            "no": 205
+          }
+        ],
+        "roots": [
+          {
+            "root": "회",
+            "meaning": "모이다",
+            "words": [
+              "회식",
+              "회의"
+            ]
+          }
+        ],
+        "skills": [
+          "ko2.listening.attitude",
+          "ko2.listening.response"
+        ],
+        "topik_types": [
+          "TII-L-27",
+          "TII-L-04"
+        ],
+        "course": null,
+        "containers": {
+          "drama": "꿈 장면 — 고른 꿈의 회식에서 격식을 가려 자기 PR(급의 첫 꿈 장면)",
+          "cafe": "회식 다음 날 — 친구 손님을 카운터에서는 손님이라 해요체로, 마감 뒤 사적인 자리에서는 반말로",
+          "club": "단톡방 — 졸업한 선배의 소식을 -대요로 전하기",
+          "reading": null,
+          "listening": "회식 대화 — 말하는 사람의 의도 · 태도",
+          "writing": null
+        },
+        "measure": {
+          "B": "꿈 장면 당일 — 처음 만난 대표님(감독님)이 「연습을 많이 했다면서요?」로 묻는 말에 들은 것을 확인해 답하고, 인사드리는 김에 목표 두 문장",
+          "C": "6~9일 창 — 다른 자리(동아리 뒤풀이)에서 처음 만난 선배가 들은 소식을 확인하며 묻는다"
+        },
+        "word_ids": [
+          "ko2.word.3.1640",
+          "ko2.word.2.508",
+          "ko2.word.2.444",
+          "ko2.word.3.548",
+          "ko2.word.4.1338",
+          "ko2.word.3.790",
+          "ko2.word.3.1460",
+          "ko2.word.3.1260",
+          "ko2.word.3.908",
+          "ko2.word.3.480",
+          "ko2.word.4.1637",
+          "ko2.word.4.112",
+          "ko2.word.3.1063",
+          "ko2.word.3.264",
+          "ko2.word.3.205"
+        ],
+        "task_ids": [
+          "ko2.task.U16.drama",
+          "ko2.task.U16.cafe",
+          "ko2.task.U16.club",
+          "ko2.task.U16.listening"
+        ]
+      }
+    },
+    {
+      "id": "ko2.task.U16.drama",
+      "kind": "task",
+      "label_ko": "꿈 장면 — 고른 꿈의 회식에서 격식을 가려 자기 PR(급의 첫 꿈 장면)",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U16"
+        }
+      ],
+      "material": {
+        "unit_id": "U16",
+        "container": "drama",
+        "brief": "꿈 장면 — 고른 꿈의 회식에서 격식을 가려 자기 PR(급의 첫 꿈 장면)"
+      }
+    },
+    {
+      "id": "ko2.task.U16.cafe",
+      "kind": "task",
+      "label_ko": "회식 다음 날 — 친구 손님을 카운터에서는 손님이라 해요체로, 마감 뒤 사적인 자리에서는 반말로",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U16"
+        }
+      ],
+      "material": {
+        "unit_id": "U16",
+        "container": "cafe",
+        "brief": "회식 다음 날 — 친구 손님을 카운터에서는 손님이라 해요체로, 마감 뒤 사적인 자리에서는 반말로"
+      }
+    },
+    {
+      "id": "ko2.task.U16.club",
+      "kind": "task",
+      "label_ko": "단톡방 — 졸업한 선배의 소식을 -대요로 전하기",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U16"
+        }
+      ],
+      "material": {
+        "unit_id": "U16",
+        "container": "club",
+        "brief": "단톡방 — 졸업한 선배의 소식을 -대요로 전하기"
+      }
+    },
+    {
+      "id": "ko2.task.U16.listening",
+      "kind": "task",
+      "label_ko": "회식 대화 — 말하는 사람의 의도 · 태도",
+      "level": {
+        "intro": 4,
+        "basis": "unit_draft"
+      },
+      "confidence": "ai_draft",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "unit-curriculum",
+          "selector": "units.U16"
+        }
+      ],
+      "material": {
+        "unit_id": "U16",
+        "container": "listening",
+        "brief": "회식 대화 — 말하는 사람의 의도 · 태도"
+      }
+    }
+  ],
+  "edges": [],
+  "tag_vocabulary": [],
+  "links": {
+    "tags": [],
+    "goals": [
+      {
+        "goal": "U13",
+        "nodes": [
+          "ko2.task.U13.drama",
+          "ko2.task.U13.cafe",
+          "ko2.task.U13.club",
+          "ko2.task.U13.reading",
+          "ko2.task.U13.listening",
+          "ko2.task.U13.writing"
+        ],
+        "confidence": "ai_draft",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "unit-curriculum",
+            "selector": "units.U13"
+          }
+        ]
+      },
+      {
+        "goal": "U14",
+        "nodes": [
+          "ko2.task.U14.drama",
+          "ko2.task.U14.cafe",
+          "ko2.task.U14.club",
+          "ko2.task.U14.reading",
+          "ko2.task.U14.listening",
+          "ko2.task.U14.writing"
+        ],
+        "confidence": "ai_draft",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "unit-curriculum",
+            "selector": "units.U14"
+          }
+        ]
+      },
+      {
+        "goal": "U15",
+        "nodes": [
+          "ko2.task.U15.drama",
+          "ko2.task.U15.cafe",
+          "ko2.task.U15.club",
+          "ko2.task.U15.reading",
+          "ko2.task.U15.listening",
+          "ko2.task.U15.writing"
+        ],
+        "confidence": "ai_draft",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "unit-curriculum",
+            "selector": "units.U15"
+          }
+        ]
+      },
+      {
+        "goal": "U16",
+        "nodes": [
+          "ko2.task.U16.drama",
+          "ko2.task.U16.cafe",
+          "ko2.task.U16.club",
+          "ko2.task.U16.listening"
+        ],
+        "confidence": "ai_draft",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "unit-curriculum",
+            "selector": "units.U16"
+          }
+        ]
+      },
+      {
+        "goal": "topik-4",
+        "nodes": [
+          "ko2.unit.U13",
+          "ko2.unit.U14",
+          "ko2.unit.U15",
+          "ko2.unit.U16"
+        ],
+        "confidence": "ai_draft",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "unit-curriculum",
+            "selector": "units.U13"
+          },
+          {
+            "source": "unit-curriculum",
+            "selector": "units.U14"
+          },
+          {
+            "source": "unit-curriculum",
+            "selector": "units.U15"
+          },
+          {
+            "source": "unit-curriculum",
+            "selector": "units.U16"
+          }
+        ]
+      }
+    ]
+  }
+}

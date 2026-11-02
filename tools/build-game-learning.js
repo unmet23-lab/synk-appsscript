@@ -62,6 +62,14 @@ const map2 = { map_ver: `${taxonomy2.json.version}-${taxonomy2.sha.slice(0, 12)}
   edges: [], tag_vocabulary: [], links: { tags: [], goals: [] } };
 validateMap(map2);
 output(path.join(root, 'strata/maps/topik-ii.json'), JSON.stringify(map2, null, 2) + '\n');
+// Unit consumers opt in to this separate map. Keep the existing TOPIK I/II, WORLD and speaking
+// versions byte-for-byte stable; their event stores need no migration or rewritten history.
+const unitSource = read('strata/topik-ii.units.json'), unitGrammar = read('strata/topik-ii.grammar.json'), unitTypes = read('strata/topik-types.json');
+const unitMap = require('../strata/topik-ii').buildUnitMap({ base: map2, units: unitSource.json, grammar: unitGrammar.json, types: unitTypes.json,
+  sources: { 'unit-curriculum': { path: unitSource.rel, sha256: unitSource.sha },
+    'unit-grammar': { path: unitGrammar.rel, sha256: unitGrammar.sha }, 'unit-exam-types': { path: unitTypes.rel, sha256: unitTypes.sha } } });
+unitMap.map_ver += `-${crypto.createHash('sha256').update(JSON.stringify(unitMap)).digest('hex').slice(0, 12)}`;
+output(path.join(root, 'strata/maps/topik-ii-units.json'), JSON.stringify(unitMap, null, 2) + '\n');
 // Drama speaking (2026-10-31) is its own map too: speaking abilities (ko.speaking.*) and the grammar and words of the
 // drama lines, carried with the 15 TOPIK II abilities under their own ids so a line's grammar point is part_of
 // ko2.reading.grammar (a draft link, never a grade). WORLD's map and the games do not bundle it, and its content ids
