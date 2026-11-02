@@ -115,7 +115,7 @@
       "방법": "작업실",
       "작업": "7aafa1c39b8777e160ab79d9a77d91ba699688e98dcf963b77ce53bf6bcd9c42",
       "후속": [
-        "고정 댓글은 게시 뒤 손으로(API에 고정 기능 없음)",
+        "고정 댓글: 11-03 03:22 Claude가 ego에서 같은 Google 계정 안 www 활성 채널을 @yuhobuilds로 바꿔(댓글 칸 프로필 「유호 · AI와 회사 만들기」 확인) 원고 pinnedComment를 달고 고정(넣은 글 · 단 글 일치 · 「@yuhobuilds님이 고정함」, 새로 불러 다시 확인) → 03:24 활성 채널 SYNK LAB으로 되돌림(확인). 스크립트 C:/Users/q1212/ego/pin-20261103/switch.mjs · pin.mjs",
         "유튜브 표지 그림은 서버가 못 올린다 — 첫 화면이 표지"
       ],
       "편ID": "yuhobuilds_없는후기한줄_20261028",
