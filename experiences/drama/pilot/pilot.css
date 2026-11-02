@@ -133,6 +133,10 @@ body.is-recording .stage::before { content: ''; position: absolute; inset: 0; z-
 .pill.big { width: 100%; height: 54px; font-size: 16.5px; margin-top: 6px; }
 .ghost { height: 36px; padding: 0 13px; border-radius: 999px; background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); font-size: 13px; font-weight: 600; color: var(--ink); }
 .ghost:hover { background: rgba(255,255,255,.14); }
+/* C(7~10일 뒤 문항) 카드가 있는 첫 화면: 카드 단추가 주, 1화 시작은 같은 크기의 보조 단추 */
+.ghost.big { width: 100%; height: 50px; font-size: 15px; margin-top: 6px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.card.delayed { margin: 10px 0 4px; }
+.card.delayed .row { margin-top: 8px; }
 .link { background: none; padding: 6px 4px; color: var(--muted); font-size: 12.5px; text-decoration: underline; text-underline-offset: 3px; }
 .sheet a.policy { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; } /* 동의 창의 처리방침 링크(WORLD 안, 11-02) */
 .rec { height: 48px; padding: 0 22px; border-radius: 999px; background: var(--ink); color: #0a0a0e; font-weight: 750; font-size: 15.5px; }

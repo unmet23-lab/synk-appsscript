@@ -6725,9 +6725,9 @@ var DramaLearning = (() => {
             return null;
           }
         };
-        function open({ lineId, skillId, phase }) {
+        function open({ lineId, skillId, phase, lazy = false }) {
           if (!identifier(lineId) || !PHASES.includes(phase) || map.getNode(skillId)?.kind !== "skill") return null;
-          const pid = safe(() => game().present({
+          const present = () => safe(() => game().present({
             id: `${GAME_ID}.${phase}.${lineId}`,
             itemKey: lineId,
             familyKey: lineId,
@@ -6738,19 +6738,32 @@ var DramaLearning = (() => {
             responseFormat: "spoken",
             audioRequired: false
           }));
-          if (!pid) return null;
+          let pid = lazy ? null : present();
+          if (!lazy && !pid) return null;
           const helped = /* @__PURE__ */ new Set(), attempts = [], excluded = /* @__PURE__ */ new Set();
           return Object.freeze({
-            // text: 한국어 대사 카드가 보임, answer: 빈칸을 열었거나 새 상황의 모범을 봄.
+            // text: 한국어 대사 카드가 보임, answer: 빈칸을 열었거나 새 상황의 모범을 봄. lazy이면 보이기 전 도움은 모았다가 보일 때 남긴다.
+            // 다만 lazy 문항의 모범(answer)을 보면 그 자리에서 보임 · 도움을 남긴다 — 정답을 본 학생이 다음에 다시 와서 「혼자 해 봄」으로 잡히지 않게(화면 검수 A2).
             help(kind) {
               if (!HELPS.includes(kind) || helped.has(kind)) return;
               helped.add(kind);
-              safe(() => game().help(pid, kind));
+              if (!pid && lazy && kind === "answer") {
+                pid = present();
+                if (pid) for (const k of helped) safe(() => game().help(pid, k));
+                return;
+              }
+              if (pid) safe(() => game().help(pid, kind));
             },
             // 「혼자 해 봄」은 그 차례의 첫 시도만이다 — Trail은 같은 문항에 앞 시도(안 들린 테이크 포함)가 있으면 반복(repeat)으로 본다(11-02 설계 검토).
             take(outcome) {
               const answered = answerOf(outcome);
               if (!answered) return null;
+              if (!pid) {
+                if (![true, false].includes(answered.correct)) return null;
+                pid = present();
+                if (!pid) return null;
+                for (const kind of helped) safe(() => game().help(pid, kind));
+              }
               const result = attempts.length && answered.assessable ? { ...answered, assessable: false } : answered;
               const recorded = safe(() => game().answer(pid, { ...result, attemptNo: attempts.length + 1 }));
               if (recorded?.eventId) attempts.push(recorded.eventId);
@@ -6763,10 +6776,27 @@ var DramaLearning = (() => {
                 excluded.add(id);
                 safe(() => game().exclude(id));
               }
+            },
+            // lazy 문항이 기록에 남았는지(판정된 테이크가 왔는지) — 화면이 첫 화면 카드를 거둘지 정한다.
+            get recorded() {
+              return !!pid;
             }
           });
         }
-        return Object.freeze({ open, flush: () => safe(() => coach?.flush?.()) });
+        function delayedDue({ lineId, skillId }) {
+          if (!identifier(lineId) || map.getNode(skillId)?.kind !== "skill") return false;
+          return safe(() => {
+            const c = game();
+            if (typeof c.followups !== "function" || typeof c.exposure !== "function") return false;
+            const report = c.followups();
+            if (report?.evidenceComplete !== true) return null;
+            const due = report.items.some((row) => row.status === "due" && row.window === "d7" && row.gameId === GAME_ID && row.measure.taskVersion === map.map_ver && row.measure.skillId === skillId && row.measure.difficulty === 2 && row.measure.responseFormat === "spoken" && row.measure.modality === "speaking" && row.measure.audioRequired === false);
+            if (!due) return false;
+            const seen = c.exposure({ itemKey: lineId, familyKey: lineId }).seen;
+            return seen === false ? true : seen === true ? false : null;
+          });
+        }
+        return Object.freeze({ open, delayedDue, flush: () => safe(() => coach?.flush?.()) });
       }
       function createRehearsalHost({ accountKey, revision, connected, transport, storage, win = typeof window === "undefined" ? null : window }) {
         const prefix = `synk.drama.rehearsal.${accountKey}.r${revision}.`;

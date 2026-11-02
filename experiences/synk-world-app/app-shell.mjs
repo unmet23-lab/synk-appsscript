@@ -65,7 +65,8 @@ const examRequested=(value=>['topik1','topik2'].includes(value)?value:null)(new 
 // ?drama=1(11-02, 드라마 말하기 코호트 링크): 로그인은 전체 페이지 이동이고 돌아오는 주소에 쿼리가 없어, 이 탭에 30분 동안 남겨 두었다가
 // 로그인한 상태로 들어왔을 때 한 번 연다(로그인 전에는 launchGame이 로그인 창을 열고 표시는 남는다).
 const DRAMA_PENDING='synk.world.drama.pending';
-const dramaRequested=(()=>{try{if(new URLSearchParams(location.search).get('drama')==='1')sessionStorage.setItem(DRAMA_PENDING,String(Date.now()));const at=Number(sessionStorage.getItem(DRAMA_PENDING));if(at&&Date.now()-at<30*60000)return true;sessionStorage.removeItem(DRAMA_PENDING);}catch{}return false;})();
+// 로그인을 거쳐 돌아온 드라마 바로가기는 30분 남기되, 주소가 다른 바로가기(옷장 · 카페 · 시험)를 부르면 그쪽이 이기고 남은 드라마 표시는 지운다(FA2).
+const dramaRequested=(()=>{try{const q=new URLSearchParams(location.search);if(q.get('drama')==='1')sessionStorage.setItem(DRAMA_PENDING,String(Date.now()));else if(q.get('wardrobe')==='1'||q.get('cafe')==='1'||q.has('exam')){sessionStorage.removeItem(DRAMA_PENDING);return false;}const at=Number(sessionStorage.getItem(DRAMA_PENDING));if(at&&Date.now()-at<30*60000)return true;sessionStorage.removeItem(DRAMA_PENDING);}catch{}return false;})();
 async function restoreConnectedHome(){
  try{
   const restored=await restoreSession();

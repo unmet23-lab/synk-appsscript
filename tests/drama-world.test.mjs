@@ -134,3 +134,75 @@ test('강의 생성 도구 --check가 통과한다', () => {
   const r = spawnSync(process.execPath, ['tools/build-drama-world.mjs', '--check'], { cwd: REPO, encoding: 'utf8' });
   assert.equal(r.status, 0, r.stderr || r.stdout);
 });
+
+// C(설계 §17): 실제 Atlas 게임 + 메모리 저장소 + 시계를 밀어, t9 판정 뒤 d7 창(7~10일)에만 처음 보는 t6이 차례가 된다.
+function delayedRig({ storage = true } = {}) {
+  const Drama = require('../experiences/drama/pilot/learning-entry.cjs');
+  const box = { now: Date.parse('2026-11-03T10:00:00Z') };
+  const m = new Map();
+  const mem = { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k) };
+  const owner = { createGame: (meta, factory) => factory({ gameId: meta.gameId, clock: () => new Date(box.now).toISOString(), ...(storage ? { storage: mem } : {}) }) };
+  return { box, recorder: Drama.createRecorder({ owner }), at: (days) => { box.now = Date.parse('2026-11-03T10:02:00Z') + days * 86400000; } };
+}
+const T6 = { lineId: 's1e01-t6', skillId: PILOT.delayed.skill };
+
+test('C: t9 첫 판정 뒤 7~10일 창에서만 t6이 차례, 보인 뒤 · 창 밖 · 판정 없는 시도 · 저장 실패면 아니다', () => {
+  assert.equal(PILOT.delayed.skill, PILOT.transfer.skill, '같은 능력이어야 같은 측정 칸');
+  const r = delayedRig();
+  const t9 = r.recorder.open({ lineId: PILOT.transfer.id, skillId: PILOT.transfer.skill, phase: 'transfer' });
+  r.box.now += 60000; t9.take({ kind: 'result', data: { trail: { correct: false, assessable: true } } });
+  for (const [days, want] of [[0.5, false], [6.9, false], [7.5, true], [9.9, true], [10.5, false]]) { r.at(days); assert.equal(r.recorder.delayedDue(T6), want, `${days}일`); }
+  r.at(7.5);
+  assert.equal(r.recorder.delayedDue({ lineId: 's1e01-t9', skillId: T6.skillId }), false, '이미 본 문항');
+  const c = r.recorder.open({ ...T6, phase: 'transfer' });
+  assert.equal(r.recorder.delayedDue(T6), false, '보인 뒤에는 다시 내지 않는다');
+  r.box.now += 60000; c.take({ kind: 'result', data: { trail: { correct: true, assessable: true } } });
+  assert.equal(r.recorder.delayedDue(T6), false);
+
+  const off = delayedRig();
+  off.recorder.open({ lineId: PILOT.transfer.id, skillId: PILOT.transfer.skill, phase: 'transfer' }).take({ kind: 'down' });
+  off.at(7.5); assert.equal(off.recorder.delayedDue(T6), false, '받아쓰기 없는 연습 시도는 기준이 아니다');
+
+  const bare = delayedRig({ storage: false });
+  bare.recorder.open({ lineId: PILOT.transfer.id, skillId: PILOT.transfer.skill, phase: 'transfer' }).take({ kind: 'result', data: { trail: { correct: true, assessable: true } } });
+  bare.at(7.5); assert.equal(bare.recorder.delayedDue(T6), null, '기록이 덜 모이면 모름(내보내지 않음)');
+});
+
+test('C: 상황 카드(한 · 영)에 t6 핵심 말 · 허용 표현이 없고, 강의에 같은 능력 · talk 은행 녹음 상한으로 실린다', async () => {
+  const words = PILOT.delayed.spec.keys.flatMap((k) => [k.word, ...(k.alts || [])]);
+  for (const card of [PILOT.delayed.prompt, PILOT.delayed.promptKo]) for (const w of words) assert.ok(findIn(w, card) < HIT, `「${w}」가 카드에 있다: ${card}`);
+  const built = await buildWorldLesson();
+  const line = dramaLines(await readEpisodes()).find((l) => l.id === 's1e01-t6');
+  assert.deepEqual([built.lesson.delayed.id, built.lesson.delayed.reviewed, built.lesson.delayed.answerSec, line.kind], ['s1e01-t6', true, line.answerSec, 'unseen']);
+  assert.ok(!JSON.stringify(built.lesson).includes(PILOT.delayed.text), '모범 글은 delayedReveal에만');
+  assert.equal(built.delayedReveal.text, PILOT.delayed.text);
+});
+
+test('C는 판정된 첫 테이크에만 기록된다(lazy) — 받아쓰기 꺼짐 · 서버 사정 · 안 들림 · 보류는 t6을 쓰지 않고, 판정되면 d7 관측(설계 검토 P1)', () => {
+  const r = delayedRig();
+  r.recorder.open({ lineId: PILOT.transfer.id, skillId: PILOT.transfer.skill, phase: 'transfer' }).take({ kind: 'result', data: { trail: { correct: true, assessable: true } } });
+  r.at(7.5);
+  const c = r.recorder.open({ ...T6, phase: 'transfer', lazy: true });
+  c.help('text'); c.help('text'); // 모범이 아닌 도움은 모아 두었다가 보일 때 남긴다
+  for (const outcome of [{ kind: 'off' }, { kind: 'down' }, { kind: 'unheard' }, { kind: 'result', data: { trail: { correct: null, assessable: false } } }]) assert.equal(c.take(outcome), null);
+  assert.equal(c.recorded, false);
+  assert.equal(r.recorder.delayedDue(T6), true, '연습 시도만 있으면 카드가 남는다');
+  r.box.now += 60000;
+  const rec = c.take({ kind: 'result', data: { trail: { correct: true, assessable: false } } });
+  assert.equal(rec.attemptNo, 1); assert.equal(c.recorded, true);
+  assert.equal(r.recorder.delayedDue(T6), false);
+
+  // 모범을 보면 판정 테이크 전이라도 그 자리에서 보임 · 도움을 남겨 t6을 쓴다(정답을 본 뒤 다른 날 「혼자 해 봄」으로 잡히지 않게, 아르곤 A2).
+  const h = delayedRig();
+  h.recorder.open({ lineId: PILOT.transfer.id, skillId: PILOT.transfer.skill, phase: 'transfer' }).take({ kind: 'result', data: { trail: { correct: true, assessable: true } } });
+  h.at(7.5);
+  const hc = h.recorder.open({ ...T6, phase: 'transfer', lazy: true });
+  hc.help('answer');
+  assert.equal(hc.recorded, true);
+  assert.equal(h.recorder.delayedDue(T6), false);
+});
+
+test('C 상황 카드(한 · 영)에 모범 글의 어느 문장도 없다', () => {
+  const sentences = PILOT.delayed.text.split(/(?<=[.?!])\s*/).map((x) => x.replace(/[.?!]$/, '').trim()).filter(Boolean);
+  for (const card of [PILOT.delayed.prompt, PILOT.delayed.promptKo]) for (const line of sentences) assert.ok(findIn(line, card) < HIT, `「${line}」가 카드에 있다: ${card}`);
+});

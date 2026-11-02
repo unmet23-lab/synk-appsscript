@@ -43,19 +43,32 @@ function createRecorder({ win = typeof window === 'undefined' ? null : window, o
   let coach = null;
   const game = () => coach || (coach = owner.createGame({ gameId: GAME_ID }, factory, learning.createLearningSync));
   const safe = fn => { try { return fn(); } catch (error) { try { onError(error); } catch { /* observers cannot stop the scene */ } return null; } };
-  function open({ lineId, skillId, phase }) {
+  // lazy: 한 번뿐인 측정 문항(C, 설계 §17)은 판정(맞음 · 고칠 점)이 난 첫 테이크가 올 때 보임 · 도움 · 답을 한꺼번에 남긴다. 그 전의
+  // 연습 시도(받아쓰기 꺼짐 · 서버 사정 · 안 들림 · 판정 보류)는 남기지 않아 문항을 쓰지 않는다 — 학생은 다음에 다시 할 수 있다(설계 검토 P1).
+  function open({ lineId, skillId, phase, lazy = false }) {
     if (!identifier(lineId) || !PHASES.includes(phase) || map.getNode(skillId)?.kind !== 'skill') return null;
-    const pid = safe(() => game().present({ id: `${GAME_ID}.${phase}.${lineId}`, itemKey: lineId, familyKey: lineId, skillId, modality: 'speaking',
+    const present = () => safe(() => game().present({ id: `${GAME_ID}.${phase}.${lineId}`, itemKey: lineId, familyKey: lineId, skillId, modality: 'speaking',
       // 장면 · 테이크 2는 한국어 대사 카드를 보고 말하기(1), 새 상황은 상황만 보고 스스로 만들어 말하기(2).
       difficulty: phase === 'transfer' ? 2 : 1, responseFormat: 'spoken', audioRequired: false }));
-    if (!pid) return null;
+    let pid = lazy ? null : present();
+    if (!lazy && !pid) return null;
     const helped = new Set(), attempts = [], excluded = new Set();
     return Object.freeze({
-      // text: 한국어 대사 카드가 보임, answer: 빈칸을 열었거나 새 상황의 모범을 봄.
-      help(kind) { if (!HELPS.includes(kind) || helped.has(kind)) return; helped.add(kind); safe(() => game().help(pid, kind)); },
+      // text: 한국어 대사 카드가 보임, answer: 빈칸을 열었거나 새 상황의 모범을 봄. lazy이면 보이기 전 도움은 모았다가 보일 때 남긴다.
+      // 다만 lazy 문항의 모범(answer)을 보면 그 자리에서 보임 · 도움을 남긴다 — 정답을 본 학생이 다음에 다시 와서 「혼자 해 봄」으로 잡히지 않게(화면 검수 A2).
+      help(kind) {
+        if (!HELPS.includes(kind) || helped.has(kind)) return; helped.add(kind);
+        if (!pid && lazy && kind === 'answer') { pid = present(); if (pid) for (const k of helped) safe(() => game().help(pid, k)); return; }
+        if (pid) safe(() => game().help(pid, kind));
+      },
       // 「혼자 해 봄」은 그 차례의 첫 시도만이다 — Trail은 같은 문항에 앞 시도(안 들린 테이크 포함)가 있으면 반복(repeat)으로 본다(11-02 설계 검토).
       take(outcome) {
         const answered = answerOf(outcome); if (!answered) return null;
+        if (!pid) {
+          if (![true, false].includes(answered.correct)) return null;
+          pid = present(); if (!pid) return null;
+          for (const kind of helped) safe(() => game().help(pid, kind));
+        }
         const result = attempts.length && answered.assessable ? { ...answered, assessable: false } : answered;
         const recorded = safe(() => game().answer(pid, { ...result, attemptNo: attempts.length + 1 }));
         if (recorded?.eventId) attempts.push(recorded.eventId);
@@ -63,9 +76,29 @@ function createRecorder({ win = typeof window === 'undefined' ? null : window, o
       },
       // 「제가 한 말과 달라요」: 그 받아쓰기로 판정한 마지막 시도를 기록에서 뺀다(record.excluded, 결정 10-31 ②).
       excludeLast() { const id = attempts.at(-1); if (id && !excluded.has(id)) { excluded.add(id); safe(() => game().exclude(id)); } },
+      // lazy 문항이 기록에 남았는지(판정된 테이크가 왔는지) — 화면이 첫 화면 카드를 거둘지 정한다.
+      get recorded() { return !!pid; },
     });
   }
-  return Object.freeze({ open, flush: () => safe(() => coach?.flush?.()) });
+  // 7~10일 뒤 처음 보는 문항(설계 §17): Atlas 지연 관측(followups, d7 창)이 이 문항의 측정 칸(같은 게임 · 지도판 · 능력 · 새 상황 난이도 2 ·
+  // spoken · speaking)으로 「due」이고, 이 문항을 한 번도 보이지 않았을 때만 참. 기록이 아직 덜 모였으면(동기화 전 · 저장 실패) null —
+  // 화면은 잠시 뒤 다시 묻고, 모르면 내보내지 않는다(거짓 관측 · 문항 낭비를 막는다). 리듬 게임 delayedSupplemental과 같은 꼴.
+  function delayedDue({ lineId, skillId }) {
+    if (!identifier(lineId) || map.getNode(skillId)?.kind !== 'skill') return false;
+    return safe(() => {
+      const c = game();
+      if (typeof c.followups !== 'function' || typeof c.exposure !== 'function') return false;
+      const report = c.followups();
+      if (report?.evidenceComplete !== true) return null;
+      const due = report.items.some(row => row.status === 'due' && row.window === 'd7' && row.gameId === GAME_ID
+        && row.measure.taskVersion === map.map_ver && row.measure.skillId === skillId && row.measure.difficulty === 2
+        && row.measure.responseFormat === 'spoken' && row.measure.modality === 'speaking' && row.measure.audioRequired === false);
+      if (!due) return false;
+      const seen = c.exposure({ itemKey: lineId, familyKey: lineId }).seen;
+      return seen === false ? true : seen === true ? false : null;
+    });
+  }
+  return Object.freeze({ open, delayedDue, flush: () => safe(() => coach?.flush?.()) });
 }
 
 // 이PC 시범 서버의 리허설 계정(합성 계정)으로 왕복을 볼 때만 쓴다. WORLD 안에서는 WORLD가 세운 호스트를 쓴다(findHost).

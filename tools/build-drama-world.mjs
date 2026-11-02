@@ -31,7 +31,8 @@ export async function buildWorldLesson(pilot = PILOT) {
  const bank = (id) => {
   const l = byId.get(id);
   if (!l) throw new Error(`talk 대사 은행에 없는 줄: ${id}`);
-  if (l.line !== (id === pilot.transfer.id ? pilot.transfer.text : pilot.scene.find((x) => x.id === id)?.text)) throw new Error(`대사 글이 talk 은행과 다르다: ${id}`);
+  const text = id === pilot.transfer.id ? pilot.transfer.text : id === pilot.delayed?.id ? pilot.delayed.text : pilot.scene.find((x) => x.id === id)?.text;
+  if (l.line !== text) throw new Error(`대사 글이 talk 은행과 다르다: ${id}`);
   return l;
  };
  const lesson = relativize(publicLesson(pilot));
@@ -40,16 +41,25 @@ export async function buildWorldLesson(pilot = PILOT) {
   item.answerSec = l.answerSec;
   item.reviewed = l.review.status === 'passed';
  }
- const t = bank(pilot.transfer.id);
- if (t.kind !== 'unseen') throw new Error('새 상황은 처음 보는 대사여야 한다');
- if (lesson.transfer.reviewed !== (t.review.status === 'passed')) throw new Error('새 상황 검수 여부가 talk 은행과 다르다');
- lesson.transfer = { ...lesson.transfer, answerSec: t.answerSec };
+ const unseen = (key) => {
+  const t = bank(pilot[key].id);
+  if (t.kind !== 'unseen') throw new Error(`${key}는 처음 보는 대사여야 한다`);
+  if (lesson[key].reviewed !== (t.review.status === 'passed')) throw new Error(`${key} 검수 여부가 talk 은행과 다르다`);
+  lesson[key] = { ...lesson[key], answerSec: t.answerSec };
+ };
+ unseen('transfer');
+ // 7~10일 뒤 문항(설계 §17)은 새 상황과 다른 처음 보는 문항이고 같은 능력이어야 한다 — Atlas 측정 칸이 같아야 지연 관측으로 이어진다.
+ if (pilot.delayed) {
+  if (pilot.delayed.id === pilot.transfer.id || pilot.delayed.skill !== pilot.transfer.skill) throw new Error('지연 문항은 새 상황과 다른 문항 · 같은 능력이어야 한다');
+  unseen('delayed');
+ }
  return {
   version: WORLD_LESSON_VERSION,
   linesVersion: linesHash(lines),
   lesson,
   // 「모범 보기」 뒤에만 그린다. 승인 모범 녹음이 없어 글만.
   reveal: { lineId: pilot.transfer.id, text: pilot.transfer.text, modelAudio: relative(pilot.transfer.modelAudio || null) },
+  ...(pilot.delayed ? { delayedReveal: { lineId: pilot.delayed.id, text: pilot.delayed.text, modelAudio: relative(pilot.delayed.modelAudio || null) } } : {}),
  };
 }
 export const serialize = (value) => `${JSON.stringify(value, null, 1)}\n`;

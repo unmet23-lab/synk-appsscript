@@ -14,6 +14,13 @@ export const TRANSFER_PROMPT = {
  ko: '다음 수업 전에 마실 것을 사고 싶은데 그 가게를 못 찾았어요. 오늘 처음 인사한 같은 과의 다른 선배께 공손하게 여쭤보세요. (가게 이름은 영어 설명을 보세요.)',
 };
 const T9 = ep01.처음보는대사.find((x) => x.id === 's1e01-t9');
+// 새 상황 C — 7~10일 뒤 Atlas 지연 관측(d7)으로 한 번 내는 처음 보는 문항 s1e01-t6(학교 앞 버스 정류장에서 지나가는 어른께 정문 위치,
+// 설계 §17). t9와 같은 능력 · 같은 「상황만 보고 만들어 말하기」라 측정 칸이 같다. 카드 두 줄은 t6 허용 표현(정문 · 어디… 등)도, 모범 글의 문장(「길을 잃었어요」)도 쓰지 않는다.
+export const DELAYED_PROMPT = {
+ en: "You're lost at the bus stop in front of the university. Politely ask an adult walking by where the university's main gate is.",
+ ko: '학교 앞 버스 정류장에 처음 내려서 헤매고 있어요. 지나가는 처음 보는 어른께 학교로 들어가는 큰 출입구의 위치를 공손하게 여쭤보세요. (장소 이름은 영어 설명을 보세요.)',
+};
+const T6 = ep01.처음보는대사.find((x) => x.id === 's1e01-t6');
 
 // 빌드가 만든 재생 사본이 있을 때만 주소를 준다. 아직 없는 자리(코치 녹음·쇼케이스 영상)는 null — 화면은 글만, 장면은 지금 판 그대로 돈다.
 const MEDIA_DIR = new URL('./media/', import.meta.url);
@@ -115,6 +122,15 @@ export const PILOT = {
   to: T9.명세.to,
   text: T9.말,
   spec: { ...dramaSpecOf({ row: T9, kind: 'unseen' }), reviewed: dramaReviewStatus({ row: T9, kind: 'unseen', day: null, before: null }, ep01.id).status === 'passed' },
+ },
+ delayed: {
+  id: T6.id,
+  skill: T6.능력,
+  prompt: DELAYED_PROMPT.en,
+  promptKo: DELAYED_PROMPT.ko,
+  to: T6.명세.to,
+  text: T6.말,
+  spec: { ...dramaSpecOf({ row: T6, kind: 'unseen' }), reviewed: dramaReviewStatus({ row: T6, kind: 'unseen', day: null, before: null }, ep01.id).status === 'passed' },
  },
  nextEpisode: { title: ep01.예고.제목, line: '태오 선배가 데려간 동아리 박람회에서 동갑내기 친구를 만난다. 처음으로 말을 놓아 볼까?' },
  assets: {

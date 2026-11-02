@@ -156,11 +156,24 @@
    "skill": "ko.speaking.ask",
    "reviewed": true,
    "answerSec": 13
+  },
+  "delayed": {
+   "id": "s1e01-t6",
+   "prompt": "You're lost at the bus stop in front of the university. Politely ask an adult walking by where the university's main gate is.",
+   "promptKo": "학교 앞 버스 정류장에 처음 내려서 헤매고 있어요. 지나가는 처음 보는 어른께 학교로 들어가는 큰 출입구의 위치를 공손하게 여쭤보세요. (장소 이름은 영어 설명을 보세요.)",
+   "skill": "ko.speaking.ask",
+   "reviewed": true,
+   "answerSec": 15
   }
  },
  "reveal": {
   "lineId": "s1e01-t9",
   "text": "선배님, 혹시 편의점이 어디에 있는지 아세요?",
+  "modelAudio": null
+ },
+ "delayedReveal": {
+  "lineId": "s1e01-t6",
+  "text": "길을 잃었어요. 새솔대 정문이 어디에 있는지 아세요?",
   "modelAudio": null
  }
 }

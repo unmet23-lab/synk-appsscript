@@ -5,7 +5,7 @@
 //   드라마 통로(SYNKDramaHost)를 세운 뒤 /drama/를 같은 출처 게임 틀로 연다(app-shell launchGame과 같은 allow).
 // · 드라마 통로의 take는 /fake/take로 간다: talk와 같은 판정기(tools/lib/드라마판정.mjs judgeLine · nextTake)와 같은 대사 은행(dramaLines)으로
 //   판정하고, 받아 적은 글만 아래 TRANSCRIPTS 차례로 정해 둔다(받아쓰기 흉내 — 소리는 보지 않는다). 응답 꼴은 talk world-speaking take 그대로.
-// · /drama/는 공개 빌드처럼 index.html에 data-drama="world"를 단다. ?limit=1이면 status가 오늘 횟수 0, ?off=1이면 드라마 스위치 꺼짐.
+// · /drama/는 공개 빌드처럼 index.html에 data-drama="world"를 단다. ?limit=1이면 status가 오늘 횟수 0, ?off=1이면 드라마 스위치 꺼짐, ?down=1이면 take가 unavailable(받아 적기 실패), ?c=1이면 7.5일 전 t9 판정을 미리 남겨 C 카드를 본다.
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -29,6 +29,7 @@ const TRANSCRIPTS = {
  's1e01-8': ['정말요? 선배님 덕분에 살았어요'],
  's1e01-t4': ['선생님, 혹시 복사실이 어디에 있는지 아세요?'],
  's1e01-t9': ['선배님, 혹시 편의점이 어디에 있는지 아세요?'], // 11-03 새 상황 t4 → t9
+ 's1e01-t6': ['길을 잃었어요. 새솔대 정문이 어디에 있는지 아세요?'], // 11-03 C(7~10일 뒤 문항, 설계 §17)
 };
 const used = new Map();
 const log = [];
@@ -61,6 +62,17 @@ const call = (body) => fetch('/fake/' + body.action + location.search, { method:
 window.SYNKDramaHost = Object.freeze({ status: () => call({ action: 'status' }), take: (p) => call(p) });
 // WORLD prepareGame처럼 호스트가 준비된 뒤에 틀을 연다.
 await learnHost.ready();
+// ?c=1(설계 §17): 7.5일 전 시계로 t9 새 상황 첫 판정(혼자 해 봄 · 맞음)을 미리 남겨 두면 틀의 첫 화면에 C(t6) 카드가 나와야 한다.
+if (q.get('c') === '1') {
+ // 계정 기록이 다 모인 뒤에 남겨야 첫 노출이 확정돼 판정된 첫 시도(혼자 해 봄)가 된다 — 실제로도 t9는 동기화가 끝난 화면에서 낸다.
+ for (let i = 0; i < 50 && learnHost.status().complete !== true; i++) await new Promise((r) => setTimeout(r, 100));
+ const past = () => new Date(Date.now() - 7.5 * 86400000).toISOString();
+ const g = learnHost.createGame({ gameId: 'drama-s1', clock: past }, DramaLearning.engine.createGame, DramaLearning.engine.createLearningSync);
+ await new Promise((r) => setTimeout(r, 400)); // 기록 잠금(Web Lock)을 받은 뒤에 남긴다 — 받기 전이면 reason storage(판정 없음)
+ const pid = g.present({ id: 'drama-s1.transfer.s1e01-t9', itemKey: 's1e01-t9', familyKey: 's1e01-t9', skillId: 'ko.speaking.ask', modality: 'speaking', difficulty: 2, responseFormat: 'spoken', audioRequired: false });
+ g.answer(pid, { correct: true, assessable: true, attemptNo: 1 });
+ await g.flush(); g.dispose();
+}
 const f = document.createElement('iframe'); f.className = 'game-frame'; f.title = '드라마 말하기 · 1화'; f.allow = 'autoplay; fullscreen; microphone'; f.src = (q.get('world') === 'live' ? '/live/drama/' : '/drama/') + (q.get('nowebgl') === '1' ? '?nowebgl=1' : '');
 document.body.append(f);
 </script></body></html>`;
@@ -88,6 +100,8 @@ const server = http.createServer(async (req, res) => {
    const line = byId.get(body.line_id);
    if (!line) return reply(res, 409, { code: 'ITEM_CHANGED' });
    if (body.seconds > line.answerSec + 5) { log.push({ line: line.id, status: 'too_long', seconds: body.seconds }); return reply(res, 200, { ok: true, status: 'too_long' }); }
+   // ?down=1: status는 켜짐인데 받아 적기가 실패(운영 11-01~ OpenAI 429와 같은 꼴) — 화면은 「지금은 받아쓰기를 못 해요」.
+   if (url.searchParams.get('down') === '1') { log.push({ line: line.id, status: 'unavailable' }); return reply(res, 200, { ok: true, status: 'unavailable' }); }
    const list = TRANSCRIPTS[line.id] || [line.line], n = used.get(line.id) || 0; used.set(line.id, n + 1);
    const transcript = list[Math.min(n, list.length - 1)];
    const result = judgeLine(line.spec, { transcript, seconds: body.seconds, speechSeconds: body.seconds, language: '' });
