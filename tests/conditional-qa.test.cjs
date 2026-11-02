@@ -104,6 +104,7 @@ test('the newest commit runs before the backlog; historical entries and failed p
   assert.equal(JSON.stringify(queue), before, 'selection does not change old results');
   attempted.add(commits[2]);
   assert.equal(nextItem(queue, commits[2], attempted).commit, commits[0]);
+  attempted.add(commits[0]);
   extendQueue(queue, commits[3], [commits[3]]);
   assert.equal(nextItem(queue, commits[3], attempted).commit, commits[3], 'a push during verification gets priority next');
   queue.items.push({ commit: commits[4], status: 'publish-pending' });
@@ -114,13 +115,28 @@ test('the newest commit runs before the backlog; historical entries and failed p
   assert.equal(queue.items[1].status, 'failed');
 });
 
-test('after the newest commit passes, recent commits drain before the historical backlog without dropping any item', () => {
+test('after the newest commit passes, recent and historical commits alternate without dropping any item', () => {
   const items = ['a', 'b', 'c', 'd'].map(x => ({ commit: x.repeat(40), status: 'queued' }));
   items[3].status = 'passed';
   const queue = { items }, attempted = new Set(), order = [];
   for (let item; (item = nextItem(queue, items[3].commit, attempted));) { order.push(item.commit); attempted.add(item.commit); }
-  assert.deepEqual(order, [items[2].commit, items[1].commit, items[0].commit]);
+  assert.deepEqual(order, [items[2].commit, items[0].commit, items[1].commit]);
   assert.deepEqual(items.map(item => item.status), ['queued', 'queued', 'queued', 'passed']);
+});
+
+test('continuous new pushes cannot starve older pending commits or automatically retry failed proof', () => {
+  const old = ['a', 'b'].map(x => x.repeat(40)), failed = 'f'.repeat(40);
+  const queue = { items: [...old.map(commit => ({ commit, status: 'queued' })), { commit: failed, status: 'failed', output: 'original-proof' }] };
+  const attempted = new Set(), order = [];
+  for (let n = 1; n <= 6; n++) {
+    const head = String(n).repeat(40);
+    extendQueue(queue, head, [head]);
+    const item = nextItem(queue, head, attempted);
+    order.push(item.commit); attempted.add(item.commit);
+  }
+  assert.deepEqual(order.slice(0, 4), ['1'.repeat(40), old[0], '3'.repeat(40), old[1]]);
+  assert.equal(order.includes(failed), false);
+  assert.deepEqual(queue.items[2], { commit: failed, status: 'failed', output: 'original-proof' });
 });
 
 test('remote local-status evidence is exact and malformed requests never reach the API', () => {
