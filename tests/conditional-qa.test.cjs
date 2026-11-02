@@ -17,8 +17,8 @@ const good = () => ({ version: 1, commit, manifestDigest: manifest.digest, expec
 function scratch(t) { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'conditional-qa-test-')); t.after(() => { if (!c.within(os.tmpdir(), dir) || fs.lstatSync(dir).isSymbolicLink()) throw Error('Unsafe test cleanup'); fs.rmSync(dir, { recursive: true, force: true }); }); return dir; }
 
 test('all 113 original cases have one concrete route and a live source file', () => {
-  assert.equal(check(root), 113);
-  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 28, linux: 7, local: 78 });
+  assert.equal(check(root), 114);
+  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 28, linux: 7, local: 79 });
 });
 test('every route owns a real temporary path instead of an inherited 8.3 or virtual alias', t => {
   const dir = scratch(t), env = temporaryEnvironment(dir);
@@ -30,7 +30,7 @@ test('manifest binding is stable across checkout line endings, but not across dr
   const dir = scratch(t), file = path.join(dir, 'tools/conditional-qa/cases.json'); fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, fs.readFileSync(path.join(root, 'tools/conditional-qa/cases.json'), 'utf8').replace(/\r?\n/g, '\r\n'));
   assert.equal(c.readManifest(dir).digest, manifest.digest);
-  const changed = JSON.parse(fs.readFileSync(file)); changed.cases.pop(); changed.expectedCount--;
+  const changed = JSON.parse(fs.readFileSync(file)); changed.cases = changed.cases.filter(row => row.id !== 'S113'); changed.expectedCount--;
   fs.writeFileSync(file, JSON.stringify(changed)); assert.throws(() => c.readManifest(dir), /incomplete|missing/);
 });
 test('a saved receipt cannot cover another commit, manifest, a missing case or duplicate', () => {

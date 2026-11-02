@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 113,
+  "expectedCount": 114,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -907,6 +907,14 @@
       "file": "tests/이어하기꾸러미.test.js",
       "name": "검토한 문서 예제 예외는 정확한 경로와 원문 SHA에만 적용한다",
       "group": "문서 원문 해시",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S114",
+      "file": "tests/large-backup-receipt.test.cjs",
+      "name": "a previously copied note that gained control bytes is encrypted byte for byte; a changed prior copy still stops it",
+      "group": "로컬 암호화 모듈",
       "route": "local",
       "profile": "default"
     }

@@ -55,7 +55,7 @@ test('넓은 시험 CLI가 제외 목록을 기존 실패 후보와 함께 저�
   fs.mkdirSync(path.join(dir, 'tests'));
   const inventoryPath = path.join(dir, 'tools/conditional-qa/cases.json');
   const inventory = JSON.parse(fs.readFileSync(inventoryPath, 'utf8'));
-  for (const [index, name] of ['명시적 제외', '자료 없음', '실행 중 판단', '중첩 제외'].entries()) inventory.cases.push({ id: `S${114 + index}`, file: 'tests/fixture.test.cjs', name, route: 'local', profile: 'default' });
+  for (const [index, name] of ['명시적 제외', '자료 없음', '실행 중 판단', '중첩 제외'].entries()) inventory.cases.push({ id: `S${900 + index}`, file: 'tests/fixture.test.cjs', name, route: 'local', profile: 'default' });
   inventory.expectedCount = inventory.cases.length; fs.writeFileSync(inventoryPath, JSON.stringify(inventory));
   fs.writeFileSync(path.join(dir, 'tests/fixture.test.cjs'), source);
   fs.writeFileSync(path.join(dir, 'tests/ci넓은시험_알려진실패.json'), JSON.stringify({ 묶음: { 루트: [] } }));

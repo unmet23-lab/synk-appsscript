@@ -6,8 +6,8 @@
 |---|---:|---|
 | GitHub Windows | 28 | Hermes Windows 경로·복구, OneDrive, ASAR, 대소문자, 가짜 자격 증명 |
 | GitHub Linux | 7 | 현재 Rust 원천을 WASM으로 빌드, ffmpeg 실제 실행 |
-| Windows 로컬 | 78 | 암호·Caddy·비공개/보관 자산·브라우저·Talk/WORLD·문서 SHA |
-| 합계 | 113 | `cases.json`의 S001~S113을 삭제할 수 없다 |
+| Windows 로컬 | 79 | 암호·Caddy·비공개/보관 자산·브라우저·Talk/WORLD·문서 SHA |
+| 합계 | 114 | `cases.json`의 S001~S113을 삭제할 수 없다. S114는 11-03에 더한 암호화 모듈 시험이다 |
 
 `conditional-qa.yml`은 master의 각 push에 세 관문을 건다. 파일과 시험 이름이 일치하는 실제 Node 시험 이벤트가 정확히 한 번 통과해야 한다. skip/todo, 이름 변경, 누락, 중복, 프로세스 실패·시간 초과는 실패다. 기존 syntax/wide CI에 처음 생긴 조건부 제외도 등록되지 않았으면 실패한다. 새 제외를 추가할 때에는 재현 입력과 자동 실행 경로를 함께 등록한다. 등록된 이름을 바꿀 때에는 같은 ID의 이름과 시험을 함께 바꾼다.
 
@@ -39,4 +39,4 @@ Windows 작업 `SYNK 조건부 시험`은 현재 사용자의 일반 권한·대
 
 일일 튜터의 같은 날 저장·새로고침·2분 뒤 복습 흐름은 시험의 한국 시각 정오를 고정한다. 실제 실행 시각이 자정 직전이어도 의도한 같은 학습일을 검사하며, 브라우저 타이머·실제 시험 제한은 계속 흐른다. 실제 한국 자정 뒤에는 전날 도움을 당일 도움으로 세지 않고 전날 기록을 보존해야 하는 별도 회귀를 유지한다. 시험 시간만 고정하며 앱의 날짜 기준은 바꾸지 않는다.
 
-회귀는 `node --test tests/conditional-qa.test.cjs tests/conditional-qa-retry.test.cjs tests/ci넓은시험.test.js`다. 이 자동화는 등록된 113건의 지속 검증이며, 새 보안 감사나 운영 접근 권한 전체의 재점검을 대신하지 않는다. 최초 실제 실행과 원격 CI 결과는 비공개 설치·실행 영수증과 해당 커밋의 GitHub Checks에서 확인한다.
+회귀는 `node --test tests/conditional-qa.test.cjs tests/conditional-qa-retry.test.cjs tests/ci넓은시험.test.js`다. 이 자동화는 등록된 114건의 지속 검증이며, 새 보안 감사나 운영 접근 권한 전체의 재점검을 대신하지 않는다. 최초 실제 실행과 원격 CI 결과는 비공개 설치·실행 영수증과 해당 커밋의 GitHub Checks에서 확인한다.
