@@ -41,6 +41,14 @@ for (const [누구, id] of [['태오', 'taeo'], ['교수', 'prof']]) {
 // 나노바나나는 4,300자 한도라 같은 내용을 줄인 `셀카_nb` 하나로 쓴다.
 일감.push({ id: 'selfie-gpt', 엔진: 'gpt', 줄: ['셀카', 'T-C:조각_mn-m', '셀카_태오', '셀카_결', '_계절', '_규칙'], 참고: ['mn-m-id', 'taeo-pick-gpt'] });
 일감.push({ id: 'selfie-nb', 엔진: 'nb', 줄: ['셀카_nb', 'T-C:조각_mn-m', '_계절', '_규칙'], 참고: ['mn-m-id', 'taeo-pick-nb'] });
+// 엔진 B 얼굴 고정 시험(11-02 유호님 「B 결로 시험해 봐」): 위 B 셀카는 B가 다시 구운 태오를 참고로 써 얼굴이 두 번 흔들렸다.
+// 원본 = 승인 원천을 바로 참고, A참고 = A 태오 정면(폰 결) + 승인 하나, 결만 = A 셀카 · 승인 연구실 그림을 그대로 두고 결만 다시 찍기.
+// a-selfie = A 셀카(selfie-gpt_063157), office-full = 1화 연구실 승인 그림 전체(office-real).
+일감.push({ id: 'bt-selfie-orig', 엔진: 'nb', 줄: ['B시험_셀카_원본', 'B시험_셀카_장면', 'B시험_셀카_결', 'T-C:조각_mn-m', '_계절', '_규칙'], 참고: ['mn-m-id', 'taeo-cafeteria', 'taeo-campus'] });
+일감.push({ id: 'bt-selfie-aref', 엔진: 'nb', 줄: ['B시험_셀카_A참고', 'B시험_셀카_장면', 'B시험_셀카_결', 'T-C:조각_mn-m', '_계절', '_규칙'], 참고: ['mn-m-id', 'taeo-pick-gpt', 'taeo-cafeteria'] });
+일감.push({ id: 'bt-selfie-fin', 엔진: 'nb', 줄: ['B시험_셀카_결만', 'B시험_셀카_결', '_규칙'], 참고: ['a-selfie', 'mn-m-id', 'taeo-cafeteria'] });
+일감.push({ id: 'bt-prof-orig', 엔진: 'nb', 줄: ['교수_신원', 'B시험_교수_원본', '교수_결', '_계절', '_규칙'], 참고: 인물참고.교수 });
+일감.push({ id: 'bt-prof-fin', 엔진: 'nb', 줄: ['B시험_교수_결만', '교수_결', '_규칙'], 참고: ['office-full', 'prof-cafe'] });
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   fs.mkdirSync(path.join(밖, '지시문'), { recursive: true });
