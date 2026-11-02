@@ -43,6 +43,8 @@ function publicAsset(relative,bytes){
   const data=JSON.parse(bytes.toString('utf8'));data.items=data.items.filter(row=>row.review?.status==='passed').map(({review,...row})=>({...row,review:{status:'passed'}}));bytes=Buffer.from(JSON.stringify(data)+'\n');
  }
  if(relative==='hangul-stage/assets/provenance.json')return null;
+ // 음성 구 사본(orbloom@0.1.0, MIT)의 esbuild 원천 경로 주석(이 PC 임시 폴더 경로)은 공개본에서 뺀다 — 코드와 MIT 고지는 그대로.
+ if(relative==='drama/orbloom.mjs')bytes=Buffer.from(bytes.toString('utf8').replace(/^\/\/ (?:\.\.\/)+[^\r\n]*(?:\r?\n)/gm,''));
  if(/\.mp3$/i.test(relative)&&bytes.subarray(0,3).toString('ascii')==='ID3'){
   if(bytes.length<10||![3,4].includes(bytes[3])||bytes[5]!==0||[...bytes.subarray(6,10)].some(n=>n>127))throw Error('Unsupported public MP3 tag: '+relative);
   const size=(bytes[6]<<21)|(bytes[7]<<14)|(bytes[8]<<7)|bytes[9],end=10+size;
@@ -146,6 +148,30 @@ const opening=path.join(root,'experiences/brand-opening');
 // assets/tutor-photos는 위에서 폴더째 실었다(home.html 기본 계정 사진이 여기 다시 잡혀도 두 번 쓰지 않는다).
 for(const name of openingAssets)if(!name.startsWith('tutor-photos/'))copyFile(path.join(opening,'assets',name),'brand-opening/assets/'+name);
 for(const game of ['korean-runner','korean-rhythm','hangul-stage'])copyTree(path.join(root,'experiences',game),game,(source,relative)=>!relative.startsWith('hangul-stage/assets/voice/'));
+// 드라마 말하기 1화(11-02, 설계 experiences/drama/qa/WORLD올리기-20261102/설계.md): 화면 · 강의(world-lesson.json) · 기록 묶음 · 재생 사본만 싣는다.
+// content.mjs(시범 서버 전용 · 판정 명세)와 README · qa는 싣지 않는다. 재생 사본(media/)은 git 밖(tools/build-drama-pilot-assets.mjs가 승인 원천에서
+// 만든다)이라 그 manifest.json의 sha256과 하나씩 대조해 없거나 다르면 멈춘다 — manifest 자체(원천 파일 이름)는 싣지 않는다.
+// index.html에는 WORLD 표시(data-drama="world")를 단다: 게임 틀 밖에서 바로 열면 화면이 WORLD로 안내한다.
+{const dramaRoot=path.join(root,'experiences/drama/pilot'),indexSource=path.join(dramaRoot,'index.html'),indexBytes=fs.readFileSync(indexSource);sourceHashes.set(indexSource,sha(indexBytes));
+ const dramaHtml=indexBytes.toString('utf8');if(!dramaHtml.includes('<html lang="ko">'))throw Error('Drama index.html shape changed: <html lang="ko"> missing');
+ // 캐시 토큰(?v=)은 공개본에만 단다 — 이PC 시범 서버는 쿼리 붙은 주소를 받지 않는다. 다음 공개부터는 tools/공개.js가 바뀐 파일의 토큰을 고친다.
+ // pilot.mjs가 부르는 하위 모듈에도 토큰을 달고, pilot.mjs의 토큰은 그 치환이 든 공개 본문으로 잰다 — 하위 모듈만 바뀌어도 새 판을 받는다.
+ const dramaToken=name=>sha(fs.readFileSync(path.join(dramaRoot,name))).slice(0,12);
+ const pilotSource=path.join(dramaRoot,'pilot.mjs'),pilotBytes=fs.readFileSync(pilotSource);sourceHashes.set(pilotSource,sha(pilotBytes));
+ let pilotText=rewrite(pilotBytes.toString('utf8'),'drama/pilot.mjs');
+ for(const name of ['strings.mjs','takes.mjs','orbloom.mjs']){const from=`'./${name}'`;if(pilotText.split(from).length!==2)throw Error('Drama pilot.mjs import missing: '+from);pilotText=pilotText.replace(from,`'./${name}?v=${dramaToken(name)}'`);}
+ write('drama/pilot.mjs',Buffer.from(pilotText),pilotSource);
+ const tokens={'pilot.css':dramaToken('pilot.css'),'atlas-learning.js':dramaToken('atlas-learning.js'),'pilot.mjs':sha(Buffer.from(pilotText)).slice(0,12)};
+ let dramaPage=dramaHtml.replace('<html lang="ko">','<html lang="ko" data-drama="world">');
+ for(const [attr,name] of [['href','pilot.css'],['src','atlas-learning.js'],['src','pilot.mjs']]){const from=`${attr}="${name}"`;if(dramaPage.split(from).length!==2)throw Error('Drama index.html reference missing: '+from);dramaPage=dramaPage.replace(from,`${attr}="${name}?v=${tokens[name]}"`);}
+ write('drama/index.html',Buffer.from(dramaPage),indexSource);
+ for(const name of ['pilot.css','strings.mjs','takes.mjs','orbloom.mjs','atlas-learning.js','world-lesson.json'])copyFile(path.join(dramaRoot,name),'drama/'+name);
+ const mediaManifest=path.join(dramaRoot,'media/manifest.json');if(!fs.existsSync(mediaManifest))throw Error('Drama media missing: run node tools/build-drama-pilot-assets.mjs first');
+ for(const item of JSON.parse(fs.readFileSync(mediaManifest,'utf8')).files){
+  if(!/^[A-Za-z0-9_.-]+$/.test(item.file))throw Error('Invalid drama media name: '+item.file);
+  const source=path.join(dramaRoot,'media',item.file);if(!fs.existsSync(source)||sha(fs.readFileSync(source))!==item.sha256)throw Error('Drama media differs from its manifest: '+item.file);
+  copyFile(source,'drama/media/'+item.file);
+ }}
 // 내 위치 짧은 진단의 낱말 듣기: 레이싱 폴더는 싣지 않고 진단이 쓰는 낱말 녹음만 싣는다. 표는 아무것도 import하지 않는
 // world-diagnostic-racing.mjs에서 읽는다(진단 묶음 전체를 부르면 공개 내보내기에 없는 게임 폴더까지 따라 부른다).
 for(const [id] of DIAG_RACING_WORDS)copyFile(path.join(root,'experiences',racingWordAudio(id)),racingWordAudio(id));

@@ -67,8 +67,8 @@ export function createPilotServer({lesson,root=path.join(REPO,'experiences','dra
         if(!relative&&/^\/media\/[A-Za-z0-9_.-]+$/.test(route))relative=route.slice(1);
         if(!relative&&/^\/[A-Za-z0-9_-]+\.mjs$/.test(route)&&!['/content.mjs'].includes(route)){
           // 번역/문구를 별도 모듈로 나눴을 때만 제공한다. 서버용 콘텐츠 모듈은 항상 제외한다.
-          // orbloom.mjs: 음성 구(orbloom@0.1.0, MIT)를 한 파일로 묶은 사본 — CSP가 바깥 스크립트를 막아 여기서 낸다(11-02).
-          if(['strings.mjs','copy.mjs','orbloom.mjs'].includes(route.slice(1)))relative=route.slice(1);
+          // orbloom.mjs: 음성 구(orbloom@0.1.0, MIT)를 한 파일로 묶은 사본 — CSP가 바깥 스크립트를 막아 여기서 낸다(11-02). takes.mjs: 테이크 차례 · 혼자 해 봄 규칙(WORLD 안 화면과 같은 파일).
+          if(['strings.mjs','copy.mjs','orbloom.mjs','takes.mjs'].includes(route.slice(1)))relative=route.slice(1);
         }
         if(!relative)throw new PilotError('route_missing',404);
         const filename=path.join(root,relative),extension=path.extname(filename);

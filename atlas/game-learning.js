@@ -23,11 +23,32 @@ const uid = () => `l${Date.now().toString(36)}-${Math.random().toString(36).slic
 // A synchronous Storage read followed by setItem is not an atomic transaction
 // across browser tabs. One browser context owns writes for a history at a time;
 // games in that context share the lease and its provisional initial epoch.
+// Same-origin frames of one tab run on one event loop and every write first merges what is stored (refresh), so they share
+// that lease too. Each frame bundles its own copy of this file (WORLD's account bundle in the page, a game's bundle in its
+// frame — 2026-11-02 drama-in-WORLD rehearsal), so the topmost same-origin window's copy hands out every lease of the tab:
+// its callbacks outlive any frame. A frame whose top window carries no Atlas keeps its own lease, as before; a separate tab
+// or a cross-origin ancestor still waits for the lock.
+const LEASE_OWNER = '__synkAtlasHistoryLease';
+function leaseScope() {
+  let scope = globalThis;
+  try {
+    for (let frame = globalThis; frame.parent && frame.parent !== frame; frame = frame.parent) {
+      if (frame.parent.location?.origin !== globalThis.location?.origin) break;
+      scope = frame.parent;
+    }
+  } catch { /* A cross-origin ancestor ends the shared scope. */ }
+  return scope;
+}
 const historyLeases = new Map();
 const LEASE_WARNING = '다른 탭에서 이 기록을 사용 중이에요. 그 탭을 닫으면 이곳에서 저장할 수 있어요.';
 function browserHistoryLease(name) {
   if (typeof globalThis.document !== 'object') return null;
   if (globalThis.location?.protocol === 'synk-desktop:' && typeof globalThis.synkDesktop === 'object') return null;
+  let owner = null;
+  try { owner = leaseScope()[LEASE_OWNER]; } catch { owner = null; }
+  return typeof owner === 'function' ? owner(name) : ownHistoryLease(name);
+}
+function ownHistoryLease(name) {
   const manager = globalThis.navigator?.locks;
   // Packaged desktop renderers are protected by the existing single-instance
   // app owner. Other browser documents without Web Locks remain read-only.
@@ -59,6 +80,8 @@ function browserHistoryLease(name) {
   };
   historyLeases.set(name, entry); return entry;
 }
+// The first copy loaded in a top window owns the tab's leases (later copies and frames call it).
+try { if (typeof globalThis.document === 'object' && leaseScope() === globalThis && typeof globalThis[LEASE_OWNER] !== 'function') globalThis[LEASE_OWNER] = ownHistoryLease; } catch { /* A sealed global keeps per-copy leases. */ }
 // Both readings use Trail: an exclusion withdraws a result without replacing its
 // original anchor. Retain the full decision bundles until the observation window ends.
 function readFollowups(events, { scope, asOf, prior = null, complete = true, retain = false }) {

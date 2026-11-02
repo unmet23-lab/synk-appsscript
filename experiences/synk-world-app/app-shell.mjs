@@ -19,7 +19,7 @@ import {createWorkbenchStorage,thumbnailKey,wardrobeThumbnailCache} from '../syn
 import {play as playSound,getPref} from '../brand-opening/world-sound.mjs'
 import {profilePhoto,welcomePhoto} from '../brand-opening/tutor-photos.mjs';
 // 화면 언어(10-19 1판): 계정 연결·로그인 안내·저장 확인·오류는 고른 언어로. 첫 문장 놀이·타운·노래 화면은 2판까지 한국어다.
-import {t,tMessage} from '../brand-opening/world-lang.mjs';
+import {t,tMessage,currentLang} from '../brand-opening/world-lang.mjs';
 import {restoreDisplayLanguage,commitDisplayLanguage} from './display-language-sync.mjs';
 const $=s=>document.querySelector(s);
 // pagehide closes this capability object; a restored document must reverify it.
@@ -62,6 +62,10 @@ let screen='',draftRun=null,answers=[],questionIndex=0,lastCompletion=null,wardr
 const wardrobeRequested=new URLSearchParams(location.search).get('wardrobe')==='1';
 // 주소의 ?exam=topik1|topik2(10-22, 메일·신청 페이지의 무료 연습 링크): 첫 실행을 마치고 들어온 뒤 그 시험을 채운 학습 목표 창(이미 그 목표면 이번 주 계획)을 연다 — openExamLink.
 const examRequested=(value=>['topik1','topik2'].includes(value)?value:null)(new URLSearchParams(location.search).get('exam'));
+// ?drama=1(11-02, 드라마 말하기 코호트 링크): 로그인은 전체 페이지 이동이고 돌아오는 주소에 쿼리가 없어, 이 탭에 30분 동안 남겨 두었다가
+// 로그인한 상태로 들어왔을 때 한 번 연다(로그인 전에는 launchGame이 로그인 창을 열고 표시는 남는다).
+const DRAMA_PENDING='synk.world.drama.pending';
+const dramaRequested=(()=>{try{if(new URLSearchParams(location.search).get('drama')==='1')sessionStorage.setItem(DRAMA_PENDING,String(Date.now()));const at=Number(sessionStorage.getItem(DRAMA_PENDING));if(at&&Date.now()-at<30*60000)return true;sessionStorage.removeItem(DRAMA_PENDING);}catch{}return false;})();
 async function restoreConnectedHome(){
  try{
   const restored=await restoreSession();
@@ -666,7 +670,23 @@ function mountRewardTutor(){
   review.querySelectorAll('p')[index]?.append(button);
  }
 }
-const games={runner:{get title(){return t('game.runner.title');},path:'korean-runner/'},rhythm:{get title(){return t('game.rhythm.title');},path:'korean-rhythm/'},hangul:{get title(){return t('game.hangul.title');},path:'hangul-stage/'}};
+const games={runner:{get title(){return t('game.runner.title');},path:'korean-runner/'},rhythm:{get title(){return t('game.rhythm.title');},path:'korean-rhythm/'},hangul:{get title(){return t('game.hangul.title');},path:'hangul-stage/'},
+ // 드라마 말하기 1화(11-02, 설계 experiences/drama/qa/WORLD올리기-20261102/설계.md): 지금은 코호트 바로가기(?drama=1)로만 연다 — 첫 화면 줄은 입구 작업과 함께 정한다.
+ // 제목은 번역 표 밖의 고정 글(새 키를 넣으면 모든 화면 언어의 검수가 따라온다).
+ drama:{get title(){return currentLang()==='ko'?'드라마 말하기 · 1화':'Korean drama · Episode 1';},path:'drama/',microphone:true}};
+// 드라마 말하기의 받아쓰기 통로: 게임 틀(같은 출처 iframe)은 계정 토큰을 모르므로, 그 틀이 열린 동안만 부모 창에 talk world-speaking 동작 둘(status · take)을 둔다.
+// 만든 때의 계정(owner · generation)과 지금이 다르면 던지고, PC 앱처럼 말하기 자동 피드백을 못 쓰는 곳에서는 두지 않는다(화면은 스스로 확인으로 간다).
+function mountDramaHost(){
+ if(!operating||!account?.supportsSpeaking||!client.snapshot)return null;
+ const owner=client.snapshot.accountId,generation=client.generation;
+ const check=()=>{if(client.snapshot?.accountId!==owner||client.generation!==generation||window.SYNKDramaHost!==host)throw Object.assign(Error('로그인한 계정이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});};
+ const host=Object.freeze({
+  status:async()=>{check();const data=await account.speakingRequest({action:'status'});check();return data;},
+  take:async payload=>{check();if(!payload||typeof payload!=='object'||payload.action!=='take')throw Object.assign(Error('drama take only'),{code:'INVALID_ACTION'});const data=await account.speakingRequest(payload);check();return data;},
+ });
+ window.SYNKDramaHost=host;
+ return {dispose(){if(window.SYNKDramaHost===host)delete window.SYNKDramaHost;}};
+}
 function showGameConflict(id,session){
  const status=session.status().play;
  gameRecovery={id,session,busy:false};
@@ -674,7 +694,7 @@ function showGameConflict(id,session){
 }
 async function launchGame(id){
  const game=games[id];if(!game)return;
- const owner=client.snapshot?.accountId;let launchTicket=gameLaunch,session,trialHost=null,companion;
+ const owner=client.snapshot?.accountId;let launchTicket=gameLaunch,session,trialHost=null,companion,dramaHost=null;
  try{
  if(home.ensureTutor&&!home.tutor()?.tutor)return await home.ensureTutor(()=>launchGame(id));
  // 손님의 한글 만나기는 계정 놀이 기록 없이 기기 진도로, 바람길·리듬은 체험이 남아 있으면 한 판 체험으로 연다(계정 호스트를 설치하지 않는다).
@@ -693,13 +713,15 @@ async function launchGame(id){
  if(life.education?.applyPreferences()===false)throw Error('도움 방식을 저장하지 못했어요. 잠시 뒤 다시 저장해 주세요.');
  // 체험 판의 틀은 메모리 호스트를 받는다: 판이 끝나면 그 게임의 체험을 닫고 추천을 다시 고르며, 결과의 로그인 단추는 계정 연결을 연다.
  if(trial){trialHost=createGuestTrialPlayHost({game:id,onRound:()=>{guestTrials.finish(id);life.education?.refresh();},signIn:()=>setTimeout(()=>{if(client.snapshot)return;close();signIn(id);},0)});window.SYNKPlayHost=trialHost;}
- show(game.title,`<iframe class="game-frame" title="${game.title}" src="${worldUrl(game.path)}" allow="autoplay; fullscreen" allowfullscreen></iframe>`,'game');
+ // 드라마 통로는 틀보다 먼저 둔다 — 틀 안 화면이 처음 읽을 때 있어야 한다.
+ dramaHost=id==='drama'?mountDramaHost():null;
+ show(game.title,`<iframe class="game-frame" title="${game.title}" src="${worldUrl(game.path)}" allow="autoplay; fullscreen${game.microphone?'; microphone':''}" allowfullscreen></iframe>`,'game');
  launchTicket=gameLaunch;
  companion=home.mountGameTutor?.(id,{frame:document.querySelector('.game-frame')});
  if(session)activeGameSession=session;
- home.attachPanelResource({dispose:()=>{companion?.dispose();if(session){if(activeGameSession===session)activeGameSession=null;session.closeGame();}if(trialHost){if(window.SYNKPlayHost===trialHost)delete window.SYNKPlayHost;trialHost.stop();}queueMicrotask(()=>refreshLife());}});
+ home.attachPanelResource({dispose:()=>{companion?.dispose();dramaHost?.dispose();if(session){if(activeGameSession===session)activeGameSession=null;session.closeGame();}if(trialHost){if(window.SYNKPlayHost===trialHost)delete window.SYNKPlayHost;trialHost.stop();}queueMicrotask(()=>refreshLife());}});
  }catch(error){
-  companion?.dispose();if(session){if(activeGameSession===session)activeGameSession=null;session.dispose();}
+  companion?.dispose();dramaHost?.dispose();if(session){if(activeGameSession===session)activeGameSession=null;session.dispose();}
   if(trialHost){if(window.SYNKPlayHost===trialHost)delete window.SYNKPlayHost;trialHost.stop();}
   if(launchTicket!==gameLaunch||client.snapshot?.accountId!==owner)return;
   show(t('account.gameCheck'),`${notice('PLAY','check',t('account.gameCheckNotice'),escape(errorText(error)))}<div class="world-actions"><button class="felt-button" data-world-game="${id}">${t('account.reconnect')}</button><button class="plain-button" data-world="profile">${t('account.checkMine')}</button></div>`,'world-game-error');
@@ -809,6 +831,8 @@ entryGate=createWorldEntryGate({
    if(entryGate.state().phase!=='ready'||identity.owner!==(client.snapshot?.accountId||'guest')||identity.generation!==client.generation)return;
    if(wardrobeRequested){if(client.snapshot)void wardrobe();else signIn();}
    else if(new URLSearchParams(location.search).get('cafe')==='1')void openLife('cafe').catch(()=>home.toast('카페를 열지 못했어요. 우리 동네에서 카페를 다시 눌러 주세요.'));
+   // ?drama=1(11-02): 드라마 말하기 1화 코호트 링크 — 다른 게임과 같은 launchGame(로그인 전이면 로그인부터).
+   else if(dramaRequested){if(client.snapshot)try{sessionStorage.removeItem(DRAMA_PENDING);}catch{}void launchGame('drama');}
    // 한 번만 도는 바로가기라 계정이 바뀌어 멈춘 것(코드 없는 오류)은 알리지 않는다 — 「다시 시도」할 일이 아니다.
    else if(examRequested)void openExamLink().catch(error=>{if(error?.code)home.toast(errorText(error));});
    else openReminderLink();

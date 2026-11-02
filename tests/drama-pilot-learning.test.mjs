@@ -50,9 +50,9 @@ test('시범 대사에는 말하기 지도의 능력 이름이 있고, 새 상�
   const map=require('../strata').createMap(require('../strata/maps/ko-speaking.json'));
   for(const line of [...PILOT.scene.filter(x=>x.type==='student'),PILOT.transfer])assert.equal(map.getNode(line.skill)?.kind,'skill',line.id);
   const pub=publicLesson(PILOT);
-  assert.deepEqual(Object.keys(pub.transfer).sort(),['id','prompt','reviewed','skill']);
-  // 새 상황은 ep01 처음 보는 대사 t9 — AI 2중 검수(drama-ep01-r13)를 통과해 「혼자 해 봄」을 셀 수 있다. 대본을 고치면 검수지문이 풀려 false가 된다.
-  assert.equal(PILOT.transfer.id,'s1e01-t9');assert.equal(PILOT.transfer.spec.reviewed,true);assert.equal(pub.transfer.reviewed,true);assert.equal(PILOT.transfer.spec.free,true);
+  // 한국어 상황 글(promptKo)은 답 낱말을 쓰지 않고, reviewed는 칸 명세 검수 여부뿐이다(11-02).
+  assert.deepEqual(Object.keys(pub.transfer).sort(),['id','prompt','promptKo','reviewed','skill']);
+  for(const key of PILOT.transfer.spec.keys)assert.ok(!pub.transfer.promptKo.includes(key.word),key.word);
   assert.ok(pub.scene.filter(x=>x.type==='student').every(x=>x.skill&&!x.spec));
 });
 
@@ -72,7 +72,7 @@ test('차례 하나 = 보임 하나, 테이크 = 시도(spoken). 서버 trail ·
   const retake=recorder.open({lineId:'s1e01-7',skillId:'ko.speaking.ask',phase:'retake'});
   retake.take({kind:'result',data:{status:'ok',transcript:TRANSCRIPT,trail:{correct:true,assessable:false}}});
   retake.excludeLast();retake.excludeLast();
-  const transfer=recorder.open({lineId:'transfer-location',skillId:'ko.speaking.ask',phase:'transfer'});
+  const transfer=recorder.open({lineId:'s1e01-t4',skillId:'ko.speaking.ask',phase:'transfer'});
   transfer.take({kind:'result',data:{status:'ok',transcript:TRANSCRIPT,trail:{correct:true,assessable:true}}});
   transfer.help('answer');
   transfer.take({kind:'down'});
@@ -119,7 +119,7 @@ async function serve(t,overrides={}){
   const port=socket.address().port;await new Promise(r=>socket.close(r));
   const app=createPilotServer({lesson:PILOT,root,port,analysis:true,
     decode:async()=>({wav:Buffer.from('x'),seconds:4,speechSeconds:3,silent:false}),
-    transcribe:async()=>({text:'선배님, 혹시 편의점이 어디에 있는지 아세요?',languages:[{code:'ko'}]}),...overrides});
+    transcribe:async()=>({text:'선생님, 혹시 복사실이 어디에 있는지 아세요?',languages:[{code:'ko'}]}),...overrides});
   await new Promise(r=>app.server.listen(port,'127.0.0.1',r));
   t.after(async()=>{app.server.closeAllConnections();await new Promise(r=>app.server.close(r));await fs.rm(root,{recursive:true,force:true});});
   const init=await fetch(`${app.origin}/api/bootstrap`);const cookie=init.headers.get('set-cookie').split(';')[0];
@@ -136,6 +136,8 @@ test('서버: 테이크 응답의 trail이 판정 · 검수 · 첫 노출을 따
   const {bootstrap,take,learn}=await serve(t);
   assert.equal(bootstrap.learning,null);
   assert.deepEqual((await take('s1e01-7','scene')).trail,{correct:false,assessable:false});
+  // 새 상황은 검수를 통과한 처음 보는 대사 s1e01-t4(11-02, 운영 talk 대사 은행에 있는 줄 — WORLD 공개판과 같다). t9(편의점)는 talk 은행 재배포 뒤 다음 판.
+  assert.equal(PILOT.transfer.id,'s1e01-t4');assert.equal(PILOT.transfer.spec.reviewed,true);assert.equal(PILOT.transfer.spec.free,true);
   const first=await take(PILOT.transfer.id,'transfer');
   assert.equal(first.observation.kind,'pass');assert.deepEqual(first.trail,{correct:true,assessable:true});
   assert.deepEqual((await take(PILOT.transfer.id,'transfer')).trail,{correct:true,assessable:false},'두 번째는 첫 응답이 아니다');
@@ -158,7 +160,8 @@ test('묶음(atlas-learning.js)이 원천과 같고, 화면이 그것을 싣는�
   const r=spawnSync(process.execPath,['tools/build-drama-learning.js','--check'],{cwd:REPO,encoding:'utf8'});
   assert.equal(r.status,0,r.stderr||r.stdout);
   const html=await fs.readFile(path.join(REPO,'experiences/drama/pilot/index.html'),'utf8');
-  assert.ok(html.indexOf('src="/atlas-learning.js"')>0&&html.indexOf('src="/atlas-learning.js"')<html.indexOf('src="/pilot.mjs"'));
+  // 주소는 문서 기준 상대 주소(시범 서버 / · WORLD /world/drama/ 둘 다에서 풀린다, 11-02).
+  assert.ok(html.indexOf('src="atlas-learning.js"')>0&&html.indexOf('src="atlas-learning.js"')<html.indexOf('src="pilot.mjs"'));
   const pilot=await fs.readFile(path.join(REPO,'experiences/drama/pilot/pilot.mjs'),'utf8');
   assert.match(pilot,/S\.trail\?\.open\(\{ lineId: item\.id, skillId: item\.skill, phase: ctx\.phase \}\)/);
   // 테이크 2 「다시 녹음」은 같은 차례 — 보임을 다시 열지 않는다(아르곤 A2).

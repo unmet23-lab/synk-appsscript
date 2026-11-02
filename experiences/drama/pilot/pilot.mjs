@@ -1,5 +1,8 @@
-// 드라마 말하기 로컬 시범판 화면(2026-10-31, Claude). 서버 계약: /api/bootstrap·take·reveal·reset(부모 GPT 서버), 리허설에서만 /api/learning.
-// 지키는 것(Fable 설계 검토 반영 — .tmp/drama-pilot-20261031/fable-design.md):
+// 드라마 말하기 시범판 화면(2026-10-31). 통로 둘(11-02, 설계 experiences/drama/qa/WORLD올리기-20261102/설계.md):
+//  · 이PC 시범 서버(tools/drama-pilot.mjs): /api/bootstrap·take·reveal·reset, 리허설에서만 /api/learning.
+//  · WORLD 안(synk.im/world/?drama=1 → 같은 출처 게임 틀): 강의는 정적 world-lesson.json, 받아쓰기 · 판정은 부모 창의 드라마 통로
+//    (SYNKDramaHost — 계정의 talk world-speaking take를 부른다, 이 창은 토큰을 모른다), 「혼자 해 봄」은 takes.mjs 규칙으로 이 창이 정한다.
+// 지키는 것(설계 검토 반영):
 //  · 녹음·받아 적은 글은 이 창의 메모리에만. 콘솔·저장소·내려받기 없음. ObjectURL은 세션 보관함에서만 만들고 비우기·다시하기·창 닫기에 해제.
 //  · 장면 안에서는 판정을 말로 보여 주지 않는다 — 인물 되묻기 → 카드 펼침 → 통과(어긋남 셋까지). 안 들림(unclear·no_speech)은 따로 세어 되묻기만, 세 번이면 스스로 확인.
 //  · 코치 노트는 장면이 끝난 뒤 하나만: 줄마다 마지막 판정 테이크의 note만 후보. 없으면 「다른 말로 한번 더」 연습(교정 아님).
@@ -15,6 +18,7 @@
 //    있을 때만 남고, 호스트는 학습 기록 동의가 켜진 계정에서만 보낸다 — 없으면 아무것도 남지 않는다. 받아 적은 글 · 소리는 넣지 않고,
 //    「혼자 해 봄」 여부는 서버가 테이크 응답의 trail로 정한다.
 import { STR, endingFix } from './strings.mjs';
+import { newAttemptState, resetAttempts, beginTake, talkObservation, nextCount, settleTake } from './takes.mjs';
 
 const $ = (id) => document.getElementById(id);
 const ui = { stage: $('stage'), still: $('still'), loop: $('loop'), reply: $('reply'), subs: $('subs'), slate: $('slate'), panel: $('panel'), dialog: $('dialog'), voice: $('voice'), chip: $('analysisChip'), lang: $('langBtn'),
@@ -38,16 +42,16 @@ if (window.ResizeObserver && dockEl) new ResizeObserver(syncDock).observe(dockEl
 // bootstrap이 아래 칸을 넘기지 않아도 돌도록 둔 기본값(content.mjs와 같은 파일).
 const FALLBACK = {
  reasks: [
-  { text: '응? 응? 뭐라고요?', audio: '/media/senior-ask-1.mp3' },
-  { text: '미안해요, 여기가 시끄러워서 잘 못 들었어요.', audio: '/media/senior-ask-2.mp3' },
-  { text: '천천히 해도 돼요.', audio: '/media/senior-ask-3.mp3' },
+  { text: '응? 응? 뭐라고요?', audio: 'media/senior-ask-1.mp3' },
+  { text: '미안해요, 여기가 시끄러워서 잘 못 들었어요.', audio: 'media/senior-ask-2.mp3' },
+  { text: '천천히 해도 돼요.', audio: 'media/senior-ask-3.mp3' },
  ],
  coach: {
   noteEnding: { text: '끝에 \'요\'를 붙여 봐요. 이 장면을 다시 해 볼까요?', audio: null },
   noteOther: { text: '이 장면을 다시 해 볼까요?', audio: null },
   wrap: { text: '오늘은 여기까지! 수고했어요.', audio: null },
  },
- assets: { listenLoop: '/media/taeo-listen.mp4', poster: '/media/taeo-still.webp', backdrop: '/media/taeo-still-blur.webp' },
+ assets: { listenLoop: 'media/taeo-listen.mp4', poster: 'media/taeo-still.webp', backdrop: 'media/taeo-still-blur.webp' },
 };
 const NOTE_ORDER = { ending: 0, length: 1, missing: 2 };
 
@@ -295,12 +299,13 @@ function slate(title, { k = '', sub = '', ms = 1400 } = {}) {
 /* ───────── 대화창(<dialog>) ───────── */
 let dialogResolve = null;
 function closeDialog(value = null) { if (ui.dialog.open) ui.dialog.close(); const r = dialogResolve; dialogResolve = null; if (r) r(value); }
-function ask({ title, body, note, buttons }) {
+function ask({ title, body, note, buttons, link = null }) {
  closeDialog();
  return new Promise((res) => {
   dialogResolve = res;
   ui.dialog.replaceChildren(h('div', { class: 'sheet-in' },
    h('h2', {}, title), body ? h('p', {}, body) : null, note ? h('p', { class: 'fine' }, note) : null,
+   link ? h('p', { class: 'fine' }, h('a', { class: 'policy', href: link.href, target: '_blank', rel: 'noopener' }, link.label)) : null,
    h('div', { class: 'row' }, buttons.map((b) => h('button', { type: 'button', class: b.primary ? 'pill' : 'ghost', on: { click: () => closeDialog(b.value) } }, b.label)))));
   ui.dialog.showModal();
  });
@@ -341,7 +346,76 @@ function setupTrail() {
  } catch { return null; }
 }
 
+/* ───────── WORLD 통로(11-02) ─────────
+ * 같은 출처 부모 창(WORLD)이 이 게임 틀을 연 동안만 SYNKDramaHost = {status(), take(payload)}를 둔다. 둘 다 계정의 talk world-speaking을
+ * 부르고(status · take), 계정이 바뀌면 던진다. 부모가 없는데 WORLD 공개본(html data-drama="world")이면 WORLD에서 열라고만 보인다. */
+function findDramaHost() {
+ try { if (window.parent !== window && window.parent.location.origin === location.origin) return window.parent.SYNKDramaHost || null; } catch { /* 다른 출처 — 계정 통로 없음 */ }
+ return null;
+}
+const worldBuild = document.documentElement.dataset.drama === 'world';
+const W = { host: null, lesson: null, attempts: newAttemptState(), counts: new Map(), off: false, limit: false };
+const inWorld = () => !!W.host;
+// 대사마다 녹음 상한: talk는 answerSec + 5초를 넘으면 too_long — 그보다 조금 먼저 멈춘다(recordOnce의 AUTO_STOP_MARGIN). 시범 서버는 20초.
+const maxSecondsFor = (item) => (inWorld() && Number.isInteger(item?.answerSec) ? item.answerSec + 5 : 20);
+const blobToBase64 = (blob) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1] || ''); r.onerror = () => rej(r.error); r.readAsDataURL(blob); });
+// 받아쓰기를 이번 판 끈다(오늘 횟수 끝 · 서버 스위치 꺼짐 · 대사 은행 판이 바뀜).
+function worldAnalysisOff(why) { W[why] = true; if (S.boot) S.boot.capabilities.analysis = false; updateChip(); }
+async function sendTakeWorld(item, phase, take, s) {
+ const epoch = S.epoch, lineId = item.id, key = `${phase}:${lineId}`;
+ const count = W.counts.get(key) || { judged: 0, unheard: 0 };
+ const requestId = uuid();
+ let turn; try { turn = beginTake(W.attempts, { lineId, phase, requestId }); } catch { return { kind: 'down' }; }
+ const ac = new AbortController(); S.upload = ac;
+ const onAbort = () => ac.abort(); s.signal.addEventListener('abort', onAbort, { once: true });
+ const aborted = new Promise((res) => ac.signal.addEventListener('abort', () => res(null), { once: true }));
+ S.sentRun = true;
+ try {
+  const data = await blobToBase64(take.blob);
+  const mime = (take.blob.type || 'audio/webm').split(';')[0];
+  // 취소하면 기다리기만 멈춘다 — 이미 보낸 요청은 talk가 하루 횟수에 센다.
+  const r = await Promise.race([W.host.take({ action: 'take', request_id: requestId, consent: 'send-once', lang: S.lang, audio: { mime, data },
+   seconds: Math.max(0.01, Math.round(take.seconds * 100) / 100), lines_version: W.lesson.linesVersion, line_id: lineId, take: { judged: count.judged, unheard: count.unheard } }), aborted]);
+  if (epoch !== S.epoch || !live(s)) return { kind: 'stale' };
+  if (r === null) return { kind: 'aborted' };
+  if (r?.status === 'too_long') return { kind: 'input' };
+  if (r?.status === 'limit') { worldAnalysisOff('limit'); return { kind: 'down', limit: true }; }
+  if (r?.status === 'off') { worldAnalysisOff('off'); return { kind: 'down' }; }
+  if (r?.status !== 'ok' || !r.take) return { kind: 'down' };
+  const out = talkObservation(r.take);
+  W.counts.set(key, nextCount(count, out));
+  return { kind: 'result', data: settleTake(W.attempts, { phase, turn, out, reviewed: phase === 'transfer' ? S.boot.lesson.transfer.reviewed : item.reviewed }) };
+ } catch (error) {
+  if (epoch !== S.epoch || !live(s)) return { kind: 'stale' };
+  // 판이 바뀜(409 ITEM_CHANGED · ITEM_NOT_OPEN) — 이번 판은 받아쓰기를 끈다. 같은 요청 id 충돌(REQUEST_CONFLICT)은 그 테이크만.
+  if (error?.status === 409 && ['ITEM_CHANGED', 'ITEM_NOT_OPEN'].includes(error.code)) worldAnalysisOff('off');
+  return { kind: 'down' };
+ } finally { s.signal.removeEventListener('abort', onAbort); if (S.upload === ac) S.upload = null; }
+}
+async function bootWorld() {
+ const r = await fetch('world-lesson.json', { cache: 'no-cache' });
+ if (!r.ok) throw new Error('lesson');
+ W.lesson = await r.json();
+ if (!W.lesson?.lesson?.scene) throw new Error('lesson');
+ let status = null; try { status = await W.host.status(); } catch { status = null; W.statusFailed = true; }
+ // 드라마 스위치가 켜지고 대사 은행 지문이 같고 오늘 횟수가 남았을 때만 받아쓰기를 연다.
+ const analysis = !!status && status.dramaEnabled === true && status.linesVersion === W.lesson.linesVersion && status.dramaRemaining !== 0;
+ W.limit = status?.dramaRemaining === 0;
+ return { lesson: W.lesson.lesson, capabilities: { analysis, microphone: true }, limits: { maxSeconds: 20 }, firstExposure: true, learning: null };
+}
+
+// 처음 status가 일시 오류로 실패했으면 차례마다 한 번 다시 물어 받아쓰기를 되살린다(한도 · 꺼짐 · 판 다름은 그대로 둔다).
+async function retryWorldStatus() {
+ if (!inWorld() || !W.statusFailed || W.off || W.limit || S.boot.capabilities.analysis) return;
+ let status = null; try { status = await W.host.status(); } catch { return; }
+ W.statusFailed = false;
+ W.limit = status?.dramaRemaining === 0;
+ S.boot.capabilities.analysis = status?.dramaEnabled === true && status.linesVersion === W.lesson.linesVersion && !W.limit;
+ updateChip();
+}
+
 async function sendTake(lineId, phase, take, s) {
+ if (inWorld()) return sendTakeWorld(phase === 'transfer' ? S.boot.lesson.transfer : studentItems().find((x) => x.id === lineId) || { id: lineId }, phase, take, s);
  const ac = new AbortController(); S.upload = ac;
  const onAbort = () => ac.abort(); s.signal.addEventListener('abort', onAbort, { once: true });
  const epoch = S.epoch;
@@ -450,9 +524,9 @@ async function recordOnce(s, { onStart, onTick } = {}) {
 }
 
 /* ───────── 세션 녹음 보관함 ───────── */
-function addTake(lineId, phase, blob) {
+function addTake(lineId, phase, blob, seconds = null) {
  const n = S.takes.filter((x) => x.lineId === lineId).length + 1;
- const take = { id: uuid(), lineId, phase, n, blob, url: URL.createObjectURL(blob) };
+ const take = { id: uuid(), lineId, phase, n, blob, seconds, url: URL.createObjectURL(blob) };
  S.takes.push(take);
  return take;
 }
@@ -526,9 +600,11 @@ function choose(s, build) {
 }
 
 /* ───────── 동의 ───────── */
+// WORLD 안에서는 처리방침(수탁자 표의 받아 적기 줄)을 함께 보인다. 이PC 시범은 공개 쪽 주소가 없다.
+const consentLink = () => (inWorld() ? { href: '/privacy/', label: tx('privacyLink') } : null);
 async function ensureConsent(s) {
  if (S.consent || !analysisCapable() || micUnusable()) return;
- const v = await ask({ title: tx('consentTitle'), body: tx('consentBody'), note: tx('consentNote'), buttons: [
+ const v = await ask({ title: tx('consentTitle'), body: tx('consentBody'), note: tx('consentNote'), link: consentLink(), buttons: [
   { label: tx('consentNo'), value: 'no' }, { label: tx('consentYes'), value: 'yes', primary: true }] });
  if (!live(s)) return;
  S.consent = v === 'yes' ? 'yes' : 'no';
@@ -549,7 +625,7 @@ ui.chip.addEventListener('click', async () => {
   const v = await ask({ title: tx('withdrawTitle'), body: tx('withdrawBody'), buttons: [{ label: tx('cancel'), value: 'no' }, { label: tx('withdrawYes'), value: 'yes', primary: true }] });
   if (v === 'yes') { S.consent = 'no'; S.upload?.abort(); updateChip(); }
  } else {
-  const v = await ask({ title: tx('consentTitle'), body: tx('consentBody'), note: tx('consentNote'), buttons: [{ label: tx('cancel'), value: 'no' }, { label: tx('consentYes'), value: 'yes', primary: true }] });
+  const v = await ask({ title: tx('consentTitle'), body: tx('consentBody'), note: tx('consentNote'), link: consentLink(), buttons: [{ label: tx('cancel'), value: 'no' }, { label: tx('consentYes'), value: 'yes', primary: true }] });
   if (v === 'yes') { S.consent = 'yes'; updateChip(); }
  }
 });
@@ -559,13 +635,16 @@ async function boot() {
  S.step = 'boot';
  panel(h('div', { class: 'wait' }, h('span', { class: 'spinner', 'aria-hidden': 'true' }), tx('loading')));
  try {
-  const r = await api('/api/bootstrap');
-  if (!r.ok || !r.data?.lesson?.scene) throw new Error('boot');
-  S.boot = r.data; S.csrf = r.data.csrfToken || ''; S.firstExposure = r.data.firstExposure !== false;
-  S.maxSeconds = Math.max(5, Math.min(60, Number(r.data.limits?.maxSeconds) || 20));
+  W.host = findDramaHost();
+  if (!W.host && worldBuild) return openInWorld();
+  let data;
+  if (W.host) data = await bootWorld();
+  else { const r = await api('/api/bootstrap'); if (!r.ok || !r.data?.lesson?.scene) throw new Error('boot'); data = r.data; }
+  S.boot = data; S.csrf = data.csrfToken || ''; S.firstExposure = data.firstExposure !== false;
+  S.maxSeconds = Math.max(5, Math.min(60, Number(data.limits?.maxSeconds) || 20));
   if (S.trail === undefined) S.trail = setupTrail();
  } catch {
-  panel(h('div', { class: 'block' }, h('p', { class: 'lead' }, tx('bootFail')), h('button', { type: 'button', class: 'pill', on: { click: boot } }, tx('retry'))));
+  panel(h('div', { class: 'block' }, h('p', { class: 'lead' }, tx(W.host ? 'bootFailWorld' : 'bootFail')), h('button', { type: 'button', class: 'pill', on: { click: boot } }, tx('retry'))));
   return;
  }
  const a = { ...FALLBACK.assets, ...(S.boot.lesson.assets || {}) };
@@ -574,6 +653,13 @@ async function boot() {
  const firstVideo = sceneItems().find((x) => x.video); if (firstVideo) { ui.reply.src = firstVideo.video; ui.reply.preload = 'auto'; }
  updateChip();
  intro();
+}
+
+// WORLD 공개본을 게임 틀 밖에서 바로 연 경우 — 계정 · 기록 · 받아쓰기가 없으니 WORLD에서 열게 한다.
+function openInWorld() {
+ S.step = 'outside'; S.render = openInWorld; hideMic(); updateChip();
+ panel(h('div', { class: 'block' }, h('p', { class: 'lead' }, tx('openInWorld')),
+  h('a', { class: 'pill', href: '../?drama=1', target: '_top' }, tx('openInWorldBtn'))));
 }
 
 // 첫 화면: 회차 표지(「Episode 01 · 개강 첫날 · 나는 한국에 막 온 유학생」)가 장면 위에 남고, 아래 유리 카드에 상대 · 때와 곳 · 시작 단추.
@@ -717,6 +803,7 @@ function micWaitPanel() {
   sub: h('span', { class: 'mic-hint' }, h('span', { class: 'fine' }, tx('micPreparingHint')), h('button', { type: 'button', class: 'link', on: { click: () => stopRecorder(true) } }, tx('cancel'))) });
 }
 async function captureAndSend(item, ctx, s) {
+ S.maxSeconds = maxSecondsFor(ctx.phase === 'transfer' ? S.boot.lesson.transfer : item);
  micWaitPanel();
  let tick = null;
  const out = await recordOnce(s, { onStart: () => { if (live(s)) { tick = recordingPanel(s); startHeldLoop(); } }, onTick: (sec) => tick?.(sec) });
@@ -731,8 +818,9 @@ async function captureAndSend(item, ctx, s) {
   await choose(s, (go) => [h('div', { class: 'turn' }, h('div', { class: 'notice quiet' }, tx('tooShort')), h('button', { type: 'button', class: 'pill', on: { click: () => go(1) } }, tx('recordAgain')))]);
   return null;
  }
- const take = addTake(item.id, ctx.phase, out.blob);
- if (!analysisOn()) return { take, res: { kind: 'off' } };
+ const take = addTake(item.id, ctx.phase, out.blob, out.seconds);
+ // 오늘 받아쓰기 횟수를 이미 다 쓴 WORLD 계정이면 「연습만」 대신 그 안내를 보인다.
+ if (!analysisOn()) return { take, res: { kind: 'off', limit: inWorld() && W.limit } };
  const res = await sendingPanel(item, ctx.phase, take, s);
  rest();
  return { take, res };
@@ -740,6 +828,8 @@ async function captureAndSend(item, ctx, s) {
 
 async function studentTurn(item, s, ctx) {
  const L = line(item.id);
+ await retryWorldStatus();
+ if (!live(s)) return;
  await ensureConsent(s);
  if (!live(s)) return;
  subs(null);
@@ -787,7 +877,7 @@ async function studentTurn(item, s, ctx) {
   // 장면에서 말해 본 줄: 받아 적을 수 있었던 테이크, 또는 받아쓰기 없이(꺼짐·서버 사정) 녹음한 테이크.
   if (ctx.phase === 'scene' && (res.kind === 'off' || res.kind === 'down' || (res.kind === 'result' && !unheardData(res.data)))) L.spoken = true;
   if (res.kind === 'off' || res.kind === 'down') {
-   const v = await selfCheckPanel(s, take, res.kind === 'off' ? 'practiceOnly' : 'apiDown', stepKey);
+   const v = await selfCheckPanel(s, take, res.limit ? 'dailyLimit' : res.kind === 'off' ? 'practiceOnly' : 'apiDown', stepKey);
    if (v === 'again') continue;
    if (v == null) return;
    return ctx.onDone({ take });
@@ -924,7 +1014,8 @@ async function retakeResult(item, r) {
   else msg = tx('t2Pending');
  }
  const noteTake = takeById(R.noteTakeId); const t2 = takeById(R.take2Id);
- let checked = null;
+ // 「같아요/달라요」 고른 것은 언어를 바꿔 다시 그려도 남는다.
+ let checked = r.selfCheck || null;
  hideMic(); S.cardKey = null;
  // 해낸 순간은 처음 그릴 때 한 번만(언어 바꾸기 · 확인 단추로 다시 그릴 때는 없이).
  if (passed && !r.celebrated) { r.celebrated = true; celebrate(s); }
@@ -934,7 +1025,7 @@ async function retakeResult(item, r) {
   data?.transcript ? h('div', { class: 'heard' }, h('p', { class: 'fine' }, tx('heardAs')), h('p', { class: 'ko', lang: 'ko' }, data.transcript)) : null,
   msg ? h('p', { class: passed ? 'lead passed' : 'lead' }, passed ? h('span', { class: 'tick on', 'aria-hidden': 'true' }) : null, msg) : null,
   hedge ? h('p', { class: 'fine' }, tx('noteHedge')) : null,
-  !data && r.take ? h('p', { class: 'fine' }, tx(r.invalid ? 'invalidSelf' : analysisOn() ? 'apiDown' : 'practiceOnly')) : null,
+  !data && r.take ? h('p', { class: 'fine' }, tx(r.invalid ? 'invalidSelf' : analysisOn() ? 'apiDown' : inWorld() && W.limit ? 'dailyLimit' : 'practiceOnly')) : null,
   data?.transcript ? (checked ? h('p', { class: 'fine' }, tx(checked === 'differs' ? 'differsAck' : 'sameAck'))
    : h('div', { class: 'row' }, h('button', { type: 'button', class: 'ghost', on: { click: () => go('same') } }, tx('same')), h('button', { type: 'button', class: 'ghost', on: { click: () => go('differs') } }, tx('differs')))) : null,
   (noteTake || t2) ? h('div', { class: 'compare' }, h('p', { class: 'fine' }, tx('compare')),
@@ -944,7 +1035,7 @@ async function retakeResult(item, r) {
  for (;;) {
   const v = await render();
   if (!live(s) || v == null) return;
-  if (v === 'same' || v === 'differs') { checked = v; R.selfCheck = v; if (v === 'differs') R.trail?.excludeLast(); continue; }
+  if (v === 'same' || v === 'differs') { checked = v; r.selfCheck = v; R.selfCheck = v; if (v === 'differs') R.trail?.excludeLast(); continue; }
   if (v === 'again') return runRetake();
   return runTransfer();
  }
@@ -965,6 +1056,8 @@ async function runTransfer() {
  stageMode('still'); subs(null); hideMic(); S.cardKey = null; panel();
  // 표지가 사라진 뒤에 카드가 올라온다(겹치지 않게).
  if (T.tries === 0 && !T.introShown) { T.introShown = true; slate(tx('transferTitle'), { k: 'New situation', ms: 1200 }); await sleep(s, 1650); if (!live(s)) return; hideSlate(); }
+ await retryWorldStatus();
+ if (!live(s)) return;
  await ensureConsent(s);
  if (!live(s)) return;
  const item = { id: tr.id };
@@ -988,7 +1081,7 @@ async function runTransfer() {
    if (res.kind === 'input') { T.invalid = (T.invalid || 0) + 1; T.selfCheck = null; T.lastTakeId = take.id; T.last = { kind: 'input' }; continue; }
    T.trail?.take(res);
    T.tries += 1; T.selfCheck = null; T.lastTakeId = take.id;
-   if (res.kind === 'off' || res.kind === 'down') { markSpoken(null); T.last = { kind: res.kind }; continue; }
+   if (res.kind === 'off' || res.kind === 'down') { markSpoken(null); T.last = { kind: res.kind, limit: !!res.limit }; continue; }
    const d = res.data;
    // 무음·받아 적은 글 없음은 시도로 세지 않는다(모범 보기 전 안내도 그대로 남는다).
    if (unheardData(d)) { T.unheard += 1; T.last = { kind: 'unheard' }; continue; }
@@ -1006,8 +1099,8 @@ function transferPanel(s, tr, T) {
  const lastTake = takeById(T.lastTakeId);
  const L = T.last; const d = L?.kind === 'result' ? L.data : null; const obs = d?.observation;
  let outcome = null;
- if (L?.kind === 'off') outcome = h('div', { class: 'notice quiet' }, tx('practiceOnly'));
- else if (L?.kind === 'down') outcome = h('div', { class: 'notice quiet' }, tx('apiDown'));
+ if (L?.kind === 'off') outcome = h('div', { class: 'notice quiet' }, tx(L.limit ? 'dailyLimit' : 'practiceOnly'));
+ else if (L?.kind === 'down') outcome = h('div', { class: 'notice quiet' }, tx(L.limit ? 'dailyLimit' : 'apiDown'));
  else if (L?.kind === 'input') outcome = h('div', { class: 'notice quiet' }, tx(T.invalid >= INVALID_REPEAT ? 'takeInvalidRepeat' : 'takeInvalid'));
  else if (L?.kind === 'unheard') outcome = h('div', { class: 'notice quiet' }, tx(T.unheard >= 3 ? 'unheardSelf' : 'unheardRetry'));
  else if (d) {
@@ -1030,7 +1123,7 @@ function transferPanel(s, tr, T) {
   h('p', { class: 'lead' }, tx('transferLead')),
   h('div', { class: 'card situation' }, h('p', { class: 'fine' }, tx('transferPromptLabel')), h('p', { class: 'mean big', lang: 'en' }, tr.prompt), promptKo ? h('p', { class: 'fine' }, promptKo) : null),
   micNotice(),
-  T.revealed ? h('div', { class: 'card model' }, h('p', { class: 'fine' }, tx('modelLabel')), h('p', { class: 'ko line', lang: 'ko' }, T.revealed.text), h('p', { class: 'fine' }, tx(tr.reviewed ? 'modelOther' : 'modelUnreviewed')),
+  T.revealed ? h('div', { class: 'card model' }, h('p', { class: 'fine' }, tx('modelLabel')), h('p', { class: 'ko line', lang: 'ko' }, T.revealed.text), h('p', { class: 'fine' }, tx(tr.reviewed ? 'modelReviewed' : 'modelUnreviewed')),
    T.revealed.modelAudio ? h('div', { class: 'row' }, soundBtn(tx('modelListen'), T.revealed.modelAudio, s)) : null) : null,
   outcome,
   d?.transcript && !T.selfCheck ? h('div', { class: 'row' }, h('button', { type: 'button', class: 'ghost', on: { click: () => go('same') } }, tx('same')), h('button', { type: 'button', class: 'ghost', on: { click: () => go('differs') } }, tx('differs'))) : null,
@@ -1055,7 +1148,8 @@ async function revealModel(s, T) {
  }
  const epoch = S.epoch;
  let r;
- try { r = await api('/api/reveal', { method: 'POST', json: { lineId: S.boot.lesson.transfer.id }, signal: s.signal }); } catch { r = null; }
+ if (inWorld()) { W.attempts.transferRevealed = true; r = { ok: true, data: W.lesson.reveal }; }
+ else { try { r = await api('/api/reveal', { method: 'POST', json: { lineId: S.boot.lesson.transfer.id }, signal: s.signal }); } catch { r = null; } }
  if (!live(s) || epoch !== S.epoch) return;
  if (!r?.ok || !r.data?.text) { await ask({ title: tx('apiDown'), buttons: [{ label: tx('close'), value: 'ok', primary: true }] }); return; }
  // 서버가 reveal을 먼저 기록한 뒤에만 보인다.
@@ -1130,7 +1224,8 @@ async function restart() {
  const s = newScope(); S.step = 'reset'; S.render = null; subs(null); hideMic();
  panel(h('div', { class: 'wait' }, h('span', { class: 'spinner', 'aria-hidden': 'true' }), tx('loading')));
  let r = null;
- try { r = await api('/api/reset', { method: 'POST', json: {}, signal: s.signal }); } catch {}
+ if (inWorld()) { W.counts.clear(); r = { ok: true, data: resetAttempts(W.attempts) }; }
+ else { try { r = await api('/api/reset', { method: 'POST', json: {}, signal: s.signal }); } catch {} }
  if (!live(s)) return;
  if (!r?.ok || !r.data?.ok) return resetFailed();
  clearTakes();
@@ -1151,7 +1246,7 @@ ui.lang.addEventListener('click', () => {
  S.lang = S.lang === 'ko' ? 'en' : 'ko';
  applyStaticText();
  // 녹음·마이크 허용 대기·전송 중이 아니면 지금 단계를 새 언어로 다시 그린다(intro·wrap 등 상태를 잃지 않는 단계만).
- if (!S.rec && !S.micWait && !S.upload && ['intro', 'wrap', 'transfer', 'take2-done', 'reset-fail'].includes(S.step) && S.render) S.render();
+ if (!S.rec && !S.micWait && !S.upload && ['intro', 'wrap', 'transfer', 'take2-done', 'reset-fail', 'outside'].includes(S.step) && S.render) S.render();
 });
 window.addEventListener('pagehide', () => { stopRecorder(true); S.upload?.abort(); clearTakes(); S.trail?.flush(); });
 

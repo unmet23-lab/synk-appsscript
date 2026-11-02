@@ -213,7 +213,7 @@ test('장면 화면은 바깥 스크립트 없이 Orbloom 사본을 쓰고 고�
   const [html,js,css,orb]=await Promise.all(['index.html','pilot.mjs','pilot.css','orbloom.mjs'].map(read));
   assert.match(orb,/^\/\*! orbloom@0\.1\.0[\s\S]*MIT License[\s\S]*Ricky Bharti/);
   for(const src of [html,js,css,orb])assert.doesNotMatch(src,/https?:\/\/(?!github\.com\/rickybharti)[^\s'"]+\.(?:m?js|css|woff2?)/);
-  assert.deepEqual([...js.matchAll(/(?:import\s*\(|from\s+)'([^']+)'/g)].map(m=>m[1]).sort(),['./orbloom.mjs','./strings.mjs']);
+  assert.deepEqual([...js.matchAll(/(?:import\s*\(|from\s+)'([^']+)'/g)].map(m=>m[1]).sort(),['./orbloom.mjs','./strings.mjs','./takes.mjs']);
   // 고정폭(.k · .who · .ep · .mstate · 표지 k) 자리에 넣는 글은 영문만이다. tx(...)·h('b', ...)(산세리프 한글 안내)는 빼고 본다.
   const hangul=/[가-힣]/;
   const literals=src=>[...src.replace(/tx\([^)]*\)/g,'').replace(/h\('b'[^)]*\)/g,'').matchAll(/'([^'\\]*(?:\\.[^'\\]*)*)'|`([^`]*)`/g)].map(m=>m[1]??m[2]);

@@ -1,0 +1,154 @@
+{
+ "version": "drama-world-1",
+ "linesVersion": "1b1afc801764882a",
+ "lesson": {
+  "id": "s1e01-pilot",
+  "title": "1화 · 개강 첫날 — 점심, 태오 선배",
+  "notices": {
+   "synthetic": "인물은 지어냈고, 목소리는 모두 합성했어요.",
+   "analysis": "받아쓰기를 위해 녹음을 외부 AI 서비스로 보냅니다. 서버에 저장하지 않고, 이 창을 닫으면 녹음도 사라집니다.",
+   "practice": "이 시범판의 판정은 받아쓴 글과 미리 정한 규칙만 봅니다. 교사의 평가나 공식 시험 결과가 아닙니다."
+  },
+  "role": {
+   "me": "새로 온 유학생",
+   "partner": "권태오 · 3학년 선배",
+   "place": "점심시간, 캠퍼스"
+  },
+  "reasks": [
+   {
+    "text": "응? 응? 뭐라고요?",
+    "audio": "media/senior-ask-1.mp3"
+   },
+   {
+    "text": "미안해요, 여기가 시끄러워서 잘 못 들었어요.",
+    "audio": "media/senior-ask-2.mp3"
+   },
+   {
+    "text": "천천히 해도 돼요.",
+    "audio": "media/senior-ask-3.mp3"
+   }
+  ],
+  "coach": {
+   "noteEnding": {
+    "text": "끝에 '요'를 붙여 봐요. 이 장면을 다시 해 볼까요?",
+    "audio": null
+   },
+   "noteOther": {
+    "text": "이 장면을 다시 해 볼까요?",
+    "audio": null
+   },
+   "wrap": {
+    "text": "오늘은 여기까지! 수고했어요.",
+    "audio": null
+   }
+  },
+  "nextEpisode": {
+   "title": "2화 · 동아리 박람회",
+   "line": "태오 선배가 데려간 동아리 박람회에서 동갑내기 친구를 만난다. 처음으로 말을 놓아 볼까?"
+  },
+  "assets": {
+   "listenLoop": "media/taeo-listen.mp4",
+   "poster": "media/taeo-still.webp",
+   "backdrop": "media/taeo-still-blur.webp"
+  },
+  "scene": [
+   {
+    "type": "actor",
+    "id": "a1",
+    "speaker": "senior",
+    "text": "저기, 혹시 신입생이에요? 아까 정문 안내 지도 앞에서 빙빙 돌고 있었죠?",
+    "meaning": "Hey, are you a freshman by any chance? You were circling around the campus map by the main gate earlier, right?",
+    "audio": "media/senior-01.mp3",
+    "image": "media/taeo-still.webp"
+   },
+   {
+    "type": "student",
+    "id": "s1e01-6",
+    "text": "네, 맞아요. 길을 잃어서 한참 헤맸어요.",
+    "meaning": "Yes, that's right. I got lost and wandered around for a long time.",
+    "skill": "ko.speaking.explain",
+    "modelAudio": "media/model-6.mp3",
+    "blanks": [
+     "길을 잃어서",
+     "헤맸어요"
+    ],
+    "answerSec": 12,
+    "reviewed": true
+   },
+   {
+    "type": "actor",
+    "id": "a2",
+    "speaker": "senior",
+    "text": "하하, 여기 처음 오면 다 헤매요. 나는 3학년 권태오예요. 편하게 선배라고 불러요.",
+    "meaning": "Haha, everyone gets lost here at first. I'm Taeo, a third-year. Just call me sunbae (senior).",
+    "audio": null,
+    "image": "media/taeo-still.webp",
+    "video": "media/taeo-reply.mp4",
+    "videoStart": 0,
+    "videoEnd": 9.99,
+    "retakeStart": 2.25
+   },
+   {
+    "type": "student",
+    "id": "s1e01-7",
+    "text": "네, 선배님! 그런데 혹시 도서관이 어디에 있는지 아세요?",
+    "meaning": "Yes, sunbae-nim! By the way, do you happen to know where the library is?",
+    "skill": "ko.speaking.ask",
+    "modelAudio": "media/model-7.mp3",
+    "blanks": [
+     "도서관",
+     "어디에 있는지"
+    ],
+    "goal": true,
+    "answerSec": 15,
+    "reviewed": true
+   },
+   {
+    "type": "actor",
+    "id": "a3",
+    "speaker": "senior",
+    "text": "선배님은 좀 부담스러운데… 뭐, 편한 대로 해요. 도서관? 밥 먹고 같이 가요. 내가 데려다줄게요.",
+    "meaning": "\"Sunbae-nim\" feels like a bit much... well, whatever you're comfortable with. The library? Let's go together after we eat. I'll take you there.",
+    "audio": "media/senior-03.mp3",
+    "image": "media/taeo-still.webp"
+   },
+   {
+    "type": "student",
+    "id": "s1e01-8",
+    "text": "정말요? 선배님 덕분에 살았어요.",
+    "meaning": "Really? You're a lifesaver, sunbae-nim.",
+    "skill": "ko.speaking.thank",
+    "modelAudio": "media/model-8.mp3",
+    "blanks": [
+     "덕분에",
+     "살았어요"
+    ],
+    "answerSec": 11,
+    "reviewed": true
+   },
+   {
+    "type": "actor",
+    "id": "a4",
+    "speaker": "senior",
+    "text": "에이, 뭘요. 대신 다음 주 동아리 박람회 때 커피 한 잔 사요. 내가 데려갈게요.",
+    "meaning": "Oh, it's nothing. But you're buying me a coffee at the club fair next week — I'll take you there.",
+    "audio": "media/senior-04.mp3",
+    "image": "media/taeo-still.webp",
+    "last": true
+   }
+  ],
+  "transfer": {
+   "id": "s1e01-t4",
+   "prompt": "You can't find the copy room. Politely ask a staff member you don't know where it is.",
+   "promptKo": "프린트를 해야 하는데 그 방을 못 찾았어요. 처음 뵙는 교직원께 공손하게 여쭤보세요. (장소 이름은 영어 설명을 보세요.)",
+   "skill": "ko.speaking.ask",
+   "reviewed": true,
+   "answerSec": 13
+  }
+ },
+ "reveal": {
+  "lineId": "s1e01-t4",
+  "text": "선생님, 혹시 복사실이 어디에 있는지 아세요?",
+  "modelAudio": null
+ }
+}

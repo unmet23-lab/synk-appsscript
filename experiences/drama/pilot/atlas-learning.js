@@ -4154,11 +4154,32 @@ var DramaLearning = (() => {
       var RESPONSE_MS = 30 * 864e5;
       var identifier = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
       var uid = () => `l${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+      var LEASE_OWNER = "__synkAtlasHistoryLease";
+      function leaseScope() {
+        let scope = globalThis;
+        try {
+          for (let frame = globalThis; frame.parent && frame.parent !== frame; frame = frame.parent) {
+            if (frame.parent.location?.origin !== globalThis.location?.origin) break;
+            scope = frame.parent;
+          }
+        } catch {
+        }
+        return scope;
+      }
       var historyLeases = /* @__PURE__ */ new Map();
       var LEASE_WARNING = "다른 탭에서 이 기록을 사용 중이에요. 그 탭을 닫으면 이곳에서 저장할 수 있어요.";
       function browserHistoryLease(name) {
         if (typeof globalThis.document !== "object") return null;
         if (globalThis.location?.protocol === "synk-desktop:" && typeof globalThis.synkDesktop === "object") return null;
+        let owner = null;
+        try {
+          owner = leaseScope()[LEASE_OWNER];
+        } catch {
+          owner = null;
+        }
+        return typeof owner === "function" ? owner(name) : ownHistoryLease(name);
+      }
+      function ownHistoryLease(name) {
         const manager = globalThis.navigator?.locks;
         if (historyLeases.has(name)) return historyLeases.get(name);
         const entry = { epoch: null, active: false, supported: !!manager, listeners: /* @__PURE__ */ new Set() };
@@ -4212,6 +4233,10 @@ var DramaLearning = (() => {
         };
         historyLeases.set(name, entry);
         return entry;
+      }
+      try {
+        if (typeof globalThis.document === "object" && leaseScope() === globalThis && typeof globalThis[LEASE_OWNER] !== "function") globalThis[LEASE_OWNER] = ownHistoryLease;
+      } catch {
       }
       function readFollowups(events, { scope, asOf, prior = null, complete = true, retain = false }) {
         const options = { scope, asOf, prior };
@@ -6722,9 +6747,11 @@ var DramaLearning = (() => {
               helped.add(kind);
               safe(() => game().help(pid, kind));
             },
+            // 「혼자 해 봄」은 그 차례의 첫 시도만이다 — Trail은 같은 문항에 앞 시도(안 들린 테이크 포함)가 있으면 반복(repeat)으로 본다(11-02 설계 검토).
             take(outcome) {
-              const result = answerOf(outcome);
-              if (!result) return null;
+              const answered = answerOf(outcome);
+              if (!answered) return null;
+              const result = attempts.length && answered.assessable ? { ...answered, assessable: false } : answered;
               const recorded = safe(() => game().answer(pid, { ...result, attemptNo: attempts.length + 1 }));
               if (recorded?.eventId) attempts.push(recorded.eventId);
               return recorded;

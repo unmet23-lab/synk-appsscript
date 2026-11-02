@@ -53,8 +53,10 @@ function createRecorder({ win = typeof window === 'undefined' ? null : window, o
     return Object.freeze({
       // text: 한국어 대사 카드가 보임, answer: 빈칸을 열었거나 새 상황의 모범을 봄.
       help(kind) { if (!HELPS.includes(kind) || helped.has(kind)) return; helped.add(kind); safe(() => game().help(pid, kind)); },
+      // 「혼자 해 봄」은 그 차례의 첫 시도만이다 — Trail은 같은 문항에 앞 시도(안 들린 테이크 포함)가 있으면 반복(repeat)으로 본다(11-02 설계 검토).
       take(outcome) {
-        const result = answerOf(outcome); if (!result) return null;
+        const answered = answerOf(outcome); if (!answered) return null;
+        const result = attempts.length && answered.assessable ? { ...answered, assessable: false } : answered;
         const recorded = safe(() => game().answer(pid, { ...result, attemptNo: attempts.length + 1 }));
         if (recorded?.eventId) attempts.push(recorded.eventId);
         return recorded;

@@ -2,7 +2,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),{createRequire}=require('node:module'),{locks}=require('node:worker_threads');
 const {createGame}=require('../atlas/game-learning'),{createMap}=require('../strata');
 const {createLearningSync}=require('../atlas/learning-sync');
-const file=require.resolve('../atlas/game-learning'),source=fs.readFileSync(file,'utf8'),map=createMap(require('../strata/maps/topik-i.json'));
+const file=require.resolve('../atlas/game-learning'),moduleSource=fs.readFileSync(file,'utf8'),map=createMap(require('../strata/maps/topik-i.json'));
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const disk=()=>{const values=new Map();return{getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k),key:i=>[...values.keys()][i]??null,get length(){return values.size;}};};
 test('a failed reset keeps the original history through the next successful write',()=>{
@@ -16,11 +16,17 @@ test('disposing retries a failed local write once and reports its actual final d
  const game=createGame({gameId:'dispose.retry',map,storage,fold:false});full=true;game.finishSet({kind:'short'});const ids=game.events().map(e=>e.id);full=false;game.dispose();assert.equal(game.flush(),true);const saved=JSON.parse(storage.getItem('synk.atlas.learning.v1.device'));for(const id of ids)assert.ok(saved.events.some(e=>e.id===id));
  const failed=createGame({gameId:'dispose.full',map,storage,fold:false});full=true;failed.finishSet({kind:'short'});failed.dispose();assert.equal(failed.flush(),false,'closing must not invent successful persistence');
 });
-function browser(storage,accountKey,{manager=locks,protocol='https:',storageScope='account',learnerKey='device'}={}){
- const listeners=new Map(),context={module:{exports:{}},require:createRequire(file),document:{},location:{protocol},navigator:{locks:manager},AbortController,console,addEventListener:(name,fn)=>{if(!listeners.has(name))listeners.set(name,[]);listeners.get(name).push(fn);}};
- vm.runInNewContext(source,context,{filename:file});
+function browser(storage,accountKey,{manager=locks,protocol='https:',storageScope='account',learnerKey='device',origin='https://synk.im',parent=null,atlas=true}={}){
+ const source=atlas?moduleSource:null;
+ const listeners=new Map(),context={module:{exports:{}},require:createRequire(file),document:{},location:{protocol,origin},navigator:{locks:manager},AbortController,console,addEventListener:(name,fn)=>{if(!listeners.has(name))listeners.set(name,[]);listeners.get(name).push(fn);}};
+ vm.createContext(context);context.window=vm.runInContext('globalThis',context);
+ // As in a browser, before the module runs: a top window is its own parent. A frame is its own copy of the module (its own
+ // realm) whose parent is the page's window; a cross-origin parent throws SecurityError on any read beyond its identity.
+ const crossOrigin=parent&&parent.window.location.origin!==origin;
+ context.parent=!parent?context.window:crossOrigin?new Proxy({},{get(){throw Object.assign(new Error('Blocked a frame from accessing a cross-origin frame.'),{name:'SecurityError'});}}):parent.window;
+ if(source!==null)vm.runInContext(source,context,{filename:file});
  context.removeEventListener=(name,fn)=>{listeners.set(name,(listeners.get(name)||[]).filter(other=>other!==fn));};
- return{game:id=>context.module.exports.createGame({gameId:id,map,storage,storageScope,learnerKey,accountKey:storageScope==='account'?accountKey:null,historyComplete:true,fold:false}),capture:name=>[...(listeners.get(name)||[])],hide:()=>{for(const fn of listeners.get('pagehide')||[])fn();},show:()=>{for(const fn of listeners.get('pageshow')||[])fn();},listeners:()=>[...listeners.values()].reduce((count,rows)=>count+rows.length,0)};
+ return{window:context.window,game:id=>context.module.exports.createGame({gameId:id,map,storage,storageScope,learnerKey,accountKey:storageScope==='account'?accountKey:null,historyComplete:true,fold:false}),capture:name=>[...(listeners.get(name)||[])],hide:()=>{for(const fn of listeners.get('pagehide')||[])fn();},show:()=>{for(const fn of listeners.get('pageshow')||[])fn();},listeners:()=>[...listeners.values()].reduce((count,rows)=>count+rows.length,0)};
 }
 
 test('disposing every game releases the browser writer and prevents old callbacks from writing',async t=>{
@@ -119,4 +125,33 @@ test('a response arriving after lease loss cannot write history or its outbox',a
  const storage=disk(),a=browser(storage,'writer.stale'),b=browser(storage,'writer.stale'),first=a.game('first'),second=b.game('second');t.after(async()=>{a.hide();b.hide();await tick();});for(let i=0;i<20&&!first.syncPort.canPersist();i++)await tick();
  let resolve;const sync=createLearningSync({adapter:first,accountKey:'writer.stale',revision:1,storage,auto:false,transport:{get:()=>new Promise(done=>{resolve=done;}),post:async()=>{throw Error('Unexpected post');}}});t.after(()=>sync.stop());const pending=sync.start();for(let i=0;i<20&&!resolve;i++)await tick();assert.ok(resolve);a.hide();for(let i=0;i<20&&!second.syncPort.canPersist();i++)await tick();second.finishSet({kind:'short'});
  const before=Array.from({length:storage.length},(_,i)=>storage.key(i)).map(key=>[key,storage.getItem(key)]);resolve({events:[{id:'stale.remote'}],cursor:1,hasMore:false,revision:1});await pending;assert.equal(sync.status().code,'STORAGE_BUSY');assert.deepEqual(Array.from({length:storage.length},(_,i)=>storage.key(i)).map(key=>[key,storage.getItem(key)]),before);
+});
+// 2026-11-02 (drama in WORLD): the page (WORLD's account bundle) and a same-origin game frame (its own bundle) are two copies
+// of this module in one tab. They share one writer; a separate tab still waits, and a cross-origin frame keeps its own table.
+test('a same-origin frame shares its page writer while another tab and a cross-origin frame wait',async t=>{
+ const storage=disk(),page=browser(storage,'writer.frame'),frame=browser(storage,'writer.frame',{parent:page}),tab=browser(storage,'writer.frame'),foreign=browser(storage,'writer.frame',{parent:page,origin:'https://elsewhere.example'});
+ const host=page.game('page'),game=frame.game('frame'),other=tab.game('tab'),stranger=foreign.game('foreign');
+ t.after(async()=>{host.dispose();game.dispose();other.dispose();stranger.dispose();page.hide();tab.hide();await tick();await tick();});
+ for(let i=0;i<30&&!host.syncPort.canPersist();i++)await tick();
+ assert.equal(host.syncPort.canPersist(),true);assert.equal(game.syncPort.canPersist(),true,'the frame shares the page lease');
+ assert.equal(other.syncPort.canPersist(),false,'another tab waits');assert.equal(stranger.syncPort.canPersist(),false,'a cross-origin frame does not join');
+ assert.equal(frame.listeners(),0,'the frame registers no pagehide of its own');
+ game.finishSet({kind:'short'});host.finishSet({kind:'short'});
+ const saved=JSON.parse(storage.getItem('synk.atlas.learning.v1.device'));for(const id of [...game.events(),...host.events()].map(e=>e.id))assert.ok(saved.events.some(e=>e.id===id),'lost '+id);
+ game.dispose();assert.equal(host.syncPort.canPersist(),true,'closing the frame keeps the page writer');
+});
+test('a frame that opened the shared writer first can go away without stranding its page',async t=>{
+ const storage=disk(),page=browser(storage,'writer.frame-first'),frame=browser(storage,'writer.frame-first',{parent:page});
+ const early=frame.game('frame');let host;t.after(async()=>{early.dispose();host?.dispose();page.hide();await tick();await tick();});
+ for(let i=0;i<30&&!early.syncPort.canPersist();i++)await tick();assert.equal(early.syncPort.canPersist(),true);
+ assert.equal(frame.listeners(),0,'the lease and its pagehide belong to the page copy');
+ host=page.game('page');assert.equal(host.syncPort.canPersist(),true,'the page joins the frame-opened writer');
+ early.dispose();assert.equal(host.syncPort.canPersist(),true,'the frame leaving keeps the page writer');
+ host.finishSet({kind:'short'});const saved=JSON.parse(storage.getItem('synk.atlas.learning.v1.device'));for(const e of host.events())assert.ok(saved.events.some(x=>x.id===e.id));
+});
+test('a frame whose top window has no Atlas keeps its own lease',async t=>{
+ const storage=disk(),page=browser(storage,'writer.bare-top',{atlas:false}),frame=browser(storage,'writer.bare-top',{parent:page}),tab=browser(storage,'writer.bare-top');
+ const game=frame.game('frame'),other=tab.game('tab');t.after(async()=>{game.dispose();other.dispose();frame.hide();tab.hide();await tick();await tick();});
+ for(let i=0;i<30&&!game.syncPort.canPersist()&&!other.syncPort.canPersist();i++)await tick();
+ assert.equal(game.syncPort.canPersist()!==other.syncPort.canPersist(),true,'exactly one of the frame and the other tab writes');
 });

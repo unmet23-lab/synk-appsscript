@@ -1,11 +1,11 @@
 /* 드라마 말하기 시범판 — 장면 화면 = 시네마 자막(11-02 확정, 정본 docs/디자인/드라마_장면/README.md).
    영상(시범판은 사진)이 위 74%를 채우고, 대사는 자막, 아래는 유리 대사 카드와 음성 구(Orbloom).
    포인트는 말하는 순간(구)과 해낸 순간(크롬 칩) 둘뿐 — 나머지 글자는 조용하게. 펠트는 깔지 않는다. 한글은 고정폭에 넣지 않는다. */
-@font-face { font-family: 'Pilot SUIT'; src: url('/media/SUIT-Variable.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
-@font-face { font-family: 'Pilot Inter'; src: url('/media/InterTight-Medium.woff2') format('woff2'); font-weight: 400 600; font-display: swap; }
-@font-face { font-family: 'Pilot Inter'; src: url('/media/InterTight-Bold.woff2') format('woff2'); font-weight: 700 900; font-display: swap; }
-@font-face { font-family: 'Pilot Mono'; src: url('/media/DMMono-Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
-@font-face { font-family: 'Pilot Mono'; src: url('/media/DMMono-Medium.woff2') format('woff2'); font-weight: 500 700; font-display: swap; }
+@font-face { font-family: 'Pilot SUIT'; src: url('media/SUIT-Variable.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: 'Pilot Inter'; src: url('media/InterTight-Medium.woff2') format('woff2'); font-weight: 400 600; font-display: swap; }
+@font-face { font-family: 'Pilot Inter'; src: url('media/InterTight-Bold.woff2') format('woff2'); font-weight: 700 900; font-display: swap; }
+@font-face { font-family: 'Pilot Mono'; src: url('media/DMMono-Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Pilot Mono'; src: url('media/DMMono-Medium.woff2') format('woff2'); font-weight: 500 700; font-display: swap; }
 
 :root {
  --bg: #060608; --scr: #09090b;
@@ -134,11 +134,14 @@ body.is-recording .stage::before { content: ''; position: absolute; inset: 0; z-
 .ghost { height: 36px; padding: 0 13px; border-radius: 999px; background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); font-size: 13px; font-weight: 600; color: var(--ink); }
 .ghost:hover { background: rgba(255,255,255,.14); }
 .link { background: none; padding: 6px 4px; color: var(--muted); font-size: 12.5px; text-decoration: underline; text-underline-offset: 3px; }
+.sheet a.policy { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; } /* 동의 창의 처리방침 링크(WORLD 안, 11-02) */
 .rec { height: 48px; padding: 0 22px; border-radius: 999px; background: var(--ink); color: #0a0a0e; font-weight: 750; font-size: 15.5px; }
 .rec-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--slip); }
 .pill:active, .ghost:active, .rec:active { transform: scale(.97); }
 button:disabled { opacity: .38; cursor: not-allowed; }
-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* 「WORLD에서 열기」는 링크 단추(<a class="pill">) — 단추와 같은 정렬 · 밑줄 없음(11-02) */
+a.pill { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 .ic.play { width: 0; height: 0; border-left: 8px solid currentColor; border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
 .wait { display: flex; align-items: center; gap: 10px; color: var(--dim); padding: 6px 0; }
 .spinner { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,.15); border-top-color: var(--ink); animation: spin .8s linear infinite; }

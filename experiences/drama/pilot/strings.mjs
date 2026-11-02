@@ -1,7 +1,7 @@
 // 드라마 말하기 시범판 화면 글(한국어·영어). 장면 대사·상황 카드는 서버의 lesson에서 온다.
 // 규칙: 점수·등급·TOPIK 향상·「성공」 확정 문구를 쓰지 않는다. 노트는 그 테이크의 말에 대해서만 말하고, 받아쓰기가 틀렸을 수 있다는 말(noteHedge)을 함께 둔다.
 // 바깥 틀(결정 10-31 「싱크타운 다시 짜기」 ③): 학생은 이야기 속 유학생 주인공이고 고칠 점은 이야기 밖 코치가 준다.
-// 배우·촬영·감독·오디션·컷 말은 쓰지 않는다(「테이크 2」만 화면 말로 남긴다). 사이트 규칙대로 도구 이름·「AI로 만든」 표기도 쓰지 않는다.
+// 배우·촬영·감독·오디션·컷 말은 쓰지 않는다(「테이크 2」만 화면 말로 남긴다). 사이트 규칙대로 제작 도구 이름과 「무엇으로 만들었다」는 표기도 쓰지 않는다.
 
 // 끝맺음 노트의 「헤맸어 → 헤맸어요」 표시. 「요」만 붙이면 맞는 꼴일 때만 돌려준다(「어디야 → 어디야요」 같은 틀린 표시를 내지 않는다).
 const PLUS_YO = new Set([...'어아여해돼봐줘워와지네게까걸래대데']);
@@ -127,7 +127,13 @@ export const STR = {
   hintShow: '모범 보기',
   modelLabel: '모범 예시',
   modelUnreviewed: '검수 전 연습 예시예요. 다른 표현도 될 수 있어요.',
-  modelOther: '다른 표현도 될 수 있어요.',
+  modelReviewed: '한 가지 예시예요. 다른 표현도 될 수 있어요.',
+  // WORLD 안(11-02)
+  bootFailWorld: '드라마를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.',
+  openInWorld: '이 드라마는 SYNK WORLD에서 로그인한 뒤에 열려요.',
+  openInWorldBtn: 'WORLD에서 열기',
+  dailyLimit: '오늘 받아쓰기는 여기까지예요. 내 녹음을 들어 보고 직접 확인하며 이어 가요.',
+  privacyLink: '개인정보 처리방침 — 녹음을 글로 옮기는 곳',
   transferPass: '받아 적은 글에서 장소와 묻는 말을 찾았어요. 자동 규칙으로 본 것이고, 교사 평가는 아니에요.',
   transferPending: '자동 규칙으로는 판단하기 어려운 말이에요. 모범과 견주어 직접 확인해요.',
   transferMissing: '받아 적은 글에서는 이 상황에 필요한 말(찾는 곳이나 묻는 표현)이 다 보이지 않았어요. 영어 상황을 다시 읽고 한 번 더 말해 보거나, 모범을 볼 수 있어요.',
@@ -276,7 +282,13 @@ export const STR = {
   hintShow: 'Show model',
   modelLabel: 'Model example',
   modelUnreviewed: 'An unreviewed practice example — other wordings can work too.',
-  modelOther: 'Other wordings can work too.',
+  modelReviewed: 'One example — other wordings can work too.',
+  // WORLD (11-02)
+  bootFailWorld: 'Could not load the drama. Please try again in a moment.',
+  openInWorld: 'This drama opens inside SYNK WORLD after you sign in.',
+  openInWorldBtn: 'Open in WORLD',
+  dailyLimit: 'That is all the transcription for today. Play your recording back and check it yourself as you go on.',
+  privacyLink: 'Privacy policy — who turns recordings into text',
   transferPass: 'The transcript included the place and a question. This is an automatic rule check, not a teacher\'s assessment.',
   transferPending: 'Hard to judge automatically. Compare with the model and check it yourself.',
   transferMissing: 'The transcript didn\'t include everything this situation needs (the place you\'re looking for, or the question). Reread the English situation and try again, or look at the model.',

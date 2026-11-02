@@ -10257,11 +10257,32 @@ var require_game_learning = __commonJS({
     var RESPONSE_MS = 30 * 864e5;
     var identifier = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
     var uid = () => `l${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+    var LEASE_OWNER = "__synkAtlasHistoryLease";
+    function leaseScope() {
+      let scope = globalThis;
+      try {
+        for (let frame = globalThis; frame.parent && frame.parent !== frame; frame = frame.parent) {
+          if (frame.parent.location?.origin !== globalThis.location?.origin) break;
+          scope = frame.parent;
+        }
+      } catch {
+      }
+      return scope;
+    }
     var historyLeases = /* @__PURE__ */ new Map();
     var LEASE_WARNING = "\uB2E4\uB978 \uD0ED\uC5D0\uC11C \uC774 \uAE30\uB85D\uC744 \uC0AC\uC6A9 \uC911\uC774\uC5D0\uC694. \uADF8 \uD0ED\uC744 \uB2EB\uC73C\uBA74 \uC774\uACF3\uC5D0\uC11C \uC800\uC7A5\uD560 \uC218 \uC788\uC5B4\uC694.";
     function browserHistoryLease(name) {
       if (typeof globalThis.document !== "object") return null;
       if (globalThis.location?.protocol === "synk-desktop:" && typeof globalThis.synkDesktop === "object") return null;
+      let owner = null;
+      try {
+        owner = leaseScope()[LEASE_OWNER];
+      } catch {
+        owner = null;
+      }
+      return typeof owner === "function" ? owner(name) : ownHistoryLease(name);
+    }
+    function ownHistoryLease(name) {
       const manager = globalThis.navigator?.locks;
       if (historyLeases.has(name)) return historyLeases.get(name);
       const entry = { epoch: null, active: false, supported: !!manager, listeners: /* @__PURE__ */ new Set() };
@@ -10315,6 +10336,10 @@ var require_game_learning = __commonJS({
       };
       historyLeases.set(name, entry);
       return entry;
+    }
+    try {
+      if (typeof globalThis.document === "object" && leaseScope() === globalThis && typeof globalThis[LEASE_OWNER] !== "function") globalThis[LEASE_OWNER] = ownHistoryLease;
+    } catch {
     }
     function readFollowups(events, { scope, asOf, prior = null, complete = true, retain = false }) {
       const options = { scope, asOf, prior };

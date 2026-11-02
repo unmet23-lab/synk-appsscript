@@ -20,7 +20,8 @@ const ROOT = path.join(__dirname, '..');
 // 2026-10-31: reject ambiguous same-about bindings in the shared Atlas question adapter (+5 lines).
 // LAB/WORLD dispose, unchanged paged flush, no-sample and bounded gap-recovery reuse (+27 lines).
 // A disposed waiting game drains only its existing history, then releases ownership (+19 lines).
-const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 7392, capabilityDocLines: 150 });
+// 2026-11-02: same-origin game frames share their page's history writer (the top window's Atlas copy hands out the tab's leases; +23 lines).
+const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 7415, capabilityDocLines: 150 });
 const lineCount = text => (text.length === 0 ? 0 : text.split('\n').length - (text.endsWith('\n') ? 1 : 0));
 
 test('atlas/ stays within the agreed file and line budget', () => {
