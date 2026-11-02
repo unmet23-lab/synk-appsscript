@@ -16,19 +16,39 @@ const 그림 = path.join(os.homedir(), 'Documents/synk-vendor/drama-showcase-202
 const 소리 = path.join(뿌리, '.tmp/drama-webtoon-20261030/쇼케이스/소리'); // ref-C1 · C2(S39 그대로) · C3(모범 6에서 끝 「요」를 3.50초에서 자름) · C4
 const 확인만 = process.argv.includes('--확인');
 
+// 11-02 밤: 두 사람 목소리 판(C3 · C2 · C4)이 셋 다 힉스필드 「nsfw」로 거절됐다(0크레딧). 한 사람 판 C1만 통과 — 거절 판에만
+// 「a young woman off-camera — the freshman」과 「the freshman's body」가 함께 있어 나이 어린 사람으로 오해된 것으로 보고, 둘 다 성인 대학생이라는
+// 사실을 분명히 쓰고 「body」를 뺀 판(b)을 낸다. 장면 · 대사 · 동작은 그대로다. C4b로 먼저 시험한다.
 const 판 = [
   { id: 'sc-C1', 컷: 'C1', 길이: 8, 시작: 'C1_시작.png', 끝: 'C1_끝.png' },
   { id: 'sc-C3', 컷: 'C3', 길이: 8, 시작: 'C3C2_시작.png', 끝: 'C3_끝.png' },
   { id: 'sc-C2', 컷: 'C2', 길이: 14, 시작: 'C3C2_시작.png', 끝: 'C2_끝.png' },
   { id: 'sc-C4', 컷: 'C4', 길이: 15, 시작: 'C4_시작.png', 끝: 'C4_끝.png' },
+  { id: 'sc-C4b', 컷: 'C4', 길이: 15, 시작: 'C4_시작.png', 끝: 'C4_끝.png', 성인: true },
+  { id: 'sc-C3b', 컷: 'C3', 길이: 8, 시작: 'C3C2_시작.png', 끝: 'C3_끝.png', 성인: true },
+  { id: 'sc-C2b', 컷: 'C2', 길이: 14, 시작: 'C3C2_시작.png', 끝: 'C2_끝.png', 성인: true },
 ];
+const 성인말 = [
+  ['a young woman off-camera — the freshman —', 'a female university student in her twenties, off-camera — an adult classmate who just started at this university —'],
+  ["No part of the freshman's body is in the frame — only her own lunch tray at the bottom edge.", 'The other student is never shown — only her lunch tray at the bottom edge.'],
+  ['He has just spotted the freshman at the table', 'He has just spotted the new student at the table'],
+];
+const 성인으로 = (t) => {
+  let s = t;
+  for (const [a, b] of 성인말) s = s.split(a).join(b);
+  s = s.replace(/\bthe freshman\b/g, 'the new student');
+  const 남은 = s.match(/freshman|young woman|her (?:own )?body/i); // 「his upper body」(태오 동작)는 그대로 둔다
+  if (남은) throw new Error(`성인 판에 남은 말: ${남은[0]}`);
+  return `Both people are adult university students in their twenties.\n${s}`;
+};
 const 머리 = '@이미지 1 is the exact first frame of this video: start from it unchanged — same framing, same place, same light, colors and white balance, same people, faces, hair and clothes. @이미지 2 is the exact last frame: the shot arrives at exactly that moment at the very end.';
 
 const 순서 = [];
 판.forEach((p, i) => {
   const 본문 = execFileSync('node', [path.join(여기, '지시문.mjs'), '보기', p.컷], { encoding: 'utf8' }).trim();
   if (!본문.includes('The audio reference')) throw new Error(`${p.컷}: 소리 참고 문장이 없다`);
-  const 지시문 = `${머리}\n${본문.replace('The audio reference', '@오디오 1, the audio reference,')}`;
+  const 몸 = 본문.replace('The audio reference', '@오디오 1, the audio reference,');
+  const 지시문 = `${머리}\n${p.성인 ? 성인으로(몸) : 몸}`;
   const 폴더 = `${String(i + 1).padStart(3, '0')}_${p.id}`;
   const 파일 = ['1_시작.jpg', '2_끝.jpg', '3_소리참고.mp3'];
   const 소리파일 = path.join(소리, `ref-${p.컷}.mp3`);
