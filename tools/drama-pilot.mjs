@@ -6,11 +6,11 @@ import path from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {randomBytes,timingSafeEqual} from 'node:crypto';
 import {AUDIO_LIMIT,PilotError,decodeAudio,existingTranscriptionAvailable,transcribeWithExistingCredits} from './lib/drama-pilot-audio.mjs';
-import {ProcessBudget,publicLesson,observeTranscript,newAttemptState,resetAttempts,beginTake} from './lib/drama-pilot-service.mjs';
+import {ProcessBudget,publicLesson,observeTranscript,newAttemptState,resetAttempts,beginTake,trailOf} from './lib/drama-pilot-service.mjs';
 
 export const VERSION='drama-pilot-1';
 const REPO=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const EXTENSIONS=new Map([['.html','text/html; charset=utf-8'],['.mjs','text/javascript; charset=utf-8'],['.css','text/css; charset=utf-8'],
+const EXTENSIONS=new Map([['.html','text/html; charset=utf-8'],['.mjs','text/javascript; charset=utf-8'],['.js','text/javascript; charset=utf-8'],['.css','text/css; charset=utf-8'],
   ['.mp3','audio/mpeg'],['.mp4','video/mp4'],['.webm','video/webm'],['.wav','audio/wav'],['.webp','image/webp'],['.png','image/png'],['.jpg','image/jpeg'],['.woff2','font/woff2']]);
 const token=()=>randomBytes(24).toString('base64url');
 const equal=(a,b)=>typeof a==='string'&&typeof b==='string'&&/^[A-Za-z0-9_-]{32}$/.test(a)&&a.length===b.length&&timingSafeEqual(Buffer.from(a),Buffer.from(b));
@@ -38,12 +38,15 @@ function defaultLedger(repo) {
 
 export function createPilotServer({lesson,root=path.join(REPO,'experiences','drama','pilot'),port=8794,
   analysis=existingTranscriptionAvailable(),decode=decodeAudio,transcribe=transcribeWithExistingCredits,
-  budget=new ProcessBudget(),ledger=()=>{},sessionTtlMs=45*60_000}={}) {
+  budget=new ProcessBudget(),ledger=()=>{},sessionTtlMs=45*60_000,learning=null}={}) {
+  // learning: 학습 기록(Atlas Trail)을 받을 계정 쪽. 기본은 없음 — 화면은 기록하지도 보내지도 않는다. 리허설에서 합성 계정으로
+  // 왕복을 볼 때만 {describe(session)→{accountKey,revision,connected}, request(session,{op,…})→{status,body}}를 넘긴다
+  // (experiences/drama/qa/학습기록-20261102). 이 서버는 사건을 디스크에 남기지 않는다.
   if(!lesson?.scene?.some(x=>x.type==='student')||!lesson.transfer?.spec)throw new PilotError('lesson_missing',500);
   const origin=`http://127.0.0.1:${port}`,sessions=new Map();let busy=false;
   const studentLines=new Map(lesson.scene.filter(x=>x.type==='student').map(x=>[x.id,x]));
   studentLines.set(lesson.transfer.id,lesson.transfer);
-  const staticPaths=new Map([['/','index.html'],['/index.html','index.html'],['/pilot.css','pilot.css'],['/pilot.mjs','pilot.mjs']]);
+  const staticPaths=new Map([['/','index.html'],['/index.html','index.html'],['/pilot.css','pilot.css'],['/pilot.mjs','pilot.mjs'],['/atlas-learning.js','atlas-learning.js']]);
 
   const server=http.createServer(async(req,res)=>{
     res.setHeader('cache-control','no-store');res.setHeader('x-content-type-options','nosniff');
@@ -98,7 +101,8 @@ export function createPilotServer({lesson,root=path.join(REPO,'experiences','dra
         res.setHeader('set-cookie',`pilot=${sessionId}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${Math.ceil(sessionTtlMs/1000)}`);
         return reply(res,200,{version:VERSION,csrfToken:session.csrf,lesson:publicLesson(lesson),
           capabilities:{analysis:Boolean(analysis),microphone:true},limits:{maxSeconds:AUDIO_LIMIT.seconds},
-          privacy:{audioStored:false},firstExposure:!session.transferSubmitted&&!session.transferRevealed});
+          privacy:{audioStored:false},firstExposure:!session.transferSubmitted&&!session.transferRevealed,
+          learning:learning?await learning.describe(session):null});
       }
       if(!session)throw new PilotError('session_expired',401);
       session.at=now;
@@ -115,6 +119,14 @@ export function createPilotServer({lesson,root=path.join(REPO,'experiences','dra
         if(body.lineId!==lesson.transfer.id)throw new PilotError('invalid_line');
         session.transferRevealed=true;
         return reply(res,200,{text:lesson.transfer.text,modelAudio:lesson.transfer.modelAudio,hinted:true});
+      }
+      if(route==='/api/learning') {
+        if(!learning)throw new PilotError('route_missing',404);
+        if(!(req.headers['content-type']||'').startsWith('application/json'))throw new PilotError('invalid_content_type',415);
+        let body;try{body=JSON.parse((await bodyOf(req,262144)).toString('utf8'));}catch{throw new PilotError('invalid_json');}
+        if(!body||!['get','post'].includes(body.op))throw new PilotError('invalid_learning');
+        const out=await learning.request(session,body);
+        return reply(res,out.status,out.body);
       }
       if(route!=='/api/take')throw new PilotError('route_missing',404);
       if(!analysis)throw new PilotError('analysis_unavailable',503);
@@ -145,7 +157,8 @@ export function createPilotServer({lesson,root=path.join(REPO,'experiences','dra
         const decoded=await decode(Buffer.from(await audio.arrayBuffer()));
         if(session.epoch!==epochBeforeDecode)throw new PilotError('stale_take',409);
         if(decoded.silent)return reply(res,200,{status:'no_speech',transcript:'',observation:{kind:'pending',note:null,sure:false},
-          usage:{audioSeconds:decoded.seconds,estimatedUSD:0,invoiceVerified:false},take:{attempt:0,hinted:phase==='transfer'?session.transferRevealed:true,independentEligible:false}});
+          usage:{audioSeconds:decoded.seconds,estimatedUSD:0,invoiceVerified:false},take:{attempt:0,hinted:phase==='transfer'?session.transferRevealed:true,independentEligible:false},
+          trail:trailOf({phase,status:'no_speech'})});
         budget.ensure(decoded.seconds);
         const take=beginTake(session,{lineId,phase,requestId,transferId:lesson.transfer.id});
         const usage=budget.reserve(decoded.seconds);
@@ -162,9 +175,10 @@ export function createPilotServer({lesson,root=path.join(REPO,'experiences','dra
         if(session.epoch!==take.epoch)throw new PilotError('stale_take',409);
         const observed=result.status==='ok'&&result.observation.kind!=='pending';
         if(phase==='transfer'&&observed)session.transferSubmitted=true;
+        const independentEligible=take.independentEligible&&!session.transferRevealed&&observed;
         const output={...result,usage,take:{attempt:take.attempt,hinted:take.hinted,
-          firstUnhintedAttempt:take.independentEligible,
-          independentEligible:take.independentEligible&&!session.transferRevealed&&observed}};
+          firstUnhintedAttempt:take.independentEligible,independentEligible},
+          trail:trailOf({phase,status:result.status,transcript:result.transcript,observation:result.observation,independentEligible,reviewed:studentLines.get(lineId).spec?.reviewed===true})};
         session.requests.set(requestId,{lineId,phase,output});return reply(res,200,output);
       }finally{busy=false;}
     }catch(error){

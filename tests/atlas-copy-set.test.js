@@ -114,6 +114,7 @@ test('one sync refreshes the profile core before rebuilding the life consumer', 
   write('tools/build-game-learning.js', '// no unrelated fixture consumers\n');
   write('tools/build-hangul-stage.js', '// no unrelated fixture consumers\n');
   write('tools/build-world-account.mjs', '// no unrelated fixture consumers\n');
+  write('tools/build-drama-learning.js', '// no unrelated fixture consumers\n');
   write('atlas/ask.js', '// original Ask\n');
   write('experiences/korean-study/build.mjs', `import fs from 'node:fs';const input=new URL('../../atlas/ask.js',import.meta.url),out=new URL('./dist/study/app.js',import.meta.url);const data=fs.readFileSync(input);if(process.argv.includes('--check')){if(!fs.existsSync(out)||!fs.readFileSync(out).equals(data))throw Error('stale Study Ask');}else{fs.mkdirSync(new URL('.',out),{recursive:true});fs.writeFileSync(out,data);}`);
   // The fixture builders use CommonJS, while the real registry invokes .mjs names.

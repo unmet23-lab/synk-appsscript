@@ -1,4 +1,4 @@
-// 드라마 말하기 로컬 시범판 화면(2026-10-31, Claude). 서버 계약: /api/bootstrap·take·reveal·reset(부모 GPT 서버).
+// 드라마 말하기 로컬 시범판 화면(2026-10-31, Claude). 서버 계약: /api/bootstrap·take·reveal·reset(부모 GPT 서버), 리허설에서만 /api/learning.
 // 지키는 것(Fable 설계 검토 반영 — .tmp/drama-pilot-20261031/fable-design.md):
 //  · 녹음·받아 적은 글은 이 창의 메모리에만. 콘솔·저장소·내려받기 없음. ObjectURL은 세션 보관함에서만 만들고 비우기·다시하기·창 닫기에 해제.
 //  · 장면 안에서는 판정을 말로 보여 주지 않는다 — 인물 되묻기 → 카드 펼침 → 통과(어긋남 셋까지). 안 들림(unclear·no_speech)은 따로 세어 되묻기만, 세 번이면 스스로 확인.
@@ -11,6 +11,9 @@
 //  · 겉은 장면 화면 = 시네마 자막(11-02, docs/디자인/드라마_장면/README.md): 대사는 자막, 아래 유리 카드, 녹음은 음성 구(Orbloom)를 누른다.
 //    구의 소리 세기는 녹음 스트림에서 이 창 안에서만 잰다(마이크를 따로 열지 않고, 소리를 밖으로 보내지 않는다).
 //    크롬 칩 · 불꽃은 해낸 순간(장면에서 되물은 뒤 스스로 고침 · 테이크 2 통과 · 새 상황 통과)에만.
+//  · 학습 기록(Atlas Trail, 응답 꼴 spoken, 11-02): 차례마다 보임 하나 · 테이크마다 시도 하나(atlas-learning.js). WORLD 계정 학습 호스트가
+//    있을 때만 남고, 호스트는 학습 기록 동의가 켜진 계정에서만 보낸다 — 없으면 아무것도 남지 않는다. 받아 적은 글 · 소리는 넣지 않고,
+//    「혼자 해 봄」 여부는 서버가 테이크 응답의 trail로 정한다.
 import { STR, endingFix } from './strings.mjs';
 
 const $ = (id) => document.getElementById(id);
@@ -319,6 +322,25 @@ const analysisOn = () => analysisCapable() && S.consent === 'yes';
 // 소리가 안 들린 응답(무음·받아 적은 글 없음). 녹음은 했어도 「말해 본 시도」로 세지 않는다.
 const unheardData = (d) => d.status === 'no_speech' || (d.status === 'unclear' && !String(d.transcript || '').trim());
 
+// 학습 기록: 리허설 서버가 합성 계정을 주면(bootstrap.learning) 그 계정의 호스트를 세우고, WORLD 안이면 WORLD 호스트를 그대로 쓴다.
+// 기록이 실패해도 장면은 그대로 간다.
+function learningCall(op, { signal, ...args }) {
+ return api('/api/learning', { method: 'POST', json: { op, ...args }, signal }).then((r) => {
+  // 학습 기록 서버의 거절({ok:false})은 그대로 넘겨 동기화가 판단하게 하고, 시범 서버 세션이 끝났으면 다시 열 때까지 멈춘다.
+  if (r.data?.ok === false || r.ok && r.data) return r.data;
+  throw Object.assign(new Error('learning'), { code: r.status === 401 ? 'AUTH_REQUIRED' : 'NETWORK_ERROR' });
+ });
+}
+function setupTrail() {
+ const D = window.DramaLearning; if (!D) return null;
+ const L = S.boot?.learning;
+ try {
+  if (L && !window.SYNKLearningHost) D.createRehearsalHost({ accountKey: L.accountKey, revision: L.revision, connected: L.connected === true, storage: localStorage,
+   transport: { get: (a) => learningCall('get', a), post: (a) => learningCall('post', a) } });
+  return D.createRecorder();
+ } catch { return null; }
+}
+
 async function sendTake(lineId, phase, take, s) {
  const ac = new AbortController(); S.upload = ac;
  const onAbort = () => ac.abort(); s.signal.addEventListener('abort', onAbort, { once: true });
@@ -541,6 +563,7 @@ async function boot() {
   if (!r.ok || !r.data?.lesson?.scene) throw new Error('boot');
   S.boot = r.data; S.csrf = r.data.csrfToken || ''; S.firstExposure = r.data.firstExposure !== false;
   S.maxSeconds = Math.max(5, Math.min(60, Number(r.data.limits?.maxSeconds) || 20));
+  if (S.trail === undefined) S.trail = setupTrail();
  } catch {
   panel(h('div', { class: 'block' }, h('p', { class: 'lead' }, tx('bootFail')), h('button', { type: 'button', class: 'pill', on: { click: boot } }, tx('retry'))));
   return;
@@ -720,13 +743,29 @@ async function studentTurn(item, s, ctx) {
  await ensureConsent(s);
  if (!live(s)) return;
  subs(null);
+ // 이 차례의 학습 기록. 테이크 2에서 「다시 녹음」으로 돌아와도 같은 차례라 보임을 다시 열지 않고 시도 번호를 잇는다.
+ let P;
+ if (ctx.phase === 'retake' && S.retake && S.retake.trail !== undefined) P = S.retake.trail;
+ else {
+  P = S.trail?.open({ lineId: item.id, skillId: item.skill, phase: ctx.phase }) || null;
+  // 테이크 2 앞의 코치 카드(afterScene)가 이 줄의 한국어 대사 전체와 모범 듣기를 이미 보였다.
+  if (ctx.phase === 'retake' && S.retake) { S.retake.trail = P; P?.help('answer'); }
+ }
+ // 카드가 보인 정도를 도움으로 남긴다 — turnPanel과 같은 조건(연습 모드는 뜻만 보여 한국어 도움이 없다). 차례 안에서 마이크가 막혀 대사가
+ // 다 펼쳐지는 것까지 잡게 카드를 그릴 때마다 본다(같은 도움은 한 번만 남는다).
+ const noteHelp = () => {
+  if (ctx.mode === 'practice' && !L.practiceOpened) return;
+  P?.help('text');
+  if (L.opened || micUnusable() || ctx.mode === 'readAlong') P?.help('answer');
+ };
  const stepKey = ctx.phase === 'scene' ? 'scene' : 'take2';
  let invalid = 0;   // 이 차례에서 서버가 받지 않은 녹음(413·422) 수
  while (live(s)) {
   stageMode('listen', listenOf(item, ctx));
+  noteHelp();
   const action = await turnPanel(item, s, ctx);
   if (!live(s) || action == null) return;
-  if (action === 'open') { if (ctx.mode === 'practice') L.practiceOpened = true; L.opened = true; L.helped = true; continue; }
+  if (action === 'open') { if (ctx.mode === 'practice') L.practiceOpened = true; L.opened = true; L.helped = true; P?.help('answer'); continue; }
   if (action === 'mic') { S.mic = 'unknown'; const st = await getStream(); stopStream(st); continue; }
   if (action === 'skip') return ctx.onDone({ skipped: true });
   if (action === 'next') { if (micUnusable()) L.readAlong = true; return ctx.onDone({ readAlong: micUnusable() }); }
@@ -744,6 +783,7 @@ async function studentTurn(item, s, ctx) {
    if (v === 'next') return ctx.onDone({ take, invalid: true });
    continue;
   }
+  P?.take(res);
   // 장면에서 말해 본 줄: 받아 적을 수 있었던 테이크, 또는 받아쓰기 없이(꺼짐·서버 사정) 녹음한 테이크.
   if (ctx.phase === 'scene' && (res.kind === 'off' || res.kind === 'down' || (res.kind === 'result' && !unheardData(res.data)))) L.spoken = true;
   if (res.kind === 'off' || res.kind === 'down') {
@@ -776,7 +816,7 @@ async function studentTurn(item, s, ctx) {
    L.misses += 1;
    if (obs.note.kind === 'ending') L.endingMissed = true;
    if (L.misses === 1) { await reask(s, 0, item); continue; }
-   if (L.misses === 2) { L.opened = true; L.helped = true; continue; }
+   if (L.misses === 2) { L.opened = true; L.helped = true; P?.help('answer'); continue; }
   }
   // 통과: 빈칸에 낱말이 넘겨 들어가고, 되물은 뒤 스스로 고친 줄이면 해낸 순간(크롬 칩 · 불꽃). 말로 판정하지는 않는다.
   if (obs.kind === 'pass') {
@@ -904,7 +944,7 @@ async function retakeResult(item, r) {
  for (;;) {
   const v = await render();
   if (!live(s) || v == null) return;
-  if (v === 'same' || v === 'differs') { checked = v; R.selfCheck = v; continue; }
+  if (v === 'same' || v === 'differs') { checked = v; R.selfCheck = v; if (v === 'differs') R.trail?.excludeLast(); continue; }
   if (v === 'again') return runRetake();
   return runTransfer();
  }
@@ -928,12 +968,13 @@ async function runTransfer() {
  await ensureConsent(s);
  if (!live(s)) return;
  const item = { id: tr.id };
+ if (T.trail === undefined) T.trail = S.trail?.open({ lineId: tr.id, skillId: tr.skill, phase: 'transfer' }) || null;
  for (;;) {
   const v = await transferPanel(s, tr, T);
   if (!live(s) || v == null) return;
   if (v === 'finish') return wrap();
   if (v === 'hint') { await revealModel(s, T); if (!live(s)) return; continue; }
-  if (v === 'same' || v === 'differs') { T.selfCheck = v; continue; }
+  if (v === 'same' || v === 'differs') { T.selfCheck = v; if (v === 'differs') T.trail?.excludeLast(); continue; }
   if (v === 'mic') { S.mic = 'unknown'; stopStream(await getStream()); continue; }
   if (v === 'record') {
    const got = await captureAndSend(item, { phase: 'transfer' }, s);
@@ -945,6 +986,7 @@ async function runTransfer() {
    // 서버가 받지 않은 녹음(너무 길거나 읽을 수 없음)은 시도로 세지 않고 다시 녹음을 권한다.
    // 거듭되면 「마치기」를 열어(transferPanel) 막히지 않게 한다 — 시도·말해 봄·모범 이력은 그대로.
    if (res.kind === 'input') { T.invalid = (T.invalid || 0) + 1; T.selfCheck = null; T.lastTakeId = take.id; T.last = { kind: 'input' }; continue; }
+   T.trail?.take(res);
    T.tries += 1; T.selfCheck = null; T.lastTakeId = take.id;
    if (res.kind === 'off' || res.kind === 'down') { markSpoken(null); T.last = { kind: res.kind }; continue; }
    const d = res.data;
@@ -1018,6 +1060,7 @@ async function revealModel(s, T) {
  if (!r?.ok || !r.data?.text) { await ask({ title: tx('apiDown'), buttons: [{ label: tx('close'), value: 'ok', primary: true }] }); return; }
  // 서버가 reveal을 먼저 기록한 뒤에만 보인다.
  T.revealed = { text: r.data.text, modelAudio: r.data.modelAudio || null };
+ T.trail?.help('answer');
  if (!T.spoke) T.revealedBeforeFirst = true;
  S.revealedEver = true;
 }
@@ -1110,7 +1153,7 @@ ui.lang.addEventListener('click', () => {
  // 녹음·마이크 허용 대기·전송 중이 아니면 지금 단계를 새 언어로 다시 그린다(intro·wrap 등 상태를 잃지 않는 단계만).
  if (!S.rec && !S.micWait && !S.upload && ['intro', 'wrap', 'transfer', 'take2-done', 'reset-fail'].includes(S.step) && S.render) S.render();
 });
-window.addEventListener('pagehide', () => { stopRecorder(true); S.upload?.abort(); clearTakes(); });
+window.addEventListener('pagehide', () => { stopRecorder(true); S.upload?.abort(); clearTakes(); S.trail?.flush(); });
 
 applyStaticText();
 initOrb();

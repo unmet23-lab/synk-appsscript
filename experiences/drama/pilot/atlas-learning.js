@@ -1,0 +1,6756 @@
+// Generated from atlas/, strata/, experiences/synk-account/src/generated/world-learning-host.cjs and experiences/drama/pilot/learning-entry.cjs. Change those sources; run tools/build-drama-learning.js.
+"use strict";
+var DramaLearning = (() => {
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __commonJS = (cb, mod) => function __require() {
+    try {
+      return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+    } catch (e) {
+      throw mod = 0, e;
+    }
+  };
+
+  // strata/index.js
+  var require_strata = __commonJS({
+    "strata/index.js"(exports, module) {
+      "use strict";
+      var CONFIDENCE = ["authored", "measured", "ai_draft"];
+      var KINDS = ["skill", "grammar_point", "expression", "situation", "letter", "syllable", "concept", "topic", "task", "word"];
+      var TYPES = ["part_of", "prerequisite", "recommended_before", "contrasts_with"];
+      var copy = (value) => JSON.parse(JSON.stringify(value));
+      var fail = (message) => {
+        throw new TypeError(`Strata: ${message}`);
+      };
+      var text = (value) => typeof value === "string" && value.length > 0;
+      var compare = (a, b) => a < b ? -1 : a > b ? 1 : 0;
+      function freeze(value) {
+        if (value && typeof value === "object") {
+          Object.values(value).forEach(freeze);
+          Object.freeze(value);
+        }
+        return value;
+      }
+      function validateMap(data) {
+        if (!data || !text(data.map_ver) || !text(data.subject) || !Array.isArray(data.nodes) || !Array.isArray(data.edges) || !Array.isArray(data.links?.tags) || !Array.isArray(data.tag_vocabulary) || !data.sources || typeof data.sources !== "object") fail("invalid map envelope");
+        const ids = /* @__PURE__ */ new Map();
+        const refs = (item) => {
+          if (!Array.isArray(item.source_refs) || !item.source_refs.length) fail("source references required");
+          for (const ref of item.source_refs) {
+            if (!ref || !Object.hasOwn(data.sources, ref.source) || !text(ref.selector)) fail("unknown source reference");
+          }
+        };
+        const confidence = (item) => {
+          if (!CONFIDENCE.includes(item.confidence) || typeof item.reviewed !== "boolean") fail("invalid evidence status");
+          refs(item);
+        };
+        for (const [key, source] of Object.entries(data.sources)) {
+          if (!text(key) || !text(source.path) || !/^[a-f0-9]{64}$/.test(source.sha256)) fail("invalid source hash");
+        }
+        for (const node of data.nodes) {
+          if (!text(node.id) || ids.has(node.id) || !KINDS.includes(node.kind) || !text(node.label_ko)) fail("invalid or duplicate node");
+          if (node.level !== null && (!Number.isInteger(node.level?.intro) || node.level.intro < 1 || node.level.intro > 6 || !text(node.level.basis))) fail("invalid level");
+          if (node.when_ko !== void 0 && (node.kind !== "situation" || !text(node.when_ko))) fail("invalid situation words");
+          refs(node);
+          ids.set(node.id, node);
+        }
+        const uniqueEdges = /* @__PURE__ */ new Set(), next = /* @__PURE__ */ new Map();
+        for (const edge of data.edges) {
+          if (!ids.has(edge.from) || !ids.has(edge.to) || edge.from === edge.to || !TYPES.includes(edge.type)) fail("invalid edge endpoint or type");
+          confidence(edge);
+          const key = `${edge.type}\0${edge.from}\0${edge.to}`;
+          if (uniqueEdges.has(key)) fail("duplicate edge");
+          uniqueEdges.add(key);
+          if (edge.type === "part_of" && (ids.get(edge.from).kind !== "grammar_point" || ids.get(edge.to).kind !== "skill")) fail("invalid grammar membership");
+          if (edge.type === "recommended_before") {
+            if (edge.blocking !== false || !text(edge.basis?.official_scope) || !text(edge.basis?.interpretation) || !text(edge.basis?.source_url) || !text(edge.reason_ko)) fail("recommendation needs nonblocking interpretation and source");
+            if (edge.reviewed && (!text(edge.review?.task) || !text(edge.review?.reviewer) || !text(edge.review?.evidence))) fail("reviewed recommendation needs review evidence");
+          }
+          if (edge.type === "prerequisite") {
+            const before = ids.get(edge.from).level?.intro, after = ids.get(edge.to).level?.intro;
+            if (before != null && after != null && before > after) fail("prerequisite level inversion");
+            if (!next.has(edge.from)) next.set(edge.from, []);
+            next.get(edge.from).push(edge.to);
+          }
+        }
+        const visiting = /* @__PURE__ */ new Set(), visited = /* @__PURE__ */ new Set();
+        function visit(id) {
+          if (visiting.has(id)) fail("prerequisite cycle");
+          if (visited.has(id)) return;
+          visiting.add(id);
+          (next.get(id) || []).forEach(visit);
+          visiting.delete(id);
+          visited.add(id);
+        }
+        for (const id of ids.keys()) visit(id);
+        const tags = /* @__PURE__ */ new Set();
+        if (new Set(data.tag_vocabulary).size !== data.tag_vocabulary.length || data.tag_vocabulary.some((tag) => !text(tag))) fail("invalid tag vocabulary");
+        for (const link of data.links.tags) {
+          if (!data.tag_vocabulary.includes(link.tag) || tags.has(link.tag)) fail("invalid or duplicate tag");
+          if (!["full", "none"].includes(link.fit) || (link.fit === "none" ? link.node !== null : !ids.has(link.node))) fail("tag must be exactly mapped or explicitly missing");
+          if (link.fit === "full" && ids.get(link.node).kind !== "skill") fail("tag must reference a skill");
+          confidence(link);
+          tags.add(link.tag);
+        }
+        if (tags.size !== data.tag_vocabulary.length) fail("incomplete tag partition");
+        if (data.links.goals !== void 0) {
+          if (!Array.isArray(data.links.goals)) fail("invalid goal links");
+          const goals = /* @__PURE__ */ new Set();
+          for (const link of data.links.goals) {
+            if (!text(link?.goal) || goals.has(link.goal)) fail("invalid or duplicate goal");
+            if (!Array.isArray(link.nodes) || !link.nodes.length || new Set(link.nodes).size !== link.nodes.length || link.nodes.some((id) => !ids.has(id))) fail("goal must lead to known nodes");
+            confidence(link);
+            goals.add(link.goal);
+          }
+        }
+        return true;
+      }
+      function createMap(input) {
+        validateMap(input);
+        const data = freeze(copy(input));
+        const nodes = new Map(data.nodes.map((node) => [node.id, node]));
+        const tags = new Map(data.links.tags.map((link) => [link.tag, link]));
+        const goals = new Map((data.links.goals || []).map((link) => [link.goal, link]));
+        const incoming = /* @__PURE__ */ new Map();
+        for (const edge of data.edges) {
+          const key = `${edge.type}\0${edge.to}`;
+          if (!incoming.has(key)) incoming.set(key, []);
+          incoming.get(key).push(edge);
+        }
+        for (const edges of incoming.values()) if (edges[0].type !== "part_of") edges.sort((a, b) => compare(a.from, b.from));
+        const edgesTo = (type, id) => incoming.get(`${type}\0${id}`) || [];
+        function getNode(id) {
+          return nodes.get(id) || null;
+        }
+        function forGoal(goal) {
+          const link = goals.get(goal);
+          return freeze(link ? link.nodes.map(getNode) : []);
+        }
+        function forTag(tag) {
+          const link = tags.get(tag);
+          return freeze({
+            status: !link ? "unknown" : link.fit === "full" ? "exact" : "missing",
+            tag,
+            node: link?.node ? getNode(link.node) : null,
+            source_refs: link?.source_refs || []
+          });
+        }
+        function forSkill(id) {
+          const skill = getNode(id);
+          if (skill?.kind !== "skill") return null;
+          const edges = edgesTo("part_of", id);
+          const grammar = edges.map((edge) => getNode(edge.from));
+          const refs = [...skill.source_refs, ...grammar.flatMap((node) => node.source_refs), ...edges.flatMap((edge) => edge.source_refs)];
+          const sources = [...new Map(refs.map((ref) => [`${ref.source}\0${ref.selector}`, ref])).values()];
+          return freeze({ skill, grammar, level: skill.level, sources });
+        }
+        function prerequisites(id) {
+          if (!nodes.has(id)) return [];
+          return freeze(edgesTo("prerequisite", id).map((edge) => ({
+            node: getNode(edge.from),
+            confidence: edge.confidence,
+            reviewed: edge.reviewed,
+            blocking: edge.confidence !== "ai_draft" || edge.reviewed,
+            source_refs: edge.source_refs
+          })));
+        }
+        function recommendedBefore(id) {
+          if (!nodes.has(id)) return [];
+          return freeze(edgesTo("recommended_before", id).filter((edge) => edge.reviewed).map((edge) => ({
+            node: getNode(edge.from),
+            target: id,
+            confidence: edge.confidence,
+            reviewed: true,
+            blocking: false,
+            reason_ko: edge.reason_ko,
+            basis: edge.basis,
+            source_refs: edge.source_refs,
+            review: edge.review
+          })));
+        }
+        function candidates(state = { lines: [] }, { limit = 10 } = {}) {
+          if (!Array.isArray(state.lines) || !Number.isInteger(limit) || limit < 0 || limit > 100) fail("invalid candidate input");
+          if (state.mastered != null && (!Array.isArray(state.mastered) || state.mastered.some((id) => !text(id)))) fail("invalid mastered nodes");
+          const mastered = new Set(state.mastered || []), selected = /* @__PURE__ */ new Map();
+          for (const line of state.lines) {
+            if (!line || line.usable !== true || line.status === "denied" || line.source === "estimated") continue;
+            const match = /^(need|due):(node|skill|tag)\.(.+)$/.exec(line.key || "");
+            if (!match) continue;
+            const node = match[2] === "tag" ? forTag(match[3]).node : getNode(match[3]);
+            if (!node || match[2] === "skill" && node.kind !== "skill") continue;
+            if (!selected.has(node.id)) selected.set(node.id, { id: node.id, targets: [], prerequisites: prerequisites(node.id), reasons: [] });
+            const result = selected.get(node.id);
+            if (!result.targets.includes(line.key)) result.targets.push(line.key);
+            if (!result.reasons.includes(match[1])) result.reasons.push(match[1]);
+          }
+          return freeze([...selected.values()].sort((a, b) => compare(a.id, b.id)).map((result) => ({
+            ...result,
+            targets: result.targets.sort(compare),
+            reasons: result.reasons.sort(compare),
+            blocked_by: result.prerequisites.filter((item) => item.blocking && !mastered.has(item.node.id)).map((item) => item.node.id),
+            advisory: [...new Set([...result.prerequisites.filter((item) => !item.blocking), ...recommendedBefore(result.id)].filter((item) => !mastered.has(item.node.id)).map((item) => item.node.id))]
+          })).slice(0, limit));
+        }
+        return Object.freeze({
+          map_ver: data.map_ver,
+          getNode,
+          forTag,
+          forSkill,
+          forGoal,
+          prerequisites,
+          recommendedBefore,
+          candidates,
+          allNodes: () => Object.freeze([...nodes.values()])
+        });
+      }
+      module.exports = { createMap, validateMap };
+    }
+  });
+
+  // atlas/trail.js
+  var require_trail = __commonJS({
+    "atlas/trail.js"(exports, module) {
+      (function(root, factory) {
+        if (typeof module === "object" && module.exports) module.exports = factory();
+        else root.SynkTrail = factory();
+      })(typeof globalThis !== "undefined" ? globalThis : exports, function() {
+        "use strict";
+        const VERSION = "trail-practice-2";
+        const TYPES = ["practice.presented", "practice.helped", "practice.attempted", "practice.delivery"];
+        const BASE = ["schema", "id", "scope", "at", "recordedAt", "type"];
+        const FIELDS = {
+          "practice.presented": ["decisionId", "taskId", "taskVersion", "itemKey", "conceptIds", "firstExposure"],
+          "practice.helped": ["presentationId", "helpId", "level", "contentRef"],
+          "practice.attempted": ["presentationId", "attemptNo", "verdict", "errorTags"],
+          "practice.delivery": ["presentationId", "audio"]
+        };
+        const OPTIONAL = { "practice.presented": ["measure"], "practice.attempted": ["reason", "choice"] };
+        const VERDICTS = ["correct", "incorrect", "unassessed", "skipped"];
+        const copy = (value) => JSON.parse(JSON.stringify(value));
+        const canonical = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key2) => [key2, entry[key2]])) : entry);
+        const id = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
+        function choiceRecord(value) {
+          const optionId = (entry) => typeof entry === "string" && /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}$/.test(entry) && !["constructor", "prototype", "__proto__"].includes(entry);
+          if (!value || typeof value !== "object" || Array.isArray(value) || ![Object.prototype, null].includes(Object.getPrototypeOf(value)) || Object.keys(value).length !== 2 || !Object.hasOwn(value, "selectedId") || !Object.hasOwn(value, "correctId") || !optionId(value.selectedId) || !optionId(value.correctId)) throw new TypeError("Trail: invalid choice IDs");
+          return { selectedId: value.selectedId, correctId: value.correctId };
+        }
+        const time = (value) => {
+          const n = Date.parse(value);
+          if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Trail: invalid time");
+          return n;
+        };
+        const key = (scope) => {
+          if (!scope || typeof scope !== "object" || Object.keys(scope).some((k) => !["domain", "workspace", "subject"].includes(k)) || !["LAB", "SHIFT", "PATH"].includes(scope.domain) || !id(scope.workspace) || !id(scope.subject)) throw new TypeError("Trail: invalid practice scope");
+          return `${scope.domain}/${scope.workspace}/${scope.subject}`;
+        };
+        const vouched = /* @__PURE__ */ new WeakMap();
+        const freeze = (value) => {
+          if (value && typeof value === "object" && !Object.isFrozen(value)) {
+            Object.freeze(value);
+            for (const k of Object.keys(value)) freeze(value[k]);
+          }
+          return value;
+        };
+        const scopeOf = (e) => vouched.get(e)?.scope ?? key(e.scope);
+        const atOf = (e) => vouched.get(e)?.at ?? time(e.at);
+        const recordedOf = (e) => vouched.get(e)?.recordedAt ?? time(e.recordedAt);
+        const uniqueList = (values, valid, max) => Array.isArray(values) && values.length <= max && values.every(valid) && new Set(values).size === values.length;
+        const tag = (v) => typeof v === "string" && v.trim() === v && v.length > 0 && v.length <= 120 && !/[\r\n]/.test(v);
+        function validate(event) {
+          if (!event || !TYPES.includes(event.type) || event.schema !== 1 || !id(event.id)) throw new TypeError("Trail: invalid practice event");
+          const fields = [...BASE, ...FIELDS[event.type]];
+          if (Object.keys(event).some((k) => !fields.includes(k) && !(OPTIONAL[event.type] || []).includes(k)) || fields.some((k) => !Object.hasOwn(event, k))) throw new TypeError("Trail: unexpected or missing practice field");
+          key(event.scope);
+          if (time(event.recordedAt) < time(event.at)) throw new TypeError("Trail: recorded before occurrence");
+          if (event.type === TYPES[0]) {
+            if (![event.decisionId, event.taskId, event.taskVersion, event.itemKey].every(id) || !uniqueList(event.conceptIds, id, 32) || ![true, false, null].includes(event.firstExposure)) throw new TypeError("Trail: invalid presentation");
+            if (event.measure != null) {
+              const m = event.measure, keys = ["skillId", "modality", "difficulty", "familyKey", "audioRequired", "confounded"];
+              if (Object.keys(m).some((k) => !keys.includes(k) && k !== "responseFormat") || keys.some((k) => !Object.hasOwn(m, k)) || !id(m.skillId) || !event.conceptIds.includes(m.skillId) || !id(m.familyKey) || typeof m.modality !== "string" || !/^[a-z][a-z0-9_-]{0,40}$/.test(m.modality) || ![1, 2, 3].includes(m.difficulty) || Object.hasOwn(m, "responseFormat") && !["binary-choice", "single-choice", "cup-compose", "action", "spoken", "unknown"].includes(m.responseFormat) || typeof m.audioRequired !== "boolean" || typeof m.confounded !== "boolean") throw new TypeError("Trail: invalid measurement contract");
+            }
+          } else if (event.type === TYPES[1]) {
+            if (![event.presentationId, event.helpId, event.contentRef].every(id) || !["cue", "explanation", "answer"].includes(event.level)) throw new TypeError("Trail: invalid help");
+          } else if (event.type === TYPES[3]) {
+            if (!id(event.presentationId) || !["pending", "completed", "failed"].includes(event.audio)) throw new TypeError("Trail: invalid audio delivery");
+          } else if (!id(event.presentationId) || !Number.isInteger(event.attemptNo) || event.attemptNo < 1 || !VERDICTS.includes(event.verdict) || !uniqueList(event.errorTags, tag, 24) || event.reason != null && !["motor", "audio", "unanswered", "demo", "visual", "storage"].includes(event.reason)) throw new TypeError("Trail: invalid attempt");
+          if (event.type === TYPES[2] && Object.hasOwn(event, "choice")) choiceRecord(event.choice);
+          return event;
+        }
+        function linked(event, prior, parent, attempts) {
+          if (!vouched.has(event)) validate(event);
+          if (prior) {
+            if (canonical(prior) !== canonical(event)) throw new Error("Trail: conflicting event id");
+            return event;
+          }
+          const presented = event.type === TYPES[0];
+          if (!parent || parent.type !== (presented ? "decision.made" : TYPES[0]) || scopeOf(parent) !== scopeOf(event) || atOf(parent) > atOf(event) || recordedOf(parent) > recordedOf(event)) throw new Error("Trail: practice requires a prior parent in the same scope");
+          if (event.type === TYPES[2]) {
+            if (event.attemptNo !== attempts.count + 1 || attempts.latest > atOf(event)) throw new Error("Trail: attempt sequence must be consecutive");
+          }
+          return event;
+        }
+        const link = (event, parent, attempts) => linked(event, null, parent, attempts);
+        function vouch(event) {
+          if (TYPES.includes(event?.type)) validate(event);
+          else if (!event?.scope || ![event.scope.domain, event.scope.workspace, event.scope.subject].every((v) => typeof v === "string")) throw new TypeError("Trail: invalid log entry");
+          freeze(event);
+          vouched.set(event, { scope: `${event.scope.domain}/${event.scope.workspace}/${event.scope.subject}`, at: time(event.at), recordedAt: time(event.recordedAt) });
+          return event;
+        }
+        function checkLink(events, event) {
+          const attempts = { count: 0, latest: -Infinity };
+          for (const earlier of events) if (earlier.type === TYPES[2] && earlier.presentationId === event.presentationId) {
+            attempts.count += 1;
+            attempts.latest = Math.max(attempts.latest, time(earlier.at));
+          }
+          return linked(
+            event,
+            events.find((e) => e.id === event.id),
+            events.find((e) => e.id === (event.type === TYPES[0] ? event.decisionId : event.presentationId)),
+            attempts
+          );
+        }
+        function judge(event, p, prior, audio) {
+          const assisted = prior(["help", "answer"]) ? true : p.firstExposure === true ? false : null;
+          const exposure = prior(["attempt", "answer"]) || p.firstExposure === false ? "repeat" : p.firstExposure === true ? "new" : "unknown";
+          const usableDelivery = !p.measure || !p.measure.confounded && (!p.measure.audioRequired || audio === "completed");
+          const exclusionReason = event.reason || (p.measure?.confounded ? "visual" : !usableDelivery ? "audio" : null);
+          return {
+            assisted,
+            exposure,
+            usableDelivery,
+            exclusionReason,
+            independent: !exclusionReason && usableDelivery && assisted === false && exposure === "new" && ["correct", "incorrect"].includes(event.verdict)
+          };
+        }
+        const attemptRow = (event, p, arm, audio, j) => ({
+          eventId: event.id,
+          at: event.at,
+          recordedAt: event.recordedAt,
+          presentationId: p.id,
+          decisionId: p.decisionId,
+          arm,
+          taskId: p.taskId,
+          taskVersion: p.taskVersion,
+          itemKey: p.itemKey,
+          conceptIds: [...p.conceptIds],
+          attemptNo: event.attemptNo,
+          verdict: event.verdict,
+          errorTags: [...event.errorTags],
+          assisted: j.assisted,
+          exposure: j.exposure,
+          ...Object.hasOwn(event, "choice") ? { choice: choiceRecord(event.choice) } : {},
+          ...p.measure ? { measure: { ...p.measure, responseFormat: p.measure.responseFormat || "unknown" }, audio, exclusionReason: j.exclusionReason } : j.exclusionReason ? { exclusionReason: j.exclusionReason } : {},
+          independent: j.independent
+        });
+        const traceKeys = (p) => [`item:${p.itemKey}`, ...p.measure ? [`family:${p.measure.familyKey}`] : []];
+        const BITS = Object.freeze({ attempt: 1, answer: 2, help: 4 });
+        const foldedBefore = (prior, traceKey, kind) => !!prior && Object.prototype.hasOwnProperty.call(prior.keys, traceKey) && (prior.keys[traceKey] & BITS[kind]) !== 0;
+        function summarize(events, { scope, asOf, recordedAsOf = asOf, decisions = null, prior = null } = {}) {
+          const scopeId = key(scope), cutoff = time(asOf), recordedCutoff = time(recordedAsOf);
+          if (!Array.isArray(events)) throw new TypeError("Trail: log must be an array");
+          if (decisions !== null && (!Array.isArray(decisions) || !decisions.every(id))) throw new TypeError("Trail: invalid decision filter");
+          const reported = (decisionId) => decisions === null || decisions.includes(decisionId);
+          const all = [], seen = /* @__PURE__ */ new Map(), attemptOrder = /* @__PURE__ */ new Map();
+          for (const event of events) {
+            if (!event || !event.scope || (vouched.get(event)?.scope ?? `${event.scope.domain}/${event.scope.workspace}/${event.scope.subject}`) !== scopeId) continue;
+            if (seen.has(event.id)) {
+              if (canonical(seen.get(event.id)) !== canonical(event)) throw new Error("Trail: conflicting event id");
+              continue;
+            }
+            if (TYPES.includes(event.type)) linked(
+              event,
+              null,
+              seen.get(event.type === TYPES[0] ? event.decisionId : event.presentationId),
+              attemptOrder.get(event.presentationId) || { count: 0, latest: -Infinity }
+            );
+            if (event.type === TYPES[2]) {
+              const earlier = attemptOrder.get(event.presentationId) || { count: 0, latest: -Infinity };
+              attemptOrder.set(event.presentationId, { count: earlier.count + 1, latest: Math.max(earlier.latest, atOf(event)) });
+            }
+            seen.set(event.id, event);
+            all.push(event);
+          }
+          const visible = all.filter((e) => atOf(e) <= cutoff && recordedOf(e) <= recordedCutoff);
+          const excluded = new Set(visible.filter((e) => e.type === "record.excluded").map((e) => e.targetId));
+          const arms = new Map(visible.filter((e) => e.type === "decision.made").map((e) => [e.id, e.arm ?? null]));
+          const provenance = /* @__PURE__ */ new Map(), traces = /* @__PURE__ */ new Map();
+          visible.forEach((event, index) => {
+            if (event.type === TYPES[0]) provenance.set(event.id, event);
+            const p = provenance.get(event.presentationId);
+            if (event.type !== TYPES[1] && event.type !== TYPES[2] || !p) return;
+            for (const traceKey of traceKeys(p)) {
+              if (!traces.has(traceKey)) traces.set(traceKey, /* @__PURE__ */ new Map());
+              const trace = traces.get(traceKey), kind = event.type === TYPES[2] ? "attempt" : event.level === "answer" ? "answer" : "help";
+              const earlier = trace.get(kind);
+              trace.set(kind, { index: Math.min(earlier?.index ?? Infinity, index), at: Math.min(earlier?.at ?? Infinity, atOf(event)) });
+            }
+          });
+          const presentations = [], help = [], attempts = [], met = /* @__PURE__ */ new Map(), audioByPresentation = /* @__PURE__ */ new Map();
+          const meet = (p, at, verdict) => {
+            if (!met.has(p.itemKey)) met.set(p.itemKey, { itemKey: p.itemKey, conceptIds: [...p.conceptIds], at, verdict });
+          };
+          let excludedAttempts = 0;
+          visible.forEach((event, index) => {
+            if (event.type === TYPES[3]) {
+              audioByPresentation.set(event.presentationId, { event, value: excluded.has(event.id) ? "pending" : event.audio });
+              return;
+            }
+            if (event.type === TYPES[0]) {
+              if (reported(event.decisionId) && !excluded.has(event.id) && !excluded.has(event.decisionId)) presentations.push({
+                eventId: event.id,
+                at: event.at,
+                recordedAt: event.recordedAt,
+                decisionId: event.decisionId,
+                taskId: event.taskId,
+                taskVersion: event.taskVersion,
+                itemKey: event.itemKey,
+                conceptIds: [...event.conceptIds],
+                firstExposure: event.firstExposure,
+                ...event.measure ? { measure: { ...event.measure, responseFormat: event.measure.responseFormat || "unknown" } } : {}
+              });
+              return;
+            }
+            const p = provenance.get(event.presentationId);
+            if (event.type !== TYPES[1] && event.type !== TYPES[2] || !p) return;
+            const omitted = excluded.has(event.id) || excluded.has(p.id) || excluded.has(p.decisionId);
+            const shown = reported(p.decisionId) && !omitted;
+            if (event.type === TYPES[1]) {
+              if (event.level === "answer") meet(p, event.at, null);
+              if (shown) help.push({
+                eventId: event.id,
+                at: event.at,
+                recordedAt: event.recordedAt,
+                presentationId: p.id,
+                helpId: event.helpId,
+                level: event.level,
+                contentRef: event.contentRef
+              });
+              return;
+            }
+            const at = atOf(event);
+            const earlier = (kinds) => traceKeys(p).some((traceKey) => kinds.some((kind) => {
+              if (foldedBefore(prior, traceKey, kind)) return true;
+              const first = traces.get(traceKey)?.get(kind);
+              return first && (first.index < index || first.at < at);
+            }));
+            const proof = audioByPresentation.get(p.id);
+            const audio = proof && atOf(proof.event) <= at && recordedOf(proof.event) <= recordedOf(event) ? proof.value : "pending", j = judge(event, p, earlier, audio);
+            meet(p, event.at, omitted || j.exclusionReason ? null : event.verdict);
+            if (!reported(p.decisionId)) return;
+            if (omitted) {
+              excludedAttempts += 1;
+              return;
+            }
+            attempts.push(attemptRow(event, p, arms.get(p.decisionId) ?? null, audio, j));
+          });
+          return {
+            version: VERSION,
+            scope: copy(scope),
+            asOf,
+            recordedAsOf,
+            decisions: decisions === null ? null : [...decisions],
+            presentations,
+            help,
+            attempts,
+            excludedAttempts,
+            met: [...met.values()],
+            persistence: "provided-log-only",
+            learningEffectClaim: false
+          };
+        }
+        function createIndex({ scope, prior = null }) {
+          const scopeId = key(scope);
+          const presentations = /* @__PURE__ */ new Map(), audio = /* @__PURE__ */ new Map(), deliveries = /* @__PURE__ */ new Map(), audioCover = /* @__PURE__ */ new Map(), arms = /* @__PURE__ */ new Map(), excluded = /* @__PURE__ */ new Set();
+          const helped = /* @__PURE__ */ new Set(), seen = /* @__PURE__ */ new Set(), rows = /* @__PURE__ */ new Map(), covering = /* @__PURE__ */ new Map();
+          for (const [k, bits] of Object.entries(prior?.keys || {})) {
+            if (bits & BITS.attempt) {
+              seen.add(`attempt|${k}`);
+              seen.add(k);
+            }
+            if (bits & BITS.answer) {
+              helped.add(`answer|${k}`);
+              seen.add(k);
+            }
+            if (bits & BITS.help) helped.add(`help|${k}`);
+          }
+          let lastAt = -Infinity, exact = true;
+          const cover = (target, row) => {
+            if (!covering.has(target)) covering.set(target, []);
+            covering.get(target).push(row);
+          };
+          function add(event) {
+            if (!event || !event.scope || (vouched.get(event)?.scope ?? `${event.scope.domain}/${event.scope.workspace}/${event.scope.subject}`) !== scopeId) return null;
+            const at = atOf(event);
+            if (at < lastAt) exact = false;
+            lastAt = Math.max(lastAt, at, recordedOf(event));
+            if (event.type === "decision.made") {
+              arms.set(event.id, event.arm ?? null);
+              return null;
+            }
+            if (event.type === "record.excluded") {
+              excluded.add(event.targetId);
+              for (const row2 of covering.get(event.targetId) || []) row2.omitted = true;
+              const current = audio.get(deliveries.get(event.targetId));
+              if (current?.id === event.targetId) current.value = "pending";
+              for (const row2 of audioCover.get(event.targetId) || []) {
+                row2.audio = "pending";
+                if (row2.measure.audioRequired) {
+                  row2.independent = false;
+                  row2.exclusionReason ||= "audio";
+                }
+              }
+              return null;
+            }
+            if (event.type === TYPES[0]) {
+              presentations.set(event.id, event);
+              return null;
+            }
+            if (event.type === TYPES[3]) {
+              deliveries.set(event.id, event.presentationId);
+              audio.set(event.presentationId, { id: event.id, event, value: excluded.has(event.id) ? "pending" : event.audio });
+              return null;
+            }
+            if (event.type !== TYPES[1] && event.type !== TYPES[2]) return null;
+            const p = presentations.get(event.presentationId);
+            if (!p) return null;
+            const keys = traceKeys(p);
+            if (event.type === TYPES[1]) {
+              for (const k of keys) {
+                helped.add(`help|${k}`);
+                if (event.level === "answer") {
+                  helped.add(`answer|${k}`);
+                  seen.add(k);
+                }
+              }
+              return null;
+            }
+            const prior2 = (kinds) => keys.some((k) => kinds.some((kind) => kind === "attempt" ? seen.has(`attempt|${k}`) : helped.has(`${kind}|${k}`)));
+            const proof = audio.get(p.id), delivered = proof && atOf(proof.event) <= at && recordedOf(proof.event) <= recordedOf(event) ? proof.value : "pending";
+            const row = attemptRow(event, p, arms.get(p.decisionId) ?? null, delivered, judge(event, p, prior2, delivered));
+            if (proof && row.measure) {
+              if (!audioCover.has(proof.id)) audioCover.set(proof.id, []);
+              audioCover.get(proof.id).push(row);
+            }
+            row.omitted = excluded.has(event.id) || excluded.has(p.id) || excluded.has(p.decisionId);
+            for (const k of keys) {
+              seen.add(`attempt|${k}`);
+              seen.add(k);
+            }
+            for (const target of [event.id, p.id, p.decisionId]) cover(target, row);
+            rows.set(event.id, row);
+            return row;
+          }
+          return {
+            add,
+            get exact() {
+              return exact;
+            },
+            attempt: (eventId) => rows.get(eventId) || null,
+            met: (itemKey, familyKey) => seen.has(`item:${itemKey}`) || familyKey != null && seen.has(`family:${familyKey}`)
+          };
+        }
+        const RECORD = ["itemKey", "conceptIds", "at", "verdict"];
+        const record = (r) => !!r && typeof r === "object" && Object.keys(r).length === RECORD.length && RECORD.every((k) => Object.hasOwn(r, k)) && id(r.itemKey) && uniqueList(r.conceptIds, id, 32) && typeof r.at === "string" && Number.isFinite(Date.parse(r.at)) && (r.verdict === null || VERDICTS.includes(r.verdict));
+        const frozen = (r) => Object.freeze({ ...copy(r), conceptIds: Object.freeze([...r.conceptIds]) });
+        function openHistory(stored, pending = []) {
+          const readable = !!stored && typeof stored === "object" && Array.isArray(stored.records) && typeof stored.partial === "boolean" && stored.records.every(record) && new Set(stored.records.map((r) => r.itemKey)).size === stored.records.length;
+          const pendingOk = Array.isArray(pending) && pending.every(record);
+          const records = [], index = /* @__PURE__ */ new Set();
+          if (readable) {
+            for (const r of [...stored.records, ...pendingOk ? pending : []]) if (!index.has(r.itemKey)) {
+              index.add(r.itemKey);
+              records.push(frozen(r));
+            }
+          }
+          const partial = readable ? stored.partial || !pendingOk : true;
+          return Object.freeze({
+            readable,
+            partial,
+            records: Object.freeze(records),
+            firstExposure: (itemKey) => !readable || !id(itemKey) ? null : index.has(itemKey) ? false : partial ? null : true
+          });
+        }
+        const opened = (history) => !!history && typeof history.firstExposure === "function" && typeof history.readable === "boolean" && Array.isArray(history.records) && typeof history.partial === "boolean" && history.records.every(record);
+        function remember(history, summary) {
+          if (!opened(history)) throw new TypeError("Trail: open the history first");
+          if (!summary || summary.version !== VERSION || !Array.isArray(summary.met)) throw new TypeError("Trail: use a practice summary");
+          if (!history.readable) return null;
+          const known = new Set(history.records.map((r) => r.itemKey));
+          const added = summary.met.filter((r) => record(r) && !known.has(r.itemKey));
+          return { records: [...history.records, ...added].map(copy), partial: history.partial };
+        }
+        function createPracticeOutcomeIndex(summary) {
+          if (!summary || summary.version !== VERSION || !Array.isArray(summary.attempts)) throw new TypeError("Trail: use a practice summary");
+          const owner = key(summary.scope), cutoff = time(summary.asOf), recordedCutoff = time(summary.recordedAsOf ?? summary.asOf);
+          const attempts = /* @__PURE__ */ new Map();
+          for (const item of summary.attempts) {
+            if (!id(item.eventId) || !id(item.presentationId) || !id(item.decisionId) || !Array.isArray(item.conceptIds) || item.conceptIds.some((value) => !id(value)) || attempts.has(item.eventId)) throw new TypeError("Trail: invalid practice outcome evidence");
+            const at = time(item.at), recordedAt = time(item.recordedAt);
+            if (recordedAt < at || at > cutoff || recordedAt > recordedCutoff) throw new TypeError("Trail: practice evidence outside summary");
+            attempts.set(item.eventId, {
+              eventId: item.eventId,
+              presentationId: item.presentationId,
+              decisionId: item.decisionId,
+              conceptIds: [...item.conceptIds],
+              at,
+              recordedAt,
+              qualified: item.independent === true && item.assisted === false && item.exposure === "new" && item.verdict === "correct" && !item.exclusionReason
+            });
+          }
+          return Object.freeze({ find(outcome, { targetLine, since, maxAgeMs } = {}) {
+            if (!outcome || outcome.type !== "outcome.observed" || !id(outcome.id) || key(outcome.scope) !== owner || typeof targetLine !== "string" || !/^(need|due|trait):[a-zA-Z0-9_.:-]{1,120}$/.test(targetLine) || !Number.isFinite(maxAgeMs) || maxAgeMs < 0) throw new TypeError("Trail: invalid practice outcome query");
+            const start = time(since), at = time(outcome.at), recordedAt = time(outcome.recordedAt);
+            if (at > cutoff || recordedAt > recordedCutoff || recordedAt < at || at < start || cutoff - at > maxAgeMs || outcome.measure !== "independent" || outcome.assisted !== false || outcome.targetLine !== targetLine) return null;
+            const attempt = attempts.get(outcome.attemptId);
+            const concept = targetLine.replace(/^(need|due):/, "").replace(/^(skill|node)\./, "");
+            if (!attempt?.qualified || attempt.decisionId !== outcome.decisionId || !attempt.conceptIds.includes(concept) || attempt.at < start || attempt.at > at || attempt.recordedAt > recordedAt || cutoff - attempt.at > maxAgeMs) return null;
+            return { evidence: [outcome.id, attempt.eventId, attempt.presentationId] };
+          } });
+        }
+        function growth(summary, history) {
+          if (!summary || summary.version !== VERSION || !Array.isArray(summary.attempts)) throw new TypeError("Trail: use a practice summary");
+          if (!opened(history)) throw new TypeError("Trail: open the history first");
+          const earlier = history.records, known = new Set(earlier.map((r) => r.itemKey));
+          const facts = [], told = /* @__PURE__ */ new Set();
+          for (const now of summary.attempts) {
+            const concept = now.conceptIds[0];
+            if (!now.independent || now.verdict !== "correct" || !concept || told.has(concept) || known.has(now.itemKey)) continue;
+            const before = earlier.filter((p) => p.verdict === "incorrect" && p.itemKey !== now.itemKey && p.conceptIds[0] === concept && Date.parse(p.at) < time(now.at)).sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
+            if (!before) continue;
+            told.add(concept);
+            facts.push({
+              conceptId: concept,
+              before: { itemKey: before.itemKey, at: before.at },
+              now: { attemptId: now.eventId, itemKey: now.itemKey, at: now.at }
+            });
+          }
+          return facts;
+        }
+        return Object.freeze({ VERSION, TYPES, BITS, traceKeys, choiceRecord, validate, checkLink, link, vouch, summarize, createIndex, createPracticeOutcomeIndex, openHistory, remember, growth });
+      });
+    }
+  });
+
+  // atlas/engine.js
+  var require_engine = __commonJS({
+    "atlas/engine.js"(exports, module) {
+      (function(root, factory) {
+        if (typeof module === "object" && module.exports) module.exports = factory(() => require_trail());
+        else root.SynkAtlas = factory(() => root.SynkAtlasTrail || root.SynkTrail);
+      })(typeof globalThis !== "undefined" ? globalThis : exports, function(getTrail) {
+        "use strict";
+        const VERSION = "atlas-2.4.0";
+        const POLICIES = ["atlas-1.0.0", "atlas-2.0.0", "atlas-2.1.0", "atlas-2.2.0", "atlas-2.3.0", VERSION];
+        const trail = () => {
+          const module2 = getTrail();
+          if (!module2 || typeof module2.validate !== "function" || typeof module2.checkLink !== "function" || typeof module2.summarize !== "function") throw new Error("Atlas: Trail practice module unavailable");
+          return module2;
+        };
+        const isPractice = (event) => typeof event?.type === "string" && event.type.startsWith("practice.");
+        const DOMAINS = ["LAB", "SHIFT", "PULSE", "PATH", "SYNK"];
+        const CONTEXT = {
+          goal: ["explore", "study", "work", "clarity", "expression", "prepare"],
+          time: ["short", "standard", "unlimited"],
+          support: ["choose", "step", "independent"],
+          audio: ["off", "available"]
+        };
+        const SIGNALS = ["need", "due", "trait"];
+        const ANSWERS = ["yes", "no", "unsure"];
+        const WINDOWS = ["immediate", "d1", "d7", "d30"];
+        const UNMEASURED = ["not_due", "no_sample", "unmeasurable"];
+        const LEVER_CLASSES = ["shape", "content"];
+        const ARMS = ["adapted", "baseline"];
+        const DAY = 864e5, RECENT = 30 * DAY;
+        const copy = (value) => JSON.parse(JSON.stringify(value));
+        const setOwn = (table, key, value) => Object.defineProperty(table, key, { value, enumerable: true, writable: true, configurable: true });
+        const canonical = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
+        const freeze = (value) => {
+          if (value && typeof value === "object" && !Object.isFrozen(value)) {
+            Object.freeze(value);
+            for (const k of Object.keys(value)) freeze(value[k]);
+          }
+          return value;
+        };
+        const validId = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
+        const unit = (value) => typeof value === "number" && value >= 0 && value <= 1;
+        const flag = (value) => value == null || typeof value === "boolean";
+        const ms = (value) => {
+          const n = Date.parse(value);
+          if (!Number.isFinite(n)) throw new TypeError("Atlas: invalid time");
+          return n;
+        };
+        const scopeKey = (scope) => {
+          if (!scope || !DOMAINS.includes(scope.domain) || !validId(scope.subject) || !validId(scope.workspace)) throw new TypeError("Atlas: invalid scope");
+          return `${scope.domain}/${scope.workspace}/${scope.subject}`;
+        };
+        const random = (seed) => {
+          let h = 2166136261;
+          for (let i = 0; i < seed.length; i += 1) {
+            h ^= seed.charCodeAt(i);
+            h = Math.imul(h, 16777619);
+          }
+          let a = h >>> 0;
+          return () => {
+            a = a + 1831565813 >>> 0;
+            let t = a;
+            t = Math.imul(t ^ t >>> 15, t | 1);
+            t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+          };
+        };
+        function validate(event) {
+          if (!event || event.schema !== 1 || !validId(event.id)) throw new TypeError("Atlas: invalid event");
+          scopeKey(event.scope);
+          ms(event.at);
+          ms(event.recordedAt);
+          if (ms(event.recordedAt) < ms(event.at)) throw new TypeError("Atlas: recorded before occurrence");
+          if (event.scope.domain === "PULSE" && (isPractice(event) || ["signal.observed", "estimate.responded", "outcome.observed"].includes(event.type))) throw new TypeError("Atlas: PULSE keeps no personal observations");
+          if (isPractice(event)) return trail().validate(event);
+          if (event.type === "context.set") {
+            if (!Object.hasOwn(CONTEXT, event.field) || !(event.value === null || CONTEXT[event.field].includes(event.value))) throw new TypeError("Atlas: invalid context");
+            if (event.until != null && ms(event.until) <= ms(event.at)) throw new TypeError("Atlas: invalid expiry");
+          } else if (event.type === "decision.made") {
+            if (!validId(event.experienceId) || !validId(event.variant) || !POLICIES.includes(event.policy) || !Array.isArray(event.evidence) || !event.evidence.every(validId)) throw new TypeError("Atlas: invalid decision record");
+            if (event.arm != null && !ARMS.includes(event.arm)) throw new TypeError("Atlas: invalid decision record");
+            if (event.bundle != null && (typeof event.bundle !== "object" || Array.isArray(event.bundle) || !Object.entries(event.bundle).every(([lever, pick]) => validId(lever) && pick && (pick.option === null || validId(pick.option))))) throw new TypeError("Atlas: invalid decision record");
+          } else if (event.type === "experience.completed") {
+            if (!validId(event.decisionId) || !validId(event.experienceId) || !validId(event.variant)) throw new TypeError("Atlas: invalid completion");
+          } else if (event.type === "feedback.given") {
+            if (!validId(event.completionId) || !["helpful", "too_much", "want_more", "not_fit"].includes(event.value)) throw new TypeError("Atlas: invalid feedback");
+            if (event.decisionId !== void 0 && !validId(event.decisionId)) throw new TypeError("Atlas: invalid feedback");
+          } else if (event.type === "signal.observed") {
+            if (!SIGNALS.includes(event.kind) || !validId(event.key) || !unit(event.strength) || !Number.isInteger(event.n) || event.n < 0 || !flag(event.assisted)) throw new TypeError("Atlas: invalid signal");
+            if (event.until != null && ms(event.until) <= ms(event.at)) throw new TypeError("Atlas: invalid expiry");
+            if (event.refs != null && !(Array.isArray(event.refs) && event.refs.length <= 20 && event.refs.every(validId))) throw new TypeError("Atlas: invalid signal");
+          } else if (event.type === "estimate.responded") {
+            if (!validId(event.line) || !ANSWERS.includes(event.value)) throw new TypeError("Atlas: invalid estimate response");
+          } else if (event.type === "outcome.observed") {
+            if (!validId(event.decisionId) || !validId(event.measure) || !WINDOWS.includes(event.window) || !flag(event.assisted)) throw new TypeError("Atlas: invalid outcome");
+            if ((event.attemptId != null || event.targetLine != null) && (!validId(event.attemptId) || !validId(event.targetLine) || !/^(need|due):/.test(event.targetLine))) throw new TypeError("Atlas: outcome proof needs an attempt and target line");
+            if (!(unit(event.value) && event.reason == null) && !(event.value === null && UNMEASURED.includes(event.reason))) throw new TypeError("Atlas: outcome needs a value or a reason");
+          } else if (event.type === "record.excluded") {
+            if (!validId(event.targetId)) throw new TypeError("Atlas: invalid exclusion");
+          } else throw new TypeError("Atlas: unknown event");
+          return event;
+        }
+        const admitted = /* @__PURE__ */ new WeakMap();
+        const scan = (events) => ({
+          byId: (id) => events.find((e) => e.id === id),
+          attempts: (presentationId) => {
+            const stats = { count: 0, latest: -Infinity };
+            for (const e of events) if (e.type === "practice.attempted" && e.presentationId === presentationId) {
+              stats.count += 1;
+              stats.latest = Math.max(stats.latest, ms(e.at));
+            }
+            return stats;
+          },
+          events
+        });
+        function admit(events, event) {
+          return admitWith(scan(events), event);
+        }
+        function admitWith(lookup, event) {
+          if (!admitted.has(event)) validate(event);
+          const find = (id, type) => {
+            const found = lookup.byId(id);
+            return found && (!type || found.type === type) ? found : void 0;
+          };
+          const previous = lookup.byId(event.id);
+          if (previous) {
+            if (canonical(previous) !== canonical(event)) throw new Error("Atlas: conflicting event id");
+            return false;
+          }
+          if (isPractice(event)) {
+            const t = trail();
+            if (typeof t.link === "function") t.link(event, lookup.byId(event.type === "practice.presented" ? event.decisionId : event.presentationId), lookup.attempts(event.presentationId));
+            else t.checkLink(lookup.events, event);
+          }
+          if (event.type === "feedback.given") {
+            const completion = find(event.completionId, "experience.completed");
+            if (!completion || scopeKey(completion.scope) !== scopeKey(event.scope) || ms(completion.at) > ms(event.at)) throw new Error("Atlas: feedback requires a prior completion in the same scope");
+            if (event.decisionId !== void 0 && event.decisionId !== completion.decisionId) throw new Error("Atlas: feedback names another decision than its completion");
+          }
+          if (event.type === "experience.completed") {
+            const decision = find(event.decisionId, "decision.made");
+            if (!decision || scopeKey(decision.scope) !== scopeKey(event.scope) || decision.variant !== event.variant || decision.experienceId !== event.experienceId || ms(decision.at) > ms(event.at)) throw new Error("Atlas: completion requires the delivered decision");
+          }
+          if (event.type === "outcome.observed") {
+            const decision = find(event.decisionId, "decision.made");
+            if (!decision || scopeKey(decision.scope) !== scopeKey(event.scope) || ms(decision.at) > ms(event.at)) throw new Error("Atlas: outcome requires a prior decision in the same scope");
+            if (event.attemptId != null) {
+              const attempt = find(event.attemptId, "practice.attempted");
+              if (!attempt || scopeKey(attempt.scope) !== scopeKey(event.scope) || ms(attempt.at) > ms(event.at) || ms(attempt.recordedAt) > ms(event.recordedAt)) throw new Error("Atlas: outcome proof requires a prior attempt in the same scope");
+            }
+          }
+          if (event.type === "record.excluded") {
+            const target = find(event.targetId);
+            if (!target || target.type === "record.excluded" || scopeKey(target.scope) !== scopeKey(event.scope)) throw new Error("Atlas: invalid exclusion target");
+          }
+          return true;
+        }
+        function append(events, event) {
+          return admit(events, event) ? [...copy(events), copy(event)] : copy(events);
+        }
+        function validationNeeds(events) {
+          if (!Array.isArray(events)) throw new TypeError("Atlas: invalid events");
+          const ids = /* @__PURE__ */ new Set(), presentations = /* @__PURE__ */ new Set();
+          for (const event of events) {
+            validate(event);
+            ids.add(event.id);
+            if (isPractice(event)) {
+              ids.add(event.type === "practice.presented" ? event.decisionId : event.presentationId);
+              if (event.type === "practice.attempted") presentations.add(event.presentationId);
+            }
+            if (event.type === "experience.completed" || event.type === "outcome.observed") ids.add(event.decisionId);
+            if (event.type === "outcome.observed" && event.attemptId != null) ids.add(event.attemptId);
+            if (event.type === "feedback.given") ids.add(event.completionId);
+            if (event.type === "record.excluded") ids.add(event.targetId);
+          }
+          return { ids: [...ids], presentations: [...presentations] };
+        }
+        function validateIncrement({ events, scope, references = [], attempts = [] }) {
+          const key = scopeKey(scope), needs = validationNeeds(events);
+          const wanted = new Set(needs.ids), parents = /* @__PURE__ */ new Map(), stats = /* @__PURE__ */ new Map();
+          for (const event of references) {
+            validate(event);
+            if (!wanted.has(event.id) || parents.has(event.id)) throw new TypeError("Atlas: invalid reference lookup");
+            parents.set(event.id, event);
+          }
+          for (const event of attempts) {
+            validate(event);
+            if (event.type !== "practice.attempted" || !needs.presentations.includes(event.presentationId) || stats.has(event.presentationId) || scopeKey(event.scope) !== key) throw new TypeError("Atlas: invalid attempt lookup");
+            stats.set(event.presentationId, { count: event.attemptNo, latest: ms(event.at) });
+          }
+          if (typeof trail().link !== "function") throw new Error("Atlas: indexed Trail validation unavailable");
+          const fresh = /* @__PURE__ */ new Map(), lookup = {
+            byId: (id) => fresh.get(id) || parents.get(id),
+            attempts: (id) => stats.get(id) || { count: 0, latest: -Infinity }
+          };
+          for (const event of events) {
+            if (scopeKey(event.scope) !== key) throw new TypeError("Atlas: event outside session scope");
+            if (!admitWith(lookup, event)) continue;
+            fresh.set(event.id, event);
+            if (event.type === "practice.attempted") stats.set(event.presentationId, { count: event.attemptNo, latest: ms(event.at) });
+          }
+          return [...fresh.values()];
+        }
+        function read(events, scope, asOf, recordedAsOf = asOf) {
+          const key = scopeKey(scope), cutoff = ms(asOf), recordedCutoff = ms(recordedAsOf);
+          const rows = [], positions = /* @__PURE__ */ new Map();
+          let sorted = true, last = null;
+          for (const e of events) {
+            const known = admitted.get(e);
+            if (!known) validate(e);
+            const row = known || { key: scopeKey(e.scope), at: ms(e.at), recordedAt: ms(e.recordedAt) };
+            if (row.key !== key || row.at > cutoff || row.recordedAt > recordedCutoff) continue;
+            if (last && (row.at < last.at || row.at === last.at && row.recordedAt < last.recordedAt)) sorted = false;
+            if (!positions.has(e.id)) positions.set(e.id, rows.length);
+            rows.push({ e, at: row.at, recordedAt: row.recordedAt });
+            last = row;
+          }
+          if (!sorted) rows.sort((a, b) => a.at - b.at || a.recordedAt - b.recordedAt);
+          const ordered = rows.map((row) => row.e);
+          const excluded = new Set(ordered.filter((e) => e.type === "record.excluded").map((e) => e.targetId));
+          const context = {}, evidence = {}, expired = [], latest = {}, latestSignal = {}, latestAnswer = {}, lines = [];
+          for (const event of ordered) {
+            if (event.type === "context.set") latest[event.field] = event;
+            if (event.type === "signal.observed") latestSignal[`${event.kind}:${event.key}`] = event;
+            if (event.type === "estimate.responded") latestAnswer[event.line] = event;
+          }
+          for (const [field, event] of Object.entries(latest)) {
+            if (excluded.has(event.id) || event.value === null) continue;
+            if (event.until && ms(event.until) <= cutoff) {
+              expired.push(field);
+              continue;
+            }
+            context[field] = event.value;
+            evidence[field] = event.id;
+            lines.push({ key: `declared:${field}`, kind: "declared", source: "declared", value: event.value, at: event.at, until: event.until || null, evidence: [event.id], status: "confirmed", usable: true });
+          }
+          const personal = scope.domain !== "PULSE";
+          if (personal) for (const [line, event] of Object.entries(latestSignal)) {
+            if (excluded.has(event.id)) continue;
+            const until = event.until || new Date(ms(event.at) + RECENT).toISOString();
+            if (ms(until) <= cutoff) {
+              expired.push(line);
+              continue;
+            }
+            const response = latestAnswer[line];
+            const answeredAt = response && ms(response.at), sourceRecordedAt = ms(event.recordedAt);
+            const covers = response && (answeredAt > sourceRecordedAt || answeredAt === sourceRecordedAt && ms(response.recordedAt) === sourceRecordedAt && positions.get(response.id) > positions.get(event.id));
+            const answer = response && !excluded.has(response.id) && (covers || event.kind === "trait" && response.value === "no") ? response : null;
+            const denied = answer?.value === "no";
+            const status = denied ? "denied" : answer?.value === "yes" ? "confirmed" : "unconfirmed";
+            const sufficiency = event.n >= 8 ? "solid" : event.n >= 3 ? "fair" : "thin";
+            lines.push({
+              key: line,
+              kind: event.kind,
+              source: "observed",
+              strength: event.strength,
+              n: event.n,
+              sufficiency,
+              assisted: event.assisted ?? null,
+              at: event.at,
+              until,
+              evidence: [event.id, ...answer ? [answer.id] : []],
+              status,
+              usable: !denied && (status === "confirmed" || event.kind !== "trait" && sufficiency !== "thin")
+            });
+          }
+          const decisions = new Map(ordered.filter((e) => e.type === "decision.made" && !excluded.has(e.id)).map((e) => [e.id, e]));
+          const completedRaw = new Map(ordered.filter((e) => e.type === "experience.completed" && decisions.has(e.decisionId)).map((e) => [e.id, e]));
+          const byDecision = /* @__PURE__ */ new Map();
+          for (const done of completedRaw.values()) if (!excluded.has(done.id) && !byDecision.has(done.decisionId)) byDecision.set(done.decisionId, done);
+          const responses = /* @__PURE__ */ new Map();
+          if (personal) for (const event of ordered) {
+            if (event.type !== "feedback.given" || !completedRaw.has(event.completionId)) continue;
+            if (cutoff - ms(event.at) > RECENT) continue;
+            const completion = completedRaw.get(event.completionId);
+            if (ms(completion.at) <= ms(event.at)) {
+              responses.delete(completion.decisionId);
+              responses.set(completion.decisionId, copy({ ...event, experienceId: completion.experienceId, variant: completion.variant }));
+              if (!excluded.has(completion.id)) byDecision.set(completion.decisionId, completion);
+            }
+          }
+          const latestOutcome = /* @__PURE__ */ new Map();
+          if (personal) for (const event of ordered) {
+            if (event.type === "outcome.observed" && decisions.has(event.decisionId)) latestOutcome.set(`${event.decisionId}|${event.measure}|${event.window}|${event.targetLine ?? ""}`, event);
+          }
+          const rounds = {}, finished = /* @__PURE__ */ new Set(), completed = new Map([...byDecision.values()].map((e) => [e.id, e]));
+          for (const event of ordered) if (event.type === "experience.completed" && !finished.has(event.decisionId)) {
+            finished.add(event.decisionId);
+            setOwn(rounds, event.experienceId, (Object.hasOwn(rounds, event.experienceId) ? rounds[event.experienceId] : 0) + 1);
+          }
+          const state = {
+            version: VERSION,
+            scope: copy(scope),
+            asOf,
+            recordedAsOf,
+            context,
+            evidence,
+            expired,
+            feedback: [...responses.values()].filter((e) => !excluded.has(e.id) && !excluded.has(e.completionId)),
+            excluded: [...excluded],
+            lines,
+            outcomes: [...latestOutcome.values()].filter((e) => !excluded.has(e.id)).map(copy),
+            rounds
+          };
+          return { state, cutoff, personal, decisions, completed };
+        }
+        function understand(events, scope, asOf, recordedAsOf = asOf) {
+          return read(events, scope, asOf, recordedAsOf).state;
+        }
+        function checkLever(lever, seen) {
+          const ids = /* @__PURE__ */ new Set();
+          if (!lever || !validId(lever.id) || seen.has(lever.id) || lever.id === "mode" || !LEVER_CLASSES.includes(lever.class) || !Array.isArray(lever.options) || !lever.options.length) throw new TypeError("Atlas: invalid lever");
+          for (const option of lever.options) {
+            if (!option || !validId(option.id) || ids.has(option.id)) throw new TypeError("Atlas: invalid lever");
+            ids.add(option.id);
+          }
+          if (lever.default != null && !ids.has(lever.default)) throw new TypeError("Atlas: invalid lever");
+          if (lever.follows != null && !Object.hasOwn(CONTEXT, lever.follows)) throw new TypeError("Atlas: invalid lever");
+          if (lever.learn && (lever.class !== "shape" || lever.default == null)) throw new TypeError("Atlas: invalid lever");
+          seen.add(lever.id);
+        }
+        const picked = (decision, leverId) => decision.bundle?.[leverId]?.option ?? (leverId === "mode" ? decision.variant : void 0);
+        function decide({ events = [], scope, at, recordedAt = at, experienceId, candidates, levers = [], explore = 0 }) {
+          if (!validId(experienceId) || !Array.isArray(candidates) || !candidates.length) throw new TypeError("Atlas: candidates required");
+          if (!Array.isArray(levers) || typeof explore !== "number" || !(explore >= 0 && explore <= 0.5)) throw new TypeError("Atlas: invalid decision input");
+          const seen = /* @__PURE__ */ new Set();
+          for (const lever of levers) checkLever(lever, seen);
+          const view = read(events, scope, at, recordedAt), state = view.state, c = state.context;
+          const round = Object.hasOwn(state.rounds, experienceId) ? state.rounds[experienceId] : 0, seed = `${scopeKey(scope)}|${experienceId}|${round}`;
+          const share = view.personal ? explore : 0, arm = random(seed)() < share ? "baseline" : "adapted", adapted = arm === "adapted";
+          const ids = /* @__PURE__ */ new Set();
+          const feasible = (item) => !(c.audio === "off" && item.requiresAudio) && !(c.time === "short" && item.minutes > 5) && !(c.support && item.supports && !item.supports.includes(c.support));
+          const eligible = candidates.filter((item) => {
+            if (!validId(item.id) || ids.has(item.id) || !Number.isFinite(item.minutes) || item.minutes <= 0 || !["short", "standard", "deep"].includes(item.pace) || item.supports != null && (!Array.isArray(item.supports) || !item.supports.length || item.supports.some((value) => !CONTEXT.support.includes(value)))) throw new TypeError("Atlas: invalid candidate");
+            ids.add(item.id);
+            return feasible(item);
+          });
+          const reasons = [], evidence = Object.values(state.evidence);
+          if (c.time === "short") reasons.push("time.short");
+          if (c.audio === "off") reasons.push("audio.off");
+          if (c.goal) reasons.push(`goal.${c.goal}`);
+          if (c.support) reasons.push(`support.${c.support}`);
+          if (!adapted) reasons.push("arm.baseline");
+          if (!eligible.length) return { version: VERSION, status: "unavailable", scope: copy(scope), experienceId, at, reasons: [...reasons, "no.feasible.experience"], evidence, alternatives: [], selected: null };
+          const usable = adapted ? state.lines.filter((line) => line.source === "observed" && line.usable) : [];
+          const mine = [...view.completed.values()].filter((done) => done.experienceId === experienceId && view.decisions.has(done.decisionId));
+          const last = mine.at(-1) ? view.decisions.get(mine.at(-1).decisionId) : null;
+          let performance = false;
+          const performanceProof = [];
+          const outcomeEvidence = state.outcomes.some((o) => o.attemptId) ? trail().createPracticeOutcomeIndex(trail().summarize(events, { scope, asOf: at, recordedAsOf: recordedAt })) : null;
+          const improved = (leverId, optionId, line) => {
+            for (const outcome of state.outcomes) {
+              if (outcome.value == null || outcome.value < 0.8 || picked(view.decisions.get(outcome.decisionId), leverId) !== optionId) continue;
+              const proof = outcomeEvidence?.find(outcome, { targetLine: line.key, since: line.at, maxAgeMs: RECENT });
+              if (proof) return proof;
+            }
+            return null;
+          };
+          const aim = (leverId, option, content, notes, proof) => {
+            let total = 0, due = false;
+            for (const line of usable) if (option.targets?.includes(line.key)) {
+              let weight = line.kind === "due" ? 2 + 2 * line.strength : 4 * line.strength;
+              if (line.kind === "due") due = true;
+              const result = content ? improved(leverId, option.id, line) : null;
+              if (result) {
+                weight *= 0.5;
+                performance = true;
+                notes.push("outcome.improved");
+                const refs = [...result.evidence, ...line.evidence];
+                proof.push(...refs);
+                performanceProof.push(...refs);
+              }
+              total += weight;
+              notes.push(`line.${line.key}`);
+              proof.push(...line.evidence);
+            }
+            return { total, due };
+          };
+          const feedback = adapted ? state.feedback.filter((f) => f.experienceId === experienceId) : [];
+          const recent = feedback.at(-1);
+          const targetPace = c.time === "short" ? "short" : recent?.value === "too_much" ? "short" : recent?.value === "want_more" && c.time !== "short" ? "deep" : "standard";
+          const latest = new Map(feedback.map((f) => [f.variant, f.value]));
+          const another = eligible.filter((item) => latest.get(item.id) !== "not_fit");
+          const fallback = recent?.value === "not_fit" && !another.length ? eligible.filter((item) => item.id !== recent.variant) : [];
+          const selectable = another.length ? another : fallback.length ? fallback : eligible;
+          if (another.length < eligible.length) reasons.push(another.length || fallback.length ? "feedback.alternative" : "feedback.no_alternative");
+          const scored = selectable.map((item) => {
+            const notes = [], proof = [];
+            let score = item.pace === targetPace ? 4 : 0;
+            if (c.goal && item.goals?.includes(c.goal)) score += 3;
+            const same = feedback.filter((f) => f.variant === item.id).slice(-3);
+            score += same.reduce((n, f) => n + (f.value === "helpful" ? 1 : f.value === "not_fit" ? -2 : 0), 0);
+            score += aim("mode", item, false, notes, proof).total;
+            return { item, score, notes, proof };
+          }).sort((a, b) => b.score - a.score || a.item.id.localeCompare(b.item.id));
+          if (recent) {
+            reasons.push(`feedback.${recent.value}`);
+            evidence.push(recent.id, recent.completionId);
+          }
+          for (const f of feedback) if (["helpful", "not_fit"].includes(f.value)) evidence.push(f.id, f.completionId);
+          evidence.push(...scored[0].proof);
+          const bundle = { mode: { option: scored[0].item.id, basis: !adapted ? "baseline" : scored[0].notes.length ? "line" : recent ? "response" : "setting", reasons: scored[0].notes, evidence: scored[0].proof } };
+          const tally = (leverId, optionId) => {
+            let s = 0, f = 0, helped = 0;
+            const proof = [];
+            for (const done of mine) {
+              if (view.cutoff - ms(done.at) > RECENT || picked(view.decisions.get(done.decisionId), leverId) !== optionId) continue;
+              const answer = state.feedback.find((item) => item.completionId === done.id);
+              if (answer?.value === "helpful") {
+                s += 1;
+                helped += 1;
+                proof.push(answer.id, done.id);
+              } else if (answer?.value === "not_fit") {
+                f += 1;
+                proof.push(answer.id, done.id);
+              }
+            }
+            return { s, f, helped, proof };
+          };
+          for (const lever of [...levers].sort((a, b) => a.id.localeCompare(b.id))) {
+            const options = lever.options.filter(feasible), content = lever.class === "content";
+            if (!options.length) {
+              setOwn(bundle, lever.id, { option: null, basis: "unavailable", reasons: ["no.feasible.option"], evidence: [] });
+              continue;
+            }
+            const declared = lever.follows && c[lever.follows] != null ? options.find((option) => option.id === c[lever.follows]) : null;
+            if (declared) {
+              setOwn(bundle, lever.id, { option: declared.id, basis: "declared", reasons: [`declared.${lever.follows}`], evidence: [state.evidence[lever.follows]] });
+              continue;
+            }
+            const turn = (index) => (index - round % options.length + options.length) % options.length;
+            if (!adapted) {
+              const option = content ? options.find((_, index) => turn(index) === 0) : options.find((item) => item.id === lever.default) || options[0];
+              setOwn(bundle, lever.id, { option: option.id, basis: "baseline", reasons: ["arm.baseline"], evidence: [] });
+              continue;
+            }
+            const before = last ? picked(last, lever.id) : void 0;
+            const tallies = new Map(lever.learn ? options.map((option) => [option.id, tally(lever.id, option.id)]) : []);
+            const ranked = options.map((option, index) => {
+              const notes = [], proof = [];
+              let score = 0, basis = null;
+              if (c.goal && option.goals?.includes(c.goal)) {
+                score += 3;
+                notes.push(`goal.${c.goal}`);
+                proof.push(state.evidence.goal);
+                basis = "goal";
+              }
+              const aimed = aim(lever.id, option, content, notes, proof);
+              if (aimed.total) {
+                score += aimed.total;
+                basis = "line";
+              }
+              if (content) {
+                if (before === option.id && !aimed.due) {
+                  score -= 2;
+                  notes.push("spacing");
+                }
+              } else {
+                if (option.id === lever.default) score += 0.5;
+                if (lever.learn) {
+                  const t = tallies.get(option.id), a = (option.id === lever.default ? 2 : 1) + t.s, b = 1 + t.f;
+                  score += 3 * a / (a + b) + 1 / Math.sqrt(1 + t.s + t.f);
+                }
+              }
+              return { option, score, notes, proof, basis, order: content ? turn(index) : index };
+            }).sort((a, b) => b.score - a.score || a.order - b.order);
+            const best = ranked[0], answered = [...tallies.values()].filter((t) => t.proof.length);
+            if (answered.length && !best.basis) {
+              const away = best.option.id !== lever.default && tallies.get(lever.default)?.f >= 1;
+              best.basis = "learned";
+              best.notes.push("learned", tallies.get(best.option.id).helped ? "learned.works" : away ? "learned.switch" : "learned.keep");
+              for (const t of answered) best.proof.push(...t.proof);
+            }
+            setOwn(bundle, lever.id, { option: best.option.id, basis: best.basis || (content ? "rotation" : "default"), reasons: best.notes.length ? best.notes : [content ? "rotation" : "default"], evidence: [...new Set(best.proof)] });
+            evidence.push(...best.proof);
+          }
+          const following = levers.find((lever) => lever.follows === "support");
+          evidence.push(...performanceProof);
+          return {
+            version: VERSION,
+            status: "ready",
+            scope: copy(scope),
+            experienceId,
+            at,
+            selected: copy(scored[0].item),
+            support: following && bundle[following.id].option || c.support || "choose",
+            focus: c.goal || "explore",
+            reasons,
+            evidence: [...new Set(evidence)],
+            alternatives: scored.slice(1).map((s) => s.item.id),
+            outcomeBasis: performance ? "performance" : recent ? "self_report" : "unobserved",
+            arm,
+            round,
+            seed,
+            explore: share,
+            bundle
+          };
+        }
+        const choice = (plan, leverId, fallback = null) => plan && plan.status === "ready" && plan.bundle?.[leverId]?.option || fallback;
+        function createSession({ scope, events = [], clock = () => (/* @__PURE__ */ new Date()).toISOString(), id, explore = 0 } = {}) {
+          scopeKey(scope);
+          scope = copy(scope);
+          let log = [], frozen = null;
+          const byId = /* @__PURE__ */ new Map(), attemptStats = /* @__PURE__ */ new Map(), completions = /* @__PURE__ */ new Map();
+          const lookup = {
+            byId: (id2) => byId.get(id2),
+            attempts: (presentationId) => attemptStats.get(presentationId) || { count: 0, latest: -Infinity },
+            get events() {
+              return log;
+            }
+          };
+          const index = (entry) => {
+            if (entry.type === "practice.attempted") {
+              const stats = lookup.attempts(entry.presentationId);
+              attemptStats.set(entry.presentationId, { count: stats.count + 1, latest: Math.max(stats.latest, admitted.get(entry)?.at ?? ms(entry.at)) });
+            }
+            if (entry.type === "experience.completed" && !completions.has(entry.decisionId)) completions.set(entry.decisionId, entry);
+          };
+          const store = (event) => {
+            if (admitted.has(event)) {
+              byId.set(event.id, event);
+              index(event);
+              log.push(event);
+              frozen = null;
+              return;
+            }
+            const entry = copy(event);
+            const t = getTrail();
+            if (typeof t?.vouch === "function") t.vouch(entry);
+            else freeze(entry);
+            admitted.set(entry, { key: scopeKey(entry.scope), at: ms(entry.at), recordedAt: ms(entry.recordedAt) });
+            byId.set(entry.id, entry);
+            index(entry);
+            log.push(entry);
+            frozen = null;
+          };
+          for (const event of events) {
+            if (scopeKey(event.scope) !== scopeKey(scope)) throw new Error("Atlas: scope mismatch");
+            if (admitWith(lookup, event)) store(event);
+          }
+          let sequence = 0;
+          const nextId = id || (() => `a${Date.now().toString(36)}-${(++sequence).toString(36)}-${Math.random().toString(36).slice(2, 10)}`);
+          const record = (body) => {
+            const at = clock(), event = { ...body, schema: 1, scope: copy(scope), id: nextId(), at, recordedAt: at };
+            if (admitWith(lookup, event)) store(event);
+            return copy(event);
+          };
+          return {
+            events: () => copy(log),
+            snapshot: () => frozen || (frozen = Object.freeze(log.slice())),
+            set: (field, value, until = null) => record({ type: "context.set", field, value, until }),
+            observe: (signal) => record({ type: "signal.observed", kind: signal?.kind, key: signal?.key, strength: signal?.strength, n: signal?.n, assisted: signal?.assisted ?? null, until: signal?.until ?? null, refs: signal?.refs ?? [] }),
+            respond: (line, value) => record({ type: "estimate.responded", line, value }),
+            plan: (experienceId, candidates, options = {}) => {
+              const levers = options.levers || [];
+              const decision = decide({ events: log, scope, at: clock(), experienceId, candidates, levers, explore });
+              if (decision.status !== "ready") return decision;
+              const recorded = record({
+                type: "decision.made",
+                experienceId,
+                variant: decision.selected.id,
+                policy: VERSION,
+                evidence: decision.evidence,
+                reasons: decision.reasons,
+                alternatives: decision.alternatives,
+                support: decision.support,
+                focus: decision.focus,
+                candidateSnapshot: copy(candidates),
+                arm: decision.arm,
+                round: decision.round,
+                seed: decision.seed,
+                explore: decision.explore,
+                bundle: copy(decision.bundle),
+                leverSnapshot: copy(levers)
+              });
+              return { ...decision, id: recorded.id };
+            },
+            complete: (decision) => {
+              if (!decision || decision.status !== "ready" || scopeKey(decision.scope) !== scopeKey(scope)) throw new Error("Atlas: invalid decision");
+              const existing = completions.get(decision.id);
+              return existing ? copy(existing) : record({ type: "experience.completed", decisionId: decision.id, experienceId: decision.experienceId, variant: decision.selected.id });
+            },
+            feedback: (completionId, value, decisionId) => record({ type: "feedback.given", completionId, value, ...decisionId !== void 0 ? { decisionId } : {} }),
+            practice: (kind, fields) => {
+              if (!fields || typeof fields !== "object" || Array.isArray(fields) || typeof kind !== "string") throw new TypeError("Atlas: invalid practice fields");
+              return record({ ...fields, type: kind.startsWith("practice.") ? kind : `practice.${kind}` });
+            },
+            outcome: (decisionId, result) => record({
+              type: "outcome.observed",
+              decisionId,
+              measure: result?.measure,
+              window: result?.window,
+              value: result?.value ?? null,
+              reason: result?.reason ?? null,
+              assisted: result?.assisted ?? null,
+              ...result?.attemptId != null || result?.targetLine != null ? { attemptId: result?.attemptId, targetLine: result?.targetLine } : {}
+            }),
+            exclude: (targetId) => record({ type: "record.excluded", targetId }),
+            clear: () => {
+              log = [];
+              frozen = null;
+              byId.clear();
+              attemptStats.clear();
+              completions.clear();
+            },
+            state: () => understand(log, scope, clock()),
+            lines: () => understand(log, scope, clock()).lines
+          };
+        }
+        return Object.freeze({ VERSION, POLICIES, CONTEXT, validate, append, validationNeeds, validateIncrement, understand, decide, choice, createSession });
+      });
+    }
+  });
+
+  // atlas/education.js
+  var require_education = __commonJS({
+    "atlas/education.js"(exports, module) {
+      "use strict";
+      var VERDICTS = ["correct", "incorrect", "unassessed", "skipped"];
+      var { choiceRecord, summarize } = require_trail();
+      function conceptsFor(map, task) {
+        const ids = [];
+        for (const id of task.concepts || []) {
+          if (!map.getNode(id)) throw new TypeError(`Core: unknown curriculum node ${id}`);
+          ids.push(id);
+        }
+        for (const tag of task.tags) {
+          const link = map.forTag(tag);
+          if (link.status === "exact") ids.push(link.node.id);
+        }
+        return [...new Set(ids)];
+      }
+      function diagnose({ map, task, assessment }) {
+        if (!task || !Array.isArray(task.tags) || !assessment || !VERDICTS.includes(assessment.verdict) || !Array.isArray(assessment.errorTags)) throw new TypeError("Core: invalid educational evidence");
+        const conceptIds = conceptsFor(map, task);
+        const observed = assessment.verdict === "incorrect" ? [...new Set(assessment.errorTags.filter((tag) => task.tags.includes(tag)))] : [];
+        return {
+          version: "core-education-2",
+          mapVersion: map.map_ver,
+          verdict: assessment.verdict,
+          diagnosis: observed.length ? "observed-error" : assessment.verdict === "correct" ? "correct-on-this-item" : "not-diagnosed",
+          errorTags: observed,
+          conceptIds,
+          curriculum: conceptIds.map((id) => {
+            const node = map.getNode(id);
+            return { id, kind: node.kind, label: node.label_ko };
+          }),
+          missingTags: task.tags.filter((tag) => map.forTag(tag).status !== "exact"),
+          scope: "this-item-only",
+          mastery: null
+        };
+      }
+      function createPractice({ session, decision, map, task, assess, firstExposure = null }) {
+        const conceptIds = conceptsFor(map, task);
+        const presentation = session.practice("presented", {
+          decisionId: decision.id,
+          taskId: task.id,
+          taskVersion: task.version,
+          itemKey: task.itemKey,
+          conceptIds,
+          firstExposure,
+          ...task.measure ? { measure: task.measure } : {}
+        });
+        let attempts = 0, broken = false, met = null, metCount = -1, qualifiedMet = null;
+        const shown = /* @__PURE__ */ new Set();
+        const guarded = (work) => {
+          try {
+            return work();
+          } catch (error) {
+            broken = true;
+            throw error;
+          }
+        };
+        return {
+          presentation,
+          submit(response, { skipped = false, reason = null, choice } = {}) {
+            if (broken) throw new Error("Core: practice record incomplete");
+            const selected = choice === void 0 ? null : choiceRecord(choice);
+            const result = diagnose({ map, task, assessment: skipped ? { verdict: "skipped", errorTags: [] } : assess(response) });
+            const event = guarded(() => session.practice("attempted", {
+              presentationId: presentation.id,
+              attemptNo: attempts + 1,
+              verdict: result.verdict,
+              errorTags: result.errorTags,
+              ...reason ? { reason } : {},
+              ...selected ? { choice: selected } : {}
+            }));
+            attempts += 1;
+            if (!met) met = { itemKey: task.itemKey, conceptIds, at: event.at, verdict: result.verdict };
+            return { ...result, eventId: event.id, attemptNo: attempts, ...selected ? { choice: { ...selected } } : {} };
+          },
+          // Help counts once it is on screen. Repeated renders of the same help are one exposure.
+          delivered(help) {
+            return guarded(() => {
+              if (!help || typeof help.id !== "string" || !["cue", "explanation", "answer"].includes(help.level) || typeof help.contentRef !== "string") throw new TypeError("Core: invalid delivered help");
+              const key = `${help.id}|${help.level}|${help.contentRef}`;
+              if (shown.has(key)) return null;
+              const event = session.practice("helped", { presentationId: presentation.id, helpId: help.id, level: help.level, contentRef: help.contentRef });
+              shown.add(key);
+              if (help.level === "answer" && !met) met = { itemKey: task.itemKey, conceptIds, at: event.at, verdict: null };
+              return event;
+            });
+          },
+          // The record to append to the game's pending history once this item was answered
+          // or its answer shown (see Trail.openHistory). Null until then.
+          met() {
+            if (!met) return null;
+            const events = session.events();
+            if (events.length !== metCount) {
+              const ids = /* @__PURE__ */ new Set([decision.id, presentation.id, ...events.filter((e) => e.presentationId === presentation.id).map((e) => e.id)]);
+              const owned = events.filter((e) => ids.has(e.id) || e.type === "record.excluded" && ids.has(e.targetId));
+              const latest = owned.reduce((at, e) => Math.max(at, Date.parse(e.at), Date.parse(e.recordedAt)), -Infinity);
+              qualifiedMet = summarize(owned, { scope: presentation.scope, asOf: new Date(latest).toISOString() }).met.find((r) => r.itemKey === task.itemKey) || null;
+              metCount = events.length;
+            }
+            return qualifiedMet && { ...qualifiedMet, conceptIds: [...qualifiedMet.conceptIds] };
+          }
+        };
+      }
+      module.exports = { conceptsFor, diagnose, createPractice };
+    }
+  });
+
+  // atlas/vellum.js
+  var require_vellum = __commonJS({
+    "atlas/vellum.js"(exports, module) {
+      "use strict";
+      var SUPPORTS = ["choose", "step", "independent"];
+      var VERDICTS = ["correct", "incorrect", "unassessed", "skipped"];
+      var STUCK = Object.freeze({ afterMs: 4e4, misses: 2 });
+      function reviewOpen({ verdict, support = "choose", retried = false, hasCue = false, unsure = false }) {
+        if (!VERDICTS.includes(verdict) || !SUPPORTS.includes(support)) throw new TypeError("Vellum: invalid review state");
+        if (verdict === "correct") return unsure ? "answer" : null;
+        if (verdict === "unassessed" || retried || support === "choose" || !hasCue) return "answer";
+        return "cue";
+      }
+      function offerCue({ support = "choose", elapsedMs = 0, misses = 0, offered = false, declined = false, hasCue = false, stuck = STUCK }) {
+        if (!SUPPORTS.includes(support)) throw new TypeError("Vellum: invalid support");
+        if (offered || declined || !hasCue || support === "independent") return false;
+        return elapsedMs >= stuck.afterMs || misses >= stuck.misses;
+      }
+      function particle(label, withFinal, without) {
+        for (let i = label.length - 1; i >= 0; i -= 1) {
+          const code = label.charCodeAt(i);
+          if (code >= 44032 && code <= 55203) return (code - 44032) % 28 ? withFinal : without;
+        }
+        return without;
+      }
+      function learningReason({ status, label }) {
+        if (typeof label !== "string") throw new TypeError("Vellum: invalid learning reason");
+        const topic = `${label}${particle(label, "은", "는")}`, object = `${label}${particle(label, "을", "를")}`;
+        const reasons = {
+          unseen: `${topic} 아직 기록이 적어요. 짧게 확인해 봐요.`,
+          checking: `${object} 조금 더 확인해 봐요.`,
+          practice: `최근 놓친 ${object} 조금 더 연습해 봐요.`,
+          supported: `${object} 도움과 함께 해냈어요. 이어서 살펴봐요.`,
+          "recent-independent": `${object} 최근 혼자 해냈어요. 가볍게 이어가요.`,
+          review: `${object} 다시 살펴볼 때예요.`
+        };
+        if (!Object.hasOwn(reasons, status)) throw new TypeError("Vellum: invalid learning reason");
+        return reasons[status];
+      }
+      function situationLine({ when }) {
+        if (typeof when !== "string" || !when.trim()) throw new TypeError("Vellum: invalid situation line");
+        return `${when} 쓰는 말이라 골랐어요.`;
+      }
+      function activityReason({ reasons = [], state = "unseen", label } = {}) {
+        if (!Array.isArray(reasons)) throw new TypeError("Vellum: invalid activity reason");
+        if (reasons.includes("activity.none")) return "지금 조건에 맞는 활동이 없어요. 시간이나 소리 설정을 바꿔 볼 수 있어요.";
+        if (reasons.includes("review.due")) return "복습할 시간이 된 내용이 있어요. 짧게 다시 만나 봐요.";
+        const goal = reasons.includes("goal.declared");
+        if (reasons.includes("activity.retry")) return `처음에 놓친 부분을 다시 연습해 봐요.${goal ? " 고른 목표와 이어지는 활동이에요." : ""}`;
+        if (reasons.includes("activity.assisted")) return `도움과 함께 해낸 부분이에요. 한 번 더 살펴봐요.${goal ? " 고른 목표와 이어지는 활동이에요." : ""}`;
+        if (reasons.includes("practice.spent")) return `이 활동의 새 문항은 모두 만났어요. 다시 해도 좋지만 연습 기록은 새 문항으로만 바뀌어요.${goal ? " 고른 목표와 이어지는 활동이에요." : ""}`;
+        if (label && state !== "unseen") return `${learningReason({ status: state, label })}${goal ? " 고른 목표와 이어지는 활동이에요." : ""}`;
+        if (goal) return "직접 고른 목표와 이어지는 활동이에요. 짧게 시작해 봐요.";
+        if (reasons.includes("history.incomplete")) return "기록을 모두 확인하기 전이라 기본 활동으로 시작해요.";
+        return "아직 연습 기록이 적어요. 짧게 해 보며 맞춰 갈게요.";
+      }
+      function memberActivityReason({ kind, action = false } = {}) {
+        if (!["favorite", "opened"].includes(kind)) throw new TypeError("Vellum: invalid member activity basis");
+        if (kind === "favorite") return action ? "직접 즐겨찾기에 고른 앱에서 이어서 시작해요." : "직접 즐겨찾기에 고른 앱이에요. 이용 횟수와는 별개의 선택이에요.";
+        return action ? "최근 60일에 열어 본 앱에서 이어서 시작해요." : "연결을 허용한 뒤 최근 60일에 앱을 연 기록이에요. 실제 활동 완료나 좋아하는 정도를 뜻하지 않아요.";
+      }
+      function periodComparisonReason({ source, state } = {}) {
+        if (!["activity", "practice"].includes(source) || !["ready", "empty", "partial", "disabled"].includes(state)) throw new TypeError("Vellum: invalid period comparison");
+        if (state === "disabled") return "앱 이용 기록 연결이 꺼져 있어요. 연결을 허용한 뒤의 기록부터 모아요.";
+        if (state === "partial") return "연결 시작 시점이나 보관 범위 때문에 두 기간의 기록을 모두 확인할 수 없어요. 있는 기록만 보여드리고 차이는 계산하지 않아요.";
+        if (state === "empty") return "두 기간 모두에 기록이 있어야 차이를 비교해요. 기록이 없는 기간을 성향이나 실력의 변화로 판단하지 않아요.";
+        return source === "activity" ? "같은 길이의 두 기간에 앱을 연 횟수와 날짜를 비교해요. 활동 완료나 관심의 강도를 뜻하지 않아요." : "같은 길이의 두 기간에 답한 횟수를 비교해요. 혼자 응답에는 오답도 포함하며, 실력 성장이나 학습 효과를 뜻하지 않아요.";
+      }
+      var memberDate = (value) => {
+        const time = typeof value === "string" ? Date.parse(value) : NaN;
+        if (!Number.isFinite(time)) throw new TypeError("Vellum: invalid member evidence date");
+        const [year, month, day] = new Date(time + 9 * 36e5).toISOString().slice(0, 10).split("-").map(Number);
+        return `${year}년 ${month}월 ${day}일`;
+      };
+      function memberUnderstandingLine({ kind, label, count = 0, activeDays = 0, state = "observed", selection = null, periodEnd = null } = {}) {
+        if (typeof label !== "string" || !["observed", "agreed", "contextual", "disagreed", "declared", "empty", "disabled"].includes(state)) throw new TypeError("Vellum: invalid member understanding");
+        if (state === "disabled") return "이 자료의 연결이 꺼져 있어 관찰과 그에 대한 확인을 요약에 사용하지 않아요.";
+        if (state === "empty") return "아직 여러 날의 기록이 충분하지 않아요. 지금 선호하는 방식을 직접 고를 수 있어요.";
+        if (state === "declared") {
+          if (kind === "learning-topic") {
+            if (selection === "interested") return `${label}에 관심이 있다고 직접 알려 줬어요. 다음 설명에서도 이 선택을 먼저 참고해요.`;
+            if (selection === "practice-only") return `${label}${particle(label, "은", "는")} 연습에서 다룬 내용일 뿐이라고 직접 알려 줬어요.`;
+            if (selection === "not-now") return `${label}${particle(label, "은", "는")} 지금 관심 있는 내용이 아니라고 직접 알려 줬어요.`;
+            throw new TypeError("Vellum: invalid member topic selection");
+          }
+          return `직접 고른 내용: ${label}. 다음 설명에서도 이 선택을 먼저 참고해요.`;
+        }
+        if (!Number.isSafeInteger(count) || !Number.isSafeInteger(activeDays)) throw new TypeError("Vellum: invalid member observation count");
+        const period = periodEnd ? `${memberDate(periodEnd)} 기준 최근 30일` : "최근 30일";
+        const fact = kind === "usage-repeat" ? `${period}의 연결된 기록에서 ${label}${particle(label, "을", "를")} ${activeDays}일에 걸쳐 ${count}번 열었어요.` : kind === "learning-topic" ? `${period}의 학습 기록에서 ${label}${particle(label, "을", "를")} 다룬 응답이 ${activeDays}일에 걸쳐 ${count}건 있어요.` : `${period}의 학습 기록에서 ${label} 방식의 응답이 ${activeDays}일에 걸쳐 ${count}건 있어요.`;
+        if (state === "agreed") return `${fact} ${kind === "learning-topic" ? "관심 있는 내용이라고 직접 확인했어요." : "자신에게 맞는 이용 방식이라고 직접 확인했어요."}`;
+        if (state === "contextual") return `${fact} 다만 상황에 따라 달라지는 내용이라고 직접 알려 줬어요.`;
+        if (state === "disagreed") return `${fact} 이 기록을 자신의 관심이나 선호로 해석하지 않기로 했어요.`;
+        return `${fact} ${kind === "learning-topic" ? "다뤘다는 사실만으로 관심이라고 정하지 않아요." : "기록된 방식이며 선호나 효과를 뜻하지는 않아요."}`;
+      }
+      function memberUnderstandingSummary({ hasDeclaration, hasFeedback, practice = null, learning, usage, learningAt = null, usageAt = null }) {
+        if (typeof hasDeclaration !== "boolean" || typeof hasFeedback !== "boolean" || !["ready", "disabled", "unavailable"].includes(learning) || !["ready", "disabled", "unavailable"].includes(usage)) throw new TypeError("Vellum: invalid member summary");
+        let observation = "";
+        if (learning === "ready" && practice) {
+          const { answered, independent, assisted, activeDays, to } = practice;
+          if (![answered, independent, assisted, activeDays].every((n) => Number.isSafeInteger(n) && n >= 0) || independent + assisted > answered || activeDays > Math.min(answered, 31)) throw new TypeError("Vellum: invalid member practice summary");
+          const period = `${memberDate(to)} 기준 최근 30일`;
+          observation = answered ? `학습 기록은 ${period} 중 ${activeDays}일, 응답 ${answered}건이에요. 그중 도움 없이 답한 응답은 ${independent}건, 도움을 받은 응답은 ${assisted}건이에요. ${activeDays === 1 ? "하루의 기록만으로 반복되는 경향이나 선호를 정하지 않아요." : "연습에서 사용한 방식과 본인이 원하는 방식은 다를 수 있어요."}` : `${period}에는 학습 응답 기록이 없어요. 기록이 없다는 사실을 관심이나 실력이 없다는 뜻으로 보지 않아요.`;
+        }
+        const scope = [];
+        if (learning === "disabled") scope.push("학습 기록 연결이 꺼져 있어 이번 설명에 사용하지 않았어요.");
+        else if (learning === "unavailable") scope.push("학습 기록은 이번 설명에 연결되지 않았어요.");
+        else if (!practice) scope.push(learningAt ? `학습 자료는 ${memberDate(learningAt)} 기준이며, 기간별 응답 수를 함께 확인할 수 없어 요약하지 않았어요.` : "기간별 학습 응답 수를 확인할 수 없어 요약하지 않았어요.");
+        else if (hasDeclaration) scope.push(`학습 기록은 ${memberDate(practice.to)} 기준 최근 30일의 자료예요. 직접 알려준 선호와 연습에서 관찰한 사실을 구분해요.`);
+        if (usage === "disabled") scope.push("앱 이용 기록 연결이 꺼져 있어 이번 설명에 사용하지 않았어요.");
+        else if (usage === "unavailable") scope.push("앱 이용 기록은 이번 설명에 연결되지 않았어요.");
+        else if (usageAt) scope.push(`앱 이용 기록은 ${memberDate(usageAt)} 기준으로 확인했어요. 앱을 연 사실만으로 구체적인 관심을 정하지 않아요.`);
+        return {
+          headline: hasDeclaration ? "내가 확인한 선호와 지금의 기록" : "아직 나의 선호를 알아가는 중이에요",
+          opening: hasDeclaration ? "" : hasFeedback ? "기록에 대한 본인의 확인을 먼저 반영했어요. 아직 확인하지 않은 관심이나 편한 방식은 추측하지 않아요." : "아직 관심사와 편한 방식을 정리할 만큼 직접 확인한 내용이 없어요. 원하는 방식을 직접 알려 주면 다음 설명에 먼저 반영해요.",
+          observation,
+          scope: scope.join(" ")
+        };
+      }
+      function memberUnderstandingNote({ line, note }) {
+        if (typeof line !== "string" || typeof note !== "string" || [...note].length > 200 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]|[\uD800-\uDFFF]/u.test(note)) throw new TypeError("Vellum: invalid member note");
+        return note.trim() ? `${line} 직접 남긴 설명: “${note}”` : line;
+      }
+      function memberUnderstandingActivityReason({ kind, labels }) {
+        if (!["topic", "learning", "app"].includes(kind) || !Array.isArray(labels) || !labels.length || labels.some((label) => typeof label !== "string")) throw new TypeError("Vellum: invalid member activity link");
+        const named = labels.join(" · ");
+        if (kind === "learning") return `관심 있다고 직접 확인한 '${named}'에서 이어서 학습을 골라 볼 수 있어요.`;
+        if (kind === "app") return `이어서 이용할 앱으로 ${named}${particle(named, "을", "를")} 직접 골랐어요.`;
+        return `직접 고른 '${named}' 관심과 연결되는 앱이에요.`;
+      }
+      module.exports = { SUPPORTS, STUCK, reviewOpen, offerCue, learningReason, situationLine, activityReason, memberActivityReason, periodComparisonReason, memberUnderstandingLine, memberUnderstandingSummary, memberUnderstandingNote, memberUnderstandingActivityReason };
+    }
+  });
+
+  // atlas/temper.js
+  var require_temper = __commonJS({
+    "atlas/temper.js"(exports, module) {
+      (function(root, factory) {
+        if (typeof module === "object" && module.exports) module.exports = factory();
+        else root.SynkTemper = factory();
+      })(typeof globalThis !== "undefined" ? globalThis : exports, function() {
+        "use strict";
+        const VERSION = "temper-practice-2";
+        const TRAIL = "trail-practice-2";
+        const scopeKey = (scope) => `${scope.domain}/${scope.workspace}/${scope.subject}`;
+        const taskKey = (p) => JSON.stringify([
+          p.taskId,
+          p.taskVersion,
+          p.itemKey,
+          [...p.conceptIds].sort(),
+          p.firstExposure,
+          p.measure ? [
+            p.measure.skillId,
+            p.measure.modality,
+            p.measure.difficulty,
+            p.measure.familyKey,
+            p.measure.audioRequired,
+            p.measure.confounded,
+            p.measure.responseFormat || "unknown"
+          ] : null
+        ]);
+        function summaries(input) {
+          const rows = Array.isArray(input) ? input : [input];
+          const seen = /* @__PURE__ */ new Set();
+          for (const row of rows) {
+            if (!row || row.version !== TRAIL || !row.scope || !Array.isArray(row.attempts) || !Array.isArray(row.presentations) || !Array.isArray(row.help)) throw new TypeError("Temper: use a Trail practice summary");
+            const key = scopeKey(row.scope);
+            if (seen.has(key)) throw new TypeError("Temper: duplicate scope would double-count evidence");
+            seen.add(key);
+            const attempts = /* @__PURE__ */ new Set();
+            for (const attempt of row.attempts) {
+              if (attempts.has(attempt.eventId)) throw new TypeError("Temper: duplicate attempt");
+              attempts.add(attempt.eventId);
+            }
+          }
+          return rows;
+        }
+        const bucket = () => ({ evaluated: 0, correct: 0, incorrect: 0, accuracy: null });
+        const close = (b) => {
+          if (b.evaluated) b.accuracy = b.correct / b.evaluated;
+          return b;
+        };
+        const counted = (a) => a.independent === true && !a.exclusionReason && a.assisted === false && a.exposure === "new" && ["correct", "incorrect"].includes(a.verdict) && (!a.measure || !a.measure.confounded && (!a.measure.audioRequired || a.audio === "completed"));
+        function measure(input) {
+          const rows = summaries(input);
+          const result = {
+            scopes: rows.length,
+            presented: 0,
+            attempts: 0,
+            independent: bucket(),
+            byConcept: /* @__PURE__ */ Object.create(null),
+            byArm: /* @__PURE__ */ Object.create(null),
+            assisted: 0,
+            unknownAssistance: 0,
+            repeat: 0,
+            unknownExposure: 0,
+            unassessed: 0,
+            skipped: 0,
+            excludedAttempts: 0
+          };
+          for (const row of rows) {
+            result.presented += row.presentations.length;
+            result.excludedAttempts += row.excludedAttempts || 0;
+            for (const a of row.attempts) {
+              result.attempts += 1;
+              if (a.assisted === true) result.assisted += 1;
+              else if (a.assisted === null) result.unknownAssistance += 1;
+              if (a.exposure === "repeat") result.repeat += 1;
+              else if (a.exposure === "unknown") result.unknownExposure += 1;
+              if (a.verdict === "unassessed") result.unassessed += 1;
+              if (a.verdict === "skipped") result.skipped += 1;
+              if (!counted(a)) continue;
+              const slot = (table, name) => table[name] || (table[name] = bucket());
+              const targets = [result.independent, ...a.conceptIds.map((id) => slot(result.byConcept, id)), slot(result.byArm, a.arm || "unrecorded")];
+              for (const b of targets) {
+                b.evaluated += 1;
+                b[a.verdict] += 1;
+              }
+            }
+          }
+          close(result.independent);
+          Object.values(result.byConcept).forEach(close);
+          Object.values(result.byArm).forEach(close);
+          return { ...result, status: result.independent.evaluated ? "measured" : "no_sample", learningEffectClaim: false };
+        }
+        function combine(a, b) {
+          if (!a) return b;
+          if (!b) return a;
+          const sum = (x, y) => close({ evaluated: x.evaluated + y.evaluated, correct: x.correct + y.correct, incorrect: x.incorrect + y.incorrect, accuracy: null });
+          const table = (x, y) => {
+            const out = /* @__PURE__ */ Object.create(null);
+            for (const [k, v] of Object.entries(x || {})) out[k] = sum(v, bucket());
+            for (const [k, v] of Object.entries(y || {})) out[k] = sum(out[k] || bucket(), v);
+            return out;
+          };
+          const result = {
+            scopes: Math.max(a.scopes, b.scopes),
+            presented: a.presented + b.presented,
+            attempts: a.attempts + b.attempts,
+            independent: sum(a.independent, b.independent),
+            byConcept: table(a.byConcept, b.byConcept),
+            byArm: table(a.byArm, b.byArm),
+            assisted: a.assisted + b.assisted,
+            unknownAssistance: a.unknownAssistance + b.unknownAssistance,
+            repeat: a.repeat + b.repeat,
+            unknownExposure: a.unknownExposure + b.unknownExposure,
+            unassessed: a.unassessed + b.unassessed,
+            skipped: a.skipped + b.skipped,
+            excludedAttempts: a.excludedAttempts + b.excludedAttempts
+          };
+          return { ...result, status: result.independent.evaluated ? "measured" : "no_sample", learningEffectClaim: false };
+        }
+        function compare({ before, after } = {}) {
+          const left = summaries(before), right = summaries(after);
+          const tasks = (rows) => new Map(rows.map((row) => [scopeKey(row.scope), row.presentations.map(taskKey).sort()]));
+          const l = tasks(left), r = tasks(right), reasons = [];
+          if (JSON.stringify([...l.keys()].sort()) !== JSON.stringify([...r.keys()].sort())) reasons.push("scope_mismatch");
+          else for (const [scope, set] of l) if (JSON.stringify(set) !== JSON.stringify(r.get(scope))) {
+            reasons.push("task_mismatch");
+            break;
+          }
+          const b = measure(left), a = measure(right), comparable = reasons.length === 0;
+          const measured = b.status === "measured" && a.status === "measured";
+          return {
+            version: VERSION,
+            comparable,
+            status: !comparable ? "not_comparable" : !measured ? "no_sample" : "measured",
+            reasons,
+            before: b,
+            after: a,
+            independentAccuracyDifference: comparable && measured ? a.independent.accuracy - b.independent.accuracy : null,
+            comparisonUnit: "same-input-run",
+            learningEffectClaim: false,
+            causalClaim: false,
+            limitations: [
+              "Same inputs run twice: a check of the implementation, not of learning.",
+              "Learning is read from new-item independent attempts per concept and per arm with measure()."
+            ]
+          };
+        }
+        const MINIMUM_PER_CELL = 30;
+        const label = (value) => typeof value === "string" && /^[a-zA-Z0-9_.+-]{1,40}$/.test(value);
+        function groups({ rows, labels, arms, minimum = MINIMUM_PER_CELL, tolerance = 0 } = {}) {
+          const input = summaries(rows);
+          if (!labels || typeof labels !== "object" || Array.isArray(labels)) throw new TypeError("Temper: labels by scope are required");
+          if (!Array.isArray(arms) || arms.length !== 2 || !arms.every(label) || arms[0] === arms[1]) throw new TypeError("Temper: name the baseline and candidate arms");
+          if (!Number.isSafeInteger(minimum) || minimum < 1) throw new TypeError("Temper: minimum must be a positive integer");
+          if (!(typeof tolerance === "number" && tolerance >= 0 && tolerance < 1)) throw new TypeError("Temper: tolerance must be within [0, 1)");
+          const [baseline, candidate] = arms;
+          const cells = /* @__PURE__ */ new Map();
+          for (const row of input) {
+            const given = Object.hasOwn(labels, scopeKey(row.scope)) ? labels[scopeKey(row.scope)] : null;
+            if (!given) continue;
+            if (typeof given !== "object" || Array.isArray(given)) throw new TypeError("Temper: labels must be {dimension: value}");
+            const tally = { [baseline]: [0, 0], [candidate]: [0, 0] };
+            for (const a of row.attempts) {
+              const arm = a.arm || "unrecorded";
+              if (!Object.hasOwn(tally, arm) || !counted(a)) continue;
+              tally[arm][0] += 1;
+              if (a.verdict === "correct") tally[arm][1] += 1;
+            }
+            if (!tally[baseline][0] && !tally[candidate][0]) continue;
+            for (const [dimension, value] of Object.entries(given)) {
+              if (value == null || value === "no_answer") continue;
+              if (!label(dimension) || !label(value)) throw new TypeError("Temper: invalid group label");
+              const key = `${dimension}=${value}`;
+              if (!cells.has(key)) cells.set(key, { dimension, value, people: { [baseline]: [], [candidate]: [] } });
+              for (const arm of arms) if (tally[arm][0]) cells.get(key).people[arm].push(tally[arm][1] / tally[arm][0]);
+            }
+          }
+          const mean = (list) => list.reduce((sum, value) => sum + value, 0) / list.length;
+          const report = [...cells.keys()].sort().map((key) => {
+            const cell = cells.get(key), before = cell.people[baseline], after = cell.people[candidate];
+            if (before.length < minimum || after.length < minimum) return { dimension: cell.dimension, value: cell.value, status: "waiting" };
+            const difference = mean(after) - mean(before);
+            return {
+              dimension: cell.dimension,
+              value: cell.value,
+              status: difference < -tolerance ? "worse" : "not_worse",
+              people: { baseline: before.length, candidate: after.length },
+              accuracy: { baseline: mean(before), candidate: mean(after) },
+              difference
+            };
+          });
+          const named = (status) => report.filter((cell) => cell.status === status).map((cell) => `${cell.dimension}=${cell.value}`);
+          return {
+            version: VERSION,
+            arms: { baseline, candidate },
+            minimum,
+            tolerance,
+            cells: report,
+            worse: named("worse"),
+            waiting: named("waiting"),
+            unit: "person-mean-of-new-item-independent-accuracy",
+            learningEffectClaim: false,
+            causalClaim: false,
+            significanceTested: false
+          };
+        }
+        const FOLLOWUP = Object.freeze({
+          version: "temper-followup-1",
+          maxAnchors: 24,
+          keepDays: 45,
+          windows: Object.freeze([["d1", 1, 3], ["d7", 7, 10], ["d30", 30, 37]].map(Object.freeze))
+        });
+        function followups({ events, summary, original = summary, prior = null, complete = true, asOf = summary?.asOf } = {}) {
+          summaries(summary);
+          summaries(original);
+          const now = Date.parse(asOf), day = 864e5, own = scopeKey(summary.scope);
+          if (!Array.isArray(events) || !Number.isFinite(now) || scopeKey(original.scope) !== own) throw new TypeError("Temper: invalid follow-up evidence");
+          const visible = events.filter((e) => scopeKey(e.scope) === own && Date.parse(e.at) <= now && Date.parse(e.recordedAt) <= now);
+          const byId = new Map(visible.map((e) => [e.id, e])), position = new Map(visible.map((e, i) => [e.id, i]));
+          const excluded = new Set(visible.filter((e) => e.type === "record.excluded").map((e) => e.targetId));
+          const completion = new Map(visible.filter((e) => e.type === "experience.completed").map((e) => [e.decisionId, e]));
+          const current = new Map(summary.attempts.map((a) => [a.eventId, a]));
+          const stamp = (a) => Date.parse(a.at), before = (a, b) => position.get(a.eventId ?? a.id) < position.get(b.eventId ?? b.id) && stamp(a) <= stamp(b) && Date.parse(a.recordedAt) <= Date.parse(b.recordedAt);
+          const game = (a) => byId.get(a.decisionId)?.experienceId;
+          const tuple = (a) => JSON.stringify([
+            game(a),
+            a.taskVersion,
+            a.measure?.skillId,
+            a.measure?.difficulty,
+            a.measure?.responseFormat,
+            a.measure?.modality,
+            a.measure?.audioRequired
+          ]);
+          const framed = (a) => {
+            const p = byId.get(a.presentationId), d = byId.get(a.decisionId), done = completion.get(a.decisionId);
+            return p?.type === "practice.presented" && d?.type === "decision.made" && done && before(d, p) && before(p, a) && before(a, done);
+          };
+          const qualified = (a) => a?.attemptNo === 1 && a.measure && a.measure.responseFormat !== "unknown" && !a.exclusionReason && [true, false].includes(a.assisted) && ["correct", "incorrect"].includes(a.verdict) && framed(a);
+          const invalidated = (a) => [a.eventId, a.presentationId, a.decisionId, completion.get(a.decisionId)?.id].some((id) => excluded.has(id)) || visible.some((e) => excluded.has(e.id) && ["practice.helped", "practice.delivery"].includes(e.type) && e.presentationId === a.presentationId && before(e, a));
+          const shown = /* @__PURE__ */ new Map(), foldedShown = /* @__PURE__ */ new Set();
+          const trace = (p) => [`item:${p.itemKey}`, `family:${p.measure?.familyKey || p.itemKey}`];
+          for (const p of visible.filter((e) => e.type === "practice.presented")) for (const key of trace(p)) {
+            if (!shown.has(key) || before(p, shown.get(key))) shown.set(key, p);
+          }
+          for (const [, item, family] of prior?.presented || []) {
+            foldedShown.add(`item:${item}`);
+            foldedShown.add(`family:${family}`);
+          }
+          const fresh = (a) => trace(byId.get(a.presentationId)).every((key) => !foldedShown.has(key) && shown.get(key)?.id === a.presentationId);
+          const ordered = [...original.attempts].sort((a, b) => stamp(a) - stamp(b) || position.get(a.eventId) - position.get(b.eventId));
+          const anchors = /* @__PURE__ */ new Map();
+          for (const a of ordered) if (qualified(a) && now - stamp(a) <= FOLLOWUP.keepDays * day && !anchors.has(tuple(a))) anchors.set(tuple(a), a);
+          const all = [...anchors.values()], selected = all.slice(0, FOLLOWUP.maxAnchors), retain = /* @__PURE__ */ new Set(), items = [];
+          const adjusted = prior?.adjusted || 0, usable = complete === true && !adjusted;
+          for (const source of selected) {
+            retain.add(source.decisionId);
+            const measure2 = { ...source.measure, taskVersion: source.taskVersion };
+            delete measure2.familyKey;
+            delete measure2.confounded;
+            const targets = ordered.filter((a) => a.eventId !== source.eventId && a.attemptNo === 1 && tuple(a) === tuple(source) && framed(a) && before(source, byId.get(a.presentationId)) && a.measure.familyKey !== source.measure.familyKey && a.itemKey !== source.itemKey && fresh(a));
+            for (const [window2, start, end] of FOLLOWUP.windows) {
+              const due = stamp(source) + start * day, expires = stamp(source) + end * day;
+              const target = targets.find((a) => stamp(a) >= due && stamp(a) < expires);
+              if (target) retain.add(target.decisionId);
+              const actualSource = current.get(source.eventId), actualTarget = target && current.get(target.eventId);
+              let status = now < due ? "not_due" : now < expires ? "due" : "missed", outcome = null, reason = null;
+              if (!usable) {
+                status = "unavailable";
+                reason = adjusted ? "adjusted-history" : "incomplete-history";
+              } else if (invalidated(source) || !actualSource || !qualified(actualSource)) {
+                status = "invalidated";
+                reason = "source-withdrawn";
+              } else if (target && (invalidated(target) || !actualTarget)) {
+                status = "invalidated";
+                reason = "target-withdrawn";
+              } else if (target) {
+                if (!qualified(actualTarget) || actualTarget.exposure !== "new" || actualTarget.assisted === false && !counted(actualTarget)) {
+                  status = "unavailable";
+                  reason = actualTarget.exclusionReason || "unassessable-target";
+                } else {
+                  status = "observed";
+                  outcome = `${actualTarget.assisted ? "assisted" : "independent"}-${actualTarget.verdict}`;
+                }
+              }
+              const correctionEventIds = summary.help.filter((h) => h.presentationId === source.presentationId && ["answer", "explanation"].includes(h.level) && before(source, h) && (!target || before(h, byId.get(target.presentationId)))).map((h) => h.eventId);
+              items.push({
+                id: `${source.eventId}:${window2}`,
+                sourceAttemptId: source.eventId,
+                sourceAt: source.at,
+                gameId: game(source),
+                measure: measure2,
+                kind: counted(source) && source.verdict === "correct" ? "retention" : "recovery",
+                window: window2,
+                dueAt: new Date(due).toISOString(),
+                expiresAt: new Date(expires).toISOString(),
+                status,
+                reason,
+                targetAttemptId: target?.eventId || null,
+                targetAt: target?.at || null,
+                outcome,
+                correctionEventIds
+              });
+            }
+          }
+          return {
+            policy: FOLLOWUP.version,
+            asOf,
+            observationOpportunities: true,
+            evidenceComplete: usable,
+            coverage: {
+              folded: prior?.folded || 0,
+              adjusted,
+              limited: all.length > selected.length,
+              excludedAnchors: all.length - selected.length,
+              reason: !usable ? adjusted ? "adjusted-history" : "incomplete-history" : prior?.folded ? "older-source-unavailable" : null
+            },
+            items,
+            retainDecisionIds: [...retain],
+            learningEffectClaim: false,
+            causalClaim: false,
+            policyPromotion: false
+          };
+        }
+        const FLIP_WINDOW = 2;
+        const COOL_DOWN = 2;
+        function check({ spec, knob, from, to, step, phase = "response", history = [], frozen = false } = {}) {
+          if (frozen) return { ok: false, rail: "hold" };
+          const k = spec?.knobs?.find((x) => x.id === knob);
+          if (!k) return { ok: false, rail: "unknown-knob" };
+          if (!Number.isInteger(from) || !Number.isInteger(to) || Math.abs(to - from) !== 1) return { ok: false, rail: "one-step" };
+          if (to < 0 || to >= k.values.length) return { ok: false, rail: "bounds" };
+          if (k.follows === "declared") return { ok: false, rail: "declared-only" };
+          if (!["opening", "response", "accepted"].includes(phase) || !Number.isInteger(step) || !Array.isArray(history)) return { ok: false, rail: "invalid" };
+          if (phase !== "opening") {
+            const live = history.filter((c) => c.phase !== "opening");
+            if (live.some((c) => c.step === step)) return { ok: false, rail: "one-change-per-response" };
+            const recent = live.filter((c) => c.knob === knob && step - c.step <= FLIP_WINDOW).at(-1);
+            if (recent && to > from && recent.to < recent.from) return { ok: false, rail: "no-bounce" };
+            if (to > from && live.some((c) => c.direction > 0 && step - c.step <= COOL_DOWN)) return { ok: false, rail: "cool-down" };
+          }
+          return { ok: true, rail: null };
+        }
+        return Object.freeze({ VERSION, MINIMUM_PER_CELL, measure, combine, compare, groups, FOLLOWUP, followups, FLIP_WINDOW, COOL_DOWN, check });
+      });
+    }
+  });
+
+  // atlas/learning-ledger.js
+  var require_learning_ledger = __commonJS({
+    "atlas/learning-ledger.js"(exports, module) {
+      "use strict";
+      var Trail = require_trail();
+      var Temper = require_temper();
+      var VERSION = "learning-ledger-1";
+      var BITS = Trail.BITS;
+      var KEEP = 12;
+      var HELP_MS = 30 * 864e5;
+      var FOLDABLE = Object.freeze([
+        "decision.made",
+        "experience.completed",
+        "record.excluded",
+        "feedback.given",
+        "practice.presented",
+        "practice.helped",
+        "practice.attempted",
+        "practice.delivery"
+      ]);
+      var MAX_ENTRIES = 2e5;
+      var own = (table, key) => Object.prototype.hasOwnProperty.call(table, key);
+      var plain = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+      function empty() {
+        return { version: VERSION, cutoff: null, folded: 0, keys: {}, presented: [], cells: {}, content: {}, counts: null };
+      }
+      function validate(ledger) {
+        const cellOk = (cell) => plain(cell) && Array.isArray(cell.ind) && cell.ind.length <= KEEP && cell.ind.every((r) => Array.isArray(r) && (r.length === 4 || r.length === 5 && typeof r[4] === "string") && typeof r[0] === "string" && Number.isFinite(r[1]) && ["correct", "incorrect"].includes(r[2]) && typeof r[3] === "string") && Array.isArray(cell.helped) && cell.helped.length <= MAX_ENTRIES && cell.helped.every((h) => Number.isFinite(h) || Array.isArray(h) && h.length === 2 && typeof h[0] === "string" && Number.isFinite(h[1])) && Number.isInteger(cell.unassessed) && cell.unassessed >= 0;
+        if (!plain(ledger) || ledger.version !== VERSION || !Number.isInteger(ledger.folded) || ledger.folded < 0 || !(ledger.cutoff === null || Number.isFinite(ledger.cutoff)) || !plain(ledger.keys) || Object.keys(ledger.keys).length > MAX_ENTRIES || Object.values(ledger.keys).some((v) => !Number.isInteger(v) || v < 1 || v > 7) || !Array.isArray(ledger.presented) || ledger.presented.length > MAX_ENTRIES || ledger.presented.some((r) => !Array.isArray(r) || r.length !== 4 || r.slice(0, 3).some((v) => typeof v !== "string") || !Number.isInteger(r[3]) || r[3] < 1) || !plain(ledger.cells) || !Object.values(ledger.cells).every(cellOk) || !plain(ledger.content) || !Object.values(ledger.content).every(cellOk) || !(ledger.counts === null || plain(ledger.counts)) || !(ledger.adjusted === void 0 || Number.isInteger(ledger.adjusted) && ledger.adjusted >= 0) || !(ledger.parents === void 0 || plain(ledger.parents) && Object.keys(ledger.parents).length <= MAX_ENTRIES && Object.values(ledger.parents).every((p) => Array.isArray(p) && (p.length === 2 || p.length === 3) && p.every((id, i) => i === 2 && id === null || typeof id === "string" && id.length > 0))) || !(ledger.withdrawn === void 0 || Array.isArray(ledger.withdrawn) && ledger.withdrawn.length <= MAX_ENTRIES && ledger.withdrawn.every((id) => typeof id === "string" && id.length > 0)) || !(ledger.followupsLost === void 0 || plain(ledger.followupsLost) && Number.isInteger(ledger.followupsLost.anchors) && ledger.followupsLost.anchors > 0 && ledger.followupsLost.anchors <= 24 && Number.isFinite(ledger.followupsLost.at)) || !(ledger.followupsPreserved === void 0 || typeof ledger.followupsPreserved === "boolean") || !(ledger.local === void 0 || ledger.local === true)) throw new TypeError("Ledger: unreadable");
+        return ledger;
+      }
+      var before = (ledger, traceKey, kinds) => {
+        const bits = ledger && own(ledger.keys, traceKey) ? ledger.keys[traceKey] : 0;
+        return kinds.some((kind) => bits & BITS[kind]);
+      };
+      var helpedAt = (h) => Array.isArray(h) ? h[1] : h;
+      function rows(cell) {
+        if (!cell) return { rows: [], unassessed: 0 };
+        const iso = (ms) => new Date(ms).toISOString();
+        return { unassessed: cell.unassessed, rows: [
+          ...cell.ind.map(([eventId, at, verdict, familyKey]) => ({ eventId, at: iso(at), verdict, independent: true, assisted: false, exclusionReason: null, measure: { familyKey } })),
+          ...cell.helped.map((h) => ({ eventId: Array.isArray(h) ? h[0] : null, at: iso(helpedAt(h)), verdict: "correct", independent: false, assisted: true, exclusionReason: null, measure: { familyKey: null } }))
+        ] };
+      }
+      var cellOf = (ledger, key) => ledger && own(ledger.cells, key) ? ledger.cells[key] : null;
+      var contentOf = (ledger, key) => ledger && own(ledger.content, key) ? ledger.content[key] : null;
+      function trimParents(ledger) {
+        if (!ledger.parents) return ledger;
+        const ids = /* @__PURE__ */ new Set();
+        for (const table of [ledger.cells, ledger.content]) for (const cell of Object.values(table)) {
+          for (const row of cell.ind) ids.add(row[0]);
+          for (const row of cell.helped) if (Array.isArray(row)) ids.add(row[0]);
+        }
+        ledger.parents = Object.fromEntries(Object.entries(ledger.parents).filter(([id]) => ids.has(id)));
+        return ledger;
+      }
+      function fold(previous, events, { scope, log = events, local = false }) {
+        const base = previous || empty();
+        const ledger = { ...base, keys: { ...base.keys }, cells: { ...base.cells }, content: { ...base.content }, parents: Object.assign(/* @__PURE__ */ Object.create(null), base.parents) };
+        if (!events.length) return ledger;
+        const time = (e) => Math.max(Date.parse(e.at), Date.parse(e.recordedAt));
+        const latest = log.reduce((max, e) => Math.max(max, time(e)), -Infinity);
+        const decisions = events.filter((e) => e.type === "decision.made").map((e) => e.id);
+        const summary = Trail.summarize(log, { scope, asOf: new Date(latest).toISOString(), prior: previous, decisions });
+        const deliveries = /* @__PURE__ */ new Map(), proof = /* @__PURE__ */ new Map(), seen = /* @__PURE__ */ new Set();
+        for (const e of log) {
+          if (seen.has(e.id) || e.scope.domain !== scope.domain || e.scope.workspace !== scope.workspace || e.scope.subject !== scope.subject) continue;
+          seen.add(e.id);
+          if (e.type === "practice.delivery") deliveries.set(e.presentationId, e.id);
+          if (e.type === "practice.attempted") proof.set(e.id, deliveries.get(e.presentationId));
+        }
+        const presented = new Map(events.filter((e) => e.type === "practice.presented").map((e) => [e.id, e]));
+        for (const e of events) {
+          if (e.type !== "practice.helped" && e.type !== "practice.attempted") continue;
+          const p = presented.get(e.presentationId);
+          if (!p) continue;
+          const bit = e.type === "practice.attempted" ? BITS.attempt : e.level === "answer" ? BITS.answer : BITS.help;
+          for (const k of Trail.traceKeys(p)) ledger.keys[k] = (own(ledger.keys, k) ? ledger.keys[k] : 0) | bit;
+        }
+        const shown = new Map(ledger.presented.map(([task, item, family, n]) => [JSON.stringify([task, item, family]), n]));
+        for (const p of summary.presentations) {
+          const key = JSON.stringify([p.taskId, p.itemKey, p.measure?.familyKey || p.itemKey]);
+          shown.set(key, (shown.get(key) || 0) + 1);
+        }
+        ledger.presented = [...shown].map(([key, n]) => [...JSON.parse(key), n]).sort((a, b) => a.join("\0") < b.join("\0") ? -1 : 1);
+        const touched = /* @__PURE__ */ new Set();
+        const add = (table, key, a) => {
+          const cell = own(table, key) ? touched.has(table[key]) ? table[key] : { ind: [...table[key].ind], helped: [...table[key].helped], unassessed: table[key].unassessed } : { ind: [], helped: [], unassessed: 0 };
+          table[key] = cell;
+          touched.add(cell);
+          const at = Date.parse(a.at);
+          if (a.independent) cell.ind.push([a.eventId, at, a.verdict, a.measure.familyKey, ...a.itemKey !== a.measure.familyKey ? [a.itemKey] : []]);
+          if (!a.exclusionReason && a.assisted === true && a.verdict === "correct") cell.helped.push([a.eventId, at]);
+          if (a.independent || !a.exclusionReason && a.assisted === true && a.verdict === "correct") ledger.parents[a.eventId] = [a.presentationId, a.decisionId, a.measure.audioRequired ? proof.get(a.eventId) : null];
+          if (a.verdict === "unassessed" || a.verdict === "skipped") cell.unassessed += 1;
+        };
+        for (const a of summary.attempts) {
+          if (!a.measure) continue;
+          const format = a.measure.responseFormat || "unknown";
+          add(ledger.cells, `${a.measure.skillId}|${a.measure.difficulty}|${format}`, a);
+          for (const id of a.conceptIds) if (id !== a.measure.skillId) add(ledger.content, `${id}|${format}`, a);
+        }
+        for (const table of [ledger.cells, ledger.content]) for (const [key, cell] of Object.entries(table)) {
+          const helped = cell.helped.filter((h) => helpedAt(h) > latest - HELP_MS);
+          if (!touched.has(cell) && helped.length === cell.helped.length) continue;
+          table[key] = { ind: [...cell.ind].sort((x, y) => x[1] - y[1]).slice(-KEEP), helped: helped.sort((x, y) => helpedAt(x) - helpedAt(y)), unassessed: cell.unassessed };
+        }
+        ledger.counts = ledger.counts ? Temper.combine(ledger.counts, Temper.measure(summary)) : Temper.measure(summary);
+        ledger.cutoff = Math.max(ledger.cutoff ?? -Infinity, events.reduce((max, e) => Math.max(max, time(e)), -Infinity));
+        ledger.folded += events.length;
+        if (local) ledger.local = true;
+        return trimParents(ledger);
+      }
+      function plan(events, { keep, olderThan, unfinishedBefore = olderThan, respondedBefore = -Infinity, open = [] }) {
+        if (events.length <= keep) return null;
+        const groupOf = /* @__PURE__ */ new Map(), groups = /* @__PURE__ */ new Map();
+        const join = (id, event) => {
+          if (!groups.has(id)) groups.set(id, { id, events: [], max: -Infinity, open: false, done: false, responded: -Infinity });
+          const g = groups.get(id);
+          g.events.push(event);
+          g.max = Math.max(g.max, Date.parse(event.at), Date.parse(event.recordedAt));
+          groupOf.set(event.id, id);
+          if (event.type === "experience.completed") g.done = true;
+          if (event.type === "feedback.given") g.responded = Math.max(g.responded, Date.parse(event.at));
+        };
+        const pinned = /* @__PURE__ */ new Set();
+        for (const e of events) {
+          if (e.type === "decision.made") {
+            join(e.id, e);
+            continue;
+          }
+          const parent = groupOf.get(reference(e));
+          if (!FOLDABLE.includes(e.type)) {
+            if (parent != null) pinned.add(parent);
+            continue;
+          }
+          if (parent != null) join(parent, e);
+        }
+        for (const id of pinned) groups.get(id).open = true;
+        for (const id of open) {
+          const g = groups.get(groupOf.get(id));
+          if (g) g.open = true;
+        }
+        const order = [...groups.values()].sort((a, b) => a.max - b.max);
+        let remaining = events.length, cutoff = -Infinity;
+        const folded2 = /* @__PURE__ */ new Set();
+        for (const g of order) {
+          if (remaining <= keep || g.max >= olderThan) break;
+          if (g.open || !g.done && g.max >= unfinishedBefore || g.responded > -Infinity && g.responded >= respondedBefore) continue;
+          for (const e of g.events) folded2.add(e.id);
+          remaining -= g.events.length;
+          cutoff = g.max;
+        }
+        if (!folded2.size) return null;
+        return { cutoff, folded: events.filter((e) => folded2.has(e.id)), kept: events.filter((e) => !folded2.has(e.id)) };
+      }
+      var folded = (ledger, event) => !!ledger && ledger.cutoff !== null && FOLDABLE.includes(event.type) && Date.parse(event.at) <= ledger.cutoff;
+      var reference = (e) => e?.type === "decision.made" ? void 0 : e?.decisionId ?? e?.presentationId ?? e?.targetId ?? e?.completionId;
+      function retention(events, decisions, { maxEvents = 2400, maxBytes = 1024 * 1024 } = {}) {
+        const groups = /* @__PURE__ */ new Map(), parent = /* @__PURE__ */ new Map();
+        for (const e of events) {
+          const group = e.type === "decision.made" ? e.id : parent.get(reference(e));
+          if (!group) continue;
+          parent.set(e.id, group);
+          if (!groups.has(group)) groups.set(group, []);
+          groups.get(group).push(e);
+        }
+        const selected = new Set(decisions.filter((id) => groups.has(id)));
+        const position = new Map(events.map((e, index) => [e.id, index]));
+        const first = Math.min(...[...selected].map((id) => Math.min(...groups.get(id).map((e) => position.get(e.id)))));
+        const presentations = events.filter((e) => e.type === "practice.presented"), keys = /* @__PURE__ */ new Set();
+        let changed = true;
+        while (changed) {
+          changed = false;
+          for (const p of presentations) {
+            const group = parent.get(p.id), traces = Trail.traceKeys(p);
+            if (!selected.has(group) && traces.some((key) => keys.has(key)) && groups.get(group).some((e) => position.get(e.id) >= first)) {
+              selected.add(group);
+              changed = true;
+            }
+            if (selected.has(group)) {
+              for (const key of traces) if (!keys.has(key)) {
+                keys.add(key);
+                changed = true;
+              }
+            }
+          }
+        }
+        const kept = events.filter((e) => selected.has(parent.get(e.id))), bytes = new TextEncoder().encode(JSON.stringify(kept)).length;
+        const limited = kept.length > maxEvents || bytes > maxBytes;
+        return { decisions: limited ? [] : [...selected], events: kept.length, bytes, limited, maxEvents, maxBytes };
+      }
+      var stray = (event, known) => {
+        const ref = reference(event);
+        return typeof ref === "string" && !known.has(ref);
+      };
+      function compare(a, b) {
+        const fa = a?.folded || 0, fb = b?.folded || 0;
+        if (fa !== fb) return fa > fb ? 1 : -1;
+        const ca = a?.cutoff ?? -Infinity, cb = b?.cutoff ?? -Infinity;
+        return ca === cb ? 0 : ca > cb ? 1 : -1;
+      }
+      function reconcile(a, b) {
+        if (!a || !b || !Math.max(a.adjusted || 0, b.adjusted || 0, a.withdrawn?.length || 0, b.withdrawn?.length || 0)) return null;
+        if (a === b || JSON.stringify(a) === JSON.stringify(b)) return a;
+        const order = (x, y) => {
+          const delta = helpedAt(x) - helpedAt(y), u = JSON.stringify(x), v = JSON.stringify(y);
+          return delta || (u === v ? 0 : u < v ? -1 : 1);
+        };
+        const withdrawn = [.../* @__PURE__ */ new Set([...a.withdrawn || [], ...b.withdrawn || []])].sort();
+        const next = { ...demote(compare(a, b) < 0 ? b : a, { excluded: withdrawn, linkedOnly: true }, () => null) };
+        for (const name of ["cells", "content"]) next[name] = Object.fromEntries(Object.entries(next[name]).sort(([x], [y]) => x.localeCompare(y)).map(([key, cell]) => [key, { ...cell, ind: [...cell.ind].sort(order), helped: [...cell.helped].sort(order) }]));
+        next.adjusted = Math.max(a.adjusted || 0, b.adjusted || 0, next.withdrawn?.length || 0);
+        if (a.local || b.local) next.local = true;
+        if (a.followupsPreserved !== void 0 || b.followupsPreserved !== void 0) next.followupsPreserved = a.followupsPreserved === true && b.followupsPreserved === true;
+        if (a.followupsLost || b.followupsLost) next.followupsLost = { anchors: Math.max(a.followupsLost?.anchors || 0, b.followupsLost?.anchors || 0), at: Math.min(a.followupsLost?.at ?? Infinity, b.followupsLost?.at ?? Infinity) };
+        trimParents(next);
+        return JSON.stringify(next) === JSON.stringify(a) ? a : next;
+      }
+      function demote(ledger, { late = [], excluded = [], strays = 0, linkedOnly = false }, find) {
+        const marks = [], gone = new Set(excluded);
+        for (const e of late) {
+          if (e.type !== "practice.attempted" && e.type !== "practice.helped") continue;
+          const p = find(e.presentationId);
+          if (p) marks.push({ keys: new Set(Trail.traceKeys(p)), at: Date.parse(e.at) });
+        }
+        if (!ledger || !late.length && !gone.size && !strays) return ledger;
+        const parents = ledger.parents || {}, direct = /* @__PURE__ */ new Set(), retired = new Set(ledger.withdrawn || []);
+        for (const table of [ledger.cells, ledger.content]) for (const cell of Object.values(table)) {
+          for (const row of cell.ind) direct.add(row[0]);
+          for (const row of cell.helped) if (Array.isArray(row)) direct.add(row[0]);
+        }
+        for (const p of Object.values(parents)) for (const id of p) if (id !== null) direct.add(id);
+        const parentGone = [...gone].some((id) => !retired.has(id) && !direct.has(id));
+        const withdrawn = (id) => gone.has(id) || own(parents, id) && parents[id].some((p) => p !== null && gone.has(p)) || !linkedOnly && parentGone && (!own(parents, id) || parents[id].length === 2);
+        const after = ([eventId, at, , familyKey, itemKey = familyKey]) => withdrawn(eventId) || marks.some((m) => (m.keys.has(`item:${itemKey}`) || m.keys.has(`family:${familyKey}`)) && at > m.at);
+        const excludedHelp = (h) => Array.isArray(h) ? withdrawn(h[0]) : !linkedOnly && parentGone;
+        const next = { ...ledger, cells: { ...ledger.cells }, content: { ...ledger.content }, adjusted: (ledger.adjusted || 0) + late.length + Math.max(strays, gone.size) };
+        for (const table of [next.cells, next.content]) for (const [key, cell] of Object.entries(table)) {
+          if (cell.ind.some(after) || cell.helped.some(excludedHelp)) table[key] = { ...cell, ind: cell.ind.filter((row) => {
+            if (!after(row)) return true;
+            retired.add(row[0]);
+            return false;
+          }), helped: cell.helped.filter((h) => {
+            if (!excludedHelp(h)) return true;
+            if (Array.isArray(h)) retired.add(h[0]);
+            return false;
+          }) };
+        }
+        for (const id of gone) if (typeof id === "string" && id.length) retired.add(id);
+        if (retired.size > MAX_ENTRIES) throw new Error("Ledger: withdrawal capacity");
+        if (retired.size) next.withdrawn = [...retired].sort();
+        return trimParents(next);
+      }
+      module.exports = { VERSION, BITS, FOLDABLE, empty, validate, before, rows, cellOf, contentOf, fold, plan, folded, stray, compare, reconcile, demote, reference, retention };
+    }
+  });
+
+  // atlas/learning.js
+  var require_learning = __commonJS({
+    "atlas/learning.js"(exports, module) {
+      "use strict";
+      var POLICY = Object.freeze({ version: "learning-priority-4", recentDays: 30, reviewDays: 7, sample: 4, stableRatio: 0.8 });
+      var RESPONSE_FORMATS = Object.freeze(["binary-choice", "single-choice", "cup-compose", "action", "spoken", "unknown"]);
+      var { learningReason, activityReason, SUPPORTS } = require_vellum();
+      var Ledger = require_learning_ledger();
+      var DAY = 864e5;
+      function formatEvidence(rows, { now, complete, difficulty, responseFormat, base = null }) {
+        if (base) rows = [...base.rows, ...rows];
+        const unique = /* @__PURE__ */ new Map();
+        for (const a of rows) if (complete && a.independent && !unique.has(a.measure.familyKey)) unique.set(a.measure.familyKey, a);
+        const valid = [...unique.values()].filter((a) => Date.parse(a.at) <= now).sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
+        const recent = valid.filter((a) => now - Date.parse(a.at) <= POLICY.recentDays * DAY).slice(-12);
+        const n = recent.length, correct = recent.filter((a) => a.verdict === "correct").length, incorrect = n - correct;
+        const lastAt = valid.at(-1)?.at || null;
+        const helped = rows.filter((a) => !a.exclusionReason && a.assisted === true && a.verdict === "correct" && Date.parse(a.at) <= now && now - Date.parse(a.at) <= POLICY.recentDays * DAY);
+        let status = "unseen", priority = 0.65;
+        if (n >= POLICY.sample && correct / n >= POLICY.stableRatio) {
+          status = "recent-independent";
+          priority = 0.15;
+        } else if (n >= 3 && incorrect >= 2) {
+          status = "practice";
+          priority = 1;
+        } else if (n) {
+          status = "checking";
+          priority = incorrect ? 0.85 : 0.55;
+        } else if (helped.length) {
+          status = "supported";
+          priority = 0.9;
+        }
+        if (lastAt && now - Date.parse(lastAt) > POLICY.reviewDays * DAY && priority < 0.8) {
+          status = "review";
+          priority = 0.8;
+        }
+        const reasonEvidence = status === "supported" ? helped.slice(-12) : status === "review" && !recent.length ? valid.slice(-1) : recent;
+        return {
+          difficulty,
+          responseFormat,
+          status,
+          priority,
+          n,
+          correct,
+          incorrect,
+          lastAt,
+          assisted: helped.length,
+          evidence: recent.map((a) => a.eventId),
+          reasonEvidence: reasonEvidence.map((a) => a.eventId),
+          unassessed: rows.filter((a) => a.verdict === "unassessed" || a.verdict === "skipped").length + (base?.unassessed || 0)
+        };
+      }
+      function summarizeLearning({ summary, map, complete = true, prior = null }) {
+        const now = Date.parse(summary.asOf);
+        const skills = map.allNodes().filter((n) => n.kind === "skill").map((node) => {
+          const all = summary.attempts.filter((a) => a.measure?.skillId === node.id);
+          const levels = {};
+          for (const difficulty of [1, 2, 3]) {
+            const rows = all.filter((a) => a.measure.difficulty === difficulty);
+            const formats = Object.fromEntries(RESPONSE_FORMATS.map((responseFormat) => {
+              const cell = Ledger.cellOf(prior, `${node.id}|${difficulty}|${responseFormat}`);
+              return [responseFormat, formatEvidence(
+                rows.filter((a) => (a.measure.responseFormat || "unknown") === responseFormat),
+                { now, complete, difficulty, responseFormat, base: cell ? Ledger.rows(cell) : null }
+              )];
+            }));
+            const observed2 = Object.values(formats).filter((f) => f.lastAt || f.assisted);
+            const focus2 = observed2.sort((a, b) => b.priority - a.priority)[0] || Object.values(formats).find((f) => f.unassessed) || formats.unknown;
+            levels[difficulty] = { ...focus2, formats };
+          }
+          const observed = Object.values(levels).filter((l) => l.lastAt || l.assisted);
+          const focus = observed.sort((a, b) => b.priority - a.priority || a.difficulty - b.difficulty)[0] || Object.values(levels).find((l) => l.unassessed) || levels[1];
+          return { id: node.id, label: node.label_ko, domain: node.domain, ...focus, levels };
+        });
+        return {
+          policy: POLICY.version,
+          skills,
+          evidenceComplete: complete,
+          asOf: summary.asOf,
+          independent: skills.reduce((n, s) => n + Object.values(s.levels).reduce((m, l) => m + Object.values(l.formats).reduce((sum, f) => sum + f.n, 0), 0), 0),
+          learningEffectClaim: false,
+          grade: null
+        };
+      }
+      var CONTENT_LIFT = Object.freeze({ practice: 0.2, review: 0.1, supported: 0.05 });
+      function rankLearning({ profile, candidates, presentations = [], audioAvailable = true, excludeIds = [], prior = null }) {
+        if (!Array.isArray(candidates)) throw new TypeError("Core: candidates must be an array");
+        const ids = /* @__PURE__ */ new Set(), skills = new Map(profile.skills.map((s) => [s.id, s]));
+        const content = new Map((profile.concepts || []).map((c) => [c.id, c.status]));
+        const history = { task: /* @__PURE__ */ new Map(), item: /* @__PURE__ */ new Map(), family: /* @__PURE__ */ new Map() };
+        for (const [index, presentation] of presentations.entries()) {
+          for (const [kind, key] of [
+            ["task", presentation.taskId],
+            ["item", presentation.itemKey],
+            ["family", presentation.measure?.familyKey || presentation.itemKey]
+          ]) {
+            if (!key) continue;
+            if (!history[kind].has(key)) history[kind].set(key, []);
+            history[kind].get(key).push(index);
+          }
+        }
+        const weight = /* @__PURE__ */ new Map();
+        for (const [i, [task, item, family, n]] of (prior?.presented || []).entries()) {
+          const ref = `folded:${i}`;
+          weight.set(ref, n);
+          for (const [kind, key] of [["task", task], ["item", item], ["family", family]]) {
+            if (!key) continue;
+            if (!history[kind].has(key)) history[kind].set(key, []);
+            history[kind].get(key).push(ref);
+          }
+        }
+        const ranked = [];
+        for (const candidate of candidates) {
+          if (!candidate || typeof candidate.id !== "string" || !/^[a-zA-Z0-9_.:-]{1,120}$/.test(candidate.id) || ids.has(candidate.id) || !Array.isArray(candidate.skillIds) || !candidate.skillIds.length || !candidate.skillIds.every((id) => skills.has(id)) || ![1, 2, 3].includes(candidate.difficulty) || typeof candidate.modality !== "string" || !/^[a-z][a-z0-9_-]{0,40}$/.test(candidate.modality) || !RESPONSE_FORMATS.includes(candidate.responseFormat ?? "unknown") || candidate.skillIds.some((id) => skills.get(id).domain !== candidate.modality)) throw new TypeError("Core: invalid learning candidate");
+          ids.add(candidate.id);
+          if (excludeIds.includes(candidate.id) || !audioAvailable && (candidate.audioRequired ?? candidate.modality === "listening")) continue;
+          const responseFormat = candidate.responseFormat ?? "unknown";
+          const states = candidate.skillIds.map((id) => ({ ...skills.get(id).levels[candidate.difficulty].formats[responseFormat], skill: skills.get(id) }));
+          const focus = states.sort((a, b) => b.priority - a.priority)[0];
+          const previous = /* @__PURE__ */ new Set([
+            ...history.task.get(candidate.id) || [],
+            ...history.item.get(candidate.itemKey) || [],
+            ...history.family.get(candidate.familyKey || candidate.itemKey) || []
+          ]);
+          const immediate = [...previous].some((index) => typeof index === "number" && index >= presentations.length - 4);
+          const count = [...previous].reduce((n, index) => n + (weight.get(index) || 1), 0);
+          const readyForHarder = candidate.difficulty === 1 || candidate.skillIds.every((id) => skills.get(id).levels[candidate.difficulty - 1].formats[responseFormat].status === "recent-independent");
+          if (candidate.conceptIds != null && (!Array.isArray(candidate.conceptIds) || candidate.conceptIds.some((id) => typeof id !== "string"))) throw new TypeError("Core: invalid learning candidate");
+          if (candidate.familyKeys != null && (!Array.isArray(candidate.familyKeys) || !candidate.familyKeys.length || candidate.familyKeys.length > 500 || candidate.familyKeys.some((key) => typeof key !== "string"))) throw new TypeError("Core: invalid learning candidate");
+          const lift = Math.max(0, ...(candidate.conceptIds || []).map((id) => CONTENT_LIFT[content.get(id)] || 0));
+          const exhausted = !!candidate.familyKeys && candidate.familyKeys.every((key) => history.family.has(key));
+          const score = focus.priority - (immediate ? 0.45 : 0) - (previous.size ? 0.1 : 0) - (!readyForHarder ? 0.25 * (candidate.difficulty - 1) : 0) - (exhausted ? 0.5 : 0);
+          ranked.push({ candidate, focus, score, lift, count, exhausted });
+        }
+        ranked.sort((a, b) => b.score - a.score || b.lift - a.lift || a.count - b.count || a.candidate.difficulty - b.candidate.difficulty || a.candidate.id.localeCompare(b.candidate.id));
+        return ranked;
+      }
+      function recommend(input) {
+        const ranked = rankLearning(input);
+        if (!ranked.length) return { status: "unavailable", selected: null, reason: "지금 조건에 맞는 연습이 없어요.", alternatives: [] };
+        const best = ranked[0], label = best.focus.skill.label;
+        return {
+          status: "ready",
+          selected: best.candidate,
+          reason: learningReason({ status: best.focus.status, label }),
+          focusSkillId: best.focus.skill.id,
+          state: best.focus.status,
+          responseFormat: best.focus.responseFormat,
+          policy: POLICY.version,
+          evidence: best.focus.evidence,
+          alternatives: ranked.slice(1).map((r) => r.candidate)
+        };
+      }
+      var ACTIVITY_POLICY = "learning-activity-1";
+      var activityToken = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
+      var activityTime = (value) => typeof value === "string" && Number.isFinite(Date.parse(value));
+      var activityList = (value) => Array.isArray(value) && value.every(activityToken) && new Set(value).size === value.length;
+      function recommendActivities({ profile, candidates, settings = {}, at = profile?.asOf, presentations = [], prior = null } = {}) {
+        if (!profile || !Array.isArray(profile.skills) || typeof profile.evidenceComplete !== "boolean" || !activityTime(at) || !Array.isArray(candidates) || candidates.length > 500 || !settings || typeof settings !== "object" || Array.isArray(settings) || Object.keys(settings).some((key) => !["goals", "minutes", "support", "audioAvailable"].includes(key)) || settings.goals != null && !activityList(settings.goals) || settings.minutes != null && (!Number.isFinite(settings.minutes) || settings.minutes <= 0) || settings.support != null && !SUPPORTS.includes(settings.support) || settings.audioAvailable != null && typeof settings.audioAvailable !== "boolean") throw new TypeError("Core: invalid activity recommendation");
+        const usable = profile.evidenceComplete ? profile : { ...profile, concepts: [], skills: profile.skills.map((skill) => ({
+          ...skill,
+          levels: Object.fromEntries([1, 2, 3].map((difficulty) => [difficulty, { formats: Object.fromEntries(RESPONSE_FORMATS.map((responseFormat) => [
+            responseFormat,
+            { difficulty, responseFormat, status: "unseen", priority: 0.65, n: 0, correct: 0, incorrect: 0, assisted: 0, evidence: [] }
+          ])) }]))
+        })) };
+        const goals = new Set(settings.goals || []), ids = /* @__PURE__ */ new Set(), ranked = [], excluded = [];
+        for (const candidate of candidates) {
+          if (!candidate || !activityToken(candidate.id) || ids.has(candidate.id) || !Number.isFinite(candidate.minutes) || candidate.minutes <= 0 || !Array.isArray(candidate.targets) || candidate.targets.length > 500 || candidate.goals != null && !activityList(candidate.goals) || candidate.supports != null && (!Array.isArray(candidate.supports) || !candidate.supports.length || candidate.supports.some((support) => !SUPPORTS.includes(support)) || new Set(candidate.supports).size !== candidate.supports.length) || candidate.audioRequired != null && typeof candidate.audioRequired !== "boolean" || candidate.available != null && typeof candidate.available !== "boolean" || candidate.reviewAt != null && !activityTime(candidate.reviewAt) || candidate.practiceNeed != null && (!["retry", "assisted"].includes(candidate.practiceNeed.kind) || Object.keys(candidate.practiceNeed).some((key) => !["kind", "at", "evidenceRefs"].includes(key)) || !activityTime(candidate.practiceNeed.at) || Date.parse(candidate.practiceNeed.at) > Date.parse(at) || !activityList(candidate.practiceNeed.evidenceRefs) || !candidate.practiceNeed.evidenceRefs.length)) throw new TypeError("Core: invalid learning activity");
+          ids.add(candidate.id);
+          const targets = rankLearning({
+            profile: usable,
+            candidates: candidate.targets,
+            presentations,
+            prior,
+            audioAvailable: settings.audioAvailable !== false
+          });
+          const blocked = [];
+          if (candidate.available === false) blocked.push("activity.unavailable");
+          if (settings.minutes != null && candidate.minutes > settings.minutes) blocked.push("time.limit");
+          if (settings.audioAvailable === false && (candidate.audioRequired || candidate.targets.length && !targets.length)) blocked.push("audio.unavailable");
+          if (settings.support && settings.support !== "choose" && candidate.supports && !candidate.supports.includes(settings.support)) blocked.push("support.mismatch");
+          if (blocked.length) {
+            excluded.push({ id: candidate.id, reasons: blocked });
+            continue;
+          }
+          const fresh = targets.filter((row) => !row.exhausted), spent = targets.length > 0 && !fresh.length;
+          const target = fresh[0] || targets[0] || null, state = target?.focus.status || "unseen";
+          const due = candidate.reviewAt != null && Date.parse(candidate.reviewAt) <= Date.parse(at);
+          const hostNeed = candidate.practiceNeed && Date.parse(at) - Date.parse(candidate.practiceNeed.at) <= POLICY.recentDays * DAY ? candidate.practiceNeed : null;
+          const urgent = due || hostNeed || !spent && ["practice", "supported", "review"].includes(state);
+          const tier = urgent ? 0 : spent || state === "recent-independent" ? 2 : 1;
+          const matchedGoals = (candidate.goals || []).filter((goal) => goals.has(goal));
+          const reasons = [
+            ...due ? ["review.due"] : [],
+            ...hostNeed ? [`activity.${hostNeed.kind}`] : [],
+            ...spent ? ["practice.spent"] : target && state !== "unseen" ? [`practice.${state}`] : [],
+            ...matchedGoals.length ? ["goal.declared"] : [],
+            ...!profile.evidenceComplete ? ["history.incomplete"] : [],
+            ...!due && !hostNeed && !spent && state === "unseen" && !matchedGoals.length ? ["practice.unseen"] : []
+          ];
+          ranked.push({ candidate, target, state, tier, matchedGoals, due, hostNeed, reasons, spent });
+        }
+        ranked.sort((a, b) => a.tier - b.tier || b.matchedGoals.length - a.matchedGoals.length || Number(b.due) - Number(a.due) || (b.target?.score ?? 0.65) - (a.target?.score ?? 0.65) || (b.target?.lift ?? 0) - (a.target?.lift ?? 0) || (a.target?.count ?? 0) - (b.target?.count ?? 0) || a.candidate.minutes - b.candidate.minutes || a.candidate.id.localeCompare(b.candidate.id));
+        const best = ranked[0];
+        const common = {
+          policy: ACTIVITY_POLICY,
+          asOf: at,
+          evidenceComplete: profile.evidenceComplete,
+          excluded,
+          learningEffectClaim: false,
+          abilityClaim: false,
+          grade: null
+        };
+        if (!best) return {
+          ...common,
+          status: "unavailable",
+          selected: null,
+          alternatives: [],
+          reasons: ["activity.none"],
+          reason: activityReason({ reasons: ["activity.none"] }),
+          evidence: [],
+          focusSkillId: null,
+          state: null,
+          matchedGoals: []
+        };
+        const detail = (row) => ({
+          id: row.candidate.id,
+          reasons: [...row.reasons],
+          state: row.state,
+          focusSkillId: row.target?.focus.skill.id || null,
+          matchedGoals: [...row.matchedGoals],
+          evidence: [...row.target?.focus.reasonEvidence || row.target?.focus.evidence || []],
+          ...row.due ? { reviewAt: row.candidate.reviewAt, reviewSource: "host-schedule" } : {},
+          ...row.hostNeed ? { hostEvidence: { kind: row.hostNeed.kind, at: row.hostNeed.at, evidenceRefs: [...row.hostNeed.evidenceRefs], source: "host-practice" } } : {}
+        });
+        return {
+          ...common,
+          status: "ready",
+          selected: best.candidate,
+          alternatives: ranked.slice(1).map((row) => row.candidate),
+          ...detail(best),
+          reason: activityReason({ reasons: best.reasons, state: best.state, label: best.target?.focus.skill.label }),
+          basis: best.due ? "review-schedule" : best.hostNeed ? "host-practice" : best.target && best.state !== "unseen" ? "practice" : best.matchedGoals.length ? "declared" : "cold-start",
+          assessments: ranked.map(detail)
+        };
+      }
+      var CONTENT = Object.freeze(["word", "grammar_point"]);
+      function summarizeConcepts({ summary, map, complete = true, prior = null }) {
+        const now = Date.parse(summary.asOf), rows = /* @__PURE__ */ new Map();
+        for (const key of Object.keys(prior?.content || {})) {
+          const id = key.slice(0, key.lastIndexOf("|")), node = map.getNode(id);
+          if (node && CONTENT.includes(node.kind) && !rows.has(id)) rows.set(id, { node, list: [] });
+        }
+        for (const a of summary.attempts) {
+          if (!a.measure) continue;
+          for (const id of a.conceptIds) {
+            if (id === a.measure.skillId) continue;
+            const node = map.getNode(id);
+            if (!node || !CONTENT.includes(node.kind)) continue;
+            if (!rows.has(id)) rows.set(id, { node, list: [] });
+            rows.get(id).list.push(a);
+          }
+        }
+        return [...rows.values()].map(({ node, list }) => {
+          const formats = {};
+          for (const responseFormat of RESPONSE_FORMATS) {
+            const own = list.filter((a) => (a.measure.responseFormat || "unknown") === responseFormat);
+            const cell = Ledger.contentOf(prior, `${node.id}|${responseFormat}`);
+            if (own.length || cell) formats[responseFormat] = formatEvidence(own, { now, complete, difficulty: null, responseFormat, base: cell ? Ledger.rows(cell) : null });
+          }
+          const focus = Object.values(formats).sort((a, b) => b.priority - a.priority)[0];
+          return { id: node.id, kind: node.kind, label: node.label_ko, status: focus.status, priority: focus.priority, formats };
+        }).sort((a, b) => b.priority - a.priority || a.id.localeCompare(b.id));
+      }
+      module.exports = { POLICY, ACTIVITY_POLICY, RESPONSE_FORMATS, CONTENT, summarizeLearning, summarizeConcepts, recommend, recommendActivities, formatEvidence };
+    }
+  });
+
+  // atlas/learning-pages.js
+  var require_learning_pages = __commonJS({
+    "atlas/learning-pages.js"(exports, module) {
+      "use strict";
+      var PAGE_ITEMS = 128;
+      var THRESHOLD = 1024;
+      var failure = () => Object.assign(new Error("Atlas: unreadable paged history"), { code: "STORAGE_ERROR" });
+      function encodePage(rows) {
+        const plain = JSON.stringify(rows), strings = [], ids = /* @__PURE__ */ new Map();
+        const intern = (value) => {
+          if (!ids.has(value)) {
+            ids.set(value, strings.length);
+            strings.push(value);
+          }
+          return ids.get(value);
+        };
+        const pack = (value) => typeof value === "string" ? [2, intern(value)] : Array.isArray(value) ? [0, ...value.map(pack)] : value && typeof value === "object" ? [1, ...Object.entries(value).flatMap(([name, entry]) => [intern(name), pack(entry)])] : value;
+        const entries = JSON.parse(plain).map(pack), packed = JSON.stringify({ codec: 1, strings, entries });
+        return packed.length < plain.length ? packed : plain;
+      }
+      function decodePage(text) {
+        const value = JSON.parse(text);
+        if (Array.isArray(value)) return value;
+        if (!value || value.codec !== 1 || Object.keys(value).some((k) => !["codec", "strings", "entries"].includes(k)) || !Array.isArray(value.strings) || !value.strings.every((s) => typeof s === "string") || !Array.isArray(value.entries)) throw failure();
+        const string = (index) => {
+          if (!Number.isInteger(index) || index < 0 || index >= value.strings.length) throw failure();
+          return value.strings[index];
+        };
+        function unpack(entry, depth = 0) {
+          if (depth > 64) throw failure();
+          if (entry === null || typeof entry === "boolean" || typeof entry === "number") return entry;
+          if (!Array.isArray(entry)) throw failure();
+          if (entry[0] === 2 && entry.length === 2) return string(entry[1]);
+          if (entry[0] === 0) return entry.slice(1).map((child) => unpack(child, depth + 1));
+          if (entry[0] === 1 && entry.length % 2 === 1) {
+            const out = {};
+            for (let at = 1; at < entry.length; at += 2) {
+              const name = string(entry[at]);
+              if (Object.hasOwn(out, name)) throw failure();
+              Object.defineProperty(out, name, { value: unpack(entry[at + 1], depth + 1), enumerable: true, configurable: true, writable: true });
+            }
+            return out;
+          }
+          throw failure();
+        }
+        return value.entries.map((entry) => unpack(entry));
+      }
+      function createPages(storage, key, arrays) {
+        const prefix = `${key}.page.`, cache = /* @__PURE__ */ new Map();
+        const writers = `${key}.writer.`;
+        const keys = () => {
+          if (typeof storage.key !== "function" || !Number.isSafeInteger(storage.length) || storage.length < 0) return null;
+          return Array.from({ length: storage.length }, (_, index) => storage.key(index)).filter((name) => typeof name === "string").sort();
+        };
+        let root = null, decodedRaw = null;
+        const validKey = (name) => typeof name === "string" && name.startsWith(prefix) && /^[a-zA-Z0-9_.:-]+$/.test(name.slice(prefix.length));
+        function protection(snapshot, self) {
+          const held = /* @__PURE__ */ new Set(), staged = [];
+          for (const name of snapshot.filter((name2) => name2.startsWith(writers) && name2 !== self)) {
+            const fence = JSON.parse(storage.getItem(name));
+            if (!fence || fence.version !== 1 || fence.prefix !== `${prefix}${name.slice(writers.length)}-` || !Array.isArray(fence.pages) || !fence.pages.every(validKey)) return null;
+            fence.pages.forEach((name2) => held.add(name2));
+            staged.push(fence.prefix);
+          }
+          return (name) => held.has(name) || staged.some((prefix2) => name.startsWith(prefix2));
+        }
+        const manifest = (value) => value && value.paged === 1 && value.version === 1 && value.data && typeof value.data === "object" && !Array.isArray(value.data) && value.arrays && typeof value.arrays === "object" && !Array.isArray(value.arrays);
+        function decodeOnce(raw) {
+          const value = JSON.parse(raw);
+          if (value?.paged !== 1) {
+            root = null;
+            decodedRaw = raw;
+            return value;
+          }
+          if (!manifest(value) || Object.keys(value).some((k) => !["paged", "version", "data", "arrays"].includes(k)) || Object.keys(value.arrays).some((k) => !arrays.includes(k))) throw failure();
+          const data = { ...value.data }, seen = /* @__PURE__ */ new Set();
+          for (const [name, pages] of Object.entries(value.arrays)) {
+            if (Object.hasOwn(data, name) || !Array.isArray(pages)) throw failure();
+            data[name] = [];
+            for (const page of pages) {
+              if (!page || !validKey(page.key) || seen.has(page.key) || !Number.isInteger(page.count) || page.count < 1 || page.count > PAGE_ITEMS) throw failure();
+              seen.add(page.key);
+              const text = storage.getItem(page.key);
+              if (typeof text !== "string") throw failure();
+              const rows = decodePage(text);
+              if (!Array.isArray(rows) || rows.length !== page.count) throw failure();
+              cache.set(page.key, text);
+              data[name].push(...rows);
+            }
+          }
+          root = value;
+          decodedRaw = raw;
+          return data;
+        }
+        function decode(raw) {
+          for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+              return decodeOnce(raw);
+            } catch (error) {
+              const current = storage.getItem(key);
+              if (current === raw || current == null || attempt === 2) throw error;
+              raw = current;
+            }
+          }
+        }
+        const remove = (names) => {
+          if (typeof storage.removeItem === "function") for (const name of names) {
+            try {
+              storage.removeItem(name);
+            } catch {
+            }
+          }
+        };
+        function write(data, expectedRaw) {
+          const next = { paged: 1, version: 1, data: { ...data }, arrays: {} }, created = [];
+          const generation = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`, staging = `${prefix}${generation}-`;
+          const writer = typeof storage.key === "function" ? `${writers}${generation}` : null;
+          let publishedRaw = null;
+          try {
+            if (writer) {
+              try {
+                storage.setItem(writer, JSON.stringify({ version: 1, prefix: staging, pages: Object.values(root?.arrays || {}).flat().map((page) => page.key) }));
+              } catch (error) {
+                if (error?.name !== "QuotaExceededError") throw error;
+                storage.setItem(writer, "1");
+              }
+            }
+            for (const name of arrays) {
+              if (!Object.hasOwn(data, name)) continue;
+              if (!Array.isArray(data[name])) throw failure();
+              delete next.data[name];
+              next.arrays[name] = [];
+              for (let at = 0; at < data[name].length; at += PAGE_ITEMS) {
+                const rows = data[name].slice(at, at + PAGE_ITEMS), text = encodePage(rows), prior = root?.arrays?.[name]?.[at / PAGE_ITEMS];
+                if (prior && (cache.get(prior.key) ?? storage.getItem(prior.key)) === text) next.arrays[name].push(prior);
+                else {
+                  const pageKey = `${staging}${at}-${name}`;
+                  created.push(pageKey);
+                  storage.setItem(pageKey, text);
+                  cache.set(pageKey, text);
+                  next.arrays[name].push({ key: pageKey, count: rows.length });
+                }
+              }
+            }
+            if (storage.getItem(key) !== expectedRaw) throw Object.assign(failure(), { message: "Atlas: history changed during persistence" });
+            const raw = JSON.stringify(next);
+            publishedRaw = raw;
+            storage.setItem(key, raw);
+            const retained = new Set(Object.values(next.arrays).flat().map((page) => page.key));
+            root = next;
+            try {
+              const snapshot = keys(), checked = keys();
+              if (snapshot && checked && snapshot.length === checked.length && snapshot.every((name, i) => name === checked[i]) && storage.getItem(key) === raw) {
+                const protectedByWriter = protection(checked, writer);
+                if (protectedByWriter) {
+                  const obsolete = snapshot.filter((name) => validKey(name) && !retained.has(name) && !protectedByWriter(name));
+                  remove(obsolete);
+                  for (const name of obsolete) cache.delete(name);
+                }
+              }
+            } catch {
+            }
+            return raw;
+          } catch (error) {
+            if (publishedRaw) {
+              const current = storage.getItem(key);
+              if (current === publishedRaw) {
+                root = next;
+                return publishedRaw;
+              }
+              if (current !== expectedRaw) throw error;
+            }
+            remove(created);
+            for (const name of created) cache.delete(name);
+            throw error;
+          } finally {
+            if (writer) remove([writer]);
+          }
+        }
+        return { decode, write, active: () => !!root, decodedRaw: () => decodedRaw };
+      }
+      module.exports = { createPages, encodePage, decodePage, PAGE_ITEMS, THRESHOLD };
+    }
+  });
+
+  // atlas/learning-sync.js
+  var require_learning_sync = __commonJS({
+    "atlas/learning-sync.js"(exports, module) {
+      "use strict";
+      var SYNC_KEY = "synk.atlas.learning-sync.v1";
+      var { createPages, THRESHOLD } = require_learning_pages();
+      var id = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
+      var clone = (value) => JSON.parse(JSON.stringify(value));
+      var canonical = (value) => JSON.stringify(value, function(_key, entry) {
+        return entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry;
+      });
+      var sameEvent = (a, b) => canonical(a) === canonical(b);
+      var failure = (code, message, extra = {}) => Object.assign(new Error(message), { code, ...extra });
+      var errorCode = (error) => error?.code || error?.error?.code || error?.body?.error?.code || "NETWORK_ERROR";
+      var FATAL = /* @__PURE__ */ new Set([
+        "REVISION_CONFLICT",
+        "LEARNING_DISABLED",
+        "FEATURE_DISABLED",
+        "HISTORY_CAPACITY",
+        "HISTORY_FOLDED",
+        "EVENT_CONFLICT",
+        "INVALID_EVENTS",
+        "INVALID_RESPONSE",
+        "STORAGE_ERROR",
+        "UNAUTHORIZED",
+        "AUTH_REQUIRED",
+        "AUTH_SESSION_MISSING",
+        "SESSION_REVOKED",
+        "MEMORY_SESSION_ENDED",
+        "EVENT_RUN_CONFLICT",
+        "EVENT_BEFORE_RUN",
+        "WRONG_RUN_CONTENT",
+        "FORBIDDEN"
+      ]);
+      function createLearningSync({
+        adapter,
+        accountKey,
+        revision,
+        storage,
+        transport,
+        onStatus = () => {
+        },
+        batchSize = 100,
+        maxAttempts = 3,
+        maxPages = 200,
+        timeoutMs = 15e3,
+        backoffMs = [500, 1500, 5e3],
+        sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+        auto = true
+      } = {}) {
+        const port = adapter?.syncPort;
+        const canPersist = () => typeof port?.canPersist !== "function" || port.canPersist();
+        if (!id(accountKey) || !Number.isSafeInteger(revision) || revision < 1 || !port || port.scope !== "account" || port.accountKey !== accountKey || !storage?.getItem || !storage?.setItem || typeof transport?.get !== "function" || typeof transport?.post !== "function") throw new TypeError("Atlas sync: an authenticated account adapter, isolated durable store and transport are required");
+        if (![batchSize, maxAttempts, maxPages, timeoutMs].every((n) => Number.isInteger(n) && n > 0) || batchSize > 500 || maxAttempts > 10 || !Array.isArray(backoffMs) || !backoffMs.length || backoffMs.some((ms) => !Number.isFinite(ms) || ms < 0)) throw new TypeError("Atlas sync: invalid retry bounds");
+        const key = `${SYNC_KEY}.${accountKey}`;
+        const pages = createPages(storage, key, ["acknowledged", "pending", "missing"]);
+        let lastStoredRaw = null, exhaustedRecovery = null;
+        let state = { version: 2, accountKey, revision, cursor: 0, complete: false, acknowledged: [], pending: [], missing: [] };
+        let phase = "idle", code = null, message = null, stopped = false, started = false, generation = 0, running = null, timer = null, flushRequested = false;
+        const controllers = /* @__PURE__ */ new Set();
+        const whole = () => state.complete && !state.missing.length;
+        const status = () => ({
+          phase,
+          code,
+          message,
+          revision,
+          cursor: state.cursor,
+          queued: state.pending.length,
+          complete: whole() && phase !== "blocked" && phase !== "stopped",
+          accountKey,
+          durable: !["STORAGE_ERROR", "HISTORY_CAPACITY"].includes(code)
+        });
+        const publish = () => {
+          try {
+            onStatus(status());
+          } catch {
+          }
+        };
+        const block = (error) => {
+          generation++;
+          clearTimeout(timer);
+          timer = null;
+          for (const controller of controllers) controller.abort();
+          phase = "blocked";
+          code = errorCode(error);
+          message = error?.message || code;
+          port.markComplete(false);
+          publish();
+        };
+        const readState = (raw) => {
+          const stored = pages.decode(raw), v1 = stored?.version === 1;
+          if (!stored || ![1, 2].includes(stored.version) || stored.accountKey !== accountKey || !Number.isSafeInteger(stored.cursor) || stored.cursor < 0 || typeof stored.complete !== "boolean" || !Array.isArray(stored.acknowledged) || !stored.acknowledged.every(id) || !Array.isArray(stored.pending) || !stored.pending.every(v1 ? (e) => id(e?.id) : id) || !(stored.missing === void 0 || Array.isArray(stored.missing) && stored.missing.every(id)) || !(stored.recoveryCursor === void 0 || Number.isSafeInteger(stored.recoveryCursor) && stored.recoveryCursor >= 0 && stored.recoveryCursor <= stored.cursor)) throw failure("STORAGE_ERROR", "Atlas sync: unreadable outbox; preserved without replacement");
+          if (stored.revision !== revision) throw failure("REVISION_CONFLICT", "Atlas sync: a new consent revision requires a fresh account store");
+          return { ...stored, version: 2, pending: v1 ? stored.pending.map((e) => e.id) : stored.pending, missing: stored.missing || [] };
+        };
+        const save = () => {
+          if (!canPersist()) throw failure("STORAGE_BUSY", "Atlas sync: another browser context owns this history");
+          try {
+            const current = storage.getItem(key);
+            if (current !== lastStoredRaw) {
+              if (current == null) throw failure("STORAGE_ERROR", "Atlas sync: outbox was removed by another context");
+              const latest = readState(current), acknowledged = /* @__PURE__ */ new Set([...latest.acknowledged, ...state.acknowledged]);
+              state = {
+                ...state,
+                cursor: Math.max(latest.cursor, state.cursor),
+                complete: latest.cursor > state.cursor ? latest.complete : state.complete,
+                acknowledged: [...acknowledged],
+                pending: [.../* @__PURE__ */ new Set([...latest.pending, ...state.pending])].filter((eventId) => !acknowledged.has(eventId)),
+                missing: [.../* @__PURE__ */ new Set([...latest.missing, ...state.missing])],
+                recoveryCursor: Math.min(latest.recoveryCursor || 0, state.recoveryCursor || 0)
+              };
+              lastStoredRaw = pages.decodedRaw();
+            }
+            if (pages.active() || state.acknowledged.length + state.pending.length + state.missing.length > THRESHOLD) lastStoredRaw = pages.write(state, lastStoredRaw);
+            else {
+              lastStoredRaw = JSON.stringify(state);
+              storage.setItem(key, lastStoredRaw);
+            }
+          } catch {
+            throw failure("STORAGE_ERROR", "Atlas sync: the durable outbox could not be saved");
+          }
+        };
+        try {
+          const raw = storage.getItem(key);
+          if (raw != null) {
+            state = readState(raw);
+            lastStoredRaw = pages.decodedRaw();
+          }
+          port.markComplete(whole());
+        } catch (error) {
+          block(error?.code ? error : failure("STORAGE_ERROR", "Atlas sync: unreadable outbox; preserved without replacement"));
+        }
+        const collect = () => {
+          if (typeof port.partial === "function" && port.partial()) throw failure("HISTORY_FOLDED", "Atlas sync: this log summarised entries no server received; it cannot be sent");
+          const local = port.events(), localIds = new Set(local.map((event) => event.id));
+          const folded = new Set(typeof port.dropped === "function" ? port.dropped() : []);
+          state.pending = state.pending.filter((eventId) => localIds.has(eventId) || !folded.has(eventId));
+          if (state.pending.some((eventId) => !localIds.has(eventId))) throw failure("STORAGE_ERROR", "Atlas sync: queued history does not match its account log");
+          const lost = state.acknowledged.filter((eventId) => !localIds.has(eventId) && !folded.has(eventId));
+          if (lost.length) {
+            const missing = new Set(state.missing);
+            if (lost.some((eventId) => !missing.has(eventId))) state.recoveryCursor = 0;
+            state.missing = [.../* @__PURE__ */ new Set([...state.missing, ...lost])];
+            port.markComplete(false);
+          }
+          state.acknowledged = state.acknowledged.filter((eventId) => localIds.has(eventId));
+          if (state.missing.some((eventId) => localIds.has(eventId))) exhaustedRecovery = null;
+          state.missing = state.missing.filter((eventId) => !localIds.has(eventId));
+          const queued = new Set(state.pending), acknowledged = new Set(state.acknowledged);
+          for (const event of local) if (!queued.has(event.id) && !acknowledged.has(event.id)) {
+            queued.add(event.id);
+            state.pending.push(event.id);
+          }
+          save();
+          if (folded.size && typeof port.forget === "function") port.forget([...folded]);
+        };
+        const schedule = () => {
+          if (!auto || !started || stopped || phase === "blocked" || phase === "offline" && (code !== "INCOMPLETE_HISTORY" || !state.pending.length)) return;
+          flushRequested = true;
+          if (timer) return;
+          timer = setTimeout(() => {
+            timer = null;
+            void run();
+          }, 0);
+        };
+        const unsubscribe = port.subscribe((change) => {
+          if (stopped || phase === "blocked" || change.kind === "import") return;
+          if (change.kind === "storage-wait") {
+            generation++;
+            clearTimeout(timer);
+            timer = null;
+            for (const controller of controllers) controller.abort();
+            phase = "offline";
+            code = "STORAGE_BUSY";
+            message = "Atlas sync: waiting for the other browser context";
+            publish();
+            return;
+          }
+          if (change.kind === "storage-error") {
+            block(failure(change.code || "STORAGE_ERROR", "Atlas sync: local learning could not be saved"));
+            return;
+          }
+          if (!canPersist()) return;
+          if (code === "STORAGE_BUSY") {
+            phase = "idle";
+            code = null;
+            message = null;
+          }
+          try {
+            collect();
+            publish();
+            schedule();
+          } catch (error) {
+            block(error);
+          }
+          if (change.kind === "storage-ready" && started) void Promise.resolve(running).then(() => {
+            if (!stopped && canPersist()) return run(!flushRequested);
+          });
+        });
+        if (phase !== "blocked" && canPersist()) {
+          try {
+            collect();
+          } catch (error) {
+            block(error);
+          }
+        }
+        const active = (token) => !stopped && token === generation && canPersist();
+        const request = async (method, body, token) => {
+          let last;
+          for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            if (!active(token)) throw failure("STOPPED", "Atlas sync: stopped");
+            const controller = new AbortController();
+            controllers.add(controller);
+            let deadline;
+            try {
+              const response = await Promise.race([
+                Promise.resolve().then(() => transport[method]({ ...body, signal: controller.signal })),
+                new Promise((_, reject) => {
+                  deadline = setTimeout(() => {
+                    reject(failure("NETWORK_ERROR", "Atlas sync: request timed out"));
+                    controller.abort();
+                  }, timeoutMs);
+                  controller.signal.addEventListener("abort", () => reject(failure("STOPPED", "Atlas sync: request cancelled")), { once: true });
+                })
+              ]);
+              if (!active(token)) throw failure("STOPPED", "Atlas sync: stale request");
+              if (response?.ok === false) throw failure(response.error?.code || "INVALID_RESPONSE", response.error?.message || "Atlas sync: rejected", { revision: response.revision });
+              if (!response || response.revision !== revision) throw failure("REVISION_CONFLICT", "Atlas sync: server revision changed", { revision: response?.revision });
+              return response;
+            } catch (error) {
+              last = error;
+              if (!active(token) || FATAL.has(errorCode(error))) throw error;
+            } finally {
+              clearTimeout(deadline);
+              controllers.delete(controller);
+            }
+            if (attempt + 1 < maxAttempts) await sleep(backoffMs[Math.min(attempt, backoffMs.length - 1)]);
+          }
+          throw last;
+        };
+        const pullPages = async (token) => {
+          for (let page = 0; page < maxPages; page++) {
+            const before = state.cursor, response = await request("get", { after: before, revision }, token);
+            if (!Array.isArray(response.events) || !Number.isSafeInteger(response.cursor) || response.cursor < before || typeof response.hasMore !== "boolean" || response.hasMore && response.cursor <= before || response.events.length && response.cursor <= before) throw failure("INVALID_RESPONSE", "Atlas sync: invalid or stalled server cursor");
+            if (!active(token)) return;
+            let result;
+            try {
+              result = port.importEvents(response.events);
+            } catch (error) {
+              throw failure(error?.code || "INVALID_EVENTS", error.message);
+            }
+            const skipped = new Set(result?.skipped || []), remote = new Set(state.acknowledged);
+            for (const event of response.events) if (!skipped.has(event.id)) remote.add(event.id);
+            state.acknowledged = [...remote];
+            state.pending = state.pending.filter((eventId) => !remote.has(eventId));
+            state.cursor = response.cursor;
+            state.complete = !response.hasMore;
+            save();
+            port.markComplete(whole());
+            publish();
+            if (!response.hasMore) {
+              if (typeof port.settle === "function") port.settle(state.acknowledged);
+              return true;
+            }
+          }
+          return false;
+        };
+        const recover = async (token) => {
+          const signature = state.missing.slice().sort().join("\0");
+          if (signature && exhaustedRecovery === signature) throw failure("INCOMPLETE_HISTORY", "Atlas sync: previously acknowledged history is still missing");
+          let after = state.recoveryCursor || 0;
+          for (let page = 0; page < maxPages && state.missing.length; page++) {
+            const response = await request("get", { after, revision }, token);
+            if (!Array.isArray(response.events) || !Number.isSafeInteger(response.cursor) || response.cursor < after || typeof response.hasMore !== "boolean" || response.hasMore && response.cursor <= after) throw failure("INVALID_RESPONSE", "Atlas sync: invalid or stalled server cursor");
+            if (!active(token)) return;
+            const wanted = new Set(state.missing), found = response.events.filter((event) => wanted.has(event.id));
+            if (found.length) {
+              let result;
+              try {
+                result = port.importEvents(found);
+              } catch (error) {
+                throw failure(error?.code || "INVALID_EVENTS", error.message);
+              }
+              const skipped = new Set(result?.skipped || []), back = new Set(found.map((event) => event.id));
+              state.acknowledged = [.../* @__PURE__ */ new Set([...state.acknowledged, ...[...back].filter((eventId) => !skipped.has(eventId))])];
+              if (state.missing.some((eventId) => back.has(eventId) && !skipped.has(eventId))) exhaustedRecovery = null;
+              state.missing = state.missing.filter((eventId) => !back.has(eventId) || skipped.has(eventId));
+            }
+            after = response.cursor;
+            state.recoveryCursor = Math.min(after, state.cursor);
+            const exhausted = (!response.hasMore || after >= state.cursor) && state.missing.length > 0;
+            if (exhausted) {
+              state.recoveryCursor = 0;
+              exhaustedRecovery = state.missing.slice().sort().join("\0");
+            }
+            if (!state.missing.length) state.recoveryCursor = 0;
+            save();
+            port.markComplete(whole());
+            publish();
+            if (exhausted) throw failure("INCOMPLETE_HISTORY", "Atlas sync: previously acknowledged history is still missing");
+          }
+          return !state.missing.length;
+        };
+        const flushQueue = async (token) => {
+          let emptyAcks = 0;
+          for (let batch = 0; ; batch++) {
+            if (!active(token)) return;
+            collect();
+            if (!state.pending.length) return;
+            if (batch >= maxPages) throw failure("NETWORK_ERROR", "Atlas sync: batch limit reached; remaining events stay queued");
+            const local = new Map(port.events().map((event) => [event.id, event]));
+            const events = state.pending.slice(0, batchSize).map((eventId) => clone(local.get(eventId))), sent = new Set(events.map((event) => event.id));
+            const response = await request("post", { revision, events }, token);
+            if (!Array.isArray(response.accepted) || new Set(response.accepted).size !== response.accepted.length || response.accepted.some((eventId) => !sent.has(eventId))) throw failure("INVALID_RESPONSE", "Atlas sync: acknowledgement contains an unsent event");
+            if (!active(token)) return;
+            if (!response.accepted.length) {
+              if (++emptyAcks >= maxAttempts) throw failure("NETWORK_ERROR", "Atlas sync: no acknowledged progress");
+              await sleep(backoffMs[Math.min(emptyAcks - 1, backoffMs.length - 1)]);
+              continue;
+            }
+            emptyAcks = 0;
+            const accepted = new Set(response.accepted), acknowledged = new Set(state.acknowledged);
+            for (const eventId of accepted) acknowledged.add(eventId);
+            state.acknowledged = [...acknowledged];
+            state.pending = state.pending.filter((eventId) => !accepted.has(eventId));
+            save();
+            publish();
+          }
+        };
+        function run(pullOnly = false) {
+          if (stopped || phase === "blocked") return Promise.resolve(status());
+          if (!canPersist()) {
+            flushRequested ||= !pullOnly;
+            phase = "offline";
+            code = "STORAGE_BUSY";
+            message = "Atlas sync: waiting for the other browser context";
+            publish();
+            return Promise.resolve(status());
+          }
+          if (running) {
+            if (!pullOnly) flushRequested = true;
+            return running;
+          }
+          flushRequested = !pullOnly;
+          const token = generation;
+          let continuation = false;
+          phase = "syncing";
+          code = null;
+          message = null;
+          publish();
+          const incomplete = () => {
+            continuation = auto && started;
+            if (!continuation) {
+              phase = "offline";
+              code = "INCOMPLETE_HISTORY";
+              message = "Atlas sync: bounded history scan needs another pull";
+              publish();
+            }
+            return status();
+          };
+          running = (async () => {
+            try {
+              const pulled = await pullPages(token);
+              if (active(token) && !pulled) return incomplete();
+              if (active(token) && flushRequested) await flushQueue(token);
+              if (active(token) && state.missing.length && !await recover(token)) return incomplete();
+              while (active(token) && flushRequested && state.pending.length) await flushQueue(token);
+              if (active(token)) {
+                phase = "synced";
+                code = null;
+                message = null;
+                publish();
+              }
+            } catch (error) {
+              if (active(token)) {
+                if (FATAL.has(errorCode(error))) block(error);
+                else {
+                  phase = "offline";
+                  code = errorCode(error);
+                  message = error?.message || code;
+                  publish();
+                }
+              }
+            } finally {
+              running = null;
+              if (continuation && active(token) && auto && started && !timer) {
+                timer = setTimeout(() => {
+                  timer = null;
+                  void run(!flushRequested);
+                }, 0);
+              } else if (active(token) && state.pending.length) schedule();
+            }
+            return status();
+          })();
+          return running;
+        }
+        return Object.freeze({
+          start() {
+            started = true;
+            return run();
+          },
+          pull: () => run(true),
+          flush: () => run(),
+          retry: () => {
+            exhaustedRecovery = null;
+            return run();
+          },
+          status,
+          invalidate(code2 = "STORAGE_ERROR") {
+            if (!stopped) block(failure(code2 === "HISTORY_CAPACITY" ? code2 : "STORAGE_ERROR", "Atlas sync: local learning could not be saved"));
+            return status();
+          },
+          stop() {
+            if (!stopped) {
+              stopped = true;
+              generation++;
+              clearTimeout(timer);
+              timer = null;
+              unsubscribe();
+              for (const controller of controllers) controller.abort();
+              phase = "stopped";
+              publish();
+            }
+            return status();
+          }
+        });
+      }
+      module.exports = { createLearningSync, sameEvent, SYNC_KEY };
+    }
+  });
+
+  // atlas/memory-sync.js
+  var require_memory_sync = __commonJS({
+    "atlas/memory-sync.js"(exports, module) {
+      "use strict";
+      var ID = /^[a-zA-Z0-9_.:-]{1,120}$/;
+      var BATCH = 100;
+      var ROUNDS = 50;
+      var MAX_BYTES = 4096;
+      var AHEAD_MS = 864e5;
+      var KINDS = Object.freeze(["presentation", "flow", "declined"]);
+      var object = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+      var instant = (value) => typeof value === "string" && Number.isFinite(Date.parse(value));
+      var failure = (code, message) => Object.assign(new Error(message), { code });
+      var errorCode = (error) => error?.code || error?.error?.code || error?.body?.error?.code || "NETWORK_ERROR";
+      var FATAL = /* @__PURE__ */ new Set([
+        "REVISION_CONFLICT",
+        "LEARNING_DISABLED",
+        "FEATURE_DISABLED",
+        "MEMORY_UNAVAILABLE",
+        "MEMORY_CAPACITY",
+        "INVALID_MEMORY",
+        "INVALID_RESPONSE",
+        "UNAUTHORIZED",
+        "AUTH_REQUIRED",
+        "AUTH_SESSION_MISSING",
+        "SESSION_REVOKED",
+        "MEMORY_SESSION_ENDED",
+        "PRODUCT_FORBIDDEN",
+        "ACCOUNT_UNAVAILABLE"
+      ]);
+      var keyOf = (entry) => `${entry.kind}\0${entry.key}`;
+      var canonical = (value) => JSON.stringify(value, (_key, part) => object(part) ? Object.fromEntries(Object.keys(part).sort().map((key) => [key, part[key]])) : part);
+      var sameEntry = (a, b) => canonical(a) === canonical(b);
+      var sameValue = (a, b) => canonical(a.value ?? null) === canonical(b.value ?? null);
+      function entriesOf(state) {
+        const out = [];
+        if (object(state?.presentation)) out.push({ kind: "presentation", key: "chosen", value: state.presentation.value ?? null, at: state.presentation.at });
+        for (const [key, memory] of Object.entries(object(state?.flow) ? state.flow : {})) out.push({ kind: "flow", key, value: memory, at: memory?.at });
+        for (const [key, at] of Object.entries(object(state?.declined) ? state.declined : {})) out.push({ kind: "declined", key, value: null, at });
+        return out;
+      }
+      function stateOf(entries) {
+        const state = { presentation: null, flow: {}, declined: {} };
+        for (const entry of entries) {
+          if (entry.kind === "presentation") state.presentation = { value: entry.value, at: entry.at };
+          else if (entry.kind === "flow") state.flow[entry.key] = entry.value;
+          else state.declined[entry.key] = entry.at;
+        }
+        return state;
+      }
+      function sendable(entry) {
+        if (!KINDS.includes(entry.kind) || !ID.test(entry.key || "") || !instant(entry.at)) return false;
+        if (entry.kind === "presentation") return entry.key === "chosen" && (entry.value === null || object(entry.value));
+        if (entry.kind === "declined") return entry.value === null;
+        return object(entry.value) && entry.value.content === entry.key && Date.parse(entry.value.at) === Date.parse(entry.at) && JSON.stringify(entry.value).length <= MAX_BYTES;
+      }
+      var received = (entry) => object(entry) && KINDS.includes(entry.kind) && ID.test(entry.key || "") && instant(entry.at) && (entry.kind === "flow" ? object(entry.value) : entry.kind === "declined" ? entry.value === null : entry.value === null || object(entry.value));
+      function createMemorySync({
+        adapter,
+        accountKey,
+        revision,
+        transport,
+        onStatus = () => {
+        },
+        delayMs = 3e3,
+        timeoutMs = 15e3,
+        setTimer = (fn, ms) => setTimeout(fn, ms),
+        clearTimer = (id) => clearTimeout(id)
+      } = {}) {
+        const port = adapter?.memoryPort;
+        if (!ID.test(accountKey || "") || !Number.isSafeInteger(revision) || revision < 1 || !port || port.scope !== "account" || port.accountKey !== accountKey || typeof port.state !== "function" || typeof port.merge !== "function" || typeof port.subscribe !== "function" || typeof transport?.get !== "function" || typeof transport?.post !== "function") throw new TypeError("Atlas memory sync: an authenticated account adapter and transport are required");
+        if (!Number.isFinite(delayMs) || delayMs < 0 || !Number.isInteger(timeoutMs) || timeoutMs < 1) throw new TypeError("Atlas memory sync: invalid timing");
+        const remote = /* @__PURE__ */ new Map(), refused = /* @__PURE__ */ new Map();
+        const durable = ["pending", "prepare", "acknowledge"].every((name) => typeof port[name] === "function");
+        let serverTime = null;
+        const failedLocalEdits = /* @__PURE__ */ new Set();
+        let phase = "idle", code = null, stopped = false, timer = null, running = null, again = false, pulled = false, generation = 0;
+        const controllers = /* @__PURE__ */ new Set();
+        const epoch = typeof port.epoch === "function" ? port.epoch() : void 0;
+        const checkEpoch = () => {
+          if (typeof port.epoch === "function" && port.epoch() !== epoch) throw failure("MEMORY_SESSION_ENDED", "Atlas memory sync: local memory epoch changed");
+        };
+        const newer = (at, than) => than == null || Date.parse(at) > Date.parse(than);
+        const contested = (entry) => {
+          const there = remote.get(keyOf(entry));
+          return !!there && Date.parse(there.at) === Date.parse(entry.at) && !sameValue(there, entry);
+        };
+        const intents = () => durable ? port.pending() : [];
+        const legacyPending = () => {
+          const owned = new Set(intents().map((item) => keyOf(item.entry)));
+          return entriesOf(port.state()).filter((entry) => !owned.has(keyOf(entry)) && instant(entry.at) && (newer(entry.at, remote.get(keyOf(entry))?.at) || contested(entry)) && refused.get(keyOf(entry)) !== entry.at);
+        };
+        const pending = () => [...intents().map((item) => item.entry), ...legacyPending()];
+        const status = () => {
+          let queued = 0;
+          try {
+            queued = pending().length;
+          } catch {
+          }
+          return { phase, code, accountKey, revision, queued };
+        };
+        const publish = () => {
+          try {
+            onStatus(status());
+          } catch {
+          }
+        };
+        const active = (token) => !stopped && token === generation;
+        const call = async (method, body, token) => {
+          checkEpoch();
+          if (!active(token)) throw failure("STOPPED", "Atlas memory sync: stopped");
+          const controller = new AbortController();
+          controllers.add(controller);
+          let deadline;
+          try {
+            const response = await Promise.race([
+              Promise.resolve().then(() => transport[method]({ ...body, signal: controller.signal })),
+              new Promise((_, reject) => {
+                deadline = setTimeout(() => {
+                  reject(failure("NETWORK_ERROR", "Atlas memory sync: request timed out"));
+                  controller.abort();
+                }, timeoutMs);
+                controller.signal.addEventListener("abort", () => reject(failure("STOPPED", "Atlas memory sync: request cancelled")), { once: true });
+              })
+            ]);
+            if (!active(token)) throw failure("STOPPED", "Atlas memory sync: stale request");
+            checkEpoch();
+            if (response?.ok === false) throw failure(response.error?.code || "INVALID_RESPONSE", response.error?.message || "Atlas memory sync: rejected");
+            if (!response || response.revision !== revision) throw failure("REVISION_CONFLICT", "Atlas memory sync: server revision changed");
+            if (!Array.isArray(response.entries) || !response.entries.every(received)) throw failure("INVALID_RESPONSE", "Atlas memory sync: invalid entries");
+            if (response.serverTime !== void 0 && !instant(response.serverTime)) throw failure("INVALID_RESPONSE", "Atlas memory sync: invalid server clock");
+            if (response.serverTime !== void 0) serverTime = response.serverTime;
+            return response;
+          } finally {
+            clearTimeout(deadline);
+            controllers.delete(controller);
+          }
+        };
+        const accept = (entries) => {
+          port.merge(stateOf(entries));
+          for (const entry of entries) {
+            const previous = remote.get(keyOf(entry));
+            if (!previous || Date.parse(entry.at) >= Date.parse(previous.at)) remote.set(keyOf(entry), entry);
+          }
+        };
+        async function cycle(token, held) {
+          checkEpoch();
+          if (!pulled || intents().some((item) => !item.assignedAt)) {
+            accept((await call("get", { revision }, token)).entries);
+            pulled = true;
+          }
+          for (let round = 0; round < ROUNDS; round++) {
+            const prepared = [];
+            for (const item of intents().slice(0, BATCH)) {
+              if (!sendable(item.entry)) throw failure("INVALID_MEMORY", "Atlas memory sync: local intent is invalid");
+              const baseline = serverTime == null ? Date.parse(item.entry.at) : Date.parse(serverTime);
+              const at = item.assignedAt || new Date(Math.max(baseline, (Date.parse(remote.get(keyOf(item.entry))?.at) || 0) + 1)).toISOString();
+              if (!item.assignedAt && serverTime != null && Date.parse(at) > Date.parse(serverTime) + AHEAD_MS) throw failure("MEMORY_CLOCK_AHEAD", "Atlas memory sync: server memory is ahead of its clock");
+              const value = port.prepare(item.id, at);
+              if (value) prepared.push(value);
+            }
+            const all = legacyPending().filter((entry) => held.get(keyOf(entry)) !== entry.at);
+            for (const entry of all) if (!sendable(entry)) refused.set(keyOf(entry), entry.at);
+            const batch = [...prepared.map((item) => item.entry), ...all.filter(sendable)].slice(0, BATCH);
+            if (!batch.length) return;
+            const sent = new Set(batch.map(keyOf));
+            const known = serverTime;
+            const response = await call("post", { revision, entries: batch }, token);
+            if (!active(token)) return;
+            const returned = new Map(response.entries.map((entry) => [keyOf(entry), entry]));
+            if (returned.size !== response.entries.length || response.entries.some((entry) => !sent.has(keyOf(entry)))) throw failure("INVALID_RESPONSE", "Atlas memory sync: invalid acknowledgement");
+            for (const item of prepared) {
+              const accepted = returned.get(keyOf(item.entry));
+              if (!accepted || Date.parse(accepted.at) < Date.parse(item.entry.at)) throw failure("INVALID_RESPONSE", "Atlas memory sync: missing acknowledgement");
+              if (Date.parse(accepted.at) === Date.parse(item.entry.at) && !sameEntry(accepted, item.entry)) throw failure("MEMORY_CONFLICT", "Atlas memory sync: another value has the same timestamp; local choice preserved");
+              port.acknowledge(item.id, accepted);
+            }
+            const clock = known ?? serverTime;
+            let invalid = false;
+            for (const entry of batch.slice(prepared.length)) {
+              const accepted = returned.get(keyOf(entry));
+              if (accepted) {
+                if (Date.parse(accepted.at) < Date.parse(entry.at)) invalid = true;
+                else if (Date.parse(accepted.at) === Date.parse(entry.at) && !sameValue(accepted, entry)) held.set(keyOf(entry), entry.at);
+              } else if (clock != null && Date.parse(entry.at) > Date.parse(clock) + AHEAD_MS) held.set(keyOf(entry), entry.at);
+              else invalid = true;
+            }
+            accept(response.entries);
+            if (invalid) throw failure("INVALID_RESPONSE", "Atlas memory sync: missing acknowledgement");
+          }
+          if (!active(token)) return;
+          checkEpoch();
+          const rest = legacyPending().filter((entry) => held.get(keyOf(entry)) !== entry.at);
+          for (const entry of rest) if (!sendable(entry)) refused.set(keyOf(entry), entry.at);
+          if (intents().length || rest.some(sendable)) throw failure("NETWORK_ERROR", "Atlas memory sync: too many rounds; the rest waits for the next sync");
+        }
+        function run({ pull = false } = {}) {
+          if (stopped || phase === "blocked") return Promise.resolve(status());
+          if (pull) pulled = false;
+          if (running) {
+            again = true;
+            return running;
+          }
+          const token = generation;
+          phase = "syncing";
+          code = null;
+          publish();
+          const held = /* @__PURE__ */ new Map();
+          running = (async () => {
+            try {
+              do {
+                again = false;
+                await cycle(token, held);
+              } while (again && active(token));
+              if (active(token)) {
+                const left = held.size > 0 ? legacyPending().filter((entry) => held.get(keyOf(entry)) === entry.at) : [];
+                code = failedLocalEdits.size ? "STORAGE_ERROR" : left.some(contested) ? "MEMORY_CONFLICT" : left.length ? "MEMORY_CLOCK_AHEAD" : null;
+                phase = code === "MEMORY_CONFLICT" ? "conflict" : code ? "offline" : "synced";
+                publish();
+              }
+            } catch (error) {
+              if (active(token)) {
+                code = errorCode(error);
+                phase = code === "MEMORY_CONFLICT" ? "conflict" : FATAL.has(code) ? "blocked" : "offline";
+                publish();
+              }
+            } finally {
+              running = null;
+            }
+            return status();
+          })();
+          return running;
+        }
+        const schedule = () => {
+          if (stopped || phase === "blocked" || timer != null) return;
+          timer = setTimer(() => {
+            timer = null;
+            void run();
+          }, delayMs);
+        };
+        const unsubscribe = port.subscribe((change) => {
+          if (stopped || change?.kind === "import") return;
+          if (change?.kind === "storage-error") {
+            failedLocalEdits.add(keyOf({ kind: change.targetKind, key: change.key }));
+            code = "STORAGE_ERROR";
+            phase = "offline";
+            publish();
+            return;
+          }
+          failedLocalEdits.delete(keyOf(change));
+          schedule();
+        });
+        return Object.freeze({
+          // Reads the server first, then sends what is newer here.
+          start: () => run({ pull: true }),
+          // Sends local changes now (before the app goes to the background or a page closes).
+          flush() {
+            if (timer != null) {
+              clearTimer(timer);
+              timer = null;
+            }
+            return run();
+          },
+          // Back in front: read the server again (another device may have changed something).
+          retry: () => run({ pull: true }),
+          status,
+          stop() {
+            if (!stopped) {
+              stopped = true;
+              generation++;
+              if (timer != null) clearTimer(timer);
+              timer = null;
+              unsubscribe();
+              for (const controller of controllers) controller.abort();
+              phase = "stopped";
+              publish();
+            }
+            return status();
+          }
+        });
+      }
+      module.exports = { createMemorySync, entriesOf, stateOf, MAX_BYTES };
+    }
+  });
+
+  // atlas/flow.js
+  var require_flow = __commonJS({
+    "atlas/flow.js"(exports, module) {
+      (function(root, factory) {
+        if (typeof module === "object" && module.exports) {
+          const guard = require_temper();
+          module.exports = factory(() => guard);
+        } else root.SynkFlow = factory(() => root.SynkTemper);
+      })(typeof globalThis !== "undefined" ? globalThis : exports, function(getGuard) {
+        "use strict";
+        const VERSION = "flow-1";
+        const KINDS = ["content", "pace", "support"];
+        const OUTCOMES = ["success", "fail", "timeout", "skip", "void"];
+        const MODES = ["auto", "fixed", "easier", "harder"];
+        const CONDITIONS = ["good", "okay", "tired", "no_time"];
+        const DIMENSIONS = ["content", "pace"];
+        const DAY = 864e5, RETURN_AFTER = 14 * DAY, LATENCIES = 20;
+        const RATE = Object.freeze({ max: 1.2, half: 3, min: 0.3, recover: 4 });
+        const STREAK = 4;
+        const DEADBAND = 0.75;
+        const PACE_TARGET = 0.9;
+        const ITEM = "item.difficulty";
+        const copy = (value) => JSON.parse(JSON.stringify(value));
+        const id = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
+        const scalar = (value) => ["number", "string", "boolean"].includes(typeof value) && (typeof value !== "number" || Number.isFinite(value));
+        const within = (value, min, max) => typeof value === "number" && Number.isFinite(value) && value >= min && value <= max;
+        const sigmoid = (x) => 1 / (1 + Math.exp(-x));
+        const logit = (p) => Math.log(p / (1 - p));
+        const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+        const round = (value, digits) => Math.round(value * 10 ** digits) / 10 ** digits;
+        const time = (value) => {
+          const n = Date.parse(value);
+          if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Flow: invalid time");
+          return n;
+        };
+        const fail = (message) => {
+          throw new TypeError(`Flow: ${message}`);
+        };
+        const dimensionOf = (knob) => knob.kind === "pace" ? "pace" : "content";
+        const defined = /* @__PURE__ */ new WeakSet();
+        function defineContent(input) {
+          if (defined.has(input)) return input;
+          if (!input || typeof input !== "object" || Array.isArray(input)) fail("content spec required");
+          if (Object.keys(input).some((key) => !["id", "version", "target", "scale", "knobs", "items"].includes(key))) fail("unknown spec field");
+          const spec = { id: input.id, version: input.version ?? 1, target: input.target ?? 0.75, scale: input.scale ?? 0.5, knobs: [], items: null };
+          if (!id(spec.id) || !Number.isInteger(spec.version) || spec.version < 1) fail("invalid content id or version");
+          if (!within(spec.target, 0.55, 0.9) || !within(spec.scale, 0.2, 1.5)) fail("target must be 0.55-0.9 and scale 0.2-1.5");
+          const knobs = input.knobs ?? [];
+          if (!Array.isArray(knobs) || knobs.length > 8 || !knobs.length && !input.items) fail("one to eight knobs required");
+          const seen = /* @__PURE__ */ new Set([ITEM]);
+          if (input.items != null) {
+            const items = input.items;
+            if (!items || typeof items !== "object" || Object.keys(items).some((key) => !["levels", "weight", "start"].includes(key))) fail("invalid item levels");
+            const levels = items.levels ?? [1, 2, 3], start2 = items.start ?? 0, weight = items.weight ?? 2;
+            if (!Array.isArray(levels) || levels.length < 2 || levels.length > 6 || !levels.every((level, index) => Number.isInteger(level) && (index === 0 || level > levels[index - 1])) || !Number.isInteger(start2) || start2 < 0 || start2 >= levels.length || !within(weight, 0.25, 4)) fail("invalid item levels");
+            spec.items = { levels: [...levels], weight, start: start2 };
+            spec.knobs.push({ id: ITEM, values: [...levels], start: start2, weight, kind: "content", follows: null, label: "item difficulty" });
+          }
+          for (const knob of knobs) {
+            const keys = ["id", "values", "start", "weight", "kind", "follows", "label"];
+            if (!knob || typeof knob !== "object" || Object.keys(knob).some((key) => !keys.includes(key))) fail("invalid knob");
+            const value = { id: knob.id, values: knob.values, start: knob.start ?? 0, weight: knob.weight ?? 1, kind: knob.kind ?? "content", follows: knob.follows ?? null, label: knob.label ?? knob.id };
+            if (!id(value.id) || seen.has(value.id) || !Array.isArray(value.values) || value.values.length < 2 || value.values.length > 12 || !value.values.every(scalar) || !Number.isInteger(value.start) || value.start < 0 || value.start >= value.values.length || !within(value.weight, 0.25, 4) || !KINDS.includes(value.kind) || ![null, "declared"].includes(value.follows) || typeof value.label !== "string" || value.label.length > 60) fail(`invalid knob ${knob && knob.id}`);
+            seen.add(value.id);
+            spec.knobs.push(value);
+          }
+          const result = Object.freeze(copy(spec));
+          defined.add(result);
+          return result;
+        }
+        const challenge = (spec, indices, dimension = null) => spec.scale * spec.knobs.reduce((sum, knob) => sum + (dimension === null || dimensionOf(knob) === dimension ? knob.weight * indices[knob.id] : 0), 0);
+        const defaults = (spec) => Object.fromEntries(spec.knobs.map((knob) => [knob.id, knob.start]));
+        const has = (spec, dimension) => spec.knobs.some((knob) => dimensionOf(knob) === dimension && knob.follows !== "declared");
+        function targets(spec, overall) {
+          const timed = has(spec, "pace"), contented = has(spec, "content");
+          if (!(timed && contented)) return { content: contented ? overall : PACE_TARGET, pace: timed ? overall : PACE_TARGET };
+          const pace = clamp(PACE_TARGET * Math.sqrt(overall / spec.target), 0.75, 0.97);
+          return { content: clamp(overall / pace, 0.55, 0.95), pace };
+        }
+        function validMemory(spec, memory) {
+          const estimate = (value) => value && typeof value === "object" && within(value.theta, -20, 20) && within(value.n, 0, 1e6) && within(value.reversals, 0, 1e6);
+          if (memory == null || typeof memory !== "object" || memory.v !== 2 || memory.content !== spec.id || memory.specVersion !== spec.version || !estimate(memory.estimates?.content) || !estimate(memory.estimates?.pace) || typeof memory.at !== "string" || !Number.isFinite(Date.parse(memory.at)) || !memory.indices || typeof memory.indices !== "object" || !Array.isArray(memory.latencies) || memory.latencies.length > LATENCIES || !memory.latencies.every((ms) => within(ms, 0, 6e5))) return null;
+          const indices = {};
+          for (const knob of spec.knobs) {
+            const index = memory.indices[knob.id];
+            indices[knob.id] = Number.isInteger(index) && index >= 0 && index < knob.values.length ? index : knob.start;
+          }
+          return { estimates: copy(memory.estimates), at: memory.at, indices, latencies: [...memory.latencies] };
+        }
+        function priorFromSummary(input, summary, skillIds = [], { responseFormat } = {}) {
+          const spec = defineContent(input);
+          if (!spec.items || summary?.evidenceComplete !== true || !Array.isArray(summary.skills) || !Array.isArray(skillIds) || !skillIds.length || typeof responseFormat !== "string" || !responseFormat || responseFormat === "unknown") return null;
+          const skills = skillIds.map((skill) => summary.skills.find((s) => s.id === skill));
+          if (skills.some((skill) => !skill)) return null;
+          let level = spec.items.start;
+          for (let index = spec.items.start; index < spec.items.levels.length - 1; index += 1) {
+            const authored = spec.items.levels[index];
+            const steady = skills.every((skill) => {
+              const formats = skill.levels?.[authored]?.formats;
+              return !!formats && Object.hasOwn(formats, responseFormat) && formats[responseFormat].status === "recent-independent";
+            });
+            if (!steady) break;
+            level = index + 1;
+          }
+          if (level === spec.items.start) return null;
+          const indices = { ...defaults(spec), [ITEM]: level };
+          return { content: challenge(spec, indices, "content") + logit(targets(spec, spec.target).content), level: spec.items.levels[level], basis: "practice-summary" };
+        }
+        const PRESENTATION = Object.freeze({
+          support: Object.freeze(["choose", "step", "independent"]),
+          textSize: Object.freeze(["standard", "large"]),
+          explanation: Object.freeze(["brief", "standard", "detailed"]),
+          motion: Object.freeze(["full", "reduced"]),
+          audio: Object.freeze(["off", "available"])
+        });
+        const FOLLOWED = ["textSize", "motion", "explanation"];
+        function declaredFrom(input, presentation) {
+          const spec = defineContent(input);
+          if (!presentation || typeof presentation !== "object" || Array.isArray(presentation) || Object.keys(presentation).some((key) => !Object.hasOwn(PRESENTATION, key))) fail(`presentation accepts only ${Object.keys(PRESENTATION).join(", ")}`);
+          for (const [key, value] of Object.entries(presentation)) if (value != null && !PRESENTATION[key].includes(value)) fail(`invalid presentation ${key}`);
+          const support = presentation.support ?? "choose", knobs = {};
+          for (const knob of spec.knobs) {
+            if (knob.follows === "declared") {
+              const index = FOLLOWED.includes(knob.id) && presentation[knob.id] != null ? knob.values.indexOf(presentation[knob.id]) : -1;
+              if (index >= 0) knobs[knob.id] = index;
+            } else if (knob.kind === "support" && support !== "choose") knobs[knob.id] = support === "step" ? 0 : knob.values.length - 1;
+          }
+          return { knobs };
+        }
+        const START = ["spec", "memory", "prior", "declared", "condition", "arm", "now"];
+        function start(options = {}) {
+          if (!options || typeof options !== "object" || Object.keys(options).some((key) => !START.includes(key))) fail(`start accepts only ${START.join(", ")}`);
+          const { spec: input, memory = null, prior = null, declared = {}, condition = null, arm = "adapted", now } = options;
+          const spec = defineContent(input), guard = getGuard();
+          if (!guard || typeof guard.check !== "function") throw new Error("Flow: Temper guard unavailable");
+          if (!declared || typeof declared !== "object" || Array.isArray(declared) || Object.keys(declared).some((key) => !["mode", "knobs"].includes(key))) fail("declared must be { mode, knobs }");
+          const mode = declared.mode ?? "auto", locks = { ...declared.knobs ?? {} };
+          if (!MODES.includes(mode)) fail("invalid declared mode");
+          for (const [knobId, index] of Object.entries(locks)) {
+            const knob = spec.knobs.find((k) => k.id === knobId);
+            if (!knob || !Number.isInteger(index) || index < 0 || index >= knob.values.length) fail(`invalid declared knob ${knobId}`);
+          }
+          if (condition !== null && !CONDITIONS.includes(condition)) fail("invalid condition");
+          if (!["adapted", "baseline"].includes(arm)) fail("invalid arm");
+          if (prior !== null && (typeof prior !== "object" || !within(prior.content, -20, 20))) fail("invalid prior");
+          const startedAt = time(now), remembered = validMemory(spec, memory);
+          let overall = spec.target + (mode === "easier" ? 0.1 : mode === "harder" ? -0.1 : 0) + (condition === "tired" ? 0.08 : 0);
+          overall = clamp(overall, 0.55, 0.92);
+          const aim = targets(spec, overall);
+          const ordinary = targets(spec, spec.target);
+          const base = defaults(spec);
+          const fresh = (dimension) => ({ theta: challenge(spec, base, dimension) + logit(targets(spec, spec.target)[dimension]), n: 0, reversals: 0, streak: 0, sign: 0 });
+          const estimates = { content: fresh("content"), pace: fresh("pace") };
+          let basis = "default", indices = { ...base };
+          if (remembered) {
+            for (const dimension of DIMENSIONS) Object.assign(estimates[dimension], remembered.estimates[dimension], { streak: 0, sign: 0 });
+            indices = { ...remembered.indices };
+            basis = "memory";
+          } else if (prior) {
+            estimates.content.theta = prior.content;
+            basis = "prior";
+          }
+          const returning = !!remembered && startedAt - time(remembered.at) > RETURN_AFTER;
+          if (returning) for (const dimension of DIMENSIONS) estimates[dimension].reversals = Math.min(estimates[dimension].reversals, 1);
+          const adaptive = arm === "adapted" && mode !== "fixed";
+          const calm = condition === "tired";
+          const locked = (knob) => Object.hasOwn(locks, knob.id) || knob.follows === "declared";
+          const reached = { ...indices };
+          for (const knob of spec.knobs) {
+            if (Object.hasOwn(locks, knob.id)) indices[knob.id] = locks[knob.id];
+            else if (!adaptive || knob.follows === "declared") indices[knob.id] = knob.start;
+          }
+          const latencies = remembered ? remembered.latencies : [];
+          const changes = [], trace = [];
+          let step = 0, responses = 0, quiet = 0, steady = 0, last = null;
+          const todayOnly = {};
+          const gap = (dimension, goal = aim, theta = estimates[dimension].theta) => (theta - logit(goal[dimension]) - challenge(spec, indices, dimension)) / spec.scale;
+          const chance = (dimension, at = indices) => sigmoid(estimates[dimension].theta - challenge(spec, at, dimension));
+          const expected = (at = indices) => (has(spec, "content") ? chance("content", at) : 1) * (has(spec, "pace") ? chance("pace", at) : 1);
+          const span = (dimension, goal = aim) => {
+            const knobs = spec.knobs.filter((knob) => dimensionOf(knob) === dimension);
+            const fixed = (knob) => knob.follows === "declared" ? indices[knob.id] : null;
+            const low = spec.scale * knobs.reduce((sum, k) => sum + k.weight * (fixed(k) ?? 0), 0);
+            const high = spec.scale * knobs.reduce((sum, k) => sum + k.weight * (fixed(k) ?? k.values.length - 1), 0);
+            return [low + logit(goal[dimension]) - 2 * spec.scale, high + logit(goal[dimension]) + 2 * spec.scale];
+          };
+          const bound = (dimension) => {
+            const [low, high] = span(dimension);
+            estimates[dimension].theta = clamp(estimates[dimension].theta, low, high);
+          };
+          function learn(dimension, y, weight, ceiling = Infinity) {
+            const e = estimates[dimension], p = chance(dimension), sign = Math.sign(y - p);
+            if (sign && e.sign && sign !== e.sign) {
+              e.reversals += 1;
+              e.streak = 0;
+            } else if (sign) {
+              e.streak += 1;
+              if (e.streak >= RATE.recover) {
+                e.reversals = Math.max(0, e.reversals - 1);
+                e.streak = 0;
+              }
+            }
+            if (sign) e.sign = sign;
+            const rate = Math.max(RATE.min, RATE.max / (1 + e.reversals / RATE.half));
+            e.theta = clamp(e.theta + Math.min(ceiling, rate * weight * (y - p)), -20, 20);
+            e.n += weight;
+            bound(dimension);
+          }
+          function because(direction, knob, observed) {
+            if (direction > 0) return knob.kind === "pace" ? "comfortable-success" : "steady-success";
+            if (observed?.assisted && observed.outcome === "success") return "help-needed";
+            if (knob.kind === "pace") return observed?.outcome === "timeout" ? "time-ran-out" : "time-pressure";
+            if (knob.kind === "support") return "more-help";
+            return "content-miss";
+          }
+          function settle(dimension, direction, observed, reason, phase = "response", held = locked, history = changes) {
+            const pool = spec.knobs.filter((knob) => dimensionOf(knob) === dimension && !held(knob) && (direction < 0 || knob.kind !== "support"));
+            const byWeight = (list) => [...list].sort((a, b) => direction > 0 ? a.weight - b.weight : b.weight - a.weight);
+            const ordered = [...byWeight(pool.filter((k) => k.kind !== "support")), ...byWeight(pool.filter((k) => k.kind === "support"))];
+            for (const knob of ordered) {
+              const from = indices[knob.id], to = from + direction;
+              if (to < 0 || to >= knob.values.length) continue;
+              if (direction > 0 && phase === "response" && reason !== "quiet-streak" && gap(dimension) - knob.weight <= -DEADBAND) continue;
+              if (!guard.check({ spec, knob: knob.id, from, to, step, phase, history, frozen: !adaptive }).ok) continue;
+              indices[knob.id] = to;
+              const change = { step, phase, knob: knob.id, kind: knob.kind, dimension, from, to, direction, because: reason || because(direction, knob, observed), value: knob.values[to] };
+              history.push(change);
+              return change;
+            }
+            return null;
+          }
+          const unbound = Object.fromEntries(DIMENSIONS.map((d) => [d, estimates[d].theta]));
+          for (const dimension of DIMENSIONS) bound(dimension);
+          const opening = [];
+          if (adaptive && returning) {
+            for (const dimension of DIMENSIONS) {
+              const change = settle(dimension, -1, null, "returning", "opening");
+              if (change) {
+                opening.push(change);
+                break;
+              }
+            }
+            for (const dimension of DIMENSIONS) estimates[dimension].theta = Math.min(estimates[dimension].theta, logit(aim[dimension]) + challenge(spec, indices, dimension));
+          } else if (adaptive) {
+            const limit = basis === "memory" ? 2 : 12, easeOnly = basis === "memory" || calm;
+            const why = basis === "memory" ? "memory" : "prior";
+            const open = (goal, theta, ease, held = locked, history = changes) => {
+              const moves = [], directions = {};
+              for (let n = 0; n < limit; n += 1) {
+                const off = (d) => gap(d, goal, theta[d]);
+                const ranked = DIMENSIONS.filter((d) => Math.abs(off(d)) >= DEADBAND && (!ease || off(d) < 0) && (!directions[d] || directions[d] === Math.sign(off(d)))).sort((a, b) => Math.abs(off(b)) - Math.abs(off(a)));
+                let change = null;
+                for (const dimension of ranked) {
+                  change = settle(dimension, Math.sign(off(dimension)), null, why, "opening", held, history);
+                  if (change) break;
+                }
+                if (!change) break;
+                directions[change.dimension] = change.direction;
+                moves.push(change);
+              }
+              return moves;
+            };
+            let home = null;
+            if (mode !== "auto" || calm) {
+              const today = indices, declaredOnly = (knob) => knob.follows === "declared";
+              indices = Object.fromEntries(spec.knobs.map((knob) => [knob.id, declaredOnly(knob) ? knob.start : reached[knob.id]]));
+              open(ordinary, Object.fromEntries(DIMENSIONS.map((d) => [d, clamp(unbound[d], ...span(d, ordinary))])), basis === "memory", declaredOnly, []);
+              home = indices;
+              indices = today;
+            }
+            for (const change of open(aim, Object.fromEntries(DIMENSIONS.map((d) => [d, estimates[d].theta])), easeOnly)) {
+              if (home && (home[change.knob] - change.from) * change.direction <= 0) {
+                change.because = change.direction > 0 ? mode === "harder" ? "declared-harder" : why : calm ? "tired" : mode === "easier" ? "declared-easier" : why;
+              }
+              opening.push(change);
+            }
+            if (home) for (const knob of spec.knobs) todayOnly[knob.id] = indices[knob.id] - home[knob.id];
+          }
+          const intro = !adaptive ? arm === "baseline" ? "baseline" : "fixed" : returning ? "returning" : condition === "tired" ? "tired" : basis;
+          const settings = () => ({
+            content: spec.id,
+            policy: VERSION,
+            arm,
+            mode,
+            adaptive,
+            values: Object.fromEntries(spec.knobs.map((knob) => [knob.id, knob.values[indices[knob.id]]])),
+            indices: { ...indices },
+            expected: round(expected(), 2),
+            level: spec.items ? spec.items.levels[indices[ITEM]] : null
+          });
+          return {
+            spec,
+            settings,
+            intro: () => ({ code: `start.${intro}`, opening: copy(opening) }),
+            // The item level the content should draw next, or the nearest level it actually has.
+            level(available) {
+              if (!spec.items) return null;
+              const wanted = spec.items.levels[indices[ITEM]];
+              if (!Array.isArray(available) || !available.length) return wanted;
+              return [...new Set(available)].sort((a, b) => Math.abs(a - wanted) - Math.abs(b - wanted) || a - b)[0];
+            },
+            /* After each response. `pressure` is the share of the allowed time used (0-1) when the
+             * content knows it; `assisted` means help was on screen before the answer; `repeat` means the
+             * item was met before; `level` is the item level actually answered. A skipped or void
+             * response (audio failed, app hidden, wrong control) is not evidence and moves nothing. */
+            observe({ outcome, assisted = false, repeat = false, pressure = null, latencyMs = null, level = null } = {}) {
+              if (!OUTCOMES.includes(outcome) || typeof assisted !== "boolean" || typeof repeat !== "boolean" || pressure !== null && !within(pressure, 0, 1.5) || latencyMs !== null && !within(latencyMs, 0, 6e5)) fail("invalid observation");
+              if (level !== null && (!spec.items || !spec.items.levels.includes(level))) fail("invalid item level");
+              const aboutContent = outcome === "success" || outcome === "fail" && !(pressure !== null && pressure >= 1);
+              const aboutPace = has(spec, "pace") && ["success", "fail", "timeout"].includes(outcome);
+              const evidence = aboutContent || aboutPace;
+              responses += 1;
+              if (evidence) step += 1;
+              const shown = { ...indices };
+              if (level !== null) shown[ITEM] = spec.items.levels.indexOf(level);
+              const before = expected(shown), saved = { ...indices };
+              indices = shown;
+              if (aboutContent) {
+                if (outcome === "success") learn("content", assisted ? 0.5 : 1, repeat && !assisted ? 0.5 : 1, assisted ? 0 : Infinity);
+                else learn("content", 0, 1);
+              }
+              if (aboutPace) {
+                if (outcome === "timeout") learn("pace", 0, 1);
+                else if (pressure !== null) learn("pace", 1 - 0.5 * clamp((pressure - 0.5) / 0.5, 0, 1), 1);
+                else learn("pace", 1, 0.5);
+              }
+              indices = saved;
+              if (outcome === "success" && !assisted && !repeat) {
+                quiet += 1;
+                if (latencyMs !== null) latencies.push(Math.round(latencyMs));
+              } else if (evidence) quiet = 0;
+              if (outcome === "success") steady += 1;
+              else if (outcome === "fail" || outcome === "timeout") steady = 0;
+              while (latencies.length > LATENCIES) latencies.shift();
+              last = { outcome, assisted, repeat, pressure };
+              let change = null;
+              if (adaptive && evidence) {
+                const lower = DIMENSIONS.filter((d) => gap(d) <= -DEADBAND).sort((a, b) => gap(a) - gap(b));
+                const raise = !calm && outcome === "success" && !assisted ? DIMENSIONS.filter((d) => gap(d) >= DEADBAND && !(d === "pace" && pressure !== null && pressure >= 0.85)).sort((a, b) => gap(b) - gap(a)) : [];
+                for (const dimension of lower) {
+                  change = settle(dimension, -1, last);
+                  if (change) break;
+                }
+                if (!change && !lower.length) for (const dimension of raise) {
+                  change = settle(dimension, 1, last);
+                  if (change) break;
+                }
+                if (!change && !lower.length && quiet >= STREAK && !calm) {
+                  const ready = DIMENSIONS.filter((d) => gap(d) >= 0 && !(d === "pace" && pressure !== null && pressure > 0.5)).sort((a, b) => gap(b) - gap(a) || (a === "content" ? -1 : 1));
+                  for (const dimension of ready) {
+                    change = settle(dimension, 1, last, "quiet-streak");
+                    if (change && chance(dimension) < aim[dimension] - 0.15) {
+                      indices[change.knob] = change.from;
+                      changes.pop();
+                      change = null;
+                      continue;
+                    }
+                    if (change) {
+                      estimates[dimension].theta = Math.max(estimates[dimension].theta, logit(aim[dimension]) + challenge(spec, indices, dimension) - spec.scale / 2);
+                      quiet = 0;
+                      break;
+                    }
+                  }
+                }
+              }
+              if (change && change.kind === "support") steady = 0;
+              trace.push({
+                response: responses,
+                step,
+                outcome,
+                assisted,
+                repeat,
+                pressure,
+                expected: round(before, 3),
+                content: round(estimates.content.theta, 3),
+                pace: round(estimates.pace.theta, 3),
+                change: change && copy(change)
+              });
+              return { change: change && copy(change), settings: settings(), evidence };
+            },
+            /* The person accepted an offer of less help (vellum-flow.supportStep). One support knob
+             * moves one step toward less help; nothing else changes. Not in the same response as
+             * another change, nor right after a raise, nor on a tired day; the offer can come again later. */
+            lessHelpAllowed() {
+              const knob = spec.knobs.find((k) => k.kind === "support" && !locked(k) && indices[k.id] < k.values.length - 1);
+              return !!knob && adaptive && !calm && guard.check({ spec, knob: knob.id, from: indices[knob.id], to: indices[knob.id] + 1, step, phase: "accepted", history: changes, frozen: false }).ok;
+            },
+            acceptLessHelp() {
+              const knob = spec.knobs.find((k) => k.kind === "support" && !locked(k) && indices[k.id] < k.values.length - 1);
+              if (!knob || !adaptive || calm) return null;
+              const from = indices[knob.id], to = from + 1;
+              if (!guard.check({ spec, knob: knob.id, from, to, step, phase: "accepted", history: changes, frozen: false }).ok) return null;
+              indices[knob.id] = to;
+              estimates.content.theta = Math.max(estimates.content.theta, logit(aim.content) + challenge(spec, indices, "content") - spec.scale / 2);
+              const change = { step, phase: "accepted", knob: knob.id, kind: knob.kind, dimension: "content", from, to, direction: 1, because: "accepted-less-help", value: knob.values[to] };
+              steady = 0;
+              changes.push(change);
+              return copy(change);
+            },
+            quietStreak: () => quiet,
+            steadyStreak: () => steady,
+            // Dimensions whose adjustable knobs are all at their easiest. When the person still struggles
+            // there, the content itself has no easier step left: suggest an easier content instead.
+            floor: () => DIMENSIONS.filter((d) => {
+              const knobs = spec.knobs.filter((k) => dimensionOf(k) === d && !locked(k));
+              return knobs.length > 0 && knobs.every((k) => indices[k.id] === 0);
+            }),
+            latencies: () => [...latencies],
+            trace: () => copy(trace),
+            changes: () => copy(changes),
+            last: () => last && { ...last },
+            // What the host stores for next time: per content, no identity, no answers, no text.
+            // The estimates learn in every round; the place kept is only where adapted play reached,
+            // without the opening steps taken for today's choice alone.
+            memory: (at) => ({
+              v: 2,
+              content: spec.id,
+              specVersion: spec.version,
+              policy: VERSION,
+              at: new Date(time(at)).toISOString(),
+              estimates: Object.fromEntries(DIMENSIONS.map((d) => [d, { theta: round(estimates[d].theta, 4), n: round(estimates[d].n, 2), reversals: estimates[d].reversals }])),
+              indices: Object.fromEntries(spec.knobs.map((k) => [k.id, adaptive && !locked(k) ? clamp(indices[k.id] - (todayOnly[k.id] || 0), 0, k.values.length - 1) : reached[k.id]])),
+              latencies: [...latencies]
+            })
+          };
+        }
+        return Object.freeze({ VERSION, KINDS, OUTCOMES, MODES, CONDITIONS, DIMENSIONS, ITEM, PRESENTATION, defineContent, priorFromSummary, declaredFrom, start, challenge, sigmoid, logit });
+      });
+    }
+  });
+
+  // atlas/vellum-flow.js
+  var require_vellum_flow = __commonJS({
+    "atlas/vellum-flow.js"(exports, module) {
+      (function(root, factory) {
+        if (typeof module === "object" && module.exports) module.exports = factory();
+        else root.SynkVellumFlow = factory();
+      })(typeof globalThis !== "undefined" ? globalThis : exports, function() {
+        "use strict";
+        const VERSION = "vellum-flow-1";
+        const DAY = 864e5;
+        const STUCK = Object.freeze({ afterMs: 4e4, misses: 2 });
+        const within = (value, min, max) => typeof value === "number" && Number.isFinite(value) && value >= min && value <= max;
+        const time = (value) => {
+          const n = Date.parse(value);
+          if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Vellum: invalid time");
+          return n;
+        };
+        function stuckFor({ latencies = [], base = STUCK, factor = 2.5, floorMs = 8e3, ceilMs = 9e4, minSamples = 5 } = {}) {
+          if (!Array.isArray(latencies) || !latencies.every((ms) => within(ms, 0, 6e5)) || !base || !within(base.afterMs, 1e3, 6e5) || !Number.isInteger(base.misses) || base.misses < 1 || !Number.isSafeInteger(minSamples) || minSamples < 1 || !within(factor, 1, 10) || !within(floorMs, 1e3, ceilMs) || !within(ceilMs, floorMs, 6e5)) {
+            throw new TypeError("Vellum: invalid stuck input");
+          }
+          if (latencies.length < minSamples) return { afterMs: base.afterMs, misses: base.misses, basis: "default", n: latencies.length };
+          const sorted = [...latencies].sort((a, b) => a - b), middle = Math.floor(sorted.length / 2);
+          const median = sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+          return { afterMs: Math.round(Math.min(ceilMs, Math.max(floorMs, factor * median))), misses: base.misses, basis: "personal", n: latencies.length };
+        }
+        function supportStep({ at, last, streak, steady = 0, declared = false, declinedAt = null, now, need = 3, quietDays = 14 } = {}) {
+          if (!Number.isInteger(at) || !Number.isInteger(last) || at < 0 || at > last || !Number.isInteger(streak) || streak < 0 || !Number.isInteger(steady) || steady < 0 || typeof declared !== "boolean" || !Number.isInteger(need) || need < 1 || !within(quietDays, 0, 365)) throw new TypeError("Vellum: invalid support step input");
+          if (declared) return { offer: false, reason: "declared" };
+          if (at >= last) return { offer: false, reason: "least-help" };
+          if (streak < need && steady < need + 1) return { offer: false, reason: "not-yet" };
+          if (declinedAt !== null && time(now) - time(declinedAt) < quietDays * DAY) return { offer: false, reason: "declined-recently" };
+          return { offer: true, from: at, to: at + 1, reason: streak >= need ? "quiet-streak" : "steady-with-help" };
+        }
+        const WORDS = Object.freeze({
+          easy: {
+            "raise.pace": "조금 빨라져요.",
+            "raise.content": "조금 어려워져요.",
+            "ease.pace": "시간이 더 있어요.",
+            "ease.content": "조금 쉬워져요.",
+            "ease.support": "힌트가 먼저 나와요.",
+            "accepted-less-help": "힌트가 조금 늦게 나와요.",
+            "start.memory": "지난번에 이어서 해요.",
+            "start.prior": "지난 연습에 맞춰 시작해요.",
+            "start.returning": "가볍게 시작해요.",
+            "start.tired": "오늘은 안 어려워져요.",
+            "start.fixed": "정한 방식 그대로 해요.",
+            "start.baseline": "이번에는 기본으로 해요."
+          },
+          standard: {
+            "raise.pace": "조금 더 빠르게 해 볼게요.",
+            "raise.content": "조금 더 어려운 것도 해 볼게요.",
+            "ease.pace": "시간을 조금 더 넉넉하게 드릴게요.",
+            "ease.content": "조금 더 쉬운 것부터 다시 해요.",
+            "ease.support": "도움을 조금 더 일찍 보여 드릴게요.",
+            "accepted-less-help": "말씀하신 대로 도움을 조금 늦게 보여 드릴게요.",
+            "start.memory": "지난번에 하던 데서 이어 갈게요.",
+            "start.prior": "다른 연습 기록에 맞춰 시작할게요.",
+            "start.returning": "가볍게 다시 시작할게요.",
+            "start.tired": "오늘은 더 어렵게 하지 않을게요.",
+            "start.fixed": "정해 둔 방식 그대로 진행해요.",
+            "start.baseline": "이번 판은 기본 구성으로 진행해요."
+          }
+        });
+        function keyOf(event) {
+          if (!event || typeof event !== "object") return null;
+          if (typeof event.code === "string") return event.code === "start.default" ? null : event.code;
+          if (event.because === "accepted-less-help") return "accepted-less-help";
+          if (event.direction > 0) return event.kind === "pace" ? "raise.pace" : "raise.content";
+          if (event.direction < 0) return event.kind === "pace" ? "ease.pace" : event.kind === "support" ? "ease.support" : "ease.content";
+          return null;
+        }
+        function line(event, { level = "standard", words = {} } = {}) {
+          if (!Object.hasOwn(WORDS, level) || !words || typeof words !== "object") throw new TypeError("Vellum: invalid line options");
+          const key = keyOf(event);
+          if (!key) return null;
+          const text = Object.hasOwn(words, key) ? words[key] : WORDS[level][key];
+          return typeof text === "string" && text ? { key, text } : null;
+        }
+        return Object.freeze({ VERSION, STUCK, WORDS, stuckFor, supportStep, line });
+      });
+    }
+  });
+
+  // atlas/game-flow.js
+  var require_game_flow = __commonJS({
+    "atlas/game-flow.js"(exports, module) {
+      "use strict";
+      var Flow = require_flow();
+      var VellumFlow = require_vellum_flow();
+      var localDay = (iso) => {
+        const d = new Date(iso);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      };
+      var SEEN = Object.freeze(["practice", "supported", "checking", "review"]);
+      var object = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+      var presentationOf = (value) => object(value) && Object.keys(value).length > 0 && Object.entries(value).every(([key, choice]) => Object.hasOwn(Flow.PRESENTATION, key) && (choice === null || Flow.PRESENTATION[key].includes(choice)));
+      function createFlowPort({ storage, key, clock, epoch = () => null, canPersist = () => true }) {
+        const FLOW = `${key}.flow`, TODAY = `${key}.today`, PRESENT = `${key}.presentation`;
+        const listeners = /* @__PURE__ */ new Set();
+        const notify = (change) => {
+          for (const listener of listeners) {
+            try {
+              listener(change);
+            } catch {
+            }
+          }
+        };
+        const storageError = () => Object.assign(new Error("Atlas memory: local storage unavailable"), { code: "STORAGE_ERROR" });
+        const read = (name, strict = false) => {
+          try {
+            const raw = storage?.getItem(name);
+            return raw == null || raw === "" ? null : JSON.parse(raw);
+          } catch {
+            if (strict) throw storageError();
+            return null;
+          }
+        };
+        const write = (name, value) => {
+          try {
+            if (!storage || !canPersist()) return false;
+            if (value == null) {
+              if (typeof storage.removeItem === "function") storage.removeItem(name);
+              else storage.setItem(name, "");
+            } else storage.setItem(name, JSON.stringify(value));
+            return true;
+          } catch {
+            return false;
+          }
+        };
+        const saveRequired = (name, value) => {
+          if (!write(name, value)) throw storageError();
+        };
+        const memories = (current = epoch(), strict = false) => {
+          const value = read(FLOW, strict);
+          if (strict && value != null && (value.v !== 1 || !object(value.contents) || !object(value.declined))) throw storageError();
+          return value && value.v === 1 && (value.epoch ?? null) === current && object(value.contents) && object(value.declined) ? value : { v: 1, epoch: current, contents: {}, declined: {} };
+        };
+        const update = (since, change, targetKind, key2) => {
+          const current = epoch();
+          if (since !== void 0 && since !== current) return false;
+          try {
+            const all = memories(current, true);
+            change(all);
+            saveRequired(FLOW, all);
+            return true;
+          } catch {
+            notify({ kind: "storage-error", code: "STORAGE_ERROR", targetKind, key: key2 });
+            return false;
+          }
+        };
+        const instant = (value) => typeof value === "string" && Number.isFinite(Date.parse(value));
+        let sequence = 0;
+        const copy = (value) => JSON.parse(JSON.stringify(value));
+        const pendingKey = (kind, id) => `${kind}|${id}`;
+        const intent = (entry) => ({ id: `${Date.now().toString(36)}-${++sequence}-${Math.random().toString(36).slice(2)}`, epoch: epoch(), entry: copy(entry), assignedAt: null });
+        const currentIntent = (value) => value && value.epoch === epoch() && typeof value.id === "string" && object(value.entry);
+        const intents = () => {
+          const present = read(PRESENT, true), all = memories(epoch(), true);
+          if (all.pending != null && !object(all.pending)) throw storageError();
+          const rows = [present?.pending, ...Object.values(all.pending || {})].filter((value) => value !== void 0);
+          if (rows.some((value) => !object(value) || typeof value.id !== "string" || !value.id || value.id.length > 120 || !object(value.entry) || !["presentation", "flow", "declined"].includes(value.entry.kind) || typeof value.entry.key !== "string" || !(value.assignedAt === null || instant(value.assignedAt)))) throw storageError();
+          return rows.filter(currentIntent).map(copy);
+        };
+        const mutateIntent = (id, change) => {
+          const present = read(PRESENT, true);
+          if (currentIntent(present?.pending) && present.pending.id === id) {
+            const result = change(present.pending, (entry) => {
+              present.presentation = copy(entry.value);
+              present.at = entry.at;
+              delete present.pending;
+            });
+            saveRequired(PRESENT, present);
+            return result;
+          }
+          const all = memories(epoch(), true);
+          for (const [slot, pending] of Object.entries(object(all.pending) ? all.pending : {})) {
+            if (!currentIntent(pending) || pending.id !== id) continue;
+            const result = change(pending, (entry) => {
+              if (entry.kind === "flow") all.contents[entry.key] = copy(entry.value);
+              else all.declined[entry.key] = entry.at;
+              delete all.pending[slot];
+            });
+            saveRequired(FLOW, all);
+            return result;
+          }
+          return null;
+        };
+        const later = (at, than) => !instant(than) || Date.parse(at) > Date.parse(than);
+        const chosen = (strict = false) => {
+          const value = read(PRESENT, strict);
+          return value && value.v === 1 && instant(value.at) && (value.presentation === null || presentationOf(value.presentation)) ? value : null;
+        };
+        return Object.freeze({
+          today() {
+            const value = read(TODAY);
+            return value && value.day === localDay(clock()) && Flow.CONDITIONS.includes(value.condition) ? value.condition : null;
+          },
+          setToday(condition) {
+            if (condition !== null && !Flow.CONDITIONS.includes(condition)) throw new TypeError("Atlas: invalid condition");
+            return write(TODAY, condition === null ? null : { day: localDay(clock()), condition });
+          },
+          // Set only by the person's own choice (a hub or settings screen); a value that is not in the
+          // vocabulary is never read back. null forgets it, and the forgetting keeps its time so another
+          // device's older choice does not come back.
+          presentation() {
+            const value = chosen();
+            return value?.presentation ? { ...value.presentation } : null;
+          },
+          setPresentation(presentation) {
+            if (presentation !== null && !presentationOf(presentation)) throw new TypeError(`Atlas: presentation accepts only ${Object.keys(Flow.PRESENTATION).join(", ")}`);
+            const at = clock(), value = presentation === null ? null : { ...presentation };
+            const done = write(PRESENT, { v: 1, presentation: value, at, pending: intent({ kind: "presentation", key: "chosen", value, at }) });
+            if (done) notify({ kind: "presentation", key: "chosen" });
+            else notify({ kind: "storage-error", code: "STORAGE_ERROR", targetKind: "presentation", key: "chosen" });
+            return done;
+          },
+          epoch,
+          memories: () => memories(),
+          save(contentId, memory, since) {
+            const done = update(since, (all) => {
+              all.contents[contentId] = memory;
+              all.pending ||= {};
+              all.pending[pendingKey("flow", contentId)] = intent({ kind: "flow", key: contentId, value: memory, at: memory.at });
+            }, "flow", contentId);
+            if (done) notify({ kind: "flow", key: contentId });
+            return done;
+          },
+          decline(contentId, at, since) {
+            const done = update(since, (all) => {
+              all.declined[contentId] = at;
+              all.pending ||= {};
+              all.pending[pendingKey("declined", contentId)] = intent({ kind: "declined", key: contentId, value: null, at });
+            }, "declined", contentId);
+            if (done) notify({ kind: "declined", key: contentId });
+            return done;
+          },
+          pending: intents,
+          prepare(id, assignedAt) {
+            if (!instant(assignedAt)) throw new TypeError("Atlas memory: invalid assigned time");
+            return mutateIntent(id, (pending) => {
+              if (!pending.assignedAt) pending.assignedAt = assignedAt;
+              const entry = { ...copy(pending.entry), at: pending.assignedAt };
+              if (entry.kind === "flow") entry.value.at = entry.at;
+              return { id: pending.id, entry };
+            });
+          },
+          acknowledge(id, entry) {
+            return mutateIntent(id, (_pending, accept) => {
+              accept(entry);
+              return true;
+            });
+          },
+          // Everything a synchroniser exchanges, each with its own time: the chosen presentation,
+          // each content's memory (memory.at) and each declined offer.
+          state() {
+            const all = memories(epoch(), true), present = chosen(true);
+            return {
+              presentation: present ? { value: present.presentation && { ...present.presentation }, at: present.at } : null,
+              flow: JSON.parse(JSON.stringify(all.contents)),
+              declined: { ...all.declined }
+            };
+          },
+          // Takes another device's values where they are newer than this device's, entry by entry.
+          // Subscribers hear it as 'import', so a synchroniser does not send it back.
+          merge(remote) {
+            if (!object(remote)) throw new TypeError("Atlas: invalid memory");
+            let changed = false;
+            const pending = new Set(intents().map((item) => pendingKey(item.entry.kind, item.entry.key)));
+            const present = remote.presentation;
+            if (object(present) && instant(present.at) && (present.value === null || presentationOf(present.value)) && later(present.at, chosen(true)?.at) && !pending.has("presentation|chosen")) {
+              saveRequired(PRESENT, { v: 1, presentation: present.value && { ...present.value }, at: present.at });
+              changed = true;
+            }
+            const all = memories(epoch(), true);
+            let touched = false;
+            for (const [id, memory] of Object.entries(object(remote.flow) ? remote.flow : {})) {
+              if (!object(memory) || memory.content !== id || !instant(memory.at) || !later(memory.at, all.contents[id]?.at) || pending.has(pendingKey("flow", id))) continue;
+              all.contents[id] = JSON.parse(JSON.stringify(memory));
+              touched = true;
+            }
+            for (const [id, at] of Object.entries(object(remote.declined) ? remote.declined : {})) {
+              if (!instant(at) || !later(at, all.declined[id]) || pending.has(pendingKey("declined", id))) continue;
+              all.declined[id] = at;
+              touched = true;
+            }
+            if (touched) {
+              saveRequired(FLOW, all);
+              changed = true;
+            }
+            if (changed) notify({ kind: "import" });
+            return changed;
+          },
+          subscribe(listener) {
+            if (typeof listener !== "function") throw new TypeError("Atlas: listener required");
+            listeners.add(listener);
+            return () => listeners.delete(listener);
+          },
+          clear() {
+            if (!storage || !canPersist()) return;
+            const cleared = [FLOW, TODAY, PRESENT].map((name) => write(name, null));
+            if (cleared.some((ok) => !ok)) throw Object.assign(new Error("기기 설정을 모두 지우지 못했어요. 다시 초기화해 주세요."), { code: "STORAGE_ERROR" });
+          }
+        });
+      }
+      function createLive({ coach, port, clock }) {
+        return function live(input, { declared = {}, presentation, skillIds = [], responseFormat, arm = "adapted", condition, level = "standard", words = {} } = {}) {
+          const spec = Flow.defineContent(input);
+          if (presentation === void 0) presentation = typeof port.presentation === "function" ? port.presentation() : null;
+          if (presentation != null) {
+            const knobs = { ...Flow.declaredFrom(spec, presentation).knobs, ...declared && declared.knobs };
+            if (Object.keys(knobs).length) declared = { ...declared, knobs };
+          }
+          const since = port.epoch();
+          const memory = port.memories().contents[spec.id] || null;
+          let prior = null;
+          if (!memory && skillIds.length) {
+            try {
+              prior = Flow.priorFromSummary(spec, coach.summary(), skillIds, { responseFormat });
+            } catch {
+              prior = null;
+            }
+          }
+          const run = Flow.start({ spec, memory, prior, declared, condition: condition === void 0 ? port.today() : condition, arm, now: clock() });
+          const say = (event) => VellumFlow.line(event, { level, words });
+          const save = () => port.save(spec.id, run.memory(clock()), since);
+          const shown = /* @__PURE__ */ new Map(), owed = /* @__PURE__ */ new Set();
+          const snapshot = () => {
+            const s = run.settings();
+            return { content: s.content, policy: s.policy, arm: s.arm, mode: s.mode, values: s.values, level: s.level };
+          };
+          const result = (observed) => ({ ...observed, line: observed.change ? say(observed.change) : null });
+          return Object.freeze({
+            spec,
+            settings: run.settings,
+            intro() {
+              const intro = run.intro();
+              return { ...intro, line: say(intro) };
+            },
+            level: run.level,
+            // Core's learning priority decides what to practise; the flow level decides how hard,
+            // among the leading choices only. When Core's first choice rests on what it saw (a miss to
+            // practise, help, a check or a review that is due), the choice stays with that ability, and
+            // only its level follows the flow: in a content whose levels are different kinds of item,
+            // an easier level must not quietly put off the practice Core asked for.
+            pick(candidates, options = {}) {
+              const { within = 5, ...rest } = options;
+              const recommendation = coach.recommend(candidates, rest);
+              if (recommendation.status !== "ready" || !spec.items) return recommendation;
+              const ranked = [recommendation.selected, ...recommendation.alternatives].slice(0, within);
+              const focus = SEEN.includes(recommendation.state) && recommendation.focusSkillId;
+              const leading = focus ? ranked.filter((candidate) => candidate.skillIds?.includes(focus)) : ranked;
+              const wanted = run.level(leading.map((candidate) => candidate.difficulty));
+              const chosen = leading.find((candidate) => candidate.difficulty === wanted) || recommendation.selected;
+              const own = chosen === recommendation.selected ? recommendation : coach.recommend([chosen], rest);
+              return { ...own, selected: chosen, alternatives: [recommendation.selected, ...recommendation.alternatives].filter((c) => c !== chosen), flowLevel: wanted };
+            },
+            // The settings in force are kept with the decision, so the choice can be reviewed later.
+            present(item) {
+              const pid = coach.present(item, { flow: snapshot() });
+              shown.set(pid, item.difficulty);
+              return pid;
+            },
+            /* Learning evidence to Trail first; then the same response moves the challenge. `flow` may
+             * name the outcome for the challenge (a missed order is a 'timeout' there, yet not a language
+             * error) and pass the share of time used as `pressure`. Otherwise the outcome is the verdict
+             * Trail recorded, so an answer it could not assess moves nothing. Trail decides assisted and repeat. */
+            answer(pid, response, flow = {}) {
+              const known = typeof coach.events === "function" ? coach.events() : null;
+              const recorded = coach.answer(pid, response);
+              const eventId = object(recorded) && recorded.accepted !== false && typeof recorded.eventId === "string" && recorded.eventId ? recorded.eventId : null;
+              const fresh = !!eventId && Array.isArray(known) && (owed.has(eventId) || !known.some((event) => event.id === eventId));
+              if (!fresh) return { recorded, change: null, settings: run.settings(), evidence: false, line: null };
+              const outcome = flow.outcome ?? (recorded.verdict === "correct" ? "success" : recorded.verdict === "incorrect" ? "fail" : "void");
+              const level2 = spec.items && spec.items.levels.includes(shown.get(pid)) ? shown.get(pid) : null;
+              owed.add(eventId);
+              const observed = run.observe({
+                outcome,
+                assisted: flow.assisted ?? recorded.assisted === true,
+                repeat: flow.repeat ?? recorded.exposure === "repeat",
+                pressure: flow.pressure ?? null,
+                latencyMs: flow.latencyMs ?? null,
+                level: level2
+              });
+              owed.delete(eventId);
+              save();
+              return { recorded, ...result(observed) };
+            },
+            // A response that is not a Strata item (a game action, a missed customer).
+            observe(input2) {
+              const observed = run.observe(input2);
+              save();
+              return result(observed);
+            },
+            stuck: (base) => VellumFlow.stuckFor({ latencies: run.latencies(), ...base ? { base } : {} }),
+            offerLessHelp() {
+              const support = spec.knobs.find((knob) => knob.kind === "support" && knob.follows !== "declared");
+              if (!support || !run.settings().adaptive) return { offer: false, reason: "not-available" };
+              const step = VellumFlow.supportStep({
+                at: run.settings().indices[support.id],
+                last: support.values.length - 1,
+                streak: run.quietStreak(),
+                steady: run.steadyStreak(),
+                declared: Object.hasOwn(declared.knobs || {}, support.id),
+                declinedAt: port.memories().declined[spec.id] ?? null,
+                now: clock()
+              });
+              return step.offer && !run.lessHelpAllowed() ? { offer: false, reason: "not-now" } : step;
+            },
+            acceptLessHelp() {
+              const change = run.acceptLessHelp();
+              save();
+              return change && { ...change, line: say(change) };
+            },
+            declineLessHelp() {
+              return port.decline(spec.id, clock(), since);
+            },
+            floor: run.floor,
+            end() {
+              save();
+              return { settings: run.settings(), changes: run.changes(), floor: run.floor() };
+            },
+            trace: run.trace
+          });
+        };
+      }
+      module.exports = { createFlowPort, createLive, localDay };
+    }
+  });
+
+  // atlas/game-learning.js
+  var require_game_learning = __commonJS({
+    "atlas/game-learning.js"(exports, module) {
+      "use strict";
+      var Atlas = require_engine();
+      var Core = require_education();
+      var Trail = require_trail();
+      var Learning = require_learning();
+      var Temper = require_temper();
+      var { createLearningSync, sameEvent } = require_learning_sync();
+      var { createMemorySync } = require_memory_sync();
+      var Ledger = require_learning_ledger();
+      var { createPages, THRESHOLD } = require_learning_pages();
+      var { createFlowPort, createLive } = require_game_flow();
+      var KEY = "synk.atlas.learning.v1";
+      var SET_KINDS = ["short", "diagnostic", "mock"];
+      var RESPONSES = ["helpful", "not_fit", "too_much", "want_more"];
+      var SET_OPEN_MS = 864e5;
+      var RESPONSE_MS = 30 * 864e5;
+      var identifier = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
+      var uid = () => `l${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+      var historyLeases = /* @__PURE__ */ new Map();
+      var LEASE_WARNING = "다른 탭에서 이 기록을 사용 중이에요. 그 탭을 닫으면 이곳에서 저장할 수 있어요.";
+      function browserHistoryLease(name) {
+        if (typeof globalThis.document !== "object") return null;
+        if (globalThis.location?.protocol === "synk-desktop:" && typeof globalThis.synkDesktop === "object") return null;
+        const manager = globalThis.navigator?.locks;
+        if (historyLeases.has(name)) return historyLeases.get(name);
+        const entry = { epoch: null, active: false, supported: !!manager, listeners: /* @__PURE__ */ new Set() };
+        let pending = false, wanted = true, release = null, controller = null, retired = false;
+        const announce = (active) => {
+          entry.active = active;
+          for (const listener of entry.listeners) {
+            try {
+              listener(active);
+            } catch {
+            }
+          }
+        };
+        entry.start = () => {
+          if (retired) return;
+          wanted = true;
+          if (pending || !manager) return;
+          pending = true;
+          controller = new AbortController();
+          const signal = controller.signal;
+          Promise.resolve().then(() => retired || signal.aborted ? void 0 : manager.request("synk.atlas.history." + name, { mode: "exclusive", signal }, () => new Promise((done) => {
+            release = done;
+            announce(true);
+          }))).catch(() => {
+            if (!signal.aborted) {
+              wanted = false;
+              announce(false);
+            }
+          }).finally(() => {
+            pending = false;
+            release = null;
+            if (wanted) entry.start();
+          });
+        };
+        const pause = () => {
+          wanted = false;
+          announce(false);
+          controller?.abort();
+          release?.();
+        };
+        globalThis.addEventListener?.("pagehide", pause);
+        globalThis.addEventListener?.("pageshow", entry.start);
+        entry.detach = (listener) => {
+          entry.listeners.delete(listener);
+          if (entry.listeners.size) return;
+          retired = true;
+          pause();
+          globalThis.removeEventListener?.("pagehide", pause);
+          globalThis.removeEventListener?.("pageshow", entry.start);
+          if (historyLeases.get(name) === entry) historyLeases.delete(name);
+        };
+        historyLeases.set(name, entry);
+        return entry;
+      }
+      function readFollowups(events, { scope, asOf, prior = null, complete = true, retain = false }) {
+        const options = { scope, asOf, prior };
+        const report = Temper.followups({
+          events,
+          summary: Trail.summarize(events, options),
+          original: Trail.summarize(events.filter((e) => e.type !== "record.excluded"), options),
+          prior,
+          complete,
+          asOf
+        });
+        if (prior?.followupsLost) {
+          report.items = [];
+          report.retainDecisionIds = [];
+          report.evidenceComplete = false;
+          Object.assign(report.coverage, {
+            limited: true,
+            reason: "retention-capacity",
+            retentionEnabled: retain,
+            retentionLimited: true,
+            unretainedAnchors: prior.followupsLost.anchors,
+            lostAt: new Date(prior.followupsLost.at).toISOString()
+          });
+          return report;
+        }
+        if (prior?.folded && prior.followupsPreserved !== true) {
+          report.items = [];
+          report.retainDecisionIds = [];
+          report.evidenceComplete = false;
+          Object.assign(report.coverage, { limited: true, reason: "older-source-unavailable", retentionEnabled: retain });
+          return report;
+        }
+        const retention = retain ? Ledger.retention(events, report.retainDecisionIds) : null;
+        report.coverage.retentionEnabled = retain;
+        if (retention) {
+          Object.assign(report.coverage, {
+            retentionLimited: retention.limited,
+            retainedEvents: retention.limited ? 0 : retention.events,
+            retainedBytes: retention.limited ? 0 : retention.bytes
+          });
+          report.retainDecisionIds = retention.decisions;
+          if (retention.limited) {
+            report.coverage.limited = true;
+            report.coverage.reason = "retention-capacity";
+            report.coverage.unretainedAnchors = report.items.length / Temper.FOLLOWUP.windows.length;
+            for (const item of report.items) {
+              item.status = "unavailable";
+              item.reason = "retention-capacity";
+              item.outcome = null;
+            }
+          }
+        }
+        return report;
+      }
+      var AHEAD_MS = 5 * 6e4;
+      function openHistory({ storage, key, scope, storageScope, accountKey, historyComplete, fold, followups, clock, held, release }) {
+        const lease = storage ? browserHistoryLease(JSON.stringify([key, storageScope, accountKey])) : null;
+        let leased = !lease, waitingWrite = false, closed = false, closing = false, closedFlush = false, detachLease = () => {
+        };
+        const FINAL_FLUSH = /* @__PURE__ */ Symbol("final-history-flush");
+        const leaseWarning = lease && !lease.supported ? "이 환경에서는 기록을 안전하게 저장할 수 없어 기본 연습으로 진행해요." : LEASE_WARNING;
+        const pages = storageScope === "account" && storage ? createPages(storage, key, ["events", "settled", "dropped"]) : null;
+        let paged = false, epoch = null, session, readable = true, writable = !!storage, complete = historyComplete, warning = null, ledger = null;
+        const folding = fold === false || fold == null && storageScope !== "device" ? null : { max: 600, keep: 400, ageMs: fold?.remote ? 864e5 : 6e5, remote: false, ...fold && typeof fold === "object" ? fold : {} };
+        const settled = /* @__PURE__ */ new Set();
+        let settledVersion = 0;
+        const dropped = /* @__PURE__ */ new Set();
+        let droppedVersion = 0;
+        const UNCHANGED = /* @__PURE__ */ Symbol("unchanged-history");
+        let lastStoredRaw = /* @__PURE__ */ Symbol("unread-history"), lastTime = 0, lastSavedState = null;
+        const listeners = /* @__PURE__ */ new Set();
+        const notify = (kind, code) => {
+          for (const listener of listeners) {
+            try {
+              listener({ kind, ...code ? { code } : {} });
+            } catch {
+            }
+          }
+        };
+        const monotonicClock = () => {
+          const value = Date.parse(clock());
+          if (!Number.isFinite(value)) throw new TypeError("Atlas: invalid clock");
+          lastTime = Math.max(value, lastTime);
+          return new Date(lastTime).toISOString();
+        };
+        const newSession = (events) => {
+          const own = Date.parse(clock());
+          for (const e of events) {
+            const at = Date.parse(e.at);
+            if (Number.isFinite(at) && (!Number.isFinite(own) || at <= own + AHEAD_MS) && at > lastTime) lastTime = at;
+          }
+          return Atlas.createSession({ scope, events, clock: monotonicClock });
+        };
+        const log = (of = session) => of.snapshot ? of.snapshot() : of.events();
+        const savedState = () => [log(), ledger, epoch, settledVersion, droppedVersion, lastStoredRaw];
+        const rememberSaved = () => {
+          lastSavedState = savedState();
+        };
+        const unchangedPaged = () => lastSavedState && savedState().every((value, index) => value === lastSavedState[index]);
+        const decode = (raw) => {
+          if (raw == null) return null;
+          const value = pages ? pages.decode(raw) : JSON.parse(raw);
+          paged = pages?.active() || false;
+          if (!value || value.version !== 1 || !identifier(value.epoch) || !Array.isArray(value.events) || storageScope !== "account" && value.events.length > 2e4 || Object.keys(value).some((k) => !["version", "epoch", "events", "owner", "ledger", "settled", "dropped"].includes(k))) throw new Error("Atlas: unreadable history");
+          if (value.ledger != null) Ledger.validate(value.ledger);
+          for (const ids of [value.settled, value.dropped]) if (ids != null && (!Array.isArray(ids) || storageScope !== "account" && ids.length > 2e4 || !ids.every(identifier))) throw new Error("Atlas: unreadable history");
+          if (storageScope === "account" ? value.owner !== accountKey : value.owner != null) throw new Error("Atlas: local history belongs to a different storage scope");
+          newSession(value.events);
+          return value;
+        };
+        function readStored() {
+          if (!storage) return null;
+          try {
+            const raw = storage.getItem(key);
+            if (raw === lastStoredRaw) return UNCHANGED;
+            const stored = decode(raw);
+            lastStoredRaw = pages?.decodedRaw() ?? raw;
+            return stored;
+          } catch {
+            readable = false;
+            complete = false;
+            warning = "기록을 읽지 못해 기본 연습으로 진행해요.";
+            notify("storage-error", "STORAGE_ERROR");
+            return null;
+          }
+        }
+        const initial = readStored();
+        let provisional = !!lease && !initial;
+        epoch = initial?.epoch || lease?.epoch || (lease ? "initial." + uid() : uid());
+        if (lease && !lease.epoch) lease.epoch = epoch;
+        ledger = initial?.ledger || null;
+        session = newSession(initial?.events || []);
+        const settle = (ids, known) => {
+          const before = settled.size;
+          for (const id of ids) if (known.has(id)) settled.add(id);
+          for (const id of settled) if (!known.has(id)) settled.delete(id);
+          if (settled.size !== before) settledVersion += 1;
+        };
+        if (initial?.settled) settle(initial.settled, new Set(initial.events.map((e) => e.id)));
+        for (const id of initial?.dropped || []) dropped.add(id);
+        if (initial) rememberSaved();
+        const takeDropped = (ids, keepMine) => {
+          const next = new Set(keepMine ? [...dropped, ...ids] : ids);
+          if (next.size !== dropped.size || [...next].some((id) => !dropped.has(id))) {
+            dropped.clear();
+            for (const id of next) dropped.add(id);
+            droppedVersion += 1;
+          }
+        };
+        function refresh(access = null) {
+          if (closed || closing && access !== FINAL_FLUSH) return;
+          if (!readable || !storage) return;
+          const stored = readStored();
+          if (!stored || stored === UNCHANGED) return;
+          if (provisional && stored.epoch.startsWith("initial.")) {
+            epoch = stored.epoch;
+            provisional = false;
+          }
+          if (stored.epoch !== epoch) {
+            epoch = stored.epoch;
+            provisional = false;
+            ledger = stored.ledger || null;
+            session = newSession(stored.events);
+            release(null);
+            settled.clear();
+            settledVersion += 1;
+            settle(stored.settled || [], new Set(stored.events.map((e) => e.id)));
+            takeDropped(stored.dropped || [], false);
+            return;
+          }
+          const theirs = stored.ledger || null, order = Ledger.compare(ledger, theirs), mine = log();
+          const storedIds = new Set(stored.events.map((e) => e.id)), mineIds = new Set(mine.map((e) => e.id));
+          const kept = /* @__PURE__ */ new Set(), keeps = (e, ids) => ids.has(e.id) || ids.has(Ledger.reference(e)) || kept.has(Ledger.reference(e));
+          const combined = mine.filter((e) => (order >= 0 || keeps(e, storedIds) || !Ledger.folded(theirs, e)) && kept.add(e.id)), known = new Map(combined.map((e) => [e.id, e]));
+          for (const e of stored.events) {
+            if (order > 0 && !keeps(e, mineIds) && Ledger.folded(ledger, e)) continue;
+            if (known.has(e.id)) {
+              if (!sameEvent(known.get(e.id), e)) {
+                readable = false;
+                complete = false;
+                warning = "기록 내용이 서로 달라 연결을 중단했어요. 기존 기록은 보존해요.";
+                notify("storage-error", "STORAGE_ERROR");
+                throw Object.assign(new Error("Atlas: conflicting stored event"), { code: "STORAGE_ERROR" });
+              }
+            } else {
+              known.set(e.id, e);
+              combined.push(e);
+              kept.add(e.id);
+            }
+          }
+          ledger = Ledger.reconcile(ledger, theirs) || (order < 0 ? theirs : ledger);
+          const types = new Map([...mine, ...stored.events].map((e) => [e.id, e.type]));
+          for (const e of combined) if (e.type === "feedback.given" && !known.has(e.completionId) || e.type === "record.excluded" && !known.has(e.targetId) && types.get(e.targetId) === "feedback.given") known.delete(e.id);
+          settle([...settled, ...stored.settled || []], known);
+          takeDropped(stored.dropped || [], order > 0);
+          const gone = [...mine, ...combined].filter((e) => !known.has(e.id));
+          if (folding?.remote && gone.length) {
+            for (const e of gone) dropped.add(e.id);
+            droppedVersion += 1;
+          }
+          session = newSession(combined.filter((e) => known.has(e.id)));
+          release((id) => !known.has(id));
+        }
+        const serialised = /* @__PURE__ */ new WeakMap();
+        const entryJson = (e) => {
+          let json = serialised.get(e);
+          if (json === void 0) {
+            json = JSON.stringify(e);
+            if (Object.isFrozen(e)) serialised.set(e, json);
+          }
+          return json;
+        };
+        let body = null, ledgerJson = null, settledJson = null, droppedJson = null, retryFold = null;
+        const snapshot = (events) => {
+          if (!(body && body.session === session && body.count <= events.length && (body.count === 0 || events[body.count - 1] === body.last))) body = { session, count: 0, last: null, text: "" };
+          for (; body.count < events.length; body.count += 1) body.text += (body.count ? "," : "") + entryJson(events[body.count]);
+          body.last = body.count ? events[body.count - 1] : null;
+          if (ledgerJson?.ledger !== ledger) ledgerJson = { ledger, text: ledger ? `,"ledger":${JSON.stringify(ledger)}` : "" };
+          if (settledJson?.version !== settledVersion) settledJson = { version: settledVersion, text: settled.size ? `,"settled":${JSON.stringify([...settled])}` : "" };
+          if (droppedJson?.version !== droppedVersion) droppedJson = { version: droppedVersion, text: dropped.size ? `,"dropped":${JSON.stringify([...dropped])}` : "" };
+          return `{"version":1,"epoch":${JSON.stringify(epoch)},"events":[${body.text}]${ledgerJson.text}${settledJson.text}${droppedJson.text}${storageScope === "account" ? `,"owner":${JSON.stringify(accountKey)}` : ""}}`;
+        };
+        function compact() {
+          if (!folding || paged) return;
+          const events = log(), now = Date.parse(monotonicClock());
+          if (events.length <= folding.max) return;
+          if (retryFold && retryFold.settled === settledVersion && now < retryFold.at) return;
+          const open = held(now);
+          const retained = followups ? readFollowups(events, { scope, asOf: new Date(now).toISOString(), prior: ledger, retain: true }) : null;
+          if (retained) open.push(...retained.retainDecisionIds);
+          if (folding.remote) {
+            for (const e of events) if (!settled.has(e.id)) open.push(e.id);
+          }
+          const planned = Ledger.plan(events, {
+            keep: folding.keep,
+            olderThan: now - folding.ageMs,
+            open,
+            unfinishedBefore: folding.remote ? now - 30 * 864e5 : now - folding.ageMs,
+            respondedBefore: now - RESPONSE_MS - SET_OPEN_MS
+          });
+          const batch = Math.max(1, Math.floor((folding.max - folding.keep) / 2));
+          if (!planned || planned.folded.length < batch && events.length < 2 * folding.max) {
+            retryFold = { settled: settledVersion, at: now + 6e4 };
+            return;
+          }
+          retryFold = null;
+          const preserved = followups && (!ledger?.folded || ledger.followupsPreserved === true);
+          ledger = Ledger.fold(ledger, planned.folded, { scope, log: events, local: !folding.remote });
+          ledger.followupsPreserved = preserved;
+          if (retained?.coverage.retentionLimited && !ledger.followupsLost) {
+            ledger.followupsLost = { anchors: retained.coverage.unretainedAnchors, at: now };
+          }
+          session = newSession(planned.kept);
+          for (const e of planned.folded) settled.delete(e.id);
+          settledVersion += 1;
+          release((id) => planned.folded.some((e) => e.id === id));
+          if (folding.remote) {
+            for (const e of planned.folded) dropped.add(e.id);
+            droppedVersion += 1;
+          }
+        }
+        function persist(kind = "append", { quiet = false, access = null } = {}) {
+          if (closed || closing && access !== FINAL_FLUSH) return false;
+          waitingWrite = true;
+          if (!leased) {
+            writable = false;
+            warning = leaseWarning;
+            notify("storage-wait", "STORAGE_BUSY");
+            return false;
+          }
+          if (!storage || !readable) {
+            complete = false;
+            notify("storage-error", "STORAGE_ERROR");
+            return false;
+          }
+          try {
+            if (pages && log().length > THRESHOLD) paged = true;
+            compact();
+            const events = log();
+            if (!pages && events.length > 2e4) throw Object.assign(new Error("Atlas: local history limit"), { code: "HISTORY_CAPACITY" });
+            let raw;
+            if (paged) raw = pages.write(
+              {
+                version: 1,
+                epoch,
+                events,
+                owner: accountKey,
+                ...ledger ? { ledger } : {},
+                ...settled.size ? { settled: [...settled] } : {},
+                ...dropped.size ? { dropped: [...dropped] } : {}
+              },
+              typeof lastStoredRaw === "string" ? lastStoredRaw : null
+            );
+            else {
+              raw = snapshot(events);
+              storage.setItem(key, raw);
+            }
+            lastStoredRaw = raw;
+            rememberSaved();
+            provisional = false;
+            writable = true;
+            waitingWrite = false;
+            if (!quiet) notify(kind);
+            return true;
+          } catch (error) {
+            writable = false;
+            complete = false;
+            warning = "기록을 저장하지 못했어요. 이번 연습은 다음 접속에 이어지지 않을 수 있어요.";
+            notify("storage-error", error.code === "HISTORY_CAPACITY" ? "HISTORY_CAPACITY" : "STORAGE_ERROR");
+            return false;
+          }
+        }
+        if (!initial && readable && storage) persist();
+        const requireDurable = () => {
+          if (closed || closing) throw Object.assign(new Error("Atlas: game closed"), { code: "GAME_CLOSED" });
+          refresh();
+          if (!leased) throw Object.assign(new Error("Atlas: another browser context owns this history"), { code: "STORAGE_BUSY" });
+          if (!readable || !writable) throw Object.assign(new Error("Atlas: local history is not durable"), { code: "STORAGE_ERROR" });
+        };
+        const port = Object.freeze({
+          scope: storageScope,
+          accountKey,
+          canPersist: () => !closed && !closing && leased,
+          // The kept entries. A synchronised store's folded entries are on the server; whether this
+          // history can be sent at all is partial().
+          events() {
+            requireDurable();
+            return session.events();
+          },
+          // The kept entries' ids, without copying the entries: a WORLD host compares them around a
+          // game call to find what the call added (account/world-learning-host.js).
+          ids() {
+            requireDurable();
+            return log().map((e) => e.id);
+          },
+          // True when this store folded entries no server has received (it was not synchronised then):
+          // its history can never be sent whole, so a synchroniser must not send it.
+          partial() {
+            refresh();
+            return !!ledger?.local;
+          },
+          // The sync calls this after a complete pull with every entry id the server has sent:
+          // those entries may fold here. Saved quietly (it is not a new learning entry).
+          settle(ids) {
+            if (closed || closing) return false;
+            if (!folding?.remote || !Array.isArray(ids)) return false;
+            refresh();
+            if (!readable) return false;
+            const version = settledVersion;
+            settle([...settled, ...ids], new Set(log().map((e) => e.id)));
+            return settledVersion === version || persist("settle", { quiet: true });
+          },
+          // Ids this store folded away since the synchroniser last took them (always on the server).
+          dropped() {
+            refresh();
+            return [...dropped];
+          },
+          // The synchroniser has taken these (saved in its own outbox first).
+          forget(ids) {
+            if (closed || closing) return false;
+            refresh();
+            if (!readable || !Array.isArray(ids)) return false;
+            const version = droppedVersion;
+            for (const id of ids) if (dropped.delete(id)) droppedVersion = version + 1;
+            return droppedVersion === version || persist("forget", { quiet: true });
+          },
+          subscribe(listener) {
+            if (closed || closing) throw Object.assign(new Error("Atlas: game closed"), { code: "GAME_CLOSED" });
+            if (typeof listener !== "function") throw new TypeError("Atlas: listener required");
+            listeners.add(listener);
+            return () => listeners.delete(listener);
+          },
+          markComplete(value) {
+            if (closed || closing) return false;
+            complete = value === true;
+          },
+          importEvents(incoming) {
+            if (closed || closing) throw Object.assign(new Error("Atlas: game closed"), { code: "GAME_CLOSED" });
+            refresh();
+            if (!readable) throw Object.assign(new Error("Atlas: local history is unreadable"), { code: "STORAGE_ERROR" });
+            if (ledger?.local) throw Object.assign(new Error("Atlas: a folded history is kept on this device only"), { code: "HISTORY_FOLDED" });
+            if (!Array.isArray(incoming)) throw new TypeError("Atlas: imported events must be an array");
+            const combined = log().slice(), previousLength = combined.length, known = new Map(combined.map((event) => [event.id, event])), late = [], gone = [], skipped = [];
+            for (const event of incoming) {
+              if (known.has(event?.id)) {
+                if (!sameEvent(known.get(event.id), event)) throw Object.assign(new Error("Atlas: conflicting imported event"), { code: "EVENT_CONFLICT" });
+              } else if (ledger && Ledger.stray(event, known)) {
+                Atlas.validate(event);
+                if (["domain", "workspace", "subject"].some((field) => event.scope[field] !== scope[field])) throw new Error("Atlas: scope mismatch");
+                skipped.push(event.id);
+                if (event.type === "record.excluded") gone.push(event.targetId);
+                continue;
+              } else {
+                known.set(event?.id, event);
+                combined.push(event);
+                if (Ledger.folded(ledger, event)) late.push(event);
+              }
+            }
+            if (combined.length === previousLength && !skipped.length && writable && (paged || snapshot(combined) === lastStoredRaw)) return { added: 0, skipped };
+            const imported = newSession(combined);
+            session = imported;
+            if (late.length || skipped.length) ledger = Ledger.demote(ledger, { late, excluded: gone, strays: skipped.length }, (id) => known.get(id));
+            if (!persist("import")) throw Object.assign(new Error("Atlas: imported history could not be saved"), { code: "STORAGE_ERROR" });
+            return { added: combined.length - previousLength, skipped };
+          }
+        });
+        if (lease) {
+          const changed = (active) => {
+            leased = active;
+            if (closing) {
+              if (active) {
+                try {
+                  writable = true;
+                  closedFlush = flushHistory(FINAL_FLUSH);
+                } catch {
+                  closedFlush = false;
+                } finally {
+                  retireHistory();
+                }
+              }
+              return;
+            }
+            if (!active) {
+              writable = false;
+              warning = leaseWarning;
+              notify("storage-wait", "STORAGE_BUSY");
+              return;
+            }
+            writable = true;
+            if (warning === leaseWarning) warning = null;
+            try {
+              refresh();
+              if (!waitingWrite || persist("storage-ready", { quiet: true })) notify("storage-ready");
+            } catch {
+              readable = false;
+              complete = false;
+              writable = false;
+              notify("storage-error", "STORAGE_ERROR");
+            }
+          };
+          lease.listeners.add(changed);
+          detachLease = () => lease.detach(changed);
+          changed(lease.active);
+          lease.start();
+        }
+        function flushHistory(access = null) {
+          if (closed || closing && access !== FINAL_FLUSH) return closedFlush;
+          refresh(access);
+          return !!storage && readable && (writable && (paged ? unchangedPaged() : snapshot(log()) === lastStoredRaw) || persist("flush", { quiet: true, access }));
+        }
+        function retireHistory() {
+          closed = true;
+          closing = false;
+          leased = false;
+          readable = false;
+          writable = false;
+          complete = false;
+          detachLease();
+        }
+        return Object.freeze({
+          port,
+          refresh,
+          clock: monotonicClock,
+          close() {
+            if (closed || closing) return closedFlush;
+            closing = true;
+            listeners.clear();
+            release(null);
+            try {
+              closedFlush = flushHistory(FINAL_FLUSH);
+            } catch {
+              retireHistory();
+              return false;
+            }
+            const pending = paged ? !unchangedPaged() : snapshot(log()) !== lastStoredRaw;
+            if (!closedFlush && pending && storage && readable && lease?.supported && !leased) return false;
+            retireHistory();
+            return closedFlush;
+          },
+          // What is saved now. `session` is the log the game appends to (only this owner replaces it);
+          // `available`: it can be read and written; `durable`: also complete, so only then is an answer independent.
+          state() {
+            const of = session;
+            return Object.freeze({ epoch, session: of, get log() {
+              return log(of);
+            }, ledger, available: readable && writable, durable: complete && readable && writable, warning });
+          },
+          persist: () => persist(),
+          // Before a tab closes or hides: another tab may have written an older history over this
+          // one's entries in the meantime (tabs see each other's writes late), so join and write again.
+          flush: flushHistory,
+          reset() {
+            if (!leased) throw Object.assign(new Error("Atlas: another browser context owns this history"), { code: "STORAGE_BUSY" });
+            const nextEpoch = uid(), nextSession = newSession([]);
+            const raw = JSON.stringify({ version: 1, epoch: nextEpoch, events: [], ...storageScope === "account" ? { owner: accountKey } : {} });
+            try {
+              if (storage) storage.setItem(key, raw);
+            } catch {
+              writable = false;
+              warning = "기록을 저장하지 못해 초기화하지 않았어요.";
+              notify("storage-error", "STORAGE_ERROR");
+              throw Object.assign(new Error("Atlas: reset could not be saved"), { code: "STORAGE_ERROR" });
+            }
+            epoch = nextEpoch;
+            provisional = false;
+            session = nextSession;
+            ledger = null;
+            settled.clear();
+            settledVersion += 1;
+            takeDropped([], false);
+            readable = true;
+            writable = !!storage;
+            complete = historyComplete;
+            warning = null;
+            waitingWrite = false;
+            lastStoredRaw = storage ? raw : null;
+            body = ledgerJson = settledJson = droppedJson = retryFold = null;
+            paged = false;
+            release(null);
+            if (storage) notify("append");
+          }
+        });
+      }
+      function createGame({
+        gameId,
+        map,
+        storage = null,
+        learnerKey = "device",
+        clock = () => (/* @__PURE__ */ new Date()).toISOString(),
+        historyComplete = true,
+        storageScope = "device",
+        accountKey = null,
+        fold = null,
+        followups = false,
+        memoryOwner = null
+      } = {}) {
+        if (!identifier(gameId) || !identifier(learnerKey) || typeof map?.allNodes !== "function") throw new TypeError("Atlas: game, local scope and Strata map required");
+        if (typeof followups !== "boolean") throw new TypeError("Atlas: follow-up retention must be explicit");
+        if (!["device", "account"].includes(storageScope) || storageScope === "account" && (!identifier(accountKey) || learnerKey !== "device")) throw new TypeError("Atlas: account identity and isolated host storage required");
+        if (memoryOwner != null && (storageScope !== "account" || memoryOwner.scope !== "account" || !identifier(memoryOwner.accountKey) || !memoryOwner.flow || ["today", "setToday", "presentation", "setPresentation", "epoch", "memories", "save", "decline", "state", "merge", "subscribe"].some((name) => typeof memoryOwner.flow[name] !== "function"))) throw new TypeError("Atlas: a verified personal memory owner is required");
+        const scope = { domain: "LAB", workspace: "learning", subject: learnerKey };
+        const key = `${KEY}.${learnerKey}`;
+        let flowPort = null, disposed = false;
+        const active = /* @__PURE__ */ new Map(), sets = /* @__PURE__ */ new Map();
+        const history = openHistory({
+          storage,
+          key,
+          scope,
+          storageScope,
+          accountKey,
+          historyComplete,
+          fold,
+          followups,
+          clock,
+          held: (now) => {
+            const open = [...active].filter(([, item]) => !item.results.length).map(([pid]) => pid);
+            for (const [id, at] of sets) if (now - at < SET_OPEN_MS) open.push(id);
+            else sets.delete(id);
+            return open;
+          },
+          release: (gone) => {
+            if (!gone) {
+              active.clear();
+              sets.clear();
+            } else for (const pid of active.keys()) if (gone(pid)) active.delete(pid);
+          }
+        });
+        const monotonicClock = history.clock;
+        const current = () => {
+          history.refresh();
+          return history.state();
+        };
+        const practiceSession = { practice: (...args) => history.state().session.practice(...args) };
+        const VIEW_MS = 6e4;
+        let cached = null, met = null;
+        function view(saved) {
+          const events = saved.log, asOf = monotonicClock(), now = Date.parse(asOf);
+          if (cached?.events === events && now - cached.now < VIEW_MS) return cached.summary;
+          cached = { events, now, summary: Trail.summarize(events, { scope, asOf, prior: saved.ledger }), profiles: /* @__PURE__ */ new Map(), counts: null };
+          return cached.summary;
+        }
+        function profileOf(observed, { durable, ledger }) {
+          const flag = String(durable);
+          if (cached?.summary === observed && cached.profiles.has(flag)) return cached.profiles.get(flag);
+          const profile = {
+            ...Learning.summarizeLearning({ summary: observed, map, complete: durable, prior: ledger }),
+            concepts: Learning.summarizeConcepts({ summary: observed, map, complete: durable, prior: ledger })
+          };
+          if (cached?.summary === observed) cached.profiles.set(flag, profile);
+          return profile;
+        }
+        function provenance(saved) {
+          const events = saved.log;
+          if (!met || met.session !== saved.session) met = { session: saved.session, done: 0, index: Trail.createIndex({ scope, prior: saved.ledger }), buckets: /* @__PURE__ */ new Map() };
+          for (; met.done < events.length; met.done += 1) {
+            const row = met.index.add(events[met.done]);
+            if (!row?.measure) continue;
+            const bucket = `${row.measure.skillId}|${row.measure.difficulty}|${row.measure.responseFormat}`;
+            if (!met.buckets.has(bucket)) met.buckets.set(bucket, []);
+            met.buckets.get(bucket).push(row);
+          }
+          return met;
+        }
+        function basisOf(measure, saved) {
+          const known = provenance(saved);
+          if (!known.index.exact) return profileOf(view(saved), saved).skills.find((s) => s.id === measure.skillId).levels[measure.difficulty].formats[measure.responseFormat];
+          const key2 = `${measure.skillId}|${measure.difficulty}|${measure.responseFormat}`, cell = Ledger.cellOf(saved.ledger, key2);
+          const rows = (known.buckets.get(key2) || []).filter((row) => !row.omitted);
+          return Learning.formatEvidence(rows, {
+            now: Date.parse(monotonicClock()),
+            complete: saved.durable,
+            difficulty: measure.difficulty,
+            responseFormat: measure.responseFormat,
+            base: cell ? Ledger.rows(cell) : null
+          });
+        }
+        function report(saved) {
+          const observed = view(saved), { ledger } = saved;
+          const measured = () => {
+            const counts = Temper.combine(ledger?.counts || null, Temper.measure(observed));
+            return ledger?.adjusted && counts ? { ...counts, status: counts.status === "measured" ? "approximate" : counts.status, approximate: true } : counts;
+          };
+          if (cached?.summary === observed && !cached.counts) cached.counts = measured();
+          return {
+            ...profileOf(observed, saved),
+            storage: {
+              available: saved.available,
+              scope: storageScope,
+              warning: saved.warning,
+              ...ledger ? { folded: ledger.folded, adjusted: ledger.adjusted || 0 } : {}
+            },
+            counts: cached?.summary === observed ? cached.counts : measured()
+          };
+        }
+        function requireActive(pid) {
+          const saved = current(), item = active.get(pid);
+          if (!item) throw new Error("Atlas: presentation ended or local record reset");
+          return [item, saved];
+        }
+        const api = {
+          mapVersion: map.map_ver,
+          syncPort: history.port,
+          summary: () => report(current()),
+          followups() {
+            const saved = current();
+            return readFollowups(saved.log, { scope, asOf: monotonicClock(), prior: saved.ledger, complete: saved.durable, retain: followups });
+          },
+          recommend(candidates, options = {}) {
+            const saved = current(), profile = report(saved);
+            return { ...Learning.recommend({ profile, candidates, presentations: view(saved).presentations, prior: saved.ledger, ...options }), storage: profile.storage };
+          },
+          recommendActivities(candidates, options = {}) {
+            const saved = current(), profile = report(saved);
+            return { ...Learning.recommendActivities({ ...options, profile, candidates, presentations: view(saved).presentations, prior: saved.ledger }), storage: profile.storage };
+          },
+          // Display exposure is stricter than independent-attempt qualification: an item
+          // shown without an answer is still not a never-shown item. Both include folded history.
+          exposure(item) {
+            if (!identifier(item?.itemKey) || !identifier(item.familyKey || item.itemKey)) throw new TypeError("Atlas: invalid exposure item");
+            const saved = current(), family = item.familyKey || item.itemKey;
+            const shown = saved.log.some((e) => e.type === "practice.presented" && (e.itemKey === item.itemKey || (e.measure?.familyKey || e.itemKey) === family)) || (saved.ledger?.presented || []).some(([_task, priorItem, priorFamily]) => priorItem === item.itemKey || priorFamily === family);
+            return { seen: shown || provenance(saved).index.met(item.itemKey, family) ? true : saved.durable ? false : null };
+          },
+          // A consumer supplies the two attempts it deliberately joined in this round.
+          // This reads recent full events only: no durable lineage, profile update or causal claim.
+          recheck(sourceAttemptId, targetAttemptId) {
+            if (![sourceAttemptId, targetAttemptId].every(identifier)) throw new TypeError("Atlas: invalid recheck attempt IDs");
+            const result = { sourceAttemptId, targetAttemptId, correctionObserved: false, correctionEventIds: [], learningEffectClaim: false };
+            const unavailable = (reason) => ({ ...result, status: "unavailable", line: "새 문항 확인 결과를 판단할 기록이 충분하지 않아요.", reason });
+            let saved;
+            try {
+              saved = current();
+            } catch {
+              return unavailable("incomplete-history");
+            }
+            if (!saved.durable || saved.ledger?.adjusted) return unavailable("incomplete-history");
+            const events = saved.log, positions = new Map(events.map((event, index) => [event.id, index]));
+            const byId = new Map(events.map((event) => [event.id, event]));
+            const sourceEvent = byId.get(sourceAttemptId), targetEvent = byId.get(targetAttemptId);
+            if (sourceEvent?.type !== "practice.attempted" || targetEvent?.type !== "practice.attempted") return unavailable("missing-attempt");
+            if (sourceEvent.attemptNo !== 1 || targetEvent.attemptNo !== 1) return unavailable("not-first-attempt");
+            const sourcePresentation = byId.get(sourceEvent.presentationId), targetPresentation = byId.get(targetEvent.presentationId);
+            const sourceDecision = byId.get(sourcePresentation?.decisionId), targetDecision = byId.get(targetPresentation?.decisionId);
+            if (sourcePresentation?.type !== "practice.presented" || targetPresentation?.type !== "practice.presented" || sourceDecision?.type !== "decision.made" || targetDecision?.type !== "decision.made") return unavailable("missing-parent");
+            const sourceCompletion = events.find((event) => event.type === "experience.completed" && event.decisionId === sourceDecision.id);
+            const targetCompletion = events.find((event) => event.type === "experience.completed" && event.decisionId === targetDecision.id);
+            if (!sourceCompletion || !targetCompletion) return unavailable("missing-completion");
+            const now = Date.parse(monotonicClock());
+            const visible = (event) => Date.parse(event.at) <= now && Date.parse(event.recordedAt) <= now;
+            const before = (a2, b2) => positions.get(a2.id) < positions.get(b2.id) && Date.parse(a2.at) <= Date.parse(b2.at) && Date.parse(a2.recordedAt) <= Date.parse(b2.recordedAt);
+            const required = [sourceDecision, sourcePresentation, sourceEvent, sourceCompletion, targetDecision, targetPresentation, targetEvent, targetCompletion];
+            if (!required.every(visible) || !before(sourcePresentation, sourceEvent) || !before(sourceEvent, targetPresentation) || !before(targetPresentation, targetEvent) || !before(sourceEvent, sourceCompletion) || !before(targetEvent, targetCompletion)) return unavailable("invalid-order");
+            const relevant = new Set(required.map((event) => event.id));
+            for (const event of events) if (["practice.helped", "practice.delivery"].includes(event.type) && (event.presentationId === sourcePresentation.id && before(event, sourceEvent) || event.presentationId === targetPresentation.id && before(event, targetEvent))) relevant.add(event.id);
+            if (events.some((event) => event.type === "record.excluded" && relevant.has(event.targetId))) return unavailable("excluded-evidence");
+            if (sourceDecision.experienceId !== targetDecision.experienceId) return unavailable("different-game");
+            const a = sourcePresentation.measure, b = targetPresentation.measure;
+            if (!a || !b || !Learning.RESPONSE_FORMATS.includes(a.responseFormat) || a.responseFormat === "unknown" || ["skillId", "difficulty", "responseFormat", "modality", "audioRequired"].some((key2) => a[key2] !== b[key2]) || sourcePresentation.taskVersion !== targetPresentation.taskVersion) return unavailable("different-measurement");
+            if (sourcePresentation.itemKey === targetPresentation.itemKey || a.familyKey === b.familyKey) return unavailable("same-family");
+            const priorPresentation = events.some((event) => event.type === "practice.presented" && event.id !== targetPresentation.id && (positions.get(event.id) < positions.get(targetPresentation.id) || Date.parse(event.at) < Date.parse(targetPresentation.at)) && (event.itemKey === targetPresentation.itemKey || (event.measure?.familyKey || event.itemKey) === b.familyKey));
+            if (priorPresentation || (saved.ledger?.presented || []).some(([_task, item, family]) => item === targetPresentation.itemKey || family === b.familyKey)) return unavailable("previously-presented");
+            const observed = view(saved), source = observed.attempts.find((row) => row.eventId === sourceAttemptId), target = observed.attempts.find((row) => row.eventId === targetAttemptId);
+            if (!source || !target || source.exclusionReason || target.exclusionReason || !["correct", "incorrect"].includes(source.verdict) || !["correct", "incorrect"].includes(target.verdict)) return unavailable("unassessable");
+            if (source.verdict === "correct" && source.assisted !== true) return unavailable("source-not-recheck");
+            if (targetPresentation.firstExposure !== true || target.exposure !== "new" || ![true, false].includes(target.assisted) || target.assisted === false && !target.independent) return unavailable("unknown-provenance");
+            const corrections = observed.help.filter((help) => help.presentationId === sourcePresentation.id && help.level === "answer" && before(sourceEvent, byId.get(help.eventId)) && before(byId.get(help.eventId), targetPresentation));
+            const status = `${target.assisted ? "assisted" : "independent"}-${target.verdict}`;
+            const lines = {
+              "independent-correct": "다른 새 문항은 도움 없이 맞혔어요.",
+              "independent-incorrect": "다른 새 문항은 도움 없이 풀었지만 틀렸어요.",
+              "assisted-correct": "다른 새 문항은 도움을 보고 맞혔어요.",
+              "assisted-incorrect": "다른 새 문항은 도움을 보고 풀었지만 틀렸어요."
+            };
+            return {
+              ...result,
+              status,
+              line: lines[status],
+              correctionObserved: corrections.length > 0,
+              correctionEventIds: corrections.map((help) => help.eventId),
+              source: { verdict: source.verdict, assisted: source.assisted, independent: source.independent },
+              target: { verdict: target.verdict, assisted: target.assisted, independent: target.independent }
+            };
+          },
+          present(item, context = {}) {
+            const saved = current();
+            if (!context || typeof context !== "object" || Object.keys(context).some((k) => k !== "flow") || context.flow != null && (typeof context.flow !== "object" || Array.isArray(context.flow))) throw new TypeError("Atlas: invalid presentation context");
+            const node = map.getNode(item?.skillId);
+            if (!node || node.domain !== item.modality || !identifier(item.id) || !identifier(item.itemKey) || !identifier(item.familyKey || item.itemKey) || ![1, 2, 3].includes(item.difficulty) || !Learning.RESPONSE_FORMATS.includes(item.responseFormat ?? "unknown")) throw new TypeError("Atlas: invalid measured item");
+            const measure = {
+              skillId: item.skillId,
+              modality: item.modality,
+              difficulty: item.difficulty,
+              responseFormat: item.responseFormat ?? "unknown",
+              familyKey: item.familyKey || item.itemKey,
+              audioRequired: item.audioRequired ?? item.modality === "listening",
+              confounded: !!item.confounded
+            };
+            const seen = provenance(saved).index.met(item.itemKey, measure.familyKey);
+            const basis = basisOf(measure, saved);
+            const decision = saved.session.plan(gameId, [{
+              id: item.id,
+              minutes: 3,
+              pace: "standard",
+              learning: {
+                policy: Learning.POLICY.version,
+                skillId: item.skillId,
+                difficulty: item.difficulty,
+                responseFormat: measure.responseFormat,
+                state: basis.status,
+                evidence: basis.evidence
+              },
+              ...context.flow ? { flow: JSON.parse(JSON.stringify(context.flow)) } : {}
+            }]);
+            const content = item.conceptIds ?? [];
+            if (!Array.isArray(content) || content.length > 31 || new Set(content).size !== content.length || content.some((id) => !identifier(id) || !Learning.CONTENT.includes(map.getNode(id)?.kind))) throw new TypeError("Atlas: invalid measured item");
+            const task = { id: item.id, version: map.map_ver, itemKey: item.itemKey, concepts: [item.skillId, ...content], tags: [], measure };
+            const practice = Core.createPractice({
+              session: practiceSession,
+              decision,
+              map,
+              task,
+              assess: (result) => ({ verdict: result.assessable === false ? "unassessed" : result.correct == null ? "skipped" : result.correct ? "correct" : "incorrect", errorTags: [] }),
+              firstExposure: seen ? false : saved.durable ? true : null
+            });
+            active.set(practice.presentation.id, { practice, measure, decision, audio: "pending", results: [] });
+            history.persist();
+            return practice.presentation.id;
+          },
+          help(pid, kind) {
+            const [p] = requireActive(pid);
+            if (!["text", "hint", "answer", "replay", "explanation"].includes(kind)) throw new TypeError("Atlas: invalid help kind");
+            const result = p.practice.delivered({ id: kind, level: ["answer", "explanation"].includes(kind) ? kind : "cue", contentRef: `${gameId}.${kind}` });
+            history.persist();
+            return result;
+          },
+          delivery(pid, { audio }) {
+            const [p, saved] = requireActive(pid);
+            p.audio = audio;
+            const result = saved.session.practice("delivery", { presentationId: pid, audio });
+            history.persist();
+            return result;
+          },
+          answer(pid, result) {
+            const [p, saved] = requireActive(pid);
+            if (!result || ![true, false, null].includes(result.correct) || typeof result.assessable !== "boolean") throw new TypeError("Atlas: answer must identify assessability");
+            const choice = Object.hasOwn(result, "choice") ? Trail.choiceRecord(result.choice) : null;
+            const attemptNo = result.attemptNo ?? 1;
+            if (!Number.isInteger(attemptNo) || attemptNo < 1 || attemptNo > p.results.length + 1) throw new TypeError("Atlas: attempts must be consecutive");
+            if (p.results[attemptNo - 1]) {
+              const earlier = p.results[attemptNo - 1];
+              return { ...earlier, ...earlier.choice ? { choice: { ...earlier.choice } } : {} };
+            }
+            const reason = p.measure.confounded ? result.reason || "visual" : p.measure.audioRequired && p.audio !== "completed" ? "audio" : !saved.available ? "storage" : result.reason;
+            const assessable = result.assessable && !p.measure.confounded && (!p.measure.audioRequired || p.audio === "completed") && saved.available;
+            const attempt = p.practice.submit({ ...result, assessable }, { reason: reason || null, ...choice ? { choice } : {} });
+            saved.session.complete(p.decision);
+            history.persist();
+            const after = history.state(), known = provenance(after), row = known.index.attempt(attempt.eventId);
+            const actual = known.index.exact ? row && !row.omitted ? row : void 0 : view(after).attempts.find((a) => a.eventId === attempt.eventId);
+            const recorded = {
+              ...attempt,
+              independent: !!actual?.independent && after.durable,
+              reason: reason || null,
+              assisted: actual?.assisted ?? null,
+              exposure: actual?.exposure ?? null
+            };
+            p.results.push(recorded);
+            return { ...recorded, ...recorded.choice ? { choice: { ...recorded.choice } } : {} };
+          },
+          exclude(eventId) {
+            const event = current().session.exclude(eventId);
+            history.persist();
+            return event;
+          },
+          // A practice set ended (short practice, quick check, exam-form practice): a `<gameId>.set` decision and completion, so a
+          // response is about the set, not its last item. One 5-minute candidate, so a short-time setting never blocks it.
+          // Both entries are written together, once.
+          finishSet({ kind } = {}) {
+            const { session } = current();
+            if (!SET_KINDS.includes(kind)) throw new TypeError("Atlas: invalid practice set");
+            const decision = session.plan(`${gameId}.set`, [{ id: kind, minutes: 5, pace: "standard" }]);
+            if (decision.status !== "ready") throw new Error("Atlas: practice set could not be recorded");
+            const completion = session.complete(decision);
+            sets.set(decision.id, Date.parse(completion.at));
+            history.persist();
+            return { decisionId: decision.id, completionId: completion.id };
+          },
+          // A response to a finished set. It names the set's decision too, so a store folding by the older reference() keeps the
+          // set with it. The same value again adds nothing; another value replaces it.
+          feedback(set, value) {
+            const saved = current();
+            if (!RESPONSES.includes(value) || !identifier(set?.completionId) || !identifier(set?.decisionId)) throw new TypeError("Atlas: invalid set response");
+            const done = saved.log.find((e) => e.id === set.completionId);
+            if (done?.type !== "experience.completed" || done.experienceId !== `${gameId}.set` || done.decisionId !== set.decisionId || Date.parse(monotonicClock()) - Date.parse(done.at) > SET_OPEN_MS) throw Object.assign(new Error("Atlas: this practice set no longer takes a response"), { code: "SET_UNAVAILABLE" });
+            if (saved.session.state().feedback.find((f) => f.completionId === done.id)?.value === value) return null;
+            const event = saved.session.feedback(done.id, value, done.decisionId);
+            history.persist();
+            return event;
+          },
+          // Responses to this game's sets that Core still reads (30 days, not excluded), oldest first.
+          setFeedback() {
+            return current().session.state().feedback.filter((f) => f.experienceId === `${gameId}.set`).map((f) => ({ id: f.id, completionId: f.completionId, decisionId: f.decisionId ?? null, value: f.value, kind: f.variant, at: f.at }));
+          },
+          events() {
+            return current().session.events();
+          },
+          flush: () => history.flush(),
+          reset() {
+            if (storageScope === "account") throw Object.assign(new Error("Atlas: account deletion requires the host consent/reset API; local reset cannot delete server records"), { code: "ACCOUNT_RESET_REQUIRED" });
+            history.reset();
+            flowPort.clear();
+            return api.summary();
+          }
+        };
+        flowPort = memoryOwner?.flow || createFlowPort({ storage, key, clock: monotonicClock, canPersist: history.port.canPersist, epoch: () => {
+          try {
+            history.refresh();
+          } catch {
+          }
+          return history.state().epoch;
+        } });
+        api.today = flowPort.today;
+        api.setToday = flowPort.setToday;
+        api.presentation = flowPort.presentation;
+        api.setPresentation = flowPort.setPresentation;
+        api.memoryPort = Object.freeze({
+          scope: memoryOwner?.scope || storageScope,
+          accountKey: memoryOwner?.accountKey || accountKey,
+          state: flowPort.state,
+          merge: flowPort.merge,
+          subscribe: flowPort.subscribe,
+          flow: flowPort,
+          pending: flowPort.pending,
+          prepare: flowPort.prepare,
+          acknowledge: flowPort.acknowledge,
+          epoch: flowPort.epoch
+        });
+        api.live = createLive({ coach: api, port: flowPort, clock: monotonicClock });
+        api.dispose = () => {
+          if (disposed) return;
+          disposed = true;
+          history.close();
+          cached = null;
+          met = null;
+        };
+        for (const [name, method] of Object.entries(api)) if (typeof method === "function" && !["dispose", "flush"].includes(name)) {
+          api[name] = (...args) => {
+            if (disposed) throw Object.assign(new Error("Atlas: game closed"), { code: "GAME_CLOSED" });
+            return method(...args);
+          };
+        }
+        return api;
+      }
+      module.exports = {
+        createGame,
+        createLearningSync,
+        createMemorySync,
+        summarizeLearning: Learning.summarizeLearning,
+        recommend: Learning.recommend,
+        recommendActivities: Learning.recommendActivities,
+        POLICY: Learning.POLICY,
+        ACTIVITY_POLICY: Learning.ACTIVITY_POLICY,
+        RESPONSE_FORMATS: Learning.RESPONSE_FORMATS,
+        KEY
+      };
+    }
+  });
+
+  // experiences/synk-account/src/generated/world-learning-host.cjs
+  var require_world_learning_host = __commonJS({
+    "experiences/synk-account/src/generated/world-learning-host.cjs"(exports, module) {
+      "use strict";
+      var OWNER = "synk.world.run-owner.v1";
+      var OWNERS = "synk.world.run-owners.v1";
+      var OWNER_GRACE_MS = 864e5;
+      var identifier = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
+      var failure = (message, code) => Object.assign(new Error(message), { code });
+      function createWorldLearningHost({ accountKey, revision, storage, transport, memoryTransport = null, personalMemory = null, guard, connected = true, onStatus = () => {
+      }, engine = null, clock = Date.now }) {
+        if (!accountKey || !Number.isSafeInteger(revision) || typeof guard !== "function") throw new TypeError("Verified WORLD account required");
+        if (personalMemory && (!identifier(personalMemory.accountKey) || !Number.isSafeInteger(personalMemory.revision) || personalMemory.revision < 1 || typeof personalMemory.storage?.getItem !== "function" || typeof personalMemory.storage?.setItem !== "function" || typeof personalMemory.connected !== "boolean")) throw new TypeError("Verified personal WORLD memory required");
+        let sync, primary, memory, memoryReady, personal, privacyBlocked = false, closed = false, run = null, generation = 0;
+        const coaches = /* @__PURE__ */ new Set(), memoryListeners = /* @__PURE__ */ new Set();
+        const check = () => {
+          guard();
+          if (closed || privacyBlocked) throw failure("WORLD account session ended", "MEMORY_SESSION_ENDED");
+        };
+        const shared = { getItem(key) {
+          check();
+          return storage.getItem(key);
+        }, setItem(key, value) {
+          check();
+          storage.setItem(key, value);
+        }, removeItem(key) {
+          check();
+          storage.removeItem(key);
+        } };
+        const ownerKey = (eventId) => `${OWNER}.${eventId}`;
+        function owners(ids, now) {
+          const raw = shared.getItem(OWNERS);
+          try {
+            const rows = raw == null ? null : JSON.parse(raw);
+            if (Array.isArray(rows) && rows.every((row) => Array.isArray(row) && row.length === 2 && identifier(row[0]) && Number.isSafeInteger(row[1]))) return rows;
+          } catch {
+          }
+          return ids.filter((id) => shared.getItem(ownerKey(id)) != null).map((id) => [id, now]);
+        }
+        function own(ids, before, context) {
+          const added = ids.filter((id) => !before.has(id));
+          if (!added.length) return;
+          for (const id of added) {
+            const key = ownerKey(id), prior = shared.getItem(key);
+            if (prior != null && prior !== context.id) throw new Error("Conflicting WORLD run ownership");
+            shared.setItem(key, context.id);
+          }
+          const now = clock(), kept = new Set(ids), rows = [];
+          for (const [id, at] of owners(ids, now)) {
+            if (kept.has(id) || now - at < OWNER_GRACE_MS) rows.push([id, at]);
+            else shared.removeItem(ownerKey(id));
+          }
+          const listed = new Set(rows.map(([id]) => id));
+          for (const id of added) if (!listed.has(id)) rows.push([id, now]);
+          shared.setItem(OWNERS, JSON.stringify(rows));
+        }
+        const memoryAdapter = () => ({ memoryPort: Object.freeze({
+          scope: "account",
+          accountKey,
+          state: () => primary.memoryPort.state(),
+          merge: (value) => primary.memoryPort.merge(value),
+          ...typeof primary.memoryPort.pending === "function" ? {
+            pending: () => primary.memoryPort.pending(),
+            prepare: (...args) => primary.memoryPort.prepare(...args),
+            acknowledge: (...args) => primary.memoryPort.acknowledge(...args),
+            epoch: () => primary.memoryPort.epoch()
+          } : {},
+          subscribe(listener) {
+            const stop = primary.memoryPort.subscribe(listener);
+            memoryListeners.add(listener);
+            return () => {
+              stop();
+              memoryListeners.delete(listener);
+            };
+          }
+        }) });
+        const upload = transport && { get: (args) => transport.get(args), async post(args) {
+          check();
+          const groups = [];
+          for (const event of args.events) {
+            const runId = shared.getItem(ownerKey(event.id)) ?? null;
+            if (runId !== null && !identifier(runId)) throw failure("Unreadable WORLD run ownership", "STORAGE_ERROR");
+            if (groups.length && groups.at(-1).runId === runId) groups.at(-1).events.push(event);
+            else groups.push({ runId, events: [event] });
+          }
+          const accepted = [];
+          for (const group of groups) {
+            const result = await transport.post({ ...args, events: group.events, ...group.runId ? { runId: group.runId } : {} });
+            check();
+            if (result?.ok === false || result?.revision !== revision) return result;
+            const sent = new Set(group.events.map((event) => event.id));
+            if (!Array.isArray(result.accepted) || result.accepted.some((id) => !sent.has(id))) throw failure("Invalid WORLD run acknowledgement", "INVALID_RESPONSE");
+            accepted.push(...result.accepted);
+          }
+          return { ok: true, revision, accepted };
+        } };
+        function createGame(options, factory, createSync) {
+          check();
+          const make = engine?.createGame && engine?.createLearningSync ? engine : { createGame: factory, createLearningSync: createSync };
+          if (personalMemory && !personal) {
+            const own2 = personalMemory, ownStorage = Object.fromEntries(["getItem", "setItem", "removeItem"].map((method) => [method, (...args) => {
+              check();
+              return own2.storage[method]?.(...args);
+            }]));
+            personal = make.createGame({ gameId: "world-personal-memory", storage: ownStorage, learnerKey: "device", storageScope: "account", accountKey: own2.accountKey, historyComplete: !own2.connected, fold: { remote: true } });
+            if (own2.connected && own2.transport && typeof engine?.createMemorySync === "function") {
+              memory = engine.createMemorySync({
+                adapter: personal,
+                accountKey: own2.accountKey,
+                revision: own2.revision,
+                transport: own2.transport,
+                onStatus: (state) => {
+                  if (state.phase === "blocked" && ["REVISION_CONFLICT", "LEARNING_DISABLED", "SESSION_REVOKED", "UNAUTHORIZED", "AUTH_REQUIRED", "AUTH_SESSION_MISSING", "MEMORY_SESSION_ENDED", "ACCOUNT_UNAVAILABLE"].includes(state.code)) {
+                    privacyBlocked = true;
+                    generation++;
+                    sync?.stop();
+                    onStatus({ phase: "blocked", code: state.code, complete: false, queued: 0 });
+                  }
+                }
+              });
+              memoryReady = memory.start();
+            }
+          }
+          const owned = { storage: shared, learnerKey: "device", storageScope: "account", accountKey, historyComplete: !connected, fold: connected ? { remote: true } : true, followups: true, memoryOwner: personal?.memoryPort || null };
+          if (connected && !sync) {
+            primary = make.createGame({ gameId: "world-account", ...owned });
+            sync = make.createLearningSync({
+              adapter: primary,
+              accountKey,
+              revision,
+              storage: shared,
+              transport: upload,
+              onStatus: (state) => {
+                for (const coach2 of coaches) coach2.syncPort.markComplete(state.complete && state.phase !== "blocked");
+                onStatus(state);
+              }
+            });
+            void sync.start();
+            if (!personalMemory && memoryTransport && typeof engine?.createMemorySync === "function" && primary.memoryPort) {
+              memory = engine.createMemorySync({ adapter: memoryAdapter(), accountKey, revision, transport: memoryTransport });
+              memoryReady = memory.start();
+            }
+          }
+          const opened = generation, context = run && { ...run };
+          if (context && options?.gameId !== context.gameId) throw new Error("WORLD game does not match its run");
+          const coach = factory({ ...options, ...owned });
+          coaches.add(coach);
+          if (connected) coach.syncPort.markComplete(sync?.status().complete === true);
+          const unsubscribe = coach.syncPort.subscribe((change) => {
+            if (closed || !sync) return;
+            if (change.kind === "storage-error") sync.invalidate(change.code);
+            else if (change.kind === "append") queueMicrotask(() => {
+              if (!closed) void sync.flush();
+            });
+          });
+          const unsubscribeMemory = !personalMemory && typeof coach.memoryPort?.subscribe === "function" ? coach.memoryPort.subscribe((change) => {
+            if (!closed) for (const listener of memoryListeners) listener(change);
+          }) : () => {
+          };
+          const logIds = () => typeof coach.syncPort.ids === "function" ? coach.syncPort.ids() : coach.syncPort.events().map((event) => event.id);
+          const record = (before) => {
+            try {
+              own(logIds(), before, context);
+            } catch (error) {
+              sync?.invalidate("STORAGE_ERROR");
+              throw error;
+            }
+          };
+          let disconnected = false;
+          const disconnect = () => {
+            if (disconnected) return;
+            disconnected = true;
+            unsubscribe();
+            unsubscribeMemory();
+            coaches.delete(coach);
+            if (coach !== primary && coach !== personal) coach.dispose?.();
+          };
+          const call = (method, args, closing = false) => {
+            check();
+            if (disconnected) throw failure("WORLD game run ended", "RUN_ENDED");
+            if (opened !== generation && !closing) throw failure("WORLD game run ended", "RUN_ENDED");
+            if (!context) return method(...args);
+            const before = new Set(logIds());
+            try {
+              return method(...args);
+            } finally {
+              record(before);
+            }
+          };
+          const guarded = (value, closing) => typeof value === "function" ? (...args) => call(value, args, closing) : value;
+          const live = (value) => (...args) => Object.freeze(Object.fromEntries(Object.entries(call(value, args)).map(([name, part]) => [name, guarded(part)])));
+          return Object.freeze(Object.fromEntries(Object.entries(coach).filter(([name]) => !["syncPort", "memoryPort", "dispose"].includes(name)).map(([name, value]) => [
+            name,
+            name === "live" ? live(value) : guarded(value, name === "flush")
+          ]).concat([
+            // Each game sees the run's immutable task snapshot, without an account token.
+            ["assignment", () => {
+              check();
+              if (opened !== generation) throw failure("WORLD game run ended", "RUN_ENDED");
+              return context?.target ? structuredClone(context.target) : null;
+            }],
+            ["disconnect", disconnect],
+            ["dispose", disconnect]
+          ])));
+        }
+        return Object.freeze({
+          createGame,
+          // Account preferences live beyond an individual game run. Expose only guarded choices,
+          // never a storage/merge port; a late UI callback still checks the current account session.
+          preferences() {
+            check();
+            if (!personal && !primary) {
+              if (!connected && !personalMemory) return null;
+              if (typeof engine?.createGame !== "function") return null;
+              const bootstrap = createGame({ gameId: run?.gameId || "world-preferences" }, engine.createGame, engine.createLearningSync);
+              bootstrap.disconnect();
+            }
+            const owner = personal || primary;
+            if (!owner) return null;
+            return Object.freeze({
+              today: () => {
+                check();
+                return owner.today();
+              },
+              setToday: (value) => {
+                check();
+                return owner.setToday(value);
+              },
+              presentation: () => {
+                check();
+                return owner.presentation();
+              },
+              setPresentation: (value) => {
+                check();
+                return owner.setPresentation(value);
+              },
+              subscribe: (listener) => {
+                check();
+                return owner.memoryPort.subscribe((change) => {
+                  try {
+                    check();
+                    listener(change);
+                  } catch {
+                  }
+                });
+              }
+            });
+          },
+          status: () => ({ accountKey, revision, ...sync?.status() || { phase: connected ? "idle" : "local", queued: 0 }, runId: run?.id || null, memory: memory ? memory.status() : null }),
+          // A new game snapshots its flow settings once. Let its launcher wait for the first
+          // bounded memory read so a slow response cannot silently start it at defaults.
+          // Offline/unsupported memory still permits device-local practice; privacy changes do not.
+          async ready() {
+            check();
+            await memoryReady;
+            check();
+          },
+          // Back in front: retry the sync and read what other devices chose.
+          retry: () => {
+            check();
+            const remembered = memoryReady = memory?.retry(), learned = sync?.retry();
+            return remembered && learned ? Promise.all([remembered, learned]).then(([, state]) => state) : learned || remembered;
+          },
+          // Going to the background or closing: send the changed memory now.
+          flush: () => {
+            check();
+            return memory?.flush();
+          },
+          // One run at a time, on a connected account. Opening or closing one ends the games of the last.
+          beginRun(value) {
+            check();
+            if (!connected || !identifier(value?.id) || !identifier(value?.gameId)) throw new TypeError("A connected WORLD run is required");
+            generation += 1;
+            run = { id: value.id, gameId: value.gameId, ...value.target ? { target: structuredClone(value.target) } : {} };
+            return structuredClone(run);
+          },
+          closeRun() {
+            check();
+            generation += 1;
+            run = null;
+          },
+          stop() {
+            if (closed) return;
+            closed = true;
+            generation += 1;
+            run = null;
+            sync?.stop();
+            memory?.stop();
+            const owners2 = new Set([...coaches, primary, personal].filter(Boolean));
+            coaches.clear();
+            for (const owner of owners2) owner.dispose?.();
+            memoryListeners.clear();
+          }
+        });
+      }
+      module.exports = { createWorldLearningHost };
+    }
+  });
+
+  // strata/maps/ko-speaking.json
+  var require_ko_speaking = __commonJS({
+    "strata/maps/ko-speaking.json"(exports, module) {
+      module.exports = {
+        map_ver: "ko-speaking-1-6703a8fbbd8e",
+        subject: "ko",
+        sources: {
+          "practice-taxonomy": {
+            path: "strata/topik-ii.skills.json",
+            sha256: "47d0a0c1915834979d4eb07420214da084987699ae2e4c59057b1de4cfb1da8d"
+          },
+          "speaking-items": {
+            path: "strata/ko-speaking.json",
+            sha256: "c7d20e345c4751bf4c4a9422493256ac0b7e368c3ae1ca742d83a7de39f103f6"
+          }
+        },
+        nodes: [
+          {
+            id: "ko2.listening.response",
+            kind: "skill",
+            label_ko: "듣고 알맞게 대답하기",
+            domain: "listening",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.listening.detail",
+            kind: "skill",
+            label_ko: "듣고 세부 내용 파악하기",
+            domain: "listening",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.listening.main",
+            kind: "skill",
+            label_ko: "듣고 중심 생각 파악하기",
+            domain: "listening",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.listening.inference",
+            kind: "skill",
+            label_ko: "듣고 상황 짐작하기",
+            domain: "listening",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.listening.attitude",
+            kind: "skill",
+            label_ko: "듣고 의도·태도 파악하기",
+            domain: "listening",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.reading.grammar",
+            kind: "skill",
+            label_ko: "문법 표현 읽기",
+            domain: "reading",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.reading.vocabulary",
+            kind: "skill",
+            label_ko: "어휘·관용 표현 읽기",
+            domain: "reading",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.reading.detail",
+            kind: "skill",
+            label_ko: "읽고 세부 내용 파악하기",
+            domain: "reading",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.reading.main",
+            kind: "skill",
+            label_ko: "읽고 중심 내용 파악하기",
+            domain: "reading",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.reading.context",
+            kind: "skill",
+            label_ko: "문맥으로 내용 짐작하기",
+            domain: "reading",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.reading.structure",
+            kind: "skill",
+            label_ko: "글의 흐름 파악하기",
+            domain: "reading",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.reading.attitude",
+            kind: "skill",
+            label_ko: "필자·인물의 태도와 심정 파악하기",
+            domain: "reading",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.writing.sentence",
+            kind: "skill",
+            label_ko: "문맥에 맞는 문장 쓰기",
+            domain: "writing",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.writing.description",
+            kind: "skill",
+            label_ko: "자료를 설명하는 글 쓰기",
+            domain: "writing",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.writing.argument",
+            kind: "skill",
+            label_ko: "주장하는 글 쓰기",
+            domain: "writing",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.greet",
+            kind: "skill",
+            label_ko: "인사하고 나를 소개하기",
+            domain: "speaking",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.status",
+            kind: "skill",
+            label_ko: "지내는 형편과 바뀐 점 말하기",
+            domain: "speaking",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.purpose",
+            kind: "skill",
+            label_ko: "찾아온 까닭(용건) 말하기",
+            domain: "speaking",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.ask",
+            kind: "skill",
+            label_ko: "알고 싶은 것을 공손하게 묻기",
+            domain: "speaking",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.explain",
+            kind: "skill",
+            label_ko: "겪은 일과 그 까닭 말하기",
+            domain: "speaking",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.thank",
+            kind: "skill",
+            label_ko: "고마움을 전하고 대화 맺기",
+            domain: "speaking",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.promise",
+            kind: "skill",
+            label_ko: "하겠다고 약속하기",
+            domain: "speaking",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.grammar.past-modifier",
+            kind: "grammar_point",
+            label_ko: "-(으)ㄴ(과거 관형형)",
+            forms: [
+              "-(으)ㄴ"
+            ],
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.past-modifier"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.grammar.contrast",
+            kind: "grammar_point",
+            label_ko: "-지만",
+            forms: [
+              "-지만"
+            ],
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.contrast"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.grammar.become",
+            kind: "grammar_point",
+            label_ko: "-아/어지다",
+            forms: [
+              "-아지다",
+              "-어지다"
+            ],
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.become"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.grammar.progressive",
+            kind: "grammar_point",
+            label_ko: "-고 있다",
+            forms: [
+              "-고 있다"
+            ],
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.progressive"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.grammar.honorific-ask",
+            kind: "grammar_point",
+            label_ko: "여쭈다·여쭙다(묻다의 높임) → 여쭤보다",
+            forms: [
+              "여쭈다",
+              "여쭙다",
+              "여쭤보다"
+            ],
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.honorific-ask"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.grammar.have-to-do",
+            kind: "grammar_point",
+            label_ko: "-(으)ㄹ 게 있다",
+            forms: [
+              "-(으)ㄹ 게 있다",
+              "-(으)ㄹ 것이 있다"
+            ],
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.have-to-do"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.grammar.reason",
+            kind: "grammar_point",
+            label_ko: "-아/어서(까닭)",
+            forms: [
+              "-아서",
+              "-어서"
+            ],
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.reason"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.grammar.wonder-whether",
+            kind: "grammar_point",
+            label_ko: "-(으)ㄴ지/-는지 궁금하다(명사+인지)",
+            forms: [
+              "-(으)ㄴ지 궁금하다",
+              "-는지 궁금하다",
+              "인지 궁금하다"
+            ],
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.wonder-whether"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.grammar.reason-final",
+            kind: "grammar_point",
+            label_ko: "-아/어서요",
+            forms: [
+              "-아서요",
+              "-어서요"
+            ],
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.reason-final"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.grammar.formal-ending",
+            kind: "grammar_point",
+            label_ko: "-습니다(합쇼체로 맺는 인사)",
+            forms: [
+              "-습니다",
+              "-ㅂ니다"
+            ],
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.formal-ending"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.grammar.know-whether",
+            kind: "grammar_point",
+            label_ko: "-는지 알다",
+            forms: [
+              "-는지 알다",
+              "-는지 아세요"
+            ],
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.know-whether"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.grammar.topic-shift",
+            kind: "grammar_point",
+            label_ko: "그런데(화제 바꾸기)",
+            forms: [
+              "그런데"
+            ],
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.topic-shift"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.grammar.thanks-to",
+            kind: "grammar_point",
+            label_ko: "덕분에",
+            forms: [
+              "덕분에"
+            ],
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.thanks-to"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.grammar.idiom-saved",
+            kind: "grammar_point",
+            label_ko: "살았다(관용 표현)",
+            forms: [
+              "살았다",
+              "살았어요"
+            ],
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.idiom-saved"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.grammar.promise",
+            kind: "grammar_point",
+            label_ko: "-(으)ㄹ게요(약속)",
+            forms: [
+              "-(으)ㄹ게요"
+            ],
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.promise"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.word.this-semester",
+            kind: "word",
+            label_ko: "이번 학기",
+            pos: "명",
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.word.this-semester"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.word.international-student",
+            kind: "word",
+            label_ko: "유학생",
+            pos: "명",
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.word.international-student"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.word.unfamiliar",
+            kind: "word",
+            label_ko: "낯설다",
+            pos: "형",
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.word.unfamiliar"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.word.familiar",
+            kind: "word",
+            label_ko: "익숙하다",
+            pos: "형",
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.word.familiar"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.word.assignment",
+            kind: "word",
+            label_ko: "과제",
+            pos: "명",
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.word.assignment"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.word.submission",
+            kind: "word",
+            label_ko: "제출",
+            pos: "명",
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.word.submission"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.word.deadline",
+            kind: "word",
+            label_ko: "기한",
+            pos: "명",
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.word.deadline"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.word.get-lost",
+            kind: "word",
+            label_ko: "길을 잃다",
+            pos: "구",
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.word.get-lost"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.word.long-while",
+            kind: "word",
+            label_ko: "한참",
+            pos: "명",
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.word.long-while"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.word.wander",
+            kind: "word",
+            label_ko: "헤매다",
+            pos: "동",
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.word.wander"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.word.senior",
+            kind: "word",
+            label_ko: "선배님",
+            pos: "명",
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.word.senior"
+              }
+            ]
+          },
+          {
+            id: "ko.speaking.word.library",
+            kind: "word",
+            label_ko: "도서관",
+            pos: "명",
+            level: null,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.word.library"
+              }
+            ]
+          }
+        ],
+        edges: [
+          {
+            from: "ko.speaking.grammar.past-modifier",
+            to: "ko.speaking.greet",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.past-modifier"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.past-modifier",
+            to: "ko2.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.past-modifier"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.contrast",
+            to: "ko.speaking.status",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.contrast"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.contrast",
+            to: "ko2.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.contrast"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.become",
+            to: "ko.speaking.status",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.become"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.become",
+            to: "ko2.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.become"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.progressive",
+            to: "ko.speaking.status",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.progressive"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.progressive",
+            to: "ko2.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.progressive"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.honorific-ask",
+            to: "ko.speaking.purpose",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.honorific-ask"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.honorific-ask",
+            to: "ko.speaking.ask",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.honorific-ask"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.honorific-ask",
+            to: "ko2.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.honorific-ask"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.have-to-do",
+            to: "ko.speaking.purpose",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.have-to-do"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.have-to-do",
+            to: "ko2.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.have-to-do"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.reason",
+            to: "ko.speaking.purpose",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.reason"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.reason",
+            to: "ko.speaking.explain",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.reason"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.reason",
+            to: "ko2.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.reason"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.wonder-whether",
+            to: "ko.speaking.ask",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.wonder-whether"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.wonder-whether",
+            to: "ko2.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.wonder-whether"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.reason-final",
+            to: "ko.speaking.ask",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.reason-final"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.reason-final",
+            to: "ko2.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.reason-final"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.formal-ending",
+            to: "ko.speaking.thank",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.formal-ending"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.formal-ending",
+            to: "ko2.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.formal-ending"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.know-whether",
+            to: "ko.speaking.ask",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.know-whether"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.know-whether",
+            to: "ko2.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.know-whether"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.topic-shift",
+            to: "ko.speaking.ask",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.topic-shift"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.topic-shift",
+            to: "ko2.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.topic-shift"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.thanks-to",
+            to: "ko.speaking.thank",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.thanks-to"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.thanks-to",
+            to: "ko2.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.thanks-to"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.idiom-saved",
+            to: "ko.speaking.thank",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.idiom-saved"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.idiom-saved",
+            to: "ko2.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.idiom-saved"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.promise",
+            to: "ko.speaking.promise",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.promise"
+              }
+            ]
+          },
+          {
+            from: "ko.speaking.grammar.promise",
+            to: "ko2.reading.grammar",
+            type: "part_of",
+            confidence: "ai_draft",
+            reviewed: false,
+            source_refs: [
+              {
+                source: "speaking-items",
+                selector: "ko.speaking.grammar.promise"
+              }
+            ]
+          }
+        ],
+        tag_vocabulary: [],
+        links: {
+          tags: [],
+          goals: []
+        }
+      };
+    }
+  });
+
+  // experiences/drama/pilot/learning-entry.cjs
+  var require_learning_entry = __commonJS({
+    "experiences/drama/pilot/learning-entry.cjs"(exports, module) {
+      var { createMap } = require_strata();
+      var learning = require_game_learning();
+      var { createWorldLearningHost } = require_world_learning_host();
+      var map = createMap(require_ko_speaking());
+      var GAME_ID = "drama-s1";
+      var factory = (config) => learning.createGame({ ...config, map });
+      var engine = Object.freeze({ createGame: factory, createLearningSync: learning.createLearningSync });
+      var PHASES = ["scene", "retake", "transfer"];
+      var HELPS = ["text", "answer"];
+      var identifier = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
+      function findHost(win) {
+        if (!win) return null;
+        if (win.SYNKLearningHost) return win.SYNKLearningHost;
+        try {
+          if (win.parent !== win && win.parent.location.origin === win.location.origin) return win.parent.SYNKLearningHost || null;
+        } catch {
+        }
+        return null;
+      }
+      function answerOf(outcome) {
+        if (outcome?.kind === "result") {
+          const t = outcome.data?.trail;
+          if (t && [true, false, null].includes(t.correct) && typeof t.assessable === "boolean") return { correct: t.correct, assessable: t.assessable, ...t.reason === "unanswered" ? { reason: "unanswered" } : {} };
+          return { correct: null, assessable: false };
+        }
+        if (outcome?.kind === "unheard") return { correct: null, assessable: false, reason: "unanswered" };
+        if (outcome?.kind === "off" || outcome?.kind === "down") return { correct: null, assessable: false };
+        return null;
+      }
+      function createRecorder({ win = typeof window === "undefined" ? null : window, owner = findHost(win), onError = () => {
+      } } = {}) {
+        if (!owner || typeof owner.createGame !== "function") return null;
+        let coach = null;
+        const game = () => coach || (coach = owner.createGame({ gameId: GAME_ID }, factory, learning.createLearningSync));
+        const safe = (fn) => {
+          try {
+            return fn();
+          } catch (error) {
+            try {
+              onError(error);
+            } catch {
+            }
+            return null;
+          }
+        };
+        function open({ lineId, skillId, phase }) {
+          if (!identifier(lineId) || !PHASES.includes(phase) || map.getNode(skillId)?.kind !== "skill") return null;
+          const pid = safe(() => game().present({
+            id: `${GAME_ID}.${phase}.${lineId}`,
+            itemKey: lineId,
+            familyKey: lineId,
+            skillId,
+            modality: "speaking",
+            // 장면 · 테이크 2는 한국어 대사 카드를 보고 말하기(1), 새 상황은 상황만 보고 스스로 만들어 말하기(2).
+            difficulty: phase === "transfer" ? 2 : 1,
+            responseFormat: "spoken",
+            audioRequired: false
+          }));
+          if (!pid) return null;
+          const helped = /* @__PURE__ */ new Set(), attempts = [], excluded = /* @__PURE__ */ new Set();
+          return Object.freeze({
+            // text: 한국어 대사 카드가 보임, answer: 빈칸을 열었거나 새 상황의 모범을 봄.
+            help(kind) {
+              if (!HELPS.includes(kind) || helped.has(kind)) return;
+              helped.add(kind);
+              safe(() => game().help(pid, kind));
+            },
+            take(outcome) {
+              const result = answerOf(outcome);
+              if (!result) return null;
+              const recorded = safe(() => game().answer(pid, { ...result, attemptNo: attempts.length + 1 }));
+              if (recorded?.eventId) attempts.push(recorded.eventId);
+              return recorded;
+            },
+            // 「제가 한 말과 달라요」: 그 받아쓰기로 판정한 마지막 시도를 기록에서 뺀다(record.excluded, 결정 10-31 ②).
+            excludeLast() {
+              const id = attempts.at(-1);
+              if (id && !excluded.has(id)) {
+                excluded.add(id);
+                safe(() => game().exclude(id));
+              }
+            }
+          });
+        }
+        return Object.freeze({ open, flush: () => safe(() => coach?.flush?.()) });
+      }
+      function createRehearsalHost({ accountKey, revision, connected, transport, storage, win = typeof window === "undefined" ? null : window }) {
+        const prefix = `synk.drama.rehearsal.${accountKey}.r${revision}.`;
+        const scoped = { getItem: (key) => storage.getItem(prefix + key), setItem: (key, value) => storage.setItem(prefix + key, value), removeItem: (key) => storage.removeItem(prefix + key) };
+        const host = createWorldLearningHost({ accountKey, revision, connected, guard: () => {
+        }, engine, storage: scoped, ...connected ? { transport } : {} });
+        if (win) win.SYNKLearningHost = host;
+        return host;
+      }
+      module.exports = { GAME_ID, mapVersion: map.map_ver, engine, answerOf, createRecorder, createRehearsalHost };
+    }
+  });
+  return require_learning_entry();
+})();

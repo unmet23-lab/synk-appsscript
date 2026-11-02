@@ -20,6 +20,7 @@ const WORLD_BUNDLES = Object.freeze([
 ]);
 const PRODUCT_BUNDLES = Object.freeze([
   { label: 'Study learning bundle', build: 'experiences/korean-study/build.mjs', output: 'experiences/korean-study/dist/study/app.js' },
+  { label: 'Drama pilot learning bundle', build: 'tools/build-drama-learning.js', output: 'experiences/drama/pilot/atlas-learning.js' },
 ]);
 // Product modules whose canonical source lives in the product, not in atlas/. They keep an Atlas-style
 // global for stored records, so the marker scan would otherwise report them as copies.

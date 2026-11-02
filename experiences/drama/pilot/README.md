@@ -44,6 +44,10 @@ node tools/drama-pilot.mjs
 
 입 모양이 맞는 승인 영상은 해당 대답 구간에만 사용한다. 나머지 선배 대사는 같은 실사 정지 사진과 그 대사의 원래 녹음으로 재생한다. 1화 전체 장면을 새 립싱크 영상으로 제작한 결과가 아니다. 새 상황은 검수 전 연습 예시이며 몽골어 자막·7일 뒤 C 과제·학생 학습효과 측정은 이번 범위에 포함하지 않았다.
 
+## 학습 기록 (11-02)
+
+테이크마다 학습 기록(Atlas Trail, 응답 꼴 `spoken`)을 남기는 길을 이었다 — 차례 하나 = 보임 하나, 테이크 하나 = 시도 하나, 「혼자 해 봄」은 서버가 테이크 응답의 `trail`로 정한다. WORLD 게임과 같은 계정 학습 호스트(`SYNKLearningHost`)가 있을 때만 남고 학습 기록 동의가 켜진 계정만 서버로 보낸다. 이 PC 시범은 로그인이 없어 **기본 실행에서는 아무것도 남기지 않는다.** 받아 적은 글 · 소리는 사건에 들지 않는다. 묶음은 `learning-entry.cjs`를 고친 뒤 `node tools/build-drama-learning.js`로 다시 만든다(`atlas-learning.js`, 생성물). 합성 계정 왕복 실측과 리허설 실행법은 [학습 기록 리허설](../qa/학습기록-20261102/README.md).
+
 ## 음성과 비용
 
 받아쓰기 사용에 동의했을 때만 녹음을 기존 OpenAI API 키 통로의 `gpt-transcribe`로 보낸다. 이 시범 서버는 음성 원본·받아쓴 글을 파일로 보관하지 않는다. 녹음 재생은 브라우저 메모리에서 하며 「녹음 비우기」·다시 시작·창 닫기로 비운다. 브라우저에는 키를 주지 않는다. 외부 분석을 끄면 녹음·듣기·스스로 확인으로 진행한다.
@@ -56,7 +60,7 @@ node tools/drama-pilot.mjs
 
 ```powershell
 node tools/build-drama-pilot-assets.mjs --확인
-node --test tests/drama-pilot.test.mjs tests/드라마판정.test.mjs tests/드라마대본.test.mjs
+node --test tests/drama-pilot.test.mjs tests/drama-pilot-learning.test.mjs tests/드라마판정.test.mjs tests/드라마대본.test.mjs
 ```
 
 화면은 Claude, 서버·검증은 GPT가 맡았다. 사전 Fable 설계 검토, 백엔드 GPT+Claude 교차 검수, 화면 아르곤·Fable 검수의 실제 결과는 제작 기록을 따른다.

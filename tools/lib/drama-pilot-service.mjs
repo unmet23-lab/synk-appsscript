@@ -8,7 +8,19 @@ export function publicLesson(lesson) {
     reasks:lesson.reasks,coach:lesson.coach,nextEpisode:lesson.nextEpisode,
     assets:lesson.assets?{listenLoop:lesson.assets.listenLoop,poster:lesson.assets.poster,backdrop:lesson.assets.backdrop}:undefined,
     scene:lesson.scene.map(({spec,...line})=>line),
-    transfer:{id:lesson.transfer.id,prompt:lesson.transfer.prompt}};
+    transfer:{id:lesson.transfer.id,prompt:lesson.transfer.prompt,skill:lesson.transfer.skill}};
+}
+
+// 테이크 하나를 학습 기록(Atlas Trail, 응답 꼴 spoken)에 어떻게 남길지 — 판정과 명세 검수 여부를 아는 서버가 정하고 화면은 적기만 한다.
+// 「혼자 해 봄」(assessable)은 검수를 통과한 새 상황 명세에서 모범을 보기 전 첫 판정 테이크가 규칙으로 확신한 것뿐이다
+// (pass+sure → 맞음, note → 고칠 점; 기획 §3-5 · 결정 10-31 ②). 장면 · 테이크 2 · 판정 보류 · 검수 전 명세는 시도로만 남고,
+// 소리가 안 들린 테이크는 대답 없음(unanswered)이다. 받아 적은 글은 여기 들지 않는다.
+export function trailOf({phase,status,transcript='',observation,independentEligible=false,reviewed=false}) {
+  const kind=status==='ok'?observation?.kind:null;
+  const correct=kind==='pass'?true:kind==='note'?false:null;
+  const assessable=phase==='transfer'&&independentEligible===true&&reviewed===true&&(kind==='note'||kind==='pass'&&observation.sure===true);
+  const unheard=status==='no_speech'||status==='unclear'&&!String(transcript||'').trim();
+  return {correct,assessable,...(unheard?{reason:'unanswered'}:{})};
 }
 
 export function observeTranscript(spec,raw,{seconds,speechSeconds}={}) {

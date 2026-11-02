@@ -57,7 +57,7 @@ const seniorLine = (i) => dining.filter((x) => x.누가 === '선배')[i];
 const student = (id, modelAudio, extra = {}) => {
  const l = studentLine(id);
  // blanks: 장면 카드에서 가릴 핵심말(보고 말하기 A의 카드 — 정답 보호 대상 아님). spec은 서버가 브라우저에 보내지 않는다.
- return { type: 'student', id, text: l.말, meaning: l.뜻, modelAudio, blanks: l.명세.keys.map((k) => k.word), spec: { line: l.말, ...l.명세 }, ...extra };
+ return { type: 'student', id, text: l.말, meaning: l.뜻, skill: l.능력, modelAudio, blanks: l.명세.keys.map((k) => k.word), spec: { line: l.말, ...l.명세 }, ...extra };
 };
 const actor = (id, i, media) => {
  const l = seniorLine(i);
@@ -95,6 +95,7 @@ export const PILOT = {
  // 공식 검수 통과 문항·검증된 평가가 아니다. prompt는 학습자 언어(영어)로 상황과 필요한 정보만 — 한국어 답·첫 글자 없음.
  transfer: {
   id: 'transfer-location',
+  skill: 'ko.speaking.ask', // 학습 기록의 능력 이름(말하기 지도). 한국어 답의 실마리가 아니라 화면에 보낸다.
   prompt: 'Before your next class you want to buy a drink, but you can\'t find the convenience store. Another senior from your department, whom you met for the first time today, is standing nearby. Politely ask them where the convenience store is.',
   promptKo: '다음 수업 전에 마실 것을 사고 싶은데 가게를 못 찾았어요. 오늘 처음 인사한 같은 과의 다른 선배가 옆에 있어요. 공손하게 그 가게가 어디 있는지 물어보세요. (가게 이름은 영어 설명을 보세요.)',
   to: 'senior',
