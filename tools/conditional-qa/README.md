@@ -27,4 +27,6 @@ Windows 작업 `SYNK 조건부 시험`은 현재 사용자의 일반 권한·대
 
 운영 확인은 `node tools/conditional-qa/worker.cjs --state <비공개 폴더>`로 같은 회차를 실행할 수 있다. 이미 도는 회차가 있으면 잠금을 지우지 말고 완료를 기다린다. 입력이나 실행 도구 문제가 해결되면 인프라 실패는 다음 재시도에서 검증한다. 시험 자체가 실패하면 원인을 고친 새 코드로 다시 확인한다. 예약을 끄더라도 CI 로컬 단계는 미완료로 남으며 검증을 생략해 통과시키지 않는다.
 
-회귀는 `node --test tests/conditional-qa.test.cjs tests/ci넓은시험.test.js`다. 이 자동화는 등록된 113건의 지속 검증이며, 새 보안 감사나 운영 접근 권한 전체의 재점검을 대신하지 않는다. 최초 실제 실행과 원격 CI 결과는 비공개 설치·실행 영수증과 해당 커밋의 GitHub Checks에서 확인한다.
+과거 `failed` 항목은 저절로 성공 처리하거나 계속 재시도하지 않는다. 원인을 고친 뒤 같은 커밋을 다시 검사하려면 `node tools/conditional-qa/retry.cjs --state <비공개 폴더> --reason "확인한 원인과 재검사 이유" <커밋 SHA...>`로 미리 보고 `--apply`로 재등록한다(11-02 유호님 과거 대기·오류 전체 확인 요청). 실행 중인 일꾼이 있으면 재등록도 거절하므로 회차가 끝난 뒤 실행한다. 원래 실패 결과는 그대로 두고 `queue.json`의 `history`와 `retry-history/`에 원래 항목·결과 해시·이유를 남긴다. 대기열은 `retry`로 바뀔 뿐이며 GitHub 성공은 같은 커밋의 새 78건 영수증이 완전할 때에만 기존 일꾼이 올린다. 로컬 통과와 GitHub 전체 job의 복구도 각각 확인한다.
+
+회귀는 `node --test tests/conditional-qa.test.cjs tests/conditional-qa-retry.test.cjs tests/ci넓은시험.test.js`다. 이 자동화는 등록된 113건의 지속 검증이며, 새 보안 감사나 운영 접근 권한 전체의 재점검을 대신하지 않는다. 최초 실제 실행과 원격 CI 결과는 비공개 설치·실행 영수증과 해당 커밋의 GitHub Checks에서 확인한다.
