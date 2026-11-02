@@ -898,7 +898,9 @@ function 따라가기실행(c, 계획) {
       git(['--literal-pathspecs', 'checkout', B, '--pathspec-from-file=-', '--pathspec-file-nul'], { input: `${B에있는.join('\0')}\0` });
     }
     if (B에없는.length) {
-      const 올라간 = git(['--literal-pathspecs', 'ls-files', '-z', '--', ...B에없는]).toString('utf8').split('\0').filter(Boolean);
+      // 경로 수가 많아도 Windows 명령 길이를 넘지 않게 인덱스를 한 번 읽고 정확한 경로만 고른다.
+      const 새경로집합 = new Set(B에없는);
+      const 올라간 = git(['ls-files', '-z']).toString('utf8').split('\0').filter((p) => 새경로집합.has(p));
       if (올라간.length) git(['--literal-pathspecs', 'rm', '-q', '--cached', '--ignore-unmatch', '--pathspec-from-file=-', '--pathspec-file-nul'], { input: `${올라간.join('\0')}\0` });
       for (const p of B에없는) fs.rmSync(path.join(c.저장소, p), { force: true });
     }

@@ -128,6 +128,43 @@ const 장부바탕 = [1, 2, 3].map(장부줄).join('');
 
 // ── 워크트리에서 ─────────────────────────────────────────────────────────────
 
+test('공용 작업본: 새 경로 목록이 Windows 명령 길이를 넘어도 받은 파일과 다른 작업을 보존한다', async (t) => {
+  const 판 = 새판(t, { 파일: { '남의-작업.txt': '바탕\n' } });
+  const 파일들 = Object.fromEntries(Array.from({ length: 300 }, (_, i) => [
+    `received/${String(i).padStart(4, '0')}-${'long-path-'.repeat(12)}[literal].txt`, `원격 ${i}\n`,
+  ]));
+  assert.ok(Object.keys(파일들).join(' ').length > 32767);
+  const O = 판.남push(파일들);
+  for (const [p, v] of Object.entries(파일들)) 판.공용.쓰기(p, v);
+  판.공용.쓰기('남의-작업.txt', '다른 작업의 미커밋 수정\r\n');
+  판.공용.쓰기('남의-미추적.txt', '다른 작업의 새 파일\r\n');
+  const r = await 도구.따라가기({ 저장소: 판.공용.폴더, 실행: true });
+  assert.equal(r.결과, '따라감', JSON.stringify(r));
+  assert.equal(판.공용.머리(), O);
+  for (const [p, v] of Object.entries(파일들)) assert.equal(판.공용.읽기(p), v);
+  assert.equal(판.공용.읽기('남의-작업.txt'), '다른 작업의 미커밋 수정\r\n');
+  assert.equal(판.공용.읽기('남의-미추적.txt'), '다른 작업의 새 파일\r\n');
+  assert.equal(판.공용.g('diff', '--cached', '--name-only').trim(), '');
+  assert.match(판.공용.g('ls-files', '--', '남의-작업.txt'), /남의-작업/);
+});
+
+test('워크트리: 받은 새 경로를 이미 올렸어도 비슷한 다른 경로의 인덱스를 보존한다', async (t) => {
+  const 판 = 새판(t, { 파일: { 'new1.txt': '비슷한 기존 경로\n', '남.txt': '기존\n' } });
+  const 워 = 판.워크트리('indexed-paths');
+  const O = 판.남push({ 'new[1].txt': '새 경로\n' });
+  워.쓰기('new[1].txt', '새 경로\n');
+  워.g('--literal-pathspecs', 'add', '--', 'new[1].txt');
+  워.쓰기('남.txt', '다른 작업\r\n');
+  const r = await 도구.따라가기({ 저장소: 워.폴더, 실행: true });
+  assert.equal(r.결과, '따라감', JSON.stringify(r));
+  assert.equal(워.머리(), O);
+  assert.equal(워.읽기('new[1].txt'), '새 경로\n');
+  assert.equal(워.읽기('new1.txt'), '비슷한 기존 경로\n');
+  assert.equal(워.읽기('남.txt'), '다른 작업\r\n');
+  assert.equal(워.g('diff', '--cached', '--name-only').trim(), '');
+  assert.equal(워.g('ls-files', '--', 'new1.txt').trim(), 'new1.txt');
+});
+
 test('워크트리: 꼬리(남의 미푸시)에서 떠도 내가 바꾼 것만 최신 origin 위에 올리고, 워크트리는 올린 커밋으로 따라간다', async (t) => {
   const 판 = 새판(t, { 파일: { '공용.md': 공용글, '남.txt': '바탕\n', 'tools/a.js': 'a\n' } });
   const P = 판.미푸시({ '공용.md': '# 공용\n\n## 가\n- a1\n- 남의 미푸시 줄\n\n## 나\n- b1\n', '꼬리.txt': '꼬리\n' });
