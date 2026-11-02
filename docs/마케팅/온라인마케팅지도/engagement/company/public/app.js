@@ -134,7 +134,8 @@ async function initialize() {
     const params = new URLSearchParams(location.hash.replace(/^#/, ''));
     const requestedView=new URLSearchParams(location.search).get('tab')||params.get('view');
     if(isDemoMode()&&['messenger','home','workroom','handbook','teaching'].includes(requestedView)){location.replace(requestedView==='teaching'?demoTeachingUrl():requestedView==='home'?demoHomeUrl():requestedView==='workroom'?demoWorkroomUrl():requestedView==='handbook'?demoHandbookUrl():demoMessengerUrl());return;}
-    selectWorkspaceView(requestedView,new URLSearchParams(location.search).get('section')||params.get('section')||'',new URLSearchParams(location.search).get('teamId')||params.get('teamId')||undefined,new URLSearchParams(location.search).get('draftId')||params.get('draftId')||undefined);
+    state.requestedView=[requestedView,new URLSearchParams(location.search).get('section')||params.get('section')||'',new URLSearchParams(location.search).get('teamId')||params.get('teamId')||undefined,new URLSearchParams(location.search).get('draftId')||params.get('draftId')||undefined];
+    selectWorkspaceView(...state.requestedView);
     const launch = params.get('launch');
     if (launch) { history.replaceState(null, '', location.pathname + location.search); await api('/api/launch', { token: launch }); }
     // A reset link opens its own screen before the SYNK and platform entry checks, which would send a platform tab to OAuth or block it.
@@ -160,6 +161,7 @@ async function initialize() {
     state.synkUserId = me.synkUserId || null;
     state.platformUrl = me.platformUrl || null;
     state.passwordSet = me.passwordSet === true;
+    if (state.user) selectRequestedView();
     if (params.get('invite')) { state.authMode = 'join'; state.authToken = params.get('invite'); history.replaceState(null, '', location.pathname + location.search); }
     else if (me.needsSetup || params.get('setup')) { state.authMode = 'setup'; state.authToken = params.get('setup') || ''; if (params.get('setup')) history.replaceState(null, '', location.pathname + location.search); }
     if (!state.user || state.authMode === 'join') { renderAuth(); return; }
@@ -174,6 +176,8 @@ async function initialize() {
     if (status.has('connected') || status.has('connectionError')) { const resultUrl=new URL(location.href);if(status.get('connected')&&['comments','publishing'].includes(status.get('connectionPurpose'))){resultUrl.searchParams.set('tab','social');resultUrl.searchParams.set('section',status.get('connectionPurpose')==='publishing'?'accounts':'inbox');}resultUrl.searchParams.delete('connected');resultUrl.searchParams.delete('connectionError');resultUrl.searchParams.delete('connectionPurpose');history.replaceState(null,'',resultUrl.pathname+resultUrl.search+resultUrl.hash); }
   } catch (err) { if(err.code==='SESSION_CHANGED')return; app.innerHTML = `<main class="initial-loading" id="main"><img class="brand-logo" src="/wordmark.svg" alt="싱ㅋ"><div class="empty"><h3>워크스페이스를 열지 못했어요</h3><p>${escape(err.message)}</p>${button('다시 불러오기', 'reload', 'refresh', 'primary')}</div></main>`;if(typeof renderSynkPlatformEntryRecovery==='function')renderSynkPlatformEntryRecovery(err); }
 }
+// Team and settings links depend on the role, so the first choice runs before sign-in fails them; choose them again once the user is known.
+function selectRequestedView() { const requested = state.requestedView; state.requestedView = null; if (['members','settings'].includes(requested?.[0]) && state.tab !== requested[0]) selectWorkspaceView(...requested); }
 async function loadState() {
   // Polling passes {quiet:true}: an unchanged answer keeps the screen as it is, a changed one repaints in the background.
   const quiet=arguments[0]?.quiet===true;
@@ -327,8 +331,10 @@ function marketingReportHeading(actions = '') {
 }
 function marketingScopeEmpty() {
   const noTeam = state.scope === 'team' && !state.teamId;
-  const title = noTeam ? '팀을 만들면 팀별 현황이 보여요' : state.scope === 'mine' ? '내가 맡은 채널이 아직 없어요' : state.scope === 'team' ? '이 팀에 연결된 채널이 없어요' : '등록된 채널이 아직 없어요';
-  const description = noTeam ? (isAdmin() ? '팀을 만들고 크루와 채널을 넣어 주세요. 그러면 팀마다 비교할 수 있어요.' : '아직 속한 팀이 없어요. 관리자에게 팀에 넣어 달라고 해 주세요.') : state.scope === 'mine' ? '채널을 맡거나 새로 등록하면 내 성과만 따로 볼 수 있어요.' : '채널을 등록하고 계정을 연결하면 성과가 여기에 보여요.';
+  // An administrator gets the first running team even without one of their own, so a missing team here means none is running.
+  const paused = noTeam && isAdmin() && (state.data?.teams || []).some(team => team.active === false);
+  const title = paused ? '운영 중인 팀이 없어요' : noTeam ? '팀을 만들면 팀별 현황이 보여요' : state.scope === 'mine' ? '내가 맡은 채널이 아직 없어요' : state.scope === 'team' ? '이 팀에 연결된 채널이 없어요' : '등록된 채널이 아직 없어요';
+  const description = paused ? '팀·크루에서 멈춘 팀을 다시 운영하거나 새 팀을 만들어 주세요.' : noTeam ? (isAdmin() ? '팀을 만들고 크루와 채널을 넣어 주세요. 그러면 팀마다 비교할 수 있어요.' : '아직 속한 팀이 없어요. 관리자에게 팀에 넣어 달라고 해 주세요.') : state.scope === 'mine' ? '채널을 맡거나 새로 등록하면 내 성과만 따로 볼 수 있어요.' : '채널을 등록하고 계정을 연결하면 성과가 여기에 보여요.';
   const actions = noTeam ? (isAdmin()?button('팀·크루로 가기','tab','users','primary','data-tab="members"'):'') : !isViewer()?button('채널 화면으로 가기','tab','link','primary','data-tab="channels"'):'';
   return `<section class="marketing-scope-empty">${empty(title,description,actions,false,noTeam?'users':'link')}</section>`;
 }
@@ -769,7 +775,7 @@ document.addEventListener('submit', async event => {
         if (state.authMode === 'setup') values.setupToken = state.authToken || values.setupToken;
         await api(endpoint, values); state.authMode = 'login'; state.authToken = ''; state.authNotice = ''; state.authPrefill = '';
         const synkEntry=!isDemoMode()&&typeof prepareSynkCompanyEntry==='function'?await prepareSynkCompanyEntry():true;if(synkEntry===false)break;
-        const me = synkEntry?.me||await api('/api/me');if(!isDemoMode()&&typeof assertSynkPlatformIdentity==='function')assertSynkPlatformIdentity(me,synkEntry);state.platformUrl = me.platformUrl || null; state.passwordSet = me.passwordSet === true; state.user = me.user; state.csrf = me.csrfToken || ''; await loadState(); if(reportTabs())await loadReport(); if(state.tab==='content')await loadContentWorkspace(); startPolling(); break;
+        const me = synkEntry?.me||await api('/api/me');if(!isDemoMode()&&typeof assertSynkPlatformIdentity==='function')assertSynkPlatformIdentity(me,synkEntry);state.platformUrl = me.platformUrl || null; state.passwordSet = me.passwordSet === true; state.user = me.user; state.csrf = me.csrfToken || ''; if(state.user)selectRequestedView(); await loadState(); if(reportTabs())await loadReport(); if(state.tab==='content')await loadContentWorkspace(); startPolling(); break;
       }
       case 'add-channels': {
         const urls = values.urls.split(/\r?\n/).map(url => url.trim()).filter(Boolean), results = { added: [], existing: [], errors: [] };

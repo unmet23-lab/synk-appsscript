@@ -41,4 +41,6 @@ test('error retry, empty teams and metric/period request keys keep the screen ac
   assert.match(f.run('teamTrendsSection()'),/다시 불러오기/);assert.doesNotMatch(f.run('teamTrendsSection()'),/<script>/);
   f.cache.range='all';const next=f.run('loadTeamTrends()');assert.match(f.requests[1].path,/range=all/);f.requests[1].resolve({...payload(),teams:[],ownTeamId:null});await next;
   assert.match(f.run('teamTrendsSection()'),/등록된 팀이 아직 없어요/);assert.equal(f.cache.loading,false);
+  f.state.data.teams=[{id:'alpha',active:false}];assert.match(f.run('teamTrendsSection()'),/운영 중인 팀이 없어요[\s\S]*관리자가 팀 운영을 다시 시작하면/);
+  f.run("isAdmin=()=>true;button=label=>label");const admin=f.run('teamTrendsSection()');assert.match(admin,/멈춘 팀을 다시 운영하거나 새 팀을 만들어/);assert.match(admin,/팀·크루로 가기/);
 });
