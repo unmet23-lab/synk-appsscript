@@ -38,7 +38,10 @@ export const SHOWCASE_CUTS = [
  { cut: 'C1', src: 'C1.mp4', onto: 'a1', reply: [0, null] }, // 선배 1
  { cut: 'C3', src: 'C3.mp4', onto: 's1e01-6', listenFor: 's1e01-6', first: true, listen: [0.2, 4.0], reask: [4.05, null] }, // 「…헤맸어.」 → 「응? 응? 뭐라고요?」 — 6번 줄 첫 시도 · 첫 되묻기
  { cut: 'C2', src: 'C2.mp4', onto: 'a2', listenFor: 's1e01-6', listen: [0.3, 4.6], reply: [4.65, null], retakeFrom: 2.0 }, // 6번 줄 + 선배 2(테이크2는 웃음 뒤 「여기」부터)
- { cut: 'C4', src: 'C4.mp4', onto: 'a3', listenFor: 's1e01-7', listen: [0.3, 7.2], reply: [7.3, null] }, // 7번 줄 + 선배 3(영상에 「도서관?」 한 마디가 없어 원래 녹음에서도 뺐다)
+ { cut: 'C4', src: 'C4.mp4', onto: 'a3', listenFor: 's1e01-7', listen: [0.3, 7.2], reply: [7.3, null], // 7번 줄 + 선배 3
+  // 영상이 대본의 「도서관?」 한 마디를 빼고 연기해 얹은 원래 녹음에서도 뺐다 — 자막 · 뜻도 들리는 말 그대로(아르곤 A1, 11-03).
+  text: '선배님은 좀 부담스러운데… 뭐, 편한 대로 해요. 밥 먹고 같이 가요. 내가 데려다줄게요.',
+  meaning: "\"Sunbae-nim\" feels like a bit much... well, whatever you're comfortable with. Let's go together after we eat. I'll take you there." },
 ];
 export const cutFile = (c, part) => `${c.cut.toLowerCase()}-${part}.mp4`;
 export const cutParts = (c) => ['listen', 'reply', 'reask'].filter((p) => Array.isArray(c[p]));
@@ -48,7 +51,7 @@ function withShowcase(scene) {
  for (const c of SHOWCASE_CUTS) {
   const url = (p) => (Array.isArray(c[p]) ? built(cutFile(c, p)) : null);
   const reply = url('reply'); const listen = url('listen'); const reask = url('reask');
-  if (reply) Object.assign(byId(c.onto), { audio: null, video: reply, videoStart: 0, videoEnd: null, retakeStart: c.retakeFrom ?? 0 });
+  if (reply) Object.assign(byId(c.onto), { audio: null, video: reply, videoStart: 0, videoEnd: null, retakeStart: c.retakeFrom ?? 0 }, c.text ? { text: c.text } : {}, c.meaning ? { meaning: c.meaning } : {});
   if (listen) byId(c.listenFor)[c.first ? 'listenFirst' : 'listen'] = listen;
   if (reask) byId(c.onto).reaskVideo = reask;
  }
