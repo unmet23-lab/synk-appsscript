@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1102,
+  "lufs": -17
+ },
+ "made": "2026-11-02T08:55:25.001Z",
+ "lines": [
+  {
+   "id": "a",
+   "text": "요즘 뜨는 영상을 찾아서, 따라 만들려고 했거든요. 조회순으로 모아 보니, 일 위가 오백칠만 회. 그런데 좋아요는, 쉰여덟 개. 회사 홍보 영상이에요. 이 비율이면, 광고로 노출된 조회 같아요.",
+   "dur": 10.554,
+   "syllablesPerSec": 6.92,
+   "src": "a.wav",
+   "key": "22d5a0e797471f99816118924c2742f5",
+   "words": 27
+  },
+  {
+   "id": "b",
+   "text": "진짜 뜬 영상은, 따로 있었어요. 평소보다 열 배 넘게 뛴, 이 영상이요. 그래서 이제 두 개만 봐요. 그 채널 평소의 몇 배인지, 좋아요가 얼마나 붙었는지. 일 등 말고, 튄 걸 따라 하세요.",
+   "dur": 9.776,
+   "syllablesPerSec": 6.96,
+   "src": "b.wav",
+   "key": "9dfe57941b3614f576ab990ba0fd2ef9",
+   "words": 32
+  },
+  {
+   "id": "c",
+   "text": "진짜 뜬 영상은... 따로 있었어요.",
+   "dur": 2.172,
+   "syllablesPerSec": 5.52,
+   "src": "c.wav",
+   "key": "4661af240eca4a137f4287d5d9884f8d",
+   "words": 5
+  },
+  {
+   "id": "d",
+   "text": "여러분이 따라 하려던 영상은... 평소의 몇 배였어요?",
+   "dur": 2.781,
+   "syllablesPerSec": 7.19,
+   "src": "d.wav",
+   "key": "352a2ce19daa599abadc66a585fe323f",
+   "words": 7
+  }
+ ]
+}

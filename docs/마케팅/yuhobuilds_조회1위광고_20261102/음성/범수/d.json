@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "d",
+ "text": "여러분이 따라 하려던 영상은... 평소의 몇 배였어요?",
+ "dur": 2.781,
+ "words": [
+  {
+   "text": "여러분이",
+   "start": 0.02,
+   "end": 0.34
+  },
+  {
+   "text": "따라",
+   "start": 0.38,
+   "end": 0.594
+  },
+  {
+   "text": "하려던",
+   "start": 0.634,
+   "end": 0.9
+  },
+  {
+   "text": "영상은...",
+   "start": 0.94,
+   "end": 1.366
+  },
+  {
+   "text": "평소의",
+   "start": 1.686,
+   "end": 2.006
+  },
+  {
+   "text": "몇",
+   "start": 2.06,
+   "end": 2.166
+  },
+  {
+   "text": "배였어요?",
+   "start": 2.22,
+   "end": 2.781
+  }
+ ],
+ "source": {
+  "key": "352a2ce19daa599abadc66a585fe323f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1102,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 0.95,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 171
+ }
+}
