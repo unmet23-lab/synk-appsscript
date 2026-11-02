@@ -27,6 +27,9 @@ const 판 = [
   { id: 'sc-C4b', 컷: 'C4', 길이: 15, 시작: 'C4_시작.png', 끝: 'C4_끝.png', 성인: true },
   { id: 'sc-C3b', 컷: 'C3', 길이: 8, 시작: 'C3C2_시작.png', 끝: 'C3_끝.png', 성인: true },
   { id: 'sc-C2b', 컷: 'C2', 길이: 14, 시작: 'C3C2_시작.png', 끝: 'C2_끝.png', 성인: true },
+  // 체험판 듣는 반복(11-03): 받은 C2b의 「한참」 끝 3.62초 · C4b의 「아세요?」 뒤 6.80초 프레임을 시작이자 끝 그림으로, 소리 끔
+  { id: 'sc-L6', 컷: '반복6', 길이: 4, 시작: 'L6_이음.png', 끝: 'L6_이음.png', 성인: true, 소리없음: true },
+  { id: 'sc-L7', 컷: '반복7', 길이: 4, 시작: 'L7_이음.png', 끝: 'L7_이음.png', 성인: true, 소리없음: true },
 ];
 const 성인말 = [
   ['a young woman off-camera — the freshman —', 'a female university student in her twenties, off-camera — an adult classmate who just started at this university —'],
@@ -46,23 +49,23 @@ const 머리 = '@이미지 1 is the exact first frame of this video: start from 
 const 순서 = [];
 판.forEach((p, i) => {
   const 본문 = execFileSync('node', [path.join(여기, '지시문.mjs'), '보기', p.컷], { encoding: 'utf8' }).trim();
-  if (!본문.includes('The audio reference')) throw new Error(`${p.컷}: 소리 참고 문장이 없다`);
+  if (!p.소리없음 && !본문.includes('The audio reference')) throw new Error(`${p.컷}: 소리 참고 문장이 없다`);
   const 몸 = 본문.replace('The audio reference', '@오디오 1, the audio reference,');
   const 지시문 = `${머리}\n${p.성인 ? 성인으로(몸) : 몸}`;
   const 폴더 = `${String(i + 1).padStart(3, '0')}_${p.id}`;
-  const 파일 = ['1_시작.jpg', '2_끝.jpg', '3_소리참고.mp3'];
-  const 소리파일 = path.join(소리, `ref-${p.컷}.mp3`);
-  for (const f of [path.join(그림, p.시작), path.join(그림, p.끝), 소리파일]) if (!fs.existsSync(f)) throw new Error(`없음: ${f}`);
-  const 소리초 = Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', 소리파일], { encoding: 'utf8' }));
+  const 파일 = p.소리없음 ? ['1_시작.jpg', '2_끝.jpg'] : ['1_시작.jpg', '2_끝.jpg', '3_소리참고.mp3'];
+  const 소리파일 = p.소리없음 ? null : path.join(소리, `ref-${p.컷}.mp3`);
+  for (const f of [path.join(그림, p.시작), path.join(그림, p.끝), 소리파일].filter(Boolean)) if (!fs.existsSync(f)) throw new Error(`없음: ${f}`);
+  const 소리초 = 소리파일 ? Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', 소리파일], { encoding: 'utf8' })) : 0;
   if (소리초 > p.길이) throw new Error(`${p.컷}: 소리 참고 ${소리초}초가 판 길이 ${p.길이}초보다 길다`);
-  순서.push({ 순서: i + 1, id: p.id, 편: 'sc', 컷: [p.컷], 폴더, 길이: p.길이, 비율: '9:16', 소리: '켬', 묶음: false, 대안: false, 방식: '한 샷 · 시작/끝 그림 + 소리 참고', 낱판: [], 쓰는초: null, 파일, '빠진 파일': [], '지시문 머리': 지시문.slice(0, 160), '지시문 글자 수': 지시문.length });
+  순서.push({ 순서: i + 1, id: p.id, 편: 'sc', 컷: [p.컷], 폴더, 길이: p.길이, 비율: '9:16', 소리: p.소리없음 ? '끔' : '켬', 묶음: false, 대안: false, 방식: p.소리없음 ? '한 샷 · 시작/끝 그림(같은 그림) · 소리 끔' : '한 샷 · 시작/끝 그림 + 소리 참고', 낱판: [], 쓰는초: null, 파일, '빠진 파일': [], '지시문 머리': 지시문.slice(0, 160), '지시문 글자 수': 지시문.length });
   console.log(`${폴더} · ${p.길이}초 · 소리 ${소리초.toFixed(2)}초 · 지시문 ${지시문.length}자`);
   if (확인만) return;
   const d = path.join(꾸러미, 폴더);
   fs.mkdirSync(d, { recursive: true });
   // 웹 올리기는 JPEG — PNG 원본을 긴 변 그대로 품질 2로 옮긴다(후보정 없음)
   for (const [src, dst] of [[p.시작, '1_시작.jpg'], [p.끝, '2_끝.jpg']]) execFileSync('ffmpeg', ['-nostdin', '-v', 'error', '-y', '-i', path.join(그림, src), '-q:v', '2', path.join(d, dst)]);
-  fs.copyFileSync(소리파일, path.join(d, '3_소리참고.mp3'));
+  if (소리파일) fs.copyFileSync(소리파일, path.join(d, '3_소리참고.mp3'));
   fs.writeFileSync(path.join(d, '지시문.txt'), 지시문);
 });
 if (!확인만) fs.writeFileSync(path.join(꾸러미, '_순서.json'), JSON.stringify(순서, null, 1));
