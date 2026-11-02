@@ -315,8 +315,15 @@ test('⑥ 서체 원본이 못박은 지문 그대로다 — 아니면 위 다�
  *        바이트 대조는 그대로라 다른 서체·잘린 사본은 여전히 «안 싣는다»다(⑧).
  *   🔑 ⓑⓒ 의 파일은 만들기 단계가 쓰는 사본이라 git 밖에 있는 것이 많다. 그래서 «있나»가 아니라
  *      «정본과 바이트까지 같나»를 문다 — 다른 서체거나 저장소 밖이면 «안 싣는다», 부르는 파일이 없으면 «없음»으로 센다
- *      (⑧ 이 증명). «없음»은 개발 PC 에서는 실패이고, 그 사본이 아예 없는 CI 체크아웃에서만 건너뛴다.
+ *      (⑧ 이 증명). «없음»은 개발 PC 에서는 실패이고, CI 체크아웃에서는 빠진 파일이 «설계상 git 밖»일 때만 건너뛴다.
  *   ⓑⓒ 는 «파일 하나»가 아니라서 ③(자립형·펠트 스킨)과 ④(심은 지면 목록)에는 안 쓴다 — 그 둘은 ⓐ 만 받는다.
+ *
+ * ── 11-03 CI 건너뜀을 «설계상 git 밖»으로 좁힘 ──
+ *   10-03 부터 ⑦ 은 CI 에서 '없음' 을 지면을 가리지 않고 건너뛰었다. 그래서 사본을 git 으로 들고 있어야 하는 지면이
+ *   사본을 커밋에서 빠뜨려도 CI 가 초록이었다(10-21 아르곤·Fable — 그때는 ⑨ 두 지면만 닫았다).
+ *   이제 빠진 파일마다 묻는다: 그 폴더 `.gitignore` 가 무시하나(`git check-ignore` — 추적 파일은 무시로 안 친다),
+ *   아니면 아래 `무시안하는git밖` 표에 사유와 함께 있나. 둘 다 아니면 CI 에서도 빨갛다. 키트 사본은 프로젝트 폴더마다
+ *   `.gitignore` 에 `assets/synk-kit/` 를 적는 것이 관례다(⑩ 이 표를, ⑪ 이 이 갈래를 픽스처로 문다).
  */
 
 const 정본폴더 = path.join(루트, 'docs', '브랜드_폰트', 'SUIT');
@@ -340,20 +347,28 @@ function 안쪽경로(기준, url, 경계) {
 const 있는파일 = (p) => fs.existsSync(p) && fs.statSync(p).isFile();
 
 /** ⑦ 의 술어 — 이 지면이 정본 SUIT 를 실제로 받나(ⓐ·ⓑ·ⓒ 중 하나).
- *  true = 받는다 · false = 안 받는다 · '없음' = 저장소 안의 스타일시트·서체 파일을 부르는데 그 파일이 지금 없다.
- *  키트 사본·빌드 산출물은 git 밖이라 CI 체크아웃에는 없다 — ⑦ 은 '없음' 을 CI 에서만 건너뛰고, 개발 PC 에서는 빨갛다. */
-function 싣나(파일, 경계 = 루트) {
+ *  결과: true = 받는다 · false = 안 받는다 · '없음' = 저장소 안의 스타일시트·서체 파일을 부르는데 그 파일이 지금 없다.
+ *  부른 = 부른 저장소 안 스타일시트·서체 파일 전부, 빠진 = 그중 지금 없는 것(둘 다 경계 기준 `/` 경로).
+ *  '없음' 은 개발 PC 에서는 빨갛고, CI 에서는 빠진 파일이 모두 «설계상 git 밖»일 때만 건너뛴다(⑦). */
+function 잰다(파일, 경계 = 루트) {
   const html = fs.readFileSync(파일, 'utf8');
-  if (브랜드폰트.심겼나(html)) return true;                                        // ⓐ
-  let 빠짐 = false;
+  if (브랜드폰트.심겼나(html)) return { 결과: true, 부른: [], 빠진: [] };            // ⓐ
+  let 실음 = false;
+  const 부른 = new Set();
+  const 빠진 = new Set();
+  const 적기 = (p, 있나) => {
+    const rel = path.relative(경계, p).split(path.sep).join('/');
+    부른.add(rel);
+    if (!있나) 빠진.add(rel);
+    return 있나;
+  };
   const 폴더 = path.dirname(파일);
   const 원천 = [{ 글: html, 기준: 폴더 }];
   for (const [태그] of html.matchAll(/<link\b[^>]*>/gi)) {
     if (!/\brel\s*=\s*["']?stylesheet\b/i.test(태그)) continue;
     const href = (태그.match(/\bhref\s*=\s*["']([^"']+)["']/i) || [])[1];
     const css = href && 안쪽경로(폴더, href, 경계);
-    if (!css) continue;
-    if (!있는파일(css)) { 빠짐 = true; continue; }
+    if (!css || !적기(css, 있는파일(css))) continue;
     원천.push({ 글: fs.readFileSync(css, 'utf8'), 기준: path.dirname(css) });
   }
   for (const { 글, 기준 } of 원천) {
@@ -362,32 +377,70 @@ function 싣나(파일, 경계 = 루트) {
       for (const [, url] of 면.matchAll(/url\(\s*["']?([^"')\s]+)["']?\s*\)/gi)) {
         const 데이터 = url.match(/^data:font\/woff2[^,]*;base64,(.+)$/i);
         if (데이터) {                                                                 // ⓑ (지면 안의 data URI 는 ⓐ 가 이미 셌다)
-          if (정본인가(Buffer.from(데이터[1], 'base64'))) return true;
+          if (정본인가(Buffer.from(데이터[1], 'base64'))) 실음 = true;
           continue;
         }
         const 서체 = 안쪽경로(기준, url, 경계);
-        if (!서체) continue;
-        if (!있는파일(서체)) { 빠짐 = true; continue; }
-        if (정본인가(fs.readFileSync(서체))) return true;                               // ⓒ
+        if (!서체 || !적기(서체, 있는파일(서체))) continue;
+        if (정본인가(fs.readFileSync(서체))) 실음 = true;                               // ⓒ
       }
     }
   }
-  return 빠짐 ? '없음' : false;
+  return { 결과: 실음 || (빠진.size ? '없음' : false), 부른: [...부른], 빠진: [...빠진] };
+}
+const 싣나 = (파일, 경계) => 잰다(파일, 경계).결과;
+
+/* ── ⑦ 의 CI 건너뜀이 받는 «무시하지 않는 git 밖 산출물» — `.gitignore` 에 못 넣는 까닭을 줄마다 적는다 (11-03) ──
+ * 나머지 git 밖 사본은 그 프로젝트 폴더의 `.gitignore` 가 적는다(키트 사본 `assets/synk-kit/` 등). 이 표는 그 길이
+ * 막힌 것만 받는다. 줄이 추적 파일을 덮거나, `.gitignore` 가 이미 덮거나, 아무 지면도 안 부르면 ⑩ 이 빨갛다. */
+const 무시안하는git밖 = [
+  ['docs/마케팅/포트폴리오_회사소개_20260927/assets/fonts.css', '포트폴리오 쪽 열아홉 벌(`preview.html` · `source/*.html`)이 '
+    + '나눠 쓰는 서체 묶음이다. 같은 폴더 `build.cjs` 가 정본 SUIT 를 data URI 로 담아 쓴다(약 1.7MB). `.gitignore` 에 넣으면 '
+    + '공간 지킴이의 원본 단계(docs/마케팅 git 무시 파일 · 7일 · 1MB 넘는 것)가 드라이브로 내려 개발 PC 의 ⑦ 이 빨개진다 — '
+    + '그래서 무시하지 않고 이 줄로 git 밖임을 적는다.'],
+];
+
+/** 빠진 파일(저장소 뿌리 기준 `/` 경로) 중 «설계상 git 밖»인 것 — 그 저장소의 `.gitignore` 가 무시하거나 표에 있다.
+ *  `--no-index` 없이 물어 추적 파일은 무시로 치지 않는다 — 무시 규칙 아래 강제로 넣은 사본을 지워도 빨갛다(⑪). */
+function git밖인것(빠진, { 저장소 = 루트, 표 = 무시안하는git밖 } = {}) {
+  const 밖 = new Set(빠진.filter((rel) => 표.some(([p]) => p === rel)));
+  const 물을것 = 빠진.filter((rel) => !밖.has(rel));
+  if (!물을것.length) return 밖;
+  let 출력 = '';
+  try {
+    출력 = execFileSync('git', ['-C', 저장소, 'check-ignore', '--stdin', '-z'],
+      { input: 물을것.join('\0') + '\0', encoding: 'utf8', maxBuffer: 1 << 24 });
+  } catch (e) {
+    if (e.status !== 1) throw e;                                                     // 1 = 무시되는 것이 하나도 없다
+  }
+  for (const rel of 출력.split('\0').filter(Boolean)) 밖.add(rel);
+  return 밖;
 }
 
 test('⑦ SUIT 를 «이름으로 부르는» 지면은 그 서체를 반드시 싣는다', (t) => {
   const 부르는것 = 추적HTML().filter((rel) => !제외사유(rel) && /['"]SUIT/.test(읽기(rel)));
   assert.ok(부르는것.length > 30,
     `SUIT 를 부르는 지면이 ${부르는것.length}벌뿐이다 — 자가 거의 아무것도 안 재고 있다(09-03 실측 = 79벌).`);
-  const 판정 = 부르는것.map((rel) => [rel, 싣나(path.join(루트, rel))]);
-  /* '없음'(부르는 서체 파일·스타일시트가 지금 없다)은 CI 체크아웃에서만 건너뛴다 — 키트 사본·빌드 산출물이 git 밖이다
-     (tests/_git밖.js, 10-03). 개발 PC 에서는 «안 싣는다»와 같이 빨갛다. */
-  const 못잰것 = CI인가() ? 판정.filter(([, r]) => r === '없음').map(([rel]) => rel) : [];
-  if (못잰것.length) t.diagnostic(`CI 체크아웃 — 서체 파일·스타일시트가 git 밖이라 못 잰 지면 ${못잰것.length}벌`);
-  const 빈것 = 판정.filter(([rel, r]) => r !== true && !못잰것.includes(rel)).map(([rel]) => rel);
+  const 판정 = 부르는것.map((rel) => [rel, 잰다(path.join(루트, rel))]);
+  /* '없음'(부르는 서체 파일·스타일시트가 지금 없다)은 CI 체크아웃에서, 빠진 파일이 모두 «설계상 git 밖»일 때만 건너뛴다
+     (그 폴더 `.gitignore` 가 무시하거나 `무시안하는git밖` 표에 있다 · 11-03). 개발 PC 에서는 «안 싣는다»와 같이 빨갛다. */
+  let 못잰것 = [];
+  let 안밖인빠짐 = [];
+  if (CI인가()) {
+    const 없음 = 판정.filter(([, r]) => r.결과 === '없음');
+    const 밖 = git밖인것([...new Set(없음.flatMap(([, r]) => r.빠진))]);
+    못잰것 = 없음.filter(([, r]) => r.빠진.every((p) => 밖.has(p))).map(([rel]) => rel);
+    안밖인빠짐 = [...new Set(없음.flatMap(([, r]) => r.빠진.filter((p) => !밖.has(p))))];
+  }
+  if (못잰것.length) t.diagnostic(`CI 체크아웃 — 서체 파일·스타일시트가 설계상 git 밖이라 못 잰 지면 ${못잰것.length}벌`);
+  const 빈것 = 판정.filter(([rel, r]) => r.결과 !== true && !못잰것.includes(rel)).map(([rel]) => rel);
   assert.deepEqual(빈것, [],
     `이름만 적고 안 싣는 지면 ${빈것.length}벌 (부르는 지면 ${부르는것.length}벌 중).`
     + ' 안에 심지도, 정본과 같은 서체 파일·스타일시트를 부르지도 않는다 — 시스템 고딕으로 떨어져 있다.'
+    + (안밖인빠짐.length
+      ? `\n   ⚠ CI — 빠졌는데 git 밖이라고 적힌 곳이 없는 파일: ${안밖인빠짐.slice(0, 3).join(' · ')}`
+        + '\n     추적해야 할 사본이면 커밋에서 빠진 것이다(같이 커밋한다). 설계상 git 밖이면 그 폴더 `.gitignore` 에 적는다.'
+      : '')
     + `\n   → 심는다: node tools/lib/브랜드폰트.js --심기 ${빈것.slice(0, 3).map((p) => JSON.stringify(p)).join(' ')}`
     + '\n   → 폴더째 렌더하는 키트 지면이면 키트 사본을 다시 넣는다: node tools/SNS키트_영상연결.js <그 프로젝트 폴더>'
     + '\n   → 안 심는 것이 맞으면 위 `제외` 표에 **사유와 함께** 줄을 넣는다(사유 없는 제외는 안 받는다).');
@@ -448,7 +501,9 @@ test('⑧ «싣나»는 이름만·다른 서체·저장소 밖 파일을 «안 
  *    공개본 한글이 시스템 고딕으로 떨어지는데도 CI 가 초록이다. 개발 PC 의 «CI 없이 빨갛다»도 워크트리에서는
  *    안전망이 못 된다(워크트리는 CI=1 로 돌리고, CI 없이는 git 밖 34벌 때문에 이미 빨갛다). (10-21 아르곤·Fable)
  * 🔑 그래서 그런 지면만 여기 적고 CI 와 무관하게 «싣는다»(true)를 단언한다. ④ 와 같은 양성 목록이다 —
- *    새로 태어나는 지면은 그대로 ⑦ 이 잡고, 이 목록은 «사본을 추적한다»고 정한 지면만 받는다. */
+ *    새로 태어나는 지면은 그대로 ⑦ 이 잡고, 이 목록은 «사본을 추적한다»고 정한 지면만 받는다.
+ * ⇒ 11-03 부터 ⑦ 도 CI 에서 «설계상 git 밖»(`.gitignore` 가 무시 · `무시안하는git밖` 표)인 빠짐만 건너뛰어 같은 구멍을
+ *    지면 전체에서 닫는다. 이 목록은 «이 두 지면은 사본이 있어야 한다»는 이름 박은 양성으로 그대로 둔다. */
 const 사본을추적하는지면 = [
   /* synk.im LAB 도구 — 같은 폴더 assets/fonts/SUIT-Variable.woff2(정본 사본)를 preload 로 싣는다.
      base64 로 심으면(--심기) HTML 이 830KB 를 넘어 느린 4G 첫 화면이 0.7→4.5초라 사본을 택했다(현장 노트 배포_공개). */
@@ -463,4 +518,58 @@ test('⑨ 옆에 둔 서체 사본을 추적하는 지면은 CI 에서도 그 �
   assert.deepEqual(빈것, [],
     `옆 서체 사본이 없거나 정본과 다른 지면 ${빈것.length}벌 (${사본을추적하는지면.length}벌 중) — CI 체크아웃에 사본이 없으면 커밋에서 빠진 것이다.`
     + '\n   → 정본을 다시 놓고 같이 커밋한다: cp docs/브랜드_폰트/SUIT/SUIT-Variable.woff2 <그 지면 폴더>/assets/fonts/');
+});
+
+/* ── ⑩ ⑦ 의 «무시하지 않는 git 밖» 표가 낡지 않았나 — ⑤ 처럼 목록이 낡으면 목록이 운다 (11-03) ── */
+
+test('⑩ 무시하지 않는 git 밖 표의 줄은 추적 밖이고, .gitignore 가 안 덮고, 어떤 지면이 실제로 부른다', () => {
+  const 추적 = new Set(execFileSync('git', ['-C', 루트, 'ls-files', '-z', '--', ...무시안하는git밖.map(([p]) => p)],
+    { encoding: 'utf8' }).split('\0').filter(Boolean));
+  const 무시됨 = git밖인것(무시안하는git밖.map(([p]) => p), { 표: [] });
+  const 부른것 = new Set(추적HTML().filter((rel) => !제외사유(rel) && /['"]SUIT/.test(읽기(rel)))
+    .flatMap((rel) => 잰다(path.join(루트, rel)).부른));
+  const 흠 = 무시안하는git밖.flatMap(([p, 왜]) => [
+    !왜 && `${p} — 사유가 없다`,
+    추적.has(p) && `${p} — git 이 추적한다(git 밖이 아니다 · 이 줄이 빠진 사본을 CI 에서 숨긴다)`,
+    무시됨.has(p) && `${p} — .gitignore 가 이미 덮는다(이 줄은 죽었다)`,
+    !부른것.has(p) && `${p} — 부르는 지면이 없다(지면이 옮겨졌거나 지워졌다)`,
+  ].filter(Boolean));
+  assert.deepEqual(흠, [], `낡은 줄 ${흠.length}개 — 죽은 줄을 두면 다음 사람이 「이미 판정된 자리」로 읽는다.`);
+});
+
+/* ── ⑪ ⑦ 의 CI 갈래가 무는지 — 무시된 사본·표의 산출물만 건너뛰고, 빠뜨린 사본·지운 추적 사본은 남긴다 (11-03) ── */
+
+test('⑪ CI 건너뜀은 .gitignore 가 무시하는 사본과 표의 산출물만 받는다 — 빠뜨린 사본·지운 추적 사본은 안 받는다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '지면폰트git-'));
+  const 쓰기 = (rel, 내용) => {
+    const 파일 = path.join(방, rel);
+    fs.mkdirSync(path.dirname(파일), { recursive: true });
+    fs.writeFileSync(파일, 내용);
+    return 파일;
+  };
+  const git = (...args) => execFileSync('git', ['-C', 방, ...args], { stdio: ['ignore', 'pipe', 'ignore'] });
+  const 스택 = '<p style="font-family:\'SUIT Variable\',sans-serif">가</p>';
+  const 키트면 = `<style>@font-face{font-family:'SUIT Variable';src:url("assets/synk-kit/fonts/SUIT-Variable.woff2")}</style>${스택}`;
+  try {
+    git('init', '-q');
+    쓰기('무시함/.gitignore', 'assets/synk-kit/\n');
+    쓰기('추적함/.gitignore', 'assets/synk-kit/\n');
+    const 판 = {
+      무시함: 쓰기('무시함/index.html', 키트면),                                         // 폴더가 키트 사본을 git 밖이라고 적었다
+      빠뜨림: 쓰기('빠뜨림/index.html', 키트면),                                         // 아무도 git 밖이라고 안 적었다 = 커밋에서 빠졌다
+      추적함: 쓰기('추적함/index.html', 키트면),                                         // 무시 규칙 아래 강제로 추적하던 사본을 지웠다
+      표: 쓰기('표/source/쪽.html', `<link rel="stylesheet" href="../assets/fonts.css">${스택}`),
+    };
+    쓰기('추적함/assets/synk-kit/fonts/SUIT-Variable.woff2', 브랜드폰트.woff2());
+    git('add', '-f', '추적함/assets/synk-kit/fonts/SUIT-Variable.woff2');
+    fs.rmSync(path.join(방, '추적함/assets'), { recursive: true, force: true });
+    const 잰것 = Object.fromEntries(Object.entries(판).map(([이름, 파일]) => [이름, 잰다(파일, 방)]));
+    assert.deepEqual(Object.values(잰것).map((r) => r.결과), ['없음', '없음', '없음', '없음'], '픽스처가 «없음»을 못 만든다');
+    const 밖 = git밖인것(Object.values(잰것).flatMap((r) => r.빠진),
+      { 저장소: 방, 표: [['표/assets/fonts.css', '픽스처 — 무시하지 않는 빌드 산출물']] });
+    const 건너뜀 = Object.entries(잰것).filter(([, r]) => r.빠진.every((p) => 밖.has(p))).map(([이름]) => 이름);
+    assert.deepEqual(건너뜀, ['무시함', '표']);
+  } finally {
+    fs.rmSync(방, { recursive: true, force: true });
+  }
 });

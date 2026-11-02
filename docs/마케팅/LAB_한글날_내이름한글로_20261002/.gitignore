@@ -1,0 +1,4 @@
+# 키트 사본은 git 밖이다(README) — `node tools/SNS키트_영상연결.js <이 폴더>`로 다시 넣는다.
+# motion.js 하나는 10-02 git 밖 원본 커밋(`37c1a0812`) 때 들어와 추적 중이라 그대로 둔다.
+assets/synk-kit/*
+!assets/synk-kit/motion.js
