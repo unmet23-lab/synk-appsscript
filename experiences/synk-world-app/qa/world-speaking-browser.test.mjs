@@ -8,6 +8,7 @@ import {spawn} from 'node:child_process';
 import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
 import {serverReady} from './server-ready.mjs';
+import {pageReady} from './page-ready.mjs';
 // 말하기 연습(10-21 공개 판)을 리허설 WORLD(실제 Edge, 합성 계정 player-a)에서 끝까지 돈다. 마이크는 Edge의 가짜 장치에 이 시험이 만든
 // 합성 소리(사람 목소리가 아니다)를 물린다. 자동 피드백·역할극 서버 몫은 가짜 응답이라 모델·운영 서버·돈을 쓰지 않는다.
 // 플래그 없이 배우기 판에 줄이 있다 → 이 기기 끄는 스위치(synk.world.speaking.preview=0)면 모듈도 줄도 없다 → 스위치를 지우고 연다
@@ -45,8 +46,9 @@ test('리허설 WORLD 「말하기 연습」: 기본 켜짐·끄는 스위치·�
  fs.mkdirSync(out,{recursive:true});for(const name of fs.readdirSync(out))if(/\.png$/.test(name))fs.rmSync(path.join(out,name));
  const socket=net.createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r));
  const server=spawn(process.execPath,[path.join(root,'experiences/synk-world-app/server.mjs')],{cwd:root,stdio:'pipe',env:{...process.env,SYNK_TALK_ROOT:talkRoot,SYNK_WORLD_PORT:String(port),SYNK_WORLD_DATA_DIR:path.join(directory,'db'),SYNK_WORLD_SPEAKING_DEV:''}});
+ const serverClosed=new Promise(resolve=>server.once('close',resolve));
  let serverOutput='';server.stderr.on('data',c=>serverOutput+=c);server.stdout.on('data',c=>serverOutput+=c);
- const url=`http://127.0.0.1:${port}`,calls=[],errors=[],external=[],shots=[],measures={},checks={},progress=[];
+ const url=`http://127.0.0.1:${port}`,calls=[],errors=[],external=[],shots=[],measures={},checks={},progress=[],navigations=[];
  const step=name=>{progress.push(`${new Date().toISOString().slice(11,19)} ${name}`);if(process.env.SYNK_QA_VERBOSE)console.log(progress.at(-1));};
  let browser,page,context,placeTries=0;
  // 가짜 서버 몫의 답을 바꾼다(feedback: ok·unavailable, remaining: 피드백 뒤 남은 횟수, turn: ok·limit).
@@ -75,7 +77,10 @@ test('리허설 WORLD 「말하기 연습」: 기본 켜짐·끄는 스위치·�
   // 단계마다 한 번만 답하고 그 창이 물러날 때까지 기다린다 — 답을 저장하는 동안 창은 단추를 끈 채 남는다. 0.25초 뒤 다시 보면 바쁜 PC에서는
   // 같은 단계로 읽혀 꺼진 단추를 또 누르다, 다음 창으로 바뀌며 사라진 단추를 30초 기다렸다(11-02 로컬 조건부 시험 574f7c5a9).
   const enter=async(query='')=>{
-   await page.goto(url+'/mobile.html?opening=off'+query,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.__synkWorld?.client);
+   const navigation={query,startedAt:new Date().toISOString()},started=Date.now();navigations.push(navigation);
+   try{const response=await pageReady(page,url+'/mobile.html?opening=off'+query,{signal:t.signal});navigation.status=response?.status();}
+   catch(error){navigation.error=error.message;throw error;}finally{navigation.ms=Date.now()-started;}
+   await page.waitForFunction(()=>window.__synkWorld?.client);
    const leave=(name,selector)=>page.waitForFunction(s=>![...document.querySelectorAll(s)].some(n=>n.getClientRects().length>0),selector,{timeout:60000})
     .catch(e=>{throw Error(`입장 「${name}」 창이 물러나지 않았다 — ${e.message.split('\n')[0]}`);});
    for(let i=0;i<120;i++){
@@ -313,7 +318,7 @@ test('리허설 WORLD 「말하기 연습」: 기본 켜짐·끄는 스위치·�
   }
   assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
  }finally{
-  fs.writeFileSync(path.join(out,'result.json'),JSON.stringify({at:new Date().toISOString(),progress,shots,checks,measures,calls,errors,external,server:serverOutput.slice(-2000)},null,1)+'\n');
-  await browser?.close();server.kill();fs.rmSync(directory,{recursive:true,force:true});
+  fs.writeFileSync(path.join(out,'result.json'),JSON.stringify({at:new Date().toISOString(),progress,navigations,shots,checks,measures,calls,errors,external,server:serverOutput.slice(-2000)},null,1)+'\n');
+  try{await browser?.close();}finally{server.kill();await serverClosed;fs.rmSync(directory,{recursive:true,force:true});}
  }
 });
