@@ -368,6 +368,9 @@ test('a source that turned protected waits only while queued for encryption, the
   assert.equal(late.status, 'failed'); assert.equal(late.error, 'previously-backed-source-now-protected');
   assert.equal(late.protectedSources[0].awaitedRuns, backup.PROTECTED_AWAIT_RUNS); assert.equal(late.protectedSources[0].awaiting, undefined);
   assert.equal(backup.run(options).status, 'failed', 'an expired wait does not start over');
+  // 내용이 바뀌면 그 판의 보관을 새로 기다린다 — 오래 고치는 CSS가 사슬이 멀쩡한데 기한만 넘겨 실패하지 않게.
+  f.put(f.root, 'note.md', broken + 'more\n');
+  waiting(backup.run(options), 1);
   f.put(f.root, 'note.md', safe);
   const fixed = backup.run(options); assert.equal(fixed.status, 'healthy'); assert.deepEqual(fixed.protectedAwaiting, {});
   // 평문 한도를 넘은 일반 문서는 암호문으로 보관될 길이 없다(목록에 안 든다). 기다리지 않고 바로 실패한다.

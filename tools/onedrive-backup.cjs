@@ -747,23 +747,25 @@ function encryptedProtectionCoverage(vault, files) {
 // 그동안 매 회차가 실패라 거짓 알림이 됐다. 이번 목록(protected-sources.json)에 들어 보관을 기다리는 줄만, 깨어 있는 동안 도는 이 회차로
 // 16회(약 8시간, 적용이 한 번 더 어긋나도 닿는다)까지 대기로 둔다 — 절전한 시간은 회차가 없어 세지 않는다. 목록에 없는 줄(보관될 길이 없음)·오류 줄·기한 넘은 줄은 예전처럼 실패다.
 const PROTECTED_AWAIT_RUNS = 16;
-// carried: 지난 영수증의 protectedAwaiting(원본 경로 → 처음 본 시각·센 회차). 다른 이유로 일찍 끝난 회차도 이 칸은 그대로 넘겨 셈이 풀리지 않고,
-// 기한을 넘긴 원본은 보관이 확인되거나 보호 대상에서 빠질 때까지 실패로 남는다(다시 1회차부터 세지 않는다).
+// carried: 지난 영수증의 protectedAwaiting(원본 경로 → 내용 SHA·처음 본 시각·센 회차). 다른 이유로 일찍 끝난 회차도 이 칸은 그대로 넘겨 셈이 풀리지 않고,
+// 기한을 넘긴 판은 보관이 확인되거나 보호 대상에서 빠질 때까지 실패로 남는다(다시 1회차부터 세지 않는다). 내용이 바뀌면 그 판의 보관을 새로 기다린다 —
+// 세션이 CSS를 오래 고치는 동안 사슬이 멀쩡한데 기한만 넘는 일을 막는다. 사슬이 고장 나면 GitHub 칸이 따로 알린다.
 function awaitProtectedArchive(rows, inventoryFiles, carried, now = new Date().toISOString()) {
   const queued = new Set((inventoryFiles || []).map(row => row.sourcePath && path.resolve(row.sourcePath).toLowerCase()));
   const before = carried && typeof carried === 'object' ? carried : {}, awaiting = {};
   const sources = rows.map(row => {
     const key = path.resolve(row.source).toLowerCase();
     if (row.preservedBy === 'encrypted-drive') return row;
-    const last = before[key], runs = (Number.isSafeInteger(last?.runs) ? last.runs : 0) + 1;
-    const since = typeof last?.since === 'string' ? last.since : now;
     // 보관될 길이 없거나(목록에 없음) 이번에 읽지 못한 줄은 이 회차만 실패다. 센 회차는 그대로 둔다.
-    if (row.error || !queued.has(key)) { if (last) awaiting[key] = last; return row; }
+    if (row.error || !queued.has(key)) { if (before[key]) awaiting[key] = before[key]; return row; }
+    const last = before[key]?.sha256 && before[key].sha256 !== row.sha256 ? null : before[key];
+    const runs = (Number.isSafeInteger(last?.runs) ? last.runs : 0) + 1;
+    const since = typeof last?.since === 'string' ? last.since : now;
     if (last?.exhausted || runs > PROTECTED_AWAIT_RUNS) {
-      awaiting[key] = { since, runs: PROTECTED_AWAIT_RUNS, exhausted: true };
+      awaiting[key] = { sha256: row.sha256, since, runs: PROTECTED_AWAIT_RUNS, exhausted: true };
       return { ...row, awaitedRuns: PROTECTED_AWAIT_RUNS };
     }
-    awaiting[key] = { since, runs };
+    awaiting[key] = { sha256: row.sha256, since, runs };
     return { ...row, awaiting: { since, runs } };
   });
   return { sources, awaiting };
