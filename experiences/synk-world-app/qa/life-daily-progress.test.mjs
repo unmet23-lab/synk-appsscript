@@ -50,6 +50,18 @@ test('new first review response refreshes one daily item and permits a new guide
  const before=p.exportSnapshot();assert.equal(p.answerReview({id:q.review.id,correct:true}).duplicate,true);assert.deepEqual(p.exportSnapshot(),before);
 });
 
+test('a two-minute review advance across KST midnight no longer counts yesterday guidance as same-day help',()=>{
+ const at=Date.parse('2026-11-02T23:59:30+09:00'),f=fixture({at}),{p,storage}=f,q=sample.questions[0];
+ p.startLesson(sample);answer(p);p.recordGuidedPractice({questionId:q.id,tutorId:'kkamong'});
+ const yesterday=p.exportSnapshot().daily.days[lifeDayKey(at)];
+ const resumed=fixture({storage,at:at+120000});resumed.p.startReview(1);
+ assert.equal(resumed.p.answerReview({id:q.review.id,correct:true}).intervalDays,1);
+ const result=resumed.p.exportSnapshot();
+ assert.equal(result.activeReview.answers[q.review.id].helped,false);
+ assert.deepEqual(result.daily.days[lifeDayKey(at)],yesterday);
+ assert.equal(result.daily.days[lifeDayKey(at+120000)].items[q.id].outcome,'independent');
+});
+
 test('closing requires real practice, is idempotent, and same-ms or backwards-clock work reopens the day',()=>{
  const f=fixture(),{p,storage}=f;p.startLesson(sample);let writes=storage.writes;
  assert.equal(p.markDayComplete().empty,true);assert.equal(storage.writes,writes);
