@@ -123,11 +123,9 @@
  },
  "검사": {
   "도구": "tools/올리기전검사.js",
-  "시각": "2026-11-02T18:23:30+09:00",
-  "결과": "고칠 것",
-  "고칠것": [
-   "프롬프트 · 공개된 https://synk.im/prompts/에 「outlier-not-top-views」 항목이 아직 없다 — node docs/마케팅/맞춤도구/build.mjs prompts 뒤 tools/공개.js로 올린다"
-  ],
+  "시각": "2026-11-02T19:50:44+09:00",
+  "결과": "확인할 것",
+  "고칠것": [],
   "확인할것": [
    "최종.mp4 · 소리 비트레이트가 297kbps입니다. 올림 기준은 스테레오 384kbps입니다.",
    "표지(yuhobuilds-instagram · yuhobuilds-youtube · yuhobuilds-x · yuho-linkedin-primary · yuhobuilds-threads · shift-tistory) · 표지 오른쪽 단추 자리 1군데 — 「시 강좌쇼츠 • 평소의 10배+」 오른쪽 끝 987px(안전선 920)",
@@ -165,7 +163,7 @@
      "최장": 0,
      "자리": 0
     },
-    "사전검사": ".tmp/올리기전검사/yuhobuilds_조회1위광고_20261102/영상사전검사_최종/inspection-8ca0fbae-656e-4ae2-b315-c8d738a9e4a7/검사.json"
+    "사전검사": ".tmp/올리기전검사/yuhobuilds_조회1위광고_20261102/영상사전검사_최종/inspection-6d7a6da3-9fb0-4e42-8788-17867afafbde/검사.json"
    }
   ],
   "목소리": {
@@ -216,5 +214,6 @@
   "AI진행자": "세 판 모두 「예 — AI 진행자로 읽혀 넘기고 싶다」",
   "GPT": "API 크레딧 바닥(429)으로 못 받음",
   "판정": "관문 못 넘음(재미 · 볼 이유)"
- }
+ },
+ "작업실등록": true
 }
