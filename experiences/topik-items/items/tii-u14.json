@@ -1,0 +1,398 @@
+{
+  "schema": "topik-item-1",
+  "batch": "tii-u14",
+  "author": "claude-opus-5-5 · Claude Code 세션 · 2026-11-03",
+  "note": "TOPIK 3→4급 뼈대 U14 「설문 결과 브리핑」의 읽을거리 · 듣기(experiences/topik-units/u14.json). 학보 기사 · 안내문 · 회의 대화는 모두 자체 창작이고 수치는 가상 자료다.",
+  "items": [
+    {
+      "id": "tii-u14-001",
+      "rev": 3,
+      "family": "tii-u14-001",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TII-R-19",
+      "targetGrade": 4,
+      "skillId": "ko2.reading.grammar",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-u14-s01",
+        "order": 1
+      },
+      "passage": "우리 학교 학생들이 끼니를 해결하는 곳은 크게 학생 식당과 동아리 카페로 나뉜다. 학생 식당은 음식값이 싸고 양이 많아서 점심시간이면 줄이 길게 늘어선다. (   ) 동아리 카페는 음식값이 조금 비싸고 메뉴도 많지 않다. 그런데 학보사가 학생 200명을 대상으로 조사한 결과, 아침에는 동아리 카페를 이용한다는 응답이 학생 식당보다 많았다. 응답자들은 수업 전에 빨리 먹을 수 있다는 점과 먹으면서 공부할 수 있다는 점을 이유로 들었다. 학생들은 값과 양만 보고 먹을 곳을 정하는 것이 아니라 그때그때 자신에게 필요한 것을 보고 정하는 것이다.",
+      "script": null,
+      "question": "(   )에 들어갈 말로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "반면에",
+        "그래서",
+        "게다가",
+        "예를 들면"
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "빈칸 앞은 학생 식당이 「음식값이 싸고 양이 많아서」 줄이 길다는 내용이고, 뒤는 동아리 카페가 「음식값이 조금 비싸고 메뉴도 많지 않다」는 내용이에요. 서로 다른 두 곳을 맞세우고 있으니 대조를 나타내는 「반면에」가 맞아요. 「그래서」는 앞이 뒤의 까닭일 때 쓰는데, 식당이 싼 것이 카페가 비싼 까닭은 아니에요.",
+        "en": "Before the blank, the student cafeteria has long lines because 「음식값이 싸고 양이 많아서」 (the food is cheap and the portions are large). After it, the club cafe is described as 「음식값이 조금 비싸고 메뉴도 많지 않다」 (the food is a little expensive and there are few menu items). Since two different places are being set against each other, 「반면에」 (on the other hand), which shows contrast, is correct. 「그래서」 (so) is used when what comes before is the reason for what follows, but the cafeteria being cheap is not the reason the cafe is expensive.",
+        "mn": "Хоосон зайны өмнө оюутны хоолны газар 「음식값이 싸고 양이 많아서」 (хоолны үнэ хямд, хэмжээ их учраас) дараалал урт байдаг гэж, ард нь дугуйлангийн кафе 「음식값이 조금 비싸고 메뉴도 많지 않다」 (хоолны үнэ арай өндөр, цэс нь ч олон биш) гэж өгүүлжээ. Хоёр өөр газрыг хооронд нь харьцуулж байгаа тул эсрэгцлийг илэрхийлдэг 「반면에」 (харин нөгөө талаас) зөв. 「그래서」 (тиймээс)-ийг өмнөх нь дараагийнхаа шалтгаан болох үед хэрэглэдэг бөгөөд хоолны газар хямд байгаа нь кафе үнэтэй байгаагийн шалтгаан биш."
+      },
+      "choiceNotes": [
+        "앞뒤 내용이 서로 달라서 대조를 나타내는 이 말이 맞아요.",
+        "「그래서」는 앞이 뒤의 까닭일 때 써요. 식당이 싼 것이 카페가 비싼 까닭은 아니에요.",
+        "「게다가」는 비슷한 내용을 더할 때 써요. 앞뒤가 비슷한 내용이 아니에요.",
+        "「예를 들면」은 앞 내용의 예를 들 때 써요. 카페는 학생 식당의 예가 아니에요."
+      ],
+      "conceptIds": [],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "대조 이음말 「반면에」를 고르는 문항으로, 정답이 하나뿐이고 오답·해설·난도가 모두 적절하다. 통과.",
+          "rubric": "topik-review-r1",
+          "at": "2026-11-02T21:46:21.159Z",
+          "rev": 3,
+          "hash": "5eb2b24c57d9122d",
+          "packet": "u14-r4"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "두 장소의 상반된 특성을 대조하는 접속부사 빈칸 문항으로 정답 유일성, 오답 구성, 다국어 해설 모두 기준에 맞는다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-11-02T21:46:21.159Z",
+          "rev": 3,
+          "hash": "5eb2b24c57d9122d",
+          "packet": "u14-r4"
+        }
+      ]
+    },
+    {
+      "id": "tii-u14-002",
+      "rev": 3,
+      "family": "tii-u14-002",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TII-R-20",
+      "targetGrade": 4,
+      "skillId": "ko2.reading.main",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-u14-s01",
+        "order": 2
+      },
+      "passage": "우리 학교 학생들이 끼니를 해결하는 곳은 크게 학생 식당과 동아리 카페로 나뉜다. 학생 식당은 음식값이 싸고 양이 많아서 점심시간이면 줄이 길게 늘어선다. (   ) 동아리 카페는 음식값이 조금 비싸고 메뉴도 많지 않다. 그런데 학보사가 학생 200명을 대상으로 조사한 결과, 아침에는 동아리 카페를 이용한다는 응답이 학생 식당보다 많았다. 응답자들은 수업 전에 빨리 먹을 수 있다는 점과 먹으면서 공부할 수 있다는 점을 이유로 들었다. 학생들은 값과 양만 보고 먹을 곳을 정하는 것이 아니라 그때그때 자신에게 필요한 것을 보고 정하는 것이다.",
+      "script": null,
+      "question": "이 글의 중심 내용으로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "학생 식당은 값이 싸서 점심시간에 가장 붐빈다.",
+        "학생들은 상황에 따라 필요한 것을 보고 먹을 곳을 정한다.",
+        "동아리 카페는 음식값을 낮추어 학생 식당과 경쟁해야 한다.",
+        "아침 수업 전에 밥을 먹지 않는 학생이 점점 늘고 있다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "글은 두 곳을 견준 뒤 마지막 문장에서 학생들이 값과 양만이 아니라 「그때그때 자신에게 필요한 것」을 보고 정한다고 맺어요. 이 내용이 글 전체를 묶는 중심 내용이에요. ①은 글의 한 부분일 뿐이라 중심 내용이 아니에요.",
+        "en": "After comparing the two places, the passage concludes in its last sentence that students decide not only by price and portion but by 「그때그때 자신에게 필요한 것」 (what they need at that moment). This is the main idea that ties the whole passage together. Choice ① is only one part of the passage, so it is not the main idea.",
+        "mn": "Бичвэр хоёр газрыг харьцуулсны дараа сүүлийн өгүүлбэрт оюутнууд зөвхөн үнэ, хэмжээгээр бус 「그때그때 자신에게 필요한 것」 (тухайн үед өөрт нь хэрэгтэй зүйл)-ийг харж шийддэг гэж дүгнэжээ. Энэ нь бичвэрийг бүхэлд нь холбосон гол санаа юм. ① нь бичвэрийн зөвхөн нэг хэсэг тул гол санаа биш."
+      },
+      "choiceNotes": [
+        "글에 나오는 내용의 한 부분이에요. 글 전체의 중심 내용은 아니에요.",
+        "마지막 문장의 내용이고 앞의 비교와 조사 결과를 모두 묶어요.",
+        "글은 카페가 값을 낮춰야 한다고 말하지 않아요.",
+        "밥을 먹지 않는 학생이 는다는 내용은 글에 없어요."
+      ],
+      "conceptIds": [],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답 ②가 유일하고 자리 꼴·급·해설 모두 알맞다. ③·④ 오답이 조금 약하지만 학습자에게 해는 없어 통과로 본다. 다만 기출 유사도는 확신할 수 없어 확인이 필요하다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-11-02T21:46:21.159Z",
+          "rev": 3,
+          "hash": "6d43aece228c46aa",
+          "packet": "u14-r4"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "세트 지문의 마지막 결론을 패러프레이징해 중심 내용을 묻는 문항으로 보기 매력도와 다국어 해설 모두 우수하다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-11-02T21:46:21.159Z",
+          "rev": 3,
+          "hash": "6d43aece228c46aa",
+          "packet": "u14-r4"
+        }
+      ]
+    },
+    {
+      "id": "tii-u14-003",
+      "rev": 3,
+      "family": "tii-u14-003",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "reading",
+      "officialType": "TII-R-09",
+      "targetGrade": 3,
+      "skillId": "ko2.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "set": null,
+      "passage": "창업 동아리 카페 아침 메뉴 안내\n\n기간: 11월 9일(월)~12월 4일(금)\n시간: 평일 오전 8시~10시\n메뉴: 참치 샌드위치 4,000원, 달걀 샌드위치 3,000원, 커피, 차\n혜택: 학생증을 보여 주시면 음료 500원 할인\n\n※ 메뉴는 이용하신 분들의 의견에 따라 바뀔 수 있습니다.",
+      "script": null,
+      "question": "다음 안내문의 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "아침 메뉴는 주말에도 판매한다.",
+        "달걀 샌드위치가 참치 샌드위치보다 비싸다.",
+        "학생증을 보여 주면 음료를 싸게 살 수 있다.",
+        "아침 메뉴는 오전 10시가 지나도 주문할 수 있다."
+      ],
+      "answer": 2,
+      "explanation": {
+        "ko": "「혜택」 줄에 학생증을 보여 주면 음료를 500원 할인해 준다고 나와 있어요. 그래서 음료를 더 싸게 살 수 있어요. 시간 줄의 「오전 8시~10시」를 놓치면 ④를 고르기 쉬워요.",
+        "en": "The 「혜택」 (benefit) line says drinks are 500 won off if you show your student ID. So you can buy drinks for less. If you miss 「오전 8시~10시」 (8 to 10 a.m.) on the time line, it is easy to pick ④.",
+        "mn": "「혜택」 (хөнгөлөлт) мөрөнд оюутны үнэмлэхээ үзүүлбэл ундаа 500 воноор хямдарна гэж бичсэн байна. Тиймээс ундааг хямд авч болно. Цагийн мөрийн 「오전 8시~10시」 (өглөөний 8-10 цаг)-ийг анзаарахгүй бол ④-ийг сонгоход амархан."
+      },
+      "choiceNotes": [
+        "시간 줄에 「평일」이라고 나와 있어서 주말에는 팔지 않아요.",
+        "달걀은 3,000원, 참치는 4,000원이라 달걀 샌드위치가 더 싸요.",
+        "혜택 줄의 내용과 같아요.",
+        "시간 줄에 오전 10시까지라고 나와 있어요."
+      ],
+      "conceptIds": [],
+      "audio": null,
+      "origin": "synk-original",
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 하나뿐이고 오답이 글의 정보를 바꾼 꼴로 잘 짜인 3급 안내문 내용 일치 문항입니다. 해설 세 언어도 정확해 그대로 통과합니다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-11-02T21:46:21.159Z",
+          "rev": 3,
+          "hash": "1de96c4476f0a123",
+          "packet": "u14-r4"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "교내 카페 아침 메뉴 안내문의 세부 내용 일치를 묻는 3급 문항으로, 오답 모두 지문 정보와 명확히 어긋나게 설계되어 깔끔하다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-11-02T21:46:21.159Z",
+          "rev": 3,
+          "hash": "1de96c4476f0a123",
+          "packet": "u14-r4"
+        }
+      ]
+    },
+    {
+      "id": "tii-u14-004",
+      "rev": 2,
+      "family": "tii-u14-004",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-21",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.main",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-u14-s02",
+        "order": 1
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "회장님, 작년에 비해 아침에 카페를 찾는 학생이 크게 늘었어요. 저녁 손님은 조금 줄었고요."
+        },
+        {
+          "speaker": "남자",
+          "text": "그럼 저녁 영업을 줄이고 아침 시간을 늘리면 어떨까요? 일할 사람도 부족하잖아요."
+        },
+        {
+          "speaker": "여자",
+          "text": "저녁을 바로 줄이면 저녁에 모임을 하는 동아리들이 불편할 거예요. 우선 아침 영업만 한 시간 늘려 보고, 다음 달 자료를 보고 정하는 게 좋겠어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "그럼 한 달만 그렇게 해 보죠."
+        }
+      ],
+      "question": "여자의 중심 생각으로 가장 알맞은 것을 고르십시오.",
+      "choices": [
+        "아침 영업을 먼저 늘려 보고 나서 결정하는 것이 좋다.",
+        "저녁 영업을 줄여서 일할 사람을 확보해야 한다.",
+        "저녁 모임이 있는 날에는 영업을 쉬는 것이 좋다.",
+        "학생들의 의견을 먼저 더 들어 보는 것이 좋다."
+      ],
+      "answer": 0,
+      "explanation": {
+        "ko": "여자는 저녁을 바로 줄이는 것에 반대하고 「우선 아침 영업만 한 시간 늘려 보고, 다음 달 자료를 보고 정하는 게 좋겠어요」라고 말해요. 이 말이 여자의 중심 생각이에요.",
+        "en": "The woman opposes cutting evening hours right away and says 「우선 아침 영업만 한 시간 늘려 보고, 다음 달 자료를 보고 정하는 게 좋겠어요」 (let's first extend only morning hours by one hour, then decide after seeing next month's data). That is her main idea.",
+        "mn": "Эмэгтэй оройн цагийг шууд багасгахыг эсэргүүцэж, 「우선 아침 영업만 한 시간 늘려 보고, 다음 달 자료를 보고 정하는 게 좋겠어요」 (эхлээд зөвхөн өглөөний цагийг нэг цагаар нэмж үзээд, дараа сарын мэдээллийг хараад шийдвэл дээр) гэж хэлдэг. Энэ бол эмэгтэйн гол санаа юм."
+      },
+      "choiceNotes": [
+        "여자가 마지막에 제안한 내용과 같아요.",
+        "저녁 영업을 줄이자는 것은 남자의 생각이에요. 여자는 반대했어요.",
+        "여자는 동아리들이 불편할 거라고 했을 뿐, 영업을 쉬자고 하지 않았어요.",
+        "여자는 학생들의 의견이 아니라 다음 달 자료를 보자고 했어요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-u14-s02.mp3",
+        "plays": 2,
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 28
+      },
+      "origin": "synk-original",
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "정답이 유일하고 오답이 대본에 근거해 그럴듯해요. 대본이 자연스럽고 해설 세 언어도 일치해요. 그대로 통과해도 돼요.",
+          "rubric": "topik-review-r1",
+          "at": "2026-11-02T21:46:21.159Z",
+          "rev": 2,
+          "hash": "41884f405d01a2ea",
+          "packet": "u14-r4"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass",
+          "notes": "영업시간 조정을 논의하는 업무 대화에서 여자의 절충안을 파악하는 듣기 문항으로, TTS 표기 규칙과 보기 설계 모두 기준에 부합한다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-11-02T21:46:21.159Z",
+          "rev": 2,
+          "hash": "41884f405d01a2ea",
+          "packet": "u14-r4"
+        }
+      ]
+    },
+    {
+      "id": "tii-u14-005",
+      "rev": 3,
+      "family": "tii-u14-005",
+      "exam": "topik-ii",
+      "format": "pbt",
+      "section": "listening",
+      "officialType": "TII-L-22",
+      "targetGrade": 4,
+      "skillId": "ko2.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "set": {
+        "id": "tii-u14-s02",
+        "order": 2
+      },
+      "passage": null,
+      "script": [
+        {
+          "speaker": "여자",
+          "text": "회장님, 작년에 비해 아침에 카페를 찾는 학생이 크게 늘었어요. 저녁 손님은 조금 줄었고요."
+        },
+        {
+          "speaker": "남자",
+          "text": "그럼 저녁 영업을 줄이고 아침 시간을 늘리면 어떨까요? 일할 사람도 부족하잖아요."
+        },
+        {
+          "speaker": "여자",
+          "text": "저녁을 바로 줄이면 저녁에 모임을 하는 동아리들이 불편할 거예요. 우선 아침 영업만 한 시간 늘려 보고, 다음 달 자료를 보고 정하는 게 좋겠어요."
+        },
+        {
+          "speaker": "남자",
+          "text": "그럼 한 달만 그렇게 해 보죠."
+        }
+      ],
+      "question": "들은 내용과 같은 것을 고르십시오.",
+      "choices": [
+        "저녁 손님이 작년에 비해 늘었다.",
+        "남자는 저녁 영업을 줄이자고 제안했다.",
+        "카페는 아침 영업을 두 시간 늘리기로 했다.",
+        "카페에는 일할 사람이 충분하다."
+      ],
+      "answer": 1,
+      "explanation": {
+        "ko": "남자가 「저녁 영업을 줄이고 아침 시간을 늘리면 어떨까요?」라고 제안해요. 그래서 이 보기가 들은 내용과 같아요. 여자는 「한 시간」 늘려 보자고 했으니 「두 시간」이라고 한 ③은 틀려요.",
+        "en": "The man asks 「저녁 영업을 줄이고 아침 시간을 늘리면 어떨까요?」 (how about cutting evening hours and extending morning hours?). So this choice matches what you heard. The woman said to try extending by 「한 시간」 (one hour), so ③, which says two hours, is wrong.",
+        "mn": "Эрэгтэй 「저녁 영업을 줄이고 아침 시간을 늘리면 어떨까요?」 (оройн цагийг багасгаж, өглөөний цагийг нэмбэл ямар вэ?) гэж санал болгодог. Тиймээс энэ хариулт сонссон зүйлтэй таарна. Эмэгтэй 「한 시간」 (нэг цаг) нэмж үзье гэсэн тул хоёр цаг гэсэн ③ буруу."
+      },
+      "choiceNotes": [
+        "여자가 저녁 손님은 조금 줄었다고 했어요.",
+        "남자의 첫 번째 말과 같아요.",
+        "두 시간이 아니라 한 시간 늘려 보기로 했어요.",
+        "남자가 일할 사람이 부족하다고 했어요."
+      ],
+      "conceptIds": [],
+      "audio": {
+        "file": "audio/tii-u14-s02.mp3",
+        "plays": 2,
+        "status": "ready",
+        "voices": {
+          "남자": "범수",
+          "여자": "하나"
+        },
+        "seconds": 28
+      },
+      "origin": "synk-original",
+      "reviewStatus": "ai-reviewed",
+      "review": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "The answer is unique, and all three distractors are built by changing a fact from the script. The explanation is consistent across the three languages, so the item can be used as is.",
+          "rubric": "topik-review-r1",
+          "at": "2026-11-02T21:46:21.159Z",
+          "rev": 3,
+          "hash": "611eebc27dd767c2",
+          "packet": "u14-r4"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix",
+          "notes": "정답 유일성·오답 매력도·유형·난도·해설 모두 탄탄하나, 카페 영업시간과 인력 부족을 상의하는 매장 운영 대화에서 첫 호칭을 '회장님'으로 쓴 것이 부자연스러워 '사장님'(세트 공통 대본 포함)으로 고쳐 쓰면 된다.",
+          "rubric": "topik-review-r1",
+          "at": "2026-11-02T21:46:21.159Z",
+          "rev": 3,
+          "hash": "611eebc27dd767c2",
+          "packet": "u14-r4"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "pass",
+          "notes": "I solved the item myself and got ②, which matches the answer key. The man proposes 「저녁 영업을 줄이고 아침 시간을 늘리면 어떨까요?」, so ② is clearly correct. Each wrong choice contradicts a specific line: ① is wrong because of 「저녁 손님은 조금 줄었고요」, ③ because of 「한 시간 늘려 보고」, and ④ because of 「일할 사람도 부족하잖아요」. None of them can be argued away as \"not in the script,\" so the answer is unique. The format fits the content-match item of the TOPIK II set (21·22). The skill (detail), difficulty 2 and grade 4 all fit. The Korean, English and Mongolian explanations give the same evidence. Reviewer B flagged the address 「회장님」 as unnatural. However, the script says 「학생」 customers come to the cafe and 「동아리들」 hold evening meetings there. That reads as a campus cafe run by a student council, so the student council president (회장) talking with a member is natural. 「회장님」 is not an error, and the evidence for the answer does not depend on it. Changing it to 「사장님」 is also possible, but it is not a defect that would harm learners. I judge the item fine to show on the student screen.",
+          "rubric": "topik-review-r1",
+          "at": "2026-11-02T21:46:21.159Z",
+          "rev": 3,
+          "hash": "611eebc27dd767c2",
+          "packet": "u14-r4"
+        }
+      ]
+    }
+  ]
+}
