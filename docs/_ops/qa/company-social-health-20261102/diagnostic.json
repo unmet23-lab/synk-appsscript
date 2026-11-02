@@ -1,0 +1,191 @@
+{
+  "schema": "synk-company-social-health-diagnosis/v1",
+  "status": "diagnosed-and-locally-verified-not-deployed",
+  "recordedAt": "2026-11-02T08:12:49.018Z",
+  "social": {
+    "fixture": "Read-only online backup of actual app45 data; private network; production paths inaccessible; CPU 50 percent; fixed time; ABBA; 8 requests per round; first samples retained",
+    "order": [
+      "baseline",
+      "candidate",
+      "candidate",
+      "baseline"
+    ],
+    "variants": {
+      "baseline": {
+        "samples": 16,
+        "medianMs": 240.29646399999956,
+        "medianCpuMs": 128.012,
+        "reads": [
+          720,
+          718
+        ],
+        "statQueries": [
+          314
+        ]
+      },
+      "candidate": {
+        "samples": 16,
+        "medianMs": 220.40391899999986,
+        "medianCpuMs": 109.7085,
+        "reads": [
+          408,
+          406
+        ],
+        "statQueries": [
+          2
+        ]
+      }
+    },
+    "response": {
+      "samples": 32,
+      "status": 200,
+      "bytes": 64769,
+      "sha256": "214eb62e07352872e6c3fbc491c9e821efbf2e012d97cb31a51235ae7b3d2b1e"
+    },
+    "evidence": {
+      "privateArtifact": "social-pair-1793604605337.json",
+      "sha256": "129cc3f77a034226bf6ef4fc2944a41b1992aa7091a291eab9638a87498a36cc"
+    }
+  },
+  "proxyShutdown": {
+    "image": "sha256:d8542f48d34a9cf4e4c11a478865229840e87e4c96ea3f439101f31a5d35f75f",
+    "binarySha256": "678ade3bfc088749c81a681adc603333ee0bb023b6a6cfe3c0f58bef8ff854e9",
+    "status": "passed",
+    "privateNetwork": true,
+    "productionData": false,
+    "results": [
+      {
+        "order": "proxy-first",
+        "status": 200,
+        "stillWaitingAfter3s": true,
+        "shutdownMs": 3214.87,
+        "exitCode": 0
+      },
+      {
+        "order": "backend-first",
+        "status": 200,
+        "stillWaitingAfter3s": false,
+        "shutdownMs": 107.83,
+        "exitCode": 0
+      }
+    ],
+    "evidence": {
+      "privateArtifact": "caddy-shutdown-1793604273795.json",
+      "sha256": "5492cdec1868eefb6e9a1ce412eca088f9bb8943b68aca928301e58a59ff1b88"
+    },
+    "limitation": "Proxy-first fixture released upstream after three seconds. Its 3214.87 ms is not the production timeout. Production Docker journal separately recorded the Caddy 60 second timeout."
+  },
+  "previewQa": {
+    "manifest": "7367f9d19d5282a345ee8a97d299c8dc2c8f947290049a57282a5474de365887",
+    "counts": {
+      "tests": 3372,
+      "pass": 3372,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "sourceUnchanged": true,
+    "externalNetworkGuardApplied": true,
+    "resultSha256": "33755c3bd6a8e07c839bcf2502a9567ad83993803f0b9ae20bd2b9b20917dc4b"
+  },
+  "nativeQa": {
+    "tests": 182,
+    "evidence": {
+      "privateArtifact": "native-qa-1793606109545.json",
+      "sha256": "781f9130018bbb443dd2d2bfe09bd950f30e0310d028644b99fe485a3514cf38"
+    },
+    "canonicalReleaseQaPending": false,
+    "canonicalReleaseQa": {
+      "tests": 182,
+      "failures": 0,
+      "skipped": 0,
+      "protectedUnchanged": true,
+      "networkCalls": 0,
+      "productionServiceActions": 0,
+      "validationSha256": "6dc07a2d0ad9b5cdaf83b37115bc4f0e6924750d488b354e54fa930e25aa3b9c",
+      "resultSha256": "9c1cd68387238299adfdca2e7334ceb47a5b68260d10233b03732875ac279eab",
+      "code": {
+        "deployment-job.py": "3dfc6abaafd28c74c8db0d57afb23d0ea500ff5823b1cb26fe2c629f27339328",
+        "deployment-host.py": "db9c4fd50ca846dd9295caa2fbfb2b8cf35e9388ca7fbe35a1537efdafc3a3a6",
+        "maintenance-entry-worker.py": "1e4ab23dbbdc623fbdb87d829c61128a4d6daf6de2674e3f895b3e8dca31ec69",
+        "release-node.py": "e1a1163fd1c84398349702f3fea091588cd855ea19479953bcc411c0c4d1dcc2",
+        "release-transition.py": "b124373dc70d49ed6c892785ad8ffa23c7b4f8735e57394d059ab1d23beb37b2",
+        "controller-release.py": "a54acd43a109817266ea88ff76d78ec189bddfe9e0d81730fbe743c27b8edd37"
+      },
+      "testSources": {
+        "controller-release.test.py": "b262d85e47754cfaabbc91a4db0f9b9636990383d1f3c79aca40d697d48c8078",
+        "deployment-host.test.py": "9d768021ea72657eb2e88a7fd87d3398f4e4174f99b9227c356b974b6f302137",
+        "deployment-job.test.py": "c06586a68f7efcf0020de7e97e6a537f74a648140fa087758eebb6095ad94f8f",
+        "public-readiness.test.py": "ba12640ef0c955dfef310e45c48d523cf6869f6829e6cc06a1eb4acf8d81c1a3",
+        "release-node.test.py": "15bc8bc4acad9deb5f2beaec78e6ef50cddb76833069e8c7cfaa4cef1368761f",
+        "release-transition.test.py": "5aae60ca8a8100016fa706a15f4ab3f480faf25863b0e844942bee57e23595fa",
+        "retirement-recovery.test.py": "a9e00f62dd344a5041fe58e37d4fa9a22bec7246e250b2af5d6c300809a845e5"
+      }
+    }
+  },
+  "review": {
+    "ids": [
+      "company-social-health-20261102-v1",
+      "company-social-health-20261102-v2"
+    ],
+    "gptFindings": 0,
+    "claudeFindings": 3,
+    "claudeAddressed": 2,
+    "claudeFollowup": 1,
+    "finalP0P1": 0,
+    "sourceFiles": [
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/post-performance.mjs",
+        "sha256": "a266e4db887e00b7d7d30ab3f641c0723317634225090d9300d918ccd34dd36c"
+      },
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/social-simple.mjs",
+        "sha256": "02cefbb1cc2d18236fc2c1285e98ded020085208548968fb66cdae7fc59d245c"
+      },
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/social-simple-reads.test.mjs",
+        "sha256": "103f621f759705a3573676bd0733679e29ef29f1b1b13cc7e9609e4842971e36"
+      },
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/company-stack.sh",
+        "sha256": "ff12504ef7c3fdc28ffa06100b520bb40bbb6413bd1f5556dcd95d939afd68c1"
+      },
+      {
+        "path": "native/deployment-host.py",
+        "sha256": "db9c4fd50ca846dd9295caa2fbfb2b8cf35e9388ca7fbe35a1537efdafc3a3a6"
+      },
+      {
+        "path": "native/deployment-host.test.py",
+        "sha256": "9d768021ea72657eb2e88a7fd87d3398f4e4174f99b9227c356b974b6f302137"
+      },
+      {
+        "path": "native/retirement-recovery.test.py",
+        "sha256": "a9e00f62dd344a5041fe58e37d4fa9a22bec7246e250b2af5d6c300809a845e5"
+      },
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/company-stack-stop.test.mjs",
+        "sha256": "e91e0a2d896f5390f7be78c18525556e73419266bc98c94aac127808f5e52772"
+      }
+    ]
+  },
+  "productionDeployment": false,
+  "livePairedComparison": false,
+  "predecessorRestoreIoObservation": {
+    "sourceSha256": "d1b143ee2b96b92304ae9861ddb515ce15ae7edf4d6553cd1f4e5d0662a04879",
+    "sourceRelease": "857324da6a3c863a1a617d795fd885675e3e362c5557522d3b52705c373ce90c",
+    "startedAt": "2026-11-02T11:04:09.122705+00:00",
+    "finishedAt": "2026-11-02T11:04:17.123348+00:00",
+    "samples": 5,
+    "standbyAliveFalse": 5,
+    "haAction": "release",
+    "haWaitChannel": "folio_wait_bit_common",
+    "cpuQuotaPerSec": "1s",
+    "cpuThrottledPeriodsDelta": 0,
+    "ioPressureFirst": "some avg10=88.83 avg60=89.01 avg300=81.16 total=29946821759\nfull avg10=83.48 avg60=82.04 avg300=75.78 total=26123251607",
+    "ioPressureLast": "some avg10=92.17 avg60=89.78 avg300=81.54 total=29954493768\nfull avg10=86.41 avg60=82.87 avg300=76.13 total=26130409914",
+    "interpretation": "During full-backup rehearsal, HA release verification was waiting on file reads; B3 expires alive after 15 seconds without a new control read. This is separate from the Caddy deployment shutdown delay.",
+    "productionMutations": 0,
+    "isRelease47Measurement": false
+  }
+}

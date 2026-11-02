@@ -11,6 +11,9 @@ case "${1:-}" in
     event STACK_STARTED
     ;;
   stop)
+    # Compose stops the dependent HTTPS proxy first. Its active SSE requests wait
+    # for the company server, so close those streams before stopping the proxy.
+    compose stop --timeout 60 company || fail COMPANY_STOP_FAILED
     compose stop --timeout 60 || fail STACK_STOP_FAILED
     event STACK_STOPPED
     ;;

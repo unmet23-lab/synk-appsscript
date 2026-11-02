@@ -1,0 +1,126 @@
+diff --git a/deployment-host.py b/deployment-host.py
+index 08dd35ed1c..b63b4f8d7b 100644
+--- a/deployment-host.py
++++ b/deployment-host.py
+@@ -220,10 +220,29 @@ class NodeAdapter(Base):
+         return p
+     def stopped_gate(self):
+         s=self.fresh(self.command,self.recovery);require(s['bootAllowed']==[] and s['readyAllowed']==[] and self.held is not None,'STOPPED_PERMISSIONS_AND_LOCK')
+-        for unit in ('synk-ha-node.service',*self.h.TIMERS,'synk-company-health.service','synk-company-backup.service','synk-company-backup-watch.service',*self.h.UNITS):
+-            require(self.w.joined_run(['systemctl','show',unit,'--property=ActiveState','--value'],10) in ('inactive','failed'),'UNIT_STILL_ACTIVE')
++        units=('synk-ha-node.service',*self.h.TIMERS,'synk-company-health.service','synk-company-backup.service','synk-company-backup-watch.service',*self.h.UNITS)
++        states=self.h.unit_properties(units,('ActiveState',),10)
++        for unit in units:require(states[unit]['ActiveState'] in ('inactive','failed'),'UNIT_STILL_ACTIVE')
+         require(all(not v['State']['Running'] and not v['State'].get('Restarting') for v in self.raw_containers()),'WRITER_STILL_RUNNING')
+         if self.n==self.c['ownerId']:self.h.check_mount(self.node())
++    def close_company_streams(self):
++        # The old stack script may stop Caddy before its upstream, leaving SSE
++        # requests waiting until Docker's 60s force-stop. Under the same revoked
++        # boot authority and held locks, stop only the PREPARE-pinned writer first.
++        if self.recovery or self.c['mode']!='company-release-only' or self.n!=self.c['ownerId']:return
++        s=self.fresh(self.command,self.recovery)
++        require(s['bootAllowed']==[] and s['readyAllowed']==[] and self.held is not None and self.ops is not None,'STREAM_STOP_AUTHORITY')
++        name='/synk-company-company-1';expected=self.saved.get('initialContainers',{}).get(name)
++        require(expected is not None and re.fullmatch('[a-f0-9]{64}',expected.get('id','')),'STREAM_STOP_CAPTURE_REQUIRED')
++        def current():
++            rows=[row for row in self.raw_containers() if row['Name']==name]
++            require(len(rows)==1 and rows[0]['Id']==expected['id'] and rows[0]['Image']==expected['image'],'STREAM_STOP_CONTAINER_CHANGED')
++            return rows[0]['State']
++        state=current()
++        if state['Running'] or state.get('Restarting'):self.w.joined_run(['docker','stop','--time','60',expected['id']],70)
++        s=self.fresh(self.command,self.recovery)
++        require(s['bootAllowed']==[] and s['readyAllowed']==[],'STREAM_STOP_AUTHORITY')
++        state=current();require(not state['Running'] and not state.get('Restarting'),'STREAM_STOP_NOT_CONFIRMED')
+     def startup_files(self,recovery):
+         self.code();sw=self.cap['releaseSoftware'];node=protected(CONFIG,True).read_bytes();plan=protected(PLAN,True).read_bytes()
+         if recovery:require(sha(node)==sw['oldNodeSha256'] and sha(plan)==sw['oldPlanSha256'],'START_PARENT_CONFIG_BYTES')
+@@ -373,6 +392,7 @@ class NodeAdapter(Base):
+             self.lock();require(self.baseline(True)==self.saved['initialContainers'],'NOOP_PROCESS_CHANGED');return {'sameProcessAndConfig':True}
+         if phase=='STOP':
+             self.lock();require(s['bootAllowed']==[] and s['readyAllowed']==[],'STOP_NOT_AUTHORIZED')
++            self.close_company_streams()
+             self.w.joined_run(['systemctl','stop','synk-ha-node.service'],300);result=self.h.stop_stack(self.node());self.stopped_gate();return {'writersStopped':result['containerStopConfirmed'],'agentStopped':True,'timersStopped':True}
+         if phase=='CAPTURE':
+             require(self.n==self.c['ownerId'],'OWNER_CAPTURE_ONLY');self.lock();snapshot=self.data_snapshot();self.saved['dataBefore']=snapshot;self.local_save();return {'dataAccepted':True,'logicalReceiptSha256':sha(encode(snapshot))}
+diff --git a/deployment-host.test.py b/deployment-host.test.py
+index 9d38f9e614..276f660a7f 100644
+--- a/deployment-host.test.py
++++ b/deployment-host.test.py
+@@ -190,4 +190,64 @@ class PrepareLockTests(unittest.TestCase):
+         n=self.node();n.c={'expiresAt':900,'recoveryUntil':2000};checks=[];n.fresh=lambda record,recovery:checks.append(recovery);n.lock=lambda:None
+         with patch.object(h.time,'monotonic',lambda:10):n.prepare_lock({},True)
+         self.assertEqual(checks,[True,True])
++class StreamStopTests(unittest.TestCase):
++    def fixture(self):
++        n=h.NodeAdapter.__new__(h.NodeAdapter);n.n=h.IDS['primary'];n.c={'mode':'company-release-only','ownerId':n.n,'oldReleaseSha256':'old','newReleaseSha256':'new'}
++        n.command={};n.recovery=False;n.held=10;n.ops=11;n.saved={'initialContainers':{'/synk-company-company-1':{'id':'a'*64,'image':'sha256:'+'b'*64}}}
++        rows=[{'Name':'/synk-company-company-1','Id':'a'*64,'Image':'sha256:'+'b'*64,'State':{'Running':True,'Restarting':False}}];calls=[]
++        n.fresh=lambda *a:{'bootAllowed':[],'readyAllowed':[]};n.raw_containers=lambda:rows
++        def run(args,timeout):calls.append(args);rows[0]['State']['Running']=False
++        n.w=type('W',(),{'joined_run':staticmethod(run)})();return n,rows,calls
++    def test_stop_pinned_writer_before_agent_and_keep_full_stop_verification(self):
++        n,rows,calls=self.fixture();n.lock=lambda:None;n.node=lambda:{}
++        n.h=type('H',(),{'stop_stack':staticmethod(lambda node:calls.append('full-stop') or {'containerStopConfirmed':True})})();n.stopped_gate=lambda:calls.append('stopped-gate')
++        out=n.execute('STOP',{},False)
++        self.assertEqual(calls,[['docker','stop','--time','60','a'*64],['systemctl','stop','synk-ha-node.service'],'full-stop','stopped-gate']);self.assertTrue(out['writersStopped'])
++    def test_no_container_action_for_standby_or_other_job_modes(self):
++        for change in ('standby','same-release-noop','dr-helper-only','recovery'):
++            n,rows,calls=self.fixture()
++            if change=='standby':n.n=h.IDS['standby']
++            elif change=='recovery':n.recovery=True;rows[0]['Id']='c'*64
++            else:n.c['mode']=change
++            n.close_company_streams();self.assertEqual(calls,[])
++    def test_revoked_boot_and_both_locks_are_required(self):
++        for change in ('boot','ready','lock','ops'):
++            n,rows,calls=self.fixture()
++            if change=='boot':n.fresh=lambda *a:{'bootAllowed':[n.n],'readyAllowed':[]}
++            if change=='ready':n.fresh=lambda *a:{'bootAllowed':[],'readyAllowed':[n.n]}
++            if change=='lock':n.held=None
++            if change=='ops':n.ops=None
++            with self.assertRaisesRegex(h.Hold,'STREAM_STOP_AUTHORITY'):n.close_company_streams()
++            self.assertEqual(calls,[])
++    def test_replaced_or_missing_captured_container_is_rejected_without_stop(self):
++        for change in ('id','image','missing','capture'):
++            n,rows,calls=self.fixture()
++            if change=='id':rows[0]['Id']='c'*64
++            if change=='image':rows[0]['Image']='sha256:'+'c'*64
++            if change=='missing':rows.clear()
++            if change=='capture':n.saved={}
++            with self.assertRaisesRegex(h.Hold,'STREAM_STOP_'):n.close_company_streams()
++            self.assertEqual(calls,[])
++    def test_authority_loss_or_running_writer_after_stop_never_passes(self):
++        n,rows,calls=self.fixture();count=[0]
++        def fresh(*a):
++            count[0]+=1
++            if count[0]>1:raise h.Hold('AUTHORITY_CHANGED')
++            return {'bootAllowed':[],'readyAllowed':[]}
++        n.fresh=fresh
++        with self.assertRaisesRegex(h.Hold,'AUTHORITY_CHANGED'):n.close_company_streams()
++        self.assertEqual(len(calls),1)
++        n,rows,calls=self.fixture();n.w.joined_run=lambda *a:None
++        with self.assertRaisesRegex(h.Hold,'STREAM_STOP_NOT_CONFIRMED'):n.close_company_streams()
++    def test_already_stopped_writer_is_rechecked_without_second_signal(self):
++        n,rows,calls=self.fixture();rows[0]['State']['Running']=False;n.close_company_streams();self.assertEqual(calls,[])
++    def test_batch_gate_checks_every_unit_and_does_not_accept_active_unit(self):
++        n,rows,calls=self.fixture();n.n=h.IDS['standby'];n.raw_containers=lambda:[]
++        units=('synk-ha-node.service','timer','synk-company-health.service','synk-company-backup.service','synk-company-backup-watch.service','company')
++        def properties(requested,fields,timeout):
++            self.assertEqual(requested,units);self.assertEqual(fields,('ActiveState',));calls.append('fresh-units');return {u:{'ActiveState':'inactive'} for u in units}
++        n.h=type('H',(),{'TIMERS':('timer',),'UNITS':('company',),'unit_properties':staticmethod(properties)})();n.stopped_gate();n.stopped_gate();self.assertEqual(calls,['fresh-units','fresh-units'])
++        n.h.unit_properties=lambda *a:{u:{'ActiveState':'active' if u=='company' else 'inactive'} for u in units}
++        with self.assertRaisesRegex(h.Hold,'UNIT_STILL_ACTIVE'):n.stopped_gate()
++
+ if __name__=='__main__':unittest.main()
+diff --git a/retirement-recovery.test.py b/retirement-recovery.test.py
+index 7ff065d4b4..ac0b3577dc 100644
+--- a/retirement-recovery.test.py
++++ b/retirement-recovery.test.py
+@@ -181,7 +181,7 @@ class ReconciliationTests(unittest.TestCase):
+         n.cap={'oldNode':m.old_node(self.tx.c,self.io),'newNode':self.tx.c['newNode'],'releaseSoftware':{}}
+         n.cap['releaseSoftware']={'present':True};n.node=lambda:json.loads(self.io.read(m.t.NODE))
+         def fresh(*a):self.guard_events.append('host-authority');return {'bootAllowed':[],'readyAllowed':[]}
+-        n.fresh=fresh;n.h=type('H',(),{'TIMERS':(),'UNITS':(),'check_mount':staticmethod(lambda node:self.guard_events.append('mount'))})()
++        n.fresh=fresh;n.h=type('H',(),{'TIMERS':(),'UNITS':(),'check_mount':staticmethod(lambda node:self.guard_events.append('mount')),'unit_properties':staticmethod(lambda units,fields,timeout:self.guard_events.append('unit') or {unit:{'ActiveState':'inactive'} for unit in units})})()
+         def command(args,timeout=30):
+             if args[0]=='systemctl':self.guard_events.append('unit');return 'inactive'
+             if args[:2]==['docker','ps'] and args[-1]=='{{.Names}}':return self.name if self.exists else ''

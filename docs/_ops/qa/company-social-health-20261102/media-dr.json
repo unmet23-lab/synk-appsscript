@@ -1,0 +1,64 @@
+{
+  "schema": "synk-company-media-dr-local-evidence/v1",
+  "status": "local-tests-and-cross-review-passed-not-deployed",
+  "sourceBase": "d1566e54a99889980f582b4b5d1e8298ea2c9df7",
+  "sourceHead": "5946c129474b3b30d543320e8a5dd0be2f3c2983",
+  "files": [
+    {
+      "path": "rearm/dr/infra-dr-rehearsal.py",
+      "sha256": "83cb87ffa7568536e9e44ae8a1817d4484b1e5d7597a6844a372ddd2c9f0761b"
+    },
+    {
+      "path": "rearm/dr/isolation.test.py",
+      "sha256": "762de33190153b16a966fb21886e868e0e8e682f23d9d665ff56be94961b4152"
+    },
+    {
+      "path": "rearm/dr/adapter.cjs",
+      "sha256": "ac520cbce7e0a2f536923a6ae8b6de3dfa2eb4d70252efa84853e2470fd902ca"
+    },
+    {
+      "path": "rearm/dr/adapter.test.cjs",
+      "sha256": "51596f65f8888ce74f8cb628a5bdde3b88cad0e8855327ad1670f4f7f6b880bf"
+    },
+    {
+      "path": "rearm/dr/media-proof.cjs",
+      "sha256": "3528cc888b8e5ba2d9548b34ba93cc71b9ec417ff73554e01dad6db8573c9cca"
+    },
+    {
+      "path": "rearm/dr/media-proof.test.cjs",
+      "sha256": "e73409e2da593a710ddf5f15e7cb08673bbcbacf6a9e63f5b979a6926cfc238c"
+    },
+    {
+      "path": "rearm/dr/reviewed-backup-media.fixture.json",
+      "sha256": "a204a1747772448a57f78916d68bc2ed728af4c60a51af59cbd20fc697b153f8"
+    }
+  ],
+  "patchSha256": "b4da9c61e3d56710b2e1d91aa9e3f342f1250b8049b62f8a0586f96e98a496e5",
+  "localTests": {
+    "python": 14,
+    "node": 11,
+    "failures": 0,
+    "pythonLogSha256": "e09b2569ae400d1c6e2e55c8b6a05df429c97e08644df27f3a1a6d9f17ed70a2",
+    "nodeTapSha256": "fc108858bb228532c456706e2dbc56074de9db47881533a659e2e0731ecabc0d"
+  },
+  "review": {
+    "id": "company-social47-media-dr-20261102-v4",
+    "checkSha256": "2d6acc42ee1fd6e58156560e342023bcedbaea239858c63eea40515f5914b285",
+    "gptFindings": 0,
+    "claudeFindings": 0,
+    "claudeNotReproduced": 0,
+    "priorV3ClaudeNotReproduced": 1,
+    "p0p1": 0
+  },
+  "productionChanges": 0,
+  "liveRestoreVerified": false,
+  "isolatedLinux": {
+    "tests": 14,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "protectedUnchanged": true,
+    "operatingRestore": false,
+    "evidenceSha256": "fbcfbd16c5f30f58b5e939b515126661eb1dbde9a20da103d33c696fd07fe926"
+  }
+}

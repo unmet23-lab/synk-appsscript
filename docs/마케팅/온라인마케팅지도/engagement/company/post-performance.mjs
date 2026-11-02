@@ -36,7 +36,8 @@ const NO_API = Object.freeze({
 // the publication date in Pacific Time and the next two days, once, five days after publication (the last
 // day is then 48~72 hours old). It fills only metrics the checkpoint left empty and is never fetched again.
 const WINDOW_TIME_ZONE = 'America/Los_Angeles', WINDOW_DAYS = 3, WINDOW_DUE = 120 * HOUR, WINDOW_OPEN = 72 * HOUR, WINDOW_BATCH = 10;
-const pacificDate = value => new Intl.DateTimeFormat('en-CA', { timeZone: WINDOW_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(value));
+const pacificDateFormat = new Intl.DateTimeFormat('en-CA', { timeZone: WINDOW_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' });
+const pacificDate = value => pacificDateFormat.format(new Date(value));
 const addDays = (date, days) => new Date(Date.parse(`${date}T00:00:00.000Z`) + days * 24 * HOUR).toISOString().slice(0, 10);
 const withoutLease = ({ leaseToken, leaseUntil, ...rest }) => rest;
 function windowPlan(row, checkpoint) {

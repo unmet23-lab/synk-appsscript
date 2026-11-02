@@ -244,11 +244,18 @@ export function createSocialSimple({store,publishing,marketing,provider,clock=()
   }
   // 게시물마다 마지막 숫자 — 하루 숫자(snapshots, id 「게시물:날짜」)와 최근 7일 관측(hypeObservations, id 「게시물:시각」)을 열쇠 범위로 읽는다.
   function latestNumbers(posts,now){
-    const out=new Map();
+    const out=new Map(),at=Date.parse(now),ids=JSON.stringify(posts.map(p=>p.id));
+    if(!posts.length)return out;
     for(const kind of ['snapshots','hypeObservations']){
-      const read=sql(`SELECT body FROM documents WHERE kind='${kind}' AND id>=? AND id<? ORDER BY id DESC LIMIT 4`);
-      for(const p of posts){
-        for(const row of read.all(p.id+':',p.id+';')){const s=JSON.parse(row.body);if(s.expiresAt&&Date.parse(s.expiresAt)<=Date.parse(now))continue;if(s.views===null||s.views===undefined)continue;const old=out.get(p.id);if(!old||String(s.checkedAt)>String(old.checkedAt))out.set(p.id,{views:s.views,likes:s.likes??null,comments:s.comments??null,checkedAt:s.checkedAt});break;}
+      // Keep the same indexed four-row window per post. One call per kind avoids
+      // crossing the SQLite/JS boundary twice for every visible post.
+      const read=sql(`SELECT p.value AS postId,d.body FROM json_each(?) p CROSS JOIN documents d WHERE d.rowid IN (SELECT rowid FROM documents WHERE kind='${kind}' AND id>=p.value||':' AND id<p.value||';' ORDER BY id DESC LIMIT 4) ORDER BY p.key,d.id DESC`);
+      const selected=new Set();
+      for(const row of read.all(ids)){
+        if(selected.has(row.postId))continue;
+        const s=JSON.parse(row.body);if(s.expiresAt&&Date.parse(s.expiresAt)<=at)continue;if(s.views===null||s.views===undefined)continue;
+        selected.add(row.postId);const old=out.get(row.postId);
+        if(!old||String(s.checkedAt)>String(old.checkedAt))out.set(row.postId,{views:s.views,likes:s.likes??null,comments:s.comments??null,checkedAt:s.checkedAt});
       }
     }
     return out;

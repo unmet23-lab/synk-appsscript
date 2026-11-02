@@ -1,0 +1,4 @@
+diagnostic.json text eol=lf
+media-dr.json text eol=lf
+native-deployment.patch -text
+media-dr.patch -text

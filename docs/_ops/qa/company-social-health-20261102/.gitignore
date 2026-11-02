@@ -1,0 +1,5 @@
+# 공개 가능한 집계와 검수한 코드 차이 네 파일만 의도적으로 보존한다.
+!diagnostic.json
+!media-dr.json
+!native-deployment.patch
+!media-dr.patch
