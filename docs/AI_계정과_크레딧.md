@@ -92,7 +92,7 @@ Gemini는 2026-10-17 사용자 결정으로, 무료 API 문이 몫 상한(429)�
 
 2026-11-02 정리(유호님 「허깅페이스 매월 결제하고 있는데 기능을 하나도 이용 안 하고 있어 … 최대한 잘 이용하고 싶어」). 계정은 `q121235`(PRO 월 $9, [돈장부](_ops/돈장부.json))이고, 이 PC의 `hf` CLI에 OAuth로 로그인돼 있다(`~/.cache/huggingface/token`, 결제 읽기 권한 있음 — 값은 찍지 않는다). 도구 함정과 실측은 [현장 노트 · 허깅페이스](현장노트/허깅페이스.md)에 있다.
 
-**PRO가 주는 것(11-02 결제 화면 · API 실측):** ZeroGPU 하루 2,400초(40분, 그 창의 첫 사용 24시간 뒤 다시 참)를 반쪽 RTX Pro 6000(48GB)으로 쓰고, `size="xlarge"` 함수는 온쪽(96GB)이라 2배로 깎인다. 자기 ZeroGPU Space는 10개까지다 — 지금 비공개 셋(`h3-conditioner` · `h3-generator` · `pulse-lora-render`). 선불 잔액은 $2이고 이것이 PRO에 딸린 월 몫이다. Inference Providers · ZeroGPU 넘침(10분 $1) · Jobs가 모두 이 잔액에서 깎인다. 자동 충전은 꺼져 있고(화면 「Automatic Recharge -」), 카드가 붙어 있어 「Add Credits」를 누르면 카드로 산다. 저장은 비공개 1TB(지금 0.35GB — Space 셋과 옛 Jobs 버킷 `jobs-artifacts`) · 공개 11.2TB다. 11월 사용은 11-02까지 Inference $0 · Jobs $0 · ZeroGPU 넘침 0초다.
+**PRO가 주는 것(11-02 결제 화면 · API 실측):** ZeroGPU 하루 2,400초(40분, 그 창의 첫 사용 24시간 뒤 다시 참)를 반쪽 RTX Pro 6000(48GB)으로 쓰고, `size="xlarge"` 함수는 온쪽(96GB)이라 2배로 깎인다. 자기 ZeroGPU Space는 10개까지다 — 지금 비공개 일곱(`h3-conditioner` · `h3-generator` · `pulse-lora-render`, 11-03 「제2의 나」 오픈 모델 견주기 `me2-qwen2511` · `me2-firered11` · `me2-longcat` · `me2-longcat-turbo`). 선불 잔액은 $2이고 이것이 PRO에 딸린 월 몫이다. Inference Providers · ZeroGPU 넘침(10분 $1) · Jobs가 모두 이 잔액에서 깎인다. 자동 충전은 꺼져 있고(화면 「Automatic Recharge -」), 카드가 붙어 있어 「Add Credits」를 누르면 카드로 산다. 저장은 비공개 1TB(지금 0.35GB — Space 셋과 옛 Jobs 버킷 `jobs-artifacts`) · 공개 11.2TB다. 11월 사용은 11-02까지 Inference $0 · Jobs $0 · ZeroGPU 넘침 0초다.
 
 **돈이 나가는 길과 막는 법:**
 - ZeroGPU는 `python -X utf8 tools/허깅페이스.py 부르기 <space> …`로 부른다. 도구는 남은 초(`/api/spaces/zero-gpu/quota`)에서 다른 세션 예약과 여유 30초를 빼고, 그 Space가 적은 duration × 배수가 안 들어가면 부르지 않는다(끝 코드 2). 부른 뒤 넘친 초가 늘면 멈춤을 걸어(끝 코드 3) 사람이 결제 화면을 보고 `풀기 --확인`할 때까지 모든 호출을 막는다 — 한도가 크레딧으로 넘어가지 않게 하는 것이다. 자기 gradio 호출이 있는 스크립트(블렌더 `render_zerogpu.py`, PULSE 호출기)는 `with 한도지키기(space, 필요초):`로 감싼다. 쓸 Space와 예상초는 [Space 목록](../tools/lib/허깅페이스_space.json), 남은 몫은 `… 한도`, 쓴 초는 `… 기록`이다.
@@ -111,6 +111,7 @@ Gemini는 2026-10-17 사용자 결정으로, 무료 API 문이 몫 상한(429)�
 | 영상에 맞춘 효과음 | MMAudio · HunyuanFoley 로컬 | `hkchengrex/MMAudio` | 집 GPU가 바쁠 때. CC-BY-NC라 공모 · 광고에는 안 됨 |
 | 24GB에 안 드는 그림 모델 | — | `hugging-apps/qwen-qwen-image-2-1-turbo` | 역할 표 밖의 시험 그림만(마스코트 · 실사 정지컷 · 광고 콘티는 역할 표대로). 10-18 장당 3.7초 |
 | 우리 LoRA 그림 | — | 비공개 `q121235/pulse-lora-render` | PULSE 세션 몫(11-02 두 장 17초) |
+| 사진 아바타 오픈 편집 모델 견주기 | 학생 사진 길은 OpenAI API(결정 11-03) | 비공개 `q121235/me2-*` 넷(Qwen-Image-Edit-2511 · FireRed-Image-Edit-1.1 · LongCat-Image-Edit · 그 Turbo) | 자체 GPU로 옮길지 견줄 때만. 유호님 사진이 닿아 우리 Space만 쓰고, Qwen 계열(bf16 57.7GB)은 반쪽에 안 들어 xlarge(2배). 재료 · 숫자는 `experiences/drama/qa/제2의나-20261102/오픈모델/README.md` |
 | 그림 → 3D | 보류 | `microsoft/TRELLIS.2`(형상+텍스처) · `tencent/Hunyuan3D-2.1`(형상) | 보류 중인 마스코트 3D를 다시 열 때(`tools/보류_3D/`) |
 | 영상(H3) | 안 씀(10-29) | 비공개 `h3-conditioner` · `h3-generator`(5초 한 편 233초) | 지금 안 씀(라이선스가 한국 이용 제외) |
 | 대본 TTS · 목소리 복제 | 시댄스 생성본 → 일레븐 v4 | `Qwen/Qwen3-TTS` · `k2-fsa/OmniVoice`가 돌지만 쓰지 않는다 | 목소리는 정한 규칙대로 |

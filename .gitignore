@@ -316,6 +316,7 @@ docs/마케팅/LAB_관용구퀴즈3_20261019/판/판1_074138.png
 **/qa/*/**/*.log
 **/qa/*/**/*.tap
 **/qa/*/**/*.txt
+!experiences/drama/qa/제2의나-20261102/오픈모델/space/requirements.txt
 **/qa/*/**/*.html
 **/qa/*/**/*.csv
 **/qa/*/**/*.svg

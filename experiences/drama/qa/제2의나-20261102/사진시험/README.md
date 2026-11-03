@@ -136,6 +136,8 @@ python -I -X utf8 experiences/drama/qa/제2의나-20261102/사진시험/줄세�
 
 결과 페이지는 `결과모으기.py` → `결과페이지.py`로 만든다(유호님 사진이 들어가 비공개, HTML은 git 밖). 11-03 밤 판 [결과 페이지](https://claude.ai/artifact/TMbHzTLETmwhLScWKrQtgd)에 GPT 셀카 줄 · 장면 판 편집 칸 · Fable 판정 · 갱신한 결론이 들어갔다. 첫 판(https://claude.ai/artifact/8SoffK38vYrNkBGmyUceGS)은 다른 계정에서 올려 이 판으로 덮지 못했고, 그 HTML은 `.tmp/me2-20261102/photo-gpt/결과/*_1811판.*`로 남겼다.
 
+**같은 입력 · 같은 지시문으로 오픈 편집 모델(자체 GPU 후보)을 견준 결과는 [오픈모델](../오픈모델/README.md)(11-03)** — 상업 사용이 되는 셋(Qwen-Image-Edit-2511 · FireRed-Image-Edit-1.1 · LongCat-Image-Edit)과 그 빠른 판, 같은 SFace · 같은 Fable 눈가림 검수.
+
 **쓴 것:** GPT 이미지 2.5 39번 불러 46장(한 번에 여러 장을 돌려준 때가 있음 — 기준 12 · 옷장 15 · 나이 19, 고친 판 포함, 계정 bake1 주간 한도 → bake3), Gemini 21장(대역 셀카 2 · 기준 9 · 셀카 6 + 다시 2 · 옛 규칙 2). 모두 구독, 현금 0. 눈가림 시험관 셋(Sonnet · Haiku · GPT) · Fable 검수 둘. 저녁(GPT 셀카 결 · 판 편집 · 강+): GPT 15번 불러 20장(셀카 6번 10장 · 판 편집 4장 · 강+ 5번 6장, 모두 bake3 — 주간 92%에서 그대로), Fable 줄세우기 하나.
 
 ## 지킬 것
