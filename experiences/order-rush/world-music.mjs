@@ -50,7 +50,7 @@ export function createMusic(ctx, { base = '', destination = ctx.destination, sto
     const list = Object.entries(manifest.tracks).filter(([, t]) => t.mode === (mode === 'rush' ? 'rush' : 'calm')).map(([id]) => id);
     if (!list.length) return null;
     const last = recall(lastKey(mode));
-    return list.length > 1 ? list.find((id) => id !== last) || list[0] : list[0];
+    return list[(list.indexOf(last) + 1) % list.length];   // 직전 곡의 다음 곡(처음이면 첫 곡) — 곡이 늘어도 모두 돈다
   }
   /** 고리 하나를 시각 when부터 돌린다. 이음매마다 다음 소스를 겹쳐 예약한다. */
   function loop(id, buf, when, fadeIn) {

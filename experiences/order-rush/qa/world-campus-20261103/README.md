@@ -27,6 +27,7 @@
 | `앱화면.cjs` | WORLD 앱 안에서 「놀이」 잠김 → 싱크타운 카페 첫 방문 → 열림 → 게임 → 결과를 찍는다. 결과 `앱화면.json` |
 | `부드러움재기.cjs` | 화면 바꿈이 부드러운지: 게임 틀(390 × 844 · 배율 3 · GPU)에서 전환 하나(입구 · 시작 · 서빙 · 영업끝 · 처음으로 · 다시)를 크롬 추적으로 떠 움직이는 중에 버린 장 · 합성기로 못 간 애니메이션 · 셰이더 굽기 · 오디오 문맥 시간 · 가림막 켬/걷음 시각을 센다(`--횟수 3` · `--캐시`). 결과 `부드러움.json` |
 | `경합재기.cjs` | 화면 검수가 짚은 경합 · 설정 결함 다섯(주문 음성 두 번 시작 · 뺄 때 출렁임 · 손님 빠른 왕복 뒤 얼굴 · 코인 소리 순서 · 앱 움직임 줄이기)을 게임 틀 안에서 재현 — `[experiences 폴더]`로 고치기 전 판과 견준다 |
+| `공개묶음동기화.cjs` | 공개본 WORLD 계정 묶음(옛 Atlas) + 공개 후보의 게임(새 Atlas)으로 한 판 — 호스트만 가짜 서버에 이어 학습 기록이 막히지 않고 가는지(`--후보 <폴더> [--러시]`). 11-02 드라마 STORAGE_ERROR 같은 일을 공개 전에 잡는다 |
 
 **시험:** `node --test experiences/order-rush/world-sfx.test.mjs experiences/order-rush/world-music.test.mjs experiences/order-rush/world-cast.test.mjs experiences/brand-opening/qa/play-unlocks.test.mjs` — 사운드킷 규칙 · 크기(잰 값과 `LEVEL`이 같고 목표 ±1 LU) · 시작 표본 튐 없음 · 얼음 착지 시각 · 곡 규칙(러시 104~112BPM · 조 · 목소리 층 −40dB 아래 · 고리 45초) · 이음매 · 덕킹 · 멈춤 창.
 
