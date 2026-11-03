@@ -73,4 +73,10 @@ S097은 화면의 마이크 막대에 합성 신호가 들어온 시간만 센�
 
 S115는 Linux에서 공개 저장소 `unmet23-lab/synk-policy`의 `30492147d467337c46ef61a1b8ec5c3c58a1356c` 판을 받는다. `world/world-account.bundle.mjs`와 `world/life-content.mjs`의 SHA-256은 11-04에 synk.im에서 받은 두 파일과 각각 일치했다. `DRAMA_LIVE_WORLD_BUNDLE`에 첫 파일을 지정해 합성 사건이 모두 올라가고 동기화가 완료되는지 확인한다. 파일이 빠지거나 건너뛰면 해당 커밋의 조건부 검사가 실패한다.
 
+<a id="local-profile-timeout"></a>
+
+### 로컬 시험 묶음의 시간 제한
+
+로컬 기본 묶음은 시험 결과가 계속 쌓이면 최대 36분까지 진행한다. 결과 파일이 20분간 늘지 않으면 전용 시험 자식 프로세스를 종료한다. 로그 출력만으로는 시간이 늘지 않는다. 전체 48분 안에 과제와 계정 검사 몫 12분(계정 3분 포함)을 남기고, 일꾼의 50분 상한까지 끝 2분을 원천 대조와 영수증 기록에 둔다. 종료 이유는 `no-test-events` 또는 `deadline`으로 남기고 누락·실패 판정을 보존한다. GitHub와 개별 시험 시간 제한은 종전 값을 쓴다.
+
 회귀는 `node --test tests/conditional-qa.test.cjs tests/conditional-qa-retry.test.cjs tests/ci넓은시험.test.js`다. 이 자동화는 등록된 115건의 지속 검증이며, 새 보안 감사나 운영 접근 권한 전체의 재점검을 대신하지 않는다. 최초 실제 실행과 원격 CI 결과는 비공개 설치·실행 영수증과 해당 커밋의 GitHub Checks에서 확인한다.

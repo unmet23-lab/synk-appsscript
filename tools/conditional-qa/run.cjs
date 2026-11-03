@@ -15,22 +15,43 @@ function sourceState(root, files) {
     trackedDiff: sha256(cp.execFileSync('git', ['diff', '--binary', 'HEAD'], { cwd: root, windowsHide: true, maxBuffer: 64 << 20 })),
     files: Object.fromEntries(files.map(file => [file, sha256(fs.readFileSync(path.join(root, file)))])) };
 }
-function childRun(args, { cwd, env, log, timeoutMs = 20 * 60_000 }) {
+const PROFILE_MS = 20 * 60_000;
+function profileBudget(route, profile, remainingMs) {
+  if (route !== 'local') return PROFILE_MS;
+  const reserveMs = { default: 12 * 60_000, homework: 3 * 60_000, client: 0 }[profile];
+  return Math.min(profile === 'default' ? 36 * 60_000 : PROFILE_MS, remainingMs - reserveMs);
+}
+function childRun(args, { cwd, env, log, timeoutMs = PROFILE_MS, progressFile, idleTimeoutMs = PROFILE_MS }) {
   return new Promise((resolve, reject) => {
     const fd = fs.openSync(log, 'a');
     const child = cp.spawn(process.execPath, args, { cwd, env, windowsHide: true, stdio: ['ignore', fd, fd] });
-    let timedOut = false, closed = false;
+    const start = Date.now(), deadline = start + timeoutMs;
+    let timedOut = false, timeoutReason, closed = false, timer, bytes = 0, activeAt = start;
     const close = () => { if (!closed) { closed = true; clearTimeout(timer); fs.closeSync(fd); } };
-    const timer = setTimeout(() => {
+    function checkTime() {
+      const now = Date.now();
+      if (progressFile && now < deadline) {
+        // Only the test reporter writes this private event file. Output from a noisy or stuck process cannot extend the wait.
+        let stat;
+        try { stat = fs.statSync(progressFile, { throwIfNoEntry: false }); } catch { /* no readable progress */ }
+        if (stat && stat.size > bytes) {
+          bytes = stat.size;
+          activeAt = Math.max(activeAt, Math.min(now, stat.mtimeMs));
+        }
+        const left = Math.min(deadline, activeAt + idleTimeoutMs) - now;
+        if (left > 0) { timer = setTimeout(checkTime, Math.ceil(left)); return; }
+      }
       timedOut = true;
+      timeoutReason = now >= deadline ? 'deadline' : 'no-test-events';
       if (child.exitCode === null) {
         // Only this live child and its descendants. Never search by command-name substring.
         if (process.platform === 'win32') cp.spawnSync('taskkill.exe', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true, stdio: 'ignore', timeout: 15_000 });
         else child.kill('SIGKILL');
       }
-    }, timeoutMs);
+    }
+    timer = setTimeout(checkTime, progressFile ? Math.min(timeoutMs, idleTimeoutMs) : timeoutMs);
     child.once('error', error => { close(); reject(error); });
-    child.once('close', (exitCode, signal) => { close(); resolve({ exitCode, signal, timedOut }); });
+    child.once('close', (exitCode, signal) => { close(); resolve({ exitCode, signal, timedOut, ...(timedOut && { timeoutReason }) }); });
   });
 }
 async function rehearsal(root, env, output) {
@@ -63,6 +84,8 @@ async function rehearsal(root, env, output) {
   } catch (error) { await stop(); throw error; }
 }
 async function run({ route, output, context, root = ROOT }) {
+  // The parent worker caps a local run at 50 minutes. Leave two minutes for final source checks and the receipt.
+  const localDeadline = Date.now() + 48 * 60_000;
   if (!['windows', 'linux', 'local', 'all'].includes(route)) throw Error('Choose windows, linux, local, or all');
   if (route === 'windows' && process.platform !== 'win32') throw Error('Windows coverage requires Windows');
   if (['local', 'all'].includes(route) && (!context || context.version !== 1 || path.resolve(context.root) !== path.resolve(root))) throw Error('Local QA requires an explicitly prepared, isolated workspace');
@@ -100,10 +123,13 @@ async function run({ route, output, context, root = ROOT }) {
           '--test-reporter=tap', `--test-reporter-destination=${path.join(folder, 'tests.tap')}`,
           `--test-reporter=${pathToFileURL(path.join(root, 'tools/conditional-qa/reporter.cjs')).href}`, `--test-reporter-destination=${path.join(folder, 'events.jsonl')}`,
           ...new Set(selected.map(row => row.file))];
-        const execution = await childRun(args, { cwd: root, env, log: path.join(folder, 'process.log') });
+        const timeoutMs = profileBudget(route, profile, localDeadline - Date.now());
+        if (timeoutMs <= 0) throw Error('Local verification budget exhausted before ' + profile);
+        const progressFile = route === 'local' && profile === 'default' ? path.join(folder, 'events.jsonl') : undefined;
+        const execution = await childRun(args, { cwd: root, env, log: path.join(folder, 'process.log'), timeoutMs, progressFile });
         const events = fs.readFileSync(path.join(folder, 'events.jsonl'), 'utf8').split(/\r?\n/).filter(Boolean).map(JSON.parse);
         const result = judge(selected, events, { root, ...execution });
-        receipt.phases.push({ profile, ...result }); receipt.rows.push(...result.rows);
+        receipt.phases.push({ profile, ...result, ...(execution.timedOut && { timeoutReason: execution.timeoutReason }) }); receipt.rows.push(...result.rows);
         console.log(`${profile}: ${result.passed}/${result.expected}; ${result.ok ? 'PASS' : 'INCOMPLETE OR FAILED'}`);
       } catch (error) { receipt.phases.push({ profile, ok: false, error: error.message }); }
       finally { if (server) await server.stop(); }
@@ -124,4 +150,4 @@ if (require.main === module) {
     .then(result => { console.log(JSON.stringify({ commit: result.commit, route: result.route, passed: result.passed, expected: result.expected, ok: result.ok })); process.exitCode = result.ok ? 0 : 1; })
     .catch(error => { console.error(error); process.exitCode = 1; });
 }
-module.exports = { sourceState, childRun, run, temporaryEnvironment };
+module.exports = { sourceState, childRun, run, temporaryEnvironment, profileBudget };

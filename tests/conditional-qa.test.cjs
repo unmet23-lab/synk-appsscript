@@ -4,7 +4,7 @@ const fs = require('node:fs'), path = require('node:path'), os = require('node:o
 const { pathToFileURL } = require('node:url');
 const root = path.resolve(__dirname, '..'), c = require('../tools/conditional-qa/contract.cjs');
 const { check } = require('../tools/conditional-qa/guard.cjs');
-const { childRun, temporaryEnvironment } = require('../tools/conditional-qa/run.cjs');
+const { childRun, temporaryEnvironment, profileBudget } = require('../tools/conditional-qa/run.cjs');
 const { materialize, write, release, prepare } = require('../tools/conditional-qa/inputs.cjs');
 const { extendQueue, nextItem, advanceTurn, acquire, sleptDuring, failureDisposition, due } = require('../tools/conditional-qa/worker.cjs');
 const { plan } = require('../tools/conditional-qa/install.cjs');
@@ -19,6 +19,42 @@ function scratch(t) { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'conditi
 test('all 113 original cases have one concrete route and a live source file', () => {
   assert.equal(check(root), 115);
   assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 28, linux: 8, local: 79 });
+});
+test('the local default profile reserves time for homework, client and the final receipt', () => {
+  const minute = 60_000;
+  assert.equal(profileBudget('local', 'default', 48 * minute), 36 * minute);
+  assert.equal(profileBudget('local', 'homework', 12 * minute), 9 * minute);
+  assert.equal(profileBudget('local', 'client', 3 * minute), 3 * minute);
+  assert.equal(profileBudget('local', 'default', 12 * minute), 0);
+  for (const route of ['windows', 'linux', 'all']) assert.equal(profileBudget(route, 'default', 48 * minute), 20 * minute);
+});
+test('completed test events can extend a progressing child, but silence and the absolute deadline stop it', async t => {
+  const dir = scratch(t), events = path.join(dir, 'events.jsonl'), release = path.join(dir, 'finished');
+  t.mock.timers.enable({ apis: ['Date', 'setTimeout'], now: Date.now() });
+  const launch = () => childRun(['-e', `const fs = require('node:fs'); const stop = Date.now() + 15000;
+    setInterval(() => { if (fs.existsSync(process.argv[1])) process.exit(0); if (Date.now() > stop) process.exit(2); }, 25)`, release],
+    { cwd: dir, env: process.env, log: path.join(dir, 'process.log'), progressFile: events, idleTimeoutMs: 4000, timeoutMs: 7000 });
+  const event = () => {
+    fs.appendFileSync(events, '{"event":"test:pass"}\n');
+    const now = new Date();
+    fs.utimesSync(events, now, now);
+  };
+  const makingProgress = launch();
+  t.mock.timers.tick(3000); event(); t.mock.timers.tick(1500);
+  fs.writeFileSync(release, 'done');
+  const good = await makingProgress;
+  assert.equal(good.exitCode, 0); assert.equal(good.timedOut, false);
+
+  fs.unlinkSync(release); fs.unlinkSync(events);
+  const stalled = launch();
+  fs.appendFileSync(path.join(dir, 'process.log'), 'still printing\n');
+  t.mock.timers.tick(4000);
+  assert.equal((await stalled).timeoutReason, 'no-test-events');
+
+  const expired = launch();
+  t.mock.timers.tick(3000); event(); t.mock.timers.tick(1500);
+  t.mock.timers.tick(1500); event(); t.mock.timers.tick(1000);
+  assert.equal((await expired).timeoutReason, 'deadline');
 });
 test('every route owns a real temporary path instead of an inherited 8.3 or virtual alias', t => {
   const dir = scratch(t), env = temporaryEnvironment(dir);
