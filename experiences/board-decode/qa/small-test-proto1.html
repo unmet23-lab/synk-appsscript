@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>게시판 해독 · 작은 시험</title>
+<!-- 게시판 해독 작은 시험 시제품(2026-11-04). 판 꼴 셋 A 한 장 공지 · B 게시판 이어 풀기 · C 친구 부탁을 한 장에 둔다.
+     시험용 주소 값: ?round=A|B|C · ?view=board|book|act1|act2|act3|done · ?mask=unknown(모르는 말을 ①②로) · ?mask=all(공지의 한글을 모두 ▢로) · ?found=all · ?pair=all|wrong
+     원고는 아래 <script id="content">(JSON) 한 곳이고, 시험관 글 묶음도 판.mjs가 같은 원고에서 만든다. 생성 그림은 쓰지 않는다 — 게시물 글은 모두 HTML 글자다. -->
+<style>
+@font-face{font-family:'SUIT Variable';src:url('../../../docs/브랜드_폰트/SUIT/SUIT-Variable.woff2') format('woff2');font-weight:100 900;font-display:block}
+:root{
+  --ink:#1b1d22;--ink-2:#4a4f59;--ink-3:#7c818b;--paper:#fbfaf6;--line:#e3e0d7;
+  --navy:#22325a;--coral:#e8664f;--butter:#f3d36b;--mint:#2f8f6b;--found:#fff1c2;--sky:#dfe9f7;
+  --sheet:#ffffff;--bg:#e9e6df;--shadow:0 1px 2px rgba(20,22,28,.08),0 8px 24px rgba(20,22,28,.12);
+  --sans:'SUIT Variable','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#cfcac0;font-family:var(--sans);color:var(--ink)}
+body{display:flex;justify-content:center}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+#app{position:relative;width:100%;max-width:430px;height:100dvh;min-height:640px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
+
+/* 위 띠: 자리 · 시각 · 수첩 수 */
+.top{flex:none;display:flex;align-items:center;gap:10px;padding:14px 16px 10px;background:linear-gradient(#f6f3ec,#efebe3)}
+.top .place{flex:1;min-width:0}
+.top .place b{display:block;font-size:15px;font-weight:800;letter-spacing:-.01em}
+.top .place span{display:block;font-size:12px;color:var(--ink-3);margin-top:2px}
+.top .tabs{display:flex;gap:4px}
+.top .tabs button{width:30px;height:30px;border-radius:999px;font-size:12px;font-weight:800;color:var(--ink-3);background:#e4e0d7}
+.top .tabs button[aria-current="true"]{background:var(--ink);color:#fff}
+
+/* 상황: 인물 말 또는 내 혼잣말 */
+.sit{flex:none;margin:0 12px 8px;padding:10px 12px;border-radius:14px;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.04);display:flex;gap:10px;align-items:flex-start}
+.sit .who{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;color:#fff;background:var(--navy)}
+.sit .who.me{background:#c9c3b6;color:var(--ink)}
+.sit p{margin:0;font-size:14px;line-height:1.5;letter-spacing:-.01em}
+.sit p small{display:block;font-size:11px;color:var(--ink-3);margin-bottom:1px}
+
+/* 게시판 */
+.board{flex:1;min-height:0;overflow:auto;padding:10px 14px 150px;scroll-behavior:smooth}
+.board.metal{background:linear-gradient(90deg,#b9bcc1 0 49.6%,#9fa3a9 49.6% 50.4%,#b9bcc1 50.4%),repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px)}
+.board.cork{background-color:#b98a55;background-image:radial-gradient(rgba(70,40,10,.18) 1px,transparent 1.4px),radial-gradient(rgba(255,240,210,.14) 1px,transparent 1.6px);background-size:7px 7px,11px 11px;background-position:0 0,3px 5px}
+.board.glass{background:linear-gradient(160deg,#dde3e8,#c8d0d7)}
+.notice{position:relative;margin:14px auto;background:var(--paper);box-shadow:var(--shadow);padding:18px 18px 16px;font-size:14px;line-height:1.62;letter-spacing:-.012em;max-width:360px}
+.notice .tape{position:absolute;top:-9px;width:64px;height:20px;background:rgba(255,248,220,.72);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.notice .tape.l{left:14px;transform:rotate(-5deg)} .notice .tape.r{right:14px;transform:rotate(4deg)}
+.notice .pin{position:absolute;top:8px;left:50%;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ff9a86,#c8412c 70%);box-shadow:0 2px 3px rgba(0,0,0,.35)}
+.notice .head{font-size:11px;font-weight:700;color:var(--ink-3);letter-spacing:.02em}
+.notice h3{margin:4px 0 10px;font-size:19px;line-height:1.3;font-weight:850;letter-spacing:-.02em}
+.notice p{margin:0}
+.notice .li{padding-left:12px;text-indent:-12px}
+.notice .note{color:var(--ink-2)}
+.notice .foot{margin-top:10px;padding-top:8px;border-top:1px dashed var(--line);font-size:12px;color:var(--ink-3)}
+.notice .ico{position:absolute;right:14px;top:16px;width:36px;height:36px;color:var(--navy);opacity:.9}
+.n-dorm{border-top:6px solid var(--navy)}
+.n-fest{background:#1f2a52;color:#fff7e6;transform:rotate(-1.2deg)}
+.n-fest .head{color:#f3d36b} .n-fest h3{font-size:24px;color:#fff} .n-fest .note{color:#e9dcc4} .n-fest .big{display:block;font-size:20px;font-weight:850;color:#f3d36b;margin:6px 0 2px}
+.n-club{background:#fffdf4;transform:rotate(1.4deg);border:1px solid #efe6c8}
+.n-club h3{color:#2f6f5e}
+.n-club .photo{height:70px;margin:2px 0 10px;border-radius:6px;background:linear-gradient(135deg,#f4c59a,#e97a5b 55%,#5b3c6e);position:relative;overflow:hidden}
+.n-club .photo::after{content:'';position:absolute;inset:auto 18px 12px auto;width:30px;height:30px;border-radius:50%;background:rgba(255,240,200,.85)}
+.n-council{transform:rotate(-.6deg)}
+.n-council h3{font-size:17px}
+.n-a4{border-left:5px solid #7a8aa8}
+.n-a4 h3{font-size:16px}
+
+/* 모르는 말 · 찾은 말 · 푼 말 */
+.w{display:inline;position:relative;padding:0 1px;border-radius:3px;background:linear-gradient(transparent 62%,rgba(232,102,79,.18) 62%);border-bottom:1.5px dotted var(--coral);cursor:pointer;color:inherit;font-weight:inherit}
+.n-fest .w{border-bottom-color:#f3d36b;background:linear-gradient(transparent 62%,rgba(243,211,107,.22) 62%)}
+.w.found{background:var(--found);border-bottom-style:solid}
+.n-fest .w.found{background:rgba(243,211,107,.35)}
+.w.solved{background:none;border-bottom:2px solid var(--mint);color:inherit}
+.w.solved::after{content:'';display:inline-block;width:6px;height:6px;margin-left:2px;border-radius:50%;background:var(--mint);vertical-align:super}
+.w.known{background:none;border-bottom:2px solid var(--mint)}
+.hint{transition:background .3s,box-shadow .3s;border-radius:3px}
+.hint.lit{background:#fff3a8;box-shadow:0 0 0 3px #fff3a8;color:var(--ink)}
+.n-fest .hint.lit{color:var(--ink)}
+.mask-tok{display:inline-block;min-width:22px;padding:0 4px;border-radius:4px;background:#2b2f38;color:#fff;font-weight:800;text-align:center;line-height:1.35}
+
+/* 아래 판: 수첩 + 해내기 단추 */
+.dock{position:absolute;left:0;right:0;bottom:0;z-index:5;background:var(--sheet);border-radius:20px 20px 0 0;box-shadow:0 -6px 24px rgba(20,22,28,.14);padding:10px 14px calc(14px + env(safe-area-inset-bottom))}
+.dock .grab{width:36px;height:4px;border-radius:2px;background:#d9d5cc;margin:0 auto 10px}
+.dock .row{display:flex;align-items:center;gap:8px}
+.dock .row .lab{font-size:12px;font-weight:800;color:var(--ink-3);white-space:nowrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap;flex:1;min-width:0}
+.chip{display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 10px;border-radius:999px;background:#f1eee7;font-size:13px;font-weight:700}
+.chip.empty{color:var(--ink-3);font-weight:600;background:none;border:1px dashed #d9d5cc}
+.chip.paired{background:var(--sky)}
+.chip.solved{background:#e2f2ea;color:#1e6b4f}
+.chip.sel{outline:2px solid var(--ink);outline-offset:1px}
+.dock .act{display:flex;gap:8px;margin-top:10px}
+.btn{flex:1;height:48px;border-radius:14px;font-size:15px;font-weight:800;letter-spacing:-.01em;background:#f1eee7}
+.btn.primary{background:var(--ink);color:#fff}
+.btn:disabled{opacity:.4}
+
+/* 수첩 판 */
+.book{position:absolute;inset:0;z-index:8;background:rgba(20,22,28,.38);display:flex;align-items:flex-end}
+.book .sheet{width:100%;background:var(--sheet);border-radius:20px 20px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:86%;overflow:auto}
+.book h4{margin:0 0 4px;font-size:17px;font-weight:850}
+.book .sub{margin:0 0 12px;font-size:12.5px;color:var(--ink-3);line-height:1.5}
+.pairs{display:grid;gap:8px;margin-bottom:14px}
+.pair{display:flex;align-items:center;gap:10px;min-height:52px;padding:8px 10px;border-radius:12px;background:#f6f4ef;border:2px solid transparent;text-align:left;width:100%}
+.pair.sel{border-color:var(--ink)}
+.pair .wd{flex:none;min-width:58px;font-size:16px;font-weight:850}
+.pair .mean{flex:1;font-size:13.5px;color:var(--ink-2);display:flex;align-items:center;gap:8px}
+.pair .mean.none{color:var(--ink-3)}
+.pair.solved{background:#e8f4ee}
+.pair .mean svg{flex:none;width:22px;height:22px;color:var(--navy)}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:10px;border-radius:12px;background:#fff;border:1.5px solid #e3e0d7;text-align:left;min-height:84px}
+.card svg{width:26px;height:26px;color:var(--navy)}
+.card span{font-size:13.5px;font-weight:700;line-height:1.35;letter-spacing:-.01em}
+.card.used{opacity:.45}
+.card.on{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.msg{margin:10px 0 0;font-size:13px;line-height:1.5;color:var(--ink-2);min-height:20px}
+.msg.bad{color:#b4412f}
+.msg.good{color:var(--mint);font-weight:800}
+
+/* 해내기 판 */
+.task{position:absolute;inset:0;z-index:9;background:rgba(20,22,28,.38);display:flex;align-items:flex-end}
+.task .sheet{width:100%;background:var(--sheet);border-radius:20px 20px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:90%;overflow:auto}
+.task .step{font-size:11px;font-weight:800;color:var(--coral);letter-spacing:.04em}
+.task h4{margin:4px 0 12px;font-size:17px;line-height:1.45;font-weight:850;letter-spacing:-.015em}
+.opts{display:grid;gap:8px}
+.opt{display:flex;align-items:center;gap:10px;min-height:52px;padding:10px 14px;border-radius:14px;background:#f6f4ef;font-size:15px;font-weight:700;text-align:left;width:100%;border:2px solid transparent}
+.opt.on{border-color:var(--ink);background:#fff}
+.opt .k{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;background:#e6e2d9;color:var(--ink-2)}
+.opt.on .k{background:var(--ink);color:#fff}
+.slots{display:grid;gap:12px}
+.slot .q{font-size:12.5px;font-weight:800;color:var(--ink-3);margin-bottom:6px}
+.slot .opts{grid-template-columns:repeat(auto-fit,minmax(96px,1fr))}
+.slot .opt{min-height:44px;font-size:14px;padding:8px 10px;justify-content:center;text-align:center}
+.bubble{margin:0 0 12px;padding:10px 12px;border-radius:14px 14px 14px 4px;background:#eef1f7;font-size:14px;line-height:1.5}
+.reply{margin:10px 0 0;padding:10px 12px;border-radius:14px 14px 4px 14px;background:var(--navy);color:#fff;font-size:14px;line-height:1.5;min-height:42px}
+.reply.ghost{background:#e9ecf3;color:var(--ink-3)}
+.dorm{display:grid;gap:6px;margin-bottom:10px}
+.floor{display:flex;align-items:center;gap:10px;height:54px;border-radius:12px;background:#f6f4ef;padding:0 12px;border:2px solid transparent;width:100%;text-align:left}
+.floor .fl{flex:none;width:34px;font-size:15px;font-weight:850}
+.floor .rm{flex:1;font-size:13.5px;color:var(--ink-2)}
+.floor .me{font-size:11px;font-weight:800;color:#fff;background:var(--coral);border-radius:999px;padding:2px 8px}
+.floor.on{border-color:var(--ink);background:#fff}
+.floor[disabled]{opacity:.55;cursor:default}
+
+/* 결과 */
+.done{position:absolute;inset:0;z-index:10;background:var(--bg);display:flex;flex-direction:column;padding:28px 18px 18px;overflow:auto}
+.done .badge{align-self:flex-start;font-size:11px;font-weight:800;color:#fff;background:var(--mint);border-radius:999px;padding:3px 10px}
+.done .badge.retry{background:var(--coral)}
+.done h2{margin:12px 0 6px;font-size:24px;line-height:1.3;font-weight:900;letter-spacing:-.025em}
+.done .react{margin:0 0 18px;font-size:15px;line-height:1.6;color:var(--ink-2)}
+.done .list{display:grid;gap:8px;margin-bottom:16px}
+.done .it{display:flex;gap:10px;align-items:flex-start;padding:12px;border-radius:14px;background:#fff}
+.done .it b{flex:none;min-width:58px;font-size:16px}
+.done .it span{font-size:13.5px;line-height:1.5;color:var(--ink-2)}
+.done .it i{display:block;font-style:normal;font-size:12px;color:var(--ink-3);margin-top:2px}
+.done .stats{display:flex;gap:8px;margin-bottom:18px}
+.done .stats div{flex:1;padding:12px;border-radius:14px;background:#fff;text-align:center}
+.done .stats b{display:block;font-size:20px;font-weight:900}
+.done .stats span{font-size:11.5px;color:var(--ink-3)}
+.shake{animation:shake .32s}
+@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+/* 시험관 캡처용 긴 판(?tall=1): 게시판 전체를 한 장에 */
+html.tall,html.tall body{height:auto}
+html.tall #app{height:auto;min-height:844px;overflow:visible}
+html.tall .board{overflow:visible;flex:none;padding-bottom:24px}
+html.tall .dock{position:relative}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div id="app" aria-live="polite"></div>
+
+<script id="icons" type="application/json">
+{
+ "inspect":"<circle cx='10.5' cy='10.5' r='6'/><path d='M15 15l5 5M8 10.5h5M10.5 8v5'/>",
+ "pause":"<rect x='6' y='5' width='4' height='14' rx='1'/><rect x='14' y='5' width='4' height='14' rx='1'/>",
+ "except":"<path d='M4 7h10M4 12h10M4 17h6'/><path d='M16 15l5 5M21 15l-5 5'/>",
+ "keep":"<rect x='4' y='8' width='16' height='12' rx='2'/><path d='M4 12h16M9 8V5h6v3'/>",
+ "swap":"<path d='M5 9h12l-3-3M19 15H7l3 3'/>",
+ "trash":"<path d='M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13'/>",
+ "first":"<circle cx='7' cy='6' r='2'/><circle cx='13' cy='6' r='2'/><circle cx='19' cy='6' r='2'/><path d='M7 9v6M13 9v6M19 9v6M4 19h3l2-2'/>",
+ "bring":"<path d='M6 9h12l-1 11H7z'/><path d='M9 9a3 3 0 0 1 6 0'/>",
+ "rain":"<path d='M3 12a9 9 0 0 1 18 0z'/><path d='M12 12v6a2 2 0 0 1-4 0'/>",
+ "end":"<circle cx='12' cy='12' r='8'/><path d='M12 7v5l3 2'/><path d='M4 4l3 3'/>",
+ "each":"<circle cx='8' cy='7' r='2.5'/><path d='M4 20c0-4 2-6 4-6s4 2 4 6'/><path d='M15 12h5v5h-5z'/>",
+ "buy":"<path d='M4 5h2l2 10h10l2-7H7'/><circle cx='10' cy='19' r='1.5'/><circle cx='17' cy='19' r='1.5'/>",
+ "who":"<circle cx='12' cy='12' r='8'/><circle cx='12' cy='12' r='4'/><circle cx='12' cy='12' r='1'/>",
+ "take":"<path d='M4 13l3-8h10l3 8v6H4z'/><path d='M4 13h5l1 2h4l1-2h5'/>",
+ "minus":"<circle cx='9' cy='8' r='3'/><path d='M3 20c0-4 3-6 6-6s6 2 6 6'/><path d='M16 11h6'/>",
+ "pay":"<rect x='3' y='6' width='18' height='12' rx='2'/><circle cx='12' cy='12' r='2.5'/>",
+ "together":"<circle cx='8' cy='8' r='2.5'/><circle cx='16' cy='8' r='2.5'/><path d='M3 19c0-3 2-5 5-5s5 2 5 5M11 19c0-3 2-5 5-5s5 2 5 5'/>",
+ "wrench":"<path d='M14 6a4 4 0 0 0 4 6l-8 8-3-3 8-8a4 4 0 0 0-1-3z'/>"
+}
+</script>
+
+<script id="content" type="application/json">
+{
+ "version":"small-test-20261104",
+ "rounds":[
+  {
+   "id":"A","kind":"한 장 공지","board":"metal","title":"세탁실 점검",
+   "place":"새솔관 4층 엘리베이터 앞","time":"목요일 오전 10:02",
+   "situation":{"who":"me","text":"빨래 바구니를 들고 나왔다. 엘리베이터 문에 종이 한 장이 붙어 있다."},
+   "notices":[
+    {"id":"a1","style":"n-dorm","head":"새솔관 생활 안내","icon":"wrench","title":"세탁실 정기 [[점검]] 안내","tape":true,
+     "lines":[
+      "세탁기 [[점검]]으로 {h:a-time|아래 시간에는} 세탁실 이용이 [[중단]]됩니다.",
+      {"li":"일시: 11월 6일(목) 오전 9시 ~ 오후 1시"},
+      {"li":"장소: 2층, 4층 세탁실"},
+      "[[단]], {h:a-three|3층 세탁실은 평소처럼 이용할 수 있습니다.}",
+      {"gap":true},
+      "{h:a-keep|점검 전에 세탁기에 남아 있는 빨래는} 1층 관리실에서 [[보관]]합니다. {h:a-after|점검이 끝난 후} 관리실로 찾으러 오세요."
+     ],
+     "foot":"새솔관 관리실 · 내선 1204"}
+   ],
+   "words":{
+    "점검":{"card":"inspect","clue":"a-time"},
+    "중단":{"card":"pause","clue":"a-time"},
+    "단":{"card":"except","clue":"a-three"},
+    "보관":{"card":"keep","clue":"a-keep"}
+   },
+   "cards":[
+    {"id":"inspect","icon":"inspect","text":"고장이 없는지 살펴봐요"},
+    {"id":"swap","icon":"swap","text":"새것으로 바꿔요"},
+    {"id":"pause","icon":"pause","text":"잠깐 멈춰요"},
+    {"id":"except","icon":"except","text":"그런데 이것만 달라요"},
+    {"id":"keep","icon":"keep","text":"잘 맡아 둬요"},
+    {"id":"trash","icon":"trash","text":"버려요"}
+   ],
+   "steps":[
+    {"type":"dorm","q":"지금은 목요일 오전 10시. 빨래를 어디서 할까?",
+     "options":[
+      {"k":"4","fl":"4층","rm":"세탁실 · 내 방 404호","me":true,"ok":false,"why":"a-time","say":"4층 세탁실 문에 「점검 중」 줄이 걸려 있다. 세탁기가 다 멈춰 있다."},
+      {"k":"3","fl":"3층","rm":"세탁실","ok":true},
+      {"k":"2","fl":"2층","rm":"세탁실","ok":false,"why":"a-time","say":"2층도 문이 잠겨 있다. 안에서 기사님이 세탁기를 열어 보고 있다."},
+      {"k":"1","fl":"1층","rm":"관리실","ok":false,"why":"a-three","say":"관리실 아저씨: 「여기는 세탁기가 없어요. 공지 다시 보세요~」"}
+     ],
+     "slots":[
+      {"id":"when","q":"4층 세탁실은 언제부터 다시 쓸 수 있을까?","options":[
+        {"k":"9","t":"오전 9시","ok":false,"why":"a-time","say":"오전 9시는 점검이 시작되는 때다. 그때부터 못 쓴다."},
+        {"k":"12","t":"낮 12시","ok":false,"why":"a-time","say":"12시에 가 보니 아직 세탁기가 멈춰 있다."},
+        {"k":"13","t":"오후 1시","ok":true},
+        {"k":"tmr","t":"내일 아침","ok":false,"why":"a-time","say":"내일까지 기다릴 필요는 없었다. 오후 1시면 끝난다."}]}
+     ]},
+    {"type":"slots","q":"아, 그런데… 아침 8시 50분에 4층 세탁기에 수건을 넣어 두고 깜빡했다. 지금은 11시. 수건은 어떻게 찾지?",
+     "slots":[
+      {"id":"where","q":"수건은 지금 어디에?","options":[
+        {"k":"m","t":"4층 세탁기 안","ok":false,"why":"a-keep","say":"4층 세탁기를 열어 보니 텅 비어 있다."},
+        {"k":"o","t":"1층 관리실","ok":true},
+        {"k":"t","t":"버려졌다","ok":false,"why":"a-keep","say":"쓰레기통을 뒤졌지만 수건은 없다."}]},
+      {"id":"when","q":"언제 찾으러 갈까?","options":[
+        {"k":"now","t":"지금 바로","ok":false,"why":"a-after","say":"관리실 문에 「점검 중 · 1시 이후 찾아가세요」 쪽지가 붙어 있다."},
+        {"k":"1","t":"오후 1시 지나서","ok":true}]}
+     ]}
+   ],
+   "win":{"title":"3층 세탁기 한 대가 비어 있었다","react":"빨래를 돌려 놓고 1시 넘어 관리실에 갔다. 관리실 아저씨가 수건을 건네며 웃는다. 「점검 공지 잘 봤네요. 다들 4층 앞에서 헤매던데.」"}
+  },
+  {
+   "id":"B","kind":"게시판 이어 풀기","board":"cork","title":"축제 떡볶이",
+   "place":"학생회관 1층 게시판","time":"화요일 오후 4:40",
+   "situation":{"who":"태오","text":"목요일에 비 온대 ☔ 축제 떡볶이 같이 받으러 갈래? 나 수업이 1시에 끝나는데 그때 가도 될까? 그리고 너 빛담 들고 싶다며!"},
+   "notices":[
+    {"id":"b1","style":"n-fest","pin":true,"head":"제12회 새솔 가을 축제","title":"솔빛제","lines":[
+      "11월 13일(목) ~ 14일(금) · 대운동장",
+      {"big":"떡볶이 무료 나눔"},
+      "13일(목) 낮 12시부터 · [[선착순]] 200명",
+      {"note":"※ [[우천 시]] {h:b-rain|학생회관 1층 로비에서 나눠 드립니다.}"}
+     ]},
+    {"id":"b2","style":"n-club","pin":true,"photo":true,"head":"사진 동아리","title":"「빛담」 신입 회원 모집","lines":[
+      "축제 기간에 우리 부스로 오세요!",
+      {"li":"신청: 11월 13일(목) ~ 14일(금), 대운동장 부스"},
+      {"li":"[[선착순]] 20명 — {h:b-first|자리가 다 차면 신청이 끝나요!}"},
+      {"li":"신청할 때 학생증 [[지참]]"},
+      {"note":"※ [[우천 시]] 부스는 {h:b-rain2|학생회관 3층 304호}로 옮깁니다."}
+     ]},
+    {"id":"b3","style":"n-council n-a4","tape":true,"head":"총학생회 알림","title":"축제 먹거리 장터 이용 안내","lines":[
+      {"li":"장터는 학생증을 [[지참]]한 재학생만 이용할 수 있습니다. {h:b-bring|(학생증이 없으면 이용할 수 없습니다.)}"},
+      {"li":"장터 [[마감]]: 매일 오후 6시"},
+      {"li":"{h:b-end|[[마감]] 30분 전부터는 주문을 받지 않습니다.}"}
+     ]}
+   ],
+   "words":{
+    "선착순":{"card":"first","clue":"b-first"},
+    "우천 시":{"card":"rain","clue":"b-rain"},
+    "지참":{"card":"bring","clue":"b-bring"},
+    "마감":{"card":"end","clue":"b-end"}
+   },
+   "cards":[
+    {"id":"first","icon":"first","text":"먼저 온 사람부터"},
+    {"id":"each","icon":"each","text":"한 사람에 하나씩"},
+    {"id":"rain","icon":"rain","text":"비가 오면"},
+    {"id":"bring","icon":"bring","text":"가지고 와요"},
+    {"id":"buy","icon":"buy","text":"미리 사 와요"},
+    {"id":"end","icon":"end","text":"끝나는 때"}
+   ],
+   "steps":[
+    {"type":"reply","q":"태오에게 답장하기 — 떡볶이","bubble":"목요일에 비 온대 ☔ 떡볶이 같이 받으러 갈래? 나 수업이 1시에 끝나는데 그때 가도 될까?",
+     "slots":[
+      {"id":"place","q":"어디서?","options":[
+        {"k":"field","t":"대운동장","ok":false,"why":"b-rain","say":"비 오는 대운동장. 텐트도 사람도 없다. 태오가 우산을 쓰고 서 있다. 「…여기 아닌가 봐.」"},
+        {"k":"lobby","t":"학생회관 1층 로비","ok":true},
+        {"k":"304","t":"학생회관 304호","ok":false,"why":"b-rain","say":"304호 문을 여니 사진 동아리 사람들이 의자를 나르고 있다. 「떡볶이요? 여기 아니에요!」"}]},
+      {"id":"time","q":"언제?","options":[
+        {"k":"1","t":"1시에 같이 가자","ok":false,"why":"b-first","say":"1시 반, 로비에 도착했다. 냄비가 비어 있다. 「오늘 준비한 거 다 나갔어요~」"},
+        {"k":"early","t":"내가 12시 전에 먼저 가서 줄 설게","ok":true},
+        {"k":"6","t":"저녁 6시쯤 가자","ok":false,"why":"b-first","say":"저녁 6시, 떡볶이 냄비는 벌써 치워졌다."}]}
+     ],
+     "say":{"place":"{t}에서 나눠 준대!","time":"{t}."}},
+    {"type":"reply","q":"태오에게 답장하기 — 빛담 신청","bubble":"빛담은 언제 어디서 신청해? 뭐 가져가야 돼?",
+     "slots":[
+      {"id":"bring","q":"뭘 가져갈까?","options":[
+        {"k":"id","t":"학생증","ok":true},
+        {"k":"cam","t":"사진기","ok":false,"why":"b-bring","say":"부스 선배가 웃으며 묻는다. 「사진기 멋지네요! 근데 학생증은요? 학생증이 있어야 신청돼요.」"},
+        {"k":"none","t":"아무것도 필요 없어","ok":false,"why":"b-bring","say":"「학생증 가져오셨어요? 신청할 때 꼭 있어야 해요.」"}]},
+      {"id":"room","q":"어디로?","options":[
+        {"k":"field","t":"대운동장 부스","ok":false,"why":"b-rain2","say":"비 오는 대운동장에 빛담 부스는 없다."},
+        {"k":"304","t":"학생회관 304호","ok":true}]}
+     ],
+     "say":{"bring":"{t} 꼭 가져가!","room":"{t}로 가면 돼."}}
+   ],
+   "win":{"title":"떡볶이 두 그릇, 빛담 신청 완료","react":"태오: 「와, 진짜 1층 로비에 있네! 줄 서 줘서 고마워 😆 304호도 같이 가자. 근데 우천 시가 무슨 말이었어?」"}
+  },
+  {
+   "id":"C","kind":"친구 부탁","board":"glass","title":"봉사 활동 고르기",
+   "place":"국제관 2층 알림판","time":"월요일 오후 1:15",
+   "situation":{"who":"투야","text":"있잖아, 나 이번 달에 봉사 시간 채워야 돼 😭 화요일이랑 목요일 오후만 돼. 근데 나 학생증 아직 안 나왔고, 신입생이야. 몽골어는 자신 있는데 한국어로 말하는 건 아직 무서워… 하나만 골라 줘!"},
+   "notices":[
+    {"id":"c1","style":"n-a4","tape":true,"head":"새솔대학교 도서관","title":"책 정리 봉사자 모집","lines":[
+      {"li":"일시: 매주 화요일 오후 2시 ~ 4시"},
+      {"li":"[[대상]]: 재학생 누구나"},
+      {"li":"신청: 도서관 1층 안내 데스크 방문 [[접수]]"},
+      {"li":"{h:c-id|※ [[접수]]할 때 학생증 [[지참]]}"},
+      {"note":"봉사 시간 2시간 인정"}
+     ]},
+    {"id":"c2","style":"n-dorm","tape":true,"head":"국제교류팀","title":"신입 유학생 서류 도우미 모집","lines":[
+      "새로 온 유학생들이 서류를 쓸 때 그 나라 말로 옆에서 도와주세요.",
+      {"li":"일시: 11월 13일(목) 오후 2시 ~ 5시"},
+      {"li":"{h:c-who|[[대상]]: 몽골어 · 베트남어 · 우즈베크어를 할 수 있는 재학생 (신입생도 신청할 수 있습니다)}"},
+      {"li":"신청: 이메일 [[접수]] (학생증 대신 학번만 써도 됩니다)"},
+      {"note":"봉사 시간 3시간 인정"}
+     ]},
+    {"id":"c3","style":"n-council","pin":true,"head":"총학생회","title":"축제 환경 지킴이 모집","lines":[
+      {"li":"일시: 11월 13일(목) 오후 3시 ~ 5시"},
+      {"li":"{h:c-out|[[대상]]: 재학생 ([[단]], 신입생 [[제외]])}"},
+      {"li":"신청: 학생회 누리집 [[접수]] · [[선착순]] 30명"},
+      {"note":"봉사 시간 2시간 인정"}
+     ]}
+   ],
+   "words":{
+    "대상":{"card":"who","clue":"c-who"},
+    "접수":{"card":"take","clue":"c-id"},
+    "지참":{"card":"bring","clue":"c-id"},
+    "제외":{"card":"minus","clue":"c-out"}
+   },
+   "known":["단","선착순"],
+   "cards":[
+    {"id":"who","icon":"who","text":"누가 할 수 있는지"},
+    {"id":"together","icon":"together","text":"함께 해요"},
+    {"id":"take","icon":"take","text":"신청을 받아요"},
+    {"id":"pay","icon":"pay","text":"돈을 내요"},
+    {"id":"bring","icon":"bring","text":"가지고 와요"},
+    {"id":"minus","icon":"minus","text":"빼요 · 안 돼요"}
+   ],
+   "steps":[
+    {"type":"pick","q":"투야에게 어떤 봉사를 권할까?",
+     "options":[
+      {"k":"c1","t":"도서관 책 정리","ok":false,"why":"c-id","say":"투야가 도서관 안내 데스크에서 돌아왔다. 「학생증 있어야 접수된대… 나 아직 없잖아 😢」"},
+      {"k":"c2","t":"신입 유학생 서류 도우미","ok":true},
+      {"k":"c3","t":"축제 환경 지킴이","ok":false,"why":"c-out","say":"투야: 「누리집에서 신청하려는데 신입생은 안 된대. 신입생 제외래 😢」"}
+     ]},
+    {"type":"slots","q":"투야에게 한 줄로 말해 주자.",
+     "slots":[
+      {"id":"how","q":"어떻게 신청해?","options":[
+        {"k":"desk","t":"직접 가서","ok":false,"why":"c-who","say":"투야: 「국제교류팀에 갔는데 이메일로 보내래!」"},
+        {"k":"mail","t":"이메일로","ok":true},
+        {"k":"web","t":"학생회 누리집에서","ok":false,"why":"c-who","say":"투야: 「누리집에는 이 봉사가 없던데?」"}]},
+      {"id":"why","q":"왜 이게 좋아?","options":[
+        {"k":"r1","t":"학생증이 없어도 되고, 몽골어로 도와주는 거야","ok":true},
+        {"k":"r2","t":"화요일 오후라서 시간이 딱 맞아","ok":false,"why":"c-who","say":"투야: 「어? 이거 목요일 아니야?」"},
+        {"k":"r3","t":"먼저 신청하는 30명만 할 수 있어","ok":false,"why":"c-who","say":"투야: 「30명? 그건 다른 거 아니야?」"}]}
+     ]}
+   ],
+   "win":{"title":"투야, 목요일에 서류 도우미 확정","react":"투야: 「대박! 몽골어로 도와주는 거면 나 진짜 잘할 수 있어. 너 최고야 🥹 다음에 내가 밥 살게!」"}
+  }
+ ]
+}
+</script>
+
+<script>
+'use strict';
+const C = JSON.parse(document.getElementById('content').textContent);
+const ICONS = JSON.parse(document.getElementById('icons').textContent);
+const Q = new URLSearchParams(location.search);
+const MASK = Q.get('mask'); // 'unknown' | 'all' | null
+const $app = document.getElementById('app');
+const svg = (name) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ''}</svg>`;
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+// 판마다 상태. 수첩은 판을 넘어 남는다(앞 판에서 푼 말은 다음 판에 푼 말로 보인다).
+const book = new Set(JSON.parse(sessionStorage.getItem('bd-book') || '[]'));
+const saveBook = () => { try { sessionStorage.setItem('bd-book', JSON.stringify([...book])); } catch {} };
+let S = null;
+const log = [];
+const mark = (what, extra) => log.push({ t: Math.round(performance.now()), what, ...extra });
+window.__bd = { log, state: () => S };
+
+function start(id) {
+  const R = C.rounds.find((r) => r.id === id) || C.rounds[0];
+  const tokenOf = {}; let n = 0;
+  for (const w of Object.keys(R.words)) tokenOf[w] = '①②③④⑤⑥'[n++];
+  S = { R, found: new Set(), pairs: {}, solved: false, tries: 0, hints: new Set(), view: 'board', step: 0, picks: {}, firstTry: true, misses: 0, t0: performance.now(), tokenOf, sel: null };
+  for (const w of Object.keys(R.words)) if (book.has(w)) S.found.add(w);
+  mark('start', { round: R.id });
+  render();
+}
+
+// 공지 한 줄을 그린다: [[낱말]] = 모르는 말, {h:id|글} = 단서 자리
+function inline(text, R) {
+  const parts = [];
+  const re = /\{h:([\w-]+)\|((?:[^{}]|\[\[[^\]]+\]\])*)\}|\[\[([^\]]+)\]\]/g;
+  let last = 0, m;
+  while ((m = re.exec(text))) {
+    if (m.index > last) parts.push(plain(text.slice(last, m.index)));
+    if (m[1]) parts.push(`<span class="hint${S.hints.has(m[1]) ? ' lit' : ''}" data-h="${m[1]}">${inline(m[2], R)}</span>`);
+    else parts.push(word(m[3], R));
+    last = re.lastIndex;
+  }
+  if (last < text.length) parts.push(plain(text.slice(last)));
+  return parts.join('');
+}
+function plain(s) { return MASK === 'all' ? esc(s).replace(/[가-힣]/g, '▢') : esc(s); }
+function word(w, R) {
+  const known = (R.known || []).includes(w) || (!R.words[w]);
+  if (known) return MASK === 'all' ? plain(w) : `<span class="w known">${esc(w)}</span>`;
+  if (MASK === 'unknown') return `<span class="mask-tok">${S.tokenOf[w]}</span>`;
+  if (MASK === 'all') return `<span class="mask-tok">${S.tokenOf[w]}</span>`;
+  const cls = S.solved || book.has(w) ? 'solved' : S.found.has(w) ? 'found' : '';
+  return `<button class="w ${cls}" data-w="${esc(w)}">${esc(w)}</button>`;
+}
+function notice(N, R) {
+  const lines = N.lines.map((L) => {
+    if (typeof L === 'string') return `<p>${inline(L, R)}</p>`;
+    if (L.li) return `<p class="li">· ${inline(L.li, R)}</p>`;
+    if (L.note) return `<p class="note">${inline(L.note, R)}</p>`;
+    if (L.big) return `<span class="big">${inline(L.big, R)}</span>`;
+    if (L.gap) return '<p style="height:8px"></p>';
+    return '';
+  }).join('');
+  return `<article class="notice ${N.style}" data-n="${N.id}">
+    ${N.tape ? '<i class="tape l"></i><i class="tape r"></i>' : ''}${N.pin ? '<i class="pin"></i>' : ''}
+    ${N.icon ? `<span class="ico">${svg(N.icon)}</span>` : ''}
+    <div class="head">${plain(N.head)}</div><h3>${inline(N.title, R)}</h3>
+    ${N.photo ? '<div class="photo" aria-hidden="true"></div>' : ''}${lines}
+    ${N.foot ? `<div class="foot">${plain(N.foot)}</div>` : ''}</article>`;
+}
+
+function render() {
+  const { R } = S;
+  const words = Object.keys(R.words);
+  const chips = words.map((w) => {
+    if (!S.found.has(w)) return '<span class="chip empty">?</span>';
+    const solved = S.solved || book.has(w);
+    const label = MASK ? S.tokenOf[w] : esc(w);
+    return `<button class="chip ${solved ? 'solved' : S.pairs[w] ? 'paired' : ''}" data-open-book>${label}</button>`;
+  }).join('');
+  $app.innerHTML = `
+  <header class="top">
+    <div class="place"><b>${esc(R.place)}</b><span>${esc(R.time)} · ${esc(R.kind)}</span></div>
+    <nav class="tabs" aria-label="판 꼴">${C.rounds.map((r) => `<button data-round="${r.id}" aria-current="${r.id === R.id}">${r.id}</button>`).join('')}</nav>
+  </header>
+  <section class="sit"><span class="who ${R.situation.who === 'me' ? 'me' : ''}">${R.situation.who === 'me' ? '나' : esc(R.situation.who[0])}</span>
+    <p>${R.situation.who === 'me' ? '' : `<small>${esc(R.situation.who)}</small>`}${esc(R.situation.text)}</p></section>
+  <main class="board ${R.board}">${R.notices.map((N) => notice(N, R)).join('')}</main>
+  <footer class="dock">
+    <div class="grab"></div>
+    <div class="row"><span class="lab">수첩</span><div class="chips">${chips}</div></div>
+    <div class="act">
+      <button class="btn" data-open-book ${S.found.size ? '' : 'disabled'}>뜻 맞춰 보기</button>
+      <button class="btn primary" data-open-task>${R.id === 'C' ? '투야에게 답하기' : R.id === 'B' ? '태오에게 답하기' : '빨래하러 가기'}</button>
+    </div>
+  </footer>
+  ${S.view === 'book' ? bookView() : ''}${S.view === 'task' ? taskView() : ''}${S.view === 'done' ? doneView() : ''}`;
+}
+
+function bookView() {
+  const { R } = S;
+  const found = Object.keys(R.words).filter((w) => S.found.has(w));
+  const used = new Set(Object.values(S.pairs));
+  const solvedAll = S.solved;
+  return `<div class="book" data-close><div class="sheet" role="dialog" aria-label="수첩">
+    <h4>수첩 — 모르는 말 ${found.length}개</h4>
+    <p class="sub">${solvedAll ? '다 풀었어요. 이 말들은 다음 게시물에서도 바로 읽혀요.' : '말을 고르고 뜻 카드를 눌러 짝을 지어요. 다 짝지으면 한꺼번에 맞춰 봐요 — 어느 게 틀렸는지는 알려 주지 않아요.'}</p>
+    <div class="pairs">${found.map((w) => {
+      const card = R.cards.find((c) => c.id === (solvedAll ? R.words[w].card : S.pairs[w]));
+      return `<button class="pair ${S.sel === w ? 'sel' : ''} ${solvedAll ? 'solved' : ''}" data-pick="${esc(w)}">
+        <span class="wd">${MASK ? S.tokenOf[w] : esc(w)}</span>
+        <span class="mean ${card ? '' : 'none'}">${card ? svg(card.icon) + esc(card.text) : '뜻 카드를 골라요'}</span></button>`;
+    }).join('')}</div>
+    ${solvedAll ? '' : `<div class="cards">${R.cards.map((c) => `<button class="card ${used.has(c.id) ? 'used' : ''} ${S.sel && S.pairs[S.sel] === c.id ? 'on' : ''}" data-card="${c.id}">${svg(c.icon)}<span>${esc(c.text)}</span></button>`).join('')}</div>`}
+    <p class="msg ${S.msg?.k || ''}">${esc(S.msg?.t || (found.length < Object.keys(R.words).length ? `게시물에서 밑줄 친 말을 더 찾아요 (${found.length} / ${Object.keys(R.words).length})` : ''))}</p>
+    <div class="act" style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn" data-close>게시물 보기</button>
+      ${solvedAll ? '' : `<button class="btn primary" data-check ${found.length && found.every((w) => S.pairs[w]) ? '' : 'disabled'}>한꺼번에 맞춰 보기</button>`}
+    </div></div></div>`;
+}
+
+function taskView() {
+  const { R } = S;
+  const st = R.steps[S.step];
+  const head = `<div class="step">해내기 ${S.step + 1} / ${R.steps.length}</div>`;
+  let body = '';
+  const slotHtml = (slots) => `<div class="slots">${slots.map((sl) => `<div class="slot"><div class="q">${esc(sl.q)}</div><div class="opts">${sl.options.map((o) => `<button class="opt ${S.picks[sl.id] === o.k ? 'on' : ''}" data-opt="${sl.id}:${o.k}">${esc(o.t)}</button>`).join('')}</div></div>`).join('')}</div>`;
+  if (st.type === 'dorm' || st.type === 'pick') {
+    const opts = st.options.map((o) => st.type === 'dorm'
+      ? `<button class="floor ${S.picks.main === o.k ? 'on' : ''}" data-opt="main:${o.k}"><span class="fl">${esc(o.fl)}</span><span class="rm">${esc(o.rm)}</span>${o.me ? '<span class="me">내 층</span>' : ''}</button>`
+      : `<button class="opt ${S.picks.main === o.k ? 'on' : ''}" data-opt="main:${o.k}"><span class="k">${o.k.slice(-1)}</span>${esc(o.t)}</button>`).join('');
+    body = `<h4>${esc(st.q)}</h4><div class="${st.type === 'dorm' ? 'dorm' : 'opts'}">${opts}</div>${st.slots ? slotHtml(st.slots) : ''}`;
+  } else {
+    const reply = st.type === 'reply' ? st.slots.map((sl) => {
+      const o = sl.options.find((x) => x.k === S.picks[sl.id]);
+      return o ? st.say[sl.id].replace('{t}', o.t) : '';
+    }).filter(Boolean).join(' ') : '';
+    body = `${st.bubble ? `<p class="bubble"><b>태오</b> · ${esc(st.bubble)}</p>` : `<h4>${esc(st.q)}</h4>`}
+      ${slotHtml(st.slots)}
+      ${st.type === 'reply' ? `<p class="reply ${reply ? '' : 'ghost'}">${esc(reply || '답장을 골라 채워요')}</p>` : ''}`;
+  }
+  const ready = ((st.type === 'dorm' || st.type === 'pick') ? !!S.picks.main : true) && (st.slots || []).every((sl) => S.picks[sl.id]);
+  return `<div class="task" data-close><div class="sheet" role="dialog" aria-label="해내기">${head}${body}
+    ${S.fail ? `<p class="msg bad">${esc(S.fail)}</p>` : ''}
+    <div class="act" style="display:flex;gap:8px;margin-top:14px"><button class="btn" data-close>게시물 다시 보기</button><button class="btn primary" data-go ${ready ? '' : 'disabled'}>${st.type === 'reply' ? '보내기' : '이걸로!'}</button></div>
+  </div></div>`;
+}
+
+function doneView() {
+  const { R } = S;
+  const secs = Math.round((S.t1 - S.t0) / 1000);
+  const words = Object.keys(R.words);
+  return `<section class="done">
+    <span class="badge">해냈다</span>
+    <h2>${esc(R.win.title)}</h2><p class="react">${esc(R.win.react)}</p>
+    <div class="stats"><div><b>${words.filter((w) => S.solved || book.has(w)).length} / ${words.length}</b><span>푼 말</span></div><div><b>${S.firstTry ? '한 번에' : `${S.misses}번 헤맴`}</b><span>해내기</span></div><div><b>${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}</b><span>걸린 시간</span></div></div>
+    <div class="list">${words.map((w) => { const c = R.cards.find((x) => x.id === R.words[w].card); const ok = S.solved || book.has(w);
+      return `<div class="it"><b>${esc(w)}</b><span>${ok ? esc(c.text) : '아직 못 푼 말 — 다음 게시물에서 또 만나요'}<i>${ok ? '수첩에 들어갔어요' : ''}</i></span></div>`; }).join('')}</div>
+    <div class="act" style="display:flex;gap:8px;margin-top:auto"><button class="btn" data-round="${R.id}">다시 하기</button><button class="btn primary" data-round="${C.rounds[(C.rounds.indexOf(R) + 1) % C.rounds.length].id}">다음 판</button></div>
+  </section>`;
+}
+
+function lightHint(id) { if (!id) return; S.hints.add(id); }
+
+$app.addEventListener('click', (e) => {
+  const t = e.target.closest('button,[data-close]');
+  if (!t) return;
+  const { R } = S;
+  if (t.dataset.round) return start(t.dataset.round);
+  if (t.matches('.w[data-w]')) { const w = t.dataset.w; if (!S.found.has(w)) { S.found.add(w); mark('found', { w }); } else { S.view = 'book'; S.sel = w; } S.msg = null; return render(); }
+  if (t.hasAttribute('data-open-book')) { S.view = 'book'; S.msg = null; S.sel = S.sel || [...S.found].find((w) => !S.pairs[w]) || null; return render(); }
+  if (t.hasAttribute('data-open-task')) { S.view = 'task'; S.fail = null; mark('task-open', { step: S.step }); return render(); }
+  if (t.dataset.pick) { S.sel = t.dataset.pick; return render(); }
+  if (t.dataset.card) {
+    if (!S.sel) { S.sel = [...S.found].find((w) => !S.pairs[w]) || null; if (!S.sel) return; }
+    for (const [w, c] of Object.entries(S.pairs)) if (c === t.dataset.card && w !== S.sel) delete S.pairs[w];
+    S.pairs[S.sel] = t.dataset.card;
+    const next = [...S.found].find((w) => !S.pairs[w]);
+    if (next) S.sel = next;
+    S.msg = null; return render();
+  }
+  if (t.hasAttribute('data-check')) {
+    const words = Object.keys(R.words).filter((w) => S.found.has(w));
+    const ok = words.length === Object.keys(R.words).length && words.every((w) => S.pairs[w] === R.words[w].card);
+    S.tries++; mark('check', { ok, tries: S.tries, pairs: { ...S.pairs } });
+    if (ok) { S.solved = true; for (const w of words) book.add(w); saveBook(); S.msg = { k: 'good', t: '다 맞았어요! 게시물이 술술 읽혀요.' }; }
+    else if (words.length < Object.keys(R.words).length) S.msg = { k: 'bad', t: '짝은 다 맞을 수도 있지만, 게시물에 아직 못 찾은 말이 있어요.' };
+    else {
+      const wrong = words.filter((w) => S.pairs[w] !== R.words[w].card);
+      if (S.tries >= 2) { const w = wrong[0]; lightHint(R.words[w].clue); S.msg = { k: 'bad', t: '아직 틀린 짝이 있어요. 노랗게 빛나는 곳을 다시 읽어 봐요.' }; }
+      else S.msg = { k: 'bad', t: '아직 틀린 짝이 있어요. 게시물을 한 번 더 읽어 볼까요?' };
+    }
+    render();
+    if (!ok) document.querySelector('.book .sheet')?.classList.add('shake');
+    return;
+  }
+  if (t.dataset.opt) { const [slot, k] = t.dataset.opt.split(':'); S.picks[slot] = k; S.fail = null; return render(); }
+  if (t.hasAttribute('data-go')) {
+    const st = R.steps[S.step];
+    const chosen = [...((st.type === 'dorm' || st.type === 'pick') ? [st.options.find((o) => o.k === S.picks.main)] : []), ...(st.slots || []).map((sl) => sl.options.find((o) => o.k === S.picks[sl.id]))];
+    const bad = chosen.find((o) => !o.ok);
+    mark('go', { step: S.step, ok: !bad, picks: { ...S.picks } });
+    if (bad) { S.firstTry = false; S.misses++; S.fail = bad.say; lightHint(bad.why); return render(); }
+    S.step++; S.picks = {}; S.fail = null;
+    if (S.step >= R.steps.length) { S.view = 'done'; S.t1 = performance.now(); mark('done', { secs: Math.round((S.t1 - S.t0) / 1000) }); }
+    return render();
+  }
+  if (t.hasAttribute('data-close') && (t === e.target || t.tagName === 'BUTTON')) { S.view = 'board'; S.sel = null; return render(); }
+});
+
+// 시험 화면 고정용 주소 값
+if (Q.get('tall')) document.documentElement.classList.add('tall');
+if (Q.get('fresh')) { book.clear(); saveBook(); }
+start(Q.get('round') || 'A');
+if (Q.get('found') === 'all') { for (const w of Object.keys(S.R.words)) S.found.add(w); }
+if (Q.get('pair')) { for (const w of Object.keys(S.R.words)) { S.found.add(w); S.pairs[w] = Q.get('pair') === 'all' ? S.R.words[w].card : S.R.cards.find((c) => c.id !== S.R.words[w].card).id; } }
+const v = Q.get('view');
+if (v === 'book') { S.view = 'book'; S.sel = Object.keys(S.R.words)[0]; }
+if (v && v.startsWith('act')) { S.view = 'task'; S.step = Math.min(Number(v.slice(3)) - 1, S.R.steps.length - 1); }
+if (v === 'done') { S.solved = true; S.view = 'done'; S.t1 = S.t0 + 104000; }
+render();
+</script>
+</body>
+</html>
