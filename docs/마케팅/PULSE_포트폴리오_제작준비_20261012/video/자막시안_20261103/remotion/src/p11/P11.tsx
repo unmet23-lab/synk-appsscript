@@ -16,6 +16,8 @@ const FPS = 24;
 const INK = '#0E1320', PAPER = '#F6F3EA', LEMON = '#FFD43B', NAVY = '#17224D';
 const abs = (x: number, y: number, w?: number, h?: number): React.CSSProperties => ({ position: 'absolute', left: x, top: y, width: w, height: h });
 const last = <T,>(a: T[]): T | undefined => a[a.length - 1];
+// 화면 글자에는 마침표를 쓰지 않는다(유호님 11-03) — 물음표 · 느낌표 · 쉼표는 뜻이라 둔다
+const noDot = (s: string) => s.replace(/\.$/, '');
 // 18자가 넘는 문장은 가운데에 가장 가까운 낱말 사이에서 두 줄로 나눈다
 const splitAt = (words: { w: string }[]) => {
   const full = words.map((x) => x.w).join(' ');
@@ -72,13 +74,13 @@ const Ring: React.FC<{ t: number; style: React.CSSProperties; color: string }> =
 // ── A 「S42 결」
 // front: 피사체가 화면 가운데를 다 덮는 컷(9번 선글라스 개)은 뒤로 보내면 낱말이 거의 가려져 앞에 둔다(11-03 자체 검수)
 const BIG_A: { w: string; a: number; b: number; y: number; size: number; front?: boolean }[] = [
-  { w: '외계인.', a: w(0, 0), b: w(0, 4), y: 250, size: 250 },
-  { w: '바닷가.', a: w(0, 4), b: endOf(0) + 0.1, y: 250, size: 250 },
-  { w: '깜짝.', a: w(1, 3), b: endOf(1) + 0.1, y: 300, size: 300 },
-  { w: '특별한 걸.', a: w(2, 2), b: w(3, 0), y: 330, size: 190 },
-  { w: '튼튼.', a: w(4, 2), b: w(5, 0), y: 300, size: 280 },
-  { w: '번쩍.', a: w(5, 5), b: endOf(5) + 0.1, y: 260, size: 300 },
-  { w: '멋있게.', a: w(6, 2), b: endOf(6) + 0.1, y: 1080, size: 200, front: true },
+  { w: '외계인', a: w(0, 0), b: w(0, 4), y: 250, size: 250 },
+  { w: '바닷가', a: w(0, 4), b: endOf(0) + 0.1, y: 250, size: 250 },
+  { w: '깜짝', a: w(1, 3), b: endOf(1) + 0.1, y: 300, size: 300 },
+  { w: '특별한 걸', a: w(2, 2), b: w(3, 0), y: 330, size: 190 },
+  { w: '튼튼', a: w(4, 2), b: w(5, 0), y: 300, size: 280 },
+  { w: '번쩍', a: w(5, 5), b: endOf(5) + 0.1, y: 260, size: 300 },
+  { w: '멋있게', a: w(6, 2), b: endOf(6) + 0.1, y: 1080, size: 200, front: true },
   { w: '외계인?', a: w(7, 1), b: endOf(7) + 0.2, y: 1080, size: 220, front: true },
 ];
 const LookA: React.FC<{ t: number }> = ({ t }) => {
@@ -97,7 +99,7 @@ const LookA: React.FC<{ t: number }> = ({ t }) => {
       <Subject t={t} />
       {/* 머리 줄 · 발 줄 */}
       <div style={{ ...abs(72, 96, 936, 60), zIndex: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: PAPER, textShadow: '0 1px 12px #0008' }}>
-        <span style={{ fontFamily: KO, fontWeight: 700, fontSize: 36, letterSpacing: '-0.03em' }}>외계 · 3살<span style={{ color: LEMON }}>.</span></span>
+        <span style={{ fontFamily: KO, fontWeight: 700, fontSize: 36, letterSpacing: '-0.03em' }}>외계 · 3살</span>
         <span style={{ fontFamily: EN, fontSize: 24, letterSpacing: '0.08em', opacity: 0.8 }}>SUMMER WATER DAY / 01</span>
       </div>
       <div style={{ ...abs(72, 170, 936, 2), zIndex: 20, background: PAPER, opacity: 0.45 }} />
@@ -124,7 +126,7 @@ const LookA: React.FC<{ t: number }> = ({ t }) => {
             <Ring t={t} color={LEMON} style={{ ...abs(700, 1180, 330, 330), zIndex: 9, opacity: ramp(t, 19.5, 0.4) * 0.9 }} />
             <div style={{ ...abs(72, 1110, 620), zIndex: 12, opacity: ramp(t, 19.4, 0.3), transform: `translateY(${(1 - ramp(t, 19.4, 0.4)) * 60}px)` }}>
               <div style={{ fontFamily: EN, fontSize: 24, letterSpacing: '0.1em', color: PAPER, textShadow: '0 1px 10px #0009' }}>LIFE VEST FOR PETS</div>
-              <div style={{ fontFamily: KO, fontWeight: 700, fontSize: 52, letterSpacing: '-0.03em', color: PAPER, marginTop: 10, textShadow: '0 2px 16px #000a' }}>물놀이 가는 날엔.</div>
+              <div style={{ fontFamily: KO, fontWeight: 700, fontSize: 52, letterSpacing: '-0.03em', color: PAPER, marginTop: 10, textShadow: '0 2px 16px #000a' }}>물놀이 가는 날엔</div>
             </div>
           </>
         );
@@ -132,7 +134,7 @@ const LookA: React.FC<{ t: number }> = ({ t }) => {
       {/* 말자막(S42 Caption 결) */}
       {l && !end && (() => {
         const o = life(t, l.at - 0.05, l.end + 0.35, 0.18, 0.14);
-        return <div style={{ ...abs(72, 1500, 936), zIndex: 25, textAlign: 'center', opacity: o }}><span style={{ fontFamily: KO, fontWeight: 650, fontSize: 52, lineHeight: 1.32, color: PAPER, background: '#0E1320e0', boxDecorationBreak: 'clone', WebkitBoxDecorationBreak: 'clone', padding: '10px 22px', borderRadius: 10 }}>{l.words.map((w, i) => <React.Fragment key={i}>{i === splitAt(l.words) ? <br /> : null}<span style={{ color: w.key && t >= w.t ? LEMON : PAPER }}>{w.w}{i < l.words.length - 1 && i + 1 !== splitAt(l.words) ? ' ' : ''}</span></React.Fragment>)}</span></div>;
+        return <div style={{ ...abs(72, 1500, 936), zIndex: 25, textAlign: 'center', opacity: o }}><span style={{ fontFamily: KO, fontWeight: 650, fontSize: 52, lineHeight: 1.32, color: PAPER, background: '#0E1320e0', boxDecorationBreak: 'clone', WebkitBoxDecorationBreak: 'clone', padding: '10px 22px', borderRadius: 10 }}>{l.words.map((w, i) => <React.Fragment key={i}>{i === splitAt(l.words) ? <br /> : null}<span style={{ color: w.key && t >= w.t ? LEMON : PAPER }}>{noDot(w.w)}{i < l.words.length - 1 && i + 1 !== splitAt(l.words) ? ' ' : ''}</span></React.Fragment>)}</span></div>;
       })()}
       <Door t={t} at={w(3, 0)} color={LEMON} />
       <Door t={t} at={19.33} color={NAVY} />
@@ -198,7 +200,7 @@ const LookC: React.FC<{ t: number }> = ({ t }) => {
           const old = i < shown.length - 1;
           return (
             <div key={l.at} style={{ maxWidth: 840, background: old ? '#FFFFFFD9' : '#FFFFFF', color: INK, borderRadius: '34px 34px 34px 10px', padding: '20px 30px', fontFamily: KO, fontWeight: 650, fontSize: 46, lineHeight: 1.32, letterSpacing: '-0.02em', boxShadow: '0 12px 34px #0003', transform: `translateY(${(1 - p) * 40}px) scale(${0.85 + 0.15 * Math.min(1, p)})`, transformOrigin: 'left bottom', opacity: Math.min(1, p) * (old ? 0.75 : 1) }}>
-              {l.words.map((w, k) => <span key={k} style={w.key ? { background: 'linear-gradient(transparent 58%, #FFD43B 58%)', fontWeight: 800 } : undefined}>{w.w}{k < l.words.length - 1 ? ' ' : ''}</span>)}
+              {l.words.map((w, k) => <span key={k} style={w.key ? { background: 'linear-gradient(transparent 58%, #FFD43B 58%)', fontWeight: 800 } : undefined}>{noDot(w.w)}{k < l.words.length - 1 ? ' ' : ''}</span>)}
             </div>
           );
         })}
@@ -227,7 +229,7 @@ const LookC: React.FC<{ t: number }> = ({ t }) => {
         const p = pop(t, 19.4, 0.45);
         return (
           <div style={{ ...abs(64, 1220, 952), zIndex: 22, transform: `translateY(${(1 - Math.min(1, p)) * 200}px)`, opacity: Math.min(1, p) }}>
-            <div style={{ display: 'inline-block', background: '#FFFFFF', color: INK, borderRadius: '34px 34px 34px 10px', padding: '20px 30px', fontFamily: KO, fontWeight: 700, fontSize: 48 }}>물놀이 가는 날엔, <span style={{ background: 'linear-gradient(transparent 58%, #FFD43B 58%)', fontWeight: 900 }}>첨벙댕.</span></div>
+            <div style={{ display: 'inline-block', background: '#FFFFFF', color: INK, borderRadius: '34px 34px 34px 10px', padding: '20px 30px', fontFamily: KO, fontWeight: 700, fontSize: 48 }}>물놀이 가는 날엔, <span style={{ background: 'linear-gradient(transparent 58%, #FFD43B 58%)', fontWeight: 900 }}>첨벙댕</span></div>
             <div style={{ marginTop: 22, background: NAVY, color: '#fff', borderRadius: 30, padding: '26px 34px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: ramp(t, w(8, 3), 0.25) }}>
               <span style={{ fontFamily: KO, fontWeight: 900, fontSize: 64, letterSpacing: '-0.04em' }}>첨벙댕</span>
               <span style={{ fontFamily: KO, fontWeight: 800, fontSize: 30, background: LEMON, color: NAVY, borderRadius: 18, padding: '14px 22px' }}>구명조끼 보기 →</span>

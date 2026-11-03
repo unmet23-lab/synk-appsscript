@@ -51,7 +51,7 @@ const Head: React.FC<{ t: number }> = ({ t }) => {
     <>
       <div style={{ ...abs(64, 540 - d * 330, 952), zIndex: 30, transformOrigin: 'left top', transform: `scale(${1 - d * 0.55})`, opacity: 1 - ramp(t, 1.6, 0.25) }}>
         <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 118, lineHeight: 1.04, letterSpacing: '-0.05em', color: PAPER, textShadow: '0 4px 30px #0007', whiteSpace: 'pre-line', opacity: Math.min(1, pop(t, 0.0, 0.35)) }}>
-          {'제주 2박 3일,\n가는 데마다\n'}<span style={{ color: '#7DF0D3' }}>또 그 사람.</span>
+          {'제주 2박 3일,\n가는 데마다\n'}<span style={{ color: '#7DF0D3' }}>또 그 사람</span>
         </div>
       </div>
       <div style={{ ...abs(64, 200, 952), zIndex: 30, fontFamily: KO, fontWeight: 700, fontSize: 38, letterSpacing: '-0.03em', color: PAPER, textShadow: '0 2px 14px #000a', opacity: ramp(t, 1.62, 0.25), transform: `translateY(${(1 - ramp(t, 1.62, 0.3, EXPO)) * 14}px)` }}>
@@ -114,7 +114,7 @@ const SameScreen: React.FC<{ t: number }> = ({ t }) => {
   );
 };
 
-// 끝 — 제주 위 코스 선 · 핀 열다섯 · 「알고 보니, 같은 코스.」 → 브랜드
+// 끝 — 제주 위 코스 선 · 핀 열다섯 · 「알고 보니, 같은 코스」 → 브랜드
 const End: React.FC<{ t: number }> = ({ t }) => {
   const a = T[16];
   if (t < a) return null;
@@ -138,7 +138,7 @@ const End: React.FC<{ t: number }> = ({ t }) => {
         {pins.map((q, k) => { const s = pop(t, a + 0.1 + k * 0.055, 0.3); return <g key={k} transform={`translate(${q.x} ${q.y}) scale(${s})`}><circle r={k === 0 || k === 14 ? 22 : 15} fill="#fff" stroke={MINT_D} strokeWidth={6} /></g>; })}
       </svg>
       {!brand && <div style={{ ...abs(0, 1120, 1080), textAlign: 'center', fontFamily: MONO, fontSize: 30, color: '#8fd9c6', opacity: ramp(t, a + 0.3, 0.2) }}>15곳 · 인기 1위 코스 · 12,480명</div>}
-      {!brand && <div style={{ ...abs(0, 1220, 1080), textAlign: 'center', fontFamily: KO, fontWeight: 800, fontSize: 104, lineHeight: 1.08, letterSpacing: '-0.05em', color: PAPER, opacity: ramp(t, a + 0.35, 0.25), transform: `translateY(${(1 - ramp(t, a + 0.35, 0.35, EXPO)) * 40}px)` }}>알고 보니,<br /><span style={{ color: '#7DF0D3' }}>같은 코스.</span></div>}
+      {!brand && <div style={{ ...abs(0, 1220, 1080), textAlign: 'center', fontFamily: KO, fontWeight: 800, fontSize: 104, lineHeight: 1.08, letterSpacing: '-0.05em', color: PAPER, opacity: ramp(t, a + 0.35, 0.25), transform: `translateY(${(1 - ramp(t, a + 0.35, 0.35, EXPO)) * 40}px)` }}>알고 보니,<br /><span style={{ color: '#7DF0D3' }}>같은 코스</span></div>}
       {brand && (
         <div style={{ ...abs(0, 900, 1080), textAlign: 'center', opacity: bp, transform: `translateY(${(1 - bp) * 50}px)` }}>
           <div style={{ fontFamily: KO, fontWeight: 700, fontSize: 52, color: PAPER, letterSpacing: '-0.03em' }}>모두가 고른 제주 코스 그대로</div>

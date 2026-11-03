@@ -89,7 +89,7 @@ def end_card_1():
     im = Image.new("RGB", (W, H), (0, 0, 0))
     d = ImageDraw.Draw(im)
     d.text((W // 2, 850), "알고 보니,", font=f("ExtraBold", 132), fill=WHITE, anchor="mm")
-    d.text((W // 2, 1010), "같은 코스.", font=f("ExtraBold", 132), fill=WHITE, anchor="mm")
+    d.text((W // 2, 1010), "같은 코스", font=f("ExtraBold", 132), fill=WHITE, anchor="mm")   # 마침표 없음(결정 11-03)
     return im
 
 
