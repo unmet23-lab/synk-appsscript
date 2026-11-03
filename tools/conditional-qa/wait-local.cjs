@@ -12,6 +12,7 @@ async function wait({ commit, root, runId, read = status, write = publish, cance
   const current = read(commit);
   if (accepted(current, count, manifest.digest)) { console.log(`Local coverage complete: ${count}/${count} at ${commit}`); return; }
   if (current?.state === 'failure' || current?.state === 'error') throw Error(`Local QA has not passed: ${current.description}`);
+  if (current?.state === 'success') throw Error(`Local status does not match this commit's manifest: ${current.description}`);
   if (!current) write(commit, 'pending', `WAIT ${count} local tests manifest=${manifest.digest.slice(0, 16)}`);
   console.log(`Local coverage pending for ${commit.slice(0, 12)} (${count} tests). Offline or unavailable is not a pass. Cancelling this run to free the runner; the worker re-runs it after verification.`);
   if (!/^[0-9]+$/.test(String(runId || ''))) throw Error('Local verification did not finish and this run cannot cancel itself without a run id.');

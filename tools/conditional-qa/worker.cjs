@@ -78,6 +78,24 @@ async function verify(config, commit, output) {
   if (!coverage(receipt, { commit, digest: manifest.digest, cases })) { const error = Error(`Local tests incomplete: ${receipt.passed}/${cases.length}`); error.code = 'TEST_FAILURE'; throw error; }
   return { receipt, count: cases.length, digest: manifest.digest };
 }
+// The flag stays until the commit's runs have settled, so a failed call or a run still in progress is looked at again.
+// Least recently tried first: a commit that cannot settle yet never keeps the others from being looked at.
+function resumeFinished(queue, resume = github.resumeWaitingWorkflow, now = Date.now()) {
+  const flagged = queue.items.filter(row => row.resumePending).sort((a, b) => (a.resumeTriedAt || 0) - (b.resumeTriedAt || 0));
+  for (const item of flagged.slice(0, 10)) {
+    item.resumeTriedAt = now;
+    try { item.resumePending = !resume(item.commit, { localPassed: item.status === 'passed' }); delete item.resumeError; }
+    catch (error) { item.resumeError = error.message.slice(0, 500); }
+  }
+}
+// A commit with a local result and a cancelled run has to be woken even if its item settled earlier. Each attempt of a run is looked at once.
+// A failure that could not be published still reads as running, so waking its run would only cancel it again.
+function markCancelledRuns(queue, cancelled) {
+  for (const item of queue.items) {
+    const run = cancelled.get(item.commit);
+    if (run && (item.status === 'passed' || (item.status === 'failed' && !item.publicationError)) && item.checkedRun !== run) { item.checkedRun = run; item.resumePending = true; }
+  }
+}
 async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring } = {}) {
   const config = loadConfig(stateDir), release = acquire(stateDir), queueFile = path.join(stateDir, 'queue.json'), started = Date.now();
   try {
@@ -93,21 +111,21 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring } = {}
       const commits = git(root, ['rev-list', '--reverse', '--first-parent', `${queue.seen}..${head}`]).split(/\r?\n/).filter(Boolean);
       extendQueue(queue, head, commits); write(queueFile, queue);
     };
+    // Between verifications too: one tick can last two hours while a finished commit's run stays unresolved.
+    const settle = () => { resumeFinished(queue); write(queueFile, queue); };
     refresh();
-    for (const item of queue.items.filter(row => row.status === 'passed' && row.resumePending).slice(0, 10)) {
-      try { item.resumePending = !github.resumeWaitingWorkflow(item.commit); } catch (error) { item.resumeError = error.message.slice(0, 500); }
-    }
-    write(queueFile, queue);
+    try { markCancelledRuns(queue, github.cancelledRuns()); } catch (error) { console.error(`Cancelled runs were not listed: ${error.message}`); }
+    settle();
     // An interrupted process or network publication is resumed; a failed test stays explicitly failed.
     // Each commit is attempted once per tick, so an unavailable API cannot spin on the same publication.
     const attempted = new Set();
-    for (let item; Date.now() - started < budgetMs && (item = nextItem(queue, head, attempted)); refresh()) {
+    for (let item; Date.now() - started < budgetMs && (item = nextItem(queue, head, attempted)); refresh(), settle()) {
       attempted.add(item.commit);
       git(root, ['merge-base', '--is-ancestor', item.commit, head]);
       try {
         if (item.status !== 'publish-pending') {
           advanceTurn(queue);
-          item.status = 'running'; item.startedAt = new Date().toISOString(); write(queueFile, queue);
+          item.status = 'running'; item.startedAt = new Date().toISOString(); delete item.resumePending; write(queueFile, queue);
           github.publish(item.commit, 'pending', 'Running the registered local conditional tests');
           item.output = path.join(stateDir, 'runs', `${item.commit}-${Date.now()}`);
           const result = await verify(config, item.commit, item.output);
@@ -119,9 +137,7 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring } = {}
         const expected = savedManifest.cases.filter(row => row.route === 'local'), digest = sha256(JSON.stringify(savedManifest));
         if (item.digest !== digest || item.count !== expected.length || !receipt.inputsUnchanged || !coverage(receipt, { commit: item.commit, digest, cases: expected })) throw Error('Saved local proof is incomplete');
         github.publish(item.commit, 'success', github.description(item.count, item.digest));
-        item.status = 'passed'; item.endedAt = new Date().toISOString(); delete item.error; write(queueFile, queue);
-        item.resumePending = true;
-        try { item.resumePending = !github.resumeWaitingWorkflow(item.commit); } catch (error) { item.resumeError = error.message.slice(0, 500); }
+        item.status = 'passed'; item.endedAt = new Date().toISOString(); item.resumePending = true; delete item.error; write(queueFile, queue);
       } catch (error) {
         item.error = error.message.slice(0, 1000);
         let publicationState = 'failure', description = 'Local verification incomplete; inspect the private worker receipt';
@@ -131,9 +147,11 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring } = {}
           item.status = disposition.status; item.retryAt = Date.now() + 15 * 60_000;
           ({ publicationState, description } = disposition);
         }
-        try { github.publish(item.commit, publicationState, description); } catch { item.publicationError = true; }
-        // local-coverage has released its runner, so a real failure has to wake it to turn the run red.
-        if (publicationState === 'failure') { try { github.resumeWaitingWorkflow(item.commit); } catch (resumeError) { item.resumeError = resumeError.message.slice(0, 500); } }
+        try {
+          github.publish(item.commit, publicationState, description);
+          // local-coverage has released its runner, so a published failure has to wake it to turn the run red.
+          if (publicationState === 'failure') item.resumePending = true;
+        } catch { item.publicationError = true; }
         write(queueFile, queue);
       }
       write(queueFile, queue);
@@ -153,4 +171,4 @@ if (require.main === module) {
   const promise = args.includes('--initialize') ? Promise.resolve(initialize(stateDir, args[args.indexOf('--initialize') + 1])) : tick(stateDir);
   promise.catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, failureDisposition, due };
+module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns };

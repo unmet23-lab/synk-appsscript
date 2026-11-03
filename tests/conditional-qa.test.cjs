@@ -6,7 +6,7 @@ const root = path.resolve(__dirname, '..'), c = require('../tools/conditional-qa
 const { check } = require('../tools/conditional-qa/guard.cjs');
 const { childRun, temporaryEnvironment, profileBudget } = require('../tools/conditional-qa/run.cjs');
 const { materialize, write, release, prepare } = require('../tools/conditional-qa/inputs.cjs');
-const { extendQueue, nextItem, advanceTurn, acquire, sleptDuring, failureDisposition, due } = require('../tools/conditional-qa/worker.cjs');
+const { extendQueue, nextItem, advanceTurn, acquire, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns } = require('../tools/conditional-qa/worker.cjs');
 const { plan } = require('../tools/conditional-qa/install.cjs');
 const github = require('../tools/conditional-qa/github.cjs');
 const { wait } = require('../tools/conditional-qa/wait-local.cjs');
@@ -340,7 +340,7 @@ test('remote local-status evidence is exact and malformed requests never reach t
   assert.throws(() => github.status('master', () => assert.fail('no network request allowed')), /SHA/);
   assert.throws(() => github.status(commit, () => ({ sha: 'b'.repeat(40), statuses: [] })), /bound/);
 });
-test('offline local verification times out and never manufactures a green status', async () => {
+test('offline local verification releases its runner and never manufactures a green status', async () => {
   const writes = [];
   // Pending never passes and never holds the runner: the job cancels its own run once and gives up if that does not take effect.
   const cancels = [];
@@ -353,27 +353,48 @@ test('offline local verification times out and never manufactures a green status
   await assert.rejects(wait({ root, commit, read: () => ({ state: 'pending' }), cancel: () => assert.fail('no run id, no cancel') }), /without a run id/);
   await assert.rejects(wait({ root, commit, runId: '125', read: () => ({ state: 'pending' }), cancel: () => { throw Error('403'); } }), /403/);
   await assert.rejects(wait({ root, commit, read: () => ({ state: 'failure', description: 'incomplete' }) }), /not passed/);
+  await assert.rejects(wait({ root, commit, runId: '126', read: () => ({ state: 'success', description: 'PASS 1/1 manifest=another' }), cancel: () => assert.fail('a success for another manifest is not pending') }), /does not match/);
 });
 
-// A waiting run ends as cancelled since local-coverage releases its runner (2026-11-04). Only that shape is re-run.
-test('resumeWaitingWorkflow re-runs a run whose only unfinished job is local-coverage', () => {
+// A waiting run ends as cancelled since local-coverage releases its runner (2026-11-04).
+test('resumeWaitingWorkflow wakes a waiting or cancelled run and leaves a real failure red', () => {
   const { resumeWaitingWorkflow, cancelRun } = require('../tools/conditional-qa/github.cjs');
   const commit = 'a'.repeat(40), hosted = conclusion => ({ name: 'hosted (ubuntu-24.04, linux)', conclusion }), local = conclusion => ({ name: 'local-coverage', conclusion });
-  const resume = (conclusion, jobs, status = 'completed') => {
+  const rerun = ['repos/unmet23-lab/synk-appsscript/actions/runs/7/rerun-failed-jobs'];
+  const resume = (conclusion, jobs, { status = 'completed', localPassed, attempt, createdAt, now } = {}) => {
     const posts = [];
-    const settled = resumeWaitingWorkflow(commit, (endpoint, body) => { if (body) { posts.push(endpoint); return null; } return { jobs }; }, () => [{ databaseId: 7, status, conclusion }]);
+    const settled = resumeWaitingWorkflow(commit, { localPassed, now, api: (endpoint, body) => { if (body) { posts.push(endpoint); return null; } return { jobs }; }, list: () => [{ databaseId: 7, status, conclusion, attempt, createdAt }] });
     return { settled, posts };
   };
   for (const conclusion of ['cancelled', 'failure', 'timed_out']) {
     const { settled, posts } = resume(conclusion === 'timed_out' ? 'failure' : conclusion, [hosted('success'), local(conclusion)]);
-    assert.deepEqual(posts, ['repos/unmet23-lab/synk-appsscript/actions/runs/7/rerun-failed-jobs'], conclusion);
+    assert.deepEqual(posts, rerun, conclusion);
     assert.equal(settled, false, conclusion);
   }
-  assert.deepEqual(resume('cancelled', [hosted('cancelled'), local('cancelled')]).posts, [], 'a cancelled hosted job is not a waiting run');
-  assert.deepEqual(resume('failure', [hosted('failure'), local('skipped')]).posts, [], 'a hosted failure stays red');
+  // Hosted jobs cancelled by hand never verified this commit, so they run again with it.
+  assert.deepEqual(resume('cancelled', [hosted('cancelled'), local('cancelled')]).posts, rerun);
+  assert.deepEqual(resume('failure', [hosted('cancelled'), local('failure')]).posts, rerun);
+  // A real hosted failure stays red, whatever the run's conclusion says.
+  assert.deepEqual(resume('failure', [hosted('failure'), local('skipped')]).posts, []);
+  assert.deepEqual(resume('failure', [hosted('timed_out'), local('failure')]).posts, []);
+  assert.deepEqual(resume('cancelled', [hosted('failure'), local('cancelled')]).posts, []);
+  // A failed local result wakes a run that still waits, and the red run it leaves is settled instead of being woken every tick.
+  assert.deepEqual(resume('cancelled', [hosted('success'), local('cancelled')], { localPassed: false }).posts, rerun);
+  const red = resume('failure', [hosted('success'), local('failure')], { localPassed: false });
+  assert.deepEqual(red.posts, []); assert.equal(red.settled, true);
+  // A re-run that keeps ending the same way stops.
+  assert.deepEqual(resume('cancelled', [hosted('success'), local('cancelled')], { attempt: 5 }).posts, rerun);
+  const spent = resume('cancelled', [hosted('success'), local('cancelled')], { attempt: 6 });
+  assert.deepEqual(spent.posts, []); assert.equal(spent.settled, true);
+  // GitHub refuses a re-run a month after the run started, so that run settles instead of being tried forever.
+  const now = Date.parse('2026-12-31T00:00:00Z'), day = 24 * 60 * 60_000;
+  assert.deepEqual(resume('cancelled', [hosted('success'), local('cancelled')], { now, createdAt: new Date(now - 29 * day).toISOString() }).posts, rerun);
+  const expired = resume('cancelled', [hosted('success'), local('cancelled')], { now, createdAt: new Date(now - 31 * day).toISOString() });
+  assert.deepEqual(expired.posts, []); assert.equal(expired.settled, true);
   assert.deepEqual(resume('success', [hosted('success'), local('success')]).posts, []);
   assert.equal(resume('success', [hosted('success'), local('success')]).settled, true);
-  assert.equal(resume(null, [hosted('success'), local(null)], 'in_progress').settled, false);
+  assert.equal(resume(null, [hosted('success'), local(null)], { status: 'in_progress' }).settled, false);
+  assert.equal(resumeWaitingWorkflow(commit, { list: () => [], api: () => assert.fail('no runs, no request') }), true, 'a commit without a run has nothing to wake');
   const cancelled = [];
   cancelRun('99', (endpoint, body) => { cancelled.push([endpoint, body]); return null; });
   assert.deepEqual(cancelled, [['repos/unmet23-lab/synk-appsscript/actions/runs/99/cancel', {}]]);
@@ -436,4 +457,39 @@ test('no conditional job polls the PC; the status check is read-only', () => {
   assert.match(push, /local-coverage:\n\s+needs: hosted/); assert.doesNotMatch(push, /timeout-minutes: 160/);
   assert.doesNotMatch(push, /cancel-in-progress: true|paths(-ignore)?:/, 'no commit is cancelled or filtered out of hosted verification');
   assert.match(status, /schedule:/); assert.match(status, /timeout-minutes: 10/); assert.doesNotMatch(status, /: write/);
+});
+
+test('a finished commit stays flagged until its runs settle, and one cancelled after that is found again', () => {
+  const [a, b, c, d] = ['a', 'b', 'c', 'd'].map(letter => letter.repeat(40));
+  const queue = { items: [{ commit: a, status: 'passed', resumePending: true, resumeError: 'old' }, { commit: b, status: 'failed', resumePending: true }, { commit: c, status: 'passed', resumePending: true }, { commit: d, status: 'passed' }] };
+  const asked = [];
+  resumeFinished(queue, (commit, { localPassed }) => { asked.push([commit, localPassed]); if (commit === c) throw Error('network'); return commit === a; });
+  assert.deepEqual(asked, [[a, true], [b, false], [c, true]]);
+  assert.equal(queue.items[0].resumePending, false); assert.equal(queue.items[0].resumeError, undefined);
+  assert.equal(queue.items[1].resumePending, true, 'a run still in progress is looked at again');
+  assert.equal(queue.items[2].resumePending, true); assert.equal(queue.items[2].resumeError, 'network');
+  const many = { items: Array.from({ length: 12 }, () => ({ commit: a, status: 'passed', resumePending: true })) };
+  let calls = 0; resumeFinished(many, () => { calls++; return true; }); assert.equal(calls, 10);
+  // Ten commits that cannot settle never keep the next one from being looked at.
+  const stuck = { items: Array.from({ length: 12 }, (_, i) => ({ commit: String(i), status: 'passed', resumePending: true })) };
+  const tried = []; resumeFinished(stuck, commit => { tried.push(commit); throw Error('refused'); }, 1);
+  assert.deepEqual(tried, ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']);
+  tried.length = 0; resumeFinished(stuck, commit => { tried.push(commit); return commit === '11'; }, 2);
+  assert.deepEqual(tried.slice(0, 2), ['10', '11']); assert.equal(stuck.items[11].resumePending, false);
+
+  const sweep = { items: [{ commit: a, status: 'passed' }, { commit: b, status: 'failed' }, { commit: c, status: 'queued' }, { commit: d, status: 'passed' }] };
+  markCancelledRuns(sweep, new Map([[a, '1:1'], [b, '2:1'], [c, '3:1']]));
+  assert.deepEqual(sweep.items.map(row => row.resumePending), [true, true, undefined, undefined], 'no local result yet means the run keeps waiting');
+  sweep.items[0].resumePending = false;
+  markCancelledRuns(sweep, new Map([[a, '1:1']])); assert.equal(sweep.items[0].resumePending, false, 'a run that was left alone is not looked at every tick');
+  markCancelledRuns(sweep, new Map([[a, '1:2']])); assert.equal(sweep.items[0].resumePending, true, 'a new attempt cancelled again is');
+  const unpublished = { items: [{ commit: a, status: 'failed', publicationError: true }, { commit: b, status: 'passed', publicationError: true }] };
+  markCancelledRuns(unpublished, new Map([[a, '1:1'], [b, '2:1']]));
+  assert.equal(unpublished.items[0].resumePending, undefined, 'an unpublished failure still reads as running'); assert.equal(unpublished.items[1].resumePending, true);
+
+  const pages = [Array.from({ length: 100 }, (_, i) => ({ id: i, run_attempt: 1, head_sha: i ? `sha${i}` : a })), [{ id: 500, run_attempt: 3, head_sha: a }, { id: 501, run_attempt: 1, head_sha: b }]], asks = [];
+  const found = github.cancelledRuns(endpoint => { asks.push(endpoint); return { workflow_runs: pages[asks.length - 1] }; });
+  assert.equal(found.get(a), '0:1', 'the newest run of a commit counts'); assert.equal(found.get(b), '501:1'); assert.equal(asks.length, 2);
+  assert.match(asks[0], /conditional-qa\.yml\/runs\?branch=master&status=cancelled&per_page=100&page=1$/);
+  assert.equal(github.cancelledRuns(() => ({ workflow_runs: pages[0] }), 1).size, 100);
 });
