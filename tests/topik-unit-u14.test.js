@@ -133,3 +133,25 @@ test('the U14 item batch stays a draft of the listed items, and sets share one t
   for (const item of items) if (item.set) bySet.set(item.set.id, [...(bySet.get(item.set.id) || []), item]);
   for (const members of bySet.values()) assert.equal(new Set(members.map(item => JSON.stringify([item.passage, item.script]))).size, 1);
 });
+
+// drama-judge-7(11-03): 숫자 한 자리를 바꾼 답은 확실한 통과가 아니다.
+test('practice lines with a number: a wrong number never earns a sure pass', async () => {
+  const { judgeLine } = await judge();
+  const wrong = { 'u14-f02': ['44퍼센트', '54퍼센트'], 'u14-f03': ['24퍼센트', '14퍼센트'], 'u14-f04': ['200명', '300명'], 'u14-f05': ['50명', '30명'] };
+  for (const [id, [bad, good]] of Object.entries(wrong)) {
+    const row = content.cafe.frames.find(frame => frame.id === id);
+    const result = judgeLine(specOf(row), { transcript: row.말.replace(good, bad) });
+    assert.equal(result.verdict === 'pass' && result.sure, false, `${id} ${bad}`);
+  }
+});
+
+// 단원 줄도 대사 칸 명세 검수(tools/topik-review.mjs --드라마)를 탄다 — 통과 표시가 있으면 지문이 지금 내용과 같아야 한다.
+test('unit lines: a passed review mark matches the current review unit', async () => {
+  const { unitEpisode } = await import(pathToFileURL(path.join(root, 'tools/lib/topik-unit-lines.mjs')).href);
+  const { dramaReviewRows, dramaReviewStatus } = await import(pathToFileURL(path.join(root, 'tools/lib/drama-spec-review-unit.mjs')).href);
+  const ep = unitEpisode(content);
+  const rows = dramaReviewRows(ep);
+  assert.deepEqual(rows.map(row => row.row.id), lines().map(row => row.id));
+  for (const entry of rows) assert.equal(dramaReviewStatus(entry, ep.id).stale, false, `${entry.row.id}: 검수 뒤 바뀜 — node tools/topik-review.mjs 준비 <이름> --드라마 ${entry.row.id}`);
+});
+

@@ -7,7 +7,7 @@
 // · 점수·등급·감정 판정을 만들지 않는다. 받아 적은 글만으로 발음 오류를 단정하지 않는다. 노트 문구는 제품 글 표에 두고 여기는 종류만 돌려준다.
 import {syllables} from './말하기피드백.mjs';
 
-export const DRAMA_JUDGE_VERSION='drama-judge-6';
+export const DRAMA_JUDGE_VERSION='drama-judge-7';
 // 받아 적은 말이 핵심 말과 HIT만큼 닮으면 말한 것, MISS보다 덜 닮으면 빠진 것으로 본다. 그 사이는 애매라 노트를 주지 않는다(시범값).
 export const HIT=0.8,MISS=0.5;
 // 통째로 이만큼 닮으면 모범 대사나 허용 변형을 그대로 말한 것으로 본다.
@@ -135,12 +135,40 @@ export function minSyllablesOf(spec){
  const own=syllables(spec?.line);
  return Number.isInteger(spec?.minSyllables)&&spec.minSyllables>0?spec.minSyllables:Math.max(2,Math.ceil(own/2));
 }
+// 숫자는 자모 한 글자라 「14퍼센트」 ↔ 「24퍼센트」 · 「300명」 ↔ 「200명」이 0.8을 넘어 같은 말로 잡혔다(drama-judge-7, 11-03 U14).
+// 숫자가 든 핵심 말 · 허용 표현은 그 숫자가 받아 적은 글에 그대로 있을 때만 들린 것으로 본다.
+const digitsOf=value=>String(value??'').match(/\d+/g)||[];
+// 숫자 뒤 퍼센트 꼴 셋(퍼센트 · % · 프로)은 하나로 본다 — 「54%」로 받아 적혀도 핵심 말 「54퍼센트」가 들린 것이다.
+const percentAs=value=>String(value??'').replace(/(\d)\s*(퍼\s?센트|%|프로)/g,'$1퍼센트');
+const said=(word,heard)=>findIn(percentAs(word),percentAs(heard))>=HIT&&digitsOf(word).every(d=>digitsOf(heard).includes(d));
+// 숫자는 「숫자+붙은 꼬리」 덩이로 견준다(Fable 설계 검토 A′, experiences/drama/review/설계검토_숫자판정_20261103.md). 숫자의 역할은 바로 붙은 꼬리가 든다 —
+// 「30명에서 · 110명으로 · 110명이나 · 80명」. 퍼센트 꼴 셋은 하나로, 숫자와 꼬리 사이 띄움은 붙이고, 격조사 · 서술 끝만 뗀다(뜻을 바꾸는 꼬리 에서 · 으로 · 이나 · 부터 · 까지 · 쯤은 남긴다).
+// 그래서 변형에 숫자를 넣을 때는 역할 조사가 붙은 꼴을 우선한다 — 맨 숫자(「110명이에요」) 변형 하나가 그 숫자의 틀린 자리(「110명 더 많아요」)를 모두 연다.
+// 모음으로 끝나는 단위(시 · 위 · 퍼센트) 뒤의 서술격 끝(라서 · 니까 · 고 · 면)과 겹조사(에는 · 에도)도 뗀다(아르곤 drama-judge-7d).
+const STRIP=/(이에요|예요|이었어요|이었습니다|였어요|였습니다|입니다|이고|인데|이라서|이라고|이니까|이면|이야|이지요|이죠|라서|라고|니까|지요|죠|에는|에도|이|가|은|는|을|를|의|도|한테|에게|께|에|고|면|야)$/;
+const chunksOf=value=>(percentAs(value).replace(/(\d)\s+(?=[가-힣])/g,'$1').match(/\d+[가-힣]*/g)||[]).map(chunk=>chunk.replace(STRIP,''));
+/** 들은 말의 숫자 덩이(들린 허용 표현의 덩이는 뺌)가 모범 · 허용 변형에 없으면 어긋난다 — 노트 없이 통과하되 확실한 통과로 세지 않는다.
+ *  들린 허용 표현의 덩이는 맞춘 것이고, 숫자 없는 꼴로 들렸으면(「300명」 대신 「삼백 명」) 그 칸 대표 말의 덩이도 맞춘 것이다.
+ *  들린 칸의 덩이는 모범 · 변형 쪽에서도 뺀다(「밤」이 들렸다고 같은 칸 「8시」를 다른 자리 「8명」의 근거로 쓰지 않는다). */
+function numberOff(spec,heard){
+ const heardChunks=chunksOf(heard);
+ if(!heardChunks.length)return false;
+ const heardSlots=(spec.keys||[]).map(key=>({key,words:[key.word,...(key.alts||[])]})).map(slot=>({...slot,heard:slot.words.filter(word=>said(word,heard))})).filter(slot=>slot.heard.length);
+ const spoken=new Set(heardSlots.flatMap(({key,heard:words})=>[...words,...(words.some(word=>!digitsOf(word).length)?[key.word]:[])].flatMap(chunksOf)));
+ // 들린 칸과는 앞부분으로 견준다 — 허용 표현 「8시부터 10시」가 들렸으면 받아 적은 「10시까지」도 그 칸의 덩이다.
+ const inSlot=(chunk,set)=>set.has(chunk)||[...set].some(head=>chunk.startsWith(head)&&/^[가-힣]/.test(chunk.slice(head.length)));
+ const rest=heardChunks.filter(chunk=>!inSlot(chunk,spoken));
+ if(!rest.length)return false;
+ const slotChunks=new Set(heardSlots.flatMap(slot=>slot.words.flatMap(chunksOf)));
+ const covered=new Set([spec.line,...(spec.variants||[])].flatMap(chunksOf).filter(chunk=>!inSlot(chunk,slotChunks)));
+ return rest.some(chunk=>!covered.has(chunk));
+}
 function keyCheck(spec,heard){
  const missing=[],unsure=[],names=spec.names||[];
  for(const key of spec.keys||[]){
   const words=[key.word,...(key.alts||[])].filter(Boolean);
   if(!words.length||names.some(n=>n&&words.some(w=>w.includes(n))))continue;
-  if(words.some(w=>findIn(w,heard)>=HIT))continue;
+  if(words.some(w=>said(w,heard)))continue;
   // 없다고 보는 것: 한 어절이면 덜 닮았을 때. 여러 어절이면 세 음절 이상 어절 하나가 없거나 어절이 모두 없을 때 — 「있어요」 같은 끝말이 닮아
   // 「질문이 있어요」가 남아 보이는 일을 막고, 「제출 기한」에서 짧은 「제출」만 빠진 것은 단정하지 않는다.
   const absent=w=>{
@@ -207,7 +235,7 @@ export function judgeLine(spec,heard={},{whole=true}={}){
  const n=syllables(transcript),min=minSyllablesOf(spec),speech=Number(heard.speechSeconds)||0;
  if(n<min&&speech>0&&n/speech<MIN_SYLLABLES_PER_SPEECH_SECOND)return {status:'unclear',verdict:null,note:null,sure:false,checks:null};
  const ending=endingCheck(spec,transcript);
- const keys=keyCheck(spec,transcript),flipped=negationOff(spec,transcript);
+ const keys=keyCheck(spec,transcript),numbers=numberOff(spec,transcript),flipped=negationOff(spec,transcript)||numbers;
  // 명시한 허용 변형을 그대로 말한 경우는 원문과 다른 핵심 어휘도 허용한다.
  // 근사 일치는 이 예외가 아니다 — 「정문」을 「후문」으로 바꾸는 오통과를 다시 열지 않는다.
  const literal=value=>String(value??'').normalize('NFC').replace(/[\s\p{P}]/gu,'');
@@ -217,14 +245,14 @@ export function judgeLine(spec,heard={},{whole=true}={}){
  // 핵심 말도 먼저 본다 — 긴 대사에서 짧은 핵심 말 하나를 바꾼 것(「정문」 → 「후문」)도 통째 닮음 0.9를 넘는다(GPT 2차 검수 GA2).
  // 빠진 핵심 말이 있으면 통째 통과가 아니고(아래에서 노트), 확신 없는 핵심 말이 있으면 통과하되 혼자 해냄으로 세지 않는다.
  if(whole&&ending.state!=='off'&&!flipped&&(!keys.missing.length||exactVariant)&&[spec.line,...(spec.variants||[])].some(v=>similarity(v,transcript)>=WHOLE))
-  return {status,verdict:'pass',note:null,sure:ending.state==='ok'&&(exactVariant||!keys.unsure.length),checks:{whole:true,ending,keys,exactVariant,flipped}};
+  return {status,verdict:'pass',note:null,sure:ending.state==='ok'&&(exactVariant||!keys.unsure.length),checks:{whole:true,ending,keys,exactVariant,flipped,numbers}};
  const length={state:n>=min?'ok':'short',min,got:n};
  let note=null;
  if(ending.state==='off')note={kind:'ending',want:ending.want,got:ending.got,at:ending.at};
  else if(length.state==='short')note={kind:'length',min};
  else if(keys.missing.length)note={kind:'missing',word:keys.missing[0]};
  const sure=!note&&ending.state==='ok'&&length.state==='ok'&&!keys.unsure.length&&!flipped;
- return {status,verdict:note?'note':'pass',note,sure,checks:{whole:false,ending,length,keys,flipped}};
+ return {status,verdict:note?'note':'pass',note,sure,checks:{whole:false,ending,length,keys,flipped,numbers}};
 }
 
 /**

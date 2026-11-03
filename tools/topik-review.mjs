@@ -238,13 +238,20 @@ export function dramaSpecTests(spec) {
   return rows;
 }
 // 대본을 새로 읽는다(같은 프로세스에서 고친 대본도 보이게 — ESM은 한 번 읽은 모듈을 기억한다).
+// 단원 글 원고(experiences/topik-units/u*.json)는 tools/lib/topik-unit-lines.mjs가 대본 꼴로 바꿔 같은 단위 · 지문 · 판정으로 검수한다(11-03).
 async function freshEpisodes(files) {
   const out = [];
-  for (const file of files) out.push((await import(`${pathToFileURL(file).href}?at=${Date.now()}-${Math.random().toString(36).slice(2)}`)).default);
+  const { readUnitEpisode } = await import('./lib/topik-unit-lines.mjs');
+  for (const file of files) out.push(file.endsWith('.json') ? readUnitEpisode(file) : (await import(`${pathToFileURL(file).href}?at=${Date.now()}-${Math.random().toString(36).slice(2)}`)).default);
   return out;
 }
+/** 대사 칸 명세 검수가 보는 원천 — 드라마 대본과 단원 글 원고. talk 대사 은행(build-world-speaking-talk.mjs EPISODE_FILES)은 대본만 싣는다. */
+export async function dramaSourceFiles() {
+  const { UNIT_LINE_FILES } = await import('./lib/topik-unit-lines.mjs');
+  return [...(await import('./build-world-speaking-talk.mjs')).EPISODE_FILES, ...UNIT_LINE_FILES];
+}
 export async function dramaUnits(ids = null, { episodes = null } = {}) {
-  const eps = episodes || await freshEpisodes((await import('./build-world-speaking-talk.mjs')).EPISODE_FILES);
+  const eps = episodes || await freshEpisodes(await dramaSourceFiles());
   const map = readJson(SPEAKING_MAP), labels = Object.fromEntries(map.nodes.map(n => [n.id, n.label_ko]));
   const idOf = new Map(map.nodes.filter(n => n.kind !== 'skill').map(n => [n.label_ko, n.id]));
   const tags = list => (list || []).map(label => { const id = idOf.get(label) || null;
@@ -310,7 +317,7 @@ export function markReviewed(text, id, hash) {
 export async function applyToDrama(packet, merged, { at = new Date().toISOString(), file = DRAMA_EVIDENCE_FILE, episodeFiles = null } = {}) {
   const units = packet.units.filter(unit => unit.kind === 'drama');
   if (!units.length) return null;
-  const files = episodeFiles || (await import('./build-world-speaking-talk.mjs')).EPISODE_FILES;
+  const files = episodeFiles || await dramaSourceFiles();
   const now = new Map((await dramaUnits(null, { episodes: await freshEpisodes(files) })).map(u => [u.id, u.hash]));
   const doc = fs.existsSync(file) ? readJson(file) : { task: 'drama-spec-review', rubric: DRAMA_RUBRIC_ID,
     reviewers: [{ stage: 'claude', model: CLAUDE_MODEL }, { stage: 'argon', model: ARGON.label }], results: [] };
@@ -334,7 +341,8 @@ export async function applyToDrama(packet, merged, { at = new Date().toISOString
   for (const f of files) {
     const before = fs.readFileSync(f, 'utf8');
     let text = before;
-    for (const [id, hash] of marks) text = markReviewed(text, id, hash);
+    if (f.endsWith('.json')) text = (await import('./lib/topik-unit-lines.mjs')).markUnitReviewed(text, marks);
+    else for (const [id, hash] of marks) text = markReviewed(text, id, hash);
     if (text !== before) fs.writeFileSync(f, text);
   }
   return { passed: [...marks.values()].filter(Boolean).length, held: [...marks.values()].filter(v => !v).length, skipped };

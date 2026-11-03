@@ -8,10 +8,10 @@
 import {createHash} from 'node:crypto';
 import {DRAMA_JUDGE_VERSION} from './드라마판정.mjs';
 
-// 검수 기준 판(experiences/drama/review/rubric-spec-<판>.md). r1 · r2는 drama-judge-3, r3는 drama-judge-4, r4는 drama-judge-5 묶음의 기준이고, r5가 지금 기준이다(drama-judge-6 — 부정이 어긋나면 확실한 통과로 세지 않음)
+// 검수 기준 판(experiences/drama/review/rubric-spec-<판>.md). r1 · r2는 drama-judge-3, r3는 drama-judge-4, r4는 drama-judge-5 묶음의 기준이고, r5는 drama-judge-6, r6가 지금 기준이다(drama-judge-7 — 숫자가 어긋나면 확실한 통과로 세지 않음 · 단원 글 원고 줄도 검수)
 // (drama-judge-5 — 허용 표현 끝말의 「요」를 뺀 꼴도 반말 확신 · 앱의 바깥 틀은 이야기 속 유학생 주인공과 이야기 밖 코치 목소리, 결정 10-31).
-export const DRAMA_SPEC_RUBRIC='drama-spec-r5';
-export const DRAMA_SPEC_RUBRICS=Object.freeze({'drama-spec-r1':'rubric-spec-r1.md','drama-spec-r2':'rubric-spec-r2.md','drama-spec-r3':'rubric-spec-r3.md','drama-spec-r4':'rubric-spec-r4.md','drama-spec-r5':'rubric-spec-r5.md'});
+export const DRAMA_SPEC_RUBRIC='drama-spec-r6';
+export const DRAMA_SPEC_RUBRICS=Object.freeze({'drama-spec-r1':'rubric-spec-r1.md','drama-spec-r2':'rubric-spec-r2.md','drama-spec-r3':'rubric-spec-r3.md','drama-spec-r4':'rubric-spec-r4.md','drama-spec-r5':'rubric-spec-r5.md','drama-spec-r6':'rubric-spec-r6.md'});
 const stable=value=>Array.isArray(value)?'['+value.map(stable).join(',')+']'
  :value&&typeof value==='object'?'{'+Object.keys(value).sort().map(key=>JSON.stringify(key)+':'+stable(value[key])).join(',')+'}':JSON.stringify(value??null);
 

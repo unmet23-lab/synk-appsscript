@@ -251,3 +251,65 @@ test('negation: an allowed negative phrase only counts when it is actually said'
  assert.equal(judgeLine(spec,{transcript:'선생님 덕분이 아니에요. 감사합니다.'}).sure,false);
  assert.equal(judgeLine(spec,{transcript:'선생님이 아니었으면 큰일 날 뻔했어요. 정말 감사합니다.'}).checks.flipped,false);
 });
+
+// drama-judge-7(11-03): 숫자 한 자리 차이가 자모로는 0.8을 넘어 같은 말로 잡히던 것.
+test('numbers: a different number never earns a sure pass, the same number does', () => {
+ const spec={id:'num',line:'네, 설문에 따르면 샐러드를 고른 학생은 14퍼센트였어요.',minSyllables:9,keys:[{word:'설문에 따르면'},{word:'14퍼센트',alts:['십사 퍼센트','14%']}]};
+ for(const wrong of ['네, 설문에 따르면 샐러드를 고른 학생은 24퍼센트였어요.','설문에 따르면 샐러드는 41퍼센트였어요.']){
+  const result=judgeLine(spec,{transcript:wrong});
+  assert.equal(result.sure,false,wrong);
+  assert.equal(result.checks.numbers,true,wrong);
+ }
+ assert.equal(judgeLine(spec,{transcript:spec.line}).sure,true);
+ assert.equal(judgeLine(spec,{transcript:'설문에 따르면 샐러드는 14%였어요.'}).checks.numbers,false);
+ assert.equal(judgeLine(spec,{transcript:'설문에 따르면 샐러드를 고른 학생은 십사 퍼센트였어요.'}).checks.numbers,false);
+});
+
+test('numbers: a line without numbers is not affected by a number in the answer that a key allows', () => {
+ const spec={id:'num2',line:'학생 300명한테 물어본 결과 아침에는 샌드위치가 1위였어요.',keys:[{word:'300명',alts:['삼백 명']},{word:'물어본 결과'},{word:'샌드위치'}]};
+ assert.equal(judgeLine(spec,{transcript:'학생 200명한테 물어본 결과 아침에는 샌드위치가 1위였어요.'}).sure,false);
+ assert.equal(judgeLine(spec,{transcript:'학생 삼백 명한테 물어본 결과 아침에는 샌드위치가 1위였어요.'}).checks.numbers,false);
+});
+
+// GPT GA2 · Opus r18(11-03): 숫자는 묶음으로 본다 — 변형 하나의 숫자를 모두 말하면 받고, 그 가운데 하나만 떼어 틀린 사실로 말하면 받지 않는다.
+test('numbers: the heard numbers must match one variant as a set', () => {
+ const spec={id:'num3',free:true,line:'평소에 비해 시험 기간에는 밤에 손님이 훨씬 많아요.',minSyllables:9,keys:[{word:'평소에 비해',alts:['평소보다']},{word:'밤',alts:['8시']},{word:'많아요',alts:['늘었어요']}],
+  variants:['평소에 비해 시험 기간 밤에는 손님이 30명에서 110명으로 늘었어요.','평소에 비해 시험 기간 밤에는 손님이 80명 더 많아요.']};
+ assert.equal(judgeLine(spec,{transcript:'평소에 비해 시험 기간에는 밤에 손님이 30명에서 110명으로 늘어서 훨씬 많아요.'}).checks.numbers,false);
+ assert.equal(judgeLine(spec,{transcript:'평소에 비해 시험 기간에는 밤에 손님이 80명 더 많아요.'}).checks.numbers,false);
+ assert.equal(judgeLine(spec,{transcript:'평소에 비해 시험 기간에는 밤에 손님이 30명 늘었어요.'}).checks.numbers,true);
+ assert.equal(judgeLine(spec,{transcript:'평소보다 시험 기간에 밤 8시에 손님이 훨씬 많아요.'}).checks.numbers,false);
+});
+
+// 아르곤 drama-judge-7c(11-03): 들린 칸의 숫자는 변형에서도 빼고, 변형 묶음 여럿을 함께 말해도 받는다.
+test('numbers: a heard key slot removes its numbers from the variants too, and several variant groups may be combined', () => {
+ const spec={id:'num4',free:true,line:'설문에 따르면 학생의 절반이 샌드위치를 골랐습니다.',keys:[{word:'샌드위치'},{word:'절반',alts:['50퍼센트']}],
+  variants:['학생 300명한테 물어본 결과 50퍼센트가 샌드위치를 골랐습니다.','평소에 비해 30명에서 110명으로 늘었어요.','80명 더 많아요.']};
+ assert.equal(judgeLine(spec,{transcript:'학생 300명한테 물어본 결과 절반이 샌드위치를 골랐습니다.'}).checks.numbers,false);
+ assert.equal(judgeLine(spec,{transcript:'샌드위치는 절반, 30명에서 110명으로 80명 늘었어요.'}).checks.numbers,false);
+ assert.equal(judgeLine(spec,{transcript:'샌드위치는 절반, 손님이 30명 늘었어요.'}).checks.numbers,true);
+ assert.equal(judgeLine(spec,{transcript:'학생 200명한테 물어본 결과 절반이 샌드위치를 골랐습니다.'}).checks.numbers,true);
+});
+
+// Fable 설계 검토 A′(11-03): 숫자는 「숫자+붙은 꼬리」 덩이로 본다 — 변형의 「110명이나」 · 「80명 더」가 틀린 자리의 110 · 80을 열지 않는다.
+test('numbers: a number is compared with its attached tail, so a variant number does not open a wrong role', () => {
+ const spec={id:'num5',free:true,line:'평소에 비해 시험 기간에는 밤에 손님이 훨씬 많아요.',minSyllables:7,keys:[{word:'평소에 비해',alts:['평소보다']},{word:'밤',alts:['8시부터 10시','8시']},{word:'많아요',alts:['많아졌어요','늘어났어요']}],
+  variants:['평소에 비해 시험 기간에는 밤 손님이 110명이나 돼요.','평소에 비해 시험 기간 밤에는 손님이 80명 더 많아요.','평소에 비해 시험 기간 밤에는 손님이 30명에서 110명으로 많아졌어요.']};
+ for(const wrong of ['평소에 비해 시험 기간에는 밤에 손님이 110명 더 많아요.','평소에 비해 시험 기간에는 밤에 손님이 80명으로 많아졌어요.','평소보다 시험 기간에는 밤 8시부터 10시까지 손님이 10명에서 110명으로 많아졌어요.','평소보다 시험 기간에는 밤 8시에 손님이 8명 더 많아요.','평소에 비해 시험 기간에는 밤 손님이 110명이에요.'])
+  assert.equal(judgeLine(spec,{transcript:wrong}).checks.numbers,true,wrong);
+ for(const right of ['평소에 비해 시험 기간에는 밤에 손님이 110명으로 늘어났어요.','평소에 비해 시험 기간에는 밤에 손님이 110명이나 와요.','평소에 비해 시험 기간에는 밤에 손님이 80명 늘어났어요.','평소보다 시험 기간 밤 8시부터 10시에 손님이 훨씬 많아요.'])
+  assert.equal(judgeLine(spec,{transcript:right}).checks.numbers,false,right);
+ const pct={id:'pct',line:'설문에 따르면 저녁에는 커피 음료가 54퍼센트로 1위였어요.',keys:[{word:'설문에 따르면'},{word:'54퍼센트',alts:['54%']}]};
+ assert.equal(judgeLine(pct,{transcript:'설문에 따르면 저녁에는 커피 음료가 54%로 1위였어요.'}).checks.numbers,false);
+});
+
+// 아르곤 drama-judge-7d(11-03): 들린 칸의 덩이 뒤에 붙은 조사 · 겹조사 · 모음 뒤 서술격 끝 때문에 맞는 답이 덜 세지 않게.
+test('numbers: particles after a heard key number and copula endings after a vowel do not undercount a right answer', () => {
+ const spec={id:'num6',free:true,line:'평소에 비해 시험 기간에는 밤에 손님이 훨씬 많아요.',keys:[{word:'평소에 비해',alts:['평소보다']},{word:'밤',alts:['8시부터 10시','8시']},{word:'많아요'}]};
+ for(const right of ['평소보다 시험 기간에는 밤 8시부터 10시까지 손님이 훨씬 많아요.','평소보다 시험 기간에는 밤 8시부터 10시에는 손님이 훨씬 많아요.'])
+  assert.equal(judgeLine(spec,{transcript:right}).checks.numbers,false,right);
+ const pct={id:'pct2',line:'설문에 따르면 저녁에는 커피 음료가 54퍼센트로 1위였어요.',keys:[{word:'설문에 따르면'},{word:'54퍼센트',alts:['절반 넘게']}]};
+ assert.equal(judgeLine(pct,{transcript:'설문에 따르면 저녁에는 커피 음료가 54%라서 1위고 제일 많아요.'}).checks.numbers,false);
+ assert.equal(judgeLine(pct,{transcript:'설문에 따르면 저녁에는 커피 음료가 54%로 1위였어요.'}).checks.numbers,false);
+ assert.equal(judgeLine(pct,{transcript:'설문에 따르면 저녁에는 커피 음료가 45%로 1위였어요.'}).checks.numbers,true);
+});
