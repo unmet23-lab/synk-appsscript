@@ -1,0 +1,193 @@
+<title>제2의 나 얼굴 조각</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* 캐스팅 보드 — 같은 식당 · 같은 빛의 웃는 사진을 한 판에 놓고, 고른 장에 코랄 테두리와 순번 도장을 찍는다. */
+:root{
+  --bg:#F2F3EF;--surface:#FFFFFF;--ink:#16201B;--ink-2:#4B5650;--ink-3:#7A847E;--line:#D8DCD4;
+  --accent:#E4553D;--on-accent:#FFFFFF;--pass:#2C6A4D;--look:#A8740E;--redo:#B23A2D;
+  --sans:'SUIT Variable',SUIT,system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1311;--surface:#171C19;--ink:#EDF1EC;--ink-2:#A8B2AB;--ink-3:#7C8680;--line:#29302C;
+  --accent:#FF7A63;--on-accent:#1A0B07;--pass:#7FC59D;--look:#E3B44C;--redo:#F08A7E;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1311;--surface:#171C19;--ink:#EDF1EC;--ink-2:#A8B2AB;--ink-3:#7C8680;--line:#29302C;
+  --accent:#FF7A63;--on-accent:#1A0B07;--pass:#7FC59D;--look:#E3B44C;--redo:#F08A7E;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:22px}
+h1{font-size:clamp(26px,4vw,38px);line-height:1.15;margin:0;letter-spacing:-.02em;text-wrap:balance}
+.lede{margin:0;color:var(--ink-2);max-width:68ch}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;padding-block:10px;border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.count{font-weight:800;font-size:18px;font-variant-numeric:tabular-nums}
+.count small{font-weight:500;color:var(--ink-3);font-size:13px;margin-left:6px}
+.count.ok{color:var(--pass)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:999px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.save{margin-left:auto;display:flex;gap:10px;align-items:center}
+.btn{border:0;border-radius:999px;padding:9px 18px;font:inherit;font-weight:700;cursor:pointer;background:var(--accent);color:var(--on-accent)}
+.btn:disabled{opacity:.45;cursor:default}
+.status{font-size:13px;color:var(--ink-3)}
+:is(button,[tabindex]):focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(212px,1fr));gap:16px}
+.card{position:relative;background:var(--surface);border-radius:var(--r);overflow:hidden;box-shadow:0 0 0 1px var(--line);display:flex;flex-direction:column}
+.card.on{box-shadow:0 0 0 3px var(--accent)}
+.photo{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;cursor:zoom-in;border:0;padding:0;background:var(--line)}
+.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.stamp{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-weight:800;font-variant-numeric:tabular-nums;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.region{position:absolute;top:10px;left:10px;background:rgba(10,14,12,.62);color:#fff;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600;backdrop-filter:blur(6px)}
+.meta{padding:12px 14px 14px;display:grid;gap:8px;min-width:0}
+.meta-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.id{font-weight:800;font-size:15px;letter-spacing:.01em}
+.kind{color:var(--ink-3);font-size:13px}
+.check{font-size:12.5px;color:var(--ink-2);display:flex;gap:6px;align-items:flex-start}
+.dot{flex:none;width:9px;height:9px;border-radius:50%;margin-top:5px;background:var(--ink-3)}
+.dot.pass{background:var(--pass)}.dot.look{background:var(--look)}.dot.redo{background:var(--redo)}
+.pick{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;padding:8px;font:inherit;font-weight:700;cursor:pointer}
+.card.on .pick{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.note{font-size:13px;color:var(--ink-3);max-width:80ch;display:grid;gap:6px}
+.note h2{font-size:15px;color:var(--ink);margin:0}
+.note p{margin:0}
+dialog{border:0;border-radius:18px;padding:0;max-width:min(920px,calc(100vw - 32px));background:var(--surface);color:var(--ink)}
+dialog::backdrop{background:rgba(5,8,6,.6)}
+.big{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:0}
+.big img{width:100%;height:100%;max-height:82vh;object-fit:cover;display:block}
+.side{padding:22px;display:grid;gap:16px;align-content:start;min-width:0}
+.idcard{border-radius:14px;padding:14px;display:grid;grid-template-columns:86px 1fr;gap:12px;align-items:center;background:linear-gradient(135deg,#1F4D3E,#173A2F);color:#F3F6F1}
+.idcard img{width:86px;height:108px;object-fit:cover;border-radius:8px}
+.idcard .school{font-size:11px;letter-spacing:.12em;opacity:.75}
+.idcard .nm{font-size:19px;font-weight:800;margin:2px 0}
+.idcard .sub{font-size:12.5px;opacity:.85}
+.close{justify-self:end;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:6px 14px;font:inherit;cursor:pointer}
+.detail{font-size:13.5px;color:var(--ink-2);display:grid;gap:4px}
+@media (max-width:640px){.big{grid-template-columns:1fr}.big img{max-height:52vh}.save{margin-left:0;width:100%}}
+@media (prefers-reduced-motion:no-preference){.card{transition:box-shadow .15s ease}}
+</style>
+
+<div class="wrap">
+  <header style="display:grid;gap:10px">
+    <h1>제2의 나 얼굴 조각 — 시즌 1 후보</h1>
+    <p class="lede">학생이 고르는 「제2의 나」 얼굴이에요. 모두 지어낸 사람이고, 같은 빈 학생 식당 · 3월 낮 · 친구 폰으로 찍은 웃는 순간으로 구워 얼굴만 견줄 수 있게 했어요. 이 사진이 그대로 학생증과 추억 사진의 기준이 돼요. <b>12~16개</b>를 골라 저장해 주세요.</p>
+  </header>
+
+  <div class="bar" role="toolbar" aria-label="고르기">
+    <span class="count" id="count">0 <small>/ 12~16 고름</small></span>
+    <div class="chips" id="regions" aria-label="지역"></div>
+    <div class="chips" id="genders" aria-label="성별"></div>
+    <div class="save">
+      <span class="status" id="status" role="status">저장 기능을 불러오는 중이에요.</span>
+      <button class="btn" id="save" type="button" disabled>고른 것 저장</button>
+    </div>
+  </div>
+
+  <main class="grid" id="grid" aria-label="얼굴 조각"></main>
+
+  <section class="note">
+    <h2>공개 전 실존 인물 대조</h2>
+    <p>조각마다 세 가지를 봤어요. ① 얼굴만 잘라 구글 렌즈로 역검색하고, 배우 프로필 · 위키 같은 공인 사진 가운데 얼굴이 가까운 것이 있는지 숫자로 견줬어요. ② Gemini와 GPT에 따로, 이름은 묻지 않고 「유명인을 본뜬 얼굴로 오해받을 만큼 특정한 인상인가」를 물었어요. ③ 하나라도 걸리면 얼굴 특징 둘 이상을 바꿔 다시 구웠고, 애매한 것은 사진을 나란히 놓고 눈으로 정했어요.</p>
+    <p>점은 결과예요 — <span style="color:var(--pass)">●</span> 통과 · <span style="color:var(--look)">●</span> 눈으로 본 뒤 통과 · <span style="color:var(--redo)">●</span> 다시 굽는 중.</p>
+  </section>
+</div>
+
+<dialog id="view" aria-labelledby="view-title">
+  <div class="big">
+    <img id="view-img" alt="">
+    <div class="side">
+      <button class="close" type="button" id="view-close">닫기</button>
+      <h2 id="view-title" style="margin:0;font-size:22px"></h2>
+      <div class="detail" id="view-detail"></div>
+      <div>
+        <div style="font-size:12px;color:var(--ink-3);margin-bottom:6px">학생증 보기(이름 · 꿈은 보기용)</div>
+        <div class="idcard"><img id="card-img" alt=""><div><div class="school">SAESOL UNIV · 국제학부</div><div class="nm" id="card-name"></div><div class="sub" id="card-sub"></div></div></div>
+      </div>
+      <button class="btn" type="button" id="view-pick"></button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+const 조각들 = /*__조각__*/[];
+const 보기이름 = {mn:['바트에르덴','어용게렐','알탄'],uz:['자수르','말리카'],kz:['아르만','아이게림'],vn:['투안','마이'],th:['나팟'],id:['시티'],in:['아르준'],np:['수니타'],et:['다윗'],ng:['치오마'],pl:['카밀'],fr:['클로에'],nl:['사샤']};
+const 나라 = {mn:'몽골',uz:'우즈베키스탄',kz:'카자흐스탄',vn:'베트남',th:'태국',id:'인도네시아',in:'인도',np:'네팔',et:'에티오피아',ng:'나이지리아',pl:'폴란드',fr:'프랑스',nl:'네덜란드'};
+let 고름 = [], 지역 = '전체', 성별 = '전체', db = null, 저장본 = '[]';
+const $ = (s) => document.querySelector(s);
+const 점 = (d) => !d ? '' : /다시/.test(d.판정) ? 'redo' : /눈/.test(d.판정) ? 'look' : /통과/.test(d.판정) ? 'pass' : '';
+const 이름 = (c) => { const k = c.id.split('-')[0], list = 보기이름[k] || ['민']; const i = c.성별 === '여' ? 1 : c.성별 === '중성적' ? 2 : 0; return list[Math.min(i, list.length - 1)]; };
+
+function chips(el, 값들, 지금, 고르기) {
+  el.textContent = '';
+  for (const v of 값들) { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = v; b.setAttribute('aria-pressed', String(v === 지금)); b.onclick = () => 고르기(v); el.append(b); }
+}
+function 그리기() {
+  chips($('#regions'), ['전체', ...new Set(조각들.map((c) => c.묶음))], 지역, (v) => { 지역 = v; 그리기(); });
+  chips($('#genders'), ['전체', '남', '여', '중성적'], 성별, (v) => { 성별 = v; 그리기(); });
+  const n = 고름.length, cnt = $('#count');
+  cnt.firstChild.nodeValue = `${n} `; cnt.classList.toggle('ok', n >= 12 && n <= 16);
+  const grid = $('#grid'); grid.textContent = '';
+  for (const c of 조각들) {
+    if ((지역 !== '전체' && c.묶음 !== 지역) || (성별 !== '전체' && c.성별 !== 성별)) continue;
+    const on = 고름.includes(c.id), card = document.createElement('article');
+    card.className = `card${on ? ' on' : ''}`;
+    card.innerHTML = `<button class="photo" type="button" aria-label="${c.id} 크게 보기"><img alt="" loading="lazy"></button>`
+      + `<span class="region"></span>${on ? `<span class="stamp" aria-hidden="true">${고름.indexOf(c.id) + 1}</span>` : ''}`
+      + `<div class="meta"><div class="meta-top"><span class="id"></span><span class="kind"></span></div><div class="check"><i class="dot ${점(c.대조)}"></i><span></span></div><button class="pick" type="button" aria-pressed="${on}">${on ? '고름 ✓' : '고르기'}</button></div>`;
+    card.querySelector('img').src = c.그림;
+    card.querySelector('.region').textContent = c.지역;
+    card.querySelector('.id').textContent = c.id;
+    card.querySelector('.kind').textContent = `${c.성별} · ${c.얼굴형}`;
+    card.querySelector('.check span').textContent = c.대조 ? c.대조.판정 : '대조 전';
+    card.querySelector('.photo').onclick = () => 보기(c);
+    card.querySelector('.pick').onclick = () => 토글(c.id);
+    grid.append(card);
+  }
+  상태();
+}
+function 토글(id) { 고름 = 고름.includes(id) ? 고름.filter((x) => x !== id) : [...고름, id]; 그리기(); }
+function 보기(c) {
+  $('#view-img').src = c.그림; $('#card-img').src = c.그림;
+  $('#view-title').textContent = `${c.id} · ${c.지역}`;
+  const d = c.대조, det = $('#view-detail'); det.textContent = '';
+  const add = (t) => { const p = document.createElement('div'); p.textContent = t; det.append(p); };
+  add(`${c.성별} · ${c.얼굴형}${c.다시 ? ` · ${c.다시}` : ''}`);
+  if (d) { add(`실존 대조: ${d.판정}`); add(`역검색 ${d.렌즈} · Gemini ${d.gemini} · GPT ${d.gpt}`); if (d.메모) add(d.메모); }
+  const k = c.id.split('-')[0];
+  $('#card-name').textContent = 이름(c); $('#card-sub').textContent = `${나라[k] || ''} · 1학년 · 꿈: 배우`;
+  const pick = $('#view-pick'), sync = () => { pick.textContent = 고름.includes(c.id) ? '고름 풀기' : '이 얼굴 고르기'; };
+  sync(); pick.onclick = () => { 토글(c.id); sync(); };
+  $('#view').showModal();
+}
+$('#view-close').onclick = () => $('#view').close();
+$('#view').addEventListener('click', (e) => { if (e.target === $('#view')) $('#view').close(); });
+
+function 상태(글) {
+  const 바뀜 = JSON.stringify(고름) !== 저장본;
+  $('#save').disabled = !db || !바뀜;
+  if (글) $('#status').textContent = 글;
+  else if (db) $('#status').textContent = 바뀜 ? '저장하지 않은 고름이 있어요.' : (저장본 === '[]' ? '아직 저장한 고름이 없어요.' : '저장한 그대로예요.');
+}
+$('#save').onclick = async () => {
+  if (!db) return;
+  $('#save').disabled = true; 상태('저장하는 중…');
+  try {
+    await db.doc('picks/yuho').set({ ids: 고름, at: new Date().toISOString() });
+    저장본 = JSON.stringify(고름); 상태(`저장했어요 — ${고름.length}개.`);
+  } catch (e) { 상태(`저장하지 못했어요(${e?.code || e?.message || '알 수 없음'}). 고른 번호를 채팅으로 알려 주셔도 돼요: ${고름.join(', ')}`); $('#save').disabled = false; }
+};
+
+그리기();
+(async () => {
+  const 시한 = setTimeout(() => { if (!db) 상태('이 화면에서는 저장할 수 없어요. 고른 번호를 채팅으로 알려 주세요.'); }, 10000);
+  try {
+    db = await window.claude?.use?.('db') ?? null;
+    if (!db) { clearTimeout(시한); 상태('이 화면에서는 저장할 수 없어요. 고른 번호를 채팅으로 알려 주세요.'); return; }
+    const snap = await db.doc('picks/yuho').get();
+    clearTimeout(시한);
+    const ids = snap?.data?.()?.ids ?? snap?.data?.ids ?? null;
+    if (Array.isArray(ids)) { 고름 = ids.filter((id) => 조각들.some((c) => c.id === id)); 저장본 = JSON.stringify(고름); }
+    그리기();
+  } catch (e) { clearTimeout(시한); db = null; 상태('저장한 고름을 읽지 못했어요. 고른 번호를 채팅으로 알려 주셔도 돼요.'); }
+})();
+</script>

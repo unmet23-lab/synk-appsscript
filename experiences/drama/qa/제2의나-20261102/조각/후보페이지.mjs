@@ -40,7 +40,7 @@ const 조각들 = 쌍.map(([id, 그림]) => {
     대조: d ? { 판정: d.판정, 렌즈: d.렌즈 ? `${d.렌즈.판정} · 공인 카드 최고 ${d.렌즈.공인최고 ?? '-'}` : '안 돌림', gemini: d.gemini || '-', gpt: d.gpt || '-', 메모: d.메모 || '' } : null };
 });
 
-const 틀 = fs.readFileSync(path.join(여기, '후보페이지.html'), 'utf8');
+const 틀 = fs.readFileSync(path.join(여기, '후보페이지.htm'), 'utf8');
 let html = 틀.replace('/*__조각__*/[]', JSON.stringify(조각들));
 html = 폰트.심기(html).html;
 fs.mkdirSync(밖, { recursive: true });
