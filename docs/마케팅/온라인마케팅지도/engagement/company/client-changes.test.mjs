@@ -62,6 +62,19 @@ test('casting model and styling changes produce readable before and after summar
   const view=report(row),diff=view.changes.find(item=>item.id==='strategy:castingSelection');assert.equal(view.changes.length,1);assert.equal(diff.label,'모델·스타일 선택');assert.match(diff.before,/모델: 이안 \(M01\)/);assert.match(diff.after,/모델: 유나 \(F01\)/);assert.match(diff.before,/헤어: 긴 생머리/);assert.match(diff.after,/헤어: 단발/);assert.doesNotMatch(diff.before+diff.after,/목소리|undefined/);assert.match(diff.before,/자켓: 없음/);assert.match(diff.before,/상의: 셔츠/);assert.match(diff.before,/하의: 데님/);assert.match(diff.after,/기타·메모: 파란 셔츠/);assert.doesNotMatch(JSON.stringify(diff),/\[object Object\]/);assert.deepEqual(customerClientChanges(row).changes,[diff]);assert.equal(view.status,'pending');
 });
 
+// 검수 GPT GA1(11-03): 목소리를 뺀 판이 나가도 그 전 판에서 끝낸 변경 검토는 풀리지 않는다. 그 전 판은 모델이 있을 때 저장된 목소리를 읽어
+// changeKey에 넣었으므로, 새 판도 검토 완료 표시를 셀 때만 같은 규칙으로 센다(화면 · 비교 글에는 목소리가 없다).
+test('a change review finished before the voice was withdrawn stays reviewed, and the key still counts a stored voice only with a model',()=>{
+  let row=raw();row.studio.strategy.data.castingSelection={...row.studio.strategy.data.castingSelection,modelId:'F01',voice:'B'};
+  row=change(capture(row));row.studio.strategy.data.castingSelection.voice='B';
+  const blank=structuredClone(row);blank.studio.strategy.data.castingSelection.voice='';
+  assert.notEqual(report(row).changeKey,report(blank).changeKey,'a stored legacy voice with a model counts in the key as the previous release counted it');
+  const noModel=structuredClone(row),noModelBlank=structuredClone(blank);for(const item of [noModel,noModelBlank])item.studio.strategy.data.castingSelection.modelId='';
+  assert.equal(report(noModel).changeKey,report(noModelBlank).changeKey,'without a model the previous release already read the voice as empty');
+  row=reviewed(confirm(row));const view=report(row);
+  assert.equal(view.status,'reviewed');assert.equal(view.pendingCount,0);assert.equal(view.canAdvance,true);assert.doesNotMatch(JSON.stringify(view.changes),/목소리|"voice"/);
+});
+
 test('casting clearing and legacy absent defaults distinguish real selection changes from schema additions',()=>{
   let row=capture(raw());delete row.changeControl.baseline.strategy.castingSelection;assert.equal(report(row).changes.length,0);assert.equal(report(row).status,'clean');
   row=change(row,{castingSelection:{...row.studio.strategy.data.castingSelection,modelId:'F04',hair:'wave'}});let diff=report(row).changes.find(item=>item.id==='strategy:castingSelection');assert.equal(diff.before,'고르지 않음');assert.match(diff.after,/모델: 지유 \(F04\)/);assert.match(diff.after,/헤어: 웨이브/);
