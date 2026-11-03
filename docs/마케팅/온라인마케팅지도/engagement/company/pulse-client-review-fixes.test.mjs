@@ -97,8 +97,8 @@ test('the saved notice lets clicks through and sits under the header on wide scr
 });
 
 test('clothing choices follow each model gender from the catalog, so the six later models get the same rule as the first seven',()=>{
-  assert.deepEqual(CASTING_MODELS.filter(model=>model.gender==='남').map(model=>model.id),['M01','M02','M03','M04','M05','M06']);
-  assert.deepEqual(CASTING_MODELS.filter(model=>model.gender==='여').map(model=>model.id),['F01','F02','F03','F04','F05','F06','F07']);
+  assert.deepEqual(CASTING_MODELS.filter(model=>model.gender==='남').map(model=>model.id),['M01','M02','M03','M04','M05','M06','M07','M08','M09','M10']);
+  assert.deepEqual(CASTING_MODELS.filter(model=>model.gender==='여').map(model=>model.id),['F01','F02','F03','F04','F05','F06','F07','F08','F09','F10','F11']);
   for(const model of CASTING_MODELS){
     const html=castingView({modelId:model.id}),male=model.gender==='남';
     assert.equal(html.includes('name="cast_top" value="blouse"'),!male,model.id+' blouse');

@@ -451,6 +451,7 @@
   - 이어서(18:4x, 유호님 로그인 뒤): 로그인해도 통로가 안 열렸고, **`--startup-ego-browser-service` · `--no-first-run`을 빼고 `ego.exe --user-data-dir="…\User Data gemini-b" --ego-server-name=gemini-b`로 다시 띄우자** `\\.\pipe\mojo.CitroLabs.ego.0.6.2.5.gemini-b`가 생기고 `ego-browser --ego-server-name=gemini-b nodejs`가 붙었다(프로필 「유호」 · 「내 ego」). 그 창의 계정 번호는 `/u/0` unmet23 · `/u/1` unmet25 · `/u/2` unmet27 — 실행기의 b 줄 번호(`/u/1`)가 그대로 맞는다. 공용 차례에는 「b만 잡기」가 없으므로, 사슬은 `--두줄`로 서되 **잡은 줄이 b면 두 번째 브라우저, a면 메인 브라우저로 보낸다**(`idol_fresh_20261101/굽기_세트2.sh` · `굽기_새컷2.sh`의 `EGO=` 한 줄, 작업 줄은 `굽기_줄3.sh 줄a.txt` · `줄b.txt` 둘). 첫 b 차례의 「확인」 줄(첨부 수 · Argon 높음 · 계정)은 아래에 덧붙인다.
   - 결과(18:42~18:57, F11 세트 6장 · 참조 1장): 두 번째 브라우저에서 여섯 장 모두 「계정 unmet25」 · 「Argon 높음」 · 확인 `blobs 1 = want 1 · ok`, 받은 그림 1792×2400 원본, 대표와 닮음 0.51(옆)~0.93 — **된다**. 「숨은 파일 칸 없음 → 파일 업로드 메뉴」와 첫 장 「no original url → 대화 주소로 다시 받기」는 메인 브라우저와 같은 흐름이다. 빨라지는 폭은 공용 차례가 정한다 — 다른 세션이 두 줄을 쥐고 있으면 내 번호표가 둘일 뿐이라 1.5배 안팎, 줄이 빌 때만 2배에 가깝다.
   - 프로필 새로 만들기(11-03 01:4x, 유호님 「왜 자동으로 unmet23으로 로그인되어있지? 아예 다시 새로운 프로필로 … unmet25만 로그인해놓을게」): 첫 실행 때 크롬 프로필 「유호」를 가져오면서 크롬의 구글 쿠키(unmet23 · unmet27)가 딸려 왔다. 두 번째 브라우저를 끄고(`User Data gemini-b`를 쓰는 ego.exe 전부) 옛 폴더를 `User Data gemini-b_옛판_unmet23딸림_20261103`으로 돌린 뒤, 빈 폴더로 `ego.exe --user-data-dir="%LOCALAPPDATA%\Citro Labs\ego lite\User Data gemini-b" --ego-server-name=gemini-b`를 띄워 **첫 실행에서 크롬 가져오기를 건너뛰고 unmet25만 로그인**(유호님 손). 이 프로필에서는 unmet25가 하나뿐이라 `/u/0`이 된다 — b 차례 실행기의 계정 번호를 그 창 표시로 확인해 맞춘다(옛 `/u/1` 그대로면 「계정 다름」).
+  - 새 프로필 첫 차례가 0장(11-03 02:19 · 02:23, M09 세트 1차 · F09 새컷 3차): 실행기 출력에 `A browser permission prompt for notifications has appeared. The user now controls this task space.` — 새 프로필이라 Gemini가 알림 권한을 물었고, ego가 작업 공간을 사람 손으로 넘겨 그 차례가 통째로 0장, 사슬은 「0장 — 멈춤」으로 그 멤버 줄을 버렸다(앞서 01:38에는 첫 실행 마법사 때문에 `Please complete the onboarding process first`로 같은 0장). 고침: 창은 누르지 않고 `gemini-b.off`로 b를 끈 뒤, 두 번째 브라우저를 끄고 `ego.exe --user-data-dir="…\User Data gemini-b" --ego-server-name=gemini-b --disable-notifications`로 다시 띄웠다(알림 자체가 없어 창이 안 뜸 — 「차단」과 같은 결과, 로그인은 그대로). `/u/1`은 이 프로필에서 `/u/0`으로 넘어가므로 `run-batch.mjs`가 b 줄이면 `/u/0`을 열어 unmet25인지 보고 주소 번호(`uacc`)를 0으로 바꾼다(`gen.mjs`는 그 번호로 열고 대화 주소를 맞춘다). 다시 확인: 같은 브라우저에서 `/u/0/images`를 15초 열어 둬도 넘김 문구가 없고 `Notification` 객체가 없음, 계정 표시 unmet25 · 「업로드 및 도구」 단추 있음 → `.off.풀림_0234`. 0장으로 버려진 줄(M09 세트 · F09 새컷 남은 일곱)은 줄 파일에 다시 넣었다.
 
 ### 받기가 미리보기 주소(lh3)로 떨어지면 896×1200 작은 판이 원본처럼 저장된다 — 받은 뒤 크기를 잰다 (2026-10-31 Claude)
 - 증상: 막내 세트 오른쪽 옆 컷이 896×1200(다른 컷의 절반)으로 저장됐다. 단계 기록의 그림 주소가 `blob:` 아닌 `https://lh3.googleusercontent.com/gg/…`였고 받기 단추를 두 번 더 누른 뒤 50만 바이트로 받음 — Fable 세트 검수가 「원본의 절반」으로 짚을 때까지 몰랐다.
@@ -874,6 +875,24 @@
 - 원인: 기준 사진은 입 다문 미소인데 셀카는 이를 드러내 크게 웃고, 앞카메라 광각 · 기울기와 작은 얼굴이 겹친다. 손이 얼굴을 가리면 더 떨어진다(손하트를 볼에 대면 0.83, 앞머리를 쓸어 올리면 0.65~0.73).
 - 고침: 숫자는 다른 사람 차단만 맡긴다(다른 사람끼리 최고 0.47 → 0.55). 후보를 F1 · 웃는 기준과 같은 크기 얼굴로 나란히 두고 눈꼬리 · 눈썹 · 코끝 · 앞머리 결 넷을 보며, 옛 얼굴 · 비슷한 후보를 미끼로 섞어 짝을 고르는 줄세우기를 Fable에 맡긴다. 관문 숫자는 그 인물의 승인 사진끼리 닮음으로 맞추고, 다른 인물의 값을 옮겨 쓰지 않는다. 포즈 줄에는 「손은 가슴 높이 · 눈썹 위」를 적는다.
 - 다시 확인: `셀카/README.md` 7~10차의 표, 얼굴만 나란히 모은 한 장에서 눈으로 같은 사람인지 본 뒤 숫자를 읽는다.
+
+### 「90도 옆모습」을 시켜도 3/4 얼굴로 나온다 — 먼 쪽 눈 · 볼이 안 보인다고 못박고 몸까지 돌린다 (2026-11-03 Claude)
+- 증상: 아이돌 스타일 v4 세트에서 리드보컬 F11 · 비주얼 M09의 `angle-left` · `angle-right`가 고개만 반쯤 돌린 3/4 얼굴로 나왔다(먼 쪽 눈 · 볼이 보임). 지시문은 「side profile」 한 마디였다.
+- 원인: 대표 사진이 정면이라 Gemini가 얼굴을 덜 돌린 쪽으로 끌려간다 — 「옆모습」만으로는 몸 · 어깨 방향이 정해지지 않는다.
+- 고침: `세트새컷_v4.py`의 옆 컷 문장을 「Upper body from the waist up, a strict 90-degree side profile, not a three-quarter view: her head, shoulders and whole body turned fully toward the left edge of the frame so the camera sees only the profile line of her forehead, nose, lips and chin, one eye and one ear; the far eye and far cheek are completely hidden」으로 바꾸고 다문 입 · 코 방향 시선 한 줄을 더했다. 앞 판은 `세트v4/_앞판/`.
+- 다시 확인: 다시 구운 F11 · M09 옆 컷 넷과 그 뒤 M07 · M10 옆 컷이 모두 먼 쪽 눈 없이 코끝 · 턱선만 보였다(`세트v4/_<코드>_판.jpg`).
+
+### 시스루 앞머리 · 커튼 뱅이 컷마다 무거운 풀뱅으로 되돌아간다 — 지시문 맨 끝에 머리 한 줄을 「Most important」로 다시 쓴다 (2026-11-03 Claude)
+- 증상: 리더 F08(성긴 시스루 앞머리)의 33장 가운데 6장, 리드보컬 F11(가운데 가른 커튼 뱅)의 11장이 이마 · 눈썹을 덮는 앞머리로 나왔다(Fable 게이트). 대표 · 세트 앞쪽 컷은 표대로였고, 장면 · 소품이 많은 새 컷과 얼굴이 큰 근접에서 많이 샜다.
+- 원인: 머리 문장이 지시문 앞쪽(정체성 · 메이크업 다음)에 있어 긴 장면 글 뒤로 밀린다 — 모델이 흔한 아이돌 앞머리 쪽으로 돌아간다.
+- 고침: `v4_다시굽기.py <코드> "<강조 문장>" <컷…>`으로 그 컷 지시문 끝에 「Most important for the hair: the fringe is only five or six separate thin strands with bare forehead showing between them, and both eyebrows are fully visible …」(F11은 「curtain bangs clearly parted in the middle … the center of her forehead is open and bare」)을 덧붙여 다시 구웠다.
+- 다시 확인: 다시 구운 F08 6컷 · F11 3컷 모두 앞머리가 표대로였다(`새컷v4/받음/F08v4_B15_*` 등). 처음 지시문을 짤 때부터 머리 한 줄을 끝에 한 번 더 두면 다시 굽기가 준다.
+
+### 「No logos」를 넣어도 가방 · 운동화 · 마이크에 상표 꼴이 생긴다 — 게이트가 좌표를 적고 손으로 메운다 (2026-11-03 Claude)
+- 증상: 막내 F10 전신의 검정 나일론 가방 앞면에 역삼각형 금속 플레이트(특정 명품 가방 꼴), 리더 F08 녹음 부스 마이크의 상표 플레이트, 메인댄서 M08 운동화 옆면 곡선 · 더플백 흰 패치 · 창틀 스티커 글자가 나왔다.
+- 원인: 「black nylon crossbody bag」 · 「white sneakers」처럼 흔한 물건 이름이 그 물건의 대표 상표 꼴까지 끌고 온다. 지시문 끝의 「No text, letters, logos」로는 다 못 막는다.
+- 고침: Fable 게이트가 `메움_v4_<코드>.txt`에 `<컷> x,y,r`을 적고 `v4_메움적용.py <코드>`(안에서 `자리메우기.py`)로 메웠다. 반지름은 플레이트 크기에 꼭 맞게 — 처음 F10 가방은 r45로 잡아 가방 모서리까지 번졌고 r23으로 다시 했다(원본 `_점원본/`).
+- 다시 확인: `<폴더>/_점메움판/<이름>_손.jpg` 전후 조각에서 플레이트 자리가 천 결로 이어지고 모서리가 남는지.
 
 ## 영상 올려 분석시키기
 

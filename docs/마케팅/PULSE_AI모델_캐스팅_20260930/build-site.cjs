@@ -1,12 +1,14 @@
 // PULSE AI 모델 고르기(캐스팅북)를 만든다. 사용: node build-site.cjs
-// 결과: site/index.html(홈페이지용 전체 문서), site/artifact.html(claude.ai 보기용), site/img, site/voice, site/video
-// 원본: roster-v2.json(모델) · voices.json(목소리) · catalog.json(고르기 설정·모델별 추가 자료) · 명세서/<코드>_<이름>.json(완성 명세서)
+// 결과: site/index.html(홈페이지용 전체 문서), site/artifact.html(claude.ai 보기용), site/img, site/video
+// 원본: roster-v2.json(모델) · catalog.json(고르기 설정·모델별 추가 자료) · 명세서/<코드>_<이름>.json(완성 명세서)
 // 원본 사진(raw/)이 없는 PC에서는 이미 만든 site/img 파일을 그대로 쓴다. 둘 다 없으면 그 컷만 빠진다.
+// 견본 목소리는 11-03부터 사이트에 싣지 않는다(유호님 「둘 다 전부 빼기」 — 실제 광고 목소리는 장면마다 연기로 따로 만들어
+// 견본이 지킬 수 없는 약속이었다). voices.json · voice/*.wav · 지난 빌드의 site/voice는 보관만 하고 이 빌드는 읽지도 옮기지도 않는다.
+// 「우리 광고 문장으로 듣기」(say-server.cjs)도 화면이 부르지 않으며 catalog.json의 say 칸은 읽지 않는다.
 const fs = require('node:fs'), path = require('node:path'), { execFileSync } = require('node:child_process');
 const here = __dirname, root = path.resolve(here, '../../..'), out = path.join(here, 'site');
 const uri = (p, m) => `data:${m};base64,${fs.readFileSync(p).toString('base64')}`;
 const { models } = require('./roster-v2.json');
-const voices = require('./voices.json');
 const catalog = require('./catalog.json');
 const logic = require('./site-src/casting-logic.js');
 
@@ -17,14 +19,6 @@ const SHOTS = [
   ['fullbody', '전신', 'FULL BODY'], ['look-1', '룩 1', 'LOOK 1'], ['look-2', '룩 2', 'LOOK 2'],
   ['skin', '피부 근접', 'SKIN'], ['hands', '손', 'HANDS'], ['context', '광고 장면', 'SCENE'],
 ];
-const VOICE_NOTE = {
-  Charon: '낮고 안정적인 톤 · 내레이션', Puck: '밝고 경쾌한 톤 · 추천·후기', Enceladus: '숨결이 섞인 낮은 톤 · 향수·무드',
-  Despina: '매끄럽고 자신감 있는 톤 · 색조·패션', Zephyr: '밝고 또렷한 톤 · 소개·안내', Achernar: '부드럽고 가까운 톤 · 스킨케어·무드',
-  Leda: '맑고 어린 톤 · 음료·앱', Aoede: '산뜻하고 가벼운 톤 · 일상·후기', Laomedeia: '들뜨고 생기 있는 톤 · 이벤트·챌린지',
-  Kore: '또렷하고 단단한 톤 · 금융·안내', Erinome: '맑고 차분한 톤 · 설명·교육', Vindemiatrix: '부드럽고 다정한 톤 · 상담·케어',
-  Algenib: '거칠고 묵직한 톤 · 향수·주류', Orus: '단단하고 깊은 톤 · 자동차·기업', Algieba: '부드럽고 낮은 톤 · 무드·내레이션',
-  Autonoe: '밝고 맑은 톤 · 스킨케어·여행', Callirrhoe: '편안하고 자연스러운 톤 · 일상·브이로그', Sulafat: '따뜻하고 부드러운 톤 · 라이프스타일',
-};
 
 // 완성 명세서: 명세서/*.json 중 「코드」가 같은 것
 const specs = {};
@@ -47,7 +41,28 @@ function pair(src, base) {
 }
 
 // 화면의 브리프 추천이 제품 설명 속 낱말을 찾으므로 words는 같이 보낸다(fits·match는 빌드에서 모델에 붙인다)
-const data = { updated: catalog.updated, industries: catalog.industries.map(({ id, label, hint, words, sub }) => ({ id, label, hint, words, sub })), moods: catalog.moods.map(({ id, label, words }) => ({ id, label, words })), genderWords: catalog.genderWords || {}, compareShots: catalog.compareShots, say: catalog.say || null, shareBase: catalog.artifactUrl || '', models: [] };
+const data = { updated: catalog.updated, industries: catalog.industries.map(({ id, label, hint, words, sub }) => ({ id, label, hint, words, sub })), moods: catalog.moods.map(({ id, label, words }) => ({ id, label, words })), genderWords: catalog.genderWords || {}, compareShots: catalog.compareShots, shareBase: catalog.artifactUrl || '', groups: [], models: [] };
+
+// 그룹(11-02 아이돌 두 팀): 주소가 #g-<id>라 id는 영문 대문자·숫자만(「-」 없이), 모델 코드 꼴([A-Z]\d\d)과 겹치지 않게.
+// 단체 컷은 원본(src)을 img/groups/<id>/<n>(-s).webp로 굽는다. 단체 컷이 아직 없는 팀은 화면이 멤버 대표 사진을 이어 붙여 대신한다.
+const memberOf = {};
+for (const g of catalog.groups || []) {
+  if (!/^[A-Z][A-Z0-9]{2,}$/.test(g.id) || /^[A-Z]\d\d$/.test(g.id)) throw Error('그룹 id는 영문 대문자·숫자 셋 이상(모델 코드 꼴 말고): ' + g.id);
+  const cuts = [];
+  (g.cuts || []).forEach((c, i) => {
+    const p = pair(c.src, `img/groups/${g.id}/${i + 1}`);
+    if (p) cuts.push({ ...p, place: c.place || '', label: c.label || '' }); else missing.push(`${g.id} 단체 컷 ${i + 1}`);
+  });
+  if (!(g.cuts || []).length) missing.push(`${g.id} 단체 컷(아직 없음 — 멤버 대표로 대신)`);
+  const members = g.members.map(({ code, position, color, hex }) => {
+    if (!/^#[0-9A-F]{6}$/.test(hex)) throw Error(`${g.id} ${code} 멤버 색은 대문자 HEX: ${hex}`);
+    if (memberOf[code]) throw Error(`${code}가 두 그룹에 있다`);
+    memberOf[code] = { group: g.id, position, memberColor: { label: color, hex } };
+    return { code, position, color, hex };
+  });
+  data.groups.push({ id: g.id, name: g.name, nameKo: g.nameKo || '', hanja: g.hanja || '', line: g.line || '', why: g.why || '', look: g.look || '', members, cuts });
+}
+for (const code of Object.keys(memberOf)) if (!models.some((m) => m.code === code)) throw Error(`그룹 멤버 ${code}가 명단(roster-v2.json)에 없다`);
 
 for (const m of models) {
   const code = m.code, extra = (catalog.models || {})[code] || {}, spec = specs[code];
@@ -75,7 +90,8 @@ for (const m of models) {
   const scenes = [];
   for (const it of (extra.scenes || {}).items || []) {
     const p = pair(path.join(it.dir || extra.scenes.dir, it.file), `img/${code}/scene-${it.id}`); // it.dir: 제품 시안처럼 다른 폴더의 장면
-    if (p) scenes.push({ id: it.id, ...p, place: it.place, label: it.label, tags: it.tags || [] }); else missing.push(`${code} scene ${it.id}`);
+    // concept: 그룹 콘셉트 룩(무대·화보 의상) 장면 — 그룹 페이지가 멤버별로 모아 보인다
+    if (p) scenes.push({ id: it.id, ...p, place: it.place, label: it.label, tags: it.tags || [], ...(it.concept ? { concept: true } : {}) }); else missing.push(`${code} scene ${it.id}`);
   }
 
   // 키 비교 띠: 정수리~발바닥을 자른 세로 띠. 띠 높이가 곧 키라서 화면에서 cm에 맞춰 세운다.
@@ -85,15 +101,6 @@ for (const m of models) {
     const ok = image(path.resolve(root, extra.stand.src), `img/${code}/stand.webp`, 1100, 82, { top: extra.stand.top, bottom: extra.stand.feet, half });
     if (ok) stand = { src: `img/${code}/stand.webp`, ratio: +(2 * half / span).toFixed(4) };
   }
-
-  const mine = voices.filter((v) => v.name.startsWith(m.key + '-'));
-  fs.mkdirSync(path.join(out, 'voice'), { recursive: true });
-  const vs = mine.map((v, i) => {
-    const wav = path.join(here, 'voice', `${v.name}.wav`), mp3 = `voice/${code}-${i + 1}.mp3`;
-    if (fs.existsSync(wav)) execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', wav, '-ac', '1', '-b:a', '96k', outRel(mp3)]);
-    if (!fs.existsSync(outRel(mp3))) { missing.push(`${code} voice ${i + 1}`); return null; }
-    return { label: v.label, note: v.note || VOICE_NOTE[v.voice] || '', text: v.text || '', src: mp3, say: v.engine === 'typecast' && !!v.voiceId };
-  }).filter(Boolean);
 
   // 보드에서 마우스를 올리면 도는 짧은 영상(loop/<코드>.mp4, 처음·끝 프레임이 대표 사진과 같다)
   let loop = null;
@@ -124,9 +131,9 @@ for (const m of models) {
     tagline: m.tagline || '', roles: m.roles || [], // 한 줄 캐릭터·맡는 역할(로드맵 2절 4). avoid는 제작용이라 화면에 내지 않고 연출 「피하는」 문장으로 보인다
     height: m.height || null, weightKg: m.weightKg || null, build: m.build || '', sizes: m.sizes || {}, skin: m.skin || '', eyes: m.eyes || '', hairBase: m.hairBase || '',
     realPerson: !!m.realPerson, hair: m.hair.map((h) => ({ label: h.label })), looks: m.looks.map((l) => ({ label: l.label })),
-    hero: shots.hero || null, alt, shots, scenes, stand, body, colors, voices: vs, loop, tagged, // 10-22 모델별 참고 영상(움직임 탭·하린 5초 샘플)은 거뒀다 — 루프는 보드의 움직이는 사진
+    hero: shots.hero || null, alt, shots, scenes, stand, body, colors, loop, tagged, // 11-03 견본 목소리(voices · script)는 뺐다. 10-22 모델별 참고 영상(움직임 탭·하린 5초 샘플)은 거뒀다 — 루프는 보드의 움직이는 사진
     face: extra.face || null, bodyNote: extra.bodyNote || '', direction: extra.direction || null, spec: !!spec && scenes.length > 0, // 「상세 프로필」 꼬리표: 명세서에 장면 사진까지 갖춘 모델
-    script: mine.every((v) => v.text) ? '' : (mine[0] || {}).script || '',
+    ...(memberOf[code] || {}), // 그룹 멤버면 group(id) · position · memberColor{label, hex}
   };
   Object.assign(pub, logic.tagModel(pub, catalog));
   pub.shotCount = Object.keys(shots).filter((k) => k !== 'hair-1').length;
@@ -179,15 +186,15 @@ const appHome = rep.APP.replace(/^.*window\.claude\b.*\r?\n/m, '');
 if (appHome === rep.APP || /claude/i.test(appHome)) throw Error('홈페이지판에서 claude.ai 전용 줄을 빼지 못했다');
 const homePage = fill({ ...rep, FAVICON: 'assets/favicon-32.png', LOGO: 'assets/brand-pulse.webp', FONTS: homeFonts, APP: appHome })
   .replace(/<meta name="claude:[^>]*>\r?\n?/, '');
-// 「우리 광고 문장으로 듣기」 서버 주소는 홈페이지판(index.html)에만 넣는다. claude.ai 페이지는 다른 주소로 요청을 보낼 수 없다.
-const sayBase = { max: (catalog.say || {}).max || 60, daily: (catalog.say || {}).daily || 10 };
-const dataJson = (d, api) => JSON.stringify({ ...d, say: { ...sayBase, api } }).replace(/</g, '\\u003c');
-const withData = (html, api, d = data) => html.replace('@@DATA@@', () => dataJson(d, api));
+// 11-03부터 「우리 광고 문장으로 듣기」 서버 주소(say)를 어느 판에도 넣지 않는다 — 화면에 듣기 칸이 없다.
+const dataJson = (d) => JSON.stringify(d).replace(/</g, '\\u003c');
+const withData = (html, d = data) => html.replace('@@DATA@@', () => dataJson(d));
 // claude.ai 판(artifact.html)은 한 판에 함께 올릴 수 있는 파일이 511개까지다(10-21 열두 명이 766개). 그 판에서만 대표 사진 말고는
 // 작은 판(s, 720px)을 큰 판(l, 1600px)으로 합치고, 움직이는 사진이 있어 쓰이지 않는 웃음 사진(alt)을 뺀다. 홈페이지판은 둘 다 쓴다.
 const big = (p) => (p && p.l ? { ...p, s: p.l } : p);
 const slim = {
   ...data,
+  groups: data.groups.map((g) => ({ ...g, cuts: g.cuts.map(big) })),
   models: data.models.map((m) => ({
     ...m,
     shots: Object.fromEntries(Object.entries(m.shots).map(([k, v]) => [k, k === 'hero' || k === 'hair-1' ? v : big(v)])),
@@ -196,7 +203,44 @@ const slim = {
     tagged: m.tagged.map(big),
   })),
 };
-// 화면에 나가는 글에 만든 도구 이름이 섞이지 않았는지 본다(목소리 이름표는 VOICE_NOTE로 바꿔서 나간다)
+// 11-02 아이돌 두 팀 여덟 명이 들어오며 위처럼 합쳐도 약 720개라 한 판에 다 담기지 않는다. 기존 열세 명(456개)은 그대로 두고,
+// 그룹 멤버는 이 판에서만 대표·움직임·키 띠·단체 컷을 먼저 담고 나머지 사진을 아래 차례로 한도(511) 안에서만 남긴다.
+// 콘셉트 룩 장면이 먼저(그룹 페이지), 그다음 전신·룩·웃음…, 일상 장면 사진과 전신 각도는 맨 뒤라 대개 이 판에서 빠진다(홈페이지판은 전부).
+const CLAUDE_MAX = 511;
+const SLIM_ORDER = ['scene:concept', 'fullbody', 'look-1', 'exp-smile', 'look-2', 'context', 'angle-front', 'angle-left', 'hair-2', 'hair-3', 'hands', 'skin', 'angle-right', 'angle-back', 'exp-angry', 'exp-surprised', 'full-left', 'full-back', 'full-45', 'scene'];
+{
+  const refsOf = (d) => new Set((JSON.stringify(d).match(/"(?:img|voice|video)\/[^"]+"/g) || []).map((x) => x.slice(1, -1)));
+  const kept = new Map(); // 코드 → 남길 사진 key(shots의 key 또는 scene:<id>)
+  const optional = (m) => [...Object.keys(m.shots).filter((k) => k !== 'hero' && k !== 'hair-1'), ...m.scenes.map((s) => 'scene:' + s.id)];
+  const view = (m) => {
+    const keep = kept.get(m.code);
+    if (!keep) return m;
+    const shots = Object.fromEntries(Object.entries(m.shots).filter(([k]) => k === 'hero' || k === 'hair-1' || keep.has(k)));
+    const scenes = m.scenes.filter((s) => keep.has('scene:' + s.id));
+    const live = refsOf({ shots, scenes });
+    return { ...m, shots, scenes, tagged: m.tagged.filter((t) => live.has(t.l)) };
+  };
+  const members = slim.models.filter((m) => m.group);
+  for (const m of members) kept.set(m.code, new Set());
+  const total = () => refsOf({ ...slim, models: slim.models.map(view) }).size;
+  let n = total();
+  for (const step of SLIM_ORDER) {
+    for (const m of members) {
+      const keys = optional(m).filter((k) => !kept.get(m.code).has(k) && (step === 'scene:concept' ? k.startsWith('scene:') && m.scenes.find((s) => 'scene:' + s.id === k).concept : step === 'scene' ? k.startsWith('scene:') : k === step));
+      for (const k of keys) {
+        if (n >= CLAUDE_MAX) break;
+        kept.get(m.code).add(k);
+        const next = total();
+        if (next > CLAUDE_MAX) { kept.get(m.code).delete(k); continue; }
+        n = next;
+      }
+    }
+  }
+  slim.models = slim.models.map(view);
+  const cut = members.reduce((t, m) => t + optional(m).length - kept.get(m.code).size, 0);
+  if (cut) console.log(`claude.ai 판: 그룹 멤버 사진 ${cut}장을 이 판에서만 뺐다(한도 ${CLAUDE_MAX}, 홈페이지판은 전부)`);
+}
+// 화면에 나가는 글에 만든 도구 이름이 섞이지 않았는지 본다
 const banned = /Gemini|Nano ?Banana|Higgsfield|Soul 2|Vertex|LoRA|pls_f0|MediaPipe|Leda|Aoede|Laomedeia|SYNK-LoRA|Typecast|타입캐스트|tc_[0-9a-f]{8}/i;
 const leak = JSON.stringify(data).match(banned);
 if (leak) throw Error('공개 자료에 도구 이름이 들어 있다: ' + leak[0]);
@@ -205,9 +249,8 @@ const licenses = ['SUIT/LICENSE_OFL.txt', 'InterTight/OFL.txt', 'DM_Mono/OFL.txt
 const split = (p) => { const cut = p.indexOf('</style>') + '</style>'.length; return [p.slice(0, cut), p.slice(cut)]; };
 const [head, body] = split(page), [homeHead, homeBody] = split(homePage);
 const lic = `\n<!-- Embedded font licenses\n${licenses}\n-->`;
-const homeApi = process.env.PULSE_SAY_API ?? ((catalog.say || {}).api || '');
-fs.writeFileSync(path.join(out, 'artifact.html'), withData(head + lic + body, '', slim));
-// claude.ai에 함께 올릴 파일 목록(artifact.html이 가리키는 그림·소리·영상)
+fs.writeFileSync(path.join(out, 'artifact.html'), withData(head + lic + body, slim));
+// claude.ai에 함께 올릴 파일 목록(artifact.html이 가리키는 그림·영상 — voice/는 11-03부터 없어야 하고, 남으면 아래에서 멈춘다)
 const refs = [...new Set((fs.readFileSync(path.join(out, 'artifact.html'), 'utf8').match(/"(?:img|voice|video)\/[^"]+"/g) || []).map((x) => x.slice(1, -1)))].sort();
 fs.writeFileSync(path.join(here, 'jobs', '_publish-files.json'), JSON.stringify(refs.map((p) => ({ path: p }))));
 
@@ -230,15 +273,18 @@ const homeMeta = `<link rel="canonical" href="${HOME_URL}">`
   + '<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image">'
   + '<link rel="preload" href="assets/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>\n';
 const homeLic = `\n<!-- Font licenses (assets/fonts)\n${licenses}\n-->`;
-const homeHtml = withData(`<!doctype html>\n<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">${homeMeta}${homeHead}${homeLic}</head>\n<body>${homeBody}</body></html>\n`, homeApi);
+const homeHtml = withData(`<!doctype html>\n<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">${homeMeta}${homeHead}${homeLic}</head>\n<body>${homeBody}</body></html>\n`);
 // 공개 페이지라 글 전체에서 만든 도구 이름·작업 자리 경로를 한 번 더 본다(공개 도구·배포 점검도 보지만 빌드에서 먼저 멈춘다)
 const homeLeak = homeHtml.match(/claude|chat ?gpt|\bgpt|codex|openai|gemini|typecast|타입캐스트|higgsfield|힉스필드|fable|페이블|아르곤|\bargon|\blora\b|comfy|minimax|seedance|\bkling|nano ?banana|지피티|클로드|제미나이|synk-vendor|\.tmp\/|SYNK-LoRA|[A-Z]:[\\/]Users/i);
 if (homeLeak) throw Error('홈페이지판에 만든 도구 이름·작업 경로가 있다: ' + homeLeak[0]);
+// 11-03 견본 목소리를 뺐다 — 두 판 어디에도 소리 파일 · 듣기 단추 · 문장 듣기 주소가 다시 들어가지 않게 여기서 멈춘다
+const voiceHits = (h) => h.match(/"voice\/[^"]+"|\.(?:mp3|wav|m4a)"|data-act="(?:voice|vsel|say)"|\/api\/say/g) || [];
+const voiceLeft = [...voiceHits(homeHtml), ...voiceHits(fs.readFileSync(path.join(out, 'artifact.html'), 'utf8'))];
+if (voiceLeft.length) throw Error('견본 목소리는 11-03에 뺐는데 페이지에 남아 있다: ' + [...new Set(voiceLeft)].slice(0, 5).join(', '));
 // 줄끝은 LF로 — 공개본(synk-policy)이 LF라, Windows 작업본의 CRLF 원고를 그대로 쓰면 다시 올릴 때마다 파일 전체가 바뀐 것으로 잡힌다(10-23 Fable P3)
 fs.writeFileSync(path.join(out, 'index.html'), homeHtml.replace(/\r\n/g, '\n'));
 const size = (p) => (fs.statSync(path.join(out, p)).size / 1024 / 1024).toFixed(2) + 'MB';
-console.log('모델', data.models.map((m) => `${m.code} ${m.name} 컷${m.shotCount} 장면${m.scenes.length} 목소리${m.voices.length}${m.voices.some((v) => v.say) ? '(문장 듣기)' : ''}${m.loop ? ' 움직임' : ''}${m.spec ? ' 명세서' : ''}`).join(' / '));
-if (homeApi) console.log('문장 듣기 서버', homeApi);
+console.log('모델', data.models.map((m) => `${m.code} ${m.name} 컷${m.shotCount} 장면${m.scenes.length}${m.loop ? ' 움직임' : ''}${m.spec ? ' 명세서' : ''}`).join(' / '), `· 견본 목소리 ${voiceLeft.length}(11-03 뺌)`);
 if (missing.length) console.log('빠진 것', missing.join(', '));
 console.log('index.html', size('index.html'), '· artifact.html', size('artifact.html'), `· claude.ai 판 파일 ${refs.length}개`);
 if (refs.length > 511) console.log('경고: claude.ai 판 파일이 한 판 한도 511개를 넘는다');

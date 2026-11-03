@@ -1,7 +1,103 @@
 {
   "note": "모델 고르기 시스템(site-src·build-site.cjs)의 설정. 모델의 이름·신체·업종은 roster-v2.json, 목소리는 voices.json, 완성 명세서는 명세서/<코드>_<이름>.json이 원본이다. 여기에는 고르기에만 쓰는 것(업종·분위기 분류, 브리프 낱말, 모델별 추가 자료)을 둔다. 모델을 더할 때는 roster-v2.json에 한 줄을 더하면 카드·거르기·비교·추천에 바로 나온다. 아래 models의 칸은 있는 것만 채우면 된다. 화면에 보이는 글에는 만든 도구 이름을 쓰지 않는다.",
-  "updated": "2026-10-24",
+  "updated": "2026-11-02",
   "say": { "api": "", "max": 60, "daily": 10 },
+  "groups": [
+    {
+      "id": "OPALINE",
+      "name": "OPALINE",
+      "nameKo": "오팔린",
+      "hanja": "백광(白光)",
+      "line": "네 파장, 네 사람 — 같은 빛에서 갈라진 네 색",
+      "why": "같은 오팔 빛에서 갈라진 네 색이에요. 멤버마다 자기 색 하나를 머리부터 발끝까지 입고, 팀은 오팔 장신구 한 점으로만 묶어요.",
+      "look": "멤버별 한 색 코디 · 오팔 장신구 한 점 · 실루엣 넷 다 다름",
+      "members": [
+        {
+          "code": "F08",
+          "position": "리더 · 메인보컬",
+          "color": "옥스블러드",
+          "hex": "#6E1423"
+        },
+        {
+          "code": "F09",
+          "position": "비주얼",
+          "color": "바이올렛",
+          "hex": "#5B2A86"
+        },
+        {
+          "code": "F10",
+          "position": "막내 · 메인댄서",
+          "color": "애플 그린",
+          "hex": "#6DBE45"
+        },
+        {
+          "code": "F11",
+          "position": "리드보컬",
+          "color": "잉크 블루",
+          "hex": "#1F2A52"
+        }
+      ],
+      "cuts": [
+        {
+          "src": "C:/SYNK-LoRA/casting/idol_fresh_20261101/단체/G8_Pb.jpg",
+          "place": "아침 돌계단",
+          "label": "멤버마다 다른 한 색 · 오팔 한 점"
+        },
+        {
+          "src": "C:/SYNK-LoRA/casting/idol_fresh_20261101/단체/G8_Pa.jpg",
+          "place": "회벽 스튜디오",
+          "label": "멤버마다 다른 한 색 · 앉고 서기"
+        }
+      ]
+    },
+    {
+      "id": "OUTBLUE",
+      "name": "OUTBLUE",
+      "nameKo": "아웃블루",
+      "hanja": "청람(靑藍)",
+      "line": "쪽에서 나왔지만 넷 다 다른 파랑",
+      "why": "쪽빛 한 점으로만 묶고 나머지는 넷 다 달라요. 생지 데님 · 연청 데님 · 실크 스카프 · 다크 워싱 데님처럼 쪽빛이 옷마다 다르게 앉아요.",
+      "look": "쪽빛 데님 또는 실크 한 점 · 멤버별 재킷 · 하의 · 신발 다름",
+      "members": [
+        {
+          "code": "M07",
+          "position": "리더 · 메인보컬",
+          "color": "초콜릿 브라운",
+          "hex": "#4B2E22"
+        },
+        {
+          "code": "M08",
+          "position": "메인댄서",
+          "color": "번트 오렌지",
+          "hex": "#D9661F"
+        },
+        {
+          "code": "M09",
+          "position": "비주얼 · 서브보컬",
+          "color": "블루 그레이",
+          "hex": "#8A9BB0"
+        },
+        {
+          "code": "M10",
+          "position": "막내 · 메인래퍼",
+          "color": "딥 틸",
+          "hex": "#1F7A8C"
+        }
+      ],
+      "cuts": [
+        {
+          "src": "C:/SYNK-LoRA/casting/idol_fresh_20261101/단체/G8_Ob.jpg",
+          "place": "콘크리트 공간",
+          "label": "쪽빛 데님 · 실크 스카프 · 넷 다른 실루엣"
+        },
+        {
+          "src": "C:/SYNK-LoRA/casting/idol_fresh_20261101/단체/G8_Oa.jpg",
+          "place": "아침 거리",
+          "label": "쪽빛 데님 · 실크 스카프 · 걷기"
+        }
+      ]
+    }
+  ],
   "industries": [
     { "id": "food", "label": "식음료", "hint": "음료·디저트·카페·주류", "fits": ["음료", "디저트", "카페", "주류", "위스키", "간편식"], "words": ["커피", "라떼", "음료", "주스", "에이드", "스무디", "탄산", "생수", "밀크티", "홍차", "녹차", "디저트", "케이크", "베이커리", "빵", "아이스크림", "과자", "초콜릿", "쿠키", "간식", "카페", "맥주", "소주", "와인", "위스키", "주류", "식품", "밀키트", "편의점", "배달", "레스토랑", "치킨", "버거", "간편식", "도시락", "즉석", "캔커피", "콜드브루", "사이다", "드링크", "스낵", "에너지바"], "sub": {"디저트": ["아이스크림", "케이크", "베이커리", "빵", "과자", "간식", "디저트", "초콜릿", "쿠키"], "간식": ["간식", "과자", "초콜릿", "쿠키", "스낵", "에너지바"], "음료": ["커피", "라떼", "음료", "주스", "에이드", "스무디", "탄산", "생수", "밀크티", "홍차", "녹차", "캔커피", "콜드브루", "사이다", "드링크"], "카페": ["카페", "커피", "라떼", "콜드브루"], "주류": ["맥주", "소주", "와인", "위스키", "주류"], "간편식": ["간편식", "밀키트", "도시락", "즉석"]} },
     { "id": "beauty", "label": "뷰티·스킨케어", "hint": "스킨케어·색조·뷰티 기기", "fits": ["스킨케어", "뷰티", "색조", "클렌징", "안티에이징", "선케어", "클리닉"], "words": ["화장품", "스킨케어", "크림", "세럼", "앰플", "토너", "로션", "선크림", "선케어", "클렌징", "마스크팩", "쿠션", "파운데이션", "립밤", "틴트", "립스틱", "아이섀도", "마스카라", "네일", "뷰티", "피부", "미백", "보습", "안티에이징", "주름", "탄력", "레티놀", "클리닉", "피부과"], "sub": {"색조": ["쿠션", "파운데이션", "립스틱", "틴트", "립밤", "아이섀도", "마스카라", "네일"], "스킨케어": ["스킨케어", "크림", "세럼", "앰플", "토너", "로션", "선크림", "선케어", "마스크팩", "보습", "미백"], "클렌징": ["클렌징"], "안티에이징": ["안티에이징", "주름", "탄력", "레티놀"], "선케어": ["선크림", "선케어"]} },
@@ -1830,6 +1926,2036 @@
             "label": "회색 티 · 위에서 본 미소",
             "tags": [
               "sports"
+            ]
+          }
+        ]
+      }
+    },
+    "F08": {
+      "set": {
+        "dir": "C:/SYNK-LoRA/casting/idol_fresh_20261101/세트v4"
+      },
+      "stand": {
+        "src": "C:/SYNK-LoRA/casting/idol_fresh_20261101/세트v4/F08_fullbody.jpg",
+        "top": 364,
+        "feet": 2620
+      },
+      "loop": {
+        "src": "loop/F08.mp4",
+        "made": "만드는 중"
+      },
+      "shotLabels": {
+        "context": "카페 창가 · 커피 한 잔",
+        "hands": "체리 탄산 병을 든 두 손"
+      },
+      "shotTags": {
+        "context": [
+          "food"
+        ],
+        "hands": [
+          "food"
+        ],
+        "look-1": [
+          "fashion"
+        ],
+        "look-2": [
+          "fashion"
+        ]
+      },
+      "face": [
+        {
+          "label": "눈",
+          "text": "가늘고 긴 고양이 눈에 짧은 검은 윙 라인 하나만 그어요. 애교살이 도톰해요."
+        },
+        {
+          "label": "입술",
+          "text": "번진 듯한 쿨 체리 틴트예요. 다문 입으로 웃으면 왼쪽이 살짝 올라가고 그쪽 볼에 보조개가 생겨요."
+        },
+        {
+          "label": "얼굴선",
+          "text": "작은 달걀형에 볼이 동그랗고 턱 끝이 둥글게 좁아져요. 코는 작고 끝이 둥글어요."
+        },
+        {
+          "label": "피부",
+          "text": "모공이 보이는 맑고 흰 피부에, 코끝에만 작은 빛을 둬요."
+        },
+        {
+          "label": "머리",
+          "text": "쿨 제트블랙 턱선 단발에 결이 가볍게 쳐져 있어요. 앞머리는 몇 가닥만 내리고, 왼쪽을 귀 뒤로 넘겨 오팔 귀걸이가 보여요."
+        }
+      ],
+      "bodyNote": "164cm 슬림 체형으로 어깨가 좁고 허리가 가늘어요. 셔츠·데님 같은 일상 옷이 단정하게 떨어져요. 광고에서도 이 비율을 그대로 지켜요.",
+      "direction": {
+        "fit": [
+          "카페 창가에서 커피 한 잔에 웃음",
+          "아이스커피 들고 출근길 횡단보도",
+          "녹음 부스에서 노래하기",
+          "저녁 소파에서 영상 통화",
+          "바닷가 산책로 걷기"
+        ],
+        "avoid": [
+          "섹시한 연출·교복과 체크 치마·10대 같은 연출은 믿음직한 리더 인상과 맞지 않아 쓰지 않아요."
+        ]
+      },
+      "fullAngles": {
+        "dir": "C:/SYNK-LoRA/datasets/F08_idol_leader/v4",
+        "items": [
+          {
+            "key": "full-left",
+            "file": "15.jpg",
+            "label": "전신 옆",
+            "en": "SIDE"
+          },
+          {
+            "key": "full-back",
+            "file": "16.jpg",
+            "label": "전신 뒤",
+            "en": "BACK"
+          },
+          {
+            "key": "full-45",
+            "file": "17.jpg",
+            "label": "전신 45도",
+            "en": "3/4"
+          }
+        ]
+      },
+      "scenes": {
+        "dir": "C:/SYNK-LoRA/datasets/F08_idol_leader/v4",
+        "items": [
+          {
+            "id": "b01",
+            "file": "18.jpg",
+            "place": "아침 횡단보도",
+            "label": "흰 포플린 셔츠 · 생지 데님 · 아이스커피",
+            "tags": [
+              "food",
+              "fashion"
+            ]
+          },
+          {
+            "id": "b02",
+            "file": "19.jpg",
+            "place": "녹음 부스",
+            "label": "체리 니트 · 노래하기",
+            "tags": [
+              "ent"
+            ]
+          },
+          {
+            "id": "b03",
+            "file": "20.jpg",
+            "place": "공항 라운지",
+            "label": "검정 라이더 재킷 · 휴대폰과 캐리어",
+            "tags": [
+              "travel",
+              "tech"
+            ]
+          },
+          {
+            "id": "b04",
+            "file": "21.jpg",
+            "place": "밝은 카페 카운터",
+            "label": "체리 카디건 · 라테 앞에서 웃음",
+            "tags": [
+              "food"
+            ]
+          },
+          {
+            "id": "b05",
+            "file": "22.jpg",
+            "place": "저녁 거실 소파",
+            "label": "옥스블러드 니트 · 영상 통화",
+            "tags": [
+              "tech"
+            ]
+          },
+          {
+            "id": "b06",
+            "file": "23.jpg",
+            "place": "밤 음료 냉장고",
+            "label": "검정 새틴 봄버 · 탄산 캔 들고 웃음",
+            "tags": [
+              "food"
+            ]
+          },
+          {
+            "id": "b07",
+            "file": "24.jpg",
+            "place": "바닷가 산책로",
+            "label": "아이보리 리넨 셔츠 · 검정 와이드 · 걷기",
+            "tags": [
+              "travel",
+              "fashion"
+            ]
+          },
+          {
+            "id": "b08",
+            "file": "25.jpg",
+            "place": "아침 옥상 테라스",
+            "label": "옥스블러드 크롭 재킷 · 체리 니트 · 무릎 위",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b09",
+            "file": "26.jpg",
+            "place": "가을 공원",
+            "label": "생지 재킷 · 검정 자전거",
+            "tags": [
+              "travel",
+              "sports"
+            ]
+          },
+          {
+            "id": "b10",
+            "file": "27.jpg",
+            "place": "늦은 오후 야외",
+            "label": "아이보리 실크 블라우스 · 근접",
+            "tags": [
+              "beauty"
+            ]
+          },
+          {
+            "id": "b11",
+            "file": "28.jpg",
+            "place": "회색 벽",
+            "label": "옥스블러드 크롭 재킷 · 근접",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b12",
+            "file": "29.jpg",
+            "place": "햇살 광장",
+            "label": "옥스블러드 크롭 재킷 · 새틴 와이드 · 전신",
+            "tags": [
+              "ent",
+              "fashion",
+              "travel"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b13",
+            "file": "30.jpg",
+            "place": "회색 벽",
+            "label": "옥스블러드 크롭 재킷 · 웃음",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b14",
+            "file": "31.jpg",
+            "place": "밝은 주방",
+            "label": "검정 립 니트 · 레몬 썰기",
+            "tags": [
+              "food"
+            ]
+          },
+          {
+            "id": "b15",
+            "file": "32.jpg",
+            "place": "밝은 회색 배경",
+            "label": "아이보리 니트 티 · 정면 근접",
+            "tags": [
+              "beauty"
+            ]
+          },
+          {
+            "id": "b16",
+            "file": "33.jpg",
+            "place": "크림 피크닉 담요",
+            "label": "검정 립 티 · 위에서 본 미소",
+            "tags": [
+              "travel"
+            ]
+          }
+        ]
+      }
+    },
+    "F09": {
+      "set": {
+        "dir": "C:/SYNK-LoRA/casting/idol_fresh_20261101/세트v4"
+      },
+      "stand": {
+        "src": "C:/SYNK-LoRA/casting/idol_fresh_20261101/세트v4/F09_fullbody.jpg",
+        "top": 194,
+        "feet": 2672
+      },
+      "loop": {
+        "src": "loop/F09.mp4",
+        "made": "만드는 중"
+      },
+      "shotLabels": {
+        "context": "꽃집 · 작은 꽃다발",
+        "hands": "스킨케어 병을 든 손"
+      },
+      "shotTags": {
+        "context": [
+          "travel"
+        ],
+        "hands": [
+          "beauty"
+        ],
+        "look-1": [
+          "fashion"
+        ],
+        "look-2": [
+          "fashion"
+        ]
+      },
+      "face": [
+        {
+          "label": "눈",
+          "text": "얇은 평행 쌍꺼풀이 있는 중간 아몬드 눈이에요. 눈두덩은 비워 두고 속눈썹만 갈라 올려요."
+        },
+        {
+          "label": "입",
+          "text": "맑은 광이 도는 로즈 핑크 입술이에요. 윗니 한 줄만 보이게 절제해서 웃어요."
+        },
+        {
+          "label": "얼굴선",
+          "text": "계란형에 가까운 작은 얼굴에 볼이 부드럽고 턱 끝이 둥글어요."
+        },
+        {
+          "label": "피부",
+          "text": "모공이 보이는 맑고 밝은 피부에, 자기 피부가 데워진 듯한 옅은 혈색만 있어요."
+        },
+        {
+          "label": "머리",
+          "text": "딥 체리 브라운 긴 S웨이브를 옆가르마로 넘겨요. 앞머리는 없어요."
+        }
+      ],
+      "bodyNote": "169cm로 목과 다리가 긴 가늘고 길쭉한 체형이에요. 코트·트위드 재킷처럼 길게 떨어지는 옷이 잘 받아요. 광고에서도 이 비율을 그대로 지켜요.",
+      "direction": {
+        "fit": [
+          "세럼 한 방울 바르며 미소",
+          "손목에 향수 뿌리기",
+          "목걸이를 채우며 거울 보기",
+          "꽃시장에서 작약 고르기",
+          "호텔 창가에서 차 한 잔"
+        ],
+        "avoid": [
+          "섹시한 연출·교복과 체크 치마·10대 같은 연출은 우아한 비주얼 인상과 맞지 않아 쓰지 않아요."
+        ]
+      },
+      "fullAngles": {
+        "dir": "C:/SYNK-LoRA/datasets/F09_idol_visual/v4",
+        "items": [
+          {
+            "key": "full-left",
+            "file": "15.jpg",
+            "label": "전신 옆",
+            "en": "SIDE"
+          },
+          {
+            "key": "full-back",
+            "file": "16.jpg",
+            "label": "전신 뒤",
+            "en": "BACK"
+          },
+          {
+            "key": "full-45",
+            "file": "17.jpg",
+            "label": "전신 45도",
+            "en": "3/4"
+          }
+        ]
+      },
+      "scenes": {
+        "dir": "C:/SYNK-LoRA/datasets/F09_idol_visual/v4",
+        "items": [
+          {
+            "id": "b01",
+            "file": "18.jpg",
+            "place": "가을 돌길",
+            "label": "바이올렛 울 코트 · 크림 니트 원피스 · 걷기",
+            "tags": [
+              "fashion",
+              "travel"
+            ]
+          },
+          {
+            "id": "b02",
+            "file": "19.jpg",
+            "place": "밝은 욕실",
+            "label": "세럼 한 방울 · 근접",
+            "tags": [
+              "beauty"
+            ]
+          },
+          {
+            "id": "b03",
+            "file": "20.jpg",
+            "place": "창가 화장대",
+            "label": "라벤더 니트 · 립 틴트 바르기",
+            "tags": [
+              "beauty"
+            ]
+          },
+          {
+            "id": "b04",
+            "file": "21.jpg",
+            "place": "꽃시장",
+            "label": "아이보리 프릴 블라우스 · 작약 고르며 웃음",
+            "tags": [
+              "travel"
+            ]
+          },
+          {
+            "id": "b05",
+            "file": "22.jpg",
+            "place": "주얼리 매장",
+            "label": "아이보리 실크 블라우스 · 목걸이 채우기",
+            "tags": [
+              "fashion"
+            ]
+          },
+          {
+            "id": "b06",
+            "file": "23.jpg",
+            "place": "아침 창가",
+            "label": "바이올렛 새틴 블라우스 · 손목에 향수",
+            "tags": [
+              "fragrance",
+              "beauty"
+            ]
+          },
+          {
+            "id": "b07",
+            "file": "24.jpg",
+            "place": "장미 정원",
+            "label": "바이올렛 꽃무늬 쉬폰 원피스 · 걷기",
+            "tags": [
+              "fashion",
+              "travel"
+            ]
+          },
+          {
+            "id": "b08",
+            "file": "25.jpg",
+            "place": "유리 온실",
+            "label": "가지색 롱코트 · 라일락 니트 · 상반신",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b09",
+            "file": "26.jpg",
+            "place": "흰 갤러리",
+            "label": "아이보리 니트 · 바이올렛 새틴 와이드 · 서 있기",
+            "tags": [
+              "fashion"
+            ]
+          },
+          {
+            "id": "b10",
+            "file": "27.jpg",
+            "place": "노을 역광 야외",
+            "label": "크림 쉬폰 블라우스 · 근접",
+            "tags": [
+              "beauty",
+              "fragrance"
+            ]
+          },
+          {
+            "id": "b11",
+            "file": "28.jpg",
+            "place": "크림 벽",
+            "label": "가지색 롱코트 · 근접",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b12",
+            "file": "29.jpg",
+            "place": "돌 테라스",
+            "label": "가지색 롱코트 · 바이올렛 부츠 · 전신",
+            "tags": [
+              "ent",
+              "fashion",
+              "travel"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b13",
+            "file": "30.jpg",
+            "place": "크림 벽",
+            "label": "가지색 롱코트 · 웃음",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b14",
+            "file": "31.jpg",
+            "place": "호텔 아침 창가",
+            "label": "라일락 니트 · 찻잔",
+            "tags": [
+              "food",
+              "travel"
+            ]
+          },
+          {
+            "id": "b15",
+            "file": "32.jpg",
+            "place": "밝은 회색 배경",
+            "label": "라벤더 니트 티 · 정면 근접",
+            "tags": [
+              "beauty"
+            ]
+          },
+          {
+            "id": "b16",
+            "file": "33.jpg",
+            "place": "흰 니트 담요",
+            "label": "아이보리 니트 · 위에서 본 미소",
+            "tags": [
+              "beauty"
+            ]
+          }
+        ]
+      }
+    },
+    "F10": {
+      "set": {
+        "dir": "C:/SYNK-LoRA/casting/idol_fresh_20261101/세트v4"
+      },
+      "stand": {
+        "src": "C:/SYNK-LoRA/casting/idol_fresh_20261101/세트v4/F10_fullbody.jpg",
+        "top": 361,
+        "feet": 2674
+      },
+      "loop": {
+        "src": "loop/F10.mp4",
+        "made": "만드는 중"
+      },
+      "shotLabels": {
+        "context": "연습실 · 쉬는 시간 물 한 병",
+        "hands": "레몬 소르베 컵과 나무 숟가락"
+      },
+      "shotTags": {
+        "context": [
+          "food",
+          "sports"
+        ],
+        "hands": [
+          "food"
+        ],
+        "look-1": [
+          "fashion"
+        ],
+        "look-2": [
+          "sports",
+          "fashion"
+        ]
+      },
+      "face": [
+        {
+          "label": "눈",
+          "text": "크고 동그란 눈에 속눈썹이 길게 말려요. 눈 앞머리에만 아주 작은 아이스 블루 빛이 있어요."
+        },
+        {
+          "label": "입",
+          "text": "윗니가 보이게 활짝 웃어요. 가운데 앞니 둘이 살짝 큰 토끼 앞니고, 입술은 물기 있는 코랄이에요."
+        },
+        {
+          "label": "얼굴선",
+          "text": "작고 둥근 얼굴에 사과 볼이 도톰하고 턱이 짧아요. 코가 짧고 끝이 둥글어요."
+        },
+        {
+          "label": "피부",
+          "text": "모공이 보이는 생기 있는 피부에, 사과 볼 위로 옅은 살구빛만 돌아요."
+        },
+        {
+          "label": "머리",
+          "text": "맑은 코퍼 오렌지 쇄골 길이 샤기예요. 안팎으로 뻗치는 결에 앞머리는 없어요."
+        }
+      ],
+      "bodyNote": "160cm 아담한 댄서 체형으로 가늘고 탄탄해요. 팀에서 가장 작고 몸이 가벼워 춤·운동 장면에 잘 맞아요. 광고에서도 이 비율을 그대로 지켜요.",
+      "direction": {
+        "fit": [
+          "연습실에서 춤 동작 한 컷",
+          "아이스크림 들고 크게 웃기",
+          "소파에서 게임하며 웃음",
+          "과자 봉지 들고 장난스럽게",
+          "공원 벤치에서 운동화 끈 묶기"
+        ],
+        "avoid": [
+          "섹시한 연출·교복과 체크 치마·10대 같은 연출은 쓰지 않아요. 발랄해도 성인 막내로 보이게 찍어요."
+        ]
+      },
+      "fullAngles": {
+        "dir": "C:/SYNK-LoRA/datasets/F10_idol_maknae/v4",
+        "items": [
+          {
+            "key": "full-left",
+            "file": "15.jpg",
+            "label": "전신 옆",
+            "en": "SIDE"
+          },
+          {
+            "key": "full-back",
+            "file": "16.jpg",
+            "label": "전신 뒤",
+            "en": "BACK"
+          },
+          {
+            "key": "full-45",
+            "file": "17.jpg",
+            "label": "전신 45도",
+            "en": "3/4"
+          }
+        ]
+      },
+      "scenes": {
+        "dir": "C:/SYNK-LoRA/datasets/F10_idol_maknae/v4",
+        "items": [
+          {
+            "id": "b01",
+            "file": "18.jpg",
+            "place": "밝은 연습실",
+            "label": "애플 그린 바람막이 · 춤 동작",
+            "tags": [
+              "sports",
+              "ent"
+            ]
+          },
+          {
+            "id": "b02",
+            "file": "19.jpg",
+            "place": "햇살 거리",
+            "label": "애플 그린 카디건 · 소르베 들고 웃음",
+            "tags": [
+              "food"
+            ]
+          },
+          {
+            "id": "b03",
+            "file": "20.jpg",
+            "place": "밤 거실 소파",
+            "label": "애플 그린 후드 · 게임하며 웃음",
+            "tags": [
+              "tech"
+            ]
+          },
+          {
+            "id": "b04",
+            "file": "21.jpg",
+            "place": "밤 오락실",
+            "label": "애플 그린 바람막이 · 인형 뽑기 앞에서",
+            "tags": [
+              "tech",
+              "ent"
+            ]
+          },
+          {
+            "id": "b05",
+            "file": "22.jpg",
+            "place": "공원 벤치",
+            "label": "차콜 맨투맨 · 운동화 끈 묶기",
+            "tags": [
+              "sports",
+              "fashion"
+            ]
+          },
+          {
+            "id": "b06",
+            "file": "23.jpg",
+            "place": "밝은 과자 가게",
+            "label": "남색 니트 · 노란 과자 봉지 들고 웃음",
+            "tags": [
+              "food"
+            ]
+          },
+          {
+            "id": "b07",
+            "file": "24.jpg",
+            "place": "봄 캠퍼스 길",
+            "label": "애플 그린 카디건 · 연청 와이드 · 걷기",
+            "tags": [
+              "edu",
+              "fashion"
+            ]
+          },
+          {
+            "id": "b08",
+            "file": "25.jpg",
+            "place": "야외 농구장",
+            "label": "애플 그린 스웨이드 봄버 · 무릎 위",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b09",
+            "file": "26.jpg",
+            "place": "밝은 연습실",
+            "label": "피스타치오 티 · 다리 스트레칭",
+            "tags": [
+              "sports"
+            ]
+          },
+          {
+            "id": "b10",
+            "file": "27.jpg",
+            "place": "아침 창가",
+            "label": "크림 셔츠 · 귀 뒤로 넘긴 머리 · 근접",
+            "tags": [
+              "beauty"
+            ]
+          },
+          {
+            "id": "b11",
+            "file": "28.jpg",
+            "place": "흰 벽",
+            "label": "애플 그린 스웨이드 봄버 · 근접",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b12",
+            "file": "29.jpg",
+            "place": "육교 위",
+            "label": "애플 그린 봄버 · 포레스트 코듀로이 · 전신",
+            "tags": [
+              "ent",
+              "fashion",
+              "travel"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b13",
+            "file": "30.jpg",
+            "place": "흰 벽",
+            "label": "애플 그린 스웨이드 봄버 · 웃음",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b14",
+            "file": "31.jpg",
+            "place": "밝은 주방",
+            "label": "애플 그린 앞치마 · 쿠키 반죽",
+            "tags": [
+              "food",
+              "home"
+            ]
+          },
+          {
+            "id": "b15",
+            "file": "32.jpg",
+            "place": "밝은 회색 배경",
+            "label": "피스타치오 티 · 정면 근접",
+            "tags": [
+              "beauty"
+            ]
+          },
+          {
+            "id": "b16",
+            "file": "33.jpg",
+            "place": "연녹색 운동 매트",
+            "label": "흰 티 · 위에서 본 미소",
+            "tags": [
+              "sports"
+            ]
+          }
+        ]
+      }
+    },
+    "F11": {
+      "set": {
+        "dir": "C:/SYNK-LoRA/casting/idol_fresh_20261101/세트v4"
+      },
+      "loop": {
+        "src": "loop/F11.mp4",
+        "made": "만드는 중"
+      },
+      "face": [
+        {
+          "label": "눈",
+          "text": "또렷한 평행 쌍꺼풀의 동그란 아몬드 눈이에요. 윗눈두덩 바깥에만 아주 옅은 회보라를 얹어요."
+        },
+        {
+          "label": "입",
+          "text": "윗니가 살짝 보이게 웃고, 제 입술 모양 그대로 안쪽에만 광을 줘요."
+        },
+        {
+          "label": "얼굴선",
+          "text": "작고 둥근 달걀형에 볼이 부드럽고 턱이 짧고 둥글어요. 코가 가늘고 곧아요."
+        },
+        {
+          "label": "피부",
+          "text": "결이 보이는 얇고 맑은 피부예요. 볼 색은 거의 넣지 않아요."
+        },
+        {
+          "label": "머리",
+          "text": "버터 블론드 쇄골 아래 레이어에, 가운데로 갈라 양옆으로 넘긴 커튼 뱅이에요. 이마 가운데가 열려 있어요."
+        }
+      ],
+      "bodyNote": "167cm 슬림 체형에 다리가 길어요. 원피스·플리츠 스커트 장면에서 길게 서요. 광고에서도 이 비율을 그대로 지켜요.",
+      "direction": {
+        "fit": [
+          "빵집에서 크루아상 고르며 웃음",
+          "강변 피크닉에서 종이컵 들고 웃음",
+          "녹음 부스에서 노래하기",
+          "옥상 정원에서 물 주기",
+          "주방에서 레모네이드 만들기"
+        ],
+        "avoid": [
+          "섹시한 연출·교복과 체크 치마·10대 같은 연출은 상큼한 리드보컬 인상과 맞지 않아 쓰지 않아요."
+        ]
+      },
+      "fullAngles": {
+        "dir": "C:/SYNK-LoRA/datasets/F11_idol_vocal/v4",
+        "items": [
+          {
+            "key": "full-left",
+            "file": "15.jpg",
+            "label": "전신 옆",
+            "en": "SIDE"
+          },
+          {
+            "key": "full-back",
+            "file": "16.jpg",
+            "label": "전신 뒤",
+            "en": "BACK"
+          },
+          {
+            "key": "full-45",
+            "file": "17.jpg",
+            "label": "전신 45도",
+            "en": "3/4"
+          }
+        ]
+      },
+      "scenes": {
+        "dir": "C:/SYNK-LoRA/datasets/F11_idol_vocal/v4",
+        "items": [
+          {
+            "id": "b01",
+            "file": "18.jpg",
+            "place": "아침 가로수길",
+            "label": "카키 필드 재킷 · 레이스 원피스 · 아이스티",
+            "tags": [
+              "food",
+              "fashion"
+            ]
+          },
+          {
+            "id": "b02",
+            "file": "19.jpg",
+            "place": "녹음 부스",
+            "label": "슬레이트 립 니트 · 노래하기",
+            "tags": [
+              "ent"
+            ]
+          },
+          {
+            "id": "b03",
+            "file": "20.jpg",
+            "place": "빵집 진열대",
+            "label": "남색 카디건 · 크루아상 고르며 웃음",
+            "tags": [
+              "food"
+            ]
+          },
+          {
+            "id": "b04",
+            "file": "21.jpg",
+            "place": "창가 책상",
+            "label": "슬레이트 터틀넥 · 노트에 쓰기",
+            "tags": [
+              "edu"
+            ]
+          },
+          {
+            "id": "b05",
+            "file": "22.jpg",
+            "place": "저녁 강변 피크닉",
+            "label": "카키 필드 재킷 · 종이컵 들고 웃음",
+            "tags": [
+              "food",
+              "travel"
+            ]
+          },
+          {
+            "id": "b06",
+            "file": "23.jpg",
+            "place": "밝은 욕실",
+            "label": "남색 니트 · 볼 만지기",
+            "tags": [
+              "beauty"
+            ]
+          },
+          {
+            "id": "b07",
+            "file": "24.jpg",
+            "place": "노을 바닷가",
+            "label": "아이보리 레이스 원피스 · 맨발로 걷기",
+            "tags": [
+              "travel",
+              "fashion"
+            ]
+          },
+          {
+            "id": "b08",
+            "file": "25.jpg",
+            "place": "아침 바닷가",
+            "label": "가죽 하프 트렌치 · 슬레이트 터틀넥 · 상반신",
+            "tags": [
+              "ent",
+              "fashion",
+              "travel"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b09",
+            "file": "26.jpg",
+            "place": "옥상 정원",
+            "label": "남색 립 티 · 연청 · 물뿌리개 들고 웃음",
+            "tags": [
+              "travel"
+            ]
+          },
+          {
+            "id": "b10",
+            "file": "27.jpg",
+            "place": "해 질 녘 숲길",
+            "label": "슬레이트 니트 · 근접",
+            "tags": [
+              "beauty"
+            ]
+          },
+          {
+            "id": "b11",
+            "file": "28.jpg",
+            "place": "회색 벽",
+            "label": "가죽 하프 트렌치 · 근접",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b12",
+            "file": "29.jpg",
+            "place": "흰 갤러리",
+            "label": "가죽 하프 트렌치 · 플리츠 스커트 · 전신",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b13",
+            "file": "30.jpg",
+            "place": "회색 벽",
+            "label": "가죽 하프 트렌치 · 웃음",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b14",
+            "file": "31.jpg",
+            "place": "밝은 주방",
+            "label": "슬레이트 앞치마 · 레모네이드 만들기",
+            "tags": [
+              "food"
+            ]
+          },
+          {
+            "id": "b15",
+            "file": "32.jpg",
+            "place": "밝은 회색 배경",
+            "label": "슬레이트 립 탑 · 정면 근접",
+            "tags": [
+              "beauty"
+            ]
+          },
+          {
+            "id": "b16",
+            "file": "33.jpg",
+            "place": "크림 피크닉 담요",
+            "label": "아이보리 티 · 위에서 본 미소",
+            "tags": [
+              "travel"
+            ]
+          }
+        ]
+      },
+      "stand": {
+        "src": "C:/SYNK-LoRA/casting/idol_fresh_20261101/세트v4/F11_fullbody.jpg",
+        "top": 288,
+        "feet": 2716
+      },
+      "shotLabels": {
+        "context": "공원 피크닉 · 레모네이드",
+        "hands": "민트 레모네이드 잔을 든 두 손"
+      },
+      "shotTags": {
+        "context": [
+          "food",
+          "travel"
+        ],
+        "hands": [
+          "food"
+        ],
+        "look-1": [
+          "fashion",
+          "travel"
+        ],
+        "look-2": [
+          "fashion"
+        ]
+      }
+    },
+    "M07": {
+      "set": {
+        "dir": "C:/SYNK-LoRA/casting/idol_fresh_20261101/세트v4"
+      },
+      "stand": {
+        "src": "C:/SYNK-LoRA/casting/idol_fresh_20261101/세트v4/M07_fullbody.jpg",
+        "top": 191,
+        "feet": 2660
+      },
+      "loop": {
+        "src": "loop/M07.mp4",
+        "made": "만드는 중"
+      },
+      "shotLabels": {
+        "context": "강변 벤치 · 아이스커피",
+        "hands": "탄산수 병을 든 두 손"
+      },
+      "shotTags": {
+        "context": [
+          "food",
+          "travel"
+        ],
+        "hands": [
+          "food"
+        ],
+        "look-1": [
+          "fashion"
+        ],
+        "look-2": [
+          "fashion"
+        ]
+      },
+      "face": [
+        {
+          "label": "눈",
+          "text": "가늘고 긴 눈에 얇은 속쌍꺼풀이 있어요. 눈꼬리의 짙은 갈색 라인이 수평으로 짧게 나가요."
+        },
+        {
+          "label": "눈썹",
+          "text": "눈 가까이 낮게 놓인 곧은 일자 눈썹이에요. 결을 위로 빗어 올려요."
+        },
+        {
+          "label": "얼굴선",
+          "text": "긴 계란형에 턱이 갸름하고 턱 끝이 살짝 뾰족해요. 콧대가 높고 곧아요."
+        },
+        {
+          "label": "피부",
+          "text": "모공이 보이는 맑은 피부에 블러셔 없이 자기 혈색만 둬요. 수염 없이 매끈해요."
+        },
+        {
+          "label": "머리",
+          "text": "머리는 채도 낮은 올리브 브라운이에요. 가운데 가까이 가른 앞머리를 양옆으로 넘겨 이마 가운데가 열려요."
+        }
+      ],
+      "bodyNote": "182cm로 날씬하고 탄탄해요. 셔츠·코트 장면에서 반듯하게 서요. 광고에서도 이 비율을 그대로 지켜요.",
+      "direction": {
+        "fit": [
+          "강변 벤치에서 아이스커피 들고 웃음",
+          "공항 라운지에서 휴대폰 확인",
+          "회의실에서 태블릿으로 발표",
+          "녹음 부스에서 눈 감고 노래",
+          "해 뜰 녘 강변 조깅"
+        ],
+        "avoid": [
+          "섹시한 연출·수염·무표정은 맑은 리더 인상과 맞지 않아 쓰지 않아요."
+        ]
+      },
+      "fullAngles": {
+        "dir": "C:/SYNK-LoRA/datasets/M07_idol_leader/v4",
+        "items": [
+          {
+            "key": "full-left",
+            "file": "15.jpg",
+            "label": "전신 옆",
+            "en": "SIDE"
+          },
+          {
+            "key": "full-back",
+            "file": "16.jpg",
+            "label": "전신 뒤",
+            "en": "BACK"
+          },
+          {
+            "key": "full-45",
+            "file": "17.jpg",
+            "label": "전신 45도",
+            "en": "3/4"
+          }
+        ]
+      },
+      "scenes": {
+        "dir": "C:/SYNK-LoRA/datasets/M07_idol_leader/v4",
+        "items": [
+          {
+            "id": "b01",
+            "file": "18.jpg",
+            "place": "아침 횡단보도",
+            "label": "옥스퍼드 셔츠 · 생지 데님 · 아이스커피",
+            "tags": [
+              "food",
+              "fashion"
+            ]
+          },
+          {
+            "id": "b02",
+            "file": "19.jpg",
+            "place": "녹음 부스",
+            "label": "아이보리 립 니트 · 눈 감고 노래",
+            "tags": [
+              "ent"
+            ]
+          },
+          {
+            "id": "b03",
+            "file": "20.jpg",
+            "place": "회의실",
+            "label": "스트라이프 셔츠 · 태블릿으로 발표",
+            "tags": [
+              "tech",
+              "finance"
+            ]
+          },
+          {
+            "id": "b04",
+            "file": "21.jpg",
+            "place": "안개 낀 캠핑장",
+            "label": "스웨이드 초어 재킷 · 주전자로 커피 따르기",
+            "tags": [
+              "food",
+              "travel"
+            ]
+          },
+          {
+            "id": "b05",
+            "file": "22.jpg",
+            "place": "공항 라운지",
+            "label": "캐멀 코트 · 휴대폰과 캐리어",
+            "tags": [
+              "travel",
+              "tech"
+            ]
+          },
+          {
+            "id": "b06",
+            "file": "23.jpg",
+            "place": "밤 음료 냉장고",
+            "label": "짙은 갈색 후드 · 캔 꺼내기",
+            "tags": [
+              "food"
+            ]
+          },
+          {
+            "id": "b07",
+            "file": "24.jpg",
+            "place": "해 뜰 녘 강변",
+            "label": "갈색 티 · 조깅",
+            "tags": [
+              "sports"
+            ]
+          },
+          {
+            "id": "b08",
+            "file": "25.jpg",
+            "place": "아침 옥상",
+            "label": "초콜릿 롱코트 · 아이보리 하이넥 · 전신",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b09",
+            "file": "26.jpg",
+            "place": "요트 선착장",
+            "label": "스웨이드 재킷 · 니트 폴로 · 웃음",
+            "tags": [
+              "travel",
+              "fashion"
+            ]
+          },
+          {
+            "id": "b10",
+            "file": "27.jpg",
+            "place": "노을 역광 야외",
+            "label": "아이보리 니트 · 근접",
+            "tags": [
+              "beauty",
+              "fragrance"
+            ]
+          },
+          {
+            "id": "b11",
+            "file": "28.jpg",
+            "place": "돌 벽",
+            "label": "초콜릿 롱코트 · 근접",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b12",
+            "file": "29.jpg",
+            "place": "바닷가 부두",
+            "label": "초콜릿 롱코트 · 생지 데님 · 전신",
+            "tags": [
+              "ent",
+              "fashion",
+              "travel"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b13",
+            "file": "30.jpg",
+            "place": "돌 벽",
+            "label": "초콜릿 롱코트 · 웃음",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b14",
+            "file": "31.jpg",
+            "place": "저녁 거실 소파",
+            "label": "초콜릿 니트 · 하얀 강아지와",
+            "tags": [
+              "home"
+            ]
+          },
+          {
+            "id": "b15",
+            "file": "32.jpg",
+            "place": "밝은 회색 배경",
+            "label": "초콜릿 티 · 정면 근접",
+            "tags": [
+              "beauty",
+              "fragrance"
+            ]
+          },
+          {
+            "id": "b16",
+            "file": "33.jpg",
+            "place": "크림 피크닉 담요",
+            "label": "아이보리 티 · 위에서 본 미소",
+            "tags": [
+              "travel"
+            ]
+          }
+        ]
+      }
+    },
+    "M08": {
+      "set": {
+        "dir": "C:/SYNK-LoRA/casting/idol_fresh_20261101/세트v4"
+      },
+      "stand": {
+        "src": "C:/SYNK-LoRA/casting/idol_fresh_20261101/세트v4/M08_fullbody.jpg",
+        "top": 384,
+        "feet": 2603
+      },
+      "loop": {
+        "src": "loop/M08.mp4",
+        "made": "만드는 중"
+      },
+      "shotLabels": {
+        "context": "스튜디오 앞 계단 · 물 한 병",
+        "hands": "망고 스무디 컵을 든 두 손"
+      },
+      "shotTags": {
+        "context": [
+          "food",
+          "sports"
+        ],
+        "hands": [
+          "food"
+        ],
+        "look-1": [
+          "fashion"
+        ],
+        "look-2": [
+          "fashion"
+        ]
+      },
+      "face": [
+        {
+          "label": "눈",
+          "text": "작고 바깥 끝이 살짝 처진 강아지 눈이에요. 웃으면 반달로 접혀요."
+        },
+        {
+          "label": "볼",
+          "text": "짧고 둥근 얼굴에 사과 볼이 도톰해요."
+        },
+        {
+          "label": "코 · 입",
+          "text": "끝이 둥근 단추 코에, 코랄 로즈 입술로 활짝 웃어요."
+        },
+        {
+          "label": "피부",
+          "text": "모공이 보이는 피부에, 볕을 쬔 듯한 옅은 온기만 있어요."
+        },
+        {
+          "label": "머리",
+          "text": "골드 베이지 베이비 펌이 이마 위로 풀려 내려요. 크고 작은 컬이 섞여 있어요."
+        }
+      ],
+      "bodyNote": "177cm 날씬한 댄서 체형으로 팔다리가 길고 몸이 가벼워요. 움직이는 장면에서 선이 길게 나와요. 광고에서도 이 비율을 그대로 지켜요.",
+      "direction": {
+        "fit": [
+          "연습실에서 춤 동작 한 컷",
+          "해변 카페에서 스무디 들고 크게 웃기",
+          "놀이공원에서 솜사탕 들기",
+          "풀밭 언덕에서 점프",
+          "컵케이크에 크림 짜기"
+        ],
+        "avoid": [
+          "섹시한 연출·수염·10대 같은 연출은 햇살 같은 메인댄서 인상과 맞지 않아 쓰지 않아요."
+        ]
+      },
+      "fullAngles": {
+        "dir": "C:/SYNK-LoRA/datasets/M08_idol_dancer/v4",
+        "items": [
+          {
+            "key": "full-left",
+            "file": "15.jpg",
+            "label": "전신 옆",
+            "en": "SIDE"
+          },
+          {
+            "key": "full-back",
+            "file": "16.jpg",
+            "label": "전신 뒤",
+            "en": "BACK"
+          },
+          {
+            "key": "full-45",
+            "file": "17.jpg",
+            "label": "전신 45도",
+            "en": "3/4"
+          }
+        ]
+      },
+      "scenes": {
+        "dir": "C:/SYNK-LoRA/datasets/M08_idol_dancer/v4",
+        "items": [
+          {
+            "id": "b01",
+            "file": "18.jpg",
+            "place": "밝은 연습실",
+            "label": "번트 오렌지 티 · 춤 동작",
+            "tags": [
+              "sports",
+              "ent"
+            ]
+          },
+          {
+            "id": "b02",
+            "file": "19.jpg",
+            "place": "아침 창가",
+            "label": "번트 오렌지 후드 · 머그잔",
+            "tags": [
+              "food"
+            ]
+          },
+          {
+            "id": "b03",
+            "file": "20.jpg",
+            "place": "해변 카페",
+            "label": "번트 오렌지 캠프 셔츠 · 망고 스무디",
+            "tags": [
+              "food",
+              "travel"
+            ]
+          },
+          {
+            "id": "b04",
+            "file": "21.jpg",
+            "place": "놀이공원",
+            "label": "연청 재킷 · 솜사탕 들고 웃음",
+            "tags": [
+              "food",
+              "travel"
+            ]
+          },
+          {
+            "id": "b05",
+            "file": "22.jpg",
+            "place": "밤 버스 창가",
+            "label": "보틀 그린 항공 재킷 · 무선 이어폰",
+            "tags": [
+              "tech"
+            ]
+          },
+          {
+            "id": "b06",
+            "file": "23.jpg",
+            "place": "아침 침실",
+            "label": "흰 티 · 운동화 끈 묶기",
+            "tags": [
+              "fashion",
+              "sports"
+            ]
+          },
+          {
+            "id": "b07",
+            "file": "24.jpg",
+            "place": "바닷가 산책로",
+            "label": "흰 티 · 연청 와이드 · 아이스크림 콘",
+            "tags": [
+              "food",
+              "travel"
+            ]
+          },
+          {
+            "id": "b08",
+            "file": "25.jpg",
+            "place": "빈 도시 광장",
+            "label": "번트 오렌지 바시티 · 전신",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b09",
+            "file": "26.jpg",
+            "place": "언덕 풀밭",
+            "label": "번트 오렌지 티 · 점프",
+            "tags": [
+              "sports",
+              "travel"
+            ]
+          },
+          {
+            "id": "b10",
+            "file": "27.jpg",
+            "place": "노을 역광 야외",
+            "label": "비비드 블루 니트 · 근접",
+            "tags": [
+              "beauty"
+            ]
+          },
+          {
+            "id": "b11",
+            "file": "28.jpg",
+            "place": "흰 벽",
+            "label": "번트 오렌지 바시티 · 근접",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b12",
+            "file": "29.jpg",
+            "place": "강변 풀밭",
+            "label": "번트 오렌지 바시티 · 연청 와이드 · 전신",
+            "tags": [
+              "ent",
+              "fashion",
+              "travel"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b13",
+            "file": "30.jpg",
+            "place": "흰 벽",
+            "label": "번트 오렌지 바시티 · 전신",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b14",
+            "file": "31.jpg",
+            "place": "밝은 주방",
+            "label": "번트 오렌지 앞치마 · 컵케이크에 크림 짜기",
+            "tags": [
+              "food"
+            ]
+          },
+          {
+            "id": "b15",
+            "file": "32.jpg",
+            "place": "밝은 회색 배경",
+            "label": "오렌지 티 · 정면 근접",
+            "tags": [
+              "beauty"
+            ]
+          },
+          {
+            "id": "b16",
+            "file": "33.jpg",
+            "place": "연습실 바닥",
+            "label": "회색 티 · 위에서 본 미소",
+            "tags": [
+              "sports"
+            ]
+          }
+        ]
+      }
+    },
+    "M09": {
+      "set": {
+        "dir": "C:/SYNK-LoRA/casting/idol_fresh_20261101/세트v4"
+      },
+      "stand": {
+        "src": "C:/SYNK-LoRA/casting/idol_fresh_20261101/세트v4/M09_fullbody.jpg",
+        "top": 252,
+        "feet": 2647
+      },
+      "loop": {
+        "src": "loop/M09.mp4",
+        "made": "만드는 중"
+      },
+      "shotLabels": {
+        "context": "책방 창가 · 책 읽기",
+        "hands": "향수병을 든 손"
+      },
+      "shotTags": {
+        "context": [
+          "edu"
+        ],
+        "hands": [
+          "fragrance"
+        ],
+        "look-1": [
+          "fashion"
+        ],
+        "look-2": [
+          "fashion"
+        ]
+      },
+      "face": [
+        {
+          "label": "눈",
+          "text": "또렷한 쌍꺼풀의 큰 아몬드 눈이에요. 눈두덩과 라인은 비워 두고, 곧고 짙은 눈썹을 그대로 살려요."
+        },
+        {
+          "label": "입술",
+          "text": "도톰한 제 입술 그대로예요. 큐피드 활이 또렷해요."
+        },
+        {
+          "label": "얼굴선",
+          "text": "광대가 높은 작은 V라인 얼굴에 콧대가 높고 곧아요."
+        },
+        {
+          "label": "피부",
+          "text": "모공이 보이는 반무광 피부에, 광대 위로만 빛이 돌아요."
+        },
+        {
+          "label": "머리",
+          "text": "따뜻한 모래빛 바탕의 라이트 애쉬 블론드 소프트 울프예요. 앞머리가 살짝 한쪽으로 떨어져요."
+        }
+      ],
+      "bodyNote": "180cm 길쭉하고 가는 체형으로 다리가 길고 골반이 좁아요. 코트·화보 장면에서 선이 길어요. 광고에서도 이 비율을 그대로 지켜요.",
+      "direction": {
+        "fit": [
+          "욕실에서 세럼 바르기",
+          "갤러리를 천천히 걷기",
+          "밤 강변에서 코트 차림으로 서기",
+          "꽃시장에서 라벤더 다발 들기",
+          "카페에서 종이컵 들고 웃음"
+        ],
+        "avoid": [
+          "섹시한 연출·수염·10대 같은 연출은 차가운 비주얼 인상과 맞지 않아 쓰지 않아요."
+        ]
+      },
+      "fullAngles": {
+        "dir": "C:/SYNK-LoRA/datasets/M09_idol_visual/v4",
+        "items": [
+          {
+            "key": "full-left",
+            "file": "15.jpg",
+            "label": "전신 옆",
+            "en": "SIDE"
+          },
+          {
+            "key": "full-back",
+            "file": "16.jpg",
+            "label": "전신 뒤",
+            "en": "BACK"
+          },
+          {
+            "key": "full-45",
+            "file": "17.jpg",
+            "label": "전신 45도",
+            "en": "3/4"
+          }
+        ]
+      },
+      "scenes": {
+        "dir": "C:/SYNK-LoRA/datasets/M09_idol_visual/v4",
+        "items": [
+          {
+            "id": "b01",
+            "file": "18.jpg",
+            "place": "흰 갤러리",
+            "label": "차콜 케이프 코트 · 실크 셔츠 · 걷기",
+            "tags": [
+              "fashion",
+              "travel"
+            ]
+          },
+          {
+            "id": "b02",
+            "file": "19.jpg",
+            "place": "밝은 욕실",
+            "label": "아이보리 셔츠 · 세럼 바르기",
+            "tags": [
+              "beauty"
+            ]
+          },
+          {
+            "id": "b03",
+            "file": "20.jpg",
+            "place": "꽃시장",
+            "label": "블루 그레이 니트 조끼 · 라벤더 다발",
+            "tags": [
+              "travel"
+            ]
+          },
+          {
+            "id": "b04",
+            "file": "21.jpg",
+            "place": "오후 창가",
+            "label": "블루 그레이 니트 · 책 읽기",
+            "tags": [
+              "travel",
+              "edu"
+            ]
+          },
+          {
+            "id": "b05",
+            "file": "22.jpg",
+            "place": "밤 다리 위",
+            "label": "검정 터틀넥 · 차콜 울 코트",
+            "tags": [
+              "fashion",
+              "fragrance"
+            ]
+          },
+          {
+            "id": "b06",
+            "file": "23.jpg",
+            "place": "밝은 카페",
+            "label": "실크 셔츠 · 종이컵 들고 웃음",
+            "tags": [
+              "food"
+            ]
+          },
+          {
+            "id": "b07",
+            "file": "24.jpg",
+            "place": "노을 갈대밭",
+            "label": "아이보리 리넨 셔츠 · 크림 와이드",
+            "tags": [
+              "fashion",
+              "fragrance"
+            ]
+          },
+          {
+            "id": "b08",
+            "file": "25.jpg",
+            "place": "흰 갤러리",
+            "label": "블루 그레이 블레이저 · 쪽빛 스카프 · 무릎 위",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b09",
+            "file": "26.jpg",
+            "place": "햇살 골목",
+            "label": "블루 그레이 셔츠 · 바게트 봉투 들고 건너기",
+            "tags": [
+              "food",
+              "fashion"
+            ]
+          },
+          {
+            "id": "b10",
+            "file": "27.jpg",
+            "place": "노을 빛 야외",
+            "label": "블루 그레이 니트 · 근접",
+            "tags": [
+              "beauty",
+              "fragrance"
+            ]
+          },
+          {
+            "id": "b11",
+            "file": "28.jpg",
+            "place": "토프 벽",
+            "label": "블루 그레이 블레이저 · 근접",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b12",
+            "file": "29.jpg",
+            "place": "가을 가로수길",
+            "label": "블루 그레이 블레이저 · 차콜 플레어 · 전신",
+            "tags": [
+              "ent",
+              "fashion",
+              "travel"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b13",
+            "file": "30.jpg",
+            "place": "토프 벽",
+            "label": "블루 그레이 블레이저 · 웃음",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b14",
+            "file": "31.jpg",
+            "place": "작은 주방",
+            "label": "블루 그레이 앞치마 · 케이크에 딸기 올리기",
+            "tags": [
+              "food"
+            ]
+          },
+          {
+            "id": "b15",
+            "file": "32.jpg",
+            "place": "밝은 회색 배경",
+            "label": "블루 그레이 티 · 정면 근접",
+            "tags": [
+              "beauty"
+            ]
+          },
+          {
+            "id": "b16",
+            "file": "33.jpg",
+            "place": "라벤더 풀밭",
+            "label": "아이보리 티 · 위에서 본 미소",
+            "tags": [
+              "beauty",
+              "travel"
+            ]
+          }
+        ]
+      }
+    },
+    "M10": {
+      "set": {
+        "dir": "C:/SYNK-LoRA/casting/idol_fresh_20261101/세트v4"
+      },
+      "stand": {
+        "src": "C:/SYNK-LoRA/casting/idol_fresh_20261101/세트v4/M10_fullbody.jpg",
+        "top": 328,
+        "feet": 2632
+      },
+      "loop": {
+        "src": "loop/M10.mp4",
+        "made": "만드는 중"
+      },
+      "shotLabels": {
+        "context": "농구장 벤치 · 농구공",
+        "hands": "라임 소다 잔을 든 두 손"
+      },
+      "shotTags": {
+        "context": [
+          "sports"
+        ],
+        "hands": [
+          "food"
+        ],
+        "look-1": [
+          "fashion"
+        ],
+        "look-2": [
+          "fashion"
+        ]
+      },
+      "face": [
+        {
+          "label": "눈",
+          "text": "가는 속쌍꺼풀이 속눈썹에 붙은 길고 가는 눈이에요. 눈꼬리가 살짝 올라가요."
+        },
+        {
+          "label": "입",
+          "text": "웃으면 왼쪽 입꼬리가 더 올라가요. 입술만 쿨 핑크로 살려요."
+        },
+        {
+          "label": "얼굴선",
+          "text": "광대가 높고 턱이 날씬하게 각졌어요."
+        },
+        {
+          "label": "귀",
+          "text": "왼쪽 귀에 작은 은색 이어 커프를 하나 해요."
+        },
+        {
+          "label": "머리",
+          "text": "칠흑 짧은 텍스처 컷에 앞머리가 결대로 흩어져요. 앞머리 서너 가닥만 옅은 은빛이에요."
+        }
+      ],
+      "bodyNote": "175cm 마른 체형으로 가볍고 길쭉해요. 스트리트 옷을 넉넉하게 입어도 몸이 묻히지 않아요. 광고에서도 이 비율을 그대로 지켜요.",
+      "direction": {
+        "fit": [
+          "녹음 부스에서 랩 하기",
+          "농구장에서 공 끼고 웃음",
+          "스케이트 파크에서 보드 들기",
+          "아이스바 들고 바닷길 걷기",
+          "광장 계단에서 뛰어내리기"
+        ],
+        "avoid": [
+          "섹시한 연출·수염·10대 같은 연출은 쓰지 않아요. 장난기 있어도 성인 막내로 보이게 찍어요."
+        ]
+      },
+      "fullAngles": {
+        "dir": "C:/SYNK-LoRA/datasets/M10_idol_maknae/v4",
+        "items": [
+          {
+            "key": "full-left",
+            "file": "15.jpg",
+            "label": "전신 옆",
+            "en": "SIDE"
+          },
+          {
+            "key": "full-back",
+            "file": "16.jpg",
+            "label": "전신 뒤",
+            "en": "BACK"
+          },
+          {
+            "key": "full-45",
+            "file": "17.jpg",
+            "label": "전신 45도",
+            "en": "3/4"
+          }
+        ]
+      },
+      "scenes": {
+        "dir": "C:/SYNK-LoRA/datasets/M10_idol_maknae/v4",
+        "items": [
+          {
+            "id": "b01",
+            "file": "18.jpg",
+            "place": "공원 돌계단",
+            "label": "딥 틸 후드 · 계단 오르기",
+            "tags": [
+              "fashion",
+              "sports"
+            ]
+          },
+          {
+            "id": "b02",
+            "file": "19.jpg",
+            "place": "녹음 부스",
+            "label": "검정 티 · 랩 하기",
+            "tags": [
+              "ent"
+            ]
+          },
+          {
+            "id": "b03",
+            "file": "20.jpg",
+            "place": "야외 농구장",
+            "label": "딥 틸 긴팔 티 · 농구공 끼고 웃음",
+            "tags": [
+              "sports"
+            ]
+          },
+          {
+            "id": "b04",
+            "file": "21.jpg",
+            "place": "밝은 책상",
+            "label": "회색 후드 · 스케치북에 그림",
+            "tags": [
+              "edu"
+            ]
+          },
+          {
+            "id": "b05",
+            "file": "22.jpg",
+            "place": "밤 강변 계단",
+            "label": "검정 바람막이 · 앉아서",
+            "tags": [
+              "fashion"
+            ]
+          },
+          {
+            "id": "b06",
+            "file": "23.jpg",
+            "place": "스케이트 파크",
+            "label": "딥 틸 티 · 스케이트보드",
+            "tags": [
+              "sports",
+              "fashion"
+            ]
+          },
+          {
+            "id": "b07",
+            "file": "24.jpg",
+            "place": "바닷가 길",
+            "label": "흰 티 · 배기 데님 · 라임 아이스바",
+            "tags": [
+              "food",
+              "travel"
+            ]
+          },
+          {
+            "id": "b08",
+            "file": "25.jpg",
+            "place": "스케이트 파크",
+            "label": "검정 라이더 · 딥 틸 스웨트 · 앉은 전신",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b09",
+            "file": "26.jpg",
+            "place": "도시 광장",
+            "label": "딥 틸 티 · 계단에서 뛰어내리기",
+            "tags": [
+              "fashion",
+              "sports"
+            ]
+          },
+          {
+            "id": "b10",
+            "file": "27.jpg",
+            "place": "노을 역광 야외",
+            "label": "검정 집업 후드 · 근접",
+            "tags": [
+              "beauty"
+            ]
+          },
+          {
+            "id": "b11",
+            "file": "28.jpg",
+            "place": "콘크리트 벽",
+            "label": "검정 라이더 · 근접",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b12",
+            "file": "29.jpg",
+            "place": "밝은 지하도",
+            "label": "검정 라이더 · 배기 데님 · 전신",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b13",
+            "file": "30.jpg",
+            "place": "콘크리트 벽",
+            "label": "검정 라이더 · 웃음",
+            "tags": [
+              "ent",
+              "fashion"
+            ],
+            "concept": true
+          },
+          {
+            "id": "b14",
+            "file": "31.jpg",
+            "place": "작은 주방",
+            "label": "회색 앞치마 · 팬케이크 뒤집기",
+            "tags": [
+              "food"
+            ]
+          },
+          {
+            "id": "b15",
+            "file": "32.jpg",
+            "place": "밝은 회색 배경",
+            "label": "딥 틸 티 · 정면 근접",
+            "tags": [
+              "beauty"
+            ]
+          },
+          {
+            "id": "b16",
+            "file": "33.jpg",
+            "place": "딥 틸 피크닉 담요",
+            "label": "검정 티 · 위에서 본 미소",
+            "tags": [
+              "travel"
             ]
           }
         ]

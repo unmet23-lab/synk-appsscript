@@ -10,8 +10,9 @@ import {CASTING_MODELS} from './public/pulse-app/casting-catalog.mjs';
 import {readCastingCode,intakeCastingText,castingCodeBox,castingCodeResult,castingCodeLabel,normalizeDemoCasting,castingView} from './public/pulse-app/casting-view.mjs';
 import {strategyView,castingCodeSaveMessage,strategyReviewState} from './public/pulse-app/strategy-view.mjs';
 
-// 캐스팅북 문의 → 제작 설계(2026-10-19): 고객이 캐스팅북에서 고른 모델·헤어·목소리가 담긴 문의 글을 담당자가 붙여 넣으면
+// 캐스팅북 문의 → 제작 설계(2026-10-19): 고객이 캐스팅북에서 고른 모델·헤어가 담긴 문의 글을 담당자가 붙여 넣으면
 // 그 조합이 프로젝트에 저장되어 고객은 처음 열 때 그 조합을 본다. 캐스팅북 쪽 짝 시험은 저장소 tests/pulse-casting-code.test.mjs.
+// 11-03 목소리는 뺐다(유호님 「둘 다 전부 빼기」): 아래 KMONG·UNDECIDED·ORDER는 목소리 줄이 든 예전 문의 글이다 — 목소리는 읽되 버린다.
 const appDir=new URL('./public/pulse-app/',import.meta.url);
 // 손님이 캐스팅북에서 「누구로 진행할까요?」를 지유로 고르고 보낸 크몽 문의 글(10-19 2차 — 코드 줄 없음).
 const KMONG=`안녕하세요. PULSE 모델 캐스팅북을 보고 문의드려요.
@@ -46,59 +47,77 @@ const ORDER=`[진행할 모델] M02 태준 (남 · 30대 후반 · 섹시 · 183
 헤어: 1번 기본
 목소리: 2번 차분한
 [광고] 프리미엄 위스키`;
-const picks=text=>readCastingCode(text).items.map(item=>[item.modelId,item.hair,item.voice,item.lead]);
+const picks=text=>readCastingCode(text).items.map(item=>[item.modelId,item.hair,item.lead]);
 
 test('the inquiry the client sends reads into the app values, with the model the client chose first',()=>{
-  assert.deepEqual(picks(KMONG),[['F04','original','C',true],['F02','look-2','A',false]],'numbers in people lines start at 1; a memo saying 헤어 3번 does not override');
-  assert.deepEqual(picks(UNDECIDED),[['F02','look-2','A',false],['F04','original','C',false]],'compared-only models are not picks');
+  assert.deepEqual(picks(KMONG),[['F04','original',true],['F02','look-2',false]],'numbers in people lines start at 1; a memo saying 헤어 3번 does not override');
+  assert.deepEqual(picks(UNDECIDED),[['F02','look-2',false],['F04','original',false]],'compared-only models are not picks');
   const order=readCastingCode(ORDER);
-  assert.deepEqual(order.unknown,['F99'],'a model the casting book added before the app is reported, not guessed');assert.deepEqual(picks(ORDER),[['M02','look-3','',true]],'a missing voice stays open');
-  const [missing]=order.items;assert.equal(missing.code,'M02.2.9');assert.deepEqual(readCastingCode(missing.code).items[0],{...missing,lead:false},'the button code reads back to the same open choice');
-  assert.deepEqual(picks('1. F02 하린\n   헤어 9번 / 목소리 7번'),[['F02','','',false]]);
+  assert.deepEqual(order.unknown,['F99'],'a model the casting book added before the app is reported, not guessed');assert.deepEqual(picks(ORDER),[['M02','look-3',true]]);
+  const [missing]=order.items;assert.equal(missing.code,'M02.2');assert.deepEqual(readCastingCode(missing.code).items[0],{...missing,lead:false},'the button code reads back to the same choice');
+  assert.deepEqual(readCastingCode('1. F02 하린\n   헤어 9번 / 목소리 7번').items,[{modelId:'F02',hair:'',code:'F02.8',lead:false}],'an out-of-range hair stays open and the voice is dropped');
+  for(const item of [...readCastingCode(KMONG).items,...readCastingCode(ORDER).items])assert.deepEqual(Object.keys(item),['modelId','hair','code','lead'],'no voice in what the box reads');
   for(const noise of ['','F02','F2.1.0','F002.1.0','AF02.1.0','F02.1.0x','F02.1.0.5','v1.2.3','1.0.0','1. 제품 소개','[함께 비교한 모델] F02 하린',null,undefined])assert.deepEqual(readCastingCode(noise),{items:[],unknown:[],codes:[]},String(noise));
 });
 
 test('codes still read: the casting book share link, older inquiries and typing by hand',()=>{
-  assert.deepEqual(readCastingCode('F02.1.0'),{items:[{modelId:'F02',hair:'look-2',voice:'A',code:'F02.1.0',lead:false}],unknown:[],codes:['F02.1.0']});
-  assert.deepEqual(readCastingCode('https://synk.example/casting/#p-M03.2.2~M01.0.1').items.map(item=>item.code),['M03.2.2','M01.0.1'],'a shared package link works too');
-  assert.deepEqual(readCastingCode(`${UNDECIDED}\n\n캐스팅북 코드: F04.0.2, F02.1.0`).items.map(item=>item.code),['F02.1.0','F04.0.2'],'an older inquiry with the code line reads its people lines; codes are only the fallback');
-  assert.deepEqual(picks('f02.1.0'),[['F02','look-2','A',false]],'typed in lower case');
+  assert.deepEqual(readCastingCode('F02.1.0'),{items:[{modelId:'F02',hair:'look-2',code:'F02.1',lead:false}],unknown:[],codes:['F02.1']});
+  assert.deepEqual(readCastingCode('https://synk.example/casting/#p-M03.2.2~M01.0.1').items.map(item=>item.code),['M03.2','M01.0'],'a shared package link works too');
+  assert.deepEqual(readCastingCode(`${UNDECIDED}\n\n캐스팅북 코드: F04.0.2, F02.1.0`).items.map(item=>item.code),['F02.1','F04.0'],'an older inquiry with the code line reads its people lines; codes are only the fallback');
+  assert.deepEqual(picks('f02.1.0'),[['F02','look-2',false]],'typed in lower case');
   assert.deepEqual(readCastingCode('F02.7.9').items[0].hair,'','numbers out of range leave only that choice open');
-  assert.deepEqual(readCastingCode('F02.1.0~F02.2.1').items.map(item=>item.code),['F02.1.0'],'one row per model, first wins');
+  assert.deepEqual(readCastingCode('F02.1.0~F02.2.1').items.map(item=>item.code),['F02.1'],'one row per model, first wins');
   assert.equal(readCastingCode(Array.from({length:12},(_,index)=>`${CASTING_MODELS[index%7].id}.0.0`).join('~')).items.length,7);
-  assert.equal(castingCodeLabel(readCastingCode('F02.1.0').items[0]),'하린 · 헤어 2 하이 포니테일 · 목소리 A 밝고 상큼한');
+  assert.equal(castingCodeLabel(readCastingCode('F02.1.0').items[0]),'하린 · 헤어 2 하이 포니테일');
+});
+
+// 11-03 목소리를 뺀 뒤: 예전에 나간 세 자리 코드(목소리 값이 든 꼴 · 지금 캐스팅북 공유 주소는 셋째 자리를 늘 0으로 쓴다)와
+// 이 칸이 새로 쓰는 두 자리 코드는 같은 조합으로 읽힌다. 목소리 번호는 무엇이든(범위 밖 9도) 버린다.
+test('an old code that still carries a voice number reads like the new two-part code, voice ignored',()=>{
+  for(const [old,now]of [['F02.1.0','F02.1'],['F04.0.2','F04.0'],['M03.2.1','M03.2'],['F02.9.9','F02.9'],['#p-F02.1.0~F04.0.2','#p-F02.1~F04.0']]){
+    assert.deepEqual(readCastingCode(old),readCastingCode(now),old);
+  }
+  assert.deepEqual(readCastingCode('F04.0').items,[{modelId:'F04',hair:'original',code:'F04.0',lead:false}]);
+  assert.deepEqual(readCastingCode('공유 링크: https://synk.example/casting/#p-F04.0.2~F02.1').items.map(item=>item.code),['F04.0','F02.1'],'old and new codes mixed in one link');
+  for(const noise of ['F02.1.0.5','F02.1.0x','F02.1x','F02.12','AF02.1'])assert.deepEqual(readCastingCode(noise).items,[],noise);
+  const box=castingCodeBox({text:'F04.0.2'});assert.match(box,/data-code="F04\.0"/);assert.doesNotMatch(box,/목소리|data-code="F04\.0\.2"/);
 });
 
 test('an inquiry the client edited by hand still reads safely',()=>{
   // 「[함께 고민 중인 모델]」 머리줄과 빈 줄을 지운 글: 진행하고 싶은 모델은 첫 모델 하나뿐이다.
   const trimmed=KMONG.replace('\n\n[함께 고민 중인 모델]','');
-  assert.deepEqual(picks(trimmed),[['F04','original','C',true],['F02','look-2','A',false]]);
+  assert.deepEqual(picks(trimmed),[['F04','original',true],['F02','look-2',false]]);
   assert.doesNotMatch(castingCodeResult({text:trimmed}),/고객이 고른 모델[\s\S]*고객이 고른 모델/,'one badge');
   // 메모를 헤어 줄보다 먼저 적은 글: 메모 속 「헤어 3번」을 고른 번호로 읽지 않는다. 대사·들어 보고 싶은 문장도 같다.
-  assert.deepEqual(picks('[진행하고 싶은 모델]\n1. F04 지유\n   메모: 헤어 3번처럼 묶은 것도 보고 싶어요\n   헤어 1번 기본 / 목소리 3번 가까이 속삭이는'),[['F04','original','C',true]]);
-  assert.deepEqual(picks('[진행할 모델] M02 태준\n대사: 목소리 1번처럼 낮게, 헤어 2번은 싫어요\n헤어: 3번 짧은 크롭컷\n목소리: 2번 단단하고 또렷한'),[['M02','look-3','B',true]]);
-  assert.deepEqual(picks('1. F02 하린\n   이 목소리로 들어 보고 싶은 문장: “목소리 3번 말고 이걸로”\n   헤어 2번 / 목소리 1번'),[['F02','look-2','A',false]]);
+  assert.deepEqual(picks('[진행하고 싶은 모델]\n1. F04 지유\n   메모: 헤어 3번처럼 묶은 것도 보고 싶어요\n   헤어 1번 기본 / 목소리 3번 가까이 속삭이는'),[['F04','original',true]]);
+  assert.deepEqual(picks('[진행할 모델] M02 태준\n대사: 목소리 1번처럼 낮게, 헤어 2번은 싫어요\n헤어: 3번 짧은 크롭컷\n목소리: 2번 단단하고 또렷한'),[['M02','look-3',true]]);
+  assert.deepEqual(picks('1. F02 하린\n   이 목소리로 들어 보고 싶은 문장: “목소리 3번 말고 이걸로”\n   헤어 2번 / 목소리 1번'),[['F02','look-2',false]]);
   // 공유 주소가 함께 붙은 문의 글: 손님이 고른 순서가 담긴 사람 글 줄이 이긴다.
   assert.deepEqual(picks(`${KMONG}\n\n공유 링크: https://synk.example/casting/#p-M03.0.0`),picks(KMONG));
 });
 
-test('every hair and voice the casting book can send is a value the server and the demo accept',()=>{
-  for(const model of CASTING_MODELS)for(const hair of [0,1,2])for(const voice of [0,1,2]){
-    const [item]=readCastingCode(`${model.id}.${hair}.${voice}`).items,selection={modelId:item.modelId,hair:item.hair,voice:item.voice};
-    assert.equal(item.hair,['original','look-2','look-3'][hair]);assert.equal(item.voice,['A','B','C'][voice]);
+test('every hair the casting book can send is a value the server and the demo accept, whatever old voice number came with it',()=>{
+  for(const model of CASTING_MODELS)for(const hair of [0,1,2]){
+    const [item]=readCastingCode(`${model.id}.${hair}`).items,selection={modelId:item.modelId,hair:item.hair};
+    assert.equal(item.hair,['original','look-2','look-3'][hair]);
     assert.deepEqual(normalizeCastingSelection(selection),{...normalizeCastingSelection({}),...selection});
     assert.deepEqual(normalizeDemoCasting(selection),normalizeCastingSelection(selection));
-    const [line]=readCastingCode(`1. ${model.id} ${model.name}\n   헤어 ${hair+1}번 / 목소리 ${voice+1}번`).items;assert.deepEqual([line.hair,line.voice],[item.hair,item.voice],'people lines and codes point at the same choice');
+    for(const voice of [0,1,2]){
+      assert.deepEqual(readCastingCode(`${model.id}.${hair}.${voice}`).items[0],item,'an old code with a voice number reads the same');
+      const [line]=readCastingCode(`1. ${model.id} ${model.name}\n   헤어 ${hair+1}번 / 목소리 ${voice+1}번`).items;assert.equal(line.hair,item.hair,'people lines and codes point at the same choice');
+    }
+    const [line]=readCastingCode(`1. ${model.id} ${model.name}\n   헤어 ${hair+1}번 ${model.hairLabels[hair]}`).items;assert.equal(line.hair,item.hair,'the new people line without a voice reads the same');
   }
 });
 
 test('an imported brief carries the picks to the staff box as short people lines, the client choice first',()=>{
   const text=intakeCastingText({reportText:`[표현·장면]\n장면·모델 메모:\n${KMONG}`});
-  assert.equal(text,'[진행하고 싶은 모델]\n1. F04 지유\n   헤어 1번 기본 · 긴 흑발 생머리 / 목소리 3번 가까이 속삭이는\n\n[함께 고민 중인 모델]\n2. F02 하린\n   헤어 2번 하이 포니테일 / 목소리 1번 밝고 상큼한');
+  assert.equal(text,'[진행하고 싶은 모델]\n1. F04 지유\n   헤어 1번 기본 · 긴 흑발 생머리\n\n[함께 고민 중인 모델]\n2. F02 하린\n   헤어 2번 하이 포니테일');
   assert.deepEqual(picks(text),picks(KMONG),'and the box reads them back the same');
   assert.equal(intakeCastingText({reportText:ORDER}),'[진행하고 싶은 모델]\n1. M02 태준\n   헤어 3번 짧은 크롭컷\n\n[함께 고민 중인 모델]\n2. F99');
   assert.deepEqual(readCastingCode(intakeCastingText({reportText:ORDER})).unknown,['F99'],'a model the app does not have yet still shows as not available');
-  assert.equal(intakeCastingText({reportText:'장면·모델 메모: 캐스팅북 코드: F02.1.0',notes:''}),'[고른 모델]\n1. F02 하린\n   헤어 2번 하이 포니테일 / 목소리 1번 밝고 상큼한');
+  assert.equal(intakeCastingText({reportText:'장면·모델 메모: 캐스팅북 코드: F02.1.0',notes:''}),'[고른 모델]\n1. F02 하린\n   헤어 2번 하이 포니테일');
+  assert.equal(intakeCastingText({reportText:'1. F02 하린\n   헤어 9번 / 목소리 1번'}),'[고른 모델]\n1. F02 하린','no hair, no voice: just the model line');
   for(const intake of [null,undefined,{},{reportText:'모델은 상담으로 정해요.'},{reportText:42}])assert.equal(intakeCastingText(intake),'');
 });
 
@@ -107,7 +126,8 @@ test('the staff box shows what will be saved and never sends its text with the p
   assert.doesNotMatch(empty,/<textarea[^>]*\sname=/,'no name: FormData must not send it to save_strategy');
   assert.throws(()=>normalizeStrategyData({castingCode:'F02.1.0'}),/제작 설계 입력 항목/,'the server would reject an unknown plan field');
   const two=castingCodeBox({text:KMONG});assert.match(two,/<details class="casting-code" open>/);
-  assert.equal((two.match(/data-action="casting-code-save"/g)||[]).length,2);assert.match(two,/data-code="F04\.0\.2"[\s\S]*data-code="F02\.1\.0"/,'the client choice first');
+  assert.equal((two.match(/data-action="casting-code-save"/g)||[]).length,2);assert.match(two,/data-code="F04\.0"[\s\S]*data-code="F02\.1"/,'the client choice first');
+  assert.doesNotMatch(two.replace(/<textarea[\s\S]*<\/textarea>/,''),/목소리|<dt>목소리/,'the box shows model and hair only (the pasted text itself may still say 목소리)');assert.doesNotMatch(empty,/목소리/);
   assert.match(two,/casting-code-item is-lead[\s\S]*지유[\s\S]*고객이 고른 모델/);assert.equal((two.match(/고객이 고른 모델/g)||[]).length,1);
   assert.match(two,/고객은 지유로 진행하고 싶어 해요\./);
   assert.match(castingCodeResult({text:UNDECIDED}),/2명이 담겨 있어요\. 고객과 정한 모델을 저장해 주세요\./);assert.doesNotMatch(castingCodeResult({text:UNDECIDED}),/고객이 고른 모델/);
@@ -137,8 +157,8 @@ test('only an editing staff member sees the box, and an imported brief fills it 
 
 test('the save notice names the pick, mentions other saved edits and asks for a new review when one was current',()=>{
   const item=readCastingCode('F04.2.1').items[0],before={revision:2,request:null,confirmation:null},after={revision:3,request:null,confirmation:null};
-  assert.equal(castingCodeSaveMessage(item,before,after),'캐스팅북 조합을 저장했어요: 지유 · 헤어 3 로우 번 · 목소리 B 차분하고 부드러운. 고객 화면에도 그대로 보여요.');
-  assert.equal(castingCodeSaveMessage(item,before,after,{otherEdits:true}),'캐스팅북 조합을 저장했어요: 지유 · 헤어 3 로우 번 · 목소리 B 차분하고 부드러운. 고객 화면에도 그대로 보여요. 다른 칸에서 고친 내용도 함께 저장했어요.');
+  assert.equal(castingCodeSaveMessage(item,before,after),'캐스팅북 조합을 저장했어요: 지유 · 헤어 3 로우 번. 고객 화면에도 그대로 보여요.');
+  assert.equal(castingCodeSaveMessage(item,before,after,{otherEdits:true}),'캐스팅북 조합을 저장했어요: 지유 · 헤어 3 로우 번. 고객 화면에도 그대로 보여요. 다른 칸에서 고친 내용도 함께 저장했어요.');
   assert.match(castingCodeSaveMessage(item,{revision:2,request:{strategyRevision:2},confirmation:{strategyRevision:2}},after),/고객에게 확인을 다시 요청해 주세요/);
   assert.equal(castingCodeSaveMessage(item,before,{...before}),'바뀐 내용이 없어 그대로 두었어요.');
   assert.equal(strategyReviewState({revision:2,request:{strategyRevision:2},confirmation:null}),'requested');assert.equal(strategyReviewState({revision:2,request:{strategyRevision:1},confirmation:{strategyRevision:1}}),'');
@@ -156,10 +176,11 @@ test('the client room wires the box: save fills the casting form, submits it, an
   assert.match(app,/document\.addEventListener\('click',event=>\{const details=event\.target\?\.closest\?\.\('details\.casting-code>summary'\)\?\.parentElement;if\(details\?\.matches\?\.\('details\.casting-code'\)\)s\.castingCodeOpen=!details\.open;\},true\);/,'and at the click itself, since toggle arrives a tick later and is lost if the tab changes first');
   assert.match(app,/if\(castingCodeShown\.get\(result\)!==html\)\{result\.innerHTML=html;castingCodeShown\.set\(result,html\);\}/,'the live region is rewritten only when the reading changes');
   assert.match(app,/otherEdits=!!form&&Object\.keys\(drafts\.get\(draftKey\(form\)\)\?\.values\|\|\{\}\)\.some\(name=>!name\.startsWith\('cast_'\)\)/,'other unsaved plan edits are named in the notice');
-  assert.match(view,/pick\('cast_modelId',item\.modelId\)&&pick\('cast_hair',item\.hair\)&&pick\('cast_voice',item\.voice\)/,'model first, then hair and voice, like a person would');
+  assert.match(view,/pick\('cast_modelId',item\.modelId\)&&pick\('cast_hair',item\.hair\);/,'model first, then hair, like a person would — there is no voice field to pick');
+  assert.doesNotMatch(app,/voice-play|\.voice-play|'play','pause','ended'/,'the voice sample buttons and their audio listener are gone');
   assert.match(castingView({modelId:'F02'}),/data-choices-model="F02"/);assert.match(castingView({}),/data-choices-model=""/);
   assert.doesNotMatch(view.split('\n').filter(line=>!line.trim().startsWith('//')).join('\n'),/\(\?<[!=]/,'no regex lookbehind: Safari before 16.4 would fail to load the whole client room');
-  assert.match(readFileSync(new URL('sw.js',appDir),'utf8'),/const CACHE = 'synk-pulse-shell-v22-client-fixes-20261102';/);
+  assert.match(readFileSync(new URL('sw.js',appDir),'utf8'),/const CACHE = 'synk-pulse-shell-v24-idol-teams-20261103';/);
 });
 
 async function fixture(t){
@@ -177,7 +198,7 @@ async function fixture(t){
 test('a staff save from the code is what the client sees on first open, and a confirmed plan asks again',async t=>{
   const {request}=await fixture(t);
   let row=(await request('/api/client-projects',{body:{title:'합성 캐스팅북 코드 시험',customerName:'합성 고객',summary:'코드로 모델 채우기',terms:'합성',nextStep:'모델 확인',dueDate:'2026-12-01'}})).data.project;
-  const [item]=readCastingCode(KMONG).items,castingSelection={...normalizeCastingSelection({}),modelId:item.modelId,hair:item.hair,voice:item.voice};
+  const [item]=readCastingCode(KMONG).items,castingSelection={...normalizeCastingSelection({}),modelId:item.modelId,hair:item.hair};
   const save=async strategy=>{const result=await request(`/api/client-projects/${row.id}/studio`,{body:{revision:row.revision,action:'save_strategy',strategy}});assert.equal(result.status,200,JSON.stringify(result.data));row=result.data.project;return row.studio.strategy;};
   const first=await save({primaryPromise:'한 잔으로 시작하는 아침',evidence1:'실제 손 장면',desiredAction:'상세 보기',castingSelection});
   assert.deepEqual(first.data.castingSelection,castingSelection);
@@ -190,6 +211,6 @@ test('a staff save from the code is what the client sees on first open, and a co
   const current=(await request('/pulse/api/project',{customer})).data.project;
   const confirmed=await request('/pulse/api/studio',{customer,body:{revision:current.revision,action:'confirm_strategy',strategyRevision:current.studio.strategy.revision}});assert.equal(confirmed.status,200);
   row=(await request(`/api/client-projects/${row.id}/studio`)).data.project;assert.equal(strategyReviewState(row.studio.strategy),'confirmed');
-  const [other]=readCastingCode('F02.1.0').items,changed=await save({...row.studio.strategy.data,castingSelection:{...row.studio.strategy.data.castingSelection,modelId:other.modelId,hair:other.hair,voice:other.voice}});
+  const [other]=readCastingCode('F02.1.0').items,changed=await save({...row.studio.strategy.data,castingSelection:{...row.studio.strategy.data.castingSelection,modelId:other.modelId,hair:other.hair}});
   assert.equal(changed.confirmation,null,'a staff casting change is confirmed again by the client, as the box warns');assert.equal(changed.data.castingSelection.modelId,'F02');
 });

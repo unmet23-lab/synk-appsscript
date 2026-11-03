@@ -8,6 +8,8 @@ const CHANNELS=['instagram','youtube','facebook','tiktok','website','blog','offl
 const NUMBERS={durationSeconds:[1,600],budgetProduction:[0,1e12],budgetMedia:[0,1e12]};
 // hair: 'original'·'look-2'·'look-3'은 고른 모델의 헤어 1·2·3(casting-catalog의 hairLabels)이다. 옛 공통 값은 저장된 선택을 읽으려고 남긴다.
 // modelId는 고객 앱 카탈로그와 같은 목록이다(11-02 캐스팅북 열세 명).
+// voice는 11-03에 뺀 목소리 칸이다(유호님 「둘 다 전부 빼기」). 저장 모양과 변경 비교가 흔들리지 않게 키는 남기고,
+// 옛 화면·저장본이 보내는 A·B·C는 받되 늘 빈 값으로 두고 보여 주지도 않는다(고객 앱 normalizeDemoCasting과 같은 규칙).
 const CASTING_ENUMS={modelId:['',...CASTING_MODELS.map(model=>model.id)],hair:['','original','look-2','look-3','short','bob','long-straight','wave','updo','custom'],makeup:['','natural','clean','glow','smoky','custom'],jacket:['','none','blazer','casual','leather','custom'],top:['','tshirt','shirt','knit','blouse','custom'],bottom:['','trousers','denim','skirt','custom'],voice:['','A','B','C'],earrings:['','none','stud','hoop','drop','custom'],ring:['','none','simple','layered','custom']};
 const CASTING_FIELDS=[...Object.keys(CASTING_ENUMS),'notes'];
 const FIELDS=[...TEXT_FIELDS,...Object.keys(ENUMS),...Object.keys(NUMBERS),'channels','destinationUrl','proposedDeadline','castingSelection'];
@@ -26,7 +28,7 @@ export function normalizeCastingSelection(input){
   for(const [key,values]of Object.entries(CASTING_ENUMS)){const value=Object.hasOwn(input,key)?input[key]:'';if(!values.includes(value))throw fail('모델과 스타일 선택값을 확인해 주세요.');result[key]=value;}
   if(Object.hasOwn(input,'notes')&&typeof input.notes!=='string')throw fail('모델과 스타일 요청 내용을 확인해 주세요.');
   result.notes=text(input.notes,'castingNotes');
-  if(result.voice&&!result.modelId)throw fail('목소리를 선택하기 전에 모델을 선택해 주세요.');
+  result.voice='';
   return result;
 }
 export function normalizeStrategyData(input){
@@ -49,7 +51,7 @@ function safeCastingSelection(value){
   const result=emptyCastingSelection();if(!object(value))return result;
   for(const [key,values]of Object.entries(CASTING_ENUMS))if(values.includes(value[key]))result[key]=value[key];
   if(typeof value.notes==='string'&&value.notes.length<=1000&&!/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(value.notes))result.notes=value.notes.trim();
-  if(!result.modelId)result.voice='';
+  result.voice='';
   return result;
 }
 function safeData(value){const defaults=emptyStrategyData();return Object.fromEntries(FIELDS.map(key=>[key,key==='castingSelection'?safeCastingSelection(value?.[key]):structuredClone(value?.[key]??defaults[key])]));}

@@ -1808,7 +1808,7 @@ export function createCompanyApp(options={}) {
     // 모델 목록은 고객 앱 카탈로그(casting-catalog.mjs) 하나에서 읽는다 — 캐스팅북에 모델이 늘면 카탈로그만 고친다(11-02 일곱 → 열세 명).
     const castingIds=CASTING_MODELS.map(model=>model.id);
     for(const id of castingIds.map(value=>value.toLowerCase()))files['/pulse-app/assets/casting/'+id+'.webp']=['public/pulse-app/assets/casting/'+id+'.webp','image/webp'];
-    for(const id of castingIds)for(const sample of [1,2,3])files['/pulse-app/assets/casting/voice/'+id+'-'+sample+'.mp3']=['public/pulse-app/assets/casting/voice/'+id+'-'+sample+'.mp3','audio/mpeg'];
+    // 11-03 모델 목소리를 뺐다(유호님 「둘 다 전부 빼기」): 목소리 mp3는 공개 목록에 두지 않는다(원본은 archive/casting-voice-20261103/).
     // 10-22 모델은 사진만: 영상 칸·기획 모음(production-library)·하린 영상은 공개 목록에서 뺀다(파일은 저장소에 그대로). 모델마다 사진 넉 장.
     for(const id of castingIds.map(value=>value.toLowerCase()))for(const shot of ['fullbody','look-1','look-2','context'])files['/pulse-app/assets/casting/photos/'+id+'-'+shot+'.webp']=['public/pulse-app/assets/casting/photos/'+id+'-'+shot+'.webp','image/webp'];
     // 완성 광고(films-view.mjs): 갱스터 뮤직비디오와 화성 세 편(10-22 더함, 1분 안쪽이라 발췌 없이 포스터·본편만 — mp4는 git 밖).

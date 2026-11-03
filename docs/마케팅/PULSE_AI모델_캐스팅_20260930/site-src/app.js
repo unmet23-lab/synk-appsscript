@@ -5,6 +5,7 @@
   //   #board            모델 보드(광고 내용으로 순서 바꾸기·거르기)   #lineup  키 순서
   //   #m-F02[-탭]       모델 북(북·디지털·장면·프로필 — 10-22 「움직임」 탭은 뺐다, 옛 #m-…-motion은 북으로)         #swipe   넘기며 고르기
   //   #pkg[-inq]        패키지(컴프 카드·나란히 비교·문의 글)        #p-F02.1.0~F04.0.2  공유받은 패키지
+  //   #g-OUTBLUE        그룹(11-02 아이돌 두 팀 — 단체 컷·멤버·콘셉트 룩·팀 통째로 담기)
   const D = JSON.parse(document.getElementById('data').textContent);
   const L = window.CastingLogic;
   const TAX = { industries: D.industries, moods: D.moods, genderWords: D.genderWords };
@@ -21,11 +22,30 @@
   const whoOf = (m) => dot(sexWord(m.gender), m.age || m.ageBand, m.impression.some((w) => w.includes(m.concept)) ? '' : m.concept, m.impression.join(' · '));
   const view = $('#view');
 
+  /* ── 그룹(11-02 아이돌 두 팀) ─────────────────────────── */
+  // 모델의 group·position·memberColor는 빌드가 넣는다. 없으면(원고 그대로 여는 시험) 그룹 목록의 멤버 칸에서 채운다.
+  // 단체 컷이 아직 없는 팀은 멤버 대표 사진을 이어 붙여 대신한다. 주소 #g-<id>의 id에는 「-」가 없다(빌드가 막는다).
+  const GROUPS = (D.groups || []).filter((g) => g && /^[A-Z][A-Z0-9]{2,}$/.test(g.id));
+  const groupById = (id) => GROUPS.find((g) => g.id === id);
+  const hexOk = (h) => (/^#[0-9A-Fa-f]{6}$/.test(String(h || '')) ? h : '#9A9A93');
+  for (const g of GROUPS) for (const x of g.members || []) { const m = byCode(x.code); if (m && !m.group) Object.assign(m, { group: g.id, position: x.position, memberColor: { label: x.color, hex: x.hex } }); }
+  const teamOf = (m) => (m && m.group ? groupById(m.group) || null : null);
+  const teamMembers = (g) => (g.members || []).map((x) => byCode(x.code)).filter(Boolean);
+  const cutsOf = (g) => (g.cuts || []).filter((c) => c && c.s && c.l);
+  const teamKind = (ms) => (ms.length && ms.every((m) => m.gender === '여') ? '걸그룹' : ms.length && ms.every((m) => m.gender === '남') ? '보이그룹' : '그룹');
+  // 그룹 꼬리표: 「● OUTBLUE · 리더 · 메인보컬」, 누르면 그룹 페이지
+  function gtagHTML(m) {
+    const g = teamOf(m); if (!g) return '';
+    return `<a class="gtag" href="#g-${E(g.id)}" style="--mc:${E(hexOk(m.memberColor && m.memberColor.hex))}" aria-label="${E(g.name)} 그룹 보기${m.position ? `, ${E(m.position)}` : ''}"><i aria-hidden="true"></i><b>${E(g.name)}</b>${m.position ? `<span>${K(m.position)}</span>` : ''}</a>`;
+  }
+
   /* ── 저장: 이 브라우저에만 남는 편의 기능. 막혀 있어도 화면은 그대로 쓴다 ── */
   const KEY = 'pulse-casting-v3';
   const state = { pkg: [], sel: {}, ask: '', lead: '', ...load() };
   delete state.format; // 10-26 전 판의 글 모양(크몽 메시지 · 발주서 메모) 고르기는 뺐다
   state.pkg = state.pkg.filter(byCode);
+  // 11-03 견본 목소리 · 「우리 광고 문장으로 듣기」를 뺐다 — 전 판에 저장된 목소리 번호 · 문장은 버리고 헤어 · 메모만 남긴다
+  for (const [c, s] of Object.entries(state.sel || {})) state.sel[c] = { hair: Number((s && s.hair) || 0), memo: String((s && s.memo) || '') };
   function load() {
     try {
       const v = JSON.parse(localStorage.getItem(KEY) || 'null');
@@ -33,14 +53,14 @@
       // 1판(비교·내 선택 따로)에서 옮겨 온다: 둘 다 패키지로
       const o = JSON.parse(localStorage.getItem('pulse-casting-v2') || 'null');
       if (o && typeof o === 'object') {
-        const sel = {}; for (const p of o.picks || []) sel[p.code] = { hair: p.hair || 0, voice: p.voice || 0, memo: p.memo || '' };
+        const sel = {}; for (const p of o.picks || []) sel[p.code] = { hair: p.hair || 0, memo: p.memo || '' };
         return { pkg: [...new Set([...(o.picks || []).map((p) => p.code), ...(o.compare || [])])], sel, ask: (o.brief && o.brief.touched && o.brief.product) || '' };
       }
     } catch { /* 저장이 막힌 브라우저 */ }
     return {};
   }
   function save() { try { localStorage.setItem(KEY, JSON.stringify({ pkg: state.pkg, sel: state.sel, ask: state.ask, lead: state.lead })); } catch { /* 무시 */ } }
-  const selOf = (c) => ({ hair: 0, voice: 0, memo: '', ...(state.sel[c] || {}) });
+  const selOf = (c) => ({ hair: 0, memo: '', ...(state.sel[c] || {}) });
   const inPkg = (c) => state.pkg.includes(c);
   function setSel(c, patch) { state.sel[c] = { ...selOf(c), ...patch }; save(); }
   function togglePkg(c, on = !inPkg(c)) {
@@ -124,31 +144,9 @@
   }
 
   /* ── 목소리 ───────────────────────────────────────────── */
-  const audio = new Audio();
-  let playing = null;
-  const svgPlay = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 2.8v10.4l8.6-5.2z" fill="currentColor"/></svg>';
-  const svgStop = '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="4" y="4" width="8" height="8" rx="1.6" fill="currentColor"/></svg>';
-  const voiceBtn = (m, i) => `<button type="button" class="play" data-act="voice" data-code="${E(m.code)}" data-i="${i}" aria-pressed="false" aria-label="${E(m.name)} 목소리 ${i + 1} ${E(m.voices[i].label)} 듣기">${svgPlay}</button>`;
-  function stopAudio() {
-    audio.pause();
-    for (const b of $$('[data-act="voice"][aria-pressed="true"],[data-act="say"][aria-pressed="true"]')) { b.setAttribute('aria-pressed', 'false'); if (b.dataset.act === 'voice') b.innerHTML = svgPlay; }
-    playing = null;
-  }
-  function playSrc(src, key, btns) {
-    stopAudio();
-    audio.src = src; audio.currentTime = 0;
-    return audio.play().then(() => {
-      playing = key;
-      for (const b of btns()) { b.setAttribute('aria-pressed', 'true'); if (b.dataset.act === 'voice') b.innerHTML = svgStop; }
-    }).catch(() => toast('소리를 재생하지 못했어요. 다시 눌러 주세요.'));
-  }
-  function toggleVoice(btn) {
-    const key = btn.dataset.code + ':' + btn.dataset.i;
-    if (playing === key) { stopAudio(); return; }
-    const v = byCode(btn.dataset.code).voices[Number(btn.dataset.i)];
-    playSrc(v.src, key, () => $$(`[data-act="voice"][data-code="${btn.dataset.code}"][data-i="${btn.dataset.i}"]`));
-  }
-  audio.addEventListener('ended', stopAudio);
+  // 11-03 견본 목소리 · 듣기 단추 · 「우리 광고 문장으로 듣기」를 모두 뺐다(유호님 「둘 다 전부 빼기」). 실제 광고 목소리는
+  // 장면마다 연기로 따로 만들어 견본과 같게 들릴 수 없었다. 모델 북에는 아래 한 줄만 남긴다.
+  const VOICE_LINE = '목소리는 광고 장면에 맞춰 연기로 만들고, 시안 단계에서 들려 드려요.';
 
   /* ── 크게 보기 ────────────────────────────────────────── */
   let lbList = [], lbIndex = 0, lbName = '';
@@ -191,7 +189,7 @@
   const pkgBtn = (m, cls = 'btn line', on = '패키지에 담김', off = '+ 패키지에 넣기') => `<button type="button" class="${cls}" data-act="pkg" data-code="${E(m.code)}" data-on="${E(on)}" data-off="${E(off)}" aria-pressed="${inPkg(m.code)}">${inPkg(m.code) ? on : off}</button>`;
 
   /* ── 보드 ─────────────────────────────────────────────── */
-  const filters = { gender: '', age: '', concept: '', industry: '', height: '' };
+  const filters = { gender: '', group: '', age: '', concept: '', industry: '', height: '' };
   const uniq = (xs) => [...new Set(xs.filter(Boolean))];
   function ranked() {
     const list = L.filterModels(D.models, filters);
@@ -224,9 +222,28 @@
           <span class="line">${K(dot(m.height && m.height + 'cm', m.age || m.ageBand, m.concept))}</span>
           ${r ? `<span class="why">${K(whyOf(r))}</span>` : ''}</div>
       </a>
+      ${gtagHTML(m)}
       ${pkgBtn(m, 'add', '패키지에 담김', '+ 패키지')}
     </article>`;
   }
+  // 보드 머리 아래 그룹 띠: 팀마다 카드 한 장(단체 컷 또는 멤버 대표 이어 붙임 · 이름 · 한 줄 · 멤버 색)
+  function teamCardHTML(g) {
+    const ms = teamMembers(g), cut = cutsOf(g)[0];
+    const ph = cut
+      ? `<img src="${E(cut.s)}" srcset="${E(cut.s)} 720w, ${E(cut.l)} 1600w" sizes="(max-width:760px) 100vw, 30vw" alt="" loading="lazy">`
+      : `<span class="team-row">${(g.members || []).map((x) => { const m = byCode(x.code); return m ? `<span style="--mc:${E(hexOk(x.hex))}">${m.hero ? `<img src="${E(m.hero.s)}" alt="" loading="lazy">` : ''}</span>` : ''; }).join('')}</span>`;
+    return `<a class="team" data-team="${E(g.id)}" href="#g-${E(g.id)}">
+        <span class="team-ph">${ph}</span>
+        <span class="team-tx">
+          <span class="team-k">${E(dot(g.hanja, teamKind(ms)))}</span>
+          <b class="team-name">${E(g.name)}</b>
+          <span class="team-ko">${E(g.nameKo)}</span>
+          <span class="team-line">${K(g.line)}</span>
+          <span class="team-dots">${(g.members || []).map((x) => { const m = byCode(x.code); return m ? `<span><i style="background:${E(hexOk(x.hex))}"></i>${E(m.name)}</span>` : ''; }).join('')}</span>
+          <span class="team-go">그룹 보기 <span aria-hidden="true">→</span></span>
+        </span></a>`;
+  }
+  const teamsHTML = () => (GROUPS.length ? `<section class="teams pad" aria-label="아이돌 그룹">${GROUPS.map(teamCardHTML).join('')}</section>` : '');
   function filtersHTML(mode) {
     const order = ['상큼', '지적', '섹시', '개성'];
     const concepts = uniq(D.models.map((m) => m.concept)).sort((a, b) => (order.indexOf(a) + 99) % 99 - (order.indexOf(b) + 99) % 99);
@@ -234,6 +251,7 @@
     const count = (id) => D.models.filter((m) => (m.industries || []).includes(id)).length;
     return `<div class="filters pad" role="group" aria-label="모델 거르기">
       ${sel('gender', '성별', [['여', '여자'], ['남', '남자']])}
+      ${GROUPS.length ? sel('group', '그룹', GROUPS.map((g) => [g.id, g.name])) : ''}
       ${sel('age', '나이', uniq(D.models.map((m) => m.ageBand)).sort().map((a) => [a, a]))}
       ${sel('concept', '콘셉트', concepts.map((c) => [c, c]))}
       ${sel('industry', '업종', D.industries.filter((i) => count(i.id)).map((i) => [i.id, `${i.label} ${count(i.id)}`]))}
@@ -253,6 +271,7 @@
         </form>
         <a class="swipe-cta" href="#swipe">한 명씩 넘기며 고르기<span aria-hidden="true">→</span></a>
       </section>
+      ${mode === 'board' ? teamsHTML() : ''}
       ${filtersHTML(mode)}
       <p class="result pad" id="result" role="status"></p>
       <div id="board-body"></div>
@@ -279,7 +298,7 @@
     }
     const tiles = order.map((m) => { const r = recs.find((x) => x.model.code === m.code); return tileHTML(m, r, r ? recs.indexOf(r) + 1 : 0, recs.length && !r); }).join('');
     body.innerHTML = `<section class="board pad" aria-label="모델 보드">${tiles || ''}
-      <div class="slot"><h2>찾는 얼굴이 없나요?</h2><p>10대 모델은 준비하고 있어요. 원하는 나이·분위기를 알려 주시면 같은 방식으로 새 모델을 만들어 드려요.</p><a class="link" href="${E(formUrl(newModelText()))}" target="_blank" rel="noopener" data-act="new-model">새 모델 문의하기 <span aria-hidden="true">↗</span></a></div></section>`;
+      <div class="slot"><h2>찾는 얼굴이 없나요?</h2><p>원하는 나이·분위기를 알려 주시면 같은 방식으로 새 모델을 만들어 드려요. 아이돌 그룹처럼 여럿을 한 팀으로도 만들 수 있어요.</p><a class="link" href="${E(formUrl(newModelText()))}" target="_blank" rel="noopener" data-act="new-model">새 모델 문의하기 <span aria-hidden="true">↗</span></a></div></section>`;
     wireLoops(body);
   }
   // 움직이는 사진: 마우스를 올리면(휴대폰은 화면에 보이면) 짧게 돈다
@@ -327,6 +346,7 @@
           <h1>${E(m.name)} <small class="num">${E(m.code)}</small></h1>
           ${m.tagline ? `<p class="tagline">${K(`“${m.tagline}”`)}</p>` : ''}
           <p class="who">${K(whoOf(m))}</p>
+          ${teamOf(m) ? `<p class="g-of">${gtagHTML(m)}</p>` : ''}
           ${m.realPerson ? '<p class="real">실제 인물 · SYNK 대표 본인의 얼굴로, 본인 동의를 받아 만든 모델이에요. 신체 정보는 본인이 알려 준 값이에요.</p>' : ''}
         </div>
         <div class="acts">${pkgBtn(m)}<a class="btn ink" href="#pkg-inq" data-act="ask-this" data-code="${E(m.code)}">이 모델로 문의</a></div>
@@ -336,10 +356,7 @@
       <div class="pad">${compHTML(m)}</div>
       <section class="pick pad" aria-label="이 모델로 고르기">
         <div><h2>헤어 고르기</h2><div class="hairs" role="group" aria-label="헤어">${m.hair.map((h, i) => { const sh = m.shots['hair-' + (i + 1)]; return `<button type="button" data-act="hair" data-i="${i}" aria-pressed="${i === s.hair}">${sh ? `<img src="${E(sh.s)}" alt="" loading="lazy">` : ''}<span>${i + 1} · ${K(h.label)}</span></button>`; }).join('')}</div></div>
-        <div><h2>목소리 고르기</h2>
-          ${m.voices.length ? `<div class="voices">${m.voices.map((v, i) => `<div class="voice">${voiceBtn(m, i)}<div><b>${i + 1} · ${K(v.label)}</b><small>${K(v.note)}</small>${v.text ? `<small class="line">“${E(v.text)}”</small>` : ''}</div><button type="button" class="sel" data-act="vsel" data-i="${i}" aria-pressed="${i === s.voice}">${i === s.voice ? '고름' : '고르기'}</button></div>`).join('')}</div>${m.script ? `<p class="mt-help">읽은 문장 “${E(m.script)}”</p>` : ''}` : '<p class="muted">목소리는 상담에서 골라 드려요.</p>'}
-          ${sayHTML(m)}
-        </div>
+        <div class="voice-note"><h2>목소리</h2><p>${E(VOICE_LINE)}</p></div>
         <div class="fit"><h2>어울리는 광고</h2><p>${K(m.fits.join(' · '))}</p>
           ${(m.roles || []).length ? `<p class="roles"><b>맡는 역할</b>${K(m.roles.join(' · '))}</p>` : ''}
           ${m.direction ? `<ul>${m.direction.fit.slice(0, 4).map((t) => `<li>${K(t)}</li>`).join('')}</ul>` : ''}
@@ -349,7 +366,6 @@
       </section>`;
     drawTab(m, tab);
     $('#memo').addEventListener('input', (e) => setSel(m.code, { memo: e.target.value }));
-    wireSay(m);
   }
   function drawTab(m, tab) {
     for (const b of $$('[data-act="tab"]')) b.setAttribute('aria-selected', b.dataset.v === tab);
@@ -371,7 +387,7 @@
       return;
     }
     // 프로필
-    const info = [['한 줄 캐릭터', m.tagline && `“${m.tagline}”`], ['성별', sexWord(m.gender)], ['나이대', m.age || m.ageBand], ['콘셉트', m.concept], ['맡는 역할', (m.roles || []).join(' · ')], ['키', m.height && m.height + 'cm'], ['몸무게', m.weightKg && m.weightKg + 'kg (설정값)'], ['체형', m.build], ['옷 사이즈', dot(m.sizes.top && '상의 ' + m.sizes.top, m.sizes.bottom && '하의 ' + m.sizes.bottom)], ['신발', m.sizes.shoe && m.sizes.shoe + 'mm'], ['피부 톤', m.skin], ['눈', m.eyes], ['기본 헤어', m.hairBase], ['어울리는 업종', m.fits.join(' · ')]].filter(([, v]) => v);
+    const info = [['한 줄 캐릭터', m.tagline && `“${m.tagline}”`], ['성별', sexWord(m.gender)], ['나이대', m.age || m.ageBand], ['콘셉트', m.concept], ['그룹', teamOf(m) && `${teamOf(m).name} (${teamOf(m).nameKo})`], ['포지션', teamOf(m) && m.position], ['멤버 색', teamOf(m) && m.memberColor && m.memberColor.label], ['맡는 역할', (m.roles || []).join(' · ')], ['키', m.height && m.height + 'cm'], ['몸무게', m.weightKg && m.weightKg + 'kg (설정값)'], ['체형', m.build], ['옷 사이즈', dot(m.sizes.top && '상의 ' + m.sizes.top, m.sizes.bottom && '하의 ' + m.sizes.bottom)], ['신발', m.sizes.shoe && m.sizes.shoe + 'mm'], ['피부 톤', m.skin], ['눈', m.eyes], ['기본 헤어', m.hairBase], ['어울리는 업종', m.fits.join(' · ')]].filter(([, v]) => v);
     const sorted = D.models.filter((x) => x.height).slice().sort((a, b) => a.height - b.height);
     body.innerHTML = `<section class="panel pad prof">
       <div><h2 class="sec-h">기본 정보</h2><dl class="info">${info.map(([k, v]) => `<div><dt>${E(k)}</dt><dd>${K(v)}</dd></div>`).join('')}</dl>
@@ -418,62 +434,95 @@
     strip.scrollTo({ left: figs[i].offsetLeft - (parseFloat(getComputedStyle(strip).paddingLeft) || 0), behavior: 'smooth' });
   }
 
-  /* ── 우리 광고 문장 ───────────────────────────────────── */
-  // 문장은 늘 적어 둘 수 있고(문의 글에 들어간다), 읽어 주는 서버가 있고 그 목소리가 준비돼 있을 때만 바로 들려준다.
-  const sayApi = (D.say && D.say.api) || '';
-  const sayMax = (D.say && D.say.max) || 60;
-  const canSay = (m, i) => !!(sayApi && m.voices[i] && m.voices[i].say);
-  function sayNote(m) {
-    const i = selOf(m.code).voice;
-    if (canSay(m, i)) return `고른 목소리(${i + 1}번)로 바로 읽어 드려요. ${sayMax}자까지, 하루 ${(D.say && D.say.daily) || 10}번까지예요.`;
-    return '적어 두면 문의 글에 같이 들어가요. 고른 목소리로 이 문장을 만들어 보내 드려요.';
+  /* ── 그룹 페이지(#g-<id>) ─────────────────────────────── */
+  // 큰 단체 컷(여럿이면 넘기기) → 한 줄·왜 지금·의상 → 멤버 넷(누르면 모델 북) → 멤버별 콘셉트 룩 → 키 순서.
+  // 「팀 통째로 담기」는 넷을 기존 패키지에 담는다(컴프 카드·나란히 비교·공유 #p-·문의 글을 그대로 쓴다).
+  let gLists = { cuts: [], looks: [] }, gCut = 0, curGroup = '';
+  function teamActsHTML(g) {
+    const codes = teamMembers(g).map((m) => m.code), all = codes.length > 0 && codes.every(inPkg);
+    return `${all ? `<a class="btn ink" href="#pkg" data-act="team-compare" data-g="${E(g.id)}">패키지에서 나란히 보기</a>` : `<button type="button" class="btn ink" data-act="team-pkg" data-g="${E(g.id)}">그룹 통째로 패키지에 담기 <span class="num">${codes.length}명</span></button>`}<a class="btn line" href="#pkg-inq" data-act="team-ask" data-g="${E(g.id)}">이 그룹으로 문의</a>`;
   }
-  function sayHTML(m) {
-    if (!m.voices.length) return '';
-    const i = selOf(m.code).voice;
-    return `<form class="say" id="say" autocomplete="off"><label class="sec-h" for="say-in">우리 광고 문장으로 듣기 <span class="muted">선택</span></label>
-      <div class="row"><input id="say-in" maxlength="${sayMax}" value="${E(selOf(m.code).line || '')}" placeholder="예: 이번 주말, 딸기 라떼 한 잔 어때요?"><button type="submit" class="btn ink sm" id="say-go" data-act="say" aria-pressed="false"${canSay(m, i) ? '' : ' hidden'}>듣기</button></div>
-      <small id="say-note">${E(sayNote(m))}</small></form>`;
+  function stageHTML(g, ms, cuts) {
+    if (cuts.length) {
+      const c = cuts[0];
+      return `<figure class="g-cut"><button type="button" data-act="glb" data-list="cuts" data-i="0" id="g-cut-btn" aria-label="단체 컷 크게 보기"><img id="g-cut-img" src="${E(c.l)}" alt="${E(`${g.name} 단체 컷 · ${dot(c.place, c.label)}`)}"></button>
+        <figcaption class="g-cut-bar"><span id="g-cut-cap">${K(dot(c.place, c.label))}</span>${cuts.length > 1 ? `<span class="g-cut-nav"><button type="button" class="sq" data-act="g-cut" data-d="-1" aria-label="이전 단체 컷">←</button><span class="num" id="g-cut-n">1 / ${cuts.length}</span><button type="button" class="sq" data-act="g-cut" data-d="1" aria-label="다음 단체 컷">→</button></span>` : ''}</figcaption></figure>`;
+    }
+    // 단체 컷이 아직 없으면 멤버 넷을 전신으로 나란히(아래 멤버 칸의 대표 사진과 겹치지 않게, 전신이 없으면 대표) — 누르면 그 모델 북
+    return `<figure class="g-cut"><div class="g-collage">${ms.map((m) => { const ph = m.shots.fullbody || m.hero; return `<a href="#m-${E(m.code)}" style="--mc:${E(hexOk(m.memberColor && m.memberColor.hex))}" aria-label="${E(m.name)} 모델 북 보기">${ph ? `<img src="${E(ph.l)}" alt="${E(`${m.name} ${ph.label || ''}`)}" loading="lazy">` : ''}<span>${E(m.name)}</span></a>`; }).join('')}</div>
+      <figcaption class="g-cut-bar"><span>멤버 ${ms.length}명의 전신 · 누르면 모델 북</span></figcaption></figure>`;
   }
-  function syncSay(m) {
-    const go = $('#say-go'); if (!go) return;
-    go.hidden = !canSay(m, selOf(m.code).voice);
-    $('#say-note').textContent = sayNote(m);
+  function renderGroup(id) {
+    const g = groupById(id); if (!g) { go('#board'); return; }
+    curGroup = g.id;
+    const ms = teamMembers(g), cuts = cutsOf(g);
+    const looks = ms.flatMap((m) => m.scenes.filter((s) => s.concept).map((s) => ({ s: s.s, l: s.l, label: `${m.name} · ${s.place} · ${s.label}`, name: m.name, place: s.place, tail: s.label.split(' · ').pop() })));
+    gLists = { cuts: cuts.map((c) => ({ s: c.s, l: c.l, label: dot(c.place, c.label) })), looks };
+    gCut = 0;
+    const sorted = ms.filter((m) => m.height).slice().sort((a, b) => a.height - b.height);
+    view.innerHTML = `
+      <section class="g-band" data-team="${E(g.id)}" aria-labelledby="g-title">
+        <div class="g-head pad">
+          <a class="back" href="#board">← 모델 보드</a>
+          <div>
+            <p class="team-k">${E(dot(g.hanja, teamKind(ms), `${ms.length}명`))}</p>
+            <h1 id="g-title">${E(g.name)}</h1>
+            <p class="g-ko">${E(g.nameKo)}</p>
+            <p class="g-line">${K(g.line)}</p>
+          </div>
+          <div class="acts" id="g-acts">${teamActsHTML(g)}</div>
+        </div>
+        <div class="g-stage pad">${stageHTML(g, ms, cuts)}</div>
+      </section>
+      <section class="g-about pad">
+        <div><h2 class="sec-h">왜 지금 이 콘셉트인가</h2><p>${K(g.why)}</p></div>
+        <div><h2 class="sec-h">무대 의상</h2><p>${K(g.look)}</p></div>
+      </section>
+      <section class="g-members pad" aria-labelledby="g-mem-title">
+        <h2 class="sec-h" id="g-mem-title">멤버</h2>
+        <div class="g-mems">${(g.members || []).map((x) => { const m = byCode(x.code); return m ? `<a class="g-mem" href="#m-${E(m.code)}" style="--mc:${E(hexOk(x.hex))}">
+            <span class="g-mem-ph">${m.hero ? `<img src="${E(m.hero.s)}" alt="" loading="lazy">` : ''}</span>
+            <span class="g-pos">${K(x.position)}</span>
+            <span class="g-nm"><b>${E(m.name)}</b><span class="num">${E(m.code)}</span></span>
+            <span class="g-col"><i aria-hidden="true"></i>${E(x.color)}</span>
+            ${m.tagline ? `<span class="g-tl">${K(`“${m.tagline}”`)}</span>` : ''}</a>` : ''; }).join('')}</div>
+      </section>
+      <section class="g-looks pad" aria-labelledby="g-look-title">
+        <h2 class="sec-h" id="g-look-title">멤버별 콘셉트 컷 <span class="muted">무대·화보</span></h2>
+        ${looks.length ? `<div class="scene-grid">${looks.map((s, i) => `<figure class="scene"><button type="button" data-act="glb" data-list="looks" data-i="${i}" aria-label="${E(s.label)} 크게 보기"><img src="${E(s.s)}" alt="${E(s.label)}" loading="lazy"></button><figcaption><b>${E(s.name)}</b>${K(dot(s.place, s.tail))}</figcaption></figure>`).join('')}</div>`
+          : '<p class="mt-help">무대·화보 콘셉트 컷은 준비하고 있어요. 지금은 모델 북에서 프로필 사진을 볼 수 있어요.</p>'}
+      </section>
+      ${sorted.length ? `<section class="g-lineup pad" aria-label="키 순서"><h2 class="sec-h">키 순서</h2>${lineupHTML(sorted, { maxH: 380 })}<p class="mt-help">멤버를 같은 눈금에 세웠어요. 정수리부터 신발 바닥까지 잰 키예요.</p></section>` : ''}`;
+    watchLineups(view);
   }
-  function wireSay(m) {
-    const f = $('#say'); if (!f) return;
-    $('#say-in').addEventListener('input', (e) => setSel(m.code, { line: e.target.value.trim() }));
-    f.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const text = $('#say-in').value.trim(), btn = $('#say-go'), note = $('#say-note');
-      const v = selOf(m.code).voice;
-      if (!text) { $('#say-in').focus(); return; }
-      if (!canSay(m, v)) { note.textContent = sayNote(m); return; }
-      btn.disabled = true; btn.textContent = '만드는 중';
-      try {
-        const res = await fetch(sayApi, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ model: m.code, voice: v, text }) });
-        if (!res.ok) { const j = await res.json().catch(() => ({})); throw Error(j.message || '지금은 만들 수 없어요. 잠시 뒤 다시 눌러 주세요.'); }
-        const url = URL.createObjectURL(await res.blob());
-        await playSrc(url, 'say', () => [btn]);
-        note.textContent = `${v + 1}번 ${m.voices[v].label} 목소리로 읽었어요. 문장은 문의 글에도 들어가요.`;
-      } catch (err) { note.textContent = err.message; }
-      btn.disabled = false; btn.textContent = '듣기';
-    });
+  function stepCut(d) {
+    const list = gLists.cuts; if (list.length < 2) return;
+    gCut = (gCut + d + list.length) % list.length;
+    const c = list[gCut], img = $('#g-cut-img'), g = groupById(curGroup);
+    if (!img) return;
+    img.src = c.l; img.alt = `${g ? g.name : ''} 단체 컷 · ${c.label}`;
+    $('#g-cut-btn').dataset.i = gCut;
+    $('#g-cut-cap').innerHTML = K(c.label);
+    $('#g-cut-n').textContent = `${gCut + 1} / ${list.length}`;
+  }
+  function addTeam(g) {
+    const codes = teamMembers(g).map((m) => m.code), fresh = codes.filter((c) => !inPkg(c));
+    state.pkg.push(...fresh); save(); syncPkg();
+    return fresh.length;
   }
 
   /* ── 패키지 ───────────────────────────────────────────── */
   let pkgMode = 'cards', cmpShot = 'hero';
-  // 공유 주소: #p-F02.1.0~F04.0.2 (코드.헤어.목소리). 문의 글 끝의 「캐스팅북 코드」와 같은 번호라 PULSE 제작 화면에 그대로 옮겨진다.
+  // 공유 주소: #p-F02.1.0~F04.0.0 (코드.헤어.0). 셋째 자리는 옛 목소리 번호 자리라 11-03부터 늘 0이고, 옛 링크의 그 자리는 읽지 않는다.
   const shareCode = (items) => L.castingCode(items);
   function readShare(s) {
-    return String(s || '').split('~').map((t) => { const [code, h, v] = t.split('.'); const m = byCode(code); return m && { code, hair: Math.min(Number(h) || 0, m.hair.length - 1), voice: Math.min(Number(v) || 0, Math.max(0, m.voices.length - 1)), memo: '' }; }).filter(Boolean);
+    return String(s || '').split('~').map((t) => { const [code, h] = t.split('.'); const m = byCode(code); return m && { code, hair: Math.min(Number(h) || 0, m.hair.length - 1), memo: '' }; }).filter(Boolean);
   }
-  const myItems = () => state.pkg.map((c) => ({ code: c, ...selOf(c) }));
+  const myItems = () => state.pkg.map((c) => { const s = selOf(c); return { code: c, hair: s.hair, memo: s.memo }; });
   function cardHTML(x, shared) {
     const m = byCode(x.code), hairShot = m.shots['hair-' + (x.hair + 1)] || m.hero;
     const side = [m.shots['exp-smile'] || m.shots['look-1'], m.shots['fullbody'] || m.shots['look-2']].filter(Boolean);
     const cells = compCells(m);
-    const v = m.voices[x.voice];
     return `<article class="comp-card" data-code="${E(m.code)}">
       <div class="cc-photos"><img src="${E(hairShot.l)}" alt="${E(m.name)} ${E(hairShot.label || '')}" loading="lazy">${side.map((s) => `<img src="${E(s.s)}" alt="" loading="lazy">`).join('')}</div>
       <div class="cc-body">
@@ -482,10 +531,8 @@
         <dl class="cc-comp">${cells.map(([k, val]) => `<div><dt>${E(k)}</dt><dd class="num">${val}</dd></div>`).join('')}</dl>
         <dl class="cc-pick">
           <dt>헤어</dt><dd>${x.hair + 1} · ${K(m.hair[x.hair].label)}</dd>
-          ${v ? `<dt>목소리</dt><dd style="display:flex;align-items:center;gap:10px">${voiceBtn(m, x.voice)}${x.voice + 1} · ${K(v.label)}</dd>` : ''}
           <dt>어울림</dt><dd>${K(m.fits.slice(0, 3).join(' · '))}</dd>
           ${m.direction ? `<dt>연출</dt><dd>${K(m.direction.fit.slice(0, 2).join(' · '))}</dd>` : ''}
-          ${x.line ? `<dt>문장</dt><dd>“${E(x.line)}”</dd>` : ''}
           ${x.memo ? `<dt>메모</dt><dd>${E(x.memo)}</dd>` : ''}
         </dl>
         <div class="cc-row">
@@ -510,6 +557,7 @@
         <div class="wide">${lineupHTML(list, { maxH: 400, cols: true })}</div>
         ${brief.length ? row('광고 내용과 맞는 점', (m) => { const r = brief.find((y) => y.model.code === m.code); return r ? K(r.reasons.map((y) => y.text).join(' · ')) : '<span class="muted">겹치는 점이 적어요</span>'; }) : ''}
         ${list.some((m) => m.tagline) ? row('한 줄 캐릭터', (m) => (m.tagline ? K(`“${m.tagline}”`) : '')) : ''}
+        ${list.some(teamOf) ? row('그룹', (m) => (teamOf(m) ? K(dot(teamOf(m).name, m.position)) : '')) : ''}
         ${row('인상', (m) => K(m.impression.join(' · ')))}
         ${list.some((m) => (m.roles || []).length) ? row('맡는 역할', (m) => K((m.roles || []).join(' · '))) : ''}
         ${row('키', num((m) => m.height, (v) => `${v}<small>cm</small>`))}
@@ -518,7 +566,6 @@
         ${row('다리 비율', num((m) => m.body && m.body.leg, (v) => v.toFixed(3)))}
         ${row('옷·신발', (m) => K(dot(m.sizes.top && '상의 ' + m.sizes.top, m.sizes.bottom && '하의 ' + m.sizes.bottom, m.sizes.shoe && '신발 ' + m.sizes.shoe)))}
         ${row('고른 헤어', (m) => { const h = items.find((x) => x.code === m.code).hair; return K(`${h + 1} · ${m.hair[h].label}`); })}
-        ${row('고른 목소리', (m) => { const i = items.find((x) => x.code === m.code).voice; return m.voices[i] ? `<span style="display:flex;align-items:center;gap:10px">${voiceBtn(m, i)}${K(`${i + 1} · ${m.voices[i].label}`)}</span>` : ''; })}
         ${row('어울리는 업종', (m) => K(m.fits.join(' · ')))}
       </div></div>`;
   }
@@ -592,7 +639,7 @@
   function inqHTML(items) {
     return `<section class="inq pad" id="inq" aria-labelledby="inq-title">
       <div><h2 id="inq-title">문의 글</h2>
-        <p>${items.length ? '담은 모델과 고른 헤어·목소리, 보드에 적은 광고 내용이 들어가요. 이 글을 문의 양식이나 메일로 보내 주시면 제작을 시작할 때 같은 조합으로 준비해 드려요.' :'아직 담은 모델이 없어요. 새 모델이 필요하거나 상담부터 받고 싶다면 이 글로 시작해 주세요.'}</p>
+        <p>${items.length ? '담은 모델과 고른 헤어, 보드에 적은 광고 내용이 들어가요. 이 글을 문의 양식이나 메일로 보내 주시면 제작을 시작할 때 같은 조합으로 준비해 드려요.' :'아직 담은 모델이 없어요. 새 모델이 필요하거나 상담부터 받고 싶다면 이 글로 시작해 주세요.'}</p>
         ${leadHTML(items)}
       </div>
       <div><label class="sec-h" for="inq-text">보낼 글</label><textarea id="inq-text" readonly rows="10"></textarea>
@@ -683,7 +730,7 @@
       if (i % 3 === 2 || i === cells.length - 1) { ctx.fillStyle = '#E4E4E0'; ctx.fillRect(X, cy + 85, TW, 1); }
     });
     y += Math.ceil(cells.length / 3) * 86 + 40;
-    const pick = [['헤어', `${x.hair + 1} · ${m.hair[x.hair].label}`], m.voices[x.voice] && ['목소리', `${x.voice + 1} · ${m.voices[x.voice].label}`], ['어울리는 업종', m.fits.slice(0, 3).join(' · ')], m.direction && ['연출', m.direction.fit.slice(0, 2).join(' · ')], x.line && ['문장', `“${x.line}”`], x.memo && ['메모', x.memo]].filter(Boolean);
+    const pick = [['헤어', `${x.hair + 1} · ${m.hair[x.hair].label}`], ['어울리는 업종', m.fits.slice(0, 3).join(' · ')], m.direction && ['연출', m.direction.fit.slice(0, 2).join(' · ')], x.memo && ['메모', x.memo]].filter(Boolean);
     for (const [k, v] of pick) { text(ctx, k, X, y, 20, 450, '#77776F'); y += 6; y += 34 * wrap(ctx, v, X + 150, y - 6, 24, TW - 150, 34, 550, '#0F0F0F', 2) + 10; }
     // 바닥: 브랜드·표시
     ctx.fillStyle = '#A3265F'; ctx.fillRect(X, H - P - 74, 36, 4);
@@ -692,8 +739,8 @@
   }
   async function drawSheet(items) {
     const n = items.length, colW = 520, gap = 24, P = 56, W = P * 2 + n * colW + (n - 1) * gap;
-    const rowsMax = Math.max(...items.map((x) => (byCode(x.code).voices[x.voice] ? 4 : 3)));
-    const H = P + 64 + colW * 4 / 3 + 76 + 40 + 26 + rowsMax * 44 + 40 + 60 + P;
+    const rowsMax = 3; // 키 · 헤어 · 어울림(11-03 목소리 줄은 뺐다)
+    const H =P + 64 + colW * 4 / 3 + 76 + 40 + 26 + rowsMax * 44 + 40 + 60 + P;
     const c = document.createElement('canvas'); c.width = Math.min(W, 6000); c.height = H;
     const ctx = c.getContext('2d');
     ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, c.width, H);
@@ -708,7 +755,7 @@
       text(ctx, m.name, X, y, 60, 600); ctx.font = `550 20px ${FONT}`; text(ctx, m.code, X + colW - ctx.measureText(m.code).width, y, 20, 550, '#77776F');
       y += 40; text(ctx, dot(sexWord(m.gender), m.age || m.ageBand, m.concept), X, y, 22, 450, '#45453F', colW);
       y += 26; ctx.fillStyle = '#0F0F0F'; ctx.fillRect(X, y, colW, 2);
-      const rows = [['키', m.height ? m.height + 'cm' : '—'], ['헤어', `${x.hair + 1} · ${m.hair[x.hair].label}`], m.voices[x.voice] && ['목소리', `${x.voice + 1} · ${m.voices[x.voice].label}`], ['어울림', m.fits.slice(0, 2).join(' · ')]].filter(Boolean);
+      const rows = [['키', m.height ? m.height + 'cm' : '—'], ['헤어', `${x.hair + 1} · ${m.hair[x.hair].label}`], ['어울림', m.fits.slice(0, 2).join(' · ')]];
       rows.forEach(([k, v], j) => { const ry = y + 44 + j * 44; text(ctx, k, X, ry, 19, 450, '#77776F'); text(ctx, v, X + 92, ry, 22, 550, '#0F0F0F', colW - 92); ctx.fillStyle = '#E4E4E0'; ctx.fillRect(X, ry + 16, colW, 1); });
     });
     text(ctx, 'AI로 만든 가상인물이 포함돼 있어요. 광고에는 가상인물 표시가 필요해요.', P, H - P + 10, 18, 450, '#77776F');
@@ -815,7 +862,6 @@
     const h = decodeURIComponent(location.hash || '');
     const prev = route;
     if (prev === 'board' || prev === 'lineup') boardY = window.scrollY;
-    stopAudio();
     if ($('#lightbox').open) $('#lightbox').close();
     if ($('#export').open) $('#export').close();
     const old = h.match(/^#([A-Z]\d\d)$/);
@@ -823,12 +869,13 @@
     route = parts[0] || 'board'; curModel = '';
     let nav = 'board';
     if (route === 'm' && byCode(parts[1])) { curModel = parts[1]; renderBook(parts[1], parts[2]); nav = ''; jump(0); }
+    else if (route === 'g' && groupById(parts[1])) { renderGroup(parts[1]); nav = 'board'; jump(0); }
     else if (route === 'pkg') { renderPkg(parts[1]); nav = 'pkg'; if (parts[1] !== 'inq') jump(0); }
     else if (route === 'p') { renderPkg(parts[2], readShare(parts[1])); nav = 'pkg'; jump(0); }
     else if (route === 'swipe') { renderSwipe(); nav = 'swipe'; jump(0); }
     else if (route === 'lineup') { renderBoard('lineup'); nav = 'lineup'; jump(prev === 'm' ? boardY : 0); }
     else if (route === 'guide') { renderBoard('board', 'guide'); nav = 'guide'; }
-    else { route = 'board'; renderBoard('board'); jump(prev === 'm' ? boardY : 0); }
+    else { route = 'board'; renderBoard('board'); jump(prev === 'm' || prev === 'g' ? boardY : 0); }
     for (const x of $$('[data-nav]')) { if (x.dataset.nav === nav) x.setAttribute('aria-current', 'page'); else x.removeAttribute('aria-current'); }
     syncPkg();
   }
@@ -847,6 +894,11 @@
       case 'filters-clear': for (const k of Object.keys(filters)) filters[k] = ''; for (const s of $$('.filters select')) s.value = ''; drawBoard(route === 'lineup' ? 'lineup' : 'board'); break;
       case 'new-model': t.href = formUrl(newModelText()); break; // 보드에 적은 광고 내용이 그 사이 바뀌었을 수 있어 누를 때 다시 채운다(새 창 열기는 링크 그대로)
       case 'ask-this': if (!inPkg(code)) state.pkg.push(code); state.lead = code; save(); break;
+      case 'team-pkg': { const g = groupById(t.dataset.g); if (!g) break; const n = addTeam(g); pkgMode = 'compare'; toast(n ? `${g.name} ${n}명을 패키지에 담았어요` : `${g.nameKo}${L.josa(g.nameKo, '은', '는')} 이미 패키지에 있어요`); const a = $('#g-acts'); if (a) a.innerHTML = teamActsHTML(g); break; }
+      case 'team-compare': { const g = groupById(t.dataset.g); if (g) addTeam(g); pkgMode = 'compare'; break; } // 링크(#pkg)는 그대로 연다
+      case 'team-ask': { const g = groupById(t.dataset.g); if (g) addTeam(g); state.lead = ''; save(); break; } // 진행할 모델은 문의 글에서 고르거나 상담에서 정한다
+      case 'g-cut': stepCut(Number(t.dataset.d)); break;
+      case 'glb': { const g = groupById(curGroup); const list = gLists[t.dataset.list] || []; if (list.length) openLb(list, Number(t.dataset.i) || 0, g ? g.name : ''); break; }
       case 'tab': drawTab(byCode(curCode), v); try { history.replaceState(null, '', `#m-${curCode}-${v}`); } catch { /* 무시 */ } break;
       case 'strip': stepStrip(Number(t.dataset.d)); break;
       case 'strip-grid': { const s = $('#strip'); const on = s.classList.toggle('grid'); t.textContent = on ? '옆으로 넘겨 보기' : '한눈에 보기'; $$('.strip-nav .sq, #strip-count').forEach((x) => { x.hidden = on; }); break; }
@@ -855,12 +907,10 @@
       case 'lb-close': $('#lightbox').close(); break;
       case 'scene-tag': for (const b of $$('[data-act="scene-tag"]')) b.setAttribute('aria-pressed', b === t); for (const f of $$('.scene')) f.hidden = !!v && !f.dataset.tags.split(' ').includes(v); break;
       case 'hair': setSel(curCode, { hair: Number(t.dataset.i) }); for (const b of $$('[data-act="hair"]')) b.setAttribute('aria-pressed', b === t); break;
-      case 'vsel': setSel(curCode, { voice: Number(t.dataset.i) }); for (const b of $$('[data-act="vsel"]')) { const on = b === t; b.setAttribute('aria-pressed', on); b.textContent = on ? '고름' : '고르기'; } syncSay(byCode(curCode)); break;
-      case 'voice': toggleVoice(t); break;
-      case 'pk-mode': if (t.disabled) break; pkgMode = v; stopAudio(); { const items = view.dataset.shared ? readShare(view.dataset.shared) : myItems(); $('#pk-body').innerHTML = pkgMode === 'compare' ? compareHTML(items) : `<div class="cards pad">${items.map((x) => cardHTML(x, !!view.dataset.shared)).join('')}</div>`; watchLineups($('#pk-body')); for (const b of $$('[data-act="pk-mode"]')) b.setAttribute('aria-pressed', b === t); } break;
+      case 'pk-mode': if (t.disabled) break; pkgMode = v; { const items = view.dataset.shared ? readShare(view.dataset.shared) : myItems(); $('#pk-body').innerHTML = pkgMode === 'compare' ? compareHTML(items) : `<div class="cards pad">${items.map((x) => cardHTML(x, !!view.dataset.shared)).join('')}</div>`; watchLineups($('#pk-body')); for (const b of $$('[data-act="pk-mode"]')) b.setAttribute('aria-pressed', b === t); } break;
       case 'cmp-shot': cmpShot = v; { const items = view.dataset.shared ? readShare(view.dataset.shared) : myItems(); $('#pk-body').innerHTML = compareHTML(items); watchLineups($('#pk-body')); } break;
       case 'pkg-rm': state.pkg = state.pkg.filter((x) => x !== code); save(); syncPkg(); renderPkg(); break;
-      case 'take-share': { const items = readShare(view.dataset.shared); for (const x of items) { if (!inPkg(x.code)) state.pkg.push(x.code); setSel(x.code, { hair: x.hair, voice: x.voice }); } save(); toast(`${items.length}명을 내 패키지에 담았어요`); go('#pkg'); break; }
+      case 'take-share': { const items = readShare(view.dataset.shared); for (const x of items) { if (!inPkg(x.code)) state.pkg.push(x.code); setSel(x.code, { hair: x.hair }); } save(); toast(`${items.length}명을 내 패키지에 담았어요`); go('#pkg'); break; }
       case 'share-link': copy(`${shareBase}#p-${shareCode(myItems())}`, '공유 링크를 복사했어요. 받은 사람도 같은 조합으로 볼 수 있어요.'); break;
       case 'to-inq': e.preventDefault(); $('#inq')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); break;
       // 양식 · 메일은 링크 그대로 열고, 글이 주소에 다 담기지 않았거나 메일 앱이 없을 때를 위해 글을 복사해 둔다

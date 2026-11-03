@@ -135,41 +135,7 @@
       "주의": "지시문엔 pls_m06, a Korean man in his early twenties를 늘 함께 적는다 — 트리거만 적은 클로즈업 견본은 여자로 나오고(줄전구 2,500~3,400) 트리거 없는 a young Korean man은 한결 꼴이 되니 트리거 하나만 믿지 않고, 한 장면에 다른 젊은 남자 모델 LoRA나 트리거 없는 젊은 남자를 세우지 않는다(두 사람 컷은 따로 뽑아 합침). young·handsome은 쓰지 않고 룩은 short cropped black hair with a messy fringe, monolid eyes, slightly protruding ears, straight nose, slightly angular boyish jaw, clean-shaven, no moles anywhere on his face. squinting·frown은 세트 07 화남의 미간 주름이 새고 볼·턱이 넓어지며 볼에 점이 생기니(V05) relaxed brow, soft eyes slightly narrowed, soft smile로 바꾸고 한낮 직사광은 시드 2~3개·점은 후보정. 촛불·따뜻한 측광 돌아봄은 광대·턱이 각지고 볼에 작은 점이 번지며 24~27로 보이니(V06) soft boyish face, smooth cheeks, gentle expression을 적고 시드 2~3개, 클로즈업은 img2img 0.6, 볼 확인. 안전한 표정은 큰 웃음(V10)·다문 입 미소(V01·V04)·담담한 응시(V02·V07), focused는 시선이 내려간다(V09). 수염은 안 적어도 0/10이라 clean-shaven 불필요, 이마 잡티는 기준보다 적게 나와 필요하면 a few faint tiny blemishes on the forehead. 전신은 얼굴 69px에서도 한결이나 등신 7.05·어깨/얼굴폭 2.5·다리 0.511로 허용 윗끝이고 입술이 어두우니(V08) 178 cm, swimmer's build with broad straight shoulders, camera at waist height를 적고 등신을 재며 얼굴은 클로즈업 따로 → 얼굴 띠 → 2K 또는 img2img 0.6. 좌우 방향은 적은 대로 돌고(3/3) front view도 정면이지만 45°는 16~19°에 그치니 three-quarter view, 45 degrees, far ear hidden으로 적고 각도를 잰다. candid snapshot은 광각 꼴(V01)이라 85mm portrait lens, 창가 옆얼굴 땀방울(V03)은 dry matte skin 또는 시드 바꾸기. 입술은 어두운 빛에서 적갈색(V08·V06·V09)이라 soft coral-pink lips, 차가운 빛은 warm skin tone"
     }
   },
-  "목소리": {
-    "엔진": "타입캐스트 ssfm-v30 · seed 1018",
-    "목소리": "성현(Sunghyun, tc_6502c170032896b4d457fe01)",
-    "대사": "슛 하나만 더 넣고요! 운동 끝나고 마시는 이 한 모금, 이게 진짜 청량이죠.",
-    "들리는_나이": 22,
-    "톤_셋": [
-      {
-        "번호": 1,
-        "느낌": "밝고 청량한",
-        "감정": "happy",
-        "빠르기": 1.03,
-        "쓰임": "음료·간식·이벤트"
-      },
-      {
-        "번호": 2,
-        "느낌": "편하고 친근한",
-        "감정": "normal",
-        "빠르기": 1,
-        "쓰임": "앱·게임·후기"
-      },
-      {
-        "번호": 3,
-        "느낌": "힘차게 응원하는",
-        "감정": "toneup",
-        "빠르기": 1,
-        "쓰임": "헬스 입문·스포츠"
-      }
-    ],
-    "다른_후보": [
-      "건석(Gunseok, 들리는 나이 28.6)",
-      "우성(Woosung, 들리는 나이 29.1)"
-    ],
-    "고른_방법": "10-18 젊은 성인 156 + 10-20 30~40대 62를 같은 문장으로 잰 값(다시 굽지 않음)에서 「20대 초반 · 밝고 가벼움 · 활기 높음」과 가까운 남자 6명 → 한결 대사로 다시 재서 고름(들리는 나이 22.0). 1기·1차 열 명 · 해설 목소리 · 유호님이 뺀 목소리 · 이름이 「한결」인 목소리(미니게임 마린) 제외. C:/SYNK-LoRA/casting/wave2_20261023/목소리/README.md · 톤 셋 들리는 나이 24.1~25.8",
-    "상태": "측정으로 고름(10-23) — 1차 다섯 명처럼 측정 기본값. 바꾸려면 다른 후보에서"
-  },
+  "목소리": "없음 — 목소리는 광고 장면에 맞춰 연기로 만들고, 시안 단계에서 들려 드린다(11-03 유호님 「둘 다 전부 빼기」 — 캐스팅북 · 고객 앱 견본 목소리 모두 뺌, 원본은 보관)",
   "영상_게이트": {
     "날짜": "2026-10-24",
     "판정": "통과 — 루프 hold2 s203 예, 시안 S1 예 · S2 예(경계) · S3 예. 올리기 전 볼 점 · S1 팔 얼룩을 지우고 웹판을 36번 장부터 재단해 재확인 통과",

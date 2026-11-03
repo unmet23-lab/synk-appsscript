@@ -57,11 +57,12 @@
 
   const heightBand = (cm) => (Number(cm) > 0 ? Math.floor(Number(cm) / 10) * 10 + 'cm대' : '');
 
-  // 거르기. 값이 ''이거나 '전체'면 그 조건은 보지 않는다.
+  // 거르기. 값이 ''이거나 '전체'면 그 조건은 보지 않는다. group은 그룹 id(11-02 아이돌 두 팀 — OPALINE · OUTBLUE).
   function filterModels(models, f) {
     const on = (v) => v && v !== '전체';
     return models.filter((m) =>
       (!on(f.gender) || m.gender === f.gender)
+      && (!on(f.group) || m.group === f.group)
       && (!on(f.age) || m.ageBand === f.age)
       && (!on(f.concept) || m.concept === f.concept)
       && (!on(f.industry) || (m.industries || []).includes(f.industry))
@@ -179,11 +180,12 @@
     return `${m.code} ${m.name} (${joinDot(m.gender, m.age || m.ageBand, m.concept, m.height && m.height + 'cm')})`;
   }
 
-  // 캐스팅북 코드: 「모델 코드.헤어 번호.목소리 번호」(번호는 0부터)를 ~로 잇는다. 공유 주소 #p- 뒤 글자다.
+  // 캐스팅북 코드: 「모델 코드.헤어 번호.0」(번호는 0부터)을 ~로 잇는다. 공유 주소 #p- 뒤 글자다.
+  // 셋째 자리는 옛 목소리 번호 자리다. 11-03 견본 목소리를 빼며 늘 0으로 적는다 — 세 자리 꼴은 옛 공유 링크 · 담당자 칸이 읽는 꼴이라 그대로 둔다.
   // 손님이 보내는 문의 글에는 넣지 않는다(10-19 유호님 「손님 입장에서 이걸 보면 잘 모르지 않을까」). 담당자가 PULSE 제작 설계의
-  // 「캐스팅북 문의로 채우기」에 문의 글을 붙여 넣으면 그 칸이 「1. F02 하린」·「헤어 2번 / 목소리 1번」 줄과 「진행하고 싶은 모델」 칸을 읽는다.
+  // 「캐스팅북 문의로 채우기」에 문의 글을 붙여 넣으면 그 칸이 「1. F02 하린」·「헤어 2번」 줄과 「진행하고 싶은 모델」 칸을 읽는다.
   function castingCode(picks) {
-    return (picks || []).filter((p) => /^[A-Z]\d\d$/.test(String((p && p.code) || ''))).map((p) => `${p.code}.${Number(p.hair) || 0}.${Number(p.voice) || 0}`).join('~');
+    return (picks || []).filter((p) => /^[A-Z]\d\d$/.test(String((p && p.code) || ''))).map((p) => `${p.code}.${Number(p.hair) || 0}.0`).join('~');
   }
 
   // 문의용 글. format: 'kmong'(편지 꼴 — 10-26부터 캐스팅북 화면은 이것만 쓴다) | 'order'(발주서 「장면·모델」 메모). 담당자 칸은 둘 다 읽는다.
@@ -197,8 +199,8 @@
     const others = (compare || []).filter((c) => !chosen.some((x) => x.m.code === c)).map(byCode).filter(Boolean);
     const undecided = !first && chosen.length > 1;
     const lines = [];
+    // 11-03부터 목소리 번호 · 「들어 보고 싶은 문장」은 글에 넣지 않는다(견본 목소리를 뺐다 — 목소리는 시안에서 장면에 맞춰 만든다)
     const hairOf = (x) => x.m.hair[x.p.hair] ? `${x.p.hair + 1}번 ${x.m.hair[x.p.hair].label}` : '';
-    const voiceOf = (x) => x.m.voices[x.p.voice] ? `${x.p.voice + 1}번 ${x.m.voices[x.p.voice].label}` : '';
     const briefBits = [];
     if (brief && brief.touched && !briefIsEmpty(brief)) {
       const ind = taxonomy.industries.find((i) => i.id === brief.industry);
@@ -211,8 +213,6 @@
       chosen.forEach((x, i) => {
         lines.push(`[${first ? (i ? '함께 고민 중인 모델' : '진행할 모델') : `모델 ${i + 1}`}] ${modelLine(x.m)}`);
         if (hairOf(x)) lines.push(`헤어: ${hairOf(x)}`);
-        if (voiceOf(x)) lines.push(`목소리: ${voiceOf(x)}`);
-        if (x.p.line) lines.push(`대사: ${x.p.line.replace(/\s+/g, ' ').trim()}`);
         if (x.p.memo) lines.push(`메모: ${x.p.memo.replace(/\s+/g, ' ').trim()}`);
       });
       if (others.length) lines.push(`[함께 비교한 모델] ${others.map((m) => `${m.code} ${m.name}`).join(', ')}`);
@@ -225,9 +225,7 @@
       const b = [title];
       list.forEach((x, i) => {
         b.push(`${start + i}. ${modelLine(x.m)}`);
-        const hv = [hairOf(x) && `헤어 ${hairOf(x)}`, voiceOf(x) && `목소리 ${voiceOf(x)}`].filter(Boolean).join(' / ');
-        if (hv) b.push(`   ${hv}`);
-        if (x.p.line) b.push(`   이 목소리로 들어 보고 싶은 문장: “${x.p.line.replace(/\s+/g, ' ').trim()}”`);
+        if (hairOf(x)) b.push(`   헤어 ${hairOf(x)}`);
         if (x.p.memo) b.push(`   메모: ${x.p.memo.replace(/\s+/g, ' ').trim()}`);
       });
       return b;

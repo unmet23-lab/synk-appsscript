@@ -22,11 +22,11 @@ const castingOptions={
 const structuredText=value=>value&&typeof value==='object'?JSON.stringify(value,null,2):String(value);
 function castingText(value){
   if(!object(value)||!Object.values(value).some(item=>item!==''&&item!==null&&item!==undefined))return '고르지 않음';
-  const model=CASTING_MODELS.find(model=>model.id===value.modelId),voice=model?.voices.find(voice=>voice.id===value.voice),parts=['모델: '+(model?model.name+' ('+model.id+')':value.modelId||'미정')];
+  // 목소리는 11-03에 뺐다 — 옛 기준에 남은 목소리 값은 strategyView가 비우고, 여기서도 줄을 쓰지 않는다.
+  const model=CASTING_MODELS.find(model=>model.id===value.modelId),parts=['모델: '+(model?model.name+' ('+model.id+')':value.modelId||'미정')];
   // 헤어 1·2·3은 고른 모델의 헤어 이름으로 읽는다(casting-catalog의 hairLabels).
   const modelHair=key=>key==='hair'&&model&&{original:0,'look-2':1,'look-3':2}[value.hair]!==undefined?model.hairLabels?.[{original:0,'look-2':1,'look-3':2}[value.hair]]:'';
   for(const [key,option]of Object.entries(castingOptions))parts.push(option.label+': '+(modelHair(key)||option.values[value[key]]||value[key]||'미정'));
-  parts.push('목소리: '+(value.voice?value.voice+(voice?' · '+voice.label:''):'미정'));
   if(value.notes)parts.push('기타·메모: '+value.notes);return parts.join('\n');
 }
 function display(key,value){if(key==='castingSelection')return castingText(value);if(value===null||value===undefined||value==='')return '아직 없음';if(Array.isArray(value))return value.length?value.map(item=>choices[key]?.[item]||structuredText(item)).join(', '):'고르지 않음';if(object(value))return structuredText(value);if(key==='durationSeconds')return value+'초';if(key==='budgetProduction'||key==='budgetMedia')return Number(value).toLocaleString('ko-KR')+'원';return choices[key]?.[value]||String(value);}

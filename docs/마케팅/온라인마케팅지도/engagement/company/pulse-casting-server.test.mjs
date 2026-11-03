@@ -10,7 +10,8 @@ import {emptyCastingSelection} from './pulse-strategy.mjs';
 const companyDir=dirname(fileURLToPath(import.meta.url));
 const projectDraft={title:'합성 모델 선택 시험',customerName:'합성 고객',contact:'SYNTHETIC-PRIVATE-CONTACT',summary:'캐스팅 API 시험',terms:'합성 합의',internalNotes:'SYNTHETIC-PRIVATE-STAFF',nextStep:'모델 선택',dueDate:'2026-12-01',nextContactDate:''};
 const strategyDraft={objective:'brand',product:'합성 제품',audience:'합성 고객',channels:['instagram'],primaryPromise:'오래 쓰는 제품',value1:'편안함',evidence1:'합성 내구성 시험 장면',value2:'튼튼함',memoryHook:'제품 이름',desiredAction:'자세히 보기'};
-const selection={modelId:'F01',hair:'wave',makeup:'natural',jacket:'blazer',top:'shirt',bottom:'trousers',voice:'B',earrings:'stud',ring:'simple',notes:'밝은 분위기'};
+// voice는 11-03에 뺀 목소리 칸이다(유호님 「둘 다 전부 빼기」): 키는 남고 값은 늘 비어 있다.
+const selection={modelId:'F01',hair:'wave',makeup:'natural',jacket:'blazer',top:'shirt',bottom:'trousers',voice:'',earrings:'stud',ring:'simple',notes:'밝은 분위기'};
 
 async function fixture(t){
   const directory=await mkdtemp(join(tmpdir(),'synk-pulse-casting-'));
@@ -39,7 +40,8 @@ async function fixture(t){
 test('customer casting saves reach staff, persist after restart, keep the confirmed plan and preserve reviewed history',async t=>{
   const f=await fixture(t);const created=await f.create(),customer=await f.invite(created);let row=customer.project;
   assert.deepEqual(row.studio.strategy.data.castingSelection,emptyCastingSelection());
-  let result=await f.customerStudio(customer,row,{action:'save_strategy',strategy:{...strategyDraft,castingSelection:selection}});
+  // 캐시에 남은 옛 고객 화면은 목소리 B를 함께 보낸다 — 받되 비워서 저장한다.
+  let result=await f.customerStudio(customer,row,{action:'save_strategy',strategy:{...strategyDraft,castingSelection:{...selection,voice:'B'}}});
   assert.equal(result.status,200,result.text);row=result.data.project;
   assert.equal(row.studio.strategy.revision,1);assert.equal(row.studio.strategy.author,'customer');assert.deepEqual(row.studio.strategy.data.castingSelection,selection);
   let staff=await f.request('/api/client-projects/'+row.id+'/studio');assert.equal(staff.status,200,staff.text);assert.deepEqual(staff.data.project.studio.strategy,row.studio.strategy);
@@ -48,7 +50,7 @@ test('customer casting saves reach staff, persist after restart, keep the confir
   assert.equal(row.studio.strategy.confirmation.strategyRevision,1);
   await f.restart();
   result=await f.request('/pulse/api/project',{customer});assert.equal(result.status,200,result.text);assert.deepEqual(result.data.project.studio.strategy,row.studio.strategy);row=result.data.project;
-  const changed={...selection,modelId:'M02',voice:'C',hair:'short',earrings:'none',notes:'두 번째 선택'};
+  const changed={...selection,modelId:'M02',hair:'short',earrings:'none',notes:'두 번째 선택'};
   result=await f.customerStudio(customer,row,{action:'save_strategy',strategy:{...strategyDraft,castingSelection:changed}});assert.equal(result.status,200,result.text);row=result.data.project;
   const strategy=row.studio.strategy;
   // A customer's own model or style change carries the confirmed plan to the new version.
@@ -61,7 +63,8 @@ test('customer casting saves reach staff, persist after restart, keep the confir
   result=await f.customerStudio(customer,row,{action:'save_strategy',strategy:{...strategyDraft,castingSelection:changed}});assert.equal(result.status,200,result.text);
   assert.equal(result.data.project.revision,row.revision,'an unchanged save writes nothing');assert.deepEqual(result.data.project.studio.strategy,strategy);row=result.data.project;
   const beforeInvalid=structuredClone(row);
-  for(const castingSelection of [{...changed,modelId:'UNKNOWN'},{...changed,voice:'D'},{...changed,modelId:''},{...changed,privateUrl:'https://example.test/private'},{...changed,notes:{private:'hidden'}}]){
+  // 11-03 전에는 「모델 없이 목소리」라 거절하던 {...changed,modelId:''}는 목소리가 없어진 지금 「모델은 나중에」라는 바른 선택이라 목록에서 뺐다.
+  for(const castingSelection of [{...changed,modelId:'UNKNOWN'},{...changed,voice:'D'},{...changed,voice:7},{...changed,privateUrl:'https://example.test/private'},{...changed,notes:{private:'hidden'}}]){
     result=await f.customerStudio(customer,row,{action:'save_strategy',strategy:{...strategyDraft,castingSelection}});assert.equal(result.status,400,result.text);
   }
   result=await f.request('/pulse/api/project',{customer});assert.equal(result.status,200,result.text);assert.deepEqual(result.data.project,beforeInvalid,'invalid nested payloads never partially write');
@@ -81,5 +84,9 @@ test('server serves casting modules, stylesheet and all six prepared portraits w
     assert.equal(result.status,200,file+': '+result.status);assert.ok(result.headers.get('content-type')?.startsWith(type),file+' content type');
     const source=await readFile(join(companyDir,'public','pulse-app',file));assert.deepEqual(result.bytes,source,file+' exact served contents');assert.ok(result.bytes.length>0,file+' is not empty');
     if(type==='image/webp'){assert.equal(result.bytes.subarray(0,4).toString(),'RIFF');assert.equal(result.bytes.subarray(8,12).toString(),'WEBP');}
+  }
+  // 11-03 목소리를 뺐다: 예전 목소리 샘플 주소는 공개 목록에 없다(원본은 공개 폴더 밖 archive/casting-voice-20261103/).
+  for(const path of ['assets/casting/voice/F01-1.mp3','assets/casting/voice/M03-2.mp3','assets/casting/voice/M06-3.mp3']){
+    const result=await f.request('/pulse-app/'+path,{anonymous:true});assert.equal(result.status,404,path+': '+result.status);assert.doesNotMatch(result.headers.get('content-type')||'',/audio/,path);
   }
 });
