@@ -10,6 +10,7 @@ T-C `닮음.py`와 같은 모델(OpenCV YuNet + SFace). 얼굴 닮음 점수는 
 
     python -I -X utf8 실존대조_얼굴.py 자르기 <그림> <밖.jpg>          얼굴 + 머리만 정사각에 가깝게 자른다(렌즈 · 판별 모델에 넣을 판)
     python -I -X utf8 실존대조_얼굴.py 렌즈닮음 <조각 그림> <렌즈 결과 폴더>   결과.json의 썸네일마다 얼굴을 찾아 견주고 렌즈.json을 쓴다
+    python -I -X utf8 실존대조_얼굴.py 나란히 <조각 그림> <렌즈 결과 폴더> <밖.jpg>   살핌을 눈으로 정할 한 장(조각 + 공인 카드 위 다섯)
 """
 import json
 import os
@@ -31,13 +32,18 @@ def 닮음(a, b):
 
 
 def 읽기(p):
-    return cv2.imdecode(np.fromfile(p, np.uint8), cv2.IMREAD_COLOR)
+    buf = np.fromfile(p, np.uint8)
+    return cv2.imdecode(buf, cv2.IMREAD_COLOR) if buf.size else None  # 빈 썸네일(0바이트 응답)은 없는 그림으로
 
 
 def 얼굴들(img):
     h, w = img.shape[:2]
     if min(h, w) < 160:  # 썸네일은 작아 YuNet이 놓친다 — 두 배로 키워 찾는다
         img = cv2.resize(img, (w * 2, h * 2), interpolation=cv2.INTER_CUBIC)
+        h, w = img.shape[:2]
+    elif max(h, w) > 1200:  # 큰 원본(1792×2400)은 점수가 떨어진다(히잡 조각 0.68 → 줄이면 0.94) — 긴 변 1200으로
+        s = 1200 / max(h, w)
+        img = cv2.resize(img, (int(w * s), int(h * s)), interpolation=cv2.INTER_AREA)
         h, w = img.shape[:2]
     FD.setInputSize((w, h))
     _, faces = FD.detect(img)
@@ -74,7 +80,10 @@ elif sys.argv[1] == "렌즈닮음":
     for c in 결과["카드"]:
         if not c.get("파일"):
             continue
-        t, fs = 얼굴들(읽기(os.path.join(폴더, c["파일"])))
+        원 = 읽기(os.path.join(폴더, c["파일"]))
+        if 원 is None:  # 받은 썸네일이 그림이 아닌 때(빈 응답 · 지원 밖 형식) — 건너뛴다
+            continue
+        t, fs = 얼굴들(원)
         if not fs:
             continue
         점, g = max(((닮음(기준, FR.feature(FR.alignCrop(t, g))), g) for g in fs), key=lambda x: x[0])
@@ -91,5 +100,25 @@ elif sys.argv[1] == "렌즈닮음":
             "공인카드": len(공인), "공인최고": 공인최고, "공인무리": 무리, "판정": 판정, "공인위": 공인[:5], "위": 줄[:5]}
     json.dump(요약, open(os.path.join(폴더, "렌즈.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(json.dumps({k: v for k, v in 요약.items() if k not in ("위", "공인위")}, ensure_ascii=False))
+elif sys.argv[1] == "나란히":
+    # 살핌 판정을 눈으로 정할 한 장 — 조각 얼굴 + 렌즈 공인 카드 위 다섯(닮음 숫자 붙임). 공인 카드가 없으면 전체 위 다섯.
+    조각, 폴더, 밖 = sys.argv[2], sys.argv[3], sys.argv[4]
+    요약 = json.load(open(os.path.join(폴더, "렌즈.json"), encoding="utf-8"))
+    줄 = (요약.get("공인위") or 요약.get("위") or [])[:5]
+    H = 300
+    def 칸(im, 글):
+        h, w = im.shape[:2]
+        im = cv2.resize(im, (max(1, int(w * H / h)), H))
+        cv2.putText(im, 글, (6, H - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 4)
+        cv2.putText(im, 글, (6, H - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+        return im
+    img, f = 가장큰(읽기(조각))
+    x, y, fw, fh = [int(v) for v in f[:4]]
+    s = int(max(fw, fh) * 0.75)
+    cx, cy = x + fw // 2, y + int(fh * 0.45)
+    칸들 = [칸(img[max(0, cy - s):cy + s, max(0, cx - s):cx + s], "piece")]
+    칸들 += [칸(읽기(os.path.join(폴더, r["파일"])), f"{r['닮음']:.2f}") for r in 줄]
+    cv2.imencode(".jpg", np.hstack(칸들), [cv2.IMWRITE_JPEG_QUALITY, 85])[1].tofile(밖)
+    print(json.dumps({"나란히": 밖, "칸": len(칸들) - 1}, ensure_ascii=False))
 else:
     raise SystemExit(__doc__)

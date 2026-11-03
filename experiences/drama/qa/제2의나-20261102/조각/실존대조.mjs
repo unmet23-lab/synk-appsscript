@@ -15,6 +15,7 @@
  *   node experiences/drama/qa/제2의나-20261102/조각/실존대조.mjs 렌즈 <id=그림>…
  *   node experiences/drama/qa/제2의나-20261102/조각/실존대조.mjs 모델 <묶음 이름> <id=그림>…   (한 묶음 10장까지 — 아르곤 첨부 한도)
  *   node experiences/drama/qa/제2의나-20261102/조각/실존대조.mjs 다시재기 <id=그림>…   (렌즈 결과는 두고 닮음 · 판정만 다시)
+ *   node experiences/drama/qa/제2의나-20261102/조각/실존대조.mjs 나란히 <id=그림>…   (살핌: 조각 + 렌즈 공인 카드 위 다섯 → <id>/나란히.jpg, 본 판정은 piece-check/눈.json에)
  *   node experiences/drama/qa/제2의나-20261102/조각/실존대조.mjs 표 <id>… [--md]
  *
  * 나오는 곳(공용 작업본, git 밖): `.tmp/me2-20261102/piece-check/<id>/`(얼굴.jpg · 렌즈/ · 렌즈.json), `piece-check/_모델/<묶음>/`(순서.json · 답_gemini.md · 답_gpt.md)
@@ -74,6 +75,10 @@ function 렌즈(xs) {
   }
 }
 
+function 나란히(xs) {
+  for (const [id, 그림] of 쌍들(xs)) console.log(JSON.stringify({ id, ...파이썬('나란히', 그림, path.join(밖, id, '렌즈'), path.join(밖, id, '나란히.jpg')) }));
+}
+
 function 다시재기(xs) {
   for (const [id, 그림] of 쌍들(xs)) console.log(JSON.stringify({ id, ...파이썬('렌즈닮음', 그림, path.join(밖, id, '렌즈')) }));
 }
@@ -96,7 +101,7 @@ function 모델(묶음, xs) {
   }
   const gem답 = path.join(폴더, '답_gemini.md');
   if (!fs.existsSync(gem답)) {
-    const r = spawnSync(process.execPath, ['tools/아르곤웹.js', '보내기', '--파일', ...얼굴들, '--지시문', 질문파일, '--답', gem답, '--이름', 'me2-piece-check'], { cwd: 뿌리, encoding: 'utf8', timeout: 60 * 60_000, stdio: ['ignore', 'pipe', 'pipe'] });
+    const r = spawnSync(process.execPath, ['tools/아르곤웹.js', '보내기', '--파일', ...얼굴들, '--지시문', 질문파일, '--답', gem답, '--이름', `me2-pc-${묶음}`], { cwd: 뿌리, encoding: 'utf8', timeout: 60 * 60_000, stdio: ['ignore', 'pipe', 'pipe'] });
     console.log(`[Gemini] 종료 ${r.status} — ${fs.existsSync(gem답) ? '답 있음' : `${r.stdout || ''}${r.stderr || ''}`.slice(-400)}`);
   }
 }
@@ -137,24 +142,30 @@ export function 판정(렌즈판정, gem, gpt) {
   return '통과';
 }
 
+// 살핌을 눈으로 정한 기록 — piece-check/눈.json {id: {판정: '통과' | '다시 굽기', 까닭}} (나란히 한 장을 보고 적는다).
+const 눈 = () => (fs.existsSync(path.join(밖, '눈.json')) ? JSON.parse(fs.readFileSync(path.join(밖, '눈.json'), 'utf8')) : {});
+
 function 표(ids, md) {
-  const 줄 = [];
+  const 줄 = [], 눈판 = 눈();
   for (const id of ids) {
     const 렌즈파일 = path.join(밖, id, '렌즈', '렌즈.json');
     const 렌 = fs.existsSync(렌즈파일) ? JSON.parse(fs.readFileSync(렌즈파일, 'utf8')) : null;
     const m = 모델답(id);
     줄.push({ id, 렌즈: 렌 ? { 카드: 렌.카드, 최고: 렌.최고, 공인카드: 렌.공인카드, 공인최고: 렌.공인최고, 공인무리: 렌.공인무리, 판정: 렌.판정 } : null, gemini: m?.gemini?.위험 || null, gpt: m?.gpt?.위험 || null, 판정: 판정(렌?.판정 || null, m?.gemini, m?.gpt) });
+    const 끝 = 줄.at(-1);
+    if (끝.판정.startsWith('살핌') && 눈판[id]) Object.assign(끝, { 판정: `${눈판[id].판정}(눈)`, 까닭: 눈판[id].까닭 });
   }
   fs.writeFileSync(path.join(밖, '대조.json'), JSON.stringify(줄, null, 1));
   if (!md) { for (const r of 줄) console.log(JSON.stringify(r)); return; }
-  console.log('| 조각 | 역검색(렌즈 카드 · 얼굴 · 최고 닮음) | Gemini | GPT | 판정 |\n|---|---|---|---|---|');
-  for (const r of 줄) console.log(`| ${r.id} | ${r.렌즈 ? `${r.렌즈.카드} · ${r.렌즈.얼굴} · ${r.렌즈.최고 ?? '-'}${r.렌즈.살핌이상 ? `(0.40 넘음 ${r.렌즈.살핌이상})` : ''}` : '안 돌림'} | ${r.gemini || '-'} | ${r.gpt || '-'} | ${r.판정} |`);
+  console.log('| 조각 | 역검색(카드 · 공인 카드 · 공인 최고 · 같은 공인 무리 · 전체 최고 → 판정) | Gemini | GPT | 판정 |\n|---|---|---|---|---|');
+  for (const r of 줄) console.log(`| ${r.id} | ${r.렌즈 ? `${r.렌즈.카드} · ${r.렌즈.공인카드} · ${r.렌즈.공인최고 ?? '-'} · ${r.렌즈.공인무리} · ${r.렌즈.최고 ?? '-'} → ${r.렌즈.판정}` : '안 돌림'} | ${r.gemini || '-'} | ${r.gpt || '-'} | ${r.판정}${r.까닭 ? ` — ${r.까닭}` : ''} |`);
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   const [할일, ...나머지] = process.argv.slice(2);
   if (할일 === '렌즈') 렌즈(나머지);
   else if (할일 === '다시재기') 다시재기(나머지);
+  else if (할일 === '나란히') 나란히(나머지);
   else if (할일 === '모델') 모델(나머지[0], 나머지.slice(1));
   else if (할일 === '표') 표(나머지.filter((x) => x !== '--md'), 나머지.includes('--md'));
   else { console.error('사용: 실존대조.mjs 렌즈 <id=그림>… | 모델 <묶음> <id=그림>… | 표 <id>… [--md]'); process.exit(2); }
