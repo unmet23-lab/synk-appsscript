@@ -134,57 +134,95 @@ test('tab identifiers survive reload without placing credentials in either stora
   for(const value of [...cache.data.values(),...tabA.data.values(),...tabB.data.values()])assert.ok(!value.includes('synthetic-'));
 });
 
-test('real browser tabs retain separate accounts across reload and logout',{skip:!process.env.SYNK_WORLD_QA_URL,timeout:180000},async t=>{
-  const {createRequire}=await import('node:module'),{default:path}=await import('node:path'),{homedir}=await import('node:os');
-  const require=createRequire(import.meta.url);let playwright;
-  try{playwright=require('playwright');}catch{playwright=require(path.join(homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));}
-  const base=process.env.SYNK_WORLD_QA_URL,errors=[],requests=[];
-  const browserServer=await playwright.chromium.launchServer({channel:'msedge',headless:true,timeout:45000});
-  t.signal.addEventListener('abort',()=>browserServer.process()?.kill('SIGKILL'),{once:true});
-  let browser;
-  let step='launch';
-  async function bounded(name,work,timeout=30000){
-    step=name;let timer;
-    try{return await Promise.race([Promise.resolve().then(work),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(`Browser account test timed out at: ${name}`)),timeout);})]);}
-    finally{clearTimeout(timer);}
-  }
-  const ready=page=>page.waitForFunction(()=>window.__synkWorld?.client.status==='ready',null,{timeout:30000,polling:100});
-  try{
-    browser=await bounded('connect browser',()=>playwright.chromium.connect(browserServer.wsEndpoint(),{timeout:30000}));
-    const context=await bounded('create context',()=>browser.newContext({viewport:{width:390,height:844}}));
-    context.setDefaultTimeout(30000);context.setDefaultNavigationTimeout(45000);
-    const [a,b]=await bounded('create tabs',()=>Promise.all([context.newPage(),context.newPage()]));
-    for(const [index,page]of [a,b].entries()){
-      page.on('pageerror',error=>errors.push(error.message));
-      page.on('response',response=>{if(response.url().includes('/api/world/'))requests.push({tab:index,route:new URL(response.url()).pathname,status:response.status()});});
+const accountBrowserTimeoutMs = 180_000;
+test('real browser tabs retain separate accounts across reload and logout', {skip: !process.env.SYNK_WORLD_QA_URL, timeout: accountBrowserTimeoutMs}, async t => {
+  const {createRequire} = await import('node:module'), {default: path} = await import('node:path'), {homedir} = await import('node:os');
+  const require = createRequire(import.meta.url);
+  let playwright;
+  try { playwright = require('playwright'); } catch { playwright = require(path.join(homedir(), '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright')); }
+
+  const base = process.env.SYNK_WORLD_QA_URL, errors = [], requests = [];
+  // All browser operations share the original test deadline, with time to close our own Edge.
+  const workMs = accountBrowserTimeoutMs - 15_000;
+  const signal = AbortSignal.any([t.signal, AbortSignal.timeout(workMs)]);
+  let step = 'launch', browserServer, onAbort;
+  const ready = page => page.waitForFunction(() => window.__synkWorld?.client.status === 'ready', null, {polling: 100});
+
+  async function exerciseAccounts() {
+    step = 'connect browser';
+    const browser = await playwright.chromium.connect(browserServer.wsEndpoint(), {timeout: 0});
+    step = 'create context';
+    const context = await browser.newContext({viewport: {width: 390, height: 844}});
+    context.setDefaultTimeout(0);
+    context.setDefaultNavigationTimeout(0);
+    step = 'create tabs';
+    const [a, b] = await Promise.all([context.newPage(), context.newPage()]);
+    for (const [index, page] of [a, b].entries()) {
+      page.on('pageerror', error => errors.push(error.message));
+      page.on('response', response => {
+        if (response.url().includes('/api/world/')) requests.push({tab: index, route: new URL(response.url()).pathname, status: response.status()});
+      });
     }
-    await bounded('initial navigation',()=>Promise.all([a.goto(base+'/mobile.html',{waitUntil:'domcontentloaded'}),b.goto(base+'/mobile.html',{waitUntil:'domcontentloaded'})]),47000);
-    await bounded('client initialization',()=>Promise.all([a,b].map(page=>page.waitForFunction(()=>window.__synkWorld,null,{timeout:30000,polling:100}))));
-    await bounded('sign in A',()=>a.evaluate(()=>window.__synkWorld.client.signIn('player-a')),45000);
-    await bounded('sign in B',()=>b.evaluate(()=>window.__synkWorld.client.signIn('player-b')),45000);
-    const beforeA=await a.evaluate(()=>({account:window.__synkWorld.client.snapshot.accountId,tab:window.__synkWorld.client.tabId}));
-    const beforeB=await b.evaluate(()=>({account:window.__synkWorld.client.snapshot.accountId,tab:window.__synkWorld.client.tabId}));
-    assert.notEqual(beforeA.account,beforeB.account);assert.notEqual(beforeA.tab,beforeB.tab);
-    const cookies=await context.cookies();
-    for(const tab of [beforeA.tab,beforeB.tab])assert.ok(cookies.some(cookie=>cookie.name===`synk_world_rehearsal_${tab}`&&cookie.httpOnly&&cookie.sameSite==='Strict'));
-    await bounded('reload both accounts',()=>Promise.all([a.reload({waitUntil:'domcontentloaded'}),b.reload({waitUntil:'domcontentloaded'})]),47000);
-    await bounded('restore both accounts',()=>Promise.all([ready(a),ready(b)]));
-    assert.equal(await a.evaluate(()=>window.__synkWorld.client.snapshot.accountId),beforeA.account);
-    assert.equal(await b.evaluate(()=>window.__synkWorld.client.snapshot.accountId),beforeB.account);
-    await bounded('logout A',()=>a.evaluate(()=>window.__synkWorld.client.logout()),45000);
-    await bounded('reload after logout',()=>Promise.all([a.reload({waitUntil:'domcontentloaded'}),b.reload({waitUntil:'domcontentloaded'})]),47000);
-    await bounded('restore B while A stays signed out',()=>Promise.all([ready(b),a.waitForFunction(()=>window.__synkWorld?.client.status==='welcome',null,{timeout:30000,polling:100})]));
-    assert.equal(await a.evaluate(()=>window.__synkWorld.client.snapshot),null);
-    assert.equal(await b.evaluate(()=>window.__synkWorld.client.snapshot.accountId),beforeB.account);
-    for(const page of [a,b])assert.equal(await page.evaluate(()=>Object.entries({...localStorage,...sessionStorage}).some(([key,value])=>/accessToken|refreshToken|Bearer|access_token/.test(key+value))),false);
-    assert.deepEqual(errors,[]);
-    // One owned browser shutdown below closes the context too. Closing it twice
-    // can obscure the useful phase when renderer teardown itself stalls.
-  }catch(error){throw new Error(`${error.message}\nLast step: ${step}\nAPI status trace: ${JSON.stringify(requests)}\nBrowser errors: ${JSON.stringify(errors)}`,{cause:error});}
-  finally{
-    // The owned BrowserServer exposes only this test's process. If graceful
-    // shutdown stalls, terminate that process without touching other Edge tabs.
-    try{await bounded('close browser',()=>browserServer.close(),10000);}
-    catch{t.diagnostic('Owned Edge shutdown exceeded 10 seconds; terminated only this test browser process.');browserServer.process()?.kill('SIGKILL');}
+    step = 'initial navigation';
+    await Promise.all([a, b].map(page => page.goto(base + '/mobile.html', {waitUntil: 'domcontentloaded'})));
+    step = 'client initialization';
+    await Promise.all([a, b].map(page => page.waitForFunction(() => window.__synkWorld, null, {polling: 100})));
+    step = 'sign in A';
+    await a.evaluate(() => window.__synkWorld.client.signIn('player-a'));
+    step = 'sign in B';
+    await b.evaluate(() => window.__synkWorld.client.signIn('player-b'));
+    step = 'check separate accounts and cookies';
+    const beforeA = await a.evaluate(() => ({account: window.__synkWorld.client.snapshot.accountId, tab: window.__synkWorld.client.tabId}));
+    const beforeB = await b.evaluate(() => ({account: window.__synkWorld.client.snapshot.accountId, tab: window.__synkWorld.client.tabId}));
+    assert.notEqual(beforeA.account, beforeB.account);
+    assert.notEqual(beforeA.tab, beforeB.tab);
+    const cookies = await context.cookies();
+    for (const tab of [beforeA.tab, beforeB.tab]) assert.ok(cookies.some(cookie => cookie.name === `synk_world_rehearsal_${tab}` && cookie.httpOnly && cookie.sameSite === 'Strict'));
+
+    step = 'reload both accounts';
+    await Promise.all([a, b].map(page => page.reload({waitUntil: 'domcontentloaded'})));
+    step = 'restore both accounts';
+    await Promise.all([ready(a), ready(b)]);
+    assert.equal(await a.evaluate(() => window.__synkWorld.client.snapshot.accountId), beforeA.account);
+    assert.equal(await b.evaluate(() => window.__synkWorld.client.snapshot.accountId), beforeB.account);
+    step = 'logout A';
+    await a.evaluate(() => window.__synkWorld.client.logout());
+    step = 'reload after logout';
+    await Promise.all([a, b].map(page => page.reload({waitUntil: 'domcontentloaded'})));
+    step = 'restore B while A stays signed out';
+    await Promise.all([ready(b), a.waitForFunction(() => window.__synkWorld?.client.status === 'welcome', null, {polling: 100})]);
+    assert.equal(await a.evaluate(() => window.__synkWorld.client.snapshot), null);
+    assert.equal(await b.evaluate(() => window.__synkWorld.client.snapshot.accountId), beforeB.account);
+    step = 'check browser storage and errors';
+    for (const page of [a, b]) assert.equal(await page.evaluate(() => Object.entries({...localStorage, ...sessionStorage}).some(([key, value]) => /accessToken|refreshToken|Bearer|access_token/.test(key + value))), false);
+    assert.deepEqual(errors, []);
+  }
+
+  try {
+    browserServer = await playwright.chromium.launchServer({channel: 'msedge', headless: true, timeout: workMs});
+    signal.throwIfAborted();
+    const interrupted = new Promise((_, reject) => {
+      onAbort = () => reject(Error(`Browser account verification stopped at: ${step}`, {cause: signal.reason}));
+      signal.addEventListener('abort', onAbort, {once: true});
+    });
+    await Promise.race([exerciseAccounts(), interrupted]);
+  } catch (error) {
+    throw new Error(`${error.message}\nLast step: ${step}\nAPI status trace: ${JSON.stringify(requests)}\nBrowser errors: ${JSON.stringify(errors)}`, {cause: error});
+  } finally {
+    if (onAbort) signal.removeEventListener('abort', onAbort);
+    if (browserServer) {
+      if (signal.aborted) {
+        await browserServer.kill();
+      } else {
+        let timer;
+        try {
+          const grace = new Promise((_, reject) => { timer = setTimeout(() => reject(Error('Edge close timed out')), 10_000); });
+          await Promise.race([browserServer.close(), grace]);
+        } catch (error) {
+          t.diagnostic(`Closing this test's Edge with its child processes: ${error.message}`);
+          await browserServer.kill();
+        } finally { clearTimeout(timer); }
+      }
+    }
   }
 });
