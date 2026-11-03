@@ -1,0 +1,3 @@
+A REAL PHOTOGRAPH taken on a smartphone by a university student in Korea, natural light and honest colors, slightly imperfect framing, portrait 2:3. Never an illustration, never a 3D render, never a stock-photo gloss. Absolutely no text, letters, numbers, signs with writing, labels, logos or brand marks anywhere in the frame. No people, no faces, no hands unless the description says so.
+
+A dorm room bed by daylight: a brand new pale blue towel still sealed in clear plastic packaging lying on a rumpled grey blanket, beside it a smartphone lying face up with its screen glowing plain white and blurred, no readable content. Soft window light from the side. Quietly comical regret.

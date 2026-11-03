@@ -1,0 +1,3 @@
+A REAL PHOTOGRAPH taken on a smartphone by a university student in Korea, natural light and honest colors, slightly imperfect framing, portrait 2:3. Never an illustration, never a 3D render, never a stock-photo gloss. Absolutely no text, letters, numbers, signs with writing, labels, logos or brand marks anywhere in the frame. No people, no faces, no hands unless the description says so.
+
+A small dormitory manager office window seen from the corridor: a sliding glass window pushed open, a narrow counter with a plastic basket on it holding one neatly folded pale blue towel. Warm desk lamp light from inside, a kettle and a wall clock without numerals softly out of focus behind. Cosy and reassuring.
