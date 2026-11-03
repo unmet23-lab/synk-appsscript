@@ -100,10 +100,13 @@ jobs:
           if-no-files-found: error
 
   local-coverage:
+    needs: hosted
     if: ${{ github.repository == 'unmet23-lab/synk-appsscript' && github.ref == 'refs/heads/master' && (github.event.repository.private == false || vars.SYNK_HOSTED_CI == 'on') }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 160
+    # Reads the local result once. While it is pending the job cancels its own run instead of holding a runner.
+    timeout-minutes: 10
     permissions:
+      actions: write
       contents: read
       statuses: write
     steps:
@@ -114,7 +117,7 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 24
-      - name: wait for the exact commit's complete local result
+      - name: check the exact commit's complete local result
         env:
           GH_TOKEN: ${{ github.token }}
         run: node tools/conditional-qa/wait-local.cjs

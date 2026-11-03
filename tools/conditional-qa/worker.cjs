@@ -132,6 +132,8 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring } = {}
           ({ publicationState, description } = disposition);
         }
         try { github.publish(item.commit, publicationState, description); } catch { item.publicationError = true; }
+        // local-coverage has released its runner, so a real failure has to wake it to turn the run red.
+        if (publicationState === 'failure') { try { github.resumeWaitingWorkflow(item.commit); } catch (resumeError) { item.resumeError = resumeError.message.slice(0, 500); } }
         write(queueFile, queue);
       }
       write(queueFile, queue);

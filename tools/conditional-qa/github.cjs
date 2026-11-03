@@ -23,14 +23,18 @@ function publish(commit, state, text, api = request) {
   return api(`repos/${REPO}/statuses/${commit}`, { state, context: CONTEXT, description: text,
     target_url: `https://github.com/${REPO}/commit/${commit}/checks` });
 }
-function resumeWaitingWorkflow(commit, api = request) {
-  const runs = JSON.parse(cp.execFileSync('gh', ['run', 'list', '--repo', REPO, '--workflow', 'conditional-qa.yml', '--commit', validCommit(commit), '--limit', '10', '--json', 'databaseId,status,conclusion'], { encoding: 'utf8', windowsHide: true, timeout: 60_000 }));
+function cancelRun(runId, api = request) { return api(`repos/${REPO}/actions/runs/${runId}/cancel`, {}); }
+const listRuns = commit => JSON.parse(cp.execFileSync('gh', ['run', 'list', '--repo', REPO, '--workflow', 'conditional-qa.yml', '--commit', validCommit(commit), '--limit', '10', '--json', 'databaseId,status,conclusion'], { encoding: 'utf8', windowsHide: true, timeout: 60_000 }));
+// local-coverage cancels its own run while the PC verifies, so a waiting run ends as cancelled; an old run that timed out ends as failure.
+// Only a run whose single unfinished job is local-coverage is re-run, so a cancelled hosted job is never mistaken for a waiting one.
+function resumeWaitingWorkflow(commit, api = request, list = listRuns) {
+  const runs = list(commit);
   let settled = runs.length > 0 && runs.every(row => row.status === 'completed');
-  for (const run of runs.filter(row => row.status === 'completed' && row.conclusion === 'failure')) {
+  for (const run of runs.filter(row => row.status === 'completed' && (row.conclusion === 'failure' || row.conclusion === 'cancelled'))) {
     const jobs = api(`repos/${REPO}/actions/runs/${run.databaseId}/jobs?per_page=100`).jobs;
-    const failures = jobs.filter(row => row.conclusion === 'failure' || row.conclusion === 'timed_out');
+    const failures = jobs.filter(row => row.conclusion === 'failure' || row.conclusion === 'timed_out' || row.conclusion === 'cancelled');
     if (failures.length === 1 && failures[0].name === 'local-coverage') { api(`repos/${REPO}/actions/runs/${run.databaseId}/rerun-failed-jobs`, {}); settled = false; }
   }
   return settled;
 }
-module.exports = { REPO, validCommit, request, status, description, accepted, publish, resumeWaitingWorkflow };
+module.exports = { REPO, validCommit, request, status, description, accepted, publish, cancelRun, resumeWaitingWorkflow };

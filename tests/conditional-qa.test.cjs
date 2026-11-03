@@ -306,7 +306,39 @@ test('remote local-status evidence is exact and malformed requests never reach t
 });
 test('offline local verification times out and never manufactures a green status', async () => {
   const writes = [];
-  await assert.rejects(wait({ root, commit, timeoutMs: 15, intervalMs: 2, read: () => null, write: (...args) => writes.push(args) }), /did not finish/);
+  // Pending never passes and never holds the runner: the job cancels its own run once and gives up if that does not take effect.
+  const cancels = [];
+  await assert.rejects(wait({ root, commit, runId: '123', cancelGraceMs: 1, read: () => null, write: (...args) => writes.push(args), cancel: id => cancels.push(id) }), /did not take effect/);
   assert.equal(writes.length, 1); assert.equal(writes[0][1], 'pending');
+  assert.deepEqual(cancels, ['123']);
+  const pendingWrites = [];
+  await assert.rejects(wait({ root, commit, runId: '124', cancelGraceMs: 1, read: () => ({ state: 'pending', description: 'Running' }), write: (...args) => pendingWrites.push(args), cancel: () => {} }), /did not take effect/);
+  assert.equal(pendingWrites.length, 0, 'the worker already owns the pending status');
+  await assert.rejects(wait({ root, commit, read: () => ({ state: 'pending' }), cancel: () => assert.fail('no run id, no cancel') }), /without a run id/);
+  await assert.rejects(wait({ root, commit, runId: '125', read: () => ({ state: 'pending' }), cancel: () => { throw Error('403'); } }), /403/);
   await assert.rejects(wait({ root, commit, read: () => ({ state: 'failure', description: 'incomplete' }) }), /not passed/);
+});
+
+// A waiting run ends as cancelled since local-coverage releases its runner (2026-11-04). Only that shape is re-run.
+test('resumeWaitingWorkflow re-runs a run whose only unfinished job is local-coverage', () => {
+  const { resumeWaitingWorkflow, cancelRun } = require('../tools/conditional-qa/github.cjs');
+  const commit = 'a'.repeat(40), hosted = conclusion => ({ name: 'hosted (ubuntu-24.04, linux)', conclusion }), local = conclusion => ({ name: 'local-coverage', conclusion });
+  const resume = (conclusion, jobs, status = 'completed') => {
+    const posts = [];
+    const settled = resumeWaitingWorkflow(commit, (endpoint, body) => { if (body) { posts.push(endpoint); return null; } return { jobs }; }, () => [{ databaseId: 7, status, conclusion }]);
+    return { settled, posts };
+  };
+  for (const conclusion of ['cancelled', 'failure', 'timed_out']) {
+    const { settled, posts } = resume(conclusion === 'timed_out' ? 'failure' : conclusion, [hosted('success'), local(conclusion)]);
+    assert.deepEqual(posts, ['repos/unmet23-lab/synk-appsscript/actions/runs/7/rerun-failed-jobs'], conclusion);
+    assert.equal(settled, false, conclusion);
+  }
+  assert.deepEqual(resume('cancelled', [hosted('cancelled'), local('cancelled')]).posts, [], 'a cancelled hosted job is not a waiting run');
+  assert.deepEqual(resume('failure', [hosted('failure'), local('skipped')]).posts, [], 'a hosted failure stays red');
+  assert.deepEqual(resume('success', [hosted('success'), local('success')]).posts, []);
+  assert.equal(resume('success', [hosted('success'), local('success')]).settled, true);
+  assert.equal(resume(null, [hosted('success'), local(null)], 'in_progress').settled, false);
+  const cancelled = [];
+  cancelRun('99', (endpoint, body) => { cancelled.push([endpoint, body]); return null; });
+  assert.deepEqual(cancelled, [['repos/unmet23-lab/synk-appsscript/actions/runs/99/cancel', {}]]);
 });
