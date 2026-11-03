@@ -540,4 +540,5 @@
 }
 :root[data-host=world][data-motion=reduced] :is(.felt-cta,.chip-btn,.mode,.ing,#pause,.ticket,.serve,.w-dots li,.w-stamp){transition:none}
 :root[data-host=world][data-motion=reduced] .ing::after{transform:none;transition:none}
-:root[data-host=world][data-motion=reduced] .res-hero::before{animation:none}
+:root[data-host=world][data-motion=reduced] .res-hero::before,:root[data-host=world][data-motion=reduced] .w-art[data-rush] h1 span,:root[data-host=world][data-motion=reduced] .w-ticker::before{animation:none!important}
+:root[data-host=world][data-motion=reduced] :is(.felt-cta,.chip-btn,.mode,.ing,#pause,.ticket):active{transform:none}

@@ -387,7 +387,7 @@ function selectTicket(uid) {
   renderLineUp();
   // WORLD: 손님이 들어오며 울린 문 종이 첫 음절을 덮지 않게 320ms 뒤에 말한다(그사이 멈추면 이어 할 때 말한다)
   if (world) t.chimeHold = true;   // 그 320ms는 듣는 시간처럼 영업 시간을 세우지 않는다
-  if (world) world.later(world.chimeDelay(), () => { if (ticket() !== t || state.screen !== 'game' || state.celebrating) return; if (state.paused) t.pendingVoice = true; else playTicket(t); });
+  if (world) world.later(world.chimeDelay(), () => { if (!t.chimeHold || ticket() !== t || state.screen !== 'game' || state.celebrating) return; if (state.paused) t.pendingVoice = true; else playTicket(t); });   // 그사이 손님을 눌러 이미 말했으면(chimeHold 풀림) 처음부터 다시 말하지 않는다
   else playTicket(t);
   metrics();
 }

@@ -48,7 +48,7 @@ export function wasAdded(action, after) {
  */
 export function createWorldPlay({ audio, stage = () => null, cupLabel = () => '' }) {
   let ctx = null, sfx = null, music = null, env = null, envLoading = null, meter = null, ducked = false;
-  let entered = false, faceToken = 0, front = null, back = null, lastPlay = new Map(), lastTick = null;
+  let entered = false, faceToken = 0, front = null, back = null, faceSettle = null, lastPlay = new Map(), lastTick = null;
   let rollers = null, results = null, coinWaiting = false, orderNo = 17;
   let curtainOn = false, curtainToken = 0, pendingReveal = 0, hideToken = 0;
   const warmed = new Map();   // 미리 푼 그림(참조를 들고 있어야 풀린 판이 남는다)
@@ -227,6 +227,7 @@ export function createWorldPlay({ audio, stage = () => null, cupLabel = () => ''
     cancel('face');
     const run = () => {
       if (token !== faceToken) return;
+      faceSettle?.();   // 앞 전환이 아직 스미는 중이면 먼저 끝낸다 — 얼굴 둘이 겹친 채 남거나 앞 손님이 뒤에서 다시 비치지 않게
       if (alt !== null) { front.alt = alt; back.alt = ''; }
       if (front.getAttribute('src') === src) return;
       back.src = src;
@@ -237,13 +238,15 @@ export function createWorldPlay({ audio, stage = () => null, cupLabel = () => ''
         const a = fx.effect(back, [{ opacity: 0 }, { opacity: 1 }], slide ? fx.M.eslow : fx.M.ebase);
         if (slide) fx.spatial(back, [{ transform: 'translateX(14px)' }, { transform: 'none' }], fx.M.base);
         const done = () => {
-          if (token !== faceToken) return;
+          if (faceSettle !== done) return;   // 이미 끝냈다(다음 전환이 먼저 끝냄 · 취소된 finished)
+          faceSettle = null;
           const old = front; front = back; back = old;
           back.hidden = true; back.style.zIndex = ''; front.style.zIndex = '';
           front.alt = alt ?? old.alt; old.alt = '';
           front.id = 'guest-img'; old.id = 'w-guest-next';   // app.mjs는 #guest-img를 지금 보이는 얼굴로 안다
           a?.cancel();
         };
+        faceSettle = done;
         if (a) a.finished.then(done, done); else done();
       };
       (back.decode ? back.decode() : Promise.resolve()).then(swap, swap);
@@ -311,17 +314,18 @@ export function createWorldPlay({ audio, stage = () => null, cupLabel = () => ''
       if (coinWaiting) { coinWaiting = false; later(160, () => play('coin'), 'results'); }
       if (perfect && stamp) later(300, () => { stamp.classList.add('on'); play('combo'); haptic('done'); }, 'results');
     };
-    const finishAll = () => {
+    const finishAll = (sound = true) => {   // 포스터 탭(이벤트) · 연출 없음은 기다리던 코인 소리를 낸다, 화면을 떠날 때(skip)는 내지 않는다
       cancel('results');
       for (const a of anims) { try { a.finish(); } catch { /* 이미 끝 */ } }
       if (big) big.textContent = String(firstOk);
       for (const d of dots) d.classList.add('on');
       if (perfect && stamp) stamp.classList.add('on');
+      if (coinWaiting && sound !== false) play('coin');
       landed = true; coinWaiting = false;
       hero?.removeEventListener('click', finishAll);
       results = null;
     };
-    results = { skip: finishAll, get landed() { return landed; } };
+    results = { skip: () => finishAll(false), get landed() { return landed; } };
     if (!fx.motionOn()) { finishAll(); return; }
     hero?.addEventListener('click', finishAll);
     keep(fx.spatial(title, [{ transform: 'translateY(28px)' }, { transform: 'none' }], fx.M.base));
@@ -479,7 +483,7 @@ export function createWorldPlay({ audio, stage = () => null, cupLabel = () => ''
       g.getAnimations().forEach((a) => a.cancel());   // 앞 손님 사라짐(hideGuest)의 끝 상태를 지운다
       if (faces()) {
         if (wasShown && !pendingReveal && fx.motionOn()) showFace(src, name, { slide: true });
-        else { faceToken += 1; cancel('face'); front.src = src; front.alt = name; back.hidden = true; back.removeAttribute('src'); }
+        else { faceToken += 1; cancel('face'); faceSettle?.(); front.src = src; front.alt = name; back.hidden = true; back.removeAttribute('src'); }
       }
       if (pendingReveal) {
         const tok = pendingReveal; pendingReveal = 0;
@@ -571,6 +575,9 @@ export function createWorldPlay({ audio, stage = () => null, cupLabel = () => ''
       buildDots(records);
       const big = $('#r-correct');
       if (big && fx.motionOn()) big.textContent = '0';
+      // 가림막이 걷히기 전에 코인 정산이 먼저 와도 소리는 숫자가 앉은 뒤에(앞 판의 끝난 results가 남아 있어도 덮는다).
+      coinWaiting = false;
+      results = { landed: false, skip() { results = null; coinWaiting = false; } };
       const tok = cover();
       reveal(tok, [warm(['assets/world/close.webp'])], () => {
         play('done');

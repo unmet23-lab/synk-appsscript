@@ -394,7 +394,9 @@ class Cup {
     // 얼음·설탕이 막 들어왔으면 위에서 떨어뜨린다
     if (change === 'ice' && cup.ice && !reduced) this.drop.ice = 0;
     if (change === 'sugar' && cup.sugar && !reduced) this.drop.sugar = 0;
-    if (world && change && !reduced) { this.bump = 0; this.bumpAt = change === 'ice' ? ICE_LAND[0] : change === 'sugar' ? 0.12 : ['coffee', 'tea', 'milk'].includes(change) ? 0.2 : 0; }
+    // 컵 출렁임은 담길 때만 — 뺄 때는 떨어지거나 부어지는 것이 없다(차갑게는 켜고 끌 때 모두 바로).
+    const added = change === 'cold' || (change === 'coffee' || change === 'tea' ? cup.base === change : Boolean(change && cup[change]));
+    if (world && change && added && !reduced) { this.bump = 0; this.bumpAt = change === 'ice' ? ICE_LAND[0] : change === 'sugar' ? 0.12 : ['coffee', 'tea', 'milk'].includes(change) ? 0.2 : 0; }
     this.place();
   }
 
