@@ -267,6 +267,10 @@ test('명단의 모든 모델에 명세서(몸 비율·색)와 얼굴 기준·�
       assert.equal(s['그룹']['포지션'], team.members.find((x) => x.code === m.code).position, `${m.code} 명세서 포지션`);
       assert.equal(s['그룹']['멤버_색'], team.members.find((x) => x.code === m.code).color, `${m.code} 명세서 멤버 색`);
     }
+    // 11-03 도현 사이즈가 명세서만 바뀌어 화면(roster)과 두 값이 됐다 — 키 · 사이즈는 두 원본이 같아야 한다
+    const size = s['몸']['사이즈'] || {};
+    assert.equal(m.height, s['몸']['키_cm'], `${m.code} 키(명단 ↔ 명세서)`);
+    assert.deepEqual([m.sizes.top, m.sizes.bottom, m.sizes.shoe], [size['상의'], size['하의'], size['신발']], `${m.code} 사이즈(명단 ↔ 명세서)`);
     const body = s['몸']['측정_전신기준'];
     for (const k of ['등신_머리카락포함', '어깨_얼굴폭_비', '다리비율_골반관절에서바닥']) assert.equal(typeof body[k], 'number', `${m.code} ${k}`);
     for (const k of ['머리', '피부', '입술']) assert.match(s['색'][k], /^#[0-9A-F]{6}$/, `${m.code} ${k}`);
