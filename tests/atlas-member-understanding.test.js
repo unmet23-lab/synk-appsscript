@@ -84,6 +84,7 @@ test('same-day repetitions do not become a pattern of returning over several day
   assert.equal(facet(result, 'practice-mode').claim, null);
   assert.equal(facet(result, 'practice-response').claim, null);
   assert.equal(facet(result, 'practice-mode').available, true);
+  assert.equal(facet(result, 'practice-mode').line, '현재 원하는 방식을 직접 고를 수 있어요.');
 });
 
 test('Core confirmation changes the next explanation without rewriting observation counts', () => {
@@ -290,6 +291,39 @@ test('persisted multiline notes and Unicode characters remain literal across sch
     assert.throws(() => validateMemberUnderstanding(document));
     assert.throws(() => report({ document, asOf: after(2) }));
   }
+});
+
+test('five actually observed response formats stay valid without becoming a personality or admitting unsafe rows', () => {
+  const formats = ['binary-choice', 'single-choice', 'cup-compose', 'action', 'spoken'];
+  const source = log();
+  formats.forEach((responseFormat, index) => source.answer(ago(index + 1), { responseFormat }));
+  const accountSummary = account(source.events);
+  assert.deepEqual(accountSummary.summary.practice.observations.formats.map(row => row.id).sort(), [...formats].sort());
+  const document = { ...empty(), overrides: [correction(150, 'support', ['step']), correction(151, 'topics', ['ai-tools'])] };
+  const result = report({ accountSummary, document, asOf: after(2) });
+  const topic = facet(result, 'learning-topic:sit-travel-order');
+  assert.deepEqual([topic.claim.count, topic.claim.activeDays], [5, 5]);
+  assert.deepEqual(facet(result, 'support').selected, ['step']);
+  assert.deepEqual(facet(result, 'topics').selected, ['ai-tools']);
+  assert.equal(facet(result, 'practice-response').claim, null, 'five different formats do not assert a preferred format');
+  assert.equal(facet(result, 'practice-response').line, '현재 원하는 방식을 직접 고를 수 있어요.', 'five active days must not read as missing practice history');
+  assert.deepEqual(facet(result, 'practice-response').selected, []);
+  assert.deepEqual(result.activities, []);
+  const declared = report({ accountSummary, document: { ...empty(), overrides: [correction(152, 'practice-response', ['mixed'])] }, asOf: after(2) });
+  assert.deepEqual(facet(declared, 'practice-response').selected, ['mixed']);
+  for (const change of [
+    o => { o.formats[0].id = 'mixed'; }, o => { o.formats[0].id = 'no-fixed-format'; }, o => { o.formats[0].id = 'no-fixed-mode'; },
+    o => { o.formats[0].id = 'unknown-format'; }, o => { o.formats[0].id = 'constructor'; }, o => { o.formats[1].id = o.formats[0].id; },
+    o => { o.formats.push({ ...o.formats[0] }); }, o => { o.modes[0].id = 'mixed'; }, o => { o.modes[0].id = 'no-fixed-mode'; }, o => { o.modes.push({ ...o.modes[0] }); },
+  ]) {
+    const bad = structuredClone(accountSummary);
+    change(bad.summary.practice.observations);
+    assert.throws(() => report({ accountSummary: bad }));
+  }
+  const denied = structuredClone(accountSummary);
+  denied.learning.enabled = false;
+  denied.shared = 'declared-only';
+  assert.equal(report({ accountSummary: denied }).facets.some(row => row.claim), false, 'records without consent stay excluded');
 });
 
 function oneDayEvidence() {

@@ -9,7 +9,7 @@
     "atlas/interpretation.js": "ac43c5d2ee96ee2b24b7c39cde23b8bcb73089c76ce40a794dc1ea013a5d5f8e",
     "atlas/member-activity.js": "afff9122dcbb38b1566d1e1f1e9061541b673ee9b915e15d0a82e818439ceb62",
     "atlas/member-understanding-contract.js": "88a8c244eb7a7aece0b4e963f3cfb0a1193a0e3030e36b9f34bc66593cdbbb2d",
-    "atlas/member-understanding.js": "0fe120d185b427eb5d5436bd658b1272ab62f7a07e69b5337ea0cf9acb6e30cc",
+    "atlas/member-understanding.js": "fb1d0be2b573741167f6317da4ae213615610956302b4ab5ec5e44a8696e34fb",
     "atlas/trail-periods.js": "4ec4419d3abe982bcc300993d4bba5dd2dd27b1174aca5c6d9bf3621171df637",
     "atlas/vellum.js": "4bb31f9ed6549f886164ba2203c87b464430f284c10088c9b5a54bef470965e6",
     "experiences/synk-account/src/member-activity-data.mjs": "03aba1b188c5860fdb14488bf21ff658705aedb6a26290c37338233ecf3b39dd",
@@ -68,7 +68,7 @@
       ]
     },
     "member-understanding.mjs": {
-      "sha256": "cc445d9a898d2691ccb6fd0403525622de4e660cc5c0bf9e6feb5d72f3a392b4",
+      "sha256": "5ca243e887e3dd7c73c7f70e3bc6be12bd69637e29afdff07ef0a95c2af870c0",
       "imports": [
         "member-shared/chunk-2PM2464V.mjs",
         "member-shared/chunk-4G5MC6EL.mjs",

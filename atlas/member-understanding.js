@@ -5,8 +5,7 @@
 const Interpretation = require('./interpretation');
 const Domain = require('./domain');
 const Contract = require('./member-understanding-contract');
-// The insight screen's wording is used by 「내 성향」 alone, so it lives with that product
-// (docs/아틀라스_설계.md#common-capability-promotion), next to the member statement modules.
+// 「내 성향」 alone uses the insight wording, so it lives with that product (docs/아틀라스_설계.md#common-capability-promotion).
 const Insight = require('../experiences/synk-account/src/vellum-insight.cjs');
 const { memberUnderstandingLine, memberUnderstandingSummary, memberUnderstandingNote, memberUnderstandingActivityReason, memberCorrectionLine } = Insight;
 const Periods = require('./trail-periods');
@@ -97,8 +96,9 @@ function observationsOf(value, asOf) {
   if (value == null) return null;
   if (!exact(value, ['from', 'to', 'total', 'topics', 'modes', 'formats']) || !integer(value.total)
     || Periods.instant(value.to) > Periods.instant(asOf) || Periods.instant(value.to) - Periods.instant(value.from) !== 30 * 86400000) fail();
-  for (const [key, limit] of [['topics', 12], ['modes', 2], ['formats', 4]]) {
-    if (!Array.isArray(value[key]) || value[key].length > limit) fail();
+  const observable = facet => understandingFacet(facet).choices.map(choice => choice.id).filter(id => !['mixed', 'no-fixed-mode', 'no-fixed-format'].includes(id));
+  for (const [key, choices] of [['topics', null], ['modes', observable('practice-mode')], ['formats', observable('practice-response')]]) {
+    if (!Array.isArray(value[key]) || value[key].length > (choices ? choices.length : 12)) fail();
     const ids = new Set();
     for (const row of value[key]) {
       if (!exact(row, key === 'topics' ? ['id', 'kind', 'label', 'count', 'activeDays', 'lastAt'] : ['id', 'count', 'activeDays', 'lastAt'])
@@ -106,7 +106,7 @@ function observationsOf(value, asOf) {
         || !integer(row.count) || row.count < 1 || row.count > value.total || !integer(row.activeDays) || row.activeDays < 1 || row.activeDays > Math.min(row.count, 31)
         || !Periods.within(row.lastAt, value)) fail();
       if (key === 'topics' ? !safeText(row.label) || !['situation', 'topic', 'word', 'grammar_point', 'skill', 'concept'].includes(row.kind)
-        : !understandingFacet(key === 'modes' ? 'practice-mode' : 'practice-response').choices.some(choice => choice.id === row.id && !['mixed', 'no-fixed-mode', 'no-fixed-format'].includes(choice.id))) fail();
+        : !choices.includes(row.id)) fail();
       ids.add(row.id);
     }
   }
@@ -158,7 +158,7 @@ function summarizeMemberUnderstanding({ accountSummary = null, activity = null, 
     else if (selectedLabels.length) { line = memberUnderstandingLine({ kind, label: kind === 'learning-topic' ? label : selectedLabels.join(' · '), labels: kind === 'learning-topic' ? null : selectedLabels, selection: selected[0], state: 'declared' }); basis = 'self-declared'; }
     else if (claim) { line = memberUnderstandingLine({ kind, label, count: claim.count, activeDays: claim.activeDays, state: review?.meaning || 'observed', periodEnd: claim.to }); basis = review && review.meaning !== 'disagreed' ? 'self-declared' : 'observed'; }
     else line = id === 'topics' ? '관심 있는 구체적인 주제를 직접 골라 두면 다음 요약에 반영해요.'
-      : ['support', 'explanation'].includes(id) ? '현재 원하는 방식을 직접 고를 수 있어요.' : memberUnderstandingLine({ label: '', state: 'empty' });
+      : ['support', 'explanation', 'practice-mode', 'practice-response'].includes(id) ? '현재 원하는 방식을 직접 고를 수 있어요.' : memberUnderstandingLine({ label: '', state: 'empty' });
     const applied = activeOverride && selected.length ? activeOverride : review ? reviews.get(id) : null;
     if (available && applied) {
       appliedAt.set(id, applied.at);
