@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {createWorldPlayHost} from './account-host.mjs';
 import {emptyPlayState,validatePlayRecords,validatePlayChanges} from './play-data.mjs';
 import {buyItem,awardMiniGame} from '../korean-racing/garage-core.js';
+import {emptyProgress,meet} from '../hangul-stage/core.mjs';
 const key='synk.word-magic.progress.v1';
 const clone=x=>structuredClone(x);
 function storage(){const map=new Map();return {map,get length(){return map.size;},key:i=>[...map.keys()][i]??null,getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,String(v)),removeItem:k=>map.delete(k)};}
@@ -167,6 +168,53 @@ test('invalid acknowledgement after a commit preserves the same command for rece
  const a=make(remote,'a',local,{client:{...base,mutate:async body=>{const response=await base.mutate(body);return malformed?{...response,state:{wallet:response.state.wallet,records:{unknown:'{}'},imported:false}}:response;}}});t.after(()=>a.stop());await a.ready();
  await assert.rejects(a.wallet('awardMiniGame',[{game:'word-magic',total:1,correct:1,completed:true,roundId:'malformed-ack'}]),{code:'INVALID_PLAY_STATE'});
  assert.equal(a.status().pending,1);assert.equal(a.status().rejected,0);malformed=false;await a.retry();assert.equal(a.snapshot().state.wallet.coins,25);assert.equal(a.status().pending,0);
+});
+
+// An older synk-play does not know a record key the client already writes (10-20: v17 and
+// synk.hangul-stage.v1). Its 400 INVALID_PLAY_STATE must not hold back the commands behind it.
+const hangulKey='synk.hangul-stage.v1',hangulValue=JSON.stringify(meet(emptyProgress(),['v-a','v-o'],'2026-10-20T00:00:00Z'));
+const olderServer=(remote,owner,sends=[])=>{const base=remote.client(owner);return {...base,mutate:async body=>{sends.push(body.id);if(body.action==='progress'&&body.changes.some(change=>change.key===hangulKey))throw Object.assign(Error('INVALID_PLAY_STATE'),{code:'INVALID_PLAY_STATE',status:400});return base.mutate(body);}};};
+
+test('a record key the server refuses is archived and later progress and wallet commands still reach the account',async t=>{
+ const remote=server(),local=storage(),sends=[],a=make(remote,'a',local,{client:olderServer(remote,'a',sends)});t.after(()=>a.stop());await a.ready();
+ const game=a.storage();game.setItem(hangulKey,hangulValue);game.setItem(key,'{"last":1}');await a.flush();
+ assert.equal(remote.accounts.get('a').state.records[key],'{"last":1}');assert.equal(remote.accounts.get('a').state.records[hangulKey],undefined);
+ assert.equal(a.status().phase,'synced');assert.equal(a.status().pending,0);assert.equal(a.status().rejected,1);assert.match(a.status().message,/기록 1개는 저장하지 못해 이 기기에 남겨 뒀어요/);
+ const archive=JSON.parse([...local.map].find(([name])=>name.startsWith('synk.play.account.v1:a:rejected:'))[1]);
+ assert.equal(archive.code,'INVALID_PLAY_STATE');assert.deepEqual(archive.entry.body.changes,[{key:hangulKey,previous:null,value:hangulValue}]);
+ assert.equal((await a.wallet('awardMiniGame',[{game:'word-magic',total:1,correct:1,completed:true,roundId:'after-unknown-key'}])).saved,true);
+ assert.equal(remote.accounts.get('a').state.wallet.coins,25);assert.equal(sends.length,3);
+ // The archived command is never sent again by a later flush or a reopened host.
+ await a.retry();const reopened=make(remote,'a',local,{client:olderServer(remote,'a',sends)});t.after(()=>reopened.stop());await reopened.ready();await reopened.flush();
+ assert.equal(sends.length,3);assert.equal(reopened.status().rejected,1);assert.equal(reopened.status().pending,0);
+});
+
+test('a wallet the server refuses as INVALID_PLAY_STATE is reported as kept on this device',async t=>{
+ const remote=server(),base=remote.client('a');const a=make(remote,'a',storage(),{client:{...base,mutate:async body=>{if(body.method==='buyItem')throw Object.assign(Error('INVALID_PLAY_STATE'),{code:'INVALID_PLAY_STATE',status:400});return base.mutate(body);}}});t.after(()=>a.stop());await a.ready();
+ await assert.rejects(a.wallet('buyItem',['magic-toys-picnic']),{code:'INVALID_PLAY_STATE',rejected:true,message:/이 기기에 남겨 뒀고/});
+ assert.equal(a.status().phase,'synced');assert.equal(a.status().pending,0);assert.equal(a.status().rejected,1);
+ assert.equal((await a.wallet('awardMiniGame',[{game:'word-magic',total:1,correct:1,completed:true,roundId:'after-refused-wallet'}])).saved,true);
+});
+
+for(const [label,failure] of [['5xx',{code:'SERVICE_UNAVAILABLE',status:503}],['429',{code:'SERVICE_UNAVAILABLE',status:429}],['a lost connection',{code:'NETWORK'}],['INVALID_PLAY_STATE without the server 400',{code:'INVALID_PLAY_STATE'}],['INVALID_PLAY_STATE with a 5xx',{code:'INVALID_PLAY_STATE',status:502}]])test(`${label} keeps the first record queued in order`,async t=>{
+ const remote=server(),base=remote.client('a'),sends=[];let failing=true;
+ const a=make(remote,'a',storage(),{client:{...base,mutate:async body=>{sends.push(body.id);if(failing)throw Object.assign(Error(failure.code),failure);return base.mutate(body);}}});t.after(()=>a.stop());await a.ready();
+ const game=a.storage();game.setItem(key,'{"last":1}');game.setItem(key,'{"last":2}');
+ await assert.rejects(a.flush(),{code:failure.code});
+ assert.equal(sends.length,1);assert.equal(a.status().pending,2);assert.equal(a.status().rejected,0);assert.equal(a.status().phase,'offline');
+ failing=false;await a.retry();assert.equal(remote.accounts.get('a').state.records[key],'{"last":2}');assert.equal(a.status().pending,0);assert.equal(a.status().rejected,0);
+});
+
+test('refused records stay with their account when another account signs in on the same device',async t=>{
+ const remote=server(),local=storage(),aSends=[],bSends=[];
+ const a=make(remote,'a',local,{client:olderServer(remote,'a',aSends)});await a.ready();a.storage().setItem(hangulKey,hangulValue);a.storage().setItem(key,'{"last":1}');await a.flush();a.stop();
+ const b=make(remote,'b',local,{client:olderServer(remote,'b',bSends)});t.after(()=>b.stop());await b.ready();
+ assert.equal(b.status().rejected,0);assert.equal(b.status().pending,0);assert.equal(b.storage().getItem(key),null);assert.equal(b.storage().getItem(hangulKey),null);
+ b.storage().setItem(hangulKey,hangulValue);b.storage().setItem(key,'{"last":7}');await b.flush();
+ assert.equal(b.status().rejected,1);assert.equal(remote.accounts.get('b').state.records[key],'{"last":7}');assert.equal(remote.accounts.get('a').state.records[key],'{"last":1}');
+ assert.equal(bSends.length,2);assert.ok(!bSends.some(id=>aSends.includes(id)));
+ const a2=make(remote,'a',local,{client:olderServer(remote,'a',aSends)});t.after(()=>a2.stop());await a2.ready();assert.equal(a2.status().rejected,1);assert.equal(a2.storage().getItem(key),'{"last":1}');
+ const archived=[...local.map.keys()].filter(name=>name.includes(':rejected:'));assert.equal(archived.length,2);assert.ok(archived.some(name=>name.startsWith('synk.play.account.v1:a:'))&&archived.some(name=>name.startsWith('synk.play.account.v1:b:')));
 });
 
 test('each game read observes drafts added by another same-origin host',async t=>{

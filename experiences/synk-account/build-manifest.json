@@ -57,10 +57,10 @@
     "assets/DMMono-Medium.ttf": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b",
     "dist/wardrobe-three.js": "ca63e2e89a9a83c9c3ddb8641aeda6ab2aa2420e41210f1571887442ad60fe44",
     "dist/app.js": "7e4459476b2b9bcc50756fb85237c6dbe6ac3c1d331a7fe4698f6d789baa44a2",
-    "dist/client.js": "67e55c48d95b2b3a2298ecebce003ebedd2aeac91f2d81e547c6351959a54b37",
-    "dist/preview.js": "d5d6c5ae56b3f3b87447f6a9f6ee251eaad569671951920ee9606e039031147e",
+    "dist/client.js": "d60fd7ee83c091e00fe869692b7de3866e0268dfb593c6f052eda8cfbf53eda4",
+    "dist/preview.js": "e926b5e8322ad76cdbae170b737b3638ae56c357f8b97910d78d50090913adf6",
     "dist/platform.js": "0005566837ddba20ee8c46692cda4503a10b54c1918e2b9c6811cf73cd83999e",
-    "dist/local-world.js": "eca81e636e80431eb3527af17639910322c95792d56fd863e1a38a3b49fd996c",
+    "dist/local-world.js": "687c0e1be47470257d4fb4b8e45fb8fb7bd18d60760eb675b9087e6866c9366d",
     "dist/teacher.js": "56f60c73a23eab1ed18a5cf583fcc0a537a494db45415cacf57ae882f80d5265",
     "preview.html": "44db8c9bd6e1dae7b969195bd74f29ca4fba0f1a7d35367601b6f2125aa15d5e"
   }

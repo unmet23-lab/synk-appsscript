@@ -5,7 +5,11 @@ const clone=value=>JSON.parse(JSON.stringify(value));
 const terminal=new Set(['UNAUTHORIZED','AUTH_REQUIRED','AUTH_SESSION_MISSING','SESSION_REVOKED','ACCOUNT_UNAVAILABLE','PRODUCT_FORBIDDEN','PLAY_ACCOUNT_MISMATCH','ACCOUNT_CHANGED','PLAY_SESSION_ENDED']);
 // Only explicit command rejection is final. Network, capacity, authorization and
 // conflicting progress failures must retain their retry/choice semantics.
-const rejectedCommands=new Set(['INVALID_PLAY_COMMAND','INVALID_PLAY_REQUEST','INVALID_JSON','JSON_REQUIRED','PAYLOAD_TOO_LARGE','PLAY_DATA_TOO_LARGE','COMMAND_ID_CONFLICT']);
+const rejectedCommands=new Set(['INVALID_PLAY_COMMAND','INVALID_PLAY_REQUEST','INVALID_JSON','JSON_REQUIRED','PAYLOAD_TOO_LARGE','PLAY_DATA_TOO_LARGE','COMMAND_ID_CONFLICT','INVALID_PLAY_STATE']);
+// A server without a record key answers 400 INVALID_PLAY_STATE and resending cannot change that.
+// This host also names a malformed acknowledgement INVALID_PLAY_STATE (that one may follow a commit),
+// so only the server's 400 for the command itself counts as a rejection.
+const rejection=cause=>rejectedCommands.has(cause?.code)&&(cause.code!=='INVALID_PLAY_STATE'||cause.status===400);
 /** Authenticated WORLD owns this host; iframe games receive methods, never credentials. */
 export function createWorldPlayHost({accountId,client,guard,onStatus=()=>{},storage=globalThis.localStorage,locks=globalThis.navigator?.locks,uuid=()=>crypto.randomUUID(),now=Date.now}){
   if(typeof accountId!=='string'||!accountId||typeof guard!=='function'||typeof client?.load!=='function'||typeof client?.mutate!=='function')throw TypeError('Verified WORLD play account required');
@@ -57,7 +61,7 @@ export function createWorldPlayHost({accountId,client,guard,onStatus=()=>{},stor
       for(;;){const entry=pending()[0];if(!entry)break;
         check();emit('saving');let response;
         try{response=await client.mutate(entry.body);}
-        catch(cause){check();if(!rejectedCommands.has(cause.code))throw cause;preserveRejected(entry,cause);continue;}
+        catch(cause){check();if(!rejection(cause))throw cause;preserveRejected(entry,cause);continue;}
         // A malformed acknowledgement may follow a successful commit. Never
         // quarantine it as if the command itself had been rejected.
         last=accept(response);check();
