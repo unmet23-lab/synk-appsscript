@@ -74,7 +74,21 @@ jobs:
           sudo apt-get install -y ffmpeg
           rustup target add wasm32-unknown-unknown
           cargo build --locked --release --target wasm32-unknown-unknown --manifest-path tools/text-compare-bench/rust/Cargo.toml
+      - name: checkout the released WORLD account bundle for the drama sync test
+        if: runner.os == 'Linux'
+        uses: actions/checkout@v5
+        with:
+          repository: unmet23-lab/synk-policy
+          ref: 30492147d467337c46ef61a1b8ec5c3c58a1356c
+          path: .tmp/conditional-drama-public
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /world/world-account.bundle.mjs
+            /world/life-content.mjs
       - name: verify exact registered cases, with no skips
+        env:
+          DRAMA_LIVE_WORLD_BUNDLE: ${{ runner.os == 'Linux' && format('{0}/.tmp/conditional-drama-public/world/world-account.bundle.mjs', github.workspace) || '' }}
         run: node tools/conditional-qa/run.cjs --route ${{ matrix.route }} --output "${{ runner.temp }}/conditional-${{ matrix.route }}"
       - name: save the actual event ledger
         if: always()

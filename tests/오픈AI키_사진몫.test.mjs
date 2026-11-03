@@ -176,17 +176,20 @@ test('값이 나갔는지 모르는 실패(본문을 다 못 읽음 · 5xx)는 �
   }
 });
 
-test('주기 끝 25시간 안에는 돈 드는 사진 부르기를 하지 않고(다음 주기로 청구될 수 있음), 지우기는 그대로 한다', async () => {
+test('주기 끝 25시간 안에는 돈 드는 사진 부르기를 하지 않고(다음 주기로 청구될 수 있음), 지우기는 그대로 한다', async (t) => {
+  const 경계 = Date.parse('2026-11-05T00:00:00+09:00') - 25 * 3600e3;
+  t.mock.timers.enable({ apis: ['Date'], now: 경계 - 1 });
   const { s, 받은, 바탕 } = await 서버((req) => ({ 글: req.method === 'DELETE' ? '{"id":"file-x","deleted":true}' : '{"id":"batch_1"}' }));
   try {
-    const 내일 = new Date(Date.now() + 864e5 + 3600e3).toISOString().slice(0, 10);
-    const d = 자리(오늘몫({ 주기: { 시작: new Date(Date.now() - 20 * 864e5).toISOString().slice(0, 10), 끝: 내일 }, 월크레딧USD: 100 }));
+    const d = 자리(오늘몫({ 주기: { 시작: '2026-10-05', 끝: '2026-11-05' }, 월크레딧USD: 100 }));
     await 환경(d, 바탕, async () => {
+      await 차례로부르기(만들기(바탕), { 용도: '사진', 어림USD: 0.1 });
+      t.mock.timers.setTime(경계);
       await assert.rejects(차례로부르기(만들기(바탕), { 용도: '사진', 어림USD: 0.1 }), (e) => e.코드 === 3 && /25시간 안/.test(e.message));
       const 지움 = await 차례로부르기(() => ({ 주소: `${바탕}/files/file-x` }), { 용도: '사진', 어림USD: 0, 방법: 'DELETE' });
       assert.strictEqual(지움.답.deleted, true);
     });
-    assert.deepStrictEqual(받은.map((r) => r.방법), ['DELETE']);
+    assert.deepStrictEqual(받은.map((r) => r.방법), ['POST', 'DELETE']);
   } finally {
     s.close();
   }

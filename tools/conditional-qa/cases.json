@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 114,
+  "expectedCount": 115,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -916,6 +916,14 @@
       "name": "a previously copied note that gained control bytes is encrypted byte for byte; a changed prior copy still stops it",
       "group": "로컬 암호화 모듈",
       "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S115",
+      "file": "tests/drama-pilot-record.test.mjs",
+      "name": "① 공개본 WORLD 계정 묶음으로도 동기화가 막히지 않는다(내려받은 파일이 있을 때만)",
+      "group": "드라마 공개본 WORLD 계정 묶음",
+      "route": "linux",
       "profile": "default"
     }
   ]
