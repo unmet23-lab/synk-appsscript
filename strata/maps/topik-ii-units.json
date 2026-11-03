@@ -1,5 +1,5 @@
 {
-  "map_ver": "topik-ii-units-1-a15de85dc2ab",
+  "map_ver": "topik-ii-units-1-66f3a1832eda",
   "subject": "ko",
   "sources": {
     "practice-taxonomy": {
@@ -8,7 +8,7 @@
     },
     "unit-curriculum": {
       "path": "strata/topik-ii.units.json",
-      "sha256": "9a5c307c89b90b316a18dd111a893479178d92fe4f8f395e9e2048369366675c"
+      "sha256": "e09d6d91e6ff889d17a19b4765dce92087785e6fd669dc404a33a107f6ba351e"
     },
     "unit-grammar": {
       "path": "strata/topik-ii.grammar.json",

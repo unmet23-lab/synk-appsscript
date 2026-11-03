@@ -1,6 +1,6 @@
 {
  "version": "topik-ii-units-1",
- "note": "TOPIK 3→4급 뼈대(docs/TOPIK_3to4급_뼈대_시안_20261102.md, 결정 11-02)의 단원 원천 — 첫 판은 가을 학기(4급) 앞 넷 U13~U16뿐이다. 문형은 strata/topik-ii.grammar.json(국립국어원 표준 교육과정 등급 목록 3 · 4급)의 id, 낱말은 같은 원자료 첫째 시트(어휘)의 등급 · 등급별 번호다(tools/build-topik-ii-grammar.py --check가 원자료와 대조). 문형 · 낱말의 review: true는 앞 급의 복습, again: true는 같은 급의 앞 단원에 이미 나온 것이다. 능력은 strata/maps/topik-ii.json, 유형은 strata/topik-types.json, course는 TOPIK 4급 온라인 반 자료(docs/온라인반_TOPIK4급)의 주차다. 모두 ai_draft이고 교원 검수 전이다 — 지도(maps/topik-ii.json)와 나뉜 층이라 지도 판(map_ver)과 WORLD 코치는 바뀌지 않는다. 낱말은 단원마다 첫 판 12~16개이고 목표는 핵심 40~60개다.",
+ "note": "TOPIK 3→4급 뼈대(docs/TOPIK_3to4급_뼈대_시안_20261102.md, 결정 11-02)의 단원 원천 — 첫 판은 가을 학기(4급) 앞 넷 U13~U16뿐이다. 문형은 strata/topik-ii.grammar.json(국립국어원 표준 교육과정 등급 목록 3 · 4급)의 id, 낱말은 같은 원자료 첫째 시트(어휘)의 등급 · 등급별 번호다(tools/build-topik-ii-grammar.py --check가 원자료와 대조). 문형 · 낱말의 review: true는 앞 급의 복습, again: true는 같은 급의 앞 단원에 이미 나온 것이다. 능력은 strata/maps/topik-ii.json, 유형은 strata/topik-types.json, course는 TOPIK 4급 온라인 반 자료(docs/온라인반_TOPIK4급)의 주차다. 모두 ai_draft이고 AI 초안이다(교원 검수는 11-03부터 하지 않는다) — 지도(maps/topik-ii.json)와 나뉜 층이라 지도 판(map_ver)과 WORLD 코치는 바뀌지 않는다. 낱말은 단원마다 첫 판 12~16개이고 목표는 핵심 40~60개다.",
  "status": "ai_draft",
  "reviewed": false,
  "units": [
