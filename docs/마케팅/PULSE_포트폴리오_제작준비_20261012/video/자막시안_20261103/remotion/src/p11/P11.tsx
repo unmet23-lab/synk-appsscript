@@ -94,11 +94,13 @@ const LookA: React.FC<{ t: number; mix?: boolean }> = ({ t, mix }) => {
       <Subject film="p11" cuts={MASKS} t={t} />
       {/* 머리 줄 · 발 줄 */}
       {!(mix && t >= w(8, 3)) && <>
-        <div style={{ ...abs(72, 96, 936, 60), zIndex: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: PAPER, textShadow: '0 1px 12px #0008' }}>
+        {/* 흰 천장 위에서 머리 줄이 묻혀(11-04) 위쪽만 살짝 어둡게 깐다 */}
+        <AbsoluteFill style={{ zIndex: 7, background: 'linear-gradient(#0009 0%, #0000 14%)' }} />
+        <div style={{ ...abs(72, 96, 936, 60), zIndex: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: PAPER, textShadow: '0 1px 12px #000b' }}>
           <span style={{ fontFamily: KO, fontWeight: 700, fontSize: 36, letterSpacing: '-0.03em' }}>외계 · 3살</span>
-          {mix ? <span style={{ fontFamily: KO, fontWeight: 700, fontSize: 28, letterSpacing: '-0.02em', opacity: 0.6 }}>첨벙댕</span> : <span style={{ fontFamily: EN, fontSize: 24, letterSpacing: '0.08em', opacity: 0.8 }}>SUMMER WATER DAY / 01</span>}
+          {mix ? <span style={{ fontFamily: KO, fontWeight: 700, fontSize: 28, letterSpacing: '-0.02em', opacity: 0.9 }}>첨벙댕</span> : <span style={{ fontFamily: EN, fontSize: 24, letterSpacing: '0.08em', opacity: 0.8 }}>SUMMER WATER DAY / 01</span>}
         </div>
-        <div style={{ ...abs(72, 170, 936, 2), zIndex: 20, background: PAPER, opacity: 0.45 }} />
+        <div style={{ ...abs(72, 170, 936, 2), zIndex: 20, background: PAPER, opacity: 0.6 }} />
         <div style={{ ...abs(72, 1812, 936, 3), zIndex: 20, background: '#ffffff30' }}><div style={{ height: 3, width: `${Math.min(1, t / 22.06) * 100}%`, background: LEMON }} /></div>
       </>}
       {/* 조끼 카드(앞) */}
@@ -139,25 +141,25 @@ const LookA: React.FC<{ t: number; mix?: boolean }> = ({ t, mix }) => {
           </>
         );
       })()}
-      {end && mix && t < w(8, 3) && <div style={{ ...abs(72, 1110, 620), zIndex: 12, opacity: ramp(t, 19.4, 0.3), transform: `translateY(${(1 - ramp(t, 19.4, 0.4)) * 60}px)` }}>
-        <div style={{ fontFamily: EN, fontSize: 24, letterSpacing: '0.1em', color: PAPER, textShadow: '0 1px 10px #0009' }}>LIFE VEST FOR PETS</div>
-        <div style={{ fontFamily: KO, fontWeight: 700, fontSize: 52, letterSpacing: '-0.03em', color: PAPER, marginTop: 10, textShadow: '0 2px 16px #000a' }}>물놀이 가는 날엔</div>
-      </div>}
       {end && mix && t >= w(8, 3) && (() => {
         const p = ramp(t, w(8, 3), 0.22, EXPO);
         const q = pop(t, w(8, 3) + 0.06, 0.42);
         return (
           <>
-            <div style={{ ...abs(0, 1920 - p * 520, 1080, 540), zIndex: 22, background: LEMON }} />
-            <div style={{ ...abs(0, 1420, 1080), zIndex: 23, textAlign: 'center', fontFamily: KO, fontWeight: 900, fontSize: 220, letterSpacing: '-0.07em', lineHeight: 1, color: NAVY, transform: `scale(${0.94 + 0.06 * Math.min(1, q)})` }}>첨벙댕</div>
-            <div style={{ ...abs(0, 1672, 1080), zIndex: 23, textAlign: 'center', fontFamily: KO, fontWeight: 700, fontSize: 44, color: NAVY }}>반려견 구명조끼</div>
+            {/* 판이 27%일 땐 조끼 아래를 잘라 끝에 제품보다 로고가 남았다(11-04 GPT 검수) → 22%로 낮춰 조끼를 다 보인다 */}
+            <div style={{ ...abs(0, 1920 - p * 420, 1080, 440), zIndex: 22, background: LEMON }} />
+            <div style={{ ...abs(0, 1516, 1080), zIndex: 23, textAlign: 'center', fontFamily: KO, fontWeight: 900, fontSize: 190, letterSpacing: '-0.07em', lineHeight: 1, color: NAVY, transform: `scale(${0.94 + 0.06 * Math.min(1, q)})` }}>첨벙댕</div>
+            <div style={{ ...abs(0, 1716, 1080), zIndex: 23, textAlign: 'center', fontFamily: KO, fontWeight: 700, fontSize: 42, color: NAVY }}>반려견 구명조끼</div>
           </>
         );
       })()}
       {/* 말자막(S42 Caption 결) */}
-      {l && !end && l !== LINES[3] && (() => {   // 3번 줄(「첨벙댕 구명조끼」)은 카드 · 블록이 같은 말을 크게 보여 준다
+      {l && (!end || (mix && t < w(8, 3))) && l !== LINES[3] && (() => {   // 3번 줄(「첨벙댕 구명조끼」)은 카드 · 블록이 같은 말을 크게 보여 준다
+        // mix 끝 줄: 브랜드가 레몬 판으로 터지기 전까지 「물놀이 가는 날엔」만 상자에 — 밝은 글자를 화면에 띄웠더니 흰 반바지 · 문 위에 묻혔다(11-04)
+        const ws = l === LINES[8] ? l.words.slice(0, 3) : l.words;
+        const cut = splitAt(ws);
         const o = life(t, l.at - 0.05, l.end + 0.35, 0.18, 0.14);
-        return <div style={{ ...abs(72, 1500, 936), zIndex: 25, textAlign: 'center', opacity: o }}><span style={{ fontFamily: KO, fontWeight: 650, fontSize: 52, lineHeight: 1.32, color: PAPER, background: '#0E1320e0', boxDecorationBreak: 'clone', WebkitBoxDecorationBreak: 'clone', padding: '10px 22px', borderRadius: 10 }}>{l.words.map((w, i) => <React.Fragment key={i}>{i === splitAt(l.words) ? <br /> : null}<span style={{ color: w.key && t >= w.t ? LEMON : PAPER }}>{noDot(w.w)}{i < l.words.length - 1 && i + 1 !== splitAt(l.words) ? ' ' : ''}</span></React.Fragment>)}</span></div>;
+        return <div style={{ ...abs(72, 1500, 936), zIndex: 25, textAlign: 'center', opacity: o }}><span style={{ fontFamily: KO, fontWeight: 650, fontSize: 52, lineHeight: 1.32, color: PAPER, background: '#0E1320e0', boxDecorationBreak: 'clone', WebkitBoxDecorationBreak: 'clone', padding: '10px 22px', borderRadius: 10 }}>{ws.map((w, i) => <React.Fragment key={i}>{i === cut ? <br /> : null}<span style={{ color: w.key && t >= w.t ? LEMON : PAPER }}>{i === ws.length - 1 ? noDot(w.w).replace(/,$/, '') : noDot(w.w)}{i < ws.length - 1 && i + 1 !== cut ? ' ' : ''}</span></React.Fragment>)}</span></div>;
       })()}
       <Door t={t} at={w(3, 0)} color={LEMON} />
       <Door t={t} at={19.33} color={NAVY} />
@@ -275,7 +277,7 @@ export const P11: React.FC<{ look: 'A' | 'B' | 'C' | 'AB'; probe?: boolean }> = 
       {look === 'B' && <LookB t={t} />}
       {look === 'C' && <LookC t={t} />}
       {look === 'AB' && <LookA t={t} mix />}
-      <div style={{ ...abs(0, 1872, 1080), zIndex: 30, textAlign: 'center', fontFamily: KO, fontWeight: 500, fontSize: 22, color: (look === 'AB' || look === 'B') && t >= w(8, 3) ? '#17224Dcc' : '#ffffffaa' }}>가상 브랜드 · AI로 만든 가상 모델 · 음성</div>
+      <div style={{ ...abs(0, 1872, 1080), zIndex: 30, textAlign: 'center', fontFamily: KO, fontWeight: 500, fontSize: 22, color: (look === 'AB' || look === 'B') && t >= w(8, 3) ? '#17224Dcc' : '#ffffffcc', textShadow: (look === 'AB' || look === 'B') && t >= w(8, 3) ? undefined : '0 1px 6px #000a' }}>가상 브랜드 · AI로 만든 가상 모델 · 음성</div>
       <Sequence from={0}><Audio src={staticFile('p11/sound_narr.wav')} /></Sequence>
     </AbsoluteFill>
   );

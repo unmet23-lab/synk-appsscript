@@ -3,19 +3,20 @@
 //   A(큰 글자): 「그 사람」 마주친 횟수를 장소 칩 아래 한 자리에 큰 숫자로 — 컷이 바뀌면 그 자리에서 숫자만 바뀐다.
 //     남자 뒤로 보내려고 컷마다 rembg 마스크를 땄지만(11-03 밤) 절반이 비거나 튀어(남자가 작거나 카메라가 돌아 들어감) 숫자는 모두 앞에 두고,
 //     그 컷 마스크를 합친 자리를 피하게 ../자리찾기.py로 재서 골랐다(해녀의 집 · 우도만 머리를 피해 오른쪽, 바탕이 어두운 컷은 밝은 숫자)
-//   B(색 블록 두 방): 두 폰이 같은 화면인 순간 「모두의코스 / 같은 코스」 민트 블록 + 두 폰 화면의 고리, 끝 브랜드는 아래에서 올라오는 민트 판
+//   B(색 블록 한 장): 두 폰이 같은 화면인 순간 「모두의코스 / 같은 코스」 민트 블록 + 두 폰 테두리, 끝은 그 블록이 두 폰 사이 띠로 자라 브랜드까지 담고 그 사람은 멈춘 채 남는다(11-04)
 // 바닥 고정 자막(밈 원본 꼴)은 뺐다. 화면 · 소리는 git 밖 public(p12/picture.mp4 · sound.wav).
 import React from 'react';
 import { AbsoluteFill, Img, OffthreadVideo, staticFile, useCurrentFrame } from 'remotion';
 import { Audio } from '@remotion/media';
 import { EN, KO, MONO } from '../lib/fonts';
 import { EXPO, pop, ramp } from '../lib/motion';
-import { Door, ProbeMeta, probeChars } from '../lib/subject';
+import { ProbeMeta, probeChars } from '../lib/subject';
+import phones from './폰자리.json';
 
 const FPS = 24;
-export const P12_FRAMES = Math.round(37.64 * FPS);
-const T = [0, 1.87, 3.87, 7.2, 11.73, 15.1, 18.3, 21.77, 22.87, 27.07, 27.77, 28.47, 29.17, 29.87, 30.57, 31.27, 35.14, 37.64];
-const MINT = '#20B296', MINT_D = '#12846E', INK = '#101414', PAPER = '#F7F6F1';
+export const P12_FRAMES = Math.round(38 * FPS);   // 끝 포스터가 다 선 뒤 1.6초 멈춘다(읽을 시간 — 11-04에 37.64에서 늘림)
+const T = [0, 1.87, 3.87, 7.2, 11.73, 15.1, 18.3, 21.77, 22.87, 27.07, 27.77, 28.47, 29.17, 29.87, 30.57, 31.27, 35.14, 38];
+const MINT = '#20B296', INK = '#101414', PAPER = '#F7F6F1';
 // 컷 → [일차, 장소, 마주친 횟수] (7 · 8은 같은 곳)
 const PLACE: [string, string, number][] = [
   ['1일차', '김포 → 제주 기내', 1], ['1일차', '공항 렌터카 셔틀', 2], ['1일차', '호텔 수영장', 3], ['1일차', '요트 투어', 4], ['1일차', '해변 카페', 5],
@@ -49,22 +50,27 @@ const NUM: (NumAt | null)[] = [
 ];
 // 그 횟수가 처음 뜬 시각(7 · 8번 컷은 같은 횟수라 다시 튀지 않는다)
 const firstAt = (i: number) => NUM[i]?.at ?? TT[PLACE.findIndex((p) => p[2] === PLACE[i][2])];
+// 폭로 — 폰 디지털 줌으로 그 사람이 폰을 든 판이 뜨는 프레임에 한 방(소리도 여기, comedy-montage 최종편집.py ZOOM). 숫자 · 진행 선은 이 프레임에 사라진다 —
+// 남아 있으면 두 폰보다 글이 먼저 보인다(11-04 GPT 검수). 먼저 그 사람과 두 폰을 보고 「같은 코스」는 0.5초 뒤(BLOCK_AT, 최종편집.py와 같은 값)
+const ZOOM = (Math.round(T[15] * FPS) + phones.from) / FPS;
+const BLOCK_AT = ZOOM + 0.5;
+const BRAND_AT = TT[16] + 0.95;   // 끝 포스터가 닫히는 순간(딩) — 최종편집.py와 같은 값
 const numBox = (t: number, i: number): React.CSSProperties => {
   const n = NUM[i]!;
   const a = firstAt(i);
   const p = pop(t, a, isRapid(i) ? 0.28 : 0.42);
-  return { ...abs(56, n.y, 968), textAlign: n.x === 'c' ? 'center' : n.x === 'r' ? 'right' : 'left', fontFamily: KO, fontWeight: 800, fontSize: n.size, letterSpacing: '-0.06em', lineHeight: 1, whiteSpace: 'nowrap', opacity: Math.min(1, p), transform: `translateY(${(1 - p) * 90}px)` };
+  return { ...abs(56, n.y, 968), display: 'flex', flexDirection: 'column', alignItems: n.x === 'r' ? 'flex-end' : 'flex-start', fontFamily: KO, fontWeight: 800, fontSize: n.size, letterSpacing: '-0.06em', lineHeight: 1, whiteSpace: 'nowrap', opacity: Math.min(1, p), transform: `translateY(${(1 - p) * 90}px)` };
 };
 const digits = (i: number) => String(PLACE[i][2]).padStart(2, '0');
-// 「번째」 알약 — 숫자와 같은 줄, 민트 바탕이라 어디서나 읽힌다
-const Pill: React.FC<{ show: boolean }> = ({ show }) => (
-  <span style={{ display: 'inline-block', verticalAlign: 'baseline', marginLeft: 18, fontSize: 40, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1, color: show ? '#fff' : 'transparent', background: show ? MINT : 'transparent', borderRadius: 40, padding: '10px 20px 12px' }}>번째</span>
+// 「번째」 알약 — 민트 바탕이라 어디서나 읽힌다. 숫자 옆에 두니 클로즈업 컷에서 얼굴에 얹혀(11-04 감귤밭 11) 숫자 아래로
+const Pill: React.FC<{ size: number }> = ({ size }) => (
+  <span style={{ marginTop: -0.06 * size, fontSize: 40, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1, color: '#fff', background: MINT, borderRadius: 40, padding: '10px 20px 12px' }}>번째</span>
 );
 const BigNum: React.FC<{ t: number; i: number }> = ({ t, i }) => {
-  if (!NUM[i]) return null;
+  if (!NUM[i] || t >= ZOOM) return null;
   const light = NUM[i]!.light;
   return (
-    <div style={{ ...numBox(t, i), zIndex: 6, color: light ? PAPER : INK, textShadow: light ? '0 4px 28px #10141470' : undefined }}>{digits(i)}<Pill show /></div>
+    <div style={{ ...numBox(t, i), zIndex: 6 }}><span style={{ color: light ? PAPER : INK, textShadow: light ? '0 2px 22px #101414b0' : undefined }}>{digits(i)}</span><Pill size={NUM[i]!.size} /></div>
   );
 };
 
@@ -73,20 +79,22 @@ const Pin: React.FC<{ size: number; color: string }> = ({ size, color }) => (
 );
 
 const Head: React.FC<{ t: number }> = ({ t }) => {
-  // 0 ~ 1.5초 세 줄로 크게 → 1.45 ~ 1.87초 작아지며 위로 빠지고, 그 자리에 한 줄 머리글이 남는다
-  // (처음엔 세 줄을 그대로 줄여 접었더니 셋째 줄이 장소 칩과 겹쳤다 — 11-03 자체 검수)
-  const d = ramp(t, 1.45, 0.42, EXPO);
+  // 0 ~ 1.4초 세 줄로 크게 → 제자리에서 사라지고, 위에 한 줄 머리글이 남는다
+  // 11-04: 제목(y 540)이 남자 얼굴 · 눈을 덮었다 → 가슴 아래로 내리고 그 자리만 어둡게 깐다. 위로 접으면 또 얼굴을 지나가니 접지 않는다
+  const d = ramp(t, 1.4, 0.35, EXPO);
+  const out = 1 - ramp(t, BRAND_AT, 0.25);   // 끝 포스터는 그 사람 사진 + 민트 판 두 칸만(글자 층이 셋이면 어수선하다, 크몽 세션 Fable 재검)
   return (
     <>
-      <div style={{ ...abs(64, 540 - d * 330, 952), zIndex: 30, transformOrigin: 'left top', transform: `scale(${1 - d * 0.55})`, opacity: 1 - ramp(t, 1.6, 0.25) }}>
+      <AbsoluteFill style={{ zIndex: 11, background: 'linear-gradient(#0000 50%, #000c 80%, #000c 100%)', opacity: 1 - d }} />
+      <div style={{ ...abs(64, 1190, 952), zIndex: 30, transformOrigin: 'left bottom', transform: `scale(${1 - d * 0.08})`, opacity: 1 - d }}>
         <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 118, lineHeight: 1.04, letterSpacing: '-0.05em', color: PAPER, textShadow: '0 4px 30px #0007', whiteSpace: 'pre-line', opacity: Math.min(1, pop(t, 0.0, 0.35)) }}>
           {'제주 2박 3일,\n가는 데마다\n'}<span style={{ color: '#7DF0D3' }}>또 그 사람</span>
         </div>
       </div>
-      <div style={{ ...abs(64, 200, 952), zIndex: 30, fontFamily: KO, fontWeight: 700, fontSize: 38, letterSpacing: '-0.03em', color: PAPER, textShadow: '0 2px 14px #000a', opacity: ramp(t, 1.62, 0.25), transform: `translateY(${(1 - ramp(t, 1.62, 0.3, EXPO)) * 14}px)` }}>
+      <div style={{ ...abs(64, 200, 952), zIndex: 30, fontFamily: KO, fontWeight: 700, fontSize: 38, letterSpacing: '-0.03em', color: PAPER, textShadow: '0 2px 14px #000a', opacity: ramp(t, 1.62, 0.25) * out, transform: `translateY(${(1 - ramp(t, 1.62, 0.3, EXPO)) * 14}px)` }}>
         제주 2박 3일, 가는 데마다 <span style={{ color: '#7DF0D3' }}>또 그 사람</span>
       </div>
-      <div style={{ ...abs(64, 262, 952, 2), zIndex: 29, background: PAPER, opacity: 0.5 * d }} />
+      <div style={{ ...abs(64, 262, 952, 2), zIndex: 29, background: PAPER, opacity: 0.5 * d * out }} />
     </>
   );
 };
@@ -96,87 +104,109 @@ const Chip: React.FC<{ t: number; i: number }> = ({ t, i }) => {
   const same = i > 0 && PLACE[i - 1][1] === name;
   const p = same ? 1 : ramp(t, TT[i], 0.24, EXPO);
   return (
-    <div style={{ ...abs(64, 300, 700), zIndex: 30, display: 'flex', alignItems: 'center', gap: 14, transform: `translateX(${(1 - p) * -60}px)`, opacity: p }}>
+    <div style={{ ...abs(64, 300, 700), zIndex: 30, display: 'flex', alignItems: 'center', gap: 14, transform: `translateX(${(1 - p) * -60}px)`, opacity: p * (1 - ramp(t, TT[16], 0.2)) }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: MINT, color: '#fff', borderRadius: 40, padding: '12px 24px 12px 16px', boxShadow: '0 10px 30px #0003' }}>
         <Pin size={34} color="#fff" />
         <span style={{ fontFamily: KO, fontWeight: 800, fontSize: 38, letterSpacing: '-0.03em' }}>{name}</span>
       </div>
-      <span style={{ fontFamily: MONO, fontSize: 26, color: PAPER, textShadow: '0 1px 10px #000a' }}>{day}</span>
+      <span style={{ fontFamily: MONO, fontSize: 26, color: PAPER, textShadow: '0 1px 10px #000e' }}>{day}</span>
     </div>
   );
 };
 
-// 16번 — 두 폰이 같은 화면인 순간: 두 폰 사이 탁자 위에 「모두의코스 / 같은 코스」 블록 한 방(11번 「첨벙댕 / 구명조끼」와 같은 결) + 두 폰 화면에 고리
-const SameScreen: React.FC<{ t: number }> = ({ t }) => {
-  const a = 33.2;
-  if (t < a || t >= TT[16]) return null;
-  const p = ramp(t, a, 0.16, EXPO);
-  const punch = 1 + (1 - ramp(t, a, 0.14)) * 0.08;
-  const phones = [{ x: 497, y: 1020 }, { x: 448, y: 1700 }];
+// 네 꼭짓점 → 위 변 가운데에서 양쪽으로 내려가는 둥근 길 둘(바깥으로 pad). 앞 폰은 아래가 화면 밖이라 길도 화면 밖으로 나간다
+const phonePaths = (q: number[][], pad: number, r: number) => {
+  const unit = (a: number[], b: number[]) => { const d = Math.hypot(b[0] - a[0], b[1] - a[1]); return [(b[0] - a[0]) / d, (b[1] - a[1]) / d]; };
+  const u = unit(q[0], q[1]), v = unit(q[0], q[3]);
+  const at = (p: number[], su: number, sv: number) => [p[0] + u[0] * su + v[0] * sv, p[1] + u[1] * su + v[1] * sv];
+  const P = (p: number[]) => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`;
+  const tl = at(q[0], -pad, -pad), tr = at(q[1], pad, -pad), br = at(q[2], pad, pad), bl = at(q[3], -pad, pad);
+  const top = [(tl[0] + tr[0]) / 2, (tl[1] + tr[1]) / 2], bottom = [(bl[0] + br[0]) / 2, (bl[1] + br[1]) / 2];
+  return [
+    `M${P(top)} L${P(at(tr, -r, 0))} Q${P(tr)} ${P(at(tr, 0, r))} L${P(at(br, 0, -r))} Q${P(br)} ${P(at(br, -r, 0))} L${P(bottom)}`,
+    `M${P(top)} L${P(at(tl, r, 0))} Q${P(tl)} ${P(at(tl, 0, r))} L${P(at(bl, 0, -r))} Q${P(bl)} ${P(at(bl, r, 0))} L${P(bottom)}`,
+  ];
+};
+// 두 폰 테두리 — 고리는 화면의 글 · 지도를 덮어 정작 「같은 화면」을 못 보게 했다(11-04) → 폰 둘레를 따라 그린다. 꼭짓점은 comedy-montage-20261026/폰다시얹기.py가 잰 값
+// 흰 테까지 두 겹 굵게 그리니 장난감 범퍼 같았다(11-04 GPT 검수) → 민트 한 겹으로 얇게, 두 폰을 알려 준 뒤(블록이 뜬 뒤) 거둔다
+const Outlines: React.FC<{ t: number }> = ({ t }) => {
+  const off = 1 - ramp(t, BLOCK_AT + 0.25, 0.25);
+  if (t < ZOOM || off <= 0) return null;
+  const j = Math.min(phones.man.length - 1, Math.round((t - ZOOM) * FPS));
+  const parts = [{ q: phones.man[j], pad: 8, r: 20, at: ZOOM + 0.1 }, { q: phones.front[j], pad: 12, r: 38, at: ZOOM + 0.2 }];
   return (
-    <>
-      {phones.map((q, k) => {
-        const r = ramp(t, a + 0.12 + k * 0.08, 0.5, EXPO);
-        return <div key={k} style={{ ...abs(q.x - 80, q.y - 80, 160, 160), zIndex: 31, borderRadius: '50%', border: `6px solid ${MINT}`, boxShadow: `0 0 0 4px #fff8`, transform: `scale(${0.4 + 0.6 * r})`, opacity: Math.min(1, r * 2) }} />;
-      })}
-      <div style={{ ...abs(0, 1176, 1080), zIndex: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, transform: `scale(${punch})`, transformOrigin: 'center center' }}>
-        <div style={{ fontFamily: KO, fontWeight: 750, fontSize: 48, letterSpacing: '-0.03em', color: PAPER, background: INK, padding: '8px 22px 10px', borderRadius: 10, clipPath: `inset(0 ${(1 - p) * 100}% 0 0 round 10px)` }}>모두의코스</div>
-        <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 168, letterSpacing: '-0.06em', lineHeight: 0.98, color: INK, background: MINT, padding: '6px 26px 14px', borderRadius: 16, clipPath: `inset(0 ${(1 - p) * 100}% 0 0 round 16px)` }}>같은 코스</div>
-      </div>
-    </>
+    <svg width={1080} height={1920} style={{ position: 'absolute', left: 0, top: 0, zIndex: 8, opacity: off }}>
+      <g fill="none" strokeLinecap="round" stroke={MINT} strokeWidth={4}>
+        {parts.map(({ q, pad, r, at }, k) => phonePaths(q, pad, r).map((d, m) => (
+          <path key={`${k}${m}`} d={d} pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - ramp(t, at, 0.34, EXPO)} />
+        )))}
+      </g>
+    </svg>
   );
 };
 
-// 끝 — 제주 위 코스 선 · 핀 열다섯 · 「알고 보니, 같은 코스」 → 아래에서 민트 판이 올라와 브랜드(11번 끝 레몬 판과 같은 결, 글자는 한 번에)
-const End: React.FC<{ t: number }> = ({ t }) => {
-  const a = TT[16];
-  if (t < a) return null;
-  const draw = ramp(t, a + 0.1, 0.85, EXPO);
-  const cx = 540, cy = 760, rx = 400, ry = 230, tilt = -12 * Math.PI / 180;
+// 16번 → 끝: 민트 블록 한 장 — 두 폰 사이에 「모두의코스 / 같은 코스」로 닦여 나왔다가(11번 「첨벙댕 / 구명조끼」와 같은 결), 끝에서 가로 띠로 자라고 화면 아래 끝까지 내려가 포스터로 닫힌다.
+// 예전 끝은 그 사람을 끊고 검은 화면 + 추상 지도로 닫혀 「또 그 사람」의 여운이 없었다(크몽 세션 Fable 맹검 · 11-04). 띠를 두 폰 사이에 멈춰 앞 폰을 끝까지 남긴 판은 로고가 폰 머리글과 두 겹이고
+// 떠 있는 스티커처럼 덜 닫혔다(Fable 재검) → 두 폰은 멈춤 첫 1초(띠 아래)까지 보이고, 딩에서 판이 아래를 다 덮어 그 사람 + 브랜드로 끝난다
+const BAND = { top: 1196, mid: 1520 };
+const Block: React.FC<{ t: number }> = ({ t }) => {
+  if (t < BLOCK_AT) return null;
+  const a = TT[16], b0 = BRAND_AT;
+  const p = ramp(t, BLOCK_AT, 0.16, EXPO);
+  const punch = 1 + (1 - ramp(t, BLOCK_AT, 0.14)) * 0.08;
+  const g = t >= a ? ramp(t, a, 0.34, EXPO) : 0;
+  const h = t >= b0 ? ramp(t, b0, 0.3, EXPO) : 0;
+  const mix = (x: number, y: number) => x + (y - x) * g;
+  const [l, r0, top, bottom] = [mix(262, 0), mix(818, 1080), mix(1258, BAND.top), mix(1420, BAND.mid) + (1920 - BAND.mid) * h];
+  const right = l + (r0 - l) * p;
+  // 앱 지도와 같은 섬 · 코스 — 그 폰 화면을 그대로 떼어 온 꼴이라 눈이 잇는다(물결선 + 흰 원은 템플릿 같았다, GPT 검수). 핀은 소리 틱과 같은 시각(0.1초부터 0.055초 간격)
+  const draw = ramp(t, a + 0.1, 14 * 0.055, (x) => x);
+  const cx = 104, cy = 56, rx = 96, ry = 50, tilt = -12 * Math.PI / 180;
   const pins = Array.from({ length: 15 }, (_, k) => {
-    const g = (200 - k * 24) * Math.PI / 180;
-    const x = 0.72 * rx * Math.cos(g), y = 0.66 * ry * Math.sin(g);
+    const c = (200 - k * 24) * Math.PI / 180;
+    const x = 0.76 * rx * Math.cos(c), y = 0.66 * ry * Math.sin(c);
     return { x: cx + x * Math.cos(tilt) - y * Math.sin(tilt), y: cy + x * Math.sin(tilt) + y * Math.cos(tilt) };
   });
-  const path = 'M' + pins.map((q) => `${q.x.toFixed(1)} ${q.y.toFixed(1)}`).join(' L');
-  const L = pins.slice(1).reduce((s, q, k) => s + Math.hypot(q.x - pins[k].x, q.y - pins[k].y), 0);
-  const b0 = a + 1.2;
-  const brand = t >= b0;
-  const bp = ramp(t, b0, 0.22, EXPO);
+  const path = 'M' + pins.map((n) => `${n.x.toFixed(1)} ${n.y.toFixed(1)}`).join(' L');
   const q = pop(t, b0 + 0.06, 0.42);
   return (
-    <AbsoluteFill style={{ zIndex: 50, background: INK }}>
-      <svg width={1080} height={1920} style={{ position: 'absolute', left: 0, top: 0, opacity: 1 - bp * 0.35, transform: `translateY(${-bp * 160}px) scale(${1 - bp * 0.12})`, transformOrigin: '540px 760px' }}>
-        <ellipse cx={cx} cy={cy} rx={rx} ry={ry} transform={`rotate(-12 ${cx} ${cy})`} fill="#1A2623" stroke="#2E4A43" strokeWidth={3} />
-        <ellipse cx={cx} cy={cy} rx={46} ry={46} fill="#24413A" />
-        <path d={path} fill="none" stroke={MINT} strokeWidth={12} strokeLinecap="round" strokeLinejoin="round" strokeDasharray={L} strokeDashoffset={L * (1 - draw)} />
-        {pins.map((q2, k) => { const s = pop(t, a + 0.1 + k * 0.055, 0.3); return <g key={k} transform={`translate(${q2.x} ${q2.y}) scale(${s})`}><circle r={k === 0 || k === 14 ? 22 : 15} fill="#fff" stroke={MINT_D} strokeWidth={6} /></g>; })}
-      </svg>
-      {!brand && <div style={{ ...abs(0, 1120, 1080), textAlign: 'center', fontFamily: MONO, fontSize: 30, color: '#8fd9c6', opacity: ramp(t, a + 0.3, 0.2) }}>15곳 · 인기 1위 코스 · 12,480명</div>}
-      {!brand && <div style={{ ...abs(0, 1220, 1080), textAlign: 'center', fontFamily: KO, fontWeight: 800, fontSize: 104, lineHeight: 1.08, letterSpacing: '-0.05em', color: PAPER, opacity: ramp(t, a + 0.35, 0.25), transform: `translateY(${(1 - ramp(t, a + 0.35, 0.35, EXPO)) * 40}px)` }}>알고 보니,<br /><span style={{ color: '#7DF0D3' }}>같은 코스</span></div>}
-      {brand && (
-        <>
-          <div style={{ ...abs(0, 1920 - bp * 640, 1080, 660), background: MINT }} />
-          <div style={{ ...abs(0, 1392, 1080), textAlign: 'center', fontFamily: KO, fontWeight: 700, fontSize: 46, color: INK, letterSpacing: '-0.03em' }}>모두가 고른 제주 코스 그대로</div>
-          <div style={{ ...abs(0, 1480, 1080), display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 30, transform: `scale(${0.94 + 0.06 * Math.min(1, q)})` }}>
-            {/* 민트 판 위라 아이콘 네모가 사라져 흰 핀만 남았다 — 흰 테로 앱 아이콘을 살린다 */}
-            <Img src={staticFile('p12/appicon.png')} style={{ width: 170, height: 170, borderRadius: 44, border: '6px solid #fff', boxShadow: '0 12px 30px #0003' }} />
-            <span style={{ fontFamily: KO, fontWeight: 900, fontSize: 124, color: INK, letterSpacing: '-0.06em' }}>모두의코스</span>
+    <>
+      <div style={{ ...abs(0, 1176, 1080), zIndex: 32, display: 'flex', justifyContent: 'center', opacity: 1 - ramp(t, a, 0.12), transform: `scale(${punch})`, transformOrigin: '540px 160px' }}>
+        <div style={{ fontFamily: KO, fontWeight: 750, fontSize: 44, letterSpacing: '-0.03em', color: PAPER, background: INK, padding: '8px 22px 10px', borderRadius: 10, clipPath: `inset(0 ${(1 - p) * 100}% 0 0 round 10px)` }}>모두의코스</div>
+      </div>
+      <AbsoluteFill style={{ zIndex: 33, background: MINT, clipPath: `inset(${top}px ${1080 - right}px ${1920 - bottom}px ${l}px round ${16 * (1 - g)}px)`, transform: `scale(${punch})`, transformOrigin: '540px 1339px' }}>
+        {/* 끝에서는 브랜드가 가장 크게 — 「같은 코스」는 줄여 위로(둘 다 무거우면 시선이 갈린다, GPT 검수) */}
+        <div style={{ ...abs(0, mix(1262, 1236), 1080), textAlign: 'center', fontFamily: KO, fontWeight: 900, fontSize: 148, letterSpacing: '-0.06em', lineHeight: 0.98, color: INK, transform: `scale(${mix(1, 124 / 148)})`, transformOrigin: '540px 0' }}>같은 코스</div>
+        {t >= a && (
+          <div style={{ ...abs(0, 1380, 1080), display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 22 }}>
+            <svg width={208} height={112} style={{ opacity: ramp(t, a + 0.05, 0.2) }}>
+              <ellipse cx={cx} cy={cy} rx={rx} ry={ry} transform={`rotate(-12 ${cx} ${cy})`} fill="#EAF8F3" />
+              <path d={path} fill="none" stroke="#12846E" strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - draw} />
+              {pins.map((n, k) => { const s2 = pop(t, a + 0.1 + k * 0.055, 0.3); return <g key={k} transform={`translate(${n.x} ${n.y}) scale(${s2})`}><circle r={k === 0 || k === 14 ? 8 : 5.5} fill="#fff" stroke="#12846E" strokeWidth={3} /></g>; })}
+            </svg>
+            <span style={{ fontFamily: KO, fontWeight: 700, fontSize: 46, letterSpacing: '-0.03em', color: INK, opacity: ramp(t, a + 0.35, 0.25) }}>12,480명이 이 코스로</span>
           </div>
-        </>
-      )}
-    </AbsoluteFill>
+        )}
+        {t >= b0 && (
+          <div style={{ ...abs(0, 1590, 1080), display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 28, opacity: Math.min(1, q), transform: `translateY(${(1 - Math.min(1, q)) * 40}px) scale(${0.94 + 0.06 * Math.min(1, q)})` }}>
+            {/* 민트 판 위라 아이콘 네모가 사라져 흰 핀만 남았다 — 흰 테로 앱 아이콘을 살린다 */}
+            <Img src={staticFile('p12/appicon.png')} style={{ width: 156, height: 156, borderRadius: 42, border: '6px solid #fff', boxShadow: '0 12px 30px #0003' }} />
+            <span style={{ fontFamily: KO, fontWeight: 900, fontSize: 138, color: INK, letterSpacing: '-0.06em' }}>모두의코스</span>
+          </div>
+        )}
+      </AbsoluteFill>
+    </>
   );
 };
 
 // 가림 검사용(../가림검사.py --편 p12): 큰 숫자만 글자마다 다른 순색으로 검은 바탕에 — 낱말 번호는 PLACE 차례 − 1
 const Probe: React.FC<{ t: number }> = ({ t }) => {
   const i = cutAt(t);
-  if (i < 1 || i >= 16 || !NUM[i]) return null;
+  if (i < 1 || i >= 16 || !NUM[i] || t >= ZOOM) return null;
   return (
     <>
       <ProbeMeta i={i - 1} behind={false} light={NUM[i]!.light} />
-      <div style={numBox(t, i)}>{probeChars(digits(i))}<Pill show={false} /></div>
+      <div style={numBox(t, i)}><span>{probeChars(digits(i))}</span></div>
     </>
   );
 };
@@ -185,21 +215,23 @@ export const P12: React.FC<{ probe?: boolean }> = ({ probe }) => {
   const t = useCurrentFrame() / FPS;
   const i = cutAt(t);
   if (probe) return <AbsoluteFill style={{ background: '#000' }}><Probe t={t} /></AbsoluteFill>;
+  // 끝에서는 멈춘 그림으로 천천히 들어간다(판이 올라와도 그 사람이 살아 있게) — 두 폰 테두리도 그림에 붙어 함께
+  const push = 1 + 0.03 * ramp(t, TT[16], P12_FRAMES / FPS - TT[16]);
+  const legalRight = t >= ZOOM;   // 폭로부터는 앞 폰 위를 가로지르지 않게 오른쪽 어두운 바닥으로
+  const onPanel = t >= BRAND_AT + 0.1;   // 포스터가 닫히면 판 안 어두운 글자로
   return (
     <AbsoluteFill style={{ background: '#000' }}>
-      <OffthreadVideo src={staticFile('p12/picture.mp4')} muted style={{ width: '100%', height: '100%' }} />
-      {i < 16 && <>
-        <AbsoluteFill style={{ zIndex: 10, background: 'linear-gradient(#000a 0%, #0000 22%)' }} />
-        {t >= TT[1] && <BigNum t={t} i={i} />}
-        <Head t={t} />
-        {t >= 1.6 && <Chip t={t} i={i} />}
-        <SameScreen t={t} />
-        <div style={{ ...abs(0, 1872, 1080), zIndex: 30, textAlign: 'center', fontFamily: KO, fontWeight: 500, fontSize: 22, color: '#ffffffaa' }}>가상 브랜드 · AI로 만든 가상 모델</div>
-      </>}
-      <End t={t} />
-      <Door t={t} at={TT[16]} color={INK} />
-      {!(t >= TT[16] + 1.2) && <div style={{ ...abs(64, 1800, 952, 3), zIndex: 55, background: '#ffffff25' }}><div style={{ height: 3, width: `${Math.min(1, t / 37.64) * 100}%`, background: MINT }} /></div>}
-      {t >= TT[16] + 1.2 && <div style={{ ...abs(0, 1872, 1080), zIndex: 56, textAlign: 'center', fontFamily: KO, fontWeight: 500, fontSize: 22, color: '#101414aa' }}>가상 브랜드 · AI로 만든 가상 모델</div>}
+      <AbsoluteFill style={{ transform: `scale(${push})`, transformOrigin: '500px 680px' }}>
+        <OffthreadVideo src={staticFile('p12/picture.mp4')} muted style={{ width: '100%', height: '100%' }} />
+        <Outlines t={t} />
+      </AbsoluteFill>
+      <AbsoluteFill style={{ zIndex: 10, background: 'linear-gradient(#000a 0%, #0000 22%)', opacity: 1 - ramp(t, BRAND_AT, 0.25) }} />
+      {i < 16 && t >= TT[1] && <BigNum t={t} i={i} />}
+      <Head t={t} />
+      {t >= 1.6 && <Chip t={t} i={Math.min(i, 15)} />}
+      <Block t={t} />
+      {t < ZOOM && <div style={{ ...abs(64, 1800, 952, 3), zIndex: 55, background: '#ffffff25' }}><div style={{ height: 3, width: `${Math.min(1, t / 38) * 100}%`, background: MINT }} /></div>}
+      <div style={{ ...abs(0, 1872, legalRight ? 1036 : 1080), zIndex: 56, textAlign: legalRight ? 'right' : 'center', fontFamily: KO, fontWeight: 500, fontSize: 24, color: onPanel ? '#14221F' : '#ffffffd9', textShadow: onPanel ? undefined : '0 1px 6px #000c, 0 0 2px #000a' }}>가상 브랜드 · AI로 만든 가상 모델</div>
       <Audio src={staticFile('p12/sound.wav')} />
       <span style={{ display: 'none', fontFamily: EN }} />
     </AbsoluteFill>

@@ -85,8 +85,8 @@ const Caption: React.FC<{ t: number; y: number; x: number; w: number; size: numb
 // 큰 낱말(16:9 화면 좌표) — light: 어두운 바탕 위 밝은 글자, front: 피사체 앞, x: 정렬(기본 왼쪽)
 type Big = { w: string; a: number; b: number; y: number; size: number; x?: 'c' | 'r'; light?: boolean; front?: boolean };
 const BIG: Big[] = [
-  { w: '내놔!', a: 13 / FPS, b: 33 / FPS, y: 220, size: 340, x: 'r', light: true },   // #2 강도 미디엄 — 칼날과 손이 「내」 앞을 지난다(덮임 6%)
-  { w: '한국말이야?', a: 42.4, b: 44.45, y: 160, size: 220, x: 'r', light: true },     // #23 상자를 들고 본다
+  { w: '내놔!', a: 13 / FPS, b: 33 / FPS, y: 300, size: 260, x: 'r', light: true },   // #2 강도 미디엄 — 340이면 칼날(마스크에 안 잡힘) 위를 글자가 덮어(11-04 GPT 검수) 오른쪽 벽으로, 뻗은 손끝만 글자 앞을 지난다
+  { w: '한국말이야?', a: 42.4, b: 44.45, y: 180, size: 200, x: 'r', light: true },     // #23 상자를 들고 본다 — 220이면 반응 연기보다 글자가 먼저 보여 줄임
 ];
 const behind = (t: number, b: Big) => !!maskAt(MASKS, t) && !b.front;
 const bigBox = (t: number, b: Big): React.CSSProperties => {
@@ -158,8 +158,9 @@ export const HS9: React.FC = () => {
     <AbsoluteFill style={{ background: '#000' }}>
       <div style={{ ...abs(0, 656, 1920, 1080), transform: 'scale(0.5625)', transformOrigin: 'left top', overflow: 'hidden' }}><Film t={t} /></div>
       <Head9 t={t} />
-      <Brand t={t} at={HEAD_CHANGE} style={{ ...abs(64, 360) }} logo={480} text={52} origin="left bottom" />
-      <Caption t={t} x={72} y={1334} w={936} size={52} wrap />
+      {/* 검은 여백이 넓어 글자를 16:9 비례보다 키운다(11-04 GPT 검수) */}
+      <Brand t={t} at={HEAD_CHANGE} style={{ ...abs(64, 318) }} logo={600} text={62} origin="left bottom" />
+      <Caption t={t} x={48} y={1334} w={984} size={66} wrap />
       <div style={{ ...abs(0, 1858, 1080), zIndex: 30, textAlign: 'center', fontFamily: KO, fontWeight: 500, fontSize: 22, color: '#ffffff88' }}>{NOTICE}</div>
       <Audio src={staticFile('hs/sound.wav')} />
     </AbsoluteFill>
