@@ -7,6 +7,9 @@
 // preview: 입구 그림 — 같은 레인·판정선·배지를 코랄 머리 면 위에 멈춘 채 한 번 그린다(벽·바닥 없이, 움직임 없음).
 // theme 'world'(WORLD 안, 2026-10-14 3차): 어두운 무대 + 흰 판정선 하나 + 흰 노트(검은 O·X), 답 노트만 코랄 테. 반짝이 없음.
 //   레인·판정선 자리(두 단추 가운데로 모임)와 노트 시간·크기 계산은 LAB과 같다. LAB 단독 화면은 theme이 없어 펠트 무대 그대로.
+// 캠퍼스 판(2026-11-04, qa/world-campus-20261104/설계.md): 바닥은 축제 무대 연습실 밤 실사(WORLD_FLOOR)를 레인이 모이는 높이에 맞춰 깔고
+//   어두운 막을 얹는다. 박마다 양쪽 벽 LED 빛이 숨 쉬고, 문장을 듣는 동안 방이 어두워지며(setHush), 치면 판정선에 고리 하나, 콤보는 노트 뒤에 반투명.
+//   화면 전체 번쩍 · 흔들림은 없다. 효과 줄이기(reduced)에서는 숨쉬기 · 고리 · 튐 · 훑기를 끄고 판정선 빛과 숫자만 남긴다.
 
 const FELT = 'kit/felt/';
 const SRC = { wall: 'wide-cream', floor: 'tex-coral', cream: 'tex-cream', lane0: 'cushion-lapis-strip', lane1: 'cushion-blush-strip', badge: 'badge-cream', sparkle: 'sparkle' };
@@ -17,6 +20,10 @@ const LANE_DEPTH = 7;   // 레인(쿠션 띠)은 그보다 더 멀리, 벽 가�
 const TILT = 0.72;   // 바닥을 비스듬히 내려다보는 만큼(결의 세로 줄임)
 // badge-cream.webp(156×160) 안의 펠트 원: 가운데 (72.5, 73), 지름 143 — 아래·오른쪽은 바닥 그림자
 const BADGE = { cx: 72.5 / 156, cy: 73 / 160, d: 143 / 156 };
+// WORLD 바닥 사진: v = 바닥과 먼 벽(커튼)이 만나는 줄의 높이(사진 높이 비율, qa/world-campus-20261104/웹판.py가 잰 값). 소실점은 가로 가운데.
+const WORLD_FLOOR = { tall: { src: 'assets/world/stage-tall.webp', v: 0.236 }, wide: { src: 'assets/world/stage-wide.webp', v: 0.382 } };
+const MILESTONES = new Set([10, 25, 50, 100, 150, 200]);
+const LANE_TINT = ['157,185,245', '255,180,169'];   // O 청금석 · X 코랄(바닥 사진의 왼쪽 · 오른쪽 벽 빛과 같은 쪽)
 
 function loadImage(url) {
   return new Promise((resolve) => {
@@ -43,16 +50,39 @@ export class Stage {
     this.flash = [0, 0];
     this.sparks = [];
     this.frames = 0;
+    this.hush = 0; this.hushTo = 0; this.warmth = 0; this.rings = []; this.sweepAt = -1e9; this.beatAt = 0;
+    this.comboN = 0; this.comboBump = -1e9; this.comboBig = -1e9; this.comboFall = null; this.missAt = [-1e9, -1e9];
+    this.worldCalm = false;   // WORLD 「움직임 줄이기」(부모 창) — world-play.mjs가 옮겨 적는다. 효과 줄이기(reduced)와 함께 본다
     this.ready = Promise.all([
-      ...Object.entries(SRC).map(([key, name]) => loadImage(`${FELT}${name}.webp`).then((im) => { this.img[key] = im; })),
+      ...(this.night   // WORLD는 펠트 그림을 쓰지 않는다 — 바닥 사진 둘만 받는다
+        ? Object.entries(WORLD_FLOOR).map(([key, f]) => loadImage(f.src).then((im) => { this.img[key] = im; }))
+        : Object.entries(SRC).map(([key, name]) => loadImage(`${FELT}${name}.webp`).then((im) => { this.img[key] = im; }))),
       document.fonts?.load?.('900 40px SUIT').catch(() => {}),
       this.night ? document.fonts?.load?.('600 40px "World Game Latin"').catch(() => {}) : null,
+      this.night ? document.fonts?.load?.('700 40px "World Game Latin"').catch(() => {}) : null,
     ]).then(() => this.resize(true));
     new ResizeObserver(() => this.resize()).observe(canvas);
   }
 
   /** 새 곡: 빛·반짝이를 비운다. */
-  reset() { this.flash = [0, 0]; this.sparks = []; }
+  reset() { this.flash = [0, 0]; this.sparks = []; this.rings = []; this.hush = this.hushTo = 0; this.warmth = 0; this.comboN = 0; this.comboFall = null; this.beatAt = 0; }
+
+  /* ── WORLD 캠퍼스 판에서만 부르는 것(app.mjs WORLD 분기 · world-play.mjs) ── */
+  /** 문장을 듣는 동안 방을 어둡게(레인 · 바닥이 함께 물러나고 노트 · 카드만 밝다). 약 0.3초에 걸쳐 바뀐다. */
+  setHush(on) { this.hushTo = on ? 1 : 0; }
+  get calm() { return this.reduced || this.worldCalm; }
+  /** 노트를 놓쳤다: 그 레인의 판정선만 150ms 어두워진다(소리 · 흔들림 없음). */
+  miss(lane) { if (lane === 0 || lane === 1) this.missAt[lane] = performance.now(); }
+  /** 들은 내용을 맞혔을 때 불이 한 번 따뜻하게 오른다(0.5초). */
+  warm() { if (!this.calm) this.warmth = 1; }
+  /** 콤보 숫자(노트 뒤 반투명). 5부터 보이고, 10 · 25 · 50 · 100에서만 크게 튀며 판정선을 빛이 한 번 훑는다. 끊기면 가라앉으며 흐려진다. */
+  setCombo(n) {
+    const now = performance.now(), prev = this.comboN;
+    if (n === prev) return;
+    if (n > prev) { this.comboBump = now; if (MILESTONES.has(n)) { this.comboBig = now; this.sweepAt = now; } }
+    else if (prev >= 5) this.comboFall = { n: prev, at: now };
+    this.comboN = n;
+  }
 
   resize(force = false) {
     const r = this.canvas.getBoundingClientRect();
@@ -146,19 +176,35 @@ export class Stage {
 
   /** WORLD 무대: 근사 검정 판 위에 두 레인(한 단계 밝은 면 + 1px 선)이 멀리 한 점으로 모이고, 판정선은 흰 선 하나. */
   paintNight(c, g) {
-    const bg = c.createLinearGradient(0, 0, 0, g.H);
-    bg.addColorStop(0, '#08090c'); bg.addColorStop(Math.min(0.95, Math.max(0.05, g.yJ / g.H)), '#121317'); bg.addColorStop(1, '#0c0d10');
-    c.fillStyle = bg; c.fillRect(0, 0, g.W, g.H);
+    const floor = this.floorPhoto(g);
+    if (floor) c.drawImage(floor.im, floor.x, floor.y, floor.w, floor.h);
+    else {
+      const bg = c.createLinearGradient(0, 0, 0, g.H);
+      bg.addColorStop(0, '#08090c'); bg.addColorStop(Math.min(0.95, Math.max(0.05, g.yJ / g.H)), '#121317'); bg.addColorStop(1, '#0c0d10');
+      c.fillStyle = bg; c.fillRect(0, 0, g.W, g.H);
+    }
+    // 양쪽 벽 LED 빛 한 장씩: 4분의 1 크기로 한 번 그려 두고 박마다 늘여 얹는다(장면마다 그라디언트를 새로 계산하지 않는다)
+    this.glowLayers = [[0, '91,134,219'], [g.W, '249,104,89']].map(([x, rgb]) => {
+      const q = 4, layer = document.createElement('canvas'); layer.width = Math.ceil(g.W / q); layer.height = Math.ceil(g.H / q);
+      const k = layer.getContext('2d'), glow = k.createRadialGradient(x / q, g.yJ / q, 0, x / q, g.yJ / q, Math.max(g.W * 0.6, g.H * 0.45) / q);
+      glow.addColorStop(0, `rgba(${rgb},1)`); glow.addColorStop(1, `rgba(${rgb},0)`); k.fillStyle = glow; k.fillRect(0, 0, layer.width, layer.height);
+      return layer;
+    });
+    // 어두운 막: 먼 벽 · 커튼은 보이게 옅고, 판정선 · 단추 쪽은 진하게(흰 노트 · 유리 단추 대비)
+    const at = (y) => Math.min(0.98, Math.max(0.02, y / g.H)), scrim = c.createLinearGradient(0, 0, 0, g.H);
+    scrim.addColorStop(0, 'rgba(6,7,9,.34)'); scrim.addColorStop(at(g.yh + 4), 'rgba(6,7,9,.2)');
+    scrim.addColorStop(at(g.yJ - (g.yJ - g.yh) * 0.25), 'rgba(6,7,9,.42)'); scrim.addColorStop(1, 'rgba(6,7,9,.8)');
+    c.fillStyle = scrim; c.fillRect(0, 0, g.W, g.H);
     const top = g.yL, bottom = g.yN, span = g.yJ - g.yh;
     for (const lane of [0, 1]) {
       const k0 = (top - g.yh) / span, k1 = (bottom - g.yh) / span;
       const x0 = g.vx + (g.lx[lane] - g.vx) * k0, x1 = g.vx + (g.lx[lane] - g.vx) * k1, w0 = g.wJ * k0 / 2, w1 = g.wJ * k1 / 2;
       const face = c.createLinearGradient(0, top, 0, bottom);
-      face.addColorStop(0, 'rgba(255,255,255,0)'); face.addColorStop(0.55, 'rgba(255,255,255,.035)'); face.addColorStop(1, 'rgba(255,255,255,.06)');
+      face.addColorStop(0, 'rgba(255,255,255,0)'); face.addColorStop(0.55, 'rgba(255,255,255,.04)'); face.addColorStop(1, 'rgba(255,255,255,.075)');
       c.beginPath(); c.moveTo(x0 - w0, top); c.lineTo(x0 + w0, top); c.lineTo(x1 + w1, bottom); c.lineTo(x1 - w1, bottom); c.closePath();
       c.fillStyle = face; c.fill();
       const edge = c.createLinearGradient(0, top, 0, bottom);
-      edge.addColorStop(0, 'rgba(255,255,255,0)'); edge.addColorStop(1, 'rgba(255,255,255,.16)');
+      edge.addColorStop(0, 'rgba(255,255,255,0)'); edge.addColorStop(1, 'rgba(255,255,255,.24)');
       c.strokeStyle = edge; c.lineWidth = 1; c.stroke();
     }
     // 판정선: 두 레인을 가로지르는 흰 선 하나(위아래로 옅은 빛)
@@ -167,6 +213,15 @@ export class Stage {
     glow.addColorStop(0, 'rgba(250,250,249,0)'); glow.addColorStop(0.5, 'rgba(250,250,249,.10)'); glow.addColorStop(1, 'rgba(250,250,249,0)');
     c.fillStyle = glow; c.fillRect(x0, g.yJ - 18, x1 - x0, 36);
     c.fillStyle = '#fafaf9'; c.beginPath(); c.roundRect(x0, g.yJ - 1.5, x1 - x0, 3, 1.5); c.fill();
+  }
+
+  /** 바닥 사진의 자리: 사진의 바닥 · 커튼 줄(v)과 가로 가운데가 레인이 모이는 점(vx, yh)에 오는 가장 작은 배율(화면을 늘 덮는다). */
+  floorPhoto(g) {
+    const kind = g.W / g.H < 1 ? 'tall' : 'wide', im = this.img[kind], v = WORLD_FLOOR[kind].v;
+    if (!im) return null;
+    const iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height;
+    const s = Math.max(g.W / iw, g.H / ih, g.vx / (iw * 0.5), (g.W - g.vx) / (iw * 0.5), g.yh / (ih * v), (g.H - g.yh) / (ih * (1 - v)));
+    return { im, w: iw * s, h: ih * s, x: g.vx - iw * s * 0.5, y: g.yh - ih * s * v };
   }
 
   paintWall(c, g) {
@@ -274,7 +329,8 @@ export class Stage {
   /** 맞힌 노트: 그 레인의 판정선이 잠깐 밝아지고(효과 줄이기에서는 덜), 반짝이 몇 개가 위로 흩어진다. */
   hit(lane, quality) {
     this.flash[lane] = quality > 0 ? 1 : 0.2;
-    if (this.night || this.reduced || quality < 0.8 || !this.g) return;   // WORLD: 반짝이 없이 판정선 빛만
+    if (this.night) { if (!this.calm && quality > 0) this.rings.push({ lane, q: quality, at: performance.now() }); return; }   // WORLD: 반짝이 없이 판정선 빛 + 고리 하나
+    if (this.reduced || quality < 0.8 || !this.g) return;
     const { x, y } = this.judgeAt(lane), n = quality >= 1 ? 4 : 2;
     for (let i = 0; i < n; i += 1) {
       this.sparks.push({ x: x + (Math.random() - 0.5) * this.g.wJ * 0.5, y: y - 6, vx: (Math.random() - 0.5) * 90, vy: -150 - Math.random() * 90,
@@ -290,12 +346,15 @@ export class Stage {
     c.clearRect(0, 0, this.canvas.width, this.canvas.height);
     if (this.bgReady) c.drawImage(this.bg, 0, 0);
     c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    if (this.night) this.drawRoom(round, time, dt);
     if (round) {
+      if (this.night) this.drawCombo();
       this.drawBeats(round, time);
       this.drawGlow(pressed, dt);
       this.drawNotes(round, time);
       this.drawAnswers(round, time);
     }
+    if (this.night) this.drawRings();
     this.drawSparks(dt);
     this.frames += 1;
   }
@@ -316,6 +375,81 @@ export class Stage {
         const { x, y } = this.pointAt(lane, s), w = g.wJ * s * 0.78;
         c.fillRect(x - w / 2, y - Math.max(0.6, 1.6 * s) / 2, w, Math.max(0.6, 1.6 * s));
       }
+    }
+  }
+
+  /** WORLD 방: 박마다 양쪽 벽 LED 빛이 숨 쉬고(내림박이 조금 더), 듣는 동안 방 전체가 어두워지고, 맞히면 따뜻하게 한 번 오른다. */
+  drawRoom(round, time, dt) {
+    const c = this.ctx, g = this.g;
+    if (dt > 0) this.hush += (this.hushTo - this.hush) * Math.min(1, dt / 0.11);
+    const beats = round?.track?.beatTimes;
+    if (beats && !this.calm && time > -0.5) {
+      let i = this.beatAt;
+      if (i >= beats.length || beats[i] > time) i = 0;
+      while (i + 1 < beats.length && beats[i + 1] <= time) i += 1;
+      this.beatAt = i;
+      const phase = time - beats[i], amp = phase >= 0 ? Math.exp(-phase / 0.28) * (i % 4 === 0 ? 1 : 0.55) : 0, a = (0.05 + 0.15 * amp) * (1 - this.hush * 0.75);
+      c.save(); c.globalCompositeOperation = 'screen'; c.globalAlpha = a;
+      for (const layer of this.glowLayers || []) c.drawImage(layer, 0, 0, g.W, g.H);
+      c.restore();
+    }
+    if (this.hush > 0.01) { c.fillStyle = `rgba(4,5,7,${(0.36 * this.hush).toFixed(3)})`; c.fillRect(0, 0, g.W, g.H); }
+    if (this.warmth > 0.01) {
+      const warm = c.createRadialGradient(g.vx, g.yh, 0, g.vx, g.yh, Math.max(g.W, g.H) * 0.8);
+      warm.addColorStop(0, `rgba(255,200,150,${(0.24 * this.warmth).toFixed(3)})`); warm.addColorStop(1, 'rgba(255,200,150,0)');
+      c.save(); c.globalCompositeOperation = 'screen'; c.fillStyle = warm; c.fillRect(0, 0, g.W, g.H); c.restore();
+      this.warmth = Math.max(0, this.warmth - dt * 2);
+    }
+  }
+
+  /** 콤보: 레인 사이 먼 쪽에 반투명 숫자(노트보다 먼저 그려 노트 뒤). 늘면 작게 튀고, 이정표에서 크게, 끊기면 8px 가라앉으며 흐려진다. */
+  drawCombo() {
+    const c = this.ctx, g = this.g, now = performance.now(), x = g.vx, y = g.yh + (g.yJ - g.yh) * 0.42, size = Math.round(Math.max(30, Math.min(64, g.d * 0.92)));
+    const text = (n, scale, alpha, dy = 0, big = false) => {
+      c.save(); c.globalAlpha = alpha; c.translate(x, y + dy); c.scale(scale, scale);
+      c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.fillStyle = '#fafaf9';
+      c.font = `700 ${size}px "World Game Latin", "Inter Tight", SUIT, sans-serif`; c.fillText(String(n), 0, 0);
+      c.font = `500 ${Math.round(size * 0.2)}px "World Game Mono", ui-monospace, monospace`; c.fillStyle = big ? '#ffb4a9' : 'rgba(250,250,249,.8)';
+      c.fillText('COMBO', 0, size * 0.36);
+      c.restore();
+    };
+    if (this.comboFall) {
+      const k = (now - this.comboFall.at) / 220;
+      if (k >= 1) this.comboFall = null; else text(this.comboFall.n, 1, 0.5 * (1 - k), this.calm ? 0 : 8 * k);
+    }
+    const n = this.comboN;
+    if (n < 5) return;
+    const kb = (now - this.comboBig) / 520, kp = (now - this.comboBump) / 350, big = kb < 1;
+    let scale = 1, alpha = 0.5;
+    if (!this.calm) {
+      if (big) scale = 1 + 0.32 * Math.pow(1 - kb, 3); else if (kp < 1) scale = 1 + 0.1 * Math.pow(1 - kp, 2);
+    }
+    if (big) alpha = 0.5 + 0.4 * (1 - kb);
+    text(n, scale, alpha, 0, big);
+  }
+
+  /** 맞힌 노트의 고리(160ms)와 이정표의 판정선 빛 훑기(450ms). */
+  drawRings() {
+    const c = this.ctx, g = this.g, now = performance.now();
+    for (let i = this.rings.length - 1; i >= 0; i -= 1) {
+      const ring = this.rings[i], k = (now - ring.at) / 160;
+      if (k >= 1) { this.rings.splice(i, 1); continue; }
+      const x = g.lx[ring.lane], r = g.d * 0.5 * (1 + 0.85 * k), a = (1 - k) * (ring.q >= 1 ? 1 : ring.q >= 0.8 ? 0.75 : 0.4);
+      c.save(); c.strokeStyle = ring.q >= 1 ? `rgba(${LANE_TINT[ring.lane]},${a.toFixed(3)})` : `rgba(250,250,249,${a.toFixed(3)})`; c.lineWidth = Math.max(0.5, 3 * (1 - k));
+      c.beginPath(); c.ellipse(x, g.yJ, r, r * 0.62, 0, 0, Math.PI * 2); c.stroke(); c.restore();
+    }
+    for (const lane of [0, 1]) {
+      const km = (now - this.missAt[lane]) / 150;
+      if (km < 0 || km >= 1) continue;
+      c.fillStyle = `rgba(4,5,7,${(0.55 * (1 - km)).toFixed(3)})`;
+      c.fillRect(g.lx[lane] - g.wJ / 2 - 6, g.yJ - 8, g.wJ + 12, 16);
+    }
+    const ks = (now - this.sweepAt) / 450;
+    if (ks >= 0 && ks < 1 && !this.calm) {
+      const x0 = g.lx[0] - g.wJ / 2 - 10, x1 = g.lx[1] + g.wJ / 2 + 10, sx = x0 + (x1 - x0) * ks, w = (x1 - x0) * 0.22;
+      const band = c.createLinearGradient(sx - w, 0, sx + w, 0);
+      band.addColorStop(0, 'rgba(255,255,255,0)'); band.addColorStop(0.5, `rgba(255,236,220,${(0.85 * (1 - ks * 0.6)).toFixed(3)})`); band.addColorStop(1, 'rgba(255,255,255,0)');
+      c.fillStyle = band; c.fillRect(Math.max(x0, sx - w), g.yJ - 9, Math.min(x1, sx + w) - Math.max(x0, sx - w), 18);
     }
   }
 

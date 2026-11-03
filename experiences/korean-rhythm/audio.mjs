@@ -38,6 +38,9 @@ export class MusicPlayer {
     this.master = null; this.musicGain = null; this.voiceGain = null; this.analyser = null; this.voiceAnalyser = null;
     this.voiceSources = []; this.voices = []; this.scheduledVoices = [];
     this.enabled = true; this.recording = null;
+    // WORLD 캠퍼스 판(world-play.mjs)이 거는 고리: countSound(시각, 차례) 네 박 소리 · voiceCue(음성 시작 시각) 문장 안내음 예약 · cueReset() 건너뛸 때 예약 지우기,
+    // duckLead = 음성 몇 초 전부터 음악을 낮출지(LAB 0.12 — 캠퍼스 판은 안내음이 낮아진 음악 위에서 나게 0.5).
+    this.countSound = null; this.voiceCue = null; this.cueReset = null; this.duckLead = 0.12;
   }
 
   async prepare(track, questions = []) {
@@ -64,7 +67,7 @@ export class MusicPlayer {
     this.buffer = buffer;
     this.origin = this.context.currentTime + 4 * beat + 0.12;
     this.schedule(0);
-    for (let i = 0; i < 4; i += 1) this.note(76, this.origin - (4 - i) * beat, 0.13, 0.045);
+    for (let i = 0; i < 4; i += 1) { const at = this.origin - (4 - i) * beat; if (this.countSound) this.countSound(at, i); else this.note(76, at, 0.13, 0.045); }
   }
 
   /** 곡의 from초부터 음악을 틀고, 아직 시작하지 않은 내레이션을 예약한다. 내레이션 동안 음악은 6%로 낮췄다가 되돌린다. */
@@ -81,7 +84,8 @@ export class MusicPlayer {
       this.voiceSources.push(voice);
       this.scheduledVoices.push({ id: q.id, url: q.voice.url, start: q.showTime, end: q.showTime + voiceBuffer.duration });
       const gain = this.musicGain.gain, level = this.enabled ? 1 : 0;
-      gain.setValueAtTime(level, start - 0.12); gain.linearRampToValueAtTime(level * 0.06, start);
+      gain.setValueAtTime(level, start - this.duckLead); gain.linearRampToValueAtTime(level * 0.06, start);
+      this.voiceCue?.(start);
       gain.setValueAtTime(level * 0.06, end + 0.15); gain.linearRampToValueAtTime(level, end + 0.7);
     }
   }
@@ -96,6 +100,7 @@ export class MusicPlayer {
     const now = context.currentTime, gain = this.musicGain.gain;
     gain.cancelScheduledValues(now); gain.setValueAtTime(this.enabled ? 1 : 0, now);
     this.origin = now + 0.05 - Math.max(0, t);
+    this.cueReset?.();
     this.schedule(Math.max(0, t));
     return true;
   }
@@ -119,7 +124,7 @@ export class MusicPlayer {
     for (const v of this.scheduledVoices) {
       const start = this.origin + v.start, end = this.origin + v.end;
       if (end <= now) continue;
-      if (start > now) { gain.setValueAtTime(enabled ? 1 : 0, start - 0.12); gain.linearRampToValueAtTime(enabled ? 0.06 : 0, start); }
+      if (start > now) { gain.setValueAtTime(enabled ? 1 : 0, start - this.duckLead); gain.linearRampToValueAtTime(enabled ? 0.06 : 0, start); }
       gain.setValueAtTime(enabled ? 0.06 : 0, end + 0.15); gain.linearRampToValueAtTime(enabled ? 1 : 0, end + 0.7);
     }
   }

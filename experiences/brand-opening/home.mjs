@@ -27,7 +27,8 @@ const landscape=matchMedia('(orientation:landscape)'),spacious=matchMedia('(min-
 const games={
  runner:{get title(){return t('game.runner.title');},get detail(){return t('game.runner.detail');},label:'LISTEN & RUN',path:'../korean-runner/',image:'world-felt/runner.webp',area:'짧은 지시의 방향·동작·부정·순서 듣기 연습'},
  hangul:{get title(){return t('game.hangul.title');},get detail(){return t('game.hangul.detail');},label:'HANGUL',path:'../hangul-stage/',image:'world-felt/hangul.webp',area:'한글 자모와 음절의 소리·글자 연결 연습'},
- rhythm:{get title(){return t('game.rhythm.title');},get detail(){return t('game.rhythm.detail');},label:'RHYTHM',path:'../korean-rhythm/',image:'world-felt/rhythm.webp',area:'짧은 발화를 듣고 내용 일치 판단 연습'},
+ // 말의 리듬(11-04, 캠퍼스 판 겉 — 축제 무대 연습실): 그림은 실사 인화지(흰 바탕 마이크). 해금은 축제 무대 연습 회차가 생기면 play-unlocks.mjs로.
+ rhythm:{get title(){return t('game.rhythm.title');},get detail(){return t('game.rhythm.detail');},label:'RHYTHM',path:'../korean-rhythm/',image:'world-play/rhythm.webp',area:'짧은 발화를 듣고 내용 일치 판단 연습'},
  // 주문 폭주(11-03, 캠퍼스 판 겉): 싱크타운 카페 이야기에서 열린다(play-unlocks.mjs). 그림은 손님 실사 판의 인화지 한 장.
  order:{get title(){return t('game.order.title');},get detail(){return t('game.order.detail');},label:'LISTEN & MAKE',path:'../order-rush/',image:'world-play/order-rush.webp',area:'주문의 수량·온도·추가·빼기·바꾸기 듣기 연습'},
  // 빈칸 베기(11-04, 캠퍼스 판 겉 — 중간고사 전날 밤 도서관): 레슨 한 번 뒤 열린다(play-unlocks.mjs). 그림은 찢긴 단어 카드 인화지 한 장.
@@ -415,7 +416,10 @@ export const home={
  startTutorial:()=>openTutor(),chooseTutor:()=>openTutor({force:true}),ensureTutor:then=>openTutor({then}),tutor:()=>tutorUI.metrics(),homeTutor:()=>homeTutor?.metrics(),
  applyTutorChoice:(id,owner)=>tutorUI.applyChoice(id,owner),refreshTutorStatus:()=>tutorUI.refreshStatus()
 };
+// 캠퍼스 판 놀이에는 게임 곁 튜터(마스코트 사진 · 말풍선 · 조작 연습)를 붙이지 않는다(앱에서 마스코트를 뺀다, 설계 11-1). 주문 폭주처럼 안내표가 없는 놀이는 원래 안 붙는다.
+const CAMPUS_NO_TUTOR=new Set(['rhythm']);
 home.mountGameTutor=(game,{frame=null,practiceEnabled=true,presentation=education?.presentation?.()||null}={})=>{
+ if(CAMPUS_NO_TUTOR.has(game))return null;
  const companion=createGameTutor({tutorId:tutorUI.choice()?.id,game,container:content,frame,reduced:()=>home.state.reduced,owner:tutorUI.metrics().owner,onExit:closePanel,practiceEnabled,presentation});
  if(!companion)return null;
  window.__synkGameTutor=companion;

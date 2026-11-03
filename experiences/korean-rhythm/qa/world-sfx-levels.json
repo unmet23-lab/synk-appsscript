@@ -1,0 +1,88 @@
+{
+ "measured": "2026-11-03",
+ "method": "OfflineAudioContext 48kHz mono → BS.1770 K-weighting → 400ms momentary max, hop 50ms, zero-padded (sound_check.py measure); mean of seeds 1,2,3,5,8",
+ "opts": {
+  "key": {
+   "lane": 0,
+   "quality": 1
+  },
+  "pick": {
+   "lane": 0
+  },
+  "right": {
+   "n": 3
+  },
+  "dot": {
+   "step": 3,
+   "ok": true
+  }
+ },
+ "target": {
+  "key": -26,
+  "pick": -31,
+  "release": -31,
+  "count": -28,
+  "open": -21,
+  "listen": -24,
+  "right": -20.8,
+  "differ": -26,
+  "milestone": -21,
+  "roll": -34,
+  "dot": -26,
+  "land": -20,
+  "done": -17.5,
+  "stamp": -19,
+  "coin": -21
+ },
+ "level": {
+  "key": 10.606,
+  "pick": 11.511,
+  "release": 11.711,
+  "count": 5.246,
+  "open": 5.891,
+  "listen": 5.721,
+  "right": 9.387,
+  "differ": 7.463,
+  "milestone": 3.721,
+  "roll": 24.774,
+  "dot": 10.13,
+  "land": 5.191,
+  "done": 12.322,
+  "stamp": 5.387,
+  "coin": 6.414
+ },
+ "measuredLufs": {
+  "key": -26,
+  "pick": -31,
+  "release": -31,
+  "count": -28,
+  "open": -21,
+  "listen": -24,
+  "right": -20.8,
+  "differ": -26,
+  "milestone": -21,
+  "roll": -34,
+  "dot": -26,
+  "land": -20,
+  "done": -17.5,
+  "stamp": -19,
+  "coin": -21
+ },
+ "peakDbfs": {
+  "key": -0.8,
+  "pick": -7,
+  "release": -4.4,
+  "count": -6.4,
+  "open": -5.9,
+  "listen": -8.5,
+  "right": -3.7,
+  "differ": -9,
+  "milestone": -6.2,
+  "roll": -3.4,
+  "dot": -3.4,
+  "land": -1.9,
+  "done": -0.9,
+  "stamp": -2.2,
+  "coin": -7.7
+ }
+}

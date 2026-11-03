@@ -533,3 +533,122 @@
   :root[data-host=world] :is(.felt-cta,.chip-btn,.song,.pad,.ox,#pause-button,.w-cal-pad){transition:none}
   :root[data-host=world] :is(.felt-cta,.chip-btn,.song,.pad,.ox,#pause-button,.w-cal-pad):active{transform:none}
 }
+
+/* ══ 캠퍼스 판(2026-11-04, 축제 무대 연습실 — qa/world-campus-20261104/설계.md) ══════════════════════════════════════════════
+ * world-play.mjs가 WORLD에서 불렸을 때만 붙는 겉(입구 사진 상자 .w-art · 결과 점 .w-dots · 도장 .w-stamp · 가림막 #w-curtain · 키 소리 단추).
+ * 위의 3차 규칙은 그대로 두고 이 아래에서 덮는다. 움직임 값은 토큰 여섯(--m-* 공간 · --e-* 효과 — world-fx.mjs M과 같은 값)뿐이고 튐은 위치 · 크기에만.
+ * 입구 · 결과 사진 상자는 주문 폭주 캠퍼스 판 world-skin.css와 같은 꼴이다: 히어로가 크기 컨테이너, .w-art가 사진 비율(4:5) 상자. */
+:root[data-host=world]{
+  --m-fast:350ms cubic-bezier(.42,1.67,.21,.90);--m-base:500ms cubic-bezier(.38,1.21,.22,1);--m-slow:650ms cubic-bezier(.39,1.29,.35,.98);
+  --e-fast:150ms cubic-bezier(.31,.94,.34,1);--e-base:200ms cubic-bezier(.34,.80,.34,1);--e-slow:300ms cubic-bezier(.34,.88,.34,1);
+  --w-glass-dark:rgba(10,11,14,.66);
+  /* 입구 사진 위 그늘: 제목 쪽(왼쪽)과 아래를 어둡게. 마이크 판 위에도 같은 그늘을 마이크 모양으로 한 번 더(마이크가 둘레와 같은 밝기) */
+  --w-hero-scrim:linear-gradient(90deg,rgba(6,7,9,.5) 0,rgba(6,7,9,.16) 40%,rgba(6,7,9,0) 64%),linear-gradient(180deg,rgba(6,7,9,.46) 0,rgba(6,7,9,0) 22%,rgba(6,7,9,0) 62%,rgba(12,13,16,.86) 90%,var(--w-panel) 99%);
+}
+:root[data-host=world] #w-curtain{position:fixed;inset:0;z-index:60;background:var(--w-panel);opacity:0;pointer-events:none;will-change:opacity}
+:root[data-host=world] #w-curtain.on{opacity:.99}   /* 1이면 그래픽 칩이 아래 화면을 그리지 않아 걷을 때 장을 버린다(주문 폭주 11-03) */
+
+/* ── 입구: 사진 · 제목 · 마이크 세 층 ── */
+:root[data-host=world] .lobby:has(.w-art){padding:0 0 28px}
+:root[data-host=world] .lobby:has(.w-art)>.topbar{top:max(14px,env(safe-area-inset-top));right:14px;left:auto}
+:root[data-host=world] .lobby:has(.w-art) .sound-toggle{background:var(--w-glass-dark);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);transition:background var(--e-fast)}
+:root[data-host=world] .lobby:has(.w-art) .sound-toggle:hover{background:rgba(24,25,30,.78)}
+:root[data-host=world] .lobby:has(.w-art) .sound-toggle::before{background:var(--w-ink)}
+:root[data-host=world] .lobby>.hero:has(.w-art){--hero-h:clamp(380px,calc(100svh - 340px),600px);container-type:size;display:block;height:var(--hero-h);min-height:0;margin:0;padding:0;border-radius:0;
+  background:var(--w-s1);color:var(--w-ink)}
+:root[data-host=world] .lobby>.hero:has(.w-art)::after{content:none}
+:root[data-host=world] .lobby>.hero:has(.w-art) .hero-art{display:none}
+:root[data-host=world] .w-art{--aw:max(100cqw,80cqh);position:absolute;left:0;top:calc((100cqh - var(--aw) * 1.25) * .3);width:var(--aw);aspect-ratio:4/5}
+:root[data-host=world] .w-art>img{position:absolute;inset:0;display:block;width:100%;height:100%}
+:root[data-host=world] .w-art .w-photo{z-index:0}
+:root[data-host=world] .w-art::before,:root[data-host=world] .w-art::after{content:'';position:absolute;inset:0;pointer-events:none;background:var(--w-hero-scrim)}
+:root[data-host=world] .w-art::before{z-index:1}
+:root[data-host=world] .w-art .w-mic{z-index:3;pointer-events:none}
+:root[data-host=world] .w-art::after{z-index:4;-webkit-mask:url(assets/world/lobby-mic.webp) 0 0/100% 100% no-repeat;mask:url(assets/world/lobby-mic.webp) 0 0/100% 100% no-repeat}
+/* 제목 두 줄: 「의」의 오른쪽 절반과 「듬」의 오른쪽 끝만 마이크(상자 폭 29~46%, 머리 41~50%) 뒤로 — 「듬」의 ㅁ이 가려 「리듣」으로 읽히지 않게 */
+:root[data-host=world] .w-art h1{position:absolute;z-index:2;left:4.5%;top:33%;margin:0;font:900 calc(var(--aw) * .17)/.98 var(--w-sans);letter-spacing:-.06em;color:var(--w-ink);text-shadow:0 2px 30px rgba(0,0,0,.35)}
+:root[data-host=world] .w-art h1 .w-l{position:relative;display:block;overflow-x:visible;overflow-y:clip;overflow-clip-margin:.16em}   /* 위아래만 자른다 — 등장은 아래에서 올라온다 */
+:root[data-host=world] .w-art h1 .w-l>span{display:block}
+/* 제목 박자(노래방 공): 고른 곡의 한 박(--beat)마다 한 글자가 살짝 눌리고 그 위에 코랄 점이 내려앉는다 — 네 박에 한 바퀴. 합성기에서 도는 transform · opacity뿐 */
+:root[data-host=world] .w-art h1 .w-s{position:relative;display:inline-block;font-style:normal;will-change:transform}
+:root[data-host=world] .w-art h1 .w-s::before{content:'';position:absolute;left:50%;top:-.08em;width:.13em;height:.13em;margin-left:-.065em;border-radius:50%;background:var(--w-face);box-shadow:0 0 .2em rgba(249,104,89,.7);opacity:0;will-change:transform,opacity}
+/* 지연은 음수(넷이 함께 시작하고 차례만 다름) — 양수면 글자마다 제 차례에 층을 새로 올려 그때마다 장을 버렸다(11-04 추적) */
+:root[data-host=world] .w-art[data-beat] h1 .w-s{animation:wDip calc(var(--beat,.54s) * 4) linear calc(var(--beat,.54s) * (var(--i,0) - 4)) infinite}
+:root[data-host=world] .w-art[data-beat] h1 .w-s::before{animation:wDot calc(var(--beat,.54s) * 4) linear calc(var(--beat,.54s) * (var(--i,0) - 4)) infinite}
+@keyframes wDip{0%{transform:translateY(0)}3%{transform:translateY(.045em)}12%{transform:translateY(0)}100%{transform:translateY(0)}}
+@keyframes wDot{0%{opacity:0;transform:translateY(-.22em) scale(.5)}4%{opacity:1;transform:translateY(0) scale(1.1)}9%{transform:translateY(0) scale(1)}20%{opacity:1}25%{opacity:0}100%{opacity:0}}
+/* 사진 위 글: 위 왼쪽 자리 이름표, 아래 한 줄 */
+:root[data-host=world] .lobby>.hero:has(.w-art) .hero-copy{position:absolute;z-index:5;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:calc(max(14px,env(safe-area-inset-top)) + 12px) 20px 20px;pointer-events:none}
+:root[data-host=world] .lobby>.hero:has(.w-art) .hero-copy>.kicker{color:var(--w-ink-2)}
+:root[data-host=world] .lobby>.hero:has(.w-art) .hero-copy>.kicker::after{background:rgba(250,250,249,.32)}
+:root[data-host=world] .lobby>.hero:has(.w-art) .lede{margin:0;color:var(--w-ink);font:600 17px/1.45 var(--w-sans);text-shadow:0 1px 14px rgba(0,0,0,.45)}
+:root[data-host=world] .lobby>.hero:has(.w-art) .sub{display:none}
+:root[data-host=world] .lobby>.hero:has(.w-art)~.plan .start-card{padding-top:18px}
+/* 곡 카드: 미리듣기가 나는 동안 이름 옆 작은 막대 셋이 움직인다 */
+:root[data-host=world] .song.w-playing .song-title::after{content:'';display:inline-block;width:3px;height:11px;margin:0 9px 0 6px;vertical-align:-1px;border-radius:1px;background:var(--w-face);
+  box-shadow:4.5px 0 0 var(--w-face),9px 0 0 var(--w-face);transform-origin:50% 100%;animation:wEq .42s cubic-bezier(.34,.8,.34,1) infinite alternate}
+:root[data-host=world] .song[aria-pressed=true].w-playing .song-title::after{background:var(--w-on-ink);box-shadow:4.5px 0 0 var(--w-on-ink),9px 0 0 var(--w-on-ink)}
+@keyframes wEq{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
+
+/* ── 놀이: 판정 글자는 작게 튀어 오르며(빠른 공간) 위로 12px 떠올라 사라진다 ── */
+:root[data-host=world] .game .pop{font:680 20px/1 var(--w-sans);letter-spacing:-.01em}
+:root[data-host=world] .game .pop[data-kind=perfect]{text-shadow:0 0 18px rgba(255,236,220,.55),0 2px 10px rgba(8,9,12,.5)}
+:root[data-host=world] .game .pop.go{animation:wPop2 .62s both}
+@keyframes wPop2{0%{opacity:0;transform:translate(-50%,-50%) scale(.8);animation-timing-function:cubic-bezier(.42,1.67,.21,.90)}
+  30%{opacity:1;transform:translate(-50%,-50%) scale(1);animation-timing-function:cubic-bezier(.34,.88,.34,1)}
+  60%{opacity:1;transform:translate(-50%,calc(-50% - 6px))}100%{opacity:0;transform:translate(-50%,calc(-50% - 12px))}}
+:root[data-host=world] .game.calm .pop.go{animation:wPopCalm .62s both}
+@keyframes wPopCalm{0%,60%{opacity:1}100%{opacity:0}}
+:root[data-host=world] .count.punch b{animation:wCount var(--m-fast) both}
+@keyframes wCount{from{transform:scale(.72)}to{transform:scale(1)}}
+:root[data-host=world] .game.calm .count.punch b{animation:none}
+/* 문제 카드: 듣는 동안 방이 어두워지면(stage.setHush) 카드 테가 청금석으로 한 단 밝다 */
+:root[data-host=world] .qcard[data-phase=listening]{box-shadow:var(--w-glass-edge),0 0 0 1px rgba(91,134,219,.38),0 18px 50px rgba(0,0,0,.4)}
+
+/* ── 결과: 축제 본무대 사진 포스터 · 문장 점 다섯 · 5/5 도장 ── */
+:root[data-host=world] .results:has(#w-dots) .res-hero{background:var(--w-s1);color:var(--w-ink);padding-top:max(50vh,280px)}
+/* 사진은 제목 위 칸에만(세로 화면) — 객석 휴대폰 불빛 띠(사진 높이 60%)가 제목 바로 위에 오고, 마이크(좌우를 뒤집어 오른쪽 아래)는 큰 숫자 옆에 */
+:root[data-host=world] .results:has(#w-dots) .res-hero::before{inset:0 0 auto 0;top:0;right:0;width:auto;height:calc(max(50vh,280px) + 150px);aspect-ratio:auto;border:0;border-radius:inherit;transform:none;box-shadow:none;
+  background:linear-gradient(180deg,rgba(6,7,9,.4) 0,rgba(6,7,9,0) 18%,rgba(6,7,9,0) 50%,rgba(12,13,16,.8) 80%,var(--w-s1) 100%),url(assets/world/finale.webp) center 40%/cover no-repeat;transform-origin:50% 30%}
+:root[data-host=world] .results:has(#w-dots) .res-hero.w-zoom::before{animation:wZoom 9s cubic-bezier(.2,.6,.2,1) both}
+@keyframes wZoom{from{transform:scale(1)}to{transform:scale(1.06)}}
+:root[data-host=world] .results:has(#w-dots) .res-hero::after{content:none}
+:root[data-host=world] .results:has(#w-dots)>.topbar .kicker{color:var(--w-ink-2)}
+:root[data-host=world] .results:has(#w-dots)>.topbar .kicker::after{background:rgba(250,250,249,.32)}
+:root[data-host=world] .results:has(#w-dots) .res-hero :is(.kicker.ko,.r-label,.r-note,.big span){color:var(--w-ink-2)}
+:root[data-host=world] .results:has(#w-dots) .res-hero :is(h1,.big b){color:var(--w-ink)}
+:root[data-host=world] .results:has(#w-dots) .res-hero h1{max-width:none;text-shadow:0 2px 24px rgba(0,0,0,.35)}
+:root[data-host=world] .results:has(#w-dots) .res-hero .big b{display:inline-block}
+:root[data-host=world] .results:has(#w-dots) .r-stats{border-top-color:var(--w-line-2)}
+:root[data-host=world] .results:has(#w-dots) .r-stats .pill+.pill{box-shadow:inset 1px 0 0 var(--w-line-2)}
+:root[data-host=world] .results:has(#w-dots) .r-stats .pill small{color:var(--w-ink-3)}
+:root[data-host=world] .results:has(#w-dots) .r-stats .pill b{color:var(--w-ink);font-variant-numeric:tabular-nums}
+:root[data-host=world] .results:has(#w-dots) .res-hero .synk-collection-line{color:var(--w-ink-2)}
+:root[data-host=world] .results:has(#w-dots) .res-hero .synk-collection-line a{color:var(--w-ink)}
+:root[data-host=world] .results:has(#w-dots) .res-hero>div{position:relative}
+:root[data-host=world] .w-dots{display:flex;gap:8px;margin:12px 0 0;padding:0;list-style:none}
+:root[data-host=world] .w-dots li{width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--w-ink-4);opacity:.35}
+:root[data-host=world] .w-dots li.on{opacity:1}
+:root[data-host=world] .w-dots li.ok.on{background:var(--w-led-ok);box-shadow:0 0 10px rgba(125,180,90,.55)}
+:root[data-host=world] .w-dots li.ko.on{box-shadow:inset 0 0 0 1.5px var(--w-face-text)}
+:root[data-host=world] .w-dots li.none.on{box-shadow:inset 0 0 0 1.5px var(--w-ink-3)}
+:root[data-host=world] .w-stamp{position:absolute;right:4px;top:-64px;margin:0;padding:10px 16px;border:3px solid #F96859;border-radius:14px;color:#FFB4A9;
+  font:800 18px/1.15 var(--w-sans);letter-spacing:-.01em;transform:rotate(-8deg);text-shadow:0 0 14px rgba(249,104,89,.4);box-shadow:0 0 22px rgba(249,104,89,.25),inset 0 0 18px rgba(249,104,89,.18);background:rgba(10,11,14,.35)}
+
+@media (min-width:760px) and (min-height:501px) and (orientation:landscape){
+  :root[data-host=world] .lobby>.hero:has(.w-art){--hero-h:calc(100svh - 32px);height:var(--hero-h);min-height:0;padding:0;border-radius:var(--w-r-lg);overflow:hidden}
+  :root[data-host=world] .lobby>.hero:has(.w-art) .lede{font-size:19px}
+  :root[data-host=world] .results:has(#w-dots) .res-hero{padding-top:max(38vh,220px);overflow:hidden}
+  :root[data-host=world] .results:has(#w-dots) .res-hero::before{inset:0;height:auto;background-position:0 0,center top}
+}
+@media (min-width:520px) and (max-height:500px){
+  :root[data-host=world] .lobby>.hero:has(.w-art){--hero-h:calc(100svh - 20px);height:var(--hero-h);min-height:0;padding:0}
+  :root[data-host=world] .results:has(#w-dots) .res-hero{padding-top:110px}
+  :root[data-host=world] .results:has(#w-dots) .res-hero::before{inset:0;height:auto}
+}
+/* WORLD 「움직임 줄이기」(data-w-calm — world-play.mjs가 부모 창 설정을 옮겨 적는다)도 기기 설정과 같게 */
+:root[data-host=world][data-w-calm] :is(.w-art[data-beat] h1 .w-s,.w-art[data-beat] h1 .w-s::before,.song.w-playing .song-title::after,.results:has(#w-dots) .res-hero.w-zoom::before){animation:none}
+@media (prefers-reduced-motion:reduce){
+  :root[data-host=world] .w-art[data-beat] h1 .w-s,:root[data-host=world] .w-art[data-beat] h1 .w-s::before,:root[data-host=world] .song.w-playing .song-title::after,
+  :root[data-host=world] .results:has(#w-dots) .res-hero.w-zoom::before{animation:none}
+}
