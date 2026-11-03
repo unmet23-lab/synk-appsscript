@@ -16,6 +16,7 @@
  * 찾기 — 공용 git 폴더의 synk-ops-path 한 줄(운영 사본 절대 경로). 어느 작업본에서든 git rev-parse --git-common-dir로 찾는다.
  * 갱신 — tools/바로올리기.js가 push한 뒤(같은 프로세스)와 Windows 예약 「SYNK 운영 사본 갱신」(5분)이 부른다.
  *   1. 잠금(상태 폴더의 갱신.lock — 10분 넘었거나 주인 프로세스가 없으면 주인 없는 잠금).
+ *      따라가기가 끊기거나 늦은 쪽이 되돌려 HEAD와 인덱스가 갈라진 자국은 누가 고친 내용이 없을 때만 HEAD를 맞춰 먼저 푼다.
  *   2. 추적 파일이 바뀌어 있으면: 운영 도구가 기록을 쓰는 자리(기록자리 — 장부·편 기록·팁 카드)는 쓰는 중일 수 있어 막지 않고,
  *      그 가운데 도구가 올리려다 못 올린 것(남은장부.json)만 Git 코어로 다시 올린다. 그 밖의 파일이 바뀌었으면 「누가 운영 사본을 고쳤다」로 보고
  *      따라가지 않는다. 처음 본 시각을 상태에 남기고 헤르메스 감시가 30분 넘게 이어지면 알린다(못 올린 기록은 6시간).
@@ -339,6 +340,25 @@ function 끊긴따라가기마무리(git, B, O) {
 }
 
 /**
+ * 끊긴따라가기마무리의 거울. 같은 사본을 둘이 동시에 따라가다 늦은 쪽이 앞 판으로 되돌리면(11-04 예약 갱신 × 장부 올림) HEAD는 새 판인데 인덱스 · 작업본은
+ * 앞 판이라 모든 파일이 고친 것으로 보이고 스스로 못 푼다. 기록자리 밖의 인덱스 · 작업본이 HEAD 바로 앞 판(HEAD@{1})과 똑같으면 누가 고친 내용이 없는 것이니
+ * HEAD만 그 판으로 돌리고(CAS) 이번 회차 따라가기가 잇는다. 아니면 아무것도 하지 않는다 → 옮긴 커밋 또는 null
+ */
+function 되돌아간따라가기맞추기(git, B) {
+  const 인덱스와다름 = (판) => git(['diff', '--cached', '--name-only', '-z', '--no-renames', 판]).toString('utf8').split('\0').filter(Boolean);
+  // 기록자리만 HEAD와 다르면 되돌린 자국이 아니다 — 보통 따라가기가 3방향으로 지킨다
+  if (!인덱스와다름(B).some((p) => !기록자리인가(p))) return null;
+  const 앞 = String(git.돌리기(['rev-parse', '-q', '--verify', 'HEAD@{1}^{commit}'], { 허용: null }).stdout).trim();
+  if (!앞 || 앞 === B || !조상인가(git, 앞, B)) return null;
+  // 작업본 쪽은 status로 본다 — diff.autoRefreshIndex=false라 diff --name-only는 시각만 바뀐 파일도 내놓는다
+  const 작업본다름 = git(['--no-optional-locks', 'status', '--porcelain=v1', '-z', '--no-renames', '--untracked-files=no', '--ignore-submodules=all'])
+    .toString('utf8').split('\0').filter((줄) => 줄 && 줄[1] !== ' ').map((줄) => 줄.slice(3));
+  if ([...인덱스와다름(앞), ...작업본다름].some((p) => !기록자리인가(p))) return null;
+  git(['update-ref', '--no-deref', '-m', '운영 사본: 되돌아간 따라가기 맞춤', 'HEAD', 앞, B]);
+  return 앞;
+}
+
+/**
  * 옵션: 저장소 · 실행 · 상태폴더 · 받지않음(방금 push해 origin 추적 가지가 최신일 때) · 헤르메스(시험 대역) · 부른곳
  * → {결과:'같음'|'따라감'|'멈춤'|'실패'|'바쁨'|'없음'|'미리 보기', …}. 상태.json도 같은 내용으로 쓴다(미리 보기·바쁨·없음은 안 씀).
  */
@@ -386,7 +406,7 @@ async function 갱신(옵션 = {}) {
     const 뒤짐 = () => Number(git.글(['rev-list', '--count', `${B}..${O}`]));
     let 마무리 = null;
     if (옵션.실행 && 조상인가(git, B, O)) {
-      마무리 = 끊긴따라가기마무리(git, B, O);
+      마무리 = 끊긴따라가기마무리(git, B, O) || 되돌아간따라가기맞추기(git, B);
       if (마무리) B = 마무리;
     }
     const 기록 = 기록바뀜(git);

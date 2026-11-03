@@ -412,6 +412,91 @@ test('갱신: 따라가기가 중간에 끊겨(Windows가 연 파일로 read-tre
   assert.deepEqual(멈춤.걸림, ['tools/a.js']);
 });
 
+test('따라가기: 같은 사본을 따라간 다른 프로세스가 HEAD를 먼저 옮겼으면 앞 판으로 되돌리지 않는다 — HEAD와 인덱스 · 작업본이 갈라지지 않게', async (t) => {
+  const 핵심 = require(path.join(REPO, 'tools', 'lib', 'git-publish-core.cjs'));
+  const 판 = 새판(t);
+  await 판.만들기();
+  const B = 판.운영.머리();
+  const T = 판.남push({ 'tools/a.js': '새 판\n', 'tools/새.js': '새 파일\n' });
+  const r = await 핵심.따라가기({ 저장소: 판.운영.폴더, 실행: true,
+    시험고리: { 가지옮기기직전: () => 판.운영.g('update-ref', '--no-deref', 'HEAD', T, B) } });
+  assert.equal(r.결과, '따라감', JSON.stringify(r));
+  assert.match(r.주의, /먼저 옮겼다/);
+  assert.equal(판.운영.머리(), T);
+  assert.deepEqual(판.운영.상태(), [], '늦은 쪽이 파일을 앞 판으로 되돌리지 않는다');
+  assert.equal(판.운영.읽기('tools/a.js'), '새 판\n');
+  // 더 새 판으로 먼저 갔으면 앞 판이 아니라 그 판에 맞춘다
+  const 앞 = 판.운영.머리();
+  판.남push({ 'tools/a.js': '다음 판\n' });
+  let 더새 = null;
+  const r2 = await 핵심.따라가기({ 저장소: 판.운영.폴더, 실행: true,
+    시험고리: { 가지옮기기직전: () => {
+      더새 = 판.남push({ 'tools/b.js': '더 새 판\n' });
+      판.운영.g('fetch', '-q', 'origin');
+      판.운영.g('update-ref', '--no-deref', 'HEAD', 더새, 앞);
+    } } });
+  assert.equal(r2.결과, '실패', JSON.stringify(r2));
+  assert.equal(판.운영.머리(), 더새);
+  assert.deepEqual(판.운영.상태(), [], '인덱스 · 작업본이 지금 HEAD와 같다');
+  assert.equal(판.운영.읽기('tools/b.js'), '더 새 판\n');
+});
+
+test('갱신: 동시 따라가기의 늦은 쪽이 파일만 앞 판으로 되돌린 자국(HEAD만 새 판)은 스스로 풀어 따라가고, 누가 고친 내용이 있으면 멈춘다', async (t) => {
+  const 판 = 새판(t, { 'tools/c.js': 'c1\n', 'tools/지울.js': '곧 지움\n' });
+  await 판.만들기();
+  const 헤르메스 = () => ({ 결과: '맞음' });
+  const 장부 = 'docs/_ops/장부.jsonl';
+  const B = 판.운영.머리();
+  const T = 판.남push({ 'tools/a.js': 'a2\n', 'tools/c.js': 'c2\n', 'tools/새.js': '새\n', [장부]: '{"n":1}\n{"n":2}\n' });
+  const O = 판.남push({ 'tools/b.js': '그 뒤 판\n' });
+  판.운영.g('fetch', '-q', 'origin');
+  // 11-04 실측 모양: HEAD는 T, 인덱스 · 작업본은 B, 운영 사본에서 올린 장부만 T 판
+  판.운영.g('read-tree', '-m', '-u', B, T);
+  판.운영.g('update-ref', '--no-deref', 'HEAD', T, B);
+  판.운영.g('read-tree', '-m', '-u', T, B);
+  판.운영.쓰기(장부, '{"n":1}\n{"n":2}\n');
+  판.운영.g('add', 장부);
+  오래전(path.join(판.운영.폴더, 장부));
+  assert.deepEqual(판.운영.상태(), ['D  tools/새.js', 'M  tools/a.js', 'M  tools/c.js']);
+  // 누가 고친 내용(작업본 · 인덱스)이 있으면 지금처럼 멈추고 HEAD도 건드리지 않는다
+  판.운영.쓰기('tools/c.js', '운영 사본에서 고침\n');
+  const 고침 = await 도구.갱신({ 저장소: 판.공용.폴더, 상태폴더: 판.상태폴더, 실행: true, 헤르메스 });
+  assert.equal(고침.결과, '멈춤', JSON.stringify(고침));
+  assert.equal(판.운영.머리(), T);
+  판.운영.g('add', 'tools/c.js');
+  const 올려둠 = await 도구.갱신({ 저장소: 판.공용.폴더, 상태폴더: 판.상태폴더, 실행: true, 헤르메스 });
+  assert.equal(올려둠.결과, '멈춤', JSON.stringify(올려둠));
+  assert.equal(판.운영.머리(), T);
+  판.운영.쓰기('tools/c.js', 'c1\n');
+  판.운영.g('add', 'tools/c.js');
+  const r = await 도구.갱신({ 저장소: 판.공용.폴더, 상태폴더: 판.상태폴더, 실행: true, 헤르메스 });
+  assert.equal(r.결과, '따라감', JSON.stringify(r));
+  assert.equal(r.마무리, B);
+  assert.equal(판.운영.머리(), O);
+  assert.deepEqual(판.운영.상태(), []);
+  assert.equal(판.운영.읽기('tools/a.js'), 'a2\n');
+  assert.equal(판.운영.읽기('tools/새.js'), '새\n');
+  assert.equal(판.운영.읽기(장부), '{"n":1}\n{"n":2}\n', '이미 올라간 장부를 지킨다');
+  const s = 판.상태();
+  assert.equal(s.state, 'ok');
+  assert.equal(s.finishedInterruptedFollow, B);
+});
+
+test('갱신: 인덱스가 기록자리에서만 HEAD와 다르면 되돌린 자국이 아니다 — HEAD를 앞 판으로 돌리지 않는다', async (t) => {
+  const 판 = 새판(t);
+  await 판.만들기();
+  const 헤르메스 = () => ({ 결과: '맞음' });
+  const 장부 = 'docs/_ops/장부.jsonl';
+  const T = 판.남push({ [장부]: '{"n":1}\n{"n":2}\n' });
+  assert.equal((await 도구.갱신({ 저장소: 판.공용.폴더, 상태폴더: 판.상태폴더, 실행: true, 헤르메스 })).결과, '따라감');
+  판.운영.쓰기(장부, '{"n":1}\n{"n":2}\n{"n":3}\n');
+  판.운영.g('add', 장부);
+  const r = await 도구.갱신({ 저장소: 판.공용.폴더, 상태폴더: 판.상태폴더, 실행: true, 헤르메스 });
+  assert.equal(r.결과, '같음', JSON.stringify(r));
+  assert.equal(r.마무리, null);
+  assert.equal(판.운영.머리(), T);
+});
+
 test('잠그기: 풀기는 제가 잡은 잠금만 지우고, 살아 있는 주인의 잠금은 한도 안이면 빼앗지 않는다', (t) => {
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-ops-lock-'));
   t.after(() => fs.rmSync(방, { recursive: true, force: true }));
