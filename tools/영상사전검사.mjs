@@ -5,6 +5,7 @@ import { createReadStream } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { availableParallelism } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
@@ -78,29 +79,59 @@ async function run(program, args, timeout = 180000) {
   return result;
 }
 
+async function probeVideoFrames(ffprobe, file, video, rate, duration, threads) {
+  const scan = async parallel => {
+    const options = parallel ? ['-threads', String(threads), '-thread_type', 'frame', '-err_detect', 'explode'] : [];
+    const fields = parallel ? 'frame=pts_time,best_effort_timestamp_time' : 'frame=best_effort_timestamp_time';
+    const { stdout, stderr } = await run(ffprobe, ['-v', parallel ? 'warning' : 'error', '-protocol_whitelist', 'file,pipe', ...options,
+      '-select_streams', 'v:0', '-show_frames', '-show_entries', fields, '-of', 'csv=p=0', file]);
+    let explicitTimestamps = true;
+    const values = stdout.split(/\r?\n/).filter(line => line.trim()).map(line => {
+      const [time, estimate] = line.split(',', 2);
+      if (parallel && time !== estimate) explicitTimestamps = false;
+      return time;
+    });
+    const frames = inspectFrameTimes(values, rate);
+    const end = frames.last === null ? null : frames.last + (frames.medianStep || 0);
+    const start = finite(video.start_time) ?? 0;
+    const endMismatch = end !== null && Math.abs(end - start - duration) > Math.max(.15, (frames.medianStep || .04) * 3);
+    return { values, frames, end, endMismatch, stderr, explicitTimestamps };
+  };
+  const expected = Number(video.nb_frames), pixels = video.width * video.height;
+  if (threads > 1 && video.codec_name === 'h264' && video.field_order === 'progressive' && video.pix_fmt === 'yuv420p' &&
+      pixels > 0 && pixels <= 1920 * 1080 && Number.isSafeInteger(expected) && expected > 0) {
+    // Frame threading keeps H.264 error resilience. Slice threading can disable it.
+    try {
+      const result = await scan(true);
+      if (!result.stderr.trim() && result.explicitTimestamps && result.frames.count === expected && !result.frames.missingTimestamps &&
+          !result.frames.issues.length && !result.endMismatch) return result;
+    } catch {
+      // Unsupported options and failed accelerated reads must still get the original decode.
+    }
+  }
+  return scan(false);
+}
+
 export async function inspectMedia(options = {}) {
   if (!options.video || !options.out) throw new Error('--video와 --out을 지정해 주세요.');
   const source = await fingerprint(options.video);
   if (!['.mp4', '.webm'].includes(path.extname(source.path).toLowerCase())) throw new Error('MP4·WebM 파일만 검사합니다.');
   const inputs = { video: source }, ffprobe = options.ffprobe || process.env.SYNK_FFPROBE_EXE || 'ffprobe', ffmpeg = options.ffmpeg || process.env.SYNK_FFMPEG_EXE || 'ffmpeg';
-  const [metadata, frameResult] = await Promise.all([
-    run(ffprobe, ['-v', 'error', '-protocol_whitelist', 'file,pipe', '-show_streams', '-show_format', '-of', 'json', source.path]),
-    run(ffprobe, ['-v', 'error', '-protocol_whitelist', 'file,pipe', '-select_streams', 'v:0', '-show_frames', '-show_entries', 'frame=best_effort_timestamp_time', '-of', 'csv=p=0', source.path]),
-  ]);
+  const metadata = await run(ffprobe, ['-v', 'error', '-protocol_whitelist', 'file,pipe', '-show_streams', '-show_format', '-of', 'json', source.path]);
   const raw = JSON.parse(metadata.stdout), video = raw.streams?.find(row => row.codec_type === 'video'), audio = raw.streams?.filter(row => row.codec_type === 'audio') || [];
   if (!video) throw new Error('영상 스트림이 없습니다.');
   const duration = finite(video.duration) ?? finite(raw.format?.duration);
   if (!duration || duration > 1800) throw new Error('30분 이내의 길이를 확인할 수 있는 영상을 지정해 주세요.');
   const rate = fraction(video.avg_frame_rate) || fraction(video.r_frame_rate);
-  const frameValues = frameResult.stdout.split(/\r?\n/).filter(line => line.trim()).map(line => line.split(',')[0]);
-  const frames = inspectFrameTimes(frameValues, rate), issues = [...frames.issues];
+  const threads = metadata.stderr.trim() ? 1 : Math.min(8, availableParallelism());
+  const frameResult = await probeVideoFrames(ffprobe, source.path, video, rate, duration, threads);
+  const { values: frameValues, frames, end: decodedEnd } = frameResult, issues = [...frames.issues];
   const add = (code, severity, at, message) => issues.push({ code, severity, at: at === null ? null : Math.max(0, at ?? 0), message });
   if (frameResult.stderr.trim() || metadata.stderr.trim()) add('decode-error', 'error', null, 'FFprobe가 영상 읽기·디코드 오류를 보고했습니다: ' + (frameResult.stderr || metadata.stderr).trim().slice(0, 500));
   if (!frames.count) add('no-frames', 'error', 0, '실제 디코드한 영상 프레임이 없습니다.');
   if (frames.missingTimestamps) add('missing-frame-time', 'warning', 0, `프레임 ${frames.missingTimestamps}개의 표시 시각을 확인하지 못했습니다.`);
-  const decodedEnd = frames.last === null ? null : frames.last + (frames.medianStep || 0);
   const streamStart = finite(video.start_time) ?? 0;
-  if (decodedEnd !== null && Math.abs(decodedEnd - streamStart - duration) > Math.max(.15, (frames.medianStep || .04) * 3)) add('decoded-duration', 'warning', Math.min(decodedEnd, duration), `프레임으로 읽은 끝 ${decodedEnd.toFixed(3)}초와 영상 스트림 길이 ${duration.toFixed(3)}초가 다릅니다.`);
+  if (frameResult.endMismatch) add('decoded-duration', 'warning', Math.min(decodedEnd, duration), `프레임으로 읽은 끝 ${decodedEnd.toFixed(3)}초와 영상 스트림 길이 ${duration.toFixed(3)}초가 다릅니다.`);
   issues.push(...uploadQualityIssues(video, audio, raw.format));
   let loudness = null;
   if (!audio.length) add('no-audio', 'warning', null, '음성 스트림이 없습니다. 무음 영상으로 만든 것인지 확인하세요.');

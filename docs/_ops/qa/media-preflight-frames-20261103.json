@@ -1,0 +1,783 @@
+{
+  "experiment": "SYNK video preflight full-frame decode, 2026-11-03",
+  "scope": "Local production preflight CLI on the same two final videos, scripts and saved transcripts as tools/text-compare-bench/evidence/20261103-real-scripts.json. All media, reports and local paths stay outside this receipt.",
+  "environment": {
+    "node": "v24.20.0",
+    "platform": "win32",
+    "os": "10.0.26300",
+    "cpu": "Intel(R) Core(TM) Ultra 9 275HX",
+    "availableParallelism": 24,
+    "threads": 8,
+    "ffprobe": "ffprobe version 9.0.2-full_build-www.gyan.dev Copyright (c) 2007-2026 the FFmpeg developers",
+    "ffmpeg": "ffmpeg version 9.0.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers"
+  },
+  "startedAt": "2026-11-03T07:47:53.179Z",
+  "finishedAt": "2026-11-03T07:51:49.786Z",
+  "source": {
+    "entry": "tools/영상사전검사.mjs",
+    "originalCommit": "a3ed07891dc2e3567d5e1fcb76fce9fd5a2912af",
+    "originalBlob": "cc307bbee45a2c99fc23226e6f11b24082787d93",
+    "optimizedBlob": "0160ef78ca282d1f88bec1089dd06f76ced92bdd",
+    "localEntrySha256": {
+      "old": "2b1b01cb2a04f372f71531349263af9d0bdceb76c9aad697f0be98651988402a",
+      "current": "3b444744a9b93de09144644f3b35cdc9d48666c8ee343f41cf2b2b7d2e5d3794"
+    }
+  },
+  "method": {
+    "endpoint": "Parent wall clock around a fresh Node process through exit. node <entry> --video <master> --script <spoken> --transcript <asr> --out <local directory>. Includes file hashing, metadata, full decode, audio measurement, text comparison and report writes. Existing transcripts were reused; no new ASR.",
+    "order": "One process at a time. Eight pairs per title, original first in four and optimized first in four. Title order alternated. File cache was not flushed. Traced stage runs and diagnostic candidate trials are separate and excluded from the whole distributions.",
+    "reference": "Every complete real-video report deep-equaled the archived report except inspectedAt. The report fingerprint here replaces inputs with their byte counts and SHA-256 to omit local paths. Traced original and optimized frame CSV matched byte-for-byte after projecting the extra explicit PTS column out of the optimized scan.",
+    "estimator": "Median of eight is the average of the fourth and fifth sorted values. Percent saved is 100*(1-optimizedMedian/originalMedian). Wall times are milliseconds.",
+    "routing": "If the metadata read is clean, the first video is progressive H.264 yuv420p, 0 < pixels <= 2073600, nb_frames is a positive integer, and more than one CPU is available, fully decode with up to eight threads, frame threading and err_detect=explode. A warning or failed call, missing/estimated timestamps, wrong count, frame-time or end-time discrepancy switches to the original -show_frames call; its report determines the result. Other inputs keep the original scan."
+  },
+  "whole": {
+    "brief-b24": {
+      "master": "b24_master.mp4",
+      "inputs": {
+        "video": {
+          "bytes": 44150657,
+          "sha256": "201de2188d6800482f676c98ef1b5ecb303037b8369b6d24898d1b69c0b3183d"
+        },
+        "script": {
+          "bytes": 536,
+          "sha256": "b112c128c2f551da97db38c032d3eab9d6197c7936c74b61d8cd9756393ff4b2"
+        },
+        "transcript": {
+          "bytes": 3215,
+          "sha256": "e282c04ad944df0d6a2e8acaf112ea85591263a66d4d2d586a95b6b8c2abb8af"
+        }
+      },
+      "durationSeconds": 28.766667,
+      "frameCount": 863,
+      "unchangedStatus": "ready",
+      "unchangedIssueCodes": [],
+      "reportSha256WithoutTimeOrLocalPaths": "22b8fe0853c91403c25b3bd24d94d4171ade76815bca0c289c821b7133bd9eac",
+      "frameCsvSha256": "abfa6487aebf2a74a65be9a18a2ce8b87594d4a2e26b4961f601bf125d59ad38",
+      "wholeMs": {
+        "original": {
+          "runs": 8,
+          "min": 5199.158,
+          "median": 8120.303,
+          "max": 10759.364
+        },
+        "optimized": {
+          "runs": 8,
+          "min": 2282.099,
+          "median": 2804.698,
+          "max": 4526.477
+        },
+        "medianSaved": 5315.605,
+        "medianReductionPct": 65.461,
+        "pairsFaster": 8
+      }
+    },
+    "brief-b23": {
+      "master": "b23_master.mp4",
+      "inputs": {
+        "video": {
+          "bytes": 79419624,
+          "sha256": "95b2e002a664a2d582f69e71f6eb85e710edf1801b40846ba769a87dd028cd40"
+        },
+        "script": {
+          "bytes": 809,
+          "sha256": "f06bb9b5f85986c6f6ad61cf90b8c24662538faebf0d52692dc2ed5d801fd7f0"
+        },
+        "transcript": {
+          "bytes": 3092,
+          "sha256": "e201efe39305f8ee380653b4529d2333939d656ca21a2840641e97ff5631ce40"
+        }
+      },
+      "durationSeconds": 41.2,
+      "frameCount": 1236,
+      "unchangedStatus": "needs-review",
+      "unchangedIssueCodes": ["upload-audio-bitrate"],
+      "reportSha256WithoutTimeOrLocalPaths": "b7e96153e1f07a836d9a943102a1c6d9bfd5a2295f3e541b5552648cf24942eb",
+      "frameCsvSha256": "e81fbefdef3318c9283aa8c8639ff19f76e7f348fcf5078572270ebf0a3f7f9e",
+      "wholeMs": {
+        "original": {
+          "runs": 8,
+          "min": 8802.023,
+          "median": 9433.498,
+          "max": 23701.753
+        },
+        "optimized": {
+          "runs": 8,
+          "min": 2742.146,
+          "median": 3065.499,
+          "max": 5998.162
+        },
+        "medianSaved": 6367.999,
+        "medianReductionPct": 67.504,
+        "pairsFaster": 8
+      }
+    }
+  },
+  "sampleColumns": ["round", "video", "implementation", "wholeMs"],
+  "samples": [
+    [1, "brief-b23", "old", 23701.753],
+    [1, "brief-b23", "current", 3077.001],
+    [1, "brief-b24", "current", 2977.092],
+    [1, "brief-b24", "old", 10759.364],
+    [2, "brief-b24", "old", 9063.535],
+    [2, "brief-b24", "current", 3965.821],
+    [2, "brief-b23", "current", 3505.73],
+    [2, "brief-b23", "old", 9044.455],
+    [3, "brief-b24", "current", 2363.159],
+    [3, "brief-b24", "old", 5199.158],
+    [3, "brief-b23", "old", 11907.78],
+    [3, "brief-b23", "current", 3053.996],
+    [4, "brief-b23", "current", 2998.345],
+    [4, "brief-b23", "old", 9234.904],
+    [4, "brief-b24", "old", 7692.363],
+    [4, "brief-b24", "current", 3255.052],
+    [5, "brief-b23", "old", 14290.798],
+    [5, "brief-b23", "current", 5998.162],
+    [5, "brief-b24", "current", 4526.477],
+    [5, "brief-b24", "old", 8548.242],
+    [6, "brief-b24", "old", 9135.571],
+    [6, "brief-b24", "current", 2282.099],
+    [6, "brief-b23", "current", 3460.869],
+    [6, "brief-b23", "old", 9632.091],
+    [7, "brief-b24", "current", 2632.304],
+    [7, "brief-b24", "old", 6848.368],
+    [7, "brief-b23", "old", 8802.023],
+    [7, "brief-b23", "current", 2901.969],
+    [8, "brief-b23", "current", 2742.146],
+    [8, "brief-b23", "old", 9081.398],
+    [8, "brief-b24", "old", 7112.98],
+    [8, "brief-b24", "current", 2317.898]
+  ],
+  "tracedStages": [
+    {
+      "id": "brief-b23",
+      "version": "old",
+      "wholeMs": 10650.831,
+      "stageMs": {
+        "metadata": 106.323,
+        "original-frames": 9844.548,
+        "loudness": 357.481
+      }
+    },
+    {
+      "id": "brief-b23",
+      "version": "current",
+      "wholeMs": 3800.97,
+      "stageMs": {
+        "metadata": 250.004,
+        "parallel-frames": 2478.816,
+        "loudness": 430.839
+      }
+    },
+    {
+      "id": "brief-b24",
+      "version": "current",
+      "wholeMs": 3147.504,
+      "stageMs": {
+        "metadata": 273.039,
+        "parallel-frames": 2173.55,
+        "loudness": 227.735
+      }
+    },
+    {
+      "id": "brief-b24",
+      "version": "old",
+      "wholeMs": 6198.666,
+      "stageMs": {
+        "metadata": 87.789,
+        "original-frames": 5646.226,
+        "loudness": 203.976
+      }
+    }
+  ],
+  "singlePassDiagnostics": {
+    "runsPerVariantAndVideo": 1,
+    "ffprobeArgsBeforeInput": {
+      "packets": ["-v", "error", "-protocol_whitelist", "file,pipe", "-select_streams", "v:0", "-show_packets", "-show_entries", "packet=pts_time", "-of", "csv=p=0"],
+      "base": ["-v", "error", "-protocol_whitelist", "file,pipe", "-select_streams", "v:0", "-show_frames", "-show_entries", "frame=best_effort_timestamp_time", "-of", "csv=p=0"],
+      "t4": ["-v", "error", "-protocol_whitelist", "file,pipe", "-threads", "4", "-select_streams", "v:0", "-show_frames", "-show_entries", "frame=best_effort_timestamp_time", "-of", "csv=p=0"],
+      "t8": ["-v", "error", "-protocol_whitelist", "file,pipe", "-threads", "8", "-select_streams", "v:0", "-show_frames", "-show_entries", "frame=best_effort_timestamp_time", "-of", "csv=p=0"],
+      "t4slice": ["-v", "error", "-protocol_whitelist", "file,pipe", "-threads", "4", "-thread_type", "slice", "-select_streams", "v:0", "-show_frames", "-show_entries", "frame=best_effort_timestamp_time", "-of", "csv=p=0"]
+    },
+    "results": {
+      "brief-b24": {
+        "packetPtsBackwards": 420,
+        "packetPtsFirst7": [0, 0.066667, 0.033333, 0.2, 0.133333, 0.1, 0.166667],
+        "decodedPtsFirst7": [0, 0.033333, 0.066667, 0.1, 0.133333, 0.166667, 0.2],
+        "singleCallMs": {
+          "packets": 140.353,
+          "base": 7240.863,
+          "t4": 2745.718,
+          "t8": 1747.114,
+          "t4slice": 8077.078
+        }
+      },
+      "brief-b23": {
+        "packetPtsBackwards": 599,
+        "packetPtsFirst7": [0, 0.133333, 0.066667, 0.033333, 0.1, 0.266667, 0.2],
+        "decodedPtsFirst7": [0, 0.033333, 0.066667, 0.1, 0.133333, 0.166667, 0.2],
+        "singleCallMs": {
+          "t4slice": 10772.804,
+          "t8": 2391.557,
+          "t4": 3941.027,
+          "base": 8979.327,
+          "packets": 173.234
+        }
+      }
+    }
+  },
+  "preservation": {
+    "compared": "Same CLI inputs and output root; compared exit code and complete report except inspectedAt and variable decoder context addresses. Compared the full reported frame timestamp CSV and review asset names, times and contents. Counts below refer to this corpus.",
+    "source": "FFmpeg testsrc2 160x120, 25 fps, 2 s. H.264 yuv420p with keyint=20:min-keyint=20:scenecut=0:bframes=3:b-adapt=0 and faststart. Additional input variants: PTS gap +0.32 s from frame 17 (VFR), interlaced tff, VP9 WebM. Four byte mutations in each of zero-based packets 1,2,6,11,19,20,21,31,38,48. Final sample truncated 15 bytes into the sixth packet from the end.",
+    "mutations": "invalid-length: overwrite first BE32 NAL length with packet size+16384; payload-zero: zero [floor(size*0.25),floor(size*0.85)); bitflip: XOR bytes 6 and 9 by 0x9f; startcode-as-avcc: set first BE32 to 1. Keep the MP4 packet table intact for all 40 mutations.",
+    "files": 45,
+    "originalDecodeErrors": 25,
+    "originalAndOptimizedBlocked": 25,
+    "fullReportMatches": 45,
+    "frameCsvMatches": 45,
+    "finalPairedAssetsCompared": 50,
+    "finalPairedAssetByteMismatches": 0,
+    "frameRoutes": {
+      "parallel": 17,
+      "parallel+original": 26,
+      "original": 2
+    },
+    "rawAcceleratedFrameOutputsDifferingBeforeFallback": 10,
+    "legacyRepeatControl": {
+      "fixture": "damaged-20-bitflip.mp4",
+      "repeats": 6,
+      "distinct": {
+        "01-review.mp4": 2,
+        "01-frame.jpg": 1,
+        "02-review.mp4": 2,
+        "02-frame.jpg": 1
+      }
+    },
+    "legacyRepeatNote": "On this damaged keyframe the unchanged original CLI produced two different MP4 byte hashes for each review clip across six runs. The reports, times and stills matched. The paired equivalence check measures detection, frame evidence and review selection.",
+    "caseColumns": ["file", "inputSha256", "exitCode", "decodedFrames", "distinctIssueCodes", "optimizedRoute", "rawFrameOutputsDifferBeforeFallback", "originalAndFinalFrameCsvSha256"],
+    "cases": [
+      [
+        "bframes.mp4",
+        "642fa3df815f7fc111eac41b8179a5c9898586798cc58f0c57d0ebcfe7f65cf7",
+        0,
+        50,
+        ["no-audio"],
+        "parallel",
+        false,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "gap.mp4",
+        "8d19eff2559eb50d2b364fd756b2212d41dcaecd420c6e8e63e0ce39b2aef597",
+        0,
+        50,
+        ["frame-gap", "no-audio"],
+        "parallel+original",
+        false,
+        "7ab401fbe0b1f6e7ea7e6ec6ea2a242340774efeb0f0809d35e91ec9026fee8a"
+      ],
+      [
+        "interlaced.mp4",
+        "fe4f9fd48664ea29be9c4c5d5bf25ff12b2a3e65dfb4eca051cba3e4db87ae63",
+        0,
+        50,
+        ["no-audio"],
+        "original",
+        false,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "unsupported.webm",
+        "703846aa60c2fce79248baf8e61b4428e95a4d3dcdcd2e1f5183a6d4b5a72641",
+        0,
+        50,
+        ["no-audio"],
+        "original",
+        false,
+        "6f5057ffb169a5c53f2d588dc57aa96df7175891854e05e15bd642a08565e92e"
+      ],
+      [
+        "damaged-1-invalid-length.mp4",
+        "5fac87dcb06d1992a657a568ce2dc22ad88aefe56111ef3883d8a0e9b632ad2d",
+        2,
+        49,
+        ["frame-gap", "decode-error", "no-audio"],
+        "parallel+original",
+        false,
+        "ed85d46e783801bb53fa2035c6592f3c19bcbde74cefa92b3734e7c0d0f83add"
+      ],
+      [
+        "damaged-1-payload-zero.mp4",
+        "fe7b6da1a3bf434786a74e319ed75a8e352bf4ef38ea3377bfedbede5e200ae8",
+        0,
+        50,
+        ["no-audio"],
+        "parallel",
+        false,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "damaged-1-bitflip.mp4",
+        "06709e4f9b8726ba1752303732610cb277dd45c1df80df831813378b65191c40",
+        2,
+        49,
+        ["frame-gap", "decode-error", "no-audio"],
+        "parallel+original",
+        false,
+        "ed85d46e783801bb53fa2035c6592f3c19bcbde74cefa92b3734e7c0d0f83add"
+      ],
+      [
+        "damaged-1-startcode-as-avcc.mp4",
+        "a96945bdd9fea6fd60e113bafcf9500222731cf232ef783adf3e5b93a1f1c3ef",
+        0,
+        50,
+        ["no-audio"],
+        "parallel",
+        false,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "damaged-2-invalid-length.mp4",
+        "ab0087e0e8645a3566e36bc4a77a85aa78a9f66e59e0d524c8cacb8533a10ca4",
+        2,
+        49,
+        ["frame-gap", "decode-error", "no-audio"],
+        "parallel+original",
+        false,
+        "573cd51d09082d1140faf9940e46dff68d3b9adc7887bf5317b32fc80881050e"
+      ],
+      [
+        "damaged-2-payload-zero.mp4",
+        "9d975d9a4a4729191d905745fec21468eca9234e611f215b236dbcf083eb4269",
+        0,
+        50,
+        ["no-audio"],
+        "parallel",
+        false,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "damaged-2-bitflip.mp4",
+        "567c770ac4b2aca07d0d5a99f1bc404b30596bf60b98ce32709e03a4f32c50c0",
+        2,
+        49,
+        ["frame-gap", "decode-error", "no-audio"],
+        "parallel+original",
+        false,
+        "573cd51d09082d1140faf9940e46dff68d3b9adc7887bf5317b32fc80881050e"
+      ],
+      [
+        "damaged-2-startcode-as-avcc.mp4",
+        "ca1dcbce6b8c36323f78b5e0648cad7199942ff72766cb6559172b18bbb1656f",
+        2,
+        50,
+        ["decode-error", "no-audio"],
+        "parallel+original",
+        false,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "damaged-6-invalid-length.mp4",
+        "d42d1143337d62c8aa856e293d380e989bc1870ede74d3335d71c6d8da4bfab5",
+        2,
+        49,
+        ["frame-gap", "decode-error", "no-audio"],
+        "parallel+original",
+        true,
+        "95a0b7c87e545ed096e59dd6edeb0a6314b2ece46d5548d8546aec1f90af7056"
+      ],
+      [
+        "damaged-6-payload-zero.mp4",
+        "f10b059f37aa44a3c196a0014f2a720ccea42f8b109066ec6f35f4b0b1f6504d",
+        0,
+        50,
+        ["no-audio"],
+        "parallel",
+        false,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "damaged-6-bitflip.mp4",
+        "8cf7e7f055f615c86a7bdfe64a272bf740c754daafc9fd3e76234c40e5c36810",
+        2,
+        41,
+        ["frame-gap", "frame-order", "decode-error", "no-audio"],
+        "parallel+original",
+        true,
+        "e09aa779cae982b60df7b3b565858042340ce81c579ad1dd41edc0d28636b131"
+      ],
+      [
+        "damaged-6-startcode-as-avcc.mp4",
+        "c665307fc6d6cb1960caf4f75e4ecb208b778e279772db329cb9f2e4d8f4d416",
+        0,
+        50,
+        ["no-audio"],
+        "parallel",
+        false,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "damaged-11-invalid-length.mp4",
+        "c34e4c1ddce9826b81e4935c492e68f7b9009892bee6a5b47f38b73e38d8e373",
+        2,
+        49,
+        ["frame-gap", "decode-error", "no-audio"],
+        "parallel+original",
+        false,
+        "af0a97de7797b6df6087b1f770ce6404b782eceaa7e4a7060bfb1069417eb4a3"
+      ],
+      [
+        "damaged-11-payload-zero.mp4",
+        "2bc6384c0fc3435fb22dcaae506e10a0092f8489a3bf108cfa6b1c1fe5fc7e9a",
+        2,
+        50,
+        ["decode-error", "no-audio"],
+        "parallel+original",
+        true,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "damaged-11-bitflip.mp4",
+        "db75902eaf83e8ffe92ea961291c3f0fb20ee44c2930c9abcef1108b5e597a95",
+        2,
+        49,
+        ["frame-gap", "decode-error", "no-audio"],
+        "parallel+original",
+        false,
+        "af0a97de7797b6df6087b1f770ce6404b782eceaa7e4a7060bfb1069417eb4a3"
+      ],
+      [
+        "damaged-11-startcode-as-avcc.mp4",
+        "e224cc9955e7bb1a0079573c5cac93e4e4e956c0ab93f985a3056d1e48535c83",
+        0,
+        50,
+        ["no-audio"],
+        "parallel",
+        false,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "damaged-19-invalid-length.mp4",
+        "9ed9c496e6217ea7f6a58884d3fc14cd3a239ca0a8a5e67a95e7a2f47b729f86",
+        2,
+        49,
+        ["frame-gap", "decode-error", "no-audio"],
+        "parallel+original",
+        false,
+        "7771184a9d1f97d14a2802d3ca3ee55c15a7475516ae63820840d4f5c9363c2b"
+      ],
+      [
+        "damaged-19-payload-zero.mp4",
+        "275df214d5401462788db7ba319bfd5d8f01e9b66d3810cc97a8e6fa4a48b4c2",
+        0,
+        50,
+        ["no-audio"],
+        "parallel",
+        false,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "damaged-19-bitflip.mp4",
+        "116d3d6a016320f78833d6a30ec9119fa05dc18bf2f8a1ddf70c1938f0efe9d0",
+        2,
+        49,
+        ["frame-gap", "decode-error", "no-audio"],
+        "parallel+original",
+        false,
+        "7771184a9d1f97d14a2802d3ca3ee55c15a7475516ae63820840d4f5c9363c2b"
+      ],
+      [
+        "damaged-19-startcode-as-avcc.mp4",
+        "d791c01dd379b4625feb88bd4135d583b33330aa303e014c9b118cb4df1ec13e",
+        0,
+        50,
+        ["no-audio"],
+        "parallel",
+        false,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "damaged-20-invalid-length.mp4",
+        "9633889840a5d510464ef1d635c5f87efebdac4c91c54537bc077a79145c5f46",
+        2,
+        32,
+        ["frame-gap", "frame-order", "decode-error", "no-audio"],
+        "parallel+original",
+        false,
+        "03cd3917a41923c8cb2fec442e74d19ca7fcf2060e83539ff5659119423f05cd"
+      ],
+      [
+        "damaged-20-payload-zero.mp4",
+        "f17fee99be196f76dbbe3b2ccb231c15df05b28e66b48fe97b269a67c190bcb9",
+        2,
+        50,
+        ["decode-error", "no-audio"],
+        "parallel+original",
+        true,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "damaged-20-bitflip.mp4",
+        "995aae680862ee92577bee0c1274e454143502a227c80ea1da73a9042769a873",
+        2,
+        32,
+        ["frame-gap", "frame-order", "decode-error", "no-audio"],
+        "parallel+original",
+        true,
+        "03cd3917a41923c8cb2fec442e74d19ca7fcf2060e83539ff5659119423f05cd"
+      ],
+      [
+        "damaged-20-startcode-as-avcc.mp4",
+        "022888b650b8d6b3b8afb605e44e75d3dff22f569fb5d6f9ff20dc9e09ade00c",
+        0,
+        50,
+        ["no-audio"],
+        "parallel",
+        false,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "damaged-21-invalid-length.mp4",
+        "ece6085e212bb19e5cca4c0270487a77a703276d89c5fdbdbcef8240ba3875c1",
+        2,
+        49,
+        ["frame-gap", "decode-error", "no-audio"],
+        "parallel+original",
+        false,
+        "3c4da6c30194e0b48fe35aa972407d1cf3036b1f2dd08e5608490d7d834f5a38"
+      ],
+      [
+        "damaged-21-payload-zero.mp4",
+        "0417d966c2df15b69c04096aa42e05097b641d7e7211af843c373cf897898152",
+        0,
+        50,
+        ["no-audio"],
+        "parallel",
+        false,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "damaged-21-bitflip.mp4",
+        "e5798f7c46549cbe876e624fa72e6d0d1abff821264945574b5a3fcbc32009d2",
+        2,
+        49,
+        ["frame-gap", "decode-error", "no-audio"],
+        "parallel+original",
+        false,
+        "3c4da6c30194e0b48fe35aa972407d1cf3036b1f2dd08e5608490d7d834f5a38"
+      ],
+      [
+        "damaged-21-startcode-as-avcc.mp4",
+        "7f220a2f3c292183c1c0b51dd903c45a40f0ea6fbfda0a2bb150f1e46afa42c2",
+        0,
+        50,
+        ["no-audio"],
+        "parallel",
+        false,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "damaged-31-invalid-length.mp4",
+        "b0f5c86947492df7324939ed9fd21852258a6c497e932920beddcaeb411dfe86",
+        2,
+        49,
+        ["frame-gap", "decode-error", "no-audio"],
+        "parallel+original",
+        false,
+        "99a8e3a267d092489b6db3f434f24d36b007a886f5d544a67fecf11ef87372e8"
+      ],
+      [
+        "damaged-31-payload-zero.mp4",
+        "c51815b7fee3a1f71214cc4f429c5d2f6e99acf9e1f7e27bbd1550983bfd8789",
+        0,
+        50,
+        ["no-audio"],
+        "parallel",
+        false,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "damaged-31-bitflip.mp4",
+        "ff41a51f4f2eba8325c3bd53d08bb55c900ffa019645c854f53739fe6dd28c3c",
+        2,
+        49,
+        ["frame-gap", "decode-error", "no-audio"],
+        "parallel+original",
+        false,
+        "99a8e3a267d092489b6db3f434f24d36b007a886f5d544a67fecf11ef87372e8"
+      ],
+      [
+        "damaged-31-startcode-as-avcc.mp4",
+        "8e412bf3d71122c886f47480a2869f4d28a5e86950b7aa4788837f5f173ce2bc",
+        0,
+        50,
+        ["no-audio"],
+        "parallel",
+        false,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "damaged-38-invalid-length.mp4",
+        "d4f525d4610d898498e80a6b49f59f18c2b71d17c0e199d075b1ca168b0dd7b1",
+        2,
+        49,
+        ["frame-gap", "decode-error", "no-audio"],
+        "parallel+original",
+        false,
+        "6b7c0915846d658da683da866b05cd4badc7464e8016546a52d4963e87172d87"
+      ],
+      [
+        "damaged-38-payload-zero.mp4",
+        "7350b766872c0c533b365ff8b889f0e6f74c686efbf5a2fc682b1b6673df5649",
+        0,
+        50,
+        ["no-audio"],
+        "parallel",
+        false,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "damaged-38-bitflip.mp4",
+        "abfdfd50a9bcc0ca962d54753d4b8f5afdd7a91ed56d093283f60ae81f1139dd",
+        2,
+        49,
+        ["frame-gap", "frame-order", "decode-error", "no-audio"],
+        "parallel+original",
+        true,
+        "e740c3724425ef7a9ca2e328c926555605f30dbe042a99660fd07cc8663ed0a3"
+      ],
+      [
+        "damaged-38-startcode-as-avcc.mp4",
+        "2d2cdd35dd1e3f853319f8a1547cb5953985dd604cfe3e6809b4de7d2b591d4f",
+        0,
+        50,
+        ["no-audio"],
+        "parallel",
+        false,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "damaged-48-invalid-length.mp4",
+        "bf9f831f584b3b3979f591fde55a5786d2bdd6cbeed27389c604fda6a920b61e",
+        2,
+        49,
+        ["frame-gap", "decode-error", "no-audio"],
+        "parallel+original",
+        true,
+        "87c752b0d4f12706b8929745b34a5d065f2445f11a6e37950428a24e026da383"
+      ],
+      [
+        "damaged-48-payload-zero.mp4",
+        "94086b7630a07d1770114e24036752077e974b9e5d02f3d10f0468f44b92787b",
+        2,
+        50,
+        ["decode-error", "no-audio"],
+        "parallel+original",
+        true,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "damaged-48-bitflip.mp4",
+        "6a9346330dcbf74990bbe1172b86270661fc45a12d6d4a3ce0e15c1de215ccf9",
+        2,
+        49,
+        ["frame-gap", "decode-error", "no-audio"],
+        "parallel+original",
+        true,
+        "87c752b0d4f12706b8929745b34a5d065f2445f11a6e37950428a24e026da383"
+      ],
+      [
+        "damaged-48-startcode-as-avcc.mp4",
+        "b4a10e835bc74ea7454c8ef9433550e54d3992288732175e7322f4489b20b3e3",
+        0,
+        50,
+        ["no-audio"],
+        "parallel",
+        false,
+        "12a50ffc75710052097a9bfdfc3e7ea73b797ca18be90bea0f3eb6cfaf0d7da3"
+      ],
+      [
+        "truncated.mp4",
+        "f8436b37a7410dc9666a509d954b689bfa8bf760b8f3a71fe62392c6167c34a7",
+        2,
+        44,
+        ["frame-gap", "decode-error", "decoded-duration", "no-audio"],
+        "parallel+original",
+        true,
+        "faa39c6f6e9b6ac002e22ae5cc98f1545b63690d3313737c1ead3b55196a4ce9"
+      ]
+    ],
+    "simulatedGuardChecks": {
+      "note": "Separate controlled FFprobe responses through the real inspectMedia entry point; excluded from the 45 real files.",
+      "cases": [
+        {
+          "case": "clean",
+          "route": "parallel"
+        },
+        {
+          "case": "warning",
+          "route": "parallel+legacy"
+        },
+        {
+          "case": "option-rejected",
+          "route": "parallel+legacy"
+        },
+        {
+          "case": "no-decoded-frames",
+          "route": "parallel+legacy"
+        },
+        {
+          "case": "short-decode",
+          "route": "parallel+legacy"
+        },
+        {
+          "case": "missing-timestamp",
+          "route": "parallel+legacy"
+        },
+        {
+          "case": "estimated-pts-only",
+          "route": "parallel+legacy"
+        },
+        {
+          "case": "duplicate-pts",
+          "route": "parallel+legacy"
+        },
+        {
+          "case": "reverse-pts",
+          "route": "parallel+legacy"
+        },
+        {
+          "case": "large-gap",
+          "route": "parallel+legacy"
+        },
+        {
+          "case": "duration-disagrees",
+          "route": "parallel+legacy"
+        },
+        {
+          "case": "metadata-diagnostic",
+          "route": "legacy"
+        },
+        {
+          "case": "no-count",
+          "route": "legacy"
+        },
+        {
+          "case": "interlaced",
+          "route": "legacy"
+        },
+        {
+          "case": "10-bit",
+          "route": "legacy"
+        },
+        {
+          "case": "larger-image",
+          "route": "legacy"
+        },
+        {
+          "case": "other-codec",
+          "route": "legacy"
+        }
+      ]
+    }
+  }
+}

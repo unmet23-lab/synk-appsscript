@@ -12,11 +12,12 @@ import { createStudioService } from '../docs/마케팅/온라인마케팅지도/
 import { createPublicationInboxService } from '../docs/마케팅/온라인마케팅지도/engagement/company/publication-inbox.mjs';
 import { compareText as legacyCompare } from '../tools/text-compare-bench/baseline.mjs';
 
-async function fixture(t) {
+async function fixture(t, { gap = true } = {}) {
   const parent = await realpath(tmpdir()), root = await mkdtemp(path.join(parent, 'synk-media-inspection-')), cleanup = [];
   t.after(async () => { for (const close of cleanup) await close(); assert.equal(path.dirname(await realpath(root)), parent); assert.ok(path.basename(root).startsWith('synk-media-inspection-')); await rm(root, { recursive: true, force: true }); });
   const video = path.join(root, '의심 구간 $(not-a-command).mp4');
-  execFileSync(process.env.SYNK_FFMPEG_EXE || 'ffmpeg', ['-v','error','-nostdin','-f','lavfi','-i','testsrc2=size=160x240:rate=25:duration=3','-f','lavfi','-i','sine=frequency=440:duration=1','-vf','setpts=if(gte(N\\,25)\\,PTS+0.16/TB\\,PTS)','-fps_mode','vfr','-c:v','libx264','-pix_fmt','yuv420p','-c:a','aac',video], { windowsHide: true });
+  const timing = gap ? ['-vf','setpts=if(gte(N\\,25)\\,PTS+0.16/TB\\,PTS)','-fps_mode','vfr'] : [];
+  execFileSync(process.env.SYNK_FFMPEG_EXE || 'ffmpeg', ['-v','error','-nostdin','-f','lavfi','-i','testsrc2=size=160x240:rate=25:duration=3','-f','lavfi','-i','sine=frequency=440:duration=1',...timing,'-c:v','libx264','-pix_fmt','yuv420p','-c:a','aac',video], { windowsHide: true });
   return { root, video, cleanup };
 }
 
@@ -24,7 +25,38 @@ test('frame inspection uses decoded display order and marks true gaps without tr
   const normal = inspectFrameTimes([0, .04, .08, .12], 25); assert.deepEqual(normal.issues, []);
   assert.equal(inspectFrameTimes([0,.04,.12,.16],25).issues[0].code, 'frame-gap');
   assert.equal(inspectFrameTimes([0,.04,.04,.08],25).issues[0].severity, 'error');
+  assert.equal(inspectFrameTimes([0,.08,.04,.12],25).issues[0].code, 'frame-order');
   assert.equal(inspectFrameTimes([0,'N/A',.08],25).missingTimestamps,1);
+});
+
+test('payload corruption with intact MP4 timing is blocked and retains the original decoded frame evidence', async t => {
+  const { root, video } = await fixture(t, { gap: false });
+  const ffprobe = process.env.SYNK_FFPROBE_EXE || 'ffprobe';
+  const args = ['-v', 'error', '-protocol_whitelist', 'file,pipe', '-select_streams', 'v:0'];
+  const options = { encoding: 'utf8', windowsHide: true };
+  const packetArgs = [...args, '-show_packets', '-show_entries', 'packet=pos,size,pts,dts,flags', '-of', 'json'];
+  const packetTable = execFileSync(ffprobe, [...packetArgs, video], options);
+  const packets = JSON.parse(packetTable).packets;
+  const packet = packets.at(-2);
+  assert.ok(!packet.flags.includes('K') && Number(packet.size) > 4);
+  const bytes = await readFile(video), damaged = path.join(root, 'payload-corrupt.mp4');
+  bytes.writeUInt32BE(Number(packet.size) + 1024, Number(packet.pos));
+  await writeFile(damaged, bytes);
+  const demux = spawnSync(ffprobe, [...packetArgs, damaged], options);
+  assert.equal(demux.status, 0);
+  assert.deepEqual(JSON.parse(demux.stdout).packets, packets);
+
+  const serial = spawnSync(ffprobe, [...args, '-show_frames', '-show_entries', 'frame=best_effort_timestamp_time', '-of', 'csv=p=0', damaged], options);
+  assert.equal(serial.status, 0);
+  assert.ok(serial.stderr.trim(), 'The original decoder must diagnose the damaged payload');
+  const values = serial.stdout.split(/\r?\n/).filter(line => line.trim()).map(line => line.split(',')[0]);
+  const expected = inspectFrameTimes(values, 25);
+  assert.ok(expected.count < packets.length);
+  const report = await inspectMedia({ video: damaged, out: path.join(root, 'damaged') });
+  assert.equal(report.status, 'blocked');
+  assert.ok(report.issues.some(issue => issue.code === 'decode-error' && issue.severity === 'error'));
+  assert.deepEqual(report.frames, { ...expected, issues: undefined });
+  for (const issue of expected.issues) assert.ok(report.issues.some(found => found.code === issue.code && found.at === issue.at));
 });
 
 test('upload quality flags low-bitrate, full-range and untagged 1080p finals but leaves small previews alone', () => {
