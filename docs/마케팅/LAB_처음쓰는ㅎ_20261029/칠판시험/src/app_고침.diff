@@ -1,0 +1,38 @@
+--- styles/chalkboard/demo/js/app.js	2026-11-03 16:27:26.665202300 +0900
++++ films/haha-chalk/js/app.js	2026-11-03 16:35:30.055220200 +0900
+@@ -26,7 +26,7 @@
+   const WALLI = bakeWall();
+   const BACK = bakeSlate(PW + 140, BH, 61), FR = bakeSlate(PW, BH, 71, true), FL = bakeSlate(PW, BH, 81, true);
+   { const c = BACK.cv.getContext('2d'); c.save(); c.translate(BACK.m, 0); for (const g of F.SMALL) paintGrid(c, g.x, g.y, g.size); c.restore(); }
+-  { const c = FL.cv.getContext('2d'); c.save(); c.translate(FL.m, 0); paintGrid(c, F.G1.x, F.G1.y, F.G1.size); paintGrid(c, F.G2.x, F.G2.y, F.G2.size); c.restore(); }
++  if (F.G1) { const c = FL.cv.getContext('2d'); c.save(); c.translate(FL.m, 0); paintGrid(c, F.G1.x, F.G1.y, F.G1.size); paintGrid(c, F.G2.x, F.G2.y, F.G2.size); c.restore(); }
+   const TILE = grainTile();
+ 
+   const post = new Post(cv, W, H);
+@@ -46,7 +46,7 @@
+     c.putImageData(img, 0, 0); return o;
+   })();
+   function drawWet(ctx, t, ox, v) {
+-    const w = F.wet; if (t > w.t1 + .3) return;
++    const w = F.wet; if (!w || t > w.t1 + .3) return;
+     const u = clamp((t - w.t0) / (w.t1 - w.t0)), front = lerp(w.bx0, w.xEnd + 20, 1 - Math.pow(1 - u, 1.5));
+     const mid = (w.y0 + w.y1) / 2, half = (w.y1 - w.y0) / 2;
+     const bx = y => front + (n1(y / 70, 3) - .5) * 46 + (n1(y / 16, 4) - .5) * 12;
+@@ -81,7 +81,7 @@
+   }
+ 
+   function drawWipeHaze(ctx, t, ox) {
+-    const w = F.wipe; if (t <= w.t0) return null;
++    const w = F.wipe; if (!w || t <= w.t0) return null;
+     const P = w.path, n = Math.max(2, Math.round(P.length * clamp((t - w.t0) / (w.t1 - w.t0))));
+     const p = new Path2D(); P.slice(0, n).forEach(([x, y], i) => i ? p.lineTo(x + ox, y) : p.moveTo(x + ox, y));
+     return p;
+@@ -149,7 +149,7 @@
+   }
+ 
+   // ───────── subtitles: the voice line in Chinese, a translation in English, on a soft dark plate above the bottom safe area
+-  await document.fonts.load('40px SubKai');
++  // (자막 판 없음: v7과 같게)
+   const sc = document.getElementById('s'); sc.width = W; sc.height = H; const sx = sc.getContext('2d');
+   const SZ = { zh: Math.round(38 * KS), en: Math.round(25 * KS), zhY: H - Math.round(100 * KS), enY: H - Math.round(62 * KS) };
+   const subAt = t => F.SUBS.find(q => t >= q.t0 && t < q.t1);
