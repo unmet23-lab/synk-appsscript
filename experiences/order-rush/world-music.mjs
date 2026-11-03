@@ -96,6 +96,7 @@ export function createMusic(ctx, { base = '', destination = ctx.destination, sto
     /** 영업이 시작될 때: 'calm'(한가한 오픈 · 새 주문 연습) · 'rush'(점심 러시). 같은 곡이 돌고 있으면 그대로, 다른 곡이면 1.2초 겹쳐 바꾼다. */
     async play(mode) {
       wanted = mode;
+      this.pause(false);   // 멈춤 창에서 처음으로 나간 판의 −12dB를 다음 판까지 끌고 오지 않는다
       if (!on) return;
       try {
         await loadManifest();

@@ -5,6 +5,10 @@
 //   B1 줄 선 손님 B를 눌렀다가 120ms 뒤 A로 돌아오면 맨 위 얼굴이 A인가 — true
 //   B2 영업 끝 소리 순서 — done → land → coin(코인 정산이 가림막 동안 먼저 와도)
 //   B3 앱 설정 「움직임 줄이기」에서 결과 사진 다가감이 멈추나 — none
+//   F1 멈춤 창에서 처음으로 나간 다음 판의 음악 크기(pause 값) — 1이어야 한다(멈춤 창 값 0.25가 남으면 12dB 작다)
+//   F2 말하는 중에 멈췄다 이어 하면 음악이 다시 내려가나(ducked) — true
+//   F3 러시 남은 시간 10 → 9 숫자 띠가 한 칸만 구르나 — translateY(-10em) → (-9em)
+//   F4 터치 기기(hover 없음)에서 알약에 코랄 고리가 남나 — none
 //   node experiences/order-rush/qa/world-campus-20261103/경합재기.cjs [experiences 폴더]
 const http = require('node:http'), fs = require('node:fs'), path = require('node:path'), os = require('node:os');
 const NM = process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE || os.homedir(), '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules');
@@ -128,6 +132,57 @@ server.listen(0, '127.0.0.1', async () => {
     await page.waitForTimeout(1500);
     out.B3_결과사진움직임 = await fr().evaluate(() => getComputedStyle(document.querySelector('#results .res-hero'), '::before').animationName);
     out.B3_data_motion = await fr().evaluate(() => document.documentElement.dataset.motion || null);
+    await ctx.close(); }
+
+  // F1 · F2: 멈춤 창과 음악 크기
+  { const { ctx, page, fr, f } = await open(browser);
+    await f.locator('#start').click();
+    await waitFor(page, () => fr().evaluate(() => window.__rush.world()?.music?.playing), 12000);
+    await waitFor(page, () => fr().evaluate(() => window.__rush.state().current?.voice === 'playing'), 8000);
+    await page.waitForTimeout(250);
+    await fr().evaluate(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true })));
+    await page.waitForTimeout(350);
+    const paused = await fr().evaluate(() => window.__rush.world());
+    await f.locator('#resume').click();
+    await page.waitForTimeout(150);
+    const resumed = await fr().evaluate(() => ({ ...window.__rush.world(), voice: window.__rush.state().current?.voice }));
+    out.F2_멈춤중덕킹 = paused.ducked;
+    out.F2_이어하기뒤덕킹 = resumed.ducked;
+    await waitFor(page, () => fr().evaluate(() => window.__rush.state().current?.heard), 15000);
+    await fr().evaluate(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true })));
+    await page.waitForTimeout(900);
+    out.F1_멈춤창크기 = +(await fr().evaluate(() => window.__rush.world().music.pause)).toFixed(2);
+    await f.locator('#quit').click();
+    await page.waitForTimeout(1500);
+    await f.locator('#start').click();
+    await page.waitForTimeout(2500);
+    out.F1_다음판크기 = +(await fr().evaluate(() => window.__rush.world().music.pause)).toFixed(2);
+    await ctx.close(); }
+
+  // F3: 숫자 띠
+  { const { ctx, fr } = await open(browser);
+    out.F3_띠 = await fr().evaluate(async () => {
+      const fx = await import('./world-fx.mjs');
+      const s = document.createElement('span'); s.textContent = '10'; document.body.append(s);
+      fx.roller(s);
+      s.textContent = '9';
+      await new Promise((d) => setTimeout(d, 30));
+      const strip = s.nextElementSibling.querySelector('.w-roll-s');
+      const kf = strip.getAnimations()[0]?.effect.getKeyframes().map((k) => k.transform) || [];
+      return kf.join(' → ');
+    });
+    await ctx.close(); }
+
+  // F4: 터치 기기의 hover 고리
+  { const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    const page = await ctx.newPage();
+    await page.goto(`http://127.0.0.1:${server.address().port}/`, { waitUntil: 'load' });
+    const fr = () => page.frames().find((x) => x.url().includes('/order-rush/index.html'));
+    await waitFor(page, () => fr().evaluate(() => !!window.__rush && document.documentElement.classList.contains('w-ready')), 18000);
+    await page.waitForTimeout(1500);
+    await page.frameLocator('iframe.game-frame').locator('#start').hover();
+    out.F4_마우스없음 = await fr().evaluate(() => matchMedia('(hover:hover)').matches === false);
+    out.F4_고리 = await fr().evaluate(() => getComputedStyle(document.querySelector('#start')).boxShadow);
     await ctx.close(); }
 
   await browser.close(); server.close();

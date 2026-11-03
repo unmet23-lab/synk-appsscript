@@ -94,14 +94,15 @@ export function roller(target) {
       if (!/\d/.test(ch)) { slot.textContent = ch; return slot; }
       const strip = document.createElement('span');
       strip.className = 'w-roll-s';
-      strip.textContent = '0123456789';
+      strip.textContent = '01234567890';   // 끝의 0: 9와 0 사이를 넘어갈 때 한 칸만 구르는 자리
       strip.style.setProperty('--d', ch);
       slot.append(strip);
       const before = prev[i - shift];
       if (before !== ch && dir && motionOn()) {
-        const from = /\d/.test(before || '') ? Number(before) : Math.min(9, Math.max(0, Number(ch) - dir));
+        let from = /\d/.test(before || '') ? Number(before) : Math.min(9, Math.max(0, Number(ch) - dir)), to = Number(ch);
+        if (dir < 0 && from === 0 && to === 9) from = 10; else if (dir > 0 && from === 9 && to === 0) to = 10;
         const order = dir > 0 ? i : text.length - 1 - i;
-        strip.animate([{ transform: `translateY(${-from}em)` }, { transform: `translateY(${-Number(ch)}em)` }], { ...M.fast, delay: wait + order * 30, fill: 'backwards' });
+        strip.animate([{ transform: `translateY(${-from}em)` }, { transform: `translateY(${-to}em)` }], { ...M.fast, delay: wait + order * 30, fill: 'backwards' });
       }
       return slot;
     }));

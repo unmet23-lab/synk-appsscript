@@ -677,7 +677,7 @@ function resume() {
   state.last = performance.now();
   world?.resume();
   if (state.pendingServe) { completeServe(); return; }
-  if (audio.isOn()) audio.resume(); else onSoundOff();
+  if (audio.isOn()) { audio.resume(); if (audio.busy) world?.voice('playing', audioTicket); } else onSoundOff();   // WORLD: 말하던 음성을 잇는 동안 음악을 다시 내리고 막대를 다시 움직인다
   const cur = ticket();
   if (cur?.pendingVoice) { cur.pendingVoice = false; playTicket(cur); }   // WORLD: 문 종 뒤에 말하려던 사이 멈췄으면 이제 말한다
   renderBubble();
