@@ -1,0 +1,224 @@
+{
+  "episode": "synkbrief B23 셋째 줄 그대로",
+  "inspectedAt": "2026-11-03T08:11:22.788Z",
+  "scope": "41.2초 마스터의 오디오만 별도 수정본으로 제작하고 동일한 대본과 저장된 받아쓰기로 전체 사전검사를 실행했다.",
+  "toolVersions": {
+    "ffmpeg": "ffmpeg version 9.0.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+    "remotion": "4.0.535",
+    "node": "v24.20.0",
+    "preflightSourceSha256": "3b444744a9b93de09144644f3b35cdc9d48666c8ee343f41cf2b2b7d2e5d3794"
+  },
+  "original": {
+    "file": "게시/b23_master.mp4",
+    "sha256": "95b2e002a664a2d582f69e71f6eb85e710edf1801b40846ba769a87dd028cd40",
+    "bytes": 79419624,
+    "matchedBeforeAndAfter": true,
+    "sameAs": "remotion/out/b23_v7.mp4",
+    "sourceRender": "remotion/out/b23_v7_raw.mp4",
+    "sourceRenderSha256": "13bd2513e68cc29ecc9e3202eaf4935e985bbb772e34d7360626d91029bdc13f",
+    "originalEncodedAudioPayloadSha256": "8701bb86f3a20d164a8d1a1bc1eddbda9b1c18d4c1491b67c3c1f49688779a39"
+  },
+  "cause": {
+    "originalSettings": "FFmpeg native AAC, default twoloop, -b:a 384k at 48 kHz, original finish.mjs gain +2.7dB and limiter 0.83/3ms/60ms",
+    "originalMeasuredBps": 308462,
+    "stereoWarningBelowBps": 320000,
+    "productionTargetBps": 384000,
+    "reconstructedOriginalAacPayloadMatches": true,
+    "trialNumbers": [
+      {
+        "name": "original-384.m4a",
+        "bitrateBps": 308462,
+        "audioDurationSamples": 1978368
+      },
+      {
+        "name": "fast-384.m4a",
+        "bitrateBps": 349945,
+        "audioDurationSamples": 1978368
+      },
+      {
+        "name": "fast-448.m4a",
+        "bitrateBps": 349850,
+        "audioDurationSamples": 1978368
+      },
+      {
+        "name": "twoloop-quality.m4a",
+        "bitrateBps": 384656,
+        "audioDurationSamples": 1978368
+      },
+      {
+        "name": "source-q3.5.m4a",
+        "bitrateBps": 385097,
+        "audioDurationSamples": 1977616
+      },
+      {
+        "name": "q35-tail.m4a",
+        "bitrateBps": 384768,
+        "audioDurationSamples": 1978368
+      }
+    ]
+  },
+  "corrected": {
+    "file": "수정본/b23_master_audio_v2.mp4",
+    "bytes": 79812953,
+    "sha256": "6f4a033bc4329583d43640ce430135153cb5821819043d1b424d5d319fd989a4",
+    "source": "Same v7 Remotion b23 composition: original dialogue WAVs, BGM, effects and the clip with the spoken aside.",
+    "sourceCompositionSha256": "3d6a1e352f7da5a9f79ddc0ead20ca8fe1bba6b274343c238e10e01b47c5a162",
+    "sourceMix": {
+      "sha256": "88b9a73438258219da1ad1218dbc91dee9cb42c74601dfcd27023db15eaa8c5d",
+      "format": "pcm_s16le",
+      "sampleRate": 48000,
+      "channels": 2,
+      "samplesPerChannel": 1977616
+    },
+    "render": "Remotion render src/index.ts b23 <mix.wav> --codec=wav --sample-rate=48000 --rspack --config <empty-audio-only.config.js> (omit the episode X264 preset for WAV output)",
+    "audioFilter": "apad=whole_len=1978368,volume=2.7dB,alimiter=limit=0.83:level=false:attack=3:release=60",
+    "addedTailSamplesBeforeLimiter": 752,
+    "encode": "FFmpeg -c:a aac -q:a 3.5 -ar 48000 (quality setting measured for this mix); AAC-LC",
+    "mux": "Copy original video and its metadata, copy new AAC without re-encoding; preserve original audio presentation end.",
+    "measuredBps": 384768,
+    "sampleRate": 48000,
+    "channels": 2,
+    "encodedAudioPacketPayloadSha256": "391987a86f347ef2a7e690a7c82e258ceda77eb1b5201c3082a858987e0e706c"
+  },
+  "unchanged": {
+    "videoDurationSeconds": 41.2,
+    "videoFrames": 1236,
+    "videoPacketsCompared": 1236,
+    "videoPacketDataPtsDtsDurationFlagsAndSizeMatch": true,
+    "videoPacketComparisonSha256": "a65542e2d3571468c32eefaf650b27cfff2104855d976ea1b43bf3f4fd79e3b3",
+    "independentCsvPacketHashes": {
+      "original": {
+        "count": 1236,
+        "csvSha256": "fe3094de2ad8921721ca5687aff25b5bc5c3c0c5588194ed451415e52684aaec"
+      },
+      "corrected": {
+        "count": 1236,
+        "csvSha256": "fe3094de2ad8921721ca5687aff25b5bc5c3c0c5588194ed451415e52684aaec"
+      }
+    },
+    "encodedVideoSha256": "39da1d4dabfae710c097f49d766ee4bd161b0d832cb0dac290a5aed78387c938",
+    "fullVideoStreamMetadataMatch": true,
+    "audioStartSeconds": 0,
+    "audioDurationSeconds": 41.216,
+    "audioSamplesPerChannel": 1978368,
+    "audioPacketCount": 1933,
+    "waveform": {
+      "sampleRateHz": 48000,
+      "windowLengthSeconds": 1,
+      "windowStartSeconds": [
+        1,
+        4,
+        8,
+        12,
+        16,
+        20,
+        24,
+        28,
+        32,
+        36,
+        39
+      ],
+      "offsetSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "minNormalizedCorrelation": 0.9996948486554066,
+      "fullChannelCorrelations": [
+        0.9997102058349709,
+        0.9997090821328513
+      ]
+    },
+    "originalUploadCopyAndScheduleReceiptsUnchanged": true
+  },
+  "fullPreflight": {
+    "inputs": {
+      "scriptSha256": "f06bb9b5f85986c6f6ad61cf90b8c24662538faebf0d52692dc2ed5d801fd7f0",
+      "transcriptSha256": "e201efe39305f8ee380653b4529d2333939d656ca21a2840641e97ff5631ce40",
+      "comparison": "Same as the original full preflight. Existing transcript; no new transcription."
+    },
+    "before": {
+      "measuredWallMs": 3879.4226,
+      "status": "needs-review",
+      "issues": [
+        "upload-audio-bitrate"
+      ],
+      "loudnessLufs": -14.6,
+      "truePeakDbtp": -1.4
+    },
+    "after": {
+      "measuredWallMs": 2681.9152,
+      "status": "ready",
+      "complete": true,
+      "issues": [],
+      "loudnessLufs": -14.6,
+      "truePeakDbtp": -1.5,
+      "frames": {
+        "count": 1236,
+        "missingTimestamps": 0,
+        "first": 0,
+        "last": 41.166667,
+        "medianStep": 0.03333300000000072
+      },
+      "comparisons": [
+        {
+          "kind": "provided-transcript",
+          "expectedCharacters": 240,
+          "observedCharacters": 238,
+          "editDistance": 4,
+          "similarity": 0.9833333333333333,
+          "method": "normalized-character-edit-distance"
+        }
+      ],
+      "fullReport": "remotion/out/오디오수정_사전검사/inspection-f05570ae-599d-4f3f-b5b3-c27d2020bd54/검사.json",
+      "fullReportSha256": "640e057f4793618b2fec9bf417da6ff97cf55b2c48e1f892aaa810cc2263e8ce",
+      "humanReview": "remotion/out/오디오수정_사전검사/inspection-f05570ae-599d-4f3f-b5b3-c27d2020bd54/검토.html"
+    }
+  },
+  "freshTranscriptPreflight": {
+    "model": "faster-whisper-large-v3-turbo",
+    "modelSnapshot": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
+    "fasterWhisper": "1.2.1",
+    "ctranslate2": "4.8.2",
+    "settings": "CPU int8, 6 threads, language ko, beam 5, temperature 0, no prompt, no VAD, offline",
+    "targetVideoSha256": "6f4a033bc4329583d43640ce430135153cb5821819043d1b424d5d319fd989a4",
+    "freshTextIdenticalToOriginalAsr": true,
+    "exactSegmentsIncludingTimestamps": false,
+    "sameSegmentWords": true,
+    "segments": 14,
+    "maxAsrSegmentTimestampDeltaSeconds": 0.02,
+    "transcriptSha256": "5e52de3cf17c607fb4b9d66b4475860eea8b3b05c669b540b11d5075059fd501",
+    "rawTranscript": "remotion/out/오디오수정_사전검사/수정본_받아쓰기.json",
+    "status": "ready",
+    "complete": true,
+    "issues": [],
+    "comparisons": [
+      {
+        "kind": "provided-transcript",
+        "expectedCharacters": 240,
+        "observedCharacters": 238,
+        "editDistance": 4,
+        "similarity": 0.9833333333333333,
+        "method": "normalized-character-edit-distance"
+      }
+    ],
+    "frames": 1236,
+    "measuredWallMsExcludingTranscription": 4124.0494,
+    "fullReport": "remotion/out/오디오수정_사전검사/inspection-4dc96e11-99ab-4f53-9a24-9db857a62822/검사.json",
+    "fullReportSha256": "42803171c63a5cdd190f326ef6e714ffe17db265cc4e3fca7e63d41d15b6a5c7",
+    "humanReview": "remotion/out/오디오수정_사전검사/inspection-4dc96e11-99ab-4f53-9a24-9db857a62822/검토.html"
+  },
+  "review": {
+    "model": "claude-fable-5-1",
+    "verdict": "Technical pass; no P0/P1 reported.",
+    "scope": "Technical review of original and revised master data, unchanged video and timing, and the first preflight with the saved transcript. The fresh transcription and second preflight are recorded separately."
+  }
+}
