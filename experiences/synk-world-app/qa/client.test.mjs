@@ -1,4 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {WorldClient} from '../world-client.mjs';
+import {closeOwnedEdge} from './owned-edge.mjs';
 const storage=()=>{const data=new Map();return{getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,v),removeItem:k=>data.delete(k),data};};
 const snapshot=(accountId='a',revision=1)=>({ok:true,accountId,revision,avatar:{characterId:'mongle',slots:{body:'',neck:''}},inventory:[]});
 const response=(data,status=200)=>({ok:status===200,status,json:async()=>data});
@@ -210,19 +211,6 @@ test('real browser tabs retain separate accounts across reload and logout', {ski
     throw new Error(`${error.message}\nLast step: ${step}\nAPI status trace: ${JSON.stringify(requests)}\nBrowser errors: ${JSON.stringify(errors)}`, {cause: error});
   } finally {
     if (onAbort) signal.removeEventListener('abort', onAbort);
-    if (browserServer) {
-      if (signal.aborted) {
-        await browserServer.kill();
-      } else {
-        let timer;
-        try {
-          const grace = new Promise((_, reject) => { timer = setTimeout(() => reject(Error('Edge close timed out')), 10_000); });
-          await Promise.race([browserServer.close(), grace]);
-        } catch (error) {
-          t.diagnostic(`Closing this test's Edge with its child processes: ${error.message}`);
-          await browserServer.kill();
-        } finally { clearTimeout(timer); }
-      }
-    }
+    await closeOwnedEdge(browserServer, {signal, diagnostic: message => t.diagnostic(message)});
   }
 });

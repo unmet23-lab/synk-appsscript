@@ -1,4 +1,5 @@
 import {handleWorldProfileRead,assetFailure,openWorldLibrary} from './static-world-fixture.mjs';
+import {navigationBefore} from './owned-edge.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -13,7 +14,9 @@ const require=createRequire(import.meta.url),{chromium}=(()=>{try{return require
 const payload=path.resolve(process.env.SYNK_LIFE_TUTOR_STATIC_PAYLOAD||'.tmp/world-static-c55d5a78-20261027/world'),frozen={skip:Boolean(process.env.CI)&&!fs.existsSync(path.join(payload,'world-config.json'))&&'CI 체크아웃에는 없다 — .tmp/world-static-c55d5a78-20261027/world (git 밖 고정 /world 판)'};
 const A='11111111-1111-4111-8111-111111111111';
 const core=value=>JSON.stringify({owner:value.owner,version:value.version,lessons:value.lessons,reviews:value.reviews,activeLessonId:value.activeLessonId,activeReview:value.activeReview});
-test('frozen /world tutor follows owner choice, preserves guided records and disposes on logout',{timeout:90000,...frozen},async()=>{
+const tutorTestMs=90_000;
+test('frozen /world tutor follows owner choice, preserves guided records and disposes on logout',{timeout:tutorTestMs,...frozen},async()=>{
+ const navigationDeadline=performance.now()+tutorTestMs-7000;
  const config=JSON.parse(fs.readFileSync(path.join(payload,'world-config.json'),'utf8')).account;
  const standaloneHtml=path.resolve(process.env.SYNK_LIFE_TUTOR_STANDALONE_HTML||'experiences/brand-opening/home.html');
  const out=path.resolve('experiences/synk-world-app/qa/life-tutor-20261011',process.env.SYNK_LIFE_TUTOR_STATIC_RUN||'account');fs.mkdirSync(out,{recursive:true});
@@ -43,7 +46,7 @@ test('frozen /world tutor follows owner choice, preserves guided records and dis
    return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data),headers:{'Access-Control-Allow-Origin':'*'}});
   });
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(assetFailure(r,config.accountApiUrl))assets.push({path:new URL(r.url()).pathname,status:r.status()});});
-  await page.goto(base+'/world/mobile.html?opening=off&cafe=1');await page.waitForFunction(()=>window.__synkWorld?.life()?.owner==='11111111-1111-4111-8111-111111111111');
+  await page.goto(base+'/world/mobile.html?opening=off&cafe=1',navigationBefore(navigationDeadline));await page.waitForFunction(()=>window.__synkWorld?.life()?.owner==='11111111-1111-4111-8111-111111111111');
   check('account choice overrides the different guest tutor',(await read()).tutor.tutor==='kkamong');
   await page.locator('.cafe-visit-list [data-life-lesson=cafe-visit-soldout]').click();await page.locator('[data-life-cafe-mode=read]').click();await page.locator('[data-life-cafe-next]').click();
   const q=lessonById('cafe-visit-soldout').questions[0];await page.locator(`[data-life-cafe-choice=${q.choices.find(c=>c.id!==q.answerId).id}]`).click();await synced();
@@ -51,7 +54,7 @@ test('frozen /world tutor follows owner choice, preserves guided records and dis
   const stored=JSON.parse(state.records['synk.life-korean.progress.v1']),guided=Object.values(stored.daily?.days||{}).map(day=>day.items[q.id]).find(item=>item?.guidedAt);
   check('guided answer adds one account life record at success while keeping first error and repair checkpoint',calls.filter(c=>c.action).length===writeCount+1&&core(stored)===core(before.progress)&&core((await read()).progress)===core(before.progress)&&guided?.tutorId==='kkamong'&&guided.lessonId==='cafe-visit-soldout'&&guided.outcome==='retry'&&await page.locator('.life-expression-practice[open]').count()===1);
   await page.locator('.life-expression-return').click();
-  await page.reload();await page.locator('.cafe-pack-preview [data-life-lesson=cafe-visit-soldout]').click();
+  await page.reload(navigationBefore(navigationDeadline));await page.locator('.cafe-pack-preview [data-life-lesson=cafe-visit-soldout]').click();
   check('frozen account page restores selected tutor and the actual repair checkpoint',(await read()).tutor.tutor==='kkamong'&&(await read()).cafe.phase==='repair'&&!(await read()).progress.lessons['cafe-visit-soldout'].answers[q.id].correct);
   await page.locator('[data-life-cafe-pause],[data-life-pause]').first().click();await library();await page.locator('[data-life-pack=plans]').click();await page.locator('[data-life-lesson=plans-story]').click();await page.locator('[data-life-begin]').click();
   check('story keeps its three distinct actors beside the selected mentor',(await page.locator('.life-story-photo img[alt*="몽글·까몽·마린"]').count()===1||await page.locator('.life-cast .life-friend').count()===3)&&(await read()).tutor.tutor==='kkamong');await page.screenshot({path:path.join(out,'account-story.png')});
@@ -59,7 +62,7 @@ test('frozen /world tutor follows owner choice, preserves guided records and dis
   if(await page.locator('[data-world=guest]').count())await page.locator('[data-world=guest]').click();await library();await page.locator('[data-life-pack=cafe]').click();await page.locator('.life-tutor-help').click();
   check('logout restores guest tutor and does not leak account difficulties',(await read()).owner==='guest'&&(await read()).tutor.tutor==='marin'&&await page.locator('.life-tutor-difficulties [data-life-expression]').count()===0);await page.locator('.life-tutor-resume').click();await page.locator('#panel-close').click();
   check('owner change released account guide and draft view',!(await read()).tutor&&await page.locator('.life-expression-practice,.life-tutor-guide').count()===0);
-  await page.goto(base+'/world/brand-opening/home.html?opening=off');await page.waitForFunction(()=>window.__synkHome);await library();await page.locator('[data-life-pack=greetings]').click();await page.locator('[data-life-lesson=greetings-expressions]').click();
+  await page.goto(base+'/world/brand-opening/home.html?opening=off',navigationBefore(navigationDeadline));await page.waitForFunction(()=>window.__synkHome);await library();await page.locator('[data-life-pack=greetings]').click();await page.locator('[data-life-lesson=greetings-expressions]').click();
   check('bundled standalone home uses the same guest tutor',await page.evaluate(()=>window.__synkLife.metrics().tutor.tutor==='marin'));
   await page.locator('[data-life-begin]').click();while(await page.locator('[data-life-scene-next]').count())await page.locator('[data-life-scene-next]').click();await page.locator('[data-life-choice=b]').click();await page.locator('[data-life-tutor-retry]').click();
   check('standalone bundle offers the canonical transfer exercise',await page.locator('.life-expression-question h4').textContent()===lessonById('greetings-expressions').questions[0].review.prompt);await page.screenshot({path:path.join(out,'standalone-practice.png')});await page.locator('.life-expression-cancel').click();
