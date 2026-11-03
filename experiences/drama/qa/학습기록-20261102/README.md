@@ -41,6 +41,25 @@ NODE_PATH=../SYNK-talk/node_modules node experiences/drama/qa/학습기록-20261
 
 `node --test tests/drama-pilot-learning.test.mjs tests/drama-pilot.test.mjs` — trailOf 규칙(검수 전 · 모범 본 뒤 · 두 번째 판정 · 장면은 혼자 해 봄 아님), 호스트 없음 = 기록 없음, 동의 끔 = 전송 없음, 시도 번호 · 도움 한 번 · 뺌, 서버 Trail 검증기(`atlas/engine.js` validateIncrement · createSession) 통과, 받아 적은 글이 사건 · 기기 저장에 없음, `/api/learning`은 리허설 계정이 있을 때만 열리고 CSRF를 지킴, 묶음이 원천과 같음.
 
+<a id="11-03"></a>
+
+## 11-03 — 판정 갈래 · 코치 노트 · 받아 적기 막힘 때 B 남겨 두기
+
+몽골 학습자 시범([설계](../../../../docs/드라마말하기_몽골시범_20261103.md) §1 (가)(나)(다))을 서버 기록만으로 세게 했다. **학습 기록 꼴(사건 종류 · 칸)은 바꾸지 않았다** — 이미 서버 · 공개본 WORLD 계정 묶음이 받는 칸만 쓴다(11-02 `STORAGE_ERROR` 회귀를 되풀이하지 않게).
+
+| 무엇 | 어디에 | 값 |
+|---|---|---|
+| 규칙 판정의 갈래(테이크마다) | `practice.attempted`의 `choice` — `selectedId`가 갈래, `correctId`는 늘 `pass` | `pass` · `note-ending` · `note-length` · `note-missing` · `hold`(판정 보류) · `unclear`(글은 받아 적혔지만 한국어인지 · 말 빠르기를 못 가림). 안 들림은 지금처럼 `reason: unanswered`, 받아쓰기 꺼짐 · 서버 사정은 칸 없음 |
+| 코치 노트를 받음 | 그 장면 줄 보임의 `practice.helped` `explanation`(`drama-s1.explanation`) — 장면이 끝나 노트 카드가 뜰 때. 테이크 2를 건너뛰어도 남는다 | 노트 종류는 그 보임의 마지막 판정 시도(choice가 pass · note-… · hold인 것)의 갈래 — 화면의 노트 고르기(`pickNote`)가 같은 시도를 본다 |
+| 테이크 2 | 지금처럼 `drama-s1.retake.<줄>` 보임의 시도들(unassessed) + 갈래 | 「고침」 = 뺀 것(`record.excluded`)을 빼고 첫 판정 시도(pass · note-…)가 받은 노트 종류가 아님 |
+| 새 상황(B) | `open({lazy:'transcribed'})` — 받아 적기까지 간 첫 테이크(안 들림 · 보류 포함)가 올 때 보임 · 도움 · 답을 남긴다 | 받아쓰기 꺼짐 · 서버 사정(크레딧 소진 429) · 오늘 횟수 끝 테이크로는 B를 쓰지 않는다. 안 들린 첫 테이크가 「혼자 해 봄」을 쓰는 11-02 규칙은 그대로(설계 17-1 P2) |
+
+화면(`pilot.mjs`): WORLD에서 받아쓰기를 못 쓰면(status 꺼짐 · 오늘 횟수 끝 · 대사 은행 판 다름 · status 실패) B 앞에서 「지금은 받아쓰기가 쉬고 있어요(학생 탓이 아니에요). 새 상황은 받아쓰기가 될 때 하도록 남겨 둘게요.」와 「다시 확인」(다시 확인해도 막혀 있으면 「아직」 한 줄) · 「나중에 다시」를 낸다. status는 켜졌는데 테이크가 서버 사정으로 돌아오면 B 패널에서 모범 보기 · 마치기 대신 「나중에 다시」를 낸다. 장면 학생 줄을 모두 봤고 B는 안 본 계정에는 첫 화면에 「장면 뒤의 새 상황을 아직 하지 않았어요」 카드(장면 없이 B만, 마치면 첫 화면)를 둔다(첫 줄에서 멈춘 계정은 장면 전에 B를 쓰지 않게 — Fable F1) — C 카드와 같은 셈(Atlas `exposure`, 기록이 덜 모이면 내지 않음).
+
+시험 [`tests/drama-pilot-record.test.mjs`](../../../../tests/drama-pilot-record.test.mjs): B를 미룬 뒤 이틀 뒤 첫 판정이 시도 1 · 혼자 해 봄 → 7.5일 뒤 C 차례, 안 들림 첫 테이크는 B를 씀, 갈래 표, 사건에 받아 적은 글 · 빠진 낱말(note.word) 없음, 서버 Trail 검증기 통과, **부모 창 WORLD 계정 묶음의 엔진으로 연결 동기화를 세워 드라마가 쓰게 하면 synced**(원천 묶음 · 공개본 묶음 — `DRAMA_LIVE_WORLD_BUNDLE`로 11-03 공개본도 통과), 같은 묶음에서 `spoken` 또는 `explanation`만 뺀 사본이면 `blocked · STORAGE_ERROR`(시험이 이 회귀를 잡는다는 대조).
+
+틀 시험(`틀시험.mjs`, 머리 없는 크롬 · 가짜 마이크): `?off=1` — B 앞 「남겨 둘게요」 → 「나중에 다시」 → 마침 화면 「새 상황은 남겨 뒀어요」. `?down=1` — B 첫 테이크 서버 사정 → 「나중에 다시」 → 처음부터 다시 → 첫 화면 새 상황 카드 → B → 다시 서버 사정 → 카드 남음, 사건에 t9 보임 0건 · 동기화 synced. 받아 적힌 글을 「헤맸어」로 정한 판 — 6번 줄 note-ending 세 번 → `explanation` → 테이크 2 note-ending(못 고침) → B 첫 테이크 correct · pass.
+
 ## 남은 것
 
 - **실제 계정 왕복 — 끝(11-02)**: WORLD 안 공개 뒤 유호님 계정(평가 집계 제외)으로 `?drama=1` → 장면 세 줄 → 드라마 사건 15건이 서버에 받아졌다(settled). 받아쓰기는 운영 talk가 `unavailable`이라 연습 시도로만 남았다. 경과 · 핫픽스는 [WORLD 올리기](../WORLD올리기-20261102/설계.md).

@@ -49,6 +49,8 @@ node tools/drama-pilot.mjs
 
 테이크마다 학습 기록(Atlas Trail, 응답 꼴 `spoken`)을 남기는 길을 이었다 — 차례 하나 = 보임 하나, 테이크 하나 = 시도 하나, 「혼자 해 봄」은 서버가 테이크 응답의 `trail`로 정한다. WORLD 게임과 같은 계정 학습 호스트(`SYNKLearningHost`)가 있을 때만 남고 학습 기록 동의가 켜진 계정만 서버로 보낸다. 이 PC 시범은 로그인이 없어 **기본 실행에서는 아무것도 남기지 않는다.** 받아 적은 글 · 소리는 사건에 들지 않는다. 묶음은 `learning-entry.cjs`를 고친 뒤 `node tools/build-drama-learning.js`로 다시 만든다(`atlas-learning.js`, 생성물). 합성 계정 왕복 실측과 리허설 실행법은 [학습 기록 리허설](../qa/학습기록-20261102/README.md).
 
+**11-03 더함(몽골 시범 §7 ① · ④):** 테이크마다 규칙 판정의 갈래를 시도의 `choice` 칸에(pass · note-ending · note-length · note-missing · hold · unclear), 장면 뒤 코치 노트를 그 줄 보임의 도움 `explanation`으로 남긴다. 장면 · 테이크 2는 그대로 판정 없음이다. 새 상황(B)은 받아 적기까지 간 첫 테이크가 올 때만 기록에 남고(`lazy: 'transcribed'`), 받아쓰기를 못 쓰는 동안에는 B를 열지 않고 「나중에 다시」로 남겨 첫 화면 카드로 다시 내민다. 자세한 꼴과 시험은 [학습 기록 리허설](../qa/학습기록-20261102/README.md#11-03).
+
 ## WORLD 안 (11-02)
 
 같은 화면이 `synk.im/world/?drama=1`(WORLD 게임 틀, SYNK ID 로그인 뒤)에서도 돈다 — 설계 · 검토는 [WORLD 올리기](../qa/WORLD올리기-20261102/설계.md).

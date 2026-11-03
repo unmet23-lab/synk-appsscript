@@ -6688,7 +6688,8 @@ var DramaLearning = (() => {
       var factory = (config) => learning.createGame({ ...config, map });
       var engine = Object.freeze({ createGame: factory, createLearningSync: learning.createLearningSync });
       var PHASES = ["scene", "retake", "transfer"];
-      var HELPS = ["text", "answer"];
+      var HELPS = ["text", "answer", "explanation"];
+      var NOTE_KINDS = ["ending", "length", "missing"];
       var identifier = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
       function findHost(win) {
         if (!win) return null;
@@ -6699,11 +6700,22 @@ var DramaLearning = (() => {
         }
         return null;
       }
+      function judgedAs(data) {
+        if (data?.status === "ok") {
+          const o = data.observation;
+          if (o?.kind === "pass") return "pass";
+          if (o?.kind === "note" && NOTE_KINDS.includes(o.note?.kind)) return `note-${o.note.kind}`;
+          return "hold";
+        }
+        if (data?.status === "unclear" && String(data.transcript || "").trim()) return "unclear";
+        return null;
+      }
       function answerOf(outcome) {
         if (outcome?.kind === "result") {
-          const t = outcome.data?.trail;
-          if (t && [true, false, null].includes(t.correct) && typeof t.assessable === "boolean") return { correct: t.correct, assessable: t.assessable, ...t.reason === "unanswered" ? { reason: "unanswered" } : {} };
-          return { correct: null, assessable: false };
+          const t = outcome.data?.trail, judged = judgedAs(outcome.data);
+          const choice = judged ? { choice: { selectedId: judged, correctId: "pass" } } : {};
+          if (t && [true, false, null].includes(t.correct) && typeof t.assessable === "boolean") return { correct: t.correct, assessable: t.assessable, ...t.reason === "unanswered" ? { reason: "unanswered" } : {}, ...choice };
+          return { correct: null, assessable: false, ...choice };
         }
         if (outcome?.kind === "unheard") return { correct: null, assessable: false, reason: "unanswered" };
         if (outcome?.kind === "off" || outcome?.kind === "down") return { correct: null, assessable: false };
@@ -6759,7 +6771,7 @@ var DramaLearning = (() => {
               const answered = answerOf(outcome);
               if (!answered) return null;
               if (!pid) {
-                if (![true, false].includes(answered.correct)) return null;
+                if (lazy === "transcribed" ? !["result", "unheard"].includes(outcome?.kind) : ![true, false].includes(answered.correct)) return null;
                 pid = present();
                 if (!pid) return null;
                 for (const kind of helped) safe(() => game().help(pid, kind));
@@ -6777,7 +6789,7 @@ var DramaLearning = (() => {
                 safe(() => game().exclude(id));
               }
             },
-            // lazy 문항이 기록에 남았는지(판정된 테이크가 왔는지) — 화면이 첫 화면 카드를 거둘지 정한다.
+            // lazy 문항이 기록에 남았는지(그 문항을 쓴 테이크 · 모범 보기가 왔는지) — 화면이 첫 화면 카드를 거둘지 정한다.
             get recorded() {
               return !!pid;
             }
@@ -6792,11 +6804,18 @@ var DramaLearning = (() => {
             if (report?.evidenceComplete !== true) return null;
             const due = report.items.some((row) => row.status === "due" && row.window === "d7" && row.gameId === GAME_ID && row.measure.taskVersion === map.map_ver && row.measure.skillId === skillId && row.measure.difficulty === 2 && row.measure.responseFormat === "spoken" && row.measure.modality === "speaking" && row.measure.audioRequired === false);
             if (!due) return false;
-            const seen = c.exposure({ itemKey: lineId, familyKey: lineId }).seen;
-            return seen === false ? true : seen === true ? false : null;
+            const seen2 = c.exposure({ itemKey: lineId, familyKey: lineId }).seen;
+            return seen2 === false ? true : seen2 === true ? false : null;
           });
         }
-        return Object.freeze({ open, delayedDue, flush: () => safe(() => coach?.flush?.()) });
+        function seen(lineId) {
+          if (!identifier(lineId)) return null;
+          return safe(() => {
+            const v = game().exposure({ itemKey: lineId, familyKey: lineId }).seen;
+            return v === true || v === false ? v : null;
+          });
+        }
+        return Object.freeze({ open, delayedDue, seen, flush: () => safe(() => coach?.flush?.()) });
       }
       function createRehearsalHost({ accountKey, revision, connected, transport, storage, win = typeof window === "undefined" ? null : window }) {
         const prefix = `synk.drama.rehearsal.${accountKey}.r${revision}.`;
@@ -6806,7 +6825,7 @@ var DramaLearning = (() => {
         if (win) win.SYNKLearningHost = host;
         return host;
       }
-      module.exports = { GAME_ID, mapVersion: map.map_ver, engine, answerOf, createRecorder, createRehearsalHost };
+      module.exports = { GAME_ID, mapVersion: map.map_ver, engine, answerOf, judgedAs, createRecorder, createRehearsalHost };
     }
   });
   return require_learning_entry();

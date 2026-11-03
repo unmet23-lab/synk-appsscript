@@ -70,6 +70,7 @@ const S = {
  // 새 상황 모범을 이 창에서 본 적이 있는지(다시하기에도 남김 — 서버 transferRevealed와 같은 뜻, 새 보관 없음).
  revealedEver: false,
  firstExposure: null,      // bootstrap·reset이 준 값(이번 실행 시작 때 새 상황이 처음인지)
+ pendingB: null,           // 첫 화면 「남겨 둔 새 상황」 카드: true | false | null(모름 — 다시 묻는다)
  upload: null, rec: null, micWait: null, playing: false, listenLoop: '', loopHeld: false,
  step: 'boot', render: null,
  orb: null, orbAction: null, cardKey: null, // 음성 구 · 구를 눌렀을 때 할 일 · 지금 떠 있는 대사 카드(올라오는 움직임은 새 카드에만)
@@ -669,10 +670,11 @@ function openInWorld() {
 // 첫 화면: 회차 표지(「Episode 01 · 개강 첫날 · 나는 한국에 막 온 유학생」)가 장면 위에 남고, 아래 유리 카드에 상대 · 때와 곳 · 시작 단추.
 function intro() {
  const s = newScope(); S.step = 'intro'; S.render = intro; S.cardKey = null;
- checkDelayed(s);
+ checkCards(s);
  stageMode('still'); subs(null); hideMic(); setPhase('intro', 0); pushStill();
  slate(tx('episodeTitle'), { k: 'Episode 01', sub: tx('heroLine'), ms: 0 });
  cardIn('intro');
+ const held = S.pendingB === true && S.delayedDue !== true, card = S.delayedDue === true || held;
  panel(h('div', { class: 'intro' },
   h('dl', { class: 'cast' },
    h('div', {}, h('dt', {}, tx('partner')), h('dd', {}, tx('rolePartner'))),
@@ -684,28 +686,56 @@ function intro() {
    ? h('div', { class: 'card situation delayed' }, h('p', { class: 'k' }, h('span', { class: 'dot', 'aria-hidden': 'true' }), 'New situation', h('b', {}, tx('delayedTitle'))),
     h('p', { class: 'fine' }, tx('delayedLead')),
     h('div', { class: 'row' }, h('button', { type: 'button', class: 'pill', on: { click: () => { if (live(s)) runTransfer('delayed'); } } }, tx('delayedStart'))))
+   : held
+   ? h('div', { class: 'card situation delayed' }, h('p', { class: 'k' }, h('span', { class: 'dot', 'aria-hidden': 'true' }), 'New situation', h('b', {}, tx('transferTitle'))),
+    h('p', { class: 'fine' }, tx('heldLead')),
+    h('div', { class: 'row' }, h('button', { type: 'button', class: 'pill', on: { click: () => { if (live(s)) runTransfer('held'); } } }, tx('heldStart'))))
    : null,
-  h('button', { type: 'button', class: S.delayedDue === true ? 'ghost big' : 'pill big', on: { click: () => { if (live(s)) runScene(0); } } }, h('span', { class: 'ic play', 'aria-hidden': 'true' }), tx(S.delayedDue === true ? 'delayedSkip' : 'start')),
+  h('button', { type: 'button', class: card ? 'ghost big' : 'pill big', on: { click: () => { if (live(s)) runScene(0); } } }, h('span', { class: 'ic play', 'aria-hidden': 'true' }), tx(card ? 'delayedSkip' : 'start')),
  ));
 }
 
-// C(설계 §17): WORLD 안에서 받아쓰기가 켜져 있고 기록기가 「d7 차례 · t6 처음」이라 할 때만 첫 화면에 카드를 둔다. 계정 기록이 아직 덜
-// 모였으면(null) 첫 화면에 있는 동안 잠시 간격을 두고 다시 묻는다 — 끝내 모르면 내지 않는다(문항을 아낀다).
-async function checkDelayed(s) {
- const item = S.boot?.lesson?.delayed;
- if (!item || !inWorld() || !S.trail?.delayedDue || S.delayedDue === false) return;
+// 첫 화면 카드 둘. 계정 기록이 아직 덜 모였으면(null) 첫 화면에 있는 동안 잠시 간격을 두고 다시 묻고, 끝내 모르면 내지 않는다(문항을 아낀다).
+//  · C(설계 §17): WORLD 안에서 받아쓰기가 켜져 있고 기록기가 「d7 차례 · t6 처음」이라 할 때.
+//  · 남겨 둔 B(11-03, 몽골 시범 §7 ④): 받아쓰기가 켜져 있고 이 계정이 장면 줄은 봤는데 새 상황은 안 봤을 때 — 받아쓰기가 막혀 「나중에 다시」로
+//    둔 학생이 장면을 다시 하지 않고 B만 할 수 있게. C가 차례면 내지 않는다(C는 B 판정이 있어야 오니 둘이 함께 올 일은 없다).
+async function checkCards(s) {
+ const C = S.boot?.lesson?.delayed, B = S.boot?.lesson?.transfer;
+ if (!inWorld() || !S.trail) return;
+ const wantC = !!C && !!S.trail.delayedDue && S.delayedDue !== false;
+ const wantB = !!B && !!S.trail.seen && S.pendingB !== false;
+ if (!wantC && !wantB) return;
  await null; // 첫 화면을 다 그린 뒤에 묻는다 — 그리는 도중 다시 그리면 앞 판 단추가 끝난 범위에 묶인다
  // 받아쓰기를 끈(동의 거절) 동안은 카드를 내리고 묻지 않는다 — 칩에서 다시 켜면 첫 화면이 다시 묻는다(화면 검수 F4).
- if (S.consent === 'no') { if (S.delayedDue === true && live(s)) { S.delayedDue = null; intro(); } return; }
+ if (S.consent === 'no') {
+  if (S.delayedDue === true || S.pendingB === true) { if (S.delayedDue === true) S.delayedDue = null; if (S.pendingB === true) S.pendingB = null; if (live(s)) intro(); }
+  return;
+ }
  for (let i = 0; i < 12 && live(s); i++) {
   // 받아쓰기를 지금 못 쓰면 내지 않는다(status가 잠깐 실패했으면 모름으로 두고 다시 묻는다). 동의 · 받아 적기 실패는 lazy 기록이 막는다.
   if (W.statusFailed) await retryWorldStatus();
   if (!live(s)) return;
-  const due = !analysisCapable() ? (W.statusFailed ? null : false) : S.trail.delayedDue({ lineId: item.id, skillId: item.skill });
+  const off = analysisCapable() ? undefined : W.statusFailed ? null : false;
+  const due = !wantC ? false : off !== undefined ? off : S.trail.delayedDue({ lineId: C.id, skillId: C.skill });
+  const held = !wantB || due === true ? false : off !== undefined ? off : heldTransfer(B);
   // 바뀌면 어느 쪽이든 다시 그린다 — 카드가 있었는데 한도 · 꺼짐 · 창 만료로 차례가 아니게 됐으면 카드를 거둔다(화면 검수 A3).
-  if (due !== null) { if (due !== S.delayedDue) { S.delayedDue = due; if (live(s)) intro(); } return; }
+  if (due !== null && held !== null) {
+   const changed = (wantC && due !== S.delayedDue) || (wantB && held !== S.pendingB);
+   if (wantC) S.delayedDue = due;
+   if (wantB) S.pendingB = held;
+   if (changed && live(s)) intro();
+   return;
+  }
   await sleep(s, 2500);
  }
+}
+// 남겨 둔 B인지: B는 안 봤고 장면 학생 줄을 모두 봤으면 참(장면 끝까지 간 계정만 — 첫 줄에서 멈춘 계정이 장면 전에 B를 쓰지 않게, 화면 검수 F1).
+// 기록이 덜 모여 모르면 null.
+function heldTransfer(B) {
+ const b = S.trail.seen(B.id);
+ if (b !== false) return b === true ? false : null;
+ const lines = studentItems().map((x) => S.trail.seen(x.id));
+ return lines.every((v) => v === true) ? true : lines.includes(null) ? null : false;
 }
 
 /* ───────── 장면 ───────── */
@@ -866,7 +896,11 @@ async function studentTurn(item, s, ctx) {
  let P;
  if (ctx.phase === 'retake' && S.retake && S.retake.trail !== undefined) P = S.retake.trail;
  else {
-  P = S.trail?.open({ lineId: item.id, skillId: item.skill, phase: ctx.phase }) || null;
+  // 장면 줄의 차례는 줄 상태에 둔다 — 장면이 끝난 뒤 그 줄에 준 코치 노트를 같은 보임의 도움(explanation)으로 남긴다(afterScene).
+  // 같은 줄을 다시 그려도 보임을 새로 열지 않는다(노트가 시도 없는 새 보임에 붙지 않게, 화면 검수 A2).
+  if (ctx.phase === 'scene' && L.trail !== undefined) P = L.trail;
+  else P = S.trail?.open({ lineId: item.id, skillId: item.skill, phase: ctx.phase }) || null;
+  if (ctx.phase === 'scene') L.trail = P;
   // 테이크 2 앞의 코치 카드(afterScene)가 이 줄의 한국어 대사 전체와 모범 듣기를 이미 보였다.
   if (ctx.phase === 'retake' && S.retake) { S.retake.trail = P; P?.help('answer'); }
  }
@@ -1008,6 +1042,8 @@ async function afterScene() {
   h('div', { class: 'row main' }, h('button', { type: 'button', class: 'pill', on: { click: () => go('go') } }, tx('take2Start')),
    h('button', { type: 'button', class: 'link', on: { click: () => go('skip') } }, tx('toTransfer'))))]);
  cardIn('after');
+ // 노트를 받았다는 사실(11-03, 몽골 시범 §7 ①) — 노트 종류는 그 줄 마지막 판정 시도의 choice(note-…)가 말한다. 테이크 2를 건너뛰어도 남는다.
+ if (cand) S.lines.get(cand.item.id)?.trail?.help('explanation');
  const v = await chosen;
  if (!live(s) || v == null) return;
  if (v === 'skip') { S.retake.skipped = true; return runTransfer(); }
@@ -1071,16 +1107,18 @@ async function retakeResult(item, r) {
 }
 
 /* ───────── 새 상황 ───────── */
+// kind: 'transfer'(장면 뒤 B) · 'delayed'(첫 화면의 C) · 'held'(첫 화면의 남겨 둔 B — 마치면 첫 화면으로).
 async function runTransfer(kind = 'transfer', { rerender = false } = {}) {
- const delayed = kind === 'delayed';
+ const delayed = kind === 'delayed', fromIntro = kind !== 'transfer';
  const s = newScope(); S.step = 'transfer'; S.render = () => runTransfer(kind, { rerender: true });
  // tries: 녹음해 보낸 횟수(단추 모양용). spoke: 소리가 들린(또는 받아쓰기 없이 녹음한) 시도 수.
  // firstHinted: 첫 「말해 본 시도」가 시작될 때 모범이 공개돼 있었는지 — 첫 시도에서 한 번만 정하고 뒤 시도로 덮지 않는다.
  const slot = delayed ? 'delayedRun' : 'transfer';
  const T = S[slot] || (S[slot] = { tries: 0, spoke: 0, firstHinted: null, revealed: null, revealedBeforeFirst: false, last: null, selfCheck: null, unheard: 0 });
+ T.fromIntro = fromIntro;
  // C에 기록 없이 다시 들어오면 지난 안내(받아쓰기 꺼짐 · 다시 녹음 등)는 지우고 지금 상태로 새로 그린다 — 시도 수 · 모범 본 사실은 둔다(화면 검수 r2).
  // 언어 단추 · 동의 칩처럼 같은 화면을 다시 그릴 때(rerender)는 지금 안내와 「내 녹음 듣기」를 그대로 둔다.
- if (delayed && !rerender && !T.trail?.recorded) Object.assign(T, { last: null, lastTakeId: null, selfCheck: null, invalid: 0 });
+ if (fromIntro && !rerender && !T.trail?.recorded) Object.assign(T, { last: null, lastTakeId: null, selfCheck: null, invalid: 0 });
  const markSpoken = (d) => {
   // 서버 take.hinted는 이전 실행(다시하기 전)의 모범 공개도 포함한다. 받아쓰기 없이 녹음한 경우는 이 창의 기억으로만 안다.
   if (!T.spoke) T.firstHinted = d?.take ? (!!d.take.hinted || T.revealedBeforeFirst) : (!!T.revealed || (!delayed && S.revealedEver));
@@ -1097,13 +1135,28 @@ async function runTransfer(kind = 'transfer', { rerender = false } = {}) {
  if (!live(s)) return;
  const item = { id: tr.id };
  // C는 판정된 첫 테이크가 올 때만 기록에 남긴다(lazy, 설계 검토 P1) — 그 전에 닫거나 받아쓰기가 안 되면 카드가 남아 다음에 다시 할 수 있다.
- if (T.trail === undefined) T.trail = S.trail?.open({ lineId: tr.id, skillId: tr.skill, phase: 'transfer', lazy: delayed }) || null;
+ // B는 받아 적기까지 간 첫 테이크가 올 때 남긴다(11-03, 몽골 시범 §7 ④) — 받아쓰기 꺼짐 · 서버 사정 테이크로는 B를 쓰지 않는다.
+ if (T.trail === undefined) T.trail = S.trail?.open({ lineId: tr.id, skillId: tr.skill, phase: 'transfer', lazy: delayed ? true : 'transcribed' }) || null;
+ // WORLD에서 받아쓰기를 지금 못 쓰면(서버 꺼짐 · 오늘 횟수 끝 · 대사 은행 판 다름 · status 실패) B를 열지 않고 남겨 둔다 — 탓하지 않는 한 줄과
+ // 「다시 확인」 · 「나중에 다시」. 기록기가 없으면(로그인 · 학습 기록 동의 전) 남는 것이 없으니 그대로 연습한다.
+ while (!delayed && inWorld() && T.trail && !T.trail.recorded && !analysisCapable()) {
+  const v = await heldPanel(s, T);
+  if (!live(s) || v == null) return;
+  if (v === 'later') return leaveHeld(T);
+  T.heldChecked = true;
+  await recheckWorldStatus();
+  if (!live(s)) return;
+ }
  for (;;) {
   const v = await transferPanel(s, tr, T);
   if (!live(s) || v == null) return;
-  // C를 마치면 첫 화면으로 — 판정된 테이크가 남았으면 카드를 거둔다(Atlas가 t6을 본 문항으로 안다), 아니면 카드가 남는다.
-  if (v === 'finish') { if (delayed) { if (T.trail?.recorded) S.delayedDue = false; S.trail?.flush(); return intro(); } return wrap(); }
-  if (v === 'later') return intro();
+  // C · 남겨 둔 B를 마치면 첫 화면으로 — 기록이 남았으면 카드를 거둔다(Atlas가 그 문항을 본 것으로 안다), 아니면 카드가 남는다.
+  if (v === 'finish') {
+   if (fromIntro) { if (T.trail?.recorded) { if (delayed) S.delayedDue = false; else S.pendingB = false; } S.trail?.flush(); return backToIntro(kind); }
+   return wrap();
+  }
+  if (v === 'later') return backToIntro(kind);
+  if (v === 'held') return leaveHeld(T);
   if (v === 'hint') { await revealModel(s, T, tr); if (!live(s)) return; continue; }
   if (v === 'same' || v === 'differs') { T.selfCheck = v; if (v === 'differs') T.trail?.excludeLast(); continue; }
   if (v === 'mic') { S.mic = 'unknown'; stopStream(await getStream()); continue; }
@@ -1133,12 +1186,46 @@ async function runTransfer(kind = 'transfer', { rerender = false } = {}) {
  }
 }
 
+// 받아쓰기가 막혀 B를 열지 않을 때. 녹음 구는 내리고(보낼 수 없으니) 다시 확인 · 나중에 다시만 둔다.
+function heldPanel(s, T) {
+ hideMic();
+ const p = choose(s, (go) => [stepper('transfer'), h('div', { class: 'transfer' },
+  h('p', { class: 'k' }, h('span', { class: 'dot', 'aria-hidden': 'true' }), 'New situation', h('b', {}, tx('transferTitle'))),
+  h('div', { class: 'notice quiet' }, tx(W.limit ? 'heldLimit' : 'heldDown'), T.heldChecked ? h('p', { class: 'fine' }, tx('heldStill')) : null),
+  h('div', { class: 'row main' }, h('button', { type: 'button', class: 'pill', on: { click: () => go('retry') } }, tx('heldRetry')),
+   h('button', { type: 'button', class: 'ghost', on: { click: () => go('later') } }, tx(T.fromIntro ? 'delayedLater' : 'heldLater'))))]);
+ cardIn('transfer-held');
+ return p;
+}
+// B를 쓰지 않고 떠난다 — 장면 뒤면 마침 화면(「남겨 뒀어요」), 첫 화면에서 왔으면 첫 화면. 첫 화면 카드는 기록으로 다시 정한다.
+function leaveHeld(T) {
+ T.deferred = true; S.pendingB = null; S.trail?.flush();
+ return T.fromIntro ? backToIntro('held') : wrap();
+}
+// 첫 화면에서 연 남겨 둔 B를 떠날 때는 그 판 상태(S.transfer)를 비운다 — 그 뒤 「1화 처음부터」로 장면을 하고 여는 B가 지난 테이크 · 기록기를
+// 잇지 않게(화면 검수 A1). 판정 · 모범 본 사실은 Atlas 기록과 W.attempts(takes.mjs)가 그대로 안다. C는 지금처럼 S.delayedRun을 둔다.
+function backToIntro(kind) {
+ if (kind === 'held') S.transfer = null;
+ return intro();
+}
+// 「다시 확인」: 꺼짐 · 오늘 횟수 끝이라도 status를 다시 묻는다(retryWorldStatus는 잠깐 실패만 다시 묻는다).
+async function recheckWorldStatus() {
+ if (!inWorld()) return;
+ let status = null; try { status = await W.host.status(); } catch { W.statusFailed = true; return; }
+ W.statusFailed = false; W.off = false;
+ W.limit = status?.dramaRemaining === 0;
+ S.boot.capabilities.analysis = status?.dramaEnabled === true && status.linesVersion === W.lesson.linesVersion && !W.limit;
+ updateChip();
+}
+
 function transferPanel(s, tr, T) {
  const lastTake = takeById(T.lastTakeId);
  const L = T.last; const d = L?.kind === 'result' ? L.data : null; const obs = d?.observation;
+ // B를 아직 쓰지 않았는데 받아 적기가 막혔다(서버 사정 · 오늘 횟수 끝) — 모범 보기 · 마치기 대신 「나중에 다시」(B를 쓰지 않는다, §7 ④).
+ const held = !isDelayed(tr.id) && !!T.trail && !T.trail.recorded && (L?.kind === 'down' || (L?.kind === 'off' && L.limit));
  let outcome = null;
- if (L?.kind === 'off') outcome = h('div', { class: 'notice quiet' }, tx(L.limit ? 'dailyLimit' : 'practiceOnly'));
- else if (L?.kind === 'down') outcome = h('div', { class: 'notice quiet' }, tx(L.limit ? 'dailyLimit' : 'apiDown'));
+ if (L?.kind === 'off') outcome = h('div', { class: 'notice quiet' }, tx(L.limit ? 'dailyLimit' : 'practiceOnly'), held ? h('p', { class: 'fine' }, tx('heldNote')) : null);
+ else if (L?.kind === 'down') outcome = h('div', { class: 'notice quiet' }, tx(L.limit ? 'dailyLimit' : 'apiDown'), held ? h('p', { class: 'fine' }, tx('heldNote')) : null);
  else if (L?.kind === 'input') outcome = h('div', { class: 'notice quiet' }, tx(T.invalid >= INVALID_REPEAT ? 'takeInvalidRepeat' : 'takeInvalid'));
  else if (L?.kind === 'unheard') outcome = h('div', { class: 'notice quiet' }, tx(T.unheard >= 3 ? 'unheardSelf' : 'unheardRetry'));
  else if (d) {
@@ -1171,10 +1258,11 @@ function transferPanel(s, tr, T) {
    ? h('div', { class: 'row main' }, h('p', { class: 'fine' }, tx('readAlongTransfer')), h('button', { type: 'button', class: 'link', on: { click: () => go('mic') } }, tx('micRetry')))
    : null,
   h('div', { class: 'row' },
-   !T.revealed ? h('button', { type: 'button', class: 'link', on: { click: () => go('hint') } }, tx('hintBtn')) : null,
-   // C는 첫 화면에서 바로 들어오므로 테이크 전에도 돌아갈 수 있게 — 기록이 없으면 카드가 남는다(화면 검수 F3).
-   isDelayed(tr.id) && !(T.tries || micUnusable() || T.revealed || T.invalid >= INVALID_REPEAT) ? h('button', { type: 'button', class: 'ghost', on: { click: () => go('later') } }, tx('delayedLater')) : null,
-   (T.tries || micUnusable() || T.revealed || T.invalid >= INVALID_REPEAT) ? h('button', { type: 'button', class: T.tries ? 'pill' : 'ghost', on: { click: () => go('finish') } }, tx('finish')) : null),
+   !T.revealed && !held ? h('button', { type: 'button', class: 'link', on: { click: () => go('hint') } }, tx('hintBtn')) : null,
+   // C · 남겨 둔 B는 첫 화면에서 바로 들어오므로 테이크 전에도 돌아갈 수 있게 — 기록이 없으면 카드가 남는다(화면 검수 F3).
+   T.fromIntro && !held && !(T.tries || micUnusable() || T.revealed || T.invalid >= INVALID_REPEAT) ? h('button', { type: 'button', class: 'ghost', on: { click: () => go('later') } }, tx('delayedLater')) : null,
+   held ? h('button', { type: 'button', class: 'pill', on: { click: () => go('held') } }, tx(T.fromIntro ? 'delayedLater' : 'heldLater'))
+    : (T.tries || micUnusable() || T.revealed || T.invalid >= INVALID_REPEAT) ? h('button', { type: 'button', class: T.tries ? 'pill' : 'ghost', on: { click: () => go('finish') } }, tx('finish')) : null),
   )];
  });
  cardIn('transfer');
@@ -1238,8 +1326,8 @@ async function wrap({ replay = true } = {}) {
     withdrawn ? h('p', { class: 'fine' }, tx('wrapWithdrawn')) : null)),
    h('li', {}, tick(!!did2), h('div', {}, h('b', {}, R?.mode === 'note' ? tx('wrapNote') : tx('wrapPractice')),
     rItem ? h('p', { lang: 'ko', class: 'ko' }, rItem.text) : null, !did2 ? h('p', { class: 'fine' }, tx('wrapNoTake2')) : null)),
-   h('li', {}, tick(!!T?.spoke), h('div', {}, h('b', {}, tx('wrapTransfer')), h('p', {}, T?.spoke ? tx('wrapTransferTried') : T?.tries ? tx('wrapTransferUnheard') : T?.invalid ? tx('wrapTransferInvalid') : tx('wrapTransferNot')),
-    hintState ? h('p', { class: 'fine' }, tx(hintState)) : null)),
+   h('li', {}, tick(!!T?.spoke && !(T.deferred && !T.trail?.recorded)), h('div', {}, h('b', {}, tx('wrapTransfer')), h('p', {}, T?.deferred && !T.trail?.recorded ? tx('wrapTransferHeld') : T?.spoke ? tx('wrapTransferTried') : T?.tries ? tx('wrapTransferUnheard') : T?.invalid ? tx('wrapTransferInvalid') : tx('wrapTransferNot')),
+    hintState && !(T.deferred && !T.trail?.recorded) ? h('p', { class: 'fine' }, tx(hintState)) : null)),
   ),
   h('details', { class: 'takes', open: msg ? '' : null }, h('summary', { class: 'eyebrow' }, tx('myTakes')),
    S.takes.length ? h('div', { class: 'take-list' }, S.takes.map((k) => {
@@ -1276,7 +1364,7 @@ async function restart() {
  if (!live(s)) return;
  if (!r?.ok || !r.data?.ok) return resetFailed();
  clearTakes();
- S.lines.clear(); S.retake = null; S.transfer = null; S.micNoticeShown = false; S.sentRun = false;
+ S.lines.clear(); S.retake = null; S.transfer = null; S.micNoticeShown = false; S.sentRun = false; S.pendingB = null;
  // C는 기록 · 모범 본 사실은 두고 이번 판의 테이크 흔적만 비운다(화면 검수 F2).
  if (S.delayedRun) Object.assign(S.delayedRun, { tries: 0, spoke: 0, last: null, lastTakeId: null, selfCheck: null, unheard: 0, invalid: 0 });
  if (inWorld()) resetAttempts(W.delayedAttempts);
