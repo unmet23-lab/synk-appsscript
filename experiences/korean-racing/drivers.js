@@ -5,7 +5,7 @@
 export const DRIVER_FELT_URL = './assets/felt/driver-felt.webp';
 export const DRIVER_SPECS = Object.freeze({
   marin: Object.freeze({label:'마린',forward:[0,0,1],helmet:0x283158,eyes:0xf5cd58,body:0xcbb7a8,eyeMaterial:'matte-felt'}),
-  kkamong: Object.freeze({label:'까몽',forward:[0,0,1],body:0x302326,iris:0x799459,eyeMaterial:'glass'})
+  kkamong: Object.freeze({label:'까몽',forward:[0,0,1],body:0x45322b,iris:0x799459,eyeMaterial:'glass'})
 });
 
 const TAU = Math.PI * 2;
@@ -97,15 +97,133 @@ function fibres(T,parent,material,name,surface,count,seed,length=.016) {
   }
   strands.instanceMatrix.needsUpdate=true;strands.computeBoundingBox();strands.computeBoundingSphere();parent.add(strands);return strands;
 }
-function softFold(T,parent,material,name,position,scale,rotation) {
-  // Tiny ambiguous felt folds preserve Kkamong's silhouette. These are not
-  // new limbs, horns or a bat wing skeleton (guide anatomy-actions).
+function feltEar(T,parent,material,name,position,scale,rotation) {
+  // Kkamong's pointed cat ears: a felt blob narrowing to a soft point. They sit
+  // on the crown's corners, as in the 4K master (docs/캐릭터/정본_4K/까몽_본체.png).
   const geometry=new T.SphereGeometry(1,24,12),p=geometry.attributes.position;
   for(let i=0;i<p.count;i++){
     const y=p.getY(i),x=p.getX(i),z=p.getZ(i),t=.78+.22*(1-y)*.5;
     p.setXYZ(i,x*t,y,z*t);
   }
   geometry.computeVertexNormals();return part(T,parent,geometry,material,name,position,scale,rotation);
+}
+// 2026-10-27 revision (docs/캐릭터/가이드_정본.md 「까몽 개정」): in place of arms
+// Kkamong has two small dragon wings — a brown felt bone up to a rounded elbow
+// knob and out to the tip, one rib down to the middle scallop, and an olive felt
+// membrane with a scalloped lower edge — and a thick dragon tail that tapers and
+// curls up, with five olive felt spikes on its ridge. No hands. The shapes are
+// those of the WORLD home avatar (experiences/synk-world-home/home-kkamong-avatar.mjs,
+// WING · wingMembraneGeometry · wingBoneGeometry · wingRibGeometry · tailGeometry ·
+// TAIL_SPIKES · placeSpikes), re-measured into this seated rig. The body and
+// the eyes follow the same avatar (BODY_PROFILE · bodySectionAt · EYES): a round
+// head on a rounder belly with a softly pinched neck, like a snowman, and round
+// glass eyes whose olive iris shows wide around the black pupil.
+// Home coordinates map to the rig by one scale: the home floor (.28) is the
+// rig's lowest point and the home crown (1.895) its top (.737).
+const KKAMONG_HOME_SCALE=.484,KKAMONG_HOME_FLOOR=.28,KKAMONG_RIG_FLOOR=-.045;
+const kkamongRigY=y=>KKAMONG_RIG_FLOOR+(y-KKAMONG_HOME_FLOOR)*KKAMONG_HOME_SCALE;
+// The home avatar's measured rows [height, half width] from the felt master
+// (heights before its .95 squash): belly, pinched neck, round head, crown.
+const KKAMONG_HOME_ROWS=[[.280,0],[.297,.1292],[.3225,.20672],[.365,.2907],[.4075,.350455],[.45,.411825],[.4925,.447355],[.535,.47481],[.62,.51034],[.705,.524875],[.79,.524875],[.875,.51357],[.96,.476425],[1.028,.45866],[1.079,.46189],[1.13,.47804],[1.215,.51357],[1.3,.54587],[1.385,.56525],[1.47,.573325],[1.555,.565306],[1.64,.540536],[1.708,.507068],[1.759,.472389],[1.81,.427331],[1.844,.389786],[1.878,.343995],[1.912,.286025],[1.946,.20583],[1.963,.146793],[1.98,0]];
+const KKAMONG_BODY_ROWS=KKAMONG_HOME_ROWS.map(([y,w])=>[w*KKAMONG_HOME_SCALE,kkamongRigY(KKAMONG_HOME_FLOOR+(y-KKAMONG_HOME_FLOOR)*.95)]);
+const KKAMONG_TOP=KKAMONG_BODY_ROWS.at(-1)[1];
+// bodySectionAt: the section is round, its front .84 and its back .74 of the
+// half width, and the belly sits a little further back than the head.
+const KKAMONG_FRONT=.84,KKAMONG_BACK=.74;
+function kkamongDepthCentre(y) {
+  const t=Math.max(0,Math.min(1,(y-KKAMONG_RIG_FLOOR)/(KKAMONG_TOP-KKAMONG_RIG_FLOOR))),ease=t*t*(3-2*t);
+  return (-.100+.106*ease)*KKAMONG_HOME_SCALE;
+}
+function kkamongBodyGeometry(T) {
+  // One smooth outline revolved, then pressed to the home section.
+  const body=profile(T,KKAMONG_BODY_ROWS,56,48),p=body.geometry.attributes.position;
+  for(let i=0;i<p.count;i++){const y=p.getY(i),z=p.getZ(i);p.setZ(i,z*(z>=0?KKAMONG_FRONT:KKAMONG_BACK)+kkamongDepthCentre(y));}
+  body.geometry.computeVertexNormals();return body;
+}
+function kkamongBodyPoint(T,ring,y,theta) {
+  const front=Math.sin(theta)>=0,surface=profilePoint(T,ring,y,theta,front?KKAMONG_FRONT:KKAMONG_BACK);
+  surface.point.z+=kkamongDepthCentre(y);return surface;
+}
+// EYES: centres .2096 from the middle and radius .091, as at home. Their
+// height is measured on the 4K front master (정본_4K/까몽_본체.png): the iris
+// centres sit 19.8% of the body height below the crown (home units 1.575; the
+// home avatar uses 1.457), and the pupil is about .68 of the iris.
+const KKAMONG_EYES={x:.2096*KKAMONG_HOME_SCALE,y:kkamongRigY(1.575),r:.091*KKAMONG_HOME_SCALE,pupil:.68};
+// Olive felt of the wing membranes and tail spikes: the home avatar remaps its
+// felt photograph between FELT.wingDark #4a6127 and FELT.wingLight #b9d07c; its
+// olive fuzz middle tone #88a64a is that felt's average colour.
+const KKAMONG_OLIVE=0x88a64a;
+// Front-view points of the home master [x, y]. The driving pose keeps the home
+// "ta-da" lift (.62) — the elbow knob stands above the shoulder and the
+// membrane fans out. The wings sweep further back than at home (.14), clear of
+// the wheel, which also turns the membrane towards a side camera instead of
+// edge on. `size` grows the wing about its root a little for driving distance
+// and `out` (rig units) moves its root outwards. The rib is a little thicker
+// than the home rib so it stands proud of the thinner membrane.
+const KKAMONG_WING={root:[.540,1.322],knob:[.669,1.452],tip:[.895,1.262],rib:[.730,1.110],low:[.568,1.055],attach:[.470,1.077],size:1.12,out:0,sweep:.45,raise:.62,z:-.06,bone:.046,elbow:.060,ribRadius:.034};
+function kkamongHomeMatrix(T) {
+  const s=KKAMONG_HOME_SCALE;
+  return new T.Matrix4().makeTranslation(0,KKAMONG_RIG_FLOOR-KKAMONG_HOME_FLOOR*s,0).multiply(new T.Matrix4().makeScale(s,s,s));
+}
+function kkamongWingFrame(T,side) {
+  const W=KKAMONG_WING,c=Math.cos(W.sweep);
+  const matrix=new T.Matrix4().makeTranslation(side*W.out,0,0).multiply(kkamongHomeMatrix(T)).multiply(new T.Matrix4().makeTranslation(side*W.root[0],W.root[1],W.z))
+    .multiply(new T.Matrix4().makeScale(W.size,W.size,W.size)).multiply(new T.Matrix4().makeRotationZ(side*W.raise)).multiply(new T.Matrix4().makeRotationY(side*W.sweep));
+  const local=([x,y],z=0)=>new T.Vector3(side*(x-W.root[0])/c,y-W.root[1],z);
+  return {matrix,local,world:(point,z=0)=>local(point,z).applyMatrix4(matrix)};
+}
+function kkamongWingMembrane(T,side) {
+  const W=KKAMONG_WING,{local,matrix}=kkamongWingFrame(T,side),at=point=>{const v=local(point);return [v.x,v.y];};
+  const mid=(a,b,t,lift)=>[a[0]+(b[0]-a[0])*t+lift[0],a[1]+(b[1]-a[1])*t+lift[1]];
+  const shape=new T.Shape();shape.moveTo(...at(W.attach));
+  shape.lineTo(...at(W.root));
+  shape.quadraticCurveTo(...at([.600,1.430]),...at(W.knob));
+  shape.quadraticCurveTo(...at([.790,1.400]),...at(W.tip));
+  // Each scallop bows up and inwards between two points of the lower edge.
+  shape.quadraticCurveTo(...at(mid(W.tip,W.rib,.5,[-.065,.105])),...at(W.rib));
+  shape.quadraticCurveTo(...at(mid(W.rib,W.low,.5,[-.018,.085])),...at(W.low));
+  shape.quadraticCurveTo(...at(mid(W.low,W.attach,.5,[.010,.030])),...at(W.attach));
+  const geometry=new T.ExtrudeGeometry(shape,{depth:.016,bevelEnabled:true,bevelThickness:.009,bevelSize:.010,bevelSegments:2,curveSegments:8});
+  geometry.translate(0,0,-.008);geometry.applyMatrix4(matrix);geometry.computeVertexNormals();return geometry;
+}
+function kkamongTaperedTube(T,curve,radius,segments,radial,closeTip=true) {
+  // A felt bone, rib or tail: a round tube whose radius follows radius(t). The
+  // open root end stays buried in the body; the far end closes to a soft point.
+  const geometry=new T.TubeGeometry(curve,segments,1,radial,false),position=geometry.getAttribute('position');
+  for(let segment=0;segment<=segments;segment++){
+    const t=segment/segments,center=curve.getPointAt(t),scale=Math.max(.002,radius(t)*(closeTip?Math.sqrt(Math.min(1,Math.max(0,(1-t)/.10))):1));
+    for(let ring=0;ring<=radial;ring++){
+      const i=segment*(radial+1)+ring;
+      position.setXYZ(i,center.x+(position.getX(i)-center.x)*scale,center.y+(position.getY(i)-center.y)*scale,center.z+(position.getZ(i)-center.z)*scale);
+    }
+  }
+  geometry.computeVertexNormals();return geometry;
+}
+function kkamongWingBones(T,side) {
+  const W=KKAMONG_WING,{world}=kkamongWingFrame(T,side),s=KKAMONG_HOME_SCALE*W.size,elbowT=.42;
+  const curve=points=>new T.CatmullRomCurve3(points.map(point=>world(point)));
+  // Thicker at the rounded elbow knob, a little thinner out to the tip.
+  const bone=kkamongTaperedTube(T,curve([[W.root[0]-.070,W.root[1]-.040],W.root,[.610,1.410],W.knob,[.775,1.392],W.tip,[W.tip[0]+.022,W.tip[1]-.010]]),
+    t=>s*(W.bone+(W.elbow-W.bone)*Math.exp(-(((t-elbowT)/.11)**2))-.006*t),18,9);
+  const rib=kkamongTaperedTube(T,curve([[W.knob[0]-.010,W.knob[1]-.030],[.700,1.300],[.712,1.200],W.rib]),t=>s*W.ribRadius*(1-.25*t),10,7);
+  return [bone,rib];
+}
+// The seated dragon tail, in rig units. The home tail leaves the lower side and
+// curls up beside the body; behind a driver's seat that path would run through
+// the door. Here the same thick root, taper and proud upward curl leave the
+// lower back on the right and run diagonally out behind the seat back, rising
+// above the rear deck inside the cockpit sides. Seen from the chase camera the
+// curl stands clear of the body at an angle, so its spikes show.
+const KKAMONG_TAIL=[[.10,.24,-.10],[.22,.29,-.22],[.31,.34,-.33],[.36,.43,-.41],[.36,.54,-.42],[.32,.61,-.38]];
+const kkamongTailRadius=t=>Math.max(.004,.108*Math.pow(1-t,.45)*(1-.25*t));
+// Five soft felt spikes along the ridge, largest near the root: [t, height, length].
+const KKAMONG_SPIKE_ROLL=-.7;
+const KKAMONG_TAIL_SPIKES=[[.30,.064,.061],[.43,.056,.054],[.56,.046,.046],[.68,.038,.039],[.79,.030,.032]];
+function kkamongSpikeGeometry(T) {
+  const outline=[[1,0],[.97,.14],[.80,.38],[.52,.66],[.24,.89],[.08,.98],[0,1]].map(([r,y])=>new T.Vector2(r*.5,y));
+  // LatheGeometry's own profile normals stay defined at the pointed tip, where
+  // recomputed face normals vanish; scale() carries them through the press.
+  const geometry=new T.LatheGeometry(outline,10);geometry.scale(1,1,.42);return geometry;
 }
 function addMarin(T,rig,texture) {
   const indigo=wool(T,0x283158,texture),seam=wool(T,0x222948,texture),stone=wool(T,0xcbb7a8,texture),cream=wool(T,0xe4d7c6,texture),yellow=wool(T,0xf5cd58,texture,{sheen:.25,envMapIntensity:.16});
@@ -219,30 +337,68 @@ function addMarin(T,rig,texture) {
   return {head,eyes,arms:rig.children.filter(p=>p.name.startsWith('driver-marin-arm-')),torso};
 }
 function addKkamong(T,rig,texture) {
-  const dark=wool(T,0x302326,texture,{sheen:.88}),warm=wool(T,0x594137,texture),fold=wool(T,0x39282a,texture);
-  const body=profile(T,[[0,-.045],[.14,-.040],[.235,.033],[.279,.170],[.293,.356],[.269,.527],[.218,.666],[.132,.724],[0,.737]],48,32);
-  feltSurface(T,part(T,rig,body.geometry,dark,'kkamong-soft-body',[0,0,0],[1,1,.95]),(x,y,z)=>.96+.05*y+Math.sin(x*8+z*5)*.025);
+  const dark=wool(T,DRIVER_SPECS.kkamong.body,texture,{sheen:.88});
+  const olive=wool(T,KKAMONG_OLIVE,texture,{sheen:.2});
+  const body=kkamongBodyGeometry(T);
+  // As at home: the neck sits in the shade of the head and the wings, and the
+  // belly is a little darker than the crown.
+  const neckY=kkamongRigY(KKAMONG_HOME_FLOOR+(1.075-KKAMONG_HOME_FLOOR)*.95),homeY=y=>(y-KKAMONG_RIG_FLOOR)/KKAMONG_HOME_SCALE+KKAMONG_HOME_FLOOR;
+  feltSurface(T,part(T,rig,body.geometry,dark,'kkamong-soft-body'),(x,y,z)=>(1-.12*Math.exp(-(((y-neckY)/.048)**2)))*(.90+.16*Math.max(0,Math.min(1,(homeY(y)-.5)/1.3)))+Math.sin(x*8+z*5)*.02);
   const head=new T.Group();head.name='driver-kkamong-face';rig.add(head);
+  const wings=[];
   for(const side of [-1,1]){
-    softFold(T,rig,dark,`kkamong-top-fold-${side}`,[side*.207,.672,-.024],[.080,.135,.075],[0,0,side*-.22]);
-    softFold(T,rig,fold,`kkamong-side-fold-${side}`,[side*.309,.339,-.082],[.114,.166,.076],[.12,0,side*-.86]);
+    feltEar(T,rig,dark,`kkamong-ear-${side}`,[side*.170,.664,-.020],[.090,.114,.064],[0,0,side*-.34]);
+    // Each wing is its own group so a later flap can turn it about the shoulder.
+    const wing=new T.Group();wing.name=`driver-kkamong-wing-${side}`;rig.add(wing);wings.push(wing);
+    feltSurface(T,part(T,wing,kkamongWingMembrane(T,side),olive,`kkamong-wing-membrane-${side}`),(x,y,z)=>.74+Math.sin(x*41+y*37+z*29)*.02);
+    const [bone,rib]=kkamongWingBones(T,side);
+    combineParts(T,wing,[part(T,wing,bone,dark,`kkamong-wing-bone-${side}`),part(T,wing,rib,dark,`kkamong-wing-rib-${side}`)],`kkamong-wing-bones-${side}`);
   }
-  // In the original Kkamong image the little tail is beside the body. Keep
-  // it behind the seat and short, without introducing claws or long limbs.
-  curveTube(T,rig,dark,'kkamong-tail',[[.184,.053,-.105],[.282,.055,-.205],[.338,.031,-.27],[.359,.04,-.326]],.054,20,8);
-  ellipsoid(T,rig,dark,'kkamong-tail-tip',[.365,.047,-.337],[.088,.079,.097],20,12);
-  const irisMaterial=new T.MeshPhysicalMaterial({color:0x799459,metalness:0,roughness:.25,clearcoat:.88,clearcoatRoughness:.09,envMapIntensity:1});
-  const glass=new T.MeshPhysicalMaterial({color:0x050c08,metalness:0,roughness:.10,clearcoat:1,clearcoatRoughness:.05,envMapIntensity:1.3});
-  const eyes=[];
+  const tailCurve=new T.CatmullRomCurve3(KKAMONG_TAIL.map(p=>new T.Vector3(...p)));
+  feltSurface(T,part(T,rig,kkamongTaperedTube(T,tailCurve,kkamongTailRadius,30,12),dark,'kkamong-dragon-tail'),(x,y,z)=>.95+.06*y);
+  // The ridge follows the curl: the top of the tail turns towards the body as
+  // the tail rises, as on the master, where the spikes sit inside the curl.
+  // The tail's plane is upright through its diagonal run; `across` is its normal.
+  const run=new T.Vector3(...KKAMONG_TAIL[3]).sub(new T.Vector3(...KKAMONG_TAIL[0])).setY(0).normalize();
+  const spikeShape=kkamongSpikeGeometry(T),spikes=[],across=new T.Vector3(-run.z,0,run.x),tangent=new T.Vector3(),up=new T.Vector3(),sideways=new T.Vector3(),basis=new T.Matrix4();
+  KKAMONG_TAIL_SPIKES.forEach(([t,height,length],i)=>{
+    const spike=part(T,rig,i?spikeShape.clone():spikeShape,olive,`kkamong-tail-spike-${i+1}`);
+    tangent.copy(tailCurve.getTangentAt(t));up.crossVectors(across,tangent).normalize();sideways.crossVectors(tangent,up).normalize();
+    // Rolled a little towards the outside of the run, so the row shows from the
+    // chase camera behind and above as well as from the front.
+    up.multiplyScalar(Math.cos(KKAMONG_SPIKE_ROLL)).addScaledVector(sideways,Math.sin(KKAMONG_SPIKE_ROLL)).normalize();sideways.crossVectors(tangent,up).normalize();
+    basis.makeBasis(tangent,up,sideways);spike.quaternion.setFromRotationMatrix(basis);
+    spike.scale.set(length,height,length);spike.position.copy(tailCurve.getPointAt(t)).addScaledVector(up,kkamongTailRadius(t)*.86);
+    spikes.push(spike);
+  });
+  combineParts(T,rig,spikes,'kkamong-tail-spikes');
+  // Round glass eyes without a brown rim: a domed olive iris, a black glass
+  // pupil and one bright catch-light, set into the face as at home.
+  const irisMaterial=new T.MeshPhysicalMaterial({color:DRIVER_SPECS.kkamong.iris,emissive:DRIVER_SPECS.kkamong.iris,emissiveIntensity:.22,metalness:0,roughness:.23,clearcoat:1,clearcoatRoughness:.12,envMapIntensity:1});
+  const glass=new T.MeshPhysicalMaterial({color:0x09080a,metalness:0,roughness:.10,clearcoat:1,clearcoatRoughness:.06,envMapIntensity:1.3});
+  const glint=new T.MeshStandardMaterial({color:0xfff9ee,emissive:0xfff9ee,emissiveIntensity:.9,roughness:.3,metalness:0});
+  const E=KKAMONG_EYES,s=KKAMONG_HOME_SCALE,eyes=[];
+  const centre=kkamongDepthCentre(E.y),front=kkamongBodyPoint(T,body.ring,E.y,Math.PI/2).point.z-centre,halfWidth=profilePoint(T,body.ring,E.y,0).point.x;
+  // Set a little deeper than at home and turned with the face, so the domed
+  // glass sits flush in the felt from the 3/4 views instead of standing out.
+  const eyeZ=centre+front*Math.sqrt(1-(E.x/halfWidth)**2)-.022*s;
   for(const side of [-1,1]){
-    const eye=new T.Group();eye.name=`driver-kkamong-eye-${side}`;eye.position.set(side*.098,.493,.246);eye.rotation.y=side*.21;head.add(eye);
-    ellipsoid(T,eye,warm,'kkamong-eye-socket',[0,0,-.008],[.052,.057,.025],20,12);
-    ellipsoid(T,eye,irisMaterial,'kkamong-iris',[0,0,0],[.041,.046,.017],28,16);
-    const pupil=ellipsoid(T,eye,glass,'kkamong-glass-pupil',[0,0,.010],[.0303,.034,.018],28,16);pupil.userData.baseScaleY=pupil.scale.y;eyes.push(pupil);
+    const eye=new T.Group();eye.name=`driver-kkamong-eye-${side}`;eye.position.set(side*E.x,E.y,eyeZ);eye.rotation.y=side*.30;head.add(eye);
+    ellipsoid(T,eye,irisMaterial,'kkamong-iris',[0,0,0],[E.r,E.r*1.10,.056*s],28,18);
+    const pr=E.r*E.pupil;ellipsoid(T,eye,glass,'kkamong-glass-pupil',[0,0,.044*s],[pr,pr*1.10,.016*s],28,16);
+    const g=E.r/.095;ellipsoid(T,eye,glint,'kkamong-eye-glint',[-.027*g,.032*g,.060*s],[.0205*g,.022*g,.006*s],12,8);
+    eye.userData.baseScaleY=1;eyes.push(eye);
   }
-  fibres(T,rig,dark,'kkamong-fibres',random=>profilePoint(T,body.ring,.0+random()*.705,random()*TAU,.95),1400,913,.023);
+  // Felt fibres follow the new surface; none over the eyes.
+  const eyeCentres=[-1,1].map(side=>[side*E.x,E.y]);
+  fibres(T,rig,dark,'kkamong-fibres',random=>{
+    for(;;){
+      const surface=kkamongBodyPoint(T,body.ring,KKAMONG_RIG_FLOOR+.01+random()*(KKAMONG_TOP-KKAMONG_RIG_FLOOR-.03),random()*TAU);
+      if(!(surface.point.z>0&&eyeCentres.some(([x,y])=>Math.hypot(surface.point.x-x,surface.point.y-y)<E.r*1.2)))return surface;
+    }
+  },1400,913,.023);
   rig.scale.setScalar(1.09);
-  return {head,eyes,arms:[],torso:rig.children[0]};
+  return {head,eyes,arms:[],wings,torso:rig.children[0]};
 }
 
 /** Build a driver with genuinely three-dimensional, shadow-casting surfaces.

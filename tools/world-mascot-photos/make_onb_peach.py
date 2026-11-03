@@ -1,4 +1,5 @@
 # 튜터 고르기 판을 복숭아색 무지 촬영 배경지로 다시(10-14 유호님 「튜터 고르기 배경은 복숭아색 배경지로 다시 구워줘」).
+# 11-04: 까몽 · 마린은 10-27 정본 본체(까몽 짜잔 · 마린 경례 + 수첩)로.
 # 첫 화면 바탕 #F8C6B3과 이어지게. 소품·자세·표정 지시는 그대로 두고 방·벽·창·나무 바닥만 배경지로 바꾼다.
 # 결과: p_onbpeach_<id>.txt(지시문), hf_onbpeach_<id>.txt(MASCOTS까지 채운 최종 글 — 힉스필드 GPT Image 2.5에 그대로 넣는다)
 import os, re
@@ -12,8 +13,8 @@ LIGHT = ('Lighting: one large soft key light from the upper left like a big diff
          'nothing else in the background but the peach paper. Eye-level camera, 50mm lens look, shallow depth of field.')
 SHOT = {
     'mongle': f'Mongle (see MASCOTS below and REFERENCE 1) sits {PAPER}. Mongle is curious and loves to touch everything: just to the right of Mongle stands a tiny felt flower pot with a sage-green sprout, and a small red felt ladybug rests on one leaf. Mongle\'s body is turned about 15 degrees toward the pot but its face looks straight at the camera. {LIGHT}',
-    'kkamong': f'Kkamong (see MASCOTS) SITS firmly on top of a small stack of three felt books (dusty blue, mustard and cream covers, no titles) standing {PAPER}. Its round fluffy bottom presses down into the top book (the cover dents slightly), both short arms rest on its round belly, and its long tail with the coral felt paddle hangs down over the side of the books and touches the paper. It is NOT floating and its arms are NOT raised. Kkamong believes it is the coolest dragon in the world, so it sits proudly with its chest out, facing the camera. {LIGHT}',
-    'marin': f'Marin (see MASCOTS) stands very upright {PAPER}, next to a tiny open felt notebook with neat dotted lines and a small pencil; beside the notebook a single white felt daisy stands in a thimble used as a vase. Marin is serious and precise but secretly kind: it stands straight like on duty, its feet flat on the paper, one tiny arm holding the strap of its cross-body pouch, facing the camera. {LIGHT}',
+    'kkamong': f'Kkamong (see MASCOTS) SITS firmly on top of a small stack of three felt books (dusty blue, mustard and cream covers, no titles) standing {PAPER}. Its round bottom presses down into the top book (the cover dents slightly). It strikes its proud ta-da pose: both little dragon wings lifted high and spread open at its shoulders, its spiky olive-tipped dragon tail curled up behind it, chin slightly up, facing the camera. Kkamong believes it is the coolest dragon in the world. It is NOT floating. {LIGHT}',
+    'marin': f'Marin (see MASCOTS) stands very upright {PAPER}; beside it a single white felt daisy stands in a thimble used as a vase, with a small pencil lying on the paper. Marin is serious and precise but secretly kind: it stands straight like on duty, its feet flat on the paper, and gives a crisp little salute - its right hand raised beside its right lens - while its left hand holds a small cream felt notebook against its chest, facing the camera. {LIGHT}',
 }
 common = open(os.path.join(ROOT, 'mascot_common.txt'), encoding='utf-8').read()
 for tid, shot in SHOT.items():

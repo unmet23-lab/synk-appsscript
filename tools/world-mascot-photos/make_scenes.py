@@ -32,7 +32,7 @@ Each photo is a friendly ID-card portrait of one felt mascot: head and upper bod
 
 # 첫 환영(계정 만들기 전 「SYNK WORLD 시작하기」)
 job('welcome', f'''Image to generate: one square photograph.
-The three felt friends welcome a new visitor at the open round wooden door of their small felt house: Kkamong stands on the left waving one short fluffy arm, Mongle stands in the middle slightly in front with gentle smiling stitched-arc eyes, Marin stands on the right raising one tiny arm in a hello, its lenses glowing warm yellow. They stand on a little cream felt doormat on a stone step, warm light spills from inside the house behind them, a small potted sage plant beside the door. Morning daylight from the left, soft real contact shadows. The group is centred and fills about 70 percent of the frame width, their feet at about 86 percent of the height, nothing cropped.
+The three felt friends welcome a new visitor at the open round wooden door of their small felt house: Kkamong stands on the left waving the tip of one little dragon wing, Mongle stands in the middle slightly in front with gentle smiling stitched-arc eyes, Marin stands on the right giving a little salute hello with one hand, holding its small cream felt notebook in the other, its lenses glowing warm yellow. They stand on a little cream felt doormat on a stone step, warm light spills from inside the house behind them, a small potted sage plant beside the door. Morning daylight from the left, soft real contact shadows. The group is centred and fills about 70 percent of the frame width, their feet at about 86 percent of the height, nothing cropped.
 {STYLE} {NOTEXT}
 
 {{{{MASCOTS}}}}
@@ -43,7 +43,7 @@ The three felt friends welcome a new visitor at the open round wooden door of th
 CAFE = 'a cosy felt neighbourhood cafe called "Cloud" (but no visible text): warm wood, cream walls, small hanging lamps, a felt espresso machine and cups in the background.'
 for name, place, side in [
     ('cafe_counter', f'The three friends stand side by side in front of the wooden order counter of {CAFE} They look up toward the counter, ready to order.', 'left'),
-    ('cafe_window', f'The three friends sit around a small round wooden table by a big sunny window inside {CAFE} Mongle sits on a cushion on the chair, Kkamong and Marin on their chairs, all relaxed and chatting.', 'left'),
+    ('cafe_window', f'The three friends sit around a small round wooden table by a big sunny window inside {CAFE} Mongle sits on a cushion on the chair, Kkamong and Marin on their chairs, all relaxed and chatting; Marin holds a small cup with both hands, Kkamong rests one wing tip on the table.', 'left'),
     ('cafe_garden', f'The three friends sit around a small wooden table on the garden terrace of {CAFE}, surrounded by felt potted plants and a little hedge, dappled daylight.', 'right'),
 ]:
     other = 'right' if side == 'left' else 'left'
@@ -56,13 +56,13 @@ Composition: the friends are grouped in the {side} half of the frame, occupying 
 {REFNOTE}
 ''')
 
-# 생활 한국어 이야기 6편: 같은 장면 2×2 — 해설(모두 차분) · 몽글 · 까몽 · 마린이 말하는 순간
+# 생활 한국어 이야기 6편: 같은 장면 2×2 · 글을 얹는 자리(story-signs.mjs)는 왼쪽 위 튜터 알약을 피해 자리를 못 박는다(11-04) — 해설(모두 차분) · 몽글 · 까몽 · 마린이 말하는 순간
 STORIES = {
     'story_greetings': 'the three friends meet for the first time in a sunny little felt community hall; on a low table in front of them lie three blank felt name tags with ribbons.',
     'story_cafe': 'the three friends stand at the counter of a cosy felt cafe; on the counter is a cup topped with a big fluffy whipped-cream cloud that looks like a real little cloud.',
     'story_store': 'the three friends stand in the aisle of a small bright felt convenience store, shelves of small felt water bottles and snacks behind them, a little felt shopping basket on the floor next to Kkamong.',
-    'story_directions': 'the three friends stand on a quiet felt street corner beside a wooden signpost with blank arrow boards; a big felt map lies open on the pavement in front of them, upside down.',
-    'story_transit': 'the three friends sit side by side on the seat of a green felt city bus; through the bus window behind them, out of focus, a road lined with flowering trees; a small red stop button on the pole beside them.',
+    'story_directions': 'the three friends stand on a quiet felt street corner; a wooden signpost stands at the far right edge of the set behind Marin, and its two blank arrow boards sit in the upper right corner of the frame (about 72 to 96 percent of the width, 4 to 26 percent of the height) - the upper board points right, the lower board points left; a big felt map lies open on the pavement in front of them, upside down.',
+    'story_transit': 'the three friends sit side by side on the seat of a green felt city bus; through the bus window behind them, out of focus, a road lined with flowering trees; a small red stop button on the pole beside them; above the window, across the upper right part of the frame (about 45 to 95 percent of the width, 2 to 10 percent of the height), a long dark rectangular LED destination display panel glows faintly with no text on it.',
     'story_plans': 'the three friends stand in front of the steps of a small felt library building with a big round clock above the door showing three o\'clock (hands only, no numbers).',
 }
 for name, scene in STORIES.items():
@@ -70,8 +70,8 @@ for name, scene in STORIES.items():
 All four frames are the SAME locked-off camera shot of the SAME miniature set: {scene} The friends stand left to right: Mongle, Kkamong, Marin, at the same positions and sizes in every frame, their bodies between 30 and 86 percent of the frame height, together about 60 percent of the frame width, nothing cropped. Only who is talking changes:
 1. top-left: nobody talks - all three calm with default faces (Mongle black bead eyes, Kkamong round green eyes, Marin round yellow lenses), looking at the scene.
 2. top-right: Mongle talks - Mongle has lively smiling stitched-arc eyes and leans a tiny bit forward; the other two turn their heads slightly toward Mongle.
-3. bottom-left: Kkamong talks - Kkamong has proud happy green stitched-arc eyes and lifts one short arm; the other two turn slightly toward Kkamong.
-4. bottom-right: Marin talks - Marin's lenses glow brighter with a bright horizontal band (focused, explaining) and it raises one tiny arm; the other two turn slightly toward Marin.
+3. bottom-left: Kkamong talks - Kkamong has proud happy green stitched-arc eyes and lifts both little dragon wings high; the other two turn slightly toward Kkamong.
+4. bottom-right: Marin talks - Marin's lenses glow brighter with a bright horizontal band (focused, explaining) and it raises one small hand; the other two turn slightly toward Marin.
 Light and set are identical in all frames. {STYLE} {NOTEXT}
 
 {{{{MASCOTS}}}}

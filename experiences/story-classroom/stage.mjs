@@ -21,7 +21,7 @@ const SPRITES = {
   snacks: ['prop-snacks', 256, 256, 21, 18, 215, 222], paper: ['prop-paper', 256, 256, 16, 30, 224, 198],
   cake: ['prop-cake', 256, 256, 17, 18, 223, 217], ribbon: ['prop-ribbon', 256, 256, 16, 31, 221, 195],
   flowers: ['prop-flowers', 256, 256, 39, 18, 178, 222], letter: ['prop-letter', 256, 256, 16, 48, 224, 162],
-  marin: ['marin-body', 1024, 1024, 255, 183, 527, 812], kkamong: ['kkamong-body', 1024, 1024, 126, 141, 817, 771],
+  marin: ['marin-body', 1024, 1024, 256, 302, 523, 691], kkamong: ['kkamong-body', 1024, 1024, 128, 197, 813, 713],
   teacher: ['teacher', 1024, 1536, 0, 14, 1012, 1498],
 };
 export const sprite = (id) => SPRITES[id];

@@ -18,8 +18,8 @@ FACES = {
         ('기본', 'calm default - two big round glossy green eyes (chart cell 1)'),
         ('잔잔감음', 'eyes closed in a soft blink - two short light-green stitched lines (chart cell 2)'),
         ('놀람', 'surprised - the green eyes opened a little wider and rounder (chart cell 4)'),
-        ('기쁨', 'very happy - light-green stitched upward arc eyes like chart cell 3, plus a tiny puff of white felt steam from the nose'),
-        ('으쓱', 'smug and proud - light-green stitched arcs like chart cell 7, chin slightly up'),
+        ('기쁨', 'very happy - light-green stitched upward arc eyes like chart cell 3, plus a tiny puff of white felt steam rising beside its head'),
+        ('으쓱', 'smug and proud - round green eyes with the lower eyelids pushed up into a sly half-moon smile exactly like chart cell 7, chin slightly up'),
         ('민망', 'a little embarrassed - small half-closed light-green eyes like chart cell 5, plus one tiny light-blue felt sweat drop on the side of the head'),
     ],
     'marin': [
@@ -49,7 +49,7 @@ FRAMING = {
 SCENES = {
     ('onb', 'mongle'): None,  # 시험판(p_onb_mongle.txt)을 그대로 쓴다
     ('onb', 'kkamong'): ('stage', 'Kkamong (see MASCOTS) stands proudly on top of a small stack of three felt books (dusty blue, mustard and cream covers, no titles) on a warm honey-coloured oak floor in the sunny corner of a small handmade felt room. Kkamong believes it is the coolest dragon in the world: chest puffed out, both short fluffy arms on its hips, its long tail with the coral felt paddle curled proudly around the side of the books. It faces the camera. Background: a soft cream plaster wall with a faint felt texture, a bit of a window frame at the far left edge with warm afternoon sunlight from the upper left, gentle bounce light, soft real contact shadows. Eye-level camera, 50mm lens look, shallow depth of field.'),
-    ('onb', 'marin'): ('stage', 'Marin (see MASCOTS) stands very upright next to a tiny open felt notebook with neat dotted lines and a small pencil on a warm honey-coloured oak floor in the sunny corner of a small handmade felt room; beside the notebook a single white felt daisy stands in a thimble used as a vase. Marin is serious and precise but secretly kind: it stands straight like on duty, one tiny arm holding the strap of its cross-body pouch, facing the camera. Background: a soft cream plaster wall with a faint felt texture, a bit of a window frame at the far left edge with warm afternoon sunlight from the upper left, gentle bounce light, soft real contact shadows. Eye-level camera, 50mm lens look, shallow depth of field.'),
+    ('onb', 'marin'): ('stage', 'Marin (see MASCOTS) stands very upright on a warm honey-coloured oak floor in the sunny corner of a small handmade felt room; beside it a single white felt daisy stands in a thimble used as a vase, with a small pencil lying on the floor. Marin is serious and precise but secretly kind: it stands straight like on duty and gives a crisp little salute - its right hand raised beside its right lens - while its left hand holds a small cream felt notebook against its chest, facing the camera. Background: a soft cream plaster wall with a faint felt texture, a bit of a window frame at the far left edge with warm afternoon sunlight from the upper left, gentle bounce light, soft real contact shadows. Eye-level camera, 50mm lens look, shallow depth of field.'),
 }
 
 LIGHT_ROOM = 'warm late-afternoon light from a window on the left, cosy and soft, gentle bounce light, shallow depth of field so the background melts into soft bokeh'
@@ -57,13 +57,13 @@ CLOSE = {
     # 홈: 방 안 소파 위 동그란 말풍선 친구
     'home': {
         'mongle': f'Mongle sits on a mustard-yellow felt floor cushion in the living room of a small handmade felt house. Behind it, out of focus: a wooden shelf with a sage-green potted plant and the warm glow of a window. {LIGHT_ROOM}.',
-        'kkamong': f'Kkamong sits on a mustard-yellow felt floor cushion in the living room of a small handmade felt house, its long tail with the coral felt paddle curled around the cushion. Behind it, out of focus: a wooden shelf with a sage-green potted plant and the warm glow of a window. {LIGHT_ROOM}.',
+        'kkamong': f'Kkamong sits on a mustard-yellow felt floor cushion in the living room of a small handmade felt house, its little dragon wings folded at its sides and its spiky olive-tipped dragon tail curled around the cushion. Behind it, out of focus: a wooden shelf with a sage-green potted plant and the warm glow of a window. {LIGHT_ROOM}.',
         'marin': f'Marin sits upright on a mustard-yellow felt floor cushion in the living room of a small handmade felt house. Behind it, out of focus: a wooden shelf with a sage-green potted plant and the warm glow of a window. {LIGHT_ROOM}.',
     },
     # 배우기: 생활 한국어 — 창가 책상에서 함께 공부
     'life': {
         'mongle': 'Mongle sits at a small wooden study desk by a big window; in front of it lies an open felt notebook with dotted lines and a short yellow pencil. Through the window, softly out of focus, a cheerful Seoul street made of felt: a corner shop with a striped awning, a green bus stop sign shape without letters. Bright clear midday daylight from the window on the right, soft and even.',
-        'kkamong': 'Kkamong sits at a small wooden study desk by a big window, one fluffy arm resting on an open felt notebook with dotted lines, a short yellow pencil next to it. Through the window, softly out of focus, a cheerful Seoul street made of felt: a corner shop with a striped awning, a green bus stop sign shape without letters. Bright clear midday daylight from the window on the right, soft and even.',
+        'kkamong': 'Kkamong sits at a small wooden study desk by a big window, the tip of one little dragon wing resting on an open felt notebook like a hand with dotted lines, a short yellow pencil next to it. Through the window, softly out of focus, a cheerful Seoul street made of felt: a corner shop with a striped awning, a green bus stop sign shape without letters. Bright clear midday daylight from the window on the right, soft and even.',
         'marin': 'Marin sits at a small wooden study desk by a big window, one tiny arm on an open felt notebook with neat dotted lines, a short yellow pencil lined up perfectly straight beside it. Through the window, softly out of focus, a cheerful Seoul street made of felt: a corner shop with a striped awning, a green bus stop sign shape without letters. Bright clear midday daylight from the window on the right, soft and even.',
     },
 }
@@ -79,13 +79,14 @@ GAME = {
 }
 for sit, scene in GAME.items():
     for tid in ('mongle', 'kkamong', 'marin'):
-        SCENES[(sit, tid)] = ('close', f'{NAMES[tid]} {scene}' + (' Its long tail with the coral felt paddle curls around its side.' if tid == 'kkamong' else ''))
+        SCENES[(sit, tid)] = ('close', f'{NAMES[tid]} {scene}' + (' Its two little dragon wings are slightly open and its dragon tail with small olive felt spikes curls around its side.' if tid == 'kkamong' else ''))
 for sit, per in CLOSE.items():
     for tid, scene in per.items():
         SCENES[(sit, tid)] = ('close', scene)
 
 # 튜터 고르기 까몽 다시: 정본의 공중 자세를 따라 떠 보였고 놀람·으쓱 칸이 기본과 같았다 → 앉은 자세를 못 박고 얼굴 차이를 키운다
-SCENES[('onb', 'kkamong')] = ('stage', 'Kkamong (see MASCOTS) SITS firmly on top of a small stack of three felt books (dusty blue, mustard and cream covers, no titles) on a warm honey-coloured oak floor in the sunny corner of a small handmade felt room. Its round fluffy bottom presses down into the top book (the cover dents slightly), both short arms rest on its round belly, and its long tail with the coral felt paddle hangs down over the side of the books and touches the floor. It is NOT floating and its arms are NOT raised. Kkamong believes it is the coolest dragon in the world, so it sits proudly with its chest out, facing the camera. Background: a soft cream plaster wall with a faint felt texture, a bit of a window frame at the far left edge with warm afternoon sunlight from the upper left, gentle bounce light, soft real contact shadows. Eye-level camera, 50mm lens look, shallow depth of field.')
+# 11-04: 10-27 정본(펠트 · 올리브 용 날개 · 짜잔 자세)으로 — 책 위에 앉은 채 날개를 높이 편다
+SCENES[('onb', 'kkamong')] = ('stage', 'Kkamong (see MASCOTS) SITS firmly on top of a small stack of three felt books (dusty blue, mustard and cream covers, no titles) on a warm honey-coloured oak floor in the sunny corner of a small handmade felt room. Its round bottom presses down into the top book (the cover dents slightly). It strikes its proud ta-da pose: both little dragon wings lifted high and spread open at its shoulders, its spiky dragon tail curled up behind it, chin slightly up, facing the camera. Kkamong believes it is the coolest dragon in the world. It is NOT floating. Background: a soft cream plaster wall with a faint felt texture, a bit of a window frame at the far left edge with warm afternoon sunlight from the upper left, gentle bounce light, soft real contact shadows. Eye-level camera, 50mm lens look, shallow depth of field.')
 
 # 게임·홈·배우기의 마린은 성공 때 눈웃음(꽃 렌즈)을 쓴다 → 잔잔감음 대신 눈웃음
 MARIN_PLAY = [

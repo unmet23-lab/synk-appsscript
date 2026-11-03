@@ -1,0 +1,64 @@
+{
+ "crop": {
+  "port": [
+   94,
+   585,
+   470
+  ],
+  "land": [
+   635,
+   372,
+   569
+  ]
+ },
+ "jobs": [
+  {
+   "name": "town_port",
+   "prompt": "p_town_port.txt",
+   "refs": [
+    "town/town_port_in.png",
+    "ref/본체_kkamong.jpg"
+   ]
+  },
+  {
+   "name": "town_port-evening",
+   "prompt": "p_town_port-evening.txt",
+   "refs": [
+    "town/town_port-evening_in.png",
+    "ref/본체_kkamong.jpg"
+   ]
+  },
+  {
+   "name": "town_port-night",
+   "prompt": "p_town_port-night.txt",
+   "refs": [
+    "town/town_port-night_in.png",
+    "ref/본체_kkamong.jpg"
+   ]
+  },
+  {
+   "name": "town_land",
+   "prompt": "p_town_land.txt",
+   "refs": [
+    "town/town_land_in.png",
+    "ref/본체_kkamong.jpg"
+   ]
+  },
+  {
+   "name": "town_land-evening",
+   "prompt": "p_town_land-evening.txt",
+   "refs": [
+    "town/town_land-evening_in.png",
+    "ref/본체_kkamong.jpg"
+   ]
+  },
+  {
+   "name": "town_land-night",
+   "prompt": "p_town_land-night.txt",
+   "refs": [
+    "town/town_land-night_in.png",
+    "ref/본체_kkamong.jpg"
+   ]
+  }
+ ]
+}

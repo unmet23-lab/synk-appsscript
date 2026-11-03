@@ -10,7 +10,16 @@ DEST = os.path.join(OPEN, 'assets/tutor-photos')
 TUTORS = ['mongle', 'kkamong', 'marin']
 PLACES = {'onb': 512, 'home': 288, 'life': 288, 'runner': 288, 'rhythm': 288, 'hangul': 288, 'first': 288}
 STORIES = ['greetings', 'cafe', 'store', 'directions', 'transit', 'plans']
-log = {'missing': []}
+log = {'missing': [], 'kept': []}
+# 이번에 굽지 않은 칸은 지금 앱의 판을 그대로 둔다(11-04 — 까몽 · 마린만 다시 구웠을 때 몽글 판을 지우지 않게).
+OLD = {}
+try:
+    for line in open(os.path.join(OPEN, 'tutor-photos-data.mjs'), encoding='utf-8'):
+        if line.startswith('export const '):
+            key, val = line[len('export const '):].split('=', 1)
+            OLD[key] = json.loads(val.strip().rstrip(';'))
+except FileNotFoundError:
+    pass
 
 
 def save(src, dest, size, quality=82):
@@ -71,6 +80,21 @@ for face in ['curious', 'smile']:
     else:
         log['missing'].append(f'cut/teach_mongle/{face}.png')
 
+def keep(new, old, where):
+    # new에 없는 칸을 old에서 채운다(파일이 실제로 있는 것만).
+    for k, v in (old or {}).items():
+        if isinstance(v, dict):
+            keep(new.setdefault(k, {}), v, where + '.' + k)
+        elif k not in new or new[k] is None:
+            if v and os.path.exists(os.path.join(DEST, v.split('?')[0])):
+                new[k] = v
+                log['kept'].append(where + '.' + k)
+
+
+keep(tutor, OLD.get('TUTOR_PHOTOS'), 'tutor')
+keep(profile, OLD.get('PROFILE_PHOTOS'), 'profile')
+keep(life, OLD.get('LIFE_PHOTOS'), 'life')
+
 js = ('// 자료: tools/world-mascot-photos/install.py가 만든다(손으로 고치지 않는다).\n'
       '// 경로는 brand-opening/assets/tutor-photos/ 기준, ?v=는 파일 sha256 앞 12자리.\n'
       f'export const TUTOR_PHOTOS={json.dumps(tutor, ensure_ascii=False, separators=(",", ":"))};\n'
@@ -81,3 +105,4 @@ total = sum(os.path.getsize(os.path.join(dp, f)) for dp, _, fs in os.walk(DEST) 
 print('tutor places', {p: {t: len(v) for t, v in d.items()} for p, d in tutor.items()})
 print('profile', list(profile), 'story', {k: len(v) for k, v in life['story'].items()}, 'cafe', list(life['cafe']), 'welcome', bool(life['welcome']), 'teach', teach)
 print('size MB %.2f' % (total / 1048576), 'missing', log['missing'])
+print('kept(지난 판 그대로)', len(log['kept']), log['kept'][:12], '…' if len(log['kept']) > 12 else '')

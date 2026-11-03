@@ -14841,7 +14841,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
 }
 
 // experiences/brand-opening/tutor-photos-data.mjs
-var LIFE_PHOTOS = { "story": { "greetings": { "narrator": "story/greetings-narrator.webp?v=495e4e663d0e", "mongle": "story/greetings-mongle.webp?v=c9e5ce6d789f", "kkamong": "story/greetings-kkamong.webp?v=084687c155b9", "marine": "story/greetings-marine.webp?v=997f79a9b9a4" }, "cafe": { "narrator": "story/cafe-narrator.webp?v=b783a807becb", "mongle": "story/cafe-mongle.webp?v=3b5dd13fedc3", "kkamong": "story/cafe-kkamong.webp?v=ffdaf11dffbd", "marine": "story/cafe-marine.webp?v=f4013da8354e" }, "store": { "narrator": "story/store-narrator.webp?v=7737f8184c21", "mongle": "story/store-mongle.webp?v=36df30d88b82", "kkamong": "story/store-kkamong.webp?v=2a969252d590", "marine": "story/store-marine.webp?v=89050b8861fa" }, "directions": { "narrator": "story/directions-narrator.webp?v=6ab4355f3dad", "mongle": "story/directions-mongle.webp?v=9012b6e84430", "kkamong": "story/directions-kkamong.webp?v=88ff15240840", "marine": "story/directions-marine.webp?v=d27de2d431a3" }, "transit": { "narrator": "story/transit-narrator.webp?v=a59b5ad8dec6", "mongle": "story/transit-mongle.webp?v=44773d5945e7", "kkamong": "story/transit-kkamong.webp?v=4ac27a44fc3c", "marine": "story/transit-marine.webp?v=436d968987e9" }, "plans": { "narrator": "story/plans-narrator.webp?v=d002e16f4e6e", "mongle": "story/plans-mongle.webp?v=35cb37b67b4a", "kkamong": "story/plans-kkamong.webp?v=90face468b5e", "marine": "story/plans-marine.webp?v=4d56c0b9c3bf" } }, "cafe": { "counter": "cafe/counter.webp?v=a08e91c304f8", "window": "cafe/window.webp?v=438e737507f3", "garden": "cafe/garden.webp?v=9a9d2add2cec" }, "welcome": "welcome/friends.webp?v=f9c00a1a30ec" };
+var LIFE_PHOTOS = { "story": { "greetings": { "narrator": "story/greetings-narrator.webp?v=4df26996ce97", "mongle": "story/greetings-mongle.webp?v=8410ebec9891", "kkamong": "story/greetings-kkamong.webp?v=fd75b4264bd6", "marine": "story/greetings-marine.webp?v=78b637b23a03" }, "cafe": { "narrator": "story/cafe-narrator.webp?v=9a114ea18426", "mongle": "story/cafe-mongle.webp?v=d5e59c8b5604", "kkamong": "story/cafe-kkamong.webp?v=42b446ed8b24", "marine": "story/cafe-marine.webp?v=22c1638733e1" }, "store": { "narrator": "story/store-narrator.webp?v=62223a431ee8", "mongle": "story/store-mongle.webp?v=a482ee1cd8c5", "kkamong": "story/store-kkamong.webp?v=5dac8837c0f5", "marine": "story/store-marine.webp?v=8fdae5cbda2b" }, "directions": { "narrator": "story/directions-narrator.webp?v=abef4498e111", "mongle": "story/directions-mongle.webp?v=e83ecc37bee4", "kkamong": "story/directions-kkamong.webp?v=b2f5ae693bc5", "marine": "story/directions-marine.webp?v=72265f07efbf" }, "transit": { "narrator": "story/transit-narrator.webp?v=4f91b7d26982", "mongle": "story/transit-mongle.webp?v=b74da4c175fc", "kkamong": "story/transit-kkamong.webp?v=9dab116af5f7", "marine": "story/transit-marine.webp?v=ad7164282c13" }, "plans": { "narrator": "story/plans-narrator.webp?v=2302ac38fc87", "mongle": "story/plans-mongle.webp?v=d12ae5d0629f", "kkamong": "story/plans-kkamong.webp?v=6f2ee734cc42", "marine": "story/plans-marine.webp?v=336dfe8e2692" } }, "cafe": { "counter": "cafe/counter.webp?v=f6209b8cd231", "window": "cafe/window.webp?v=48a6beb07ff8", "garden": "cafe/garden.webp?v=97cd5dd7a645" }, "welcome": "welcome/friends.webp?v=e23f1c340e5e" };
 
 // experiences/brand-opening/tutor-photos.mjs
 var storyPhotoFile = (pack, speaker) => {
@@ -15028,18 +15028,18 @@ import { play, haptic, verdict, getPref } from "../world-sound.mjs";
 var STORY_SIGNS = {
   // 「입구에는 이름표 세 장이 놓여 있어요」 — 탁자 위 세 이름표(빨강·초록·파랑 고리)
   greetings: [
-    { text: "\uBABD\uAE00", kind: "tag", voice: "mongle", box: [21.6, 76.2, 32.7, 81.8] },
-    { text: "\uAE4C\uBABD", kind: "tag", voice: "kkamong", box: [43.2, 76.2, 55, 81.8] },
-    { text: "\uB9C8\uB9B0", kind: "tag", voice: "marin", box: [65, 76.2, 77.6, 81.8] }
+    { text: "\uBABD\uAE00", kind: "tag", voice: "mongle", box: [23.6, 74.6, 34.6, 81.8] },
+    { text: "\uAE4C\uBABD", kind: "tag", voice: "kkamong", box: [46.2, 74.6, 57.6, 81.8] },
+    { text: "\uB9C8\uB9B0", kind: "tag", voice: "marin", box: [68.6, 74.6, 80.4, 81.8] }
   ],
-  // 「안내판에는 ‘공원: 갈림길에서 오른쪽. 은행 옆.’」 — 오른쪽을 가리키는 아래 판이 공원
+  // 「안내판에는 ‘공원: 갈림길에서 오른쪽. 은행 옆.’」 — 오른쪽을 가리키는 위 판이 공원(11-04 판: 표지판은 오른쪽 위)
   directions: [
-    { text: "\uC815\uB958\uC7A5", kind: "board", voice: "stop", box: [76.5, 5.5, 94.5, 14.5] },
-    { text: "\uACF5\uC6D0", kind: "board", voice: "park", box: [80.5, 17, 95.5, 25.8] }
+    { text: "\uC815\uB958\uC7A5", kind: "board", voice: "stop", box: [80.5, 13.6, 93.5, 20.2] },
+    { text: "\uACF5\uC6D0", kind: "board", voice: "park", box: [81.5, 3.2, 94.5, 10.4] }
   ],
   // 「안내문에는 ‘다음 정류장: 꽃길 공원’」 — 창 위 안내 화면(실제 버스의 LED 안내기처럼). 왼쪽 위는 튜터 알약 자리라 오른쪽 절반에 둔다
   transit: [
-    { text: "\uB2E4\uC74C \uC815\uB958\uC7A5 \uAF43\uAE38 \uACF5\uC6D0", kind: "led", voice: "next-stop", box: [46, 2.4, 94, 9.8] }
+    { text: "\uB2E4\uC74C \uC815\uB958\uC7A5 \uAF43\uAE38 \uACF5\uC6D0", kind: "led", voice: "next-stop", box: [49.5, 4.4, 93.5, 9.8] }
   ]
 };
 var storySigns = (pack) => STORY_SIGNS[pack] || [];

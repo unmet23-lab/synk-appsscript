@@ -5,12 +5,13 @@
       "name": "마린",
       "pose": "본체",
       "sourceCanonical": "docs/캐릭터/정본_4K/마린_본체.png",
-      "sourceOptimized": "docs/캐릭터/화면_1024/마린_본체.webp",
+      "sourceOptimized": null,
       "sourceSize": 4096,
-      "displaySize": 1024,
+      "displaySize": 256,
       "path": "assets/mascots/marin-base.webp",
-      "bytes": 144398,
-      "sha256": "1f2f19b0724bbfcba4ed5802ebd2fa21c07ccac19459b09bff2ae33e1b35f57a"
+      "bytes": 8500,
+      "sha256": "691ab4d17a970f72f87dcedef914514fe68a8cbeb22356923e584e9786fc4849",
+      "method": "11-04: driver chip photo cut from the WORLD tutor-pick board (GPT Image 2.5, baked with the scene; canonical master used as a likeness reference only). tools/world-mascot-photos onb board, default face."
     },
     {
       "name": "마린",
@@ -38,12 +39,13 @@
       "name": "까몽",
       "pose": "본체",
       "sourceCanonical": "docs/캐릭터/정본_4K/까몽_본체.png",
-      "sourceOptimized": "docs/캐릭터/화면_1024/까몽_본체.webp",
+      "sourceOptimized": null,
       "sourceSize": 4096,
-      "displaySize": 1024,
+      "displaySize": 256,
       "path": "assets/mascots/kkamong-base.webp",
-      "bytes": 92234,
-      "sha256": "6b4443b39891e3f91abb70e6727ec7be00c943c13887e5fe69a79c1d7d640600"
+      "bytes": 10026,
+      "sha256": "6723a6449d36c8a50c740ca42b875f20d93d39303ca3a52eac57483da7bb23f9",
+      "method": "11-04: driver chip photo cut from the WORLD tutor-pick board (GPT Image 2.5, baked with the scene; canonical master used as a likeness reference only). tools/world-mascot-photos onb board, default face."
     },
     {
       "name": "까몽",
