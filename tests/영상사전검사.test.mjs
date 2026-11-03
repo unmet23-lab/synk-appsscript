@@ -11,6 +11,7 @@ import { Store } from '../docs/마케팅/온라인마케팅지도/engagement/com
 import { createStudioService } from '../docs/마케팅/온라인마케팅지도/engagement/company/studio-service.mjs';
 import { createPublicationInboxService } from '../docs/마케팅/온라인마케팅지도/engagement/company/publication-inbox.mjs';
 import { compareText as legacyCompare } from '../tools/text-compare-bench/baseline.mjs';
+import audioRates from '../tools/lib/upload-audio-bitrate.cjs';
 
 async function fixture(t, { gap = true } = {}) {
   const parent = await realpath(tmpdir()), root = await mkdtemp(path.join(parent, 'synk-media-inspection-')), cleanup = [];
@@ -72,6 +73,41 @@ test('upload quality flags low-bitrate, full-range and untagged 1080p finals but
   assert.ok(sixty.every(issue => issue.severity === 'warning' && issue.at === null));
   const fromFormat = uploadQualityIssues({ width: 1080, height: 1920, codec_name: 'h264', pix_fmt: 'yuv420p', color_space: 'bt709', color_primaries: 'bt709', color_transfer: 'bt709', avg_frame_rate: '30/1' }, [{ sample_rate: '44100', channels: 2, bit_rate: '384000' }], { bit_rate: '4384000' });
   assert.deepEqual(fromFormat.map(issue => issue.code), ['upload-video-bitrate', 'upload-audio-rate']);
+});
+
+test('게시용 오디오는 각 트랙의 실측과 하한을 비교하고 인코딩 목표를 별도로 안내한다', () => {
+  const video = { width: 1080, height: 1920, bit_rate: '12000000' };
+  const audio = (channels, bit_rate) => ({ channels, bit_rate });
+  const problems = tracks => uploadQualityIssues(video, tracks, { bit_rate: '20000000' }).filter(i => i.code === 'upload-audio-bitrate');
+  assert.deepEqual(problems([audio(2, 320000), audio(1, 128000)]), []);
+  assert.match(problems([audio(2, 319999)])[0].message, /319\.999kbps.*통과 기준.*320kbps.*목표.*384kbps/);
+  assert.match(problems([audio(6, 400000), audio(1, 127999)])[0].message, /오디오 2.*127\.999kbps.*모노 128kbps/);
+  assert.match(problems([audio(2, 'N/A')])[0].message, /측정 불가/);
+  assert.match(problems([])[0].message, /트랙이 없어/);
+});
+
+test('WebM의 bit_rate가 없으면 사전검사와 예약이 같은 트랙의 패킷으로 하한을 판정한다', async t => {
+  const { root } = await fixture(t), file = path.join(root, '두트랙.webm');
+  execFileSync('ffmpeg', ['-v','error','-nostdin','-f','lavfi','-i','color=s=1080x1080:r=4:d=1',
+    '-f','lavfi','-i','anoisesrc=r=48000:amplitude=0.1:d=1:seed=7','-map','0:v','-map','1:a','-map','1:a',
+    '-c:v','libvpx-vp9','-deadline','realtime','-cpu-used','8','-c:a','libopus','-vbr','off','-b:a:0','192k','-b:a:1','96k',file]);
+  const report = await inspectMedia({ video: file, out: path.join(root, '검사') });
+  const tracks = await audioRates.probeUploadTracks(file);
+  assert.deepEqual(tracks, report.media.audioBitrates);
+  assert.deepEqual(tracks.map(track => track.measurement), ['packets', 'packets']);
+  assert.ok(tracks[0].actualBps >= 128000 && tracks[1].actualBps < 128000 && tracks[1].actualBps > 0);
+  assert.match(report.issues.find(i => i.code === 'upload-audio-bitrate').message, /오디오 2.*모노 128kbps/);
+});
+
+test('게시 해상도의 무음 트랙 부재는 한 번만 경고하고 미리보기의 비트레이트 검사는 해당 없음으로 둔다', async t => {
+  const { root, video } = await fixture(t), silent = path.join(root, '오디오없음.mp4');
+  execFileSync('ffmpeg', ['-v','error','-nostdin','-f','lavfi','-i','color=s=1080x1080:r=4:d=1','-c:v','libx264','-pix_fmt','yuv420p',silent]);
+  const master = await inspectMedia({ video: silent, out: path.join(root,'마스터') });
+  assert.deepEqual(master.media.audioBitrates, []);
+  assert.deepEqual(master.issues.filter(i => ['no-audio','upload-audio-bitrate'].includes(i.code)).map(i => i.code), ['upload-audio-bitrate']);
+  const preview = await inspectMedia({ video, out: path.join(root,'미리보기') });
+  assert.equal(preview.media.audioBitrates, null);
+  assert.ok(!preview.issues.some(i => i.code === 'upload-audio-bitrate'));
 });
 
 test('script comparison preserves order and repetitions while ignoring punctuation and spacing', () => {

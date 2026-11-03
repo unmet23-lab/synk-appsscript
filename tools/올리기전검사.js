@@ -338,7 +338,7 @@ async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.bas
   const report = await 사전.inspectMedia({ video: file, out: path.join(out, '영상사전검사_' + slug) });
   for (const issue of report.issues) {
     if (['audio-level', 'audio-peak'].includes(issue.code)) continue; // ④에서 공용 기준으로 본다
-    const hard = issue.severity === 'error' || ['upload-video-bitrate', 'upload-video-codec', 'upload-pixel-format'].includes(issue.code);
+    const hard = issue.severity === 'error' || ['upload-video-bitrate', 'upload-video-codec', 'upload-pixel-format', 'upload-audio-bitrate'].includes(issue.code);
     add(hard ? FIX : LOOK, 'media-' + issue.code, `${issue.at == null ? '' : `${issue.at.toFixed(1)}초 · `}${issue.message}`);
   }
   const m = report.media;
@@ -384,7 +384,7 @@ async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.bas
   return {
     findings, ocrFindings: ocr.findings, ocrText: ocr.text, size: stat.size,
     summary: { 바이트: stat.size, 수정: new Date(stat.mtimeMs).toISOString(), sha256: video.sha256, 길이: Math.round(m.duration * 10) / 10,
-      해상도: `${m.width}×${m.height}`, 평균Mbps: stream, 음량: loud?.integratedLufs ?? null, 봉우리: loud?.truePeakDbfs ?? null,
+      해상도: `${m.width}×${m.height}`, 평균Mbps: stream, 오디오비트레이트: m.audioBitrates, 음량: loud?.integratedLufs ?? null, 봉우리: loud?.truePeakDbfs ?? null,
       정지: `${Math.round(still.ratio * 100)}%${still.pass ? ' 통과' : ' 고칠 것'}`, 끝화면: still.end ? Math.round(still.end.length * 10) / 10 : null,
       한구성: Math.round(구성.longest * 100) / 100,
       ...(gap ? { 소리빈자리: { 합: Math.round(gap.total * 100) / 100, 최장: Math.round(gap.longest * 100) / 100, 자리: gap.gaps.length } } : {}),

@@ -1,0 +1,162 @@
+{
+  "verifiedAt": "2026-11-03T09:35:32.183Z",
+  "scope": "SYNK production episode pre-publication checks, queue display and workspace reservation client",
+  "method": "Original master bytes and source publication manifests verified by SHA-256. Each complete posting bundle was checked in an isolated copy with all default checks enabled. Only the master was substituted for the corrected comparison. Registration used the company server implementation on loopback with a private database, test channels, automatic sending disabled, and no live platform jobs.",
+  "policy": {
+    "encodingTargetBps": 384000,
+    "minimumStereoOrMultichannelBps": 320000,
+    "minimumMonoBps": 128000,
+    "inclusive": true,
+    "perAudioTrack": true,
+    "unknownOrNoAudio": "block",
+    "source": "FFprobe audio stream average or individually timed compressed audio packets",
+    "serverUpload": "must match locally inspected SHA-256 before creating any posts or reservations"
+  },
+  "gitBlobs": {
+    "tools/lib/upload-audio-bitrate.cjs": "1cbf3b3126bb040722aeaa8285c5cca2a21e88a3",
+    "tools/영상사전검사.mjs": "069c3ad10f336e8bc13730a21b1e3ef5cadd7bcc",
+    "tools/올리기전검사.js": "517a8a39afd761fc1dcf9513212129e00eb3a3df",
+    "tools/작업실예약.js": "cb19aacea2ebdb8b6aea6514ce786a4cfb4f58f0",
+    "tools/음량마감.mjs": "2ca736cafa7fb1ab7df5d3012428af2e714a906a",
+    "tools/예약큐.js": "c71f41116e58900aaadd8ab73e5520f755461925"
+  },
+  "regression": {
+    "tests": 103,
+    "passed": 103,
+    "failed": 0,
+    "skipped": 0
+  },
+  "cases": [
+    {
+      "case": "b23-original",
+      "episode": "synkbrief_셋째줄그대로_20261102",
+      "sourceFile": "게시/b23_master.mp4",
+      "sha256": "95b2e002a664a2d582f69e71f6eb85e710edf1801b40846ba769a87dd028cd40",
+      "sourceBytes": 79419624,
+      "audioTracks": [
+        {
+          "channels": 2,
+          "actualBps": 308462,
+          "measurement": "stream"
+        }
+      ],
+      "previousCheckOnSameFile": "오디오 1 실측 308.462kbps. 게시 통과 기준은 스테레오·다채널 320kbps 이상이며, 기본 인코딩 목표는 384kbps입니다.",
+      "publicationCheck": {
+        "result": "고칠 것",
+        "blockingFindings": [
+          {
+            "code": "media-upload-audio-bitrate",
+            "message": "오디오 1 실측 308.462kbps. 게시 통과 기준은 스테레오·다채널 320kbps 이상이며, 기본 인코딩 목표는 384kbps입니다."
+          }
+        ],
+        "otherReviewNotes": 10,
+        "otherReviewCodes": [
+          "tiktok-ending",
+          "end-card",
+          "cover-safe-area",
+          "text-right",
+          "text-bottom",
+          "text-top",
+          "text-left",
+          "text-whiteShort",
+          "text-whiteShot"
+        ],
+        "skippedChecks": []
+      },
+      "reservationFileGate": "오디오 1 실측 308.462kbps. 게시 통과 기준은 스테레오·다채널 320kbps 이상이며, 기본 인코딩 목표는 384kbps입니다.",
+      "isolatedReservation": {
+        "acceptedPlatforms": [],
+        "uploadedAssets": 0,
+        "uploadedSha256": null,
+        "drafts": 0,
+        "scheduledAwaitingReview": 0
+      }
+    },
+    {
+      "case": "b23-fixed",
+      "episode": "synkbrief_셋째줄그대로_20261102",
+      "sourceFile": "수정본/b23_master_audio_v2.mp4",
+      "sha256": "6f4a033bc4329583d43640ce430135153cb5821819043d1b424d5d319fd989a4",
+      "sourceBytes": 79812953,
+      "audioTracks": [
+        {
+          "channels": 2,
+          "actualBps": 384768,
+          "measurement": "stream"
+        }
+      ],
+      "previousCheckOnSameFile": "검사 뒤 영상이 바뀌었다 — 다시 검사",
+      "publicationCheck": {
+        "result": "확인할 것",
+        "blockingFindings": [],
+        "otherReviewNotes": 10,
+        "otherReviewCodes": [
+          "tiktok-ending",
+          "end-card",
+          "cover-safe-area",
+          "text-right",
+          "text-bottom",
+          "text-top",
+          "text-left",
+          "text-whiteShort",
+          "text-whiteShot"
+        ],
+        "skippedChecks": []
+      },
+      "reservationFileGate": "pass",
+      "isolatedReservation": {
+        "acceptedPlatforms": [
+          "instagram",
+          "youtube"
+        ],
+        "uploadedAssets": 1,
+        "uploadedSha256": "6f4a033bc4329583d43640ce430135153cb5821819043d1b424d5d319fd989a4",
+        "drafts": 1,
+        "scheduledAwaitingReview": 2
+      }
+    },
+    {
+      "case": "b24",
+      "episode": "synkbrief_요금제질문셋_20261103",
+      "sourceFile": "게시/b24_master.mp4",
+      "sha256": "201de2188d6800482f676c98ef1b5ecb303037b8369b6d24898d1b69c0b3183d",
+      "sourceBytes": 44150657,
+      "audioTracks": [
+        {
+          "channels": 2,
+          "actualBps": 333421,
+          "measurement": "stream"
+        }
+      ],
+      "previousCheckOnSameFile": null,
+      "publicationCheck": {
+        "result": "확인할 것",
+        "blockingFindings": [],
+        "otherReviewNotes": 11,
+        "otherReviewCodes": [
+          "tiktok-ending",
+          "homage-칸수",
+          "homage-첫2초",
+          "homage-박자",
+          "end-card",
+          "cover-safe-area",
+          "text-right",
+          "text-bottom",
+          "text-top"
+        ],
+        "skippedChecks": []
+      },
+      "reservationFileGate": "pass",
+      "isolatedReservation": {
+        "acceptedPlatforms": [
+          "instagram",
+          "youtube"
+        ],
+        "uploadedAssets": 1,
+        "uploadedSha256": "201de2188d6800482f676c98ef1b5ecb303037b8369b6d24898d1b69c0b3183d",
+        "drafts": 1,
+        "scheduledAwaitingReview": 2
+      }
+    }
+  ]
+}

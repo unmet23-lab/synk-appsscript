@@ -31,6 +31,23 @@ function 큐(...args) {
   return r.stdout;
 }
 
+test('예약 큐는 옛 영상의 오디오 실측을 재검사로 표시하고 미달과 정상 파일을 구분한다', t => {
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-오디오-')), base = path.join(repo, 'docs', '마케팅');
+  t.after(() => fs.rmSync(repo, { recursive: true, force: true }));
+  for (const [name, rate] of [['old', null], ['low', 308462], ['changed', 308462], ['good', 333421]]) {
+    const nameOnDisk = name + '.mp4';
+    fs.writeFileSync(path.join(repo, nameOnDisk), 'test');
+    const stat = fs.statSync(path.join(repo, nameOnDisk));
+    const file = { 경로: nameOnDisk, 바이트: name === 'changed' ? 1 : stat.size, 수정: new Date(stat.mtimeMs).toISOString(),
+      ...(rate && { sha256: '1'.repeat(64), 오디오비트레이트: [{ channels: 2, actualBps: rate }] }) };
+    편(name, { ...판('synkbrief', '2026-11-06'), 검사: { 결과: '확인할 것', 파일: [file] } }, null, base);
+  }
+  const result = 돌리기(base, '--오늘', '2026-11-05', '--json');
+  assert.equal(result.status, 0, result.stderr);
+  const fixes = JSON.parse(result.stdout).fix;
+  assert.deepEqual(Object.fromEntries(fixes.map(f => [f.folder, f.check])), { old: '다시 검사', low: '고칠 것', changed: '다시 검사' });
+});
+
 const 판 = (brand, slot, 역할) => ({ 브랜드: brand, 슬롯: slot, 성격: '상시', 역할, 제목: `${brand} ${slot}`,
   판: [{ 계정: `${brand.toLowerCase()}-youtube`, 시각: `${slot}T21:00+09:00` }] });
 // 10-21~22에 만든 옛 편처럼 준비.json에 「역할」이 남아 있다 — 넷 안의 값 · 없음 · 넷 밖의 값. 10-23부터 세지 않고 편 줄에 보이기만 한다.

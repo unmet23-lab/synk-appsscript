@@ -35,6 +35,7 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { Readable } = require('node:stream');
 const { createHash } = require('node:crypto');
+const { probeUploadTracks, probeUploadProblemSync, uploadBitrateProblem, hasInspectionHash } = require('./lib/upload-audio-bitrate.cjs');
 const 묶음 = require('./lib/게시묶음.js');
 const { 공용작업본 } = require('./lib/공용작업본.js');
 const 헤르메스 = require('./lib/헤르메스보내기.js');
@@ -133,12 +134,21 @@ class Workspace {
     return this.parse(r, p);
   }
 
-  async upload(file, label) {
-    const size = fs.statSync(file).size;
+  async upload(file, label, inspectedSha256) {
+    const before = fs.statSync(file, { bigint: true });
+    const problem = uploadBitrateProblem(await probeUploadTracks(file));
+    if (problem) throw Error(problem);
+    const { fingerprint } = await import('./영상사전검사.mjs');
+    const source = await fingerprint(file, MAX_BYTES);
+    const after = fs.statSync(file, { bigint: true });
+    if (['dev', 'ino', 'size', 'mtimeNs', 'ctimeNs'].some(key => before[key] !== after[key]) ||
+        (inspectedSha256 && source.sha256 !== inspectedSha256.toLowerCase())) throw Error('검사 뒤 영상이 바뀌었다 — 다시 검사');
     const r = await this.fetch(this.base + '/api/social/media', { method: 'POST', redirect: 'error', duplex: 'half',
-      headers: this.headers({ 'content-type': 'video/mp4', 'content-length': String(size), 'x-file-name': encodeURIComponent(path.basename(file)), 'x-version-label': encodeURIComponent(label.slice(0, 90)) }),
+      headers: this.headers({ 'content-type': 'video/mp4', 'content-length': String(source.byteSize), 'x-file-name': encodeURIComponent(path.basename(file)), 'x-version-label': encodeURIComponent(label.slice(0, 90)) }),
       body: Readable.toWeb(fs.createReadStream(file)), signal: AbortSignal.timeout(15 * 60000) });
-    return this.parse(r, '영상 올리기');
+    const data = await this.parse(r, '영상 올리기');
+    if (data.asset?.sha256 !== source.sha256) throw Error('작업실이 받은 영상이 오디오 검사본과 다르다 — 다시 검사');
+    return data;
   }
 }
 
@@ -166,22 +176,27 @@ function matchChannel(account, platform, channels) {
   return hits.length === 1 ? { channel: hits[0] } : { channel: null, reason: hits.length ? `작업실에 ${account?.handle} 채널이 ${hits.length}개 있다` : `작업실에 ${account?.handle || '이 계정'} 채널이 없다` };
 }
 
-// 검사 기록과 지금 파일이 같은지(크기·수정 시각). 다르면 다시 검사해야 한다.
+// 옛 「확인할 것」 기록도 실제 예약 계획에 넣을 파일에서 오디오를 다시 잰다.
 function checkedFile(prep, rel, file) {
   const record = prep.검사;
   if (!record) return '올리기 전 검사 기록이 없다 — node tools/올리기전검사.js <편 폴더>';
-  if (record.결과 === '고칠 것') return '올리기 전 검사에 「고칠 것」이 남아 있다';
   const row = (record.파일 || []).find((f) => f.경로 === rel);
-  if (!row) return '이 영상은 올리기 전 검사를 거치지 않았다';
+  if (!row) return '이 영상은 올리기 전 검사를 거치지 않았다 — 다시 검사';
   const stat = fs.statSync(file);
   if (row.바이트 !== stat.size || row.수정 !== new Date(stat.mtimeMs).toISOString()) return '검사 뒤 영상이 바뀌었다 — 다시 검사';
-  return null;
+  if (!hasInspectionHash(row.sha256)) return '검사한 원본의 SHA-256 기록이 없다 — 다시 검사';
+  if (record.결과 === '고칠 것') {
+    const audio = row?.오디오비트레이트;
+    return (Array.isArray(audio) && uploadBitrateProblem(audio)) || '올리기 전 검사에 「고칠 것」이 남아 있다';
+  }
+  return probeUploadProblemSync(file);
 }
 
 function planBundle(bundle, workspace, opts = {}) {
   const prep = bundle.prep;
   const channels = workspace.channels || [];
   const rows = [];
+  const fileChecks = new Map();
   for (const plate of 묶음.plates(bundle)) {
     const row = { account: plate.account, platform: plate.platform, time: plate.time, eligible: false, reasons: [], notes: [], plate };
     rows.push(row);
@@ -199,7 +214,8 @@ function planBundle(bundle, workspace, opts = {}) {
     const size = fs.statSync(v.path).size;
     if (size > MAX_BYTES) row.reasons.push(`영상이 ${(size / 1048576).toFixed(1)}MiB — 작업실은 100MiB까지`);
     const rel = 묶음.rel(bundle, v.path);
-    const unchecked = checkedFile(prep, rel, v.path);
+    if (!fileChecks.has(rel)) fileChecks.set(rel, checkedFile(prep, rel, v.path));
+    const unchecked = fileChecks.get(rel);
     if (unchecked) row.reasons.push(unchecked);
     const at = Date.parse(plate.time || '');
     if (!Number.isFinite(at)) row.reasons.push('시각이 없다');
@@ -408,7 +424,8 @@ async function registerLocked(bundle, ws, rows, opts = {}) {
   try {
     for (const row of eligible) {
       if (!state.자산[row.video.rel]) {
-        const { asset } = await ws.upload(row.video.path, `${bundle.name} · ${path.basename(row.video.path)}`);
+        const inspected = prep.검사?.파일?.find(f => f.경로 === row.video.rel);
+        const { asset } = await ws.upload(row.video.path, `${bundle.name} · ${path.basename(row.video.path)}`, inspected?.sha256);
         state.자산[row.video.rel] = asset.id;
       }
       row.variant.media = [{ assetId: state.자산[row.video.rel] }];

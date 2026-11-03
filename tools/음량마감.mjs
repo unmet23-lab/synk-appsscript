@@ -14,18 +14,17 @@
 //       --소리 384k · --표본율 48000|원본 · --휴대폰리미터 0.82 · --덮어쓰기 · --json
 import fs from 'node:fs';
 import path from 'node:path';
-import { execFile, spawn } from 'node:child_process';
+import { execFile } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { once } from 'node:events';
-import { createInterface } from 'node:readline';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { uploadAudioBitrateFloor } from './영상사전검사.mjs';
+import audioRates from './lib/upload-audio-bitrate.cjs';
 
 const run = promisify(execFile);
 const PHONE_LIMIT = 30 * 1024 * 1024;
 const AAC_MODES = [null, { coder: 'twoloop', quality: 3.5 }, { coder: 'fast', quality: 8 }];
-export const DEFAULTS = { target: -14.5, tolerance: 0.5, window: null, ceiling: -1.2, limit: 0.84, attack: 1, release: 60, correct: 0.3, bitrate: '384k', rate: 48000, phoneLimit: 0.82, maxPasses: 3 };
+export const DEFAULTS = { target: -14.5, tolerance: 0.5, window: null, ceiling: -1.2, limit: 0.84, attack: 1, release: 60, correct: 0.3, bitrate: audioRates.ENCODING_TARGET_BPS / 1000 + 'k', rate: 48000, phoneLimit: 0.82, maxPasses: 3 };
 
 const tools = (o = {}) => ({ ffmpeg: o.ffmpeg || process.env.SYNK_FFMPEG_EXE || 'ffmpeg', ffprobe: o.ffprobe || process.env.SYNK_FFPROBE_EXE || 'ffprobe' });
 // ebur128 요약에서 마지막 I·Peak를 읽는다(peak=true면 참 봉우리). 소리가 없으면 오류.
@@ -59,25 +58,6 @@ export function passes(after, o) {
   const [lo, hi] = o.window || [o.target - o.tolerance, o.target + o.tolerance];
   return after.I >= lo - 1e-9 && after.I <= hi + 1e-9 && after.peak <= o.ceiling + 1e-9;
 }
-// Matroska 등 스트림에 bit_rate가 없는 경우 첫 오디오의 압축 패킷만 센다. 프라이밍도 같은 시간 구간에 포함한다.
-async function packetBitrate(file, o) {
-  const probe = spawn(tools(o).ffprobe, ['-v', 'error', '-select_streams', 'a:0', '-show_packets', '-show_entries', 'packet=pts_time,duration_time,size', '-of', 'csv=p=0', file],
-    { windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'] });
-  let bytes = 0, start = Infinity, end = -Infinity, valid = true;
-  const read = async () => {
-    for await (const line of createInterface({ input: probe.stdout, crlfDelay: Infinity })) {
-      if (!line.trim()) continue;
-      const [pts, duration, size] = line.split(',', 3).map(value => value.trim() ? Number(value) : NaN);
-      if (!Number.isFinite(pts) || !Number.isFinite(duration) || duration <= 0 || !Number.isSafeInteger(size) || size <= 0) { valid = false; continue; }
-      bytes += size;
-      start = Math.min(start, pts);
-      end = Math.max(end, pts + duration);
-    }
-  };
-  const [[code]] = await Promise.all([once(probe, 'close'), read()]);
-  return code === 0 && valid && end > start ? Math.floor(bytes * 8 / (end - start)) : null;
-}
-
 async function checkBitrate(file, info, o) {
   const minimumBps = uploadAudioBitrateFloor(info.video, info.audio?.channels);
   // FFmpeg accepts both decimal and binary units (e.g. 256k, 0.256M, 250Ki).
@@ -85,11 +65,9 @@ async function checkBitrate(file, info, o) {
   const match = /^(\d*\.?\d+(?:[eE][+-]?\d+)?)([kKM]i?)?(B?)$/.exec(String(o.bitrate).trim());
   const requestedBps = match ? Number(match[1]) * units[match[2] || ''] * (match[3] ? 8 : 1) : null;
   const enforced = minimumBps !== null && !(requestedBps > 0 && requestedBps < minimumBps);
-  let actualBps = info.audio?.bitrate ?? null, measurement = actualBps === null ? null : 'stream';
-  if (enforced && actualBps === null) {
-    actualBps = await packetBitrate(file, o);
-    if (actualBps !== null) measurement = 'packets';
-  }
+  const known = audioRates.streamBps(info.audio?.bitrate);
+  const { actualBps, measurement } = enforced ? await audioRates.measureStreamBitrate(file, tools(o).ffprobe, known)
+    : { actualBps: known, measurement: known === null ? null : 'stream' };
   return { actualBps, minimumBps, enforced, measurement, ok: !enforced || (actualBps !== null && actualBps >= minimumBps) };
 }
 
@@ -211,7 +189,7 @@ export async function main(argv = process.argv.slice(2)) {
   if (o.json) console.log(JSON.stringify(r));
   else {
     console.log(`${r.before.I} LUFS / ${r.before.peak} dBFS → ${r.passes.map((p) => `${p.gain >= 0 ? '+' : ''}${p.gain}dB → ${p.I} LUFS / ${p.peak} dBFS · AAC ${p.bitrateBps ?? '미확인'}bps`).join(' → ')}`);
-    if (!r.bitrate.ok) console.log(`  ⚠ 올림 오디오 기준 ${r.bitrate.minimumBps}bps 미충족 · 실제 ${r.bitrate.actualBps ?? '미확인'}bps`);
+    if (!r.bitrate.ok) console.log(`  ⚠ 게시 통과 기준 ${r.bitrate.minimumBps / 1000}kbps 이상 · 인코딩 목표 ${r.settings.bitrate} · 실측 ${r.bitrate.actualBps === null ? '측정 불가' : r.bitrate.actualBps / 1000 + 'kbps'}`);
     if (!passes(r.after, r)) console.log(`  ⚠ 음량 범위 밖(${r.window.join('~')} LUFS · 최대 ${r.ceiling} dBFS)`);
     console.log(`  ${r.ok ? '통과' : '미통과'} · ${r.written ? '저장' : '미저장'} ${r.out} · 영상 ${r.duration.srcVideo}→${r.duration.outVideo}초 · 소리 ${r.duration.srcAudio}→${r.duration.outAudio}초`);
     if (r.reviewPath) console.log(`  검토용 파일 ${r.reviewPath}`);

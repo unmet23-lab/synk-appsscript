@@ -9,6 +9,7 @@ import os from 'node:os';
 import path from 'node:path';
 import net from 'node:net';
 import { execFileSync, spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
@@ -44,8 +45,8 @@ async function fixture(t, { options = ALL_OPTIONS } = {}) {
   fs.mkdirSync(path.join(dir, '게시', '02-yt'), { recursive: true });
   const video = path.join(dir, 'remotion', 'out', 'a_final.mp4');
   fs.mkdirSync(path.dirname(video), { recursive: true });
-  execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-f', 'lavfi', '-i', 'color=c=0x355f52:s=1080x1920:d=4:r=30', '-f', 'lavfi', '-i', 'anullsrc=r=48000:cl=stereo',
-    '-t', '4', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-shortest', '-movflags', '+faststart', video]);
+  execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-f', 'lavfi', '-i', 'color=c=0x355f52:s=1080x1920:d=4:r=30', '-f', 'lavfi', '-i', 'anoisesrc=r=48000:amplitude=0.1:seed=7',
+    '-t', '4', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', video]);
   fs.writeFileSync(path.join(dir, '게시', '01-ig', '원고.json'), JSON.stringify({ caption: '42초 쇼츠를 재 보니 24초가 멈춰 있었어요.\n\n#쇼츠만들기', alteredContent: true }));
   fs.writeFileSync(path.join(dir, '게시', '02-yt', '원고.json'), JSON.stringify({ title: '42초 쇼츠, 재 보니 24초가 멈춰 있었어요', caption: '설명란 첫 줄', pinnedComment: '몇 %였어요?', language: 'ko', audioLanguage: 'ko', alteredContent: true, madeForKids: false }));
   fs.writeFileSync(path.join(dir, '게시', '티스토리.md'), '**제목**\n\n글');
@@ -59,7 +60,7 @@ async function fixture(t, { options = ALL_OPTIONS } = {}) {
       { 계정: 'yuhobuilds-youtube', 파일: rel, 원고: '게시/02-yt/원고.json', 시각: `${day}T21:00:00+09:00` },
       { 계정: 'shift-tistory', 파일: '게시/티스토리.md', 시각: `${day}T21:30:00+09:00` },
     ],
-    검사: { 결과: '확인할 것', 파일: [{ 경로: rel, 바이트: stat.size, 수정: new Date(stat.mtimeMs).toISOString() }] } }, null, 2));
+    검사: { 결과: '확인할 것', 파일: [{ 경로: rel, 바이트: stat.size, 수정: new Date(stat.mtimeMs).toISOString(), sha256: createHash('sha256').update(fs.readFileSync(video)).digest('hex') }] } }, null, 2));
 
   const port = await freePort(), origin = `http://127.0.0.1:${port}`;
   let at = new Date().toISOString();
@@ -234,6 +235,39 @@ test('검사 뒤 영상이 바뀌거나 「고칠 것」이 남으면 등록하�
   assert.match(f.예약.planBundle(묶음.load(f.dir), workspace, {})[0].reasons.join(' '), /고칠 것/);
   fs.writeFileSync(prepFile, JSON.stringify({ ...prep, 검사: { ...prep.검사, 파일: [{ ...prep.검사.파일[0], 바이트: 1 }] } }));
   assert.match(f.예약.planBundle(묶음.load(f.dir), workspace, {})[0].reasons.join(' '), /다시 검사/);
+});
+
+test('옛 경고 기록과 이미 만든 예약 계획도 두 번째 오디오가 미달이면 원고·예약을 만들지 않는다', async t => {
+  const f = await fixture(t), bundle = 묶음.load(f.dir), workspace = await f.ws.get('/api/social/workspace');
+  const rows = f.예약.planBundle(bundle, workspace);
+  const { path: file, rel } = rows.find(row => row.eligible).video;
+  const queueFixes = () => JSON.parse(execFileSync(process.execPath, [path.join(here, '../tools/예약큐.js'), '--폴더', path.join(f.root, 'docs', '마케팅'), '--json'], { encoding: 'utf8' })).fix;
+  assert.equal(queueFixes().some(item => item.folder === bundle.name), false);
+  const oldRecord = structuredClone(bundle.prep);
+  delete oldRecord.검사.파일[0].sha256;
+  assert.match(f.예약.checkedFile(oldRecord, rel, file), /SHA-256.*다시 검사/);
+  const stale = structuredClone(bundle.prep);
+  stale.검사.결과 = '고칠 것';
+  Object.assign(stale.검사.파일[0], { 바이트: 1, 오디오비트레이트: [{ channels: 2, actualBps: 308462 }] });
+  assert.match(f.예약.checkedFile(stale, rel, file), /파일|영상이 바뀌었다/);
+  const wrongReceipt = new f.예약.Workspace(f.origin, { fetchImpl: async (_url, options) => {
+    for await (const chunk of options.body) assert.ok(chunk.length);
+    return Response.json({ asset: { id: 'mismatch', sha256: '0'.repeat(64) } });
+  } });
+  await assert.rejects(wrongReceipt.upload(file, '검사'), /작업실이 받은 영상/);
+  await assert.rejects(f.ws.upload(file, '검사', '0'.repeat(64)), /검사 뒤 영상/);
+  const other = path.join(f.root, '두트랙.mp4');
+  execFileSync('ffmpeg', ['-v', 'error', '-nostdin', '-i', file, '-map', '0:v', '-map', '0:a:0', '-map', '0:a:0',
+    '-c', 'copy', '-c:a:1', 'aac', '-b:a:1', '32k', other]);
+  fs.copyFileSync(other, file);
+  const stat = fs.statSync(file);
+  Object.assign(bundle.prep.검사.파일[0], { 바이트: stat.size, 수정: new Date(stat.mtimeMs).toISOString() });
+  fs.writeFileSync(bundle.file, JSON.stringify(bundle.prep));
+  assert.equal(queueFixes().find(item => item.folder === bundle.name)?.check, '고칠 것');
+  assert.match(f.예약.checkedFile(bundle.prep, rel, file), /오디오 2.*모노 128kbps/);
+  assert.equal(f.예약.planBundle(bundle, workspace).some(row => row.eligible), false);
+  await assert.rejects(f.예약.register(bundle, f.ws, rows), /오디오 2.*모노 128kbps/);
+  for (const table of ['socialMedia', 'socialPosts', 'socialPublishJobs']) assert.equal(f.app.store.all(table).length, 0);
 });
 
 test('첫 인자(명령·편 폴더)가 빠지지 않고, 명령 이름은 NFC·영어 이름도 받으며, 명령도 폴더도 아니면 자격을 읽기 전에 멈춘다(10-22 「자격」이 사라짐)', () => {

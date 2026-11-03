@@ -10,6 +10,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 import { compareTextJs, normalizeText as normalize } from './lib/text-compare.mjs';
+import audioRates from './lib/upload-audio-bitrate.cjs';
 
 const execute = promisify(execFile);
 const decoder = new TextDecoder('utf-8', { fatal: true });
@@ -44,10 +45,10 @@ export function inspectFrameTimes(values, rate) {
 // 올림 화질(제작 방식 v2 §2-4, 유튜브 권장 업로드 인코딩): 짧은 변이 1080 이상인 마감본만 본다.
 export function uploadAudioBitrateFloor(video, channels) {
   if (Math.min(Number(video?.width) || 0, Number(video?.height) || 0) < 1080) return null;
-  return (Number(channels) || 2) >= 2 ? 320000 : 128000;
+  return audioRates.minimumBps(channels);
 }
 
-export function uploadQualityIssues(video, audio = [], format = {}) {
+export function uploadQualityIssues(video, audio = [], format = {}, tracks = audio.map(s => ({ channels: Number(s.channels), actualBps: audioRates.streamBps(s.bit_rate) }))) {
   const issues = [], add = (code, message) => issues.push({ code, severity: 'warning', at: null, message });
   const sound = audio[0], needSound = uploadAudioBitrateFloor(video, sound?.channels);
   if (needSound === null) return issues;
@@ -60,10 +61,11 @@ export function uploadQualityIssues(video, audio = [], format = {}) {
   const tags = [video.color_space, video.color_primaries, video.color_transfer];
   if (tags.some(tag => tag && tag !== 'unknown' && tag !== 'bt709') || tags.every(tag => !tag || tag === 'unknown')) add('upload-color', `색 공간 표시가 ${tags.map(tag => tag || '없음').join('/')}입니다. 올림 기준은 BT.709입니다.`);
   if (sound) {
-    const sampleRate = finite(sound.sample_rate), channels = Number(sound.channels) || 2, soundRate = finite(sound.bit_rate);
+    const sampleRate = finite(sound.sample_rate);
     if (sampleRate !== null && sampleRate !== 48000) add('upload-audio-rate', `소리 샘플레이트가 ${sampleRate}Hz입니다. 올림 기준은 48kHz입니다.`);
-    if (soundRate !== null && soundRate < needSound) add('upload-audio-bitrate', `소리 비트레이트가 ${Math.round(soundRate / 1000)}kbps입니다. 올림 기준은 ${channels >= 2 ? '스테레오 384kbps' : '모노 128kbps'}입니다.`);
   }
+  const audioProblem = audioRates.uploadBitrateProblem(tracks);
+  if (audioProblem) add('upload-audio-bitrate', audioProblem);
   return issues;
 }
 
@@ -136,9 +138,10 @@ export async function inspectMedia(options = {}) {
   if (frames.missingTimestamps) add('missing-frame-time', 'warning', 0, `프레임 ${frames.missingTimestamps}개의 표시 시각을 확인하지 못했습니다.`);
   const streamStart = finite(video.start_time) ?? 0;
   if (frameResult.endMismatch) add('decoded-duration', 'warning', Math.min(decodedEnd, duration), `프레임으로 읽은 끝 ${decodedEnd.toFixed(3)}초와 영상 스트림 길이 ${duration.toFixed(3)}초가 다릅니다.`);
-  issues.push(...uploadQualityIssues(video, audio, raw.format));
+  const audioBitrates = uploadAudioBitrateFloor(video) === null ? null : await audioRates.measureTracks(source.path, ffprobe, audio);
+  issues.push(...uploadQualityIssues(video, audio, raw.format, audioBitrates));
   let loudness = null;
-  if (!audio.length) add('no-audio', 'warning', null, '음성 스트림이 없습니다. 무음 영상으로 만든 것인지 확인하세요.');
+  if (!audio.length && audioBitrates === null) add('no-audio', 'warning', null, '이 미리보기에는 음성 스트림이 없습니다.');
   for (const stream of audio) {
     const audioDuration = finite(stream.duration);
     if (audioDuration !== null && Math.abs((finite(stream.start_time) ?? 0) + audioDuration - streamStart - duration) > .25) add('av-duration', 'warning', Math.min(audioDuration, duration), `음성 ${stream.index}의 끝과 영상 끝이 ${Math.abs((finite(stream.start_time) ?? 0) + audioDuration - streamStart - duration).toFixed(3)}초 다릅니다.`);
@@ -203,7 +206,7 @@ export async function inspectMedia(options = {}) {
     const after = await fingerprint(original.path);
     if (original.sha256 !== after.sha256 || original.byteSize !== after.byteSize) throw new Error('검사 중 입력이 바뀌었습니다. 생성된 검토 파일은 미완료이며 다시 검사해야 합니다.');
   }
-  const report = { schema: 'synk-media-preflight/v1', complete: true, inspectedAt: new Date().toISOString(), inputs, media: { duration, start: streamStart, width: video.width, height: video.height, rate, audioStreams: audio.length, audio: audio.map(stream => ({ index: stream.index, duration: finite(stream.duration), start: finite(stream.start_time) })), loudness }, frames: { ...frames, issues: undefined }, subtitles: subtitles ? { cueCount: subtitles.cueCount, duration: subtitles.duration } : null, comparisons, issues, artifacts, status: issues.some(issue => issue.severity === 'error') ? 'blocked' : issues.length ? 'needs-review' : 'ready', limits: ['기술 검사이며 시청·청취·재미·발음 정확성·게시 승인 판정이 아닙니다.', '받아쓰기는 새로 생성하지 않습니다. 제공된 받아쓰기만 대본과 문자 단위로 비교합니다.', '검토 클립은 최대 8개 시간 위치입니다. 전체 영상과 자막은 직접 확인해야 합니다.'] };
+  const report = { schema: 'synk-media-preflight/v1', complete: true, inspectedAt: new Date().toISOString(), inputs, media: { duration, start: streamStart, width: video.width, height: video.height, rate, audioStreams: audio.length, audioBitrates, audio: audio.map(stream => ({ index: stream.index, duration: finite(stream.duration), start: finite(stream.start_time) })), loudness }, frames: { ...frames, issues: undefined }, subtitles: subtitles ? { cueCount: subtitles.cueCount, duration: subtitles.duration } : null, comparisons, issues, artifacts, status: issues.some(issue => issue.severity === 'error') ? 'blocked' : issues.length ? 'needs-review' : 'ready', limits: ['기술 검사이며 시청·청취·재미·발음 정확성·게시 승인 판정이 아닙니다.', '받아쓰기는 새로 생성하지 않습니다. 제공된 받아쓰기만 대본과 문자 단위로 비교합니다.', '검토 클립은 최대 8개 시간 위치입니다. 전체 영상과 자막은 직접 확인해야 합니다.'] };
   const reportPath = path.join(output, '검사.json');
   await writeFile(path.join(output, '검토.html'), `<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>영상 사전검사</title><style>body{max-width:920px;margin:40px auto;padding:0 20px;font:17px/1.65 system-ui;background:#f6f3ee;color:#182331}video,img{max-width:100%;max-height:600px}article{padding:20px;margin:20px 0;background:white;border-radius:16px}small{color:#586574}</style><h1>영상 사전검사 · ${escape(report.status)}</h1><p>${escape(path.basename(source.path))} · ${duration.toFixed(2)}초 · 확인할 항목 ${issues.length}개</p><p>${report.limits.map(escape).join('<br>')}</p><ol>${issues.map(issue => `<li><b>${issue.at === null ? '전체 파일' : issue.at.toFixed(3) + '초'} · ${escape(issue.code)}</b> ${escape(issue.message)}</li>`).join('')}</ol>${artifacts.map(item => `<article><h2>${item.at.toFixed(3)}초 주변</h2><video controls preload="metadata" src="${item.clip}"></video><br><img src="${item.still}" alt="${item.frame}번 프레임"><p><small>검토 클립 ${item.start.toFixed(3)}~${item.end.toFixed(3)}초 · 원본 ${item.frame}번 프레임</small></p></article>`).join('')}</html>`, { flag: 'wx' });
   // Publish the completed report only after every review artifact is available.

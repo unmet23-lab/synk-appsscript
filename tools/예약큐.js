@@ -41,6 +41,9 @@
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { handleOf, VIDEO } = require('./lib/게시묶음.js');
+const { 공용작업본 } = require('./lib/공용작업본.js');
+const { uploadBitrateProblem, probeUploadProblemSync, hasInspectionHash } = require('./lib/upload-audio-bitrate.cjs');
 
 const REPO = path.resolve(__dirname, '..');
 const argValue = (name) => { const i = process.argv.indexOf(name); return i > -1 ? process.argv[i + 1] : null; };
@@ -95,21 +98,29 @@ function slotOf(prep) {
 }
 
 // 올리기 전 검사 기록과 지금 영상이 같은지. 검사 기록의 경로는 그 편이 든 저장소 기준이다.
-function checkOf(prep) {
+function checkOf(prep, needsBooking) {
   const record = prep.검사;
   if (!record) return { result: '검사 전', stale: false };
   const repo = path.resolve(ROOT, '..', '..');
-  // 영상은 git 밖이라 다른 작업본(워크트리)에서는 없을 수 있다 — 없으면 모른다고 보고, 있는데 다를 때만 「다시 검사」.
-  const stale = (record.파일 || []).some((f) => {
-    try {
-      const stat = fs.statSync(path.join(repo, f.경로));
-      return stat.size !== f.바이트 || new Date(stat.mtimeMs).toISOString() !== f.수정;
-    } catch { return false; }
-  });
-  return { result: record.결과 || '검사 전', stale };
+  const shared = 공용작업본(repo), legacy = [];
+  let result = record.결과 || '검사 전';
+  for (const f of record.파일 || []) {
+    let file = path.join(repo, f.경로);
+    if (shared !== repo && !fs.existsSync(file)) file = path.join(shared, f.경로);
+    let stat;
+    try { stat = fs.statSync(file, { throwIfNoEntry: false }); } catch { return { result, stale: true }; }
+    if (stat && (stat.size !== f.바이트 || new Date(stat.mtimeMs).toISOString() !== f.수정)) return { result, stale: true };
+    if (!VIDEO.test(f.경로)) continue;
+    if (needsBooking && (!stat || !hasInspectionHash(f.sha256))) return { result, stale: true };
+    if (Array.isArray(f.오디오비트레이트)) {
+      if (uploadBitrateProblem(f.오디오비트레이트)) result = '고칠 것';
+    } else if (needsBooking) legacy.push(file);
+  }
+  // 이미 게시된 이력을 다시 스캔하지 않는다. 아직 예약할 옛 파일만 실제 소리로 판정한다.
+  if (result !== '고칠 것' && legacy.some(file => probeUploadProblemSync(file))) result = '고칠 것';
+  return { result, stale: false };
 }
 
-const { handleOf } = require('./lib/게시묶음.js');
 const 헤르메스 = require('./lib/헤르메스보내기.js');
 
 // 판 계정 키(sns-계정.json) → 서버 채널 id들. 핸들이나 유튜브 채널 ID로 맞춘다.
@@ -140,7 +151,9 @@ function collect(server, accounts, now) {
     const result = readJson(path.join(base, '게시결과.json')) || {};
     const done = new Map();
     for (const p of result.판 || []) if (p.계정) done.set(p.계정, p);
-    const check = checkOf(prep);
+    const needsBooking = (prep.판 || []).some(p => !DONE.has(done.get(p.계정)?.상태) && done.get(p.계정)?.상태 !== '보류'
+      && !(Date.parse(p.시각) < now));
+    const check = checkOf(prep, needsBooking);
     const groups = { [prep.브랜드]: [], SHIFT: [] };
     for (const p of prep.판 || []) (String(p.계정 || '').startsWith('shift-') ? groups.SHIFT : groups[prep.브랜드]).push(p);
     for (const [brand, plates] of Object.entries(groups)) {
