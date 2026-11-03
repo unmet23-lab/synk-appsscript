@@ -239,12 +239,16 @@ function 보낸결과(r) {
   return { ok: false, method: 'hermes', error: 가리기(r.error?.message || j?.error || r.stderr || r.stdout || `종료 ${r.status}`).slice(0, 300) };
 }
 
+let 시험순번 = 0;
+
 /** 한도ms: 승인 훅은 60초 안에 끝나야 해 기본은 45초다. 예약 회차(CI 빨간불·예약 멈춤)는 넉넉히 넘긴다 —
  *  10-23 바쁜 PC(CPU 100%)에 텔레그램 연결 지연까지 겹쳐 hermes send가 45초를 넘기자 15:48부터 한 시간 넘게 알림이 한 통도 못 나갔다. */
 function 보내기(글, 환경 = process.env, { 한도ms = 45000 } = {}) {
   if (환경.SYNK_TG_DRYRUN_DIR) {
     fs.mkdirSync(환경.SYNK_TG_DRYRUN_DIR, { recursive: true });
-    const message_id = `dryrun-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`;
+    // 같은 밀리초에 두 통을 쓰면 무작위 꼬리가 순서를 정해, 이름순으로 읽는 시험이 가끔 뒤바뀐 순서를 봤다(11-03 CI 예약멈춤.test.js:309) — 보낸 순번을 사이에 넣는다.
+    시험순번 += 1;
+    const message_id = `dryrun-${Date.now()}-${String(시험순번).padStart(6, '0')}-${crypto.randomBytes(3).toString('hex')}`;
     fs.writeFileSync(path.join(환경.SYNK_TG_DRYRUN_DIR, `${message_id}.txt`), 글);
     return { ok: true, message_id, method: 'dryrun' };
   }
