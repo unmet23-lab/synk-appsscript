@@ -1,0 +1,148 @@
+{
+  "note": "LAB 영어 E20 「F · V · Z 이름」 — 해설 소진 세기 1.0, 영어 안내 줄과 한국어 이름 줄을 따로 굽는다(제작 방식 §4-3). 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_이름FVZ_20261103/음성/계획.json --굽기",
+  "voice": {
+    "id": "tc_666a9871abcf27a5169850d0",
+    "name": "소진"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "en",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1103,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "e1b",
+      "text": "There's no F in Korean.",
+      "emotion": "smart",
+      "prev": "Toy letter blocks spell a name on a table.",
+      "next": "Fiona?"
+    },
+    {
+      "id": "e1",
+      "text": "Korean has no F.",
+      "emotion": "smart",
+      "prev": "Toy letter blocks spell a name on a table.",
+      "next": "Fiona?"
+    },
+    {
+      "id": "q1",
+      "text": "Fiona?",
+      "emotion": "smart",
+      "prev": "Korean has no F.",
+      "next": "So how do you write it?"
+    },
+    {
+      "id": "k1",
+      "text": "피오나.",
+      "lang": "ko",
+      "emotion": "happy"
+    },
+    {
+      "id": "k1b",
+      "text": "피, 오, 나.",
+      "lang": "ko",
+      "emotion": "normal",
+      "tempo": 0.9
+    },
+    {
+      "id": "e2",
+      "text": "No V. No Z, either.",
+      "emotion": "smart",
+      "prev": "Korean has no F.",
+      "next": "Victor?"
+    },
+    {
+      "id": "q2",
+      "text": "Victor?",
+      "emotion": "smart",
+      "prev": "No V.",
+      "next": "Zara?"
+    },
+    {
+      "id": "k2",
+      "text": "빅터.",
+      "lang": "ko",
+      "emotion": "happy"
+    },
+    {
+      "id": "q3",
+      "text": "Zara?",
+      "emotion": "smart",
+      "prev": "Victor?",
+      "next": "In Korean, that means turtle."
+    },
+    {
+      "id": "k3",
+      "text": "자라.",
+      "lang": "ko",
+      "emotion": "happy"
+    },
+    {
+      "id": "e3",
+      "text": "In Korean, that means turtle.",
+      "emotion": "smart",
+      "prev": "A name turned into the Korean word 자라, and a real turtle walked in.",
+      "next": "What does your name become?"
+    },
+    {
+      "id": "e4",
+      "text": "What does your name become?",
+      "emotion": "smart",
+      "prev": "In Korean, that means turtle.",
+      "next": "Comment it."
+    },
+    {
+      "id": "e4b",
+      "text": "What's yours? Hopefully not a turtle.",
+      "emotion": "smart",
+      "prev": "In Korean, that means turtle.",
+      "next": "Comment it."
+    },
+    {
+      "id": "e5",
+      "text": "Comment it. I'll write it in Korean.",
+      "emotion": "smart",
+      "prev": "What does your name become?",
+      "next": ""
+    },
+    {
+      "id": "k4",
+      "text": "너는?",
+      "lang": "ko",
+      "emotion": "toneup"
+    },
+    {
+      "id": "q4",
+      "text": "Bob?",
+      "emotion": "smart",
+      "prev": "In Korean, that means turtle.",
+      "next": "Rice."
+    },
+    {
+      "id": "k5",
+      "text": "밥.",
+      "lang": "ko",
+      "emotion": "happy"
+    },
+    {
+      "id": "e6",
+      "text": "Rice.",
+      "emotion": "smart",
+      "prev": "Bob becomes a Korean word that means...",
+      "next": "And you?"
+    },
+    {
+      "id": "e5b",
+      "text": "Comment your name. I'll write it in Korean.",
+      "emotion": "smart",
+      "prev": "And you?",
+      "next": ""
+    }
+  ]
+}

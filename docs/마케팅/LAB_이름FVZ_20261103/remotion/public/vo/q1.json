@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "q1",
+ "text": "Fiona?",
+ "dur": 0.598,
+ "words": [
+  {
+   "text": "Fiona?",
+   "start": 0.02,
+   "end": 0.598
+  }
+ ],
+ "source": {
+  "key": "5ff8b34843c618ba136c0136bc85c38e",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "Korean has no F.",
+   "next": "So how do you write it?"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 281
+ }
+}

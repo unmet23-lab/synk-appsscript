@@ -1,0 +1,72 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e5",
+ "text": "Comment it. I'll write it in Korean.",
+ "dur": 2.066,
+ "words": [
+  {
+   "text": "Comment",
+   "start": 0.02,
+   "end": 0.437
+  },
+  {
+   "text": "it.",
+   "start": 0.496,
+   "end": 0.6
+  },
+  {
+   "text": "I'll",
+   "start": 0.868,
+   "end": 0.972
+  },
+  {
+   "text": "write",
+   "start": 1.016,
+   "end": 1.195
+  },
+  {
+   "text": "it",
+   "start": 1.239,
+   "end": 1.284
+  },
+  {
+   "text": "in",
+   "start": 1.343,
+   "end": 1.403
+  },
+  {
+   "text": "Korean.",
+   "start": 1.462,
+   "end": 2.066
+  }
+ ],
+ "source": {
+  "key": "ebdebbf212930e5197597775cd5a10c6",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "What does your name become?",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 470
+ }
+}

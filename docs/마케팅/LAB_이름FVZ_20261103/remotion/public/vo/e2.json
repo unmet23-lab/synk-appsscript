@@ -1,0 +1,62 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e2",
+ "text": "No V. No Z, either.",
+ "dur": 1.733,
+ "words": [
+  {
+   "text": "No",
+   "start": 0.02,
+   "end": 0.1
+  },
+  {
+   "text": "V.",
+   "start": 0.241,
+   "end": 0.261
+  },
+  {
+   "text": "No",
+   "start": 0.804,
+   "end": 0.904
+  },
+  {
+   "text": "Z,",
+   "start": 1.025,
+   "end": 1.045
+  },
+  {
+   "text": "either.",
+   "start": 1.105,
+   "end": 1.733
+  }
+ ],
+ "source": {
+  "key": "8f4e6d161ffaed913a660b326cead266",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "Korean has no F.",
+   "next": "Victor?"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 421
+ }
+}

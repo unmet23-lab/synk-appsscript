@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "k1b",
+ "text": "피, 오, 나.",
+ "dur": 1.224,
+ "words": [
+  {
+   "text": "피,",
+   "start": 0.02,
+   "end": 0.18
+  },
+  {
+   "text": "오,",
+   "start": 0.502,
+   "end": 0.522
+  },
+  {
+   "text": "나.",
+   "start": 0.722,
+   "end": 1.224
+  }
+ ],
+ "source": {
+  "key": "a8c34464612ebc63672df8d41c114d1c",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 0.9,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 425
+ }
+}

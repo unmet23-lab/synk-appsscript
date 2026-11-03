@@ -1,0 +1,62 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e4",
+ "text": "What does your name become?",
+ "dur": 1.448,
+ "words": [
+  {
+   "text": "What",
+   "start": 0.06,
+   "end": 0.204
+  },
+  {
+   "text": "does",
+   "start": 0.248,
+   "end": 0.364
+  },
+  {
+   "text": "your",
+   "start": 0.407,
+   "end": 0.508
+  },
+  {
+   "text": "name",
+   "start": 0.566,
+   "end": 0.754
+  },
+  {
+   "text": "become?",
+   "start": 0.798,
+   "end": 1.448
+  }
+ ],
+ "source": {
+  "key": "c2c1a57617c16caad14239cbfd212f38",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "In Korean, that means turtle.",
+   "next": "Comment it."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 458
+ }
+}

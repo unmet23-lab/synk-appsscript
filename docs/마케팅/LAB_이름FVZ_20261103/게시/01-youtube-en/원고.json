@@ -1,0 +1,20 @@
+{
+ "id": "01-youtube-en",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "audioLanguage": "ko",
+ "title": "There's no F in Korean… so Zara becomes a turtle 🐢 #learnkorean",
+ "caption": "Korean has no F, V or Z sounds, so names change:\n\nFiona → 피오나 (pi-o-na)\nVictor → 빅터 (bik-teo)\nZara → 자라 (ja-ra) — and 자라 is also a soft-shell turtle 🐢\nBob → 밥 (bap) — and 밥 means rice 🍚\n\nMost of the time: F → ㅍ · V → ㅂ · Z → ㅈ\n\nComment just your first name and I'll write it in Korean ✍️ (first 3 days). Or try it yourself: synk.im/name\n\nSYNK LAB\n#learnkorean #studykorean #koreanlanguage #hangul",
+ "pinnedComment": "Comment just your first name 👇 I'll reply with it in Hangul for the first 3 days ✍️",
+ "alt": [
+  "A coral felt mascot sits behind a mint felt table with wooden letter blocks spelling FIONA. The F tips off the edge, hits a toy seesaw and launches a Korean block ㅍ into its place; the blocks merge into 피 오 나 (pi-o-na). VICTOR: the ㅂ block bonks the mascot on the head and it goes dizzy, then the blocks become 빅 터 (bik-teo). ZARA becomes 자 라 (ja-ra) — and a felt turtle walks in and carries the blocks on its shell: 자라 = a turtle. Then Bob → 밥 = rice, with the turtle eating a felt bowl of rice. The turtle looks at the viewer: 너는? = And you? Comment your name."
+ ],
+ "madeForKids": false,
+ "alteredContent": false,
+ "category": "Education",
+ "_비고": "video.mp4 = e20 v9(23.1초 · 관문 못 넘음 — 기획.md 「판정」) → 음량마감 → CBR 10M 다시 담기. upload_10MB.mp4는 올림판.",
+ "version": "e20-en-v9"
+}

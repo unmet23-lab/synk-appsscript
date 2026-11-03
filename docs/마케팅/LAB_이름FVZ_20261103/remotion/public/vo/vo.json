@@ -1,0 +1,192 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "en",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1103,
+  "lufs": -17
+ },
+ "made": "2026-11-02T23:11:20.576Z",
+ "lines": [
+  {
+   "id": "e1b",
+   "text": "There's no F in Korean.",
+   "dur": 1.521,
+   "syllablesPerSec": null,
+   "src": "e1b.wav",
+   "key": "3c54d1918050fec0ff2145bef70c8c78",
+   "words": 5
+  },
+  {
+   "id": "e1",
+   "text": "Korean has no F.",
+   "dur": 1.537,
+   "syllablesPerSec": null,
+   "src": "e1.wav",
+   "key": "f281f044fcf8a65f2732dffbea280c5e",
+   "words": 4
+  },
+  {
+   "id": "q1",
+   "text": "Fiona?",
+   "dur": 0.598,
+   "syllablesPerSec": null,
+   "src": "q1.wav",
+   "key": "5ff8b34843c618ba136c0136bc85c38e",
+   "words": 1
+  },
+  {
+   "id": "k1",
+   "text": "피오나.",
+   "dur": 0.745,
+   "syllablesPerSec": 4.03,
+   "src": "k1.wav",
+   "key": "63c1951bac18f5f0a0c21108f3b3c06b",
+   "words": 1
+  },
+  {
+   "id": "k1b",
+   "text": "피, 오, 나.",
+   "dur": 1.224,
+   "syllablesPerSec": 2.45,
+   "src": "k1b.wav",
+   "key": "a8c34464612ebc63672df8d41c114d1c",
+   "words": 3
+  },
+  {
+   "id": "e2",
+   "text": "No V. No Z, either.",
+   "dur": 1.733,
+   "syllablesPerSec": null,
+   "src": "e2.wav",
+   "key": "8f4e6d161ffaed913a660b326cead266",
+   "words": 5
+  },
+  {
+   "id": "q2",
+   "text": "Victor?",
+   "dur": 0.759,
+   "syllablesPerSec": null,
+   "src": "q2.wav",
+   "key": "daf2b636dd54422cfae1210177b7f692",
+   "words": 1
+  },
+  {
+   "id": "k2",
+   "text": "빅터.",
+   "dur": 0.533,
+   "syllablesPerSec": 3.75,
+   "src": "k2.wav",
+   "key": "293a77ca44f7d8d6998dc672a909c50d",
+   "words": 1
+  },
+  {
+   "id": "q3",
+   "text": "Zara?",
+   "dur": 0.585,
+   "syllablesPerSec": null,
+   "src": "q3.wav",
+   "key": "edbfbbc91e33eb86ef9e5828ddd3386a",
+   "words": 1
+  },
+  {
+   "id": "k3",
+   "text": "자라.",
+   "dur": 0.547,
+   "syllablesPerSec": 3.66,
+   "src": "k3.wav",
+   "key": "e206671df9c76a1b98ae55f4597a4496",
+   "words": 1
+  },
+  {
+   "id": "e3",
+   "text": "In Korean, that means turtle.",
+   "dur": 1.751,
+   "syllablesPerSec": null,
+   "src": "e3.wav",
+   "key": "2cd0d24744cac8265a09de9833fa76c1",
+   "words": 5
+  },
+  {
+   "id": "e4",
+   "text": "What does your name become?",
+   "dur": 1.448,
+   "syllablesPerSec": null,
+   "src": "e4.wav",
+   "key": "c2c1a57617c16caad14239cbfd212f38",
+   "words": 5
+  },
+  {
+   "id": "e4b",
+   "text": "What's yours? Hopefully not a turtle.",
+   "dur": 2.261,
+   "syllablesPerSec": null,
+   "src": "e4b.wav",
+   "key": "a92c4086f7029cd885dc18eda0243331",
+   "words": 6
+  },
+  {
+   "id": "e5",
+   "text": "Comment it. I'll write it in Korean.",
+   "dur": 2.066,
+   "syllablesPerSec": null,
+   "src": "e5.wav",
+   "key": "ebdebbf212930e5197597775cd5a10c6",
+   "words": 7
+  },
+  {
+   "id": "k4",
+   "text": "너는?",
+   "dur": 0.556,
+   "syllablesPerSec": 3.6,
+   "src": "k4.wav",
+   "key": "0e9778add8d6f02ebc6d00dd82fc8073",
+   "words": 1
+  },
+  {
+   "id": "q4",
+   "text": "Bob?",
+   "dur": 0.547,
+   "syllablesPerSec": null,
+   "src": "q4.wav",
+   "key": "53c16753e96ad69d176cd26ed46e4b72",
+   "words": 1
+  },
+  {
+   "id": "k5",
+   "text": "밥.",
+   "dur": 0.297,
+   "syllablesPerSec": 3.37,
+   "src": "k5.wav",
+   "key": "b34164dba9b12c81856d59c194a65de2",
+   "words": 1
+  },
+  {
+   "id": "e6",
+   "text": "Rice.",
+   "dur": 0.609,
+   "syllablesPerSec": null,
+   "src": "e6.wav",
+   "key": "b55104e41aa471e6c0c70493c6ffd674",
+   "words": 1
+  },
+  {
+   "id": "e5b",
+   "text": "Comment your name. I'll write it in Korean.",
+   "dur": 1.984,
+   "syllablesPerSec": null,
+   "src": "e5b.wav",
+   "key": "70a1ae05ceffc9ee032661225dd8720b",
+   "words": 8
+  }
+ ]
+}

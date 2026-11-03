@@ -1,0 +1,77 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e5b",
+ "text": "Comment your name. I'll write it in Korean.",
+ "dur": 1.984,
+ "words": [
+  {
+   "text": "Comment",
+   "start": 0.02,
+   "end": 0.332
+  },
+  {
+   "text": "your",
+   "start": 0.37,
+   "end": 0.457
+  },
+  {
+   "text": "name.",
+   "start": 0.507,
+   "end": 0.745
+  },
+  {
+   "text": "I'll",
+   "start": 0.782,
+   "end": 1.07
+  },
+  {
+   "text": "write",
+   "start": 1.107,
+   "end": 1.294
+  },
+  {
+   "text": "it",
+   "start": 1.332,
+   "end": 1.369
+  },
+  {
+   "text": "in",
+   "start": 1.407,
+   "end": 1.445
+  },
+  {
+   "text": "Korean.",
+   "start": 1.494,
+   "end": 1.984
+  }
+ ],
+ "source": {
+  "key": "70a1ae05ceffc9ee032661225dd8720b",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "And you?",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 501
+ }
+}

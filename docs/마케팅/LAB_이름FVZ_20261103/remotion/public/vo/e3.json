@@ -1,0 +1,62 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e3",
+ "text": "In Korean, that means turtle.",
+ "dur": 1.751,
+ "words": [
+  {
+   "text": "In",
+   "start": 0.02,
+   "end": 0.102
+  },
+  {
+   "text": "Korean,",
+   "start": 0.185,
+   "end": 0.631
+  },
+  {
+   "text": "that",
+   "start": 0.714,
+   "end": 0.846
+  },
+  {
+   "text": "means",
+   "start": 0.896,
+   "end": 1.144
+  },
+  {
+   "text": "turtle.",
+   "start": 1.226,
+   "end": 1.751
+  }
+ ],
+ "source": {
+  "key": "2cd0d24744cac8265a09de9833fa76c1",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "A name turned into the Korean word 자라, and a real turtle walked in.",
+   "next": "What does your name become?"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 404
+ }
+}
