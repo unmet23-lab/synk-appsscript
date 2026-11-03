@@ -6,7 +6,7 @@
 import { TRACKS, LEVELS, RoundState } from './core.mjs';
 import { MusicPlayer } from './audio.mjs';
 import { Stage } from './stage.mjs';
-import { rhythmItem, FLOW_RHYTHM, timingObservation, timingSummary, assignmentTracks, assignmentTrack, rhythmTargetLabel, nextTrackLine } from './personalization.mjs';
+import { rhythmItem, FLOW_RHYTHM, timingObservation, timingSummary, assignmentTracks, assignmentTrack, rhythmTargetLabel, nextTrackLine, RHYTHM_CANDIDATES, missedRhythm, returnLine } from './personalization.mjs';
 import {rhythmSupport} from '../brand-opening/game-tutor-support.mjs';
 import {createSupplementalPanel} from './supplemental-player.mjs';
 
@@ -39,8 +39,9 @@ if (WORLD) import('../brand-opening/world-sound.mjs').then((m) => { worldSound =
 /* ── 공통 학습 기록(Atlas) ── */
 let coach = null, learningAvailable = true;
 try { coach = globalThis.SynkLearning?.createGame({ gameId: 'korean-rhythm', storage: localStorage, followups:true }) || null; } catch { learningAvailable = false; }
-const supplementalPanel=createSupplementalPanel({host:$('supplemental-practice'),getCoach:()=>learningAvailable?coach:null});
-const supplementalLobby=createSupplementalPanel({host:$('supplemental-ready'),getCoach:()=>learningAvailable?coach:null});
+const returnPlan=()=>learningAvailable?missedRhythm(coach,{songsOnly:TRIAL}):null;
+const supplementalPanel=createSupplementalPanel({host:$('supplemental-practice'),getCoach:()=>learningAvailable?coach:null,getReturn:returnPlan,onReturn:()=>paintNextReason()});
+const supplementalLobby=createSupplementalPanel({host:$('supplemental-ready'),getCoach:()=>learningAvailable?coach:null,getReturn:returnPlan,onReturn:()=>renderRecommendation(!trackChosen)});
 function learn(action, fallback = null) { try { return coach ? action(coach) : fallback; } catch { learningAvailable = false; return fallback; } }
 const assignment = () => learn((c) => c.assignment?.());
 // SYNK WORLD 안에서는 기록이 계정의 것이다: 지우기도 거기서 한다.
@@ -154,14 +155,15 @@ function learningScopeText() {
 function renderRecommendation(select = false) {
   const target = assignment(), candidates = assignmentTracks(target);
   const recommendation = learn((c) => c.recommend(candidates, { audioAvailable: true }));
-  const candidate = recommendation?.selected || (target ? candidates[0] : null);
+  const plan = target ? null : returnPlan();
+  const candidate = plan?.target.item.kind === 'song' ? RHYTHM_CANDIDATES[plan.target.item.trackId] : recommendation?.selected || (target ? candidates[0] : null);
   for (const x of $('track-grid').children) x.classList.toggle('rec', !!candidate && Number(x.dataset.track) === candidate.trackId);
-  $('recommendation-reason').textContent = target ? rhythmTargetLabel(target)
+  $('recommendation-reason').textContent = target ? rhythmTargetLabel(target) : plan ? returnLine(plan)
     : recommendation?.reason || '맞춤 추천을 불러오지 못했어요. 원하는 곡은 그대로 플레이할 수 있어요.';
   $('learning-scope').textContent = learningScopeText(); paintResetNotice();
   $('reset-learning').hidden = hosted;
   if (candidate && select) selectTrack(candidate.trackId);
-  return { candidate, reason: recommendation?.reason || null };
+  return { candidate, reason: plan ? returnLine(plan) : recommendation?.reason || null };
 }
 function selectLevel(level) {
   if (!LEVELS[level]) return;
@@ -212,7 +214,9 @@ async function start() {
     if (!window.AudioContext) throw new Error('이 브라우저는 음악 재생을 지원하지 않아요. 최신 Chrome 또는 Edge에서 열어 주세요.');
     const target = assignment(), track = assignmentTrack(TRACKS[state.track], target);
     if (!track) throw new Error('과제 문항이 있는 곡을 준비하지 못했어요. WORLD에서 다시 열어 주세요.');
-    const round = new RoundState(track, state.level, crypto.getRandomValues(new Uint32Array(1))[0]);
+    // 재방문 맞춤 연습의 곡이면 그 문항이 첫 관문이다. 다른 곡을 직접 골랐으면 그 곡 그대로다(과제에서는 맞춤이 없다).
+    const missed = target ? null : returnPlan(), lead = missed?.target.item.kind === 'song' && missed.target.item.trackId === track.id ? missed.target.item.sourceIndex : null;
+    const round = new RoundState(track, state.level, crypto.getRandomValues(new Uint32Array(1))[0], { lead });
     const loading = music.prepare(track, round.questions);   // 소리 길은 누른 그 순간에 연다(휴대폰 자동 재생 규칙)
     state.round = round; state.pressed.clear(); state.paused = false;
     resetQuestion(); resetHud(round);
@@ -809,8 +813,8 @@ if (!globalThis.SynkPlayCollection) for (const n of document.querySelectorAll('.
 
 // 저장 상태가 실제로 바뀔 때(기록을 넘겨받음·잃음·오류)만 입구·결과의 추천 글을 다시 쓴다. 연주 중의 음악·문항·판정과 화면 전환·포커스는 건드리지 않는다.
 function refreshStorageText() {
-  if (state.screen === 'lobby') renderRecommendation(!trackChosen);
-  else if (state.screen === 'results') paintNextReason();
+  if (state.screen === 'lobby') { renderRecommendation(!trackChosen); if (!TRIAL) supplementalLobby.refresh(); }
+  else if (state.screen === 'results') { paintNextReason(); if (!TRIAL) supplementalPanel.refresh(); }
 }
 let storagePaint = false;
 try {
@@ -860,7 +864,7 @@ if (QA) {
         phase: $('phrase-card').hidden ? null : $('phrase-card').dataset.phase, result: $('phrase-card').dataset.result || null,
         score: r?.score ?? 0, combo: r?.combo ?? 0, maxCombo: r?.maxCombo ?? 0, processed: r?.processed ?? 0, duration: r?.duration ?? 0,
         hits: r ? r.notes.filter((n) => n.state === 'hit' || n.state === 'holding').length : 0, missed: r ? r.notes.filter((n) => n.state === 'missed').length : 0,
-        questions: r ? r.questions.map((q) => ({ state: q.state, response: q.response, answer: q.answer, correct: q.response !== null && q.options[q.response] === q.answer,
+        questions: r ? r.questions.map((q) => ({ id: q.id, sourceIndex: q.sourceIndex, state: q.state, response: q.response, answer: q.answer, correct: q.response !== null && q.options[q.response] === q.answer,
           texted: !!q.texted, delivered: q.delivered || null, showTime: q.showTime, voiceEnd: q.voiceEnd, answerOpen: q.answerOpen, time: q.time, closeTime: q.closeTime,
           independent: q.learning?.independent ?? null })) : [],
         frames: stage.frames };

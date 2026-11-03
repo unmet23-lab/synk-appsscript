@@ -1,4 +1,5 @@
 import { instructionMetadata } from './learning.mjs';
+import { returnPractice } from './kit/return-practice.mjs';
 // Twelve checks the run never says (2026-10-03). Each has its own clip and its own family, so a run cannot
 // spend its first try: before, the checks reused the sixteen run instructions and their families, and a
 // check after running was only a repeat. Choices are the actions in plain words; the answer place varies.
@@ -91,9 +92,25 @@ export function selectListeningChecks(coach, { assignment = coach.assignment?.()
   return selected;
 }
 
+// 재방문 맞춤 연습: 달리기는 장면을 보고도 할 수 있어 근거가 아니므로, 듣기 확인에서 놓친 능력만 말하고 듣기 확인 첫 문제로 연다.
+// 첫 문제까지만 약속한다. 그 뒤는 기존 즉시 확인 문구가 맡는다. 답은 말하지 않는다.
+const CHECK_NEXT = '‘듣기 확인’의 첫 문제도 그런 말이에요. 끝까지 듣고 골라 보세요.';
+export const RETURN_PATTERNS = Object.freeze({
+  detail: { why: '지난 듣기 확인에서 방향이나 동작을 말하는 부탁을 놓친 적이 있어요.', next: CHECK_NEXT },
+  negation: { why: '지난 듣기 확인에서 하지 말라거나 하지 않아도 된다는 말을 놓친 적이 있어요.', next: CHECK_NEXT },
+  sequence: { why: '지난 듣기 확인에서 두 동작의 순서를 놓친 적이 있어요.', next: CHECK_NEXT },
+});
+const patternOfCheck = item => checkMetadata(item).skillId.split('.').at(-1);
+const CHECK_OF_FAMILY = new Map(LISTENING_CHECKS.map(item => [checkMetadata(item).familyKey, item]));
+export function missedCheck(coach) {
+  return returnPractice({ coach, gameId: 'korean-runner', patterns: RETURN_PATTERNS,
+    patternOfFamily: family => { const item = CHECK_OF_FAMILY.get(family); return item ? patternOfCheck(item) : null; },
+    freshItems: pattern => LISTENING_CHECKS.filter(item => patternOfCheck(item) === pattern).map(item => ({ id: item.id, item, meta: checkMetadata(item) })) });
+}
+
 // The next check is picked after the answer. The teacher's exact list and round
 // size remain fixed; follow-up never creates a question or changes the goal.
-export function createListeningCheckRound(coach, { assignment = coach.assignment?.() ?? null, limit = 3 } = {}) {
+export function createListeningCheckRound(coach, { assignment = coach.assignment?.() ?? null, limit = 3, lead = null } = {}) {
   const allowed = allowedChecks(assignment), used = new Set();
   const total = Math.min(limit, assignment?.requiredAttempts ?? limit, allowed.length);
   const sameGoal = (a, b) => { const x = checkMetadata(a), y = checkMetadata(b); return ['skillId', 'difficulty', 'responseFormat', 'modality'].every(key => x[key] === y[key]); };
@@ -102,6 +119,10 @@ export function createListeningCheckRound(coach, { assignment = coach.assignment
     total,
     next(previous = null) {
       if (used.size >= total) return { status: 'finished', item: null };
+      if (!previous && !used.size && !assignment && lead && allowed.includes(lead)) {
+        used.add(lead.id);
+        return { status: 'ready', item: lead, exposure: 'new', followup: null, note: '처음 듣는 문항이에요.', index: 0, total };
+      }
       let pool = allowed.filter(item => !used.has(item.id));
       if (!pool.length) return { status: 'unavailable', item: null, note: '이 목표에서 남은 문항을 준비하지 못했어요.' };
       const followUp = previous?.item && (previous.result?.verdict === 'incorrect' || previous.result?.assisted === true);

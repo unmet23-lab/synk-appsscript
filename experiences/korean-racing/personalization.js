@@ -1,5 +1,6 @@
 import { CAMPAIGN } from './campaign.js';
 import { FINALES } from './finales.js';
+import { returnPractice } from './kit/return-practice.mjs';
 
 // Authored practice tags, not official TOPIK grade assignments.
 const SKILLS = [
@@ -76,6 +77,37 @@ export const FLOW_WORDS={'raise.pace':'차가 조금 빨라져요.','ease.pace':
   // A changed item level shows in the next personalized five, so the results screen tells it.
   'raise.content':'','ease.content':'',
   'start.memory':'','start.prior':'','start.returning':'오랜만이라 조금 느긋하게 달려요.','start.tired':'오늘은 차가 더 빨라지지 않아요.'};
+/* 재방문 맞춤 연습: 같은 능력 이름 안에서도 코스마다 다른 것을 연습하므로 코스 묶음으로 나눈다. 문항이 셋뿐인 묶음은 서로 다른 두 문제에서
+ * 두 번 놓치면 말한다. 한 문항뿐인 능력(이유·순서·읽기 부정)은 묶음이 없고, 결승 문항은 맞춤에 다시 쓰지 않으며(위 FINALE 규칙),
+ * 어휘 코스는 「틀린 단어부터 복습」이 따로 있어 여기서 다루지 않는다. 답은 말하지 않는다. */
+export const RETURN_PATTERNS=Object.freeze({
+  'listen.short':{why:'지난 레이스에서 짧은 문장의 무엇·어디를 듣는 문제를 놓친 적이 있어요.'},
+  'listen.info':{why:'지난 레이스에서 시간이나 장소 같은 정보를 듣는 문제를 놓친 적이 있어요.'},
+  'listen.dialog':{why:'지난 레이스에서 짧은 대화의 세부 내용을 듣는 문제를 놓친 적이 있어요.'},
+  'listen.main':{why:'지난 레이스에서 대화의 중심 내용을 듣는 문제를 놓친 적이 있어요.'},
+  'listen.negation2':{minEvidence:2,why:'지난 레이스에서 아니라고 하거나 바뀌었다는 말을 듣는 문제를 놓친 적이 있어요.'},
+  'listen.negation3':{minEvidence:2,why:'지난 레이스에서 아니라고 하거나 바뀌었다는 말을 듣는 문제를 놓친 적이 있어요.'},
+  'read.particle':{why:'지난 레이스에서 낱말 뒤에 붙는 말을 고르는 문제를 놓친 적이 있어요.'},
+  'read.connector':{why:'지난 레이스에서 두 문장을 잇는 말을 고르는 문제를 놓친 적이 있어요.'},
+  'read.detail':{why:'지난 레이스에서 안내문의 세부 내용을 읽는 문제를 놓친 적이 있어요.'},
+  'read.condition':{minEvidence:2,why:'지난 레이스에서 두 정보를 함께 읽는 조건 문제를 놓친 적이 있어요.'},
+});
+function patternOfCandidate(c){
+  const course=Number(c.id.slice(1,3)),skill=c.skillIds[0].split('.').at(-1);
+  if(c.modality==='reading'){
+    if(skill==='grammar')return course===3?'read.particle':course===4?'read.connector':null;
+    return skill==='detail'?'read.detail':skill==='condition'?'read.condition':null;
+  }
+  if(skill==='detail')return course<=2?'listen.short':course<=6?'listen.info':course<=8?'listen.dialog':null;
+  if(skill==='main')return 'listen.main';
+  return skill==='negation'?(c.difficulty===2?'listen.negation2':'listen.negation3'):null;
+}
+const CANDIDATE_OF_FAMILY=new Map(RACING_CANDIDATES.map(c=>[c.itemKey,c]));
+export function missedRacing(coach,{audioAvailable=true,modality=null}={}){
+  return returnPractice({coach,gameId:'korean-racing',patterns:RETURN_PATTERNS,audioAvailable,
+    patternOfFamily:family=>{const c=CANDIDATE_OF_FAMILY.get(family);return c?patternOfCandidate(c):null;},
+    freshItems:pattern=>RACING_CANDIDATES.filter(c=>patternOfCandidate(c)===pattern&&(!modality||c.modality===modality)).map(c=>({id:c.id,item:c.item,meta:racingItem(c.item)}))});
+}
 /** The share of the decision time used, from when the question was fully heard (or shown) to the lane
  * chosen. A sentence course stops the car at the line and waits, so the share is of the designed approach
  * at this speed; a word course does not wait, so it is of the road that was left. Kept under 1: a chosen
@@ -141,13 +173,15 @@ export function linkRacingRecheck(follow,source){
 export function racingTargetLabel(target){const labels={detail:'세부 내용',negation:'부정 표현',condition:'조건 표현',reason:'이유',main:'중심 내용',sequence:'순서',grammar:'문법',vocabulary:'어휘'};return `${target.modality==='reading'?'읽기':'듣기'} · ${labels[target.skillId.split('.').at(-1)]||'지정 표현'} · 난도 ${target.difficulty}`;}
 // `live` (coach.live(FLOW_RACE)) draws free practice at the item level the races reached, among Core's
 // leading choices (game-flow.js pick). A teacher's target sets its own level, so it keeps Core's choice.
-export function personalizedStage(coach,{audioAvailable=true,modality=null,live=null}={}){
+export function personalizedStage(coach,{audioAvailable=true,modality=null,live=null,lead=null}={}){
   const target=coach.assignment?.();
   const pool=assignmentCandidates(target);
   const candidates=modality?pool.filter(c=>c.modality===modality):pool;
   const pick=!target&&live?(list,options)=>live.pick(list,options):(list,options)=>coach.recommend(list,options);
-  const chosen=[],excluded=[];let reason='';
-  for(let i=0;i<Math.min(5,candidates.length);i++){
+  // lead: 재방문 맞춤 연습의 문항. 첫 문제로 고정하고 나머지는 Core가 고른다.
+  const first=lead?candidates.find(c=>c.id===lead.id):null;
+  const chosen=first?[first.item]:[],excluded=first?[first.id]:[];let reason='';
+  for(let i=chosen.length;i<Math.min(5,candidates.length);i++){
     const recommendation=pick(candidates,{audioAvailable,excludeIds:excluded});
     if(recommendation.status!=='ready'||!recommendation.selected)break;
     if(!reason)reason=recommendation.reason;

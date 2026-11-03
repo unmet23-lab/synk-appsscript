@@ -4,9 +4,23 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import {createRequire} from 'node:module';
 import {TRACKS,LEVELS,RoundState} from './core.mjs';
-import {rhythmItem,RHYTHM_CANDIDATES,assignmentTracks,assignmentTrack,rhythmTargetLabel,FLOW_RHYTHM,timingObservation,timingSummary,nextTrackLine} from './personalization.mjs';
+import {rhythmItem,RHYTHM_CANDIDATES,assignmentTracks,assignmentTrack,rhythmTargetLabel,FLOW_RHYTHM,timingObservation,timingSummary,nextTrackLine,missedRhythm,returnLine} from './personalization.mjs';
 import {rhythmSupport} from '../brand-opening/game-tutor-support.mjs';
 import {createSupplementalPanel,supplementalAudioUrl} from './supplemental-player.mjs';
+test('supplemental panel tells the page only when a practice returns home, after the unanswered record',()=>{
+ const element=(tag,text='')=>({tag,textContent:text,children:[],focused:0,listeners:{},type:'',className:'',disabled:false,setAttribute(){},
+  append(...c){this.children.push(...c);},replaceChildren(...c){this.children=c;},addEventListener(k,f){this.listeners[k]=f;},focus(){this.focused++;},
+  querySelector(){return this.children.find(c=>c.tag==='button')||null;}});
+ const host=element('section'),doc={createElement:tag=>element(tag)},log=[];
+ const coach={present(){log.push('present');return 'p1';},answer(_,r){log.push(`answer:${r.reason}`);return {};},help(){},delivery(){}};
+ const panel=createSupplementalPanel({host,getCoach:()=>coach,onReturn:()=>log.push('return'),audioFactory:()=>({pause(){},play:async()=>{}}),seed:()=>1,document:doc});
+ const press=label=>host.children.find(c=>c.textContent===label).listeners.click();
+ panel.show();panel.refresh();assert.deepEqual(log,[]);
+ press('보충 연습');assert.deepEqual(log,['present']);
+ press('보충 연습 닫기');assert.deepEqual(log,['present','answer:unanswered','return']);
+ assert.equal(host.children.find(c=>c.tag==='button').focused,1);
+ panel.close();assert.deepEqual(log,['present','answer:unanswered','return']);
+});
 test('supplemental audio resolves local and WORLD mounts and shares WORLD audio from try',()=>{
  const audio='topik-items/audio/detail.mp3';
  for(const [href,expected] of [
@@ -36,7 +50,7 @@ async function mount(coach,storage,{confirm=()=>true}={}){
     replaceChildren(...children){this.children=children;},focus(){},click(){this.listeners.get('click')?.();}});
   const get=id=>{if(!elements.has(id))elements.set(id,element());return elements.get(id);};
   const document={getElementById:get,createElement:element,querySelectorAll:()=>[],addEventListener(){},body:element()};
-  const context={TRACKS,LEVELS,RoundState,rhythmItem,RHYTHM_CANDIDATES,assignmentTracks,assignmentTrack,rhythmTargetLabel,
+  const context={TRACKS,LEVELS,RoundState,rhythmItem,RHYTHM_CANDIDATES,missedRhythm,returnLine,assignmentTracks,assignmentTrack,rhythmTargetLabel,
     FLOW_RHYTHM,timingObservation,timingSummary,nextTrackLine,rhythmSupport,createSupplementalPanel:options=>createSupplementalPanel({...options,document}),recordTrialStarted(){},document,localStorage:storage,
     MusicPlayer:class{},Stage:class{},SynkLearning:{createGame:()=>coach},SynkPlayAccount:{ready:async()=>{}},
     matchMedia:()=>({matches:false}),setTimeout:()=>1,clearTimeout(){},addEventListener(){},scrollTo(){},confirm};

@@ -11,7 +11,7 @@ import { WORDS, STAGES, WORD_BY_ID, makeQuestions, loadProgress } from './learni
 import { Narrator } from './narration.js';
 import { LANE_AUDIO } from './question-audio.js';
 import { CAMPAIGN, recommendedStage } from './campaign.js';
-import { racingItem, personalizedStage, FLOW_RACE, FLOW_WORDS, BASE_CRUISE } from './personalization.js';
+import { racingItem, personalizedStage, missedRacing, FLOW_RACE, FLOW_WORDS, BASE_CRUISE } from './personalization.js';
 import { VEHICLES, PAINTS, WHEELS, TRAILS, loadGarage, saveGarage, dailyMission } from './garage.js';
 import { buildAlternativeCar, customizeCar, createGarageStage, setVehicleQuality } from './vehicles.js';
 import { createCoastDrive } from './coast-drive.js';
@@ -83,7 +83,9 @@ function answerGate(pid, response, flow) {
   }
   return learn((c) => c.answer(pid, response));
 }
-function nextPersonalized() { return learn((c) => personalizedStage(c, { audioAvailable: !round.soundTouched || round.soundEnabled, modality: requestedModality, live: flowOf() })); }
+const racingAudio = () => !round.soundTouched || round.soundEnabled;
+function returnPlanNow() { return learn((c) => missedRacing(c, { audioAvailable: racingAudio(), modality: requestedModality })); }
+function nextPersonalized(lead = null) { return learn((c) => personalizedStage(c, { audioAvailable: racingAudio(), modality: requestedModality, live: flowOf(), lead: lead ?? missedRacing(c, { audioAvailable: racingAudio(), modality: requestedModality })?.target.item ?? null })); }
 const assignment = () => learn((c) => c.assignment?.());
 // 듣기 목표인데 소리가 꺼져 있으면 문항이 없는 게 아니라 소리를 켜면 된다고 말한다.
 function targetUnavailable() {
@@ -108,6 +110,8 @@ const groundHeight = createLandscapeHeight(pathX, pathY);
 let renderer, scene, camera, car, rivals = [], wheels = [], world = null, resizeObserver = null;
 const startup = { phase: 'idle', compilePasses: 0 };
 let ready = false, loadState = 'loading', pendingStart = null, heroShot = false;
+// 컨텍스트를 잃거나 되찾을 때마다 오른다. 첫 장면 준비는 이 값이 바뀌면 처음부터 다시 한다.
+let glEpoch = 0; const contextWaiters = [], CONTEXT_WAIT_MS = 20000;
 const coastDrive = createCoastDrive();
 const questionPace = createQuestionPace();
 let renderFrames = 0, renderTotal = 0, adaptiveTime = 0, frameSample = [], warmupFrames = 0;
@@ -133,6 +137,8 @@ const initialStage = recommendedStage(initialProgress);
 let starting = false;
 let tutorial = null, tutorialVoicePending = false, tutorialDismissed = false, tutorialSaved = true, tutorialBank = null, tutorialIdle = 0, tutorialGoHint = false;
 let tutorialCompleted = false;
+// 재방문 맞춤 연습을 누른 순간의 첫 문제. 조작 연습을 거쳐도(건너뛰기·완료) 이 문제로 시작한다. 다른 코스를 고르거나 입구로 돌아오면 지운다.
+let returnLead = null;
 try { tutorialCompleted = loadTutorial(progressStorage).completed; } catch { /* 저장 공간이 없으면 연습부터 */ }
 const TUTORIAL_CLIPS = ['welcome', 'right', 'listen', 'choices', 'retry', 'correct', 'boost', 'finish', 'go'].map((id) => 'tutorial-' + id);
 const tutorialFruits = ['사과', '포도', '바나나'].map((word) => WORDS.find((w) => w.word === word));
@@ -305,11 +311,16 @@ document.addEventListener('input', (e) => { if (e.target.id === 'garage-angle') 
 
 /* ── 입구 ── */
 const lobby = createLobby({ view: lobbyView, select: selectStage, journey: startJourney, mission: playMission });
+$('return-practice').addEventListener('click', () => {
+  if (starting) return;
+  const plan = returnPlanNow();
+  if (plan) startJourney(plan.target.item); else renderLobby();   // 그사이 쓰기 권한을 잃었으면 단추와 안내를 지금 상태로 되돌린다
+});
 function lobbyView() {
   return { ready, starting, pendingStart: !!pendingStart, load: loadState, stage: round.selectedStage, unlocked: assignment() ? true : isUnlocked(round.selectedStage),
     firstRun: !tutorialCompleted && !tutorialDismissed, target: assignment(), personal: nextPersonalized(), recommended: recommendedStage(round.progress),
     targetUnavailable: targetUnavailable(), progress: round.progress, garage: round.garage, garageSaved, mission: dailyMission(round.progress, Date.now(), round.garage),
-    driver: driverName, scope: learningScope(), hosted, isUnlocked };
+    driver: driverName, scope: learningScope(), hosted, isUnlocked, returnPlan: assignment() ? null : returnPlanNow() };
 }
 function renderLobby() { lobby.render(lobbyView()); paintResetNotice(); }
 // 지우기 결과는 누른 단추 바로 옆(#learning-scope)에 남긴다. 입구가 이 칸의 바탕 글을 다시 써도 안내는 다음 판을 시작할 때까지 남고, 화면 읽기는 #sr-live로 듣는다.
@@ -345,27 +356,30 @@ function paintResetNotice(force = false) {
 }
 function showResetNotice(kind) { resetNotice = kind; paintResetNotice(true); }
 function clearResetNotice() { resetNotice = null; paintResetNotice(); }
-function showLobby() { showScreen('lobby'); worldShown = false; renderLobby(); }
+function showLobby() { returnLead = null; showScreen('lobby'); worldShown = false; renderLobby(); }
 function lobbyNote(text) { $('l-reason').textContent = text; hud.announce(text); }
 function selectStage(s) {
   if (assignment()) { const plan = nextPersonalized(); if (!plan) { lobbyNote(targetUnavailable()); return; } s = plan.stage; }
   if (starting) return;
   if (garageOpen) garageUI.close();
-  clearTutorial(); round.selectedStage = s; round.questionBank = makeQuestions(s); round.running = false; round.auto = false; silence(); endLive();
+  returnLead = null; clearTutorial(); round.selectedStage = s; round.questionBank = makeQuestions(s); round.running = false; round.auto = false; silence(); endLive();
   if (ready) { setScenery(s.scene || 'coast'); reset(false); }
   renderLobby();
 }
-function startJourney() {
+function startJourney(lead = null) {
   if (starting) return;
-  const personal = nextPersonalized();
+  const personal = nextPersonalized(lead);
   if (requestedModality && !personal) { lobbyNote('맞춤 문항을 준비하지 못했어요. 소리 설정과 연결 상태를 확인해 주세요.'); return; }
   requestedModality = null; lobby.useCollection('campaign');
-  selectStage(personal?.stage || recommendedStage(round.progress)); start(false);
+  selectStage(personal?.stage || recommendedStage(round.progress)); returnLead = lead?.id ?? null; start(false);
 }
 // ‘레이스 시작’: 잠긴 코스를 보고 있었으면 아직 통과하지 못한 첫 코스부터 달린다.
 function onStartClick() {
   if (starting) return;
   if (!assignment() && !isUnlocked(round.selectedStage)) selectStage(recommendedStage(round.progress));
+  // 안내가 「이 코스 첫 문제」라고 말한 문제를 눌렀을 때 고정한다. 그 문제가 없는 코스는 고른 그대로 달린다.
+  const planned = returnPlanNow()?.target.id;
+  returnLead = round.selectedStage.items?.some((q) => q.id === planned) ? planned : null;
   start(false);
 }
 
@@ -429,7 +443,8 @@ async function init() {
     renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.setClearColor(0xc9dedb);
     stage.appendChild(renderer.domElement);
-    renderer.domElement.addEventListener('webglcontextlost', (e) => { e.preventDefault(); if (round.running && !round.paused) pause(); $('world-error').hidden = false; });
+    renderer.domElement.addEventListener('webglcontextlost', (e) => { e.preventDefault(); glEpoch++; if (round.running && !round.paused) pause(); $('world-error').hidden = false; });
+    renderer.domElement.addEventListener('webglcontextrestored', onContextRestored);
     scene = new THREE.Scene(); camera = new THREE.PerspectiveCamera(53, 1, .12, 4900);
     ambientLight = new THREE.HemisphereLight(0xc7e1fa, 0x68764c, .78); scene.add(ambientLight);
     light = new THREE.DirectionalLight(0xfff2db, 2.9); light.castShadow = true; light.shadow.mapSize.set(2048, 2048);
@@ -467,12 +482,8 @@ async function init() {
     mark('vegetationMs'); await yieldToUI();
     // 하늘 셰이더(방향·구름 높이 포함)를 그대로 구워 차체·바다·보이는 하늘이 같은 빛을 쓴다.
     startup.phase = 'environment';
-    const pmrem = new THREE.PMREMGenerator(renderer), environmentScene = new THREE.Scene();
-    const environmentSky = new THREE.Mesh(scenery.atmosphere.sky.geometry, scenery.atmosphere.sky.material); environmentScene.add(environmentSky);
-    scenery.environments = {};
-    scenery.atmosphere.setTheme('sunset'); environmentSky.rotation.copy(scenery.atmosphere.sky.rotation); sunDirection.set(.34, .115, .94).normalize();
-    scenery.environments.sunset = pmrem.fromScene(environmentScene, .01, .1, 5000, { size: deviceGraphics.coarsePointer ? 128 : 256 });
-    environmentScene.remove(environmentSky); pmrem.dispose(); world.setupJourneyScenery(round.selectedStage.scene || 'coast');
+    await contextBack();
+    bakeEnvironment(); world.setupJourneyScenery(round.selectedStage.scene || 'coast');
     mark('environmentMs'); await yieldToUI();
     startup.phase = 'vehicles';
     scenery.rockShelves = createCoastalRocks(THREE, { source: rockScan.scene, pathX, groundHeight }); scene.add(scenery.rockShelves.group);
@@ -486,13 +497,13 @@ async function init() {
     mark('worldMs'); startup.phase = 'shaders';
     startup.parallelShaders = renderer.extensions.has('KHR_parallel_shader_compile');
     await prepareFirstFrame({
-      getState: () => [round.selectedStage, round.questionBank, $('quality').value, driverName, stage.clientWidth || innerWidth, stage.clientHeight || innerHeight, devicePixelRatio],
+      getState: () => [round.selectedStage, round.questionBank, $('quality').value, driverName, stage.clientWidth || innerWidth, stage.clientHeight || innerHeight, devicePixelRatio, glEpoch],
       prepare: () => {
         setScenery(round.selectedStage.scene || 'coast');
         setQuality($('quality').value);reset(false);
         updateCamera(0);
       },
-      compile: async () => { startup.compilePasses++; await renderer.compileAsync(scene, camera); mark('shadersMs'); },
+      compile: async () => { startup.compilePasses++; await compileWorld(); mark('shadersMs'); },
       render: () => { frame(); mark('firstFrameMs'); },
       nextFrame: () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
     });
@@ -506,12 +517,54 @@ async function init() {
     garageUI.setReady(true);
     if (garageOpen) attachGarage3D();
     renderLobby();
-    if (pendingStart && !garageOpen) { const queued = pendingStart; pendingStart = null; start(queued.demo); }
-    else pendingStart = null;
+    runPendingStart();
   } catch (error) {
     ready = false; loadState = 'failed'; pendingStart = null; startup.phase = 'failed'; console.error(error); window.__racingError = String(error);
     renderLobby(); garageUI.setReady(false);
   } finally { draco?.dispose(); terrainBuild?.cancel(); }
+}
+function runPendingStart() {
+  const queued = pendingStart; pendingStart = null;
+  if (queued && !garageOpen) start(queued.demo, queued.bypassTutorial);
+}
+/* ── WebGL 컨텍스트 손실·복구: 복구되면 three가 재질 기록을 통째로 새로 만들고, 렌더 타깃에 구워 둔 그림은 사라진다 ── */
+const contextIsLost = () => renderer.getContext().isContextLost();
+// 잃은 컨텍스트가 돌아오길 기다린다. 끝내 돌아오지 않으면 거절해 「다시 열기」 안내로 넘긴다.
+function contextBack() {
+  if (!contextIsLost()) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('WebGL context was not restored')), CONTEXT_WAIT_MS);
+    contextWaiters.push(() => { clearTimeout(timer); resolve(); });
+  });
+}
+// three의 compileAsync는 기다리는 사이 컨텍스트가 복구되면 타이머 안에서 예외를 내고 영영 끝나지 않는다(새 재질 기록에 program이 없다).
+// 같은 대기를 여기서 하되 컨텍스트가 바뀌면 멈춘다. 다시 컴파일하는 것은 glEpoch를 함께 보는 prepareFirstFrame이다.
+async function compileWorld() {
+  await contextBack();
+  const epoch = glEpoch, pending = renderer.compile(scene, camera);
+  while (pending.size && epoch === glEpoch) {
+    for (const material of pending) { const program = renderer.properties.get(material).currentProgram; if (!program || program.isReady()) pending.delete(material); }
+    if (pending.size) await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+}
+// 하늘 셰이더(방향·구름 높이 포함)를 그대로 구워 차체·바다·보이는 하늘이 같은 빛을 쓴다. 복구 뒤에는 다시 굽는다(구운 그림은 컨텍스트와 함께 사라진다).
+function bakeEnvironment() {
+  const pmrem = new THREE.PMREMGenerator(renderer), environmentScene = new THREE.Scene(), old = scenery.environments?.sunset;
+  const environmentSky = new THREE.Mesh(scenery.atmosphere.sky.geometry, scenery.atmosphere.sky.material); environmentScene.add(environmentSky);
+  scenery.atmosphere.setTheme('sunset'); environmentSky.rotation.copy(scenery.atmosphere.sky.rotation); sunDirection.set(.34, .115, .94).normalize();
+  const baked = pmrem.fromScene(environmentScene, .01, .1, 5000, { size: deviceGraphics.coarsePointer ? 128 : 256 });
+  environmentScene.remove(environmentSky); pmrem.dispose();
+  scenery.environments = { sunset: baked };
+  if (old) { if (scene.environment === old.texture) scene.environment = baked.texture; old.dispose(); }
+}
+function onContextRestored() {
+  glEpoch++; $('world-error').hidden = true;
+  for (const wake of contextWaiters.splice(0)) wake();
+  if (scenery.environments) bakeEnvironment();
+  // 준비 중이면 prepareFirstFrame이 glEpoch를 보고 다시 컴파일한다. 준비된 뒤에는 멈춘 판도 다시 그리고, 멈춤은 그대로 둔다.
+  if (!ready) return;
+  pausedFrameGate.invalidate(); renderLobby();
+  runPendingStart();
 }
 function setScenery(theme) { world?.setScenery(theme); }
 // 3D 캔버스를 옮긴다(레이스 판 ↔ 차고 액자). 크기는 새 상자를 따른다.
@@ -686,7 +739,13 @@ async function start(demo = false, bypassTutorial = false) {
   }
   if (starting || !demo && !isUnlocked(round.selectedStage)) return;
   // 3D가 아직 준비 중이면 누른 것을 기억했다가 준비되는 대로 출발한다(소리는 누른 순간에 연다).
-  if (!ready) { if (loadState === 'loading') { pendingStart = { demo }; if (round.soundEnabled) void ensureAudio(); renderLobby(); } return; }
+  if (!ready) { if (loadState === 'loading') { pendingStart = { demo, bypassTutorial }; if (round.soundEnabled) void ensureAudio(); renderLobby(); } return; }
+  // 준비된 뒤 컨텍스트를 잃은 사이에 눌렀으면 빈 화면으로 출발하지 않고 복구되는 대로 출발한다.
+  if (contextIsLost()) {
+    pendingStart = { demo, bypassTutorial }; renderLobby();
+    contextBack().catch(() => { ready = false; loadState = 'failed'; pendingStart = null; renderLobby(); });
+    return;
+  }
   if (!demo && !bypassTutorial && !tutorialCompleted && !tutorialDismissed) { await startTutorial(); return; }
   clearResetNotice(); clearTutorial();
   if (garageOpen) garageUI.close();
@@ -695,6 +754,10 @@ async function start(demo = false, bypassTutorial = false) {
   if (!round.soundTouched) { round.soundEnabled = true; updateSoundButton(); }
   if (round.soundEnabled) { try { await ensureAudio(); await narrator.prepare([...commonClips, ...stageClips(round.selectedStage)]); } catch { round.narrationUnavailable = true; } }
   round.auto = demo; round.roundWasDemo = demo; round.questionBank = makeQuestions(round.selectedStage); starting = false;
+  // 재방문 맞춤 연습: 고른 코스에 그 문항이 있으면 첫 문제로 당긴다. 코스·판 크기·기록은 그대로다.
+  const missedId = demo || assignment() ? null : returnLead ?? returnPlanNow()?.target.id, missedAt = missedId ? round.questionBank.findIndex((q) => q.id === missedId) : -1;
+  returnLead = null;
+  if (missedAt > 0) round.questionBank.unshift(...round.questionBank.splice(missedAt, 1));
   const opening = startLive();
   showRace(); reset(true); renderLobby();
   speak(['intro'], '출발! 문제를 잘 듣고, 답이 있는 길로 달려 줘!', 'intro');
@@ -995,8 +1058,9 @@ if (QA) installQaHook({
 function refreshStorageText() {
   if (currentScreen() !== 'lobby') return;
   $('learning-scope').textContent = learningScope(); paintResetNotice();
-  // 기록으로 고른 코스의 이유만 다시 그린다. 코스 창이 열려 있으면 창 안 포커스를 지키고, 창을 열 때 새로 읽는다.
+  // 기록으로 고른 코스는 입구 전체를, 그 밖에는 안내와 맞춤 연습 단추만 다시 그린다. 코스 창이 열려 있으면 창 안 포커스를 지키고 창 뒤의 안내·단추만 맞춰 둔다.
   if (!$('course-dialog').open && (assignment() || round.selectedStage?.personalized)) renderLobby();
+  else lobby.renderReturn(lobbyView());
 }
 let storagePaint = false;
 try {

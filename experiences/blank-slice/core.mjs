@@ -34,12 +34,13 @@ export function shuffled(arr, rand = Math.random) {
  * - 고른 뒤에는 쉬운 것 → 어려운 것(같은 난도는 필요 순서 유지)으로 늘어놓는다.
  * - 아틀라스 순서가 없으면(기록을 못 쓰는 브라우저) seed(판 번호)로 섞어, 판마다 다른 문장이 나오게 한다.
  */
-export function composeRound(items = ITEMS, { ranked = null, size = ROUND_SIZE, firstTime = false, seed = 0 } = {}) {
+export function composeRound(items = ITEMS, { ranked = null, size = ROUND_SIZE, firstTime = false, seed = 0, lead = null } = {}) {
   const byId = new Map(items.map((x) => [x.id, x]));
   const base = !ranked?.length && !firstTime && seed ? shuffled(items, rng(seed * 7919)) : items;
-  let order = [...(ranked || []).filter((id) => byId.has(id)), ...base.map((x) => x.id)]
+  // lead: 재방문 맞춤 연습의 문장. 판에 반드시 들어가고 정렬 뒤에도 첫 문장이다. 공통 기록은 다른 기기에서 넘어오므로 이 기기의 처음 판과 겹칠 수 있고, 그때도 나머지만 ‘쉬운 문장부터’다.
+  let order = [...(byId.has(lead) ? [lead] : []), ...(ranked || []).filter((id) => byId.has(id)), ...base.map((x) => x.id)]
     .filter((id, i, a) => a.indexOf(id) === i).map((id) => byId.get(id));
-  if (firstTime) order = [...order.filter((x) => x.difficulty === 1), ...order.filter((x) => x.difficulty !== 1)];
+  if (firstTime) order = [...order.filter((x) => x.id === lead || x.difficulty === 1), ...order.filter((x) => x.id !== lead && x.difficulty !== 1)];
   const n = Math.min(size, items.length);
   const minEach = Math.min(4, Math.floor(n / 3));
   const picked = [];
@@ -48,7 +49,10 @@ export function composeRound(items = ITEMS, { ranked = null, size = ROUND_SIZE, 
   }
   for (const x of order) { if (picked.length >= n) break; if (!picked.includes(x)) picked.push(x); }
   const rank = new Map(order.map((x, i) => [x.id, i]));
-  return picked.slice(0, n).sort((a, b) => a.difficulty - b.difficulty || rank.get(a.id) - rank.get(b.id));
+  const round = picked.slice(0, n).sort((a, b) => a.difficulty - b.difficulty || rank.get(a.id) - rank.get(b.id));
+  const at = round.findIndex((x) => x.id === lead);
+  if (at > 0) round.unshift(...round.splice(at, 1));
+  return round;
 }
 
 /** 점수: 맞히면 100, 연속이면 20씩 더(최대 +100). */

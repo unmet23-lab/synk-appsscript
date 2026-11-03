@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 import crypto from 'node:crypto';
 import { VENUES } from './content.mjs';
 import { composeShift } from './core.mjs';
-import { caseMetadata, caseCandidates, rankCases, recommendVenue, answerPayload, skillReport, assignmentCases } from './learning.mjs';
+import { caseMetadata, caseCandidates, rankCases, recommendVenue, answerPayload, skillReport, assignmentCases, missedPractice, opensTutorial, shiftPlan, soloGuestPlan } from './learning.mjs';
 
 const require = createRequire(import.meta.url);
 const { createGame } = require('../../atlas/game-learning.js');
@@ -186,4 +186,32 @@ test('문항 판: 손님의 서류·짐·말·정답을 바꾸면 판이 올라�
     assert.equal(caseMetadata(c).itemKey, `entry-check.${c.id}.v${version}`, c.id);
     assert.equal(caseMetadata(c).familyKey, `entry-check.${c.id}.v1`, c.id);
   }
+});
+
+// 지적 A2: 새 기기에 공통 기록의 오답(다른 근무지 손님)은 있지만 이 게임의 연수는 안 마친 사람.
+function missedOnNewDevice() {
+  const g = coach();
+  VENUES.find((v) => v.id === 'museum').cases.filter((c) => !c.followupOnly && c.skill === 'ko.reading.condition').slice(0, 3).forEach((c, i) => play(g, c, i === 0));
+  return g;
+}
+test('입구 약속: 연수로 열리는 근무는 기록이 충분해도 맞춤 손님을 약속하지 않는다', () => {
+  const g = missedOnNewDevice(), NEW = { tutorial: false, plays: 0, stars: {} };
+  assert.equal(opensTutorial(NEW, 'pool'), true);
+  assert.ok(missedPractice(g, ['pool']), '측정은 충분하다');
+  assert.equal(shiftPlan(g, ['pool'], NEW), null, '근무 단추는 연수이므로 약속 없음');
+  assert.equal(soloGuestPlan(g, ['pool'], NEW), null, '한 손님 연습 단추도 없음');
+});
+test('입구 약속: 연수를 마쳤으면 그 손님이 실제 근무에 든다', () => {
+  const g = missedOnNewDevice(), pool = VENUES.find((v) => v.id === 'pool');
+  const plan = shiftPlan(g, ['pool'], { tutorial: true, plays: 0, stars: {} });
+  assert.equal(plan.target.venueId, 'pool');
+  assert.ok(composeShift(pool, { ranked: [plan.target.id] }).some((c) => c.id === plan.target.id));
+});
+test('입구 약속: 연수가 아닌 열린 근무지는 그대로 약속하고, 연수로 안내만 받은 손님은 새 손님으로 약속하지 않는다', () => {
+  const g = missedOnNewDevice();
+  const other = shiftPlan(g, ['pool', 'library'], { tutorial: false, plays: 1, stars: { pool: 1 } });
+  assert.equal(other.target.venueId, 'library');
+  const viewed = shiftPlan(g, ['pool'], { tutorial: true, plays: 0, stars: {} });
+  const pid = g.present(caseMetadata(viewed.target.item)); g.help(pid, 'answer'); g.answer(pid, answerPayload(true));
+  assert.notEqual(shiftPlan(g, ['pool'], { tutorial: true, plays: 1, stars: {} })?.target.id, viewed.target.id);
 });

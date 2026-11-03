@@ -4,6 +4,7 @@
 // 공은 고를 때까지 라켓 앞에서 기다려 준다(10-03 「공이 기다려 줘요」 — 시간이 지나 놓치는 일이 없다). 기다리는 동안 다시 듣기·글로 보기를 쓰면
 // 도움으로 남는다. 그만두기로 닫은 문항은 평가하지 않는 응답이다.
 import { ITEMS, SKILL_LABEL } from './content.mjs';
+import { returnPractice } from './kit/return-practice.mjs';
 
 export const GAME_ID = 'talk-rally';
 export const FORMAT = 'single-choice';
@@ -39,6 +40,21 @@ export function rankItems(coach, items, { audioAvailable = true } = {}) {
     if (r.status !== 'ready') return null;
     return { order: [r.selected, ...r.alternatives].map((x) => x.itemId), reason: r.reason, skillId: r.focusSkillId, state: r.state };
   } catch { return null; }
+}
+
+/* 재방문 맞춤 연습: 듣기 항목은 하나지만 놓치는 말은 셋으로 갈린다(네/아니요로 묻는 말·의문사로 묻는 말·이어지는 말).
+ * 답이나 말의 위치는 말하지 않는다. 하루 도전은 모두에게 같은 판이라 여기를 읽지 않는다. */
+export const RETURN_PATTERNS = Object.freeze({
+  yn: { why: '지난 판에서 ‘네’나 ‘아니요’로 대답하는 말을 놓친 적이 있어요.', next: '이번 첫 공도 그런 말이에요. 끝까지 듣고 물은 말에 맞는 대답을 골라 보세요.' },
+  wh: { why: '지난 판에서 ‘어디·언제·왜’처럼 무엇을 묻는지 듣는 말을 놓친 적이 있어요.', next: '이번 첫 공도 그런 말이에요. 무엇을 묻는지 끝까지 들어 보세요.' },
+  follow: { why: '지난 판에서 인사나 고마움처럼 이어서 대답하는 말을 놓친 적이 있어요.', next: '이번 첫 공도 그런 말이에요. 어떤 상황의 말인지 끝까지 들어 보세요.' },
+});
+export const patternOfItem = (item) => item.kind === 'follow' ? 'follow' : item.id.startsWith('w') ? 'wh' : 'yn';
+const ITEM_OF_FAMILY = new Map(ITEMS.map((x) => [itemMetadata(x).familyKey, x]));
+export function missedPractice(coach, { audioAvailable = true } = {}) {
+  return returnPractice({ coach, gameId: GAME_ID, patterns: RETURN_PATTERNS, audioAvailable,
+    patternOfFamily: (family) => { const item = ITEM_OF_FAMILY.get(family); return item ? patternOfItem(item) : null; },
+    freshItems: (pattern) => ITEMS.filter((x) => patternOfItem(x) === pattern).map((x) => ({ id: x.id, item: x, meta: itemMetadata(x) })) });
 }
 
 export const answerPayload = (correct) => ({ correct, assessable: true });
@@ -93,6 +109,25 @@ const PRIORITY = { practice: 6, review: 5, supported: 4, checking: 3, unseen: 2,
 const LEVEL_LABEL = { 1: '쉬운 말', 2: '조금 어려운 말' };
 const LEVELS = Object.fromEntries(Object.keys(SKILL_LABEL).map((id) =>
   [id, [...new Set(ITEMS.filter((x) => x.skill === id).map((x) => x.difficulty))].sort((a, b) => a - b)]));
+
+/**
+ * 연습 기록 표가 듣고 알맞게 대답하기 하나로 바뀌기 전의 칸(지금 SKILL_LABEL 밖)에, 이 게임에서 혼자 답했고 문항을 알아볼 수 있는 기록이 있는가.
+ * 칸과 원장은 합치거나 고치지 않고 결과 화면이 한 줄만 말한다. 다른 게임·도움 받은 답·알아볼 수 없는 기록은 세지 않고, 숫자나 약점으로 말하지 않는다.
+ */
+export function hasEarlierRecord(coach) {
+  try {
+    const summary = coach.summary(), events = new Map(coach.events().map((e) => [e.id, e]));
+    for (const skill of summary?.skills || []) {
+      if (SKILL_LABEL[skill.id]) continue;
+      for (const level of Object.values(skill.levels || {})) for (const cell of Object.values(level.formats || {})) for (const id of cell.evidence || []) {
+        const attempt = events.get(id), shown = events.get(attempt?.presentationId), decision = events.get(shown?.decisionId);
+        if (attempt?.type === 'practice.attempted' && ['correct', 'incorrect'].includes(attempt.verdict) && shown?.type === 'practice.presented'
+          && decision?.type === 'decision.made' && decision.experienceId === GAME_ID && ITEM_OF_FAMILY.has(shown.measure?.familyKey || shown.itemKey)) return true;
+      }
+    }
+  } catch { /* 기록을 읽지 못하면 말하지 않는다 */ }
+  return false;
+}
 
 /** 공통 기록 요약에서 이 게임의 학습 항목 상태(같은 형식·듣기 기록만, 10-21부터 듣고 알맞게 대답하기 하나). 빈칸 베기와 같은 방식. */
 export function skillReport(summary, { focusSkillId = null } = {}) {

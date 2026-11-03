@@ -18,12 +18,13 @@ export function shuffled(arr, rand = Math.random) {
  * 종류로 나누는 까닭: 두 종류가 한 학습 항목(듣고 알맞게 대답하기)이 된 10-21 뒤에도 판마다 둘이 섞이게(그전에는 항목이 종류마다 달랐다).
  * 아틀라스 순서가 없으면 seed(판 번호)로 섞어 판마다 다른 말이 나오게 한다.
  */
-export function composeRound(items = ITEMS, { ranked = null, size = ROUND_SIZE, firstTime = false, seed = 0 } = {}) {
+export function composeRound(items = ITEMS, { ranked = null, size = ROUND_SIZE, firstTime = false, seed = 0, lead = null } = {}) {
   const byId = new Map(items.map((x) => [x.id, x]));
   const base = !ranked?.length && !firstTime && seed ? shuffled(items, rng(seed * 7919)) : items;
-  let order = [...(ranked || []).filter((id) => byId.has(id)), ...base.map((x) => x.id)]
+  // lead: 재방문 맞춤 연습의 말. 판에 반드시 들어가고 정렬 뒤에도 첫 공이다. 다른 기기의 기록을 받은 새 기기는 처음 판이면서 lead가 있어, 난도와 관계없이 앞에 둔다.
+  let order = [...(byId.has(lead) ? [lead] : []), ...(ranked || []).filter((id) => byId.has(id)), ...base.map((x) => x.id)]
     .filter((id, i, a) => a.indexOf(id) === i).map((id) => byId.get(id));
-  if (firstTime) order = [...order.filter((x) => x.difficulty === 1), ...order.filter((x) => x.difficulty !== 1)];
+  if (firstTime) { const easy = (x) => x.id === lead || x.difficulty === 1; order = [...order.filter(easy), ...order.filter((x) => !easy(x))]; }
   const n = Math.min(size, items.length);
   const minEach = Math.min(4, Math.floor(n / 3));
   const picked = [];
@@ -32,7 +33,10 @@ export function composeRound(items = ITEMS, { ranked = null, size = ROUND_SIZE, 
   }
   for (const x of order) { if (picked.length >= n) break; if (!picked.includes(x)) picked.push(x); }
   const rank = new Map(order.map((x, i) => [x.id, i]));
-  return picked.slice(0, n).sort((a, b) => a.difficulty - b.difficulty || rank.get(a.id) - rank.get(b.id));
+  const round = picked.slice(0, n).sort((a, b) => a.difficulty - b.difficulty || rank.get(a.id) - rank.get(b.id));
+  const at = round.findIndex((x) => x.id === lead);
+  if (at > 0) round.unshift(...round.splice(at, 1));
+  return round;
 }
 
 /** 맞게 받아치면 100점, 랠리가 이어질수록 20점씩 더(최대 +100). 세 번 연속마다 스매시(+50). 공이 라켓에 닿기 전에 고르면 ‘빠르게!’(+50). */

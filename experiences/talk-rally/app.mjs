@@ -5,7 +5,7 @@
 // 쓸 수 있다(도움으로 기록). 시간이 지나 놓치는 일은 없다. 틀린 칸이면 맞는 대답과 이유가 나온다.
 import { ITEMS, PRACTICE, SKILL_LABEL, KIND_LABEL } from './content.mjs';
 import { shuffled, composeRound, pointsFor, isSmash, scoreRound, flightTime, swipeLane } from './core.mjs';
-import { GAME_ID, rankItems, createExchange, skillReport, FLOW_RALLY, FLOW_WORDS, rallyObservation } from './learning.mjs';
+import { GAME_ID, rankItems, createExchange, skillReport, FLOW_RALLY, FLOW_WORDS, rallyObservation, missedPractice, hasEarlierRecord } from './learning.mjs';
 import * as sound from './audio.mjs';
 import { swingPower } from './sfx.mjs';
 import { createStage, LANES, WALL_SRC } from './stage.mjs';
@@ -112,7 +112,8 @@ function paintStorageNote() {
 /** 입구의 추천·저장 안내만 그린다. 판·소리·3D 무대·화면 전환·포커스는 건드리지 않아 저장 상태가 바뀔 때 다시 불러도 된다. */
 function paintLobbyPlan() {
   state.ranked = progress.plays === 0 ? null : atlas((c) => rankItems(c, ITEMS, { audioAvailable: sound.isOn() }));
-  $('#l-reason').textContent = progress.plays === 0 ? '처음이니까 쉬운 말부터 해요. 첫 공은 연습이에요.'
+  const plan = atlas((c) => missedPractice(c, { audioAvailable: sound.isOn() }));
+  $('#l-reason').textContent = plan ? `${plan.why} ${plan.next}` + (progress.practiced ? '' : ' 연습 공을 마치면 바로 나와요.') : progress.plays === 0 ? '처음이니까 쉬운 말부터 해요. 첫 공은 연습이에요.'
     : state.ranked?.reason ? `${state.ranked.reason} 그 말들을 먼저 넣었어요.` : '새 말을 섞어 한 판을 만들어요.';
   paintStorageNote();
 }
@@ -171,7 +172,7 @@ async function startRound(mode = 'normal') {
   const opening = startFlow();
   const daily = mode === 'daily', date = daily ? seoulDate() : null;
   Object.assign(state, { index: 0, results: [], rally: 0, score: 0, cur: null, practice: false, paused: false, mode: daily ? 'daily' : 'normal', dailyDate: date,
-    queue: daily ? dailyRound(date) : composeRound(ITEMS, { ranked: state.ranked?.order, firstTime: progress.plays === 0, seed: progress.plays + 1 }) });
+    queue: daily ? dailyRound(date) : composeRound(ITEMS, { ranked: state.ranked?.order, firstTime: progress.plays === 0, seed: progress.plays + 1, lead: atlas((c) => missedPractice(c, { audioAvailable: sound.isOn() }))?.target.id ?? null }) });
   $('.game-title').textContent = daily ? '하루 도전' : '말 랠리';
   // 공통 코인(play-common): 이 판의 번호. 끝까지 마친 판만 받는다(그만두면 받지 않는다). 코인은 학습 기록에 쓰지 않는다.
   state.coinRound = globalThis.SynkPlayCollection?.roundId('talk-rally') || null;
@@ -497,7 +498,7 @@ function finish() {
   const next = atlas((c) => rankItems(c, ITEMS, { audioAvailable: sound.isOn() }));
   state.ranked = next;
   renderSkills(next);
-  $('#r-next-reason').textContent = nextLine(next);
+  $('#r-next-reason').textContent = nextLineWithReturn(next);
   $('#r-hub').hidden = !location.pathname.includes('/talk-rally/');
   show('results');
   $('#r-title').focus({ preventScroll: true });
@@ -522,6 +523,11 @@ function renderDailyResult(dres, s) {
   }
 }
 
+// 놓친 말이 확인되면 그 안내가 먼저다(입구와 같은 말). 하루 도전 결과에서도 다음 보통 판을 말한다.
+function nextLineWithReturn(next) {
+  const plan = atlas((c) => missedPractice(c, { audioAvailable: sound.isOn() }));
+  return plan ? `${plan.why} ‘다음 판 시작’의 첫 공도 그런 말이에요.` : nextLine(next);
+}
 function nextLine(next) {
   if (!next?.reason) return '다음 판에는 새 말을 섞어요.';
   const first = ITEMS.find((x) => x.id === next.order?.[0]);
@@ -539,6 +545,7 @@ function renderSkills(next) {
     li.innerHTML = `<b>${esc(r.label)}${focus ? ' <i class="next-tag">다음 연습</i>' : ''}</b><em>이번 ${ok}/${mine.length}</em><span>${esc(r.text)}${r.n ? ` · 처음 들은 말 ${r.n}개 중 ${r.correct}개는 혼자 맞힘` : ''}</span>`;
     ul.append(li);
   }
+  if (atlas(hasEarlierRecord, false)) ul.append(el('li', 'earlier-record', '<span>연습 기록 표가 바뀌기 전에 혼자 답한 기록도 그대로 남아 있어요. 위 숫자는 바뀐 뒤의 기록이에요.</span>'));
 }
 
 /* ── 멈춤 ── */
@@ -656,7 +663,7 @@ document.addEventListener('keydown', (e) => {
 function refreshStorageText() {
   paintResetNotice();
   if (!$('#lobby').hidden) paintLobbyPlan();
-  else if (!$('#results').hidden) { const next = atlas((c) => rankItems(c, ITEMS, { audioAvailable: sound.isOn() })); state.ranked = next; renderSkills(next); $('#r-next-reason').textContent = nextLine(next); }
+  else if (!$('#results').hidden) { const next = atlas((c) => rankItems(c, ITEMS, { audioAvailable: sound.isOn() })); state.ranked = next; renderSkills(next); $('#r-next-reason').textContent = nextLineWithReturn(next); }
 }
 let storagePaint = false;
 try {

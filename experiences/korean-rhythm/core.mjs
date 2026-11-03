@@ -21,15 +21,18 @@ export function timeAtBeat(track,index){
  if(whole>=beats.length-1)return beats.at(-1)+(index-(beats.length-1))*60/track.bpm;
  return beats[whole]+(beats[whole+1]-beats[whole])*fraction;
 }
-export function buildChart(track,levelName='easy',seed=1){
+// lead: 재방문 맞춤 연습의 문항 번호. 그 문항이 첫 관문에 오고 나머지는 원래 순서로 뒤에 온다. 음성·변형·기록은 관문 자리가 아니라 문항 번호를 따른다.
+export function buildChart(track,levelName='easy',seed=1,{lead=null}={}){
   const level=LEVELS[levelName],rng=random(seed),beat=60/track.bpm;
   const gates=[40,...[.30,.48,.66,.84].map(r=>Math.floor(track.beatTimes.length*r/4)*4)];
   const variants=shuffle([0,1,0,1,rng()>.5?1:0],rng);
-  const questions=track.questions.map((q,i)=>{
-    const allowed=track.variantChoices?.[i];
+  const order=track.questions.map((_,i)=>i);
+  if(Number.isInteger(lead)&&lead>0&&lead<order.length)order.unshift(...order.splice(lead,1));
+  const questions=order.map((i,gate)=>{
+    const q=track.questions[i],allowed=track.variantChoices?.[i];
     const variant=allowed?.length&&!allowed.includes(variants[i])?allowed[0]:variants[i],voice=NARRATION[`t${track.id}q${i}v${variant}`],recallVoice=NARRATION[`t${track.id}q${i}r`];
-    const at=gates[i],time=timeAtBeat(track,at),lead=Math.max(voice.duration+3.5,12);
-    const showTime=time-lead,voiceEnd=showTime+voice.duration,answerOpen=time-Math.max(2,3*beat);
+    const at=gates[gate],time=timeAtBeat(track,at),before=Math.max(voice.duration+3.5,12);
+    const showTime=time-before,voiceEnd=showTime+voice.duration,answerOpen=time-Math.max(2,3*beat);
     if(showTime<1||voiceEnd>answerOpen-.4)throw Error('이 곡의 문제를 준비하지 못했어요. 다른 곡을 골라 주세요.');
     return {...q,...q.claims[variant],id:`t${track.id}q${i}v${variant}`,sourceIndex:i,variant,beat:at,time,showTime,voiceEnd,answerOpen,closeTime:time+.65,voice,
       recall:{...q.recall,options:['O','X'],voice:recallVoice},options:['O','X'],intent:null,response:null,quality:0,state:'pending'};
@@ -51,7 +54,7 @@ export function buildChart(track,levelName='easy',seed=1){
 }
 
 export class RoundState{
-  constructor(track,levelName='easy',seed=1){Object.assign(this,buildChart(track,levelName,seed));this.base=this.level;this.level={...this.level};this.timing=1;this.track=track;this.levelName=levelName;this.combo=0;this.maxCombo=0;this.score=0;this.earned=0;this.processed=0;this.possible=this.notes.reduce((n,x)=>n+(x.duration?2:1),0)+this.questions.length;this.events=[];}
+  constructor(track,levelName='easy',seed=1,options={}){Object.assign(this,buildChart(track,levelName,seed,options));this.base=this.level;this.level={...this.level};this.timing=1;this.track=track;this.levelName=levelName;this.combo=0;this.maxCombo=0;this.score=0;this.earned=0;this.processed=0;this.possible=this.notes.reduce((n,x)=>n+(x.duration?2:1),0)+this.questions.length;this.events=[];}
   record(quality,type,lane){this.processed++;this.earned+=quality;this.score+=Math.round(quality*1000);if(quality>0){this.combo++;this.maxCombo=Math.max(this.maxCombo,this.combo);}else this.combo=0;const event={type,lane,quality,combo:this.combo};this.events.push(event);return event;}
   activeQuestion(time){return this.questions.find(q=>time>=q.showTime&&time<=q.closeTime+1.5);}
   input(lane,time){

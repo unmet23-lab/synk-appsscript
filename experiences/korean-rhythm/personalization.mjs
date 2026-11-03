@@ -1,5 +1,7 @@
 import {TRACKS} from './core.mjs';
 import {josa} from './kit/josa.mjs';
+import {returnPractice} from './kit/return-practice.mjs';
+import {supplementalItems} from './supplemental.mjs';
 // 대표 능력과 언어 난도는 문항마다(곡 번호가 아니라). 10-21 문항 검수 판정: 바뀐 시간을 듣는 t0q4는 부정·변경, 값을 듣는 t1q1과
 // 한 문장을 바꿔 말한 t2q2·t2q4는 세부. 난도는 작성 기준 §3대로 — 한 문장·1급 문형인 t1q1·t1q3과, 두 문장·정보 둘을 1단계 「그래서」로
 // 잇는 t1q0(같은 날 재검수)은 1, 2단계 문형(-(으)려고·-(으)니까)으로 까닭을 듣는 t1q2·t1q4와 셋째 곡은 모두 2(3은 쓰지 않는 칸).
@@ -52,6 +54,36 @@ export function assignmentTrack(track,target){
  const variantChoices={};
  track.questions.forEach((q,i)=>{const m=rhythmItem(track.id,{sourceIndex:i});if(target.familyKeys?.includes(m.familyKey)&&m.skillId===target.skillId&&m.difficulty===target.difficulty)variantChoices[i]=[0,1].filter(v=>!target.itemKeys?.length||target.itemKeys.includes(rhythmItem(track.id,{sourceIndex:i,variant:v}).itemKey));});
  return {...track,variantChoices};
+}
+
+/* 재방문 맞춤 연습: 곡에서 놓친 능력의 새 문항을 고른다. 안 만난 곡 문항이 있으면 그 곡의 첫 관문으로, 곡 안에 없으면(부정 표현은 첫 곡에
+ * 다 있다) 보충 연습의 새 대화로 연다. 곡 문항은 곡 추천 칸(RHYTHM_CANDIDATES)과 같은 곡이다. 조건은 곡에 한 문항뿐이라 보충 연습 근거가 쌓여야 말한다. */
+export const RETURN_PATTERNS=Object.freeze({
+ detail:{why:'지난 곡에서 시간이나 장소 같은 세부 내용을 놓친 적이 있어요.'},
+ negation:{why:'지난 곡에서 아니라고 하거나 바뀌었다고 하는 말을 놓친 적이 있어요.'},
+ reason:{why:'지난 곡에서 왜 그런지 말하는 이유를 놓친 적이 있어요.'},
+ condition:{why:'지난 곡에서 어떤 경우에 그런지 말하는 조건을 놓친 적이 있어요.'},
+});
+const patternOfSkill=skill=>{const id=String(skill).split('.').at(-1);return RETURN_PATTERNS[id]?id:null;};
+const SONG_ROWS=TRACKS.flatMap(track=>track.questions.map((_,sourceIndex)=>({trackId:track.id,sourceIndex,meta:rhythmItem(track.id,{sourceIndex,variant:0})})));
+const SUPPLY_ROWS=supplementalItems({purpose:'practice'});
+const FAMILY_SKILL=new Map([...SONG_ROWS.map(row=>[row.meta.familyKey,row.meta.skillId]),...SUPPLY_ROWS.map(row=>[row.familyKey,row.skillId])]);
+const SONG_FAMILIES=new Set(SONG_ROWS.map(row=>row.meta.familyKey));
+/** songsOnly: 보충 연습이 없는 체험 판. */
+export function missedRhythm(coach,{songsOnly=false}={}){
+ const plan=returnPractice({coach,gameId:'korean-rhythm',patterns:RETURN_PATTERNS,
+  patternOfFamily:family=>FAMILY_SKILL.has(family)?patternOfSkill(FAMILY_SKILL.get(family)):null,
+  freshItems:pattern=>[
+   ...SONG_ROWS.filter(row=>patternOfSkill(row.meta.skillId)===pattern).map(row=>({id:`t${row.trackId}q${row.sourceIndex}`,meta:row.meta,tier:0,item:{kind:'song',trackId:row.trackId,sourceIndex:row.sourceIndex}})),
+   ...(songsOnly?[]:SUPPLY_ROWS.filter(row=>patternOfSkill(row.skillId)===pattern).map(row=>({id:row.id,meta:row,peers:row.exposurePeers,tier:1,item:{kind:'supplemental',row}}))),
+  ]});
+ // 놓친 문항이 모두 곡 문항일 때만 「지난 곡에서」라고 말한다. 보충 연습 오답이 섞이면 곡을 놓쳤다고 하지 않는다.
+ if(!plan||plan.missedFamilies.every(family=>SONG_FAMILIES.has(family)))return plan;
+ return {...plan,why:plan.why.replace('지난 곡에서','지난 듣기 연습에서')};
+}
+export function returnLine(plan){
+ return plan.target.item.kind==='song'?`${plan.why} ‘${TRACKS[plan.target.item.trackId].title}’의 첫 문제도 그런 문제예요. 끝까지 듣고 답해 보세요.`
+  :`${plan.why} 아래 ‘놓친 표현 바로 연습’에서 새 대화로 들어 봐요.`;
 }
 
 /* Atlas moment-level challenge for the beat (Core flow.js). Only the timing windows move, within the

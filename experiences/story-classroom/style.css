@@ -16,6 +16,9 @@
 
 /* 오늘의 이야기 카드 */
 .start-card .felt-cta.cream{margin-top:-2px}
+.support-offer{display:grid;gap:8px;justify-items:start}
+.support-offer .reason{margin:0}
+.support-offer.first{display:contents}
 .fine.warn{color:var(--coral-deep);font-weight:700}
 
 /* WORLD 계정(입구 아래 작은 종이 줄) */
@@ -213,6 +216,10 @@ dialog.journal .fine{margin:4px 0 10px}
   .hero{padding-bottom:44px}
   .hero .sub{display:none}
   .hero-art{height:min(50vw,210px);margin-top:10px}
+}
+@media (max-width:599px){
+  /* 재방문 근거가 있으면 그 안내와 연습이 첫 화면에 들어오게 그림을 뺀다(359px 이하와 같은 처리) */
+  .lobby.has-return .hero-art{display:none}
 }
 @media (max-width:359px){
   .hero-art{display:none}

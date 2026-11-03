@@ -3,6 +3,7 @@
 // 두 번 던져도 못 베면(손이 늦은 것인지 몰랐던 것인지 가를 수 없어) 정답을 보이기 전에 멈춘 보기에서 시간 제한 없이 답한다.
 // 그만두기로 확인을 닫은 경우는 오답이 아니라 평가하지 않는 응답이다.
 import { ITEMS, SKILL_LABEL } from './content.mjs';
+import { returnPractice } from './kit/return-practice.mjs';
 
 export const GAME_ID = 'blank-slice';
 export const FORMAT = 'single-choice';
@@ -69,6 +70,24 @@ export function rankItems(coach, items) {
     if (r.status !== 'ready') return null;
     return { order: [r.selected, ...r.alternatives].map((x) => x.itemId), reason: r.reason, skillId: r.focusSkillId, state: r.state };
   } catch { return null; }
+}
+
+/* 재방문 맞춤 연습: 낱말·문형 두 항목 안에서 실제로 갈리는 말의 종류로 나눈다. 때(1)·세는 말(2)·꾸미는 말(2)은 세 번 만나고 남는
+ * 새 문장이 없어 패턴을 두지 않는다(기존 추천만). 이음말은 셋뿐이라 두 문장에서 두 번 놓치면 말한다. */
+export const RETURN_PATTERNS = Object.freeze({
+  particle: { why: '지난 판에서 낱말 뒤에 붙는 조사를 놓친 적이 있어요.', next: '이번 첫 문장도 그런 문장이에요. 빈칸 앞뒤 말을 함께 읽어 보세요.' },
+  ending: { why: '지난 판에서 문장 끝이나 중간의 문형을 놓친 적이 있어요.', next: '이번 첫 문장도 그런 문장이에요. 문장 전체의 뜻을 읽고 골라 보세요.' },
+  connector: { minEvidence: 2, why: '지난 판에서 두 문장을 잇는 말을 놓친 적이 있어요.', next: '이번 첫 문장도 그런 문장이에요. 앞뒤 문장이 어떤 관계인지 읽어 보세요.' },
+  noun: { why: '지난 판에서 이름을 나타내는 낱말을 놓친 적이 있어요.', next: '이번 첫 문장도 그런 문장이에요. 앞뒤 말에서 단서를 찾아 보세요.' },
+  predicate: { why: '지난 판에서 동작이나 상태를 나타내는 낱말을 놓친 적이 있어요.', next: '이번 첫 문장도 그런 문장이에요. 앞뒤 말에서 단서를 찾아 보세요.' },
+});
+const PATTERN_OF_KIND = Object.freeze({ particle: 'particle', ending: 'ending', connector: 'connector', noun: 'noun', verb: 'predicate', adjective: 'predicate' });
+export const patternOfItem = (item) => PATTERN_OF_KIND[item.kind] || null;
+const ITEM_OF_FAMILY = new Map(ITEMS.map((x) => [itemMetadata(x).familyKey, x]));
+export function missedPractice(coach) {
+  return returnPractice({ coach, gameId: GAME_ID, patterns: RETURN_PATTERNS,
+    patternOfFamily: (family) => { const item = ITEM_OF_FAMILY.get(family); return item ? patternOfItem(item) : null; },
+    freshItems: (pattern) => ITEMS.filter((x) => patternOfItem(x) === pattern).map((x) => ({ id: x.id, item: x, meta: itemMetadata(x) })) });
 }
 
 /** 벤 말 또는 멈춘 보기에서 고른 답. 둘 다 정답을 보이기 전의 독립 응답이다. */

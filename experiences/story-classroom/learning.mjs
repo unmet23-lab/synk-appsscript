@@ -4,6 +4,8 @@
  * authenticated identity, consent decision or proficiency score.
  */
 import { EPISODE, STORY_VERSION } from './story.mjs';
+import { returnPractice } from './kit/return-practice.mjs';
+import { supportedPractice } from './supported-practice.mjs';
 
 export const GAME_ID = 'story-classroom';
 export const RESPONSE_FORMAT = 'action';
@@ -62,6 +64,36 @@ export function missionCandidates(missions) {
     modality: m.modality, responseFormat: m.responseFormat, itemKey: m.itemKey, conceptIds: m.conceptIds,
   }; });
 }
+
+/* 재방문 맞춤 연습. 부탁 읽어 주기(기본값 자동)는 도움이라 그때의 오답은 근거가 아니다: 읽어 주기를 끄고 혼자 읽은 부탁에서만 말한다.
+ * 첫 판을 끝까지 하면 부탁 아홉 개를 다 만나 새 부탁이 없을 수 있다. 그때는 놓친 그 부탁을 다시 열고 다시 읽는 것임을 그대로 말한다.
+ * 「~지 말고」 부탁은 둘뿐이라 둘 다 놓쳤을 때 말한다. 답은 말하지 않는다. */
+export const RETURN_PATTERNS = Object.freeze({
+  detail: { why: '지난 이야기에서 누가·무엇을·어디에 옮기는지 읽는 부탁을 놓친 적이 있어요.' },
+  negation: { minEvidence: 2, why: '지난 이야기에서 ‘~지 말고’·‘~이 아니라’가 들어간 부탁을 놓친 적이 있어요.' },
+  sequence: { why: '지난 이야기에서 무엇을 먼저 하는지 읽는 부탁을 놓친 적이 있어요.' },
+});
+const patternOfMission = mission => missionMetadata(mission).skillId.split('.').at(-1);
+const MISSION_OF_FAMILY = new Map([...MISSIONS.values()].map(m => [missionMetadata(m).familyKey, m]));
+/* 이미 본 부탁을 권했는데 근거 뒤에 그 부탁을 첫 시도에 맞혔으면(다시 듣기만 허용) 같은 근거로 같은 부탁을 또 권하지 않는다.
+ * 회복 판정이 아니다: 다시 한 시도는 독립 근거가 아니고 칸 상태는 그대로이며, 새 독립 오답이 생기면 다시 말한다. */
+function rereadAfter(coach, familyKey, after) {
+  const events = coach.events(), byId = new Map(events.map(event => [event.id, event]));
+  const excluded = new Set(events.filter(event => event.type === 'record.excluded').map(event => event.targetId));
+  return events.some((event, order) => {
+    if (order <= after || event.type !== 'practice.attempted' || event.attemptNo !== 1 || event.verdict !== 'correct' || excluded.has(event.id)) return false;
+    const shown = byId.get(event.presentationId);
+    if (shown?.measure?.familyKey !== familyKey || shown.measure.confounded === true || byId.get(shown.decisionId)?.experienceId !== GAME_ID) return false;
+    return !events.some((help, at) => at < order && help.type === 'practice.helped' && help.presentationId === shown.id && (help.level !== 'cue' || help.helpId !== 'replay'));
+  });
+}
+export function missedStory(coach) {
+  return returnPractice({ coach, gameId: GAME_ID, patterns: RETURN_PATTERNS,
+    patternOfFamily: family => { const m = MISSION_OF_FAMILY.get(family); return m ? patternOfMission(m) : null; },
+    freshItems: pattern => [...MISSIONS.values()].filter(m => patternOfMission(m) === pattern).map(m => ({ id: m.id, item: m, meta: missionMetadata(m) })),
+    repeatItem: found => { const family = found.missedFamilies.at(-1), m = MISSION_OF_FAMILY.get(family); return m && !rereadAfter(coach, family, found.lastMiss) ? { id: m.id, item: m, meta: missionMetadata(m) } : null; } });
+}
+export const returnLine = plan => `${plan.why} ${plan.repeat ? '새 부탁은 모두 만났어요. ‘놓친 부탁 바로 연습’에서 이미 본 그 부탁을 다시 읽어 봐요.' : '‘놓친 부탁 바로 연습’에서 새 부탁으로 해 봐요.'}`;
 
 export function resolveLearningHost(runtime = globalThis) {
   if (runtime?.SYNKLearningHost) return runtime.SYNKLearningHost;
@@ -201,6 +233,9 @@ export class StoryLearning {
   }
 
   summary() { return this._call('summary'); }
+  missedPractice() { return this.coach && this._sessionCurrent() ? missedStory(this.coach) : null; }
+  /** 독립 근거가 없는 사람(기본 자동 읽기)에게 건네는 다시 하기. 과제나 독립 근거의 맞춤 연습이 있으면 그쪽이 먼저다. */
+  supportedOffer() { return this.coach && this._sessionCurrent() && !this.assignment() && !this.missedPractice() ? supportedPractice(this.coach) : null; }
   assignment() { return typeof this.coach?.assignment==='function'?this._call('assignment'):null; }
   recommend(missions = EPISODE.review) {
     let candidates;

@@ -4,7 +4,7 @@
 import { ITEMS, PRACTICE, SKILL_LABEL, KIND_LABEL } from './content.mjs';
 import { parts, filled, readBlank, shuffled, composeRound, pointsFor, scoreRound, hangTime, readDelay } from './core.mjs';
 import { josa } from './kit/josa.mjs';
-import { GAME_ID, rankItems, createReadingConfirmation, skillReport, assignmentItems, assignmentLabel, FLOW_SLICE, FLOW_WORDS, sliceObservation } from './learning.mjs';
+import { GAME_ID, rankItems, createReadingConfirmation, skillReport, assignmentItems, assignmentLabel, FLOW_SLICE, FLOW_WORDS, sliceObservation, missedPractice } from './learning.mjs';
 import * as sound from './audio.mjs';
 import { swingPower } from './sfx.mjs';
 import { createStage, FEEL } from './stage.mjs';
@@ -99,7 +99,8 @@ function paintLobbyPlan() {
   state.ranked = progress.plays === 0 ? null : atlas((c) => rankItems(c, ITEMS));
   $('#l-count').textContent = String(target ? targetItems.length : 12);
   $('#btn-start').disabled = !!target && targetItems.length === 0;
-  $('#l-reason').textContent = target && !targetItems.length ? '이 과제의 문항이 바뀌어서 지금은 시작할 수 없어요. WORLD로 돌아가 선생님께 새 과제를 받아 주세요.'
+  const plan = target ? null : atlas((c) => missedPractice(c));
+  $('#l-reason').textContent = plan ? `${plan.why} ${plan.next}` + (progress.practiced ? '' : ' 연습 문장을 마치면 바로 나와요.') : target && !targetItems.length ? '이 과제의 문항이 바뀌어서 지금은 시작할 수 없어요. WORLD로 돌아가 선생님께 새 과제를 받아 주세요.'
     : target ? `${assignmentLabel(target)}. 이 목표 문장에 답하면 WORLD 과제에 반영돼요. 놓친 문장은 멈춘 화면에서 답을 골라요.` : progress.plays === 0
     ? '처음이라 쉬운 문장부터 시작해요. 첫 문장은 연습이에요.'
     : state.ranked?.reason ? `${state.ranked.reason} 그래서 그런 문장을 앞쪽에 넣었어요.` : '새 문장을 섞어 한 판을 만들어요.';
@@ -155,7 +156,7 @@ async function startRound() {
   // 무대를 준비하는 동안에도 쉬기를 누를 수 있다. 상태를 먼저 정해 두고, 준비가 끝나면 쉬기 상태를 무대에 그대로 넘긴다
   const opening = startFlow();
   Object.assign(state, { index: 0, results: [], combo: 0, score: 0, cur: null, practice: null, paused: false,
-    queue: targetItems || composeRound(ITEMS, { ranked: state.ranked?.order, firstTime: progress.plays === 0, seed: progress.plays + 1 }) });
+    queue: targetItems || composeRound(ITEMS, { ranked: state.ranked?.order, firstTime: progress.plays === 0, seed: progress.plays + 1, lead: target ? null : atlas((c) => missedPractice(c))?.target.id ?? null }) });
   countScore.token = (countScore.token || 0) + 1; countScore.anim = false;
   updateHud();
   try { await ensureStage(); }
@@ -489,7 +490,7 @@ function finish() {
   const next = atlas((c) => rankItems(c, ITEMS));
   state.ranked = next;
   renderSkills(s, next);
-  $('#r-next-reason').textContent = closed ? '이 WORLD 과제는 끝났어요. 이어서 하려면 WORLD에서 다시 열어 주세요.' : target ? `${assignmentLabel(target)}. WORLD에서 읽기 결과와 다음 과제를 확인해요.` : nextLine(next);
+  $('#r-next-reason').textContent = closed ? '이 WORLD 과제는 끝났어요. 이어서 하려면 WORLD에서 다시 열어 주세요.' : target ? `${assignmentLabel(target)}. WORLD에서 읽기 결과와 다음 과제를 확인해요.` : nextLineWithReturn(next);
   $('#r-again span').textContent = target ? '목표 문장 다시 풀기' : '다음 판 시작';
   $('#r-again').disabled = closed;
   $('#r-hub').hidden = hosted || !location.pathname.includes('/blank-slice/');
@@ -498,6 +499,11 @@ function finish() {
   announce(`${$('#r-title').textContent} ${s.total}문장 중 ${s.correct}개 맞혔어요. 별 ${s.stars}개, ${s.score}점.`);
 }
 
+// 놓친 문장 종류가 확인되면 그 안내가 먼저다(입구와 같은 말).
+function nextLineWithReturn(next) {
+  const plan = atlas((c) => missedPractice(c));
+  return plan ? `${plan.why} 다음 판 첫 문장도 그런 문장이에요.` : nextLine(next);
+}
 /** 다음 판 이유: 아틀라스의 이유에 어떤 문장(학습 항목·난도)을 넣는지 붙인다. 한 판은 쉬운 문장부터 늘어놓아서
  *  필요한 문장이 맨 앞에 온다고는 말하지 않는다(composeRound는 1순위 문장을 반드시 넣는다). */
 function nextLine(next) {
@@ -604,7 +610,7 @@ window.addEventListener('resize', () => { if (stage && !$('#game').hidden) stage
 function refreshStorageText() {
   paintResetNotice();
   if (!$('#lobby').hidden) paintLobbyPlan();
-  else if (!$('#results').hidden && !assignment() && !runClosed()) { const next = atlas((c) => rankItems(c, ITEMS)); state.ranked = next; renderSkills(null, next); $('#r-next-reason').textContent = nextLine(next); }
+  else if (!$('#results').hidden && !assignment() && !runClosed()) { const next = atlas((c) => rankItems(c, ITEMS)); state.ranked = next; renderSkills(null, next); $('#r-next-reason').textContent = nextLineWithReturn(next); }
 }
 let storagePaint = false;
 try {

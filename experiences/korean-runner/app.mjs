@@ -10,6 +10,7 @@ import { KeyboardInput, KEY_ACTIONS } from './controls.mjs';
 import { InstructionAudio } from './audio.mjs';
 import { instructionMetadata, chooseInstruction, actionEvidence, FLOW_RUN, TIRED_RUN, FLOW_WORDS, paceOf, runObservation } from './learning.mjs';
 import { mountListeningCheck } from './listening-check-ui.mjs';
+import { missedCheck } from './listening-check.mjs';
 import { scoreRun, skillReport, skillOf, SKILL_LABEL, STEP_WORD } from './report.mjs?v=runner-listening-scope-20261014';
 import { drawHeroRoad } from './hero.mjs';
 import { preloadImages } from './kit/lab.mjs';
@@ -54,9 +55,13 @@ try { coach = globalThis.SynkLearning?.createGame({ gameId: 'korean-runner', sto
 function learn(method, ...args) { try { return coach?.[method](...args); } catch { learningFailed = true; return null; } }
 // WORLD 안에서는 기록이 계정의 것이다: 지우기·보관은 WORLD에서 한다.
 const hosted = (() => { try { return typeof coach?.assignment === 'function'; } catch { return false; } })();
+// 재방문 맞춤 연습: 듣기 확인에서 놓친 능력을 이번 달리기 첫 부탁으로 한 번 먼저 듣는다. 달리기는 근거가 아니라 입구에서 약속하지 않는다.
+let runLeadSkill = null;
 function selectInstruction(items) {
   if (!coach || learningFailed) return items[0];
-  try { const plan = chooseInstruction(coach, items); if (plan?.selected) { nextPlan = plan; return plan.selected; } } catch { learningFailed = true; }
+  const same = runLeadSkill ? items.filter((item) => instructionMetadata(item).skillId === runLeadSkill) : [];
+  runLeadSkill = null;
+  try { const plan = chooseInstruction(coach, same.length ? same : items); if (plan?.selected) { nextPlan = plan; return plan.selected; } } catch { learningFailed = true; }
   return items[0];
 }
 function refreshRecommendation() { if (coach) selectInstruction(INSTRUCTIONS); }
@@ -65,9 +70,10 @@ const learningBroken = () => { const s = learn('summary'); return !coach || lear
 const learningWaiting = () => !learningFailed && /다른 탭/.test(learn('summary')?.storage?.warning || '');
 // 기록을 다 읽었는데 답한 적이 한 번도 없을 때만 첫 출발 안내를 쓴다. 답이 하나라도 있거나 계정 기록을 아직 다 받지 못했으면 엔진의 추천 이유를 그대로 둔다.
 const noPracticeYet = () => { const s = learn('summary'); return s?.evidenceComplete === true && s.counts?.attempts === 0 && nextPlan?.state === 'unseen'; };
+const returnReason = () => { const plan = missedCheck(coach); return plan ? `${plan.why} ${plan.next}` : null; };
 const reasonText = () => (learningWaiting() ? '학습 기록을 기다리는 중이에요. 다른 탭에서 쓰고 있다면 그 탭을 닫아 주세요. 달리기는 바로 할 수 있어요.'
   : learningBroken() ? '학습 기록을 저장할 수 없어서 기본 부탁으로 달려요.'
-    : noPracticeYet() ? '아직 연습 기록이 없어요. 짧은 부탁을 들으면서 출발해 봐요.' : nextPlan?.reason || '아직 안 들어 본 부탁부터 준비했어요.');
+    : returnReason() || (noPracticeYet() ? '아직 연습 기록이 없어요. 짧은 부탁을 들으면서 출발해 봐요.' : null) || nextPlan?.reason || '아직 안 들어 본 부탁부터 준비했어요.');
 let live = null;
 function startLive() {
   live = null;
@@ -200,6 +206,7 @@ async function start() {
     return;
   }
   endLive();
+  runLeadSkill = missedCheck(coach)?.target.meta.skillId ?? null;
   model = new RunnerModel({ mode: 'tour', learning: 'listen', chooseInstruction: coach ? selectInstruction : null, pace: startLive() || undefined });
   // 공통 코인(play-common): 이 판의 번호. 90초를 끝까지 달린 판만 받는다(그만두거나 부딪혀 멈추면 받지 않는다). 코인은 학습 기록에 쓰지 않는다.
   collectionRoundId = globalThis.SynkPlayCollection?.roundId('runner') || null;
@@ -499,7 +506,7 @@ function renderResultLearning(s) {
   renderSkills(s);
   byId('r-next-reason').textContent = learningWaiting() ? '학습 기록을 기다리는 중이에요. 연결되면 이번 기록도 다음 달리기에 반영해요.'
     : learningBroken() ? '학습 기록을 저장할 수 없어서 다음에도 기본 부탁으로 달려요.'
-    : `${nextPlan?.reason || '아직 안 들어 본 부탁부터 준비해요.'} 다음 달리기에는 그런 부탁을 먼저 넣어요.`;
+    : returnReason() || `${nextPlan?.reason || '아직 안 들어 본 부탁부터 준비해요.'} 다음 달리기에는 그런 부탁을 먼저 넣어요.`;
 }
 function renderSkills(s) {
   const ul = byId('r-skills'); ul.textContent = '';
@@ -730,7 +737,7 @@ function closeListeningCheck() {
   }
   tutorEvent('lobby');
 }
-const listeningCheck = mountListeningCheck({ coach, beforeOpen: () => { if (running && !model?.finished) return false; cancelVoice(); return true; },onListen:()=>tutorEvent('listening'),onFeedback:(correct,detail)=>tutorEvent(correct?'success':'retry',{answer:true,support:!correct&&detail?runnerCheckSupport(detail.item,detail.choice,detail.feedback):[]}),onClose:closeListeningCheck });
+const listeningCheck = mountListeningCheck({ coach, chooseLead: () => missedCheck(coach)?.target.item ?? null, beforeOpen: () => { if (running && !model?.finished) return false; cancelVoice(); return true; },onListen:()=>tutorEvent('listening'),onFeedback:(correct,detail)=>tutorEvent(correct?'success':'retry',{answer:true,support:!correct&&detail?runnerCheckSupport(detail.item,detail.choice,detail.feedback):[]}),onClose:closeListeningCheck });
 
 let resizeT = 0;
 window.addEventListener('resize', () => { cancelGesture(); clearTimeout(resizeT); resizeT = setTimeout(() => { if (screen === 'lobby') drawHeroRoad(byId('hero-road')); placeTip(); }, 140); });

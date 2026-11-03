@@ -2,7 +2,7 @@
 import { VENUES, CAST, SKILL_LABEL } from './content.mjs';
 import { TUTORIAL, TUTORIAL_CASES, VOICE_ID } from './narration.mjs';
 import { koreanTime, minutes, venueById, activeRules, memoActive, judge, composeShift, scoreShift, unlocked, itemLabel } from './core.mjs';
-import { GAME_ID, caseMetadata, rankCases, recommendVenue, answerPayload, skillReport, FLOW_ENTRY, magnifierAfter, FLOW_WORDS, assignmentCases, assignmentVenues, entryTargetLabel } from './learning.mjs';
+import { GAME_ID, caseMetadata, rankCases, recommendVenue, answerPayload, skillReport, FLOW_ENTRY, magnifierAfter, FLOW_WORDS, assignmentCases, assignmentVenues, entryTargetLabel, missedPractice, shiftPlan, soloGuestPlan } from './learning.mjs';
 import * as sound from './audio.mjs';
 import { fitText, preloadImages } from './kit/lab.mjs';
 import { josa } from './kit/josa.mjs';
@@ -90,14 +90,18 @@ function paintLobbyPlan() {
   const target=assignment(),targetVenues=assignmentVenues(target,[...assignmentSeen]);
   const ids = unlockedIds();
   const rec = progress.plays === 0 ? null : atlas((c) => recommendVenue(c, ids));
-  const venue = targetVenues[0] || venueById(rec?.venueId) || VENUES.find((v) => ids.includes(v.id) && (progress.stars[v.id] || 0) < 3) || VENUES[0];
+  const plan = target ? null : atlas((c) => shiftPlan(c, ids, progress));
+  const venue = targetVenues[0] || venueById(plan?.target.venueId) || venueById(rec?.venueId) || VENUES.find((v) => ids.includes(v.id) && (progress.stars[v.id] || 0) < 3) || VENUES[0];
   $('#rec-day').textContent = `${venue.day}일차`;
   $('#rec-name').textContent = venue.name;
-  $('#rec-reason').textContent = target ? (targetVenues.length?entryTargetLabel(target):'과제 손님을 불러오지 못했어요. WORLD에서 다시 열어 주세요.') : progress.plays === 0
+  $('#rec-reason').textContent = target ? (targetVenues.length?entryTargetLabel(target):'과제 손님을 불러오지 못했어요. WORLD에서 다시 열어 주세요.') : plan ? `${plan.why} ${plan.next}` : progress.plays === 0
     ? '처음이니까 제일 쉬운 하늘 수영장부터 해요. 안내문이 세 줄뿐이에요.'
     : rec?.reason ? `${rec.reason} 이 연습에 맞는 손님이 제일 많은 곳이에요.` : '앞 근무지에서 별을 모아 다음 근무지를 열어요.';
   $('#rec-start').onclick = () => startShift(venue.id);
   $('#rec-start').disabled=!!target&&!targetVenues.length;
+  // 근무 밖 한 손님 연습: 정규 근무 단추와 따로 둔다. 근무의 시간 순·규칙·코인·별은 그대로다.
+  const solo = target ? null : atlas((c) => soloGuestPlan(c, ids, progress));
+  $('#rec-practice').hidden = $('#rec-practice-note').hidden = !solo;
   $('#how-tutorial').hidden=!!target;
   const storage = atlas((c) => c.summary().storage);
   const warn = (/다른 탭/.test(storage?.warning || '') ? '학습 기록을 기다리는 중이에요. 다른 탭에서 쓰고 있다면 그 탭을 닫아 주세요. 그러면 여기서 이어서 저장해요.' : storage?.warning)
@@ -129,19 +133,24 @@ function renderLobby() {
 /* ── 근무 시작 ── */
 // 공통 코인 스크립트(collection.js)를 읽지 못했으면 코인 줄을 숨긴다(모듈은 본문 끝 스크립트 뒤에 돈다).
 if (!globalThis.SynkPlayCollection) for (const n of document.querySelectorAll('.synk-collection-line')) n.hidden = true;
-function startShift(venueId, { tutorial = !progress.tutorial } = {}) {
+function startShift(venueId, { tutorial = !progress.tutorial, drill = null } = {}) {
   sound.unlock(); sound.stopVoice();
   const v = venueById(venueId);
   const target=assignment(),targetCases=v&&target?assignmentCases(v.cases,target):null;
   if (!v || (target?!targetCases.length:!unlocked(progress, v.id))) return;
   clearResetNotice();
-  if(target)tutorial=false;
+  if(target){tutorial=false;drill=null;}
+  if(drill)tutorial=false;
+  $('#rec-drill-done').hidden=true;
   tut.on = tutorial && v.id === 'pool'; tut.i = 0; hideCoach();
-  state.ranked = progress.plays === 0 || tut.on ? null : atlas((c) => rankCases(c, v.cases));
-  Object.assign(state, { venue: v, queue: targetCases || (tut.on ? tutorialQueue(v) : composeShift(v, { ranked: state.ranked?.order, firstTime: !progress.tutorial })),
-    index: 0, results: [], combo: 0, cur: null, memoShown: false, busy: false, shift: state.shift + 1, targeted: !!target });
+  state.ranked = progress.plays === 0 || tut.on || drill ? null : atlas((c) => rankCases(c, v.cases));
+  // 재방문 맞춤 연습: 이 근무지의 새 손님이면 필요 순서 맨 앞에 두어 근무에 반드시 들어가게 한다(규칙·시각·알림 약속은 composeShift가 그대로 지킨다).
+  state.returnPlan = target || tut.on || drill ? null : atlas((c) => missedPractice(c, [v.id]));
+  const shiftOrder = state.returnPlan ? [state.returnPlan.target.id, ...(state.ranked?.order || [])] : state.ranked?.order;
+  Object.assign(state, { venue: v, queue: targetCases || (drill ? [drill.item] : tut.on ? tutorialQueue(v) : composeShift(v, { ranked: shiftOrder, firstTime: !progress.tutorial })),
+    index: 0, results: [], combo: 0, cur: null, memoShown: false, busy: false, shift: state.shift + 1, targeted: !!target, drill: !!drill });
   // 공통 코인(play-common): 이 근무의 번호. 연수 근무는 안내를 따라 찍은 도장이라 받지 않는다. 코인은 학습 기록에 쓰지 않는다.
-  state.coinRound = tut.on ? null : (globalThis.SynkPlayCollection?.roundId('entry-check') || null);
+  state.coinRound = tut.on || drill ? null : (globalThis.SynkPlayCollection?.roundId('entry-check') || null);
   // 순간 맞춤: 돋보기가 스스로 나오는 때만 맞춘다(연수 근무는 정해진 대로).
   clearTimeout(state.magnifierTimer); state.flowLine = null; state.checkNotice = null;
   state.flow = tut.on ? null : atlas((c) => c.live?.(FLOW_ENTRY, { words: FLOW_WORDS }) ?? null);
@@ -172,7 +181,8 @@ function startShift(venueId, { tutorial = !progress.tutorial } = {}) {
   $('#brief-day').textContent = `${v.day}일차`;
   $('#brief-title').lastChild.textContent = ` ${v.name}`;
   $('#brief-text').textContent = v.briefing;
-  const why = target ? entryTargetLabel(target) : tut.on ? '첫 근무라서 연수부터 해요. 하는 방법을 하나씩 알려 줄게요.'
+  const why = target ? entryTargetLabel(target) : drill ? `${drill.why} 이 손님 한 명만 보고 근무지 고르는 화면으로 돌아와요.` : tut.on ? '첫 근무라서 연수부터 해요. 하는 방법을 하나씩 알려 줄게요.'
+    : state.returnPlan ? `${state.returnPlan.why} ${state.returnPlan.next}`
     : state.ranked?.reason && progress.plays > 0 ? `오늘의 손님은 기록에 맞춰 골랐어요. ${state.ranked.reason}` : '';
   $('#brief-reason').hidden = !why; $('#brief-reason').textContent = why;
   $('#briefing').hidden = false; setOverlay(true);
@@ -456,7 +466,7 @@ async function decide(choice, e) {
   cur.recheck = followUpResult(coach, cur.checkLink, item, rec);
   state.results.push({ caseId: item.id, who: item.who, choice, expected: item.answer, correct: result.correct, skill: item.skill,
     hinted: cur.hint > 0, guided: !!cur.guided, independent: !!rec?.independent, recheck: cur.recheck });
-  if (!tut.on && !runClosed() && (!result.correct || cur.hint > 0 || cur.guided || rec?.assisted === true)) {
+  if (!state.drill && !tut.on && !runClosed() && (!result.correct || cur.hint > 0 || cur.guided || rec?.assisted === true)) {
     cur.followup = immediateCheck({ venue: v, queue: state.queue, index: state.index, item, coach, assignment: assignment(), seenIds: [...assignmentSeen] });
     state.queue = cur.followup.queue;
     if (cur.followup.item) state.checkNotice = { id: cur.followup.item.id, line: cur.followup.line,
@@ -540,7 +550,7 @@ function showFeedback(item, choice, result) {
   $('#fb-followup').hidden = !followup; $('#fb-followup').textContent = followup ? `${followup.line}${followup.item?.textOnly ? ' 다음 손님은 목소리 없이 글로만 나와요.' : ''}` : '';
   const wrongPassOrReject = !result.correct && (choice === 'pass' || item.answer === 'pass');
   $('#fb-oops').hidden = !wrongPassOrReject; $('#fb-oops-text').textContent = item.oops;
-  $('#btn-next').querySelector('span').textContent = state.index + 1 >= state.queue.length ? '근무 마치기'
+  $('#btn-next').querySelector('span').textContent = state.drill ? '근무지 고르기로 돌아가기' : state.index + 1 >= state.queue.length ? '근무 마치기'
     : followup?.status === 'new' ? '새 손님으로 확인' : followup?.status === 'review' ? '복습 손님으로 확인' : '다음 손님';
   $('#fb-kicker').classList.toggle('ko', !result.correct);
   fb.hidden = false;
@@ -580,6 +590,7 @@ async function next() {
 
 /* ── 근무 끝 ── */
 function finishShift() {
+  if (state.drill) return finishDrill();
   const v = state.venue, score = scoreShift(state.results);
   // 정답 비율로 받는다. WORLD 과제 근무도 끝까지 마치면 받는다.
   const coinRound = state.coinRound; state.coinRound = null; $('#r-coins').textContent = '';
@@ -637,6 +648,13 @@ function finishShift() {
   show('results');
 }
 
+/** 한 손님 연습의 끝: 별·근무 횟수·코인·오늘 완료·결과 화면을 지나지 않고 근무지 고르는 화면으로 돌아간다. 판정은 이미 학습 기록에 있다. */
+function finishDrill() {
+  const line = ['한 손님 연습을 마치고 근무지 고르는 화면으로 돌아왔어요.', state.flowLine].filter(Boolean).join(' ');
+  leaveShift(); renderLobby();
+  $('#rec-drill-done').hidden = false; $('#rec-drill-done').textContent = line; announce(line);
+}
+
 /** 결과 기록용 규칙 이름: 번호 + 짧은 이름(예: ② 의자). 첫 문장만 자르면 '돗자리는 가지고 와도 됩니다'처럼 반대 뜻이 나왔다. */
 function ruleText(v, c, id) {
   const rules = activeRules(v, c.at), i = rules.findIndex((x) => x.id === id);
@@ -660,9 +678,10 @@ function renderNext(v) {
   const ids = unlockedIds();
   const rec = atlas((c) => recommendVenue(c, ids));
   const goal=assignment();
-  const target = assignmentVenues(goal,[...assignmentSeen])[0] || venueById(rec?.venueId) || VENUES.find((x) => ids.includes(x.id) && (progress.stars[x.id] || 0) < 3) || v;
+  const plan = goal ? null : atlas((c) => shiftPlan(c, ids, progress));
+  const target = assignmentVenues(goal,[...assignmentSeen])[0] || venueById(plan?.target.venueId) || venueById(rec?.venueId) || VENUES.find((x) => ids.includes(x.id) && (progress.stars[x.id] || 0) < 3) || v;
   $('#r-next-name').textContent = `${target.day}일차 · ${target.name}`;
-  $('#r-next-reason').textContent = goal ? entryTargetLabel(goal) : rec?.reason ? `${rec.reason}` : target.id === v.id ? '같은 근무지에서 새 손님을 만나요.' : '다음 근무지에서 새 안내문을 읽어요.';
+  $('#r-next-reason').textContent = goal ? entryTargetLabel(goal) : plan ? `${plan.why} ‘추천 근무 시작’에 그런 손님이 와요.` : rec?.reason ? `${rec.reason}` : target.id === v.id ? '같은 근무지에서 새 손님을 만나요.' : '다음 근무지에서 새 안내문을 읽어요.';
   $('#r-next').onclick = () => startShift(target.id);
   $('#r-again').onclick = () => startShift(v.id);
   const closed = runClosed();
@@ -688,7 +707,7 @@ function leaveShift() {
   if (state.cur && !state.cur.done) atlas((c) => c.answer(state.cur.pid, { correct: null, assessable: false, reason: 'unanswered' }));
   // 이 근무를 끝낸다: 기다리던 움직임·알림이 돌아와도 이어 가지 않는다
   clearTimeout(state.magnifierTimer); if (state.flow) { atlas(() => state.flow.end()); state.flow = null; }
-  state.shift += 1; state.busy = false; state.cur = null; setOverlay(false);
+  state.shift += 1; state.busy = false; state.cur = null; state.drill = false; setOverlay(false);
   $('#briefing').hidden = true; $('#memo-alert').hidden = true; $('#feedback').hidden = true;
   document.documentElement.style.removeProperty('--fb-room');
   tut.on = false; hideCoach(); sound.stopVoice();
@@ -696,6 +715,11 @@ function leaveShift() {
 $('#quit').onclick = () => { $('#pause-dialog').close(); leaveShift(); renderLobby(); };
 $('#replay-tutorial').onclick = () => { $('#pause-dialog').close(); leaveShift(); startShift('pool', { tutorial: true }); };
 $('#how-tutorial').onclick = () => startShift('pool', { tutorial: true });
+// 입구를 그린 뒤 다른 탭에서 기록이 바뀌었을 수 있어 누른 때에 다시 판단한다.
+$('#rec-practice').onclick = () => {
+  const plan = assignment() ? null : atlas((c) => soloGuestPlan(c, unlockedIds(), progress));
+  if (plan) startShift(plan.target.venueId, { drill: { item: plan.target.item, why: plan.why } }); else renderLobby();
+};
 $('#voice-toggle').onclick = () => { sound.setVoiceOn(!sound.isVoiceOn()); syncSound(); };
 $('#motion-toggle').onclick = () => {
   progress.motion = progress.motion === false; saveProgress(); applyMotion();

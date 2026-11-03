@@ -6,7 +6,7 @@ import { createListeningCheck, createListeningCheckRound, listeningCheckFeedback
 import { InstructionAudio } from './audio.mjs';
 import { fitText } from './kit/lab.mjs';
 
-export function mountListeningCheck({ coach, beforeOpen, onClose = () => {}, onFeedback = () => {}, onListen = () => {} }) {
+export function mountListeningCheck({ coach, beforeOpen, onClose = () => {}, onFeedback = () => {}, onListen = () => {}, chooseLead = () => null }) {
   const $ = (id) => document.getElementById(id), dialog = $('listening-check-dialog');
   let check = null, context, bank, gain, round = null, index = 0, epoch = 0, pending = false, rightCount = 0, stopped = false, recheckSource = null;
   const status = (text) => { $('check-status').textContent = text; };
@@ -118,7 +118,7 @@ export function mountListeningCheck({ coach, beforeOpen, onClose = () => {}, onF
     if (!coach) { status('학습 기록을 준비하지 못했어요. 앱을 다시 열어 주세요.'); $('check-choices').replaceChildren(); $('check-next').hidden = true; dialog.showModal(); return; }
     try {
       check ||= createListeningCheck(coach);
-      round = createListeningCheckRound(coach); index = 0;
+      round = createListeningCheckRound(coach, { lead: chooseLead() }); index = 0;
       const plan = round.next();
       if (plan.status !== 'ready') { $('check-choices').replaceChildren(); $('check-feedback').textContent = ''; $('check-plan').textContent = ''; $('check-count').textContent = ''; $('check-next').hidden = true; $('check-replay').hidden = true; status('이 목표에 맞는 듣기 문항을 준비하지 못했어요. WORLD 홈의 「학습 목표 · 도움 방식」에서 목표를 바꿔 볼 수 있어요.'); dialog.showModal(); return; }
       $('check-replay').hidden = false;

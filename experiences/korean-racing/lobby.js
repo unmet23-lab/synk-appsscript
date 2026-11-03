@@ -36,7 +36,7 @@ export function createLobby(api) {
     $('#l-medals').replaceChildren(...[1, 2, 3].map((i) => el('i', i <= medals ? 'on' : '')),
       el('span', '', best == null ? `${total}문제 · 처음 달려요` : `최고 ${best} / ${total}${v.progress.stages[s.id]?.cleared ? ' · 통과' : ''}`));
     $('#l-medals').setAttribute('aria-label', `학습 메달 3개 중 ${medals}개`);
-    $('#l-reason').textContent = reasonFor(v);
+    renderReturn(v);
     const label = $('#start').querySelector('span');
     label.textContent = v.starting ? '소리를 준비하고 있어요' : v.pendingStart ? '준비되면 바로 출발해요'
       : !v.unlocked ? '앞 코스부터 달리기' : v.firstRun ? '조작 연습부터 시작' : '레이스 시작';
@@ -58,11 +58,28 @@ export function createLobby(api) {
     $('#reset-learning').hidden = !!v.hosted;
   }
 
+  // 안내와 맞춤 연습 단추는 늘 함께 바뀐다. 같은 글은 다시 쓰지 않아(화면 읽기가 또 읽지 않게) 다른 단추의 포커스·안내를 건드리지 않고, 누르고 있던 단추가 사라질 때만 시작 단추로 옮긴다.
+  function renderReturn(v) {
+    const reason = $('#l-reason'), text = reasonFor(v), button = $('#return-practice'), hide = !v.returnPlan || !!v.target || returnCourse(v);
+    if (reason.textContent !== text) reason.textContent = text;
+    if (hide && !button.hidden && document.activeElement === button) $('#start').focus({ preventScroll: true });
+    button.hidden = hide;
+  }
+
+  // 지금 고른 코스가 열려 있고 맞춤 연습 문항이 있으면 시작 단추가 그 코스 첫 문제로 연다. 잠겼거나 없으면 입구의 단추가 그 문항으로 시작하는 맞춤 5문항을 연다.
+  // 잠긴 코스의 시작 단추는 앞 코스로 가므로 그 코스의 문항을 약속하지 않는다. 맞춤 5문항은 코스 통과로 세지 않아 잠금은 그대로다.
+  function returnCourse(v) { return !!v.unlocked && !!v.stage.items?.some((q) => q.id === v.returnPlan?.target.id); }
+  function returnLine(v) { return `${v.returnPlan.why} ${returnCourse(v) ? '이 코스 첫 문제도 그런 문제예요.' : '‘놓친 문제 바로 연습’의 첫 문제도 그런 문제예요.'}${v.firstRun ? ' 조작 연습을 마치거나 건너뛰면 바로 이어져요.' : ''}`; }
   function reasonFor(v) {
     const s = v.stage;
     if (v.target) return v.personal?.reason || v.targetUnavailable;
-    if (!v.unlocked) return s.finale ? '이 챕터의 두 코스를 통과하면 결승전이 열려요. 자동 시연은 지금도 볼 수 있어요.'
-      : '앞 코스를 다섯 문제 중 넷 이상 맞히면 열려요. 자동 시연은 지금도 볼 수 있어요.';
+    if (!v.unlocked) {
+      const lock = s.finale ? '이 챕터의 두 코스를 통과하면 결승전이 열려요. 자동 시연은 지금도 볼 수 있어요.'
+        : '앞 코스를 다섯 문제 중 넷 이상 맞히면 열려요. 자동 시연은 지금도 볼 수 있어요.';
+      return v.returnPlan ? `${lock} ${returnLine(v)}` : lock;
+    }
+    // 맞춤 연습은 독립 응답 기록이 있어야 생기므로 조작 연습을 아직 저장하지 않은 재방문자에게도 먼저 말한다. 기록이 없는 첫 사용자는 아래 첫 안내 그대로다.
+    if (v.returnPlan) return returnLine(v);
     if (v.firstRun) return '처음이라 30초 조작 연습부터 함께 달려요. 연습이 끝나면 바로 이 코스로 출발해요.';
     if (s.personalized) return v.personal?.reason || '지금까지의 기록에 맞춰 고른 다섯 문항이에요.';
     if (s.review) return '지난 레이스에서 놓친 것부터 다시 만나요.';
@@ -173,6 +190,7 @@ export function createLobby(api) {
   });
 
   return {
+    renderReturn,
     render(v = api.view()) { renderStart(v); renderCoins(v.garage, v.garageSaved); if (dialog.open) renderCourses(); },
     renderCoins,
     openCourses,

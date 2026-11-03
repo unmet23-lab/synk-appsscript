@@ -8,7 +8,7 @@ import { StoryStage, names, sprite } from './stage.mjs';
 import { StoryAudio } from './audio.mjs';
 import { StoryVoice } from './voice.mjs';
 import { VOICE_LINE_BY_ID, voiceForMission } from './voice-lines.mjs';
-import { createStoryLearning, skillReport, assignmentMissions, storyTargetLabel, missionMetadata, SKILL_LABELS } from './learning.mjs';
+import { createStoryLearning, skillReport, assignmentMissions, storyTargetLabel, missionMetadata, SKILL_LABELS, returnLine } from './learning.mjs';
 import { $, $$, esc, fitText } from './kit/lab.mjs';
 
 // Restore the verified account before reading progress or enabling play.
@@ -55,13 +55,15 @@ voice.automatic = chosenVoice;
 let saved = null, started = false, busy = false, placing = null, teacherVisible = false, resultsShown = false;
 let feedback = null;   // 판의 쪽지: {type: wrong|right|hint|tip|undo, text, voiceId, …}
 let activeId = null;   // 지금 판에 크게 보이는 부탁
-let notes = [], coinRound = null, coinState = 'idle';
+let notes = [], coinRound = null, coinState = 'idle', practiceFocus = null, gentleShown = null;
 
 function loadSaved() {
   saved = null;
   try { const raw = STORAGE ? JSON.parse(localStorage.getItem(STORAGE)) : null; if (raw?.game && new StoryGame().restore(raw.game)) saved = raw; } catch { /* 저장 없음 */ }
 }
 function persist() {
+  // 맞춤 연습은 한 장면짜리 판이라 하던 이야기의 저장본을 덮지 않는다.
+  if (practiceFocus) return;
   try {
     const scope = learning.progressScope();
     if (!learning.assignment() && STORAGE && scope.persistent && scope.key === STORAGE)
@@ -100,7 +102,8 @@ function storyPool() {
 
 /** 기록을 보고 지금 할 수 있는 부탁 중 먼저 할 것(순서 조건을 지킨다). 없으면 남은 첫 부탁. */
 function recommended() {
-  const ready = available();
+  const ready = available(), focus = ready.find((m) => m.id === practiceFocus);
+  if (focus) return focus;
   const plan = ready.length > 1 ? learning.recommend(ready) : null;
   return ready.find((m) => m.id === plan?.selected?.missionId) || ready[0] || open()[0] || null;
 }
@@ -111,6 +114,8 @@ function renderLobby() {
   loadSaved();
   const target = learning.assignment();
   $('#resume').hidden = !(saved && !target);
+  practiceFocus = null;
+  paintMissedButton();
   if (target) {
     const n = assignmentMissions(ALL_MISSIONS, target).length;
     $('#l-title').innerHTML = `목표 부탁 <b>${n}개</b>`;
@@ -124,7 +129,55 @@ function renderLobby() {
   syncToggles(); accountStatus();
   show('lobby');
 }
+function paintMissedButton() {
+  const button = $('#practice-missed'), hide = !!learning.assignment() || !learning.missedPractice();
+  // 누르고 있던 단추가 쓰기 권한을 잃어 사라지면 포커스를 시작 단추로 옮긴다(그 밖의 포커스는 건드리지 않는다).
+  if (hide && !button.hidden && document.activeElement === button) $('#start').focus({ preventScroll: true });
+  button.hidden = hide;
+  paintSupportOffer();
+  // 근거가 있는 재방문: 그 연습이 첫 행동이고 이야기 시작은 그다음이다. 약한 제안과 과제는 기존 순서 그대로다.
+  const first = !hide || (!$('#support-offer').hidden && $('#support-offer').classList.contains('first'));
+  $('#start').className = `felt-cta ${first ? 'cream' : 'coral'}`;
+  $('#lobby').classList.toggle('has-return', first);
+}
+// 약한 제안은 같은 부탁을 두 번 권하지 않고, 하던 이야기가 남아 있으면 내지 않는다(그 부탁은 아직 「지난번」이 아니다).
+const gentleKey = () => STORAGE ? `${STORAGE}.gentle-offer` : null;
+function gentleSeen(offer) {
+  if (offer.rowId === gentleShown) return false;
+  try { const key = gentleKey(); if (!key || localStorage.getItem(key) === offer.rowId) return true; localStorage.setItem(key, offer.rowId); } catch { return true; }
+  gentleShown = offer.rowId; return false;
+}
+function currentOffer() {
+  const offer = learning.supportedOffer();
+  if (offer?.strength !== 'gentle') return offer;
+  return (saved && saved.game?.phase !== 'complete') || gentleSeen(offer) ? null : offer;
+}
+function paintSupportOffer() {
+  const offer = currentOffer(), box = $('#support-offer');
+  // 누르고 있던 단추가 쓰기 권한을 잃어 사라지면 포커스를 시작 단추로 옮긴다(놓친 부탁 단추와 같다).
+  if (!offer && !box.hidden && box.contains(document.activeElement)) $('#start').focus({ preventScroll: true });
+  box.hidden = !offer;
+  if (!offer) return;
+  // 강한 근거는 #l-reason이 같은 문장을 말하므로 여기서는 숨기고 단추만 시작 앞에 둔다. 약한 제안은 주요 단추 뒤에 그대로 둔다.
+  const repeated = offer.strength === 'repeated', go = $('#support-go'), anchor = repeated ? $('#start') : $('#resume');
+  if (repeated ? box.nextElementSibling !== anchor : box.previousElementSibling !== anchor) {
+    const focused = document.activeElement === go;
+    if (repeated) anchor.before(box); else anchor.after(box);
+    if (focused) go.focus({ preventScroll: true });
+  }
+  box.classList.toggle('first', repeated);
+  $('#support-line').hidden = repeated;
+  $('#support-line').textContent = offer.line;
+  go.className = repeated ? 'felt-cta coral' : 'chip-btn';
+  $('#support-go span').textContent = offer.action;
+  $('#support-go').dataset.mission = offer.missionId;
+}
 function lobbyReason() {
+  const missed = learning.missedPractice();
+  // 강한 근거의 구체적인 안내는 입구 맨 위 이 칸에서 말한다(휴대폰에서 시작·이어 하기 뒤로 밀리지 않게).
+  const offer = missed ? null : learning.supportedOffer();
+  const line = missed ? returnLine(missed) : offer?.strength === 'repeated' ? offer.line : null;
+  if (line) return `${line}${saved ? ' 하던 이야기는 이어 하기로 계속할 수 있어요.' : ''}`;
   if (saved) return '지난번에 하던 이야기가 남아 있어요. 이어서 하거나 처음부터 시작해요.';
   const focus = skillReport(learning.summary()).find((s) => ['practice', 'review'].includes(s.status));
   if (focus) return `지난번에는 ‘${focus.label}’가 조금 어려웠어요. 이번 이야기에서 한 번 더 해 봐요.`;
@@ -132,12 +185,14 @@ function lobbyReason() {
 }
 
 /* ── 시작·이어 하기 ── */
-async function start(resume = false) {
+async function start(resume = false, practiceId = null) {
   const target = learning.assignment(), targetMissions = target ? assignmentMissions(ALL_MISSIONS, target) : null;
   if (target && !targetMissions.length) { $('#lobby-note').hidden = false; $('#lobby-note').textContent = '과제 부탁을 불러오지 못했어요. WORLD에서 다시 열어 주세요.'; return; }
   if (target) resume = false;
   if (busy) return;
   voice.stop(); voiceKey = ''; started = true; feedback = null; activeId = null; resultsShown = false;
+  gentleShown = null;   // 이 입구에서 다시 그릴 때만 유지한다. 판을 하고 돌아온 입구는 저장된 기록을 보고 같은 부탁을 다시 권하지 않는다.
+  practiceFocus = !target && !resume ? practiceId : null;
   stage.reset(); teacherVisible = false;
   if (resume && saved && game.restore(saved.game)) {
     notes = Array.isArray(saved.notes) ? saved.notes.filter((n) => typeof n.text === 'string' && typeof n.speaker === 'string').slice(-60) : [];
@@ -146,10 +201,10 @@ async function start(resume = false) {
     coinRound = typeof saved.coinRound === 'string' ? saved.coinRound : (globalThis.SynkPlayCollection?.roundId('story-classroom') || null);
     coinState = saved.coinPaid === true ? 'done' : 'idle';
   } else {
-    if (target) game.startPractice(targetMissions.map((m) => m.id)); else game.restart();
+    if (target) game.startPractice(targetMissions.map((m) => m.id)); else if (practiceFocus) game.startPractice([practiceFocus]); else game.restart();
     notes = [];
-    // 공통 코인(play-common): 이 판의 번호. 끝까지 마친 판에 한 번만 받는다.
-    coinRound = globalThis.SynkPlayCollection?.roundId('story-classroom') || null;
+    // 공통 코인(play-common): 이 판의 번호. 끝까지 마친 판에 한 번만 받는다. 맞춤 연습은 한 장면이라 코인이 없다(이야기 한 판을 마친 것이 아니다).
+    coinRound = practiceFocus ? null : globalThis.SynkPlayCollection?.roundId('story-classroom') || null;
     coinState = 'idle';
   }
   $('#r-coins').textContent = coinState === 'done' ? '이번 판 보상은 벌써 차고에 들어갔어요.' : '';
@@ -176,8 +231,8 @@ function render() {
 
 function renderHud() {
   const p = game.phase, review = p === 'review';
-  $('#g-scene').textContent = p === 'opening' ? '시작' : p === 'ending' ? '끝' : review ? '마지막' : `${game.actIndex + 1} / 3`;
-  const pool = review ? EPISODE.review : storyPool();
+  $('#g-scene').textContent = practiceFocus ? '연습' : p === 'opening' ? '시작' : p === 'ending' ? '끝' : review ? '마지막' : `${game.actIndex + 1} / 3`;
+  const pool = practiceFocus ? game.missions : review ? EPISODE.review : storyPool();
   const n = pool.filter((m) => game.completedIds.includes(m.id)).length;
   const text = `${n} / ${pool.length}`;
   if ($('#g-done').textContent !== text) {
@@ -240,7 +295,7 @@ function renderAsk() {
   const review = game.phase === 'review';
   $('#ask-kicker').textContent = done(m) ? '마친 부탁'
     : target && assignmentMissions([m], target).length ? '이번 목표'
-      : review ? '바뀐 부탁' : '선생님의 부탁';
+      : m.id === practiceFocus ? '연습할 부탁' : review ? '바뀐 부탁' : '선생님의 부탁';
   const say = $('#ask-line');
   say.dataset.text = m.text;
   say.classList.toggle('done', done(m));
@@ -506,7 +561,8 @@ function showResults() {
   $('#r-stars').setAttribute('aria-label', `별 3개 중 ${stars}개`);
   $('#r-mongle').src = stars >= 2 ? 'kit/brand/mongle-cheer.webp' : 'kit/brand/mongle-smile.webp';
   const story = recs.filter((r) => r.mode === 'story').length, review = recs.filter((r) => r.mode === 'review').length;
-  $('#r-kicker').textContent = review ? `이야기 속 부탁 ${story}개 · 바뀐 부탁 ${review}개` : `선생님이 돌아왔다 · 부탁 ${story}개`;
+  $('#r-title').textContent = practiceFocus ? '연습 끝!' : '이야기 끝!';
+  $('#r-kicker').textContent = practiceFocus ? '이 부탁만 연습했어요' : review ? `이야기 속 부탁 ${story}개 · 바뀐 부탁 ${review}개` : `선생님이 돌아왔다 · 부탁 ${story}개`;
   $('#r-note').textContent = [`혼자 한 번에 해낸 부탁 ${independent}개`, `힌트 ${hinted}개`, `음성으로 들은 부탁 ${heard}개`].join(' · ');
   renderLog(); renderSkills();
   $('#r-hub').hidden = false;
@@ -554,9 +610,46 @@ function renderSkills() {
     li.innerHTML = `<b>${esc(s.label)}${isFocus ? ' <i class="next-tag">다음 연습</i>' : ''}</b><em>이번 ${ok}/${mine.length}</em><span>${esc(s.text)}</span>`;
     ul.append(li);
   }
-  $('#r-next-reason').textContent = focus
-    ? `‘${focus.label}’를 한 번 더 해 보면 좋아요. 다시 하면 같은 이야기의 부탁을 처음부터 읽어요.`
-    : '같은 이야기라도 다시 읽으면 더 빨라져요. 마지막의 바뀐 부탁도 다시 나와요.';
+  paintNext(focus);
+}
+
+/** 지금 권할 다른 부탁({ id, label, line }). 방금 연습한 그 부탁이면 없다(「방금 한 부탁 다시」가 같은 일을 한다). */
+function suggestedPractice(focus) {
+  if (learning.assignment()) return null;
+  const missed = learning.missedPractice();
+  // 기본 자동 읽기로 한 사람은 독립 근거가 없어 위 안내가 비어 있다. 같은 종류를 여러 장면에서 놓친 사실이 있을 때만 여기서 말한다.
+  const offer = missed || focus ? null : learning.supportedOffer(), repeated = offer?.strength === 'repeated' ? offer : null;
+  const next = missed ? { id: missed.target.id, label: '놓친 부탁 바로 연습', line: returnLine(missed) }
+    : repeated ? { id: repeated.missionId, label: repeated.action, line: repeated.line } : null;
+  return next?.id === practiceFocus ? null : next;
+}
+const resumable = () => !!saved && saved.game?.phase !== 'complete';
+
+/**
+ * 결과의 「다음」: 글이 가리키는 단추가 화면에 있고, 그 단추가 말한 판을 연다.
+ * 이야기 한 판: 권할 부탁이 있으면 그 부탁이 첫 단추, 이야기를 처음부터 하는 단추가 그다음.
+ * 한 장면 연습: 권할 다른 부탁 · 하던 이야기로 돌아가기(없으면 이야기 시작) · 방금 한 부탁 다시. 하던 이야기의 저장본은 덮지 않는다.
+ * 과제: 이 판이 곧 목표 부탁이라 다시 하기만 있다.
+ */
+function paintNext(focus) {
+  const held = document.activeElement, target = learning.assignment(), next = suggestedPractice(focus), practiced = !!practiceFocus;
+  const practice = $('#r-practice'), story = $('#r-story'), again = $('#again');
+  if (practiced) loadSaved();
+  const back = practiced && resumable();
+  practice.hidden = !next;
+  if (next) { practice.querySelector('span').textContent = next.label; practice.dataset.mission = next.id; }
+  story.hidden = !practiced;
+  story.querySelector('span').textContent = back ? '하던 이야기 이어 하기' : '이야기 시작';
+  story.className = `felt-cta ${next ? 'cream' : 'coral'}`;
+  again.querySelector('span').textContent = practiced ? '방금 한 부탁 다시' : next ? '이야기 처음부터' : '한 번 더 놀기';
+  again.className = `felt-cta ${practiced || next ? 'cream' : 'coral'}`;
+  $('#r-next-reason').textContent = next ? next.line
+    : practiced ? `방금 한 부탁을 다시 하거나, ${back ? '하던 이야기를 이어서 해요.' : '이야기를 처음부터 해요.'}`
+      : target ? `${focus ? `‘${focus.label}’를 한 번 더 해 보면 좋아요. ` : ''}한 번 더 놀면 이번 목표 부탁을 다시 해요.`
+        : focus ? `‘${focus.label}’를 한 번 더 해 보면 좋아요. 다시 하면 같은 이야기의 부탁을 처음부터 읽어요.`
+          : '같은 이야기라도 다시 읽으면 더 빨라져요. 마지막의 바뀐 부탁도 다시 나와요.';
+  // 누르고 있던 단추가 쓰기 권한을 잃어 사라지면 포커스를 다시 하기 단추로 옮긴다.
+  if (held?.hidden && (held === practice || held === story)) again.focus({ preventScroll: true });
 }
 
 /* ── 멈춤·수첩 ── */
@@ -581,6 +674,11 @@ function openJournal() {
 /* ── 이벤트 ── */
 $('#start').onclick = () => start(false);
 $('#resume').onclick = () => start(true);
+$('#practice-missed').onclick = () => { const missed = learning.missedPractice(); if (missed) start(false, missed.target.id); else renderLobby(); };
+$('#support-go').onclick = () => { const id = $('#support-go').dataset.mission; if (id && learning.supportedOffer()) start(false, id); else renderLobby(); };
+// 누르는 순간 권할 부탁을 다시 읽는다. 그사이 기록을 못 쓰게 됐으면 없는 약속으로 열지 않고 「다음」을 다시 그린다.
+$('#r-practice').onclick = () => { const id = $('#r-practice').dataset.mission; if (id && suggestedPractice(skillReport(learning.summary()).find((s) => ['practice', 'review'].includes(s.status)))?.id === id) start(false, id); else renderSkills(); };
+$('#r-story').onclick = () => { loadSaved(); start(resumable()); };
 $('#dialogue-next').onclick = advance;
 $('#beat-replay').onclick = replay;
 $('#ask-replay').onclick = replay;
@@ -594,9 +692,10 @@ $('#journal').onclick = openJournal;
 $('#journal-close').onclick = () => { voice.stop(); $('#journal-dialog').close(); };
 $('#restart').onclick = () => { $('#restart-row').hidden = true; $('#restart-confirm').hidden = false; $('#confirm-restart').focus(); };
 $('#keep-playing').onclick = () => { $('#restart-confirm').hidden = true; $('#restart-row').hidden = false; };
-$('#confirm-restart').onclick = () => { $('#pause-dialog').close(); start(false); };
+// 맞춤 연습에서 다시 하면 같은 연습이다. 전체 이야기로 넘어가 이어 하기 저장본을 덮지 않는다.
+$('#confirm-restart').onclick = () => { $('#pause-dialog').close(); start(false, practiceFocus); };
 $('#quit').onclick = () => { $('#pause-dialog').close(); voice.stop(); persist(); renderLobby(); };
-$('#again').onclick = () => start(false);
+$('#again').onclick = () => start(false, practiceFocus);
 $('#r-home').onclick = () => { voice.stop(); renderLobby(); };
 for (const t of $$('[data-sound-toggle]')) t.onclick = toggleSound;
 for (const t of [$('#voice-auto'), $('#voice-auto-2')]) t.onclick = toggleAuto;
@@ -629,7 +728,7 @@ Object.defineProperty(window, '__storyLearning', { get: () => ({ summary: learni
 
 // 저장 상태가 실제로 바뀔 때(기록을 넘겨받음·잃음·오류)만 입구·결과의 안내 글을 다시 쓴다. 진행 중인 이야기·소리와 화면 전환·포커스는 건드리지 않는다.
 function refreshStorageText() {
-  if (!$('#lobby').hidden) { accountStatus(); if (!learning.assignment()) $('#l-reason').textContent = lobbyReason(); }
+  if (!$('#lobby').hidden) { accountStatus(); paintMissedButton(); if (!learning.assignment()) $('#l-reason').textContent = lobbyReason(); }
   else if (!$('#results').hidden) renderSkills();
 }
 let storagePaint = false;

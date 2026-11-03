@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import { createRequire } from 'node:module';
 import { ITEMS } from './content.mjs';
 import { composeRound } from './core.mjs';
-import { itemMetadata, candidates, rankItems, answerPayload, missedPayload, skillReport, assignmentItems } from './learning.mjs';
+import { itemMetadata, candidates, rankItems, answerPayload, missedPayload, skillReport, assignmentItems, missedPractice } from './learning.mjs';
 
 const require = createRequire(import.meta.url);
 const { createGame } = require('../../atlas/game-learning.js');
@@ -161,4 +161,20 @@ test('문항 판: 문장·보기·정답을 바꾸면 판이 올라간다', () =
     assert.equal(digest(x), hash, `${x.id}: 내용이 바뀌었으면 ITEM_VERSION에서 판을 올리고 이 표를 고친다`);
     assert.equal(itemMetadata(x).itemKey, `blank-slice.${x.id}.v${version}`, x.id);
   }
+});
+
+test('지적 A3: 이 기기의 처음 판이어도 공통 기록에서 온 난도 2 맞춤 문장이 맨 앞이고, 나머지는 쉬운 문장부터다', () => {
+  const g = coach();
+  ['e03', 'e05', 'e01'].forEach((id, i) => play(g, byId(id), i === 2));
+  const plan = missedPractice(g);
+  assert.equal(plan.patternId, 'ending');
+  const lead = plan.target.item, round = composeRound(ITEMS, { firstTime: true, lead: lead.id });
+  assert.equal(lead.difficulty, 2, '이 재현의 맞춤 문장은 난도 2');
+  assert.equal(round[0].id, lead.id);
+  assert.equal(round.length, 12);
+  assert.ok(round.slice(1).every((x) => x.difficulty === 1), '나머지는 처음 판 그대로 난도 1');
+  for (const skill of new Set(ITEMS.map((x) => x.skill))) assert.ok(round.filter((x) => x.skill === skill).length >= 4, skill);
+  // 맞춤 문장이 없으면 처음 판은 그대로다.
+  assert.deepEqual(composeRound(ITEMS, { firstTime: true, lead: null }), composeRound(ITEMS, { firstTime: true }));
+  assert.ok(composeRound(ITEMS, { firstTime: true }).every((x) => x.difficulty === 1));
 });

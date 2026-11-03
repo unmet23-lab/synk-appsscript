@@ -16798,6 +16798,13 @@ function checkMetadata(item) {
     conceptIds: [...CHECK_GRAMMAR[item.id] || []]
   };
 }
+var CHECK_NEXT = "\u2018\uB4E3\uAE30 \uD655\uC778\u2019\uC758 \uCCAB \uBB38\uC81C\uB3C4 \uADF8\uB7F0 \uB9D0\uC774\uC5D0\uC694. \uB05D\uAE4C\uC9C0 \uB4E3\uACE0 \uACE8\uB77C \uBCF4\uC138\uC694.";
+var RETURN_PATTERNS = Object.freeze({
+  detail: { why: "\uC9C0\uB09C \uB4E3\uAE30 \uD655\uC778\uC5D0\uC11C \uBC29\uD5A5\uC774\uB098 \uB3D9\uC791\uC744 \uB9D0\uD558\uB294 \uBD80\uD0C1\uC744 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: CHECK_NEXT },
+  negation: { why: "\uC9C0\uB09C \uB4E3\uAE30 \uD655\uC778\uC5D0\uC11C \uD558\uC9C0 \uB9D0\uB77C\uAC70\uB098 \uD558\uC9C0 \uC54A\uC544\uB3C4 \uB41C\uB2E4\uB294 \uB9D0\uC744 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: CHECK_NEXT },
+  sequence: { why: "\uC9C0\uB09C \uB4E3\uAE30 \uD655\uC778\uC5D0\uC11C \uB450 \uB3D9\uC791\uC758 \uC21C\uC11C\uB97C \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: CHECK_NEXT }
+});
+var CHECK_OF_FAMILY = new Map(LISTENING_CHECKS.map((item) => [checkMetadata(item).familyKey, item]));
 
 // experiences/korean-rhythm/suno-tracks.mjs
 var SUNO_RECORDINGS = [{ "sourceId": "94e8eeb8-fcba-4434-a0ba-cd1490d8c6d3", "title": "\uCD08\uB85D", "audioUrl": "assets/music/blue-signal.mp3", "duration": 202.68, "bpm": 111.096, "beatOffset": 0.045, "beatTimes": [0.04644, 0.58507, 1.08408, 1.63283, 2.18159, 2.73034, 3.26912, 3.80789, 4.34667, 4.89542, 5.4342, 5.98295, 6.51175, 7.0605, 7.59927, 8.13805, 8.67683, 9.22558, 9.75438, 10.30313, 10.83193, 11.39066, 11.91946, 12.46821, 12.99701, 13.54576, 14.07456, 14.62331, 15.16209, 15.70086, 16.23964, 16.77841, 17.31719, 17.86594, 18.39474, 18.94349, 19.49224, 20.02104, 20.55982, 21.09859, 21.63737, 22.17615, 22.71492, 23.26367, 23.80245, 24.3512, 24.88, 25.42875, 25.95755, 26.5063, 27.0351, 27.58385, 28.12263, 28.67138, 29.20018, 29.74893, 30.28771, 30.82649, 31.36526, 31.90404, 32.44281, 32.99156, 33.52036, 34.06912, 34.60789, 35.14667, 35.68544, 36.22422, 36.77297, 37.31175, 37.85052, 38.3893, 38.92807, 39.47683, 40.00562, 40.55438, 41.09315, 41.6419, 42.1707, 42.70948, 43.24825, 43.79701, 44.33578, 44.87456, 45.42331, 45.95211, 46.49088, 47.03964, 47.56844, 48.11719, 48.65596, 49.20472, 49.73351, 50.28227, 50.82104, 51.35982, 51.88862, 52.42739, 52.96617, 53.51492, 54.0537, 54.60245, 55.13125, 55.68, 56.2088, 56.75755, 57.29633, 57.8351, 58.37388, 58.92263, 59.45143, 60.00018, 60.53896, 61.07773, 61.61651, 62.16526, 62.69406, 63.23283, 63.77161, 64.32036, 64.85914, 65.39791, 65.93669, 66.47546, 67.01424, 67.56299, 68.08181, 68.59066, 69.16934, 69.7181, 70.25687, 70.79565, 71.33442, 71.87477, 72.41197, 72.96073, 73.48952, 74.03828, 74.56707, 75.10585, 75.6546, 76.19338, 76.72218, 77.27093, 77.80971, 78.3385, 78.87728, 79.42603, 79.96481, 80.50358, 81.04236, 81.58113, 82.11991, 82.66866, 83.19746, 83.73624, 84.27501, 84.78385, 85.35256, 85.90132, 86.44009, 86.98884, 87.51764, 88.05642, 88.59519, 89.13397, 89.67274, 90.21152, 90.76027, 91.30902, 91.82785, 92.3766, 92.9054, 93.45415, 94.0029, 94.5317, 95.07048, 95.60925, 96.14803, 96.69678, 97.22558, 97.76435, 98.30313, 98.85188, 99.39066, 99.91946, 100.45823, 101.00698, 101.53578, 102.07456, 102.62331, 103.16209, 103.69088, 104.23964, 104.76844, 105.31719, 105.84599, 106.38476, 106.93351, 107.47229, 108.01107, 108.54984, 109.08862, 109.62739, 110.16617, 110.71492, 111.2537, 111.79247, 112.33125, 112.87002, 113.4088, 113.94757, 114.48635, 115.0351, 115.57388, 116.11265, 116.65143, 117.1902, 117.72898, 118.26776, 118.80653, 119.40123, 119.94131, 120.53261, 121.02145, 121.56153, 122.1016, 122.64167, 123.18175, 123.72182, 124.26189, 124.85279, 125.34204, 125.88211, 126.46912, 127.00789, 127.54667, 128.04241, 128.6342, 129.16299, 129.66263, 130.2027, 130.74277, 131.3181, 131.82292, 132.363, 132.90307, 133.48317, 134.02195, 134.52329, 135.06336, 135.61832, 136.14351, 136.71583, 137.2546, 137.77342, 138.3038, 138.86095, 139.39973, 139.92853, 140.4641, 141.00417, 141.54424, 142.08363, 142.62439, 143.16446, 143.70454, 144.25868, 144.77751, 145.32476, 145.86483, 146.4049, 146.94498, 147.48505, 148.02513, 148.5652, 149.10527, 149.64535, 150.2351, 150.72549, 151.26557, 151.80564, 152.34571, 152.88579, 153.42586, 153.96593, 154.45551, 155.04608, 155.58615, 156.12623, 156.72036, 157.25914, 157.78794, 158.28652, 158.77569, 159.41424, 159.95302, 160.44681, 161.02059, 161.53941, 162.06703, 162.64689, 163.17569, 163.68454, 164.25324, 164.802, 165.33079, 165.86957, 166.38839, 166.94712, 167.47592, 168.00472, 168.55347, 169.09224, 169.63102, 170.17977, 170.71855, 171.24735, 171.78612, 172.3249, 172.8537, 173.39247, 173.93125, 174.47002, 174.97887, 175.5376, 176.07637, 176.61515, 177.14395, 177.68272, 178.2215, 178.76027, 179.29905, 179.83782, 180.3766, 180.91537, 181.5639, 182.04975, 182.58983, 183.1299, 183.62921, 184.25778, 184.75012, 185.33533, 185.83027, 186.42286, 186.91041, 187.50041, 187.99056, 188.558, 189.09678, 189.64553, 190.15085, 190.70313, 191.231, 191.79066, 192.33941, 192.84825, 193.38703, 193.94576, 194.47144, 195.00336, 195.55159, 196.09088, 196.63174, 197.15846, 197.68726, 198.23601, 198.79203, 199.3321, 199.84236, 200.38113, 200.92989, 201.4924, 202.03247] }, { "sourceId": "c2835bc7-6963-4503-95bd-781b55e20b88", "title": "\uD574\uC548\uC120", "audioUrl": "assets/music/one-hour-to-sea.mp3", "duration": 231.6, "bpm": 112.058, "beatOffset": 0.205, "beatTimes": [0.205, 0.79474, 1.32354, 1.81131, 2.34675, 2.88219, 3.41762, 3.95306, 4.43646, 4.97524, 5.51401, 6.04281, 6.63024, 7.12036, 7.65914, 8.18794, 8.72671, 9.30743, 9.79429, 10.33306, 10.87184, 11.40063, 11.94939, 12.47819, 13.01696, 13.56571, 14.10449, 14.64327, 15.17206, 15.71084, 16.25959, 16.78839, 17.33714, 17.8859, 18.41469, 18.94349, 19.50222, 20.02104, 20.55982, 21.08862, 21.64735, 22.1961, 22.71492, 23.26367, 23.80245, 24.34122, 24.87002, 25.4088, 25.91764, 26.38658, 27.02512, 27.55392, 28.10268, 28.63147, 29.17025, 29.59927, 30.21787, 30.7766, 31.3054, 31.79578, 32.38295, 32.86666, 33.40209, 33.90948, 34.50812, 34.9571, 35.54384, 36.07928, 36.61472, 37.18204, 37.68559, 38.22103, 38.75646, 39.2919, 39.82734, 40.36278, 40.89821, 41.43365, 41.96909, 42.50993, 43.03996, 43.5754, 44.11083, 44.64627, 45.18171, 45.71715, 46.25258, 46.80018, 47.32346, 47.85889, 48.39433, 48.95528, 49.4652, 50.00064, 50.53608, 51.11039, 51.60695, 52.14239, 52.67783, 53.25551, 53.7487, 54.28414, 54.81957, 55.35501, 55.89045, 56.42589, 56.96132, 57.5258, 58.0322, 58.56763, 59.15211, 59.68091, 60.17394, 60.70938, 61.24482, 61.78026, 62.31569, 62.85113, 63.38657, 63.97116, 64.45744, 64.99882, 65.52831, 66.06375, 66.59919, 67.13463, 67.67006, 68.2055, 68.74094, 69.27637, 69.8478, 70.34725, 70.88268, 71.41812, 71.90313, 72.489, 72.9707, 73.50948, 74.04825, 74.57705, 75.11583, 75.6546, 76.1834, 76.72218, 77.26095, 77.78975, 78.32853, 78.8673, 79.3961, 79.93488, 80.47365, 81.00245, 81.60109, 82.08, 82.6088, 83.14757, 83.68635, 84.21515, 84.75392, 85.2927, 85.83147, 86.37025, 86.89905, 87.43782, 87.98658, 88.5054, 89.05415, 89.58295, 90.1317, 90.6605, 91.19927, 91.72807, 92.25687, 92.80562, 93.3444, 93.8732, 94.43193, 94.95075, 95.4995, 96.0283, 96.5571, 97.09587, 97.63465, 98.16345, 98.70222, 99.241, 99.77977, 100.30857, 100.84735, 101.38612, 101.9249, 102.4537, 102.99247, 103.53125, 104.07002, 104.6088, 105.1376, 105.67637, 106.21515, 106.75392, 107.28272, 107.8215, 108.36027, 108.88907, 109.42785, 109.96662, 110.5054, 111.0342, 111.57297, 112.10177, 112.64054, 113.17932, 113.7181, 114.24689, 114.78567, 115.32444, 115.86322, 116.39202, 116.93079, 117.45959, 117.99837, 118.53714, 119.07592, 119.60472, 120.13351, 120.66231, 121.21107, 121.73986, 122.27864, 122.81741, 123.35619, 123.88499, 124.43374, 124.95256, 125.50132, 126.03011, 126.56889, 127.09769, 127.64644, 128.17524, 128.71401, 129.24281, 129.79156, 130.32036, 130.85914, 131.38794, 131.93669, 132.45551, 133.00426, 133.52308, 134.07184, 134.60063, 135.13941, 135.66821, 136.21696, 136.73578, 137.28454, 137.81333, 138.36209, 138.88091, 139.42966, 139.95846, 140.49723, 141.02603, 141.57478, 142.10358, 142.64236, 143.17116, 143.71991, 144.23873, 144.78748, 145.32626, 145.86503, 146.37388, 146.92263, 147.45143, 147.9902, 148.519, 149.07773, 149.59655, 150.14531, 150.66413, 151.21288, 151.7317, 152.27048, 152.80925, 153.34803, 153.87683, 154.42558, 154.9444, 155.49315, 156.02195, 156.56073, 157.08952, 157.6283, 158.1571, 158.70585, 159.23465, 159.77342, 160.30222, 160.841, 161.3698, 161.91855, 162.43737, 162.9961, 163.51492, 164.0537, 164.58249, 165.14122, 165.65007, 166.19882, 166.72762, 167.28635, 167.78522, 168.33397, 168.86277, 169.41152, 169.94032, 170.47909, 170.99791, 171.54667, 172.07546, 172.62422, 173.15302, 173.69179, 174.22059, 174.75937, 175.27819, 175.83692, 176.35574, 176.90449, 177.42331, 177.98204, 178.51084, 179.04961, 179.57841, 180.12717, 180.64727, 181.17478, 181.71356, 182.25358, 182.78113, 183.32446, 183.84871, 184.36753, 184.91628, 185.45506, 185.99383, 186.53708, 187.05143, 187.5902, 188.12898, 188.65778, 189.19655, 189.73533, 190.26413, 190.8029, 191.3317, 191.88045, 192.39927, 192.94803, 193.47683, 194.0156, 194.5444, 195.08317, 195.61197, 196.15075, 196.67955, 197.21832, 197.74712, 198.29587, 198.81469, 199.35347, 199.88227, 200.43102, 200.95982, 201.49859, 202.01741, 202.56617, 203.09497, 203.64372, 204.16254, 204.74194, 205.24009, 205.77887, 206.30766, 206.83646, 207.37524, 207.91401, 208.44281, 208.98159, 209.51039, 210.04916, 210.57796, 211.11673, 211.65551, 212.18431, 212.72308, 213.26186, 213.79066, 214.32943, 214.86821, 215.39701, 215.93578, 216.47456, 217.00336, 217.54213, 218.08091, 218.60971, 219.14848, 219.68726, 220.21605, 220.75483, 221.34048, 221.8224, 222.36118, 222.89995, 223.42875, 224.01767, 224.55311, 225.0351, 225.62398, 226.15942, 226.69485, 227.23029, 227.76573, 228.30116, 228.8366, 229.37204, 229.90748, 230.44291, 230.97835] }, { "sourceId": "ed3ac4b9-0386-4f47-8c1f-eb61cbd11f52", "title": "\uB124 \uC2DC", "audioUrl": "assets/music/four-pm-promise.mp3", "duration": 222.8, "bpm": 106.991, "beatOffset": 0.5, "beatTimes": [0.52535, 1.08408, 1.64281, 2.18238, 2.7902, 3.30397, 3.86477, 4.42556, 4.98636, 5.54715, 6.10795, 6.66874, 7.22954, 7.79033, 8.29769, 8.91192, 9.42512, 9.98385, 10.54259, 11.1551, 11.67002, 12.22875, 12.78748, 13.35619, 13.91492, 14.47365, 15.03238, 15.60109, 16.15982, 16.72853, 17.28726, 17.85596, 18.41469, 18.99338, 19.54213, 20.10086, 20.66957, 21.2283, 21.78703, 22.34576, 22.90449, 23.4732, 24.03193, 24.60063, 25.14939, 25.7181, 26.27683, 26.84553, 27.40426, 27.97297, 28.52172, 29.09043, 29.64916, 30.21787, 30.7766, 31.33533, 31.89406, 32.46277, 33.0215, 33.58023, 34.13896, 34.70766, 35.26639, 35.82512, 36.38385, 36.95256, 37.51129, 38.07002, 38.62875, 39.14757, 39.75619, 40.31643, 40.87365, 41.44236, 42.00109, 42.57977, 43.11855, 43.68726, 44.23601, 44.80279, 45.36345, 45.92438, 46.51084, 47.04597, 47.60834, 48.16707, 48.72836, 49.28454, 49.85324, 50.41197, 50.98068, 51.53941, 52.09814, 52.66685, 53.2156, 53.78431, 54.34304, 54.91175, 55.47048, 56.02921, 56.58794, 57.15664, 57.7054, 58.2741, 58.83283, 59.39156, 59.95029, 60.519, 61.06776, 61.63646, 62.19519, 62.7639, 63.31265, 63.88136, 64.44009, 65.0088, 65.55755, 66.12626, 66.67501, 67.24372, 67.80245, 68.37116, 68.91991, 69.48862, 70.03737, 70.59935, 71.16481, 71.72354, 72.28227, 72.85098, 73.40971, 73.97841, 74.52717, 75.09587, 75.64651, 76.2073, 76.77206, 77.34077, 77.8995, 78.45823, 79.01696, 79.57569, 80.13442, 80.70313, 81.26186, 81.83057, 82.37932, 82.94803, 83.49678, 84.06549, 84.62422, 85.18295, 85.74168, 86.31039, 86.85914, 87.42785, 87.98658, 88.55528, 89.10404, 89.67274, 90.23147, 90.7902, 91.34893, 91.91764, 92.46639, 93.0351, 93.59383, 94.16254, 94.71129, 95.28, 95.82875, 96.40744, 96.95619, 97.5249, 98.07365, 98.64236, 99.20109, 99.7698, 100.31855, 100.88228, 101.44599, 102.00472, 102.55347, 103.12545, 103.69088, 104.24961, 104.80834, 105.36707, 105.93578, 106.49022, 107.05324, 107.61197, 108.1707, 108.72943, 109.2942, 109.85687, 110.40562, 110.97433, 111.53306, 112.10177, 112.65052, 113.21923, 113.76798, 114.33669, 114.89542, 115.46413, 116.0029, 116.58159, 117.13034, 117.69905, 118.2478, 118.81651, 119.36526, 119.94395, 120.4927, 121.06141, 121.61016, 122.17887, 122.72762, 123.29633, 123.85506, 124.42376, 124.97252, 125.54122, 126.08998, 126.66866, 127.21741, 127.78612, 128.33488, 128.90358, 129.45234, 130.03102, 130.57977, 131.14848, 131.69723, 132.25596, 132.81469, 133.3834, 133.93215, 134.50086, 135.04961, 135.64825, 136.21235, 136.77314, 137.28454, 137.85324, 138.41197, 138.98068, 139.52943, 140.09814, 140.64689, 141.22558, 141.77433, 142.34304, 142.89179, 143.4605, 144.00925, 144.57796, 145.13669, 145.69542, 146.25415, 146.81288, 147.38159, 147.94032, 148.49905, 149.11063, 149.61651, 150.18522, 150.74395, 151.30268, 151.86141, 152.43011, 152.98884, 153.59699, 154.1063, 154.66503, 155.27937, 155.84017, 156.3512, 156.96176, 157.46866, 158.08335, 158.62603, 159.20494, 159.71356, 160.32653, 160.841, 161.44812, 161.96844, 162.56971, 163.0859, 163.6913, 164.20336, 164.81289, 165.37368, 165.93448, 166.49527, 167.05607, 167.61686, 168.17766, 168.73845, 169.29924, 169.86004, 170.42083, 170.98163, 171.54242, 172.10322, 172.66401, 173.26277, 173.7856, 174.3464, 174.90719, 175.46799, 176.02878, 176.60517, 177.15037, 177.73261, 178.24145, 178.83276, 179.39355, 179.95435, 180.51514, 181.07501, 181.63673, 182.19753, 182.75832, 183.31991, 183.87991, 184.40744, 185.0015, 185.54485, 186.12309, 186.68388, 187.24468, 187.77977, 188.36627, 188.93714, 189.48786, 190.01469, 190.66322, 191.22195, 191.73104, 192.23964, 192.85263, 193.46685, 194.02558, 194.58431, 195.14304, 195.70177, 196.27048, 196.81923, 197.36798, 197.92671, 198.46058, 199.05415, 199.58217, 200.14296, 200.70376, 201.26455, 201.82785, 202.38614, 202.95528, 203.52399, 204.07274, 204.63147, 205.1902, 205.74893, 206.30766, 206.86639, 207.41515, 207.97388, 208.53261, 209.08136, 209.64009, 210.19882, 210.74757, 211.31628, 211.86503, 212.43374, 212.99247, 213.5512, 214.10993, 214.66866, 215.28442, 215.84522, 216.40601, 216.96681, 217.58204, 218.0884, 218.64919, 219.20998, 219.77078, 220.33157, 220.89237, 221.45316, 222.01396, 222.57475] }];
@@ -16841,6 +16848,3313 @@ var TRACKS = SUNO_RECORDINGS.map((recording, id) => ({
   questions: LISTENING[id]
 }));
 
+// experiences/korean-rhythm/supplemental.json
+var supplemental_default = {
+  version: "rhythm-transfer-20261028",
+  items: [
+    {
+      id: "rhythm-transfer-ti-l-b-011",
+      rev: 1,
+      sourceItemId: "ti-l-b-011",
+      sourceItemKey: "topik-items.ti-l-b-011.v2",
+      sourceHash: "cf5bff3cd9f113d0f90a330f454c8a194dd19183ee3dfe3a001d33b03ba1cb39",
+      familyKey: "topik-items.ti-l-b-011",
+      setId: null,
+      skillId: "ko.listening.detail",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC774 \uC0C8 \uD578\uB4DC\uD3F0\uC744 \uC0AC\uACE0 \uC2F6\uC5B4\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC8C4\uC1A1\uD574\uC694. \uADF8 \uD578\uB4DC\uD3F0\uC740 \uB2E4\uC74C \uC8FC \uAE08\uC694\uC77C\uBD80\uD130 \uD314\uC544\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC544, \uADF8\uB798\uC694? \uADF8\uB7FC \uAE08\uC694\uC77C\uC5D0 \uB2E4\uC2DC \uC62C\uAC8C\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-b-011.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 11
+      },
+      claim: "\uB0A8\uC790\uB294 \uB2E4\uC74C \uC8FC \uAE08\uC694\uC77C \uC804\uC5D0\uB294 \uADF8 \uD578\uB4DC\uD3F0\uC744 \uBABB \uC0BD\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uC5EC\uC790\uB294 \u300C\uADF8 \uD578\uB4DC\uD3F0\uC740 \uB2E4\uC74C \uC8FC \uAE08\uC694\uC77C\uBD80\uD130 \uD314\uC544\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB7EC\uB2C8\uAE4C \uB2E4\uC74C \uC8FC \uAE08\uC694\uC77C\uC774 \uB418\uAE30 \uC804\uC5D0\uB294 \uADF8 \uD578\uB4DC\uD3F0\uC744 \uC0B4 \uC218 \uC5C6\uC5B4\uC11C \uB0A8\uC790\uB294 \u300C\uAE08\uC694\uC77C\uC5D0 \uB2E4\uC2DC \uC62C\uAC8C\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uC774\uBC88 \uC8FC \uAE08\uC694\uC77C\uBD80\uD130 \uD310\uB2E4\uB294 \uC124\uBA85\uC740 \u300C\uB2E4\uC74C \uC8FC \uAE08\uC694\uC77C\uBD80\uD130\u300D\uC640 \uB9DE\uC9C0 \uC54A\uC544\uC694.",
+      conceptIds: [
+        "S104"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "5c35644c9d46558ec450e73c72b5d3e8064e2409ff16fc27d24bd05faaf89c82",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-b-023",
+      rev: 1,
+      sourceItemId: "ti-l-b-023",
+      sourceItemKey: "topik-items.ti-l-b-023.v2",
+      sourceHash: "ebebc01cbb3ee1fa0bf58d53cffd00260e87f35cac7657939aa3b5f090bb4af2",
+      familyKey: "topik-items.ti-l-b-023",
+      setId: null,
+      skillId: "ko.listening.detail",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC800\uB3C4 \uCC45 \uC77D\uAE30 \uBAA8\uC784\uC5D0 \uB4E4\uC5B4\uAC00\uACE0 \uC2F6\uC5B4\uC694. \uC5B8\uC81C \uB9CC\uB098\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uB9E4\uC8FC \uAE08\uC694\uC77C \uC800\uB141\uC5D0\uB9CC \uB9CC\uB098\uC694. \uB2E4\uB978 \uB0A0\uC5D0\uB294 \uC548 \uB9CC\uB098\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC544, \uC800\uB294 \uAE08\uC694\uC77C \uC800\uB141\uC5D0 \uC218\uC5C5\uC774 \uC788\uC5B4\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-b-023.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 12.2
+      },
+      claim: "\uC5EC\uC790\uB294 \uC218\uC694\uC77C \uC800\uB141\uC5D0\uB3C4 \uBAA8\uC784 \uC0AC\uB78C\uB4E4\uC744 \uB9CC\uB0A9\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uC5EC\uC790\uB294 \u300C\uB9E4\uC8FC \uAE08\uC694\uC77C \uC800\uB141\uC5D0\uB9CC \uB9CC\uB098\uC694. \uB2E4\uB978 \uB0A0\uC5D0\uB294 \uC548 \uB9CC\uB098\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB7EC\uB2C8\uAE4C \uBAA8\uC784\uC740 \uC77C\uC8FC\uC77C\uC5D0 \uD55C \uBC88, \uAE08\uC694\uC77C \uC800\uB141\uC5D0\uB9CC \uD574\uC694. \uB0A8\uC790\uB294 \uAE08\uC694\uC77C \uC800\uB141\uC5D0 \u300C\uC218\uC5C5\uC774 \uC788\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uACE0 \uBAA8\uC784\uC5D0 \u300C\uB4E4\uC5B4\uAC00\uACE0 \uC2F6\uC5B4\uC694\u300D\uB77C\uACE0\uB9CC \uD588\uC73C\uB2C8\uAE4C \uC2DC\uAC04\uC774 \uC788\uB2E4\uAC70\uB098 \uBC8C\uC368 \uB4E4\uC5B4\uAC14\uB2E4\uB294 \uC124\uBA85\uC740 \uD2C0\uB824\uC694.",
+      conceptIds: [
+        "S107"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "eeebfff15a4558f8994012a7f718622474653352e096deee6f02afb379af0866",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-b-027",
+      rev: 1,
+      sourceItemId: "ti-l-b-027",
+      sourceItemKey: "topik-items.ti-l-b-027.v2",
+      sourceHash: "77786e6a1931ed9202af1d77c66dfefc74c836b5ed47d5aadbe689f2a92262d5",
+      familyKey: "topik-items.ti-l-b-027",
+      setId: null,
+      skillId: "ko.listening.detail",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC81C\uAC00 \uB0B4\uC77C\uBD80\uD130 \uC0BC \uC77C \uB3D9\uC548 \uC9D1\uC5D0 \uC5C6\uC5B4\uC694. \uC6B0\uB9AC \uACE0\uC591\uC774 \uBC25\uC744 \uBD80\uD0C1\uD574\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB124, \uC88B\uC544\uC694. \uC544\uCE68\uD558\uACE0 \uC800\uB141\uC5D0 \uC918\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC544\uB2C8\uC694, \uC800\uB141\uC5D0\uB9CC \uC8FC\uC138\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-b-027.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 12.3
+      },
+      claim: "\uB0A8\uC790\uB294 \uC800\uB141\uC5D0 \uACE0\uC591\uC774\uC5D0\uAC8C \uBC25\uC744 \uC90D\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uB0A8\uC790\uAC00 \u300C\uC544\uCE68\uD558\uACE0 \uC800\uB141\uC5D0 \uC918\uC694?\u300D\uB77C\uACE0 \uBB3C\uC5C8\uACE0, \uC5EC\uC790\uB294 \u300C\uC544\uB2C8\uC694, \uC800\uB141\uC5D0\uB9CC \uC8FC\uC138\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB0A8\uC790\uB294 \uC800\uB141\uC5D0\uB9CC \uACE0\uC591\uC774 \uBC25\uC744 \uC918\uC694. \uC544\uCE68\uC5D0\uB294 \uC8FC\uC9C0 \uC54A\uC544\uC694.",
+      conceptIds: [
+        "S107"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "c4975c9aa0547c75e105f7c4b202eb2bc811801b4c10348817d523736dc1c741",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-b-030",
+      rev: 1,
+      sourceItemId: "ti-l-b-030",
+      sourceItemKey: "topik-items.ti-l-b-030.v2",
+      sourceHash: "274bec4ba2a416274f481f0b35a582d468143903cb481c2f71eff9d17ff83f2d",
+      familyKey: "topik-items.ti-l-b-030",
+      setId: null,
+      skillId: "ko.listening.detail",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC774 \uC57D\uAD6D\uC740 \uD1A0\uC694\uC77C\uC5D0\uB3C4 \uBB38\uC744 \uC5F4\uC5B4\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uB124, \uD1A0\uC694\uC77C\uC5D0\uB294 \uC624\uD6C4 \uD55C \uC2DC\uAE4C\uC9C0 \uC5F4\uC5B4\uC694. \uC77C\uC694\uC77C\uC5D0\uB294 \uBB38\uC744 \uC548 \uC5F4\uC5B4\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uADF8\uB7FC \uD1A0\uC694\uC77C \uC544\uCE68\uC5D0 \uB2E4\uC2DC \uC62C\uAC8C\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-b-030.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 12.5
+      },
+      claim: "\uB0A8\uC790\uB294 \uC77C\uC694\uC77C \uC544\uCE68\uC5D0 \uC57D\uAD6D\uC5D0 \uC635\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uC5EC\uC790\uB294 \u300C\uD1A0\uC694\uC77C\uC5D0\uB294 \uC624\uD6C4 \uD55C \uC2DC\uAE4C\uC9C0 \uC5F4\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB7EC\uB2C8\uAE4C \uD1A0\uC694\uC77C\uC5D0\uB294 \uD55C \uC2DC\uC5D0 \uBB38\uC744 \uB2EB\uC544\uC694. \uC77C\uC694\uC77C\uC5D0\uB294 \uBB38\uC744 \uC548 \uC5F4\uC5B4\uC11C \uB0A8\uC790\uB294 \uD1A0\uC694\uC77C \uC544\uCE68\uC5D0 \uB2E4\uC2DC \uC640\uC694.",
+      conceptIds: [
+        "S105"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "a3ee7f99c458f1a9249c0707d46be2ed25427d25982bd21bb8b7343829172b59",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-b-032",
+      rev: 1,
+      sourceItemId: "ti-l-b-032",
+      sourceItemKey: "topik-items.ti-l-b-032.v2",
+      sourceHash: "b8ccb6c64ece77306a465d35e37e1735013b5fbbfa0df2ee0e5c286f63a6a313",
+      familyKey: "topik-items.ti-l-b-032",
+      setId: null,
+      skillId: "ko.listening.detail",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "delayed",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC2DC\uD5D8\uC774 \uB05D\uB098\uBA74 \uAC19\uC774 \uBC14\uB2E4\uC5D0 \uAC00\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC88B\uC544\uC694. \uC81C \uC2DC\uD5D8\uC740 \uB2E4\uC74C \uC8FC \uAE08\uC694\uC77C\uC5D0 \uB05D\uB098\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uADF8\uB7FC \uADF8\uB2E4\uC74C \uB0A0 \uC544\uCE68\uC5D0 \uAC00\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uB124, \uC88B\uC544\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-b-032.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 12.7
+      },
+      claim: "\uC5EC\uC790\uB294 \uB2E4\uC74C \uC8FC \uD1A0\uC694\uC77C\uC5D0 \uBC14\uB2E4\uC5D0 \uAC11\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uB0A8\uC790\uB294 \u300C\uC2DC\uD5D8\uC774 \uB05D\uB098\uBA74 \uAC19\uC774 \uBC14\uB2E4\uC5D0 \uAC00\uC694\u300D\uB77C\uACE0 \uD588\uACE0, \uC5EC\uC790\uB294 \uC2DC\uD5D8\uC774 \u300C\uB2E4\uC74C \uC8FC \uAE08\uC694\uC77C\uC5D0 \uB05D\uB098\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB450 \uC0AC\uB78C\uC740 \u300C\uADF8\uB2E4\uC74C \uB0A0\u300D\uC778 \uD1A0\uC694\uC77C\uC5D0 \uBC14\uB2E4\uC5D0 \uAC00\uC694. \uAE08\uC694\uC77C \uC544\uCE68\uC5D0 \uAC04\uB2E4\uB294 \uC124\uBA85\uC740 \uD2C0\uB824\uC694.",
+      conceptIds: [
+        "G401"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "b4a61a56b931160e3337bbf91a10c414e35eb9eb5004a19907c0e424c8fd3013",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-a-009",
+      rev: 1,
+      sourceItemId: "ti-l-a-009",
+      sourceItemKey: "topik-items.ti-l-a-009.v1",
+      sourceHash: "6df4e7d870bc626e9e3b9007b5df469e34310c4b0710cc7f2f7c4e79a0299f11",
+      familyKey: "topik-items.ti-l-a-009",
+      setId: null,
+      skillId: "ko.listening.detail",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "delayed",
+      script: [
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uBC30\uAC00 \uC544\uD30C\uC694. \uC5B4\uC81C \uC800\uB141\uC744 \uB108\uBB34 \uB9CE\uC774 \uBA39\uC5C8\uC5B4\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC774 \uC57D\uC744 \uB4DC\uC138\uC694. \uD558\uB8E8\uC5D0 \uB450 \uBC88, \uBC25\uC744 \uBA39\uACE0 \uC0BC\uC2ED \uBD84 \uB4A4\uC5D0 \uB4DC\uC138\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-a-009.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 9.6
+      },
+      claim: "\uB300\uD654\uAC00 \uC774\uB8E8\uC5B4\uC9C0\uB294 \uACF3\uC740 \uC11C\uC810\uC785\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uB0A8\uC790\uB294 \uC57D\uC744 \uC8FC\uBA70 \uD558\uB8E8\uC5D0 \uB450 \uBC88, \uBC25\uC744 \uBA39\uACE0 \uC0BC\uC2ED \uBD84 \uB4A4\uC5D0 \uBA39\uC73C\uB77C\uACE0 \uC124\uBA85\uD574\uC694. \uCC45\uC744 \uACE0\uB974\uAC70\uB098 \uC0AC\uB294 \uB300\uD654\uAC00 \uC544\uB2C8\uBBC0\uB85C \uC11C\uC810\uC774\uB77C\uB294 \uC124\uBA85\uC740 \uB9DE\uC9C0 \uC54A\uC544\uC694.",
+      conceptIds: [
+        "G212"
+      ],
+      sourceOfficialType: "TI-L-07",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "81b6802cdf4d7f9bafe2d6a370ed799faa39a118fac6896554d88dee4f7f89d1",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-009",
+      rev: 1,
+      sourceItemId: "ti-l-d-009",
+      sourceItemKey: "topik-items.ti-l-d-009.v1",
+      sourceHash: "6d5b66af5c4942cfa452e2fc91c9c98e46d5226d02574fdffbb8ca5d9976c632",
+      familyKey: "topik-items.ti-l-d-009",
+      setId: null,
+      skillId: "ko.listening.detail",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC548\uACBD\uC744 \uC0C8\uB85C \uB9DE\uCD94\uACE0 \uC2F6\uC5B4\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uBA3C\uC800 \uB208 \uAC80\uC0AC\uB97C \uD574\uC57C \uD574\uC694. \uC548\uACBD\uC740 \uBAA8\uB450 \uC2ED\uC624\uB9CC \uC6D0\uC774\uC5D0\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC88B\uC544\uC694. \uC624\uB298 \uBC1B\uC744 \uC218 \uC788\uC5B4\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC544\uB2C8\uC694, \uC0AC\uD758 \uB4A4\uC5D0 \uB098\uC640\uC694. \uAE08\uC694\uC77C \uC624\uD6C4\uC5D0 \uCC3E\uC73C\uB7EC \uC624\uC138\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uAE08\uC694\uC77C \uC624\uC804\uC5D0\uB294 \uC548 \uB3FC\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uB124, \uC624\uC804\uC5D0\uB294 \uAC00\uAC8C \uBB38\uC744 \uC548 \uC5F4\uC5B4\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-009.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 21.7
+      },
+      claim: "\uB0A8\uC790\uB294 \uC0C8 \uC548\uACBD \uAC12\uC73C\uB85C \uC2ED\uC624\uB9CC \uC6D0\uC744 \uB0C5\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uC5EC\uC790\uAC00 \u300C\uC548\uACBD\uC740 \uBAA8\uB450 \uC2ED\uC624\uB9CC \uC6D0\uC774\uC5D0\uC694\u300D\uB77C\uACE0 \uD588\uACE0 \uB0A8\uC790\uB294 \u300C\uC88B\uC544\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB0A8\uC790\uB294 \uC0C8 \uC548\uACBD \uAC12\uC73C\uB85C \uC2ED\uC624\uB9CC \uC6D0\uC744 \uB0B4\uC694.",
+      conceptIds: [
+        "G403",
+        "G402",
+        "G303",
+        "G209"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "3ca9ee57c70b3c1164d99920a0fb633874bf11268738559a4236257ff3902af4",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-010",
+      rev: 1,
+      sourceItemId: "ti-l-d-010",
+      sourceItemKey: "topik-items.ti-l-d-010.v1",
+      sourceHash: "af0cfcdb2bc443256be8f2d60270959d793370d4123a0c5693caf2adab7d3805",
+      familyKey: "topik-items.ti-l-d-010",
+      setId: null,
+      skillId: "ko.listening.detail",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC694\uAC00\uB97C \uBC30\uC6B0\uACE0 \uC2F6\uC740\uB370\uC694. \uC218\uC5C5\uC774 \uC77C\uC8FC\uC77C\uC5D0 \uBA87 \uBC88 \uC788\uC5B4\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uD654\uC694\uC77C\uD558\uACE0 \uBAA9\uC694\uC77C, \uB450 \uBC88 \uC788\uC5B4\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uBA87 \uC2DC\uC5D0 \uC2DC\uC791\uD574\uC694? \uC800\uB294 \uD68C\uC0AC\uAC00 \uC5EC\uC12F \uC2DC\uC5D0 \uB05D\uB098\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC800\uB141 \uC77C\uACF1 \uC2DC \uBC18\uC5D0 \uC2DC\uC791\uD574\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uADF8\uB7FC \uB2E4\uC74C \uC8FC\uBD80\uD130 \uB2E4\uB2D0\uAC8C\uC694. \uC694\uAE08\uC740 \uC5BC\uB9C8\uC608\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uD55C \uB2EC\uC5D0 \uC721\uB9CC \uC6D0\uC774\uC5D0\uC694. \uCCAB \uC218\uC5C5\uC740 \uB3C8\uC744 \uC548 \uB0B4\uC154\uB3C4 \uB3FC\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-010.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 23.5
+      },
+      claim: "\uC5EC\uC790\uB294 \uC800\uB141 \uC5EC\uC12F \uC2DC\uC5D0 \uC694\uAC00 \uC218\uC5C5\uC744 \uB4E3\uC2B5\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uC5EC\uC790\uC758 \uD68C\uC0AC\uAC00 \uB05D\uB098\uB294 \uC2DC\uAC04\uC740 \uC800\uB141 \uC5EC\uC12F \uC2DC\uC774\uACE0, \uC694\uAC00 \uC218\uC5C5\uC774 \uC2DC\uC791\uD558\uB294 \uC2DC\uAC04\uC740 \uC800\uB141 \uC77C\uACF1 \uC2DC \uBC18\uC774\uC5D0\uC694. \uC5EC\uC12F \uC2DC\uC5D0 \uC218\uC5C5\uC744 \uB4E3\uB294\uB2E4\uB294 \uC124\uBA85\uC740 \uD2C0\uB824\uC694.",
+      conceptIds: [
+        "G610",
+        "G612",
+        "G505",
+        "S104"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "89b51178ad0f13c4d3b38a67e8156ca238d5afb3b208dd545882ddadbda4afb7",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-011",
+      rev: 1,
+      sourceItemId: "ti-l-d-011",
+      sourceItemKey: "topik-items.ti-l-d-011.v2",
+      sourceHash: "5d767cd2e7100e2e43806b59cda63384101b356d7c25ac8765d92d52aa66d0c1",
+      familyKey: "topik-items.ti-l-d-011",
+      setId: null,
+      skillId: "ko.listening.detail",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB124, \uC774\uC0BF\uC9D0\uC13C\uD130\uC785\uB2C8\uB2E4."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC774\uBC88 \uC8FC \uC77C\uC694\uC77C\uC5D0 \uC774\uC0AC\uD558\uB824\uACE0 \uD558\uB294\uB370\uC694. \uC9C0\uAE08 \uC0AC\uB294 \uC9D1\uC740 \uBC29\uC774 \uB450 \uAC1C\uC608\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC0C8\uC9D1\uC5D0 \uC5D8\uB9AC\uBCA0\uC774\uD130\uAC00 \uC788\uC5B4\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC544\uB2C8\uC694, \uC5C6\uC5B4\uC11C \uC9D0\uC744 \uACC4\uB2E8\uC73C\uB85C \uC62C\uB824\uC57C \uD574\uC694. \uC0AC \uCE35\uC774\uC5D0\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uADF8\uB7FC \uC138 \uBA85\uC774 \uAC08\uAC8C\uC694. \uAC12\uC740 \uC721\uC2ED\uB9CC \uC6D0\uC774\uC5D0\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uB124, \uC88B\uC544\uC694. \uC544\uCE68 \uC5EC\uB35F \uC2DC\uAE4C\uC9C0 \uC640 \uC8FC\uC138\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-011.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 24.5
+      },
+      claim: "\uC5EC\uC790\uB294 \uC774\uC0BF\uC9D0\uC13C\uD130\uC5D0 \uC721\uC2ED\uB9CC \uC6D0\uC744 \uB0BC \uAC81\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uB0A8\uC790\uAC00 \u300C\uAC12\uC740 \uC721\uC2ED\uB9CC \uC6D0\uC774\uC5D0\uC694\u300D\uB77C\uACE0 \uD588\uACE0 \uC5EC\uC790\uB294 \u300C\uB124, \uC88B\uC544\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uC5EC\uC790\uB294 \uC721\uC2ED\uB9CC \uC6D0\uC744 \uB0BC \uAC70\uC608\uC694.",
+      conceptIds: [
+        "G405",
+        "G610",
+        "G308",
+        "G403",
+        "G612",
+        "G404",
+        "S105"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "45cbf9378da377449e8adeab7d576a8648f3e8406dcad21cb8cd6630836d4fe5",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-012",
+      rev: 1,
+      sourceItemId: "ti-l-d-012",
+      sourceItemKey: "topik-items.ti-l-d-012.v1",
+      sourceHash: "b8bd0d12283c6b9c701fdf4757eb6a38767f3a196442c7ce6b0196d0f9c32dd0",
+      familyKey: "topik-items.ti-l-d-012",
+      setId: null,
+      skillId: "ko.listening.detail",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uD734\uB300\uD3F0 \uD654\uBA74\uC774 \uAE68\uC84C\uC5B4\uC694. \uACE0\uCE60 \uC218 \uC788\uC5B4\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB124, \uD654\uBA74\uC744 \uBC14\uAFD4\uC57C \uD574\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC2DC\uAC04\uC774 \uC5BC\uB9C8\uB098 \uAC78\uB824\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uD55C \uC2DC\uAC04\uCBE4 \uAC78\uB824\uC694. \uAC12\uC740 \uC2ED\uC774\uB9CC \uC6D0\uC774\uC5D0\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC0DD\uAC01\uBCF4\uB2E4 \uBE44\uC2F8\uB124\uC694. \uADF8\uB7FC \uADF8\uB3D9\uC548 \uADFC\uCC98\uC5D0\uC11C \uC810\uC2EC\uC744 \uBA39\uACE0 \uC62C\uAC8C\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB124, \uD55C \uC2DC\uC5D0 \uCC3E\uC73C\uB7EC \uC624\uC138\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-012.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 20.8
+      },
+      claim: "\uC5EC\uC790\uB294 \uD734\uB300\uD3F0\uC744 \uACE0\uCE58\uB294 \uB3D9\uC548 \uAC00\uAC8C\uC5D0\uC11C \uAE30\uB2E4\uB9BD\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uC5EC\uC790\uB294 \u300C\uADF8\uB3D9\uC548 \uADFC\uCC98\uC5D0\uC11C \uC810\uC2EC\uC744 \uBA39\uACE0 \uC62C\uAC8C\uC694\u300D\uB77C\uACE0 \uD588\uACE0, \uB0A8\uC790\uB294 \u300C\uD55C \uC2DC\uC5D0 \uCC3E\uC73C\uB7EC \uC624\uC138\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uC5EC\uC790\uB294 \uC810\uC2EC\uC744 \uBA39\uACE0 \uD55C \uC2DC\uC5D0 \uB2E4\uC2DC \uC640\uC694.",
+      conceptIds: [
+        "G402",
+        "G403",
+        "G312",
+        "G411",
+        "G612"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "af535e918029b0640dc2eb66e5a6f991c26614ac0e753b750b1b0f89808f84f1",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-001",
+      rev: 1,
+      sourceItemId: "ti-l-d-001",
+      sourceItemKey: "topik-items.ti-l-d-001.v1",
+      sourceHash: "049f8eebe5caba92df956986848682dee289bf7e9bd309834a36129e6f29a6ab",
+      familyKey: "topik-items.ti-l-d-001",
+      setId: null,
+      skillId: "ko.listening.detail",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "delayed",
+      script: [
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC774 \uC0C1\uC790\uB97C \uACE0\uD5A5\uC5D0 \uC788\uB294 \uB3D9\uC0DD\uD55C\uD14C \uBCF4\uB0B4\uB824\uACE0 \uD574\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC5EC\uAE30\uC5D0 \uC62C\uB824 \uC8FC\uC138\uC694. \uC0BC \uD0AC\uB85C\uADF8\uB7A8\uC774\uB124\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uBE44\uD589\uAE30\uB85C \uBCF4\uB0B4\uBA74 \uBA70\uCE60 \uAC78\uB824\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC77C\uC8FC\uC77C\uCBE4 \uAC78\uB824\uC694. \uBC30\uB294 \uD55C \uB2EC\uCBE4 \uAC78\uB9AC\uACE0\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uADF8\uB7FC \uC870\uAE08 \uBE44\uC2F8\uB3C4 \uBE44\uD589\uAE30\uB85C \uD560\uAC8C\uC694. \uBC1B\uB294 \uC0AC\uB78C \uC8FC\uC18C\uB294 \uC5B4\uB514\uC5D0 \uC368\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC774 \uC885\uC774\uC5D0 \uC4F0\uACE0 \uC0C1\uC790 \uC704\uC5D0 \uBD99\uC5EC \uC8FC\uC138\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-001.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 24
+      },
+      claim: "\uB300\uD654\uAC00 \uC774\uB8E8\uC5B4\uC9C0\uB294 \uACF3\uC740 \uC6B0\uCCB4\uAD6D\uC785\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uC5EC\uC790\uAC00 \u300C\uC774 \uC0C1\uC790\uB97C \uACE0\uD5A5\uC5D0 \uC788\uB294 \uB3D9\uC0DD\uD55C\uD14C \uBCF4\uB0B4\uB824\uACE0 \uD574\uC694\u300D\uB77C\uACE0 \uD558\uACE0, \uB0A8\uC790\uB294 \uBC1B\uB294 \uC0AC\uB78C \uC8FC\uC18C\uB97C \u300C\uC774 \uC885\uC774\uC5D0 \uC4F0\uACE0 \uC0C1\uC790 \uC704\uC5D0 \uBD99\uC5EC \uC8FC\uC138\uC694\u300D\uB77C\uACE0 \uD574\uC694. \uC0C1\uC790\uB97C \uB2E4\uB978 \uACF3\uC73C\uB85C \uBCF4\uB0B4\uB294 \uACF3\uC774\uB2C8\uAE4C \uC6B0\uCCB4\uAD6D\uC774\uC5D0\uC694. \u300C\uBE44\uD589\uAE30\u300D\uB77C\uB294 \uB9D0\uC774 \uB098\uC624\uC9C0\uB9CC \uBE44\uD589\uAE30\uB97C \uD0C0\uB7EC \uC628 \uAC83\uC774 \uC544\uB2C8\uB77C \uC0C1\uC790\uB97C \uBE44\uD589\uAE30\uB85C \uBCF4\uB0B4\uB294 \uAC83\uC774\uB77C\uC11C \uACF5\uD56D\uC774 \uC544\uB2C8\uC5D0\uC694.",
+      conceptIds: [
+        "G405",
+        "G401",
+        "G612",
+        "G404",
+        "S114"
+      ],
+      sourceOfficialType: "TI-L-07",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "adea71f979a30d6bcfdaf161a923c61d018fd298c620e48fb6d7cef2e061315a",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-002",
+      rev: 1,
+      sourceItemId: "ti-l-d-002",
+      sourceItemKey: "topik-items.ti-l-d-002.v1",
+      sourceHash: "b20bef904916da036a13d894c7da6ac8f2d8da2cc688a4cce563f218d901c4a7",
+      familyKey: "topik-items.ti-l-d-002",
+      setId: null,
+      skillId: "ko.listening.detail",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "delayed",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC774 \uCF54\uD2B8\uD558\uACE0 \uBC14\uC9C0\uB97C \uB9E1\uAE30\uB824\uACE0\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC8FC\uBA38\uB2C8\uB97C \uBA3C\uC800 \uD655\uC778\uD574 \uC8FC\uC138\uC694. \uAC00\uB054 \uB3C8\uC774\uB098 \uC5F4\uC1E0\uAC00 \uC788\uC5B4\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC544, \uC5F4\uC1E0\uAC00 \uC788\uC5C8\uB124\uC694. \uACE0\uB9C8\uC6CC\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uCF54\uD2B8\uB294 \uBB3C\uB85C \uBE68\uBA74 \uC548 \uB418\uB2C8\uAE4C \uC0AC\uD758\uCBE4 \uAC78\uB824\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uBC14\uC9C0\uB294 \uC5B8\uC81C \uCC3E\uC744 \uC218 \uC788\uC5B4\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uBC14\uC9C0\uB294 \uB0B4\uC77C \uC800\uB141\uC5D0 \uCC3E\uC73C\uB7EC \uC624\uC138\uC694. \uC774 \uC885\uC774\uB97C \uAF2D \uAC00\uC9C0\uACE0 \uC624\uC154\uC57C \uD574\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-002.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 24.5
+      },
+      claim: "\uB300\uD654\uAC00 \uC774\uB8E8\uC5B4\uC9C0\uB294 \uACF3\uC740 \uBBF8\uC6A9\uC2E4\uC785\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uB0A8\uC790\uAC00 \u300C\uC774 \uCF54\uD2B8\uD558\uACE0 \uBC14\uC9C0\uB97C \uB9E1\uAE30\uB824\uACE0\uC694\u300D\uB77C\uACE0 \uD558\uACE0, \uC5EC\uC790\uB294 \u300C\uCF54\uD2B8\uB294 \uBB3C\uB85C \uBE68\uBA74 \uC548 \uB418\uB2C8\uAE4C \uC0AC\uD758\uCBE4 \uAC78\uB824\uC694\u300D\uB77C\uACE0 \uD574\uC694. \uC637\uC744 \uB9E1\uACA8\uC11C \uBE68\uACE0 \uB098\uC911\uC5D0 \uB2E4\uC2DC \uCC3E\uB294 \uACF3\uC774\uB2C8\uAE4C \uC138\uD0C1\uC18C\uC608\uC694. \uCF54\uD2B8\uC640 \uBC14\uC9C0\uAC00 \uB098\uC624\uC9C0\uB9CC \uC637\uC744 \uC0AC\uB294 \uC774\uC57C\uAE30\uAC00 \uC544\uB2C8\uB77C\uC11C \uC637 \uAC00\uAC8C\uAC00 \uC544\uB2C8\uC5D0\uC694.",
+      conceptIds: [
+        "G405",
+        "G506",
+        "G410",
+        "G402",
+        "G403",
+        "G303"
+      ],
+      sourceOfficialType: "TI-L-07",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "358d4db5a821e240dc3c50dc810adcbfff301217f1e1afc27f7baf36faa5fa53",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-b-001",
+      rev: 1,
+      sourceItemId: "ti-l-b-001",
+      sourceItemKey: "topik-items.ti-l-b-001.v1",
+      sourceHash: "a953a598648f684d61d7c1c8a9a9eb27a0803599dff892fb255be5b5144dccde",
+      familyKey: "topik-items.ti-l-b-001",
+      setId: null,
+      skillId: "ko.listening.negation",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC9C0\uB09C\uC8FC\uC5D0 \uC778\uD130\uB137\uC5D0\uC11C \uC6B4\uB3D9\uD654\uB97C \uC0C0\uC5B4\uC694. \uADF8\uB7F0\uB370 \uC544\uC9C1 \uC548 \uC654\uC5B4\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uADF8\uB798\uC694? \uAC00\uAC8C\uC5D0 \uC804\uD654\uD588\uC5B4\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB124, \uC624\uB298 \uC544\uCE68\uC5D0 \uC804\uD654\uD588\uC5B4\uC694. \uB0B4\uC77C \uC640\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-b-001.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 11.2
+      },
+      claim: "\uB0A8\uC790\uB294 \uC544\uC9C1 \uC6B4\uB3D9\uD654\uB97C \uBC1B\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uB0A8\uC790\uB294 \uC6B4\uB3D9\uD654\uAC00 \u300C\uC544\uC9C1 \uC548 \uC654\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uC544\uC9C1 \uC6B4\uB3D9\uD654\uB97C \uBC1B\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC6B4\uB3D9\uD654\uB294 \u300C\uB0B4\uC77C \uC640\uC694\u300D\uB77C\uACE0 \uD588\uC73C\uB2C8\uAE4C \uC624\uB298 \uBC1B\uB294\uB2E4\uB294 \uC124\uBA85\uC740 \uD2C0\uB824\uC694.",
+      conceptIds: [
+        "G209",
+        "G313"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "06172d2ea3d4fd98b25acddb9f6aebf9df768e78d6bb931ebafbf8d46a560740",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-b-005",
+      rev: 1,
+      sourceItemId: "ti-l-b-005",
+      sourceItemKey: "topik-items.ti-l-b-005.v1",
+      sourceHash: "f3c5ead98669f547e5785c7f375c2a2c9b7e65097a479985ef2dae0c5c5cfa99",
+      familyKey: "topik-items.ti-l-b-005",
+      setId: null,
+      skillId: "ko.listening.negation",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB098\uB514\uC544 \uC528, \uB9CE\uC774 \uB4DC\uC138\uC694. \uC774 \uBD88\uACE0\uAE30\uB294 \uC81C\uAC00 \uB9CC\uB4E4\uC5C8\uC5B4\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uACE0\uB9C8\uC6CC\uC694. \uADF8\uB7F0\uB370 \uC800\uB294 \uACE0\uAE30\uB97C \uC548 \uBA39\uC5B4\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC544, \uADF8\uB798\uC694? \uADF8\uB7FC \uC774 \uC0DD\uC120\uC744 \uB4DC\uC138\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uB124, \uC0DD\uC120\uC740 \uC88B\uC544\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-b-005.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 15.1
+      },
+      claim: "\uC5EC\uC790\uB294 \uC0DD\uC120\uC744 \uBA39\uC9C0 \uC54A\uACE0 \uBD88\uACE0\uAE30\uB97C \uBA39\uC2B5\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uC5EC\uC790\uB294 \u300C\uC800\uB294 \uACE0\uAE30\uB97C \uC548 \uBA39\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uBD88\uACE0\uAE30\uB294 \uBA39\uC9C0 \uC54A\uACE0, \u300C\uC0DD\uC120\uC740 \uC88B\uC544\uC694\u300D\uB77C\uACE0 \uD558\uBA74\uC11C \uC0DD\uC120\uC744 \uBA39\uC5B4\uC694. \uC0DD\uC120\uC744 \uC548 \uBA39\uB294\uB2E4\uB294 \uC124\uBA85\uC740 \uC774 \uB9D0\uACFC \uB9DE\uC9C0 \uC54A\uC544\uC694.",
+      conceptIds: [
+        "G209"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "4e5343d7d91dc42e1f58876009d87176125d62774acaff8a2d1cf653930186db",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-b-007",
+      rev: 1,
+      sourceItemId: "ti-l-b-007",
+      sourceItemKey: "topik-items.ti-l-b-007.v3",
+      sourceHash: "28a9abb6a7366c6464247b452c4afb63f8c61f578db92bf117638fc2b1e931b0",
+      familyKey: "topik-items.ti-l-b-007",
+      setId: null,
+      skillId: "ko.listening.negation",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uBB3C \uB450 \uBCD1\uD558\uACE0 \uC544\uC774\uC2A4\uD06C\uB9BC \uD558\uB098 \uC8FC\uC138\uC694. \uC5EC\uAE30 \uCE74\uB4DC\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC8C4\uC1A1\uD574\uC694. \uC5EC\uAE30\uB294 \uD604\uAE08\uB9CC \uBC1B\uC544\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC544, \uC9C0\uAE08 \uD604\uAE08\uC774 \uCC9C \uC6D0 \uC788\uC5B4\uC694. \uADF8\uB7FC \uBB3C \uD55C \uBCD1\uB9CC \uC8FC\uC138\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-b-007.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 12.5
+      },
+      claim: "\uB0A8\uC790\uB294 \uC544\uC774\uC2A4\uD06C\uB9BC\uC744 \uC0AC\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uC5EC\uC790\uB294 \u300C\uC5EC\uAE30\uB294 \uD604\uAE08\uB9CC \uBC1B\uC544\uC694\u300D\uB77C\uACE0 \uD588\uC73C\uB2C8\uAE4C \uCE74\uB4DC\uB85C\uB294 \uB0BC \uC218 \uC5C6\uC5B4\uC694. \uB0A8\uC790\uB294 \uD604\uAE08\uC774 \uCC9C \uC6D0 \uC788\uC5B4\uC11C \u300C\uBB3C \uD55C \uBCD1\uB9CC \uC8FC\uC138\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uC544\uC774\uC2A4\uD06C\uB9BC\uC740 \uC0AC\uC9C0 \uC54A\uC544\uC694.",
+      conceptIds: [
+        "S107"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "3e55ee6bdcce0d17372f52138410ad5e865ac2b8e508943d5d8af1b7a8f936f4",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-b-009",
+      rev: 1,
+      sourceItemId: "ti-l-b-009",
+      sourceItemKey: "topik-items.ti-l-b-009.v2",
+      sourceHash: "097ba268475fcafe0d2df4c7334fb225cfe322c5820f39c49361e021391c2788",
+      familyKey: "topik-items.ti-l-b-009",
+      setId: null,
+      skillId: "ko.listening.negation",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC18C\uD76C \uC528, \uD1A0\uC694\uC77C \uACF5\uC5F0 \uD45C\uB97C \uC0C0\uC5B4\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC544\uB2C8\uC694, \uBABB \uC0C0\uC5B4\uC694. \uB0A8\uC740 \uD45C\uAC00 \uD558\uB098\uB3C4 \uC5C6\uC5C8\uC5B4\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC800\uB294 \uC77C\uC694\uC77C \uD45C\uAC00 \uB450 \uC7A5 \uC788\uC5B4\uC694. \uC77C\uC694\uC77C\uC5D0 \uAC19\uC774 \uAC00\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC815\uB9D0\uC694? \uC88B\uC544\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-b-009.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 14.1
+      },
+      claim: "\uC5EC\uC790\uB294 \uD1A0\uC694\uC77C \uACF5\uC5F0 \uD45C\uB97C \uC0C0\uC2B5\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uC5EC\uC790\uB294 \u300C\uBABB \uC0C0\uC5B4\uC694. \uB0A8\uC740 \uD45C\uAC00 \uD558\uB098\uB3C4 \uC5C6\uC5C8\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uC5EC\uC790\uB294 \uD1A0\uC694\uC77C \uD45C\uAC00 \uC5C6\uACE0, \uB0A8\uC790\uC758 \uC77C\uC694\uC77C \uD45C\uB85C \uAC19\uC774 \uAC00\uC694. \uB0A8\uC790\uB294 \uD45C\uAC00 \uB450 \uC7A5 \uC788\uC73C\uB2C8\uAE4C \uD63C\uC790 \uBCF4\uC9C0 \uC54A\uC544\uC694.",
+      conceptIds: [
+        "G305"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "8e7543700e0c48bd1363e8943ef4d6a05b27913d3d5d929c72adcaf34fea1e43",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-b-013",
+      rev: 1,
+      sourceItemId: "ti-l-b-013",
+      sourceItemKey: "topik-items.ti-l-b-013.v2",
+      sourceHash: "0051e7f86fc3925bb4c8472d553316da58169337c7c574f1769e9f8f64647baf",
+      familyKey: "topik-items.ti-l-b-013",
+      setId: null,
+      skillId: "ko.listening.negation",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "delayed",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC740\uC11C \uC528, \uB0B4\uC77C \uD560\uC544\uBC84\uC9C0 \uB301\uC5D0 \uCC28\uB85C \uAC00\uC694. \uC740\uC11C \uC528\uB3C4 \uC6B4\uC804\uD574\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC544\uB2C8\uC694, \uC800\uB294 \uC6B4\uC804\uC744 \uBABB \uD574\uC694. \uBBF8\uC548\uD574\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uAD1C\uCC2E\uC544\uC694. \uADF8\uB7FC \uC6B4\uC804\uC740 \uC81C\uAC00 \uB2E4 \uD560\uAC8C\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-b-013.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 12
+      },
+      claim: "\uB0B4\uC77C\uC740 \uB0A8\uC790\uB9CC \uC6B4\uC804\uC744 \uD569\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uC5EC\uC790\uB294 \u300C\uC800\uB294 \uC6B4\uC804\uC744 \uBABB \uD574\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB0A8\uC790\uAC00 \u300C\uC6B4\uC804\uC740 \uC81C\uAC00 \uB2E4 \uD560\uAC8C\uC694\u300D\uB77C\uACE0 \uD588\uC73C\uB2C8\uAE4C \uB0B4\uC77C\uC740 \uB0A8\uC790\uB9CC \uC6B4\uC804\uD574\uC694. \uADF8\uB9AC\uACE0 \u300C\uCC28\uB85C \uAC00\uC694\u300D\uB77C\uACE0 \uD588\uC73C\uB2C8\uAE4C \uAE30\uCC28\uB97C \uD0C0\uC9C0 \uC54A\uC544\uC694.",
+      conceptIds: [
+        "G305"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "a91cade3682803b7a8d2cb05442c79f9b026302ddd8717178a088999a608696c",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-b-017",
+      rev: 1,
+      sourceItemId: "ti-l-b-017",
+      sourceItemKey: "topik-items.ti-l-b-017.v2",
+      sourceHash: "ab9b29a96a0f43235aee66ff6e117dca53e20ae273f9c93211fa97b84739397b",
+      familyKey: "topik-items.ti-l-b-017",
+      setId: null,
+      skillId: "ko.listening.negation",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "delayed",
+      script: [
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uB124, \uBBF8\uC6A9\uC2E4\uC785\uB2C8\uB2E4."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB0B4\uC77C \uC624\uD6C4 \uC138 \uC2DC\uC5D0 \uC608\uC57D\uC744 \uD588\uC5B4\uC694. \uADF8\uB7F0\uB370 \uADF8 \uC2DC\uAC04\uC5D0 \uBABB \uAC00\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uADF8\uB7FC \uB2E4\uC12F \uC2DC\uB294 \uC5B4\uB54C\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB124, \uC88B\uC544\uC694. \uB2E4\uC12F \uC2DC\uC5D0 \uAC08\uAC8C\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-b-017.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 12.1
+      },
+      claim: "\uB0A8\uC790\uB294 \uB0B4\uC77C \uBBF8\uC6A9\uC2E4\uC5D0 \uAC00\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uB0A8\uC790\uB294 \u300C\u2026 \uC138 \uC2DC\uC5D0 \uC608\uC57D\uC744 \uD588\uC5B4\uC694. \uADF8\uB7F0\uB370 \uADF8 \uC2DC\uAC04\uC5D0 \uBABB \uAC00\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uC608\uC57D\uC744 \uB2E4\uC12F \uC2DC\uB85C \uBC14\uAFD4\uC694. \uB0B4\uC77C \uBBF8\uC6A9\uC2E4\uC5D0 \uC548 \uAC00\uB294 \uAC83\uC774 \uC544\uB2C8\uB77C \uB2E4\uC12F \uC2DC\uC5D0 \uAC00\uC694.",
+      conceptIds: [
+        "G305"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "d11f2a393d27ce41e6adb6b955d0698e44b6c2702f18fa63fd1f2cdf50d2b3f1",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-013",
+      rev: 1,
+      sourceItemId: "ti-l-d-013",
+      sourceItemKey: "topik-items.ti-l-d-013.v1",
+      sourceHash: "7d1ac0f6b5bfb62f348770882e8b2c63f441bc4c8053f89ff75642628849349a",
+      familyKey: "topik-items.ti-l-d-013",
+      setId: null,
+      skillId: "ko.listening.negation",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uD0DD\uBC30\uC785\uB2C8\uB2E4. \uC9C0\uAE08 \uC9D1\uC5D0 \uACC4\uC138\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC544\uB2C8\uC694, \uD68C\uC0AC\uC5D0 \uC788\uC5B4\uC694. \uBC24 \uC544\uD649 \uC2DC\uCBE4 \uB4E4\uC5B4\uAC00\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uADF8\uB7FC \uACBD\uBE44\uC2E4\uC5D0 \uB9E1\uAE38\uAE4C\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC624\uB298\uC740 \uACBD\uBE44\uC2E4\uC774 \uC26C\uB294 \uB0A0\uC774\uC5D0\uC694. \uADF8\uB0E5 \uBB38 \uC55E\uC5D0 \uB193\uC544 \uC8FC\uC138\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB124, \uB193\uACE0 \uC0AC\uC9C4\uC744 \uBCF4\uB0B4 \uB4DC\uB9B4\uAC8C\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-013.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 18.7
+      },
+      claim: "\uB0A8\uC790\uB294 \uD0DD\uBC30\uB97C \uBB38 \uC55E\uC5D0 \uB450\uACE0 \uAC08 \uAC81\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uB0A8\uC790\uAC00 \u300C\uACBD\uBE44\uC2E4\uC5D0 \uB9E1\uAE38\uAE4C\uC694?\u300D\uB77C\uACE0 \uBB3C\uC5C8\uC9C0\uB9CC \uC5EC\uC790\uB294 \u300C\uC624\uB298\uC740 \uACBD\uBE44\uC2E4\uC774 \uC26C\uB294 \uB0A0\uC774\uC5D0\uC694. \uADF8\uB0E5 \uBB38 \uC55E\uC5D0 \uB193\uC544 \uC8FC\uC138\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB0A8\uC790\uB294 \uD0DD\uBC30\uB97C \uBB38 \uC55E\uC5D0 \uB450\uACE0 \uAC00\uC694.",
+      conceptIds: [
+        "G311",
+        "G404",
+        "G612",
+        "S109"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "e75a409c56136cf7bc2f5b27af743077e8ea81cbff1a32a0abba8ece48736022",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-014",
+      rev: 1,
+      sourceItemId: "ti-l-d-014",
+      sourceItemKey: "topik-items.ti-l-d-014.v1",
+      sourceHash: "56ad084789bf417153aa256fb713f735408ef4303a236626cf3497fec5673c8d",
+      familyKey: "topik-items.ti-l-d-014",
+      setId: null,
+      skillId: "ko.listening.negation",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uBC29\uC774 \uC880 \uB365\uB124\uC694. \uC5D0\uC5B4\uCEE8\uC744 \uCF24\uAE4C\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC9C0\uB09C\uB2EC\uC5D0 \uC804\uAE30 \uC694\uAE08\uC774 \uB9CE\uC774 \uB098\uC640\uC11C \uC774\uBC88 \uB2EC\uC5D0\uB294 \uC5D0\uC5B4\uCEE8\uC744 \uC548 \uCF1C\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uADF8\uB7FC \uCC3D\uBB38\uC744 \uC5F4\uAE4C\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uBC16\uC774 \uC2DC\uB044\uB7EC\uC6CC\uC11C \uCC3D\uBB38\uC740 \uC548 \uC5F4\uACE0 \uC2F6\uC5B4\uC694. \uC800\uAE30 \uC788\uB294 \uC120\uD48D\uAE30\uB97C \uCF1C\uC138\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC120\uD48D\uAE30\uAC00 \uACE0\uC7A5 \uB0AC\uC5B4\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uADF8\uB7FC \uC624\uB298\uB9CC \uC5D0\uC5B4\uCEE8\uC744 \uD55C \uC2DC\uAC04 \uCF1C\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-014.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 24
+      },
+      claim: "\uC5EC\uC790\uB294 \uC774\uBC88 \uB2EC\uC5D0 \uC5D0\uC5B4\uCEE8\uC744 \uD55C \uBC88\uB3C4 \uCF1C\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uC5EC\uC790\uB294 \uCC98\uC74C\uC5D0 \u300C\uC774\uBC88 \uB2EC\uC5D0\uB294 \uC5D0\uC5B4\uCEE8\uC744 \uC548 \uCF1C\uC694\u300D\uB77C\uACE0 \uD588\uC9C0\uB9CC, \uB0A8\uC790\uAC00 \u300C\uC120\uD48D\uAE30\uAC00 \uACE0\uC7A5 \uB0AC\uC5B4\uC694\u300D\uB77C\uACE0 \uD558\uC790 \u300C\uADF8\uB7FC \uC624\uB298\uB9CC \uC5D0\uC5B4\uCEE8\uC744 \uD55C \uC2DC\uAC04 \uCF1C\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uC5EC\uC790\uB294 \uC624\uB298 \uD55C \uC2DC\uAC04 \uB3D9\uC548 \uC5D0\uC5B4\uCEE8\uC744 \uCF1C\uB824\uACE0 \uD574\uC694.",
+      conceptIds: [
+        "G411",
+        "G311",
+        "G308",
+        "G301",
+        "S107"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "ea6fc879f60d61bdef419562e19ae69aa8588fe9cb03c1eeea11b2e532c1e1c7",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-015",
+      rev: 1,
+      sourceItemId: "ti-l-d-015",
+      sourceItemKey: "topik-items.ti-l-d-015.v1",
+      sourceHash: "bcec37f252d323eb658e79b608df12aa49214c22e08cce52db46c8136aa96e50",
+      familyKey: "topik-items.ti-l-d-015",
+      setId: null,
+      skillId: "ko.listening.negation",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC774\uBC88 \uD1A0\uC694\uC77C \uC0AC\uC9C4 \uBAA8\uC784 \uC54C\uC9C0\uC694? \uC7A5\uC18C\uAC00 \uBC14\uB00C\uC5C8\uC5B4\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC65C\uC694? \uACF5\uC6D0\uC5D0 \uC548 \uAC00\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uACF5\uC6D0\uC5D0\uC11C \uC774\uBC88 \uC8FC\uC5D0 \uACF5\uC0AC\uB97C \uD574\uC694. \uADF8\uB798\uC11C \uACF5\uC6D0 \uB300\uC2E0 \uB3D9\uBB3C\uC6D0\uC5D0 \uAC00\uAE30\uB85C \uD588\uC5B4\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB9CC\uB098\uB294 \uC2DC\uAC04\uB3C4 \uBC14\uB00C\uC5C8\uC5B4\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC544\uB2C8\uC694, \uC2DC\uAC04\uC740 \uADF8\uB300\uB85C \uC544\uCE68 \uC5F4 \uC2DC\uC608\uC694. \uB3D9\uBB3C\uC6D0 \uC55E\uC5D0\uC11C \uB9CC\uB098\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC54C\uACA0\uC5B4\uC694. \uADF8\uB7FC \uD1A0\uC694\uC77C\uC5D0 \uBD10\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-015.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 25.4
+      },
+      claim: "\uB0A8\uC790\uB294 \uD1A0\uC694\uC77C \uC544\uCE68\uC5D0 \uB3D9\uBB3C\uC6D0 \uC55E\uC73C\uB85C \uAC11\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uC5EC\uC790\uAC00 \u300C\uACF5\uC6D0 \uB300\uC2E0 \uB3D9\uBB3C\uC6D0\uC5D0 \uAC00\uAE30\uB85C \uD588\uC5B4\uC694\u300D\uB77C\uACE0 \uD558\uACE0, \u300C\uC2DC\uAC04\uC740 \uADF8\uB300\uB85C \uC544\uCE68 \uC5F4 \uC2DC\uC608\uC694. \uB3D9\uBB3C\uC6D0 \uC55E\uC5D0\uC11C \uB9CC\uB098\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB0A8\uC790\uB294 \uD1A0\uC694\uC77C \uC544\uCE68\uC5D0 \uB3D9\uBB3C\uC6D0 \uC55E\uC73C\uB85C \uAC00\uC694.",
+      conceptIds: [
+        "G412",
+        "S220",
+        "G501"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "95ec02dcc6b515cfc7c00cf5733d18514fb75e0a763a63fc1f9f1329b3046f0c",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-016",
+      rev: 1,
+      sourceItemId: "ti-l-d-016",
+      sourceItemKey: "topik-items.ti-l-d-016.v1",
+      sourceHash: "220f12534391784c6e49408a25e9e480827b5f469ba7a3693315e2164bee57e1",
+      familyKey: "topik-items.ti-l-d-016",
+      setId: null,
+      skillId: "ko.listening.negation",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC218\uC9C4 \uC528, \uC624\uB298 \uD68C\uC758\uAC00 \uBA87 \uC2DC\uC608\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC6D0\uB798 \uB450 \uC2DC\uC600\uB294\uB370 \uB124 \uC2DC\uB85C \uBC14\uB00C\uC5C8\uC5B4\uC694. \uBD80\uC7A5\uB2D8\uC774 \uC544\uC9C1 \uCD9C\uC7A5\uC5D0\uC11C \uC548 \uB3CC\uC544\uC624\uC168\uC5B4\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uD68C\uC758\uC2E4\uC740 \uAC19\uC544\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC544\uB2C8\uC694, \uC624 \uCE35 \uD68C\uC758\uC2E4\uC5D0 \uB2E4\uB978 \uD68C\uC758\uAC00 \uC788\uC5B4\uC11C \uCE60 \uCE35\uC5D0\uC11C \uD574\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uD68C\uC758 \uC790\uB8CC\uB294 \uBA87 \uC7A5 \uC900\uBE44\uD560\uAE4C\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC5F4 \uC7A5\uC774\uC694. \uD68C\uC758 \uC804\uC5D0 \uC81C \uCC45\uC0C1 \uC704\uC5D0 \uB193\uC544 \uC8FC\uC138\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-016.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 23.8
+      },
+      claim: "\uC624\uB298 \uD68C\uC758\uB294 \uCC98\uC74C \uC548\uB0B4\uD55C \uB450 \uC2DC\uC5D0 \uADF8\uB300\uB85C \uC2DC\uC791\uD569\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uD68C\uC758 \uC2DC\uAC04\uC774 \uB450 \uC2DC\uC5D0\uC11C \uB124 \uC2DC\uB85C \uBC14\uB00C\uC5C8\uC5B4\uC694. \uCC98\uC74C \uC548\uB0B4\uD55C \uC2DC\uAC04 \uADF8\uB300\uB85C \uC2DC\uC791\uD558\uC9C0 \uC54A\uC544\uC694.",
+      conceptIds: [
+        "G610",
+        "G308",
+        "G311",
+        "G406",
+        "G404"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "14318d6ba73c96e1a7737f5864c9b5eb2dfb5c0ea471300248a64457fc2c175f",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-017",
+      rev: 1,
+      sourceItemId: "ti-l-d-017",
+      sourceItemKey: "topik-items.ti-l-d-017.v1",
+      sourceHash: "32d5570013c6def4cf78e60492de92b8bc9960b1db30c0de248c1bd1f52d4a0d",
+      familyKey: "topik-items.ti-l-d-017",
+      setId: null,
+      skillId: "ko.listening.negation",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "delayed",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uD55C\uAD6D \uC694\uB9AC \uCC45 \uC788\uC5B4\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC774 \uAC00\uAC8C\uC5D0\uB294 \uC9C0\uAE08 \uC5C6\uC5B4\uC694. \uC8FC\uBB38\uD558\uC2DC\uBA74 \uBAA8\uB808 \uC640\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC624\uB298 \uC800\uB141\uC5D0 \uCE5C\uAD6C\uD55C\uD14C \uC918\uC57C \uD574\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uADF8\uB7FC \uC5ED \uC55E\uC5D0 \uC788\uB294 \uC800\uD76C \uB2E4\uB978 \uAC00\uAC8C\uC5D0 \uC9C1\uC811 \uAC00 \uBCF4\uC138\uC694. \uAC70\uAE30\uC5D0\uB294 \uB450 \uAD8C \uC788\uC5B4\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uADF8\uB7FC \uC8FC\uBB38\uD558\uC9C0 \uB9D0\uACE0 \uAC70\uAE30\uB85C \uAC08\uAC8C\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uB124, \uC81C\uAC00 \uADF8 \uAC00\uAC8C\uC5D0 \uC804\uD654\uD574 \uB458\uAC8C\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-017.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 24
+      },
+      claim: "\uB0A8\uC790\uB294 \uC5ED \uC55E \uAC00\uAC8C\uC5D0\uC11C \uCC45\uC744 \uC0B4 \uAC81\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uC5EC\uC790\uAC00 \u300C\uC5ED \uC55E\uC5D0 \uC788\uB294 \uC800\uD76C \uB2E4\uB978 \uAC00\uAC8C\uC5D0 \uC9C1\uC811 \uAC00 \uBCF4\uC138\uC694\u300D\uB77C\uACE0 \uD558\uC790 \uB0A8\uC790\uB294 \u300C\uC8FC\uBB38\uD558\uC9C0 \uB9D0\uACE0 \uAC70\uAE30\uB85C \uAC08\uAC8C\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB0A8\uC790\uB294 \uC5ED \uC55E \uAC00\uAC8C\uC5D0\uC11C \uCC45\uC744 \uC0AC\uC694.",
+      conceptIds: [
+        "G401",
+        "G403",
+        "G408",
+        "S226",
+        "G612"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "8a01754ade58a7b31ad78f32550ac8e4bfb475913588e5144735e130229ce183",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-018",
+      rev: 1,
+      sourceItemId: "ti-l-d-018",
+      sourceItemKey: "topik-items.ti-l-d-018.v1",
+      sourceHash: "1609fa60c4ac1647d73bddb018ca9de85e2304f3ed30f4a7a9e335ea52beafcb",
+      familyKey: "topik-items.ti-l-d-018",
+      setId: null,
+      skillId: "ko.listening.negation",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "delayed",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC790\uC804\uAC70 \uBC14\uD034\uAC00 \uC774\uC0C1\uD574\uC694. \uACE0\uCE60 \uC218 \uC788\uC5B4\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uBC14\uD034\uB97C \uBC14\uAFD4\uC57C \uD574\uC694. \uC624\uB9CC \uC6D0\uC774\uC5D0\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC624\uB9CC \uC6D0\uC774\uC694? \uC880 \uBE44\uC2F8\uB124\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC774 \uC790\uC804\uAC70\uB294 \uC624\uB798\uB3FC\uC11C \uB2E4\uB978 \uACF3\uB3C4 \uACE7 \uACE0\uC7A5 \uB0A0 \uAC83 \uAC19\uC544\uC694. \uC0C8 \uC790\uC804\uAC70\uB294 \uC2ED\uC624\uB9CC \uC6D0\uBD80\uD130 \uC788\uC5B4\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uADF8\uB7FC \uACE0\uCE58\uC9C0 \uB9D0\uACE0 \uC0C8\uB85C \uC0B4\uAC8C\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uADF8\uB7FC \uC800\uCABD\uC5D0\uC11C \uD55C\uBC88 \uACE8\uB77C \uBCF4\uC138\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-018.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 24.7
+      },
+      claim: "\uB0A8\uC790\uB294 \uC0C8 \uC790\uC804\uAC70\uB97C \uC0AC\uC9C0 \uC54A\uACE0 \uBC14\uD034\uB9CC \uACE0\uCE58\uAE30\uB85C \uD588\uC2B5\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uB0A8\uC790\uB294 \uCC98\uC74C\uC5D0\uB294 \uACE0\uCE58\uB824\uACE0 \uD588\uC9C0\uB9CC, \uB9C8\uC9C0\uB9C9\uC5D0\uB294 \uACE0\uCE58\uC9C0 \uB9D0\uACE0 \uC0C8\uB85C \uC0AC\uACA0\uB2E4\uACE0 \uD588\uC5B4\uC694.",
+      conceptIds: [
+        "G403",
+        "G411",
+        "G608",
+        "S226",
+        "G612",
+        "G408"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "b52f5220c230c96b3e076f74d598fac547cac368adf2fde57c24ef9ed20fbc13",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-b-003",
+      rev: 1,
+      sourceItemId: "ti-l-b-003",
+      sourceItemKey: "topik-items.ti-l-b-003.v2",
+      sourceHash: "fc507c1538cf3ed2b09d63e1efe78c230346ac5086db09b89a0c3b848c5f2085",
+      familyKey: "topik-items.ti-l-b-003",
+      setId: null,
+      skillId: "ko.listening.condition",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC120\uC0DD\uB2D8, \uAE30\uC219\uC0AC \uBB38\uC740 \uBC24 \uBA87 \uC2DC\uC5D0 \uB2EB\uC544\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC5F4\uB450 \uC2DC\uC5D0 \uB2EB\uC544\uC694. \uC5F4\uB450 \uC2DC\uAC00 \uC9C0\uB098\uBA74 \uAE30\uC219\uC0AC\uC5D0 \uBABB \uB4E4\uC5B4\uAC00\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC8FC\uB9D0\uC5D0\uB3C4\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uB124, \uC8FC\uB9D0\uC5D0\uB3C4 \uAC19\uC544\uC694. \uC5F4\uB450 \uC2DC\uAE4C\uC9C0 \uAF2D \uB4E4\uC5B4\uC624\uC138\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-b-003.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 16
+      },
+      claim: "\uB0A8\uC790\uB294 \uC8FC\uB9D0\uC5D0\uB3C4 \uBC24 \uC5F4\uB450 \uC2DC\uAE4C\uC9C0 \uAE30\uC219\uC0AC\uC5D0 \uB4E4\uC5B4\uAC00\uC57C \uD569\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uC5EC\uC790\uB294 \u300C\uC5F4\uB450 \uC2DC\uAC00 \uC9C0\uB098\uBA74 \uAE30\uC219\uC0AC\uC5D0 \uBABB \uB4E4\uC5B4\uAC00\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB9AC\uACE0 \u300C\uC8FC\uB9D0\uC5D0\uB3C4 \uAC19\uC544\uC694. \uC5F4\uB450 \uC2DC\uAE4C\uC9C0 \uAF2D \uB4E4\uC5B4\uC624\uC138\uC694\u300D\uB77C\uACE0 \uD588\uC73C\uB2C8\uAE4C \uB0A8\uC790\uB294 \uC8FC\uB9D0\uC5D0\uB3C4 \uC5F4\uB450 \uC2DC\uAE4C\uC9C0 \uB4E4\uC5B4\uAC00\uC57C \uD574\uC694. \uC8FC\uB9D0\uC5D0\uB294 \uB2A6\uAC8C \uB4E4\uC5B4\uAC08 \uC218 \uC788\uB2E4\uB294 \uC124\uBA85\uC740 \u300C\uC8FC\uB9D0\uC5D0\uB3C4 \uAC19\uC544\uC694\u300D\uC640 \uB9DE\uC9C0 \uC54A\uC544\uC694.",
+      conceptIds: [
+        "S105",
+        "G401"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "05458194a15e0102f47cbc1d05751d3ce0308db8675f3ee968be4fd922430c22",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-b-015",
+      rev: 1,
+      sourceItemId: "ti-l-b-015",
+      sourceItemKey: "topik-items.ti-l-b-015.v1",
+      sourceHash: "f1883e4001c442e358de1c02c8ea7e149d07ee79e7b2f21870e9dd02fa9a34a4",
+      familyKey: "topik-items.ti-l-b-015",
+      setId: null,
+      skillId: "ko.listening.condition",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC774 \uD68C\uC0AC \uC2DD\uB2F9 \uC810\uC2EC\uC740 \uC5BC\uB9C8\uC608\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uD68C\uC0AC \uCE74\uB4DC\uAC00 \uC788\uC73C\uBA74 \uC624\uCC9C \uC6D0\uC774\uC5D0\uC694. \uCE74\uB4DC\uAC00 \uC5C6\uC73C\uBA74 \uCE60\uCC9C \uC6D0\uC774\uC5D0\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC800\uB294 \uC624\uB298 \uCC98\uC74C \uC654\uC5B4\uC694. \uC544\uC9C1 \uCE74\uB4DC\uAC00 \uC5C6\uC5B4\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-b-015.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 12.5
+      },
+      claim: "\uC5EC\uC790\uB294 \uC624\uB298 \uC810\uC2EC\uC744 \uC624\uCC9C \uC6D0\uC5D0 \uBA39\uC2B5\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uB0A8\uC790\uB294 \u300C\uCE74\uB4DC\uAC00 \uC5C6\uC73C\uBA74 \uCE60\uCC9C \uC6D0\uC774\uC5D0\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uC5EC\uC790\uB294 \u300C\uC544\uC9C1 \uCE74\uB4DC\uAC00 \uC5C6\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC73C\uB2C8\uAE4C \uC624\uB298 \uC810\uC2EC\uAC12\uC740 \uCE60\uCC9C \uC6D0\uC774\uC5D0\uC694. \uC624\uCC9C \uC6D0\uC740 \uCE74\uB4DC\uAC00 \uC788\uC744 \uB54C\uC758 \uAC12\uC774\uC5D0\uC694.",
+      conceptIds: [
+        "G401"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "051c42d959a0d68c323381fe426c1e8aafe294970fe444c8c96c9798d01d5e97",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-b-019",
+      rev: 1,
+      sourceItemId: "ti-l-b-019",
+      sourceItemKey: "topik-items.ti-l-b-019.v1",
+      sourceHash: "5c71f8634ed13ca74715ff27a370a90373c36152a3e04254e64fe405e2347ea5",
+      familyKey: "topik-items.ti-l-b-019",
+      setId: null,
+      skillId: "ko.listening.condition",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC774 \uACF5\uCC45 \uD55C \uAD8C\uC5D0 \uC5BC\uB9C8\uC608\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uCC9C\uC624\uBC31 \uC6D0\uC774\uC5D0\uC694. \uADF8\uB7F0\uB370 \uC138 \uAD8C\uC744 \uC0AC\uBA74 \uD55C \uAD8C\uC744 \uB354 \uB4DC\uB824\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uADF8\uB7FC \uC138 \uAD8C \uC8FC\uC138\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-b-019.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 9.5
+      },
+      claim: "\uC5EC\uC790\uB294 \uACF5\uCC45\uC744 \uBAA8\uB450 \uB124 \uAD8C \uBC1B\uC2B5\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uB0A8\uC790\uB294 \uC138 \uAD8C\uC744 \uC0AC\uBA74 \uD55C \uAD8C\uC744 \uB354 \uC900\uB2E4\uACE0 \uD588\uC5B4\uC694. \uC5EC\uC790\uAC00 \uC138 \uAD8C\uC744 \uC0AC\uB2C8\uAE4C \uD55C \uAD8C\uC744 \uB354 \uBC1B\uC544\uC11C \uBAA8\uB450 \uB124 \uAD8C\uC774\uC5D0\uC694.",
+      conceptIds: [
+        "G401"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "8a5094f1853b7d674fddd5cba02bbbad3dafdf05987bbbea12f731394cf64577",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-c-017",
+      rev: 1,
+      sourceItemId: "ti-l-c-017",
+      sourceItemKey: "topik-items.ti-l-c-017.v1",
+      sourceHash: "8423428b60606577f205d99140635b8ab7333d95e4dfd87114534678f74b04cc",
+      familyKey: "topik-items.ti-l-c-017",
+      setId: null,
+      skillId: "ko.listening.condition",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uD0DC\uBBFC \uC528\uB294 \uD68C\uC0AC\uC5D0 \uC790\uC804\uAC70\uB97C \uD0C0\uACE0 \uC640\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB124, \uB0A0\uC528\uAC00 \uC88B\uC73C\uBA74 \uC790\uC804\uAC70\uB97C \uD0C0\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uBE44\uAC00 \uC624\uBA74\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uBE44\uAC00 \uC624\uBA74 \uC9C0\uD558\uCCA0\uC744 \uD0C0\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-c-017.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 10.8
+      },
+      claim: "\uB0A8\uC790\uB294 \uBE44\uAC00 \uC624\uBA74 \uC790\uC804\uAC70\uB85C \uD68C\uC0AC\uC5D0 \uAC11\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uB0A8\uC790\uB294 \u300C\uB0A0\uC528\uAC00 \uC88B\uC73C\uBA74 \uC790\uC804\uAC70\uB97C \uD0C0\uC694\u300D, \u300C\uBE44\uAC00 \uC624\uBA74 \uC9C0\uD558\uCCA0\uC744 \uD0C0\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uBE44\uAC00 \uC624\uB294 \uB0A0\uC5D0\uB294 \uC9C0\uD558\uCCA0\uB85C \uD68C\uC0AC\uC5D0 \uAC00\uC694.",
+      conceptIds: [
+        "G401"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "4ad53fcf7e2fc2d59afc1ef95f64c3a52b2399ec02f74d57a14c20cf731c3292",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-c-018",
+      rev: 1,
+      sourceItemId: "ti-l-c-018",
+      sourceItemKey: "topik-items.ti-l-c-018.v1",
+      sourceHash: "ed2a6761ae6fe9f757378c83b5394ff3182a53f50970ad29d809d5dfc5b8a864",
+      familyKey: "topik-items.ti-l-c-018",
+      setId: null,
+      skillId: "ko.listening.condition",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "delayed",
+      script: [
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC900\uD638 \uC528, \uC800 \uC7A0\uAE50 \uBC16\uC5D0 \uB098\uAC00\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB124, \uB2E4\uB140\uC624\uC138\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC190\uB2D8\uC774 \uC624\uBA74 \uC800\uC5D0\uAC8C \uC804\uD654\uD558\uC138\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB124, \uC54C\uACA0\uC5B4\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-c-018.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 10.7
+      },
+      claim: "\uB0A8\uC790\uB294 \uC190\uB2D8\uC774 \uC624\uBA74 \uC5EC\uC790\uC5D0\uAC8C \uC804\uD654\uB97C \uAC81\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uC5EC\uC790\uB294 \u300C\uC190\uB2D8\uC774 \uC624\uBA74 \uC800\uC5D0\uAC8C \uC804\uD654\uD558\uC138\uC694\u300D\uB77C\uACE0 \uD588\uACE0 \uB0A8\uC790\uB294 \u300C\uB124, \uC54C\uACA0\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uC190\uB2D8\uC774 \uC624\uBA74 \uB0A8\uC790\uAC00 \uC5EC\uC790\uC5D0\uAC8C \uC804\uD654\uD574\uC694.",
+      conceptIds: [
+        "G401",
+        "G211"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "62177e4da128ecb9337e4ee37cd5285e667ae1f38e9b7a6eefc21e3228b00b79",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-c-019",
+      rev: 1,
+      sourceItemId: "ti-l-c-019",
+      sourceItemKey: "topik-items.ti-l-c-019.v1",
+      sourceHash: "abc827e637af22621d1f060561998e64890fd68f3d3c307f5b362bdda86e0427",
+      familyKey: "topik-items.ti-l-c-019",
+      setId: null,
+      skillId: "ko.listening.condition",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "delayed",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC218\uC601 \uBAA8\uC790\uAC00 \uC5C6\uC5B4\uC694. \uAD1C\uCC2E\uC544\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC544\uB2C8\uC694, \uBAA8\uC790\uAC00 \uC5C6\uC73C\uBA74 \uBABB \uB4E4\uC5B4\uAC00\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uADF8\uB7FC \uBAA8\uC790\uB294 \uC5B4\uB514\uC5D0\uC11C \uC0AC\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC77C \uCE35 \uAC00\uAC8C\uC5D0\uC11C \uC0AC\uC138\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-c-019.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 11.2
+      },
+      claim: "\uB0A8\uC790\uB294 \uBAA8\uC790\uAC00 \uC788\uC5B4\uC11C \uBC14\uB85C \uC218\uC601\uC7A5\uC5D0 \uB4E4\uC5B4\uAC11\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uC5EC\uC790\uB294 \u300C\uBAA8\uC790\uAC00 \uC5C6\uC73C\uBA74 \uBABB \uB4E4\uC5B4\uAC00\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uBAA8\uC790\uAC00 \uC5C6\uC73C\uBA74 \uC218\uC601\uC7A5\uC5D0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC73C\uB2C8\uAE4C \uC218\uC601\uB3C4 \uBABB \uD574\uC694.",
+      conceptIds: [
+        "G401",
+        "G305"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "079dd7de40081b4751199c5c829bc22a051112db50e4ad4ce4fc955f3f32fea8",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-029",
+      rev: 1,
+      sourceItemId: "ti-l-d-029",
+      sourceItemKey: "topik-items.ti-l-d-029.v1",
+      sourceHash: "96177a3b930b85a4fdad676128d976a61e57b33788e5e2079684f4d0d73df907",
+      familyKey: "topik-items.ti-l-d-029",
+      setId: null,
+      skillId: "ko.listening.condition",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC8FC\uCC28 \uC694\uAE08\uC774 \uC5BC\uB9C8\uC608\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uCC98\uC74C \uD55C \uC2DC\uAC04\uC740 \uB3C8\uC744 \uC548 \uB0B4\uC154\uB3C4 \uB3FC\uC694. \uD55C \uC2DC\uAC04\uC774 \uB118\uC73C\uBA74 \uC0BC\uC2ED \uBD84\uC5D0 \uCC9C \uC6D0\uC774\uC5D0\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC800\uB294 \uD55C \uC2DC\uAC04 \uBC18\uCBE4 \uC788\uC744 \uAC70\uC608\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC774 \uAC74\uBB3C \uAC00\uAC8C\uC5D0\uC11C \uBB3C\uAC74\uC744 \uC0AC\uC2DC\uBA74 \uB450 \uC2DC\uAC04\uAE4C\uC9C0 \uB3C8\uC744 \uC548 \uB0B4\uC154\uB3C4 \uB3FC\uC694. \uC601\uC218\uC99D\uB9CC \uBCF4\uC5EC \uC8FC\uC138\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC544, \uC800\uB294 \uC6B4\uB3D9\uD654\uB97C \uC0AC\uB7EC \uC654\uC5B4\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-029.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 21.8
+      },
+      claim: "\uB0A8\uC790\uB294 \uC6B4\uB3D9\uD654\uB97C \uC0AC\uACE0 \uC601\uC218\uC99D\uC744 \uBCF4\uC774\uBA74 \uB3C8\uC744 \uC548 \uB0C5\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uC5EC\uC790\uB294 \u300C\uC774 \uAC74\uBB3C \uAC00\uAC8C\uC5D0\uC11C \uBB3C\uAC74\uC744 \uC0AC\uC2DC\uBA74 \uB450 \uC2DC\uAC04\uAE4C\uC9C0 \uB3C8\uC744 \uC548 \uB0B4\uC154\uB3C4 \uB3FC\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uB0A8\uC790\uB294 \uD55C \uC2DC\uAC04 \uBC18\uCBE4 \uC788\uACE0 \uC6B4\uB3D9\uD654\uB97C \uC0AC\uB7EC \uC654\uC73C\uB2C8\uAE4C, \uC6B4\uB3D9\uD654\uB97C \uC0AC\uACE0 \uC601\uC218\uC99D\uC744 \uBCF4\uC5EC \uC8FC\uBA74 \uC694\uAE08\uC744 \uB0B4\uC9C0 \uC54A\uC544\uC694.",
+      conceptIds: [
+        "G401",
+        "G505",
+        "G302",
+        "S105",
+        "S107",
+        "G303"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "30c26690745b96715e0c0a26704b769e8b1ae47cd016af57ec3f91c31af47a7d",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-030",
+      rev: 1,
+      sourceItemId: "ti-l-d-030",
+      sourceItemKey: "topik-items.ti-l-d-030.v1",
+      sourceHash: "1e1e6168c8cc1a0a75224d29fffb6bb7e3fcff53005063da1d97a0e3ff1f8a08",
+      familyKey: "topik-items.ti-l-d-030",
+      setId: null,
+      skillId: "ko.listening.condition",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC774 \uBC14\uC9C0\uD558\uACE0 \uD2F0\uC154\uCE20\uB97C \uBC14\uAFB8\uACE0 \uC2F6\uC5B4\uC694. \uC9C0\uB09C\uC8FC \uD1A0\uC694\uC77C\uC5D0 \uC0C0\uC5B4\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC601\uC218\uC99D\uC774 \uC788\uC73C\uBA74 \uC774 \uC8FC \uC548\uC5D0 \uBC14\uAFC0 \uC218 \uC788\uC5B4\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC601\uC218\uC99D\uC740 \uC5EC\uAE30 \uC788\uC5B4\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uADF8\uB7F0\uB370 \uC637\uC744 \uBE68\uC558\uC73C\uBA74 \uBC14\uAFC0 \uC218 \uC5C6\uC5B4\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uBC14\uC9C0\uB294 \uD55C \uBC88 \uBE68\uC558\uB294\uB370\uC694. \uD2F0\uC154\uCE20\uB294 \uC548 \uBE68\uC558\uC5B4\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uADF8\uB7FC \uD2F0\uC154\uCE20\uB9CC \uC774\uCABD\uC73C\uB85C \uC8FC\uC138\uC694. \uD655\uC778\uD574 \uBCFC\uAC8C\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-030.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 21.8
+      },
+      claim: "\uC601\uC218\uC99D\uC774 \uC788\uC73C\uBBC0\uB85C \uD55C \uBC88 \uBE64 \uBC14\uC9C0\uB3C4 \uBC14\uAFC0 \uC218 \uC788\uC2B5\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uC601\uC218\uC99D\uC774 \uC788\uC5B4\uB3C4 \uD55C \uBC88 \uBE64 \uC637\uC740 \uBC14\uAFC0 \uC218 \uC5C6\uC5B4\uC694. \uBC14\uC9C0\uB294 \uBE68\uC558\uACE0 \uD2F0\uC154\uCE20\uB294 \uBE68\uC9C0 \uC54A\uC558\uC73C\uBBC0\uB85C \uD2F0\uC154\uCE20\uB9CC \uBC14\uAFC0 \uC218 \uC788\uC5B4\uC694.",
+      conceptIds: [
+        "G401",
+        "G402",
+        "G610",
+        "S107",
+        "G408"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "4b64b1a560557ee6475115e8191b2531876d6695c0da5ad8e0444ceb8d7da8b5",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-031",
+      rev: 1,
+      sourceItemId: "ti-l-d-031",
+      sourceItemKey: "topik-items.ti-l-d-031.v1",
+      sourceHash: "1c535171e11cac40298418f4ef4bfb705b48138ee2726e5bcf877999edad886e",
+      familyKey: "topik-items.ti-l-d-031",
+      setId: null,
+      skillId: "ko.listening.condition",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC5B4\uB978 \uB450 \uC7A5\uD558\uACE0 \uC544\uC774 \uD55C \uC7A5 \uC8FC\uC138\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC544\uC774\uB294 \uBA87 \uC0B4\uC774\uC5D0\uC694? \uC77C\uACF1 \uC0B4\uC774 \uC548 \uB418\uBA74 \uD45C\uB97C \uB530\uB85C \uC548 \uC0AC\uC154\uB3C4 \uB3FC\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC5EC\uB35F \uC0B4\uC774\uC5D0\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uADF8\uB7FC \uC544\uC774\uB294 \uC0BC\uCC9C \uC6D0, \uC5B4\uB978\uC740 \uC721\uCC9C \uC6D0\uC774\uC5D0\uC694. \uD559\uC0DD\uC99D\uC774 \uC788\uC73C\uBA74 \uC5B4\uB978\uB3C4 \uC544\uC774\uCC98\uB7FC \uC0BC\uCC9C \uC6D0\uC774\uC5D0\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC544, \uC800\uB294 \uD559\uC0DD\uC99D\uC774 \uC788\uC5B4\uC694. \uC5EC\uAE30\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-031.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 22.8
+      },
+      claim: "\uB0A8\uC790\uB294 \uC790\uAE30 \uD45C\uB97C \uC0BC\uCC9C \uC6D0\uC5D0 \uC0B4 \uC218 \uC788\uC2B5\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uC5EC\uC790\uAC00 \u300C\uD559\uC0DD\uC99D\uC774 \uC788\uC73C\uBA74 \uC5B4\uB978\uB3C4 \uC544\uC774\uCC98\uB7FC \uC0BC\uCC9C \uC6D0\uC774\uC5D0\uC694\u300D\uB77C\uACE0 \uD588\uACE0, \uB0A8\uC790\uB294 \u300C\uC800\uB294 \uD559\uC0DD\uC99D\uC774 \uC788\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB0A8\uC790\uB294 \uC790\uAE30 \uD45C\uB97C \uC0BC\uCC9C \uC6D0\uC5D0 \uC0B4 \uC218 \uC788\uC5B4\uC694.",
+      conceptIds: [
+        "G401",
+        "G505",
+        "S204",
+        "S102"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "8a628cb6c35dd4816d75eccb3e106fad3ffb3e7e004eb563661de32d1eb747a1",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-032",
+      rev: 1,
+      sourceItemId: "ti-l-d-032",
+      sourceItemKey: "topik-items.ti-l-d-032.v1",
+      sourceHash: "4076247afb67fd192873878fb1b872e9112096355e091e8d79d19943fa215761",
+      familyKey: "topik-items.ti-l-d-032",
+      setId: null,
+      skillId: "ko.listening.condition",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC774\uBC88 \uB2EC \uB9C8\uC9C0\uB9C9 \uD1A0\uC694\uC77C\uC5D0 \uCEA0\uD551\uC7A5\uC744 \uC608\uC57D\uD558\uACE0 \uC2F6\uC5B4\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uBA87 \uBD84\uC774 \uC624\uC138\uC694? \uC5EC\uC12F \uBA85\uC774 \uB118\uC73C\uBA74 \uD070 \uC790\uB9AC\uB97C \uC4F0\uC154\uC57C \uD574\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC5B4\uB978 \uB2E4\uC12F \uBA85\uD558\uACE0 \uC544\uC774 \uB450 \uBA85\uC774\uC5D0\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uD070 \uC790\uB9AC\uB294 \uD558\uB8E8\uC5D0 \uD314\uB9CC \uC6D0\uC774\uACE0 \uC791\uC740 \uC790\uB9AC\uB294 \uC624\uB9CC \uC6D0\uC774\uC5D0\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC544\uC774\uB3C4 \uC0AC\uB78C \uC218\uC5D0 \uB4E4\uC5B4\uAC00\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uB124, \uC544\uC774\uB3C4 \uB611\uAC19\uC774 \uD55C \uBA85\uC774\uC5D0\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-032.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 22.8
+      },
+      claim: "\uB0A8\uC790\uB294 \uC791\uC740 \uC790\uB9AC\uB97C \uC624\uB9CC \uC6D0\uC5D0 \uC608\uC57D\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uC5EC\uC790\uAC00 \u300C\uC5EC\uC12F \uBA85\uC774 \uB118\uC73C\uBA74 \uD070 \uC790\uB9AC\uB97C \uC4F0\uC154\uC57C \uD574\uC694\u300D\uB77C\uACE0 \uD588\uACE0, \uB0A8\uC790\uB294 \u300C\uC5B4\uB978 \uB2E4\uC12F \uBA85\uD558\uACE0 \uC544\uC774 \uB450 \uBA85\uC774\uC5D0\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uC544\uC774\uB3C4 \u300C\uB611\uAC19\uC774 \uD55C \uBA85\uC774\uC5D0\uC694\u300D\uB77C\uC11C \uBAA8\uB450 \uC77C\uACF1 \uBA85\uC774\uB2C8\uAE4C \uB0A8\uC790\uB294 \uD558\uB8E8\uC5D0 \uD314\uB9CC \uC6D0\uC778 \uD070 \uC790\uB9AC\uB97C \uC368\uC57C \uD574\uC694.",
+      conceptIds: [
+        "G401",
+        "G403",
+        "G301",
+        "S109"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "92d631fd2e1b8d3949fde64a17284a93a5b3cff5a8d6f412f6f3a1518a625030",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-033",
+      rev: 1,
+      sourceItemId: "ti-l-d-033",
+      sourceItemKey: "topik-items.ti-l-d-033.v1",
+      sourceHash: "0d473ae625e9f1b26d0752b711788bd0783d4928a914bfbd5d6d43ab593c6e4b",
+      familyKey: "topik-items.ti-l-d-033",
+      setId: null,
+      skillId: "ko.listening.condition",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "delayed",
+      script: [
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uAE38\uC774 \uB9C9\uD600\uC11C \uB2A6\uC5C8\uC5B4\uC694. \uC9C0\uAE08 \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC5B4\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uACF5\uC5F0\uC774 \uC2DC\uC791\uD558\uBA74 \uC548\uC5D0 \uB4E4\uC5B4\uAC00\uC2E4 \uC218 \uC5C6\uC5B4\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uADF8\uB7FC \uD45C\uB97C \uBC14\uAFD4\uC57C \uD574\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC544\uB2C8\uC694, \uC26C\uB294 \uC2DC\uAC04\uC774 \uB418\uBA74 \uB4E4\uC5B4\uAC00\uC2E4 \uC218 \uC788\uC5B4\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC26C\uB294 \uC2DC\uAC04\uC740 \uC5B8\uC81C\uC608\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC624\uC2ED \uBD84 \uB4A4\uC608\uC694. \uADF8\uB3D9\uC548 \uC800 \uD654\uBA74\uC73C\uB85C \uBCF4\uC138\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-033.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 19.7
+      },
+      claim: "\uC5EC\uC790\uB294 \uC26C\uB294 \uC2DC\uAC04\uC774 \uB420 \uB54C\uAE4C\uC9C0 \uBC16\uC5D0\uC11C \uAE30\uB2E4\uB824\uC57C \uD569\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uB0A8\uC790\uAC00 \u300C\uACF5\uC5F0\uC774 \uC2DC\uC791\uD558\uBA74 \uC548\uC5D0 \uB4E4\uC5B4\uAC00\uC2E4 \uC218 \uC5C6\uC5B4\uC694\u300D\uB77C\uACE0 \uD558\uACE0, \u300C\uC26C\uB294 \uC2DC\uAC04\uC774 \uB418\uBA74 \uB4E4\uC5B4\uAC00\uC2E4 \uC218 \uC788\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uC5EC\uC790\uB294 \uC26C\uB294 \uC2DC\uAC04\uC774 \uB420 \uB54C\uAE4C\uC9C0 \uBC16\uC5D0\uC11C \uAE30\uB2E4\uB824\uC57C \uD574\uC694.",
+      conceptIds: [
+        "G401",
+        "G402",
+        "G308",
+        "G403"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "607781a0bd3acbd6d8acb8a6bf00a451365302ec2742b5c403ab5be81c3e8175",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-034",
+      rev: 1,
+      sourceItemId: "ti-l-d-034",
+      sourceItemKey: "topik-items.ti-l-d-034.v1",
+      sourceHash: "992be67980eeed10a6bf2e366b7e8cdc39a94a917131e092dbcff8fd4cbdffa2",
+      familyKey: "topik-items.ti-l-d-034",
+      setId: null,
+      skillId: "ko.listening.condition",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "delayed",
+      script: [
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC694\uB9AC \uC218\uC5C5\uC740 \uD55C \uB2EC\uC5D0 \uC5BC\uB9C8\uC608\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC774 \uB3D9\uB124\uC5D0 \uC0B4\uBA74 \uC774\uB9CC \uC6D0\uC774\uC5D0\uC694. \uB2E4\uB978 \uB3D9\uB124\uB294 \uC0AC\uB9CC \uC6D0\uC774\uC5D0\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC800\uB294 \uC9C0\uB09C\uC8FC\uC5D0 \uC774 \uB3D9\uB124\uB85C \uC774\uC0AC \uC654\uC5B4\uC694. \uD68C\uC0AC\uB294 \uB2E4\uB978 \uB3D9\uB124\uC5D0 \uC788\uACE0\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC218\uC5C5\uC740 \uB9E4\uC8FC \uC218\uC694\uC77C \uC800\uB141 \uC77C\uACF1 \uC2DC\uC608\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC88B\uC544\uC694. \uB2E4\uC74C \uB2EC\uBD80\uD130 \uB4E4\uC744\uAC8C\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-034.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 19.3
+      },
+      claim: "\uC5EC\uC790\uB294 \uD68C\uC0AC\uAC00 \uB2E4\uB978 \uB3D9\uB124\uC5D0 \uC788\uC5B4\uC11C \uC0AC\uB9CC \uC6D0\uC744 \uB0C5\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uB0A8\uC790\uB294 \u300C\uC774 \uB3D9\uB124\uC5D0 \uC0B4\uBA74 \uC774\uB9CC \uC6D0\uC774\uC5D0\uC694\u300D\uB77C\uACE0 \uD588\uACE0, \uC5EC\uC790\uB294 \u300C\uC9C0\uB09C\uC8FC\uC5D0 \uC774 \uB3D9\uB124\uB85C \uC774\uC0AC \uC654\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uC5EC\uC790\uB294 \uC774 \uB3D9\uB124\uC5D0 \uC0AC\uB2C8\uAE4C \uD55C \uB2EC\uC5D0 \uC774\uB9CC \uC6D0\uC744 \uB0B4\uC694.",
+      conceptIds: [
+        "G401",
+        "S114",
+        "G612",
+        "S104"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "a1613a36de7069cad873cb629800e29f9d45a3ad831b9ead3dea3bb64c14edfa",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-b-004",
+      rev: 1,
+      sourceItemId: "ti-l-b-004",
+      sourceItemKey: "topik-items.ti-l-b-004.v2",
+      sourceHash: "3bbaf5003286e43023f041c626cf251f6d16bab3ab4a558a730ca209e6b9f011",
+      familyKey: "topik-items.ti-l-b-004",
+      setId: null,
+      skillId: "ko.listening.reason",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC694\uC998 \uC65C \uB2A6\uAC8C\uAE4C\uC9C0 \uD559\uAD50\uC5D0 \uC788\uC5B4\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB2E4\uC74C \uC8FC\uC5D0 \uD55C\uAD6D\uC5B4 \uB9D0\uD558\uAE30 \uB300\uD68C\uAC00 \uC788\uC5B4\uC694. \uADF8\uB798\uC11C \uB9E4\uC77C \uC800\uB141\uC5D0 \uC5F0\uC2B5\uD574\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC640, \uADF8\uB798\uC694? \uB300\uD68C \uB0A0\uC5D0 \uC800\uB3C4 \uBCF4\uB7EC \uAC08\uAC8C\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-b-004.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 12.9
+      },
+      claim: "\uB0A8\uC790\uB294 \uB300\uD68C \uC5F0\uC2B5\uC744 \uD574\uC11C \uB2A6\uAC8C\uAE4C\uC9C0 \uD559\uAD50\uC5D0 \uC788\uC2B5\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uB0A8\uC790\uB294 \u300C\uB2E4\uC74C \uC8FC\uC5D0 \u2026 \uB9D0\uD558\uAE30 \uB300\uD68C\uAC00 \uC788\uC5B4\uC694. \uADF8\uB798\uC11C \uB9E4\uC77C \uC800\uB141\uC5D0 \uC5F0\uC2B5\uD574\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uB300\uD68C \uC5F0\uC2B5 \uB54C\uBB38\uC5D0 \uB2A6\uAC8C\uAE4C\uC9C0 \uD559\uAD50\uC5D0 \uC788\uC5B4\uC694. \uB300\uD68C\uB294 \uC544\uC9C1 \uD558\uC9C0 \uC54A\uC558\uC73C\uB2C8\uAE4C \uB300\uD68C\uAC00 \uB05D\uB098\uC11C \uB2A6\uAC8C\uAE4C\uC9C0 \uC788\uB2E4\uB294 \uC124\uBA85\uC740 \uD2C0\uB824\uC694.",
+      conceptIds: [
+        "G308"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "c60a363627961178a799f55b793ace931d50d8e16d5cdafcdeeaa6ee745b1048",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-b-008",
+      rev: 1,
+      sourceItemId: "ti-l-b-008",
+      sourceItemKey: "topik-items.ti-l-b-008.v1",
+      sourceHash: "7f3caf6457fd3e227ae4e4e7e0955d6fea9627b5ab2cb1d3b7f9f48c58369edd",
+      familyKey: "topik-items.ti-l-b-008",
+      setId: null,
+      skillId: "ko.listening.reason",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uD558\uC0B0 \uC528, \uC624\uB298\uC740 \uD0DD\uC2DC\uB97C \uD0C0\uACE0 \uC654\uC5B4\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB124, \uC800\uB294 \uBCF4\uD1B5 \uC9C0\uD558\uCCA0\uC744 \uD0C0\uC694. \uADF8\uB7F0\uB370 \uC624\uB298\uC740 \uAC00\uBC29\uC774 \uB108\uBB34 \uBB34\uAC70\uC6CC\uC11C \uD0DD\uC2DC\uB97C \uD0D4\uC5B4\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uAC00\uBC29\uC5D0 \uBB50\uAC00 \uC788\uC5B4\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uCC45\uC774 \uB9CE\uC774 \uC788\uC5B4\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-b-008.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 14.4
+      },
+      claim: "\uB0A8\uC790\uB294 \uAC00\uBC29\uC774 \uAC00\uBCBC\uC6CC\uC11C \uC624\uB298 \uD0DD\uC2DC\uB97C \uD0D4\uC2B5\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uCC45\uC774 \uB9CE\uC544 \uAC00\uBC29\uC774 \uB108\uBB34 \uBB34\uAC70\uC6E0\uAE30 \uB54C\uBB38\uC5D0 \uD0DD\uC2DC\uB97C \uD0D4\uC5B4\uC694. \uAC00\uBCBC\uC6CC\uC11C \uD0C4 \uAC83\uC774 \uC544\uB2C8\uC5D0\uC694.",
+      conceptIds: [
+        "G308"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "bc26db413eed902e72e117d65f2ec7999d8f51ad295a952b52bf5702081cabfe",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-b-012",
+      rev: 1,
+      sourceItemId: "ti-l-b-012",
+      sourceItemKey: "topik-items.ti-l-b-012.v2",
+      sourceHash: "001faf71cd22a2fe428f9f20202ee4e51199914072eb0a43dc0b5f366e32bbc8",
+      familyKey: "topik-items.ti-l-b-012",
+      setId: null,
+      skillId: "ko.listening.reason",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uCE74\uBC00\uB77C \uC528, \uC624\uB298 \uC800\uB141\uC5D0 \uAC19\uC774 \uAE40\uCE58\uCC0C\uAC1C\uB97C \uBA39\uC744\uAE4C\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uAE40\uCE58\uCC0C\uAC1C\uB294 \uB108\uBB34 \uB9E4\uC6CC\uC11C \uBABB \uBA39\uC5B4\uC694. \uAC08\uBE44\uB294 \uC5B4\uB54C\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC88B\uC544\uC694. \uADF8\uB7FC \uD559\uAD50 \uC55E \uC2DD\uB2F9\uC5D0 \uAC00\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-b-012.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 11.5
+      },
+      claim: "\uC5EC\uC790\uB294 \uAE40\uCE58\uCC0C\uAC1C\uAC00 \uB9E4\uC6CC\uC11C \uAC08\uBE44\uB97C \uBA39\uC2B5\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uC5EC\uC790\uB294 \u300C\uAE40\uCE58\uCC0C\uAC1C\uB294 \uB108\uBB34 \uB9E4\uC6CC\uC11C \uBABB \uBA39\uC5B4\uC694. \uAC08\uBE44\uB294 \uC5B4\uB54C\uC694?\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uAE40\uCE58\uCC0C\uAC1C\uAC00 \uB9E4\uC6CC\uC11C \uAC08\uBE44\uB97C \uBA39\uC5B4\uC694. \uB0A8\uC790\uB3C4 \u300C\uC88B\uC544\uC694\u300D\uB77C\uACE0 \uD588\uC73C\uB2C8\uAE4C \uB0A8\uC790\uAC00 \uAC08\uBE44\uB97C \uBA39\uC9C0 \uC54A\uB294\uB2E4\uB294 \uC124\uBA85\uC740 \uD2C0\uB824\uC694.",
+      conceptIds: [
+        "G308"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "e6bc4b7369dd353d4903c50183b59f9f642f30cbaf25a27b0829af6a430d9041",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-b-016",
+      rev: 1,
+      sourceItemId: "ti-l-b-016",
+      sourceItemKey: "topik-items.ti-l-b-016.v1",
+      sourceHash: "4c30cdcb7ecd3d414129c342eb00aabc11db4b38befdeabe2e1a2b2f485dd0fc",
+      familyKey: "topik-items.ti-l-b-016",
+      setId: null,
+      skillId: "ko.listening.reason",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uBC14\uC57C\uB974 \uC528, \uC694\uC998 \uC800\uB141\uC5D0 \uCDA4\uC744 \uBC30\uC6CC\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB124, \uC77C\uC8FC\uC77C\uC5D0 \uC138 \uBC88 \uBC30\uC6CC\uC694. \uC81C \uC544\uB0B4\uAC00 \uCDA4\uC744 \uC544\uC8FC \uC88B\uC544\uD574\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC544, \uADF8\uB798\uC11C \uAC19\uC774 \uBC30\uC6CC\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB124. \uADF8\uB7F0\uB370 \uC800\uB294 \uC544\uC9C1 \uC798 \uBABB \uCDB0\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-b-016.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 14.6
+      },
+      claim: "\uB0A8\uC790\uB294 \uC544\uB0B4\uAC00 \uCDA4\uC744 \uC2EB\uC5B4\uD574\uC11C \uD568\uAED8 \uCDA4\uC744 \uBC30\uC6C1\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uC544\uB0B4\uAC00 \uCDA4\uC744 \uC544\uC8FC \uC88B\uC544\uD574\uC11C \uD568\uAED8 \uBC30\uC6B0\uACE0 \uC788\uC5B4\uC694. \uC2EB\uC5B4\uD574\uC11C \uBC30\uC6B0\uB294 \uAC83\uC774 \uC544\uB2C8\uC5D0\uC694.",
+      conceptIds: [
+        "G308"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "6bba48edc745e2ee9c6403d1b2d4d48df2263341b9a5e2580ad425d75e92dc37",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-b-020",
+      rev: 1,
+      sourceItemId: "ti-l-b-020",
+      sourceItemKey: "topik-items.ti-l-b-020.v1",
+      sourceHash: "2a607c69c81c3d6ecce484fe2f2972740c5f38fd6a1a8ad06dd165f25a9594ed",
+      familyKey: "topik-items.ti-l-b-020",
+      setId: null,
+      skillId: "ko.listening.reason",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "delayed",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC9C0\uAE08 \uD154\uB808\uBE44\uC804\uC5D0\uC11C \uCD95\uAD6C\uB97C \uD574\uC694. \uAC19\uC774 \uBD10\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC544\uAE30\uAC00 \uC9C0\uAE08 \uC790\uC694. \uC18C\uB9AC\uB97C \uC791\uAC8C \uD558\uC138\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC544, \uBBF8\uC548\uD574\uC694. \uADF8\uB7FC \uC18C\uB9AC\uB97C \uB044\uACE0 \uBD10\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-b-020.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 11
+      },
+      claim: "\uB0A8\uC790\uB294 \uC544\uAE30\uAC00 \uC790\uC11C \uD154\uB808\uBE44\uC804 \uC18C\uB9AC\uB97C \uB055\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uC5EC\uC790\uB294 \u300C\uC544\uAE30\uAC00 \uC9C0\uAE08 \uC790\uC694. \uC18C\uB9AC\uB97C \uC791\uAC8C \uD558\uC138\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB0A8\uC790\uB294 \uC18C\uB9AC\uB97C \uB044\uACE0 \uD154\uB808\uBE44\uC804\uC744 \uBD10\uC694. \uC544\uAE30\uB294 \uC6B8\uC9C0 \uC54A\uACE0 \uC790\uB2C8\uAE4C \uC544\uAE30\uAC00 \uC6B8\uC5B4\uC11C \uD154\uB808\uBE44\uC804\uC744 \uB048\uB2E4\uB294 \uC124\uBA85\uC740 \uD2C0\uB824\uC694.",
+      conceptIds: [
+        "G308"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "cbc94a083bff69b053b324f4d12a0bb6ff82f6ac1d1d023953f31bffadc4971b",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-b-024",
+      rev: 1,
+      sourceItemId: "ti-l-b-024",
+      sourceItemKey: "topik-items.ti-l-b-024.v2",
+      sourceHash: "d730cb2c3b9147bf3198d34146f46646ed7cb2ace19694717653f55fef226117",
+      familyKey: "topik-items.ti-l-b-024",
+      setId: null,
+      skillId: "ko.listening.reason",
+      difficulty: 1,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "delayed",
+      script: [
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC694\uC998 \uC800\uB141\uC5D0 \uACF5\uC6D0\uC5D0 \uC790\uC8FC \uAC00\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB124, \uC694\uC998 \uB0AE\uC5D0\uB294 \uB108\uBB34 \uB354\uC6CC\uC694. \uADF8\uB798\uC11C \uC800\uB141\uC5D0 \uC0B0\uCC45\uC744 \uD574\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC544, \uADF8\uB7FC \uC800\uB3C4 \uB0B4\uC77C\uBD80\uD130 \uAC19\uC774 \uD560\uAC8C\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-b-024.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 13.1
+      },
+      claim: "\uB0A8\uC790\uB294 \uB0AE\uC5D0 \uB108\uBB34 \uCD94\uC6CC\uC11C \uC800\uB141\uC5D0 \uC0B0\uCC45\uC744 \uD569\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uB0AE\uC5D0 \uB108\uBB34 \uB354\uC6CC\uC11C \uC800\uB141\uC5D0 \uC0B0\uCC45\uD574\uC694. \uCD94\uC6CC\uC11C \uC2DC\uAC04\uC744 \uBC14\uAFBC \uAC83\uC774 \uC544\uB2C8\uC5D0\uC694.",
+      conceptIds: [
+        "G308"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "a5ef22e7dce056b44e521151582debae7f9c3435abeabbc3011eb99eab504b3b",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-025",
+      rev: 1,
+      sourceItemId: "ti-l-d-025",
+      sourceItemKey: "topik-items.ti-l-d-025.v1",
+      sourceHash: "7fb8d5f848f0c3134330c2cfb45184954616976ede9583fd143f9cf18bcdb481",
+      familyKey: "topik-items.ti-l-d-025",
+      setId: null,
+      skillId: "ko.listening.reason",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uBBF8\uB098 \uC528, \uBA38\uB9AC\uB97C \uC9E7\uAC8C \uC798\uB790\uB124\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uB124, \uC694\uC998 \uC544\uCE68\uB9C8\uB2E4 \uC218\uC601\uC744 \uBC30\uC6B0\uACE0 \uC788\uC5B4\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uADF8\uB798\uC11C \uC798\uB790\uC5B4\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uB124, \uBA38\uB9AC\uAC00 \uAE38\uBA74 \uC218\uC601\uD558\uACE0 \uB098\uC11C \uB9D0\uB9AC\uAE30\uAC00 \uD798\uB4E4\uC5B4\uC694. \uADF8\uB798\uC11C \uD68C\uC0AC\uC5D0 \uC790\uC8FC \uB2A6\uC5C8\uC5B4\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB0A0\uC528\uAC00 \uB354\uC6CC\uC11C \uC790\uB978 \uAC70 \uC544\uB2C8\uC5D0\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uB354\uC6B4 \uAC74 \uAD1C\uCC2E\uC544\uC694. \uBA38\uB9AC\uB97C \uB9D0\uB9AC\uB294 \uAC8C \uD798\uB4E4\uC5B4\uC11C \uC798\uB790\uC5B4\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-025.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 25
+      },
+      claim: "\uC5EC\uC790\uB294 \uAE34 \uBA38\uB9AC\uB97C \uBE68\uB9AC \uB9D0\uB9B4 \uC218 \uC5C6\uC5B4\uC11C \uC798\uB790\uC2B5\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uC5EC\uC790\uB294 \u300C\uBA38\uB9AC\uAC00 \uAE38\uBA74 \uC218\uC601\uD558\uACE0 \uB098\uC11C \uB9D0\uB9AC\uAE30\uAC00 \uD798\uB4E4\uC5B4\uC694\u300D\uB77C\uACE0 \uD558\uACE0, \u300C\uBA38\uB9AC\uB97C \uB9D0\uB9AC\uB294 \uAC8C \uD798\uB4E4\uC5B4\uC11C \uC798\uB790\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uAE34 \uBA38\uB9AC\uB97C \uBE68\uB9AC \uB9D0\uB9B4 \uC218 \uC5C6\uC5B4\uC11C \uC790\uB978 \uAC70\uC608\uC694.",
+      conceptIds: [
+        "G411",
+        "G409",
+        "S202",
+        "G401",
+        "S215",
+        "G308"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "4a02791acf39817442d4600fe97b1655157b764ce1e8a8f3a1e77c406a6f04e5",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-026",
+      rev: 1,
+      sourceItemId: "ti-l-d-026",
+      sourceItemKey: "topik-items.ti-l-d-026.v1",
+      sourceHash: "9726a475fd7d1dd789c249e5ef14e65a67ea7628b0978e6d3aecc8d616a29e5c",
+      familyKey: "topik-items.ti-l-d-026",
+      setId: null,
+      skillId: "ko.listening.reason",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC0AC\uB77C \uC528, \uC694\uC998\uB3C4 \uD3B8\uC758\uC810\uC5D0\uC11C \uC77C\uD574\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC544\uB2C8\uC694, \uD3B8\uC758\uC810\uC740 \uADF8\uB9CC\uB450\uACE0 \uC9C0\uB09C\uB2EC\uBD80\uD130 \uBE75\uC9D1\uC5D0\uC11C \uC77C\uD574\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC65C \uBC14\uAFE8\uC5B4\uC694? \uD3B8\uC758\uC810\uC740 \uC9D1\uC5D0\uC11C \uAC00\uAE5D\uC9C0 \uC54A\uC544\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uAC00\uAE4C\uC6E0\uC5B4\uC694. \uADF8\uB7F0\uB370 \uBC24\uC5D0 \uC77C\uD574\uC57C \uD574\uC11C \uB108\uBB34 \uD53C\uACE4\uD588\uC5B4\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uBE75\uC9D1\uC740 \uB0AE\uC5D0 \uC77C\uD574\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uB124, \uC544\uCE68 \uC77C\uACF1 \uC2DC\uBD80\uD130 \uC624\uD6C4 \uD55C \uC2DC\uAE4C\uC9C0\uC608\uC694. \uB3C8\uC740 \uC870\uAE08 \uC801\uC9C0\uB9CC \uBC24\uC5D0 \uC798 \uC218 \uC788\uC73C\uB2C8\uAE4C \uC88B\uC544\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-026.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 29.1
+      },
+      claim: "\uC5EC\uC790\uB294 \uB3C8\uC744 \uB354 \uB9CE\uC774 \uBC8C\uB824\uACE0 \uD3B8\uC758\uC810\uC5D0\uC11C \uBE75\uC9D1\uC73C\uB85C \uC62E\uACBC\uC2B5\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uD3B8\uC758\uC810\uC5D0\uC11C \uBC24\uC5D0 \uC77C\uD558\uB294 \uAC83\uC774 \uB108\uBB34 \uD53C\uACE4\uD574\uC11C \uC62E\uACBC\uC5B4\uC694. \uBE75\uC9D1\uC5D0\uC11C \uBC1B\uB294 \uB3C8\uC740 \uC624\uD788\uB824 \uC870\uAE08 \uC801\uC5B4\uC694.",
+      conceptIds: [
+        "G403",
+        "G308",
+        "G307",
+        "G410",
+        "G402",
+        "S104"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "786b22605043a18def4cfedc2b3eacbbc8ca7c2f612304ea2cf6bf446fd9ab51",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-027",
+      rev: 1,
+      sourceItemId: "ti-l-d-027",
+      sourceItemKey: "topik-items.ti-l-d-027.v1",
+      sourceHash: "135a637036ef74a94c01279e1daa8d1980fe16f8281e3e72033ed545d5c63077",
+      familyKey: "topik-items.ti-l-d-027",
+      setId: null,
+      skillId: "ko.listening.reason",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB9C8\uB9AC\uC544 \uC528, \uC65C \uC774\uB807\uAC8C \uB2A6\uC5C8\uC5B4\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uBBF8\uC548\uD574\uC694. \uC9C0\uD558\uCCA0\uC744 \uBC18\uB300\uB85C \uD0C0\uC11C \uB2E4\uC12F \uC815\uAC70\uC7A5\uC774\uB098 \uAC14\uC5B4\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB2A6\uAC8C \uC77C\uC5B4\uB0AC\uC5B4\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC544\uB2C8\uC694, \uC77C\uCC0D \uB098\uC654\uC5B4\uC694. \uADF8\uB7F0\uB370 \uD734\uB300\uD3F0\uC744 \uBCF4\uB2E4\uAC00 \uC798\uBABB \uD0D4\uC5B4\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uAD1C\uCC2E\uC544\uC694. \uC601\uD654\uB294 \uC544\uC9C1 \uC2DC\uC791 \uC548 \uD588\uC5B4\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uB2E4\uD589\uC774\uC5D0\uC694. \uBE68\uB9AC \uB4E4\uC5B4\uAC00\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-027.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 22.8
+      },
+      claim: "\uC5EC\uC790\uB294 \uB2E4\uB978 \uBC29\uD5A5\uC73C\uB85C \uAC00\uB294 \uC9C0\uD558\uCCA0\uC744 \uD0C0\uC11C \uB2A6\uC5C8\uC2B5\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uC5EC\uC790\uB294 \u300C\uC9C0\uD558\uCCA0\uC744 \uBC18\uB300\uB85C \uD0C0\uC11C \uB2E4\uC12F \uC815\uAC70\uC7A5\uC774\uB098 \uAC14\uC5B4\uC694\u300D\uB77C\uACE0 \uD558\uACE0, \u300C\uD734\uB300\uD3F0\uC744 \uBCF4\uB2E4\uAC00 \uC798\uBABB \uD0D4\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB2E4\uB978 \uBC29\uD5A5\uC73C\uB85C \uAC00\uB294 \uC9C0\uD558\uCCA0\uC744 \uD0C0\uC11C \uB2A6\uC5C8\uC5B4\uC694.",
+      conceptIds: [
+        "G308",
+        "S214",
+        "G209"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "b622f82f7ed7220c715f35996fdcd641615e86fb295d97aa417f27454a68bd2c",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-d-028",
+      rev: 1,
+      sourceItemId: "ti-l-d-028",
+      sourceItemKey: "topik-items.ti-l-d-028.v1",
+      sourceHash: "5bdafcd0ec8a4355fd12b0ae9c66fec7a830e621f35f35b4d5d6ac2897b9bf45",
+      familyKey: "topik-items.ti-l-d-028",
+      setId: null,
+      skillId: "ko.listening.reason",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "practice",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC9C0\uC601 \uC528, \uC624\uB298\uB3C4 \uB3C4\uC2DC\uB77D\uC744 \uC2F8 \uC654\uC5B4\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uB124, \uC774\uBC88 \uB2EC\uBD80\uD130 \uB9E4\uC77C \uC2F8 \uC640\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB3C8\uC744 \uC544\uB07C\uB824\uACE0\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC544\uB2C8\uC694, \uB3C8 \uB54C\uBB38\uC774 \uC544\uB2C8\uC5D0\uC694. \uD68C\uC0AC \uC2DD\uB2F9 \uC74C\uC2DD\uC774 \uC800\uD55C\uD14C\uB294 \uB108\uBB34 \uC9DC\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uADF8\uB798\uC694? \uC800\uB294 \uB9DB\uC788\uB294\uB370\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC800\uB294 \uC694\uC998 \uC9E0 \uC74C\uC2DD\uC744 \uC870\uC2EC\uD574\uC57C \uD574\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-d-028.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 21.5
+      },
+      claim: "\uC5EC\uC790\uB294 \uB3C8\uC744 \uC544\uB07C\uB824\uACE0 \uB3C4\uC2DC\uB77D\uC744 \uAC00\uC9C0\uACE0 \uC635\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uC5EC\uC790\uB294 \u300C\uD68C\uC0AC \uC2DD\uB2F9 \uC74C\uC2DD\uC774 \uC800\uD55C\uD14C\uB294 \uB108\uBB34 \uC9DC\uC694\u300D\uB77C\uACE0 \uD558\uACE0, \u300C\uC9E0 \uC74C\uC2DD\uC744 \uC870\uC2EC\uD574\uC57C \uD574\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uC9E0 \uC74C\uC2DD\uC744 \uBA39\uC9C0 \uC54A\uC73C\uB824\uACE0 \uB3C4\uC2DC\uB77D\uC744 \uC2F8 \uC640\uC694.",
+      conceptIds: [
+        "G405",
+        "G610",
+        "G403",
+        "G209"
+      ],
+      sourceOfficialType: "TI-L-17",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "f2e39e2cd8e4a31f6390e6283487180a6705b65176f58cb9e00f6fb0db7f3298",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-e-013",
+      rev: 1,
+      sourceItemId: "ti-l-e-013",
+      sourceItemKey: "topik-items.ti-l-e-013.v1",
+      sourceHash: "95ec6a6b618e5dc121956c44a7f68c7ff13f54688e140015d1e146d59b19bbc1",
+      familyKey: "topik-items.ti-l-e-013",
+      setId: "ti-l-e-s07",
+      skillId: "ko.listening.reason",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "delayed",
+      script: [
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uB124, \uBCD1\uC6D0\uC785\uB2C8\uB2E4."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB0B4\uC77C \uC624\uD6C4 \uC138 \uC2DC\uC5D0 \uC608\uC57D\uD55C \uAE40\uBBFC\uC218\uC778\uB370\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uB124, \uAE40\uBBFC\uC218 \uC528. \uBB34\uC2A8 \uC77C\uC774\uC138\uC694?"
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uB0B4\uC77C \uC624\uD6C4\uC5D0 \uAC11\uC790\uAE30 \uD68C\uC758\uAC00 \uC0DD\uACBC\uC5B4\uC694. \uC608\uC57D\uC744 \uBC14\uAFC0 \uC218 \uC788\uC5B4\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uB0B4\uC77C\uC740 \uB2E4\uC12F \uC2DC \uBC18\uC5D0 \uC790\uB9AC\uAC00 \uC788\uC5B4\uC694. \uC544\uB2C8\uBA74 \uB2E4\uC74C \uC8FC \uD654\uC694\uC77C \uC624\uC804 \uC5F4 \uC2DC\uB3C4 \uAD1C\uCC2E\uC544\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uD68C\uC758\uAC00 \uB2A6\uAC8C \uB05D\uB0A0 \uC218\uB3C4 \uC788\uC5B4\uC694. \uD654\uC694\uC77C \uC624\uC804\uC73C\uB85C \uD574 \uC8FC\uC138\uC694."
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uB124, \uB2E4\uC74C \uC8FC \uD654\uC694\uC77C \uC624\uC804 \uC5F4 \uC2DC\uB85C \uBC14\uAFE8\uC5B4\uC694. \uC2ED \uBD84 \uC77C\uCC0D \uC624\uC138\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-e-s07.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 30.4
+      },
+      claim: "\uB0A8\uC790\uB294 \uB0B4\uC77C \uC624\uD6C4\uC5D0 \uD68C\uC758\uC5D0 \uAC00\uC57C \uD574\uC11C \uBCD1\uC6D0 \uC608\uC57D\uC744 \uBC14\uAFC9\uB2C8\uB2E4.",
+      answer: "O",
+      explanation: "\uB0B4\uC77C \uC624\uD6C4\uC5D0 \uAC11\uC790\uAE30 \uD68C\uC758\uAC00 \uC0DD\uACBC\uAE30 \uB54C\uBB38\uC5D0 \uBCD1\uC6D0 \uC608\uC57D\uC744 \uB2E4\uC74C \uC8FC \uD654\uC694\uC77C \uC624\uC804\uC73C\uB85C \uBC14\uAFE8\uC5B4\uC694.",
+      conceptIds: [
+        "G308",
+        "G403"
+      ],
+      sourceOfficialType: "TI-L-29",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "bf2791fcf07b62d3c7feeb14245eaf121d778a14488d8e6ae20a3cb5f5822de6",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    },
+    {
+      id: "rhythm-transfer-ti-l-e-015",
+      rev: 1,
+      sourceItemId: "ti-l-e-015",
+      sourceItemKey: "topik-items.ti-l-e-015.v1",
+      sourceHash: "60e0d405db67ff188dc5aeee1ec4172afa659d0cf214d97c0807bba9cf428fb0",
+      familyKey: "topik-items.ti-l-e-015",
+      setId: "ti-l-e-s08",
+      skillId: "ko.listening.reason",
+      difficulty: 2,
+      modality: "listening",
+      responseFormat: "binary-choice",
+      audioRequired: true,
+      role: "delayed",
+      script: [
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uC0AC\uC7A5\uB2D8, \uC804\uC5D0\uB294 \uC740\uD589\uC5D0\uC11C \uC77C\uD558\uC168\uC9C0\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uB124, \uC740\uD589\uC5D0\uC11C \uC624 \uB144 \uB3D9\uC548 \uC77C\uD588\uC5B4\uC694. \uB3C8\uB3C4 \uC9C0\uAE08\uBCF4\uB2E4 \uB9CE\uC774 \uBC8C\uC5C8\uC5B4\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uADF8\uB7F0\uB370 \uC65C \uBE75\uC9D1\uC744 \uC2DC\uC791\uD558\uC168\uC5B4\uC694? \uBE75\uC744 \uC88B\uC544\uD574\uC11C\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC544\uB2C8\uC694, \uBE75\uC740 \uBCC4\uB85C \uC548 \uC88B\uC544\uD574\uC694. \uC81C \uBE75\uC744 \uBA39\uACE0 \uC0AC\uB78C\uB4E4\uC774 \uC6C3\uB294 \uAC8C \uC88B\uC558\uC5B4\uC694."
+        },
+        {
+          speaker: "\uB0A8\uC790",
+          text: "\uBE75\uC9D1\uC740 \uB9E4\uC77C \uBB38\uC744 \uC5F4\uC5B4\uC694?"
+        },
+        {
+          speaker: "\uC5EC\uC790",
+          text: "\uC804\uC5D0\uB294 \uB9E4\uC77C \uC5F4\uC5C8\uB294\uB370 \uC9C0\uAE08\uC740 \uC77C\uC694\uC77C\uC5D0 \uC26C\uC5B4\uC694. \uC77C\uC694\uC77C\uC5D0\uB294 \uC544\uC774\uC640 \uAC19\uC774 \uC2DC\uAC04\uC744 \uBCF4\uB0B4\uC694."
+        }
+      ],
+      audio: {
+        file: "audio/ti-l-e-s08.mp3",
+        plays: 2,
+        status: "ready",
+        voices: {
+          \uB0A8\uC790: "\uBC94\uC218",
+          \uC5EC\uC790: "\uD558\uB098"
+        },
+        seconds: 30.3
+      },
+      claim: "\uC5EC\uC790\uB294 \uBE75\uC744 \uBA39\uB294 \uAC83\uC744 \uC544\uC8FC \uC88B\uC544\uD574\uC11C \uBE75\uC9D1\uC744 \uC2DC\uC791\uD588\uC2B5\uB2C8\uB2E4.",
+      answer: "X",
+      explanation: "\uC5EC\uC790\uB294 \uBE75\uC744 \uBCC4\uB85C \uC88B\uC544\uD558\uC9C0 \uC54A\uC544\uC694. \uC0AC\uB78C\uB4E4\uC774 \uC790\uC2E0\uC758 \uBE75\uC744 \uBA39\uACE0 \uC6C3\uB294 \uAC83\uC774 \uC88B\uC544\uC11C \uBE75\uC9D1\uC744 \uC2DC\uC791\uD588\uC5B4\uC694.",
+      conceptIds: [
+        "G308"
+      ],
+      sourceOfficialType: "TI-L-29",
+      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
+      review: {
+        status: "passed",
+        task: "atlas-world-learning-20261028",
+        hash: "f5bb6c448bdd6a1e5a52c0055a16687d49c3ec644aa8f67156951fe0081d58ba",
+        reviewer: "/root",
+        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
+      }
+    }
+  ]
+};
+
+// experiences/topik-items/review/holdout-20261028.json
+var holdout_20261028_default = {
+  version: "atlas-holdout-20261028",
+  purpose: "\uC9C0\uC5F0 \uD655\uC778 \uC804\uC6A9. \uC77C\uBC18 \uC9C4\uB2E8\xB7\uC5F0\uC2B5\xB7\uAC8C\uC784\xB7\uBCF5\uC2B5\xB7\uC2DC\uD5D8\uC5D0\uC11C family \uB610\uB294 set\uAC00 \uAC19\uC740 \uC6D0\uBB38\uB3C4 \uC81C\uC678\uD55C\uB2E4. \uACFC\uAC70\uC5D0 \uB178\uCD9C\uB41C \uACC4\uC815\uC5D0\uB294 \uC0C8 \uBB38\uD56D\uC73C\uB85C \uACF5\uAE09\uD558\uC9C0 \uC54A\uB294\uB2E4.",
+  items: [
+    {
+      sourceItemId: "ti-l-b-032",
+      sourceItemKey: "topik-items.ti-l-b-032.v2",
+      familyKey: "topik-items.ti-l-b-032",
+      setId: null,
+      sourceHash: "b8ccb6c64ece77306a465d35e37e1735013b5fbbfa0df2ee0e5c286f63a6a313",
+      skillId: "ko.listening.detail",
+      difficulty: 1,
+      exposurePeers: [
+        {
+          itemKey: "topik-items.ti-l-b-032.v2",
+          familyKey: "topik-items.ti-l-b-032"
+        }
+      ]
+    },
+    {
+      sourceItemId: "ti-l-a-009",
+      sourceItemKey: "topik-items.ti-l-a-009.v1",
+      familyKey: "topik-items.ti-l-a-009",
+      setId: null,
+      sourceHash: "6df4e7d870bc626e9e3b9007b5df469e34310c4b0710cc7f2f7c4e79a0299f11",
+      skillId: "ko.listening.detail",
+      difficulty: 1,
+      exposurePeers: [
+        {
+          itemKey: "topik-items.ti-l-a-009.v1",
+          familyKey: "topik-items.ti-l-a-009"
+        }
+      ]
+    },
+    {
+      sourceItemId: "ti-l-d-001",
+      sourceItemKey: "topik-items.ti-l-d-001.v1",
+      familyKey: "topik-items.ti-l-d-001",
+      setId: null,
+      sourceHash: "049f8eebe5caba92df956986848682dee289bf7e9bd309834a36129e6f29a6ab",
+      skillId: "ko.listening.detail",
+      difficulty: 2,
+      exposurePeers: [
+        {
+          itemKey: "topik-items.ti-l-d-001.v1",
+          familyKey: "topik-items.ti-l-d-001"
+        }
+      ]
+    },
+    {
+      sourceItemId: "ti-l-d-002",
+      sourceItemKey: "topik-items.ti-l-d-002.v1",
+      familyKey: "topik-items.ti-l-d-002",
+      setId: null,
+      sourceHash: "b20bef904916da036a13d894c7da6ac8f2d8da2cc688a4cce563f218d901c4a7",
+      skillId: "ko.listening.detail",
+      difficulty: 2,
+      exposurePeers: [
+        {
+          itemKey: "topik-items.ti-l-d-002.v1",
+          familyKey: "topik-items.ti-l-d-002"
+        }
+      ]
+    },
+    {
+      sourceItemId: "ti-l-b-013",
+      sourceItemKey: "topik-items.ti-l-b-013.v2",
+      familyKey: "topik-items.ti-l-b-013",
+      setId: null,
+      sourceHash: "0051e7f86fc3925bb4c8472d553316da58169337c7c574f1769e9f8f64647baf",
+      skillId: "ko.listening.negation",
+      difficulty: 1,
+      exposurePeers: [
+        {
+          itemKey: "topik-items.ti-l-b-013.v2",
+          familyKey: "topik-items.ti-l-b-013"
+        }
+      ]
+    },
+    {
+      sourceItemId: "ti-l-b-017",
+      sourceItemKey: "topik-items.ti-l-b-017.v2",
+      familyKey: "topik-items.ti-l-b-017",
+      setId: null,
+      sourceHash: "ab9b29a96a0f43235aee66ff6e117dca53e20ae273f9c93211fa97b84739397b",
+      skillId: "ko.listening.negation",
+      difficulty: 1,
+      exposurePeers: [
+        {
+          itemKey: "topik-items.ti-l-b-017.v2",
+          familyKey: "topik-items.ti-l-b-017"
+        }
+      ]
+    },
+    {
+      sourceItemId: "ti-l-d-017",
+      sourceItemKey: "topik-items.ti-l-d-017.v1",
+      familyKey: "topik-items.ti-l-d-017",
+      setId: null,
+      sourceHash: "32d5570013c6def4cf78e60492de92b8bc9960b1db30c0de248c1bd1f52d4a0d",
+      skillId: "ko.listening.negation",
+      difficulty: 2,
+      exposurePeers: [
+        {
+          itemKey: "topik-items.ti-l-d-017.v1",
+          familyKey: "topik-items.ti-l-d-017"
+        }
+      ]
+    },
+    {
+      sourceItemId: "ti-l-d-018",
+      sourceItemKey: "topik-items.ti-l-d-018.v1",
+      familyKey: "topik-items.ti-l-d-018",
+      setId: null,
+      sourceHash: "1609fa60c4ac1647d73bddb018ca9de85e2304f3ed30f4a7a9e335ea52beafcb",
+      skillId: "ko.listening.negation",
+      difficulty: 2,
+      exposurePeers: [
+        {
+          itemKey: "topik-items.ti-l-d-018.v1",
+          familyKey: "topik-items.ti-l-d-018"
+        }
+      ]
+    },
+    {
+      sourceItemId: "ti-l-c-018",
+      sourceItemKey: "topik-items.ti-l-c-018.v1",
+      familyKey: "topik-items.ti-l-c-018",
+      setId: null,
+      sourceHash: "ed2a6761ae6fe9f757378c83b5394ff3182a53f50970ad29d809d5dfc5b8a864",
+      skillId: "ko.listening.condition",
+      difficulty: 1,
+      exposurePeers: [
+        {
+          itemKey: "topik-items.ti-l-c-018.v1",
+          familyKey: "topik-items.ti-l-c-018"
+        }
+      ]
+    },
+    {
+      sourceItemId: "ti-l-c-019",
+      sourceItemKey: "topik-items.ti-l-c-019.v1",
+      familyKey: "topik-items.ti-l-c-019",
+      setId: null,
+      sourceHash: "abc827e637af22621d1f060561998e64890fd68f3d3c307f5b362bdda86e0427",
+      skillId: "ko.listening.condition",
+      difficulty: 1,
+      exposurePeers: [
+        {
+          itemKey: "topik-items.ti-l-c-019.v1",
+          familyKey: "topik-items.ti-l-c-019"
+        }
+      ]
+    },
+    {
+      sourceItemId: "ti-l-d-033",
+      sourceItemKey: "topik-items.ti-l-d-033.v1",
+      familyKey: "topik-items.ti-l-d-033",
+      setId: null,
+      sourceHash: "0d473ae625e9f1b26d0752b711788bd0783d4928a914bfbd5d6d43ab593c6e4b",
+      skillId: "ko.listening.condition",
+      difficulty: 2,
+      exposurePeers: [
+        {
+          itemKey: "topik-items.ti-l-d-033.v1",
+          familyKey: "topik-items.ti-l-d-033"
+        }
+      ]
+    },
+    {
+      sourceItemId: "ti-l-d-034",
+      sourceItemKey: "topik-items.ti-l-d-034.v1",
+      familyKey: "topik-items.ti-l-d-034",
+      setId: null,
+      sourceHash: "992be67980eeed10a6bf2e366b7e8cdc39a94a917131e092dbcff8fd4cbdffa2",
+      skillId: "ko.listening.condition",
+      difficulty: 2,
+      exposurePeers: [
+        {
+          itemKey: "topik-items.ti-l-d-034.v1",
+          familyKey: "topik-items.ti-l-d-034"
+        }
+      ]
+    },
+    {
+      sourceItemId: "ti-l-b-020",
+      sourceItemKey: "topik-items.ti-l-b-020.v1",
+      familyKey: "topik-items.ti-l-b-020",
+      setId: null,
+      sourceHash: "2a607c69c81c3d6ecce484fe2f2972740c5f38fd6a1a8ad06dd165f25a9594ed",
+      skillId: "ko.listening.reason",
+      difficulty: 1,
+      exposurePeers: [
+        {
+          itemKey: "topik-items.ti-l-b-020.v1",
+          familyKey: "topik-items.ti-l-b-020"
+        }
+      ]
+    },
+    {
+      sourceItemId: "ti-l-b-024",
+      sourceItemKey: "topik-items.ti-l-b-024.v2",
+      familyKey: "topik-items.ti-l-b-024",
+      setId: null,
+      sourceHash: "d730cb2c3b9147bf3198d34146f46646ed7cb2ace19694717653f55fef226117",
+      skillId: "ko.listening.reason",
+      difficulty: 1,
+      exposurePeers: [
+        {
+          itemKey: "topik-items.ti-l-b-024.v2",
+          familyKey: "topik-items.ti-l-b-024"
+        }
+      ]
+    },
+    {
+      sourceItemId: "ti-l-e-013",
+      sourceItemKey: "topik-items.ti-l-e-013.v1",
+      familyKey: "topik-items.ti-l-e-013",
+      setId: "ti-l-e-s07",
+      sourceHash: "95ec6a6b618e5dc121956c44a7f68c7ff13f54688e140015d1e146d59b19bbc1",
+      skillId: "ko.listening.reason",
+      difficulty: 2,
+      exposurePeers: [
+        {
+          itemKey: "topik-items.ti-l-e-013.v1",
+          familyKey: "topik-items.ti-l-e-013"
+        },
+        {
+          itemKey: "topik-items.ti-l-e-014.v1",
+          familyKey: "topik-items.ti-l-e-014"
+        }
+      ]
+    },
+    {
+      sourceItemId: "ti-l-e-015",
+      sourceItemKey: "topik-items.ti-l-e-015.v1",
+      familyKey: "topik-items.ti-l-e-015",
+      setId: "ti-l-e-s08",
+      sourceHash: "60e0d405db67ff188dc5aeee1ec4172afa659d0cf214d97c0807bba9cf428fb0",
+      skillId: "ko.listening.reason",
+      difficulty: 2,
+      exposurePeers: [
+        {
+          itemKey: "topik-items.ti-l-e-015.v1",
+          familyKey: "topik-items.ti-l-e-015"
+        },
+        {
+          itemKey: "topik-items.ti-l-e-016.v1",
+          familyKey: "topik-items.ti-l-e-016"
+        }
+      ]
+    }
+  ]
+};
+
+// experiences/topik-items/holdout.mjs
+var HOLDOUT = Object.freeze(holdout_20261028_default.items.map((item) => Object.freeze({ ...item })));
+var families = new Set(HOLDOUT.map((item) => item.familyKey));
+var sets = new Set(HOLDOUT.map((item) => item.setId).filter(Boolean));
+
+// experiences/korean-rhythm/supplemental.mjs
+function presented(item) {
+  const itemKey = `korean-rhythm.${item.id}.v${item.rev}`;
+  return Object.freeze({
+    id: item.id,
+    itemKey,
+    familyKey: item.familyKey,
+    setId: item.setId || null,
+    skillId: item.skillId,
+    difficulty: item.difficulty,
+    modality: "listening",
+    responseFormat: "binary-choice",
+    audioRequired: true,
+    confounded: false,
+    conceptIds: [...item.conceptIds || []],
+    source: "korean-rhythm",
+    sourceItemKey: item.sourceItemKey,
+    supplyRole: item.role,
+    audio: `topik-items/${item.audio.file}`,
+    plays: item.audio.plays,
+    seconds: item.audio.seconds,
+    script: item.script,
+    prompt: null,
+    question: `\uB2E4\uC74C \uC124\uBA85\uC774 \uB300\uD654\uC758 \uB0B4\uC6A9\uACFC \uB9DE\uB098\uC694?
+${item.claim}`,
+    choices: [{ id: `${itemKey}.O`, label: "O \xB7 \uB9DE\uC544\uC694" }, { id: `${itemKey}.X`, label: "X \xB7 \uB2EC\uB77C\uC694" }],
+    correctId: `${itemKey}.${item.answer}`,
+    explanation: { ko: item.explanation },
+    choiceNotes: [],
+    label: item.claim,
+    exposurePeers: HOLDOUT.find((row) => row.sourceItemId === item.sourceItemId)?.exposurePeers || [{ itemKey: item.sourceItemKey, familyKey: item.familyKey }]
+  });
+}
+function supplementalItems({ purpose = "practice", seen, skillId, difficulty } = {}) {
+  if (!["practice", "delayed"].includes(purpose)) throw TypeError("unknown supplemental purpose");
+  const pool = supplemental_default.items.filter((item) => item.review?.status === "passed" && item.role === purpose && item.audio?.status === "ready").filter((item) => (!skillId || item.skillId === skillId) && (difficulty == null || item.difficulty === difficulty)).map(presented);
+  if (purpose === "practice") return Object.freeze(pool);
+  if (typeof seen !== "function") return Object.freeze([]);
+  return Object.freeze(pool.filter((item) => {
+    try {
+      return seen(item) === false && item.exposurePeers.every((peer) => seen(peer) === false);
+    } catch {
+      return false;
+    }
+  }));
+}
+
 // experiences/korean-rhythm/personalization.mjs
 var SKILLS = [["detail", "detail", "negation", "negation", "negation"], ["reason", "detail", "reason", "detail", "reason"], ["condition", "detail", "detail", "detail", "detail"]];
 var DIFFICULTY = Object.freeze([[1, 1, 1, 1, 1], [1, 1, 2, 1, 2], [2, 2, 2, 2, 2]].map((row) => Object.freeze(row)));
@@ -16874,6 +20188,16 @@ var RHYTHM_CANDIDATES = TRACKS.map((track) => ({
   familyKeys: track.questions.map((_, i) => `korean-rhythm:t${track.id}q${i}:v1`),
   conceptIds: [...new Set((RHYTHM_GRAMMAR[track.id] || []).flatMap(([passage]) => passage))]
 }));
+var RETURN_PATTERNS2 = Object.freeze({
+  detail: { why: "\uC9C0\uB09C \uACE1\uC5D0\uC11C \uC2DC\uAC04\uC774\uB098 \uC7A5\uC18C \uAC19\uC740 \uC138\uBD80 \uB0B4\uC6A9\uC744 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694." },
+  negation: { why: "\uC9C0\uB09C \uACE1\uC5D0\uC11C \uC544\uB2C8\uB77C\uACE0 \uD558\uAC70\uB098 \uBC14\uB00C\uC5C8\uB2E4\uACE0 \uD558\uB294 \uB9D0\uC744 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694." },
+  reason: { why: "\uC9C0\uB09C \uACE1\uC5D0\uC11C \uC65C \uADF8\uB7F0\uC9C0 \uB9D0\uD558\uB294 \uC774\uC720\uB97C \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694." },
+  condition: { why: "\uC9C0\uB09C \uACE1\uC5D0\uC11C \uC5B4\uB5A4 \uACBD\uC6B0\uC5D0 \uADF8\uB7F0\uC9C0 \uB9D0\uD558\uB294 \uC870\uAC74\uC744 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694." }
+});
+var SONG_ROWS = TRACKS.flatMap((track) => track.questions.map((_, sourceIndex) => ({ trackId: track.id, sourceIndex, meta: rhythmItem(track.id, { sourceIndex, variant: 0 }) })));
+var SUPPLY_ROWS = supplementalItems({ purpose: "practice" });
+var FAMILY_SKILL = new Map([...SONG_ROWS.map((row) => [row.meta.familyKey, row.meta.skillId]), ...SUPPLY_ROWS.map((row) => [row.familyKey, row.skillId])]);
+var SONG_FAMILIES = new Set(SONG_ROWS.map((row) => row.meta.familyKey));
 
 // experiences/synk-world-app/world-exam-plan.mjs
 var world_exam_plan_exports = {};
@@ -20300,6 +23624,15 @@ function itemMetadata(item) {
     conceptIds: conceptsOf(item.id)
   };
 }
+var RETURN_PATTERNS3 = Object.freeze({
+  particle: { why: "\uC9C0\uB09C \uD310\uC5D0\uC11C \uB0B1\uB9D0 \uB4A4\uC5D0 \uBD99\uB294 \uC870\uC0AC\uB97C \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC774\uBC88 \uCCAB \uBB38\uC7A5\uB3C4 \uADF8\uB7F0 \uBB38\uC7A5\uC774\uC5D0\uC694. \uBE48\uCE78 \uC55E\uB4A4 \uB9D0\uC744 \uD568\uAED8 \uC77D\uC5B4 \uBCF4\uC138\uC694." },
+  ending: { why: "\uC9C0\uB09C \uD310\uC5D0\uC11C \uBB38\uC7A5 \uB05D\uC774\uB098 \uC911\uAC04\uC758 \uBB38\uD615\uC744 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC774\uBC88 \uCCAB \uBB38\uC7A5\uB3C4 \uADF8\uB7F0 \uBB38\uC7A5\uC774\uC5D0\uC694. \uBB38\uC7A5 \uC804\uCCB4\uC758 \uB73B\uC744 \uC77D\uACE0 \uACE8\uB77C \uBCF4\uC138\uC694." },
+  connector: { minEvidence: 2, why: "\uC9C0\uB09C \uD310\uC5D0\uC11C \uB450 \uBB38\uC7A5\uC744 \uC787\uB294 \uB9D0\uC744 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC774\uBC88 \uCCAB \uBB38\uC7A5\uB3C4 \uADF8\uB7F0 \uBB38\uC7A5\uC774\uC5D0\uC694. \uC55E\uB4A4 \uBB38\uC7A5\uC774 \uC5B4\uB5A4 \uAD00\uACC4\uC778\uC9C0 \uC77D\uC5B4 \uBCF4\uC138\uC694." },
+  noun: { why: "\uC9C0\uB09C \uD310\uC5D0\uC11C \uC774\uB984\uC744 \uB098\uD0C0\uB0B4\uB294 \uB0B1\uB9D0\uC744 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC774\uBC88 \uCCAB \uBB38\uC7A5\uB3C4 \uADF8\uB7F0 \uBB38\uC7A5\uC774\uC5D0\uC694. \uC55E\uB4A4 \uB9D0\uC5D0\uC11C \uB2E8\uC11C\uB97C \uCC3E\uC544 \uBCF4\uC138\uC694." },
+  predicate: { why: "\uC9C0\uB09C \uD310\uC5D0\uC11C \uB3D9\uC791\uC774\uB098 \uC0C1\uD0DC\uB97C \uB098\uD0C0\uB0B4\uB294 \uB0B1\uB9D0\uC744 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC774\uBC88 \uCCAB \uBB38\uC7A5\uB3C4 \uADF8\uB7F0 \uBB38\uC7A5\uC774\uC5D0\uC694. \uC55E\uB4A4 \uB9D0\uC5D0\uC11C \uB2E8\uC11C\uB97C \uCC3E\uC544 \uBCF4\uC138\uC694." }
+});
+var PATTERN_OF_KIND = Object.freeze({ particle: "particle", ending: "ending", connector: "connector", noun: "noun", verb: "predicate", adjective: "predicate" });
+var ITEM_OF_FAMILY = new Map(ITEMS.map((x) => [itemMetadata(x).familyKey, x]));
 var LEVELS = Object.fromEntries(Object.keys(SKILL_LABEL).map((id) => [id, [...new Set(ITEMS.filter((x) => x.skill === id).map((x) => x.difficulty))].sort((a, b) => a - b)]));
 
 // experiences/synk-town/understanding.mjs
@@ -21633,6 +24966,13 @@ function caseMetadata(c) {
     conceptIds: [...CASE_GRAMMAR.get(c.id) || []]
   };
 }
+var RETURN_PATTERNS4 = Object.freeze({
+  detail: { skillId: "ko.reading.detail", why: "\uC9C0\uB09C \uADFC\uBB34\uC5D0\uC11C \uD45C\uB098 \uC9D0\uC758 \uC138\uBD80 \uB0B4\uC6A9\uC744 \uC548\uB0B4\uBB38\uACFC \uB9DE\uCD94\uB294 \uAC78 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC624\uB298 \uADFC\uBB34\uC5D0\uB3C4 \uADF8\uB7F0 \uC190\uB2D8\uC774 \uC640\uC694. \uC548\uB0B4\uBB38\uC744 \uD55C \uC904\uC529 \uB2E4 \uC77D\uACE0 \uB3C4\uC7A5\uC744 \uCC0D\uC5B4 \uBCF4\uC138\uC694." },
+  negation: { skillId: "ko.reading.negation", why: "\uC9C0\uB09C \uADFC\uBB34\uC5D0\uC11C \uC548\uB0B4\uBB38\uC758 \uBD80\uC815 \uD45C\uD604\uC744 \uC190\uB2D8\uACFC \uB9DE\uCD94\uB294 \uAC78 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC624\uB298 \uADFC\uBB34\uC5D0\uB3C4 \uADF8\uB7F0 \uC190\uB2D8\uC774 \uC640\uC694. \uC548\uB0B4\uBB38\uC744 \uD55C \uC904\uC529 \uB2E4 \uC77D\uACE0 \uB3C4\uC7A5\uC744 \uCC0D\uC5B4 \uBCF4\uC138\uC694." },
+  condition: { skillId: "ko.reading.condition", why: "\uC9C0\uB09C \uADFC\uBB34\uC5D0\uC11C \uC548\uB0B4\uBB38\uC758 \uC870\uAC74\uC744 \uC190\uB2D8\uACFC \uB9DE\uCD94\uB294 \uAC78 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC624\uB298 \uADFC\uBB34\uC5D0\uB3C4 \uADF8\uB7F0 \uC190\uB2D8\uC774 \uC640\uC694. \uC548\uB0B4\uBB38\uC744 \uD55C \uC904\uC529 \uB2E4 \uC77D\uACE0 \uB3C4\uC7A5\uC744 \uCC0D\uC5B4 \uBCF4\uC138\uC694." }
+});
+var ALL_CASES = VENUES.flatMap((v) => v.cases.map((c) => ({ venue: v, c })));
+var CASE_OF_FAMILY = new Map(ALL_CASES.map(({ c }) => [caseMetadata(c).familyKey, c]));
 
 // experiences/entry-check/core.mjs
 var minutes = (t3) => {
@@ -22721,3313 +26061,6 @@ function createTopikBank({ fetcher = (...args) => globalThis.fetch(...args) } = 
       return () => listeners.delete(listener);
     }
   });
-}
-
-// experiences/korean-rhythm/supplemental.json
-var supplemental_default = {
-  version: "rhythm-transfer-20261028",
-  items: [
-    {
-      id: "rhythm-transfer-ti-l-b-011",
-      rev: 1,
-      sourceItemId: "ti-l-b-011",
-      sourceItemKey: "topik-items.ti-l-b-011.v2",
-      sourceHash: "cf5bff3cd9f113d0f90a330f454c8a194dd19183ee3dfe3a001d33b03ba1cb39",
-      familyKey: "topik-items.ti-l-b-011",
-      setId: null,
-      skillId: "ko.listening.detail",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC774 \uC0C8 \uD578\uB4DC\uD3F0\uC744 \uC0AC\uACE0 \uC2F6\uC5B4\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC8C4\uC1A1\uD574\uC694. \uADF8 \uD578\uB4DC\uD3F0\uC740 \uB2E4\uC74C \uC8FC \uAE08\uC694\uC77C\uBD80\uD130 \uD314\uC544\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC544, \uADF8\uB798\uC694? \uADF8\uB7FC \uAE08\uC694\uC77C\uC5D0 \uB2E4\uC2DC \uC62C\uAC8C\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-b-011.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 11
-      },
-      claim: "\uB0A8\uC790\uB294 \uB2E4\uC74C \uC8FC \uAE08\uC694\uC77C \uC804\uC5D0\uB294 \uADF8 \uD578\uB4DC\uD3F0\uC744 \uBABB \uC0BD\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uC5EC\uC790\uB294 \u300C\uADF8 \uD578\uB4DC\uD3F0\uC740 \uB2E4\uC74C \uC8FC \uAE08\uC694\uC77C\uBD80\uD130 \uD314\uC544\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB7EC\uB2C8\uAE4C \uB2E4\uC74C \uC8FC \uAE08\uC694\uC77C\uC774 \uB418\uAE30 \uC804\uC5D0\uB294 \uADF8 \uD578\uB4DC\uD3F0\uC744 \uC0B4 \uC218 \uC5C6\uC5B4\uC11C \uB0A8\uC790\uB294 \u300C\uAE08\uC694\uC77C\uC5D0 \uB2E4\uC2DC \uC62C\uAC8C\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uC774\uBC88 \uC8FC \uAE08\uC694\uC77C\uBD80\uD130 \uD310\uB2E4\uB294 \uC124\uBA85\uC740 \u300C\uB2E4\uC74C \uC8FC \uAE08\uC694\uC77C\uBD80\uD130\u300D\uC640 \uB9DE\uC9C0 \uC54A\uC544\uC694.",
-      conceptIds: [
-        "S104"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "5c35644c9d46558ec450e73c72b5d3e8064e2409ff16fc27d24bd05faaf89c82",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-b-023",
-      rev: 1,
-      sourceItemId: "ti-l-b-023",
-      sourceItemKey: "topik-items.ti-l-b-023.v2",
-      sourceHash: "ebebc01cbb3ee1fa0bf58d53cffd00260e87f35cac7657939aa3b5f090bb4af2",
-      familyKey: "topik-items.ti-l-b-023",
-      setId: null,
-      skillId: "ko.listening.detail",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC800\uB3C4 \uCC45 \uC77D\uAE30 \uBAA8\uC784\uC5D0 \uB4E4\uC5B4\uAC00\uACE0 \uC2F6\uC5B4\uC694. \uC5B8\uC81C \uB9CC\uB098\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uB9E4\uC8FC \uAE08\uC694\uC77C \uC800\uB141\uC5D0\uB9CC \uB9CC\uB098\uC694. \uB2E4\uB978 \uB0A0\uC5D0\uB294 \uC548 \uB9CC\uB098\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC544, \uC800\uB294 \uAE08\uC694\uC77C \uC800\uB141\uC5D0 \uC218\uC5C5\uC774 \uC788\uC5B4\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-b-023.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 12.2
-      },
-      claim: "\uC5EC\uC790\uB294 \uC218\uC694\uC77C \uC800\uB141\uC5D0\uB3C4 \uBAA8\uC784 \uC0AC\uB78C\uB4E4\uC744 \uB9CC\uB0A9\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uC5EC\uC790\uB294 \u300C\uB9E4\uC8FC \uAE08\uC694\uC77C \uC800\uB141\uC5D0\uB9CC \uB9CC\uB098\uC694. \uB2E4\uB978 \uB0A0\uC5D0\uB294 \uC548 \uB9CC\uB098\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB7EC\uB2C8\uAE4C \uBAA8\uC784\uC740 \uC77C\uC8FC\uC77C\uC5D0 \uD55C \uBC88, \uAE08\uC694\uC77C \uC800\uB141\uC5D0\uB9CC \uD574\uC694. \uB0A8\uC790\uB294 \uAE08\uC694\uC77C \uC800\uB141\uC5D0 \u300C\uC218\uC5C5\uC774 \uC788\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uACE0 \uBAA8\uC784\uC5D0 \u300C\uB4E4\uC5B4\uAC00\uACE0 \uC2F6\uC5B4\uC694\u300D\uB77C\uACE0\uB9CC \uD588\uC73C\uB2C8\uAE4C \uC2DC\uAC04\uC774 \uC788\uB2E4\uAC70\uB098 \uBC8C\uC368 \uB4E4\uC5B4\uAC14\uB2E4\uB294 \uC124\uBA85\uC740 \uD2C0\uB824\uC694.",
-      conceptIds: [
-        "S107"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "eeebfff15a4558f8994012a7f718622474653352e096deee6f02afb379af0866",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-b-027",
-      rev: 1,
-      sourceItemId: "ti-l-b-027",
-      sourceItemKey: "topik-items.ti-l-b-027.v2",
-      sourceHash: "77786e6a1931ed9202af1d77c66dfefc74c836b5ed47d5aadbe689f2a92262d5",
-      familyKey: "topik-items.ti-l-b-027",
-      setId: null,
-      skillId: "ko.listening.detail",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC81C\uAC00 \uB0B4\uC77C\uBD80\uD130 \uC0BC \uC77C \uB3D9\uC548 \uC9D1\uC5D0 \uC5C6\uC5B4\uC694. \uC6B0\uB9AC \uACE0\uC591\uC774 \uBC25\uC744 \uBD80\uD0C1\uD574\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB124, \uC88B\uC544\uC694. \uC544\uCE68\uD558\uACE0 \uC800\uB141\uC5D0 \uC918\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC544\uB2C8\uC694, \uC800\uB141\uC5D0\uB9CC \uC8FC\uC138\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-b-027.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 12.3
-      },
-      claim: "\uB0A8\uC790\uB294 \uC800\uB141\uC5D0 \uACE0\uC591\uC774\uC5D0\uAC8C \uBC25\uC744 \uC90D\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uB0A8\uC790\uAC00 \u300C\uC544\uCE68\uD558\uACE0 \uC800\uB141\uC5D0 \uC918\uC694?\u300D\uB77C\uACE0 \uBB3C\uC5C8\uACE0, \uC5EC\uC790\uB294 \u300C\uC544\uB2C8\uC694, \uC800\uB141\uC5D0\uB9CC \uC8FC\uC138\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB0A8\uC790\uB294 \uC800\uB141\uC5D0\uB9CC \uACE0\uC591\uC774 \uBC25\uC744 \uC918\uC694. \uC544\uCE68\uC5D0\uB294 \uC8FC\uC9C0 \uC54A\uC544\uC694.",
-      conceptIds: [
-        "S107"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "c4975c9aa0547c75e105f7c4b202eb2bc811801b4c10348817d523736dc1c741",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-b-030",
-      rev: 1,
-      sourceItemId: "ti-l-b-030",
-      sourceItemKey: "topik-items.ti-l-b-030.v2",
-      sourceHash: "274bec4ba2a416274f481f0b35a582d468143903cb481c2f71eff9d17ff83f2d",
-      familyKey: "topik-items.ti-l-b-030",
-      setId: null,
-      skillId: "ko.listening.detail",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC774 \uC57D\uAD6D\uC740 \uD1A0\uC694\uC77C\uC5D0\uB3C4 \uBB38\uC744 \uC5F4\uC5B4\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uB124, \uD1A0\uC694\uC77C\uC5D0\uB294 \uC624\uD6C4 \uD55C \uC2DC\uAE4C\uC9C0 \uC5F4\uC5B4\uC694. \uC77C\uC694\uC77C\uC5D0\uB294 \uBB38\uC744 \uC548 \uC5F4\uC5B4\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uADF8\uB7FC \uD1A0\uC694\uC77C \uC544\uCE68\uC5D0 \uB2E4\uC2DC \uC62C\uAC8C\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-b-030.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 12.5
-      },
-      claim: "\uB0A8\uC790\uB294 \uC77C\uC694\uC77C \uC544\uCE68\uC5D0 \uC57D\uAD6D\uC5D0 \uC635\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uC5EC\uC790\uB294 \u300C\uD1A0\uC694\uC77C\uC5D0\uB294 \uC624\uD6C4 \uD55C \uC2DC\uAE4C\uC9C0 \uC5F4\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB7EC\uB2C8\uAE4C \uD1A0\uC694\uC77C\uC5D0\uB294 \uD55C \uC2DC\uC5D0 \uBB38\uC744 \uB2EB\uC544\uC694. \uC77C\uC694\uC77C\uC5D0\uB294 \uBB38\uC744 \uC548 \uC5F4\uC5B4\uC11C \uB0A8\uC790\uB294 \uD1A0\uC694\uC77C \uC544\uCE68\uC5D0 \uB2E4\uC2DC \uC640\uC694.",
-      conceptIds: [
-        "S105"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "a3ee7f99c458f1a9249c0707d46be2ed25427d25982bd21bb8b7343829172b59",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-b-032",
-      rev: 1,
-      sourceItemId: "ti-l-b-032",
-      sourceItemKey: "topik-items.ti-l-b-032.v2",
-      sourceHash: "b8ccb6c64ece77306a465d35e37e1735013b5fbbfa0df2ee0e5c286f63a6a313",
-      familyKey: "topik-items.ti-l-b-032",
-      setId: null,
-      skillId: "ko.listening.detail",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "delayed",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC2DC\uD5D8\uC774 \uB05D\uB098\uBA74 \uAC19\uC774 \uBC14\uB2E4\uC5D0 \uAC00\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC88B\uC544\uC694. \uC81C \uC2DC\uD5D8\uC740 \uB2E4\uC74C \uC8FC \uAE08\uC694\uC77C\uC5D0 \uB05D\uB098\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uADF8\uB7FC \uADF8\uB2E4\uC74C \uB0A0 \uC544\uCE68\uC5D0 \uAC00\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uB124, \uC88B\uC544\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-b-032.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 12.7
-      },
-      claim: "\uC5EC\uC790\uB294 \uB2E4\uC74C \uC8FC \uD1A0\uC694\uC77C\uC5D0 \uBC14\uB2E4\uC5D0 \uAC11\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uB0A8\uC790\uB294 \u300C\uC2DC\uD5D8\uC774 \uB05D\uB098\uBA74 \uAC19\uC774 \uBC14\uB2E4\uC5D0 \uAC00\uC694\u300D\uB77C\uACE0 \uD588\uACE0, \uC5EC\uC790\uB294 \uC2DC\uD5D8\uC774 \u300C\uB2E4\uC74C \uC8FC \uAE08\uC694\uC77C\uC5D0 \uB05D\uB098\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB450 \uC0AC\uB78C\uC740 \u300C\uADF8\uB2E4\uC74C \uB0A0\u300D\uC778 \uD1A0\uC694\uC77C\uC5D0 \uBC14\uB2E4\uC5D0 \uAC00\uC694. \uAE08\uC694\uC77C \uC544\uCE68\uC5D0 \uAC04\uB2E4\uB294 \uC124\uBA85\uC740 \uD2C0\uB824\uC694.",
-      conceptIds: [
-        "G401"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "b4a61a56b931160e3337bbf91a10c414e35eb9eb5004a19907c0e424c8fd3013",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-a-009",
-      rev: 1,
-      sourceItemId: "ti-l-a-009",
-      sourceItemKey: "topik-items.ti-l-a-009.v1",
-      sourceHash: "6df4e7d870bc626e9e3b9007b5df469e34310c4b0710cc7f2f7c4e79a0299f11",
-      familyKey: "topik-items.ti-l-a-009",
-      setId: null,
-      skillId: "ko.listening.detail",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "delayed",
-      script: [
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uBC30\uAC00 \uC544\uD30C\uC694. \uC5B4\uC81C \uC800\uB141\uC744 \uB108\uBB34 \uB9CE\uC774 \uBA39\uC5C8\uC5B4\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC774 \uC57D\uC744 \uB4DC\uC138\uC694. \uD558\uB8E8\uC5D0 \uB450 \uBC88, \uBC25\uC744 \uBA39\uACE0 \uC0BC\uC2ED \uBD84 \uB4A4\uC5D0 \uB4DC\uC138\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-a-009.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 9.6
-      },
-      claim: "\uB300\uD654\uAC00 \uC774\uB8E8\uC5B4\uC9C0\uB294 \uACF3\uC740 \uC11C\uC810\uC785\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uB0A8\uC790\uB294 \uC57D\uC744 \uC8FC\uBA70 \uD558\uB8E8\uC5D0 \uB450 \uBC88, \uBC25\uC744 \uBA39\uACE0 \uC0BC\uC2ED \uBD84 \uB4A4\uC5D0 \uBA39\uC73C\uB77C\uACE0 \uC124\uBA85\uD574\uC694. \uCC45\uC744 \uACE0\uB974\uAC70\uB098 \uC0AC\uB294 \uB300\uD654\uAC00 \uC544\uB2C8\uBBC0\uB85C \uC11C\uC810\uC774\uB77C\uB294 \uC124\uBA85\uC740 \uB9DE\uC9C0 \uC54A\uC544\uC694.",
-      conceptIds: [
-        "G212"
-      ],
-      sourceOfficialType: "TI-L-07",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "81b6802cdf4d7f9bafe2d6a370ed799faa39a118fac6896554d88dee4f7f89d1",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-009",
-      rev: 1,
-      sourceItemId: "ti-l-d-009",
-      sourceItemKey: "topik-items.ti-l-d-009.v1",
-      sourceHash: "6d5b66af5c4942cfa452e2fc91c9c98e46d5226d02574fdffbb8ca5d9976c632",
-      familyKey: "topik-items.ti-l-d-009",
-      setId: null,
-      skillId: "ko.listening.detail",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC548\uACBD\uC744 \uC0C8\uB85C \uB9DE\uCD94\uACE0 \uC2F6\uC5B4\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uBA3C\uC800 \uB208 \uAC80\uC0AC\uB97C \uD574\uC57C \uD574\uC694. \uC548\uACBD\uC740 \uBAA8\uB450 \uC2ED\uC624\uB9CC \uC6D0\uC774\uC5D0\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC88B\uC544\uC694. \uC624\uB298 \uBC1B\uC744 \uC218 \uC788\uC5B4\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC544\uB2C8\uC694, \uC0AC\uD758 \uB4A4\uC5D0 \uB098\uC640\uC694. \uAE08\uC694\uC77C \uC624\uD6C4\uC5D0 \uCC3E\uC73C\uB7EC \uC624\uC138\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uAE08\uC694\uC77C \uC624\uC804\uC5D0\uB294 \uC548 \uB3FC\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uB124, \uC624\uC804\uC5D0\uB294 \uAC00\uAC8C \uBB38\uC744 \uC548 \uC5F4\uC5B4\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-009.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 21.7
-      },
-      claim: "\uB0A8\uC790\uB294 \uC0C8 \uC548\uACBD \uAC12\uC73C\uB85C \uC2ED\uC624\uB9CC \uC6D0\uC744 \uB0C5\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uC5EC\uC790\uAC00 \u300C\uC548\uACBD\uC740 \uBAA8\uB450 \uC2ED\uC624\uB9CC \uC6D0\uC774\uC5D0\uC694\u300D\uB77C\uACE0 \uD588\uACE0 \uB0A8\uC790\uB294 \u300C\uC88B\uC544\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB0A8\uC790\uB294 \uC0C8 \uC548\uACBD \uAC12\uC73C\uB85C \uC2ED\uC624\uB9CC \uC6D0\uC744 \uB0B4\uC694.",
-      conceptIds: [
-        "G403",
-        "G402",
-        "G303",
-        "G209"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "3ca9ee57c70b3c1164d99920a0fb633874bf11268738559a4236257ff3902af4",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-010",
-      rev: 1,
-      sourceItemId: "ti-l-d-010",
-      sourceItemKey: "topik-items.ti-l-d-010.v1",
-      sourceHash: "af0cfcdb2bc443256be8f2d60270959d793370d4123a0c5693caf2adab7d3805",
-      familyKey: "topik-items.ti-l-d-010",
-      setId: null,
-      skillId: "ko.listening.detail",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC694\uAC00\uB97C \uBC30\uC6B0\uACE0 \uC2F6\uC740\uB370\uC694. \uC218\uC5C5\uC774 \uC77C\uC8FC\uC77C\uC5D0 \uBA87 \uBC88 \uC788\uC5B4\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uD654\uC694\uC77C\uD558\uACE0 \uBAA9\uC694\uC77C, \uB450 \uBC88 \uC788\uC5B4\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uBA87 \uC2DC\uC5D0 \uC2DC\uC791\uD574\uC694? \uC800\uB294 \uD68C\uC0AC\uAC00 \uC5EC\uC12F \uC2DC\uC5D0 \uB05D\uB098\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC800\uB141 \uC77C\uACF1 \uC2DC \uBC18\uC5D0 \uC2DC\uC791\uD574\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uADF8\uB7FC \uB2E4\uC74C \uC8FC\uBD80\uD130 \uB2E4\uB2D0\uAC8C\uC694. \uC694\uAE08\uC740 \uC5BC\uB9C8\uC608\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uD55C \uB2EC\uC5D0 \uC721\uB9CC \uC6D0\uC774\uC5D0\uC694. \uCCAB \uC218\uC5C5\uC740 \uB3C8\uC744 \uC548 \uB0B4\uC154\uB3C4 \uB3FC\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-010.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 23.5
-      },
-      claim: "\uC5EC\uC790\uB294 \uC800\uB141 \uC5EC\uC12F \uC2DC\uC5D0 \uC694\uAC00 \uC218\uC5C5\uC744 \uB4E3\uC2B5\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uC5EC\uC790\uC758 \uD68C\uC0AC\uAC00 \uB05D\uB098\uB294 \uC2DC\uAC04\uC740 \uC800\uB141 \uC5EC\uC12F \uC2DC\uC774\uACE0, \uC694\uAC00 \uC218\uC5C5\uC774 \uC2DC\uC791\uD558\uB294 \uC2DC\uAC04\uC740 \uC800\uB141 \uC77C\uACF1 \uC2DC \uBC18\uC774\uC5D0\uC694. \uC5EC\uC12F \uC2DC\uC5D0 \uC218\uC5C5\uC744 \uB4E3\uB294\uB2E4\uB294 \uC124\uBA85\uC740 \uD2C0\uB824\uC694.",
-      conceptIds: [
-        "G610",
-        "G612",
-        "G505",
-        "S104"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "89b51178ad0f13c4d3b38a67e8156ca238d5afb3b208dd545882ddadbda4afb7",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-011",
-      rev: 1,
-      sourceItemId: "ti-l-d-011",
-      sourceItemKey: "topik-items.ti-l-d-011.v2",
-      sourceHash: "5d767cd2e7100e2e43806b59cda63384101b356d7c25ac8765d92d52aa66d0c1",
-      familyKey: "topik-items.ti-l-d-011",
-      setId: null,
-      skillId: "ko.listening.detail",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB124, \uC774\uC0BF\uC9D0\uC13C\uD130\uC785\uB2C8\uB2E4."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC774\uBC88 \uC8FC \uC77C\uC694\uC77C\uC5D0 \uC774\uC0AC\uD558\uB824\uACE0 \uD558\uB294\uB370\uC694. \uC9C0\uAE08 \uC0AC\uB294 \uC9D1\uC740 \uBC29\uC774 \uB450 \uAC1C\uC608\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC0C8\uC9D1\uC5D0 \uC5D8\uB9AC\uBCA0\uC774\uD130\uAC00 \uC788\uC5B4\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC544\uB2C8\uC694, \uC5C6\uC5B4\uC11C \uC9D0\uC744 \uACC4\uB2E8\uC73C\uB85C \uC62C\uB824\uC57C \uD574\uC694. \uC0AC \uCE35\uC774\uC5D0\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uADF8\uB7FC \uC138 \uBA85\uC774 \uAC08\uAC8C\uC694. \uAC12\uC740 \uC721\uC2ED\uB9CC \uC6D0\uC774\uC5D0\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uB124, \uC88B\uC544\uC694. \uC544\uCE68 \uC5EC\uB35F \uC2DC\uAE4C\uC9C0 \uC640 \uC8FC\uC138\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-011.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 24.5
-      },
-      claim: "\uC5EC\uC790\uB294 \uC774\uC0BF\uC9D0\uC13C\uD130\uC5D0 \uC721\uC2ED\uB9CC \uC6D0\uC744 \uB0BC \uAC81\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uB0A8\uC790\uAC00 \u300C\uAC12\uC740 \uC721\uC2ED\uB9CC \uC6D0\uC774\uC5D0\uC694\u300D\uB77C\uACE0 \uD588\uACE0 \uC5EC\uC790\uB294 \u300C\uB124, \uC88B\uC544\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uC5EC\uC790\uB294 \uC721\uC2ED\uB9CC \uC6D0\uC744 \uB0BC \uAC70\uC608\uC694.",
-      conceptIds: [
-        "G405",
-        "G610",
-        "G308",
-        "G403",
-        "G612",
-        "G404",
-        "S105"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "45cbf9378da377449e8adeab7d576a8648f3e8406dcad21cb8cd6630836d4fe5",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-012",
-      rev: 1,
-      sourceItemId: "ti-l-d-012",
-      sourceItemKey: "topik-items.ti-l-d-012.v1",
-      sourceHash: "b8bd0d12283c6b9c701fdf4757eb6a38767f3a196442c7ce6b0196d0f9c32dd0",
-      familyKey: "topik-items.ti-l-d-012",
-      setId: null,
-      skillId: "ko.listening.detail",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uD734\uB300\uD3F0 \uD654\uBA74\uC774 \uAE68\uC84C\uC5B4\uC694. \uACE0\uCE60 \uC218 \uC788\uC5B4\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB124, \uD654\uBA74\uC744 \uBC14\uAFD4\uC57C \uD574\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC2DC\uAC04\uC774 \uC5BC\uB9C8\uB098 \uAC78\uB824\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uD55C \uC2DC\uAC04\uCBE4 \uAC78\uB824\uC694. \uAC12\uC740 \uC2ED\uC774\uB9CC \uC6D0\uC774\uC5D0\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC0DD\uAC01\uBCF4\uB2E4 \uBE44\uC2F8\uB124\uC694. \uADF8\uB7FC \uADF8\uB3D9\uC548 \uADFC\uCC98\uC5D0\uC11C \uC810\uC2EC\uC744 \uBA39\uACE0 \uC62C\uAC8C\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB124, \uD55C \uC2DC\uC5D0 \uCC3E\uC73C\uB7EC \uC624\uC138\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-012.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 20.8
-      },
-      claim: "\uC5EC\uC790\uB294 \uD734\uB300\uD3F0\uC744 \uACE0\uCE58\uB294 \uB3D9\uC548 \uAC00\uAC8C\uC5D0\uC11C \uAE30\uB2E4\uB9BD\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uC5EC\uC790\uB294 \u300C\uADF8\uB3D9\uC548 \uADFC\uCC98\uC5D0\uC11C \uC810\uC2EC\uC744 \uBA39\uACE0 \uC62C\uAC8C\uC694\u300D\uB77C\uACE0 \uD588\uACE0, \uB0A8\uC790\uB294 \u300C\uD55C \uC2DC\uC5D0 \uCC3E\uC73C\uB7EC \uC624\uC138\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uC5EC\uC790\uB294 \uC810\uC2EC\uC744 \uBA39\uACE0 \uD55C \uC2DC\uC5D0 \uB2E4\uC2DC \uC640\uC694.",
-      conceptIds: [
-        "G402",
-        "G403",
-        "G312",
-        "G411",
-        "G612"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "af535e918029b0640dc2eb66e5a6f991c26614ac0e753b750b1b0f89808f84f1",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-001",
-      rev: 1,
-      sourceItemId: "ti-l-d-001",
-      sourceItemKey: "topik-items.ti-l-d-001.v1",
-      sourceHash: "049f8eebe5caba92df956986848682dee289bf7e9bd309834a36129e6f29a6ab",
-      familyKey: "topik-items.ti-l-d-001",
-      setId: null,
-      skillId: "ko.listening.detail",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "delayed",
-      script: [
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC774 \uC0C1\uC790\uB97C \uACE0\uD5A5\uC5D0 \uC788\uB294 \uB3D9\uC0DD\uD55C\uD14C \uBCF4\uB0B4\uB824\uACE0 \uD574\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC5EC\uAE30\uC5D0 \uC62C\uB824 \uC8FC\uC138\uC694. \uC0BC \uD0AC\uB85C\uADF8\uB7A8\uC774\uB124\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uBE44\uD589\uAE30\uB85C \uBCF4\uB0B4\uBA74 \uBA70\uCE60 \uAC78\uB824\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC77C\uC8FC\uC77C\uCBE4 \uAC78\uB824\uC694. \uBC30\uB294 \uD55C \uB2EC\uCBE4 \uAC78\uB9AC\uACE0\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uADF8\uB7FC \uC870\uAE08 \uBE44\uC2F8\uB3C4 \uBE44\uD589\uAE30\uB85C \uD560\uAC8C\uC694. \uBC1B\uB294 \uC0AC\uB78C \uC8FC\uC18C\uB294 \uC5B4\uB514\uC5D0 \uC368\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC774 \uC885\uC774\uC5D0 \uC4F0\uACE0 \uC0C1\uC790 \uC704\uC5D0 \uBD99\uC5EC \uC8FC\uC138\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-001.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 24
-      },
-      claim: "\uB300\uD654\uAC00 \uC774\uB8E8\uC5B4\uC9C0\uB294 \uACF3\uC740 \uC6B0\uCCB4\uAD6D\uC785\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uC5EC\uC790\uAC00 \u300C\uC774 \uC0C1\uC790\uB97C \uACE0\uD5A5\uC5D0 \uC788\uB294 \uB3D9\uC0DD\uD55C\uD14C \uBCF4\uB0B4\uB824\uACE0 \uD574\uC694\u300D\uB77C\uACE0 \uD558\uACE0, \uB0A8\uC790\uB294 \uBC1B\uB294 \uC0AC\uB78C \uC8FC\uC18C\uB97C \u300C\uC774 \uC885\uC774\uC5D0 \uC4F0\uACE0 \uC0C1\uC790 \uC704\uC5D0 \uBD99\uC5EC \uC8FC\uC138\uC694\u300D\uB77C\uACE0 \uD574\uC694. \uC0C1\uC790\uB97C \uB2E4\uB978 \uACF3\uC73C\uB85C \uBCF4\uB0B4\uB294 \uACF3\uC774\uB2C8\uAE4C \uC6B0\uCCB4\uAD6D\uC774\uC5D0\uC694. \u300C\uBE44\uD589\uAE30\u300D\uB77C\uB294 \uB9D0\uC774 \uB098\uC624\uC9C0\uB9CC \uBE44\uD589\uAE30\uB97C \uD0C0\uB7EC \uC628 \uAC83\uC774 \uC544\uB2C8\uB77C \uC0C1\uC790\uB97C \uBE44\uD589\uAE30\uB85C \uBCF4\uB0B4\uB294 \uAC83\uC774\uB77C\uC11C \uACF5\uD56D\uC774 \uC544\uB2C8\uC5D0\uC694.",
-      conceptIds: [
-        "G405",
-        "G401",
-        "G612",
-        "G404",
-        "S114"
-      ],
-      sourceOfficialType: "TI-L-07",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "adea71f979a30d6bcfdaf161a923c61d018fd298c620e48fb6d7cef2e061315a",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-002",
-      rev: 1,
-      sourceItemId: "ti-l-d-002",
-      sourceItemKey: "topik-items.ti-l-d-002.v1",
-      sourceHash: "b20bef904916da036a13d894c7da6ac8f2d8da2cc688a4cce563f218d901c4a7",
-      familyKey: "topik-items.ti-l-d-002",
-      setId: null,
-      skillId: "ko.listening.detail",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "delayed",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC774 \uCF54\uD2B8\uD558\uACE0 \uBC14\uC9C0\uB97C \uB9E1\uAE30\uB824\uACE0\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC8FC\uBA38\uB2C8\uB97C \uBA3C\uC800 \uD655\uC778\uD574 \uC8FC\uC138\uC694. \uAC00\uB054 \uB3C8\uC774\uB098 \uC5F4\uC1E0\uAC00 \uC788\uC5B4\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC544, \uC5F4\uC1E0\uAC00 \uC788\uC5C8\uB124\uC694. \uACE0\uB9C8\uC6CC\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uCF54\uD2B8\uB294 \uBB3C\uB85C \uBE68\uBA74 \uC548 \uB418\uB2C8\uAE4C \uC0AC\uD758\uCBE4 \uAC78\uB824\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uBC14\uC9C0\uB294 \uC5B8\uC81C \uCC3E\uC744 \uC218 \uC788\uC5B4\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uBC14\uC9C0\uB294 \uB0B4\uC77C \uC800\uB141\uC5D0 \uCC3E\uC73C\uB7EC \uC624\uC138\uC694. \uC774 \uC885\uC774\uB97C \uAF2D \uAC00\uC9C0\uACE0 \uC624\uC154\uC57C \uD574\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-002.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 24.5
-      },
-      claim: "\uB300\uD654\uAC00 \uC774\uB8E8\uC5B4\uC9C0\uB294 \uACF3\uC740 \uBBF8\uC6A9\uC2E4\uC785\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uB0A8\uC790\uAC00 \u300C\uC774 \uCF54\uD2B8\uD558\uACE0 \uBC14\uC9C0\uB97C \uB9E1\uAE30\uB824\uACE0\uC694\u300D\uB77C\uACE0 \uD558\uACE0, \uC5EC\uC790\uB294 \u300C\uCF54\uD2B8\uB294 \uBB3C\uB85C \uBE68\uBA74 \uC548 \uB418\uB2C8\uAE4C \uC0AC\uD758\uCBE4 \uAC78\uB824\uC694\u300D\uB77C\uACE0 \uD574\uC694. \uC637\uC744 \uB9E1\uACA8\uC11C \uBE68\uACE0 \uB098\uC911\uC5D0 \uB2E4\uC2DC \uCC3E\uB294 \uACF3\uC774\uB2C8\uAE4C \uC138\uD0C1\uC18C\uC608\uC694. \uCF54\uD2B8\uC640 \uBC14\uC9C0\uAC00 \uB098\uC624\uC9C0\uB9CC \uC637\uC744 \uC0AC\uB294 \uC774\uC57C\uAE30\uAC00 \uC544\uB2C8\uB77C\uC11C \uC637 \uAC00\uAC8C\uAC00 \uC544\uB2C8\uC5D0\uC694.",
-      conceptIds: [
-        "G405",
-        "G506",
-        "G410",
-        "G402",
-        "G403",
-        "G303"
-      ],
-      sourceOfficialType: "TI-L-07",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "358d4db5a821e240dc3c50dc810adcbfff301217f1e1afc27f7baf36faa5fa53",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-b-001",
-      rev: 1,
-      sourceItemId: "ti-l-b-001",
-      sourceItemKey: "topik-items.ti-l-b-001.v1",
-      sourceHash: "a953a598648f684d61d7c1c8a9a9eb27a0803599dff892fb255be5b5144dccde",
-      familyKey: "topik-items.ti-l-b-001",
-      setId: null,
-      skillId: "ko.listening.negation",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC9C0\uB09C\uC8FC\uC5D0 \uC778\uD130\uB137\uC5D0\uC11C \uC6B4\uB3D9\uD654\uB97C \uC0C0\uC5B4\uC694. \uADF8\uB7F0\uB370 \uC544\uC9C1 \uC548 \uC654\uC5B4\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uADF8\uB798\uC694? \uAC00\uAC8C\uC5D0 \uC804\uD654\uD588\uC5B4\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB124, \uC624\uB298 \uC544\uCE68\uC5D0 \uC804\uD654\uD588\uC5B4\uC694. \uB0B4\uC77C \uC640\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-b-001.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 11.2
-      },
-      claim: "\uB0A8\uC790\uB294 \uC544\uC9C1 \uC6B4\uB3D9\uD654\uB97C \uBC1B\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uB0A8\uC790\uB294 \uC6B4\uB3D9\uD654\uAC00 \u300C\uC544\uC9C1 \uC548 \uC654\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uC544\uC9C1 \uC6B4\uB3D9\uD654\uB97C \uBC1B\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC6B4\uB3D9\uD654\uB294 \u300C\uB0B4\uC77C \uC640\uC694\u300D\uB77C\uACE0 \uD588\uC73C\uB2C8\uAE4C \uC624\uB298 \uBC1B\uB294\uB2E4\uB294 \uC124\uBA85\uC740 \uD2C0\uB824\uC694.",
-      conceptIds: [
-        "G209",
-        "G313"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "06172d2ea3d4fd98b25acddb9f6aebf9df768e78d6bb931ebafbf8d46a560740",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-b-005",
-      rev: 1,
-      sourceItemId: "ti-l-b-005",
-      sourceItemKey: "topik-items.ti-l-b-005.v1",
-      sourceHash: "f3c5ead98669f547e5785c7f375c2a2c9b7e65097a479985ef2dae0c5c5cfa99",
-      familyKey: "topik-items.ti-l-b-005",
-      setId: null,
-      skillId: "ko.listening.negation",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB098\uB514\uC544 \uC528, \uB9CE\uC774 \uB4DC\uC138\uC694. \uC774 \uBD88\uACE0\uAE30\uB294 \uC81C\uAC00 \uB9CC\uB4E4\uC5C8\uC5B4\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uACE0\uB9C8\uC6CC\uC694. \uADF8\uB7F0\uB370 \uC800\uB294 \uACE0\uAE30\uB97C \uC548 \uBA39\uC5B4\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC544, \uADF8\uB798\uC694? \uADF8\uB7FC \uC774 \uC0DD\uC120\uC744 \uB4DC\uC138\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uB124, \uC0DD\uC120\uC740 \uC88B\uC544\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-b-005.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 15.1
-      },
-      claim: "\uC5EC\uC790\uB294 \uC0DD\uC120\uC744 \uBA39\uC9C0 \uC54A\uACE0 \uBD88\uACE0\uAE30\uB97C \uBA39\uC2B5\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uC5EC\uC790\uB294 \u300C\uC800\uB294 \uACE0\uAE30\uB97C \uC548 \uBA39\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uBD88\uACE0\uAE30\uB294 \uBA39\uC9C0 \uC54A\uACE0, \u300C\uC0DD\uC120\uC740 \uC88B\uC544\uC694\u300D\uB77C\uACE0 \uD558\uBA74\uC11C \uC0DD\uC120\uC744 \uBA39\uC5B4\uC694. \uC0DD\uC120\uC744 \uC548 \uBA39\uB294\uB2E4\uB294 \uC124\uBA85\uC740 \uC774 \uB9D0\uACFC \uB9DE\uC9C0 \uC54A\uC544\uC694.",
-      conceptIds: [
-        "G209"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "4e5343d7d91dc42e1f58876009d87176125d62774acaff8a2d1cf653930186db",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-b-007",
-      rev: 1,
-      sourceItemId: "ti-l-b-007",
-      sourceItemKey: "topik-items.ti-l-b-007.v3",
-      sourceHash: "28a9abb6a7366c6464247b452c4afb63f8c61f578db92bf117638fc2b1e931b0",
-      familyKey: "topik-items.ti-l-b-007",
-      setId: null,
-      skillId: "ko.listening.negation",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uBB3C \uB450 \uBCD1\uD558\uACE0 \uC544\uC774\uC2A4\uD06C\uB9BC \uD558\uB098 \uC8FC\uC138\uC694. \uC5EC\uAE30 \uCE74\uB4DC\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC8C4\uC1A1\uD574\uC694. \uC5EC\uAE30\uB294 \uD604\uAE08\uB9CC \uBC1B\uC544\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC544, \uC9C0\uAE08 \uD604\uAE08\uC774 \uCC9C \uC6D0 \uC788\uC5B4\uC694. \uADF8\uB7FC \uBB3C \uD55C \uBCD1\uB9CC \uC8FC\uC138\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-b-007.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 12.5
-      },
-      claim: "\uB0A8\uC790\uB294 \uC544\uC774\uC2A4\uD06C\uB9BC\uC744 \uC0AC\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uC5EC\uC790\uB294 \u300C\uC5EC\uAE30\uB294 \uD604\uAE08\uB9CC \uBC1B\uC544\uC694\u300D\uB77C\uACE0 \uD588\uC73C\uB2C8\uAE4C \uCE74\uB4DC\uB85C\uB294 \uB0BC \uC218 \uC5C6\uC5B4\uC694. \uB0A8\uC790\uB294 \uD604\uAE08\uC774 \uCC9C \uC6D0 \uC788\uC5B4\uC11C \u300C\uBB3C \uD55C \uBCD1\uB9CC \uC8FC\uC138\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uC544\uC774\uC2A4\uD06C\uB9BC\uC740 \uC0AC\uC9C0 \uC54A\uC544\uC694.",
-      conceptIds: [
-        "S107"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "3e55ee6bdcce0d17372f52138410ad5e865ac2b8e508943d5d8af1b7a8f936f4",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-b-009",
-      rev: 1,
-      sourceItemId: "ti-l-b-009",
-      sourceItemKey: "topik-items.ti-l-b-009.v2",
-      sourceHash: "097ba268475fcafe0d2df4c7334fb225cfe322c5820f39c49361e021391c2788",
-      familyKey: "topik-items.ti-l-b-009",
-      setId: null,
-      skillId: "ko.listening.negation",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC18C\uD76C \uC528, \uD1A0\uC694\uC77C \uACF5\uC5F0 \uD45C\uB97C \uC0C0\uC5B4\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC544\uB2C8\uC694, \uBABB \uC0C0\uC5B4\uC694. \uB0A8\uC740 \uD45C\uAC00 \uD558\uB098\uB3C4 \uC5C6\uC5C8\uC5B4\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC800\uB294 \uC77C\uC694\uC77C \uD45C\uAC00 \uB450 \uC7A5 \uC788\uC5B4\uC694. \uC77C\uC694\uC77C\uC5D0 \uAC19\uC774 \uAC00\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC815\uB9D0\uC694? \uC88B\uC544\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-b-009.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 14.1
-      },
-      claim: "\uC5EC\uC790\uB294 \uD1A0\uC694\uC77C \uACF5\uC5F0 \uD45C\uB97C \uC0C0\uC2B5\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uC5EC\uC790\uB294 \u300C\uBABB \uC0C0\uC5B4\uC694. \uB0A8\uC740 \uD45C\uAC00 \uD558\uB098\uB3C4 \uC5C6\uC5C8\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uC5EC\uC790\uB294 \uD1A0\uC694\uC77C \uD45C\uAC00 \uC5C6\uACE0, \uB0A8\uC790\uC758 \uC77C\uC694\uC77C \uD45C\uB85C \uAC19\uC774 \uAC00\uC694. \uB0A8\uC790\uB294 \uD45C\uAC00 \uB450 \uC7A5 \uC788\uC73C\uB2C8\uAE4C \uD63C\uC790 \uBCF4\uC9C0 \uC54A\uC544\uC694.",
-      conceptIds: [
-        "G305"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "8e7543700e0c48bd1363e8943ef4d6a05b27913d3d5d929c72adcaf34fea1e43",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-b-013",
-      rev: 1,
-      sourceItemId: "ti-l-b-013",
-      sourceItemKey: "topik-items.ti-l-b-013.v2",
-      sourceHash: "0051e7f86fc3925bb4c8472d553316da58169337c7c574f1769e9f8f64647baf",
-      familyKey: "topik-items.ti-l-b-013",
-      setId: null,
-      skillId: "ko.listening.negation",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "delayed",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC740\uC11C \uC528, \uB0B4\uC77C \uD560\uC544\uBC84\uC9C0 \uB301\uC5D0 \uCC28\uB85C \uAC00\uC694. \uC740\uC11C \uC528\uB3C4 \uC6B4\uC804\uD574\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC544\uB2C8\uC694, \uC800\uB294 \uC6B4\uC804\uC744 \uBABB \uD574\uC694. \uBBF8\uC548\uD574\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uAD1C\uCC2E\uC544\uC694. \uADF8\uB7FC \uC6B4\uC804\uC740 \uC81C\uAC00 \uB2E4 \uD560\uAC8C\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-b-013.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 12
-      },
-      claim: "\uB0B4\uC77C\uC740 \uB0A8\uC790\uB9CC \uC6B4\uC804\uC744 \uD569\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uC5EC\uC790\uB294 \u300C\uC800\uB294 \uC6B4\uC804\uC744 \uBABB \uD574\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB0A8\uC790\uAC00 \u300C\uC6B4\uC804\uC740 \uC81C\uAC00 \uB2E4 \uD560\uAC8C\uC694\u300D\uB77C\uACE0 \uD588\uC73C\uB2C8\uAE4C \uB0B4\uC77C\uC740 \uB0A8\uC790\uB9CC \uC6B4\uC804\uD574\uC694. \uADF8\uB9AC\uACE0 \u300C\uCC28\uB85C \uAC00\uC694\u300D\uB77C\uACE0 \uD588\uC73C\uB2C8\uAE4C \uAE30\uCC28\uB97C \uD0C0\uC9C0 \uC54A\uC544\uC694.",
-      conceptIds: [
-        "G305"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "a91cade3682803b7a8d2cb05442c79f9b026302ddd8717178a088999a608696c",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-b-017",
-      rev: 1,
-      sourceItemId: "ti-l-b-017",
-      sourceItemKey: "topik-items.ti-l-b-017.v2",
-      sourceHash: "ab9b29a96a0f43235aee66ff6e117dca53e20ae273f9c93211fa97b84739397b",
-      familyKey: "topik-items.ti-l-b-017",
-      setId: null,
-      skillId: "ko.listening.negation",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "delayed",
-      script: [
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uB124, \uBBF8\uC6A9\uC2E4\uC785\uB2C8\uB2E4."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB0B4\uC77C \uC624\uD6C4 \uC138 \uC2DC\uC5D0 \uC608\uC57D\uC744 \uD588\uC5B4\uC694. \uADF8\uB7F0\uB370 \uADF8 \uC2DC\uAC04\uC5D0 \uBABB \uAC00\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uADF8\uB7FC \uB2E4\uC12F \uC2DC\uB294 \uC5B4\uB54C\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB124, \uC88B\uC544\uC694. \uB2E4\uC12F \uC2DC\uC5D0 \uAC08\uAC8C\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-b-017.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 12.1
-      },
-      claim: "\uB0A8\uC790\uB294 \uB0B4\uC77C \uBBF8\uC6A9\uC2E4\uC5D0 \uAC00\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uB0A8\uC790\uB294 \u300C\u2026 \uC138 \uC2DC\uC5D0 \uC608\uC57D\uC744 \uD588\uC5B4\uC694. \uADF8\uB7F0\uB370 \uADF8 \uC2DC\uAC04\uC5D0 \uBABB \uAC00\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uC608\uC57D\uC744 \uB2E4\uC12F \uC2DC\uB85C \uBC14\uAFD4\uC694. \uB0B4\uC77C \uBBF8\uC6A9\uC2E4\uC5D0 \uC548 \uAC00\uB294 \uAC83\uC774 \uC544\uB2C8\uB77C \uB2E4\uC12F \uC2DC\uC5D0 \uAC00\uC694.",
-      conceptIds: [
-        "G305"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "d11f2a393d27ce41e6adb6b955d0698e44b6c2702f18fa63fd1f2cdf50d2b3f1",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-013",
-      rev: 1,
-      sourceItemId: "ti-l-d-013",
-      sourceItemKey: "topik-items.ti-l-d-013.v1",
-      sourceHash: "7d1ac0f6b5bfb62f348770882e8b2c63f441bc4c8053f89ff75642628849349a",
-      familyKey: "topik-items.ti-l-d-013",
-      setId: null,
-      skillId: "ko.listening.negation",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uD0DD\uBC30\uC785\uB2C8\uB2E4. \uC9C0\uAE08 \uC9D1\uC5D0 \uACC4\uC138\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC544\uB2C8\uC694, \uD68C\uC0AC\uC5D0 \uC788\uC5B4\uC694. \uBC24 \uC544\uD649 \uC2DC\uCBE4 \uB4E4\uC5B4\uAC00\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uADF8\uB7FC \uACBD\uBE44\uC2E4\uC5D0 \uB9E1\uAE38\uAE4C\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC624\uB298\uC740 \uACBD\uBE44\uC2E4\uC774 \uC26C\uB294 \uB0A0\uC774\uC5D0\uC694. \uADF8\uB0E5 \uBB38 \uC55E\uC5D0 \uB193\uC544 \uC8FC\uC138\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB124, \uB193\uACE0 \uC0AC\uC9C4\uC744 \uBCF4\uB0B4 \uB4DC\uB9B4\uAC8C\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-013.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 18.7
-      },
-      claim: "\uB0A8\uC790\uB294 \uD0DD\uBC30\uB97C \uBB38 \uC55E\uC5D0 \uB450\uACE0 \uAC08 \uAC81\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uB0A8\uC790\uAC00 \u300C\uACBD\uBE44\uC2E4\uC5D0 \uB9E1\uAE38\uAE4C\uC694?\u300D\uB77C\uACE0 \uBB3C\uC5C8\uC9C0\uB9CC \uC5EC\uC790\uB294 \u300C\uC624\uB298\uC740 \uACBD\uBE44\uC2E4\uC774 \uC26C\uB294 \uB0A0\uC774\uC5D0\uC694. \uADF8\uB0E5 \uBB38 \uC55E\uC5D0 \uB193\uC544 \uC8FC\uC138\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB0A8\uC790\uB294 \uD0DD\uBC30\uB97C \uBB38 \uC55E\uC5D0 \uB450\uACE0 \uAC00\uC694.",
-      conceptIds: [
-        "G311",
-        "G404",
-        "G612",
-        "S109"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "e75a409c56136cf7bc2f5b27af743077e8ea81cbff1a32a0abba8ece48736022",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-014",
-      rev: 1,
-      sourceItemId: "ti-l-d-014",
-      sourceItemKey: "topik-items.ti-l-d-014.v1",
-      sourceHash: "56ad084789bf417153aa256fb713f735408ef4303a236626cf3497fec5673c8d",
-      familyKey: "topik-items.ti-l-d-014",
-      setId: null,
-      skillId: "ko.listening.negation",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uBC29\uC774 \uC880 \uB365\uB124\uC694. \uC5D0\uC5B4\uCEE8\uC744 \uCF24\uAE4C\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC9C0\uB09C\uB2EC\uC5D0 \uC804\uAE30 \uC694\uAE08\uC774 \uB9CE\uC774 \uB098\uC640\uC11C \uC774\uBC88 \uB2EC\uC5D0\uB294 \uC5D0\uC5B4\uCEE8\uC744 \uC548 \uCF1C\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uADF8\uB7FC \uCC3D\uBB38\uC744 \uC5F4\uAE4C\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uBC16\uC774 \uC2DC\uB044\uB7EC\uC6CC\uC11C \uCC3D\uBB38\uC740 \uC548 \uC5F4\uACE0 \uC2F6\uC5B4\uC694. \uC800\uAE30 \uC788\uB294 \uC120\uD48D\uAE30\uB97C \uCF1C\uC138\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC120\uD48D\uAE30\uAC00 \uACE0\uC7A5 \uB0AC\uC5B4\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uADF8\uB7FC \uC624\uB298\uB9CC \uC5D0\uC5B4\uCEE8\uC744 \uD55C \uC2DC\uAC04 \uCF1C\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-014.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 24
-      },
-      claim: "\uC5EC\uC790\uB294 \uC774\uBC88 \uB2EC\uC5D0 \uC5D0\uC5B4\uCEE8\uC744 \uD55C \uBC88\uB3C4 \uCF1C\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uC5EC\uC790\uB294 \uCC98\uC74C\uC5D0 \u300C\uC774\uBC88 \uB2EC\uC5D0\uB294 \uC5D0\uC5B4\uCEE8\uC744 \uC548 \uCF1C\uC694\u300D\uB77C\uACE0 \uD588\uC9C0\uB9CC, \uB0A8\uC790\uAC00 \u300C\uC120\uD48D\uAE30\uAC00 \uACE0\uC7A5 \uB0AC\uC5B4\uC694\u300D\uB77C\uACE0 \uD558\uC790 \u300C\uADF8\uB7FC \uC624\uB298\uB9CC \uC5D0\uC5B4\uCEE8\uC744 \uD55C \uC2DC\uAC04 \uCF1C\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uC5EC\uC790\uB294 \uC624\uB298 \uD55C \uC2DC\uAC04 \uB3D9\uC548 \uC5D0\uC5B4\uCEE8\uC744 \uCF1C\uB824\uACE0 \uD574\uC694.",
-      conceptIds: [
-        "G411",
-        "G311",
-        "G308",
-        "G301",
-        "S107"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "ea6fc879f60d61bdef419562e19ae69aa8588fe9cb03c1eeea11b2e532c1e1c7",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-015",
-      rev: 1,
-      sourceItemId: "ti-l-d-015",
-      sourceItemKey: "topik-items.ti-l-d-015.v1",
-      sourceHash: "bcec37f252d323eb658e79b608df12aa49214c22e08cce52db46c8136aa96e50",
-      familyKey: "topik-items.ti-l-d-015",
-      setId: null,
-      skillId: "ko.listening.negation",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC774\uBC88 \uD1A0\uC694\uC77C \uC0AC\uC9C4 \uBAA8\uC784 \uC54C\uC9C0\uC694? \uC7A5\uC18C\uAC00 \uBC14\uB00C\uC5C8\uC5B4\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC65C\uC694? \uACF5\uC6D0\uC5D0 \uC548 \uAC00\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uACF5\uC6D0\uC5D0\uC11C \uC774\uBC88 \uC8FC\uC5D0 \uACF5\uC0AC\uB97C \uD574\uC694. \uADF8\uB798\uC11C \uACF5\uC6D0 \uB300\uC2E0 \uB3D9\uBB3C\uC6D0\uC5D0 \uAC00\uAE30\uB85C \uD588\uC5B4\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB9CC\uB098\uB294 \uC2DC\uAC04\uB3C4 \uBC14\uB00C\uC5C8\uC5B4\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC544\uB2C8\uC694, \uC2DC\uAC04\uC740 \uADF8\uB300\uB85C \uC544\uCE68 \uC5F4 \uC2DC\uC608\uC694. \uB3D9\uBB3C\uC6D0 \uC55E\uC5D0\uC11C \uB9CC\uB098\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC54C\uACA0\uC5B4\uC694. \uADF8\uB7FC \uD1A0\uC694\uC77C\uC5D0 \uBD10\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-015.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 25.4
-      },
-      claim: "\uB0A8\uC790\uB294 \uD1A0\uC694\uC77C \uC544\uCE68\uC5D0 \uB3D9\uBB3C\uC6D0 \uC55E\uC73C\uB85C \uAC11\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uC5EC\uC790\uAC00 \u300C\uACF5\uC6D0 \uB300\uC2E0 \uB3D9\uBB3C\uC6D0\uC5D0 \uAC00\uAE30\uB85C \uD588\uC5B4\uC694\u300D\uB77C\uACE0 \uD558\uACE0, \u300C\uC2DC\uAC04\uC740 \uADF8\uB300\uB85C \uC544\uCE68 \uC5F4 \uC2DC\uC608\uC694. \uB3D9\uBB3C\uC6D0 \uC55E\uC5D0\uC11C \uB9CC\uB098\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB0A8\uC790\uB294 \uD1A0\uC694\uC77C \uC544\uCE68\uC5D0 \uB3D9\uBB3C\uC6D0 \uC55E\uC73C\uB85C \uAC00\uC694.",
-      conceptIds: [
-        "G412",
-        "S220",
-        "G501"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "95ec02dcc6b515cfc7c00cf5733d18514fb75e0a763a63fc1f9f1329b3046f0c",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-016",
-      rev: 1,
-      sourceItemId: "ti-l-d-016",
-      sourceItemKey: "topik-items.ti-l-d-016.v1",
-      sourceHash: "220f12534391784c6e49408a25e9e480827b5f469ba7a3693315e2164bee57e1",
-      familyKey: "topik-items.ti-l-d-016",
-      setId: null,
-      skillId: "ko.listening.negation",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC218\uC9C4 \uC528, \uC624\uB298 \uD68C\uC758\uAC00 \uBA87 \uC2DC\uC608\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC6D0\uB798 \uB450 \uC2DC\uC600\uB294\uB370 \uB124 \uC2DC\uB85C \uBC14\uB00C\uC5C8\uC5B4\uC694. \uBD80\uC7A5\uB2D8\uC774 \uC544\uC9C1 \uCD9C\uC7A5\uC5D0\uC11C \uC548 \uB3CC\uC544\uC624\uC168\uC5B4\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uD68C\uC758\uC2E4\uC740 \uAC19\uC544\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC544\uB2C8\uC694, \uC624 \uCE35 \uD68C\uC758\uC2E4\uC5D0 \uB2E4\uB978 \uD68C\uC758\uAC00 \uC788\uC5B4\uC11C \uCE60 \uCE35\uC5D0\uC11C \uD574\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uD68C\uC758 \uC790\uB8CC\uB294 \uBA87 \uC7A5 \uC900\uBE44\uD560\uAE4C\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC5F4 \uC7A5\uC774\uC694. \uD68C\uC758 \uC804\uC5D0 \uC81C \uCC45\uC0C1 \uC704\uC5D0 \uB193\uC544 \uC8FC\uC138\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-016.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 23.8
-      },
-      claim: "\uC624\uB298 \uD68C\uC758\uB294 \uCC98\uC74C \uC548\uB0B4\uD55C \uB450 \uC2DC\uC5D0 \uADF8\uB300\uB85C \uC2DC\uC791\uD569\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uD68C\uC758 \uC2DC\uAC04\uC774 \uB450 \uC2DC\uC5D0\uC11C \uB124 \uC2DC\uB85C \uBC14\uB00C\uC5C8\uC5B4\uC694. \uCC98\uC74C \uC548\uB0B4\uD55C \uC2DC\uAC04 \uADF8\uB300\uB85C \uC2DC\uC791\uD558\uC9C0 \uC54A\uC544\uC694.",
-      conceptIds: [
-        "G610",
-        "G308",
-        "G311",
-        "G406",
-        "G404"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "14318d6ba73c96e1a7737f5864c9b5eb2dfb5c0ea471300248a64457fc2c175f",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-017",
-      rev: 1,
-      sourceItemId: "ti-l-d-017",
-      sourceItemKey: "topik-items.ti-l-d-017.v1",
-      sourceHash: "32d5570013c6def4cf78e60492de92b8bc9960b1db30c0de248c1bd1f52d4a0d",
-      familyKey: "topik-items.ti-l-d-017",
-      setId: null,
-      skillId: "ko.listening.negation",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "delayed",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uD55C\uAD6D \uC694\uB9AC \uCC45 \uC788\uC5B4\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC774 \uAC00\uAC8C\uC5D0\uB294 \uC9C0\uAE08 \uC5C6\uC5B4\uC694. \uC8FC\uBB38\uD558\uC2DC\uBA74 \uBAA8\uB808 \uC640\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC624\uB298 \uC800\uB141\uC5D0 \uCE5C\uAD6C\uD55C\uD14C \uC918\uC57C \uD574\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uADF8\uB7FC \uC5ED \uC55E\uC5D0 \uC788\uB294 \uC800\uD76C \uB2E4\uB978 \uAC00\uAC8C\uC5D0 \uC9C1\uC811 \uAC00 \uBCF4\uC138\uC694. \uAC70\uAE30\uC5D0\uB294 \uB450 \uAD8C \uC788\uC5B4\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uADF8\uB7FC \uC8FC\uBB38\uD558\uC9C0 \uB9D0\uACE0 \uAC70\uAE30\uB85C \uAC08\uAC8C\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uB124, \uC81C\uAC00 \uADF8 \uAC00\uAC8C\uC5D0 \uC804\uD654\uD574 \uB458\uAC8C\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-017.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 24
-      },
-      claim: "\uB0A8\uC790\uB294 \uC5ED \uC55E \uAC00\uAC8C\uC5D0\uC11C \uCC45\uC744 \uC0B4 \uAC81\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uC5EC\uC790\uAC00 \u300C\uC5ED \uC55E\uC5D0 \uC788\uB294 \uC800\uD76C \uB2E4\uB978 \uAC00\uAC8C\uC5D0 \uC9C1\uC811 \uAC00 \uBCF4\uC138\uC694\u300D\uB77C\uACE0 \uD558\uC790 \uB0A8\uC790\uB294 \u300C\uC8FC\uBB38\uD558\uC9C0 \uB9D0\uACE0 \uAC70\uAE30\uB85C \uAC08\uAC8C\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB0A8\uC790\uB294 \uC5ED \uC55E \uAC00\uAC8C\uC5D0\uC11C \uCC45\uC744 \uC0AC\uC694.",
-      conceptIds: [
-        "G401",
-        "G403",
-        "G408",
-        "S226",
-        "G612"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "8a01754ade58a7b31ad78f32550ac8e4bfb475913588e5144735e130229ce183",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-018",
-      rev: 1,
-      sourceItemId: "ti-l-d-018",
-      sourceItemKey: "topik-items.ti-l-d-018.v1",
-      sourceHash: "1609fa60c4ac1647d73bddb018ca9de85e2304f3ed30f4a7a9e335ea52beafcb",
-      familyKey: "topik-items.ti-l-d-018",
-      setId: null,
-      skillId: "ko.listening.negation",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "delayed",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC790\uC804\uAC70 \uBC14\uD034\uAC00 \uC774\uC0C1\uD574\uC694. \uACE0\uCE60 \uC218 \uC788\uC5B4\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uBC14\uD034\uB97C \uBC14\uAFD4\uC57C \uD574\uC694. \uC624\uB9CC \uC6D0\uC774\uC5D0\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC624\uB9CC \uC6D0\uC774\uC694? \uC880 \uBE44\uC2F8\uB124\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC774 \uC790\uC804\uAC70\uB294 \uC624\uB798\uB3FC\uC11C \uB2E4\uB978 \uACF3\uB3C4 \uACE7 \uACE0\uC7A5 \uB0A0 \uAC83 \uAC19\uC544\uC694. \uC0C8 \uC790\uC804\uAC70\uB294 \uC2ED\uC624\uB9CC \uC6D0\uBD80\uD130 \uC788\uC5B4\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uADF8\uB7FC \uACE0\uCE58\uC9C0 \uB9D0\uACE0 \uC0C8\uB85C \uC0B4\uAC8C\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uADF8\uB7FC \uC800\uCABD\uC5D0\uC11C \uD55C\uBC88 \uACE8\uB77C \uBCF4\uC138\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-018.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 24.7
-      },
-      claim: "\uB0A8\uC790\uB294 \uC0C8 \uC790\uC804\uAC70\uB97C \uC0AC\uC9C0 \uC54A\uACE0 \uBC14\uD034\uB9CC \uACE0\uCE58\uAE30\uB85C \uD588\uC2B5\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uB0A8\uC790\uB294 \uCC98\uC74C\uC5D0\uB294 \uACE0\uCE58\uB824\uACE0 \uD588\uC9C0\uB9CC, \uB9C8\uC9C0\uB9C9\uC5D0\uB294 \uACE0\uCE58\uC9C0 \uB9D0\uACE0 \uC0C8\uB85C \uC0AC\uACA0\uB2E4\uACE0 \uD588\uC5B4\uC694.",
-      conceptIds: [
-        "G403",
-        "G411",
-        "G608",
-        "S226",
-        "G612",
-        "G408"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "b52f5220c230c96b3e076f74d598fac547cac368adf2fde57c24ef9ed20fbc13",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-b-003",
-      rev: 1,
-      sourceItemId: "ti-l-b-003",
-      sourceItemKey: "topik-items.ti-l-b-003.v2",
-      sourceHash: "fc507c1538cf3ed2b09d63e1efe78c230346ac5086db09b89a0c3b848c5f2085",
-      familyKey: "topik-items.ti-l-b-003",
-      setId: null,
-      skillId: "ko.listening.condition",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC120\uC0DD\uB2D8, \uAE30\uC219\uC0AC \uBB38\uC740 \uBC24 \uBA87 \uC2DC\uC5D0 \uB2EB\uC544\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC5F4\uB450 \uC2DC\uC5D0 \uB2EB\uC544\uC694. \uC5F4\uB450 \uC2DC\uAC00 \uC9C0\uB098\uBA74 \uAE30\uC219\uC0AC\uC5D0 \uBABB \uB4E4\uC5B4\uAC00\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC8FC\uB9D0\uC5D0\uB3C4\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uB124, \uC8FC\uB9D0\uC5D0\uB3C4 \uAC19\uC544\uC694. \uC5F4\uB450 \uC2DC\uAE4C\uC9C0 \uAF2D \uB4E4\uC5B4\uC624\uC138\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-b-003.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 16
-      },
-      claim: "\uB0A8\uC790\uB294 \uC8FC\uB9D0\uC5D0\uB3C4 \uBC24 \uC5F4\uB450 \uC2DC\uAE4C\uC9C0 \uAE30\uC219\uC0AC\uC5D0 \uB4E4\uC5B4\uAC00\uC57C \uD569\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uC5EC\uC790\uB294 \u300C\uC5F4\uB450 \uC2DC\uAC00 \uC9C0\uB098\uBA74 \uAE30\uC219\uC0AC\uC5D0 \uBABB \uB4E4\uC5B4\uAC00\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB9AC\uACE0 \u300C\uC8FC\uB9D0\uC5D0\uB3C4 \uAC19\uC544\uC694. \uC5F4\uB450 \uC2DC\uAE4C\uC9C0 \uAF2D \uB4E4\uC5B4\uC624\uC138\uC694\u300D\uB77C\uACE0 \uD588\uC73C\uB2C8\uAE4C \uB0A8\uC790\uB294 \uC8FC\uB9D0\uC5D0\uB3C4 \uC5F4\uB450 \uC2DC\uAE4C\uC9C0 \uB4E4\uC5B4\uAC00\uC57C \uD574\uC694. \uC8FC\uB9D0\uC5D0\uB294 \uB2A6\uAC8C \uB4E4\uC5B4\uAC08 \uC218 \uC788\uB2E4\uB294 \uC124\uBA85\uC740 \u300C\uC8FC\uB9D0\uC5D0\uB3C4 \uAC19\uC544\uC694\u300D\uC640 \uB9DE\uC9C0 \uC54A\uC544\uC694.",
-      conceptIds: [
-        "S105",
-        "G401"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "05458194a15e0102f47cbc1d05751d3ce0308db8675f3ee968be4fd922430c22",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-b-015",
-      rev: 1,
-      sourceItemId: "ti-l-b-015",
-      sourceItemKey: "topik-items.ti-l-b-015.v1",
-      sourceHash: "f1883e4001c442e358de1c02c8ea7e149d07ee79e7b2f21870e9dd02fa9a34a4",
-      familyKey: "topik-items.ti-l-b-015",
-      setId: null,
-      skillId: "ko.listening.condition",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC774 \uD68C\uC0AC \uC2DD\uB2F9 \uC810\uC2EC\uC740 \uC5BC\uB9C8\uC608\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uD68C\uC0AC \uCE74\uB4DC\uAC00 \uC788\uC73C\uBA74 \uC624\uCC9C \uC6D0\uC774\uC5D0\uC694. \uCE74\uB4DC\uAC00 \uC5C6\uC73C\uBA74 \uCE60\uCC9C \uC6D0\uC774\uC5D0\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC800\uB294 \uC624\uB298 \uCC98\uC74C \uC654\uC5B4\uC694. \uC544\uC9C1 \uCE74\uB4DC\uAC00 \uC5C6\uC5B4\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-b-015.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 12.5
-      },
-      claim: "\uC5EC\uC790\uB294 \uC624\uB298 \uC810\uC2EC\uC744 \uC624\uCC9C \uC6D0\uC5D0 \uBA39\uC2B5\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uB0A8\uC790\uB294 \u300C\uCE74\uB4DC\uAC00 \uC5C6\uC73C\uBA74 \uCE60\uCC9C \uC6D0\uC774\uC5D0\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uC5EC\uC790\uB294 \u300C\uC544\uC9C1 \uCE74\uB4DC\uAC00 \uC5C6\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC73C\uB2C8\uAE4C \uC624\uB298 \uC810\uC2EC\uAC12\uC740 \uCE60\uCC9C \uC6D0\uC774\uC5D0\uC694. \uC624\uCC9C \uC6D0\uC740 \uCE74\uB4DC\uAC00 \uC788\uC744 \uB54C\uC758 \uAC12\uC774\uC5D0\uC694.",
-      conceptIds: [
-        "G401"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "051c42d959a0d68c323381fe426c1e8aafe294970fe444c8c96c9798d01d5e97",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-b-019",
-      rev: 1,
-      sourceItemId: "ti-l-b-019",
-      sourceItemKey: "topik-items.ti-l-b-019.v1",
-      sourceHash: "5c71f8634ed13ca74715ff27a370a90373c36152a3e04254e64fe405e2347ea5",
-      familyKey: "topik-items.ti-l-b-019",
-      setId: null,
-      skillId: "ko.listening.condition",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC774 \uACF5\uCC45 \uD55C \uAD8C\uC5D0 \uC5BC\uB9C8\uC608\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uCC9C\uC624\uBC31 \uC6D0\uC774\uC5D0\uC694. \uADF8\uB7F0\uB370 \uC138 \uAD8C\uC744 \uC0AC\uBA74 \uD55C \uAD8C\uC744 \uB354 \uB4DC\uB824\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uADF8\uB7FC \uC138 \uAD8C \uC8FC\uC138\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-b-019.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 9.5
-      },
-      claim: "\uC5EC\uC790\uB294 \uACF5\uCC45\uC744 \uBAA8\uB450 \uB124 \uAD8C \uBC1B\uC2B5\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uB0A8\uC790\uB294 \uC138 \uAD8C\uC744 \uC0AC\uBA74 \uD55C \uAD8C\uC744 \uB354 \uC900\uB2E4\uACE0 \uD588\uC5B4\uC694. \uC5EC\uC790\uAC00 \uC138 \uAD8C\uC744 \uC0AC\uB2C8\uAE4C \uD55C \uAD8C\uC744 \uB354 \uBC1B\uC544\uC11C \uBAA8\uB450 \uB124 \uAD8C\uC774\uC5D0\uC694.",
-      conceptIds: [
-        "G401"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "8a5094f1853b7d674fddd5cba02bbbad3dafdf05987bbbea12f731394cf64577",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-c-017",
-      rev: 1,
-      sourceItemId: "ti-l-c-017",
-      sourceItemKey: "topik-items.ti-l-c-017.v1",
-      sourceHash: "8423428b60606577f205d99140635b8ab7333d95e4dfd87114534678f74b04cc",
-      familyKey: "topik-items.ti-l-c-017",
-      setId: null,
-      skillId: "ko.listening.condition",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uD0DC\uBBFC \uC528\uB294 \uD68C\uC0AC\uC5D0 \uC790\uC804\uAC70\uB97C \uD0C0\uACE0 \uC640\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB124, \uB0A0\uC528\uAC00 \uC88B\uC73C\uBA74 \uC790\uC804\uAC70\uB97C \uD0C0\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uBE44\uAC00 \uC624\uBA74\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uBE44\uAC00 \uC624\uBA74 \uC9C0\uD558\uCCA0\uC744 \uD0C0\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-c-017.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 10.8
-      },
-      claim: "\uB0A8\uC790\uB294 \uBE44\uAC00 \uC624\uBA74 \uC790\uC804\uAC70\uB85C \uD68C\uC0AC\uC5D0 \uAC11\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uB0A8\uC790\uB294 \u300C\uB0A0\uC528\uAC00 \uC88B\uC73C\uBA74 \uC790\uC804\uAC70\uB97C \uD0C0\uC694\u300D, \u300C\uBE44\uAC00 \uC624\uBA74 \uC9C0\uD558\uCCA0\uC744 \uD0C0\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uBE44\uAC00 \uC624\uB294 \uB0A0\uC5D0\uB294 \uC9C0\uD558\uCCA0\uB85C \uD68C\uC0AC\uC5D0 \uAC00\uC694.",
-      conceptIds: [
-        "G401"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "4ad53fcf7e2fc2d59afc1ef95f64c3a52b2399ec02f74d57a14c20cf731c3292",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-c-018",
-      rev: 1,
-      sourceItemId: "ti-l-c-018",
-      sourceItemKey: "topik-items.ti-l-c-018.v1",
-      sourceHash: "ed2a6761ae6fe9f757378c83b5394ff3182a53f50970ad29d809d5dfc5b8a864",
-      familyKey: "topik-items.ti-l-c-018",
-      setId: null,
-      skillId: "ko.listening.condition",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "delayed",
-      script: [
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC900\uD638 \uC528, \uC800 \uC7A0\uAE50 \uBC16\uC5D0 \uB098\uAC00\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB124, \uB2E4\uB140\uC624\uC138\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC190\uB2D8\uC774 \uC624\uBA74 \uC800\uC5D0\uAC8C \uC804\uD654\uD558\uC138\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB124, \uC54C\uACA0\uC5B4\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-c-018.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 10.7
-      },
-      claim: "\uB0A8\uC790\uB294 \uC190\uB2D8\uC774 \uC624\uBA74 \uC5EC\uC790\uC5D0\uAC8C \uC804\uD654\uB97C \uAC81\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uC5EC\uC790\uB294 \u300C\uC190\uB2D8\uC774 \uC624\uBA74 \uC800\uC5D0\uAC8C \uC804\uD654\uD558\uC138\uC694\u300D\uB77C\uACE0 \uD588\uACE0 \uB0A8\uC790\uB294 \u300C\uB124, \uC54C\uACA0\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uC190\uB2D8\uC774 \uC624\uBA74 \uB0A8\uC790\uAC00 \uC5EC\uC790\uC5D0\uAC8C \uC804\uD654\uD574\uC694.",
-      conceptIds: [
-        "G401",
-        "G211"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "62177e4da128ecb9337e4ee37cd5285e667ae1f38e9b7a6eefc21e3228b00b79",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-c-019",
-      rev: 1,
-      sourceItemId: "ti-l-c-019",
-      sourceItemKey: "topik-items.ti-l-c-019.v1",
-      sourceHash: "abc827e637af22621d1f060561998e64890fd68f3d3c307f5b362bdda86e0427",
-      familyKey: "topik-items.ti-l-c-019",
-      setId: null,
-      skillId: "ko.listening.condition",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "delayed",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC218\uC601 \uBAA8\uC790\uAC00 \uC5C6\uC5B4\uC694. \uAD1C\uCC2E\uC544\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC544\uB2C8\uC694, \uBAA8\uC790\uAC00 \uC5C6\uC73C\uBA74 \uBABB \uB4E4\uC5B4\uAC00\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uADF8\uB7FC \uBAA8\uC790\uB294 \uC5B4\uB514\uC5D0\uC11C \uC0AC\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC77C \uCE35 \uAC00\uAC8C\uC5D0\uC11C \uC0AC\uC138\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-c-019.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 11.2
-      },
-      claim: "\uB0A8\uC790\uB294 \uBAA8\uC790\uAC00 \uC788\uC5B4\uC11C \uBC14\uB85C \uC218\uC601\uC7A5\uC5D0 \uB4E4\uC5B4\uAC11\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uC5EC\uC790\uB294 \u300C\uBAA8\uC790\uAC00 \uC5C6\uC73C\uBA74 \uBABB \uB4E4\uC5B4\uAC00\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uBAA8\uC790\uAC00 \uC5C6\uC73C\uBA74 \uC218\uC601\uC7A5\uC5D0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC73C\uB2C8\uAE4C \uC218\uC601\uB3C4 \uBABB \uD574\uC694.",
-      conceptIds: [
-        "G401",
-        "G305"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "079dd7de40081b4751199c5c829bc22a051112db50e4ad4ce4fc955f3f32fea8",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-029",
-      rev: 1,
-      sourceItemId: "ti-l-d-029",
-      sourceItemKey: "topik-items.ti-l-d-029.v1",
-      sourceHash: "96177a3b930b85a4fdad676128d976a61e57b33788e5e2079684f4d0d73df907",
-      familyKey: "topik-items.ti-l-d-029",
-      setId: null,
-      skillId: "ko.listening.condition",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC8FC\uCC28 \uC694\uAE08\uC774 \uC5BC\uB9C8\uC608\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uCC98\uC74C \uD55C \uC2DC\uAC04\uC740 \uB3C8\uC744 \uC548 \uB0B4\uC154\uB3C4 \uB3FC\uC694. \uD55C \uC2DC\uAC04\uC774 \uB118\uC73C\uBA74 \uC0BC\uC2ED \uBD84\uC5D0 \uCC9C \uC6D0\uC774\uC5D0\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC800\uB294 \uD55C \uC2DC\uAC04 \uBC18\uCBE4 \uC788\uC744 \uAC70\uC608\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC774 \uAC74\uBB3C \uAC00\uAC8C\uC5D0\uC11C \uBB3C\uAC74\uC744 \uC0AC\uC2DC\uBA74 \uB450 \uC2DC\uAC04\uAE4C\uC9C0 \uB3C8\uC744 \uC548 \uB0B4\uC154\uB3C4 \uB3FC\uC694. \uC601\uC218\uC99D\uB9CC \uBCF4\uC5EC \uC8FC\uC138\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC544, \uC800\uB294 \uC6B4\uB3D9\uD654\uB97C \uC0AC\uB7EC \uC654\uC5B4\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-029.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 21.8
-      },
-      claim: "\uB0A8\uC790\uB294 \uC6B4\uB3D9\uD654\uB97C \uC0AC\uACE0 \uC601\uC218\uC99D\uC744 \uBCF4\uC774\uBA74 \uB3C8\uC744 \uC548 \uB0C5\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uC5EC\uC790\uB294 \u300C\uC774 \uAC74\uBB3C \uAC00\uAC8C\uC5D0\uC11C \uBB3C\uAC74\uC744 \uC0AC\uC2DC\uBA74 \uB450 \uC2DC\uAC04\uAE4C\uC9C0 \uB3C8\uC744 \uC548 \uB0B4\uC154\uB3C4 \uB3FC\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uB0A8\uC790\uB294 \uD55C \uC2DC\uAC04 \uBC18\uCBE4 \uC788\uACE0 \uC6B4\uB3D9\uD654\uB97C \uC0AC\uB7EC \uC654\uC73C\uB2C8\uAE4C, \uC6B4\uB3D9\uD654\uB97C \uC0AC\uACE0 \uC601\uC218\uC99D\uC744 \uBCF4\uC5EC \uC8FC\uBA74 \uC694\uAE08\uC744 \uB0B4\uC9C0 \uC54A\uC544\uC694.",
-      conceptIds: [
-        "G401",
-        "G505",
-        "G302",
-        "S105",
-        "S107",
-        "G303"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "30c26690745b96715e0c0a26704b769e8b1ae47cd016af57ec3f91c31af47a7d",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-030",
-      rev: 1,
-      sourceItemId: "ti-l-d-030",
-      sourceItemKey: "topik-items.ti-l-d-030.v1",
-      sourceHash: "1e1e6168c8cc1a0a75224d29fffb6bb7e3fcff53005063da1d97a0e3ff1f8a08",
-      familyKey: "topik-items.ti-l-d-030",
-      setId: null,
-      skillId: "ko.listening.condition",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC774 \uBC14\uC9C0\uD558\uACE0 \uD2F0\uC154\uCE20\uB97C \uBC14\uAFB8\uACE0 \uC2F6\uC5B4\uC694. \uC9C0\uB09C\uC8FC \uD1A0\uC694\uC77C\uC5D0 \uC0C0\uC5B4\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC601\uC218\uC99D\uC774 \uC788\uC73C\uBA74 \uC774 \uC8FC \uC548\uC5D0 \uBC14\uAFC0 \uC218 \uC788\uC5B4\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC601\uC218\uC99D\uC740 \uC5EC\uAE30 \uC788\uC5B4\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uADF8\uB7F0\uB370 \uC637\uC744 \uBE68\uC558\uC73C\uBA74 \uBC14\uAFC0 \uC218 \uC5C6\uC5B4\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uBC14\uC9C0\uB294 \uD55C \uBC88 \uBE68\uC558\uB294\uB370\uC694. \uD2F0\uC154\uCE20\uB294 \uC548 \uBE68\uC558\uC5B4\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uADF8\uB7FC \uD2F0\uC154\uCE20\uB9CC \uC774\uCABD\uC73C\uB85C \uC8FC\uC138\uC694. \uD655\uC778\uD574 \uBCFC\uAC8C\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-030.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 21.8
-      },
-      claim: "\uC601\uC218\uC99D\uC774 \uC788\uC73C\uBBC0\uB85C \uD55C \uBC88 \uBE64 \uBC14\uC9C0\uB3C4 \uBC14\uAFC0 \uC218 \uC788\uC2B5\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uC601\uC218\uC99D\uC774 \uC788\uC5B4\uB3C4 \uD55C \uBC88 \uBE64 \uC637\uC740 \uBC14\uAFC0 \uC218 \uC5C6\uC5B4\uC694. \uBC14\uC9C0\uB294 \uBE68\uC558\uACE0 \uD2F0\uC154\uCE20\uB294 \uBE68\uC9C0 \uC54A\uC558\uC73C\uBBC0\uB85C \uD2F0\uC154\uCE20\uB9CC \uBC14\uAFC0 \uC218 \uC788\uC5B4\uC694.",
-      conceptIds: [
-        "G401",
-        "G402",
-        "G610",
-        "S107",
-        "G408"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "4b64b1a560557ee6475115e8191b2531876d6695c0da5ad8e0444ceb8d7da8b5",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-031",
-      rev: 1,
-      sourceItemId: "ti-l-d-031",
-      sourceItemKey: "topik-items.ti-l-d-031.v1",
-      sourceHash: "1c535171e11cac40298418f4ef4bfb705b48138ee2726e5bcf877999edad886e",
-      familyKey: "topik-items.ti-l-d-031",
-      setId: null,
-      skillId: "ko.listening.condition",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC5B4\uB978 \uB450 \uC7A5\uD558\uACE0 \uC544\uC774 \uD55C \uC7A5 \uC8FC\uC138\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC544\uC774\uB294 \uBA87 \uC0B4\uC774\uC5D0\uC694? \uC77C\uACF1 \uC0B4\uC774 \uC548 \uB418\uBA74 \uD45C\uB97C \uB530\uB85C \uC548 \uC0AC\uC154\uB3C4 \uB3FC\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC5EC\uB35F \uC0B4\uC774\uC5D0\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uADF8\uB7FC \uC544\uC774\uB294 \uC0BC\uCC9C \uC6D0, \uC5B4\uB978\uC740 \uC721\uCC9C \uC6D0\uC774\uC5D0\uC694. \uD559\uC0DD\uC99D\uC774 \uC788\uC73C\uBA74 \uC5B4\uB978\uB3C4 \uC544\uC774\uCC98\uB7FC \uC0BC\uCC9C \uC6D0\uC774\uC5D0\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC544, \uC800\uB294 \uD559\uC0DD\uC99D\uC774 \uC788\uC5B4\uC694. \uC5EC\uAE30\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-031.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 22.8
-      },
-      claim: "\uB0A8\uC790\uB294 \uC790\uAE30 \uD45C\uB97C \uC0BC\uCC9C \uC6D0\uC5D0 \uC0B4 \uC218 \uC788\uC2B5\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uC5EC\uC790\uAC00 \u300C\uD559\uC0DD\uC99D\uC774 \uC788\uC73C\uBA74 \uC5B4\uB978\uB3C4 \uC544\uC774\uCC98\uB7FC \uC0BC\uCC9C \uC6D0\uC774\uC5D0\uC694\u300D\uB77C\uACE0 \uD588\uACE0, \uB0A8\uC790\uB294 \u300C\uC800\uB294 \uD559\uC0DD\uC99D\uC774 \uC788\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB0A8\uC790\uB294 \uC790\uAE30 \uD45C\uB97C \uC0BC\uCC9C \uC6D0\uC5D0 \uC0B4 \uC218 \uC788\uC5B4\uC694.",
-      conceptIds: [
-        "G401",
-        "G505",
-        "S204",
-        "S102"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "8a628cb6c35dd4816d75eccb3e106fad3ffb3e7e004eb563661de32d1eb747a1",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-032",
-      rev: 1,
-      sourceItemId: "ti-l-d-032",
-      sourceItemKey: "topik-items.ti-l-d-032.v1",
-      sourceHash: "4076247afb67fd192873878fb1b872e9112096355e091e8d79d19943fa215761",
-      familyKey: "topik-items.ti-l-d-032",
-      setId: null,
-      skillId: "ko.listening.condition",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC774\uBC88 \uB2EC \uB9C8\uC9C0\uB9C9 \uD1A0\uC694\uC77C\uC5D0 \uCEA0\uD551\uC7A5\uC744 \uC608\uC57D\uD558\uACE0 \uC2F6\uC5B4\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uBA87 \uBD84\uC774 \uC624\uC138\uC694? \uC5EC\uC12F \uBA85\uC774 \uB118\uC73C\uBA74 \uD070 \uC790\uB9AC\uB97C \uC4F0\uC154\uC57C \uD574\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC5B4\uB978 \uB2E4\uC12F \uBA85\uD558\uACE0 \uC544\uC774 \uB450 \uBA85\uC774\uC5D0\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uD070 \uC790\uB9AC\uB294 \uD558\uB8E8\uC5D0 \uD314\uB9CC \uC6D0\uC774\uACE0 \uC791\uC740 \uC790\uB9AC\uB294 \uC624\uB9CC \uC6D0\uC774\uC5D0\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC544\uC774\uB3C4 \uC0AC\uB78C \uC218\uC5D0 \uB4E4\uC5B4\uAC00\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uB124, \uC544\uC774\uB3C4 \uB611\uAC19\uC774 \uD55C \uBA85\uC774\uC5D0\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-032.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 22.8
-      },
-      claim: "\uB0A8\uC790\uB294 \uC791\uC740 \uC790\uB9AC\uB97C \uC624\uB9CC \uC6D0\uC5D0 \uC608\uC57D\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uC5EC\uC790\uAC00 \u300C\uC5EC\uC12F \uBA85\uC774 \uB118\uC73C\uBA74 \uD070 \uC790\uB9AC\uB97C \uC4F0\uC154\uC57C \uD574\uC694\u300D\uB77C\uACE0 \uD588\uACE0, \uB0A8\uC790\uB294 \u300C\uC5B4\uB978 \uB2E4\uC12F \uBA85\uD558\uACE0 \uC544\uC774 \uB450 \uBA85\uC774\uC5D0\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uC544\uC774\uB3C4 \u300C\uB611\uAC19\uC774 \uD55C \uBA85\uC774\uC5D0\uC694\u300D\uB77C\uC11C \uBAA8\uB450 \uC77C\uACF1 \uBA85\uC774\uB2C8\uAE4C \uB0A8\uC790\uB294 \uD558\uB8E8\uC5D0 \uD314\uB9CC \uC6D0\uC778 \uD070 \uC790\uB9AC\uB97C \uC368\uC57C \uD574\uC694.",
-      conceptIds: [
-        "G401",
-        "G403",
-        "G301",
-        "S109"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "92d631fd2e1b8d3949fde64a17284a93a5b3cff5a8d6f412f6f3a1518a625030",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-033",
-      rev: 1,
-      sourceItemId: "ti-l-d-033",
-      sourceItemKey: "topik-items.ti-l-d-033.v1",
-      sourceHash: "0d473ae625e9f1b26d0752b711788bd0783d4928a914bfbd5d6d43ab593c6e4b",
-      familyKey: "topik-items.ti-l-d-033",
-      setId: null,
-      skillId: "ko.listening.condition",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "delayed",
-      script: [
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uAE38\uC774 \uB9C9\uD600\uC11C \uB2A6\uC5C8\uC5B4\uC694. \uC9C0\uAE08 \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC5B4\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uACF5\uC5F0\uC774 \uC2DC\uC791\uD558\uBA74 \uC548\uC5D0 \uB4E4\uC5B4\uAC00\uC2E4 \uC218 \uC5C6\uC5B4\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uADF8\uB7FC \uD45C\uB97C \uBC14\uAFD4\uC57C \uD574\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC544\uB2C8\uC694, \uC26C\uB294 \uC2DC\uAC04\uC774 \uB418\uBA74 \uB4E4\uC5B4\uAC00\uC2E4 \uC218 \uC788\uC5B4\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC26C\uB294 \uC2DC\uAC04\uC740 \uC5B8\uC81C\uC608\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC624\uC2ED \uBD84 \uB4A4\uC608\uC694. \uADF8\uB3D9\uC548 \uC800 \uD654\uBA74\uC73C\uB85C \uBCF4\uC138\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-033.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 19.7
-      },
-      claim: "\uC5EC\uC790\uB294 \uC26C\uB294 \uC2DC\uAC04\uC774 \uB420 \uB54C\uAE4C\uC9C0 \uBC16\uC5D0\uC11C \uAE30\uB2E4\uB824\uC57C \uD569\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uB0A8\uC790\uAC00 \u300C\uACF5\uC5F0\uC774 \uC2DC\uC791\uD558\uBA74 \uC548\uC5D0 \uB4E4\uC5B4\uAC00\uC2E4 \uC218 \uC5C6\uC5B4\uC694\u300D\uB77C\uACE0 \uD558\uACE0, \u300C\uC26C\uB294 \uC2DC\uAC04\uC774 \uB418\uBA74 \uB4E4\uC5B4\uAC00\uC2E4 \uC218 \uC788\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uC5EC\uC790\uB294 \uC26C\uB294 \uC2DC\uAC04\uC774 \uB420 \uB54C\uAE4C\uC9C0 \uBC16\uC5D0\uC11C \uAE30\uB2E4\uB824\uC57C \uD574\uC694.",
-      conceptIds: [
-        "G401",
-        "G402",
-        "G308",
-        "G403"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "607781a0bd3acbd6d8acb8a6bf00a451365302ec2742b5c403ab5be81c3e8175",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-034",
-      rev: 1,
-      sourceItemId: "ti-l-d-034",
-      sourceItemKey: "topik-items.ti-l-d-034.v1",
-      sourceHash: "992be67980eeed10a6bf2e366b7e8cdc39a94a917131e092dbcff8fd4cbdffa2",
-      familyKey: "topik-items.ti-l-d-034",
-      setId: null,
-      skillId: "ko.listening.condition",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "delayed",
-      script: [
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC694\uB9AC \uC218\uC5C5\uC740 \uD55C \uB2EC\uC5D0 \uC5BC\uB9C8\uC608\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC774 \uB3D9\uB124\uC5D0 \uC0B4\uBA74 \uC774\uB9CC \uC6D0\uC774\uC5D0\uC694. \uB2E4\uB978 \uB3D9\uB124\uB294 \uC0AC\uB9CC \uC6D0\uC774\uC5D0\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC800\uB294 \uC9C0\uB09C\uC8FC\uC5D0 \uC774 \uB3D9\uB124\uB85C \uC774\uC0AC \uC654\uC5B4\uC694. \uD68C\uC0AC\uB294 \uB2E4\uB978 \uB3D9\uB124\uC5D0 \uC788\uACE0\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC218\uC5C5\uC740 \uB9E4\uC8FC \uC218\uC694\uC77C \uC800\uB141 \uC77C\uACF1 \uC2DC\uC608\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC88B\uC544\uC694. \uB2E4\uC74C \uB2EC\uBD80\uD130 \uB4E4\uC744\uAC8C\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-034.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 19.3
-      },
-      claim: "\uC5EC\uC790\uB294 \uD68C\uC0AC\uAC00 \uB2E4\uB978 \uB3D9\uB124\uC5D0 \uC788\uC5B4\uC11C \uC0AC\uB9CC \uC6D0\uC744 \uB0C5\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uB0A8\uC790\uB294 \u300C\uC774 \uB3D9\uB124\uC5D0 \uC0B4\uBA74 \uC774\uB9CC \uC6D0\uC774\uC5D0\uC694\u300D\uB77C\uACE0 \uD588\uACE0, \uC5EC\uC790\uB294 \u300C\uC9C0\uB09C\uC8FC\uC5D0 \uC774 \uB3D9\uB124\uB85C \uC774\uC0AC \uC654\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uC5EC\uC790\uB294 \uC774 \uB3D9\uB124\uC5D0 \uC0AC\uB2C8\uAE4C \uD55C \uB2EC\uC5D0 \uC774\uB9CC \uC6D0\uC744 \uB0B4\uC694.",
-      conceptIds: [
-        "G401",
-        "S114",
-        "G612",
-        "S104"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "a1613a36de7069cad873cb629800e29f9d45a3ad831b9ead3dea3bb64c14edfa",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-b-004",
-      rev: 1,
-      sourceItemId: "ti-l-b-004",
-      sourceItemKey: "topik-items.ti-l-b-004.v2",
-      sourceHash: "3bbaf5003286e43023f041c626cf251f6d16bab3ab4a558a730ca209e6b9f011",
-      familyKey: "topik-items.ti-l-b-004",
-      setId: null,
-      skillId: "ko.listening.reason",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC694\uC998 \uC65C \uB2A6\uAC8C\uAE4C\uC9C0 \uD559\uAD50\uC5D0 \uC788\uC5B4\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB2E4\uC74C \uC8FC\uC5D0 \uD55C\uAD6D\uC5B4 \uB9D0\uD558\uAE30 \uB300\uD68C\uAC00 \uC788\uC5B4\uC694. \uADF8\uB798\uC11C \uB9E4\uC77C \uC800\uB141\uC5D0 \uC5F0\uC2B5\uD574\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC640, \uADF8\uB798\uC694? \uB300\uD68C \uB0A0\uC5D0 \uC800\uB3C4 \uBCF4\uB7EC \uAC08\uAC8C\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-b-004.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 12.9
-      },
-      claim: "\uB0A8\uC790\uB294 \uB300\uD68C \uC5F0\uC2B5\uC744 \uD574\uC11C \uB2A6\uAC8C\uAE4C\uC9C0 \uD559\uAD50\uC5D0 \uC788\uC2B5\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uB0A8\uC790\uB294 \u300C\uB2E4\uC74C \uC8FC\uC5D0 \u2026 \uB9D0\uD558\uAE30 \uB300\uD68C\uAC00 \uC788\uC5B4\uC694. \uADF8\uB798\uC11C \uB9E4\uC77C \uC800\uB141\uC5D0 \uC5F0\uC2B5\uD574\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uB300\uD68C \uC5F0\uC2B5 \uB54C\uBB38\uC5D0 \uB2A6\uAC8C\uAE4C\uC9C0 \uD559\uAD50\uC5D0 \uC788\uC5B4\uC694. \uB300\uD68C\uB294 \uC544\uC9C1 \uD558\uC9C0 \uC54A\uC558\uC73C\uB2C8\uAE4C \uB300\uD68C\uAC00 \uB05D\uB098\uC11C \uB2A6\uAC8C\uAE4C\uC9C0 \uC788\uB2E4\uB294 \uC124\uBA85\uC740 \uD2C0\uB824\uC694.",
-      conceptIds: [
-        "G308"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "c60a363627961178a799f55b793ace931d50d8e16d5cdafcdeeaa6ee745b1048",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-b-008",
-      rev: 1,
-      sourceItemId: "ti-l-b-008",
-      sourceItemKey: "topik-items.ti-l-b-008.v1",
-      sourceHash: "7f3caf6457fd3e227ae4e4e7e0955d6fea9627b5ab2cb1d3b7f9f48c58369edd",
-      familyKey: "topik-items.ti-l-b-008",
-      setId: null,
-      skillId: "ko.listening.reason",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uD558\uC0B0 \uC528, \uC624\uB298\uC740 \uD0DD\uC2DC\uB97C \uD0C0\uACE0 \uC654\uC5B4\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB124, \uC800\uB294 \uBCF4\uD1B5 \uC9C0\uD558\uCCA0\uC744 \uD0C0\uC694. \uADF8\uB7F0\uB370 \uC624\uB298\uC740 \uAC00\uBC29\uC774 \uB108\uBB34 \uBB34\uAC70\uC6CC\uC11C \uD0DD\uC2DC\uB97C \uD0D4\uC5B4\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uAC00\uBC29\uC5D0 \uBB50\uAC00 \uC788\uC5B4\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uCC45\uC774 \uB9CE\uC774 \uC788\uC5B4\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-b-008.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 14.4
-      },
-      claim: "\uB0A8\uC790\uB294 \uAC00\uBC29\uC774 \uAC00\uBCBC\uC6CC\uC11C \uC624\uB298 \uD0DD\uC2DC\uB97C \uD0D4\uC2B5\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uCC45\uC774 \uB9CE\uC544 \uAC00\uBC29\uC774 \uB108\uBB34 \uBB34\uAC70\uC6E0\uAE30 \uB54C\uBB38\uC5D0 \uD0DD\uC2DC\uB97C \uD0D4\uC5B4\uC694. \uAC00\uBCBC\uC6CC\uC11C \uD0C4 \uAC83\uC774 \uC544\uB2C8\uC5D0\uC694.",
-      conceptIds: [
-        "G308"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "bc26db413eed902e72e117d65f2ec7999d8f51ad295a952b52bf5702081cabfe",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-b-012",
-      rev: 1,
-      sourceItemId: "ti-l-b-012",
-      sourceItemKey: "topik-items.ti-l-b-012.v2",
-      sourceHash: "001faf71cd22a2fe428f9f20202ee4e51199914072eb0a43dc0b5f366e32bbc8",
-      familyKey: "topik-items.ti-l-b-012",
-      setId: null,
-      skillId: "ko.listening.reason",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uCE74\uBC00\uB77C \uC528, \uC624\uB298 \uC800\uB141\uC5D0 \uAC19\uC774 \uAE40\uCE58\uCC0C\uAC1C\uB97C \uBA39\uC744\uAE4C\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uAE40\uCE58\uCC0C\uAC1C\uB294 \uB108\uBB34 \uB9E4\uC6CC\uC11C \uBABB \uBA39\uC5B4\uC694. \uAC08\uBE44\uB294 \uC5B4\uB54C\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC88B\uC544\uC694. \uADF8\uB7FC \uD559\uAD50 \uC55E \uC2DD\uB2F9\uC5D0 \uAC00\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-b-012.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 11.5
-      },
-      claim: "\uC5EC\uC790\uB294 \uAE40\uCE58\uCC0C\uAC1C\uAC00 \uB9E4\uC6CC\uC11C \uAC08\uBE44\uB97C \uBA39\uC2B5\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uC5EC\uC790\uB294 \u300C\uAE40\uCE58\uCC0C\uAC1C\uB294 \uB108\uBB34 \uB9E4\uC6CC\uC11C \uBABB \uBA39\uC5B4\uC694. \uAC08\uBE44\uB294 \uC5B4\uB54C\uC694?\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uAE40\uCE58\uCC0C\uAC1C\uAC00 \uB9E4\uC6CC\uC11C \uAC08\uBE44\uB97C \uBA39\uC5B4\uC694. \uB0A8\uC790\uB3C4 \u300C\uC88B\uC544\uC694\u300D\uB77C\uACE0 \uD588\uC73C\uB2C8\uAE4C \uB0A8\uC790\uAC00 \uAC08\uBE44\uB97C \uBA39\uC9C0 \uC54A\uB294\uB2E4\uB294 \uC124\uBA85\uC740 \uD2C0\uB824\uC694.",
-      conceptIds: [
-        "G308"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "e6bc4b7369dd353d4903c50183b59f9f642f30cbaf25a27b0829af6a430d9041",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-b-016",
-      rev: 1,
-      sourceItemId: "ti-l-b-016",
-      sourceItemKey: "topik-items.ti-l-b-016.v1",
-      sourceHash: "4c30cdcb7ecd3d414129c342eb00aabc11db4b38befdeabe2e1a2b2f485dd0fc",
-      familyKey: "topik-items.ti-l-b-016",
-      setId: null,
-      skillId: "ko.listening.reason",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uBC14\uC57C\uB974 \uC528, \uC694\uC998 \uC800\uB141\uC5D0 \uCDA4\uC744 \uBC30\uC6CC\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB124, \uC77C\uC8FC\uC77C\uC5D0 \uC138 \uBC88 \uBC30\uC6CC\uC694. \uC81C \uC544\uB0B4\uAC00 \uCDA4\uC744 \uC544\uC8FC \uC88B\uC544\uD574\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC544, \uADF8\uB798\uC11C \uAC19\uC774 \uBC30\uC6CC\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB124. \uADF8\uB7F0\uB370 \uC800\uB294 \uC544\uC9C1 \uC798 \uBABB \uCDB0\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-b-016.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 14.6
-      },
-      claim: "\uB0A8\uC790\uB294 \uC544\uB0B4\uAC00 \uCDA4\uC744 \uC2EB\uC5B4\uD574\uC11C \uD568\uAED8 \uCDA4\uC744 \uBC30\uC6C1\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uC544\uB0B4\uAC00 \uCDA4\uC744 \uC544\uC8FC \uC88B\uC544\uD574\uC11C \uD568\uAED8 \uBC30\uC6B0\uACE0 \uC788\uC5B4\uC694. \uC2EB\uC5B4\uD574\uC11C \uBC30\uC6B0\uB294 \uAC83\uC774 \uC544\uB2C8\uC5D0\uC694.",
-      conceptIds: [
-        "G308"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "6bba48edc745e2ee9c6403d1b2d4d48df2263341b9a5e2580ad425d75e92dc37",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-b-020",
-      rev: 1,
-      sourceItemId: "ti-l-b-020",
-      sourceItemKey: "topik-items.ti-l-b-020.v1",
-      sourceHash: "2a607c69c81c3d6ecce484fe2f2972740c5f38fd6a1a8ad06dd165f25a9594ed",
-      familyKey: "topik-items.ti-l-b-020",
-      setId: null,
-      skillId: "ko.listening.reason",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "delayed",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC9C0\uAE08 \uD154\uB808\uBE44\uC804\uC5D0\uC11C \uCD95\uAD6C\uB97C \uD574\uC694. \uAC19\uC774 \uBD10\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC544\uAE30\uAC00 \uC9C0\uAE08 \uC790\uC694. \uC18C\uB9AC\uB97C \uC791\uAC8C \uD558\uC138\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC544, \uBBF8\uC548\uD574\uC694. \uADF8\uB7FC \uC18C\uB9AC\uB97C \uB044\uACE0 \uBD10\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-b-020.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 11
-      },
-      claim: "\uB0A8\uC790\uB294 \uC544\uAE30\uAC00 \uC790\uC11C \uD154\uB808\uBE44\uC804 \uC18C\uB9AC\uB97C \uB055\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uC5EC\uC790\uB294 \u300C\uC544\uAE30\uAC00 \uC9C0\uAE08 \uC790\uC694. \uC18C\uB9AC\uB97C \uC791\uAC8C \uD558\uC138\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB0A8\uC790\uB294 \uC18C\uB9AC\uB97C \uB044\uACE0 \uD154\uB808\uBE44\uC804\uC744 \uBD10\uC694. \uC544\uAE30\uB294 \uC6B8\uC9C0 \uC54A\uACE0 \uC790\uB2C8\uAE4C \uC544\uAE30\uAC00 \uC6B8\uC5B4\uC11C \uD154\uB808\uBE44\uC804\uC744 \uB048\uB2E4\uB294 \uC124\uBA85\uC740 \uD2C0\uB824\uC694.",
-      conceptIds: [
-        "G308"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "cbc94a083bff69b053b324f4d12a0bb6ff82f6ac1d1d023953f31bffadc4971b",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-b-024",
-      rev: 1,
-      sourceItemId: "ti-l-b-024",
-      sourceItemKey: "topik-items.ti-l-b-024.v2",
-      sourceHash: "d730cb2c3b9147bf3198d34146f46646ed7cb2ace19694717653f55fef226117",
-      familyKey: "topik-items.ti-l-b-024",
-      setId: null,
-      skillId: "ko.listening.reason",
-      difficulty: 1,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "delayed",
-      script: [
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC694\uC998 \uC800\uB141\uC5D0 \uACF5\uC6D0\uC5D0 \uC790\uC8FC \uAC00\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB124, \uC694\uC998 \uB0AE\uC5D0\uB294 \uB108\uBB34 \uB354\uC6CC\uC694. \uADF8\uB798\uC11C \uC800\uB141\uC5D0 \uC0B0\uCC45\uC744 \uD574\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC544, \uADF8\uB7FC \uC800\uB3C4 \uB0B4\uC77C\uBD80\uD130 \uAC19\uC774 \uD560\uAC8C\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-b-024.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 13.1
-      },
-      claim: "\uB0A8\uC790\uB294 \uB0AE\uC5D0 \uB108\uBB34 \uCD94\uC6CC\uC11C \uC800\uB141\uC5D0 \uC0B0\uCC45\uC744 \uD569\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uB0AE\uC5D0 \uB108\uBB34 \uB354\uC6CC\uC11C \uC800\uB141\uC5D0 \uC0B0\uCC45\uD574\uC694. \uCD94\uC6CC\uC11C \uC2DC\uAC04\uC744 \uBC14\uAFBC \uAC83\uC774 \uC544\uB2C8\uC5D0\uC694.",
-      conceptIds: [
-        "G308"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "a5ef22e7dce056b44e521151582debae7f9c3435abeabbc3011eb99eab504b3b",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-025",
-      rev: 1,
-      sourceItemId: "ti-l-d-025",
-      sourceItemKey: "topik-items.ti-l-d-025.v1",
-      sourceHash: "7fb8d5f848f0c3134330c2cfb45184954616976ede9583fd143f9cf18bcdb481",
-      familyKey: "topik-items.ti-l-d-025",
-      setId: null,
-      skillId: "ko.listening.reason",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uBBF8\uB098 \uC528, \uBA38\uB9AC\uB97C \uC9E7\uAC8C \uC798\uB790\uB124\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uB124, \uC694\uC998 \uC544\uCE68\uB9C8\uB2E4 \uC218\uC601\uC744 \uBC30\uC6B0\uACE0 \uC788\uC5B4\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uADF8\uB798\uC11C \uC798\uB790\uC5B4\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uB124, \uBA38\uB9AC\uAC00 \uAE38\uBA74 \uC218\uC601\uD558\uACE0 \uB098\uC11C \uB9D0\uB9AC\uAE30\uAC00 \uD798\uB4E4\uC5B4\uC694. \uADF8\uB798\uC11C \uD68C\uC0AC\uC5D0 \uC790\uC8FC \uB2A6\uC5C8\uC5B4\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB0A0\uC528\uAC00 \uB354\uC6CC\uC11C \uC790\uB978 \uAC70 \uC544\uB2C8\uC5D0\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uB354\uC6B4 \uAC74 \uAD1C\uCC2E\uC544\uC694. \uBA38\uB9AC\uB97C \uB9D0\uB9AC\uB294 \uAC8C \uD798\uB4E4\uC5B4\uC11C \uC798\uB790\uC5B4\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-025.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 25
-      },
-      claim: "\uC5EC\uC790\uB294 \uAE34 \uBA38\uB9AC\uB97C \uBE68\uB9AC \uB9D0\uB9B4 \uC218 \uC5C6\uC5B4\uC11C \uC798\uB790\uC2B5\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uC5EC\uC790\uB294 \u300C\uBA38\uB9AC\uAC00 \uAE38\uBA74 \uC218\uC601\uD558\uACE0 \uB098\uC11C \uB9D0\uB9AC\uAE30\uAC00 \uD798\uB4E4\uC5B4\uC694\u300D\uB77C\uACE0 \uD558\uACE0, \u300C\uBA38\uB9AC\uB97C \uB9D0\uB9AC\uB294 \uAC8C \uD798\uB4E4\uC5B4\uC11C \uC798\uB790\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uAE34 \uBA38\uB9AC\uB97C \uBE68\uB9AC \uB9D0\uB9B4 \uC218 \uC5C6\uC5B4\uC11C \uC790\uB978 \uAC70\uC608\uC694.",
-      conceptIds: [
-        "G411",
-        "G409",
-        "S202",
-        "G401",
-        "S215",
-        "G308"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "4a02791acf39817442d4600fe97b1655157b764ce1e8a8f3a1e77c406a6f04e5",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-026",
-      rev: 1,
-      sourceItemId: "ti-l-d-026",
-      sourceItemKey: "topik-items.ti-l-d-026.v1",
-      sourceHash: "9726a475fd7d1dd789c249e5ef14e65a67ea7628b0978e6d3aecc8d616a29e5c",
-      familyKey: "topik-items.ti-l-d-026",
-      setId: null,
-      skillId: "ko.listening.reason",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC0AC\uB77C \uC528, \uC694\uC998\uB3C4 \uD3B8\uC758\uC810\uC5D0\uC11C \uC77C\uD574\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC544\uB2C8\uC694, \uD3B8\uC758\uC810\uC740 \uADF8\uB9CC\uB450\uACE0 \uC9C0\uB09C\uB2EC\uBD80\uD130 \uBE75\uC9D1\uC5D0\uC11C \uC77C\uD574\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC65C \uBC14\uAFE8\uC5B4\uC694? \uD3B8\uC758\uC810\uC740 \uC9D1\uC5D0\uC11C \uAC00\uAE5D\uC9C0 \uC54A\uC544\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uAC00\uAE4C\uC6E0\uC5B4\uC694. \uADF8\uB7F0\uB370 \uBC24\uC5D0 \uC77C\uD574\uC57C \uD574\uC11C \uB108\uBB34 \uD53C\uACE4\uD588\uC5B4\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uBE75\uC9D1\uC740 \uB0AE\uC5D0 \uC77C\uD574\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uB124, \uC544\uCE68 \uC77C\uACF1 \uC2DC\uBD80\uD130 \uC624\uD6C4 \uD55C \uC2DC\uAE4C\uC9C0\uC608\uC694. \uB3C8\uC740 \uC870\uAE08 \uC801\uC9C0\uB9CC \uBC24\uC5D0 \uC798 \uC218 \uC788\uC73C\uB2C8\uAE4C \uC88B\uC544\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-026.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 29.1
-      },
-      claim: "\uC5EC\uC790\uB294 \uB3C8\uC744 \uB354 \uB9CE\uC774 \uBC8C\uB824\uACE0 \uD3B8\uC758\uC810\uC5D0\uC11C \uBE75\uC9D1\uC73C\uB85C \uC62E\uACBC\uC2B5\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uD3B8\uC758\uC810\uC5D0\uC11C \uBC24\uC5D0 \uC77C\uD558\uB294 \uAC83\uC774 \uB108\uBB34 \uD53C\uACE4\uD574\uC11C \uC62E\uACBC\uC5B4\uC694. \uBE75\uC9D1\uC5D0\uC11C \uBC1B\uB294 \uB3C8\uC740 \uC624\uD788\uB824 \uC870\uAE08 \uC801\uC5B4\uC694.",
-      conceptIds: [
-        "G403",
-        "G308",
-        "G307",
-        "G410",
-        "G402",
-        "S104"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "786b22605043a18def4cfedc2b3eacbbc8ca7c2f612304ea2cf6bf446fd9ab51",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-027",
-      rev: 1,
-      sourceItemId: "ti-l-d-027",
-      sourceItemKey: "topik-items.ti-l-d-027.v1",
-      sourceHash: "135a637036ef74a94c01279e1daa8d1980fe16f8281e3e72033ed545d5c63077",
-      familyKey: "topik-items.ti-l-d-027",
-      setId: null,
-      skillId: "ko.listening.reason",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB9C8\uB9AC\uC544 \uC528, \uC65C \uC774\uB807\uAC8C \uB2A6\uC5C8\uC5B4\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uBBF8\uC548\uD574\uC694. \uC9C0\uD558\uCCA0\uC744 \uBC18\uB300\uB85C \uD0C0\uC11C \uB2E4\uC12F \uC815\uAC70\uC7A5\uC774\uB098 \uAC14\uC5B4\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB2A6\uAC8C \uC77C\uC5B4\uB0AC\uC5B4\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC544\uB2C8\uC694, \uC77C\uCC0D \uB098\uC654\uC5B4\uC694. \uADF8\uB7F0\uB370 \uD734\uB300\uD3F0\uC744 \uBCF4\uB2E4\uAC00 \uC798\uBABB \uD0D4\uC5B4\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uAD1C\uCC2E\uC544\uC694. \uC601\uD654\uB294 \uC544\uC9C1 \uC2DC\uC791 \uC548 \uD588\uC5B4\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uB2E4\uD589\uC774\uC5D0\uC694. \uBE68\uB9AC \uB4E4\uC5B4\uAC00\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-027.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 22.8
-      },
-      claim: "\uC5EC\uC790\uB294 \uB2E4\uB978 \uBC29\uD5A5\uC73C\uB85C \uAC00\uB294 \uC9C0\uD558\uCCA0\uC744 \uD0C0\uC11C \uB2A6\uC5C8\uC2B5\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uC5EC\uC790\uB294 \u300C\uC9C0\uD558\uCCA0\uC744 \uBC18\uB300\uB85C \uD0C0\uC11C \uB2E4\uC12F \uC815\uAC70\uC7A5\uC774\uB098 \uAC14\uC5B4\uC694\u300D\uB77C\uACE0 \uD558\uACE0, \u300C\uD734\uB300\uD3F0\uC744 \uBCF4\uB2E4\uAC00 \uC798\uBABB \uD0D4\uC5B4\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB2E4\uB978 \uBC29\uD5A5\uC73C\uB85C \uAC00\uB294 \uC9C0\uD558\uCCA0\uC744 \uD0C0\uC11C \uB2A6\uC5C8\uC5B4\uC694.",
-      conceptIds: [
-        "G308",
-        "S214",
-        "G209"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "b622f82f7ed7220c715f35996fdcd641615e86fb295d97aa417f27454a68bd2c",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-d-028",
-      rev: 1,
-      sourceItemId: "ti-l-d-028",
-      sourceItemKey: "topik-items.ti-l-d-028.v1",
-      sourceHash: "5bdafcd0ec8a4355fd12b0ae9c66fec7a830e621f35f35b4d5d6ac2897b9bf45",
-      familyKey: "topik-items.ti-l-d-028",
-      setId: null,
-      skillId: "ko.listening.reason",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "practice",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC9C0\uC601 \uC528, \uC624\uB298\uB3C4 \uB3C4\uC2DC\uB77D\uC744 \uC2F8 \uC654\uC5B4\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uB124, \uC774\uBC88 \uB2EC\uBD80\uD130 \uB9E4\uC77C \uC2F8 \uC640\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB3C8\uC744 \uC544\uB07C\uB824\uACE0\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC544\uB2C8\uC694, \uB3C8 \uB54C\uBB38\uC774 \uC544\uB2C8\uC5D0\uC694. \uD68C\uC0AC \uC2DD\uB2F9 \uC74C\uC2DD\uC774 \uC800\uD55C\uD14C\uB294 \uB108\uBB34 \uC9DC\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uADF8\uB798\uC694? \uC800\uB294 \uB9DB\uC788\uB294\uB370\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC800\uB294 \uC694\uC998 \uC9E0 \uC74C\uC2DD\uC744 \uC870\uC2EC\uD574\uC57C \uD574\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-d-028.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 21.5
-      },
-      claim: "\uC5EC\uC790\uB294 \uB3C8\uC744 \uC544\uB07C\uB824\uACE0 \uB3C4\uC2DC\uB77D\uC744 \uAC00\uC9C0\uACE0 \uC635\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uC5EC\uC790\uB294 \u300C\uD68C\uC0AC \uC2DD\uB2F9 \uC74C\uC2DD\uC774 \uC800\uD55C\uD14C\uB294 \uB108\uBB34 \uC9DC\uC694\u300D\uB77C\uACE0 \uD558\uACE0, \u300C\uC9E0 \uC74C\uC2DD\uC744 \uC870\uC2EC\uD574\uC57C \uD574\uC694\u300D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uC9E0 \uC74C\uC2DD\uC744 \uBA39\uC9C0 \uC54A\uC73C\uB824\uACE0 \uB3C4\uC2DC\uB77D\uC744 \uC2F8 \uC640\uC694.",
-      conceptIds: [
-        "G405",
-        "G610",
-        "G403",
-        "G209"
-      ],
-      sourceOfficialType: "TI-L-17",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "f2e39e2cd8e4a31f6390e6283487180a6705b65176f58cb9e00f6fb0db7f3298",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-e-013",
-      rev: 1,
-      sourceItemId: "ti-l-e-013",
-      sourceItemKey: "topik-items.ti-l-e-013.v1",
-      sourceHash: "95ec6a6b618e5dc121956c44a7f68c7ff13f54688e140015d1e146d59b19bbc1",
-      familyKey: "topik-items.ti-l-e-013",
-      setId: "ti-l-e-s07",
-      skillId: "ko.listening.reason",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "delayed",
-      script: [
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uB124, \uBCD1\uC6D0\uC785\uB2C8\uB2E4."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB0B4\uC77C \uC624\uD6C4 \uC138 \uC2DC\uC5D0 \uC608\uC57D\uD55C \uAE40\uBBFC\uC218\uC778\uB370\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uB124, \uAE40\uBBFC\uC218 \uC528. \uBB34\uC2A8 \uC77C\uC774\uC138\uC694?"
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uB0B4\uC77C \uC624\uD6C4\uC5D0 \uAC11\uC790\uAE30 \uD68C\uC758\uAC00 \uC0DD\uACBC\uC5B4\uC694. \uC608\uC57D\uC744 \uBC14\uAFC0 \uC218 \uC788\uC5B4\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uB0B4\uC77C\uC740 \uB2E4\uC12F \uC2DC \uBC18\uC5D0 \uC790\uB9AC\uAC00 \uC788\uC5B4\uC694. \uC544\uB2C8\uBA74 \uB2E4\uC74C \uC8FC \uD654\uC694\uC77C \uC624\uC804 \uC5F4 \uC2DC\uB3C4 \uAD1C\uCC2E\uC544\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uD68C\uC758\uAC00 \uB2A6\uAC8C \uB05D\uB0A0 \uC218\uB3C4 \uC788\uC5B4\uC694. \uD654\uC694\uC77C \uC624\uC804\uC73C\uB85C \uD574 \uC8FC\uC138\uC694."
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uB124, \uB2E4\uC74C \uC8FC \uD654\uC694\uC77C \uC624\uC804 \uC5F4 \uC2DC\uB85C \uBC14\uAFE8\uC5B4\uC694. \uC2ED \uBD84 \uC77C\uCC0D \uC624\uC138\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-e-s07.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 30.4
-      },
-      claim: "\uB0A8\uC790\uB294 \uB0B4\uC77C \uC624\uD6C4\uC5D0 \uD68C\uC758\uC5D0 \uAC00\uC57C \uD574\uC11C \uBCD1\uC6D0 \uC608\uC57D\uC744 \uBC14\uAFC9\uB2C8\uB2E4.",
-      answer: "O",
-      explanation: "\uB0B4\uC77C \uC624\uD6C4\uC5D0 \uAC11\uC790\uAE30 \uD68C\uC758\uAC00 \uC0DD\uACBC\uAE30 \uB54C\uBB38\uC5D0 \uBCD1\uC6D0 \uC608\uC57D\uC744 \uB2E4\uC74C \uC8FC \uD654\uC694\uC77C \uC624\uC804\uC73C\uB85C \uBC14\uAFE8\uC5B4\uC694.",
-      conceptIds: [
-        "G308",
-        "G403"
-      ],
-      sourceOfficialType: "TI-L-29",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "bf2791fcf07b62d3c7feeb14245eaf121d778a14488d8e6ae20a3cb5f5822de6",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    },
-    {
-      id: "rhythm-transfer-ti-l-e-015",
-      rev: 1,
-      sourceItemId: "ti-l-e-015",
-      sourceItemKey: "topik-items.ti-l-e-015.v1",
-      sourceHash: "60e0d405db67ff188dc5aeee1ec4172afa659d0cf214d97c0807bba9cf428fb0",
-      familyKey: "topik-items.ti-l-e-015",
-      setId: "ti-l-e-s08",
-      skillId: "ko.listening.reason",
-      difficulty: 2,
-      modality: "listening",
-      responseFormat: "binary-choice",
-      audioRequired: true,
-      role: "delayed",
-      script: [
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uC0AC\uC7A5\uB2D8, \uC804\uC5D0\uB294 \uC740\uD589\uC5D0\uC11C \uC77C\uD558\uC168\uC9C0\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uB124, \uC740\uD589\uC5D0\uC11C \uC624 \uB144 \uB3D9\uC548 \uC77C\uD588\uC5B4\uC694. \uB3C8\uB3C4 \uC9C0\uAE08\uBCF4\uB2E4 \uB9CE\uC774 \uBC8C\uC5C8\uC5B4\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uADF8\uB7F0\uB370 \uC65C \uBE75\uC9D1\uC744 \uC2DC\uC791\uD558\uC168\uC5B4\uC694? \uBE75\uC744 \uC88B\uC544\uD574\uC11C\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC544\uB2C8\uC694, \uBE75\uC740 \uBCC4\uB85C \uC548 \uC88B\uC544\uD574\uC694. \uC81C \uBE75\uC744 \uBA39\uACE0 \uC0AC\uB78C\uB4E4\uC774 \uC6C3\uB294 \uAC8C \uC88B\uC558\uC5B4\uC694."
-        },
-        {
-          speaker: "\uB0A8\uC790",
-          text: "\uBE75\uC9D1\uC740 \uB9E4\uC77C \uBB38\uC744 \uC5F4\uC5B4\uC694?"
-        },
-        {
-          speaker: "\uC5EC\uC790",
-          text: "\uC804\uC5D0\uB294 \uB9E4\uC77C \uC5F4\uC5C8\uB294\uB370 \uC9C0\uAE08\uC740 \uC77C\uC694\uC77C\uC5D0 \uC26C\uC5B4\uC694. \uC77C\uC694\uC77C\uC5D0\uB294 \uC544\uC774\uC640 \uAC19\uC774 \uC2DC\uAC04\uC744 \uBCF4\uB0B4\uC694."
-        }
-      ],
-      audio: {
-        file: "audio/ti-l-e-s08.mp3",
-        plays: 2,
-        status: "ready",
-        voices: {
-          \uB0A8\uC790: "\uBC94\uC218",
-          \uC5EC\uC790: "\uD558\uB098"
-        },
-        seconds: 30.3
-      },
-      claim: "\uC5EC\uC790\uB294 \uBE75\uC744 \uBA39\uB294 \uAC83\uC744 \uC544\uC8FC \uC88B\uC544\uD574\uC11C \uBE75\uC9D1\uC744 \uC2DC\uC791\uD588\uC2B5\uB2C8\uB2E4.",
-      answer: "X",
-      explanation: "\uC5EC\uC790\uB294 \uBE75\uC744 \uBCC4\uB85C \uC88B\uC544\uD558\uC9C0 \uC54A\uC544\uC694. \uC0AC\uB78C\uB4E4\uC774 \uC790\uC2E0\uC758 \uBE75\uC744 \uBA39\uACE0 \uC6C3\uB294 \uAC83\uC774 \uC88B\uC544\uC11C \uBE75\uC9D1\uC744 \uC2DC\uC791\uD588\uC5B4\uC694.",
-      conceptIds: [
-        "G308"
-      ],
-      sourceOfficialType: "TI-L-29",
-      officialTypeClaim: "\uACF5\uC2DD TOPIK \uBB38\uC81C \uD615\uC2DD\uC774 \uC544\uB2CC, \uAC19\uC740 \uC6D0\uBB38\uC744 \uC0AC\uC6A9\uD558\uB294 OX \uC5F0\uC2B5. \uC6D0\uB798 4\uC9C0\uC120\uB2E4\uC640 \uAC19\uC740 family\uC774\uBA70 \uC6D0\uBB38\uC744 \uB4E4\uC740 \uAE30\uB85D\uC744 \uACF5\uC720\uD55C\uB2E4.",
-      review: {
-        status: "passed",
-        task: "atlas-world-learning-20261028",
-        hash: "f5bb6c448bdd6a1e5a52c0055a16687d49c3ec644aa8f67156951fe0081d58ba",
-        reviewer: "/root",
-        evidence: "experiences/topik-items/review/atlas-world-learning-20261028.json"
-      }
-    }
-  ]
-};
-
-// experiences/topik-items/review/holdout-20261028.json
-var holdout_20261028_default = {
-  version: "atlas-holdout-20261028",
-  purpose: "\uC9C0\uC5F0 \uD655\uC778 \uC804\uC6A9. \uC77C\uBC18 \uC9C4\uB2E8\xB7\uC5F0\uC2B5\xB7\uAC8C\uC784\xB7\uBCF5\uC2B5\xB7\uC2DC\uD5D8\uC5D0\uC11C family \uB610\uB294 set\uAC00 \uAC19\uC740 \uC6D0\uBB38\uB3C4 \uC81C\uC678\uD55C\uB2E4. \uACFC\uAC70\uC5D0 \uB178\uCD9C\uB41C \uACC4\uC815\uC5D0\uB294 \uC0C8 \uBB38\uD56D\uC73C\uB85C \uACF5\uAE09\uD558\uC9C0 \uC54A\uB294\uB2E4.",
-  items: [
-    {
-      sourceItemId: "ti-l-b-032",
-      sourceItemKey: "topik-items.ti-l-b-032.v2",
-      familyKey: "topik-items.ti-l-b-032",
-      setId: null,
-      sourceHash: "b8ccb6c64ece77306a465d35e37e1735013b5fbbfa0df2ee0e5c286f63a6a313",
-      skillId: "ko.listening.detail",
-      difficulty: 1,
-      exposurePeers: [
-        {
-          itemKey: "topik-items.ti-l-b-032.v2",
-          familyKey: "topik-items.ti-l-b-032"
-        }
-      ]
-    },
-    {
-      sourceItemId: "ti-l-a-009",
-      sourceItemKey: "topik-items.ti-l-a-009.v1",
-      familyKey: "topik-items.ti-l-a-009",
-      setId: null,
-      sourceHash: "6df4e7d870bc626e9e3b9007b5df469e34310c4b0710cc7f2f7c4e79a0299f11",
-      skillId: "ko.listening.detail",
-      difficulty: 1,
-      exposurePeers: [
-        {
-          itemKey: "topik-items.ti-l-a-009.v1",
-          familyKey: "topik-items.ti-l-a-009"
-        }
-      ]
-    },
-    {
-      sourceItemId: "ti-l-d-001",
-      sourceItemKey: "topik-items.ti-l-d-001.v1",
-      familyKey: "topik-items.ti-l-d-001",
-      setId: null,
-      sourceHash: "049f8eebe5caba92df956986848682dee289bf7e9bd309834a36129e6f29a6ab",
-      skillId: "ko.listening.detail",
-      difficulty: 2,
-      exposurePeers: [
-        {
-          itemKey: "topik-items.ti-l-d-001.v1",
-          familyKey: "topik-items.ti-l-d-001"
-        }
-      ]
-    },
-    {
-      sourceItemId: "ti-l-d-002",
-      sourceItemKey: "topik-items.ti-l-d-002.v1",
-      familyKey: "topik-items.ti-l-d-002",
-      setId: null,
-      sourceHash: "b20bef904916da036a13d894c7da6ac8f2d8da2cc688a4cce563f218d901c4a7",
-      skillId: "ko.listening.detail",
-      difficulty: 2,
-      exposurePeers: [
-        {
-          itemKey: "topik-items.ti-l-d-002.v1",
-          familyKey: "topik-items.ti-l-d-002"
-        }
-      ]
-    },
-    {
-      sourceItemId: "ti-l-b-013",
-      sourceItemKey: "topik-items.ti-l-b-013.v2",
-      familyKey: "topik-items.ti-l-b-013",
-      setId: null,
-      sourceHash: "0051e7f86fc3925bb4c8472d553316da58169337c7c574f1769e9f8f64647baf",
-      skillId: "ko.listening.negation",
-      difficulty: 1,
-      exposurePeers: [
-        {
-          itemKey: "topik-items.ti-l-b-013.v2",
-          familyKey: "topik-items.ti-l-b-013"
-        }
-      ]
-    },
-    {
-      sourceItemId: "ti-l-b-017",
-      sourceItemKey: "topik-items.ti-l-b-017.v2",
-      familyKey: "topik-items.ti-l-b-017",
-      setId: null,
-      sourceHash: "ab9b29a96a0f43235aee66ff6e117dca53e20ae273f9c93211fa97b84739397b",
-      skillId: "ko.listening.negation",
-      difficulty: 1,
-      exposurePeers: [
-        {
-          itemKey: "topik-items.ti-l-b-017.v2",
-          familyKey: "topik-items.ti-l-b-017"
-        }
-      ]
-    },
-    {
-      sourceItemId: "ti-l-d-017",
-      sourceItemKey: "topik-items.ti-l-d-017.v1",
-      familyKey: "topik-items.ti-l-d-017",
-      setId: null,
-      sourceHash: "32d5570013c6def4cf78e60492de92b8bc9960b1db30c0de248c1bd1f52d4a0d",
-      skillId: "ko.listening.negation",
-      difficulty: 2,
-      exposurePeers: [
-        {
-          itemKey: "topik-items.ti-l-d-017.v1",
-          familyKey: "topik-items.ti-l-d-017"
-        }
-      ]
-    },
-    {
-      sourceItemId: "ti-l-d-018",
-      sourceItemKey: "topik-items.ti-l-d-018.v1",
-      familyKey: "topik-items.ti-l-d-018",
-      setId: null,
-      sourceHash: "1609fa60c4ac1647d73bddb018ca9de85e2304f3ed30f4a7a9e335ea52beafcb",
-      skillId: "ko.listening.negation",
-      difficulty: 2,
-      exposurePeers: [
-        {
-          itemKey: "topik-items.ti-l-d-018.v1",
-          familyKey: "topik-items.ti-l-d-018"
-        }
-      ]
-    },
-    {
-      sourceItemId: "ti-l-c-018",
-      sourceItemKey: "topik-items.ti-l-c-018.v1",
-      familyKey: "topik-items.ti-l-c-018",
-      setId: null,
-      sourceHash: "ed2a6761ae6fe9f757378c83b5394ff3182a53f50970ad29d809d5dfc5b8a864",
-      skillId: "ko.listening.condition",
-      difficulty: 1,
-      exposurePeers: [
-        {
-          itemKey: "topik-items.ti-l-c-018.v1",
-          familyKey: "topik-items.ti-l-c-018"
-        }
-      ]
-    },
-    {
-      sourceItemId: "ti-l-c-019",
-      sourceItemKey: "topik-items.ti-l-c-019.v1",
-      familyKey: "topik-items.ti-l-c-019",
-      setId: null,
-      sourceHash: "abc827e637af22621d1f060561998e64890fd68f3d3c307f5b362bdda86e0427",
-      skillId: "ko.listening.condition",
-      difficulty: 1,
-      exposurePeers: [
-        {
-          itemKey: "topik-items.ti-l-c-019.v1",
-          familyKey: "topik-items.ti-l-c-019"
-        }
-      ]
-    },
-    {
-      sourceItemId: "ti-l-d-033",
-      sourceItemKey: "topik-items.ti-l-d-033.v1",
-      familyKey: "topik-items.ti-l-d-033",
-      setId: null,
-      sourceHash: "0d473ae625e9f1b26d0752b711788bd0783d4928a914bfbd5d6d43ab593c6e4b",
-      skillId: "ko.listening.condition",
-      difficulty: 2,
-      exposurePeers: [
-        {
-          itemKey: "topik-items.ti-l-d-033.v1",
-          familyKey: "topik-items.ti-l-d-033"
-        }
-      ]
-    },
-    {
-      sourceItemId: "ti-l-d-034",
-      sourceItemKey: "topik-items.ti-l-d-034.v1",
-      familyKey: "topik-items.ti-l-d-034",
-      setId: null,
-      sourceHash: "992be67980eeed10a6bf2e366b7e8cdc39a94a917131e092dbcff8fd4cbdffa2",
-      skillId: "ko.listening.condition",
-      difficulty: 2,
-      exposurePeers: [
-        {
-          itemKey: "topik-items.ti-l-d-034.v1",
-          familyKey: "topik-items.ti-l-d-034"
-        }
-      ]
-    },
-    {
-      sourceItemId: "ti-l-b-020",
-      sourceItemKey: "topik-items.ti-l-b-020.v1",
-      familyKey: "topik-items.ti-l-b-020",
-      setId: null,
-      sourceHash: "2a607c69c81c3d6ecce484fe2f2972740c5f38fd6a1a8ad06dd165f25a9594ed",
-      skillId: "ko.listening.reason",
-      difficulty: 1,
-      exposurePeers: [
-        {
-          itemKey: "topik-items.ti-l-b-020.v1",
-          familyKey: "topik-items.ti-l-b-020"
-        }
-      ]
-    },
-    {
-      sourceItemId: "ti-l-b-024",
-      sourceItemKey: "topik-items.ti-l-b-024.v2",
-      familyKey: "topik-items.ti-l-b-024",
-      setId: null,
-      sourceHash: "d730cb2c3b9147bf3198d34146f46646ed7cb2ace19694717653f55fef226117",
-      skillId: "ko.listening.reason",
-      difficulty: 1,
-      exposurePeers: [
-        {
-          itemKey: "topik-items.ti-l-b-024.v2",
-          familyKey: "topik-items.ti-l-b-024"
-        }
-      ]
-    },
-    {
-      sourceItemId: "ti-l-e-013",
-      sourceItemKey: "topik-items.ti-l-e-013.v1",
-      familyKey: "topik-items.ti-l-e-013",
-      setId: "ti-l-e-s07",
-      sourceHash: "95ec6a6b618e5dc121956c44a7f68c7ff13f54688e140015d1e146d59b19bbc1",
-      skillId: "ko.listening.reason",
-      difficulty: 2,
-      exposurePeers: [
-        {
-          itemKey: "topik-items.ti-l-e-013.v1",
-          familyKey: "topik-items.ti-l-e-013"
-        },
-        {
-          itemKey: "topik-items.ti-l-e-014.v1",
-          familyKey: "topik-items.ti-l-e-014"
-        }
-      ]
-    },
-    {
-      sourceItemId: "ti-l-e-015",
-      sourceItemKey: "topik-items.ti-l-e-015.v1",
-      familyKey: "topik-items.ti-l-e-015",
-      setId: "ti-l-e-s08",
-      sourceHash: "60e0d405db67ff188dc5aeee1ec4172afa659d0cf214d97c0807bba9cf428fb0",
-      skillId: "ko.listening.reason",
-      difficulty: 2,
-      exposurePeers: [
-        {
-          itemKey: "topik-items.ti-l-e-015.v1",
-          familyKey: "topik-items.ti-l-e-015"
-        },
-        {
-          itemKey: "topik-items.ti-l-e-016.v1",
-          familyKey: "topik-items.ti-l-e-016"
-        }
-      ]
-    }
-  ]
-};
-
-// experiences/topik-items/holdout.mjs
-var HOLDOUT = Object.freeze(holdout_20261028_default.items.map((item) => Object.freeze({ ...item })));
-var families = new Set(HOLDOUT.map((item) => item.familyKey));
-var sets = new Set(HOLDOUT.map((item) => item.setId).filter(Boolean));
-
-// experiences/korean-rhythm/supplemental.mjs
-function presented(item) {
-  const itemKey = `korean-rhythm.${item.id}.v${item.rev}`;
-  return Object.freeze({
-    id: item.id,
-    itemKey,
-    familyKey: item.familyKey,
-    setId: item.setId || null,
-    skillId: item.skillId,
-    difficulty: item.difficulty,
-    modality: "listening",
-    responseFormat: "binary-choice",
-    audioRequired: true,
-    confounded: false,
-    conceptIds: [...item.conceptIds || []],
-    source: "korean-rhythm",
-    sourceItemKey: item.sourceItemKey,
-    supplyRole: item.role,
-    audio: `topik-items/${item.audio.file}`,
-    plays: item.audio.plays,
-    seconds: item.audio.seconds,
-    script: item.script,
-    prompt: null,
-    question: `\uB2E4\uC74C \uC124\uBA85\uC774 \uB300\uD654\uC758 \uB0B4\uC6A9\uACFC \uB9DE\uB098\uC694?
-${item.claim}`,
-    choices: [{ id: `${itemKey}.O`, label: "O \xB7 \uB9DE\uC544\uC694" }, { id: `${itemKey}.X`, label: "X \xB7 \uB2EC\uB77C\uC694" }],
-    correctId: `${itemKey}.${item.answer}`,
-    explanation: { ko: item.explanation },
-    choiceNotes: [],
-    label: item.claim,
-    exposurePeers: HOLDOUT.find((row) => row.sourceItemId === item.sourceItemId)?.exposurePeers || [{ itemKey: item.sourceItemKey, familyKey: item.familyKey }]
-  });
-}
-function supplementalItems({ purpose = "practice", seen, skillId, difficulty } = {}) {
-  if (!["practice", "delayed"].includes(purpose)) throw TypeError("unknown supplemental purpose");
-  const pool = supplemental_default.items.filter((item) => item.review?.status === "passed" && item.role === purpose && item.audio?.status === "ready").filter((item) => (!skillId || item.skillId === skillId) && (difficulty == null || item.difficulty === difficulty)).map(presented);
-  if (purpose === "practice") return Object.freeze(pool);
-  if (typeof seen !== "function") return Object.freeze([]);
-  return Object.freeze(pool.filter((item) => {
-    try {
-      return seen(item) === false && item.exposurePeers.every((peer) => seen(peer) === false);
-    } catch {
-      return false;
-    }
-  }));
 }
 
 // experiences/synk-world-app/world-position-kit.mjs
