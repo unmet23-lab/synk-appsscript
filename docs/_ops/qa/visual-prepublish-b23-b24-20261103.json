@@ -1,0 +1,355 @@
+{
+  "verifiedAt": "2026-11-03T10:07:40.930651+00:00",
+  "safeArea1080x1920": {
+    "left": 65,
+    "right": 920,
+    "top": 269,
+    "bottom": 1428
+  },
+  "method": "공통 게시 검사 전체를 독립된 편 사본에서 실행했다. 세 플랫폼의 게시 원고와 링크를 그대로 읽고, 실제 마스터와 표지만 수정본으로 넣었다. OCR 좌표는 0.5초 간격과 표지에서 추출했다. 대표 컷과 경고 시점은 원본·수정본의 프레임을 휴대폰 크기 및 확대 화면으로 대조했다.",
+  "cases": [
+    {
+      "episode": "synkbrief_셋째줄그대로_20261102",
+      "input": "수정본/b23_master_audio_v2.mp4",
+      "output": "수정본/화면_v1/b23_화면수정.mp4",
+      "cover": "수정본/화면_v1/표지.jpg",
+      "sourcePatch": "수정본/화면_v1/편집.patch",
+      "sourceVideoSha256": "6f4a033bc4329583d43640ce430135153cb5821819043d1b424d5d319fd989a4",
+      "outputVideoSha256": "6fedd44193520b13cc8c03a80a1400caa2a6ee4abaa56a7d60a8cd03795ccbee",
+      "sourceCoverSha256": "c3ca21cc550512963b7e44bc54efaf111a0000d115b30b745f7b9d3ef27a8b7e",
+      "outputCoverSha256": "2de94695ea0a87d8a8c331d571bc605882776abbba1d688827241b59c5f34dff",
+      "sourceRendererSha256": "3d6a1e352f7da5a9f79ddc0ead20ca8fe1bba6b274343c238e10e01b47c5a162",
+      "correctedRendererSha256": "5e287162cbae54b70a5a1d3c0d676418b8d6c20cfca1eae5c052f44612d79a5f",
+      "coverFrame": 636,
+      "frameRate": "30/1",
+      "videoFrames": 1236,
+      "audioPacketsBitIdenticalSha256": "391987a86f347ef2a7e690a7c82e258ceda77eb1b5201c3082a858987e0e706c",
+      "audioBps": 384768,
+      "lufs": -14.6,
+      "truePeakDbfs": -1.5,
+      "sourcePostPackageModified": false,
+      "inspection": {
+        "result": "확인할 것",
+        "beforeReviewCount": 10,
+        "afterReviewCount": 8,
+        "blockers": [],
+        "skippedChecks": [],
+        "automaticNotes": [
+          {
+            "code": "tiktok-ending",
+            "message": "고정 댓글이 있는 유튜브 판과 같은 영상이다 — 끝 말이 고정 댓글을 가리키면 끝 말만 바꾼 틱톡판을 렌더한다"
+          },
+          {
+            "code": "end-card",
+            "message": "끝 화면 2.2초(39.0초 컷부터) — v2 §2-4 「4초 안팎」"
+          },
+          {
+            "code": "text-right",
+            "message": "오른쪽 단추 자리 12군데 — 10.5초 「올해 상반기에 같은 지원을 받은 」 오른쪽 끝 1035px(안전선 920) · 10.5초 「니다. 선정되면 6개월 이내에 키」 오른쪽 끝 1000px(안전선 920) · 장면표 .tmp/올리기전검사/synkbrief_셋째줄그대로_20261102/글자표_게시_b23_master.jpg"
+          },
+          {
+            "code": "text-bottom",
+            "message": "아래 앱 글자 자리 9군데 — 0.0초 「신청 방법 구청 홈페이지 온라인 」 아래 끝 1498px(안전선 1428) · 0.0초 「선정 발표 2026년 12월 4일」 아래 끝 1572px(안전선 1428) · 장면표 .tmp/올리기전검사/synkbrief_셋째줄그대로_20261102/글자표_게시_b23_master.jpg"
+          },
+          {
+            "code": "text-top",
+            "message": "위 머리 자리 9군데 — 1.0초 「약해 줘.」 위 끝 81px(안전선 269) · 1.0초 「구청 공문 핵심 요약」 위 끝 235px(안전선 269) · 장면표 .tmp/올리기전검사/synkbrief_셋째줄그대로_20261102/글자표_게시_b23_master.jpg"
+          },
+          {
+            "code": "text-left",
+            "message": "왼쪽 가장자리 14군데 — 10.5초 「준비할 서류」 왼쪽 끝 42px(안전선 65) · 10.5초 「꼭 알아들 점」 왼쪽 끝 42px(안전선 65) · 장면표 .tmp/올리기전검사/synkbrief_셋째줄그대로_20261102/글자표_게시_b23_master.jpg"
+          },
+          {
+            "code": "text-whiteShort",
+            "message": "판 없이 그림 위에 얹은 짧은 밝은 글자 1군데 — 20.5초 「바꿔 쓰기도」 바탕 얼룩 49 · 흰 글자 둘레 어두운 칸 42% · 장면표 .tmp/올리기전검사/synkbrief_셋째줄그대로_20261102/글자표_게시_b23_master.jpg"
+          },
+          {
+            "code": "text-whiteShot",
+            "message": "화면 캡처 속 흰 글자(준비.json 「화면캡처」 구간 — 우리가 얹은 글이 아닌지 눈으로 본다) 2군데 — 1.0초 「ChatGPT 요약 인 키오스크 」 바탕 얼룩 43 · 흰 글자 둘레 어두운 칸 38% · 39.0초 「l원금을 돌려주서0 합니다.」 바탕 얼룩 42 · 흰 글자 둘레 어두운 칸 16% · 까닭: 실제 ChatGPT 휴대폰 화면(2026-11-02 임시 채팅 녹화)을 잘라 키운 조각 — 화면 속 흰 글자는 우리가 얹은 글이 아니라 AI 답 그대로다(제작 절차 「synkbrief · yuhobuilds 편」 3 · 검사 ⑤-3) · 장면표 .tmp/올리기전검사/synkbrief_셋째줄그대로_20261102/글자표_게시_b23_master.jpg"
+          }
+        ]
+      },
+      "visualReview": {
+        "samples": {
+          "ocrEverySeconds": 0.5,
+          "framesWithCover": 83,
+          "visualTimesSeconds": [
+            0,
+            1,
+            2.3,
+            3.9,
+            5.2,
+            6.1,
+            6.9,
+            8.73,
+            10,
+            11,
+            13,
+            15.5,
+            17.87,
+            20.5,
+            21.2,
+            22.4,
+            24,
+            26,
+            27.5,
+            29.1,
+            31.6,
+            33.6,
+            35.7,
+            38,
+            39.33,
+            40.5
+          ]
+        },
+        "corrected": [
+          {
+            "time": "표지 21.20초와 마지막 비교 장면",
+            "issue": "요약의 빨간 선이 ‘키오스크를 설치해야’의 획을 가리고 원문의 ‘지원금을 돌려주셔야 합니다’가 오른쪽 단추 영역까지 나갔다. 두 문장과 강조선을 안쪽에 맞추고 선을 글자 아래로 옮겼다.",
+            "rightEdgePxAt21_2": {
+              "before": 1003,
+              "after": 872,
+              "safeMaximum": 920
+            }
+          },
+          {
+            "time": "20.5초와 27.5초",
+            "issue": "하단 앱 안내가 덮을 수 있는 위치의 편집 자막을 올리고 줄을 나눴다. 사장님 인용은 불투명한 크림색 판에 먹색으로 표시했다.",
+            "captionBottomPxAt20_5": {
+              "before": 1572,
+              "after": 1376,
+              "safeMaximum": 1428
+            },
+            "speakerQuoteBottomPxAt27_5": {
+              "before": 1556,
+              "after": 1376
+            }
+          },
+          {
+            "time": "25~27초·39~41초",
+            "issue": "실제 답변에서 잘라 둔 ‘6개월 안에 폐업하면 / 지원금을 돌려주셔야 합니다’ 두 줄을 따로 크게 보여 준다. 끝 비교의 원문·사장님 화면·마지막 대사가 겹치지 않는다.",
+            "sourceQuoteAt39_5": {
+              "rightEdgeBefore": 1003,
+              "rightEdgeAfter": 872,
+              "bottomEdgeBefore": 1457,
+              "bottomEdgeAfter": 1258
+            }
+          }
+        ],
+        "reviewedAutomaticWarnings": [
+          {
+            "codes": [
+              "text-right",
+              "text-bottom",
+              "text-top",
+              "text-left"
+            ],
+            "finding": "실제 캡처의 0~1.5초 신청 방법·제출 서류와 10.5~13.5초 타이핑 화면 주변 설명·Instant 메뉴가 안전선을 넘는다. 타이핑 도중 채워지는 입력은 가운데에, 완성된 질문은 14.2초부터 별도 카드에 나온다. 편집 자막 잘림과 구분했다."
+          },
+          {
+            "codes": [
+              "text-whiteShort",
+              "text-whiteShot"
+            ],
+            "finding": "20.5초 ‘바꿔 쓰기도’에는 실제 어두운 판이 있다. 1초의 OCR은 겹쳐 읽은 화면 배경과 꼬리표이고, 39초 문장은 실제 답 이미지 위 노란 강조다. 두 줄의 원문과 강조 뒤 남은 어미를 육안 확인했다."
+          },
+          {
+            "codes": [
+              "tiktok-ending",
+              "end-card"
+            ],
+            "finding": "끝 대사는 ‘지원금이 걸린 줄은, 원문 그대로 한 번 더’다. 고정 댓글 지시가 없다. 2.2초 엔딩 길이는 별도의 편집 참고다."
+          }
+        ],
+        "intermediateResult": "첫 수정본의 27.5초 검은 판과 노란 글을 흰 기본 자막으로 판정해 text-white 차단 1건이 생겼다. 인용 배색을 고친 최종본에서 해소됐다.",
+        "sourcePostManifestSha256": "275f511e63a84477b2066a2c5ac07c5dece326962a6dc7a866beec1db7f1751c",
+        "originalBrightTextReview": "원래 밝은 글 경고 세 자리는 3.5초 빨간 취소선이 글자 획을 가르던 요약, 20.5초 검은 판 위 자막, 27.5초 사장님 인용이었다. 별도 39초 경고는 캡처 원문이었다."
+      }
+    },
+    {
+      "episode": "synkbrief_요금제질문셋_20261103",
+      "input": "게시/b24_master.mp4",
+      "output": "수정본/화면_v1/b24_화면수정.mp4",
+      "cover": "수정본/화면_v1/표지.jpg",
+      "sourcePatch": "수정본/화면_v1/편집.patch",
+      "sourceVideoSha256": "201de2188d6800482f676c98ef1b5ecb303037b8369b6d24898d1b69c0b3183d",
+      "outputVideoSha256": "8b743b143a7ab6469866dcbc2c12d7d272d93bd1e61191fd66ca677aac35c3cf",
+      "sourceCoverSha256": "b272e73d51635ad70dc10c43bdea4f7370844ef15b028869dce57435f7698258",
+      "outputCoverSha256": "746cba609b3c248168bc41211f435409d756feb5334dacee6d91a05d65a9cc5b",
+      "sourceRendererSha256": "81b3bdae363e9d974a2ddebef6b2afd583d21e1d92f2d3d66beaef35e2ebc810",
+      "correctedRendererSha256": "7e93ab95ad09ac3ba77fa23d1768ced649ed176c9e4ea996e775931a5f6dea18",
+      "coverFrame": 18,
+      "frameRate": "30/1",
+      "videoFrames": 863,
+      "audioPacketsBitIdenticalSha256": "fdc9b6f3c3e29beef6abd159f25103437fe09f1a41864430d2d6392fc9e4eb74",
+      "audioBps": 333421,
+      "lufs": -14.5,
+      "truePeakDbfs": -1.4,
+      "sourcePostPackageModified": false,
+      "inspection": {
+        "result": "확인할 것",
+        "beforeReviewCount": 11,
+        "afterReviewCount": 11,
+        "blockers": [],
+        "skippedChecks": [],
+        "automaticNotes": [
+          {
+            "code": "tiktok-ending",
+            "message": "고정 댓글이 있는 유튜브 판과 같은 영상이다 — 끝 말이 고정 댓글을 가리키면 끝 말만 바꾼 틱톡판을 렌더한다"
+          },
+          {
+            "code": "homage-칸수",
+            "message": "원본과 칸 수이 다르다 — 원본 10칸(바로 넘기는 컷 1) · 우리 25칸(컷 13) · 다르게: 원본은 한 컷 진행자 + 카드 칸인데, 우리는 장면 심사(v1 「손 두 개와 요금표뿐 — 넘김」)를 넘기려 두 사람의 대화로 지었다. 대답 · 휴대폰 화면 칸이 더 든다"
+          },
+          {
+            "code": "homage-첫2초",
+            "message": "원본과 첫 2초이 다르다 — 원본 첫 2초 박자 0(없음) · 우리 1(1초) · 다르게: 원본은 첫 말로 바로 판정해 첫 2초에 카드 변화가 없다. 우리는 그 자리에 손바닥 사건을 뒀다(1.46초 탁) — 이번 편이 이기는 한 장면이다"
+          },
+          {
+            "code": "homage-박자",
+            "message": "원본과 박자이 다르다 — 원본 박자 9번 · 우리 24번 가운데 8번이 같은 순서로 0.6초 안(많은 쪽의 33%) · 짝의 중앙 어긋남 0.29초 · 다르게: 원본 박자 9곳 가운데 8곳은 우리도 칸이 바뀐다. 그 사이에 대답 · 듣는 얼굴 · 휴대폰 칸이 더 들어 있어 많은 쪽 기준 비율만 낮다"
+          },
+          {
+            "code": "end-card",
+            "message": "끝 화면 1.5초(27.3초 컷부터) — v2 §2-4 「4초 안팎」"
+          },
+          {
+            "code": "cover-safe-area",
+            "message": "표지 아래 앱 글자 자리 4군데 — 「심층 리서치 기능 확장」 아래 끝 1458px(안전선 1428) · 「확장된 메모리와 컨텍스트」 아래 끝 1530px(안전선 1428)"
+          },
+          {
+            "code": "cover-safe-area",
+            "message": "표지 위 머리 자리 1군데 — 「더 높은 이미지 생성 한도」 위 끝 197px(안전선 269)"
+          },
+          {
+            "code": "text-right",
+            "message": "오른쪽 단추 자리 2군데 — 23.5초 「이 플랜에는 광고가 포함될 수 있」 오른쪽 끝 1034px(안전선 920) · 23.5초 「무제한 텍스트 채팅에는 악용 방지」 오른쪽 끝 1051px(안전선 920) · 장면표 .tmp/올리기전검사/synkbrief_요금제질문셋_20261103/글자표_게시_b24_master.jpg"
+          },
+          {
+            "code": "text-bottom",
+            "message": "아래 앱 글자 자리 23군데 — 0.0초 「심층 리서치 기능 확장」 아래 끝 1455px(안전선 1428) · 0.0초 「확장된 메모리와 컨텍스트」 아래 끝 1527px(안전선 1428) · 장면표 .tmp/올리기전검사/synkbrief_요금제질문셋_20261103/글자표_게시_b24_master.jpg"
+          },
+          {
+            "code": "text-top",
+            "message": "위 머리 자리 4군데 — 0.5초 「더 높은 이미지 생성 한도」 위 끝 197px(안전선 269) · 23.5초 「이 플랜에는 광고가 포함될 수 있」 위 끝 155px(안전선 269) · 장면표 .tmp/올리기전검사/synkbrief_요금제질문셋_20261103/글자표_게시_b24_master.jpg"
+          },
+          {
+            "code": "text-whiteShort",
+            "message": "판 없이 그림 위에 얹은 짧은 밝은 글자 1군데 — 11.5초 「파일 업로드」 바탕 얼룩 29 · 흰 글자 둘레 어두운 칸 43% · 장면표 .tmp/올리기전검사/synkbrief_요금제질문셋_20261103/글자표_게시_b24_master.jpg"
+          }
+        ]
+      },
+      "visualReview": {
+        "samples": {
+          "ocrEverySeconds": 0.5,
+          "framesWithCover": 59,
+          "visualTimesSeconds": [
+            0.17,
+            0.6,
+            1.7,
+            2.8,
+            4.6,
+            5.8,
+            6.8,
+            8.8,
+            9.6,
+            11.3,
+            13.4,
+            15.3,
+            16.93,
+            18.5,
+            20.1,
+            21.8,
+            23.67,
+            25.47,
+            27.8
+          ]
+        },
+        "corrected": [
+          {
+            "time": "표지 0.60초와 휴대폰 장면 윗자막",
+            "issue": "‘AI 유료 결제 1초 전’과 대사를 상단 앱 영역 아래로 내렸다. ‘₩29,000’과 결제 버튼 위 손은 그대로 보인다.",
+            "titleTopPx": {
+              "before": 231,
+              "after": 311,
+              "safeMinimum": 269
+            }
+          },
+          {
+            "time": "8.5~11초",
+            "issue": "도움말 카드와 판정 세 칸의 폭을 조절했다. ‘한도에 도달하면 ChatGPT에서 알려드립니다’의 끝과 오른쪽 ‘긴 문서’ 칸을 함께 읽을 수 있다.",
+            "helpRightEdgePxAt8_5": {
+              "before": 1019,
+              "after": 891,
+              "safeMaximum": 920
+            }
+          },
+          {
+            "time": "18.5~21.33초",
+            "issue": "첫 수정에서 한 줄 40px로 작아진 무료 요금제 대사를 52px 두 줄로 고쳤다. 20초의 글자 상자는 y294~408, 판은 y429까지다. 가격 글자의 최상단은 85프레임 동안 y450~457이었다."
+          }
+        ],
+        "reviewedAutomaticWarnings": [
+          {
+            "codes": [
+              "cover-safe-area",
+              "text-top",
+              "text-bottom",
+              "text-right"
+            ],
+            "finding": "표지의 위쪽 회색 ‘더 높은 이미지 생성 한도’와 아래쪽 기능 목록, 가격 화면의 약관·광고 안내와 점심 메뉴의 작은 설명은 실제 폰 화면 배경이다. 표지에서 기존 13px OCR 조각은 가려진 배경 메뉴였고 최종 작은 글자 경고는 사라졌다. 가입·가격·대사는 별도로 확인했다."
+          },
+          {
+            "codes": [
+              "text-whiteShort"
+            ],
+            "finding": "11.5초 ‘파일 업로드’는 독립된 검은색 공식 화면 카드 안에 실제로 인쇄된 흰 글씨다. 사진 위에 바로 얹은 편집 자막이라는 의심은 오탐이다."
+          },
+          {
+            "codes": [
+              "tiktok-ending",
+              "homage-칸수",
+              "homage-첫2초",
+              "homage-박자",
+              "end-card"
+            ],
+            "finding": "끝 대사 ‘그 돈으로 점심이나 사’에는 고정 댓글 지시가 없다. 마지막 1.5초 길이, 원작과 컷 수·도입부·박자 차이 세 건은 화면 잘림과 별도인 편집 참고다."
+          }
+        ],
+        "sourcePostManifestSha256": "b17e07fa75eb5edb65ce87beb5db9895e953a7a053776721ce420c5eeb5b8014",
+        "priceClearance": {
+          "intervalFramesInclusive": [
+            555,
+            639
+          ],
+          "checkedFrames": 85,
+          "priceTopRangePx": [
+            450,
+            457
+          ],
+          "subtitlePanelBottomPx": 429,
+          "minimumGapPx": 21,
+          "minimumOriginalPriceGlyphsRetained": 0.99972,
+          "method": "원본에서 흰 ₩0의 연결 성분을 찾아 수정본의 같은 프레임·좌표에서 살아 있는 화소 비율을 계산했다."
+        }
+      }
+    }
+  ],
+  "review": {
+    "model": "claude-fable-5-1",
+    "marker": "검수-195946fbccb4103b",
+    "verdict": "두 편 모두 통과. 필수 수정 없음.",
+    "visuallyConfirmed": [
+      "B23 표지·마지막 비교 문구와 사장님 인용이 읽힌다.",
+      "B24 표지와 월 가격, 도움말·판정 세 칸, 무료 요금제 대사와 가격이 분리돼 읽힌다."
+    ],
+    "minorBackgroundOverlaps": [
+      "B23 1초의 출처 배지는 캡처 도입 두 줄 일부, 11초 설명 자막은 폰의 일반 안내 일부를 덮는다. 금액·핵심 조건과 편집 자막은 온전히 보인다.",
+      "B24 20.1초 판 오른쪽으로 폰 원래 제목 일부가 비치며 편집 대사와 가격을 가리지 않는다."
+    ],
+    "measurementCorrections": [
+      "검수자가 B24 끝 인장이 상단 안전선을 넘을 수 있다고 본 점을 원본 해상도에서 대조했다. 최종본 27.5·28.0·28.5초 모두 실제 글자 상자는 x737~891, y299~325로 안전 영역 안이다.",
+      "B24 무료 가격 간격은 시각 추정 대신 85프레임 실측으로 기록했다."
+    ]
+  }
+}

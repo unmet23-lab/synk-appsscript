@@ -1,0 +1,330 @@
+--- a/docs/마케팅/synkbrief_셋째줄그대로_20261102/remotion/src/Film.tsx
++++ b/docs/마케팅/synkbrief_셋째줄그대로_20261102/remotion/src/Film.tsx
+@@ -58,17 +58,20 @@
+   );
+ };
+ 
+-// 자막(말과 같은 글) — 판 위에 얹는다(흰 기본 글자 없음)
+-const Cap: React.FC<{ text: React.ReactNode; from: number; to: number; y?: number; color?: string; size?: number; who?: string; fadeIn?: number; fadeOut?: number }> = ({ text, from, to, y = 1500, color = '#fff', size = 56, who, fadeIn = 3, fadeOut = 3 }) => {
++// 자막(말과 같은 글) — 판 위에 얹는다(흰 기본 글자 없음). y를 안 주면 아래 끝을 1400에 맞춘다(SNS 안전 범위 x82..907 · y≤1410)
++// quote: 사장님 인용 — 불투명 크림 판 + 먹색 글(사진 밝기와 상관없이 대비 유지), 바깥 얇은 외곽선
++const Cap: React.FC<{ text: React.ReactNode; from: number; to: number; y?: number; color?: string; size?: number; who?: string; fadeIn?: number; fadeOut?: number; quote?: boolean }> = ({ text, from, to, y, color = '#fff', size = 56, who, fadeIn = 3, fadeOut = 3, quote }) => {
+   const f = useCurrentFrame();
+   const a = sec(from), b = sec(to);
+   if (f < a || f >= b) return null;
+   const o = Math.min(interpolate(f, [a, a + fadeIn], [0, 1], clamp), interpolate(f, [b - fadeOut, b], [1, 0], clamp));
+-  return (
+-    <div style={{ position: 'absolute', left: 54, right: 54, top: y, display: 'flex', justifyContent: 'center', opacity: o }}>
+-      <div style={{ fontFamily: KO, fontWeight: 800, fontSize: size, lineHeight: 1.28, letterSpacing: -1, color, textAlign: 'center', wordBreak: 'keep-all',
+-        background: 'rgba(12,12,12,0.94)', padding: '12px 26px', borderRadius: 16, maxWidth: 940 }}>
+-        {who ? <span style={{ fontSize: 36, fontWeight: 700, color: '#bdbdbd', letterSpacing: -0.3, marginRight: 14 }}>{who}</span> : null}
++  const pos = y === undefined ? { bottom: 1920 - 1400 } : { top: y };
++  return (
++    <div style={{ position: 'absolute', left: 82, width: 825, ...pos, display: 'flex', justifyContent: 'center', opacity: o }}>
++      <div style={{ fontFamily: KO, fontWeight: 800, fontSize: size, lineHeight: 1.28, letterSpacing: -1, color: quote ? '#171717' : color, textAlign: 'center', wordBreak: 'keep-all',
++        background: quote ? '#ffe6a0' : 'rgba(12,12,12,0.94)', padding: '12px 26px', borderRadius: 16, maxWidth: 825, boxSizing: 'border-box',
++        ...(quote ? { boxShadow: '0 0 0 2px #443420, 0 6px 18px rgba(0,0,0,0.35)' } : null) }}>
++        {who ? <span style={{ fontSize: 36, fontWeight: 700, color: quote ? '#443420' : '#bdbdbd', letterSpacing: -0.3, marginRight: 14 }}>{who}</span> : null}
+         {text}
+       </div>
+     </div>
+@@ -76,7 +79,7 @@
+ };
+ 
+ // 꼬리표 — 무엇의 화면인지(장면 심사 셋 다 「누구 말인지」를 짚음)
+-const Tag: React.FC<{ text: string; from: number; to: number; y?: number; x?: number; tone?: 'ai' | 'real' | 'note' }> = ({ text, from, to, y = 230, x = 54, tone = 'note' }) => {
++const Tag: React.FC<{ text: string; from: number; to: number; y?: number; x?: number; tone?: 'ai' | 'real' | 'note' }> = ({ text, from, to, y = 290, x = 82, tone = 'note' }) => {
+   const f = useCurrentFrame();
+   if (f < sec(from) || f >= sec(to)) return null;
+   const bg = tone === 'ai' ? '#e5322d' : tone === 'real' ? '#ffd84a' : 'rgba(12,12,12,0.86)';
+@@ -88,11 +91,17 @@
+   );
+ };
+ 
+-// 빨간 줄 · 노란 형광(퍼센트 너비로 그어 나감)
+-const Strike: React.FC<{ on: number; x: number; y: number; w: number; t?: number }> = ({ on, x, y, w, t = 12 }) => {
++// 빨간 표시 · 노란 형광(퍼센트 너비로 그어 나감)
++// 빨간 표시: 예전 취소선이 글 한가운데를 덮어 안 읽혀서, 글 위엔 옅은 빨강만 깔고 굵은 빨간 줄은 글 아래로(뜻 = 「원문에 없는 줄」은 그대로). x · y · w · h는 글 덩이
++const Flag: React.FC<{ on: number; x: number; y: number; w: number; h: number; t?: number }> = ({ on, x, y, w, h, t = 10 }) => {
+   const f = useCurrentFrame();
+   const p = interpolate(f, [sec(on), sec(on) + 9], [0, 1], { ...clamp, easing: EASE_OUT });
+-  return <div style={{ position: 'absolute', left: x, top: y - t / 2, width: w * p, height: t, background: '#e5322d', borderRadius: t / 2, boxShadow: '0 2px 8px rgba(0,0,0,0.35)' }} />;
++  return (
++    <>
++      <div style={{ position: 'absolute', left: x, top: y, width: w * p, height: h, background: 'rgba(229,50,45,0.24)', borderRadius: 6 }} />
++      <div style={{ position: 'absolute', left: x, top: y + h + 6, width: w * p, height: t, background: '#e5322d', borderRadius: t / 2, boxShadow: '0 2px 8px rgba(0,0,0,0.35)' }} />
++    </>
++  );
+ };
+ const Mark: React.FC<{ on: number; x: number; y: number; w: number; h: number }> = ({ on, x, y, w, h }) => {
+   const f = useCurrentFrame();
+@@ -100,22 +109,25 @@
+   return <div style={{ position: 'absolute', left: x, top: y, width: w * p, height: h, background: 'rgba(255,214,10,0.42)', borderRadius: 6 }} />;
+ };
+ 
+-// 두 줄 맞대기(장면 v2 · v3의 아래쪽) — 위 AI 요약 굵은 줄(빨간 줄) · 확인 질문 · 진짜 줄 두 덩이(노란 형광). top은 그 판의 위 끝
++// 두 줄 맞대기(장면 v2 · v3의 아래쪽) — 위 AI 요약 굵은 줄(빨간 표시) · 확인 질문 · 진짜 줄 두 덩이(노란 형광). top은 그 판의 위 끝
++// 판 전체(x33..1047)를 FK배로 줄여 x82..907 안에 둔다 — 안의 좌표는 예전 그대로, 스케일된 높이: 굵은 줄 +57..+125 · 질문 +155..+321 · 진짜 줄 +407..+576
++const FK = 0.814;
++const FLIP_TAG = 328; // 「원문 그대로」 꼬리표를 둘 자리(판 위 끝에서)
+ const Flip: React.FC<{ top: number; strikeAt: number; markAt: number; showAt?: number }> = ({ top, strikeAt, markAt, showAt = -1 }) => {
+   const f = useCurrentFrame();
+   const shown = f >= sec(showAt);
+   return (
+-    <>
+-      <Img src={staticFile('img/line_ai_big.png')} style={{ position: 'absolute', left: 33, top: top + 70, width: 1014, height: 84 }} />
+-      <Strike on={strikeAt} x={33 + 27} y={top + 70 + 42} w={970} />
+-      <Img src={staticFile('img/q_bubble.png')} style={{ position: 'absolute', left: 300, top: top + 190, width: 680, height: 204, opacity: shown ? 1 : 0 }} />
++    <div style={{ position: 'absolute', left: 82 - 33 * FK, top, width: 1080, height: 720, transformOrigin: '0 0', transform: `scale(${FK})` }}>
++      <Img src={staticFile('img/line_ai_big.png')} style={{ position: 'absolute', left: 33, top: 70, width: 1014, height: 84 }} />
++      <Flag on={strikeAt} x={33 + 20} y={70} w={984} h={84} />
++      <Img src={staticFile('img/q_bubble.png')} style={{ position: 'absolute', left: 300, top: 190, width: 680, height: 204, opacity: shown ? 1 : 0 }} />
+       {shown ? <>
+-        <Img src={staticFile('img/ans_b1.png')} style={{ position: 'absolute', left: 64, top: top + 500, width: 690, height: 99 }} />
+-        <Img src={staticFile('img/ans_b2.png')} style={{ position: 'absolute', left: 64, top: top + 615, width: 952, height: 93 }} />
+-        <Mark on={markAt} x={64 + 11} y={top + 500} w={666} h={99} />
+-        <Mark on={markAt + 0.25} x={64 + 9} y={top + 615} w={680} h={93} />
++        <Img src={staticFile('img/ans_b1.png')} style={{ position: 'absolute', left: 64, top: 500, width: 690, height: 99 }} />
++        <Img src={staticFile('img/ans_b2.png')} style={{ position: 'absolute', left: 64, top: 615, width: 952, height: 93 }} />
++        <Mark on={markAt} x={64 + 11} y={500} w={666} h={99} />
++        <Mark on={markAt + 0.25} x={64 + 9} y={615} w={680} h={93} />
+       </> : null}
+-    </>
++    </div>
+   );
+ };
+ 
+@@ -129,8 +141,8 @@
+   const f = useCurrentFrame();
+   return (
+     <AbsoluteFill style={{ background: '#121212' }}>
+-      <div style={{ position: 'absolute', top: 360, left: 0, right: 0, textAlign: 'center', fontFamily: KO, fontWeight: 800, fontSize: 52, color: '#e8e8e8', letterSpacing: -1.2 }}>같은 공문 · 새 대화 여덟 번</div>
+-      <div style={{ position: 'absolute', top: 470, left: 60, right: 60, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 22 }}>
++      <div style={{ position: 'absolute', top: 360, left: 82, width: 825, textAlign: 'center', fontFamily: KO, fontWeight: 800, fontSize: 52, color: '#e8e8e8', letterSpacing: -1.2 }}>같은 공문 · 새 대화 여덟 번</div>
++      <div style={{ position: 'absolute', top: 470, left: 82, width: 825, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18 }}>
+         {RUNS.map((r, i) => {
+           const o = interpolate(f, [sec(from) + i, sec(from) + i + 3], [0, 1], clamp);
+           return (
+@@ -142,7 +154,7 @@
+           );
+         })}
+       </div>
+-      {big ? <div style={{ position: 'absolute', left: 0, right: 0, top: 1060, display: 'flex', justifyContent: 'center' }}>
++      {big ? <div style={{ position: 'absolute', left: 82, width: 825, top: 1060, display: 'flex', justifyContent: 'center' }}>
+         <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 88, color: '#fff', background: '#e5322d', padding: '10px 36px', borderRadius: 24, letterSpacing: -3 }}>여섯 번 다른 조건</div>
+       </div> : null}
+     </AbsoluteFill>
+@@ -160,9 +172,9 @@
+   return (
+     <AbsoluteFill style={{ background: '#0e0e0e' }}>
+       <Img src={staticFile('img/r2_top.png')} style={{ position: 'absolute', left: 0, top: -200, width: 1080, height: 2341, filter: 'blur(16px) brightness(0.4)' }} />
+-      <div style={{ position: 'absolute', left: 0, right: 0, top: 520, textAlign: 'center', fontFamily: KO, fontWeight: 800, fontSize: 46, color: '#e6e6e6' }}>요약 뒤에 이렇게 한 줄</div>
+-      <div style={{ position: 'absolute', left: 60, right: 60, top: 620, opacity: q, translate: `0 ${(1 - q) * 28}px`, fontFamily: KO, color: '#f4f4f4', background: '#303030',
+-        border: '3px dashed #6a6a6a', borderRadius: 40, padding: '44px 46px', fontSize: 72, fontWeight: 800, lineHeight: 1.36, letterSpacing: -1.4, wordBreak: 'keep-all' }}>
++      <div style={{ position: 'absolute', left: 82, width: 825, top: 520, textAlign: 'center', fontFamily: KO, fontWeight: 800, fontSize: 46, color: '#e6e6e6' }}>요약 뒤에 이렇게 한 줄</div>
++      <div style={{ position: 'absolute', left: 82, width: 825, boxSizing: 'border-box', top: 620, opacity: q, translate: `0 ${(1 - q) * 28}px`, fontFamily: KO, color: '#f4f4f4', background: '#303030',
++        border: '3px dashed #6a6a6a', borderRadius: 40, padding: '40px 40px', fontSize: 66, fontWeight: 800, lineHeight: 1.36, letterSpacing: -1.4, wordBreak: 'keep-all' }}>
+         <span style={{ color: '#111', background: swapped ? '#7fe0a8' : '#ffd84a', borderRadius: 8, padding: '0 6px' }}>{kw}</span>이 나오는 줄을 <span style={{ color: '#111', background: '#ffd84a', borderRadius: 8, padding: '0 6px' }}>원문 그대로</span> 옮겨 줘.
+       </div>
+     </AbsoluteFill>
+@@ -174,7 +186,7 @@
+   const f = useCurrentFrame();
+   const o = interpolate(f, [6, 12], [0, 1], clamp);
+   return (
+-    <div style={{ position: 'absolute', left: 18, top: 336, width: 520, opacity: o, fontFamily: KO, fontWeight: 900, fontSize: 30, lineHeight: 1.3, letterSpacing: -0.8,
++    <div style={{ position: 'absolute', left: 18, top: 336, width: 480, opacity: o, fontFamily: KO, fontWeight: 900, fontSize: 30, lineHeight: 1.3, letterSpacing: -0.8,
+       color: '#fff', background: '#e5322d', borderRadius: 10, padding: '6px 14px' }}>
+       6개월 안에 폐업하면<br />→ 이 지원금을 돌려줘야
+     </div>
+@@ -183,8 +195,9 @@
+ 
+ // 종이 공문(시험에 쓴 흐린 스캔 — 지어낸 예시) — 「사.」 줄(760~823px)
+ const SCAN = { w: 1241, h: 1754 };
+-const ScanShot: React.FC<{ s: number; cy: number; ay?: number; markAt?: number }> = ({ s, cy, ay = 960, markAt }) => (
+-  <Pic src="img/scan_page.png" w={SCAN.w} h={SCAN.h} s={s} cx={620} cy={cy} ay={ay} drift={0.01} bg="#f2f2f2">
++// 「사.」 줄(x150..1110)이 화면 x82..907 안에 들게 cx · s를 맞춘다(cx 683 · s 0.86)
++const ScanShot: React.FC<{ s: number; cy: number; cx?: number; ay?: number; markAt?: number }> = ({ s, cy, cx = 620, ay = 960, markAt }) => (
++  <Pic src="img/scan_page.png" w={SCAN.w} h={SCAN.h} s={s} cx={cx} cy={cy} ay={ay} drift={0.006} bg="#f2f2f2">
+     {markAt !== undefined ? <>
+       <Mark on={markAt} x={150} y={757} w={960} h={36} />
+       <Mark on={markAt + 0.2} x={150} y={796} w={620} h={30} />
+@@ -208,27 +221,30 @@
+   return (
+     <AbsoluteFill style={{ background: '#000' }}>
+       {/* 0초 — 실제 요약 화면의 「최대 지원금 140만 원」(장면 심사 셋: 걸린 돈 · 누구 말인지를 0.5초 안에) → 표 쪽으로 내려감 */}
+-      {seq(S.a, S.line, <Pic src="img/r2_top.png" w={1080} h={2341} s={1.0} cx={540} cy={640} ay={820} drift={0.015} />)}
+-      {seq(S.line, S.man, <Pic src="img/r2_top.png" w={1080} h={2341} s={1.0} cx={540} cy={1180} ay={860} drift={0.015} />)}
++      {/* 휴대폰 캡처(글 x≈22..1075)는 s 0.78~0.8 · cx 586~600으로 줄여 x82..907 안에(「140만 원」 · 굵은 줄 끝이 오른쪽 버튼 자리에 걸리지 않게) */}
++      {seq(S.a, S.line, <Pic src="img/r2_top.png" w={1080} h={2341} s={0.8} cx={590} cy={640} ay={820} drift={0.012} />)}
++      {seq(S.line, S.man, <Pic src="img/r2_top.png" w={1080} h={2341} s={0.8} cx={590} cy={1180} ay={860} drift={0.012} />)}
+       {/* 굵은 줄 「6개월 이내에 키오스크를 설치해야」(R1) — 볼 이유 심사 「1.8초 사장님 컷은 장식」 → 요약 줄로 */}
+-      {seq(S.man, S.wrong, <Pic src="img/r1_bullets.png" w={1080} h={441} s={1.0} cx={540} cy={220} ay={860} drift={0.02} />)}
+-      {/* 빨간 줄 — 그 줄만 크게(「그런데 원문엔 이런 말이 없어요」) */}
++      {seq(S.man, S.wrong, <Pic src="img/r1_bullets.png" w={1080} h={441} s={0.8} cx={586} cy={220} ay={860} drift={0.012} />)}
++      {/* 빨간 표시 — 그 줄만 크게(「그런데 원문엔 이런 말이 없어요」) */}
+       {seq(S.wrong, S.scan, <AbsoluteFill style={{ background: '#0e0e0e' }}>
+-        <Img src={staticFile('img/line_ai_big.png')} style={{ position: 'absolute', left: 33, top: 800, width: 1014, height: 84 }} />
+-        <Strike on={0.05} x={60} y={842} w={970} />
++        <div style={{ position: 'absolute', left: 82 - 33 * FK, top: 800, width: 1080, height: 120, transformOrigin: '0 0', transform: `scale(${FK})` }}>
++          <Img src={staticFile('img/line_ai_big.png')} style={{ position: 'absolute', left: 33, top: 0, width: 1014, height: 84 }} />
++          <Flag on={0.05} x={33 + 20} y={0} w={984} h={84} />
++        </div>
+       </AbsoluteFill>)}
+       {/* 같은 공문(흐린 스캔) → 바뀐 줄 화면 · 종이 · 바뀐 줄 → 여덟 번 표 → 흐린 글자 가까이(어두운 화면끼리는 컷으로 안 잡혀 사이에 흰 종이를 끼움) */}
+       {/* 같은 공문 — 흐려도 읽히는 제목 쪽으로 키움(두 시험관이 두 번 「공문 글씨를 못 읽음」) */}
+-      {seq(S.scan, S.l1, <Pic src="img/scan_page.png" w={SCAN.w} h={SCAN.h} s={1.15} cx={620} cy={255} ay={860} drift={0.01} bg="#ffffff">
++      {seq(S.scan, S.l1, <Pic src="img/scan_page.png" w={SCAN.w} h={SCAN.h} s={0.96} cx={646} cy={255} ay={860} drift={0.008} bg="#ffffff">
+         {/* 제목만 — 작은 본문 글씨는 흰 종이로 덮는다(마지막 확인까지 두 시험관이 세 번 「공문 본문 글씨를 못 읽음」) */}
+         <div style={{ position: 'absolute', left: 0, top: 318, width: SCAN.w, height: SCAN.h - 318, background: 'linear-gradient(rgba(255,255,255,0.7) 0, #ffffff 40px)' }} />
+       </Pic>)}
+       {/* 0.2초 종이 깜빡임은 뺀다(셋째 시험 전: sonnet 「깜빡이는 짧은 컷에서 넘김」) */}
+-      {seq(S.l1, S.flashP, <Pic src="img/line_R1.png" w={1080} h={385} s={1.0} cx={540} cy={190} ay={860} drift={0.02} />)}
+-      {seq(S.flashP, S.tally, <Pic src="img/line_R5.png" w={1080} h={502} s={1.0} cx={540} cy={250} ay={760} drift={0.02} />)}
++      {seq(S.l1, S.flashP, <Pic src="img/line_R1.png" w={1080} h={385} s={0.78} cx={600} cy={190} ay={860} drift={0.01} />)}
++      {seq(S.flashP, S.tally, <Pic src="img/line_R5.png" w={1080} h={502} s={0.78} cx={600} cy={250} ay={760} drift={0.01} />)}
+       {seq(S.tally, S.tally2, <Tally from={0} />)}
+       {seq(S.tally2, S.blur, <Tally from={-60} big />)}
+-      {seq(S.blur, S.key, <Pic src="img/line_R2.png" w={1080} h={502} s={1.0} cx={540} cy={250} ay={760} drift={0.015} />)}
++      {seq(S.blur, S.key, <Pic src="img/line_R2.png" w={1080} h={502} s={0.78} cx={600} cy={250} ay={760} drift={0.008} />)}
+       {/* 확인 한 줄 — 바뀐 줄(R2) 위에서 「한 줄이면 돼요」 → 실제 화면에서 치기(입력 칸 가까이, 2.4초) → 바꿔 넣을 낱말 카드 → 보냄 */}
+       {seq(S.key, S.typing, <Vid src="img/type.mp4" start={0} crop={{ s: 1.0, cx: 540, cy: 1300, ay: 1000 }} free drift={0.0} rate={0.01} />)}
+       {seq(S.typing, 14.2, <Vid src="img/type.mp4" start={0} crop={{ s: 1.35, cx: 440, cy: 1760, ay: 1000 }} free drift={0.0} rate={4.55 / (14.2 - S.typing)} />)}
+@@ -240,79 +256,93 @@
+       {/* 두 줄 맞대기 → 곧바로 사장님 반응(공문을 들어 휴대폰과 견줌) → 원문 종이의 그 줄 → 걸린 돈 */}
+       {seq(S.flip, S.paper, <AbsoluteFill style={{ background: '#0e0e0e' }}><Flip top={330} strikeAt={0.1} markAt={0.35} /></AbsoluteFill>)}
+       {seq(S.paper, S.ai, <Vid src="img/V1.mp4" start={V.react} crop={FACE(1.4)} drift={0.012} />)}
+-      {seq(S.ai, S.real, <Pic src="img/scan_page.png" w={SCAN.w} h={SCAN.h} s={1.0} cx={620} cy={792} ay={860} drift={0.01} bg="#ffffff">
++      {seq(S.ai, S.real, <Pic src="img/scan_page.png" w={SCAN.w} h={SCAN.h} s={0.86} cx={683} cy={792} ay={860} drift={0.006} bg="#ffffff">
+         {/* 「사.」 두 줄(757~826px)만 남기고 흐리게 — 마지막 시험 두 시험관 「원문 본문 작은 글씨를 못 읽음」 */}
+         <div style={{ position: 'absolute', left: 0, top: 0, width: SCAN.w, height: 750, background: 'rgba(255,255,255,0.82)' }} />
+         <div style={{ position: 'absolute', left: 0, top: 832, width: SCAN.w, height: SCAN.h - 832, background: 'rgba(255,255,255,0.82)' }} />
+         <Mark on={0.15} x={150} y={757} w={960} h={36} />
+         <Mark on={0.35} x={150} y={796} w={620} h={30} />
+       </Pic>)}
+-      {seq(S.real, S.turn, <Pic src="img/ans_full.png" w={1080} h={197} s={1.0} cx={540} cy={98} ay={860} drift={0.015}>
+-        <Mark on={0.1} x={605} y={78} w={380} h={46} />
+-        <Mark on={0.3} x={30} y={145} w={380} h={46} />
+-      </Pic>)}
++      {/* 원문 그대로 옮긴 답 — 실제 답 화면 한 덩이(글 x31..997)는 x82..907 안으로 줄여 위에, 그 아래 같은 답에서 자른 두 줄(ans_b1 · ans_b2)을 크게 · 형광은 각 글 좌표에 */}
++      {seq(S.real, S.turn, <AbsoluteFill style={{ background: '#0e0e0e' }}>
++        <Pic src="img/ans_full.png" w={1080} h={197} s={0.82} cx={570} cy={98} ay={520} drift={0.006}>
++          <Mark on={0.1} x={605} y={78} w={380} h={46} />
++          <Mark on={0.3} x={30} y={145} w={380} h={46} />
++        </Pic>
++        <Img src={staticFile('img/ans_b1.png')} style={{ position: 'absolute', left: 82, top: 700, width: 593, height: 85 }} />
++        <Img src={staticFile('img/ans_b2.png')} style={{ position: 'absolute', left: 82, top: 800, width: 819, height: 80 }} />
++        <Mark on={0.1} x={82 + 9} y={700} w={573} h={85} />
++        <Mark on={0.3} x={82 + 8} y={800} w={585} h={80} />
++      </AbsoluteFill>)}
+       {/* 반전(원본 37.1초) — 바로 사장님 한마디 「…폐업하면, 돌려줘야 한다고?」(동영상 6.3~10초를 그대로 이어서, 얼굴 → 키오스크 → 얼굴 가까이 → 얼굴) */}
+       {seq(S.turn, S.p2, <Vid src="img/V1.mp4" start={V.mutter + (S.turn - S.turn)} crop={FACE(1.45)} drift={0.0} />)}
+       {seq(S.p2, S.p4, <Vid src="img/V1.mp4" start={V.mutter + (S.p2 - S.turn)} crop={KIOSK} drift={0.0} />)}
+       {seq(S.p4, S.wide, <Vid src="img/V1.mp4" start={V.mutter + (S.p4 - S.turn)} crop={FACE(2.0)} drift={0.005} />)}
+       {seq(S.wide, S.card1, <Vid src="img/V1.mp4" start={V.mutter + (S.wide - S.turn)} crop={FACE(1.3)} drift={0.008} />)}
+       {/* 「요약만 믿었다면」 — 요약 줄(빨간 줄) → 걸린 돈 → 키오스크를 돌아보는 사장님(동영상 4.2~6.3초) */}
+-      {seq(S.card1, S.card, <Pic src="img/r1_bullets.png" w={1080} h={441} s={1.0} cx={540} cy={220} ay={860} drift={0.015}><Strike on={0.05} x={372} y={196} w={645} t={10} /></Pic>)}
+-      {seq(S.card, S.worry, <Pic src="img/card.png" w={1028} h={323} s={1.9} cx={262} cy={150} ay={760} drift={0.015}><MoneyNote /></Pic>)}
++      {seq(S.card1, S.card, <Pic src="img/r1_bullets.png" w={1080} h={441} s={0.8} cx={586} cy={220} ay={860} drift={0.01}><Flag on={0.05} x={366} y={176} w={652} h={42} t={6} /></Pic>)}
++      {/* 돈 카드 — 왼쪽 반(글은 그림 x≤503)만 크게: s 1.5로 왼쪽 끝을 x82에, 오른쪽으로 흘러나간 카드는 x860~915에서 흐려 끊는다 */}
++      {seq(S.card, S.worry, <AbsoluteFill style={{ background: '#0e0e0e' }}>
++        <div style={{ position: 'absolute', inset: 0, WebkitMaskImage: 'linear-gradient(90deg, #000 0, #000 860px, transparent 915px)', maskImage: 'linear-gradient(90deg, #000 0, #000 860px, transparent 915px)' }}>
++          <Pic src="img/card.png" w={1028} h={323} s={1.5} cx={305} cy={150} ay={760} drift={0.012}><MoneyNote /></Pic>
++        </div>
++      </AbsoluteFill>)}
+       {seq(S.worry, S.f3, <Vid src="img/V1.mp4" start={V.gaze} crop={{ s: 1.25, cx: 700, cy: 640, ay: 900 }} drift={0.008} rate={(V.mutter - V.gaze) / (S.f3 - S.worry)} />)}
+-      {seq(S.f3, S.end, <ScanShot s={0.86} cy={760} ay={900} markAt={-1} />)}
+-      {/* 끝 3초 — v3 장면을 다시: 위 사장님(키오스크를 돌아봄 → 39.89초 얼굴 가까이) · 아래 뒤집힌 두 줄 */}
++      {seq(S.f3, S.end, <ScanShot s={0.86} cx={683} cy={760} ay={900} markAt={-1} />)}
++      {/* 끝 3초 — v3 장면을 다시: 위 사장님(키오스크를 돌아봄 → 39.89초 얼굴 가까이) · 아래 뒤집힌 두 줄. 두 줄 판이 자막(한 줄, 1320~1400) 위에서 끝나게 사장님 칸을 690까지로 */}
+       {seq(S.end, S.total, <AbsoluteFill style={{ background: '#0e0e0e' }}>
+         <Sequence durationInFrames={sec(S.end2) - sec(S.end)}>
+-          <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 800, overflow: 'hidden' }}>
++          <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 690, overflow: 'hidden' }}>
+             <OffthreadVideo muted src={staticFile('img/V1.mp4')} startFrom={sec(5.4)} playbackRate={0.7}
+               style={{ position: 'absolute', left: -101, top: -230, width: 1215, height: 2160 }} />
+           </div>
+         </Sequence>
+         <Sequence from={sec(S.end2) - sec(S.end)}>
+-          <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 800, overflow: 'hidden' }}>
++          <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 690, overflow: 'hidden' }}>
+             <OffthreadVideo muted src={staticFile('img/V1.mp4')} startFrom={sec(5.4 + (S.end2 - S.end) * 0.7)} playbackRate={0.7}
+               style={{ position: 'absolute', left: -330, top: -420, width: 1215 * 1.45, height: 2160 * 1.45 }} />
+           </div>
+         </Sequence>
+-        <Flip top={760} strikeAt={-1} markAt={-1} />
++        <Flip top={690} strikeAt={-1} markAt={-1} />
+       </AbsoluteFill>)}
+ 
+-      {/* 꼬리표 */}
+-      <Tag text="ChatGPT 요약" tone="ai" from={S.a} to={S.wrong} y={250} />
++      {/* 꼬리표 — 기본 자리 x82 · y290(안전 범위 위/왼쪽 여유) */}
++      <Tag text="ChatGPT 요약" tone="ai" from={S.a} to={S.wrong} />
+       <Tag text="ChatGPT 요약의 이 줄" tone="ai" from={S.wrong} to={S.scan} y={720} />
+-      <Tag text="지원금 최대 140만 원이 걸린 공문" tone="real" from={S.a} to={S.man} y={330} />
+-      <Tag text="올린 공문 — 흐릿한 스캔본(예시로 만든 것)" from={S.scan} to={S.l1} y={250} />
+-      <Tag text="ChatGPT 요약 · 다른 대화" tone="ai" from={S.l1} to={S.flashP} y={250} />
+-      <Tag text="ChatGPT 요약 · 또 다른 대화" tone="ai" from={S.flashP} to={S.tally} y={250} />
+-      <Tag text="ChatGPT 요약 · 또 다른 대화" tone="ai" from={S.blur} to={S.key} y={250} />
+-      <Tag text="요약을 믿고 키오스크를 들인 사장님 · AI 재연" from={S.prompt} to={S.ans} y={250} />
+-      <Tag text="ChatGPT 요약" tone="ai" from={S.flip} to={S.paper} y={250} />
+-      <Tag text="원문 그대로 옮긴 답" tone="real" from={S.flip} to={S.paper} y={330 + 420} />
+-      <Tag text="AI로 지어낸 장면이에요" from={S.paper} to={S.ai} y={250} />
+-      <Tag text="원문(예시로 만든 공문)" tone="real" from={S.ai} to={S.real} y={250} />
+-      <Tag text="원문 그대로 옮긴 답" tone="real" from={S.real} to={S.turn} y={250} />
+-      <Tag text="AI로 지어낸 장면이에요" from={S.turn} to={S.card1} y={250} />
+-      <Tag text="ChatGPT 요약" tone="ai" from={S.card1} to={S.card} y={250} />
+-      <Tag text="ChatGPT 요약 화면" tone="ai" from={S.card} to={S.worry} y={250} />
+-      <Tag text="AI로 지어낸 장면이에요" from={S.worry} to={S.f3} y={250} />
+-      <Tag text="원문(예시로 만든 공문)" tone="real" from={S.f3} to={S.end} y={250} />
+-      <Tag text="ChatGPT 요약" tone="ai" from={S.end} to={S.total} y={690} x={54} />
+-      <Tag text="원문 그대로" tone="real" from={S.end} to={S.total} y={760 + 420} />
+-      <Tag text="SYNK 브리핑" from={S.end} to={S.total} y={60} />
+-
+-      {/* 자막 = 말 */}
+-      <Cap text="흐릿한 공문, AI 요약에 이렇게 나왔어요" from={vo('n01') / 30} to={S.wrong - 0.05} y={1480} />
+-      <Cap text={<>그런데 원문엔 <span style={{ color: '#ff6a5f' }}>이런 말이 없어요</span></>} from={vo('n02') / 30} to={S.scan} y={1480} />
+-      <Cap text={<>새 대화로 여덟 번 → <span style={{ color: '#ff6a5f' }}>여섯 번이 조건을 바꿈</span></>} from={vo('n03') / 30} to={S.blur + 0.3} y={1480} />
++      <Tag text="지원금 최대 140만 원이 걸린 공문" tone="real" from={S.a} to={S.man} y={375} />
++      <Tag text="올린 공문 — 흐릿한 스캔본(예시로 만든 것)" from={S.scan} to={S.l1} />
++      <Tag text="ChatGPT 요약 · 다른 대화" tone="ai" from={S.l1} to={S.flashP} />
++      <Tag text="ChatGPT 요약 · 또 다른 대화" tone="ai" from={S.flashP} to={S.tally} />
++      <Tag text="ChatGPT 요약 · 또 다른 대화" tone="ai" from={S.blur} to={S.key} />
++      <Tag text="요약을 믿고 키오스크를 들인 사장님 · AI 재연" from={S.prompt} to={S.ans} />
++      <Tag text="ChatGPT 요약" tone="ai" from={S.flip} to={S.paper} />
++      <Tag text="원문 그대로 옮긴 답" tone="real" from={S.flip} to={S.paper} y={330 + FLIP_TAG} />
++      <Tag text="AI로 지어낸 장면이에요" from={S.paper} to={S.ai} />
++      <Tag text="원문(예시로 만든 공문)" tone="real" from={S.ai} to={S.real} />
++      <Tag text="원문 그대로 옮긴 답" tone="real" from={S.real} to={S.turn} />
++      <Tag text="AI로 지어낸 장면이에요" from={S.turn} to={S.card1} />
++      <Tag text="ChatGPT 요약" tone="ai" from={S.card1} to={S.card} />
++      <Tag text="ChatGPT 요약 화면" tone="ai" from={S.card} to={S.worry} />
++      <Tag text="AI로 지어낸 장면이에요" from={S.worry} to={S.f3} />
++      <Tag text="원문(예시로 만든 공문)" tone="real" from={S.f3} to={S.end} />
++      <Tag text="ChatGPT 요약" tone="ai" from={S.end} to={S.total} y={668} />
++      <Tag text="원문 그대로" tone="real" from={S.end} to={S.total} y={690 + FLIP_TAG} />
++      {/* 브랜드 — 예전 y60은 안전 범위 밖 · 사장님 얼굴을 피해 「ChatGPT 요약」 꼬리표와 같은 줄 오른쪽에 */}
++      <Tag text="SYNK 브리핑" from={S.end} to={S.total} y={676} x={650} />
++
++      {/* 자막 = 말 — 아래 끝 1400(안전 범위 안) · 너비 x82..907, 줄은 뜻 덩이에서 끊는다 */}
++      <Cap text={<>흐릿한 공문,<br />AI 요약에 이렇게 나왔어요</>} from={vo('n01') / 30} to={S.wrong - 0.05} />
++      <Cap text={<>그런데 원문엔 <span style={{ color: '#ff6a5f' }}>이런 말이 없어요</span></>} from={vo('n02') / 30} to={S.scan} />
++      <Cap text={<>새 대화로 여덟 번 →<br /><span style={{ color: '#ff6a5f' }}>여섯 번이 조건을 바꿈</span></>} from={vo('n03') / 30} to={S.blur + 0.3} />
+       <Cap text={<>확인은 한 줄이면 돼요</>} from={vo('n04') / 30} to={14.2} y={1260} />
+-      <Cap text={<>'6개월' 자리엔 <span style={{ color: '#ffd84a' }}>마감일 · 금액</span>을 넣어도</>} from={vo('n08') / 30} to={S.send} y={1300} />
+-      <Cap text={<>요약은 <span style={{ color: '#ffd84a' }}>그럴듯한 말로 바꿔 쓰기도</span></>} from={vo('n05') / 30} to={vo('n09') / 30 - 0.1} y={1500} />
+-      <Cap text={<>같은 6개월인데, <span style={{ color: '#ff6a5f' }}>전혀 다른 조건</span></>} from={vo('n09') / 30} to={S.turn - 0.05} y={1480} />
+-      <Cap who="사장님" text={<span style={{ color: '#ffd84a' }}>“…폐업하면, 돌려줘야 한다고?”</span>} from={S.turn + 0.2} to={vo('n06') / 30 - 0.1} y={1480} />
+-      <Cap text="요약만 믿었다면 몰랐을 조건 — 6개월 안에 폐업하면 반환" from={vo('n06') / 30} to={vo('n10') / 30 - 0.1} y={1480} size={50} />
+-      <Cap text={<>6개월 안에 문 닫으면, <span style={{ color: '#ff6a5f' }}>키오스크값을 고스란히 떠안는 셈</span></>} from={vo('n10') / 30} to={S.end - 0.05} y={1480} size={50} />
+-      <Cap text={<>지원금이 걸린 줄은, <span style={{ color: '#ffd84a' }}>원문 그대로 한 번 더</span></>} from={vo('n07') / 30} to={S.total} y={1510} size={52} />
++      <Cap text={<>'6개월' 자리엔<br /><span style={{ color: '#ffd84a' }}>마감일 · 금액</span>을 넣어도</>} from={vo('n08') / 30} to={S.send} />
++      <Cap text={<>요약은 <span style={{ color: '#ffd84a' }}>그럴듯한 말로<br />바꿔 쓰기도</span></>} from={vo('n05') / 30} to={vo('n09') / 30 - 0.1} />
++      <Cap text={<>같은 6개월인데, <span style={{ color: '#ff6a5f' }}>전혀 다른 조건</span></>} from={vo('n09') / 30} to={S.turn - 0.05} />
++      <Cap who="사장님" quote text={<>“…폐업하면,<br />돌려줘야 한다고?”</>} from={S.turn + 0.2} to={vo('n06') / 30 - 0.1} />
++      <Cap text={<>요약만 믿었다면 몰랐을 조건 —<br />6개월 안에 폐업하면 반환</>} from={vo('n06') / 30} to={vo('n10') / 30 - 0.1} size={50} />
++      <Cap text={<>6개월 안에 문 닫으면,<br /><span style={{ color: '#ff6a5f' }}>키오스크값을 고스란히 떠안는 셈</span></>} from={vo('n10') / 30} to={S.end - 0.05} size={50} />
++      {/* 끝 — 두 줄 판(~1266) 아래 한 줄로 */}
++      <Cap text={<>지원금이 걸린 줄은, <span style={{ color: '#ffd84a' }}>원문 그대로 한 번 더</span></>} from={vo('n07') / 30} to={S.total} size={44} />
+ 
+       {/* 소리 */}
+       <Audio src={staticFile('bgm.wav')} volume={bgm} />

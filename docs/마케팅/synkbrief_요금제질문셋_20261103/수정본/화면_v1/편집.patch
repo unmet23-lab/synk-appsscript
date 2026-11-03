@@ -1,0 +1,137 @@
+--- a/docs/마케팅/synkbrief_요금제질문셋_20261103/remotion/src/Film.tsx
++++ b/docs/마케팅/synkbrief_요금제질문셋_20261103/remotion/src/Film.tsx
+@@ -30,16 +30,17 @@
+   <AbsoluteFill style={{ overflow: 'hidden' }}><OffthreadVideo muted src={staticFile(`plate/${src}.mp4`)} startFrom={sec(start)} playbackRate={rate} style={{ width: 1080, height: 1920, transformOrigin: origin, transform: `scale(${z})` }} /></AbsoluteFill>
+ );
+ 
+-// 자막(말과 같은 글) — 판 위에(흰 기본 글자 없음)
++// 자막(말과 같은 글) — 판 위에(흰 기본 글자 없음). 너비는 SNS 안전 범위 x82..907 안, 윗자막 자리는 TOP(예전 190/210은 안전 범위 위로 나감)
++const TOP = 290;
+ const Cap: React.FC<{ text: React.ReactNode; from: number; to: number; y?: number; me?: boolean; num?: number; size?: number }> = ({ text, from, to, y = 940, me, num, size = 54 }) => {
+   const f = useCurrentFrame();
+   const a = sec(from), b = sec(to);
+   if (f < a || f >= b) return null;
+   const o = Math.min(interpolate(f, [a, a + 2], [0, 1], clamp), interpolate(f, [b - 2, b], [1, 0], clamp));
+   return (
+-    <div style={{ position: 'absolute', left: 60, right: 60, top: y, display: 'flex', justifyContent: 'center', opacity: o }}>
++    <div style={{ position: 'absolute', left: 82, width: 825, top: y, display: 'flex', justifyContent: 'center', opacity: o }}>
+       <div style={{ fontFamily: KO, fontWeight: 800, fontSize: size, lineHeight: 1.26, letterSpacing: -1.2, color: me ? '#141414' : '#fff', textAlign: 'center', wordBreak: 'keep-all',
+-        background: me ? '#ffffff' : 'rgba(14,14,14,0.94)', padding: '12px 26px', borderRadius: 16, maxWidth: 960, display: 'flex', alignItems: 'center', gap: 16 }}>
++        background: me ? '#ffffff' : 'rgba(14,14,14,0.94)', padding: '12px 26px', borderRadius: 16, maxWidth: 825, boxSizing: 'border-box', display: 'flex', alignItems: 'center', gap: 16 }}>
+         {num ? <span style={{ flex: 'none', width: 62, height: 62, borderRadius: 31, background: '#ffd84a', color: '#141414', fontWeight: 900, fontSize: 42, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{num}</span> : null}
+         <span>{text}</span>
+       </div>
+@@ -47,14 +48,16 @@
+   );
+ };
+ 
+-// 실제 화면 칸 — 위 꼬리표는 무엇의 화면인지
+-const Card: React.FC<{ imgs: { src: string; w: number; h: number; dw?: number }[]; tag: string; from: number; to: number; y?: number; width?: number; tagSize?: number; children?: React.ReactNode }> = ({ imgs, tag, from, to, y = 1050, width = 960, tagSize = 28, children }) => {
++// 실제 화면 칸 — 위 꼬리표는 무엇의 화면인지. 왼쪽 끝 82 · 너비 825(예전 960은 오른쪽 버튼 자리로 나감)
++const CARD_W = 825;
++const CK = CARD_W / 960; // 예전 960 너비 기준 형광 좌표를 줄이는 비
++const Card: React.FC<{ imgs: { src: string; w: number; h: number; dw?: number }[]; tag: string; from: number; to: number; y?: number; width?: number; tagSize?: number; children?: React.ReactNode }> = ({ imgs, tag, from, to, y = 1050, width = CARD_W, tagSize = 28, children }) => {
+   const f = useCurrentFrame();
+   if (f < sec(from) || f >= sec(to)) return null;
+   const k = interpolate(f, [sec(from), sec(from) + 5], [0.94, 1], { ...clamp, easing: EASE_OUT });
+   const o = interpolate(f, [sec(from), sec(from) + 3], [0, 1], clamp);
+   return (
+-    <div style={{ position: 'absolute', left: (1080 - width) / 2, width, top: y, transform: `scale(${k})`, opacity: o, transformOrigin: '50% 50%' }}>
++    <div style={{ position: 'absolute', left: 82, width, top: y, transform: `scale(${k})`, opacity: o, transformOrigin: '50% 50%' }}>
+       <div style={{ display: 'inline-block', fontFamily: KO, fontWeight: 700, fontSize: tagSize, color: '#141414', background: '#e8e8e8', padding: '3px 14px', borderRadius: '10px 10px 0 0' }}>{tag}</div>
+       <div style={{ background: '#2e2e2e', borderRadius: '0 16px 16px 16px', overflow: 'hidden', position: 'relative', boxShadow: '0 10px 30px rgba(0,0,0,0.35)' }}>
+         {imgs.map((m, i) => {
+@@ -85,7 +88,7 @@
+   ];
+   const g = interpolate(f, [sec(S.free), sec(S.free) + 5], [0, 1], { ...clamp, easing: EASE_OUT });
+   return (
+-    <div style={{ position: 'absolute', left: 60, width: 960, top: 1272, height: 150 }}>
++    <div style={{ position: 'absolute', left: 82, width: 825, top: 1256, height: 150 }}>
+       <div style={{ display: 'flex', gap: 14, opacity: 1 - g }}>
+         {items.map((m) => {
+           const a = sec(m.on);
+@@ -97,7 +100,7 @@
+               <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 34, color: '#fff', textAlign: 'center', marginTop: 8, letterSpacing: -0.8 }}>{m.t}</div>
+               {shown ? (
+                 <div style={{ position: 'absolute', left: 16, right: 16, top: 56, height: 80, background: '#ffe873', borderRadius: 6, transform: `scale(${k}) rotate(-2.5deg)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+-                  <Img src={staticFile(`img/pen_${m.pen}.png`)} style={{ height: 70, clipPath: `inset(0 ${100 - wipe}% 0 0)` }} />
++                  <Img src={staticFile(`img/pen_${m.pen}.png`)} style={{ height: 70, maxWidth: '100%', objectFit: 'contain', clipPath: `inset(0 ${100 - wipe}% 0 0)` }} />
+                 </div>
+               ) : null}
+             </div>
+@@ -106,7 +109,7 @@
+       </div>
+       {g > 0 ? (
+         <div style={{ position: 'absolute', inset: 0, background: '#15803d', borderRadius: 16, opacity: g, display: 'flex', alignItems: 'center', justifyContent: 'center', transform: `scale(${0.94 + 0.06 * g})` }}>
+-          <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 70, color: '#fff', letterSpacing: -2 }}>셋 다 아니요 = 무료로 충분</div>
++          <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 64, color: '#fff', letterSpacing: -2 }}>셋 다 아니요 = 무료로 충분</div>
+         </div>
+       ) : null}
+     </div>
+@@ -119,7 +122,7 @@
+   if (f < sec(from) || f >= sec(to)) return null;
+   const k = interpolate(f, [sec(from), sec(from) + 5], [1.25, 1], { ...clamp, easing: EASE_OUT });
+   return (
+-    <div style={{ position: 'absolute', left: 60, right: 60, top: 1000, display: 'flex', justifyContent: 'center', transform: `scale(${k})` }}>
++    <div style={{ position: 'absolute', left: 82, width: 825, top: 1000, display: 'flex', justifyContent: 'center', transform: `scale(${k})` }}>
+       <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 92, lineHeight: 1.14, letterSpacing: -3, color: '#fff', background: '#d92d27', padding: '14px 34px 18px', borderRadius: 18, textAlign: 'center' }}>
+         <div style={{ fontSize: 42, fontWeight: 800, letterSpacing: -1, opacity: 0.96 }}>₩29,000 × 12달</div>
+         1년이면 34만 8천 원
+@@ -167,41 +170,43 @@
+       {seq(S.lunch, S.total, <Face src="lunch" start={0.3} z={1.22} origin="250px 1700px" />)}
+ 
+       {/* 글 */}
+-      <Cap text="AI 유료 결제 1초 전" from={0} to={S.slap} y={210} size={54} />
+-      <Cap text="잠깐, 그거 어디 쓰려고?" from={vo('n01')} to={S.faceA} y={210} />
++      <Cap text="AI 유료 결제 1초 전" from={0} to={S.slap} y={TOP} size={54} />
++      <Cap text="잠깐, 그거 어디 쓰려고?" from={vo('n01')} to={S.faceA} y={TOP} />
+       <Cap text="잠깐, 그거 어디 쓰려고?" from={S.faceA} to={vo('p01')} />
+-      <Mini text="AI로 만든 재연이에요" from={S.faceA} to={S.faceB} x={60} y={1432} />
++      <Mini text="AI로 만든 재연이에요" from={S.faceA} to={S.faceB} x={82} y={1360} />
+       <Cap text="다들 쓴다길래…" from={vo('p01')} to={S.faceB} me />
+       <Cap text="다들 뭐에 쓰는데?" from={S.faceB} to={vo('p06')} />
+       <Cap text="…몰라." from={vo('p06')} to={S.chat} me size={64} />
+-      <Cap text="어제 뭐 물어봤어?" from={S.chat} to={vo('p07')} y={190} size={60} />
+-      <Cap text="…오늘 점심 뭐 먹지." from={vo('p07')} to={S.laugh} y={190} me size={60} />
++      <Cap text="어제 뭐 물어봤어?" from={S.chat} to={vo('p07')} y={TOP} size={60} />
++      <Cap text="…오늘 점심 뭐 먹지." from={vo('p07')} to={S.laugh} y={TOP} me size={60} />
+ 
+       <Cap text="한도 다 썼다는 알림, 본 적 있어?" from={S.q} to={vo('p02')} num={1} size={50} />
+       <Cap text="아니." from={vo('p02')} to={vo('n04')} me size={64} />
+       <Cap text="파일이나 사진, 매일 올려?" from={vo('n04')} to={S.povFile} num={2} />
+-      <Cap text="어… 가끔?" from={vo('p03')} to={vo('n11')} y={210} me size={64} />
+-      <Cap text="가끔이면 됐고." from={vo('n11')} to={S.q3} y={210} />
++      <Cap text="어… 가끔?" from={vo('p03')} to={vo('n11')} y={TOP} me size={64} />
++      <Cap text="가끔이면 됐고." from={vo('n11')} to={S.q3} y={TOP} />
+       <Cap text="긴 문서, 통째로 넣어?" from={S.q3} to={vo('p04')} num={3} />
+       <Cap text="…아니." from={vo('p04')} to={S.free} me size={64} />
+-      <Card imgs={[{ src: 'card_help', w: 972, h: 58 }]} tag="파일 · 사진 · 음성은 쓰는 양에 한도가 있어요" tagSize={44} from={S.q + 0.3} to={vo('n04')}>
+-        <Mark on={S.q + 0.7} x={0} y={0} w={348} h={58} />
++      {/* 실제 화면 칸 — 너비 825로 줄인 만큼 형광 좌표도 CK배 */}
++      <Card imgs={[{ src: 'card_help', w: 972, h: 58 }]} tag="파일 · 사진 · 음성은 쓰는 양에 한도가 있어요" tagSize={38} from={S.q + 0.3} to={vo('n04')}>
++        <Mark on={S.q + 0.7} x={0} y={0} w={348 * CK} h={Math.round((58 * CARD_W) / 972)} />
+       </Card>
+       <Card imgs={[{ src: 'card_file', w: 1098, h: 144 }]} tag="ChatGPT 무료 요금제(실제 화면)" tagSize={34} from={vo('n04')} to={S.povFile}>
+-        <Mark on={vo('n04') + 0.5} x={520} y={18} w={280} h={92} />
++        <Mark on={vo('n04') + 0.5} x={520 * CK} y={18 * CK} w={280 * CK} h={92 * CK} />
+       </Card>
+       <Slots from={S.q + 0.3} to={S.n08} />
+ 
+       <Cap text="그럼 무료로 충분해." from={S.free} to={S.povFree} size={62} />
+-      <Cap text="진짜?" from={vo('p08')} to={vo('n07')} y={210} me size={64} />
+-      <Cap text="챗GPT는 글로만 묻는 건, 무료도 무제한이야." from={vo('n07')} to={S.n08} y={210} />
++      <Cap text="진짜?" from={vo('p08')} to={vo('n07')} y={TOP} me size={64} />
++      {/* 두 줄 52px — 이 대사만 y274(판 아래 ≈274+12+2×65.5+12 = 429), 「₩0」 글자 위 끝(≈455)과 안 겹침 */}
++      <Cap text={<>챗GPT는 글로만 묻는 건,<br />무료도 무제한이야.</>} from={vo('n07')} to={S.n08} y={274} size={52} />
+       <Cap text="하나라도 '예'면," from={S.n08} to={S.pay2} size={62} />
+       <Cap text="그때 결제해." from={S.pay2} to={S.strike} size={62} />
+ 
+       <Big from={S.strike + 0.35} to={S.creep + 0.3} />
+-      <Cap text="그래도 한 달만…" from={vo('p05')} to={S.slap2} y={210} me />
++      <Cap text="그래도 한 달만…" from={vo('p05')} to={S.slap2} y={TOP} me />
+       <Cap text="그 돈으로 점심이나 사." from={S.faceEnd} to={S.total} size={62} />
+-      <Mini text="SYNK 브리핑" from={S.total - 3} to={S.total} right={60} y={120} />
++      <Mini text="SYNK 브리핑" from={S.total - 3} to={S.total} right={1080 - 907} y={TOP} />
+ 
+       {/* 소리 — 첫 사건 동안 방 소리와 초침, 탁에서 초침이 멈춘다 */}
+       <Audio src={staticFile('sfx/room.wav')} volume={(fr: number) => 0.35 * interpolate(fr, [0, 6, sec(S.q - 0.1), sec(S.q + 0.2)], [0.5, 1, 1, 0], clamp)} />
