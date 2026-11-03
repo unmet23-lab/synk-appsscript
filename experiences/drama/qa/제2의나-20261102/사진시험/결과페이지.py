@@ -46,7 +46,7 @@ for 사람 in 결과["사람"]:
         몸.append(f"<div class='verdict'>{사람['판정']}</div>")
     몸.append("</section>")
 
-문서 = f"""<title>제2의 나 사진 아바타 시험</title>
+문서 = f"""<title>제2의 나 사진 아바타</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
 /* 시험 기록지 — 사람마다 한 띠: 올린 사진 → 보정 셋 → 셀카, 숫자는 그림 바로 아래 같은 자리에. */

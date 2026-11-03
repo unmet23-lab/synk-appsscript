@@ -87,7 +87,7 @@ function 가짜OpenAI(답그림) {
         return 답(200, { id, object: 'file', purpose: 목적, bytes: 몸.length, expires_at: Math.floor(Date.now() / 1000) + 25 * 3600 });
       }
       if (req.method === 'POST' && 길 === '/batches') {
-        const { input_file_id: 입력, endpoint } = JSON.parse(몸.toString('utf8'));
+        const { input_file_id: 입력, endpoint, metadata, output_expires_after } = JSON.parse(몸.toString('utf8'));
         const 줄들 = 파일.get(입력).글.trim().split('\n').map((l) => JSON.parse(l));
         const 나옴 = 줄들.map((l) => {
           const 그림 = 답그림(l.custom_id);
@@ -98,7 +98,7 @@ function 가짜OpenAI(답그림) {
         const 출력 = 새id('file');
         파일.set(출력, { 목적: 'batch_output', 글: 나옴.map((x) => JSON.stringify(x)).join('\n') + '\n' });
         const id = 새id('batch');
-        묶음.set(id, { id, object: 'batch', endpoint, input_file_id: 입력, status: 'validating', output_file_id: 출력, request_counts: { total: 줄들.length, completed: 0, failed: 0 } });
+        묶음.set(id, { id, object: 'batch', endpoint, input_file_id: 입력, status: 'validating', output_file_id: 출력, error_file_id: null, metadata, output_expires_after, request_counts: { total: 줄들.length, completed: 0, failed: 0 } });
         return 답(200, 묶음.get(id));
       }
       const 묶음길 = /^\/batches\/([\w-]+)$/.exec(길);
@@ -189,10 +189,11 @@ async function 한바퀴(이름, 몫, 키통로) {
     const 입력 = await 올리기(Buffer.from(낼.map((x) => JSON.stringify(x.l)).join('\n') + '\n'), `${이름표}.jsonl`, 'batch');
     fs.writeFileSync(path.join(밖, `${이름}_${이름표}_요청.jsonl`), 낼.map((x) => JSON.stringify(x.l)).join('\n') + '\n');
     const 어림합 = 낼.reduce((a, x) => a + 어림(x.l), 0);
-    const b = (await 부르기(() => ({ 주소: `${서버.바탕}/batches`, 몸: JSON.stringify({ input_file_id: 입력, endpoint: '/v1/images/edits', completion_window: '24h' }), json: true }), { 어림USD: Number(어림합.toFixed(4)), 메모: `${이름표} ${낼.length}줄` })).답;
+    const b = (await 부르기(() => ({ 주소: `${서버.바탕}/batches`, 몸: JSON.stringify({ input_file_id: 입력, endpoint: '/v1/images/edits', completion_window: '24h', metadata: { me2_group: `${이름}-${이름표}` }, output_expires_after: { anchor: 'created_at', seconds: 25 * 3600 } }), json: true }), { 어림USD: Number(어림합.toFixed(4)), 메모: `${이름표} ${낼.length}줄` })).답;
     const 상태 = (await 부르기(() => ({ 주소: `${서버.바탕}/batches/${b.id}` }), { 어림USD: 0, 방법: 'GET' })).답;
     const 글 = (await 부르기(() => ({ 주소: `${서버.바탕}/files/${상태.output_file_id}/content` }), { 어림USD: 0, 방법: 'GET', 날글: true })).글;
-    for (const id of [입력, 상태.output_file_id]) await 지우기(id);
+    // 결과 · 오류 파일도 지운다 — 묶음 결과 파일은 output_expires_after(25시간)로도 저절로 사라진다(Fable 설계 검토 10)
+    for (const id of [입력, 상태.output_file_id, 상태.error_file_id].filter(Boolean)) await 지우기(id);
     판정.묶음.push({ 이름표, 줄: 낼.length, 어림USD: Number(어림합.toFixed(3)) });
     return 글.trim().split('\n').map((t) => JSON.parse(t)).map((o) => {
       const u = o.response.body.usage;
