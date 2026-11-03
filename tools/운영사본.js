@@ -65,7 +65,8 @@ function 찾기(시작 = __dirname) {
   const [공용git, 뿌리] = git.글(['rev-parse', '--path-format=absolute', '--git-common-dir', '--show-toplevel']).split('\n');
   const 공용 = path.resolve(공용git);
   let 운영 = null;
-  try { 운영 = fs.readFileSync(path.join(공용, 가리킴파일), 'utf8').trim() || null; } catch {}
+  try { 운영 = fs.readFileSync(path.join(공용, 가리킴파일), 'utf8').trim() || null; }
+  catch (e) { if (e.code !== 'ENOENT') throw e; }
   return {
     공용git: 공용,
     공용작업본: path.basename(공용).toLowerCase() === '.git' ? path.dirname(공용) : null,
@@ -200,14 +201,14 @@ function 남은장부적기(경로들, 결과, 상태폴더 = 기본상태폴더
 }
 
 /** 잠금 파일(wx). 주인 프로세스가 없거나 한도보다 오래됐으면 주인 없는 잠금으로 치운다. 풀기는 제가 잡은 잠금(표)일 때만 지운다 */
-function 잠그기(상태폴더, 이름 = '갱신.lock', 한도 = 잠금한도ms) {
+function 잠그기(상태폴더, 이름 = '갱신.lock', 한도 = 잠금한도ms, 종료까지 = false) {
   fs.mkdirSync(상태폴더, { recursive: true });
   const 파일 = path.join(상태폴더, 이름);
   const 표 = `${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
   for (let 차례 = 0; 차례 < 2; 차례++) {
     try {
       const fd = fs.openSync(파일, 'wx');
-      fs.writeFileSync(fd, JSON.stringify({ pid: process.pid, 시각: new Date().toISOString(), 표 }));
+      fs.writeFileSync(fd, JSON.stringify({ pid: process.pid, 시각: new Date().toISOString(), 표, ...(종료까지 ? { 종료까지: true } : {}) }));
       fs.closeSync(fd);
       return {
         풀기: () => {
@@ -222,7 +223,7 @@ function 잠그기(상태폴더, 이름 = '갱신.lock', 한도 = 잠금한도ms
       try { 나이 = Date.now() - (Date.parse(주인?.시각) || fs.statSync(파일).mtimeMs); } catch { continue; }   // 그새 풀렸다
       let 살아있음 = false;
       try { if (Number.isSafeInteger(주인?.pid)) { process.kill(주인.pid, 0); 살아있음 = true; } } catch {}
-      if (살아있음 && 나이 < 한도) return null;
+      if (살아있음 && (주인.종료까지 || 나이 < 한도)) return null;
       if (!주인 && 나이 < 5_000) return null;           // 막 만들어 아직 쓰는 중인 잠금
       fs.rmSync(파일, { force: true });                // 주인 없는 잠금
     }
@@ -543,6 +544,9 @@ async function main(argv = process.argv.slice(2)) {
   return ['같음', '따라감', '만듦', '이미 있음', '있음', '미리 보기', '바쁨'].includes(r.결과) ? 0 : 1;
 }
 
-module.exports = { 찾기, 운영사본인가, 만들기, 갱신, 밀린뒤, 상태, 헤르메스맞추기, 기록자리인가, 남은장부읽기, 남은장부적기, 잠그기, 상태읽기, 같은곳, 인자읽기, main, 가리킴파일, 뺄폴더, 사람몫, 헤르메스판단 };
+// 직접 올릴 때의 관련 시험은 예약 갱신의 20분 한도를 넘길 수 있다.
+function 올리기잠그기() { return 잠그기(기본상태폴더(), '갱신.lock', 잠금한도ms, true); }
+
+module.exports = { 찾기, 운영사본인가, 만들기, 갱신, 밀린뒤, 상태, 헤르메스맞추기, 기록자리인가, 남은장부읽기, 남은장부적기, 잠그기, 올리기잠그기, 상태읽기, 같은곳, 인자읽기, main, 가리킴파일, 뺄폴더, 사람몫, 헤르메스판단 };
 
 if (require.main === module) main().then((code) => { process.exitCode = code; });

@@ -262,6 +262,38 @@ test('갱신: 헤르메스 계약을 다시 잡지 못하면 실패로 남긴다
   assert.equal(s.head, O);
 });
 
+test('운영 사본 장부 올림과 수동 따라가기는 예약 갱신과 같은 잠금을 지키고 원고를 보존한다', async (t) => {
+  const 판 = 새판(t);
+  await 판.만들기();
+  const 경로 = 'docs/_ops/장부.jsonl';
+  const 옛머리 = 판.운영.머리();
+  판.운영.쓰기(경로, '{"n":2}\n');
+  const 옵션 = { 저장소: 판.운영.폴더, 경로들: [경로], 메시지: 'chore(장부): 한 번만', 실행: true };
+  const 예약 = 도구.잠그기(기본상태);
+  assert.ok(예약);
+  try {
+    const 올림 = await 바로.올리기(옵션);
+    assert.equal(올림.결과, '멈춤', JSON.stringify(올림));
+    assert.equal((await 바로.따라가기(옵션)).결과, '멈춤');
+    assert.equal(판.원격머리(), 옛머리);
+    assert.equal(판.운영.읽기(경로), '{"n":2}\n');
+  } finally { 예약.풀기(); }
+  let 잠금확인 = false;
+  const r = await 바로.올리기({ ...옵션, 시험고리: { push직전() {
+    const 파일 = path.join(기본상태, '갱신.lock');
+    const 주인 = JSON.parse(fs.readFileSync(파일, 'utf8'));
+    fs.writeFileSync(파일, JSON.stringify({ ...주인, 시각: new Date(Date.now() - 30 * 60_000).toISOString() }));
+    const 다른 = 도구.잠그기(기본상태);
+    if (다른) 다른.풀기();
+    assert.equal(다른, null, '장부를 올리는 동안 예약 갱신은 들어올 수 없다');
+    잠금확인 = true;
+  } } });
+  assert.equal(r.결과, '올림', JSON.stringify(r));
+  assert.ok(잠금확인);
+  assert.equal(판.운영.머리(), 판.원격머리());
+  assert.equal(판.운영.읽기(경로), '{"n":2}\n');
+});
+
 test('바로올리기: 다른 작업본에서 올리면 운영 사본도 그 커밋으로 따라간다 · 운영 사본에서 올린 장부는 헤르메스만 맞춘다', async (t) => {
   const 판 = 새판(t);
   await 판.만들기();

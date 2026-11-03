@@ -64,9 +64,20 @@ const { 따라가기잠금, 가볍게, 가볍게뺄, 좋은결과, 따라가기�
 const 있으면 = (이름) => { try { return require(이름); } catch (e) { if (e && e.code === 'MODULE_NOT_FOUND' && String(e.message).includes(이름.slice(2))) return null; throw e; } };
 const 짝검사 = 있으면('./짝검사.js'), 관련시험 = 있으면('./관련시험.js'), 운영사본 = 있으면('./운영사본.js');
 
+async function 작업본에쓰기(작업, 옵션) {
+  if (!옵션.실행 || !운영사본) return 작업(옵션);
+  let 위치;
+  try { 위치 = 운영사본.찾기(옵션.저장소 || process.cwd()); }
+  catch (e) { return { 결과: '멈춤', 이유: `운영 사본 위치를 확인하지 못했다 — ${e.이유 || e.message}` }; }
+  if (!운영사본.같은곳(위치.지금, 위치.운영사본)) return 작업(옵션);
+  const 잠금 = 운영사본.올리기잠그기();
+  if (!잠금) return { 결과: '멈춤', 이유: '운영 사본 갱신이나 장부 올림이 진행 중이다 — 파일을 보존하고 다음 회차에 다시 한다' };
+  try { return await 작업(옵션); } finally { 잠금.풀기(); }
+}
+
 /** 커밋·push가 끝난 다음에만 운영 사본을 한 번 갱신한다. */
 async function 올리기(옵션 = {}) {
-  const r = await core.올리기(옵션);
+  const r = await 작업본에쓰기(core.올리기, 옵션);
   if (r.결과 === '올림' && 운영사본 && !옵션.운영안따라감) {
     try { const s = await 운영사본.밀린뒤(저장소찾기(옵션.저장소 || process.cwd())); if (s) r.운영따라가기 = s; }
     catch (e) { r.운영따라가기 = { 결과: '실패', 이유: e.이유 || e.message }; }
@@ -76,7 +87,7 @@ async function 올리기(옵션 = {}) {
 
 /** 수동 따라가기는 운영 사본의 감시 계약도 맞춘다. 운영 갱신 내부는 core를 직접 쓴다. */
 async function 따라가기(옵션 = {}) {
-  const r = await core.따라가기(옵션);
+  const r = await 작업본에쓰기(core.따라가기, 옵션);
   if (r.결과 === '따라감' && 운영사본 && !옵션.운영안맞춤) {
     const 저장소 = 저장소찾기(옵션.저장소 || process.cwd());
     if (운영사본.운영사본인가(저장소)) r.헤르메스 = 운영사본.헤르메스맞추기(저장소, { 실행: true });
