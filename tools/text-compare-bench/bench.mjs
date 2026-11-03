@@ -6,18 +6,29 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { cpus, totalmem, platform, release } from 'node:os';
 import { fileURLToPath } from 'node:url';
+import { parseArgs } from 'node:util';
+import { compareText as preflightCompare } from '../영상사전검사.mjs';
 import { compareText as baseline } from './baseline.mjs';
-import { compareTextJs, distanceJs, prepare } from './compare.mjs';
+import { distanceJs, prepare } from './compare.mjs';
 import { createRustComparison, wasmUrl } from './rust.mjs';
 import { benchmarkCases } from './cases.mjs';
 
-const output = process.argv.indexOf('--out');
-if (output === -1 || !process.argv[output + 1]) throw new Error('Usage: node tools/text-compare-bench/bench.mjs --out <new-result.json>');
+const { values: options } = parseArgs({ options: { out: { type: 'string' }, cases: { type: 'string' } } });
+if (!options.out) throw new Error('Usage: node tools/text-compare-bench/bench.mjs --out <new-result.json> [--cases <local-pairs.json>]');
 // This program never invokes paid APIs, transcribes media, or modifies production.
 globalThis.fetch = () => { throw new Error('Network disabled for this local experiment'); };
 const started = new Date().toISOString(), cpuStart = process.cpuUsage(), wallStart = performance.now();
 const rust = await createRustComparison();
-const cases = benchmarkCases(), rounds = 7, targetBatchMs = 25, maxBatch = 512;
+const fixtures = benchmarkCases();
+const localBytes = options.cases ? await readFile(options.cases) : null;
+const cases = localBytes ? JSON.parse(localBytes.toString('utf8')) : fixtures;
+assert.ok(Array.isArray(cases) && cases.length > 0, 'A non-empty array of cases is required');
+for (const c of cases) {
+  assert.ok(typeof c.id === 'string' && c.id && typeof c.kind === 'string' && c.kind &&
+    typeof c.expected === 'string' && typeof c.observed === 'string', 'Each case needs id, kind, expected and observed strings');
+}
+assert.equal(new Set(cases.map(c => c.id)).size, cases.length, 'Case IDs must be unique');
+const rounds = 7, targetBatchMs = 25, maxBatch = localBytes ? 4096 : 512;
 let sink = 0;
 function time(fn, iterations) {
   const start = performance.now();
@@ -31,21 +42,21 @@ function stats(samples) {
 }
 
 // Give all three engines the same non-trivial warm-up work before calibration.
-const warm = cases.find(c => c.id === '100-mixed-edits');
+const warm = fixtures.find(c => c.id === '100-mixed-edits');
 for (let i = 0; i < 500; i++) {
   sink += baseline(warm.expected, warm.observed).editDistance;
-  sink += compareTextJs(warm.expected, warm.observed).editDistance;
+  sink += preflightCompare(warm.expected, warm.observed).editDistance;
   sink += rust.compareText(warm.expected, warm.observed).editDistance;
 }
 const rows = [];
 for (const [index, c] of cases.entries()) {
   const expected = baseline(c.expected, c.observed);
-  assert.deepEqual(compareTextJs(c.expected, c.observed), expected);
+  assert.deepEqual(preflightCompare(c.expected, c.observed), expected);
   assert.deepEqual(rust.compareText(c.expected, c.observed), expected);
   const normalized = prepare(c.expected, c.observed);
   const functions = {
     baseline: () => baseline(c.expected, c.observed).editDistance,
-    javascript: () => compareTextJs(c.expected, c.observed).editDistance,
+    javascript: () => preflightCompare(c.expected, c.observed).editDistance,
     rustWasm: () => rust.compareText(c.expected, c.observed).editDistance,
     javascriptCore: () => distanceJs(normalized.a, normalized.b),
     rustWasmCoreWithCopy: () => rust.distance(normalized.a, normalized.b),
@@ -78,11 +89,15 @@ for (const [index, c] of cases.entries()) {
 // the timed steady-state instance. Report in-process initialization separately
 // from the time spent starting the fresh Node process itself.
 const cold = [];
+const first = localBytes ? cases[0] : null;
+const coldDistance = first ? rows[0].result.editDistance : 1;
 for (let i = 0; i < 7; i++) {
   const start = performance.now();
-  const sample = JSON.parse(execFileSync(process.execPath, [fileURLToPath(new URL('./cold-start.mjs', import.meta.url))],
-    { encoding: 'utf8', windowsHide: true, timeout: 30000 }));
-  assert.equal(sample.distance, 1);
+  const args = [fileURLToPath(new URL('./cold-start.mjs', import.meta.url))];
+  if (first) args.push('--stdin');
+  const sample = JSON.parse(execFileSync(process.execPath, args,
+    { input: first ? JSON.stringify([first.expected, first.observed]) : undefined, encoding: 'utf8', windowsHide: true, timeout: 30000 }));
+  assert.equal(sample.distance, coldDistance);
   cold.push({ ...sample, freshNodeProcessWallMs: performance.now() - start });
 }
 const sourceFiles = ['../영상사전검사.mjs', '../lib/text-compare.mjs', './baseline.mjs', './compare.mjs', './rust.mjs', './cases.mjs', './bench.mjs',
@@ -102,13 +117,15 @@ const report = {
     fullFunctionIncludes: 'String coercion, NFKC, lowercase, Unicode filtering, codepoint conversion, calculation, result object; Rust also copies into WASM memory',
     fullFunctionExcludes: 'one-time read/compile/instantiate (reported separately), Rust build/install',
     coreIncludes: 'prepared Unicode codepoints; Rust includes JS/WASM crossing and input copying',
-    dataset: 'synthetic deterministic Hangul and a newly written short script, not a production workload sample',
+    dataset: localBytes ? 'local input pairs; original strings omitted from this timing report' :
+      'synthetic deterministic Hangul and a newly written short script, not a production workload sample',
+    ...(localBytes ? { caseFileSha256: createHash('sha256').update(localBytes).digest('hex') } : {}),
     scope: 'Rust is WASM in Node V8, not a native executable or Node native addon; JS shares the media-preflight implementation; frozen baseline preserves the pre-optimization algorithm',
     concurrency: 'one benchmark process, sequential implementations; other desktop workloads not controlled' },
-  sourceSha256, rows, coldStart: { samples: cold,
+  sourceSha256, rows, coldStart: { caseId: first?.id ?? 'synthetic-one-edit', samples: cold,
     initialize: stats(cold.map(s => s.initializeMs)),
     initializeAndFirstCompare: stats(cold.map(s => s.initializeAndFirstCompareMs)) },
   wallMs: performance.now() - wallStart, cpuUsageMicros: process.cpuUsage(cpuStart), checksum: sink,
 };
-await writeFile(process.argv[output + 1], JSON.stringify(report, null, 2) + '\n', { flag: 'wx' });
-console.log(`Saved ${rows.length} cases to ${process.argv[output + 1]}`);
+await writeFile(options.out, JSON.stringify(report, null, 2) + '\n', { flag: 'wx' });
+console.log(`Saved ${rows.length} cases to ${options.out}`);
