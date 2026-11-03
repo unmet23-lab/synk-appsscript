@@ -72,20 +72,43 @@ const Ring: React.FC<{ t: number; style: React.CSSProperties; color: string }> =
 );
 
 // ── A 「S42 결」
-// front: 피사체가 화면 가운데를 다 덮는 컷(9번 선글라스 개)은 뒤로 보내면 낱말이 거의 가려져 앞에 둔다(11-03 자체 검수)
+// 큰 낱말 자리(11-03 밤 유호님 「처음에 외계인이 강아지 뒤로 가려져서 잘 안 보여 · 중간중간 가려져서 안 보이는 게 꽤 있어」):
+//   ../가림검사.py로 프레임마다 글자별 가림 · 바탕 대비를 재고(여덟 낱말 가운데 여섯이 걸림) ../자리찾기.py로 자리 · 크기 · 색 · 층을 골랐다.
+//   뒤 글자는 피사체가 글자마다 12% 넘게 덮지 않는 자리에만 둔다(S42 깊이). 피사체가 위 · 가운데를 다 채운 컷(c01 · c09)은 앞에 둔다.
+//   짙은 바탕(개 몸) 위는 밝은 글자(light)에 옅은 그림자, x는 정렬(기본 왼쪽)
 // 바닷가: 첫 컷(c01)은 밀려 들어오는 개 머리가 1.4초부터 왼쪽 위를 다 덮어 「바」만 0.8초 보였다(11-03 섞은 판 검수) → 다음 컷 첫 프레임에 얹는다
-//   외계인을 컷 끝까지 늘려도 같은 자리라 「외」만 남아서, 외계인은 그대로 바닷가에서 직전에 빠지고 그 사이는 자막만 둔다
 const cutEnd = (id: string) => MASKS.find((c) => c.cut === id)!.to;
-const BIG_A: { w: string; a: number; b: number; y: number; size: number; front?: boolean }[] = [
-  { w: '외계인', a: w(0, 0), b: w(0, 4), y: 250, size: 250 },
+const BIG_A: { w: string; a: number; b: number; y: number; size: number; front?: boolean; x?: 'c' | 'r'; light?: boolean }[] = [
+  { w: '외계인', a: w(0, 0), b: w(0, 4), y: 190, size: 240, front: true },     // 귀 · 머리털이 위를 다 덮어 뒤로는 「계 · 인」이 절반 넘게 가려졌다 → 하늘 위 앞
   { w: '바닷가', a: cutEnd('c01'), b: endOf(0) + 0.1, y: 250, size: 250 },
   { w: '깜짝', a: w(1, 3), b: endOf(1) + 0.1, y: 300, size: 300 },
-  { w: '특별한 걸', a: w(2, 2), b: w(3, 0), y: 330, size: 190 },
-  { w: '튼튼', a: w(4, 2), b: w(5, 0), y: 300, size: 280 },
-  { w: '번쩍', a: w(5, 5), b: endOf(5) + 0.1, y: 260, size: 300 },
-  { w: '멋있게', a: w(6, 2), b: endOf(6) + 0.1, y: 1080, size: 200, front: true },
-  { w: '외계인?', a: w(7, 1), b: endOf(7) + 0.2, y: 1080, size: 220, front: true },
+  { w: '특별한 걸', a: w(2, 2), b: w(3, 0), y: 410, size: 180 },               // 남자 머리 왼쪽 벽 — 머리가 「걸」 끝만 덮는다(전에는 「걸」 절반)
+  { w: '튼튼', a: w(4, 2), b: w(5, 0), y: 290, size: 280, x: 'r' },            // 남자 머리 오른쪽 벽으로 — 전에는 검은 머리 위에 얹혀 묻혔다
+  { w: '번쩍', a: w(5, 5), b: endOf(5) + 0.1, y: 430, size: 240, front: true }, // 서 있는 컷 · 들어 올리는 컷 모두 왼쪽 복도 위(전에는 민소매 위에 묻힘)
+  { w: '멋있게', a: w(6, 2), b: endOf(6) + 0.1, y: 1130, size: 270, front: true, x: 'c', light: true },   // 남색은 회색 개 몸 · 남색 끈에 묻혔다
+  { w: '외계인?', a: w(7, 1), b: endOf(7) + 0.2, y: 1150, size: 270, front: true, x: 'c', light: true },
 ];
+type Big = (typeof BIG_A)[number];
+const behind = (t: number, big: Big) => masked(t) && !big.front;
+const bigBox = (t: number, big: Big): React.CSSProperties => {
+  const p = pop(t, big.a);
+  const out = 1 - ramp(t, big.b - 0.12, 0.12);
+  return { ...abs(56, big.y, 980), textAlign: big.x === 'c' ? 'center' : big.x === 'r' ? 'right' : 'left', fontFamily: KO, fontWeight: 800, fontSize: big.size, letterSpacing: '-0.05em', lineHeight: 1, opacity: Math.min(1, p) * out, transform: `translateY(${(1 - p) * 110}px)` };
+};
+// 가림 검사용(가림검사.py): 큰 낱말만 글자마다 다른 순색으로 검은 바탕에 그리고, 왼쪽 위 16px 칸 색에 낱말 번호 · 피사체 뒤 · 밝은 글자를 적는다
+const PROBE = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'];
+const Probe: React.FC<{ t: number }> = ({ t }) => {
+  const i = BIG_A.findIndex((b) => t >= b.a && t < b.b);
+  if (i < 0) return null;
+  const big = BIG_A[i];
+  let k = 0;
+  return (
+    <>
+      <div style={{ ...abs(0, 0, 16, 16), background: `rgb(${16 * (i + 1)},${behind(t, big) ? 255 : 0},${big.light ? 255 : 0})` }} />
+      <div style={bigBox(t, big)}>{[...big.w].map((ch, j) => <span key={j} style={{ color: ch === ' ' ? 'transparent' : PROBE[k++ % PROBE.length] }}>{ch}</span>)}</div>
+    </>
+  );
+};
 // mix(A+B, 11-03 유호님 「A+B 섞어 보기」): A 그대로에 두 순간만 B의 레몬 블록 — 제품 이름(기울어진 카드 대신 큰 블록 한 방 → 특징 칩) · 끝 브랜드(아래 절반 레몬 판, 엄지 든 끝 그림은 위에 남김)
 const LookA: React.FC<{ t: number; mix?: boolean }> = ({ t, mix }) => {
   const big = BIG_A.find((b) => t >= b.a && t < b.b);
@@ -95,11 +118,7 @@ const LookA: React.FC<{ t: number; mix?: boolean }> = ({ t, mix }) => {
   const end = t >= 19.33;
   return (
     <>
-      {big && (() => {
-        const p = pop(t, big.a);
-        const out = 1 - ramp(t, big.b - 0.12, 0.12);
-        return <div style={{ ...abs(56, big.y, 980), zIndex: masked(t) && !big.front ? 3 : 6, textShadow: big.front && !mix ? '0 6px 0 #17224D' : undefined, fontFamily: KO, fontWeight: 800, fontSize: big.size, letterSpacing: '-0.05em', lineHeight: 1, color: big.front ? (mix ? NAVY : LEMON) : INK, opacity: Math.min(1, p) * out, transform: `translateY(${(1 - p) * 110}px)` }}>{big.w}</div>;
-      })()}
+      {big && <div style={{ ...bigBox(t, big), zIndex: behind(t, big) ? 3 : 6, textShadow: big.light ? '0 4px 28px #0E132070' : undefined, color: big.light ? PAPER : INK }}>{big.w}</div>}
       <Subject t={t} />
       {/* 머리 줄 · 발 줄 */}
       {!(mix && t >= w(8, 3)) && <>
@@ -273,9 +292,10 @@ const LookC: React.FC<{ t: number }> = ({ t }) => {
   );
 };
 
-export const P11: React.FC<{ look: 'A' | 'B' | 'C' | 'AB' }> = ({ look }) => {
+export const P11: React.FC<{ look: 'A' | 'B' | 'C' | 'AB'; probe?: boolean }> = ({ look, probe }) => {
   const f = useCurrentFrame();
   const t = f / FPS;
+  if (probe) return <AbsoluteFill style={{ background: '#000' }}><Probe t={t} /></AbsoluteFill>;
   return (
     <AbsoluteFill style={{ background: '#000' }}>
       <OffthreadVideo src={staticFile('p11/picture.mp4')} muted style={{ width: '100%', height: '100%' }} />
