@@ -15,6 +15,14 @@ test('주문 폭주는 싱크타운 카페 첫 방문을 마친 뒤에만 열린
   assert.deepEqual(playState('order', playRecord(learning(1))), { open: true });
 });
 
+test('빈칸 베기는 레슨 한 번이나 카페 첫 방문 뒤에 열린다(중간고사 회차가 생기면 그 기록으로 옮긴다)', () => {
+  const record = (completed, cafe = 0) => playRecord({ summary: { completed, cafe: { completed: cafe }, status: { phase: 'ready' } } });
+  assert.deepEqual(playState('blank', record(0)), { open: false, where: 'play.where.lesson' });
+  assert.deepEqual(playState('blank', record(1)), { open: true });
+  assert.deepEqual(playState('blank', record(0, 1)), { open: true });
+  assert.equal(playState('blank', null).open, false);
+});
+
 test('생활 진도를 아직 못 읽었거나 읽는 중이면 잠김으로 본다(열렸다고 먼저 말하지 않는다)', () => {
   assert.equal(playRecord(undefined), null);
   assert.equal(playRecord({}), null);
@@ -28,7 +36,7 @@ test('규칙이 이상한 기록에 던져도 잠김으로 남는다', () => {
 
 test('잠김 안내의 여는 자리 글이 화면 글 표에 세 언어로 있다', () => {
   for (const rule of Object.values(PLAY_UNLOCKS)) {
-    for (const key of [rule.where, 'play.locked', 'game.order.title', 'game.order.detail']) {
+    for (const key of [rule.where, 'play.locked', 'game.order.title', 'game.order.detail', 'game.blank.title', 'game.blank.detail']) {
       for (const lang of ['ko', 'en', 'mn']) assert.ok(strings[key]?.[lang], `${key}.${lang}`);
     }
   }

@@ -61,7 +61,11 @@ function star4(g, x, y, r, rot) {
   g.closePath(); g.fill(); g.restore();
 }
 
-export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, onSwing, reducedMotion = () => false }) {
+/**
+ * skin: WORLD 캠퍼스 판의 겉(world-stage.mjs createSkin). 없으면 LAB 펠트 그대로다 — 아래 `look` 갈래는 모두 skin이 있을 때만 다르게 간다.
+ */
+export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, onSwing, reducedMotion = () => false, skin = null }) {
+  const look = skin;
   await document.fonts?.load?.('800 80px SUIT').catch(() => {});
   const feltImg = await new Promise((res) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = 'kit/felt/tex-cream.webp'; });
 
@@ -79,7 +83,8 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 100);
   camera.position.set(0, 0, CAM_Z);
-  scene.add(new THREE.HemisphereLight(0xfff6ee, 0xcdb8a6, 1.35));
+  const hemi = new THREE.HemisphereLight(0xfff6ee, 0xcdb8a6, 1.35);
+  scene.add(hemi);
   const sun = new THREE.DirectionalLight(0xffffff, 1.7);
   sun.position.set(-2, 4, 14); sun.castShadow = true;
   sun.shadow.mapSize.set(1024, 1024);
@@ -90,6 +95,7 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
   // 그림자는 조각 바로 아래 가깝고 옅게(무거워 보이지 않게)
   const wall = new THREE.Mesh(new THREE.PlaneGeometry(60, 40), new THREE.ShadowMaterial({ opacity: 0.1 }));
   wall.position.z = -0.9; wall.receiveShadow = true; scene.add(wall);
+  look?.lights({ hemi, sun, wall });
 
   const ctx2d = overlay.getContext('2d');
   let W = 1, H = 1, dpr = 1, hw = 0, hh = 1, topPx = 0, active = true;
@@ -132,6 +138,7 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
     const scale = 220 / ph;   // 높이 220px 기준
     c.width = Math.max(64, Math.round(pw * scale)); c.height = Math.round(ph * scale);
     const g = c.getContext('2d');
+    if (look) { look.paint(g, c, { word, n, color, numbers: view.showNumbers }); return canvasTexture(c); }
     g.fillStyle = color.base; g.fillRect(0, 0, c.width, c.height);
     if (feltImg) {   // 실제 펠트 사진 결을 곱해 털 느낌
       g.globalAlpha = 0.5; g.globalCompositeOperation = 'multiply';
@@ -153,6 +160,9 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
       g.fillStyle = 'rgba(255,253,248,.92)'; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill();
       g.fillStyle = '#2b2320'; g.font = `700 ${Math.round(r * 1.25)}px "DM Mono", SUIT, monospace`; g.fillText(String(n), cx, cy + 1);
     }
+    return canvasTexture(c);
+  }
+  function canvasTexture(c) {
     const tex = new THREE.CanvasTexture(c);
     tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
     return tex;
@@ -165,9 +175,10 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
   }
 
   function makePiece(word, n, color, pw, ph) {
-    const geo = feltGeometry(pw, ph);
-    const front = new THREE.MeshStandardMaterial({ map: faceTexture(word, n, color, pw, ph), roughness: 0.96, metalness: 0 });
-    const side = new THREE.MeshStandardMaterial({ color: color.side, roughness: 1, metalness: 0 });
+    const geo = look ? look.geometry(pw, ph) : feltGeometry(pw, ph);
+    const [front, side] = look ? look.materials(faceTexture(word, n, color, pw, ph), color) : [
+      new THREE.MeshStandardMaterial({ map: faceTexture(word, n, color, pw, ph), roughness: 0.96, metalness: 0 }),
+      new THREE.MeshStandardMaterial({ color: color.side, roughness: 1, metalness: 0 })];
     const mesh = new THREE.Mesh(geo, [front, side]);
     mesh.castShadow = true;
     const group = new THREE.Group(); group.add(mesh); scene.add(group);
@@ -193,7 +204,8 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
     const colW = narrow ? hw * 0.92 : (2 * hw) / 4.4;             // 한 열의 폭(좁은 화면 2열·넓은 화면 4열이 서로 닿지 않게)
     const bottom = -hh + 0.4, top = pxToWorldY(topPx) - 0.25;     // 던지는 띠
     // 정답을 빛으로 알려 주는 던지기(연습)에는 버터색을 빼서 ‘노란 조각’과 ‘빛나는 조각’이 헷갈리지 않게 한다
-    const pool = highlight == null ? FELT : FELT.filter((c) => c !== BUTTER);
+    const palette = look?.palette || FELT, avoid = look ? look.avoid : BUTTER;
+    const pool = highlight == null ? palette : palette.filter((c) => c !== avoid);
     const colors = [...pool].sort(() => Math.random() - 0.5);
     words.forEach((wd, i) => {
       const L = layout[i % layout.length];
@@ -205,8 +217,12 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
       const y0 = -hh - h * 0.9;
       const apexY = bottom + h / 2 + L.apex * Math.max(1, top - bottom - h);
       const H0 = apexY - y0, T = hang;
-      const g = (8 * H0) / (T * T), vy = (g * T) / 2;   // 같은 체공 시간 T: 같은 열의 두 조각은 늘 위아래로 떨어져 있다
-      const p = { group, mesh, geo, word: wd.word, n: wd.n, index: i, color, w: pw, h, x: x0, y: y0, y0, vx: Math.sign(L.x) * 0.04, vy, g, T,
+      // 같은 체공 시간 T: 같은 열의 두 조각은 늘 위아래로 떨어져 있다.
+      // WORLD 겉(skin.rise · skin.fall)은 오를 때와 내릴 때 중력이 다르다 — T의 rise 몫에 꼭대기까지 솟고, fall배 중력으로 천천히 내려온다(과일 닌자처럼).
+      // 오름 · 내림 모두 높이에 비례하는 꼴이라 같은 열 두 조각은 여전히 겹치지 않는다.
+      const tUp = look ? T * look.rise : T / 2;
+      const g = look ? (2 * H0) / (tUp * tUp) : (8 * H0) / (T * T), vy = look ? g * tUp : (g * T) / 2;
+      const p = { group, mesh, geo, word: wd.word, n: wd.n, index: i, color, w: pw, h, x: x0, y: y0, y0, vx: Math.sign(L.x) * 0.04, vy, g, fall: look?.fall ?? 1, T, seed: look ? Math.random() * 100 : 0,
         t: -L.delay, tilt: (Math.random() - 0.5) * 0.16, wz: 0.9 + Math.random() * 0.6, wy: 0.7 + Math.random() * 0.5, ph: Math.random() * 6.28,
         alive: true, gone: false, glow: null, fade: 1, sliced: false, launched: false };
       group.position.set(x0, y0, 0); group.visible = false;
@@ -241,17 +257,24 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
       const group = new THREE.Group();
       group.position.copy(p.group.position); group.rotation.copy(p.group.rotation);
       const local = new THREE.Plane(n.clone().multiplyScalar(sgn).applyQuaternion(p.group.quaternion.clone().invert()), 0);
-      const mats = p.mesh.material.map((m) => {
-        const c2 = m.clone(); c2.clippingPlanes = [new THREE.Plane()]; c2.clipShadows = true; c2.transparent = true;
-        c2.emissive = white.clone(); c2.emissiveIntensity = flash; return c2;
-      });
-      const inner = new THREE.MeshStandardMaterial({ color: p.color.inner, side: THREE.BackSide, roughness: 1, clippingPlanes: [new THREE.Plane()],
-        clipShadows: true, transparent: true, emissive: white.clone(), emissiveIntensity: flash });
+      let mats, inner, depth = null;
+      if (look) {   // WORLD 찢기: 잘림 면 대신 셰이더가 들쭉날쭉한 찢김 선으로 가른다(두 쪽이 같은 선을 나눠 가진다)
+        const back = p.group.quaternion.clone().invert();
+        ({ mats, inner, depth } = look.tearHalf(p, sgn, n.clone().applyQuaternion(back), along.clone().applyQuaternion(back), flash));
+      } else {
+        mats = p.mesh.material.map((m) => {
+          const c2 = m.clone(); c2.clippingPlanes = [new THREE.Plane()]; c2.clipShadows = true; c2.transparent = true;
+          c2.emissive = white.clone(); c2.emissiveIntensity = flash; return c2;
+        });
+        inner = new THREE.MeshStandardMaterial({ color: p.color.inner, side: THREE.BackSide, roughness: 1, clippingPlanes: [new THREE.Plane()],
+          clipShadows: true, transparent: true, emissive: white.clone(), emissiveIntensity: flash });
+      }
       const m1 = new THREE.Mesh(p.geo, mats); m1.castShadow = true;
+      if (depth) m1.customDepthMaterial = depth;
       const m2 = new THREE.Mesh(p.geo, inner);
       group.add(m1, m2); scene.add(group);
-      halves.push({ group, local, mats: [...mats, inner], life: 1.1, owner: p, flash, vel: base.clone(),
-        push: n.clone().multiplyScalar(sgn * (ok ? 3.6 : 2.6)),   // 두 쪽을 벌리는 힘(빨리 잦아든다)
+      halves.push({ group, local, mats: [...mats, inner, ...(depth ? [depth] : [])], life: 1.1, owner: p, flash, vel: base.clone(),
+        push: n.clone().multiplyScalar(sgn * (ok ? 3.6 : 2.6) * (look?.push ?? 1)),   // 두 쪽을 벌리는 힘(빨리 잦아든다)
         spin: new THREE.Vector3((Math.random() - 0.5) * 2.4, (Math.random() - 0.5) * 2.4, sgn * (2.2 + Math.random() * 1.6)) });
     }
     const now = performance.now();
@@ -271,8 +294,8 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
           born: now + FEEL.stop.ok * 0.6, dur: 520 + Math.random() * 220 });
       }
     }
-    crumbs(p, ok ? 16 : kind === 'wrong' ? 10 : 8);
-    burst(p.group.position, p.color);
+    crumbs(p, Math.round((ok ? 16 : kind === 'wrong' ? 10 : 8) * (look?.crumbs ?? 1)));
+    if (!look?.noFluff) burst(p.group.position, p.color);
   }
 
   const dotTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 32; const g = c.getContext('2d');
@@ -294,12 +317,14 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
   }
 
   // 펠트 부스러기: 겉색·속색의 작은 판이 돌며 튄다(한 번에 그리는 InstancedMesh)
-  const flakeGeo = new THREE.BoxGeometry(0.15, 0.1, 0.05);
+  const flakeGeo = look?.flakeGeo || new THREE.BoxGeometry(0.15, 0.1, 0.05);
+  const flakeG = look?.flake?.g ?? 11, flakeDrag = look?.flake?.drag ?? 1.1, flakeSway = look?.flake?.sway ?? 0;
   const dummy = new THREE.Object3D();
   function placeFlakes(f, sdt) {
     f.items.forEach((it, k) => {
-      it.v.y -= 11 * sdt; it.v.multiplyScalar(Math.max(0, 1 - 1.1 * sdt));
+      it.v.y -= flakeG * sdt; it.v.multiplyScalar(Math.max(0, 1 - flakeDrag * sdt));
       it.p.addScaledVector(it.v, sdt);
+      if (flakeSway) { it.age = (it.age || 0) + sdt; it.p.x += Math.sin(it.age * 9 + k) * flakeSway * sdt; }   // 종이 부스러기는 팔랑이며 내려온다
       it.r.x += it.w.x * sdt; it.r.y += it.w.y * sdt; it.r.z += it.w.z * sdt;
       dummy.position.copy(it.p); dummy.rotation.copy(it.r); dummy.scale.setScalar(it.s * Math.min(1, f.life / 0.3));
       dummy.updateMatrix(); f.mesh.setMatrixAt(k, dummy.matrix);
@@ -307,11 +332,12 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
     f.mesh.instanceMatrix.needsUpdate = true;
   }
   function crumbs(p, n) {
-    const mesh = new THREE.InstancedMesh(flakeGeo, new THREE.MeshStandardMaterial({ roughness: 1, metalness: 0 }), n);
+    if (n <= 0) return;
+    const mesh = new THREE.InstancedMesh(flakeGeo, new THREE.MeshStandardMaterial({ roughness: 1, metalness: 0, ...(look ? { side: THREE.DoubleSide } : {}) }), n);
     const at = p.group.position, outer = new THREE.Color(p.color.base), inner = new THREE.Color(p.color.inner);
     const items = [];
     for (let k = 0; k < n; k++) {
-      const a = Math.random() * Math.PI * 2, sp = 2.2 + Math.random() * 4.2;
+      const a = Math.random() * Math.PI * 2, sp = (2.2 + Math.random() * 4.2) * (look?.flake?.burst ?? 1);
       items.push({ p: new THREE.Vector3(at.x + (Math.random() - 0.5) * p.w * 0.6, at.y + (Math.random() - 0.5) * p.h * 0.5, at.z + 0.1),
         v: new THREE.Vector3(Math.cos(a) * sp, Math.sin(a) * sp + 1.6, (Math.random() - 0.2) * 2.5),
         r: new THREE.Euler(Math.random() * 6, Math.random() * 6, Math.random() * 6),
@@ -444,7 +470,7 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
       const L = e.len * (0.6 + 0.4 * easeOut(Math.min(1, k / 0.16)));
       const w = (e.ok ? 15 : 11) * (k < 0.1 ? k / 0.1 : Math.pow(1 - (k - 0.1) / 0.9, 1.5));
       g.save(); g.translate(e.x, e.y); g.rotate(e.ang);
-      g.fillStyle = e.ok ? `rgba(245,196,69,${0.6 * Math.min(1, w / 8)})` : `rgba(249,104,89,${0.35 * Math.min(1, w / 8)})`;
+      g.fillStyle = e.ok ? `rgba(245,196,69,${0.6 * Math.min(1, w / 8)})` : `rgba(${look?.trailGlow || '249,104,89'},${0.35 * Math.min(1, w / 8)})`;
       lens(g, L * 1.06, w * 2.2);
       g.fillStyle = '#fff'; lens(g, L, w);
       g.restore();
@@ -471,7 +497,7 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
     const heat = hot.until > now, speed = Math.min(1, motion().speed / 2.2);
     const base = (5 + 11 * speed) * (heat ? 1.3 : 1);
     const pts = trail.map((p, i) => ({ x: p.x, y: p.y, w: base * Math.max(0, 1 - (now - p.t) / FEEL.trailMs) * (0.25 + 0.75 * (i / (n - 1))) }));
-    const glow = heat ? (hot.ok ? '245,196,69' : '255,255,255') : '249,104,89';
+    const glow = heat ? (hot.ok ? '245,196,69' : '255,255,255') : (look?.trailGlow || '249,104,89');
     ribbon(g, pts, 1, `rgba(${glow},.34)`);
     ribbon(g, pts, 0.55, 'rgba(255,236,214,.85)');
     ribbon(g, pts, 0.26, '#fff');
@@ -513,7 +539,7 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
       if (!p.launched) { p.launched = true; launched.push(p); }
       const step = before < 0 ? p.t : sdt;   // 던진 순간부터만 움직인다
       p.group.visible = true;
-      p.vy -= p.g * step; p.y += p.vy * step; p.x += p.vx * step;
+      p.vy -= p.g * (p.vy > 0 ? 1 : p.fall) * step; p.y += p.vy * step; p.x += p.vx * step;
       const t = p.t;
       p.group.position.set(p.x, p.y, 0);
       p.group.rotation.set(Math.sin(t * 1.3 + p.ph) * 0.05, Math.sin(t * p.wy + p.ph) * 0.18, p.tilt + Math.sin(t * p.wz + p.ph) * 0.1);
@@ -533,7 +559,7 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
     if (allDown && !resolved) { resolved = true; onLanded?.({ token: tossToken }); }
     for (let i = halves.length - 1; i >= 0; i--) {
       const h = halves[i];
-      h.life -= sdt; h.vel.y -= 9 * sdt;
+      h.life -= sdt; h.vel.y -= (look?.halfG ?? 9) * sdt;
       h.push.multiplyScalar(Math.max(0, 1 - 3.2 * sdt));
       h.group.position.addScaledVector(h.vel, sdt).addScaledVector(h.push, sdt);
       h.group.rotation.x += h.spin.x * sdt; h.group.rotation.y += h.spin.y * sdt; h.group.rotation.z += h.spin.z * sdt;
@@ -541,7 +567,7 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
       h.group.updateMatrixWorld(true);
       tmpPlane.copy(h.local).applyMatrix4(h.group.matrixWorld);
       const op = Math.max(0, Math.min(1, h.life / 0.5));
-      for (const m of h.mats) { m.clippingPlanes[0].copy(tmpPlane); m.opacity = op; m.emissiveIntensity = h.flash; }
+      for (const m of h.mats) { m.clippingPlanes?.[0].copy(tmpPlane); m.opacity = op; if (m.emissive) m.emissiveIntensity = h.flash; }
       if (h.life <= 0) {
         scene.remove(h.group); h.mats.forEach((m) => m.dispose()); halves.splice(i, 1);
         if (!halves.some((o) => o.owner === h.owner)) releasePiece(h.owner);   // 두 쪽 다 사라지면 판 자원도
@@ -570,7 +596,7 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
    */
   function warmUp() {
     // 진짜 낱말 조각 하나(돌출 도형·글꼴로 그린 앞면 그림)도 함께 그려, 첫 던지기에서 글꼴·도형·그림 올리기가 처음 일어나며 멈추지 않게 한다
-    const color = FELT[2], piece = makePiece('가나', 1, color, measure('가나', 0.8), 0.8), geo = piece.geo;
+    const color = (look?.palette || FELT)[2], piece = makePiece('가나', 1, color, measure('가나', 0.8), 0.8), geo = piece.geo;
     const [front, side] = piece.mesh.material;
     const plane = () => [new THREE.Plane(new THREE.Vector3(1, 0, 0), 0)];
     const cut = (m) => { const c = m.clone(); c.clippingPlanes = plane(); c.clipShadows = true; c.transparent = true; c.emissive = new THREE.Color(0xfff6dc); c.emissiveIntensity = 0; return c; };
@@ -580,19 +606,22 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
     const inner = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: color.inner, side: THREE.BackSide, roughness: 1, clippingPlanes: plane(),
       clipShadows: true, transparent: true, emissive: new THREE.Color(0xfff6dc), emissiveIntensity: 0 }));
     const glow = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0xffe07a, side: THREE.BackSide, transparent: true, opacity: 0.9 }));
-    const bits = new THREE.InstancedMesh(flakeGeo, new THREE.MeshStandardMaterial({ roughness: 1, metalness: 0 }), 1);
+    const bits = new THREE.InstancedMesh(flakeGeo, new THREE.MeshStandardMaterial({ roughness: 1, metalness: 0, ...(look ? { side: THREE.DoubleSide } : {}) }), 1);
     bits.setColorAt(0, new THREE.Color(0xffffff)); bits.setMatrixAt(0, new THREE.Matrix4());
     const fuzz = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(new Float32Array(3), 3)),
       new THREE.PointsMaterial({ color: 0xffffff, size: 0.16, map: dotTex, transparent: true, depthWrite: false }));
     keep.add(half, inner, glow, bits, fuzz);
+    const torn = look?.warm(keep, piece) || null;   // WORLD 찢김 셰이더(앞 · 옆 · 속 · 그림자)도 같은 자리에서 미리 굽는다
     scene.add(keep);   // 화면 가운데(그림자 카메라 안). 잘림 면은 실제로 그릴 때만 셰이더에 들어가서 화면 밖에 두면 안 된다
     // 1픽셀 영역에만 두 번 그린다(사용자에게는 보이지 않는다). 그림자용 재질은 처음 그려질 때 셰이더가 정해지는데,
     // 첫 그리기에서는 빛 정보가 그림자 다음에 채워져 빛 0개짜리가 된다. 그래서 첫 그리기는 그림자 없이(빛 정보만 채우고),
     // 두 번째 그리기에서 그림자를 켜 실제와 같은 그림자 셰이더를 만든다(실측: 그러지 않으면 벨 때마다 두 개를 새로 만든다)
     renderer.setScissorTest(true); renderer.setScissor(0, 0, 1, 1);
     whole.castShadow = half.castShadow = false;
+    if (torn) torn.castShadow = false;
     renderer.render(scene, camera);
     whole.castShadow = half.castShadow = true;
+    if (torn) torn.castShadow = true;
     renderer.render(scene, camera);
     renderer.setScissorTest(false);
     keep.visible = false;   // 더는 그리지 않지만 재질을 버리지 않아 셰이더가 남는다

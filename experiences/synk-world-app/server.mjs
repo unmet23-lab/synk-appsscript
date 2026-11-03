@@ -32,7 +32,7 @@ const townHost=mode==='rehearsal'?createAccountTownHost({directory:`${dataDir}-t
 const sessions=new Map();
 let speakingHost=null;
 const ids={'player-a':'11111111-1111-4111-8111-111111111111','player-b':'22222222-2222-4222-8222-222222222222'};
-const allowedGames=new Set(['korean-runner','korean-rhythm','hangul-stage','order-rush']);
+const allowedGames=new Set(['korean-runner','korean-rhythm','hangul-stage','order-rush','blank-slice']);
 const mime={'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml','.woff2':'font/woff2','.ttf':'font/ttf','.mp4':'video/mp4','.mp3':'audio/mpeg','.wav':'audio/wav','.glb':'model/gltf-binary','.wasm':'application/wasm'};
 function sessionCookieName(request){const tab=request.headers.get('x-synk-rehearsal-tab');return tab?`synk_world_rehearsal_${tab.toLowerCase()}`:'synk_world_rehearsal';}
 function cookieToken(request){const name=sessionCookieName(request);return request.headers.get('cookie')?.match(new RegExp(`(?:^|;\\s*)${name}=([A-Za-z0-9_-]+)(?:;|$)`))?.[1];}

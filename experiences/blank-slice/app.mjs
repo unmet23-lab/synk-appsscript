@@ -9,6 +9,9 @@ import * as sound from './audio.mjs';
 import { swingPower } from './sfx.mjs';
 import { createStage, FEEL } from './stage.mjs';
 
+// WORLD 캠퍼스 판(world-host.js가 붙인 data-host=world)에서만 겉 · 소리를 갈아 끼운다. 규칙 · 문항 · 판정 · 기록은 그대로다.
+const world = document.documentElement.dataset.host === 'world' ? await import('./world-play.mjs') : null;
+
 // Restore the verified account before reading progress or enabling play.
 await globalThis.SynkPlayAccount.ready();
 const progressStorage = globalThis.SynkPlayAccount.storage();
@@ -16,10 +19,10 @@ const progressStorage = globalThis.SynkPlayAccount.storage();
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; };
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const reduced = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+const reduced = () => world ? world.reduced() : window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;   // WORLD는 앱의 「움직임 줄이기」도 따른다
 const announce = (text) => { const n = $('#sr-live'); n.textContent = ''; requestAnimationFrame(() => { n.textContent = text; }); };
 /** 진동(되는 기기만). 소리를 끄면 진동도 쉰다. */
-const buzz = (ms) => { try { if (sound.isOn() && navigator.vibrate) navigator.vibrate(ms); } catch { /* 진동 없는 기기 */ } };
+const buzz = (ms) => { try { if (sound.isOn() && (!world || world.pref('haptic')) && navigator.vibrate) navigator.vibrate(ms); } catch { /* 진동 없는 기기 */ } };
 const punch = (node) => { if (!node) return; node.classList.remove('punch'); void node.offsetWidth; node.classList.add('punch'); };
 const QA = new URLSearchParams(location.search).has('qa');
 // 공통 코인 스크립트(collection.js)를 읽지 못했으면 코인 줄을 숨긴다(모듈은 본문 끝 스크립트 뒤에 돈다).
@@ -82,6 +85,7 @@ function after(ms, fn) {
 const show = (id) => {
   for (const s of ['lobby', 'game', 'results']) $('#' + s).hidden = s !== id;
   stage?.setActive(id === 'game');   // 게임 화면이 아니면 3D를 그리지 않는다
+  if (id !== 'results') world?.stopResults();
   window.scrollTo(0, 0);
 };
 
@@ -130,7 +134,7 @@ let stageReady = null;
 /** 3D 무대는 하나만 만든다(입구에서 미리 만들기와 시작 단추가 겹쳐도). 실패하면 다음에 다시 시도한다. */
 function ensureStage() {
   if (!stageReady) {
-    stageReady = createStage({ host: $('#arena'), overlay: $('#trail'), onSlice, onLanded, onLaunch, onSwing, reducedMotion: reduced })
+    stageReady = createStage({ host: $('#arena'), overlay: $('#trail'), onSlice, onLanded, onLaunch, onSwing, reducedMotion: reduced, skin: world?.skin || null })
       .then((s) => {
         stage = s;
         stage.setShowNumbers(window.matchMedia?.('(hover: hover) and (pointer: fine)').matches);   // 마우스 쓰는 넓은 화면만 번호(키보드 1~4)
@@ -148,6 +152,7 @@ async function startRound() {
   // 과제 판인지는 시작할 때 정한다. 판 중에 과제가 닫혀도 그 판을 자유 연습의 판 수·최고 점수로 세지 않는다.
   state.targeted = !!target;
   sound.unlock();
+  world?.roundStart();   // WORLD: 판 안에서만 배경음
   show('game');
   state.run += 1;
   const run = state.run;
@@ -262,7 +267,8 @@ function tossCur() {
   stage.setTopPx(sentenceBottom());
   // 피곤한 날은 연속 가속을 쓰지 않는다. 순간 맞춤의 배율은 그 사람의 기본 체공 시간을 맞춘다.
   const hang = hangTime({ difficulty: cur.item.difficulty, combo: state.tired ? 0 : state.combo, slow: progress.slow }) * hangScale();
-  cur.tossAt = performance.now(); cur.hangMs = hang * 1000; cur.pausedBase = state.pausedMs;
+  // WORLD 겉은 천천히 내려와 화면에 skin.air배 오래 떠 있다 — 순간 맞춤은 실제로 떠 있는 시간에 견준다
+  cur.tossAt = performance.now(); cur.hangMs = hang * 1000 * (world?.skin.air ?? 1); cur.pausedBase = state.pausedMs;
   cur.token = stage.toss(words, { hang });
 }
 
@@ -471,8 +477,10 @@ function finish() {
   // 별은 하나씩 튀어나오며 도·미·솔로 울린다
   $('#r-stars').innerHTML = [1, 2, 3].map((i) => `<i class="${i <= s.stars ? 'on' : ''}" style="animation-delay:${0.3 + (i - 1) * 0.22}s"></i>`).join('');
   $('#r-stars').setAttribute('aria-label', `별 3개 중 ${s.stars}개`);
-  for (let i = 0; i < s.stars; i++) setTimeout(() => sound.sfx('star', { i }), 300 + i * 220);
-  $('#r-mongle').src = s.stars >= 2 ? 'kit/brand/mongle-smile.webp' : 'kit/brand/mongle-cheer.webp';
+  if (!world) {   // WORLD에는 몽글이 없고(10-31), 별 소리는 빨간 펜 채점이 끝난 뒤에 난다(world-play.mjs results)
+    for (let i = 0; i < s.stars; i++) setTimeout(() => sound.sfx('star', { i }), 300 + i * 220);
+    $('#r-mongle').src = s.stars >= 2 ? 'kit/brand/mongle-smile.webp' : 'kit/brand/mongle-cheer.webp';
+  }
   const notes = [`점수 ${s.score}점`];
   if (s.bestRun >= 3) notes.push(`최고 ${s.bestRun}연속`);
   if (s.missed) notes.push(`놓친 문장 ${s.missed}개(멈춘 화면에서 ${state.results.filter((r) => r.correct === null && r.readingCorrect).length}개 맞힘)`);
@@ -495,6 +503,8 @@ function finish() {
   $('#r-again').disabled = closed;
   $('#r-hub').hidden = hosted || !location.pathname.includes('/blank-slice/');
   show('results');
+  world?.roundEnd();
+  world?.results({ correct: s.correct, stars: s.stars, rows: state.results });
   $('#r-title').focus({ preventScroll: true });
   announce(`${$('#r-title').textContent} ${s.total}문장 중 ${s.correct}개 맞혔어요. 별 ${s.stars}개, ${s.score}점.`);
 }
@@ -530,7 +540,7 @@ function pause(open = true) {
   if (open && $('#game').hidden) return;
   if (open && !state.paused) state.pausedAt = performance.now();
   if (!open && state.paused && state.pausedAt) { state.pausedMs += performance.now() - state.pausedAt; state.pausedAt = 0; }
-  state.paused = open; stage?.pause(open);
+  state.paused = open; stage?.pause(open); world?.roundPaused(open);
   if (open && !$('#pause-dialog').open) $('#pause-dialog').showModal();
   if (!open && $('#pause-dialog').open) $('#pause-dialog').close();
 }
@@ -540,8 +550,17 @@ $('#pause-dialog').addEventListener('cancel', (e) => { e.preventDefault(); pause
 $('#quit').onclick = () => {
   // 풀던 문장은 응답 없음으로 닫는다(평가하지 않음)
   if (state.cur && !state.cur.confirmed) state.cur.check?.cancel();
-  pause(false); endFlow(); state.cur = null; state.practice = null; tip(null); hideExplain(); hideAnswerCheck(); renderLobby();
+  pause(false); endFlow(); world?.roundEnd(0.4); state.cur = null; state.practice = null; tip(null); hideExplain(); hideAnswerCheck(); renderLobby();
 };
+/** 결과 → 우리 동네(WORLD): 홈이 동네로 돌아가기를 알면 그걸 부르고, 아니면 게임 창의 닫기를 누른다(같은 출처 틀 — 주문 폭주와 같은 길). 닿지 않으면 게임 입구로. */
+function backToRoom() {
+  world?.roundEnd(0.3);
+  try {
+    const town = window.parent?.__synkHome?.goTown; if (town) { town(); return; }
+    const close = window.parent?.document?.getElementById('panel-close'); if (close) { close.click(); return; }
+  } catch { /* 다른 출처 */ }
+  renderLobby();
+}
 document.addEventListener('visibilitychange', () => { if (document.hidden && !$('#game').hidden) pause(true); });
 
 /* ── 이벤트 ── */
@@ -620,6 +639,7 @@ try {
     Promise.resolve().then(() => { storagePaint = false; refreshStorageText(); }).catch(() => {});
   });
 } catch { /* 알림이 없어도 입구를 다시 열 때 최신 상태를 읽는다 */ }
+world?.setup({ onRoom: backToRoom });
 syncToggles();
 renderLobby();
 // 3D 무대를 입구에서 미리 만든다. 셰이더 미리 데우기(약 0.8초)가 시작 단추를 누른 뒤의 멈춤이 되지 않게, 브라우저가 한가할 때

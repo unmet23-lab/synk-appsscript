@@ -32,6 +32,7 @@ export function setOn(value) {
 
 export async function loadKit(c, into) {
   await Promise.all(Object.entries(FILES).map(async ([k, url]) => {
+    if (kitMap && k in kitMap) return;   // WORLD: 몽글 목소리 파일은 받지 않는다
     try { const res = await fetch(url); into.set(k, await c.decodeAudioData(await res.arrayBuffer())); } catch { /* 하나 없어도 계속 */ }
   }));
 }
@@ -52,9 +53,16 @@ export async function unlock() {
 
 const note = (kind, name, opts, delay = 0) => { if (log) log.push({ kind, name, opts, t: performance.now() + delay * 1000 }); };
 
+// WORLD 캠퍼스 판(world-play.mjs)만 손맛 소리 모음과 몽글 목소리 자리를 갈아 끼운다(world-sfx.mjs). LAB은 부르지 않아 위 VOICES 그대로다.
+let voices = VOICES, kitMap = null, gate = null;
+export function useVoices(v, map = null, soundGate = null) { voices = v; kitMap = map; gate = soundGate; }
+/** WORLD 배경음이 같은 문맥 · 같은 소리 길(켜기 · 끄기 · 리미터)로 나가도록 내준다. 문맥을 열기 전에는 null. */
+export const route = () => (ctx && bus ? { ctx, out: bus.out } : null);
+
 /** 사운드킷 파일 하나. delay초 뒤에 울릴 수 있다. */
 export function play(name, { delay = 0 } = {}) {
-  if (!enabled) return;
+  if (!enabled || (gate && !gate())) return;   // gate: WORLD 앱 설정 「효과음」
+  if (kitMap && name in kitMap) { if (kitMap[name]) sfx(kitMap[name], { delay }); return; }   // 몽글 목소리 → 목소리 없는 짧은 음(또는 없음)
   note('kit', name, undefined, delay);
   const buf = ctx && buffers.get(name); if (!buf) return;
   const src = ctx.createBufferSource(); src.buffer = buf; src.connect(bus.out); src.start(ctx.currentTime + delay);
@@ -62,11 +70,11 @@ export function play(name, { delay = 0 } = {}) {
 
 /** 손맛 소리 하나(sfx.mjs의 VOICES). */
 export function sfx(name, opts = {}) {
-  if (!enabled || !VOICES[name]) return;
+  if (!enabled || !voices[name] || (gate && !gate())) return;
   const o = { ...opts, variant };
-  note('sfx', name, o);
+  note('sfx', name, o, opts.delay || 0);
   if (!ctx || ctx.state !== 'running') return;
-  try { VOICES[name](bus, ctx.currentTime, o); } catch { /* 소리 하나가 실패해도 게임은 계속 */ }
+  try { voices[name](bus, ctx.currentTime + (opts.delay || 0), o); } catch { /* 소리 하나가 실패해도 게임은 계속 */ }
 }
 
 export function startLog() { log = []; }

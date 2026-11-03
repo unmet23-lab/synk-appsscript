@@ -220,3 +220,6 @@ export const VOICES = {
     return 0.3;
   },
 };
+
+// WORLD 캠퍼스 판의 종이 소리(world-sfx.mjs)가 같은 부품 · 같은 리미터로 소리를 만든다(LAB 소리는 위 VOICES 그대로).
+export const parts = { place, env, tone, hiss, filter, ring, clamp };

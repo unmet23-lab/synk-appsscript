@@ -1,0 +1,319 @@
+/* 빈칸 베기 — WORLD 안의 모습(캠퍼스 판, 2026-11-04 · 설계 docs/제2의나_설계_20261102.md 11 · 11-1, 이야기 자리: 중간고사 전날 밤 도서관).
+ * WORLD 앱이 이 게임을 .game-frame iframe으로 열면 world-host.js가 <html data-host="world">를 붙이고, 이 파일의 규칙이 그때만 걸린다.
+ * 따로 연 LAB 화면은 kit/lab.css + style.css 그대로다(모든 규칙이 :root[data-host=world] 아래).
+ * 공통 부분(글꼴 · 토큰 · 단추 · 창 · 계정 띠)은 korean-rhythm · order-rush의 world-skin.css와 같은 글이다 — 고치면 함께 고친다.
+ * 놀이: 밤 열람실 책상 앞(실사 정지 사진) — 위에 문제지 한 장(빈칸은 밑줄, 맞히면 빨간 펜 동그라미), 아래 책상에서 낱말 카드가 튀어 오르고
+ *   그어 찢으면 낱말 쪽지가 빈칸에 테이프로 붙는다(11-04 유호님 「찢어지는 효과음 · 타격감, 과일 자르는 게임 느낌」).
+ *   낱말 카드의 재질 · 찢김 · 던지기 곡선은 world-stage.mjs, 소리는 world-sfx.mjs. */
+/* 라틴·숫자는 Inter Tight, 영문 라벨은 DM Mono(띄어쓰기 뺀 범위) — 둘 다 키트 글꼴 파일을 쓴다. 이 이름은 WORLD 규칙에서만 불러서 LAB 화면은 받지 않는다. */
+@font-face{font-family:'World Game Latin';src:url(kit/fonts/InterTight-Medium.woff2) format('woff2');font-weight:100 599;font-display:swap;unicode-range:U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+2010-2024,U+2026-2027,U+2030-203A,U+2190-2199,U+20A9,U+20AC,U+2122,U+2212}
+@font-face{font-family:'World Game Latin';src:url(kit/fonts/InterTight-Bold.woff2) format('woff2');font-weight:600 1000;font-display:swap;unicode-range:U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+2010-2024,U+2026-2027,U+2030-203A,U+2190-2199,U+20A9,U+20AC,U+2122,U+2212}
+@font-face{font-family:'World Game Mono';src:url(kit/fonts/DMMono-Medium.woff2) format('woff2');font-weight:100 1000;font-display:swap;unicode-range:U+0021-007E,U+00A0-00FF,U+2010-2027}
+
+/* ── 토큰(world-ui.css의 밤 값) + 키트 변수를 같은 값으로 돌려 남은 규칙도 어두운 판에 맞춘다 ── */
+:root[data-host=world]{
+  --w-sans:'World Game Latin',SUIT,system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --w-mono:'World Game Mono',SUIT,ui-monospace,monospace;
+  --w-bg:#060709;--w-panel:#0C0D10;--w-s1:#121317;--w-s2:#191A1F;--w-s3:#222329;
+  --w-line:rgba(255,255,255,.075);--w-line-2:rgba(255,255,255,.14);
+  --w-ink:#FAFAF9;--w-ink-2:rgba(250,250,249,.76);--w-ink-3:rgba(250,250,249,.58);--w-ink-q:rgba(250,250,249,.42);--w-ink-4:rgba(250,250,249,.22);--w-on-ink:#08090C;
+  --w-glass:rgba(17,18,22,.52);--w-glass-strong:rgba(14,15,19,.82);
+  --w-glass-edge:inset 0 1px 0 rgba(255,255,255,.16),inset 0 0 0 1px rgba(255,255,255,.085),0 10px 30px rgba(0,0,0,.26);
+  --w-card-edge:inset 0 1px 0 rgba(255,255,255,.055),inset 0 0 0 1px var(--w-line);
+  --w-blur:blur(22px) saturate(1.7);
+  --w-shadow:0 28px 80px rgba(0,0,0,.55);
+  --w-r-xl:28px;--w-r-lg:22px;--w-r-md:16px;
+  --w-ease:cubic-bezier(.2,.75,.2,1);
+  --w-face:#F96859;--w-on-face:#1E0E0A;--w-face-text:#FFB4A9;--w-glow:#F96859;
+  --w-face-ink-2:rgba(30,14,10,.74);--w-face-ink-3:rgba(30,14,10,.6);--w-face-line:rgba(30,14,10,.16);
+  --w-led-ok:#7DB45A;--w-led-info:#5B86DB;--w-led-check:#F5C445;--w-led-alert:#F96859;--w-led-idle:rgba(250,250,249,.34);
+  --w-ok-text:#C9E6AE;--w-check-text:#FFE08A;--w-alert-text:#FFB4A9;
+  --w-grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --w-studio:radial-gradient(120% 85% at 28% -10%,rgba(255,255,255,.17),transparent 58%),linear-gradient(180deg,transparent 52%,rgba(0,0,0,.13));
+  --w-print-shadow:0 1px 0 rgba(0,0,0,.04),0 14px 30px rgba(30,14,10,.28),0 3px 8px rgba(30,14,10,.16);
+  --w-arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2.5 8h10.5M9 3.8 13.2 8 9 12.2' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --w-check:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --w-close:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 4l8 8M12 4l-8 8' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  --w-pause:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M5.5 3.5v9M10.5 3.5v9' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  --w-minus:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8h9' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  --w-plus:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 3.5v9M3.5 8h9' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  --w-star:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.8l2.85 5.78 6.38.93-4.62 4.5 1.09 6.36L12 17.36l-5.7 3.01 1.09-6.36-4.62-4.5 6.38-.93z' fill='black' stroke='black' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E");
+  /* 키트 변수: 종이·크림·잉크를 밤 판 값으로(펠트 그림은 아래에서 하나씩 걷어 낸다) */
+  --ink:var(--w-ink);--ink-2:var(--w-ink-2);--muted:var(--w-ink-3);--line:var(--w-line);
+  --paper:var(--w-s1);--cream:var(--w-panel);--sand:var(--w-s2);
+  --coral:var(--w-face);--coral-deep:var(--w-face-text);--coral-wash:rgba(249,104,89,.16);--blush:var(--w-s3);--marker:transparent;
+  --focus:var(--w-ink);--sans:var(--w-sans);--mono:var(--w-mono);
+  --shadow-paper:none;--shadow-felt:none;--ease:var(--w-ease);
+  color-scheme:dark;
+}
+:root[data-host=world] body{background:var(--w-panel);color:var(--w-ink);font-family:var(--w-sans);font-weight:450;letter-spacing:-.006em}
+:root[data-host=world] :is(button,a):focus-visible{outline:2px solid var(--w-ink);outline-offset:3px}
+:root[data-host=world] [tabindex="-1"]:focus{outline:none}
+:root[data-host=world] :is(h1,h2,h3){text-wrap:balance}
+:root[data-host=world] p{text-wrap:pretty}
+
+/* ── 공통 부품 ── */
+:root[data-host=world] .paper{background:none;border-radius:0;box-shadow:none}
+:root[data-host=world] .lab-only{display:none}   /* LAB 화면에만 맞는 안내(예: ‘펠트 단추’) → WORLD에서는 .world-only 문장으로 바꿔 보인다 */
+:root[data-host=world] .world-only[hidden]{display:block!important}
+:root[data-host=world] .kicker{display:inline-flex;align-items:center;gap:10px;font:500 11px/1.4 var(--w-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--w-ink-3)}
+:root[data-host=world] .kicker.ko{font:550 13px/1.4 var(--w-sans);letter-spacing:0;text-transform:none}
+:root[data-host=world] .tag{display:inline-flex;align-items:center;gap:10px;min-height:0;padding:0;background:none;font:550 13px/1.4 var(--w-sans);letter-spacing:0;color:var(--w-ink-3)}
+:root[data-host=world] :is(.start-card,.card-head,.how,.res-grid .paper)>.tag::after,:root[data-host=world] dialog.lab-dialog>.kicker::after,:root[data-host=world] .check-top>.kicker::after{content:'';width:28px;height:1px;background:var(--w-line-2)}
+:root[data-host=world] .fine{font-size:13px;line-height:1.6;color:var(--w-ink-3)}
+:root[data-host=world] .reason{font-size:15.5px;line-height:1.6;color:var(--w-ink-2)}
+:root[data-host=world] .text-link{font-size:13.5px;font-weight:600;color:var(--w-ink-2);text-decoration:underline;text-decoration-color:var(--w-ink-4);text-underline-offset:4px}
+:root[data-host=world] .w-led,:root[data-host=world] .fine.warn::before{display:inline-block;flex:none;width:7px;height:7px;border-radius:50%;background:var(--w-led-idle)}
+
+/* 주 행동: 흰 알약 하나(화살표는 마스크) */
+:root[data-host=world] .felt-cta{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;padding:0 28px;border:0;border-radius:999px;
+  background:var(--w-ink);color:var(--w-on-ink);text-shadow:none;filter:none;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12);
+  font:600 16.5px/1.2 var(--w-sans);letter-spacing:-.01em;transition:box-shadow .2s var(--w-ease),transform .12s var(--w-ease),opacity .18s var(--w-ease)}
+:root[data-host=world] .felt-cta:is(.coral,.cream){background:var(--w-ink);color:var(--w-on-ink)}
+:root[data-host=world] .felt-cta .disc{position:static;width:16px;height:16px;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
+:root[data-host=world] .felt-cta .disc::after{content:none}
+:root[data-host=world] .felt-cta:hover{box-shadow:0 0 0 5px color-mix(in srgb,var(--w-glow) 32%,transparent)}
+:root[data-host=world] .felt-cta:active{transform:scale(.975);filter:none}
+:root[data-host=world] .felt-cta:disabled{opacity:.42;cursor:default;transform:none}
+/* 보조: 1px 선 알약 */
+:root[data-host=world] .chip-btn{min-height:44px;padding:0 18px;border:0;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink);
+  font:600 14px/1.2 var(--w-sans);letter-spacing:-.005em;filter:none;transition:background .18s var(--w-ease),transform .12s var(--w-ease)}
+:root[data-host=world] .chip-btn:hover{background:var(--w-s2)}
+:root[data-host=world] .chip-btn:active{transform:scale(.97)}
+:root[data-host=world] .chip-btn[aria-pressed=true]{color:var(--w-ink)}
+:root[data-host=world] .chip-btn:disabled{opacity:.42;cursor:default;transform:none}
+:root[data-host=world] .chip-btn.wide{width:100%;min-height:52px;background:transparent;filter:none;font-size:15px}
+:root[data-host=world] .disc-btn{display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:var(--w-s2);box-shadow:var(--w-card-edge);color:var(--w-ink)}
+
+/* 공통 코인 줄: 조용한 글 + 밑줄 링크 */
+:root[data-host=world] .synk-collection-line{gap:6px 14px;font-size:13.5px;line-height:1.5;color:var(--w-ink-3)}
+:root[data-host=world] .synk-collection-line a{font-weight:600;color:var(--w-ink-2);text-decoration:underline;text-decoration-color:var(--w-ink-4);text-underline-offset:4px}
+:root[data-host=world] [data-collection-garage]{display:none}   /* WORLD 앱에는 레이싱 차고(/korean-racing/)가 없어 이 링크는 빈 화면으로 간다 — 잔액만 남긴다 */
+
+/* 계정 띠: WORLD가 위에서 계정을 보여 주므로 안내만 하는 상태는 숨기고, 손볼 일이 있을 때(연결 끊김·진도 충돌·종료)만 어두운 띠로 */
+:root[data-host=world] .synk-play-account:is([data-phase=guest],[data-phase=synced],[data-phase=saving],[data-phase=loading]){display:none}
+:root[data-host=world] .synk-play-account{gap:4px 14px;padding:10px 16px;background:var(--w-s1);color:var(--w-ink-2);border-bottom:1px solid var(--w-line);font:450 13px/1.5 var(--w-sans)}
+:root[data-host=world] .synk-play-account>span::before{content:'';display:inline-block;width:7px;height:7px;margin:0 8px 1px 0;border-radius:50%;background:var(--w-led-check);box-shadow:0 0 10px rgba(245,196,69,.5)}
+:root[data-host=world] .synk-play-account[data-phase=stopped]>span::before{background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.55)}
+:root[data-host=world] .synk-play-account a{color:var(--w-ink);font-weight:600;text-decoration-color:var(--w-ink-4)}
+
+/* 알림: 흰 알약 */
+:root[data-host=world] .toast{border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);box-shadow:0 14px 36px rgba(0,0,0,.35);font:550 14px/1.45 var(--w-sans);padding:12px 18px}
+
+/* 창(멈춤·목소리 문제·듣기 확인): 어두운 판 */
+:root[data-host=world] dialog.lab-dialog{padding:24px 22px 22px;border-radius:var(--w-r-xl);background:var(--w-s1);color:var(--w-ink);box-shadow:var(--w-card-edge),var(--w-shadow)}
+:root[data-host=world] dialog.lab-dialog::backdrop{background:rgba(4,5,7,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+:root[data-host=world] dialog.lab-dialog h2{margin:10px 0 8px;font:680 24px/1.25 var(--w-sans);letter-spacing:-.024em;color:var(--w-ink)}
+:root[data-host=world] dialog.lab-dialog p{color:var(--w-ink-2);font-size:15.5px;line-height:1.6}
+:root[data-host=world] .dialog-actions{gap:12px}
+/* 켜고 끄는 칩은 설정 줄 + 50×30 스위치(글은 그대로 ‘소리 켜짐/꺼짐’) */
+:root[data-host=world] .dialog-toggles{display:grid;gap:0;border-top:1px solid var(--w-line)}
+:root[data-host=world] .dialog-toggles .chip-btn{justify-content:space-between;width:100%;min-height:58px;padding:0 2px;border-radius:0;box-shadow:none;border-bottom:1px solid var(--w-line);
+  background:none;font:600 15.5px/1.3 var(--w-sans);text-align:left;white-space:normal}
+:root[data-host=world] .dialog-toggles .chip-btn::after{content:'';flex:none;width:50px;height:30px;margin-left:16px;border-radius:999px;
+  background:radial-gradient(circle at 15px 50%,var(--w-ink-2) 0 12px,transparent 12.5px),var(--w-s3);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+:root[data-host=world] .dialog-toggles .chip-btn[aria-pressed=true]::after{background:radial-gradient(circle at 35px 50%,var(--w-on-ink) 0 12px,transparent 12.5px),var(--w-ink);box-shadow:none}
+:root[data-host=world] .dialog-toggles .chip-btn:is(:hover,:active){background:none;transform:none}
+
+
+/* ── 3차 공통(바람길 · 말의 리듬과 같은 글): 모노 라벨 · 점수 글자 ── */
+:root[data-host=world] .w-mono{font:500 11px/1.4 var(--w-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--w-ink-3)}
+:root[data-host=world] .pop.go{animation:wPop .7s var(--w-ease) both}
+@keyframes wPop{0%{opacity:0;transform:translate(-50%,-50%)}20%{opacity:1}70%{opacity:1;transform:translate(-50%,-56%)}100%{opacity:0;transform:translate(-50%,-60%)}}
+
+/* ── 몽글 걷기(10-31 앱에서 마스코트 뺌): LAB과 같은 HTML의 몽글 그림은 WORLD에서 보이지 않는다 ── */
+:root[data-host=world] :is(.hero-mongle,.res-mongle,#r-mongle){display:none}
+
+/* ── 놀이: 밤 열람실 책상 앞. 사진은 조금 흐리고 어둡게 눌러 카드 · 칼빛이 대비로 튄다(Fruit Ninja 초기 디자이너 회고 — 바탕을 일부러 어둡고 밋밋하게,
+ *    qa/world-campus-20261104 벤치마킹). 위쪽은 더 눌러 문제지가 또렷하다. 사진 층은 ::before(3D 판 · 칼빛 아래) ── */
+:root[data-host=world] .game{background:#0b0a09}
+:root[data-host=world] .game .arena{background:#0b0a09}
+:root[data-host=world] .game .arena::before{content:'';position:absolute;inset:-12px;z-index:0;pointer-events:none;
+  background:url(assets/world/library-v.webp) center bottom/cover no-repeat;filter:blur(2.5px) brightness(.68) saturate(.9)}
+:root[data-host=world] .game .arena::after{content:'';position:absolute;inset:0;z-index:0;height:auto;pointer-events:none;box-shadow:none;
+  background:linear-gradient(180deg,rgba(7,7,8,.66) 0%,rgba(7,7,8,.22) 30%,rgba(7,7,8,0) 50%),radial-gradient(120% 70% at 50% 60%,transparent 40%,rgba(7,7,8,.45) 100%)}
+@media (min-aspect-ratio:1/1){
+  :root[data-host=world] .game .arena::before{background-image:url(assets/world/library-h.webp);background-position:center 70%}
+}
+/* 위: 어두운 유리 캡슐(문장 · 점수 · 연속) + 멈춤 원 */
+:root[data-host=world] .game-bar{position:absolute;z-index:6;top:0;left:0;right:0;display:flex;align-items:center;gap:8px;padding:10px 12px 0;background:none;border:0;pointer-events:none}
+:root[data-host=world] .game-bar>*{pointer-events:auto}
+:root[data-host=world] .game-bar>:is(.logo-mini,.game-title){display:none}
+:root[data-host=world] .game-bar .hud{flex:none;display:flex;align-items:center;gap:0;height:44px;margin:0 0 0 auto;padding:0 6px;border-radius:999px;background:rgba(12,13,16,.72);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
+:root[data-host=world] .game-bar .pill{display:flex;align-items:baseline;gap:6px;min-width:0;padding:0 10px;background:none}
+:root[data-host=world] .game-bar .pill+.pill{box-shadow:inset 1px 0 0 var(--w-line-2)}
+:root[data-host=world] .game-bar .pill small{font:550 13px/1 var(--w-sans);letter-spacing:0;color:var(--w-ink-3);white-space:nowrap}
+:root[data-host=world] .game-bar .pill b{font:500 18px/1 var(--w-mono);font-variant-numeric:tabular-nums;letter-spacing:.01em;color:var(--w-ink);background:none}
+:root[data-host=world] .game-bar .pill.combo[data-tier="2"] b{color:#FFE08A}
+:root[data-host=world] .game-bar .pill.combo[data-tier="3"] b{color:#FFE08A;background:none;text-shadow:0 0 12px rgba(255,214,90,.55)}
+:root[data-host=world] #pause{background:rgba(12,13,16,.72);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
+:root[data-host=world] #pause span{display:block;width:16px;height:16px;font-size:0;background:currentColor;-webkit-mask:var(--w-pause) center/contain no-repeat;mask:var(--w-pause) center/contain no-repeat}
+
+@media (max-width:359px){   /* 아주 좁은 폰: 라벨을 줄여 캡슐이 멈춤 원과 겹치지 않게 */
+  :root[data-host=world] .game-bar .pill{padding:0 7px}
+  :root[data-host=world] .game-bar .pill small{font-size:11.5px}
+  :root[data-host=world] .game-bar .pill b{font-size:15px}
+}
+/* 문제지 한 장: 미색 종이 · 왼쪽 위 번호 · 빈칸은 밑줄. 맞히면 빨간 펜 동그라미가 그려진다 */
+:root[data-host=world] .game .sentence{top:64px;width:min(720px,calc(100% - 24px));padding:12px 20px 18px;border-radius:10px;text-align:left;gap:6px;
+  background:#f8f4ea;color:#1c1915;box-shadow:0 22px 44px -12px rgba(0,0,0,.6),0 2px 6px rgba(0,0,0,.35)}
+:root[data-host=world] .game .sentence .kicker{font:500 11.5px/1.4 var(--w-mono);letter-spacing:.06em;color:rgba(28,25,21,.5)}
+:root[data-host=world] .game .s-text{font:700 clamp(20px,5.4vw,30px)/1.5 var(--sans);letter-spacing:-.02em;color:#1c1915}
+:root[data-host=world] .game .blank{min-width:3.2em;margin:0 .14em;padding:0 .3em;border-radius:0;background:none;box-shadow:inset 0 -2.5px 0 rgba(28,25,21,.82);color:transparent;transition:none}
+:root[data-host=world] .game .blank.filled{min-width:0;margin:0 .06em;padding:0 .16em;color:#1c1915}
+:root[data-host=world] .game .blank.answer{background:none;color:#d23f30;box-shadow:inset 0 -2.5px 0 #d23f30}
+:root[data-host=world] .game .sentence.done{box-shadow:0 22px 44px -12px rgba(0,0,0,.6),0 2px 6px rgba(0,0,0,.35)}
+:root[data-host=world] .game .sentence::after{content:'';position:absolute;right:12px;top:8px;width:44px;height:40px;opacity:0;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 40'%3E%3Cpath d='M30 6C20 2 6 8 5 20s12 17 22 15 13-11 11-19C36 9 30 5 22 6' fill='none' stroke='%23d23f30' stroke-width='3.2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
+:root[data-host=world] .game .sentence.done::after{opacity:1;animation:wCircle .34s cubic-bezier(.42,1.67,.21,.9) both}
+@keyframes wCircle{from{opacity:0;transform:scale(1.5) rotate(-18deg)}to{opacity:1;transform:none}}
+
+/* 날아가는 낱말 · 끼워진 빈칸: 찢은 쪽지(들쭉날쭉한 양끝)가 빈칸에 붙고 위에 반투명 테이프 */
+:root[data-host=world] .fly-chip{white-space:nowrap;padding:6px 12px 8px;border-radius:0;background:#fbf8f1;color:#23201c;font:800 22px/1 var(--sans);box-shadow:none;
+  clip-path:polygon(0 8%,6% 0,14% 6%,22% 0,100% 0,96% 14%,100% 27%,95% 41%,100% 55%,94% 70%,100% 84%,96% 100%,10% 100%,4% 92%,0 80%,5% 64%,0 50%,6% 36%,1% 22%)}
+:root[data-host=world] .game .blank.ok{position:relative;isolation:isolate;background:none;box-shadow:none}
+:root[data-host=world] .game .blank.ok::before{content:'';position:absolute;inset:-2px -5px -3px;z-index:-1;background:#fbf8f1;box-shadow:0 2px 5px rgba(0,0,0,.18);
+  clip-path:polygon(0 8%,6% 0,100% 0,96% 14%,100% 27%,95% 41%,100% 55%,94% 70%,100% 84%,96% 100%,10% 100%,4% 92%,0 80%,5% 64%,0 50%,6% 36%,1% 22%)}
+:root[data-host=world] .game .blank.ok::after{content:'';position:absolute;left:50%;top:-9px;width:34px;height:14px;transform:translateX(-50%) rotate(-4deg);
+  background:rgba(236,226,200,.78);box-shadow:0 1px 2px rgba(0,0,0,.12);clip-path:polygon(0 10%,8% 0,92% 6%,100% 0,97% 50%,100% 100%,6% 92%,0 100%,3% 50%)}
+
+/* 안내 · 점수 글자 · 반짝이 */
+:root[data-host=world] .game .tip{bottom:24px;border-radius:16px;background:rgba(12,13,16,.86);color:var(--w-ink);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);font:550 14.5px/1.45 var(--w-sans);padding:11px 16px}
+:root[data-host=world] .game .pop{font:700 24px/1 var(--w-sans);color:#FAFAF9;text-shadow:0 2px 14px rgba(8,9,12,.6),0 1px 2px rgba(8,9,12,.5)}
+:root[data-host=world] .game .pop:is([data-tier="2"],[data-tier="3"]){color:#FFE08A}
+:root[data-host=world] .spark{width:16px;height:16px;background:#FFE08A;-webkit-mask:var(--w-star) center/contain no-repeat;mask:var(--w-star) center/contain no-repeat}
+
+/* 해설 · 멈춘 보기: 어두운 유리 판 */
+:root[data-host=world] .game :is(.explain,.answer-check){border-radius:var(--w-r-lg);background:rgba(14,15,19,.9);color:var(--w-ink);box-shadow:var(--w-glass-edge),var(--w-shadow);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
+:root[data-host=world] .game .x-sentence{font:700 19px/1.5 var(--sans);color:var(--w-ink)}
+:root[data-host=world] .game .x-sentence b{padding:0 .2em;border-radius:3px;background:rgba(255,232,60,.86);color:#1c1915}
+:root[data-host=world] .game .x-why{color:var(--w-ink-2)}
+:root[data-host=world] .game .x-why b{background:var(--w-s3);color:var(--w-ink)}
+
+/* ── 첫 그림 전: 게임 모듈이 WORLD 겉을 다 붙일 때까지 화면을 비워 둔다(LAB 펠트 · 몽글이 한 번 비치지 않게). world-play.mjs setup 끝에서 .w-ready ── */
+:root[data-host=world]:not(.w-ready) .screen{visibility:hidden}
+:root[data-host=world] .sound-toggle{width:44px;height:44px;margin:0 0 0 auto;border-radius:50%;background:rgba(12,13,16,.62);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
+:root[data-host=world] .sound-toggle::before{width:20px;height:20px;background:var(--w-ink)}
+:root[data-host=world] .sound-toggle[aria-pressed=false]::before{opacity:.4}
+
+/* ── 입구: 밤 열람실 사진 위 큰 제목(3.6초마다 칼빛이 지나며 제목이 갈라졌다 붙는다 — 움직임 값은 토큰) + 문제지 한 장(찢은 쪽지 · 테이프) → 시작 ── */
+:root[data-host=world] .lobby{position:relative;background:#0b0a09}
+:root[data-host=world] .lobby>.topbar{position:absolute;z-index:4;top:0;left:0;right:0;background:none}
+:root[data-host=world] .lobby>.topbar>:is(.logo-tag,.kicker),:root[data-host=world] .results>.topbar{display:none}
+:root[data-host=world] .lobby>.hero{position:relative;isolation:isolate;display:flex;flex-direction:column;gap:0;padding:clamp(64px,13svh,132px) 20px 22px;background:none;overflow:hidden}
+:root[data-host=world] .lobby>.hero::before{content:'';position:absolute;inset:-8px;z-index:-2;background:url(assets/world/library-v.webp) center 62%/cover no-repeat;filter:brightness(.8) saturate(.95)}
+:root[data-host=world] .lobby>.hero::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(7,7,8,.5) 0%,rgba(7,7,8,.18) 26%,rgba(7,7,8,.42) 60%,#0b0a09 100%)}
+:root[data-host=world] .hero-copy>.kicker{font:500 11.5px/1.5 var(--w-mono);letter-spacing:.08em;color:rgba(250,250,249,.82);text-transform:none}
+:root[data-host=world] .hero-copy>.kicker::before{content:'';display:inline-block;width:7px;height:7px;margin-right:2px;border-radius:50%;background:#FFD48A;box-shadow:0 0 12px rgba(255,212,138,.8)}
+:root[data-host=world] .hero h1{position:relative;margin:10px 0 0;width:fit-content;font:800 clamp(62px,18.5vw,132px)/1.02 var(--sans);letter-spacing:-.05em;color:#FAFAF9;text-shadow:0 2px 26px rgba(0,0,0,.55)}
+/* 제목 베기: 본 글자 위에 같은 글자 두 벌(aria-hidden)이 대각선으로 나뉘어 있다가, 박자에 맞춰 벌어졌다 붙는다. transform · opacity만 움직여 합성기에서 돈다 */
+:root[data-host=world] .w-title{display:block;animation:wTitle 3.6s linear infinite}
+:root[data-host=world] .w-cut{position:absolute;inset:0;display:block;opacity:0;pointer-events:none;will-change:transform,opacity}
+:root[data-host=world] .w-cut.a{clip-path:polygon(0 0,100% 0,100% 37%,84% 41%,68% 39%,50% 47%,33% 45%,16% 56%,0 60%);animation:wCutA 3.6s linear infinite}
+:root[data-host=world] .w-cut.b{clip-path:polygon(0 60%,16% 56%,33% 45%,50% 47%,68% 39%,84% 41%,100% 37%,100% 100%,0 100%);animation:wCutB 3.6s linear infinite}
+:root[data-host=world] .w-blade{position:absolute;left:-6%;right:-6%;top:47%;height:4px;border-radius:4px;background:linear-gradient(90deg,transparent,#fff 18%,#fff 70%,transparent);box-shadow:0 0 18px rgba(255,214,150,.95);transform:rotate(-7deg) scaleX(0);transform-origin:0 50%;opacity:0;pointer-events:none;animation:wBlade 3.6s linear infinite}
+:root[data-host=world] .w-shred{position:absolute;width:9px;height:6px;background:#f8f4ea;opacity:0;pointer-events:none;animation:wShred 3.6s linear infinite}
+:root[data-host=world] .w-shred:nth-of-type(1){left:22%;top:46%;--x:-26px;--y:-30px;--r:-70deg}
+:root[data-host=world] .w-shred:nth-of-type(2){left:44%;top:40%;--x:8px;--y:-38px;--r:110deg;background:#ffe27a}
+:root[data-host=world] .w-shred:nth-of-type(3){left:62%;top:52%;--x:24px;--y:30px;--r:150deg;background:#ffcad1}
+:root[data-host=world] .w-shred:nth-of-type(4){left:80%;top:36%;--x:34px;--y:-16px;--r:-120deg;background:#bfead6}
+@keyframes wTitle{0%,84.9%{opacity:1}85%,96.9%{opacity:0}97%,100%{opacity:1}}
+@keyframes wCutA{0%,84.9%{opacity:0;transform:none}85%{opacity:1;transform:none;animation-timing-function:cubic-bezier(.2,.9,.3,1)}88.5%{opacity:1;transform:translate(-7px,-7px) rotate(-.7deg);animation-timing-function:cubic-bezier(.42,1.67,.21,.9)}96.9%{opacity:1;transform:none}97%,100%{opacity:0;transform:none}}
+@keyframes wCutB{0%,84.9%{opacity:0;transform:none}85%{opacity:1;transform:none;animation-timing-function:cubic-bezier(.2,.9,.3,1)}88.5%{opacity:1;transform:translate(7px,8px) rotate(.7deg);animation-timing-function:cubic-bezier(.42,1.67,.21,.9)}96.9%{opacity:1;transform:none}97%,100%{opacity:0;transform:none}}
+@keyframes wBlade{0%,82.9%{opacity:0;transform:rotate(-7deg) scaleX(0)}83%{opacity:1;transform:rotate(-7deg) scaleX(.05)}85.5%{opacity:1;transform:rotate(-7deg) scaleX(1)}89%,100%{opacity:0;transform:rotate(-7deg) scaleX(1)}}
+@keyframes wShred{0%,84.9%{opacity:0;transform:none}85%{opacity:1;transform:none;animation-timing-function:cubic-bezier(.2,.8,.3,1)}95%{opacity:.9;transform:translate(var(--x),calc(var(--y) + 22px)) rotate(var(--r))}97%,100%{opacity:0;transform:translate(var(--x),calc(var(--y) + 28px)) rotate(var(--r))}}
+:root[data-host=world] .hero .lede{margin:12px 0 0;font:650 clamp(19px,5.2vw,26px)/1.36 var(--sans);letter-spacing:-.02em;color:#FAFAF9;text-shadow:0 1px 14px rgba(0,0,0,.6)}
+:root[data-host=world] .hero .sub{margin:8px 0 0;font-size:14.5px;line-height:1.6;color:rgba(250,250,249,.82);text-shadow:0 1px 10px rgba(0,0,0,.7)}
+:root[data-host=world] .hero .crayon-under{background:none;box-shadow:inset 0 -.12em 0 #FFD48A}
+/* 문제지 한 장: 맞는 낱말 쪽지가 테이프로 붙어 있다(게임 끝 장면과 같은 그림). 펠트 조각 사진 · 칼자국 줄은 앱에 두지 않는다 */
+:root[data-host=world] .hero-art{margin:18px 0 0;height:auto}
+:root[data-host=world] .hero-art>:is(.hero-pieces,.slash){display:none}
+:root[data-host=world] .hero-sentence{position:relative;left:auto;right:auto;top:auto;padding:16px 18px 18px;border-radius:9px;background:#f8f4ea;color:#1c1915;text-align:left;font:700 clamp(17px,4.8vw,22px)/1.55 var(--sans);letter-spacing:-.02em;transform:rotate(-1.2deg);box-shadow:0 22px 44px -14px rgba(0,0,0,.7),0 2px 6px rgba(0,0,0,.35)}
+:root[data-host=world] .hero-sentence .hb{position:relative;isolation:isolate;display:inline-block;min-width:0;margin:0 .06em;padding:0 .3em;border-radius:0;background:none;color:#1c1915}
+:root[data-host=world] .hero-sentence .hb::before{content:'';position:absolute;inset:-1px -1px -2px;z-index:-1;background:#fffdf7;box-shadow:0 2px 5px rgba(0,0,0,.2);clip-path:polygon(0 8%,10% 0,100% 0,92% 14%,100% 27%,90% 41%,100% 55%,88% 70%,100% 84%,92% 100%,14% 100%,6% 92%,0 80%,8% 64%,0 50%,10% 36%,2% 22%)}
+:root[data-host=world] .hero-sentence .hb::after{content:'';position:absolute;left:50%;top:-9px;width:34px;height:14px;transform:translateX(-50%) rotate(-5deg);background:rgba(236,226,200,.82);box-shadow:0 1px 2px rgba(0,0,0,.14);clip-path:polygon(0 10%,8% 0,92% 6%,100% 0,97% 50%,100% 100%,6% 92%,0 100%,3% 50%)}
+/* 시작 판 · 하는 법 */
+:root[data-host=world] .plan{margin:0;padding:0 16px;gap:12px}
+:root[data-host=world] .start-card{gap:10px;padding:18px 18px 16px;border-radius:var(--w-r-lg);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+:root[data-host=world] .start-card h2{margin:2px 0 0;font:680 22px/1.25 var(--sans);letter-spacing:-.02em;color:var(--w-ink)}
+:root[data-host=world] .start-card h2 b{color:#FFD48A;font-weight:680}
+:root[data-host=world] .start-options .chip-btn[aria-pressed=true]{background:var(--w-ink);color:var(--w-on-ink);box-shadow:none}
+:root[data-host=world] .how{gap:12px;padding:18px;border-radius:var(--w-r-lg);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+:root[data-host=world] .how-steps{gap:0}
+:root[data-host=world] .how-steps li{padding:12px 0;border-radius:0;background:none;border-top:1px solid var(--w-line)}
+:root[data-host=world] .how-steps li:first-child{border-top:0;padding-top:4px}
+:root[data-host=world] .how-steps .num{grid-row:span 2;width:28px;height:28px;margin-top:-2px;background:none;box-shadow:inset 0 0 0 1px var(--w-line-2);border-radius:50%;color:var(--w-ink-2);text-shadow:none;font:500 12px/1 var(--w-mono)}
+:root[data-host=world] .how-steps strong{font:650 15.5px/1.35 var(--sans);color:var(--w-ink)}
+:root[data-host=world] .how-steps span{color:var(--w-ink-2)}
+:root[data-host=world] .lobby-foot{color:var(--w-ink-3)}
+@media (min-width:960px){
+  :root[data-host=world] .lobby>.hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);align-items:end;gap:32px;padding:clamp(80px,14vh,140px) 32px 28px}
+  :root[data-host=world] .lobby>.hero::before{background-image:url(assets/world/library-h.webp);background-position:center 66%}
+  :root[data-host=world] .hero-art{margin:0}
+  :root[data-host=world] .plan{margin:0;padding:0 32px}
+}
+
+/* ── 결과: 빨간 펜으로 채점한 시험지. 문장마다 ○(맞음) · 빗금(다시 볼 것) · △(놓침)이 하나씩 찍히고 맞힘마다 큰 숫자가 오른다(world-play.mjs). 탭하면 바로 끝 ── */
+:root[data-host=world] .results{position:relative;background:#0b0a09;color:var(--w-ink);--pen:#d23f30}
+:root[data-host=world] .res-hero{display:block;margin:0 16px;padding:18px 20px 20px;border-radius:10px 10px 0 0;background:#f8f4ea;color:#1c1915}
+:root[data-host=world] .results{padding-top:16px}
+:root[data-host=world] .res-hero .kicker{font:500 11.5px/1.5 var(--w-mono);letter-spacing:.06em;color:rgba(28,25,21,.56)}
+:root[data-host=world] .res-hero h1{margin:6px 0 0;font:800 clamp(30px,8.4vw,48px)/1.1 var(--sans);letter-spacing:-.035em;color:#1c1915}
+:root[data-host=world] .res-hero .big{width:fit-content;margin:14px 0 0;padding:4px 0 6px 12px;gap:18px}
+:root[data-host=world] .res-hero .big b{position:relative;display:inline-block;font:800 clamp(72px,21vw,112px)/.95 var(--sans);letter-spacing:-.05em;color:var(--pen);font-variant-numeric:tabular-nums}
+:root[data-host=world] .res-hero .big span{font:500 22px/1 var(--w-mono);color:rgba(28,25,21,.62)}
+/* 큰 숫자에 빨간 펜 동그라미(다 찍힌 뒤 그려진다) */
+:root[data-host=world] .res-hero .big b::after{content:'';position:absolute;inset:-12px -16px -12px -14px;opacity:0;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 110' preserveAspectRatio='none'%3E%3Cpath d='M146 12C96-2 22 8 8 50s44 54 100 50 92-30 82-58C184 22 150 8 104 12' fill='none' stroke='%23d23f30' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center/100% 100% no-repeat}
+:root[data-host=world] .res-hero .big.w-done b::after{opacity:1;animation:wCircle .34s cubic-bezier(.42,1.67,.21,.9) both}
+:root[data-host=world] .res-hero .stars{margin:10px 0 0;gap:6px}
+:root[data-host=world] .res-hero .stars i,:root[data-host=world] .res-hero .stars i.on{width:24px;height:24px;background:rgba(28,25,21,.14);filter:none;-webkit-mask:var(--w-star) center/contain no-repeat;mask:var(--w-star) center/contain no-repeat}
+:root[data-host=world] .res-hero .stars i.on{background:var(--pen)}
+:root[data-host=world] .res-hero .r-note{margin:10px 0 0;font-size:14.5px;line-height:1.55;color:rgba(28,25,21,.72)}
+:root[data-host=world] .res-hero .synk-collection-line{color:rgba(28,25,21,.72)}
+:root[data-host=world] .res-grid{margin:0;padding:0 16px;gap:12px}
+:root[data-host=world] .res-grid .paper{padding:18px;border-radius:var(--w-r-lg);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+/* 이번 판의 문장: 위 시험지와 이어진 같은 종이. 펠트 표시(img.mark)는 읽기 프로그램에만 남기고 빨간 펜 표시를 그린다 */
+:root[data-host=world] .res-grid .log{padding:4px 20px 18px;border-radius:0 0 10px 10px;background:#f8f4ea;box-shadow:0 22px 44px -18px rgba(0,0,0,.7);color:#1c1915}
+:root[data-host=world] .res-grid .log>.tag{color:rgba(28,25,21,.56)}
+:root[data-host=world] .log li{position:relative;grid-template-columns:30px 1fr;border-top:1px solid rgba(28,25,21,.12)}
+:root[data-host=world] .log .mark,:root[data-host=world] .log li.ok .mark,:root[data-host=world] .log li.ko .mark{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+:root[data-host=world] .log li::before{content:'';grid-column:1;width:24px;height:24px;margin-top:1px;background:center/contain no-repeat}
+:root[data-host=world] .log li.ok::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M16 4C10 1 3 5 3 12s6 10 11 9 8-6 6-11c-1-3-4-5-8-5' fill='none' stroke='%23d23f30' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E")}
+:root[data-host=world] .log li.ko::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19 3C15 9 10 15 5 21' fill='none' stroke='%23d23f30' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E")}
+:root[data-host=world] .log li.miss::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 4 3.5 19.5 20.5 19 11 3.8' fill='none' stroke='%23d23f30' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+:root[data-host=world] .log li.w-wait::before{opacity:0}
+:root[data-host=world] .log li.w-pen::before{animation:wPen .26s cubic-bezier(.42,1.67,.21,.9) both}
+@keyframes wPen{from{opacity:0;transform:scale(1.7) rotate(-14deg)}to{opacity:1;transform:none}}
+:root[data-host=world] .log .body{grid-column:2}
+:root[data-host=world] .log .sent{font:600 15px/1.5 var(--sans);color:#1c1915}
+:root[data-host=world] .log .sent b{padding:0 .15em;background:none;box-shadow:inset 0 -2px 0 var(--pen);color:#1c1915}
+:root[data-host=world] .log small{color:rgba(28,25,21,.6)}
+/* 읽기 능력 기록 · 다음 판 */
+:root[data-host=world] .skills li{border-radius:var(--w-r-md);background:var(--w-s2);box-shadow:var(--w-card-edge)}
+:root[data-host=world] .skills li b{font:650 15px/1.3 var(--sans);color:var(--w-ink)}
+:root[data-host=world] .skills li span{color:var(--w-ink-2)}
+:root[data-host=world] .skills li em{color:var(--w-ink-3)}
+:root[data-host=world] .skills li.focus{background:var(--w-s2);box-shadow:inset 0 0 0 1.5px #FFD48A}
+:root[data-host=world] .skills li.good{background:var(--w-s2)}
+:root[data-host=world] .next-tag{background:#FFD48A;color:#1c1915;font:650 11px/1.3 var(--sans)}
+:root[data-host=world] .next #r-again{background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+:root[data-host=world] .next #r-again:is(:hover,:active){background:var(--w-s2)}
+:root[data-host=world] .w-room-bar{position:sticky;z-index:6;bottom:0;margin:14px 0 0;padding:28px 16px max(16px,env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(11,10,9,0),#0b0a09 42%)}
+:root[data-host=world] .w-room-bar>.felt-cta{min-height:58px}
+@media (min-width:960px){
+  :root[data-host=world] .results{padding-top:24px}
+  :root[data-host=world] .res-hero{margin:0 auto;max-width:900px;width:calc(100% - 64px)}
+  :root[data-host=world] .res-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);max-width:900px;margin:0 auto;padding:0;width:calc(100% - 64px);align-items:start}
+  :root[data-host=world] .res-grid .log{grid-column:1/-1}
+  :root[data-host=world] .w-room-bar{max-width:900px;margin:14px auto 0;padding-left:0;padding-right:0}
+}
+
+/* 움직임 줄이기(기기 설정 · WORLD 설정): 제목 베기 · 빨간 펜 튐 · 해설 올라옴을 멈춘다 */
+@media (prefers-reduced-motion:reduce){
+  :root[data-host=world] :is(.w-title,.w-cut,.w-blade,.w-shred){animation:none}
+  :root[data-host=world] :is(.w-cut,.w-blade,.w-shred){display:none}
+  :root[data-host=world] .log li.w-pen::before,:root[data-host=world] .res-hero .big.w-done b::after{animation:none}
+}
+:root[data-host=world][data-motion=reduced] :is(.w-title,.w-cut,.w-blade,.w-shred){animation:none}
+:root[data-host=world][data-motion=reduced] :is(.w-cut,.w-blade,.w-shred){display:none}
+:root[data-host=world][data-motion=reduced] .log li.w-pen::before,:root[data-host=world][data-motion=reduced] .res-hero .big.w-done b::after{animation:none}

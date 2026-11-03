@@ -90,6 +90,10 @@ function copyFile(source,relative,{transform=true}={}){
  if(relative==='order-rush/index.html'){const entry=/\r?\n[ \t]*<article class="paper beginner-entry">[\s\S]*?<\/article>/;if(!entry.test(content))throw Error('Order rush beginner entry shape changed');content=content.replace(entry,'');}
  // 주문 폭주 3D 작업대는 WORLD 홈이 이미 받은 공용 three.js(scene-assets)를 쓴다 — 두 사본의 바이트가 같을 때만(아래 orderSharedThree).
  if(relative==='order-rush/stage.mjs'&&orderSharedThree){const from="'./vendor/three.module.js'";if(content.split(from).length!==2)throw Error('Order rush three.js import changed');content=content.replace(from,"'../scene-assets/three.module.js'");}
+ // 빈칸 베기 입구 · 결과의 펠트 조각 · 몽글 그림은 WORLD 사본 HTML에서 뺀다 — 앱은 그 그림을 쓰지 않으니 받지도 않는다(world-play.mjs도 같은 줄을 걷는다).
+ if(relative==='blank-slice/index.html'){for(const line of [/\r?\n[ \t]*<img class="hero-pieces"[^>]*>/,/\r?\n[ \t]*<img class="hero-mongle[^>]*>/,/\r?\n[ \t]*<img class="res-mongle[^>]*>/]){if(!line.test(content))throw Error('Blank slice felt image shape changed');content=content.replace(line,'');}}
+ // 빈칸 베기 3D 무대 · 찢기 재질도 공용 three.js를 쓴다 — 두 사본의 바이트가 같을 때만(아래 blankSharedThree).
+ if((relative==='blank-slice/stage.mjs'||relative==='blank-slice/world-stage.mjs')&&blankSharedThree){const from="'./vendor/three.module.js'";if(content.split(from).length!==2)throw Error('Blank slice three.js import changed');content=content.replace(from,"'../scene-assets/three.module.js'");}
  const rendered=transform&&/\.(?:mjs|js|cjs|html|css)$/.test(source)?Buffer.from(rewrite(content,relative)):bytes;
  const prepared=publicAsset(relative,rendered);if(prepared)write(prepared.relative,prepared.bytes,source);
 }
@@ -159,6 +163,10 @@ for(const game of ['korean-runner','korean-rhythm','hangul-stage'])copyTree(path
 // three.js가 홈의 scene-assets와 바이트까지 같으면 vendor/는 싣지 않고 stage.mjs가 그 공용 사본을 부른다(다르면 지금처럼 자기 사본).
 const orderSharedThree=['three.module.js','three.core.js'].every(name=>fs.readFileSync(path.join(root,'experiences/order-rush/vendor',name)).equals(fs.readFileSync(path.join(home,'scene-assets',name))));
 copyTree(path.join(root,'experiences','order-rush'),'order-rush',(source,relative)=>relative!=='order-rush/assets/cafe-original.png'&&!/^order-rush\/(?:beginner[^/]*|assets\/(?:beginner|picnic|progress)\/.*)$/.test(relative)&&!(orderSharedThree&&relative.startsWith('order-rush/vendor/')));
+// 빈칸 베기(11-04, 캠퍼스 판 겉 — 해금 표로 「놀이」에서 연다): 게임 폴더째 싣되, LAB 소리 시청 페이지와 펠트 입구 그림은 뺀다. 배경음은 위 order-rush의 곡을 함께 쓴다(world-play.mjs).
+// three.js는 주문 폭주와 같이 홈의 공용 사본과 바이트까지 같으면 vendor/를 싣지 않고 공용 사본을 부른다(위 copyFile).
+const blankSharedThree=['three.module.js','three.core.js'].every(name=>fs.readFileSync(path.join(root,'experiences/blank-slice/vendor',name)).equals(fs.readFileSync(path.join(home,'scene-assets',name))));
+copyTree(path.join(root,'experiences','blank-slice'),'blank-slice',(source,relative)=>!/^blank-slice\/(?:sound-lab[^/]*|assets\/hero-pieces\.webp)$/.test(relative)&&!(blankSharedThree&&relative.startsWith('blank-slice/vendor/')));
 // 드라마 말하기 1화(11-02, 설계 experiences/drama/qa/WORLD올리기-20261102/설계.md): 화면 · 강의(world-lesson.json) · 기록 묶음 · 재생 사본만 싣는다.
 // content.mjs(시범 서버 전용 · 판정 명세)와 README · qa는 싣지 않는다. 재생 사본(media/)은 git 밖(tools/build-drama-pilot-assets.mjs가 승인 원천에서
 // 만든다)이라 그 manifest.json의 sha256과 하나씩 대조해 없거나 다르면 멈춘다 — manifest 자체(원천 파일 이름)는 싣지 않는다.

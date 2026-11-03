@@ -1,0 +1,4 @@
+PHOTOREAL product still, square 1:1, pure white seamless background, no props.
+One white ruled index card torn in two by hand, the two pieces just separating from each other in the air: a jagged torn edge with soft white paper fibers runs diagonally across the card, the upper-right piece lifted a little and rotated away from the lower-left piece, a few tiny paper scraps floating between them. The card has one thin red line near its top and faint pale-blue ruled lines. A short strip of translucent cream masking tape stuck on the lower-left piece. The card fills about two thirds of the frame, centered, with a soft natural shadow under it.
+Soft daylight from the upper left, true-to-life paper texture and fibers, tack-sharp. A real studio photograph — never an illustration or a 3D render.
+NEVER: no text, no letters, no numbers, no logos, no hands, no highlighter, no background objects.
