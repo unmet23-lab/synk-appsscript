@@ -1,5 +1,42 @@
 # 회사 워크스페이스와 고객 상담의 상시 서버 운영
 
+<a id="spaceship-retire-20261104"></a>
+## 둘이서 우주선 협동 API 정리 계획 (2026-11-04, 운영 변경 없음)
+
+게임을 버리고 공개판을 내린 뒤([결정](../../../../_ops/결정.md)) 회사 쪽에 남은 것은 공개 경로 `https://workspace.synk.im/api/spaceship`과 컨테이너 `synk-spaceship-spaceship-1`이다. **공개 경로는 다음 회사 이미지 판에 싣고, 컨테이너는 HA 런타임이나 재해 복구 도우미를 어차피 바꾸는 다음 인프라 판에 뺀다.** 이 일만으로 판을 내지 않는다.
+
+**얻는 것:** 저장된 실측(11-01, `.tmp/company-api-ha-followup-20261101/forward42-load-1793523176854.json`)으로 메모리 28.83MiB(노드 3.833GiB의 약 0.7%), CPU 0.01%, 네트워크 1.77kB/126B다. 11-04에 다시 재려던 읽기는 자동 모드 판정기가 「Production Reads」로 막아 못 쟀다. 방은 메모리에만 있어 지울 자료가 없고(`storage: ephemeral`), 11-04 `/api/spaceship/health`는 아직 200이다.
+
+**정기 판으로 컨테이너를 못 빼는 까닭 — 세 컨테이너 계약이 정확 일치로 묶여 있다:**
+
+| 층 | 자리 | 막는 것 |
+|---|---|---|
+| 제품 판 | `deploy/Caddyfile` · `deploy-operations.test.mjs` | 없음 — 11-04 저장소에서 고침 |
+| HA 런타임(두 노드) | `node-agent.mjs` `CONTAINERS` · `node-host.py` `UNITS` `CONTAINERS`, 노드의 `/etc/synk/ha/node.json` · `plan.json`, 시험 `node-agent-light.test.mjs` · `host-optimization.test.py` | `LIVE_CONTAINER_CONTRACT` · `CONTAINER_CONTRACT` · `UNIT_ALLOWLIST`. 정기 판은 런타임을 부모 판 그대로 잇는다 |
+| 전환 가드 | `release-transition.py` `NAMES` · `known`, 판 도구 `build-capsules.cjs` · `release-node.py` · `stage-candidate.py` · `stack-guard.test.cjs` | `GUARD_FILE_ALLOWLIST`가 스페이스십 가드 둘과 드롭인을 요구하고, 유닛 · 가드를 지우는 단계가 없다 |
+| 재해 복구 | `disaster-restore.py` `HA_GUARD_NAMES` · `HA_ENV_CONTRACT`, git 밖 `disaster-capture.py`의 실행 컨테이너 집합, 예비 노드 연습 설정 `restoreSha256` | 도우미를 바꾸면 내용 해시 폴더 · 백업 훅 · 연습 목록을 같은 판에 옮겨야 한다 |
+| 재무장 | 계약 `nextPlan.scope`(`spaceship-current-origin`), 기준선의 가드 · 환경 파일 목록 | 승인 사슬이 해시로 잡는다 |
+
+**위험의 선례:** 마지막 인프라 판(사슬 41 → 42 · 43, 11-01~02)은 앱 42 작업이 기한 만료로 공개 접속을 끊었고 43 첫 작업도 만료됐으며, 바뀐 도우미 해시가 연습 설정에 빠져 주간 연습이 말없이 깨져 있었다. 메모리 0.7%를 얻으려고 이 길을 따로 타지 않는다.
+
+**1단계 — 공개 경로(다음 회사 이미지 판):**
+
+- 넘김에 `git log -1 -- deploy/Caddyfile` 커밋의 두 파일(`deploy/Caddyfile` · `deploy-operations.test.mjs`)을 함께 더한다.
+- 판 선택 시험에 `deploy-operations.test.mjs`가 없어(사슬 49 `operator-input.json` 확인) inert가 Caddy 어댑터를 안 돌린다. 그 판에서 `SYNK_QA_CADDY`로 `^Caddy ` 시험 둘을 한 번 돌린다(선례 `.tmp/company-sns-close-20261016/qa/caddy-result.json`). 11-04 이 PC에는 Caddy 바이너리가 없어 못 돌렸다 — 저장소에서 확인한 것은 괄호 짝과 바뀌지 않은 나머지 줄뿐이다.
+- 덧붙는 끊김은 0이다. 이미지 판 교체가 Caddy를 어차피 다시 띄운다(판 전체 health 실패 실측 227~331초, 사슬 47 · 48). 화면 묶음만 바꾸는 판에는 싣지 않는다.
+- 컨테이너는 `edge` 망에 그대로 떠서 HA 계약을 채운다. 반영 뒤 `curl -s https://workspace.synk.im/api/spaceship/health` 응답에 `spaceship-coop`이 없는지 본다. 바깥 요청이 닿지 않으니 버린 게임이 죽어 노드 준비를 떨어뜨릴 길도 줄어든다.
+
+**2단계 — 컨테이너(다음 인프라 판):**
+
+1. 비무장 뒤 새 백업.
+2. 두 노드에서 `synk-spaceship.service` 멈춤 · 끔과 런타임 · `node.json` · `plan.json` · 가드 · 재해 복구 도우미 교체를 한 유지보수 안에서 한다. 계약이 정확 일치라 하나씩 나눠 갈 수 없다.
+3. 예비 노드 연습 목록에 새 해시를 **더하고**(옛 묶음 복원을 위해 옛 해시는 둔다) `run-now`까지 통과시킨다.
+4. 새 백업 · 격리 복원 · 재무장 · 봉인. 검수와 시각 관문은 회사 릴리스 절차 그대로다.
+
+끊김 설계: 앱을 함께 교체하면 위와 같은 227~331초다. 런타임만 바꾸면 앱 재시작이 없어 0을 목표로 하지만 사슬 42의 경주 선례가 있어 약속하지 않는다. 자동 전환이 꺼지는 비무장은 약 1시간으로 잡는다(사슬 49 교체 시작 22:18 ~ 원격 끝 23:1x). 이미지 · `/opt/synk/spaceship` · `/etc/synk/spaceship.env` · 옛 재해 복구 묶음은 지우지 않는다.
+
+**그때까지 하지 말 것:** 컨테이너를 손으로 멈추지 않는다([현장 노트](../../../../현장노트/배포_공개.md#버린-협동-컨테이너-synk-spaceship도-손으로-멈추면-안-된다--ha가-세-컨테이너를-모두-요구한다-2026-11-04-claude)). `deploy/ha/*` · `disaster-restore.py`를 master에서 먼저 고치지 않는다 — 11-04 `node-agent.mjs` · `node-host.py`는 운영 고정 사본과 해시가 같고(`b3f96d38…` · `9b74b24c…`), 재무장 입력이 이 바이트를 가리킨다.
+
 <a id="pulse-models21-20261103"></a>
 ## PULSE 고객 앱 모델 21명 · 견본 목소리 빼기 (2026-11-03 저장소 반영 · 같은 날 회사 사슬 49 운영 반영)
 
@@ -1292,7 +1329,7 @@ Windows843중839통과/실패0/플랫폼skip4, 실제 Linux843/843·skip0·전�
 
 ## 07:27 협동 게임 경로 추가
 
-WORLD 협동 서버의 공식 추가 검수를 마친 뒤 기존 VM에 별도 `synk-spaceship.service`를 설치·활성화했다. 회사 current는 `1fa6475e97eb`에서 `85b20c886ba0`으로 전환했고, 444파일 중 Caddy 한 파일만 바뀌었다. 회사 컨테이너·이미지·시작 시각·DB·환경과 기존 자료는 그대로이며 HTTPS 컨테이너만 기존 이미지·인증서 volume으로 재생성했다. 회사 health와 협동 health를 통과했다. 공유 Caddy에도 적용된 동일 경로를 반영했으므로 다음 회사 릴리스에서 `/api/spaceship` 경로를 보존해야 한다.
+WORLD 협동 서버의 공식 추가 검수를 마친 뒤 기존 VM에 별도 `synk-spaceship.service`를 설치·활성화했다. 회사 current는 `1fa6475e97eb`에서 `85b20c886ba0`으로 전환했고, 444파일 중 Caddy 한 파일만 바뀌었다. 회사 컨테이너·이미지·시작 시각·DB·환경과 기존 자료는 그대로이며 HTTPS 컨테이너만 기존 이미지·인증서 volume으로 재생성했다. 회사 health와 협동 health를 통과했다. 공유 Caddy에도 적용된 동일 경로를 반영했으므로 다음 회사 릴리스에서 `/api/spaceship` 경로를 보존해야 한다(11-04 게임을 버려 이 경로도 뺀다 — [계획](#spaceship-retire-20261104)).
 
 `https://workspace.synk.im/api/spaceship`의 실제 CORS·SSE와 두 독립 HTTP 연결의 18개 수리·공동 출발을 확인했다. 합성 임시방 시험이며 공개 게임 화면의 브라우저 음성·실제 두 사람·물리 기기 검증은 별도다. 우주선 방은 메모리에서 유지되며 서비스 재시작 시 사라진다. 계정 학습 기록은 별도 SYNK Play 서버 배포 대상이다. 근거: `experiences/beginner-games/qa/account-sync/coop-release/r4/`의 `service-apply-result.json`, `route-apply-result.json`, `public-api-result.json`.
 

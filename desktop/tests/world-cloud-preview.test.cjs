@@ -20,7 +20,7 @@ test('WORLD HTTPS Preview requires its explicit flag, exact tutor home URL and d
 test('public game navigation permits named games but never grants game or subframe account IPC',()=>{
   const frame={url:entry},contents={mainFrame:frame},window={webContents:contents,isDestroyed:()=>false};
   assert.doesNotThrow(()=>assertSender({sender:contents,senderFrame:frame},window,entry,'world'));
-  for(const slug of ['learning-hub','racing','runner','rhythm','order-rush','entry-check','story-classroom','blank-slice','talk-rally','word-magic','spaceship-coop']){
+  for(const slug of ['learning-hub','racing','runner','rhythm','order-rush','entry-check','story-classroom','blank-slice','talk-rally','word-magic']){
     for(const suffix of ['/','/index.html','/?assignment=synthetic']){
       const value='https://synk.im/try/'+slug+suffix;assert.equal(allowedNavigation(value,entry,'world'),true,value);assert.equal(trustedEntry(value,entry,'world'),false);
       assert.throws(()=>assertSender({sender:contents,senderFrame:{url:value}},window,entry,'world'),/UNTRUSTED_SENDER/);
