@@ -1,0 +1,543 @@
+/* 주문 폭주 — WORLD 안의 모습(캠퍼스 판 2판, 2026-11-03 · 설계 docs/제2의나_설계_20261102.md 11-1 · qa/world-campus-20261103/2판_설계.md).
+ * WORLD 앱이 이 게임을 .game-frame iframe으로 열면 world-host.js가 <html data-host="world">를 붙이고, 이 파일의 규칙이 그때만 걸린다.
+ * 따로 연 LAB 화면은 kit/lab.css + style.css 그대로다(모든 규칙이 :root[data-host=world] 아래).
+ * 공통 부분(글꼴·토큰·단추·창·계정 띠)은 korean-rhythm · korean-runner의 world-skin.css와 같은 글이다 — 고치면 셋 다 고친다.
+ * 2판(유호님 11-03 「디테일 부족 · 맹한 느낌」): 입구는 아이스 라테 한 잔 뒤로 들어가는 두 줄 제목(사진 · 제목 · 잔 세 층),
+ *   영업은 위 실사 무대(손님 · 유리 말풍선 · 목소리 막대)가 아래 나무 작업대 사진(3D 컵이 선다)으로 이어지고 재료는 사진 메뉴 카드,
+ *   결과는 1판 앞면(마감한 홀 사진 포스터 · 큰 「영업 끝!」 · 큰 숫자 — 11-03 유호님 「전판이 더 낫다」)에 주문 점 · 숫자 오름 · 도장을 얹는다.
+ *   입구 제목 「주문 폭주」는 3.4초마다 한 번 떠밀렸다 돌아오며 색 잔상 · 「폭주」 달아오름 · 주문 번호가 오른다(11-03 「바쁜 느낌을 모션그래픽으로」).
+ *   움직임 값은 토큰 여섯(--m-* 공간 · --e-* 효과, world-fx.mjs M과 같은 값)뿐이고 튐은 위치 · 크기에만 건다.
+ *   DOM에 더한 것(.w-art · .w-echo · .w-ticker · .w-cam · .w-dots · .w-mix …)은 world-play.mjs setup이 WORLD에서만 붙인다. id · data-* · 클래스는 그대로다. */
+/* 라틴·숫자는 Inter Tight, 영문 라벨은 DM Mono(띄어쓰기 뺀 범위) — 둘 다 키트 글꼴 파일을 쓴다. 이 이름은 WORLD 규칙에서만 불러서 LAB 화면은 받지 않는다. */
+@font-face{font-family:'World Game Latin';src:url(kit/fonts/InterTight-Medium.woff2) format('woff2');font-weight:100 599;font-display:swap;unicode-range:U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+2010-2024,U+2026-2027,U+2030-203A,U+2190-2199,U+20A9,U+20AC,U+2122,U+2212}
+@font-face{font-family:'World Game Latin';src:url(kit/fonts/InterTight-Bold.woff2) format('woff2');font-weight:600 1000;font-display:swap;unicode-range:U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+2010-2024,U+2026-2027,U+2030-203A,U+2190-2199,U+20A9,U+20AC,U+2122,U+2212}
+@font-face{font-family:'World Game Mono';src:url(kit/fonts/DMMono-Medium.woff2) format('woff2');font-weight:100 1000;font-display:swap;unicode-range:U+0021-007E,U+00A0-00FF,U+2010-2027}
+
+/* ── 토큰(world-ui.css의 밤 값) + 키트 변수를 같은 값으로 돌려 남은 규칙도 어두운 판에 맞춘다 ── */
+:root[data-host=world]{
+  --w-sans:'World Game Latin',SUIT,system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --w-mono:'World Game Mono',SUIT,ui-monospace,monospace;
+  --w-bg:#060709;--w-panel:#0C0D10;--w-s1:#121317;--w-s2:#191A1F;--w-s3:#222329;
+  --w-line:rgba(255,255,255,.075);--w-line-2:rgba(255,255,255,.14);
+  --w-ink:#FAFAF9;--w-ink-2:rgba(250,250,249,.76);--w-ink-3:rgba(250,250,249,.58);--w-ink-q:rgba(250,250,249,.42);--w-ink-4:rgba(250,250,249,.22);--w-on-ink:#08090C;
+  --w-glass:rgba(17,18,22,.52);--w-glass-strong:rgba(14,15,19,.82);
+  --w-glass-edge:inset 0 1px 0 rgba(255,255,255,.16),inset 0 0 0 1px rgba(255,255,255,.085),0 10px 30px rgba(0,0,0,.26);
+  --w-card-edge:inset 0 1px 0 rgba(255,255,255,.055),inset 0 0 0 1px var(--w-line);
+  --w-blur:blur(22px) saturate(1.7);
+  --w-shadow:0 28px 80px rgba(0,0,0,.55);
+  --w-r-xl:28px;--w-r-lg:22px;--w-r-md:16px;
+  --w-ease:cubic-bezier(.2,.75,.2,1);
+  --w-face:#F96859;--w-on-face:#1E0E0A;--w-face-text:#FFB4A9;--w-glow:#F96859;
+  --w-face-ink-2:rgba(30,14,10,.74);--w-face-ink-3:rgba(30,14,10,.6);--w-face-line:rgba(30,14,10,.16);
+  --w-led-ok:#7DB45A;--w-led-info:#5B86DB;--w-led-check:#F5C445;--w-led-alert:#F96859;--w-led-idle:rgba(250,250,249,.34);
+  --w-ok-text:#C9E6AE;--w-check-text:#FFE08A;--w-alert-text:#FFB4A9;
+  --w-grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --w-studio:radial-gradient(120% 85% at 28% -10%,rgba(255,255,255,.17),transparent 58%),linear-gradient(180deg,transparent 52%,rgba(0,0,0,.13));
+  --w-print-shadow:0 1px 0 rgba(0,0,0,.04),0 14px 30px rgba(30,14,10,.28),0 3px 8px rgba(30,14,10,.16);
+  --w-arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2.5 8h10.5M9 3.8 13.2 8 9 12.2' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --w-check:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --w-close:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 4l8 8M12 4l-8 8' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  --w-pause:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M5.5 3.5v9M10.5 3.5v9' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  --w-minus:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8h9' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  --w-plus:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 3.5v9M3.5 8h9' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  --w-star:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.8l2.85 5.78 6.38.93-4.62 4.5 1.09 6.36L12 17.36l-5.7 3.01 1.09-6.36-4.62-4.5 6.38-.93z' fill='black' stroke='black' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E");
+  /* 키트 변수: 종이·크림·잉크를 밤 판 값으로(펠트 그림은 아래에서 하나씩 걷어 낸다) */
+  --ink:var(--w-ink);--ink-2:var(--w-ink-2);--muted:var(--w-ink-3);--line:var(--w-line);
+  --paper:var(--w-s1);--cream:var(--w-panel);--sand:var(--w-s2);
+  --coral:var(--w-face);--coral-deep:var(--w-face-text);--coral-wash:rgba(249,104,89,.16);--blush:var(--w-s3);--marker:transparent;
+  --focus:var(--w-ink);--sans:var(--w-sans);--mono:var(--w-mono);
+  --shadow-paper:none;--shadow-felt:none;--ease:var(--w-ease);
+  color-scheme:dark;
+}
+:root[data-host=world] body{background:var(--w-panel);color:var(--w-ink);font-family:var(--w-sans);font-weight:450;letter-spacing:-.006em}
+/* 게임 모듈이 WORLD 겉을 다 붙이기 전(계정 준비 · 모듈 읽기, 0.5초 안팎)에는 화면을 비워 둔다 — LAB의 「처음 여는 작은 가게」 · 몽글이 한 번 비쳤다(11-03 시안 영상에서 찾음). world-play.mjs setup 끝에서 .w-ready */
+:root[data-host=world]:not(.w-ready) .screen{visibility:hidden}
+/* 화면 바꿈 가림막(world-play.mjs): 바꾸는 순간 바탕색으로 덮고, 새 화면이 두 장 그려지면 260ms에 걷는다 — 첫 그리기의 끊김을 가린다 */
+:root[data-host=world] #w-curtain{position:fixed;inset:0;z-index:60;background:var(--w-panel);opacity:0;pointer-events:none;will-change:opacity}
+:root[data-host=world] #w-curtain.on{opacity:.99}   /* 1이면 그래픽 칩이 아래 화면을 가려졌다고 그리지 않아, 걷기 시작해서야 셰이더를 굽고 장을 버렸다 — 99%면 덮인 동안 미리 그린다 */
+:root[data-host=world] :is(button,a):focus-visible{outline:2px solid var(--w-ink);outline-offset:3px}
+:root[data-host=world] [tabindex="-1"]:focus{outline:none}
+:root[data-host=world] :is(h1,h2,h3){text-wrap:balance}
+:root[data-host=world] p{text-wrap:pretty}
+
+/* ── 공통 부품 ── */
+:root[data-host=world] .paper{background:none;border-radius:0;box-shadow:none}
+:root[data-host=world] .lab-only{display:none}   /* LAB 화면에만 맞는 안내(예: ‘펠트 단추’) → WORLD에서는 .world-only 문장으로 바꿔 보인다 */
+:root[data-host=world] .world-only[hidden]{display:block!important}
+:root[data-host=world] .kicker{display:inline-flex;align-items:center;gap:10px;font:500 11px/1.4 var(--w-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--w-ink-3)}
+:root[data-host=world] .kicker.ko{font:550 13px/1.4 var(--w-sans);letter-spacing:0;text-transform:none}
+:root[data-host=world] .tag{display:inline-flex;align-items:center;gap:10px;min-height:0;padding:0;background:none;font:550 13px/1.4 var(--w-sans);letter-spacing:0;color:var(--w-ink-3)}
+:root[data-host=world] :is(.start-card,.card-head,.how,.res-grid .paper)>.tag::after,:root[data-host=world] dialog.lab-dialog>.kicker::after,:root[data-host=world] .check-top>.kicker::after{content:'';width:28px;height:1px;background:var(--w-line-2)}
+:root[data-host=world] .fine{font-size:13px;line-height:1.6;color:var(--w-ink-3)}
+:root[data-host=world] .reason{font-size:15.5px;line-height:1.6;color:var(--w-ink-2)}
+:root[data-host=world] .text-link{font-size:13.5px;font-weight:600;color:var(--w-ink-2);text-decoration:underline;text-decoration-color:var(--w-ink-4);text-underline-offset:4px}
+:root[data-host=world] .w-led,:root[data-host=world] .fine.warn::before{display:inline-block;flex:none;width:7px;height:7px;border-radius:50%;background:var(--w-led-idle)}
+
+/* 주 행동: 흰 알약 하나(화살표는 마스크) */
+:root[data-host=world] .felt-cta{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;padding:0 28px;border:0;border-radius:999px;
+  background:var(--w-ink);color:var(--w-on-ink);text-shadow:none;filter:none;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12);
+  font:600 16.5px/1.2 var(--w-sans);letter-spacing:-.01em;transition:box-shadow .2s var(--w-ease),transform .12s var(--w-ease),opacity .18s var(--w-ease)}
+:root[data-host=world] .felt-cta:is(.coral,.cream){background:var(--w-ink);color:var(--w-on-ink)}
+:root[data-host=world] .felt-cta .disc{position:static;width:16px;height:16px;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
+:root[data-host=world] .felt-cta .disc::after{content:none}
+:root[data-host=world] .felt-cta:hover{box-shadow:0 0 0 5px color-mix(in srgb,var(--w-glow) 32%,transparent)}
+:root[data-host=world] .felt-cta:active{transform:scale(.975);filter:none}
+:root[data-host=world] .felt-cta:disabled{opacity:.42;cursor:default;transform:none}
+/* 보조: 1px 선 알약 */
+:root[data-host=world] .chip-btn{min-height:44px;padding:0 18px;border:0;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink);
+  font:600 14px/1.2 var(--w-sans);letter-spacing:-.005em;filter:none;transition:background .18s var(--w-ease),transform .12s var(--w-ease)}
+:root[data-host=world] .chip-btn:hover{background:var(--w-s2)}
+:root[data-host=world] .chip-btn:active{transform:scale(.97)}
+:root[data-host=world] .chip-btn[aria-pressed=true]{color:var(--w-ink)}
+:root[data-host=world] .chip-btn:disabled{opacity:.42;cursor:default;transform:none}
+:root[data-host=world] .chip-btn.wide{width:100%;min-height:52px;background:transparent;filter:none;font-size:15px}
+:root[data-host=world] .disc-btn{display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:var(--w-s2);box-shadow:var(--w-card-edge);color:var(--w-ink)}
+
+/* 공통 코인 줄: 조용한 글 + 밑줄 링크 */
+:root[data-host=world] .synk-collection-line{gap:6px 14px;font-size:13.5px;line-height:1.5;color:var(--w-ink-3)}
+:root[data-host=world] .synk-collection-line a{font-weight:600;color:var(--w-ink-2);text-decoration:underline;text-decoration-color:var(--w-ink-4);text-underline-offset:4px}
+:root[data-host=world] [data-collection-garage]{display:none}   /* WORLD 앱에는 레이싱 차고(/korean-racing/)가 없어 이 링크는 빈 화면으로 간다 — 잔액만 남긴다 */
+
+/* 계정 띠: WORLD가 위에서 계정을 보여 주므로 안내만 하는 상태는 숨기고, 손볼 일이 있을 때(연결 끊김·진도 충돌·종료)만 어두운 띠로 */
+:root[data-host=world] .synk-play-account:is([data-phase=guest],[data-phase=synced],[data-phase=saving],[data-phase=loading]){display:none}
+:root[data-host=world] .synk-play-account{gap:4px 14px;padding:10px 16px;background:var(--w-s1);color:var(--w-ink-2);border-bottom:1px solid var(--w-line);font:450 13px/1.5 var(--w-sans)}
+:root[data-host=world] .synk-play-account>span::before{content:'';display:inline-block;width:7px;height:7px;margin:0 8px 1px 0;border-radius:50%;background:var(--w-led-check);box-shadow:0 0 10px rgba(245,196,69,.5)}
+:root[data-host=world] .synk-play-account[data-phase=stopped]>span::before{background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.55)}
+:root[data-host=world] .synk-play-account a{color:var(--w-ink);font-weight:600;text-decoration-color:var(--w-ink-4)}
+
+/* 알림: 흰 알약 */
+:root[data-host=world] .toast{border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);box-shadow:0 14px 36px rgba(0,0,0,.35);font:550 14px/1.45 var(--w-sans);padding:12px 18px}
+
+/* 창(멈춤·목소리 문제·듣기 확인): 어두운 판 */
+:root[data-host=world] dialog.lab-dialog{padding:24px 22px 22px;border-radius:var(--w-r-xl);background:var(--w-s1);color:var(--w-ink);box-shadow:var(--w-card-edge),var(--w-shadow)}
+:root[data-host=world] dialog.lab-dialog::backdrop{background:rgba(4,5,7,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+:root[data-host=world] dialog.lab-dialog h2{margin:10px 0 8px;font:680 24px/1.25 var(--w-sans);letter-spacing:-.024em;color:var(--w-ink)}
+:root[data-host=world] dialog.lab-dialog p{color:var(--w-ink-2);font-size:15.5px;line-height:1.6}
+:root[data-host=world] .dialog-actions{gap:12px}
+/* 켜고 끄는 칩은 설정 줄 + 50×30 스위치(글은 그대로 ‘소리 켜짐/꺼짐’) */
+:root[data-host=world] .dialog-toggles{display:grid;gap:0;border-top:1px solid var(--w-line)}
+:root[data-host=world] .dialog-toggles .chip-btn{justify-content:space-between;width:100%;min-height:58px;padding:0 2px;border-radius:0;box-shadow:none;border-bottom:1px solid var(--w-line);
+  background:none;font:600 15.5px/1.3 var(--w-sans);text-align:left;white-space:normal}
+:root[data-host=world] .dialog-toggles .chip-btn::after{content:'';flex:none;width:50px;height:30px;margin-left:16px;border-radius:999px;
+  background:radial-gradient(circle at 15px 50%,var(--w-ink-2) 0 12px,transparent 12.5px),var(--w-s3);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+:root[data-host=world] .dialog-toggles .chip-btn[aria-pressed=true]::after{background:radial-gradient(circle at 35px 50%,var(--w-on-ink) 0 12px,transparent 12.5px),var(--w-ink);box-shadow:none}
+:root[data-host=world] .dialog-toggles .chip-btn:is(:hover,:active){background:none;transform:none}
+
+/* ── 결과 공통(말의 리듬 3차 공통에서 이 게임이 쓰는 것): 점수 글자 · 얻은 것 · 흰 알약 「우리 동네로」 ── */
+:root[data-host=world] .w-mono{font:500 11px/1.4 var(--w-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--w-ink-3)}
+:root[data-host=world] .pop.go{animation:wPop .7s var(--w-ease) both}
+@keyframes wPop{0%{opacity:0;transform:translate(-50%,-50%)}20%{opacity:1}70%{opacity:1;transform:translate(-50%,-56%)}100%{opacity:0;transform:translate(-50%,-60%)}}
+@media (prefers-reduced-motion:reduce){:root[data-host=world] .pop.go{animation:none}}
+:root[data-host=world] .res-hero .stars{display:none}   /* 별 대신 큰 숫자 하나 */
+:root[data-host=world] .w-room-bar{position:sticky;z-index:6;bottom:0;margin:14px -12px -28px;padding:28px 18px max(16px,env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(12,13,16,0),var(--w-panel) 42%)}
+:root[data-host=world] .w-room-bar>.felt-cta{min-height:58px}
+
+/* ── 2판 토큰: 움직임 여섯(Material 3 Expressive 웹 변환표 — world-fx.mjs M과 같은 값) · 이 게임의 유리 ──
+ * 밝은 사진 위 유리는 채도를 1.3으로만 올리고(1.7이면 색이 유리를 뚫는다) 바깥에 어두운 1px을 둔다(2판 설계 검토 P3). */
+:root[data-host=world]{
+  --m-fast:350ms cubic-bezier(.42,1.67,.21,.90);--m-base:500ms cubic-bezier(.38,1.21,.22,1);--m-slow:650ms cubic-bezier(.39,1.29,.35,.98);
+  --e-fast:150ms cubic-bezier(.31,.94,.34,1);--e-base:200ms cubic-bezier(.34,.80,.34,1);--e-slow:300ms cubic-bezier(.34,.88,.34,1);
+  --w-blur:blur(16px) saturate(1.3);   /* 흐림 반지름이 그리기 비용을 정한다(3배 화면에서 22px = 66px 흐림) — 11-03 밤 16px로 */
+  --w-glass-edge:inset 0 1px 0 rgba(255,255,255,.16),inset 0 0 0 1px rgba(255,255,255,.085),0 0 0 1px rgba(0,0,0,.35),0 10px 30px rgba(0,0,0,.26);
+  --w-glass-dark:rgba(10,11,14,.66);
+  --w-photo-fade:linear-gradient(180deg,rgba(6,7,9,.34) 0,rgba(6,7,9,0) 18%,rgba(6,7,9,0) 46%,rgba(6,7,9,.78) 80%,var(--w-panel) 97%);
+  --rush:3.4s;   /* 입구 제목의 바쁜 박자 한 바퀴 */
+  --w-check-dark:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='%2308090C' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  /* 입구 사진 위 그늘: 제목 쪽(왼쪽)과 아래를 어둡게. 잔 판(.w-glass) 위에도 같은 그늘을 잔 모양으로 한 번 더 얹어 잔이 둘레와 같은 밝기다 */
+  --w-hero-scrim:linear-gradient(90deg,rgba(6,7,9,.58) 0,rgba(6,7,9,.22) 38%,rgba(6,7,9,0) 62%),linear-gradient(180deg,rgba(6,7,9,.42) 0,rgba(6,7,9,0) 20%,rgba(6,7,9,0) 66%,rgba(12,13,16,.86) 92%,var(--w-panel) 99%);
+}
+
+/* ── 입구: 사진 · 제목 · 잔 세 층 → 한 줄 · 영업 방식 둘 · 흰 알약 ── */
+:root[data-host=world] .lobby{position:relative;min-height:100svh;padding:0 0 28px;background:var(--w-panel)}
+:root[data-host=world] .lobby>.topbar{position:absolute;z-index:6;top:max(14px,env(safe-area-inset-top));right:14px;left:auto;padding:0;gap:0;background:none}
+:root[data-host=world] .lobby>.topbar>:is(.logo-tag,.kicker){display:none}
+:root[data-host=world] .sound-toggle{width:44px;height:44px;margin:0;border-radius:50%;background:var(--w-glass-dark);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);transition:background var(--e-fast)}
+:root[data-host=world] .sound-toggle::before{width:20px;height:20px;background:var(--w-ink)}
+:root[data-host=world] .sound-toggle[aria-pressed=false]::before{opacity:.4}
+/* 히어로 상자(크기 고정 · size 컨테이너) 안의 .w-art는 사진 비율(4:5)의 상자라, 제목과 잔의 자리가 화면 크기와 상관없이 같다:
+ * 세로 화면은 높이를 채우고(왼쪽 맞춤 — 잔이 오른쪽으로), 가로가 넓으면 폭을 채우고 남는 높이의 30% 자리를 보인다. */
+:root[data-host=world] .lobby>.hero{--hero-h:clamp(400px,calc(100svh - 250px),640px);position:relative;isolation:isolate;container-type:size;display:block;
+  height:var(--hero-h);min-height:0;margin:0;padding:0;overflow:hidden;background:var(--w-s1);color:var(--w-ink)}
+:root[data-host=world] .w-art{--aw:max(100cqw,80cqh);position:absolute;left:0;top:calc((100cqh - var(--aw) * 1.25) * .3);width:var(--aw);aspect-ratio:4/5}
+:root[data-host=world] .w-art>img{position:absolute;inset:0;display:block;width:100%;height:100%}
+:root[data-host=world] .w-art .w-photo{z-index:0}
+:root[data-host=world] .w-art::before,:root[data-host=world] .w-art::after{content:'';position:absolute;inset:0;pointer-events:none;background:var(--w-hero-scrim)}
+:root[data-host=world] .w-art::before{z-index:1}
+:root[data-host=world] .w-art .w-glass{z-index:3;pointer-events:none}
+:root[data-host=world] .w-art::after{z-index:4;-webkit-mask:url(assets/world/lobby-glass.webp) 0 0/100% 100% no-repeat;mask:url(assets/world/lobby-glass.webp) 0 0/100% 100% no-repeat}
+/* 제목 두 줄: 둘째 글자의 오른쪽 30~45%가 잔 뒤로 들어간다(잔 왼쪽 끝 = 상자의 33.7%) */
+:root[data-host=world] .w-art h1{position:absolute;z-index:2;left:4.2%;top:50.5%;margin:0;font:900 calc(var(--aw) * .19)/.96 var(--w-sans);letter-spacing:-.06em;color:var(--w-ink);text-shadow:0 2px 30px rgba(0,0,0,.3)}
+:root[data-host=world] .w-art h1 .w-l{position:relative;display:block;overflow-x:visible;overflow-y:clip;overflow-clip-margin:.12em}   /* 위아래만 자른다 — 등장은 아래에서 올라오고, 떠밀림은 옆으로 나간다 */
+:root[data-host=world] .w-art h1 .w-l>span{display:block}
+:root[data-host=world] .w-art h1 .w-l>span:first-child{position:relative;z-index:2}
+/* 「주문 폭주」 바쁜 박자(3.4초마다 한 번, 입구 등장이 끝난 뒤 data-rush): 두 줄이 서로 반대쪽으로 떠밀렸다가(140ms 가속) 빠른 공간으로 제자리 — 곧이어 작게 한 번 더(다다닥),
+ * 그 순간 색 잔상 셋(코랄 · 버터 · 흰 테두리 글자)이 밀린 반대쪽으로 흩어졌다 모이며 사라지고 「폭주」가 코랄로 한 번 달아오른다.
+ * 잔상도 제목과 같은 층이라 잔 뒤를 지난다. 움직임 줄이기(기기 · WORLD 설정)면 data-rush를 달지 않아 가만하다. */
+:root[data-host=world] .w-art h1 .w-echo{position:absolute;left:0;top:0;z-index:1;color:transparent;-webkit-text-stroke:.024em var(--ec);text-shadow:none;opacity:0;pointer-events:none}
+:root[data-host=world] .w-art h1 .w-echo:nth-child(2){--ec:#F96859;--ex:7%;--eo:.8}
+:root[data-host=world] .w-art h1 .w-echo:nth-child(3){--ec:#F5C445;--ex:14%;--eo:.55}
+:root[data-host=world] .w-art h1 .w-echo:nth-child(4){--ec:rgba(250,250,249,.9);--ex:21%;--eo:.32}
+:root[data-host=world] .w-art[data-rush] h1 .w-l:nth-child(1)>span:first-child{animation:wRushA var(--rush) linear .2s infinite}
+:root[data-host=world] .w-art[data-rush] h1 .w-l:nth-child(2)>span:first-child{animation:wRushB var(--rush) linear .2s infinite}
+:root[data-host=world] .w-art h1 .w-hot{position:absolute;left:0;top:0;z-index:3;color:#FF7A66;text-shadow:none;opacity:0;pointer-events:none}
+:root[data-host=world] .w-art[data-rush] h1 .w-l:nth-child(2)>.w-hot{animation:wRushB var(--rush) linear .2s infinite,wHot var(--rush) linear .2s infinite}
+:root[data-host=world] .w-art[data-rush] h1 .w-l>span{will-change:transform,opacity}   /* 글자 판을 합성 층에 올려 박자마다 다시 그리지 않는다 */
+:root[data-host=world] .w-art[data-rush] h1 .w-l:nth-child(1)>.w-echo{animation:wEchoA var(--rush) linear infinite}
+:root[data-host=world] .w-art[data-rush] h1 .w-l:nth-child(2)>.w-echo{animation:wEchoB var(--rush) linear infinite}
+:root[data-host=world] .w-art[data-rush] h1 .w-echo:nth-child(2){animation-delay:.24s}
+:root[data-host=world] .w-art[data-rush] h1 .w-echo:nth-child(3){animation-delay:.28s}
+:root[data-host=world] .w-art[data-rush] h1 .w-echo:nth-child(4){animation-delay:.32s}
+@keyframes wRushA{0%{transform:none;animation-timing-function:cubic-bezier(.55,0,.9,.45)}4.1%{transform:translateX(5%) skewX(-12deg);animation-timing-function:cubic-bezier(.42,1.67,.21,.9)}14.4%{transform:none}17%{transform:none;animation-timing-function:cubic-bezier(.55,0,.9,.45)}20.3%{transform:translateX(3%) skewX(-7deg);animation-timing-function:cubic-bezier(.42,1.67,.21,.9)}29%,100%{transform:none}}
+@keyframes wRushB{0%{transform:none;animation-timing-function:cubic-bezier(.55,0,.9,.45)}4.1%{transform:translateX(-5%) skewX(12deg);animation-timing-function:cubic-bezier(.42,1.67,.21,.9)}14.4%{transform:none}17%{transform:none;animation-timing-function:cubic-bezier(.55,0,.9,.45)}20.3%{transform:translateX(-3%) skewX(7deg);animation-timing-function:cubic-bezier(.42,1.67,.21,.9)}29%,100%{transform:none}}
+@keyframes wHot{0%{opacity:0;animation-timing-function:cubic-bezier(.31,.94,.34,1)}4.4%,32%{opacity:1}32%{animation-timing-function:cubic-bezier(.34,.8,.34,1)}38%,100%{opacity:0}}   /* 「폭주」 위 코랄 판의 투명도 — 글자색을 바꾸면 큰 글자를 매 장 다시 그린다 */
+@keyframes wEchoA{0%{opacity:0;transform:none;animation-timing-function:cubic-bezier(.55,0,.9,.45)}4.1%{opacity:var(--eo);transform:translateX(calc(5% - var(--ex))) skewX(-12deg);animation-timing-function:cubic-bezier(.34,.88,.34,1)}18%,100%{opacity:0;transform:none}}
+@keyframes wEchoB{0%{opacity:0;transform:none;animation-timing-function:cubic-bezier(.55,0,.9,.45)}4.1%{opacity:var(--eo);transform:translateX(calc(var(--ex) - 5%)) skewX(12deg);animation-timing-function:cubic-bezier(.34,.88,.34,1)}18%,100%{opacity:0;transform:none}}
+/* 주문 번호: 박자마다 1~3씩 자리마다 굴러 오른다(world-play.mjs), 앞 코랄 점이 그때 한 번 깜빡 */
+:root[data-host=world] .w-ticker{display:inline-flex;align-items:center;gap:7px;margin-left:12px;font:500 11px/1.4 var(--w-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--w-ink-2);vertical-align:middle}
+:root[data-host=world] .w-ticker::before{content:'';flex:none;width:6px;height:6px;border-radius:50%;background:#F96859;box-shadow:0 0 8px rgba(249,104,89,.7)}
+:root[data-host=world] .hero:has(.w-art[data-rush]) .w-ticker::before{animation:wBlink var(--rush) linear .2s infinite}
+@keyframes wBlink{0%,10%,100%{opacity:1}3%{opacity:.25}}
+:root[data-host=world] .w-ticker .w-roll{font:inherit;letter-spacing:inherit;color:var(--w-ink)}
+:root[data-host=world] .lobby .hero-copy{position:absolute;z-index:5;top:max(26px,calc(env(safe-area-inset-top) + 12px));left:20px;right:72px;min-width:0}
+:root[data-host=world] .hero-copy>.kicker{display:inline-flex;color:var(--w-ink-2);vertical-align:middle}
+:root[data-host=world] .hero-copy>.kicker::after{content:'';width:28px;height:1px;background:var(--w-line-2)}
+:root[data-host=world] .lobby .hero .sub,:root[data-host=world] .lobby .hero-art{display:none}
+
+:root[data-host=world] .plan{margin:0;padding:0 16px;gap:0}
+:root[data-host=world] .start-card{position:relative;z-index:1;display:grid;gap:12px;padding:4px 2px 6px}
+:root[data-host=world] .start-card>.tag,:root[data-host=world] #l-title{display:none}   /* 영업 방식 카드가 「주문 8개 · 90초」를 말한다 */
+:root[data-host=world] .w-lede{order:0;margin:0;font:600 18px/1.45 var(--w-sans);letter-spacing:-.015em;color:var(--w-ink)}
+:root[data-host=world] .start-card .modes{order:1}
+:root[data-host=world] .start-card>#start{order:2;margin-top:2px}
+:root[data-host=world] #followup-start{order:3;justify-self:start}
+:root[data-host=world] #learning-reason{order:4;display:flex;gap:9px;align-items:baseline;margin:6px 0 0;font-size:14px;line-height:1.55;color:var(--w-ink-3)}
+:root[data-host=world] #learning-reason::before{content:'';flex:none;width:7px;height:7px;border-radius:50%;background:var(--w-led-info);transform:translateY(-1px)}
+:root[data-host=world] #learning-reason:empty{display:none}
+:root[data-host=world] .start-options{order:5;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+:root[data-host=world] .start-options .chip-btn{min-height:44px;padding:0 18px;font-size:14px}
+:root[data-host=world] .start-options .fine{flex:1 1 12em;margin:0}
+:root[data-host=world] #sound-note{order:6}
+:root[data-host=world] #storage-note{order:7}
+:root[data-host=world] .start-card>.synk-collection-line{order:8;margin:4px 0 0;padding-top:14px;border-top:1px solid var(--w-line)}
+:root[data-host=world] .fine.warn{display:flex;align-items:center;gap:8px;color:var(--w-check-text);font-weight:600}
+:root[data-host=world] .fine.warn::before{content:'';background:var(--w-led-check)}
+/* 영업 방식 둘: 고르기 카드(고르면 흰 판으로 뒤집히고 검정 체크) */
+:root[data-host=world] .modes{gap:8px;margin:2px 0 0}
+:root[data-host=world] .mode{position:relative;display:grid;align-content:center;justify-items:start;gap:3px;min-height:76px;padding:12px 16px;border-radius:18px;background:var(--w-s1);box-shadow:var(--w-card-edge);
+  filter:none;color:var(--w-ink);text-align:left;transition:background var(--e-fast),color var(--e-fast),transform var(--e-fast)}
+:root[data-host=world] .mode:hover{background:var(--w-s2)}
+:root[data-host=world] .mode:active{transform:scale(.97)}
+:root[data-host=world] .mode b{font:650 17px/1.25 var(--w-sans);letter-spacing:-.02em}
+:root[data-host=world] .mode small{font:450 13px/1.4 var(--w-sans);color:var(--w-ink-3)}
+:root[data-host=world] .mode small span{display:inline;white-space:nowrap}
+:root[data-host=world] .mode small span+span::before{content:' · '}
+:root[data-host=world] .mode[aria-pressed=true]{transform:none;filter:none;background:var(--w-ink);color:var(--w-on-ink);box-shadow:none}
+:root[data-host=world] .mode[aria-pressed=true] small{color:rgba(8,9,12,.6)}
+:root[data-host=world] .mode[aria-pressed=true]::after{content:'';position:absolute;top:12px;right:12px;width:14px;height:14px;background:var(--w-on-ink);-webkit-mask:var(--w-check) center/contain no-repeat;mask:var(--w-check) center/contain no-repeat}
+:root[data-host=world] .how{display:grid;gap:4px;margin:22px 2px 0;padding:24px 0 6px;border-top:1px solid var(--w-line)}
+:root[data-host=world] .how-steps{gap:0;margin:8px 0 0;padding:0}
+:root[data-host=world] .how-steps li{grid-template-columns:auto 1fr;column-gap:14px;row-gap:3px;align-items:start;padding:14px 0;border-radius:0;background:none;border-top:1px solid var(--w-line)}
+:root[data-host=world] .how-steps li:first-child{border-top:0}
+:root[data-host=world] .how-steps .num{grid-row:span 2;width:28px;height:28px;margin-top:-2px;background:none;box-shadow:inset 0 0 0 1px var(--w-line-2);border-radius:50%;color:var(--w-ink-2);text-shadow:none;font:500 12px/1 var(--w-mono)}
+:root[data-host=world] .how-steps strong{font:650 16px/1.4 var(--w-sans);letter-spacing:-.02em}
+:root[data-host=world] .how-steps span{grid-column:2;font-size:14px;line-height:1.55;color:var(--w-ink-3)}
+:root[data-host=world] .how>.fine{margin-top:6px}
+:root[data-host=world] .lobby-foot{display:grid;gap:8px;padding:20px 18px 0;font-size:13px;line-height:1.6;color:var(--w-ink-3)}
+:root[data-host=world] .lobby-foot p{margin:0}
+
+/* ── 영업: 위 실사 무대(손님 · 유리 말풍선 · 목소리 막대) → 아래 나무 작업대 사진 위 3D 컵 → 사진 재료 카드 → 흰 알약 ── */
+:root[data-host=world] .game{position:relative;background:var(--w-panel)}
+:root[data-host=world] .game-bar{position:absolute;z-index:7;top:0;left:0;right:0;display:flex;align-items:center;gap:8px;padding:max(10px,env(safe-area-inset-top)) 12px 0;background:none;border:0;pointer-events:none}
+:root[data-host=world] .game-bar>*{pointer-events:auto}
+:root[data-host=world] .game-bar>:is(.logo-mini,.game-title){display:none}
+:root[data-host=world] .game-bar .hud{flex:none;display:flex;align-items:center;gap:0;height:44px;margin:0 0 0 auto;padding:0 6px;border-radius:999px;background:var(--w-glass-dark);box-shadow:var(--w-glass-edge);
+  -webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);transition:background var(--e-slow)}
+:root[data-host=world] .game-bar .pill{display:flex;align-items:baseline;gap:6px;min-width:0;padding:0 10px;background:none;animation:none}
+:root[data-host=world] .game-bar .pill+.pill{box-shadow:inset 1px 0 0 var(--w-line-2)}
+:root[data-host=world] .game-bar .pill small{font:550 13px/1 var(--w-sans);letter-spacing:0;color:var(--w-ink-3);white-space:nowrap}
+:root[data-host=world] .game-bar .pill b{font:500 19px/1 var(--w-mono);font-variant-numeric:tabular-nums;letter-spacing:.01em;color:var(--w-ink);background:none}
+:root[data-host=world] .game-bar .pill.combo{display:none}   /* 연속은 3 · 5 · 8에서만 칩으로(#w-combo) */
+/* 러시 끝 10초: 시간 캡슐만 코랄(1초마다 똑딱은 world-play.mjs) */
+:root[data-host=world] .hud[data-last]{background:rgba(249,104,89,.86)}
+:root[data-host=world] .hud[data-last] .pill small{color:rgba(30,14,10,.72)}
+:root[data-host=world] .hud[data-last] .pill+.pill{box-shadow:inset 1px 0 0 rgba(30,14,10,.2)}
+:root[data-host=world] .hud[data-last] .w-roll{color:var(--w-on-face)}
+/* 자리마다 굴러가는 숫자(world-fx.mjs roller): 원래 숫자는 읽기 프로그램용으로 남기고 그림 층만 굴린다 */
+:root[data-host=world] .w-roll-src{position:absolute!important;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+:root[data-host=world] .w-roll{display:inline-flex;font:500 19px/1 var(--w-mono);font-variant-numeric:tabular-nums;letter-spacing:.01em;color:var(--w-ink)}
+:root[data-host=world] .w-roll-d{display:inline-block;width:1ch;height:1em;overflow:hidden}
+:root[data-host=world] .w-roll-s{display:block;width:1ch;line-height:1em;word-break:break-all;transform:translateY(calc(var(--d) * -1em))}
+:root[data-host=world] .w-roll-c{display:inline-block;white-space:pre}
+:root[data-host=world] #pause{width:44px;height:44px;min-width:44px;border-radius:50%;background:var(--w-glass-dark);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);
+  color:var(--w-ink);font-size:0;transition:transform var(--e-fast)}
+:root[data-host=world] #pause>span{display:none}
+:root[data-host=world] #pause::before{content:'';width:16px;height:16px;background:currentColor;-webkit-mask:var(--w-pause) center/contain no-repeat;mask:var(--w-pause) center/contain no-repeat}
+:root[data-host=world] #pause:active{transform:scale(.94)}
+
+/* 무대: 손님이 없을 때는 싱크타운 카페 홀, 손님이 오면 계산대 너머의 그 손님(얼굴 두 장 · 카메라 다가감은 world-play.mjs) */
+:root[data-host=world] .counter-scene{height:clamp(230px,calc(100svh - 434px),540px);background:url(assets/world/hall.webp) 50% 40%/cover no-repeat,var(--w-s1)}
+:root[data-host=world] .counter-scene::before{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,rgba(6,7,9,.42) 0,rgba(6,7,9,0) 22%,rgba(6,7,9,0) 50%,rgba(6,7,9,.55) 100%)}
+:root[data-host=world] .counter-scene::after,:root[data-host=world] .counter{display:none}
+:root[data-host=world] .guest{position:absolute;z-index:1;inset:0;width:auto;height:auto;margin:0;overflow:hidden}
+:root[data-host=world] .guest .w-cam{position:absolute;inset:0;transform-origin:50% 28%}
+:root[data-host=world] .guest .w-cam img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 24%;filter:none}
+:root[data-host=world] .guest:is(.enter,.leave){animation:none}
+/* 말풍선: 무대 아래쪽 어두운 유리 한 장. 상태는 앞 LED — 듣는 중 청금석 막대 · 내 차례 메도우 · 다름 코랄 글 · 받음 체크 */
+:root[data-host=world] .bubble{--say:clamp(17px,4.6vw,21px);left:12px;right:12px;top:auto;bottom:12px;max-height:calc(58% - 12px);gap:8px;padding:12px 14px 14px;border-radius:20px;
+  background:var(--w-glass-dark);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);color:var(--w-ink);overflow:hidden}
+:root[data-host=world] .bubble::before{content:none}
+:root[data-host=world] .bubble.right::after{content:'';position:absolute;right:14px;top:14px;width:22px;height:22px;background:var(--w-led-ok);filter:none;animation:none;
+  -webkit-mask:var(--w-check) center/contain no-repeat;mask:var(--w-check) center/contain no-repeat}
+/* 목소리 막대 다섯: 미리 구운 포락선으로 실제 음성 크기만큼(world-play.mjs). 포락선이 없거나 움직임 줄이기면 가만히 선다 */
+:root[data-host=world] .b-dots{display:flex;align-items:center;gap:4px;height:22px}
+:root[data-host=world] .b-dots i{width:4px;height:20px;border-radius:2px;background:var(--w-led-info);box-shadow:0 0 10px rgba(91,134,219,.45);animation:none;opacity:1;transform:scaleY(.42);transform-origin:50% 50%;will-change:transform}   /* 막대마다 합성 층 — 말하는 동안 말풍선 유리를 다시 그리지 않는다 */
+:root[data-host=world] .b-dots i:nth-child(2),:root[data-host=world] .b-dots i:nth-child(4){transform:scaleY(.62)}
+:root[data-host=world] .b-dots i:nth-child(3){transform:scaleY(.8)}
+:root[data-host=world] .b-cap{display:flex;align-items:center;gap:8px;font:550 14px/1.45 var(--w-sans);color:var(--w-ink-2)}
+:root[data-host=world] .b-cap::before{content:'';flex:none;width:7px;height:7px;border-radius:50%;background:var(--w-led-idle)}
+:root[data-host=world] .bubble[data-turn] .b-cap{color:var(--w-ink)}
+:root[data-host=world] .bubble[data-turn] .b-cap::before{background:var(--w-led-ok);box-shadow:0 0 10px rgba(125,180,90,.6)}
+:root[data-host=world] .b-line{font:650 var(--say)/1.42 var(--w-sans);letter-spacing:-.018em;color:var(--w-ink)}
+:root[data-host=world] .b-note{padding:0;border-radius:0;background:none;font:650 var(--say)/1.42 var(--w-sans);letter-spacing:-.018em;color:var(--w-alert-text)}
+:root[data-host=world] .b-note small{margin-top:4px;font:500 13.5px/1.45 var(--w-sans);letter-spacing:0;color:var(--w-ink-3)}
+:root[data-host=world] .b-note.thanks{padding:0 30px 0 0;color:var(--w-ok-text)}
+:root[data-host=world] .b-tools{gap:8px}
+:root[data-host=world] .b-tools .chip-btn{min-height:40px;padding:0 15px;font-size:13.5px;background:rgba(255,255,255,.06)}
+:root[data-host=world] .bubble .patience{height:4px;background:rgba(255,255,255,.14)}
+:root[data-host=world] .patience i{background:var(--w-led-ok)}
+:root[data-host=world] .patience[data-level=mid] i{background:var(--w-led-check)}
+:root[data-host=world] .patience[data-level=low] i{background:var(--w-led-alert)}
+/* 줄 선 손님(점심 러시): 무대 왼쪽 위 유리 띠의 얼굴 원 — 둘레 고리가 기다려 줄 시간만큼 남는다(반 · 4분의 1에서 색) */
+:root[data-host=world] .line-up{left:12px;right:auto;top:max(10px,env(safe-area-inset-top));bottom:auto;z-index:6;gap:6px;padding:4px;border-radius:999px;background:var(--w-glass-dark);box-shadow:var(--w-glass-edge);
+  -webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
+:root[data-host=world] .line-up[hidden]{display:none}
+:root[data-host=world] .ticket{position:relative;display:block;width:40px;height:40px;padding:0;gap:0;border-radius:50%;background:none;box-shadow:none;transition:transform var(--e-fast)}
+:root[data-host=world] .ticket img{display:block;width:32px;height:32px;margin:4px;border-radius:50%;background:var(--w-s2);object-fit:cover}
+:root[data-host=world] .ticket .patience{position:absolute;inset:0;width:auto;height:auto;border-radius:50%;overflow:visible;
+  background:conic-gradient(var(--pc,var(--w-led-ok)) calc(var(--left,1) * 360deg),rgba(255,255,255,.14) 0);
+  -webkit-mask:radial-gradient(closest-side,transparent calc(100% - 2.5px),#000 calc(100% - 2px));mask:radial-gradient(closest-side,transparent calc(100% - 2.5px),#000 calc(100% - 2px))}
+:root[data-host=world] .ticket .patience i{display:none}
+:root[data-host=world] .ticket .patience[data-level=mid]{--pc:var(--w-led-check)}
+:root[data-host=world] .ticket .patience[data-level=low]{--pc:var(--w-led-alert)}
+:root[data-host=world] .ticket:active{transform:scale(.94)}
+/* 연속 3 · 5 · 8에서만 「연속 n」 칩(점수 캡슐 아래) — 떠오르는 「+110」 글자는 점수 굴림과 겹쳐 뺀다 */
+:root[data-host=world] .w-combo{position:absolute;z-index:6;right:12px;top:calc(max(10px,env(safe-area-inset-top)) + 54px);margin:0;padding:7px 13px 8px;border-radius:999px;
+  background:var(--w-ink);color:var(--w-on-ink);box-shadow:0 10px 24px rgba(0,0,0,.3);font:700 14px/1 var(--w-sans);letter-spacing:-.01em}
+:root[data-host=world] .counter-scene .pop{display:none!important}
+:root[data-host=world] .menu-card{display:none}
+:root[data-host=world] .menu-card{border-radius:18px;background:var(--w-glass-dark);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);color:var(--w-ink)}
+:root[data-host=world] .menu-card li{border-bottom-color:var(--w-line-2);border-bottom-style:solid}
+:root[data-host=world] .menu-card p{color:var(--w-ink-3)}
+:root[data-host=world] .counter-scene .tip{z-index:4;top:42%;border-radius:16px;background:var(--w-glass-dark);color:var(--w-ink);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);font:550 14.5px/1.45 var(--w-sans)}
+
+/* 작업대: 무대 바로 아래 나무 작업대 사진(손님 쪽 카운터와 같은 오크) 위에 3D 컵 — 컵 탭 · 컵 더하기는 작업대 위 유리 칩 */
+:root[data-host=world] .station{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(var(--bench-min,120px),1fr) auto auto;gap:10px;padding:0 12px calc(12px + env(safe-area-inset-bottom));background:var(--w-panel);border-top:0}
+:root[data-host=world] .station>.cup-row{grid-row:1;grid-column:1;position:relative;z-index:2;align-self:start;min-height:0;margin:10px 0 0;flex-wrap:nowrap}
+:root[data-host=world] .station>.bench{grid-row:1;grid-column:1;height:auto;min-height:var(--bench-min,120px);margin:0 -12px;border-radius:0;
+  background:url(assets/world/bench.webp) 50% 100%/cover no-repeat,#9a7650;box-shadow:inset 0 16px 18px -12px rgba(0,0,0,.6),inset 0 -1px 0 rgba(0,0,0,.4)}
+:root[data-host=world] .cup-row .chip-btn{min-height:36px;padding:0 14px;font-size:13.5px;background:rgba(14,15,19,.74);box-shadow:var(--w-glass-edge)}   /* 나무 사진 위라 흐림 없이 짙은 반투명(흐림 층을 줄였다) */
+:root[data-host=world] .cup-tab[aria-pressed=true]{background:var(--w-ink);background-image:none;color:var(--w-on-ink);text-shadow:none;box-shadow:none}
+:root[data-host=world] .chip-btn.add{color:var(--w-ink)}
+:root[data-host=world] .cup-desc{position:absolute!important;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}   /* 컵 이름은 서빙 알약 안에(읽기 프로그램은 여기서 듣는다) */
+:root[data-host=world] .flow-line{top:auto;bottom:10px;background:var(--w-ink);color:var(--w-on-ink);box-shadow:0 10px 24px rgba(0,0,0,.35);font:600 13.5px/1.35 var(--w-sans)}
+/* 재료: 실물 사진 메뉴 카드 3×2 — 어두운 호두나무 카운터 위에 한 가지씩 구운 사진(같은 빛 · 같은 각도 · 같은 크기)이 카드를 꽉 채운다.
+ * 사진 위쪽 4분의 1은 원래 어두운 뒤 배경이라 이름은 왼쪽 위에(물건 · 나무 반사를 가리지 않는다), 숫자 키는 오른쪽 위 — 담기면 그 자리가 흰 체크 원으로 바뀌고
+ * 테두리가 2px 흰 테가 된다(흰 판으로 뒤집지 않는다). 테 · 그늘은 사진 위 ::before에(버튼 자신의 안쪽 그림자는 사진에 가려진다).
+ * 눌림은 카드째 96% + 사진 투명도(합성 층 — 다시 그리지 않는다). 11-03 밤 유호님 「메뉴판이 대충 만든 것 같다 · 사진도」 —
+ * 회색 종이 한 판을 잘라 카드 위쪽 띠에 붙였던 앞 판은 스티커처럼 보였다. */
+:root[data-host=world] .ingredients{--ing-h:92px;gap:8px}
+:root[data-host=world] .ing{position:relative;display:block;height:var(--ing-h);min-height:0;padding:0;border:0;border-radius:16px;overflow:hidden;isolation:isolate;
+  background:#120d0a;box-shadow:0 1px 2px rgba(0,0,0,.3);filter:none;color:var(--w-ink);font:650 14.5px/1.15 var(--w-sans);letter-spacing:-.015em;text-align:left;
+  transition:transform var(--e-fast);will-change:transform}   /* 테 · 그림자는 바로 바꾼다(그림자 전환은 합성기로 못 가 메인 스레드에서 카드를 다시 그린다) */
+/* 사진 위 끝은 카드 바탕색으로 녹인다(잘린 뒤 불빛 점이 카드 끝에 걸려 보이지 않게). 키 낮은 화면은 사진을 조금 내려 이름과 물건이 겹치지 않게(--ing-drop) */
+:root[data-host=world] .ing img{position:absolute;inset:auto 0 auto 0;top:var(--ing-drop,0px);z-index:0;display:block;width:100%;height:100%;max-width:none;max-height:none;object-fit:cover;object-position:50% 58%;filter:none;
+  background:#120d0a;-webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.3) 0,rgba(0,0,0,.78) 16%,#000 34%);mask-image:linear-gradient(180deg,rgba(0,0,0,.3) 0,rgba(0,0,0,.78) 16%,#000 34%);
+  transition:opacity var(--e-fast)}
+:root[data-host=world] .ing::before{content:'';position:absolute;inset:0;z-index:1;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(180deg,rgba(9,6,4,.42) 0%,rgba(9,6,4,.1) 30%,rgba(9,6,4,0) 46%,rgba(9,6,4,0) 80%,rgba(9,6,4,.26) 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.09)}
+:root[data-host=world] .ing span{position:absolute;z-index:2;top:9px;left:11px;right:32px;display:block;padding:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 8px rgba(0,0,0,.65)}
+:root[data-host=world] .ing .no{position:absolute;z-index:2;left:auto;bottom:auto;top:8px;right:8px;display:grid;place-items:center;width:auto;height:17px;min-width:17px;padding:0 4px;border-radius:5px;
+  background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);filter:none;color:rgba(250,250,249,.74);font:500 10px/1 var(--w-mono);transition:opacity var(--e-fast)}
+:root[data-host=world] .ing::after{content:'';position:absolute;z-index:3;top:6px;right:6px;width:21px;height:21px;border-radius:50%;background:var(--w-ink) var(--w-check-dark) center/12px no-repeat;
+  box-shadow:0 2px 8px rgba(0,0,0,.45);opacity:0;transform:scale(.5);transition:opacity var(--e-fast),transform var(--m-fast)}
+:root[data-host=world] .ing:hover::before{box-shadow:inset 0 0 0 1px rgba(255,255,255,.24)}
+:root[data-host=world] .ing:active{transform:scale(.96)}
+:root[data-host=world] .ing:active img{opacity:.74}
+:root[data-host=world] .ing[aria-pressed=true]{box-shadow:0 8px 18px rgba(0,0,0,.34)}
+:root[data-host=world] .ing[aria-pressed=true]::before{box-shadow:inset 0 0 0 2px var(--w-ink)}
+:root[data-host=world] .ing[aria-pressed=true] .no{opacity:0}
+:root[data-host=world] .ing[aria-pressed=true]::after{opacity:1;transform:none}
+/* 서빙: 흰 알약 안에 지금 만든 음료 이름. 빈 컵이면 흐리게(막지는 않는다 — 규칙 그대로). 저절로 맥박 치지 않는다 */
+:root[data-host=world] .serve{min-height:56px;gap:12px;padding:0 22px 0 26px;transition:opacity var(--e-base),transform var(--e-fast),box-shadow var(--e-base)}
+:root[data-host=world] .serve>span{margin-right:auto}
+:root[data-host=world] .serve .w-serve-cup{min-width:0;max-width:58%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:600 13px/1.2 var(--w-sans);letter-spacing:-.005em;color:rgba(8,9,12,.6)}
+:root[data-host=world] .serve .w-serve-cup:empty{display:none}
+:root[data-host=world] .serve.w-empty{opacity:.5}
+
+/* ── 결과: 마감한 홀 포스터(1판 앞면 — 큰 「영업 끝!」 · 큰 숫자) → 이번 영업의 주문 → 연습 기록 → 보조 둘 → 흰 알약 ──
+ * 2판 연출은 그 위에: 사진이 아주 천천히 다가오고(9초 한 번), 주문마다 점 하나가 찍히며 큰 숫자가 하나씩 오르고, 8/8이면 잉크 도장. 탭하면 바로 끝. */
+:root[data-host=world] .results{position:relative;min-height:100svh;padding:0 0 28px;background:var(--w-panel)}
+:root[data-host=world] .results>.topbar{position:absolute;z-index:3;top:max(18px,env(safe-area-inset-top));left:20px;padding:0;background:none}
+:root[data-host=world] .results>.topbar .logo-tag{display:none}
+:root[data-host=world] .results>.topbar .kicker{color:var(--w-ink-2);text-shadow:0 1px 10px rgba(0,0,0,.55)}
+:root[data-host=world] .results>.topbar .kicker::after{content:'';width:28px;height:1px;background:var(--w-line-2)}
+:root[data-host=world] .res-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr);align-items:end;min-height:min(62svh,540px);margin:0;padding:96px 20px 20px;overflow:hidden;
+  background:var(--w-s1);color:var(--w-ink);cursor:default}
+:root[data-host=world] .res-hero::before{content:'';position:absolute;inset:0;z-index:-2;background:url(assets/world/close.webp) 50% 40%/cover no-repeat;transform-origin:50% 40%}
+:root[data-host=world] .res-hero::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(6,7,9,.5),rgba(6,7,9,0) 70%),var(--w-photo-fade)}
+:root[data-host=world] .results:not([hidden]) .res-hero::before{animation:wPush 9s cubic-bezier(.22,.61,.36,1) both}
+@keyframes wPush{from{transform:scale(1)}to{transform:scale(1.06)}}
+:root[data-host=world] .res-hero>div{position:relative;z-index:1;min-width:0}
+:root[data-host=world] .res-hero .kicker.ko{color:var(--w-ink-2);text-shadow:0 1px 10px rgba(0,0,0,.6)}
+:root[data-host=world] :is(.res-hero .r-note,.big-cap,.res-hero .synk-collection-line){text-shadow:0 1px 10px rgba(0,0,0,.55)}
+:root[data-host=world] .res-hero h1{margin:8px 0 0;font:900 clamp(44px,13vw,72px)/.95 var(--w-sans);letter-spacing:-.06em;color:var(--w-ink);text-shadow:0 2px 24px rgba(0,0,0,.35)}
+:root[data-host=world] .res-hero .big{display:flex;align-items:baseline;margin:16px 0 0;gap:10px}
+:root[data-host=world] .res-hero .big b{display:inline-block;font:900 clamp(64px,19vw,108px)/.86 var(--w-sans);letter-spacing:-.06em;color:var(--w-ink);font-variant-numeric:tabular-nums;transform-origin:30% 70%}
+:root[data-host=world] .res-hero .big span{font:500 22px/1 var(--w-mono);color:var(--w-ink-3)}
+:root[data-host=world] .res-hero .big i{font-style:normal}
+:root[data-host=world] .big-cap{margin:8px 0 0;font:600 15.5px/1.4 var(--w-sans);color:var(--w-ink-2)}
+:root[data-host=world] .res-hero .stars{display:none}   /* 별 대신 큰 숫자 하나 */
+/* 주문 점: 첫 서빙에 맞힘 = 메도우 체크 · 고침 = 버터 테 · 못 함/듣기 전에 떠남 = 옅은 테. 하나씩 찍히며 맞힘마다 큰 숫자가 하나 오른다 */
+:root[data-host=world] .w-dots{list-style:none;display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 0;padding:0}
+:root[data-host=world] .w-dots li{width:20px;height:20px;border-radius:50%;box-shadow:inset 0 0 0 1.5px rgba(250,250,249,.32);opacity:0;transform:scale(.4);transition:opacity var(--e-fast),transform var(--m-fast)}
+:root[data-host=world] .w-dots li.on{opacity:1;transform:none}
+:root[data-host=world] .w-dots li.ok{background:var(--w-led-ok) var(--w-check-dark) center/12px no-repeat;box-shadow:0 0 12px rgba(125,180,90,.35)}
+:root[data-host=world] .w-dots li.fix{box-shadow:inset 0 0 0 2px var(--w-led-check)}
+:root[data-host=world] .res-hero .r-note{margin:14px 0 0;font:450 14px/1.6 var(--w-sans);color:var(--w-ink-3)}
+:root[data-host=world] .res-hero .synk-collection-line{margin:10px 0 0;font:600 15px/1.5 var(--w-sans);color:var(--w-ink)}
+:root[data-host=world] .res-hero .synk-collection-line:has(#r-coins:empty){display:none}
+/* 8주문 모두 첫 서빙에 맞힌 날만: 잉크 도장(기본값 꽃가루 대신 — 2판 설계 검토 P2-4) */
+:root[data-host=world] .w-stamp{position:absolute;right:0;top:40px;margin:0;padding:8px 12px 9px;border:2px solid rgba(249,104,89,.92);border-radius:10px;color:rgba(255,122,102,.95);
+  font:800 17px/1 var(--w-sans);letter-spacing:-.01em;opacity:0;transform:rotate(-8deg) scale(1.3);transition:opacity var(--e-fast),transform var(--m-base);pointer-events:none}
+:root[data-host=world] .w-stamp.on{opacity:1;transform:rotate(-8deg) scale(1)}
+:root[data-host=world] .res-grid{margin:0;padding:0 12px;gap:0}
+:root[data-host=world] .res-grid .paper{margin:0 6px;padding:24px 0 22px;border-top:1px solid var(--w-line)}
+:root[data-host=world] .res-grid .log{order:1;border-top:0}
+:root[data-host=world] .res-grid .skills{order:3}
+:root[data-host=world] .res-grid .next{order:4}
+:root[data-host=world] .log ol{gap:0;margin:8px 0 0;padding:0}
+:root[data-host=world] .log li{grid-template-columns:28px minmax(0,1fr) auto;gap:12px;padding:14px 0;border-top:1px solid var(--w-line)}
+:root[data-host=world] .log li:first-child{border-top:0}
+:root[data-host=world] .log .mark{position:relative;display:grid;place-items:center;width:28px;height:28px;margin-top:2px;padding:0;border-radius:50%;background:none;
+  box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink-2);font:500 11px/1 var(--w-sans)}
+:root[data-host=world] .log li.ok .mark{background:var(--w-s2);box-shadow:none}
+:root[data-host=world] .log li.ok .mark img{display:none}
+:root[data-host=world] .log li.ok .mark::after{content:'';position:absolute;inset:7px;background:var(--w-led-ok);-webkit-mask:var(--w-check) center/contain no-repeat;mask:var(--w-check) center/contain no-repeat}
+:root[data-host=world] .log li.ko .mark{background:none;color:var(--w-check-text)}
+:root[data-host=world] .log .sent{font:650 17px/1.45 var(--w-sans);letter-spacing:-.02em;color:var(--w-ink)}
+:root[data-host=world] .log li.skip .sent{font-weight:550;color:var(--w-ink-2)}
+:root[data-host=world] .log small{display:block;margin-top:4px;font-size:13px;line-height:1.5;color:var(--w-ink-3)}
+:root[data-host=world] .recipe{color:var(--w-ink-3)}
+:root[data-host=world] .recipe summary{color:var(--w-ink-2);text-decoration-color:var(--w-ink-4);text-underline-offset:4px;font-weight:600}
+:root[data-host=world] .say-again{min-height:40px;padding:0 14px;font-size:13.5px;align-self:center}
+:root[data-host=world] .skills{gap:10px}
+:root[data-host=world] .skills .reason{font-size:15px;color:var(--w-ink-2)}
+:root[data-host=world] .flow-box,:root[data-host=world] .metrics{border-radius:16px;background:var(--w-s1);box-shadow:var(--w-card-edge)}
+:root[data-host=world] .flow-box h3{font:650 15.5px/1.35 var(--w-sans);color:var(--w-ink)}
+:root[data-host=world] .skills .flow-box ul{color:var(--w-ink-2)}
+:root[data-host=world] .skills .flow-box li.suggest{color:var(--w-check-text)}
+:root[data-host=world] .metrics dt{color:var(--w-ink-3)}
+:root[data-host=world] .metrics dd{color:var(--w-ink)}
+/* 다음: 새 주문 연습 · 다시 영업 · 처음으로는 1px 선 알약(흰 알약은 「우리 동네로」 하나) */
+:root[data-host=world] .res-grid .next{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding-bottom:6px}
+:root[data-host=world] .res-grid .next>:is(.tag,.reason){grid-column:1 / -1}
+:root[data-host=world] .res-grid .next>.reason{margin:0 0 4px;font-size:14.5px;color:var(--w-ink-3)}
+:root[data-host=world] .res-grid .next>.r-actions{display:contents}
+:root[data-host=world] .res-grid .next :is(.felt-cta,.chip-btn){width:100%;min-height:52px;padding:0 14px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2);font:600 15px/1.2 var(--w-sans)}
+:root[data-host=world] .res-grid .next>#review-start{grid-column:1 / -1}
+:root[data-host=world] .res-grid .next .felt-cta .disc{display:none}
+:root[data-host=world] .res-grid .next :is(.felt-cta,.chip-btn):hover{background:var(--w-s2)}
+:root[data-host=world] #followup-result{grid-column:1 / -1}
+:root[data-host=world] .w-room-bar{margin:14px 0 -28px}
+:root[data-host=world] .pause-why{margin:-4px 0 14px}
+/* 멈춤 창: 음악 · 효과음 크기(손님 목소리는 듣기 내용이라 그대로) */
+:root[data-host=world] .w-mix{display:grid;gap:0;border-top:1px solid var(--w-line)}
+:root[data-host=world] .w-mix label{display:grid;grid-template-columns:5.2em minmax(0,1fr);align-items:center;gap:14px;min-height:54px;border-bottom:1px solid var(--w-line);font:600 15.5px/1.3 var(--w-sans);color:var(--w-ink)}
+:root[data-host=world] .w-mix input[type=range]{width:100%;height:30px;margin:0;accent-color:var(--w-ink);background:none}
+
+/* ── 큰 화면(가로 PC 틀 · 태블릿 가로): 무대 왼쪽, 작업대 오른쪽 / 입구 · 결과는 사진 상자를 왼쪽에 세운다 ── */
+@media (min-width:760px) and (min-height:501px) and (orientation:landscape){
+  :root[data-host=world] .lobby,:root[data-host=world] .results{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.04fr);align-items:start;column-gap:28px;padding:16px 20px 32px}
+  :root[data-host=world] .lobby>.topbar{top:30px;right:auto;left:min(calc(50% - 76px),calc(100% - 76px))}
+  :root[data-host=world] .results>.topbar{top:34px;left:40px}
+  :root[data-host=world] .lobby>.hero{--hero-h:calc(100svh - 32px);grid-column:1;grid-row:1 / span 3;position:sticky;top:16px;border-radius:var(--w-r-lg)}
+  :root[data-host=world] .lobby .hero-copy{top:30px;left:28px}
+  :root[data-host=world] .res-hero{grid-column:1;grid-row:1 / span 3;position:sticky;top:16px;min-height:calc(100svh - 32px);border-radius:var(--w-r-lg);padding:88px 28px 28px}
+  :root[data-host=world] .lobby>.plan,:root[data-host=world] .lobby>.lobby-foot,:root[data-host=world] .results>:is(.res-grid,.w-room-bar){grid-column:2}
+  :root[data-host=world] .plan{grid-template-columns:minmax(0,1fr);padding:0;align-self:center}
+  :root[data-host=world] .start-card{padding:min(16vh,140px) 0 6px}
+  :root[data-host=world] .w-lede{font-size:22px}
+  :root[data-host=world] .how-steps{grid-template-columns:minmax(0,1fr)}
+  :root[data-host=world] .how-steps li{grid-template-columns:auto 1fr;row-gap:3px;align-items:start}
+  :root[data-host=world] .res-grid{grid-template-columns:minmax(0,1fr);padding:0}
+  :root[data-host=world] .w-room-bar{margin:14px -6px -32px}
+}
+@media (min-width:960px){
+  :root[data-host=world] .game-bar{right:clamp(440px,40vw,600px)}   /* 유리 캡슐 띠는 왼쪽 무대 위에만 — 오른쪽 작업대의 컵 줄을 덮지 않게 */
+  :root[data-host=world] .counter-scene{height:auto}
+  :root[data-host=world] .guest .w-cam img{object-position:50% 20%}
+  :root[data-host=world] .bubble{--say:clamp(19px,1.6vw,24px);left:20px;right:auto;width:min(560px,calc(100% - 40px));top:auto;bottom:20px;max-height:48%;padding:16px 18px 18px;border-radius:22px}
+  :root[data-host=world] .menu-card{right:20px;top:auto;bottom:20px;width:min(250px,28%)}
+  :root[data-host=world] .line-up{left:16px;top:14px}
+  :root[data-host=world] .ticket{width:48px;height:48px}
+  :root[data-host=world] .ticket img{width:40px;height:40px}
+  :root[data-host=world] .w-combo{right:auto;left:calc(100% - clamp(440px,40vw,600px) - 120px)}
+  :root[data-host=world] .station{--bench-min:200px;gap:12px;padding:0 22px 22px;border-left:1px solid var(--w-line)}
+  :root[data-host=world] .station>.bench{margin:0 -22px}
+  :root[data-host=world] .station>.cup-row{margin-top:max(16px,env(safe-area-inset-top))}
+  :root[data-host=world] .ingredients{--ing-h:128px;gap:10px}
+  :root[data-host=world] .ing{font-size:16px;border-radius:18px}
+  :root[data-host=world] .ing span{top:12px;left:14px}
+  :root[data-host=world] .ing .no{top:11px;right:11px}
+  :root[data-host=world] .ing::after{top:9px;right:9px;width:23px;height:23px}
+  :root[data-host=world] .serve{min-height:60px}
+}
+@media (min-width:1500px) and (min-height:700px){
+  :root[data-host=world] .menu-card{display:grid}
+}
+@media (min-width:960px) and (max-height:820px){
+  :root[data-host=world] .ingredients{--ing-h:108px}
+}
+/* 넓은 세로 화면(태블릿): 가운데 한 열 */
+@media (min-width:700px) and (orientation:portrait){
+  :root[data-host=world] .lobby>:not(.hero):not(.topbar),:root[data-host=world] .results>:not(.topbar):not(.res-hero){max-width:680px;margin-left:auto;margin-right:auto}
+  :root[data-host=world] :is(.plan,.how-steps,.res-grid){grid-template-columns:minmax(0,1fr)}
+}
+/* 키 낮은 휴대폰(667px 이하): 무대 · 작업대 · 재료 카드를 낮춘다 */
+@media (max-height:700px) and (max-width:959px){
+  :root[data-host=world] .counter-scene{height:clamp(200px,calc(100svh - 400px),300px)}
+  :root[data-host=world] .station{--bench-min:100px}
+  :root[data-host=world] .ingredients{--ing-h:74px;--ing-drop:6px;gap:6px}
+  :root[data-host=world] .ing{font-size:13.5px}
+  :root[data-host=world] .ing span{top:7px}
+  :root[data-host=world] .ing .no{top:6px}
+  :root[data-host=world] .ing::after{top:5px;right:5px}
+  :root[data-host=world] .serve{min-height:50px}
+  :root[data-host=world] .bubble{--say:clamp(15px,4.2vw,18px);padding:10px 12px 12px;gap:6px}
+  :root[data-host=world] .station{gap:8px}
+}
+/* 가로 휴대폰(키 낮음): 무대 왼쪽 · 작업대 오른쪽 */
+@media (min-width:560px) and (max-height:500px){
+  :root[data-host=world] .play{flex-direction:row}
+  :root[data-host=world] .counter-scene{flex:1 1 auto;height:auto}
+  :root[data-host=world] .station{flex:0 0 min(400px,52%);border-top:0;border-left:1px solid var(--w-line);overflow:auto}
+  :root[data-host=world] .game-bar{right:min(400px,52%)}
+  :root[data-host=world] .bubble{max-height:calc(100% - 70px)}
+  :root[data-host=world] .lobby>.hero{--hero-h:calc(100svh - 20px)}
+}
+@media (max-width:359px){
+  :root[data-host=world] .lobby .hero-copy{left:16px}
+  :root[data-host=world] .ing span{left:9px;right:26px}
+  :root[data-host=world] .ing .no{display:none}
+  :root[data-host=world] .res-hero{padding:90px 16px 16px}
+}
+@media (prefers-reduced-motion:reduce){
+  :root[data-host=world] :is(.felt-cta,.chip-btn,.mode,.ing,#pause,.ticket,.serve,.ing::after,.w-dots li,.w-stamp){transition:none}
+  :root[data-host=world] .res-hero::before,:root[data-host=world] .w-art[data-rush] h1 span,:root[data-host=world] .w-ticker::before{animation:none!important}
+  :root[data-host=world] :is(.felt-cta,.chip-btn,.mode,.ing,#pause,.ticket):active{transform:none}
+  :root[data-host=world] .ing::after{transform:none;transition:none}   /* :is() 안의 ::after는 맞지 않아 따로 */
+}
+:root[data-host=world][data-motion=reduced] :is(.felt-cta,.chip-btn,.mode,.ing,#pause,.ticket,.serve,.w-dots li,.w-stamp){transition:none}
+:root[data-host=world][data-motion=reduced] .ing::after{transform:none;transition:none}
+:root[data-host=world][data-motion=reduced] .res-hero::before{animation:none}

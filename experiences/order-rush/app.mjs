@@ -15,6 +15,13 @@ import { $, $$, el, esc, preloadImages, bindSoundToggles } from './kit/lab.mjs';
 // Restore the verified account before reading progress or enabling play.
 await globalThis.SynkPlayAccount.ready();
 const progressStorage = globalThis.SynkPlayAccount.storage();
+// ── WORLD 안(2026-11-03 캠퍼스 판): world-host.js가 붙인 data-host=world일 때만 실사 손님(world-cast.mjs) · 문구 · 결과 「우리 동네로」.
+// LAB 화면(펠트 동물 · 몽글)은 그대로다 — 손님 파일도 WORLD에서만 불러온다.
+const WORLD = globalThis.document?.documentElement?.dataset?.host === 'world';
+const cast = WORLD ? await import('./world-cast.mjs') : null;
+// 2판(11-03): 사건마다 소리 · 음악 · 움직임은 world-play.mjs가 맡는다. 앱 「효과음 · 진동」 설정도 거기서 같은 열쇠로 읽는다 —
+// brand-opening/world-sound.mjs는 들이지 않는다(첫 손짓에 오디오 문맥을 하나 더 만들어 첫 탭이 0.5초 멈췄다, 11-03 추적).
+const worldPlay = WORLD ? await import('./world-play.mjs') : null;
 
 const QA = new URLSearchParams(location.search).has('qa');
 const reduced = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -176,10 +183,21 @@ const state = {
   screen: 'lobby', mode: 'practice', shift: '한가한 오픈', review: false, session: null, ticket: null, served: null,
   cups: [makeCup()], active: 0, paused: false, celebrating: false, pendingServe: false, frame: 0, last: 0, coinRound: null, original: null,
 };
-let stage = null, celebrationTimer = 0, leaveTimer = 0, tipTimer = 0;
+let stage = null, celebrationTimer = 0, leaveTimer = 0, tipTimer = 0, guests = null;
 const ticket = () => state.session?.queue.find((t) => t.uid === state.ticket);
 /** 말풍선에 보일 손님: 맞게 서빙한 뒤 떠나기 전까지는 그 손님. */
 const shownTicket = () => (state.celebrating ? state.served : ticket());
+/** 손님 그림: LAB은 주문마다 정한 펠트 동물, WORLD는 지금 줄 · 계산대와 겹치지 않게 고른 실사 손님(표에 worldGuest로 붙는다). */
+const guestOf = (t) => (guests ? guests.of(t, [...(state.session?.queue || []), state.served].filter(Boolean)) : customerOf(t.order.id));
+const guestName = (t) => (cast ? cast.worldGuestName(t.worldGuest) : customerName(t.order.id));
+const guestFace = (t) => (cast ? cast.worldGuestFace(guestOf(t)) : `assets/cast/face/${customerOf(t.order.id)}.webp`);
+/** WORLD 손님 표정: order(주문하는 중) · thanks(받아 감) · puzzled(주문과 다름). 계산대에 선 그 손님일 때만 바꾼다. */
+function setMood(t, mood) {
+  if (!cast || !t?.worldGuest || $('#guest').dataset.uid !== String(t.uid) || t.mood === mood) return;
+  t.mood = mood;
+  world.face(cast.worldGuestImage(t.worldGuest, mood), mood);   // 두 장을 겹쳐 바꾼다(받음은 서빙 뒤 120ms)
+  $('#guest').dataset.mood = mood;
+}
 
 /* ── 소리: 주문 전달과 다시 듣기 ── */
 const audio = new CafeAudio((status) => {
@@ -193,13 +211,19 @@ const audio = new CafeAudio((status) => {
   }
   if (t) t.voice = status;
   if (t && t === ticket()) renderBubble();
+  world?.voice(status, t);   // WORLD: 음악 · 효과음 덕킹, 목소리 막대, 처음 다 들은 순간
 });
+const world = worldPlay?.createWorldPlay({ audio, stage: () => stage, cupLabel }) || null;
+/** LAB의 짧은 효과음(audio.mjs). WORLD는 같은 자리에서 world-play.mjs가 소리 · 움직임을 낸다. */
+const tone = (kind) => { if (!world) audio.tone(kind); };
 // 끝까지 들은 뒤의 재생만 다시 듣기다. 첫 재생이 실패했거나 다른 손님을 눌러 끊긴 뒤의 재생은 아직 첫 듣기다.
 function playTicket(t) {
   if (!t) return;
+  t.chimeHold = false;
   if (!t.presentationId) t.presentationId = presentOrder(t.order);
   if (!audio.isOn()) { if (!t.textShown) showOrderText(t); return; }   // 소리를 꺼 두었으면 주문을 글로(도움으로 남는다)
   if (t.heard) learn('help', t.presentationId, 'replay');
+  setMood(t, 'order');   // WORLD: 다시 주문하는 얼굴로
   t.playCount = (t.playCount || 0) + 1;
   audioTicket = t;
   audio.play(t.order);
@@ -271,6 +295,7 @@ function renderLobby() {
 }
 function showLobby() {
   audio.stop();
+  world?.lobby();
   switchScreen('lobby');
   refreshRecommendation();
   renderLobby();
@@ -279,14 +304,15 @@ function showLobby() {
 /* ── 한 판 ── */
 function initStage() {
   if (stage) return;
-  try { stage = new CafeStage($('#stage'), selectCup, { reducedMotion: reduced }); }
+  const theme = WORLD ? 'world' : 'lab';
+  try { stage = new CafeStage($('#stage'), selectCup, { reducedMotion: reduced, theme }); }
   catch (error) {
     console.warn('3D 작업대를 만들 수 없어 평면 작업대로 바꿔요.', error?.message);
     const old = $('#stage'), canvas = document.createElement('canvas');
     canvas.id = 'stage';
     canvas.setAttribute('aria-hidden', 'true');
     old.replaceWith(canvas);
-    stage = new FlatStage(canvas, selectCup);
+    stage = new FlatStage(canvas, selectCup, { theme });
   }
 }
 
@@ -303,7 +329,9 @@ function start(isReview = false, delayed = null) {
   Object.assign(state, { celebrating: false, pendingServe: false, review: isReview, paused: false, ticket: null, served: null, cups: [makeCup()], active: 0 });
   audioTicket = null;
   startLive(isReview);
-  state.session = new CafeSession(isReview ? 'practice' : state.mode, Date.now() >>> 0, {
+  const seed = Date.now() >>> 0;
+  guests = cast ? cast.createGuestPicker(seed) : null;
+  state.session = new CafeSession(isReview ? 'practice' : state.mode, seed, {
     deck: delayed?[delayed]:targetDeck || (isReview ? REVIEW : ORDERS), selectOrder: coach ? selectOrder : null,
     orderLimit: delayed?1:targetDeck?.length || (isReview ? REVIEW.length : 8), tuning: live ? tuningFrom(live.settings().values) : null,
   });
@@ -313,6 +341,7 @@ function start(isReview = false, delayed = null) {
   state.shift = delayed?'며칠 뒤 주문 확인':target ? '나의 목표 주문' : isReview ? '새 주문 연습' : state.mode === 'rush' ? '점심 러시' : '한가한 오픈';
   $('#pause-kicker').textContent = `PAUSED · ${state.mode === 'rush' && !isReview ? 'LUNCH RUSH' : 'OPEN'}`;
   audio.unlock();
+  world?.start(state.mode === 'rush' && !isReview ? 'rush' : 'calm');
   switchScreen('game');
   initStage();
   $('#pop').hidden = true;
@@ -356,24 +385,41 @@ function selectTicket(uid) {
   showGuest(t);
   renderCups();
   renderLineUp();
-  playTicket(t);
+  // WORLD: 손님이 들어오며 울린 문 종이 첫 음절을 덮지 않게 320ms 뒤에 말한다(그사이 멈추면 이어 할 때 말한다)
+  if (world) t.chimeHold = true;   // 그 320ms는 듣는 시간처럼 영업 시간을 세우지 않는다
+  if (world) world.later(world.chimeDelay(), () => { if (ticket() !== t || state.screen !== 'game' || state.celebrating) return; if (state.paused) t.pendingVoice = true; else playTicket(t); });
+  else playTicket(t);
   metrics();
 }
 
 /** 계산대의 손님: 바뀌면 한 번 들어온다(반복 움직임 없음). */
 function showGuest(t) {
   const g = $('#guest');
-  if (!t) { g.hidden = true; g.dataset.uid = ''; $('#bubble').hidden = true; return; }
+  if (!t) {
+    const hide = () => { g.hidden = true; g.dataset.uid = ''; $('#bubble').hidden = true; };
+    if (world && !g.hidden && g.dataset.uid) { g.dataset.uid = ''; world.hideGuest(hide); } else hide();   // WORLD: 200ms에 걸쳐 사라진다
+    return;
+  }
   if (g.dataset.uid !== String(t.uid)) {
-    const img = $('#guest-img');
-    img.src = `assets/cast/${customerOf(t.order.id)}.webp`;
-    img.alt = customerName(t.order.id);
+    const wasShown = !g.hidden && !!g.dataset.uid;   // WORLD: 앞 손님 위로 새 손님이 스며든다
     g.dataset.uid = String(t.uid);
     g.hidden = false;
-    g.classList.remove('enter', 'leave');
-    void g.offsetWidth;
-    g.classList.add('enter');
-    audio.tone('arrive');
+    if (cast) {
+      // WORLD: 얼굴 두 장 · 오른쪽에서 제자리 · 손님마다 다른 문 종(world-play.mjs)
+      const id = guestOf(t);
+      t.mood = 'order';
+      g.dataset.mood = 'order';
+      world.guest(t, id, cast.worldGuestImage(id, 'order'), guestName(t), wasShown);
+      world.warm(['thanks', 'puzzled'].map((mood) => cast.worldGuestImage(id, mood)));   // 표정이 바뀔 때 비지 않게 미리 푼다
+    } else {
+      const img = $('#guest-img');
+      img.src = `assets/cast/${customerOf(t.order.id)}.webp`;
+      img.alt = guestName(t);
+      g.classList.remove('enter', 'leave');
+      void g.offsetWidth;
+      g.classList.add('enter');
+      tone('arrive');
+    }
   }
   renderBubble();
 }
@@ -396,6 +442,7 @@ function renderBubble() {
   else if (!t.textShown) cap = t.heard ? '주문을 다 들었어요. 컵에 담아 주세요.' : '주문을 들어 보세요.';
   $('#b-cap').textContent = cap;
   $('#b-cap').hidden = !cap;
+  if (world) b.toggleAttribute('data-turn', !thanks && !listening && !!t.heard && !t.note);   // WORLD: 다 들은 뒤 「내 차례」 LED
   $('#order-text').textContent = `“${t.order.text}”`;
   $('#order-text').hidden = !t.textShown || !!thanks;
   // 다르게 만든 조건은 손님 말로, 그 아래 할 일 한 줄
@@ -429,8 +476,9 @@ function renderLineUp() {
     const b = el('button', 'ticket');
     b.type = 'button';
     b.dataset.uid = String(t.uid);
-    b.setAttribute('aria-label', `줄 선 ${customerName(t.order.id)}: 주문 듣기`);
-    b.innerHTML = `<img src="assets/cast/face/${customerOf(t.order.id)}.webp" alt=""><span class="patience" aria-hidden="true"><i></i></span>`;
+    const face = guestFace(t);
+    b.setAttribute('aria-label', `줄 선 ${guestName(t)}: 주문 듣기`);
+    b.innerHTML = `<img src="${face}" alt=""><span class="patience" aria-hidden="true"><i></i></span>`;
     b.onclick = () => selectTicket(t.uid);
     return b;
   }));
@@ -463,23 +511,28 @@ function renderCups(change = null) {
     b.setAttribute('aria-pressed', String(!!on));
   }
   stage?.sync(state.cups, state.active, change);
+  world?.cups(state.cups, state.active);
 }
 function ingredient(action) {
   if (state.screen !== 'game' || state.paused || state.celebrating || !ticket()) return;
-  state.cups[state.active] = editCup(state.cups[state.active], action);
-  audio.tone('tap');
+  const before = state.cups[state.active];
+  state.cups[state.active] = editCup(before, action);
+  tone('tap');
   renderCups(action);
+  world?.ingredient(action, before, state.cups[state.active], $(`[data-ingredient="${action}"]`));
 }
 function addCup() {
   if (state.paused || state.celebrating || !ticket() || state.cups.length >= 2) return;
   state.cups.push(makeCup());
   state.active = state.cups.length - 1;
   renderCups();
+  world?.cup('add');
 }
 function removeCup() {
   if (state.paused || state.celebrating || !ticket()) return;
   if (state.cups.length > 1) { state.cups.splice(state.active, 1); state.active = 0; } else state.cups[0] = makeCup();
   renderCups();
+  world?.cup('remove');
 }
 
 function serve() {
@@ -494,11 +547,13 @@ function serve() {
   if (result.correct) {
     // 맞음: 체크 배지·점수, 컵이 손님 쪽으로 나가고 손님이 받아 간다
     audio.stop();
-    audio.tone('serve');
+    tone('serve');
+    world?.correct(t, { combo: state.session.combo });   // WORLD 한 박자: 서빙 소리 → 얼굴 +120 → 맞음 소리 · 점수 굴림 +180(점수를 쓰기 전에 부른다)
     state.celebrating = true;
     state.served = t;
     t.thanks = result.feedback;
     t.note = null;
+    setMood(t, 'thanks');
     renderBubble();
     stage?.served();
     $('#bench').classList.add('served');
@@ -508,14 +563,18 @@ function serve() {
     if (state.session.combo >= 2) punch($('#g-combo-wrap'));
     metrics();
     announce(`${result.feedback} ${pts}점.`);
-    const wait = reduced() ? 800 : 1100;   // 움직임 줄이기: 점수 글자가 움직이지 않으니 조금 더 오래 보인다
-    // 손님이 받아 가며 한 번 나간다(움직임 줄이기에서는 다음 손님으로 바로 바뀐다)
-    if (!reduced()) leaveTimer = setTimeout(() => { if (state.served === t) $('#guest').classList.add('leave'); }, wait - 380);
+    // 움직임 줄이기: 점수 글자가 움직이지 않으니 조금 더 오래 보인다. WORLD는 한 박자 표(world-play.mjs BEAT)대로
+    const wait = world ? world.BEAT.next : reduced() ? 800 : 1100;
+    // 손님이 받아 가며 한 번 나간다(LAB 움직임 줄이기에서는 다음 손님으로 바로 바뀐다)
+    if (world) leaveTimer = setTimeout(() => { if (state.served === t) world.leave(); }, world.BEAT.leave);
+    else if (!reduced()) leaveTimer = setTimeout(() => { if (state.served === t) $('#guest').classList.add('leave'); }, wait - 380);
     celebrationTimer = setTimeout(completeServe, wait);
   } else {
     // 다름: 손님이 무엇이 다른지 말한다(실패음·빨간 표시 없음). 고쳐서 다시 서빙한다.
-    audio.tone('wrong');
+    tone('wrong');
+    world?.differ(t);
     t.note = result.feedback;
+    setMood(t, 'puzzled');
     if (t.presentationId) learn('help', t.presentationId, 'hint');
     renderBubble();
     metrics();
@@ -571,6 +630,7 @@ function metrics() {
   }
   const cur = ticket();
   if (cur) setPatience($('#b-patience'), left(cur));
+  world?.metrics(s);
 }
 function setPatience(node, k) {
   node.style.setProperty('--left', k.toFixed(3));
@@ -583,12 +643,14 @@ function tick(now) {
   const dt = Math.min(0.1, Math.max(0, (now - state.last) / 1000));
   state.last = now;
   // 영업 시간은 주문을 듣는 동안·멈춤·서빙 축하·다른 탭에서는 흐르지 않는다
-  if (!state.paused && !audio.busy && !state.celebrating && !document.hidden) {
-    const before = queueKey(), cur = state.ticket;
+  if (!state.paused && !audio.busy && !state.celebrating && !document.hidden && !ticket()?.chimeHold) {
+    const before = queueKey(), cur = state.ticket, line = world ? [...state.session.queue] : null;
     state.session.step(dt);
     recordUnanswered();
     if (state.session.done) { finish(); return; }
     if (before !== queueKey()) {
+      const gone = line?.find((x) => !state.session.queue.includes(x));
+      if (gone) world.left(gone);   // WORLD: 기다리다 떠난 손님의 문 종을 작게
       const left = cur != null && !ticket();   // 지금 손님이 기다리다 떠났다
       if (left) audio.stop();
       updateQueue();
@@ -597,6 +659,7 @@ function tick(now) {
     metrics();
   }
   if (!state.paused && !document.hidden) stage?.render(dt);
+  world?.frame();
   state.frame = requestAnimationFrame(tick);
 }
 
@@ -605,20 +668,25 @@ function pause() {
   if (state.screen !== 'game' || state.paused) return;
   state.paused = true;
   audio.pause();
+  world?.pause();
   if (!$('#pause-dialog').open) $('#pause-dialog').showModal();
 }
 function resume() {
   state.paused = false;
   if ($('#pause-dialog').open) $('#pause-dialog').close();
   state.last = performance.now();
+  world?.resume();
   if (state.pendingServe) { completeServe(); return; }
   if (audio.isOn()) audio.resume(); else onSoundOff();
+  const cur = ticket();
+  if (cur?.pendingVoice) { cur.pendingVoice = false; playTicket(cur); }   // WORLD: 문 종 뒤에 말하려던 사이 멈췄으면 이제 말한다
   renderBubble();
 }
 /** 처음으로: 끝까지 마치지 않은 판은 결과·코인 없이 입구로. 들었지만 답하지 않은 주문은 응답 없음으로 닫는다(평가하지 않음). */
 function quit() {
   if (state.screen !== 'game') return;
   audio.stop();
+  world?.quit();
   cancelAnimationFrame(state.frame);
   clearTimeout(celebrationTimer); clearTimeout(leaveTimer);
   Object.assign(state, { celebrating: false, pendingServe: false, paused: false, served: null, coinRound: null });
@@ -654,7 +722,8 @@ function finish() {
   awardCoins(s);
   renderResults(s, stats);
   switchScreen('results');
-  audio.tone('done');
+  tone('done');
+  world?.finish({ records: s.records, firstOk: s.records.filter((r) => r.first === true).length, total: s.records.length, nameOf: guestName });
   $('#r-title').focus({ preventScroll: true });
 }
 
@@ -665,7 +734,7 @@ function awardCoins(s) {
   $('#r-coins').textContent = '';
   if (!round || !total) { if (state.review && globalThis.SynkPlayCollection) $('#r-coins').textContent = '새 주문 연습에서는 코인을 받지 않아요.'; return; }
   globalThis.SynkPlayCollection?.award({ game: 'order-rush', total, correct, completed: true, automatic: false, roundId: round })
-    .then((result) => { $('#r-coins').textContent = globalThis.SynkPlayCollection.rewardText(result); });
+    .then((result) => { $('#r-coins').textContent = globalThis.SynkPlayCollection.rewardText(result); world?.coin(); });
 }
 
 function renderFlowBox(flowEnd, changes, suggestion) {
@@ -685,8 +754,8 @@ function renderResults(s, stats) {
   $('#r-total').textContent = String(total);
   $('#r-stars').innerHTML = [1, 2, 3].map((i) => `<i class="${i <= stars ? 'on' : ''}" style="animation-delay:${0.3 + (i - 1) * 0.22}s"></i>`).join('');
   $('#r-stars').setAttribute('aria-label', `별 3개 중 ${stars}개`);
-  for (let i = 0; i < stars; i++) setTimeout(() => audio.tone('star'), 300 + i * 220);
-  $('#r-mongle').src = stars >= 2 ? 'kit/brand/mongle-cheer.webp' : 'kit/brand/mongle-smile.webp';
+  if (!world) for (let i = 0; i < stars; i++) setTimeout(() => audio.tone('star'), 300 + i * 220);   // WORLD는 별 대신 영수증(world-play.mjs)
+  if (!WORLD) $('#r-mongle').src = stars >= 2 ? 'kit/brand/mongle-cheer.webp' : 'kit/brand/mongle-smile.webp';   // WORLD에는 몽글이 없다(10-31 ④)
   const notes = [`서빙 점수 ${s.score}점`, `최고 콤보 ${s.best}`, `서빙 완료 ${stats.served}개`];
   if (stats.help) notes.push(`글로 확인한 주문 ${stats.help}개`);
   if (stats.unanswered) notes.push(`답하지 않은 주문 ${stats.unanswered}개`);
@@ -722,7 +791,7 @@ function renderLog(s) {
     const status = r.first === null ? `답하지 않음${r.outcome === 'missed' ? ' · 기다리다 떠난 손님' : ''}`
       : ok ? '첫 서빙에 맞힘' : fixed ? '고쳐서 서빙' : '주문과 달랐어요 · 서빙하지 못함';
     const mark = ok ? '<img src="kit/felt/badge-check.webp" alt="">' : fixed ? '고침' : '–';
-    const info = `${customerName(r.order.id)} · ${status}${r.help ? ' · 글로 확인' : ''} · 연습: ${r.order.skill.replaceAll(' · ', '·')}`;
+    const info = `${guestName(r)} · ${status}${r.help ? ' · 글로 확인' : ''} · 연습: ${r.order.skill.replaceAll(' · ', '·')}`;
     // 주문대로 만든 컵(펼치면 정답 보기 도움으로 남긴다). 말하지 않은 얼음·설탕은 채점하지 않는다
     const skipped = r.order.cups.some((c) => !('sugar' in c) || !('ice' in c));
     const recipe = r.order.cups.map((c) => describeCup({ ...makeCup(), ...c })).join(' / ') + (skipped ? ' (손님이 말하지 않은 재료는 채점하지 않았어요.)' : '');
@@ -742,6 +811,33 @@ function renderLog(s) {
     return li;
   }));
 }
+
+/* ── WORLD 안: 입구 · 결과 문구, 몽글 걷기, 결과 아래 흰 알약 「우리 동네로」(말의 리듬 WORLD 분기와 같은 꼴) ── */
+const WORLD_COPY = [
+  ['#lobby .hero-copy>.kicker', 'SYNK TOWN CAFÉ'],
+  ['#lobby .hero .lede', '손님 주문을 끝까지 듣고 딱 맞는 음료를 만들어요'],
+  ['#lobby .hero .sub', '따뜻하게? 얼음 없이? 두 잔? 싱크타운 카페에 손님이 왔어요. 주문과 다르게 만들면 손님이 어디가 다른지 말해 줘요.'],
+  ['#how-title', '하는 법'],
+  ['#quit', '게임 처음으로'],
+  ['#home', '게임 처음으로'],
+];
+function setupWorld() {
+  for (const [sel, text] of WORLD_COPY) { const n = document.querySelector(sel); if (n) n.textContent = text; }
+  for (const n of $$('.hero-mongle,#r-mongle,.hero-guest,.hero-bit')) n.remove();   // 몽글 · 펠트 그림은 앱에 두지 않는다(그림은 world-skin.css의 실사 사진)
+  $('.beginner-entry')?.remove();   // 처음 여는 작은 가게(몽글 시범 · 펠트 동물)는 LAB에만 — WORLD의 처음 한국어는 한글 · 드라마가 맡는다
+  world.setup();   // 2판: 입구 세 층 · 재료 사진 · 목소리 막대 · 얼굴 두 장 · 영수증 · 멈춤 창 크기
+  const bar = document.createElement('div'); bar.className = 'w-room-bar';
+  bar.innerHTML = '<button id="w-room" class="felt-cta w-room" type="button"><span>우리 동네로</span><i class="disc" aria-hidden="true"></i></button>';
+  bar.firstChild.addEventListener('click', backToRoom); $('#results').append(bar);
+}
+/** 결과 → 우리 동네: WORLD 홈이 동네로 돌아가기(goTown)를 알면 그걸 부르고, 아니면 게임 창의 닫기(#panel-close)를 누른다(같은 출처 틀). 닿지 않으면 게임 입구로. */
+function backToRoom() {
+  audio.stop();
+  world?.quit();
+  try { const town = window.parent?.__synkHome?.goTown; if (town) { town(); return; } const close = window.parent?.document?.getElementById('panel-close'); if (close) { close.click(); return; } } catch { /* 다른 출처 */ }
+  showLobby();
+}
+if (WORLD) setupWorld();
 
 /* ── 이벤트 ── */
 for (const b of $$('.modes [data-mode]')) {
@@ -772,7 +868,8 @@ bindSoundToggles({
   isOn: () => audio.isOn(),
   setOn: (on) => {
     audio.setOn(on);
-    if (on) { audio.unlock(); audio.tone('tap'); } else onSoundOff();
+    if (on) { audio.unlock(); tone('tap'); } else onSoundOff();
+    world?.sound(on);
     $('#sound-note').hidden = on;
     if (state.screen === 'game') renderBubble();
   },
@@ -851,10 +948,12 @@ try { storagePort?.subscribe(onStorageEvent); } catch { /* 닫힌 게임: 상태
 refreshRecommendation();
 watchHostStorage();
 renderLobby();
+world?.lobby({ prepare: initStage });   // WORLD: 처음 한 번 — 사진이 그려지고 3D 작업대 · 오디오를 준비한 뒤 제목이 잔 뒤에서 올라온다
 // 영업에 쓰는 펠트 그림을 입구에서 미리 받아 두고, 컵 작업대(3D)도 미리 만든다(첫 손님 때 쿠션·재료가 늦게 뜨거나 셰이더 준비로 멈칫하지 않게)
 (window.requestIdleCallback || ((fn) => setTimeout(fn, 600)))(() => {
-  initStage();
-  preloadImages(['assets/felt/cushion-cream-tile.webp', 'assets/felt/cushion-blush-tile.webp', 'kit/felt/badge-check.webp',
+  if (!world) initStage();   // WORLD는 위 lobby가 제목 등장 전에 만든다(셰이더 굽기가 움직임과 겹치지 않게)
+  if (cast) world.warm(cast.WORLD_GUESTS.map((g) => cast.worldGuestImage(g.id, 'order')));   // WORLD: 손님 사진을 미리 풀어 둔다(작업대 · 재료 · 마감 사진은 world-play가)
+  else preloadImages(['assets/felt/cushion-cream-tile.webp', 'assets/felt/cushion-blush-tile.webp', 'kit/felt/badge-check.webp',
     'kit/felt/tex-cream.webp', 'kit/felt/tex-coral.webp', 'kit/felt/wide-cream.webp']);
 }, { timeout: 2500 });
 
@@ -884,5 +983,6 @@ if (QA) {
     finish: () => finish(),   // 확인 도구가 영업을 바로 끝낼 때(예전 ‘영업 마치기’ 자리)
     stage: () => stage,
     sound: (on) => { audio.setOn(on); },
+    world: () => world?.state() || null,
   };
 }

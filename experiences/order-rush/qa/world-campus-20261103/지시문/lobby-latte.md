@@ -1,0 +1,5 @@
+PHOTOREAL HERO STILL, vertical 4:5.
+A tall clear glass of iced café latte — espresso swirling down into cold milk, clear ice cubes, beads of condensation on the glass — stands alone on the light-oak service counter of this same café. The glass rises from the bottom edge of the frame to a little above the middle of the frame, centered. Behind it the café hall is softly out of focus: amber globe pendants glowing as round bokeh near the top, tall windows with bare trees, students at tables blurred into soft shapes. Warm golden late-afternoon backlight from the windows makes the glass glow and the condensation sparkle, with a bright rim of light along the glass edges.
+The upper part of the frame stays calm and uncluttered (soft bokeh only) — leave room above and around the top of the glass.
+Image 1 is this same café seen from the entrance — keep the same room, materials and light.
+CAMERA: eye level with the countertop, 85mm, shallow depth of field, the glass tack-sharp. A real photograph — never an illustration or a 3D render. No text, no logos, no straws with printing, no people in focus, no hands.

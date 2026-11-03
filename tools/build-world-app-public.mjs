@@ -145,9 +145,13 @@ const opening=path.join(root,'experiences/brand-opening');
  for(const match of openingSource.matchAll(/[\"']assets\/([a-zA-Z0-9_./-]+\.(?:webp|png|jpg|mp4|wav|woff2))[\"']/g))openingAssets.add(match[1]);
  for(const name of fs.readdirSync(path.join(opening,'assets/home')))if(/\.(?:webp|woff2)$/.test(name)||name==='cafe-drinks-v2.png')openingAssets.add('home/'+name);
  for(const name of fs.readdirSync(path.join(opening,'assets/world-felt')))if(/^[a-z0-9-]+\.webp$/.test(name))openingAssets.add('world-felt/'+name);
+ // 「놀이」 목록의 실사 인화지(11-03 주문 폭주 — 캠퍼스 판 그림은 world-felt가 아니라 world-play에 둔다).
+ for(const name of fs.readdirSync(path.join(opening,'assets/world-play')))if(/^[a-z0-9-]+\.webp$/.test(name))openingAssets.add('world-play/'+name);
 // assets/tutor-photos는 위에서 폴더째 실었다(home.html 기본 계정 사진이 여기 다시 잡혀도 두 번 쓰지 않는다).
 for(const name of openingAssets)if(!name.startsWith('tutor-photos/'))copyFile(path.join(opening,'assets',name),'brand-opening/assets/'+name);
 for(const game of ['korean-runner','korean-rhythm','hangul-stage'])copyTree(path.join(root,'experiences',game),game,(source,relative)=>!relative.startsWith('hangul-stage/assets/voice/'));
+// 주문 폭주(11-03, 캠퍼스 판 겉 — 해금 표로 「놀이」에서 연다): 게임 폴더째 싣되, 쓰지 않는 펠트 카페 원본(cafe-original.png 2.3MB)은 뺀다.
+copyTree(path.join(root,'experiences','order-rush'),'order-rush',(source,relative)=>relative!=='order-rush/assets/cafe-original.png');
 // 드라마 말하기 1화(11-02, 설계 experiences/drama/qa/WORLD올리기-20261102/설계.md): 화면 · 강의(world-lesson.json) · 기록 묶음 · 재생 사본만 싣는다.
 // content.mjs(시범 서버 전용 · 판정 명세)와 README · qa는 싣지 않는다. 재생 사본(media/)은 git 밖(tools/build-drama-pilot-assets.mjs가 승인 원천에서
 // 만든다)이라 그 manifest.json의 sha256과 하나씩 대조해 없거나 다르면 멈춘다 — manifest 자체(원천 파일 이름)는 싣지 않는다.

@@ -1,0 +1,140 @@
+{
+ "measured": "2026-11-03",
+ "method": "OfflineAudioContext 48kHz mono → BS.1770 K-weighting → 400ms momentary max, hop 50ms, zero-padded (sound_check.py measure); mean of seeds 1,2,3,5,8",
+ "opts": {
+  "coffee": {
+   "step": 3
+  },
+  "tea": {
+   "step": 3
+  },
+  "milk": {
+   "step": 3
+  },
+  "sugar": {
+   "step": 3
+  },
+  "cold": {
+   "step": 3
+  },
+  "ice": {
+   "step": 3,
+   "hits": [
+    0.12,
+    0.165,
+    0.21
+   ]
+  },
+  "remove": {
+   "step": 2
+  },
+  "arrive": {
+   "guest": "g2"
+  },
+  "leave": {
+   "guest": "g2"
+  },
+  "correct": {
+   "combo": 2
+  },
+  "tick": {
+   "n": 5
+  }
+ },
+ "target": {
+  "tap": -31,
+  "coffee": -26,
+  "tea": -25,
+  "milk": -25,
+  "ice": -24.5,
+  "sugar": -25,
+  "cold": -25,
+  "remove": -28,
+  "cup": -25,
+  "clear": -27,
+  "arrive": -24,
+  "leave": -28,
+  "open": -21,
+  "serve": -24,
+  "correct": -20.8,
+  "combo": -19,
+  "differ": -26,
+  "tick": -30.5,
+  "roll": -34,
+  "land": -20,
+  "done": -17.5,
+  "coin": -21
+ },
+ "level": {
+  "tap": 15.312,
+  "coffee": 6.805,
+  "tea": 6.644,
+  "milk": 6.873,
+  "ice": 6.377,
+  "sugar": 9.191,
+  "cold": 4.501,
+  "remove": 14.084,
+  "cup": 11.96,
+  "clear": 9.633,
+  "arrive": 4.389,
+  "leave": 6.699,
+  "open": 5.068,
+  "serve": 10.628,
+  "correct": 9.7,
+  "combo": 4.685,
+  "differ": 7.463,
+  "tick": 27.933,
+  "roll": 24.774,
+  "land": 5.191,
+  "done": 12.322,
+  "coin": 6.414
+ },
+ "measuredLufs": {
+  "tap": -31,
+  "coffee": -26,
+  "tea": -25,
+  "milk": -25,
+  "ice": -24.5,
+  "sugar": -25,
+  "cold": -25,
+  "remove": -28,
+  "cup": -25,
+  "clear": -27,
+  "arrive": -24,
+  "leave": -28,
+  "open": -21,
+  "serve": -24,
+  "correct": -20.8,
+  "combo": -19,
+  "differ": -26,
+  "tick": -30.5,
+  "roll": -34,
+  "land": -20,
+  "done": -17.5,
+  "coin": -21
+ },
+ "peakDbfs": {
+  "tap": -2.3,
+  "coffee": -3,
+  "tea": -3.3,
+  "milk": -5.6,
+  "ice": -7.4,
+  "sugar": -2.7,
+  "cold": -3.6,
+  "remove": -5.9,
+  "cup": -1,
+  "clear": -3.9,
+  "arrive": -8.1,
+  "leave": -11.8,
+  "open": -6.4,
+  "serve": -3.3,
+  "correct": -3.3,
+  "combo": -4.2,
+  "differ": -9,
+  "tick": -1.8,
+  "roll": -3.4,
+  "land": -1.9,
+  "done": -0.9,
+  "coin": -7.7
+ }
+}

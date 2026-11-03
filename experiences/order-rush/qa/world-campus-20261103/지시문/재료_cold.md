@@ -1,0 +1,1 @@
+The object: an empty short clear tumbler glass chilled until frosted — a fine white frost and cold condensation droplets all over the outside and a faint cold mist curling over the rim. There is nothing inside the glass and no ice anywhere.

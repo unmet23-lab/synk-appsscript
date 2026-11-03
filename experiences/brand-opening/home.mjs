@@ -13,6 +13,7 @@ import {motionOn,slidePill,spring,bindPress} from './world-motion.mjs';
 // 화면 언어(10-19 1판): 기능 글·안내는 고른 언어, 학습 내용은 한국어. 표는 world-strings.mjs, 첫 실행의 언어 고르기는 lang-picker.mjs.
 import {t,tMessage,onLang,translateTree,currentLang,setLang} from './world-lang.mjs';
 import {createLangStep,langSettingsMarkup} from './lang-picker.mjs';
+import {PLAY_UNLOCKS,playRecord,playState} from './play-unlocks.mjs';
 // 문 열림은 이름 없이 꺼내 쓴다: 공개 직후 캐시에 doors가 없는 옛 world-motion.mjs가 남아 있어도 홈은 뜨고 장소만 바로 바뀐다.
 import * as worldMotion from './world-motion.mjs';
 const $=selector=>document.querySelector(selector);
@@ -26,7 +27,9 @@ const landscape=matchMedia('(orientation:landscape)'),spacious=matchMedia('(min-
 const games={
  runner:{get title(){return t('game.runner.title');},get detail(){return t('game.runner.detail');},label:'LISTEN & RUN',path:'../korean-runner/',image:'world-felt/runner.webp',area:'짧은 지시의 방향·동작·부정·순서 듣기 연습'},
  hangul:{get title(){return t('game.hangul.title');},get detail(){return t('game.hangul.detail');},label:'HANGUL',path:'../hangul-stage/',image:'world-felt/hangul.webp',area:'한글 자모와 음절의 소리·글자 연결 연습'},
- rhythm:{get title(){return t('game.rhythm.title');},get detail(){return t('game.rhythm.detail');},label:'RHYTHM',path:'../korean-rhythm/',image:'world-felt/rhythm.webp',area:'짧은 발화를 듣고 내용 일치 판단 연습'}
+ rhythm:{get title(){return t('game.rhythm.title');},get detail(){return t('game.rhythm.detail');},label:'RHYTHM',path:'../korean-rhythm/',image:'world-felt/rhythm.webp',area:'짧은 발화를 듣고 내용 일치 판단 연습'},
+ // 주문 폭주(11-03, 캠퍼스 판 겉): 싱크타운 카페 이야기에서 열린다(play-unlocks.mjs). 그림은 손님 실사 판의 인화지 한 장.
+ order:{get title(){return t('game.order.title');},get detail(){return t('game.order.detail');},label:'LISTEN & MAKE',path:'../order-rush/',image:'world-play/order-rush.webp',area:'주문의 수량·온도·추가·빼기·바꾸기 듣기 연습'}
 };
 let lastFocus=null,panelKind='',inView=true,manualReduced=false,frameTimer,displayPreference='auto',layout='portrait';
 let learningUI=null,learningLoader=null,education=null,reminders=null;
@@ -187,7 +190,10 @@ function callHost(command,...args){
  return true;
 }
 function openGame(id){
- if(games[id])void openTutor({then:()=>launchGame(id)});
+ if(!games[id])return;
+ const state=playState(id,playRecord(learningData));
+ if(!state.open){toast(t('play.locked',{where:t(state.where)}));return;}   // 잠긴 놀이는 이야기에서 연다
+ void openTutor({then:()=>launchGame(id)});
 }
 // 첫 실행 순서(10-19 확정): 화면 언어 고르기 → (한글을 읽을 수 있는지 묻기) → 튜터 고르기. 언어는 튜터를 아직 고르지 않은
 // 첫 실행에서만 묻고, 이미 고른 언어(이 기기 또는 계정에서 되살린 값)가 있으면 건너뛴다. 설정에서 언제든 바꾼다.
@@ -301,8 +307,15 @@ function updateStudy(plan){
 }
 function showPlay(){
  const more=host?`<section class="play-more" aria-label="${t('play.more')}"><p class="eyebrow">MORE</p><button data-world="play"><img src="${asset('assets/world-felt/sentence.webp')}" alt=""><span><strong>${t('play.first.title')}</strong><small>${t('play.first.detail')}</small></span></button><button data-world="town"><img src="${asset('assets/world-felt/town.webp')}" alt=""><span><strong>${t('play.town.title')}</strong><small>${t('play.town.detail')}</small></span></button><button data-world="songs"><img src="${asset('assets/world-felt/songs.webp')}" alt=""><span><strong>${t('play.songs.title')}</strong><small>${t('play.songs.detail')}</small></span></button></section>`:'';
- openPanel(t('play.title'),`<div class="play-list">${Object.entries(games).map(([id,g],i)=>`<button data-game="${id}"><span class="play-art w-print"><img src="${asset(`assets/${g.image}`)}" alt=""></span><span class="play-copy"><small class="play-label">${String(i+1).padStart(2,'0')} · ${g.label}</small><strong>${g.title}</strong><small>${g.detail}</small></span><span class="arrow" aria-hidden="true">↗</span></button>`).join('')}</div><p class="panel-note">${t('play.note')}</p>${more}`,{eyebrow:'PLAY',nav:'play'});
+ // 해금 표(play-unlocks.mjs) + 학생 기록: 열린 놀이는 그대로, 잠긴 놀이는 이름과 「이야기에서 열려요 — 여는 자리」 한 줄(누르면 같은 말을 알린다).
+ // 표로 잠겼던 놀이가 열린 뒤 처음 볼 때 한 번만 「새로 열림」(자물쇠가 열리고 흑백 → 색 · 빛 한 번 — home.css). 본 것은 계정마다 이 기기에 남긴다.
+ const record=playRecord(learningData),seen=seenPlays(),fresh=[];
+ openPanel(t('play.title'),`<div class="play-list">${Object.entries(games).map(([id,g],i)=>{const state=playState(id,record),lock=state.open?'':t('play.locked',{where:t(state.where)});const isNew=!lock&&PLAY_UNLOCKS[id]&&seen&&!seen.includes(id);if(isNew)fresh.push(id);return `<button data-game="${id}"${lock?` data-locked="" aria-disabled="true" aria-label="${g.title}. ${lock}"`:''}${isNew?' data-new=""':''}><span class="play-art w-print"><img src="${asset(`assets/${g.image}`)}" alt=""></span>${isNew?'<span class="play-sheen" aria-hidden="true"></span>':''}<span class="play-copy"><small class="play-label">${String(i+1).padStart(2,'0')} · ${g.label}</small><strong>${g.title}</strong><small>${isNew?`<span class="play-new">${t('play.new')}</span> `:''}${lock?`<span class="play-lock">${lock}</span>`:g.detail}</small></span><span class="arrow" aria-hidden="true">↗</span></button>`;}).join('')}</div><p class="panel-note">${t('play.note')}</p>${more}`,{eyebrow:'PLAY',nav:'play'});
+ if(fresh.length)markPlaysSeen([...seen,...fresh]);
 }
+/** 「새로 열림」을 이미 본 놀이(계정마다). 저장소를 못 쓰면 null — 그때는 「새로 열림」을 띄우지 않는다(열 때마다 되풀이되지 않게). */
+function seenPlays(){try{const raw=localStorage.getItem(`synk.world.play-seen.${accountOwner}`);const list=raw?JSON.parse(raw):[];return Array.isArray(list)?list.filter(x=>typeof x==='string'):[];}catch{return null;}}
+function markPlaysSeen(list){try{localStorage.setItem(`synk.world.play-seen.${accountOwner}`,JSON.stringify([...new Set(list)]));}catch{}}
 function showWardrobe(){if(callHost('wardrobe'))return;openPanel(t('wardrobe.title'),`<span class="panel-print w-print"><img src="${asset('assets/world-felt/wardrobe.webp')}" alt="${t('wardrobe.alt')}"></span><p class="panel-description">${t('wardrobe.lead')}</p><div class="panel-actions"><a class="felt-button" href="${asset('../mobile.html?wardrobe=1&opening=off')}">${t('wardrobe.open')} <span aria-hidden="true">↗</span></a></div><p class="panel-note">${t('wardrobe.note')}</p>`,{eyebrow:'MY WARDROBE',nav:'wardrobe'});}
 function showMe(){if(callHost('profile'))return;openPanel(t('home.myAccount'),`<span class="panel-print w-print"><img src="${asset('assets/world-felt/account.webp')}" alt="${t('me.alt')}"></span><p class="panel-description">${t('me.guest')}</p><div class="panel-actions"><a class="felt-button" href="${asset('../mobile.html?opening=off')}">${t('home.account.connect')} <span aria-hidden="true">↗</span></a><button class="quiet-button" data-close>${t('me.later')}</button></div>`,{eyebrow:'ACCOUNT',nav:'me'});}
 function prefRows(){

@@ -3,11 +3,20 @@
 // 얼음은 옅은 하늘 펠트 조각, 설탕은 흰 펠트 각설탕. 고른 컵은 분홍 펠트 받침 위에 선다.
 // 펠트 질감은 말 랠리처럼 키트의 펠트 사진(kit/felt/tex-*.webp)을 재질에 곱한다. 카메라는 움직이지 않는다(흔들기·확대 없음).
 // 움직임 줄이기에서는 김·붓기·떨어지기·밀어내기를 하지 않는다. WebGL이 없으면 같은 모습을 2D로 그리는 FlatStage를 쓴다.
+// theme 'world'(WORLD 안 캠퍼스 판, 2026-11-03 2판): 작업대는 화면 CSS의 실사 사진(assets/world/bench.webp)이고, 여기서는 그림자만 받는 투명 판 위에
+// 유광 도자기 머그 · 맑은 유리 텀블러 · 어두운 받침을 세운다(작은 실내 반사 환경으로 빛을 받는다). LAB('lab')은 그대로다.
+// world에서만: 얼음은 중력처럼 빨라지며 떨어져 ICE_LAND 시각에 바닥에 닿고(효과음 땡을 그 시각에 맞춘다 — world-play.mjs), 재료가 들어가면 컵이
+// 한 번 출렁이며(1 → 1.06 → 1), 새 컵은 왼쪽에서 미끄러져 들어온다. rimPoint()는 날아드는 재료 사진의 끝점(컵 테두리의 화면 자리)이다.
 import * as THREE from './vendor/three.module.js';
 import { liquidOf } from './cafe.mjs';
 
 export const LIQUID = { coffee: '#5a3322', latte: '#c48c59', tea: '#c97c22', milktea: '#dcb27d', milk: '#fbf7ee' };
 const COLORS = { mug: '#fffaf1', tumbler: '#c4e0fb', coaster: '#f6bba9', ice: '#b8d9f7', sugar: '#ffffff' };
+// WORLD 캠퍼스 판: 실제 카페 물건의 색과 결(거칠기)
+const WORLD_LOOK = {
+  top: ['#6b4a35', 0.55], side: ['#3b281d', 0.7], mug: ['#f6f3ee', 0.3], tumbler: ['#dcebf2', 0.08],
+  coaster: ['#26272c', 0.85], ice: ['#eef7fc', 0.12], sugar: ['#ffffff', 0.7],
+};
 // 컵 모양(높이·위 반지름·아래 반지름·벽 두께·바닥 두께·음료가 차는 높이)
 const SHAPES = {
   mug: { h: 0.6, rTop: 0.34, rBot: 0.3, wall: 0.04, floor: 0.06, fill: 0.53 },
@@ -18,6 +27,19 @@ const COASTER_H = 0.035;
 const ICE_AT = [[-0.09, 0.05, 0], [0.09, -0.04, 0], [0.01, 0.06, 1]];   // 얼음 셋(x, z, 층)
 const SUGAR_AT = [[0.11, 0.1], [-0.12, -0.08]];
 const ease = (k) => 1 - Math.pow(1 - Math.min(1, Math.max(0, k)), 3);
+/** world: 얼음 셋이 컵 바닥에 닿는 시각(초, 누른 때부터). 효과음 ice의 hits로도 쓴다. */
+export const ICE_LAND = [0.12, 0.165, 0.21];
+const FALL = 0.12, DROP_H = 0.7;
+/** world: 얼음 k의 높이(누른 뒤 t초) — 45ms씩 늦게 떨어지기 시작해 FALL초 만에 닿고(가속), 80ms 작게 튄다. */
+function iceLift(t, k) {
+  const tau = t - (ICE_LAND[k] - FALL);
+  if (tau < 0) return DROP_H;
+  if (tau < FALL) return DROP_H * (1 - (tau / FALL) ** 2);
+  const b = tau - FALL;
+  return b < 0.08 ? 0.03 * Math.sin(Math.PI * b / 0.08) : 0;
+}
+/** world: 컵 출렁(누른 뒤 t초, 0.36초): 1 → 1.06 → 0.98 → 1. */
+const bumpScale = (t) => (t < 0 || t > 0.36 ? 1 : 1 + 0.08 * Math.sin(Math.PI * t / 0.18) * (1 - t / 0.36));
 const loadImg = (src) => new Promise((res) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
 
 /** 컵 단면(돌려 깎기용): 바깥 벽 → 둥근 입술 → 안쪽 벽 → 안쪽 바닥. */
@@ -33,6 +55,21 @@ function profile(s) {
 function innerR(s, y) {
   const k = (y - s.floor) / (s.h - s.floor);
   return (s.rBot - s.wall) + ((s.rTop - s.wall) - (s.rBot - s.wall)) * k - 0.006;
+}
+
+/** WORLD 유리 · 도자기가 받는 작은 실내 반사 환경: 어두운 방에 따뜻한 창 둘과 펜던트 하나(PMREM으로 굽는다). */
+function cafeEnvironment(renderer) {
+  const room = new THREE.Scene();
+  const box = new THREE.Mesh(new THREE.BoxGeometry(10, 6, 10), new THREE.MeshBasicMaterial({ color: '#3a2a20', side: THREE.BackSide }));
+  room.add(box);
+  const light = (color, w, h, x, y, z, ry = 0) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color })); m.position.set(x, y, z); m.rotation.y = ry; room.add(m); };
+  light('#fff3dc', 6, 3, 0, 1, -4.9);              // 뒤 창(작업대 사진의 창)
+  light('#ffe1b0', 2.2, 2.2, -4.9, 1.5, 0, Math.PI / 2);
+  light('#ffd08a', 1.2, 1.2, 1.5, 2.9, 0);          // 펜던트
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const tex = pmrem.fromScene(room, 0.04).texture;
+  pmrem.dispose();
+  return tex;
 }
 
 /** 크림 펠트 사진에서 밝기 결만 남긴 판. 재질 색을 곱해도 색이 탁해지지 않는다. */
@@ -56,10 +93,11 @@ function feltGrain(img) {
 
 export class CafeStage {
   /** canvas: 작업대 상자 안의 캔버스. onSelect(i): 컵을 눌렀을 때. WebGL을 만들 수 없으면 여기서 오류가 난다(app.mjs가 FlatStage로 바꾼다). */
-  constructor(canvas, onSelect, { reducedMotion = () => false } = {}) {
+  constructor(canvas, onSelect, { reducedMotion = () => false, theme = 'lab' } = {}) {
     this.canvas = canvas;
     this.onSelect = onSelect;
     this.reduced = reducedMotion;
+    this.theme = theme;
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -69,9 +107,10 @@ export class CafeStage {
 
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(30, 1, 0.1, 40);
-    this.scene.add(new THREE.HemisphereLight(0xfffaf2, 0xe2cdb8, 1.7));
-    const sun = new THREE.DirectionalLight(0xffffff, 1.7);
-    sun.position.set(-2.2, 4.6, 3.2);
+    this.scene.add(theme === 'world' ? new THREE.HemisphereLight(0xfff1df, 0x6b4a30, 1.1) : new THREE.HemisphereLight(0xfffaf2, 0xe2cdb8, 1.7));
+    const sun = new THREE.DirectionalLight(theme === 'world' ? 0xffe2bd : 0xffffff, theme === 'world' ? 2.1 : 1.7);
+    // WORLD: 작업대 사진의 빛은 뒤쪽 창에서 온다 — 그림자가 앞(아래)으로 조금 떨어지게 뒤 위에서 비춘다
+    if (theme === 'world') sun.position.set(-1.4, 4.2, -2.6); else sun.position.set(-2.2, 4.6, 3.2);
     sun.castShadow = true;
     sun.shadow.mapSize.set(1024, 1024);
     Object.assign(sun.shadow.camera, { left: -2.4, right: 2.4, top: 2.4, bottom: -2.4, near: 0.5, far: 12 });
@@ -86,13 +125,28 @@ export class CafeStage {
       mug: felt(COLORS.mug), tumbler: felt(COLORS.tumbler), coaster: felt(COLORS.coaster),
       ice: felt(COLORS.ice), sugar: felt(COLORS.sugar),
     };
+    if (theme === 'world') {
+      for (const [k, [color, roughness]] of Object.entries(WORLD_LOOK)) this.mat[k] = new THREE.MeshStandardMaterial({ color, roughness, metalness: 0 });
+      this.mat.mug = new THREE.MeshPhysicalMaterial({ color: WORLD_LOOK.mug[0], roughness: 0.32, clearcoat: 0.7, clearcoatRoughness: 0.18 });
+      // 유리: 반쯤 비치고 가장자리에 빛이 걸린다(안의 음료 · 얼음이 보인다)
+      this.mat.tumbler = new THREE.MeshPhysicalMaterial({ color: '#eaf4f8', roughness: 0.06, metalness: 0, transparent: true, opacity: 0.32, depthWrite: false, clearcoat: 1, clearcoatRoughness: 0.05, side: THREE.DoubleSide });
+      this.mat.ice = new THREE.MeshPhysicalMaterial({ color: WORLD_LOOK.ice[0], roughness: 0.08, transparent: true, opacity: 0.82, clearcoat: 1 });
+      this.scene.environment = cafeEnvironment(this.renderer);
+      this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      this.renderer.toneMappingExposure = 1.05;
+    }
 
     // 작업대: 코랄 펠트 윗면(앞쪽은 화면 아래로 이어진다)
     const counter = new THREE.Mesh(new THREE.BoxGeometry(14, 0.6, 4.4),
       [this.mat.side, this.mat.side, this.mat.top, this.mat.side, this.mat.side, this.mat.side]);
     counter.position.set(0, -0.3, 0.6);
     counter.receiveShadow = true;
-    this.scene.add(counter);
+    if (theme === 'world') {
+      // 작업대는 사진이 맡는다: 투명한 판에 그림자만 떨어진다
+      const catcher = new THREE.Mesh(new THREE.PlaneGeometry(14, 4.4), new THREE.ShadowMaterial({ opacity: 0.32 }));
+      catcher.rotation.x = -Math.PI / 2; catcher.position.set(0, 0, 0.6); catcher.receiveShadow = true;
+      this.scene.add(catcher);
+    } else this.scene.add(counter);
 
     // 붓는 줄기(재료를 넣는 순간만)
     this.pourMat = new THREE.MeshStandardMaterial({ color: LIQUID.coffee, roughness: 0.9 });
@@ -108,7 +162,7 @@ export class CafeStage {
     this.dirty = true;
     this.leaving = null;   // 서빙한 컵이 오른쪽으로 밀려 나가는 중 { t }
 
-    this.loadFelt();
+    if (theme !== 'world') this.loadFelt();
     this.ray = new THREE.Raycaster();
     this.pointer = new THREE.Vector2();
     this.click = (e) => {
@@ -196,6 +250,15 @@ export class CafeStage {
   /** 맞게 서빙했다: 컵이 오른쪽으로 밀려 나간다(움직임 줄이기에서는 그대로 둔다). */
   served() { if (!this.reduced()) this.leaving = { t: 0 }; }
 
+  /** 컵 테두리 가운데의 화면 자리(client 좌표). 날아드는 재료 사진의 끝점이다. 컵이 없으면 null. */
+  rimPoint(index = this.active) {
+    const slot = this.slots[index];
+    if (!slot?.group.visible || !slot.cup) return null;
+    const v = new THREE.Vector3(slot.x, slot.body.position.y + slot.shape().h, 0).project(this.camera);
+    const r = this.canvas.getBoundingClientRect();
+    return { x: r.left + (v.x + 1) / 2 * r.width, y: r.top + (1 - v.y) / 2 * r.height };
+  }
+
   render(dt = 0) {
     this.time += dt;
     let moving = false;
@@ -257,7 +320,7 @@ class Cup {
     handle.position.set(0.3, 0.31, 0);
     this.shapes.mug.add(handle);
 
-    this.liquidMat = new THREE.MeshStandardMaterial({ color: LIQUID.coffee, roughness: 0.95 });
+    this.liquidMat = new THREE.MeshStandardMaterial({ color: LIQUID.coffee, roughness: stage.theme === 'world' ? 0.3 : 0.95 });
     this.liquid = new THREE.Mesh(new THREE.CircleGeometry(1, 48), this.liquidMat);
     this.liquid.rotation.x = -Math.PI / 2;
     this.liquid.receiveShadow = true;
@@ -290,6 +353,8 @@ class Cup {
     this.color = new THREE.Color(LIQUID.coffee);
     this.colorTo = new THREE.Color(LIQUID.coffee);
     this.drop = { ice: 1, sugar: 1 };   // 떨어지는 중이면 0→1
+    this.bump = -1;                     // world 출렁: 누른 뒤 초(−1이면 없음)
+    this.bumpAt = 0;                    // 출렁이 시작되는 시각(재료마다: 붓기 0.2초 · 얼음 · 설탕은 닿는 순간)
   }
 
   useGrain(grain) {
@@ -314,8 +379,10 @@ class Cup {
     this.shapes.tumbler.visible = this.kind === 'tumbler';
     this.coaster.visible = active;
     this.body.position.y = active ? COASTER_H : 0;
-    // 자리: 컵을 더하거나 빼면 미끄러지듯 옮긴다
-    if (appearing || reduced) { this.x = x; this.slide = null; this.group.position.x = x; }
+    // 자리: 컵을 더하거나 빼면 미끄러지듯 옮긴다(world는 새 컵이 왼쪽에서 들어온다)
+    const world = this.stage.theme === 'world';
+    if (appearing && world && !reduced) { this.x = x; this.slide = { from: x - 0.9, to: x, t: 0 }; this.group.position.x = x - 0.9; }
+    else if (appearing || reduced) { this.x = x; this.slide = null; this.group.position.x = x; }
     else if (Math.abs(this.x - x) > 0.001) { this.slide = { from: this.group.position.x, to: x, t: 0 }; this.x = x; }
     else this.group.position.x = x;
     // 음료
@@ -327,6 +394,7 @@ class Cup {
     // 얼음·설탕이 막 들어왔으면 위에서 떨어뜨린다
     if (change === 'ice' && cup.ice && !reduced) this.drop.ice = 0;
     if (change === 'sugar' && cup.sugar && !reduced) this.drop.sugar = 0;
+    if (world && change && !reduced) { this.bump = 0; this.bumpAt = change === 'ice' ? ICE_LAND[0] : change === 'sugar' ? 0.12 : ['coffee', 'tea', 'milk'].includes(change) ? 0.2 : 0; }
     this.place();
   }
 
@@ -338,11 +406,13 @@ class Cup {
     this.liquid.scale.setScalar(Math.max(0.01, innerR(s, y)));
     this.liquidMat.color.copy(this.color);
     const lift = (d) => (d >= 1 ? 0 : 0.7 * (1 - ease(d)));
+    const world = this.stage.theme === 'world';
     this.ice.forEach((m, k) => {
       m.visible = !!c?.ice;
       const [x, z, layer] = ICE_AT[k];
       const r = innerR(s, y) - 0.1;
-      m.position.set(Math.max(-r, Math.min(r, x)), y + 0.045 + layer * 0.11 + lift(this.drop.ice - k * 0.12), z);
+      const up = world ? (this.drop.ice >= 1 ? 0 : iceLift(this.drop.ice * 0.42, k)) : lift(this.drop.ice - k * 0.12);
+      m.position.set(Math.max(-r, Math.min(r, x)), y + 0.045 + layer * 0.11 + up, z);
     });
     this.sugar.forEach((m, k) => {
       m.visible = !!c?.sugar;
@@ -372,6 +442,13 @@ class Cup {
       moving = true;
     }
     for (const k of ['ice', 'sugar']) if (this.drop[k] < 1) { this.drop[k] = Math.min(1, this.drop[k] + dt / 0.42); moving = true; }
+    if (this.bump >= 0) {
+      this.bump += dt;
+      const sc = bumpScale(this.bump - this.bumpAt);
+      this.body.scale.set(sc, sc, sc);
+      if (this.bump - this.bumpAt > 0.36) { this.bump = -1; this.body.scale.set(1, 1, 1); }
+      moving = true;
+    }
     this.place();
     // 김: 따뜻한 음료 위로 천천히 오른다(움직임 줄이기에서는 없다)
     const hot = this.cup.temp === 'hot' && this.level > 0.6 && !this.stage.reduced();
@@ -390,13 +467,14 @@ class Cup {
 
 /** WebGL이 없을 때: 같은 작업대를 2D로 그린다(컵 모양·음료 색·얼음·설탕·고른 컵 받침). */
 export class FlatStage {
-  constructor(canvas, onSelect) {
+  constructor(canvas, onSelect, { theme = 'lab' } = {}) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.onSelect = onSelect;
+    this.theme = theme;
     this.cups = [];
     this.active = 0;
-    loadImg('kit/felt/tex-coral.webp').then((im) => { this.coral = im; this.draw(); });
+    if (theme !== 'world') loadImg('kit/felt/tex-coral.webp').then((im) => { this.coral = im; this.draw(); });
     this.click = (e) => {
       const r = canvas.getBoundingClientRect(), x = (e.clientX - r.left) / r.width;
       if (this.cups.length === 2) this.onSelect?.(x < 0.5 ? 0 : 1);
@@ -420,7 +498,8 @@ export class FlatStage {
     g.clearRect(0, 0, W, H);
     // 작업대: 코랄 펠트 결(사진이 오기 전에는 같은 색 면)
     const top = H * 0.4;
-    g.fillStyle = '#ec6f5f';
+    const world = this.theme === 'world';
+    g.fillStyle = world ? WORLD_LOOK.top[0] : '#ec6f5f';
     g.fillRect(0, top, W, H - top);
     if (this.coral) {
       g.globalAlpha = 0.85;
@@ -434,8 +513,8 @@ export class FlatStage {
     this.cups.forEach((c, i) => {
       const cx = n === 1 ? W / 2 : W / 2 + (i === 0 ? -1 : 1) * unit * 0.9, base = H * 0.74;   // 아래 컵 이름표를 비켜 선다
       const cold = c.temp === 'cold', w = unit * (cold ? 0.62 : 0.72), h = unit * (cold ? 1.05 : 0.72);
-      if (i === this.active) {   // 고른 컵의 분홍 받침
-        g.fillStyle = COLORS.coaster;
+      if (i === this.active) {   // 고른 컵의 분홍 받침(WORLD: 어두운 받침)
+        g.fillStyle = world ? WORLD_LOOK.coaster[0] : COLORS.coaster;
         g.beginPath(); g.ellipse(cx, base, w * 0.72, w * 0.16, 0, 0, Math.PI * 2); g.fill();
       }
       if (!cold) {   // 머그 손잡이

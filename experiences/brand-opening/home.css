@@ -198,6 +198,31 @@ html:not([lang=ko]) .play-list button:first-child .play-art{position:relative;to
 .play-list button:nth-child(3) .play-art{transform:rotate(3deg)}
 .play-list button:not(:first-child) .arrow{background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line)}
 .play-list button:not(:first-child):hover{box-shadow:var(--w-card-edge),0 0 0 4px var(--w-line)}
+/* 해금(11-03, play-unlocks.mjs): 넷째 놀이부터 짝이 안 맞는 마지막 카드는 한 줄을 다 쓴다. 잠긴 놀이는 가라앉힌 카드 —
+   그림은 흐리게, 화살표 자리에 자물쇠, 설명 자리에 버터 LED와 「이야기에서 열려요 — 여는 자리」 */
+.play-list>button:last-child:nth-child(even){grid-column:1/-1}
+.play-list button[data-locked]{cursor:default}
+.play-list button[data-locked] .play-art{opacity:.45;filter:grayscale(.7)}
+.play-list button[data-locked] .play-copy strong{color:var(--w-ink-2)}
+.play-list button[data-locked] .arrow::before{width:14px;height:14px;-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='3.5' y='7' width='9' height='6.5' rx='1.6' fill='black'/%3E%3Cpath d='M5.5 7V5.2a2.5 2.5 0 0 1 5 0V7' fill='none' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='3.5' y='7' width='9' height='6.5' rx='1.6' fill='black'/%3E%3Cpath d='M5.5 7V5.2a2.5 2.5 0 0 1 5 0V7' fill='none' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E")}
+.play-list button[data-locked]:hover{box-shadow:var(--w-card-edge)}
+.play-list button[data-locked]:active{transform:none}
+.play-lock{display:inline-flex;align-items:baseline;gap:8px;color:var(--w-check-text)}
+.play-lock::before{content:'';flex:none;width:7px;height:7px;border-radius:50%;background:var(--w-led-check);transform:translateY(-1px)}
+/* 열린 뒤 처음 한 번(data-new, home.mjs): 자물쇠 자리에 화살표가 튀어나오고(빠른 공간), 그림이 흑백에서 색으로(느린 효과), 빛이 한 번 훑는다.
+ * 그 뒤로는 다른 놀이와 똑같다. 움직임 줄이기면 「새로 열림」 글만 남는다. */
+.play-list button[data-new] .play-art{animation:playUnlockArt .3s cubic-bezier(.34,.88,.34,1) .32s both}
+@keyframes playUnlockArt{from{opacity:.45;filter:grayscale(.7)}to{opacity:1;filter:none}}
+.play-list button[data-new] .arrow{animation:playUnlockArrow .35s cubic-bezier(.42,1.67,.21,.9) .2s both}
+@keyframes playUnlockArrow{from{transform:scale(.55) rotate(-25deg)}to{transform:none}}
+.play-sheen{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden;border-radius:inherit}
+.play-sheen::before{content:'';position:absolute;top:-20%;bottom:-20%;left:-60%;width:45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.2) 45%,rgba(255,255,255,.32) 50%,rgba(255,255,255,.2) 55%,transparent);
+  transform:translateX(0) skewX(-12deg);animation:playSheen .7s cubic-bezier(.34,.88,.34,1) .55s both}
+@keyframes playSheen{from{transform:translateX(0) skewX(-12deg)}to{transform:translateX(420%) skewX(-12deg)}}
+.play-new{display:inline-flex;align-items:center;margin-right:4px;padding:2px 8px 3px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);font-weight:650;font-size:12px;line-height:1.3;vertical-align:1px}
+@media (prefers-reduced-motion:reduce){.play-list button[data-new] :is(.play-art,.arrow),.play-sheen::before{animation:none}.play-sheen{display:none}}
+:root[data-motion=reduced] .play-list button[data-new] :is(.play-art,.arrow),:root[data-motion=reduced] .play-sheen::before{animation:none}
+:root[data-motion=reduced] .play-sheen{display:none}
 @container (min-width:600px){.play-list{grid-template-columns:1.3fr 1fr}.play-list button:first-child{grid-column:auto;grid-row:span 2;min-height:400px}.play-list button:first-child .play-art{width:190px}}
 .play-more{display:grid;margin-top:22px}
 .play-more .eyebrow{margin-bottom:6px}

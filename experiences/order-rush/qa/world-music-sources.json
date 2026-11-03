@@ -1,0 +1,29 @@
+{
+ "note": "곡 출처 · 권리(공개 게임 파일 music.json에는 싣지 않는다 — 공개 빌드의 제작 도구 이름 검사). 음악고리.py가 함께 쓴다.",
+ "tracks": {
+  "open-a1b7366a": {
+   "file": "assets/world/music/open-a1b7366a.mp3",
+   "suno": "a1b7366a-3fda-4352-bd31-4b8543410e55",
+   "title": "Order Rush Open C",
+   "rights": "suno-premier-official-download"
+  },
+  "open-5b24e08e": {
+   "file": "assets/world/music/open-5b24e08e.mp3",
+   "suno": "5b24e08e-8ecd-443c-a0e9-3c5e6136c0a3",
+   "title": "Order Rush Open C",
+   "rights": "suno-premier-official-download"
+  },
+  "lunch-fa1490bb": {
+   "file": "assets/world/music/lunch-fa1490bb.mp3",
+   "suno": "fa1490bb-cd8b-4b2a-918b-c0a058cf02d4",
+   "title": "Order Rush Lunch G",
+   "rights": "suno-premier-official-download"
+  },
+  "lunch-65feca30": {
+   "file": "assets/world/music/lunch-65feca30.mp3",
+   "suno": "65feca30-bd2f-4e78-ab37-4774ccbf0bf9",
+   "title": "Order Rush Lunch G",
+   "rights": "suno-premier-official-download"
+  }
+ }
+}

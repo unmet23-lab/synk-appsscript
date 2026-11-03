@@ -672,6 +672,8 @@ function mountRewardTutor(){
  }
 }
 const games={runner:{get title(){return t('game.runner.title');},path:'korean-runner/'},rhythm:{get title(){return t('game.rhythm.title');},path:'korean-rhythm/'},hangul:{get title(){return t('game.hangul.title');},path:'hangul-stage/'},
+ // 주문 폭주(11-03, 캠퍼스 판 겉 — order-rush/world-skin.css): 홈 「놀이」가 해금 표(brand-opening/play-unlocks.mjs)로 연 뒤에만 여기로 온다.
+ order:{get title(){return t('game.order.title');},path:'order-rush/'},
  // 드라마 말하기 1화(11-02, 설계 experiences/drama/qa/WORLD올리기-20261102/설계.md): 지금은 코호트 바로가기(?drama=1)로만 연다 — 첫 화면 줄은 입구 작업과 함께 정한다.
  // 제목은 번역 표 밖의 고정 글(새 키를 넣으면 모든 화면 언어의 검수가 따라온다).
  drama:{get title(){return currentLang()==='ko'?'드라마 말하기 · 1화':'Korean drama · Episode 1';},path:'drama/',microphone:true}};
