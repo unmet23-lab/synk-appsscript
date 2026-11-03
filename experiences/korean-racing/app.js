@@ -55,8 +55,9 @@ function learn(action, fallback = null) { try { return coach ? action(coach) : f
 function learningScope() {
   const summary = learn((c) => c.summary());
   if (!coach || !learningAvailable) return '맞춤 기록을 연결하지 못했어요. 기본 코스는 계속 플레이할 수 있어요.';
+  if (/다른 탭/.test(summary?.storage.warning || '')) return '학습 기록을 기다리는 중이에요. 다른 탭에서 쓰고 있다면 그 탭을 닫아 주세요. 그러면 여기서 이어서 저장해요.';
   if (!summary?.storage.available) return '저장이 제한되어 이번 페이지에서만 맞춤 기록을 유지해요.';
-  return hosted ? 'WORLD 계정의 학습 기록 · 공유와 삭제는 WORLD 계정 설정에서 관리해요' : '이 기기의 학습 기록 · 아직 학생 계정과 연결 전';
+  return hosted ? 'WORLD 계정의 학습 기록 · 공유와 삭제는 WORLD 계정 설정에서 관리해요' : '지금 연습은 이 브라우저에 저장돼요.';
 }
 // 순간 맞춤: 차가 달리는 속도와 맞춤 5문항이 고르는 문항 단계(FLOW_RACE). 레이스마다 하나, 시연·연습에는 없다. 잃어도 맞춤만 멈춘다.
 let live = null;
@@ -310,7 +311,40 @@ function lobbyView() {
     targetUnavailable: targetUnavailable(), progress: round.progress, garage: round.garage, garageSaved, mission: dailyMission(round.progress, Date.now(), round.garage),
     driver: driverName, scope: learningScope(), hosted, isUnlocked };
 }
-function renderLobby() { lobby.render(lobbyView()); }
+function renderLobby() { lobby.render(lobbyView()); paintResetNotice(); }
+// 지우기 결과는 누른 단추 바로 옆(#learning-scope)에 남긴다. 입구가 이 칸의 바탕 글을 다시 써도 안내는 다음 판을 시작할 때까지 남고, 화면 읽기는 #sr-live로 듣는다.
+const RESET_NOTICE = {
+  done: '이 브라우저의 공통 학습 기록을 지웠어요.',
+  busy: '학습 기록을 지우지 못했어요. 다른 탭을 닫고 다시 시도해 주세요.',
+  retry: '학습 기록은 아직 지워지지 않았어요. 이제 다시 지울 수 있어요.',
+  unsupported: '이 환경에서는 학습 기록을 안전하게 쓸 수 없어 지우지 못했어요. 기록은 그대로 남아 있어요.',
+  account: '이 기록은 WORLD 계정에 있어서 여기서는 지우지 않았어요. WORLD 계정 설정에서 지워 주세요.',
+  storage: '이 브라우저에 저장하지 못해 학습 기록을 모두 지우지 못했어요. 남은 기록이 있을 수 있으니 저장 공간을 확인하고 다시 시도해 주세요.',
+  error: '오류로 학습 기록을 모두 지우지 못했어요. 남은 기록이 있을 수 있으니 새로 고친 뒤 다시 시도해 주세요.',
+  unavailable: '학습 기록 기능을 불러오지 못해 지우지 못했어요. 새로 고친 뒤 다시 시도해 주세요.',
+};
+let resetNotice = null, resetNoticeShown = null;
+function resetFailure(error) {
+  if (error?.code === 'ACCOUNT_RESET_REQUIRED') return 'account';
+  if (error?.code === 'STORAGE_BUSY') return globalThis.navigator?.locks ? 'busy' : 'unsupported';
+  return error?.code === 'STORAGE_ERROR' ? 'storage' : 'error';
+}
+// 대기는 굳히지 않는다: 저장 권한을 얻으면 '다시 지울 수 있어요'로, 다시 잃으면 '다른 탭을 닫고'로 지금 상태를 따른다.
+function paintResetNotice(force = false) {
+  let canPersist = false;
+  if (resetNotice === 'busy') try { canPersist = coach?.syncPort?.canPersist?.() === true; } catch { /* 닫힌 게임: 대기 안내를 그대로 둔다 */ }
+  const text = RESET_NOTICE[resetNotice === 'busy' && canPersist ? 'retry' : resetNotice] || null;
+  if (!text && !resetNoticeShown) return;
+  const scope = $('learning-scope'), base = learningScope();
+  const notice = document.createElement('strong');
+  notice.textContent = text || '';
+  // 바탕 글이 이미 다른 탭을 기다린다고 말할 때는 같은 말을 두 번 하지 않는다.
+  if (!text) scope.textContent = base; else if (/다른 탭/.test(text)) scope.replaceChildren(notice); else scope.replaceChildren(`${base} `, notice);
+  if (text && currentScreen() === 'lobby' && (force || text !== resetNoticeShown)) hud.announce(text);
+  resetNoticeShown = text;
+}
+function showResetNotice(kind) { resetNotice = kind; paintResetNotice(true); }
+function clearResetNotice() { resetNotice = null; paintResetNotice(); }
 function showLobby() { showScreen('lobby'); worldShown = false; renderLobby(); }
 function lobbyNote(text) { $('l-reason').textContent = text; hud.announce(text); }
 function selectStage(s) {
@@ -556,7 +590,7 @@ function repeatTutorial() {
 async function startTutorial() {
   if (!ready || starting) return;
   if (garageOpen) garageUI.close();
-  clearTutorial(); starting = true; round.running = false; silence(); round.narrationUnavailable = false; renderLobby();
+  clearResetNotice(); clearTutorial(); starting = true; round.running = false; silence(); round.narrationUnavailable = false; renderLobby();
   if (!round.soundTouched) { round.soundEnabled = true; updateSoundButton(); }
   if (round.soundEnabled) { try { await ensureAudio(); await narrator.prepare(TUTORIAL_CLIPS); } catch { round.narrationUnavailable = true; } }
   showRace();
@@ -654,7 +688,7 @@ async function start(demo = false, bypassTutorial = false) {
   // 3D가 아직 준비 중이면 누른 것을 기억했다가 준비되는 대로 출발한다(소리는 누른 순간에 연다).
   if (!ready) { if (loadState === 'loading') { pendingStart = { demo }; if (round.soundEnabled) void ensureAudio(); renderLobby(); } return; }
   if (!demo && !bypassTutorial && !tutorialCompleted && !tutorialDismissed) { await startTutorial(); return; }
-  clearTutorial();
+  clearResetNotice(); clearTutorial();
   if (garageOpen) garageUI.close();
   round.garage = loadGarageSafe(); round.roundId = globalThis.crypto?.randomUUID?.() || `race-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   starting = true; round.running = false; round.narrationUnavailable = false; silence(); coastRadio.stop(); renderLobby();
@@ -858,11 +892,20 @@ $('tutorial-home').addEventListener('click', home);
 $('next-stage').addEventListener('click', () => { const next = nextStage(); if (next) { const demo = round.roundWasDemo; selectStage(next); start(demo); } });
 $('reset-learning').hidden = hosted;
 $('reset-learning').addEventListener('click', () => {
-  // 실제로 지운 경우에만 지웠다고 말한다. 계정 기록은 WORLD에서 지우며, 그 거절은 학습 실패가 아니다.
-  let message = '학습 기록을 지우지 못했어요. 다시 시도해 주세요.';
-  try { const result = coach?.reset(); if (result?.storage?.available) message = '이 기기의 공통 맞춤 학습 기록을 지웠어요.'; }
-  catch (error) { if (error?.code === 'ACCOUNT_RESET_REQUIRED') message = '계정의 학습 기록은 WORLD 계정 설정에서 관리해 주세요.'; else learningAvailable = false; }
-  renderLobby(); lobbyNote(message);
+  if (!coach) { showResetNotice('unavailable'); return; }
+  if (!window.confirm('같은 주소에서 연 모든 SYNK 게임의 학습 기록을 지울까요? 코스 진행과 차고는 그대로 남아요.')) return;
+  // 엔진이 저장 가능한 상태로 돌아왔고 공유 원장이 실제로 비었을 때만 지웠다고 말한다. 계정 기록 거절과 다른 탭 대기는 학습 실패가 아니다.
+  let outcome;
+  try {
+    const available = coach.reset()?.storage?.available === true;
+    if (available) learningAvailable = true;
+    outcome = !available ? 'storage' : coach.events().length === 0 ? 'done' : 'error';
+  } catch (error) {
+    outcome = resetFailure(error);
+    if (!['account', 'busy', 'unsupported'].includes(outcome)) learningAvailable = false;
+  }
+  // 추천은 #l-reason에 그대로 두고 결과는 단추 옆에 쓴다. 지난 안내를 먼저 거둬 이번 결과만 한 번 읽힌다.
+  clearResetNotice(); renderLobby(); showResetNotice(outcome);
 });
 for (const name of ['marin', 'kkamong']) $(`driver-${name}`).addEventListener('click', () => { selectDriver(name); renderLobby(); });
 for (const direction of ['left', 'right']) {
@@ -948,6 +991,21 @@ if (QA) installQaHook({
 });
 
 /* ── 시작 ── */
+// 저장 상태가 실제로 바뀔 때(기록을 넘겨받음·잃음·오류)만 입구의 안내 글을 다시 쓴다. 달리는 중의 레이스·문제·소리와 화면 전환·포커스는 건드리지 않는다.
+function refreshStorageText() {
+  if (currentScreen() !== 'lobby') return;
+  $('learning-scope').textContent = learningScope(); paintResetNotice();
+  // 기록으로 고른 코스의 이유만 다시 그린다. 코스 창이 열려 있으면 창 안 포커스를 지키고, 창을 열 때 새로 읽는다.
+  if (!$('course-dialog').open && (assignment() || round.selectedStage?.personalized)) renderLobby();
+}
+let storagePaint = false;
+try {
+  coach?.syncPort?.subscribe?.((event) => {
+    if (storagePaint || !['storage-ready', 'storage-wait', 'storage-error'].includes(event?.kind)) return;
+    storagePaint = true;
+    Promise.resolve().then(() => { storagePaint = false; refreshStorageText(); }).catch(() => {});
+  });
+} catch { /* 알림이 없어도 입구를 다시 열 때 최신 상태를 읽는다 */ }
 renderLobby();
 if (new URLSearchParams(location.search).get('garage') === '1') openGarage();
 init();

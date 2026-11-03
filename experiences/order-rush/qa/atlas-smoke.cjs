@@ -11,7 +11,8 @@ const {chromium}=require(require.resolve('playwright',{paths:[process.env.SYNK_Q
  const base=process.env.SYNK_QA_BASE||'http://127.0.0.1:4280';
  const result={origin:base};
  try{
-  await page.goto(`${base}/order-rush/?qa`);await page.locator('#learning-reason').filter({hasText:'기록'}).waitFor();
+  await page.goto(`${base}/order-rush/?qa`);
+  await page.locator('#learning-reason').filter({hasText:'아직 기록이 적어요'}).waitFor();
   await page.screenshot({path:path.join(__dirname,'atlas-cafe-desktop.png'),fullPage:true});
   await page.locator('#start').click();await page.waitForFunction(()=>window.synkCafe.current?.audioCompleted);
   assert.equal(await page.evaluate(()=>window.synkCafe.current.id),'o01');
@@ -24,18 +25,22 @@ const {chromium}=require(require.resolve('playwright',{paths:[process.env.SYNK_Q
   // 2026-10-06: 영업 중간에 결과를 보는 단추를 없앴다 → 확인 도구의 끝내기(?qa)
   await page.evaluate(()=>window.__rush.finish());await page.locator('#results').waitFor({state:'visible'});
   await page.screenshot({path:path.join(__dirname,'atlas-cafe-results.png'),fullPage:true});
-  await page.reload();result.afterReload=await page.evaluate(()=>window.synkCafe.learning.independent);assert.equal(result.afterReload,1);
+  await page.reload();await page.waitForFunction(()=>window.synkCafe?.learning?.storage.available);
+  result.afterReload=await page.evaluate(()=>window.synkCafe.learning.independent);assert.equal(result.afterReload,1);
   await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(__dirname,'atlas-cafe-mobile.png'),fullPage:true});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   await page.goto(`${base}/korean-runner/`);await page.locator('#start:not([disabled])').waitFor();
-  result.sharedBeforeRunner=await page.evaluate(()=>SynkLearning.createGame({gameId:'korean-runner',storage:localStorage}).summary().independent);
+  const runnerCoach=await page.evaluateHandle(()=>SynkLearning.createGame({gameId:'korean-runner',storage:localStorage}));
+  await page.waitForFunction(coach=>coach.summary().storage.available,runnerCoach);
+  result.sharedBeforeRunner=await runnerCoach.evaluate(coach=>coach.summary().independent);
   assert.equal(result.sharedBeforeRunner,1);
   await page.screenshot({path:path.resolve(__dirname,'../../korean-runner/qa/atlas-runner-mobile.png'),fullPage:true});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   await page.setViewportSize({width:1280,height:900});await page.screenshot({path:path.resolve(__dirname,'../../korean-runner/qa/atlas-runner-desktop.png'),fullPage:true});
-  await page.locator('#start').click();await page.waitForFunction(()=>window.synkRunner.info.model?.answers.length>0,{},{timeout:20000});
+  await page.locator('#start').click();await page.waitForFunction(()=>window.synkRunner?.info.model?.answers.length>0,undefined,{timeout:20000});
   await page.locator('#pause-button').click();
-  result.runner=await page.evaluate(()=>{const s=SynkLearning.createGame({gameId:'korean-runner',storage:localStorage}).summary();return {independent:s.independent,unassessed:s.counts.unassessed};});
+  result.runner=await runnerCoach.evaluate(coach=>{const s=coach.summary();return {independent:s.independent,unassessed:s.counts.unassessed};});
+  await runnerCoach.evaluate(coach=>coach.dispose());
   assert.equal(result.runner.independent,1);assert.ok(result.runner.unassessed>0);
   await page.screenshot({path:path.resolve(__dirname,'../../korean-runner/qa/atlas-runner-paused.png'),fullPage:true});
   assert.deepEqual(errors,[]);result.errors=errors;result.status='passed';

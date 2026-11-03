@@ -85,6 +85,7 @@ let raf = 0, lastFrame = 0, lastUi = 0, toastTimer = 0, startGeneration = 0, rev
 /* ── 입구: 곡 셋(쿠션 타일) · 추천 이유 · 박자 난이도 ── */
 const SONG_FELT = ['blush', 'lapis', 'butter'];   // 초록(코랄 계열) · 해안선(바다) · 네 시(오후 햇빛)
 const songWhat = (track) => track.subtitle.split(' · ').pop();
+let trackChosen = false;   // 직접 고른 곡은 저장 상태가 바뀌어 추천이 달라져도 그대로 둔다
 
 function renderTracks() {
   const grid = $('track-grid'), allowed = assignmentTracks(assignment());
@@ -99,7 +100,7 @@ function renderTracks() {
     b.innerHTML = `<span class="song-title">${esc(track.title)}</span><span class="song-what">${esc(songWhat(track))}</span>`
       + `<span class="song-meta"><span class="bpm">${Math.round(track.bpm)} BPM</span><span class="len">&nbsp;· ${clock(track.duration)}</span></span>`;
     b.disabled = !allowed.some((c) => c.trackId === track.id);
-    b.addEventListener('click', () => selectTrack(track.id));
+    b.addEventListener('click', () => { trackChosen = true; selectTrack(track.id); });
     grid.append(b);
   }
 }
@@ -109,6 +110,46 @@ function selectTrack(id) {
   for (const x of $('track-grid').children) x.setAttribute('aria-pressed', String(Number(x.dataset.track) === id));
   $('l-song').textContent = TRACKS[id].title;
 }
+// 지우기 결과는 누른 단추 바로 옆(#learning-scope)에 남긴다. 입구가 이 칸의 바탕 글을 다시 써도 안내는 다음 판을 시작할 때까지 남는다. 누른 직후의 결과는 #toast(role=status)가, 그 뒤 저장 상태가 바꾼 안내는 #sr-live가 읽어 한 문장을 두 번 읽지 않는다.
+const RESET_NOTICE = {
+  done: '이 브라우저의 모든 게임 학습 기록을 지웠어요. 공통 코인과 소리·박자 설정은 그대로 남아요.',
+  busy: '학습 기록을 지우지 못했어요. 다른 탭을 닫고 다시 시도해 주세요.',
+  retry: '학습 기록은 아직 지워지지 않았어요. 이제 다시 지울 수 있어요.',
+  unsupported: '이 환경에서는 학습 기록을 안전하게 쓸 수 없어 지우지 못했어요. 기록은 그대로 남아 있어요.',
+  account: '이 기록은 WORLD 계정에 있어서 여기서는 지우지 않았어요. WORLD 계정 설정에서 지워 주세요.',
+  storage: '이 브라우저에 저장하지 못해 학습 기록을 모두 지우지 못했어요. 남은 기록이 있을 수 있으니 저장 공간을 확인하고 다시 시도해 주세요.',
+  error: '오류로 학습 기록을 모두 지우지 못했어요. 남은 기록이 있을 수 있으니 새로 고친 뒤 다시 시도해 주세요.',
+  unavailable: '학습 기록 기능을 불러오지 못해 지우지 못했어요. 새로 고친 뒤 다시 시도해 주세요.',
+};
+let resetNotice = null, resetNoticeShown = null;
+function resetFailure(error) {
+  if (error?.code === 'ACCOUNT_RESET_REQUIRED') return 'account';
+  if (error?.code === 'STORAGE_BUSY') return globalThis.navigator?.locks ? 'busy' : 'unsupported';
+  return error?.code === 'STORAGE_ERROR' ? 'storage' : 'error';
+}
+// 대기는 굳히지 않는다: 저장 권한을 얻으면 '다시 지울 수 있어요'로, 다시 잃으면 '다른 탭을 닫고'로 지금 상태를 따른다.
+function paintResetNotice(clicked = false) {
+  let canPersist = false;
+  if (resetNotice === 'busy') try { canPersist = coach?.syncPort?.canPersist?.() === true; } catch { /* 닫힌 게임: 대기 안내를 그대로 둔다 */ }
+  const text = RESET_NOTICE[resetNotice === 'busy' && canPersist ? 'retry' : resetNotice] || null;
+  if (!text && !resetNoticeShown) return;
+  const scope = $('learning-scope'), base = learningScopeText();
+  const notice = document.createElement('strong');
+  notice.textContent = text || '';
+  // 바탕 글이 이미 다른 탭을 기다린다고 말할 때는 같은 말을 두 번 하지 않는다.
+  if (!text) scope.textContent = base; else if (/다른 탭/.test(text)) scope.replaceChildren(notice); else scope.replaceChildren(`${base} `, notice);
+  if (text && clicked) toast(text); else if (text && state.screen === 'lobby' && text !== resetNoticeShown) announce(text);
+  resetNoticeShown = text;
+}
+function showResetNotice(kind) { resetNotice = kind; paintResetNotice(true); }
+function clearResetNotice() { resetNotice = null; paintResetNotice(); }
+function learningScopeText() {
+  const summary = learn((c) => c.summary());
+  return !coach || !learningAvailable ? '학습 기록을 연결하지 못했어요.'
+    : /다른 탭/.test(summary?.storage?.warning || '') ? '학습 기록을 기다리는 중이에요. 다른 탭에서 쓰고 있다면 그 탭을 닫아 주세요. 그러면 여기서 이어서 저장해요.'
+    : summary?.storage.available ? (hosted ? '학습 기록은 WORLD 계정에 이어지고, 공유와 삭제는 WORLD 계정 설정에서 할 수 있어요.' : '지금 연습은 이 브라우저에 저장돼요. 같은 주소에서 연 다른 SYNK 게임과 기록을 함께 써요.')
+      : '기록을 저장할 수 없어서 이 페이지에서만 기억해요.';
+}
 /** 내 기록에 맞는 다음 곡(Atlas). 지정 과제가 있으면 그 곡만 고를 수 있다. */
 function renderRecommendation(select = false) {
   const target = assignment(), candidates = assignmentTracks(target);
@@ -117,10 +158,7 @@ function renderRecommendation(select = false) {
   for (const x of $('track-grid').children) x.classList.toggle('rec', !!candidate && Number(x.dataset.track) === candidate.trackId);
   $('recommendation-reason').textContent = target ? rhythmTargetLabel(target)
     : recommendation?.reason || '맞춤 추천을 불러오지 못했어요. 원하는 곡은 그대로 플레이할 수 있어요.';
-  const summary = learn((c) => c.summary());
-  $('learning-scope').textContent = !coach || !learningAvailable ? '학습 기록을 연결하지 못했어요.'
-    : summary?.storage.available ? (hosted ? '학습 기록은 WORLD 계정에 이어지고, 공유와 삭제는 WORLD 계정 설정에서 할 수 있어요.' : '학습 기록은 이 브라우저에만 저장되고, 아직 학생 계정과는 이어지지 않아요.')
-      : '기록을 저장할 수 없어서 이 페이지에서만 기억해요.';
+  $('learning-scope').textContent = learningScopeText(); paintResetNotice();
   $('reset-learning').hidden = hosted;
   if (candidate && select) selectTrack(candidate.trackId);
   return { candidate, reason: recommendation?.reason || null };
@@ -167,6 +205,7 @@ async function start() {
   if (TRIAL && trialDone) { show('results'); $('w-trial-login')?.focus({ preventScroll: true }); return; }   // 체험은 한 곡: 한 곡 더는 로그인 뒤
   if (needsCalibration() && openCalibration()) return;   // WORLD 처음 한 번: 박자 맞추기 → 「노래 시작하기」로 다시 여기
   state.loading = true;
+  clearResetNotice();
   const generation = ++startGeneration;
   $('start-button').disabled = true; $('replay-button').disabled = true;
   try {
@@ -469,15 +508,19 @@ function finish() {
   coins.textContent = '공통 코인을 계산하고 있어요.';
   globalThis.SynkPlayCollection?.award({ game: 'rhythm', total, correct, completed: true, automatic: false, roundId: collectionRoundId })
     .then((result) => { if (state.round === r) coins.textContent = result?.reason === 'guest-trial' ? '체험 판이라 코인은 쌓이지 않았어요' : globalThis.SynkPlayCollection.rewardText(result); });
-  const next = renderRecommendation();
-  $('r-next-reason').textContent = next.candidate
-    ? nextTrackLine(next.candidate.label, next.reason)
-    : '다음에는 다른 곡이나 박자 난이도로 들어 봐요.';
+  paintNextReason();
   state.recallIndex = 0;
   $('recall-content').hidden = true; $('recall-intro').hidden = false;
   $('recall-button').hidden = false; $('recall-button').textContent = '다른 문장 듣기';
   if (WORLD) { worldResults(); worldArrive(); }
   $('result-title').focus({ preventScroll: true });
+}
+
+function paintNextReason() {
+  const next = renderRecommendation();
+  $('r-next-reason').textContent = next.candidate
+    ? nextTrackLine(next.candidate.label, next.reason)
+    : '다음에는 다른 곡이나 박자 난이도로 들어 봐요.';
 }
 
 function renderLog(r) {
@@ -746,21 +789,37 @@ for (const b of document.querySelectorAll('[data-offset]')) b.addEventListener('
 document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
 window.addEventListener('blur', () => pause());
 $('reset-learning').addEventListener('click', () => {
+  if (!coach) { showResetNotice('unavailable'); return; }
   if (!window.confirm('같은 주소에서 연 모든 SYNK 게임의 학습 기록을 지울까요? 공통 코인과 소리·박자 설정은 그대로 남아요.')) return;
-  let message = '학습 기록을 지우지 못했어요. 다시 시도해 주세요.';
+  let outcome;
   try {
-    const result = coach?.reset();
+    const result = coach.reset();
     learningAvailable = result?.storage?.available === true;
-    if (learningAvailable) message = '이 브라우저의 모든 게임 학습 기록을 지웠어요.';
+    // 엔진이 저장 가능한 상태로 돌아왔고 공유 원장이 실제로 비었을 때만 지웠다고 말한다.
+    outcome = !learningAvailable ? 'storage' : coach.events().length === 0 ? 'done' : 'error';
   } catch (error) {
-    if (error?.code === 'ACCOUNT_RESET_REQUIRED') message = '계정의 학습 기록은 SYNK WORLD에서 관리해 주세요.';
-    else learningAvailable = false;
+    outcome = resetFailure(error);
+    if (!['account', 'busy', 'unsupported'].includes(outcome)) learningAvailable = false;
   }
-  renderRecommendation(); toast(message);
+  // 지난 안내를 먼저 거둬 이번 결과만 한 번 읽힌다.
+  clearResetNotice(); renderRecommendation(); showResetNotice(outcome);
 });
 // 공통 코인 스크립트(collection.js)를 읽지 못했으면 코인 줄을 숨긴다.
 if (!globalThis.SynkPlayCollection) for (const n of document.querySelectorAll('.synk-collection-line')) n.hidden = true;
 
+// 저장 상태가 실제로 바뀔 때(기록을 넘겨받음·잃음·오류)만 입구·결과의 추천 글을 다시 쓴다. 연주 중의 음악·문항·판정과 화면 전환·포커스는 건드리지 않는다.
+function refreshStorageText() {
+  if (state.screen === 'lobby') renderRecommendation(!trackChosen);
+  else if (state.screen === 'results') paintNextReason();
+}
+let storagePaint = false;
+try {
+  coach?.syncPort?.subscribe?.((event) => {
+    if (storagePaint || !['storage-ready', 'storage-wait', 'storage-error'].includes(event?.kind)) return;
+    storagePaint = true;
+    Promise.resolve().then(() => { storagePaint = false; refreshStorageText(); }).catch(() => {});
+  });
+} catch { /* 알림이 없어도 입구를 다시 열 때 최신 상태를 읽는다 */ }
 renderTracks(); renderRecommendation(true); syncSettings();
 if(!TRIAL)supplementalLobby.show();
 

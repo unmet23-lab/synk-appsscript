@@ -469,12 +469,14 @@ function accountStatus() {
   const status = learning.status(), scope = learning.progressScope();
   $('#account-sign-in').hidden = scope.scope === 'account'; $('#account-sign-out').hidden = scope.scope !== 'account';
   $('#account-sync').hidden = !['offline', 'blocked', 'error'].includes(status.phase);
-  $('#account-status').textContent = status.warning || ({
-    synced: 'WORLD 계정에 학습 기록을 연결했어요.',
+  const waiting = /다른 탭/.test(status.warning || '');
+  $('#account-status').textContent = (waiting ? '학습 기록을 기다리는 중이에요. 다른 탭에서 쓰고 있다면 그 탭을 닫아 주세요. 그러면 여기서 이어서 저장해요.' : status.warning) || ({
+    unavailable: '학습 기록을 저장할 수 없어 이번 이야기만 연습해요.',
+    synced: '학습 기록이 WORLD 계정에 이어져요.',
     offline: `아직 보내지 못한 기록 ${status.queued || 0}개를 이 기기에 모아 두었어요.`,
     blocked: '학습 기록을 보내지 못했어요. WORLD 계정을 확인해 주세요.',
     local: '이 계정은 기록을 이 기기에만 저장해요. 이야기는 이 창에서만 이어져요.',
-  }[status.phase] || '연습 기록은 이 기기에 저장돼요.');
+  }[status.phase] || (scope.scope === 'device' ? '학습 기록은 이 브라우저에 저장돼요.' : '학습 기록은 이 기기에 저장돼요.'));
   if (scope.scope === 'device' && location.port === '5213') $('#account-status').textContent += ' 다른 게임과 함께 보려면 WORLD 입구에서 열어 주세요.';
   const accountUrl = location.pathname.startsWith('/story-classroom/')
     ? new URL('../synk-account/client.html?product=world', location.href)
@@ -625,6 +627,19 @@ Object.defineProperty(window, '__storyState', { get: () => ({ busy, started, ...
 Object.defineProperty(window, '__storyVoice', { get: () => ({ state: voice.state, id: voice.currentId, automatic: voice.automatic, readingOnly: voice.readingOnly }) });
 Object.defineProperty(window, '__storyLearning', { get: () => ({ summary: learning.summary(), status: learning.status(), scope: learning.progressScope() }) });
 
+// 저장 상태가 실제로 바뀔 때(기록을 넘겨받음·잃음·오류)만 입구·결과의 안내 글을 다시 쓴다. 진행 중인 이야기·소리와 화면 전환·포커스는 건드리지 않는다.
+function refreshStorageText() {
+  if (!$('#lobby').hidden) { accountStatus(); if (!learning.assignment()) $('#l-reason').textContent = lobbyReason(); }
+  else if (!$('#results').hidden) renderSkills();
+}
+let storagePaint = false;
+try {
+  learning.coach?.syncPort?.subscribe?.((event) => {
+    if (storagePaint || !['storage-ready', 'storage-wait', 'storage-error'].includes(event?.kind)) return;
+    storagePaint = true;
+    Promise.resolve().then(() => { storagePaint = false; refreshStorageText(); }).catch(() => {});
+  });
+} catch { /* 알림이 없어도 입구를 다시 열 때 최신 상태를 읽는다 */ }
 renderLobby();
 setInterval(accountStatus, 3000);
 

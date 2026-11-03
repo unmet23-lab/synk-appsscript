@@ -61,7 +61,13 @@ function selectInstruction(items) {
 }
 function refreshRecommendation() { if (coach) selectInstruction(INSTRUCTIONS); }
 const learningBroken = () => { const s = learn('summary'); return !coach || learningFailed || s?.storage?.available === false; };
-const reasonText = () => (learningBroken() ? '학습 기록을 저장할 수 없어서 기본 부탁으로 달려요.' : nextPlan?.reason || '아직 안 들어 본 부탁부터 준비했어요.');
+// 다른 탭이 기록을 쓰는 동안은 고장이 아니라 대기다. 그 탭이 닫히면 storage-ready로 넘겨받는다.
+const learningWaiting = () => !learningFailed && /다른 탭/.test(learn('summary')?.storage?.warning || '');
+// 기록을 다 읽었는데 답한 적이 한 번도 없을 때만 첫 출발 안내를 쓴다. 답이 하나라도 있거나 계정 기록을 아직 다 받지 못했으면 엔진의 추천 이유를 그대로 둔다.
+const noPracticeYet = () => { const s = learn('summary'); return s?.evidenceComplete === true && s.counts?.attempts === 0 && nextPlan?.state === 'unseen'; };
+const reasonText = () => (learningWaiting() ? '학습 기록을 기다리는 중이에요. 다른 탭에서 쓰고 있다면 그 탭을 닫아 주세요. 달리기는 바로 할 수 있어요.'
+  : learningBroken() ? '학습 기록을 저장할 수 없어서 기본 부탁으로 달려요.'
+    : noPracticeYet() ? '아직 연습 기록이 없어요. 짧은 부탁을 들으면서 출발해 봐요.' : nextPlan?.reason || '아직 안 들어 본 부탁부터 준비했어요.');
 let live = null;
 function startLive() {
   live = null;
@@ -134,10 +140,14 @@ function openDialog(id) { for (const d of dialogs) if (d !== id && byId(d).open)
 function closeDialogs() { for (const d of dialogs) if (byId(d).open) byId(d).close(); }
 
 /* ── 입구 ── */
-function renderLobby() {
-  refreshRecommendation();
+function paintLobbyReason() {
   const assignment = (() => { try { return coach?.assignment?.() || null; } catch { return null; } })();   // WORLD 안의 선생님 과제
   byId('l-reason').textContent = `${reasonText()}${assignment ? ' 선생님이 정한 ‘듣기 확인’이 있어요.' : ''}`;
+  return assignment;
+}
+function renderLobby() {
+  refreshRecommendation();
+  const assignment = paintLobbyReason();
   byId('best-line').hidden = !best; byId('best-line').textContent = best ? `최고 거리 ${meters(best)}` : '';
   const warn = !storageAvailable ? '이 브라우저에 최고 거리를 저장할 수 없어요.' : null;
   byId('storage-note').hidden = !warn; byId('storage-note').textContent = warn || '';
@@ -177,6 +187,7 @@ function ensureWorld() {
 async function start() {
   if (starting || listeningCheck.open) return;
   if (TRIAL && trialDone) { show('results'); byId('w-trial-login')?.focus({ preventScroll: true }); return; }   // 체험은 한 판: 다시 달리기는 로그인 뒤
+  clearResetNotice();
   starting = true; running = false; paused = false; ending = false; model = null;
   keyboard.reset(); cancelVoice(); setSound(true); closeDialogs(); document.activeElement?.blur?.();   // 초점이 단추에 남으면 Space(점프)가 그 단추를 누른다
   show('game'); resetRunUI(); world?.clear(); tip(wt('바람을 부르고 있어요…', '길을 준비하고 있어요'), 0, { silent: true });
@@ -486,7 +497,8 @@ function renderResults({ completed, distance, newBest, quiet = false }) {
 // learning report and next plan; the run's score, replay list and award stay put.
 function renderResultLearning(s) {
   renderSkills(s);
-  byId('r-next-reason').textContent = learningBroken() ? '학습 기록을 저장할 수 없어서 다음에도 기본 부탁으로 달려요.'
+  byId('r-next-reason').textContent = learningWaiting() ? '학습 기록을 기다리는 중이에요. 연결되면 이번 기록도 다음 달리기에 반영해요.'
+    : learningBroken() ? '학습 기록을 저장할 수 없어서 다음에도 기본 부탁으로 달려요.'
     : `${nextPlan?.reason || '아직 안 들어 본 부탁부터 준비해요.'} 다음 달리기에는 그런 부탁을 먼저 넣어요.`;
 }
 function renderSkills(s) {
@@ -663,12 +675,53 @@ window.addEventListener('blur', () => { keyboard.reset(); if (running && !paused
 for (const t of document.querySelectorAll('[data-sound-toggle]')) t.addEventListener('click', () => { setSound(!sound); if (sound) { audioInit(); audio?.resume?.().catch(() => {}); tone(1046.5, 0.12, 'sine', 0.18); } });
 byId('learning-reset').hidden = hosted;
 if (hosted) byId('learning-scope').textContent = '학습 기록은 WORLD 계정에 이어져요. 기록 공유와 삭제는 WORLD 계정 설정에서 할 수 있어요.';
+// 지우기 결과는 누른 단추 바로 옆(#learning-scope)에 남긴다: 추천·대기 글이 쓰는 칸이 아니라 덮이지 않고, 화면 읽기는 #sr-live로 듣는다.
+const RESET_NOTICE = {
+  done: '이 브라우저의 모든 게임 학습 기록을 지웠어요. 최고 거리는 그대로 남아요.',
+  busy: '학습 기록을 지우지 못했어요. 다른 탭을 닫고 다시 시도해 주세요.',
+  retry: '학습 기록은 아직 지워지지 않았어요. 이제 다시 지울 수 있어요.',
+  unsupported: '이 환경에서는 학습 기록을 안전하게 쓸 수 없어 지우지 못했어요. 기록은 그대로 남아 있어요.',
+  account: '이 기록은 WORLD 계정에 있어서 여기서는 지우지 않았어요. WORLD 계정 설정에서 지워 주세요.',
+  storage: '이 브라우저에 저장하지 못해 학습 기록을 모두 지우지 못했어요. 남은 기록이 있을 수 있으니 저장 공간을 확인하고 다시 시도해 주세요.',
+  error: '오류로 학습 기록을 모두 지우지 못했어요. 남은 기록이 있을 수 있으니 새로 고친 뒤 다시 시도해 주세요.',
+  unavailable: '학습 기록 기능을 불러오지 못해 지우지 못했어요. 새로 고친 뒤 다시 시도해 주세요.',
+};
+let resetNotice = null, resetNoticeShown = null, learningScopeText = null;
+function resetFailure(error) {
+  if (error?.code === 'ACCOUNT_RESET_REQUIRED') return 'account';
+  if (error?.code === 'STORAGE_BUSY') return globalThis.navigator?.locks ? 'busy' : 'unsupported';
+  return error?.code === 'STORAGE_ERROR' ? 'storage' : 'error';
+}
+// 대기는 굳히지 않는다: 저장 권한을 얻으면 '다시 지울 수 있어요'로, 다시 잃으면 '다른 탭을 닫고'로 지금 상태를 따른다.
+function paintResetNotice(force = false) {
+  let canPersist = false;
+  if (resetNotice === 'busy') try { canPersist = coach?.syncPort?.canPersist?.() === true; } catch { /* 닫힌 게임: 대기 안내를 그대로 둔다 */ }
+  const text = RESET_NOTICE[resetNotice === 'busy' && canPersist ? 'retry' : resetNotice] || null;
+  if (!text && !resetNoticeShown) return;
+  const scope = byId('learning-scope');
+  learningScopeText ??= scope.textContent;
+  const notice = document.createElement('strong');
+  notice.textContent = text || '';
+  if (text) scope.replaceChildren(`${learningScopeText} `, notice); else scope.textContent = learningScopeText;
+  if (text && screen === 'lobby' && (force || text !== resetNoticeShown)) announce(text);
+  resetNoticeShown = text;
+}
+function showResetNotice(kind) { resetNotice = kind; paintResetNotice(true); }
+function clearResetNotice() { resetNotice = null; paintResetNotice(); }
 byId('learning-reset').addEventListener('click', () => {
-  if (!coach) return;
+  if (!coach) { showResetNotice('unavailable'); return; }
   if (!window.confirm('같은 주소에서 연 모든 SYNK 게임의 학습 기록을 지울까요? 최고 거리는 그대로 남아요.')) return;
-  try { coach.reset(); for (const m of model?.missions || []) m.presentationId = null; learningFailed = false; nextPlan = null; }
-  catch (error) { if (error?.code !== 'ACCOUNT_RESET_REQUIRED') learningFailed = true; }
-  renderLobby();
+  let outcome;
+  try {
+    const summary = coach.reset();
+    for (const m of model?.missions || []) m.presentationId = null;
+    learningFailed = false; nextPlan = null;
+    // 엔진이 저장 가능한 상태로 돌아왔고 공유 원장이 실제로 비었을 때만 지웠다고 말한다.
+    outcome = summary?.storage?.available !== true ? 'storage' : coach.events().length === 0 ? 'done' : 'error';
+  } catch (error) { outcome = resetFailure(error); }
+  showResetNotice(outcome);
+  // renderLobby는 화면을 맨 위로 올려 단추 옆 안내를 밀어내므로 추천 글만 다시 쓴다.
+  refreshRecommendation(); paintLobbyReason();
 });
 function closeListeningCheck() {
   if (screen === 'results' && model?.finished) {
@@ -685,6 +738,20 @@ window.addEventListener('resize', () => { cancelGesture(); clearTimeout(resizeT)
 preloadImages(['tex-cream', 'tex-coral', 'badge-cream', 'badge-check', 'badge-coral', 'sparkle', 'cushion-blush-strip', 'cushion-butter-strip', 'cushion-lapis-strip'].map((n) => `kit/felt/${n}.webp`));
 (window.requestIdleCallback || ((fn) => setTimeout(fn, 700)))(() => { ensureWorld().catch(() => { /* 시작할 때 다시 시도하고 안내한다 */ }); }, { timeout: 2500 });
 document.fonts?.ready.then(() => { if (screen === 'lobby') drawHeroRoad(byId('hero-road')); });
+// 저장 상태가 실제로 바뀔 때(기록을 넘겨받음·잃음·오류)만 입구·결과의 안내 글을 다시 쓴다. 달리는 중의 판·부탁·소리와 화면 전환·포커스는 건드리지 않는다.
+function refreshStorageText() {
+  paintResetNotice();
+  if (screen === 'lobby') { refreshRecommendation(); paintLobbyReason(); }
+  else if (model?.finished && (screen === 'results' || ending)) { refreshRecommendation(); renderResultLearning(scoreRun(model.answers, { completed: model.reason === 'tour' })); }
+}
+let storagePaint = false;
+try {
+  coach?.syncPort?.subscribe?.((event) => {
+    if (storagePaint || !['storage-ready', 'storage-wait', 'storage-error'].includes(event?.kind)) return;
+    storagePaint = true;
+    Promise.resolve().then(() => { storagePaint = false; refreshStorageText(); }).catch(() => {});
+  });
+} catch { /* 알림이 없어도 입구를 다시 열 때 최신 상태를 읽는다 */ }
 renderLobby();
 
 /* ── 확인용 ── */

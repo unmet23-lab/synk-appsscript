@@ -26,7 +26,11 @@ if (!globalThis.SynkPlayCollection) for (const n of $$('.synk-collection-line'))
 /* ── 아틀라스: 공통 학습 기록과 다음 주문 고르기 ── */
 let coach = null, learningFailed = false, nextPlan = null, audioTicket = null;
 try { coach = globalThis.SynkLearning?.createGame({ gameId: 'order-rush', storage: localStorage, followups:true }) || null; } catch { learningFailed = true; }
-function learn(method, ...args) { try { return coach?.[method](...args); } catch { learningFailed = true; return null; } }
+// 저장 차례를 기다리는 STORAGE_BUSY(WORLD 과제 실행 중 호스트가 던진다)는 영구 실패가 아니다.
+let hostStorageBusy = false;
+function noteLearningError(error) { if (error?.code === 'STORAGE_BUSY') hostStorageBusy = true; else learningFailed = true; }
+// 요약 읽기가 된 것만으로는 차례가 돌아왔다고 보지 않는다: 쓰기 성공이나 요약의 저장 상태(storageStatus)로만 대기를 푼다.
+function learn(method, ...args) { try { const value = coach?.[method](...args); if (method !== 'summary') hostStorageBusy = false; return value; } catch (error) { noteLearningError(error); return null; } }
 const assignment = () => { try { return coach?.assignment?.() || null; } catch { return null; } };
 // SYNK WORLD 안에서는 기록이 계정의 것이다: 이 브라우저가 아니라 계정에서 보관하고 지운다.
 const hosted = (() => { try { return typeof coach?.assignment === 'function'; } catch { return false; } })();
@@ -73,23 +77,94 @@ function answerWithFlow(t, result, flow = {}) {
   if (live) { try { const out = live.answer(t.presentationId, result, flow); applyFlow(out); return out.recorded; } catch { live = null; } }
   return learn('answer', t.presentationId, result);
 }
+/* 저장 상태는 알림 종류로 굳히지 않고 엔진의 지금 상태에서 읽는다: 기록을 못 읽은 저장소도 storage-ready를 보내고, 쓰기 실패는 다음 쓰기가 되면 append로만 풀린다. */
+const storagePort = (() => { try { return typeof coach?.syncPort?.subscribe === 'function' ? coach.syncPort : null; } catch { return null; } })();
+let storageView = null, storageCheckQueued = false, storageReadyPending = false;
+function storageStatus(s) {
+  if (!coach || learningFailed) return 'failed';
+  // 엔진은 차례를 잃으면 쓰기를 막고 available을 false로 내리므로 true는 회복 신호다. 경고가 따로 있으면 그 경고로 대기와 저장 실패를 가른다.
+  if (s?.storage?.available === true) { hostStorageBusy = false; return 'ready'; }
+  if (hostStorageBusy && !s?.storage?.warning) return 'waiting';
+  if (s?.storage?.available !== false) return 'ready';
+  // Web Locks가 없는 환경은 차례가 오지 않는다. syncPort가 없는 호스트는 엔진의 대기 문구로만 구분할 수 있다.
+  const waiting = storagePort ? storagePort.canPersist?.() === false : /^다른 탭에서/.test(s.storage.warning || '');
+  return waiting && globalThis.navigator?.locks ? 'waiting' : 'failed';
+}
 function learningCopy() {
   const target = assignment();
   if (target) return orderTargetLabel(target);
   const s = learn('summary');
-  if (!coach || learningFailed || s?.storage?.available === false) return '학습 기록을 저장할 수 없어서 이번에는 기본 주문으로 연습해요.';
-  return `${nextPlan?.reason || '아직 안 들어 본 주문 표현부터 들어 봐요.'} ${hosted ? 'WORLD 계정의 연습 기록을 보고 골랐어요.' : '이 브라우저에 남은 연습 기록을 보고 골랐어요.'}`;
+  storageView = storageStatus(s);
+  if (storageView === 'waiting') return '기록을 쓸 수 있을 때까지 기다리는 중이에요. 다른 탭에서 쓰고 있다면 그 탭을 닫아 주세요.';
+  if (storageView === 'failed') return s?.storage?.warning || '학습 기록을 저장할 수 없어서 이번에는 기본 주문으로 연습해요.';
+  // 근거를 다 받지 못해 엔진이 unseen 기본으로 돌아가면 기록이 적은지도, 기록을 보고 골랐는지도 알 수 없다.
+  if (s?.evidenceComplete === false && (nextPlan?.state ?? 'unseen') === 'unseen') return '아직 학습 기록을 다 받지 못했어요. 이번에는 짧은 주문으로 확인해 봐요.';
+  const basis = hosted ? 'WORLD 계정의 연습 기록을 보고 골랐어요.' : '이 브라우저에 남은 연습 기록을 보고 골랐어요.';
+  const missed = missedChangeSource(s);
+  if (missed) return `${missed}에서 빼거나 바꿔 달라는 요청을 놓친 적이 있어요. ${basis}`;
+  const reason = nextPlan?.reason || '아직 안 들어 본 주문 표현부터 들어 봐요.';
+  return isFirstPractice(s) ? reason : `${reason} ${basis}`;
 }
-function updateLearning() { const text = learningCopy(); for (const id of ['#learning-reason', '#game-learning', '#result-learning']) $(id).textContent = text; }
+// 답한 주문이 하나도 없으면 기록을 보고 고른 것이 아니다.
+function isFirstPractice(s) { return s?.evidenceComplete === true && s?.counts?.attempts === 0 && nextPlan?.state === 'unseen'; }
+// 고른 능력·상태와 그 칸의 최근 독립 오답(엔진의 practice: 3개 이상 중 2개 이상)이 모두 맞을 때만 오답을 말한다.
+// 듣기 근거는 게임끼리 공유하고 접어 둔 기록은 출처를 알 수 없어, '지난 주문'은 오답 기록이 주문 폭주의 것으로 확인될 때만 쓴다.
+function missedChangeSource(s) {
+  const plan = nextPlan;
+  if (plan?.focusSkillId !== 'ko.listening.negation' || plan.state !== 'practice' || plan.responseFormat !== 'cup-compose') return null;
+  const cell = s?.skills?.find((skill) => skill.id === plan.focusSkillId)?.levels?.[plan.selected?.difficulty]?.formats?.['cup-compose'];
+  if (!s?.evidenceComplete || cell?.status !== 'practice' || !(cell.incorrect >= 2)) return null;
+  try {
+    const events = coach.events(), ids = new Set(cell.evidence);
+    const tasks = new Map(events.filter((e) => e.type === 'practice.presented').map((e) => [e.id, e.taskId]));
+    const own = events.some((e) => e.type === 'practice.attempted' && ids.has(e.id) && e.verdict === 'incorrect' && tasks.get(e.presentationId)?.startsWith('order-rush.'));
+    return own ? '지난 주문' : '지난 듣기 연습';
+  } catch { return '지난 듣기 연습'; }
+}
+// 입구에서만 보이는 듣기 안내: 주문을 푸는 중에는 힌트가 되지 않게 멈춤·결과 화면에는 넣지 않는다. 정답이나 말의 위치는 말하지 않는다.
+function lobbyTip() {
+  if (assignment() || storageView !== 'ready') return '';
+  const s = learn('summary');
+  if (missedChangeSource(s)) return '이번엔 손님이 무엇을 빼거나 바꿔 달라고 하는지 들어 보세요.';
+  return isFirstPractice(s) && nextPlan.focusSkillId === 'ko.listening.detail' && nextPlan.selected?.difficulty === 1
+    ? '먼저 기본 주문 하나로, 손님이 어떤 음료를 어떤 온도로 달라고 하는지 들어 보세요.' : '';
+}
+function updateLearning() {
+  const text = learningCopy(), tip = lobbyTip();
+  for (const id of ['#game-learning', '#result-learning']) $(id).textContent = text;
+  $('#learning-reason').textContent = tip ? `${text} ${tip}` : text;
+}
 function selectOrder(orders) {
   if (!coach || learningFailed) return orders[0];
   try {
     const plan = live ? chooseOrderLive(live, orders) : chooseOrder(coach, orders);
     if (plan?.selected) { nextPlan = plan; updateLearning(); return plan.selected; }
-  } catch { learningFailed = true; }
+  } catch (error) { noteLearningError(error); }
   return orders[0];
 }
 function refreshRecommendation() { if (coach) selectOrder(ORDERS); updateLearning(); refreshDelayed(); }
+// 영업 중에는 글만 고친다: live.pick은 순간 맞춤 상태를 건드리고, 다음 손님은 어차피 새로 고른다.
+function applyStorageChange() { paintResetNotice(); if (state.screen === 'game') updateLearning(); else refreshRecommendation(); }
+// 엔진의 호출 도중에 알림이 올 수 있어 호출이 끝난 뒤 한 번만 읽고, 쓰기마다 다시 그리지 않게 상태가 바뀔 때만 그린다.
+// 추천·요약은 읽기뿐이라 기록을 만들지 않고, 여기서 다시 알림이 돌아오지 않는다.
+function onStorageEvent(change) {
+  if (change?.kind === 'storage-ready') storageReadyPending = true;
+  else if (!['storage-wait', 'storage-error'].includes(change?.kind) && storageView === 'ready') return;
+  if (storageCheckQueued) return;
+  storageCheckQueued = true;
+  queueMicrotask(() => {
+    storageCheckQueued = false;
+    const ready = storageReadyPending, next = storageStatus(learn('summary')), changed = next !== storageView;
+    storageReadyPending = false;
+    storageView = next;
+    if (ready || changed) applyStorageChange();
+  });
+}
+// syncPort를 주지 않는 호스트는 알림이 없어 처음 기다리는 동안만 짧게 다시 본다(입구로 돌아올 때도 다시 읽는다).
+function watchHostStorage(checks = 40) {
+  if (storagePort || storageView !== 'waiting' || !checks) return;
+  setTimeout(() => { applyStorageChange(); watchHostStorage(checks - 1); }, 250);
+}
 function refreshDelayed(){
  const available=!assignment()&&!learningFailed&&delayedOrders(coach,DELAYED_ORDERS).length>0;
  for(const id of ['#followup-start','#followup-result']){const button=$(id);if(button)button.hidden=!available;}
@@ -222,6 +297,7 @@ function start(isReview = false, delayed = null) {
   if (target && !targetDeck.length) { $('#learning-reason').textContent = '과제 주문을 불러오지 못했어요. WORLD에서 다시 열어 주세요.'; return; }
   if (target) { state.mode = 'practice'; isReview = false; }
   if(delayed){state.mode='practice';isReview=true;}
+  clearResetNotice();
   audio.stop();
   clearTimeout(celebrationTimer); clearTimeout(leaveTimer);
   Object.assign(state, { celebrating: false, pendingServe: false, review: isReview, paused: false, ticket: null, served: null, cups: [makeCup()], active: 0 });
@@ -726,14 +802,54 @@ if (hosted) {
   $('#learning-scope').textContent = '연습 기록은 WORLD 계정에 이어지고, 공유와 삭제는 WORLD 계정 설정에서 할 수 있어요.';
   $('#result-scope').textContent = '주문 음성은 합성 음성이에요. 학습 효과는 아직 학생들과 확인하지 않았어요. 연습 기록은 WORLD 계정에 이어지고, 공유와 삭제는 WORLD 계정 설정에서 할 수 있어요.';
 }
+// 지우기 결과는 누른 단추 바로 옆(#learning-scope)에 남긴다: 추천·대기 글이 쓰는 칸이 아니라 덮이지 않고, 화면 읽기는 #sr-live로 듣는다.
+const RESET_NOTICE = {
+  done: '이 브라우저의 모든 게임 학습 기록을 지웠어요. 공통 코인은 그대로 남아요.',
+  busy: '학습 기록을 지우지 못했어요. 다른 탭을 닫고 다시 시도해 주세요.',
+  retry: '학습 기록은 아직 지워지지 않았어요. 이제 다시 지울 수 있어요.',
+  unsupported: '이 환경에서는 학습 기록을 안전하게 쓸 수 없어 지우지 못했어요. 기록은 그대로 남아 있어요.',
+  account: '이 기록은 WORLD 계정에 있어서 여기서는 지우지 않았어요. WORLD 계정 설정에서 지워 주세요.',
+  storage: '이 브라우저에 저장하지 못해 학습 기록을 모두 지우지 못했어요. 남은 기록이 있을 수 있으니 저장 공간을 확인하고 다시 시도해 주세요.',
+  error: '오류로 학습 기록을 모두 지우지 못했어요. 남은 기록이 있을 수 있으니 새로 고친 뒤 다시 시도해 주세요.',
+  unavailable: '학습 기록 기능을 불러오지 못해 지우지 못했어요. 새로 고친 뒤 다시 시도해 주세요.',
+};
+let resetNotice = null, resetNoticeShown = null, learningScopeText = null;
+function resetFailure(error) {
+  if (error?.code === 'ACCOUNT_RESET_REQUIRED') return 'account';
+  if (error?.code === 'STORAGE_BUSY') return globalThis.navigator?.locks ? 'busy' : 'unsupported';
+  return error?.code === 'STORAGE_ERROR' ? 'storage' : 'error';
+}
+// 대기는 굳히지 않는다: 저장 권한을 얻으면 '다시 지울 수 있어요'로, 다시 잃으면 '다른 탭을 닫고'로 지금 상태를 따른다.
+function paintResetNotice(force = false) {
+  const text = RESET_NOTICE[resetNotice === 'busy' && storagePort?.canPersist?.() === true ? 'retry' : resetNotice] || null;
+  if (!text && !resetNoticeShown) return;
+  const scope = $('#learning-scope');
+  learningScopeText ??= scope.textContent;
+  const notice = document.createElement('strong');
+  notice.textContent = text || '';
+  if (text) scope.replaceChildren(`${learningScopeText} `, notice); else scope.textContent = learningScopeText;
+  if (text && state.screen === 'lobby' && (force || text !== resetNoticeShown)) announce(text);
+  resetNoticeShown = text;
+}
+function showResetNotice(kind) { resetNotice = kind; paintResetNotice(true); }
+function clearResetNotice() { resetNotice = null; paintResetNotice(); }
 $('#learning-reset').addEventListener('click', () => {
+  if (!coach) { showResetNotice('unavailable'); return; }
   if (!window.confirm('같은 주소에서 연 모든 SYNK 게임의 학습 기록을 지울까요? 공통 코인은 그대로 남아요.')) return;
-  try { coach?.reset(); learningFailed = !coach; nextPlan = null; }
-  catch (error) { if (error?.code !== 'ACCOUNT_RESET_REQUIRED') learningFailed = true; }
+  let outcome;
+  try {
+    const summary = coach.reset();
+    learningFailed = false; nextPlan = null;
+    // 엔진이 저장 가능한 상태로 돌아왔고 공유 원장이 실제로 비었을 때만 지웠다고 말한다.
+    outcome = summary?.storage?.available !== true ? 'storage' : coach.events().length === 0 ? 'done' : 'error';
+  } catch (error) { outcome = resetFailure(error); }
+  showResetNotice(outcome);
   refreshRecommendation();
 });
 
+try { storagePort?.subscribe(onStorageEvent); } catch { /* 닫힌 게임: 상태는 입구를 그릴 때 읽는다 */ }
 refreshRecommendation();
+watchHostStorage();
 renderLobby();
 // 영업에 쓰는 펠트 그림을 입구에서 미리 받아 두고, 컵 작업대(3D)도 미리 만든다(첫 손님 때 쿠션·재료가 늦게 뜨거나 셰이더 준비로 멈칫하지 않게)
 (window.requestIdleCallback || ((fn) => setTimeout(fn, 600)))(() => {

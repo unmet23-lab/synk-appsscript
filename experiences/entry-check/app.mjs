@@ -85,7 +85,8 @@ const show = (id) => {
 };
 
 /* ── 입구 ── */
-function renderLobby() {
+/** 입구의 추천·저장 안내만 그린다. 근무지 목록과 화면 전환·포커스는 건드리지 않아 저장 상태가 바뀔 때 다시 불러도 된다. */
+function paintLobbyPlan() {
   const target=assignment(),targetVenues=assignmentVenues(target,[...assignmentSeen]);
   const ids = unlockedIds();
   const rec = progress.plays === 0 ? null : atlas((c) => recommendVenue(c, ids));
@@ -98,8 +99,14 @@ function renderLobby() {
   $('#rec-start').onclick = () => startShift(venue.id);
   $('#rec-start').disabled=!!target&&!targetVenues.length;
   $('#how-tutorial').hidden=!!target;
-  const warn = atlas((c) => c.summary().storage?.warning) || (!coach ? '학습 기록을 쓸 수 없어 기본 순서로 진행해요.' : null) || (!progressSaved ? '이 브라우저에 진행을 저장할 수 없어요.' : null);
+  const storage = atlas((c) => c.summary().storage);
+  const warn = (/다른 탭/.test(storage?.warning || '') ? '학습 기록을 기다리는 중이에요. 다른 탭에서 쓰고 있다면 그 탭을 닫아 주세요. 그러면 여기서 이어서 저장해요.' : storage?.warning)
+    || (storage?.available === false ? '학습 기록을 저장할 수 없어 기본 순서로 진행해요.' : null) || (!coach ? '학습 기록을 쓸 수 없어 기본 순서로 진행해요.' : null) || (!progressSaved ? '이 브라우저에 진행을 저장할 수 없어요.' : null);
   $('#storage-note').hidden = !warn; $('#storage-note').textContent = warn || '';
+  return { target, targetVenues, venue };
+}
+function renderLobby() {
+  const { target, targetVenues, venue } = paintLobbyPlan();
   $('#reset-learning').hidden = hosted;
   if (hosted) { $('#learning-scope').textContent = 'WORLD에서 선택한 계정의 학습 기록으로 연결해요. 기록 공유와 삭제는 WORLD 계정 설정에서 관리해요.'; $('#skills-scope').textContent = 'WORLD 계정에 남은'; }
   const list = $('#venues'); list.textContent = '';
@@ -107,7 +114,7 @@ function renderLobby() {
     const open = target?targetVenues.some(x=>x.id===v.id):unlocked(progress, v.id), stars = progress.stars[v.id] || 0;
     const li = el('li');
     const b = el('button', `venue${open ? '' : ' locked'}${v.id === venue.id ? ' is-rec' : ''}`);
-    b.type = 'button';
+    b.type = 'button'; b.dataset.venue = v.id;
     b.setAttribute('aria-label', `${v.day}일차 ${v.name}${open ? `, 별 ${stars}개` : ', 잠김'}`);
     b.innerHTML = `<span class="thumb"><img src="assets/scenes/${v.scene}-m.webp" alt="" loading="lazy"><b class="num">${v.day}</b>${open ? '' : '<span class="lock">앞 근무지 별 1개면 열려요</span>'}</span>
       <span class="body"><strong>${esc(v.name)}</strong><small>${esc(v.notice.kind)} · 규칙 ${v.notice.rules.length + (v.memo ? 1 : 0)}개</small>
@@ -127,6 +134,7 @@ function startShift(venueId, { tutorial = !progress.tutorial } = {}) {
   const v = venueById(venueId);
   const target=assignment(),targetCases=v&&target?assignmentCases(v.cases,target):null;
   if (!v || (target?!targetCases.length:!unlocked(progress, v.id))) return;
+  clearResetNotice();
   if(target)tutorial=false;
   tut.on = tutorial && v.id === 'pool'; tut.i = 0; hideCoach();
   state.ranked = progress.plays === 0 || tut.on ? null : atlas((c) => rankCases(c, v.cases));
@@ -693,10 +701,52 @@ $('#motion-toggle').onclick = () => {
   progress.motion = progress.motion === false; saveProgress(); applyMotion();
   if (state.venue && !$('#game').hidden) setScene(state.venue);
 };
+// 지우기 결과는 누른 단추 바로 옆(#learning-scope)에 남긴다: 추천·대기 글이 쓰는 칸이 아니라 덮이지 않고, 화면 읽기는 #sr-live로 듣는다.
+const RESET_NOTICE = {
+  done: '이 브라우저의 모든 게임 학습 기록을 지웠어요. 근무지 별은 그대로 남아요.',
+  busy: '학습 기록을 지우지 못했어요. 다른 탭을 닫고 다시 시도해 주세요.',
+  retry: '학습 기록은 아직 지워지지 않았어요. 이제 다시 지울 수 있어요.',
+  unsupported: '이 환경에서는 학습 기록을 안전하게 쓸 수 없어 지우지 못했어요. 기록은 그대로 남아 있어요.',
+  account: '이 기록은 WORLD 계정에 있어서 여기서는 지우지 않았어요. WORLD 계정 설정에서 지워 주세요.',
+  storage: '이 브라우저에 저장하지 못해 학습 기록을 모두 지우지 못했어요. 남은 기록이 있을 수 있으니 저장 공간을 확인하고 다시 시도해 주세요.',
+  error: '오류로 학습 기록을 모두 지우지 못했어요. 남은 기록이 있을 수 있으니 새로 고친 뒤 다시 시도해 주세요.',
+  unavailable: '학습 기록 기능을 불러오지 못해 지우지 못했어요. 새로 고친 뒤 다시 시도해 주세요.',
+};
+let resetNotice = null, resetNoticeShown = null, learningScopeText = null;
+function resetFailure(error) {
+  if (error?.code === 'ACCOUNT_RESET_REQUIRED') return 'account';
+  if (error?.code === 'STORAGE_BUSY') return globalThis.navigator?.locks ? 'busy' : 'unsupported';
+  return error?.code === 'STORAGE_ERROR' ? 'storage' : 'error';
+}
+// 대기는 굳히지 않는다: 저장 권한을 얻으면 '다시 지울 수 있어요'로, 다시 잃으면 '다른 탭을 닫고'로 지금 상태를 따른다.
+function paintResetNotice(force = false) {
+  let canPersist = false;
+  if (resetNotice === 'busy') try { canPersist = coach?.syncPort?.canPersist?.() === true; } catch { /* 닫힌 게임: 대기 안내를 그대로 둔다 */ }
+  const text = RESET_NOTICE[resetNotice === 'busy' && canPersist ? 'retry' : resetNotice] || null;
+  if (!text && !resetNoticeShown) return;
+  const scope = $('#learning-scope');
+  learningScopeText ??= scope.textContent;
+  const notice = document.createElement('strong');
+  notice.textContent = text || '';
+  if (text) scope.replaceChildren(`${learningScopeText} `, notice); else scope.textContent = learningScopeText;
+  if (text && !$('#lobby').hidden && (force || text !== resetNoticeShown)) announce(text);
+  resetNoticeShown = text;
+}
+function showResetNotice(kind) { resetNotice = kind; paintResetNotice(true); }
+function clearResetNotice() { resetNotice = null; paintResetNotice(); }
 $('#reset-learning').onclick = () => {
-  if (!coach || hosted) return;
+  if (hosted) return;
+  if (!coach) { showResetNotice('unavailable'); return; }
   if (!window.confirm('같은 주소에서 연 모든 SYNK 게임의 학습 기록을 지울까요? 근무지 별은 그대로 남아요.')) return;
-  atlas((c) => c.reset()); renderLobby();
+  let outcome;
+  try {
+    const summary = coach.reset();
+    // 엔진이 저장 가능한 상태로 돌아왔고 공유 원장이 실제로 비었을 때만 지웠다고 말한다.
+    outcome = summary?.storage?.available !== true ? 'storage' : coach.events().length === 0 ? 'done' : 'error';
+  } catch (error) { outcome = resetFailure(error); }
+  showResetNotice(outcome);
+  // renderLobby는 근무지 단추를 새로 만들고 화면을 맨 위로 올리므로 추천·저장 글과 추천 표시만 다시 쓴다.
+  refreshStorageText();
 };
 for (const t of document.querySelectorAll('[data-sound-toggle]')) {
   t.onclick = () => { sound.setOn(!sound.isOn()); syncSound(); if (sound.isOn()) { sound.unlock(); sound.play('tap', .7); } };
@@ -832,6 +882,22 @@ sound.onSpeaking((id) => {
 sound.loadCatalog();
 applyMotion();
 syncSound();
+// 저장 상태가 실제로 바뀔 때(기록을 넘겨받음·잃음·오류)만 입구·결과의 안내 글을 다시 쓴다. 진행 중인 근무의 손님·타이머·소리와 화면 전환·포커스는 건드리지 않는다.
+function refreshStorageText() {
+  paintResetNotice();
+  if (!$('#lobby').hidden) {
+    const { venue } = paintLobbyPlan();
+    for (const b of document.querySelectorAll('#venues .venue')) b.classList.toggle('is-rec', b.dataset.venue === venue.id);
+  } else if (!$('#results').hidden && state.venue) renderNext(state.venue);
+}
+let storagePaint = false;
+try {
+  coach?.syncPort?.subscribe?.((event) => {
+    if (storagePaint || !['storage-ready', 'storage-wait', 'storage-error'].includes(event?.kind)) return;
+    storagePaint = true;
+    Promise.resolve().then(() => { storagePaint = false; refreshStorageText(); }).catch(() => {});
+  });
+} catch { /* 알림이 없어도 입구를 다시 열 때 최신 상태를 읽는다 */ }
 renderLobby();
 // 시험·확인용 읽기 전용 관찰(상태를 바꾸지 않는다)
 if (QA) {

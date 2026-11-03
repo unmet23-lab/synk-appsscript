@@ -86,8 +86,15 @@ const show = (id) => {
 };
 
 /* ── 입구 ── */
-function renderLobby() {
-  state.run += 1; stage?.clear(); hideAnswerCheck();
+let stageNote = null;   // 3D를 띄우지 못했다는 안내. 저장 상태가 바뀌어도 지우지 않고 입구를 다시 그릴 때 비운다
+function paintStorageNote() {
+  const storage = atlas((c) => c.summary().storage);
+  const warn = stageNote || (/다른 탭/.test(storage?.warning || '') ? '학습 기록을 기다리는 중이에요. 다른 탭에서 쓰고 있다면 그 탭을 닫아 주세요. 그러면 여기서 이어서 저장해요.' : storage?.warning)
+    || (storage?.available === false ? '학습 기록을 저장할 수 없어서 기본 순서로 진행해요.' : null) || (!coach ? '학습 기록을 쓸 수 없어서 기본 순서로 진행해요.' : null) || (!saved ? '이 브라우저에 진행을 저장할 수 없어요.' : null);
+  $('#storage-note').hidden = !warn; $('#storage-note').textContent = warn || '';
+}
+/** 입구의 추천·저장 안내만 그린다. 판·3D 무대·화면 전환·포커스는 건드리지 않아 저장 상태가 바뀔 때 다시 불러도 된다. */
+function paintLobbyPlan() {
   const target = assignment(), targetItems = assignmentItems(target);
   state.ranked = progress.plays === 0 ? null : atlas((c) => rankItems(c, ITEMS));
   $('#l-count').textContent = String(target ? targetItems.length : 12);
@@ -96,10 +103,13 @@ function renderLobby() {
     : target ? `${assignmentLabel(target)}. 이 목표 문장에 답하면 WORLD 과제에 반영돼요. 놓친 문장은 멈춘 화면에서 답을 골라요.` : progress.plays === 0
     ? '처음이라 쉬운 문장부터 시작해요. 첫 문장은 연습이에요.'
     : state.ranked?.reason ? `${state.ranked.reason} 그래서 그런 문장을 앞쪽에 넣었어요.` : '새 문장을 섞어 한 판을 만들어요.';
+  paintStorageNote();
+}
+function renderLobby() {
+  state.run += 1; stage?.clear(); hideAnswerCheck(); stageNote = null;
+  paintLobbyPlan();
   const best = progress.best;
   $('#best-line').hidden = !best; if (best) $('#best-line').textContent = `최고 ${best.score}점 · ${best.correct}/${best.total}`;
-  const warn = atlas((c) => c.summary().storage?.warning) || (!coach ? '학습 기록을 쓸 수 없어서 기본 순서로 진행해요.' : null) || (!saved ? '이 브라우저에 진행을 저장할 수 없어요.' : null);
-  $('#storage-note').hidden = !warn; $('#storage-note').textContent = warn || '';
   $('#reset-learning').hidden = hosted;
   if (hosted) $('#learning-scope').textContent = 'WORLD에서 선택한 계정의 학습 기록으로 연결해요. 기록 공유와 삭제는 WORLD 계정 설정에서 관리해요.';
   syncToggles();
@@ -133,6 +143,7 @@ function ensureStage() {
 async function startRound() {
   const target = assignment(), targetItems = assignmentItems(target);
   if (target && !targetItems.length) return renderLobby();
+  clearResetNotice();
   // 과제 판인지는 시작할 때 정한다. 판 중에 과제가 닫혀도 그 판을 자유 연습의 판 수·최고 점수로 세지 않는다.
   state.targeted = !!target;
   sound.unlock();
@@ -151,8 +162,8 @@ async function startRound() {
   catch {
     // WebGL을 만들 수 없는 기기·브라우저: 빈 화면에 멈추지 않고 입구에서 알린다
     renderLobby();
-    $('#storage-note').hidden = false;
-    $('#storage-note').textContent = '이 브라우저에서는 3D 화면을 띄울 수 없어요. 크롬이나 사파리 최신판으로 열어 주세요.';
+    stageNote = '이 브라우저에서는 3D 화면을 띄울 수 없어요. 크롬이나 사파리 최신판으로 열어 주세요.';
+    paintStorageNote();
     return;
   }
   if (!live(run)) return;
@@ -533,10 +544,51 @@ $('#r-again').onclick = () => startRound();
 $('#r-home').onclick = () => renderLobby();
 for (const t of document.querySelectorAll('[data-sound-toggle]')) t.onclick = () => { sound.setOn(!sound.isOn()); syncToggles(); if (sound.isOn()) { sound.unlock(); sound.play('tap'); } };
 for (const t of [$('#slow-toggle'), $('#slow-toggle-2')]) t.onclick = () => { progress.slow = !progress.slow; save(); syncToggles(); };
+// 지우기 결과는 누른 단추 바로 옆(#learning-scope)에 남긴다: 추천·대기 글이 쓰는 칸이 아니라 덮이지 않고, 화면 읽기는 #sr-live로 듣는다.
+const RESET_NOTICE = {
+  done: '이 브라우저의 모든 게임 학습 기록을 지웠어요. 최고 기록은 그대로 남아요.',
+  busy: '학습 기록을 지우지 못했어요. 다른 탭을 닫고 다시 시도해 주세요.',
+  retry: '학습 기록은 아직 지워지지 않았어요. 이제 다시 지울 수 있어요.',
+  unsupported: '이 환경에서는 학습 기록을 안전하게 쓸 수 없어 지우지 못했어요. 기록은 그대로 남아 있어요.',
+  account: '이 기록은 WORLD 계정에 있어서 여기서는 지우지 않았어요. WORLD 계정 설정에서 지워 주세요.',
+  storage: '이 브라우저에 저장하지 못해 학습 기록을 모두 지우지 못했어요. 남은 기록이 있을 수 있으니 저장 공간을 확인하고 다시 시도해 주세요.',
+  error: '오류로 학습 기록을 모두 지우지 못했어요. 남은 기록이 있을 수 있으니 새로 고친 뒤 다시 시도해 주세요.',
+  unavailable: '학습 기록 기능을 불러오지 못해 지우지 못했어요. 새로 고친 뒤 다시 시도해 주세요.',
+};
+let resetNotice = null, resetNoticeShown = null, learningScopeText = null;
+function resetFailure(error) {
+  if (error?.code === 'ACCOUNT_RESET_REQUIRED') return 'account';
+  if (error?.code === 'STORAGE_BUSY') return globalThis.navigator?.locks ? 'busy' : 'unsupported';
+  return error?.code === 'STORAGE_ERROR' ? 'storage' : 'error';
+}
+// 대기는 굳히지 않는다: 저장 권한을 얻으면 '다시 지울 수 있어요'로, 다시 잃으면 '다른 탭을 닫고'로 지금 상태를 따른다.
+function paintResetNotice(force = false) {
+  let canPersist = false;
+  if (resetNotice === 'busy') try { canPersist = coach?.syncPort?.canPersist?.() === true; } catch { /* 닫힌 게임: 대기 안내를 그대로 둔다 */ }
+  const text = RESET_NOTICE[resetNotice === 'busy' && canPersist ? 'retry' : resetNotice] || null;
+  if (!text && !resetNoticeShown) return;
+  const scope = $('#learning-scope');
+  learningScopeText ??= scope.textContent;
+  const notice = document.createElement('strong');
+  notice.textContent = text || '';
+  if (text) scope.replaceChildren(`${learningScopeText} `, notice); else scope.textContent = learningScopeText;
+  if (text && !$('#lobby').hidden && (force || text !== resetNoticeShown)) announce(text);
+  resetNoticeShown = text;
+}
+function showResetNotice(kind) { resetNotice = kind; paintResetNotice(true); }
+function clearResetNotice() { resetNotice = null; paintResetNotice(); }
 $('#reset-learning').onclick = () => {
-  if (!coach) return;
+  if (!coach) { showResetNotice('unavailable'); return; }
   if (!window.confirm('같은 주소에서 연 모든 SYNK 게임의 학습 기록을 지울까요? 최고 기록은 그대로 남아요.')) return;
-  atlas((c) => c.reset()); renderLobby();
+  let outcome;
+  try {
+    const summary = coach.reset();
+    // 엔진이 저장 가능한 상태로 돌아왔고 공유 원장이 실제로 비었을 때만 지웠다고 말한다.
+    outcome = summary?.storage?.available !== true ? 'storage' : coach.events().length === 0 ? 'done' : 'error';
+  } catch (error) { outcome = resetFailure(error); }
+  showResetNotice(outcome);
+  // renderLobby는 화면을 맨 위로 올려 단추 옆 안내를 밀어내므로 추천·저장 글만 다시 쓴다.
+  paintLobbyPlan();
 };
 document.addEventListener('keydown', (e) => {
   if ($('#game').hidden || $('#pause-dialog').open || e.altKey || e.ctrlKey || e.metaKey) return;
@@ -548,6 +600,20 @@ document.addEventListener('keydown', (e) => {
 });
 window.addEventListener('resize', () => { if (stage && !$('#game').hidden) stage.setTopPx(sentenceBottom()); });
 
+// 저장 상태가 실제로 바뀔 때(기록을 넘겨받음·잃음·오류)만 입구·결과의 안내 글을 다시 쓴다. 진행 중인 판의 문항·타이머·소리와 화면 전환·포커스는 건드리지 않는다.
+function refreshStorageText() {
+  paintResetNotice();
+  if (!$('#lobby').hidden) paintLobbyPlan();
+  else if (!$('#results').hidden && !assignment() && !runClosed()) { const next = atlas((c) => rankItems(c, ITEMS)); state.ranked = next; renderSkills(null, next); $('#r-next-reason').textContent = nextLine(next); }
+}
+let storagePaint = false;
+try {
+  coach?.syncPort?.subscribe?.((event) => {
+    if (storagePaint || !['storage-ready', 'storage-wait', 'storage-error'].includes(event?.kind)) return;
+    storagePaint = true;
+    Promise.resolve().then(() => { storagePaint = false; refreshStorageText(); }).catch(() => {});
+  });
+} catch { /* 알림이 없어도 입구를 다시 열 때 최신 상태를 읽는다 */ }
 syncToggles();
 renderLobby();
 // 3D 무대를 입구에서 미리 만든다. 셰이더 미리 데우기(약 0.8초)가 시작 단추를 누른 뒤의 멈춤이 되지 않게, 브라우저가 한가할 때
