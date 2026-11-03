@@ -179,6 +179,7 @@
 - 원인: 컬렉션 화면은 첫 32개를 서버가 그려 주고, 그 뒤는 `https://api.cosmos.so/graphql`의 `GetClusterElements`(32개씩, `pageCursor`)로 받는다. 공개 컬렉션 `/<주인>/<슬러그>`·`/explore/<분류>`(ui-ux·branding·typography·graphic-design·motion·technology)·`/search/collections/<낱말>`에는 로그인 벽이 없다.
 - 고침: ego 페이지에서 fetch를 감싸 `GetClusterBySlug`·`GetClusterElements` 요청 본문을 한 번 잡아 두고, 같은 꼴을 `page.fetch`로 커서를 따라 0.35초 간격으로 부른다(스크립트 `.tmp/homepage-v11-20261022/research/design-crawl/`, git 밖). 웹사이트 엘리먼트(`WebsiteElementTile`)에 원래 사이트 주소(`source.url`)·`websiteTitle`·`websiteDescription`·저장 날짜(`createdAt`)·그림이 있다. 인기 신호는 컬렉션 팔로워 수, 같은 사이트가 여러 컬렉션에 겹쳐 저장된 수, 저장 날짜(최근성)뿐이고 노출 수는 없다 — 인기 숫자가 필요하면 recent.design을 같이 본다. 엘리먼트 검색의 가입 벽 너머는 받지 않는다. 10-22 결과는 컬렉션 229개 · 엘리먼트 26,057 · 웹사이트 3,108 · 사이트 1,867.
 - 다시 확인: 10-24 읽기만 — `/explore/ui-ux` 200. 10-22에 잡아 둔 `GetClusterBySlug` 본문을 curl로 보내도(Origin `https://www.cosmos.so`, 로그인 없음) 공개 컬렉션 하나의 엘리먼트 수·팔로워 수가 왔고, `GetClusterElements` 첫 쪽은 32개(그중 `WebsiteElementTile` 5개, 제목·설명·날짜·주소·그림 칸이 다 있음)와 다음 커서를 줬다 — 페이지 밖에서도 부를 수 있다.
+- 11-03 덧붙임(Claude): 컬렉션 검색 `SearchGlobalClusters`(10-22 `discover.json`에 잡힌 본문)도 페이지 밖 Node `fetch`(Origin · Referer `https://www.cosmos.so`)로 된다. 크몽 상세 3판 조사에서 55개 낱말 × 3쪽으로 컬렉션 2,604개를 찾았고, 팔로워 순 140개의 엘리먼트 17,712장을 4분에 받았다(스크립트 git 밖 `synk-vendor/kmong-sales-kit-20261103/research/cosmos-crawl.mjs`). AI 생성 표시(`media.aiGenerated`)는 125장(0.7%)뿐이라, 걸러도 표본이 거의 줄지 않는다.
 
 ## 웹 조사(exa · 비메오)
 
