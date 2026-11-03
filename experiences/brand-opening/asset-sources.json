@@ -427,17 +427,17 @@
     },
     {
       "file": "assets/drama-s1e01-p11-hello.webp",
-      "source": "https://synk.im/assets/v10/drama-s1e01-p11-hello.webp (SYNK-website claude/home-drama-pub-20261031: site-v10/assets/drama-s1e01-p11-hello.webp)",
+      "source": "https://synk.im/assets/v10/drama-s1e01-p11-hello.webp (SYNK-website claude/taeo-home-panels-20261103: site-v10/assets/drama-s1e01-p11-hello.webp)",
       "transform": "byte-identical copy of the published Episode 1 Scene 2 photoreal panel (student cafeteria, Taeo)",
       "use": "2026-11-01 WORLD entrance (opening.mjs) — docs/WORLD_게임방향_재설계_20261031.md 9절 1단계 ②",
-      "sha256": "51e495752401f84dfcdbb6ca505124e24621efff4c4c68aa0212c6ec56e48b3f"
+      "sha256": "5cf083885503ca38c6e9e6f98fd8b1f190c26d5afdd14a8180557b022222fe35"
     },
     {
       "file": "assets/drama-s1e01-p11-hello-w800.webp",
-      "source": "https://synk.im/assets/v10/r/v10-drama-s1e01-p11-hello-w800.webp (SYNK-website claude/home-drama-pub-20261031: site-v10/assets/r/v10-drama-s1e01-p11-hello-w800.webp)",
+      "source": "https://synk.im/assets/v10/r/v10-drama-s1e01-p11-hello-w800.webp (SYNK-website claude/taeo-home-panels-20261103: site-v10/assets/r/v10-drama-s1e01-p11-hello-w800.webp)",
       "transform": "byte-identical copy of the published 800px variant",
       "use": "2026-11-01 WORLD entrance (opening.mjs)",
-      "sha256": "63368457e9d3117fbac5a37af6748e724b6c135ca02cfc761218439575c817c1"
+      "sha256": "3cbd4a6948bb68ab6352655dacc5157bf385552bf2f6a773f6b84b7d857424d1"
     },
     {
       "file": "assets/world-title-concert-port-v1.webp",
