@@ -84,20 +84,26 @@ def app_screen():
 
 def end_card_1():
     """끝 글 첫 판(1.2초) — 이유 한 줄. 화면 위 글은 후반에서 얹지만, 보드 · 검수에서 두 판을 함께 보도록 그림도 둔다(Fable 이미지콘티 P3-4)."""
+    # 11-03 완성본 Fable: 한 줄 76px(화면 높이 3.8%)은 검은 화면에 자리표처럼 작았다 → 두 줄 크게
     W, H = 1080, 1920
     im = Image.new("RGB", (W, H), (0, 0, 0))
-    ImageDraw.Draw(im).text((W // 2, 900), "알고 보니, 같은 코스.", font=f("ExtraBold", 76), fill=WHITE, anchor="mm")
+    d = ImageDraw.Draw(im)
+    d.text((W // 2, 850), "알고 보니,", font=f("ExtraBold", 132), fill=WHITE, anchor="mm")
+    d.text((W // 2, 1010), "같은 코스.", font=f("ExtraBold", 132), fill=WHITE, anchor="mm")
     return im
 
 
 def end_card():
+    # 11-03 완성본 Fable: 윗줄 58px · 이름 84px은 1.3초에 빠듯 → 키우고 아이콘 + 이름을 한 덩어리로 가운데에
     W, H = 1080, 1920
     im = Image.new("RGB", (W, H), (0, 0, 0))
     d = ImageDraw.Draw(im)
-    d.text((W // 2, 780), "모두가 고른 제주 코스 그대로", font=f("ExtraBold", 58), fill=WHITE, anchor="mm")
-    ic = icon(150)
-    im.paste(ic, (W // 2 - 75 - 190, 900), ic)
-    d.text((W // 2 - 90, 975), "모두의코스", font=f("ExtraBold", 84), fill=WHITE, anchor="lm")
+    d.text((W // 2, 770), "모두가 고른 제주 코스 그대로", font=f("ExtraBold", 72), fill=WHITE, anchor="mm")
+    s, nf, isz, gap = "모두의코스", f("ExtraBold", 116), 196, 34
+    x0 = (W - (isz + gap + d.textlength(s, font=nf))) / 2
+    ic = icon(isz)
+    im.paste(ic, (int(x0), 900), ic)
+    d.text((x0 + isz + gap, 900 + isz / 2), s, font=nf, fill=WHITE, anchor="lm")
     return im
 
 

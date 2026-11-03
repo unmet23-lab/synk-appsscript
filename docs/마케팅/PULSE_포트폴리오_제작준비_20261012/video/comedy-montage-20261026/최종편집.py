@@ -4,6 +4,7 @@
 import os
 import sys
 
+import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
@@ -14,6 +15,7 @@ OUT = os.path.join(ROOT, "최종", "p12")
 CARD = os.path.join(ROOT, "콘티", "p12", "합성")
 FAIR = "C:/Users/q1212/Documents/synk-vendor/sound-library/fairlight/Media Files"
 SON = "C:/Users/q1212/Documents/synk-vendor/sound-library/sonniss_gdc2026/풀림"
+DING = "C:/Users/q1212/Documents/synk-vendor/homeshopping-horror-20261021/remotion_v1-v3_워크트리사본/public/sfx/ding1.wav"
 SONG = os.path.join(ROOT, "최종", "음악", "p12_Hazy_A.mp3")   # Suno 「Hazy Summer Afternoon」(72b802a8, 11-03 — 피아노 아르페지오 + 따뜻한 패드, 드럼 없음, 콘티 1절 「소리」)
 SONG_IN = 3.70   # 곡 27.5초 루프가 크게 올라오는 자리(저역 +26 dB)가 9번 해변에 그가 보이는 23.8초에 온다 — 그 앞 곡 22~27초 가라앉음은 ATV 엔진 밑, 곡 34.3초 올라옴은 속사포 15(30.6초)
 SUIT = os.path.join(C.REPO, "docs", "브랜드_폰트", "SUIT", "SUIT-SemiBold.otf")
@@ -30,17 +32,17 @@ CUTS = {
     3: ("p12-03", 0.40),     # 팬에 밀려 컷 2.7초쯤 왼쪽으로 나감
     4: ("p12-04", 1.00),     # 줄무늬 바닥 → 위로 → 벤치의 그와 일행(0.6초 앞은 동행 뒤통수가 화면을 덮음)
     5: ("p12-05", 0.30),     # 접시 → 컷 0.7초 눈을 들어 3초 가까이 봄
-    6: ("p12-06", 0.90),     # 일행 손이 가리킴 → 억새로 휘두름 → 돌탑 옆 그
+    6: ("p12-06", 1.30),     # 일행 손이 가리킴 → 억새로 휘두름 → 돌탑 옆 그를 지나침(판 1.2초 앞은 그가 미리 앉아 있어 공개가 샘 — Fable 11-03 P1)
     7: ("p12-07-08", 1.03),  # 샷1 끝까지(4.50초에 컷) — 올라타 앉고 넥게이터를 매만짐
     8: ("p12-07-08", 4.50),  # 샷2 — 넥게이터를 내려 얼굴을 드러냄
-    9: ("p12-09", 1.50),     # 아이와 놀다 컷 0.5초부터 정색해 이쪽, 끝에 왼쪽으로 흐름
+    9: ("p12-09", 1.84),     # 이쪽을 노려보다 끝 0.3초 왼쪽으로 흘러 빈 해변(판 끝까지 — Fable P1)
     10: ("p12-10", 0.80),    # 속사포 — 다가가는 판에서 뒤 컷일수록 가까운 자리(콘티 3-2)
     11: ("p12-11", 0.80),
-    12: ("p12-12", 2.60),
-    13: ("p12-13", 0.00),
-    14: ("p12-14", 1.60),
-    15: ("p12-15", 3.00),
-    16: ("p12-16", 0.15),    # 여행자 폰 → 맞은편 테이블 → 1.68초 한 번에 당김 → 같은 화면의 폰
+    12: ("p12-12", 3.34),    # 판 끝 — 2.6초는 11보다 멀어 순서가 거꾸로였다(Fable P1)
+    13: ("p12-13", 0.00),    # 단체가 보이는 채로 가장 덜 다가감
+    14: ("p12-14", 1.00),    # 15보다 크지 않게
+    15: ("p12-15", 3.34),
+    16: ("p12-16", 0.00),    # 여행자 폰을 판 첫머리부터(또렷한 시간 0.2 → 0.35초) → 맞은편 테이블 → 1.83초 당김 → 같은 화면의 폰
 }
 LINE = ("제주 2박 3일,", "가는 데마다 또 그 사람")
 
@@ -127,13 +129,27 @@ def sound():
     # 7~8 ATV 엔진은 음악을 거의 덮을 만큼 크게 → 9 해변으로 넘어가는 순간 뚝 끊기고 파도만(콘티 1절)
     eng = C.load_stereo(os.path.join(SON, "SoundBits - Motorcycles - Honda", "VEHSkid_Honda CB500F Engine Start Tires Skidding Stop 02_SNDBTS_MCH.wav"))
     m.put(T[6], eng[int(0.2 * C.RATE):int((0.2 + T[8] - T[6]) * C.RATE)], -1 if have_song else -10, fade=0.003)
-    # 속사포 조각 소리 — 자전거 바퀴 · 숯불
-    m.put(T[10], amb(os.path.join(FAIR, "Bike By 1.M.wav"), 0.3, 0.7), bed + 4, fade=0.003)
-    m.put(T[14], amb(os.path.join(SON, "Ivo Vicic - Campfire - Bonfire FX", "24 Campfire, Dropping Fresh Pine Branches in Fire, Crackling, Sizzling Strong, Close 02.wav"), 20, 0.7), bed + 4, fade=0.003)
-    m.put(T[15], amb(os.path.join(SON, "Ivo Vicic - Campfire - Bonfire FX", "24 Campfire, Dropping Fresh Pine Branches in Fire, Crackling, Sizzling Strong, Close 02.wav"), 40, T[16] - T[15]), bed - 2, fade=0.004)
+    # 속사포 조각 소리 — 컷 머리마다 한 조각(파도 · 자전거 바퀴 · 바람 · 셔터 · 잔 · 숯불, 콘티 1절). 처음엔 10 · 12 · 13 · 14가 빠져 박이 없었고(Fable P2),
+    # bed 기준 이득으로 넣자 파일 자체가 작은 조각이 묻혔다(재확인 P2) → 조각마다 봉우리를 합의 봉우리에 견줘 맞춘다(아래 hits)
+    camp = os.path.join(SON, "Ivo Vicic - Campfire - Bonfire FX", "24 Campfire, Dropping Fresh Pine Branches in Fire, Crackling, Sizzling Strong, Close 02.wav")
+    hits = [
+        (T[9], amb(os.path.join(SON, "Just Sound Effects - Rocky Coast of Norway", "WATRWave_Medium Waves at Pebble Beach_JSE_RCoN_Stereo.wav"), 9.0, 0.3), 0.12),
+        (T[10], amb(os.path.join(FAIR, "Bike By 1.M.wav"), 0.3, 0.7), 0.2),
+        (T[11], amb(os.path.join(FAIR, "Grass Moving With The Win.M.wav"), 3.0, 0.3), 0.12),
+        (T[12], C.load(os.path.join(FAIR, "Pen Clicks.M.wav"))[:int(0.12 * C.RATE)], 0.03),
+        (T[13], C.load(os.path.join(FAIR, "Glass Clink Toast.M.wav"))[:int(0.4 * C.RATE)], 0.15),
+        (T[14], amb(camp, 20, 0.7), 0.2),
+    ]
+    m.put(T[15], amb(camp, 40, T[16] - T[15]), bed + 12, fade=0.004)
     # 16 끝 휙
-    m.put(T[16] - 0.12, C.load(os.path.join(FAIR, "Low Whoosh x2.wav"))[:int(0.5 * C.RATE)], -10, fade_out=0.15)
-    m.finish(os.path.join(OUT, "소리.wav"), boost_db=-3.0)
+    m.put(T[16] - 0.12, C.load(os.path.join(FAIR, "Low Whoosh x2.wav"))[:int(0.5 * C.RATE)], 3, fade_out=0.15)   # 파일 자체가 작아(RMS −27) −10이면 곡 꼬리에 묻혔다(Fable P2)
+    # 브랜드 카드에 앱 알림 같은 한 방 — 처음엔 끝 글이 잦아들기만 해 소리 사건이 없었다(Fable P2, 재확인에서 −10은 겨우 보여 −4)
+    m.put(T[16] + 1.20, C.load(DING), -8)
+    # 속사포 조각은 합 봉우리의 20%(−14 dB)에 봉우리를 맞춘다 — 마감의 정규화 · +1 dB 뒤 −7 dBFS 안팎(40%는 한계기 천장 −1까지 갔다)
+    pk = float(np.max(np.abs(m.a)))
+    for t, x, fo in hits:
+        m.put(t, x * (0.2 * pk / (float(np.max(np.abs(x))) or 1.0)), 0, fade=0.002, fade_out=fo)
+    m.finish(os.path.join(OUT, "소리.wav"), boost_db=1.0)   # 휙 봉우리에 맞춰 줄어든 만큼 올려 −14 LUFS 안팎(한계기가 봉우리를 잡음)
 
 
 def render():
