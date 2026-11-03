@@ -4,10 +4,11 @@
 //   C 「말풍선 · 쇼핑 카드」: 보호자 말이 메신저 말풍선으로 쌓이고, 조끼가 나오면 담기 카드가 올라온다
 // 화면 · 소리는 git 밖 public(p11/picture.mp4 · sound_narr.wav), 마스크는 사람개분리.py가 만든 p11/cut/<컷>/.
 import React from 'react';
-import { AbsoluteFill, Img, OffthreadVideo, Sequence, staticFile, useCurrentFrame } from 'remotion';
+import { AbsoluteFill, OffthreadVideo, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { Audio } from '@remotion/media';
 import { EN, KO } from '../lib/fonts';
 import { EXPO, life, pop, ramp } from '../lib/motion';
+import { Door, MaskCut, maskAt, ProbeMeta, probeChars, Subject } from '../lib/subject';
 import { LINES } from './timing';
 import masks from './masks.json';
 
@@ -31,36 +32,9 @@ const lineAt = (t: number) => last(LINES.filter((l) => t >= l.at - 0.05 && t < l
 const w = (li: number, wi: number) => LINES[li].words[wi].t;
 const endOf = (li: number) => LINES[li].end;
 
-// ── 마스크 컷: 그 컷의 프레임 위에 마스크 알파로 피사체만 다시 얹는다(뒤 글자를 가림)
-type MaskCut = { cut: string; from: number; to: number; frames: number };
+// ── 마스크 컷(피사체를 다시 얹어 뒤 글자를 가림 — ../lib/subject)
 const MASKS = (masks as MaskCut[]);
-const Subject: React.FC<{ t: number }> = ({ t }) => {
-  const m = MASKS.find((c) => t >= c.from && t < c.to);
-  if (!m) return null;
-  const n = Math.min(m.frames, Math.max(1, Math.floor((t - m.from) * FPS) + 1));
-  const id = String(n).padStart(5, '0');
-  const mask = `url("${staticFile(`p11/cut/${m.cut}/m/${id}.png`)}")`;
-  return (
-    <AbsoluteFill style={{ zIndex: 5 }}>
-      <Img src={staticFile(`p11/cut/${m.cut}/f/${id}.jpg`)} style={{ width: '100%', height: '100%', WebkitMaskImage: mask, maskImage: mask, WebkitMaskSize: '100% 100%', maskSize: '100% 100%' }} />
-    </AbsoluteFill>
-  );
-};
-const masked = (t: number) => MASKS.some((c) => t >= c.from && t < c.to);
-
-// 문짝 전환(S42 Door) — 세 장이 위 · 아래에서 번갈아 덮고 걷힌다
-const Door: React.FC<{ t: number; at: number; color: string }> = ({ t, at, color }) => {
-  const q = t - at;
-  if (q < -0.23 || q > 0.35) return null;
-  return (
-    <AbsoluteFill style={{ zIndex: 60 }}>
-      {[0, 1, 2].map((i) => {
-        const p = q < 0 ? ramp(q + 0.23 - i * 0.018, 0, 0.2) : 1 - ramp(q - i * 0.018, 0, 0.28);
-        return <div key={i} style={{ ...abs(i * 360, -5, 362, 1930), background: color, transform: `translateY(${(1 - p) * (i % 2 === 0 ? -1940 : 1940)}px)` }} />;
-      })}
-    </AbsoluteFill>
-  );
-};
+const masked = (t: number) => !!maskAt(MASKS, t);
 
 // 눈금 고리(S42 Ring) — 천천히 돈다
 const Ring: React.FC<{ t: number; style: React.CSSProperties; color: string }> = ({ t, style, color }) => (
@@ -95,17 +69,15 @@ const bigBox = (t: number, big: Big): React.CSSProperties => {
   const out = 1 - ramp(t, big.b - 0.12, 0.12);
   return { ...abs(56, big.y, 980), textAlign: big.x === 'c' ? 'center' : big.x === 'r' ? 'right' : 'left', fontFamily: KO, fontWeight: 800, fontSize: big.size, letterSpacing: '-0.05em', lineHeight: 1, opacity: Math.min(1, p) * out, transform: `translateY(${(1 - p) * 110}px)` };
 };
-// 가림 검사용(가림검사.py): 큰 낱말만 글자마다 다른 순색으로 검은 바탕에 그리고, 왼쪽 위 16px 칸 색에 낱말 번호 · 피사체 뒤 · 밝은 글자를 적는다
-const PROBE = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'];
+// 가림 검사용(가림검사.py): 큰 낱말만 글자마다 다른 순색으로 검은 바탕에(../lib/subject 탐침)
 const Probe: React.FC<{ t: number }> = ({ t }) => {
   const i = BIG_A.findIndex((b) => t >= b.a && t < b.b);
   if (i < 0) return null;
   const big = BIG_A[i];
-  let k = 0;
   return (
     <>
-      <div style={{ ...abs(0, 0, 16, 16), background: `rgb(${16 * (i + 1)},${behind(t, big) ? 255 : 0},${big.light ? 255 : 0})` }} />
-      <div style={bigBox(t, big)}>{[...big.w].map((ch, j) => <span key={j} style={{ color: ch === ' ' ? 'transparent' : PROBE[k++ % PROBE.length] }}>{ch}</span>)}</div>
+      <ProbeMeta i={i} behind={behind(t, big)} light={big.light} />
+      <div style={bigBox(t, big)}>{probeChars(big.w)}</div>
     </>
   );
 };
@@ -119,7 +91,7 @@ const LookA: React.FC<{ t: number; mix?: boolean }> = ({ t, mix }) => {
   return (
     <>
       {big && <div style={{ ...bigBox(t, big), zIndex: behind(t, big) ? 3 : 6, textShadow: big.light ? '0 4px 28px #0E132070' : undefined, color: big.light ? PAPER : INK }}>{big.w}</div>}
-      <Subject t={t} />
+      <Subject film="p11" cuts={MASKS} t={t} />
       {/* 머리 줄 · 발 줄 */}
       {!(mix && t >= w(8, 3)) && <>
         <div style={{ ...abs(72, 96, 936, 60), zIndex: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: PAPER, textShadow: '0 1px 12px #0008' }}>

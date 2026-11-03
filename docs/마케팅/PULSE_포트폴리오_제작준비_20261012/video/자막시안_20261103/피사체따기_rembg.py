@@ -10,7 +10,11 @@ PUB = Path("C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/최�
 FPS = 24
 # p11 c05 · c07 · c08(11-03 밤): 「튼튼」 · 「번쩍」이 남자 머리 · 민소매 위에 얹혀 묻혀서(가림검사.py) 뒤로 보낼 자리를 찾으려고 더 땄다
 JOBS = {"p11": {"c01": (0.00, 2.17), "c04": (6.50, 11.23), "c05": (11.23, 12.83), "c07": (13.47, 14.90), "c08": (14.90, 16.27), "c09": (16.27, 19.33), "c10": (19.33, 22.06)},
-        "p12": {"c01": (0.00, 1.87), "c09": (22.87, 27.07), "c13": (29.17, 29.87), "c16": (31.27, 35.14)}}
+        # p12 전 컷(11-03 밤 「세 편에 넣기」): 컷마다 「그 사람 마주침」 큰 숫자를 남자 뒤에 둔다 — 컷 경계는 comedy-montage 최종편집.py T
+        "p12": {f"c{n:02d}": (a, b) for n, (a, b) in enumerate(zip([0, 1.87, 3.87, 7.20, 11.73, 15.10, 18.30, 21.77, 22.87, 27.07, 27.77, 28.47, 29.17, 29.87, 30.57, 31.27],
+                                                                  [1.87, 3.87, 7.20, 11.73, 15.10, 18.30, 21.77, 22.87, 27.07, 27.77, 28.47, 29.17, 29.87, 30.57, 31.27, 35.14]), 1)},
+        # 매진 임박(16:9 화면) — 강도 컷 둘(2 「내놔!」 · 23 「한국말이야?」)에만 큰 글자를 강도 뒤에 둔다. 컷 경계는 원본_샷.json
+        "hs": {"c02": (0.54, 1.38), "c23": (41.33, 45.75)}}
 film, cuts = sys.argv[1], sys.argv[2:]
 sess = new_session("isnet-general-use")
 for cut in cuts:
@@ -25,7 +29,7 @@ for cut in cuts:
         for i, p in enumerate(sorted(Path(tmp).glob("*.jpg"))):
             im = Image.open(p).convert("RGB")
             im.save(out / "f" / f"{i + 1:05}.jpg", quality=92)
-            small = im.resize((540, 960), Image.LANCZOS)
+            small = im.resize((im.width // 2, im.height // 2), Image.LANCZOS)   # 반 크기(세로 540×960 · 가로 960×540)
             m = remove(small, session=sess, only_mask=True)
             arr = np.array(m) > 127
             iou = float(np.logical_and(arr, prev).sum() / max(1, np.logical_or(arr, prev).sum())) if prev is not None else 1.0

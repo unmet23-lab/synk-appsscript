@@ -1,11 +1,11 @@
-# 12번 B급 코미디 몽타주 「모두의코스」 최종 편집(2026-11-03, Claude) — 02_콘티 3절 17컷을 시각 그대로 하드컷으로 잇고, 고정 자막 · 끝 글 두 장 · 음악 · 장소마다 현장음을 놓는다.
+# 12번 B급 코미디 몽타주 「모두의코스」 최종 편집(2026-11-03, Claude) — 02_콘티 3절 17컷을 시각 그대로 하드컷으로 잇고, 음악 · 장소마다 현장음을 놓고, 화면 글은 Remotion 섞은 판(p12)으로 굽는다.
 #   python -X utf8 최종편집.py   → git 밖 pulse-portfolio12-20261024/최종/p12/모두의코스_9x16.mp4 · _폰.mp4 · _반초.jpg
 # 말 · 입 맞춤 없음(콘티 1절). 음악(최종/음악/p12_*.mp3)이 없으면 현장음만으로 간다. 후보정 없음(결정 10-24).
 import os
+import shutil
 import sys
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 import 최종편집공통 as C
@@ -18,12 +18,11 @@ SON = "C:/Users/q1212/Documents/synk-vendor/sound-library/sonniss_gdc2026/풀림
 DING = "C:/Users/q1212/Documents/synk-vendor/homeshopping-horror-20261021/remotion_v1-v3_워크트리사본/public/sfx/ding1.wav"
 SONG = os.path.join(ROOT, "최종", "음악", "p12_Hazy_A.mp3")   # Suno 「Hazy Summer Afternoon」(72b802a8, 11-03 — 피아노 아르페지오 + 따뜻한 패드, 드럼 없음, 콘티 1절 「소리」)
 SONG_IN = 3.70   # 곡 27.5초 루프가 크게 올라오는 자리(저역 +26 dB)가 9번 해변에 그가 보이는 23.8초에 온다 — 그 앞 곡 22~27초 가라앉음은 ATV 엔진 밑, 곡 34.3초 올라옴은 속사포 15(30.6초)
-SUIT = os.path.join(C.REPO, "docs", "브랜드_폰트", "SUIT", "SUIT-SemiBold.otf")
-SUIT_M = os.path.join(C.REPO, "docs", "브랜드_폰트", "SUIT", "SUIT-Medium.otf")
+CAP = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "자막시안_20261103")   # Remotion 섞은 판(p12)
+PUB = os.path.join(ROOT, "최종", "자막시안_public", "p12")
 FPS, W, H = 24, 1080, 1920
 T = [0, 1.87, 3.87, 7.20, 11.73, 15.10, 18.30, 21.77, 22.87, 27.07, 27.77, 28.47, 29.17, 29.87, 30.57, 31.27, 35.14, 37.64]   # 컷 경계(02_콘티 3절)
 END = T[-1]
-LOOK = T[16]   # 1~16컷 고정 자막, 17은 끝 글
 
 # 컷 번호 → (판, 그 판에서 시작하는 초). 17은 끝 글 두 장(합성/끝글_1.png → 끝글.png)
 CUTS = {
@@ -44,7 +43,6 @@ CUTS = {
     15: ("p12-15", 3.34),
     16: ("p12-16", 0.00),    # 여행자 폰을 판 첫머리부터(또렷한 시간 0.2 → 0.35초) → 맞은편 테이블 → 1.83초 당김 → 같은 화면의 폰
 }
-LINE = ("제주 2박 3일,", "가는 데마다 또 그 사람")
 
 
 def picture():
@@ -72,25 +70,6 @@ def picture():
               "-r", str(FPS), "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", out)
         paths.append(out)
     C.join_videos(paths, os.path.join(OUT, "화면.mp4"))
-
-
-def caption_png(path):
-    # 원본 자리 · 크기 그대로 — 흰 글자 + 얇은 검은 테, 화면 높이 72~84%
-    f = ImageFont.truetype(SUIT, 62)
-    im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    d = ImageDraw.Draw(im)
-    for i, s in enumerate(LINE):
-        d.text(((W - d.textlength(s, font=f)) / 2, 1418 + i * 80), s, font=f, fill=(255, 255, 255), stroke_width=4, stroke_fill=(0, 0, 0))
-    im.save(path)
-
-
-def notice_png(path):
-    im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    d = ImageDraw.Draw(im)
-    f = ImageFont.truetype(SUIT_M, 24)
-    s = "가상 브랜드 · AI로 만든 가상 모델"
-    d.text(((W - d.textlength(s, font=f)) / 2, H - 70), s, font=f, fill=(255, 255, 255, 170), stroke_width=2, stroke_fill=(0, 0, 0, 120))
-    im.save(path)
 
 
 def amb(path, start, seconds):
@@ -153,16 +132,14 @@ def sound():
 
 
 def render():
-    t = os.path.join(OUT, "_글")
-    os.makedirs(t, exist_ok=True)
-    cap, note = os.path.join(t, "자막.png"), os.path.join(t, "고지.png")
-    caption_png(cap)
-    notice_png(note)
-    out = os.path.join(OUT, "모두의코스_9x16.mp4")
-    chain = f"[0:v][2:v]overlay=0:0:enable='lt(t,{LOOK})'[v1];[v1][3:v]overlay=0:0:enable='lt(t,{LOOK})',format=yuv420p[v]"
-    C.run("ffmpeg", "-y", "-v", "error", "-i", os.path.join(OUT, "화면.mp4"), "-i", os.path.join(OUT, "소리.wav"), "-i", cap, "-i", note, "-filter_complex", chain, "-map", "[v]", "-map", "1:a",
-          "-c:v", "libx264", "-crf", "16", "-preset", "slow", "-r", str(FPS), "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", "-c:a", "aac", "-b:a", "256k",
-          "-shortest", "-movflags", "+faststart", out)
+    # 화면 글 — 11-03 밤 유호님 「세 편에 넣기」: 고정 두 줄 자막을 버리고 자막시안_20261103/remotion의 p12(앱 화면 결 + 섞은 판 — 장소 칩 아래 큰 「N번째」 ·
+    # 「같은 코스」 민트 블록 · 끝 코스 선 → 민트 판 브랜드)가 굽는다. 끝 글 두 장(17)은 화면에 남지만 p12 끝 화면이 덮는다
+    for src, dst in ((os.path.join(OUT, "화면.mp4"), "picture.mp4"), (os.path.join(OUT, "소리.wav"), "sound.wav")):
+        if C.md5(src) != C.md5(os.path.join(PUB, dst)):
+            shutil.copyfile(src, os.path.join(PUB, dst))
+    out, raw = os.path.join(OUT, "모두의코스_9x16.mp4"), os.path.join(OUT, "_렌더.mp4")
+    C.run(shutil.which("npx"), "remotion", "render", "src/index.ts", "p12", raw, "--concurrency=4", "--log=error", cwd=os.path.join(CAP, "remotion"))
+    C.run("node", os.path.join(C.REPO, "tools", "음량마감.mjs"), raw, out, "--목표", "-14", "--덮어쓰기")   # 소리 AAC 320k 이상(영상사전검사)
     C.run("ffmpeg", "-y", "-v", "error", "-i", out, "-vf", "scale=720:-2", "-c:v", "libx264", "-crf", "24", "-preset", "medium", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", os.path.join(OUT, "모두의코스_9x16_폰.mp4"))
     C.run("ffmpeg", "-y", "-v", "error", "-i", out, "-vf", "fps=2,scale=200:-2,tile=15x5:padding=3", "-frames:v", "1", "-q:v", "4", os.path.join(OUT, "_반초.jpg"))
     print(out)

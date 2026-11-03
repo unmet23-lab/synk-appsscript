@@ -1,27 +1,25 @@
 # 「매진 임박」 시댄스 판 최종 편집(2026-11-03, Claude) — 04_콘티 3절 31컷을 원본 시각 · 길이 그대로 하드컷으로 잇고, 대사는 시댄스 생성 목소리를 Demucs로 떼어 놓는다.
 #   python -X utf8 최종편집.py 화면          → 최종/_컷/NN.mp4 · 최종/화면.mp4(1920×1080 · 24fps · 소리 없음)
 #   python -X utf8 최종편집.py 소리          → 최종/소리.wav(대사 · 흐느낌 · 방 소리 · 카드 음악 · 효과음, −14 LUFS 안팎)
-#   python -X utf8 최종편집.py 판            → 최종/매진임박_16x9.mp4 · 매진임박_9x16.mp4 · _폰.mp4 · 1초 시트(9:16은 원본처럼 가운데 영화 띠 + 위 머리글)
+#   python -X utf8 최종편집.py 판            → 최종/매진임박_16x9.mp4 · 매진임박_9x16.mp4 · _폰.mp4(9:16은 원본처럼 가운데 영화 띠 + 위 머리글 · 아래 말자막 — Remotion hs16 · hs9)
 #   python -X utf8 최종편집.py 나란히        → 최종/원본과나란히.mp4(왼쪽 원본 띠 · 오른쪽 우리 판, 원본 프레임이 들어가 git 밖에만)
 # 후보정 없음(결정 10-24): 색 · 밝기 · 떨림 · 속도를 건드리지 않고 받은 판을 시작점부터 잘라 잇기만 한다. 틀린 컷은 다시 뽑는다. 쓰는 판 · 시작점은 CUTS 한 곳이다.
 import json
 import os
+import shutil
 import subprocess
 import sys
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-from 최종편집공통 import Mix, load, load_stereo
+from 최종편집공통 import Mix, load, load_stereo, md5
 
 DAY = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028/받음"
 V = "C:/Users/q1212/Documents/synk-vendor/homeshopping-horror-20261021"
 OUT = os.path.join(V, "최종")
 VOX = os.path.join(OUT, "소리")   # 판마다 Demucs로 뗀 목소리(<판>.wav)
 CARD = os.path.join(V, "영상", "v4", "카드")
-REPO = "C:/Users/q1212/Documents/SYNK-appsscript"
-SUIT = os.path.join(REPO, "docs", "브랜드_폰트", "SUIT")
 BGM = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/최종/음악/hs_OrderNow_B.mp3"   # Suno 「Order Now」(aaae3b39, 11-03 — 90년대 인포머셜풍 연주곡)
 AMB = os.path.join(V, "remotion_v1-v3_워크트리사본", "public", "amb")
 SFX = os.path.join(V, "remotion_v1-v3_워크트리사본", "public", "sfx")
@@ -166,73 +164,22 @@ def mix_audio():
     m.finish(os.path.join(OUT, "소리.wav"), boost_db=-2.8)   # 스테레오 기준 원본 크기(−14.6 LUFS) 안팎
 
 
-def font(name, size):
-    return ImageFont.truetype(os.path.join(SUIT, f"SUIT-{name}.otf"), size)
-
-
-def band_layer(W, H, top, bottom, band_h):
-    # 9:16 위 · 아래 검정 띠의 글 — 원본 자리(가운데 16:9 띠 위에 머리글 두 줄, 아래 비움) + AI 고지
-    im = Image.new("RGB", (W, H), (0, 0, 0))
-    d = ImageDraw.Draw(im)
-    y0 = (H - band_h) // 2
-    f = font("ExtraBold", 58)
-    lines = top
-    lh = 76
-    total = lh * len(lines)
-    y = y0 - 60 - total
-    for s in lines:
-        w = d.textlength(s, font=f)
-        d.text(((W - w) / 2, y), s, font=f, fill=(255, 255, 255))
-        y += lh
-    f2 = font("Medium", 26)
-    w = d.textlength(bottom, font=f2)
-    d.text(((W - w) / 2, y0 + band_h + 28), bottom, font=f2, fill=(150, 150, 150))
-    return im
-
-
-NOTICE = "가상 브랜드 · AI로 만든 가상 모델 · 음성"
-HEAD_A = ["홈쇼핑 덕후", "코미디 스케치를 만들었다"]
-HEAD_B = ["제품 광고 문의", "PULSE"]
-HEAD_CHANGE = 67.21
+# 화면 글 — 11-03 밤 유호님 「세 편에 넣기」: 흰 가운데 머리글 · 로고 덧씌우기를 버리고, 자막시안_20261103/remotion의 섞은 판(hs16 · hs9)이 굽는다
+#   말자막(S42 상자, 핵심 낱말 레몬) · 강도 컷 둘의 큰 낱말(강도 뒤) · 끝 PULSE 종이 블록 · 9:16 머리글(원본 두 줄 · 67.21초에 블록으로)
+#   화면.mp4를 다시 자르면 강도 컷 마스크(c02 · c23)를 자막시안 피사체따기_rembg.py hs로 다시 딴다
+CAP = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "자막시안_20261103")
+PUB = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/최종/자막시안_public/hs"
 
 
 def render():
-    pic = os.path.join(OUT, "화면.mp4")
-    wav = os.path.join(OUT, "소리.wav")
-    t = os.path.join(OUT, "_글")
-    os.makedirs(t, exist_ok=True)
-    # 16:9 — 화면 그대로, 마지막 컷(#31)에 PULSE 로고 · 문의 한 줄, 밑에 AI 고지(글자는 후반에서, 제작 규칙 D)
-    ov = Image.new("RGBA", (1920, 1080), (0, 0, 0, 0))
-    d = ImageDraw.Draw(ov)
-    f = font("Medium", 22)
-    w = d.textlength(NOTICE, font=f)
-    d.text((1920 - w - 40, 1080 - 50), NOTICE, font=f, fill=(255, 255, 255, 150))
-    ov.save(os.path.join(t, "고지.png"))
-    ov2 = Image.new("RGBA", (1920, 1080), (0, 0, 0, 0))
-    logo = Image.open(os.path.join(REPO, "docs", "홍보물", "마케팅실행_20260909", "브랜드킷", "배치용", "SYNK-PULSE-Paper.png")).convert("RGBA")   # 어두운 바탕용 승인 조합
-    logo = logo.resize((480, round(480 * logo.height / logo.width)), Image.LANCZOS)
-    ov2.alpha_composite(logo, (1920 - 480 - 60, 770))
-    d = ImageDraw.Draw(ov2)
-    f = font("SemiBold", 44)
-    s = "제품 광고 문의"
-    w = d.textlength(s, font=f)
-    d.text((1920 - w - 60, 770 + logo.height + 14), s, font=f, fill=(255, 255, 255, 235))
-    ov2.save(os.path.join(t, "문의.png"))
-    a16 = os.path.join(OUT, "매진임박_16x9.mp4")
-    run("ffmpeg", "-y", "-v", "error", "-i", pic, "-i", wav, "-i", os.path.join(t, "고지.png"), "-i", os.path.join(t, "문의.png"), "-filter_complex",
-        f"[0:v][2:v]overlay=0:0[a];[a][3:v]overlay=0:0:enable='gte(t,{SHOTS[31]["f0"] / FPS})',format=yuv420p[v]", "-map", "[v]", "-map", "1:a",
-        "-c:v", "libx264", "-crf", "16", "-preset", "slow", "-r", str(FPS), "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709",
-        "-c:a", "aac", "-b:a", "256k", "-movflags", "+faststart", a16)
-    # 9:16 — 1080×1920, 가운데 16:9 띠(폭 그대로 608줄)
-    bh = 608
-    band_layer(1080, 1920, HEAD_A, NOTICE, bh).save(os.path.join(t, "띠_앞.png"))
-    band_layer(1080, 1920, HEAD_B, NOTICE, bh).save(os.path.join(t, "띠_뒤.png"))
-    a9 = os.path.join(OUT, "매진임박_9x16.mp4")
-    y0 = (1920 - bh) // 2
-    run("ffmpeg", "-y", "-v", "error", "-i", pic, "-i", wav, "-loop", "1", "-i", os.path.join(t, "띠_앞.png"), "-loop", "1", "-i", os.path.join(t, "띠_뒤.png"), "-filter_complex",
-        f"[0:v]scale=1080:{bh}:flags=lanczos[b];[2:v][3:v]overlay=0:0:enable='gte(t,{HEAD_CHANGE})'[bg];[bg][b]overlay=0:{y0}:shortest=1,format=yuv420p[v]",
-        "-map", "[v]", "-map", "1:a", "-t", f"{ENDT:.3f}", "-c:v", "libx264", "-crf", "17", "-preset", "slow", "-r", str(FPS), "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709",
-        "-c:a", "aac", "-b:a", "256k", "-movflags", "+faststart", a9)
+    for src, dst in ((os.path.join(OUT, "화면.mp4"), "picture.mp4"), (os.path.join(OUT, "소리.wav"), "sound.wav")):
+        if not os.path.exists(os.path.join(PUB, dst)) or md5(src) != md5(os.path.join(PUB, dst)):
+            shutil.copyfile(src, os.path.join(PUB, dst))
+    a16, a9 = os.path.join(OUT, "매진임박_16x9.mp4"), os.path.join(OUT, "매진임박_9x16.mp4")
+    for comp, out in (("hs16", a16), ("hs9", a9)):   # 렌더는 한 번에 하나(둘을 같이 돌리면 하나가 죽는다 — 현장노트)
+        # 음량마감.mjs를 거치지 않는다 — 소리가 대부분 −45~−50 dB 정적이라 다시 담으면 AAC가 305k까지만 써 올림 기준(320k)에 못 미친다.
+        # 소리.wav가 이미 −14.4 LUFS로 섞여 있고, Remotion이 384k(remotion.config.ts)로 바로 담으면 381k(11-04)
+        subprocess.run([shutil.which("npx"), "remotion", "render", "src/index.ts", comp, out, "--concurrency=4", "--log=error"], check=True, cwd=os.path.join(CAP, "remotion"))
     for src, dst, sc in ((a16, "매진임박_16x9_폰.mp4", "1280:-2"), (a9, "매진임박_9x16_폰.mp4", "720:-2")):
         run("ffmpeg", "-y", "-v", "error", "-i", src, "-vf", f"scale={sc}", "-c:v", "libx264", "-crf", "24", "-preset", "medium", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", os.path.join(OUT, dst))
     print(a16, a9)

@@ -25,4 +25,4 @@ m.put(0, sea[C.RATE * 3:C.RATE * 3 + int(6.50 * C.RATE)], -24, fade=0.004)
 m.put(6.75, C.load(os.path.join(SFX, "Tape Ripping.M.wav"))[:int(1.0 * C.RATE)], -18, fade_out=0.2)
 m.put(11.95, C.load(os.path.join(SFX, "Belt Buckle.M.wav"))[:int(0.5 * C.RATE)], -12, fade_out=0.1)
 m.put(21.38, C.load(DING), -12)
-m.finish(os.path.join(PUB, "sound_narr.wav"), boost_db=-3.0)
+m.finish(os.path.join(PUB, "sound_narr.wav"), boost_db=-1.8)   # −3.0이면 −15.2 LUFS(11-03 최종) — 다른 편처럼 −14 안팎으로
