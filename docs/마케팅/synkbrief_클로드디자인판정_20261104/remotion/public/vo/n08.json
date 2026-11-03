@@ -1,0 +1,71 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n08",
+ "text": "거래처에 보낸 시안 링크가, 그날부터 안 열려요.",
+ "show": "거래처에 보낸 시안 링크가 그날부터 안 열려요",
+ "dur": 2.554,
+ "words": [
+  {
+   "text": "거래처에",
+   "start": 0.06,
+   "end": 0.437
+  },
+  {
+   "text": "보낸",
+   "start": 0.48,
+   "end": 0.668
+  },
+  {
+   "text": "시안",
+   "start": 0.741,
+   "end": 0.929
+  },
+  {
+   "text": "링크가,",
+   "start": 0.972,
+   "end": 1.291
+  },
+  {
+   "text": "그날부터",
+   "start": 1.566,
+   "end": 1.942
+  },
+  {
+   "text": "안",
+   "start": 2,
+   "end": 2.072
+  },
+  {
+   "text": "열려요.",
+   "start": 2.115,
+   "end": 2.554
+  }
+ ],
+ "source": {
+  "key": "629efa46f50d5e20792df8b51df5a0ed",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1104,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 153
+ }
+}

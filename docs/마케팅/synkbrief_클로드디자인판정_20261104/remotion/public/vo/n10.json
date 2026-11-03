@@ -1,0 +1,51 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n10",
+ "text": "세 가지만 하세요.",
+ "show": "세 가지만 하세요",
+ "dur": 0.925,
+ "words": [
+  {
+   "text": "세",
+   "start": 0,
+   "end": 0.081
+  },
+  {
+   "text": "가지만",
+   "start": 0.141,
+   "end": 0.403
+  },
+  {
+   "text": "하세요.",
+   "start": 0.463,
+   "end": 0.925
+  }
+ ],
+ "source": {
+  "key": "b395d4f603885ed05fafb49d0412a646",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1104,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 141
+ }
+}

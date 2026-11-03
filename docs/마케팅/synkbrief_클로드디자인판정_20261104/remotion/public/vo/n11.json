@@ -1,0 +1,76 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n11",
+ "text": "보낸 링크는 적어 뒀다가, 새 링크로 다시 보내고,",
+ "show": "보낸 링크는 적어 뒀다가 새 링크로 다시 보내고",
+ "dur": 2.777,
+ "words": [
+  {
+   "text": "보낸",
+   "start": 0.01,
+   "end": 0.198
+  },
+  {
+   "text": "링크는",
+   "start": 0.241,
+   "end": 0.559
+  },
+  {
+   "text": "적어",
+   "start": 0.602,
+   "end": 0.79
+  },
+  {
+   "text": "뒀다가,",
+   "start": 0.833,
+   "end": 1.179
+  },
+  {
+   "text": "새",
+   "start": 1.54,
+   "end": 1.627
+  },
+  {
+   "text": "링크로",
+   "start": 1.684,
+   "end": 1.973
+  },
+  {
+   "text": "다시",
+   "start": 2.031,
+   "end": 2.262
+  },
+  {
+   "text": "보내고,",
+   "start": 2.305,
+   "end": 2.777
+  }
+ ],
+ "source": {
+  "key": "83b259806944104d9f7dec9cd385bdb3",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1104,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 166
+ }
+}

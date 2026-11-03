@@ -1,0 +1,88 @@
+{
+ "updated": {
+  "y": 221,
+  "h": 16,
+  "x": 16,
+  "w": 115,
+  "t": "Updated this week"
+ },
+ "close": {
+  "y": 311,
+  "h": 135,
+  "x": 16,
+  "w": 388,
+  "t": "Claude Design now lives in Claude. The standalone Claude Design site (claude.ai/design) will close on December 14, 2026, and you can still access it until that "
+ },
+ "move": {
+  "y": 1178,
+  "h": 19,
+  "x": 40,
+  "w": 222,
+  "t": "Move your design systems now."
+ },
+ "heading": {
+  "y": 7510,
+  "h": 28,
+  "x": 16,
+  "w": 237,
+  "t": "What isn't carried over"
+ },
+ "chats": {
+  "y": 7639,
+  "h": 19,
+  "x": 40,
+  "w": 162,
+  "t": "Your chats with Claude"
+ },
+ "comments": {
+  "y": 7670,
+  "h": 19,
+  "x": 40,
+  "w": 337,
+  "t": "Comments on your projects and design systems"
+ },
+ "links": {
+  "y": 7709,
+  "h": 42,
+  "x": 16,
+  "w": 389,
+  "t": "Public links to projects in the standalone version will no longer work after it closes."
+ },
+ "save": {
+  "y": 7789,
+  "h": 66,
+  "x": 37,
+  "w": 323,
+  "t": "Save anything you need from your chats and comments before the standalone version closes."
+ },
+ "download": {
+  "y": 9003,
+  "h": 42,
+  "x": 16,
+  "w": 378,
+  "t": "Can I download all my projects?"
+ },
+ "share": {
+  "y": 9755,
+  "h": 42,
+  "x": 40,
+  "w": 340,
+  "t": "Click \"Share,\" then choose \"Project HTML.\" For a slide deck, it's under \"More formats and apps.\""
+ },
+ "keep": {
+  "y": 9809,
+  "h": 19,
+  "x": 40,
+  "w": 357,
+  "t": "Keep \"Project archive\" selected and click \"Export.\""
+ },
+ "zip": {
+  "y": 9848,
+  "h": 42,
+  "x": 16,
+  "w": 381,
+  "t": "You get a .zip file with every file in the project. It's free and doesn't count toward your usage limits."
+ },
+ "H": 11109,
+ "W": 430
+}

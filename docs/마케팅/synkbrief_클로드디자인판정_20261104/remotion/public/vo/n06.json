@@ -1,0 +1,46 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n06",
+ "text": "채팅, 댓글,",
+ "show": "채팅 · 댓글",
+ "dur": 1.109,
+ "words": [
+  {
+   "text": "채팅,",
+   "start": 0.02,
+   "end": 0.362
+  },
+  {
+   "text": "댓글,",
+   "start": 0.643,
+   "end": 1.109
+  }
+ ],
+ "source": {
+  "key": "7aea8ec449b4944ee2a9dbb1d79c49ab",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1104,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 161
+ }
+}

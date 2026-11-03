@@ -1,0 +1,51 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n03",
+ "text": "닫히는 건 사이트뿐이에요.",
+ "show": "닫히는 건 사이트뿐이에요",
+ "dur": 1.324,
+ "words": [
+  {
+   "text": "닫히는",
+   "start": 0.02,
+   "end": 0.324
+  },
+  {
+   "text": "건",
+   "start": 0.37,
+   "end": 0.431
+  },
+  {
+   "text": "사이트뿐이에요.",
+   "start": 0.476,
+   "end": 1.324
+  }
+ ],
+ "source": {
+  "key": "7033562b3b545ced527a157dab56861d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1104,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 137
+ }
+}

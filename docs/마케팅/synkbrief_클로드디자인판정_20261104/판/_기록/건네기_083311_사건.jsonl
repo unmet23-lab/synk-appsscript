@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1a3c2-7ab2-7a50-8af8-b9278714fe30"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬을 사용해 참고 사진의 인물과 장소를 유지하고, 열쇠를 상자로 건네는 장면을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"완성했습니다."}}
+{"type":"turn.completed","usage":{"input_tokens":148419,"cached_input_tokens":112896,"cache_write_input_tokens":0,"output_tokens":1713,"reasoning_output_tokens":396}}

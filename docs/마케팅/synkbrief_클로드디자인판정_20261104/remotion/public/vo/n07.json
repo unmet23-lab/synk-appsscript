@@ -1,0 +1,51 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n07",
+ "text": "그리고 공개 링크.",
+ "show": "그리고 공개 링크",
+ "dur": 1.033,
+ "words": [
+  {
+   "text": "그리고",
+   "start": 0.05,
+   "end": 0.268
+  },
+  {
+   "text": "공개",
+   "start": 0.319,
+   "end": 0.554
+  },
+  {
+   "text": "링크.",
+   "start": 0.605,
+   "end": 1.033
+  }
+ ],
+ "source": {
+  "key": "f90dd0d3da400615dcc2a964961b4e54",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1104,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 128
+ }
+}

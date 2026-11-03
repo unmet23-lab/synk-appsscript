@@ -1,0 +1,51 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n09",
+ "text": "십이월 십사일 전에,",
+ "show": "12월 14일 전에",
+ "dur": 1.156,
+ "words": [
+  {
+   "text": "십이월",
+   "start": 0.02,
+   "end": 0.321
+  },
+  {
+   "text": "십사일",
+   "start": 0.442,
+   "end": 0.723
+  },
+  {
+   "text": "전에,",
+   "start": 0.783,
+   "end": 1.156
+  }
+ ],
+ "source": {
+  "key": "4637e83b1032b1b4cab85fb3376db8fc",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1104,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 165
+ }
+}

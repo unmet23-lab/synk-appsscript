@@ -1,0 +1,71 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n05",
+ "text": "근데 이삿짐에 못 넣는 게 셋 있어요.",
+ "show": "근데 이삿짐에 못 넣는 게 셋 있어요",
+ "dur": 2.388,
+ "words": [
+  {
+   "text": "근데",
+   "start": 0.06,
+   "end": 0.262
+  },
+  {
+   "text": "이삿짐에",
+   "start": 0.826,
+   "end": 1.189
+  },
+  {
+   "text": "못",
+   "start": 1.25,
+   "end": 1.351
+  },
+  {
+   "text": "넣는",
+   "start": 1.411,
+   "end": 1.613
+  },
+  {
+   "text": "게",
+   "start": 1.673,
+   "end": 1.714
+  },
+  {
+   "text": "셋",
+   "start": 1.774,
+   "end": 1.875
+  },
+  {
+   "text": "있어요.",
+   "start": 1.955,
+   "end": 2.388
+  }
+ ],
+ "source": {
+  "key": "bc2367e8e61b86a00ffb536bd478eca1",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1104,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 140
+ }
+}

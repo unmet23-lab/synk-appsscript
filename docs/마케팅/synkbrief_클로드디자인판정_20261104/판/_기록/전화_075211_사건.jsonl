@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1a39c-fe40-7ea1-93c3-6effe94650de"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬로 얼굴과 문간, 조명, 구도를 유지하면서 전화로 나쁜 소식을 들은 몇 초 뒤 장면을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":137140,"cached_input_tokens":122240,"cache_write_input_tokens":0,"output_tokens":1138,"reasoning_output_tokens":249}}

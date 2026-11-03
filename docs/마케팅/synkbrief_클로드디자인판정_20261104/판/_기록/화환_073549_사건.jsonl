@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1a38e-094d-71d3-ad83-c550c3a69162"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬을 사용해, 요청하신 구도와 한국 드라마 스틸 같은 자연스러운 질감으로 한 장 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":128464,"cached_input_tokens":115072,"cache_write_input_tokens":0,"output_tokens":1353,"reasoning_output_tokens":247}}

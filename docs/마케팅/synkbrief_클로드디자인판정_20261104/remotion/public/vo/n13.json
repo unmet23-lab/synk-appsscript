@@ -1,0 +1,56 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n13",
+ "text": "프로젝트는 파일로 받아 두세요.",
+ "show": "프로젝트는 파일로 받아 두세요",
+ "dur": 1.612,
+ "words": [
+  {
+   "text": "프로젝트는",
+   "start": 0.07,
+   "end": 0.555
+  },
+  {
+   "text": "파일로",
+   "start": 0.601,
+   "end": 0.919
+  },
+  {
+   "text": "받아",
+   "start": 0.965,
+   "end": 1.131
+  },
+  {
+   "text": "두세요.",
+   "start": 1.177,
+   "end": 1.612
+  }
+ ],
+ "source": {
+  "key": "caed6cd9292b310ea81244daf128b3d2",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1104,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 150
+ }
+}

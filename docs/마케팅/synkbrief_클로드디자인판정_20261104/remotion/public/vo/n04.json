@@ -1,0 +1,71 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n04",
+ "text": "디자인은 직접 옮기면, 클로드 안에서 계속 써요.",
+ "show": "디자인은 직접 옮기면 클로드 안에서 계속 써요",
+ "dur": 2.719,
+ "words": [
+  {
+   "text": "디자인은",
+   "start": 0.08,
+   "end": 0.471
+  },
+  {
+   "text": "직접",
+   "start": 0.516,
+   "end": 0.757
+  },
+  {
+   "text": "옮기면,",
+   "start": 0.802,
+   "end": 1.193
+  },
+  {
+   "text": "클로드",
+   "start": 1.509,
+   "end": 1.78
+  },
+  {
+   "text": "안에서",
+   "start": 1.825,
+   "end": 2.02
+  },
+  {
+   "text": "계속",
+   "start": 2.065,
+   "end": 2.276
+  },
+  {
+   "text": "써요.",
+   "start": 2.321,
+   "end": 2.719
+  }
+ ],
+ "source": {
+  "key": "5e4cf3ae97d99492964361cee2e5121e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1104,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 159
+ }
+}
