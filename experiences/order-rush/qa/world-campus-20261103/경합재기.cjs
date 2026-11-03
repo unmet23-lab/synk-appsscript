@@ -9,6 +9,7 @@
 //   F2 말하는 중에 멈췄다 이어 하면 음악이 다시 내려가나(ducked) — true
 //   F3 러시 남은 시간 10 → 9 숫자 띠가 한 칸만 구르나 — translateY(-10em) → (-9em)
 //   F4 터치 기기(hover 없음)에서 알약에 코랄 고리가 남나 — none
+//   F5 멈춤 창 안에서 소리를 껐다 켜도, 문 열자마자 멈춰도 음악은 멈춤 크기(0.25) 그대로 — 이어 하면 1
 //   node experiences/order-rush/qa/world-campus-20261103/경합재기.cjs [experiences 폴더]
 const http = require('node:http'), fs = require('node:fs'), path = require('node:path'), os = require('node:os');
 const NM = process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE || os.homedir(), '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules');
@@ -152,11 +153,28 @@ server.listen(0, '127.0.0.1', async () => {
     await fr().evaluate(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true })));
     await page.waitForTimeout(900);
     out.F1_멈춤창크기 = +(await fr().evaluate(() => window.__rush.world().music.pause)).toFixed(2);
+    await f.locator('#pause-dialog [data-sound-toggle]').click();
+    await page.waitForTimeout(300);
+    await f.locator('#pause-dialog [data-sound-toggle]').click();
+    await page.waitForTimeout(900);
+    out.F5_창안소리다시켬 = +(await fr().evaluate(() => window.__rush.world().music.pause)).toFixed(2);
     await f.locator('#quit').click();
     await page.waitForTimeout(1500);
     await f.locator('#start').click();
     await page.waitForTimeout(2500);
     out.F1_다음판크기 = +(await fr().evaluate(() => window.__rush.world().music.pause)).toFixed(2);
+    await ctx.close(); }
+
+  // F5: 문 열자마자(음악이 시작되기 전) 멈춰도 멈춤 크기, 이어 하면 제 크기
+  { const { ctx, page, fr, f } = await open(browser);
+    await f.locator('#start').click();
+    await page.waitForTimeout(90);
+    await fr().evaluate(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true })));
+    await page.waitForTimeout(1200);
+    out.F5_문열자마자멈춤 = +(await fr().evaluate(() => window.__rush.world().music.pause)).toFixed(2);
+    await f.locator('#resume').click();
+    await page.waitForTimeout(900);
+    out.F5_이어하기 = +(await fr().evaluate(() => window.__rush.world().music.pause)).toFixed(2);
     await ctx.close(); }
 
   // F3: 숫자 띠

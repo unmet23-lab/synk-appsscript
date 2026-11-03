@@ -96,7 +96,6 @@ export function createMusic(ctx, { base = '', destination = ctx.destination, sto
     /** 영업이 시작될 때: 'calm'(한가한 오픈 · 새 주문 연습) · 'rush'(점심 러시). 같은 곡이 돌고 있으면 그대로, 다른 곡이면 1.2초 겹쳐 바꾼다. */
     async play(mode) {
       wanted = mode;
-      this.pause(false);   // 멈춤 창에서 처음으로 나간 판의 −12dB를 다음 판까지 끌고 오지 않는다
       if (!on) return;
       try {
         await loadManifest();
@@ -113,7 +112,12 @@ export function createMusic(ctx, { base = '', destination = ctx.destination, sto
     },
     /** 다른 곡을 미리 풀어 둔다(러시를 고르면 입구에서). */
     async preload(mode) { try { await loadManifest(); const id = pick(mode); if (id) await buffer(id); } catch { /* 나중에 */ } },
-    stop(fade = 0.8) { wanted = null; stopVoice(current, fade); current = null; },
+    stop(fade = 0.8) {
+      wanted = null; stopVoice(current, fade); current = null;
+      // 판이 끝났다 — 멈춤 창에서 처음으로 나간 판의 −12dB를 다음 판까지 끌고 오지 않는다(소리가 다 사라진 뒤에 되돌린다)
+      pauseGain.gain.cancelScheduledValues(ctx.currentTime);
+      pauseGain.gain.setTargetAtTime(1, ctx.currentTime + fade, 0.05);
+    },
     /** 주문 음성 덕킹: voice(true)는 음성이 시작될 때, voice(false)는 끝났을 때. deep이면(다시 듣기) 4dB 더. */
     voice(active, { deep = false } = {}) {
       const now = ctx.currentTime, g = duckGain.gain;
@@ -128,7 +132,7 @@ export function createMusic(ctx, { base = '', destination = ctx.destination, sto
       }
     },
     /** 멈춤 창이 열려 있는 동안 12dB 내린다(멈추지 않는다). */
-    pause(on) { pauseGain.gain.setTargetAtTime(on ? DB(-12) : 1, ctx.currentTime, 0.12); },
+    pause(on) { pauseGain.gain.cancelScheduledValues(ctx.currentTime); pauseGain.gain.setTargetAtTime(on ? DB(-12) : 1, ctx.currentTime, 0.12); },
     setVolume(v) { volume = Math.min(1, Math.max(0, v)); master.gain.setTargetAtTime(volume, ctx.currentTime, 0.05); remember('synk.order-rush.music.volume', String(volume)); },
     /** 게임 소리 단추: 끄면 곡을 멈추되 어느 곡을 원했는지는 기억해 두었다가 켜면 다시 튼다. */
     setOn(next) { on = !!next; if (!on) { stopVoice(current, 0.4); current = null; } else if (wanted) this.play(wanted); },
