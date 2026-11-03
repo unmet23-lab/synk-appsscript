@@ -7,7 +7,7 @@
 // · 점수·등급·감정 판정을 만들지 않는다. 받아 적은 글만으로 발음 오류를 단정하지 않는다. 노트 문구는 제품 글 표에 두고 여기는 종류만 돌려준다.
 import {syllables} from './말하기피드백.mjs';
 
-export const DRAMA_JUDGE_VERSION='drama-judge-5';
+export const DRAMA_JUDGE_VERSION='drama-judge-6';
 // 받아 적은 말이 핵심 말과 HIT만큼 닮으면 말한 것, MISS보다 덜 닮으면 빠진 것으로 본다. 그 사이는 애매라 노트를 주지 않는다(시범값).
 export const HIT=0.8,MISS=0.5;
 // 통째로 이만큼 닮으면 모범 대사나 허용 변형을 그대로 말한 것으로 본다.
@@ -154,6 +154,29 @@ function keyCheck(spec,heard){
  }
  return {missing,unsure};
 }
+// 부정 표지. 자모로는 모범 대사에 「안」을 끼운 말도 0.9를 넘어(「많아요」 ↔ 「안 많아요」) 뜻이 뒤집힌 말이 확실한 통과가 된다(drama-judge-6, 11-03 U14 측정 C).
+// 「안녕 · 안내 · 안전 · 아니요」는 부정이 아니다 — 「안」은 홀로 선 낱말과 흔한 붙여 쓰기만 본다.
+const NEGATIONS=Object.freeze([
+ ['안',/(^|[\s,.!?~…])안(\s|돼|되|해|가|와|먹|많|좋)/],
+ ['못',/(^|[\s,.!?~…])못(\s|[가-힣])/],
+ ['지 않',/[지진](는|도|만)?\s*않/],  // -지 않- · -지는 않- · -진 않- · -지도 않- (GPT GA1)
+ ['지 못',/[지진](는|도|만)?\s*못/],
+ ['없',/없(어|습|는|다|으|었|네|죠|음)/],
+ ['아니',/아니(에|예|었)|아닙니|아닌/],
+]);
+const negationsIn=value=>NEGATIONS.filter(([,re])=>re.test(String(value??''))).map(([name])=>name);
+/**
+ * 들은 말과 모범의 부정이 어긋나는가. 들은 말의 부정이 모범 · 허용 변형에도, 들은 말 안에서 찾은 허용 표현에도 없거나, 모범과 허용 변형이 모두 부정인데 들은 말에 부정이 없으면 어긋난다.
+ * 허용 표현의 부정은 그 표현을 실제로 말했을 때만 받는다 — 「선생님이 아니었으면」을 허용했다고 「덕분이 아니에요」의 「아니」까지 받지 않는다(11-03 아르곤 drama-ep01-r14).
+ * 어긋나면 노트 없이 통과하되 혼자 해냄으로 세지 않는다 — 다른 말로 맞게 했을 수도 있어 틀렸다고 단정하지 않는다(확신이 없으면 노트를 주지 않는다).
+ */
+function negationOff(spec,heard){
+ const said=negationsIn(heard);
+ const models=[spec.line,...(spec.variants||[])];
+ const spoken=(spec.keys||[]).flatMap(key=>[key.word,...(key.alts||[])]).filter(word=>negationsIn(word).length&&findIn(word,heard)>=HIT);
+ const allowed=new Set([...models,...spoken].flatMap(negationsIn));
+ return said.some(name=>!allowed.has(name))||(!said.length&&models.every(model=>negationsIn(model).length));
+}
 // 한글 밖의 글자 — 어느 문자권이든(로마자·키릴·가나·한자·버마·타이…) 글자면 센다(GPT 2차 검수 GA2: 몇 문자권만 세면 버마어가 0으로 빠졌다).
 const OTHER_LETTERS=/(?!\p{Script=Hangul})\p{L}/gu;
 /**
@@ -184,7 +207,7 @@ export function judgeLine(spec,heard={},{whole=true}={}){
  const n=syllables(transcript),min=minSyllablesOf(spec),speech=Number(heard.speechSeconds)||0;
  if(n<min&&speech>0&&n/speech<MIN_SYLLABLES_PER_SPEECH_SECOND)return {status:'unclear',verdict:null,note:null,sure:false,checks:null};
  const ending=endingCheck(spec,transcript);
- const keys=keyCheck(spec,transcript);
+ const keys=keyCheck(spec,transcript),flipped=negationOff(spec,transcript);
  // 명시한 허용 변형을 그대로 말한 경우는 원문과 다른 핵심 어휘도 허용한다.
  // 근사 일치는 이 예외가 아니다 — 「정문」을 「후문」으로 바꾸는 오통과를 다시 열지 않는다.
  const literal=value=>String(value??'').normalize('NFC').replace(/[\s\p{P}]/gu,'');
@@ -193,15 +216,15 @@ export function judgeLine(spec,heard={},{whole=true}={}){
  // 끝맺음이 애매하면(「…아세요」 대신 「…알아?」) 노트 없이 통과하되 혼자 해냄으로 세지 않는다(10-30 Fable 실측).
  // 핵심 말도 먼저 본다 — 긴 대사에서 짧은 핵심 말 하나를 바꾼 것(「정문」 → 「후문」)도 통째 닮음 0.9를 넘는다(GPT 2차 검수 GA2).
  // 빠진 핵심 말이 있으면 통째 통과가 아니고(아래에서 노트), 확신 없는 핵심 말이 있으면 통과하되 혼자 해냄으로 세지 않는다.
- if(whole&&ending.state!=='off'&&(!keys.missing.length||exactVariant)&&[spec.line,...(spec.variants||[])].some(v=>similarity(v,transcript)>=WHOLE))
-  return {status,verdict:'pass',note:null,sure:ending.state==='ok'&&(exactVariant||!keys.unsure.length),checks:{whole:true,ending,keys,exactVariant}};
+ if(whole&&ending.state!=='off'&&!flipped&&(!keys.missing.length||exactVariant)&&[spec.line,...(spec.variants||[])].some(v=>similarity(v,transcript)>=WHOLE))
+  return {status,verdict:'pass',note:null,sure:ending.state==='ok'&&(exactVariant||!keys.unsure.length),checks:{whole:true,ending,keys,exactVariant,flipped}};
  const length={state:n>=min?'ok':'short',min,got:n};
  let note=null;
  if(ending.state==='off')note={kind:'ending',want:ending.want,got:ending.got,at:ending.at};
  else if(length.state==='short')note={kind:'length',min};
  else if(keys.missing.length)note={kind:'missing',word:keys.missing[0]};
- const sure=!note&&ending.state==='ok'&&length.state==='ok'&&!keys.unsure.length;
- return {status,verdict:note?'note':'pass',note,sure,checks:{whole:false,ending,length,keys}};
+ const sure=!note&&ending.state==='ok'&&length.state==='ok'&&!keys.unsure.length&&!flipped;
+ return {status,verdict:note?'note':'pass',note,sure,checks:{whole:false,ending,length,keys,flipped}};
 }
 
 /**

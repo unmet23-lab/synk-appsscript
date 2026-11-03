@@ -65,7 +65,7 @@ test('measure cards: the likeliest wrong answers never earn a sure pass', async 
   const { judgeLine } = await judge();
   const wrong = {
     B: ['설문 결과에 따르면 학생의 절반이 저녁에 커피를 찾습니다.', '설문 결과에 따르면 커피를 찾습니다.'],
-    C: ['평소에 비해 시험 기간에는 밤에 손님이 적어요.', '평소에 비해 시험 기간에는 오후에 손님이 많아요.'],
+    C: ['평소에 비해 시험 기간에는 밤에 손님이 적어요.', '평소에 비해 시험 기간에는 오후에 손님이 많아요.', '평소보다 밤에는 별로 안 많아요.', '평소에 비해 시험 기간에는 밤에 손님이 안 많아요.', '평소에 비해 시험 기간에는 밤에 손님이 많지 않아요.'],
   };
   for (const [name, says] of Object.entries(wrong)) {
     const spec = specOf(content.measure[name]);

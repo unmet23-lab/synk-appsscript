@@ -213,3 +213,41 @@ test('반말 확신 넓힘(drama-judge-5): 대사 · 허용 변형의 문장 끝
  assert.equal(judgeLine(intro,{transcript:'이번 학기에 새로 온 유학생이에요. 잘 부탁해요.'}).sure,true);
  assert.deepEqual(checkSpec(library),[]);assert.deepEqual(checkSpec(intro),[]);
 });
+
+// drama-judge-6(11-03): 모범에 「안」을 끼운 말이 통째 닮음으로 확실한 통과가 되던 것. 측정 C(U14)의 「많아요 → 안 많아요」에서 찾았다.
+test('negation: a flipped meaning never earns a sure pass, and is not a note', () => {
+ const spec={id:'neg',line:'평소에 비해 시험 기간에는 밤에 손님이 훨씬 많아요.',minSyllables:9,keys:[{word:'평소에 비해',alts:['평소보다']},{word:'많아요',alts:['붐벼요','자리가 없어요']}]};
+ for(const said of ['평소에 비해 시험 기간에는 밤에 손님이 훨씬 안 많아요.','평소보다 밤에는 별로 안 많아요.','평소에 비해 시험 기간에는 밤에 손님이 많지 않아요.','평소에 비해 시험 기간에는 밤에 손님이 많지 못해요.','평소에 비해 시험 기간에는 밤에 손님이 훨씬 많지는 않아요.','평소에 비해 시험 기간에는 밤에 손님이 많진 않아요.','평소에 비해 시험 기간에는 밤에 손님이 많지도 않아요.']){
+  const result=judgeLine(spec,{transcript:said});
+  assert.equal(result.sure,false,said);
+  assert.equal(result.checks.flipped,true,said);
+ }
+ const sure=judgeLine(spec,{transcript:spec.line});
+ assert.equal(sure.verdict,'pass');
+ assert.equal(sure.sure,true);
+ // 허용 표현에 있는 부정은 그 부정만 맞다.
+ assert.equal(judgeLine(spec,{transcript:'평소에 비해 시험 기간에는 밤에 자리가 없어요.'}).checks.flipped,false);
+});
+
+test('negation: dropping the negation of a negative model does not earn a sure pass, in any spelling', () => {
+ const spec={id:'neg2',line:'도서관을 못 찾았어요.',keys:[{word:'도서관'}]};
+ assert.equal(judgeLine(spec,{transcript:'도서관을 찾았어요.'}).sure,false);
+ assert.equal(judgeLine(spec,{transcript:'도서관을 못 찾았어요.'}).sure,true);
+ assert.equal(judgeLine(spec,{transcript:'도서관을 못찾았어요.'}).checks.flipped,false);
+ assert.equal(checkSpec(spec).length,0);
+});
+
+test('negation: greetings, nouns and an answer word are not negation', () => {
+ for(const line of ['안녕하세요, 교수님.','안내 데스크가 어디예요?','안전모를 쓰세요.','아니요, 작년에 비해 아침 손님이 늘었어요.','안에 있어요.']){
+  const spec={id:'neg3',line,keys:[]};
+  const result=judgeLine(spec,{transcript:line},{whole:false});
+  assert.equal(result.checks.flipped,false,line);
+  assert.equal(result.sure,true,line);
+ }
+});
+
+test('negation: an allowed negative phrase only counts when it is actually said', () => {
+ const spec={id:'neg4',line:'선생님 덕분에 살았어요. 정말 감사합니다.',keys:[{word:'덕분에',alts:['덕분이에요','아니었으면','없었으면']},{word:'감사합니다',alts:['고맙습니다']}]};
+ assert.equal(judgeLine(spec,{transcript:'선생님 덕분이 아니에요. 감사합니다.'}).sure,false);
+ assert.equal(judgeLine(spec,{transcript:'선생님이 아니었으면 큰일 날 뻔했어요. 정말 감사합니다.'}).checks.flipped,false);
+});
