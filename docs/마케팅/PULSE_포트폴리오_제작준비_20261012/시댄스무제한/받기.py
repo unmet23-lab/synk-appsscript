@@ -1,6 +1,7 @@
-# 시댄스 2.5 무제한 날 — 유호님이 웹에서 낸 판을 founder 계정 기록에서 찾아 판 이름으로 받는다(2026-10-29).
-#   python -X utf8 받기.py [--크기 100] [--부터 2026-10-29T11:00Z]   → synk-vendor/pulse-seedance-day-20261028/받음/<판>.mp4 · _받음.json
-# 받기만 한다 — 생성 단추는 누르지 않는다(무제한은 사람만, 결정 10-26). 계정 기록은 CLI를 founder 홈으로 불러 읽는다(현장노트 higgsfield).
+# 시댄스 2.5 무제한 날 — 유호님이 웹에서 낸 판을 계정 기록에서 찾아 판 이름으로 받는다(2026-10-29).
+#   python -X utf8 받기.py [--계정 founder] [--크기 100] [--부터 2026-10-29T11:00Z]   → synk-vendor/pulse-seedance-day-20261028/받음/<판>.mp4 · _받음.json
+# 받기만 한다 — 생성 단추는 누르지 않는다(무제한은 사람만, 결정 10-26). 계정 기록은 CLI를 그 계정 홈(~/.ai-accounts/higgsfield-<계정>)으로 불러 읽는다(현장노트 higgsfield).
+# 11-04부터 무제한은 새 계정 이벤트권으로 낸다 — 그 계정 이름을 --계정으로 준다. 크레딧내기.py로 낸 판(_크레딧내기.json)은 건너뛰고 거래 내역 셈에서도 뺀다.
 # 판 찾기: 기록의 지시문을 웹올리기 · 웹올리기_둘째날(7번) · 7번비교 · 프리비즈 · 로맨스 · 여섯편 · 한강/<폴더>/지시문.txt와 견준다(꼬리표 @이미지 · @오디오 · 띄어쓰기를 빼고).
 # 비율 · 길이 · 소리도 함께 본다. 로맨스 rs-C53a를 받으면 웹꾸러미.py --로맨스를 다시 돌려 rs-C53b 첫 그림(그 영상의 끝 프레임)을 채운다.
 # 같은 판을 다시 냈으면 먼저 낸 것이 <판>.mp4, 뒤의 것이 <판>__2.mp4 … 이다(고르는 것은 검수에서).
@@ -10,7 +11,9 @@ import difflib, json, os, re, shutil, subprocess, sys
 DAY = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028"
 WEBS = [os.path.join(DAY, d) for d in ("웹올리기", "웹올리기_둘째날", "웹올리기_7번비교", "웹올리기_프리비즈", "웹올리기_로맨스", "웹올리기_여섯편", "웹올리기_한강", "웹올리기_수정20261103")]   # 첫날 · 둘째 날 · 7번 그림 비교(10-30) · 5번 프리비즈 시험 · 로맨스(10-31) · 여섯 편(10-31 밤) · 한강2126(11-01) — 판 id는 서로 겹치지 않는다
 OUT = os.path.join(DAY, "받음")
-HOME = os.path.join(os.path.expanduser("~"), ".ai-accounts", "higgsfield-founder")
+CREDIT = os.path.join(OUT, "_크레딧내기.json")   # 크레딧내기.py가 낸 판(우선 대기열 · 크레딧이 나가는 것이 맞음)
+ACCT = sys.argv[sys.argv.index("--계정") + 1] if "--계정" in sys.argv else "founder"
+HOME = os.path.join(os.path.expanduser("~"), ".ai-accounts", f"higgsfield-{ACCT}")
 MATCH = 0.85   # 이보다 낮으면 판을 정하지 않고 「못 찾음」으로 둔다
 
 
@@ -76,8 +79,10 @@ def main():
     led_path = os.path.join(OUT, "_받음.json")
     ledger = json.load(open(led_path, encoding="utf-8")) if os.path.exists(led_path) else {}
     cands = boards()
+    credit = json.load(open(CREDIT, encoding="utf-8")) if os.path.exists(CREDIT) else {}
     jobs = [j for j in hf("generate", "list", "--video", "--size", str(size))
-            if "seedance" in (j.get("job_type") or "") and "2_0" not in j.get("job_type", "") and j.get("created_at", "") >= since.rstrip("Z")]
+            if "seedance" in (j.get("job_type") or "") and "2_0" not in j.get("job_type", "") and j.get("created_at", "") >= since.rstrip("Z")
+            and j["id"] not in credit]
     jobs.sort(key=lambda j: j["created_at"])
     new, waiting, lost = 0, [], []
     for j in jobs:
@@ -131,13 +136,15 @@ def main():
     tx = [t for t in hf("account", "transactions", "--size", "100").get("items", [])
           if "2.5" in (t.get("display_name") or "") and "seedance" in (t.get("display_name") or "").lower() and t.get("created_at", "") >= since.rstrip("Z")]
     paid = [t for t in tx if float(t.get("credits") or 0) != 0]
+    meant = sum(1 for v in credit.values() if v.get("계정") == ACCT and (v.get("만든때") or "") >= since.rstrip("Z"))   # 거래 줄에 작업 id가 없어 수로만 뺀다
     got = sorted({v["판"] for v in ledger.values()})
-    print(f"\n새로 받음 {new} · 받은 판 {len(got)} / {len(cands)} · 아직 도는 것 {len(waiting)} · 못 찾음 {len(lost)}")
+    print(f"\n계정 {ACCT} · 새로 받음 {new} · 받은 판 {len(got)} / {len(cands)} · 아직 도는 것 {len(waiting)} · 못 찾음 {len(lost)}")
     for w in waiting:
         print("  도는 중", w)
     for w in lost:
         print("  못 찾음", w)
-    print(f"거래 내역 시댄스 2.5 {len(tx)}줄 · 0크레딧 아닌 것 {len(paid)}" + (f"  ⚠ 무제한으로 안 나감: {[(t['created_at'][11:19], t['credits']) for t in paid]}" if paid else ""))
+    print(f"거래 내역 시댄스 2.5 {len(tx)}줄 · 0크레딧 아닌 것 {len(paid)}(크레딧내기로 낸 {meant}판 포함)"
+          + (f"  ⚠ 무제한으로 안 나감: {[(t['created_at'][11:19], t['credits']) for t in paid]}" if len(paid) > meant else ""))
 
 
 if __name__ == "__main__":
