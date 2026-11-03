@@ -9,6 +9,30 @@ const defaultState = () => path.join(os.homedir(), 'security-audit-skill/SYNK-co
 // A tick opens new verifications only within this budget: one verification may take 50 minutes,
 // and both the scheduled task and its hidden launcher stop a tick after two hours.
 const BUDGET_MS = 60 * 60_000;
+const MIN_VERIFICATION_FREE_BYTES = 2 * 1024 ** 3;
+// Browser profiles, databases and test output all live on the registered state volume.
+function diskWaitFor(item, stateDir, statfs = fs.statfsSync) {
+  if (item.status === 'publish-pending') return null;
+  const { bavail, bsize } = statfs(stateDir, { bigint: true });
+  const availableBytes = Number(bavail * bsize);
+  return availableBytes < MIN_VERIFICATION_FREE_BYTES ? { availableBytes, requiredBytes: MIN_VERIFICATION_FREE_BYTES } : null;
+}
+function browserProfileDiskFull(receipt, output) {
+  if (receipt.platform !== 'win32' || receipt.candidate || !receipt.inputsUnchanged || !receipt.sourceUnchanged) return false;
+  const failed = receipt.phases?.filter(phase => !phase.ok);
+  return !!failed?.length && failed.every(phase => {
+    const reports = phase.unexpectedFailures || [], rows = phase.rows || [];
+    const failedRows = rows.filter(row => row.status === 'fail');
+    if (!reports.length || reports.length !== failedRows.length || !rows.every(row => ['pass', 'missing', 'fail'].includes(row.status))) return false;
+    const ownProfile = path.win32.join(output, phase.profile, 'temp', 'playwright_chromiumdev_profile-').toLowerCase();
+    return reports.every(({ file, name, error }) => {
+      const message = error?.message || '';
+      return failedRows.some(row => row.file === file && row.name === name) &&
+        message.startsWith('browserType.launch:') && message.includes('Failed to create initial profile') &&
+        message.split('\n').some(line => line.toLowerCase().includes(ownProfile) && /\(0x70\)/i.test(line));
+    });
+  });
+}
 const due = (row, now = Date.now()) => ['queued', 'running', 'publish-pending'].includes(row.status) || (row.status === 'retry' && now >= row.retryAt);
 // Publish an already verified receipt first. Alternate current/recent work with
 // the oldest ready entry, so a stream of new pushes cannot starve the backlog.
@@ -32,6 +56,8 @@ function sleptDuring(from, to, { platform = process.platform, run = cp.execFileS
   catch { return false; }
 }
 function failureDisposition(error, startedAt, { slept = sleptDuring, now = new Date() } = {}) {
+  if (error.code === 'ENOSPC') return { interrupted: false, status: 'retry', publicationState: 'pending',
+    description: 'Local storage is full; awaiting a fresh complete verification' };
   const interrupted = error.code === 'TEST_FAILURE' && slept(startedAt, now);
   return { interrupted, status: error.code === 'TEST_FAILURE' && !interrupted ? 'failed' : 'retry',
     publicationState: interrupted ? 'pending' : 'failure',
@@ -76,7 +102,12 @@ async function verify(config, commit, output) {
   receipt.inputsUnchanged = postcheck(context);
   receipt.ok = receipt.ok && execution.exitCode === 0 && !execution.timedOut && receipt.inputDigest === context.inputDigest && !git(config.root, ['status', '--porcelain', '--untracked-files=no']);
   write(path.join(output, 'result.json'), receipt);
-  if (!coverage(receipt, { commit, digest: manifest.digest, cases })) { const error = Error(`Local tests incomplete: ${receipt.passed}/${cases.length}`); error.code = 'TEST_FAILURE'; throw error; }
+  if (!coverage(receipt, { commit, digest: manifest.digest, cases })) {
+    const error = Error(`Local tests incomplete: ${receipt.passed}/${cases.length}`);
+    const ownInput = receipt.commit === commit && receipt.manifestDigest === manifest.digest && receipt.inputDigest === context.inputDigest;
+    error.code = ownInput && browserProfileDiskFull(receipt, output) ? 'ENOSPC' : 'TEST_FAILURE';
+    throw error;
+  }
   return { receipt, count: cases.length, digest: manifest.digest };
 }
 // The flag stays until the commit's runs have settled, so a failed call or a run still in progress is looked at again.
@@ -120,7 +151,10 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring } = {}
     // An interrupted process or network publication is resumed; a failed test stays explicitly failed.
     // Each commit is attempted once per tick, so an unavailable API cannot spin on the same publication.
     const attempted = new Set();
+    let diskWait = null;
     for (let item; Date.now() - started < budgetMs && (item = nextItem(queue, head, attempted)); refresh(), settle()) {
+      diskWait = diskWaitFor(item, stateDir);
+      if (diskWait) break;
       attempted.add(item.commit);
       git(root, ['merge-base', '--is-ancestor', item.commit, head]);
       try {
@@ -157,7 +191,7 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring } = {}
       }
       write(queueFile, queue);
     }
-    const summary = { checkedAt: new Date().toISOString(), head, queued: queue.items.filter(row => row.status === 'queued').length,
+    const summary = { checkedAt: new Date().toISOString(), head, ...(diskWait && { diskWait }), queued: queue.items.filter(row => row.status === 'queued').length,
       incomplete: queue.items.filter(row => row.status !== 'passed').length,
       passed: queue.items.filter(row => row.status === 'passed').length, failed: queue.items.filter(row => row.status === 'failed').length,
       items: queue.items.slice(-5).map(({ commit, status, error }) => ({ commit, status, error })) };
@@ -172,4 +206,4 @@ if (require.main === module) {
   const promise = args.includes('--initialize') ? Promise.resolve(initialize(stateDir, args[args.indexOf('--initialize') + 1])) : tick(stateDir);
   promise.catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns };
+module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns, diskWaitFor, browserProfileDiskFull };

@@ -148,10 +148,39 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
    }finally{entryHold=null;release();}
   }
   await page.locator('.world-nav [data-view="play"]').click();await page.locator('[data-world="town"]').click();await page.locator('[data-town-sharing]').waitFor();assert.equal(await page.locator('[data-town-sharing]').isChecked(),false);await page.locator('[data-town-sharing]').check();await page.waitForFunction(()=>document.querySelector('[data-town-sharing]')?.checked&&!document.querySelector('[data-town-sharing]')?.disabled);
-  await page.getByRole('button',{name:/내 차림으로 동네 열기/}).click();await page.waitForFunction(()=>!!document.querySelector('iframe'));
-  const frame=()=>page.frames().find(f=>f.url().includes('/town/day.html'));const townLog=[];page.on('console',m=>{if(['error','warning'].includes(m.type()))townLog.push(m.text().slice(0,300));});
-  // GPU 없는 러너는 소프트웨어 WebGL이라 구운 마을을 올리는 데 오래 걸린다 — 끝내 못 붙으면 마을 쪽 상태를 실패 글에 남긴다.
-  const waitTown=()=>page.waitForFunction(()=>document.querySelector('iframe')?.contentWindow?.SYNKTownDay?.metrics().connected,undefined,{timeout:Boolean(process.env.CI)?180000:20000}).catch(async error=>{const state=await frame()?.evaluate(()=>({metrics:globalThis.SYNKTownDay?.metrics?.(),error:document.getElementById('error')?.hidden===false?document.getElementById('error').textContent:null})).catch(e=>e.message);error.message+=' · 마을 상태 '+JSON.stringify(state)+' · 콘솔 '+JSON.stringify(townLog.slice(-12))+' · 자산 '+JSON.stringify(assetErrors.slice(-6));throw error;});;await waitTown();
+  await page.getByRole('button',{name:/내 차림으로 동네 열기/}).click();
+  const isTownFrame=f=>f.parentFrame()===page.mainFrame()&&f.url().split(/[?#]/,1)[0].endsWith('/town/day.html');
+  const frame=()=>page.frames().find(isTownFrame),townLog=[];
+  let refusedTownRequest=null;
+  page.on('console',m=>{if(['error','warning'].includes(m.type()))townLog.push(m.text().slice(0,300));});
+  page.on('response',response=>{
+   const url=new URL(response.url());
+   if(response.status()>=400&&url.origin===new URL(runtimeConfig.accountApiUrl).origin&&url.pathname.includes('/synk-town/'))refusedTownRequest={status:response.status(),path:url.pathname};
+  });
+  async function waitTown(){
+   const limit=process.env.CI?180000:20000,deadline=Date.now()+limit;
+   let town;
+   try{
+    town=frame()||await page.waitForEvent('framenavigated',{predicate:isTownFrame,timeout:limit});
+    // Watch the account's actual frame. It can be connected while its parent receives no animation frames.
+    const ready=await town.waitForFunction(()=>{
+     const refusal=document.querySelector('#error:not([hidden])')?.textContent.trim();
+     if(refusal)throw new Error(refusal);
+     const state=globalThis.SYNKTownDay?.metrics();
+     if(state?.connected&&!state.worldLinked)throw new Error('마을이 현재 WORLD 계정과 연결되지 않았어요.');
+     return state?.connected===true;
+    },undefined,{polling:250,timeout:Math.max(1,deadline-Date.now())});
+    await ready.dispose();refusedTownRequest=null;
+   }catch(cause){
+    const state=town&&!town.isDetached()?await town.evaluate(()=>{
+     const m=globalThis.SYNKTownDay?.metrics();
+     return {connected:m?.connected??null,worldLinked:m?.worldLinked??null,ready:m?.ready??null,
+      error:document.querySelector('#error:not([hidden])')?.textContent.trim()||null};
+    }).catch(e=>e.message):{frame:town?'detached':'missing'};
+    throw new Error(`마을 연결 실패 ${JSON.stringify({request:refusedTownRequest,state})} · ${cause.message} · 콘솔 ${JSON.stringify(townLog.slice(-4))} · 자산 ${JSON.stringify(assetErrors.slice(-3))}`,{cause});
+   }
+  }
+  await waitTown();
   assert.equal(await frame().evaluate(()=>SYNKTownDay.metrics().worldLinked),true);assert.ok(calls.some(c=>c.path.endsWith('/synk-town/state')));assert.ok(calls.some(c=>c.path.endsWith('/synk-town/pulse')&&c.classId===C));assert.ok(!calls.some(c=>c.path.endsWith('/synk-town/presence')),'W3 town keeps its lease by pulse');
   const exposed=await page.evaluate(()=>Object.keys(window.SYNKWorldTownHost));assert.deepEqual(exposed,['appearance','subscribe','languageContext','refresh','request','placement','choosePlacement','dispose']);
   assert.deepEqual(await page.evaluate(()=>Object.keys(window.SYNKWorldTownHost.languageContext())),['summary','today']);

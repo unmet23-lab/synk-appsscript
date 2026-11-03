@@ -6,7 +6,7 @@ const root = path.resolve(__dirname, '..'), c = require('../tools/conditional-qa
 const { check } = require('../tools/conditional-qa/guard.cjs');
 const { childRun, temporaryEnvironment, profileBudget } = require('../tools/conditional-qa/run.cjs');
 const { materialize, write, release, prepare } = require('../tools/conditional-qa/inputs.cjs');
-const { extendQueue, nextItem, advanceTurn, acquire, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns } = require('../tools/conditional-qa/worker.cjs');
+const { extendQueue, nextItem, advanceTurn, acquire, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns, diskWaitFor, browserProfileDiskFull } = require('../tools/conditional-qa/worker.cjs');
 const { plan } = require('../tools/conditional-qa/install.cjs');
 const github = require('../tools/conditional-qa/github.cjs');
 const { wait } = require('../tools/conditional-qa/wait-local.cjs');
@@ -255,11 +255,11 @@ test('the scheduled worker runs at normal priority, and only a logged sleep turn
   assert.deepEqual(['queued', 'running', 'publish-pending', 'passed', 'failed'].map(status => due({ status })), [true, true, true, false, false]);
   assert.equal(due({ status: 'retry', retryAt: Date.now() + 60_000 }), false); assert.equal(due({ status: 'retry', retryAt: Date.now() - 1 }), true);
 });
-test('only an event-backed sleep interruption is pending; real failures are still red and neither can pass', () => {
+test('observed sleep or OS disk exhaustion is pending; a test failure remains red', () => {
   const from = '2026-11-02T13:01:39.573Z', now = new Date('2026-11-02T13:13:35.839Z');
   for (const [code, loggedSleep, expectedStatus, expectedPublication] of [
     ['TEST_FAILURE', true, 'retry', 'pending'], ['TEST_FAILURE', false, 'failed', 'failure'],
-    ['EIO', true, 'retry', 'failure'], [undefined, false, 'retry', 'failure'],
+    ['EIO', true, 'retry', 'failure'], ['ENOSPC', false, 'retry', 'pending'], [undefined, false, 'retry', 'failure'],
   ]) {
     let asked = 0;
     const error = Object.freeze({ code, message: 'original failure' });
@@ -271,6 +271,38 @@ test('only an event-backed sleep interruption is pending; real failures are stil
     assert.notEqual(result.status, 'passed'); assert.notEqual(result.publicationState, 'success');
     assert.equal(error.message, 'original failure');
   }
+});
+
+test('storage pressure preserves the selected verification and lets an already verified receipt publish', () => {
+  const stateDir = '/registered/qa', need = 2 * 1024 ** 3;
+  const capacity = available => (target, options) => {
+    assert.equal(target, stateDir); assert.deepEqual(options, { bigint: true });
+    return { bsize: 4096n, bavail: BigInt(available / 4096) };
+  };
+  const queue = { nextTurn: 'oldest', items: [{ commit: 'b'.repeat(40), status: 'queued' }, { commit, status: 'retry', retryAt: 0 }] };
+  const before = structuredClone(queue), oldest = nextItem(queue, commit);
+  assert.deepEqual(diskWaitFor(oldest, stateDir, capacity(need - 4096)), { availableBytes: need - 4096, requiredBytes: need });
+  assert.equal(diskWaitFor(oldest, stateDir, capacity(need)), null);
+  assert.deepEqual(queue, before); assert.equal(nextItem(queue, commit), oldest);
+  assert.equal(diskWaitFor({ status: 'publish-pending' }, stateDir, () => assert.fail('a sealed result can publish')), null);
+  assert.throws(() => diskWaitFor(oldest, stateDir, () => { throw Error('unreadable volume'); }), /unreadable volume/);
+});
+
+test('only the current Edge profile exhausting storage can interrupt an otherwise intact browser verification', () => {
+  const output = 'C:\\qa\\runs\\original-123', row = { file: 'qa/browser.test.mjs', name: 'subscribe', status: 'fail' };
+  const message = ['browserType.launch: Target closed', 'Failed to create cache directory: ' + output + '\\default\\temp\\playwright_chromiumdev_profile-abc\\GPUPersistentCache: (0x70)', 'Failed to create initial profile'].join('\n');
+  const failure = { file: row.file, name: row.name, error: { message } };
+  const phase = { profile: 'default', ok: false, rows: [row, { status: 'missing' }], unexpectedFailures: [failure] };
+  const receipt = { platform: 'win32', candidate: false, sourceUnchanged: true, inputsUnchanged: true, phases: [phase, { ok: true }] };
+  assert.ok(browserProfileDiskFull(receipt, output));
+  assert.equal(browserProfileDiskFull(receipt, output + '-other'), false);
+  for (const altered of [message.replace('0x70', '0x05'), message.replace('Failed to create initial profile', 'Cache disabled'), 'actual assertion failed']) {
+    assert.equal(browserProfileDiskFull({ ...receipt, phases: [{ ...phase, unexpectedFailures: [{ ...failure, error: { message: altered } }] }] }, output), false);
+  }
+  assert.equal(browserProfileDiskFull({ ...receipt, phases: [...receipt.phases, { ok: false, unexpectedFailures: [] }] }, output), false);
+  assert.equal(browserProfileDiskFull({ ...receipt, phases: [{ ...phase, rows: [row, { ...row, name: 'other' }], unexpectedFailures: [failure, { ...failure, name: 'other', error: { message: 'assertion failed' } }] }] }, output), false);
+  assert.equal(browserProfileDiskFull({ ...receipt, inputsUnchanged: false }, output), false);
+  assert.equal(browserProfileDiskFull({ ...receipt, phases: [] }, output), false);
 });
 
 test('the newest commit runs before the backlog; historical entries and failed proof are preserved', () => {
