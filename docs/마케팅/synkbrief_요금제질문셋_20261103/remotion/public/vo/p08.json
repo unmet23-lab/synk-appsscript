@@ -1,0 +1,41 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "p08",
+ "text": "진짜?",
+ "show": "진짜?",
+ "dur": 0.544,
+ "words": [
+  {
+   "text": "진짜?",
+   "start": 0.02,
+   "end": 0.544
+  }
+ ],
+ "source": {
+  "key": "022492113ad6b0965ece55be824720f2",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 240
+ }
+}

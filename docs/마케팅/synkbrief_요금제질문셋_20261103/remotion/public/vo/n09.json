@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n09",
+ "text": "일 년이면 삼십사만 팔천 원이야.",
+ "show": "1년이면 34만 8천 원이야.",
+ "dur": 1.698,
+ "words": [
+  {
+   "text": "일",
+   "start": 0.02,
+   "end": 0.082
+  },
+  {
+   "text": "년이면",
+   "start": 0.129,
+   "end": 0.44
+  },
+  {
+   "text": "삼십사만",
+   "start": 0.487,
+   "end": 0.97
+  },
+  {
+   "text": "팔천",
+   "start": 1.017,
+   "end": 1.266
+  },
+  {
+   "text": "원이야.",
+   "start": 1.312,
+   "end": 1.698
+  }
+ ],
+ "source": {
+  "key": "cefabfdf2bbafda065ef72722adb35a7",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 147
+ }
+}

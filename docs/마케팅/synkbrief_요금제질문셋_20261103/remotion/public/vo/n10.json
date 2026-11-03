@@ -1,0 +1,56 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n10",
+ "text": "그 돈으로 점심이나 사.",
+ "show": "그 돈으로 점심이나 사.",
+ "dur": 1.195,
+ "words": [
+  {
+   "text": "그",
+   "start": 0.02,
+   "end": 0.084
+  },
+  {
+   "text": "돈으로",
+   "start": 0.132,
+   "end": 0.388
+  },
+  {
+   "text": "점심이나",
+   "start": 0.436,
+   "end": 0.851
+  },
+  {
+   "text": "사.",
+   "start": 0.899,
+   "end": 1.195
+  }
+ ],
+ "source": {
+  "key": "3d450a5b5c9388e2463a546fdf607fee",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 147
+ }
+}

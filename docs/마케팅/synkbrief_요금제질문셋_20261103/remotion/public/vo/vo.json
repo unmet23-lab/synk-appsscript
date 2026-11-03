@@ -1,0 +1,241 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1103,
+  "lufs": -17
+ },
+ "made": "2026-11-03T02:22:49.728Z",
+ "lines": [
+  {
+   "id": "n01",
+   "text": "잠깐, 그거 어디 쓰려고?",
+   "show": "잠깐, 그거 어디 쓰려고?",
+   "scene": "손바닥 탁 직후",
+   "dur": 1.504,
+   "syllablesPerSec": 5.98,
+   "src": "n01.wav",
+   "key": "7ce96fdaab557d5bb2a05d9f664f6210",
+   "words": 4
+  },
+  {
+   "id": "p01",
+   "text": "다들 쓴다길래.",
+   "show": "다들 쓴다길래…",
+   "scene": "손바닥이 화면을 덮은 채",
+   "dur": 1.047,
+   "syllablesPerSec": 5.73,
+   "src": "p01.wav",
+   "key": "b1d38ff94dda29125fbe4adbd38a2e0d",
+   "words": 2
+  },
+  {
+   "id": "n02",
+   "text": "다들 뭐에 쓰는데?",
+   "show": "다들 뭐에 쓰는데?",
+   "scene": "되물음",
+   "dur": 0.98,
+   "syllablesPerSec": 7.14,
+   "src": "n02.wav",
+   "key": "e71a3c6f53004272b60a7f3a26d79bc8",
+   "words": 3
+  },
+  {
+   "id": "p06",
+   "text": "몰라.",
+   "show": "…몰라.",
+   "scene": "되물음 뒤",
+   "dur": 0.498,
+   "syllablesPerSec": 4.02,
+   "src": "p06.wav",
+   "key": "e28e274b003cd0c29b8ed00bf50997c0",
+   "words": 1
+  },
+  {
+   "id": "n12",
+   "text": "어제 뭐 물어봤어?",
+   "show": "어제 뭐 물어봤어?",
+   "scene": "되물음 — 휴대폰 화면(실제 임시 채팅)",
+   "dur": 0.923,
+   "syllablesPerSec": 7.58,
+   "src": "n12.wav",
+   "key": "1fc9ceed38b00f69255c0ba21531fa54",
+   "words": 3
+  },
+  {
+   "id": "p07",
+   "text": "오늘 점심 뭐 먹지.",
+   "show": "…오늘 점심 뭐 먹지.",
+   "scene": "휴대폰 화면 — 끝 말의 복선",
+   "dur": 1.071,
+   "syllablesPerSec": 6.54,
+   "src": "p07.wav",
+   "key": "ba9dc24752472b32ea7dfc841c99bb2c",
+   "words": 4
+  },
+  {
+   "id": "n03",
+   "text": "한도 다 썼다는 알림, 본 적 있어?",
+   "show": "한도 다 썼다는 알림, 본 적 있어?",
+   "scene": "질문 하나",
+   "dur": 1.876,
+   "syllablesPerSec": 6.4,
+   "src": "n03.wav",
+   "key": "676e11ad934b9975418823c42dedc1c2",
+   "words": 7
+  },
+  {
+   "id": "p02",
+   "text": "아니.",
+   "show": "아니.",
+   "scene": "질문 하나 뒤",
+   "dur": 0.466,
+   "syllablesPerSec": 4.29,
+   "src": "p02.wav",
+   "key": "c4fd370c963b9a8b38a372ec7b226a7d",
+   "words": 1
+  },
+  {
+   "id": "n04",
+   "text": "파일이나 사진, 매일 올려?",
+   "show": "파일이나 사진, 매일 올려?",
+   "scene": "질문 둘",
+   "dur": 1.488,
+   "syllablesPerSec": 6.72,
+   "src": "n04.wav",
+   "key": "6d3bd21490befe8816f5f65401403345",
+   "words": 4
+  },
+  {
+   "id": "p03",
+   "text": "어, 가끔?",
+   "show": "어… 가끔?",
+   "scene": "질문 둘 뒤 — 흔들림",
+   "dur": 0.928,
+   "syllablesPerSec": 3.23,
+   "src": "p03.wav",
+   "key": "1323dde7117a1dc4effdfb9e3d6d7313",
+   "words": 2
+  },
+  {
+   "id": "n11",
+   "text": "가끔이면 됐고.",
+   "show": "가끔이면 됐고.",
+   "scene": "가끔이면 된다는 판정",
+   "dur": 1.008,
+   "syllablesPerSec": 5.95,
+   "src": "n11.wav",
+   "key": "d4642cf7835aeed4edb1dd7b7a3f23a3",
+   "words": 2
+  },
+  {
+   "id": "n05",
+   "text": "긴 문서, 통째로 넣어?",
+   "show": "긴 문서, 통째로 넣어?",
+   "scene": "질문 셋",
+   "dur": 1.588,
+   "syllablesPerSec": 5.04,
+   "src": "n05.wav",
+   "key": "4bb8185c2fb4b75e0feee242c9585fd0",
+   "words": 4
+  },
+  {
+   "id": "p04",
+   "text": "아니.",
+   "show": "…아니.",
+   "scene": "질문 셋 뒤 — 조금 작게",
+   "dur": 0.48,
+   "syllablesPerSec": 4.17,
+   "src": "p04.wav",
+   "key": "cb5358b554c7e552bf8743a4e03f0e1f",
+   "words": 1
+  },
+  {
+   "id": "n06",
+   "text": "그럼 무료로 충분해.",
+   "show": "그럼 무료로 충분해.",
+   "scene": "결론",
+   "dur": 1.107,
+   "syllablesPerSec": 7.23,
+   "src": "n06.wav",
+   "key": "eeb34b9a8a0bdc4741d626ac226ed624",
+   "words": 3
+  },
+  {
+   "id": "p08",
+   "text": "진짜?",
+   "show": "진짜?",
+   "scene": "무제한이라는 말에 되묻기",
+   "dur": 0.544,
+   "syllablesPerSec": 3.68,
+   "src": "p08.wav",
+   "key": "022492113ad6b0965ece55be824720f2",
+   "words": 1
+  },
+  {
+   "id": "n07",
+   "text": "챗지피티는 글로만 묻는 건, 무료도 무제한이야.",
+   "show": "챗GPT는 글로만 묻는 건, 무료도 무제한이야.",
+   "scene": "실제 Free 목록",
+   "dur": 2.864,
+   "syllablesPerSec": 6.63,
+   "src": "n07.wav",
+   "key": "c5c667029d8417987fb933c1ed909598",
+   "words": 6
+  },
+  {
+   "id": "n08",
+   "text": "하나라도 예면, 그때 결제해.",
+   "show": "하나라도 '예'면, 그때 결제해.",
+   "scene": "조건 한 줄",
+   "dur": 1.799,
+   "syllablesPerSec": 6.11,
+   "src": "n08.wav",
+   "key": "5fda7215e29f213e70f16b18ec8fe790",
+   "words": 4
+  },
+  {
+   "id": "n09",
+   "text": "일 년이면 삼십사만 팔천 원이야.",
+   "show": "1년이면 34만 8천 원이야.",
+   "scene": "₩29,000에 빨간 줄",
+   "dur": 1.698,
+   "syllablesPerSec": 7.66,
+   "src": "n09.wav",
+   "key": "cefabfdf2bbafda065ef72722adb35a7",
+   "words": 5
+  },
+  {
+   "id": "p05",
+   "text": "그래도 한 달만.",
+   "show": "그래도 한 달만…",
+   "scene": "끝 — 그래도 엄지가 다시 간다",
+   "dur": 1.032,
+   "syllablesPerSec": 5.81,
+   "src": "p05.wav",
+   "key": "7a982c5c0234347c342b3728e032fbbb",
+   "words": 3
+  },
+  {
+   "id": "n10",
+   "text": "그 돈으로 점심이나 사.",
+   "show": "그 돈으로 점심이나 사.",
+   "scene": "끝 — 다시 탁",
+   "dur": 1.195,
+   "syllablesPerSec": 7.53,
+   "src": "n10.wav",
+   "key": "3d450a5b5c9388e2463a546fdf607fee",
+   "words": 4
+  }
+ ]
+}

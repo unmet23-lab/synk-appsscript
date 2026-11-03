@@ -1,0 +1,71 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n03",
+ "text": "한도 다 썼다는 알림, 본 적 있어?",
+ "show": "한도 다 썼다는 알림, 본 적 있어?",
+ "dur": 1.876,
+ "words": [
+  {
+   "text": "한도",
+   "start": 0.03,
+   "end": 0.251
+  },
+  {
+   "text": "다",
+   "start": 0.306,
+   "end": 0.375
+  },
+  {
+   "text": "썼다는",
+   "start": 0.43,
+   "end": 0.776
+  },
+  {
+   "text": "알림,",
+   "start": 0.831,
+   "end": 1.093
+  },
+  {
+   "text": "본",
+   "start": 1.287,
+   "end": 1.397
+  },
+  {
+   "text": "적",
+   "start": 1.439,
+   "end": 1.549
+  },
+  {
+   "text": "있어?",
+   "start": 1.59,
+   "end": 1.876
+  }
+ ],
+ "source": {
+  "key": "676e11ad934b9975418823c42dedc1c2",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 146
+ }
+}

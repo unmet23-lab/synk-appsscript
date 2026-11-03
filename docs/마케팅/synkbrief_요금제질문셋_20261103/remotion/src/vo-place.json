@@ -1,0 +1,122 @@
+[
+ {
+  "id": "n01",
+  "at": 44,
+  "speechEnd": 90,
+  "end": 90
+ },
+ {
+  "id": "p01",
+  "at": 91,
+  "speechEnd": 123,
+  "end": 123
+ },
+ {
+  "id": "n02",
+  "at": 123,
+  "speechEnd": 153,
+  "end": 153
+ },
+ {
+  "id": "p06",
+  "at": 154,
+  "speechEnd": 169,
+  "end": 169
+ },
+ {
+  "id": "n12",
+  "at": 170,
+  "speechEnd": 198,
+  "end": 198
+ },
+ {
+  "id": "p07",
+  "at": 202,
+  "speechEnd": 235,
+  "end": 235
+ },
+ {
+  "id": "n03",
+  "at": 253,
+  "speechEnd": 310,
+  "end": 310
+ },
+ {
+  "id": "p02",
+  "at": 311,
+  "speechEnd": 325,
+  "end": 325
+ },
+ {
+  "id": "n04",
+  "at": 329,
+  "speechEnd": 374,
+  "end": 374
+ },
+ {
+  "id": "p03",
+  "at": 375,
+  "speechEnd": 403,
+  "end": 403
+ },
+ {
+  "id": "n11",
+  "at": 403,
+  "speechEnd": 434,
+  "end": 434
+ },
+ {
+  "id": "n05",
+  "at": 434,
+  "speechEnd": 482,
+  "end": 482
+ },
+ {
+  "id": "p04",
+  "at": 484,
+  "speechEnd": 499,
+  "end": 499
+ },
+ {
+  "id": "n06",
+  "at": 503,
+  "speechEnd": 537,
+  "end": 537
+ },
+ {
+  "id": "p08",
+  "at": 538,
+  "speechEnd": 555,
+  "end": 555
+ },
+ {
+  "id": "n07",
+  "at": 555,
+  "speechEnd": 641,
+  "end": 641
+ },
+ {
+  "id": "n08",
+  "at": 642,
+  "speechEnd": 696,
+  "end": 696
+ },
+ {
+  "id": "n09",
+  "at": 697,
+  "speechEnd": 748,
+  "end": 748
+ },
+ {
+  "id": "p05",
+  "at": 755,
+  "speechEnd": 786,
+  "end": 786
+ },
+ {
+  "id": "n10",
+  "at": 805,
+  "speechEnd": 841,
+  "end": 841
+ }
+]

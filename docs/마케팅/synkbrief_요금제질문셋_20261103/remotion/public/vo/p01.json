@@ -1,0 +1,46 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "p01",
+ "text": "다들 쓴다길래.",
+ "show": "다들 쓴다길래…",
+ "dur": 1.047,
+ "words": [
+  {
+   "text": "다들",
+   "start": 0.03,
+   "end": 0.295
+  },
+  {
+   "text": "쓴다길래.",
+   "start": 0.376,
+   "end": 1.047
+  }
+ ],
+ "source": {
+  "key": "b1d38ff94dda29125fbe4adbd38a2e0d",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 450
+ }
+}

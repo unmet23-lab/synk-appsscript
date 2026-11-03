@@ -1,0 +1,56 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n05",
+ "text": "긴 문서, 통째로 넣어?",
+ "show": "긴 문서, 통째로 넣어?",
+ "dur": 1.588,
+ "words": [
+  {
+   "text": "긴",
+   "start": 0.02,
+   "end": 0.181
+  },
+  {
+   "text": "문서,",
+   "start": 0.242,
+   "end": 0.504
+  },
+  {
+   "text": "통째로",
+   "start": 0.866,
+   "end": 1.249
+  },
+  {
+   "text": "넣어?",
+   "start": 1.31,
+   "end": 1.588
+  }
+ ],
+ "source": {
+  "key": "4bb8185c2fb4b75e0feee242c9585fd0",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 167
+ }
+}

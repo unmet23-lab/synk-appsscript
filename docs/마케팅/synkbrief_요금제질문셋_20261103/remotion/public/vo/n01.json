@@ -1,0 +1,56 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n01",
+ "text": "잠깐, 그거 어디 쓰려고?",
+ "show": "잠깐, 그거 어디 쓰려고?",
+ "dur": 1.504,
+ "words": [
+  {
+   "text": "잠깐,",
+   "start": 0.02,
+   "end": 0.363
+  },
+  {
+   "text": "그거",
+   "start": 0.645,
+   "end": 0.806
+  },
+  {
+   "text": "어디",
+   "start": 0.866,
+   "end": 0.987
+  },
+  {
+   "text": "쓰려고?",
+   "start": 1.048,
+   "end": 1.504
+  }
+ ],
+ "source": {
+  "key": "7ce96fdaab557d5bb2a05d9f664f6210",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 141
+ }
+}

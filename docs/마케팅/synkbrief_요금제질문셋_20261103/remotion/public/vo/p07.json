@@ -1,0 +1,56 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "p07",
+ "text": "오늘 점심 뭐 먹지.",
+ "show": "…오늘 점심 뭐 먹지.",
+ "dur": 1.071,
+ "words": [
+  {
+   "text": "오늘",
+   "start": 0.02,
+   "end": 0.263
+  },
+  {
+   "text": "점심",
+   "start": 0.364,
+   "end": 0.607
+  },
+  {
+   "text": "뭐",
+   "start": 0.668,
+   "end": 0.749
+  },
+  {
+   "text": "먹지.",
+   "start": 0.809,
+   "end": 1.071
+  }
+ ],
+ "source": {
+  "key": "ba9dc24752472b32ea7dfc841c99bb2c",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 355
+ }
+}

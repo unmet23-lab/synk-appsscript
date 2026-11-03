@@ -1,0 +1,66 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n07",
+ "text": "챗지피티는 글로만 묻는 건, 무료도 무제한이야.",
+ "show": "챗GPT는 글로만 묻는 건, 무료도 무제한이야.",
+ "dur": 2.864,
+ "words": [
+  {
+   "text": "챗지피티는",
+   "start": 0.02,
+   "end": 0.626
+  },
+  {
+   "text": "글로만",
+   "start": 0.693,
+   "end": 1.03
+  },
+  {
+   "text": "묻는",
+   "start": 1.08,
+   "end": 1.299
+  },
+  {
+   "text": "건,",
+   "start": 1.35,
+   "end": 1.518
+  },
+  {
+   "text": "무료도",
+   "start": 1.905,
+   "end": 2.175
+  },
+  {
+   "text": "무제한이야.",
+   "start": 2.242,
+   "end": 2.864
+  }
+ ],
+ "source": {
+  "key": "c5c667029d8417987fb933c1ed909598",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 142
+ }
+}

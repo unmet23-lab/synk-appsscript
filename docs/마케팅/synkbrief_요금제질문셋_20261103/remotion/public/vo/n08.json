@@ -1,0 +1,56 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n08",
+ "text": "하나라도 예면, 그때 결제해.",
+ "show": "하나라도 '예'면, 그때 결제해.",
+ "dur": 1.799,
+ "words": [
+  {
+   "text": "하나라도",
+   "start": 0.03,
+   "end": 0.394
+  },
+  {
+   "text": "예면,",
+   "start": 0.454,
+   "end": 0.777
+  },
+  {
+   "text": "그때",
+   "start": 1.081,
+   "end": 1.262
+  },
+  {
+   "text": "결제해.",
+   "start": 1.323,
+   "end": 1.799
+  }
+ ],
+ "source": {
+  "key": "5fda7215e29f213e70f16b18ec8fe790",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 145
+ }
+}

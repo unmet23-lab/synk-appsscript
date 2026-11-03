@@ -1,0 +1,46 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n11",
+ "text": "가끔이면 됐고.",
+ "show": "가끔이면 됐고.",
+ "dur": 1.008,
+ "words": [
+  {
+   "text": "가끔이면",
+   "start": 0.03,
+   "end": 0.478
+  },
+  {
+   "text": "됐고.",
+   "start": 0.539,
+   "end": 1.008
+  }
+ ],
+ "source": {
+  "key": "d4642cf7835aeed4edb1dd7b7a3f23a3",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 160
+ }
+}

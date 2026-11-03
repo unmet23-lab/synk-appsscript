@@ -1,0 +1,41 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "p02",
+ "text": "아니.",
+ "show": "아니.",
+ "dur": 0.466,
+ "words": [
+  {
+   "text": "아니.",
+   "start": 0.02,
+   "end": 0.466
+  }
+ ],
+ "source": {
+  "key": "c4fd370c963b9a8b38a372ec7b226a7d",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 239
+ }
+}
