@@ -34,13 +34,15 @@
     },
     {
       "계정": "synkbrief-tiktok",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-02T21:00:00+09:00",
-      "주소": "https://www.tiktok.com/tiktokstudio/content (예약 글은 게시 전이라 영상 주소 없음)",
+      "주소": "https://www.tiktok.com/@synkbrief/video/7703271927636364552",
       "방법": "ego 프로필 「TikTok synkbrief」 공간 「틱톡 @synkbrief 1102」 — username synkbrief 확인 뒤 업로드 · 캡션 붙여 넣기(공백 빼고 일치) · AI 표시 켬 · 예약 날짜(2026-11-02, .day.valid) · 시각 21:00 → Schedule. 스크립트 C:/Users/q1212/ego/plates-20261102-tiktok/tk-run.mjs + sb-02.json (기록 sb-02.txt)",
       "확인": "Studio 콘텐츠 목록: 6.10.30 확인). 권리가 있는 사진만 올리세요. #제미나이 #AI사진 #사진복원 #옛날사진 #AI활용 Nov 2, 9:00 PM (GMT+9) Seoul Everyone 0",
       "승인": "유호님 11-02 앱 세션 「나머지 판도 걸어」 · 「매일 한편씩 모든 계정에 업로드해야하는데 지금 매번 이걸 깜빡하는것같아서 아쉬워」(그 앞 「자체검수 → 검토 다 승인, 전부 업로드」) — Claude 자체검수(영상 모아보기 · 음량 · 글) 뒤",
-      "편ID": "synkbrief_옛사진복원_20261030"
+      "편ID": "synkbrief_옛사진복원_20261030",
+      "게시물ID": "7703271927636364552",
+      "공개확인": "11-03 14시 회차 읽음 — Studio 줄 「Nov 2, 9:00 PM」"
     },
     {
       "계정": "shift-naverblog",
