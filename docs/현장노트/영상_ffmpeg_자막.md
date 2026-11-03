@@ -260,6 +260,12 @@
 - `tools/영상사전검사.mjs`는 프레임 수가 명시된 프로그레시브 H.264 8비트 `yuv420p` 영상 중 1920×1080 화소 수 이하에서 모든 프레임을 최대 8개 스레드로 디코딩한다. 프레임 단위 병렬화와 엄격한 오류 검사를 사용한다. 경고, 실패, 프레임 수 차이, 누락·추정·중복·역행·긴 간격, 끝 시각 이상이 있으면 원래 명령으로 다시 읽어 그 결과로 판정한다. 다른 형식과 메타데이터에 오류가 있는 파일도 원래 명령을 쓴다. [H.264 디코더의 스레드 방식과 오류 복구](https://github.com/FFmpeg/FFmpeg/blob/n9.0.2/libavcodec/h264dec.c#L418-L432)
 - 같은 PC에서 영상·대본·받아쓰기 파일을 고정하고 영상별·버전별 8회씩 실행했다. **전체 검사 중앙값**은 29초 편 8.12→2.80초(65.5% 단축), 41초 편 9.43→3.07초(67.5% 단축)였다. 별도 계측 한 번에서 프레임 단계는 각각 5.65→2.17초, 9.84→2.48초였다. 검증 파일 45개 모두 프레임 시각·판정·검토 위치가 같았고 기존 디코딩 오류 25개 모두 차단했다. [원시 측정값·입력 해시·손상 검증 결과](../_ops/qa/media-preflight-frames-20261103.json)
 
+### Git Bash에서 `metadata=print:file=/c/…`로 장면 변화 숫자를 파일에 쓰면 「Could not open」으로 필터가 통째로 실패한다 (2026-11-03 Claude)
+- 증상: 참고 영상 움직임을 재려고 `ffmpeg -i clip.webm -vf "scale=320:-2,fps=30,select='gte(scene,0)',metadata=print:file=$O/scene.txt" -an -f null -`(`$O`는 `/c/Users/…`)를 돌리자 `Could not open /c/Users/…/scene.txt` · `Error initializing filters`로 끝났다. 앞의 yt-dlp 받기는 됐고 출력 파일만 없었다.
+- 원인: Git Bash(MSYS)는 인자 전체가 경로이거나 `이름=경로` 꼴일 때만 `/c/…`를 `C:/…`로 바꾼다. 긴 필터 문자열 한가운데 든 경로는 그대로 넘어가 윈도우용 ffmpeg가 못 연다. `C:/…`로 직접 써도 필터 문법에서 콜론이 옵션 구분자라 다시 깨진다.
+- 고침: 그 폴더로 들어가 상대 경로(`file=scene.txt`)로 쓰거나, 필터 파일 쓰기를 빼고 `-f rawvideo -`로 프레임을 받아 파이썬에서 차이를 잰다.
+- 다시 확인: 출력 폴더에서 `ffmpeg -v error -i clip.webm -t 2 -vf "scale=160:-2,select='gte(scene,0)',metadata=print:file=scene.txt" -an -f null -` 뒤 `scene.txt`가 생기는지(11-03 122줄).
+
 ## 색 맞춤(LUT·bt709 표시)
 
 ### `-color_primaries bt709 -color_trc bt709`를 줘도 원색·감마가 unknown으로 남는다
