@@ -13,6 +13,6 @@ PC용 모듈은 다섯 방식을 한 번씩 썼을 때 “현재 원하는 방�
 
 회원 요약의 허용 개수와 항목 검증을 [같은 계약](../../../../atlas/member-understanding-contract.js)에서 구한다. [회귀 시험](../../../../tests/atlas-member-understanding.test.js)에서 선언 전용 값, 모르는 값, 중복, 허용 개수 초과를 거절하고 학습 연결을 끄면 관찰을 제외하는 것도 확인한다.
 
-공개 계정 파일을 교체하지 않았다. 변경 전 원천 `2cfb220e`의 `dist/platform.js`는 1,751,575바이트, 당시 [공개본](https://github.com/unmet23-lab/synk-policy/blob/a2a8a581d0ea1b1b9f081b2c01232d2291273b46/account/dist/platform.js)은 3,453,185바이트였다. 동일한 압축 조건에서도 내용이 달랐다. 공개 확인은 synk.im이 제공한 파일의 해시를 대조한 뒤, 그 파일을 격리 브라우저에서 가상 학습자 데이터로 실행했다. 실제 회원 데이터나 운영 계정을 사용하지 않았다.
+공개 계정 파일을 교체하지 않았다. 변경 전 원천 `2cfb220e`의 `dist/platform.js`는 1,751,575바이트, 당시 [공개본](https://github.com/unmet23-lab/synk-policy/blob/a2a8a581d0ea1b1b9f081b2c01232d2291273b46/account/dist/platform.js)은 3,453,208바이트였다. 줄끝을 LF로 통일하면 공개본은 3,453,185바이트다. 동일한 압축 조건에서도 두 파일의 내용이 달랐다. 공개 확인은 synk.im이 제공한 파일의 해시를 대조한 뒤, 그 파일을 격리 브라우저에서 가상 학습자 데이터로 실행했다. 실제 회원 데이터나 운영 계정을 사용하지 않았다.
 
 미니게임의 실제 재방문 안내와 첫 문제는 [게임별 공개 플레이 기록](../atlas-seven-return-20261103/README.md)에 있다.
