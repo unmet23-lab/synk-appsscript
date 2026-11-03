@@ -1071,15 +1071,16 @@ async function retakeResult(item, r) {
 }
 
 /* ───────── 새 상황 ───────── */
-async function runTransfer(kind = 'transfer') {
+async function runTransfer(kind = 'transfer', { rerender = false } = {}) {
  const delayed = kind === 'delayed';
- const s = newScope(); S.step = 'transfer'; S.render = () => runTransfer(kind);
+ const s = newScope(); S.step = 'transfer'; S.render = () => runTransfer(kind, { rerender: true });
  // tries: 녹음해 보낸 횟수(단추 모양용). spoke: 소리가 들린(또는 받아쓰기 없이 녹음한) 시도 수.
  // firstHinted: 첫 「말해 본 시도」가 시작될 때 모범이 공개돼 있었는지 — 첫 시도에서 한 번만 정하고 뒤 시도로 덮지 않는다.
  const slot = delayed ? 'delayedRun' : 'transfer';
  const T = S[slot] || (S[slot] = { tries: 0, spoke: 0, firstHinted: null, revealed: null, revealedBeforeFirst: false, last: null, selfCheck: null, unheard: 0 });
  // C에 기록 없이 다시 들어오면 지난 안내(받아쓰기 꺼짐 · 다시 녹음 등)는 지우고 지금 상태로 새로 그린다 — 시도 수 · 모범 본 사실은 둔다(화면 검수 r2).
- if (delayed && !T.trail?.recorded) Object.assign(T, { last: null, lastTakeId: null, selfCheck: null, invalid: 0 });
+ // 언어 단추 · 동의 칩처럼 같은 화면을 다시 그릴 때(rerender)는 지금 안내와 「내 녹음 듣기」를 그대로 둔다.
+ if (delayed && !rerender && !T.trail?.recorded) Object.assign(T, { last: null, lastTakeId: null, selfCheck: null, invalid: 0 });
  const markSpoken = (d) => {
   // 서버 take.hinted는 이전 실행(다시하기 전)의 모범 공개도 포함한다. 받아쓰기 없이 녹음한 경우는 이 창의 기억으로만 안다.
   if (!T.spoke) T.firstHinted = d?.take ? (!!d.take.hinted || T.revealedBeforeFirst) : (!!T.revealed || (!delayed && S.revealedEver));
@@ -1089,6 +1090,7 @@ async function runTransfer(kind = 'transfer') {
  stageMode('still'); subs(null); hideMic(); S.cardKey = null; panel();
  // 표지가 사라진 뒤에 카드가 올라온다(겹치지 않게).
  if (T.tries === 0 && !T.introShown) { T.introShown = true; slate(tx(delayed ? 'delayedTitle' : 'transferTitle'), { k: 'New situation', ms: 1200 }); await sleep(s, 1650); if (!live(s)) return; hideSlate(); }
+ else hideSlate(); // 첫 화면 회차 표지(ms 0)는 스스로 사라지지 않는다 — C에 두 번째로 들어올 때도 걷는다.
  await retryWorldStatus();
  if (!live(s)) return;
  await ensureConsent(s);
