@@ -145,7 +145,7 @@ async function 한바퀴(이름, 몫, 키통로) {
   const 줄 = (cid, who, 글, 그림id들) => ({ custom_id: cid, method: 'POST', url: '/v1/images/edits',
     body: { model: 'gpt-image-2.5-sunburst', prompt: 글, images: 그림id들.map((file_id) => ({ file_id })), size: 크기, quality: 'max', n: 1, output_format: 'jpeg', output_compression: 90, moderation: 'auto', safety_identifier: 안전id(who) } });
 
-  // 1. 받기 — 혼자 찍은 얼굴 하나 · 크기 · 흐림 · 밝기. 기준 묶음(강 · 약 · 강+) 몫이 없으면 사진을 아예 받지 않는다(원본이 몫을 기다리며 남지 않게)
+  // 1. 받기 — 막지 않는다(손보거나 물어봄, 11-03 유호님 「사진을 고르는건 자유」). 다만 기준 묶음(강 · 약 · 강+) 몫이 없으면 사진을 아예 받지 않는다(원본이 몫을 기다리며 남지 않게)
   const { 일감들 } = await import('../사진시험/지시문조립.mjs');
   const 기준글 = Object.fromEntries(일감들(path.join(작업, 'photo-nb')).filter((j) => j.id.startsWith('base-')).map((j) => [j.id, j.prompt]));
   const 기준판들 = ['강', '약', '강+'];  // 첫 묶음에 셋 — 원본은 이 묶음 뒤 지우므로 강+(「아직 나이 들어 보여요」)도 원본으로 함께 굽는다
@@ -156,7 +156,7 @@ async function 한바퀴(이름, 몫, 키통로) {
   { const { 시작, 끝, 상한 } = 사진몫(); let 남음 = 상한 - 사진씀(시작, 끝);
     for (const [i, s] of 학생들.entries()) {
       판정.학생[s.id] = { 받기: 받음[i].판정 };
-      if (받음[i].판정 !== '받음') continue;
+      // 받기는 막지 않는다 — 「물어봄」(얼굴 여럿 · 못 찾음)은 학생이 고른 대로 이어 간다고 본다(모의의 올림은 모두 얼굴 하나)
       const 기준값 = 기준판들.reduce((a, lv) => a + 어림(기준줄(s, lv)), 0) * 1.3;
       if (기준값 > 남음) { 판정.학생[s.id].받기 = '받지 않음 — 이번 주기 사진 몫이 모자람(준비된 얼굴로 시작, 다음 주기에 다시 찍기)'; continue; }
       남음 -= 기준값;
@@ -211,8 +211,8 @@ async function 한바퀴(이름, 몫, 키통로) {
     if (강 && 약 && 강플) {
       const r = 검사('기준', s.올림, 강.p, 약.p, 강플.p);
       판정.학생[s.id].기준 = r.판들.map((x) => `${x.판} ${x['올린 사진과']}(${x.등급})`).join(' · ');
-      판정.학생[s.id].기본 = r.기본 || '새 사진 부탁';
-      if (r.기본) 고른기준[s.id] = r.기본 === '강' ? 강.p : 약.p;
+      판정.학생[s.id].기본 = r.다시굽기 ? `${r.기본}(셋 다 문턱 아래 — 원본이 있는 동안 동기로 한 번 더)` : r.기본;
+      고른기준[s.id] = { 강: 강.p, 약: 약.p, '강+': 강플.p }[r.기본];
     } else 판정.학생[s.id].기본 = '배송 지연';
     await 지우기(올린id[s.id]);  // 기준 묶음이 끝나면 원본을 지운다 — 다시 굽기에 원본을 쓰지 않는다
   }
