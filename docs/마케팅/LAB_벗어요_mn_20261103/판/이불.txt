@@ -1,0 +1,9 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait, 1024x1820 or similar), sharp and detailed.
+
+Edit the FIRST attached image. Keep the same warm evening room, the same glowing stove and light, and the same camera angle. Change only: the navy coat, red boots, mustard beanie and green mittens lie scattered on the floor around. Mongle lies flat in the middle-lower part near the stove, half melted and soft like a happy puddle, tucked under a small cream knitted blanket, only its face and scalloped hem showing, eyes closed in two happy arcs, a tiny sleepy smile, a little steam rising.
+
+Mongle: the coral needle-felted wool ghost-shaped mascot (use the attached reference photos ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy solid black bead eyes with NO white in them, pink felt cheeks). No arms, no legs, no hands, ever.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, soft natural light, gentle depth of field, cute but not babyish (for university students and young workers). Keep the TOP 26% of the image calm and uncluttered (plain wall, softly out of focus) because text goes there later. Absolutely no text, letters, numbers, logos, symbols or speech bubbles anywhere.

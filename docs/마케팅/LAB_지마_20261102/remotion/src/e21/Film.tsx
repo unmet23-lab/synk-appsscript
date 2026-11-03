@@ -3,7 +3,7 @@
 // 몽골판 M22와 같은 이야기 · 그림 · 목소리(바리스타 범수 · 몽글 자리 소진)에, 뜻은 말풍선 세 줄(한글 · 로마자 읽기 · 영어). 전부 useCurrentFrame()으로만 움직인다.
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, random, Sequence, staticFile, useCurrentFrame } from 'remotion';
-import { CAPTION, LINES, Line } from './data';
+import { Line, LINES, Loc, LOCS } from './data';
 import { fr, T } from './timeline';
 
 const C = { coral: '#F96859', coralShade: '#AE322A', brown: '#2B1A14', cream: '#FFFDF8' };
@@ -81,7 +81,9 @@ const Plate: React.FC<{ t: number }> = ({ t }) => {
 // 말풍선(한글 · 로마자 읽기 · 영어)
 const TOP0 = 290;
 const H = 286;
+const LocCtx = React.createContext<Loc>('en');
 const Bubble: React.FC<{ line: Line; t: number; from: number; until: number }> = ({ line, t, from, until }) => {
+  const pack = LOCS[React.useContext(LocCtx)];
   if (t < from || t >= until) return null;
   const a = interpolate(t, [from, from + 0.18], [0, 1], { ...clamp, easing: Easing.out(Easing.back(2.2)) });
   const TOP = line.top ?? TOP0;
@@ -108,16 +110,11 @@ const Bubble: React.FC<{ line: Line; t: number; from: number; until: number }> =
           )}
         </div>
         <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 52, lineHeight: 1.2, color: C.coralShade, whiteSpace: 'nowrap' }}>🔊 {line.read}</div>
-        <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 58, lineHeight: 1.2, color: C.brown, whiteSpace: 'nowrap' }}>
-          {/* 「지 마」와 「Don't」를 같은 색으로 — 따로 「= don't」 카드를 세우지 않는다(v4 haiku 9번 「X = 뜻 카드가 지난 편과 같다」) */}
-          {line.en.startsWith("Don't") ? (
-            <>
-              <span style={{ color: C.coralShade }}>Don't</span>
-              {line.en.slice(5)}
-            </>
-          ) : (
-            line.en
-          )}
+        <div style={{ fontFamily: pack.font, fontWeight: 800, fontSize: pack.size, lineHeight: pack.lineH, color: C.brown, whiteSpace: 'nowrap' }}>
+          {/* 「지 마」와 뜻 줄의 금지 자리를 같은 색으로 — 따로 「= don't」 카드를 세우지 않는다(v4 haiku 9번 「X = 뜻 카드가 지난 편과 같다」) */}
+          {pack.means[LINES.indexOf(line)].map((g, i) => (
+            <span key={i} style={g.c ? { color: C.coralShade } : undefined}>{g.t}</span>
+          ))}
         </div>
       </div>
     </div>
@@ -126,17 +123,19 @@ const Bubble: React.FC<{ line: Line; t: number; from: number; until: number }> =
 
 // 이야기 자막 — 작은 알약 한 줄(장면을 덮지 않는 자리)
 const Cap: React.FC<{ t: number; from: number; until: number; top: number; children: React.ReactNode }> = ({ t, from, until, top, children }) => {
+  const pack = LOCS[React.useContext(LocCtx)];
   if (t < from || t >= until) return null;
   const a = interpolate(t, [from, from + 0.2], [0, 1], { ...clamp, easing: EASE_OUT });
   return (
     <div style={{ position: 'absolute', left: 0, width: 1080, top, display: 'flex', justifyContent: 'center', opacity: a, transform: `translateY(${(1 - a) * 16}px)` }}>
-      <div style={{ padding: '16px 40px 20px', borderRadius: 999, background: 'rgba(24,16,30,0.86)', boxShadow: '0 10px 24px rgba(20,8,0,0.35)', fontFamily: EN, fontWeight: 800, fontSize: 60, color: C.cream, whiteSpace: 'nowrap' }}>{children}</div>
+      <div style={{ padding: '16px 40px 20px', borderRadius: 999, background: 'rgba(24,16,30,0.86)', boxShadow: '0 10px 24px rgba(20,8,0,0.35)', fontFamily: pack.font, fontWeight: 800, fontSize: pack.capSize, color: C.cream, whiteSpace: 'nowrap' }}>{children}</div>
     </div>
   );
 };
 
 // 끝 — 쪽지의 말. 첫 잔소리 「먹지 마!」가 떠오르고, 「지 마」(와 영어 Don't)가 떨어져 「먹어.」(Eat it.)가 된다.
 const Flip: React.FC<{ t: number }> = ({ t }) => {
+  const pack = LOCS[React.useContext(LocCtx)];
   if (t < T.eat || t >= T.bite) return null;
   const line = LINES[5];
   // 접시 앞 쪽지(화면 약 665, 1420)에서 커져 나온다 — 이 말이 그가 남긴 쪽지의 말임을 보인다(v4 두 시험관 「먹어는 누구 말인가」)
@@ -155,7 +154,7 @@ const Flip: React.FC<{ t: number }> = ({ t }) => {
     <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', ...style }}>
       <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 112, lineHeight: 1.05, color: C.brown, whiteSpace: 'nowrap' }}>{ko}</div>
       <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 52, lineHeight: 1.2, color: C.coralShade, whiteSpace: 'nowrap' }}>{read}</div>
-      <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 58, lineHeight: 1.2, color: C.brown, whiteSpace: 'nowrap' }}>{en}</div>
+      <div style={{ fontFamily: pack.font, fontWeight: 800, fontSize: pack.size, lineHeight: pack.lineH, color: C.brown, whiteSpace: 'nowrap' }}>{en}</div>
     </div>
   );
   return (
@@ -165,10 +164,10 @@ const Flip: React.FC<{ t: number }> = ({ t }) => {
       {row(
         <>먹<span style={{ ...drop, color: C.coralShade }}>지 마!</span></>,
         <span style={{ opacity: sub }}>🔊 meok-ji ma</span>,
-        <><span style={{ ...dropEn, color: C.coralShade }}>Don't</span><span style={{ opacity: sub }}> eat it!</span></>,
+        <>{pack.means[0].map((g, i) => (g.c ? <span key={i} style={{ ...dropEn, color: C.coralShade }}>{g.t}</span> : <span key={i} style={{ opacity: sub }}>{g.t}</span>))}</>,
         { opacity: oldA },
       )}
-      {row(line.ko, `🔊 ${line.read}`, line.en, { opacity: newA, transform: `scale(${newS})` })}
+      {row(line.ko, `🔊 ${line.read}`, pack.means[5].map((g) => g.t).join(''), { opacity: newA, transform: `scale(${newS})` })}
     </div>
   );
 };
@@ -205,10 +204,12 @@ const Sound: React.FC = () => (
   </>
 );
 
-export const Film: React.FC = () => {
+export const Film: React.FC<{ loc?: Loc }> = ({ loc = 'en' }) => {
   const f = useCurrentFrame();
   const t = f / 30;
+  const pack = LOCS[loc];
   return (
+    <LocCtx.Provider value={loc}>
     <AbsoluteFill style={{ backgroundColor: '#1a1014' }}>
       <Plate t={t} />
       <Bubble line={LINES[0]} t={t} from={T.scold[0]} until={T.scold[1]} />
@@ -217,9 +218,10 @@ export const Film: React.FC = () => {
       <Bubble line={LINES[3]} t={t} from={T.go} until={T.pat} />
       <Bubble line={LINES[4]} t={t} from={T.pat + 0.3} until={T.end} />
       <Flip t={t} />
-      <Cap t={t} from={T.dusk + 0.2} until={T.go} top={1360}>{CAPTION.last}</Cap>
-      <Cap t={t} from={T.end + 0.15} until={T.bite} top={140}>{CAPTION.note}</Cap>
+      <Cap t={t} from={T.dusk + 0.2} until={T.go} top={1360}>{pack.caption.last}</Cap>
+      <Cap t={t} from={T.end + 0.15} until={T.bite} top={140}>{pack.caption.note}</Cap>
       <Sound />
     </AbsoluteFill>
+    </LocCtx.Provider>
   );
 };

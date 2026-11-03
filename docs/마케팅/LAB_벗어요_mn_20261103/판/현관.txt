@@ -1,0 +1,10 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait, 1024x1820 or similar), sharp and detailed.
+
+Scene: a cozy needle-felted Korean dormitory entryway on a cold morning, seen straight-on from inside. Pale cream-grey felt wall. On the left a tall window shows the very first snow of the year falling softly over grey felt rooftops, cool morning light. On the right edge, part of a wooden front door. Warm-toned wooden floor. In the lower-middle, on a low wooden bench and the floor beside it, a neat pile of four winter things, each easy to recognise and clearly separate: a puffy navy felt winter coat with wooden buttons, a pair of red felt boots with cream cuffs, a knitted mustard beanie with a pompom, and a pair of green mittens with a white snowflake.
+
+Mongle: the coral needle-felted wool ghost-shaped mascot (use the attached reference photos ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy solid black bead eyes with NO white in them, pink felt cheeks). No arms, no legs, no hands, ever.
+Mongle floats just above the floor next to the pile, on the left of it, with nothing on, looking down at the pile with wide worried eyes, a small wobbly mouth. Its body sits in the middle-lower part of the image.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, soft natural light, gentle depth of field, cute but not babyish (for university students and young workers). Keep the TOP 26% of the image calm and uncluttered (plain wall, softly out of focus) because text goes there later. Absolutely no text, letters, numbers, logos, symbols or speech bubbles anywhere.
