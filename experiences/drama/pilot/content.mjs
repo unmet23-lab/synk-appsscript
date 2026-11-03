@@ -12,14 +12,14 @@ import { dramaSpecOf, dramaReviewStatus } from '../../../tools/lib/drama-spec-re
 // — 설계 qa/WORLD올리기-20261102/설계.md §5 · §14(11-03 t4 → t9). 한국어 줄에는 답 낱말(편의점)과 위치 묻는 꼴(어디 있는지 · 위치 등 허용 표현)을 쓰지 않는다.
 export const TRANSFER_PROMPT = {
  en: 'Before your next class you want to buy a drink, but you can\'t find the convenience store. Politely ask another senior from your department, whom you met for the first time today, where it is.',
- ko: '다음 수업 전에 마실 것을 사고 싶은데 그 가게를 못 찾았어요. 오늘 처음 인사한 같은 과의 다른 선배께 공손하게 여쭤보세요. (가게 이름은 영어 설명을 보세요.)',
+ ko: '다음 수업 전에 마실 것을 사고 싶은데 그 가게를 못 찾았어요. 오늘 처음 인사한 같은 과의 다른 선배께 공손하게 여쭤보세요. (가게 이름은 위 설명을 보세요.)',
 };
 const T9 = ep01.처음보는대사.find((x) => x.id === 's1e01-t9');
 // 새 상황 C — 7~10일 뒤 Atlas 지연 관측(d7)으로 한 번 내는 처음 보는 문항 s1e01-t6(학교 앞 버스 정류장에서 지나가는 어른께 정문 위치,
 // 설계 §17). t9와 같은 능력 · 같은 「상황만 보고 만들어 말하기」라 측정 칸이 같다. 카드 두 줄은 t6 허용 표현(정문 · 어디… 등)도, 모범 글의 문장(「길을 잃었어요」)도 쓰지 않는다.
 export const DELAYED_PROMPT = {
  en: "You're lost at the bus stop in front of the university. Politely ask an adult walking by where the university's main gate is.",
- ko: '학교 앞 버스 정류장에 처음 내려서 헤매고 있어요. 지나가는 처음 보는 어른께 학교로 들어가는 큰 출입구의 위치를 공손하게 여쭤보세요. (장소 이름은 영어 설명을 보세요.)',
+ ko: '학교 앞 버스 정류장에 처음 내려서 헤매고 있어요. 지나가는 처음 보는 어른께 학교로 들어가는 큰 출입구의 위치를 공손하게 여쭤보세요. (장소 이름은 위 설명을 보세요.)',
 };
 const T6 = ep01.처음보는대사.find((x) => x.id === 's1e01-t6');
 

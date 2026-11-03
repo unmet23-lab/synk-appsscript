@@ -67,9 +67,10 @@ function startLang() {
  return deviceLang();
 }
 const firstLang = startLang();
+const savedLang = () => { try { return localStorage.getItem('synk.world.lang'); } catch { return null; } };
 const S = {
  lang: firstLang,
- home: firstLang === 'ko' ? (deviceLang() === 'mn' ? 'mn' : 'en') : firstLang, // 언어 단추가 한국어에서 넘어갈 학습자 언어
+ home: firstLang === 'ko' ? (savedLang() === 'mn' || deviceLang() === 'mn' ? 'mn' : 'en') : firstLang, // 언어 단추가 한국어에서 넘어갈 학습자 언어
  boot: null, csrf: '', epoch: 0, maxSeconds: 20,
  consent: null,            // 'yes' | 'no' | null(아직 안 물음)
  mic: 'unknown',           // 'ok' | 'denied' | 'unsupported' | 'unknown'
@@ -89,9 +90,9 @@ const S = {
  orb: null, orbAction: null, cardKey: null, // 음성 구 · 구를 눌렀을 때 할 일 · 지금 떠 있는 대사 카드(올라오는 움직임은 새 카드에만)
 };
 const t = () => STR[S.lang];
-// 대사 뜻 · 상황 글은 화면 언어로(몽골어 판이 없으면 영어).
-const meaningOf = (item) => (S.lang === 'mn' && item?.meaningMn) || item?.meaning || '';
-const meaningLang = (item) => (S.lang === 'mn' && item?.meaningMn ? 'mn' : 'en');
+// 대사 뜻 · 상황 글은 학습자 언어로 — 몽골 학습자는 화면을 한국어로 바꿔도 뜻은 몽골어다(몽골어 판이 없으면 영어).
+const meaningOf = (item) => (S.home === 'mn' && item?.meaningMn) || item?.meaning || '';
+const meaningLang = (item) => (S.home === 'mn' && item?.meaningMn ? 'mn' : 'en');
 const tx = (key, ...a) => { const v = t()[key]; return typeof v === 'function' ? v(...a) : v; };
 
 /* ───────── DOM 도우미(동적 글은 늘 텍스트 노드로) ───────── */
@@ -282,13 +283,13 @@ function startHeldLoop() {
 const listenOf = (item, ctx) => (ctx.phase === 'scene' && !line(item.id).misses && item.listenFirst) || item.listen || null;
 const subsShowing = (ko) => !!ko && ui.subs.querySelector('.ko')?.textContent === ko;
 // 자막: 말하는 사람(고정폭 영문) · 대사 · 뜻. motion 'words'는 낱말마다 110ms로 흐림에서 떠오르고, 'pop'은 0.6배에서 톡 튀어 들어온다(되묻기).
-function subs(ko, meaning, who, motion = null) {
+function subs(ko, meaning, who, motion = null, meanLang = 'en') {
  if (!ko) { ui.subs.replaceChildren(); return; }
  syncDock();
  const words = ko.split(' ').map((w) => h('span', { class: 'w' }, w));
  const line = h('p', { class: 'ko', lang: 'ko' }, words.flatMap((w, i) => (i ? [' ', w] : [w])));
  const whoEl = who ? h('span', { class: 'who' }, who) : null;
- const meanEl = meaning ? h('p', { class: 'mean', lang: S.lang === 'mn' ? 'mn' : 'en' }, meaning) : null;
+ const meanEl = meaning ? h('p', { class: 'mean', lang: meanLang }, meaning) : null;
  ui.subs.replaceChildren(...[whoEl, line, meanEl].filter(Boolean));
  if (!motion) return;
  anim(whoEl, [{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 350 });
@@ -301,13 +302,16 @@ function pushStill() { anim(ui.still, [{ transform: 'scale(1.1)' }, { transform:
 // 표지(회차 · 장면 끝): 작은 고정폭 영문 · 큰 제목(글자마다 70ms 흐림 → 또렷) · 빛 줄 · 작은 글. ms 뒤 사라진다(0이면 남긴다).
 function hideSlate() { clearTimeout(slate.t); ui.slate.hidden = true; }
 function slate(title, { k = '', sub = '', ms = 1400 } = {}) {
- const t = h('span', { class: 't' }, [...title].map((c) => h('span', {}, c === ' ' ? ' ' : c)));
+ // 글자마다 움직이되 줄은 낱말 사이에서만 바뀐다(몽골어 제목처럼 긴 낱말이 390폭에서 가운데로 끊기지 않게).
+ const t = h('span', { class: 't' }, title.split(' ').flatMap((w, i) => [i ? ' ' : null, h('span', { class: 'w' }, [...w].map((c) => h('span', {}, c)))]));
  const bar = h('span', { class: 'bar' });
  ui.slate.replaceChildren(...[k ? h('span', { class: 'k' }, k) : null, t, bar, sub ? h('span', { class: 's' }, sub) : null].filter(Boolean));
  syncDock();
  ui.slate.hidden = false;
  anim(ui.slate, [{ opacity: 0 }, { opacity: 1 }], { duration: 200 });
- [...t.children].forEach((c, i) => anim(c, [{ opacity: 0, filter: 'blur(10px)', transform: 'translateY(14px)' }, { opacity: 1, filter: 'blur(0)', transform: 'none' }], { duration: 650, delay: 120 + i * 70 }));
+ // 글자 사이는 70ms, 긴 제목은 전체가 560ms 안에 — 표지가 사라지기 전에 제목이 다 보이게.
+ const chars = [...t.querySelectorAll('.w > span')], step = Math.min(70, 560 / chars.length);
+ chars.forEach((c, i) => anim(c, [{ opacity: 0, filter: 'blur(10px)', transform: 'translateY(14px)' }, { opacity: 1, filter: 'blur(0)', transform: 'none' }], { duration: 650, delay: 120 + i * step }));
  anim(bar, [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: 900, delay: 400 });
  clearTimeout(slate.t);
  if (ms) slate.t = setTimeout(() => { const a = anim(ui.slate, [{ opacity: 1 }, { opacity: 0 }], { duration: 450 }); if (a) a.onfinish = () => { ui.slate.hidden = true; }; else ui.slate.hidden = true; }, ms);
@@ -734,9 +738,10 @@ async function checkCards(s) {
   const off = analysisCapable() ? undefined : W.statusFailed ? null : false;
   const due = !wantC ? false : off !== undefined ? off : S.trail.delayedDue({ lineId: C.id, skillId: C.skill });
   const held = !wantB || due === true ? false : off !== undefined ? off : heldTransfer(B);
-  // 바뀌면 어느 쪽이든 다시 그린다 — 카드가 있었는데 한도 · 꺼짐 · 창 만료로 차례가 아니게 됐으면 카드를 거둔다(화면 검수 A3).
+  // 보이는 카드가 바뀌면 어느 쪽이든 다시 그린다 — 카드가 있었는데 한도 · 꺼짐 · 창 만료로 차례가 아니게 됐으면 카드를 거둔다(화면 검수 A3).
+  // 모름 → 없음처럼 화면이 그대로면 다시 그리지 않는다(다시 그리면 그사이 칩으로 연 받아쓰기 창이 닫힌다).
   if (due !== null && held !== null) {
-   const changed = (wantC && due !== S.delayedDue) || (wantB && held !== S.pendingB);
+   const changed = (wantC && (due === true) !== (S.delayedDue === true)) || (wantB && (held === true) !== (S.pendingB === true));
    if (wantC) S.delayedDue = due;
    if (wantB) S.pendingB = held;
    if (changed && live(s)) intro();
@@ -772,7 +777,7 @@ async function runScene(i) {
 async function actorBeat(item, s, { from } = {}) {
  S.cardKey = null; panel();
  orbMode('idle', 'Listen');
- subs(item.text, meaningOf(item), 'Taeo', 'words');
+ subs(item.text, meaningOf(item), 'Taeo', 'words', meaningLang(item));
  let ok;
  if (item.video) { stageMode('reply'); ok = await playVideo(item.video, from ?? item.videoStart ?? 0, item.videoEnd, s); }
  else { stageMode('still'); pushStill(); ok = await playUrl(item.audio, s); }
@@ -1162,6 +1167,9 @@ async function runTransfer(kind = 'transfer', { rerender = false } = {}) {
   T.heldChecked = true;
   await recheckWorldStatus();
   if (!live(s)) return;
+  // 부팅 때부터 꺼져 있던 세션은 동의를 물은 적이 없다 — 받아쓰기가 돌아왔으면 여기서 묻는다(이미 답했으면 바로 돌아온다).
+  await ensureConsent(s);
+  if (!live(s)) return;
  }
  for (;;) {
   const v = await transferPanel(s, tr, T);
@@ -1256,7 +1264,7 @@ function transferPanel(s, tr, T) {
    ...lines);
  }
  const promptKo = S.lang === 'ko' && tr.promptKo ? tr.promptKo : null;
- const promptMn = S.lang === 'mn' && tr.promptMn ? tr.promptMn : null;
+ const promptMn = S.home === 'mn' && tr.promptMn ? tr.promptMn : null;
  const p = choose(s, (go) => {
   if (micUnusable()) hideMic();
   else orbMode('listening', obs?.kind === 'pass' && T.selfCheck !== 'differs' ? 'One more' : T.tries ? 'Say it again' : 'Tap to speak', { action: () => go('record'), aria: T.tries ? tx('tryAgain') : tx('record') });

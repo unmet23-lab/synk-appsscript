@@ -47,3 +47,11 @@ test('화면 언어: 주소 ?lang= → WORLD에서 고른 언어(같은 키) →
   assert.match(pilot, /promptMn \|\| tr\.prompt/);
   assert.doesNotMatch(pilot, /item\.meaning \?/, '뜻은 meaningOf로만');
 });
+
+test('표지 제목은 낱말 사이에서만 줄이 바뀌고(긴 몽골어 제목), 카드 확인은 보이는 카드가 바뀔 때만 첫 화면을 다시 그린다(칩으로 연 창이 닫히지 않게)', () => {
+  assert.match(pilot, /title\.split\(' '\)\.flatMap/);
+  assert.match(pilot, /querySelectorAll\('\.w > span'\)/);
+  assert.match(fs.readFileSync(path.join(REPO, 'experiences/drama/pilot/pilot.css'), 'utf8'), /\.slate \.t \.w \{ white-space: nowrap; \}/);
+  assert.match(pilot, /\(due === true\) !== \(S\.delayedDue === true\)/);
+  assert.match(pilot, /\(held === true\) !== \(S\.pendingB === true\)/);
+});

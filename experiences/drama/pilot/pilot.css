@@ -18,6 +18,8 @@
  --spring: cubic-bezier(.23,1,.32,1); --snap: cubic-bezier(.25,1,.5,1);
  --sans: 'Pilot Inter', 'Pilot SUIT', system-ui, -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
  --mono: 'Pilot Mono', ui-monospace, monospace;
+ /* 묶인 글꼴에 키릴이 없다 — 몽골어는 기기 글꼴 하나로(숫자 · 따옴표만 다른 글꼴로 섞이지 않게), 한글은 SUIT 그대로 */
+ --mn-sans: system-ui, -apple-system, Roboto, 'Segoe UI', 'Pilot SUIT', sans-serif;
  --backdrop: none;
  color-scheme: dark;
 }
@@ -74,6 +76,12 @@ body.is-recording .stage::before { content: ''; position: absolute; inset: 0; z-
 .slate .k { font: 500 11px/1 var(--mono); letter-spacing: .32em; color: var(--dim); text-transform: uppercase; }
 .slate .t { font-weight: 820; font-size: 44px; letter-spacing: -.05em; line-height: 1.05; text-shadow: 0 4px 30px rgba(0,0,0,.6); }
 .slate .t span { display: inline-block; }
+.slate .t { padding: 0 16px; }
+.slate .t .w { white-space: nowrap; }
+html[lang="mn"] { --sans: var(--mn-sans); }
+html[lang="mn"] .slate .t { font-weight: 700; letter-spacing: -.03em; } /* 큰 굵기에서 Ө · ө의 속이 막힌다 */
+html [lang="mn"] { font-family: var(--mn-sans); }
+html[lang="mn"] [lang="ko"] { font-family: 'Pilot SUIT', system-ui, -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; }
 .slate .bar { width: 120px; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transform-origin: center; }
 .slate .s { font-size: 14px; color: var(--dim); }
 
