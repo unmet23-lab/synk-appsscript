@@ -9,10 +9,9 @@ const gameList=[
 ];
 const beginnerShops=[
  ['magic','말의 마법사','Word Magic','새 소품에 배운 말을 써 보고 사진으로 남겨요.','Try familiar words on new toys, then take a photo.','/word-magic/?shop=1','word-magic',['magic-scene','magic-frame','magic-toys']],
- ['order','첫 가게','Your First Shop','세 친구의 주문을 듣고 소풍을 완성해요.','Listen, serve three friends, and enjoy a picnic.','/order-rush/beginner.html?shop=1','order-rush',['order-stall','order-tray','order-playset']],
- ['ship','둘이서 우주선 고치기','Fix the Spaceship','함께 끝낸 탐험이 우리의 별지도가 돼요.','Turn your completed expeditions into a starbook.','/spaceship-coop/?shop=1','spaceship-coop',['ship-sky','ship-badge','ship-keepsake']]
+ ['order','첫 가게','Your First Shop','세 친구의 주문을 듣고 소풍을 완성해요.','Listen, serve three friends, and enjoy a picnic.','/order-rush/beginner.html?shop=1','order-rush',['order-stall','order-tray','order-playset']]
 ];
-const shopArt={magic:['/word-magic/assets/objects/rabbit.webp','/word-magic/assets/objects/camera.webp'],order:['/spaceship-coop/assets/brand/mongle-smile.webp','/order-rush/assets/beginner/bread.webp'],ship:['/spaceship-coop/assets/art/felt-rocket-v2.webp','/spaceship-coop/assets/felt/sparkle.webp']};
+const shopArt={magic:['/word-magic/assets/objects/rabbit.webp','/word-magic/assets/objects/camera.webp'],order:['/learning-hub/assets/mongle-smile.webp','/order-rush/assets/beginner/bread.webp']};
 for(const [id,name,en,copy,copyEn,href] of beginnerShops){const card=document.createElement('article');card.className='beginner-shop-card';card.dataset.beginnerShop=id;card.innerHTML=`<span class="beginner-card-art art-${id}" aria-hidden="true"><img src="${shopArt[id][0]}" alt="" width="140" height="186"><img class="art-companion" src="${shopArt[id][1]}" alt="" width="80" height="80"></span><h3>${name}<span lang="en">${en}</span></h3><p>${copy}<br><span lang="en">${copyEn}</span></p><div class="shop-play-owned" hidden><span class="owned-play-label">내가 모은 놀이 · <span lang="en">Yours to play</span></span><a class="shop-use"><img alt="" width="52" height="52"><span><b></b><span lang="en"></span></span></a></div><span class="shop-goal" role="status"></span><span class="shop-owned"></span><a class="shop-visit" href="${href}"><strong>상점에서 골라 보기 · <span lang="en">Visit shop</span> →</strong></a>`;document.getElementById('beginner-shop-cards').append(card);}
 function updateOwnedPlay(card,id,state){
  const owned=state.items.filter(item=>item.owned&&item.price>0),host=card.querySelector('.shop-play-owned'),link=host.querySelector('a');
@@ -24,8 +23,6 @@ function updateOwnedPlay(card,id,state){
   const picnic=item.id==='magic-toys-picnic';ko=picnic?'내 소풍 실험실 열기':'내 마법 실험실 열기';en=picnic?'Play with my picnic toys':'Open my magic playground';image=picnic?'/word-magic/assets/objects/bear.webp':shopArt.magic[1];
  }else if(id==='order'){
   item=owned.find(i=>i.id==='order-playset-picnic');href=item?'/order-rush/beginner.html?play=picnic':'/order-rush/beginner.html';ko=item?'친구들과 소풍하기':'내 가게에서 놀기';en=item?'Play my picnic':'Play in my shop';image=item?'/order-rush/assets/picnic/rolled-mat.webp':shopArt.order[1];
- }else{
-  item=owned.find(i=>i.id==='ship-keepsake-starbook');href=item?'/spaceship-coop/?collection=starbook':'/spaceship-coop/';ko=item?'내 탐험 별지도 열기':'내 우주선으로 탐험하기';en=item?'Open my expedition starbook':'Explore with my ship';image=item?shopArt.ship[1]:shopArt.ship[0];
  }
  link.href=href;link.dataset.ownedPlay=item?.id||id;link.querySelector('b').textContent=ko;link.querySelector('[lang=en]').textContent=en;link.querySelector('img').src=image;
 }

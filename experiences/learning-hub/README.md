@@ -14,7 +14,7 @@ node experiences/learning-hub/server.mjs
 
 ## 입문 게임과 개별 상점 · 2026-10-08
 
-`/learning-hub/#beginner-title`에서 말의 마법사·주문 폭주 입문·둘이서 우주선 고치기를 연다. `/learning-hub/collection.html#beginner-shops-title`에는 세 상점 입구와 구입한 꾸미기 수를 표시한다. 각 상점6상품은 실제 장면에 적용되고 기존 차고와 같은 origin의 코인·보유품을 공유한다. 학습 내용은 구입 없이 이용한다. 현재4340포트에서 확인했으며, [입문 게임 원문과 검증](../beginner-games/README.md)에 구현 범위와 결과를 둔다.
+`/learning-hub/#beginner-title`에서 말의 마법사·주문 폭주 입문을 연다(둘이서 우주선 고치기는 2026-11-04 공개 내림 — 카드 · 상점 줄을 뺐다). `/learning-hub/collection.html#beginner-shops-title`에는 두 상점 입구와 구입한 꾸미기 수를 표시한다. 각 상점6상품은 실제 장면에 적용되고 기존 차고와 같은 origin의 코인·보유품을 공유한다. 학습 내용은 구입 없이 이용한다. 현재4340포트에서 확인했으며, [입문 게임 원문과 검증](../beginner-games/README.md)에 구현 범위와 결과를 둔다.
 
 ## 실제 흐름
 

@@ -120,3 +120,11 @@ test('unseen confirmation-only guests do not keep a spent free entry shift ahead
   assert.equal(spent.selected.id, 'reading-blank-slice', 'all ordinary first tries were presented, so offer fresh practice');
   assert.ok(spent.alternatives.some(e => e.id === 'reading-entry-check'), 'the spent free shift remains selectable');
 });
+
+// 2026-11-04: Fix the Spaceship was taken down. The hub and its shop page no longer lead to it or borrow its pictures.
+test('the hub does not lead to the taken-down spaceship game or use its pictures', () => {
+  for (const name of ['index.html', 'collection.html', 'collection-page.js', 'beginner-cards.css']) {
+    assert.doesNotMatch(fs.readFileSync(new URL(name, here), 'utf8'), /spaceship|우주선|별지도|art-ship/i, name);
+  }
+  assert.ok(fs.existsSync(new URL('assets/mongle-smile.webp', here)), 'the order card keeps its own picture');
+});
