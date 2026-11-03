@@ -9,6 +9,17 @@ function request(endpoint, body) {
   const response = cp.execFileSync('gh', args, { input: body ? JSON.stringify(body) : undefined, encoding: 'utf8', windowsHide: true, timeout: 60_000, maxBuffer: 16 << 20 });
   return response.trim() ? JSON.parse(response) : null;
 }
+function graphql(query, variables = {}) {
+  const args = ['api', 'graphql', '-f', `query=${query}`];
+  for (const [name, value] of Object.entries(variables)) args.push('-f', `${name}=${value}`);
+  try { return JSON.parse(cp.execFileSync('gh', args, { encoding: 'utf8', windowsHide: true, timeout: 60_000, maxBuffer: 64 << 20, stdio: ['ignore', 'pipe', 'pipe'] })); }
+  catch (error) {
+    // A commit older than the requested file makes gh exit non-zero while the page itself is complete.
+    let partial = null; try { partial = JSON.parse(error.stdout); } catch {}
+    if (partial?.data && partial.errors?.every(row => /Could not resolve file/.test(row.message))) return partial;
+    throw Error(`GitHub query failed: ${String(error.stderr || error.message).slice(0, 300)}`);
+  }
+}
 function status(commit, api = request) {
   validCommit(commit);
   const response = api(`repos/${REPO}/commits/${commit}/status?per_page=100`);
@@ -37,4 +48,4 @@ function resumeWaitingWorkflow(commit, api = request, list = listRuns) {
   }
   return settled;
 }
-module.exports = { REPO, validCommit, request, status, description, accepted, publish, cancelRun, resumeWaitingWorkflow };
+module.exports = { REPO, validCommit, request, graphql, status, description, accepted, publish, cancelRun, resumeWaitingWorkflow };

@@ -378,3 +378,62 @@ test('resumeWaitingWorkflow re-runs a run whose only unfinished job is local-cov
   cancelRun('99', (endpoint, body) => { cancelled.push([endpoint, body]); return null; });
   assert.deepEqual(cancelled, [['repos/unmet23-lab/synk-appsscript/actions/runs/99/cancel', {}]]);
 });
+const localStatus = require('../tools/conditional-qa/local-status.cjs');
+const statusRow = (id, state, description, createdAt = '2026-11-04T00:00:00Z', committedAt = '2026-11-03T23:00:00Z') => ({ commit: id.repeat(40), committedAt, manifest: { count: 79, digest: manifest.digest }, status: state ? { state, description, createdAt } : null });
+const statusPass = github.description(79, manifest.digest), statusNow = Date.parse('2026-11-04T00:30:00Z');
+test('a commit passes only with the exact PASS of its own manifest; pending, absent and offline never pass', () => {
+  const result = localStatus.judge([statusRow('a', 'success', statusPass), statusRow('b', 'pending', 'Running the registered local conditional tests'), statusRow('c', 'pending', 'WAIT 79 local tests manifest=x'), statusRow('d', null)], { now: statusNow });
+  assert.deepEqual([result.ok, result.passed, result.waiting, result.oldest], [true, 1, 3, 'd'.repeat(40)]);
+  const wrong = localStatus.judge([statusRow('a', 'success', github.description(78, manifest.digest))], { now: statusNow });
+  assert.equal(wrong.ok, false); assert.equal(wrong.passed, 0); assert.equal(wrong.invalid, 1);
+  assert.match(localStatus.report(result), /stay pending/); assert.doesNotMatch(localStatus.report(result), /not ok/);
+});
+test('a stopped worker and an overdue backlog turn red; a queue that is still moving does not', () => {
+  const waiting = statusRow('b', null), last = statusRow('a', 'success', statusPass);
+  const after = ms => Date.parse(last.status.createdAt) + ms;
+  assert.equal(localStatus.judge([waiting, last], { now: after(localStatus.STALL_MS - 1) }).ok, true);
+  assert.match(localStatus.judge([waiting, last], { now: after(localStatus.STALL_MS + 1) }).problems.join(), /no new result/);
+  // local-coverage's own WAIT mark is not worker activity: a PC that never answered cannot look alive.
+  assert.match(localStatus.judge([statusRow('b', 'pending', 'WAIT 79 local tests manifest=x', '2026-11-04T00:29:00Z')], { now: statusNow }).problems.join(), /no new result/);
+  assert.equal(localStatus.judge([last], { now: after(localStatus.STALL_MS * 10) }).ok, true, 'nothing waiting is not a stall');
+  const old = statusRow('b', null, undefined, undefined, new Date(statusNow - localStatus.OVERDUE_MS - 1).toISOString());
+  assert.match(localStatus.judge([statusRow('a', 'success', statusPass, '2026-11-04T00:29:00Z'), old], { now: statusNow }).problems.join(), /older than the limit/);
+  assert.match(localStatus.judge([last], { now: statusNow, reachedFirst: false }).problems.join(), /window ended/);
+});
+test('each new failure is named for the alert, and an old one stays listed without burying the next', () => {
+  const failed = statusRow('a', 'failure', 'Local verification incomplete');
+  const fresh = localStatus.judge([failed], { now: statusNow });
+  assert.equal(fresh.ok, false);
+  const { 실패읽기 } = require('../tools/ci빨간불.js');
+  const log = localStatus.report(fresh).split('\n').map(line => `status\tread\t2026-11-04T00:00:00.0000000Z ${line}`).join('\n');
+  assert.deepEqual(실패읽기(log).시험.map(row => row.이름), [`local verification failed at ${failed.commit}`]);
+  const older = localStatus.judge([failed], { now: Date.parse(failed.status.createdAt) + localStatus.FAILURE_RED_MS + 1 });
+  assert.equal(older.ok, true); assert.deepEqual(older.failed, [failed.commit]); assert.match(localStatus.report(older), /kept until a retry passes/);
+});
+test('the status read walks first parents down to the activation commit and binds each manifest', () => {
+  const [head, side, parent, first, below] = ['1', '2', '3', '4', '5'].map(x => x.repeat(40));
+  const node = (oid, parents) => ({ oid, committedDate: '2026-11-04T00:00:00Z', parents: { nodes: parents.map(row => ({ oid: row })) }, file: { oid: 'blob' }, status: null });
+  const pages = [{ pageInfo: { hasNextPage: true, endCursor: 'next' }, nodes: [node(head, [parent, side]), node(side, [first])] }, { pageInfo: { hasNextPage: true, endCursor: 'more' }, nodes: [node(parent, [first]), node(first, [below]), node(below, [])] }];
+  const asked = [], query = (text, variables) => { asked.push(variables.after); return { data: { repository: { object: { history: pages.shift() } } } }; };
+  const { line, reachedFirst } = localStatus.fetchHistory({ query, first });
+  assert.deepEqual(line.map(row => row.oid), [head, parent, first]); assert.equal(reachedFirst, true); assert.deepEqual(asked, [undefined, 'next'], 'stops at the activation commit');
+  const bytes = fs.readFileSync(path.join(root, 'tools/conditional-qa/cases.json')), cache = new Map(); let reads = 0;
+  const api = () => { reads++; return { content: bytes.toString('base64') }; };
+  for (let n = 0; n < 2; n++) assert.deepEqual(localStatus.manifestAt('blob', { api, cache }), { count: selected.length, digest: manifest.digest });
+  assert.equal(reads, 1);
+});
+test('a passing GitHub read error is retried, and a lasting one is an error rather than a green check', () => {
+  const node = { oid: localStatus.FIRST_COMMIT, committedDate: '2026-11-04T00:00:00Z', parents: { nodes: [] }, file: null, status: null };
+  const page = { data: { repository: { object: { history: { pageInfo: { hasNextPage: false, endCursor: null }, nodes: [node] } } } } };
+  let calls = 0; const waits = [];
+  const once = () => { if (++calls === 1) throw Error('HTTP 502'); return page; };
+  assert.equal(localStatus.fetchHistory({ query: once, pause: ms => waits.push(ms) }).reachedFirst, true); assert.equal(waits.length, 1);
+  assert.throws(() => localStatus.fetchHistory({ query: () => { throw Error('HTTP 502'); }, pause: () => {} }), /502/);
+});
+test('no conditional job polls the PC; the status check is read-only', () => {
+  const yml = name => fs.readFileSync(path.join(root, '.github/workflows', name), 'utf8').replace(/\r\n/g, '\n');
+  const push = yml('conditional-qa.yml'), status = yml('conditional-qa-local.yml');
+  assert.match(push, /local-coverage:\n\s+needs: hosted/); assert.doesNotMatch(push, /timeout-minutes: 160/);
+  assert.doesNotMatch(push, /cancel-in-progress: true|paths(-ignore)?:/, 'no commit is cancelled or filtered out of hosted verification');
+  assert.match(status, /schedule:/); assert.match(status, /timeout-minutes: 10/); assert.doesNotMatch(status, /: write/);
+});
