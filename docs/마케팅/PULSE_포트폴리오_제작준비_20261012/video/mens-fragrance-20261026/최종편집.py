@@ -106,10 +106,10 @@ def song():
 
 
 def phrases(x):
-    # 말 덩어리 셋을 찾는다 — 0.25초 넘는 빈틈으로 가른다
+    # 말 덩어리 셋을 찾는다 — 0.25초 넘는 빈틈으로 가른다. −40 dB로 재면 MonoGPT 판(11-03)의 마디 사이 숨소리(−35~−44)가 둘째 마디에 붙어 3.4초가 됐다 → −32
     n = 480
     e = np.array([np.sqrt(np.mean(x[i:i + n] ** 2) + 1e-12) for i in range(0, len(x) - n, n)])
-    on = 20 * np.log10(e) > -40
+    on = 20 * np.log10(e) > -32
     segs, i = [], 0
     while i < len(on):
         if on[i]:
@@ -138,8 +138,9 @@ def sound():
         segs = phrases(x)
         print("내레이션 덩어리", [(round(a / C.RATE, 2), round(b / C.RATE, 2)) for a, b in segs])
         if len(segs) == 3:
+            pre, post = int(0.06 * C.RATE), int(0.12 * C.RATE)   # −32 dB 문턱이 자르는 첫 닿소리 · 끝 숨을 살린다
             for (a, b), t in zip(segs, NARR_AT):
-                m.put(t, x[a:b], 0)
+                m.put(t - 0.06, x[max(0, a - pre):b + post], 0, fade=0.01)
         else:   # 셋으로 안 갈리면 첫 자리에서 통째로
             m.put(NARR_AT[0], x[segs[0][0]:segs[-1][1]], 0)
     # 효과음 — 얼음 · 물 · 칙 · 어는 소리(콘티 3절)

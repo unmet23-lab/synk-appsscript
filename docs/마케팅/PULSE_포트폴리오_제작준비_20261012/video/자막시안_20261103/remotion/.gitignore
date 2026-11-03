@@ -1,0 +1,10 @@
+node_modules
+dist
+.DS_Store
+.env
+
+# Ignore the output video from Git but not videos you import into src/.
+out
+
+# 화면 · 소리 · 마스크는 git 밖(synk-vendor/…/최종/자막시안_public)으로 이어 둔 연결이라 올리지 않는다
+public
