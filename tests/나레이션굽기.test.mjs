@@ -273,6 +273,19 @@ test('가짜 Typecast로: 미리보기는 부르지 않고, --굽기는 없는 �
   } finally { m.server.close(); }
 });
 
+test('앞 무음 lead 0으로 이어 붙여도 끝나고, 결과는 줄 길이만큼이다(11-02 %TEMP% 54GB 재발 막기)', { skip: !hasFfmpeg && 'ffmpeg 없음', timeout: 120000 }, async () => {
+  const m = await mockTypecast();
+  try {
+    const w = workspace({ ...PLAN, take: { ...PLAN.take, lead: 0, mp3: undefined } });
+    const r = await tool([w.planFile, '--굽기', '--키파일', w.key], { SYNK_TYPECAST_API: m.origin, SYNK_TYPECAST_CACHE: w.cache });
+    assert.equal(r.code, 0, r.out);
+    const take = JSON.parse(fs.readFileSync(path.join(w.dir, 'take', 'take.json'), 'utf8'));
+    assert.ok(take.segs.a01.start < 0.06, '앞 무음 없이 바로 말한다');
+    assert.ok(take.seconds < take.segs.a03.end + 1, `길이가 줄 끝을 넘지 않는다(${take.seconds}초)`);
+    assert.ok(fs.statSync(path.join(w.dir, 'take', 'take.wav')).size < 48000 * 2 * 30, '이어 붙인 판이 30초 분량보다 작다');
+  } finally { m.server.close(); }
+});
+
 test('가짜 API에서는 실제 키 파일을 읽지 않고, 401·상한 초과·캐시에 없는 다듬기는 멈추거나 알린다', { skip: !hasFfmpeg && 'ffmpeg 없음', timeout: 120000 }, async () => {
   const m = await mockTypecast();
   try {

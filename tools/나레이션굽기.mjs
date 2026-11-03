@@ -264,7 +264,9 @@ const probeSeconds = async (file) => Number((await run(FFPROBE, ['-v', 'error', 
 async function ffmpegTo(out, args) {
   fs.mkdirSync(path.dirname(out), { recursive: true });
   const part = out + '.part';
-  await run(FFMPEG, ['-y', '-hide_banner', '-loglevel', 'error', '-nostdin', ...args, '-f', path.extname(out).slice(1) === 'mp3' ? 'mp3' : 'wav', part], { windowsHide: true, maxBuffer: 1 << 26 });
+  try {
+    await run(FFMPEG, ['-y', '-hide_banner', '-loglevel', 'error', '-nostdin', ...args, '-f', path.extname(out).slice(1) === 'mp3' ? 'mp3' : 'wav', part], { windowsHide: true, maxBuffer: 1 << 26 });
+  } catch (error) { fs.rmSync(part, { force: true }); throw error; }
   fs.renameSync(part, out);
 }
 async function measureLufs(file) {
@@ -356,14 +358,15 @@ async function buildTake(plan, result, say) {
   const ids = t.lines || plan.versions[0].lines.filter((l) => !l.variant).map((l) => l.id);
   const lines = ids.map((id) => result.made.find((x) => x.id === id));
   if (lines.some((x) => !x)) { say(`이어 붙이기 건너뜀: 없는 줄 ${ids.filter((id, i) => !lines[i]).join(',')}`); return null; }
-  const breaks = new Set(t.breaks), args = ['-f', 'lavfi', '-t', String(t.lead), '-i', 'anullsrc=r=48000:cl=mono'];
-  let graph = '', labels = '[0:a]', pos = t.lead;
+  // 앞 무음은 lead가 있을 때만 넣는다 — anullsrc에 -t 0을 주면 길이 제한이 풀려 끝없이 써서 11-02에 %TEMP%에 54GB를 남겼다.
+  const breaks = new Set(t.breaks), base = t.lead > 0 ? 1 : 0, args = base ? ['-f', 'lavfi', '-t', String(t.lead), '-i', 'anullsrc=r=48000:cl=mono'] : [];
+  let graph = '', labels = base ? '[0:a]' : '', pos = Math.max(0, t.lead);
   const segs = {};
   lines.forEach((x, i) => {
     const file = path.join(plan.versions[0].out, x.id + '.wav');
     args.push('-i', file);
     const pad = lines[i + 1] ? (breaks.has(lines[i + 1].id) ? t.breakGap : t.gap) : t.tail;
-    graph += `[${i + 1}:a]apad=pad_dur=${pad}[a${i}];`; labels += `[a${i}]`;
+    graph += `[${i + base}:a]apad=pad_dur=${pad}[a${i}];`; labels += `[a${i}]`;
     const words = JSON.parse(fs.readFileSync(path.join(plan.versions[0].out, x.id + '.json'), 'utf8')).words || [];
     const on = words.length ? words[0].start : onsetSeconds(readWavMono16(file));
     segs[x.id] = { start: +(pos + on).toFixed(3), end: +(pos + (words.length ? words.at(-1).end : x.dur)).toFixed(3), tokens: words.map((w) => +(pos + w.start).toFixed(3)) };
@@ -371,7 +374,7 @@ async function buildTake(plan, result, say) {
   });
   const joined = path.join(os.tmpdir(), `synk-take-${process.pid}-${Date.now()}.wav`);
   try {
-    await ffmpegTo(joined, [...args, '-filter_complex', `${graph}${labels}concat=n=${lines.length + 1}:v=0:a=1[out]`, '-map', '[out]', '-ar', '48000', '-ac', '1', '-c:a', 'pcm_s16le']);
+    await ffmpegTo(joined, [...args, '-filter_complex', `${graph}${labels}concat=n=${lines.length + base}:v=0:a=1[out]`, '-map', '[out]', '-t', String(+(pos + 1).toFixed(3)), '-ar', '48000', '-ac', '1', '-c:a', 'pcm_s16le']);
     const before = await measureLufs(joined), gain = +(t.lufs - before.I).toFixed(2), af = `volume=${gain}dB,alimiter=limit=${t.limiter}:level=false`;
     const out = {};
     if (t.wav) { out.wav = path.resolve(plan.dir, t.wav); await ffmpegTo(out.wav, ['-i', joined, '-af', af, '-ar', '48000', '-ac', '1', '-c:a', 'pcm_s16le']); }
