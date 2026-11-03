@@ -30,6 +30,15 @@ export const 대역 = [
     셀카: 'PHOTOREAL SMARTPHONE SELFIE, vertical 3:4, the kind of everyday selfie someone would upload to an app. A Mongolian woman of about 52; an original person with an ordinary everyday face, not model-like: a round face with broad cheekbones and rosy, weathered cheeks, monolid dark eyes with crow\'s feet and slight hooding, thin brows, a low nose bridge, deeper smile lines, a few age spots. Chin-length black hair with grey strands at the temples, simply combed. Dark-red knit sweater. Taken at arm\'s length with the front camera at home in the kitchen in the evening under a warm ceiling lamp. A warm, shy smile. No makeup; no beauty filter.' },
 ];
 
+/**
+ * 「아직 나이 들어 보여요」(일괄 처리 설계 2절 8단계) — 원본은 기준 묶음 뒤 지우므로, 강+는 원본이 아니라 학생이 고른 기준 사진을 편집해 굽는다.
+ * `_나이_더` 단락을 「Image 1(이미 만든 기준)이 아직 20대 중반 넘게 보인다」로 바꿔 넣고, 나머지는 옷장 편집처럼 「한 가지만 바꾸기」다.
+ */
+export const 강플편집 = () => `PHOTO EDIT of Image 1, vertical 3:4 — the same real smartphone photo, re-taken with ONE change: the student now looks about 19 to 20 years old.
+${읽기('_나이_더').replace('(they read as 30 or older in Image 1)', '(in Image 1 they still read as their mid-twenties or older)')}
+KEEP EXACTLY: the same person — eye shape and eyelids, brows, nose, lips, ears and skin tone; the same smile, head angle, pose, camera distance and framing; the same clothes, the same empty university cafeteria, window light and colours. Everything that is not the age stays as in Image 1.
+Keep a fine natural skin texture so it never looks airbrushed, waxy or plastic. No text, letters, logos or brand marks on anything. Hands have five fingers.`;
+
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   fs.mkdirSync(밖, { recursive: true });
   for (const d of 대역) {
@@ -40,5 +49,6 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
       fs.writeFileSync(path.join(밖, `base-${d.id}-${lv}.txt`), `${글}\n`);
     }
   }
-  console.log(`[나이] ${대역.length}명 × (셀카 + 약 · 강) → ${밖}`);
+  fs.writeFileSync(path.join(밖, 'edit-강플.txt'), `${강플편집()}\n`);
+  console.log(`[나이] ${대역.length}명 × (셀카 + 약 · 강 · 강+) + 기준에서 강+ 편집 → ${밖}`);
 }
