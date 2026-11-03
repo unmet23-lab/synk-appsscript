@@ -86,6 +86,10 @@ function copyFile(source,relative,{transform=true}={}){
  let content=bytes.toString('utf8');
  if(relative==='hangul-stage/index.html')content=content.replace('id="games"','id="games" target="_top"').replace('id="grad-games"','id="grad-games" target="_top"');
  if(relative==='hangul-stage/app.mjs')content=content.replace(/const HUB = [^;]+;/,"const HUB = !hosted ? 'https://synk.im/account/client.html?product=world&play=learning-hub' : null;");
+ // 주문 폭주 초보판 입구(LAB 전용)는 WORLD 사본에서 뺀다 — 초보판 파일을 싣지 않으니 링크도 남기지 않는다.
+ if(relative==='order-rush/index.html'){const entry=/\r?\n[ \t]*<article class="paper beginner-entry">[\s\S]*?<\/article>/;if(!entry.test(content))throw Error('Order rush beginner entry shape changed');content=content.replace(entry,'');}
+ // 주문 폭주 3D 작업대는 WORLD 홈이 이미 받은 공용 three.js(scene-assets)를 쓴다 — 두 사본의 바이트가 같을 때만(아래 orderSharedThree).
+ if(relative==='order-rush/stage.mjs'&&orderSharedThree){const from="'./vendor/three.module.js'";if(content.split(from).length!==2)throw Error('Order rush three.js import changed');content=content.replace(from,"'../scene-assets/three.module.js'");}
  const rendered=transform&&/\.(?:mjs|js|cjs|html|css)$/.test(source)?Buffer.from(rewrite(content,relative)):bytes;
  const prepared=publicAsset(relative,rendered);if(prepared)write(prepared.relative,prepared.bytes,source);
 }
@@ -132,7 +136,7 @@ for(const name of ['azure-sky-v3.jpg','azure-sky-v3-mobile.jpg','terrain-normal.
 copyFile(path.join(home,'assets/felt-coral.webp'),'town/day-assets/felt-coral.webp');
 const opening=path.join(root,'experiences/brand-opening');
  for(const name of ['content/life-standalone.mjs','content/life-ui.css'])copyFile(path.join(opening,name),'brand-opening/'+name);
- for(const name of ['world-ui.css','world-sound.mjs','world-motion.mjs','world-motion.css','world-lang.mjs','world-strings.mjs','lang-picker.mjs','opening.mjs','opening.css','home.mjs','home.css','home-scene.mjs','home-scene.css','home-town.mjs','home-town.css','home-memory.mjs','tutor-onboarding.mjs','tutor-onboarding.css','tutor-profiles.mjs','tutor-choice.mjs','game-tutor.mjs','game-tutor.css','game-tutor-lines.mjs','game-tutor-contract.mjs','game-tutor-channel.mjs','tutor-practice.mjs','tutor-practice.css','tutor-practice-core.mjs','tutor-practice-lines.mjs','tutor-review.mjs','tutor-review.css','game-tutor-support.mjs','life-tutor.mjs','life-tutor.css','life-tutor-lines.mjs','home-tutor.mjs','home-tutor-lines.mjs','home-tutor-days.mjs','home-tutor-recap.mjs','first-run.mjs','kit/josa.mjs','tutor-photos.mjs','tutor-photos-data.mjs','story-signs.mjs'])copyFile(path.join(opening,name),'brand-opening/'+name);
+ for(const name of ['world-ui.css','world-sound.mjs','world-motion.mjs','world-motion.css','world-lang.mjs','world-strings.mjs','lang-picker.mjs','opening.mjs','opening.css','home.mjs','home.css','home-scene.mjs','home-scene.css','home-town.mjs','home-town.css','home-memory.mjs','tutor-onboarding.mjs','tutor-onboarding.css','tutor-profiles.mjs','tutor-choice.mjs','game-tutor.mjs','game-tutor.css','game-tutor-lines.mjs','game-tutor-contract.mjs','game-tutor-channel.mjs','tutor-practice.mjs','tutor-practice.css','tutor-practice-core.mjs','tutor-practice-lines.mjs','tutor-review.mjs','tutor-review.css','game-tutor-support.mjs','life-tutor.mjs','life-tutor.css','life-tutor-lines.mjs','home-tutor.mjs','home-tutor-lines.mjs','home-tutor-days.mjs','home-tutor-recap.mjs','first-run.mjs','kit/josa.mjs','tutor-photos.mjs','tutor-photos-data.mjs','story-signs.mjs','play-unlocks.mjs'])copyFile(path.join(opening,name),'brand-opening/'+name);
  copyTree(path.join(opening,'assets/tutors'),'brand-opening/assets/tutors',(_source,relative)=>/\.(?:webp|wav)$/.test(relative)||/\/(?:marin|mongle)-face-mask\.svg$/.test(relative));
  // 마스코트 사진: 자리마다 장면과 함께 구운 튜터·친구 사진(tutor-photos.mjs가 고른다)
  copyTree(path.join(opening,'assets/tutor-photos'),'brand-opening/assets/tutor-photos',(_source,relative)=>/\.webp$/.test(relative));
@@ -150,8 +154,11 @@ const opening=path.join(root,'experiences/brand-opening');
 // assets/tutor-photos는 위에서 폴더째 실었다(home.html 기본 계정 사진이 여기 다시 잡혀도 두 번 쓰지 않는다).
 for(const name of openingAssets)if(!name.startsWith('tutor-photos/'))copyFile(path.join(opening,'assets',name),'brand-opening/assets/'+name);
 for(const game of ['korean-runner','korean-rhythm','hangul-stage'])copyTree(path.join(root,'experiences',game),game,(source,relative)=>!relative.startsWith('hangul-stage/assets/voice/'));
-// 주문 폭주(11-03, 캠퍼스 판 겉 — 해금 표로 「놀이」에서 연다): 게임 폴더째 싣되, 쓰지 않는 펠트 카페 원본(cafe-original.png 2.3MB)은 뺀다.
-copyTree(path.join(root,'experiences','order-rush'),'order-rush',(source,relative)=>relative!=='order-rush/assets/cafe-original.png');
+// 주문 폭주(11-03, 캠퍼스 판 겉 — 해금 표로 「놀이」에서 연다): 게임 폴더째 싣되, 쓰지 않는 펠트 카페 원본(cafe-original.png 2.3MB)과
+// LAB 전용 초보판 「처음 여는 작은 가게」(beginner* · 그 그림 폴더 셋)는 뺀다 — WORLD는 그 입구를 지운다(app.mjs WORLD 분기 · 위 copyFile).
+// three.js가 홈의 scene-assets와 바이트까지 같으면 vendor/는 싣지 않고 stage.mjs가 그 공용 사본을 부른다(다르면 지금처럼 자기 사본).
+const orderSharedThree=['three.module.js','three.core.js'].every(name=>fs.readFileSync(path.join(root,'experiences/order-rush/vendor',name)).equals(fs.readFileSync(path.join(home,'scene-assets',name))));
+copyTree(path.join(root,'experiences','order-rush'),'order-rush',(source,relative)=>relative!=='order-rush/assets/cafe-original.png'&&!/^order-rush\/(?:beginner[^/]*|assets\/(?:beginner|picnic|progress)\/.*)$/.test(relative)&&!(orderSharedThree&&relative.startsWith('order-rush/vendor/')));
 // 드라마 말하기 1화(11-02, 설계 experiences/drama/qa/WORLD올리기-20261102/설계.md): 화면 · 강의(world-lesson.json) · 기록 묶음 · 재생 사본만 싣는다.
 // content.mjs(시범 서버 전용 · 판정 명세)와 README · qa는 싣지 않는다. 재생 사본(media/)은 git 밖(tools/build-drama-pilot-assets.mjs가 승인 원천에서
 // 만든다)이라 그 manifest.json의 sha256과 하나씩 대조해 없거나 다르면 멈춘다 — manifest 자체(원천 파일 이름)는 싣지 않는다.
