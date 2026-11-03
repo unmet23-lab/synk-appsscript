@@ -39,13 +39,23 @@ const 가지만한도 = 200;
  * 밖이라 「쓰는 중인 줄」로 보여 멈췄다(10-22 저녁 WORLD TOPIK 줄). 시험은 SYNK_이력판한도로 줄여 잰다.
  */
 const 이력판한도 = Number(process.env.SYNK_이력판한도) || 400;
+const 환경수 = (이름, 기본) => { const v = process.env[이름]; return v !== undefined && v !== '' && Number.isFinite(Number(v)) ? Number(v) : 기본; };
+/** 공용 작업본 따라가기: 이 초 안에 저장된 고치는 파일은 합치지 않고 다음 번으로 남긴다(세션이 쓰는 중일 수 있다). */
+const 저장중초 = () => 환경수('SYNK_따라가기_저장중초', 20);
+/** 공용 작업본 따라가기: 고치는 파일을 합쳐 보는 데 쓸 시간. 넘으면 나머지는 남긴다 — 남기는 것은 언제나 안전하고 다음 번에 잇는다. */
+const 계획한도초 = () => 환경수('SYNK_따라가기_계획한도초', 420);
+/** 이 줄 수를 넘는 글 파일은 공용 작업본에서 3방향으로 재지 않고 남긴다 — 생성 묶음의 줄 짝 맞추기가 수억 쌍까지 돌았다(10-28 WORLD 묶음 19,500 × 23,277줄). */
+const 합칠줄한도 = 8000;
+/** 다른 세션의 따라가기가 끊겼다고 보는 나이 */
+const 따라가기잠금한도ms = 30 * 60000;
+const 따라가기잠금참조 = 'refs/synk/따라가기잠금';
 const 좋은결과 = new Set(['미리 보기', '올림', '올릴 것 없음', '따라감', '이미 최신', '가볍게 함', '되살림']);
 /** 공용 작업본에 꼬리가 다시 생겼을 때(2026-10-20 정리 뒤 로컬 master에 커밋이 쌓임) 할 일 */
 const 꼬리안내 = '꼬리 커밋은 먼저 `node tools/내커밋.js 올리기 <커밋…> --실행`으로 origin에 올리고, docs/현장노트/git_줄끝_잠금.md 「공용 작업본 꼬리 정리」대로 master를 origin의 조상으로 되돌린다';
 
 // ── 맥락 ────────────────────────────────────────────────────────────────────
 
-/** 옵션: 저장소 · 원격 · 가지 · 시험용 잠깐(ms) · 잠금살피기() · 잠금한도ms · 시험고리 {push직전, 가지옮기기직전, 따라가기쓰기직전} */
+/** 옵션: 저장소 · 원격 · 가지 · 시험용 잠깐(ms) · 잠금살피기() · 잠금한도ms · 시험고리 {push직전, 가지옮기기직전, 따라가기쓰기직전, 읽은나무직전, 색인재검사뒤} */
 function 맥락(옵션 = {}) {
   const 저장소 = 저장소찾기(옵션.저장소 || process.cwd());
   const git = git도구(저장소);
@@ -114,10 +124,12 @@ function 가린자리꺼내기(git, 경로들) {
   return 꺼낼;
 }
 
-function C만들기(c, B, 일) {
+function C만들기(c, 머리B, 일) {
   const { git } = c;
   const 저장 = c.저장;
   가린자리꺼내기(git, 일.모두 ? null : 일.경로들);
+  const 남긴 = 남김바탕(c, 머리B, 일);
+  const B = 남긴.바탕;
   const 인덱스 = 별도인덱스(git, B);
   try {
     const 통째 = 일.경로들.filter((p) => !일.조각.has(p) || 일.조각.get(p) === '전부');
@@ -202,7 +214,8 @@ function C만들기(c, B, 일) {
       if (!바뀜.length) return { 결과: '올릴 것 없음', 이유: '줄끝만 바탕과 다르다 — 바탕 판의 줄끝을 따르면 바뀐 것이 없다(줄끝을 일부러 바꾸는 커밋이면 --줄끝그대로)' };
     }
     if (c.공용) {
-      const 걸림 = 남의스테이징(git, 바뀜);
+      // 남긴 경로의 공용 인덱스 항목은 바탕이 아니라 HEAD 판이다 — 그 판은 남의 스테이징이 아니다
+      const 걸림 = 남의스테이징(git, 바뀜.map((e) => (남긴.머리판.has(e.경로) ? { ...e, 옛: 남긴.머리판.get(e.경로) } : e)));
       if (걸림.length) return { 결과: '멈춤', 걸림, 이유: '공용 인덱스에 내 경로의 다른 스테이징이 있다 — 남이 올려 둔 것일 수 있어 손대지 않았다' };
     }
     const 트리 = git.글(['write-tree'], { env: 인덱스.env });
@@ -244,9 +257,16 @@ function 파일읽기(파일) {
     if (st.isDirectory()) return { 폴더: true };
     return { 바이트: fs.readFileSync(파일) };
   } catch (e) {
-    if (e.code === 'ENOENT' || e.code === 'ENOTDIR') return { 없음: true };
+    if (e.code === 'ENOENT') return { 없음: true };
+    if (e.code === 'ENOTDIR') return { 없음: true, 부모가파일: true };
     throw e;
   }
+}
+
+function 줄수세기(버퍼) {
+  let n = 0;
+  for (let i = 버퍼.indexOf(10); i !== -1; i = 버퍼.indexOf(10, i + 1)) n++;
+  return n;
 }
 
 /** 작업본에 쓸 바이트(체크아웃과 같은 변환) */
@@ -259,13 +279,168 @@ function 깨끗한sha(c, 경로, 바이트) {
   return c.git.글(['hash-object', `--path=${경로}`, '--stdin'], { input: 바이트 });
 }
 
+// ── 공용 작업본: 겹친 경로만 남기고 옮기기(2026-11-03) ──────────────────────────
+//
+// HEAD는 커밋 하나라 경로마다 다른 판에 둘 수 없다. 그래서 공용 작업본은 겹치지 않는 경로를 모두 옮기고, 겹친 경로는 작업본 바이트를 그대로 둔 채
+// 「그 파일이 어느 판에서 나왔는가」(바탕 blob · 그때의 커밋)를 <git 폴더>/바로올리기-남김.json에 적는다. 그 경로의 공용 인덱스는 HEAD 판이라 상태는 « M»이다.
+// 이 기록이 없으면 HEAD 대비 차이에 origin의 새 줄이 「지운 줄」로 보여, 그 파일을 올릴 때 origin의 줄을 지운다(10-21 사고). 그래서
+//   따라가기: 남긴 경로를 바뀐 경로에 더해 기억한 바탕으로 다시 합쳐 본다 · 올리기: 기억한 바탕 위에 내 변경을 만든다(남김바탕) · 기록을 못 읽으면 멈춘다.
+// 워크트리는 그 세션 것이라 전처럼 하나라도 겹치면 옮기지 않는다(세션이 바로 풀 수 있다). 운영 사본도 연결 작업본이라 그대로다.
+
+const 남김파일 = (c) => path.join(c.gitdir, '바로올리기-남김.json');
+const 따라가기기록파일 = (c) => path.join(c.gitdir, '바로올리기-따라가기.jsonl');
+
+/** 경로 → {바탕: blob sha|null, 커밋, 이유, 때}. 기록이 깨졌으면 멈춘다 — 바탕을 모른 채 옮기거나 올리면 origin의 줄을 지운다. */
+function 남김읽기(c) {
+  if (!c.공용) return new Map();
+  let 글;
+  try { 글 = fs.readFileSync(남김파일(c), 'utf8'); } catch (e) {
+    if (e.code === 'ENOENT') return new Map();
+    throw new 멈춤(`남긴 경로 기록을 읽지 못했다(${남김파일(c)}) — ${e.message}`);
+  }
+  try { return new Map(Object.entries(JSON.parse(글).경로)); } catch (e) {
+    throw new 멈춤(`남긴 경로 기록이 깨졌다(${남김파일(c)}) — 바탕을 몰라 옮기거나 올리지 않는다. 그 파일을 고치거나, 남긴 경로마다 작업본 바이트를 사본으로 두고 지운다`);
+  }
+}
+
+function 남김쓰기(c, 맵) {
+  if (!맵.size) { fs.rmSync(남김파일(c), { force: true }); return; }
+  바꿔쓰기(남김파일(c), Buffer.from(`${JSON.stringify({ 경로: Object.fromEntries(맵) }, null, 2)}\n`, 'utf8'));
+}
+
+/** update-index -z --index-info 한 줄. sha가 없으면 지움. */
+const 색인줄 = (모드, sha, p) => (sha ? `${모드} ${sha}\t${p}\0` : `0 ${'0'.repeat(40)}\t${p}\0`);
+
+/** 올리기의 바탕: 이번에 올리는 경로에 남긴 경로가 있으면 HEAD에 그 경로만 기억한 바탕 판을 얹은 임시 커밋(어느 가지도 안 움직인다, push되지 않는다). */
+function 남김바탕(c, 머리B, 일) {
+  const 머리판 = new Map();
+  const 남긴 = 남김읽기(c);
+  const 닿는 = [...남긴].filter(([p]) => 일.경로들.some((q) => p === q || p.startsWith(`${q}/`)));
+  if (!닿는.length) return { 바탕: 머리B, 머리판 };
+  const { git } = c;
+  const 머리항 = 트리항목들(git, 머리B, 닿는.map(([p]) => p));
+  for (const [p] of 닿는) 머리판.set(p, 머리항.has(p) ? 머리항.get(p).sha : null);
+  const 인덱스 = 별도인덱스(git, 머리B);
+  try {
+    git(['update-index', '--add', '--replace', '-z', '--index-info'], { env: 인덱스.env, input: 닿는.map(([p, x]) => 색인줄(x.모드 || (머리항.get(p) || {}).모드 || '100644', x.바탕, p)).join('') });
+    const 트리 = git.글(['write-tree'], { env: 인덱스.env });
+    const 바탕 = git.글(['commit-tree', 트리, '-p', 머리B, '-F', '-'], { input: Buffer.from('공용 작업본 남긴 경로의 바탕 판(임시, push되지 않는다)\n', 'utf8') });
+    return { 바탕, 머리판 };
+  } finally { 인덱스.치우기(); }
+}
+
+/** T에서 남길 경로만 HEAD(B) 판으로 돌린 나무 — read-tree가 그 경로의 인덱스 · 작업본을 건드리지 않게 한다. */
+function 남긴나무(c, B, T, 남김) {
+  if (!남김.length) return T;
+  const { git } = c;
+  const 경로들 = 남김.map((x) => x.경로);
+  const B항 = 트리항목들(git, B, 경로들);
+  const 인덱스 = 별도인덱스(git, T);
+  try {
+    git(['update-index', '--add', '--replace', '-z', '--index-info'], { env: 인덱스.env, input: 경로들.map((p) => { const h = B항.get(p); return 색인줄(h ? h.모드 : '100644', h ? h.sha : null, p); }).join('') });
+    return git.글(['write-tree'], { env: 인덱스.env });
+  } finally { 인덱스.치우기(); }
+}
+
+/** read-tree -m -u가 막은 경로(그 경로만 남기면 다시 할 수 있다) */
+function 막힌경로(오류글) {
+  return [...String(오류글).matchAll(/^error: (?:Entry|Untracked working tree file|Updating) '(.+?)' (?:not uptodate|would be overwritten|would be removed|would lose untracked)/gm)].map((m) => m[1]);
+}
+
+/**
+ * 공용 작업본 따라가기를 한 번에 하나만 돌린다 — 계획이 몇 분 걸리는 날 세션마다 같은 계산을 겹쳐 돌리면 프로세스가 모자라 서로 실패했다(11-03 0xC0000142 ·
+ * 0xC000012D). 잠금은 git ref 하나다: 값은 주인(pid · 시각 · 표)을 적은 blob이고 잡기 · 회수 · 풀기가 모두 update-ref의 비교 후 교체라, 다른 세션이 먼저 회수했거나
+ * 새로 잡은 잠금을 건드릴 수 없다(파일 잠금은 끊긴 잠금을 치우는 자리에서 경쟁이 남았다 — 11-03 GPT 재현 셋). 주인 프로세스가 죽었거나 너무 오래된 잠금은 회수한다.
+ * 기다림ms 안에 못 잡으면 null.
+ */
+function 따라가기잠금(c, 기다림ms = 0) {
+  const { git } = c;
+  const 값 = git.글(['hash-object', '-w', '--stdin'], { input: Buffer.from(`${process.pid} ${Date.now()} ${crypto.randomBytes(6).toString('hex')}\n`, 'utf8') });
+  const 바꾸기 = (앞) => git.돌리기(['update-ref', 따라가기잠금참조, 값, 앞], { 허용: null }).status === 0;
+  const 끝 = Date.now() + 기다림ms;
+  for (;;) {
+    const 지금 = git.돌리기(['rev-parse', '-q', '--verify', 따라가기잠금참조], { 허용: null });
+    const 앞 = String(지금.stdout).trim();
+    const 잡음 = !앞 ? 바꾸기('0'.repeat(40)) : (!잠금주인살았나(c, 앞) && 바꾸기(앞));
+    if (잡음) return { 풀기() { git.돌리기(['update-ref', '-d', 따라가기잠금참조, 값], { 허용: null }); } };
+    if (Date.now() >= 끝) return null;
+    c.잠깐(500);
+  }
+}
+
+function 잠금주인살았나(c, 값) {
+  const 글 = c.git.돌리기(['cat-file', 'blob', 값], { 허용: null });
+  const [pid, 때] = String(글.stdout).trim().split(' ').map(Number);
+  if (!(pid > 0 && 때 > 0) || Date.now() - 때 >= 따라가기잠금한도ms) return false;
+  try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; }
+}
+
+/**
+ * 남긴 경로의 공용 인덱스를 새 HEAD 판으로 맞춘다. read-tree는 그 경로의 인덱스를 나무 판 그대로 두었으니 모드 · blob · 단계 가운데 하나라도 나무 판과 다르면 남이 스테이징한
+ * 것이다(계획 뒤에 올렸어도). 그 항목과 폴더 · 파일로 겹치는 항목은 그대로 둔다. index.lock을 쥔 채 사본에서 다시 읽고 고쳐 바꿔 넣는다 — 재검사와 갱신 사이에 끝난 git add를 덮지 않게.
+ * → 못 맞췄으면 까닭 글, 맞췄으면 null
+ */
+function 색인맞추기(c, 항목들) {
+  const { git } = c;
+  const 인덱스 = path.resolve(git.글(['rev-parse', '--path-format=absolute', '--git-path', 'index']));
+  const 잠금파일 = `${인덱스}.lock`;
+  const 끝 = Date.now() + c.한도.잠금;
+  for (;;) {
+    if (!잠금기다리기(c, Math.max(0, 끝 - Date.now())).풀림) return 'index.lock이 풀리지 않았다';
+    try { fs.closeSync(fs.openSync(잠금파일, 'wx')); break; } catch (e) {
+      if (e.code !== 'EEXIST') return e.message;
+      if (Date.now() >= 끝) return 'index.lock이 풀리지 않았다';
+      c.잠깐(100);
+    }
+  }
+  const 사본 = `${인덱스}.baro-${process.pid}.tmp`;
+  try {
+    fs.copyFileSync(인덱스, 사본);
+    const env = { GIT_INDEX_FILE: 사본 };
+    const 지금 = new Map();
+    for (const 줄 of git(['ls-files', '-s', '-z'], { env }).toString('utf8').split('\0')) {
+      const 탭 = 줄.indexOf('\t');
+      if (탭 > 0) { const p = 줄.slice(탭 + 1); 지금.set(p, [...(지금.get(p) || []), 줄.slice(0, 탭)]); }
+    }
+    const 기대 = (e) => (e.옛 ? [`${e.옛모드} ${e.옛} 0`] : []);
+    const 올라간 = 항목들.filter((e) => (지금.get(e.경로) || []).join() !== 기대(e).join()).map((e) => e.경로);
+    if (c.고리.색인재검사뒤) c.고리.색인재검사뒤();
+    const 겹침 = (p) => 올라간.some((q) => p === q || p.startsWith(`${q}/`) || q.startsWith(`${p}/`));
+    const 입력 = 항목들.filter((e) => !겹침(e.경로)).map((e) => 색인줄(e.새모드, e.새, e.경로)).join('');
+    if (!입력) return null;
+    git(['update-index', '--add', '--replace', '-z', '--index-info'], { env, input: 입력 });
+    replaceFile(사본, 인덱스);
+    return null;
+  } catch (e) {
+    return e.message;
+  } finally {
+    fs.rmSync(사본, { force: true });
+    fs.rmSync(`${사본}.lock`, { force: true });
+    fs.rmSync(잠금파일, { force: true });
+  }
+}
+
+/** 공용 작업본 따라가기 결과 한 줄 — 왜 못 옮겼는지 나중에 볼 곳(11-02 ~ 11-03 하루 막힘은 세션 대화에서 찾아야 했다). 못 적어도 따라가기는 그대로다. */
+function 따라가기기록(c, B, T, r) {
+  if (!c.공용) return;
+  try {
+    const 남김 = (r.남김 || []).map((x) => x.경로);
+    const 줄 = { 때: new Date().toISOString(), B, T, 결과: r.결과, ...(r.이유 ? { 이유: String(r.이유).slice(0, 300) } : {}), ...(r.주의 ? { 주의: String(r.주의).slice(0, 300) } : {}), 남김수: 남김.length, 남김: 남김.slice(0, 10) };
+    const 파일 = 따라가기기록파일(c);
+    try { if (fs.statSync(파일).size > 1024 * 1024) fs.renameSync(파일, `${파일}.1`); } catch (_) {}
+    fs.appendFileSync(파일, `${JSON.stringify(줄)}\n`);
+  } catch (_) {}
+}
+
 /**
  * B → T로 옮길 계획. 바탕들: 방금 올린 경로 → 올린 내 판(C의 blob sha 또는 null). 3방향 바탕으로 B 판 대신 쓴다.
- * → {결과:'이미 최신'} | {결과:'멈춤', 걸림[]} | {결과:'계획', B, T, 경로[], 새판[], 고침[]}
+ * → {결과:'이미 최신'} | {결과:'멈춤', 걸림[]} | {결과:'계획', B, T, 경로[], 새판[], 고침[], 남김[]}
+ * 공용 작업본은 겹친 경로에서 멈추지 않고 남김[](경로 · 이유 · 바탕 · 커밋)에 넣는다. 합쳐 보다 던져도, 계산 시간을 넘겨도 그 경로만 남긴다.
  */
 function 따라가기계획(c, B, T, { 바탕들 = new Map() } = {}) {
   const { git } = c;
-  if (B === T) return { 결과: '이미 최신', B, T };
+  const 남긴 = 남김읽기(c);
+  if (B === T && !남긴.size) return { 결과: '이미 최신', B, T };
   const 짧은가지 = c.가지 && c.가지.startsWith('refs/heads/') ? c.가지.slice('refs/heads/'.length) : null;
   const 가지만 = git.글(['rev-list', `--max-count=${가지만한도 + 1}`, B, '--not', T, '--remotes', ...(짧은가지 ? [`--exclude=${짧은가지}`] : []), '--branches']).split('\n').filter(Boolean);
   const 안올라간 = 가지만.length > 가지만한도 ? 가지만 : 짝없는커밋(git, 가지만, T);
@@ -276,49 +451,79 @@ function 따라가기계획(c, B, T, { 바탕들 = new Map() } = {}) {
       걸림: 안올라간.slice(0, 5).map((h) => ({ 커밋: h })),
     };
   }
-  const 경로 = git(['diff', '--name-only', '-z', '--no-renames', B, T]).toString('utf8').split('\0').filter(Boolean);
+  const 경로 = [...new Set([...git(['diff', '--name-only', '-z', '--no-renames', B, T]).toString('utf8').split('\0').filter(Boolean), ...남긴.keys()])];
   const 상태 = 상태읽기(git);
+  const 합침끝 = Date.now() + 계획한도초() * 1000;
+  const 저장중ms = 저장중초() * 1000;
   const B항 = 트리항목들(git, B, 경로), T항 = 트리항목들(git, T, 경로);
   const 글아님 = 글아닌경로(git, 경로);
   const 새판 = [], 고침 = [], 걸림 = [], 비킬 = [];
   for (const p of 경로) {
-    const st = 상태.get(p);
+    const 옛 = 남긴.get(p) || null;   // 앞서 남긴 경로면 그때의 바탕에서 다시 본다(방금 올렸으면 바탕은 올린 판, 이력은 그때부터)
     const bh = B항.get(p) || null, th = T항.get(p) || null;
-    const 파일 = path.join(c.저장소, p);
-    const 있음 = 파일읽기(파일);
-    const 덮을파일 = !bh && !있음.없음;          // T가 새로 넣는 경로에 작업본 파일(미추적·무시)이 이미 있다
-    if (!st && !덮을파일) { 새판.push(p); continue; }
+    const 바탕sha = 바탕들.has(p) ? 바탕들.get(p) : (옛 ? 옛.바탕 : (bh ? bh.sha : null));
+    const 바탕커밋 = 옛 ? 옛.커밋 : B;
+    const 걸림표 = 걸림.length;
+    try {
+      따라가기한경로(c, { p, B, T, 상태, bh, th, 옛, 바탕sha, 바탕커밋, 바탕들, 글아님, 새판, 고침, 걸림, 비킬, 합침끝, 저장중ms });
+    } catch (e) {
+      if (!c.공용) throw e;
+      걸림.length = 걸림표;
+      걸림.push({ 경로: p, 이유: `합쳐 보지 못했다 — ${e.이유 || e.message}` });
+    }
+    // 공용 작업본은 이 경로만 남긴다. 바탕 · 커밋을 적어 두어야 다음 따라가기와 올리기가 이 파일을 제 바탕에서 본다
+    if (걸림.length > 걸림표) Object.assign(걸림[걸림표], { 바탕: 바탕sha, 커밋: 바탕커밋, ...(th || bh ? { 모드: (th || bh).모드 } : {}) });
+  }
+  if (!c.공용 && 걸림.length) return { 결과: '멈춤', B, T, 이유: '작업본에서 아직 고치는 파일이 origin의 변경과 겹친다 — 아무것도 옮기지 않았다', 걸림 };
+  return { 결과: '계획', B, T, 경로, 새판, 고침, 비킬, 남김: 걸림 };
+}
+
+/** 한 경로의 처리를 새판 · 고침 · 비킬 · 걸림 가운데 하나로 정한다. */
+function 따라가기한경로(c, { p, B, T, 상태, bh, th, 옛, 바탕sha, 바탕커밋, 바탕들, 글아님, 새판, 고침, 걸림, 비킬, 합침끝, 저장중ms }) {
+  const { git } = c;
+  const st = 상태.get(p);
+  const 파일 = path.join(c.저장소, p);
+  const 있음 = 파일읽기(파일);
+  const 덮을파일 = !bh && !있음.없음;          // T가 새로 넣는 경로에 작업본 파일(미추적·무시)이 이미 있다
+  if (c.공용 && 있음.부모가파일) { 걸림.push({ 경로: p, 이유: '작업본에서 이 경로의 폴더 자리에 파일이 있다' }); return; }
+  if (!st && !덮을파일) { 새판.push(p); return; }
+  {
     // 인덱스에서 이미 지웠고(작업본에 남긴 파일은 무시·미추적) origin도 지운 경로 — 인덱스가 이미 T와 같으니 남의 스테이징이 아니라
     // 먼저 올라간 일이다. 막지 않고, 작업본에 남은 파일은 read-tree가 지우지 않게 잠깐 비켜 두었다가 되돌린다(10-21 붙여넣기 판 셋).
     // 이름 바꾸기(git mv)의 옛 경로는 남의 스테이징 그대로 멈춘다. 파일이 없는 지움도 넣어 둔다 — 실패 되돌리기에서 지움을 다시 맞춘다.
     if (!th && bh && st && st.x === 'D' && st.y === ' ' && !st.이름바꿈 && !있음.폴더) {
       비킬.push({ 경로: p, 바이트: 있음.없음 ? null : 있음.바이트, Bsha: bh.sha });
-      continue;
+      return;
     }
-    if (c.공용 && st && st.x !== ' ' && st.x !== '?') { 걸림.push({ 경로: p, 이유: '공용 인덱스에 스테이징이 있다(남의 것일 수 있다)' }); continue; }
-    if (있음.폴더) { 걸림.push({ 경로: p, 이유: '작업본의 그 자리에 폴더가 있다' }); continue; }
-    const 바탕sha = 바탕들.has(p) ? 바탕들.get(p) : (bh ? bh.sha : null);
+    if (c.공용 && st && st.x !== ' ' && st.x !== '?') { 걸림.push({ 경로: p, 이유: '공용 인덱스에 스테이징이 있다(남의 것일 수 있다)' }); return; }
+    if (있음.폴더) { 걸림.push({ 경로: p, 이유: '작업본의 그 자리에 폴더가 있다' }); return; }
+    // 공용 작업본: 방금 저장된 파일은 쓰는 중일 수 있다 — 읽어 합치지 않고 다음 번으로 넘긴다. 시간을 넘겼으면 나머지도 그렇다.
+    if (c.공용 && !바탕들.has(p) && !있음.없음) {
+      if (저장중ms > 0 && Date.now() - fs.statSync(파일).mtimeMs < 저장중ms) { 걸림.push({ 경로: p, 이유: '방금 저장된 파일이다 — 쓰는 중일 수 있어 다음 따라가기에서 본다' }); return; }
+      if (Date.now() > 합침끝) { 걸림.push({ 경로: p, 이유: '합쳐 볼 시간을 넘겼다 — 다음 따라가기에서 본다' }); return; }
+    }
     const W = 있음.없음 ? null : 있음.바이트;
-    const 고침항 = (sha, 방법) => 고침.push({ 경로: p, sha, 모드: th ? th.모드 : (bh ? bh.모드 : '100644'), 방법, 전: W, B있음: Boolean(bh) });
+    const 고침항 = (sha, 방법) => 고침.push({ 경로: p, sha, 모드: th ? th.모드 : (bh ? bh.모드 : '100644'), 방법, 전: W, B있음: Boolean(bh), 바탕: 바탕sha, 바탕커밋 });
     if (W === null) {
       // 작업본에서 지웠다
       if (!th) 고침항(null, '양쪽 지움');
+      else if (옛 && !바탕sha) 고침항(th.sha, '새 판');            // 남겨 둔 미추적 파일을 세션이 치웠다 — 지킬 것이 없다
       else if (바탕sha && th.sha === 바탕sha) 고침항(null, '내 지움');
       else 걸림.push({ 경로: p, 이유: '작업본에서 지운 파일을 origin이 고쳤다' });
-      continue;
+      return;
     }
     if (!바탕sha) {
       // 바탕에 없던 파일이 작업본에 있다(미추적·새 파일). 줄끝만 다르면(작업본 LF · 체크아웃 CRLF) git add가 만들 blob이
       // origin 판과 같으니 같은 파일이다 — 백업 뒤 체크아웃 판으로 바뀐다(10-21, 미추적 끝난 작업물을 올렸을 때 공용 작업본이 못 따라가던 일).
       if (th && (W.equals(꺼낸바이트(c, th.sha, p)) || 깨끗한sha(c, p, W) === th.sha)) 고침항(th.sha, '이미 같음');
       else 걸림.push({ 경로: p, 이유: th ? 'origin이 새로 넣는 파일과 다른 파일이 작업본에 있다' : '바탕에 없는 파일이다' });
-      continue;
+      return;
     }
     const 바탕바이트 = 블롭(git, c.저장, 바탕sha);
     if (!th) {
       if (W.equals(꺼낸바이트(c, 바탕sha, p))) 고침항(null, '새 판(지움)');
       else 걸림.push({ 경로: p, 이유: '작업본에서 고치는 파일을 origin이 지웠다' });
-      continue;
+      return;
     }
     const 이진 = 이진인가(W) || 이진인가(바탕바이트) || 이진인가(블롭(git, c.저장, th.sha)) || 글아님.has(p);
     let 내sha;
@@ -327,22 +532,21 @@ function 따라가기계획(c, B, T, { 바탕들 = new Map() } = {}) {
     } else {
       내sha = 블롭쓰기(git, c.저장, 바이트로(줄끝맞추기(글로(바탕바이트), 글로(W)).글));
     }
-    if (내sha === th.sha) { 고침항(th.sha, '이미 같음'); continue; }
-    if (내sha === 바탕sha) { 고침항(th.sha, '새 판'); continue; }
-    if (이진) { 걸림.push({ 경로: p, 이유: '바이너리 파일을 양쪽이 고쳤다' }); continue; }
+    if (내sha === th.sha) { 고침항(th.sha, '이미 같음'); return; }
+    if (내sha === 바탕sha) { 고침항(th.sha, '새 판'); return; }
+    if (이진) { 걸림.push({ 경로: p, 이유: '바이너리 파일을 양쪽이 고쳤다' }); return; }
+    if (c.공용 && Math.max(줄수세기(W), 줄수세기(블롭(git, c.저장, th.sha))) > 합칠줄한도) { 걸림.push({ 경로: p, 이유: `${합칠줄한도}줄이 넘는 파일이라 합쳐 보지 않는다 — 생성물이면 그 세션이 다시 만들어 올린다` }); return; }
     // 작업본이 B보다 새 origin 판 위에 다시 짜였으면(공용 작업본에서 세션이 최신 판에 제 줄을 얹은 경우) 그 판을 바탕으로 3방향.
     // 바탕은 「B + 작업본이 이미 받은 origin 고침」으로 맞춘다(받은것만바탕).
-    const 판들 = origin판들(c, B, T, p);
+    const 판들 = origin판들(c, 바탕커밋, T, p);
     const K = 바탕들.has(p) ? 바탕sha : 가까운바탕(c, 판들, 바탕sha, 글로(W));
     const 바탕 = 받은것만바탕(c, { 경로: p, 판들, K, 바탕sha, 바탕바이트, W, Tsha: th.sha });
-    if (바탕.문제) { 걸림.push({ 경로: p, 이유: 바탕.문제 }); continue; }
-    if (내sha === 바탕) { 고침항(th.sha, '새 판'); continue; }
+    if (바탕.문제) { 걸림.push({ 경로: p, 이유: 바탕.문제 }); return; }
+    if (내sha === 바탕) { 고침항(th.sha, '새 판'); return; }
     const m = 세판합치기(git, c.저장, p, th.sha, 바탕, 내sha);
-    if (m.문제) { 걸림.push({ 경로: p, 이유: m.문제 }); continue; }
+    if (m.문제) { 걸림.push({ 경로: p, 이유: m.문제 }); return; }
     고침항(블롭쓰기(git, c.저장, m.버퍼), m.방법);
   }
-  if (걸림.length) return { 결과: '멈춤', B, T, 이유: '작업본에서 아직 고치는 파일이 origin의 변경과 겹친다 — 아무것도 옮기지 않았다', 걸림 };
-  return { 결과: '계획', B, T, 경로, 새판, 고침, 비킬 };
 }
 
 /**
@@ -865,6 +1069,7 @@ function 되돌리기(c, 계획, 백업목록) {
 /** 계획대로 옮긴다. → {결과:'따라감'|'멈춤'|'실패', …} */
 function 따라가기실행(c, 계획) {
   const { git } = c;
+  if (c.공용) return 공용실행(c, 계획);
   const { B, T } = 계획;
   const 잠금 = 잠금기다리기(c, c.한도.잠금);
   if (!잠금.풀림) return { 결과: '멈춤', 이유: `index.lock이 풀리지 않아 옮기지 않았다 — ${잠금.이유}` };
@@ -909,6 +1114,9 @@ function 따라가기실행(c, 계획) {
     const 못함 = 되돌리기(c, 계획, 백업목록);
     return { 결과: '실패', 이유: `고치는 파일을 바탕 판으로 돌리지 못했다 — ${e.message}${못함.length ? ` / 되돌리지 못함: ${못함.join('; ')}` : ' (되돌림)'}`, 백업 };
   }
+  // 인덱스의 낡은 시각을 맞춘다 — status는 내용까지 보아 깨끗하다고 하지만(--no-optional-locks라 인덱스에 적지 않는다) read-tree -u는 시각만 보고
+  // 「not uptodate」로 멈춰 전체가 되돌아갔다(10-26 · 10-28 재현, 시각만 바뀐 파일 하나로 충분하다).
+  git.돌리기(['update-index', '-q', '--refresh'], { 허용: null });
   const rt = git.돌리기(['read-tree', '-m', '-u', B, T], { 허용: null });
   if (rt.status !== 0) {
     const 못함 = 되돌리기(c, 계획, 백업목록);
@@ -973,6 +1181,149 @@ function 따라가기실행(c, 계획) {
   return r;
 }
 
+/**
+ * 공용 작업본 실행. 세션이 고치는 파일은 어느 순간에도 작업본에서 그 바이트를 떼지 않는다 — 합칠 파일도 남길 파일처럼 read-tree에서 빼고, 가지를 옮긴 뒤 「지금 파일이
+ * 계획 때 바이트와 같을 때만」 합친 결과를 한 번 쓴다. 어디서 죽어도 작업본에는 세션 바이트나 합친 결과가 있고, 바탕은 가지를 옮기기 전에 적어 두었으니 다음 따라가기가 잇는다
+ * (이전 차례 — B 판으로 돌리고 → read-tree → 결과 쓰기 — 는 그 사이 작업본에 세션 줄이 없어 읽어-고쳐-쓰는 세션이 줄을 잃었다. 11-03 Fable 설계 검토).
+ */
+function 공용실행(c, 계획) {
+  const { git } = c;
+  const { B, T } = 계획;
+  const 잠금 = 잠금기다리기(c, c.한도.잠금);
+  if (!잠금.풀림) return { 결과: '멈춤', 이유: `index.lock이 풀리지 않아 옮기지 않았다 — ${잠금.이유}` };
+  if (머리(c) !== B) return { 결과: '멈춤', 이유: '그사이 HEAD가 움직였다 — 다시 돌린다' };
+  const 비킬 = 계획.비킬 || [];
+  const 남김 = [...(계획.남김 || [])];
+  let 고침들 = [...계획.고침];
+  const 고침남기기 = (x, 이유) => {
+    남김.push({ 경로: x.경로, 이유, 바탕: x.바탕, 커밋: x.바탕커밋, 모드: x.모드 });
+    고침들 = 고침들.filter((y) => y !== x);
+  };
+  const 그대로파일 = (경로, 전) => {
+    const 지금 = 파일읽기(path.join(c.저장소, 경로));
+    return 전 === null ? Boolean(지금.없음) : Boolean(지금.바이트 && 지금.바이트.equals(전));
+  };
+  const 틈 = '다음 따라가기에서 본다';
+  for (const x of 계획.고침) {
+    if (x.모드 === '120000') 고침남기기(x, `심볼릭 링크는 합친 결과를 쓰지 않는다 — ${틈}`);
+    else if (!그대로파일(x.경로, x.전)) 고침남기기(x, `계획을 세운 뒤 작업본에서 바뀌었다 — ${틈}`);
+  }
+  // 계획에 몇 분이 걸리는 날이 있다 — 그사이 저장된 깨끗한 파일도 남긴다
+  const 다룸 = new Set([...고침들, ...비킬, ...남김].map((x) => x.경로));
+  const 남은 = 계획.경로.filter((p) => !다룸.has(p));
+  const 지금상태 = 상태읽기(git), 남은항 = 트리항목들(git, B, 남은);
+  for (const p of 남은) {
+    const h = 남은항.get(p);
+    if (!지금상태.get(p) && (h || 파일읽기(path.join(c.저장소, p)).없음)) continue;
+    남김.push({ 경로: p, 이유: `계획을 세운 뒤 작업본에서 바뀌었다 — ${틈}`, 바탕: h ? h.sha : null, 커밋: B, ...(h ? { 모드: h.모드 } : {}) });
+  }
+  // 인덱스의 낡은 시각을 맞춘다(따라가기실행과 같다)
+  git.돌리기(['update-index', '-q', '--refresh'], { 허용: null });
+  const 옛남김 = 남김읽기(c);
+  const 지금시각 = new Date().toISOString();
+  const 표로 = (목록) => 목록.map((x) => [x.경로, { 바탕: x.바탕, 커밋: x.커밋, 이유: x.이유, 때: (옛남김.get(x.경로) || {}).때 || 지금시각, ...(x.모드 ? { 모드: x.모드 } : {}) }]);
+  const 남김표 = () => new Map(표로(남김));
+  // 합칠 파일의 바탕도 함께 적는다 — 결과를 쓰기 전에 끊기면 그 파일은 남긴 것과 같다
+  const 먼저적기 = () => 남김쓰기(c, new Map([...옛남김, ...표로(고침들.map((x) => ({ 경로: x.경로, 이유: `합치던 중 끊겼다 — ${틈}`, 바탕: x.바탕, 커밋: x.바탕커밋, 모드: x.모드 }))), ...남김표()]));
+  const 남김보기 = () => (남김.length ? { 남김: 남김.map((x) => ({ 경로: x.경로, 이유: x.이유 })) } : {});
+  if (B === T && !고침들.length && !비킬.length) {
+    남김쓰기(c, 남김표());
+    return { 결과: '이미 최신', B, T, ...남김보기() };
+  }
+  먼저적기();
+  // 바이트 백업 — 작업본에서 떼지는 않지만 합친 결과가 틀렸을 때 볼 원본이다
+  const 백업뿌리 = path.join(c.gitdir, '바로올리기');
+  백업정리(백업뿌리);
+  const 시각 = new Date().toISOString().replace(/[-:]/g, '').replace(/\..+$/, '').replace('T', '-');
+  const 백업 = path.join(백업뿌리, `${시각}-${B.slice(0, 9)}-${T.slice(0, 9)}`);
+  if (고침들.length) {
+    fs.mkdirSync(path.join(백업, '파일'), { recursive: true });
+    const 목록 = 고침들.map((x, i) => {
+      if (x.전 !== null) fs.writeFileSync(path.join(백업, '파일', String(i)), x.전);
+      return { 경로: x.경로, 파일: x.전 === null ? null : String(i), sha256: x.전 === null ? null : crypto.createHash('sha256').update(x.전).digest('hex') };
+    });
+    fs.writeFileSync(path.join(백업, '목록.json'), `${JSON.stringify({ B, T, 가지: c.가지, 경로: 목록 }, null, 2)}\n`);
+  }
+  const 실패로 = (글) => { try { 남김쓰기(c, 옛남김); } catch (_) {} return { 결과: '실패', 이유: 글, ...(고침들.length ? { 백업 } : {}) }; };
+  // 세션이 고치는 경로를 뺀 나무로 깨끗한 경로만 옮긴다. read-tree가 어떤 경로를 막으면(그사이 저장됨) 그 경로만 남기고 다시 한다.
+  let 나무 = T, 색인맞출 = [];
+  if (B !== T) {
+    const 뺄 = () => [...남김, ...고침들, ...비킬].map((x) => ({ 경로: x.경로 }));
+    for (let 차례 = 0; ; 차례++) {
+      let rt;
+      try {
+        나무 = 남긴나무(c, B, T, 뺄());
+        if (c.고리.읽은나무직전 && 차례 === 0) c.고리.읽은나무직전();
+        rt = git.돌리기(['read-tree', '-m', '-u', B, 나무], { 허용: null });
+      } catch (e) { return 실패로(`옮길 나무를 만들지 못했다 — ${e.message} (작업본 그대로)`); }
+      if (rt.status === 0) break;
+      const 막힌 = 차례 < 20 ? 막힌경로(rt.stderr).filter((p) => !남김.some((x) => x.경로 === p)) : [];
+      if (!막힌.length) return 실패로(`read-tree가 멈췄다 — ${String(rt.stderr).trim()} (작업본 그대로)`);
+      const 막힌항 = 트리항목들(git, B, 막힌);
+      for (const p of 막힌) {
+        const h = 막힌항.get(p);
+        남김.push({ 경로: p, 이유: `옮기는 사이 작업본에서 바뀌었다 — ${틈}`, 바탕: h ? h.sha : null, 커밋: B, ...(h ? { 모드: h.모드 } : {}) });
+      }
+      먼저적기();
+    }
+    // 여기부터 깨끗한 경로는 T 판이다. 가지를 옮기기 전에 던지면 그 경로만 B 판으로 돌린다 — 세션 파일은 손대지 않았다.
+    const 나무되돌리기 = (글) => {
+      const 뒤로 = git.돌리기(['read-tree', '-m', '-u', 나무, B], { 허용: null });
+      return 실패로(`${글}${뒤로.status !== 0 ? `(read-tree 되돌리기 실패: ${String(뒤로.stderr).trim()})` : ''}`);
+    };
+    try {
+      if (나무 !== T) {
+        // 세션 경로 때문에 T와 달라진 곳 전부(파일 ↔ 폴더로 바뀌면 그 아래 경로도 밀려난다) — 밀려난 경로도 남긴다
+        색인맞출 = 날차이읽기(git(['diff-tree', '-r', '--no-renames', '--no-abbrev', '-z', 나무, T]));
+        const 있던 = new Set(뺄().map((x) => x.경로));
+        for (const e of 색인맞출) {
+          if (!있던.has(e.경로)) 남김.push({ 경로: e.경로, 이유: '남긴 경로와 파일 · 폴더 자리가 겹친다', 바탕: e.옛, 커밋: B, 모드: e.옛모드 !== '000000' ? e.옛모드 : e.새모드 });
+        }
+        먼저적기();
+      }
+    } catch (e) { return 나무되돌리기(`남길 경로를 적지 못했다 — ${e.message} — 작업본을 되돌렸다`); }
+    if (c.고리.가지옮기기직전) c.고리.가지옮기기직전();
+    const ur = git.돌리기(['update-ref', ...(c.가지 ? [] : ['--no-deref']), '-m', `바로올리기: 따라가기 ${B.slice(0, 9)} → ${T.slice(0, 9)}`, c.가지 || 'HEAD', T, B], { 허용: null });
+    if (ur.status !== 0) return 나무되돌리기('가지를 옮기지 못했다(그사이 움직임) — 작업본을 되돌렸다');
+  }
+  // 가지를 옮겼다 — 여기부터는 되돌리지 않는다. 못 쓴 파일은 남긴다(바탕은 위에 적혀 있다).
+  const 주의 = [];
+  if (색인맞출.length) {
+    const 못함 = 색인맞추기(c, 색인맞출);
+    if (못함) 주의.push(`세션 경로의 인덱스를 맞추지 못했다 — 그 경로가 스테이징으로 보인다. \`git reset -q HEAD -- <경로>\`로 푼다(${못함})`);
+  }
+  if (c.고리.따라가기쓰기직전) c.고리.따라가기쓰기직전();
+  for (const x of [...고침들]) {
+    const 파일 = path.join(c.저장소, x.경로);
+    const 그대로인가 = () => 그대로파일(x.경로, x.전);
+    try {
+      const 결과 = x.sha === null ? null : 꺼낸바이트(c, x.sha, x.경로);
+      if (결과 === null ? x.전 === null : Boolean(x.전 && 결과.equals(x.전))) continue;     // 이미 그 바이트다
+      if (!그대로인가()) throw Object.assign(new Error('그사이 바뀜'), { code: 'REPLACE_TARGET_CHANGED' });
+      if (결과 === null) fs.rmSync(파일, { force: true });
+      else {
+        바꿔쓰기(파일, 결과, 그대로인가);
+        if (x.모드 === '100755') { try { fs.chmodSync(파일, 0o755); } catch (_) {} }
+      }
+    } catch (e) {
+      if (e.code === 'REPLACE_TARGET_CHANGED') 고침남기기(x, `합친 결과를 쓰기 직전에 작업본에서 바뀌었다 — ${틈}`);
+      else {
+        고침남기기(x, `합친 결과를 쓰지 못했다(${e.code || e.message}) — ${틈}`);
+        주의.push(`${x.경로}: 합친 결과를 쓰지 못해 작업본 그대로 남겼다(${e.code || e.message})`);
+      }
+    }
+  }
+  // 비켜 둔 파일은 없다 — 스테이징된 지움은 나무에서 빠져 인덱스 · 작업본이 그대로다
+  try { 남김쓰기(c, 남김표()); } catch (e) { 주의.push(`남긴 경로 기록을 정리하지 못했다(${e.code || e.message})`); }
+  const r = {
+    결과: '따라감', B, T, 경로: 계획.경로.length, 새판: 계획.새판.length,
+    고침: 고침들.map((x) => ({ 경로: x.경로, 방법: x.방법 })), ...(비킬.some((v) => v.바이트) ? { 지킨파일: 비킬.filter((v) => v.바이트).map((v) => v.경로) } : {}),
+    ...(고침들.length ? { 백업 } : {}), ...남김보기(),
+  };
+  if (주의.length) r.주의 = 주의.join(' / ');
+  return r;
+}
+
 /** 메인 작업본(공용)을 T로 따라가게 한다. 꼬리가 있거나 겹치면 건너뛴다. */
 function 공용따라가기(c, T) {
   const 줄 = c.git.글(['worktree', 'list', '--porcelain']).split('\n');
@@ -984,13 +1335,46 @@ function 공용따라가기(c, T) {
   try { m = 맥락({ 저장소: 메인, 원격: c.원격, 가지: c.원격가지 }); } catch (e) { return { 결과: '건너뜀', 이유: `공용 작업본을 열지 못했다 — ${e.이유 || e.message}` }; }
   m.저장 = c.저장;
   if (m.가지 !== `refs/heads/${c.원격가지}`) return { 결과: '건너뜀', 이유: `공용 작업본이 ${c.원격가지} 가지가 아니다` };
-  const B = 머리(m);
-  if (B === T) return { 결과: '이미 최신' };
-  if (!조상인가(m.git, B, T)) return { 결과: '건너뜀', 이유: `공용 작업본 ${c.원격가지}에 origin에 없는 커밋(꼬리)이 있다 — 따라가지 않았다. ${꼬리안내}` };
-  const 계획 = 따라가기계획(m, B, T);
-  if (계획.결과 !== '계획') return 계획.결과 === '멈춤' ? { 결과: '건너뜀', 이유: 계획.이유, 걸림: 계획.걸림 } : { 결과: 계획.결과 };
-  const r = 따라가기실행(m, 계획);
-  return r.결과 === '따라감' ? r : { 결과: '건너뜀', 이유: r.이유 };
+  const 잠금 = 따라가기잠금(m);
+  // 돌고 있는 쪽이 끝나면서 그사이 올라온 커밋까지 받는다(아래) — 기다리지 않는다. push한 세션을 몇 분씩 붙잡지 않게.
+  if (!잠금) return { 결과: '건너뜀', 이유: '다른 세션이 공용 작업본을 따라가는 중이다 — 그쪽이 끝나면서 최신까지 받는다' };
+  try {
+    let 목표 = T, r = null;
+    for (let 차례 = 0; 차례 < 3; 차례++) {
+      const B = 머리(m);
+      if (B !== 목표 && 조상인가(m.git, 목표, B)) 목표 = B;   // 잠금을 기다리는 사이 다른 세션이 더 앞까지 옮겼다 — 꼬리가 아니다
+      if (B !== 목표 && !조상인가(m.git, B, 목표)) return 건너뜀기록(m, B, 목표, `공용 작업본 ${c.원격가지}에 origin에 없는 커밋(꼬리)이 있다 — 따라가지 않았다. ${꼬리안내}`);
+      const 계획 = 따라가기계획(m, B, 목표);
+      if (계획.결과 === '멈춤') return { ...건너뜀기록(m, B, 목표, 계획.이유), 걸림: 계획.걸림 };
+      if (계획.결과 !== '계획') { r = r || { 결과: 계획.결과 }; } else {
+        const 이번 = 따라가기실행(m, 계획);
+        따라가기기록(m, B, 목표, 이번);
+        if (이번.결과 !== '따라감' && 이번.결과 !== '이미 최신') return { 결과: '건너뜀', 이유: 이번.이유 };
+        r = 회차합치기(r, 이번);
+      }
+      const 최신 = m.git.글(['rev-parse', '--verify', `refs/remotes/${m.원격}/${m.원격가지}^{commit}`]);
+      if (최신 === 목표 || !조상인가(m.git, 목표, 최신)) break;
+      목표 = 최신;
+    }
+    return r;
+  } catch (e) {
+    return 건너뜀기록(m, null, T, e.이유 || e.message);
+  } finally {
+    잠금.풀기();
+  }
+}
+
+/** 앞 회차에 옮겼으면 그 시작점 · 경로 수를 잇고, 남긴 경로는 마지막 회차 그대로 보인다. */
+function 회차합치기(앞, 이번) {
+  if (!앞 || 앞.결과 !== '따라감') return 이번;
+  const { 남김: _앞남김, ...앞만 } = 앞;
+  if (이번.결과 !== '따라감') return { ...앞만, ...(이번.남김 ? { 남김: 이번.남김 } : {}) };
+  return { ...이번, B: 앞.B, 경로: 앞.경로 + 이번.경로, 새판: 앞.새판 + 이번.새판, 고침: [...앞.고침, ...이번.고침] };
+}
+
+function 건너뜀기록(m, B, T, 이유) {
+  따라가기기록(m, B, T, { 결과: '건너뜀', 이유 });
+  return { 결과: '건너뜀', 이유 };
 }
 
 // ── 명령 ────────────────────────────────────────────────────────────────────
@@ -1250,12 +1634,21 @@ async function 올리기(옵션 = {}) {
 }
 
 function 따라가기한번(c, B, T, 바탕들) {
+  // 공용 작업본에서 올린 뒤라면 방금 올린 경로의 바탕(바탕들)을 넘겨야 하니 조금 기다린다.
+  const 잠금 = c.공용 ? 따라가기잠금(c, 120000) : null;
+  if (c.공용 && !잠금) return { 결과: '건너뜀', 이유: '다른 세션이 공용 작업본을 따라가는 중이다 — push는 됐고 다음 따라가기가 받는다' };
   try {
     const 계획 = 따라가기계획(c, B, T, { 바탕들 });
     if (계획.결과 !== '계획') return 계획요약(계획);
-    return 따라가기실행(c, 계획);
+    const r = 따라가기실행(c, 계획);
+    따라가기기록(c, B, T, r);
+    return r;
   } catch (e) {
-    return { 결과: '실패', 이유: e.이유 || e.message };
+    const r = { 결과: '실패', 이유: e.이유 || e.message };
+    따라가기기록(c, B, T, r);
+    return r;
+  } finally {
+    if (잠금) 잠금.풀기();
   }
 }
 
@@ -1264,6 +1657,7 @@ function 계획요약(계획) {
   return {
     결과: '계획', B: 계획.B, T: 계획.T, 경로: 계획.경로.length, 새판: 계획.새판.length, 고침: 계획.고침.map((x) => ({ 경로: x.경로, 방법: x.방법 })),
     ...(계획.비킬 && 계획.비킬.some((v) => v.바이트) ? { 지킬파일: 계획.비킬.filter((v) => v.바이트).map((v) => v.경로) } : {}),
+    ...(계획.남김 && 계획.남김.length ? { 남김: 계획.남김.map((x) => ({ 경로: x.경로, 이유: x.이유 })) } : {}),
   };
 }
 
@@ -1287,11 +1681,21 @@ async function 따라가기(옵션 = {}) {
     if (c.공용 && !조상인가(c.git, B, O)) {
       return { 결과: '멈춤', 이유: `공용 작업본에 origin에 없는 커밋(꼬리)이 ${꼬리수(c, B, O)}개 있다 — 따라가지 않았다. ${꼬리안내}`, B, T: O };
     }
-    const 계획 = 따라가기계획(c, B, O);
-    if (계획.결과 !== '계획') return 계획요약(계획);
-    if (!옵션.실행) return { ...계획요약(계획), 결과: '미리 보기' };
-    const r = 따라가기실행(c, 계획);
-    return r;
+    if (!옵션.실행) {
+      const 미리 = 따라가기계획(c, B, O);
+      return 미리.결과 === '계획' ? { ...계획요약(미리), 결과: '미리 보기' } : 계획요약(미리);
+    }
+    const 잠금 = c.공용 ? 따라가기잠금(c, 120000) : null;
+    if (c.공용 && !잠금) return { 결과: '멈춤', 이유: '다른 세션이 공용 작업본을 따라가는 중이다 — 끝난 뒤 다시 본다', B, T: O };
+    try {
+      const 계획 = 따라가기계획(c, B, O);
+      if (계획.결과 !== '계획') return 계획요약(계획);
+      const r = 따라가기실행(c, 계획);
+      따라가기기록(c, B, O, r);
+      return r;
+    } finally {
+      if (잠금) 잠금.풀기();
+    }
   } catch (e) {
     if (e instanceof 멈춤) return { 결과: '멈춤', 이유: e.이유, ...e.덧 };
     throw e;
@@ -1346,4 +1750,4 @@ async function 가볍게(옵션 = {}) {
 // ── 명령줄 ──────────────────────────────────────────────────────────────────
 
 
-module.exports = { 올리기, 따라가기, 가볍게, 가볍게뺄, 가볍게미디어, 가볍게가린자리, 좋은결과, 따라가기계획, 따라가기실행, 공용따라가기, 상태읽기, 맥락, origin판들, 가까운바탕, 받은것만바탕 };
+module.exports = { 따라가기잠금, 올리기, 따라가기, 가볍게, 가볍게뺄, 가볍게미디어, 가볍게가린자리, 좋은결과, 따라가기계획, 따라가기실행, 공용따라가기, 상태읽기, 맥락, origin판들, 가까운바탕, 받은것만바탕 };
