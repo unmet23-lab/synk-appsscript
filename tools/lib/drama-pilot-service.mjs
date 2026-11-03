@@ -10,9 +10,9 @@ export function publicLesson(lesson) {
     assets:lesson.assets?{listenLoop:lesson.assets.listenLoop,poster:lesson.assets.poster,backdrop:lesson.assets.backdrop}:undefined,
     scene:lesson.scene.map(({spec,...line})=>line),
     // promptKo는 답 낱말을 쓰지 않는 한국어 상황 글, reviewed는 칸 명세 검수 통과 여부(모범 카드의 안내 글이 달라진다).
-    transfer:{id:lesson.transfer.id,prompt:lesson.transfer.prompt,promptKo:lesson.transfer.promptKo,skill:lesson.transfer.skill,reviewed:lesson.transfer.spec?.reviewed===true},
+    transfer:{id:lesson.transfer.id,prompt:lesson.transfer.prompt,promptKo:lesson.transfer.promptKo,promptMn:lesson.transfer.promptMn,skill:lesson.transfer.skill,reviewed:lesson.transfer.spec?.reviewed===true},
     // 7~10일 뒤 처음 보는 문항(설계 §17) — 새 상황과 같은 꼴, 명세 · 모범 글은 빼고.
-    ...(lesson.delayed?{delayed:{id:lesson.delayed.id,prompt:lesson.delayed.prompt,promptKo:lesson.delayed.promptKo,skill:lesson.delayed.skill,reviewed:lesson.delayed.spec?.reviewed===true}}:{})};
+    ...(lesson.delayed?{delayed:{id:lesson.delayed.id,prompt:lesson.delayed.prompt,promptKo:lesson.delayed.promptKo,promptMn:lesson.delayed.promptMn,skill:lesson.delayed.skill,reviewed:lesson.delayed.spec?.reviewed===true}}:{})};
 }
 
 // 테이크 하나를 학습 기록(Atlas Trail, 응답 꼴 spoken)에 어떻게 남길지 — 판정과 명세 검수 여부를 아는 서버가 정하고 화면은 적기만 한다.

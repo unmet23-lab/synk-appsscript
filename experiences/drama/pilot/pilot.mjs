@@ -55,8 +55,21 @@ const FALLBACK = {
 };
 const NOTE_ORDER = { ending: 0, length: 1, missing: 2 };
 
+// 화면 언어(11-03, 몽골 시범 §7 ②): WORLD에서 고른 언어를 따른다 — 같은 출처 localStorage 'synk.world.lang'(brand-opening/world-lang.mjs와
+// 같은 키 · 값 ko · en · mn), 주소의 ?lang=이 먼저. 고르기 전이면 기기 언어(한국어 · 키릴 몽골어 · 그 밖은 영어). 언어 단추는 한국어와 학습자
+// 언어(영어 또는 몽골어)를 오간다. 대사 · 모범 · 받아 적은 글 같은 학습 내용은 늘 한국어다.
+const LANGS = ['ko', 'en', 'mn'];
+const deviceLang = () => { const d = String(navigator.language || 'ko').toLowerCase().split(/[-_]/); return d[0] === 'ko' ? 'ko' : (d[0] === 'mn' || d[0] === 'khk') && !d.includes('mong') && !d.includes('cn') ? 'mn' : 'en'; };
+function startLang() {
+ const ok = (v) => (LANGS.includes(v) ? v : null);
+ try { const q = ok(new URLSearchParams(location.search).get('lang')); if (q) return q; } catch {}
+ try { const saved = ok(localStorage.getItem('synk.world.lang')); if (saved) return saved; } catch {}
+ return deviceLang();
+}
+const firstLang = startLang();
 const S = {
- lang: (navigator.language || 'ko').toLowerCase().startsWith('ko') ? 'ko' : 'en',
+ lang: firstLang,
+ home: firstLang === 'ko' ? (deviceLang() === 'mn' ? 'mn' : 'en') : firstLang, // 언어 단추가 한국어에서 넘어갈 학습자 언어
  boot: null, csrf: '', epoch: 0, maxSeconds: 20,
  consent: null,            // 'yes' | 'no' | null(아직 안 물음)
  mic: 'unknown',           // 'ok' | 'denied' | 'unsupported' | 'unknown'
@@ -76,6 +89,9 @@ const S = {
  orb: null, orbAction: null, cardKey: null, // 음성 구 · 구를 눌렀을 때 할 일 · 지금 떠 있는 대사 카드(올라오는 움직임은 새 카드에만)
 };
 const t = () => STR[S.lang];
+// 대사 뜻 · 상황 글은 화면 언어로(몽골어 판이 없으면 영어).
+const meaningOf = (item) => (S.lang === 'mn' && item?.meaningMn) || item?.meaning || '';
+const meaningLang = (item) => (S.lang === 'mn' && item?.meaningMn ? 'mn' : 'en');
 const tx = (key, ...a) => { const v = t()[key]; return typeof v === 'function' ? v(...a) : v; };
 
 /* ───────── DOM 도우미(동적 글은 늘 텍스트 노드로) ───────── */
@@ -176,8 +192,8 @@ function celebrate(s) {
 function applyStaticText() {
  document.documentElement.lang = S.lang;
  for (const n of document.querySelectorAll('[data-s]')) n.textContent = tx(n.dataset.s);
- ui.lang.textContent = tx('lang');
- ui.lang.setAttribute('aria-label', S.lang === 'ko' ? 'Switch to English' : '한국어로 보기');
+ ui.lang.textContent = S.lang === 'ko' ? (S.home === 'mn' ? 'MN' : 'EN') : tx('lang');
+ ui.lang.setAttribute('aria-label', S.lang !== 'ko' ? '한국어로 보기' : S.home === 'mn' ? 'Монгол хэлээр харах' : 'Switch to English');
  updateChip();
 }
 
@@ -272,7 +288,7 @@ function subs(ko, meaning, who, motion = null) {
  const words = ko.split(' ').map((w) => h('span', { class: 'w' }, w));
  const line = h('p', { class: 'ko', lang: 'ko' }, words.flatMap((w, i) => (i ? [' ', w] : [w])));
  const whoEl = who ? h('span', { class: 'who' }, who) : null;
- const meanEl = meaning ? h('p', { class: 'mean', lang: 'en' }, meaning) : null;
+ const meanEl = meaning ? h('p', { class: 'mean', lang: S.lang === 'mn' ? 'mn' : 'en' }, meaning) : null;
  ui.subs.replaceChildren(...[whoEl, line, meanEl].filter(Boolean));
  if (!motion) return;
  anim(whoEl, [{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 350 });
@@ -756,7 +772,7 @@ async function runScene(i) {
 async function actorBeat(item, s, { from } = {}) {
  S.cardKey = null; panel();
  orbMode('idle', 'Listen');
- subs(item.text, item.meaning, 'Taeo', 'words');
+ subs(item.text, meaningOf(item), 'Taeo', 'words');
  let ok;
  if (item.video) { stageMode('reply'); ok = await playVideo(item.video, from ?? item.videoStart ?? 0, item.videoEnd, s); }
  else { stageMode('still'); pushStill(); ok = await playUrl(item.audio, s); }
@@ -800,8 +816,8 @@ function turnPanel(item, s, ctx, extra = []) {
     micNotice(),
     ...extra,
     practice
-     ? [h('p', { class: 'mean big' }, item.meaning || ''), h('p', { class: 'fine' }, tx('practiceHint'))]
-     : [h('p', { class: 'cardline ko', lang: 'ko' }, showFull ? item.text : blanked(item.text, item)), item.meaning ? h('p', { class: 'mean' }, item.meaning) : null],
+     ? [h('p', { class: 'mean big', lang: meaningLang(item) }, meaningOf(item)), h('p', { class: 'fine' }, tx('practiceHint'))]
+     : [h('p', { class: 'cardline ko', lang: 'ko' }, showFull ? item.text : blanked(item.text, item)), meaningOf(item) ? h('p', { class: 'mean', lang: meaningLang(item) }, meaningOf(item)) : null],
     h('div', { class: 'row aux' },
      item.modelAudio ? soundBtn(tx('modelListen'), item.modelAudio, s) : null,
      (!showFull || practice) ? h('button', { type: 'button', class: 'ghost', on: { click: () => go('open') } }, tx('openCard')) : null,
@@ -1034,7 +1050,7 @@ async function afterScene() {
  const chosen = choose(s, (go) => [stepper('take2'), h('div', { class: 'director' },
   h('p', { class: 'k' }, cand ? 'Coach note' : 'Practice', h('b', {}, tx('sceneEnd'))),
   h('h2', {}, cand ? tx('coachNote') : tx('practiceTitle')),
-  h('div', { class: 'card' }, h('p', { class: 'ko line', lang: 'ko' }, item.text), item.meaning ? h('p', { class: 'mean' }, item.meaning) : null),
+  h('div', { class: 'card' }, h('p', { class: 'ko line', lang: 'ko' }, item.text), meaningOf(item) ? h('p', { class: 'mean', lang: meaningLang(item) }, meaningOf(item)) : null),
   cand ? [h('p', { class: 'lead' }, noteText), endingFix(cand.note) ? h('p', { class: 'fix ko', lang: 'ko' }, noteFix.slice(0, -1), h('span', { class: 'yo' }, '요')) : h('p', { class: 'lead strong' }, noteFix), h('p', { class: 'fine' }, tx('noteHedge'))]
    : [h('p', { class: 'lead' }, tx('practiceBody'))],
   h('div', { class: 'row aux' }, noteTake ? mineBtn(noteTake, s) : null, item.modelAudio ? soundBtn(tx('modelListen'), item.modelAudio, s) : null),
@@ -1191,7 +1207,7 @@ function heldPanel(s, T) {
  hideMic();
  const p = choose(s, (go) => [stepper('transfer'), h('div', { class: 'transfer' },
   h('p', { class: 'k' }, h('span', { class: 'dot', 'aria-hidden': 'true' }), 'New situation', h('b', {}, tx('transferTitle'))),
-  h('div', { class: 'notice quiet' }, tx(W.limit ? 'heldLimit' : 'heldDown'), T.heldChecked ? h('p', { class: 'fine' }, tx('heldStill')) : null),
+  h('div', { class: 'notice quiet' }, tx(W.limit ? 'heldLimit' : 'heldDown'), T.heldChecked ? h('p', { class: 'fine' }, tx(W.statusFailed ? 'heldCheckFail' : W.limit ? 'heldStillLimit' : 'heldStill')) : null),
   h('div', { class: 'row main' }, h('button', { type: 'button', class: 'pill', on: { click: () => go('retry') } }, tx('heldRetry')),
    h('button', { type: 'button', class: 'ghost', on: { click: () => go('later') } }, tx(T.fromIntro ? 'delayedLater' : 'heldLater'))))]);
  cardIn('transfer-held');
@@ -1240,13 +1256,14 @@ function transferPanel(s, tr, T) {
    ...lines);
  }
  const promptKo = S.lang === 'ko' && tr.promptKo ? tr.promptKo : null;
+ const promptMn = S.lang === 'mn' && tr.promptMn ? tr.promptMn : null;
  const p = choose(s, (go) => {
   if (micUnusable()) hideMic();
   else orbMode('listening', obs?.kind === 'pass' && T.selfCheck !== 'differs' ? 'One more' : T.tries ? 'Say it again' : 'Tap to speak', { action: () => go('record'), aria: T.tries ? tx('tryAgain') : tx('record') });
   return [stepper('transfer'), h('div', { class: 'transfer' },
   h('p', { class: 'k' }, h('span', { class: 'dot', 'aria-hidden': 'true' }), 'New situation', h('b', {}, tx(isDelayed(tr.id) ? 'delayedTitle' : 'transferTitle'))),
   h('p', { class: 'lead' }, tx('transferLead')),
-  h('div', { class: 'card situation' }, h('p', { class: 'fine' }, tx('transferPromptLabel')), h('p', { class: 'mean big', lang: 'en' }, tr.prompt), promptKo ? h('p', { class: 'fine' }, promptKo) : null),
+  h('div', { class: 'card situation' }, h('p', { class: 'fine' }, tx('transferPromptLabel')), h('p', { class: 'mean big', lang: promptMn ? 'mn' : 'en' }, promptMn || tr.prompt), promptKo ? h('p', { class: 'fine' }, promptKo) : null),
   micNotice(),
   T.revealed ? h('div', { class: 'card model' }, h('p', { class: 'fine' }, tx('modelLabel')), h('p', { class: 'ko line', lang: 'ko' }, T.revealed.text), h('p', { class: 'fine' }, tx(tr.reviewed ? 'modelReviewed' : 'modelUnreviewed')),
    T.revealed.modelAudio ? h('div', { class: 'row' }, soundBtn(tx('modelListen'), T.revealed.modelAudio, s)) : null) : null,
@@ -1381,7 +1398,7 @@ function resetFailed() {
 
 /* ───────── 언어 · 창 닫기 ───────── */
 ui.lang.addEventListener('click', () => {
- S.lang = S.lang === 'ko' ? 'en' : 'ko';
+ S.lang = S.lang === 'ko' ? S.home : 'ko';
  applyStaticText();
  // 녹음·마이크 허용 대기·전송 중이 아니면 지금 단계를 새 언어로 다시 그린다(intro·wrap 등 상태를 잃지 않는 단계만).
  if (!S.rec && !S.micWait && !S.upload && ['intro', 'wrap', 'transfer', 'take2-done', 'reset-fail', 'outside'].includes(S.step) && S.render) S.render();

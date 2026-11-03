@@ -51,7 +51,7 @@ test('시범 대사에는 말하기 지도의 능력 이름이 있고, 새 상�
   for(const line of [...PILOT.scene.filter(x=>x.type==='student'),PILOT.transfer])assert.equal(map.getNode(line.skill)?.kind,'skill',line.id);
   const pub=publicLesson(PILOT);
   // 한국어 상황 글(promptKo)은 답 낱말을 쓰지 않고, reviewed는 칸 명세 검수 여부뿐이다(11-02).
-  assert.deepEqual(Object.keys(pub.transfer).sort(),['id','prompt','promptKo','reviewed','skill']);
+  assert.deepEqual(Object.keys(pub.transfer).sort(),['id','prompt','promptKo','promptMn','reviewed','skill']);
   for(const key of PILOT.transfer.spec.keys)assert.ok(!pub.transfer.promptKo.includes(key.word),key.word);
   assert.ok(pub.scene.filter(x=>x.type==='student').every(x=>x.skill&&!x.spec));
 });

@@ -5,6 +5,7 @@
 // 미디어는 tools/build-drama-pilot-assets.mjs가 승인 자산에서 정리한 것(새 생성 0). 음성만 있는 대사는 정지 사진+원래 녹음이며 립싱크 영상이 아니다.
 import fs from 'node:fs';
 import ep01 from '../s1/ep01.mjs';
+import { MEANING_MN, PROMPT_MN } from './content-mn.mjs';
 import { dramaSpecOf, dramaReviewStatus } from '../../../tools/lib/drama-spec-review-unit.mjs';
 
 // 새 상황 카드(도움 언어). 대본 상황 「다음 수업 전에 마실 것을 사려는데 편의점을 못 찾아, 오늘 처음 인사한 같은 과의 다른 선배께」를 옮긴 것
@@ -86,6 +87,15 @@ const actor = (id, i, media) => {
 };
 
 const STILL = '/media/taeo-still.webp';
+// 몽골어 뜻(content-mn.mjs)을 화면에 나가는 대사 글과 짝 지어 붙인다 — 짝 글이 지금 대사와 다르면 멈춘다(옛 대사의 뜻이 나가지 않게).
+function withMongolian(scene) {
+ for (const line of scene) {
+  const pair = MEANING_MN[line.id];
+  if (!pair || pair[0] !== line.text) throw new Error(`몽골어 뜻의 짝 글이 대사와 다르다: ${line.id}`);
+  line.meaningMn = pair[1];
+ }
+ return scene;
+}
 
 export const PILOT = {
  id: 's1e01-pilot',
@@ -98,7 +108,7 @@ export const PILOT = {
  role: { me: '새로 온 유학생', partner: '권태오 · 3학년 선배', place: '점심시간, 캠퍼스' },
  // 상대 → 나 → 상대 → 나(목표) → 상대 → 나 → 상대. 내 대사는 셋.
  // 쇼케이스 영상을 구워 넣으면 a1·a2·a3은 그 영상으로, 6·7번 줄의 듣는 고리와 6번 줄 첫 되묻기도 그 영상으로 바뀐다(withShowcase).
- scene: withShowcase([
+ scene: withMongolian(withShowcase([
   actor('a1', 0, { audio: '/media/senior-01.mp3', image: STILL }),
   student('s1e01-6', '/media/model-6.mp3'),
   actor('a2', 1, { audio: null, image: STILL }), // 선배 2는 쇼케이스 C2 영상(웃음 + 대사)으로만 — withShowcase가 붙인다
@@ -106,7 +116,7 @@ export const PILOT = {
   actor('a3', 2, { audio: '/media/senior-03.mp3', image: STILL }),
   student('s1e01-8', '/media/model-8.mp3'),
   actor('a4', 3, { audio: '/media/senior-04.mp3', image: STILL, last: true }),
- ]),
+ ])),
  // 장면 안 1번째 어긋남에 선배가 되묻는 녹음(ep01 되묻기.선배 순서 그대로).
  reasks: ep01.되묻기.선배.map((text, i) => ({ text, audio: `/media/senior-ask-${i + 1}.mp3` })),
  // audio가 null이면 녹음 전 — 화면에 코치 글만 보이고 소리는 내지 않는다.
@@ -120,6 +130,7 @@ export const PILOT = {
   skill: T9.능력, // 학습 기록의 능력 이름(말하기 지도). 한국어 답의 실마리가 아니라 화면에 보낸다.
   prompt: TRANSFER_PROMPT.en,
   promptKo: TRANSFER_PROMPT.ko,
+  promptMn: PROMPT_MN.transfer,
   to: T9.명세.to,
   text: T9.말,
   spec: { ...dramaSpecOf({ row: T9, kind: 'unseen' }), reviewed: dramaReviewStatus({ row: T9, kind: 'unseen', day: null, before: null }, ep01.id).status === 'passed' },
@@ -129,6 +140,7 @@ export const PILOT = {
   skill: T6.능력,
   prompt: DELAYED_PROMPT.en,
   promptKo: DELAYED_PROMPT.ko,
+  promptMn: PROMPT_MN.delayed,
   to: T6.명세.to,
   text: T6.말,
   spec: { ...dramaSpecOf({ row: T6, kind: 'unseen' }), reviewed: dramaReviewStatus({ row: T6, kind: 'unseen', day: null, before: null }, ep01.id).status === 'passed' },
