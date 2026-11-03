@@ -7,6 +7,7 @@ import { join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn, spawnSync } from 'node:child_process';
 import { createServer as createNetServer } from 'node:net';
+import { setTimeout as delay } from 'node:timers/promises';
 
 const deploy = fileURLToPath(new URL('./deploy/', import.meta.url));
 const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : '/bin/bash';
@@ -43,15 +44,37 @@ test('Caddy adapter advertises only reachable TCP protocols and clears cached al
 });
 
 test('Caddy runtime proxy error redacts a synthetic media capability URI', {skip:caddy?false:'Set SYNK_QA_CADDY to an existing Caddy binary.'}, async t=>{
-  const root=await mkdtemp(join(tmpdir(),'synk-caddy-media-')),output=join(root,'runtime.log');let child;
-  t.after(async()=>{if(child&&child.exitCode===null){const done=new Promise(resolve=>child.once('exit',resolve));child.kill();await done;}assert.ok(resolve(root).startsWith(resolve(tmpdir())+sep));await rm(root,{recursive:true,force:true});});
+  const root=await mkdtemp(join(tmpdir(),'synk-caddy-media-')),output=join(root,'runtime.log');
+  let child, closed, spawnError;
+  t.after(async()=>{
+    if(child && child.exitCode===null && child.signalCode===null) child.kill();
+    await closed;
+    assert.ok(resolve(root).startsWith(resolve(tmpdir())+sep));
+    await rm(root,{recursive:true,force:true});
+  });
   const adapted=spawnSync(caddy,['adapt','--config',join(deploy,'Caddyfile'),'--adapter','caddyfile'],{env:{...process.env,SYNK_COMPANY_DOMAIN:'workspace.example.test',SYNK_TLS_EMAIL:'ops@example.test'},encoding:'utf8',timeout:10000,windowsHide:true});assert.equal(adapted.status,0,adapted.stderr);
   const config=JSON.parse(adapted.stdout),listener=createNetServer();await new Promise(resolve=>listener.listen(0,'127.0.0.1',resolve));const port=listener.address().port;await new Promise(resolve=>listener.close(resolve));
   config.admin={disabled:true,config:{persist:false}};config.logging.logs.default.writer={output:'file',filename:output};const server=Object.values(config.apps.http.servers)[0];server.listen=['127.0.0.1:'+port];server.automatic_https={disable:true};delete server.routes[0].match;
   const visit=value=>{if(!value||typeof value!=='object')return;if(value.handler==='reverse_proxy')value.upstreams=[{dial:'127.0.0.1:1'}];for(const child of Object.values(value))visit(child);};visit(server.routes);
   const configPath=join(root,'caddy.json');await writeFile(configPath,JSON.stringify(config));child=spawn(caddy,['run','--config',configPath],{windowsHide:true,stdio:'ignore'});
-  let response;for(let tries=0;tries<100;tries++){try{response=await fetch('http://127.0.0.1:'+port+'/social-publish-media/synthetic-capability?test=1',{headers:{Host:'workspace.example.test'},signal:AbortSignal.timeout(500)});break;}catch{await new Promise(resolve=>setTimeout(resolve,50));}}
-  assert.equal(response?.status,502);let logs='';for(let tries=0;tries<40;tries++){logs=await readFile(output,'utf8').catch(()=> '');if(logs.includes('/social-publish-media/REDACTED'))break;await new Promise(resolve=>setTimeout(resolve,25));}
+  closed=new Promise(resolve=>child.once('close',resolve));
+  child.once('error',error=>{spawnError=error;});
+  const deadline=performance.now()+30_000, url='http://127.0.0.1:'+port+'/social-publish-media/synthetic-capability?test=1';
+  let response, lastError;
+  while(performance.now()<deadline){
+    if(spawnError) throw spawnError;
+    assert.ok(child.exitCode===null && child.signalCode===null,'Caddy exited before the loopback request: '+(child.exitCode??child.signalCode));
+    try{
+      const timeout=Math.max(1,Math.min(2000,Math.ceil(deadline-performance.now())));
+      response=await fetch(url,{headers:{Host:'workspace.example.test'},signal:AbortSignal.timeout(timeout)});
+      break;
+    }catch(error){lastError=error;}
+    await delay(100);
+  }
+  assert.ok(response,'Caddy did not accept the loopback request: '+(lastError?.cause?.code??lastError?.message));
+  assert.equal(response.status,502);
+  await response.arrayBuffer();
+  let logs='';for(let tries=0;tries<40;tries++){logs=await readFile(output,'utf8').catch(()=> '');if(logs.includes('/social-publish-media/REDACTED'))break;await new Promise(resolve=>setTimeout(resolve,25));}
   assert.match(logs,/\/social-publish-media\/REDACTED/);assert.doesNotMatch(logs,/synthetic-capability/);
 });
 

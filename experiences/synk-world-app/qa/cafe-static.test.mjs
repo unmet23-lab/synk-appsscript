@@ -13,7 +13,8 @@ const require=createRequire(import.meta.url),{chromium}=(()=>{try{return require
 const payload=path.resolve(process.env.SYNK_CAFE_PUBLIC_PAYLOAD||'.tmp/world-static-c55d5a78-20261027/world'),frozen={skip:Boolean(process.env.CI)&&!fs.existsSync(path.join(payload,'world-config.json'))&&'CI 체크아웃에는 없다 — .tmp/world-static-c55d5a78-20261027/world (git 밖 고정 /world 판)'};
 const A='11111111-1111-4111-8111-111111111111';
 const cafeTestMs=90_000;
-test('frozen /world cafe completes and restores the physical checkpoint through the official account transport',{timeout:cafeTestMs,...frozen},async t=>{
+const disposalReserveMs=60_000;
+test('frozen /world cafe completes and restores the physical checkpoint through the official account transport',{timeout:cafeTestMs+disposalReserveMs,...frozen},async t=>{
  const deadline=performance.now()+cafeTestMs;
  const closeGraceMs=5000,remaining=()=>Math.floor(deadline-performance.now()-2000);
  const navigation=()=>navigationBefore(deadline-closeGraceMs-2000);
@@ -26,14 +27,17 @@ test('frozen /world cafe completes and restores the physical checkpoint through 
  const check=(name,value)=>{assert.ok(value,name);checks.push(name);};
  const snapshot={ok:true,accountId:A,revision:1,avatar:{characterId:'mongle',slots:{body:'',neck:''}},inventory:[],activeRun:null};
  let failure,browserServer,closing,checksCompletedAt;
+ const work=new AbortController(),signal=AbortSignal.any([work.signal,t.signal]);
+ const workTimeout=()=>Error('Cafe functional checks exceeded '+cafeTestMs+'ms');
+ const workTimer=setTimeout(()=>work.abort(workTimeout()),Math.max(1,deadline-performance.now()));
  const closeBrowser=()=>closing??=closeOwnedEdge(browserServer,{
-  signal:t.signal,graceMs:Math.min(closeGraceMs,remaining()),diagnostic:message=>t.diagnostic(message),
+  signal,graceMs:Math.min(closeGraceMs,remaining()),diagnostic:message=>t.diagnostic(message),
  });
  const abortBrowser=()=>{if(browserServer)void closeBrowser().catch(()=>{});};
- t.signal.addEventListener('abort',abortBrowser,{once:true});
+ signal.addEventListener('abort',abortBrowser,{once:true});
  try{
   browserServer=await chromium.launchServer({channel:'msedge',headless:true});
-  t.signal.throwIfAborted();
+  signal.throwIfAborted();
   const browser=await chromium.connect(browserServer.wsEndpoint());
   const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true});page=await context.newPage();page.setDefaultTimeout(15000);
   await context.addInitScript(()=>{sessionStorage.setItem('synk.oauth.session.world',JSON.stringify({access_token:'synthetic-cafe-static',refresh_token:null,expires_at:Date.now()+3600000}));localStorage.setItem('synk.world.tutor.v1:11111111-1111-4111-8111-111111111111',JSON.stringify({version:1,completed:true,tutor:'kkamong'}));});
@@ -93,11 +97,13 @@ test('frozen /world cafe completes and restores the physical checkpoint through 
   await next();await synced();composed=JSON.parse(state.records[key]).lessons['cafe-compose'];check('the fifth visit finishes only on pickup through the official account transport',composed.completedAt!==null&&composed.stage.cafe.phase==='complete'&&Object.values(JSON.parse(state.records[key]).lessons).filter(l=>l.completedAt!==null).length===5);await page.screenshot({path:path.join(output,'compose-complete-portrait.png')});
   check('only scoped progress was written and the account wallet remains unchanged',JSON.stringify(state.wallet)===originalWallet&&calls.filter(c=>c.action).every(c=>c.action==='progress'));
   check('frozen runtime modules, tutor dependencies, art and CSS load without errors',!errors.length&&!assets.length&&!unexpected.length);
+  if(performance.now()>=deadline)throw workTimeout();
   checksCompletedAt=new Date().toISOString();
- }catch(error){failure=error;if(page&&!t.signal.aborted)await page.screenshot({path:path.join(output,'failure.png'),timeout:2000}).catch(()=>{});}
+ }catch(error){failure=signal.aborted?signal.reason:error;if(page&&!signal.aborted)await page.screenshot({path:path.join(output,'failure.png'),timeout:2000}).catch(()=>{});}
  finally{
+  clearTimeout(workTimer);
   const cleanupStarted=performance.now();
-  t.signal.removeEventListener('abort',abortBrowser);
+  signal.removeEventListener('abort',abortBrowser);
   // Closing the owned browser also closes its context. Stop accepting HTTP before dropping sockets.
   const stopped=new Promise(resolve=>server.close(resolve));
   server.closeAllConnections();

@@ -1,5 +1,5 @@
 import {handleWorldProfileRead,assetFailure,openWorldLibrary} from './static-world-fixture.mjs';
-import {navigationBefore} from './owned-edge.mjs';
+import {navigationBefore,openOwnedEdge,stopTutorFixture} from './owned-edge.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -15,7 +15,7 @@ const payload=path.resolve(process.env.SYNK_LIFE_TUTOR_STATIC_PAYLOAD||'.tmp/wor
 const A='11111111-1111-4111-8111-111111111111';
 const core=value=>JSON.stringify({owner:value.owner,version:value.version,lessons:value.lessons,reviews:value.reviews,activeLessonId:value.activeLessonId,activeReview:value.activeReview});
 const tutorTestMs=90_000;
-test('frozen /world tutor follows owner choice, preserves guided records and disposes on logout',{timeout:tutorTestMs,...frozen},async()=>{
+test('frozen /world tutor follows owner choice, preserves guided records and disposes on logout',{timeout:tutorTestMs,...frozen},async t=>{
  const navigationDeadline=performance.now()+tutorTestMs-7000;
  const config=JSON.parse(fs.readFileSync(path.join(payload,'world-config.json'),'utf8')).account;
  const standaloneHtml=path.resolve(process.env.SYNK_LIFE_TUTOR_STANDALONE_HTML||'experiences/brand-opening/home.html');
@@ -23,14 +23,15 @@ test('frozen /world tutor follows owner choice, preserves guided records and dis
  const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.mp3':'audio/mpeg','.mp4':'video/mp4','.wav':'audio/wav','.webp':'image/webp','.png':'image/png','.woff2':'font/woff2'};
  const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://localhost'),name=decodeURIComponent(u.pathname.slice(7))||'index.html',standalone=name==='brand-opening/home.html',file=standalone?standaloneHtml:path.resolve(payload,name),rel=path.relative(payload,file);if(!u.pathname.startsWith('/world/')||!standalone&&(rel.startsWith('..')||path.isAbsolute(rel))||!fs.existsSync(file)||!fs.statSync(file).isFile())return res.writeHead(404).end();res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream'});fs.createReadStream(file).pipe(res);});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${server.address().port}`;
- const state=emptyPlayState(),wallet=JSON.stringify(state.wallet),commands=new Map(),checks=[],calls=[],errors=[],assets=[],outside=[];let revision=0,browser,context,page,failure;
+ const state=emptyPlayState(),wallet=JSON.stringify(state.wallet),commands=new Map(),checks=[],calls=[],errors=[],assets=[],outside=[];let revision=0,edge,page,failure,checksCompletedAt;
  const check=(name,value)=>{assert.ok(value,name);checks.push(name);};
  const read=()=>page.evaluate(()=>window.__synkWorld.life());
  const library=async()=>{await openWorldLibrary(page);};
  const synced=()=>page.waitForFunction(()=>document.querySelector('.life-save-status')?.dataset.savePhase==='synced');
  const snapshot={ok:true,accountId:A,revision:1,avatar:{characterId:'mongle',slots:{body:'',neck:''}},inventory:[],activeRun:null};
  try{
-  browser=await chromium.launch({channel:'msedge',headless:true});context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,reducedMotion:'reduce'});page=await context.newPage();page.setDefaultTimeout(15000);
+  edge=await openOwnedEdge(chromium,t,navigationDeadline);
+  const context=await edge.browser.newContext({viewport:{width:390,height:844},hasTouch:true,reducedMotion:'reduce'});page=await context.newPage();page.setDefaultTimeout(15000);
   await context.addInitScript(account=>{sessionStorage.setItem('synk.oauth.session.world',JSON.stringify({access_token:'synthetic-life-tutor-static',refresh_token:null,expires_at:Date.now()+3600000}));localStorage.setItem('synk.world.tutor.v1:guest',JSON.stringify({version:1,completed:true,tutor:'marin'}));localStorage.setItem('synk.world.tutor.v1:'+account,JSON.stringify({version:1,completed:true,tutor:'kkamong'}));},A);
   await context.route('**/*',async route=>{if(await handleWorldProfileRead(route,config.accountApiUrl,A))return;
    const request=route.request(),u=new URL(request.url());if(u.origin===base)return route.continue();
@@ -68,6 +69,13 @@ test('frozen /world tutor follows owner choice, preserves guided records and dis
   check('standalone bundle offers the canonical transfer exercise',await page.locator('.life-expression-question h4').textContent()===lessonById('greetings-expressions').questions[0].review.prompt);await page.screenshot({path:path.join(out,'standalone-practice.png')});await page.locator('.life-expression-cancel').click();
   check('only life progress was written and no wallet mutation occurred',JSON.stringify(state.wallet)===wallet&&calls.filter(c=>c.action).every(c=>c.action==='progress'));
   check('all new modules, art and fonts resolve under the mounted public path',!errors.length&&!assets.length&&!outside.length);
- }catch(error){failure=error;if(page)await page.screenshot({path:path.join(out,'failure.png')}).catch(()=>{});throw error;}
- finally{fs.writeFileSync(path.join(out,'report.json'),JSON.stringify({ok:!failure,payload,standaloneHtml,at:new Date().toISOString(),checks,calls,errors,assets,outside,...(failure?{failure:failure.stack}:{}),scope:{frozenStatic:true,standaloneHtml:process.env.SYNK_LIFE_TUTOR_STANDALONE_HTML?'fixture':'source',syntheticAccount:true,realOAuth:false,remoteDatabase:false,published:false}},null,2)+'\n');if(page&&!page.isClosed()){await context.unrouteAll({behavior:'ignoreErrors'});await page.goto('about:blank').catch(()=>{});}await context?.close();await browser?.close();server.closeAllConnections();await new Promise(r=>server.close(r));}
+  checksCompletedAt=new Date().toISOString();
+ }catch(error){failure=error;if(page&&!t.signal.aborted)await page.screenshot({path:path.join(out,'failure.png'),timeout:2000}).catch(()=>{});}
+ finally{
+  const cleanupStarted=performance.now();
+  try{await stopTutorFixture(server,edge);}catch(error){failure??=error;}
+  if(t.signal.aborted)failure??=t.signal.reason;
+  fs.writeFileSync(path.join(out,'report.json'),JSON.stringify({ok:!failure,payload,standaloneHtml,checksCompletedAt,cleanupMs:Math.round(performance.now()-cleanupStarted),at:new Date().toISOString(),checks,calls,errors,assets,outside,...(failure?{failure:failure.stack}:{}),scope:{frozenStatic:true,standaloneHtml:process.env.SYNK_LIFE_TUTOR_STANDALONE_HTML?'fixture':'source',syntheticAccount:true,realOAuth:false,remoteDatabase:false,published:false}},null,2)+'\n');
+ }
+ if(failure)throw failure;
 });

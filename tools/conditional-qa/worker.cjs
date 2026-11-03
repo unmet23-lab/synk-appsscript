@@ -4,6 +4,7 @@ const { readManifest, coverage, sha256 } = require('./contract.cjs');
 const { read, write, git, loadConfig, clone, prepare, postcheck } = require('./inputs.cjs');
 const github = require('./github.cjs');
 const { childRun } = require('./run.cjs');
+const { runnerFor } = require('./legacy-profile.cjs');
 const defaultState = () => path.join(os.homedir(), 'security-audit-skill/SYNK-conditional-qa');
 // A tick opens new verifications only within this budget: one verification may take 50 minutes,
 // and both the scheduled task and its hidden launcher stop a tick after two hours.
@@ -69,7 +70,7 @@ function initialize(stateDir, firstCommit) {
 async function verify(config, commit, output) {
   const context = prepare(config, commit), manifest = readManifest(config.root), cases = manifest.cases.filter(row => row.route === 'local');
   fs.mkdirSync(output, { recursive: true });
-  const execution = await childRun([path.join(config.root, 'tools/conditional-qa/run.cjs'), '--route', 'local', '--output', output, '--context', path.join(config.state, 'context.json')],
+  const execution = await childRun([runnerFor(config.root), '--route', 'local', '--output', output, '--context', path.join(config.state, 'context.json')],
     { cwd: config.root, env: { ...process.env }, log: path.join(output, 'runner.log'), timeoutMs: 50 * 60_000 });
   const receipt = read(path.join(output, 'result.json'));
   receipt.inputsUnchanged = postcheck(context);

@@ -1,4 +1,5 @@
 import {handleWorldProfileRead,assetFailure} from './static-world-fixture.mjs';
+import {openOwnedEdge,stopTutorFixture} from './owned-edge.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -15,7 +16,9 @@ const payload=path.resolve(process.env.SYNK_HOME_TUTOR_STATIC_PAYLOAD||'.tmp/wor
 const A='11111111-1111-4111-8111-111111111111',LIFE='synk.life-korean.progress.v1';
 const core=value=>JSON.stringify({owner:value.owner,version:value.version,lessons:value.lessons,reviews:value.reviews,activeLessonId:value.activeLessonId,activeReview:value.activeReview});
 
-test('frozen /world home tutor uses actual owner history, preserves guided progress and clears it on logout',{timeout:120000,...frozen},async()=>{
+const homeTestMs=120_000;
+test('frozen /world home tutor uses actual owner history, preserves guided progress and clears it on logout',{timeout:homeTestMs,...frozen},async t=>{
+ const workDeadline=performance.now()+homeTestMs-7000;
  const standaloneHtml=path.resolve(process.env.SYNK_HOME_TUTOR_STANDALONE_HTML||'experiences/brand-opening/home.html');
  const config=JSON.parse(fs.readFileSync(path.join(payload,'world-config.json'),'utf8')).account;
  const out=path.resolve('experiences/synk-world-app/qa/home-tutor-20261011',process.env.SYNK_HOME_TUTOR_STATIC_RUN||'account');fs.mkdirSync(out,{recursive:true});
@@ -28,12 +31,12 @@ test('frozen /world home tutor uses actual owner history, preserves guided progr
  });
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${server.address().port}`;
  const state=emptyPlayState(),wallet=JSON.stringify(state.wallet),commands=new Map(),checks=[],calls=[],errors=[],assets=[],outside=[];
- let revision=0,browser,context,page,failure,releaseRead,holdRead=true;
+ let revision=0,edge,context,page,failure,checksCompletedAt,releaseRead,holdRead=true;
  const readGate=new Promise(resolve=>releaseRead=resolve),check=(name,value)=>{assert.ok(value,name);checks.push(name);};
  const home=()=>page.evaluate(()=>window.__synkHome.homeTutor()),read=()=>page.evaluate(()=>window.__synkWorld.life());
  const snapshot={ok:true,accountId:A,revision:1,avatar:{characterId:'mongle',slots:{body:'',neck:''}},inventory:[],activeRun:null};
  async function newContext({signedIn=true,corruptGuest=false}={}){
-  context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,reducedMotion:'reduce'});page=await context.newPage();page.setDefaultTimeout(15000);
+  context=await edge.browser.newContext({viewport:{width:390,height:844},hasTouch:true,reducedMotion:'reduce'});page=await context.newPage();page.setDefaultTimeout(15000);
   await context.addInitScript(({account,signedIn,corruptGuest})=>{
    if(!location.pathname.startsWith('/world/'))return;
    if(signedIn)sessionStorage.setItem('synk.oauth.session.world',JSON.stringify({access_token:'synthetic-home-tutor-static',refresh_token:null,expires_at:Date.now()+3600000}));
@@ -61,7 +64,7 @@ test('frozen /world home tutor uses actual owner history, preserves guided progr
  }
  async function closeContext(){if(page&&!page.isClosed()){await context.unrouteAll({behavior:'ignoreErrors'});await page.goto('about:blank').catch(()=>{});}await context?.close();context=null;page=null;}
  try{
-  browser=await chromium.launch({channel:'msedge',headless:true});await newContext();
+  edge=await openOwnedEdge(chromium,t,workDeadline);await newContext();
   await page.goto(base+'/world/mobile.html?opening=off',{waitUntil:'commit'});
   await page.waitForFunction(()=>window.__synkHome?.homeTutor()?.owner==='11111111-1111-4111-8111-111111111111'&&window.__synkHome.homeTutor().recommendation.kind==='loading');
   check('account history loading hides memory claims and disables the home action',await page.locator('#home-tutor .home-tutor-action').isDisabled()&&!(await home()).recommendation.id);
@@ -110,9 +113,14 @@ test('frozen /world home tutor uses actual owner history, preserves guided progr
   await page.goto(base+'/world/mobile.html?opening=off');await page.waitForFunction(()=>window.__synkHome?.homeTutor()?.owner==='11111111-1111-4111-8111-111111111111'&&window.__synkHome.homeTutor().recommendation.kind==='unavailable');
   check('unreadable account history cannot become an invented home recommendation',(await home()).tutor==='kkamong'&&!(await home()).recommendation.id&&state.records[LIFE]===JSON.stringify({version:999,owner:A}));
   check('home modules, tutor images, bundle and fonts resolve beneath the frozen /world mount',!errors.length&&!assets.length&&!outside.length);
- }catch(error){failure=error;if(page)await page.screenshot({path:path.join(out,'failure.png')}).catch(()=>{});throw error;}
+  checksCompletedAt=new Date().toISOString();
+ }catch(error){failure=error;if(page&&!t.signal.aborted)await page.screenshot({path:path.join(out,'failure.png'),timeout:2000}).catch(()=>{});}
  finally{
-  releaseRead();fs.writeFileSync(path.join(out,'report.json'),JSON.stringify({ok:!failure,payload,standaloneHtml,at:new Date().toISOString(),checks,calls,errors,assets,outside,...(failure?{failure:failure.stack}:{}),scope:{frozenStatic:true,standaloneHtml:process.env.SYNK_HOME_TUTOR_STANDALONE_HTML?'fixture':'source',syntheticAccount:true,realOAuth:false,remoteDatabase:false,published:false}},null,2)+'\n');
-  await closeContext();await browser?.close();server.closeAllConnections();await new Promise(r=>server.close(r));
+  releaseRead();
+  const cleanupStarted=performance.now();
+  try{await stopTutorFixture(server,edge);}catch(error){failure??=error;}
+  if(t.signal.aborted)failure??=t.signal.reason;
+  fs.writeFileSync(path.join(out,'report.json'),JSON.stringify({ok:!failure,payload,standaloneHtml,checksCompletedAt,cleanupMs:Math.round(performance.now()-cleanupStarted),at:new Date().toISOString(),checks,calls,errors,assets,outside,...(failure?{failure:failure.stack}:{}),scope:{frozenStatic:true,standaloneHtml:process.env.SYNK_HOME_TUTOR_STANDALONE_HTML?'fixture':'source',syntheticAccount:true,realOAuth:false,remoteDatabase:false,published:false}},null,2)+'\n');
  }
+ if(failure)throw failure;
 });
