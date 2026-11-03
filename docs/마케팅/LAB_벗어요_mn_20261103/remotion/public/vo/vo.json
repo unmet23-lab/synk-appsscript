@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1103,
+  "lufs": -17
+ },
+ "made": "2026-11-02T23:02:47.365Z",
+ "lines": [
+  {
+   "id": "a1",
+   "text": "코트를 입어요.",
+   "dur": 1.053,
+   "syllablesPerSec": 5.7,
+   "src": "a1.wav",
+   "key": "16fba3e8fe8b01d22b334148f36c2357",
+   "words": 2
+  },
+  {
+   "id": "a2",
+   "text": "신발도 입어요?",
+   "dur": 1.101,
+   "syllablesPerSec": 5.45,
+   "src": "a2.wav",
+   "key": "e3c26b2491cc5be2d71b90d79050a264",
+   "words": 2
+  },
+  {
+   "id": "a3",
+   "text": "신발을 신어요.",
+   "dur": 1.029,
+   "syllablesPerSec": 5.83,
+   "src": "a3.wav",
+   "key": "d12755031a22707870fe9d612d2c3d82",
+   "words": 2
+  },
+  {
+   "id": "a4",
+   "text": "모자를 써요.",
+   "dur": 0.991,
+   "syllablesPerSec": 5.05,
+   "src": "a4.wav",
+   "key": "07a9b7c94f892888471ba5bf3b66cfbd",
+   "words": 2
+  },
+  {
+   "id": "a5",
+   "text": "장갑을 껴요.",
+   "dur": 1.071,
+   "syllablesPerSec": 4.67,
+   "src": "a5.wav",
+   "key": "763585c0fda658ec5758e54658cdefcc",
+   "words": 2
+  },
+  {
+   "id": "b1",
+   "text": "벗어요!",
+   "dur": 0.607,
+   "syllablesPerSec": 4.94,
+   "src": "b1.wav",
+   "key": "7345788d99a77ef610be477e93fe1077",
+   "words": 1
+  },
+  {
+   "id": "b2",
+   "text": "벗어요.",
+   "dur": 0.736,
+   "syllablesPerSec": 4.08,
+   "src": "b2.wav",
+   "key": "3e494470398b3499d5988c9ae4db70d8",
+   "words": 1
+  }
+ ]
+}

@@ -1,0 +1,16 @@
+{
+  "note": "LAB 몽골 M27 「벗어요」 — 화면 글 편(몽골어 목소리 없음)에 한국어 문장 소리만, 해설 소진 세기 1.0. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_벗어요_mn_20261103/음성/계획.json --굽기",
+  "voice": { "id": "tc_666a9871abcf27a5169850d0", "name": "소진" },
+  "defaults": { "model": "ssfm-v30", "lang": "ko", "emotion": "normal", "intensity": 1, "tempo": 1, "seed": 1103, "lufs": -17 },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    { "id": "a1", "text": "코트를 입어요." },
+    { "id": "a2", "text": "신발도 입어요?", "emotion": "toneup" },
+    { "id": "a3", "text": "신발을 신어요." },
+    { "id": "a4", "text": "모자를 써요." },
+    { "id": "a5", "text": "장갑을 껴요." },
+    { "id": "b1", "text": "벗어요!", "emotion": "happy" },
+    { "id": "b2", "text": "벗어요.", "emotion": "tonedown" }
+  ]
+}

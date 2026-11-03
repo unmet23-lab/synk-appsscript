@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a4",
+ "text": "모자를 써요.",
+ "dur": 0.991,
+ "words": [
+  {
+   "text": "모자를",
+   "start": 0.02,
+   "end": 0.405
+  },
+  {
+   "text": "써요.",
+   "start": 0.466,
+   "end": 0.991
+  }
+ ],
+ "source": {
+  "key": "07a9b7c94f892888471ba5bf3b66cfbd",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1103,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 414
+ }
+}
