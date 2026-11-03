@@ -83,10 +83,11 @@ const BIG_A: { w: string; a: number; b: number; y: number; size: number; front?:
   { w: '멋있게', a: w(6, 2), b: endOf(6) + 0.1, y: 1080, size: 200, front: true },
   { w: '외계인?', a: w(7, 1), b: endOf(7) + 0.2, y: 1080, size: 220, front: true },
 ];
-const LookA: React.FC<{ t: number }> = ({ t }) => {
+// mix(A+B, 11-03 유호님 「A+B 섞어 보기」): A 그대로에 두 순간만 B의 레몬 블록 — 제품 이름(기울어진 카드 대신 큰 블록 한 방 → 특징 칩) · 끝 브랜드(아래 절반 레몬 판, 엄지 든 끝 그림은 위에 남김)
+const LookA: React.FC<{ t: number; mix?: boolean }> = ({ t, mix }) => {
   const big = BIG_A.find((b) => t >= b.a && t < b.b);
   const l = lineAt(t);
-  const card = t >= w(3, 0) && t < w(5, 0);
+  const card = !mix && t >= w(3, 0) && t < w(5, 0);
   const chips = t >= w(4, 0) && t < w(5, 0);
   const end = t >= 19.33;
   return (
@@ -115,10 +116,21 @@ const LookA: React.FC<{ t: number }> = ({ t }) => {
           </div>
         );
       })()}
+      {mix && t >= w(3, 0) && t < w(4, 0) && (() => {
+        const p = ramp(t, w(3, 0), 0.16, EXPO);
+        const punch = 1 + (1 - ramp(t, w(3, 0), 0.14)) * 0.08;
+        return (
+          <div style={{ ...abs(60, 1040, 960), zIndex: 21, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 12, transform: `scale(${punch})`, transformOrigin: 'left bottom' }}>
+            <div style={{ fontFamily: KO, fontWeight: 750, fontSize: 56, letterSpacing: '-0.03em', color: PAPER, background: NAVY, padding: '8px 20px 10px', clipPath: `inset(0 ${(1 - p) * 100}% 0 0)` }}>첨벙댕</div>
+            <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 230, letterSpacing: '-0.06em', lineHeight: 0.98, color: NAVY, background: LEMON, padding: '6px 22px 14px', clipPath: `inset(0 ${(1 - p) * 100}% 0 0)` }}>구명조끼</div>
+          </div>
+        );
+      })()}
+      {mix && t >= w(4, 0) && t < w(5, 0) && <div style={{ ...abs(72, 1360, 936), zIndex: 12, display: 'flex', gap: 12 }}>{['등 손잡이 2개', '반사 띠', '버클 끈'].map((c, i) => <span key={c} style={{ fontFamily: KO, fontWeight: 700, fontSize: 30, color: NAVY, background: PAPER, borderRadius: 40, padding: '10px 20px', boxShadow: '0 8px 24px #0003', opacity: ramp(t, w(4, 0) + 0.05 + i * 0.12, 0.2), transform: `translateY(${(1 - ramp(t, w(4, 0) + 0.05 + i * 0.12, 0.3, EXPO)) * 30}px)` }}>{c}</span>)}</div>}
       {/* 「번쩍」 별 */}
       {t >= w(5, 5) && t < endOf(5) + 0.1 && <div style={{ ...abs(780, 720, 130, 130), zIndex: 14, borderRadius: '50%', background: LEMON, color: NAVY, display: 'grid', placeItems: 'center', fontSize: 70, transform: `scale(${pop(t, w(5, 5))}) rotate(${(t - w(5, 5)) * 70}deg)` }}>✳</div>}
       {/* 끝 */}
-      {end && (() => {
+      {end && !mix && (() => {
         const p = pop(t, w(8, 3), 0.5);
         return (
           <>
@@ -131,8 +143,23 @@ const LookA: React.FC<{ t: number }> = ({ t }) => {
           </>
         );
       })()}
+      {end && mix && t < w(8, 3) && <div style={{ ...abs(72, 1110, 620), zIndex: 12, opacity: ramp(t, 19.4, 0.3), transform: `translateY(${(1 - ramp(t, 19.4, 0.4)) * 60}px)` }}>
+        <div style={{ fontFamily: EN, fontSize: 24, letterSpacing: '0.1em', color: PAPER, textShadow: '0 1px 10px #0009' }}>LIFE VEST FOR PETS</div>
+        <div style={{ fontFamily: KO, fontWeight: 700, fontSize: 52, letterSpacing: '-0.03em', color: PAPER, marginTop: 10, textShadow: '0 2px 16px #000a' }}>물놀이 가는 날엔</div>
+      </div>}
+      {end && mix && t >= w(8, 3) && (() => {
+        const p = ramp(t, w(8, 3), 0.22, EXPO);
+        const q = pop(t, w(8, 3) + 0.06, 0.42);
+        return (
+          <>
+            <div style={{ ...abs(0, 1920 - p * 520, 1080, 540), zIndex: 22, background: LEMON }} />
+            <div style={{ ...abs(0, 1420, 1080), zIndex: 23, textAlign: 'center', fontFamily: KO, fontWeight: 900, fontSize: 220, letterSpacing: '-0.07em', lineHeight: 1, color: NAVY, opacity: Math.min(1, q), transform: `translateY(${(1 - Math.min(1, q)) * 80}px) scale(${0.85 + 0.15 * q})` }}>첨벙댕</div>
+            <div style={{ ...abs(0, 1672, 1080), zIndex: 23, textAlign: 'center', fontFamily: KO, fontWeight: 700, fontSize: 44, color: NAVY, opacity: ramp(t, w(8, 3) + 0.35, 0.2) }}>반려견 구명조끼</div>
+          </>
+        );
+      })()}
       {/* 말자막(S42 Caption 결) */}
-      {l && !end && (() => {
+      {l && !end && l !== LINES[3] && (() => {   // 3번 줄(「첨벙댕 구명조끼」)은 카드 · 블록이 같은 말을 크게 보여 준다
         const o = life(t, l.at - 0.05, l.end + 0.35, 0.18, 0.14);
         return <div style={{ ...abs(72, 1500, 936), zIndex: 25, textAlign: 'center', opacity: o }}><span style={{ fontFamily: KO, fontWeight: 650, fontSize: 52, lineHeight: 1.32, color: PAPER, background: '#0E1320e0', boxDecorationBreak: 'clone', WebkitBoxDecorationBreak: 'clone', padding: '10px 22px', borderRadius: 10 }}>{l.words.map((w, i) => <React.Fragment key={i}>{i === splitAt(l.words) ? <br /> : null}<span style={{ color: w.key && t >= w.t ? LEMON : PAPER }}>{noDot(w.w)}{i < l.words.length - 1 && i + 1 !== splitAt(l.words) ? ' ' : ''}</span></React.Fragment>)}</span></div>;
       })()}
@@ -241,7 +268,7 @@ const LookC: React.FC<{ t: number }> = ({ t }) => {
   );
 };
 
-export const P11: React.FC<{ look: 'A' | 'B' | 'C' }> = ({ look }) => {
+export const P11: React.FC<{ look: 'A' | 'B' | 'C' | 'AB' }> = ({ look }) => {
   const f = useCurrentFrame();
   const t = f / FPS;
   return (
@@ -250,7 +277,8 @@ export const P11: React.FC<{ look: 'A' | 'B' | 'C' }> = ({ look }) => {
       {look === 'A' && <LookA t={t} />}
       {look === 'B' && <LookB t={t} />}
       {look === 'C' && <LookC t={t} />}
-      <div style={{ ...abs(0, 1872, 1080), zIndex: 30, textAlign: 'center', fontFamily: KO, fontWeight: 500, fontSize: 22, color: '#ffffffaa' }}>가상 브랜드 · AI로 만든 가상 모델 · 음성</div>
+      {look === 'AB' && <LookA t={t} mix />}
+      <div style={{ ...abs(0, 1872, 1080), zIndex: 30, textAlign: 'center', fontFamily: KO, fontWeight: 500, fontSize: 22, color: (look === 'AB' || look === 'B') && t >= w(8, 3) ? '#17224Dcc' : '#ffffffaa' }}>가상 브랜드 · AI로 만든 가상 모델 · 음성</div>
       <Sequence from={0}><Audio src={staticFile('p11/sound_narr.wav')} /></Sequence>
     </AbsoluteFill>
   );
