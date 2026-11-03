@@ -22,9 +22,24 @@ jobs:
       - run: node --test --test-reporter=tap tests/*.test.js 2>&1 | tee "$test_log" || rc=$?
 `;
 
+// 시간 한도로 끊긴 시험 자식은 돌리기가 돌아온 뒤에도 수십 ms 동안 cwd로 폴더를 쥔다(Windows). Node 24 rmSync의 maxRetries는 이 EPERM을
+// 다시 시도하지 않아 직접 기다린다. 한도는 느림 시험의 20초보다 짧게 둔다 — 자식이 정말 살아남으면 여기서 깨진다(현장노트 시험_화면확인).
+async function 지우기(폴더, 한도ms = 10e3) {
+  const 끝 = Date.now() + 한도ms;
+  for (;;) {
+    try {
+      fs.rmSync(폴더, { recursive: true, force: true });
+      return;
+    } catch (e) {
+      if (!['EPERM', 'EBUSY', 'ENOTEMPTY'].includes(e.code) || Date.now() >= 끝) throw e;
+      await new Promise((r) => setTimeout(r, 50));
+    }
+  }
+}
+
 function 저장소(t, 파일) {
   const 폴더 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-관련시험-'));
-  t.after(() => fs.rmSync(폴더, { recursive: true, force: true, maxRetries: 5 }));
+  t.after(() => 지우기(폴더));
   for (const [p, v] of Object.entries({ '.github/workflows/syntax-check.yml': 흐름, ...파일 })) {
     fs.mkdirSync(path.dirname(path.join(폴더, p)), { recursive: true });
     fs.writeFileSync(path.join(폴더, p), v);
