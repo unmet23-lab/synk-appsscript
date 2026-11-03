@@ -41,11 +41,16 @@ export function inspectFrameTimes(values, rate) {
   return { count: times.length, missingTimestamps: values.length - times.length, first: times[0] ?? null, last: times.at(-1) ?? null, medianStep: step, issues };
 }
 
-// Ordered edit distance on bounded text. This is a literal comparison, never a claim about spoken meaning.
 // 올림 화질(제작 방식 v2 §2-4, 유튜브 권장 업로드 인코딩): 짧은 변이 1080 이상인 마감본만 본다.
+export function uploadAudioBitrateFloor(video, channels) {
+  if (Math.min(Number(video?.width) || 0, Number(video?.height) || 0) < 1080) return null;
+  return (Number(channels) || 2) >= 2 ? 320000 : 128000;
+}
+
 export function uploadQualityIssues(video, audio = [], format = {}) {
   const issues = [], add = (code, message) => issues.push({ code, severity: 'warning', at: null, message });
-  if (Math.min(Number(video?.width) || 0, Number(video?.height) || 0) < 1080) return issues;
+  const sound = audio[0], needSound = uploadAudioBitrateFloor(video, sound?.channels);
+  if (needSound === null) return issues;
   const rate = fraction(video.avg_frame_rate) || fraction(video.r_frame_rate) || 30, need = rate > 30.5 ? 12 : 8;
   let bitrate = finite(video.bit_rate);
   if (bitrate === null && finite(format.bit_rate) !== null) bitrate = finite(format.bit_rate) - audio.reduce((sum, stream) => sum + (finite(stream.bit_rate) || 0), 0);
@@ -54,9 +59,8 @@ export function uploadQualityIssues(video, audio = [], format = {}) {
   if (video.pix_fmt && video.pix_fmt !== 'yuv420p') add('upload-pixel-format', `픽셀 형식이 ${video.pix_fmt}입니다. 올림 기준은 yuv420p입니다${/^yuvj/.test(video.pix_fmt) ? '(풀 레인지라 플랫폼에서 색이 달라 보일 수 있습니다)' : ''}.`);
   const tags = [video.color_space, video.color_primaries, video.color_transfer];
   if (tags.some(tag => tag && tag !== 'unknown' && tag !== 'bt709') || tags.every(tag => !tag || tag === 'unknown')) add('upload-color', `색 공간 표시가 ${tags.map(tag => tag || '없음').join('/')}입니다. 올림 기준은 BT.709입니다.`);
-  const sound = audio[0];
   if (sound) {
-    const sampleRate = finite(sound.sample_rate), channels = Number(sound.channels) || 2, soundRate = finite(sound.bit_rate), needSound = channels >= 2 ? 320000 : 128000;
+    const sampleRate = finite(sound.sample_rate), channels = Number(sound.channels) || 2, soundRate = finite(sound.bit_rate);
     if (sampleRate !== null && sampleRate !== 48000) add('upload-audio-rate', `소리 샘플레이트가 ${sampleRate}Hz입니다. 올림 기준은 48kHz입니다.`);
     if (soundRate !== null && soundRate < needSound) add('upload-audio-bitrate', `소리 비트레이트가 ${Math.round(soundRate / 1000)}kbps입니다. 올림 기준은 ${channels >= 2 ? '스테레오 384kbps' : '모노 128kbps'}입니다.`);
   }

@@ -1,0 +1,549 @@
+{
+  "experiment": "SYNK common audio finish bitrate gate",
+  "time": "2026-11-03T08:48:33.110Z",
+  "tools": {
+    "node": "v24.20.0",
+    "ffmpeg": "ffmpeg version 9.0.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+    "ffprobe": "ffprobe version 9.0.2-full_build-www.gyan.dev Copyright (c) 2007-2026 the FFmpeg developers",
+    "gitBlobs": {
+      "before": "8190ffa0474e0229932d54e882ea11454be6d58c",
+      "after": "23dbe4e80f32990395e9054baafd8942875f20f7",
+      "preflight": "b913b94ce6a0b93c97a341d70a8e058fc9e9ee2f"
+    },
+    "baselineSourceCommit": "75fcb99db397de618518edeed63f1e56eafed9e5"
+  },
+  "method": "Same 1080x1920 production renders as the two published masters (confirmed by every encoded H.264 packet and PTS/DTS). Ran the frozen original and current common CLI with default options to separate files. Also called the current CLI directly on the two exact published inputs. Independently probed audio stream fields and ran the full video preflight with the pinned script/transcript on all eight products (including the two original masters). All source and publication files were SHA-256 checked before and after.",
+  "gate": {
+    "minShortSide": 1080,
+    "minimumStereoBps": 320000,
+    "minimumMonoBps": 128000,
+    "defaultTarget": "384k",
+    "boundedRetryModes": [
+      "twoloop -q:a 3.5",
+      "fast -q:a 8"
+    ],
+    "acceptedOutput": "Meets measured audio bitrate, loudness and true peak.",
+    "exemptProfiles": "Small previews, explicit audio target below the upload minimum, and the separate 96k phone output retain their original profile.",
+    "unknownOrStillLow": "Exit 1, no install at the requested master path. The last encoded file is retained under a separate review directory. Previous master and phone outputs remain intact.",
+    "measurement": "Use the measured audio stream bit_rate if present, otherwise count compressed audio packet sizes over the audio packet time span, including priming. Each bounded retry reads the input render and measures the resulting audio again."
+  },
+  "results": {
+    "b23": {
+      "title": "셋째 줄 그대로",
+      "rawInput": {
+        "file": "remotion/out/b23_v7_raw.mp4",
+        "sha256": "13bd2513e68cc29ecc9e3202eaf4935e985bbb772e34d7360626d91029bdc13f"
+      },
+      "sourceMaster": {
+        "file": "b23_master.mp4",
+        "sha256": "95b2e002a664a2d582f69e71f6eb85e710edf1801b40846ba769a87dd028cd40",
+        "publishedAudioBps": 308462,
+        "preflight": {
+          "status": "needs-review",
+          "issues": [
+            "upload-audio-bitrate"
+          ],
+          "frames": 1236,
+          "comparison": [
+            {
+              "kind": "provided-transcript",
+              "expectedCharacters": 240,
+              "observedCharacters": 238,
+              "editDistance": 4,
+              "similarity": 0.9833333333333333,
+              "method": "normalized-character-edit-distance"
+            }
+          ],
+          "loudness": {
+            "stream": 1,
+            "integratedLufs": -14.6,
+            "truePeakDbfs": -1.4
+          },
+          "videoSeconds": 41.2,
+          "audioSeconds": 41.216
+        }
+      },
+      "providedInputs": {
+        "scriptSha256": "f06bb9b5f85986c6f6ad61cf90b8c24662538faebf0d52692dc2ed5d801fd7f0",
+        "transcriptSha256": "e201efe39305f8ee380653b4529d2333939d656ca21a2840641e97ff5631ce40"
+      },
+      "picture": {
+        "sha256": "fe3094de2ad8921721ca5687aff25b5bc5c3c0c5588194ed451415e52684aaec",
+        "count": 1236
+      },
+      "protectedOtherInputs": {
+        "b23_upload.mp4": "0e7387b4796abf87b9fe33065145eb2ff5df70ba072d23ad2e7a5a25345a7dc5",
+        "준비.json": "275f511e63a84477b2066a2c5ac07c5dece326962a6dc7a866beec1db7f1751c",
+        "게시결과.json": "24adfeed51414e1129105f3bac03992222bd116ea09f33505a0d379190ad1a00",
+        "priorAudioRevision": "6f4a033bc4329583d43640ce430135153cb5821819043d1b424d5d319fd989a4"
+      },
+      "baselineRender": {
+        "sha256": "008675b78a0d366f76b5d5c9cfcd436cf3efc933094a97641653088964c8dd03",
+        "bytes": 79400530,
+        "finalBps": 304758,
+        "profile": "LC",
+        "sampleRate": 48000,
+        "channels": 2,
+        "attempts": [
+          {
+            "gain": 2.7,
+            "I": -14.5,
+            "peak": -1.3
+          }
+        ],
+        "measure": {
+          "I": -14.5,
+          "peak": -1.3,
+          "LRA": 3
+        },
+        "preflight": {
+          "status": "needs-review",
+          "issues": [
+            "upload-audio-bitrate"
+          ],
+          "frames": 1236,
+          "comparison": [
+            {
+              "kind": "provided-transcript",
+              "expectedCharacters": 240,
+              "observedCharacters": 238,
+              "editDistance": 4,
+              "similarity": 0.9833333333333333,
+              "method": "normalized-character-edit-distance"
+            }
+          ],
+          "loudness": {
+            "stream": 1,
+            "integratedLufs": -14.5,
+            "truePeakDbfs": -1.3
+          },
+          "videoSeconds": 41.2,
+          "audioSeconds": 41.216
+        },
+        "matchedVideoPackets": true,
+        "videoPacketSha256": "fe3094de2ad8921721ca5687aff25b5bc5c3c0c5588194ed451415e52684aaec"
+      },
+      "updatedRender": {
+        "sha256": "e8b47aeba11312dd81e16e59115d6f2a3f1d5cdcbe75b64dbb38f9877d94effc",
+        "bytes": 79780198,
+        "finalBps": 378413,
+        "profile": "LC",
+        "sampleRate": 48000,
+        "channels": 2,
+        "attempts": [
+          {
+            "gain": 2.7,
+            "I": -14.5,
+            "peak": -1.3,
+            "bitrateBps": 304758,
+            "aacQuality": null,
+            "aacCoder": null
+          },
+          {
+            "gain": 2.7,
+            "I": -14.5,
+            "peak": -1.3,
+            "bitrateBps": 378413,
+            "aacQuality": 3.5,
+            "aacCoder": "twoloop"
+          }
+        ],
+        "measure": {
+          "I": -14.5,
+          "peak": -1.3,
+          "LRA": 3
+        },
+        "bitrate": {
+          "actualBps": 378413,
+          "minimumBps": 320000,
+          "enforced": true,
+          "measurement": "stream",
+          "ok": true
+        },
+        "preflight": {
+          "status": "ready",
+          "issues": [],
+          "frames": 1236,
+          "comparison": [
+            {
+              "kind": "provided-transcript",
+              "expectedCharacters": 240,
+              "observedCharacters": 238,
+              "editDistance": 4,
+              "similarity": 0.9833333333333333,
+              "method": "normalized-character-edit-distance"
+            }
+          ],
+          "loudness": {
+            "stream": 1,
+            "integratedLufs": -14.5,
+            "truePeakDbfs": -1.3
+          },
+          "videoSeconds": 41.2,
+          "audioSeconds": 41.216
+        },
+        "matchedVideoPackets": true,
+        "videoPacketSha256": "fe3094de2ad8921721ca5687aff25b5bc5c3c0c5588194ed451415e52684aaec"
+      },
+      "updatedPublishedInput": {
+        "sha256": "d91e699512cc0a957c5e12dae3233d8e0f784ea1d57b68389b157fdab9b000e8",
+        "bytes": 79800681,
+        "finalBps": 382387,
+        "profile": "LC",
+        "sampleRate": 48000,
+        "channels": 2,
+        "attempts": [
+          {
+            "gain": 0.1,
+            "I": -14.5,
+            "peak": -1.3,
+            "bitrateBps": 309066,
+            "aacQuality": null,
+            "aacCoder": null
+          },
+          {
+            "gain": 0.1,
+            "I": -14.5,
+            "peak": -1.3,
+            "bitrateBps": 382387,
+            "aacQuality": 3.5,
+            "aacCoder": "twoloop"
+          }
+        ],
+        "measure": {
+          "I": -14.5,
+          "peak": -1.3,
+          "LRA": 3
+        },
+        "bitrate": {
+          "actualBps": 382387,
+          "minimumBps": 320000,
+          "enforced": true,
+          "measurement": "stream",
+          "ok": true
+        },
+        "preflight": {
+          "status": "ready",
+          "issues": [],
+          "frames": 1236,
+          "comparison": [
+            {
+              "kind": "provided-transcript",
+              "expectedCharacters": 240,
+              "observedCharacters": 238,
+              "editDistance": 4,
+              "similarity": 0.9833333333333333,
+              "method": "normalized-character-edit-distance"
+            }
+          ],
+          "loudness": {
+            "stream": 1,
+            "integratedLufs": -14.5,
+            "truePeakDbfs": -1.3
+          },
+          "videoSeconds": 41.2,
+          "audioSeconds": 41.216
+        },
+        "matchedVideoPackets": true,
+        "videoPacketSha256": "fe3094de2ad8921721ca5687aff25b5bc5c3c0c5588194ed451415e52684aaec"
+      }
+    },
+    "b24": {
+      "title": "요금제 질문 셋",
+      "rawInput": {
+        "file": "remotion/out/최종_raw.mp4",
+        "sha256": "38364c60c2d01a57565f05aab48954395bddaa8b36fa363ff53aa06817fb0e75"
+      },
+      "sourceMaster": {
+        "file": "b24_master.mp4",
+        "sha256": "201de2188d6800482f676c98ef1b5ecb303037b8369b6d24898d1b69c0b3183d",
+        "publishedAudioBps": 333421,
+        "preflight": {
+          "status": "ready",
+          "issues": [],
+          "frames": 863,
+          "comparison": [
+            {
+              "kind": "provided-transcript",
+              "expectedCharacters": 148,
+              "observedCharacters": 147,
+              "editDistance": 6,
+              "similarity": 0.9594594594594594,
+              "method": "normalized-character-edit-distance"
+            }
+          ],
+          "loudness": {
+            "stream": 1,
+            "integratedLufs": -14.5,
+            "truePeakDbfs": -1.4
+          },
+          "videoSeconds": 28.766667,
+          "audioSeconds": 28.778667
+        }
+      },
+      "providedInputs": {
+        "scriptSha256": "b112c128c2f551da97db38c032d3eab9d6197c7936c74b61d8cd9756393ff4b2",
+        "transcriptSha256": "e282c04ad944df0d6a2e8acaf112ea85591263a66d4d2d586a95b6b8c2abb8af"
+      },
+      "picture": {
+        "sha256": "3c65a4bd9939df496b38ac5a404a90c1df1d786e36892f56d56f726379f29ebc",
+        "count": 863
+      },
+      "protectedOtherInputs": {
+        "b24_upload.mp4": "11e3f723497f149fd5b34da83139dc4b86cd9c61978867d7493a52d7e5621729",
+        "준비.json": "b17e07fa75eb5edb65ce87beb5db9895e953a7a053776721ce420c5eeb5b8014",
+        "게시결과.json": "1f66ac90443f25214828190a4a1e619af2763e73f358d356858b31ed732321d4"
+      },
+      "baselineRender": {
+        "sha256": "f5b0d96cd8c4c0dc1060c9b61a9b0c07a097949cdca447c93fcd360ce51204bc",
+        "bytes": 44149618,
+        "finalBps": 333132,
+        "profile": "LC",
+        "sampleRate": 48000,
+        "channels": 2,
+        "attempts": [
+          {
+            "gain": 4.6,
+            "I": -14.5,
+            "peak": -1.3
+          }
+        ],
+        "measure": {
+          "I": -14.5,
+          "peak": -1.3,
+          "LRA": 1.7
+        },
+        "preflight": {
+          "status": "ready",
+          "issues": [],
+          "frames": 863,
+          "comparison": [
+            {
+              "kind": "provided-transcript",
+              "expectedCharacters": 148,
+              "observedCharacters": 147,
+              "editDistance": 6,
+              "similarity": 0.9594594594594594,
+              "method": "normalized-character-edit-distance"
+            }
+          ],
+          "loudness": {
+            "stream": 1,
+            "integratedLufs": -14.5,
+            "truePeakDbfs": -1.3
+          },
+          "videoSeconds": 28.766667,
+          "audioSeconds": 28.778667
+        },
+        "matchedVideoPackets": true,
+        "videoPacketSha256": "3c65a4bd9939df496b38ac5a404a90c1df1d786e36892f56d56f726379f29ebc"
+      },
+      "updatedRender": {
+        "sha256": "f5b0d96cd8c4c0dc1060c9b61a9b0c07a097949cdca447c93fcd360ce51204bc",
+        "bytes": 44149618,
+        "finalBps": 333132,
+        "profile": "LC",
+        "sampleRate": 48000,
+        "channels": 2,
+        "attempts": [
+          {
+            "gain": 4.6,
+            "I": -14.5,
+            "peak": -1.3,
+            "bitrateBps": 333132,
+            "aacQuality": null,
+            "aacCoder": null
+          }
+        ],
+        "measure": {
+          "I": -14.5,
+          "peak": -1.3,
+          "LRA": 1.7
+        },
+        "bitrate": {
+          "actualBps": 333132,
+          "minimumBps": 320000,
+          "enforced": true,
+          "measurement": "stream",
+          "ok": true
+        },
+        "preflight": {
+          "status": "ready",
+          "issues": [],
+          "frames": 863,
+          "comparison": [
+            {
+              "kind": "provided-transcript",
+              "expectedCharacters": 148,
+              "observedCharacters": 147,
+              "editDistance": 6,
+              "similarity": 0.9594594594594594,
+              "method": "normalized-character-edit-distance"
+            }
+          ],
+          "loudness": {
+            "stream": 1,
+            "integratedLufs": -14.5,
+            "truePeakDbfs": -1.3
+          },
+          "videoSeconds": 28.766667,
+          "audioSeconds": 28.778667
+        },
+        "matchedVideoPackets": true,
+        "videoPacketSha256": "3c65a4bd9939df496b38ac5a404a90c1df1d786e36892f56d56f726379f29ebc"
+      },
+      "updatedPublishedInput": {
+        "sha256": "ccd8d8c98cbab785cba76fa8e3dba7b7e171464c8786ce1e5def5dbc3a75224d",
+        "bytes": 44152432,
+        "finalBps": 333914,
+        "profile": "LC",
+        "sampleRate": 48000,
+        "channels": 2,
+        "attempts": [
+          {
+            "gain": 0,
+            "I": -14.5,
+            "peak": -1.4,
+            "bitrateBps": 333914,
+            "aacQuality": null,
+            "aacCoder": null
+          }
+        ],
+        "measure": {
+          "I": -14.5,
+          "peak": -1.4,
+          "LRA": 1.8
+        },
+        "bitrate": {
+          "actualBps": 333914,
+          "minimumBps": 320000,
+          "enforced": true,
+          "measurement": "stream",
+          "ok": true
+        },
+        "preflight": {
+          "status": "ready",
+          "issues": [],
+          "frames": 863,
+          "comparison": [
+            {
+              "kind": "provided-transcript",
+              "expectedCharacters": 148,
+              "observedCharacters": 147,
+              "editDistance": 6,
+              "similarity": 0.9594594594594594,
+              "method": "normalized-character-edit-distance"
+            }
+          ],
+          "loudness": {
+            "stream": 1,
+            "integratedLufs": -14.5,
+            "truePeakDbfs": -1.4
+          },
+          "videoSeconds": 28.766667,
+          "audioSeconds": 28.778667
+        },
+        "matchedVideoPackets": true,
+        "videoPacketSha256": "3c65a4bd9939df496b38ac5a404a90c1df1d786e36892f56d56f726379f29ebc"
+      }
+    }
+  },
+  "validation": {
+    "protectedFilesCheckedBeforeAndAfter": 15,
+    "regression": {
+      "tests": [
+        "tests/음량마감.test.mjs",
+        "tests/영상사전검사.test.mjs",
+        "tests/올리기전검사.test.js",
+        "tests/text-compare-bench.test.mjs"
+      ],
+      "passed": 42,
+      "failed": 0,
+      "skipped": 0
+    },
+    "secondRetry": {
+      "source": "4s at 48kHz, independent 2.8s pink noise per channel (seeds 7/23, amplitude 0.19), then silence; 1080 square with PCM audio",
+      "ok": true,
+      "attempts": [
+        {
+          "gain": 11.7,
+          "I": -14.7,
+          "peak": -4.4,
+          "bitrateBps": 269305,
+          "aacQuality": null,
+          "aacCoder": null
+        },
+        {
+          "gain": 11.7,
+          "I": -14.6,
+          "peak": -4.4,
+          "bitrateBps": 317998,
+          "aacQuality": 3.5,
+          "aacCoder": "twoloop"
+        },
+        {
+          "gain": 11.7,
+          "I": -14.6,
+          "peak": -4.4,
+          "bitrateBps": 323737,
+          "aacQuality": 8,
+          "aacCoder": "fast"
+        }
+      ],
+      "outputActualBps": 323737,
+      "truePeak": -4.4,
+      "integratedLufs": -14.6
+    },
+    "failurePolicy": {
+      "oldLoudnessOnly": {
+        "exit": 1,
+        "ok": false,
+        "exactNewOutputExists": true,
+        "outputSha256": "f5b0d96cd8c4c0dc1060c9b61a9b0c07a097949cdca447c93fcd360ce51204bc",
+        "loudness": -14.5,
+        "allowed": [
+          -5,
+          -4
+        ]
+      },
+      "newLoudnessOnly": {
+        "exit": 1,
+        "ok": false,
+        "exactNewOutputExists": true,
+        "outputSha256": "f5b0d96cd8c4c0dc1060c9b61a9b0c07a097949cdca447c93fcd360ce51204bc",
+        "loudness": -14.5,
+        "allowed": [
+          -5,
+          -4
+        ]
+      },
+      "bitrateOnlyNewDestination": {
+        "exit": 1,
+        "loudness": -70,
+        "allowed": [
+          -71,
+          -69
+        ],
+        "rateFloor": 320000,
+        "attemptBps": [
+          2295,
+          2295,
+          2295
+        ],
+        "finalBps": 2295,
+        "acceptedMasterExists": false,
+        "reviewFileExists": true,
+        "reviewPathIsSeparate": true
+      }
+    },
+    "unmeasurable": {
+      "method": "Independent fault injection: MKV with no stream bit_rate, empty packet measurement supplied to the real finisher.",
+      "measuredBps": null,
+      "minimumBps": 320000,
+      "attempts": 1,
+      "accepted": false,
+      "installed": false,
+      "reviewCandidateExists": true
+    }
+  }
+}
