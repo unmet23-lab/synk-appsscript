@@ -117,11 +117,26 @@ test('리허설 WORLD 「말하기 연습」: 기본 켜짐·끄는 스위치·�
   const shoot=async name=>{await page.evaluate(()=>document.fonts.ready);const file=path.join(out,`${name}.png`);await page.locator('#world-panel').screenshot({path:file});shots.push(path.basename(file));};
   const record=async name=>{measures[name]=await measure();await shoot(name);};
   const speakingLog=()=>page.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('synk.world.speaking.v1:')).flatMap(k=>JSON.parse(localStorage.getItem(k)).log||[]));
-  // 녹음은 벽시계가 아니라 소리 막대가 실제로 들은 만큼 한다 — 앱은 화면 그림 한 장마다 많아야 0.2초씩 「목소리 난 시간」을 쌓고 0.7초가 넘어야
-  // 보내기·다음 차례를 연다(world-speaking-practice.mjs startRecorder · MIN_VOICED_MS). 바쁜 PC에서 그림이 드물게 오면 1.6초를 기다려도 0.7초가
-  // 안 쌓여 「말소리가 거의 들리지 않았어요」로 끝나고 보낼 단추가 안 생겼다(11-02 로컬 조건부 시험 5802b910e). 같은 셈을 페이지에서 해 그만큼 기다린다.
-  const speakFor=ms=>page.evaluate(ms=>new Promise(done=>{const start=Date.now();let heard=0,last=start;
-   const frame=()=>{const now=Date.now();heard+=Math.min(200,now-last);last=now;if(heard>=ms||now-start>30000)done();else requestAnimationFrame(frame);};requestAnimationFrame(frame);}),ms);
+  // 앱은 실제 신호가 난 프레임에만 최대 200ms씩 쌓는다. 막대에는 RMS의 아홉 배가 표시된다.
+  // 합성 입력이 늦게 시작되면 기다리고, 녹음이 끝까지 조용하면 다음 단추를 누르기 전에 실패한다.
+  const speakFor = ms => page.evaluate(ms => new Promise((resolve, reject) => {
+   let heard = 0, last = performance.now(), frame;
+   const fail = () => {
+    cancelAnimationFrame(frame);
+    clearTimeout(timeout);
+    reject(Error(`합성 마이크 신호 부족 (${Math.round(heard)}/${ms}ms)`));
+   };
+   const timeout = setTimeout(fail, 30000);
+   const sample = now => {
+    const meter = document.querySelector('#panel-content [data-wsp-level]');
+    if (!meter) { fail(); return; }
+    if (Number(meter.style.getPropertyValue('--level')) > .17) heard += Math.max(0, Math.min(200, now - last));
+    last = now;
+    if (heard >= ms) { clearTimeout(timeout); resolve(); }
+    else frame = requestAnimationFrame(sample);
+   };
+   frame = requestAnimationFrame(sample);
+  }), ms);
   const answerOnce=async()=>{await page.locator('#panel-content [data-wsp-start]').click();await page.waitForSelector('#panel-content [data-wsp-skip]');await page.locator('#panel-content [data-wsp-skip]').click();
    await page.waitForSelector('#panel-content [data-wsp-stop]');await speakFor(1600);await page.locator('#panel-content [data-wsp-stop]').click();await page.waitForSelector('#panel-content [data-wsp-retry]');};
 

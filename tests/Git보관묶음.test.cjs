@@ -9,7 +9,7 @@ const { createBundle, preserveRecord, BundleInspector, fileDigest, verifyDriveCo
 const { reconcileEncryptedArchives, onlyArchiveTransferPending, deferNewSinceApply, PREFIX } = require('../tools/GitHub백업.cjs');
 const cryptoPath = process.env.SYNK_QA_CRYPTO_MODULE || path.join(os.homedir(), 'Documents/SYNK_원본창고/암호.js');
 const crypt = fs.existsSync(cryptoPath) ? require(cryptoPath) : null;
-function fixture(t) {
+function fixture(t, { baseOnly = false } = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'git-bundle-test-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const source = path.join(root, 'source'), restore = path.join(root, 'restore');
@@ -19,6 +19,7 @@ function fixture(t) {
   fs.writeFileSync(path.join(source, 'README.md'), '# remote base\n');
   git(['add', '.']); git(['commit', '-m', 'base']);
   const base = git(['rev-parse', 'HEAD']).toString().trim();
+  if (baseOnly) return { root, source, git, base };
   git(['clone', source, restore], root);
   git(['switch', '-c', 'archive-source']);
   fs.writeFileSync(path.join(source, 'history.bin'), crypto.randomBytes(200000));
@@ -448,12 +449,26 @@ test('public prerequisite rows are checked together: every reachable row passes,
 
 test('chain prerequisites take the earliest reaching earlier bundle from one graph, however many receipts and prerequisites (10-20)',
   { skip: !crypt && 'local archive encryption module unavailable' }, async t => {
-  const f = fixture(t), remote = path.join(f.root, 'public.git');
+  const f = fixture(t, { baseOnly: true }), remote = path.join(f.root, 'public.git');
   f.git(['init', '--bare', remote], f.root); f.git(['remote', 'add', 'origin', remote]); f.git(['push', 'origin', 'main']);
-  // 고르기에는 커밋 모양만 쓰니 트리는 그대로 두고 커밋만 잇는다.
-  const commit = (from, name) => f.git(['commit-tree', from + '^{tree}', '-p', from, '-m', name]).toString().trim();
+  // 같은 트리 위에 작은 그래프를 한 번에 만든다. 앞 묶음 다섯에 넣을 ref도 이때 고정한다.
+  const parents = { c1: 'base', c2a: 'base', c2b: 'c2a', p1: 'c1', p2: 'c2a', c3: 'c1', c4: 'c2a',
+    c5a: 'base', c5b: 'c5a', n1: 'c1', n2: 'c2a', n3: 'c3', n4: 'c4', n5: 'c5a', n6: 'base' };
+  const seedRefs = { c1: 'r1', c2b: 'r2', c3: 'r3', c4: 'r4', c5b: 'r5' };
+  const marks = { base: f.base }, stream = [], names = Object.keys(parents);
+  for (const [index, name] of names.entries()) {
+    const mark = ':' + (index + 1);
+    stream.push('commit refs/heads/' + (seedRefs[name] || name), 'mark ' + mark,
+      'committer Synthetic <test@example.invalid> 1700000000 +0000', 'data ' + name.length, name,
+      'from ' + marks[parents[name]], '', 'get-mark ' + mark);
+    marks[name] = mark;
+  }
+  const oids = f.git(['fast-import', '--quiet'], f.source, Buffer.from([...stream, 'done', ''].join('\n'))).toString().trim().split(/\s+/);
+  assert.equal(oids.length, names.length);
+  const sha = Object.fromEntries(names.map((name, index) => [name, oids[index]]));
   const keys = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 }), pub = path.join(f.root, 'public.pem');
-  fs.writeFileSync(pub, keys.publicKey.export({ type: 'spki', format: 'pem' }));
+  const pubPem = keys.publicKey.export({ type: 'spki', format: 'pem' });
+  fs.writeFileSync(pub, pubPem);
   const identity = 'unmet23-lab/chain-fixture', cryptoTool = { PUB: () => pub, encryptStream: crypt.encryptStream };
   const calls = [], dependencies = { github: { private: false, full_name: identity }, git(args, input) {
     calls.push(args);
@@ -466,18 +481,34 @@ test('chain prerequisites take the earliest reaching earlier bundle from one gra
     calls.length = 0;
     return { receipt: await preserveRecord(record(heads), f.root, cryptoTool, () => {}, dependencies), calls: [...calls] };
   };
+  // 이미 존재하는 입력도 실제 암호화 묶음이다. 알려진 경계를 헤더에서 확인한다.
+  // 비교할 small과 large만 preserveRecord 전체를 실행하므로 입력 다섯을 만드는 동안 같은 원격 검사를 되풀이하지 않는다.
   const made = [];
-  const verified = async heads => { const { receipt } = await archive(heads); made.push(receipt); await driveVerified(f.root, made); return receipt; };
+  const seedBundle = async (ref, head, parent, dependency) => {
+    const selected = selection(record({ [ref]: head }), f.root);
+    fs.mkdirSync(path.dirname(selected.file), { recursive: true });
+    const detail = await createBundle({ repo: f.source, heads: selected.heads, exclusions: [parent], staging: selected.file,
+      pubPem, encryptStream: crypt.encryptStream,
+      onHeader(inspector) { assert.deepEqual(inspector.prerequisites, [parent]); } });
+    const receipt = { ...detail, repository: identity, relativePath: selected.relative,
+      manifestRelativePath: path.relative(path.join(f.root, 'Git-보관'), selected.manifestFile).replaceAll('\\', '/'),
+      encrypted: await fileDigest(selected.file), finishedAt: new Date().toISOString(),
+      chain: dependency ? [dependency.manifestRelativePath] : [],
+      prerequisites: [dependency ? { sha: parent, bundle: dependency.manifestRelativePath } : { sha: parent, ref: 'refs/heads/main', public: true }] };
+    fs.writeFileSync(selected.manifestFile, JSON.stringify(receipt), { flag: 'wx' });
+    made.push(receipt);
+    return receipt;
+  };
   // 앞 묶음 둘(R1 머리 c1, R2 머리 c2b·중간 c2a) 위에서 선행 커밋 둘을 묶어 git 호출을 잰다. 이 묶음은 Drive 검증 전이라 바탕이 아니다.
-  const c1 = commit(f.base, 'c1'), c2a = commit(f.base, 'c2a'), c2b = commit(c2a, 'c2b');
-  const R1 = await verified({ r1: c1 }), R2 = await verified({ r2: c2b });
+  const { c1, c2a, c2b, c3, c4, c5a, c5b } = sha;
+  const R1 = await seedBundle('r1', c1, f.base), R2 = await seedBundle('r2', c2b, f.base);
   const smallChain = [...made];
-  const small = await archive({ p1: commit(c1, 'p1'), p2: commit(c2a, 'p2') });
+  await driveVerified(f.root, smallChain);
+  const small = await archive({ p1: sha.p1, p2: sha.p2 });
   // 앞 묶음 다섯. R3·R4는 R1·R2의 커밋에서 이어져, c1·c2a에 닿는 묶음이 둘씩이다 — 만든 차례의 첫 것을 고른다.
-  const c3 = commit(c1, 'c3'), c4 = commit(c2a, 'c4'), c5a = commit(f.base, 'c5a'), c5b = commit(c5a, 'c5b');
-  const R3 = await verified({ r3: c3 }), R4 = await verified({ r4: c4 }), R5 = await verified({ r5: c5b });
-  const large = await archive({ n1: commit(c1, 'n1'), n2: commit(c2a, 'n2'), n3: commit(c3, 'n3'), n4: commit(c4, 'n4'),
-    n5: commit(c5a, 'n5'), n6: commit(f.base, 'n6') });
+  const R3 = await seedBundle('r3', c3, c1, R1), R4 = await seedBundle('r4', c4, c2a, R2), R5 = await seedBundle('r5', c5b, f.base);
+  await driveVerified(f.root, made);
+  const large = await archive({ n1: sha.n1, n2: sha.n2, n3: sha.n3, n4: sha.n4, n5: sha.n5, n6: sha.n6 });
   const chosen = receipt => Object.fromEntries(receipt.prerequisites.map(row => [row.sha, row.bundle || row.ref]));
   const [m1, m2, m3, m4, m5] = [R1, R2, R3, R4, R5].map(receipt => receipt.manifestRelativePath);
   assert.deepEqual(chosen(small.receipt), { [c1]: m1, [c2a]: m2 });
