@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed, exactly the same framing as the first attached image.
+
+Edit the FIRST attached image. Keep exactly the same sunny butter-yellow wall, the same mint-green felt table with the same wooden rim at exactly the same height, the same camera angle, Mongle at exactly the same place, same size and same smooth rounded dome shape (do NOT make its head taller or pointed), and the same light, and keep the table top empty. Change only Mongle's expression: it has just been bonked — dizzy, its two bead eyes looking in slightly different directions, mouth a small wobbly line. Add three tiny yellow felt stars at the left and right sides of its head, at the height of its forehead, close to its body, nothing above the top of its head. No arms, no legs.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers. Absolutely no text, letters, numbers, logos or speech bubbles anywhere.

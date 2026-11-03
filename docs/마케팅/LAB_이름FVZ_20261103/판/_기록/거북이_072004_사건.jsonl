@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a19e59-2600-7ad3-87d9-b3beb9fbded1"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬을 사용해, 요청하신 흰 배경의 양모 펠트 자라 이미지를 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":125488,"cached_input_tokens":93824,"cache_write_input_tokens":0,"output_tokens":918,"reasoning_output_tokens":231}}

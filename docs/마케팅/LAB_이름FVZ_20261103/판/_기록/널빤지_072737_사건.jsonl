@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a19e60-0fdf-76d0-8220-37d3dc307fd2"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll generate one wide image of the handcrafted plank on a pure white background."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"A pale beech plank with coral felt and cream stitching, perfectly horizontal on white."}}
+{"type":"turn.completed","usage":{"input_tokens":85228,"cached_input_tokens":78720,"cache_write_input_tokens":0,"output_tokens":547,"reasoning_output_tokens":89}}

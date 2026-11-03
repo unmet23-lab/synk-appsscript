@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a19e6f-0c14-7ab0-b853-e527f5448696"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"몽글의 위치와 배경은 그대로 두고, 어지러운 표정과 작은 혹, 노란 펠트 별 세 개만 더하겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"작은 혹과 노란 펠트 별 세 개를 머리 위에 달고 어지러워하는 몽글입니다."}}
+{"type":"turn.completed","usage":{"input_tokens":76741,"cached_input_tokens":66048,"cache_write_input_tokens":0,"output_tokens":632,"reasoning_output_tokens":62}}

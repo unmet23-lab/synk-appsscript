@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a19e59-260f-7812-82be-598fe645ef49"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 사용해, 무늬 없는 나무 블록 네 개를 흰 배경에 2×2로 배치하겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":97096,"cached_input_tokens":79232,"cache_write_input_tokens":0,"output_tokens":647,"reasoning_output_tokens":108}}

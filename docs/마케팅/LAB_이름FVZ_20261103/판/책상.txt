@@ -1,0 +1,12 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait, 1024x1536 or taller), sharp and detailed.
+
+Scene: a sunny study nook, seen straight-on from the front at table height. Fresh pale butter-yellow felt wall behind with soft window light falling across it; nothing else on the wall. A wide table covered with a mint-green felt mat spans the full width of the image: the table top is the band from 55% to 66% of the image height, and its FRONT EDGE (a clean wooden rim with a little running stitch) runs perfectly straight and horizontal at about 66% of the image height, reaching beyond both sides of the picture. Below the edge is soft shadow and a pale cream felt floor down to the bottom of the image. The table top is completely EMPTY — nothing on it.
+
+Mongle: the coral needle-felted wool ghost-shaped mascot (use the attached reference photos ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy solid black bead eyes with NO white in them, pink felt cheeks). No arms, no legs, no hands, ever.
+Mongle sits BEHIND the table, centered, its scalloped hem just visible resting on the far side of the table top, its round body rising from about 30% to 56% of the image height. It looks down at the table with curious eyes, small closed smile.
+
+Keep the top 26% of the image calm and plain (butter-yellow wall). Keep the empty table top clear — wooden letter blocks will be added later in a row along the front edge.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, soft natural light, gentle depth of field, cute but not babyish (for university students and young workers). Absolutely no text, letters, numbers, logos, symbols or speech bubbles anywhere.

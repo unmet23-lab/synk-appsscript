@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed, exactly the same framing as the first attached image.
+
+Edit the FIRST attached image. Keep the same sunny butter-yellow wall, the same mint-green felt table, the same turtle at the same place and size, and the same light. Change only: on its shell, the left wooden cube now shows the clear dark burned Korean letter 밥 (drawn exactly), and the right wooden cube is gone. In its place, right in front of the turtle's chest on the table, sits a small needle-felted bowl heaped with white felt rice with little steam curls. The turtle has its face in the moment of eating: eyes closed in two happy arcs, cheeks stuffed and round, a few white felt rice grains stuck around its smiling mouth. Mongle still peeks in from the upper left edge, half its face visible, mouth a shocked O. Keep the top 24% of the image calm plain wall.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, soft natural light, gentle depth of field. No other text, letters, numbers, logos, symbols or speech bubbles anywhere.

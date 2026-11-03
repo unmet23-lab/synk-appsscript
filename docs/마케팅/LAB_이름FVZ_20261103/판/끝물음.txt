@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit the FIRST attached image. Same sunny butter-yellow wall, same mint-green felt table, same turtle and same style and light. Change only the camera and the blocks: the camera has moved in close so the turtle fills the lower two thirds of the picture, looking straight into the lens with its big round head tilted slightly, bead eyes curious, tiny smile, as if asking the viewer something. Behind its head on its shell sit exactly two chunky pale wooden toy cubes side by side, and now each cube front shows one clear dark burned question mark "?" instead of Korean letters. Mongle peeks in from the upper left edge, only half its face visible, eyes wide. Keep the top 24% of the image calm plain wall.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, soft natural light, gentle depth of field. No other text, letters, numbers, logos, symbols or speech bubbles anywhere.

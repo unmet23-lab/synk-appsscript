@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE square image.
+
+Layout: plain pure white seamless background. ONE single small chunky needle-felted triangular wedge in mint-green wool with a little cream running stitch along its slanted edges, seen straight-on from the front, standing on its flat base with a rounded top point, centered with wide white margins. It is the pivot of a toy seesaw. No shadow on the background.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, soft natural light, gentle depth of field, cute but not babyish. Absolutely no text, letters, numbers, logos or symbols anywhere.

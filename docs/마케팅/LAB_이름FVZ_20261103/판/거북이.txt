@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait, 1024x1536 or taller), sharp and detailed.
+
+Layout: a plain pure white seamless background. ONE single needle-felted wool soft-shell turtle, full body, in side view walking toward the LEFT, centered with wide empty white margins all around, filling the width of the picture. A big flat smooth round olive-green felt shell with a pale cream hem and a little cream running stitch; its top is flat and wide. A plump short neck, a big round chubby head with glossy solid black bead eyes (no white in them), pink felt cheeks, a tiny pleased smile; four stubby flippers. Very cute plush proportions, big head. No shadow on the white background.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, soft natural light, gentle depth of field, cute but not babyish (for university students and young workers). Absolutely no text, letters, numbers, logos, symbols or speech bubbles anywhere.
