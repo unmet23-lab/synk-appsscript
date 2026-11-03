@@ -298,6 +298,7 @@
 :root[data-host=world] .next-tag{background:#FFD48A;color:#1c1915;font:650 11px/1.3 var(--sans)}
 :root[data-host=world] .next #r-again{background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2)}
 :root[data-host=world] .next #r-again:is(:hover,:active){background:var(--w-s2)}
+:root[data-host=world] #r-hub{display:none}   /* LAB 허브로 가는 단추 — 앱에는 「놀이」가 있다 */
 :root[data-host=world] .w-room-bar{position:sticky;z-index:6;bottom:0;margin:14px 0 0;padding:28px 16px max(16px,env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(11,10,9,0),#0b0a09 42%)}
 :root[data-host=world] .w-room-bar>.felt-cta{min-height:58px}
 @media (min-width:960px){

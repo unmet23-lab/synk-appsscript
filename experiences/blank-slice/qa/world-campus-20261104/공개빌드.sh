@@ -18,4 +18,6 @@ cp "$M/experiences/brand-opening/assets/world-menu-desktop-stable-v10-web.mp4" "
 [ -d "$M/experiences/synk-town/assets/music" ] && { mkdir -p "$D/experiences/synk-town/assets/music"; cp "$M"/experiences/synk-town/assets/music/*.mp3 "$D/experiences/synk-town/assets/music/" 2>/dev/null || true; }
 [ -d "$M/experiences/drama/pilot/media" ] && { mkdir -p "$D/experiences/drama/pilot/media"; cp -r "$M"/experiences/drama/pilot/media/. "$D/experiences/drama/pilot/media/"; }
 (cd "$D" && node tools/build-world-app-public.mjs --config "$W/world-config.public.json" --out "$D/.tmp/pub" > "$W/build-$NAME.json" 2> "$W/build-$NAME.err") || { echo "빌드 실패"; tail -8 "$W/build-$NAME.err" | cut -c1-300; head -c 800 "$W/build-$NAME.json"; exit 3; }
+# 원천 사본은 지운다(디스크가 빠듯하다 — 쓰는 것은 빌드 결과 .tmp/pub뿐)
+find "$D" -mindepth 1 -maxdepth 1 ! -name .tmp -exec rm -rf {} +
 echo "$NAME: $(node -e "const r=require(process.argv[1]);console.log('ok '+r.ok+' · 파일 '+(r.files??r.entries?.length??'?')+' · missing '+JSON.stringify(r.missing)+' · 도구이름 '+JSON.stringify(r.publicToolNames))" "$W/build-$NAME.json" 2>/dev/null || head -c 300 "$W/build-$NAME.json")"
