@@ -73,9 +73,12 @@ const Ring: React.FC<{ t: number; style: React.CSSProperties; color: string }> =
 
 // ── A 「S42 결」
 // front: 피사체가 화면 가운데를 다 덮는 컷(9번 선글라스 개)은 뒤로 보내면 낱말이 거의 가려져 앞에 둔다(11-03 자체 검수)
+// 바닷가: 첫 컷(c01)은 밀려 들어오는 개 머리가 1.4초부터 왼쪽 위를 다 덮어 「바」만 0.8초 보였다(11-03 섞은 판 검수) → 다음 컷 첫 프레임에 얹는다
+//   외계인을 컷 끝까지 늘려도 같은 자리라 「외」만 남아서, 외계인은 그대로 바닷가에서 직전에 빠지고 그 사이는 자막만 둔다
+const cutEnd = (id: string) => MASKS.find((c) => c.cut === id)!.to;
 const BIG_A: { w: string; a: number; b: number; y: number; size: number; front?: boolean }[] = [
   { w: '외계인', a: w(0, 0), b: w(0, 4), y: 250, size: 250 },
-  { w: '바닷가', a: w(0, 4), b: endOf(0) + 0.1, y: 250, size: 250 },
+  { w: '바닷가', a: cutEnd('c01'), b: endOf(0) + 0.1, y: 250, size: 250 },
   { w: '깜짝', a: w(1, 3), b: endOf(1) + 0.1, y: 300, size: 300 },
   { w: '특별한 걸', a: w(2, 2), b: w(3, 0), y: 330, size: 190 },
   { w: '튼튼', a: w(4, 2), b: w(5, 0), y: 300, size: 280 },
@@ -95,16 +98,18 @@ const LookA: React.FC<{ t: number; mix?: boolean }> = ({ t, mix }) => {
       {big && (() => {
         const p = pop(t, big.a);
         const out = 1 - ramp(t, big.b - 0.12, 0.12);
-        return <div style={{ ...abs(56, big.y, 980), zIndex: masked(t) && !big.front ? 3 : 6, textShadow: big.front ? '0 6px 0 #17224D' : undefined, fontFamily: KO, fontWeight: 800, fontSize: big.size, letterSpacing: '-0.05em', lineHeight: 1, color: big.front ? LEMON : INK, opacity: Math.min(1, p) * out, transform: `translateY(${(1 - p) * 110}px)` }}>{big.w}</div>;
+        return <div style={{ ...abs(56, big.y, 980), zIndex: masked(t) && !big.front ? 3 : 6, textShadow: big.front && !mix ? '0 6px 0 #17224D' : undefined, fontFamily: KO, fontWeight: 800, fontSize: big.size, letterSpacing: '-0.05em', lineHeight: 1, color: big.front ? (mix ? NAVY : LEMON) : INK, opacity: Math.min(1, p) * out, transform: `translateY(${(1 - p) * 110}px)` }}>{big.w}</div>;
       })()}
       <Subject t={t} />
       {/* 머리 줄 · 발 줄 */}
-      <div style={{ ...abs(72, 96, 936, 60), zIndex: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: PAPER, textShadow: '0 1px 12px #0008' }}>
-        <span style={{ fontFamily: KO, fontWeight: 700, fontSize: 36, letterSpacing: '-0.03em' }}>외계 · 3살</span>
-        <span style={{ fontFamily: EN, fontSize: 24, letterSpacing: '0.08em', opacity: 0.8 }}>SUMMER WATER DAY / 01</span>
-      </div>
-      <div style={{ ...abs(72, 170, 936, 2), zIndex: 20, background: PAPER, opacity: 0.45 }} />
-      <div style={{ ...abs(72, 1812, 936, 3), zIndex: 20, background: '#ffffff30' }}><div style={{ height: 3, width: `${Math.min(1, t / 22.06) * 100}%`, background: LEMON }} /></div>
+      {!(mix && t >= w(8, 3)) && <>
+        <div style={{ ...abs(72, 96, 936, 60), zIndex: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: PAPER, textShadow: '0 1px 12px #0008' }}>
+          <span style={{ fontFamily: KO, fontWeight: 700, fontSize: 36, letterSpacing: '-0.03em' }}>외계 · 3살</span>
+          {mix ? <span style={{ fontFamily: KO, fontWeight: 700, fontSize: 28, letterSpacing: '-0.02em', opacity: 0.6 }}>첨벙댕</span> : <span style={{ fontFamily: EN, fontSize: 24, letterSpacing: '0.08em', opacity: 0.8 }}>SUMMER WATER DAY / 01</span>}
+        </div>
+        <div style={{ ...abs(72, 170, 936, 2), zIndex: 20, background: PAPER, opacity: 0.45 }} />
+        <div style={{ ...abs(72, 1812, 936, 3), zIndex: 20, background: '#ffffff30' }}><div style={{ height: 3, width: `${Math.min(1, t / 22.06) * 100}%`, background: LEMON }} /></div>
+      </>}
       {/* 조끼 카드(앞) */}
       {card && (() => {
         const p = pop(t, w(3, 0) + 0.03, 0.5);
@@ -121,14 +126,14 @@ const LookA: React.FC<{ t: number; mix?: boolean }> = ({ t, mix }) => {
         const punch = 1 + (1 - ramp(t, w(3, 0), 0.14)) * 0.08;
         return (
           <div style={{ ...abs(60, 1040, 960), zIndex: 21, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 12, transform: `scale(${punch})`, transformOrigin: 'left bottom' }}>
-            <div style={{ fontFamily: KO, fontWeight: 750, fontSize: 56, letterSpacing: '-0.03em', color: PAPER, background: NAVY, padding: '8px 20px 10px', clipPath: `inset(0 ${(1 - p) * 100}% 0 0)` }}>첨벙댕</div>
-            <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 230, letterSpacing: '-0.06em', lineHeight: 0.98, color: NAVY, background: LEMON, padding: '6px 22px 14px', clipPath: `inset(0 ${(1 - p) * 100}% 0 0)` }}>구명조끼</div>
+            <div style={{ fontFamily: KO, fontWeight: 750, fontSize: 56, letterSpacing: '-0.03em', color: PAPER, background: NAVY, padding: '8px 20px 10px', borderRadius: 10, clipPath: `inset(0 ${(1 - p) * 100}% 0 0 round 10px)` }}>첨벙댕</div>
+            <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 230, letterSpacing: '-0.06em', lineHeight: 0.98, color: NAVY, background: LEMON, padding: '6px 22px 14px', borderRadius: 14, clipPath: `inset(0 ${(1 - p) * 100}% 0 0 round 14px)` }}>구명조끼</div>
           </div>
         );
       })()}
       {mix && t >= w(4, 0) && t < w(5, 0) && <div style={{ ...abs(72, 1360, 936), zIndex: 12, display: 'flex', gap: 12 }}>{['등 손잡이 2개', '반사 띠', '버클 끈'].map((c, i) => <span key={c} style={{ fontFamily: KO, fontWeight: 700, fontSize: 30, color: NAVY, background: PAPER, borderRadius: 40, padding: '10px 20px', boxShadow: '0 8px 24px #0003', opacity: ramp(t, w(4, 0) + 0.05 + i * 0.12, 0.2), transform: `translateY(${(1 - ramp(t, w(4, 0) + 0.05 + i * 0.12, 0.3, EXPO)) * 30}px)` }}>{c}</span>)}</div>}
       {/* 「번쩍」 별 */}
-      {t >= w(5, 5) && t < endOf(5) + 0.1 && <div style={{ ...abs(780, 720, 130, 130), zIndex: 14, borderRadius: '50%', background: LEMON, color: NAVY, display: 'grid', placeItems: 'center', fontSize: 70, transform: `scale(${pop(t, w(5, 5))}) rotate(${(t - w(5, 5)) * 70}deg)` }}>✳</div>}
+      {!mix && t >= w(5, 5) && t < endOf(5) + 0.1 && <div style={{ ...abs(780, 720, 130, 130), zIndex: 14, borderRadius: '50%', background: LEMON, color: NAVY, display: 'grid', placeItems: 'center', fontSize: 70, transform: `scale(${pop(t, w(5, 5))}) rotate(${(t - w(5, 5)) * 70}deg)` }}>✳</div>}
       {/* 끝 */}
       {end && !mix && (() => {
         const p = pop(t, w(8, 3), 0.5);
@@ -153,8 +158,8 @@ const LookA: React.FC<{ t: number; mix?: boolean }> = ({ t, mix }) => {
         return (
           <>
             <div style={{ ...abs(0, 1920 - p * 520, 1080, 540), zIndex: 22, background: LEMON }} />
-            <div style={{ ...abs(0, 1420, 1080), zIndex: 23, textAlign: 'center', fontFamily: KO, fontWeight: 900, fontSize: 220, letterSpacing: '-0.07em', lineHeight: 1, color: NAVY, opacity: Math.min(1, q), transform: `translateY(${(1 - Math.min(1, q)) * 80}px) scale(${0.85 + 0.15 * q})` }}>첨벙댕</div>
-            <div style={{ ...abs(0, 1672, 1080), zIndex: 23, textAlign: 'center', fontFamily: KO, fontWeight: 700, fontSize: 44, color: NAVY, opacity: ramp(t, w(8, 3) + 0.35, 0.2) }}>반려견 구명조끼</div>
+            <div style={{ ...abs(0, 1420, 1080), zIndex: 23, textAlign: 'center', fontFamily: KO, fontWeight: 900, fontSize: 220, letterSpacing: '-0.07em', lineHeight: 1, color: NAVY, transform: `scale(${0.94 + 0.06 * Math.min(1, q)})` }}>첨벙댕</div>
+            <div style={{ ...abs(0, 1672, 1080), zIndex: 23, textAlign: 'center', fontFamily: KO, fontWeight: 700, fontSize: 44, color: NAVY }}>반려견 구명조끼</div>
           </>
         );
       })()}
