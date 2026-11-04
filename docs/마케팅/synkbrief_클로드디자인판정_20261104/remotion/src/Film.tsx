@@ -15,15 +15,19 @@ const seq = (from: number, to: number, el: React.ReactNode) => <Sequence from={s
 
 const BUTTER = '#F5C445';
 const GREY = '#A3A3A3';
+const TALK = '#C9C9C9'; // 디자이너의 말 — 해설(흰)과 회색으로만 가른다
 const X = 74;
 const TOP = 284;
 
 // 장면 시작(초) — 원본 박자 0.3 · 1.0 · 3.2 · 4.9 · 6.3 · 10.8 · 15.2 · 18.8 · 19.9 · 21.6 · 23.4 · 28.0 · 30.1에 맞춘다
 export const S = {
-  ribbon: 0, hand: 0.4, wide: 1.0, open: 3.2, door: 4.9, line: 5.3, react: 6.35, close: 6.85, load: 8.25, move: 9.6, things: 11.0, chats: 13.4, comments: 13.98, key: 14.55, keyPage: 15.0,
-  phone: 15.75, black: 18.8, date: 19.9, three: 21.6, s1: 23.4, s2: 26.25, s3: 27.55, card: 29.2, end: 30.55, total: 33.55,
+  ribbon: 0, hand: 0.4, wide: 1.0, open: 3.2, door: 4.9, line: 5.15, react: 6.9, close: 7.35, load: 8.72, move: 10.05, things: 11.45, chats: 13.85, comments: 14.43, key: 15.0, keyPage: 15.45,
+  phone: 16.05, black: 18.8, date: 19.9, three: 21.6, s1: 23.4, s2: 26.25, s3: 27.55, card: 29.2, end: 31.1, total: 36.1,
 };
 export const TOTAL = sec(S.total);
+// 컷 c · e에서 대사가 나오기 바로 앞(받아쓰기로 잰 초)
+const S_LINE_START = 0.6; // c는 0.77초에 말이 시작하고 2.33초에 끝난다
+const S_END_START = 0.35; // e는 0.52초에 말이 시작하고 3.99초에 끝나며, 조문객은 4.5초쯤 프레임 밖으로 나간다
 
 // AI 재연 판 — 컷이 들어올 때 1.035배에서 내려앉고 아주 천천히 다가간다
 const Plate: React.FC<{ src: string; start?: number; z?: number; origin?: string }> = ({ src, start = 0, z = 1, origin = '50% 50%' }) => {
@@ -39,17 +43,17 @@ const Plate: React.FC<{ src: string; start?: number; z?: number; origin?: string
 // 실제 도움말 — 판을 d만큼 내리고 from → to(그림 y)로 움직인다. hi: 밝게 둘 줄(그림 y 위 · 아래), 그 밖은 어둡게.
 // qa · quote: 그 줄을 먼저 그대로 보인 뒤(제작 절차 「실제 화면은 크게 다시 짜기」) qa초에 그 줄을 원문 그대로 크게 다시 짠다
 type Band = [number, number];
-const Page: React.FC<{ src: string; d?: number; from?: number; to?: number; dur?: number; hi?: Band; qa?: number; quote?: string }> = ({ src, d = 600, from = 0, to = 0, dur = 20, hi, qa = 999, quote }) => {
+const Page: React.FC<{ src: string; d?: number; from?: number; to?: number; dur?: number; hi?: Band; qa?: number; quote?: string; note?: string; zoom?: number; zo?: string }> = ({ src, d = 600, from = 0, to = 0, dur = 20, hi, qa = 999, quote, note, zoom = 1, zo = '0% 40%' }) => {
   const f = useCurrentFrame();
   const y = interpolate(f, [0, dur], [from, to], { ...clamp, easing: EASE });
-  const z = interpolate(f, [0, 8], [1.02, 1], { ...clamp, easing: EASE_OUT }) + f * 0.00008;
+  const z = (interpolate(f, [0, 8], [1.02, 1], { ...clamp, easing: EASE_OUT }) + f * 0.00008) * zoom;
   const dim = hi ? interpolate(f, [0, 5], [0, 0.72], clamp) : 0;
   const q = interpolate(f, [sec(qa), sec(qa) + 7], [0, 1], { ...clamp, easing: EASE_OUT });
   const top = hi ? hi[0] - y + d : 0;
   const bot = hi ? hi[1] - y + d : 0;
   return (
     <AbsoluteFill style={{ overflow: 'hidden', background: '#0b0b0b' }}>
-      <div style={{ position: 'absolute', inset: 0, transform: `scale(${z})`, transformOrigin: '50% 40%' }}>
+      <div style={{ position: 'absolute', inset: 0, transform: `scale(${z})`, transformOrigin: zo }}>
         <Img src={staticFile(`img/${src}.png`)} style={{ position: 'absolute', left: 0, top: d - y, width: 1080, height: 2341 }} />
         {hi ? (
           <>
@@ -62,7 +66,7 @@ const Page: React.FC<{ src: string; d?: number; from?: number; to?: number; dur?
         <>
           <AbsoluteFill style={{ background: `rgba(8,8,8,${q * 0.9})` }} />
           <div style={{ position: 'absolute', left: X, width: 860, top: 680, fontFamily: KO, opacity: q, transform: `translateY(${(1 - q) * 28}px)` }}>
-            <div style={{ fontWeight: 600, fontSize: 76, lineHeight: 1.2, letterSpacing: -1.8, color: '#fff' }}>{quote}</div>
+            <div style={{ fontWeight: 600, fontSize: 76, lineHeight: 1.2, letterSpacing: -1.8, color: '#fff' }}>{quote}</div> {note ? <div style={{ fontWeight: 700, fontSize: 44, lineHeight: 1.3, letterSpacing: -1, color: '#D6D6D6', marginTop: 34, wordBreak: 'keep-all' }}>{note}</div> : null}
           </div>
         </>
       ) : null}
@@ -76,7 +80,7 @@ const Shade: React.FC<{ strong?: boolean }> = ({ strong }) => (
 );
 
 // 큰 글자가 곧 말 — 줄마다 28px 아래에서 올라온다. still = 첫 프레임부터 다 보임(0초 훅)
-const T: React.FC<{ lines: React.ReactNode[]; from: number; to: number; size?: number; meta?: string; still?: boolean }> = ({ lines, from, to, size = 104, meta, still }) => {
+const T: React.FC<{ lines: React.ReactNode[]; from: number; to: number; size?: number; meta?: string; still?: boolean; color?: string }> = ({ lines, from, to, size = 104, meta, still, color = '#fff' }) => {
   const f = useCurrentFrame();
   const a = sec(from), b = sec(to);
   if (f < a || f >= b) return null;
@@ -89,18 +93,18 @@ const T: React.FC<{ lines: React.ReactNode[]; from: number; to: number; size?: n
     <div style={{ position: 'absolute', left: X, width: 846, top: TOP, fontFamily: KO, textShadow: '0 2px 14px rgba(0,0,0,0.55)' }}>
       {meta ? <div style={{ ...up(0), fontWeight: 600, fontSize: 34, letterSpacing: -0.5, color: '#D6D6D6', marginBottom: 16 }}>{meta}</div> : null}
       {lines.map((l, i) => (
-        <div key={i} style={{ ...up(i + (meta ? 1 : 0)), fontWeight: 800, fontSize: size, lineHeight: 1.16, letterSpacing: -2.6, color: '#fff', wordBreak: 'keep-all' }}>{l}</div>
+        <div key={i} style={{ ...up(i + (meta ? 1 : 0)), fontWeight: 800, fontSize: size, lineHeight: 1.16, letterSpacing: -2.6, color, wordBreak: 'keep-all' }}>{l}</div>
       ))}
     </div>
   );
 };
 
 // 작은 표시 — 30px · 아래 안전선 줄
-const Small: React.FC<{ text: string; from: number; to: number; right?: boolean }> = ({ text, from, to, right }) => {
+const Small: React.FC<{ text: string; from: number; to: number; right?: boolean; top?: number }> = ({ text, from, to, right, top = 1372 }) => {
   const f = useCurrentFrame();
   if (f < sec(from) || f >= sec(to)) return null;
   const pos = right ? { right: 1080 - 920 } : { left: X };
-  return <div style={{ position: 'absolute', ...pos, top: 1372, fontFamily: KO, fontWeight: 700, fontSize: 30, color: 'rgba(255,255,255,0.86)', letterSpacing: -0.4, textShadow: '0 1px 8px rgba(0,0,0,0.7)' }}>{text}</div>;
+  return <div style={{ position: 'absolute', ...pos, top, fontFamily: KO, fontWeight: 700, fontSize: 30, color: 'rgba(255,255,255,0.86)', letterSpacing: -0.4, textShadow: '0 1px 8px rgba(0,0,0,0.7)' }}>{text}</div>;
 };
 
 // 실제 화면 출처 — 꼬리표 대신 큰 글자 아래 작은 회색 한 줄
@@ -132,7 +136,7 @@ const SaveCard: React.FC = () => {
   return (
     <AbsoluteFill style={{ background: '#0b0b0b', fontFamily: KO }}>
       <div style={{ position: 'absolute', left: X, top: 284, fontWeight: 800, fontSize: 76, letterSpacing: -2, color: '#fff' }}>12월 14일 전에</div>
-      <div style={{ position: 'absolute', left: X, top: 386, fontWeight: 600, fontSize: 38, letterSpacing: -0.8, color: GREY }}>옮기기 단추가 보이면 옮기기부터</div>
+      <div style={{ position: 'absolute', left: X, top: 382, fontWeight: 600, fontSize: 46, letterSpacing: -1, color: '#C9C9C9' }}>옮기기 단추가 보이면 옮기기부터</div>
       {STEPS.map(([n, a, b], i) => {
         const p = interpolate(f, [i * 4, i * 4 + 9], [0, 1], { ...clamp, easing: EASE_OUT });
         return (
@@ -151,6 +155,20 @@ const Sfx: React.FC<{ at: number; src: string; v?: number }> = ({ at, src, v = 0
   <Sequence from={sec(at)}><Audio src={staticFile(`sfx/${src}.wav`)} volume={v * 0.8} /></Sequence>
 );
 
+// 장면 심사용 3~6초 — 제목 · 이름표 · 설명 말 없이 그 장면의 소리째(제작 절차 「한 장면 먼저」)
+export const SCENE_TOTAL = sec(4.75);
+export const Scene: React.FC = () => (
+  <AbsoluteFill style={{ background: '#0b0b0b' }}>
+    {seq(0, 2.2, <Plate src="a" start={1.0} z={1.3} origin="50% 92%" />)}
+    {seq(2.2, 2.5, <Plate src="b" start={0} z={1.5} origin="52% 88%" />)}
+    {seq(2.5, 4.3, <Plate src="c" start={S_LINE_START} />)}
+    {seq(4.3, 4.75, <Plate src="b" start={4.4} z={1.95} origin="50% 62%" />)}
+    <Sequence from={0} durationInFrames={sec(2.2)}><Audio src={staticFile('plate/a.wav')} startFrom={sec(1.0)} volume={0.8} /></Sequence>
+    <Sequence from={sec(2.2)} durationInFrames={sec(0.3)}><Audio src={staticFile('plate/b.wav')} volume={0.9} /></Sequence>
+    <Sequence from={sec(2.5)} durationInFrames={sec(2.25)}><Audio src={staticFile('plate/c.wav')} startFrom={sec(S_LINE_START)} volume={0.95} /></Sequence>
+  </AbsoluteFill>
+);
+
 export const Film: React.FC = () => {
   const f = useCurrentFrame();
   const strong = (f >= sec(S.open) && f < sec(S.door)) || (f >= sec(S.close) && f < sec(S.load)) || (f >= sec(S.move) && f < sec(S.things)) || (f >= sec(S.keyPage) && f < sec(S.phone)) || (f >= sec(S.s3) && f < sec(S.card));
@@ -164,41 +182,43 @@ export const Film: React.FC = () => {
       {seq(S.hand, S.wide, <Plate src="a" start={0.4} z={2.5} origin="46% 66%" />)}
       {seq(S.wide, S.open, <Plate src="a" start={1.0} z={1.3} origin="50% 92%" />)}
       {/* 실제 도움말 — 첫 쪽이 스크롤 */}
-      {seq(S.open, S.door, <Page src="help_top" from={0} to={420} dur={40} />)}
+      {seq(S.open, S.door, <Page src="help_top" d={520} from={170} to={205} dur={50} />)}
       {/* 반전 — 문이 열림 · 대사 · 굳은 조문객(장면 심사 v0 「대사 뒤 굳은 얼굴 한 박자」) */}
       {seq(S.door, S.line, <Plate src="b" start={0} z={1.5} origin="52% 88%" />)}
-      {seq(S.line, S.react, <Plate src="c" start={0.2} />)}
-      {seq(S.react, S.close, <Plate src="b" start={3.2} z={2.15} origin="50% 66%" />)}
+      {seq(S.line, S.react, <Plate src="c" start={S_LINE_START} />)}
+      {seq(S.react, S.close, <Plate src="b" start={4.4} z={1.95} origin="50% 62%" />)}
       {/* 닫히는 건 사이트 — 실제 줄 → 원문 그대로 크게 */}
       {seq(S.close, S.load, <Page src="help_top" from={420} to={420} hi={[765, 1135]} qa={0.45} quote="The standalone Claude Design site … will close on December 14, 2026" />)}
       {/* 디자인은 직접 옮긴다 — 짐 싣기 → 실제 줄 */}
       {seq(S.load, S.move, <Plate src="f" start={0.3} />)}
-      {seq(S.move, S.things, <Page src="help_top2" from={250} to={270} dur={40} hi={[600, 690]} qa={0.4} quote="Move your design systems now." />)}
+      {seq(S.move, S.things, <Page src="help_top2" from={250} to={270} dur={40} hi={[600, 690]} qa={0.4} quote="Move your design systems now." note="클로드 아티팩트 화면의 안내 띠에서 옮겨요" />)}
       {/* 못 넣는 셋 — 문 앞에 남은 물건(볼 이유 심사 답 4) */}
-      {seq(S.things, S.chats, <Plate src="g" start={0} />)}
+      {seq(S.things, S.chats, <Plate src="j" start={0.3} z={1.22} origin="50% 86%" />)}
       {seq(S.chats, S.comments, <Plate src="g" start={2.4} z={1.7} origin="10% 82%" />)}
       {seq(S.comments, S.key, <Plate src="g" start={3.0} z={1.6} origin="48% 44%" />)}
       {seq(S.key, S.keyPage, <Plate src="g" start={3.6} z={2.1} origin="72% 84%" />)}
-      {seq(S.keyPage, S.phone, <Page src="help_carry" from={0} to={0} hi={[640, 770]} />)}
+      {seq(S.keyPage, S.phone, <Page src="help_carry" from={0} to={0} hi={[640, 770]} qa={0.05} quote="Public links … will no longer work after it closes." />)}
       {/* 손해 — 전화 */}
-      {seq(S.phone, S.black, <Plate src="d" start={0.3} />)}
+      {seq(S.phone, S.black, <Plate src="d" start={1.8} />)}
+      {/* 쿵 — 빈 검정은 「끝난 줄 알았다」(시험관 둘) → 전화기를 든 채 굳은 얼굴로 가까이, 글 없이 */}
+      {seq(S.black, S.date, <Plate src="d" start={4.55} z={1.5} origin="46% 26%" />)}
       {/* 날짜 뒤집기 */}
       {seq(S.date, S.s1, <DateCard />)}
       {/* 세 단계 — 조문객이 경건하게 건넴(볼 이유 심사 v2 답 4) · 실제 줄 */}
       {seq(S.s1, S.s2, <Plate src="h" start={0.4} />)}
       {seq(S.s2, S.s3, <Plate src="h" start={4.4} />)}
-      {seq(S.s3, S.card, <Page src="help_share" from={520} to={520} hi={[930, 1300]} />)}
+      {seq(S.s3, S.card, <Page src="help_share" from={520} to={520} hi={[930, 1300]} qa={0.3} quote={'Click "Share," then choose "Project HTML." … click "Export."'} />)}
       {seq(S.card, S.end, <SaveCard />)}
       {/* 끝 — 화환을 가져가는 조문객 */}
-      {seq(S.end, S.total, <Plate src="e" start={0.2} />)}
+      {seq(S.end, S.total, <Plate src="e" start={S_END_START} />)}
 
       {shaded ? <Shade strong={strong} /> : null}
 
-      <T meta="AI로 시안 만드는 도구" lines={['클로드 디자인이', '12월에 없어진대요']} from={0} to={S.open} size={96} still />
+      <T meta="AI로 시안 만드는 도구" lines={['클로드 디자인이', '12월에 없어진대서', '조문 왔어요']} from={0} to={S.open} size={92} still />
       <T lines={['공식 안내문을', '열어 보니']} from={S.open} to={S.door} />
-      <T lines={['저희…', '이사 가는데요?']} from={S.line} to={S.react} />
+      <T lines={['저희…', '이사 가는데요?']} from={S.line} to={S.react} color={TALK} />
       <T lines={['닫히는 건', '사이트뿐이에요']} from={S.close} to={S.load} />
-      <T lines={['디자인은', '직접 옮기면 돼요']} from={S.load} to={S.things} />
+      <T lines={['디자인은 직접 옮기면', '클로드 안에서 계속 써요']} from={S.load} to={S.things} size={84} />
       <T lines={['근데 이삿짐에', '못 넣는 게 셋']} from={S.things} to={S.chats} />
       <T lines={['채팅']} from={S.chats} to={S.comments} />
       <T lines={['댓글']} from={S.comments} to={S.key} />
@@ -207,20 +227,21 @@ export const Film: React.FC = () => {
       <T meta="1" lines={['보낸 링크는 적어 뒀다가', '새 링크로 다시 보내고']} from={S.s1} to={S.s2} size={80} />
       <T meta="2" lines={['남길 말은', '복사하고']} from={S.s2} to={S.s3} />
       <T meta="3" lines={['프로젝트는', '파일로 받아 두고']} from={S.s3} to={S.card} />
-      <T lines={['그리고 화환은…', '가져가 주세요']} from={S.end + 0.3} to={S.total} />
+      <T lines={['저희 안 없어져요…', '화환은 가져가 주세요']} from={S.end + 0.2} to={S.total} color={TALK} size={92} />
 
       <Small text="AI로 만든 재연이에요" from={S.wide} to={S.open} />
       <Src from={S.open} to={S.door} />
       <Src from={S.close} to={S.load} />
       <Src from={S.move} to={S.things} />
       <Src from={S.keyPage} to={S.phone} />
-      <Small text="SYNK 브리핑" from={S.end} to={S.total} right />
+      <Small text="SYNK 브리핑" from={S.end + 0.2} to={S.total} top={548} />
 
       {/* 소리 */}
       <Sequence from={0} durationInFrames={sec(S.open)}><Audio src={staticFile('plate/a.wav')} volume={0.8} /></Sequence>
       <Sequence from={sec(S.door)} durationInFrames={sec(S.line - S.door)}><Audio src={staticFile('plate/b.wav')} volume={0.9} /></Sequence>
-      <Sequence from={sec(S.line)} durationInFrames={sec(S.close - S.line)}><Audio src={staticFile('plate/c.wav')} startFrom={sec(0.2)} volume={0.95} /></Sequence>
-      <Sequence from={sec(S.end)} durationInFrames={sec(S.total - S.end)}><Audio src={staticFile('plate/e.wav')} startFrom={sec(0.2)} volume={0.95} /></Sequence>
+      <Sequence from={sec(S.line)} durationInFrames={sec(S.close - S.line)}><Audio src={staticFile('plate/c.wav')} startFrom={sec(S_LINE_START)} volume={0.95} /></Sequence>
+      <Sequence from={sec(S.things)} durationInFrames={sec(S.chats - S.things)}><Audio src={staticFile('plate/j.wav')} startFrom={sec(0.3)} volume={0.45} /></Sequence>
+      <Sequence from={sec(S.end)} durationInFrames={sec(S.total - S.end)}><Audio src={staticFile('plate/e.wav')} startFrom={sec(S_END_START)} volume={0.95} /></Sequence>
       <Audio src={staticFile('bgm.wav')} volume={() => bgm * 0.8} />
       <Sfx at={S.black - 0.02} src="thud" v={0.8} />
       <Sfx at={S.date} src="hand" v={0.35} />

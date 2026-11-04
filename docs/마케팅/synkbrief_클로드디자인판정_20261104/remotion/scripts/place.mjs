@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FPS = 30;
-const PLAN = [['n01', 0.35], ['n02', 3.25], ['n03', 6.9], ['n04', 8.25], ['n05', 11.0], ['n06', 13.4], ['n07', 14.55], ['n08', 15.8], ['n09', 19.95], ['n10', 21.6], ['n11', 23.42], ['n12', 26.25], ['n13', 27.55], ['n14', 29.22]];
+const PLAN = [['n01', 0.3], ['n02', 3.25], ['n03', 7.38], ['n04', 8.72], ['n05', 11.46], ['n06', 13.85], ['n07', 15.0], ['n08', 16.05], ['n09', 19.95], ['n10', 21.6], ['n11', 23.42], ['n12', 26.25], ['n13', 27.55], ['n14', 29.22]];
 const clips = PLAN.map(([id, t]) => {
   const j = JSON.parse(fs.readFileSync(path.join(ROOT, 'public/vo', id + '.json'), 'utf8'));
   const speech = j.words?.length ? j.words[j.words.length - 1].end : j.dur;
