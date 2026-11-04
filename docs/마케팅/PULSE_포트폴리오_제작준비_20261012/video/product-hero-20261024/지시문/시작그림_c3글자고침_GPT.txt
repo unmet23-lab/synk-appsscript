@@ -1,0 +1,5 @@
+Edit image 1 only as follows and keep everything else pixel for pixel: same framing, same cans, same droplets, same light, same colours, same reflections, same backdrop.
+
+On the sharp can in the middle, the small Korean line under the white wordmark must read exactly as printed in image 2: 오미톡 오미자 스파클링. Fix that one small line so the word order is 오미톡, then 오미자, then 스파클링. In the floor reflection, change the mirrored line to match. Do not change any other letter, logo, size or position.
+
+Vertical 9:16. No new objects, no watermark.
