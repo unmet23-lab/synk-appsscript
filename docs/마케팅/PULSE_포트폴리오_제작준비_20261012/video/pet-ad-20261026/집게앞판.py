@@ -1,7 +1,7 @@
 # 11번 첨벙댕 B급 — 뽑기 집게 컷(번쩍)의 앞판(2026-11-04). 빛줄기가 개 몸 위로 지나가 「몸이 반투명」으로 읽혔다(Fable 맹검).
 # 하늘이 아닌 곳(개 · 조끼 · 집게 · 줄 · 물줄기 · 바다)을 알파 PNG로 따서 Remotion이 빛줄기 위에 얹는다 — 빛은 하늘에만 간다.
 # 색으로 하늘을 가리면 하늘을 비춘 쇠 집게가 뚫려 유령처럼 보였다 → 카메라가 고정된 판이라 집게가 들어오기 전 첫 장(빈 하늘)과의 차이로 딴다.
-#   python -X utf8 집게앞판.py <화면_B급.mp4> <화면 첫 장> <화면 끝 장(안 듦)> <판 mp4> <판 첫 장>  → git 밖 public/p11/claw_fg/000.png …
+#   python -X utf8 집게앞판.py <화면_B급.mp4> <화면 첫 장> <화면 끝 장(안 듦)> <판 mp4> <판 첫 장>  → git 밖 public/p11/claw_fg/000.png …(최종편집.py 화면이 부른다)
 import os
 import shutil
 import subprocess
@@ -53,6 +53,4 @@ for i, im in enumerate(frames):
     out = np.dstack([im, (np.clip(alpha, 0, 1) * 255).astype(np.uint8)])
     ok, buf = cv2.imencode(".png", out, [cv2.IMWRITE_PNG_COMPRESSION, 3])
     buf.tofile(os.path.join(PUB, f"{i:03d}.png"))
-    if i in (10, 16, 24, 40):
-        cv2.imencode(".jpg", cv2.resize((alpha * 255).astype(np.uint8), (W // 4, H // 4)))[1].tofile(os.path.join(os.path.dirname(PUB), f"_앞판확인_{i}.jpg"))
 print("->", PUB)

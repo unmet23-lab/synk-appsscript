@@ -1,9 +1,9 @@
 # 11번 반려동물 「첨벙댕」 최종 편집(2026-11-03, Claude) — 02_콘티 2절 10컷을 시각 그대로 하드컷으로 잇고, 내레이션 · 음악 · 효과음을 놓고, 자막 · 모션은 Remotion 섞은 판으로 굽는다.
 #   python -X utf8 최종편집.py [화면] [소리] [판]   → git 밖 pulse-portfolio12-20261024/최종/p11/첨벙댕_9x16.mp4 · _폰.mp4 · _반초.jpg
-# 11-03 밤 유호님 「세 편에 넣기」: 흰 굵은 글자 + 검은 테 자막(「촌스럽고 맹한 느낌」)을 버리고 자막시안_20261103/remotion의 p11-AB
-#   (A 사람 뒤 큰 글자 · 말자막 상자 + 제품 이름 · 끝 브랜드만 레몬 블록, Fable 맹검 1위 · 가림검사 여덟 낱말 100%)를 최종으로 굽는다.
-# 내레이션: 시댄스 세 판이 모두 「구명조끼」를 「구명조닉」으로 읽어 일레븐 v4 후보(VOICE). 목소리를 바꾸면 소리 → 판을 다시 돌린다 — 낱말 시각 · 큰 낱말이 따라간다.
-# 다시 뽑은 판(p11-04b)이 들어오면 화면이 저절로 그 판을 쓴다(마스크 컷 c04는 rembg로 다시 따야 한다). 후보정 없음(결정 10-24).
+# 11-05 유호님 「이 판으로 바꿔」: 최종은 B급 판이다(CUTS_B · B급소리.py · remotion p11-viral). 「화면」이 번쩍 컷 앞판(집게앞판.py)까지 같이 딴다.
+# 앞 판(섞은 판 자막 + 물 위아래로 갈리는 끝)은 옛화면 · 옛소리 · 옛판으로 다시 구울 수 있고, 파일은 첨벙댕_9x16_물판끝으로 남겼다. p11-04b는 11-05부터 내지 않는다.
+#   그 판은 11-03 밤 유호님 「세 편에 넣기」로 자막시안_20261103/remotion의 p11-AB(A 사람 뒤 큰 글자 · 말자막 상자 + 제품 이름 · 끝 브랜드만 레몬 블록)를 구웠다.
+# 내레이션: 시댄스 세 판이 모두 「구명조끼」를 「구명조닉」으로 읽어 일레븐 v4 후보(VOICE). 목소리를 바꾸면 자막시안 내레이션시각.py → 소리 → 판을 다시 돌린다 — 낱말 시각이 따라간다.
 import os
 import shutil
 import sys
@@ -125,6 +125,10 @@ def b_picture():
         paths.append(out)
         at = end
     C.join_videos(paths, os.path.join(OUT, "화면_B급.mp4"))
+    # 번쩍 컷의 앞판 — 화면을 다시 이으면 같이 딴다(현장 노트 「빛줄기를 피사체 뒤로 보내려면」)
+    i = next(n for n, c in enumerate(CUTS_B) if c[0] == "p11-b07")
+    C.run(sys.executable, "-X", "utf8", os.path.join(os.path.dirname(os.path.abspath(__file__)), "집게앞판.py"),
+          os.path.join(OUT, "화면_B급.mp4"), str(CUTS_B[i - 1][2]), str(CUTS_B[i][2]), C.clip("p11-b07"), str(CUTS_B[i][1]))
 
 
 def b_sound():
@@ -138,7 +142,7 @@ def sound():
     shutil.copyfile(os.path.join(PUB, "sound_narr.wav"), os.path.join(OUT, "소리.wav"))
 
 
-def render(comp="p11-AB-dog", pic_name="화면_개끝.mp4", pub_name="picture_dog.mp4", name="첨벙댕_9x16", jobs=4):
+def render(comp, pic_name, pub_name, name, jobs=4):
     pic = os.path.join(OUT, pic_name)
     if not os.path.exists(os.path.join(PUB, pub_name)) or C.md5(pic) != C.md5(os.path.join(PUB, pub_name)):
         shutil.copyfile(pic, os.path.join(PUB, pub_name))
@@ -157,6 +161,7 @@ if __name__ == "__main__":
         render("p11-AB", "화면.mp4", "picture.mp4", "첨벙댕_9x16_엄지끝")
         what = [w for w in what if w != "엄지끝"]
     for w in what:
-        {"화면": picture, "소리": sound, "판": render,
-         "B화면": b_picture, "B소리": b_sound,
-         "B판": lambda: render("p11-viral", "화면_B급.mp4", "picture_b.mp4", "첨벙댕_B급_9x16", jobs=2)}[w]()   # 다른 세션이 메모리를 쓰는 때 4개는 크롬이 죽었다(11-04)
+        {"화면": b_picture, "소리": b_sound,
+         "판": lambda: render("p11-viral", "화면_B급.mp4", "picture_b.mp4", "첨벙댕_9x16", jobs=2),   # 다른 세션이 메모리를 쓰는 때 4개는 크롬이 죽었다(11-04)
+         "옛화면": picture, "옛소리": sound,
+         "옛판": lambda: render("p11-AB-dog", "화면_개끝.mp4", "picture_dog.mp4", "첨벙댕_9x16_물판끝")}[w]()
