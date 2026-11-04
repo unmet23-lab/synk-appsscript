@@ -1,0 +1,21 @@
+{
+ "설명": "움직여 치는 영상은 저장 규칙(tools/git-storage-policy.json · 영상은 크기가 작아도 git에 안 넣음)대로 git 밖이다. 공용 작업본 experiences/talk-rally/assets/world/cast/taeo/clips/와 공개본 world/talk-rally/assets/world/cast/taeo/clips/에 있고, qa/world-campus-20261104/움직임맞추기.py 굽기가 이 목록을 다시 쓴다.",
+ "clips": {
+  "hitC.mp4": {
+   "bytes": 431837,
+   "sha256": "3f5d04ee149ad232161c733ca2b4798bb623641283d6005a55cd20ab20f04aa7"
+  },
+  "hitL.mp4": {
+   "bytes": 470155,
+   "sha256": "8561b8fdd1ddbfce22f1851b1ddbad053bcbc94498af3a7f491f5585edef7a10"
+  },
+  "hitR.mp4": {
+   "bytes": 415783,
+   "sha256": "3cf4f9138c85c8a28c4082d56105268fc3351a671d620529386349c0973af39b"
+  },
+  "serve.mp4": {
+   "bytes": 433893,
+   "sha256": "7647b8e2ae2a728f0743bfdeb072385fd52e747b0f5b4e5fd43f0d42ecbd71ed"
+  }
+ }
+}

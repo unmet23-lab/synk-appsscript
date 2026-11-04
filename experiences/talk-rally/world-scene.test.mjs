@@ -2,6 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import * as THREE from './vendor/three.module.js';
 import { ITEMS, PRACTICE } from './content.mjs';
 import { NARRATION } from './narration.mjs';
@@ -32,7 +33,16 @@ test('안내 음성 WORLD 판은 narration.mjs의 자리와 짝이 맞고, 글�
 
 test('표정 판 · 입구 · 결과 그림이 있다', () => {
   for (const src of [...Object.values(PLATES), CAST_ART.lobby, CAST_ART.result]) assert.ok(has(src), src);
-  for (const c of Object.values(CLIPS)) assert.ok(has(c.src), c.src);
+});
+
+test('움직임 영상: 표의 넷이 목록(git 밖 사본의 지문)에 있고, 이 작업본에 파일이 있으면 지문이 같다', () => {
+  const { clips } = JSON.parse(read('qa/world-clips.json'));
+  assert.deepEqual(Object.values(CLIPS).map((c) => c.src.split('/').pop()).sort(), Object.keys(clips).sort());
+  for (const c of Object.values(CLIPS)) {
+    if (!has(c.src)) continue;   // CI · 가벼운 세션 사본에는 없다(저장 규칙) — 없으면 게임은 표정 판으로 친다
+    const file = readFileSync(new URL(`./${c.src}`, import.meta.url));
+    assert.equal(createHash('sha256').update(file).digest('hex'), clips[c.src.split('/').pop()].sha256, c.src);
+  }
 });
 
 function project(x, y, z) {

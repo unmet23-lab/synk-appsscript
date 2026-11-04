@@ -8,6 +8,7 @@
     python -I -X utf8 움직임맞추기.py 굽기                 # TRIM 표대로 잘라 빠르기를 맞춰 assets/world/cast/taeo/clips/<이름>.mp4
     python -I -X utf8 움직임맞추기.py 재기 hitL2 [시작초 끝초] # 라켓(빨간 덩이) 자리를 장마다 → 사진 좌표 · 3D 자리(태오가 치는 평면) — SCENE.contact 값
 """
+import hashlib
 import json
 import math
 import re
@@ -31,7 +32,7 @@ FPS = 24
 # 영상에서 쓸 자리: 네트 윗 띠(사진 y 1767 → 영상 823)에서 자른다 — 경계가 흰 띠에 숨는다
 BOX_H = 820   # 영상 픽셀(720 폭 기준)
 # 이름 → src(받은 파일) · segs(구간 · 빠르기, from > to면 거꾸로) · contact(라켓이 공에 닿는 원본 시각) · 공(지울 흰 공 {장: [x, y]}). 보기 · 재기로 보고 적는다.
-TRIM = json.loads((여기 / "움직임표.json").read_text(encoding="utf-8")) if (여기 / "움직임표.json").exists() else {}
+TRIM = json.loads((여기.parent / "world-motion-table.json").read_text(encoding="utf-8")) if (여기.parent / "world-motion-table.json").exists() else {}
 
 
 def 찾기(이름):
@@ -182,6 +183,10 @@ def 굽기(이름):
                     "-c:v", "libx264", "-preset", "slow", "-crf", "23", "-g", "10", "-an", "-movflags", "+faststart", str(out)], check=True)
     닿음 = 시각(segs, t["contact"])
     마지막 = cv2.absdiff(frames[표[-1]][:BOX_H], ref[:BOX_H]).mean()
+    목록파일 = 여기.parent / "world-clips.json"
+    목록 = json.loads(목록파일.read_text(encoding="utf-8"))
+    목록["clips"][out.name] = {"bytes": out.stat().st_size, "sha256": hashlib.sha256(out.read_bytes()).hexdigest()}
+    목록파일.write_text(json.dumps(목록, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"{이름}: {len(표) / 30:.2f}초 · 닿는 때 {닿음:.2f}초 · {out.stat().st_size // 1024}KB · 끝 장과 ready 판 차이 {마지막:.1f} · 구간 끝 {끝}")
 
 

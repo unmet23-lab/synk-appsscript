@@ -14,6 +14,7 @@ const OUT = path.resolve(opt('--밖') || path.join(공용작업본(ROOT), '.tmp'
 const SHARED = 공용작업본(ROOT), CONFIG = path.resolve(opt('--설정'));
 const PATHS = ['experiences/brand-opening', 'experiences/synk-world-app', 'experiences/hangul-stage', 'experiences/korean-runner', 'experiences/korean-rhythm', 'experiences/synk-world-home', 'experiences/synk-account', 'experiences/synk-town', 'experiences/play-common', 'experiences/korean-racing', 'experiences/order-rush', 'experiences/blank-slice', 'experiences/snap-words', 'experiences/talk-rally', 'experiences/drama', 'experiences/topik-items', 'experiences/social-conversion.mjs', 'atlas', 'strata', 'tools', 'package.json'];
 const OUTSIDE = ['experiences/synk-town/assets/district', 'experiences/synk-world-home/assets/avatar-textiles-v1', 'experiences/drama/pilot/media'];
+const CLIP_DIR = 'experiences/talk-rally/assets/world/cast/taeo/clips';   // 움직여 치는 영상(git 밖 — qa/world-clips.json)
 const OUTSIDE_FILES = ['experiences/korean-racing/assets/coastal-rocks-v6.glb'];
 const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)]);
 const sha = (file) => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
@@ -29,12 +30,17 @@ function build(name, ref) {
   for (const to of OUTSIDE) { fs.mkdirSync(path.join(src, to), { recursive: true }); fs.cpSync(path.join(SHARED, to), path.join(src, to), { recursive: true, force: false }); }
   for (const f of fs.readdirSync(path.join(SHARED, 'experiences/brand-opening/assets')).filter((n) => /^world-menu-.*\.mp4$/.test(n))) if (!fs.existsSync(path.join(src, 'experiences/brand-opening/assets', f))) fs.copyFileSync(path.join(SHARED, 'experiences/brand-opening/assets', f), path.join(src, 'experiences/brand-opening/assets', f));
   for (const f of OUTSIDE_FILES) fs.copyFileSync(path.join(SHARED, f), path.join(src, f));
+  fs.mkdirSync(path.join(src, CLIP_DIR), { recursive: true }); fs.cpSync(path.join(ROOT, CLIP_DIR), path.join(src, CLIP_DIR), { recursive: true, force: false });
   fs.symlinkSync(path.join(SHARED, 'node_modules'), path.join(src, 'node_modules'), 'junction');
   // 남의 파일 주석의 도구 이름은 공개 빌드가 멈춘다 — 내 후보에 안 드는 파일이면 두 사본에 같은 고침만 넣고 원본은 그 세션 몫으로 남긴다(현장 노트 배포 · 공개).
   { const strings = path.join(src, 'experiences/drama/pilot/strings.mjs'), text = fs.readFileSync(strings, 'utf8'); fs.writeFileSync(strings, text.replace('역번역 → Fable → 아르곤 세 겹 확인', '세 겹 확인')); }
   const r = spawnSync(process.execPath, ['tools/build-world-app-public.mjs', '--config', CONFIG, '--out', '.tmp/out'], { cwd: src, encoding: 'utf8', maxBuffer: 1 << 28 });
   if (r.status !== 0) throw Error(`빌드 ${name} 실패: ${(r.stderr || r.stdout).slice(-1500)}`);
   { const j = JSON.parse(r.stdout.slice(r.stdout.indexOf('{'))); if (!j.ok) throw Error(`빌드 ${name} ok:false — 빠진 참조 ${JSON.stringify(j.missing).slice(0, 600)} · 도구 이름 ${JSON.stringify(j.publicToolNames).slice(0, 400)}`); console.log(name, ref, '파일', j.files, '크기', j.totalBytes); }
+  if (name === 'new') for (const [file, item] of Object.entries(JSON.parse(fs.readFileSync(path.join(ROOT, 'experiences/talk-rally/qa/world-clips.json'), 'utf8')).clips)) {
+    const put = path.join(src, '.tmp/out/world/talk-rally/assets/world/cast/taeo/clips', file);
+    if (!fs.existsSync(put) || sha(put) !== item.sha256) throw Error('움직임 영상이 후보에 없거나 다르다: ' + file);
+  }
   fs.renameSync(path.join(src, '.tmp/out'), out);
   fs.unlinkSync(path.join(src, 'node_modules'));
   fs.rmSync(src, { recursive: true, force: true });

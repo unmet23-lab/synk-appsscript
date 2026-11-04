@@ -4,7 +4,7 @@ export default async function 장면({ page, 찍기, 판, 주소들 }) {
   const 주소 = 주소들['말랠리'];
   if (판 === '전' || !주소) return;
   const 쉼 = (ms) => page.waitForTimeout(ms);
-  const fr = () => page.frames().find((f) => f.url().includes('/talk-rally/'));
+  const fr = () => page.frames().find((f) => f.url().includes('/talk-rally/index.html'));
   await page.goto(주소, { waitUntil: 'load', timeout: 60000 });
   for (let i = 0; i < 160; i += 1) { if (await fr()?.evaluate(() => !!window.__rally && document.documentElement.classList.contains('w-ready')).catch(() => false)) break; await 쉼(150); }
   await 쉼(1200);

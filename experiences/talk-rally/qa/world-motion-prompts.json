@@ -1,0 +1,45 @@
+{
+ "공통": "Vertical 9:16 photorealistic video. The camera is locked off on a tripod and does not move, zoom or shake at all. The table, the net, the room, the people in the back and the light stay exactly as in the start image. Real speed, natural athletic body movement, like a real table-tennis player in a university club room. He keeps the same face, hair and grey hoodie, and his mouth stays closed: no speaking, no lip movement. His feet stay behind the far end of the table, he never leans onto it. No music. No subtitles, no text, no letters on screen.",
+ "클립": [
+  {
+   "id": "hitL",
+   "prompt": "In the first second the young man in the grey hoodie takes one quick side-step to the LEFT of the picture, reaches out with the red paddle in his right hand and plays one crisp forehand stroke above the left side of the far table end, eyes tracking an unseen ball, no ball visible. Then he steps back and settles into exactly the ready pose of the start image, holding still for the last second."
+  },
+  {
+   "id": "hitC",
+   "prompt": "In the first second the young man in the grey hoodie bends his knees, and plays one compact forehand push straight ahead with the red paddle in his right hand above the middle of the far table end, eyes tracking an unseen ball, no ball visible. Then he recovers and settles into exactly the ready pose of the start image, holding still for the last second."
+  },
+  {
+   "id": "hitR",
+   "prompt": "In the first second the young man in the grey hoodie takes one quick side-step to the RIGHT of the picture and plays one crisp backhand stroke across his body with the red paddle above the right side of the far table end, eyes tracking an unseen ball, no ball visible. Then he steps back and settles into exactly the ready pose of the start image, holding still for the last second."
+  },
+  {
+   "id": "serve",
+   "prompt": "In the first second the young man in the grey hoodie tosses the white ball up from his open palm about a head high, watches it, and strikes it toward the camera with the red paddle in one quick forehand serve; after the strike the ball is gone from the picture. Then he settles into exactly the ready pose of the end image, holding still for the last second."
+  },
+  {
+   "id": "hitL2",
+   "prompt": "In the first second the young man in the grey hoodie slides one quick step to his own right, which is the LEFT side of the picture, reaches out with the red paddle in his right hand and swings one crisp forehand stroke at chest height out at the left edge of the picture, chin up, face visible. This is a shadow stroke, an air swing with an empty paddle: there is no ball anywhere near him and no ball on the table. Then he steps back and settles into exactly the ready pose of the start image, holding still for the last second."
+  },
+  {
+   "id": "hitC2",
+   "prompt": "In the first second the young man in the grey hoodie shifts his weight forward, chin up and looking straight ahead, and swings one short forehand drive right in front of his chest: the red paddle travels from his waist up to the very middle of the picture, in front of his chest, then stops. His face stays fully visible, he does not look down. This is a shadow stroke, an air swing with an empty paddle: there is no ball anywhere near him and no ball on the table. Then he steps back and settles into exactly the ready pose of the start image, holding still for the last second."
+  },
+  {
+   "id": "hitR2",
+   "prompt": "In the first second the young man in the grey hoodie slides one quick step toward the two students in the back, to the RIGHT half of the picture, so his whole body ends up right of centre. His right arm folds across his chest and the red paddle flicks outward in one short backhand, travelling from his chest to the right edge of the picture at chest height, with the back of his hand toward the camera. The paddle stays on the right half of the picture the whole time and never goes to the left side. This is a shadow stroke, an air swing with an empty paddle: there is no ball anywhere near him and no ball on the table. Then he steps back and settles into exactly the ready pose of the start image, holding still for the last second."
+  },
+  {
+   "id": "hitR3",
+   "prompt": "In the first second the young man in the grey hoodie moves to his own left, which is the RIGHT side of the picture, leaning and stepping that way with his whole body. He brings the red paddle across the front of his body and swings a backhand block out to the RIGHT edge of the picture, chest high, face turned to the right of the picture, chin up. At the moment of the swing the paddle is far to the right of his body and his left arm is out for balance on the same side. This is a shadow stroke, an air swing with an empty paddle: there is no ball anywhere near him and no ball on the table. Then he steps back and settles into exactly the ready pose of the start image, holding still for the last second."
+  },
+  {
+   "id": "serve2",
+   "prompt": "In the first second the young man in the grey hoodie tosses the white ball up from his open palm about a head high and watches it fall. When the ball has fallen to chest height the red paddle swings in and strikes it right in front of his chest in one quick forehand serve. At that instant the ball is gone: it shoots straight at the camera too fast to see. After the strike there is no ball in the picture at all, it never falls and never touches the table. Then he settles into exactly the ready pose of the end image, holding still for the last second."
+  },
+  {
+   "id": "hitR4",
+   "prompt": "In the first second the young man in the grey hoodie slides one quick step toward the right of the picture while the red paddle travels straight from his waist out to the right side of his chest in one short sharp backhand block, arriving exactly in the pose of the end image. Then he holds that pose perfectly still until the end, only breathing. This is a shadow stroke, an air swing with an empty paddle: there is no ball anywhere near him and no ball on the table."
+  }
+ ]
+}
