@@ -82,6 +82,25 @@ test('a second failed case, a partial list or a plain line is not explained by a
   assert.ok(localStatus.judge(line('FAIL 78/79: S070'), { now: NOW, diagnosed: [range], manifestCases }).explained.length);
 });
 
+test('a diagnosed group can require every named case on the same failed run', () => {
+  const known = { ...range, cases: ['S070', 'S072', 'S074', 'S095'], exactCases: true };
+  const judge = (message, commit = 'b') => localStatus.judge(
+    [row('a', commit === 'a' ? 'failure' : null, message), row('b', commit === 'b' ? 'failure' : null, message), row('c', null)],
+    { now: NOW, diagnosed: [known], manifestCases });
+  const exact = 'FAIL 75/79: S095 S070 S074 S072';
+  assert.deepEqual(judge(exact).explained.map(x => x.commit), [sha('b')]);
+  assert.ok(judge(exact).failed.includes(sha('b')));
+  for (const [line, commit] of [
+    ['FAIL 78/79: S070', 'b'], ['FAIL 74/79: S095 S070 S074 S072 S001', 'b'],
+    ['FAIL 75/79: S070 S070 S070 S070', 'b'],
+    ['FAIL 70/79: S095 S070 S074 S072', 'b'],
+    ['FAIL 74/79: S095 S070 S074 S072 +1', 'b'], [exact, 'a'],
+  ]) {
+    const result = judge(line, commit);
+    assert.deepEqual(result.explained, []);
+    assert.ok(result.problems.some(text => text.includes('local verification failed')));
+  }
+});
 test('a range that is not on the master line turns red instead of hiding anything', () => {
   const result = localStatus.judge([row('a', 'success', 'x'), row('b', 'failure', 'FAIL 78/79: S070')], { now: NOW, diagnosed: [range], manifestCases });
   assert.match(result.problems.join('\n'), /diagnosed range c{40} to a{40} is not on the master line/);
@@ -98,5 +117,7 @@ test('the ledger on master is well formed and every entry names a local case', t
   t.after(() => fs.rmSync(folder, { recursive: true, force: true }));
   const bad = change => { fs.writeFileSync(file, JSON.stringify({ version: 1, ranges: [{ ...range, ...change }] })); return () => localStatus.readDiagnosed(file, manifest); };
   assert.doesNotThrow(bad({}));
+  assert.throws(bad({ exactCases: 'yes' }), /Invalid diagnosed range/);
+  assert.throws(bad({ exactCases: true, cases: ['S070', 'S070'] }), /Invalid diagnosed range/);
   for (const change of [{ cases: [] }, { cases: ['S999'] }, { cases: [manifest.cases.find(item => item.route !== 'local').id] }, { from: 'abc' }, { fixedBy: range.from }, { cause: ' ' }]) assert.throws(bad(change), /Invalid diagnosed range/, JSON.stringify(change));
 });

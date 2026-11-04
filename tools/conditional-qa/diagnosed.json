@@ -14,6 +14,14 @@
       "fixedBy": "f577e04d19de6e066e997f923ecb94c7c2770911",
       "cause": "시간 초과된 GET을 모두 한 번 더 물어 과제 화면의 12초 오류가 24초로 늦어졌고, 부하가 조금만 있어도 시험의 25초 대기를 넘긴다",
       "evidence": "tools/conditional-qa/README.md#diagnosed-failures"
+    },
+    {
+      "cases": ["S070", "S072", "S074", "S095"],
+      "exactCases": true,
+      "from": "c93a5fe66ae86cd9bdac8c5dc6e1977997dfb990",
+      "fixedBy": "2ea80a882c424d2019b278cfa7f1d79344aeb0ec",
+      "cause": "WORLD 내 정보 화면이 사진 시범 상태를 조회했지만 계정·과제·수업·알림 시험의 합성 서버 네 곳에 꺼진 시범의 응답이 없었다",
+      "evidence": "tools/conditional-qa/README.md#world-photo-status-fixture"
     }
   ]
 }

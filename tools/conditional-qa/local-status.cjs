@@ -1,7 +1,7 @@
 'use strict';
 const fs = require('node:fs'), path = require('node:path');
 const { CONTEXT, sha256, readManifest } = require('./contract.cjs');
-const { REPO, request, accepted, failedCases, graphql } = require('./github.cjs');
+const { REPO, request, accepted, failedCases, failureDescription, graphql } = require('./github.cjs');
 // local-coverage cancels its own run while the PC verifies, and a cancelled run is never counted as red. So a stopped PC or
 // a failure on an older commit would make no signal at all. This reads every queued commit's status; it never runs a test or writes a pass.
 const FIRST_COMMIT = 'df9ec0dff34be52fc0fabff03381a0a2e59e639f'; // The worker's activation point; older commits were never queued.
@@ -54,6 +54,8 @@ function readDiagnosed(file = path.join(__dirname, 'diagnosed.json'), manifest =
   if (ledger.version !== 1 || !Array.isArray(ledger.ranges)) throw Error('Invalid diagnosed ledger');
   for (const range of ledger.ranges) {
     const commits = [range.from, range.fixedBy];
+    if (range.exactCases !== undefined && typeof range.exactCases !== 'boolean') throw Error('Invalid diagnosed range case matching mode');
+    if (range.exactCases && Array.isArray(range.cases) && new Set(range.cases).size !== range.cases.length) throw Error('Invalid diagnosed range with duplicate cases');
     if (!commits.every(commit => /^[0-9a-f]{40}$/.test(commit)) || range.from === range.fixedBy || !Array.isArray(range.cases) || !range.cases.length || !range.cases.every(id => local.has(id)) || typeof range.cause !== 'string' || !range.cause.trim()) throw Error(`Invalid diagnosed range: ${JSON.stringify(range).slice(0, 200)}`);
   }
   return ledger.ranges;
@@ -71,7 +73,11 @@ function placeRanges(rows, diagnosed) {
 function explain(row, { position, spans }) {
   const named = failedCases(row.status.description), at = position.get(row.commit);
   if (!named?.complete) return null;
-  const covering = named.ids.map(id => spans.find(span => span.cases.includes(id) && at > span.newest && at <= span.oldest));
+  const count = row.manifest.count;
+  const exactCount = row.status.description === failureDescription(count - named.ids.length, count, named.ids);
+  const eligible = spans.filter(span => at > span.newest && at <= span.oldest && (!span.exactCases ||
+    (exactCount && span.cases.length === named.ids.length && span.cases.every(id => named.ids.includes(id)))));
+  const covering = named.ids.map(id => eligible.find(span => span.cases.includes(id)));
   return covering.every(Boolean) ? { cases: named.ids, ranges: [...new Set(covering)] } : null;
 }
 function failureLine(row, manifestCases) {
