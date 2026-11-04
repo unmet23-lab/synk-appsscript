@@ -14,7 +14,7 @@ import 최종편집공통 as C
 OUT = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/최종/p11"
 PUB = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/최종/자막시안_public/p11"
 CAP = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "자막시안_20261103")
-VOICE = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/최종/p11/소리/일레븐후보_20261103/Kevin.mp3"   # Kevin · Andre · Miles 가운데 고르기는 유호님(시안 · 최종은 Kevin)
+VOICE = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/최종/p11/소리/일레븐후보_20261103/Kevin.mp3"   # 유호님 11-04 Kevin으로 확정(결정 표) — Andre · Miles는 같은 폴더에 후보로 남김
 FPS, W, H = 24, 1080, 1920
 T = [0, 2.17, 3.80, 6.50, 11.23, 12.83, 13.47, 14.90, 16.27, 19.33, 22.06]   # 컷 경계(02_콘티 2절)
 
