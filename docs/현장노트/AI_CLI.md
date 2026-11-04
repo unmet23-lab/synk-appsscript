@@ -621,7 +621,7 @@
 - 증상: 사슬 51에서 유호님 「사슬 51 읽기·교체·무장 진행」으로 읽기 · 중계 · 교체 · 재무장 백업까지 지났는데 `rearm-operations.cjs restore`가 판정기에 막혔다(까닭 없이 「dangerous」). 같은 때 `공개.js 기준 … --실행`과 Windows 예약 등록(`install-task.ps1`, 「Unauthorized Persistence」)도 막혔다.
 - 원인: `autoMode.allow`의 상시 허락은 재무장 모드를 나열하면서 `restore`만 뺀다(고객 자료가 든 백업을 예비 노드에 푸는 일이다). 「Gated synk.im publish」 꼴은 `올리기`와 `-m` · `--실행` · `--계획`만이라 `기준`과 환경 변수 앞붙임은 밖이다. 예약 등록에는 허락 줄이 없고, 다른 세션이 맡긴 과제의 「예약 등록」은 유호님 말이 아니다. 사슬 50은 승인 문장이 「회사 서버 읽기·중계·교체·복원·무장 진행」이라 지나갔다.
 - 고침: 회사 사슬의 첫 승인 문장을 「회사 서버 읽기·중계·교체·복원·무장 진행」 꼴로 받는다 — 복원을 빼지 않는다. 판 뒤에 남는 예약 등록 · 기준 그림도 같은 문장에 이름 댄다. 막히면 되는 일을 먼저 끝내고 한 문장으로 여쭌다. 다시 치지 않는다. `/이어서` 일괄 글은 승인이 아니다.
-- 다시 확인: `~/.claude/settings.json`의 `autoMode.allow`에서 `rearm-ops/rearm-operations.cjs <mode>` 다음의 「(not `restore`)」를 읽는다.
+- 다시 확인: `~/.claude/settings.json`의 `autoMode.allow`에서 `rearm-ops/rearm-operations.cjs <mode>` 다음의 「(not `restore`)」를 읽는다. 유호님 「사슬 51 복원·무장·의뢰예약·기준그림 승인」 뒤 같은 복원 명령 · 예약 등록 · `공개.js 기준`(앞 `/`와 환경 변수 앞붙임을 뺀 꼴)이 모두 통과했다.
 ## Claude 앱 세션
 
 ### 스스로 보관한 세션이 부모 세션에는 「끝나기 전에 사용자가 보관했다」로 온다 (2026-10-20 Claude)
