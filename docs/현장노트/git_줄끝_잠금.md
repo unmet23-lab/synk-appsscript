@@ -92,6 +92,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 이 저장소에서는 앱 도구 대신 `node tools/바로올리기.js 따라가기`(미리 보기 → `--실행`)로 받는다. 미커밋이 없고 가지에 따로 쌓은 커밋이 없으면 `git fetch origin master` 뒤 `git merge --ff-only origin/master`도 된다(sparse로 빠진 폴더는 그대로 빠진 채).
 - 다시 확인: `git log --oneline HEAD..origin/master`가 비고, `git status`에 sparse 폴더가 지워진 것으로 나오지 않는다.
 
+### GitHub SSH가 같은 열쇠를 된다 안 된다 한다 — `Permission denied (publickey)`로 바로올리기 · 공개가 멈춘다 (2026-11-04 Claude)
+- **증상:** 19시 전후로 `git fetch` · `git push`가 `git@github.com: Permission denied (publickey)`로 끊겼다. 15분짜리 관련 시험을 다 돌린 바로올리기가 push에서 「push가 거절됐다」로 멈췄고, `공개.js --실행`도 같은 말로 멈췄다. 공개 도구 로그에는 `Permission denied`가 안 남고 `correct access rights`만 남기도 한다.
+- **원인:** 확인 못 했다. `ssh -v`로 보면 등록된 열쇠(`synk-laptop-2026-08-31`)를 내밀고도 거절당했고, 같은 명령을 여덟 번 치면 다섯 번 되고 세 번 거절됐다. `github.com/<계정>.keys`에 열쇠가 그대로 있고 githubstatus는 정상이었다. 이 PC의 열쇠나 권한 문제는 아니다.
+- **고침:** 열쇠를 바꾸지 말고 인증 거절만 다시 잇는다. `GIT_SSH_COMMAND="bash <감싸는 파일>"`을 주고, 그 파일은 `ssh -o BatchMode=yes "$@"`를 돌려 종료 코드 255에 stderr가 `Permission denied (publickey)`일 때만 3초 쉬고 다시 부른다(그 밖의 실패는 그대로 돌려준다). 바로올리기 · 공개.js는 환경 변수를 물려받는다. 15분 시험을 다시 돌리는 일이 없어진다.
+- **다시 확인:** 감싼 뒤 바로올리기가 「origin 확인 ✓」까지 갔고, 공개가 바이트 대조까지 갔다. 그동안 재시도 기록에 거절 10건이 남았다.
+
 ## 줄끝(CRLF·LF)
 
 ### 작업본이 CRLF인 문서로 「HEAD 판 + 내 줄」을 만들면 제목 비교가 전부 어긋난다
