@@ -661,6 +661,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 키 · 권한을 고치지 않는다. `https://www.githubstatus.com/api/v2/components.json`을 먼저 보고 멈춘 명령을 다시 돌린다. `바로올리기`는 push 뒤에 끊겼어도 다시 돌리면 「올릴 것 없음」이다.
 - 다시 확인: `ssh -o BatchMode=yes -T git@github.com`이 여러 번 잇달아 성공한다.
 
+### 바로올리기가 fetch · push에서 「Permission denied (publickey)」로 멈췄다가 몇 분 뒤 된다 — 열쇠 문제가 아니니 간격을 두고 같은 명령을 다시 낸다 (2026-11-04 Claude)
+- 증상: 11-04 19:20~19:40 `git fetch` · `바로올리기`가 「Permission denied (publickey)」 또는 「[멈춤] push가 거절됐다 … correct access rights」로 끝났다. 그 사이 `ssh -T git@github.com`은 같은 열쇠로 「Hi unmet23-lab!」를 냈고, 다른 세션의 push도 origin에 올라갔다. 앱의 `sync_with_base_branch`도 fetch 단계에서 같이 실패했다.
+- 원인: 모름. 열쇠 · 설정은 그대로였고 같은 명령이 연달아 되었다 안 되었다 해서, 동시 접속이 많을 때 서버 쪽에서 끊는 것으로 보인다(추정).
+- 고침: 열쇠나 `~/.ssh`를 고치지 않고 90초 간격으로 같은 명령을 다시 낸다. 11-04에는 세 번째에 올라갔다. 되풀이 틀을 쓸 때 성공은 첫 줄 「[올림]」, 이미 올라간 뒤의 다시 내기는 「[올릴 것 없음]」으로 가른다 — 「origin 확인」만 찾으면 성공을 못 알아보고 한 번 더 낸다. 막힌 줄은 「publickey」 · 「push가 거절」 · 「access rights」로 찾는다.
+- 다시 확인: `git log origin/master --grep=<커밋 제목>`에 나오고 `git status --short`가 빈다. 거절 뒤에 다시 냈을 때 커밋이 두 번 올라가지 않는다.
+
 ## 워크트리·연결 폴더·공간 정리
 
 ### 워크트리에서 `sync-atlas --all --local`이 Study 묶음의 `Cannot find module …/node_modules/esbuild`로 멈춰 날 사본(path-vr trail 등)을 쓰지 않는다 — Study 빌드만 esbuild를 저장소 뿌리 경로로 찾는다 (2026-10-31 Claude)
