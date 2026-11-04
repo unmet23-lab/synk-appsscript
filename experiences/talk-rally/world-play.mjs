@@ -584,7 +584,7 @@ export function createWorldPlay() {
       playResults(results);
     },
     coin() { if (resultsRun) coinWaiting = true; else play('coin'); },
-    pause() { paused = true; holdBeat(); music?.pause(true); clearTimeout(waitTimer); try { clipNow?.el.pause(); } catch { /* 없음 */ } },
+    pause() { if (!paused) holdBeat(); paused = true; music?.pause(true); clearTimeout(waitTimer); try { clipNow?.el.pause(); } catch { /* 없음 */ } },
     resume() { if (paused) freeBeat(); paused = false; music?.pause(false); clipNow?.el.play()?.catch?.(() => finishClip()); },
     quit() { sayEnd(); inGame = false; clearTimeout(farTimer); clearTimeout(waitTimer); music?.stop(0.6); cancel('beat'); stopClip(); pushOut(); stopMeter(); },
     /** 확인용(?qa). */

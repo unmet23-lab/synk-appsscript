@@ -72,7 +72,7 @@ if (GAME) {
   if (!args.includes('--빌드재사용')) build();
   const BUILD = path.join(OUT, 'build', 'world');
   fs.cpSync(path.join(BUILD, 'talk-rally'), path.join(NEW, 'talk-rally'), { recursive: true });
-  // 앱 안 몽글 그림은 부르지 않는다(index.html에서 뺐고 stage.mjs WORLD 분기가 안 쓴다) — 빈 기준 폴더로 3방향을 건다
+  // 전부 새 파일이라 빈 기준 폴더로 3방향을 건다
   fs.mkdirSync(path.join(NEW, 'brand-opening/assets/world-play'), { recursive: true }); fs.mkdirSync(BASE, { recursive: true });
   fs.copyFileSync(path.join(BUILD, 'brand-opening/assets/world-play/talk-rally.webp'), path.join(NEW, 'brand-opening/assets/world-play/talk-rally.webp'));
   report(['world/talk-rally', 'world/brand-opening/assets/world-play/talk-rally.webp']);

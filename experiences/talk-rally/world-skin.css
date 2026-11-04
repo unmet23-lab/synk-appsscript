@@ -255,6 +255,8 @@
 /* 아래쪽 그늘: 카드 글자가 사진 위에서 읽히게 */
 :root[data-host=world] .arena>#w-scene::after{content:'';position:absolute;left:0;right:0;bottom:0;height:34%;z-index:2;pointer-events:none;background:linear-gradient(180deg,rgba(6,7,9,0),rgba(6,7,9,.42) 60%,rgba(6,7,9,.66))}
 
+/* 넓은 화면 · 낮은 화면은 태오 머리가 위로 올라가 캡슐이 안내 글 자리와 겹친다 — 안내 글이 떠 있는 동안은 글이 말을 대신한다 */
+@media (min-aspect-ratio:82/100),(max-height:640px){:root[data-host=world] .arena:has(#tip:not([hidden])) .speech{visibility:hidden}}
 /* 목소리 막대: 태오 얼굴 위 캡슐 — 이름 + 실제 소리로 움직이는 막대 다섯(점 셋 대신) */
 :root[data-host=world] .speech{top:calc(var(--w-head-y,170px) - 46px);left:50%;transform:translateX(-50%);z-index:5;display:inline-flex;align-items:center;gap:4px;height:36px;padding:0 14px;border-radius:999px;background:var(--w-glass-dark);box-shadow:var(--w-glass-edge);color:var(--w-ink);white-space:nowrap}
 :root[data-host=world] .speech .w-who{margin-right:6px;font:600 13px/1 var(--w-sans);letter-spacing:-.01em}

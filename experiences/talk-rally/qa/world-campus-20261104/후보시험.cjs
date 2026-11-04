@@ -94,6 +94,8 @@ async function run(view) {
   out.hostPatched = hostPatched;
   out.fromCandidate = fromCandidate.size;
   out.three = [...got].filter((u) => /three\.(module|core)\.js$/.test(u));
+  out.dir = DIR;
+  out.atlas = await fr().evaluate(async () => { const src = [...document.scripts].map((s) => s.src).find((s) => /atlas-learning\.js/.test(s)); const b = await (await fetch(src)).arrayBuffer(); const h = await crypto.subtle.digest('SHA-256', b); return { src, bytes: b.byteLength, sha: [...new Uint8Array(h)].slice(0, 6).map((x) => x.toString(16).padStart(2, '0')).join('') }; });
   out.labBytes = [...got].filter((u) => /talk-rally\/(kit\/brand\/mongle|assets\/sound\/mongle|assets\/voice\/|assets\/narration\/)/.test(u));
   out.clips = [...got].filter((u) => /clips\//.test(u)).length;
   out.errors = errors; out.failed = [...new Set(failed)];
