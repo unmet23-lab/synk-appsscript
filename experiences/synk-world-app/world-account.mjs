@@ -25,7 +25,7 @@ const changed=()=>Object.assign(Error('로그인한 계정이 바뀌었어요.')
 const authErrors=new Set(['AUTH_REQUIRED','AUTH_SESSION_MISSING','SESSION_REVOKED','UNAUTHORIZED','ACCOUNT_UNAVAILABLE','PRODUCT_FORBIDDEN','PLATFORM_ACCOUNT_MISMATCH']);
 // 반 연결(classId)이 붙지 않는 타운 경로: 입장 조회·입장 확인·첫 장면 배치는 계정 하나의 일이다.
 const TOWN_ACCOUNT_ROUTES=new Set(['town/entry','town/check','town/placement']);
-const routes=new Map([['bootstrap','GET'],['play/start','POST'],['play/complete','POST'],['avatar/outfit','PUT'],['wardrobe/looks','PUT'],['town/entry','GET'],['town/state','GET'],['town/sharing','POST'],['town/command','POST'],['town/presence','POST'],['town/pulse','POST'],['town/boundary','POST'],['town/check','POST'],['town/placement','POST'],['enrollment/preview','POST'],['enrollment/claim','POST'],['homework','GET'],['homework/submit','POST'],['homework/key','POST'],['writing','POST'],['speaking','POST']]);
+const routes=new Map([['bootstrap','GET'],['play/start','POST'],['play/complete','POST'],['avatar/outfit','PUT'],['wardrobe/looks','PUT'],['town/entry','GET'],['town/state','GET'],['town/sharing','POST'],['town/command','POST'],['town/presence','POST'],['town/pulse','POST'],['town/boundary','POST'],['town/check','POST'],['town/placement','POST'],['enrollment/preview','POST'],['enrollment/claim','POST'],['homework','GET'],['homework/submit','POST'],['homework/key','POST'],['writing','POST'],['speaking','POST'],['me2','POST']]);
 
 // Credentials are owned by the WORLD entry. A game receives only scoped methods.
 export function createWorldAccount({config:raw,storage=globalThis.sessionStorage,fetcher=(...args)=>globalThis.fetch(...args),
@@ -205,7 +205,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   if((path==='town/pulse'||path==='town/boundary')&&native&&!nativeTownPulse)throw Object.assign(Error('PC 앱에서는 아직 이 마을 화면을 열 수 없어요. 브라우저의 SYNK WORLD에서 열어 주세요.'),{code:'TOWN_PULSE_UNSUPPORTED'});
   const accept=(data,ok,status)=>{
    guard(expected);
-   if(status===401||authErrors.has(data?.error?.code)){clear();forgetSession();}
+   if(path!=='me2'&&(status===401||authErrors.has(data?.error?.code))){clear();forgetSession();}
    if(ok&&path!=='town/sharing'&&!path.startsWith('enrollment/')&&data?.accountId!==owner)throw Object.assign(Error('다른 계정의 정보라서 반영하지 않았어요.'),{code:'ACCOUNT_MISMATCH'});
    if(ok&&data.binding){const next=data.binding;if(townBinding&&(next.classId!==townBinding.classId||Number(next.sharing?.revision)<Number(townBinding.sharing?.revision)||Number(next.membershipRevision)<Number(townBinding.membershipRevision)||next.sharing?.revision===townBinding.sharing?.revision&&townBinding.sharing?.enabled===false&&next.sharing?.enabled===true))throw Object.assign(Error('TOWN_SNAPSHOT_CHANGED'),{code:'TOWN_SNAPSHOT_CHANGED'});townBinding=next;}
    if(ok&&path.startsWith('town/')&&Number.isSafeInteger(data.state?.revision)){if(data.state.revision<townStateRevision)throw Object.assign(Error('TOWN_SNAPSHOT_CHANGED'),{code:'TOWN_SNAPSHOT_CHANGED'});townStateRevision=data.state.revision;}
@@ -218,7 +218,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
    return accept(data,data?.ok===true,data?.ok===true?200:data?.error?.status||503);
   }
   const homework=path==='homework'||path.startsWith('homework/');
-  const endpoint=path==='writing'?'world-writing':path==='speaking'?'world-speaking':path==='town/sharing'||path.startsWith('enrollment/')||homework?'synk-classroom':path.startsWith('town/')?'synk-town':'synk-world-v1',suffix=path==='writing'||path==='speaking'?'feedback':path==='town/sharing'?'api/world/town/sharing':path.startsWith('enrollment/')?`api/${path}`:homework?'api/world/homework'+(path==='homework/key'?'/key':''):path.startsWith('town/')?path.slice(5):path;
+  const endpoint=path==='me2'?'me2-photo':path==='writing'?'world-writing':path==='speaking'?'world-speaking':path==='town/sharing'||path.startsWith('enrollment/')||homework?'synk-classroom':path.startsWith('town/')?'synk-town':'synk-world-v1',suffix=path==='me2'?'api':path==='writing'||path==='speaking'?'feedback':path==='town/sharing'?'api/world/town/sharing':path.startsWith('enrollment/')?`api/${path}`:homework?'api/world/homework'+(path==='homework/key'?'/key':''):path.startsWith('town/')?path.slice(5):path;
   const url=new URL(config.accountApiUrl);url.pathname=url.pathname.replace(/\/$/,'').replace(/\/functions\/v1(?:\/synk-(?:account|world-v1|town))?$/,'')+`/functions/v1/${endpoint}/${suffix}`;url.search='';url.hash='';if(path.startsWith('town/')&&!TOWN_ACCOUNT_ROUTES.has(path)&&townBinding?.classId)url.searchParams.set('classId',townBinding.classId);
   if(path==='homework/submit'||path==='homework/key')url.searchParams.set('classId',JSON.parse(options.body).classId);
   // 쓰기·말하기 자동 피드백은 한 번에 수십 초가 걸린다(서버 쪽 마감 85~90초).
@@ -227,7 +227,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   // clear()가 끊은 것이면 guard가 계정이 바뀌었다고 답한다.
   const askTwice=(options.method||'GET')==='GET'&&(path==='bootstrap'||path.startsWith('town/'));
   for(let lateReads=0;;lateReads++){
-  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),path==='writing'||path==='speaking'?95000:12000);controllers.add(controller);
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),path==='writing'||path==='speaking'?95000:path==='me2'?30000:12000);controllers.add(controller);
   try{
    if(session.expires_at<=now()+30000)await renew(expected);guard(expected);
    for(let attempt=0;attempt<2;attempt++){
@@ -293,6 +293,13 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   if(!response.ok)throw Object.assign(Error(data?.code||'SPEAKING_UNAVAILABLE'),{code:data?.code||'SPEAKING_UNAVAILABLE',status:response.status});
   return data;
  }
+ // 「제2의 나」 내 사진으로 만들기(SYNK-talk me2-photo 함수, 시범 11-04) — 초대한 성인만 status가 ok로 온다. 웹만이다(PC 앱 창은 카메라 · 파일 고르기 권한을 따로 다루지 않는다).
+ async function me2Request(payload){
+  if(native)throw Object.assign(Error('ME2_UNSUPPORTED'),{code:'ME2_UNSUPPORTED'});
+  const response=await request('me2',{method:'POST',body:JSON.stringify(payload)}),data=await response.json();
+  if(!response.ok)throw Object.assign(Error(data?.code||'ME2_UNAVAILABLE'),{code:data?.code||'ME2_UNAVAILABLE',status:response.status});
+  return data;
+ }
  // 「학습 알림 · 앱을 닫아도 받기」(SYNK-talk world-push 함수, 설계 qa/push-reminders-20261022). 웹만 — PC 앱 창은 푸시 서비스가 없다.
  // pushRequest는 이 탭의 SYNK ID로(status·subscribe·sync·unsubscribe), pushAnonymous는 로그인 없이 공개 키만으로(알림 누름 · 주소 + 기기 식별자 끄기).
  // 응답은 다른 계정 요청처럼 accountId가 있으면 이 계정과 같아야 쓴다. keepalive는 페이지를 떠날 때의 마지막 요약에만 쓴다.
@@ -345,7 +352,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
    const response=await revokeFetch(new URL('/auth/v1/logout?scope=local',config.supabaseUrl).href,{method:'POST',credentials:'omit',cache:'no-store',headers:{apikey:config.supabasePublishableKey,Authorization:`Bearer ${captured.access_token}`}});serverRevoked=response.ok&&serverRevoked;
   }catch{}finally{clearTimeout(timer);}return {serverRevoked};
  }
- return Object.freeze({mode:'account',restore,signIn,request,logout,prepareGame,prepareLifeProgress,prepareHangulProgress,importDeviceLearning,topicAnswers,readClassrooms,readHomework,submitHomework,readHomeworkKey,courseRequest,writingRequest,speakingRequest,pushRequest,pushAnonymous,get supportsPush(){return !native;},get supportsWriting(){return !native;},get supportsSpeaking(){return !native;},get supportsClassroom(){return !native||nativeClassroom;},get supportsHomework(){return !native||nativeHomework;},get supportsTownCheck(){return !native||nativeTownCheck;},get supportsTownPulse(){return !native||nativeTownPulse;},identity:()=>({accountId:owner,generation:epoch}),assertActive(){guard(epoch);if(!owner)throw changed();},
+ return Object.freeze({mode:'account',restore,signIn,request,logout,prepareGame,prepareLifeProgress,prepareHangulProgress,importDeviceLearning,topicAnswers,readClassrooms,readHomework,submitHomework,readHomeworkKey,courseRequest,writingRequest,speakingRequest,me2Request,pushRequest,pushAnonymous,get supportsMe2(){return !native;},get supportsPush(){return !native;},get supportsWriting(){return !native;},get supportsSpeaking(){return !native;},get supportsClassroom(){return !native||nativeClassroom;},get supportsHomework(){return !native||nativeHomework;},get supportsTownCheck(){return !native||nativeTownCheck;},get supportsTownPulse(){return !native||nativeTownPulse;},identity:()=>({accountId:owner,generation:epoch}),assertActive(){guard(epoch);if(!owner)throw changed();},
   preferences(){const learning=currentAccount?.learning;return learning&&typeof learning.enabled==='boolean'&&Number.isSafeInteger(learning.revision)?{enabled:learning.enabled,revision:learning.revision}:null;},
   async setLearning(enabled,expectedRevision){const expected=epoch;guard(expected);if(!owner||typeof enabled!=='boolean'||!Number.isSafeInteger(expectedRevision)||expectedRevision<0)throw new TypeError('Invalid account learning preference');
    const client=clientFor(expected);

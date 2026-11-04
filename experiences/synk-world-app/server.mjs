@@ -33,7 +33,7 @@ const sessions=new Map();
 let speakingHost=null;
 const ids={'player-a':'11111111-1111-4111-8111-111111111111','player-b':'22222222-2222-4222-8222-222222222222'};
 const allowedGames=new Set(['korean-runner','korean-rhythm','hangul-stage','order-rush','blank-slice','snap-words','board-decode','korean-racing','talk-rally','subway-rush']);
-const mime={'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml','.woff2':'font/woff2','.ttf':'font/ttf','.mp4':'video/mp4','.mp3':'audio/mpeg','.wav':'audio/wav','.glb':'model/gltf-binary','.wasm':'application/wasm'};
+const mime={'.bin':'application/octet-stream','.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml','.woff2':'font/woff2','.ttf':'font/ttf','.mp4':'video/mp4','.mp3':'audio/mpeg','.wav':'audio/wav','.glb':'model/gltf-binary','.wasm':'application/wasm'};
 function sessionCookieName(request){const tab=request.headers.get('x-synk-rehearsal-tab');return tab?`synk_world_rehearsal_${tab.toLowerCase()}`:'synk_world_rehearsal';}
 function cookieToken(request){const name=sessionCookieName(request);return request.headers.get('cookie')?.match(new RegExp(`(?:^|;\\s*)${name}=([A-Za-z0-9_-]+)(?:;|$)`))?.[1];}
 function requestToken(request){return request.headers.get('authorization')?.match(/^Bearer ([A-Za-z0-9_-]+)$/)?.[1]||cookieToken(request);}
@@ -101,6 +101,8 @@ const server=http.createServer(async(req,res)=>{
   else if(pathname==='/enrollment.mjs'){base=path.resolve(root,'../synk-account/src');}
   // 말하기 연습 시범(10-21, 플래그 꺼짐 · 공개 빌드 목록에는 아직 없다): 모듈·글·문항과 3번 문항 그림 칸.
   else if(['/world-speaking-practice.mjs','/world-speaking-items.json','/world-speaking.css'].includes(pathname)||/^\/speaking-assets\/[a-z0-9-]+\.webp$/.test(pathname))base=root;
+  // 「제2의 나」 내 사진으로 만들기(11-04): 모듈 · 글 · 동의 글 · 이 기기 얼굴 찾기 도구.
+  else if(['/me2-photo.mjs','/me2-photo.css','/me2-photo-consent.json','/vendor/face-api/face-api.esm.js','/vendor/face-api/tiny_face_detector_model.bin','/vendor/face-api/tiny_face_detector_model-weights_manifest.json'].includes(pathname)||/^\/me2-assets\/[a-z0-9-]+\.webp$/.test(pathname))base=root;
   // Preview-only route (10-14 redesign worktree): the games import ../social-conversion.mjs (shared trial tracking, in progress elsewhere).
   else if(pathname==='/social-conversion.mjs'){base=path.resolve(root,'..');}
   else if(['/world-learning-followups.mjs','/world-followup-items.json'].includes(pathname))base=root;

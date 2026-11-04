@@ -102,4 +102,6 @@ Supabase `vault.secrets` 복원에는 DB dump 외에 해당 프로젝트의 pgso
 - 복원: 그 회차 영수증 items에서 sourceKey가 `….media-<sha256>`인 것을 내려받아 복호화해 한 폴더에 두고, `backup-media.py hydrate --snapshot <데이터 스냅숏> --from-dir <그 폴더> --prepared <준비된 회사 볼륨>`(sha256으로 짝지음, 토큰 없음).
 - 설치: `backup.cjs`·`company-sources.py`·새 `media-read.py`를 `synk-company-1`의 `/opt/synk-server-backup/`에 root 0644로 바꿔 넣는다(다른 파일·설정·타이머 그대로, 실행 중이 아닐 때). 자기 백업(`self-capture.py`)이 폴더 전체를 담는다. 영수증이 없으면(회사 판 전) 동작은 지금과 같다.
 
+「제2의 나」 사진(2026-11-04): `me2-intake` · `me2-media` 버킷은 받지 않는다 — 동의 화면이 「원본은 늦어도 하루 안에 지운다 · 내가 지우면 함께 지운다」고 약속하는데 이 사본은 원본 삭제를 따라 지우지 않아서다(최대 1년). 잃으면 학생이 다시 찍는다. 목록 SQL과 코드 두 겹으로 막고 `backup.test.cjs`의 「제외 버킷 0건」이 지킨다. 원본창고의 `talk백업.js`도 같다.
+
 검증: `node --test tools/server-backup/backup.test.cjs`, `python -B tools/server-backup/watch.test.py`, `python -B tools/server-backup/media-sources.test.py`. 최초 실증 원문은 `.tmp/backup-remaining-20261018/server/`와 원본창고의 별도 상태 영수증에 있다.

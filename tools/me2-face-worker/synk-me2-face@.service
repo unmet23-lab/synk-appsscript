@@ -1,0 +1,32 @@
+# 「제2의 나」 사진 얼굴 점수 일꾼 — 인스턴스 이름은 과녁(rehearsal · live), 환경은 /etc/synk-me2-face/%i.env
+# 안으로 들어오는 포트 없음. 그림 · 얼굴 특징 · 주소를 디스크와 기록에 남기지 않는다(worker.py 머리말). 할 일이 없으면 cv2도 읽지 않고 끝난다.
+[Unit]
+Description=SYNK me2-photo face score worker (%i)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/synk-me2-face/%i.env
+Environment=ME2_MODEL_DIR=/opt/synk-me2-face/models
+Environment=OPENCV_LOG_LEVEL=ERROR
+ExecStart=/opt/synk-me2-face/venv/bin/python -I /opt/synk-me2-face/worker.py
+TimeoutStartSec=300
+DynamicUser=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+NoNewPrivileges=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6
+RestrictSUIDSGID=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+MemoryMax=1200M
+CPUQuota=150%
+Nice=10
+IOSchedulingClass=idle

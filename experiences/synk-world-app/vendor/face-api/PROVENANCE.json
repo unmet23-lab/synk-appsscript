@@ -1,0 +1,8 @@
+{
+  "package": "@vladmandic/face-api",
+  "version": "1.7.15",
+  "license": "MIT",
+  "source": "https://registry.npmjs.org/@vladmandic/face-api/-/face-api-1.7.15.tgz",
+  "files": ["dist/face-api.esm.js", "model/tiny_face_detector_model.bin", "model/tiny_face_detector_model-weights_manifest.json", "LICENSE"],
+  "use": "「제2의 나」 사진 고르기 — 이 기기에서 얼굴 자리만 찾는다(me2-photo.mjs). 그림 · 얼굴 값은 어디에도 보내지 않는다."
+}

@@ -1,0 +1,11 @@
+[Unit]
+Description=SYNK me2-photo face score worker every minute (%i)
+
+[Timer]
+OnBootSec=3min
+OnUnitInactiveSec=60s
+AccuracySec=10s
+Unit=synk-me2-face@%i.service
+
+[Install]
+WantedBy=timers.target
