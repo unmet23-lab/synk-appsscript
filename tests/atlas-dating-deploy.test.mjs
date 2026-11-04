@@ -53,12 +53,13 @@ test('actual Caddy template validates and enforces the standalone TLS, persisten
     if (server) { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }
     await removeOwn(dir);
   });
-  const version = (await run(binary, ['version'], { windowsHide: true, timeout: 5000 })).stdout.trim();
+  const command = { windowsHide: true, signal: t.signal };
+  const version = (await run(binary, ['version'], command)).stdout.trim();
   assert.match(version, /^v2\./);
   const openssl = process.env.SYNK_QA_OPENSSL || (process.platform === 'win32' ? 'C:/Program Files/Git/usr/bin/openssl.exe' : 'openssl');
   const key = path.join(dir, 'fixture-key.pem'), cert = path.join(dir, 'fixture-cert.pem');
   await run(openssl, ['req', '-x509', '-newkey', 'rsa:2048', '-sha256', '-nodes', '-keyout', key, '-out', cert, '-days', '1',
-    '-subj', '/CN=localhost', '-addext', 'subjectAltName=DNS:localhost,IP:127.0.0.1'], { windowsHide: true, timeout: 15000 });
+    '-subj', '/CN=localhost', '-addext', 'subjectAltName=DNS:localhost,IP:127.0.0.1'], command);
   const ca = await fs.readFile(cert), port = await freePort(), backendPort = await freePort(), origin = `https://127.0.0.1:${port}`;
   const template = await fs.readFile(path.join(deploy, 'Caddyfile'), 'utf8');
   const quoted = filename => JSON.stringify(filename.replaceAll('\\', '/'));
@@ -67,11 +68,11 @@ test('actual Caddy template validates and enforces the standalone TLS, persisten
     .replace(`${origin} {`, `${origin} {\n\tbind 127.0.0.1\n\ttls ${quoted(cert)} ${quoted(key)}`);
   const configPath = path.join(dir, 'Caddyfile'); await fs.writeFile(configPath, configuration);
   const processEnv = { ...process.env, XDG_DATA_HOME: path.join(dir, 'xdg-data'), XDG_CONFIG_HOME: path.join(dir, 'xdg-config') };
-  const adapted = await run(binary, ['adapt', '--adapter', 'caddyfile', '--config', configPath, '--pretty'], { env: processEnv, windowsHide: true, timeout: 10000 });
+  const adapted = await run(binary, ['adapt', '--adapter', 'caddyfile', '--config', configPath, '--pretty'], { ...command, env: processEnv });
   const json = JSON.parse(adapted.stdout); assert.equal(json.admin.disabled, true);
   const listeners = Object.values(json.apps.http.servers).flatMap(value => value.listen);
   assert.deepEqual(listeners, [`127.0.0.1:${port}`]);
-  await run(binary, ['validate', '--adapter', 'caddyfile', '--config', configPath], { env: processEnv, windowsHide: true, timeout: 15000 });
+  await run(binary, ['validate', '--adapter', 'caddyfile', '--config', configPath], { ...command, env: processEnv });
   const databasePath = path.join(dir, 'account.sqlite'), token = 'synthetic-caddy-access', subject = 'synk:caddy-account';
   const startBackend = async () => {
     server = createDatingServer({ mode: 'account', databasePath, transport: { publicOrigin: origin, trustedProxyIPs: ['127.0.0.1'] },
@@ -85,9 +86,11 @@ test('actual Caddy template validates and enforces the standalone TLS, persisten
   };
   await startBackend();
   child = spawn(binary, ['run', '--adapter', 'caddyfile', '--config', configPath], { env: processEnv, cwd: dir, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+  let startError;
+  child.once('error', error => { startError = error; });
   child.stdout.on('data', chunk => { stdout += chunk; }); child.stderr.on('data', chunk => { logs += chunk; });
   const request = (route, { method = 'GET', headers = {}, body } = {}) => new Promise((resolve, reject) => {
-    const req = https.request(origin + route, { method, ca, agent: false, timeout: 5000, headers: { ...headers,
+    const req = https.request(origin + route, { method, ca, agent: false, timeout: 5000, signal: t.signal, headers: { ...headers,
       ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) } }, response => {
       const chunks = []; response.on('data', chunk => chunks.push(chunk)); response.on('end', () => resolve({ status: response.statusCode, headers: response.headers, text: Buffer.concat(chunks).toString('utf8') }));
     });
@@ -95,7 +98,16 @@ test('actual Caddy template validates and enforces the standalone TLS, persisten
     req.end(body === undefined ? undefined : JSON.stringify(body));
   });
   let ready;
-  for (let attempt = 0; attempt < 80; attempt++) { try { ready = await request('/api/atlas-dating/config'); if (ready.status === 200) break; } catch {} await tick(50); }
+  while (!ready) {
+    t.signal.throwIfAborted();
+    if (startError) throw startError;
+    assert.ok(child.exitCode === null && child.signalCode === null, 'Caddy exited before accepting the readiness request');
+    try { ready = await request('/api/atlas-dating/config'); }
+    catch (error) {
+      if (error.code !== 'ECONNREFUSED') throw error;
+      await tick(100);
+    }
+  }
   if (ready?.status !== 200) t.diagnostic(JSON.stringify({ firstForwarded, expectedBackendPort: backendPort, expectedPublicPort: port }));
   assert.equal(ready?.status, 200, 'Caddy must expose the configured local backend'); assert.equal(verifyCalls, 0);
   const config = JSON.parse(ready.text); assert.equal(config.mode, 'account'); assert.equal(config.labAvailable, false);
