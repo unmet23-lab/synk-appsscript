@@ -7,6 +7,7 @@
 const path = require('node:path'), fs = require('node:fs');
 const NM = process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE, '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules');
 const { chromium } = require(require.resolve('playwright', { paths: [NM, path.resolve(__dirname, '../../../../node_modules')] }));
+const { 화면시험, 닫기 } = require('../../../../tools/lib/화면시험.cjs');
 const { 공용작업본 } = require('../../../../tools/lib/공용작업본.js');
 const BASE = process.env.WORLD_URL || 'http://127.0.0.1:4298';
 const OUT = path.join(공용작업본(path.resolve(__dirname, '../../../..')), '.tmp', 'blank-slice-world-20261104', '앱화면');
@@ -15,6 +16,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function run(name, view, ITEMS) {
   const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'] });
+  try {
   const ctx = await browser.newContext({ viewport: view, deviceScaleFactor: view.width < 700 ? 2 : 1, hasTouch: view.width < 700, isMobile: view.width < 700 });
   const page = await ctx.newPage(), errors = [], failed = [], notes = {}, got = new Set();
   page.setDefaultTimeout(30000);
@@ -106,15 +108,15 @@ async function run(name, view, ITEMS) {
   notes.music = [...got].filter((u) => /order-rush\/assets\/world\/music\//.test(u)).map((u) => u.split('/').pop());
   notes.three = [...got].filter((u) => /three\.(module|core)\.js$/.test(u));
   const felt = [...got].filter((u) => /blank-slice\/.*(mongle|hero-pieces)/.test(u));
-  await browser.close();
   return { name, view, notes, felt, errors, failed: [...new Set(failed)] };
+  } finally { await 닫기(browser); }
 }
 
-(async () => {
+화면시험({ 분: 20 }, async () => {
   const content = await import(require('node:url').pathToFileURL(path.resolve(__dirname, '../../content.mjs')).href);
   const ITEMS = [...content.ITEMS]; ITEMS.practice = content.PRACTICE; ITEMS.push(content.PRACTICE);
   const out = [];
   for (const [name, view] of [['폰', { width: 390, height: 844 }], ['PC', { width: 1280, height: 800 }]]) out.push(await run(name, view, ITEMS));
   fs.writeFileSync(path.join(OUT, '앱화면.json'), JSON.stringify(out, null, 1));
   console.log(JSON.stringify(out, null, 1));
-})().catch((e) => { console.error(e); process.exit(1); });
+});

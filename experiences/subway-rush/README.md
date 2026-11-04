@@ -43,3 +43,10 @@ node experiences/subway-rush/qa/판찍기.cjs --씨앗 777 --난도 busy --틀�
 - 안내 문장 · 보기 · 정답을 바꾸면 `learning.mjs`의 `ITEM_VERSION`을 올리고, 문항 2중 검수(`tools/topik-review.mjs`의 `subway-rush` 묶음)와 목소리 굽기를 다시 돈다.
 - 얼굴이 보이는 사람을 다시 구우면 공개 전에 실존 인물 대조(`experiences/drama/qa/제2의나-20261102/조각/실존대조.mjs`)를 처음부터 다시 돈다. 숫자 · 판정만 시안 README에 적고, 렌즈 결과는 git 밖에 둔다.
 - 앱 연결은 `brand-opening/home.mjs` · `play-unlocks.mjs` · `world-strings.mjs` · `synk-world-app/app-shell.mjs` · `server.mjs` · `desktop/src/security.cjs` · `tools/build-world-app-public.mjs` · `korean-racing/garage-core.js` · `play-common/build-collection.mjs` · `tools/lib/atlas-copies.js`.
+
+## 알아 둘 것
+
+- 3~4급 「바쁜 아침」 문항은 게임 묶음 지도에 `ko2.*`가 없어 학습 기록에 안 남는다. 게임은 그대로 간다(`learning.mjs` `createExchange`).
+- 로그인 학생의 공통 코인은 계정 서버(`synk-play-runtime.js`)의 게임 목록에 이 게임이 들어가야 쌓인다. 그전에는 서버가 `invalid-round`로 돌려주고 결과 화면에 코인 줄을 안 띄운다. 손님은 이 기기에 쌓인다.
+- 공개 후보는 `qa/공개후보.cjs`로 짓는다. 공용 파일 넷은 master 빌드가 아니라 라이브 판 + 이 게임 줄이다.
+

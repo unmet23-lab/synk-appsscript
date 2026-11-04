@@ -222,6 +222,11 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   const url=new URL(config.accountApiUrl);url.pathname=url.pathname.replace(/\/$/,'').replace(/\/functions\/v1(?:\/synk-(?:account|world-v1|town))?$/,'')+`/functions/v1/${endpoint}/${suffix}`;url.search='';url.hash='';if(path.startsWith('town/')&&!TOWN_ACCOUNT_ROUTES.has(path)&&townBinding?.classId)url.searchParams.set('classId',townBinding.classId);
   if(path==='homework/submit'||path==='homework/key')url.searchParams.set('classId',JSON.parse(options.body).classId);
   // 쓰기·말하기 자동 피드백은 한 번에 수십 초가 걸린다(서버 쪽 마감 85~90초).
+  // 마감이 지나면 브라우저가 영어 AbortError를 올린다. 화면에는 쉬운 말과 코드로 넘긴다. 마을로 들어가는 읽기만 한 번 더 묻는다 — 장면을 준비하느라
+  // 답을 늦게 받는 자리이고, 부작용이 없다. 과제처럼 12초 뒤 바로 다시 시도 단추를 보이는 화면은 그대로 두고, 쓰기는 서버에 닿았을 수 있어 부른 쪽에 맡긴다.
+  // clear()가 끊은 것이면 guard가 계정이 바뀌었다고 답한다.
+  const askTwice=(options.method||'GET')==='GET'&&(path==='bootstrap'||path.startsWith('town/'));
+  for(let lateReads=0;;lateReads++){
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),path==='writing'||path==='speaking'?95000:path==='me2'?30000:12000);controllers.add(controller);
   try{
    if(session.expires_at<=now()+30000)await renew(expected);guard(expected);
@@ -232,7 +237,13 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
     const data=await response.json();guard(expected);
     return accept(data,response.ok,response.status);
    }
+  }catch(error){
+   if(!controller.signal.aborted)throw error;
+   guard(expected);
+   if(askTwice&&lateReads===0)continue;
+   throw Object.assign(Error('연결이 늦어지고 있어요. 잠시 뒤 다시 시도해 주세요.'),{code:'NETWORK_TIMEOUT'});
   }finally{clearTimeout(timer);controllers.delete(controller);}
+  }
  }
  // 「우리 반 수업」: 학생 앱과 같은 classroom 함수다. 계정 응답이 아니라 accountId가 없고, 함수의 401(명부 없음)은 로그아웃이 아니다(classroom-client.mjs).
  // PC 앱(native)은 토큰을 가진 본체가 같은 규칙으로 묻는다(desktop/src/world-requests.cjs의 classroom 경로). 그 경로를 알리지 않는 옛 PC 앱에서는 부르지 않는다.

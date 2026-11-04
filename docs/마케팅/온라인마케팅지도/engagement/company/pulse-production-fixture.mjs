@@ -6,14 +6,16 @@ import {createServer} from 'node:net';
 import {fileURLToPath} from 'node:url';
 import {createCompanyApp} from './server.mjs';
 
+// 15초짜리 아주 작은 진짜 MP4(16×16 검은 화면, 1.2KB). 체험 영상은 git 밖이라 시험은 이 바이트를 쓴다.
+export function fixtureClip(){return Buffer.from('AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAO/bW9vdgAAAGxtdmhkAAAAAAAAAAAAAAAAAAAD6AAAOpgAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAup0cmFrAAAAXHRraGQAAAADAAAAAAAAAAAAAAABAAAAAAAAOpgAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAABAAAAAQAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAADqYAACAAAABAAAAAAJibWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAABAAAADwABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAACDW1pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAc1zdGJsAAAAwXN0c2QAAAAAAAAAAQAAALFhdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAABAAEABIAAAASAAAAAAAAAABFExhdmM2My4xLjEwMiBsaWJ4MjY0AAAAAAAAAAAAAAAAGP//AAAAN2F2Y0MBZAAK/+EAGWdkAAqscgRewEQAAAMABAAAAwAIPEiWEYABAAdo6EOBlLIs/fj4AAAAABBwYXNwAAAAAQAAAAEAAAAUYnRydAAAAAAAAABtAAAAAAAAABhzdHRzAAAAAAAAAAEAAAAPAABAAAAAABRzdHNzAAAAAAAAAAEAAAABAAAAWGN0dHMAAAAAAAAACQAAAAEAAIAAAAAAAQACgAAAAAABAAEAAAAAAAMAAAAAAAAABAAAQAAAAAABAAGAAAAAAAEAAIAAAAAAAQAAAAAAAAACAABAAAAAABxzdHNjAAAAAAAAAAEAAAABAAAADwAAAAEAAABQc3RzegAAAAAAAAAAAAAADwAAABEAAAANAAAADQAAAA0AAAANAAAADQAAAA0AAAANAAAADQAAAA0AAAATAAAADQAAAA0AAAANAAAADQAAABRzdGNvAAAAAAAAAAEAAAPvAAAAYXVkdGEAAABZbWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAbWRpcmFwcGwAAAAAAAAAAAAAAAAsaWxzdAAAACSpdG9vAAAAHGRhdGEAAAABAAAAAExhdmY2My4xLjEwMgAAAAhmcmVlAAAA1W1kYXQAAAANZYiBAANf/spPgUudZwAAAAlBmgktiDH/q4AAAAAJQZ4QhxBj/+WBAAAACQGeGCaIK//ogAAAAAkBnhhGiCv/6IEAAAAJAZ4YZogr/+iBAAAACQGeGK1IK//ogQAAAAkBnhjNSCv/6IEAAAAJAZ4Y7Ugr/+iAAAAACQGeGQ1IK//ogAAAAA9BmhnJNQIC0TKYEFf/voEAAAAJQZ4hZcQW/+eAAAAACQGeKUWiCv/ogAAAAAkBnimMkgr/6IEAAAAJAZ4prJIK/+iB','base64');}
 export function fixtureWav(seconds=15){
   const rate=16000,count=seconds*rate,bytes=Buffer.alloc(44+count*2);bytes.write('RIFF');bytes.writeUInt32LE(bytes.length-8,4);bytes.write('WAVEfmt ',8);bytes.writeUInt32LE(16,16);bytes.writeUInt16LE(1,20);bytes.writeUInt16LE(1,22);bytes.writeUInt32LE(rate,24);bytes.writeUInt32LE(rate*2,28);bytes.writeUInt16LE(2,32);bytes.writeUInt16LE(16,34);bytes.write('data',36);bytes.writeUInt32LE(count*2,40);
   for(let i=0;i<count;i++){const t=i/rate,phase=t%1;bytes.writeInt16LE(Math.round(phase<.18?Math.sin(t*440*Math.PI*2)*1600*Math.sin(phase/.18*Math.PI):0),44+i*2);}return bytes;
 }
-export async function createProductionFixture({seed=true}={}){
+export async function createProductionFixture({seed=true,options:extra={}}={}){
   const directory=await mkdtemp(join(tmpdir(),'synk-pulse-production-'));
   const probe=createServer();await new Promise(r=>probe.listen(0,'127.0.0.1',r));const port=probe.address().port;await new Promise(r=>probe.close(r));
-  const base=`http://localhost:${port}`,options={dataDir:join(directory,'data'),clientIntakeDir:join(directory,'inbox'),host:'127.0.0.1',port,origin:base,schedule:false,workNotificationsEnabled:false,webPushEnabled:false,synkIdentityConfig:null,synkCustomerIdentityConfig:null,teachingConfig:null};
+  const base=`http://localhost:${port}`,options={dataDir:join(directory,'data'),clientIntakeDir:join(directory,'inbox'),host:'127.0.0.1',port,origin:base,schedule:false,workNotificationsEnabled:false,webPushEnabled:false,synkIdentityConfig:null,synkCustomerIdentityConfig:null,teachingConfig:null,...extra};
   let app=createCompanyApp(options);await app.start();
   const password='pulse-local-production-only',email='pulse-production@example.test';
   const owner=app.store.createUser({name:'제작 기능 검증 담당자',email,password,role:'admin'});
@@ -23,7 +25,7 @@ export async function createProductionFixture({seed=true}={}){
     const bytes=Buffer.from(await res.arrayBuffer());let data=null;try{data=JSON.parse(bytes.toString());}catch{}return {status:res.status,data,bytes,headers:res.headers};
   }
   function ok(result,status=200){assert.equal(result.status,status,JSON.stringify(result.data?.error||{status:result.status}));return result.data;}
-  let row=ok(await request('/api/client-projects',{body:{title:'PULSE 제작 흐름 · 검증 예시',customerName:'가상 모루 브랜드',summary:'실제 의뢰가 아닌 기능 검증 예시',terms:'검증용 예시 · 일정과 수정 조건은 실제 계약이 아닙니다.',nextStep:'메시지와 납품 목록을 먼저 확인해 주세요.'}}),201).project;
+  let row=ok(await request('/api/client-projects',{body:{title:'PULSE 제작 흐름 · 검증 예시',customerName:'가상 브랜드',summary:'실제 의뢰가 아닌 기능 검증 예시',terms:'검증용 예시 · 일정과 수정 조건은 실제 계약이 아닙니다.',nextStep:'메시지와 납품 목록을 먼저 확인해 주세요.'}}),201).project;
   const studio=async(body,customer=null)=>{const r=await request(customer?'/pulse/api/studio':`/api/client-projects/${row.id}/studio`,{customer,body:{revision:row.revision,...body}});if(r.status===200)row=r.data.project;return r;};
   const upload=async(fileName,mimeType,bytes)=>{const r=await request(`/api/client-projects/${row.id}/studio/media`,{body:bytes,raw:true,headers:{'Content-Type':mimeType,'X-File-Name':encodeURIComponent(fileName),'X-Project-Revision':String(row.revision)}});const result=ok(r,201);row=result.project;return result.asset;};
   if(seed){
@@ -37,9 +39,9 @@ export async function createProductionFixture({seed=true}={}){
     }
     for(let i=1;i<=4;i++){
       const media=await upload(`scene-${i}.png`,'image/png',await readFile(new URL(`./public/pulse-app/demo-assets/scene-${i}.png`,import.meta.url)));
-      ok(await studio({action:'save_scene',title:['아침의 시작','제품 소개','커피 준비','다음 행동'][i-1],description:'가상 브랜드 기능 검증용 장면',narration:i===1?'하루를 시작하는 짧은 여유':'',screenText:['아침에 15초의 여유','모루 드립백 커피','나만의 아침 루틴','제품 소개 확인'][i-1],duration:i===1?3:4,assetId:media.id,visibility:'customer'}));
+      ok(await studio({action:'save_scene',title:['아침의 시작','제품 소개','커피 준비','다음 행동'][i-1],description:'가상 브랜드 기능 검증용 장면',narration:i===1?'하루를 시작하는 짧은 여유':'',screenText:['아침에 15초의 여유','유리결 홀리데이 세트','나만의 아침 루틴','제품 소개 확인'][i-1],duration:i===1?3:4,assetId:media.id,visibility:'customer'}));
     }
-    const sound=await upload('검증용_타이밍_음.wav','audio/wav',fixtureWav()),videoBytes=await readFile(new URL('./public/pulse-app/demo-assets/preview-v1.mp4',import.meta.url)),clip=await upload('검증용_움직임.mp4','video/mp4',videoBytes);
+    const sound=await upload('검증용_타이밍_음.wav','audio/wav',fixtureWav()),videoBytes=fixtureClip(),clip=await upload('검증용_움직임.mp4','video/mp4',videoBytes);
     ok(await studio({action:'preview_save_animatic',audioAssetId:sound.id,testClipAssetId:clip.id,testClipStart:0,testClipDuration:7,note:'15초 장면 순서와 글자 표시를 확인합니다. 소리는 기능 검증용 타이밍 음입니다.',testNote:'미리 준비된 가상 브랜드 모션그래픽입니다. 인물·목소리의 생성 품질을 입증하는 영상은 아닙니다.',visibility:'customer'}));
     const version=ok(await request(`/api/client-projects/${row.id}/media`,{body:videoBytes,raw:true,headers:{'Content-Type':'video/mp4','X-File-Name':'preview.mp4','X-Version-Label':encodeURIComponent('검증용 시안 v1'),'X-Version-Kind':'preview','X-Version-Guide':encodeURIComponent('문구와 재생 흐름 확인용 예시'),'X-Project-Revision':String(row.revision)}}),201);row=version.project;
   }

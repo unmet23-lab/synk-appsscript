@@ -7,6 +7,7 @@
 const path = require('node:path'), fs = require('node:fs');
 const NM = process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE, '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules');
 const { chromium } = require(require.resolve('playwright', { paths: [NM, path.resolve(__dirname, '../../../../node_modules')] }));
+const { 화면시험, 닫기 } = require('../../../../tools/lib/화면시험.cjs');
 const { 공용작업본 } = require('../../../../tools/lib/공용작업본.js');
 const BASE = process.env.WORLD_URL || 'http://127.0.0.1:4297';
 const OUT = path.join(공용작업본(path.resolve(__dirname, '../../../..')), '.tmp', 'order-rush-world-20261103', '화면');
@@ -38,6 +39,7 @@ async function serveRight(f) {
 
 async function run(name, view) {
   const browser = await chromium.launch();
+  try {
   const ctx = await browser.newContext({ viewport: view, deviceScaleFactor: 2, hasTouch: view.width < 700, isMobile: view.width < 700 });
   const page = await ctx.newPage(), errors = [], failed = [], notes = {};
   page.setDefaultTimeout(20000);
@@ -113,11 +115,11 @@ async function run(name, view) {
   await sleep(600);
   await shot('07_결과');
   notes.overflow = await f.locator('html').evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
-  await browser.close();
   return { name, view, notes, errors, failed };
+  } finally { await 닫기(browser); }
 }
 
-(async () => {
+화면시험({ 분: 20 }, async () => {
   await loadRecipes();
   const out = [];
   for (const [name, view] of [['390', { width: 390, height: 844 }], ['1280', { width: 1280, height: 800 }]]) {
@@ -125,4 +127,4 @@ async function run(name, view) {
   }
   fs.writeFileSync(path.join(__dirname, '앱화면.json'), JSON.stringify({ at: new Date().toISOString(), base: BASE, out }, null, 1) + '\n');
   console.log(JSON.stringify(out, null, 1));
-})();
+});

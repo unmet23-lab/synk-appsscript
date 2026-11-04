@@ -48,7 +48,7 @@ const Page: React.FC<{ src: string; d?: number; from?: number; to?: number; dur?
   const f = useCurrentFrame();
   const y = interpolate(f, [0, dur], [from, to], { ...clamp, easing: EASE });
   const z = (interpolate(f, [0, 8], [1.02, 1], { ...clamp, easing: EASE_OUT }) + f * 0.00008) * zoom;
-  const dim = hi ? interpolate(f, [0, 5], [0, 0.86], clamp) : 0;
+  const dim = hi ? interpolate(f, [4, 11], [0, 1], clamp) : 0;
   const q = interpolate(f, [sec(qa), sec(qa) + 7], [0, 1], { ...clamp, easing: EASE_OUT });
   const top = hi ? hi[0] - y + d : 0;
   const bot = hi ? hi[1] - y + d : 0;
@@ -122,10 +122,11 @@ const DateCard: React.FC = () => {
   const f = useCurrentFrame();
   const s = interpolate(f, [0, 7], [1.08, 1], { ...clamp, easing: EASE_OUT });
   const three = interpolate(f, [sec(S.three - S.date), sec(S.three - S.date) + 9], [0, 1], { ...clamp, easing: EASE_OUT });
+  const shade = interpolate(f, [0, 5], [0, 1], clamp);
   return (
     <AbsoluteFill>
-      <Plate src="k" start={0.4} />
-      <AbsoluteFill style={{ background: 'linear-gradient(to bottom, rgba(10,10,10,0.94) 0px, rgba(10,10,10,0.9) 700px, rgba(10,10,10,0.35) 900px, rgba(10,10,10,0) 1060px)' }} />
+      <Plate src="k" start={S.date - S.black} />
+      <AbsoluteFill style={{ opacity: shade, background: 'linear-gradient(to bottom, rgba(10,10,10,0.94) 0px, rgba(10,10,10,0.9) 700px, rgba(10,10,10,0.35) 900px, rgba(10,10,10,0) 1060px)' }} />
       <div style={{ position: 'absolute', left: X, top: 270, width: 930, fontFamily: KO, fontWeight: 900, fontSize: 156, lineHeight: 1.06, letterSpacing: -5.5, color: BUTTER, transform: `scale(${s})`, transformOrigin: '0% 50%' }}>
         12월<br />14일 전에
       </div>
@@ -134,12 +135,14 @@ const DateCard: React.FC = () => {
   );
 };
 
-// 저장할 한 장 — 세 단계. 한 줄씩 들어오고 끝까지 남는다
-const STEPS = [['1', '보낸 공개 링크', '적어 두기'], ['2', '채팅 · 댓글에서', '남길 말 복사'], ['3', 'Share → Project HTML', '→ Export로 파일 받기']];
+// 저장할 한 장 — 세 단계. 한 줄씩 들어오고 끝까지 남는다. 빈 검정 카드는 「영화 톤이 끊기고 PPT」(미학 둘)라 방명록을 어둡게 깔아 장면 안에 둔다
+const STEPS = [['1', '보낸 공개 링크', '적어 두기'], ['2', '채팅 · 댓글에서', '남길 말 복사'], ['3', '프로젝트를', '파일로 받기']];
 const SaveCard: React.FC = () => {
   const f = useCurrentFrame();
   return (
-    <AbsoluteFill style={{ background: '#0b0b0b', fontFamily: KO }}>
+    <AbsoluteFill style={{ background: '#0b0b0b', fontFamily: KO, textShadow: '0 2px 14px rgba(0,0,0,0.55)' }}>
+      <Plate src="m" start={3.3} />
+      <AbsoluteFill style={{ background: 'rgba(10,10,10,0.72)' }} />
       <div style={{ position: 'absolute', left: X, top: 284, fontWeight: 800, fontSize: 76, letterSpacing: -2, color: '#fff' }}>12월 14일 전에</div>
       <div style={{ position: 'absolute', left: X, top: 382, fontWeight: 600, fontSize: 46, letterSpacing: -1, color: '#C9C9C9' }}>옮기라는 안내가 뜨면 옮기기부터</div>
       {STEPS.map(([n, a, b], i) => {
@@ -147,8 +150,9 @@ const SaveCard: React.FC = () => {
         return (
           <div key={n} style={{ position: 'absolute', left: X, width: 846, top: 490 + i * 290, opacity: p, transform: `translateY(${(1 - p) * 28}px)` }}>
             <div style={{ fontWeight: 600, fontSize: 40, color: GREY, marginBottom: 6 }}>{n}</div>
-            <div style={{ fontWeight: 800, fontSize: 68, lineHeight: 1.18, letterSpacing: -1.8, color: '#fff' }}>{a}</div>
-            <div style={{ fontWeight: 800, fontSize: 68, lineHeight: 1.18, letterSpacing: -1.8, color: '#fff' }}>{b}</div>
+            <div style={{ fontWeight: 800, fontSize: 76, lineHeight: 1.18, letterSpacing: -2, color: '#fff' }}>{a}</div>
+            <div style={{ fontWeight: 800, fontSize: 76, lineHeight: 1.18, letterSpacing: -2, color: '#fff' }}>{b}</div>
+            {i === 2 ? <div style={{ fontWeight: 600, fontSize: 44, letterSpacing: -1, color: '#C9C9C9', marginTop: 14 }}>받는 길은 아래 글에</div> : null}
           </div>
         );
       })}
@@ -167,7 +171,7 @@ export const Scene: React.FC = () => (
     {seq(0, 2.2, <Plate src="a" start={1.0} z={1.3} origin="50% 92%" />)}
     {seq(2.2, 2.5, <Plate src="b" start={0} z={1.5} origin="52% 88%" />)}
     {seq(2.5, 4.3, <Plate src="c" start={S_LINE_START} />)}
-    {seq(4.3, 4.75, <Plate src="b" start={4.4} z={1.95} origin="50% 62%" />)}
+    {seq(4.3, 4.75, <Plate src="b" start={4.4} z={2.3} origin="88% 72%" />)}
     <Sequence from={0} durationInFrames={sec(2.2)}><Audio src={staticFile('plate/a.wav')} startFrom={sec(1.0)} volume={0.8} /></Sequence>
     <Sequence from={sec(2.2)} durationInFrames={sec(0.3)}><Audio src={staticFile('plate/b.wav')} volume={0.9} /></Sequence>
     <Sequence from={sec(2.5)} durationInFrames={sec(2.25)}><Audio src={staticFile('plate/c.wav')} startFrom={sec(S_LINE_START)} volume={0.95} /></Sequence>
@@ -177,7 +181,8 @@ export const Scene: React.FC = () => (
 export const Film: React.FC = () => {
   const f = useCurrentFrame();
   const strong = (f >= sec(S.open) && f < sec(S.door)) || (f >= sec(S.close) && f < sec(S.load));
-  const shaded = f < sec(S.black) || (f >= sec(S.s1) && f < sec(S.card)) || f >= sec(S.end);
+  const noText = (f >= sec(S.door) && f < sec(S.line)) || (f >= sec(S.react) && f < sec(S.close)); // 글 없는 칸은 그늘로 얼굴을 가리지 않는다
+  const shaded = !noText && (f < sec(S.black) || (f >= sec(S.s1) && f < sec(S.card)) || f >= sec(S.end));
   // 말 아래 배경음 — 문이 열린 뒤 깔고, 쿵에서 뚝 끊고, 날짜에서 다시, 끝 대사 앞에서 줄인다
   const bgm = interpolate(f, [sec(S.close - 0.1), sec(S.close + 0.3), sec(S.black) - 1, sec(S.black), sec(S.date), sec(S.date + 0.2), sec(S.end - 0.2), sec(S.end + 0.2), sec(S.total - 0.5), sec(S.total)], [0, 0.15, 0.15, 0, 0, 0.15, 0.15, 0.08, 0.08, 0], clamp);
   return (
@@ -191,10 +196,10 @@ export const Film: React.FC = () => {
       {/* 반전 — 문이 열림 · 대사 · 굳은 조문객(장면 심사 v0 「대사 뒤 굳은 얼굴 한 박자」) */}
       {seq(S.door, S.line, <Plate src="b" start={0} z={1.5} origin="52% 88%" />)}
       {seq(S.line, S.react, <Plate src="c" start={S_LINE_START} />)}
-      {seq(S.react, S.close, <Plate src="b" start={4.4} z={1.95} origin="50% 62%" />)}
-      {/* 닫히는 건 사이트 — 실제 줄 → 원문 그대로 크게 */}
-      {seq(S.close, S.load, <Page src="help_top" d={760} from={420} to={432} dur={40} hi={[838, 950]} />)}
-      {/* 디자인은 직접 옮긴다 — 짐 싣기 → 실제 줄 */}
+      {seq(S.react, S.close, <Plate src="b" start={4.4} z={2.3} origin="88% 72%" />)}
+      {/* 닫히는 건 사이트 — 실제 화면에서 그 줄만 남긴다 */}
+      {seq(S.close, S.load, <Page src="help_top" d={390} from={420} to={426} dur={40} hi={[838, 950]} />)}
+      {/* 디자인은 직접 옮긴다 — 짐 싣기 두 컷 */}
       {seq(S.load, S.move, <Plate src="f" start={0.3} />)}
       {seq(S.move, S.things, <Plate src="f" start={1.63} z={1.32} origin="56% 80%" />)}
       {/* 못 넣는 셋 — 문 앞에 남은 물건(볼 이유 심사 답 4) */}
@@ -204,14 +209,14 @@ export const Film: React.FC = () => {
       {seq(S.key, S.phone, <Plate src="g" start={3.6} z={2.1} origin="72% 84%" />)}
       {/* 손해 — 전화 */}
       {seq(S.phone, S.black, <Plate src="d" start={1.8} />)}
-      {/* 쿵 — 빈 검정은 「끝난 줄 알았다」(시험관 둘) → 전화기를 든 채 굳은 얼굴로 가까이, 글 없이 */}
-      {seq(S.black, S.date, <Plate src="d" start={4.55} z={1.5} origin="46% 26%" />)}
+      {/* 쿵 — 떨어진 상자와 쏟아진 짐, 글 없이. 빈 검정은 「끝난 줄 알았다」, 굳은 얼굴은 「같은 얼굴 두 컷 · 쿵의 뜻을 모르겠다」였다. 날짜 칸까지 한 컷으로 이어진다 */}
+      {seq(S.black, S.date, <Plate src="k" start={0} />)}
       {/* 날짜 뒤집기 */}
       {seq(S.date, S.s1, <DateCard />)}
-      {/* 세 단계 — 조문객이 경건하게 건넴(볼 이유 심사 v2 답 4) · 실제 줄 */}
+      {/* 세 단계 — 방명록에 적음 · 조문객이 경건하게 건넴 · 짐을 다 싣고 웃음(볼 이유 심사 답 4) */}
       {seq(S.s1, S.s2, <Plate src="m" start={0.4} />)}
       {seq(S.s2, S.s3, <Plate src="h" start={4.4} />)}
-      {seq(S.s3, S.card, <Plate src="k" start={3.6} z={1.28} origin="30% 78%" />)}
+      {seq(S.s3, S.card, <Plate src="f" start={3.6} />)}
       {seq(S.card, S.end, <SaveCard />)}
       {/* 끝 — 화환을 가져가는 조문객 */}
       {seq(S.end, S.total, <Plate src="e" start={S_END_START} />)}
@@ -236,14 +241,14 @@ export const Film: React.FC = () => {
       <Small text="AI로 만든 재연이에요" from={S.wide} to={S.open} top={668} />
       <Src from={S.open} to={S.door} />
       <Src from={S.close} to={S.load} />
-                  <Small text="SYNK 브리핑" from={S.end + 0.2} to={S.total} top={548} />
+      <Small text="SYNK 브리핑" from={S.end + 0.2} to={S.total} top={548} />
 
       {/* 소리 */}
       <Sequence from={0} durationInFrames={sec(S.open)}><Audio src={staticFile('plate/a.wav')} volume={0.8} /></Sequence>
       <Sequence from={sec(S.door)} durationInFrames={sec(S.line - S.door)}><Audio src={staticFile('plate/b.wav')} volume={0.9} /></Sequence>
       <Sequence from={sec(S.line)} durationInFrames={sec(S.close - S.line)}><Audio src={staticFile('plate/c.wav')} startFrom={sec(S_LINE_START)} volume={0.95} /></Sequence>
       <Sequence from={sec(S.things)} durationInFrames={sec(S.chats - S.things)}><Audio src={staticFile('plate/j.wav')} startFrom={sec(0.3)} volume={0.45} /></Sequence>
-      <Sequence from={sec(S.date)} durationInFrames={sec(S.s1 - S.date)}><Audio src={staticFile('plate/k.wav')} startFrom={sec(0.4)} volume={0.45} /></Sequence>
+      <Sequence from={sec(S.black)} durationInFrames={sec(S.s1 - S.black)}><Audio src={staticFile('plate/k.wav')} volume={0.45} /></Sequence>
       <Sequence from={sec(S.end)} durationInFrames={sec(S.total - S.end)}><Audio src={staticFile('plate/e.wav')} startFrom={sec(S_END_START)} volume={0.95} /></Sequence>
       <Audio src={staticFile('bgm.wav')} volume={() => bgm * 0.8} />
       <Sfx at={S.black - 0.02} src="thud" v={0.8} />
@@ -254,7 +259,9 @@ export const Film: React.FC = () => {
       <Sfx at={S.s1} src="tok" v={0.3} />
       <Sfx at={S.s2} src="tok" v={0.3} />
       <Sfx at={S.s3} src="tok" v={0.3} />
+      <Sfx at={S.s1 + 0.35} src="pen" v={0.22} />
       <Sfx at={S.card} src="snap" v={0.3} />
+      <Sfx at={S.total - 0.85} src="tok" v={0.4} />
       {(PLACE as { id: string; at: number }[]).map((c) => (
         <Sequence key={c.id} from={c.at}><Audio src={staticFile(`vo/${c.id}.wav`)} volume={0.8} /></Sequence>
       ))}

@@ -205,7 +205,21 @@ function walkFrame(now) {
 
 function text(id, value = '') { if ($(id).textContent !== value) $(id).textContent = value; }
 function queue(work) { const next = tail.then(work, work); tail = next.catch(() => {}); return next; }
+// A late answer is a slow connection, not a lost town: a phone busy preparing the scene can hold a finished reply past the
+// account layer's deadline. A pulse, read or boundary tries again on its own next turn, and entering tries again at once. An old
+// cached account bundle still throws the browser's own AbortError, so both count; neither word reaches the screen.
+const lateReply = error => error?.code === 'NETWORK_TIMEOUT' || error?.name === 'AbortError';
+const LATE_REPLIES_BEFORE_ASKING = 3, ENTRY_TRIES = 3;
+let lateReplies = 0;
+function connectionWords(message) {
+  return /^NETWORK_UNAVAILABLE$|aborted/i.test(message || '') ? '연결이 잠깐 끊겼어요. 다시 연결을 눌러 주세요.' : message;
+}
+function backgroundFailed(error) {
+  if (lateReply(error) && ++lateReplies < LATE_REPLIES_BEFORE_ASKING) return;
+  showError(error.message);
+}
 function showError(message) {
+  message = connectionWords(message);
   calmRefusal();
   connected = false; presence = null; walkControls?.stop(); document.body.classList.add('walk-error'); text('error', message); $('error').hidden = false; $('retry').hidden = false; text('connection', '연결을 다시 확인해 주세요'); setBusy(false);
   // Seated, a dropped connection asks nothing of the hands (W7b): the seat and its sound stay, and the town tries again.
@@ -259,10 +273,12 @@ async function request(path, body) {
       connected = false; pauseWalkInput(); location.reload(); throw new Error('계정 연결을 새로 확인하고 있어요.');
     }
     const result = await worldHost.request(path, body);
+    lateReplies = 0;
     if (!answered(path, result)) throw new Error(result?.message || '이 계정의 타운을 열 수 없어요.');
     return result;
   }
   const response = await fetch(`/api/preview/${path}`, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), cache: 'no-store' } : { cache: 'no-store' });
+  lateReplies = 0;
   const result = await response.json();
   if (!response.ok || !answered(path, result)) throw Object.assign(new Error(result.message || '첫 하루를 열 수 없어요. 개발 체험 서버를 확인해 주세요.'), { status: response.status, code: result.error });
   return result;
@@ -322,12 +338,12 @@ async function ensureFreshPresence() {
 function pulse() {
   if (pulseQueued || !snapshot?.capabilities?.day || !connected) return;
   pulseQueued = true;
-  queue(pulseNow).catch(e => showError(e.message)).finally(() => { pulseQueued = false; });
+  queue(pulseNow).catch(backgroundFailed).finally(() => { pulseQueued = false; });
 }
 function read() {
   if (reading || !connected) return;
   reading = true;
-  queue(async () => accept(await request('state'))).catch(e => showError(e.message)).finally(() => { reading = false; });
+  queue(async () => accept(await request('state'))).catch(backgroundFailed).finally(() => { reading = false; });
 }
 /** The window holding the town says it is at a safe point, at most every 20 seconds (§14-3): the world
  * settles there and may issue a contact. Another window holding the town is no error here. */
@@ -351,7 +367,7 @@ function boundary() {
     // mascot's question, or as one that does not draw the cards' offers.
     if (asked && error?.code === 'INVALID_REQUEST') { asksOk = false; askReport = null; return; }
     if (caps && error?.code === 'INVALID_REQUEST') { capsOk = false; return; }
-    if (error.status !== 409) showError(error.message);
+    if (error.status !== 409) backgroundFailed(error);
   }).finally(() => { bounding = false; });
 }
 /** Whether the world runs a timer of its own now (a scene's stage, C1, a bazaar step, a guest's use):
@@ -450,7 +466,7 @@ function gatherCommand(type, payload) {
         const code = error?.code ?? null;
         if (code === 'stale-command' || code === 'stale-surface') { if (code === 'stale-surface') lastPulse = 0; try { await queue(async () => accept(await request('state'))); } catch {} continue; }
         if (GATHER_REFUSALS.includes(code)) { read(); return { ok: false, code, message: gatherRefusalWords(type, code, error.message) }; }
-        showError(error.message); return { ok: false, code, message: error.message };
+        showError(error.message); return { ok: false, code, message: connectionWords(error.message) };
       } finally { setBusy(false); }
     }
     return { ok: false, code: 'stale-command' };
@@ -1163,8 +1179,12 @@ function frame(now) {
 async function load() {
   setBusy(true);
   // The window's first pulse records a visit that ended while it was away; the second read shows the town after it.
-  try { await queue(async () => { walk.discard(); accept(await request('state')); clearError(); await pulseNow(); accept(await request('state')); }); }
-  catch (error) { showError(error.message); }
+  try {
+    for (let tries = 1; ; tries++) {
+      try { await queue(async () => { walk.discard(); accept(await request('state')); clearError(); await pulseNow(); accept(await request('state')); }); break; }
+      catch (error) { if (!lateReply(error) || tries >= ENTRY_TRIES) throw error; }
+    }
+  } catch (error) { showError(error.message); }
   finally { setBusy(false); }
   // A failed first walk-enable has no saved walking state. Retry must finish
   // entering the walking view too, instead of leaving a connected classic UI.

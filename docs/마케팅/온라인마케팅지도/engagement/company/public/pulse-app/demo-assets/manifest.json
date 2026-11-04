@@ -1,100 +1,65 @@
 {
   "kind": "fictional-advertising-project-demo",
-  "brand": "MORU / 모루",
-  "disclaimer": "PULSE 체험용 · 가상 브랜드",
-  "audio": "Intentionally silent; no audio track",
-  "origin": "Original code-rendered illustration and typography; no third-party product imagery",
-  "fonts": [
-    "SUIT ExtraBold / Medium",
-    "Inter Tight Bold / Medium"
+  "brand": "유리결",
+  "disclaimer": "PULSE 체험용 · 가상 브랜드로 만든 자체 작품",
+  "origin": "대표작 「유리결」 홀리데이 세트 15초의 실제 제작 자료. 1차 시안은 4.2판, 수정본은 5.1판(대표작 웹판과 같은 바이트), 콘셉트 B는 기획 때 견준 안 3 「창에 쓴 말」 시안, 그림은 영상에서 뽑은 장면(540×960, 256색).",
+  "outsideGit": [
+    "preview-v1.mp4",
+    "preview-v2.mp4"
   ],
   "durationSeconds": 15,
-  "width": 960,
-  "height": 540,
-  "fps": 24,
+  "width": 720,
+  "height": 1280,
+  "fps": 30,
   "versions": {
-    "v1": "CTA at 11–15s: 자세히 보기, low emphasis",
-    "v2": "CTA at 11–15s: 모루 첫 잔 만나보기, prominent rust pill"
+    "v1": "4.2판 — 제품이 5초 떠 있고 끝에 뚜껑이 작게 보인다",
+    "v2": "5.1판 — 떠 있는 시간 2초, 뚜껑 접사, 다 핀 순간 두 번째 절정"
   },
   "assets": [
     {
       "file": "preview-v1.mp4",
-      "bytes": 216584,
-      "sha256": "aaf61e97702ac9ee025db45d32d036d22f142127070929a4bc69ac992dcb05d7",
-      "probe": {
-        "programs": [],
-        "stream_groups": [],
-        "streams": [
-          {
-            "codec_name": "h264",
-            "codec_type": "video",
-            "width": 960,
-            "height": 540,
-            "r_frame_rate": "24/1",
-            "duration": "15.000000"
-          }
-        ],
-        "format": {
-          "duration": "15.000000"
-        }
-      }
+      "bytes": 8821459,
+      "sha256": "595db6642e39cc776f3b434eab0f1112618456bf3da6a6495401b571df21b4b4"
     },
     {
       "file": "preview-v2.mp4",
-      "bytes": 223356,
-      "sha256": "7a42a3c8787d380845fb058547077950a30a808cd48a61ffe7f69b6c7760bdae",
-      "probe": {
-        "programs": [],
-        "stream_groups": [],
-        "streams": [
-          {
-            "codec_name": "h264",
-            "codec_type": "video",
-            "width": 960,
-            "height": 540,
-            "r_frame_rate": "24/1",
-            "duration": "15.000000"
-          }
-        ],
-        "format": {
-          "duration": "15.000000"
-        }
-      }
+      "bytes": 9005105,
+      "sha256": "197720f2186f39725202200b4aaeac1613768563d6454a1e9785d6905e13ee59"
     },
     {
       "file": "reference-bold.png",
-      "bytes": 66580,
-      "sha256": "d457f1f1b83fde8391f14b7d0e26734ede5d2b4b82bcb1b174c1a95fe77f440b"
+      "bytes": 71543,
+      "sha256": "e7f500f9d9e06190df9bf4f79d8f556f1da8e0a8ea9c91aa7672835577a04755"
     },
     {
       "file": "reference-calm.png",
-      "bytes": 64587,
-      "sha256": "1027e51858e1b488a8b144e2c6fb73113d4507f4d8176d5b0f2836cfddbb90e0"
+      "bytes": 70994,
+      "sha256": "42f8a867cfadb893b54b85a6002ae5e570394829e79f5a0302a2f5eed6cfa01d"
     },
     {
       "file": "reference-warm.png",
-      "bytes": 65476,
-      "sha256": "dd7d8460a8b1f03e1019c91294b298c9f2060d063ef35e1dbd84285e2223ed5a"
+      "bytes": 175291,
+      "sha256": "346f03e4978aa68badfb033934fbd5496ab0d0f084523126967d502a65f0edd6"
     },
     {
       "file": "scene-1.png",
-      "bytes": 65476,
-      "sha256": "dd7d8460a8b1f03e1019c91294b298c9f2060d063ef35e1dbd84285e2223ed5a"
+      "bytes": 120509,
+      "sha256": "177889a39e9b7d610215a60cee3e10558d3103362cb50e2adc2c85edddd807d8"
     },
     {
       "file": "scene-2.png",
-      "bytes": 65934,
-      "sha256": "70fb22ceee495df73a5d0fb7ba10528a65409b9ae9d58a1a42287f63f34e037c"
+      "bytes": 204307,
+      "sha256": "fa47dd897cad94abc4e327597262228eab0c8e1d2d29d64c1626813b4bda2f98"
     },
     {
       "file": "scene-3.png",
-      "bytes": 61201,
-      "sha256": "3ec0ed585e1fd67fe2be87c5a4e00f69855ce2b7690925540d52960a90ffe3e6"
+      "bytes": 164374,
+      "sha256": "397e0c5c3d2f9cb818aff0e0c9fdff7366cf995f08dc31dc7d721ac3a135a856"
     },
     {
       "file": "scene-4.png",
-      "bytes": 63881,
-      "sha256": "94d8f94b3bfa28c2d20c523d0122147497fe3358d2193441e45ebd3cc514f801"
+      "bytes": 57765,
+      "sha256": "e8adf77fc01ea5a152c67d61c16ec784a68284c1ea0f0f9089092c8787ce6fac"
     }
   ]
 }

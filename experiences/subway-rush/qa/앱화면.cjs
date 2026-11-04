@@ -6,6 +6,7 @@
 const path = require('node:path'), fs = require('node:fs');
 const NM = process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE, '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules');
 const { chromium } = require(require.resolve('playwright', { paths: [NM, path.resolve(__dirname, '../../../node_modules')] }));
+const { 화면시험, 닫기 } = require('../../../tools/lib/화면시험.cjs');
 const { 공용작업본 } = require('../../../tools/lib/공용작업본.js');
 const BASE = process.env.WORLD_URL || 'http://127.0.0.1:4297';
 const OUT = path.join(공용작업본(path.resolve(__dirname, '../../..')), '.tmp', 'subway-rush-20261104', '앱화면');
@@ -14,6 +15,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function run(name, view) {
   const browser = await chromium.launch({ channel: 'msedge', headless: true, args: ['--headless=new', '--autoplay-policy=no-user-gesture-required', '--enable-gpu-rasterization', '--ignore-gpu-blocklist', '--use-angle=d3d11'] });
+  try {
   const ctx = await browser.newContext({ viewport: view, deviceScaleFactor: 2, hasTouch: view.width < 700, isMobile: view.width < 700 });
   const page = await ctx.newPage(), errors = [], failed = [], notes = {};
   page.setDefaultTimeout(30000);
@@ -99,7 +101,7 @@ async function run(name, view) {
   await sleep(1500);
   notes.backHome = (await page.locator('.game-frame').count()) === 0;
   await shot('09_돌아옴');
-  await browser.close();
   console.log(JSON.stringify({ name, ...notes, errors: errors.slice(0, 12), failed: failed.slice(0, 12) }, null, 0));
+  } finally { await 닫기(browser); }
 }
-(async () => { await run('폰', { width: 390, height: 844 }); await run('넓은창', { width: 1280, height: 800 }); })().catch((e) => { console.error(e); process.exit(1); });
+화면시험({ 분: 20 }, async () => { await run('폰', { width: 390, height: 844 }); await run('넓은창', { width: 1280, height: 800 }); });

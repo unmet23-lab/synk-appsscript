@@ -161,16 +161,21 @@ test('the demo guide says the record stays in this PC app inside the PC app wind
 // Runs app.mjs the way the vm tests do (imports stripped, stopped before the boot line) but keeps the demo, so the
 // window flag comes from the real user agent line and the reset question is the one the router opens.
 async function demoApp(userAgent){
-  const listeners={},dialogs=[];
+  const listeners={},dialogs=[],replaced=[];
   const element=()=>({innerHTML:'',hidden:false,open:false,className:'',dataset:{},classList:{toggle(){}},querySelector:()=>null,querySelectorAll:()=>[],contains:()=>false,setAttribute(){},addEventListener(){},close(){this.open=false;},showModal(){this.open=true;}});
   const nodes=new Map(['#main','#app-dialog','#notice','#header-actions','#pulse-live','#connection-banner'].map(key=>[key,element()]));
-  const context=vm.createContext({createDemoSession,storage:memoryStorage(),productionUI:()=>({submit:()=>false,click:()=>false,render(){},reset(){}}),dialogContent:(type,item)=>{dialogs.push({type,item});return '';},URL,URLSearchParams,Map,Set,WeakSet,Date,Intl,Number,JSON,Object,Array,String,Promise,console,setTimeout:()=>1,clearTimeout(){},location:new URL('https://workspace.synk.im/pulse-app/?demo=coffee'),history:{replaceState(){}},navigator:{onLine:true,userAgent},window:{addEventListener(){},isSecureContext:true},document:{visibilityState:'visible',documentElement:{classList:{toggle(){}}},querySelector:key=>nodes.get(key)||null,querySelectorAll:()=>[],addEventListener(name,fn){(listeners[name]||=[]).push(fn);}}});
+  const context=vm.createContext({createDemoSession,storage:memoryStorage(),productionUI:()=>({submit:()=>false,click:()=>false,render(){},reset(){}}),dialogContent:(type,item)=>{dialogs.push({type,item});return '';},URL,URLSearchParams,Map,Set,WeakSet,Date,Intl,Number,JSON,Object,Array,String,Promise,console,setTimeout:()=>1,clearTimeout(){},location:new URL('https://workspace.synk.im/pulse-app/?demo=coffee'),history:{replaceState(_state,_title,url){replaced.push(url);}},navigator:{onLine:true,userAgent},window:{addEventListener(){},isSecureContext:true},document:{visibilityState:'visible',documentElement:{classList:{toggle(){}}},querySelector:key=>nodes.get(key)||null,querySelectorAll:()=>[],addEventListener(name,fn){(listeners[name]||=[]).push(fn);}}});
   const app=await readFile(new URL('./public/pulse-app/app.mjs',import.meta.url),'utf8');
   const demoLine="const demo=demoMode?(await import('./demo.mjs')).createDemoSession():null;",boot=app.indexOf("if(demo){accept(demo.snapshot());");
   assert.ok(app.includes(demoLine)&&boot>0,'the demo import and the boot line are where this test expects them');
   vm.runInContext(app.slice(0,boot).replace(/^import .*\r?\n/gm,'').replace(demoLine,'const demo=demoMode?createDemoSession({storage}):null;'),context);
-  return {flag:vm.runInContext('s.desktopApp',context),dialogs,click:async action=>{await listeners.click[0]({target:{closest:()=>({disabled:false,dataset:{action}})}});}};
+  return {flag:vm.runInContext('s.desktopApp',context),dialogs,replaced,click:async action=>{await listeners.click[0]({target:{closest:()=>({disabled:false,dataset:{action}})}});}};
 }
+
+test('the demo address becomes ?demo=gift in a browser and stays on the address the installed PC app window allows',async()=>{
+  assert.deepEqual((await demoApp('Mozilla/5.0 Chrome/130 Safari/537.36')).replaced,['/pulse-app/?demo=gift']);
+  assert.deepEqual((await demoApp('Mozilla/5.0 Chrome/130 Electron/33.0.0 Safari/537.36')).replaced,['/pulse-app/?demo=coffee']);
+});
 
 test('the demo reset question names this PC app inside the PC app window and this browser elsewhere',async()=>{
   const desktopChrome='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36';

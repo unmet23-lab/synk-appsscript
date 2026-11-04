@@ -14,7 +14,6 @@ import masks from './masks.json';
 
 export const P11_FRAMES = Math.round(22.06 * 24);
 export const P11_DOG_FRAMES = 574;   // 고글 개 끝 — 9번 컷 + 물 판 끝까지(23.92초, pet-ad 최종편집.py dog_picture와 같은 값)
-const TAG_AT = 21.35;   // 튜브 글자가 다 뜬 뒤 「반려견 구명조끼」(딩과 같은 자리)
 const FPS = 24;
 const INK = '#0E1320', PAPER = '#F6F3EA', LEMON = '#FFD43B', NAVY = '#17224D';
 const abs = (x: number, y: number, w?: number, h?: number): React.CSSProperties => ({ position: 'absolute', left: x, top: y, width: w, height: h });
@@ -63,7 +62,7 @@ const BIG_A: { w: string; a: number; b: number; y: number; size: number; front?:
   { w: '특별한 걸', a: w(2, 2), b: w(3, 0), y: 410, size: 165 },               // 남자 머리 왼쪽 벽 — 180이면 「걸」이 얼굴에 닿았다(11-04 크몽 세션 검수), 165면 덮임 0%
   { w: '튼튼', a: w(4, 2), b: w(5, 0), y: 290, size: 280, x: 'r' },            // 남자 머리 오른쪽 벽으로 — 전에는 검은 머리 위에 얹혀 묻혔다
   { w: '번쩍', a: w(5, 5), b: endOf(5) + 0.1, y: 430, size: 240, front: true }, // 서 있는 컷 · 들어 올리는 컷 모두 왼쪽 복도 위(전에는 민소매 위에 묻힘)
-  { w: '멋있게', a: w(6, 2), b: endOf(6) + 0.1, y: 1130, size: 270, front: true, x: 'c', light: true },   // 남색은 회색 개 몸 · 남색 끈에 묻혔다
+  { w: '멋있게', a: w(6, 2), b: endOf(6) + 0.1, y: 1236, size: 250, front: true, x: 'c', light: true, halo: true },   // 남색은 회색 개 몸 · 남색 끈에 묻혔다
   // 카메라가 들어가 조끼 아래 끝이 1220(18초) → 1296(19초)까지 내려와 밝은 글자 위쪽이 노랑에 묻혔다(11-04 Fable). 더 내리면 옅은 배 · 수건이라 대비가 더 떨어져(자리찾기.py) 조금만 내리고 글자 둘레만 어둡게 깐다 — 가림검사.py는 후광 없는 화면으로 재서 「손볼 것」으로 나오지만 최종본 프레임으로 재면 둘레 91% 이상이 3:1을 넘는다
   { w: '외계인?', a: w(7, 1), b: endOf(7) + 0.08, y: 1236, size: 250, front: true, x: 'c', light: true, halo: true },   // 1200 · 270이면 조끼 아랫단을 덮었다(11-04 Fable)
 ];
@@ -106,7 +105,7 @@ const LookA: React.FC<{ t: number; mix?: boolean; dogEnd?: boolean }> = ({ t, mi
           {mix ? <span style={{ fontFamily: KO, fontWeight: 700, fontSize: 28, letterSpacing: '-0.02em', opacity: 0.9 }}>첨벙댕</span> : <span style={{ fontFamily: EN, fontSize: 24, letterSpacing: '0.08em', opacity: 0.8 }}>SUMMER WATER DAY / 01</span>}
         </div>
         <div style={{ ...abs(72, 170, 936, 2), zIndex: 20, background: PAPER, opacity: 0.6 }} />
-        <div style={{ ...abs(72, 1812, 936, 3), zIndex: 20, background: '#ffffff30' }}><div style={{ height: 3, width: `${Math.min(1, t / (dogEnd ? 23.92 : 22.06)) * 100}%`, background: LEMON }} /></div>
+        {/* 아래 진행 줄은 뺐다 — Fable · 아르곤이 따로 「공장형 숏폼 템플릿」으로 짚었다(11-04) */}
       </>}
       {/* 조끼 카드(앞) */}
       {card && (() => {
@@ -115,7 +114,7 @@ const LookA: React.FC<{ t: number; mix?: boolean; dogEnd?: boolean }> = ({ t, mi
           <div style={{ ...abs(72, 1150, 600), zIndex: 12, background: LEMON, color: NAVY, borderRadius: 30, padding: '26px 36px 30px', boxShadow: '0 30px 80px #0005', transform: `translateY(${(1 - p) * 520}px) rotate(${(1 - p) * 8 - 2.5}deg)`, opacity: 1 - ramp(t, w(5, 0) - 0.14, 0.14) }}>
             <div style={{ fontFamily: EN, fontSize: 24, letterSpacing: '0.1em', display: 'flex', justifyContent: 'space-between' }}><span>NEW / 01</span><span>↗</span></div>
             <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 96, letterSpacing: '-0.05em', lineHeight: 1.02, marginTop: 14 }}>첨벙댕<br />구명조끼</div>
-            {chips && <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>{['등 손잡이 2개', '반사 띠', '버클 끈'].map((c, i) => <span key={c} style={{ fontFamily: KO, fontWeight: 700, fontSize: 26, border: `2px solid ${NAVY}`, borderRadius: 40, padding: '8px 16px', opacity: ramp(t, w(4, 0) + 0.08 + i * 0.12, 0.2) }}>{c}</span>)}</div>}
+            {chips && <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>{['등 손잡이 2개', '부력 패드', '버클 끈'].map((c, i) => <span key={c} style={{ fontFamily: KO, fontWeight: 700, fontSize: 26, border: `2px solid ${NAVY}`, borderRadius: 40, padding: '8px 16px', opacity: ramp(t, w(4, 0) + 0.08 + i * 0.12, 0.2) }}>{c}</span>)}</div>}
           </div>
         );
       })()}
@@ -129,7 +128,7 @@ const LookA: React.FC<{ t: number; mix?: boolean; dogEnd?: boolean }> = ({ t, mi
           </div>
         );
       })()}
-      {mix && t >= w(4, 0) && t < w(5, 0) && <div style={{ ...abs(72, 1360, 936), zIndex: 12, display: 'flex', gap: 12 }}>{['등 손잡이 2개', '반사 띠', '버클 끈'].map((c, i) => <span key={c} style={{ fontFamily: KO, fontWeight: 700, fontSize: 40, letterSpacing: '-0.02em', color: PAPER, background: NAVY, borderRadius: 40, padding: '10px 24px 12px', boxShadow: '0 8px 24px #0003', opacity: ramp(t, w(4, 0) + 0.05 + i * 0.12, 0.2), transform: `translateY(${(1 - ramp(t, w(4, 0) + 0.05 + i * 0.12, 0.3, EXPO)) * 30}px)` }}>{c}</span>)}</div>}
+      {/* 섞은 판의 기능 칩(등 손잡이 · 부력 패드 · 버클 끈)은 뺐다 — 판에 다 안 보이고 인포그래픽 틀로 보였다(11-04 아르곤 · Fable). 말이 같은 걸 한다 */}
       {/* 「번쩍」 별 */}
       {!mix && t >= w(5, 5) && t < endOf(5) + 0.1 && <div style={{ ...abs(780, 720, 130, 130), zIndex: 14, borderRadius: '50%', background: LEMON, color: NAVY, display: 'grid', placeItems: 'center', fontSize: 70, transform: `scale(${pop(t, w(5, 5))}) rotate(${(t - w(5, 5)) * 70}deg)` }}>✳</div>}
       {/* 끝 */}
@@ -146,11 +145,7 @@ const LookA: React.FC<{ t: number; mix?: boolean; dogEnd?: boolean }> = ({ t, mi
           </>
         );
       })()}
-      {/* 고글 개 끝 — 레몬 판을 버리고(유호님 11-04 「너무 슬롭같은데」) 화면에 구운 튜브 글자(pet-ad 끝합성.py) 아래 작은 이름표만. 「첨벙댕 / 구명조끼」 칩과 같은 꼴 */}
-      {dogEnd && t >= TAG_AT && (() => {
-        const p = ramp(t, TAG_AT, 0.2, EXPO);
-        return <div style={{ ...abs(0, 1758, 1080), zIndex: 21, display: 'flex', justifyContent: 'center' }}><div style={{ fontFamily: KO, fontWeight: 750, fontSize: 44, letterSpacing: '-0.03em', color: PAPER, background: NAVY, padding: '8px 22px 10px', borderRadius: 10, clipPath: `inset(0 ${(1 - p) * 100}% 0 0 round 10px)` }}>반려견 구명조끼</div></div>;
-      })()}
+      {/* 고글 개 끝 — 레몬 판을 버렸다(유호님 11-04 「너무 슬롭같은데」). 브랜드는 물 판 속 수건 위에 판에 구웠다(pet-ad 끝합성.py) */}
       {end && mix && !dogEnd && t >= w(8, 3) && (() => {
         const p = ramp(t, w(8, 3), 0.22, EXPO);
         const q = pop(t, w(8, 3) + 0.06, 0.42);
@@ -252,7 +247,7 @@ const LookC: React.FC<{ t: number }> = ({ t }) => {
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 40, color: INK, letterSpacing: '-0.03em' }}>첨벙댕 구명조끼</div>
-              <div style={{ fontFamily: KO, fontWeight: 500, fontSize: 27, color: '#5B6072', marginTop: 6 }}>등 손잡이 2개 · 반사 띠 · 버클 끈</div>
+              <div style={{ fontFamily: KO, fontWeight: 500, fontSize: 27, color: '#5B6072', marginTop: 6 }}>등 손잡이 2개 · 부력 패드 · 버클 끈</div>
             </div>
             <div style={{ background: NAVY, color: '#fff', fontFamily: KO, fontWeight: 800, fontSize: 32, borderRadius: 22, padding: '20px 28px', transform: `scale(${s})`, position: 'relative' }}>
               담기
@@ -278,6 +273,10 @@ const LookC: React.FC<{ t: number }> = ({ t }) => {
 };
 
 // dogEnd: 고글 쓴 개로 닫는 최종 끝(11-04 유호님 「고글 개 끝으로」) — 9번 컷(주황 고글)에 이어 그 방에 물이 차오르고 튜브 글자가 뜬 화면(pet-ad 최종편집.py dog_picture · 끝합성.py)
+// 고글 개 끝 카메라 — 물이 차기 전 3.6초가 멈춘 사진 같다는 지적(11-04 아르곤). 물이 터질 때까지 천천히 들어가고 그 뒤는 물 판의 움직임에 맡긴다
+const DOG_AT = 16.25, SPLASH_AT = 20.375;
+const endPush = (t: number) => (t < DOG_AT ? 1 : 1 + 0.018 * Math.min(1, (t - DOG_AT) / (SPLASH_AT - DOG_AT)));
+
 export const P11: React.FC<{ look: 'A' | 'B' | 'C' | 'AB'; probe?: boolean; dogEnd?: boolean }> = ({ look, probe, dogEnd }) => {
   const f = useCurrentFrame();
   const t = f / FPS;
@@ -287,7 +286,9 @@ export const P11: React.FC<{ look: 'A' | 'B' | 'C' | 'AB'; probe?: boolean; dogE
   const onPanel = !dogEnd && (look === 'AB' || look === 'B') && t >= w(8, 3);
   return (
     <AbsoluteFill style={{ background: '#000' }}>
-      <OffthreadVideo src={staticFile(dogEnd ? 'p11/picture_dog.mp4' : 'p11/picture.mp4')} muted style={{ width: '100%', height: '100%' }} />
+      <AbsoluteFill style={{ transform: `scale(${dogEnd ? endPush(t) : 1})`, transformOrigin: '540px 640px' }}>
+        <OffthreadVideo src={staticFile(dogEnd ? 'p11/picture_dog.mp4' : 'p11/picture.mp4')} muted style={{ width: '100%', height: '100%' }} />
+      </AbsoluteFill>
       {look === 'A' && <LookA t={t} />}
       {look === 'B' && <LookB t={t} />}
       {look === 'C' && <LookC t={t} />}

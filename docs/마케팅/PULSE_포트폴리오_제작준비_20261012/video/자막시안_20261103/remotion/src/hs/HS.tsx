@@ -42,7 +42,7 @@ const CAP: { a: number; b: number; s: string; ks?: number[]; left?: boolean }[] 
   { a: 52.6, b: 54.75, s: '★세상에…!' },
   { a: 54.9, b: 55.8, s: '…★왜?', left: true },
   { a: 57.46, b: 59.58, s: '안 돼, 내 ★코케트 ★떡볶이!', ks: [58.98, 58.98] },
-  { a: SHOT_F[29] / FPS, b: 66.75, s: '그거 내 ★저녁인데!', ks: [64.24] },   // 말은 63.99에 시작하지만 그땐 카드 3(아래 「1577-꽉꽉」)이라 #30 첫 프레임부터
+  { a: SHOT_F[29] / FPS, b: 66.75, s: '그거 내 ★저녁인데!', ks: [64.92] },   // 말과 자막 모두 #30 첫 프레임부터(최종편집.py EVENTS)
   { a: 67.92, b: 70.79, s: '★그냥 ★죽여!', ks: [67.92, 69.32] },
 ];
 // 꼬리 0.2초는 다음 컷에서 끊는다 — 컷 끝에서 끝나는 줄이 홈쇼핑 카드 첫 프레임까지 남았다(11-04 경계 검수)
@@ -108,16 +108,20 @@ const Film: React.FC<{ t: number; probe?: boolean }> = ({ t, probe }) => {
   );
 };
 
-// B 블록 — PULSE Ink 로고 + 「제품 광고 문의」를 종이 블록에(PULSE 사업명은 고유색을 지켜 어두운 바탕에 베리 판을 깔지 않는다)
-const Brand: React.FC<{ t: number; at: number; style: React.CSSProperties; logo: number; text: number; origin: string }> = ({ t, at, style, logo, text, origin }) => {
+// 끝 브랜드 — 종이 판은 장면 위 스티커처럼 떴다(11-04 슬롭 점검표 1번 · 유호님 「밑에 첨벙댕 … 너무 슬롭같은데」와 같은 짜임). 판 없이 어두운 바탕용 로고를 장면에 바로 얹고,
+// 그 자리만 살짝 어둡게 해 읽히게 한다. 튀어나오지 않고 줄 단위로 조용히 올라온다
+const Brand: React.FC<{ t: number; at: number; style: React.CSSProperties; logo: number; text: number; align: 'left' | 'right'; shade?: string }> = ({ t, at, style, logo, text, align, shade }) => {
   if (t < at) return null;
-  const p = ramp(t, at, 0.16, EXPO);
-  const punch = 1 + (1 - ramp(t, at, 0.14)) * 0.06;
+  const p = ramp(t, at, 0.34, EXPO);
+  const q = ramp(t, at + 0.16, 0.34, EXPO);
   return (
-    <div style={{ ...style, zIndex: 26, background: PAPER, borderRadius: 18, padding: '26px 34px 26px', boxShadow: '0 24px 60px #0007', clipPath: `inset(0 ${(1 - p) * 100}% 0 0 round 18px)`, transform: `scale(${punch})`, transformOrigin: origin }}>
-      <Img src={staticFile('hs/pulse-ink.png')} style={{ width: logo, display: 'block' }} />
-      <div style={{ fontFamily: KO, fontWeight: 700, fontSize: text, color: INK, marginTop: 14, letterSpacing: '-0.03em' }}>제품 광고 문의</div>
-    </div>
+    <>
+      {shade && <AbsoluteFill style={{ zIndex: 25, background: shade, opacity: ramp(t, at, 0.3) }} />}
+      <div style={{ ...style, zIndex: 26, textAlign: align }}>
+        <Img src={staticFile('hs/pulse-paper.png')} style={{ width: logo, display: 'block', marginLeft: align === 'right' ? 'auto' : 0, opacity: p, transform: `translateY(${(1 - p) * 24}px)` }} />
+        <div style={{ fontFamily: KO, fontWeight: 700, fontSize: text, color: PAPER, marginTop: 6, paddingRight: align === 'right' ? 14 : 0, paddingLeft: align === 'left' ? 14 : 0, letterSpacing: '-0.03em', opacity: q, transform: `translateY(${(1 - q) * 18}px)`, textShadow: '0 2px 18px #000a' }}>제품 광고 문의</div>
+      </div>
+    </>
   );
 };
 
@@ -130,7 +134,8 @@ export const HS16: React.FC<{ probe?: boolean }> = ({ probe }) => {
     <AbsoluteFill style={{ background: '#000' }}>
       <Film t={t} />
       <Caption t={t} x={0} y={918} w={1920} size={54} leftW={980} />
-      <Brand t={t} at={LAST} style={{ ...abs(1372, 742) }} logo={420} text={44} origin="right bottom" />
+      {/* 오른쪽 아래 구석은 고지 줄과 붙어 워터마크처럼 보였다(11-04 아르곤) — 문 쪽 가운데 높이로 올려 끝 제목으로 */}
+      <Brand t={t} at={LAST} style={{ ...abs(1216, 588, 620) }} logo={620} text={50} align="right" shade="radial-gradient(760px 340px at 1540px 690px, #00000080, #0000)" />
       {/* 끼어듦 카드(27~29)는 「1577-꽉꽉」이 오른쪽 아래라 고지 줄이 그 위를 가로질렀다(11-04 Fable) — 그동안만 왼쪽으로 */}
       <div style={{ ...abs(40, 1034, 1840), zIndex: 30, textAlign: t >= 59.4 && t < 64.5 ? 'left' : 'right', fontFamily: KO, fontWeight: 500, fontSize: 22, color: '#ffffff96' }}>{NOTICE}</div>
       <Audio src={staticFile('hs/sound.wav')} />
@@ -159,7 +164,7 @@ export const HS9: React.FC = () => {
       <div style={{ ...abs(0, 656, 1920, 1080), transform: 'scale(0.5625)', transformOrigin: 'left top', overflow: 'hidden' }}><Film t={t} /></div>
       <Head9 t={t} />
       {/* 검은 여백이 넓어 글자를 16:9 비례보다 키운다(11-04 GPT 검수) */}
-      <Brand t={t} at={LAST} style={{ ...abs(64, 318) }} logo={600} text={62} origin="left bottom" />
+      <Brand t={t} at={LAST} style={{ ...abs(56, 330, 760) }} logo={700} text={62} align="left" />
       <Caption t={t} x={48} y={1334} w={984} size={66} wrap />
       <div style={{ ...abs(0, 1858, 1080), zIndex: 30, textAlign: 'center', fontFamily: KO, fontWeight: 500, fontSize: 22, color: '#ffffff88' }}>{NOTICE}</div>
       <Audio src={staticFile('hs/sound.wav')} />

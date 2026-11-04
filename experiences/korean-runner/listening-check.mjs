@@ -102,10 +102,35 @@ export const RETURN_PATTERNS = Object.freeze({
 });
 const patternOfCheck = item => checkMetadata(item).skillId.split('.').at(-1);
 const CHECK_OF_FAMILY = new Map(LISTENING_CHECKS.map(item => [checkMetadata(item).familyKey, item]));
+// 새 문항이 남지 않았을 때만(returnPractice가 새 문항을 먼저 본다) 근거 뒤에 이 게임에서 같은 패턴으로 연 확인 문장 가운데
+// 소리가 실패해 끝까지 듣지 못하고 답 없이 남은 것을 같은 문장으로 다시 연다. 소리 실패(failed)가 있어야 하고, 끝까지 들은 소리·
+// 도움·채점된 답이 하나라도 있으면 아니고, 지운 기록은 근거로도 해소로도 쓰지 않는다. 그 뒤 같은 패턴 문장에 정상으로 답했거나
+// 같은 문장을 끝까지 들었거나 도움을 봤으면 해소된 것으로 본다. 소리를 틀지 않고 다시 닫은 것만으로는 아직 마치지 못한 문장이다.
+export const AUDIO_RETRY_NEXT = '‘듣기 확인’의 첫 문제는 ‘소리를 마치지 못한 문장 다시 듣기’예요. 지난번에 소리가 끝나지 않아 답하지 않고 남긴 그 문장이라 새 문제가 아니에요. 끝까지 듣고 골라 보세요.';
+function audioFailedCheck(coach, found) {
+  const events = coach.events(), byId = new Map(events.map(event => [event.id, event]));
+  const excluded = new Set(events.filter(event => event.type === 'record.excluded').map(event => event.targetId));
+  let left = null;
+  events.forEach((shown, order) => {
+    if (order <= found.lastMiss || shown.type !== 'practice.presented') return;
+    const item = CHECK_OF_FAMILY.get(shown.measure?.familyKey || shown.itemKey), decision = byId.get(shown.decisionId);
+    if (!item || patternOfCheck(item) !== found.id || decision?.type !== 'decision.made' || decision.experienceId !== 'korean-runner') return;
+    const own = events.filter(event => event.presentationId === shown.id);
+    if (excluded.has(shown.id) || own.some(event => excluded.has(event.id))) return;
+    if (own.some(event => event.type === 'practice.attempted' && ['correct', 'incorrect'].includes(event.verdict))) { left = null; return; }
+    const finished = own.some(event => event.type === 'practice.delivery' && event.audio === 'completed' || event.type === 'practice.helped'
+      || event.type === 'practice.attempted' && !(event.verdict === 'unassessed' && event.reason === 'audio'));
+    if (!finished && own.some(event => event.type === 'practice.delivery' && event.audio === 'failed')) left = item;
+    else if (finished && left?.id === item.id) left = null;
+  });
+  return left && { id: left.id, item: left, meta: checkMetadata(left) };
+}
 export function missedCheck(coach) {
-  return returnPractice({ coach, gameId: 'korean-runner', patterns: RETURN_PATTERNS,
+  const plan = returnPractice({ coach, gameId: 'korean-runner', patterns: RETURN_PATTERNS,
     patternOfFamily: family => { const item = CHECK_OF_FAMILY.get(family); return item ? patternOfCheck(item) : null; },
-    freshItems: pattern => LISTENING_CHECKS.filter(item => patternOfCheck(item) === pattern).map(item => ({ id: item.id, item, meta: checkMetadata(item) })) });
+    freshItems: pattern => LISTENING_CHECKS.filter(item => patternOfCheck(item) === pattern).map(item => ({ id: item.id, item, meta: checkMetadata(item) })),
+    repeatItem: found => audioFailedCheck(coach, found) });
+  return plan?.repeat ? { ...plan, next: AUDIO_RETRY_NEXT } : plan;
 }
 
 // The next check is picked after the answer. The teacher's exact list and round
@@ -115,13 +140,16 @@ export function createListeningCheckRound(coach, { assignment = coach.assignment
   const total = Math.min(limit, assignment?.requiredAttempts ?? limit, allowed.length);
   const sameGoal = (a, b) => { const x = checkMetadata(a), y = checkMetadata(b); return ['skillId', 'difficulty', 'responseFormat', 'modality'].every(key => x[key] === y[key]); };
   const exposure = item => { try { return coach.exposure?.(checkMetadata(item))?.seen ?? null; } catch { return null; } };
+  const kindOf = item => { const seen = exposure(item); return seen === false ? 'new' : seen === true ? 'review' : 'unknown'; };
+  const EXPOSURE_NOTE = { new: '처음 듣는 문항이에요.', review: '화면에 나온 적이 있는 문항을 다시 확인해요. 새 문항으로 표시하지 않아요.', unknown: '전에 나온 문항인지 확인하지 못했어요. 새 문항이라고 표시하지 않아요.' };
   return {
     total,
     next(previous = null) {
       if (used.size >= total) return { status: 'finished', item: null };
       if (!previous && !used.size && !assignment && lead && allowed.includes(lead)) {
-        used.add(lead.id);
-        return { status: 'ready', item: lead, exposure: 'new', followup: null, note: '처음 듣는 문항이에요.', index: 0, total };
+        // 맞춤 첫 문제도 실제 노출 기록대로 부른다: 소리를 마치지 못해 다시 여는 문장은 이미 화면에 나왔으니 새 문항이 아니다.
+        used.add(lead.id); const kind = kindOf(lead);
+        return { status: 'ready', item: lead, exposure: kind, followup: null, note: EXPOSURE_NOTE[kind], index: 0, total };
       }
       let pool = allowed.filter(item => !used.has(item.id));
       if (!pool.length) return { status: 'unavailable', item: null, note: '이 목표에서 남은 문항을 준비하지 못했어요.' };
@@ -145,8 +173,7 @@ export function createListeningCheckRound(coach, { assignment = coach.assignment
       const item = pool.find(row => row.id === plan?.selected?.id);
       if (!item) return { status: 'unavailable', item: null, note: '이 목표에서 다음 문항을 준비하지 못했어요.' };
       used.add(item.id);
-      const seen = exposure(item), kind = seen === false ? 'new' : seen === true ? 'review' : 'unknown';
-      const exposureNote = kind === 'new' ? '처음 듣는 문항이에요.' : kind === 'review' ? '화면에 나온 적이 있는 문항을 다시 확인해요. 새 문항으로 표시하지 않아요.' : '전에 나온 문항인지 확인하지 못했어요. 새 문항이라고 표시하지 않아요.';
+      const kind = kindOf(item), exposureNote = EXPOSURE_NOTE[kind];
       // Only the deliberately chosen same-goal fresh question may carry the
       // immediately preceding answer into this round's read-only recheck.
       const followup = freshSame.length && kind === 'new'

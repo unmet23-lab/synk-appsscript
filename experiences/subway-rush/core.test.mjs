@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { SubwayRun, clockText, START_MINUTES, SCHOOL_MINUTES, WRONG_MINUTES } from './core.mjs';
 import { buildJourney, allLines, ROUTES } from './journeys.mjs';
 import { LINES, STATIONS, transfersAt } from './lines.mjs';
@@ -186,5 +188,12 @@ test('고쳐 읽는 안내의 원고가 모두 목소리 줄에 있다(바쁜 �
     const j = buildJourney({ seed, level });
     assert.ok(voices.has(j.opening.voice), j.opening.voice);
     for (const d of j.decisions) { assert.ok(voices.has(d.line_.voice), d.line_.voice); if (d.lead) assert.ok(voices.has(d.lead.voice), d.lead.voice); if (d.after) assert.ok(voices.has(d.after.voice), d.after.voice); }
+  }
+});
+
+test('시험이 읽지 않는 화면 코드도 문법이 맞다(한 줄 고침이 줄 뒤를 잘라먹지 않게)', () => {
+  for (const name of ['app.mjs', 'audio.mjs', 'music.mjs', 'scene.mjs', 'led.mjs']) {
+    const r = spawnSync(process.execPath, ['--check', fileURLToPath(new URL(name, import.meta.url))], { encoding: 'utf8' });
+    assert.equal(r.status, 0, `${name}: ${r.stderr.slice(0, 300)}`);
   }
 });

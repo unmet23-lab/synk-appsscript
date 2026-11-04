@@ -6,6 +6,7 @@
 const path = require('node:path'), fs = require('node:fs');
 const NM = process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE, '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules');
 const { chromium } = require(require.resolve('playwright', { paths: [NM, path.resolve(__dirname, '../../../node_modules')] }));
+const { 화면시험, 닫기 } = require('../../../tools/lib/화면시험.cjs');
 const BASE = process.env.WORLD_URL || 'http://127.0.0.1:4303';
 const OUT = process.argv[2] || path.join(__dirname, '화면');
 fs.mkdirSync(OUT, { recursive: true });
@@ -13,6 +14,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function run(name, view, lang) {
   const browser = await chromium.launch();
+  try {
   const ctx = await browser.newContext({ viewport: view, deviceScaleFactor: 2, hasTouch: view.width < 700, isMobile: view.width < 700, reducedMotion: process.env.QA_REDUCED ? 'reduce' : 'no-preference' });
   const page = await ctx.newPage(), errors = [], failed = [], notes = { lang };
   page.setDefaultTimeout(25000);
@@ -116,16 +118,15 @@ async function run(name, view, lang) {
   notes.named = await f.evaluate(() => Object.values(window.__snap.album.cards).filter((c) => c.named).length);
   notes.overflow = await f.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
   notes.offscreen = await f.evaluate(() => [...document.querySelectorAll('[data-screen=album] button')].filter((b) => { const r = b.getBoundingClientRect(); return r.width && (r.left < -1 || r.right > innerWidth + 1); }).length);
-  await browser.close();
   return { name, view, notes, errors, failed };
+  } finally { await 닫기(browser); }
 }
 
-(async () => {
+화면시험({ 분: 20 }, async () => {
   const out = [];
   for (const [name, view] of [['390', { width: 390, height: 844 }], ['1280', { width: 1280, height: 800 }]]) {
     try { out.push(await run(name, view)); } catch (error) { out.push({ name, error: String(error) }); }
   }
   fs.writeFileSync(path.join(OUT, '앱화면.json'), JSON.stringify({ at: new Date().toISOString(), base: BASE, out }, null, 1) + '\n');
   console.log(JSON.stringify(out, null, 1));
-  process.exit(0);   // 브라우저가 닫힌 뒤에도 바쁜 PC에서 프로세스가 남는 일이 있었다
-})();
+});

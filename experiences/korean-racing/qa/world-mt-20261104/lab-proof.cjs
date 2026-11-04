@@ -8,6 +8,7 @@ const path = require('node:path'), fs = require('node:fs'), os = require('node:o
 const { execFileSync } = require('node:child_process');
 const NM = process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE, '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules');
 const { chromium } = require(require.resolve('playwright', { paths: [NM, path.resolve(__dirname, '../../../../node_modules')] }));
+const { 화면시험, 닫기 } = require('../../../../tools/lib/화면시험.cjs');
 const ROOT = path.resolve(__dirname, '../../../..'), GAME = path.join(ROOT, 'experiences/korean-racing');
 const REF = process.env.BASE_REF || 'HEAD';
 
@@ -55,7 +56,7 @@ async function capture(browser, base, view) {
 }
 const origin = (v) => (v || '').replace(/http:\/\/127\.0\.0\.1:\d+/g, '');
 const diff = (a, b) => { const n = Math.max(a.length, b.length), rows = []; for (let i = 0; i < n; i += 1) if (origin(a[i]) !== origin(b[i])) rows.push({ i, base: a[i], now: b[i] }); return rows; };
-(async () => {
+화면시험({ 분: 20 }, async () => {
   const base = extractBase();
   const browser = await chromium.launch({ channel: 'msedge', headless: true, args: ['--headless=new', '--enable-gpu-rasterization', '--ignore-gpu-blocklist', '--use-angle=d3d11'] });
   const a = await serve(base), b = await serve(process.env.SELF ? base : GAME), results = [];
@@ -66,9 +67,9 @@ const diff = (a, b) => { const n = Math.max(a.length, b.length), rows = []; for 
     const pixels = Buffer.compare(A.lobbyPng, B.lobbyPng) === 0, styles = diff(A.lobby.styles, B.lobby.styles), dom = origin(A.lobby.body) === origin(B.lobby.body), run = JSON.stringify(A.run) === JSON.stringify(B.run), after = JSON.stringify(A.after) === JSON.stringify(B.after);
     results.push({ view: `${view.width}x${view.height}`, 입구픽셀같음: pixels, 픽셀차이: pixels ? undefined : await pixelDiff(A.lobbyPng, B.lobbyPng), 스타일차이: styles.length, 첫차이: styles[0] || null, DOM같음: dom, 한판같음: run, 그리기같음: after, hostBase: A.lobby.host, hostNow: B.lobby.host, errors: [...A.errors, ...B.errors], 한판: run ? undefined : { base: A.run, now: B.run } });
   }
-  await browser.close(); a.close(); b.close(); fs.rmSync(path.dirname(path.dirname(base)), { recursive: true, force: true });
+  await 닫기(browser); a.close(); b.close(); fs.rmSync(path.dirname(path.dirname(base)), { recursive: true, force: true });
   const ok = results.every((r) => r.입구픽셀같음 && !r.스타일차이 && r.DOM같음 && r.한판같음 && r.그리기같음 && !r.hostNow && !r.errors.length);
   fs.writeFileSync(path.join(__dirname, 'lab-proof.json'), JSON.stringify({ ref: REF, ok, results }, null, 1));
   console.log(JSON.stringify({ ok, results: results.map(({ 한판, ...r }) => r) }, null, 1));
-  process.exit(ok ? 0 : 1);
-})().catch((e) => { console.error(e); process.exit(1); });
+  process.exitCode = ok ? 0 : 1;
+});

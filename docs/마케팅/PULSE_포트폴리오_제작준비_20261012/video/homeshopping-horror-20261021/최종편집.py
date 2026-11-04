@@ -131,14 +131,15 @@ EVENTS = [
     (57.46, "hs-S28-B", 0.60, 3.58, 0),     # C 「안 돼, 내 코케트 떡볶이!」
     (61.30, "hs-말-통2", 2.58, 3.18, 0),    # 「안 돼!」
     (62.50, "hs-말-통2", 4.44, 5.13, 0),    # 「안 돼!」
-    (63.99, "hs-말-통2", 6.09, 6.52, 0),    # 「그거 내」 → #30의 「저녁인데!」로 이어짐
+    (64.42, "hs-말-통2", 6.09, 6.52, 0),    # 「그거 내」 → #30의 「저녁인데!」로 이어짐. 63.99에 두면 그 사이 0.5초가 −38 dB로 비어 말이 끊겨 들렸다(11-04 아르곤 · 수치) — #30 첫머리는 휙 도는 흐림이라 입이 안 보인다
     (64.42, "hs-S30-B", 0.00, 6.38, 0),     # C 「…저녁인데!」 · 「그냥 죽여!」
     (66.75, "hs-S26-B", 1.51, 2.27, -4),    # 고개 떨구고 흐느낌(판 소리가 비는 자리)
     (67.85, "hs-S26-B", 2.48, 2.82, -4),
 ]
 MUSIC = {"곡": BGM, "시작": 0.0, "dB": -7, "구간": [(SHOTS[n]["f0"] / FPS, SHOTS[n]["f1"] / FPS) for n in (11, 21, 27, 29)]}
 ROOM = (os.path.join(AMB, "candle.wav"), -7)   # 공포 구간 −45~−50 dB 정적(원본 실측)
-HITS = [(15.80, "ding1.wav", -14), (33.00, "ding1.wav", -14), (45.30, "thud.wav", -20), (62.10, "thud.wav", -8), (62.70, "ding2.wav", -10)]
+HITS = [(15.80, "ding1.wav", -14), (33.00, "ding1.wav", -14), (45.30, "thud.wav", -20), (62.10, "thud.wav", -8), (62.70, "ding2.wav", -10),
+        (70.87, "ding1.wav", 0)]   # 끝 로고에 앞 카드들과 같은 딩 한 번 — 「그냥 죽여!」 뒤 정적만으로는 끝의 소리 한 방이 없었다(11-04 아르곤), 뒤는 다시 정적
 
 
 def mix_audio():
@@ -179,7 +180,7 @@ def render():
     for comp, out in (("hs16", a16), ("hs9", a9)):   # 렌더는 한 번에 하나(둘을 같이 돌리면 하나가 죽는다 — 현장노트)
         # 음량마감.mjs를 거치지 않는다 — 소리가 대부분 −45~−50 dB 정적이라 다시 담으면 AAC가 305k까지만 써 올림 기준(320k)에 못 미친다.
         # 소리.wav가 이미 −14.4 LUFS로 섞여 있고, Remotion이 384k(remotion.config.ts)로 바로 담으면 381k(11-04)
-        subprocess.run([shutil.which("npx"), "remotion", "render", "src/index.ts", comp, out, "--concurrency=4", "--log=error"], check=True, cwd=os.path.join(CAP, "remotion"))
+        subprocess.run([shutil.which("npx"), "remotion", "render", "src/index.ts", comp, out, "--concurrency=3", "--log=error"], check=True, cwd=os.path.join(CAP, "remotion"))
     for src, dst, sc in ((a16, "매진임박_16x9_폰.mp4", "1280:-2"), (a9, "매진임박_9x16_폰.mp4", "720:-2")):
         run("ffmpeg", "-y", "-v", "error", "-i", src, "-vf", f"scale={sc}", "-c:v", "libx264", "-crf", "24", "-preset", "medium", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", os.path.join(OUT, dst))
     print(a16, a9)

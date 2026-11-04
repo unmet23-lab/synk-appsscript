@@ -26,14 +26,15 @@ const origin = `http://127.0.0.1:${port}`;
 const directory = await mkdtemp(join(tmpdir(), 'synk-social-review-fixture-'));
 const media = join(directory, 'media-src');
 
-// 보여 줄 파일: 모루 장면 그림을 4:5 사진 둘·9:16 세로 영상으로 바꾸고, 가로 영상은 체험용 예고편을 그대로 쓴다.
+// 보여 줄 파일: 체험 장면 그림(세로)을 4:5 사진 셋·9:16 세로 영상으로 바꾸고, 가로 영상은 여기서 만든다(체험 영상은 git 밖이고 세로다).
 const ff = (...args) => execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...args]);
 mkdirSync(media, { recursive: true });
-ff('-i', join(demo, 'scene-1.png'), '-vf', 'scale=-2:1350,crop=1080:1350', join(media, 'moru-1.png'));
-ff('-i', join(demo, 'scene-2.png'), '-vf', 'scale=-2:1350,crop=1080:1350:x=(iw-1080)*0.62', join(media, 'moru-2.png'));
-ff('-i', join(demo, 'scene-3.png'), '-vf', 'scale=-2:1350,crop=1080:1350:x=(iw-1080)*0.35', join(media, 'moru-3.png'));
-ff('-loop', '1', '-i', join(demo, 'scene-3.png'), '-f', 'lavfi', '-i', 'anullsrc=r=48000:cl=stereo', '-vf', 'scale=-2:1920,crop=1080:1920,format=yuv420p',
+ff('-i', join(demo, 'scene-1.png'), '-vf', 'scale=1080:-2,crop=1080:1350', join(media, 'moru-1.png'));
+ff('-i', join(demo, 'scene-2.png'), '-vf', 'scale=1080:-2,crop=1080:1350:y=(ih-1350)*0.62', join(media, 'moru-2.png'));
+ff('-i', join(demo, 'scene-3.png'), '-vf', 'scale=1080:-2,crop=1080:1350:y=(ih-1350)*0.35', join(media, 'moru-3.png'));
+ff('-loop', '1', '-i', join(demo, 'scene-3.png'), '-f', 'lavfi', '-i', 'anullsrc=r=48000:cl=stereo', '-vf', 'scale=1080:1920,format=yuv420p',
   '-t', '4', '-r', '30', '-c:v', 'libx264', '-c:a', 'aac', '-shortest', '-movflags', '+faststart', join(media, 'daily-short.mp4'));
+ff('-f', 'lavfi', '-i', 'color=c=0x16202c:s=960x540:r=24:d=15', '-f', 'lavfi', '-i', 'anullsrc=r=48000:cl=stereo', '-pix_fmt', 'yuv420p', '-c:v', 'libx264', '-c:a', 'aac', '-shortest', '-movflags', '+faststart', join(media, 'film.mp4'));
 
 const socialProvider = {
   settings: () => ({ configured: true, integrations: [] }),
@@ -94,7 +95,7 @@ async function upload(file, type) {
 }
 const short = await upload(join(media, 'daily-short.mp4'), 'video/mp4');
 const moru1 = await upload(join(media, 'moru-1.png'), 'image/png'), moru2 = await upload(join(media, 'moru-2.png'), 'image/png'), moru3 = await upload(join(media, 'moru-3.png'), 'image/png');
-const film = await upload(join(demo, 'preview-v2.mp4'), 'video/mp4');
+const film = await upload(join(media, 'film.mp4'), 'video/mp4');
 
 const day = (days, hour, minute = 0) => { const d = new Date(Date.now() + days * 86400000), kst = new Date(d.getTime() + 9 * 3600000).toISOString().slice(0, 10);
   return new Date(`${kst}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00+09:00`).toISOString(); };

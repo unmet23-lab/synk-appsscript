@@ -35,13 +35,23 @@ const GUEST_GAMES=new Set(['hangul']);
 const guestTrials=createGuestTrials({storage:(()=>{try{return localStorage;}catch{return null;}})()});
 const guestGames=()=>[...GUEST_GAMES,...guestTrials.open()];
 const worldUrl=path=>new URL(connection.basePath+path,location.origin).href;
-const {firstSupport}=await import(worldUrl('brand-opening/game-tutor-support.mjs'));
-const home=window.__synkHome||(await import(worldUrl('brand-opening/home.mjs'))).home;
 // 자원 수명은 두 갈래다(world-session.mjs). 계정 수명 — life: 지금 주인·세대의 생활 진도 통로·진도·학습 호스트·「내 성향」 답·배우기 화면(생활·학습·알림).
 // 시트 수명 — sheet: 지금 시트 하나에 딸린 자원(내 계정의 우리 반 수업·과제·반 연결, 싱크타운 호스트). 시트를 바꾸거나 닫으면 버린다(attachSheet·releaseSheet).
 let client,sheet=null,writing=null,writingOwner=null;
 let entryGate=null,worldRequested=false,sessionTask=null,sessionConfirmed=false,accountActionPending=false,entryIdentity='',entryDestinationHandled=false;
 let finishInitialRestore;const initialRestoreReady=new Promise(resolve=>{finishInitialRestore=resolve;});
+// 초기 세션 복원은 로그인과 무관한 home.mjs를 기다리지 않고 여기서 시작한다(11-04). game-tutor-support.mjs는 결과 화면에서만 부른다(loadFirstSupport).
+// 화면이 서기 전(shellOpen=false)의 WorldClient 변경은 화면에 잇지 않고 표시만 해 두었다가, 원래 준비 시점에 client.emit()으로 한 번 다시 알린다.
+// 그 사이 pagehide면 계정을 멈추고(그 뒤 화면이 서도 생활 기록을 세우지 않는다), 준비 뒤 pagehide는 아래 기존 처리가 맡는다(중복 정리 없음).
+// authBoundary: 화면이 아는 인증 경계 번호. 이 문서의 로그인·로그아웃 동작, native 계정 연결(onConnect), pagehide에서만 올린다.
+// WorldClient.generation은 쓰지 않는다 — native 채택(clear→onInvalidate)·401·비활성 계정 정리처럼 복원 자신도 세대를 올리기 때문이다.
+let shellOpen=false,shellMissed=false,shellHidden=false,authBoundary=0;
+const account=operating?createWorldAccount({config:connection.account,onInvalidate:()=>{sessionConfirmed=false;client?.invalidate();},onConnect:restoreConnectedHome}):null;
+client=new WorldClient({onChange:()=>{if(shellOpen)onClientChange();else shellMissed=true;},account});
+window.addEventListener('pagehide',()=>{if(shellOpen)return;shellHidden=true;authBoundary++;account?.stop();});
+// 결과·오류를 그 자리에서 받아 둔다(미처리 거절 없음). 판단은 시도한 인증 경계로 한다(restoreCurrent).
+const initialRestore=attemptRestore();
+const home=window.__synkHome||(await import(worldUrl('brand-opening/home.mjs'))).home;
 // 계정 기록이 서기 전에 고른 화면 언어 — 고른 때의 주인과 함께 두고, 그 주인의 계정 복원이 한 번만 존중하고 비운다
 // (손님 때 고른 것은 처음 서는 계정 기록이 쓴다, display-language-sync.mjs restoreDisplayLanguage choice).
 const languageChoice={language:null,owner:null};
@@ -68,13 +78,24 @@ const DRAMA_PENDING='synk.world.drama.pending';
 // 로그인을 거쳐 돌아온 드라마 바로가기는 30분 남기되, 주소가 다른 바로가기(옷장 · 카페 · 시험)를 부르면 그쪽이 이기고 남은 드라마 표시는 지운다(FA2).
 const dramaRequested=(()=>{try{const q=new URLSearchParams(location.search);if(q.get('drama')==='1')sessionStorage.setItem(DRAMA_PENDING,String(Date.now()));else if(q.get('wardrobe')==='1'||q.get('cafe')==='1'||q.has('exam')){sessionStorage.removeItem(DRAMA_PENDING);return false;}const at=Number(sessionStorage.getItem(DRAMA_PENDING));if(at&&Date.now()-at<30*60000)return true;sessionStorage.removeItem(DRAMA_PENDING);}catch{}return false;})();
 async function restoreConnectedHome(){
+ // native 계정 연결은 새 인증 경계다. 진행 중인 복원(초기 복원 포함)에 합류하되 연결 완료·오류 화면은 이 경계가 맡고, 앞 시도의 화면 처리는 물러난다.
+ authBoundary++;
+ let attempt=await attemptRestore();
+ // 옛 계정(A)의 진행 중 복원에 합류했다가 그 복원이 계정 전환으로 끝났으면(ACCOUNT_CHANGED·STALE_RESPONSE), 이 경계가 아직 최신일 때만
+ // 지금 native 계정(B)을 한 번 새로 복원한다. 그 밖의 실패(비활성·네트워크)와 대체된 경계(새 연결·로그아웃·로그인·pagehide)는 다시 하지 않는다.
+ if(attempt.joined&&attempt.failed&&['ACCOUNT_CHANGED','STALE_RESPONSE'].includes(attempt.error?.code)&&attempt.boundary===authBoundary)attempt=await attemptRestore();
+ // native onConnect가 화면 준비 전에 오면 복원은 지금 하고, 화면 쪽 처리는 원래 준비 시점 뒤에 한다.
+ if(!shellOpen)await initialRestoreReady;
+ // 그 뒤 다른 로그인·로그아웃·계정 연결·pagehide가 있었거나 STALE이면 옛 결과로 지금 화면을 덮지 않는다.
+ if(!restoreCurrent(attempt))return;
  try{
-  const restored=await restoreSession();
-  if(restored&&client.snapshot&&screen==='world-signin'&&home.openPanel?.()==='world-signin'){
+  // 같은 경계에서 다른 복원이 이미 계정을 세웠으면 늦은 실패 안내로 덮지 않는다.
+  if(attempt.failed){if(client.snapshot)return;throw attempt.error;}
+  if(attempt.restored&&client.snapshot&&screen==='world-signin'&&home.openPanel?.()==='world-signin'){
    close();home.toast(t('account.connected'));
   }
   if(worldRequested)await entryGate?.start();
- }catch(error){if(!['ACCOUNT_CHANGED','STALE_RESPONSE'].includes(error.code))showEntryRecovery();}
+ }catch(error){if(!['ACCOUNT_CHANGED','STALE_RESPONSE'].includes(error?.code))showEntryRecovery();}
 }
 async function restoreSession(){
  if(sessionTask)return sessionTask;
@@ -82,7 +103,15 @@ async function restoreSession(){
  const task=client.restore();sessionTask=task;
  try{const restored=await task;sessionConfirmed=true;return restored;}finally{if(sessionTask===task)sessionTask=null;}
 }
-const account=operating?createWorldAccount({config:connection.account,onInvalidate:()=>{sessionConfirmed=false;client?.invalidate();},onConnect:restoreConnectedHome}):null;
+// 복원 한 번의 결과를 부른 때의 인증 경계와 함께 받는다(이미 도는 복원이면 합류 — 새 요청 없음). 거절하지 않는다.
+function attemptRestore(){
+ const boundary=authBoundary,joined=!!sessionTask;
+ return restoreSession().then(restored=>({restored,failed:false,error:null,boundary,joined}),error=>({restored:false,failed:true,error,boundary,joined}));
+}
+// 그 결과가 지금 화면의 것인지: 부른 뒤 인증 경계가 그대로일 때만. 복원 자신의 세대 변화(native 채택·401·ACCOUNT_UNAVAILABLE 정리)는 자기 결과로 본다. STALE_RESPONSE는 늘 옛 결과다.
+function restoreCurrent(attempt){
+ return attempt.boundary===authBoundary&&attempt.error?.code!=='STALE_RESPONSE';
+}
 // 계정 수명(E01): 지금 주인(계정 id·손님)·세대의 생활 자원은 이 세션이 세우고 버린다. 앱 셸은 무엇을 만들지만 넘기고,
 // WorldClient가 바뀔 때마다 onClientChange가 맞춘다(life.sync). 그리기(renderStatus)는 자원을 만들거나 버리지 않는다.
 const life=createLifeSession({
@@ -101,7 +130,6 @@ const life=createLifeSession({
  onAnswers:()=>life.education?.refresh(),
  onError:error=>home.toast(error.message||'생활 진도를 확인하지 못했어요.'),
 });
-client=new WorldClient({onChange:onClientChange,account});
 // 학습 알림 2단 · 앱을 닫아도 받기(world-push.mjs, 설계 qa/push-reminders-20261022): 설정값 worldPush가 켜졌을 때(기본 꺼짐), 계정 모드의 웹에서만
 // (PC 앱 창은 푸시 서비스가 없다). 꺼져 있으면 2단의 줄·안내·상태 읽기가 모두 없다. 서비스 워커는 WORLD 뿌리(/world/world-push-sw.js, 범위 /world/)다.
 // 계정 주인이 바뀌면 생활 세션이 새 기록을 세울 때(life의 onLoading) setAccount로 알린다.
@@ -248,7 +276,7 @@ async function prepareWorldTutor(){
  return true;
 }
 async function beginAccountLogin(){
- accountActionPending=true;entryGate?.invalidate();
+ accountActionPending=true;authBoundary++;entryGate?.invalidate();
  try{await client.signIn();}catch(error){showEntryRecovery();throw error;}finally{accountActionPending=false;resumeEntryAfterClosedLogin();}
 }
 function resumeEntryAfterClosedLogin(){
@@ -519,7 +547,7 @@ const accountPrint=()=>`<span class="world-account-mascot w-print"><img src="${w
 const signInHead=line=>`<div class="ws-signin-head"><p class="ws-lead">${line}</p>${accountPrint()}</div>`;
 // trial: 체험 판을 마친 게임(launchGame·체험 결과의 로그인 단추가 넘긴다). 단추가 바로 부를 때는 단추 요소가 온다.
 function signIn(trial){if(operating){const game=typeof trial==='string'&&GUEST_TRIAL_GAMES.includes(trial)?games[trial]:null;show(t('account.title'),`<div class="ws-signin">${signInHead(game?t('account.trialLead',{title:game.title}):t('account.lead'))}${game?notice('TRIAL','info',t('account.trialTitle'),t('account.trialBody')):notice('ACCOUNT','info',t('account.oneId'),t('account.oneIdBody'))}<div class="world-actions"><button class="felt-button" data-world="account-login" data-world-submit>${t('account.login')}</button><button class="plain-button" data-world="guest">${t('account.guest')}</button></div></div>`,'world-signin');return;}show(t('account.title'),`<div class="ws-signin">${signInHead(t('account.testLead'))}${notice('REHEARSAL','info',t('account.testTitle'),t('account.testBody'))}<div class="world-actions"><button class="felt-button" data-world="login-a" data-world-submit>${t('account.testA')}</button><button class="plain-button" data-world="login-b" data-world-submit>${t('account.testB')}</button></div><p class="dialog-note">${t('account.testNote')}</p></div>`,'world-signin');}
-async function login(account){accountActionPending=true;entryGate?.invalidate();try{await client.signIn(account);sessionConfirmed=true;try{localStorage.setItem('synk-world-v1-welcomed','1');}catch{}close();home.toast(t('account.loaded'));if(worldRequested)await entryGate?.start();if(wardrobeRequested&&entryGate?.state().phase==='ready')wardrobe();}catch(e){home.toast(errorText(e));}finally{accountActionPending=false;}}
+async function login(account){accountActionPending=true;authBoundary++;entryGate?.invalidate();try{await client.signIn(account);sessionConfirmed=true;try{localStorage.setItem('synk-world-v1-welcomed','1');}catch{}close();home.toast(t('account.loaded'));if(worldRequested)await entryGate?.start();if(wardrobeRequested&&entryGate?.state().phase==='ready')wardrobe();}catch(e){home.toast(errorText(e));}finally{accountActionPending=false;}}
 function about(){if(operating){show(t('account.aboutTitle'),`<div class="review-note"><p>${t('account.about1')}</p><p>${t('account.about2')}</p></div>`,'world-about');return;}show('SYNK WORLD 소개','<div class="review-note"><p><strong>지금 되는 것</strong><br>테스트 계정으로 첫 문장 놀이를 마치고, 받은 목도리와 앞치마를 함께 입어요. 같은 계정의 다른 화면에서도 차림을 불러오고, 지금 차림을 3D 사진으로 남겨요.</p><p><strong>아직 확인할 것</strong><br>실제 SYNK 로그인, 설치형 앱 실행, 휴대폰 성능은 따로 확인해야 해요. 미니게임과 노래는 지금도 열 수 있어요.</p><p>이 개발판은 이 PC의 로컬 서버와 합성 계정만 써요. 운영 계정과 공개 앱은 바뀌지 않아요.</p></div>','world-about');}
 async function photo(){
  if(home.isMaru){if(home.photo)await home.photo();else wardrobe();return;}
@@ -679,16 +707,31 @@ function showReward(){
  mountRewardTutor();
  if(celebrate)playSound(granted?'reward':'done');
 }
+// 「튜터와 다시 보기」의 도움말(game-tutor-support.mjs)은 이 결과 화면에서만 쓴다 — 세션·홈 준비를 막지 않게 결과 화면이 설 때 부르고(같은 주소라 모듈은 한 번만 받는다),
+// 누른 그 결과·계정의 화면이 아직 열려 있을 때만 튜터가 답한다. 모듈을 못 받으면 도움말 없이 답한다.
+const loadFirstSupport=()=>import(worldUrl('brand-opening/game-tutor-support.mjs')).then(module=>module.firstSupport);
 function mountRewardTutor(){
  const companion=home.mountGameTutor?.('first',{practiceEnabled:false});if(!companion)return;
+ const ticket=gameLaunch,completion=lastCompletion,run=draftRun,owner=client.snapshot?.accountId,generation=client.generation;
+ const current=()=>ticket===gameLaunch&&screen==='world-reward'&&lastCompletion===completion&&draftRun===run&&client.generation===generation&&client.snapshot?.accountId===owner;
+ if((completion?.answers||[]).some(result=>!result.correct))void loadFirstSupport().catch(()=>{});
  home.attachPanelResource(companion);companion.setPhase('results');companion.react('finish');
  // 튜터 한마디는 결과 오른쪽 열 맨 위로(포스터 위에 띠로 걸리지 않게).
  const aside=document.querySelector('#panel-content>.game-tutor'),side=document.querySelector('.world-result-side');if(aside&&side)side.prepend(aside);
  const review=document.querySelector('.world-review');if(!review)return;
+ // 누른 순번: 도움말을 기다리는 사이 다른 단추를 누르면 앞 클릭의 늦은 답은 버린다(마지막 선택만 튜터가 답한다).
+ let turn=0;
  for(const [index,result] of (lastCompletion?.answers||[]).entries()){
   const button=document.createElement('button');button.type='button';button.className='quiet-button';button.dataset.tutorReview=result.questionId;
   button.textContent=result.correct?'튜터 한마디 듣기':'튜터와 다시 보기';
-  button.addEventListener('click',()=>{const q=draftRun.questions.find(q=>q.questionId===result.questionId);companion.react(result.correct?'success':'retry',{answer:true,support:!result.correct&&q?firstSupport(q,result,answers.find(a=>a.questionId===q.questionId)?.optionId):[]});});
+  button.addEventListener('click',()=>{
+   if(!current())return;
+   const mine=++turn;
+   const q=run.questions.find(q=>q.questionId===result.questionId);
+   if(result.correct||!q){companion.react(result.correct?'success':'retry',{answer:true,support:[]});return;}
+   const choice=answers.find(a=>a.questionId===q.questionId)?.optionId;
+   void loadFirstSupport().then(firstSupport=>firstSupport(q,result,choice)).catch(()=>[]).then(support=>{if(mine===turn&&current())companion.react('retry',{answer:true,support});}).catch(()=>{});
+  });
   review.querySelectorAll('p')[index]?.append(button);
  }
 }
@@ -782,7 +825,7 @@ const commands={
  // 2단(앱을 닫아도 받기): 휴대폰 묻는 카드 · 동의 상자의 「동의하고 켜기」(누른 그 동작 안에서 world-push가 권한을 청한다) · 「괜찮아요」.
  ...Object.fromEntries(['reminder-yes','reminder-no','reminder-keep','reminder-stop','reminder-exam-start','reminder-exam-plan','reminder-push-ask','reminder-push-yes','reminder-push-no'].map(name=>[name,()=>life.reminders?.command(name)])),
  // 로그아웃: 이 뒤에 생긴 손님 기록만 다음 로그인에 옮길지 묻는다(device-records.mjs — 앞 사람의 손님 기록이 다음 사람에게 가지 않게).
- logout:async()=>{accountActionPending=true;entryGate?.invalidate();const leaving=client.snapshot?.accountId;try{try{await worldPush?.logout();}catch{/* 다음 열 때 상태가 다시 정리한다 */}await client.logout();const signedOutAt=Date.now();if(leaving)noteDeviceAccount(localStorage,leaving,signedOutAt);noteDeviceSignOut(localStorage,signedOutAt);sessionConfirmed=false;close();if(home.isMaru)await entryGate.start();else welcome();}catch(e){if(e.code==='STALE_RESPONSE')return;home.toast(t('account.logoutFailed'));if(home.isMaru)showEntryRecovery();else welcome();}finally{accountActionPending=false;}},
+ logout:async()=>{accountActionPending=true;authBoundary++;entryGate?.invalidate();const leaving=client.snapshot?.accountId;try{try{await worldPush?.logout();}catch{/* 다음 열 때 상태가 다시 정리한다 */}await client.logout();const signedOutAt=Date.now();if(leaving)noteDeviceAccount(localStorage,leaving,signedOutAt);noteDeviceSignOut(localStorage,signedOutAt);sessionConfirmed=false;close();if(home.isMaru)await entryGate.start();else welcome();}catch(e){if(e.code==='STALE_RESPONSE')return;home.toast(t('account.logoutFailed'));if(home.isMaru)showEntryRecovery();else welcome();}finally{accountActionPending=false;}},
 };
 commands.speaking=openSpeaking;
 commands.me2=openMe2;
@@ -804,7 +847,7 @@ document.addEventListener('click',event=>{
 },true);
 document.addEventListener('change',event=>{const control=event.target;if(control.matches?.('[data-world-learning]')){control.disabled=true;const enabled=control.checked;void account.setLearning(enabled,Number(control.dataset.revision)).then(()=>{if(screen==='world-profile')profile();}).catch(error=>{control.checked=!enabled;home.toast(errorText(error));}).finally(()=>{control.disabled=false;});return;}if(!control.matches?.('[data-town-sharing]'))return;control.disabled=true;const enabled=control.checked,revision=Number(control.dataset.revision);void client.request('town/sharing',{method:'POST',body:{enabled,revision}}).then(()=>town()).catch(error=>{control.checked=!enabled;home.toast(errorText(error));}).finally(()=>{control.disabled=false;});});
 // pagehide: 생활 세션을 닫고(그 뒤 계정 정리·늦은 준비가 생활 화면을 다시 세우지 않는다) 지금 시트의 자원을 버린 다음 계정을 멈춘다.
-window.addEventListener('pagehide',()=>{worldPush?.flush();writing?.dispose();speaking?.dispose();life.close();releaseSheet();account?.stop();});
+window.addEventListener('pagehide',()=>{authBoundary++;worldPush?.flush();writing?.dispose();speaking?.dispose();life.close();releaseSheet();account?.stop();});
 window.addEventListener('online',()=>{if(client.snapshot)client.refresh().then(refreshTutorAccount).catch(()=>{});});
 // Switching between side-by-side web and desktop windows need not hide either
 // document. Refocus must also restore the latest selected companion.
@@ -885,9 +928,15 @@ worldPanel.addEventListener('close',()=>queueMicrotask(()=>{
  entryGate.cancel();void startOpening(true);
 }));
 if(home.isMaru){const recovery=document.createElement('button');recovery.id='tutor-save-recovery';recovery.className='quiet-button';recovery.dataset.world='life-recovery';recovery.dataset.i18n='home.memory.recovery';recovery.textContent=t('home.memory.recovery');recovery.hidden=true;document.querySelector('#life-progress-caption')?.after(recovery);}
-let restored=false;
-try{restored=await restoreSession();}catch{if(!home.isMaru)welcome();}finally{finishInitialRestore();}
+// 원래 준비 시점: 여기부터 WorldClient 변경을 화면(onClientChange·home의 synk-world-session)에 잇는다. 미리 끝난 복원의 변경은 한 번 다시 알린다.
+shellOpen=true;
+if(shellHidden)life.close();
+if(shellMissed)client.emit();
+const initial=await initialRestore;finishInitialRestore();
+// 같은 경계에서 뒤의 복원(입장 관문·다시 연결)이 이미 계정을 세웠으면 옛 실패·미복원으로 환영 화면을 띄우지 않는다.
+const initialCurrent=()=>restoreCurrent(initial)&&!client.snapshot;
+if(initial.failed&&!home.isMaru&&initialCurrent())welcome();
 await openingReady;
-if(!home.isMaru&&!restored&&!localStorage.getItem('synk-world-v1-welcomed'))welcome();
+if(!home.isMaru&&!initial.restored&&initialCurrent()&&!localStorage.getItem('synk-world-v1-welcomed'))welcome();
 onClientChange();
 if(new URLSearchParams(location.search).get('tutor')==='choose')home.chooseTutor?.();

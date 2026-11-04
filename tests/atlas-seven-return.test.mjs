@@ -14,7 +14,7 @@ import { composeShift, unlocked } from '../experiences/entry-check/core.mjs';
 import { caseMetadata, missedPractice as entryMissed, RETURN_PATTERNS as ENTRY_PATTERNS } from '../experiences/entry-check/learning.mjs';
 import { instructionMetadata } from '../experiences/korean-runner/learning.mjs';
 import { INSTRUCTIONS } from '../experiences/korean-runner/instructions.mjs';
-import { LISTENING_CHECKS, checkMetadata, createListeningCheckRound, missedCheck, RETURN_PATTERNS as RUNNER_PATTERNS } from '../experiences/korean-runner/listening-check.mjs';
+import { LISTENING_CHECKS, checkMetadata, createListeningCheck, createListeningCheckRound, missedCheck, AUDIO_RETRY_NEXT, RETURN_PATTERNS as RUNNER_PATTERNS } from '../experiences/korean-runner/listening-check.mjs';
 import { TRACKS, LEVELS, buildChart, RoundState } from '../experiences/korean-rhythm/core.mjs';
 import { NARRATION } from '../experiences/korean-rhythm/narration.mjs';
 import { rhythmItem, missedRhythm, returnLine as rhythmLine, RETURN_PATTERNS as RHYTHM_PATTERNS } from '../experiences/korean-rhythm/personalization.mjs';
@@ -218,6 +218,77 @@ test('바람길: 과제가 있으면 맨 앞 문항을 바꾸지 않는다', () 
   assert.notEqual(createListeningCheckRound(coach, { assignment, lead }).next().item.id, lead.id);
 });
 
+// 11-04: 순서를 두 번 놓친 뒤 맞춤 첫 문제(마지막 새 순서 문장)의 소리가 실패한 채 답 없이 나가면 다음 방문에 안내가 사라졌다.
+const SEQ_MISSED = ['check-duck-jump', 'check-middle-left', 'check-left-run'], SEQ_LEFT = 'check-right-before-jump';
+const checkItem = (id) => LISTENING_CHECKS.find((x) => x.id === id);
+function sequenceMissed(options) {
+  const coach = newCoach('korean-runner', options);
+  SEQ_MISSED.forEach((id, i) => play(coach, check(id), i === 1));
+  return coach;
+}
+/** 게임과 같은 길: 듣기 확인 한 문제를 열고 소리 상태를 거친 뒤 답하지 않고 닫는다. */
+function leave(coach, id, audio = ['failed'], { help = null } = {}) {
+  const run = createListeningCheck(coach), token = run.begin(checkItem(id));
+  for (const status of audio) run.delivery(token, status);
+  if (help) coach.help(run.current.pid, help);
+  run.cancel();
+}
+test('바람길: 소리를 마치지 못하고 답 없이 남긴 맞춤 첫 문제는 같은 문장 다시 듣기로 다시 첫 문제가 되고, 정상 답 뒤에는 사라진다', () => {
+  const coach = sequenceMissed();
+  const first = missedCheck(coach);
+  assert.equal(first.target.id, SEQ_LEFT); assert.equal(first.repeat, false); assert.equal(first.next, RUNNER_PATTERNS.sequence.next);
+  leave(coach, SEQ_LEFT);
+  const again = missedCheck(coach);
+  assert.equal(again.patternId, 'sequence'); assert.equal(again.target.id, SEQ_LEFT); assert.equal(again.repeat, true);
+  assert.equal(`${again.why} ${again.next}`, `${RUNNER_PATTERNS.sequence.why} ${AUDIO_RETRY_NEXT}`);
+  assert.match(again.next, /‘소리를 마치지 못한 문장 다시 듣기’/);
+  const round = createListeningCheckRound(coach, { assignment: null, lead: again.target.item }), lead = round.next();
+  assert.equal(lead.item.id, SEQ_LEFT); assert.equal(lead.index, 0);
+  assert.equal(lead.exposure, 'review'); assert.doesNotMatch(lead.note, /처음 듣는/);
+  // 다시 연 문장을 소리 없이 또 닫아도 아직 마치지 못한 문장이라 제안이 남는다.
+  leave(coach, SEQ_LEFT, []);
+  assert.equal(missedCheck(coach).repeat, true); assert.equal(missedCheck(coach).target.id, SEQ_LEFT);
+  // 이번에는 소리가 끝까지 나오고 정답 하나: 채점된 답이 하나 생기고 다음 방문에는 이 제안이 없다.
+  const run = createListeningCheck(coach), token = run.begin(lead.item);
+  run.delivery(token, 'completed');
+  assert.equal(run.answer(lead.item.correct).verdict, 'correct');
+  assert.equal(missedCheck(coach)?.repeat ?? null, null);
+  assert.equal(missedCheck(coach), null);
+  // 오답 하나도 정상 응답이라 해소된다.
+  const wrong = sequenceMissed(); leave(wrong, SEQ_LEFT);
+  const w = createListeningCheck(wrong), wt = w.begin(checkItem(SEQ_LEFT)); w.delivery(wt, 'completed'); w.answer((checkItem(SEQ_LEFT).correct + 1) % 3);
+  assert.equal(missedCheck(wrong), null);
+});
+test('바람길: 같은 패턴의 새 문장이 남아 있으면 소리 실패보다 새 문장이 먼저고, 새 문항 안내도 그대로다', () => {
+  const coach = sequenceMissed();
+  leave(coach, 'check-left-run');
+  const plan = missedCheck(coach);
+  assert.equal(plan.target.id, SEQ_LEFT); assert.equal(plan.repeat, false); assert.equal(plan.next, RUNNER_PATTERNS.sequence.next);
+  assert.equal(createListeningCheckRound(coach, { assignment: null, lead: plan.target.item }).next().exposure, 'new');
+});
+test('바람길: 소리 실패가 아니거나 근거가 다른 경우에는 소리를 마치지 못한 문장 안내가 뜨지 않는다', () => {
+  const noRetry = (coach, label) => assert.ok(!missedCheck(coach)?.repeat && missedCheck(coach)?.next !== AUDIO_RETRY_NEXT, label);
+  noRetry(newCoach('korean-runner'), '기록 없는 새 학생');
+  const unplayed = sequenceMissed(); leave(unplayed, SEQ_LEFT, []); noRetry(unplayed, '소리를 틀지 않고 닫음');
+  const pending = sequenceMissed(); leave(pending, SEQ_LEFT, ['pending']); noRetry(pending, '재생 중 닫음(실패 아님)');
+  const unanswered = sequenceMissed(); leave(unanswered, SEQ_LEFT, ['failed', 'pending', 'completed']); noRetry(unanswered, '끝까지 들은 뒤 답 없이 닫음');
+  const hinted = sequenceMissed(); leave(hinted, SEQ_LEFT, ['failed'], { help: 'text' }); noRetry(hinted, '도움을 본 문장');
+  const once = newCoach('korean-runner'); play(once, check('check-duck-jump'), false); leave(once, SEQ_LEFT); noRetry(once, '오답 한 건뿐');
+  const removed = sequenceMissed(); leave(removed, SEQ_LEFT);
+  removed.exclude(removed.events().find((e) => e.type === 'practice.delivery' && e.audio === 'failed').id); noRetry(removed, '지운 소리 기록');
+  const partial = sequenceMissed(); leave(partial, SEQ_LEFT);
+  noRetry({ ...partial, summary: () => ({ ...partial.summary(), evidenceComplete: false }), events: () => partial.events(), exposure: (m) => partial.exposure(m), recommend: (...a) => partial.recommend(...a) }, '기록을 다 받지 못함');
+  const assigned = sequenceMissed(); leave(assigned, SEQ_LEFT); assigned.assignment = () => ({ skillId: 'ko.listening.sequence' }); assert.equal(missedCheck(assigned), null, '과제');
+  // 다른 게임이 같은 문장 꼴을 열다 소리가 실패한 기록: 같은 저장소의 다른 게임 기록이라 이 게임 문장으로 되살리지 않는다.
+  const storage = memory(), runner = createGame({ gameId: 'korean-runner', map, storage });
+  SEQ_MISSED.forEach((id, i) => play(runner, check(id), i === 1));
+  const other = createGame({ gameId: 'korean-rhythm', map, storage }), pid = other.present(check(SEQ_LEFT));
+  other.delivery(pid, { audio: 'failed' }); other.answer(pid, { correct: null, assessable: false });
+  const shared = createGame({ gameId: 'korean-runner', map, storage });
+  assert.ok(shared.events().some((e) => e.type === 'practice.delivery' && e.presentationId === pid), '다른 게임 기록이 같은 장부에 있다');
+  noRetry(shared, '다른 게임');
+});
+
 test('말의 리듬: 관문을 옮겨도 음성·질문·기록은 같은 문항이고 모든 곡·난이도·문항에서 문제없이 만들어진다', () => {
   for (const track of TRACKS) for (const level of Object.keys(LEVELS)) for (let lead = 0; lead < track.questions.length; lead++) for (const seed of [1, 77]) {
     const { questions } = buildChart(track, level, seed, { lead }), plain = buildChart(track, level, seed);
@@ -356,6 +427,8 @@ function visibleLines() {
       return warmup && template === whyAndNext ? [text, text + warmup] : [text];
     }));
   }
+  // 바람길의 소리를 마치지 못한 문장 다시 듣기: 같은 템플릿에 next만 바뀐다(listening-check.mjs의 missedCheck).
+  lines.runner.push(...Object.values(RUNNER_PATTERNS).map((pattern) => fill(whyAndNext, { ...pattern, next: AUDIO_RETRY_NEXT })));
   const lobby = source('korean-racing/lobby.js');
   for (const piece of [...RACING_TAILS, RACING_FIRST_RUN]) assert.ok(lobby.includes(piece), `lobby.js에 없는 안내 ${piece}`);
   lines.racing = Object.values(RACING_PATTERNS).flatMap(({ why }) => RACING_TAILS.flatMap((tail) => [`${why} ${tail}`, `${why} ${tail}${RACING_FIRST_RUN}`]));

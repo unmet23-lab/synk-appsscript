@@ -86,6 +86,18 @@ export function createClientProjectsService({store,clock=()=>new Date().toISOStr
     if(previous&&(row.nextContactDate!==previous.nextContactDate||row.stage!==previous.stage))row.closeoutWorkRevision=(previous.closeoutWorkRevision||0)+1;
     if(stage==='archived'){row.inviteHash=null;row.inviteRevision++;}return storeRow(row);
   }
+  // 공개 의뢰서를 보냈을 때 서버가 스스로 만드는 프로젝트(2026-11-04). 직원 계정 없이 도는 유일한 생성 길이라 입력은 pulse-requests.mjs에서 검사한 값만 받는다.
+  // 담당자는 설정값(pulseRequestSettings), 없으면 가장 먼저 만든 활성 관리자다. 담당자가 있어야 새 의뢰 알림이 간다.
+  function requestOwner(){const settings=store.get('pulseRequestSettings','main'),picked=settings?.ownerId&&store.get('users',settings.ownerId);if(picked?.active&&picked.role!=='viewer')return picked;const admin=store.all('users').filter(user=>user.active&&user.role==='admin').sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt)))[0];if(!admin)throw fail('지금은 의뢰를 받을 수 없어요. hello@synk.im으로 알려 주세요.',409);return admin;}
+  function createFromRequest(input){
+    const owner=requestOwner(),at=clock(),raw=randomBytes(32).toString('base64url'),expiresAt=new Date(Date.parse(at)+INVITE_DAYS*86400000).toISOString();
+    const base={id:randomUUID(),createdAt:at,revision:0,versions:[],messages:[],history:[],inviteRevision:1,inviteHash:digest(raw),inviteExpiresAt:expiresAt,receiptId:''};
+    const row={...append(base,'의뢰서 접수','customer'),ownerId:owner.id,reviewerId:null,teamId:owner.teamId||null,title:clean(input.title,160,'프로젝트 이름',true),customerName:clean(input.customerName,100,'고객 이름',true),contact:clean(input.contact||'',300,'연락처'),summary:clean(input.summary||'',3000,'고객이 부탁한 일'),terms:'',nextStep:'',internalNotes:'',dueDate:date(input.dueDate),nextContactDate:'',stage:'received',studio:input.studio,...(input.attachments?.length?{intake:{receivedAt:at,files:input.attachments}}:{})};
+    return {...storeRow(row),invite:raw,expiresAt};
+  }
+  function reissueRequestInvite(id){const row=store.get('clientProjects',id);if(!row||row.stage==='archived')throw fail('의뢰를 찾지 못했어요. hello@synk.im으로 알려 주세요.',404);const raw=randomBytes(32).toString('base64url'),expiresAt=new Date(Date.parse(clock())+INVITE_DAYS*86400000).toISOString();storeRow({...append(row,'의뢰서 링크 다시 만듦','customer'),inviteHash:digest(raw),inviteRevision:row.inviteRevision+1,inviteExpiresAt:expiresAt});return {invite:raw,expiresAt};}
+  // 제작으로 이어지지 않은 의뢰의 보존 기한이 끝났을 때(pulse-requests.mjs). 연락처 · 답 · 파일을 지우고 번호만 남겨 보관한다. 지울 파일 목록을 돌려준다.
+  function retireRequest(id,studio){return store.transaction(()=>{const row=store.get('clientProjects',id);if(!row)return [];const files=[...(row.studio?.assets||[]),...(row.intake?.files||[])];const {intake,...kept}=row;storeRow({...append(kept,'보존 기한이 끝나 의뢰 자료를 지움','system'),title:`지운 의뢰 ${studio.request.number}`.trim(),customerName:'지운 의뢰',contact:'',summary:'',nextStep:'',dueDate:'',stage:'archived',inviteHash:null,inviteRevision:row.inviteRevision+1,inviteExpiresAt:null,messages:[],studio});return files;});}
   function latestPreview(row){return row.versions.filter(v=>v.kind==='preview').at(-1);}
   function sceneRequests(user,id,input){
     object(input);return store.transaction(()=>{
@@ -207,5 +219,5 @@ export function createClientProjectsService({store,clock=()=>new Date().toISOStr
     const next=append(row,'자동 안내','pulse-auto-reply');next.history=[...next.history.slice(0,-1),{...next.history.at(-1),actorName:'자동 안내'}];
     storeRow({...next,messages:[...row.messages,message]});return {posted:true,messageId:message.id};
   });}
-  return {workspace,readableSources,searchSources,save,project,subscribeChanges,commitWorkflow:storeRow,closeout,kickoff,changes,sceneRequests,sceneRequestContext,schedule,completeFollowUp,invite,revoke,open,read,session,devices,addVersion,message,resolveMessage,customerAction,mediaFor,customerMedia,findImportedReceipt,importReceipt,customerSnapshot,postAutoReply};
+  return {workspace,readableSources,searchSources,save,createFromRequest,reissueRequestInvite,retireRequest,project,subscribeChanges,commitWorkflow:storeRow,closeout,kickoff,changes,sceneRequests,sceneRequestContext,schedule,completeFollowUp,invite,revoke,open,read,session,devices,addVersion,message,resolveMessage,customerAction,mediaFor,customerMedia,findImportedReceipt,importReceipt,customerSnapshot,postAutoReply};
 }

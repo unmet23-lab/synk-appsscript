@@ -7,6 +7,7 @@
 const path = require('node:path'), fs = require('node:fs');
 const NM = process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE, '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules');
 const { chromium } = require(require.resolve('playwright', { paths: [NM, path.resolve(__dirname, '../../../../node_modules')] }));
+const { 화면시험, 닫기 } = require('../../../../tools/lib/화면시험.cjs');
 const { 공용작업본 } = require('../../../../tools/lib/공용작업본.js');
 const BASE = process.env.WORLD_URL || 'http://127.0.0.1:4306';
 const OUT = path.join(공용작업본(path.resolve(__dirname, '../../../..')), '.tmp', 'world-mt-20261104', '앱');
@@ -105,16 +106,15 @@ async function run(name, view, 끝까지) {
   } catch (error) {
     notes.error = String(error).slice(0, 400);
     notes.game = await page.frameLocator('.game-frame').locator('html').evaluate(() => { const s = window.__racing?.snapshot(); return s ? { ready: s.ready, screen: s.screen, startup: s.startup, world: document.getElementById('world-status')?.textContent } : 'no __racing'; }, undefined, { timeout: 4000 }).catch((e) => String(e).slice(0, 200));
-  }
-  await browser.close();
+  } finally { await 닫기(browser); }
   return { name, view, notes, errors: [...new Set(errors)], failed: [...new Set(failed)] };
 }
 
-(async () => {
+화면시험({ 분: 20 }, async () => {
   const out = [], 하나 = process.argv.includes('--하나');
   for (const [name, view, 끝까지] of 하나 ? [['1280', { width: 1280, height: 800 }, false]] : [['390', { width: 390, height: 844 }, true], ['1280', { width: 1280, height: 800 }, false]]) {
     try { out.push(await run(name, view, 끝까지)); } catch (error) { out.push({ name, error: String(error) }); }
   }
   fs.writeFileSync(path.join(OUT, '앱화면.json'), JSON.stringify({ at: new Date().toISOString(), base: BASE, out }, null, 1) + '\n');
   console.log(JSON.stringify(out, null, 1));
-})();
+});

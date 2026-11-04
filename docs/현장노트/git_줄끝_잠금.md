@@ -92,6 +92,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 이 저장소에서는 앱 도구 대신 `node tools/바로올리기.js 따라가기`(미리 보기 → `--실행`)로 받는다. 미커밋이 없고 가지에 따로 쌓은 커밋이 없으면 `git fetch origin master` 뒤 `git merge --ff-only origin/master`도 된다(sparse로 빠진 폴더는 그대로 빠진 채).
 - 다시 확인: `git log --oneline HEAD..origin/master`가 비고, `git status`에 sparse 폴더가 지워진 것으로 나오지 않는다.
 
+### GitHub SSH가 같은 열쇠를 된다 안 된다 한다 — `Permission denied (publickey)`로 바로올리기 · 공개가 멈춘다 (2026-11-04 Claude)
+- **증상:** 19시 전후로 `git fetch` · `git push`가 `git@github.com: Permission denied (publickey)`로 끊겼다. 15분짜리 관련 시험을 다 돌린 바로올리기가 push에서 「push가 거절됐다」로 멈췄고, `공개.js --실행`도 같은 말로 멈췄다. 공개 도구 로그에는 `Permission denied`가 안 남고 `correct access rights`만 남기도 한다.
+- **원인:** GitHub 쪽 장애다. 상태 페이지에 18:49 KST부터 Git Operations · API · Pull Requests · Actions 사고가 올라왔다. 내가 18:44에 본 전체 표시는 아직 정상이어서 처음에는 못 잡았다 — 거절이 먼저 나타나므로 몇 분 뒤 `https://www.githubstatus.com/api/v2/incidents/unresolved.json`을 다시 본다. `ssh -v`로 보면 등록된 열쇠(`synk-laptop-2026-08-31`)를 내밀고도 거절당했고, 같은 명령을 여덟 번 치면 다섯 번 되고 세 번 거절됐다. 열쇠 · 권한 · 원격 주소는 고칠 것이 없다.
+- **고침:** 열쇠를 바꾸지 말고 인증 거절만 다시 잇는다. `GIT_SSH_COMMAND="bash <감싸는 파일>"`을 주고, 그 파일은 `ssh -o BatchMode=yes "$@"`를 돌려 종료 코드 255에 stderr가 `Permission denied (publickey)`일 때만 3초 쉬고 다시 부른다(그 밖의 실패는 그대로 돌려준다). 바로올리기 · 공개.js는 환경 변수를 물려받는다. 15분 시험을 다시 돌리는 일이 없어진다.
+- **다시 확인:** 감싼 뒤 바로올리기가 「origin 확인 ✓」까지 갔고, 공개가 바이트 대조까지 갔다. 그동안 재시도 기록에 거절 10건이 남았다.
+
 ## 줄끝(CRLF·LF)
 
 ### 작업본이 CRLF인 문서로 「HEAD 판 + 내 줄」을 만들면 제목 비교가 전부 어긋난다
@@ -667,6 +673,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 열쇠나 `~/.ssh`를 고치지 않고 90초 간격으로 같은 명령을 다시 낸다. 11-04에는 세 번째에 올라갔다. 되풀이 틀을 쓸 때 성공은 첫 줄 「[올림]」, 이미 올라간 뒤의 다시 내기는 「[올릴 것 없음]」으로 가른다 — 「origin 확인」만 찾으면 성공을 못 알아보고 한 번 더 낸다. 막힌 줄은 「publickey」 · 「push가 거절」 · 「access rights」로 찾는다.
 - 다시 확인: `git log origin/master --grep=<커밋 제목>`에 나오고 `git status --short`가 빈다. 거절 뒤에 다시 냈을 때 커밋이 두 번 올라가지 않는다.
 
+### 잘 되던 push가 갑자기 `Permission denied (publickey)`로 멈춰도 열쇠부터 고치지 않는다 — GitHub 장애일 수 있다 (2026-11-04 Claude)
+- 증상: 11-04 18:50 공용 작업본 `바로올리기`가 「[멈춤] fetch 실패 — git@github.com: Permission denied (publickey)」로 멈췄다. 열쇠와 설정은 그대로이고 바로 전 실행은 같은 자리를 지나갔다. `ssh -v`에서 열쇠를 내밀었는데 서버가 받지 않았다.
+- 원인: GitHub 장애로 보인다. 같은 시각 상태 페이지에 Git Operations 저하와 「Incident with Pull Requests, Git Operations and Issues」(18:49 시작)가 떠 있었고, 열쇠는 계정 공개 목록에 그대로 있었으며 https 읽기는 됐다. 아무것도 바꾸지 않았는데 약 1분 뒤 풀렸다가 그다음 시도에서 또 막혔다(들쭉날쭉하다). GitHub 쪽 원인 발표는 확인하지 않았다.
+- 고침: 열쇠 · 권한 · 원격 주소를 건드리지 말고 ① `curl -s https://github.com/<계정>.keys`에 `~/.ssh/id_ed25519.pub`이 있는지, ② `https://www.githubstatus.com/api/v2/summary.json`에 사건이 있는지, ③ `git ls-remote https://…`가 되는지 본다. 셋 다 그렇다면 `ssh -T git@github.com`이 20초 간격으로 네 번 연달아 될 때만 바로올리기를 다시 돌리는 반복을 배경으로 건다(관련 시험이 1~2분이라 한 번 된 것만 보고 돌리면 시험 끝에 push에서 또 막혀 시험만 거듭 돈다). push 자리에서 막히면 「push가 거절됐다 — … access rights」로 나오므로 다시 할 조건에 이 글도 넣는다. 바로올리기 결과는 파이프 말고 파일로 받는다 — 윈도우에서 파이프 쪽 글은 끝에 잘려 마지막 실패 줄이 안 보일 수 있다. 다른 원인(윈도우 ssh의 키 권한)은 [현장 노트 · 윈도우 셸의 ssh 절](윈도우_셸.md#ssh)에 있다.
+- 다시 확인: `ssh -T git@github.com`이 「successfully authenticated」를 낸다. 이때 CI 빨강이 checkout 단계에서 함께 늘었으므로, 장애 시각의 checkout 실패는 코드 탓부터 찾지 않는다.
+
 ## 워크트리·연결 폴더·공간 정리
 
 ### 워크트리에서 `sync-atlas --all --local`이 Study 묶음의 `Cannot find module …/node_modules/esbuild`로 멈춰 날 사본(path-vr trail 등)을 쓰지 않는다 — Study 빌드만 esbuild를 저장소 뿌리 경로로 찾는다 (2026-10-31 Claude)
@@ -838,6 +850,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 11-04 유호님 승인으로 라이브 「SYNK 운영 사본 갱신」과 같은 까닭으로 5분 한도에 잘리던 「SYNK CI 빨간불 알림」을 우선순위 5로 올렸다(원래 XML은 `%LOCALAPPDATA%\synk\ops\예약백업\우선순위5-20261104-161017`). 새로 등록할 때도 5다(`tools/운영사본/예약옮기기.ps1` · `tools/ci빨간불.js`). 다른 예약 작업은 7 그대로다. 7인 작업을 또 올리려면 예약 이름과 값을 적은 유호님 승인이 먼저다([AI_CLI](AI_CLI.md) 「예약 작업 바꾸기」).
 - 다시 확인: 고친 뒤 CPU 100% · node 137개에서 갱신 세 회차가 33 · 51 · 53초, CI 알림 두 회차가 136 · 170초에 모두 결과 0으로 끝났고, 운영 사본은 0커밋 뒤였다(고치기 전 갱신은 11~15분에 실패 · 잘림). `Get-ScheduledTaskInfo -TaskName "SYNK 운영 사본 갱신"`의 `LastTaskResult`가 124 · 2147946720(앞 회차가 아직 돌아 거절됨)이 아니라 0이고, 회차 프로세스의 `PriorityClass`가 Normal이면 된다. 뒤처짐은 `git -C <운영 사본> reflog --date=iso`와 그 구간 커밋 시각을 맞대어 잰다.
 - 다른 멈춤과 구별: 상태가 「기록 쓰는 중」이고 예약 결과가 1이면 고장이 아니다. 11-04 17:44~17:50에 예약큐가 쓴 미추적 `작업실.json` · `작업실_처리중.lock`(17:40) 때문에 쉬었고, 10분이 지나자 17:51:58에 스스로 따라갔다.
+- 또 다른 멈춤: 상태가 `fetch 실패 — git@github.com: Permission denied (publickey)`인데 `https://github.com/unmet23-lab.keys`의 지문이 내 키와 같고 CI의 배포 키 checkout도 같이 깨지면 키 문제가 아니라 GitHub 장애다. 11-04 18:38~ Git Operations 저하 때 그랬고, 사이사이 push와 따라가기는 됐다. 키를 바꾸지 말고 [상태 페이지](https://www.githubstatus.com)부터 본다.
 
 ### `가볍게 --되살림 <경로>`에 파일을 주면 「되살림」으로 끝나도 그 파일이 돌아오지 않는다 — 폴더 무늬만 더한다 (2026-10-22 Claude)
 - 증상: 가볍게 한 WORLD 글 손질 워크트리에서 튜터 소개 정본을 읽는 시험이 ENOENT였다. `node tools/바로올리기.js 가볍게 --되살림 docs/캐릭터/소개글_정본.json --실행`이 「되살림」으로 끝났는데 파일은 그대로 없었다.

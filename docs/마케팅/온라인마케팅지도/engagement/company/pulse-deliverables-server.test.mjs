@@ -1,8 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
-import {readFile} from 'node:fs/promises';
-import {createProductionFixture} from './pulse-production-fixture.mjs';
+import {createProductionFixture,fixtureClip} from './pulse-production-fixture.mjs';
 
 const item={label:'릴스 본편',kind:'video',platform:'instagram',placement:'릴스 · 유료 광고',durationSeconds:15,aspectRatio:'9:16',language:'한국어',subtitles:'burned',fileFormat:'MP4',quantity:1,notes:'고객과 합의할 검증용 예시'};
 async function fixture(t){const f=await createProductionFixture({seed:false});t.after(()=>f.stop());return f;}
@@ -55,7 +54,7 @@ test('HTTP deliverable writes enforce project ACL, CSRF, origin, author role and
 
 test('HTTP final-file mapping requires real project finals from the latest approved preview and preserves old links',async t=>{
   const f=await fixture(t);await confirmed(f);const itemId=f.row.studio.deliverables.items[0].id;
-  const bytes=await readFile(new URL('./public/pulse-app/demo-assets/preview-v1.mp4',import.meta.url));
+  const bytes=fixtureClip();
   async function uploadVersion(kind,label,status=201){
     const result=await f.request(`/api/client-projects/${f.row.id}/media`,{body:bytes,raw:true,headers:{'Content-Type':'video/mp4','X-File-Name':`${kind}.mp4`,'X-Version-Label':encodeURIComponent(label),'X-Version-Kind':kind,'X-Version-Guide':encodeURIComponent('검증용 파일의 사용 안내'),'X-Project-Revision':String(f.row.revision)}});
     f.ok(result,status);if(status===201){f.row=result.data.project;await f.refresh();return f.row.versions.at(-1);}return result;

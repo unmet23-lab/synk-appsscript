@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "date": "2026-10-23T06:00:17.683Z",
+  "date": "2026-11-04T12:48:02.700Z",
   "syntheticAccount": true,
   "syntheticClass": true,
   "syntheticStudentText": true,
@@ -42,6 +42,8 @@
     "390-late": true,
     "390-locked-unchanged": true,
     "390-retry-after-error": true,
+    "390-loading-capture-clock": true,
+    "390-request-timeout-recovers": true,
     "390-key-error": true,
     "390-key-stale": true,
     "390-quiet-error-keeps": true,
@@ -57,6 +59,8 @@
     "1280-late": true,
     "1280-locked-unchanged": true,
     "1280-retry-after-error": true,
+    "1280-loading-capture-clock": true,
+    "1280-request-timeout-recovers": true,
     "1280-key-error": true,
     "1280-key-stale": true,
     "1280-quiet-error-keeps": true,
@@ -729,6 +733,10 @@
       ]
     }
   },
+  "captureTimes": {
+    "390": 5457,
+    "1280": 578
+  },
   "shots": [
     "390-week.png",
     "390-reading.png",
@@ -763,8 +771,8 @@
     "1280-key-stale.png",
     "1280-sheet.png"
   ],
-  "homeworkRequests": 75,
-  "keyRequests": 120,
+  "homeworkRequests": 79,
+  "keyRequests": 126,
   "contentLoads": 21,
   "requestShape": {
     "get": {
@@ -786,7 +794,7 @@
         "classId": "22222222-2222-4222-8222-222222222222",
         "week": 4,
         "kind": "reading",
-        "requestId": "9ce6624b-a70b-437b-8db6-44dbe2877ad1",
+        "requestId": "225212af-24cb-4c98-b178-648d83749f96",
         "expectedRevision": 0,
         "contentVersion": "v1-53795e0997f6",
         "answers": "(합성)"

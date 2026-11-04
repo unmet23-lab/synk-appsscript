@@ -407,7 +407,7 @@ async function playSignDecision(run, d, { img, dep, panels, keyLine, auto }) {
   drawHang(d.options, i);
   const way = d.options.findIndex((o) => o.id === d.answer);
   if (result.correct) { sound.sfx.pass(); streakFlash(result); setClock(run); }
-  else { sound.sfx.ask(); if (!reduced()) await scene.peek(i - 1); $('hang').hidden = true; await afterWrong(run, d, result); await scene.show({ img, dep, c: [0.5, 0.515], panels, signs, push: reach }); drawHang(d.options, way); $('hang').hidden = false; setHang(1); await wait(0.25); }
+  else { sound.sfx.ask(); if (!reduced()) await scene.peek(i - 1); else await wait(0.5); $('hang').hidden = true; await afterWrong(run, d, result); await scene.show({ img, dep, c: [0.5, 0.515], panels, signs, push: reach }); drawHang(d.options, way); $('hang').hidden = false; setHang(1); await wait(0.25); }
   return { way, result };
 }
 async function dashThrough(way, next) {

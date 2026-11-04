@@ -74,6 +74,47 @@ test('W3 town reads check the account on entry, then at most once a minute while
  clock+=60000;await f.client.request('town/state');assert.equal(loads-base,2,'again after a minute');
  await f.client.request('town/entry');await f.client.request('town/state');assert.equal(loads-base,3,'a new entry checks again');
 });
+// 응답을 끝내 받지 못하는 요청: 브라우저처럼 signal이 끊기면 AbortError로 진다. bodyHangs면 머리까지 온 뒤 본문에서 멈춘다.
+const hang=(init,{bodyHangs=false}={})=>{const aborted=new Promise((_,reject)=>init.signal.addEventListener('abort',()=>reject(new DOMException('signal is aborted without reason','AbortError')),{once:true}));aborted.catch(()=>{});return bodyHangs?{ok:true,status:200,json:()=>aborted}:aborted;};
+const flush=async()=>{for(let i=0;i<8;i++)await new Promise(r=>setImmediate(r));};
+async function lateFixture(t,answer){let calls=0,ready=false;const f=fixture({fetcher:async(url,init)=>{if(url.includes('/auth/v1/logout'))return reply({});if(!ready)return reply(snapshot());return answer(++calls,url,init);}});await f.client.restore();ready=true;t.mock.timers.enable({apis:['setTimeout']});return {f,calls:()=>calls};}
+test('a late read asks once more, and a reply to the second ask is the answer',async t=>{
+ const {f,calls}=await lateFixture(t,(n,url,init)=>n===1?hang(init):reply(snapshot(A,7)));
+ const pending=f.account.request('bootstrap');await flush();assert.equal(calls(),1);
+ t.mock.timers.tick(12000);await flush();assert.equal(calls(),2);
+ const response=await pending;assert.equal(response.ok,true);assert.equal((await response.json()).revision,7);
+});
+test('a read late twice is a plain sentence with a code, never the browser AbortError — also when only the body is late',async t=>{
+ for(const bodyHangs of [false,true]){
+  const {f,calls}=await lateFixture(t,(n,url,init)=>hang(init,{bodyHangs}));
+  const pending=f.account.request('town/state');pending.catch(()=>{});await flush();
+  t.mock.timers.tick(12000);await flush();t.mock.timers.tick(12000);await flush();
+  await assert.rejects(pending,error=>error.code==='NETWORK_TIMEOUT'&&error.name!=='AbortError'&&/늦어지고/.test(error.message));assert.equal(calls(),2);
+  t.mock.timers.reset();
+ }
+});
+test('a late read outside the town does not ask twice: homework shows its retry button at the deadline',async t=>{
+ const {f,calls}=await lateFixture(t,(n,url,init)=>hang(init));
+ const pending=f.account.request('homework');pending.catch(()=>{});await flush();
+ t.mock.timers.tick(12000);await flush();await assert.rejects(pending,{code:'NETWORK_TIMEOUT'});assert.equal(calls(),1);
+});
+test('a late write is not sent again: it may have reached the server',async t=>{
+ const {f,calls}=await lateFixture(t,(n,url,init)=>hang(init));
+ const pending=f.account.request('town/pulse',{method:'POST',body:'{"surfaceId":"w"}'});pending.catch(()=>{});await flush();
+ t.mock.timers.tick(12000);await flush();await assert.rejects(pending,{code:'NETWORK_TIMEOUT'});assert.equal(calls(),1);
+});
+test('a late town read passes through WorldClient with its own code, and the client does not call itself offline',async t=>{
+ const {f}=await lateFixture(t,(n,url,init)=>hang(init));
+ const pending=f.client.request('town/state',{method:'GET'});pending.catch(()=>{});await flush();
+ t.mock.timers.tick(12000);await flush();t.mock.timers.tick(12000);await flush();
+ await assert.rejects(pending,{code:'NETWORK_TIMEOUT'});assert.notEqual(f.client.status,'offline');
+});
+test('logout cutting a request off says the account changed, and does not ask again',async t=>{
+ const {f,calls}=await lateFixture(t,(n,url,init)=>hang(init));
+ const pending=f.account.request('bootstrap');pending.catch(()=>{});await flush();
+ await f.account.logout();await flush();
+ await assert.rejects(pending,{code:'ACCOUNT_CHANGED'});assert.equal(calls(),1);
+});
 test('W3 town host sends pulse·boundary only to an account bundle that routes them — an older cached bundle is an unknown operation, not offline',async()=>{
  const calls=[];const client=account=>({snapshot:{accountId:A},generation:0,account,refresh:async()=>true,request:async path=>{calls.push(path);return {ok:true};}});
  const old=createTownWorldHost(client({}));
