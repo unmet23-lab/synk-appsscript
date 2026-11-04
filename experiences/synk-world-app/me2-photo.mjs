@@ -357,7 +357,7 @@ export function createMe2Photo({show,home,close,request,doc=globalThis.document,
   // 여기부터 사진은 서버에 있다 — 화면을 못 새로 받아도 「못 보냈어요」가 아니다. 시트를 닫아도 올리기는 끝까지 갔다(다시 열면 「현상 중」으로 보인다).
   if(!alive())return;
   clearPhoto();stage={name:'home'};
-  if(sent&&view?.me)view={...view,me:view.me.chosen_url?{...view.me,newer:'developing'}:{...view.me,state:'developing'}};
+  if(sent&&view?.me)view={...view,me:view.me.chosen_url?{...view.me,state:'ready',newer:'developing'}:{...view.me,state:'developing'}};
   try{await refresh();}catch{toast(text('error'));paint();}
  }
 
