@@ -59,9 +59,9 @@ test('HTTP anonymous casting photos and the films module return exact MIME, nosn
   }
 });
 
-// 10-22 화성 세 편: 포스터(git 추적)와 본편(mp4, git 밖)만 낸다 — 1분 안쪽이라 발췌가 없다.
-test('HTTP the Hwaseong finished films serve their posters and full films with exact MIME, bytes and byte ranges, and nothing else in the films folder',async t=>{
-  for(const name of ['hwaseong-cf-light','hwaseong-short-first','hwaseong-cm-song'])for(const [file,mime]of [[name+'-poster-v1.webp','image/webp'],[name+'-v1.mp4','video/mp4']]){
+// 10-22 화성 세 편 · 11-04 유리결 · 매진 임박: 포스터(git 추적)와 본편(mp4, git 밖)만 낸다 — 발췌가 없다.
+test('HTTP the finished films in the films folder serve their posters and full films with exact MIME, bytes and byte ranges, and nothing else',async t=>{
+  for(const name of ['yurigyeol-holiday','maejin-imbak','hwaseong-cf-light','hwaseong-short-first','hwaseong-cm-song'])for(const [file,mime]of [[name+'-poster-v1.webp','image/webp'],[name+'-v1.mp4','video/mp4']]){
     const path='assets/films/'+file;
     if(mime==='video/mp4'&&process.env.CI&&!existsSync(appFile(path))){t.diagnostic('CI 체크아웃에는 없다 — public/pulse-app/'+path+' (git 밖 출시 영상)');continue;}
     const response=await fetch(fixture.base+'/pulse-app/'+path),bytes=Buffer.from(await response.arrayBuffer());

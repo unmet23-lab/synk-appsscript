@@ -2,7 +2,7 @@
   "id": "/pulse-app/",
   "name": "SYNK PULSE",
   "short_name": "PULSE",
-  "description": "광고의 방향, 장면, 영상과 의견을 함께 확인하는 프로젝트 공간",
+  "description": "모든 컷을 먼저 보여 드리는 AI 광고",
   "lang": "ko",
   "start_url": "/pulse-app/",
   "scope": "/pulse-app/",

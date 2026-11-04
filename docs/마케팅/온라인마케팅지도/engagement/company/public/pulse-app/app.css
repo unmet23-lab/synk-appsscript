@@ -124,7 +124,6 @@ time,dd,.num{font-variant-numeric:tabular-nums}
 .tag.mono-tag::before{display:none}
 .led-chip{display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 12px 0 10px;border-radius:999px;background:var(--surface-1);color:var(--ink);font-size:var(--t-label);font-weight:var(--w-strong);letter-spacing:0;white-space:nowrap;box-shadow:0 0 0 1px var(--line),0 2px 6px -2px rgba(24,20,16,.12)}
 .led-chip::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--led-ok)}
-.led-chip.is-invite::before{background:var(--glow)}
 /* 고객 손이 필요한 카드: 오른쪽 위 점 하나(읽지 않음 점과 같은 말) */
 .strategy-agreement.is-requested::after,.selection-note.is-stale::after,.delivery-receipt:not(.is-confirmed)::after{content:"";position:absolute;top:20px;right:20px;width:8px;height:8px;border-radius:50%;background:var(--led-check);box-shadow:0 0 0 4px var(--check-wash)}
 .scene-requests-summary strong::before,.new-version-note strong::before{content:"";display:inline-block;width:7px;height:7px;margin:0 10px 0 1px;border-radius:50%;background:var(--led-check);box-shadow:0 0 0 3px var(--check-wash);vertical-align:2px}
@@ -160,7 +159,7 @@ details[open]>summary::after{transform:rotate(180deg)}
 .brand{display:flex;align-items:center;height:44px;padding:0 8px;border-radius:12px;flex:none}
 .brand:hover{background:rgba(24,20,16,.045)}
 .brand img{width:auto;height:24px}
-.header-caption{padding-left:14px;border-left:1px solid var(--line-2);font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap}
+.header-caption{padding-left:14px;border-left:1px solid var(--line-2);font-size:var(--t-label);font-weight:var(--w-label);letter-spacing:0;color:var(--ink-3);white-space:nowrap}
 .header-caption>span{margin:0 4px;opacity:.6}
 .app-header:has(.header-crumb:not(:empty)) .header-caption{display:none}
 .header-crumb{display:flex;align-items:center;gap:10px;min-width:0;padding-left:14px;border-left:1px solid var(--line-2)}
@@ -264,18 +263,45 @@ details[open]>summary::after{transform:rotate(180deg)}
 .welcome{display:grid;gap:16px}
 .welcome-hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr);gap:24px;align-items:stretch;padding:12px;border-radius:32px;background:var(--surface-1);box-shadow:var(--card-edge)}
 .welcome-copy{display:flex;flex-direction:column;justify-content:center;min-width:0;padding:44px 36px 36px 44px}
-.welcome-copy h1{margin:20px 0 18px;font-size:var(--t-hero);line-height:1.04;letter-spacing:var(--track-display);font-weight:var(--w-display)}
+.welcome-copy h1{margin:20px 0 18px;font-size:clamp(40px,4.2vw,58px);line-height:1.08;letter-spacing:var(--track-display);font-weight:var(--w-display)}
 .welcome-copy h1 span{display:block;color:var(--ink-q)}
 .welcome-copy .lead{max-width:30em;margin:0 0 28px;color:var(--ink-2);font-size:var(--t-lead);line-height:1.65}
 .entry-card{max-width:500px;padding:22px;border-radius:var(--r-lg);background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line)}
-.entry-title{font-size:18px;letter-spacing:var(--track-tight);margin:0 0 14px}
+.entry-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px;margin:0 0 8px}
+.entry-title{font-size:18px;letter-spacing:var(--track-tight);margin:0}
+.entry-lede{margin:0 0 14px;font-size:14px;line-height:1.6;color:var(--ink-2)}
 .entry-card .button.primary{width:100%;min-height:52px;font-size:16px}
 .entry-card .form-note{margin-top:12px}
-.welcome-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;max-width:640px;margin:26px 0 0}
-.welcome-steps>div{padding:14px 14px 16px;border-radius:16px;background:var(--surface-2);min-width:0}
-.welcome-steps dt{font-family:var(--display);font-size:13px;font-weight:600;letter-spacing:0;color:var(--berry-text)}
-.welcome-steps dd{margin:6px 0 0;font-size:13px;line-height:1.55;color:var(--ink-3)}
-.welcome-steps dd strong{display:block;margin-bottom:4px;font-size:15px;letter-spacing:-.015em;color:var(--ink)}
+.welcome-try{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px;max-width:500px;margin:12px 0 0;font-size:14px}
+/* 소개글(11-04): 첫 화면 아래로 이어지는 칸들. 현황판에는 두지 않는다 */
+.welcome-section{padding:32px 36px;border-radius:var(--r-xl);background:var(--surface-1);box-shadow:var(--card-edge)}
+.welcome-section-head h2{margin:10px 0 8px;font-size:var(--t-title-xl);font-weight:var(--w-display);letter-spacing:var(--track-tight);line-height:1.2}
+.welcome-section-head p{margin:0;max-width:34em;font-size:var(--t-body);line-height:1.65;color:var(--ink-2)}
+.welcome-promises{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.5fr);gap:36px}
+.promise-list{margin:0;padding:0;list-style:none}
+.promise-list>li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:6px;padding:16px 0;border-top:1px solid var(--line)}
+.promise-list>li:first-child{padding-top:2px;border-top:0}
+.promise-list>li:last-child{padding-bottom:0}
+.promise-no{font-family:var(--display);font-size:13px;font-weight:600;line-height:1.75;color:var(--berry-text)}
+.promise-list h3{margin:0 0 4px;font-size:var(--t-title-s);letter-spacing:var(--track-tight)}
+.promise-list p{margin:0;font-size:var(--t-body);line-height:1.65;color:var(--ink-2)}
+.promise-list .inquiry-link{margin-top:2px;font-size:14px}
+.welcome-work-grid{display:grid;grid-template-columns:minmax(0,280px) minmax(0,1fr);gap:24px;align-items:start;margin-top:24px}
+.welcome-work{min-width:0}
+.welcome-work video{display:block;width:100%;aspect-ratio:16/9;border-radius:14px;background:#000;object-fit:cover}
+.welcome-work--portrait video{aspect-ratio:9/16}
+.welcome-work h3{margin:14px 0 4px;font-size:var(--t-title-s);letter-spacing:var(--track-tight)}
+.welcome-work p{margin:0;max-width:40em;font-size:14.5px;line-height:1.6;color:var(--ink-2)}
+.welcome-maker{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:36px;align-items:end}
+.maker-credits{margin:0;padding:0;list-style:none;font-size:14.5px;line-height:1.5;color:var(--ink-2)}
+.maker-credits li{padding:10px 0;border-top:1px solid var(--line)}
+.maker-credits li:last-child{padding-bottom:0}
+.price-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 24px;margin:16px 0 14px;padding:0;list-style:none}
+.price-list li{display:grid;gap:4px;min-width:0}
+.price-list span{font-size:var(--t-body);color:var(--ink-2)}
+.price-list strong{font-size:var(--t-title-xl);font-weight:var(--w-display);letter-spacing:var(--track-tight);line-height:1.2}
+.welcome-price-note{margin:0;font-size:14.5px;line-height:1.6;color:var(--ink-2)}
+.welcome>.demo-entry{padding:32px 36px}
 .welcome-art{min-height:600px;--mesh:var(--mesh-review)}
 .welcome-art .cut{left:50%;top:44%;width:min(54%,300px);transform:translate(-50%,-50%) rotate(-6deg)}
 /* 화면 안에서 실제로 보게 될 알림들을 떠 있는 카드로 */
@@ -298,6 +324,7 @@ details[open]>summary::after{transform:rotate(180deg)}
 .inquiry-link{display:inline-flex;align-items:center;gap:4px;min-height:40px;color:var(--ink);font-weight:var(--w-label);text-decoration:underline;text-decoration-color:var(--line-2);text-underline-offset:4px}
 .inquiry-link:hover{text-decoration-color:currentColor}
 .entry-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 8px}
+.entry-footer .small{max-width:46em;margin:0}
 .entry-footer p{margin:0}
 
 /* ── 프로젝트 틀: 왼쪽 단계 레일 + 가운데 작업 칸(휴대폰은 접는 한 줄 단계 막대) ── */
@@ -912,6 +939,10 @@ form:has([name=confirmed]:not(:checked)) button[type=submit]{background:transpar
   .live-label{display:none}
   .live-status{padding:0 8px}
   .welcome-hero{grid-template-columns:minmax(0,1fr);padding:10px;gap:8px;border-radius:26px}
+  .welcome-section{padding:24px 22px}
+  .welcome-promises,.welcome-maker{grid-template-columns:minmax(0,1fr);gap:18px}
+  .welcome-work-grid{grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:18px;margin-top:18px}
+  .welcome>.demo-entry{padding:24px 22px}
   #main>.welcome,#main>.project-picker,#main>.login-wrap{margin-top:12px;padding-inline:8px}
   .welcome-copy{padding:20px 14px 18px}
   .welcome-art{order:-1;min-height:340px}
@@ -946,9 +977,12 @@ form:has([name=confirmed]:not(:checked)) button[type=submit]{background:transpar
   .header-actions .button{min-height:36px;padding:0 10px;font-size:13px}
   .header-actions .install-button{width:38px;min-height:38px;padding:0;font-size:0;gap:0}
   .header-actions .install-button::before{content:"";width:17px;height:17px;background:currentColor;-webkit-mask:var(--arrow-down) center/contain no-repeat;mask:var(--arrow-down) center/contain no-repeat}
-  .welcome-copy h1{font-size:38px}
-  .welcome-steps{grid-template-columns:minmax(0,1fr)}
-  .welcome-steps>div{padding:12px 14px}
+  .welcome-copy h1{font-size:min(38px,9.4vw)}
+  .welcome-work-grid{grid-template-columns:minmax(0,1fr);gap:20px}
+  .welcome-try .button{margin-inline-start:auto}
+  .price-list{grid-template-columns:minmax(0,1fr);gap:0}
+  .price-list li{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 12px;padding:10px 0;border-top:1px solid var(--line)}
+  .price-list strong{font-size:var(--t-title-l)}
   .demo-entry{flex-direction:column;align-items:stretch;padding:22px}
   .demo-entry-actions{justify-items:stretch;text-align:center}
   .header-actions .button[data-action=logout]{display:none}

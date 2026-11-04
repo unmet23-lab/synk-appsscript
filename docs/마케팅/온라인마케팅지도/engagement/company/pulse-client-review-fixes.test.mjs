@@ -26,6 +26,56 @@ async function throughScenes(demo){
   for(const scene of project(demo).studio.scenes)await studio(demo,{action:'review_scene',sceneId:scene.id,sceneRevision:scene.revision,status:'confirmed',text:''});
 }
 
+// 11-04 소개글(유호님 「원고대로 올려」 · 원고 docs/마케팅/PULSE_소개글_20261103/README.md): 처음 들어온 사람의 첫 화면에 원고의 말을 해요체로 둔다. 작업 중인 손님의 현황판에는 넣지 않는다.
+const words=html=>html.replace(/<[^>]+>/g,' ').replace(/[\s\u00A0]+/g,' ');
+test('the entry page introduces PULSE in the approved words and keeps the invite door and the demo',()=>{
+  const html=welcome({}),text=words(html);
+  for(const line of [
+    '모든 컷을 먼저 보여 드리는 AI 광고',
+    '영상에 들어갈 모든 컷을 장면 이미지로 먼저 보여 드려요. AI 모델 21명 캐스팅, 제품·로고는 실제 파일로 합성해요.',
+    // 장면 이미지 단서 — 장면 이미지를 말할 때는 함께 둔다.
+    '장면 이미지는 영상의 첫 장면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요.',
+    '모델 고르기, 광고가 남길 한 문장과 글 콘티, 컷마다 장면 이미지.',
+    '다음 편도 같은 모델과 같은 자막 규격으로 이어요.',
+    '맡기신 뒤에는 초대 링크 하나로 시안을 보고 의견을 남기고, 최종 파일까지 한곳에서 받아요.',
+    // 만드는 사람
+    '카메라 앞에 서 본 사람이 AI 모델의 연기를 연출해요',
+    'AI 광고가 어색해지는 곳은 대개 표정과 호흡, 말이 끝나는 타이밍이에요. SYNK PULSE는 배우로 활동한 대표 유호가 연출해요.',
+    '넷플릭스 공개 「보라! 데보라」 1화 오프닝 시퀀스 출연','tvN 「코미디빅리그」 코너 출연','부활 「너의 모습」 뮤직비디오 주연',
+    // 값은 정가의 「부터」만, 고지
+    '15초 광고 39만원부터','30초 광고와 편집본 89만원부터','기업 캠페인 250만원부터','상담은 제품 사진 한 장과 올릴 곳만으로 시작해요.',
+    '영상 속 사람과 목소리는 모두 AI로 만들어요. 실존 인물을 닮게 만드는 요청은 받지 않아요.',
+    '가상 브랜드로 만든 자체 작품이에요.',
+  ])assert.ok(text.includes(line),line);
+  assert.equal(CASTING_MODELS.length,21,'모델 수가 바뀌면 소개글의 「21명」(첫 화면 · index.html · 원고)도 함께 고친다');
+  // 쓰지 않기로 한 말(원고 1절): 도구 이름, 최상급, 납기 · 부가세 · 세금계산서 약속, 실제 촬영을 고른다는 말, 같은 얼굴 보증, 옛 머리말.
+  assert.doesNotMatch(text,/실제 촬영|실사 촬영|납기|부가세|세금계산서|같은 얼굴|무제한|최고|최초|유일|1위|솔서리|Seedance|Sora|Veo|Omni|Gemini|GPT|Suno|Higgsfield|힉스필드|시댄스|CLIENT ROOM|함께 완성해요/i);
+  // 초대 문과 체험은 그대로다.
+  assert.match(html,/<form class="entry-card" data-form="invite">[\s\S]*name="invite"[\s\S]*프로젝트로 들어가기 →[\s\S]*<\/form>/);
+  assert.equal(html.split('href="?demo=coffee"').length,3,'첫 화면 체험 줄과 아래 체험 칸');
+  // 「연결 다시 확인」은 입장 칸 바로 곁에 둔다 — 첫 화면이 길어져 맨 아래에 두면 누른 뒤 알림이 화면 밖에 난다.
+  assert.match(html,/<\/form><div class="welcome-try">[\s\S]*?data-action="retry"[\s\S]*?<\/div><\/div><div class="welcome-art studio-board">/);
+  assert.equal(html.split('data-action="retry"').length,2);
+  // 알림은 어느 길로 왔든(연결 다시 확인 · 초대 링크 실패 · 프로젝트 접근이 끊김) 다시 그리는 한 곳에서 보인다.
+  const app=readFileSync(new URL('app.mjs',appDir),'utf8');
+  assert.ok(app.includes("welcome(s);if(s.project||!s.entryError)shownEntryError=null;else if(s.entryError!==shownEntryError){shownEntryError=s.entryError;main.querySelector('.entry-alert')?.scrollIntoView?.({block:'nearest'});}restore(main);"));
+  assert.equal(app.split('.entry-alert').length,2,'one place');
+  assert.ok(html.includes('href="https://synk.im/pulse/casting/" target="_blank" rel="noopener noreferrer"'));
+  const index=readFileSync(new URL('./public/pulse-app/index.html',import.meta.url),'utf8');
+  assert.ok(index.includes('<title>SYNK PULSE — 모든 컷을 먼저 보여 드리는 AI 광고</title>'));
+  assert.ok(index.includes('content="영상에 들어갈 모든 컷을 장면 이미지로 먼저 보여 드려요. AI 모델 21명 캐스팅, 제품·로고는 실제 파일로 합성해요."'));
+  assert.ok(index.includes('<span class="header-caption">AI 광고 제작</span>'));
+  assert.doesNotMatch(index,/CLIENT ROOM|함께 만드는 광고/);
+});
+
+test('a customer working in a project sees the board, not the introduction',async()=>{
+  const demo=setup();
+  for(const tab of ['overview','direction','films']){
+    const html=view(demo,tab);
+    assert.doesNotMatch(html,/welcome-promises|welcome-maker|welcome-price|카메라 앞에 서 본|39만원부터/,tab);
+  }
+});
+
 test('someone with no project yet is offered a real inquiry next to the demo, opening synk.im in a new tab',()=>{
   assert.equal(PULSE_INQUIRY_URL,'https://synk.im/pulse/#contact');
   const html=welcome({});
