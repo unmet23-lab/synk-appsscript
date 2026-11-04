@@ -8,6 +8,7 @@ const path = require('node:path'), fs = require('node:fs');
 const { spawn } = require('node:child_process');
 const NM = process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE, '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules');
 const { chromium } = require(require.resolve('playwright', { paths: [NM, path.resolve(__dirname, '../../../../node_modules')] }));
+const { 화면시험, 닫기 } = require('../../../../tools/lib/화면시험.cjs');
 const { 공용작업본 } = require('../../../../tools/lib/공용작업본.js');
 const ROOT = path.resolve(__dirname, '../../../..');
 const PORT = 43000 + Math.floor(Math.random() * 2000);   // 다른 세션의 시범 서버와 겹치지 않게
@@ -18,6 +19,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function run(name, view, ITEMS) {
   const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
+  try {
   const ctx = await browser.newContext({ viewport: view, deviceScaleFactor: view.width < 700 ? 2 : 1, hasTouch: view.width < 700, isMobile: view.width < 700 });
   const page = await ctx.newPage(), errors = [], failed = [], notes = {}, got = new Set();
   page.setDefaultTimeout(30000);
@@ -105,11 +107,11 @@ async function run(name, view, ITEMS) {
   notes.music = [...got].filter((u) => /talk-rally\/assets\/world\/music\//.test(u)).map((u) => u.split('/').pop());
   notes.three = [...got].filter((u) => /three\.(module|core)\.js$/.test(u));
   const mascots = [...got].filter((u) => /talk-rally\/.*(kit\/brand\/mongle|assets\/sound\/mongle|assets\/voice\/|assets\/narration\/)/.test(u));
-  await browser.close();
   return { name, view, notes, mascots, errors, failed: [...new Set(failed)] };
+  } finally { await 닫기(browser); }
 }
 
-(async () => {
+화면시험({ 분: 20 }, async () => {
   const content = await import(require('node:url').pathToFileURL(path.resolve(__dirname, '../../content.mjs')).href);
   const ITEMS = [...content.ITEMS, content.PRACTICE];
   let server = null;
@@ -123,4 +125,4 @@ async function run(name, view, ITEMS) {
   } finally { server?.kill(); }
   fs.writeFileSync(path.join(OUT, '앱화면.json'), JSON.stringify(out, null, 1));
   console.log(JSON.stringify(out, null, 1));
-})().catch((e) => { console.error(e); process.exit(1); });
+});

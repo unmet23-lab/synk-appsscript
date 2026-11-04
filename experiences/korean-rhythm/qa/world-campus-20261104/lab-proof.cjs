@@ -8,6 +8,7 @@ const path = require('node:path'), fs = require('node:fs'), os = require('node:o
 const { execFileSync } = require('node:child_process');
 const NM = process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE, '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules');
 const { chromium } = require(require.resolve('playwright', { paths: [NM, path.resolve(__dirname, '../../../../node_modules')] }));
+const { 화면시험, 닫기 } = require('../../../../tools/lib/화면시험.cjs');
 const ROOT = path.resolve(__dirname, '../../../..');
 const EXP = path.join(ROOT, 'experiences');
 const REF = process.env.BASE_REF || 'origin/master';
@@ -85,7 +86,7 @@ function diff(a, b) {
   return rows;
 }
 
-(async () => {
+화면시험({ 분: 20 }, async () => {
   const baseDir = extractBase();
   const [s1, s2] = await Promise.all([serve(baseDir), serve(EXP)]);
   const url = (s) => `http://127.0.0.1:${s.address().port}/`;
@@ -106,9 +107,9 @@ function diff(a, b) {
     bad += row.lobbyStyle + row.lobbyDom + row.lobbyPng + row.heroCanvas + row.gameStyle + row.gameDom + row.floorCanvas + row.resultsStyle + row.resultsDom + row.errors.length + (b.lobby.host ? 1 : 0);
     report.views.push(row);
   }
-  await browser.close(); s1.close(); s2.close();
+  await 닫기(browser); s1.close(); s2.close();
   report.ok = bad === 0;
   fs.writeFileSync(path.join(__dirname, 'lab-proof.json'), JSON.stringify(report, null, 1) + '\n');
   console.log(JSON.stringify(report, null, 1));
   process.exitCode = bad ? 1 : 0;
-})().catch((e) => { console.error(e); process.exitCode = 1; });
+});

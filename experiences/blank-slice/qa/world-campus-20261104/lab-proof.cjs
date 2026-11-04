@@ -11,6 +11,7 @@ const path = require('node:path'), fs = require('node:fs'), os = require('node:o
 const { execFileSync, spawnSync } = require('node:child_process');
 const NM = process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE, '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules');
 const { chromium } = require(require.resolve('playwright', { paths: [NM, path.resolve(__dirname, '../../../../node_modules')] }));
+const { 화면시험, 닫기 } = require('../../../../tools/lib/화면시험.cjs');
 const { 공용작업본 } = require('../../../../tools/lib/공용작업본.js');
 const ROOT = path.resolve(__dirname, '../../../..');
 const GAME = path.join(ROOT, 'experiences/blank-slice');
@@ -153,7 +154,7 @@ function diff(a, b) {
   return rows;
 }
 
-(async () => {
+화면시험({ 분: 20 }, async () => {
   const baseDir = extractBase();
   // SAME=1: 기준끼리 견준다 — 재는 방식 자체의 흔들림을 본다(이때 차이가 나면 도구 탓이다)
   const [s1, s2] = await Promise.all([serve(baseDir), serve(process.env.SAME ? baseDir : GAME)]);
@@ -177,10 +178,10 @@ function diff(a, b) {
     bad += row.errors.length + (row.host ? 1 : 0);
     report.views.push(row);
   }
-  await browser.close(); s1.close(); s2.close();
+  await 닫기(browser); s1.close(); s2.close();
   report.ok = bad === 0;
   fs.mkdirSync(OUT, { recursive: true });
   fs.writeFileSync(path.join(OUT, 'lab-proof.json'), JSON.stringify(report, null, 1) + '\n');
   console.log(JSON.stringify(report, null, 1));
   process.exitCode = bad ? 1 : 0;
-})().catch((e) => { console.error(e); process.exitCode = 1; });
+});
