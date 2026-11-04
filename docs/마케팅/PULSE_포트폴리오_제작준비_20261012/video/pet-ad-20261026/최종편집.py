@@ -14,7 +14,6 @@ import 최종편집공통 as C
 OUT = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/최종/p11"
 PUB = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/최종/자막시안_public/p11"
 CAP = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "자막시안_20261103")
-LETTERS = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/최종/p11/튜브글자"   # 튜브글자/굽기.sh가 굽는 낱장
 VOICE = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/최종/p11/소리/일레븐후보_20261103/Kevin.mp3"   # 유호님 11-04 Kevin으로 확정(결정 표) — Andre · Miles는 같은 폴더에 후보로 남김
 FPS, W, H = 24, 1080, 1920
 T = [0, 2.17, 3.80, 6.50, 11.23, 12.83, 13.47, 14.90, 16.27, 19.33, 22.06]   # 컷 경계(02_콘티 2절)
@@ -58,7 +57,7 @@ def picture():
 
 def dog_picture():
     # 최종 화면(11-04 유호님 「고글 개 끝으로」 · 「고글 색 있는 테」 · 「밑에 첨벙댕 이거 너무 슬롭」, 결정 표) — 9번 컷(주황 고글)을 판 끝까지 잇고,
-    # 그 마지막 프레임에서 시작한 물 판(p11-11w)에 블렌더 튜브 글자를 얹어 잇는다(끝합성.py). 1~8번은 picture()가 자른 _컷을 그대로 쓴다
+    # 그 마지막 프레임에서 시작한 물 판(p11-11x — 조끼 덕에 개가 뜨고 화면이 물 위 · 물속으로 갈린다)에 글자를 얹어 잇는다(끝합성.py). 1~8번은 picture()가 자른 _컷을 그대로 쓴다
     d = os.path.join(OUT, "_컷")
     ids, t = CUTS[9]
     src = C.clip(C.latest(*ids))
@@ -67,9 +66,9 @@ def dog_picture():
     out = os.path.join(d, "09_개끝.mp4")
     C.cut_video(src, a, live, W, H, FPS, out)
     raw = os.path.join(d, "10_물_원판.mp4")
-    C.cut_video(C.clip("p11-11w"), 0, C.frames_of(C.clip("p11-11w")), W, H, FPS, raw)
+    C.cut_video(C.clip("p11-11x"), 0, C.frames_of(C.clip("p11-11x")), W, H, FPS, raw)
     wet = os.path.join(d, "10_물.mp4")
-    C.run(sys.executable, "-X", "utf8", os.path.join(os.path.dirname(os.path.abspath(__file__)), "끝합성.py"), LETTERS, wet, "--물", raw)
+    C.run(sys.executable, "-X", "utf8", os.path.join(os.path.dirname(os.path.abspath(__file__)), "끝합성.py"), wet, "--물", raw)
     paths = [os.path.join(d, f"{n:02d}.mp4") for n in range(1, 9)] + [out, wet]
     C.join_videos(paths, os.path.join(OUT, "화면_개끝.mp4"))
     print(f"#9 {live}장 + 물 {C.frames_of(wet)}장")

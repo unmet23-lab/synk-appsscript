@@ -51,9 +51,5 @@ deep = glob.glob(os.path.join(SON, "Epic Stock Media - Elemental Mutation Whoosh
 m.put(SPLASH - 0.08, under_word(C.load(deep), hit=0.09, drop=-8.0), -13, fade=0.002, fade_out=0.8)
 lap = C.load(os.path.join(SFX, "Water Movement Light Splashes.M.wav"))
 m.put(21.0, lap[int(3.0 * C.RATE):int(6.0 * C.RATE)], 16, fade=0.3, fade_out=1.0)
-blup = C.load(glob.glob(os.path.join(SON, "344 Audio - Elemental Palette Designed Vol. 1", "WATRMisc_Water, Liquid Impact, Bubble*"))[0])
-for land, k in ((0.56, 1.0), (0.74, 1.12), (0.92, 1.26)):   # 끝합성.py 착지와 같은 자리
-    y = np.interp(np.arange(0, len(blup), k), np.arange(len(blup)), blup).astype(np.float32)
-    m.put(19.875 + land - 0.2 / k, y, -22, fade=0.002, fade_out=0.3)
-m.put(21.35, C.load(DING), -9)
+m.put(21.75, C.load(DING), -9)   # 물이 가라앉고 물속에 브랜드가 뜨는 자리(끝합성.py --나타남, 물 판 1.875초)
 m.finish(os.path.join(PUB, "sound_narr.wav"), boost_db=-1.8)   # −3.0이면 −15.2 LUFS(11-03 최종) — 다른 편처럼 −14 안팎으로

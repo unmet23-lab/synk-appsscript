@@ -5,6 +5,7 @@ import os
 import shutil
 import sys
 
+import cv2
 import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
@@ -51,6 +52,30 @@ CUTS = {
 }
 
 
+def live_hold(n, out):
+    """끝 멈춤 — 한 장을 세워 두니 불판 연기까지 얼어 사진 같았다(11-04 아르곤). 판 끝 17장을 마지막 장에 맞춰 세우고(카메라는 멈춘 채) 겹쳐 돌려 연기 · 숨결만 살린다"""
+    fr = 폰.read_all(폰.OUT)[-17:]
+    ref = np.float32(cv2.cvtColor(fr[-1], cv2.COLOR_BGR2GRAY))[1000:1400, 200:880]
+    aligned = []
+    for f in fr:
+        (dx, dy), _ = cv2.phaseCorrelate(np.float32(cv2.cvtColor(f, cv2.COLOR_BGR2GRAY))[1000:1400, 200:880], ref)
+        aligned.append(cv2.warpAffine(f, np.float32([[1, 0, dx], [0, 1, dy]]), (W, H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE).astype(np.float32))
+    L, X = len(aligned), 5     # X장씩 겹쳐 이음매를 없앤다 — 되돌려 틀면 연기가 거꾸로 간다
+    P = L - X
+    res = []
+    for k in range(n):
+        pos = k % P
+        im = aligned[pos]
+        if pos < X:
+            w = (pos + 1) / (X + 1)
+            im = aligned[pos + P] * (1 - w) + aligned[pos] * w
+        if k < X:   # 16컷 마지막 장에서 부드럽게 들어간다
+            w = (k + 1) / (X + 1)
+            im = aligned[-1] * (1 - w) + im * w
+        res.append(np.clip(im + 0.5, 0, 255).astype(np.uint8))
+    폰.write_all(res, out)
+
+
 def picture():
     d = os.path.join(OUT, "_컷")
     os.makedirs(d, exist_ok=True)
@@ -68,12 +93,11 @@ def picture():
         C.cut_video(src, a, k, W, H, FPS, out)
         paths.append(out)
         print(f"#{n} {pid} {a / FPS:.2f}초부터 {k}장")
-    # 16은 앱 화면을 다시 얹고 잔 상표를 지운 판으로(폰다시얹기.py) · 17은 그 판 마지막 프레임을 잡아 둔다 — 끝 판이 폭로 그림 위로 올라온다(11-04)
+    # 16은 앱 화면을 다시 얹고 잔 상표를 지운 판으로(폰다시얹기.py) · 17은 그 판 끝부분을 이어 돌린다 — 끝 판이 폭로 그림 위로 올라온다(11-04)
     폰.main()
     paths[-1] = 폰.OUT
     out = os.path.join(d, "17.mp4")
-    C.run("ffmpeg", "-y", "-v", "error", "-loop", "1", "-i", 폰.HOLD, "-frames:v", str(round(END * FPS) - round(T[16] * FPS)), "-vf", 폰.TO_YUV,
-          "-c:v", "libx264", "-crf", "12", "-preset", "medium", "-r", str(FPS), "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", out)
+    live_hold(round(END * FPS) - round(T[16] * FPS), out)
     paths.append(out)
     C.join_videos(paths, os.path.join(OUT, "화면.mp4"))
 
@@ -125,7 +149,7 @@ def sound():
         m.put(0, song[:int(ZOOM * C.RATE)], -6, fade_out=0.015)
         # 끝은 곡 자기 맺음(맨 끝 음이 잦아드는 자리)을 끝 판에 맞춘다 — 곡 중간 토막을 페이드로 자르자 마지막 0.1초에 −20 dB에서 끊겼다
         outro = full[-int((END - T[16]) * C.RATE) - 1:]
-        m.put(T[16], outro, -4, fade_out=1.5)
+        m.put(T[16], outro, -2.5, fade_out=1.5)
     # 장소마다 현장음 — 컷 경계에서 끊김(하드컷), 음악 밑에 깐다
     bed = -22 if have_song else -16
     places = [
@@ -178,31 +202,36 @@ def sound():
     for name, k in (("boom.wav", 0.8), ("thud.wav", 0.45)):
         x = C.load(os.path.join(SFX, name))
         m.put(ZOOM, x * (k * pk / float(np.max(np.abs(x)))), 0, fade=0.001, fade_out=0.3)
-    # 「같은 코스」 블록이 닦여 나올 때 짧게, 끝 판 핀 열다섯이 찍힐 때 음이 오르는 틱(P12.tsx BLOCK_AT · 핀 시각과 같게)
+    # 「같은 코스」가 뜰 때 짧게 한 번(글자마다 넣으니 「드르륵」 탁하게 들렸다, 11-04 아르곤), 숫자가 12,480까지 오르는 동안 음이 오르는 틱(P12.tsx COUNT_FROM ~ COUNT_TO) — 마지막은 더 세게
     x = C.load(os.path.join(SFX, "snap.wav"))
-    m.put(BLOCK_AT, x * (0.2 * pk / float(np.max(np.abs(x)))), 0, fade=0.001)
+    m.put(BLOCK_AT, x * (0.14 * pk / float(np.max(np.abs(x)))), 0, fade=0.001)
     x = C.load(os.path.join(SFX, "tick.wav"))
     for k in range(15):
         y = pitched(x, 1 + k * 0.07)
-        m.put(T[16] + 0.1 + k * 0.055, y * (0.1 * pk / float(np.max(np.abs(y)))), 0, fade=0.001)
+        m.put(T[16] + 0.1 + k * 0.055, y * ((0.2 if k == 14 else 0.1) * pk / float(np.max(np.abs(y)))), 0, fade=0.001)
+    # 딩에 무게 — 딩만으로는 끝의 한 방으로 안 들렸다(11-04 아르곤 「소리 한 방이 없다」). 폰 스피커에도 남게 툭을 깐다
+    x = C.load(os.path.join(SFX, "thud.wav"))
+    m.put(BRAND_AT, x * (0.32 * pk / float(np.max(np.abs(x)))), 0, fade=0.001, fade_out=0.25)
     m.finish(os.path.join(OUT, "소리.wav"), boost_db=3.2)   # 휙 봉우리에 맞춰 줄어든 만큼 올려 −14 LUFS 안팎(한계기가 봉우리를 잡음)
 
 
-def render():
-    # 화면 글 — 11-03 밤 유호님 「세 편에 넣기」: 고정 두 줄 자막을 버리고 자막시안_20261103/remotion의 p12(앱 화면 결 + 섞은 판 — 장소 칩 아래 큰 「N번째」 ·
-    # 두 폰 테두리 · 「같은 코스」 민트 블록이 자라 끝 판 → 코스 선 · 브랜드)가 굽는다
-    for src, dst in ((os.path.join(OUT, "화면.mp4"), "picture.mp4"), (os.path.join(OUT, "소리.wav"), "sound.wav")):
-        if C.md5(src) != C.md5(os.path.join(PUB, dst)):
-            shutil.copyfile(src, os.path.join(PUB, dst))
-    out, raw = os.path.join(OUT, "모두의코스_9x16.mp4"), os.path.join(OUT, "_렌더.mp4")
-    C.run(shutil.which("npx"), "remotion", "render", "src/index.ts", "p12", raw, "--concurrency=4", "--log=error", cwd=os.path.join(CAP, "remotion"))
+def render(mint=False):
+    # 화면 글 — 11-03 밤 유호님 「세 편에 넣기」: 고정 두 줄 자막을 버리고 자막시안_20261103/remotion의 p12(앱 화면 결 + 섞은 판 — 장소 칩 아래 큰 「N번째」 · 두 폰 테두리)가 굽는다.
+    # 끝은 판 없이 그림 위 글자만(p12-cg, 11-04 슬롭 점검표 1번). 인자 민트판은 옛 끝(비교용)
+    comp, name = ("p12", "모두의코스_9x16_민트판") if mint else ("p12-cg", "모두의코스_9x16")
+    for src, to in ((os.path.join(OUT, "화면.mp4"), "picture.mp4"), (os.path.join(OUT, "소리.wav"), "sound.wav")):
+        if C.md5(src) != C.md5(os.path.join(PUB, to)):
+            shutil.copyfile(src, os.path.join(PUB, to))
+    out, raw = os.path.join(OUT, name + ".mp4"), os.path.join(OUT, "_렌더.mp4")
+    C.run(shutil.which("npx"), "remotion", "render", "src/index.ts", comp, raw, "--concurrency=4", "--log=error", cwd=os.path.join(CAP, "remotion"))
     C.run("node", os.path.join(C.REPO, "tools", "음량마감.mjs"), raw, out, "--목표", "-14", "--덮어쓰기")   # 소리 AAC 320k 이상(영상사전검사)
-    C.run("ffmpeg", "-y", "-v", "error", "-i", out, "-vf", "scale=720:-2", "-c:v", "libx264", "-crf", "24", "-preset", "medium", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", os.path.join(OUT, "모두의코스_9x16_폰.mp4"))
-    C.run("ffmpeg", "-y", "-v", "error", "-i", out, "-vf", "fps=2,scale=200:-2,tile=15x5:padding=3", "-frames:v", "1", "-q:v", "4", os.path.join(OUT, "_반초.jpg"))
+    C.run("ffmpeg", "-y", "-v", "error", "-i", out, "-vf", "scale=720:-2", "-c:v", "libx264", "-crf", "24", "-preset", "medium", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", os.path.join(OUT, name + "_폰.mp4"))
+    if not mint:
+        C.run("ffmpeg", "-y", "-v", "error", "-i", out, "-vf", "fps=2,scale=200:-2,tile=15x5:padding=3", "-frames:v", "1", "-q:v", "4", os.path.join(OUT, "_반초.jpg"))
     print(out)
 
 
 if __name__ == "__main__":
     what = sys.argv[1:] or ["화면", "소리", "판"]
     for w in what:
-        {"화면": picture, "소리": sound, "판": render}[w]()
+        {"화면": picture, "소리": sound, "판": render, "민트판": lambda: render(mint=True)}[w]()

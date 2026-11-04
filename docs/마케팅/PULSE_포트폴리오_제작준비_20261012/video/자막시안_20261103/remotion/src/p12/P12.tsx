@@ -8,7 +8,7 @@
 import React from 'react';
 import { AbsoluteFill, Img, OffthreadVideo, staticFile, useCurrentFrame } from 'remotion';
 import { Audio } from '@remotion/media';
-import { EN, KO, MONO } from '../lib/fonts';
+import { EN, KO } from '../lib/fonts';
 import { EXPO, pop, ramp } from '../lib/motion';
 import { ProbeMeta, probeChars } from '../lib/subject';
 import phones from './폰자리.json';
@@ -78,11 +78,11 @@ const Pin: React.FC<{ size: number; color: string }> = ({ size, color }) => (
   <svg viewBox="0 0 24 24" width={size} height={size}><path d="M12 22s7-7.2 7-12.2A7 7 0 0 0 5 9.8C5 14.8 12 22 12 22Z" fill={color} /><circle cx="12" cy="9.8" r="2.8" fill="#fff" /></svg>
 );
 
-const Head: React.FC<{ t: number }> = ({ t }) => {
+const Head: React.FC<{ t: number; cg?: boolean }> = ({ t, cg }) => {
   // 0 ~ 1.4초 세 줄로 크게 → 제자리에서 사라지고, 위에 한 줄 머리글이 남는다
   // 11-04: 제목(y 540)이 남자 얼굴 · 눈을 덮었다 → 가슴 아래로 내리고 그 자리만 어둡게 깐다. 위로 접으면 또 얼굴을 지나가니 접지 않는다
   const d = ramp(t, 1.4, 0.35, EXPO);
-  const out = 1 - ramp(t, BRAND_AT, 0.25);   // 끝 포스터는 그 사람 사진 + 민트 판 두 칸만(글자 층이 셋이면 어수선하다, 크몽 세션 Fable 재검)
+  const out = 1 - ramp(t, cg ? ZOOM + 0.2 : BRAND_AT, 0.25);   // 끝 CG 판은 폭로 직후 비운다(글자 층이 남으면 어수선하다, 11-04 아르곤). 끝 포스터는 그 사람 사진 + 민트 판 두 칸만(글자 층이 셋이면 어수선하다, 크몽 세션 Fable 재검)
   return (
     <>
       <AbsoluteFill style={{ zIndex: 11, background: 'linear-gradient(#0000 42%, #000d 66%, #000d 100%)', opacity: 1 - d }} />{/* 흰 티셔츠 위에서 약했다(11-04 Fable) */}
@@ -99,17 +99,17 @@ const Head: React.FC<{ t: number }> = ({ t }) => {
   );
 };
 
-const Chip: React.FC<{ t: number; i: number }> = ({ t, i }) => {
+const Chip: React.FC<{ t: number; i: number; cg?: boolean }> = ({ t, i, cg }) => {
   const [day, name] = PLACE[i];
   const same = i > 0 && PLACE[i - 1][1] === name;
   const p = same ? 1 : ramp(t, TT[i], 0.24, EXPO);
   return (
-    <div style={{ ...abs(64, 300, 700), zIndex: 30, display: 'flex', alignItems: 'center', gap: 14, transform: `translateX(${(1 - p) * -60}px)`, opacity: p * (1 - ramp(t, TT[16], 0.2)) }}>
+    <div style={{ ...abs(64, 300, 700), zIndex: 30, display: 'flex', alignItems: 'center', gap: 14, transform: `translateX(${(1 - p) * -60}px)`, opacity: p * (1 - ramp(t, cg ? ZOOM + 0.2 : TT[16], 0.2)) }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: MINT, color: '#fff', borderRadius: 40, padding: '12px 24px 12px 16px', boxShadow: '0 10px 30px #0003' }}>
         <Pin size={34} color="#fff" />
         <span style={{ fontFamily: KO, fontWeight: 800, fontSize: 38, letterSpacing: '-0.03em' }}>{name}</span>
+        <span style={{ fontFamily: KO, fontWeight: 600, fontSize: 28, letterSpacing: '-0.02em', opacity: 0.86, marginLeft: 4 }}>{day}</span>{/* 알약 밖에 두니 밝은 하늘 · 천막에서 사라졌다(11-04 아르곤 · 프레임 확인) */}
       </div>
-      <span style={{ fontFamily: MONO, fontSize: 26, color: PAPER, textShadow: '0 1px 10px #000e' }}>{day}</span>
     </div>
   );
 };
@@ -181,15 +181,35 @@ const Probe: React.FC<{ t: number }> = ({ t }) => {
   );
 };
 
-// 끝 CG 시안(11-04) — 납작한 민트 판 대신 장면 안 CG(comedy-montage 끝CG.py · 끝CG합성.py가 판에 구움). 여기는 자막만: 간판 아래 숫자 한 줄
-const CgProof: React.FC<{ t: number }> = ({ t }) => {
-  const at = BRAND_AT + 0.28;
-  if (t < at) return null;
-  const q = Math.min(1, pop(t, at, 0.36));
+// 끝 글자(11-04) — 민트 판(슬롭 점검표 1번)을 버리고 그림 위 평면 글자만. 입체 글자 · 간판은 플라스틱 · 스티커, 탁자에 세운 핀 · 구슬 · 빛 코스는 압정 · 네온 링으로 읽혀
+// 왜 거기 있는지 설명이 안 됐다(아르곤 · Fable 세 차례) — 그래서 CG 물건을 빼고 움직임을 글자 안의 이야기로 옮겼다: 「또 그 사람」 → 「같은 코스」 → 그 사람만이 아니라 12,480명.
+// 머리글과 같은 색으로 「같은」이 답하고, 숫자가 틱(최종편집.py)을 타고 올라가, 딩에 브랜드로 바뀐다. 튀지 않고 흐림이 풀리며 올라온다(결정 10-29 영상 글자 방법)
+const COUNT_FROM = T[16] + 0.1 - 0.055, COUNT_TO = T[16] + 0.1 + 14 * 0.055;   // 틱 15번과 같은 자리
+const rise = (t: number, at: number, dy = 12): React.CSSProperties => {
+  const q = ramp(t, at, 0.34, EXPO);
+  return { opacity: q, transform: `translateY(${(1 - q) * dy}px)`, filter: `blur(${(1 - q) * 8}px)` };
+};
+const CgWords: React.FC<{ t: number }> = ({ t }) => {
+  if (t < BLOCK_AT) return null;
+  const word = 1 - ramp(t, COUNT_FROM - 0.12, 0.12);
+  const big: React.CSSProperties = { ...abs(0, 150, 1080), zIndex: 30, textAlign: 'center', fontFamily: KO, fontWeight: 900, fontSize: 176, lineHeight: 1, letterSpacing: '-0.05em', color: PAPER };
+  const x = Math.min(1, Math.max(0, (t - COUNT_FROM) / (COUNT_TO - COUNT_FROM)));
+  const n = Math.round(12480 * x ** 2.2);   // 처음엔 천천히, 끝에 확
+  const counting = t >= COUNT_FROM && t < BRAND_AT;
   return (
-    <div style={{ ...abs(0, 322, 1080), zIndex: 30, display: 'flex', justifyContent: 'center', opacity: q, transform: `translateY(${(1 - q) * 18}px)` }}>
-      <span style={{ fontFamily: KO, fontWeight: 800, fontSize: 42, letterSpacing: '-0.03em', color: '#fff', background: MINT, borderRadius: 40, padding: '10px 28px 12px', boxShadow: '0 10px 30px #0004' }}>12,480명이 이 코스로</span>
-    </div>
+    <>
+      {word > 0 && <div style={{ ...big, opacity: word }}><span style={{ display: 'inline-block', ...rise(t, BLOCK_AT) }}><span style={{ color: '#7DF0D3' }}>같은</span> 코스</span></div>}
+      {counting && <div style={{ ...big, fontVariantNumeric: 'tabular-nums', opacity: 1 - ramp(t, BRAND_AT - 0.04, 0.08) }}><span style={{ color: '#7DF0D3' }}>{n.toLocaleString('en-US')}</span>명</div>}
+      {t >= BRAND_AT && (
+        <>
+          <div style={{ ...abs(0, 150, 1080), zIndex: 30, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 22, ...rise(t, BRAND_AT, 16) }}>
+            <Img src={staticFile('p12/appicon.png')} style={{ width: 142, height: 142, borderRadius: 36 }} />
+            <span style={{ fontFamily: KO, fontWeight: 900, fontSize: 158, lineHeight: 1, letterSpacing: '-0.055em', color: PAPER }}>모두의코스</span>
+          </div>
+          <div style={{ ...abs(0, 318, 1080), zIndex: 30, textAlign: 'center', fontFamily: KO, fontWeight: 700, fontSize: 48, letterSpacing: '-0.03em', color: PAPER, ...rise(t, BRAND_AT + 0.22) }}>12,480명이 이 코스로</div>
+        </>
+      )}
+    </>
   );
 };
 
@@ -198,20 +218,22 @@ export const P12: React.FC<{ probe?: boolean; cg?: boolean }> = ({ probe, cg }) 
   const i = cutAt(t);
   if (probe) return <AbsoluteFill style={{ background: '#000' }}><Probe t={t} /></AbsoluteFill>;
   // 끝에서는 멈춘 그림으로 천천히 들어간다(판이 올라와도 그 사람이 살아 있게) — 두 폰 테두리도 그림에 붙어 함께
-  const push = 1 + 0.03 * ramp(t, TT[16], P12_FRAMES / FPS - TT[16]);
+  // 폭로부터 끝까지 천천히 들어간다 — 끝 5초가 멈춘 사진 같았다(11-04 아르곤)
+  const push = cg ? 1 + 0.05 * ramp(t, ZOOM + 0.1, P12_FRAMES / FPS - ZOOM - 0.1, (x) => x) : 1 + 0.03 * ramp(t, TT[16], P12_FRAMES / FPS - TT[16]);
   const legalRight = t >= ZOOM;   // 폭로부터는 앞 폰 위를 가로지르지 않게 오른쪽 어두운 바닥으로
   const onPanel = !cg && t >= BRAND_AT + 0.1;   // 포스터가 닫히면 판 안 어두운 글자로
   return (
     <AbsoluteFill style={{ background: '#000' }}>
       <AbsoluteFill style={{ transform: `scale(${push})`, transformOrigin: '500px 680px' }}>
-        <OffthreadVideo src={staticFile(cg ? 'p12/picture_cg.mp4' : 'p12/picture.mp4')} muted style={{ width: '100%', height: '100%' }} />
+        <OffthreadVideo src={staticFile('p12/picture.mp4')} muted style={{ width: '100%', height: '100%' }} />
       </AbsoluteFill>
-      <AbsoluteFill style={{ zIndex: 10, background: 'linear-gradient(#000a 0%, #0000 22%)', opacity: 1 - ramp(t, BRAND_AT, 0.25) }} />
+      <AbsoluteFill style={{ zIndex: 10, background: 'linear-gradient(#000a 0%, #0000 22%)', opacity: cg ? 1 : 1 - ramp(t, BRAND_AT, 0.25) }} />
+      {cg && <AbsoluteFill style={{ zIndex: 10, background: 'linear-gradient(#0009 0%, #0009 14%, #0000 25%)', opacity: ramp(t, ZOOM + 0.2, 0.3) }} />}{/* 끝 글자 뒤를 판 없이 어둡게 */}
       {i < 16 && t >= TT[1] && <BigNum t={t} i={i} />}
-      <Head t={t} />
-      {t >= TT[1] && <Chip t={t} i={Math.min(i, 15)} />}{/* 첫 컷에 칩을 띄우면 0.2초 깜빡이고 끝나 못 읽었다(11-04 Fable) — 머리 줄 · 칩은 둘째 컷부터 */}
-      {cg ? <CgProof t={t} /> : <Block t={t} />}
-      {t < ZOOM && <div style={{ ...abs(64, 1800, 952, 3), zIndex: 55, background: '#ffffff25' }}><div style={{ height: 3, width: `${Math.min(1, t / 38) * 100}%`, background: MINT }} /></div>}
+      <Head t={t} cg={cg} />
+      {t >= TT[1] && <Chip t={t} i={Math.min(i, 15)} cg={cg} />}{/* 첫 컷에 칩을 띄우면 0.2초 깜빡이고 끝나 못 읽었다(11-04 Fable) — 머리 줄 · 칩은 둘째 컷부터 */}
+      {cg ? <CgWords t={t} /> : <Block t={t} />}
+      {/* 아래 진행 줄은 뺐다 — Fable · 아르곤이 따로 「공장형 숏폼 템플릿」으로 짚었다(11-04) */}
       <div style={{ ...abs(0, 1872, legalRight ? 1036 : 1080), zIndex: 56, textAlign: legalRight ? 'right' : 'center', fontFamily: KO, fontWeight: 500, fontSize: 24, color: onPanel ? '#14221F' : '#ffffffeb' }}><span style={{ background: onPanel ? undefined : '#0E132073', padding: '4px 14px 5px', borderRadius: 8 }}>가상 브랜드 · AI로 만든 가상 모델</span></div>
       <Audio src={staticFile('p12/sound.wav')} />
       <span style={{ display: 'none', fontFamily: EN }} />
