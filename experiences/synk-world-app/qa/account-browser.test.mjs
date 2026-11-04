@@ -212,6 +212,31 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   // The tutor chosen at the gate is stored in the same life record (10-12); no lesson has started yet.
   const lifeBefore=playState.records[lifeKey]===undefined?null:JSON.parse(playState.records[lifeKey]);
   assert.ok(lifeBefore===null||(Object.keys(lifeBefore.lessons).length===0&&lifeBefore.activeLessonId===null&&lifeBefore.tutor?.selected==='mongle'));
+  // Verify both original games while this account can open them from the play list.
+  const gameEntrances=[];
+  for(const game of ['runner','rhythm']){
+   await page.bringToFront();await page.locator('.world-nav [data-view="play"]').click();await page.locator('button[data-game="'+game+'"]').click();
+   await page.waitForFunction(()=>document.querySelector('iframe')?.contentWindow?.SynkPlayAccount?.status().mode==='account');
+   let gameFrame=page.frames().find(f=>f.url().includes('/korean-'+game+'/'));
+   assert.ok(gameFrame);assert.equal(page.url(),url+'/world/?opening=off');assert.equal(await gameFrame.evaluate(()=>SynkPlayAccount.status().accountId),A);
+   const boot=await gameFrame.evaluate(()=>performance.timeOrigin);
+   for(const viewport of [{width:740,height:320},{width:320,height:740},{width:390,height:844}]){await page.setViewportSize(viewport);assert.equal(await gameFrame.evaluate(()=>performance.timeOrigin),boot);}
+   const reward=await gameFrame.evaluate(async game=>{const first=await SynkPlayCollection.award({game,total:5,correct:5,completed:true,automatic:false,roundId:'synthetic-world-'+game});const repeat=await SynkPlayCollection.award({game,total:5,correct:5,completed:true,automatic:false,roundId:'synthetic-world-'+game});return {saved:first.saved,coins:first.coins,repeatCoins:repeat.coins,mode:SynkPlayAccount.status().mode};},game);
+   assert.equal(reward.saved,true);assert.ok(reward.coins>0);assert.equal(reward.repeatCoins,0);assert.equal(reward.mode,'account');
+   if(game==='runner'){
+    await gameFrame.evaluate(()=>SynkPlayAccount.storage().setItem('synk.windrun.best','123'));await page.evaluate(()=>SYNKPlayHost.flush());assert.equal(playState.records['synk.windrun.best'],'123');
+    const coinsBefore=playState.wallet.coins;conflictNext=true;
+    await gameFrame.evaluate(()=>SynkPlayAccount.storage().setItem('synk.windrun.best','234'));
+    await page.locator('[data-world="resolve-play"][data-choice="remote"]').waitFor();assert.equal(await page.locator('iframe').count(),0);assert.equal(await page.evaluate(()=>window.__synkWorld.screen()),'world-game-conflict');
+    assert.equal(await page.locator('[data-world="resolve-play"][data-choice="local"]').count(),1);await page.screenshot({path:path.join(output,'runner-progress-conflict.png')});
+    await page.locator('[data-world="resolve-play"][data-choice="remote"]').click();await page.waitForFunction(()=>document.querySelector('iframe')?.contentWindow?.SynkPlayAccount?.status().mode==='account');
+    gameFrame=page.frames().find(f=>f.url().includes('/korean-runner/'));assert.equal(await gameFrame.evaluate(()=>SynkPlayAccount.storage().getItem('synk.windrun.best')),'777');
+    assert.equal(playState.wallet.coins,coinsBefore);assert.equal(page.url(),url+'/world/?opening=off');
+   }
+   await page.screenshot({path:path.join(output,game+'-account-mobile.png')});
+   gameEntrances.push({game,href:gameFrame.url(),reward,rotationDocumentPreserved:true});
+   await closeGamePanel();assert.equal(await page.locator('iframe').count(),0);assert.equal(await page.evaluate(()=>document.querySelector('#world-panel').open),false);
+  }
   await learnFromHome();await page.locator('.life-intro').waitFor();
   assert.equal(await page.locator('iframe').count(),0);assert.equal(await page.evaluate(()=>window.__synkWorld.life().owner),A);
   await page.locator('[data-life-begin]').click();
@@ -252,30 +277,20 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   }
   await page.screenshot({path:path.join(output,'life-story-account-mobile.png')});lifeEvidence.storyRotationPreserved=true;
   await page.locator('[data-life-pause]').click();await page.waitForFunction(()=>window.__synkLife.summary().status.phase==='synced');
-  const gameEntrances=[];
-  for(const game of ['runner','rhythm']){
-   await page.bringToFront();await page.locator('.world-nav [data-view="play"]').click();await page.locator('button[data-game="'+game+'"]').click();
-   await page.waitForFunction(()=>document.querySelector('iframe')?.contentWindow?.SynkPlayAccount?.status().mode==='account');
-   let gameFrame=page.frames().find(f=>f.url().includes('/korean-'+game+'/'));
-   assert.ok(gameFrame);assert.equal(page.url(),url+'/world/?opening=off');assert.equal(await gameFrame.evaluate(()=>SynkPlayAccount.status().accountId),A);
-   const boot=await gameFrame.evaluate(()=>performance.timeOrigin);
-   for(const viewport of [{width:740,height:320},{width:320,height:740},{width:390,height:844}]){await page.setViewportSize(viewport);assert.equal(await gameFrame.evaluate(()=>performance.timeOrigin),boot);}
-   const reward=await gameFrame.evaluate(async game=>{const first=await SynkPlayCollection.award({game,total:5,correct:5,completed:true,automatic:false,roundId:'synthetic-world-'+game});const repeat=await SynkPlayCollection.award({game,total:5,correct:5,completed:true,automatic:false,roundId:'synthetic-world-'+game});return {saved:first.saved,coins:first.coins,repeatCoins:repeat.coins,mode:SynkPlayAccount.status().mode};},game);
-   assert.equal(reward.saved,true);assert.ok(reward.coins>0);assert.equal(reward.repeatCoins,0);assert.equal(reward.mode,'account');
-   if(game==='runner'){
-    await gameFrame.evaluate(()=>SynkPlayAccount.storage().setItem('synk.windrun.best','123'));await page.evaluate(()=>SYNKPlayHost.flush());assert.equal(playState.records['synk.windrun.best'],'123');
-    const coinsBefore=playState.wallet.coins;conflictNext=true;
-    await gameFrame.evaluate(()=>SynkPlayAccount.storage().setItem('synk.windrun.best','234'));
-    await page.locator('[data-world="resolve-play"][data-choice="remote"]').waitFor();assert.equal(await page.locator('iframe').count(),0);assert.equal(await page.evaluate(()=>window.__synkWorld.screen()),'world-game-conflict');
-    assert.equal(await page.locator('[data-world="resolve-play"][data-choice="local"]').count(),1);await page.screenshot({path:path.join(output,'runner-progress-conflict.png')});
-    await page.locator('[data-world="resolve-play"][data-choice="remote"]').click();await page.waitForFunction(()=>document.querySelector('iframe')?.contentWindow?.SynkPlayAccount?.status().mode==='account');
-    gameFrame=page.frames().find(f=>f.url().includes('/korean-runner/'));assert.equal(await gameFrame.evaluate(()=>SynkPlayAccount.storage().getItem('synk.windrun.best')),'777');
-    assert.equal(playState.wallet.coins,coinsBefore);assert.equal(page.url(),url+'/world/?opening=off');
-   }
-   await page.screenshot({path:path.join(output,game+'-account-mobile.png')});
-   gameEntrances.push({game,href:gameFrame.url(),reward,rotationDocumentPreserved:true});
-   await closeGamePanel();assert.equal(await page.locator('iframe').count(),0);assert.equal(await page.evaluate(()=>document.querySelector('#world-panel').open),false);
-  }
+  // Once a real lesson is complete the home replaces the wind-runner card with Subway Rush.
+  await page.locator('.world-nav [data-view="play"]').click();
+  const unlockedSubway=page.locator('button[data-game="subway"]');
+  await unlockedSubway.waitFor();
+  assert.equal(await unlockedSubway.getAttribute('aria-disabled'),null);
+  assert.equal(await page.locator('button[data-game="runner"]').count(),0);
+  await unlockedSubway.click();
+  const subwayFrame=page.frameLocator('iframe.game-frame');
+  await subwayFrame.locator('body').waitFor();
+  await page.waitForFunction(()=>document.querySelector('iframe.game-frame')?.contentWindow?.SynkPlayAccount?.status().mode==='account');
+  const subwayAccount=await subwayFrame.locator('body').evaluate(()=>({path:location.pathname,owner:SynkPlayAccount.status().accountId}));
+  assert.match(subwayAccount.path,/\/subway-rush\//);
+  assert.equal(subwayAccount.owner,A);
+  await closeGamePanel();
   assert.ok(calls.some(c=>c.path.endsWith('/synk-learning')),'enabled consent uses official learning transport');
   assert.ok(playCommands.size>=5);assert.equal(conflictInjected,true);assert.equal(playState.wallet.gameStats.runner.rounds,1);assert.equal(playState.wallet.gameStats.rhythm.rounds,1);
   await page.locator('.world-nav [data-view="packs"]').click();await page.locator('.life-row[data-view="position"]').click();
@@ -368,7 +383,7 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   assert.match(await page.locator('#panel-content .ws-lead').textContent(),/바람길 체험 판을 마쳤어요/);
   assert.equal(playState.records[hangulKey],graduatedSaved);
   assert.equal(fs.existsSync(path.join(directory,'must-not-create')),false);assert.deepEqual(errors,[]);assert.deepEqual(assetErrors,[]);assert.deepEqual(external,[]);
-  fs.writeFileSync(path.join(output,'report.json'),JSON.stringify(sanitized({ok:true,syntheticAccount:true,liveProviderCalls:false,actualBrowser:'Chromium/Chrome',mode:'account',publicPayload,health,checks:['verified-account','explicit-learning-consent','enrollment-preview-before-claim','classroom-lessons-401-keeps-session','classroom-lessons-after-claim','bfcache-reverification','bfcache-during-entry-reverification','verified-town-sharing','town-logout-relogin','embedded-runner-and-rhythm','same-iframe-rotation','account-wallet-save','duplicate-reward-prevention','runner-progress-save','in-app-progress-conflict-recovery','position-15-domains','diagnostic-audio-before-answer','diagnostic-result-screen','hangul-ui-first-letter-save','hangul-second-isolated-context-restore','hangul-private-save-without-learning-sharing','hangul-graduation-home-after-close','hangul-graduation-home-other-context','hangul-return','logout-removes-game-hosts','guest-trial-once-then-sign-in','no-real-external-traffic','life-internal-player','life-official-progress-key','life-pause-reload','life-completion-home-next','life-story-rotation','life-logout-release','guest-life-after-logout'],lifeEvidence,hangulEvidence:{isolatedBrowserContexts:2,physicalDevices:false,syntheticGraduation:true,savedLetters:Object.keys(JSON.parse(hangulSaved).letters),learningShared:false},actualBfcache,forcedBfcacheBranch:!actualBfcache,hangulHref,privateArtifacts:manifest?.privateArtifacts,conflictInjected,gameEntrances,calls,errors,assetErrors,external}),null,2));
+  fs.writeFileSync(path.join(output,'report.json'),JSON.stringify(sanitized({ok:true,syntheticAccount:true,liveProviderCalls:false,actualBrowser:'Chromium/Chrome',mode:'account',publicPayload,health,checks:['verified-account','explicit-learning-consent','enrollment-preview-before-claim','classroom-lessons-401-keeps-session','classroom-lessons-after-claim','bfcache-reverification','bfcache-during-entry-reverification','verified-town-sharing','town-logout-relogin','embedded-runner-and-rhythm','unlocked-subway-replaces-runner','same-iframe-rotation','account-wallet-save','duplicate-reward-prevention','runner-progress-save','in-app-progress-conflict-recovery','position-15-domains','diagnostic-audio-before-answer','diagnostic-result-screen','hangul-ui-first-letter-save','hangul-second-isolated-context-restore','hangul-private-save-without-learning-sharing','hangul-graduation-home-after-close','hangul-graduation-home-other-context','hangul-return','logout-removes-game-hosts','guest-trial-once-then-sign-in','no-real-external-traffic','life-internal-player','life-official-progress-key','life-pause-reload','life-completion-home-next','life-story-rotation','life-logout-release','guest-life-after-logout'],lifeEvidence,hangulEvidence:{isolatedBrowserContexts:2,physicalDevices:false,syntheticGraduation:true,savedLetters:Object.keys(JSON.parse(hangulSaved).letters),learningShared:false},actualBfcache,forcedBfcacheBranch:!actualBfcache,hangulHref,privateArtifacts:manifest?.privateArtifacts,conflictInjected,gameEntrances,calls,errors,assetErrors,external}),null,2));
  }catch(error){console.error('ACCOUNT_BROWSER_FAILURE',error.stack,JSON.stringify(sanitized({errors,assetErrors,external,calls})));if(page){const state=await page.evaluate(()=>{let life;try{life={owner:window.__synkWorld?.life()?.owner};}catch(error){life={error:error.code||error.message};}return {screen:window.__synkWorld?.screen(),clientGeneration:window.__synkWorld?.client.generation,life,host:!!window.SYNKWorldTownHost,frame:document.querySelector('iframe')?.getAttribute('src'),body:document.body.innerText.slice(-800)};});console.error('PAGE_STATE',state);if(output){fs.writeFileSync(path.join(output,'failure-report.json'),JSON.stringify(sanitized({ok:false,publicPayload,syntheticAccount:true,liveProviderCalls:false,error:error.stack,state,lifeEvidence,errors,assetErrors,external}),null,2));await page.screenshot({path:path.join(output,'failure.png')}).catch(()=>{});}for(const f of page.frames().slice(1))console.error('FRAME_STATE',await f.evaluate(()=>({config:window.__SYNK_WORLD_TOWN__,metrics:window.SYNKTownDay?.metrics(),body:document.body.innerText.slice(-1800)})));}throw error;}finally{
   // Close the connect() client before the owning launchServer() listener.
   // Otherwise its live WebSocket can keep a successful Node test worker alive.
