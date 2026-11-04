@@ -9,7 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import PILOT from '../experiences/drama/pilot/content.mjs';
-import { aggregate, report, readParticipants, readDatabase, dramaOnly, personOf } from '../tools/드라마시범집계.mjs';
+import { aggregate, report, readParticipants, readDatabase, readManagement, dramaOnly, personOf } from '../tools/드라마시범집계.mjs';
 
 const require = createRequire(import.meta.url);
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -134,6 +134,22 @@ test('DB 읽기: read only 거래 하나에서 SELECT · SET LOCAL만, 연결표
   assert.ok(queries.every((q) => /^\s*(select|set local)/i.test(q.text)), '쓰기 문장 없음');
   assert.ok(queries.some((q) => /statement_timeout/.test(q.text)));
   assert.deepEqual(out.map((p) => [p.no, p.account.found, p.account.learningEnabled ?? null, p.events.length]), [['M01', true, true, people[0].events.filter((e) => e.type !== 'decision.made' && e.type !== 'experience.completed').length], ['M02', true, false, 0], ['M03', false, null, 0]]);
+  assert.ok(!JSON.stringify(out).includes('@'));
+});
+
+test('관리 API 읽기: SELECT 한 문장씩, 연결표의 계정만, 작은따옴표는 막고 결과에 이메일이 남지 않는다', async () => {
+  const people = await cohort();
+  const texts = [];
+  const id = '00000000-0000-4000-8000-000000000001';
+  const query = async (text) => {
+    texts.push(text);
+    if (/from auth\.users/.test(text)) return [{ email: 'a@example.com', id, learning_enabled: true, status: 'active' }];
+    return people[0].events.map((payload) => ({ id, payload }));
+  };
+  const out = await readManagement(query, [{ no: 'M01', email: 'a@example.com' }, { no: 'M02', email: "x'y@example.com" }]);
+  assert.ok(texts.every((t) => /^\s*select/i.test(t) && !t.includes(';')), '쓰기 · 여러 문장 없음');
+  assert.ok(texts[0].includes("'x''y@example.com'"));
+  assert.deepEqual(out.map((p) => [p.no, p.account.found]), [['M01', true], ['M02', false]]);
   assert.ok(!JSON.stringify(out).includes('@'));
 });
 

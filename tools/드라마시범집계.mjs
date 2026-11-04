@@ -3,6 +3,7 @@
 // 참가 계정 목록(참가 번호 · SYNK ID 이메일 — 비공개 보관함, 저장소 밖)을 받아 그 계정의 드라마 학습 기록만 읽고 §1의 숫자만 낸다.
 //
 //   node tools/드라마시범집계.mjs --참가 <목록 파일> [--기준 <ISO 시각>] [--json]        운영 DB 읽기(유호님 승인 뒤에만 — 설계 §8 ⑦)
+//   node tools/드라마시범집계.mjs --참가 <목록 파일> --관리 [--기준 …] [--json]            운영 읽기를 관리 API의 read_only 질의로(11-04 유호님 승인 · 접속 주소 불필요)
 //   node tools/드라마시범집계.mjs --참가 <목록 파일> --사건 <사건 JSON> [--기준 …] [--json]  내려받은 사건 · 합성 자료로(DB 없음)
 //
 // · 목록 파일: CSV(`참가번호,이메일`, 머리줄은 있어도 없어도) 또는 JSON 배열 [{"번호": "M01", "이메일": "…"}].
@@ -176,13 +177,38 @@ export async function readDatabase(sql, participants) {
     const ids = accounts.map((a) => a.id);
     const events = ids.length ? await tx`select synk_user_id::text as id, payload from engine.synk_learning_events
       where synk_user_id = any(${ids}::uuid[]) and payload->>'type' = any(${TYPES}) order by synk_user_id, server_seq` : [];
-    const byAccount = new Map(ids.map((id) => [id, []]));
-    for (const row of events) byAccount.get(row.id)?.push(typeof row.payload === 'string' ? JSON.parse(row.payload) : row.payload);
-    return participants.map((p) => {
-      const a = accounts.find((x) => x.email === p.email);
-      return { no: p.no, account: a ? { found: true, learningEnabled: a.learning_enabled === true, status: a.status } : { found: false }, events: a ? dramaOnly(byAccount.get(a.id)) : [] };
-    });
+    return assemble(participants, accounts, events);
   });
+}
+function assemble(participants, accounts, events) {
+  const byAccount = new Map(accounts.map((a) => [a.id, []]));
+  for (const row of events) byAccount.get(row.id)?.push(typeof row.payload === 'string' ? JSON.parse(row.payload) : row.payload);
+  return participants.map((p) => {
+    const a = accounts.find((x) => x.email === p.email);
+    return { no: p.no, account: a ? { found: true, learningEnabled: a.learning_enabled === true, status: a.status } : { found: false }, events: a ? dramaOnly(byAccount.get(a.id)) : [] };
+  });
+}
+// 관리 API로 읽기(접속 주소 없이, 저장소 도구들과 같은 SUPABASE_ACCESS_TOKEN). query는 SELECT 한 문장을 받아 줄 배열을 돌려준다 — 시험은 가짜를 넣는다.
+export async function readManagement(query, participants) {
+  const text = (v) => `'${String(v).replace(/'/g, "''")}'`;
+  const accounts = await query(`select lower(u.email) as email, a.synk_user_id::text as id, a.learning_enabled, a.status
+    from auth.users u join engine.synk_auth_links l on l.auth_user_id = u.id join engine.synk_accounts a on a.synk_user_id = l.synk_user_id
+    where lower(u.email) in (${participants.map((p) => text(p.email)).join(',')})`);
+  const ids = accounts.map((a) => a.id);
+  const events = ids.length ? await query(`select synk_user_id::text as id, payload from engine.synk_learning_events
+    where synk_user_id in (${ids.map((id) => `${text(id)}::uuid`).join(',')}) and payload->>'type' in (${TYPES.map(text).join(',')}) order by synk_user_id, server_seq`) : [];
+  return assemble(participants, accounts, events);
+}
+function managementQuery() {
+  const fromTalk = () => { try { return fs.readFileSync(path.join(ROOT, '..', 'SYNK-talk', '.env'), 'utf8'); } catch { return ''; } };
+  const value = (name) => process.env[name] || (fromTalk().match(new RegExp(`^${name}=(.*)$`, 'm'))?.[1] || '').trim().replace(/^["']|["']$/g, '');
+  const token = value('SUPABASE_ACCESS_TOKEN'), ref = value('SUPABASE_PROJECT_REF');
+  if (!token || !ref) throw new Error('SUPABASE_ACCESS_TOKEN · SUPABASE_PROJECT_REF가 없다');
+  return async (sqlText) => {
+    const res = await fetch(`https://api.supabase.com/v1/projects/${ref}/database/query`, { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' }, body: JSON.stringify({ query: sqlText, read_only: true }) });
+    if (!res.ok) throw new Error(`관리 API 읽기 실패 ${res.status}`);
+    return res.json();
+  };
 }
 // 이 게임의 사건만(다른 WORLD 게임 사건은 셈에 넣지 않는다).
 export function dramaOnly(events = []) {
@@ -193,7 +219,7 @@ export function dramaOnly(events = []) {
 }
 
 async function main(argv) {
-  const known = ['--참가', '--사건', '--기준', '--json'];
+  const known = ['--참가', '--사건', '--기준', '--json', '--관리'];
   const opt = (name) => { const i = argv.indexOf(name); return i >= 0 ? argv[i + 1] : null; };
   const unknown = argv.filter((a) => a.startsWith('--') && !known.includes(a));
   if (unknown.length || !opt('--참가')) throw new Error(`쓰기: node tools/드라마시범집계.mjs --참가 <목록> [--사건 <JSON>] [--기준 <ISO>] [--json]${unknown.length ? ` — 모르는 인자 ${unknown.join(' ')}` : ''}`);
@@ -205,6 +231,8 @@ async function main(argv) {
     // 사건 파일: { "<참가 번호>": { "learningEnabled": true, "events": [...] } } — 계정이 없으면 그 번호를 빼거나 null.
     const data = JSON.parse(fs.readFileSync(opt('--사건'), 'utf8'));
     people = participants.map((p) => { const d = data[p.no]; return { no: p.no, account: d ? { found: true, learningEnabled: d.learningEnabled !== false } : { found: false }, events: d ? dramaOnly(d.events) : [] }; });
+  } else if (argv.includes('--관리')) {
+    people = await readManagement(managementQuery(), participants);
   } else {
     const url = process.env.DRAMA_PILOT_READ_DATABASE_URL;
     if (!url) throw new Error('DRAMA_PILOT_READ_DATABASE_URL이 없다(운영 DB 읽기는 유호님 승인 뒤에만 — 설계 §8 ⑦)');
