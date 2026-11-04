@@ -259,6 +259,21 @@ function 보내기(글, 환경 = process.env, { 한도ms = 45000 } = {}) {
   } finally { fs.rmSync(임시, { force: true }); }
 }
 
+/**
+ * 예약 회차 알림(CI 빨간불·예약 멈춤): 가벼운 기존 MTProto 길로 먼저 보내고, 못 보내면 hermes send로 넘어간다.
+ * 11-04 CPU 100%에서 hermes는 뜨는 데만 39~112초라 120초 · 180초 한도를 모두 넘겨 알림이 두 시간 못 나갔다(MTProto 쪽 Python은 12초).
+ * MTProto가 보내 놓고 응답을 잃으면 hermes가 한 통 더 보낼 수 있지만, 알림을 잃는 쪽이 더 나쁘다. 승인 훅은 답장 흐름이 있어 hermes 그대로다.
+ */
+function 예약알림보내기(글, 환경 = process.env, { 한도ms = 120000, 한번 = require('./lib/텔레그램_한번보내기.js'), 헤르메스로 = 보내기 } = {}) {
+  if (환경.SYNK_TG_DRYRUN_DIR) return 헤르메스로(글, 환경, { 한도ms });
+  try {
+    const r = 한번.send(글, { ...한번.identity(텔레그램대상), randomId: crypto.randomBytes(8).readBigInt64BE().toString() });
+    return { ok: true, message_id: r.messageId, method: 'mtproto' };
+  } catch {
+    return 헤르메스로(글, 환경, { 한도ms });
+  }
+}
+
 /** Stop: 막힌 일이 있으면 두 줄을 받아(없으면 한 번 요청) 알림을 한 통 보낸다. 표준출력으로 낼 글을 돌려준다. */
 function 멈춤처리(입력, 환경, { 보내는일 = 보내기, 때 = 지금() } = {}) {
   const 세션 = String(입력.session_id || '');
@@ -378,7 +393,7 @@ function 오류남기기(e, 환경 = process.env) {
   } catch { /* 훅은 어떤 경우에도 Claude를 멈추지 않는다 */ }
 }
 
-module.exports = { 훅처리, 막힘남기기, 멈춤처리, 출처찾기, 두줄읽기, 대신짓기, 알림만들기, 다듬기, 보내기, 보낸결과, 훅항목, 우리훅인가, 승인훅만, 켜기계획, 끄기계획, hooks말고같은가, 설정바꾸기, 목록, 보관함, 두줄요청 };
+module.exports = { 훅처리, 막힘남기기, 멈춤처리, 출처찾기, 두줄읽기, 대신짓기, 알림만들기, 다듬기, 보내기, 예약알림보내기, 보낸결과, 훅항목, 우리훅인가, 승인훅만, 켜기계획, 끄기계획, hooks말고같은가, 설정바꾸기, 목록, 보관함, 두줄요청 };
 
 if (require.main === module) {
   const [명령, ...나머지] = process.argv.slice(2);

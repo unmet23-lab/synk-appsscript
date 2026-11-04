@@ -237,3 +237,26 @@ test('같은 세션의 막힘 두 건이 동시에 와도 둘 다 남는다(잠�
     assert.deepEqual(t.기록(s).denials.map((d) => d.tool_use_id).sort(), ['toolu_A', 'toolu_B', 'toolu_C']);
   } finally { t.지우기(); }
 });
+
+test('예약알림보내기 — MTProto로 먼저 보내고 hermes는 부르지 않는다', () => {
+  const 보낸 = [];
+  const 한번 = { identity: (t) => ({ botId: '1', target: t }), send: (글, d) => { 보낸.push({ 글, d }); return { messageId: '42' }; } };
+  const r = 승인.예약알림보내기('글', {}, { 한번, 헤르메스로: () => assert.fail('hermes를 부르면 안 된다') });
+  assert.deepEqual(r, { ok: true, message_id: '42', method: 'mtproto' });
+  assert.equal(보낸[0].d.target, 'telegram:6017495834');
+  assert.match(보낸[0].d.randomId, /^-?[1-9][0-9]{0,18}$/);
+});
+
+test('예약알림보내기 — MTProto가 실패하면 받은 한도로 hermes에 넘긴다', () => {
+  const 한번 = { identity: (t) => ({ botId: '1', target: t }), send: () => { throw new Error('막힘'); } };
+  const 옵션들 = [];
+  const r = 승인.예약알림보내기('글', {}, { 한도ms: 90000, 한번, 헤르메스로: (글, 환경, 옵션) => { 옵션들.push(옵션); return { ok: true, method: 'hermes' }; } });
+  assert.equal(r.method, 'hermes');
+  assert.deepEqual(옵션들, [{ 한도ms: 90000 }]);
+});
+
+test('예약알림보내기 — 시험 모드(SYNK_TG_DRYRUN_DIR)에서는 MTProto로 나가지 않는다', () => {
+  const 한번 = { identity: () => assert.fail('identity'), send: () => assert.fail('send') };
+  const r = 승인.예약알림보내기('글', { SYNK_TG_DRYRUN_DIR: 'x' }, { 한번, 헤르메스로: () => ({ ok: true, method: 'dryrun' }) });
+  assert.equal(r.method, 'dryrun');
+});

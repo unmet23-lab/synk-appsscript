@@ -159,7 +159,7 @@ test('알림 — 텔레그램 대신 시험 폴더에 쓰고, 보내기가 실�
   } finally { fs.rmSync(방, { recursive: true, force: true }); }
 });
 
-test('알림 — 텔레그램 보내기는 바쁜 PC를 생각해 180초 한도로 부른다(10-23 기본 45초, 11-04 120초에 끊겨 못 보냄)', () => {
+test('알림 — 텔레그램 보내기는 바쁜 PC를 생각해 120초 한도로 부른다(10-23 기본 45초에 끊겨 한 시간 못 보냄)', () => {
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-ci빨간불-'));
   try {
     const 환경 = { SYNK_CI빨간불_상태: path.join(방, '상태.json') };
@@ -167,7 +167,7 @@ test('알림 — 텔레그램 보내기는 바쁜 PC를 생각해 180초 한도�
     const 옵션들 = [];
     const r = ci.알림({ sh, 파일들: [], 환경, 보내는일: (글, env, 옵션) => { 옵션들.push(옵션); return { ok: true, method: 'test' }; } });
     assert.equal(r.결과, '보냄');
-    assert.deepEqual(옵션들, [{ 한도ms: 180000 }]);
+    assert.deepEqual(옵션들, [{ 한도ms: 120000 }]);
   } finally { fs.rmSync(방, { recursive: true, force: true }); }
 });
 
