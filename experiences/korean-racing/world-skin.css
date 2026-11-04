@@ -70,13 +70,13 @@
 :root[data-host=world] .felt-cta:is(.coral,.cream){background:var(--w-ink);color:var(--w-on-ink)}
 :root[data-host=world] .felt-cta .disc{position:static;width:16px;height:16px;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
 :root[data-host=world] .felt-cta .disc::after{content:none}
-:root[data-host=world] .felt-cta:hover{box-shadow:0 0 0 5px color-mix(in srgb,var(--w-glow) 32%,transparent)}
+@media (hover:hover){:root[data-host=world] .felt-cta:hover{box-shadow:0 0 0 5px color-mix(in srgb,var(--w-glow) 32%,transparent)}}   /* 터치는 탭 뒤 :hover가 남아 고리가 붙어 있다 */
 :root[data-host=world] .felt-cta:active{transform:scale(.975);filter:none}
 :root[data-host=world] .felt-cta:disabled{opacity:.42;cursor:default;transform:none}
 /* 보조: 1px 선 알약 */
 :root[data-host=world] .chip-btn{min-height:44px;padding:0 18px;border:0;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink);
   font:600 14px/1.2 var(--w-sans);letter-spacing:-.005em;filter:none;transition:background .18s var(--w-ease),transform .12s var(--w-ease)}
-:root[data-host=world] .chip-btn:hover{background:var(--w-s2)}
+@media (hover:hover){:root[data-host=world] .chip-btn:hover{background:var(--w-s2)}}
 :root[data-host=world] .chip-btn:active{transform:scale(.97)}
 :root[data-host=world] .chip-btn[aria-pressed=true]{color:var(--w-ink)}
 :root[data-host=world] .chip-btn:disabled{opacity:.42;cursor:default;transform:none}

@@ -76,7 +76,7 @@
 :root[data-host=world] .felt-cta:is(.coral,.cream){background:var(--w-ink);color:var(--w-on-ink)}
 :root[data-host=world] .felt-cta .disc{position:static;width:16px;height:16px;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
 :root[data-host=world] .felt-cta .disc::after{content:none}
-:root[data-host=world] .felt-cta:hover{box-shadow:0 0 0 5px color-mix(in srgb,var(--w-glow) 32%,transparent)}
+@media (hover:hover){:root[data-host=world] .felt-cta:hover{box-shadow:0 0 0 5px color-mix(in srgb,var(--w-glow) 32%,transparent)}}   /* 터치는 탭 뒤 :hover가 남아 고리가 붙어 있다 */
 :root[data-host=world] .felt-cta:active{transform:scale(.975);filter:none}
 /* 10-17 WORLD 움직임: 시작 알약 위로 빛 띠가 가끔 지나간다 */
 :root[data-host=world] #start{position:relative;isolation:isolate;overflow:hidden}
@@ -100,7 +100,7 @@
 /* 보조: 1px 선 알약 */
 :root[data-host=world] .chip-btn{min-height:44px;padding:0 18px;border:0;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink);
   font:600 14px/1.2 var(--w-sans);letter-spacing:-.005em;filter:none;transition:background .18s var(--w-ease),transform .12s var(--w-ease)}
-:root[data-host=world] .chip-btn:hover{background:var(--w-s2)}
+@media (hover:hover){:root[data-host=world] .chip-btn:hover{background:var(--w-s2)}}
 :root[data-host=world] .chip-btn:active{transform:scale(.97)}
 :root[data-host=world] .chip-btn[aria-pressed=true]{color:var(--w-ink)}
 :root[data-host=world] .chip-btn:disabled{opacity:.42;cursor:default;transform:none}
@@ -163,7 +163,7 @@
 :root[data-host=world] .res-grid .next>.r-actions{display:contents}
 :root[data-host=world] .res-grid .next :is(.felt-cta,.chip-btn){width:100%;min-height:52px;padding:0 14px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2);font:600 15px/1.2 var(--w-sans)}
 :root[data-host=world] .res-grid .next .felt-cta .disc{display:none}
-:root[data-host=world] .res-grid .next :is(.felt-cta,.chip-btn):hover{background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+@media (hover:hover){:root[data-host=world] .res-grid .next :is(.felt-cta,.chip-btn):hover{background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2)}}
 /* 흰 알약 「우리 동네로」: 결과 아래에 붙어 언제나 한 번에 누른다(결과 → 방 1탭) */
 :root[data-host=world] .w-room-bar{position:sticky;z-index:6;bottom:0;margin:14px -12px -28px;padding:28px 18px max(16px,env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(12,13,16,0),var(--w-panel) 42%)}
 :root[data-host=world] .w-room-bar>.felt-cta{min-height:58px}
@@ -184,7 +184,7 @@
 :root[data-host=world] .lobby>.topbar{position:absolute;z-index:3;top:28px;left:28px;padding:0;gap:0;background:none}
 :root[data-host=world] .lobby>.topbar>:is(.logo-tag,.kicker){display:none}
 :root[data-host=world] .sound-toggle{width:44px;height:44px;margin:0;border-radius:50%;background:rgba(30,14,10,.1);box-shadow:inset 0 0 0 1px rgba(30,14,10,.18);transition:background .18s var(--w-ease)}
-:root[data-host=world] .sound-toggle:hover{background:rgba(30,14,10,.16)}
+@media (hover:hover){:root[data-host=world] .sound-toggle:hover{background:rgba(30,14,10,.16)}}
 :root[data-host=world] .sound-toggle::before{width:20px;height:20px;background:var(--w-on-face)}
 :root[data-host=world] .sound-toggle[aria-pressed=false]::before{opacity:.4}
 :root[data-host=world] .lobby>.hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr);align-content:end;gap:0;min-height:332px;margin:0;padding:84px 20px 22px;overflow:hidden;
@@ -299,7 +299,7 @@
 :root[data-host=world] .check-count{font:500 12px/1 var(--w-mono);letter-spacing:.06em;color:var(--w-ink-2)}
 :root[data-host=world] #check-close{display:grid;place-items:center;width:40px;min-width:40px;height:40px;min-height:40px;margin-left:auto;padding:0;border-radius:50%;background:var(--w-s2);box-shadow:none;font-size:0}
 :root[data-host=world] #check-close::before{content:'';width:16px;height:16px;background:var(--w-ink);-webkit-mask:var(--w-close) center/contain no-repeat;mask:var(--w-close) center/contain no-repeat}
-:root[data-host=world] #check-close:hover{background:var(--w-s3)}
+@media (hover:hover){:root[data-host=world] #check-close:hover{background:var(--w-s3)}}
 :root[data-host=world] dialog.check h2{margin:12px 0 6px;font-size:24px}
 :root[data-host=world] .check-intro{font-size:15px;line-height:1.6;color:var(--w-ink-3)}
 :root[data-host=world] .check-plan{font:550 13.5px/1.5 var(--w-sans);color:var(--w-ink-3)}
@@ -320,7 +320,7 @@
 :root[data-host=world] .choice .no{position:static;flex:none;display:grid;place-items:center;width:28px;height:28px;padding:0;border-radius:50%;background:none;box-shadow:inset 0 0 0 1px var(--w-line-2);
   color:var(--w-ink-2);filter:none;font:500 12px/1 var(--w-mono)}
 :root[data-host=world] .choice .lbl{min-width:0;text-wrap:pretty}
-:root[data-host=world] .choice:not(:disabled):hover{background:var(--w-s3)}
+@media (hover:hover){:root[data-host=world] .choice:not(:disabled):hover{background:var(--w-s3)}}
 :root[data-host=world] .choice:not(:disabled):active{transform:scale(.985)}
 :root[data-host=world] .check-choices.waiting .choice .lbl{opacity:.5}
 :root[data-host=world] .choice.chosen{transform:none;filter:none;background:var(--w-ink);color:var(--w-on-ink)}
