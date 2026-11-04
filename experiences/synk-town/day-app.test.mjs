@@ -123,7 +123,7 @@ function createDocument() {
 
 // --- One scenario: a fresh store, server, window and app instance ------------------------------------
 let scenarios = 0;
-async function boot(t, { setup } = {}) {
+async function boot(t, { setup, faultsAtEntry = [] } = {}) {
   let clock = 0, offset = 0, uuid = 0, raf = null, painting = true;
   const store = createStore({ lifeEnabled: true, now: () => BASE + offset + Math.floor(clock) });
   // Another window prepares the town (a seat, an episode), then leaves it: the app's first pulse takes the lease.
@@ -140,7 +140,7 @@ async function boot(t, { setup } = {}) {
   const server = createServer({ previewEnabled: true, store });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const origin = `http://127.0.0.1:${server.address().port}`, realFetch = globalThis.fetch;
-  const doc = createDocument(), win = target(), media = [], intervals = [], gates = [], faults = [], live = new Set();
+  const doc = createDocument(), win = target(), media = [], intervals = [], gates = [], faults = [...faultsAtEntry], live = new Set();
   const trace = { requests: [], frames: [] }, renderer = { requested: 1, painted: 1, ready: true, poses: 0 };
   async function fetch(input, init = {}) {
     const url = new URL(input, origin), body = init.body ? JSON.parse(init.body) : null;
@@ -151,6 +151,7 @@ async function boot(t, { setup } = {}) {
       const fault = faults.find(f => f.match(entry));
       let status, text;
       if (fault?.once) faults.splice(faults.indexOf(fault), 1);
+      if (fault?.thrown) { entry.thrown = true; throw fault.thrown; }
       if (fault && !fault.through) { status = fault.status; text = JSON.stringify(typeof fault.body === 'function' ? fault.body() : fault.body); }
       else {
         const gate = gates.find(g => g.before && g.match(entry));
@@ -233,8 +234,8 @@ async function boot(t, { setup } = {}) {
       gates.push(gate); return { open: async () => { if (gates.includes(gate)) gate.open(); await settle(); }, get held() { return [...live].filter(e => e.held && match(e)).length; } };
     },
     /** Answers the next request matching match with this status and body (a function: built then) instead of the host's
-     * answer — through: the host still handles it, only its answer is lost. */
-    fail(match, status, body, { once = true, through = false } = {}) { faults.push({ match, status, body, once, through }); },
+     * answer — through: the host still handles it, only its answer is lost; thrown: the request rejects with this error. */
+    fail(match, status, body, { once = true, through = false, thrown = null } = {}) { faults.push({ match, status, body, once, through, thrown }); },
     sent: type => trace.requests.filter(r => r.path === 'command' && r.body.type === type),
     hide(hidden = true) { doc.hidden = hidden; doc.dispatchEvent(event('visibilitychange')); },
   };
@@ -395,6 +396,66 @@ test('임대: 다시 받은 임대도 늦으면 걷기 패킷을 버리고 다�
   assert.deepEqual([app.walk().pending, app.walk().sending], [0, false]);
 });
 
+// --- A late answer: the account layer's deadline passed, often because the window was busy, not because the town is gone ---
+const lateWords = '연결이 늦어지고 있어요. 잠시 뒤 다시 시도해 주세요.';
+const late = () => Object.assign(new Error(lateWords), { code: 'NETWORK_TIMEOUT' });
+const pulses = app => app.trace.requests.filter(isPulse).length;
+async function nextPulse(app) { const seen = pulses(app); for (let i = 0; i < 400 && pulses(app) === seen; i++) await app.run(100); assert.ok(pulses(app) > seen, 'the window pulses again'); await app.settle(); }
+test('늦은 답: 들어올 때 임대 답이 마감을 넘기면 말없이 다시 들어온다', async t => {
+  const app = await boot(t, { faultsAtEntry: [{ match: isPulse, once: true, thrown: late() }] });
+  assert.equal(pulses(app), 2, 'one late pulse, then entering again');
+  assert.equal(app.metrics().connected, true);
+  assert.equal(byId(app, 'error').hidden, true);
+});
+test('늦은 답: 세 번 들어와도 늦으면 쉬운 말로 다시 연결을 청하고, 누르면 들어온다', async t => {
+  const app = await boot(t, { faultsAtEntry: [1, 2, 3].map(() => ({ match: isPulse, once: true, thrown: late() })) });
+  assert.equal(pulses(app), 3, 'entering stops asking on its own');
+  assert.equal(app.metrics().connected, false);
+  assert.equal(byId(app, 'error').textContent, lateWords);
+  assert.equal(byId(app, 'retry').hidden, false);
+  byId(app, 'retry').click(); await app.settle();
+  assert.equal(app.metrics().connected, true);
+  assert.equal(byId(app, 'error').hidden, true);
+});
+test('늦은 답: 옛 계정 묶음의 AbortError와 NETWORK_UNAVAILABLE도 화면에 영어로 보이지 않는다', async t => {
+  // Each browser words it differently: Chromium, then Firefox, then Safari, whose words are the ones left on screen.
+  const words = ['signal is aborted without reason', 'The operation was aborted.', 'Fetch is aborted'];
+  const app = await boot(t, { faultsAtEntry: words.map(message => ({ match: isPulse, once: true, thrown: new DOMException(message, 'AbortError') })) });
+  assert.equal(pulses(app), 3, 'the old bundle counts as a late answer too');
+  assert.equal(byId(app, 'error').textContent, '연결이 잠깐 끊겼어요. 다시 연결을 눌러 주세요.');
+  byId(app, 'retry').click(); await app.settle();
+  assert.equal(app.metrics().connected, true);
+  app.fail(isPulse, 0, null, { thrown: new Error('NETWORK_UNAVAILABLE') });
+  await nextPulse(app);
+  assert.equal(app.metrics().connected, false, 'a lost connection is not a late answer');
+  assert.equal(byId(app, 'error').textContent, '연결이 잠깐 끊겼어요. 다시 연결을 눌러 주세요.');
+});
+test('늦은 답: 머무는 동안의 임대 답은 두 번까지 넘기고, 세 번 잇달면 묻는다 — 그 사이 답이 오면 처음부터 센다', async t => {
+  const app = await boot(t);
+  app.fail(isPulse, 0, null, { thrown: late() });
+  await nextPulse(app);
+  assert.equal(app.metrics().connected, true); assert.equal(byId(app, 'error').hidden, true);
+  await nextPulse(app); // an answer between them starts the count over
+  for (const expected of [true, true, false]) {
+    app.fail(isPulse, 0, null, { thrown: late() });
+    await nextPulse(app);
+    assert.equal(app.metrics().connected, expected);
+  }
+  assert.equal(byId(app, 'error').textContent, lateWords);
+});
+
+test('늦은 답: 안전한 자리의 알림(boundary)이 늦어도 연결을 끊지 않고, 다음 알림이 그대로 간다', async t => {
+  const app = await boot(t, { setup: contactDue });
+  const isBoundary = r => r.path === 'boundary';
+  app.fail(isBoundary, 0, null, { thrown: late() });
+  await app.run(22000, 100);
+  assert.equal(app.trace.requests.filter(isBoundary).length, 1);
+  assert.equal(app.metrics().connected, true); assert.equal(byId(app, 'error').hidden, true);
+  await app.run(22000, 100);
+  assert.ok(app.trace.requests.filter(isBoundary).length >= 2, 'the next boundary goes out');
+  assert.equal(app.sent('LIFE_ACK').length, 1, 'the contact it offers still arrives');
+  assert.equal(app.metrics().connected, true);
+});
 test('임대: 다른 창이 임대를 가져간 뒤의 걷기 패킷은 호스트가 거절하고, 화면은 걷기를 멈춘다', async t => {
   const app = await boot(t);
   app.store.pulse({ surfaceId: 'other-window', surface: 'day', foreground: true, safe: false });
