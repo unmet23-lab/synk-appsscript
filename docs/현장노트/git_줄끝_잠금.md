@@ -94,7 +94,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 
 ### GitHub SSH가 같은 열쇠를 된다 안 된다 한다 — `Permission denied (publickey)`로 바로올리기 · 공개가 멈춘다 (2026-11-04 Claude)
 - **증상:** 19시 전후로 `git fetch` · `git push`가 `git@github.com: Permission denied (publickey)`로 끊겼다. 15분짜리 관련 시험을 다 돌린 바로올리기가 push에서 「push가 거절됐다」로 멈췄고, `공개.js --실행`도 같은 말로 멈췄다. 공개 도구 로그에는 `Permission denied`가 안 남고 `correct access rights`만 남기도 한다.
-- **원인:** 확인 못 했다. `ssh -v`로 보면 등록된 열쇠(`synk-laptop-2026-08-31`)를 내밀고도 거절당했고, 같은 명령을 여덟 번 치면 다섯 번 되고 세 번 거절됐다. `github.com/<계정>.keys`에 열쇠가 그대로 있고 githubstatus는 정상이었다. 이 PC의 열쇠나 권한 문제는 아니다.
+- **원인:** GitHub 쪽 장애다. 상태 페이지에 18:49 KST부터 Git Operations · API · Pull Requests · Actions 사고가 올라왔다. 내가 18:44에 본 전체 표시는 아직 정상이어서 처음에는 못 잡았다 — 거절이 먼저 나타나므로 몇 분 뒤 `https://www.githubstatus.com/api/v2/incidents/unresolved.json`을 다시 본다. `ssh -v`로 보면 등록된 열쇠(`synk-laptop-2026-08-31`)를 내밀고도 거절당했고, 같은 명령을 여덟 번 치면 다섯 번 되고 세 번 거절됐다. 열쇠 · 권한 · 원격 주소는 고칠 것이 없다.
 - **고침:** 열쇠를 바꾸지 말고 인증 거절만 다시 잇는다. `GIT_SSH_COMMAND="bash <감싸는 파일>"`을 주고, 그 파일은 `ssh -o BatchMode=yes "$@"`를 돌려 종료 코드 255에 stderr가 `Permission denied (publickey)`일 때만 3초 쉬고 다시 부른다(그 밖의 실패는 그대로 돌려준다). 바로올리기 · 공개.js는 환경 변수를 물려받는다. 15분 시험을 다시 돌리는 일이 없어진다.
 - **다시 확인:** 감싼 뒤 바로올리기가 「origin 확인 ✓」까지 갔고, 공개가 바이트 대조까지 갔다. 그동안 재시도 기록에 거절 10건이 남았다.
 
