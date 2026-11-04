@@ -1,0 +1,17 @@
+{
+ "note": "곡 출처 · 권리(공개 게임 파일 music.json에는 싣지 않는다 — 공개 빌드의 제작 도구 이름 검사). 음악고리.py가 함께 쓴다.",
+ "tracks": {
+  "clubA-dc1f0453": {
+   "file": "assets/world/music/clubA-dc1f0453.mp3",
+   "suno": "dc1f0453-a529-427b-9546-724e229a3ac1",
+   "title": "Talk Rally Club A",
+   "rights": "suno-premier-official-download"
+  },
+  "clubB-b9d7d4e4": {
+   "file": "assets/world/music/clubB-b9d7d4e4.mp3",
+   "suno": "b9d7d4e4-19ca-4ceb-98c8-2059f4817ac2",
+   "title": "Talk Rally Club B",
+   "rights": "suno-premier-official-download"
+  }
+ }
+}

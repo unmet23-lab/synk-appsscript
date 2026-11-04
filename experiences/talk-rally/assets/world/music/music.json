@@ -1,0 +1,59 @@
+{
+ "version": 1,
+ "target": {
+  "lufs": -18,
+  "truePeakDb": -1.5,
+  "codec": "mp3 160k 44.1kHz stereo"
+ },
+ "margin": 0.6,
+ "tracks": {
+  "clubA-dc1f0453": {
+   "mode": "calm",
+   "file": "assets/world/music/clubA-dc1f0453.mp3",
+   "loopStart": 0.6,
+   "loopEnd": 55.1059,
+   "bpm": 105.68,
+   "bar": 2.2711,
+   "bars": 24,
+   "start": 10.2731,
+   "end": 64.779,
+   "seamSimilarity": 0.9889,
+   "seamBefore": 0.9922,
+   "duration": 111.12,
+   "key": {
+    "name": "F major",
+    "r": 0.876
+   },
+   "inputLufs": -15.28,
+   "vocals": {
+    "rmsDb": -72.0,
+    "loudest3sDb": -69.8
+   },
+   "bytes": 1115625
+  },
+  "clubB-b9d7d4e4": {
+   "mode": "calm",
+   "file": "assets/world/music/clubB-b9d7d4e4.mp3",
+   "loopStart": 0.6,
+   "loopEnd": 58.5882,
+   "bpm": 99.33,
+   "bar": 2.4162,
+   "bars": 24,
+   "start": 2.6521,
+   "end": 60.6403,
+   "seamSimilarity": 0.9974,
+   "seamBefore": 0.994,
+   "duration": 156.4,
+   "key": {
+    "name": "C major",
+    "r": 0.835
+   },
+   "inputLufs": -15.62,
+   "vocals": {
+    "rmsDb": -73.3,
+    "loudest3sDb": -73.1
+   },
+   "bytes": 1185111
+  }
+ }
+}

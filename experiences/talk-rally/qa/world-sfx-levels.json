@@ -1,0 +1,53 @@
+{
+ "measured": "2026-11-03",
+ "method": "OfflineAudioContext 48kHz mono → BS.1770 K-weighting → 400ms momentary max, hop 50ms, zero-padded (sound_check.py measure); mean of seeds 1,2,3,5,8",
+ "opts": {
+  "far": {
+   "hi": false
+  }
+ },
+ "target": {
+  "tap": -31,
+  "combo": -19,
+  "tick": -30.5,
+  "roll": -34,
+  "land": -20,
+  "done": -17.5,
+  "coin": -21,
+  "start": -24,
+  "far": -46
+ },
+ "level": {
+  "tap": 15.312,
+  "combo": 4.685,
+  "tick": 26.082,
+  "roll": 24.774,
+  "land": 5.191,
+  "done": 12.322,
+  "coin": 6.414,
+  "start": 4.109,
+  "far": 10.093
+ },
+ "measuredLufs": {
+  "tap": -31,
+  "combo": -19,
+  "tick": -30.5,
+  "roll": -34,
+  "land": -20,
+  "done": -17.5,
+  "coin": -21,
+  "start": -24,
+  "far": -46
+ },
+ "peakDbfs": {
+  "tap": -2.3,
+  "combo": -4.2,
+  "tick": -1.7,
+  "roll": -3.4,
+  "land": -1.9,
+  "done": -0.9,
+  "coin": -7.7,
+  "start": -5.2,
+  "far": -16.2
+ }
+}

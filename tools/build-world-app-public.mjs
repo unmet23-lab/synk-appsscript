@@ -97,6 +97,10 @@ function copyFile(source,relative,{transform=true}={}){
  if(relative==='blank-slice/index.html'){for(const line of [/\r?\n[ \t]*<img class="hero-pieces"[^>]*>/,/\r?\n[ \t]*<img class="hero-mongle[^>]*>/,/\r?\n[ \t]*<img class="res-mongle[^>]*>/]){if(!line.test(content))throw Error('Blank slice felt image shape changed');content=content.replace(line,'');}const hub='href="/learning-hub/"';if(content.split(hub).length!==2)throw Error('Blank slice hub link changed');content=content.replace(hub,'href="#"');}   // 「다른 게임 추천」은 LAB 허브로 가는 단추 — 앱에서는 숨는다
  // 빈칸 베기 3D 무대 · 찢기 재질도 공용 three.js를 쓴다 — 두 사본의 바이트가 같을 때만(아래 blankSharedThree).
  if((relative==='blank-slice/stage.mjs'||relative==='blank-slice/world-stage.mjs')&&blankSharedThree){const from="'./vendor/three.module.js'";if(content.split(from).length!==2)throw Error('Blank slice three.js import changed');content=content.replace(from,"'../scene-assets/three.module.js'");}
+ // 말 랠리 입구 · 결과의 몽글 그림은 WORLD 사본 HTML에서 뺀다 — 가려져 있어도 받아지므로(LAB 원본 index.html은 그대로).
+ if(relative==='talk-rally/index.html'){for(const line of [/\r?\n[ \t]*<img class="hero-mongle[^>]*>/,/\r?\n[ \t]*<img class="res-mongle[^>]*>/]){if(!line.test(content))throw Error('Talk rally mascot image shape changed');content=content.replace(line,'');}}
+ // 말 랠리 3D 탁구대도 같다(아래 rallySharedThree).
+ if(relative==='talk-rally/stage.mjs'&&rallySharedThree){const from="'./vendor/three.module.js'";if(content.split(from).length!==2)throw Error('Talk rally three.js import changed');content=content.replace(from,"'../scene-assets/three.module.js'");}
  const rendered=transform&&/\.(?:mjs|js|cjs|html|css)$/.test(source)?Buffer.from(rewrite(content,relative)):bytes;
  const prepared=publicAsset(relative,rendered);if(prepared)write(prepared.relative,prepared.bytes,source);
 }
@@ -179,6 +183,9 @@ copyTree(path.join(root,'experiences','snap-words'),'snap-words',(source,relativ
 // three.js는 주문 폭주와 같이 홈의 공용 사본과 바이트까지 같으면 vendor/를 싣지 않고 공용 사본을 부른다(위 copyFile).
 const blankSharedThree=['three.module.js','three.core.js'].every(name=>fs.readFileSync(path.join(root,'experiences/blank-slice/vendor',name)).equals(fs.readFileSync(path.join(home,'scene-assets',name))));
 copyTree(path.join(root,'experiences','blank-slice'),'blank-slice',(source,relative)=>!/^blank-slice\/(?:sound-lab[^/]*|assets\/hero-pieces\.webp)$/.test(relative)&&!(blankSharedThree&&relative.startsWith('blank-slice/vendor/')));
+// 말 랠리(11-04, 캠퍼스 판 겉 — 해금 표로 「놀이」에서 연다): 게임 폴더째 싣되 LAB 전용 몽글 음성 · 안내 음성 · 펠트 벽 · 몽글 소리와 제작 원본은 뺀다 — WORLD는 assets/world만 쓴다(world-play.mjs). three.js는 공용 사본과 바이트까지 같으면 vendor/를 싣지 않는다.
+const rallySharedThree=['three.module.js','three.core.js'].every(name=>fs.readFileSync(path.join(root,'experiences/talk-rally/vendor',name)).equals(fs.readFileSync(path.join(home,'scene-assets',name))));
+copyTree(path.join(root,'experiences','talk-rally'),'talk-rally',(source,relative)=>!/^talk-rally\/(?:assets\/(?:voice|narration|scene)\/.*|assets\/sound\/mongle-.*|art-source\/.*|scripts\/.*|sound-lab\..*)$/.test(relative)&&!(rallySharedThree&&relative.startsWith('talk-rally/vendor/')));
 // 드라마 말하기 1화(11-02, 설계 experiences/drama/qa/WORLD올리기-20261102/설계.md): 화면 · 강의(world-lesson.json) · 기록 묶음 · 재생 사본만 싣는다.
 // content.mjs(시범 서버 전용 · 판정 명세)와 README · qa는 싣지 않는다. 재생 사본(media/)은 git 밖(tools/build-drama-pilot-assets.mjs가 승인 원천에서
 // 만든다)이라 그 manifest.json의 sha256과 하나씩 대조해 없거나 다르면 멈춘다 — manifest 자체(원천 파일 이름)는 싣지 않는다.

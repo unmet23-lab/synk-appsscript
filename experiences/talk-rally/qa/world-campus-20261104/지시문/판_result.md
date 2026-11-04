@@ -1,0 +1,4 @@
+PHOTOREAL STILL, vertical 3:4.
+Image 4 = the club room to keep: the same table-tennis practice room — blue-grey sports floor, cream walls, high windows with warm evening light, ceiling LED panels, dark-green divider barriers, the far table with two players, folding chairs and the navy varsity jacket with cream sleeves over one chair.
+
+THE MOMENT — the game has just ended and it was fun. A closer, medium shot from the viewer's eye height: Tae-o has walked round to the viewer's side of the blue table-tennis table and raises his right palm toward the camera for a high five, laughing, a little out of breath, a light flush on his cheeks and a few damp strands of hair on his forehead; the paddle with red rubber in his left hand. He is framed from the waist up, his face about a fifth of the frame width, in the upper third; the table and net behind him to one side. Plain light-grey hoodie with the sleeves pushed up. Eyes open and clearly visible.

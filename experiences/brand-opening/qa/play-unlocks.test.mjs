@@ -10,6 +10,13 @@ test('이 표 전부터 있던 놀이(바람길 · 한글 만나기 · 말의 �
   for (const id of ['runner', 'hangul', 'rhythm']) assert.deepEqual(playState(id, null), { open: true });
 });
 
+test('말 랠리는 레슨 한 번이나 카페 첫 방문 뒤 열린다(동아리 탁구 회차가 생기면 옮긴다)', () => {
+  const data = (completed, cafe = 0) => ({ summary: { completed, cafe: { completed: cafe }, status: { phase: 'ready' } } });
+  assert.deepEqual(playState('rally', playRecord(data(0))), { open: false, where: 'play.where.lesson' });
+  assert.deepEqual(playState('rally', playRecord(data(1))), { open: true });
+  assert.deepEqual(playState('rally', playRecord(data(0, 1))), { open: true });
+});
+
 test('주문 폭주는 싱크타운 카페 첫 방문을 마친 뒤에만 열린다', () => {
   assert.deepEqual(playState('order', playRecord(learning(0))), { open: false, where: 'play.where.cafe' });
   assert.deepEqual(playState('order', playRecord(learning(1))), { open: true });
@@ -51,7 +58,7 @@ test('규칙이 이상한 기록에 던져도 잠김으로 남는다', () => {
 
 test('잠김 안내의 여는 자리 글이 화면 글 표에 세 언어로 있다', () => {
   for (const rule of Object.values(PLAY_UNLOCKS)) {
-    for (const key of [rule.where, 'play.locked', 'game.order.title', 'game.order.detail', 'game.blank.title', 'game.blank.detail', 'game.snap.title', 'game.snap.detail', 'game.racing.title', 'game.racing.detail']) {
+    for (const key of [rule.where, 'play.locked', 'game.order.title', 'game.order.detail', 'game.blank.title', 'game.blank.detail', 'game.snap.title', 'game.snap.detail', 'game.racing.title', 'game.racing.detail', 'game.rally.title', 'game.rally.detail']) {
       for (const lang of ['ko', 'en', 'mn']) assert.ok(strings[key]?.[lang], `${key}.${lang}`);
     }
   }

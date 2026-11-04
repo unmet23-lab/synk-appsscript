@@ -132,6 +132,19 @@
 - 고침: 같은 founder 계정의 CLI로 낸다 — `HOME=/c/Users/q1212/.ai-accounts/higgsfield-founder USERPROFILE='C:\Users\q1212\.ai-accounts\higgsfield-founder' higgsfield account status --json`으로 메일 · 잔액이 MCP에서 보던 것과 같은지 보고(10-30 578.61 = MCP 707.61 − 쓴 129), `higgsfield generate cost|create <모델> --mode … --start-image <파일> --end-image <파일> --audio-references <mp3> --prompt "$(cat 지시문.txt)" --json`으로 낸다(파일은 저절로 올라간다). 기다리기는 `generate wait <id> --timeout 70m --quiet --json`을 백그라운드로 돌린다. CLI에서는 프리셋 가로채기가 나오지 않았다.
 - 다시 확인: `account status`의 메일이 founder@synk.im이고, 생성 뒤 잔액이 견적만큼 줄었는지.
 
+### CLI가 표준 입력이 열려 있으면 접수에서 10분 넘게 멈추고, node에서 부르면 「No workspace selected」다 (2026-11-04 Claude · 말 랠리 태오 목소리)
+- 증상: `higgsfield generate create elevenlabs_v4 …`를 뒤 작업 셸에서 돌리자 접수 줄이 안 나오고 10분 넘게 멈췄다(크레딧도 안 나감). node `spawn`으로 부르면 바로 「No workspace selected」로 끝났다.
+- 원인: CLI가 stdin을 끝까지 읽으려 기다린다. node에서는 HOME · USERPROFILE이 다르게 넘어가 로그인 파일을 못 찾는다.
+- 고침: 모든 호출 끝에 `< /dev/null`. node 대신 셸 스크립트로 묶고 HOME · USERPROFILE을 export한다(`experiences/talk-rally/qa/world-campus-20261104/목소리내기.sh`).
+- 다시 확인: 같은 스크립트로 66줄을 끝까지 구웠다.
+
+### 일레븐 v4 값은 꼬리표까지 글자 수로 매기고, 한국어가 빠르면 꼬리표로 늦춘다 (2026-11-04 Claude · 말 랠리 태오 목소리)
+- 증상: 12줄 묶음이 1.15크레딧인데 같은 말에 긴 꼬리표를 달자 2.30이 됐다. 꼬리표만 쓰면 초당 6~7음절로 학습 듣기에 너무 빨랐다.
+- 원인: 값은 글자 수(꼬리표 포함)다. 감정 꼬리표만으로는 빠르기가 안 바뀐다.
+- 고침: 문항에는 `[slowly and clearly, <감정>]` 한 묶음만. Julian에서 초당 약 4.2음절(몽글 5.1)로 내려왔다. 묶음으로 구워 낱말 시각으로 자르면 값이 줄지만, 자른 줄에 앞 줄 꼬리가 남으니 `말구간`처럼 소리 덩이로 다시 잰다(`목소리나누기.py`).
+- 다시 확인: 받아쓰기 대조에서 글자가 어긋난 줄만 다시 구웠다.
+
+
 ## Nano Banana Pro 정지컷
 
 ### 경로마다 값·워터마크·조작이 다르다

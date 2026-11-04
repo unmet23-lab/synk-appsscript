@@ -1,0 +1,1 @@
+TAE-O — AN UNBELIEVABLE STREAK, PURE JOY: both arms thrown up above his shoulders in celebration, the paddle with red rubber high in his right hand, his left hand a fist, laughing with his whole face, teeth showing, eyes open and crinkled. His hands stay fully inside the frame. Plain light-grey hoodie with the sleeves pushed up. There is no ball anywhere in the picture.

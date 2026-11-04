@@ -1,0 +1,1 @@
+TAE-O — A LONG RALLY, HE CAN'T BELIEVE HOW GOOD YOU ARE: his mouth is open in an amazed laugh, eyebrows high, his left hand on top of his head in disbelief, the paddle with red rubber hanging in his right hand beside his hip. Eyes wide open and clearly visible. Plain light-grey hoodie with the sleeves pushed up. There is no ball anywhere in the picture.

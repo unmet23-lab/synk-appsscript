@@ -1,0 +1,413 @@
+/* 말 랠리 — WORLD 안의 모습(캠퍼스 판, 2026-11-04 · 설계 docs/제2의나_설계_20261102.md 11-1 · qa/world-campus-20261104/설계.md).
+ * WORLD 앱이 이 게임을 .game-frame iframe으로 열면 world-host.js가 <html data-host="world">를 붙이고, 이 파일의 규칙이 그때만 걸린다.
+ * 따로 연 LAB 화면은 kit/lab.css + style.css 그대로다(모든 규칙이 :root[data-host=world] 아래).
+ * 공통 부분(글꼴 · 토큰 · 단추 · 창 · 계정 띠 · 움직임 토큰)은 주문 폭주 · 말의 리듬의 world-skin.css와 같은 글이다.
+ * 동아리 탁구장: 입구는 태오가 라켓을 건네는 사진과 큰 제목(공이 두 낱말 위를 오간다), 시합은 사진 한 장면 위에 3D 공 · 유리 캡슐 · 목소리 막대 · 대답 카드, 결과는 손바닥을 내미는 포스터 · 큰 숫자 · 주고받기 점.
+ * DOM에 더한 것(#w-scene · .w-plate · .w-art · .w-title · .w-ball · .w-who · .w-dots · .w-stamp · .w-mix …)은 world-play.mjs setup이 WORLD에서만 붙인다. id · data-* · 클래스는 그대로다. */
+/* 라틴·숫자는 Inter Tight, 영문 라벨은 DM Mono(띄어쓰기 뺀 범위) — 둘 다 키트 글꼴 파일을 쓴다. 이 이름은 WORLD 규칙에서만 불러서 LAB 화면은 받지 않는다. */
+@font-face{font-family:'World Game Latin';src:url(kit/fonts/InterTight-Medium.woff2) format('woff2');font-weight:100 599;font-display:swap;unicode-range:U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+2010-2024,U+2026-2027,U+2030-203A,U+2190-2199,U+20A9,U+20AC,U+2122,U+2212}
+@font-face{font-family:'World Game Latin';src:url(kit/fonts/InterTight-Bold.woff2) format('woff2');font-weight:600 1000;font-display:swap;unicode-range:U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+2010-2024,U+2026-2027,U+2030-203A,U+2190-2199,U+20A9,U+20AC,U+2122,U+2212}
+@font-face{font-family:'World Game Mono';src:url(kit/fonts/DMMono-Medium.woff2) format('woff2');font-weight:100 1000;font-display:swap;unicode-range:U+0021-007E,U+00A0-00FF,U+2010-2027}
+
+/* ── 토큰(world-ui.css의 밤 값) + 키트 변수를 같은 값으로 돌려 남은 규칙도 어두운 판에 맞춘다 ── */
+:root[data-host=world]{
+  --w-sans:'World Game Latin',SUIT,system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --w-mono:'World Game Mono',SUIT,ui-monospace,monospace;
+  --w-bg:#060709;--w-panel:#0C0D10;--w-s1:#121317;--w-s2:#191A1F;--w-s3:#222329;
+  --w-line:rgba(255,255,255,.075);--w-line-2:rgba(255,255,255,.14);
+  --w-ink:#FAFAF9;--w-ink-2:rgba(250,250,249,.76);--w-ink-3:rgba(250,250,249,.58);--w-ink-q:rgba(250,250,249,.42);--w-ink-4:rgba(250,250,249,.22);--w-on-ink:#08090C;
+  --w-glass:rgba(17,18,22,.52);--w-glass-strong:rgba(14,15,19,.82);
+  --w-glass-edge:inset 0 1px 0 rgba(255,255,255,.16),inset 0 0 0 1px rgba(255,255,255,.085),0 10px 30px rgba(0,0,0,.26);
+  --w-card-edge:inset 0 1px 0 rgba(255,255,255,.055),inset 0 0 0 1px var(--w-line);
+  --w-blur:blur(22px) saturate(1.7);
+  --w-shadow:0 28px 80px rgba(0,0,0,.55);
+  --w-r-xl:28px;--w-r-lg:22px;--w-r-md:16px;
+  --w-ease:cubic-bezier(.2,.75,.2,1);
+  --w-face:#F96859;--w-on-face:#1E0E0A;--w-face-text:#FFB4A9;--w-glow:#F96859;
+  --w-face-ink-2:rgba(30,14,10,.74);--w-face-ink-3:rgba(30,14,10,.6);--w-face-line:rgba(30,14,10,.16);
+  --w-led-ok:#7DB45A;--w-led-info:#5B86DB;--w-led-check:#F5C445;--w-led-alert:#F96859;--w-led-idle:rgba(250,250,249,.34);
+  --w-ok-text:#C9E6AE;--w-check-text:#FFE08A;--w-alert-text:#FFB4A9;
+  --w-grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --w-studio:radial-gradient(120% 85% at 28% -10%,rgba(255,255,255,.17),transparent 58%),linear-gradient(180deg,transparent 52%,rgba(0,0,0,.13));
+  --w-print-shadow:0 1px 0 rgba(0,0,0,.04),0 14px 30px rgba(30,14,10,.28),0 3px 8px rgba(30,14,10,.16);
+  --w-arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2.5 8h10.5M9 3.8 13.2 8 9 12.2' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --w-check:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --w-close:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 4l8 8M12 4l-8 8' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  --w-pause:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M5.5 3.5v9M10.5 3.5v9' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  --w-minus:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8h9' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  --w-plus:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 3.5v9M3.5 8h9' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  --w-star:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.8l2.85 5.78 6.38.93-4.62 4.5 1.09 6.36L12 17.36l-5.7 3.01 1.09-6.36-4.62-4.5 6.38-.93z' fill='black' stroke='black' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E");
+  /* 키트 변수: 종이·크림·잉크를 밤 판 값으로(펠트 그림은 아래에서 하나씩 걷어 낸다) */
+  --ink:var(--w-ink);--ink-2:var(--w-ink-2);--muted:var(--w-ink-3);--line:var(--w-line);
+  --paper:var(--w-s1);--cream:var(--w-panel);--sand:var(--w-s2);
+  --coral:var(--w-face);--coral-deep:var(--w-face-text);--coral-wash:rgba(249,104,89,.16);--blush:var(--w-s3);--marker:transparent;
+  --focus:var(--w-ink);--sans:var(--w-sans);--mono:var(--w-mono);
+  --shadow-paper:none;--shadow-felt:none;--ease:var(--w-ease);
+  color-scheme:dark;
+}
+:root[data-host=world] body{background:var(--w-panel);color:var(--w-ink);font-family:var(--w-sans);font-weight:450;letter-spacing:-.006em}
+/* 게임 모듈이 WORLD 겉을 다 붙이기 전(계정 준비 · 모듈 읽기, 0.5초 안팎)에는 화면을 비워 둔다 — LAB의 「처음 여는 작은 가게」 · 몽글이 한 번 비쳤다(11-03 시안 영상에서 찾음). world-play.mjs setup 끝에서 .w-ready */
+:root[data-host=world]:not(.w-ready) .screen{visibility:hidden}
+/* 화면 바꿈 가림막(world-play.mjs): 바꾸는 순간 바탕색으로 덮고, 새 화면이 두 장 그려지면 260ms에 걷는다 — 첫 그리기의 끊김을 가린다 */
+:root[data-host=world] #w-curtain{position:fixed;inset:0;z-index:60;background:var(--w-panel);opacity:0;pointer-events:none;will-change:opacity}
+:root[data-host=world] #w-curtain.on{opacity:.99}   /* 1이면 그래픽 칩이 아래 화면을 가려졌다고 그리지 않아, 걷기 시작해서야 셰이더를 굽고 장을 버렸다 — 99%면 덮인 동안 미리 그린다 */
+:root[data-host=world] :is(button,a):focus-visible{outline:2px solid var(--w-ink);outline-offset:3px}
+:root[data-host=world] [tabindex="-1"]:focus{outline:none}
+:root[data-host=world] :is(h1,h2,h3){text-wrap:balance}
+:root[data-host=world] p{text-wrap:pretty}
+
+/* ── 공통 부품 ── */
+:root[data-host=world] .paper{background:none;border-radius:0;box-shadow:none}
+:root[data-host=world] .lab-only{display:none}   /* LAB 화면에만 맞는 안내(예: ‘펠트 단추’) → WORLD에서는 .world-only 문장으로 바꿔 보인다 */
+:root[data-host=world] .world-only[hidden]{display:block!important}
+:root[data-host=world] .kicker{display:inline-flex;align-items:center;gap:10px;font:500 11px/1.4 var(--w-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--w-ink-3)}
+:root[data-host=world] .kicker.ko{font:550 13px/1.4 var(--w-sans);letter-spacing:0;text-transform:none}
+:root[data-host=world] .tag{display:inline-flex;align-items:center;gap:10px;min-height:0;padding:0;background:none;font:550 13px/1.4 var(--w-sans);letter-spacing:0;color:var(--w-ink-3)}
+:root[data-host=world] :is(.start-card,.card-head,.how,.res-grid .paper)>.tag::after,:root[data-host=world] dialog.lab-dialog>.kicker::after,:root[data-host=world] .check-top>.kicker::after{content:'';width:28px;height:1px;background:var(--w-line-2)}
+:root[data-host=world] .fine{font-size:13px;line-height:1.6;color:var(--w-ink-3)}
+:root[data-host=world] .reason{font-size:15.5px;line-height:1.6;color:var(--w-ink-2)}
+:root[data-host=world] .text-link{font-size:13.5px;font-weight:600;color:var(--w-ink-2);text-decoration:underline;text-decoration-color:var(--w-ink-4);text-underline-offset:4px}
+:root[data-host=world] .w-led,:root[data-host=world] .fine.warn::before{display:inline-block;flex:none;width:7px;height:7px;border-radius:50%;background:var(--w-led-idle)}
+
+/* 주 행동: 흰 알약 하나(화살표는 마스크) */
+:root[data-host=world] .felt-cta{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;padding:0 28px;border:0;border-radius:999px;
+  background:var(--w-ink);color:var(--w-on-ink);text-shadow:none;filter:none;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12);
+  font:600 16.5px/1.2 var(--w-sans);letter-spacing:-.01em;transition:box-shadow .2s var(--w-ease),transform .12s var(--w-ease),opacity .18s var(--w-ease)}
+:root[data-host=world] .felt-cta:is(.coral,.cream){background:var(--w-ink);color:var(--w-on-ink)}
+:root[data-host=world] .felt-cta .disc{position:static;width:16px;height:16px;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
+:root[data-host=world] .felt-cta .disc::after{content:none}
+:root[data-host=world] .felt-cta:hover{box-shadow:0 0 0 5px color-mix(in srgb,var(--w-glow) 32%,transparent)}
+:root[data-host=world] .felt-cta:active{transform:scale(.975);filter:none}
+:root[data-host=world] .felt-cta:disabled{opacity:.42;cursor:default;transform:none}
+/* 보조: 1px 선 알약 */
+:root[data-host=world] .chip-btn{min-height:44px;padding:0 18px;border:0;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink);
+  font:600 14px/1.2 var(--w-sans);letter-spacing:-.005em;filter:none;transition:background .18s var(--w-ease),transform .12s var(--w-ease)}
+:root[data-host=world] .chip-btn:hover{background:var(--w-s2)}
+:root[data-host=world] .chip-btn:active{transform:scale(.97)}
+:root[data-host=world] .chip-btn[aria-pressed=true]{color:var(--w-ink)}
+:root[data-host=world] .chip-btn:disabled{opacity:.42;cursor:default;transform:none}
+:root[data-host=world] .chip-btn.wide{width:100%;min-height:52px;background:transparent;filter:none;font-size:15px}
+:root[data-host=world] .disc-btn{display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:var(--w-s2);box-shadow:var(--w-card-edge);color:var(--w-ink)}
+
+/* 공통 코인 줄: 조용한 글 + 밑줄 링크 */
+:root[data-host=world] .synk-collection-line{gap:6px 14px;font-size:13.5px;line-height:1.5;color:var(--w-ink-3)}
+:root[data-host=world] .synk-collection-line a{font-weight:600;color:var(--w-ink-2);text-decoration:underline;text-decoration-color:var(--w-ink-4);text-underline-offset:4px}
+:root[data-host=world] [data-collection-garage]{display:none}   /* WORLD 앱에는 레이싱 차고(/korean-racing/)가 없어 이 링크는 빈 화면으로 간다 — 잔액만 남긴다 */
+
+/* 계정 띠: WORLD가 위에서 계정을 보여 주므로 안내만 하는 상태는 숨기고, 손볼 일이 있을 때(연결 끊김·진도 충돌·종료)만 어두운 띠로 */
+:root[data-host=world] .synk-play-account:is([data-phase=guest],[data-phase=synced],[data-phase=saving],[data-phase=loading]){display:none}
+:root[data-host=world] .synk-play-account{gap:4px 14px;padding:10px 16px;background:var(--w-s1);color:var(--w-ink-2);border-bottom:1px solid var(--w-line);font:450 13px/1.5 var(--w-sans)}
+:root[data-host=world] .synk-play-account>span::before{content:'';display:inline-block;width:7px;height:7px;margin:0 8px 1px 0;border-radius:50%;background:var(--w-led-check);box-shadow:0 0 10px rgba(245,196,69,.5)}
+:root[data-host=world] .synk-play-account[data-phase=stopped]>span::before{background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.55)}
+:root[data-host=world] .synk-play-account a{color:var(--w-ink);font-weight:600;text-decoration-color:var(--w-ink-4)}
+
+/* 알림: 흰 알약 */
+:root[data-host=world] .toast{border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);box-shadow:0 14px 36px rgba(0,0,0,.35);font:550 14px/1.45 var(--w-sans);padding:12px 18px}
+
+/* 창(멈춤·목소리 문제·듣기 확인): 어두운 판 */
+:root[data-host=world] dialog.lab-dialog{padding:24px 22px 22px;border-radius:var(--w-r-xl);background:var(--w-s1);color:var(--w-ink);box-shadow:var(--w-card-edge),var(--w-shadow)}
+:root[data-host=world] dialog.lab-dialog::backdrop{background:rgba(4,5,7,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+:root[data-host=world] dialog.lab-dialog h2{margin:10px 0 8px;font:680 24px/1.25 var(--w-sans);letter-spacing:-.024em;color:var(--w-ink)}
+:root[data-host=world] dialog.lab-dialog p{color:var(--w-ink-2);font-size:15.5px;line-height:1.6}
+:root[data-host=world] .dialog-actions{gap:12px}
+/* 켜고 끄는 칩은 설정 줄 + 50×30 스위치(글은 그대로 ‘소리 켜짐/꺼짐’) */
+:root[data-host=world] .dialog-toggles{display:grid;gap:0;border-top:1px solid var(--w-line)}
+:root[data-host=world] .dialog-toggles .chip-btn{justify-content:space-between;width:100%;min-height:58px;padding:0 2px;border-radius:0;box-shadow:none;border-bottom:1px solid var(--w-line);
+  background:none;font:600 15.5px/1.3 var(--w-sans);text-align:left;white-space:normal}
+:root[data-host=world] .dialog-toggles .chip-btn::after{content:'';flex:none;width:50px;height:30px;margin-left:16px;border-radius:999px;
+  background:radial-gradient(circle at 15px 50%,var(--w-ink-2) 0 12px,transparent 12.5px),var(--w-s3);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+:root[data-host=world] .dialog-toggles .chip-btn[aria-pressed=true]::after{background:radial-gradient(circle at 35px 50%,var(--w-on-ink) 0 12px,transparent 12.5px),var(--w-ink);box-shadow:none}
+:root[data-host=world] .dialog-toggles .chip-btn:is(:hover,:active){background:none;transform:none}
+
+/* ── 결과 공통(말의 리듬 3차 공통에서 이 게임이 쓰는 것): 점수 글자 · 얻은 것 · 흰 알약 「우리 동네로」 ── */
+:root[data-host=world] .w-mono{font:500 11px/1.4 var(--w-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--w-ink-3)}
+:root[data-host=world] .pop.go{animation:wPop .7s var(--w-ease) both}
+@keyframes wPop{0%{opacity:0;transform:translate(-50%,-50%)}20%{opacity:1}70%{opacity:1;transform:translate(-50%,-56%)}100%{opacity:0;transform:translate(-50%,-60%)}}
+@media (prefers-reduced-motion:reduce){:root[data-host=world] .pop.go{animation:none}}
+:root[data-host=world] .res-hero .stars{display:none}   /* 별 대신 큰 숫자 하나 */
+:root[data-host=world] .w-room-bar{position:sticky;z-index:6;bottom:0;margin:14px -12px -28px;padding:28px 18px max(16px,env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(12,13,16,0),var(--w-panel) 42%)}
+:root[data-host=world] .w-room-bar>.felt-cta{min-height:58px}
+
+/* ── 2판 토큰: 움직임 여섯(Material 3 Expressive 웹 변환표 — world-fx.mjs M과 같은 값) · 이 게임의 유리 ──
+ * 밝은 사진 위 유리는 채도를 1.3으로만 올리고(1.7이면 색이 유리를 뚫는다) 바깥에 어두운 1px을 둔다(2판 설계 검토 P3). */
+:root[data-host=world]{
+  --m-fast:350ms cubic-bezier(.42,1.67,.21,.90);--m-base:500ms cubic-bezier(.38,1.21,.22,1);--m-slow:650ms cubic-bezier(.39,1.29,.35,.98);
+  --e-fast:150ms cubic-bezier(.31,.94,.34,1);--e-base:200ms cubic-bezier(.34,.80,.34,1);--e-slow:300ms cubic-bezier(.34,.88,.34,1);
+  --w-blur:blur(16px) saturate(1.3);   /* 흐림 반지름이 그리기 비용을 정한다(3배 화면에서 22px = 66px 흐림) — 11-03 밤 16px로 */
+  --w-glass-edge:inset 0 1px 0 rgba(255,255,255,.16),inset 0 0 0 1px rgba(255,255,255,.085),0 0 0 1px rgba(0,0,0,.35),0 10px 30px rgba(0,0,0,.26);
+  --w-glass-dark:rgba(10,11,14,.66);
+  --w-check-dark:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='%2308090C' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+/* ── 입구: 태오가 라켓을 건네는 사진 · 큰 제목 「말 랠리」(공이 두 낱말 사이를 오간다) → 한 줄 · 흰 알약 ── */
+:root[data-host=world] .lobby{position:relative;min-height:100svh;padding:0 0 28px;background:var(--w-panel)}
+:root[data-host=world] .lobby>.topbar{position:absolute;z-index:6;top:max(14px,env(safe-area-inset-top));right:14px;left:auto;padding:0;gap:0;background:none}
+:root[data-host=world] .lobby>.topbar>.kicker{display:none}
+:root[data-host=world] .sound-toggle{width:44px;height:44px;margin:0;border-radius:50%;background:var(--w-glass-dark);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);transition:background var(--e-fast)}
+:root[data-host=world] .sound-toggle::before{width:20px;height:20px;background:var(--w-ink)}
+:root[data-host=world] .sound-toggle[aria-pressed=false]::before{opacity:.4}
+:root[data-host=world] .lobby>.hero{--hero-h:clamp(420px,calc(100svh - 236px),680px);position:relative;isolation:isolate;container-type:size;display:block;
+  height:var(--hero-h);min-height:0;margin:0;padding:0;overflow:hidden;background:var(--w-s1);color:var(--w-ink)}
+:root[data-host=world] .w-art{--aw:max(100cqw,75cqh);position:absolute;left:50%;top:0;width:var(--aw);aspect-ratio:3/4;transform:translateX(-50%)}
+:root[data-host=world] .w-art>img{position:absolute;inset:0;display:block;width:100%;height:100%}
+:root[data-host=world] .w-art .w-photo{z-index:0}
+:root[data-host=world] .lobby>.hero::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(6,7,9,.36) 0,rgba(6,7,9,0) 20%,rgba(6,7,9,0) 54%,rgba(12,13,16,.8) 88%,var(--w-panel) 99%)}
+/* 제목은 사진 아래쪽에 크게, 왼쪽에 맞춰 — 높이는 히어로 상자 기준(사진이 잘려도 같은 자리) */
+:root[data-host=world] .lobby .hero-copy{position:absolute;z-index:5;left:20px;right:72px;top:max(26px,calc(env(safe-area-inset-top) + 12px));min-width:0}
+:root[data-host=world] .hero-copy>.kicker{display:inline-flex;color:var(--w-ink-2);text-shadow:0 1px 10px rgba(0,0,0,.6)}
+:root[data-host=world] .hero-copy>.kicker::after{content:'';width:28px;height:1px;background:var(--w-line-2)}
+:root[data-host=world] .lobby .hero .sub{display:none}
+:root[data-host=world] .w-title{position:absolute;z-index:4;left:18px;right:18px;bottom:16px;margin:0;display:flex;align-items:baseline;gap:.2em;
+  font:900 clamp(62px,21cqw,118px)/.94 var(--w-sans);letter-spacing:-.065em;color:var(--w-ink);text-shadow:0 2px 28px rgba(0,0,0,.34)}
+:root[data-host=world] .w-title .w-l{position:relative;display:inline-block;overflow-x:visible;overflow-y:clip;overflow-clip-margin:.12em}
+:root[data-host=world] .w-title .w-w{display:inline-block;will-change:transform}
+/* 「말 랠리」 박자(2.6초 한 바퀴): 공이 「말」과 「랠리」 위를 포물선으로 오가고, 닿을 때마다 그 낱말이 눌렸다 돌아온다 — 말을 주고받는 랠리.
+ * 공과 글자 모두 합성기에서 도는 transform이다. 움직임 줄이기(기기 · WORLD 설정)면 data-rally를 달지 않아 공은 첫 낱말 옆에 가만히 있다. */
+:root[data-host=world] .w-ball{position:absolute;left:0;top:0;width:.17em;height:.17em;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#ffe9c9 62%,#e7b984);box-shadow:0 .03em .08em rgba(0,0,0,.4);
+  --x0:.3em;--x1:1.92em;translate:var(--x0) 0;transform:translateY(-.1em);will-change:transform,translate}
+:root[data-host=world] .w-title[data-rally] .w-ball{animation:wBallX 2.6s linear infinite,wBallY 1.3s linear infinite}
+:root[data-host=world] .w-title[data-rally] .w-l:nth-of-type(1) .w-w{animation:wHitA 2.6s linear infinite}
+:root[data-host=world] .w-title[data-rally] .w-l:nth-of-type(2) .w-w{animation:wHitB 2.6s linear infinite}
+@keyframes wBallX{0%,100%{translate:var(--x0) 0}50%{translate:var(--x1) 0}}
+@keyframes wBallY{0%,100%{transform:translateY(-.1em);animation-timing-function:cubic-bezier(.2,.7,.5,1)}50%{transform:translateY(-.56em);animation-timing-function:cubic-bezier(.5,0,.8,.3)}}
+@keyframes wHitA{0%{transform:translateY(.05em) scaleY(.96);animation-timing-function:cubic-bezier(.42,1.67,.21,.9)}12%,100%{transform:none}}
+@keyframes wHitB{0%,49.9%{transform:none}50%{transform:translateY(.05em) scaleY(.96);animation-timing-function:cubic-bezier(.42,1.67,.21,.9)}62%,100%{transform:none}}
+
+:root[data-host=world] .plan{margin:0;padding:6px 16px 0;gap:0}
+:root[data-host=world] .start-card{position:relative;z-index:1;display:grid;gap:12px;padding:4px 2px 6px}
+:root[data-host=world] .start-card>.tag,:root[data-host=world] .start-card>h2{display:none}
+:root[data-host=world] .w-lede{order:0;margin:0;font:600 18px/1.45 var(--w-sans);letter-spacing:-.015em;color:var(--w-ink)}
+:root[data-host=world] .w-lede mark{background:none;color:inherit}
+:root[data-host=world] .start-card>#btn-start{order:1;margin-top:2px}
+:root[data-host=world] .start-card>.daily-start{order:2;display:grid;gap:6px}
+:root[data-host=world] #btn-daily{min-height:60px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2);justify-content:space-between}
+:root[data-host=world] #btn-daily .daily-label{display:grid;gap:1px;text-align:left}
+:root[data-host=world] #btn-daily b{font:650 16px/1.25 var(--w-sans)}
+:root[data-host=world] #btn-daily small{font:450 13px/1.35 var(--w-sans);color:var(--w-ink-3)}
+:root[data-host=world] #btn-daily .disc{background:var(--w-ink)}
+:root[data-host=world] #daily-line{margin:0 2px}
+:root[data-host=world] #l-reason{order:3;display:flex;gap:9px;align-items:baseline;margin:6px 0 0;font-size:14px;line-height:1.55;color:var(--w-ink-3)}
+:root[data-host=world] #l-reason::before{content:'';flex:none;width:7px;height:7px;border-radius:50%;background:var(--w-led-info);transform:translateY(-1px)}
+:root[data-host=world] .start-options{order:4;display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
+:root[data-host=world] .start-options .chip-btn{min-height:44px;padding:0 16px;font-size:14px}
+:root[data-host=world] .start-options .fine{flex:1 1 12em;margin:0}
+:root[data-host=world] #sound-note{order:5}
+:root[data-host=world] #storage-note{order:6}
+:root[data-host=world] .start-card>.synk-collection-line{order:7;margin:4px 0 0;padding-top:14px;border-top:1px solid var(--w-line)}
+:root[data-host=world] .fine.warn{display:flex;align-items:center;gap:8px;color:var(--w-check-text);font-weight:600}
+:root[data-host=world] .fine.warn::before{content:'';background:var(--w-led-check)}
+:root[data-host=world] .plan-side{display:block}
+:root[data-host=world] .how{display:grid;gap:4px;margin:22px 2px 0;padding:24px 0 6px;border-top:1px solid var(--w-line)}
+:root[data-host=world] .how-steps{gap:0;margin:8px 0 0;padding:0}
+:root[data-host=world] .how-steps li{grid-template-columns:auto 1fr;column-gap:14px;row-gap:3px;align-items:start;padding:14px 0;border-radius:0;background:none;border-top:1px solid var(--w-line)}
+:root[data-host=world] .how-steps li:first-child{border-top:0}
+:root[data-host=world] .how-steps .num{grid-row:span 2;width:28px;height:28px;margin-top:-2px;background:none;box-shadow:inset 0 0 0 1px var(--w-line-2);border-radius:50%;color:var(--w-ink-2);text-shadow:none;font:500 12px/1 var(--w-mono)}
+:root[data-host=world] .how-steps strong{font:650 16px/1.4 var(--w-sans);letter-spacing:-.02em}
+:root[data-host=world] .how-steps span{grid-column:2;font-size:14px;line-height:1.55;color:var(--w-ink-3)}
+:root[data-host=world] .how>.fine{margin-top:6px}
+/* 꾸미기: 펠트 대신 민 색 원 */
+:root[data-host=world] .gear{display:grid;gap:10px;margin:22px 2px 0;padding:24px 0 6px;border-top:1px solid var(--w-line)}
+:root[data-host=world] .gear-coins{color:var(--w-ink-3);font-size:13.5px}
+:root[data-host=world] .gear-kind{color:var(--w-ink-3);font:550 13px/1.4 var(--w-sans)}
+:root[data-host=world] .gear-swatch{background:none;border:0;color:var(--w-ink);border-radius:14px;box-shadow:none}
+:root[data-host=world] .gear-swatch[aria-pressed=true]{background:var(--w-s2);box-shadow:var(--w-card-edge)}
+:root[data-host=world] .gear-swatch .swatch{background:var(--c)!important;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);filter:none}
+:root[data-host=world] .gear-swatch .swatch::before,:root[data-host=world] .gear-swatch .swatch::after{content:none}
+:root[data-host=world] .g-name{color:var(--w-ink);font-size:13px}
+:root[data-host=world] .g-state{color:var(--w-ink-3);font-size:12px}
+:root[data-host=world] .lobby-foot{display:grid;gap:8px;padding:20px 18px 0;font-size:13px;line-height:1.6;color:var(--w-ink-3)}
+:root[data-host=world] .lobby-foot p{margin:0}
+
+/* ── 시합: 사진 한 장면(화면 전체) 위에 유리 캡슐 · 목소리 막대 · 대답 카드 ── */
+:root[data-host=world] .game{position:relative;height:100svh;min-height:0;padding:0;background:var(--w-panel);overflow:hidden}
+:root[data-host=world] .game-bar{position:absolute;z-index:7;top:0;left:0;right:0;display:flex;align-items:center;gap:8px;padding:max(10px,env(safe-area-inset-top)) 12px 0;background:none;border:0;pointer-events:none;border-radius:0;box-shadow:none}
+:root[data-host=world] .game-bar>*{pointer-events:auto}
+:root[data-host=world] .game-bar>.game-title{display:none}
+:root[data-host=world] .game-bar .hud{flex:none;display:flex;align-items:center;gap:0;height:44px;margin:0 0 0 auto;padding:0 6px;border-radius:999px;background:var(--w-glass-dark);box-shadow:var(--w-glass-edge)}
+:root[data-host=world] .game-bar .pill{display:flex;align-items:baseline;gap:6px;min-width:0;padding:0 10px;background:none;box-shadow:none;animation:none}
+:root[data-host=world] .game-bar .pill+.pill{box-shadow:inset 1px 0 0 var(--w-line-2)}
+:root[data-host=world] .game-bar .pill small{font:550 12.5px/1 var(--w-sans);letter-spacing:0;color:var(--w-ink-3);white-space:nowrap}
+:root[data-host=world] .game-bar .pill b{font:500 18px/1 var(--w-mono);font-variant-numeric:tabular-nums;letter-spacing:.01em;color:var(--w-ink);background:none}
+:root[data-host=world] .game-bar .pill.combo[data-tier="2"] small,:root[data-host=world] .game-bar .pill.combo[data-tier="3"] small{color:#FFB4A9}
+:root[data-host=world] .game-bar .disc-btn{background:var(--w-glass-dark);box-shadow:var(--w-glass-edge)}
+:root[data-host=world] .game-bar .disc-btn span{font-size:0;width:16px;height:16px;background:var(--w-ink);-webkit-mask:var(--w-pause) center/contain no-repeat;mask:var(--w-pause) center/contain no-repeat}
+:root[data-host=world] .w-roll-src{position:absolute!important;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+:root[data-host=world] .w-roll{display:inline-flex;font:500 18px/1 var(--w-mono);font-variant-numeric:tabular-nums;letter-spacing:.01em;color:var(--w-ink)}
+:root[data-host=world] .w-roll-d{display:inline-block;width:1ch;height:1em;overflow:hidden}
+:root[data-host=world] .w-roll-s{display:block;width:1ch;line-height:1em;word-break:break-all;transform:translateY(calc(var(--d) * -1em))}
+:root[data-host=world] .w-roll-c{display:inline-block;white-space:pre}
+
+:root[data-host=world] .arena{position:absolute;inset:0;margin:0;border-radius:0;background:#0b0d12;box-shadow:none;overflow:hidden;touch-action:none}
+:root[data-host=world] .arena::before,:root[data-host=world] .arena::after{content:none}
+:root[data-host=world] #w-scene{position:absolute;inset:0;overflow:hidden;will-change:transform;transform-origin:50% 25%}
+:root[data-host=world] .w-plate{position:absolute;display:block;max-width:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
+/* 넓은 화면: 사진 양옆은 같은 사진을 크게 흐려 깐다 */
+:root[data-host=world] .w-side{position:absolute;inset:-40px;display:none;background:var(--w-art-ready) 50% 30%/cover no-repeat;filter:blur(32px) brightness(.5) saturate(.9)}
+:root[data-host=world] #w-scene[data-wide] .w-side{display:block}
+/* 넓은 화면: 사진 양쪽 끝을 어둡게 눌러 흐린 사진으로 이어지게 한다(경계가 세로 줄로 보이지 않게) */
+:root[data-host=world] #w-scene[data-wide]::before{content:'';position:absolute;z-index:3;top:0;bottom:0;left:var(--w-photo-x,0);width:var(--w-photo-w,100%);pointer-events:none;background:linear-gradient(90deg,rgba(6,7,9,.62),rgba(6,7,9,0) 12%,rgba(6,7,9,0) 88%,rgba(6,7,9,.62))}
+:root[data-host=world] .w-clip{position:absolute;z-index:2;left:var(--w-clip-x,0);top:var(--w-clip-y,0);width:var(--w-clip-w,100%);height:var(--w-clip-h,64%);max-width:none;object-fit:fill;pointer-events:none}
+:root[data-host=world] .w-clip[hidden]{display:none}
+:root[data-host=world] .stage-gl{position:absolute;inset:0;z-index:3;pointer-events:none}
+:root[data-host=world] .fx{z-index:4}
+/* 아래쪽 그늘: 카드 글자가 사진 위에서 읽히게 */
+:root[data-host=world] .arena>#w-scene::after{content:'';position:absolute;left:0;right:0;bottom:0;height:34%;z-index:2;pointer-events:none;background:linear-gradient(180deg,rgba(6,7,9,0),rgba(6,7,9,.42) 60%,rgba(6,7,9,.66))}
+
+/* 목소리 막대: 태오 얼굴 위 캡슐 — 이름 + 실제 소리로 움직이는 막대 다섯(점 셋 대신) */
+:root[data-host=world] .speech{top:calc(var(--w-head-y,170px) - 46px);left:50%;transform:translateX(-50%);z-index:5;display:inline-flex;align-items:center;gap:4px;height:36px;padding:0 14px;border-radius:999px;background:var(--w-glass-dark);box-shadow:var(--w-glass-edge);color:var(--w-ink);white-space:nowrap}
+:root[data-host=world] .speech .w-who{margin-right:6px;font:600 13px/1 var(--w-sans);letter-spacing:-.01em}
+:root[data-host=world] .speech i{width:3.5px;height:18px;border-radius:2px;background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.45);animation:none;opacity:1;transform:scaleY(.4);transform-origin:50% 50%;will-change:transform}
+:root[data-host=world] .speech i:nth-of-type(2),:root[data-host=world] .speech i:nth-of-type(4){transform:scaleY(.6)}
+:root[data-host=world] .speech i:nth-of-type(3){transform:scaleY(.8)}
+/* 안내 글(시작 · 연습 · 글로 보여 줄 때) */
+:root[data-host=world] .game .tip{position:absolute;z-index:6;top:max(66px,calc(env(safe-area-inset-top) + 62px));bottom:auto;left:50%;transform:translateX(-50%);width:min(440px,calc(100% - 28px));margin:0;padding:11px 15px 12px;border-radius:16px;background:var(--w-glass-dark);color:var(--w-ink);box-shadow:var(--w-glass-edge);font:550 14.5px/1.45 var(--w-sans);text-align:center;animation:none}
+/* 공이 기다릴 때: 카드 바로 위의 얇은 줄(공 · 태오를 가리지 않게) */
+:root[data-host=world] .wait{position:absolute;z-index:6;left:50%;top:auto;bottom:calc(var(--w-cards-h,112px) + 22px);transform:translateX(-50%);width:min(520px,calc(100% - 16px));margin:0;padding:8px 10px 9px;display:grid;gap:6px;justify-items:center;border-radius:16px;background:var(--w-glass-dark);box-shadow:var(--w-glass-edge);color:var(--w-ink);animation:none}
+:root[data-host=world] .wait-title{display:flex;flex-wrap:wrap;justify-content:center;gap:0 8px;margin:0;font:650 14px/1.35 var(--w-sans)}
+:root[data-host=world] .wait-title span{font-weight:450;color:var(--w-ink-3)}
+:root[data-host=world] .wait-line{margin:0;font:650 17px/1.35 var(--w-sans);color:var(--w-ink)}
+:root[data-host=world] .wait-tools{display:flex;flex-wrap:nowrap;justify-content:center;gap:6px}
+:root[data-host=world] .wait-tools .chip-btn{min-height:40px;padding:0 12px;font-size:13px;white-space:nowrap}
+
+/* 대답 카드: 진한 유리 판(글이 주인공). 번호 칩은 탁구대 칸과 같은 색 */
+:root[data-host=world] .cards{z-index:6;bottom:max(14px,env(safe-area-inset-bottom));left:50%;width:min(720px,calc(100% - 16px));gap:8px}
+:root[data-host=world] .card{--c:#F96859;min-height:88px;padding:24px 8px 12px;border-radius:18px;background:var(--w-glass-strong)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 0 1px rgba(255,255,255,.1),0 8px 24px rgba(0,0,0,.34);filter:none;
+  color:var(--w-ink)!important;text-shadow:none!important;font:650 clamp(14.5px,3.9vw,18px)/1.28 var(--w-sans);letter-spacing:-.018em;transition:transform var(--m-fast),opacity var(--e-base),background var(--e-fast)}
+:root[data-host=world] .card.l1{--c:#F5C445}
+:root[data-host=world] .card.l2{--c:#6FB2FF}
+:root[data-host=world] .card .no{position:absolute;left:8px;top:7px;width:20px;height:20px;border-radius:50%;background:var(--c)!important;color:#08090C;font:600 11.5px/1 var(--w-mono);filter:none;text-shadow:none}
+:root[data-host=world] .card:active{transform:scale(.97);background:rgba(34,35,41,.92)!important}
+:root[data-host=world] .card[aria-pressed=true]{transform:translateY(-7px);filter:none;box-shadow:inset 0 0 0 2px var(--c),0 12px 28px rgba(0,0,0,.42)}
+:root[data-host=world] .card.dim{opacity:.46}
+:root[data-host=world] .card.right::after{right:8px;top:7px;width:20px;height:20px;border-radius:50%;background:var(--w-led-ok) var(--w-check-dark) center/13px no-repeat;filter:none}
+:root[data-host=world] .card.right{box-shadow:inset 0 0 0 2px var(--w-led-ok),0 0 22px rgba(125,180,90,.32);opacity:1}
+:root[data-host=world] .card.hint{filter:none;box-shadow:inset 0 0 0 2px #F5C445,0 0 24px rgba(245,196,69,.5);animation:wHint 1.1s ease-in-out infinite}
+@keyframes wHint{0%,100%{box-shadow:inset 0 0 0 2px #F5C445,0 0 12px rgba(245,196,69,.3)}50%{box-shadow:inset 0 0 0 2px #F5C445,0 0 26px rgba(245,196,69,.62)}}
+
+/* 점수 글자 · 랠리 칩 */
+:root[data-host=world] .pop{z-index:6;color:var(--w-ink);font:800 26px/1 var(--w-sans);letter-spacing:-.02em;text-shadow:0 2px 14px rgba(0,0,0,.55);-webkit-text-stroke:0}
+:root[data-host=world] .pop[data-kind=quick]{color:#9CD0FF}
+:root[data-host=world] .pop[data-kind=smash]{color:#FFD45C;font-size:32px}
+:root[data-host=world] .w-rally{position:absolute;z-index:6;right:12px;top:calc(max(10px,env(safe-area-inset-top)) + 54px);margin:0;padding:7px 13px 8px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);font:700 14px/1 var(--w-sans);letter-spacing:-.01em}
+
+/* 해설: 아래에서 올라오는 진한 판 — 태오의 놓침 표정이 위에 보인다 */
+:root[data-host=world] .explain{position:absolute;z-index:7;left:8px;right:8px;bottom:max(10px,env(safe-area-inset-bottom));top:auto;transform:none;width:auto;max-width:640px;margin:0 auto;max-height:62%;overflow:auto;padding:16px 16px 14px;border-radius:22px;background:var(--w-glass-strong);box-shadow:var(--w-glass-edge);color:var(--w-ink);display:grid;gap:7px;animation:none}
+:root[data-host=world] .explain[hidden]{display:none}
+:root[data-host=world] .explain .kicker.ko{color:var(--w-ink-3);font-size:13px}
+:root[data-host=world] .x-line{color:var(--w-ink-2);font:550 14.5px/1.45 var(--w-sans)}
+:root[data-host=world] .x-answer{font:700 19px/1.4 var(--w-sans);color:var(--w-ink)}
+:root[data-host=world] .x-answer b{background:none;color:#C9E6AE;padding:0}
+:root[data-host=world] .x-why{margin:0;font:450 14.5px/1.55 var(--w-sans);color:var(--w-ink-2)}
+:root[data-host=world] .x-why b{color:var(--w-ink);font-weight:650}
+:root[data-host=world] .x-tools .chip-btn{min-height:40px;padding:0 14px;font-size:13.5px}
+:root[data-host=world] .explain #btn-next{margin-top:4px;min-height:52px}
+
+/* ── 결과: 태오가 손바닥을 내미는 포스터 · 큰 숫자 · 주고받기 점 ── */
+:root[data-host=world] .results{position:relative;min-height:100svh;padding:0 0 28px;background:var(--w-panel)}
+:root[data-host=world] .res-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr);align-items:end;min-height:min(70svh,600px);margin:0;padding:96px 20px 20px;overflow:hidden;background:var(--w-s1);color:var(--w-ink);cursor:default}
+:root[data-host=world] .res-hero::before{content:'';position:absolute;inset:0;z-index:-2;background:var(--w-art-result) 50% 12%/cover no-repeat;transform-origin:50% 30%}
+:root[data-host=world] .res-hero::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(6,7,9,.3) 0,rgba(6,7,9,0) 16%,rgba(6,7,9,0) 42%,rgba(6,7,9,.78) 76%,var(--w-panel) 98%)}
+:root[data-host=world] .results:not([hidden]) .res-hero::before{animation:wPush 9s cubic-bezier(.22,.61,.36,1) both}
+@keyframes wPush{from{transform:scale(1)}to{transform:scale(1.06)}}
+:root[data-host=world] .res-hero>div{position:relative;z-index:1;min-width:0}
+:root[data-host=world] .res-hero .kicker.ko{color:var(--w-ink-2);text-shadow:0 1px 10px rgba(0,0,0,.6)}
+:root[data-host=world] :is(.res-hero .r-note,.res-hero .synk-collection-line){text-shadow:0 1px 10px rgba(0,0,0,.55)}
+:root[data-host=world] .res-hero h1{margin:8px 0 0;font:900 clamp(38px,11vw,64px)/.98 var(--w-sans);letter-spacing:-.055em;color:var(--w-ink);text-shadow:0 2px 24px rgba(0,0,0,.35)}
+:root[data-host=world] .r-say{margin:8px 0 0;font:600 16px/1.4 var(--w-sans);color:var(--w-ink);text-shadow:0 1px 10px rgba(0,0,0,.6)}
+:root[data-host=world] .res-hero .big{display:flex;align-items:baseline;margin:14px 0 0;gap:10px}
+:root[data-host=world] .res-hero .big b{display:inline-block;font:900 clamp(64px,19vw,104px)/.86 var(--w-sans);letter-spacing:-.06em;color:var(--w-ink);font-variant-numeric:tabular-nums;transform-origin:30% 70%}
+:root[data-host=world] .res-hero .big span{font:500 22px/1 var(--w-mono);color:var(--w-ink-3)}
+:root[data-host=world] .res-hero .big i{font-style:normal}
+:root[data-host=world] .w-dots{list-style:none;display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 0;padding:0}
+:root[data-host=world] .w-dots li{width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 1.5px rgba(250,250,249,.32);opacity:0;transform:scale(.4);transition:opacity var(--e-fast),transform var(--m-fast)}
+:root[data-host=world] .w-dots li.on{opacity:1;transform:none}
+:root[data-host=world] .w-dots li.ok{background:var(--w-led-ok) var(--w-check-dark) center/11px no-repeat;box-shadow:0 0 12px rgba(125,180,90,.35)}
+:root[data-host=world] .w-dots li.miss{box-shadow:inset 0 0 0 2px var(--w-led-check)}
+:root[data-host=world] .res-hero .r-note{margin:14px 0 0;font:450 14px/1.6 var(--w-sans);color:var(--w-ink-3)}
+:root[data-host=world] .res-hero .synk-collection-line{margin:10px 0 0;font:600 15px/1.5 var(--w-sans);color:var(--w-ink)}
+:root[data-host=world] .res-hero .synk-collection-line:has(#r-coins:empty){display:none}
+:root[data-host=world] .w-stamp{position:absolute;right:0;top:0;margin:0;padding:8px 12px 9px;border:2px solid rgba(249,104,89,.92);border-radius:10px;color:rgba(255,122,102,.95);font:800 16px/1 var(--w-sans);letter-spacing:-.01em;opacity:0;transform:rotate(-7deg) scale(1.3);transition:opacity var(--e-fast),transform var(--m-base);pointer-events:none;background:rgba(6,7,9,.3)}
+:root[data-host=world] .w-stamp.on{opacity:1;transform:rotate(-7deg) scale(1)}
+:root[data-host=world] .res-grid{margin:0;padding:0 12px;gap:0}
+:root[data-host=world] .res-grid .paper{margin:0 6px;padding:24px 0 22px;border-top:1px solid var(--w-line)}
+:root[data-host=world] .res-grid .daily-rec{order:0;border-top:0}
+:root[data-host=world] .res-grid .log{order:1;border-top:0}
+:root[data-host=world] .res-grid .skills{order:3}
+:root[data-host=world] .res-grid .next{order:4}
+:root[data-host=world] .log ol{gap:0;margin:8px 0 0;padding:0}
+:root[data-host=world] .log li{grid-template-columns:28px minmax(0,1fr) auto;gap:12px;padding:14px 0;border-top:1px solid var(--w-line);background:none;border-radius:0}
+:root[data-host=world] .log li:first-child{border-top:0}
+:root[data-host=world] .log .mark{position:relative;display:grid;place-items:center;width:28px;height:28px;margin-top:2px;padding:0;border-radius:50%;background:none;box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink-2);font:500 11px/1 var(--w-sans)}
+:root[data-host=world] .log li.ok .mark{background:var(--w-s2);box-shadow:none;font-size:0}
+:root[data-host=world] .log li.ok .mark::after{content:'';position:absolute;inset:7px;background:var(--w-led-ok);-webkit-mask:var(--w-check) center/contain no-repeat;mask:var(--w-check) center/contain no-repeat}
+:root[data-host=world] .log li.ko .mark{background:none;color:var(--w-check-text)}
+:root[data-host=world] .log .line{font-size:13.5px;color:var(--w-ink-3)}
+:root[data-host=world] .log .sent{font:650 17px/1.45 var(--w-sans);letter-spacing:-.02em;color:var(--w-ink)}
+:root[data-host=world] .log .sent b{background:none;color:inherit}
+:root[data-host=world] .log small{display:block;margin-top:4px;font-size:13px;line-height:1.5;color:var(--w-ink-3)}
+:root[data-host=world] .say-again{min-height:40px;padding:0 14px;font-size:13.5px;align-self:center}
+:root[data-host=world] #r-skills{display:grid;gap:10px;margin:8px 0 0;padding:0;list-style:none}
+:root[data-host=world] #r-skills li{display:grid;gap:3px;padding:0;background:none;box-shadow:none;border-radius:0}
+:root[data-host=world] #r-skills b{font:650 15.5px/1.35 var(--w-sans);color:var(--w-ink)}
+:root[data-host=world] #r-skills em{font:500 12.5px/1.3 var(--w-mono);font-style:normal;color:var(--w-ink-3)}
+:root[data-host=world] #r-skills span{font-size:14px;line-height:1.55;color:var(--w-ink-3)}
+:root[data-host=world] .next-tag{font-style:normal;color:var(--w-check-text);font:550 12.5px/1 var(--w-sans);margin-left:6px;background:none}
+/* 하루 도전 기록 */
+:root[data-host=world] .daily-best{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:6px 0 0;font:700 19px/1.3 var(--w-sans);color:var(--w-ink)}
+:root[data-host=world] .new-best{color:var(--w-check-text)}
+:root[data-host=world] .week{gap:6px;margin:6px 0 10px;padding:0}
+:root[data-host=world] .week li{color:var(--w-ink-3);background:none}
+:root[data-host=world] .week li i{background:var(--w-s3);border-radius:50%;box-shadow:none;filter:none}
+:root[data-host=world] .week li.done i{background:var(--w-led-ok)}
+/* 다음: 다음 판 · 처음으로는 1px 선 알약(흰 알약은 「우리 동네로」 하나) */
+:root[data-host=world] .res-grid .next{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding-bottom:6px}
+:root[data-host=world] .res-grid .next>:is(.tag,.reason){grid-column:1 / -1}
+:root[data-host=world] .res-grid .next>.reason{margin:0 0 4px;font-size:14.5px;color:var(--w-ink-3)}
+:root[data-host=world] .res-grid .next>.r-actions{display:contents}
+:root[data-host=world] .res-grid .next :is(.felt-cta,.chip-btn){width:100%;min-height:52px;padding:0 14px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2);font:600 15px/1.2 var(--w-sans)}
+:root[data-host=world] .res-grid .next .felt-cta .disc{display:none}
+:root[data-host=world] .res-grid .next :is(.felt-cta,.chip-btn):hover{background:var(--w-s2)}
+:root[data-host=world] .w-room-bar{margin:14px 0 -28px}
+/* 멈춤 창: 음악 · 효과음 크기(태오 목소리는 듣기 내용이라 그대로) */
+:root[data-host=world] .w-mix{display:grid;gap:0;border-top:1px solid var(--w-line)}
+:root[data-host=world] .w-mix label{display:grid;grid-template-columns:5.2em minmax(0,1fr);align-items:center;gap:14px;min-height:54px;border-bottom:1px solid var(--w-line);font:600 15.5px/1.3 var(--w-sans);color:var(--w-ink)}
+:root[data-host=world] .w-mix input[type=range]{width:100%;height:30px;margin:0;accent-color:var(--w-ink);background:none}
+
+/* ── 큰 화면(가로 PC 틀 · 태블릿 가로): 입구 · 결과는 사진 상자를 왼쪽에 세운다. 시합은 사진 한 장면이 가운데 ── */
+@media (min-width:760px) and (min-height:501px) and (orientation:landscape){
+  :root[data-host=world] .lobby,:root[data-host=world] .results{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.04fr);align-items:start;column-gap:28px;padding:16px 20px 32px}
+  :root[data-host=world] .lobby>.topbar{top:30px;right:auto;left:min(calc(50% - 76px),calc(100% - 76px))}
+  :root[data-host=world] .lobby>.hero{--hero-h:calc(100svh - 32px);grid-column:1;grid-row:1 / span 3;position:sticky;top:16px;border-radius:var(--w-r-lg)}
+  :root[data-host=world] .res-hero{grid-column:1;grid-row:1 / span 3;position:sticky;top:16px;min-height:calc(100svh - 32px);border-radius:var(--w-r-lg);padding:88px 28px 28px}
+  :root[data-host=world] .lobby>.plan,:root[data-host=world] .lobby>.lobby-foot,:root[data-host=world] .results>:is(.res-grid,.w-room-bar){grid-column:2}
+  :root[data-host=world] .plan{grid-template-columns:minmax(0,1fr);padding:0;align-self:center}
+  :root[data-host=world] .start-card{padding:min(14vh,120px) 0 6px}
+  :root[data-host=world] .w-lede{font-size:22px}
+  :root[data-host=world] .how-steps{grid-template-columns:minmax(0,1fr)}
+  :root[data-host=world] .res-grid{grid-template-columns:minmax(0,1fr);padding:0}
+  :root[data-host=world] .w-room-bar{margin:14px -6px -32px}
+  :root[data-host=world] .card{min-height:72px;font-size:17px}
+}
+@media (min-width:700px) and (orientation:portrait){
+  :root[data-host=world] .lobby>:not(.hero):not(.topbar),:root[data-host=world] .results>:not(.res-hero){max-width:680px;margin-left:auto;margin-right:auto}
+  :root[data-host=world] :is(.plan,.how-steps,.res-grid){grid-template-columns:minmax(0,1fr)}
+}
+/* 키 낮은 휴대폰: 카드를 낮춘다 */
+@media (max-height:700px){
+  :root[data-host=world] .card{min-height:74px;padding:21px 6px 9px;font-size:clamp(13.5px,3.7vw,16px)}
+  :root[data-host=world] .wait-title{display:none}
+}
+@media (max-width:359px){
+  :root[data-host=world] .lobby .hero-copy{left:16px}
+  :root[data-host=world] .res-hero{padding:90px 16px 16px}
+  :root[data-host=world] .game-bar .pill{padding:0 7px}
+  :root[data-host=world] .game-bar .pill small{font-size:11.5px}
+}
+@media (prefers-reduced-motion:reduce){
+  :root[data-host=world] :is(.felt-cta,.chip-btn,.card,.w-dots li,.w-stamp){transition:none}
+  :root[data-host=world] .res-hero::before,:root[data-host=world] .w-title *{animation:none!important}
+  :root[data-host=world] :is(.felt-cta,.chip-btn,.card):active{transform:none}
+}
+:root[data-host=world][data-motion=reduced] :is(.felt-cta,.chip-btn,.card,.w-dots li,.w-stamp){transition:none}
+:root[data-host=world][data-motion=reduced] .res-hero::before,:root[data-host=world][data-motion=reduced] .w-title *{animation:none!important}

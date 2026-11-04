@@ -177,6 +177,8 @@ export default {
  'game.racing.title':{ko:'바닷가 레이스',en:'Seaside Race',mn:'Далайн эргийн уралдаан'},
  'game.racing.detail':{ko:'문장을 듣고 답이 있는 길로 자전거를 달려요',en:'Hear the sentence and ride into the right lane',mn:'Өгүүлбэр сонсоод зөв хариутай зам руу дугуйгаар давхина'},
  'play.locked':{ko:'이야기에서 열려요 — {where}',en:'Opens in the story — {where}',mn:'{where} нээгдэнэ'},   // 몽골어는 동사가 끝 — 「…-д очиход нээгдэнэ」(…에 가면 열려요)
+ 'game.rally.title':{ko:'말 랠리',en:'Talk Rally',mn:'Ярианы ралли'},
+ 'game.rally.detail':{ko:'태오 선배의 말을 듣고 알맞은 대답으로 받아쳐요',en:'Hear Tae-o and hit back with the right reply',mn:'Тэогийн яриаг сонсоод зөв хариултыг сонгож бөмбөгийг цохино'},
  'play.where.cafe':{ko:'싱크타운 카페 첫 방문',en:'your first visit to the SYNK Town café',mn:'SYNK Таун кафед анх очиход'},
  'play.where.lesson':{ko:'첫 학습을 마치면',en:'after your first lesson',mn:'Эхний хичээлээ дуусгахад'},
  'play.where.stories':{ko:'「처음 만난 날」 이야기',en:'the “First Meeting” story',mn:'«Анх уулзсан өдөр» түүхийг сонсоход'},

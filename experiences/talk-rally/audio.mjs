@@ -14,6 +14,12 @@ const buffers = new Map(), voices = new Map();
 let enabled = (() => { try { return localStorage.getItem(KEY) !== 'off'; } catch { return true; } })();
 let log = null;   // 확인용(?qa): 울린 소리와 시각
 
+// WORLD 캠퍼스 판이 듣는 자리(world-play.mjs가 채운다, LAB은 비어 있어 아무 일도 없다): voice(켜짐, {deep}) — 태오 목소리가 시작 · 끝날 때(음악 덕킹 · 목소리 막대),
+// tap() — 목소리를 잴 마디, ready(문맥, 버스) — 오디오 문맥을 만든 뒤.
+export const hooks = { voice: null, tap: null, ready: null };
+const tapped = (src) => { const t = hooks.tap?.(); if (t) src.connect(t); };
+export const context = () => ctx;
+export const fileSeconds = (name) => buffers.get(name)?.duration || 0;
 export const isOn = () => enabled;
 export const ready = () => !!ctx && ctx.state === 'running';
 export function setOn(value) {
@@ -38,6 +44,7 @@ export async function unlock() {
       ctx = new AC({ latencyHint: 'interactive' });
       bus = createBus(ctx); bus.out.gain.value = enabled ? 1 : 0;
       loading = loadInto(ctx, buffers, Object.entries(FILES));
+      hooks.ready?.(ctx, bus);
     }
     if (ctx.state === 'suspended') await ctx.resume();
     await loading;
@@ -70,9 +77,9 @@ export function speak(item, { onEnd = () => {} } = {}) {
     const wait = Math.min(3.2, Math.max(0.9, 0.35 + item.line.length * 0.11)), id = setTimeout(() => onEnd(false), wait * 1000);
     return { duration: wait, heard: false, stop: () => clearTimeout(id) };
   }
-  const c = ctx, src = c.createBufferSource(); src.buffer = buf; src.connect(bus.out);
+  const c = ctx, src = c.createBufferSource(); src.buffer = buf; src.connect(bus.out); tapped(src); hooks.voice?.(true);
   let done = false, guard = 0;
-  const finish = (heard) => { if (done) return; done = true; clearTimeout(guard); onEnd(heard); };
+  const finish = (heard) => { if (done) return; done = true; clearTimeout(guard); hooks.voice?.(false); onEnd(heard); };
   src.onended = () => finish(true);
   const t0 = c.currentTime;
   guard = setTimeout(() => {
@@ -81,7 +88,7 @@ export function speak(item, { onEnd = () => {} } = {}) {
     finish(played);
   }, (buf.duration + VOICE_GUARD) * 1000);
   src.start();
-  return { duration: buf.duration, heard: true, stop: () => { done = true; clearTimeout(guard); try { src.stop(); } catch { /* 이미 끝남 */ } } };
+  return { duration: buf.duration, heard: true, stop: () => { if (!done) hooks.voice?.(false); done = true; clearTimeout(guard); try { src.stop(); } catch { /* 이미 끝남 */ } } };
 }
 
 /**
@@ -90,7 +97,7 @@ export function speak(item, { onEnd = () => {} } = {}) {
  */
 let slowEl = null;
 function slowElement() {
-  if (!slowEl) { slowEl = new Audio(); slowEl.preload = 'auto'; ctx.createMediaElementSource(slowEl).connect(bus.out); }
+  if (!slowEl) { slowEl = new Audio(); slowEl.preload = 'auto'; const node = ctx.createMediaElementSource(slowEl); node.connect(bus.out); tapped(node); }
   return slowEl;
 }
 /** 공이 기다리기 시작하면 그 말의 파일을 미리 불러 둔다(처음 누를 때 0.1~0.3초 늦게 시작하지 않게). */
@@ -110,9 +117,11 @@ export function speakSlow(item, { rate = 0.75, onEnd = () => {} } = {}) {
     for (const k of ['preservesPitch', 'mozPreservesPitch', 'webkitPreservesPitch']) if (k in slowEl) slowEl[k] = true;
     slowEl.defaultPlaybackRate = rate; slowEl.playbackRate = rate;   // src를 바꾸면 빠르기가 기본값으로 돌아가니 둘 다 둔다
     let done = false;
-    slowEl.onended = () => { if (!done) { done = true; onEnd(true); } };
-    slowEl.play().catch(() => { if (!done) { done = true; onEnd(false); } });
-    return { stop: () => { done = true; try { slowEl.pause(); } catch { /* 이미 멈춤 */ } } };
+    hooks.voice?.(true, { deep: true });
+    const end = (heard) => { if (done) return; done = true; hooks.voice?.(false); onEnd(heard); };
+    slowEl.onended = () => end(true);
+    slowEl.play().catch(() => end(false));
+    return { stop: () => { if (!done) hooks.voice?.(false); done = true; try { slowEl.pause(); } catch { /* 이미 멈춤 */ } } };
   } catch { onEnd(false); return { stop() {} }; }
 }
 export const slowState = () => (slowEl ? { rate: slowEl.playbackRate, paused: slowEl.paused, time: slowEl.currentTime, src: slowEl.src.split('/').pop(), ready: slowEl.readyState, net: slowEl.networkState, error: slowEl.error?.code || null, ended: slowEl.ended } : null);
@@ -142,11 +151,11 @@ export const canNarrate = (id) => enabled && narrationOn && !!ctx && ctx.state =
 export function narrate(id) {
   stopNarration();
   if (!canNarrate(id)) return Promise.resolve(false);
-  const buf = narrations.get(id), src = ctx.createBufferSource(); src.buffer = buf; src.connect(bus.out);
+  const buf = narrations.get(id), src = ctx.createBufferSource(); src.buffer = buf; src.connect(bus.out); tapped(src); hooks.voice?.(true);
   note('narration', id, { duration: buf.duration });
   return new Promise((resolve) => {
     let done = false, guard = 0;
-    const finish = (played) => { if (done) return; done = true; clearTimeout(guard); if (narrating?.src === src) narrating = null; resolve(played); };
+    const finish = (played) => { if (done) return; done = true; clearTimeout(guard); hooks.voice?.(false); if (narrating?.src === src) narrating = null; resolve(played); };
     src.onended = () => finish(true);
     guard = setTimeout(() => { try { src.stop(); } catch { /* 시작도 못 함 */ } finish(false); }, (buf.duration + NARRATION_GUARD) * 1000);
     narrating = { id, src, finish };

@@ -14,6 +14,14 @@ import { DAILY_KEY, seoulDate, dailyRound, dailyOptions, emptyRecords, normalize
 import { NARRATION, NARRATION_LINES, resultLine } from './narration.mjs';
 import { createGearPanel, DEFAULT_GEAR } from './gear.mjs';
 
+// ── WORLD 안(2026-11-04 캠퍼스 판): world-host.js가 붙인 data-host=world일 때만 동아리 탁구장 · 상대 태오(world-play.mjs — 문항 음성 · 안내 음성 파일 자리도 거기서 바꾼다).
+// LAB 화면(몽글 · 펠트)은 그대로다 — WORLD 모듈 · 그림 · 소리는 LAB에서 불러오지 않는다.
+const WORLD = globalThis.document?.documentElement?.dataset?.host === 'world';
+const worldPlay = WORLD ? await import('./world-play.mjs') : null;
+const WHO = worldPlay?.WHO ?? '몽글';
+const WHO_FULL = worldPlay?.WHO_FULL ?? '몽글';
+const world = worldPlay?.createWorldPlay() || null;
+
 // Restore the verified account before reading progress or enabling play.
 await globalThis.SynkPlayAccount.ready();
 const progressStorage = globalThis.SynkPlayAccount.storage();
@@ -26,6 +34,7 @@ const announce = (text) => { const n = $('#sr-live'); n.textContent = ''; reques
 const buzz = (ms) => { try { if (sound.isOn() && navigator.vibrate) navigator.vibrate(ms); } catch { /* 진동 없는 기기 */ } };
 const punch = (node) => { if (!node) return; node.classList.remove('punch'); void node.offsetWidth; node.classList.add('punch'); };
 const QA = new URLSearchParams(location.search).has('qa');
+let qaLane = null;   // 시안 영상(?qa): 다음 공의 맞는 대답을 놓을 칸
 // 공통 코인 스크립트(collection.js)를 읽지 못했으면 코인 줄을 숨긴다(모듈은 본문 끝 스크립트 뒤에 돈다).
 if (!globalThis.SynkPlayCollection) for (const n of document.querySelectorAll('.synk-collection-line')) n.hidden = true;
 const impacts = [];   // 확인용(?qa): 받아친 순간의 시각·판정
@@ -96,6 +105,7 @@ function after(ms, fn) {
 }
 
 const show = (id) => {
+  world?.screen(id);   // WORLD: 바꾸는 순간 바탕색으로 덮고 새 화면이 그려진 뒤 걷는다
   for (const s of ['lobby', 'game', 'results']) $('#' + s).hidden = s !== id;
   stage?.setActive(id === 'game');
   window.scrollTo(0, 0);
@@ -127,6 +137,7 @@ function renderLobby() {
   $('#reset-learning').hidden = hosted;
   if (hosted) $('#learning-scope').textContent = 'WORLD에서 선택한 계정의 학습 기록으로 연결해요. 기록 공유와 삭제는 WORLD 계정 설정에서 관리해요.';
   syncToggles();
+  world?.lobby();
   show('lobby');
 }
 
@@ -152,7 +163,8 @@ function syncToggles() {
 let stageReady = null;
 function ensureStage() {
   if (!stageReady) {
-    stageReady = createStage({ host: $('#arena'), overlay: $('#fx'), onBounce, onOpponentHit, onHold, onArrive, onPadLanded, onCaught, onMissed, reducedMotion: reduced })
+    stageReady = createStage({ host: world?.host() || $('#arena'), overlay: $('#fx'), onBounce, onOpponentHit, onHold, onArrive, onPadLanded, onCaught, onMissed, reducedMotion: reduced,
+      ...(world ? { theme: 'world', scene: worldPlay.SCENE, onFace: world.face } : {}) })
       .then((s) => { stage = s; s.setGear(gear); return s; })
       .catch((e) => { stageReady = null; throw e; });
   }
@@ -178,6 +190,7 @@ async function startRound(mode = 'normal') {
   state.coinRound = globalThis.SynkPlayCollection?.roundId('talk-rally') || null;
   updateHud(); renderCards(null); tip('공을 준비하고 있어요…', { silent: true });
   await sound.unlock();
+  world?.start();   // WORLD: 공 두 번 튀기는 소리 · 음악 · 뒤쪽 탁구대의 먼 소리
   try { await Promise.all([ensureStage(), sound.preloadVoices([PRACTICE, ...state.queue]), sound.preloadNarration(NARRATION_LINES)]); }
   catch {
     renderLobby();
@@ -193,6 +206,7 @@ async function startRound(mode = 'normal') {
   if (!heardIntro.has(intro.id) && sound.canNarrate(intro.id)) {
     heardIntro.add(intro.id);
     tip(intro.text);
+    world?.face('talk');
     await sound.narrate(intro.id);
     if (!live(run)) return;
     tip(null);
@@ -233,6 +247,7 @@ function fitCards() { for (const b of $('#cards').children) { const say = b.quer
  *  (라피스 위 크림 글자가 바닥에 묻힘 — 10-06 움직임 줄이기 확인에서 찾음). 다 받기 전에는 같은 색 납작한 판으로 보인다(style.css .felt-ready). */
 let feltSize = '';
 function preloadFelt() {
+  if (WORLD) return;   // WORLD 카드는 펠트 판을 쓰지 않는다
   const size = matchMedia('(max-width:500px)').matches ? 'phone' : matchMedia('(max-width:700px)').matches ? 'mid' : 'wide';
   if (size === feltSize) return;
   feltSize = size; $('#cards').classList.remove('felt-ready');
@@ -241,24 +256,27 @@ function preloadFelt() {
     .then(() => { if (feltSize === size) $('#cards').classList.add('felt-ready'); });
 }
 // 배경 벽 그림도 입구에서 받아 둔다(카드 펠트를 기다리게 하지 않게 따로). 무대는 이 그림을 받은 뒤에 첫 장면을 그린다(stage.mjs)
-preloadImages([WALL_SRC]);
+if (!WORLD) preloadImages([WALL_SRC]);
 preloadFelt();
 let fitTimer = 0;
 window.addEventListener('resize', () => { clearTimeout(fitTimer); fitTimer = setTimeout(() => { preloadFelt(); fitCards(); }, 120); });
 document.fonts?.ready.then(fitCards);
 
-function nextItem() {
+/** rallied(WORLD): 앞 공을 태오가 받아친 순간이다 — 말을 시작하면서 공도 바로 날아온다(이어지는 랠리). LAB은 말이 끝나는 순간 친다. */
+function nextItem({ rallied = false } = {}) {
   if (!state.practice && state.index >= state.queue.length) return finish();
   const item = state.practice ? PRACTICE : state.queue[state.index];
   if (state.cur?.texted) tip(null);   // 앞의 말을 글로 보여 줬으면 지운다(다음 말이 소리로 나올 때 앞 글이 남지 않게)
   // 하루 도전의 대답 카드 순서는 그날 모두에게 같다(연습 공은 따로 섞는다)
   const options = state.mode === 'daily' && !state.practice ? dailyOptions(item, state.dailyDate) : shuffled(item.options);
+  if (qaLane != null && !state.practice) { const k = options.indexOf(item.answer); [options[k], options[qaLane]] = [options[qaLane], options[k]]; qaLane = null; }
   const cur = { item, ex: state.practice ? null : atlas((c) => createExchange(c, item)), options, choice: null,
-    phase: 'talk', token: 0, hint: state.practice, waiting: false, quick: false, replayed: false, texted: false };
+    phase: 'talk', token: 0, hint: state.practice, waiting: false, quick: false, replayed: false, texted: false, rallied };
   state.cur = cur;
   hideExplain(); hideWait(); renderCards(cur); updateHud();
+  world?.next({ rallied });
   stage.setLane(null); stage.setFace('talk');
-  announce(`${state.practice ? '연습. ' : `${state.index + 1}번째 공. `}몽글이 말해요. 대답: ${cur.options.map((w, i) => `${i + 1} ${w}`).join(', ')}`);
+  announce(`${state.practice ? '연습. ' : `${state.index + 1}번째 공. `}${WORLD ? `${WHO_FULL}가` : '몽글이'} 말해요. 대답: ${cur.options.map((w, i) => `${i + 1} ${w}`).join(', ')}`);
   speakCur(cur);
 }
 
@@ -266,17 +284,19 @@ function nextItem() {
 function speakCur(cur) {
   const run = state.run;
   $('#speech').hidden = false;
-  if (!sound.isOn()) { cur.ex?.help('text'); cur.texted = true; tip(`몽글: “${cur.item.line}”`, { silent: false }); }
+  if (!sound.isOn()) { cur.ex?.help('text'); cur.texted = true; tip(`${WHO}: “${cur.item.line}”`, { silent: false }); }
   cur.speech = sound.speak(cur.item, { onEnd: (heard) => {
     if (!live(run) || state.cur !== cur || cur.phase !== 'talk') return;
     $('#speech').hidden = true;
     // 소리가 도중에 끊겨 끝까지 못 들려줬으면(소리 장치 멈춤 등 — audio.mjs VOICE_GUARD) 말을 글로 보여 준다. 그 답은 도움으로 남는다
-    if (!heard && sound.isOn() && !cur.texted) { cur.ex?.help('text'); cur.texted = true; tip(`몽글: “${cur.item.line}”`); }
+    if (!heard && sound.isOn() && !cur.texted) { cur.ex?.help('text'); cur.texted = true; tip(`${WHO}: “${cur.item.line}”`); }
     cur.ex?.heard(heard);
-    serve(cur);
+    if (cur.rallied) heardRally(cur); else serve(cur);
   } });
   // 소리를 켰는데도 틀 수 없으면(브라우저가 소리를 막음 등) 말을 글로 보여 준다
-  if (sound.isOn() && !cur.speech.heard) { cur.ex?.help('text'); cur.texted = true; tip(`몽글: “${cur.item.line}”`); }
+  if (sound.isOn() && !cur.speech.heard) { cur.ex?.help('text'); cur.texted = true; tip(`${WHO}: “${cur.item.line}”`); }
+  world?.talk(cur.speech.duration, { rallied: cur.rallied });   // WORLD: 말 걺 판 · 카드 들어옴 · 카메라 다가감
+  if (cur.rallied && !cur.token) serveRally(cur);
 }
 
 function serve(cur) {
@@ -284,9 +304,32 @@ function serve(cur) {
   const slow = progress.slow || state.practice;
   // 피곤한 날은 랠리 가속을 쓰지 않는다. 순간 맞춤의 배율은 그 사람의 기본 속도를 맞춘다(연습 공은 맞춤 없이 1.3배 느리게)
   cur.flight = flightTime({ rally: state.tired ? 0 : state.rally, difficulty: cur.item.difficulty, slow }) * (state.practice ? 1.3 : flightScale());
-  cur.serveAt = performance.now(); cur.flightMs = cur.flight * 1000; cur.pausedBase = state.pausedMs;
-  cur.token = stage.serve({ flight: cur.flight });
-  if (cur.choice != null) stage.release(cur.token);   // 몽글이 말하는 중에 이미 골랐으면 공은 기다리지 않고 와서 받아친다
+  const launch = () => {
+    if (state.cur !== cur) return;
+    cur.serveAt = performance.now(); cur.flightMs = cur.flight * 1000; cur.pausedBase = state.pausedMs;
+    cur.token = stage.serve({ flight: cur.flight });
+    world?.served();
+    if (cur.choice != null) stage.release(cur.token);   // 몽글이 말하는 중에 이미 골랐으면 공은 기다리지 않고 와서 받아친다
+  };
+  const lead = world?.serveClip() || 0;   // WORLD: 태오가 공을 띄워 치는 움직임 — 라켓이 공에 닿는 순간에 3D 공이 뜬다
+  if (lead) after(lead, launch); else launch();
+}
+/** WORLD 이어지는 랠리: 태오가 받아친 공이 말하는 동안 날아온다. 라켓 앞에서 기다리기 시작하는 자리(비행의 84.8%, stage.mjs)가 말 끝 뒤에 오게 길이를 잡아, 다 듣기 전에 공이 멈추지 않는다. */
+function serveRally(cur) {
+  const base = flightTime({ rally: state.tired ? 0 : state.rally, difficulty: cur.item.difficulty, slow: progress.slow }) * flightScale();
+  cur.flight = Math.max(base, (cur.speech.duration + 0.25) / 0.848);
+  cur.flyingSince = performance.now();
+  const spot = worldPlay.SCENE.contact[state.lastLane ?? 1];
+  cur.token = stage.serve({ flight: cur.flight, fromX: spot.x, fromY: spot.y });
+}
+/** 다 들은 순간: 기록상 「공이 뜬 때」는 여기다(‘고르기까지 쓴 시간’은 들은 뒤부터 잰다 — LAB과 같은 뜻). */
+function heardRally(cur) {
+  cur.phase = 'flight'; stage.setFace('idle');
+  cur.serveAt = performance.now();
+  cur.flightMs = Math.max(400, cur.flight * 1000 - (cur.serveAt - cur.flyingSince));
+  cur.pausedBase = state.pausedMs;
+  world?.served();
+  if (cur.choice != null) stage.release(cur.token);
 }
 
 /** 대답 고르기(카드 누르기·위로 긋기·숫자 키). 처음 고른 것이 그 공의 대답이다. 공이 기다리고 있었으면 그때 와서 받아친다. */
@@ -302,6 +345,7 @@ function choose(lane, { tapped = false, power = 0.5 } = {}) {
   const cards = $('#cards'); cards.classList.add('locked');
   for (const b of cards.children) { const on = Number(b.dataset.lane) === lane; b.setAttribute('aria-pressed', String(on)); b.classList.toggle('dim', !on); }
   stage.setLane(lane);
+  world?.chose();
   sound.sfx('swing', { power: tapped ? 0.35 : power, x: 0, to: LANES[lane] * 1.6 });
   if (cur.phase === 'flight') stage.release(cur.token);
   return true;
@@ -317,6 +361,7 @@ function onHold(token) {
   if (!cur || token !== cur.token || cur.choice != null) return;
   cur.waiting = true;
   showWait(cur);
+  world?.hold();   // WORLD: 오래 기다리면 태오가 「천천히 골라요」
 }
 
 /** 공이 내 라켓에 닿았다(고른 뒤에만 닿는다): 고른 칸으로 받아친다(판정·기록·손맛). */
@@ -340,25 +385,27 @@ function onArrive(token) {
     if (!state.practice) state.score += pts;
     const at = stage.hitPoint();
     if (pts) popText(smash ? `스매시! +${pts}` : quick ? `빠르게! +${pts}` : state.rally >= 2 ? `+${pts} · 랠리 ${state.rally}` : `+${pts}`, at.x, at.y - 40, state.rally, smash ? 'smash' : quick ? 'quick' : '');
-    if (smash) after(260, () => sound.play(sound.pick('joy1', 'joy2')));
+    if (smash) after(260, () => { if (world) world.say('smash', state.rally); else sound.play(sound.pick('joy1', 'joy2')); });
     else if (quick) after(110, () => sound.play('earn'));   // 빠르게: 받아친 ‘팅’ 뒤에 사운드킷 ‘획득’(픽)
     punch($('#g-rally-wrap'));
   }
   updateHud();
   cur.verdict = correct ? 'ok' : 'wrong'; cur.smash = smash;
+  world?.returned({ lane: cur.choice, ok: correct, smash, quick });   // WORLD: 칭찬 표정 → 공이 오는 칸으로 움직여 칠 준비
   return { lane: cur.choice, verdict: cur.verdict, smash };
 }
 
 /** 받아친 공이 대답 칸에 닿았다. 맞으면 칸이 빛나고, 틀리면 맞는 카드를 보이고 이유를 알려 준다(실패음 없음). */
-function onPadLanded({ lane, verdict }) {
+function onPadLanded({ lane, verdict, smash }) {
   const cur = state.cur; if (!cur) return;
   sound.sfx('bounce', { near: 0, x: LANES[lane] });
+  world?.landed({ verdict, smash, rally: state.rally });   // WORLD: 표정 판(웃음 · 놓침) · 랠리 칩
   const right = cur.options.indexOf(cur.item.answer);
   if (verdict === 'ok') { $('#cards').children[lane]?.classList.add('right'); stage.setFace('happy'); return; }
   $('#cards').children[right]?.classList.add('right'); $('#cards').children[right]?.classList.remove('dim');
   stage.setFace('calm');
   if (state.practice) return;
-  after(240, () => sound.play(sound.pick('calm1', 'calm2')));
+  after(240, () => { if (world) world.say('miss'); else sound.play(sound.pick('calm1', 'calm2')); });
   after(520, () => showExplain(cur, { chose: cur.options[lane] }));
 }
 
@@ -366,10 +413,12 @@ function onPadLanded({ lane, verdict }) {
 function onCaught() {
   const cur = state.cur; if (!cur) return;
   cur.phase = 'done';
+  world?.caught({ smash: cur.smash });
   if (state.practice) {
     progress.practiced = true; save(); state.practice = false; state.rally = 0;
     // 안내 음성 「좋아요! 이제 시작해요.」가 끝나고(그리고 원래처럼 1.4초가 지나고) 첫 말로. 틀 수 없으면 1.4초만 기다린다
     tip(`${NARRATION.practiceDone.text} 공이 닿기 전에 고르면 ‘빠르게!’ 보너스예요.`);
+    world?.face('talk');
     const run = state.run;
     let waited = false, said = !sound.canNarrate(NARRATION.practiceDone.id);
     const go = () => { if (waited && said && live(run)) { tip(null); nextItem(); } };
@@ -377,7 +426,9 @@ function onCaught() {
     after(1400, () => { waited = true; go(); });
     return;
   }
-  after(380, () => { state.index += 1; nextItem(); });
+  // WORLD: 스매시가 아니면 태오가 칸 쪽으로 움직여 받아친 순간 바로 다음 말이 시작된다. 스매시는 태오가 놓치고 웃는 동안 기다렸다가 새 공으로
+  if (world && !cur.smash && state.index + 1 < state.queue.length) { state.lastLane = cur.choice; state.index += 1; nextItem({ rallied: true }); return; }
+  after(world && cur.smash ? world.reactMs() : 380, () => { state.index += 1; nextItem(); });
 }
 
 /** 만일의 길: 고르기 전에는 공이 라켓에 닿지 않는다. 그래도 놓쳤다면 같은 말을 다시 친다(기록·랠리는 그대로). */
@@ -390,7 +441,7 @@ function onMissed(token) {
 function showWait(cur) {
   tip(null);
   const shown = cur.texted;
-  $('#wait-line').hidden = !shown; if (shown) $('#wait-line').textContent = `몽글: “${cur.item.line}”`;
+  $('#wait-line').hidden = !shown; if (shown) $('#wait-line').textContent = `${WHO}: “${cur.item.line}”`;
   $('#wait-replay').hidden = !sound.isOn(); $('#wait-slow').hidden = !sound.isOn();
   $('#wait-text').hidden = shown;
   $('#wait').hidden = false;
@@ -417,14 +468,14 @@ function showExplain(cur, { chose = null } = {}) {
   $('#cards').hidden = true;
   const item = cur.item;
   $('#x-kicker').textContent = `받아친 대답 ‘${chose}’`;
-  $('#x-line').textContent = `몽글: “${item.line}”`;
+  $('#x-line').textContent = `${WHO}: “${item.line}”`;
   $('#x-answer').innerHTML = `알맞은 대답: <b>${esc(item.answer)}</b>`;
   $('#x-why').textContent = item.why;
   state.explained = item; $('#x-tools').hidden = !sound.isOn();
   $('#explain').hidden = false;
   $('#btn-next').querySelector('span').textContent = state.index + 1 >= state.queue.length ? '결과 보기' : '다음 공';
   $('#btn-next').focus({ preventScroll: true });
-  announce(`${$('#x-kicker').textContent}. 몽글: ${item.line} 알맞은 대답: ${item.answer}. 왜? ${item.why}`);
+  announce(`${$('#x-kicker').textContent}. ${WHO}: ${item.line} 알맞은 대답: ${item.answer}. 왜? ${item.why}`);
 }
 function hideExplain() { $('#explain').hidden = true; }
 $('#x-replay').onclick = () => { if (state.explained && !state.paused) playLine(state.explained); };
@@ -461,7 +512,7 @@ function finish() {
   // 완주 15 + 정답 비율 × 10(다른 게임과 같은 규칙). 맞힌 수는 결과 화면 그대로다 — 연습 공은 세지 않는다.
   const coinRound = state.coinRound; state.coinRound = null; $('#r-coins').textContent = '';
   if (coinRound) globalThis.SynkPlayCollection?.award({ game: 'talk-rally', total: s.total, correct: s.correct, completed: true, automatic: false, roundId: coinRound })
-    .then((result) => { $('#r-coins').textContent = globalThis.SynkPlayCollection.rewardText(result); });
+    .then((result) => { $('#r-coins').textContent = globalThis.SynkPlayCollection.rewardText(result); world?.coin(); });
   // 제목은 결과 안내 음성과 같은 문장(첫 문장은 제목, 나머지는 그 아래 한 줄)
   const tier = resultLine(s.stars);
   $('#r-title').textContent = tier.title; $('#r-say').textContent = tier.say; $('#r-say').hidden = !tier.say;
@@ -471,7 +522,7 @@ function finish() {
   $('#r-correct').textContent = String(s.correct); $('#r-total').textContent = String(s.total);
   $('#r-stars').innerHTML = [1, 2, 3].map((i) => `<i class="${i <= s.stars ? 'on' : ''}" style="animation-delay:${0.3 + (i - 1) * 0.22}s"></i>`).join('');
   $('#r-stars').setAttribute('aria-label', `별 3개 중 ${s.stars}개`);
-  for (let i = 0; i < s.stars; i++) setTimeout(() => sound.sfx('star', { i }), 300 + i * 220);
+  if (!world) for (let i = 0; i < s.stars; i++) setTimeout(() => sound.sfx('star', { i }), 300 + i * 220);   // WORLD는 별 대신 주고받기 점 · 큰 숫자(world-play.mjs)
   // 결과 안내 음성: 성취음·별 뒤에 제목과 같은 문장, 하루 도전에서 그날 기록을 넘었으면 이어서 「오늘 최고 기록이에요!」.
   // 복습의 「듣기」(몽글의 말)나 다음 판·처음으로가 누르는 순간 멈춘다
   const sayLines = [tier.id, ...(dres?.newBest ? [NARRATION.dailyBest.id] : [])];
@@ -479,7 +530,7 @@ function finish() {
     const run = state.run;
     for (const id of sayLines) { if (!live(run) || $('#results').hidden) return; if (!(await sound.narrate(id))) return; }
   });
-  $('#r-mongle').src = s.stars >= 2 ? 'kit/brand/mongle-cheer.webp' : 'kit/brand/mongle-smile.webp';
+  if (!WORLD) $('#r-mongle').src = s.stars >= 2 ? 'kit/brand/mongle-cheer.webp' : 'kit/brand/mongle-smile.webp';   // WORLD에는 몽글이 없다(10-31 ④)
   const notes = [`점수 ${s.score}점`, `최고 랠리 ${s.bestRally}번`, `빠른 대답 ${s.quick}번`];
   if (s.helped) notes.push(`다시 듣기·글로 보기를 쓴 말 ${s.helped}개`);
   $('#r-note').textContent = notes.join(' · ');
@@ -489,9 +540,9 @@ function finish() {
     const li = el('li', r.correct ? 'ok' : 'ko');
     const mark = r.correct ? '맞음' : '다시 볼 것';
     li.innerHTML = `<span class="mark" aria-label="${mark}">${r.correct ? '○' : '×'}</span>
-      <span class="body"><span class="line">몽글: “${esc(item.line)}”</span><span class="sent">→ <b>${esc(item.answer)}</b></span>
+      <span class="body"><span class="line">${WHO}: “${esc(item.line)}”</span><span class="sent">→ <b>${esc(item.answer)}</b></span>
       <small>${esc(KIND_LABEL[item.kind] || '')}${r.correct ? '' : ` · 고른 대답 ‘${esc(r.choice)}’`}${r.quick ? ' · 빠르게' : ''}${r.helped ? ' · 다시 듣기·글로 보기' : ''}</small></span>`
-      + (sound.isOn() ? `<button class="chip-btn say-again" type="button" aria-label="몽글의 말 다시 듣기: ${esc(item.line)}">듣기</button>` : '');
+      + (sound.isOn() ? `<button class="chip-btn say-again" type="button" aria-label="${WHO}의 말 다시 듣기: ${esc(item.line)}">듣기</button>` : '');
     li.querySelector('.say-again')?.addEventListener('click', () => playLine(item));
     log.append(li);
   }
@@ -501,6 +552,7 @@ function finish() {
   $('#r-next-reason').textContent = nextLineWithReturn(next);
   $('#r-hub').hidden = !location.pathname.includes('/talk-rally/');
   show('results');
+  world?.finish(state.results);   // WORLD: 음악이 물러나고 주고받기 점 · 큰 숫자가 오른다
   $('#r-title').focus({ preventScroll: true });
 }
 
@@ -558,6 +610,7 @@ function pause(open = true) {
   if (open && !state.paused) state.pausedAt = performance.now();
   if (!open && state.paused && state.pausedAt) { state.pausedMs += performance.now() - state.pausedAt; state.pausedAt = 0; }
   state.paused = open; stage?.pause(open);
+  if (open) world?.pause(); else world?.resume();
   if (open && !$('#pause-dialog').open) $('#pause-dialog').showModal();
   if (!open && $('#pause-dialog').open) $('#pause-dialog').close();
   if (!open && cur?.speechCut && cur.phase === 'talk' && state.cur === cur) { cur.speechCut = false; speakCur(cur); }
@@ -570,6 +623,7 @@ $('#quit').onclick = () => {
   const cur = state.cur;
   if (cur && !['hit', 'done'].includes(cur.phase)) cur.ex?.cancel();
   stopVoices(cur);
+  world?.quit();
   pause(false); endFlow(); state.cur = null; tip(null); hideExplain(); hideWait(); renderLobby();
 };
 document.addEventListener('visibilitychange', () => { if (document.hidden && !$('#game').hidden) pause(true); });
@@ -592,6 +646,33 @@ window.addEventListener('pointerup', (e) => {
   stage?.strokeEnd(ok);   // 대답을 골랐으면 금빛 자국, 아니면 크림색으로 사라진다
 });
 window.addEventListener('pointercancel', () => { drag = null; stage?.strokeEnd(false); });
+
+/* ── WORLD 안: 입구 · 결과 문구, 몽글 걷기, 결과 아래 흰 알약 「우리 동네로」(주문 폭주 WORLD 분기와 같은 꼴) ── */
+const WORLD_COPY = [
+  ['#lobby .hero-copy>.kicker', 'CAMPUS CLUB · TABLE TENNIS'],
+  ['#lobby .hero .lede', `동아리 탁구 시합. ${WHO_FULL}가 말을 걸며 공을 쳐요 — 알맞은 대답으로 받아쳐요.`],
+  ['#how-title', '하는 법'],
+  ['#lobby .how-steps li:nth-child(1) span', `${WHO_FULL}가 공을 치며 한마디 해요. 글은 보이지 않아요.`],
+  ['#sound-note', `듣기 게임이에요. 소리를 켜야 ${WHO_FULL}의 말이 들리고 학습 기록에도 남아요.`],
+  ['#btn-start span', '한 판 하기'],
+  ['#quit', '게임 처음으로'],
+  ['#r-home', '게임 처음으로'],
+];
+function setupWorld() {
+  for (const [sel, text] of WORLD_COPY) { const n = document.querySelector(sel); if (n) n.textContent = text; }
+  for (const n of document.querySelectorAll('.hero-mongle,#r-mongle,.hero-art,.lobby .topbar .logo-tag,.game-bar .logo-mini,.results .topbar')) n.remove();   // 몽글 · 펠트 그림과 LAB 꼬리표는 앱에 두지 않는다(10-31 ④)
+  world.setup();
+  const bar = document.createElement('div'); bar.className = 'w-room-bar';
+  bar.innerHTML = '<button id="w-room" class="felt-cta w-room" type="button"><span>우리 동네로</span><i class="disc" aria-hidden="true"></i></button>';
+  bar.firstChild.addEventListener('click', backToRoom); $('#results').append(bar);
+}
+/** 결과 → 우리 동네: WORLD 홈이 동네로 돌아가기(goTown)를 알면 그걸 부르고, 아니면 게임 창의 닫기(#panel-close)를 누른다(같은 출처 틀). 닿지 않으면 게임 입구로. */
+function backToRoom() {
+  stopLine(); sound.stopNarration(); world?.quit();
+  try { const town = window.parent?.__synkHome?.goTown; if (town) { town(); return; } const close = window.parent?.document?.getElementById('panel-close'); if (close) { close.click(); return; } } catch { /* 다른 출처 */ }
+  renderLobby();
+}
+if (WORLD) setupWorld();
 
 /* ── 이벤트 ── */
 $('#btn-start').onclick = () => startRound();
@@ -686,12 +767,15 @@ if (QA) {
       cur: state.cur && { id: state.cur.item.id, answer: state.cur.item.answer, options: [...state.cur.options], choice: state.cur.choice, phase: state.cur.phase,
         waiting: state.cur.waiting, quick: state.cur.quick } }),
     choose: (lane) => choose(lane, { tapped: true }),
+    finish: () => finish(),   // 시안 영상: 판 끝 화면으로
+    setLane: (k) => { qaLane = k; }, setRally: (n) => { state.rally = n; },   // 시안 영상: 좌 · 가운데 · 우와 긴 랠리 반응을 차례로 보인다
     progress: () => JSON.parse(JSON.stringify(progress)), summary: () => atlas((c) => c.summary()), daily: () => loadDaily(),
     flow: () => (state.flow ? { flight: flightScale(), tired: state.tired } : null),
     sound: { start: () => sound.startLog(), take: () => sound.takeLog(), slow: () => sound.slowState() },
     impacts: () => impacts.splice(0),
     stage: () => stage,
     gear: () => ({ ...gear }),
+    world: () => world?.state() ?? null,
     fitCards: () => fitCards(),   // qa/cards-fit.cjs: 모든 대답을 카드에 넣어 볼 때
   };
 }
