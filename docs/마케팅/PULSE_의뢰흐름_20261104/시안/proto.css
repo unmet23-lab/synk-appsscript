@@ -1,0 +1,37 @@
+html,body{margin:0;background:#0a0a0c}
+*{box-sizing:border-box}
+/* 시안 메뉴: 앱의 예시 띠(.demo-nav)를 그대로 쓰고, 화면은 그 아래부터 시작한다 */
+:root{--demo-bar:40px}
+#app{padding-top:var(--demo-bar)}
+/* 바뀐 점(시안 전용) */
+.why{min-height:100dvh;padding:clamp(64px,10vh,110px) var(--gutter) 90px;background:var(--paper) var(--grain);color:var(--ink);font-family:var(--sans);font-weight:450;word-break:keep-all}
+.why-head p{margin:0 0 12px;font-size:12px;color:var(--ink-3)}
+.why-head h1{margin:0;white-space:pre-line;font-size:clamp(40px,6vw,92px);font-weight:680;line-height:1.08;letter-spacing:-.05em}
+.why-part{margin-top:clamp(44px,8vh,84px)}
+.why-part>h2{margin:0;padding-bottom:12px;border-bottom:1px solid var(--ink);font-size:clamp(20px,2vw,28px);font-weight:650;letter-spacing:-.03em}
+.why-flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0}
+.why-flow article{padding:16px 16px 18px 0;border-bottom:1px solid var(--hair-p)}
+.why-flow article+article{padding-left:16px;border-left:1px solid var(--hair-p)}
+.why-flow .mono{font-size:12px;color:var(--berry)}
+.why-flow h3{margin:6px 0 10px;font-size:17px;font-weight:650;letter-spacing:-.02em;line-height:1.3}
+.why-after{margin:0;font-size:14.5px;line-height:1.55;font-weight:550}
+.why-before{margin:8px 0 8px;font-size:13.5px;line-height:1.5;color:var(--ink-3)}
+.why-compare{display:grid;gap:clamp(24px,4vh,40px);margin-top:18px}
+.why-compare figure{margin:0}
+.why-compare figcaption{margin-bottom:10px;font-size:15px;font-weight:650}
+.why-compare figure>div{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.why-compare span{position:relative;display:block;background:var(--paper-2);min-height:80px}
+.why-compare img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;object-position:50% 0;border:1px solid var(--hair-p)}
+.why-compare small{position:absolute;left:0;top:0;padding:4px 9px;background:var(--ink);color:var(--paper-3);font-size:13px;font-weight:600}
+.why-compare span+span small{background:var(--berry);color:#fff}
+.why-note{margin:14px 0 0;max-width:46em;font-size:15px;line-height:1.6;color:var(--ink-2)}
+.why-cols{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(24px,4vw,56px);margin-top:18px}
+.why-cols h3{display:flex;justify-content:space-between;align-items:baseline;margin:0;padding-bottom:8px;border-bottom:1px solid var(--ink);font-size:16px;font-weight:650}
+.why-cols h3 .mono{font-size:11px;font-weight:400;color:var(--ink-3)}
+.why-cols dl{margin:0}
+.why-cols dl>div{padding:10px 0;border-bottom:1px solid var(--hair-p)}
+.why-cols dt{font-size:15px;font-weight:620;line-height:1.4}
+.why-cols dd{margin:2px 0 0;font-size:14px;line-height:1.5;color:var(--ink-2)}
+.why :focus-visible{outline:2px solid var(--berry);outline-offset:2px}
+@media (max-width:980px){.why-flow{grid-template-columns:minmax(0,1fr)}.why-flow article+article{padding-left:0;border-left:0}.why-cols{grid-template-columns:minmax(0,1fr)}.why-compare figure>div{grid-template-columns:minmax(0,1fr)}}
+

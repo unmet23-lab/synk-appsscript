@@ -9,8 +9,10 @@ titles.customer_delivery_receipt='고객이 최종본을 받았대요';
 // 고객 문의에 자동 안내가 먼저 답한 알림(2026-10-19). 사람 답인 「제작팀이 답했어요」와 구별한다.
 titles.auto_reply='문의에 자동 안내가 왔어요';
 titles.customer_feedback_round='고객이 수정 의견을 모아 보냈어요';
+// 의뢰서 흐름(2026-11-04): 새 의뢰 → 내부 확인 → 되묻기 · 모델 → 1차안. 고객 쪽 본문은 pulse-live.mjs customerBodies.
+Object.assign(titles,{request_received:'새 의뢰가 들어왔어요',customer_request_answer:'고객이 되물은 내용에 답했어요',customer_request_file:'고객이 자료를 더 보냈어요',customer_request_edit:'고객이 의뢰서를 고쳤어요',customer_model_answer:'고객이 모델 제안에 답했어요',customer_draft_review:'고객이 1차안에 의견을 보냈어요',customer_draft_approved:'고객이 1차안을 확인했어요',request_asked:'몇 가지만 더 여쭤봐요',model_proposed:'모델을 확인해 주세요',draft_ready:'1차안이 도착했어요'});
 Object.assign(titles,{customer_preferences:'고객이 취향을 알려 줬어요',customer_reference:'고객이 참고 자료에 의견을 남겼어요',customer_strategy:'고객이 제작 설계를 썼어요',customer_strategy_confirmed:'고객이 제작 설계를 확인했어요',customer_concept:'고객이 콘셉트를 골랐어요',customer_scene:'고객이 장면을 보고 의견을 남겼어요',customer_comment:'고객이 기획에 의견을 남겼어요',preview_ready:'새 시안이 왔어요',final_ready:'최종본이 왔어요',staff_reply:'제작팀이 답했어요',strategy_ready:'제작 설계를 확인해 주세요',concept_ready:'콘셉트가 바뀌었어요',scene_ready:'장면 구성이 바뀌었어요',reference_ready:'참고 자료가 바뀌었어요'});
-const studioNewsBodies={customer_preferences:'고객이 남긴 취향을 PULSE에서 봐 주세요.',customer_reference:'고객이 참고 자료에 남긴 의견을 PULSE에서 봐 주세요.',customer_strategy:'고객이 쓴 제작 설계를 PULSE에서 봐 주세요.',customer_strategy_confirmed:'고객이 확인한 제작 설계를 PULSE에서 봐 주세요.',customer_concept:'고객이 고른 콘셉트를 PULSE에서 봐 주세요.',customer_scene:'고객이 장면에 남긴 의견을 PULSE에서 봐 주세요.',customer_comment:'고객이 기획에 남긴 의견을 PULSE에서 봐 주세요.'};
+const studioNewsBodies={request_received:'새 의뢰서가 왔어요. 내부 확인에서 빠진 것을 보고 다음을 정해 주세요.',customer_request_answer:'되물은 내용의 답을 내부 확인에서 봐 주세요.',customer_request_file:'고객이 더 보낸 자료를 내부 확인에서 봐 주세요.',customer_request_edit:'고객이 고친 의뢰서를 내부 확인에서 봐 주세요.',customer_model_answer:'모델 제안에 대한 답을 내부 확인에서 봐 주세요.',customer_draft_review:'컷마다 남긴 의견을 봐 주세요.',customer_draft_approved:'고객이 확인한 판으로 다음 단계를 이어 주세요.',customer_preferences:'고객이 남긴 취향을 PULSE에서 봐 주세요.',customer_reference:'고객이 참고 자료에 남긴 의견을 PULSE에서 봐 주세요.',customer_strategy:'고객이 쓴 제작 설계를 PULSE에서 봐 주세요.',customer_strategy_confirmed:'고객이 확인한 제작 설계를 PULSE에서 봐 주세요.',customer_concept:'고객이 고른 콘셉트를 PULSE에서 봐 주세요.',customer_scene:'고객이 장면에 남긴 의견을 PULSE에서 봐 주세요.',customer_comment:'고객이 기획에 남긴 의견을 PULSE에서 봐 주세요.'};
 Object.assign(titles,{deliverables_ready:'납품 규격을 확인해 주세요',feedback_classified:'보낸 의견의 수정 범위와 일정이 정리됐어요',kickoff_updated:'준비할 자료에 새 소식이 있어요',scene_review_ready:'고친 장면을 확인해 주세요',preview_review_ready:'수정본 검토가 끝났어요. 시안을 확인해 주세요'});
 
 // Hash only the customer-visible preparation state. Private waiver notes and
@@ -30,7 +32,9 @@ export function appendClientNotificationEvents(previous,row){
     if(ids.has(id))return;
     ids.add(id);events.push({id,type,projectId:row.id,revision:row.revision,createdAt:row.updatedAt,actorId,audiences,...extra});
   };
-  if(row.ownerId!==previous?.ownerId)add('assigned',row.ownerId,['owner'],{assigneeId:row.ownerId});
+  // 공개 의뢰서로 들어온 새 프로젝트는 「맡았어요」 대신 「새 의뢰」 하나만 알린다.
+  if(!previous&&row.studio?.request)add('request_received',row.id,['owner'],{tab:'desk',actorId:'customer'});
+  else if(row.ownerId!==previous?.ownerId)add('assigned',row.ownerId,['owner'],{assigneeId:row.ownerId});
   if(row.reviewerId&&row.reviewerId!==previous?.reviewerId)add('reviewer_assigned',row.reviewerId,['reviewer'],{assigneeId:row.reviewerId});
   const older=new Map((previous?.messages||[]).map(message=>[message.id,message]));
   const feedbackRounds=new Map((row.studio?.feedbackRounds?.rounds||[]).map(round=>[round.id,round]));
@@ -83,9 +87,12 @@ export function appendClientNotificationEvents(previous,row){
   // an unchanged document must not replay old notifications.
   if(committed&&/^PULSE (?:기획|제작) /.test(history.action||'')){
     const studio=row.studio||{},before=previous?.studio||{};
-    const customerActions={save_preferences:['customer_preferences','direction'],save_reference:['customer_reference','direction'],remove_reference:['customer_reference','direction'],save_strategy:['customer_strategy','strategy'],confirm_strategy:['customer_strategy_confirmed','strategy'],select_concept:['customer_concept','concepts'],review_scene:['customer_scene','storyboard'],comment:['customer_comment','history']};
-    if(actorId==='customer'&&customerActions[action]){const [type,tab]=customerActions[action];add(type,String(row.revision),['owner','reviewer'],{tab});}
+    const customerActions={request_submit:['request_received','desk'],request_answer:['customer_request_answer','desk'],request_file:['customer_request_file','desk'],answer_model:['customer_model_answer','desk'],submit_draft_review:['customer_draft_review','desk'],approve_draft:['customer_draft_approved','desk'],save_preferences:['customer_preferences','direction'],save_reference:['customer_reference','direction'],remove_reference:['customer_reference','direction'],save_strategy:['customer_strategy','strategy'],confirm_strategy:['customer_strategy_confirmed','strategy'],select_concept:['customer_concept','concepts'],review_scene:['customer_scene','storyboard'],comment:['customer_comment','history']};
+    if(actorId==='customer'&&customerActions[action]){const [type,tab]=customerActions[action];add(action==='request_submit'&&before.request?.submittedAt?'customer_request_edit':type,String(row.revision),['owner','reviewer'],{tab});}
     if(actorId!=='customer'){
+      if(action==='request_ask')add('request_asked',String(row.revision),['customer'],{tab:'overview'});
+      if(action==='propose_model')add('model_proposed',String(row.revision),['customer'],{tab:'overview'});
+      if(action==='send_draft')add('draft_ready',String(studio.request?.rounds?.at(-1)?.round),['customer'],{tab:'draft'});
       if(action==='request_strategy_review')add('strategy_ready',String(studio.strategy?.revision),['customer'],{tab:'strategy',strategyRevision:studio.strategy?.revision});
       if(action==='request_deliverable_review')add('deliverables_ready',String(studio.deliverables?.revision),['customer'],{tab:'strategy',target:'deliverables',deliverableRevision:studio.deliverables?.revision});
       if(action==='classify_feedback_round'){
@@ -95,7 +102,7 @@ export function appendClientNotificationEvents(previous,row){
           if((item.classifications?.length||0)>(oldItem?.classifications?.length||0))add('feedback_classified',item.id,['customer'],{tab:'review',feedbackRoundId:round.id,feedbackItemId:item.id,messageId:item.messageId,versionId:round.versionId,classificationCount:item.classifications.length});
         }
       }
-      if(action==='save_concept'||action==='save_scene'){
+      if((action==='save_concept'||action==='save_scene')&&!studio.request){
         const key=action==='save_concept'?'concepts':'scenes',old=new Map((before[key]||[]).map(card=>[card.id,card]));
         for(const card of studio[key]||[])if(card.visibility==='customer'&&old.get(card.id)?.revision!==card.revision)add(key==='concepts'?'concept_ready':'scene_ready',card.id,['customer'],{tab:key==='concepts'?'concepts':'storyboard',cardRevision:card.revision,...(key==='concepts'?{conceptId:card.id}:{sceneId:card.id})});
       }
@@ -140,7 +147,7 @@ export function createClientNotificationsService({store,clientProjects,clientWor
         const query=new URLSearchParams({tab:'workroom',section:'clients',project:source.id});
         if(event.type==='customer_delivery_receipt')query.set('closeout','1');
         if(event.versionId)query.set('version',event.versionId);if(event.messageId)query.set('message',event.messageId);if(Number.isFinite(message?.seconds))query.set('seconds',String(message.seconds));
-        const studioEvent=['customer_preferences','customer_reference','customer_strategy','customer_strategy_confirmed','customer_concept','customer_scene','customer_comment'].includes(event.type)&&['direction','strategy','concepts','storyboard','history'].includes(event.tab);
+        const studioEvent=['customer_preferences','customer_reference','customer_strategy','customer_strategy_confirmed','customer_concept','customer_scene','customer_comment','request_received','customer_request_answer','customer_request_file','customer_request_edit','customer_model_answer','customer_draft_review','customer_draft_approved'].includes(event.type)&&['direction','strategy','concepts','storyboard','history','desk'].includes(event.tab);
         // The existing messenger consumes workroom links only. Project news has
         // its own source opener, so use the exact PULSE tab for this projection.
         const href=projectId&&studioEvent?'/pulse-app/?'+new URLSearchParams({mode:'staff',project:source.id,tab:event.tab}):'/?'+query;

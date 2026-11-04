@@ -8,6 +8,7 @@ import {deliverableActions,applyDeliverableAction,deliverableView} from './pulse
 import {feedbackRoundActions,applyFeedbackRoundAction,feedbackRoundsView} from './pulse-feedback-rounds.mjs';
 import {previewActions,applyPreviewAction,previewsView,visiblePreviewAssetIds} from './pulse-previews.mjs';
 import {buildCustomerPreviewApproval} from './client-preview-approval.mjs';
+import {requestActions,applyRequestAction,requestView,usesRequestFlow} from './pulse-requests.mjs';
 
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
@@ -44,16 +45,16 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
     const concepts=studio.concepts.filter(value=>staff||value.visibility==='customer'),scenes=studio.scenes.filter(value=>staff||value.visibility==='customer');
     const publicTarget=(type,target)=>type==='project'||(type==='concept'?concepts:scenes).some(value=>value.id===target);
     const selection=value=>value?{...card(value),current:concepts.some(item=>item.id===value.conceptId&&item.revision===value.conceptRevision&&item.visibility==='customer')}:null;
-    return {schemaVersion:1,preferences:studio.preferences,strategy:strategyView(studio.strategy),deliverables:deliverableView(studio,row,staff),feedbackRounds:feedbackRoundsView(studio,row,staff),previews:previewsView(studio,row,staff),assets:[...assetMap.values()],references:studio.references.map(card),concepts:concepts.map(card),scenes:scenes.map(card),selectedConcept:selection(studio.selectedConcept),conceptSelections:studio.conceptSelections.map(selection),sceneReviews:studio.sceneReviews.filter(value=>staff||scenes.some(scene=>scene.id===value.sceneId)).map(value=>({...card(value),current:scenes.some(item=>item.id===value.sceneId&&item.revision===value.sceneRevision&&item.visibility==='customer')})),comments:studio.comments.filter(value=>staff||value.visibility==='customer'&&publicTarget(value.targetType,value.targetId)).map(card),cardRevisions:studio.history.filter(value=>staff||value.visibility==='customer').map(card)};
+    return {schemaVersion:1,request:requestView(studio,{staff}),preferences:studio.preferences,strategy:strategyView(studio.strategy),deliverables:deliverableView(studio,row,staff),feedbackRounds:feedbackRoundsView(studio,row,staff),previews:previewsView(studio,row,staff),assets:[...assetMap.values()],references:studio.references.map(card),concepts:concepts.map(card),scenes:scenes.map(card),selectedConcept:selection(studio.selectedConcept),conceptSelections:studio.conceptSelections.map(selection),sceneReviews:studio.sceneReviews.filter(value=>staff||scenes.some(scene=>scene.id===value.sceneId)).map(value=>({...card(value),current:scenes.some(item=>item.id===value.sceneId&&item.revision===value.sceneRevision&&item.visibility==='customer')})),comments:studio.comments.filter(value=>staff||value.visibility==='customer'&&publicTarget(value.targetType,value.targetId)).map(card),cardRevisions:studio.history.filter(value=>staff||value.visibility==='customer').map(card)};
   }
-  function customerState(token){const {row}=customer(token),result=clientProjects.read(token);return {...result,project:{...result.project,studio:view(row)}};}
+  function customerState(token){const {row}=customer(token),result=clientProjects.read(token);return {...result,project:{...result.project,studio:view(row),requestFlow:usesRequestFlow(row,studioOf(row))}};}
   function staffState(user,projectId){
     const row=clientProjects.project(user,projectId),{inviteHash,inviteRevision,notificationEvents,studio,...safe}=row;
     let canEdit=true;try{clientProjects.project(user,projectId,true);}catch{canEdit=false;}
     // Staff media must use staff routes. A staff session cannot impersonate
     // a customer's capability merely to render an image or video.
     const versions=row.versions.map(version=>({...version,...(version.media?{media:{...media(row,version.media,true),url:'/api/client-media/'+version.media.id}}:{})}));
-    return {project:{...safe,versions,kickoff:buildClientKickoff(row,{now:clock(),canEdit}),changes:buildClientChanges(row,{now:clock(),canEdit}),sceneRequests:buildSceneRequests(row,clientProjects.sceneRequestContext(row,user)),schedule:buildClientSchedule(row,{now:clock(),canEdit,reviewerId:clientProjects.sceneRequestContext(row,user).reviewerId}),ownerName:store.get('users',row.ownerId)?.name||'담당자',reviewerName:store.get('users',row.reviewerId)?.name||'',inviteActive:!!inviteHash&&Date.parse(row.inviteExpiresAt)>Date.parse(clock()),studio:view(row,true)},canEdit};
+    return {project:{...safe,requestFlow:usesRequestFlow(row,studioOf(row)),versions,kickoff:buildClientKickoff(row,{now:clock(),canEdit}),changes:buildClientChanges(row,{now:clock(),canEdit}),sceneRequests:buildSceneRequests(row,clientProjects.sceneRequestContext(row,user)),schedule:buildClientSchedule(row,{now:clock(),canEdit,reviewerId:clientProjects.sceneRequestContext(row,user).reviewerId}),ownerName:store.get('users',row.ownerId)?.name||'담당자',reviewerName:store.get('users',row.reviewerId)?.name||'',inviteActive:!!inviteHash&&Date.parse(row.inviteExpiresAt)>Date.parse(clock()),studio:view(row,true)},canEdit};
   }
   function asset(studio,assetId,{image=false}={}){if(!assetId)return null;const found=studio.assets.find(value=>value.id===id(assetId));if(!found||image&&!found.mimeType.startsWith('image/'))throw fail(image?'프로젝트의 이미지 자료를 선택해 주세요.':'이 프로젝트의 자료를 선택해 주세요.',404);return found;}
   function pointer(studio,input,{image=false}={}){const found=asset(studio,input.assetId,{image});return {assetId:found?.id||null,imageUrl:image?url(input.imageUrl):undefined};}
@@ -65,7 +66,7 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
   function mutate(row,input,user=null){
     const base=['action','revision'],studio=studioOf(row),who=actor(row,user),at=clock(),stamp={...who,at};revision(row,input?.revision);
     const fields={save_strategy:['strategy'],request_strategy_review:[],confirm_strategy:['strategyRevision'],save_preferences:['preferences'],save_reference:['id','label','url','assetId','preference','reason'],remove_reference:['id'],select_concept:['conceptId','conceptRevision','text'],review_scene:['sceneId','sceneRevision','status','text'],comment:['targetType','targetId','targetRevision','text'],save_concept:['id','title','description','tagline','imageUrl','assetId','visibility'],save_scene:['id','title','description','narration','screenText','duration','imageUrl','assetId','visibility','purpose','valueNumbers'],reorder_scenes:['ids']};
-    const extensions=[{fields:deliverableActions,apply:applyDeliverableAction},{fields:feedbackRoundActions,apply:applyFeedbackRoundAction},{fields:previewActions,apply:applyPreviewAction}];
+    const extensions=[{fields:deliverableActions,apply:applyDeliverableAction},{fields:feedbackRoundActions,apply:applyFeedbackRoundAction},{fields:previewActions,apply:applyPreviewAction},{fields:requestActions,apply:applyRequestAction}];
     const extension=object(input)?extensions.find(value=>value.fields(input.action)):null;
     if(!object(input)||!Object.hasOwn(fields,input.action)&&!extension)throw fail('기획 요청을 확인해 주세요.');keys(input,[...base,...(extension?extension.fields(input.action):fields[input.action])]);
     const action=input.action;
@@ -131,6 +132,28 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
   function staffUpload(user,projectId,value,metadata){return store.transaction(()=>{const row=assertStaffUpload(user,projectId,value);addAsset(row,metadata,user);const result=staffState(user,projectId);return {...result,asset:result.project.studio.assets.find(asset=>asset.id===metadata.id)};});}
   function customerMedia(token,assetId){const {row}=customer(token),studio=studioOf(row),found=studio.assets.find(value=>value.id===id(assetId));if(!found||!visibleAssetIds(studio).has(found.id))throw fail('자료를 찾지 못했어요.',404);return found;}
   function staffMedia(user,projectId,assetId){const row=clientProjects.project(user,projectId),found=studioOf(row).assets.find(value=>value.id===id(assetId));if(!found)throw fail('자료를 찾지 못했어요.',404);return found;}
+  // 접수 뒤 손님이 보낸 파일을 프로젝트에 붙인다. 화면에 띄울 수 있는 형식은 자료함으로, 나머지는 내려받기 전용(intake)으로 간다.
+  function addRequestFile(token,csrf,file){return store.transaction(()=>{
+    const {row}=customerWrite(token,csrf),studio=studioOf(row),who=actor(row),request=studio.request||{schemaVersion:1,number:'',status:'writing',answers:{},files:[],asks:[],notes:[],rounds:[]};
+    const shown={id:file.id,slot:file.slot,fileName:file.fileName,mimeType:file.mimeType,byteSize:file.byteSize,inline:file.inline};
+    studio.request={...request,files:[...(request.files||[]),shown]};
+    if(file.inline){capacity(studio.assets,120);studio.assets.push({id:file.id,diskName:file.diskName,fileName:file.fileName,mimeType:file.mimeType,byteSize:file.byteSize,slot:file.slot,...who,at:file.at});}
+    const intake=file.inline?row.intake:{...(row.intake||{receivedAt:file.at}),files:[...(row.intake?.files||[]),{id:file.id,diskName:file.diskName,fileName:file.fileName,byteSize:file.byteSize,mimeType:file.mimeType,sha256:file.sha256,kind:'attachment',slot:file.slot}]};
+    commit(intake?{...row,intake}:row,studio,'PULSE 제작 request_file',who);
+    return {...customerState(token),file:shown};
+  });}
+  // 손님이 잘못 올린 파일을 지운다. 확인이 끝난 뒤에는 저희가 쓰고 있을 수 있어 막는다. 돌려준 이름의 실제 파일은 부른 쪽이 트랜잭션 밖에서 지운다.
+  function removeRequestFile(token,csrf,fileId){return store.transaction(()=>{
+    const {row}=customerWrite(token,csrf),studio=studioOf(row),who=actor(row),request=studio.request;
+    if(!request?.files?.some(item=>item.id===fileId))throw fail('파일을 찾지 못했어요.',404);
+    if(request.status==='confirmed'||request.confirmedAt)throw fail('확인이 끝난 자료예요. 바꿀 내용은 담당자에게 알려 주세요.',409);
+    if(studio.scenes.some(scene=>scene.assetId===fileId)||(request.asks||[]).some(ask=>ask.fileId===fileId))throw fail('이미 쓰고 있는 파일이에요. 담당자에게 알려 주세요.',409);
+    const asset=studio.assets.find(item=>item.id===fileId),attached=row.intake?.files?.find(item=>item.id===fileId),diskName=asset?.diskName||attached?.diskName;
+    if((asset&&asset.author!=='customer')||!diskName)throw fail('파일을 찾지 못했어요.',404);
+    studio.assets=studio.assets.filter(item=>item.id!==fileId);studio.request={...request,files:request.files.filter(item=>item.id!==fileId)};
+    commit(attached?{...row,intake:{...row.intake,files:row.intake.files.filter(item=>item.id!==fileId)}}:row,studio,'PULSE 제작 request_file_remove',who);
+    return {...customerState(token),removed:{diskName}};
+  });}
   function customerAction(token,csrf,input){
     if(['confirm_delivery','submit_kickoff_source'].includes(input?.action)){customerWrite(token,csrf);clientProjects.customerAction(token,csrf,input);return customerState(token);}
     return store.transaction(()=>{
@@ -144,5 +167,5 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
   }
   // 서버 안에서만 부른다: 자동 안내가 읽는 고객 화면 사실(고객용 프로젝트 보기 + 고객에게 공개된 스튜디오).
   function customerSnapshot(projectId){const row=store.get('clientProjects',projectId);if(!row)throw fail('그 프로젝트를 찾지 못했어요.',404);return {...clientProjects.customerSnapshot(projectId),studio:view(row)};}
-  return {customerState,staffState,customerMutate,staffMutate,assertCustomerUpload,assertStaffUpload,customerUpload,staffUpload,customerMedia,staffMedia,customerAction,customerSnapshot};
+  return {addRequestFile,removeRequestFile,customerState,staffState,customerMutate,staffMutate,assertCustomerUpload,assertStaffUpload,customerUpload,staffUpload,customerMedia,staffMedia,customerAction,customerSnapshot};
 }

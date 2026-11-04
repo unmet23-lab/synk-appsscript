@@ -1,0 +1,51 @@
+/* 슬레이트 판을 기존 화면(05 영상 확인 · 06 납품 · 직원 작업 탭)에 입히는 층(2026-11-04).
+   app.css의 글자 단계 · 구조 · data-* 계약은 그대로 두고 토큰과 모양만 바꾼다. app.css 다음에 읽는다. */
+:root{
+  --bg:var(--paper);--panel:var(--paper);--surface-1:var(--paper-3);--surface-2:var(--paper-2);--surface-3:#dcd6cb;
+  --line:rgba(12,12,13,.12);--line-2:rgba(12,12,13,.2);
+  --ink-2:#3b3a38;--ink-3:#6f6b65;--ink-4:rgba(12,12,13,.2);--ink-q:#6f6b65;--field-line:rgba(12,12,13,.28);--on-ink:#f7f4ee;
+  --glass:rgba(239,235,228,.86);--glass-strong:rgba(247,244,238,.96);
+  --card-edge:0 0 0 1px rgba(12,12,13,.14);--glass-edge:0 0 0 1px rgba(12,12,13,.14);--lift:0 0 0 1px rgba(12,12,13,.18);--shadow:0 24px 50px -24px rgba(12,12,13,.34);
+  --r-xl:0px;--r-lg:0px;--r-md:0px;
+  --face:#99295d;--tint:#99295d;--glow:#99295d;--berry-text:#99295d;--berry-wash:#ead9df;
+  --studio:none;
+  --ok-wash:#dfe7dc;--check-wash:#efe4c9;--alert-wash:#efd9d6;--team-wash:#dcdfe6;--idle-wash:var(--paper-2);
+}
+html,body{background:var(--paper)}
+/* 둥글림 없음. 얼굴 원 · 상태 점처럼 동그라미가 뜻인 것만 남긴다. */
+#main :where(*):not(.face,.dot,.led-dot,input[type=radio]),#app-dialog :where(*):not(.face,input[type=radio]),.app-header :where(*){border-radius:0!important}
+#main img,#main video{border-radius:0!important}
+/* 머리 막대 */
+.app-header{background:var(--paper);border-bottom:1px solid var(--hair-p);box-shadow:none}
+/* 단추: 검정 면, 알약 없음. 큰 동작은 베리로 스며든다 */
+.button.primary{background:var(--ink);color:var(--paper-3);box-shadow:none;transition:background-color .2s,transform .12s ease-out}
+.button.primary:hover{background:var(--berry)}
+.button:active{transform:scale(.985)}
+.button.quiet,.button.soft{background:transparent;box-shadow:inset 0 0 0 1px var(--hair-p)}
+.button.quiet:hover,.button.soft:hover{box-shadow:inset 0 0 0 1px var(--ink)}
+/* 칩: 바탕 없이 글자와 작은 네모만 */
+.tag{background:transparent;box-shadow:inset 0 0 0 1px var(--hair-p);color:var(--ink-2)}
+.tag.berry{color:var(--berry);box-shadow:inset 0 0 0 1px rgba(153,41,93,.42)}
+.tag.green{color:#2c6b47;box-shadow:inset 0 0 0 1px rgba(44,107,71,.42)}
+/* 입력칸: 아래 선 하나 */
+#main .field input:not([type=checkbox]):not([type=radio]):not([type=file]),#main .field textarea,#main .field select{background:transparent;box-shadow:none;border:0;border-bottom:1px solid var(--field-line)}
+#main .field input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,#main .field textarea:focus,#main .field select:focus{border-bottom-color:var(--berry);box-shadow:inset 0 -1px 0 var(--berry);outline:0}
+#main .panel-card{box-shadow:var(--card-edge)}
+/* 왼쪽 레일: 번호와 이름, 지금 단계에만 베리 선 */
+.rail{background:var(--paper);border-right:1px solid var(--hair-p);box-shadow:none}
+.step .dot{background:transparent!important;box-shadow:none!important;color:var(--ink-3);font-family:var(--mono);font-size:11px;width:auto;min-width:22px}
+.step[aria-current=page]{background:transparent!important;box-shadow:inset -2px 0 0 var(--berry)!important}
+.step.is-current .dot,.step[aria-current=page] .dot{color:var(--berry)}
+.steps::before,.steps li::before,.steps li::after{display:none!important}
+.rail-contact{box-shadow:none;border-top:1px solid var(--hair-p);background:transparent}
+/* 영상 확인: 작업물이 주인공 */
+.review-player,.video-frame,.player-frame{background:var(--night)}
+.canvas-head h1,.hello h1{letter-spacing:-.045em}
+@media (hover:none){.button.primary:hover{background:var(--ink)}}
+/* 안내 말풍선도 같은 문법으로 */
+.notice{border-radius:0}
+/* 지금 단계 번호도 읽히게 */
+.step.is-now .dot,.step.is-team .dot{color:var(--berry)!important}
+.step.is-done .dot{color:var(--ink-2)!important}
+/* 휴대폰 머리 막대: 이름 칸까지 들어가면 화면 밖으로 밀린다 */
+@media (max-width:640px){.header-actions .user-label{display:none}.crumb-no{display:none}}

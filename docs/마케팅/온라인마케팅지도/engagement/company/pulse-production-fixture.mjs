@@ -10,10 +10,10 @@ export function fixtureWav(seconds=15){
   const rate=16000,count=seconds*rate,bytes=Buffer.alloc(44+count*2);bytes.write('RIFF');bytes.writeUInt32LE(bytes.length-8,4);bytes.write('WAVEfmt ',8);bytes.writeUInt32LE(16,16);bytes.writeUInt16LE(1,20);bytes.writeUInt16LE(1,22);bytes.writeUInt32LE(rate,24);bytes.writeUInt32LE(rate*2,28);bytes.writeUInt16LE(2,32);bytes.writeUInt16LE(16,34);bytes.write('data',36);bytes.writeUInt32LE(count*2,40);
   for(let i=0;i<count;i++){const t=i/rate,phase=t%1;bytes.writeInt16LE(Math.round(phase<.18?Math.sin(t*440*Math.PI*2)*1600*Math.sin(phase/.18*Math.PI):0),44+i*2);}return bytes;
 }
-export async function createProductionFixture({seed=true}={}){
+export async function createProductionFixture({seed=true,options:extra={}}={}){
   const directory=await mkdtemp(join(tmpdir(),'synk-pulse-production-'));
   const probe=createServer();await new Promise(r=>probe.listen(0,'127.0.0.1',r));const port=probe.address().port;await new Promise(r=>probe.close(r));
-  const base=`http://localhost:${port}`,options={dataDir:join(directory,'data'),clientIntakeDir:join(directory,'inbox'),host:'127.0.0.1',port,origin:base,schedule:false,workNotificationsEnabled:false,webPushEnabled:false,synkIdentityConfig:null,synkCustomerIdentityConfig:null,teachingConfig:null};
+  const base=`http://localhost:${port}`,options={dataDir:join(directory,'data'),clientIntakeDir:join(directory,'inbox'),host:'127.0.0.1',port,origin:base,schedule:false,workNotificationsEnabled:false,webPushEnabled:false,synkIdentityConfig:null,synkCustomerIdentityConfig:null,teachingConfig:null,...extra};
   let app=createCompanyApp(options);await app.start();
   const password='pulse-local-production-only',email='pulse-production@example.test';
   const owner=app.store.createUser({name:'제작 기능 검증 담당자',email,password,role:'admin'});

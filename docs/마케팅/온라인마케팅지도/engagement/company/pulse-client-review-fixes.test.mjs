@@ -51,10 +51,10 @@ test('the entry page introduces PULSE in the approved words and keeps the invite
   // 쓰지 않기로 한 말(원고 1절): 도구 이름, 최상급, 납기 · 부가세 · 세금계산서 약속, 실제 촬영을 고른다는 말, 같은 얼굴 보증, 옛 머리말.
   assert.doesNotMatch(text,/실제 촬영|실사 촬영|납기|부가세|세금계산서|같은 얼굴|무제한|최고|최초|유일|1위|솔서리|Seedance|Sora|Veo|Omni|Gemini|GPT|Suno|Higgsfield|힉스필드|시댄스|CLIENT ROOM|함께 완성해요/i);
   // 초대 문과 체험은 그대로다.
-  assert.match(html,/<form class="entry-card" data-form="invite">[\s\S]*name="invite"[\s\S]*프로젝트로 들어가기 →[\s\S]*<\/form>/);
-  assert.equal(html.split('href="?demo=coffee"').length,3,'첫 화면 체험 줄과 아래 체험 칸');
-  // 「연결 다시 확인」은 입장 칸 바로 곁에 둔다 — 첫 화면이 길어져 맨 아래에 두면 누른 뒤 알림이 화면 밖에 난다.
-  assert.match(html,/<\/form><div class="welcome-try">[\s\S]*?data-action="retry"[\s\S]*?<\/div><\/div><div class="welcome-art studio-board">/);
+  assert.match(html,/<form class="entry-invite" data-form="invite"[\s\S]*name="invite"[\s\S]*<\/form>/);
+  assert.equal(html.split('href="?demo=film"').length,3,'머리의 예시 링크와 맡긴 뒤 줄');
+  // 「이 기기에서 다시 확인」은 입장 칸 안에 둔다 — 첫 화면이 길어 맨 아래에 두면 누른 뒤 알림이 화면 밖에 난다.
+  assert.match(html,/<form class="entry-invite"[^>]*>[\s\S]*?data-action="retry"[\s\S]*?<\/form>/);
   assert.equal(html.split('data-action="retry"').length,2);
   // 알림은 어느 길로 왔든(연결 다시 확인 · 초대 링크 실패 · 프로젝트 접근이 끊김) 다시 그리는 한 곳에서 보인다.
   const app=readFileSync(new URL('app.mjs',appDir),'utf8');
@@ -72,15 +72,19 @@ test('a customer working in a project sees the board, not the introduction',asyn
   const demo=setup();
   for(const tab of ['overview','direction','films']){
     const html=view(demo,tab);
-    assert.doesNotMatch(html,/welcome-promises|welcome-maker|welcome-price|카메라 앞에 서 본|39만원부터/,tab);
+    assert.doesNotMatch(html,/entry-promise|entry-maker|entry-price|카메라 앞에 서 본|39만원부터/,tab);
   }
 });
 
-test('someone with no project yet is offered a real inquiry next to the demo, opening synk.im in a new tab',()=>{
+test('someone with no project yet can start a request right here, try the example, or open a link they already have',()=>{
   assert.equal(PULSE_INQUIRY_URL,'https://synk.im/pulse/#contact');
   const html=welcome({});
-  assert.ok(html.includes(`<div class="demo-entry-actions"><a class="button soft" href="?demo=coffee">예시 프로젝트 체험하기 →</a><p class="demo-entry-inquiry">아직 맡긴 프로젝트가 없다면 ${INQUIRY}</p></div>`));
-  assert.equal(html.split(PULSE_INQUIRY_URL).length,2,'one inquiry link on the entry page');
+  assert.equal(html.split('data-entry="start"').length,3,'the request button is at the top and after the prices');
+  assert.match(html,/광고 의뢰하기/);
+  assert.match(html,/href="\?demo=film"/);
+  assert.match(html,/<form class="entry-invite" data-form="invite"/);
+  assert.equal(html.includes(PULSE_INQUIRY_URL),false,'the request starts in the app, not on another site');
+  assert.match(welcome({requestResume:true}),/쓰던 의뢰서 이어 쓰기/);
 });
 
 test('the finished demo ends on the inquiry, keeps restart as the second choice, and only the demo inquiry box says where real questions go',async()=>{

@@ -729,6 +729,12 @@
 - 고침: 알림은 작업에 지장이 없다. 10-17 전역 `SessionEnd` 훅(`~/.ai-accounts/claude-artifact-account-hook.mjs session-end`)이 세션이 내려갈 때 켜진 지켜보기를 모두 끄는 줄을 덧붙인다 — 대가로 자동 답장은 재시작을 넘어 이어지지 않고, 그 페이지를 다시 올리면 켜진다. 시작 훅은 되살리기보다 늦게 돌아 안 된다. 종료 훅 전에 내려간 세션의 묵은 켜짐은 같은 훅의 `prune-idle`로 정리한다. 다시 올릴 때 그 계정 몫 사본 주소가 이미 있으면 그 주소를 `url`로 주고 `capabilities: {"db": {}}`를 함께 넘긴다(그 주소의 옛 파일을 이번 세션에서 안 봤다고 거절되면 `read`로 읽은 뒤). 파일 다시 올리기는 [브라우저·게시](브라우저_게시.md) 「새 주소에 파일 300개를 다시 올릴 때」. db 문서는 옛 계정일 때 `list`로 읽어 둔 내용을 새 페이지에 `batch`(50개씩, 이미 있는 문서는 `if_version`)로 옮긴다 — 계정이 바뀐 뒤에는 옛 페이지를 못 읽는다.
 - 다시 확인: 10-24 읽기만 — `~/.claude/settings.json` hooks에 이 훅이 PreToolUse `pre`·PostToolUse `post`·PostToolUseFailure `failure`(셋 다 matcher `Artifact`)와 SessionEnd `session-end`로 걸려 있고, 훅 파일에 `prune-idle`이 있다. 알림이 다시 안 뜨는지는 계정을 바꿔야 보여 (10-24 메모에서 옮김, 다시 확인 전).
 
+### 아티팩트를 ego · 앱 안 브라우저로 열어 확인하려 하면 로그인 계정이 달라 404다 (2026-11-04 Claude)
+- 증상: PULSE 시안 아티팩트를 게시한 뒤 앱 안 브라우저로 여니 로그인 화면, ego(synk.yuh 계정)로 여니 404였다.
+- 원인: 아티팩트는 올린 계정에만 묶이고 비공개가 기본이다. 앱 안 브라우저는 로그인돼 있지 않고 ego는 다른 계정이다.
+- 고침: 올린 뒤 화면 확인은 게시 전 로컬 파일(같은 HTML을 직접 띄움)로 하고, 게시 쪽은 파일 목록(`Artifact` `list` `scope:"files"`)으로 대조한다.
+- 다시 확인: 게시 결과 URL을 ego로 열어 계정이 다르면 404가 난다.
+
 ### 계정이 바뀐 세션에서 앞서 올린 아티팩트를 `open`하면 「No Artifact … that the user can see」로 안 열린다 (2026-11-02 Claude)
 - 증상: 11-02 유호님 「다시 보여줄래?」에 앞 차례에 올린 비교 페이지를 `Artifact` `open`으로 열자 「No Artifact at … that the user can see — it may have been deleted, or it has not been shared with them」이 나왔다. 그 사이 세션 계정이 unmet25에서 77unmet으로 바뀌어 있었다(`CLAUDE_CODE_USER_EMAIL`).
 - 원인: 아티팩트는 올린 계정(조직)에만 묶인다(위 절). `open`은 게시가 아니라서 아티팩트 계정 훅이 사본을 만들지 않는다.
