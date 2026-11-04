@@ -14,7 +14,7 @@ const SHARED = 공용작업본(ROOT), CONFIG = path.resolve(opt('--설정'));
 const OUT = path.resolve(opt('--밖') || path.join(SHARED, '.tmp', 'subway-rush-20261104', '공개'));
 const POLICY = process.env.SYNK_POLICY_DIR || path.join(SHARED, '..', 'synk-policy');
 const PATHS = ['experiences/brand-opening', 'experiences/synk-world-app', 'experiences/hangul-stage', 'experiences/korean-runner', 'experiences/korean-rhythm', 'experiences/synk-world-home', 'experiences/synk-account', 'experiences/synk-town', 'experiences/play-common', 'experiences/korean-racing', 'experiences/order-rush', 'experiences/blank-slice', 'experiences/snap-words', 'experiences/talk-rally', 'experiences/subway-rush', 'experiences/drama', 'experiences/topik-items', 'experiences/social-conversion.mjs', 'atlas', 'strata', 'tools', 'package.json'];
-const OUTSIDE = ['experiences/synk-town/assets/district', 'experiences/synk-world-home/assets/avatar-textiles-v1', 'experiences/drama/pilot/media'];
+const OUTSIDE = ['experiences/synk-town/assets/district', 'experiences/synk-world-home/assets/avatar-textiles-v1', 'experiences/drama/pilot/media', 'experiences/talk-rally/assets/world/cast/taeo/clips'];
 const OUTSIDE_FILES = ['experiences/korean-racing/assets/coastal-rocks-v6.glb'];
 const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)]);
 
