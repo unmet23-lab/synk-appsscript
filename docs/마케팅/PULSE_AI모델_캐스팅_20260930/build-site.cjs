@@ -131,7 +131,7 @@ for (const m of models) {
     tagline: m.tagline || '', roles: m.roles || [], // 한 줄 캐릭터·맡는 역할(로드맵 2절 4). avoid는 제작용이라 화면에 내지 않고 연출 「피하는」 문장으로 보인다
     height: m.height || null, weightKg: m.weightKg || null, build: m.build || '', sizes: m.sizes || {}, skin: m.skin || '', eyes: m.eyes || '', hairBase: m.hairBase || '',
     realPerson: !!m.realPerson, hair: m.hair.map((h) => ({ label: h.label })), looks: m.looks.map((l) => ({ label: l.label })),
-    hero: shots.hero || null, alt, shots, scenes, stand, body, colors, loop, tagged, // 11-03 견본 목소리(voices · script)는 뺐다. 10-22 모델별 참고 영상(움직임 탭·하린 5초 샘플)은 거뒀다 — 루프는 보드의 움직이는 사진
+    hero: shots.hero || null, alt, shots, scenes, stand, cut: null, body, colors, loop, tagged, // 11-03 견본 목소리(voices · script)는 뺐다. 10-22 모델별 참고 영상(움직임 탭·하린 5초 샘플)은 거뒀다 — 루프는 보드의 움직이는 사진
     face: extra.face || null, bodyNote: extra.bodyNote || '', direction: extra.direction || null, spec: !!spec && scenes.length > 0, // 「상세 프로필」 꼬리표: 명세서에 장면 사진까지 갖춘 모델
     ...(memberOf[code] || {}), // 그룹 멤버면 group(id) · position · memberColor{label, hex}
   };
@@ -144,6 +144,16 @@ fs.mkdirSync(out, { recursive: true });
 const listFile = path.join(here, 'jobs', '_img-list.json');
 fs.writeFileSync(listFile, JSON.stringify(imgJobs));
 execFileSync('python', [path.join(here, 'make-images.py'), listFile], { stdio: 'inherit' });
+
+// 줄 세워 보기의 오린 전신: 전신 사진을 구운 뒤 오리고(같은 원본이면 건너뛴다) 경로를 자료에 통째로 넣는다 — 공개 후보가 index.html의 "img/…" 글자로 파일을 모은다.
+// 없으면 말없이 키 비교 띠로 공개되지 않게 여기서 멈춘다. 점 하나만 옮길 때는 catalog.json의 models.<코드>.pins로 덮어쓴다.
+execFileSync('python', ['-X', 'utf8', path.join(here, 'make-cutouts.py')], { stdio: 'inherit' });
+const cutBook = JSON.parse(fs.readFileSync(path.join(here, 'cuts.json'), 'utf8'));
+for (const m of data.models) {
+  const cb = cutBook[m.code], files = [`img/${m.code}/cut.webp`, `img/${m.code}/cut-b.webp`];
+  if (!cb || !files.every((f) => fs.existsSync(outRel(f)))) throw Error(`${m.code} 오린 전신이 없다(make-cutouts.py)`);
+  m.cut = { src: files[0], blur: files[1], w: cb.w, h: cb.h, padX: cb.padX, padY: cb.padY, pins: { ...cb.pins, ...(((catalog.models || {})[m.code] || {}).pins || {}) } };
+}
 
 // 글꼴: SUIT(한글) + SYNK Latin(Inter Tight, 영문·숫자) + DM Mono(영문 라벨). PULSE 고객 앱과 같은 파일을 쓴다.
 // claude.ai 판은 한 파일이라 심고(data:), 홈페이지판은 같은 폴더 assets/의 파일로 싣는다 — 심으면 index.html이 1.4MB가 돼
@@ -171,6 +181,7 @@ const rep = {
   STYLE: fs.readFileSync(path.join(here, 'site-src/style.css'), 'utf8'),
   DATA: '@@DATA@@',
   LOGIC: fs.readFileSync(path.join(here, 'site-src/casting-logic.js'), 'utf8'),
+  RAIL: fs.readFileSync(path.join(root, 'experiences/play-common/drag-rail.js'), 'utf8'),
   APP: fs.readFileSync(path.join(here, 'site-src/app.js'), 'utf8'),
 };
 const template = fs.readFileSync(path.join(here, 'site-src/template.html'), 'utf8');
@@ -197,6 +208,7 @@ const slim = {
   groups: data.groups.map((g) => ({ ...g, cuts: g.cuts.map(big) })),
   models: data.models.map((m) => ({
     ...m,
+    cut: null, // 파일 한도 때문에 이 판의 줄 세워 보기는 키 비교 띠로 선다
     shots: Object.fromEntries(Object.entries(m.shots).map(([k, v]) => [k, k === 'hero' || k === 'hair-1' ? v : big(v)])),
     alt: m.loop ? null : m.alt,
     scenes: m.scenes.map(big),
