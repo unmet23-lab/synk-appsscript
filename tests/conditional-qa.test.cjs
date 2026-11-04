@@ -719,7 +719,7 @@ function tickFixture(t, commits, { slot = true } = {}) {
   const runGit = (cwd, args) => { if (args[0] === 'rev-parse') return head; if (args[0] === 'rev-list') return ''; if (args[0] === 'show') return bytes; return ''; };
   const receiptFor = commit => ({ version: 1, commit, manifestDigest: manifest.digest, expected: selected.length, passed: selected.length, ok: true, candidate: false, sourceUnchanged: true, inputsUnchanged: true, rows: selected.map(row => ({ ...row, status: 'pass' })) });
   const queue = () => JSON.parse(fs.readFileSync(path.join(state, 'queue.json'))).items;
-  return { state, published, queue, receiptFor, deps: { hub, runGit, cloneRoot: config => config.root, room: () => true, meter: () => 10, recheckMs: 1, slept: () => false } };
+  return { state, published, queue, receiptFor, deps: { hub, runGit, cloneRoot: config => config.root, room: () => true, meter: () => 10, recheckMs: 1, warmUpMs: 0, slept: () => false } };
 }
 const tickCommits = n => Array.from({ length: n }, (_, i) => String(i + 1).repeat(40).slice(0, 40));
 test('a tick verifies on both checkouts at once, keeps each receipt to its commit and trims only what passed', async t => {
@@ -793,6 +793,19 @@ test('no room means one verification at a time, and a requested commit stays on 
   } });
   assert.deepEqual(asked, [[path.basename(g.state), commits[1]]]); assert.equal(result.slots, 1); assert.equal(result.requested.status, 'passed');
   assert.equal(JSON.parse(fs.readFileSync(path.join(g.state, 'queue.json'))).nextTurn, before);
+});
+test('another verification waits until the reading can cover the one just opened', async t => {
+  const commits = tickCommits(2), f = tickFixture(t, commits), asked = []; let busy = 0, widest = 0, finishFirst;
+  const first = new Promise(resolve => { finishFirst = resolve; });
+  const summary = await tick(f.state, { ...f.deps, warmUpMs: 40, room: reading => { asked.push(reading); return true; }, verifyCommit: async (config, commit, output) => {
+    busy++; widest = Math.max(widest, busy);
+    if (busy === 1) { setTimeout(() => assert.equal(busy, 1, 'nothing opens beside it inside the warm-up'), 20); await first; } else { finishFirst(); }
+    busy--;
+    write(path.join(output, 'result.json'), f.receiptFor(commit));
+    return { count: selected.length, digest: manifest.digest };
+  } });
+  assert.equal(widest, 2, 'it does open once the reading covers the running one'); assert.ok(summary.roomHeld > 0); assert.equal(asked.length >= 1, true);
+  assert.ok(f.queue().every(row => row.status === 'passed'));
 });
 test('a saturated PC waits before the first verification but not before publishing a saved result', async t => {
   const commits = tickCommits(1), f = tickFixture(t, commits); let opened = 0;

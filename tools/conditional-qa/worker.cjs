@@ -15,6 +15,8 @@ const MIN_VERIFICATION_FREE_BYTES = 2 * 1024 ** 3;
 // Another verification beside a running one needs real room. The first waits out a saturated PC, for a while: a worker that never publishes turns red after 155 minutes.
 const ROOM_CPU_PERCENT = 70, ROOM_FREE_MEMORY = 6 * 1024 ** 3, SATURATED_CPU_PERCENT = 95, SATURATED_WAIT_MS = 30 * 60_000;
 const ROOM_RECHECK_MS = 30_000;
+// A reading only says something about a verification that has been running: right after one opens, it still shows the PC without it.
+const ROOM_WARM_UP_MS = 60_000;
 const hasRoom = (busy, freeMemory = os.freemem()) => busy !== null && busy < ROOM_CPU_PERCENT && freeMemory >= ROOM_FREE_MEMORY;
 function saturationGate({ now = Date.now, waitMs = SATURATED_WAIT_MS } = {}) {
   let since = null;
@@ -205,18 +207,18 @@ function cpuMeter({ cpus = os.cpus, now = Date.now, windowMs = 20_000 } = {}) {
 // The pool never returns while a job runs, so the caller's lock outlives every verification, and a failure stops new jobs without abandoning the others.
 async function runPool({ slots, pick, run, mayOpenFirst = () => true, mayOpenAnother = () => true, finished = () => {}, recheckMs = ROOM_RECHECK_MS }) {
   const free = [...slots], running = new Set();
-  let fatal = null, settled = 0;
+  let fatal = null, settled = 0, openedAt = 0;
   for (;;) {
     let waiting = false;
     try {
       while (!fatal && free.length) {
-        if (!(running.size ? mayOpenAnother() : mayOpenFirst())) { waiting = true; break; }
+        if (!(running.size ? mayOpenAnother(Date.now() - openedAt) : mayOpenFirst())) { waiting = true; break; }
         const item = pick();
         if (!item) break;
         const slot = free.shift();
         // run() goes up to its first await before the next pick(), so the turn it takes is seen by that pick().
         const job = run(item, slot).then(outcome => { if (!outcome?.retireSlot) free.unshift(slot); }, error => { fatal ??= error; }).finally(() => { running.delete(job); settled++; });
-        running.add(job);
+        running.add(job); openedAt = Date.now();
       }
     } catch (error) { fatal ??= error; }
     if (!running.size && (fatal || !waiting)) break;
@@ -227,7 +229,7 @@ async function runPool({ slots, pick, run, mayOpenFirst = () => true, mayOpenAno
   }
   if (fatal) throw fatal;
 }
-async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, requestedCommit = null, hub = github, runGit = git, cloneRoot = clone, verifyCommit = verify, room = hasRoom, meter = cpuMeter(), recheckMs = ROOM_RECHECK_MS } = {}) {
+async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, requestedCommit = null, hub = github, runGit = git, cloneRoot = clone, verifyCommit = verify, room = hasRoom, meter = cpuMeter(), recheckMs = ROOM_RECHECK_MS, warmUpMs = ROOM_WARM_UP_MS } = {}) {
   if (requestedCommit !== null) github.validCommit(requestedCommit);
   const config = loadConfig(stateDir), release = acquire(stateDir, { reclaimDead: requestedCommit === null }), queueFile = path.join(stateDir, 'queue.json'), started = Date.now();
   try {
@@ -309,14 +311,15 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
       const item = nextItem(queue, head, attempted);
       return !item || item.status === 'publish-pending';
     };
-    const gated = allowedAt => () => {
+    const gated = allowedAt => sinceOpened => {
       if (nothingToHold()) return true;
       busy = meter();
-      const allowed = allowedAt(busy);
+      const allowed = allowedAt(busy, sinceOpened);
       if (!allowed) held++;
       return allowed;
     };
-    await runPool({ slots: checkouts, pick, run, recheckMs, finished: () => { refresh(); settle(); }, mayOpenFirst: gated(saturated), mayOpenAnother: gated(room) });
+    await runPool({ slots: checkouts, pick, run, recheckMs, finished: () => { refresh(); settle(); }, mayOpenFirst: gated(saturated),
+      mayOpenAnother: gated((reading, sinceOpened) => sinceOpened >= warmUpMs && room(reading)) });
     const summary = { checkedAt: new Date().toISOString(), head, slots: checkouts.length, roomHeld: held, ...(diskWait && { diskWait }), queued: queue.items.filter(row => row.status === 'queued').length,
       incomplete: queue.items.filter(row => row.status !== 'passed').length,
       passed: queue.items.filter(row => row.status === 'passed').length, failed: queue.items.filter(row => row.status === 'failed').length,
