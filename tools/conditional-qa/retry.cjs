@@ -38,7 +38,7 @@ function retryFailed({ state = defaultState(), commits, reason, apply = false, n
       const { history = [], ...previous } = item;
       item.history = [...history, { ...previous, endedAt: previous.endedAt || receiptEndedAt, receiptSha256, retryRequest: id }];
       item.status = 'retry'; item.retryAt = now; item.retryRequest = id;
-      for (const field of ['error', 'startedAt', 'endedAt', 'output', 'count', 'digest', 'publicationError', 'resumePending', 'resumeError']) delete item[field];
+      for (const field of ['error', 'startedAt', 'endedAt', 'output', 'count', 'digest', 'slot', 'cpuAtStart', 'publicationError', 'resumePending', 'resumeError']) delete item[field];
     }
     write(file, queue);
     write(ledger, { ...record, state: 'queued', queueAfterSha256: sha256(fs.readFileSync(file)) });

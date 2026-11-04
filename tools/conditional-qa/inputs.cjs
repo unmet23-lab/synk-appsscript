@@ -47,7 +47,7 @@ function provision({ state, audit, originalWorktree, sourceRepo, talkRepo, caddy
   return { files: catalog.length, bytes: catalog.reduce((sum, row) => sum + row.bytes, 0), inputDigest: sha256(JSON.stringify(manifest)) };
 }
 function loadConfig(state) { assertOwned(state); const config = read(path.join(state, 'config.json')); if (config.version !== 1 || config.repo !== REPO || path.resolve(config.state) !== path.resolve(state) || path.resolve(config.root) !== path.resolve(state, 'workspace/SYNK-appsscript')) throw Error('Invalid worker configuration'); return config; }
-function clone(config) {
+function clone(config, { timeout } = {}) {
   const { root, state } = config; assertOwned(state);
   if (!fs.existsSync(path.join(root, '.git'))) {
     if (fs.existsSync(root) && fs.readdirSync(root).length) throw Error('Refusing to overwrite an existing checkout');
@@ -61,7 +61,7 @@ function clone(config) {
   }
   if (git(root, ['remote', 'get-url', 'origin']).toLowerCase() !== `https://github.com/${REPO}.git`.toLowerCase()) throw Error('Unexpected validation remote');
   if (!fs.existsSync(path.join(root, '.git/index'))) {
-    git(root, ['read-tree', '-mu', 'HEAD']);
+    git(root, ['read-tree', '-mu', 'HEAD'], timeout ? { timeout } : {});
   }
   return root;
 }
@@ -162,6 +162,45 @@ async function withCandidate(options, run) {
   if (fs.existsSync(state)) throw Error('Use a new candidate state');
   try { return await run(candidate(options)); }
   finally { try { if (fs.existsSync(path.join(state, 'context.json'))) release(state); } catch (error) { console.error(`Candidate not released (the space guard retries): ${error.message}`); } }
+}
+// A slot lets the scheduled worker verify another queued commit at the same time (2026-11-04): a verification takes at least six minutes,
+// so one checkout tops out near 230 commits a day and a busy day pushes that many. Like a candidate it is a state of its own beside the shared blobs,
+// but it has no overlay and is not marked as a candidate: its receipts count and release() refuses it. The worker only uses a slot whose slot.json exists.
+const FIRST_CHECKOUT_MS = 30 * 60_000; // prepare()'s two-minute git limit is for the small step between commits; the first checkout writes about 4 GB.
+const slotState = (original, number) => path.join(path.resolve(original), 'slots', String(number));
+function syncSlotInputs(original, state) {
+  const from = path.join(original, 'inputs.json'), to = path.join(state, 'inputs.json');
+  if (!fs.existsSync(to) || hashFile(from) !== hashFile(to)) fs.copyFileSync(from, to);
+}
+function provisionSlot({ original, number }) {
+  original = path.resolve(original);
+  if (!Number.isInteger(number) || number < 2 || number > 9) throw Error('Choose a slot number from 2 to 9');
+  const source = loadConfig(original), state = slotState(original, number), receipt = path.join(state, 'slot.json');
+  if (fs.existsSync(receipt)) return read(receipt);
+  write(path.join(state, 'owner.json'), { version: 1, purpose: 'synk-conditional-qa', state });
+  const config = { ...source, state, root: path.join(state, 'workspace/SYNK-appsscript') };
+  write(path.join(state, 'config.json'), config); syncSlotInputs(original, state);
+  if (!fs.existsSync(path.join(state, 'blobs'))) fs.symlinkSync(path.join(original, 'blobs'), path.join(state, 'blobs'), 'junction');
+  clone(config, { timeout: FIRST_CHECKOUT_MS });
+  git(config.root, ['fetch', 'origin', 'master']);
+  const commit = git(config.root, ['rev-parse', 'origin/master']);
+  git(config.root, ['checkout', '--detach', commit], { timeout: FIRST_CHECKOUT_MS });
+  prepare(config, commit);
+  const result = { version: 1, number, commit, readyAt: new Date().toISOString() };
+  write(receipt, result); return result;
+}
+function slotConfigs(original) {
+  original = path.resolve(original);
+  let names;
+  try { names = fs.readdirSync(path.join(original, 'slots')); } catch (error) { if (error.code === 'ENOENT') return []; throw error; }
+  const found = [];
+  for (const name of names.sort()) {
+    const state = slotState(original, name);
+    if (!fs.existsSync(path.join(state, 'slot.json'))) continue;
+    try { const config = loadConfig(state); syncSlotInputs(original, state); found.push(config); }
+    catch (error) { console.error(`Slot ${name} is not usable: ${error.message}`); }
+  }
+  return found;
 }
 const RELEASED = ['workspace', 'homework', 'tools', 'empty-hooks'], SCANNED = '.cqa-scanned';
 const isLink = entry => { try { return fs.lstatSync(entry).isSymbolicLink(); } catch { return false; } };
@@ -298,9 +337,9 @@ function release(state) {
     return receipt;
   } finally { fs.rmSync(lock, { force: true }); }
 }
-module.exports = { read, write, git, hashFile, provision, loadConfig, clone, prepare, postcheck, materialize, verifyBlob, dependencyInstall, assertOwned, candidate, withCandidate, release, releasePreview };
+module.exports = { read, write, git, hashFile, provision, loadConfig, clone, prepare, postcheck, materialize, verifyBlob, dependencyInstall, assertOwned, candidate, withCandidate, release, releasePreview, provisionSlot, slotConfigs, slotState };
 if (require.main === module) {
   const [command, state, flag] = process.argv.slice(2);
-  if (command !== 'release' || !state) { console.error('usage: node tools/conditional-qa/inputs.cjs release <candidate state> [--preview]'); process.exitCode = 2; }
-  else try { console.log(JSON.stringify(flag === '--preview' ? releasePreview(state) : release(state))); } catch (error) { console.error(error.message); process.exitCode = 1; }
+  if (!['release', 'slot'].includes(command) || !state) { console.error('usage: node tools/conditional-qa/inputs.cjs release <candidate state> [--preview]\n       node tools/conditional-qa/inputs.cjs slot <worker state> <2-9>'); process.exitCode = 2; }
+  else try { console.log(JSON.stringify(command === 'slot' ? provisionSlot({ original: state, number: Number(flag) }) : flag === '--preview' ? releasePreview(state) : release(state))); } catch (error) { console.error(error.message); process.exitCode = 1; }
 }

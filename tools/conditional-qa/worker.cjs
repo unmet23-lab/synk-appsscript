@@ -1,7 +1,7 @@
 'use strict';
 const fs = require('node:fs'), path = require('node:path'), cp = require('node:child_process'), os = require('node:os');
 const { readManifest, coverage, sha256 } = require('./contract.cjs');
-const { read, write, git, loadConfig, clone, prepare, postcheck } = require('./inputs.cjs');
+const { read, write, git, loadConfig, clone, prepare, postcheck, slotConfigs } = require('./inputs.cjs');
 const github = require('./github.cjs');
 const { childRun } = require('./run.cjs');
 const { runnerFor } = require('./legacy-profile.cjs');
@@ -10,6 +10,22 @@ const defaultState = () => path.join(os.homedir(), 'security-audit-skill/SYNK-co
 // and both the scheduled task and its hidden launcher stop a tick after two hours.
 const BUDGET_MS = 60 * 60_000;
 const MIN_VERIFICATION_FREE_BYTES = 2 * 1024 ** 3;
+// Under load the registered browser tests stretch until they time out (S078 takes 3 s on a quiet PC and ran past its 165 s on 11-04 at 100% CPU),
+// and a timeout stays a failure that a person has to look at. So verifications open by the load. This only waits; it never relaxes a limit or a verdict.
+// Another verification beside a running one needs real room. The first waits out a saturated PC, for a while: a worker that never publishes turns red after 155 minutes.
+const ROOM_CPU_PERCENT = 70, ROOM_FREE_MEMORY = 6 * 1024 ** 3, SATURATED_CPU_PERCENT = 95, SATURATED_WAIT_MS = 30 * 60_000;
+const ROOM_RECHECK_MS = 30_000;
+const hasRoom = (busy, freeMemory = os.freemem()) => busy !== null && busy < ROOM_CPU_PERCENT && freeMemory >= ROOM_FREE_MEMORY;
+function saturationGate({ now = Date.now, waitMs = SATURATED_WAIT_MS } = {}) {
+  let since = null;
+  return busy => {
+    if (busy !== null && busy < SATURATED_CPU_PERCENT) { since = null; return true; }
+    since ??= now();
+    if (now() - since < waitMs) return false;
+    since = null;
+    return true;
+  };
+}
 const INCOMPLETE = 'Local verification incomplete; inspect the private worker receipt';
 // Browser profiles, databases and test output all live on the registered state volume.
 function diskWaitFor(item, stateDir, statfs = fs.statfsSync) {
@@ -106,7 +122,13 @@ function initialize(stateDir, firstCommit) {
   const state = { version: 1, activatedAt: new Date().toISOString(), seen, items: [], nextTurn: 'recent' };
   write(file, state); return state;
 }
+// A slot's clone has not seen what the scheduled checkout just fetched.
+function ensureCommit(root, commit) {
+  try { git(root, ['cat-file', '-e', `${commit}^{commit}`], { stdio: ['ignore', 'pipe', 'ignore'] }); }
+  catch { git(root, ['fetch', 'origin', 'master']); }
+}
 async function verify(config, commit, output, serialRetry = false) {
+  ensureCommit(config.root, commit);
   const context = prepare(config, commit), manifest = readManifest(config.root), cases = manifest.cases.filter(row => row.route === 'local');
   fs.mkdirSync(output, { recursive: true });
   const execution = await childRun([runnerFor(config.root), '--route', 'local', '--output', output, '--context', path.join(config.state, 'context.json')],
@@ -148,82 +170,161 @@ function republishFailures(queue, publish = github.publish) {
     catch { /* Tried again between verifications. */ }
   }
 }
-function checkSavedReceipt(root, item) {
+function checkSavedReceipt(root, item, runGit = git) {
   const receipt = read(path.join(item.output, 'result.json'));
-  const savedManifest = JSON.parse(git(root, ['show', `${item.commit}:tools/conditional-qa/cases.json`]));
+  const savedManifest = JSON.parse(runGit(root, ['show', `${item.commit}:tools/conditional-qa/cases.json`]));
   const expected = savedManifest.cases.filter(row => row.route === 'local'), digest = sha256(JSON.stringify(savedManifest));
   if (item.digest !== digest || item.count !== expected.length || !receipt.inputsUnchanged || !coverage(receipt, { commit: item.commit, digest, cases: expected })) throw Error('Saved local proof is incomplete');
 }
-async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, requestedCommit = null } = {}) {
+// A passed run keeps its receipt, TAP and events. Its screens, database and temp files are 70 MB a run: at 300 runs a day that outgrows this disk
+// before a daily sweep comes round, and nothing reads them again. A failed or unfinished run keeps everything; the space guard sweeps what a crash left behind.
+const KEPT_PROFILE_FILES = new Set(['tests.tap', 'events.jsonl', 'process.log']);
+function trimPassedRun(output) {
+  for (const profile of fs.readdirSync(output, { withFileTypes: true })) {
+    if (!profile.isDirectory()) continue;
+    const folder = path.join(output, profile.name);
+    for (const entry of fs.readdirSync(folder, { withFileTypes: true })) {
+      if (entry.isFile() && KEPT_PROFILE_FILES.has(entry.name)) continue;
+      try { fs.rmSync(path.join(folder, entry.name), { recursive: true, force: true, maxRetries: 2 }); } catch { /* Still locked: the space guard takes it later. */ }
+    }
+  }
+}
+function cpuMeter({ cpus = os.cpus, now = Date.now, windowMs = 20_000 } = {}) {
+  const sample = () => cpus().reduce((sum, { times }) => ({ idle: sum.idle + times.idle, total: sum.total + times.user + times.nice + times.sys + times.idle + times.irq }), { idle: 0, total: 0 });
+  let from = sample(), at = now(), busy = null;
+  return () => {
+    if (now() - at >= windowMs) {
+      const to = sample();
+      if (to.total > from.total) busy = Math.round(100 * (1 - (to.idle - from.idle) / (to.total - from.total)));
+      from = to; at = now();
+    }
+    return busy;
+  };
+}
+// Runs one job per checkout, opening each when mayOpenFirst or mayOpenAnother allows. A job holds its checkout until it settles, and can give it up for this tick.
+// The pool never returns while a job runs, so the caller's lock outlives every verification, and a failure stops new jobs without abandoning the others.
+async function runPool({ slots, pick, run, mayOpenFirst = () => true, mayOpenAnother = () => true, finished = () => {}, recheckMs = ROOM_RECHECK_MS }) {
+  const free = [...slots], running = new Set();
+  let fatal = null, settled = 0;
+  for (;;) {
+    let waiting = false;
+    try {
+      while (!fatal && free.length) {
+        if (!(running.size ? mayOpenAnother() : mayOpenFirst())) { waiting = true; break; }
+        const item = pick();
+        if (!item) break;
+        const slot = free.shift();
+        // run() goes up to its first await before the next pick(), so the turn it takes is seen by that pick().
+        const job = run(item, slot).then(outcome => { if (!outcome?.retireSlot) free.unshift(slot); }, error => { fatal ??= error; }).finally(() => { running.delete(job); settled++; });
+        running.add(job);
+      }
+    } catch (error) { fatal ??= error; }
+    if (!running.size && (fatal || !waiting)) break;
+    const before = settled; let timer;
+    await Promise.race([...running, new Promise(resolve => { timer = setTimeout(resolve, recheckMs); })]);
+    clearTimeout(timer);
+    if (settled !== before && !fatal) { try { finished(); } catch (error) { fatal = error; } }
+  }
+  if (fatal) throw fatal;
+}
+async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, requestedCommit = null, hub = github, runGit = git, cloneRoot = clone, verifyCommit = verify, room = hasRoom, meter = cpuMeter(), recheckMs = ROOM_RECHECK_MS } = {}) {
   if (requestedCommit !== null) github.validCommit(requestedCommit);
   const config = loadConfig(stateDir), release = acquire(stateDir, { reclaimDead: requestedCommit === null }), queueFile = path.join(stateDir, 'queue.json'), started = Date.now();
   try {
-    const root = clone(config); let head, queue;
+    const root = cloneRoot(config), queue = read(queueFile); let head;
+    if (queue.version !== 1 || !Array.isArray(queue.items)) throw Error('Invalid local queue');
+    // Upgrade an existing queue once. Its next turn then survives every tick/restart.
+    if (queue.nextTurn === undefined) queue.nextTurn = 'recent';
+    if (!['recent', 'oldest'].includes(queue.nextTurn)) throw Error('Invalid queue turn');
     // Refetched after every verification, so commits pushed meanwhile join this tick instead of waiting for the next one.
+    // The queue is read once: every writer holds the lock, and a running verification keeps pointing at these same items.
     const refresh = () => {
-      git(root, ['fetch', 'origin', 'master']); head = git(root, ['rev-parse', 'origin/master']); queue = read(queueFile);
-      if (queue.version !== 1 || !Array.isArray(queue.items)) throw Error('Invalid local queue');
-      // Upgrade an existing queue once. Its next turn then survives every tick/restart.
-      if (queue.nextTurn === undefined) queue.nextTurn = 'recent';
-      if (!['recent', 'oldest'].includes(queue.nextTurn)) throw Error('Invalid queue turn');
-      github.validCommit(queue.seen); git(root, ['merge-base', '--is-ancestor', queue.seen, head]);
-      const commits = git(root, ['rev-list', '--reverse', '--first-parent', `${queue.seen}..${head}`]).split(/\r?\n/).filter(Boolean);
+      runGit(root, ['fetch', 'origin', 'master']); head = runGit(root, ['rev-parse', 'origin/master']);
+      github.validCommit(queue.seen); runGit(root, ['merge-base', '--is-ancestor', queue.seen, head]);
+      const commits = runGit(root, ['rev-list', '--reverse', '--first-parent', `${queue.seen}..${head}`]).split(/\r?\n/).filter(Boolean);
       extendQueue(queue, head, commits); write(queueFile, queue);
     };
     // Between verifications too: one tick can last two hours while a finished commit's run stays unresolved.
-    const settle = () => { republishFailures(queue); resumeFinished(queue); write(queueFile, queue); };
+    const settle = () => { republishFailures(queue, hub.publish); resumeFinished(queue, hub.resumeWaitingWorkflow); write(queueFile, queue); };
     refresh();
-    try { markCancelledRuns(queue, github.cancelledRuns()); } catch (error) { console.error(`Cancelled runs were not listed: ${error.message}`); }
+    try { markCancelledRuns(queue, hub.cancelledRuns()); } catch (error) { console.error(`Cancelled runs were not listed: ${error.message}`); }
     settle();
     // An interrupted process or network publication is resumed; a failed test stays explicitly failed.
     // Each commit is attempted once per tick, so an unavailable API cannot spin on the same publication.
-    const attempted = new Set();
-    let diskWait = null;
-    for (let item; Date.now() - started < budgetMs && (item = nextItem(queue, head, attempted, Date.now(), requestedCommit)); refresh(), settle()) {
+    const attempted = new Set(), saturated = saturationGate();
+    let diskWait = null, busy = null, held = 0;
+    const pick = () => {
+      diskWait = null;
+      if (Date.now() - started >= budgetMs) return undefined;
+      const item = nextItem(queue, head, attempted, Date.now(), requestedCommit);
+      if (!item) return undefined;
       diskWait = diskWaitFor(item, stateDir);
-      if (diskWait) break;
+      if (diskWait) return undefined;
       attempted.add(item.commit);
-      git(root, ['merge-base', '--is-ancestor', item.commit, head]);
+      return item;
+    };
+    const run = async (item, checkout) => {
+      runGit(root, ['merge-base', '--is-ancestor', item.commit, head]);
       try {
         if (item.status !== 'publish-pending') {
           if (requestedCommit === null) advanceTurn(queue);
-          item.status = 'running'; item.startedAt = new Date().toISOString(); delete item.resumePending; write(queueFile, queue);
-          github.publish(item.commit, 'pending', 'Running the registered local conditional tests');
+          item.status = 'running'; item.startedAt = new Date().toISOString(); item.slot = checkout === config ? 1 : Number(path.basename(checkout.state)); item.cpuAtStart = busy;
+          delete item.resumePending; write(queueFile, queue);
+          hub.publish(item.commit, 'pending', 'Running the registered local conditional tests');
           item.output = path.join(stateDir, 'runs', `${item.commit}-${Date.now()}`);
-          const result = await verify(config, item.commit, item.output, Boolean(item.retryRequest));
+          const result = await verifyCommit(checkout, item.commit, item.output, Boolean(item.retryRequest));
           item.count = result.count; item.digest = result.digest; item.status = 'publish-pending'; write(queueFile, queue);
         }
         // Re-read the receipt after a process restart, rather than trusting queue.json's success flag.
-        checkSavedReceipt(root, item);
-        github.publish(item.commit, 'success', github.description(item.count, item.digest));
+        checkSavedReceipt(root, item, runGit);
+        hub.publish(item.commit, 'success', github.description(item.count, item.digest));
         item.status = 'passed'; item.endedAt = new Date().toISOString(); item.resumePending = true; delete item.error; delete item.publicationError; write(queueFile, queue);
       } catch (error) {
         item.error = error.message.slice(0, 1000);
-        let publicationState = 'failure', description = INCOMPLETE;
+        let publicationState = 'failure', description = INCOMPLETE, retireSlot = false;
         if (item.status !== 'publish-pending') {
           const disposition = failureDisposition(error, item.startedAt, { slept });
           if (disposition.interrupted) item.error = `Interrupted by system sleep; verifying again. ${item.error}`.slice(0, 1000);
           item.status = disposition.status; item.retryAt = Date.now() + 15 * 60_000;
           ({ publicationState, description } = disposition);
+          // Not a test result: this checkout or the network is the suspect, so it stops for this tick instead of failing every commit it is handed.
+          retireSlot = !['TEST_FAILURE', 'ENOSPC'].includes(error.code);
         }
         try {
-          github.publish(item.commit, publicationState, description);
+          hub.publish(item.commit, publicationState, description);
           delete item.publicationError;
           // local-coverage has released its runner, so a published failure has to wake it to turn the run red.
           if (publicationState === 'failure') item.resumePending = true;
         } catch { item.publicationError = true; }
         write(queueFile, queue);
+        return { retireSlot };
       }
-      write(queueFile, queue);
-    }
-    const summary = { checkedAt: new Date().toISOString(), head, ...(diskWait && { diskWait }), queued: queue.items.filter(row => row.status === 'queued').length,
+      // Outside the result's try: a file left locked or a missing folder never turns a published pass into anything else.
+      try { trimPassedRun(item.output); } catch (error) { console.error(`Passed run was not trimmed: ${error.message}`); }
+    };
+    const checkouts = requestedCommit === null ? [config, ...slotConfigs(stateDir)] : [config];
+    // Nothing to wait for without a verification to open: a requested commit, a saved result to publish, an empty queue or a spent budget.
+    const nothingToHold = () => {
+      if (requestedCommit !== null || Date.now() - started >= budgetMs) return true;
+      const item = nextItem(queue, head, attempted);
+      return !item || item.status === 'publish-pending';
+    };
+    const gated = allowedAt => () => {
+      if (nothingToHold()) return true;
+      busy = meter();
+      const allowed = allowedAt(busy);
+      if (!allowed) held++;
+      return allowed;
+    };
+    await runPool({ slots: checkouts, pick, run, recheckMs, finished: () => { refresh(); settle(); }, mayOpenFirst: gated(saturated), mayOpenAnother: gated(room) });
+    const summary = { checkedAt: new Date().toISOString(), head, slots: checkouts.length, roomHeld: held, ...(diskWait && { diskWait }), queued: queue.items.filter(row => row.status === 'queued').length,
       incomplete: queue.items.filter(row => row.status !== 'passed').length,
       passed: queue.items.filter(row => row.status === 'passed').length, failed: queue.items.filter(row => row.status === 'failed').length,
       items: queue.items.slice(-5).map(({ commit, status, error }) => ({ commit, status, error })) };
     if (requestedCommit !== null) {
       const selected = queue.items.find(row => row.commit === requestedCommit);
       if (!selected) throw Error('Choose one commit already registered in the local queue');
-      if (selected.status === 'passed' && !attempted.has(requestedCommit)) checkSavedReceipt(root, selected);
+      if (selected.status === 'passed' && !attempted.has(requestedCommit)) checkSavedReceipt(root, selected, runGit);
       summary.requested = { commit: requestedCommit, status: selected.status, attempted: attempted.has(requestedCommit) };
     }
     write(path.join(stateDir, 'last-run.json'), summary); console.log(JSON.stringify(summary)); return summary;
@@ -242,4 +343,4 @@ if (require.main === module) {
     if (requestedCommit !== null && summary.requested.status !== 'passed') process.exitCode = summary.requested.status === 'failed' ? 1 : 2;
   }).catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns, republishFailures, diskWaitFor, browserProfileDiskFull };
+module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns, republishFailures, diskWaitFor, browserProfileDiskFull, runPool, cpuMeter, hasRoom, saturationGate, trimPassedRun };
