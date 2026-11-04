@@ -353,6 +353,14 @@ test('an unsaved PULSE brief still brings the owner back to the local brief inst
 test('PULSE sidebar opens separately without replacing the current app and failure leaves no launch record',async()=>{
   let called=0;const f=await fixture({initialAuth:account('customer',['world','pulse']),bridgeOverrides:{openPulseApp:async()=>{called++;return {ok:false,code:'PULSE_APP_OPEN_FAILED'};}}});assert.equal(await f.ready,'true');const before=f.element('breadcrumb-app').textContent;await f.action({app:'pulse'});await new Promise(resolve=>setImmediate(resolve));assert.equal(called,1);assert.equal(f.element('breadcrumb-app').textContent,before);assert.match(f.element('toast').textContent,/PULSE를 열지 못했어요/);assert.equal(f.element('pulse-client').hidden,true);assert.equal(f.storage.get(viewKey('customer')),null);
 });
+test('PULSE intro opens from the home card with the approved words while launching stays on the buttons',async()=>{
+  let opened=0;const f=await fixture({initialAuth:account('customer',['world','pulse']),bridgeOverrides:{openPulseApp:async()=>{opened++;return {ok:true};}}});assert.equal(await f.ready,'true');
+  await f.element('view-home').handlers.get('click')({target:{closest:()=>({dataset:{memberApp:'pulse'}})}});await settleLibrary();
+  assert.equal(opened,0);assert.equal(f.element('breadcrumb-app').textContent,'SYNK PULSE');assert.equal(f.element('pulse-client').hidden,true);assert.equal(f.element('hero-description').textContent,'모든 컷을 먼저 보여 드리는 AI 광고예요.');
+  const overview=f.element('detail-content').innerHTML;assert.match(overview,/AI 모델 21명/);assert.match(overview,/진행·시안·승인/);assert.match(overview,/카메라 앞에 서 본 사람이 AI 모델의 연기를 연출해요/);assert.match(overview,/data-pulse-legacy="open"/);
+  await f.action({detail:'info'});assert.match(f.element('detail-content').innerHTML,/알아 둘 것/);assert.match(f.element('detail-content').innerHTML,/초대 링크로 연결한 프로젝트만 보여요/);
+  await f.click('primary-action');assert.equal(opened,1);
+});
 test('teacher preview needs server library and explicit development capability',async()=>{
   let calls=0;const opts={getEnvironment:async()=>({...environment,teacherPreviewAvailable:true}),openTeacherPreview:async()=>{calls++;return {ok:true};}};const f=await fixture({initialAuth:account('teacher',['teacher']),bridgeOverrides:opts});assert.equal(await f.ready,'true');assert.equal(f.element('primary-action').dataset.action,'teacher-preview');await f.click('primary-action');await settleLibrary();assert.equal(calls,1);assert.notEqual(f.element('last-launch').textContent,'기록 없음');const old=await fixture({initialAuth:account('teacher',['teacher']),bridgeOverrides:{openTeacherPreview:opts.openTeacherPreview}});assert.equal(await old.ready,'true');assert.equal(old.element('primary-action').disabled,true);await old.click('primary-action');assert.equal(calls,1);
 });

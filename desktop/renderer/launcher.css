@@ -327,9 +327,14 @@ main:focus,main:focus-visible{outline:none}
 .feature-list article::before{content:"";position:absolute;left:18px;right:18px;top:46px;height:1px;background:var(--line)}
 .feature-number{font-family:var(--mono);font-size:.6875rem;letter-spacing:.12em;color:color-mix(in srgb,var(--glow) 72%,var(--ink))}
 .feature-list h3{margin-top:auto;font-size:1.25rem;font-weight:850;letter-spacing:-.035em}
+.feature-list.is-even h3{margin-top:14px}
 .feature-list p{font-size:.84375rem;color:var(--ink-2)}
 .feature-list .text-link{align-self:flex-start;margin-top:2px;font-size:.8125rem}
 .product-summary{font-size:1rem;color:var(--ink-2);max-width:70ch;margin:-4px 0 16px}
+.product-maker{display:flex;flex-direction:column;gap:8px;margin-top:16px;padding:18px 18px 20px;border-radius:var(--r-lg);background:var(--surface-1);border:1px solid var(--line)}
+.product-maker h3{font-size:1.25rem;font-weight:850;letter-spacing:-.035em}
+.product-maker p{font-size:.84375rem;color:var(--ink-2);text-wrap:pretty}
+.product-maker .product-maker-credits{padding-top:10px;border-top:1px solid var(--line)}
 .audience-line{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:16px}
 .audience-line span{font-family:var(--mono);font-size:.6875rem;letter-spacing:.12em;color:var(--ink-3)}
 .audience-line strong{display:inline-flex;align-items:center;height:30px;padding:0 13px;border-radius:999px;background:var(--surface-2);font-size:.8125rem;font-weight:700}
@@ -565,9 +570,9 @@ dialog .fine-print{margin-top:18px;font-size:.75rem;color:var(--ink-3)}
 .compact .feature-list article{min-height:150px}
 
 /* ── 설명 분량·움직임 ───────────────────────────────── */
-:root[data-explanation=brief] .product-summary,:root[data-explanation=brief] .feature-list article p,:root[data-explanation=brief] .overview-foot p,:root[data-explanation=brief] .content-card p{display:none}
+:root[data-explanation=brief] .product-summary,:root[data-explanation=brief] .feature-list article p,:root[data-explanation=brief] .product-maker p,:root[data-explanation=brief] .overview-foot p,:root[data-explanation=brief] .content-card p{display:none}
 :root[data-explanation=detailed] .recommendation-extra{display:block}
-:root[data-explanation=detailed] .feature-list p,:root[data-explanation=detailed] .product-summary{line-height:1.9}
+:root[data-explanation=detailed] .feature-list p,:root[data-explanation=detailed] .product-maker p,:root[data-explanation=detailed] .product-summary{line-height:1.9}
 :root[data-motion=reduced] *,:root[data-motion=reduced] *::before,:root[data-motion=reduced] *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 :root[data-motion=reduced] .content-card:hover,:root[data-motion=reduced] .benefit-card-link:hover .benefit-object{transform:rotate(-3deg)!important}
 :root[data-motion=reduced] .benefit-card-link:hover,:root[data-motion=reduced] .benefits-shortcut:hover,:root[data-motion=reduced] .content-card:hover img,:root[data-motion=reduced] button:active{transform:none!important}

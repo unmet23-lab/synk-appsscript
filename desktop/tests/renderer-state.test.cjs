@@ -67,3 +67,12 @@ test('old Partners view selections converge on PULSE without providing a launch 
   const {resolveLibrary}=await import('../renderer/library.mjs');
   assert.deepEqual(resolveLibrary({signedIn:true,status:'signed-in',account:{synk_user_id:'member-a'},library:{status:'ready',appIds:['partners']}}).appIds,[]);
 });
+test('PULSE guide keeps the approved intro and still says what the app does',async()=>{
+  const {APPS}=await mod,pulse=APPS.pulse,copy=[pulse.brand,pulse.category,pulse.description,pulse.caption,pulse.summary,pulse.boundary,pulse.maker.title,pulse.maker.body,pulse.maker.credits,...pulse.features.flat()].join(' ');
+  assert.equal(pulse.description,'모든 컷을 먼저 보여 드리는 AI 광고예요.');assert.equal(pulse.features.length,3);
+  for(const words of ['AI 모델 21명','같은 모델','제품·로고·화면 위 글자는 실제 파일로 합성','움직이는 동안 작은 부분은 달라질 수 있고','대표 유호','뮤직비디오 주연'])assert.ok(copy.includes(words),words);
+  // 소개가 앱의 실제 일을 가리면 안 된다: 초대받은 프로젝트의 진행 · 시안 확인 · 승인이 함께 읽혀야 한다.
+  for(const words of ['초대 링크','초대받은 프로젝트','어느 단계','시안','승인','최종 파일'])assert.ok(copy.includes(words),words);
+  // 소개글 원고가 쓰지 않는 말: 정하지 않은 약속 · 옛 화면 이름 · 제작 도구 이름
+  assert.doesNotMatch(copy,/같은 얼굴|실제 촬영|납기|부가세|세금계산서|CLIENT STUDIO|최고|최초|유일|무제한|시댄스|Seedance|Omni|Veo|Flow|Higgsfield|힉스필드|Gemini|나노바나나|GPT|Sunburst/i);
+});
