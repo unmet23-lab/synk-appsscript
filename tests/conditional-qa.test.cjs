@@ -496,7 +496,11 @@ test('no conditional job polls the PC; the status check is read-only', () => {
   const push = yml('conditional-qa.yml'), status = yml('conditional-qa-local.yml');
   assert.match(push, /local-coverage:\n\s+needs: hosted/); assert.doesNotMatch(push, /timeout-minutes: 160/);
   assert.doesNotMatch(push, /cancel-in-progress: true|paths(-ignore)?:/, 'no commit is cancelled or filtered out of hosted verification');
-  assert.match(status, /schedule:/); assert.match(status, /timeout-minutes: 10/); assert.doesNotMatch(status, /: write/);
+  assert.match(status, /workflow_run:\n\s+workflows: \[conditional-qa\]\n\s+types: \[completed\]\n\s+branches: \[master\]/, 'a delayed schedule cannot be the only trigger');
+  assert.match(status, /schedule:/); assert.doesNotMatch(status, /^on:\n\s+push:/m, 'a push trigger would make 원격ci wait on it'); assert.match(status, /timeout-minutes: 10/); assert.doesNotMatch(status, /: write/);
+  const { 판정하기 } = require('../tools/ci빨간불.js');
+  const seen = 판정하기([{ workflowName: 'conditional-qa-local', event: 'workflow_run', status: 'completed', conclusion: 'failure', createdAt: '2026-11-04T00:00:00Z', headSha: 'a', databaseId: 1 }]);
+  assert.equal(seen[0].상태, '빨강', 'the alert reads this trigger');
 });
 
 test('a finished commit stays flagged until its runs settle, and one cancelled after that is found again', () => {

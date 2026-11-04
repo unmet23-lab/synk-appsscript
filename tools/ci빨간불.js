@@ -121,7 +121,7 @@ function 워크플로별run(gh, repo, 파일들, 한도 = 50) {
 function 판정하기(runs) {
   const 묶음 = new Map();
   for (const r of runs || []) {
-    if (!['push', 'workflow_dispatch', 'schedule'].includes(r.event)) continue;
+    if (!['push', 'workflow_dispatch', 'schedule', 'workflow_run'].includes(r.event)) continue;
     if (!묶음.has(r.workflowName)) 묶음.set(r.workflowName, []);
     묶음.get(r.workflowName).push(r);
   }

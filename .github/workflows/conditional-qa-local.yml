@@ -1,11 +1,16 @@
 name: conditional-qa-local
 
-# master 커밋별 로컬 판정(conditional-qa/local 상태)을 짧게 읽는다. 시험을 돌리지 않고 통과를 쓰지 않는다(11-04).
+# master 커밋별 로컬 판정(conditional-qa/local 상태)을 짧게 읽는다. 시험을 돌리지 않고 통과를 쓰지 않으며, push 코드를 받아 돌리지 않는다(11-04).
 # conditional-qa의 local-coverage는 기다리는 동안 자기 run을 취소하고 취소는 빨강이 아니어서, PC가 멈춰도 그쪽에는 신호가 없다.
 # 빨강: 새 실패(24시간)·판 불일치·대기가 있는데 일꾼 155분 무소식·72시간 넘은 대기. tools/ci빨간불.js가 이 빨강을 알린다.
+# 주 신호는 conditional-qa run이 끝날 때다. 이 저장소의 예약 실행은 몇 시간씩 늦어(11-03 wide-tests 5시간 · mn-check-eval 10시간, 15분 예약은 4시간 동안 0회) 뒷받침으로만 둔다.
 on:
+  workflow_run:
+    workflows: [conditional-qa]
+    types: [completed]
+    branches: [master]
   schedule:
-    - cron: '7,22,37,52 * * * *'
+    - cron: '7,37 * * * *'
   workflow_dispatch:
 
 permissions:
