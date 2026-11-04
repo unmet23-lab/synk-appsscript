@@ -74,15 +74,18 @@ export function findPlayHost(win) {
  * 앨범을 연다: 계정 값 + 이 기기의 사본(이 계정 것만 — 손님 사본은 옮기지 않는다)을 합쳐 돌려주고, 달라진 것이 있으면 계정으로 올린다.
  * 옛 호스트(키를 모른다)에서는 getItem이 던지므로 이번에는 기기 사본만 쓴다. 지금 값은 지우지 않는다.
  */
-export async function openAlbumStore({ win = globalThis.window, storage = win.localStorage, accountKey = 'device', gapMs = ACCOUNT_WRITE_GAP_MS, readyMs = READY_LIMIT_MS } = {}) {
+export async function openAlbumStore({ win = globalThis.window, storage: given = null, accountKey = 'device', gapMs = ACCOUNT_WRITE_GAP_MS, readyMs = READY_LIMIT_MS } = {}) {
+  // 사이트 데이터가 막힌 브라우저에서는 localStorage를 읽기만 해도 던진다. 저장 없이도 판은 떠야 한다(아래 읽기 · 쓰기는 모두 try 안).
+  const storage = given || (() => { try { return win.localStorage; } catch { return null; } })();
   const host = findPlayHost(win);
   let port = null, seen = null, rejectedAtOpen = 0, accountId = null;
   if (host) {
+    // 호스트가 아직 준비되지 않아도 어느 계정인지는 안다 — 준비가 막혀도 이 계정의 기기 사본을 읽도록 먼저 묻는다.
+    try { accountId = host.status().accountId || null; } catch { /* 없으면 accountKey로 */ }
     try {
       let limit;
       await Promise.race([host.ready(), new Promise((_, reject) => { limit = setTimeout(() => reject(Error('PLAY_READY_TIMEOUT')), readyMs); })]).finally(() => clearTimeout(limit));
-      const status = host.status();
-      accountId = status.accountId || null; rejectedAtOpen = status.rejected || 0;
+      rejectedAtOpen = host.status().rejected || 0;
       const candidate = host.storage(), raw = candidate.getItem(STORE_KEY);
       // 뒤에 나온 판이 쓴 기록은 이 판이 합쳐 덮지 않는다.
       if (raw === null || parse(raw)?.v === 1) { port = candidate; seen = raw; }
@@ -135,7 +138,7 @@ export async function openAlbumStore({ win = globalThis.window, storage = win.lo
     if (port && canon(album) !== canon(normalizeAlbum(remote))) { dirty = true; push(); }
   }
   const flush = () => { if (dirty) push(); };
-  win.addEventListener?.('pagehide', () => { flush(); unsubscribe?.(); });
+  win.addEventListener?.('pagehide', (event) => { flush(); if (!event?.persisted) unsubscribe?.(); }); // 뒤로 가기 캐시에 들어갈 때(persisted)는 돌아와 그대로 도니 구독을 끊지 않는다
   win.document?.addEventListener?.('visibilitychange', () => { if (win.document.visibilityState === 'hidden') flush(); });
 
   return Object.freeze({

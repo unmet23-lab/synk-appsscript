@@ -44,7 +44,7 @@ function device({ server, storage = memoryStorage(), hostOverride = null }) {
   const host = hostOverride || createWorldPlayHost({ accountId: ACCOUNT, client: server.client, guard() {}, storage, locks: null, uuid: () => crypto.randomUUID() });
   const win = { SYNKPlayHost: host, localStorage: storage, addEventListener: (n, fn) => listeners.set(n, fn), document: { addEventListener() {}, visibilityState: 'visible' } };
   win.parent = win;
-  return { host, win, storage, leave: () => listeners.get('pagehide')?.() };
+  return { host, win, storage, leave: (event) => listeners.get('pagehide')?.(event) };
 }
 const open = (d, opts = {}) => openAlbumStore({ win: d.win, storage: d.storage, accountKey: ACCOUNT, gapMs: 5, ...opts });
 const settle = async (d) => { await new Promise((r) => setTimeout(r, 30)); await d.host.flush?.().catch(() => {}); };
@@ -244,6 +244,36 @@ test('빈 앨범은 계정에 쓰지 않고, 호스트가 멈춰도 앨범은 �
   const store = await open(h, { readyMs: 10 });
   assert.equal(store.album.cards.cat.named, true);
   assert.equal(store.status().account, false);
+});
+
+test('사이트 데이터가 막혀 localStorage를 읽기만 해도 던지는 브라우저에서도 앨범이 열리고 판이 돈다', async () => {
+  const win = { get localStorage() { throw Object.assign(Error('denied'), { name: 'SecurityError' }); } }; win.parent = win;
+  const store = await openAlbumStore({ win, accountKey: 'device' });
+  assert.equal(store.existed, false);
+  addCard(store.album, shot('cat'), 'gate', 1);
+  store.save(); store.saveNow();
+  assert.ok(store.album.cards.cat);
+});
+
+test('호스트 준비가 막혀도 어느 계정인지는 알아, 이 계정의 기기 사본을 읽는다(손님 사본으로 떨어지지 않는다)', async () => {
+  const storage = memoryStorage({ [`${STORE_KEY}:${ACCOUNT}`]: JSON.stringify(albumWith(['library', true, 1])), [`${STORE_KEY}:device`]: JSON.stringify(albumWith(['cat', true, 1])) });
+  const down = { ready: async () => { throw Object.assign(Error('offline'), { code: 'NETWORK' }); }, status: () => ({ accountId: ACCOUNT, rejected: 0 }), storage() { throw Error('닿으면 안 된다'); } };
+  const d = device({ storage, hostOverride: down });
+  const store = await openAlbumStore({ win: d.win, storage, accountKey: 'device', gapMs: 5 });
+  assert.deepEqual(Object.keys(store.album.cards), ['library']);
+  assert.equal(store.status().deviceKey, `${STORE_KEY}:${ACCOUNT}`);
+});
+
+test('뒤로 가기 캐시에 들어갈 때는 호스트 구독을 끊지 않아, 돌아온 뒤 다른 기기 값도 합친다', async () => {
+  const server = fakeServer();
+  const phone = device({ server }), laptop = device({ server });
+  const onLaptop = await open(laptop);
+  addCard(onLaptop.album, shot('library'), 'gate', 100); onLaptop.saveNow(); await settle(laptop);
+  laptop.leave({ persisted: true });
+  const onPhone = await open(phone);
+  addCard(onPhone.album, shot('cat'), 'gate', 200); nameCard(onPhone.album, 'cat', 201); onPhone.saveNow(); await settle(phone);
+  await laptop.host.retry();
+  assert.equal(onLaptop.album.cards.cat?.named, true);
 });
 
 test('손님 체험 호스트 · 호스트 없음은 계정 저장이 아니다', async () => {

@@ -126,6 +126,7 @@ async function main() {
   await phone.ctx.close();
 
   // ② 저장이 빈 새 프로필, 같은 계정
+  const postsBeforeFresh = play.posts;
   const fresh = await profile('B_새프로필', { width: 1280, height: 800 });
   const restored = await album(fresh);
   check('새 프로필에 앨범 · 이름이 그대로', namedOf(restored).join() === firstNamed.join() && Object.keys(restored.cards).length === Object.keys(first.cards).length);
@@ -134,7 +135,7 @@ async function main() {
   check('새 프로필 앨범 화면에 손글씨 이름이 보임', seen.captions.length > 0 && seen.cards > 0, `${seen.n} · ${seen.captions.join(', ')}`);
   check('새 프로필에서도 다음 장소가 잠기지 않음', await fresh.f.evaluate(() => !document.querySelector('[data-album-place=union]')?.classList.contains('is-locked')));
   await fresh.shot('앨범');
-  check('받기만 한 기기는 계정에 다시 쓰지 않음', play.posts <= 12);
+  check('받기만 한 기기는 계정에 다시 쓰지 않음', play.posts === postsBeforeFresh, `${play.posts - postsBeforeFresh}번`);
   await fresh.ctx.close();
 
   // ③ 기기에만 쌓인 앨범(MVP 판)이 계정으로 — 사본은 남긴다
