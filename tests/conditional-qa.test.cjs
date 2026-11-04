@@ -796,14 +796,21 @@ test('no room means one verification at a time, and a requested commit stays on 
 });
 test('another verification waits until the reading can cover the one just opened', async t => {
   const commits = tickCommits(2), f = tickFixture(t, commits), asked = []; let busy = 0, widest = 0, finishFirst;
+  const warmUpMs = 40, opened = [];
+  let now = Date.now();
+  t.mock.method(Date, 'now', () => now);
+  const meter = () => { if (busy) now += 10; return 10; };
   const first = new Promise(resolve => { finishFirst = resolve; });
-  const summary = await tick(f.state, { ...f.deps, warmUpMs: 40, room: reading => { asked.push(reading); return true; }, verifyCommit: async (config, commit, output) => {
+  const summary = await tick(f.state, { ...f.deps, warmUpMs, meter, room: reading => { asked.push(reading); return true; }, verifyCommit: async (config, commit, output) => {
     busy++; widest = Math.max(widest, busy);
-    if (busy === 1) { setTimeout(() => assert.equal(busy, 1, 'nothing opens beside it inside the warm-up'), 20); await first; } else { finishFirst(); }
+    opened.push(Date.now());
+    if (busy === 1) await first; else finishFirst();
     busy--;
     write(path.join(output, 'result.json'), f.receiptFor(commit));
     return { count: selected.length, digest: manifest.digest };
   } });
+  assert.equal(opened.length, 2);
+  assert.ok(opened[1] - opened[0] >= warmUpMs, 'second checkout must wait for a full warm-up');
   assert.equal(widest, 2, 'it does open once the reading covers the running one'); assert.ok(summary.roomHeld > 0); assert.equal(asked.length >= 1, true);
   assert.ok(f.queue().every(row => row.status === 'passed'));
 });
