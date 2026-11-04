@@ -117,5 +117,30 @@
     "금지": "섹시 연출 · 노출, 교복 · 넥타이, 10대 연출, 실존 아이돌 의상 · 세계관 옮기기",
     "업종": "커피 · 음료, 여행 · 항공, 앱 · 통신, 남성 그루밍, 캐주얼 · 셔츠(가안 — 캐스팅북에 올릴 때 업종 문구로 다시 정함)"
   },
+  "데이터셋": {
+    "트리거": "pls_m07",
+    "v4": {
+      "폴더": "C:/SYNK-LoRA/datasets/M07_idol_leader/v4",
+      "장수": 33,
+      "스크립트": "C:/SYNK-LoRA/casting/idol_fresh_20261101/v4_게이트준비.py M07 → 데이터셋_v4.py (고침표 고침_v4_M07.json)",
+      "새컷": "11-03 스타일 v4 Gemini 나노바나나 2.1, 참조 4장, 19장",
+      "장면": "C:/SYNK-LoRA/casting/idol_fresh_20261101/세트새컷_v4.py · C:/SYNK-LoRA/casting/idol_fresh_20261101/스타일v4.py",
+      "한장표": "C:/SYNK-LoRA/casting/idol_fresh_20261101/새컷v4/_M07_판.jpg · C:/SYNK-LoRA/casting/idol_fresh_20261101/세트v4/_M07_판.jpg"
+    },
+    "학습설정": "C:/SYNK-LoRA/validation/M07_idol_leader/job_config_v4.json",
+    "학습": "11-04 Z-Image Turbo, 33장 × 100 = 3,300스텝, 랭크 32/16, lr 1e-4, 캡션 드롭아웃 5%. 쓸 판은 마지막 판"
+  },
+  "LoRA": {
+    "v4": {
+      "트리거": "pls_m07",
+      "쓸_판": "C:/SYNK-LoRA/outputs/m07_idol_leader_v4/m07_idol_leader_v4.safetensors (마지막 3,300스텝)",
+      "예비": "C:/SYNK-LoRA/outputs/m07_idol_leader_v4/ 250스텝마다 저장(판끼리 비교는 안 함)",
+      "프롬프트_꼴": "pls_m07, a young Korean man in his early twenties, <구도·표정·옷·배경·조명>",
+      "검증": "11-04 집 GPU 10장 · 조건 시험 6장, 조건 달고 통과 확정(10장 전부 같은 사람 SFace 새 대표 .665~.840 · 눈 경계 2, 조건 줄로 경계 V07 .665 → .773, 앞머리 커튼 8 · 머리 10/10 올리브 브라운 · 볼 패치 0 · 나이 중간값 20~21 · 조건 장 점 0/6). 문서 fable/아이돌_LoRA검증_M07_스타일v4_판정_20261104.md",
+      "검증표": "C:/SYNK-LoRA/validation/M07_idol_leader/v4_validate/verify_v4_10장.jpg",
+      "검증_작업": "C:/SYNK-LoRA/validation/M07_idol_leader/verify_v4_jobs.json",
+      "주의": "머리말은 권장(트리거만으로도 남자). 근접 · 정면 · 3/4은 눈 줄(촛불 · 따뜻한 저조도에서는 안 먹음), 근접은 점 줄(굽고 나서 4배 확인), 식당 · 사무실 · 거리 · 공원은 뒤 사람 줄, 책상은 「노트북만」 줄, 겉옷 아래 옷 · 직사광 나이 줄은 확인됨. 「focused … brows drawn」은 카메라를 노려보는 다른 인상이 되므로 쓰지 않는다 — 영어 문장은 판정 문서 「조건 시험 결과」"
+    }
+  },
   "목소리": "없음 — 목소리는 광고 장면에 맞춰 연기로 만들고, 시안 단계에서 들려 드린다(11-03 유호님 「둘 다 전부 빼기」 — 캐스팅북 · 고객 앱 견본 목소리 모두 뺌, 아이돌 여덟의 견본은 목소리/_뺀/에 보관)"
 }
