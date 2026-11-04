@@ -1,6 +1,6 @@
 'use strict';
 // 찰칵 낱말 앨범의 계정 저장을 브라우저에서 끝까지 잰다: 실제 게임 + 실제 놀이 호스트(account-host) + synk-play 계약을 따른 가짜 서버. 운영 계정 · talk · DB는 건드리지 않는다.
-//   node experiences/snap-words/qa/계정저장.cjs <출력 폴더>
+//   node experiences/snap-words/qa/계정저장.cjs <출력 폴더> [--공개본]   --공개본: 게임 파일을 synk.im/world/snap-words/의 지금 판으로 받는다(호스트 · 서버 계약은 그대로)
 // ① 한 프로필에서 한 판 → ② 저장이 빈 새 프로필에서 앨범 · 이름 · 장소 열림이 그대로 ③ 기기에만 쌓인 앨범이 계정으로 옮겨감(사본은 남음) ④ 두 값이 다르면 이름 쪽으로 합침
 // ⑤ 서버 거절 · 옛 호스트 · 연결 끊김에도 앨범이 비지 않음 ⑥ 콘솔 오류 · 실패 요청(일부러 낸 것 빼고) 0.
 const http = require('node:http'), fs = require('node:fs'), path = require('node:path');
@@ -8,7 +8,8 @@ const NM = process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE
 const { chromium } = require(require.resolve('playwright', { paths: [NM, path.resolve(__dirname, '../../../node_modules')] }));
 
 const ROOT = path.resolve(__dirname, '../..');
-const OUT = process.argv[2] || path.join(__dirname, '화면');
+const OUT = process.argv[2] && !process.argv[2].startsWith('--') ? process.argv[2] : path.join(__dirname, '화면');
+const LIVE = process.argv.includes('--공개본');
 fs.mkdirSync(OUT, { recursive: true });
 const ACCOUNT = '11111111-1111-4111-8111-111111111111', KEY = 'synk.snap-words.v1', DEVICE = `${KEY}:local:${ACCOUNT}`;
 const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.mjs': 'text/javascript', '.js': 'text/javascript', '.webp': 'image/webp', '.png': 'image/png', '.mp3': 'audio/mpeg', '.woff2': 'font/woff2', '.json': 'application/json', '.svg': 'image/svg+xml' };
@@ -42,6 +43,13 @@ const server = http.createServer((req, res) => {
       play.revision += 1;
       return reply();
     });
+    return;
+  }
+  if (LIVE && url.pathname.startsWith('/snap-words/')) {
+    fetch(`https://synk.im/world${url.pathname}?probe=${Date.now()}`, { headers: { 'cache-control': 'no-cache' } }).then(async (r) => {
+      res.writeHead(r.status, { 'Content-Type': types[path.extname(url.pathname)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
+      res.end(Buffer.from(await r.arrayBuffer()));
+    }).catch(() => { res.writeHead(502).end(); });
     return;
   }
   const file = path.join(ROOT, decodeURIComponent(url.pathname));
