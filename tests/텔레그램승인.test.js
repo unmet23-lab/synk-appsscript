@@ -224,6 +224,21 @@ test('명령줄 훅: 표준입력으로 받아 종료 0, 깨진 입력도 종료
   } finally { t.지우기(); }
 });
 
+test('명령줄 보내기: 표준입력 글을 한 통 보내고 결과를 JSON으로, 빈 글은 보내지 않고 종료 1', () => {
+  const t = 방만들기();
+  try {
+    const 돌리기 = (입력) => spawnSync(process.execPath, [도구, '보내기'], { input: 입력, encoding: 'utf8', env: { ...process.env, ...t.환경 } });
+    let r = 돌리기('⚠ C: 남은 공간 8GB예요');
+    assert.equal(r.status, 0);
+    assert.equal(JSON.parse(r.stdout).ok, true);
+    assert.deepEqual(t.보낸글(), ['⚠ C: 남은 공간 8GB예요']);
+    r = 돌리기('  \n');
+    assert.equal(r.status, 1);
+    assert.equal(JSON.parse(r.stdout).ok, false);
+    assert.equal(t.보낸글().length, 1);
+  } finally { t.지우기(); }
+});
+
 test('같은 세션의 막힘 두 건이 동시에 와도 둘 다 남는다(잠금)', async () => {
   const t = 방만들기();
   try {

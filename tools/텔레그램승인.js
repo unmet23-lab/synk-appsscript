@@ -18,6 +18,7 @@
  * 또는 기록의 첫 사용자 메시지가 <scheduled-task …>로 시작하는 앱 예약 작업. 그 밖의 세션에서는 아무것도 하지 않는다.
  *
  *   node tools/텔레그램승인.js 훅              Claude Code 훅(표준입력 JSON). 늘 종료 0이고 도구 호출은 막지 않는다
+ *   node tools/텔레그램승인.js 보내기          표준입력 글을 유호님 개인 대화에 한 통. 결과는 JSON(공간 지킴이 바닥 알림, 11-04)
  *   node tools/텔레그램승인.js 목록            남은 막힘 기록 보기
  *   node tools/텔레그램승인.js 켜기 [--실행]    ~/.claude/settings.json 에 두 훅만 더한다(autoMode 등 다른 칸은 그대로). 기본은 미리 보기
  *   node tools/텔레그램승인.js 끄기 [--실행]    두 훅만 뺀다
@@ -408,6 +409,11 @@ if (require.main === module) {
       } catch (e) { 오류남기기(e); }
       process.exitCode = 0;
     });
+  } else if (명령 === '보내기') {
+    const 글 = fs.readFileSync(0, 'utf8');
+    const 결과 = 글.trim() ? 예약알림보내기(글, process.env, { 한도ms: 150000 }) : { ok: false, error: '보낼 글이 없다' };
+    console.log(JSON.stringify(결과));
+    process.exitCode = 결과.ok ? 0 : 1;
   } else if (명령 === '목록') {
     console.log(JSON.stringify(목록(), null, 2));
   } else if (명령 === '켜기' || 명령 === '끄기') {
@@ -416,7 +422,7 @@ if (require.main === module) {
       if (!나머지.includes('--실행')) console.log('미리 보기다. 바꾸려면 --실행 을 붙인다.');
     } catch (e) { console.error(e.message); process.exitCode = 1; }
   } else {
-    console.error('사용: node tools/텔레그램승인.js 훅 | 목록 | 켜기 [--실행] | 끄기 [--실행]');
+    console.error('사용: node tools/텔레그램승인.js 훅 | 보내기 | 목록 | 켜기 [--실행] | 끄기 [--실행]');
     process.exitCode = 1;
   }
 }

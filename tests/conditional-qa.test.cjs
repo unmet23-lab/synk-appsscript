@@ -319,7 +319,7 @@ test('a requested verification leaves an existing lock for the scheduled worker'
 });
 
 test('storage pressure preserves the selected verification and lets an already verified receipt publish', () => {
-  const stateDir = '/registered/qa', need = 2 * 1024 ** 3;
+  const stateDir = '/registered/qa', need = 15 * 1024 ** 3;
   const capacity = available => (target, options) => {
     assert.equal(target, stateDir); assert.deepEqual(options, { bigint: true });
     return { bsize: 4096n, bavail: BigInt(available / 4096) };

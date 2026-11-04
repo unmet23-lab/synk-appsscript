@@ -9,7 +9,8 @@ const defaultState = () => path.join(os.homedir(), 'security-audit-skill/SYNK-co
 // A tick opens new verifications only within this budget: one verification may take 50 minutes,
 // and both the scheduled task and its hidden launcher stop a tick after two hours.
 const BUDGET_MS = 60 * 60_000;
-const MIN_VERIFICATION_FREE_BYTES = 2 * 1024 ** 3;
+// One verification adds about 5 GiB (slots, profiles, databases; 11-04), and the disk swings by more than 20 GiB within 30 minutes. Below this it only waits.
+const MIN_VERIFICATION_FREE_BYTES = 15 * 1024 ** 3;
 // Under load the registered browser tests stretch until they time out (S078 takes 3 s on a quiet PC and ran past its 165 s on 11-04 at 100% CPU),
 // and a timeout stays a failure that someone has to look at: five of the six runs opened on a saturated PC that day ended so, after 18-40 minutes each.
 // So a verification opens only on a PC that has stayed calm for a while, and another beside it needs more room. This only waits; it never relaxes a limit or a verdict.

@@ -20,7 +20,7 @@ BAD = {'failed', 'partial_failure', 'attention', 'blocked', 'unknown', 'missed',
 GOOD = {'healthy', 'success'}
 LABELS = {'onedrive': 'OneDrive 문서·소스', 'github': 'GitHub 커밋',
           'server': '20TB 서버·DB', 'media': '20TB 미디어 원본', 'archive': '5TB 기존 원본',
-          'workspace': '20TB 업무 문서·첨부·조사 상태', 'space': '공간 지킴이(C: 여유 300GB)',
+          'workspace': '20TB 업무 문서·첨부·조사 상태', 'space': '공간 지킴이(C: 여유)',
           'capacity': '드라이브 용량', 'vault': '금고 두 번째 사본(5TB)'}
 STATUS_LABELS = {'healthy': '정상', 'pending': '동기화 대기', 'running': '실행 중', 'paused': '의도적 중지',
                  'attention': '확인 필요', 'failed': '실패', 'missed': '최신 백업 지연', 'interrupted': '실행 중단',
@@ -297,8 +297,11 @@ def space_guard(root, lib, task, now, item=SPACE_GUARD, suspended=None):
         if guard == 'attention': codes.append('DISK_FREE_BELOW_FLOOR')
         free, floor = receipt.get('freeAfter'), receipt.get('floor')
         if guard != 'ok' and isinstance(free, (int, float)) and isinstance(floor, (int, float)):
-            # GB as Explorer counts it (1024³), the unit of the guard's 300GB floor and of its own notice (10-20).
-            notes.append(f'남은 공간 {free / 1024 ** 3:.0f}GB(지킬 선 {floor / 1024 ** 3:.0f}GB)')
+            # GB as Explorer counts it (1024³), the unit of the guard's floor and of its own notice (10-20).
+            # From 11-04 the guard says attention only below its low line, so that is the line this note names.
+            low = receipt.get('low')
+            line = f'바닥 선 {low / 1024 ** 3:.0f}GB' if guard == 'attention' and isinstance(low, (int, float)) else f'지킬 선 {floor / 1024 ** 3:.0f}GB'
+            notes.append(f'남은 공간 {free / 1024 ** 3:.0f}GB({line})')
         # A scheduled run may hold the receipt for up to its 2-hour limit; wait for it before calling the guard stalled.
         # Both ages count the time the PC was awake, as the backups' do.
         running = task.get('state') == 'Running' and last_run and not overdue(
@@ -322,7 +325,7 @@ def space_guard(root, lib, task, now, item=SPACE_GUARD, suspended=None):
             'lastSuccessAt': lib.stamp(checked) if good_check else None, 'repaired': False, 'repairedAt': None,
             'codes': sorted(set(codes)), 'detail': ', '.join(notes) or None, 'task': task,
             'freeBytes': (receipt or {}).get('freeAfter'), 'floorBytes': (receipt or {}).get('floor'),
-            'scope': 'C: 여유 300GB 지킴이의 마지막 점검과 예약. 내려놓은 원본의 Drive 대조는 지킴이 장부가 맡는다.',
+            'scope': 'C: 여유 지킴이의 마지막 점검과 예약. 내려놓은 원본의 Drive 대조는 지킴이 장부가 맡는다.',
             'receiptPath': item['receipt']}
 
 
