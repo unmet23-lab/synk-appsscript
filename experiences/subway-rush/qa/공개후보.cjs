@@ -72,7 +72,7 @@ const SHARED_EDITS = {
   ] },
   'world/app-shell.mjs': { done: 'subway-rush/?grade=', pairs: () => [
     [" // 환승 러시(11-04): 홈 「놀이」가 해금 표로 연 뒤에만 여기로 온다.\n subway:{get title(){return t('game.subway.title');},path:'subway-rush/'},",
-     " // 환승 러시(11-04): 홈 「놀이」와 이번 주 계획 · 튜터 후보가 해금 표로 연 뒤에만 여기로 온다. 찰칵 낱말처럼 시험 목표 급을 넘긴다 — 3급 이상이면 고른 난도가 없을 때 바쁜 아침부터(core.mjs startLevel).\n subway:{get title(){return t('game.subway.title');},get path(){let grade=0;try{grade=Number(life.progress?.learningProfileValues?.().targetGrade)||0;}catch{grade=0;}return grade>=3?`subway-rush/?grade=${grade}`:'subway-rush/';}},"],
+     " // 환승 러시(11-04): 홈 「놀이」와 이번 주 계획 · 튜터 후보가 해금 표로 연 뒤에만 여기로 온다. 찰칵 낱말처럼 시험 목표 급을 넘긴다 — 3급 이상이면 고른 난도가 없을 때 바쁜 아침부터(level.mjs).\n subway:{get title(){return t('game.subway.title');},get path(){let grade=0;try{grade=Number(life.progress?.learningProfileValues?.().targetGrade)||0;}catch{grade=0;}return grade>=3?`subway-rush/?grade=${grade}`:'subway-rush/';}},"],
   ] },
   'world/world-account.bundle.mjs': { done: 'world.play.subway', pairs: (text, rel) => [
     ['function buildWorldLearningCandidates(', helper() + 'function buildWorldLearningCandidates('],

@@ -9,7 +9,7 @@ const { chromium } = require(require.resolve('playwright', { paths: [NM, path.re
 
 const args = process.argv.slice(2), opt = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : null; };
 const CANDIDATE = opt('--후보') ? path.resolve(opt('--후보'), 'world') : null;
-if (CANDIDATE && !fs.existsSync(path.join(CANDIDATE, 'subway-rush/index.html'))) throw Error(`후보에 게임이 없다: ${CANDIDATE} — 공개후보.cjs의 <밖>/new를 준다`);
+if (CANDIDATE && !fs.existsSync(path.join(CANDIDATE, 'subway-rush'))) throw Error(`후보에 게임이 없다: ${CANDIDATE} — 공개후보.cjs의 <밖>/new를 준다`);
 const QUERY = `auto=1&qa=1&seed=${opt('--씨앗') || 21}${opt('--난도') ? `&level=${opt('--난도')}` : ''}`;
 const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.mjs': 'text/javascript', '.js': 'text/javascript', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.mp3': 'audio/mpeg', '.woff2': 'font/woff2', '.json': 'application/json' };
 const PARENT = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><link rel="icon" href="data:,"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;height:100%;background:#111}iframe{border:0;width:100%;height:100%}</style></head><body><script type="module">
@@ -69,9 +69,10 @@ server.listen(0, '127.0.0.1', async () => {
   await page.waitForTimeout(1500);
   const posted = await page.evaluate(() => { const c = {}; for (const e of window.__posts) { const k = `${e.kind || e.type || '?'}${e.responseFormat ? ':' + e.responseFormat : ''}`; c[k] = (c[k] || 0) + 1; } return { n: window.__posts.length, gets: window.__gets, kinds: c }; });
   const end = await hostStatus();
+  const skills = await page.evaluate(() => { const c = {}; for (const e of window.__posts) { const id = e.measure?.skillId; if (e.type === 'practice.presented' && id) c[id] = (c[id] || 0) + 1; } return c; });
   const result = await fr().evaluate(() => ({ line: document.getElementById('result-line')?.textContent, score: document.getElementById('result-score')?.textContent, coin: document.getElementById('coin-row')?.textContent, error: document.body.dataset.error || null }));
   await browser.close(); server.close();
-  console.log(JSON.stringify({ done, hosted, hostPatched, fromCandidate, fromLive, before, after, end, posted, result, errors: errors.slice(0, 10), failed: failed.slice(0, 10) }, null, 1));
+  console.log(JSON.stringify({ done, hosted, hostPatched, fromCandidate, fromLive, before, after, end, posted, skills, result, errors: errors.slice(0, 10), failed: failed.slice(0, 10) }, null, 1));
   const blocked = [before, after, end].some((s) => s.phase === 'blocked');
   const broken = !done || !hosted || !!result.error || errors.length > 0 || failed.length > 0 || (CANDIDATE && !fromCandidate);
   console.log(blocked || !posted.n ? '✗ 학습 기록 동기화가 막혔다' : broken ? '✗ 한 판이 끝나지 않았거나 오류 · 실패 요청이 있다' : `✓ 동기화 ${end.phase} · 보낸 사건 ${posted.n}건`);

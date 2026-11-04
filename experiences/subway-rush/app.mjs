@@ -1,6 +1,7 @@
 // 환승 러시 흐름(설계 v0.3): 개찰구 → 승강장 → 2호선 → 시청 환승 통로 → 1호선 → 출구 → 개찰구 → 지상 → 결과.
 // 규칙은 core.mjs, 원고는 journeys.mjs · people.mjs, 그림은 scene.mjs, 전광판은 led.mjs, 소리는 audio.mjs가 맡고 여기서는 차례만 잇는다.
-import { startLevel, SubwayRun, clockText, highlightFor, SCHOOL_MINUTES } from './core.mjs';
+import { SubwayRun, clockText, highlightFor, SCHOOL_MINUTES } from './core.mjs';
+import { startLevel } from './level.mjs';
 import { buildJourney, explainDecision } from './journeys.mjs';
 import { LINES } from './lines.mjs';
 import { PEOPLE, CARS, planDay } from './people.mjs';

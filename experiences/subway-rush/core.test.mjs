@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { SubwayRun, clockText, startLevel, START_MINUTES, SCHOOL_MINUTES, WRONG_MINUTES } from './core.mjs';
+import { SubwayRun, clockText, START_MINUTES, SCHOOL_MINUTES, WRONG_MINUTES } from './core.mjs';
+import { startLevel } from './level.mjs';
 import { buildJourney, allLines, ROUTES } from './journeys.mjs';
 import { LINES, STATIONS, transfersAt } from './lines.mjs';
 
