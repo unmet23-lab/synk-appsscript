@@ -136,7 +136,8 @@ if (-not $updater) {
     $action = New-ScheduledTaskAction -Execute $pythonw -Argument $arguments -WorkingDirectory $ops
     $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes 5)
     $principal = New-ScheduledTaskPrincipal -UserId ([Security.Principal.WindowsIdentity]::GetCurrent().Name) -LogonType Interactive -RunLevel Limited
-    $settings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 20)
+    # 기본 우선순위 7이면 CPU가 꽉 찰 때 몇 초짜리 회차가 잠금을 쥔 채 한도까지 굶고, push 쪽 따라가기도 「바쁨」으로 빠진다(현장노트 ops-follow-priority, 11-04)
+    $settings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 20) -Priority 5
     $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Description 'SYNK ops copy refresh every 5 minutes. No AI: follows origin/master, pushes leftover records, re-pins the Hermes monitor contract, writes the status file.'
     $receipt.updaterCreated = $true
     Save-Receipt
