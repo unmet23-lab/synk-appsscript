@@ -20,6 +20,7 @@ import urllib.request
 
 VERSION = "me2-face-1"
 MAX_IMAGE = 8 * 1024 * 1024
+MAX_PIXELS = 40_000_000  # 8MiB 안에도 3만×3만 단색 그림이 든다 — 풀기 전에 머리표로 거른다(MemoryMax 1200M)
 UA = "synk-me2-face/1"
 LONG_EDGE = 1200
 FACE_SCORE = 0.7
@@ -50,6 +51,26 @@ def fetch(url):
     return data
 
 
+def image_size(data):
+    """JPEG · PNG 머리표의 가로 · 세로. 다른 꼴이거나 못 읽으면 None(풀지 않는다)."""
+    if data[:8] == b"\x89PNG\r\n\x1a\n" and len(data) >= 24:
+        return int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
+    if data[:2] != b"\xff\xd8":
+        return None
+    i, n = 2, len(data)
+    while i + 9 < n:
+        if data[i] != 0xFF:
+            return None
+        mark = data[i + 1]
+        if mark == 0xFF:  # 채움 바이트
+            i += 1
+            continue
+        if 0xC0 <= mark <= 0xCF and mark not in (0xC4, 0xC8, 0xCC):
+            return int.from_bytes(data[i + 7:i + 9], "big"), int.from_bytes(data[i + 5:i + 7], "big")
+        i += 2 + int.from_bytes(data[i + 2:i + 4], "big")
+    return None
+
+
 class Faces:
     """YuNet + SFace — 출고검사.py와 같은 모델 · 같은 줄임 · 같은 거르기."""
 
@@ -62,6 +83,9 @@ class Faces:
 
     def open(self, data):
         cv2, np = self.cv2, self.np
+        size = image_size(data)
+        if size is None or size[0] * size[1] > MAX_PIXELS:
+            return None, [], 1.0
         image = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
         if image is None:
             return None, [], 1.0
@@ -156,14 +180,13 @@ def run_once(model_dir):
         if faces is None:
             faces = Faces(model_dir)
         for task in tasks:
-            try:
+            try:  # 점수든 돌려주기든 한 일감의 실패가 나머지를 멈추지 않는다 — 못 돌려준 일감은 임대가 끝나면 다시 온다
                 scores = SCORERS[task["kind"]](faces, task)
+                post("report", {"job_id": task["job_id"], "attempt_id": task["attempt_id"], "scores": scores})
+                done += 1
             except Exception as error:  # 그림 · 주소가 든 메시지를 찍지 않는다 — 이름만
                 print(f"[me2-face] 일감 실패: {type(error).__name__}", file=sys.stderr)
                 failed += 1
-                continue
-            post("report", {"job_id": task["job_id"], "attempt_id": task["attempt_id"], "scores": scores})
-            done += 1
     if done or failed:
         print(f"[me2-face] 점수 {done} · 실패 {failed} · {round(time.time() - started)}초")
     return 1 if failed and not done else 0

@@ -13,6 +13,7 @@ import {serverReady} from './server-ready.mjs';
 // 공급사 · 저장소 · 얼굴 일꾼만 가짜다(talk tests/lib/me2-photo-fixture.js). 운영 계정 · 서버 · 돈 · 실제 사람 사진을 쓰지 않는다. 그림은 지어낸 대역뿐이고 바깥 주소는 막는다.
 // 얼굴 찾기 시험에는 SYNK_ME2_QA_FACES(git 밖 지어낸 대역 폴더, up-*.png · base-*.png)가 든다. 없으면 「누가 나예요?」 단계만 건너뛴다.
 // 캡처와 result.json은 SYNK_ME2_QA_OUT(기본 qa/me2-photo-20261104/)에 쓴다. 그림은 .gitignore 대상이다.
+// SYNK_ME2_QA_LIVE=<후보 폴더>: 이 PC 서버 대신 실제 synk.im/world 위에 공개 후보를 끼워 돌린다(후보의 3방향 합침 · 바꿔 넣은 묶음이 지금 공개본과 맞물리는지). =live면 공개본 그대로. 계정 · 함수 응답은 똑같이 시험대다 — 운영 데이터를 건드리지 않는다.
 const root=fileURLToPath(new URL('../../../',import.meta.url));
 const require=createRequire(import.meta.url);let playwright;try{playwright=require('playwright');}catch{playwright=require(path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));}
 const talkRoot=[process.env.SYNK_TALK_ROOT,path.resolve(root,'../SYNK-talk'),path.resolve(root.split(/[\\/]\.claude[\\/]worktrees[\\/]/)[0],'../SYNK-talk')]
@@ -20,6 +21,9 @@ const talkRoot=[process.env.SYNK_TALK_ROOT,path.resolve(root,'../SYNK-talk'),pat
 const out=path.resolve(process.env.SYNK_ME2_QA_OUT||path.join(root,'experiences/synk-world-app/qa/me2-photo-20261104'));
 const facesDir=[process.env.SYNK_ME2_QA_FACES,path.resolve(root.split(/[\\/]\.claude[\\/]worktrees[\\/]/)[0],'.tmp/me2-20261102/photo-low/판')].filter(Boolean).find(p=>fs.existsSync(p));
 const config={version:1,supabaseUrl:'https://identity.example.test',supabasePublishableKey:'sb_publishable_browser_fixture',accountApiUrl:'https://identity.example.test',portalUrl:'https://identity.example.test/',clients:{world:{clientId:'world-browser',redirectUri:'https://world.example.test/world/'}}};
+const liveMode=process.env.SYNK_ME2_QA_LIVE||null,candidate=liveMode&&liveMode!=='live'?path.resolve(liveMode):null;
+const LIVE_API='https://qiwxeddwwnzkwalpsuty.supabase.co';
+const typeOf=file=>({'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.webp':'image/webp','.bin':'application/octet-stream'})[path.extname(file)]||'application/octet-stream';
 const VIEWPORTS=[{tag:'390',size:{width:390,height:844}},{tag:'1440',size:{width:1440,height:900}}];
 const pickFile=(prefix)=>{if(!facesDir)return null;const name=fs.readdirSync(facesDir).filter(n=>n.startsWith(prefix)).sort()[0];return name?path.join(facesDir,name):null;};
 
@@ -31,10 +35,10 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'synk-world-me2-'));fs.writeFileSync(path.join(directory,'config.json'),JSON.stringify(config));
  fs.mkdirSync(out,{recursive:true});for(const name of fs.readdirSync(out))if(/\.png$/.test(name))fs.rmSync(path.join(out,name));
  const socket=net.createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r));
- const server=spawn(process.execPath,[path.join(root,'experiences/synk-world-app/server.mjs')],{cwd:root,stdio:'pipe',env:{...process.env,SYNK_TALK_ROOT:talkRoot,SYNK_WORLD_PORT:String(port),
+ const server=liveMode?{kill(){},exitCode:null,stderr:{on(){}},stdout:{on(){}}}:spawn(process.execPath,[path.join(root,'experiences/synk-world-app/server.mjs')],{cwd:root,stdio:'pipe',env:{...process.env,SYNK_TALK_ROOT:talkRoot,SYNK_WORLD_PORT:String(port),
   SYNK_WORLD_MODE:'account',SYNK_WORLD_BASE_PATH:'/world/',SYNK_WORLD_ACCOUNT_CONFIG:path.join(directory,'config.json'),SYNK_WORLD_DATA_DIR:path.join(directory,'must-not-create')}});
  let serverOutput='';server.stderr.on('data',c=>serverOutput+=c);server.stdout.on('data',c=>serverOutput+=c);
- const url=`http://127.0.0.1:${port}`,origin=new URL(config.accountApiUrl).origin,calls=[],uploads=[],unexpected=[],errors=[],external=[],shots=[],measures={},consoleErrors=[];
+ const url=liveMode?'https://synk.im':`http://127.0.0.1:${port}`,origin=liveMode?LIVE_API:new URL(config.accountApiUrl).origin,calls=[],uploads=[],unexpected=[],errors=[],external=[],shots=[],measures={},consoleErrors=[];
  let browser,page,tamper=null,failNextUpload=false,viewportTag='390';
  t.after(()=>{server.kill('SIGKILL');});
  const playState=emptyPlayState(),played=new Map();let playRevision=0;
@@ -46,10 +50,11 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
  };
  const cors={'Access-Control-Allow-Origin':'*'};
  try{
-  await serverReady(url+'/world/health',{signal:t.signal,exited:()=>server.exitCode!==null,output:()=>serverOutput});
+  if(!liveMode)await serverReady(url+'/world/health',{signal:t.signal,exited:()=>server.exitCode!==null,output:()=>serverOutput});
   browser=await playwright.chromium.launch({channel:process.platform==='win32'?'msedge':'chrome',headless:true,timeout:30000});
   const context=await browser.newContext({viewport:VIEWPORTS[0].size,locale:'ko-KR',timezoneId:'Asia/Seoul',reducedMotion:'reduce'});context.setDefaultTimeout(25000);
   await context.route('**/*',route=>{if(new URL(route.request().url()).origin===url)return route.continue();external.push(route.request().url());return route.abort('blockedbyclient');});
+  if(candidate)await context.route(url+'/world/**',route=>{const rel=new URL(route.request().url()).pathname.replace(/^\//,''),file=path.join(candidate,rel.endsWith('/')?rel+'index.html':rel);if(fs.existsSync(file)&&fs.statSync(file).isFile())return route.fulfill({status:200,contentType:typeOf(file),body:fs.readFileSync(file),headers:{'Cache-Control':'no-store'}});return route.fallback();});
   await context.addInitScript(()=>{if(window.top===window&&!sessionStorage.getItem('synk.oauth.session.world'))sessionStorage.setItem('synk.oauth.session.world',JSON.stringify({access_token:'synthetic-browser-token',refresh_token:null,expires_at:Date.now()+3600000}));});
   // 저장소(가짜) — 서명 주소의 올리기 · 읽기. 실제 저장소와 같게 교차 출처 사전 요청을 거친다.
   await context.route('https://storage.invalid/**',async route=>{
@@ -87,6 +92,7 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
     else if(target.pathname==='/functions/v1/synk-classroom/api/world/homework')data={ok:true,mode:'account-linked',accountId:A,classes:[],emptyReason:'NO_HOMEWORK_PLAN'};
     else if(target.pathname==='/functions/v1/synk-classroom/api/classes')data={ok:true,mode:'account-linked',classes:[],learnerId:null,staffId:null};
     else if(target.pathname.startsWith('/auth/v1/logout'))data={};
+    else if(liveMode&&target.pathname.startsWith('/functions/v1/')&&!/me2/.test(target.pathname)){status=404;data={ok:false,error:{code:'NOT_IN_FIXTURE'}};}
     else{unexpected.push(target.pathname);status=404;data={ok:false,error:{code:'NOT_IN_FIXTURE'}};}
    }catch(error){unexpected.push('fixture-error '+target.pathname+' '+error.message);status=500;data={ok:false,error:{code:'FIXTURE_ERROR'}};}
    await route.fulfill({status,contentType:'application/json',body:JSON.stringify(data),headers:cors});

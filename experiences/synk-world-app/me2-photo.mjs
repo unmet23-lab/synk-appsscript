@@ -15,7 +15,7 @@ const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt
 // 화면 글 — 한 자리 한 언어. 빠진 언어는 한국어로 보인다.
 const TEXT={
  ko:{title:'내 모습',row:'내 사진으로 「제2의 나」 만들기',rowNote:'초대받은 시범이에요',
-  noteTitle:'알려 주고 싶은 것',noteHint:'안 골라도 돼요. 고르면 사진이 더 잘 나와요.',glasses:'안경을 써요',head_cover:'머리를 가려요',facial_hair:'수염을 그대로 둘래요',wheelchair:'휠체어를 타요',long_hair:'머리가 길어요',buildSmall:'작은 체격',buildLarge:'큰 체격',
+  noteTitle:'알려 주고 싶은 것',noteHint:'안 골라도 돼요. 고르면 사진이 더 잘 나오고, 생성 서비스에 함께 보내요.',glasses:'안경을 써요',head_cover:'머리를 가려요',facial_hair:'수염을 그대로 둘래요',wheelchair:'휠체어를 타요',long_hair:'머리가 길어요',buildSmall:'작은 체격',buildLarge:'큰 체격',
   more:'자세히 보기',agreeGo:'사진 고르러 가기',prepared:'사진 없이 계속하기',preparedDone:'사진 없이 계속할게요. 마음이 바뀌면 언제든 여기서 만들 수 있어요.',sampleUp:'올린 사진',sampleBase:'제2의 나',sampleScene:'추억 사진',sampleNote:'예시예요. 지어낸 인물이에요.',
   pickTitle:'사진 한 장을 골라요',pickHint:'혼자 · 정면 · 밝게 찍으면 더 잘 나와요.',camera:'지금 찍기',album:'앨범에서 고르기',
   redo:'사진이 잘 안 나왔대요. 한 장만 다시 골라 줄래요?',refused:'이 사진으로는 만들 수 없어요. 다른 사진으로 해 볼까요?',busy:'지금은 사진관이 붐벼요. {date}부터 찍을 수 있어요.',limit:'이번 주에는 사진을 충분히 만들었어요. 다음 주에 다시 올 수 있어요.',
@@ -29,7 +29,7 @@ const TEXT={
   eraseOpen:'사진으로 만든 모습 지우기',eraseAsk:'만든 모습과 그 사진들을 모두 지워요. 게임 기록은 그대로예요. 되돌릴 수 없어요.',eraseYes:'모두 지우기',eraseNo:'그대로 두기',erased:'지웠어요.',
   off:'지금은 사진관이 잠시 쉬고 있어요.',error:'잠시 연결이 안 됐어요. 조금 뒤에 다시 해 주세요.',close:'닫기'},
  en:{title:'My look',row:'Make your “second me” from your own photo',rowNote:'Invite-only pilot',
-  noteTitle:'Anything you want us to know',noteHint:'Optional. It helps the photos come out better.',glasses:'I wear glasses',head_cover:'I cover my hair',facial_hair:'Keep my facial hair',wheelchair:'I use a wheelchair',long_hair:'I have long hair',buildSmall:'Smaller build',buildLarge:'Larger build',
+  noteTitle:'Anything you want us to know',noteHint:'Optional. It helps the photos come out better, and it goes to the image service with your photo.',glasses:'I wear glasses',head_cover:'I cover my hair',facial_hair:'Keep my facial hair',wheelchair:'I use a wheelchair',long_hair:'I have long hair',buildSmall:'Smaller build',buildLarge:'Larger build',
   more:'Read more',agreeGo:'Choose a photo',prepared:'Continue without a photo',preparedDone:'You can carry on without a photo. Come back here any time to make one.',sampleUp:'Your photo',sampleBase:'Second me',sampleScene:'Memory photo',sampleNote:'An example with a made-up person.',
   pickTitle:'Choose one photo',pickHint:'Alone, facing the camera, in good light works best.',camera:'Take one now',album:'Choose from album',
   redo:'That photo did not come out well. Could you choose one more?',refused:'We can’t make it from this photo. Want to try another one?',busy:'The photo studio is busy right now. You can take photos again from {date}.',limit:'You have made plenty of photos this week. Come back next week.',
@@ -43,7 +43,7 @@ const TEXT={
   eraseOpen:'Erase the look made from my photo',eraseAsk:'This erases your look and all its photos. Your game progress stays. It can’t be undone.',eraseYes:'Erase everything',eraseNo:'Keep it',erased:'Erased.',
   off:'The photo studio is closed for now.',error:'Connection problem. Please try again in a moment.',close:'Close'},
  mn:{title:'Миний дүр',row:'Өөрийн зургаар «хоёр дахь би» дүрээ бүтээх',rowNote:'Урилгаар оролцох туршилт',
-  noteTitle:'Бидэнд хэлэх зүйл',noteHint:'Заавал биш. Сонговол зураг илүү сайн гарна.',glasses:'Нүдний шил зүүдэг',head_cover:'Толгойн алчуур зүүдэг',facial_hair:'Сахлаа хэвээр үлдээнэ',wheelchair:'Тэргэнцэр ашигладаг',long_hair:'Урт үстэй',buildSmall:'Жижиг биетэй',buildLarge:'Том биетэй',
+  noteTitle:'Бидэнд хэлэх зүйл',noteHint:'Заавал биш. Сонговол зураг илүү сайн гарах бөгөөд зурагтай хамт зураг бүтээх үйлчилгээ рүү илгээгдэнэ.',glasses:'Нүдний шил зүүдэг',head_cover:'Толгойн алчуур зүүдэг',facial_hair:'Сахлаа хэвээр үлдээнэ',wheelchair:'Тэргэнцэр ашигладаг',long_hair:'Урт үстэй',buildSmall:'Жижиг биетэй',buildLarge:'Том биетэй',
   more:'Дэлгэрэнгүй',agreeGo:'Зураг сонгох',prepared:'Зураггүйгээр үргэлжлүүлэх',preparedDone:'Зураггүйгээр үргэлжлүүлье. Хүссэн үедээ эндээс дүрээ бүтээж болно.',sampleUp:'Оруулсан зураг',sampleBase:'Хоёр дахь би',sampleScene:'Дурсамжийн зураг',sampleNote:'Зохиомол хүний жишээ.',
   pickTitle:'Нэг зураг сонгоорой',pickHint:'Ганцаараа, урагшаа харж, гэрэл сайтай авсан зураг хамгийн сайн гардаг.',camera:'Одоо зураг авах',album:'Цомгоос сонгох',
   redo:'Зураг сайн гарсангүй. Дахин нэг зураг сонгох уу?',refused:'Энэ зургаар бүтээх боломжгүй. Өөр зураг сонгох уу?',busy:'Одоо зургийн газар завгүй байна. Дахин зураг авхуулах өдөр: {date}.',limit:'Энэ долоо хоногт хангалттай олон зураг бүтээлээ. Ирэх долоо хоногт дахин ирээрэй.',
@@ -376,8 +376,6 @@ export function createMe2Photo({show,home,close,request,doc=globalThis.document,
  }
 
  return {
-  /** 내 정보 시트의 줄을 그릴지 — 초대받은 계정만. 실패하면 조용히 없음. */
-  async available(){try{const out=await request({action:'status'});return out.status==='ok'||(out.status==='off'&&Boolean(out.consent));}catch{return false;}},
   rowHtml(face){return `<button type="button" class="me2-row" data-world="me2"><span class="me2-row-print"><img src="${esc(face||asset('sample-base'))}" alt=""></span><span class="me2-row-copy"><strong>${esc(text(face?'title':'row'))}</strong><span>${esc(text('rowNote'))}</span></span><i class="me2-row-arrow" aria-hidden="true"></i></button>`;},
   async open(){
    disposed=false;root=null;stage={name:'home'};view=null;
