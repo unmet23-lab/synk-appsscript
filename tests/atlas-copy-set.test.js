@@ -56,7 +56,7 @@ test('a new unregistered consumer is detected while historical QA and dependenci
   write('experiences/new-product/qa/old.js', marker);
   write('experiences/new-product/node_modules/engine.js', marker);
   assert.deepEqual(unknownCopies(root, new Set([known])), ['experiences/new-product/atlas-learning.js', 'experiences/new-product/vendor/ask.js', 'experiences/new-product/vendor/flow.js']);
-  assert.equal(GAMES.length, 10);
+  assert.equal(GAMES.length, 11);
   // Registered bundles and product-owned modules carry the same markers but are classified, not unknown.
   write('experiences/synk-world-app/world-account.bundle.mjs', 'else root.SynkAtlas = factory(() => root.SynkTrail);');
   write('experiences/relationship-care/care-followup.js', 'else root.SynkTrailFollowup = factory();');

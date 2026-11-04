@@ -163,6 +163,8 @@ for(const game of ['korean-runner','korean-rhythm','hangul-stage'])copyTree(path
 // three.js가 홈의 scene-assets와 바이트까지 같으면 vendor/는 싣지 않고 stage.mjs가 그 공용 사본을 부른다(다르면 지금처럼 자기 사본).
 const orderSharedThree=['three.module.js','three.core.js'].every(name=>fs.readFileSync(path.join(root,'experiences/order-rush/vendor',name)).equals(fs.readFileSync(path.join(home,'scene-assets',name))));
 copyTree(path.join(root,'experiences','order-rush'),'order-rush',(source,relative)=>relative!=='order-rush/assets/cafe-original.png'&&!/^order-rush\/(?:beginner[^/]*|assets\/(?:beginner|picnic|progress)\/.*)$/.test(relative)&&!(orderSharedThree&&relative.startsWith('order-rush/vendor/')));
+// 찰칵 낱말(11-04, 새 게임): 화면 · 그림 · 소리만 싣는다. 설계 · 시험 · qa · 개발 서버는 싣지 않는다.
+copyTree(path.join(root,'experiences','snap-words'),'snap-words',(source,relative)=>!/^snap-words\/(?:qa\/|.*\.test\.mjs$|.*\.md$|server\.mjs$)/.test(relative));
 // 빈칸 베기(11-04, 캠퍼스 판 겉 — 해금 표로 「놀이」에서 연다): 게임 폴더째 싣되, LAB 소리 시청 페이지와 펠트 입구 그림은 뺀다. 배경음은 위 order-rush의 곡을 함께 쓴다(world-play.mjs).
 // three.js는 주문 폭주와 같이 홈의 공용 사본과 바이트까지 같으면 vendor/를 싣지 않고 공용 사본을 부른다(위 copyFile).
 const blankSharedThree=['three.module.js','three.core.js'].every(name=>fs.readFileSync(path.join(root,'experiences/blank-slice/vendor',name)).equals(fs.readFileSync(path.join(home,'scene-assets',name))));

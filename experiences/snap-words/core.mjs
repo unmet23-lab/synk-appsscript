@@ -18,6 +18,7 @@ export function layoutPlates(place, missions, rng) {
   const plates = [];
   for (const [groupId, group] of Object.entries(place.groups)) {
     const must = missions.filter((m) => m.group === groupId).map((m) => m.word);
+    for (const word of [...must]) { const pair = group.pairs?.[word]; if (pair && !must.includes(pair)) must.push(pair); }
     const rest = shuffle(group.pool.filter((id) => !must.includes(id)), rng);
     const chosen = shuffle([...must, ...rest].slice(0, group.slots.length), rng);
     chosen.forEach((word, i) => plates.push({ id: `${groupId}-${i}`, kind: 'plate', group: groupId, style: group.style, word, text: wordOf(word).ko, q: group.slots[i], floor: group.floors?.[i] ?? null }));
@@ -30,7 +31,7 @@ export function layoutPlates(place, missions, rng) {
  * 판의 부탁 넷: 뜻 둘 · 소리 하나 · 낱말 하나(안내문을 켜면 뜻 하나가 안내문 부탁으로). 정답은 weak(Atlas가 약하다고 본 낱말) → 앨범에 있는 낱말 → 나머지 순으로 고른다.
  * 소리 부탁은 소리 파일이 있는 낱말만이다. 무리에 판이 셋 이상인 곳에서만 고른다(안내문 받침판은 둘이라 뜻 부탁 하나까지만 — 둘 가운데 고르는 것도 뜻을 읽어야 한다).
  */
-export function pickMissions(place, { collected = [], weak = [], notices = false, rng = Math.random, count = MISSIONS_PER_ROUND } = {}) {
+export function pickMissions(place, { collected = [], weak = [], notices = false, rng = Math.random, count = MISSIONS_PER_ROUND, voice = true } = {}) {
   const rank = (ids) => { const r = shuffle(ids, rng); const score = (id) => (weak.includes(id) ? 0 : collected.includes(id) ? 1 : 2); return r.sort((a, b) => score(a) - score(b)); };
   const pools = { meaning: [], sound: [], word: [], notice: [] };
   for (const [groupId, group] of Object.entries(place.groups)) {
@@ -45,7 +46,8 @@ export function pickMissions(place, { collected = [], weak = [], notices = false
   for (const t of place.things) pools.word.push({ kind: 'word', group: null, word: t.word, thing: t.id });
   const take = (pool, used) => { for (const id of rank(pool.map((m) => m.word))) { if (!used.has(id)) { used.add(id); return pool.find((m) => m.word === id); } } return null; };
   const used = new Set(), out = [];
-  const plan = notices && pools.notice.length ? ['notice', 'meaning', 'sound', 'word'] : ['meaning', 'meaning', 'sound', 'word'];
+  // 소리를 끈 사람에게는 소리 부탁 대신 뜻 부탁을 낸다.
+  const plan = (notices && pools.notice.length ? ['notice', 'meaning', 'sound', 'word'] : ['meaning', 'meaning', 'sound', 'word']).map((kind) => (kind === 'sound' && !voice ? 'meaning' : kind));
   for (const kind of plan.slice(0, count)) { const m = take(pools[kind], used); if (m) out.push({ ...m, tries: 0, doneFirst: null }); }
   // 판에 담을 수 있는 수를 넘지 않게: 같은 무리의 정답이 판 수보다 많으면 뒤의 것을 다른 꼴로 바꾸지 않고 뺀다(4장 판이면 넘지 않는다).
   const perGroup = {};
@@ -60,7 +62,7 @@ export function judgeShot(mission, shot) {
 }
 
 /**
- * 다름이 이어질 때의 도움(막히지 않게, Fable 설계 검토 6): 첫 다름 = 찍은 곳이 무엇인지만 짚는다, 둘째 = 정답 낱말을 한국어로 보여 준다,
+ * 다름이 이어질 때의 도움(막히지 않게, 설계 검토 6): 첫 다름 = 찍은 곳이 무엇인지만 짚는다, 둘째 = 정답 낱말을 한국어로 보여 준다,
  * 셋째부터 = 정답 판을 깜빡인다. 낱말이 보인 뒤의 맞힘은 글자 모양 맞추기라 Atlas에 「도움 받음」으로 남기고 이름을 붙이지 않는다.
  */
 export const helpLevel = (tries) => (tries >= 3 ? 'plate' : tries === 2 ? 'word' : 'point');
@@ -81,10 +83,14 @@ export function makeRecall(place, shots, { rng = Math.random, count = RECALL_PER
   return pool.slice(0, count).map((shot) => {
     const w = wordOf(shot.word);
     const mode = shot.kind === 'thing' ? 'word' : 'meaning';
-    const source = mode === 'word' ? things : w.band === 'notice' ? noticePool : plates;
+    // 뜻 고르기의 보기는 같은 무리에서 고른다(문은 문끼리 · 안내문은 안내문끼리 — 꼴이 다르면 꼴만 보고 풀린다, 1차 검수 11-04).
+    const own = Object.values(place.groups).find((g) => g.pool.includes(shot.word));
+    // 메뉴판처럼 장소가 아닌 고정 판은 「…곳」 풀이들 사이에서 꼴로 풀리지 않게 물건 풀이와 섞는다(2중 검수 11-04).
+    const fromThings = place.fixed.find((f) => f.word === shot.word)?.recallFrom === 'things';
+    const source = mode === 'word' || fromThings ? things : own && own.pool.length >= 3 ? own.pool : w.band === 'notice' ? noticePool : plates;
     const label = (id) => (mode === 'word' ? wordOf(id).ko : (wordOf(id).mean[lang] ?? wordOf(id).mean.en));
     const others = shuffle(source.filter((id) => id !== shot.word), rng);
-    // 길이로 못 맞히게: 낱말은 음절 차이 1 안, 뜻은 글 길이가 가까운 차례로(화면 언어 기준, Fable 설계 검토 14).
+    // 길이로 못 맞히게: 낱말은 음절 차이 1 안, 뜻은 글 길이가 가까운 차례로(화면 언어 기준, 설계 검토 14).
     const gap = (id) => Math.abs(syllables(label(id)) - syllables(label(shot.word)));
     const close = others.filter((id) => mode === 'meaning' || gap(id) <= 1);
     const rest = others.filter((id) => !close.includes(id));
@@ -110,7 +116,7 @@ export function addCard(album, shot, placeId, at) {
   return fresh;
 }
 /**
- * 사진 아래에 이름을 쓴다 — 한 번에 맞힌 부탁 또는 인화 정답에서만(Fable 설계 검토 1: 벌 없이 Koe를 막는 자리).
+ * 사진 아래에 이름을 쓴다 — 한 번에 맞힌 부탁 또는 인화 정답에서만(설계 검토 1: 벌 없이 Koe를 막는 자리).
  * 앨범의 「모은 낱말」 · 장소 도장은 이름 붙은 카드만 센다. 돌려주는 값: 이번에 이름이 새로 붙었는가.
  */
 export function nameCard(album, word, at) {

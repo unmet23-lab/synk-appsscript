@@ -7,6 +7,7 @@ import { homography, matrix3d, quadSize, quadDistance } from './sign.mjs';
 import { createBus, createLimiter, renderSfx, createAmbience } from './sfx.mjs';
 import { M, motionOn, spatial, effect, wait, finished, flyTo, rollTo, mmss } from './fx.mjs';
 import { STR } from './strings.mjs';
+import { GAME_ID, createLearning } from './learning.mjs';
 import { josa } from './kit/josa.mjs';
 
 const query = new URLSearchParams(location.search);
@@ -34,10 +35,9 @@ function save() { try { localStorage.setItem(saveKey, JSON.stringify(album)); } 
 const grade = Number(query.get('grade')) || 0;
 if (album.plays === 0 && grade >= 3) album.notices = true;
 const rng = query.has('seed') ? makeRng(Number(query.get('seed'))) : Math.random;
-// 시안 둘(설계 12절): 유호님이 고르시면 한쪽만 남기고 이 줄과 입구의 시안 단추를 걷는다.
-const inWorld = (() => { try { return !!window.frameElement?.classList?.contains('game-frame'); } catch { return false; } })();
-const sianLook = () => { try { return localStorage.getItem('synk.snap-words.sian'); } catch { return null; } };
-app.dataset.look = (query.get('look') || sianLook()) === 'film' ? 'film' : 'phone';
+
+// ── 학습 기록 ─ 같은 주소의 다른 SYNK 게임과 함께 쓴다(WORLD 안에서는 계정의 기록) ───────────────
+const learn = createLearning(() => window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }));
 
 // ── 소리 ─────────────────────────────────────────────────────────
 const prefs = (() => { try { return { sfx: 1, amb: 1, voice: 1, ...JSON.parse(localStorage.getItem('synk.snap-words.sound') || '{}') }; } catch { return { sfx: 1, amb: 1, voice: 1 }; } })();
@@ -72,14 +72,16 @@ async function voiceBuffer(id) {
   const p = fetch(`assets/voice/${id}.mp3`).then((r) => { if (!r.ok) throw Error('voice'); return r.arrayBuffer(); }).then((b) => audio.decodeAudioData(b));
   voiceBuffers.set(id, p); return p;
 }
-async function sayWord(id) {
+/** 낱말 소리를 낼 수 있나 — 소리를 끈 사람에게는 소리 부탁을 내지 않는다. */
+const voiceOn = () => !hostMuted() && prefs.voice > 0 && !!(window.AudioContext || window.webkitAudioContext);
+async function sayWord(id, onEnd = null) {
   const w = wordOf(id);
   if (!w?.voice || hostMuted() || prefs.voice <= 0 || !audioReady()) return;
   try {
     voiceEl?.stop?.();
     const buf = await voiceBuffer(id), src = audio.createBufferSource();
     src.buffer = buf; src.connect(voiceOut); voiceEl = src; ambience?.duck(true);
-    src.onended = () => { if (voiceEl === src) { voiceEl = null; ambience?.duck(false); } };
+    src.onended = () => { if (voiceEl === src) { voiceEl = null; ambience?.duck(false); onEnd?.(); } };
     src.start();
   } catch { ambience?.duck(false); }
 }
@@ -146,6 +148,7 @@ function goCam(target, ms = 500) {
   cam.vx = cam.vy = 0;
   if (!motionOn() || ms <= 0) { Object.assign(cam, to); cam.tween = null; applyCam(); kick(); return; }
   cam.tween = { from: { x: cam.x, y: cam.y, s: cam.s }, to, start: performance.now(), ms };
+  stage.style.willChange = 'transform';
   kick();
 }
 function focusTarget() {
@@ -178,7 +181,8 @@ function loop(now) {
     focusBox.style.transform = `translate3d(${ff.x}px,${ff.y}px,0)`; focusBox.style.width = `${ff.w}px`; focusBox.style.height = `${ff.h}px`;
     if (moving) busy = true;
   }
-  if (busy) kick();
+  // 움직이는 동안만 합성 층으로 둔다 — 멈추면 떼어 글자를 지금 배율로 다시 그린다(다가간 뒤 판 글자가 흐려지지 않게).
+  if (busy) kick(); else if (!drag) stage.style.willChange = '';
 }
 
 // ── 들어가기 ──────────────────────────────────────────────────────
@@ -190,11 +194,9 @@ function renderLobby() {
   root.innerHTML = `
    <div class="lobby-photo" id="lobby-photo" aria-hidden="true"></div>
    <div class="lobby-shade" aria-hidden="true"></div>
-   <div class="lobby-grid" aria-hidden="true"><i></i><i></i></div>
    <div class="focus lobby-focus" id="lobby-focus" aria-hidden="true"><div class="focus-in"><i></i><i></i><i></i><i></i></div></div>
    <header class="lobby-top">
     <button class="glass-btn" data-go="album"><span>${t('lobby.album')}</span><em>${Object.values(album.cards).filter((c) => c.named).length}</em></button>
-    ${inWorld ? '' : `<div class="sian-switch"><button data-sian="phone" class="${app.dataset.look === 'phone' ? 'is-on' : ''}">A 폰</button><button data-sian="film" class="${app.dataset.look === 'film' ? 'is-on' : ''}">B 필름</button></div>`}
     <button class="glass-icon" data-go="sound" aria-label="${t('bar.sound')}">${ICON.sound}</button>
    </header>
    <div class="lobby-title"><h1 class="vh">${t('title')}</h1><p>${t('lobby.sub')}</p></div>
@@ -222,7 +224,12 @@ function layoutLobbyPhoto(root) {
   const box = quadSize(title), span = titleNode.querySelector('.pl-t');
   span.style.fontSize = `${Math.min(box.h * 0.84, (box.w * 0.9) / textWidth(t('title'), 900))}px`; span.style.fontWeight = '900'; span.style.letterSpacing = '-.03em';
   inner.append(titleNode);
-  [...rights.slice(1), ...lefts].forEach((i, n) => inner.append(plateNode({ q: slots[i], text: wordOf(words[n]).ko, style: 'blade' })));
+  // 넓은 화면은 왼쪽 날개가 글과 단추 뒤 어둠에 들어가므로 글을 얹지 않는다. 폰은 입구 글 뒤로 들어가는 날개의 글을 뺀다(글 뒤로 글이 비치지 않게).
+  const copyTop = wide ? Infinity : (root.querySelector('.lobby-title')?.getBoundingClientRect().top || Infinity);
+  [...rights.slice(1), ...(wide ? [] : lefts)].forEach((i, n) => {
+    const box = bboxOf(slots[i]);
+    if (cy + (box.y + box.h) * s <= copyTop) inner.append(plateNode({ q: slots[i], text: wordOf(words[n]).ko, style: 'blade' }));
+  });
   host.replaceChildren(inner);
   const b = bboxOf(title), f = root.querySelector('#lobby-focus'), pad = 9;
   f.style.transform = `translate3d(${cx + b.x * s - pad}px,${cy + b.y * s - pad}px,0)`; f.style.width = `${b.w * s + pad * 2}px`; f.style.height = `${b.h * s + pad * 2}px`;
@@ -256,7 +263,6 @@ function renderShoot() {
    <div class="vf" id="vf">
     <div class="stage" id="stage"><img id="photo" alt="" draggable="false"><div id="plates"></div></div>
     <div class="vf-grid" aria-hidden="true"><i></i><i></i></div>
-    <div class="vf-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
     <div class="focus" id="focus" hidden aria-hidden="true"><div class="focus-in"><i></i><i></i><i></i><i></i></div></div>
     <div class="flash" id="flash" aria-hidden="true"></div>
     <div class="blade blade-t" id="blade-t" aria-hidden="true"></div><div class="blade blade-b" id="blade-b" aria-hidden="true"></div>
@@ -269,7 +275,7 @@ function renderShoot() {
    <footer class="bar-bottom">
     <button class="thumb" id="thumb" data-go="album" aria-label="${t('bar.album')}"><span class="thumb-pic" id="thumb-pic"></span><span class="thumb-n" id="thumb-n">0</span></button>
     <div class="shutter-wrap"><span class="zoom" id="zoom" aria-hidden="true">1.0×</span><button class="shutter" id="shutter" aria-label="${t('shoot.shutter')}"><i></i></button></div>
-    <div class="counter" aria-hidden="true"><span id="frame">00</span></div>
+    <span aria-hidden="true"></span>
    </footer>`;
   return root;
 }
@@ -302,7 +308,7 @@ async function startPlace(placeId, { daily = false } = {}) {
   const lobbyNode = app.querySelector('[data-screen=lobby]');
   if (S.screen === 'lobby') await irisClose(lobbyNode);
   const place = S.place, seen = Object.keys(album.cards).filter((id) => album.cards[id].named);
-  const missions = pickMissions(place, { collected: seen, weak: weakWords(place), notices: album.notices, rng });
+  const missions = pickMissions(place, { collected: seen, weak: learn.weak(place), notices: album.notices, rng, voice: voiceOn() });
   if (daily) {
     const d = dailyMission(openPlaces().map((id) => PLACES[id]), Date.now());
     if (d.place === placeId && !album.daily[d.day]) { const i = missions.findIndex((m) => m.kind === 'meaning'); const fresh = { kind: 'meaning', group: d.group, word: d.word, tries: 0, daily: true }; const dup = missions.findIndex((m) => m.word === d.word); if (dup >= 0) missions[dup] = fresh; else if (i >= 0) missions[i] = fresh; S.daily = d; }
@@ -315,7 +321,8 @@ async function startPlace(placeId, { daily = false } = {}) {
   stage.style.width = `${place.w}px`; stage.style.height = `${place.h}px`;
   drawPlates(); drawDots(); updateThumb(); focusBox.hidden = true; $('#step-back').hidden = true; $('#sheet').hidden = true;
   const shootNode = app.querySelector('[data-screen=shoot]');
-  await new Promise((res) => { const im = $('#photo'); if (im.complete && im.naturalWidth) res(); else { im.onload = res; im.onerror = res; } });
+  // 사진을 다 풀어 둔 뒤에 조리개를 연다(큰 그림을 처음 그리는 멈춤이 전환과 겹치지 않게 — 주문 폭주 11-03 추적).
+  await $('#photo').decode().catch(() => {});
   show('shoot'); measure();
   const s = cam.base, cx = place.start[0] * place.w, cy = place.start[1] * place.h;
   Object.assign(cam, { s, ...clampCam({ s, x: vfW / 2 - cx * s, y: vfH / 2 - cy * s }), tween: null, vx: 0, vy: 0 }); applyCam();
@@ -330,9 +337,6 @@ async function startPlace(placeId, { daily = false } = {}) {
   if (!back) { clearTimeout(S.hintTimer); S.hintTimer = setTimeout(firstHint, 5200); }
 }
 const goAction = () => [{ label: t('shoot.go'), run: beginMissions }];
-function weakWords(place) {
-  try { return learn?.weak ? learn.weak(place) : []; } catch { return []; }
-}
 function drawPlates() {
   const layer = $('#plates'); layer.replaceChildren();
   for (const p of S.plates) { layer.append(plateNode(p)); }
@@ -353,7 +357,6 @@ function drawDots() {
 function updateThumb() {
   const pic = $('#thumb-pic'), total = Object.keys(album.cards).length;
   $('#thumb-n').textContent = Object.values(album.cards).filter((c) => c.named).length;
-  const fr = $('#frame'); if (fr) fr.textContent = String(S.shots.length).padStart(2, '0');
   pic.replaceChildren();
   const last = S.shots[S.shots.length - 1] || null;
   if (last) pic.append(cropNode(S.placeId, bboxOf(last.q), last.scene, 48, 48));
@@ -376,7 +379,7 @@ function bindViewfinder() {
   vf.addEventListener('pointerdown', (e) => {
     if (e.target.closest('.msg,.sheet button,.step-back,.kbd-item') || S.busy || S.phase === 'done') return;
     vf.setPointerCapture?.(e.pointerId);
-    cam.tween = null; cam.vx = cam.vy = 0;
+    cam.tween = null; cam.vx = cam.vy = 0; stage.style.willChange = 'transform';
     drag = { id: e.pointerId, x: e.clientX, y: e.clientY, cx: cam.x, cy: cam.y, moved: false, t: performance.now(), lastX: e.clientX, lastY: e.clientY, lastT: performance.now() };
   });
   vf.addEventListener('pointermove', (e) => {
@@ -490,8 +493,8 @@ function shutterFlash() {
   F.animate([{ opacity: 0 }, { opacity: 0, offset: 0.5 }, { opacity: 0.8, offset: 0.55 }, { opacity: 0 }], { duration: 300, easing: 'linear' });
 }
 function printNode(shot, { w = 214, caption = '' } = {}) {
-  const film = app.dataset.look === 'film', h = Math.round(w * (film ? 0.92 : 0.78)), node = el('div', 'print');
-  node.append(cropNode(S.placeId, bboxOf(shot.q), shot.scene, w - 16, h - (film ? 0 : 0)));
+  const h = Math.round(w * 0.78), node = el('div', 'print');
+  node.append(cropNode(S.placeId, bboxOf(shot.q), shot.scene, w - 16, h));
   const cap = el('div', 'print-cap'); cap.textContent = caption; node.append(cap);
   return node;
 }
@@ -510,7 +513,7 @@ async function afterExploreShot(shot, fresh) {
   const w = wordOf(shot.word); S.cardsThisRound += 1;
   showSheet(shot, w, fresh);
   if (w.voice) sayWord(shot.word);
-  // 셋 넘게 찍으면 「부탁 들으러 가기」 — 저절로 끊지 않는다(Fable 설계 검토 1). 찍은 뒤에도 그 자리에 머문다: 옆 판을 바로 찍을 수 있게.
+  // 셋 넘게 찍으면 「부탁 들으러 가기」 — 저절로 끊지 않는다(설계 검토 1). 찍은 뒤에도 그 자리에 머문다: 옆 판을 바로 찍을 수 있게.
   if (S.shots.length >= 3) say({ ...taeo('taeo.hello'), actions: goAction(), min: true });
 }
 function showSheet(shot, w, fresh) {
@@ -556,8 +559,8 @@ function nextMission() {
   const m = S.missions[S.mi]; m.tries = 0; m.startAt = Date.now();
   const line = missionLine(m);
   say({ ...line, sound: 'message' });
-  if (m.kind === 'sound') setTimeout(() => sayWord(m.word), 420);
-  learn?.present?.(m);
+  learn.present(m);
+  if (m.kind === 'sound') setTimeout(() => sayWord(m.word, () => learn.heard(m)), 420);
 }
 async function afterMissionShot(shot, fresh) {
   const m = S.missions[S.mi];
@@ -575,7 +578,7 @@ async function afterMissionShot(shot, fresh) {
       cap.textContent = oneLine(wordOf(m.word).ko); cap.classList.add('is-writing');
       play('name', { step: S.firstRight });
     }
-    learn?.answer?.(m, { correct: true, helped: seenWord });
+    learn.answer(m, { correct: true, selected: shot.word, attemptNo: m.tries + 1 });
     await wait(motionOn() ? (named ? 820 : 420) : 200);
     const msgBox = $('#msg').getBoundingClientRect();
     await flyTo(pr, msgBox, { lift: 40, duration: 360, end: 0.2 });
@@ -587,16 +590,16 @@ async function afterMissionShot(shot, fresh) {
     await wait(motionOn() ? 1300 : 500);
     nextMission();
   } else {
+    learn.answer(m, { correct: false, selected: shot.word, attemptNo: m.tries + 1 });
     m.tries += 1;
-    learn?.answer?.(m, { correct: false });
     await wait(motionOn() ? 420 : 100);
     await flyToThumb(pr, { quiet: true });
     play('other');
     const level = helpLevel(m.tries), w = wordOf(m.word), got = wordOf(shot.word);
     const base = missionLine(m);
     if (level === 'point') say({ ...base, reply: taeo(shot.kind === 'thing' ? 'taeo.otherThing' : 'taeo.other', oneLine(got.ko)) });
-    else if (level === 'word') say({ ...base, reply: m.kind === 'word' ? taeo('taeo.helpThing') : taeo('taeo.help', oneLine(w.ko)) });
-    else { say({ ...base, reply: taeo('taeo.plate') }); blinkAnswer(m); }
+    else if (level === 'word') { learn.helped(m); say({ ...base, reply: m.kind === 'word' ? taeo('taeo.helpThing') : taeo('taeo.help', oneLine(w.ko)) }); }
+    else { learn.helped(m); say({ ...base, reply: taeo('taeo.plate') }); blinkAnswer(m); }
   }
 }
 function blinkAnswer(m) {
@@ -623,7 +626,7 @@ function say({ ko, gloss = null, voice = null, actions = null, sound = null, rep
   if (reply) { const r = el('p', 'msg-reply'); r.textContent = reply.ko; body.append(r); if (reply.gloss) { const rg = el('p', 'msg-gloss'); rg.textContent = reply.gloss; body.append(rg); } }
   if (voice) {
     const b = el('button', 'msg-voice', `<span class="msg-play">${ICON.play}</span><span class="msg-wave" aria-hidden="true">${'<i></i>'.repeat(14)}</span><small>${t('msg.voice')}</small>`);
-    b.setAttribute('aria-label', t('msg.replay')); b.addEventListener('click', (e) => { e.stopPropagation(); sayWord(voice); spatial(b, [{ transform: 'scale(.97)' }, { transform: 'scale(1)' }], M.fast); });
+    b.setAttribute('aria-label', t('msg.replay')); b.addEventListener('click', (e) => { e.stopPropagation(); const m = S.missions[S.mi]; sayWord(voice, () => learn.heard(m)); spatial(b, [{ transform: 'scale(.97)' }, { transform: 'scale(1)' }], M.fast); });
     body.append(b);
   }
   const line = el('p', 'msg-ko'); line.textContent = ko; body.append(line);
@@ -674,7 +677,8 @@ function askRecall(item, i, { slot, q, opts }) {
     spatial(pr, [{ transform: 'translateY(46%)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' });
     const pic = pr.querySelector('.crop');
     effect(pic, [{ filter: 'grayscale(1) brightness(1.5) contrast(.4)' }, { filter: 'grayscale(0) brightness(1) contrast(1)' }], { duration: 1200, easing: 'cubic-bezier(.3,.6,.2,1)' });
-    q.textContent = t(item.mode === 'word' ? 'print.word' : 'print.meaning');
+    // 사진에 옆 판이 같이 찍히므로 어느 판을 묻는지 낱말을 밝힌다(옆 판의 뜻이 보기에 있어도 정답이 하나로 정해지게).
+    q.textContent = item.mode === 'word' ? t('print.word') : `${oneLine(wordOf(item.answer).ko)} — ${t('print.meaning')}`;
     opts.replaceChildren();
     let answered = false;
     const label = (id) => (item.mode === 'word' ? oneLine(wordOf(id).ko) : pick(wordOf(id).mean, lang));
@@ -687,7 +691,7 @@ function askRecall(item, i, { slot, q, opts }) {
         for (const o of opts.children) o.disabled = true;
         b.classList.add(right ? 'is-right' : 'is-other');
         if (!right) [...opts.children].find((o) => o.textContent === label(item.answer))?.classList.add('is-answer');
-        learn?.recall?.(item, right);
+        learn.recall(item, id);
         if (right) { const fresh = nameCard(album, item.answer, Date.now()); cap.textContent = oneLine(w.ko); cap.classList.add('is-writing'); play('name', { step: i + 1 }); if (fresh) S.namedNow = (S.namedNow || 0) + 1; }
         else { cap.textContent = oneLine(w.ko); cap.classList.add('is-faint'); play('soft'); }
         save();
@@ -788,6 +792,7 @@ function openCard(id) {
 }
 function closeAlbum() { const from = S.albumFrom === 'shoot' && S.phase !== 'done' ? 'shoot' : S.albumFrom === 'result' ? 'result' : 'lobby'; if (from === 'lobby') backToLobby(); else show(from); }
 function backToLobby() {
+  learn.leave();
   stopAmbience(); S.phase = 'idle'; S.focus = null;
   app.querySelector('[data-screen=lobby]').replaceWith(renderLobby());
   show('lobby'); firstLobby();
@@ -822,8 +827,6 @@ function firstLobby() {
 app.addEventListener('click', (e) => {
   if (e.target.closest('#shutter')) { snap(); return; }
   if (e.target.closest('#step-back')) { stepBack(); return; }
-  const sian = e.target.closest('[data-sian]');
-  if (sian) { app.dataset.look = sian.dataset.sian; try { localStorage.setItem('synk.snap-words.sian', sian.dataset.sian); } catch { /* 이번만 */ } audioReady(); play('tap'); { const n = renderLobby(); app.querySelector('[data-screen=lobby]').replaceWith(n); layoutLobbyPhoto(n); } show('lobby'); return; }
   const chip = e.target.closest('[data-place]');
   if (chip) {
     if (chip.classList.contains('is-locked')) { play('nope'); return; }
@@ -847,10 +850,6 @@ app.addEventListener('click', (e) => {
 app.addEventListener('change', (e) => {
   if (e.target.dataset?.go === 'notices') { album.notices = e.target.checked; save(); audioReady(); play('tap'); { const n = renderLobby(); app.querySelector('[data-screen=lobby]').replaceWith(n); layoutLobbyPhoto(n); } show('lobby'); }
 });
-
-// 학습 기록은 learning.mjs가 붙는다(MVP) — 시안에서는 없다.
-let learn = null;
-export function attachLearning(port) { learn = port; }
 
 await Promise.race([document.fonts?.load?.('800 40px SUIT') || Promise.resolve(), wait(1500)]).catch(() => {});
 renderShell(); show('lobby'); firstLobby();

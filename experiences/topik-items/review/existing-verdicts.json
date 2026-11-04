@@ -1,7 +1,7 @@
 {
   "version": "topik-existing-verdicts-1",
   "rubric": "topik-review-r1",
-  "updatedAt": "2026-10-22T03:29:07.465Z",
+  "updatedAt": "2026-11-03T23:55:03.077Z",
   "note": "기존 게임·진단 문항의 AI 2중 검수 판정(허용 목록). verdict \"pass\"만 연습에 낸다. 첫 판은 비어 있다 — 판정이 나오는 대로 채운다.",
   "items": [
     {
@@ -2475,6 +2475,1005 @@
       "reviewedAt": "2026-10-21T06:32:18.885Z",
       "rubric": "topik-review-r1",
       "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.meaning.bank.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.meaning.bank.v1",
+      "officialType": null,
+      "reason": "「돈을 찾아야 해요」를 읽고 은행을 고르는 1급 낱말 문항으로, 정답이 분명하고 자연스럽다. 우체국의 금융 업무가 아주 작은 다툼 여지로 남지만, 초급 낱말 뜻 기준으로는 문제가 없어 통과로 본다. | ‘돈을 찾아야 해요’로 ‘은행’을 유일하게 가리키며 오답 구성과 뜻 풀이·예문 모두 자연스럽고 정확한 초급 어휘 게임 문항임.",
+      "hash": "d27ac10b9d0b54d0",
+      "reviewedAt": "2026-11-03T23:21:45.306Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104c",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.meaning.bookstore.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.meaning.bookstore.v1",
+      "officialType": null,
+      "reason": "책을 사는 곳인 서점이 유일한 정답이고, 도서관이 좋은 함정이에요. 다만 '어디로 가요?'를 '어디에 가야 해요?'로 다듬고, 해설에 '도서관은 책을 빌리는 곳'을 한 줄 넣으면 더 좋아요. 둘 다 고치지 않아도 학습자에게 해가 없어 통과로 판정해요. | 정답이 '서점'으로 유일하고 오답('도서관' 등)·어휘 수준·해설 모두 자연스러워 통과(pass).",
+      "hash": "abd424b605d95be8",
+      "reviewedAt": "2026-11-03T23:21:45.306Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104c",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.meaning.cafeteria.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.meaning.cafeteria.v1",
+      "officialType": null,
+      "reason": "「밥 먹는 곳」이 식당 하나만 분명히 가리키는 1급 낱말 문항이다. 보기·해설·문장이 모두 자연스러워 그대로 통과한다. | ‘밥 먹는 곳’으로 ‘식당’을 분명하게 가리키며 구어 자연스러움과 뜻 풀이·예문이 모두 바른 초급 어휘 게임 문항임.",
+      "hash": "e9a8952285d6945e",
+      "reviewedAt": "2026-11-03T23:21:45.306Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104c",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.meaning.dorm.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.meaning.dorm.v1",
+      "officialType": null,
+      "reason": "부탁 글이 '기숙사' 하나만 분명히 가리키고, 오답 판도 학교 안 장소들이라 그럴듯합니다. 뜻 풀이와 예문도 정확하고 자연스러워 그대로 통과입니다. | 학교 안에서 학생들이 사는 곳인 ‘기숙사’를 명확히 가리키며 보기 범주와 뜻 풀이·예문이 적절한 초급 어휘 게임 문항임.",
+      "hash": "2ef90cfd5c3d2bd1",
+      "reviewedAt": "2026-11-03T23:21:45.306Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104c",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.meaning.entrance.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.meaning.entrance.v1",
+      "officialType": null,
+      "reason": "메시지가 「입구」 하나를 분명히 가리키고, 반대말 「출구」가 좋은 오답 역할을 한다. 낱말 수준·해설·자연스러움 모두 문제가 없어 통과. | '건물 안으로 들어가다'가 '입구'를 유일하게 가리키고 '출구'와 명확히 대조되며, 난도·표현·해설 모두 적절함.",
+      "hash": "6fbd81340bd85102",
+      "reviewedAt": "2026-11-03T22:46:57.217Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104b",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.meaning.exit.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.meaning.exit.v1",
+      "officialType": null,
+      "reason": "「밖으로 나가고 싶어요」에서 「출구」를 고르는 정답이 하나로 분명하다. 「입구」가 좋은 짝 오답이고, 낱말·해설도 1급에 알맞아 통과한다. | '밖으로 나가다'가 '출구'를 유일하게 가리키고 '입구'와 잘 대조되며, 어휘·난도·해설 모두 적절함.",
+      "hash": "ac7abb7da46ac087",
+      "reviewedAt": "2026-11-03T22:46:57.217Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104b",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.meaning.library.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.meaning.library.v1",
+      "officialType": null,
+      "reason": "「책을 빌리고 싶어요」로 도서관이 하나로 정해지고, 서점이 그럴듯한 오답 역할을 합니다. 1급 낱말 수준이며 해설도 정확해 통과입니다(해설에 서점과의 차이를 덧붙이면 더 좋습니다). | ‘책을 빌리다’로 ‘도서관’을 유일하게 가리키며 ‘서점’ 등 오답 구성과 뜻 풀이·예문 모두 자연스럽고 정확한 초급 어휘 게임 문항임.",
+      "hash": "cb77c4c03c9fe7dd",
+      "reviewedAt": "2026-11-03T23:21:45.306Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104c",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.meaning.lift.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.meaning.lift.v1",
+      "officialType": null,
+      "reason": "「타고 올라가는」이 엘리베이터를 하나로 가리키고, 계단이 적절한 매력 오답이다. 낱말·문장도 1급에 맞다. 해설에 계단 오답 설명을 덧붙이면 더 좋겠지만, 그대로 통과해도 학습자에게 해가 없다. | 선배 메시지의 단서(「타고 올라가는 건」)가 정답 「엘리베이터」를 유일하게 가리키며, 오답 구성과 뜻 풀이·예문 모두 초급 수준에 자연스럽게 맞는다.",
+      "hash": "0f55586e0bb0e3a5",
+      "reviewedAt": "2026-11-03T22:46:57.217Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104b",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.meaning.office.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.meaning.office.v1",
+      "officialType": null,
+      "reason": "부탁 글이 「사무실」 하나를 분명히 가리키고, 낱말·문형이 1급에 맞으며 뜻 풀이·예문도 자연스럽다. 통과. | 지문 단서·보기 구성·뜻 풀이와 예문이 모두 1급 낱말 연습 게임 꼴에 잘 맞아 통과한다.",
+      "hash": "00b4e2142c3a90ed",
+      "reviewedAt": "2026-11-03T23:39:42.322Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104d",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.meaning.pharmacy.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.meaning.pharmacy.v1",
+      "officialType": null,
+      "reason": "정답이 약국 하나로 분명합니다. 낱말·문장이 1급에 맞고 해설도 정확합니다. 질문의 「약」이 정답 판 글자와 겹쳐 글자 맞추기로 풀릴 여지가 조금 있지만, 학습에 해가 없는 수준이라 통과입니다. | 단서('약은 어디에서 사요?')가 '약국'을 유일하게 가리키고 문장과 해설 모두 자연스러워 통과(pass).",
+      "hash": "8debe6ba41b923de",
+      "reviewedAt": "2026-11-03T23:21:45.306Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104c",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.meaning.post.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.meaning.post.v1",
+      "officialType": null,
+      "reason": "부탁 글이 우체국 하나를 분명히 가리킵니다. 보기도 같은 꼴의 장소 낱말로 고르고, 낱말·문형이 1급에 맞으며 해설도 정확해 그대로 통과합니다. | 정답이 '우체국'으로 명확하고 지문·보기·뜻풀이 모두 초급 눈높이에 맞아 통과(pass).",
+      "hash": "b510a3e996de2077",
+      "reviewedAt": "2026-11-03T23:21:45.306Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104c",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.meaning.stairs.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.meaning.stairs.v1",
+      "officialType": null,
+      "reason": "「걸어서 위층으로」가 계단 하나만 가리키고, 엘리베이터가 좋은 오답 역할을 합니다. 낱말 수준과 해설 모두 맞아 통과입니다. | '걸어서 위층으로'라는 단서로 '엘리베이터'와 명확히 구별되어 '계단'을 유일하게 가리키며, 어휘·난도·해설 모두 적절함.",
+      "hash": "10db68e03cbefe7b",
+      "reviewedAt": "2026-11-03T22:46:57.217Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104b",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.meaning.toilet.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.meaning.toilet.v1",
+      "officialType": null,
+      "reason": "정답 화장실이 유일하고 1급 수준에 맞는 게임형 표지 낱말 문항이다. 「어디로 가요?」를 「어디로 가야 해요?」로 다듬을 수는 있지만 사소해서 통과로 본다. | 메시지의 '손을 씻고 싶어요'가 '화장실'을 유일하게 가리키며, 어휘·난도·뜻풀이와 예문 모두 초급 표지 읽기 게임 문항으로 적절함.",
+      "hash": "54a1b04d8349b580",
+      "reviewedAt": "2026-11-03T22:46:57.217Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104b",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.notice.n-bike.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.notice.n-bike.v1",
+      "officialType": null,
+      "reason": "The answer is unique and the 「자전거 수리」 distractor is well chosen. The language and explanation are natural. The only small gap is that the explanation does not link the sign back to the question, so the item passes. | 자전거 거치 가능 여부를 묻는 메시지에 맞는 금지 안내판을 고르는 문항으로 짝 오답(자전거 수리) 변별까지 잘 짜여 있다.",
+      "hash": "f2c0c37f39373f65",
+      "reviewedAt": "2026-11-03T22:46:57.217Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104b",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.notice.n-construction.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.notice.n-construction.v1",
+      "officialType": null,
+      "reason": "부탁 글이 공사 안내판 하나를 분명히 가리키고, 짝 판과 헷갈릴 여지가 없습니다. 뜻 풀이와 예문도 바릅니다. 판 문구의 마침표 누락은 표지판 줄바꿈으로 보면 사소하므로 그대로 통과합니다. | 정문 통행 제한 상황에 맞는 공사·후문 이용 안내판을 고르는 게임 문항으로 기준을 모두 충족한다.",
+      "hash": "1ae9cd3539d77349",
+      "reviewedAt": "2026-11-03T22:46:57.217Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104b",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.notice.n-fresh.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.notice.n-fresh.v1",
+      "officialType": null,
+      "reason": "The answer is unique, the paired distractors (환영회, same location) are plausible, and the Korean is natural. It passes within the existing game format. | 선배의 부탁 메시지와 정답 안내판이 유일하게 대응하고 짝 오답(신입생 환영회·자전거 수리)도 매력적이어서 그대로 사용 가능함.",
+      "hash": "d1b46316e2632c69",
+      "reviewedAt": "2026-11-03T23:21:45.306Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104c",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.notice.n-smoke.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.notice.n-smoke.v1",
+      "officialType": null,
+      "reason": "「여기서 담배를 피워도 돼요?」라는 부탁에 맞는 판은 「이곳은 금연 구역입니다」 하나뿐이고, 해설도 바르다. 오답 판들이 담배와 무관해 쉽게 지워지는 점은 있으나, 게임 꼴의 표지 읽기 연습으로 쓰기에 문제가 없어 통과로 판정한다. | 흡연 가능 여부를 묻는 메시지와 「금연 구역」 안내판을 연결하는 문항으로 어휘 변별과 해설이 깔끔하다.",
+      "hash": "3a344b63f01c45ea",
+      "reviewedAt": "2026-11-03T22:46:57.217Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104b",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.recall-meaning.menu.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.recall-meaning.menu.v1",
+      "officialType": null,
+      "reason": "「메뉴」의 뜻 고르기다. 정답이 하나뿐이고 뜻풀이·예문이 정확하고 자연스럽다. 오답 매력도는 낮지만 게임 꼴에서는 문제없어 통과다. | 기존 게임(snap-words)의 초급 낱말 뜻 읽기 문항으로, '메뉴'의 뜻풀이와 예문이 정확하고 정답이 유일하여 통과(pass)로 판정한다.",
+      "hash": "5fb7b3a689660f6c",
+      "reviewedAt": "2026-11-03T23:55:03.077Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104e",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.recall-meaning.n-fix.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.recall-meaning.n-fix.v1",
+      "officialType": null,
+      "reason": "정답이 유일하고 오답도 판의 낱말을 섞어 그럴듯하게 짜여 있습니다. 해설에 「수리=고치다」를 덧붙이면 더 좋지만, 지금 그대로 통과해도 학습자에게 해가 없습니다. | '자전거'와 '학생회관 1층'을 각각 공유하는 오답들 사이에서 세부 정보를 정확히 읽어야 풀리는 좋은 안내판 문항으로 통과(pass).",
+      "hash": "0fa21dab49c9d94c",
+      "reviewedAt": "2026-11-03T23:55:03.077Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104e",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.recall-meaning.n-welcome.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.recall-meaning.n-welcome.v1",
+      "officialType": null,
+      "reason": "정답이 유일하고, 짝 판(4번)이 장소·일을 바꾼 좋은 오답이에요. 낱말 수준이 TOPIK I 위쪽이지만, 게임 설명에서 안내문을 3급으로 정해 두었으니 통과예요. | 캠퍼스 안내판의 세부 정보(장소·행사)를 파악해 알맞은 뜻 풀이를 고르는 기존 게임 문항으로, 오답 구성과 뜻 풀이·예문이 모두 적절하여 통과(pass).",
+      "hash": "55cedd0c69d1427c",
+      "reviewedAt": "2026-11-03T23:55:03.077Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104e",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.recall-meaning.pull.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.recall-meaning.pull.v1",
+      "officialType": null,
+      "reason": "「당기세요」의 뜻을 고르는 표지 낱말 문항입니다. 정답이 분명하고, 「미세요」와 옆으로 여는 문이 좋은 오답입니다. 예문이 조금 겹치는 것 말고는 문제가 없어 통과입니다. | 출입문 표지 ‘당기세요’의 뜻을 묻는 게임 문항으로, 정답이 유일하고 대조적인 오답 구성과 뜻풀이·예문이 자연스러워 통과.",
+      "hash": "ce4845a65bc69d70",
+      "reviewedAt": "2026-11-03T23:39:42.322Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104d",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.recall-meaning.push.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.recall-meaning.push.v1",
+      "officialType": null,
+      "reason": "「미세요」 표지의 뜻을 고르는 게임 문항이에요. 정답이 하나뿐이고, 오답(당기기·옆으로 열기)도 그럴듯하며, 1급 수준에 맞아요. 이대로 통과해요. | 기초 생활 표지 '미세요'의 의미를 여는 방향이 다른 매력 오답들과 대조해 묻는 문항으로 어휘 수준과 해설이 적절하여 통과(pass).",
+      "hash": "b0bccb6197b539d4",
+      "reviewedAt": "2026-11-03T23:55:03.077Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104e",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.recall-meaning.slide.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.recall-meaning.slide.v1",
+      "officialType": null,
+      "reason": "미닫이문 표지 「옆으로 미세요」의 뜻을 고르는 문항이에요. 정답이 하나로 분명하고, 오답(밀기·당기기)도 그럴듯해요. 낱말과 해설이 1급에 맞아 그대로 통과예요. | 표지 ‘옆으로 미세요’의 뜻을 묻는 문항으로, ‘앞으로 밀어서’와의 변별이 명확하고 뜻풀이·예문이 자연스러워 통과.",
+      "hash": "8cace9399d9e6d8f",
+      "reviewedAt": "2026-11-03T23:39:42.322Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104d",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.recall-meaning.stop.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.recall-meaning.stop.v1",
+      "officialType": null,
+      "reason": "'정류장' 뜻 고르기. 정답이 하나로 분명하고 오답 꼴이 고르며, 뜻풀이·예문이 자연스러워 통과한다. | 「정류장」의 뜻을 묻는 기존 게임 문항으로 정답이 분명하고 초급 1급 수준에 잘 맞음.",
+      "hash": "6740ded7f7ef2270",
+      "reviewedAt": "2026-11-03T23:21:45.306Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104c",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.recall-meaning.store.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.recall-meaning.store.v1",
+      "officialType": null,
+      "reason": "'편의점' 뜻 고르기 문항이다. 정답이 유일하고 오답이 같은 꼴의 장소 뜻풀이라 적절하다. 1급 수준에 맞아 통과한다. | 「편의점」의 뜻을 묻는 기존 게임 문항으로 정답 유일성과 오답 매력도 모두 적절함.",
+      "hash": "f4f6b326e53f829d",
+      "reviewedAt": "2026-11-03T23:21:45.306Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104c",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.recall-meaning.university.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.recall-meaning.university.v1",
+      "officialType": null,
+      "reason": "「대학교」의 뜻을 고르는 게임 문항이다. 정답이 유일하고, 오답도 같은 꼴의 장소 풀이라 적절하며, 1급 수준에 맞다. 통과. | 「대학교」의 뜻을 묻는 기존 게임 문항으로 정답 유일성·오답 구성·난도 모두 적절함.",
+      "hash": "5129837d026fbc01",
+      "reviewedAt": "2026-11-03T23:21:45.306Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104c",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.word.bench.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.word.bench.v1",
+      "officialType": null,
+      "reason": "부탁 글이 '벤치'를 하나로 가리키고 실물 사진 보기도 그럴듯합니다. 뜻 풀이와 예문도 바르고 자연스러워 그대로 통과합니다. | 선배의 부탁 메시지에서 ‘벤치’의 뜻을 파악해 실물 사진을 찍는 기존 게임 문항으로, 정답 유일성·어휘 수준·뜻풀이와 예문 모두 적절하여 통과(pass) 판정한다.",
+      "hash": "e58a46a7e68433da",
+      "reviewedAt": "2026-11-03T22:46:57.217Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104b",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.word.bike.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.word.bike.v1",
+      "officialType": null,
+      "reason": "부탁 글이 「자전거」 하나를 가리키고, 정답이 글자 없는 실물 사진이라 낱말 뜻을 알아야 풀립니다. 뜻 풀이와 예문도 정확하고 자연스러워 통과입니다. | 1급 기초 어휘 ‘자전거’를 묻는 기존 게임 문항으로, 정답이 명확하고 초급 수준에 맞춘 뜻풀이·예문이 바르게 작성되어 통과(pass) 판정한다.",
+      "hash": "580c68986c495d2d",
+      "reviewedAt": "2026-11-03T22:46:57.217Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104b",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.word.building.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.word.building.v1",
+      "officialType": null,
+      "reason": "‘건물’ 실물 사진을 고르는 게임 낱말 문항으로, 정답이 하나뿐이고 뜻풀이·예문도 바르다. 다른 사진 배경에 건물이 들어가지 않게 하는 것만 사진 단계에서 확인하면 된다. | 선배 부탁 메시지를 읽고 실물 ‘건물’을 고르는 기존 게임 문항으로, 정답 유일성·어휘 수준·뜻풀이와 예문이 모두 적절하여 통과.",
+      "hash": "e3601cd519fa8976",
+      "reviewedAt": "2026-11-03T22:46:57.217Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104b",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.word.cat.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.word.cat.v1",
+      "officialType": null,
+      "reason": "The single word 고양이 points clearly to one object photo, and the explanation and example sentence are accurate. Can be used as is. | 목표 어휘, 실물 보기 구성, 뜻풀이·예문이 모두 1급 낱말 연습 문항으로 적절함.",
+      "hash": "6a29cc76d5beaf83",
+      "reviewedAt": "2026-11-03T22:46:57.217Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104b",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.word.copier.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.word.copier.v1",
+      "officialType": null,
+      "reason": "'복사기'를 실물 사진으로 고르는 게임 문항입니다. 정답이 하나로 분명하고 뜻 풀이와 예문도 정확해 통과입니다. | 부탁 메시지가 정답 '복사기'를 명확히 가리키고 오답 구성과 뜻풀이·예문이 모두 정확하고 자연스러워 그대로 쓸 수 있다.",
+      "hash": "80ad2cf1a43504c7",
+      "reviewedAt": "2026-11-03T23:21:45.306Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104c",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.word.sofa.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.word.sofa.v1",
+      "officialType": null,
+      "reason": "「소파」 사진을 고르는 게임형 낱말 문항이다. 정답이 유일하고 뜻 풀이와 예문이 바르며, 급·난도·능력이 모두 맞아 통과한다. | 실물 물건 사진 UI를 전제로 기초 어휘 '소파'를 바르게 가리키며 사물 구성과 뜻 풀이·예문이 자연스러워 통과(pass).",
+      "hash": "52ff34389c1987e2",
+      "reviewedAt": "2026-11-03T23:55:03.077Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104e",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.word.tray.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.word.tray.v1",
+      "officialType": null,
+      "reason": "부탁 글이 식판 하나를 분명히 가리키고, 뜻 풀이와 예문도 바르고 자연스럽습니다. 오답 매력도가 조금 낮은 것 말고는 문제가 없어 통과입니다. | 선배의 부탁 메시지에서 ‘식판’의 뜻을 알고 실물을 고르는 게임 문항으로, 정답 유일성·오답 구성·뜻풀이·예문이 모두 적절하다.",
+      "hash": "25f77ec9bb52eec9",
+      "reviewedAt": "2026-11-03T23:21:45.306Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104c",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.word.tree.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.word.tree.v1",
+      "officialType": null,
+      "reason": "쉬운 생활 낱말 「나무」를 실물 사진으로 고르는 게임 문항이다. 정답이 하나로 분명하고, 오답 실물도 그럴듯하며, 해설도 바르다. 「목재」 뜻 때문에 나무 벤치와 헷갈릴 가능성은 작아서 그대로 통과한다. | 1급 기초 어휘 ‘나무’를 묻는 기존 게임 문항으로, 다른 피사체와 명확히 구분되고 뜻풀이·예문이 정확하여 통과(pass) 판정한다.",
+      "hash": "1b7d3d1d9e77b025",
+      "reviewedAt": "2026-11-03T22:46:57.217Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104b",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.word.umbrella.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.word.umbrella.v1",
+      "officialType": null,
+      "reason": "A word-to-photo game item asking for '우산' that points to exactly one answer. The meaning gloss and example sentence are accurate and natural. Pass. | 기초 생활 낱말 ‘우산’을 겨눈 게임 문항으로 정답 유일성, 난도(difficulty 1), 뜻풀이·예문이 모두 적절함.",
+      "hash": "ad02b1997929cb2b",
+      "reviewedAt": "2026-11-03T22:46:57.217Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104b",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.word.vending.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.word.vending.v1",
+      "officialType": null,
+      "reason": "부탁 글이 자판기 하나를 분명히 가리키고, 보기도 장면에 맞는 실물들이라 정답이 하나뿐입니다. 뜻 풀이가 조금 좁지만(음료만 파는 것은 아님) 사소하므로 통과입니다. | 실물 사진 촬영형 게임 꼴에서 ‘자판기’ 낱말 이해를 깔끔하게 확인하며 뜻 풀이·예문도 자연스러워 그대로 사용 가능함.",
+      "hash": "afc8717d4734fe9a",
+      "reviewedAt": "2026-11-03T23:21:45.306Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104c",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "snap-words.word.water.v1",
+      "source": "snap-words",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "snap-words.word.water.v1",
+      "officialType": null,
+      "reason": "정수기 낱말을 실물 사진으로 고르는 게임 문항이다. 정답이 하나로 분명하고 뜻 풀이·예문이 바르며, 급과 난도에도 맞아 그대로 통과한다. | 선배의 부탁 메시지를 읽고 글자 없는 실물 사진을 찍는 게임 문항으로, 어휘 수준·사물 변별·뜻풀이와 예문이 모두 적절하여 통과.",
+      "hash": "d4d3e94c03c479c8",
+      "reviewedAt": "2026-11-03T23:39:42.322Z",
+      "rubric": "topik-review-r1",
+      "packet": "snap-words-20261104d",
       "by": [
         {
           "stage": "claude",

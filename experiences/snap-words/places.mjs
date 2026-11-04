@@ -11,14 +11,16 @@ const bladeRight = (y, h) => box(1428, y + 7, 1645, y + h - 7);  // 오른쪽 �
 export const PLACES = Object.freeze({
   gate: Object.freeze({
     id: 'gate', photo: 'assets/places/gate.webp', w: 2752, h: 1536, start: [0.5, 0.42],
-    name: { ko: '새솔대 정문', en: 'Saesol main gate' }, when: { ko: '개강 첫날 아침', en: 'First morning of term' },
+    name: { ko: '새솔대 정문', en: 'Saesol main gate', mn: 'Сэсол их сургуулийн гол хаалга' }, when: { ko: '개강 첫날 아침', en: 'First morning of term', mn: 'Хичээлийн эхний өглөө' },
     ambience: 'outdoor',
     groups: Object.freeze({
       blade: { style: 'blade', slots: [bladeLeft(292, 56), bladeRight(293, 54), bladeLeft(376, 55), bladeRight(377, 54), bladeLeft(460, 54), bladeRight(460, 54), bladeRight(543, 54)],
-        pool: ['library', 'dorm', 'cafeteria', 'bank', 'bookstore', 'post', 'pharmacy', 'office', 'union'] },
+        pool: ['library', 'dorm', 'cafeteria', 'bank', 'bookstore', 'post', 'pharmacy', 'office'] },
       stand: { style: 'stand', notice: true,
         slots: [[[1778.6, 1137], [1930, 1135.7], [1940.7, 1371.4], [1786.4, 1374.3]], [[2131.4, 1135.7], [2283.6, 1134.3], [2303.6, 1371.4], [2147.9, 1372]]],
-        pool: ['n-construction', 'n-smoke', 'n-bike', 'n-fresh'] },
+        pool: ['n-construction', 'n-smoke', 'n-bike', 'n-fresh', 'n-welcome', 'n-fix'],
+        // 짝: 정답과 같은 낱말을 쓰지만 내용이 다른 판을 같이 세운다 — 「자전거」 글자만 보고는 못 고른다(2차 검수 11-04).
+        pairs: { 'n-bike': 'n-fix', 'n-fix': 'n-bike', 'n-fresh': 'n-welcome', 'n-welcome': 'n-fresh' } },
     }),
     fixed: Object.freeze([
       { id: 'stone', word: 'university', text: '새솔대학교', style: 'stone', vertical: true, q: box(78, 297, 262, 1064) },
@@ -36,7 +38,7 @@ export const PLACES = Object.freeze({
   }),
   union: Object.freeze({
     id: 'union', photo: 'assets/places/union.webp', w: 2752, h: 1536, start: [0.46, 0.5],
-    name: { ko: '학생회관 1층', en: 'Student union lobby' }, when: { ko: '점심 전', en: 'Before lunch' },
+    name: { ko: '학생회관 1층', en: 'Student union lobby', mn: 'Оюутны төвийн 1 давхар' }, when: { ko: '점심 전', en: 'Before lunch', mn: 'Өдрийн хоолны өмнө' },
     ambience: 'indoor',
     groups: Object.freeze({
       row: { style: 'row', floors: [5, 4, 3, 2, 1], frame: box(1450, 550, 1698, 888),
@@ -47,11 +49,11 @@ export const PLACES = Object.freeze({
         pool: ['toilet', 'stairs', 'entrance', 'exit', 'lift'] },
       door: { style: 'sticker', noMission: true,
         slots: [[[110, 682], [204, 691], [202.5, 754], [109, 750]], [[364, 706.5], [424.5, 712], [423, 765], [363.5, 761]]],
-        pool: ['push', 'pull'] },
+        pool: ['push', 'pull', 'slide'] },
     }),
     fixed: Object.freeze([
       { id: 'dir-head', decor: true, text: '층별 안내', style: 'row-head', q: box(1457, 558, 1690, 619) },
-      { id: 'chalk', word: 'menu', text: '오늘의 메뉴', style: 'chalk', q: [[1736.8, 878.6], [1862.7, 878.6], [1868.6, 1067.3], [1741.4, 1067.3]] },
+      { id: 'chalk', word: 'menu', recallFrom: 'things', text: '오늘의 메뉴', style: 'chalk', q: [[1736.8, 878.6], [1862.7, 878.6], [1868.6, 1067.3], [1741.4, 1067.3]] },
     ]),
     things: Object.freeze([
       { id: 'water', word: 'water', q: box(816, 800, 916, 1038) },
@@ -63,7 +65,7 @@ export const PLACES = Object.freeze({
   }),
 });
 
-/** 판마다 잉크색(ink)과 사진 속 판의 바탕색(bg, 재어 본 값) — 대비 4.5:1은 places.test.mjs가 본다(Fable 설계 검토 11). */
+/** 판마다 잉크색(ink)과 사진 속 판의 바탕색(bg, 재어 본 값) — 대비 4.5:1은 places.test.mjs가 본다(설계 검토 11). */
 export const STYLE_INK = Object.freeze({
   blade: { ink: '#ffffff', bg: '#1d2f55' }, row: { ink: '#ffffff', bg: '#16305f' }, 'row-head': { ink: '#ffffff', bg: '#1a3263' },
   stand: { ink: '#16284d', bg: '#f4f4f1' }, hang: { ink: '#16284d', bg: '#d6dade' }, sticker: { ink: '#16284d', bg: '#b9b7b1' },
@@ -73,10 +75,10 @@ export const STYLE_INK = Object.freeze({
 export const PLACE_ORDER = Object.freeze(['gate', 'union']);
 /** 앨범에 흐린 표지로 보이는 다음 장소(그 회차가 앱에 생기면 연다). */
 export const COMING = Object.freeze([
-  { id: 'fair', name: { ko: '동아리 박람회', en: 'Club fair' } },
-  { id: 'festival', name: { ko: '봄 축제', en: 'Spring festival' } },
-  { id: 'hangang', name: { ko: '한강 공원', en: 'Hangang park' } },
-  { id: 'mt', name: { ko: 'MT 바닷가', en: 'Retreat by the sea' } },
+  { id: 'fair', name: { ko: '동아리 박람회', en: 'Club fair', mn: 'Клубийн үзэсгэлэн' } },
+  { id: 'festival', name: { ko: '봄 축제', en: 'Spring festival', mn: 'Хаврын наадам' } },
+  { id: 'hangang', name: { ko: '한강 공원', en: 'Hangang park', mn: 'Ханган мөрний цэцэрлэгт хүрээлэн' } },
+  { id: 'mt', name: { ko: 'MT 바닷가', en: 'Retreat by the sea', mn: 'Далайн эргийн аялал' } },
 ]);
 /** 그 장소에서 모을 수 있는 낱말 전체(앨범 분모). 안내문은 켰을 때만 센다. */
 export function placeWords(place, { notices = false } = {}) {

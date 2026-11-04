@@ -1,16 +1,16 @@
 'use strict';
 // 찰칵 낱말 — 소리 나는 움직이는 시안(2026-11-04). 주문 폭주 시안영상.cjs와 같은 길: 게임을 WORLD 틀(.game-frame)에서 진짜 마우스로 돌리며 탭 녹화로 화면 · 소리를 한 번에 담는다.
-//   node experiences/snap-words/qa/시안영상.cjs <출력 폴더> [phone|film] [폭 높이]   → 시안_<판>_<폭>.mp4(30fps)
+//   node experiences/snap-words/qa/시안영상.cjs <출력 폴더> [폭 높이]   → 시안_<폭>.mp4(30fps)
 // 게임 코드는 바꾸지 않는다. 시험 손잡이 window.__snap으로 자리만 읽는다.
 const path = require('node:path'), fs = require('node:fs'), http = require('node:http');
 const { execFileSync } = require('node:child_process');
 const NM = process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE, '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules');
 const { chromium } = require(require.resolve('playwright', { paths: [NM, path.resolve(__dirname, '../../../node_modules')] }));
-const args = process.argv.slice(2), OUT = args[0], LOOK = args.find((a) => a === 'film' || a === 'phone') || 'phone';
+const args = process.argv.slice(2), OUT = args[0];
 const nums = args.filter((a) => /^\d+$/.test(a)).map(Number), W = nums[0] || 390, H = nums[1] || 844;
 const EXP = path.resolve(__dirname, '../..');
 const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.mjs': 'text/javascript', '.js': 'text/javascript', '.webp': 'image/webp', '.png': 'image/png', '.mp3': 'audio/mpeg', '.woff2': 'font/woff2', '.json': 'application/json' };
-const FRAME = `<!doctype html><meta charset=utf-8><style>html,body{margin:0;background:#060709;overflow:hidden}iframe{border:0;display:block;width:${W}px;height:${H}px;zoom:2}</style><iframe class=game-frame src="/snap-words/index.html?seed=7&lang=ko&look=${LOOK}" allow="autoplay"></iframe>`;
+const FRAME = `<!doctype html><meta charset=utf-8><style>html,body{margin:0;background:#060709;overflow:hidden}iframe{border:0;display:block;width:${W}px;height:${H}px;zoom:2}</style><iframe class=game-frame src="/snap-words/index.html?seed=7&lang=ko" allow="autoplay"></iframe>`;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 function serve() {
   return new Promise((resolve) => {
@@ -138,10 +138,10 @@ function serve() {
     };
     window.__rec.stop();
   }));
-  const raw = path.join(OUT, `녹화_${LOOK}${type.startsWith('video/mp4') ? '.mp4' : '.webm'}`);
+  const raw = path.join(OUT, `녹화${type.startsWith('video/mp4') ? '.mp4' : '.webm'}`);
   await (await dl).saveAs(raw);
   await context.close(); await browser.close(); srv.close();
-  const out = path.join(OUT, `시안_${LOOK}_${W}.mp4`);
+  const out = path.join(OUT, `시안_${W}.mp4`);
   execFileSync('ffmpeg', ['-y', '-v', 'error', '-i', raw, '-vf', 'fps=30,scale=trunc(iw/2)*2:trunc(ih/2)*2', '-c:v', 'libx264', '-preset', 'medium', '-crf', '20', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-movflags', '+faststart', out], { stdio: 'inherit' });
   fs.rmSync(raw, { force: true });
   console.log(JSON.stringify({ out, 녹화형식: type, bytes: fs.statSync(out).size, errors: logs }, null, 1));

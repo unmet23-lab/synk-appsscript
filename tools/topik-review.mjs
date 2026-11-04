@@ -81,7 +81,7 @@ export function newItemView(item, types, labels) {
 // 기존 게임 문항: 출처마다 시험 자리(맞춘 꼴)와 화면에 보이는 글. 입장 검사는 안내문·서류·짐·말을 글로 옮긴다.
 // 레이싱 그림 낱말(낱말 하나를 듣고 그림 고르기)은 맞는 공식 자리가 없어(그림 자리 TI-L-15는 대화·세부) 자리 없이 본다.
 const EXISTING_TYPE = { 'blank-slice': () => 'TI-R-34', 'synk-town': item => item.skillId === 'ko.reading.main' ? 'TI-R-46' : 'TI-R-43', 'entry-check': () => 'TI-R-40',
-  'korean-racing': () => null, 'korean-runner': () => null, 'korean-rhythm': () => null, 'talk-rally': item => item.kind === 'follow' ? 'TI-L-05' : 'TI-L-01' };
+  'korean-racing': () => null, 'korean-runner': () => null, 'korean-rhythm': () => null, 'snap-words': () => null, 'talk-rally': item => item.kind === 'follow' ? 'TI-L-05' : 'TI-L-01' };
 // 듣기 게임은 진단 문항에 들리는 글이 줄여져 있어(label) 게임 원고에서 들리는 글 전체를 찾아 대본으로 보인다.
 const LISTENING_FORMAT = {
   'korean-runner': '게임 꼴: 안내 한마디를 듣고 갈 길(행동)을 보기 셋 가운데 고른다. 공식 시험 자리는 없다(세부 듣기 연습)',
@@ -113,7 +113,7 @@ export function existingItemView(item, types, labels, { script = null } = {}) {
   // 그림 보기는 그림 글자(이모지)만으로는 검수자가 어느 낱말 그림인지 대조할 수 없어, 그 그림이 가리키는 낱말을 괄호로 붙인다.
   const choices = item.choices.map(choice => picture && wordOf(choice.id) ? `${choice.label}(${wordOf(choice.id)})` : choice.label);
   return { existing: true, source: item.source, exam: 'topik-i', officialType: typeView(types.find(t => t.id === typeId)), fit: 'adapted',
-    ...(picture ? { format: '게임 꼴: 낱말 하나를 듣고 보기 그림(이모지) 셋 가운데 고른다. 공식 시험 자리는 없다(낱말 듣기 연습). 그림이 그 낱말을 하나로 가리키는지, 보기 그림끼리 헷갈리지 않는지, 1급 낱말인지 본다' } : {}),
+    ...(item.format ? { format: item.format } : {}), ...(picture ? { format: '게임 꼴: 낱말 하나를 듣고 보기 그림(이모지) 셋 가운데 고른다. 공식 시험 자리는 없다(낱말 듣기 연습). 그림이 그 낱말을 하나로 가리키는지, 보기 그림끼리 헷갈리지 않는지, 1급 낱말인지 본다' } : {}),
     targetGrade: null, skillId: item.skillId, skillLabel: labels[item.skillId] || null, difficulty: item.difficulty, passage, script: null,
     question: item.question, choices, answer: item.choices.findIndex(choice => choice.id === item.correctId),
     explanation: { ko: item.explanation }, choiceNotes: null };
@@ -130,6 +130,40 @@ async function talkRallyItems() {
   return ITEMS.map(item => ({ ...itemMetadata(item), source: 'talk-rally', kind: item.kind, line: item.line, question: null,
     choices: item.options.map((label, index) => ({ id: `talk-rally.${item.id}.${index}`, label })),
     correctId: `talk-rally.${item.id}.${item.options.indexOf(item.answer)}`, explanation: item.why }));
+}
+// 찰칵 낱말(11-04): 낱말마다 한 문항 — 부탁이 있으면 뜻 부탁(안내문은 안내문 부탁), 글 없는 물건은 낱말 부탁, 그 밖의 고정 판은 뜻 고르기. 소리 부탁 · 인화는 같은 낱말 · 같은 원고라 따로 보지 않는다.
+async function snapWordsItems() {
+  const imp = rel => import(pathToFileURL(path.join(root, rel)));
+  const [{ PLACES, PLACE_ORDER }, { WORDS }, { itemMetadata }] = await Promise.all([imp('experiences/snap-words/places.mjs'), imp('experiences/snap-words/words.mjs'), imp('experiences/snap-words/learning.mjs')]);
+  const line = text => String(text).replace(/\n/g, ' ');
+  const out = [], done = new Set();
+  const FORMAT = '게임 꼴: 1인칭 사진에서 같은 색 · 같은 크기의 판들에 낱말이 판마다 섞여 쓰여 있다. 이야기 인물(친근한 선배, 해요체)의 휴대폰 메시지를 읽고 맞는 판이나 물건을 찍는다. 학습자는 몽골 유학생(1~2급, 안내문은 3급). 공식 시험 자리는 없다(낱말 · 표지 읽기 연습). 낱말 부탁의 정답은 글자가 없는 실물 물건 사진이라 부탁 글에 낱말이 나와도 글자 맞추기로 풀리지 않는다. 안내문은 판이 둘이고, 내용이 비슷한 짝 판이 같이 선다. 부탁 글이 정답을 하나로 가리키는지, 보기끼리 헷갈리지 않는지, 뜻 풀이 · 예문이 맞고 자연스러운지 본다.';
+  const add = (form, word, prompt, question, pool, label = id => line(WORDS[id].ko)) => {
+    if (done.has(word)) return; done.add(word);
+    const w = WORDS[word], meta = itemMetadata(form, word), others = pool.filter(id => id !== word);
+    const choices = [word, ...others].map(id => ({ id: `snap-words.${id}`, label: label(id) }));
+    out.push({ ...meta, source: 'snap-words', format: FORMAT, prompt, question, choices, correctId: `snap-words.${word}`,
+      explanation: `뜻: ${w.mean.ko}. 예문: ${w.ex.ko} (${w.ex.en})` });
+  };
+  for (const id of PLACE_ORDER) {
+    const place = PLACES[id];
+    for (const group of Object.values(place.groups)) for (const word of group.pool) {
+      const w = WORDS[word];
+      if (w.ask) add(group.notice ? 'notice' : 'meaning', word, `[태오 선배 메시지] ${w.ask.ko}`, '어느 판을 찍어야 해요?', group.pool);
+      else add('recall-meaning', word, `[사진 속 판의 글] ${line(w.ko)}`, '무슨 뜻이에요?', group.pool, k => WORDS[k].mean.ko);
+    }
+    const things = place.things.map(t => t.word);
+    for (const word of things) add('word', word, `[태오 선배 메시지] ‘${WORDS[word].ko}’ 사진 좀 찍어 줄래요?`, '무엇을 찍어야 해요?', things);
+    const fixed = place.fixed.filter(f => f.word).map(f => f.word);
+    const plates = Object.values(place.groups).filter(g => !g.notice && !g.noMission).flatMap(g => g.pool);
+    for (const word of fixed) add('recall-meaning', word, `[사진 속 판의 글] ${line(WORDS[word].ko)}`, '무슨 뜻이에요?', (place.fixed.find(f => f.word === word).recallFrom === 'things' ? things : plates).slice(0, 4), k => WORDS[k].mean.ko);
+  }
+  return out;
+}
+// 찰칵 낱말의 지금 원고 지문 — experiences/snap-words/review.test.mjs가 통과 기록과 견준다.
+export async function snapWordsUnits() {
+  const types = readJson(path.join(root, 'strata/topik-types.json')).types, labels = skillLabels();
+  return (await snapWordsItems()).map(item => ({ key: item.itemKey, hash: sha(JSON.stringify(existingItemView(item, types, labels, { script: null }))).slice(0, 16) }));
 }
 // 듣기 게임 문항의 들리는 글 전체(대본). 바람길은 안내 한 줄, 리듬은 이야기 + 묻는 말, 말 랠리는 몽글의 한마디.
 async function listeningScripts() {
@@ -375,7 +409,7 @@ export async function prepare(name, { newFiles = null, existingSources = null, s
     for (let i = units.length - 1; i >= 0; i--) if (units[i].kind === 'new' && !kept.has(units[i].key)) units.splice(i, 1);
   }
   if (existingSources) {
-    const all = [...await diagnosticItems(), ...(existingSources.includes('talk-rally') ? await talkRallyItems() : [])];
+    const all = [...await diagnosticItems(), ...(existingSources.includes('talk-rally') ? await talkRallyItems() : []), ...(existingSources.includes('snap-words') ? await snapWordsItems() : [])];
     const scriptOf = await listeningScripts();
     const pool = all.filter(item => item.source in EXISTING_TYPE && (!existingSources.length || existingSources.includes(item.source)));
     const picked = perSource ? Object.values(Object.groupBy(pool.map(item => ({ key: item.itemKey, item })), row => row.item.source)).flatMap(rows => seededPick(rows, perSource, name)).map(row => row.item) : pool;

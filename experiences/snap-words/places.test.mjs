@@ -46,6 +46,13 @@ test('③ 낱말 부탁의 정답 물건에는 얹는 글이 없고, 뜻 · 소�
   }
 });
 
+test('안내문 부탁에는 같은 낱말을 쓰는 짝 판이 같이 선다(글자 일부만 보고 못 고른다)', () => {
+  for (const seed of seeds) {
+    const plates = layoutPlates(PLACES.gate, [{ kind: 'notice', group: 'stand', word: 'n-bike' }], makeRng(seed)).filter((p) => p.group === 'stand').map((p) => p.word).sort();
+    assert.deepEqual(plates, ['n-bike', 'n-fix']);
+  }
+});
+
 test('같은 부탁이라도 정답 판의 자리가 판마다 바뀐다', () => {
   const place = PLACES.gate, seen = new Set(), mission = { kind: 'meaning', group: 'blade', word: 'library' };
   for (const seed of seeds) seen.add(layoutPlates(place, [mission], makeRng(seed)).find((p) => p.word === 'library').id);

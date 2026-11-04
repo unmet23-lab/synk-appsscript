@@ -11,13 +11,17 @@ export const PLAY_UNLOCKS = Object.freeze({
   // 빈칸 베기(11-04): 이야기 자리는 중간고사 전날 밤 도서관(3급 뼈대 U08). 그 회차가 아직 없어 가장 가까운 공부 기록 — 레슨 한 번 — 으로 열고,
   // 카페 첫 방문을 먼저 한 학생도 막지 않는다(엄격하게 막지 않는다). 중간고사 회차가 생기면 그 기록으로 옮긴다.
   blank: Object.freeze({ where: 'play.where.lesson', open: (record) => record.lessons >= 1 || record.cafeVisits >= 1 }),
+  // 찰칵 낱말(11-04): 드라마 1화 기록이 아직 홈에 없어, 이름표를 읽고 찾는 이야기(greetings-story)가 든 첫 묶음 「처음 만난 날」을 두 강 이상 들으면 연다.
+  // 강 순서를 강제하지 않아 그 강이라는 보장은 없지만, 엄격하게 막지 않는 임시 자리다. 1화 기록이 홈에 오면 그 기록으로 옮긴다.
+  snap: Object.freeze({ where: 'play.where.stories', open: (record) => record.greetingLessons >= 2 }),
 });
 
 /** 홈이 들고 있는 생활 진도(updateLearning의 summary)에서 해금에 쓰는 기록만. 아직 못 읽었으면 null(잠김으로 본다). */
 export function playRecord(learningData) {
   const summary = learningData?.summary;
   if (!summary || summary.status?.phase === 'loading') return null;
-  return Object.freeze({ cafeVisits: Number(summary.cafe?.completed) || 0, lessons: Number(summary.completed) || 0 });
+  const packs = Array.isArray(summary.packs) ? summary.packs : [];
+  return Object.freeze({ cafeVisits: Number(summary.cafe?.completed) || 0, lessons: Number(summary.completed) || 0, greetingLessons: Number(packs.find((pack) => pack?.id === 'greetings')?.completed) || 0 });
 }
 
 /** 놀이 하나의 상태: { open } 또는 { open:false, where }. 규칙이 던지거나 기록이 없으면 잠김. */

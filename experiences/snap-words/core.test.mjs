@@ -17,6 +17,13 @@ test('안내문을 켜면 뜻 하나가 안내문 부탁이 된다', () => {
   assert.deepEqual(ms.map((m) => m.kind).sort(), ['meaning', 'notice', 'sound', 'word']);
 });
 
+test('소리를 끄면 소리 부탁이 뜻 부탁으로 바뀐다', () => {
+  for (let seed = 1; seed < 30; seed += 1) {
+    const ms = pickMissions(PLACES.gate, { rng: makeRng(seed), voice: false });
+    assert.equal(ms.length, 4); assert.ok(!ms.some((m) => m.kind === 'sound'));
+  }
+});
+
 test('약한 낱말이 먼저 정답이 된다', () => {
   for (let seed = 1; seed < 30; seed += 1) assert.ok(pickMissions(PLACES.gate, { rng: makeRng(seed), weak: ['pharmacy'] }).some((m) => m.word === 'pharmacy'));
 });
@@ -70,7 +77,7 @@ test('망가진 저장은 빈 앨범 · 모르는 낱말은 버린다', () => {
 
 test('안내문을 켜면 분모에 안내문이 더해진다', () => {
   const album = emptyAlbum(), off = placeProgress(album, PLACES.gate);
-  assert.equal(placeProgress({ ...album, notices: true }, PLACES.gate).total, off.total + 4);
+  assert.equal(placeProgress({ ...album, notices: true }, PLACES.gate).total, off.total + 6);
   assert.ok(off.total >= 16, String(off.total));
 });
 
