@@ -1,0 +1,4 @@
+{"type":"thread.started","thread_id":"01a1a5a3-2123-7411-8137-68c9157f436d"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 사용해 두 참고 사진의 인물·장소·빛을 맞추고, 상자가 쏟아진 순간을 요청하신 구도로 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"스킬 파일 열기가 환경 정책으로 차단되어, 제공된 이미지 생성 도구로 진행합니다. 위쪽 40%는 바닥과 문턱만 남기고, 아래쪽에 전화 중인 여자와 쏟아진 짐을 배치하겠습니다.\n"}}
