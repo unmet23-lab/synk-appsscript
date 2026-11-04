@@ -5,7 +5,7 @@ const { pathToFileURL } = require('node:url');
 const root = path.resolve(__dirname, '..'), c = require('../tools/conditional-qa/contract.cjs');
 const { check } = require('../tools/conditional-qa/guard.cjs');
 const { childRun, temporaryEnvironment, profileBudget, fileConcurrency } = require('../tools/conditional-qa/run.cjs');
-const { materialize, write, release, prepare, slotConfigs, slotState } = require('../tools/conditional-qa/inputs.cjs');
+const { materialize, write, release, prepare, slotConfigs, slotState, repairCheckout, git: runGit } = require('../tools/conditional-qa/inputs.cjs');
 const { extendQueue, nextItem, advanceTurn, acquire, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns, republishFailures, diskWaitFor, browserProfileDiskFull, runPool, cpuMeter, hasRoom, saturationGate, trimPassedRun, tick } = require('../tools/conditional-qa/worker.cjs');
 const { plan } = require('../tools/conditional-qa/install.cjs');
 const github = require('../tools/conditional-qa/github.cjs');
@@ -829,4 +829,19 @@ test('a saturated PC waits before the first verification but not before publishi
   Object.assign(saved.items[0], { status: 'publish-pending', output, count: selected.length, digest: manifest.digest }); write(queueFile, saved);
   await tick(g.state, { ...g.deps, meter: () => 100, verifyCommit: () => assert.fail('nothing to verify') });
   assert.equal(g.queue()[0].status, 'passed');
+});
+test('a checkout left half-written is repaired and recorded, and a clean one is left alone', t => {
+  const dir = scratch(t), repo = path.join(dir, 'repo'), state = path.join(dir, 'state'), file = path.join(repo, 'tracked.txt');
+  fs.mkdirSync(repo); fs.mkdirSync(state);
+  runGit(repo, ['init', '-q']); fs.writeFileSync(file, 'committed\n'); fs.writeFileSync(path.join(repo, 'fixture.bin'), 'pinned');
+  fs.writeFileSync(path.join(repo, '.gitignore'), 'fixture.bin\n');
+  runGit(repo, ['add', 'tracked.txt', '.gitignore']); runGit(repo, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'base']);
+  const log = path.join(state, 'checkout-repairs.jsonl');
+  assert.equal(repairCheckout(repo, state), false); assert.equal(fs.existsSync(log), false, 'nothing to record');
+  fs.writeFileSync(file, 'half written\n'); fs.writeFileSync(path.join(repo, '.git/index.lock'), '');
+  assert.equal(repairCheckout(repo, state), true);
+  assert.equal(fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n'), 'committed\n'); assert.equal(fs.existsSync(path.join(repo, '.git/index.lock')), false);
+  assert.equal(runGit(repo, ['status', '--porcelain', '--untracked-files=no']), '');
+  assert.equal(fs.readFileSync(path.join(repo, 'fixture.bin'), 'utf8'), 'pinned', 'a pinned input outside git stays');
+  assert.match(JSON.parse(fs.readFileSync(log, 'utf8')).files[0], /tracked\.txt/);
 });

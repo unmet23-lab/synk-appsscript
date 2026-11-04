@@ -108,13 +108,25 @@ function postcheck(context) {
   for (const row of context.pinned) if (hashFile(row.file) !== row.sha256) throw Error('A validation input changed during execution');
   return true;
 }
+// Moving a checkout between a day-old commit and the newest writes many files; on a busy PC that took past git()'s two minutes, and a killed checkout leaves a half-written tree.
+const CHECKOUT_MS = 30 * 60_000;
+// That tree, or a test that wrote to a tracked file, would make every later commit refuse this checkout. Only the job holding a checkout runs git in it, so a lock found here has no owner,
+// and the commit is checked out right after this: nothing of the old state reaches its result, and run.cjs still refuses a tree that differs from its commit.
+function repairCheckout(root, state) {
+  fs.rmSync(path.join(root, '.git/index.lock'), { force: true });
+  const dirty = git(root, ['status', '--porcelain', '--untracked-files=no'], { timeout: CHECKOUT_MS });
+  if (!dirty) return false;
+  fs.appendFileSync(path.join(state, 'checkout-repairs.jsonl'), JSON.stringify({ at: new Date().toISOString(), head: git(root, ['rev-parse', 'HEAD']), files: dirty.split(/\r?\n/).slice(0, 20) }) + '\n');
+  git(root, ['reset', '--hard', 'HEAD'], { timeout: CHECKOUT_MS });
+  return true;
+}
 function prepare(config, commit, { overlay, refreshTalk = true } = {}) {
   validCommit(commit); const { state } = config;
   if (['released.json', 'releasing.lock', ...RELEASED.map(name => `${name}.releasing`)].some(name => fs.existsSync(path.join(state, name))))
     throw Error('This candidate state was released or is being released; prepare a new one');
   const root = clone(config);
-  if (git(root, ['status', '--porcelain', '--untracked-files=no'])) throw Error('Validation checkout has modified tracked files');
-  git(root, ['checkout', '--detach', commit]);
+  repairCheckout(root, state);
+  git(root, ['checkout', '--detach', commit], { timeout: CHECKOUT_MS });
   const manifest = read(path.join(state, 'inputs.json'));
   const tracked = new Set(git(root, ['ls-files', '-z']).split('\0'));
   const pinned = materialize(state, manifest.files.filter(row => row.area === 'app'), root, { tracked });
@@ -166,7 +178,6 @@ async function withCandidate(options, run) {
 // A slot lets the scheduled worker verify another queued commit at the same time (2026-11-04): a verification takes at least six minutes,
 // so one checkout tops out near 230 commits a day and a busy day pushes that many. Like a candidate it is a state of its own beside the shared blobs,
 // but it has no overlay and is not marked as a candidate: its receipts count and release() refuses it. The worker only uses a slot whose slot.json exists.
-const FIRST_CHECKOUT_MS = 30 * 60_000; // prepare()'s two-minute git limit is for the small step between commits; the first checkout writes about 4 GB.
 const slotState = (original, number) => path.join(path.resolve(original), 'slots', String(number));
 function syncSlotInputs(original, state) {
   const from = path.join(original, 'inputs.json'), to = path.join(state, 'inputs.json');
@@ -181,10 +192,10 @@ function provisionSlot({ original, number }) {
   const config = { ...source, state, root: path.join(state, 'workspace/SYNK-appsscript') };
   write(path.join(state, 'config.json'), config); syncSlotInputs(original, state);
   if (!fs.existsSync(path.join(state, 'blobs'))) fs.symlinkSync(path.join(original, 'blobs'), path.join(state, 'blobs'), 'junction');
-  clone(config, { timeout: FIRST_CHECKOUT_MS });
+  clone(config, { timeout: CHECKOUT_MS });
   git(config.root, ['fetch', 'origin', 'master']);
   const commit = git(config.root, ['rev-parse', 'origin/master']);
-  git(config.root, ['checkout', '--detach', commit], { timeout: FIRST_CHECKOUT_MS });
+  git(config.root, ['checkout', '--detach', commit], { timeout: CHECKOUT_MS });
   prepare(config, commit);
   const result = { version: 1, number, commit, readyAt: new Date().toISOString() };
   write(receipt, result); return result;
@@ -337,7 +348,7 @@ function release(state) {
     return receipt;
   } finally { fs.rmSync(lock, { force: true }); }
 }
-module.exports = { read, write, git, hashFile, provision, loadConfig, clone, prepare, postcheck, materialize, verifyBlob, dependencyInstall, assertOwned, candidate, withCandidate, release, releasePreview, provisionSlot, slotConfigs, slotState };
+module.exports = { read, write, git, hashFile, provision, loadConfig, clone, prepare, postcheck, materialize, verifyBlob, dependencyInstall, assertOwned, candidate, withCandidate, release, releasePreview, provisionSlot, slotConfigs, slotState, repairCheckout, CHECKOUT_MS };
 if (require.main === module) {
   const [command, state, flag] = process.argv.slice(2);
   if (!['release', 'slot'].includes(command) || !state) { console.error('usage: node tools/conditional-qa/inputs.cjs release <candidate state> [--preview]\n       node tools/conditional-qa/inputs.cjs slot <worker state> <2-9>'); process.exitCode = 2; }

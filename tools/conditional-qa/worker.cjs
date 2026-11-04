@@ -1,7 +1,7 @@
 'use strict';
 const fs = require('node:fs'), path = require('node:path'), cp = require('node:child_process'), os = require('node:os');
 const { readManifest, coverage, sha256 } = require('./contract.cjs');
-const { read, write, git, loadConfig, clone, prepare, postcheck, slotConfigs } = require('./inputs.cjs');
+const { read, write, git, loadConfig, clone, prepare, postcheck, slotConfigs, CHECKOUT_MS } = require('./inputs.cjs');
 const github = require('./github.cjs');
 const { childRun } = require('./run.cjs');
 const { runnerFor } = require('./legacy-profile.cjs');
@@ -137,7 +137,7 @@ async function verify(config, commit, output, serialRetry = false) {
     { cwd: config.root, env: { ...process.env, SYNK_QA_SERIAL_RETRY: serialRetry ? '1' : '0' }, log: path.join(output, 'runner.log'), timeoutMs: 50 * 60_000 });
   const receipt = read(path.join(output, 'result.json'));
   receipt.inputsUnchanged = postcheck(context);
-  receipt.ok = receipt.ok && execution.exitCode === 0 && !execution.timedOut && receipt.inputDigest === context.inputDigest && !git(config.root, ['status', '--porcelain', '--untracked-files=no']);
+  receipt.ok = receipt.ok && execution.exitCode === 0 && !execution.timedOut && receipt.inputDigest === context.inputDigest && !git(config.root, ['status', '--porcelain', '--untracked-files=no'], { timeout: CHECKOUT_MS });
   write(path.join(output, 'result.json'), receipt);
   if (!coverage(receipt, { commit, digest: manifest.digest, cases })) {
     const error = Error(`Local tests incomplete: ${receipt.passed}/${cases.length}`);
