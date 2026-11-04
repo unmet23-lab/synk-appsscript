@@ -122,7 +122,8 @@ async function matchedWav(raw, outWav, { edges, lufs, rate }) {
 // ── 게임별 ───────────────────────────────────────────────────────────────
 const ANIMALS = ['bear', 'raccoon', 'rabbit', 'fox', 'squirrel', 'hedgehog', 'penguin', 'ducks', 'otter', 'deer', 'panda', 'sheep'];
 const RACING_GROUPS = [['manifest.json', 'jobs.json'], ['challenge-manifest.json', 'challenge-jobs.json'], ['choice-manifest.json', 'choice-jobs.json'],
-  ['finale-manifest.json', 'finale-jobs.json'], ['garage-manifest.json', 'garage-jobs.json'], ['tutorial-manifest.json', 'tutorial-jobs.json']];
+  ['finale-manifest.json', 'finale-jobs.json'], ['garage-manifest.json', 'garage-jobs.json'], ['tutorial-manifest.json', 'tutorial-jobs.json'],
+  ['ride-manifest.json', 'ride-jobs.json']];
 const listFiles = (dir, re) => fs.existsSync(dir) ? fs.readdirSync(dir).filter(f => re.test(f)).sort() : [];
 const job = (game, id, role, text, outputs, extra = {}) => ({ game, id, role, text, outputs, ...extra });
 

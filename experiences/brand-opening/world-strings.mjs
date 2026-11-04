@@ -180,7 +180,7 @@ export default {
  'play.where.cafe':{ko:'싱크타운 카페 첫 방문',en:'your first visit to the SYNK Town café',mn:'SYNK Таун кафед анх очиход'},
  'play.where.lesson':{ko:'첫 학습을 마치면',en:'after your first lesson',mn:'Эхний хичээлээ дуусгахад'},
  'play.where.stories':{ko:'「처음 만난 날」 이야기',en:'the “First Meeting” story',mn:'«Анх уулзсан өдөр» түүхийг сонсоход'},
- 'play.where.directions':{ko:'지도 이야기 「거꾸로 든 지도」',en:'the map lesson “거꾸로 든 지도”',mn:'Газрын зургийн хичээлийг дуусгахад'},
+ 'play.where.directions':{ko:'지도 이야기 「거꾸로 든 지도」',en:'the map lesson “The upside-down map”',mn:'Газрын зургийн хичээлийг дуусгахад'},
  'play.new':{ko:'새로 열림',en:'New',mn:'Шинэ'},
  'play.note':{ko:'한글이 처음이면 ‘한글 만나기’부터 시작해요.',en:'New to Hangul? Start with Meet Hangul.',mn:'Солонгос үсгийг анх удаа үзэж байгаа бол «Солонгос үсэгтэй танилцах»-аас эхлээрэй.'},
  'play.more':{ko:'더 둘러보기',en:'More to explore',mn:'Цааш үзэх'},

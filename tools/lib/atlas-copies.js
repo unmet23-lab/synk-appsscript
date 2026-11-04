@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { spawnSync } = require('node:child_process');
-const GAMES = Object.freeze(['korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'learning-hub', 'entry-check', 'story-classroom', 'blank-slice', 'talk-rally', 'word-magic', 'snap-words']);
+const GAMES = Object.freeze(['korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'learning-hub', 'entry-check', 'story-classroom', 'blank-slice', 'talk-rally', 'word-magic', 'snap-words', 'subway-rush']);
 // Every tool in docs/마케팅/맞춤도구/build.mjs ships atlas/engine.js as atlas-engine.js next to its dist/<name>.manifest.json.
 const TOOL_OUTPUTS = Object.freeze({ computer: 'brief/computer', meeting: 'brief/meeting', katana: 'brief/katana', skills: 'brief/skills', move: 'builds/move', manual: 'builds/manual' });
 const WEBSITE_GAMES = Object.freeze({ racing: 'korean-racing', runner: 'korean-runner', rhythm: 'korean-rhythm', 'order-rush': 'order-rush', 'story-classroom': 'story-classroom', 'entry-check': 'entry-check', 'blank-slice': 'blank-slice', 'talk-rally': 'talk-rally' });
