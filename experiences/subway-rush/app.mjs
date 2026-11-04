@@ -14,6 +14,15 @@ const $ = (id) => document.getElementById(id);
 const query = new URLSearchParams(location.search);
 const AUTO = query.has('auto');                       // 녹화용 자동 진행
 const WORLD_BASE = 'assets/world/', VOICE_BASE = 'assets/voice/';
+// 앱 「움직임 줄이기」는 바깥 창(:root[data-motion=reduced])에만 적혀 있어 게임 문서로 옮겨 적는다 — CSS 연출도 이 표시를 따른다.
+function syncMotion() {
+  let outer = false;
+  try { outer = window.parent !== window && window.parent.document.documentElement.dataset.motion === 'reduced'; } catch { /* 다른 출처 */ }
+  document.documentElement.toggleAttribute('data-reduce-motion', outer);
+}
+syncMotion();
+window.addEventListener('focus', syncMotion);
+document.addEventListener('visibilitychange', syncMotion);
 const reduced = () => matchMedia('(prefers-reduced-motion:reduce)').matches || document.documentElement.hasAttribute('data-reduce-motion');
 
 // ── 시간(멈춤을 지키려고 모든 움직임을 이 고리로 돌린다) ──
@@ -29,7 +38,15 @@ let paused = false, last = performance.now();
 let stepping = 0, stepTimer = 0, stepSide = 1;
 
 // ── 준비 ──
-const assets = new Set(await fetch('assets/assets.json').then((r) => r.json()));
+// 준비가 막혀도(끊긴 회선 · WebGL 없음) 조용히 멈추지 않는다: 창으로 알리고 다시 시도한다.
+async function askRetry(title, body) {
+  $('retry-title').textContent = title; $('retry-body').textContent = body;
+  const dlg = $('voice-dialog'); dlg.showModal();
+  await new Promise((res) => $('btn-retry').addEventListener('click', res, { once: true })); dlg.close();
+}
+$('voice-dialog').addEventListener('cancel', (e) => e.preventDefault());
+async function readyOrAsk(load, title, body) { for (;;) { try { return await load(); } catch (error) { console.error(error); await askRetry(title, body); } } }
+const assets = new Set(await readyOrAsk(() => fetch('assets/assets.json').then((r) => { if (!r.ok) throw Error(`assets.json ${r.status}`); return r.json(); }), '게임을 준비하지 못했어요', '인터넷을 확인하고 다시 해 주세요.'));
 const files = Object.fromEntries([...assets].flatMap((n) => [[n, `${n}.webp`], [`${n}.depth`, `${n}.depth.png`]]));
 const has = (n) => assets.has(n);
 const sound = createSound();
@@ -37,7 +54,7 @@ const music = createMusic(sound.ctx, { destination: sound.output });
 sound.onVoice = (on) => music.voice(on);
 await Promise.all([document.fonts.load('600 20px SubwaySign'), document.fonts.load('16px SubwayLED')]).catch(() => {});
 const led = createLed($('led'));
-const scene = await createScene($('gl'), { base: WORLD_BASE, tween, ease, files });
+const scene = await readyOrAsk(() => createScene($('gl'), { base: WORLD_BASE, tween, ease, files, calm: reduced }), '화면을 그리지 못했어요', '이 브라우저에서 그래픽 가속(WebGL)을 쓸 수 없어요. 설정에서 켠 뒤 다시 해 주세요.');
 const coach = (() => { try { return window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }) || null; } catch { return null; } })();
 
 const availableCars = () => Object.keys(CARS).filter((id) => has(CARS[id].closed));
@@ -331,10 +348,10 @@ async function meeting(m, afterCarId) {
   if (s.lead) { await wait(0.4); setStatus('announcer'); sound.chime(); await wait(1.1); await say(s.lead); }
   // 그 사람 쪽으로 시점이 돌아간다
   await scene.prepareNext({ img: p.photo, dep: `${p.photo}.depth`, c: [0.5, 0.4] });
-  await tween(0.55, (k) => { scene.state.mix = k; scene.state.pan = [0.03 * k, 0]; }, ease.inOut);
+  await tween(0.55, (k) => { scene.state.mix = k; if (!reduced()) scene.state.pan = [0.03 * k, 0]; }, ease.inOut);
   scene.settleNext(); scene.state.streak = 0;
   // 말하는 동안 아주 조금 다가감(한 번 — 늘 도는 흔들림 아님)
-  tween(3.2, (k) => { scene.state.push = 0.03 * k; }, ease.out);
+  tween(3.2, (k) => { if (!reduced()) scene.state.push = 0.03 * k; }, ease.out);
   led.setStatus('');
   const ex = s.item ? createExchange(coach, meetingMeta(s.item)) : null; currentExchange = ex;
   setKeys(false);
@@ -390,7 +407,7 @@ async function playSignDecision(run, d, { img, dep, panels, keyLine, auto }) {
   drawHang(d.options, i);
   const way = d.options.findIndex((o) => o.id === d.answer);
   if (result.correct) { sound.sfx.pass(); streakFlash(result); setClock(run); }
-  else { sound.sfx.ask(); await scene.peek(i - 1); $('hang').hidden = true; await afterWrong(run, d, result); await scene.show({ img, dep, c: [0.5, 0.515], panels, signs, push: reach }); drawHang(d.options, way); $('hang').hidden = false; setHang(1); await wait(0.25); }
+  else { sound.sfx.ask(); if (!reduced()) await scene.peek(i - 1); $('hang').hidden = true; await afterWrong(run, d, result); await scene.show({ img, dep, c: [0.5, 0.515], panels, signs, push: reach }); drawHang(d.options, way); $('hang').hidden = false; setHang(1); await wait(0.25); }
   return { way, result };
 }
 async function dashThrough(way, next) {
@@ -413,7 +430,7 @@ async function playJourney(journey, plan) {
   await scene.show({ img: 'platform', dep: 'platform.depth', c: [0.2, 0.6] });
   $('lobby').hidden = true;
   await curtain(false);
-  tween(5.2, (k) => { scene.state.push = 0.12 * k; }, ease.out);
+  tween(5.2, (k) => { if (!reduced()) scene.state.push = 0.12 * k; }, ease.out);
   currentLine = journey.opening; await wait(0.5);
   await say(journey.opening);
   setKeys(false);
@@ -474,8 +491,8 @@ async function playJourney(journey, plan) {
   // 개찰구 「삑」 → 계단 위 아침 빛
   await curtain(true);
   sound.railStop();
-  if (has('gate-out')) { await scene.show({ img: 'gate-out', dep: 'gate-out.depth', c: [0.5, 0.42] }); await curtain(false); await wait(0.5); sound.sfx.gate(); led.flash('삑', 0.8, 'green'); await tween(1.0, (k) => { scene.state.push = 0.5 * k; }, ease.inOut); await curtain(true); }
-  if (has('stairs-sun')) { await scene.show({ img: 'stairs-sun', dep: 'stairs-sun.depth', c: [0.5, 0.25] }); await curtain(false); stepping = 2.8; stepTimer = 0; await tween(1.8, (k) => { scene.state.push = 0.9 * k; scene.state.fadeTo = 1; scene.state.fade = Math.max(0, (k - 0.55) / 0.45); }, ease.inOut); stepping = 0; }
+  if (has('gate-out')) { await scene.show({ img: 'gate-out', dep: 'gate-out.depth', c: [0.5, 0.42] }); await curtain(false); await wait(0.5); sound.sfx.gate(); led.flash('삑', 0.8, 'green'); await tween(1.0, (k) => { if (!reduced()) scene.state.push = 0.5 * k; }, ease.inOut); await curtain(true); }
+  if (has('stairs-sun')) { await scene.show({ img: 'stairs-sun', dep: 'stairs-sun.depth', c: [0.5, 0.25] }); await curtain(false); stepping = 2.8; stepTimer = 0; await tween(1.8, (k) => { if (!reduced()) scene.state.push = 0.9 * k; scene.state.fadeTo = 1; scene.state.fade = Math.max(0, (k - 0.55) / 0.45); }, ease.inOut); stepping = 0; }
   return run;
 }
 const platformFor = () => (has('platform-1') ? 'platform-1' : 'platform');
@@ -566,7 +583,7 @@ async function showResult(run, plan) {
   // 공통 코인(다른 게임과 같은 규칙)
   const coin = globalThis.SynkPlayCollection;
   const round = coin?.roundId?.(GAME_ID), row = $('coin-row');
-  if (round && s.total) { coin.award({ game: GAME_ID, total: s.total, correct: s.right, completed: true, automatic: false, roundId: round }).then((r) => { row.textContent = coin.rewardText(r); row.hidden = false; }).catch(() => {}); }
+  if (round && s.total) { coin.award({ game: GAME_ID, total: s.total, correct: s.right, completed: true, automatic: false, roundId: round }).then((r) => { if (r?.reason === 'invalid-round') return; row.textContent = coin.rewardText(r); row.hidden = false; }).catch(() => {}); }   // 계정 서버의 게임 목록에 아직 없으면 탓하는 글 없이 지나간다
   document.documentElement.dataset.done = '1';
 }
 function backToRoom() {
@@ -604,8 +621,7 @@ async function start() {
   const album = readAlbum();
   const plan = planDay(journey, { available: { cars: availableCars(), people: availablePeople() }, seen: Object.keys(album.met || {}) });
   try { await prepare(journey, plan); } catch (error) {
-    console.error(error); const dlg = $('voice-dialog'); dlg.showModal();
-    await new Promise((res) => $('btn-retry').addEventListener('click', res, { once: true })); dlg.close(); return start();
+    console.error(error); await askRetry('목소리를 준비하지 못했어요', '인터넷을 확인하고 다시 해 주세요. 이 게임은 소리를 들어야 할 수 있어요.'); return start();
   }
   await showLobby(journey);
   const run = await playJourney(journey, plan);

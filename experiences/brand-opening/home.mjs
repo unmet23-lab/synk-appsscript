@@ -13,7 +13,7 @@ import {motionOn,slidePill,spring,bindPress} from './world-motion.mjs';
 // 화면 언어(10-19 1판): 기능 글·안내는 고른 언어, 학습 내용은 한국어. 표는 world-strings.mjs, 첫 실행의 언어 고르기는 lang-picker.mjs.
 import {t,tMessage,onLang,translateTree,currentLang,setLang} from './world-lang.mjs';
 import {createLangStep,langSettingsMarkup} from './lang-picker.mjs';
-import {PLAY_UNLOCKS,playRecord,playState} from './play-unlocks.mjs';
+import {PLAY_UNLOCKS,playRecord,playState,playOrder} from './play-unlocks.mjs';
 // 문 열림은 이름 없이 꺼내 쓴다: 공개 직후 캐시에 doors가 없는 옛 world-motion.mjs가 남아 있어도 홈은 뜨고 장소만 바로 바뀐다.
 import * as worldMotion from './world-motion.mjs';
 const $=selector=>document.querySelector(selector);
@@ -38,7 +38,9 @@ const games={
  // MT 바닷가 레이스(11-04, 1인칭 자전거 판 — korean-racing/world-skin.css): 지도 찾기 이야기에서 열린다(play-unlocks.mjs). 그림은 자전거 벨 한 컷.
  racing:{get title(){return t('game.racing.title');},get detail(){return t('game.racing.detail');},label:'LISTEN & RIDE',path:'../korean-racing/',image:'world-play/racing.webp',area:'문장을 듣고 답이 있는 길로 옮기는 듣기 연습'},
  // 말 랠리(11-04, 캠퍼스 판 겉 — 동아리 탁구장): 태오 선배와 주고받는다. 레슨 한 번 뒤 열린다(play-unlocks.mjs). 그림은 라켓과 공 인화지 한 장.
- rally:{get title(){return t('game.rally.title');},get detail(){return t('game.rally.detail');},label:'LISTEN & RALLY',path:'../talk-rally/',image:'world-play/talk-rally.webp',area:'묻는 말 · 이어지는 말을 듣고 알맞은 대답 고르기 연습'}
+ rally:{get title(){return t('game.rally.title');},get detail(){return t('game.rally.detail');},label:'LISTEN & RALLY',path:'../talk-rally/',image:'world-play/talk-rally.webp',area:'묻는 말 · 이어지는 말을 듣고 알맞은 대답 고르기 연습'},
+ // 환승 러시(11-04, 캠퍼스 판): 레슨 하나를 마치면 열린다(play-unlocks.mjs). 열린 뒤에는 바람길 카드 자리를 이어받는다.
+ subway:{get title(){return t('game.subway.title');},get detail(){return t('game.subway.detail');},label:'LISTEN & GO',path:'../subway-rush/',image:'world-play/subway-rush.webp',area:'지하철 안내방송을 듣고 문·통로·출구 고르기 연습'}
 };
 let lastFocus=null,panelKind='',inView=true,manualReduced=false,frameTimer,displayPreference='auto',layout='portrait';
 let learningUI=null,learningLoader=null,education=null,reminders=null;
@@ -319,7 +321,7 @@ function showPlay(){
  // 해금 표(play-unlocks.mjs) + 학생 기록: 열린 놀이는 그대로, 잠긴 놀이는 이름과 「이야기에서 열려요 — 여는 자리」 한 줄(누르면 같은 말을 알린다).
  // 표로 잠겼던 놀이가 열린 뒤 처음 볼 때 한 번만 「새로 열림」(자물쇠가 열리고 흑백 → 색 · 빛 한 번 — home.css). 본 것은 계정마다 이 기기에 남긴다.
  const record=playRecord(learningData),seen=seenPlays(),fresh=[];
- openPanel(t('play.title'),`<div class="play-list">${Object.entries(games).map(([id,g],i)=>{const state=playState(id,record),lock=state.open?'':t('play.locked',{where:t(state.where)});const isNew=!lock&&PLAY_UNLOCKS[id]&&seen&&!seen.includes(id);if(isNew)fresh.push(id);return `<button data-game="${id}"${lock?` data-locked="" aria-disabled="true" aria-label="${g.title}. ${lock}"`:''}${isNew?' data-new=""':''}><span class="play-art w-print"><img src="${asset(`assets/${g.image}`)}" alt=""></span>${isNew?'<span class="play-sheen" aria-hidden="true"></span>':''}<span class="play-copy"><small class="play-label">${String(i+1).padStart(2,'0')} · ${g.label}</small><strong>${g.title}</strong><small>${isNew?`<span class="play-new">${t('play.new')}</span> `:''}${lock?`<span class="play-lock">${lock}</span>`:g.detail}</small></span><span class="arrow" aria-hidden="true">↗</span></button>`;}).join('')}</div><p class="panel-note">${t('play.note')}</p>${more}`,{eyebrow:'PLAY',nav:'play'});
+ openPanel(t('play.title'),`<div class="play-list">${playOrder(Object.keys(games),record).map(id=>[id,games[id]]).map(([id,g],i)=>{const state=playState(id,record),lock=state.open?'':t('play.locked',{where:t(state.where)});const isNew=!lock&&PLAY_UNLOCKS[id]&&seen&&!seen.includes(id);if(isNew)fresh.push(id);return `<button data-game="${id}"${lock?` data-locked="" aria-disabled="true" aria-label="${g.title}. ${lock}"`:''}${isNew?' data-new=""':''}><span class="play-art w-print"><img src="${asset(`assets/${g.image}`)}" alt=""></span>${isNew?'<span class="play-sheen" aria-hidden="true"></span>':''}<span class="play-copy"><small class="play-label">${String(i+1).padStart(2,'0')} · ${g.label}</small><strong>${g.title}</strong><small>${isNew?`<span class="play-new">${t('play.new')}</span> `:''}${lock?`<span class="play-lock">${lock}</span>`:g.detail}</small></span><span class="arrow" aria-hidden="true">↗</span></button>`;}).join('')}</div><p class="panel-note">${t('play.note')}</p>${more}`,{eyebrow:'PLAY',nav:'play'});
  if(fresh.length)markPlaysSeen([...seen,...fresh]);
 }
 /** 「새로 열림」을 이미 본 놀이(계정마다). 저장소를 못 쓰면 null — 그때는 「새로 열림」을 띄우지 않는다(열 때마다 되풀이되지 않게). */

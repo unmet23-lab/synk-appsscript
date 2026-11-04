@@ -1,7 +1,7 @@
 // 「놀이」 해금 표(play-unlocks.mjs, 11-03): 표에 없는 놀이는 늘 열림, 주문 폭주는 싱크타운 카페 첫 방문을 마쳐야 열림, 기록이 없거나 읽는 중이면 잠김.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PLAY_UNLOCKS, playRecord, playState } from '../play-unlocks.mjs';
+import { PLAY_UNLOCKS, PLAY_REPLACED_BY, playRecord, playState, playOrder } from '../play-unlocks.mjs';
 import strings from '../world-strings.mjs';
 
 const learning = (cafeCompleted, phase = 'ready') => ({ summary: { cafe: { completed: cafeCompleted, total: 1, nextNumber: null }, status: { phase } } });
@@ -45,6 +45,18 @@ test('바닷가 레이스는 지도 찾기 이야기(거꾸로 든 지도)를 �
   assert.equal(playState('racing', null).open, false);
 });
 
+test('환승 러시는 레슨 하나를 마친 뒤 열리고, 열리면 바람길 자리를 이어받는다', () => {
+  const summary = (completed) => ({ summary: { completed, cafe: { completed: 0 }, status: { phase: 'ready' } } });
+  assert.deepEqual(playState('subway', playRecord(summary(0))), { open: false, where: 'play.where.lesson' });
+  assert.deepEqual(playState('subway', playRecord(summary(1))), { open: true });
+  const ids = ['runner', 'hangul', 'rhythm', 'order', 'subway'];
+  assert.deepEqual(playOrder(ids, playRecord(summary(0))), ids, '잠겨 있는 동안은 듣기 놀이가 비지 않는다');
+  assert.deepEqual(playOrder(ids, playRecord(summary(2))), ['subway', 'hangul', 'rhythm', 'order']);
+  assert.deepEqual(playOrder(ids, null), ids, '기록을 못 읽으면 내리지 않는다');
+  assert.equal(playState('runner', playRecord(summary(2))).open, true, '게임 자체는 그대로 열린다');
+  assert.deepEqual(PLAY_REPLACED_BY, { runner: 'subway' });
+});
+
 test('생활 진도를 아직 못 읽었거나 읽는 중이면 잠김으로 본다(열렸다고 먼저 말하지 않는다)', () => {
   assert.equal(playRecord(undefined), null);
   assert.equal(playRecord({}), null);
@@ -58,7 +70,7 @@ test('규칙이 이상한 기록에 던져도 잠김으로 남는다', () => {
 
 test('잠김 안내의 여는 자리 글이 화면 글 표에 세 언어로 있다', () => {
   for (const rule of Object.values(PLAY_UNLOCKS)) {
-    for (const key of [rule.where, 'play.locked', 'game.order.title', 'game.order.detail', 'game.blank.title', 'game.blank.detail', 'game.snap.title', 'game.snap.detail', 'game.racing.title', 'game.racing.detail', 'game.rally.title', 'game.rally.detail']) {
+    for (const key of [rule.where, 'play.locked', 'game.order.title', 'game.order.detail', 'game.subway.title', 'game.subway.detail', 'game.blank.title', 'game.blank.detail', 'game.snap.title', 'game.snap.detail', 'game.racing.title', 'game.racing.detail', 'game.rally.title', 'game.rally.detail']) {
       for (const lang of ['ko', 'en', 'mn']) assert.ok(strings[key]?.[lang], `${key}.${lang}`);
     }
   }

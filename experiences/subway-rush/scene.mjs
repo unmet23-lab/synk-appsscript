@@ -104,6 +104,13 @@ function drawTrapezoid(target, source, cx, topY, botY, topW, botW) {
     target.drawImage(source, 0, sy, source.width, source.height / rows + 1, x, y, w, 1.2);
   }
 }
+// 긴 스티커 글(승강장 결정)은 줄여 쓰지 않고 두 줄로 나눈다 — 바닥 원근에 눌려도 답이 되는 글자가 읽히게.
+function stickerLines(text) {
+  if (text.length <= 6) return [text];
+  const cuts = [...text.matchAll(/ /g)].map((m) => m.index);
+  const at = cuts.reduce((best, i) => (Math.max(i, text.length - i - 1) < Math.max(best, text.length - best - 1) ? i : best), cuts[0] ?? -1);
+  return at < 0 ? [text] : [text.slice(0, at), text.slice(at + 1)];
+}
 function stickerCanvas(option, state, lane) {
   const c = document.createElement('canvas'); c.width = 460; c.height = 260; const x = c.getContext('2d');
   const door = !!option.arrow;
@@ -115,8 +122,15 @@ function stickerCanvas(option, state, lane) {
   const midX = c.width / 2;
   if (door) {
     const a = { left: Math.PI, right: 0, stay: -Math.PI / 2 }[option.arrow];
-    arrowPath(x, midX, 84, 48, a);
-    x.font = `800 ${fitFont(x, option.text, 800, 76, c.width - 60)}px ${SIGN_FONT}`; x.fillText(option.text, midX, 184);
+    const lines = stickerLines(option.text);
+    if (lines.length === 1) {
+      arrowPath(x, midX, 84, 48, a);
+      x.font = `800 ${fitFont(x, option.text, 800, 76, c.width - 60)}px ${SIGN_FONT}`; x.fillText(option.text, midX, 184);
+    } else {
+      arrowPath(x, midX, 56, 28, a);
+      const size = Math.min(...lines.map((l) => fitFont(x, l, 800, 72, c.width - 60)));
+      x.font = `800 ${size}px ${SIGN_FONT}`; x.fillText(lines[0], midX, 126); x.fillText(lines[1], midX, 200);
+    }
   } else {
     // 갈림: 화살표만 크게(답이 되는 글자는 위 걸이 표지에)
     const a = [-Math.PI * 0.72, -Math.PI / 2, -Math.PI * 0.28][lane];
@@ -125,7 +139,7 @@ function stickerCanvas(option, state, lane) {
   return c;
 }
 
-export async function createScene(canvas, { base, tween, ease, files }) {
+export async function createScene(canvas, { base, tween, ease, files, calm = () => false }) {
   const gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'high-performance' });
   if (!gl) throw Error('WebGL을 쓸 수 없어요');
   const prog = gl.createProgram(); gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, VERT)); gl.attachShader(prog, compile(gl, gl.FRAGMENT_SHADER, FRAG)); gl.linkProgram(prog); gl.useProgram(prog);
@@ -207,14 +221,15 @@ export async function createScene(canvas, { base, tween, ease, files }) {
     hideDecals() { state.decalA = 0; },
     resize() { const dpr = Math.min(window.devicePixelRatio || 1, 2); const w = Math.round(canvas.clientWidth * dpr), h = Math.round(canvas.clientHeight * dpr); if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; gl.viewport(0, 0, w, h); state.fit = Math.max(1, Math.min(1.15, 0.93 * (1024 / 1536) / (w / h))); } },   // 넓은 창에서도 바닥 스티커가 화면 안에 들도록 그림을 덜 키운다
     render(dt) {
-      state.phase += dt * state.streak * 0.95;
+      const streak = calm() ? 0 : state.streak;   // 움직임 줄이기면 창밖 터널 빛이 흐르지 않는다
+      state.phase += dt * streak * 0.95;
       if (!state.img) return;
       bind(0, state.img); bind(1, state.dep); bind(2, state.nextImg || state.img); bind(3, state.nextDep || state.dep); bind(4, state.open || blank); bind(5, decalTex);
       set('uRes', canvas.width, canvas.height); set('uAspect', 1024 / 1536); set('uFit', state.fit); set('uDrop', state.drop);
       set('uC', ...state.c); set('uPan', ...state.pan); set('uPush', state.push); set('uShift', state.shift);
       set('uNextC', ...state.nextC); set('uNextPush', state.nextPush); set('uMix', state.mix); set('uBlur', state.blur);
       set('uFade', state.fade); set('uFadeTo', state.fadeTo); set('uDoorOpen', state.doorOpen); set('uHasOpen', state.hasOpen);
-      set('uDoor', ...state.door); set('uPhase', state.phase); set('uStreak', state.streak); set('uDecalA', state.decalA);
+      set('uDoor', ...state.door); set('uPhase', state.phase); set('uStreak', streak); set('uDecalA', state.decalA);
       set('uLamp', ...state.lamp); set('uLampOn', state.lampOn);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     },

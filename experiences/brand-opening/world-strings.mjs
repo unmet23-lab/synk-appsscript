@@ -176,6 +176,8 @@ export default {
  'game.snap.detail':{ko:'간판과 물건을 찍어 낱말을 모아요',en:'Snap signs and objects to collect words',mn:'Самбар, эд зүйлийн зураг авч үг цуглуулна'},
  'game.racing.title':{ko:'바닷가 레이스',en:'Seaside Race',mn:'Далайн эргийн уралдаан'},
  'game.racing.detail':{ko:'문장을 듣고 답이 있는 길로 자전거를 달려요',en:'Hear the sentence and ride into the right lane',mn:'Өгүүлбэр сонсоод зөв хариутай зам руу дугуйгаар давхина'},
+ 'game.subway.title':{ko:'환승 러시',en:'Transfer Rush',mn:'Метро дамжин суух'},
+ 'game.subway.detail':{ko:'안내방송을 듣고 갈아타서 첫 수업에 닿아요',en:'Follow the announcements, transfer, and make it to your first class',mn:'Буудал зарлахыг сонсоод метро дамжин сууж, эхний хичээлдээ амжина'},
  'play.locked':{ko:'이야기에서 열려요 — {where}',en:'Opens in the story — {where}',mn:'{where} нээгдэнэ'},   // 몽골어는 동사가 끝 — 「…-д очиход нээгдэнэ」(…에 가면 열려요)
  'game.rally.title':{ko:'말 랠리',en:'Talk Rally',mn:'Ярианы ралли'},
  'game.rally.detail':{ko:'태오 선배의 말을 듣고 알맞은 대답으로 받아쳐요',en:'Hear Tae-o and hit back with the right reply',mn:'Тэогийн яриаг сонсоод зөв хариултыг сонгож бөмбөгийг цохино'},
@@ -502,6 +504,7 @@ export default {
  'position.source.talk-rally':{ko:'말 랠리',en:'Talk Rally',mn:'Ярианы ралли'},
  'position.source.story-classroom':{ko:'선생님이 돌아왔다',en:'The Teacher Is Back',mn:'Багш буцаж ирлээ'},
  'position.source.order-rush':{ko:'주문 폭주',en:'Order Rush',mn:'Захиалгын шуурга'},
+ 'position.source.subway-rush':{ko:'환승 러시',en:'Transfer Rush',mn:'Метро дамжин суух'},
  'position.source.korean-racing':{ko:'한국어 레이싱',en:'Korean Racing',mn:'Солонгос хэлний уралдаан'},
  'position.source.other':{ko:'다른 연습',en:'Other practice',mn:'Бусад дасгал'},
  'position.source.practice':{ko:'짧은 연습',en:'Short practice',mn:'Богино дасгал'},

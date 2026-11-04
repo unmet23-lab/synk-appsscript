@@ -71,7 +71,7 @@ test('the coast badge is visible only when owned and equipped and garage links f
 });
 
 test('every coin-paying mini-game ships byte-identical copies of the generated canonical rules',async()=>{
-  for(const game of ['korean-rhythm','korean-runner','blank-slice','entry-check','story-classroom','talk-rally','order-rush','word-magic','spaceship-coop','learning-hub'])assert.equal(await fs.readFile(new URL(`../${game}/collection.js`,import.meta.url),'utf8'),source);
+  for(const game of ['korean-rhythm','korean-runner','blank-slice','entry-check','story-classroom','talk-rally','order-rush','word-magic','spaceship-coop','subway-rush','learning-hub'])assert.equal(await fs.readFile(new URL(`../${game}/collection.js`,import.meta.url),'utf8'),source);
 });
 
 test('the three reading games pay from the same wallet, by accuracy rather than round length',async()=>{

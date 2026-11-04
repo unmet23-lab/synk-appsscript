@@ -124,7 +124,7 @@ test('노선 사실: 안내의 환승 = 실제 환승(양쪽), 원고의 역은 
     else assert.equal(mentioned.length, 0, `${station}: ${line.text}`);
   }
   for (const route of ROUTES.line2) { const order = LINES[2].order; let i = order.indexOf(route.start); const dir = order.indexOf(route.stops[0]) > i ? 1 : -1; for (const s of route.stops) { i += dir; assert.equal(order[i], s, `${route.start} → ${s}`); } }
-  for (const route of ROUTES.line1) { const order = LINES[1].order; const from = order.indexOf('시청'); route.stops.forEach((s) => assert.ok(order.indexOf(s) > from, s)); for (let k = 1; k < route.stops.length; k++) assert.equal(order.indexOf(route.stops[k]), order.indexOf(route.stops[k - 1]) + 1); }
+  for (const route of ROUTES.line1) { const order = LINES[1].order; const from = order.indexOf('시청'); assert.equal(order.indexOf(route.stops[0]), from + 1, route.dest); route.stops.forEach((s) => assert.ok(order.indexOf(s) > from, s)); for (let k = 1; k < route.stops.length; k++) assert.equal(order.indexOf(route.stops[k]), order.indexOf(route.stops[k - 1]) + 1); }
 });
 
 test('읽는 글에는 숫자가 없다(목소리가 숫자를 잘못 읽지 않게)', () => {

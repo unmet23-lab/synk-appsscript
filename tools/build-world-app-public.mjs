@@ -186,6 +186,8 @@ copyTree(path.join(root,'experiences','blank-slice'),'blank-slice',(source,relat
 // 말 랠리(11-04, 캠퍼스 판 겉 — 해금 표로 「놀이」에서 연다): 게임 폴더째 싣되 LAB 전용 몽글 음성 · 안내 음성 · 펠트 벽 · 몽글 소리와 제작 원본은 뺀다 — WORLD는 assets/world만 쓴다(world-play.mjs). three.js는 공용 사본과 바이트까지 같으면 vendor/를 싣지 않는다.
 const rallySharedThree=['three.module.js','three.core.js'].every(name=>fs.readFileSync(path.join(root,'experiences/talk-rally/vendor',name)).equals(fs.readFileSync(path.join(home,'scene-assets',name))));
 copyTree(path.join(root,'experiences','talk-rally'),'talk-rally',(source,relative)=>!/^talk-rally\/(?:assets\/(?:voice|narration|scene)\/.*|assets\/sound\/mongle-.*|art-source\/.*|scripts\/.*|sound-lab\..*)$/.test(relative)&&!(rallySharedThree&&relative.startsWith('talk-rally/vendor/')));
+// 환승 러시(11-04): 앱 전용이라 LAB 공개 길은 없다. 시험 · 도구 · 설계와 문항 검수 원본은 싣지 않는다.
+copyTree(path.join(root,'experiences','subway-rush'),'subway-rush',(source,relative)=>!/^subway-rush\/(?:qa\/|.*\.test\.mjs$|.*\.md$|review-items\.mjs$)/.test(relative));
 // 드라마 말하기 1화(11-02, 설계 experiences/drama/qa/WORLD올리기-20261102/설계.md): 화면 · 강의(world-lesson.json) · 기록 묶음 · 재생 사본만 싣는다.
 // content.mjs(시범 서버 전용 · 판정 명세)와 README · qa는 싣지 않는다. 재생 사본(media/)은 git 밖(tools/build-drama-pilot-assets.mjs가 승인 원천에서
 // 만든다)이라 그 manifest.json의 sha256과 하나씩 대조해 없거나 다르면 멈춘다 — manifest 자체(원천 파일 이름)는 싣지 않는다.

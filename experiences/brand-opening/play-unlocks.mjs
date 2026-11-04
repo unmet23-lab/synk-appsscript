@@ -19,7 +19,14 @@ export const PLAY_UNLOCKS = Object.freeze({
   racing: Object.freeze({ where: 'play.where.directions', open: (record) => record.directionsDone >= 1 }),
   // 말 랠리(11-04, 설계 talk-rally/qa/world-campus-20261104/설계.md): 동아리 탁구 회차가 아직 없어 빈칸 베기와 같이 가장 가까운 공부 기록 — 레슨 한 번(카페 첫 방문을 먼저 한 학생도 막지 않는다). 그 회차가 생기면 그 기록으로 옮긴다.
   rally: Object.freeze({ where: 'play.where.lesson', open: (record) => record.lessons >= 1 || record.cafeVisits >= 1 }),
+  // 환승 러시: 이야기 자리는 1화 아침인데 드라마 기록이 생활 요약에 없어, 가장 가까운 이야기 기록인 레슨 하나를 마침으로 연다(설계 9절) —
+  // 1화에 등굣길 장면이 생기면 그 기록으로 바꾼다.
+  subway: Object.freeze({ where: 'play.where.lesson', open: (record) => record.lessons >= 1 }),
 });
+
+// 대신하는 놀이가 그 학생에게 열리면 「놀이」 목록에서 그 자리를 이어받는다. 잠겨 있는 동안은 그대로 있어 듣기 놀이가 비지 않는다.
+// 게임 자체는 그대로 남는다(WORLD 듣기 확인 도구 · 계획 줄이 쓴다) — 목록의 카드만 바뀐다.
+export const PLAY_REPLACED_BY = Object.freeze({ runner: 'subway' });
 
 /** 홈이 들고 있는 생활 진도(updateLearning의 summary)에서 해금에 쓰는 기록만. 아직 못 읽었으면 null(잠김으로 본다). */
 export function playRecord(learningData) {
@@ -27,6 +34,17 @@ export function playRecord(learningData) {
   if (!summary || summary.status?.phase === 'loading') return null;
   const packs = Array.isArray(summary.packs) ? summary.packs : [];
   return Object.freeze({ cafeVisits: Number(summary.cafe?.completed) || 0, lessons: Number(summary.completed) || 0, greetingLessons: Number(packs.find((pack) => pack?.id === 'greetings')?.completed) || 0, directionsDone: Number(packs.find((pack) => pack?.id === 'directions')?.completed) || 0 });
+}
+
+/** 「놀이」 목록의 차례. 대신하는 놀이가 열렸으면 앞 놀이의 자리에 놓고 앞 놀이는 뺀다. */
+export function playOrder(ids, record) {
+  const successors = Object.values(PLAY_REPLACED_BY), out = [];
+  for (const id of ids) {
+    const next = PLAY_REPLACED_BY[id];
+    if (next && playState(next, record).open) out.push(next);
+    else if (!successors.includes(id) || !playState(id, record).open) out.push(id);
+  }
+  return out;
 }
 
 /** 놀이 하나의 상태: { open } 또는 { open:false, where }. 규칙이 던지거나 기록이 없으면 잠김. */

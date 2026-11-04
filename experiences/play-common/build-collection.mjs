@@ -16,6 +16,6 @@ const account=esbuild.buildSync({entryPoints:[path.join(here,'account-client.mjs
 const output=path.join(here,'collection.js');
 await writeFile(output,'// Generated account bridge + canonical play economy. Run node experiences/play-common/build-collection.mjs.\n'+account+'\n'+bundled+'\n'+adapter);
 // Every mini-game that pays common coins loads the same bytes.
-const GAMES=['korean-racing','korean-rhythm','korean-runner','blank-slice','entry-check','story-classroom','talk-rally','order-rush','word-magic','spaceship-coop','learning-hub'];
+const GAMES=['korean-racing','korean-rhythm','korean-runner','blank-slice','entry-check','story-classroom','talk-rally','order-rush','word-magic','spaceship-coop','subway-rush','learning-hub'];
 for(const game of GAMES)await copyFile(output,path.join(root,'experiences',game,'collection.js'));
 console.log(`Canonical shared collection built and copied to ${GAMES.join(' / ')} (${Buffer.byteLength(await readFile(output))} bytes).`);

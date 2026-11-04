@@ -44,7 +44,7 @@ const LINE2_ROUTES = Object.freeze([
 const LINE1_DESTS = Object.freeze([
   { dest: '종로3가', stops: ['종각', '종로3가'] },
   { dest: '종로5가', stops: ['종각', '종로3가', '종로5가'] },
-  { dest: '동대문', stops: ['종로3가', '종로5가', '동대문'] },
+  { dest: '동대문', stops: ['종각', '종로3가', '종로5가', '동대문'] },
 ]);
 export const ROUTES = Object.freeze({ line2: LINE2_ROUTES, line1: LINE1_DESTS });
 
