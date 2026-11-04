@@ -714,6 +714,8 @@ test('only a provisioned slot is used, it follows the registered inputs, and it 
 });
 
 // The whole tick on two checkouts, with git, GitHub and the test run replaced and the receipts, queue file and lock real.
+// A tick's disk room is injected: GitHub runners sit near the 15 GiB limit, so reading the real disk failed nine tests whenever one dipped below it (2026-11-05).
+const roomyDisk = () => ({ bsize: 4096n, bavail: 1n << 30n });
 function tickFixture(t, commits, { slot = true } = {}) {
   const dir = scratch(t), state = path.join(dir, 'state'), repo = github.REPO, head = commits.at(-1);
   const owned = at => { write(path.join(at, 'owner.json'), { version: 1, purpose: 'synk-conditional-qa', state: at }); write(path.join(at, 'config.json'), { version: 1, repo, state: at, root: path.join(at, 'workspace/SYNK-appsscript') }); };
@@ -725,9 +727,15 @@ function tickFixture(t, commits, { slot = true } = {}) {
   const runGit = (cwd, args) => { if (args[0] === 'rev-parse') return head; if (args[0] === 'rev-list') return ''; if (args[0] === 'show') return bytes; return ''; };
   const receiptFor = commit => ({ version: 1, commit, manifestDigest: manifest.digest, expected: selected.length, passed: selected.length, ok: true, candidate: false, sourceUnchanged: true, inputsUnchanged: true, rows: selected.map(row => ({ ...row, status: 'pass' })) });
   const queue = () => JSON.parse(fs.readFileSync(path.join(state, 'queue.json'))).items;
-  return { state, published, queue, receiptFor, deps: { hub, runGit, cloneRoot: config => config.root, first: reading => reading !== null && reading < 85, room: () => true, meter: () => 10, recheckMs: 1, warmUpMs: 0, calmMs: 0, slept: () => false } };
+  return { state, published, queue, receiptFor, deps: { hub, runGit, cloneRoot: config => config.root, first: reading => reading !== null && reading < 85, room: () => true, meter: () => 10, recheckMs: 1, warmUpMs: 0, calmMs: 0, slept: () => false, statfs: roomyDisk } };
 }
 const tickCommits = n => Array.from({ length: n }, (_, i) => String(i + 1).repeat(40).slice(0, 40));
+test('a tick below the disk limit keeps its place and opens nothing', async t => {
+  const commits = tickCommits(2), f = tickFixture(t, commits);
+  const summary = await tick(f.state, { ...f.deps, statfs: () => ({ bsize: 4096n, bavail: 1024n }), verifyCommit: () => assert.fail('no room on the disk') });
+  assert.equal(summary.diskWait.requiredBytes, 15 * 1024 ** 3);
+  assert.deepEqual(f.queue().map(row => row.status), ['queued', 'queued']);
+});
 test('a tick verifies on both checkouts at once, keeps each receipt to its commit and trims only what passed', async t => {
   const commits = tickCommits(5), f = tickFixture(t, commits), busy = new Set(), seen = []; let widest = 0, bothOpened;
   const both = new Promise(resolve => { bothOpened = resolve; });
