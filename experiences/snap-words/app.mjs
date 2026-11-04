@@ -364,7 +364,7 @@ function drawDots() {
 }
 function updateThumb() {
   const pic = $('#thumb-pic'), total = Object.keys(album.cards).length;
-  $('#thumb-n').textContent = Object.values(album.cards).filter((c) => c.named).length;
+  $('#thumb-n').textContent = namedCount();
   pic.replaceChildren();
   const last = S.shots[S.shots.length - 1] || null;
   if (last) pic.append(cropNode(S.placeId, bboxOf(last.q), last.scene, 48, 48));
