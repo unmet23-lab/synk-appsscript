@@ -54,6 +54,24 @@ def picture():
     C.join_videos(paths, os.path.join(OUT, "화면.mp4"))
 
 
+def dog_picture():
+    # 고글 쓴 개로 닫는 다른 판의 화면(11-04, 크몽 세션 아르곤 · Fable 「끝이 편에서 가장 센 그림이 아니고 남자 모델 매력이 약하다」 · 고르기는 유호님) —
+    # 9번 컷을 판 끝까지 잇고 마지막 프레임을 잡아 10번 컷 자리를 채운다. 1~8번은 picture()가 자른 _컷을 그대로 쓴다
+    d = os.path.join(OUT, "_컷")
+    ids, t = CUTS[9]
+    src = C.clip(C.latest(*ids))
+    a = round(t * FPS)
+    live = C.frames_of(src) - a
+    total = round(T[10] * FPS) - round(T[8] * FPS)
+    out = os.path.join(d, "09_개끝.mp4")
+    vf = f"select='between(n,{a},{a + live - 1})',setpts=N/{FPS}/TB,scale={W}:{H}:flags=lanczos:out_color_matrix=bt709,format=yuv420p,tpad=stop_mode=clone:stop={total - live}"
+    C.run("ffmpeg", "-y", "-v", "error", "-i", src, "-an", "-vf", vf, "-frames:v", str(total), "-c:v", "libx264", "-crf", "12", "-preset", "medium", "-r", str(FPS),
+          "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", out)
+    paths = [os.path.join(d, f"{n:02d}.mp4") for n in range(1, 9)] + [out]
+    C.join_videos(paths, os.path.join(OUT, "화면_개끝.mp4"))
+    print(f"#9 잇기 {live}장 + 잡기 {total - live}장")
+
+
 def sound():
     # 낱말 시각표(remotion/src/p11/timing.ts) → 그 자리에 내레이션 · 음악(말 밑 −17) · 바다 · 효과음(자막시안 시안소리.py)
     C.run(sys.executable, "-X", "utf8", os.path.join(CAP, "내레이션시각.py"), VOICE)
@@ -61,20 +79,24 @@ def sound():
     shutil.copyfile(os.path.join(PUB, "sound_narr.wav"), os.path.join(OUT, "소리.wav"))
 
 
-def render():
-    pic = os.path.join(OUT, "화면.mp4")
-    if C.md5(pic) != C.md5(os.path.join(PUB, "picture.mp4")):
-        shutil.copyfile(pic, os.path.join(PUB, "picture.mp4"))
-    out, raw = os.path.join(OUT, "첨벙댕_9x16.mp4"), os.path.join(OUT, "_렌더.mp4")
-    C.run(shutil.which("npx"), "remotion", "render", "src/index.ts", "p11-AB", raw, "--concurrency=4", "--log=error", cwd=os.path.join(CAP, "remotion"))
+def render(comp="p11-AB", pic_name="화면.mp4", pub_name="picture.mp4", name="첨벙댕_9x16"):
+    pic = os.path.join(OUT, pic_name)
+    if not os.path.exists(os.path.join(PUB, pub_name)) or C.md5(pic) != C.md5(os.path.join(PUB, pub_name)):
+        shutil.copyfile(pic, os.path.join(PUB, pub_name))
+    out, raw = os.path.join(OUT, f"{name}.mp4"), os.path.join(OUT, f"_렌더_{name}.mp4")
+    C.run(shutil.which("npx"), "remotion", "render", "src/index.ts", comp, raw, "--concurrency=4", "--log=error", cwd=os.path.join(CAP, "remotion"))
     # 소리만 다시 담아 올림 기준(스테레오 AAC 320k 이상)을 맞춘다 — Remotion AAC는 317k로 영상사전검사 「검토」(11-04)
     C.run("node", os.path.join(C.REPO, "tools", "음량마감.mjs"), raw, out, "--목표", "-14", "--덮어쓰기")
-    C.run("ffmpeg", "-y", "-v", "error", "-i", out, "-vf", "scale=720:-2", "-c:v", "libx264", "-crf", "24", "-preset", "medium", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", os.path.join(OUT, "첨벙댕_9x16_폰.mp4"))
-    C.run("ffmpeg", "-y", "-v", "error", "-i", out, "-vf", "fps=2,scale=200:-2,tile=12x4:padding=3", "-frames:v", "1", "-q:v", "4", os.path.join(OUT, "_반초.jpg"))
+    C.run("ffmpeg", "-y", "-v", "error", "-i", out, "-vf", "scale=720:-2", "-c:v", "libx264", "-crf", "24", "-preset", "medium", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", os.path.join(OUT, f"{name}_폰.mp4"))
+    C.run("ffmpeg", "-y", "-v", "error", "-i", out, "-vf", "fps=2,scale=200:-2,tile=12x4:padding=3", "-frames:v", "1", "-q:v", "4", os.path.join(OUT, f"_반초_{name}.jpg"))
     print(out)
 
 
 if __name__ == "__main__":
     what = sys.argv[1:] or ["화면", "소리", "판"]
+    if "개끝" in what:   # 다른 판 — 화면 · 소리는 지금 판 것을 그대로 쓰고 끝 화면만 다르다
+        dog_picture()
+        render("p11-AB-dog", "화면_개끝.mp4", "picture_dog.mp4", "첨벙댕_9x16_개끝")
+        what = [w for w in what if w != "개끝"]
     for w in what:
         {"화면": picture, "소리": sound, "판": render}[w]()

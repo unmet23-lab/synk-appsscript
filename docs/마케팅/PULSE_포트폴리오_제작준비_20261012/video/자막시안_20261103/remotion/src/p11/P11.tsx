@@ -52,15 +52,18 @@ const Ring: React.FC<{ t: number; style: React.CSSProperties; color: string }> =
 //   짙은 바탕(개 몸) 위는 밝은 글자(light)에 옅은 그림자, x는 정렬(기본 왼쪽)
 // 바닷가: 첫 컷(c01)은 밀려 들어오는 개 머리가 1.4초부터 왼쪽 위를 다 덮어 「바」만 0.8초 보였다(11-03 섞은 판 검수) → 다음 컷 첫 프레임에 얹는다
 const cutEnd = (id: string) => MASKS.find((c) => c.cut === id)!.to;
-const BIG_A: { w: string; a: number; b: number; y: number; size: number; front?: boolean; x?: 'c' | 'r'; light?: boolean }[] = [
+const cutStart = (id: string) => MASKS.find((c) => c.cut === id)!.from;
+const BIG_A: { w: string; a: number; b: number; y: number; size: number; front?: boolean; x?: 'c' | 'r'; light?: boolean; halo?: boolean }[] = [
   { w: '외계인', a: w(0, 0), b: w(0, 4), y: 190, size: 240, front: true },     // 귀 · 머리털이 위를 다 덮어 뒤로는 「계 · 인」이 절반 넘게 가려졌다 → 하늘 위 앞
   { w: '바닷가', a: cutEnd('c01'), b: endOf(0) + 0.1, y: 250, size: 250 },
-  { w: '깜짝', a: w(1, 3), b: endOf(1) + 0.1, y: 300, size: 300 },
-  { w: '특별한 걸', a: w(2, 2), b: w(3, 0), y: 410, size: 180 },               // 남자 머리 왼쪽 벽 — 머리가 「걸」 끝만 덮는다(전에는 「걸」 절반)
+  // 3번 컷은 마스크가 없어 가림검사가 못 본다 — 왼쪽(y 300)이면 「사람들이 보면 깜짝」의 그 먼 두 사람을 글자가 덮었다(11-04 크몽 세션 검수) → 오른쪽 하늘, 컷이 바뀌면 함께 사라진다
+  { w: '깜짝', a: w(1, 3), b: cutStart('c04'), y: 176, size: 270, x: 'r' },   // 190이면 아래 획이 어두운 바다에 닿았다
+  { w: '특별한 걸', a: w(2, 2), b: w(3, 0), y: 410, size: 165 },               // 남자 머리 왼쪽 벽 — 180이면 「걸」이 얼굴에 닿았다(11-04 크몽 세션 검수), 165면 덮임 0%
   { w: '튼튼', a: w(4, 2), b: w(5, 0), y: 290, size: 280, x: 'r' },            // 남자 머리 오른쪽 벽으로 — 전에는 검은 머리 위에 얹혀 묻혔다
   { w: '번쩍', a: w(5, 5), b: endOf(5) + 0.1, y: 430, size: 240, front: true }, // 서 있는 컷 · 들어 올리는 컷 모두 왼쪽 복도 위(전에는 민소매 위에 묻힘)
   { w: '멋있게', a: w(6, 2), b: endOf(6) + 0.1, y: 1130, size: 270, front: true, x: 'c', light: true },   // 남색은 회색 개 몸 · 남색 끈에 묻혔다
-  { w: '외계인?', a: w(7, 1), b: endOf(7) + 0.2, y: 1150, size: 270, front: true, x: 'c', light: true },
+  // 카메라가 들어가 조끼 아래 끝이 1220(18초) → 1296(19초)까지 내려와 밝은 글자 위쪽이 노랑에 묻혔다(11-04 Fable). 더 내리면 옅은 배 · 수건이라 대비가 더 떨어져(자리찾기.py) 조금만 내리고 글자 둘레만 어둡게 깐다 — 가림검사.py는 후광 없는 화면으로 재서 「손볼 것」으로 나오지만 최종본 프레임으로 재면 둘레 91% 이상이 3:1을 넘는다
+  { w: '외계인?', a: w(7, 1), b: endOf(7) + 0.08, y: 1200, size: 270, front: true, x: 'c', light: true, halo: true },
 ];
 type Big = (typeof BIG_A)[number];
 const behind = (t: number, big: Big) => masked(t) && !big.front;
@@ -82,7 +85,7 @@ const Probe: React.FC<{ t: number }> = ({ t }) => {
   );
 };
 // mix(A+B, 11-03 유호님 「A+B 섞어 보기」): A 그대로에 두 순간만 B의 레몬 블록 — 제품 이름(기울어진 카드 대신 큰 블록 한 방 → 특징 칩) · 끝 브랜드(아래 절반 레몬 판, 엄지 든 끝 그림은 위에 남김)
-const LookA: React.FC<{ t: number; mix?: boolean }> = ({ t, mix }) => {
+const LookA: React.FC<{ t: number; mix?: boolean; dogEnd?: boolean }> = ({ t, mix, dogEnd }) => {
   const big = BIG_A.find((b) => t >= b.a && t < b.b);
   const l = lineAt(t);
   const card = !mix && t >= w(3, 0) && t < w(5, 0);
@@ -90,8 +93,8 @@ const LookA: React.FC<{ t: number; mix?: boolean }> = ({ t, mix }) => {
   const end = t >= 19.33;
   return (
     <>
-      {big && <div style={{ ...bigBox(t, big), zIndex: behind(t, big) ? 3 : 6, textShadow: big.light ? '0 4px 28px #0E132070' : undefined, color: big.light ? PAPER : INK }}>{big.w}</div>}
-      <Subject film="p11" cuts={MASKS} t={t} />
+      {big && <div style={{ ...bigBox(t, big), zIndex: behind(t, big) ? 3 : 6, textShadow: big.halo ? '0 0 16px #0E1320b8, 0 0 44px #0E1320a0, 0 6px 26px #0E132090' : big.light ? '0 4px 28px #0E132070' : undefined, color: big.light ? PAPER : INK }}>{big.w}</div>}
+      <Subject film="p11" cuts={dogEnd ? MASKS.filter((c) => c.cut !== 'c10') : MASKS} t={t} />
       {/* 머리 줄 · 발 줄 */}
       {!(mix && t >= w(8, 3)) && <>
         {/* 흰 천장 위에서 머리 줄이 묻혀(11-04) 위쪽만 살짝 어둡게 깐다 */}
@@ -145,12 +148,12 @@ const LookA: React.FC<{ t: number; mix?: boolean }> = ({ t, mix }) => {
         const p = ramp(t, w(8, 3), 0.22, EXPO);
         const q = pop(t, w(8, 3) + 0.06, 0.42);
         return (
-          <>
-            {/* 판이 27%일 땐 조끼 아래를 잘라 끝에 제품보다 로고가 남았다(11-04 GPT 검수) → 22%로 낮춰 조끼를 다 보인다 */}
-            <div style={{ ...abs(0, 1920 - p * 420, 1080, 440), zIndex: 22, background: LEMON }} />
-            <div style={{ ...abs(0, 1516, 1080), zIndex: 23, textAlign: 'center', fontFamily: KO, fontWeight: 900, fontSize: 190, letterSpacing: '-0.07em', lineHeight: 1, color: NAVY, transform: `scale(${0.94 + 0.06 * Math.min(1, q)})` }}>첨벙댕</div>
-            <div style={{ ...abs(0, 1716, 1080), zIndex: 23, textAlign: 'center', fontFamily: KO, fontWeight: 700, fontSize: 42, color: NAVY }}>반려견 구명조끼</div>
-          </>
+          // 판이 27%일 땐 조끼 아래를 잘라 끝에 제품보다 로고가 남았다(11-04 GPT 검수) → 22%로 낮춰 조끼를 다 보인다
+          // 로고는 판 안에서 함께 오른다 — 따로 두니 판보다 먼저 떠 운동화 · 개 다리 위를 지나갔다(11-04 크몽 세션 검수)
+          <div style={{ ...abs(0, 1920 - p * 420, 1080, 440), zIndex: 22, background: LEMON }}>
+            <div style={{ ...abs(0, 16, 1080), textAlign: 'center', fontFamily: KO, fontWeight: 900, fontSize: 190, letterSpacing: '-0.07em', lineHeight: 1, color: NAVY, transform: `scale(${0.94 + 0.06 * Math.min(1, q)})` }}>첨벙댕</div>
+            <div style={{ ...abs(0, 216, 1080), textAlign: 'center', fontFamily: KO, fontWeight: 700, fontSize: 42, color: NAVY }}>반려견 구명조끼</div>
+          </div>
         );
       })()}
       {/* 말자막(S42 Caption 결) */}
@@ -162,7 +165,7 @@ const LookA: React.FC<{ t: number; mix?: boolean }> = ({ t, mix }) => {
         return <div style={{ ...abs(72, 1500, 936), zIndex: 25, textAlign: 'center', opacity: o }}><span style={{ fontFamily: KO, fontWeight: 650, fontSize: 52, lineHeight: 1.32, color: PAPER, background: '#0E1320e0', boxDecorationBreak: 'clone', WebkitBoxDecorationBreak: 'clone', padding: '10px 22px', borderRadius: 10 }}>{ws.map((w, i) => <React.Fragment key={i}>{i === cut ? <br /> : null}<span style={{ color: w.key && t >= w.t ? LEMON : PAPER }}>{i === ws.length - 1 ? noDot(w.w).replace(/,$/, '') : noDot(w.w)}{i < ws.length - 1 && i + 1 !== cut ? ' ' : ''}</span></React.Fragment>)}</span></div>;
       })()}
       <Door t={t} at={w(3, 0)} color={LEMON} />
-      <Door t={t} at={19.33} color={NAVY} />
+      {!dogEnd && <Door t={t} at={19.33} color={NAVY} />}
     </>
   );
 };
@@ -266,18 +269,28 @@ const LookC: React.FC<{ t: number }> = ({ t }) => {
   );
 };
 
-export const P11: React.FC<{ look: 'A' | 'B' | 'C' | 'AB'; probe?: boolean }> = ({ look, probe }) => {
+// dogEnd: 고글 쓴 개로 닫는 다른 판(유호님이 지금 끝과 나란히 보고 고른다) — 9번 컷을 판 끝까지 잇고 마지막 프레임을 잡은 화면(pet-ad 최종편집.py 개끝). 멈춘 동안 천천히 들어간다
+export const P11: React.FC<{ look: 'A' | 'B' | 'C' | 'AB'; probe?: boolean; dogEnd?: boolean }> = ({ look, probe, dogEnd }) => {
   const f = useCurrentFrame();
   const t = f / FPS;
   if (probe) return <AbsoluteFill style={{ background: '#000' }}><Probe t={t} /></AbsoluteFill>;
+  const push = dogEnd ? 1 + 0.04 * ramp(t, 19.33, P11_FRAMES / FPS - 19.33, (x) => x) : 1;
+  // 판이 오르는 동안(0.25초)은 고지 줄을 판 뒤로 — 앞에 두니 그 사이 로고 위에 얹혔다(11-04), 판이 선 뒤 판 안 어두운 글자로
+  const rising = (look === 'AB' || look === 'B') && t >= w(8, 3) && t < w(8, 3) + 0.25;
+  const onPanel = (look === 'AB' || look === 'B') && t >= w(8, 3);
   return (
     <AbsoluteFill style={{ background: '#000' }}>
-      <OffthreadVideo src={staticFile('p11/picture.mp4')} muted style={{ width: '100%', height: '100%' }} />
+      <AbsoluteFill style={{ transform: `scale(${push})`, transformOrigin: '50% 30%' }}>
+        <OffthreadVideo src={staticFile(dogEnd ? 'p11/picture_dog.mp4' : 'p11/picture.mp4')} muted style={{ width: '100%', height: '100%' }} />
+      </AbsoluteFill>
       {look === 'A' && <LookA t={t} />}
       {look === 'B' && <LookB t={t} />}
       {look === 'C' && <LookC t={t} />}
-      {look === 'AB' && <LookA t={t} mix />}
-      <div style={{ ...abs(0, 1872, 1080), zIndex: 30, textAlign: 'center', fontFamily: KO, fontWeight: 500, fontSize: 22, color: (look === 'AB' || look === 'B') && t >= w(8, 3) ? '#17224Dcc' : '#ffffffcc', textShadow: (look === 'AB' || look === 'B') && t >= w(8, 3) ? undefined : '0 1px 6px #000a' }}>가상 브랜드 · AI로 만든 가상 모델 · 음성</div>
+      {look === 'AB' && <LookA t={t} mix dogEnd={dogEnd} />}
+      {/* 흰 침구 · 모래 · 나무 바닥 위에서 그림자만으로는 휴대폰 폭에서 안 보였다(11-04 크몽 세션 검수) → 옅은 어두운 바탕 */}
+      <div style={{ ...abs(0, 1866, 1080), zIndex: rising ? 21 : 30, textAlign: 'center', fontFamily: KO, fontWeight: 500, fontSize: 24, color: onPanel ? '#17224Dd9' : '#ffffffeb' }}>
+        <span style={{ background: onPanel ? undefined : '#0E132073', padding: '4px 14px 5px', borderRadius: 8 }}>가상 브랜드 · AI로 만든 가상 모델 · 음성</span>
+      </div>
       <Sequence from={0}><Audio src={staticFile('p11/sound_narr.wav')} /></Sequence>
     </AbsoluteFill>
   );
