@@ -16,6 +16,8 @@
  * 구독이 사용 한도(「You've hit your weekly limit · resets …」)로 끝나면 풀리는 시각을 output/크레딧작업/구독한도.json에
  * 적고, 그때까지 어느 작업도 구독으로 띄우지 않는다(크레딧 키는 그대로 쓴다). 알림은 한도마다 한 번 — 10-24~25에 15분마다
  * 같은 실패 알림이 71번 갔다.
+ * 구독 로그인이 끊겨(「OAuth session expired…」) 못 돌면 output/크레딧작업/구독로그인.json에 적고 12시간에 한 번만 알린다 — 로그인하면
+ * 다음 확인에서 저절로 돌도록 띄우기는 그대로 한다(인증에서 끝나 크레딧도 구독 몫도 안 쓴다).
  * 모델을 고르거나 바꾸지 않고 결과를 다시 검수하는 반복도 없다 — 공식 CLI를 한 번 띄울 뿐이다.
  * 키 목록·상태·사용 기록은 클로드키와 같은 곳(저장소 밖 ~/SYNK_보안)이고, 실행 기록은 output/크레딧작업/<이름>/ 이다
  * (할 일 없이 끝난 확인은 마지막확인.json 하나만 덮어쓴다). 작업 스케줄러 등록은 tools/크레딧작업/install-task.ps1.
@@ -145,6 +147,9 @@ function 한도읽기(글, 지금 = new Date()) {
   return { 풀림: +때 > +지금 ? 때 : 벽시계시각(오늘.연, 오늘.월, 오늘.일 + 1, 시, 분, 시간대) };
 }
 
+// 구독 로그인이 끊겼을 때의 문구 — 11-04 실측 「Failed to authenticate: OAuth session expired and could not be refreshed」.
+const 로그인끊김문구 = /failed to authenticate|oauth session expired|could not be refreshed|not logged in|please run \/login/i;
+
 const 시각글 = (때) => `${때.getMonth() + 1}월 ${때.getDate()}일 ${String(때.getHours()).padStart(2, '0')}:${String(때.getMinutes()).padStart(2, '0')}`;
 
 function JSON읽기(파일) {
@@ -166,17 +171,35 @@ function 띄우기({ 실행파일 = claude실행파일(), 앞인자 = [], 인자
   });
 }
 
+/** 그 pid가 없다고 확실할 때만(ESRCH) true. 권한 없음(EPERM)은 다른 사용자의 살아 있는 프로세스다. */
+function 주인이없나(pid) {
+  if (!Number.isInteger(pid) || pid <= 0) return false; // 주인을 모르는 잠금은 시간으로만 넘는다
+  try { process.kill(pid, 0); return false; } catch (e) { return e.code === 'ESRCH'; }
+}
+
 function 잠그기(파일, 오래됨ms) {
   fs.mkdirSync(path.dirname(파일), { recursive: true });
+  const 쓰기 = (덧붙임 = {}) => fs.writeFileSync(파일, JSON.stringify({ pid: process.pid, 시각: new Date().toISOString(), ...덧붙임 }), { flag: 'wx' });
   try {
-    fs.writeFileSync(파일, JSON.stringify({ pid: process.pid, 시각: new Date().toISOString() }), { flag: 'wx' });
+    쓰기();
   } catch (e) {
     if (e.code !== 'EEXIST') throw e;
-    const 나이 = Date.now() - fs.statSync(파일).mtimeMs;
-    if (나이 < 오래됨ms) throw Object.assign(new Error(`이미 도는 중이다(잠금 ${Math.round(나이 / 60000)}분 전)`), { code: '크레딧실행_겹침' });
-    fs.writeFileSync(파일, JSON.stringify({ pid: process.pid, 시각: new Date().toISOString(), 이전잠금분: Math.round(나이 / 60000) }));
+    const 앞 = JSON읽기(파일);
+    let 나이 = 0;
+    try { 나이 = Date.now() - fs.statSync(파일).mtimeMs; } catch { /* 앞 실행이 방금 풀었다 — 아래에서 새로 잠근다 */ }
+    // 재부팅·강제 종료로 죽은 실행은 finally를 못 돌아 잠금을 남긴다(11-04 재부팅 뒤 3시간 막힘).
+    const 주인없음 = 주인이없나(앞?.pid);
+    if (!주인없음 && 나이 < 오래됨ms) throw Object.assign(new Error(`이미 도는 중이다(잠금 ${Math.round(나이 / 60000)}분 전)`), { code: '크레딧실행_겹침' });
+    fs.rmSync(파일, { force: true });
+    try {
+      쓰기({ 이전잠금분: Math.round(나이 / 60000), 이전잠금pid: 앞?.pid ?? null, 넘은까닭: 주인없음 ? '주인 없음' : '오래됨' });
+    } catch (e2) {
+      if (e2.code !== 'EEXIST') throw e2;
+      throw Object.assign(new Error('이미 도는 중이다(방금 다른 실행이 잠갔다)'), { code: '크레딧실행_겹침' });
+    }
   }
-  return () => { try { fs.rmSync(파일, { force: true }); } catch { /* 다음 실행이 오래된 잠금을 넘는다 */ } };
+  // 내 잠금만 푼다 — 오래됨으로 넘어간 뒤 끝난 앞 실행이 새 실행의 잠금을 지우지 않게.
+  return () => { try { if (JSON읽기(파일)?.pid === process.pid) fs.rmSync(파일, { force: true }); } catch { /* 다음 실행이 주인 없는 잠금을 넘는다 */ } };
 }
 
 function 명령실행(명령, 인자 = [], { cwd = 루트, 입력 } = {}) {
@@ -237,6 +260,7 @@ async function 작업돌리기(이름, 옵션 = {}) {
   const ctx = { 루트, 방, 실행: 옵션.실행 || 명령실행, 알림, 지금: 옵션.지금 };
   // 구독 사용 한도는 작업끼리 같이 쓰므로 작업 방들 옆에 하나만 둔다.
   const 한도파일 = path.join(path.dirname(방), '구독한도.json');
+  const 로그인파일 = path.join(path.dirname(방), '구독로그인.json');
   const 지금은 = () => (옵션.지금 ? new Date(옵션.지금) : new Date());
   let directNotificationAttempted = false;
   // 모든 종료 경로가 같은 상태 한 벌을 남긴다. 감시가 쓰는 도중의 JSON을 읽지 않게 교체한다.
@@ -281,7 +305,23 @@ async function 작업돌리기(이름, 옵션 = {}) {
     }
     클로드.기록남기기({ 키이름: 돈.키이름 || '구독', 용도: 이름, 경로: 돈.경로, model: 작업.모델 || null,
       추정USD: 돈.경로 === '크레딧' ? 돈.결과.비용 : null, 오류: 돈.결과.오류 }, { ...키경로(), 지금: 옵션.지금 });
-    const 기록파일 = 실행기록(방, { 이름, 경로: 돈.경로, 키이름: 돈.키이름, 비용: 돈.결과.비용, 오류: 돈.결과.오류, 시도: 돈.시도, 글: 돈.결과.글 });
+    // 구독 로그인이 끊겼으면 풀릴 때까지 15분마다 같은 실패다 — 앞 알림 뒤 12시간이 지났을 때만 기록·알림을 남긴다(10-24~25에 같은 알림 71번).
+    const 로그인끊김 = 돈.경로 === '구독' && 돈.결과.오류 && 로그인끊김문구.test(돈.결과.글);
+    const 앞로그인 = 로그인끊김 ? JSON읽기(로그인파일) : null;
+    const 로그인알릴까 = 로그인끊김 && !(Date.parse(앞로그인?.알림) > +지금은() - 한도알림간격ms);
+    const 기록파일 = 로그인끊김 && !로그인알릴까 ? null
+      : 실행기록(방, { 이름, 경로: 돈.경로, 키이름: 돈.키이름, 비용: 돈.결과.비용, 오류: 돈.결과.오류, 시도: 돈.시도, 글: 돈.결과.글 });
+    if (로그인끊김) {
+      const 때 = 지금은();
+      fs.writeFileSync(로그인파일, JSON.stringify({ 시각: 때.toISOString(), 글: 가리기(돈.결과.글), 작업: 이름,
+        알림: 로그인알릴까 ? 때.toISOString() : 앞로그인.알림 }, null, 2) + '\n');
+      directNotificationAttempted = 로그인알릴까;
+      마지막확인('실패', '구독 로그인 끊김', { 경로: 돈.경로 });
+      if (로그인알릴까) {
+        알림(`[크레딧 실행] ${이름}: 쓸 크레딧 키가 없고 이 PC 터미널의 Claude 로그인도 끊겨 돌지 못했어요. PC 터미널에서 claude auth login 을 한 번 해 주시면 다음 확인에서 저절로 돌아요. 그동안 이 알림은 12시간에 한 번만 보내요.\n원문: ${가리기(돈.결과.글).slice(0, 200)}`);
+      }
+      return { 상태: '실패', 경로: 돈.경로, 이유: '구독 로그인 끊김', 기록파일 };
+    }
     const 걸린한도 = 돈.경로 === '구독' && 돈.결과.오류 ? 한도읽기(돈.결과.글, 지금은()) : null;
     if (걸린한도) {
       const 때 = 지금은();
@@ -296,6 +336,7 @@ async function 작업돌리기(이름, 옵션 = {}) {
       }
       return { 상태: '한도쉼', 경로: 돈.경로, 풀림: 풀림.toISOString(), 기록파일 };
     }
+    if (돈.경로 === '구독' && !돈.결과.오류) fs.rmSync(로그인파일, { force: true }); // 로그인이 살아났다 — 다음에 끊기면 처음처럼 알린다
     if (돈.경로 === '구독') fs.rmSync(한도파일, { force: true }); // 구독이 다시 돈다 — 다음 한도는 처음처럼 알린다
     if (!돈.결과.읽음 || 돈.결과.오류) {
       directNotificationAttempted = true;

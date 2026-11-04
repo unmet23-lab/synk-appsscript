@@ -264,6 +264,78 @@ test('같은 작업이 겹쳐 돌지 않는다(최근 잠금이 있으면 멈춤
   } finally { t.지우기(); }
 });
 
+test('재부팅으로 죽은 실행의 잠금은 바로 넘고, 살아 있는 주인의 잠금은 그대로 막는다', async () => {
+  const t = 방만들기([['B', 25, 'sk-ant-test-bbbb']]);
+  try {
+    const out = path.join(t.방, 'out');
+    fs.mkdirSync(out, { recursive: true });
+    const 잠금 = path.join(out, '잠금');
+    const 죽은pid = require('node:child_process').spawnSync(process.execPath, ['-e', '']).pid;
+    fs.writeFileSync(잠금, JSON.stringify({ pid: 죽은pid, 시각: new Date().toISOString() }));
+    const { 작업 } = 가짜작업();
+    const r = await 실행기.작업돌리기('시험작업', { ...t.실행옵션, 작업, 방: out, fetch: 확인200, 알림: () => {} });
+    assert.equal(r.상태, '끝');
+    assert.equal(fs.existsSync(잠금), false, '끝나면 넘겨받은 잠금도 푼다');
+
+    fs.writeFileSync(잠금, JSON.stringify({ pid: process.ppid, 시각: new Date().toISOString() }));
+    await assert.rejects(실행기.작업돌리기('시험작업', { ...t.실행옵션, 작업, 방: out, fetch: 확인200, 알림: () => {} }), { code: '크레딧실행_겹침' });
+    assert.equal(fs.existsSync(잠금), true, '남의 잠금은 지우지 않는다');
+    assert.equal(t.실행들().length, 1);
+  } finally { t.지우기(); }
+});
+
+test('잠금: 오래된 잠금을 넘을 수 있고, 남이 넘겨받은 잠금은 앞 실행이 풀지 않는다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-credit-lock-'));
+  try {
+    const 잠금 = path.join(방, '잠금');
+    fs.writeFileSync(잠금, JSON.stringify({ pid: process.ppid }));
+    fs.utimesSync(잠금, new Date(Date.now() - 3600000), new Date(Date.now() - 3600000));
+    const 풀기 = 실행기.잠그기(잠금, 60000);
+    const 넘긴 = JSON.parse(fs.readFileSync(잠금, 'utf8'));
+    assert.deepEqual([넘긴.pid, 넘긴.이전잠금pid, 넘긴.넘은까닭], [process.pid, process.ppid, '오래됨']);
+    fs.writeFileSync(잠금, JSON.stringify({ pid: process.ppid }));
+    풀기();
+    assert.equal(fs.existsSync(잠금), true, '내 잠금이 아니면 그대로 둔다');
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
+test('구독 로그인이 끊기면 실패로 남기되 알림은 12시간에 한 번, 로그인하면 저절로 돈다', async () => {
+  const t = 방만들기([['A', 20, 'sk-ant-test-aaaa']]);
+  try {
+    const { 작업, 받은 } = 가짜작업();
+    const out = path.join(t.방, 'out');
+    const 알림 = [];
+    const 돌기 = (때) => 실행기.작업돌리기('시험작업', { ...t.실행옵션, 작업, 방: out, fetch: 확인소진, 알림: (s) => 알림.push(s), 지금: 때 });
+    const 처음 = new Date('2026-11-04T05:31:00Z');
+    const 분뒤 = (m) => new Date(+처음 + m * 60000);
+    const 기록수 = () => fs.readdirSync(out).filter((f) => /^\d{4}-/.test(f)).length;
+    process.env.FAKE_LIMIT = 'Failed to authenticate: OAuth session expired and could not be refreshed';
+
+    const r = await 돌기(처음);
+    assert.deepEqual([r.상태, r.이유, r.경로], ['실패', '구독 로그인 끊김', '구독']);
+    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(out, '마지막확인.json'), 'utf8')),
+      { 이름: '시험작업', 상태: '실패', 이유: '구독 로그인 끊김', 시각: 처음.toISOString(), directNotificationAttempted: true, 경로: '구독' });
+    assert.equal(알림.length, 1); assert.match(알림[0], /claude auth login/);
+    assert.equal(fs.existsSync(path.join(t.방, '구독한도.json')), false, '사용 한도와 섞지 않는다');
+    assert.equal(기록수(), 1);
+
+    assert.equal((await 돌기(분뒤(15))).상태, '실패');
+    assert.equal((await 돌기(분뒤(30))).기록파일, null);
+    assert.equal(알림.length, 1, '같은 끊김은 다시 알리지 않는다');
+    assert.equal(기록수(), 1, '같은 실패 기록을 쌓지 않는다');
+    assert.equal(t.실행들().length, 3, '로그인을 알아채도록 띄우기는 계속한다');
+    assert.equal(JSON.parse(fs.readFileSync(path.join(out, '마지막확인.json'), 'utf8')).directNotificationAttempted, false);
+
+    await 돌기(분뒤(12 * 60 + 1));
+    assert.equal(알림.length, 2, '12시간이 지나면 한 번 더');
+
+    delete process.env.FAKE_LIMIT;
+    const 끝 = await 돌기(분뒤(13 * 60));
+    assert.equal(끝.상태, '끝'); assert.equal(받은.사후.length, 1);
+    assert.equal(fs.existsSync(path.join(t.방, '구독로그인.json')), false, '다음 끊김은 처음처럼 알린다');
+  } finally { t.지우기(); }
+});
+
 test('실행 오류와 사전·사후 예외도 옛 성공을 바꾸고, 민감한 예외 원문은 상태에 넣지 않는다', async () => {
   const t = 방만들기([['B', 25, 'sk-ant-test-bbbb']]);
   try {
