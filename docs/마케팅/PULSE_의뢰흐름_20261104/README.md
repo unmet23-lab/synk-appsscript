@@ -158,7 +158,7 @@ P2 · P3 중 지금 반영: 토큰 수명, 보내기 실패 시 파일 되돌리
 | 1차안(글 콘티 · 장면 이미지) | `film-views.mjs` `draftView` · `mountDraft` | `s.tab==='draft'`. 컷마다 남긴 의견은 `drafts`에 있어 다시 그려도 남는다 |
 | 영상 확인 · 납품 · 준비 자료 | 옛 `reviewView` · `historyView` · `strategy` 탭 | `.project-shell.is-room` — 옛 화면을 새 레일 안에 둔다. 옷은 `slate-legacy.css` |
 | 내부 확인(직원) | `desk-view.mjs` | 직원이 그 탭을 열 때만 불러온다. 손님 묶음에 없다 |
-| 예시 `?demo=film` | `demo-film.mjs` | 서버 없이 도는 예시. PC 앱 창은 이 주소로 옮겨 가지 못해(`desktop/src/pulse-app.cjs` 허용 목록) 제자리에서 연다. 옛 `?demo=coffee`는 그대로 둔다(직원 목록의 「고객 체험」) |
+| 예시 `?demo=film` | `demo-film.mjs` | 서버 없이 도는 예시. PC 앱 창은 이 주소로 옮겨 가지 못해(`desktop/src/pulse-app.cjs` 허용 목록) 제자리에서 연다. 옛 체험(직원 목록의 「고객 체험」)은 11-04부터 대표작 유리결 내용의 `?demo=gift`이고, 옛 주소 `?demo=coffee`도 같은 체험으로 잇는다 |
 
 **옛 프로젝트:** 서버가 `requestFlow`를 계산한다(`usesRequestFlow`) — 의뢰서가 있거나, 담당자가 막 만들어 아직 아무 자료도 없는 프로젝트만 새 방을 쓴다. 자료가 쌓인 프로젝트는 옛 탭 그대로다.
 

@@ -379,38 +379,6 @@
         "dir": "C:/SYNK-LoRA/datasets/F05_soyeon/v2",
         "items": [
           {
-            "id": "p1",
-            "dir": "C:/SYNK-LoRA/validation/F05_soyeon/gate_20261021",
-            "file": "시안_S1.png",
-            "place": "아침 주방",
-            "label": "제품 시안 · 가상 브랜드 MORU 캔커피",
-            "tags": [
-              "food",
-              "home"
-            ]
-          },
-          {
-            "id": "p2",
-            "dir": "C:/SYNK-LoRA/validation/F05_soyeon/gate_20261021",
-            "file": "시안_S2.png",
-            "place": "작은 카페 카운터",
-            "label": "제품 시안 · 가상 브랜드 MORU 캔커피",
-            "tags": [
-              "food"
-            ]
-          },
-          {
-            "id": "p3",
-            "dir": "C:/SYNK-LoRA/validation/F05_soyeon/gate_20261021",
-            "file": "시안_S3.png",
-            "place": "거실 소파",
-            "label": "제품 시안 · 가상 브랜드 MORU 캔커피",
-            "tags": [
-              "food",
-              "home"
-            ]
-          },
-          {
             "id": "b01",
             "file": "18.jpg",
             "place": "동네 마트 앞",
@@ -655,38 +623,6 @@
         "dir": "C:/SYNK-LoRA/datasets/M04_minjae/v2",
         "items": [
           {
-            "id": "p1",
-            "dir": "C:/SYNK-LoRA/validation/M04_minjae/gate_20261021",
-            "file": "시안_S1.png",
-            "place": "밤 자취방 책상",
-            "label": "제품 시안 · 가상 브랜드 MORU 캔커피",
-            "tags": [
-              "food",
-              "tech"
-            ]
-          },
-          {
-            "id": "p2",
-            "dir": "C:/SYNK-LoRA/validation/M04_minjae/gate_20261021",
-            "file": "시안_S2.png",
-            "place": "회사 사무실",
-            "label": "제품 시안 · 가상 브랜드 MORU 캔커피",
-            "tags": [
-              "food"
-            ]
-          },
-          {
-            "id": "p3",
-            "dir": "C:/SYNK-LoRA/validation/M04_minjae/gate_20261021",
-            "file": "시안_S3.png",
-            "place": "주말 원룸 창가",
-            "label": "제품 시안 · 가상 브랜드 MORU 캔커피",
-            "tags": [
-              "food",
-              "home"
-            ]
-          },
-          {
             "id": "b01",
             "file": "19.jpg",
             "place": "밤 편의점 앞",
@@ -926,38 +862,6 @@
       "scenes": {
         "dir": "C:/SYNK-LoRA/datasets/F06_eunjeong/v2",
         "items": [
-          {
-            "id": "p1",
-            "dir": "C:/SYNK-LoRA/validation/F06_eunjeong/gate_20261021",
-            "file": "시안_S1.png",
-            "place": "부티크",
-            "label": "제품 시안 · 가상 브랜드 MORU 캔커피",
-            "tags": [
-              "food",
-              "fashion"
-            ]
-          },
-          {
-            "id": "p2",
-            "dir": "C:/SYNK-LoRA/validation/F06_eunjeong/gate_20261021",
-            "file": "시안_S2.png",
-            "place": "주방",
-            "label": "제품 시안 · 가상 브랜드 MORU 캔커피",
-            "tags": [
-              "food",
-              "home"
-            ]
-          },
-          {
-            "id": "p3",
-            "dir": "C:/SYNK-LoRA/validation/F06_eunjeong/gate_20261021",
-            "file": "시안_S3.png",
-            "place": "원장실",
-            "label": "제품 시안 · 가상 브랜드 MORU 캔커피",
-            "tags": [
-              "food"
-            ]
-          },
           {
             "id": "b01",
             "file": "18.jpg",
@@ -1200,39 +1104,6 @@
         "dir": "C:/SYNK-LoRA/datasets/F07_chaewon/v2",
         "items": [
           {
-            "id": "p1",
-            "dir": "C:/SYNK-LoRA/validation/F07_chaewon/gate_20261021",
-            "file": "시안_S1.png",
-            "place": "강변 러닝 뒤",
-            "label": "제품 시안 · 가상 브랜드 MORU 캔커피",
-            "tags": [
-              "food",
-              "sports"
-            ]
-          },
-          {
-            "id": "p2",
-            "dir": "C:/SYNK-LoRA/validation/F07_chaewon/gate_20261021",
-            "file": "시안_S2.png",
-            "place": "필라테스 스튜디오",
-            "label": "제품 시안 · 가상 브랜드 MORU 캔커피",
-            "tags": [
-              "food",
-              "sports"
-            ]
-          },
-          {
-            "id": "p3",
-            "dir": "C:/SYNK-LoRA/validation/F07_chaewon/gate_20261021",
-            "file": "시안_S3.png",
-            "place": "캠핑장",
-            "label": "제품 시안 · 가상 브랜드 MORU 캔커피",
-            "tags": [
-              "food",
-              "travel"
-            ]
-          },
-          {
             "id": "b01",
             "file": "18.jpg",
             "place": "새벽 한강",
@@ -1471,38 +1342,6 @@
       "scenes": {
         "dir": "C:/SYNK-LoRA/datasets/M05_junho/v2",
         "items": [
-          {
-            "id": "p1",
-            "dir": "C:/SYNK-LoRA/validation/M05_junho/gate_20261021",
-            "file": "시안_S1.png",
-            "place": "캠핑장 아침",
-            "label": "제품 시안 · 가상 브랜드 MORU 캔커피",
-            "tags": [
-              "food",
-              "travel"
-            ]
-          },
-          {
-            "id": "p2",
-            "dir": "C:/SYNK-LoRA/validation/M05_junho/gate_20261021",
-            "file": "시안_S2.png",
-            "place": "주말 주방",
-            "label": "제품 시안 · 가상 브랜드 MORU 캔커피",
-            "tags": [
-              "food",
-              "home"
-            ]
-          },
-          {
-            "id": "p3",
-            "dir": "C:/SYNK-LoRA/validation/M05_junho/gate_20261021",
-            "file": "시안_S3.png",
-            "place": "회의실",
-            "label": "제품 시안 · 가상 브랜드 MORU 캔커피",
-            "tags": [
-              "food"
-            ]
-          },
           {
             "id": "b01",
             "file": "18.jpg",
@@ -1749,38 +1588,6 @@
       "scenes": {
         "dir": "C:/SYNK-LoRA/datasets/M06_hangyeol/v2",
         "items": [
-          {
-            "id": "p1",
-            "dir": "C:/SYNK-LoRA/validation/M06_hangyeol/gate_20261024",
-            "file": "시안_S1.png",
-            "place": "농구장 저녁",
-            "label": "제품 시안 · 가상 브랜드 MORU 캔커피",
-            "tags": [
-              "food",
-              "sports"
-            ]
-          },
-          {
-            "id": "p2",
-            "dir": "C:/SYNK-LoRA/validation/M06_hangyeol/gate_20261024",
-            "file": "시안_S2.png",
-            "place": "헬스장 운동 뒤",
-            "label": "제품 시안 · 가상 브랜드 MORU 캔커피",
-            "tags": [
-              "food",
-              "sports"
-            ]
-          },
-          {
-            "id": "p3",
-            "dir": "C:/SYNK-LoRA/validation/M06_hangyeol/gate_20261024",
-            "file": "시안_S3.png",
-            "place": "캠퍼스 잔디 오후",
-            "label": "제품 시안 · 가상 브랜드 MORU 캔커피",
-            "tags": [
-              "food"
-            ]
-          },
           {
             "id": "b01",
             "file": "19.jpg",

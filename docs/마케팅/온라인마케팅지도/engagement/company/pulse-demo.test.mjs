@@ -19,9 +19,21 @@ async function throughScenes(demo){
 test('seed uses fictional planning, local media and no pre-recorded customer choices',()=>{
   const {demo}=setup(),p=project(demo),s=p.studio;
   assert.equal(demo.guide().action,'taste');assert.equal(p.stage,'planning');assert.equal(s.references.length,3);assert.equal(s.concepts.length,2);assert.equal(s.scenes.length,4);assert.equal(s.scenes.reduce((n,s)=>n+s.duration,0),15);
-  assert.equal(s.strategy.data.aspectRatio,'16:9');assert.equal(s.strategy.request.strategyRevision,1);assert.equal(s.strategy.confirmation,null);assert.equal(s.selectedConcept,null);assert.equal(s.sceneReviews.length,0);assert.equal(p.versions.length,0);
-  assert.match(p.terms,/체험용 예시/);assert.match(s.strategy.data.voice,/무음/);assert.equal(s.strategy.data.budgetProduction,null);assert.equal(s.strategy.data.budgetMedia,null);
+  assert.equal(s.strategy.data.aspectRatio,'9:16');assert.equal(s.strategy.request.strategyRevision,1);assert.equal(s.strategy.confirmation,null);assert.equal(s.selectedConcept,null);assert.equal(s.sceneReviews.length,0);assert.equal(p.versions.length,0);
+  assert.match(p.terms,/체험용 예시/);assert.match(s.strategy.data.voice,/말소리 없이/);assert.equal(s.strategy.data.budgetProduction,null);assert.equal(s.strategy.data.budgetMedia,null);
   assert.ok(s.assets.every(a=>a.url.startsWith('/pulse-app/demo-assets/')));
+});
+
+test('the demo is the flagship film 유리결 with its real revision and the old ad is gone from every line a customer can read',async()=>{
+  const {demo}=setup(),p=project(demo);
+  assert.match(p.title,/유리결/);assert.match(p.summary,/가상 브랜드로 만든 자체 작품/);assert.equal(p.studio.strategy.data.channels.join(),'instagram,youtube');assert.equal(p.studio.strategy.data.durationSeconds,15);
+  assert.deepEqual(p.studio.scenes.map(scene=>scene.duration),[3,3,5,4],'the scene plan is the first draft: the products float for five seconds');
+  await throughScenes(demo);demo.advance();const first=project(demo).versions.at(-1);assert.match(first.guide,/떠 있는 시간/);await action(demo,{action:'feedback',versionId:first.id,seconds:8,text:'떠 있는 시간이 길어요.'});assert.match(demo.guide().description,/뚜껑 접사/);demo.advance();
+  const second=project(demo).versions.at(-1);assert.match(second.label,/뚜껑 접사/);assert.match(project(demo).messages.at(-1).text,/5초에서 2초/);
+  const old=/모루|MORU|Moru|드립백|커피|마지막 문구|960×540|가로/;
+  for(const text of [JSON.stringify(project(demo)),JSON.stringify(demo.guide())])assert.doesNotMatch(text,old);
+  for(const file of ['demo.mjs','views.mjs','app.mjs'])assert.doesNotMatch(await readFile(new URL('./public/pulse-app/'+file,import.meta.url),'utf8'),/모루|MORU|Moru|드립백/,file);
+  assert.match(await readFile(new URL('./public/pulse-app/views.mjs',import.meta.url),'utf8'),/href="\?demo=gift"/);
 });
 
 test('full customer flow preserves time/version feedback and explicit approval before delivery',async()=>{
@@ -33,7 +45,7 @@ test('full customer flow preserves time/version feedback and explicit approval b
   const v2=project(demo).versions.at(-1);assert.equal(v2.media.url,'/pulse-app/demo-assets/preview-v2.mp4');assert.notEqual(v1.id,v2.id);assert.equal(project(demo).messages.find(m=>m.id===feedback.id).resolved,false);assert.match(project(demo).messages.at(-1).text,/미리 만든 수정본/);
   await assert.rejects(action(demo,{action:'approve',versionId:v1.id}),{status:409});await action(demo,{action:'approve',versionId:v2.id});
   feedback=project(demo).messages.find(m=>m.id===feedback.id);assert.equal(feedback.resolved,true);assert.ok(project(demo).versions.at(-1).approvedAt);assert.equal(demo.guide().action,'deliver');demo.advance();
-  const final=project(demo).versions.at(-1);assert.equal(final.kind,'final');assert.equal(final.approvedPreviewId,v2.id);assert.equal(final.media.url,v2.media.url);assert.match(final.guide,/960×540/);assert.equal(project(demo).stage,'delivered');assert.equal(demo.guide().complete,true);
+  const final=project(demo).versions.at(-1);assert.equal(final.kind,'final');assert.equal(final.approvedPreviewId,v2.id);assert.equal(final.media.url,v2.media.url);assert.match(final.guide,/720×1280/);assert.equal(project(demo).stage,'delivered');assert.equal(demo.guide().complete,true);
   assert.deepEqual([...store.values.keys()],[DEMO_STORAGE_KEY]);assert.equal(createDemoSession({storage:store}).guide().complete,true);
 });
 
@@ -99,7 +111,7 @@ test('storage-disabled and quota cases remain explicitly memory-only with no net
 });
 
 test('corrupt or manipulated local records never render server media or turn into real projects',()=>{
-  const store=storage();store.setItem(DEMO_STORAGE_KEY,'{invalid');let demo=createDemoSession({storage:store});assert.equal(demo.guide().action,'taste');demo.reset();assert.equal(JSON.parse(store.getItem(DEMO_STORAGE_KEY)).schema,2);
+  const store=storage();store.setItem(DEMO_STORAGE_KEY,'{invalid');let demo=createDemoSession({storage:store});assert.equal(demo.guide().action,'taste');demo.reset();assert.equal(JSON.parse(store.getItem(DEMO_STORAGE_KEY)).schema,3);
   for(const mutate of [s=>{s.project.id='real-project';},s=>{s.project.studio.assets[0].url='/api/client-media/secret';},s=>{s.project.studio.concepts[0].imageUrl='https://example.com/tracking.png';},s=>{s.project.studio.scenes=[null];},s=>{s.project.studio.strategy.data.channels='invalid';}]){const record=JSON.parse(store.getItem(DEMO_STORAGE_KEY));mutate(record);store.setItem(DEMO_STORAGE_KEY,JSON.stringify(record));demo=createDemoSession({storage:store});assert.equal(project(demo).id,'00000000-0000-4000-8000-000000000001');assert.equal(demo.guide().action,'taste');assert.equal(project(demo).studio.assets[0].url,'/pulse-app/demo-assets/reference-warm.png');demo.reset();}
 });
 

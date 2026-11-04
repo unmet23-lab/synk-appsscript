@@ -334,7 +334,7 @@
       box.append(part);
     }
     if(!same){
-      // 게시물 전체(이름·공통 문구·일정)를 먼저, 그다음 계정마다 소제목 아래로 묶어 「모루 커피 · 인스타그램 —」를 되풀이하지 않는다.
+      // 게시물 전체(이름·공통 문구·일정)를 먼저, 그다음 계정마다 소제목 아래로 묶어 「계정 이름 · 인스타그램 —」를 되풀이하지 않는다.
       const list=el('ol','change-list'),group=change=>change.variant||(change.kind==='presence'?'removed:'+accountName(change.account):''),ordered=[...changes.filter(change=>!group(change)),...changes.filter(change=>group(change))];
       let last='',count=0;
       for(const change of ordered){

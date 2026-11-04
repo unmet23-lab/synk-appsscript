@@ -19,7 +19,8 @@ import {installationEnvironment,installationGuide,devicePermissionTimeout} from 
 // explicitly selected demo persists its own fictional project in localStorage.
 // The service worker stores the public shell, never project/API responses.
 let initialInvite=new URLSearchParams(location.hash.slice(1)).get('invite')||'';
-const demoMode=!initialInvite&&new URLSearchParams(location.search).get('demo')==='coffee';
+// 옛 체험의 주소는 ?demo=gift다. 옛 링크와 설치된 PC 앱(허용 목록이 ?demo=coffee만 받는다)을 위해 옛 주소도 같은 체험으로 잇는다.
+const demoMode=!initialInvite&&['gift','coffee'].includes(new URLSearchParams(location.search).get('demo'));
 const demo=demoMode?(await import('./demo.mjs')).createDemoSession():null;
 const request=(path,settings={})=>demo?demo.request(path,settings):networkRequest(path,foregroundProjectOptions(path,settings,document.visibilityState==='visible'));
 const openNotificationsOnStart=new URLSearchParams(location.search).get('notifications')==='1';
@@ -32,7 +33,7 @@ const initialStaffTab=staffMode?new URLSearchParams(location.search).get('tab')|
 let initialStaffScene=staffMode?new URLSearchParams(location.search).get('scene')||'':'';
 let initialStaffHistory=staffMode?readStaffHistoryTarget(location.search):null;
 let pendingInitialScene='';
-history.replaceState({},'',location.pathname+(demoMode?'?demo=coffee':staffMode?'?mode=staff':filmDemo?'?demo=film':''));
+history.replaceState({},'',location.pathname+(demoMode?(/\bElectron\//.test(navigator.userAgent||'')?'?demo=coffee':'?demo=gift'):staffMode?'?mode=staff':filmDemo?'?demo=film':''));
 const s={demo:demoMode,demoGuide:null,demoPersistent:true,mode:staffMode?'staff':'customer',user:null,workspace:null,project:null,canEdit:false,csrf:'',tab:'strategy',editor:null,versionId:'',compare:false,showVersion:false,inviteUrl:'',newProject:false,installPrompt:null,error:'',conflict:false,workflow:[],castingCode:null,castingCodeOpen:null};
 // PC 앱은 PULSE를 자기 창(Electron)으로 연다. 그 창에서는 설치 안내 단추와 기기 알림 켜기를 두지 않고(views.mjs header·liveView), 기억하기·체험 글은 「이 브라우저」 대신 「이 PC 앱」이라 쓴다.
 // 표시는 install.mjs installationEnvironment와 같다. 맨 위에서는 가져온 함수를 부르지 않는다 — 운영 후보의 vm 시험(git 밖 파일 포함)이 import 없이 이 줄까지 돌린다.

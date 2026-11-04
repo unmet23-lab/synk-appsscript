@@ -214,7 +214,7 @@ test('the finished films rules in app.css pair one to one with the cards films-v
 
 const at='2026-10-16T09:00:00Z';
 function project(){
-  return {id:'p',revision:3,title:'모루 드립백 15초 광고',customerName:'모루 커피',ownerName:'김하늘',stage:'planning',dueDate:'2026-10-31',versions:[],messages:[{id:'m1',author:'staff',authorName:'김하늘',action:'reply',text:'안녕하세요.',at}],
+  return {id:'p',revision:3,title:'유리결 15초 광고',customerName:'유리결',ownerName:'김하늘',stage:'planning',dueDate:'2026-10-31',versions:[],messages:[{id:'m1',author:'staff',authorName:'김하늘',action:'reply',text:'안녕하세요.',at}],
     studio:{preferences:{},assets:[],references:[],concepts:[],scenes:[],sceneReviews:[],comments:[],strategy:{revision:1,data:{castingSelection:{modelId:'F02'}}}}};
 }
 const state=(over={})=>({mode:'customer',tab:'overview',project:project(),workflow:[],...over});

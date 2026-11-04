@@ -6,7 +6,7 @@ import {deskView} from './desk-view.mjs';
 import {revealWords,riseAll} from './motion.mjs';
 
 const DESK={number:'P-1104-7F3A',at:'11월 4일 오전 5:12',title:'오미톡 오미자 스파클링 15초',contact:'김합성 · 합성 음료',brief:DEMO_BRIEF,files:DEMO_FILES,
-  queue:[{title:'오미톡 15초',meta:'음료 · 릴스 · 오늘 05:12',state:'새 의뢰',tone:'is-new'},{title:'더밸런스 필라테스 30초',meta:'공간 · 인스타 · 어제',state:'답을 기다려요'},{title:'모루 드립백 15초',meta:'식품 · 유튜브 · 11월 2일',state:'1차안 준비 중'}],
+  queue:[{title:'오미톡 15초',meta:'음료 · 릴스 · 오늘 05:12',state:'새 의뢰',tone:'is-new'},{title:'더밸런스 필라테스 30초',meta:'공간 · 인스타 · 어제',state:'답을 기다려요'},{title:'유리결 홀리데이 세트 15초',meta:'뷰티 · 인스타 · 11월 2일',state:'1차안 준비 중'}],
   checks:[{ok:true,label:'제품 정면 · 옆면 사진을 받았어요',note:'3024 × 4032, 가까이 찍는 컷에도 충분해요.'},{ok:false,label:'로고 파일이 없어요',note:'끝 화면 때문에 다시 여쭤요.'},{ok:false,label:'화면 글자에 사실 확인이 필요해요',note:'「11월 편의점 출시」가 확정인지 물어봐요.'},{ok:true,label:'피할 말과 화면 글자가 부딪치지 않아요'}],
   note:{by:'Claude',at:'05:16',summary:'음료 15초 세로, 이기는 쪽은 임팩트. 한결이 잘 맞아요. 로고만 받으면 바로 글 콘티에 들어갈 수 있어요.',lines:['운동 끝 첫 모금, 다섯 가지 맛이 톡.','한 캔에 다섯 번, 맛이 바뀐다.','땀 끝에 톡, 오미톡.'],model:'한결 — 「청량한 운동부 후배」, 음료 · 러닝 쪽 쓰임이 명세서와 같아요.',ref:'반응이 좋았던 음료 15초 셋을 재어 뼈대 후보를 골랐어요. 고르는 것은 유호님 몫이에요.',risks:['캔을 따는 손가락 동작은 피하고 따는 소리와 딴 직후 그림으로 가요.','라벨 글자가 읽히는 컷은 멈춘 컷에만 둬요.']}};
 
