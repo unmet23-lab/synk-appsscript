@@ -1,0 +1,3 @@
+A REAL PHOTOGRAPH taken on a smartphone by a university student in Korea, natural light and honest colors, slightly imperfect framing, portrait 2:3. Never an illustration, never a 3D render, never a stock-photo gloss. Absolutely no text, letters, numbers, signs with writing, labels, logos or brand marks anywhere in the frame. No people, no faces, no hands unless the description says so.
+
+A dormitory utility corridor at night: a large semi-transparent trash bag tied loosely, with one pale blue towel clearly sticking out from the top, next to a wall and a mop. Harsh single fluorescent tube, slightly green cast. Sad and funny at the same time.

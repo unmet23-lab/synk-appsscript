@@ -676,8 +676,8 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 
 ### 잘 되던 push가 갑자기 `Permission denied (publickey)`로 멈춰도 열쇠부터 고치지 않는다 — GitHub 장애일 수 있다 (2026-11-04 Claude)
 - 증상: 11-04 18:50 공용 작업본 `바로올리기`가 「[멈춤] fetch 실패 — git@github.com: Permission denied (publickey)」로 멈췄다. 열쇠와 설정은 그대로이고 바로 전 실행은 같은 자리를 지나갔다. `ssh -v`에서 열쇠를 내밀었는데 서버가 받지 않았다.
-- 원인: GitHub 장애로 보인다. 같은 시각 상태 페이지에 Git Operations 저하와 「Incident with Pull Requests, Git Operations and Issues」(18:49 시작)가 떠 있었고, 열쇠는 계정 공개 목록에 그대로 있었으며 https 읽기는 됐다. 아무것도 바꾸지 않았는데 약 1분 뒤 풀렸다가 그다음 시도에서 또 막혔다(들쭉날쭉하다). GitHub 쪽 원인 발표는 확인하지 않았다.
-- 고침: 열쇠 · 권한 · 원격 주소를 건드리지 말고 ① `curl -s https://github.com/<계정>.keys`에 `~/.ssh/id_ed25519.pub`이 있는지, ② `https://www.githubstatus.com/api/v2/summary.json`에 사건이 있는지, ③ `git ls-remote https://…`가 되는지 본다. 셋 다 그렇다면 `ssh -T git@github.com`이 20초 간격으로 네 번 연달아 될 때만 바로올리기를 다시 돌리는 반복을 배경으로 건다(관련 시험이 1~2분이라 한 번 된 것만 보고 돌리면 시험 끝에 push에서 또 막혀 시험만 거듭 돈다). push 자리에서 막히면 「push가 거절됐다 — … access rights」로 나오므로 다시 할 조건에 이 글도 넣는다. 바로올리기 결과는 파이프 말고 파일로 받는다 — 윈도우에서 파이프 쪽 글은 끝에 잘려 마지막 실패 줄이 안 보일 수 있다. 다른 원인(윈도우 ssh의 키 권한)은 [현장 노트 · 윈도우 셸의 ssh 절](윈도우_셸.md#ssh)에 있다.
+- 원인: GitHub 장애로 보인다. 같은 시각 상태 페이지에 Git Operations 저하와 「Incident with Pull Requests, Git Operations and Issues」(18:49 시작)가 떠 있었고, 열쇠는 계정 공개 목록에 그대로 있었으며 https 읽기는 됐다. 아무것도 바꾸지 않았는데 되다 막히다를 거듭했고(`ssh -T` 세 번 가운데 한 번만 막히기도 했다), 상태 페이지 사건이 20:50에 닫힌 뒤인 22:31에는 세 번 모두 됐다. GitHub의 자세한 원인 발표는 이때까지 없었다.
+- 고침: 열쇠 · 권한 · 원격 주소를 건드리지 말고 ① `curl -s https://github.com/<계정>.keys`에 `~/.ssh/id_ed25519.pub`이 있는지, ② `https://www.githubstatus.com/api/v2/summary.json`에 사건이 있는지, ③ `git ls-remote https://…`가 되는지 본다. 셋 다 그렇다면 `ssh -T git@github.com`이 20초 간격으로 세 번 연달아 될 때만 바로올리기를 다시 돌리는 반복을 배경으로 건다(관련 시험이 1~2분이라 한 번 된 것만 보고 돌리면 시험 끝에 push에서 또 막혀 시험만 거듭 돈다). push 자리에서 막히면 「push가 거절됐다 — … access rights」로 나오므로 다시 할 조건에 이 글도 넣는다. 이번에는 18:50에 막혀 20:26에 여섯 번째 시도로 올라갔다(앞 다섯은 fetch나 push 자리에서 멈춤). 바로올리기의 판정 줄(`[올림]` · `[멈춤] …`)은 출력 맨 앞에 나오므로 `| tail`로 자르면 안 보인다 — 파일로 받아 첫 줄을 본다. 다른 원인(윈도우 ssh의 키 권한)은 [현장 노트 · 윈도우 셸의 ssh 절](윈도우_셸.md#ssh)에 있다.
 - 다시 확인: `ssh -T git@github.com`이 「successfully authenticated」를 낸다. 이때 CI 빨강이 checkout 단계에서 함께 늘었으므로, 장애 시각의 checkout 실패는 코드 탓부터 찾지 않는다.
 
 ## 워크트리·연결 폴더·공간 정리
@@ -688,6 +688,13 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 워크트리 `node_modules` · `desktop/node_modules` · `experiences/synk-account/node_modules`를 공용 작업본 것으로 가는 junction으로 두고(아래 항목대로 지울 때는 링크만 먼저 끊는다) 다시 `--all --local`.
 - 다시 확인: `node tools/sync-atlas.js --all --check --local`이 `"ok": true`, `node tools/check-account-bundles.js`가 넷 모두 ok.
 - 추가 실측(2026-11-01 GPT): 드라마 시범의 새 워크트리도 node_modules가 없어 `바로올리기` 관련 시험의 `공개.test.js`에서 `Cannot find module 'parse5'`가 났다(첫 회502/511, push 안 됨). 오류 뒤 해당 시험 프로세스만 남아 끝나지 않아 PID·부모 PID·시험 경로를 대조해 그 프로세스만 끝내고 실패 요약 로그를 보존했다(임시 TAP 전문은 도구가 종료 시 지워 보존하지 못함). 이 작업본에서는 junction 대신 기존 lock의 `npm ci --no-fund --no-audit`로9개를 설치했다. package.json·lock은 바뀌지 않았다. `require('parse5').parse`와 `esbuild.transformSync`가 정상임을 확인한 뒤 같은 반영 명령으로 관련 시험을 다시 돌린다(시험을 빼거나 실패를 통과로 바꾸지 않음).
+
+### `바로올리기 --모두`가 「바뀐 것을 올리지 못했다 — warning: … LF will be replaced by CRLF」로 멈춘다 — 경고가 아니라 바깥 시간 제한이 git을 죽인 것이다 (2026-11-05 Claude)
+- 증상: `timeout 170 node tools/바로올리기.js --모두 …`가 줄끝 경고 한 줄만 보이며 멈췄다. 올라간 것은 없다.
+- 원인: 이 저장소의 임시 인덱스 `git add -A`는 PC가 바쁘면 2분 넘게 걸린다(실측 1분 57초). `timeout`이 git까지 끊어 종료 코드가 비고, 도구는 그때까지 나온 stderr(경고)만 보인다.
+- 고침: 바깥 `timeout`을 걸지 않고 뒤에서 돌리거나, 경로를 직접 준다(`git status --short` 목록을 넘기면 `add -A`를 온 작업본에 돌리지 않는다).
+- 곁들여: 짝 검사 고침으로 돌린 `experiences/korean-study/build.mjs`가 내용이 같아도 CRLF 작업본에 「바뀜」을 남기면, 이번 push에 없다는 이유로 다시 막힌다 — 원천이 안 바뀌었으면 `git restore -- experiences/korean-study`로 되돌린다.
+- 다시 확인: 같은 커밋을 경로 지정으로 `ec441db4b`에 올렸다.
 
 ### junction이 든 워크트리를 통째로 지우면 공용 node_modules가 지워질 수 있다
 - 증상: `git worktree remove --force`가 등록만 풀고 폴더를 남긴다. 남은 폴더를 `rm -rf`·`Remove-Item -Recurse`로 지우면 링크를 따라 공용 작업본의 node_modules까지 지울 수 있다(모든 세션의 빌드가 멈춤). `cmd /c rmdir`은 하네스가 막는다.

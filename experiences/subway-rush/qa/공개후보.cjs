@@ -1,10 +1,10 @@
 'use strict';
-// 환승 러시 공개 후보를 만든다(2026-11-04, 말 랠리 공개후보.cjs에서). 커밋 하나를 git archive로 꺼내 tools/build-world-app-public.mjs로 빌드한 뒤 이 게임 폴더와 놀이 카드만 고른다.
-// master에는 아직 공개하지 않은 다른 게임 줄이 함께 있어 공용 파일 넷은 빌드 판을 쓰지 않는다: 라이브 판을 base/에, 라이브 판 + 환승 러시 줄을 new/에 둔다(현장 노트 배포 · 공개).
+// 환승 러시 공개 후보를 만든다(2026-11-04, 말 랠리 공개후보.cjs에서). 커밋 하나를 git archive로 꺼내 tools/build-world-app-public.mjs로 빌드한 뒤 이 게임 폴더에서 라이브와 달라진 파일만 고른다.
+// master에는 아직 공개하지 않은 다른 게임 줄이 함께 있어 공용 파일은 빌드 판을 쓰지 않는다: 라이브 판을 base/에, 라이브 판 + 환승 러시 줄을 new/에 둔다(현장 노트 배포 · 공개).
 //   node experiences/subway-rush/qa/공개후보.cjs <커밋> --설정 <world-config.json> [--밖 <폴더>] [--빌드재사용]
 //   나가는 것: <밖>/base · <밖>/new (world/ 아래) + 목록.json. 그 뒤: node tools/공개.js 올리기 --원본 <밖>/new --기준폴더 <밖>/base <목록.json의 경로…> --전부 --후보폴더 <폴더>
 const { execFileSync, spawnSync } = require('node:child_process');
-const fs = require('node:fs'), path = require('node:path');
+const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto');
 const { 공용작업본 } = require('../../../tools/lib/공용작업본.js');
 const ROOT = path.resolve(__dirname, '../../..');
 const args = process.argv.slice(2), opt = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : null; };
@@ -14,7 +14,7 @@ const SHARED = 공용작업본(ROOT), CONFIG = path.resolve(opt('--설정'));
 const OUT = path.resolve(opt('--밖') || path.join(SHARED, '.tmp', 'subway-rush-20261104', '공개'));
 const POLICY = process.env.SYNK_POLICY_DIR || path.join(SHARED, '..', 'synk-policy');
 const PATHS = ['experiences/brand-opening', 'experiences/synk-world-app', 'experiences/hangul-stage', 'experiences/korean-runner', 'experiences/korean-rhythm', 'experiences/synk-world-home', 'experiences/synk-account', 'experiences/synk-town', 'experiences/play-common', 'experiences/korean-racing', 'experiences/order-rush', 'experiences/blank-slice', 'experiences/snap-words', 'experiences/talk-rally', 'experiences/subway-rush', 'experiences/drama', 'experiences/topik-items', 'experiences/social-conversion.mjs', 'atlas', 'strata', 'tools', 'package.json'];
-const OUTSIDE = ['experiences/synk-town/assets/district', 'experiences/synk-world-home/assets/avatar-textiles-v1', 'experiences/drama/pilot/media'];
+const OUTSIDE = ['experiences/synk-town/assets/district', 'experiences/synk-world-home/assets/avatar-textiles-v1', 'experiences/drama/pilot/media', 'experiences/talk-rally/assets/world/cast/taeo/clips'];
 const OUTSIDE_FILES = ['experiences/korean-racing/assets/coastal-rocks-v6.glb'];
 const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)]);
 
@@ -47,90 +47,78 @@ function build() {
   fs.rmSync(src, { recursive: true, force: true });
 }
 
-// 공용 파일 넷: 라이브 판 + 환승 러시 줄. 앵커가 없으면(라이브가 움직이면) 멈춘다.
+// 공용 파일: 라이브 판 + 환승 러시 줄. 앵커가 없거나 둘 이상이면(라이브가 움직이면) 멈춘다. done 낱말이 이미 라이브에 있으면 그 파일은 건드리지 않는다.
 const live = (rel) => execFileSync('git', ['-C', POLICY, 'show', `origin/main:${rel}`], { maxBuffer: 1 << 28 }).toString('utf8');
-/** 표 끝에 줄을 더한다. 끝 항목에 쉼표가 없으면 붙인다. */
-const addToTable = (start, close, lines) => (s) => {
-  const a = s.indexOf(start); if (a < 0) throw Error(`표가 없다 — ${start}`);
-  const b = s.indexOf(close, a); if (b < 0) throw Error(`표 끝이 없다 — ${start}`);
-  const head = s.slice(0, b);
-  return `${head}${head.endsWith(',') ? '' : ','}\n${lines}${s.slice(b)}`;
-};
 function edit(text, rel, pairs) {
   const crlf = text.includes('\r\n'); let s = text.replace(/\r\n/g, '\n');
-  for (const pair of pairs) {
-    if (typeof pair === 'function') { s = pair(s); continue; }
-    const [a, b] = pair;
-    if (!s.includes(a)) throw Error(`${rel}: 앵커가 없다 — ${a.slice(0, 70)}`);
+  for (const [a, b] of pairs) {
+    if (s.split(a).length !== 2) throw Error(`${rel}: 앵커가 하나가 아니다 — ${a.slice(0, 70)}`);
     s = s.replace(a, () => b);
   }
   return crlf ? s.replace(/\n/g, '\r\n') : s;
 }
+// 계획 후보(11-05): 공개 묶음 둘은 master 빌드가 아니라 라이브 판이라, world-learning-plan.mjs의 후보 한 줄과 같은 동작을 도움 함수 하나로 끼운다.
+// 잠금은 놀이 해금 표의 subway 줄(레슨 하나)과 같다. 문항 표는 그 커밋의 plan-items.mjs다. 끝에서 원본 빌드와 결과를 대조한다(planCheck).
+const ascii = (text) => text.replace(/[^\x00-\x7f]/g, (c) => '\\u' + c.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0'));
+const planItems = () => {
+  const text = execFileSync('git', ['-C', ROOT, 'show', `${ref}:experiences/subway-rush/plan-items.mjs`], { maxBuffer: 1 << 24 }).toString('utf8');
+  return text.slice(text.indexOf('Object.freeze(['), text.lastIndexOf(']);') + 2).replace(/\s*\n\s*/g, '');
+};
+const helper = () => ascii(`var SUBWAY_PLAN_ITEMS=${planItems()};function pushSubwayPlan(candidates,settings,access,presentation,finished){if(!(finished>=1))return;const upper=Number(settings?.targetGrade)>=3,targets=SUBWAY_PLAN_ITEMS.filter(item=>upper||!item.skillId.startsWith("ko2.")).map(item=>({id:"subway-rush."+item.id,skillIds:[item.skillId],difficulty:item.difficulty,modality:"listening",responseFormat:"single-choice",familyKeys:["subway-rush."+item.family+".v1"],itemKey:"subway-rush."+item.id+".v1",conceptIds:[]}));candidates.push({id:"world.play.subway",label:"환승 러시 · 안내방송 듣고 갈아타기",route:"game",gameId:"subway",minutes:3,minutesEstimated:!0,targets,goals:["exam","prepare","listening","travel"],audioRequired:!0,modality:"listening",presentation,...access("subway")})}\n`);
+const timeName = (text, rel) => { const m = text.match(/pack\.lessons\.find\(\(?\w+\)?\s*=>\s*!(\w+)\(source\.lessons/); if (!m) throw Error(`${rel}: 시각 검사 이름을 못 찾았다`); return m[1]; };
 const SHARED_EDITS = {
-  'world/brand-opening/play-unlocks.mjs': [
-    addToTable('export const PLAY_UNLOCKS = Object.freeze({', '\n});', `  // 환승 러시: 이야기 자리는 1화 아침인데 드라마 기록이 생활 요약에 없어, 가장 가까운 이야기 기록인 레슨 하나를 마침으로 연다(설계 9절) —
-  // 1화에 등굣길 장면이 생기면 그 기록으로 바꾼다.
-  subway: Object.freeze({ where: 'play.where.lesson', open: (record) => record.lessons >= 1 }),`),
-    [`\n});\n\n/** 홈이 들고 있는 생활 진도`, `\n});\n
-// 대신하는 놀이가 그 학생에게 열리면 「놀이」 목록에서 그 자리를 이어받는다. 잠겨 있는 동안은 그대로 있어 듣기 놀이가 비지 않는다.
-// 게임 자체는 그대로 남는다(WORLD 듣기 확인 도구 · 계획 줄이 쓴다) — 목록의 카드만 바뀐다.
-export const PLAY_REPLACED_BY = Object.freeze({ runner: 'subway' });
-
-/** 홈이 들고 있는 생활 진도`],
-    [`/** 놀이 하나의 상태:`, `/** 「놀이」 목록의 차례. 대신하는 놀이가 열렸으면 앞 놀이의 자리에 놓고 앞 놀이는 뺀다. */
-export function playOrder(ids, record) {
-  const successors = Object.values(PLAY_REPLACED_BY), out = [];
-  for (const id of ids) {
-    const next = PLAY_REPLACED_BY[id];
-    if (next && playState(next, record).open) out.push(next);
-    else if (!successors.includes(id) || !playState(id, record).open) out.push(id);
-  }
-  return out;
-}
-
-/** 놀이 하나의 상태:`],
-  ],
-  'world/brand-opening/home.mjs': [
-    [`import {PLAY_UNLOCKS,playRecord,playState} from './play-unlocks.mjs';`, `import {PLAY_UNLOCKS,playRecord,playState,playOrder} from './play-unlocks.mjs';`],
-    [`<div class="play-list">\${Object.entries(games).map(([id,g],i)=>{`, `<div class="play-list">\${playOrder(Object.keys(games),record).map(id=>[id,games[id]]).map(([id,g],i)=>{`],
-    addToTable('const games={', '\n};', ` // 환승 러시(11-04, 캠퍼스 판): 레슨 하나를 마치면 열린다(play-unlocks.mjs). 열린 뒤에는 바람길 카드 자리를 이어받는다.
- subway:{get title(){return t('game.subway.title');},get detail(){return t('game.subway.detail');},label:'LISTEN & GO',path:'../subway-rush/',image:'world-play/subway-rush.webp',area:'지하철 안내방송을 듣고 문·통로·출구 고르기 연습'}`),
-  ],
-  'world/brand-opening/world-strings.mjs': [
-    [` 'play.locked':{ko:`, ` 'game.subway.title':{ko:'환승 러시',en:'Transfer Rush',mn:'Метро дамжин суух'},
- 'game.subway.detail':{ko:'안내방송을 듣고 갈아타서 첫 수업에 닿아요',en:'Follow the announcements, transfer, and make it to your first class',mn:'Буудал зарлахыг сонсоод метро дамжин сууж, эхний хичээлдээ амжина'},
- 'play.locked':{ko:`],
-    [` 'position.source.order-rush':{ko:'주문 폭주',en:'Order Rush',mn:'Захиалгын шуурга'},
-`, ` 'position.source.order-rush':{ko:'주문 폭주',en:'Order Rush',mn:'Захиалгын шуурга'},
- 'position.source.subway-rush':{ko:'환승 러시',en:'Transfer Rush',mn:'Метро дамжин суух'},
-`],
-  ],
-  'world/app-shell.mjs': [
-    [` racing:{get title(){return t('game.racing.title');},path:'korean-racing/'},
-`, ` racing:{get title(){return t('game.racing.title');},path:'korean-racing/'},
- // 환승 러시(11-04): 홈 「놀이」가 해금 표로 연 뒤에만 여기로 온다.
- subway:{get title(){return t('game.subway.title');},path:'subway-rush/'},
-`],
-  ],
+  'world/brand-opening/world-strings.mjs': { done: 'plan.game.subway', pairs: () => [
+    [" 'plan.game.hangul':{ko:", " 'plan.game.subway':{ko:'환승 러시 · 안내방송 듣고 갈아타기',en:'Transfer Rush · follow station announcements',mn:'Метро дамжин суух · буудал зарлахыг сонсох'},\n 'plan.game.hangul':{ko:"],
+  ] },
+  'world/app-shell.mjs': { done: 'subway-rush/?grade=', pairs: () => [
+    [" // 환승 러시(11-04): 홈 「놀이」가 해금 표로 연 뒤에만 여기로 온다.\n subway:{get title(){return t('game.subway.title');},path:'subway-rush/'},",
+     " // 환승 러시(11-04): 홈 「놀이」와 이번 주 계획 · 튜터 후보가 해금 표로 연 뒤에만 여기로 온다. 찰칵 낱말처럼 시험 목표 급을 넘긴다 — 3급 이상이면 고른 난도가 없을 때 바쁜 아침부터(level.mjs).\n subway:{get title(){return t('game.subway.title');},get path(){let grade=0;try{grade=Number(life.progress?.learningProfileValues?.().targetGrade)||0;}catch{grade=0;}return grade>=3?`subway-rush/?grade=${grade}`:'subway-rush/';}},"],
+  ] },
+  'world/world-account.bundle.mjs': { done: 'world.play.subway', pairs: (text, rel) => [
+    ['function buildWorldLearningCandidates(', helper() + 'function buildWorldLearningCandidates('],
+    ['...access("hangul")}),candidates}', `...access("hangul")}),pushSubwayPlan(candidates,settings,access,presentationFor(settings),PACKS.flatMap(pack=>pack.lessons).filter(lesson=>${timeName(text, rel)}(source.lessons?.[lesson.id]?.completedAt)).length),candidates}`],
+  ] },
+  'world/brand-opening/content/life-standalone.mjs': { done: 'world.play.subway', pairs: (text, rel) => [
+    ['function buildWorldLearningCandidates(', helper() + 'function buildWorldLearningCandidates('],
+    ['      ...access("hangul")\n    }\n  );\n  return candidates;', `      ...access("hangul")\n    }\n  );\n  pushSubwayPlan(candidates, settings, access, presentationFor(settings), PACKS.flatMap((pack) => pack.lessons).filter((lesson2) => ${timeName(text, rel)}(source.lessons?.[lesson2.id]?.completedAt)).length);\n  return candidates;`],
+  ] },
 };
 
 fs.mkdirSync(OUT, { recursive: true });
 if (!args.includes('--빌드재사용')) build();
 const BUILD = path.join(OUT, 'build', 'world'), NEW = path.join(OUT, 'new', 'world'), BASE = path.join(OUT, 'base', 'world');
 fs.rmSync(path.join(OUT, 'new'), { recursive: true, force: true }); fs.rmSync(path.join(OUT, 'base'), { recursive: true, force: true });
-fs.cpSync(path.join(BUILD, 'subway-rush'), path.join(NEW, 'subway-rush'), { recursive: true });
-fs.mkdirSync(path.join(NEW, 'brand-opening/assets/world-play'), { recursive: true });
-fs.copyFileSync(path.join(BUILD, 'brand-opening/assets/world-play/subway-rush.webp'), path.join(NEW, 'brand-opening/assets/world-play/subway-rush.webp'));
 execFileSync('git', ['-C', POLICY, 'fetch', '-q', 'origin']);
-for (const [rel, pairs] of Object.entries(SHARED_EDITS)) {
-  const text = live(rel), inner = rel.replace(/^world\//, '');
-  fs.mkdirSync(path.dirname(path.join(BASE, inner)), { recursive: true }); fs.mkdirSync(path.dirname(path.join(NEW, inner)), { recursive: true });
-  fs.writeFileSync(path.join(BASE, inner), text); fs.writeFileSync(path.join(NEW, inner), edit(text, rel, pairs));
+// 이 게임 폴더: 라이브와 바이트가 다른 파일만 싣는다(blob 번호로 견준다 — 부분 클론이라 안 받고 잰다). 라이브에만 있는 파일은 멈춘다.
+const blobId = (bytes) => crypto.createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex');
+const liveGame = new Map(execFileSync('git', ['-C', POLICY, 'ls-tree', '-r', '-z', 'origin/main', 'world/subway-rush'], { maxBuffer: 1 << 26 }).toString('utf8').split('\0').filter(Boolean).map((line) => { const [meta, file] = line.split('\t'); return [file.slice('world/'.length), meta.split(' ')[2]]; }));
+const put = (root, rel, bytes) => { const to = path.join(root, rel); fs.mkdirSync(path.dirname(to), { recursive: true }); fs.writeFileSync(to, bytes); };
+const gameFiles = walk(path.join(BUILD, 'subway-rush')).map((file) => path.relative(BUILD, file).replace(/\\/g, '/'));
+const gone = [...liveGame.keys()].filter((rel) => !gameFiles.includes(rel));
+if (gone.length) throw Error('라이브에만 있는 게임 파일: ' + gone.slice(0, 8).join(' '));
+const gameChanged = [];
+for (const rel of gameFiles) {
+  const bytes = fs.readFileSync(path.join(BUILD, rel));
+  if (liveGame.get(rel) === blobId(bytes)) continue;
+  gameChanged.push(rel); put(NEW, rel, bytes);
+  if (liveGame.has(rel)) put(BASE, rel, execFileSync('git', ['-C', POLICY, 'show', `origin/main:world/${rel}`], { maxBuffer: 1 << 28 }));
 }
-// 만든 해금 표가 바로 읽히고 환승 러시가 레슨 하나로 열리는지(문법 오류 · 쉼표 빠짐을 공개 전에 잡는다)
-for (const rel of Object.keys(SHARED_EDITS)) execFileSync(process.execPath, ['--check', path.join(OUT, 'new', rel)], { stdio: 'inherit' });
+const shared = [];
+for (const [rel, { done, pairs }] of Object.entries(SHARED_EDITS)) {
+  const text = live(rel), inner = rel.replace(/^world\//, '');
+  if (text.includes(done)) continue;   // 이미 라이브에 있으면 건드리지 않는다
+  shared.push(rel);
+  put(BASE, inner, text); put(NEW, inner, edit(text, rel, pairs(text, rel)));
+}
+// 끼운 판이 바로 읽히는지(문법 오류 · 쉼표 빠짐을 공개 전에 잡는다) + 라이브 묶음에 끼운 계획 후보가 원본 빌드와 같은 결과를 내는지.
+for (const rel of shared) execFileSync(process.execPath, ['--check', path.join(OUT, 'new', rel)], { stdio: 'inherit' });
+if (shared.includes('world/world-account.bundle.mjs')) {
+  const r = spawnSync(process.execPath, [path.join(__dirname, '계획후보대조.mjs'), path.join(OUT, 'new/world/world-account.bundle.mjs'), path.join(ROOT, 'experiences/synk-world-app/world-learning-plan.mjs')], { encoding: 'utf8', maxBuffer: 1 << 24 });
+  console.log((r.stdout || '').trim());
+  if (r.status !== 0) throw Error('계획 후보 대조 실패: ' + (r.stderr || r.stdout).slice(-1200));
+}
 const files = walk(path.join(OUT, 'new', 'world')).map((f) => path.relative(path.join(OUT, 'new'), f).replace(/\\/g, '/'));
-const noWorldQa = files.filter((f) => /\/qa\/|\.test\.mjs$|\.md$|review-items/.test(f));
+const noWorldQa = files.filter((f) => /\/qa\/|\.test\.mjs$|\.md$|review-items|plan-items/.test(f));
 if (noWorldQa.length) throw Error('실으면 안 되는 파일: ' + noWorldQa.slice(0, 8).join(' '));
-fs.writeFileSync(path.join(OUT, '목록.json'), JSON.stringify({ ref, shared: Object.keys(SHARED_EDITS), items: ['world/subway-rush', 'world/brand-opening/assets/world-play/subway-rush.webp', ...Object.keys(SHARED_EDITS)], files: files.length, bytes: files.reduce((n, f) => n + fs.statSync(path.join(OUT, 'new', f)).size, 0) }, null, 1) + '\n');
+fs.writeFileSync(path.join(OUT, '목록.json'), JSON.stringify({ ref, shared, items: files, files: files.length, bytes: files.reduce((n, f) => n + fs.statSync(path.join(OUT, 'new', f)).size, 0) }, null, 1) + '\n');
 console.log(fs.readFileSync(path.join(OUT, '목록.json'), 'utf8'));

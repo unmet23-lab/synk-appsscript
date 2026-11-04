@@ -8,7 +8,7 @@ const SINO = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '�
 export const sayNumber = (n) => SINO[n];
 // 소리가 비슷해 듣기 미끼가 되는 출구 번호 짝
 const EXIT_NEAR = Object.freeze({ 1: [2, 7], 2: [1, 4], 3: [4, 5], 4: [3, 2], 5: [3, 4], 6: [7, 1], 7: [6, 1], 8: [7, 6] });
-const SLUG = Object.freeze({ 신촌: 'sinchon', 이대: 'ewha', 아현: 'ahyeon', 충정로: 'chungjeongno', 시청: 'cityhall', 을지로입구: 'euljiro1', 을지로3가: 'euljiro3', 을지로4가: 'euljiro4', 종각: 'jonggak', 종로3가: 'jongno3', 종로5가: 'jongno5', 동대문: 'dongdaemun' });
+const SLUG = Object.freeze({ 신촌: 'sinchon', 이대: 'ewha', 아현: 'ahyeon', 충정로: 'chungjeongno', 시청: 'cityhall', 을지로입구: 'euljiro1', 을지로3가: 'euljiro3', 을지로4가: 'euljiro4', 종각: 'jonggak', 종로3가: 'jongno3', 종로5가: 'jongno5', 동대문: 'dongdaemun', 청량리: 'cheongnyangni' });
 const slugOf = (station) => SLUG[station];
 
 export function stopLine(station, line, side) {
@@ -91,7 +91,7 @@ function buildBasic(r, seed) {
   const way = '청량리', transfer = '시청', dest = line1.dest;
   const decisions = [];
   line2.stops.forEach((s, i) => decisions.push(stopDecision(r, s, 2, i === line2.stops.length - 1, 0)));
-  decisions.push({ kind: 'fork', station: transfer, leg: 0, line_: guideFork(1, way, dest), id: `fork.${way}.${slugOf(dest)}`, family: `fork.${way}`, skillId: BASIC.fork, difficulty: 1, assessable: true, options: forkOptions(r, way), answer: 'way', grade: 'basic' });
+  decisions.push({ kind: 'fork', station: transfer, leg: 0, line_: guideFork(1, way, dest), id: `fork.${slugOf(way)}.${slugOf(dest)}`, family: `fork.${slugOf(way)}`, skillId: BASIC.fork, difficulty: 1, assessable: true, options: forkOptions(r, way), answer: 'way', grade: 'basic' });
   line1.stops.forEach((s) => decisions.push(stopDecision(r, s, 1, s === dest, 1)));
   decisions.push(exitDecision(r, dest, 1));
   return { seed, level: 'basic', start: line2.start, transfer, way, dest, opening: guideStart(transfer, 1), decisions };
@@ -120,7 +120,7 @@ function buildBusy(r, seed) {
     // 갈래 ① 짧은 운행 → 통로 → 급행 → 출구 공사
     decisions.push({ kind: 'stop', station: transfer, line: 2, leg: 0, side, target: true, line_: shortTurnLine(transfer, side), id: `busy.short.${side}`, family: 'busy.short', skillId: TOPIK2, difficulty: 1, assessable: true, options: DOORS, answer: side, grade: 'busy' });
     const e = pick(r, BUSY_EXPRESS);
-    decisions.push({ kind: 'fork', station: transfer, leg: 0, line_: guideFork(1, way, e.dest), id: `fork.${way}.${slugOf(e.dest)}`, family: `fork.${way}`, skillId: BASIC.fork, difficulty: 1, assessable: true, options: forkOptions(r, way), answer: 'way', grade: 'basic' });
+    decisions.push({ kind: 'fork', station: transfer, leg: 0, line_: guideFork(1, way, e.dest), id: `fork.${slugOf(way)}.${slugOf(e.dest)}`, family: `fork.${slugOf(way)}`, skillId: BASIC.fork, difficulty: 1, assessable: true, options: forkOptions(r, way), answer: 'way', grade: 'basic' });
     decisions.push({ kind: 'board', station: transfer, leg: 1, line_: expressLine(e.skip), id: `busy.express.${slugOf(e.skip)}.${slugOf(e.dest)}`, family: `busy.express.${slugOf(e.dest)}`, skillId: TOPIK2, difficulty: 1, assessable: true, dest: e.dest,
       options: [{ id: 'board', text: '이 열차 타기', arrow: 'stay' }, { id: 'wait', text: '다음 열차 기다리기', arrow: 'left' }, { id: 'opposite', text: '반대편 승강장 가기', arrow: 'right' }], answer: e.answer, grade: 'busy' });
     e.stops.forEach((s) => decisions.push(stopDecision(r, s, 1, s === e.dest, 1, 'busy')));

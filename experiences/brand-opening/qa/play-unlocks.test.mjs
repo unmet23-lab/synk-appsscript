@@ -70,9 +70,19 @@ test('규칙이 이상한 기록에 던져도 잠김으로 남는다', () => {
 
 test('잠김 안내의 여는 자리 글이 화면 글 표에 세 언어로 있다', () => {
   for (const rule of Object.values(PLAY_UNLOCKS)) {
-    for (const key of [rule.where, 'play.locked', 'game.order.title', 'game.order.detail', 'game.subway.title', 'game.subway.detail', 'game.blank.title', 'game.blank.detail', 'game.snap.title', 'game.snap.detail', 'game.racing.title', 'game.racing.detail', 'game.rally.title', 'game.rally.detail']) {
+    for (const key of [rule.where, 'play.locked', 'game.order.title', 'game.order.detail', 'game.subway.title', 'game.subway.detail', 'game.blank.title', 'game.blank.detail', 'game.snap.title', 'game.snap.detail', 'game.board.title', 'game.board.detail', 'play.locked.level', 'game.racing.title', 'game.racing.detail', 'game.rally.title', 'game.rally.detail']) {
       for (const lang of ['ko', 'en', 'mn']) assert.ok(strings[key]?.[lang], `${key}.${lang}`);
     }
   }
   assert.match(strings['play.locked'].ko, /\{where\}/);
+});
+
+test('게시판 해독은 TOPIK II 기록으로 열리고, 한 번 본 뒤에는 기록이 떨어져도 닫히지 않는다', () => {
+  const base = { summary: { cafe: { completed: 3 }, completed: 9, status: { phase: 'ready' }, packs: [] } };
+  assert.deepEqual(playState('board', playRecord(base)), { open: false, where: 'play.locked.level', lockOnly: true });
+  assert.deepEqual(playState('board', playRecord(base, { topik2Near: true })), { open: true });
+  assert.equal(playState('board', playRecord(base), ['board']).open, true);
+  assert.equal(playState('board', playRecord(base), ['order']).open, false);
+  assert.equal(playState('board', null).open, false);
+  assert.equal(playState('order', playRecord({ summary: { cafe: { completed: 0 }, status: { phase: 'ready' } } }), ['order']).open, false);   // sticky는 표에 적은 놀이만
 });

@@ -5,6 +5,8 @@
 # 카메라 키(10-27, 원본 카메라 곡선 그대로 — 카메라키.py → 카메라곡선_원본.json):
 #   … --cut 2 --anim [--frames 0-98]   → <밖>/렌더/움직임/c2_####.png(30fps, 컷 첫 프레임 = 0)
 #   … --cut 4 --fidx 64                → <밖>/렌더/c4_f64.png(그 프레임 한 장 — Omni 끝 그림, 쓰는 판은 렌더/최종/으로 옮김)
+# 최종(11-05): … --cut 2 --anim --rate 24 --blur 0.5 --res 1080x1920 --samples 128 --outdir <곳>   → 24fps로 다시 놓은 프레임(시댄스 판과 같은 박자 · 있는 장은 건너뜀)
+#   시험: --cpu로 GPU 차례 없이 작은 장을 본다. --fidx는 30fps 프레임 번호, 컷 1은 뚜껑 · 김 · 초점 · 빛을 여기서 키로 박는다.
 # 컷: test(캔 확인) · 1(아이스박스) · 2(몸통 세로 낱말표 접사) · 3(젖은 바닥 · 네온) · 4(기운 캔 입구 · 붓기 시작 그림)
 #     5(잔 가장자리 · 기포 시작 그림) · 6(기운 로고 접사)
 # 단위는 m. 캔은 355ml 표준(몸통 지름 66 mm · 높이 122 mm).
@@ -34,6 +36,10 @@ DIAG = "--diag" in argv
 ANIM = "--anim" in argv
 FIDX = arg("--fidx", None)
 FRAMES = arg("--frames", None)
+CPU = "--cpu" in argv
+RATE = int(arg("--rate", "30"))
+BLUR = float(arg("--blur", "0"))
+OUTDIR = arg("--outdir", None)
 밖 = os.path.join(os.environ["USERPROFILE"], "Documents", "synk-vendor", "pulse-portfolio12-20261024", "콘티", "p1p3")
 LABEL = arg("--label", os.path.join(밖, "라벨", "라벨_오미톡_색.png"))
 METAL = LABEL.replace("_색.png", "_금속.png")
@@ -76,12 +82,12 @@ def reset():
                 break
         except Exception:
             continue
-    sc.cycles.device = "GPU"
+    sc.cycles.device = "CPU" if CPU else "GPU"
     sc.cycles.samples = SAMPLES
     sc.cycles.use_animated_seed = True   # 프레임마다 노이즈 씨앗을 바꾼다 — 같은 씨앗이면 남은 노이즈가 화면에 붙은 고정 무늬가 되어 카메라 측정이 그것을 잡았다
     sc.cycles.use_denoising = True
     try:
-        sc.cycles.denoiser = "OPTIX"
+        sc.cycles.denoiser = "OPENIMAGEDENOISE" if CPU else "OPTIX"
     except Exception:
         pass
     sc.cycles.max_bounces = 16
@@ -741,6 +747,7 @@ def mist(name, size, loc, density=3.0, scale=18.0, rgb=(0.82, 0.88, 1.0), lo=0.4
     l.new(last.outputs[0], vol.inputs["Density"])
     l.new(vol.outputs[0], out.inputs["Volume"])
     ob.data.materials.append(m)
+    ob["동"] = {"dens": dens.name, "noise": noise.name}
     return ob
 
 
@@ -989,6 +996,11 @@ def scene_label():
 SIDE_DEG = -106.0  # 라벨.py SIDE_X: 앞면에서 왼쪽으로 약 106°(뒷면 표시가 2번 컷 밖으로 — Fable v1 P2)
 
 
+C1 = {}
+# 흐르는 물방울: (둘레 각 — 화면 가운데 −86°, 처음 높이 mm, 끝 높이 mm, 시작 초, 끝 초, 반지름 mm). 컷 2 안의 시각이고 소리가 같은 값을 쓴다(최종편집.py)
+RUN_C2 = [(-68.0, 96.0, 40.0, 0.42, 1.72, 1.7), (-90.0, 74.0, 24.0, 1.86, 3.12, 1.5)]
+
+
 def scene_c1():
     """컷 1: 남색 몸통 · 흰 뚜껑 아이스박스. first = 닫힌 뚜껑 앞면이 화면 위 2/3, mid = 뚜껑이 뒤 경첩으로 들려
     틈으로 얼음 속 캔(엠블럼 정면)이 남색 LED 빛에 드러남."""
@@ -1055,10 +1067,12 @@ def scene_c1():
     hinge.location = (0, -(D_ / 2 + 0.005), H_ + lid_h)
     lid.parent = hinge
     lid.location = (0, D_ / 2 + 0.005, -lid_h / 2)
+    MOVING = ANIM or FIDX is not None
     open_deg = 0.0 if FRAME == "first" else 60.0
     hinge.rotation_euler = (math.radians(open_deg), 0, 0)
     if FRAME == "first":
         hinge.location.z += 0.004  # 원본 첫 프레임: 뚜껑 · 몸통 사이로 파란 LED 띠가 샌다
+    C1["hinge"] = hinge
     # 캔: 얼음 위에 서서 윗부분이 테두리 위로 올라온다(닫힌 뚜껑 속 빈 곳에 들어감)
     can = make_can(wet_bump=0.6)
     can_z = 0.180  # 열린 순간 엠블럼이 몸통 앞 테두리 위로 다 올라오게(닫힌 뚜껑 속 빈 곳 안에 든다)
@@ -1069,6 +1083,7 @@ def scene_c1():
               or (y < 0.02 and abs(x) < 0.065 and z > 0.165), mat=mat_ice(cloud=4.0))  # 캔 앞은 낮게 — 엠블럼이 틈에 다 보이게
     # 안쪽 남색 LED: 벽 위 가장자리 아래 띠 + 얼음 사이에서 올라오는 빛
     led = mat_emit("led", (0.06, 0.20, 1.0), 420.0 if FRAME != "first" else 230.0)  # 닫힌 첫 프레임 이음매 띠는 흰 심지 없이 부드럽게
+    C1["led"] = led
     for y in (-D_ / 2 + t + 0.004, D_ / 2 - t - 0.004):
         cylinder("led", 0.0025, W_ - 2 * t - 0.02, (0, y, H_ - 0.016), rot=(0, math.radians(90), 0), mat=led)
     ig = area_light("ice_glow", (0, 0.0, 0.262), (0, 0, 0.0), 60.0, 0.20, rgb=(0.05, 0.27, 1.0), size_y=0.15)
@@ -1081,17 +1096,46 @@ def scene_c1():
         if ob.type == "MESH" and ob.name not in can_set:
             recv.objects.link(ob)
     ig.light_linking.receiver_collection = recv
-    area_light("ice_up", (0, -0.05, 0.12), (0, 0.03, 0.24), 14.0, 0.20, rgb=(0.05, 0.28, 1.0), size_y=0.12)
-    area_light("can_key", (0.0, -0.06, 0.40), (0, 0.03, 0.25), 1.6, 0.15, rgb=(0.55, 0.72, 1.0))
+    if MOVING:
+        for ob in list(bpy.context.scene.objects):
+            if ob.name.startswith("led"):
+                ob.light_linking.receiver_collection = recv   # 띠 빛이 캔 앞에서 라벨을 자주색으로 덮는다
+    iu = area_light("ice_up", (0, -0.05, 0.12), (0, 0.03, 0.24), 14.0, 0.20, rgb=(0.05, 0.28, 1.0), size_y=0.12)
+    if MOVING:
+        iu.light_linking.receiver_collection = recv   # 캔까지 받으면 라벨이 통째로 뿌옇게 뜬다(움직임 시험 11-05)
+        # 얼음 · 앞 테두리가 하얗게 날면 그 모습이 바니시에 비쳐 엠블럼 아래가 뜬다 — 빛을 줄여 얼음 결을 살린다
+        ig.data.energy = float(arg("--c1ice", "26"))
+        iu.data.energy = float(arg("--c1ice2", "6"))
+    ck = area_light("can_key", (0.0, -0.06, 0.40), (0, 0.03, 0.25), 1.6, 0.15, rgb=(0.55, 0.72, 1.0))
+    if MOVING:
+        # 열린 뒤 엠블럼이 루비로 읽히게 — 남청 빛만 받으면 붉은 잉크가 자주로 죽는다(c1_mid). 뚜껑이 들리기 전에는 뚜껑이 가린다. 캔만 받는다
+        recv_can = bpy.data.collections.new("can_key_recv")
+        bpy.context.scene.collection.children.link(recv_can)
+        for ob in list(bpy.context.scene.objects):
+            if ob.name in can_set:
+                recv_can.objects.link(ob)
+        ck.light_linking.receiver_collection = recv_can
+        ck.data.energy = float(arg("--c1key", "3.0"))
+        ck.data.color = (1.0, 0.86, 0.86)
     # 바깥 빛: 위 앞에서 흰 뚜껑 앞면을 밝히는 부드러운 빛(살짝 푸름)
-    area_light("lid_key", (0.0, -0.25, 0.70), (0, -0.10, 0.30), 9.0, 0.6, rgb=(0.74, 0.72, 1.0), size_y=0.3)
-    area_light("lid_top", (0.0, 0.0, 0.80), (0, 0, 0.3), 6.0, 0.6, rgb=(0.62, 0.68, 1.0))
+    lk = area_light("lid_key", (0.0, -0.25, 0.70), (0, -0.10, 0.30), 9.0, 0.6, rgb=(0.74, 0.72, 1.0), size_y=0.3)
+    lt = area_light("lid_top", (0.0, 0.0, 0.80), (0, 0, 0.3), 6.0, 0.6, rgb=(0.62, 0.68, 1.0))
+    if MOVING:
+        lk.light_linking.receiver_collection = recv   # 뚜껑이 들리면 이 큰 빛이 바니시에 비쳐 라벨이 하얗게 뜬다
+        lt.light_linking.receiver_collection = recv
     # 김: 뚜껑 위와 틈
     mist("mist_top", (0.5, 0.3, 0.12), (0, 0.0, H_ + lid_h + 0.08), density=4.0, scale=14.0, seed=1.0, rgb=(0.7, 0.78, 1.0))
-    if FRAME != "first":
+    if FRAME != "first" and not MOVING:
         mist("mist_gap", (0.26, 0.20, 0.05), (0, 0.0, H_ + 0.03), density=3.0, scale=22.0, lo=0.52, hi=0.86, seed=2.0,
              rgb=(0.7, 0.8, 1.0))
+    if MOVING:
+        # 틈 위쪽(엠블럼 윗선 위)과 앞 테두리로 흘러내리는 김 — 엠블럼 앞은 비운다(원본도 엠블럼은 맑다)
+        C1["gap"] = mist("mist_gap", (0.26, 0.20, 0.022), (0, 0.0, H_ + 0.064), density=2.2, scale=22.0, lo=0.52, hi=0.86, seed=2.0, rgb=(0.7, 0.8, 1.0))
+        C1["spill"] = mist("mist_spill", (0.30, 0.05, 0.034), (0, -D_ / 2 - 0.016, H_ + 0.010), density=0.0, scale=34.0, lo=0.46, hi=0.84, seed=3.0, rgb=(0.72, 0.82, 1.0))
+        C1["top"] = bpy.data.objects["mist_top"]
+        mist("mist_back", (0.24, 0.07, 0.11), (0, 0.075, H_ + 0.02), density=3.2, scale=16.0, lo=0.38, hi=0.80, seed=5.0, rgb=(0.62, 0.78, 1.0))   # 캔 뒤 남청 안개(원본의 뒤 빛)
     focus = 0.134 if FRAME == "first" else 0.27   # 원본: 첫 프레임은 뚜껑 손잡이, 열린 뒤는 캔에 초점
+    C1["can_front"] = 0.240 + 0.030 - 0.033   # 카메라 ~ 캔 앞면(옛 0.27은 캔 축이라 엠블럼이 33 mm 뒤로 흐렸다)
     camera((0.0, -0.240, 0.262), (0.0, 0.0, 0.262), lens=35, fstop=4.0, focus=focus)
     sc.view_settings.exposure = -0.5 if FRAME == "first" else -0.8
 
@@ -1106,8 +1150,17 @@ def scene_c2():
     can = make_can(frost=0.48, frost_scale=14.0, frost_seed=3.0, wet_bump=0.5)  # 세 값 시험 중 원본에 가장 가까운 것
     # 낱말표 방향(앞면 기준 +106°)을 카메라 기준 왼쪽 20°로
     can.rotation_euler = (0, 0, math.radians(-SIDE_DEG - 20))
+    def _lane(x, y):   # 둘레 mm, 높이 mm
+        if not (ANIM or FIDX is not None):
+            return False
+        return any(abs(x - math.radians(a) * 33.0) < 1.6 and z1 - 3 < y < z0 + 4 for a, z0, z1, *_ in RUN_C2)
     droplets(can, n=3600, z_range=(4, 116), ang_range=(SIDE_DEG - 80, SIDE_DEG + 95), r_range=(0.20, 1.8),
-             power=2.4, seed=11)
+             power=2.4, seed=11, avoid=_lane)
+    if ANIM or FIDX is not None:
+        # 흐르는 물방울 둘(원본에는 없고, 소리 「또르르」의 사건 — 시각은 RUN_C2). 멈춰 있는 방울과 겹치지 않게 그 길은 비운다
+        for j, (ang, z0, z1, t0, t1, r) in enumerate(RUN_C2):
+            d, _ = droplets(can, n=1, z_range=(z0, z0), ang_range=(ang, ang), r_range=(r, r), seed=40 + j, name=f"run{j}", gravity=True)
+            C1[f"run{j}"] = (d, z0, z1, t0, t1)
     camera((-0.0026, -0.297, 0.058), (-0.0026, 0.0, 0.058), lens=100, fstop=4.5, focus=0.266)
     area_light("rim_l", (-0.15, 0.08, 0.058), (0, 0, 0.058), 12, 0.05, rgb=(0.20, 0.72, 1.0), size_y=0.45)
     # 왼쪽 앞 반사판: 바니시에 비쳐 낱말표 둘레가 밝은 남청으로(원본의 밝은 파랑 자리)
@@ -1385,8 +1438,9 @@ def scene_c6():
     world_color((0.01, 0.02, 0.08), 1.0)
     make_can(wet_bump=0.0)
     tgt = (-0.003, -0.032, 0.0715)
-    cam6 = camera((-0.037, -0.230, 0.0715), tgt, lens=100, roll_deg=-33, fstop=4.0, focus=0.200)
-    cam6.location += cam6.matrix_world.to_3x3() @ Vector((0.0034, 0.0009, 0.0))  # 엠블럼 가운데가 폭 50% → 원본처럼 약 37%
+    # --c6lens · --c6shift: 끝 컷을 첫 · 끝 프레임으로 잘라 낼 넓은 바탕 그림(11-05) — 원본처럼 끝에 낱말표 전체가 들어오게
+    cam6 = camera((-0.037, -0.230, 0.0715), tgt, lens=float(arg("--c6lens", "100")), roll_deg=-33, fstop=4.0, focus=0.200)
+    cam6.location += cam6.matrix_world.to_3x3() @ Vector((float(arg("--c6shift", "0.0034")), float(arg("--c6up", "0.0009")), 0.0))  # 엠블럼 가운데가 폭 50% → 원본처럼 약 37%
     key = area_light("key", (-0.06, -0.22, 0.28), (0, 0, 0.07), 6, 0.40, rgb=(0.92, 0.95, 1.0))
     key.visible_glossy = False
     # 캔 축을 따라 비치는 긴 반사(원본의 밝은 대각 띠)
@@ -1560,20 +1614,115 @@ def animate_camera(cut):
     return n
 
 
+def ease_open(t):
+    """뚜껑 각의 진행(0~1): 원본은 처음 0.05초 닫힌 듯하다가 0.4초에 절반을 넘고 0.8초에 거의 다 들리고 그 뒤로 조금씩 더 간다."""
+    u = max(0.0, (t - 0.03) / 1.05)
+    return min(1.0, 1 - (1 - min(1.0, u)) ** 2.4)
+
+
+def animate_c1():
+    """컷 1: 카메라는 고정(원본 0.2% 안). 뚜껑 · LED · 노출 · 초점 · 김에 30fps 프레임마다 키."""
+    sc = bpy.context.scene
+    n = CAMKEYS["1"]["프레임수"]
+    sc.render.fps = 30
+    sc.frame_start, sc.frame_end = 0, n - 1
+    bpy.context.preferences.edit.keyframe_new_interpolation_type = "LINEAR"
+    OPEN = float(arg("--c1open", "78"))
+    hinge = C1["hinge"]
+    cd = sc.camera.data
+    em = next(x for x in C1["led"].node_tree.nodes if x.type == "EMISSION").inputs["Strength"]
+
+    def node(ob, key):
+        return ob.data.materials[0].node_tree.nodes[ob["동"][key]]
+
+    places = {name: tuple(C1[name].location) for name in ("gap", "spill", "top")}
+    for i in range(n):
+        t = i / 30.0
+        p = ease_open(t)
+        hinge.rotation_euler = (math.radians(OPEN * p), 0, 0)
+        hinge.keyframe_insert("rotation_euler", frame=i)
+        em.default_value = 230.0 + (420.0 - 230.0) * min(1.0, t / 0.3)
+        em.keyframe_insert("default_value", frame=i)
+        sc.view_settings.exposure = -0.5 + (-0.8 + 0.5) * min(1.0, t / 0.5)
+        sc.view_settings.keyframe_insert("exposure", frame=i)
+        # 초점: 0.15초까지 손잡이 → 0.15~0.55초에 캔 앞면으로 → 끝까지 점점 또렷(원본)
+        v = max(0.0, min(1.0, (t - 0.15) / 0.40))
+        v = v * v * (3 - 2 * v)
+        cd.dof.focus_distance = 0.134 + (C1["can_front"] - 0.134) * v
+        cd.dof.keyframe_insert("focus_distance", frame=i)
+        for name, w0, dw, dens0, dens1, t0, t1, move in (
+            ("gap", 2.0, 0.55, 0.0, 2.2, 0.10, 0.60, (0, -0.030, 0.012)),
+            ("spill", 3.0, 0.70, 0.0, 2.6, 0.30, 0.95, (0, -0.012, -0.012)),
+            ("top", 1.0, 0.40, None, None, 0, 1, (0, 0, 0.010)),
+        ):
+            ob = C1[name]
+            nz = node(ob, "noise").inputs["W"]
+            nz.default_value = w0 + dw * t
+            nz.keyframe_insert("default_value", frame=i)
+            if dens0 is not None:
+                de = node(ob, "dens").inputs[1]
+                de.default_value = dens0 + (dens1 - dens0) * max(0.0, min(1.0, (t - t0) / (t1 - t0)))
+                de.keyframe_insert("default_value", frame=i)
+            ob.location = tuple(places[name][k] + move[k] * t for k in range(3))
+            ob.keyframe_insert("location", frame=i)
+    return n
+
+
+def animate_runs():
+    """컷 2: 흐르는 물방울 — 멈칫하다 미끄러진다(한 덩이 안에서 빠르기가 고르지 않게)."""
+    for key, val in list(C1.items()):
+        if not key.startswith("run"):
+            continue
+        ob, z0, z1, t0, t1 = val
+        for i in range(0, CAMKEYS["2"]["프레임수"]):
+            t = i / 30.0
+            u = max(0.0, min(1.0, (t - t0) / (t1 - t0)))
+            s = u ** 1.6 * (1 - 0.18 * math.sin(u * math.pi * 3.0) ** 2)
+            ob.location.z = (z1 - z0) * MM * s
+            ob.keyframe_insert("location", index=2, frame=i)
+
+
+def retime(rate):
+    """30fps로 박은 키를 rate fps 자리로 옮긴다(키 사이는 곧은 이음이라 그대로 곧다). 시댄스 판(24fps)과 같은 박자로 찍는다."""
+    k = rate / 30.0
+    sc = bpy.context.scene
+    n = sc.frame_end + 1
+    for act in bpy.data.actions:
+        for layer in act.layers:
+            for strip in layer.strips:
+                for bag in strip.channelbags:
+                    for fc in bag.fcurves:
+                        for p in fc.keyframe_points:
+                            p.co.x *= k
+                            p.handle_left.x *= k
+                            p.handle_right.x *= k
+                        fc.update()
+    sc.render.fps = rate
+    sc.frame_start, sc.frame_end = 0, round(n * k) - 1
+
+
 def main():
     SCENES[CUT]()
     if EXPOSURE is not None:
         bpy.context.scene.view_settings.exposure = float(EXPOSURE)
     sc = bpy.context.scene
     if ANIM or FIDX is not None:
-        n = animate_camera(CUT)
+        n = animate_c1() if CUT == "1" else animate_camera(CUT)
         if not n:
             raise SystemExit(f"카메라 키 없음: 컷 {CUT}")
+        if CUT == "2":
+            animate_runs()
+        if RATE != 30:
+            retime(RATE)
+        if BLUR:
+            sc.render.use_motion_blur = True
+            sc.render.motion_blur_shutter = BLUR
     if ANIM:
         a, b = (int(v) for v in FRAMES.split("-")) if FRAMES else (0, sc.frame_end)
         sc.frame_start, sc.frame_end = a, b
-        d = os.path.join(밖, "렌더", "움직임")
+        d = OUTDIR or os.path.join(밖, "렌더", "움직임")
         os.makedirs(d, exist_ok=True)
+        sc.render.use_overwrite = False   # 끊겨도 있는 장을 건너뛰고 잇는다
         sc.render.filepath = os.path.join(d, f"c{CUT}_")
         bpy.ops.render.render(animation=True)
         print("RENDERED", sc.render.filepath, a, b)

@@ -6,6 +6,7 @@
 import { TRACKS, LEVELS, RoundState } from './core.mjs';
 import { MusicPlayer } from './audio.mjs';
 import { Stage } from './stage.mjs';
+import { josa } from './kit/josa.mjs';
 import { rhythmItem, FLOW_RHYTHM, timingObservation, timingSummary, assignmentTracks, assignmentTrack, rhythmTargetLabel, nextTrackLine, RHYTHM_CANDIDATES, missedRhythm, returnLine } from './personalization.mjs';
 import {rhythmSupport} from '../brand-opening/game-tutor-support.mjs';
 import {createSupplementalPanel} from './supplemental-player.mjs';
@@ -104,7 +105,7 @@ function renderTracks() {
     b.innerHTML = `<span class="song-title">${esc(track.title)}</span><span class="song-what">${esc(songWhat(track))}</span>`
       + `<span class="song-meta"><span class="bpm">${Math.round(track.bpm)} BPM</span><span class="len">&nbsp;· ${clock(track.duration)}</span></span>`;
     b.disabled = !allowed.some((c) => c.trackId === track.id);
-    b.addEventListener('click', () => { trackChosen = true; selectTrack(track.id); });
+    b.addEventListener('click', () => { trackChosen = true; selectTrack(track.id); renderRecommendation(); });
     grid.append(b);
   }
 }
@@ -161,11 +162,14 @@ function renderRecommendation(select = false) {
   const plan = target ? null : returnPlan();
   const candidate = plan?.target.item.kind === 'song' ? RHYTHM_CANDIDATES[plan.target.item.trackId] : recommendation?.selected || (target ? candidates[0] : null);
   for (const x of $('track-grid').children) x.classList.toggle('rec', !!candidate && Number(x.dataset.track) === candidate.trackId);
-  $('recommendation-reason').textContent = target ? rhythmTargetLabel(target) : plan ? returnLine(plan)
-    : recommendation?.reason || '맞춤 추천을 불러오지 못했어요. 원하는 곡은 그대로 플레이할 수 있어요.';
+  if (candidate && select) selectTrack(candidate.trackId);
+  // 안내는 실제로 시작할 곡(state.track)을 말한다. 직접 고른 곡이 추천과 다르면 고른 곡을 그대로 두고 그렇게 말한다.
+  const mine = trackChosen && candidate && state.track !== candidate.trackId ? TRACKS[state.track].title : null;
+  $('recommendation-reason').textContent = target ? rhythmTargetLabel(target) : plan ? returnLine(plan, { chosenTrack: mine === null ? null : state.track })
+    : recommendation?.reason ? `${mine === null ? '' : `직접 고른 ‘${mine}’${josa(mine, '으로', '로')} 시작해요. 추천 곡은 ‘${candidate.label}’${josa(candidate.label, '이에요', '예요')}. `}${recommendation.reason}`
+    : '맞춤 추천을 불러오지 못했어요. 원하는 곡은 그대로 플레이할 수 있어요.';
   $('learning-scope').textContent = learningScopeText(); paintResetNotice();
   $('reset-learning').hidden = hosted;
-  if (candidate && select) selectTrack(candidate.trackId);
   return { candidate, reason: plan ? returnLine(plan) : recommendation?.reason || null };
 }
 function selectLevel(level) {
@@ -242,7 +246,7 @@ async function start() {
     announce(`${track.title}. 네 박자 뒤에 시작해요. 노트가 ${wt('크림색', '흰')} 선에 닿을 때 눌러요.`);
   } catch (error) {
     if (generation !== startGeneration) return;
-    music.stop(); state.round = null; tip(null); show('lobby');
+    music.stop(); state.round = null; tip(null); show('lobby'); renderRecommendation(!trackChosen);
     toast(error?.message || '곡을 준비하지 못했어요. 다시 시작해 주세요.');
   } finally {
     state.loading = false;
@@ -487,7 +491,7 @@ function leave() {
   state.pressed.clear(); state.paused = false; state.round = null;
   if ($('pause-dialog').open) $('pause-dialog').close();
   tip(null); resetQuestion(); worldPlay?.leave();
-  show('lobby'); renderRecommendation();
+  show('lobby'); renderRecommendation(!trackChosen);
   $('start-button').focus({ preventScroll: true });
 }
 
@@ -698,7 +702,7 @@ function trialSignIn() {
 function backToRoom() {
   music.stop();
   try { const town = window.parent?.__synkHome?.goTown; if (town) { town(); return; } const close = window.parent?.document?.getElementById('panel-close'); if (close) { close.click(); return; } } catch { /* 다른 출처 */ }
-  show('lobby'); renderRecommendation();
+  show('lobby'); renderRecommendation(!trackChosen);
 }
 function worldResults() {
   const list = $('review-list'), items = [...list.children].filter((li) => li.matches('li.ok,li.ko'));
@@ -791,8 +795,8 @@ $('pause-button').addEventListener('click', () => pause());
 $('resume-button').addEventListener('click', () => resume());
 $('pause-dialog').addEventListener('cancel', (e) => { e.preventDefault(); resume(); });
 $('leave-button').addEventListener('click', leave);
-$('back-button').addEventListener('click', () => { music.stop(); show('lobby'); renderRecommendation(); $('start-button').focus({ preventScroll: true }); });
-$('other-song').addEventListener('click', () => { music.stop(); show('lobby'); renderRecommendation(true); $('track-grid').scrollIntoView?.({ block: 'center' }); $('start-button').focus({ preventScroll: true }); });
+$('back-button').addEventListener('click', () => { music.stop(); show('lobby'); renderRecommendation(!trackChosen); $('start-button').focus({ preventScroll: true }); });
+$('other-song').addEventListener('click', () => { music.stop(); show('lobby'); trackChosen = false; renderRecommendation(true); $('track-grid').scrollIntoView?.({ block: 'center' }); $('start-button').focus({ preventScroll: true }); });
 $('recall-button').addEventListener('click', recall);
 $('settings-button').addEventListener('click', () => $('settings-dialog').showModal());
 $('settings-close').addEventListener('click', () => $('settings-dialog').close());
@@ -817,7 +821,7 @@ $('reset-learning').addEventListener('click', () => {
     if (!['account', 'busy', 'unsupported'].includes(outcome)) learningAvailable = false;
   }
   // 지난 안내를 먼저 거둬 이번 결과만 한 번 읽힌다.
-  clearResetNotice(); renderRecommendation(); showResetNotice(outcome);
+  clearResetNotice(); renderRecommendation(!trackChosen); showResetNotice(outcome);
 });
 // 공통 코인 스크립트(collection.js)를 읽지 못했으면 코인 줄을 숨긴다.
 if (!globalThis.SynkPlayCollection) for (const n of document.querySelectorAll('.synk-collection-line')) n.hidden = true;

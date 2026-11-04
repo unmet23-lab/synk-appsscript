@@ -1,6 +1,7 @@
 // 환승 러시 흐름(설계 v0.3): 개찰구 → 승강장 → 2호선 → 시청 환승 통로 → 1호선 → 출구 → 개찰구 → 지상 → 결과.
 // 규칙은 core.mjs, 원고는 journeys.mjs · people.mjs, 그림은 scene.mjs, 전광판은 led.mjs, 소리는 audio.mjs가 맡고 여기서는 차례만 잇는다.
 import { SubwayRun, clockText, highlightFor, SCHOOL_MINUTES } from './core.mjs';
+import { startLevel } from './level.mjs';
 import { buildJourney, explainDecision } from './journeys.mjs';
 import { LINES } from './lines.mjs';
 import { PEOPLE, CARS, planDay } from './people.mjs';
@@ -552,7 +553,8 @@ async function showResult(run, plan) {
   const best = album.best; const newBest = best == null || s.arrive < best;
   if (newBest) album.best = s.arrive;
   $('result-line').textContent = s.onTime ? (s.wrongs.length ? `${s.arriveText} 도착 — 셔틀 탔어요!` : `${s.arriveText} 도착 — 여유 있게!`) : `${s.arriveText} 도착 — 조금 늦었지만 첫날이니까요`;
-  $('result-score').textContent = `맞힌 안내 ${s.right} / ${s.total}${newBest && best != null ? ' · 내 최고 기록!' : best != null ? ` · 내 최고 ${clockText(best)}` : ''}`;
+  // 소리가 끊긴 문항은 세지 않는다(core.mjs summary) — 모두 끊긴 판은 「0 / 0」 대신 기록만 보인다.
+  $('result-score').textContent = [s.total ? `맞힌 안내 ${s.right} / ${s.total}` : '', newBest && best != null ? '내 최고 기록!' : best != null ? `내 최고 ${clockText(best)}` : ''].filter(Boolean).join(' · ');
   // 도장: 하나씩 찍힌다. 탭하면 모두 바로
   const stamps = $('stamps'); stamps.innerHTML = '';
   let skip = false; $('result').addEventListener('pointerdown', () => { skip = true; }, { once: true });
@@ -606,7 +608,7 @@ $('btn-quit').addEventListener('click', () => { togglePause(false); location.rel
 document.addEventListener('visibilitychange', () => { if (document.hidden && !$('board').hidden && !AUTO) togglePause(true); });
 
 // ── 시작 ──
-function chosenLevel() { if (query.get('level') === 'busy') return 'busy'; try { return localStorage.getItem('synk.subway.level') === 'busy' ? 'busy' : 'basic'; } catch { return 'basic'; } }
+function chosenLevel() { let saved = null; try { saved = localStorage.getItem('synk.subway.level'); } catch { /* 이번 판만 */ } return startLevel({ forced: query.get('level'), saved, grade: query.get('grade') }); }
 function setLevel(level) { try { localStorage.setItem('synk.subway.level', level); } catch { /* 이번 판만 */ } }
 async function prepare(journey, plan) {
   manifest = await fetch(`${VOICE_BASE}manifest.json`).then((r) => r.json());

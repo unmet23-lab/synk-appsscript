@@ -6,6 +6,7 @@ import './lib/fonts';
 import React from 'react';
 import { Composition } from 'remotion';
 import { P11, P11_DOG_FRAMES, P11_FRAMES } from './p11/P11';
+import { P11B, P11B_FRAMES } from './p11/B';
 import { P12, P12_FRAMES } from './p12/P12';
 import { HS16, HS9, HS_FRAMES } from './hs/HS';
 
@@ -15,10 +16,12 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="p11-B" component={P11} defaultProps={{ look: 'B' as const }} durationInFrames={P11_FRAMES} fps={24} width={1080} height={1920} />
     <Composition id="p11-C" component={P11} defaultProps={{ look: 'C' as const }} durationInFrames={P11_FRAMES} fps={24} width={1080} height={1920} />
     <Composition id="p11-AB" component={P11} defaultProps={{ look: 'AB' as const }} durationInFrames={P11_FRAMES} fps={24} width={1080} height={1920} />
-    {/* 최종 — 고글 쓴 개로 닫는 끝(11-04 유호님). p11-AB는 고르기 전 엄지 끝 */}
+    {/* 앞 판 — 고글 쓴 개가 물에 뜨는 끝(11-04, 파일 첨벙댕_9x16_물판끝). p11-AB는 고르기 전 엄지 끝 */}
     <Composition id="p11-AB-dog" component={P11} defaultProps={{ look: 'AB' as const, dogEnd: true }} durationInFrames={P11_DOG_FRAMES} fps={24} width={1080} height={1920} />
     {/* 가림 검사용 — 큰 낱말만(../가림검사.py) */}
     <Composition id="p11-AB-probe" component={P11} defaultProps={{ look: 'AB' as const, probe: true }} durationInFrames={P11_FRAMES} fps={24} width={1080} height={1920} />
+    {/* 첨벙댕 최종 — B급 바이럴 판(11-05 유호님 「이 판으로 바꿔」). 합성 이름 p11-B는 위의 옛 시안 몫이라 따로 둔다 */}
+    <Composition id="p11-viral" component={P11B} durationInFrames={P11B_FRAMES} fps={24} width={1080} height={1920} />
     <Composition id="p12" component={P12} durationInFrames={P12_FRAMES} fps={24} width={1080} height={1920} />
     <Composition id="p12-probe" component={P12} defaultProps={{ probe: true }} durationInFrames={P12_FRAMES} fps={24} width={1080} height={1920} />
     <Composition id="p12-cg" component={P12} defaultProps={{ cg: true }} durationInFrames={P12_FRAMES} fps={24} width={1080} height={1920} />

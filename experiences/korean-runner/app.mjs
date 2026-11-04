@@ -11,7 +11,7 @@ import { InstructionAudio } from './audio.mjs';
 import { instructionMetadata, chooseInstruction, actionEvidence, FLOW_RUN, TIRED_RUN, FLOW_WORDS, paceOf, runObservation } from './learning.mjs';
 import { mountListeningCheck } from './listening-check-ui.mjs';
 import { missedCheck } from './listening-check.mjs';
-import { scoreRun, skillReport, skillOf, SKILL_LABEL, STEP_WORD } from './report.mjs?v=runner-listening-scope-20261014';
+import { scoreRun, skillReport, skillOf, SKILL_LABEL, STEP_WORD, runReason } from './report.mjs?v=runner-next-way-20261104';
 import { drawHeroRoad } from './hero.mjs';
 import { preloadImages } from './kit/lab.mjs';
 import {runnerSupport,obstacleSupport,runnerCheckSupport} from '../brand-opening/game-tutor-support.mjs';
@@ -73,7 +73,7 @@ const noPracticeYet = () => { const s = learn('summary'); return s?.evidenceComp
 const returnReason = () => { const plan = missedCheck(coach); return plan ? `${plan.why} ${plan.next}` : null; };
 const reasonText = () => (learningWaiting() ? '학습 기록을 기다리는 중이에요. 다른 탭에서 쓰고 있다면 그 탭을 닫아 주세요. 달리기는 바로 할 수 있어요.'
   : learningBroken() ? '학습 기록을 저장할 수 없어서 기본 부탁으로 달려요.'
-    : returnReason() || (noPracticeYet() ? '아직 연습 기록이 없어요. 짧은 부탁을 들으면서 출발해 봐요.' : null) || nextPlan?.reason || '아직 안 들어 본 부탁부터 준비했어요.');
+    : returnReason() || (noPracticeYet() ? '아직 연습 기록이 없어요. 짧은 부탁을 들으면서 출발해 봐요.' : null) || runReason(coach, nextPlan) || nextPlan?.reason || '아직 안 들어 본 부탁부터 준비했어요.');
 let live = null;
 function startLive() {
   live = null;
@@ -149,16 +149,15 @@ function closeDialogs() { for (const d of dialogs) if (byId(d).open) byId(d).clo
 function paintLobbyReason() {
   const assignment = (() => { try { return coach?.assignment?.() || null; } catch { return null; } })();   // WORLD 안의 선생님 과제
   byId('l-reason').textContent = `${reasonText()}${assignment ? ' 선생님이 정한 ‘듣기 확인’이 있어요.' : ''}`;
-  return assignment;
+  const need = assignment?.requiredAttempts;
+  byId('listening-check').textContent = `듣기 확인 ${Number.isInteger(need) && need > 0 && need < 3 ? need : 3}문제`;
 }
 function renderLobby() {
   refreshRecommendation();
-  const assignment = paintLobbyReason();
+  paintLobbyReason();
   byId('best-line').hidden = !best; byId('best-line').textContent = best ? `최고 거리 ${meters(best)}` : '';
   const warn = !storageAvailable ? '이 브라우저에 최고 거리를 저장할 수 없어요.' : null;
   byId('storage-note').hidden = !warn; byId('storage-note').textContent = warn || '';
-  const need = assignment?.requiredAttempts;
-  byId('listening-check').textContent = `듣기 확인 ${Number.isInteger(need) && need > 0 && need < 3 ? need : 3}문제`;
   syncToggles();
   show('lobby');
 }
@@ -506,7 +505,7 @@ function renderResultLearning(s) {
   renderSkills(s);
   byId('r-next-reason').textContent = learningWaiting() ? '학습 기록을 기다리는 중이에요. 연결되면 이번 기록도 다음 달리기에 반영해요.'
     : learningBroken() ? '학습 기록을 저장할 수 없어서 다음에도 기본 부탁으로 달려요.'
-    : returnReason() || `${nextPlan?.reason || '아직 안 들어 본 부탁부터 준비해요.'} 다음 달리기에는 그런 부탁을 먼저 넣어요.`;
+    : returnReason() || runReason(coach, nextPlan) || `${nextPlan?.reason || '아직 안 들어 본 부탁부터 준비해요.'} 다음 달리기에는 그런 부탁을 먼저 넣어요.`;
 }
 function renderSkills(s) {
   const ul = byId('r-skills'); ul.textContent = '';
@@ -734,7 +733,7 @@ function closeListeningCheck() {
   if (screen === 'results' && model?.finished) {
     refreshRecommendation();
     renderResultLearning(scoreRun(model.answers, { completed: model.reason === 'tour' }));
-  }
+  } else if (screen === 'lobby') { refreshRecommendation(); paintLobbyReason(); }   // 답·취소·소리 실패가 기록에 닫힌 뒤(listening-check-ui close)의 실제 다음 판으로 다시 쓴다
   tutorEvent('lobby');
 }
 const listeningCheck = mountListeningCheck({ coach, chooseLead: () => missedCheck(coach)?.target.item ?? null, beforeOpen: () => { if (running && !model?.finished) return false; cancelVoice(); return true; },onListen:()=>tutorEvent('listening'),onFeedback:(correct,detail)=>tutorEvent(correct?'success':'retry',{answer:true,support:!correct&&detail?runnerCheckSupport(detail.item,detail.choice,detail.feedback):[]}),onClose:closeListeningCheck });

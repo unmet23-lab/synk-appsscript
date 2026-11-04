@@ -186,11 +186,11 @@ export function createWorldPlay({ audio, stage = () => null, cupLabel = () => ''
     return envLoading;
   }
   /** 막대 다섯: 지금 재생 위치의 포락선(25fps · 다섯 대역) — 공격 30ms · 해제 180ms로 부드럽게. 움직임 줄이기면 점 셋 그대로. */
-  function startMeter(id) {
+  function startMeter(key) {
     stopMeter();
     const box = $('#b-dots');
     if (!box || !fx.motionOn()) return;
-    const bars = $$('i', box), data = env?.orders?.[id], fps = env?.fps || 25, B = env?.bands || 5;
+    const bars = $$('i', box), data = env?.orders?.[key], fps = env?.fps || 25, B = env?.bands || 5;
     if (!data || !bars.length) return;
     box.classList.add('w-live');
     const level = new Float32Array(bars.length);
@@ -513,7 +513,7 @@ export function createWorldPlay({ audio, stage = () => null, cupLabel = () => ''
         ensure();
         duck(!!t?.heard);
         const id = audio.order?.id;
-        loadEnv().then(() => { if (audio.busy && audio.order?.id === id) startMeter(id); });
+        loadEnv().then(() => { if (audio.busy && audio.order?.id === id) startMeter(`${t?.worldGuest}/${id}`); });   // 포락선은 손님 · 주문마다(결과 화면의 다시 듣기는 막대가 없어 t가 비어도 된다)
         return;
       }
       release();

@@ -8,7 +8,7 @@ const understandingScenarios=require('../../../desktop/tools/member-understandin
 const { verifyFormatReturn }=require('./member-format-return.cjs');
 const root=path.resolve(__dirname,'..'),out=process.env.SYNK_INSIGHT_QA_OUT||path.join(__dirname,'member-understanding-20261014'),bundleOverride=process.env.SYNK_INSIGHT_WEB_BUNDLE||null,cssOverride=process.env.SYNK_INSIGHT_WEB_CSS||null;
 if(!path.isAbsolute(out)||[bundleOverride,cssOverride].some(file=>file&&!path.isAbsolute(file)))throw Error('QA output and asset override paths must be absolute');
-const sourceFiles=['platform.html','platform.css','benefits.css','member-insight.css','dist/platform.js','qa/member-insight-smoke.cjs','qa/member-format-return.cjs','../../desktop/tools/member-insight-fixture.cjs','../../desktop/tools/member-understanding-scenarios.cjs'];
+const sourceFiles=['platform.html','platform.css','benefits.css','member-insight.css','dist/platform.js','qa/member-insight-smoke.cjs','qa/member-format-return.cjs','../../desktop/tools/member-insight-fixture.cjs','../../desktop/tools/member-format-fixture.cjs','../../desktop/tools/member-understanding-scenarios.cjs'];
 const filePath=file=>file==='dist/platform.js'&&bundleOverride?bundleOverride:file==='member-insight.css'&&cssOverride?cssOverride:path.join(root,file);
 const fingerprints=async()=>Object.fromEntries(await Promise.all(sourceFiles.map(async file=>[file,require('node:crypto').createHash('sha256').update(await fs.readFile(filePath(file))).digest('hex')])));
 const origin='https://platform.example.invalid',accountOrigin='https://account.example.invalid',url=origin+'/platform.html#benefits/insight';

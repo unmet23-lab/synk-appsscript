@@ -9,7 +9,8 @@ const defaultState = () => path.join(os.homedir(), 'security-audit-skill/SYNK-co
 // A tick opens new verifications only within this budget: one verification may take 50 minutes,
 // and both the scheduled task and its hidden launcher stop a tick after two hours.
 const BUDGET_MS = 60 * 60_000;
-const MIN_VERIFICATION_FREE_BYTES = 2 * 1024 ** 3;
+// One verification adds about 5 GiB (slots, profiles, databases; 11-04), and the disk swings by more than 20 GiB within 30 minutes. Below this it only waits.
+const MIN_VERIFICATION_FREE_BYTES = 15 * 1024 ** 3;
 // Under load the registered browser tests stretch until they time out (S078 takes 3 s on a quiet PC and ran past its 165 s on 11-04 at 100% CPU),
 // and a timeout stays a failure that someone has to look at: five of the six runs opened on a saturated PC that day ended so, after 18-40 minutes each.
 // So a verification opens only on a PC that has stayed calm for a while, and another beside it needs more room. This only waits; it never relaxes a limit or a verdict.
@@ -93,6 +94,15 @@ function failureDisposition(error, startedAt, { slept = sleptDuring, now = new D
     publicationState: interrupted ? 'pending' : 'failure',
     description: interrupted ? 'System sleep interrupted verification; awaiting a fresh complete run' : INCOMPLETE };
 }
+// Names the failed cases only when the receipt says the tests themselves failed on unchanged source and inputs.
+// Any other end keeps the plain line, which the diagnosed ledger can never explain.
+function failureText(output) {
+  try {
+    const receipt = read(path.join(output, 'result.json')), ids = receipt.rows.filter(row => row.status !== 'pass').map(row => row.id);
+    if (receipt.sourceUnchanged !== true || receipt.inputsUnchanged !== true || !ids.length || receipt.rows.length !== receipt.expected || !ids.every(id => /^S\d{3,}$/.test(id))) return INCOMPLETE;
+    return github.failureDescription(receipt.passed, receipt.expected, ids);
+  } catch { return INCOMPLETE; }
+}
 function extendQueue(state, head, commits) {
   github.validCommit(head);
   for (const commit of commits) {
@@ -173,7 +183,7 @@ function markCancelledRuns(queue, cancelled) {
 // A failure that could not be published still reads as running. It is published again, and only then is its run woken.
 function republishFailures(queue, publish = github.publish) {
   for (const item of queue.items.filter(row => row.status === 'failed' && row.publicationError).slice(0, 10)) {
-    try { publish(item.commit, 'failure', INCOMPLETE); delete item.publicationError; item.resumePending = true; }
+    try { publish(item.commit, 'failure', failureText(item.output)); delete item.publicationError; item.resumePending = true; }
     catch { /* Tried again between verifications. */ }
   }
 }
@@ -235,7 +245,7 @@ async function runPool({ slots, pick, run, mayOpenFirst = () => true, mayOpenAno
   }
   if (fatal) throw fatal;
 }
-async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, requestedCommit = null, hub = github, runGit = git, cloneRoot = clone, verifyCommit = verify, first = roomForFirst, room = roomForAnother, meter = cpuMeter(), recheckMs = ROOM_RECHECK_MS, warmUpMs = ROOM_WARM_UP_MS, calmMs = CALM_MS, holdTickMs = HOLD_TICK_MS } = {}) {
+async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, requestedCommit = null, waitForRoom = false, hub = github, runGit = git, cloneRoot = clone, verifyCommit = verify, first = roomForFirst, room = roomForAnother, meter = cpuMeter(), recheckMs = ROOM_RECHECK_MS, warmUpMs = ROOM_WARM_UP_MS, calmMs = CALM_MS, holdTickMs = HOLD_TICK_MS, statfs = fs.statfsSync } = {}) {
   if (requestedCommit !== null) github.validCommit(requestedCommit);
   const config = loadConfig(stateDir), release = acquire(stateDir, { reclaimDead: requestedCommit === null }), queueFile = path.join(stateDir, 'queue.json'), started = Date.now();
   try {
@@ -267,7 +277,7 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
       if (spent()) return undefined;
       const item = nextItem(queue, head, attempted, Date.now(), requestedCommit);
       if (!item) return undefined;
-      diskWait = diskWaitFor(item, stateDir);
+      diskWait = diskWaitFor(item, stateDir, statfs);
       if (diskWait) return undefined;
       attempted.add(item.commit);
       return item;
@@ -297,6 +307,7 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
           if (disposition.interrupted) item.error = `Interrupted by system sleep; verifying again. ${item.error}`.slice(0, 1000);
           item.status = disposition.status; item.retryAt = Date.now() + 15 * 60_000;
           ({ publicationState, description } = disposition);
+          if (publicationState === 'failure' && error.code === 'TEST_FAILURE') description = failureText(item.output);
           // Not a test result: this checkout or the network is the suspect, so it stops for this tick instead of failing every commit it is handed.
           retireSlot = !['TEST_FAILURE', 'ENOSPC'].includes(error.code);
         }
@@ -313,10 +324,10 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
       try { trimPassedRun(item.output); } catch (error) { console.error(`Passed run was not trimmed: ${error.message}`); }
     };
     const checkouts = requestedCommit === null ? [config, ...slotConfigs(stateDir)] : [config];
-    // Nothing to wait for without a verification to open: a requested commit, a saved result to publish, an empty queue or a spent budget.
+    // An unattended request waits only for its own verification. Publishing a saved receipt needs no spare checkout.
     const nothingToHold = () => {
-      if (requestedCommit !== null || spent()) return true;
-      const item = nextItem(queue, head, attempted);
+      if (spent() || (requestedCommit !== null && !waitForRoom)) return true;
+      const item = nextItem(queue, head, attempted, Date.now(), requestedCommit);
       return !item || item.status === 'publish-pending';
     };
     const gated = allowedNow => sinceOpened => {
@@ -329,7 +340,7 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
     const mayOpenFirst = gated(() => { const calm = calmFirst.calm(); holdingSince = calm ? null : holdingSince ?? Date.now(); return calm; });
     const mayOpenAnother = gated(sinceOpened => sinceOpened >= warmUpMs && calmAnother.calm());
     await runPool({ slots: checkouts, pick, run, recheckMs, watch, finished: () => { refresh(); settle(); }, mayOpenFirst, mayOpenAnother });
-    if (holdingSince !== null && Date.now() - (queue.heldNoticeAt || 0) >= HOLD_NOTICE_MS) {
+    if (requestedCommit === null && holdingSince !== null && Date.now() - (queue.heldNoticeAt || 0) >= HOLD_NOTICE_MS) {
       // On a commit nothing has verified yet, so it replaces no result. Pending is never a pass.
       const newest = queue.items.findLast(row => row.status === 'queued');
       try { if (newest) { hub.publish(newest.commit, 'pending', HOLDING); queue.heldNoticeAt = Date.now(); write(queueFile, queue); } }
@@ -356,9 +367,11 @@ if (require.main === module) {
   const targetIndex = args.indexOf('--registered-commit');
   if (targetIndex >= 0 && (args.includes('--initialize') || targetIndex !== args.lastIndexOf('--registered-commit'))) throw Error('Choose one registered commit per verification');
   const requestedCommit = targetIndex >= 0 ? args[targetIndex + 1] || '' : null;
-  const promise = args.includes('--initialize') ? Promise.resolve(initialize(stateDir, args[args.indexOf('--initialize') + 1])) : tick(stateDir, { requestedCommit });
+  const waitForRoom = args.includes('--wait-for-room');
+  if (waitForRoom && requestedCommit === null) throw Error('--wait-for-room requires --registered-commit');
+  const promise = args.includes('--initialize') ? Promise.resolve(initialize(stateDir, args[args.indexOf('--initialize') + 1])) : tick(stateDir, { requestedCommit, waitForRoom });
   promise.then(summary => {
     if (requestedCommit !== null && summary.requested.status !== 'passed') process.exitCode = summary.requested.status === 'failed' ? 1 : 2;
   }).catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns, republishFailures, diskWaitFor, browserProfileDiskFull, runPool, cpuMeter, roomForFirst, roomForAnother, calmGate, trimPassedRun };
+module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, failureDisposition, failureText, due, resumeFinished, markCancelledRuns, republishFailures, diskWaitFor, browserProfileDiskFull, runPool, cpuMeter, roomForFirst, roomForAnother, calmGate, trimPassedRun };

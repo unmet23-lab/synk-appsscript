@@ -1,0 +1,3 @@
+A REAL PHOTOGRAPH taken on a smartphone by a university student in Korea, natural light and honest colors, slightly imperfect framing, portrait 2:3. Never an illustration, never a 3D render, never a stock-photo gloss. Absolutely no text, letters, numbers, signs with writing, labels, logos or brand marks anywhere in the frame. No people, no faces, no hands.
+
+A university department office door at night seen from the dark corridor: the door is shut, the small window dark, one green exit-style glow without any writing, a stack of folders on a small shelf beside the door, hallway lights off except one far away. A feeling of being too late.

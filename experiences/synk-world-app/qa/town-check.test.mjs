@@ -142,3 +142,21 @@ test('끝 화면 갈래: 이용권만 없으면 미통과가 아니고(access), 
  assert.equal(o({allowed:false,reason:'learning-check',outcome:'not-yet',missing:['reading']},true),'short','fewer fresh items than the window and still not yet');
  assert.equal(o(null),'not-yet');
 });
+
+test('3급 가까이(게시판 해독 해금): 가장 최근 TOPIK II 첫 답 6개 가운데 4개 — 입장 길 ②와 같은 말',()=>{
+ const seen=new Set(),fresh=bank.filter(item=>item.exam==='topik-ii'&&item.modality==='reading'&&!seen.has(item.familyKey)&&seen.add(item.familyKey));
+ const near=(c,complete=true)=>town.topik2Near({events:c.events(),evidenceComplete:complete,now:tick+1000});
+ const a=coach();solve(a,fresh.slice(0,5),[true,true,true,true,true]);
+ assert.equal(near(a),false,'다섯 개로는 아직 모른다');
+ solve(a,fresh.slice(5,6),[false]);
+ assert.equal(near(a),true,'여섯 개 가운데 다섯');
+ assert.equal(near(a,false),false,'기록이 다 안 읽혔으면 잠김');
+ const b=coach();solve(b,fresh.slice(0,6),[true,true,true,false,false,false]);
+ assert.equal(near(b),false,'여섯 개 가운데 셋');
+ solve(b,fresh.slice(6,9),[true,true,true]);
+ assert.equal(near(b),false,'가장 최근 여섯(틀림 셋 + 맞음 셋)만 본다');
+ solve(b,fresh.slice(9,10),[true]);
+ assert.equal(near(b),true,'가장 최근 여섯 가운데 넷');
+ const one=coach();solve(one,pick('topik-i','reading',6,30),[true,true,true,true,true,true]);
+ assert.equal(near(one),false,'TOPIK I 답은 세지 않는다');
+});

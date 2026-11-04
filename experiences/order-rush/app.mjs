@@ -191,6 +191,8 @@ const shownTicket = () => (state.celebrating ? state.served : ticket());
 const guestOf = (t) => (guests ? guests.of(t, [...(state.session?.queue || []), state.served].filter(Boolean)) : customerOf(t.order.id));
 const guestName = (t) => (cast ? cast.worldGuestName(t.worldGuest) : customerName(t.order.id));
 const guestFace = (t) => (cast ? cast.worldGuestFace(guestOf(t)) : `assets/cast/face/${customerOf(t.order.id)}.webp`);
+/** 주문 음성 파일: WORLD는 그 손님 목소리(결과 화면의 다시 듣기도 같은 손님), LAB은 undefined → audio.mjs가 audio/<주문>.wav 그대로. */
+const voiceSrc = (t) => (cast ? cast.worldGuestVoice(guestOf(t), t.order.id) : undefined);
 /** WORLD 손님 표정: order(주문하는 중) · thanks(받아 감) · puzzled(주문과 다름). 계산대에 선 그 손님일 때만 바꾼다. */
 function setMood(t, mood) {
   if (!cast || !t?.worldGuest || $('#guest').dataset.uid !== String(t.uid) || t.mood === mood) return;
@@ -226,7 +228,7 @@ function playTicket(t) {
   setMood(t, 'order');   // WORLD: 다시 주문하는 얼굴로
   t.playCount = (t.playCount || 0) + 1;
   audioTicket = t;
-  audio.play(t.order);
+  audio.play(t.order, voiceSrc(t));
 }
 function showOrderText(t) {
   if (!t.presentationId) t.presentationId = presentOrder(t.order);
@@ -806,7 +808,7 @@ function renderLog(s) {
       if (!r.replayed) { learn('help', r.presentationId, 'replay'); r.replayed = true; }
       audioTicket = null;
       audio.unlock();
-      audio.play(r.order);
+      audio.play(r.order, voiceSrc(r));
     });
     return li;
   }));

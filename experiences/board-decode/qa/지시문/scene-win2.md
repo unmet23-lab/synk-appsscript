@@ -1,0 +1,3 @@
+A REAL PHOTOGRAPH taken on a smartphone by a university student in Korea, natural light and honest colors, slightly imperfect framing, portrait 2:3. Never an illustration, never a 3D render, never a stock-photo gloss. Absolutely no text, letters, numbers, signs with writing, labels, logos or brand marks anywhere in the frame. No people, no faces, no hands.
+
+Close, appetizing photo of a paper bowl of Korean tteokbokki with steam rising, glossy red sauce, held on a folding table on a rainy day inside a bright university hall lobby, a second bowl beside it, rain on the big glass doors softly blurred behind. Warm, happy, delicious.

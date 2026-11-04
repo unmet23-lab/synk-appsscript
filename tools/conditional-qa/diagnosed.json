@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "ranges": [
+    {
+      "cases": ["S070"],
+      "from": "b5bd2107959294ea49e472950c060e09dfb419c2",
+      "fixedBy": "76586f0f07ed27b17078363d53a0ab2490dac116",
+      "cause": "환승 러시가 첫 레슨 뒤 바람길 카드 자리를 이어받았는데, 이 구간의 시험은 레슨 뒤에도 바람길 단추를 기다린다",
+      "evidence": "tools/conditional-qa/README.md#diagnosed-failures"
+    },
+    {
+      "cases": ["S072"],
+      "from": "a745a1f7054d4891f1882b9f1925154012527e00",
+      "fixedBy": "f577e04d19de6e066e997f923ecb94c7c2770911",
+      "cause": "시간 초과된 GET을 모두 한 번 더 물어 과제 화면의 12초 오류가 24초로 늦어졌고, 부하가 조금만 있어도 시험의 25초 대기를 넘긴다",
+      "evidence": "tools/conditional-qa/README.md#diagnosed-failures"
+    }
+  ]
+}

@@ -40,10 +40,12 @@ const games={
  // 말 랠리(11-04, 캠퍼스 판 겉 — 동아리 탁구장): 태오 선배와 주고받는다. 레슨 한 번 뒤 열린다(play-unlocks.mjs). 그림은 라켓과 공 인화지 한 장.
  rally:{get title(){return t('game.rally.title');},get detail(){return t('game.rally.detail');},label:'LISTEN & RALLY',path:'../talk-rally/',image:'world-play/talk-rally.webp',area:'묻는 말 · 이어지는 말을 듣고 알맞은 대답 고르기 연습'},
  // 환승 러시(11-04, 캠퍼스 판): 레슨 하나를 마치면 열린다(play-unlocks.mjs). 열린 뒤에는 바람길 카드 자리를 이어받는다.
- subway:{get title(){return t('game.subway.title');},get detail(){return t('game.subway.detail');},label:'LISTEN & GO',path:'../subway-rush/',image:'world-play/subway-rush.webp',area:'지하철 안내방송을 듣고 문·통로·출구 고르기 연습'}
+ subway:{get title(){return t('game.subway.title');},get detail(){return t('game.subway.detail');},label:'LISTEN & GO',path:'../subway-rush/',image:'world-play/subway-rush.webp',area:'지하철 안내방송을 듣고 문·통로·출구 고르기 연습'},
+ // 게시판 해독(11-04, 새 게임): 3→4급 읽기. 실력 기록으로 열린다(play-unlocks.mjs). 그림은 흰 바탕 위 물건 하나 — 압정으로 꽂은 빈 종이.
+ board:{get title(){return t('game.board.title');},get detail(){return t('game.board.detail');},label:'READ & ANSWER',path:'../board-decode/',image:'world-play/board-decode.webp',area:'공지 · 안내문 읽기 연습'}
 };
 let lastFocus=null,panelKind='',inView=true,manualReduced=false,frameTimer,displayPreference='auto',layout='portrait';
-let learningUI=null,learningLoader=null,education=null,reminders=null;
+let learningUI=null,learningLoader=null,education=null,reminders=null,playLevel=null;
 let host=null,panelResource=null,sceneActive=false,entryPhase='restoring',toastTimer,equipment={slots:{},dyes:{}},accountOwner='guest',learningData={},photoBusy=false,panelEpoch=0;
 let orientationTask=Promise.resolve();
 let tutorUI,homeTutor,firstRun,lastAccount=null;
@@ -202,8 +204,8 @@ function callHost(command,...args){
 }
 function openGame(id){
  if(!games[id])return;
- const state=playState(id,playRecord(learningData));
- if(!state.open){toast(t('play.locked',{where:t(state.where)}));return;}   // 잠긴 놀이는 이야기에서 연다
+ const state=playState(id,playRecordNow(),seenPlays());
+ if(!state.open){toast(lockText(state));if(state.lockOnly&&education){const go=education.examType?.()==='topik2'?education.position:education.plan;if(go){closePanel();go();}}return;}   // 잠긴 놀이는 이야기에서 연다
  void openTutor({then:()=>launchGame(id)});
 }
 // 첫 실행 순서(10-19 확정): 화면 언어 고르기 → (한글을 읽을 수 있는지 묻기) → 튜터 고르기. 언어는 튜터를 아직 고르지 않은
@@ -316,12 +318,15 @@ function updateStudy(plan){
  $('#life-next-kicker').textContent=t(plan.resume?'home.next.resume':next.route==='review'?'home.study.review':'home.study.suggested');
  $('#life-next-button').setAttribute('aria-label',t('home.study.label',{label:planLabel(next)}));
 }
+// 해금에 쓰는 기록: 생활 진도 + 앱 껍데기가 넘긴 실력 기록(게시판 해독). 못 읽으면 거짓(잠김).
+function playRecordNow(){let near=false;try{near=playLevel?.()===true;}catch{near=false;}return playRecord(learningData,{topik2Near:near});}
+const lockText=state=>state.lockOnly?t(state.where):t('play.locked',{where:t(state.where)});
 function showPlay(){
  const more=host?`<section class="play-more" aria-label="${t('play.more')}"><p class="eyebrow">MORE</p><button data-world="play"><img src="${asset('assets/world-felt/sentence.webp')}" alt=""><span><strong>${t('play.first.title')}</strong><small>${t('play.first.detail')}</small></span></button><button data-world="town"><img src="${asset('assets/world-felt/town.webp')}" alt=""><span><strong>${t('play.town.title')}</strong><small>${t('play.town.detail')}</small></span></button><button data-world="songs"><img src="${asset('assets/world-felt/songs.webp')}" alt=""><span><strong>${t('play.songs.title')}</strong><small>${t('play.songs.detail')}</small></span></button></section>`:'';
  // 해금 표(play-unlocks.mjs) + 학생 기록: 열린 놀이는 그대로, 잠긴 놀이는 이름과 「이야기에서 열려요 — 여는 자리」 한 줄(누르면 같은 말을 알린다).
  // 표로 잠겼던 놀이가 열린 뒤 처음 볼 때 한 번만 「새로 열림」(자물쇠가 열리고 흑백 → 색 · 빛 한 번 — home.css). 본 것은 계정마다 이 기기에 남긴다.
- const record=playRecord(learningData),seen=seenPlays(),fresh=[];
- openPanel(t('play.title'),`<div class="play-list">${playOrder(Object.keys(games),record).map(id=>[id,games[id]]).map(([id,g],i)=>{const state=playState(id,record),lock=state.open?'':t('play.locked',{where:t(state.where)});const isNew=!lock&&PLAY_UNLOCKS[id]&&seen&&!seen.includes(id);if(isNew)fresh.push(id);return `<button data-game="${id}"${lock?` data-locked="" aria-disabled="true" aria-label="${g.title}. ${lock}"`:''}${isNew?' data-new=""':''}><span class="play-art w-print"><img src="${asset(`assets/${g.image}`)}" alt=""></span>${isNew?'<span class="play-sheen" aria-hidden="true"></span>':''}<span class="play-copy"><small class="play-label">${String(i+1).padStart(2,'0')} · ${g.label}</small><strong>${g.title}</strong><small>${isNew?`<span class="play-new">${t('play.new')}</span> `:''}${lock?`<span class="play-lock">${lock}</span>`:g.detail}</small></span><span class="arrow" aria-hidden="true">↗</span></button>`;}).join('')}</div><p class="panel-note">${t('play.note')}</p>${more}`,{eyebrow:'PLAY',nav:'play'});
+ const record=playRecordNow(),seen=seenPlays(),fresh=[];
+ openPanel(t('play.title'),`<div class="play-list">${playOrder(Object.keys(games),record).map(id=>[id,games[id]]).map(([id,g],i)=>{const state=playState(id,record,seen),lock=state.open?'':lockText(state);const isNew=!lock&&PLAY_UNLOCKS[id]&&seen&&!seen.includes(id);if(isNew)fresh.push(id);return `<button data-game="${id}"${lock?` data-locked="" aria-disabled="true" aria-label="${g.title}. ${lock}"`:''}${isNew?' data-new=""':''}><span class="play-art w-print"><img src="${asset(`assets/${g.image}`)}" alt=""></span>${isNew?'<span class="play-sheen" aria-hidden="true"></span>':''}<span class="play-copy"><small class="play-label">${String(i+1).padStart(2,'0')} · ${g.label}</small><strong>${g.title}</strong><small>${isNew?`<span class="play-new">${t('play.new')}</span> `:''}${lock?`<span class="play-lock">${lock}</span>`:g.detail}</small></span><span class="arrow" aria-hidden="true">↗</span></button>`;}).join('')}</div><p class="panel-note">${t('play.note')}</p>${more}`,{eyebrow:'PLAY',nav:'play'});
  if(fresh.length)markPlaysSeen([...seen,...fresh]);
 }
 /** 「새로 열림」을 이미 본 놀이(계정마다). 저장소를 못 쓰면 null — 그때는 「새로 열림」을 띄우지 않는다(열 때마다 되풀이되지 않게). */
@@ -418,7 +423,7 @@ export const home={
  updateAccount,updateLearning,updateStudy,
  // 사진은 3D 방에서 찍는다. 동네에서 부르면 문 열림 없이 바로 방으로 들어간다(capture는 방이 다 불러질 때까지 기다린다).
  photo:()=>{if(place!=='room'||trip)void go('room',{instant:true});return photo();},
- connectEducation(value){education=value;},connectReminders(value){reminders=value;},openLearningGame:launchGame,
+ connectEducation(value){education=value;},connectPlayLevel(value){playLevel=value;},connectReminders(value){reminders=value;},openLearningGame:launchGame,
  hangulReading,setHangulReading,startLifeLesson,firstRun:()=>({order:[...firstRun.order],active:firstRun.active()}),
  scene:()=>living.metrics(),memory:()=>memory.snapshot(),town:()=>({place,moving:trip?.to||null,...town.metrics()}),enterRoom:()=>go('room'),leaveRoom:()=>go('town'),
  startTutorial:()=>openTutor(),chooseTutor:()=>openTutor({force:true}),ensureTutor:then=>openTutor({then}),tutor:()=>tutorUI.metrics(),homeTutor:()=>homeTutor?.metrics(),

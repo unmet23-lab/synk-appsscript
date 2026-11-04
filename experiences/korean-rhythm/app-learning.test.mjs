@@ -7,6 +7,7 @@ import {TRACKS,LEVELS,RoundState} from './core.mjs';
 import {rhythmItem,RHYTHM_CANDIDATES,assignmentTracks,assignmentTrack,rhythmTargetLabel,FLOW_RHYTHM,timingObservation,timingSummary,nextTrackLine,missedRhythm,returnLine} from './personalization.mjs';
 import {rhythmSupport} from '../brand-opening/game-tutor-support.mjs';
 import {createSupplementalPanel,supplementalAudioUrl} from './supplemental-player.mjs';
+import {josa} from './kit/josa.mjs';
 test('supplemental panel tells the page only when a practice returns home, after the unanswered record',()=>{
  const element=(tag,text='')=>({tag,textContent:text,children:[],focused:0,listeners:{},type:'',className:'',disabled:false,setAttribute(){},
   append(...c){this.children.push(...c);},replaceChildren(...c){this.children=c;},addEventListener(k,f){this.listeners[k]=f;},focus(){this.focused++;},
@@ -51,7 +52,7 @@ async function mount(coach,storage,{confirm=()=>true}={}){
   const get=id=>{if(!elements.has(id))elements.set(id,element());return elements.get(id);};
   const document={getElementById:get,createElement:element,querySelectorAll:()=>[],addEventListener(){},body:element()};
   const context={TRACKS,LEVELS,RoundState,rhythmItem,RHYTHM_CANDIDATES,missedRhythm,returnLine,assignmentTracks,assignmentTrack,rhythmTargetLabel,
-    FLOW_RHYTHM,timingObservation,timingSummary,nextTrackLine,rhythmSupport,createSupplementalPanel:options=>createSupplementalPanel({...options,document}),recordTrialStarted(){},document,localStorage:storage,
+    FLOW_RHYTHM,timingObservation,timingSummary,nextTrackLine,rhythmSupport,josa,createSupplementalPanel:options=>createSupplementalPanel({...options,document}),recordTrialStarted(){},document,localStorage:storage,
     MusicPlayer:class{},Stage:class{},SynkLearning:{createGame:()=>coach},SynkPlayAccount:{ready:async()=>{}},
     matchMedia:()=>({matches:false}),setTimeout:()=>1,clearTimeout(){},addEventListener(){},scrollTo(){},confirm};
   assert.deepEqual(imported.filter(name=>!(name in context)),[],'app.mjs imports a name this test does not provide');

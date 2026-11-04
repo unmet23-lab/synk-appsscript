@@ -89,9 +89,18 @@ const map3 = { map_ver: `${speaking.json.version}-${crypto.createHash('sha256').
 validateMap(map3);
 output(path.join(root, 'strata/maps/ko-speaking.json'), JSON.stringify(map3, null, 2) + '\n');
 const esbuild = require(require.resolve('esbuild', { paths: [root, path.join(root, '영상')] }));
-const bundled = esbuild.buildSync({ absWorkingDir: root, entryPoints: ['atlas/game-browser.js'], bundle: true,
+const bundleOptions = { absWorkingDir: root, bundle: true,
   write: false, platform: 'browser', format: 'iife', globalName: 'SynkLearning', target: ['es2022'], charset: 'utf8',
-  banner: { js: '// Generated from atlas/ and strata/. Change canonical sources; run tools/build-game-learning.js.' } });
-for (const game of require('./lib/atlas-copies').GAMES) {
-  output(path.join(root, 'experiences', game, 'atlas-learning.js'), bundled.outputFiles[0].contents);
+  banner: { js: '// Generated from atlas/ and strata/. Change canonical sources; run tools/build-game-learning.js.' } };
+const bundled = esbuild.buildSync({ ...bundleOptions, entryPoints: ['atlas/game-browser.js'] });
+// A game that also asks TOPIK II (ko2.*) questions is bundled with WORLD's map (strata/world-map.js): the same entry with
+// that one line changed, so every other game's bytes stay as they are and the entries cannot drift apart.
+const { GAMES, WORLD_MAP_GAMES } = require('./lib/atlas-copies');
+const NARROW_MAP = "const curriculum = require('../strata/topik-i').topikMap();";
+const gameEntry = fs.readFileSync(path.join(root, 'atlas/game-browser.js'), 'utf8').replace(/\r\n/g, '\n');
+if (!gameEntry.includes(NARROW_MAP)) throw new Error('atlas/game-browser.js map line changed; update WORLD_MAP_GAMES bundling');
+const worldMapped = esbuild.buildSync({ ...bundleOptions, stdin: { contents: gameEntry.replace(NARROW_MAP, "const curriculum = require('../strata/world-map').worldMapData();"),
+  resolveDir: path.join(root, 'atlas'), sourcefile: 'atlas/game-browser.js', loader: 'js' } });
+for (const game of GAMES) {
+  output(path.join(root, 'experiences', game, 'atlas-learning.js'), (WORLD_MAP_GAMES.includes(game) ? worldMapped : bundled).outputFiles[0].contents);
 }

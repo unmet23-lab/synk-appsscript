@@ -115,8 +115,14 @@ test('a TOPIK learner whose 바람길 checks are all used gets the due life revi
  const summary=coach.summary();
  const before=plan(f,{settings:exam,summary});
  assert.equal(before.selected.gameId,'runner','the 10-19 behaviour: profile alone, no presentations');
- const fixed=plan(f,{settings:exam,summary,recommendActivities:input=>coach.recommendActivities(input.candidates,{settings:input.settings,at:input.at})});
+ const withHistory=input=>coach.recommendActivities(input.candidates,{settings:input.settings,at:input.at});
+ const fixed=plan(f,{settings:exam,summary,openGames:['runner','rhythm','hangul'],recommendActivities:withHistory});
  assert.equal(fixed.selected.route,'review','with the presented history the spent 바람길 leaves the urgent tier');
  const runner=fixed.assessments.find(row=>row.id==='world.play.runner');
  assert.ok(runner.reasons.includes('practice.spent'));
+ // 환승 러시가 열린 학생(레슨을 마쳤다)에게는 같은 듣기 칸의 처음 보는 문항이 있어 Core가 그 놀이를 먼저 고른다 — 다 쓴 바람길이 앞서는 것은 아니다.
+ const opened=plan(f,{settings:exam,summary,recommendActivities:withHistory});
+ assert.equal(opened.selected.gameId,'subway');
+ assert.ok(opened.assessments.find(row=>row.id==='world.play.runner').reasons.includes('practice.spent'));
+ assert.ok(opened.alternatives.some(row=>row.route==='review'),'다음 차례에 복습이 남아 있다');
 });

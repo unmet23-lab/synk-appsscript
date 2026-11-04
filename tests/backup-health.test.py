@@ -741,7 +741,17 @@ class SpaceGuardTests(unittest.TestCase):
         self.assertEqual((row['status'], row['codes']), ('attention', ['DISK_FREE_BELOW_FLOOR']))
         event, _, unresolved = health.choose_event({'status': 'attention', 'components': [row], 'issues': []}, {}, self.now, lib)
         self.assertTrue(unresolved)
-        self.assertEqual(event['body'], '공간 지킴이(C: 여유 300GB): 남은 공간 285GB(지킬 선 300GB)')
+        self.assertEqual(event['body'], '공간 지킴이(C: 여유): 남은 공간 285GB(지킬 선 300GB)')
+
+    def test_low_line_is_named_only_when_the_guard_says_attention(self):
+        def written(status, free):
+            lib.atomic_json(self.root / health.SPACE_GUARD['receipt'], {'schemaVersion': 1, 'checkedAt': lib.stamp(self.now - dt.timedelta(minutes=20)),
+                'status': status, 'freeBefore': free, 'freeAfter': free, 'floor': 150 * 1024**3, 'low': 30 * 1024**3})
+            return self.guard()
+        row = written('attention', 17 * 1024**3)
+        self.assertEqual((row['status'], row['codes'], row['detail']), ('attention', ['DISK_FREE_BELOW_FLOOR'], '남은 공간 17GB(바닥 선 30GB)'))
+        row = written('low', 45 * 1024**3)  # 150 아래여도 바닥 위면 주의가 아니다
+        self.assertEqual((row['status'], row['codes'], row['detail']), ('healthy', [], '남은 공간 45GB(지킬 선 150GB)'))
 
     def test_unregistered_schedule_waits_without_failing_or_blocking_recovery(self):
         self.receipt(age=dt.timedelta(hours=30))  # only the one manual check

@@ -6287,6 +6287,328 @@ var SynkLearning = (() => {
     }
   });
 
+  // strata/maps/topik-ii.json
+  var require_topik_ii = __commonJS({
+    "strata/maps/topik-ii.json"(exports, module) {
+      module.exports = {
+        map_ver: "topik-ii-practice-1-47d0a0c19158",
+        subject: "ko",
+        sources: {
+          "practice-taxonomy": {
+            path: "strata/topik-ii.skills.json",
+            sha256: "47d0a0c1915834979d4eb07420214da084987699ae2e4c59057b1de4cfb1da8d"
+          }
+        },
+        nodes: [
+          {
+            id: "ko2.listening.response",
+            kind: "skill",
+            label_ko: "듣고 알맞게 대답하기",
+            domain: "listening",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.listening.detail",
+            kind: "skill",
+            label_ko: "듣고 세부 내용 파악하기",
+            domain: "listening",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.listening.main",
+            kind: "skill",
+            label_ko: "듣고 중심 생각 파악하기",
+            domain: "listening",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.listening.inference",
+            kind: "skill",
+            label_ko: "듣고 상황 짐작하기",
+            domain: "listening",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.listening.attitude",
+            kind: "skill",
+            label_ko: "듣고 의도·태도 파악하기",
+            domain: "listening",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.reading.grammar",
+            kind: "skill",
+            label_ko: "문법 표현 읽기",
+            domain: "reading",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.reading.vocabulary",
+            kind: "skill",
+            label_ko: "어휘·관용 표현 읽기",
+            domain: "reading",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.reading.detail",
+            kind: "skill",
+            label_ko: "읽고 세부 내용 파악하기",
+            domain: "reading",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.reading.main",
+            kind: "skill",
+            label_ko: "읽고 중심 내용 파악하기",
+            domain: "reading",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.reading.context",
+            kind: "skill",
+            label_ko: "문맥으로 내용 짐작하기",
+            domain: "reading",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.reading.structure",
+            kind: "skill",
+            label_ko: "글의 흐름 파악하기",
+            domain: "reading",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.reading.attitude",
+            kind: "skill",
+            label_ko: "필자·인물의 태도와 심정 파악하기",
+            domain: "reading",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.writing.sentence",
+            kind: "skill",
+            label_ko: "문맥에 맞는 문장 쓰기",
+            domain: "writing",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.writing.description",
+            kind: "skill",
+            label_ko: "자료를 설명하는 글 쓰기",
+            domain: "writing",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          },
+          {
+            id: "ko2.writing.argument",
+            kind: "skill",
+            label_ko: "주장하는 글 쓰기",
+            domain: "writing",
+            level: null,
+            difficulty: {
+              authored: null,
+              measured: null,
+              n: 0
+            },
+            source_refs: [
+              {
+                source: "practice-taxonomy",
+                selector: "skills"
+              }
+            ]
+          }
+        ],
+        edges: [],
+        tag_vocabulary: [],
+        links: {
+          tags: [],
+          goals: []
+        }
+      };
+    }
+  });
+
+  // strata/world-map.js
+  var require_world_map = __commonJS({
+    "strata/world-map.js"(exports, module) {
+      "use strict";
+      var topikI = require_topik_i2();
+      var topikII = require_topik_ii();
+      var II = "-ii";
+      function worldMapData({ base = topikI.topikMap(), second = topikII } = {}) {
+        const rename = (key) => Object.hasOwn(base.sources, key) ? `${key}${II}` : key;
+        const refs = (list) => list.map((ref) => ({ ...ref, source: rename(ref.source) }));
+        return {
+          map_ver: `world:${base.map_ver}:${second.map_ver}`,
+          subject: base.subject,
+          sources: { ...base.sources, ...Object.fromEntries(Object.entries(second.sources).map(([key, value]) => [rename(key), value])) },
+          nodes: [...base.nodes, ...second.nodes.map((node) => ({ ...node, source_refs: refs(node.source_refs) }))],
+          edges: [...base.edges, ...second.edges.map((edge) => ({ ...edge, source_refs: refs(edge.source_refs) }))],
+          tag_vocabulary: [...base.tag_vocabulary, ...second.tag_vocabulary],
+          links: {
+            ...base.links,
+            tags: [...base.links.tags, ...second.links.tags.map((link) => ({ ...link, source_refs: refs(link.source_refs) }))],
+            ...base.links.goals || second.links.goals?.length ? { goals: [...base.links.goals || [], ...(second.links.goals || []).map((link) => ({ ...link, source_refs: refs(link.source_refs) }))] } : {}
+          }
+        };
+      }
+      module.exports = { worldMapData };
+    }
+  });
+
   // atlas/trail.js
   var require_trail = __commonJS({
     "atlas/trail.js"(exports, module) {
@@ -11583,11 +11905,11 @@ var SynkLearning = (() => {
     }
   });
 
-  // atlas/game-browser.js
+  // atlas/atlas/game-browser.js
   var require_game_browser = __commonJS({
-    "atlas/game-browser.js"(exports, module) {
+    "atlas/atlas/game-browser.js"(exports, module) {
       var { createMap } = require_strata();
-      var curriculum = require_topik_i2().topikMap();
+      var curriculum = require_world_map().worldMapData();
       var learning = require_game_learning();
       var Flow = require_flow();
       var TemperFlow = require_temper_flow();

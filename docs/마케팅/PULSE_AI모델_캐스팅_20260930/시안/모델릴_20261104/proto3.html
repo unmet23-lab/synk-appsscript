@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PULSE 모델 시안</title>
+<style>
+@font-face{font-family:'SUIT Variable';font-weight:100 900;font-display:swap;src:url(assets/fonts/SUIT-Variable.woff2) format('woff2')}
+@font-face{font-family:'SYNK Latin';font-weight:100 549;font-display:swap;src:url(assets/fonts/SYNKLatin-Regular.woff2) format('woff2')}
+@font-face{font-family:'SYNK Latin';font-weight:550 649;font-display:swap;src:url(assets/fonts/SYNKLatin-SemiBold.woff2) format('woff2')}
+@font-face{font-family:'SYNK Latin';font-weight:650 1000;font-display:swap;src:url(assets/fonts/SYNKLatin-Bold.woff2) format('woff2')}
+@font-face{font-family:'DM Mono';font-weight:400 600;font-display:swap;src:url(assets/fonts/DMMono.ttf) format('truetype')}
+:root{--ease:cubic-bezier(.2,.75,.15,1);--sans:'SYNK Latin','SUIT Variable',system-ui,sans-serif;--mono:'DM Mono',ui-monospace,monospace;--edge:clamp(18px,2vw,32px)}
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#000;color:#fff;font-family:var(--sans);-webkit-font-smoothing:antialiased;word-break:keep-all}
+a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+.n{font-variant-numeric:tabular-nums}
+/* 벽: 모델마다 세로 칸 하나. 칸 너비만 바뀌고 그림은 그대로라 커튼처럼 열린다 */
+.wall{position:fixed;inset:0;overflow:hidden;touch-action:none;cursor:grab;user-select:none;background:#000}
+.wall.drag{cursor:grabbing}
+.p{position:absolute;top:0;bottom:0;left:0;overflow:hidden;will-change:transform,width;contain:strict;background:#141414}
+.p .inner{position:absolute;top:0;bottom:0;left:50%;width:var(--w0);margin-left:calc(var(--w0) / -2)}
+.p img,.p video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;-webkit-user-drag:none;pointer-events:none}
+.p video{opacity:0}.p video.on{opacity:1}
+.p .still{transform-origin:50% 40%}
+.p .still.kb{animation:kb 4.2s linear both}
+@keyframes kb{from{transform:scale(1.02)}to{transform:scale(1.1)}}
+.p .dim{position:absolute;inset:0;background:#000;opacity:var(--d,.4);pointer-events:none}
+.p .inner::after{content:'';position:absolute;left:0;right:0;bottom:0;height:42%;background:linear-gradient(to top,rgba(0,0,0,.74),rgba(0,0,0,.36) 46%,rgba(0,0,0,0));pointer-events:none}
+.p .lab{position:absolute;left:0;right:0;bottom:18px;text-align:center;font-size:13px;font-weight:600;text-shadow:0 1px 8px rgba(0,0,0,.7);opacity:0;pointer-events:none;white-space:nowrap;transition:opacity .18s}
+.p:hover .lab{opacity:var(--l,0)}.p:hover .dim{opacity:calc(var(--d,.4) * .55)}
+.topscrim{position:fixed;left:0;right:0;top:0;height:92px;pointer-events:none;background:linear-gradient(to bottom,rgba(0,0,0,.5),rgba(0,0,0,0))}
+/* 지금 도는 것 */
+.segs{position:fixed;top:64px;display:flex;gap:4px;pointer-events:none;transition:opacity .25s}
+.seg{flex:1;position:relative;height:14px;pointer-events:auto;text-align:left}
+.seg::before,.seg i{content:'';position:absolute;left:0;top:0;height:2px;width:100%;background:rgba(255,255,255,.36)}
+.seg i{background:#fff;width:var(--p,0%)}
+/* 위 · 아래 */
+.bar{position:fixed;left:0;right:0;top:0;height:60px;display:flex;align-items:center;gap:28px;padding:0 var(--edge);font-size:14px;font-weight:550}
+.bar img{height:19px;filter:brightness(0) invert(1)}
+.bar nav{display:flex;gap:24px;color:rgba(255,255,255,.72)}.bar nav .on{color:#fff}.bar nav a:hover{color:#fff}
+.bar .r{margin-left:auto;display:flex;align-items:center;gap:22px}
+.bar .r span b{font-weight:600}
+.hud{position:fixed;left:0;bottom:0;display:flex;flex-direction:column;gap:18px;padding:0 20px 20px;pointer-events:none;will-change:transform}
+.hud>*{pointer-events:auto}
+.who .k{font:500 12px/1 var(--mono);color:rgba(255,255,255,.76)}
+.who h1,.who .m{text-shadow:0 1px 14px rgba(0,0,0,.42)}
+.who h1{margin:9px 0 0;font-family:'SUIT Variable',sans-serif;font-size:clamp(40px,4.4vw,62px);font-weight:700;letter-spacing:-.045em;line-height:1}
+.who .m{margin-top:11px;font-size:14.5px;font-weight:500;color:rgba(255,255,255,.9);line-height:1.5;text-wrap:pretty}
+.who>*{transition:opacity .22s,transform .4s var(--ease)}
+.who .m,.acts{opacity:var(--o,1)}
+.who .m{transition:transform .4s var(--ease)}
+.who.swap>*{opacity:0;transform:translateY(7px)}
+.acts{display:flex;gap:18px;align-items:center;justify-content:space-between}
+.cta{display:inline-flex;align-items:center;justify-content:center;flex:1;max-width:260px;height:48px;padding:0 24px;background:#fff;color:#0c0c0d;font-size:14.5px;font-weight:700;letter-spacing:-.015em;white-space:nowrap;transition:background .2s}
+.cta:hover{background:#e9e9e6}.cta[aria-pressed="true"]{background:#A3265F;color:#fff}
+.lnk{font-size:14px;font-weight:600;white-space:nowrap;text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px}
+@media (max-width:760px){
+  .bar nav{display:none}
+  .who h1{font-size:40px}.who .m{font-size:13.5px}
+  .hud{gap:14px;padding:0 16px calc(14px + env(safe-area-inset-bottom,0px))}
+  .cta{max-width:none}
+  .p .lab{display:none}
+}
+</style></head>
+<body>
+<div class="wall" id="wall" tabindex="0" aria-label="모델 줄, 옆으로 끌어 넘겨 보세요"></div>
+<div class="topscrim"></div>
+<div class="segs" id="segs"></div>
+<header class="bar"><img src="assets/brand-pulse.webp" alt="SYNK PULSE"><nav><a class="on" href="#">모델</a><a href="#">키 순서</a><a href="#">사용 안내</a></nav><div class="r"><button>광고 내용으로 찾기</button><span>패키지 <b class="n" id="pk">0</b></span></div></header>
+<div class="hud">
+  <div class="who" id="who"><div class="k n" id="k"></div><h1 id="nm"></h1><div class="m n" id="mt"></div></div>
+  <div class="acts"><a class="lnk" href="#">모델 북</a><button class="cta" id="add" aria-pressed="false">패키지에 담기</button></div>
+</div>
+<script>
+(function () {
+  const M = @@DATA@@, $ = (s) => document.querySelector(s), wall = $('#wall'), N = M.length;
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  wall.innerHTML = M.map((m, i) => `<div class="p" data-i="${i}"><div class="inner"><img class="still" src="${m.poster}" alt="" draggable="false"><span class="dim"></span></div><span class="lab">${m.name}</span></div>`).join('');
+  const P = [...wall.querySelectorAll('.p')].map((el) => ({ el, inner: el.firstElementChild, still: el.querySelector('.still'), dim: el.querySelector('.dim') }));
+  let vw = 0, vh = 0, W = 0, phone = false, table = [], step = 180;
+  function measure() {
+    vw = innerWidth; vh = innerHeight; phone = vw <= 760;
+    W = phone ? vw - 44 : Math.min(vh * 9 / 16, vw * .44);
+    wall.style.setProperty('--w0', W + 'px');
+    table = phone ? [W, 22, 0] : [W, W * .46, W * .28, W * .14, 0];
+    step = phone ? Math.max(120, vw * .34) : Math.max(150, W * .36);
+    last = NaN; layout(f);
+  }
+  const wAt = (d) => { d = Math.abs(d); const i = Math.min(Math.floor(d), table.length - 1), j = Math.min(i + 1, table.length - 1), t = Math.min(d - i, 1); return table[i] + (table[j] - table[i]) * t; };
+  let f = Math.max(0, M.findIndex((m) => m.code === 'F02')), target = f, vel = 0, last = NaN; // 첫 화면은 하린
+  function layout(x) {
+    if (x === last) return; last = x;
+    const ws = P.map((_, i) => wAt(i - x));
+    let fixed = 0, free = 0;
+    for (let i = 0; i < N; i++) { const nk = Math.max(0, 1 - Math.abs(i - x)); fixed += ws[i] * nk; free += ws[i] * (1 - nk); }
+    const K = (vw - fixed) / Math.max(1, free);
+    let left = 0;
+    for (let i = 0; i < N; i++) {
+      const d = Math.abs(i - x), nk = Math.max(0, 1 - d);
+      const w = ws[i] * (nk + (1 - nk) * K);
+      const p = P[i], px = Math.round(left), pw = Math.round(left + w) - px;
+      if (p.px !== px) { p.px = px; p.el.style.transform = `translate3d(${px}px,0,0)`; }
+      if (p.pw !== pw) { p.pw = pw; p.el.style.width = pw + 'px'; }
+      const dimv = d < 1 ? d * .14 : Math.min(.34, .14 + (d - 1) * .08);
+      if (p.dv !== dimv) { p.dv = dimv; p.el.style.setProperty('--d', dimv.toFixed(3)); }
+      const lab = phone ? 0 : (pw > 54 && d > .6 ? 1 : 0);
+      if (p.lv !== lab) { p.lv = lab; p.el.style.setProperty('--l', lab); }
+      left += w;
+    }
+  }
+  // 끌기 · 놓으면 가까운 칸으로
+  let dragging = false, sx = 0, sf = 0, moved = false, lx = 0, lt = 0, pid = null;
+  wall.addEventListener('pointerdown', (e) => { dragging = true; moved = false; sx = lx = e.clientX; sf = target; lt = performance.now(); vel = 0; pid = e.pointerId; wall.setPointerCapture(pid); });
+  wall.addEventListener('pointermove', (e) => {
+    if (!dragging || e.pointerId !== pid) return;
+    const dx = e.clientX - sx; if (Math.abs(dx) > 5) { moved = true; wall.classList.add('drag'); }
+    if (!moved) return;
+    target = Math.max(-.4, Math.min(N - .6, sf - dx / step));
+    const now = performance.now(), dt = now - lt; if (dt > 0) { vel = vel * .6 + (-(e.clientX - lx) / step / (dt / 1000)) * .4; lx = e.clientX; lt = now; }
+  });
+  const up = (e) => {
+    if (!dragging || e.pointerId !== pid) return; dragging = false; wall.classList.remove('drag');
+    if (!moved) { const t = document.elementFromPoint(e.clientX, e.clientY); wall.releasePointerCapture(pid); const el = [...P].find((p) => p.px <= e.clientX && e.clientX < p.px + p.pw); if (el) target = P.indexOf(el); return; }
+    const still = performance.now() - lt > 90;
+    target = Math.max(0, Math.min(N - 1, Math.round(target + (still ? 0 : Math.max(-3, Math.min(3, vel * .18))))));
+  };
+  wall.addEventListener('pointerup', up); wall.addEventListener('pointercancel', up);
+  let wheelAt = 0;
+  wall.addEventListener('wheel', (e) => { e.preventDefault(); const now = performance.now(); if (now - wheelAt < 240) return; const v = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY; if (Math.abs(v) < 6) return; wheelAt = now; target = Math.max(0, Math.min(N - 1, Math.round(target) + Math.sign(v))); }, { passive: false });
+  addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') target = Math.min(N - 1, Math.round(target) + 1); if (e.key === 'ArrowLeft') target = Math.max(0, Math.round(target) - 1); });
+  addEventListener('resize', measure);
+
+  // 가운데 칸의 짧은 릴: 워킹 → 표정 → 광고 장면
+  const vids = [0, 1].map(() => { const v = document.createElement('video'); v.muted = true; v.playsInline = true; v.preload = 'auto'; return v; });
+  let cur = -1, seq = 0, front = 0, raf0 = 0;
+  const added = new Set(), segs = $('#segs');
+  function placeSegs(i) { const p = P[i]; segs.style.left = p.px + 12 + 'px'; segs.style.width = p.pw - 24 + 'px'; segs.style.opacity = Math.abs(i - f) < .08 ? 1 : 0; }
+  const hud = $('.hud');
+  function placeHud(i) { const p = P[i], d = Math.abs(i - f); if (hud.pw !== p.pw) { hud.pw = p.pw; hud.style.width = Math.max(W * .8, p.pw) + 'px'; } const x = p.px + (p.pw - Math.max(W * .8, p.pw)) / 2; hud.style.transform = `translate3d(${x.toFixed(1)}px,0,0)`; hud.style.setProperty('--o', Math.max(0, 1 - d * 5).toFixed(3)); }
+  function setSegs(m, k) { segs.innerHTML = m.reel.map((r, j) => `<button class="seg" data-k="${j}" aria-label="${r.label}" style="--p:${j < k ? 100 : 0}%"><i></i></button>`).join(''); }
+  function run(i, k) {
+    const my = ++seq, m = M[i], p = P[i], r = m.reel[k];
+    setSegs(m, k);
+    const bars = segs.children, next = () => { if (my === seq) run(i, (k + 1) % m.reel.length); };
+    const progress = (fn) => { const tick = () => { if (my !== seq) return; const v = fn(); if (bars[k]) bars[k].style.setProperty('--p', Math.min(100, v * 100).toFixed(1) + '%'); requestAnimationFrame(tick); }; requestAnimationFrame(tick); };
+    if (r.kind === 'video') {
+      const v = vids[front], o = vids[1 - front]; front = 1 - front;
+      v.src = r.src; v.currentTime = 0; p.inner.insertBefore(v, p.dim); p.inner.insertBefore(o, v);
+      const show = () => { if (my !== seq) return; v.classList.add('on'); o.classList.remove('on'); p.still.classList.remove('kb'); };
+      if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(show); else v.addEventListener('playing', show, { once: true });
+      v.play().catch(() => {});
+      v.onended = () => { if (my === seq) setTimeout(next, r.hold || 350); };
+      progress(() => (v.duration ? v.currentTime / v.duration : 0));
+    } else {
+      p.still.src = r.src; p.still.classList.remove('kb'); void p.still.offsetWidth; p.still.classList.add('kb');
+      vids.forEach((x) => x.classList.remove('on'));
+      const t0 = performance.now(); progress(() => (performance.now() - t0) / r.dur);
+      setTimeout(next, r.dur);
+    }
+    if (m.reel[k + 1] && m.reel[k + 1].kind === 'image') { const im = new Image(); im.src = m.reel[k + 1].src; }
+  }
+  const sides = [0, 1].map(() => { const v = document.createElement('video'); v.muted = true; v.playsInline = true; v.loop = true; v.preload = 'auto'; return v; });
+  function sidesOn(i) {
+    if (phone) return;
+    [i - 1, i + 1].forEach((n, k) => {
+      const v = sides[k], m = M[n]; if (!m) return;
+      const w = m.reel[0]; if (!w || w.kind !== 'video' || !/wall/.test(w.src)) return;
+      v.src = w.src; v.currentTime = 0; P[n].inner.insertBefore(v, P[n].dim);
+      const show = () => v.classList.add('on');
+      if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(show); else v.addEventListener('playing', show, { once: true });
+      v.play().catch(() => {});
+    });
+  }
+  function sidesOff() { sides.forEach((v) => { v.pause(); v.classList.remove('on'); }); }
+  function stop(i) { sidesOff(); seq++; vids.forEach((v) => { v.pause(); v.classList.remove('on'); }); if (i >= 0) { P[i].still.classList.remove('kb'); P[i].still.src = M[i].poster; } segs.innerHTML = ''; }
+  const who = $('#who');
+  function text(m, i) {
+    who.classList.add('swap');
+    clearTimeout(text.t); text.t = setTimeout(() => {
+      $('#k').textContent = `${m.code}  ${String(i + 1).padStart(2, '0')} / ${N}`;
+      $('#nm').textContent = m.name;
+      $('#mt').replaceChildren(...m.meta.map((t) => { const e = document.createElement('div'); e.textContent = t; return e; }));
+      $('#add').textContent = added.has(m.code) ? '패키지에 담김' : '패키지에 담기'; $('#add').setAttribute('aria-pressed', added.has(m.code));
+      who.classList.remove('swap');
+    }, 170);
+  }
+  let settledAt = 0, playing = -1, focused = -1;
+  function loop(now) {
+    const k = dragging ? .3 : .085;
+    f += (target - f) * k; if (Math.abs(target - f) < .002) f = target;
+    layout(f);
+    const nearest = Math.max(0, Math.min(N - 1, Math.round(f)));
+    if (nearest !== focused) { focused = nearest; text(M[nearest], nearest); }
+    if (playing >= 0) placeSegs(playing);
+    placeHud(nearest);
+    if (playing !== nearest && playing >= 0) { stop(playing); playing = -1; }
+    if (!dragging && f === target && playing < 0 && !calm) { if (!settledAt) settledAt = now; if (now - settledAt > 120) { playing = nearest; run(nearest, 0); placeSegs(nearest); sidesOn(nearest); } } else settledAt = 0;
+    requestAnimationFrame(loop);
+  }
+  segs.addEventListener('click', (e) => { const b = e.target.closest('.seg'); if (b && playing >= 0) run(playing, Number(b.dataset.k)); });
+  $('#add').addEventListener('click', () => { const m = M[focused]; added.has(m.code) ? added.delete(m.code) : added.add(m.code); $('#pk').textContent = added.size; $('#add').textContent = added.has(m.code) ? '패키지에 담김' : '패키지에 담기'; $('#add').setAttribute('aria-pressed', added.has(m.code)); });
+  measure();
+  focused = Math.round(f); text(M[focused], focused); placeHud(focused); // 첫 장면부터 이름이 있다(첫 프레임을 기다리지 않는다)
+  requestAnimationFrame(loop);
+  window.__wall = { go: (i) => { target = i; f = i; last = NaN; }, set: (i) => { target = i; }, M, get i() { return focused; } };
+})();
+</script>
+</body></html>

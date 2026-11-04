@@ -319,7 +319,7 @@ test('a requested verification leaves an existing lock for the scheduled worker'
 });
 
 test('storage pressure preserves the selected verification and lets an already verified receipt publish', () => {
-  const stateDir = '/registered/qa', need = 2 * 1024 ** 3;
+  const stateDir = '/registered/qa', need = 15 * 1024 ** 3;
   const capacity = available => (target, options) => {
     assert.equal(target, stateDir); assert.deepEqual(options, { bigint: true });
     return { bsize: 4096n, bavail: BigInt(available / 4096) };
@@ -714,6 +714,8 @@ test('only a provisioned slot is used, it follows the registered inputs, and it 
 });
 
 // The whole tick on two checkouts, with git, GitHub and the test run replaced and the receipts, queue file and lock real.
+// A tick's disk room is injected: GitHub runners sit near the 15 GiB limit, so reading the real disk failed nine tests whenever one dipped below it (2026-11-05).
+const roomyDisk = () => ({ bsize: 4096n, bavail: 1n << 30n });
 function tickFixture(t, commits, { slot = true } = {}) {
   const dir = scratch(t), state = path.join(dir, 'state'), repo = github.REPO, head = commits.at(-1);
   const owned = at => { write(path.join(at, 'owner.json'), { version: 1, purpose: 'synk-conditional-qa', state: at }); write(path.join(at, 'config.json'), { version: 1, repo, state: at, root: path.join(at, 'workspace/SYNK-appsscript') }); };
@@ -725,9 +727,15 @@ function tickFixture(t, commits, { slot = true } = {}) {
   const runGit = (cwd, args) => { if (args[0] === 'rev-parse') return head; if (args[0] === 'rev-list') return ''; if (args[0] === 'show') return bytes; return ''; };
   const receiptFor = commit => ({ version: 1, commit, manifestDigest: manifest.digest, expected: selected.length, passed: selected.length, ok: true, candidate: false, sourceUnchanged: true, inputsUnchanged: true, rows: selected.map(row => ({ ...row, status: 'pass' })) });
   const queue = () => JSON.parse(fs.readFileSync(path.join(state, 'queue.json'))).items;
-  return { state, published, queue, receiptFor, deps: { hub, runGit, cloneRoot: config => config.root, first: reading => reading !== null && reading < 85, room: () => true, meter: () => 10, recheckMs: 1, warmUpMs: 0, calmMs: 0, slept: () => false } };
+  return { state, published, queue, receiptFor, deps: { hub, runGit, cloneRoot: config => config.root, first: reading => reading !== null && reading < 85, room: () => true, meter: () => 10, recheckMs: 1, warmUpMs: 0, calmMs: 0, slept: () => false, statfs: roomyDisk } };
 }
 const tickCommits = n => Array.from({ length: n }, (_, i) => String(i + 1).repeat(40).slice(0, 40));
+test('a tick below the disk limit keeps its place and opens nothing', async t => {
+  const commits = tickCommits(2), f = tickFixture(t, commits);
+  const summary = await tick(f.state, { ...f.deps, statfs: () => ({ bsize: 4096n, bavail: 1024n }), verifyCommit: () => assert.fail('no room on the disk') });
+  assert.equal(summary.diskWait.requiredBytes, 15 * 1024 ** 3);
+  assert.deepEqual(f.queue().map(row => row.status), ['queued', 'queued']);
+});
 test('a tick verifies on both checkouts at once, keeps each receipt to its commit and trims only what passed', async t => {
   const commits = tickCommits(5), f = tickFixture(t, commits), busy = new Set(), seen = []; let widest = 0, bothOpened;
   const both = new Promise(resolve => { bothOpened = resolve; });
@@ -798,7 +806,7 @@ test('no room means one verification at a time, and a requested commit stays on 
   const summary = await tick(f.state, { ...f.deps, room: () => false, verifyCommit });
   assert.equal(widest, 1); assert.ok(f.queue().every(row => row.status === 'passed')); assert.ok(summary.roomHeld > 0);
   const g = tickFixture(t, commits), before = JSON.parse(fs.readFileSync(path.join(g.state, 'queue.json'))).nextTurn; const asked = [];
-  const result = await tick(g.state, { ...g.deps, requestedCommit: commits[1], verifyCommit: async (config, commit, output) => {
+  const result = await tick(g.state, { ...g.deps, meter: () => 100, requestedCommit: commits[1], verifyCommit: async (config, commit, output) => {
     asked.push([path.basename(config.state), commit]); write(path.join(output, 'result.json'), g.receiptFor(commit));
     return { count: selected.length, digest: manifest.digest };
   } });
@@ -851,6 +859,42 @@ test('a held tick opens nothing, ends so the next one can look again, and says o
   const activity = '2026-11-04T00:29:00Z', notice = statusRow('b', 'pending', 'Waiting for room on the local PC; not verified yet', activity);
   assert.equal(localStatus.judge([notice], { now: statusNow }).ok, true);
   assert.equal(localStatus.judge([notice], { now: Date.parse(activity) + localStatus.STALL_MS + 1 }).ok, false, 'a notice that stops coming still turns red');
+});
+test('an unattended registered verification waits for sustained room and keeps its place while held', async t => {
+  const commits = tickCommits(3), target = commits[1], f = tickFixture(t, commits), attempts = [];
+  const queueFile = path.join(f.state, 'queue.json');
+  const original = JSON.parse(fs.readFileSync(queueFile)), step = 30_000;
+  let now = Date.now(), cpu = 100, readings = [], samples = 0;
+  t.mock.method(Date, 'now', () => now);
+  const options = {
+    ...f.deps, requestedCommit: target, waitForRoom: true, calmMs: 120_000, holdTickMs: 900_000,
+    meter: () => { now += step; samples++; return readings.shift() ?? cpu; },
+    verifyCommit: async (checkout, commit, output) => {
+      attempts.push({ commit, atSample: samples });
+      write(path.join(output, 'result.json'), f.receiptFor(commit));
+      return { count: selected.length, digest: manifest.digest };
+    },
+  };
+  const held = await tick(f.state, options);
+  assert.deepEqual(held.requested, { commit: target, status: 'queued', attempted: false });
+  assert.equal(held.holdingAtCpu, 100);
+  assert.ok(held.roomHeld > 0);
+  assert.deepEqual(attempts, []);
+  assert.deepEqual(f.published, []);
+  assert.deepEqual(JSON.parse(fs.readFileSync(queueFile)), original);
+
+  samples = 0; readings = [80, 80, 100]; cpu = 80;
+  const done = await tick(f.state, options);
+  assert.deepEqual(done.requested, { commit: target, status: 'passed', attempted: true });
+  assert.equal(done.slots, 1);
+  assert.deepEqual(attempts, [{ commit: target, atSample: 8 }], 'the hot sample restarted the two-minute wait');
+  assert.equal(JSON.parse(fs.readFileSync(queueFile)).nextTurn, original.nextTurn);
+
+  cpu = 100;
+  const saved = await tick(f.state, options);
+  assert.deepEqual(saved.requested, { commit: target, status: 'passed', attempted: false });
+  assert.equal(saved.roomHeld, 0);
+  assert.equal(attempts.length, 1);
 });
 test('the first verification needs a calm stretch, and another needs its own after it', async t => {
   const commits = tickCommits(2), f = tickFixture(t, commits), opened = [], readings = [90, 80, 80, 80, 80]; let now = Date.now(), finishFirst;

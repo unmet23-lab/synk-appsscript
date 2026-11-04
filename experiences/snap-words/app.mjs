@@ -2,7 +2,8 @@
 // 1인칭이다: 내 모습은 나오지 않고, 화면이 곧 내 눈 + 내 카메라다. 사진에는 글자가 없고 글은 전부 이 파일이 판 위에 얹는다.
 import { PLACES, PLACE_ORDER, COMING, placeWords } from './places.mjs';
 import { wordOf, pick } from './words.mjs';
-import { makeRng, shuffle, pickMissions, layoutPlates, judgeShot, helpLevel, makeRecall, normalizeAlbum, addCard, nameCard, placeProgress, recordRound, dailyMission, finishDaily, dayKey, STORE_KEY } from './core.mjs';
+import { makeRng, shuffle, pickMissions, layoutPlates, judgeShot, helpLevel, makeRecall, addCard, nameCard, placeProgress, recordRound, dailyMission, finishDaily, dayKey } from './core.mjs';
+import { openAlbumStore } from './album.mjs';
 import { homography, matrix3d, quadSize, quadDistance } from './sign.mjs';
 import { createBus, createLimiter, renderSfx, createAmbience } from './sfx.mjs';
 import { M, motionOn, spatial, effect, wait, finished, flyTo, rollTo, mmss } from './fx.mjs';
@@ -27,14 +28,13 @@ function taeo(key, word) {
 }
 const oneLine = (text) => String(text).replace(/\n/g, ' ');
 
-// ── 저장 — 계정마다 기기에(설계 5-4: 서버 키가 들어가기 전에는 놀이 호스트 목록에 넣지 않는다) ─────
+// ── 저장 — 계정 놀이 기록 + 기기 사본(album.mjs, 설계 5-4). 저장이 막혀도 앨범은 기기 사본으로 남는다 ─────
 const accountKey = (() => { try { return window.parent?.SYNKLearningHost?.status?.()?.accountKey || 'device'; } catch { return 'device'; } })();
-const saveKey = `${STORE_KEY}:${accountKey}`;
-const savedAlbum = (() => { try { return localStorage.getItem(saveKey); } catch { return null; } })();
-const album = (() => { try { return normalizeAlbum(JSON.parse(savedAlbum || 'null')); } catch { return normalizeAlbum(null); } })();
-function save() { try { localStorage.setItem(saveKey, JSON.stringify(album)); } catch { /* 저장을 못 해도 판은 그대로 돈다 */ } }
+const albumStore = await openAlbumStore({ win: window, accountKey });
+const album = albumStore.album;
+const save = () => albumStore.save();
 const grade = Number(query.get('grade')) || 0;
-if (savedAlbum === null && grade >= 3) album.notices = true;
+if (!albumStore.existed && grade >= 3) album.notices = true;
 const rng = query.has('seed') ? makeRng(Number(query.get('seed'))) : Math.random;
 
 // ── 학습 기록 ─ 같은 주소의 다른 SYNK 게임과 함께 쓴다(WORLD 안에서는 계정의 기록) ───────────────
@@ -730,7 +730,7 @@ function finishRound() {
   const rec = recordRound(album, S.placeId, { ms: S.missionMs || 0, first: S.firstRight, of: S.missions.length });
   const prog = placeProgress(album, place), stampNew = prog.done && !album.stamps[S.placeId];
   if (stampNew) album.stamps[S.placeId] = Date.now();
-  save();
+  albumStore.saveNow();
   const unlocked = openPlaces().length > before ? PLACE_ORDER.find((id) => openPlaces().includes(id) && id !== 'gate') : null;
   renderResult({ rec, prog, stampNew, unlocked });
 }
@@ -873,12 +873,12 @@ app.addEventListener('click', (e) => {
   else if (go === 'sound') { audioReady(); play('tap'); soundSheet(); }
 });
 app.addEventListener('change', (e) => {
-  if (e.target.dataset?.go === 'notices') { album.notices = e.target.checked; save(); audioReady(); play('tap'); { const n = renderLobby(); app.querySelector('[data-screen=lobby]').replaceWith(n); layoutLobbyPhoto(n); } show('lobby'); }
+  if (e.target.dataset?.go === 'notices') { album.notices = e.target.checked; album.noticesAt = Date.now(); save(); audioReady(); play('tap'); { const n = renderLobby(); app.querySelector('[data-screen=lobby]').replaceWith(n); layoutLobbyPhoto(n); } show('lobby'); }
 });
 
 await Promise.race([document.fonts?.load?.('800 40px SUIT') || Promise.resolve(), wait(1500)]).catch(() => {});
 renderShell(); show('lobby'); firstLobby();
 
 // 시험 · 녹화용 손잡이(주문 폭주 __entry와 같은 꼴).
-window.__snap = { S, cam, album, startPlace, snap, focusOn, stepBack, beginMissions, tapAt, itemAt, nextMission, finishRound,
+window.__snap = { S, cam, album, albumStore, startPlace, snap, focusOn, stepBack, beginMissions, tapAt, itemAt, nextMission, finishRound,
   answerNow: () => { const q = S.recallNow; return q ? q.options.indexOf(q.answer) : 0; } };

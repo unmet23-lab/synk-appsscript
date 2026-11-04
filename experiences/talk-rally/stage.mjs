@@ -408,6 +408,7 @@ export async function createStage({ host, overlay, onBounce, onOpponentHit, onHo
     const { lane: k, verdict, smash } = res;
     setLane(k);
     swing = { t: world ? 0.35 : 0 };   // WORLD: 멈칫 전에 이미 공 자리 가까이 올라와 있다
+    if (world) worldSwingPose(Math.sin(swing.t * Math.PI));
     const stop = verdict === 'ok' ? (smash ? FEEL.stop.smash : FEEL.stop.ok) : FEEL.stop.wrong;
     if (!reducedMotion()) freezeUntil = performance.now() + stop;
     flash(at, smash ? 1.6 : verdict === 'ok' ? 1.1 : 0.7, verdict === 'ok' ? 'gold' : 'soft');
@@ -426,6 +427,12 @@ export async function createStage({ host, overlay, onBounce, onOpponentHit, onHo
     }
     path = { token: my, i: 0, t: 0, segs };
     return at;
+  }
+
+  /** WORLD 내 라켓: 카드 뒤에서 공 자리까지 올라왔다 내려간다(s = 1이 맞는 순간, 가장 높다). */
+  function worldSwingPose(s) {
+    myPaddle.position.set(REST.x + (0 - REST.x) * s, REST.y + (HIT.y - 0.02 - REST.y) * s, REST.z + (HIT.z + 0.05 - REST.z) * s);
+    myPaddle.rotation.x = -0.5 - 0.7 * s;
   }
 
   function padGlow(k, ok) { pads[k].glow = ok ? 1 : 0.35; }
@@ -465,10 +472,8 @@ export async function createStage({ host, overlay, onBounce, onOpponentHit, onHo
     if (swing && !paused && now >= freezeUntil) {
       swing.t += dtReal / 0.24;
       const k = Math.min(1, swing.t), s = Math.sin(k * Math.PI);
-      if (world) {   // 카드 뒤에서 공 자리까지 올라왔다 내려간다(맞는 순간이 가장 높다)
-        myPaddle.position.set(REST.x + (0 - REST.x) * s, REST.y + (HIT.y - 0.02 - REST.y) * s, REST.z + (HIT.z + 0.05 - REST.z) * s);
-        myPaddle.rotation.x = -0.5 - 0.7 * s;
-      } else { myPaddle.rotation.x = -0.2 - 0.9 * s; myPaddle.position.z = HIT.z + 0.06 - 0.12 * s; }
+      if (world) worldSwingPose(s);
+      else { myPaddle.rotation.x = -0.2 - 0.9 * s; myPaddle.position.z = HIT.z + 0.06 - 0.12 * s; }
       if (k >= 1) { swing = null; placePaddle(); }
     }
     for (const p of pads) if (p.glow > 0) { p.glow = Math.max(0, p.glow - dtReal * 1.4); p.mat.emissiveIntensity = p.glow * 0.9; }

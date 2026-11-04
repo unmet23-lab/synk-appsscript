@@ -14,13 +14,47 @@ L = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(L)
 
 
+def 굽기(svg, png):
+    import json
+
+    p_svg = png.replace(".png", ".svg")
+    with open(p_svg, "w", encoding="utf-8") as fh:
+        fh.write(svg)
+    job = {"sharp": L.SHARP, "svg": p_svg, "png": png, "density": 72}
+    js = ("let b='';process.stdin.setEncoding('utf8');process.stdin.on('data',c=>b+=c);"
+          "process.stdin.on('end',()=>{const j=JSON.parse(b);const s=require(j.sharp);"
+          "s(j.svg,{density:j.density}).png().toFile(j.png).then(i=>console.log(i.width+'x'+i.height+' '+j.png))"
+          ".catch(e=>{console.error(e);process.exit(1)})})")
+    subprocess.run(["node", "-e", js], input=json.dumps(job).encode("utf-8"), check=True)
+
+
+def 오른쪽위(a):
+    # 「다섯 가지 맛,」 한 줄 + 큰 「톡」(결정 11-04 화면 글 결 — 장면에 깐 큰 낱말). 판 · 테두리 · 그늘 없이 글자만, 마침표 없음
+    W, H = 1080, 1920
+    suit = L.글꼴(L.SUIT["ExtraBold"])
+    right = 1016
+    # 캔 오른쪽 테두리가 대각선으로 지나가므로 글이 뜰 때 캔에 안 닿는 높이 · 폭으로 둔다. 릴스 위 14%(270 px) · 옆 6%는 비운다
+    d1, _, _ = suit.경로("다섯 가지 맛,", a.줄크기, right, 330, anchor="end", tracking=-0.01)
+    d2, _, _ = suit.경로("톡", a.톡크기, right, 348 + a.톡크기 * 0.93, anchor="end", tracking=0)
+    for name, d in (("끝글_줄", d1), ("끝글_톡", d2)):
+        svg = f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}"><path d="{d}" fill="{a.색}"/></svg>'
+        굽기(svg, os.path.join(a.오른쪽위, name + ".png"))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--이름", default="오미톡")
     ap.add_argument("--라틴", default="omitok")
     ap.add_argument("--줄", default="다섯 가지 맛, 톡")
     ap.add_argument("--가로", action="store_true")
+    ap.add_argument("--오른쪽위", default=None, help="이 폴더에 끝글_줄.png · 끝글_톡.png — 6번 새 판(11-05)은 끝에 낱말표 전체가 보여 이름을 다시 얹지 않고, 위 오른쪽 파란 자리에 한 줄만 둔다")
+    ap.add_argument("--색", default="#ffffff")
+    ap.add_argument("--줄크기", type=float, default=66)
+    ap.add_argument("--톡크기", type=float, default=196)
     a = ap.parse_args()
+    if a.오른쪽위:
+        오른쪽위(a)
+        return
     W, H = (1920, 1080) if a.가로 else (1080, 1920)
     fr = L.글꼴(L.FRAUNCES, {"opsz": 144, "wght": 900, "SOFT": 100, "WONK": 0})
     suit = L.글꼴(L.SUIT["ExtraBold"])

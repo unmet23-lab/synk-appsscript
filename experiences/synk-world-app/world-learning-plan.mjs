@@ -2,6 +2,9 @@ import {PACKS,LESSONS} from './life-content.mjs';
 import {LISTENING_CHECKS,checkMetadata} from '../korean-runner/listening-check.mjs';
 import {RHYTHM_CANDIDATES} from '../korean-rhythm/personalization.mjs';
 import {planTokens} from './world-exam-plan.mjs';
+import {PLAN_ITEMS as SUBWAY_ITEMS} from '../subway-rush/plan-items.mjs';
+import {decisionMeta as subwayMeta} from '../subway-rush/learning.mjs';
+import {playState} from '../brand-opening/play-unlocks.mjs';
 
 // Product routes and authored content live here. Core owns the ranking; this
 // adapter neither assesses a person nor writes a profile, answer or schedule.
@@ -147,6 +150,16 @@ export function buildWorldLearningCandidates({progress={},settings={},now=Date.n
   {id:'world.play.hangul',label:'한글 만나기 · 소리와 글자',route:'game',gameId:'hangul',minutes:5,minutesEstimated:true,targets:[],
    goals:['study','culture','hobby','explore'],audioRequired:true,modality:'listening',presentation:presentationFor(settings),...access('hangul')},
  );
+ // 환승 러시(11-05): 「놀이」와 같은 해금 표로 열린 학생에게만 후보가 된다 — 잠긴 놀이를 권해 안내 없이 게임으로 보내지 않는다. 세는 값은 홈 해금과 같은 「마친 생활 레슨 수」.
+ // 3~4급 문항(ko2.*)은 3급 이상을 목표로 고른 학생에게만 겨눈다. 그 학생은 게임이 바쁜 아침으로 열린다(app-shell.mjs subway path).
+ const finished=PACKS.flatMap(pack=>pack.lessons).filter(lesson=>time(source.lessons?.[lesson.id]?.completedAt)).length;
+ if(playState('subway',{lessons:finished}).open){
+  const upper=Number(settings?.targetGrade)>=3;
+  const subwayTargets=SUBWAY_ITEMS.filter(item=>upper||!item.skillId.startsWith('ko2.')).map(item=>{const target=subwayMeta(item);return {id:target.id,skillIds:[target.skillId],difficulty:target.difficulty,
+   modality:target.modality,responseFormat:target.responseFormat,familyKeys:[target.familyKey],itemKey:target.itemKey,conceptIds:[...target.conceptIds]};});
+  candidates.push({id:'world.play.subway',label:'환승 러시 · 안내방송 듣고 갈아타기',route:'game',gameId:'subway',minutes:3,minutesEstimated:true,targets:subwayTargets,
+   goals:['exam','prepare','listening','travel'],audioRequired:true,modality:'listening',presentation:presentationFor(settings),...access('subway')});
+ }
  return candidates;
 }
 

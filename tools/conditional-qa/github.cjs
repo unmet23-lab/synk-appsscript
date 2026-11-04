@@ -28,6 +28,15 @@ function status(commit, api = request) {
 }
 const description = (count, digest) => `PASS ${count}/${count} manifest=${digest.slice(0, 16)}`;
 function accepted(value, count, digest) { return value?.state === 'success' && value.description === description(count, digest); }
+// The public line names only case ids from the public manifest; the evidence stays in the private receipt. It never reads as a pass.
+const FAILURE_LINE = /^FAIL (\d+)\/(\d+): (S\d+(?: S\d+)*)( \+\d+)?$/;
+function failureDescription(passed, expected, ids) {
+  const head = `FAIL ${passed}/${expected}:`, shown = [];
+  for (const id of ids) { if (`${head} ${[...shown, id].join(' ')} +${ids.length}`.length > 140) break; shown.push(id); }
+  return `${head} ${shown.join(' ')}${shown.length < ids.length ? ` +${ids.length - shown.length}` : ''}`;
+}
+// complete is false when the line ran out of room; a partial list can never be explained by the diagnosed ledger.
+function failedCases(text) { const match = FAILURE_LINE.exec(text || ''); return match ? { ids: match[3].split(' '), complete: !match[4] } : null; }
 function publish(commit, state, text, api = request) {
   validCommit(commit);
   if (!['pending', 'failure', 'error', 'success'].includes(state) || text.length > 140) throw Error('Invalid public check summary');
@@ -66,4 +75,4 @@ function cancelledRuns(api = request, pages = 3) {
   }
   return found;
 }
-module.exports = { REPO, validCommit, request, graphql, status, description, accepted, publish, cancelRun, resumeWaitingWorkflow, cancelledRuns };
+module.exports = { REPO, validCommit, request, graphql, status, description, accepted, failureDescription, failedCases, publish, cancelRun, resumeWaitingWorkflow, cancelledRuns };

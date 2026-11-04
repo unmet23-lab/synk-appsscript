@@ -5,11 +5,15 @@ import {PACKS,LESSONS} from '../life-content.mjs';
 import {buildWorldLearningCandidates,createWorldLearningPlan,worldLearningSettings} from '../world-learning-plan.mjs';
 import {LISTENING_CHECKS,checkMetadata} from '../../korean-runner/listening-check.mjs';
 import {RHYTHM_CANDIDATES} from '../../korean-rhythm/personalization.mjs';
+import {playState} from '../../brand-opening/play-unlocks.mjs';
+import {homeTutorRecommendation} from '../../brand-opening/home-tutor-lines.mjs';
+import worldStrings from '../../brand-opening/world-strings.mjs';
 const require=createRequire(import.meta.url);
 const {createGame,recommendActivities}=require('../../../atlas/game-browser.js');
 const NOW=Date.parse('2026-10-13T03:00:00.000Z');
 const empty=()=>({version:1,owner:'synthetic',revision:0,activeLessonId:null,activeReview:null,lessons:{},reviews:{}});
 const store=()=>{const values=new Map();return {getItem:key=>values.get(key)||null,setItem:(key,value)=>values.set(key,value)};};
+const lessonOne=()=>({...empty(),lessons:{[PACKS[0].lessons[0].id]:{completedAt:NOW-86400000,answers:{}}}});
 const makeCoach=()=>createGame({gameId:'world-plan-test',storage:store(),clock:()=>new Date(NOW).toISOString()});
 const plan=options=>createWorldLearningPlan({now:NOW,recommendActivities,...options});
 const complete=(progress,lesson)=>{progress.lessons[lesson.id]={startedAt:NOW-1000,completedAt:NOW-500,answers:{},questionIds:lesson.questions.map(q=>q.id)};};
@@ -21,12 +25,13 @@ function review(progress,lesson,{due=NOW,correct=false,helped=false,streak=0,at=
  progress.reviews[value.id]=value;return value;
 }
 
-test('each life pack offers its first unfinished canonical lesson; the only games are the three real WORLD routes',()=>{
+test('each life pack offers its first unfinished canonical lesson; the only games are real WORLD routes, 환승 러시 once a lesson is done',()=>{
  const progress=empty(),first=LESSONS[0];complete(progress,first);
  const candidates=buildWorldLearningCandidates({progress,now:NOW});
  assert.equal(candidates.filter(c=>c.route==='lesson').length,6);
  assert.equal(candidates.find(c=>c.packId===first.packId).lessonId,PACKS[0].lessons[1].id);
- assert.deepEqual(candidates.filter(c=>c.route==='game').map(c=>c.gameId),['runner','rhythm','hangul']);
+ assert.deepEqual(candidates.filter(c=>c.route==='game').map(c=>c.gameId),['runner','rhythm','hangul','subway']);
+ assert.deepEqual(buildWorldLearningCandidates({progress:empty(),now:NOW}).filter(c=>c.route==='game').map(c=>c.gameId),['runner','rhythm','hangul']);
  assert.ok(candidates.filter(c=>c.route==='lesson').every(c=>!c.targets.length));
  assert.equal(candidates.find(c=>c.gameId==='hangul').targets.length,0);
 });
@@ -136,4 +141,35 @@ test('cold or partial summaries cannot manufacture ability cells and inputs rema
  assert.equal(result.selected.gameId,'runner');assert.ok(result.candidates.every(c=>c.targets.length===0));assert.equal(result.state,'unseen');
  assert.equal(result.presentation.support,'step');assert.equal(result.presentation.explanation,'detailed');assert.equal(result.learningEffectClaim,false);
  assert.equal(JSON.stringify({progress,summary,settings}),before);
+});
+
+test('환승 러시: 레슨 하나 전에는 후보가 아니고, 마치면 듣기 놀이 후보가 된다(놀이 해금 표와 같다)',()=>{
+ assert.equal(buildWorldLearningCandidates({progress:empty(),settings:{},now:NOW}).some(c=>c.gameId==='subway'),false,'잠긴 학생에게 권하지 않는다');
+ // 표에 없는 값(지난 판 기록 · 시각이 망가진 기록)으로는 열리지 않는다.
+ assert.equal(buildWorldLearningCandidates({progress:{...empty(),lessons:{[PACKS[0].lessons[0].id]:{completedAt:null}}},settings:{},now:NOW}).some(c=>c.gameId==='subway'),false);
+ assert.equal(buildWorldLearningCandidates({progress:{...empty(),lessons:{'없는-레슨':{completedAt:NOW-1000}}},settings:{},now:NOW}).some(c=>c.gameId==='subway'),false);
+ const open=buildWorldLearningCandidates({progress:lessonOne(),settings:{},now:NOW}).find(c=>c.gameId==='subway');
+ assert.ok(open,'레슨 하나를 마치면 후보');
+ assert.equal(open.id,'world.play.subway');assert.equal(open.route,'game');assert.equal(open.modality,'listening');assert.equal(open.audioRequired,true);assert.equal(open.available,undefined);
+ assert.ok(open.targets.length>=30);
+ assert.ok(open.targets.every(t=>t.skillIds.every(id=>id.startsWith('ko.'))),'목표 급을 고르지 않은 학생은 1~2급 문항만 겨눈다');
+ assert.ok(open.targets.every(t=>t.itemKey&&t.familyKeys.length===1&&t.responseFormat==='single-choice'));
+ assert.equal(playState('subway',{lessons:1}).open,true);assert.equal(playState('subway',{lessons:0}).open,false);
+});
+test('환승 러시: 3급 이상을 목표로 고른 학생에게만 3~4급 문항을 겨눈다',()=>{
+ const of=settings=>buildWorldLearningCandidates({progress:lessonOne(),settings,now:NOW}).find(c=>c.gameId==='subway').targets;
+ assert.ok(of({examType:'topik2',targetGrade:3}).some(t=>t.skillIds.includes('ko2.listening.detail')));
+ assert.ok(!of({examType:'topik1',targetGrade:2}).some(t=>t.skillIds[0].startsWith('ko2.')));
+});
+test('환승 러시: 손님에게 닫혀 있으면 Core가 빼고, 열려 있으면 계획이 고를 수 있고 튜터가 그 이름으로 권한다',()=>{
+ const guest=plan({progress:lessonOne(),settings:{},openGames:['hangul']});
+ assert.deepEqual(guest.excluded.find(row=>row.id==='world.play.subway')?.reasons,['activity.unavailable']);
+ assert.equal(guest.candidates.find(c=>c.id==='world.play.subway').accountRequired,true);
+ const signed=plan({progress:lessonOne(),settings:{reasons:['exam'],primaryReason:'exam'}});
+ const offered=[signed.selected,...signed.alternatives].find(c=>c.id==='world.play.subway');
+ assert.ok(offered,'놀이 후보에 든다');
+ const line=homeTutorRecommendation({owner:'o',summary:{owner:'o',education:{selected:offered,reason:'이유'},status:{}},snapshot:{owner:'o'}});
+ assert.equal(line.title,'환승 러시 · 안내방송 듣고 갈아타기');assert.equal(line.command,'learn');
+ const name=worldStrings['plan.game.subway'];
+ assert.ok(name?.ko&&name.en&&name.mn,'계획 줄 이름이 세 언어 다 있다');
 });

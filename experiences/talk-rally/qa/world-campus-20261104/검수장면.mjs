@@ -17,26 +17,26 @@ export default async function 장면({ page, 찍기, 판, 주소들 }) {
   await fr().evaluate(() => document.querySelector('#btn-start').click());
   await 쉼(2600);
   await 찍기('말걺_첫공');
+  // 칸(k)는 다음 공의 정답 칸이다 — 앞 공을 고르기 전에 건다. 고른 칸이 장면 이름과 맞는지 본다.
+  const 받기 = async (이름, 다음칸, 쉬기) => {
+    const c = await 날음(); await 쉼(300);
+    await 칸(다음칸);
+    const 정답칸 = c.options.indexOf(c.answer);
+    await 고름(c, true); await 쉼(쉬기);
+    await 찍기(이름);
+    return 정답칸;
+  };
   let c = await 날음(); await 쉼(1400);
   await 찍기('공기다림');
   await 칸(0); await 고름(c, true); await 쉼(2200);
-  c = await 날음(); await 쉼(500);
-  await 칸(1); await 고름(c, true); await 쉼(1500);
-  await 찍기('왼쪽_치러감');
-  await 쉼(500);
-  await 찍기('왼쪽_받아침_말함');
-  c = await 날음(); await 쉼(300);
-  await 칸(1); await 고름(c, true); await 쉼(1700);
-  await 찍기('가운데_받아침');
-  c = await 날음(); await 쉼(300);
-  await 칸(0); await 고름(c, true); await 쉼(1400);
-  await 찍기('스매시_랠리3');
-  c = await 날음(); await 쉼(300);
-  await 칸(2); await 고름(c, true); await 쉼(1800);
-  await 찍기('오른쪽_받아침');
-  c = await 날음(); await 쉼(300);
-  await 랠리(8); await 고름(c, true); await 쉼(1500);
-  await 찍기('스매시_랠리9');
+  if ((await 받기('왼쪽_받아침_말함', 1, 2000)) !== 0) throw Error('왼쪽 칸이 아니다');
+  if ((await 받기('가운데_받아침', 2, 1700)) !== 1) throw Error('가운데 칸이 아니다');
+  await 랠리(3);   // 랠리 3 스매시를 건너뛰어 오른쪽 칸도 영상으로 받는다
+  if ((await 받기('오른쪽_받아침', 0, 1800)) !== 2) throw Error('오른쪽 칸이 아니다');
+  await 랠리(5);
+  await 받기('스매시_랠리6', 1, 1500);
+  await 랠리(8);
+  await 받기('스매시_랠리9', 1, 1500);
   c = await 날음(); await 쉼(300);
   await 고름(c, false); await 쉼(1800);
   await 찍기('틀림_해설');

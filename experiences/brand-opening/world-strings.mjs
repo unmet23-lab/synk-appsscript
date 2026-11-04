@@ -178,6 +178,9 @@ export default {
  'game.racing.detail':{ko:'문장을 듣고 답이 있는 길로 자전거를 달려요',en:'Hear the sentence and ride into the right lane',mn:'Өгүүлбэр сонсоод зөв хариутай зам руу дугуйгаар давхина'},
  'game.subway.title':{ko:'환승 러시',en:'Transfer Rush',mn:'Метро дамжин суух'},
  'game.subway.detail':{ko:'안내방송을 듣고 갈아타서 첫 수업에 닿아요',en:'Follow the announcements, transfer, and make it to your first class',mn:'Буудал зарлахыг сонсоод метро дамжин сууж, эхний хичээлдээ амжина'},
+ 'game.board.title':{ko:'게시판 해독',en:'Board Decode',mn:'Зарлал унших'},
+ 'game.board.detail':{ko:'공지를 읽고 선배의 부탁에 답해요',en:'Read campus notices and answer a senior’s questions',mn:'Зарлал уншиж, ахынхаа асуултад хариулна'},
+ 'play.locked.level':{ko:'TOPIK II 연습에서 최근 6문제 중 4문제를 맞히면 열려요',en:'Opens when you get 4 of your last 6 TOPIK II practice questions right',mn:'TOPIK II-ын дасгалын сүүлийн 6 асуултаас 4-т нь зөв хариулбал нээгдэнэ'},
  'play.locked':{ko:'이야기에서 열려요 — {where}',en:'Opens in the story — {where}',mn:'{where} нээгдэнэ'},   // 몽골어는 동사가 끝 — 「…-д очиход нээгдэнэ」(…에 가면 열려요)
  'game.rally.title':{ko:'말 랠리',en:'Talk Rally',mn:'Ярианы ралли'},
  'game.rally.detail':{ko:'태오 선배의 말을 듣고 알맞은 대답으로 받아쳐요',en:'Hear Tae-o and hit back with the right reply',mn:'Тэогийн яриаг сонсоод зөв хариултыг сонгож бөмбөгийг цохино'},
@@ -199,6 +202,7 @@ export default {
  'game.slow':{ko:'연결이 조금 늦어지고 있어요. 새 화면으로도 열 수 있어요.',en:'This is taking a little longer. You can also open it on its own page.',mn:'Холболт бага зэрэг удааширч байна. Тусдаа хуудсанд ч нээж болно.'},
  'plan.game.runner':{ko:'바람길 · 짧은 지시 듣기',en:'Wind Run · short spoken directions',mn:'Салхин зам · богино заавар сонсох'},
  'plan.game.rhythm':{ko:'말의 리듬 · 듣고 내용 확인',en:'Speech Rhythm · listen and check',mn:'Үгийн хэмнэл · сонсоод утгыг шалгах'},
+ 'plan.game.subway':{ko:'환승 러시 · 안내방송 듣고 갈아타기',en:'Transfer Rush · follow station announcements',mn:'Метро дамжин суух · буудал зарлахыг сонсох'},
  'plan.game.hangul':{ko:'한글 만나기 · 소리와 글자',en:'Meet Hangul · sounds and letters',mn:'Солонгос үсэгтэй танилцах · авиа ба үсэг'},
  'plan.resume':{ko:'{title} · 이어 하기',en:'{title} · continue',mn:'{title} · үргэлжлүүлэх'},
  'plan.review':{ko:'{title} · 새 상황 복습',en:'{title} · review in a new situation',mn:'{title} · шинэ нөхцөл байдалд давтах'},

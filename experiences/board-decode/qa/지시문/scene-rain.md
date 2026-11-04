@@ -1,0 +1,3 @@
+A REAL PHOTOGRAPH taken on a smartphone by a university student in Korea, natural light and honest colors, slightly imperfect framing, portrait 2:3. Never an illustration, never a 3D render, never a stock-photo gloss. Absolutely no text, letters, numbers, signs with writing, labels, logos or brand marks anywhere in the frame. No people, no faces, no hands.
+
+A university sports field in heavy rain at dusk: a small outdoor concert stage frame with no lights on, tarps pulled over the speakers, rows of empty folding chairs getting wet, puddles reflecting the grey sky, one transparent umbrella lying on the ground. Moody and funny at the same time.

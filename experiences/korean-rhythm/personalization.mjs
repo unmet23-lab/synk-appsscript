@@ -81,7 +81,12 @@ export function missedRhythm(coach,{songsOnly=false}={}){
  if(!plan||plan.missedFamilies.every(family=>SONG_FAMILIES.has(family)))return plan;
  return {...plan,why:plan.why.replace('지난 곡에서','지난 듣기 연습에서')};
 }
-export function returnLine(plan){
+/** chosenTrack: 직접 고른 곡이 맞춤 곡과 다를 때. 그 곡은 관문을 옮기지 않으므로(app.mjs start) 그 곡에 약속하지 않고 맞춤 곡으로 가는 길을 말한다. */
+export function returnLine(plan,{chosenTrack=null}={}){
+ if(plan.target.item.kind==='song'&&chosenTrack!==null&&chosenTrack!==plan.target.item.trackId){
+  const mine=TRACKS[chosenTrack].title,other=TRACKS[plan.target.item.trackId].title;
+  return `${plan.why} 지금은 직접 고른 ‘${mine}’${josa(mine,'으로','로')} 시작해요. 그런 문제부터 들으려면 ‘${other}’${josa(other,'을','를')} 골라 보세요.`;
+ }
  return plan.target.item.kind==='song'?`${plan.why} ‘${TRACKS[plan.target.item.trackId].title}’의 첫 문제도 그런 문제예요. 끝까지 듣고 답해 보세요.`
   :`${plan.why} 아래 ‘놓친 표현 바로 연습’에서 새 대화로 들어 봐요.`;
 }

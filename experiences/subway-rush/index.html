@@ -13,6 +13,7 @@
 </head>
 <body>
 <main class="stage" id="stage">
+  <h1 style="position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap">환승 러시</h1>
   <canvas id="gl" aria-hidden="true"></canvas>
   <div class="floor-shade" aria-hidden="true"></div>
 
@@ -59,7 +60,7 @@
   <p class="their-line" id="their-line" hidden></p>
 
   <!-- 안내문: 틀렸을 때 · 글로 보기 -->
-  <aside class="notice" id="notice" hidden role="status"><span class="tape" aria-hidden="true"></span><small id="notice-head"></small><p id="notice-body"></p><button id="notice-replay" hidden>다시 듣기</button></aside>
+  <div class="notice" id="notice" hidden role="status"><span class="tape" aria-hidden="true"></span><small id="notice-head"></small><p id="notice-body"></p><button id="notice-replay" hidden>다시 듣기</button></div>
 
   <!-- 휴대폰 알림 -->
   <div class="phone-banner" id="banner" hidden><span class="banner-icon" aria-hidden="true"></span><span class="banner-text"><b>학과 단톡방</b><span id="banner-text"></span></span><time>지금</time></div>

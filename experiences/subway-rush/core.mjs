@@ -53,9 +53,9 @@ export class SubwayRun {
     if (this.index >= this.total) { this.minutes += LEG_MINUTES.gate; this.finished = true; }
     return result;
   }
-  /** 결과 화면 값. 맞힌 수는 근거로 세는 결정만 분모로 둔다. */
+  /** 결과 화면 값. 맞힌 수는 근거로 세는 결정만 분모로 둔다 — 찍어도 맞는 칸과 소리가 끊긴 문항은 뺀다(r.assessable). */
   summary() {
-    const counted = this.results.filter((r) => this.journey.decisions.find((d) => d.id === r.id)?.assessable);
+    const counted = this.results.filter((r) => r.assessable);
     const right = counted.filter((r) => r.correct).length;
     const stations = this.results.filter((r) => r.correct && r.kind !== 'exit').map((r) => r.station);
     return { arrive: this.minutes, arriveText: clockText(this.minutes), onTime: this.minutes <= SCHOOL_MINUTES, right, total: counted.length, bestStreak: this.bestStreak, stations: [...new Set(stations)], wrongs: this.results.filter((r) => !r.correct) };
