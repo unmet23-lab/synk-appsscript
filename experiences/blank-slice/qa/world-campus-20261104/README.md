@@ -53,3 +53,14 @@
 - **결과는 빨간 펜 채점:** 한국 시험지 표시 — ○ 맞음, 빗금 다시 볼 것, △ 놓침(체크 표시는 한국에서 틀림으로 읽히므로 쓰지 않았다). 큰 숫자는 `scoreRound`와 같은 잣대(놓쳤어도 멈춘 보기에서 맞히면 센다).
 - **몽글:** 그림은 WORLD 공개 빌드 HTML에서 빼고, 목소리 파일은 받지 않으며 같은 자리에 목소리 없는 짧은 음을 둔다.
 - **해금:** 중간고사 회차가 아직 없어 레슨 한 번 또는 카페 첫 방문으로 연다(`brand-opening/play-unlocks.mjs`). 회차가 생기면 옮긴다.
+
+## 남은 순서
+
+11-04 오전 기준이다. 앱 공개만 남았다.
+
+1. Fable 재검수(몫이 남은 계정의 세션에서): Agent `model: fable`에 공용 작업본 `.tmp/검수/blank-slice-world-20261104-b/fable.md`를 그대로 맡긴다. 다시 볼 지적이 0건이라 답의 `targets`는 빈 배열이다.
+2. `node tools/검수묶음.mjs 페이블받기 blank-slice-world-20261104-b` → P0 · P1이 있으면 고친다 → `집계 blank-slice-world-20261104-b`.
+3. 공개: 공개 미리 보기가 계획 `cf1be3119c9e`를 그대로 내면 `--계획`과 `--검수 blank-slice-world-20261104-b`를 붙여 `--실행`한다. 명령은 공개 작업 폴더 `.tmp/blank-slice-publish-20261104/`의 `new/.tmp/pub/world` · `base/.tmp/pub/world` · `바뀐목록.txt`로 짓는다(`--공개폴더 world`, 새 후보는 `--후보폴더 <빈 폴더>`).
+4. 그사이 라이브가 바뀌어 미리 보기가 걸리면: 라이브 네 파일(app-shell · brand-opening/home · play-unlocks · world-strings)을 받아 `merged/<이름>.live`로 두고 `git merge-file -p merged/<이름>.ours merged/<이름>.base merged/<이름>.live > merged/<이름>`, `merged/`에서 `공개합침.cjs`를 돌려 풀고, 합친 판을 `new/`에, 라이브 판을 `base/`에 넣은 뒤 후보를 새로 짓고 `다시`로 바뀐 부분을 보인다.
+5. 후보 원천은 `refs/synk-tmp/blank-slice-candidate`(`aca197612` — fe1ba1563 + 이 게임의 고침 둘, 찰칵 낱말 같은 남의 미공개 변경 없음). 다시 지을 때는 이 커밋에 고침만 얹어 `공개빌드.sh`에 준다. 공개 뒤 이 ref를 지운다.
+6. 공개 뒤: 라이브 `/world/`에서 한 번 열어 보고, 트랙 줄을 공개 커밋으로 고치고, 시안 페이지 영상을 최종판으로 바꾼다(`시안영상.cjs`).
