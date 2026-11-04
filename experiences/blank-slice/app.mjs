@@ -539,12 +539,15 @@ function renderSkills(s, next) {
 }
 
 /* ── 멈춤 ── */
+function holdRound(on) {
+  if (on && !state.paused) state.pausedAt = performance.now();
+  if (!on && state.paused && state.pausedAt) { state.pausedMs += performance.now() - state.pausedAt; state.pausedAt = 0; }
+  state.paused = on; stage?.pause(on);
+  if (on) state.flight?.pause(); else state.flight?.play();   // 날아가는 낱말도 같이 멈춘다 — 멈춤 창 뒤나 숨긴 탭에서 끼워짐 소리 · 진동이 새지 않게
+}
 function pause(open = true) {
   if (open && $('#game').hidden) return;
-  if (open && !state.paused) state.pausedAt = performance.now();
-  if (!open && state.paused && state.pausedAt) { state.pausedMs += performance.now() - state.pausedAt; state.pausedAt = 0; }
-  state.paused = open; stage?.pause(open); world?.roundPaused(open);
-  if (open) state.flight?.pause(); else state.flight?.play();   // 날아가는 낱말도 같이 멈춘다 — 멈춤 창 뒤나 숨긴 탭에서 끼워짐 소리 · 진동이 새지 않게
+  holdRound(open); world?.roundPaused(open);
   if (open && !$('#pause-dialog').open) $('#pause-dialog').showModal();
   if (!open && $('#pause-dialog').open) $('#pause-dialog').close();
 }
@@ -660,6 +663,7 @@ if (QA) {
     arena: () => { const r = $('#arena').getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; },
     stage: () => stage,   // 입구 그림 굽기(qa/bake-hero.cjs)용
     hold: () => { state.run += 1; state.cur = null; state.practice = null; },   // 게임 흐름의 예약을 모두 멈춘다(굽기용)
+    freeze: holdRound,   // 검수 캡처: 멈춤 창 없이 판만 잠깐 멈췄다 잇는다
     sound: { start: () => sound.startLog(), take: () => sound.takeLog(), variant: () => sound.sfxVariant() },   // 시연 영상에 같은 소리를 입힐 때
     impacts: () => impacts.splice(0),
     // 시연 영상의 소리 맞추기: 화면 전체를 0.3초 검게 칠하고, 그 장면이 그려지는 시각을 돌려준다

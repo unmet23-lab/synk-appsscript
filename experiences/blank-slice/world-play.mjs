@@ -103,7 +103,8 @@ export function results({ correct, stars, rows = [] }) {
   const items = [...document.querySelectorAll('#r-log li')], big = document.querySelector('#r-correct'), wrap = big?.closest('.big');
   wrap?.classList.remove('w-done');
   let rung = 0, timer = 0, done = false;
-  const starSound = () => { starTimers = Array.from({ length: stars }, (_, i) => setTimeout(() => sound.sfx('star', { i }), i * 180)); };
+  // 별은 채점이 끝난 뒤 소리와 같은 박자로 하나씩 켜진다(그 전에는 안 받은 별과 같은 색)
+  const starSound = () => { starTimers = [...document.querySelectorAll('#r-stars i.on')].slice(0, stars).map((star, i) => setTimeout(() => { star.classList.add('w-lit'); sound.sfx('star', { i }); }, i * 180)); };
   const finish = () => {
     if (done) return; done = true;
     clearTimeout(timer); document.removeEventListener('pointerdown', finish, true);

@@ -185,6 +185,8 @@
 :root[data-host=world] .spark{width:16px;height:16px;background:#FFE08A;-webkit-mask:var(--w-star) center/contain no-repeat;mask:var(--w-star) center/contain no-repeat}
 
 /* 해설 · 멈춘 보기: 어두운 유리 판 */
+:root[data-host=world] .game .answer-check{inset:64px 12px 12px;max-height:calc(100% - 76px)}   /* 위 막대 아래부터: 작은 폰에서 판 윗줄이 막대에 가리지 않게 */
+@media (max-height:620px){:root[data-host=world] .game .answer-check{padding:14px 18px;gap:8px}}   /* 낮은 폰(320×568)에서도 보기 넷이 스크롤 없이 들어오게 */
 :root[data-host=world] .game :is(.explain,.answer-check){border-radius:var(--w-r-lg);background:rgba(14,15,19,.9);color:var(--w-ink);box-shadow:var(--w-glass-edge),var(--w-shadow);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
 :root[data-host=world] .game .x-sentence{font:700 19px/1.5 var(--sans);color:var(--w-ink)}
 :root[data-host=world] .game .x-sentence b{padding:0 .2em;border-radius:3px;background:rgba(255,232,60,.86);color:#1c1915}
@@ -268,7 +270,8 @@
 :root[data-host=world] .res-hero .big.w-done b::after{opacity:1;animation:wCircle .34s cubic-bezier(.42,1.67,.21,.9) both}
 :root[data-host=world] .res-hero .stars{margin:10px 0 0;gap:6px}
 :root[data-host=world] .res-hero .stars i,:root[data-host=world] .res-hero .stars i.on{width:24px;height:24px;background:rgba(28,25,21,.14);filter:none;-webkit-mask:var(--w-star) center/contain no-repeat;mask:var(--w-star) center/contain no-repeat}
-:root[data-host=world] .res-hero .stars i.on{background:var(--pen)}
+:root[data-host=world] .res-hero .stars i.on{animation:none}   /* LAB은 결과가 뜨자마자 튀어나오지만, 앱은 채점 뒤 소리와 함께 켠다(world-play.mjs results) */
+:root[data-host=world] .res-hero .stars i.w-lit{background:var(--pen);animation:pop .3s var(--ease) both;animation-delay:0s!important}
 :root[data-host=world] .res-hero .r-note{margin:10px 0 0;font-size:14.5px;line-height:1.55;color:rgba(28,25,21,.72)}
 :root[data-host=world] .res-hero .synk-collection-line{color:rgba(28,25,21,.72)}
 :root[data-host=world] .res-grid{margin:0;padding:0 16px;gap:12px}
@@ -314,8 +317,8 @@
 @media (prefers-reduced-motion:reduce){
   :root[data-host=world] :is(.w-title,.w-cut,.w-blade,.w-shred){animation:none}
   :root[data-host=world] :is(.w-cut,.w-blade,.w-shred){display:none}
-  :root[data-host=world] .log li.w-pen::before,:root[data-host=world] .res-hero .big.w-done b::after,:root[data-host=world] .game .sentence.done::after,:root[data-host=world] .pop.go,:root[data-host=world] .game .explain{animation:none}
+  :root[data-host=world] .res-hero .stars i.w-lit,:root[data-host=world] .log li.w-pen::before,:root[data-host=world] .res-hero .big.w-done b::after,:root[data-host=world] .game .sentence.done::after,:root[data-host=world] .pop.go,:root[data-host=world] .game .explain{animation:none}
 }
 :root[data-host=world][data-motion=reduced] :is(.w-title,.w-cut,.w-blade,.w-shred){animation:none}
 :root[data-host=world][data-motion=reduced] :is(.w-cut,.w-blade,.w-shred){display:none}
-:root[data-host=world][data-motion=reduced] .log li.w-pen::before,:root[data-host=world][data-motion=reduced] .res-hero .big.w-done b::after,:root[data-host=world][data-motion=reduced] .game .sentence.done::after,:root[data-host=world][data-motion=reduced] .pop.go,:root[data-host=world][data-motion=reduced] .game .explain{animation:none}
+:root[data-host=world][data-motion=reduced] .res-hero .stars i.w-lit,:root[data-host=world][data-motion=reduced] .log li.w-pen::before,:root[data-host=world][data-motion=reduced] .res-hero .big.w-done b::after,:root[data-host=world][data-motion=reduced] .game .sentence.done::after,:root[data-host=world][data-motion=reduced] .pop.go,:root[data-host=world][data-motion=reduced] .game .explain{animation:none}
