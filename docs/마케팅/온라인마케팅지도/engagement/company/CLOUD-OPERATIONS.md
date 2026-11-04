@@ -22,7 +22,7 @@
 **1단계 — 공개 경로(다음 회사 이미지 판):**
 
 - 넘김에 `git log -1 -- deploy/Caddyfile` 커밋의 두 파일(`deploy/Caddyfile` · `deploy-operations.test.mjs`)을 함께 더한다.
-- 판 선택 시험에 `deploy-operations.test.mjs`가 없어(사슬 49 `operator-input.json` 확인) inert가 Caddy 어댑터를 안 돌린다. 그 판에서 `SYNK_QA_CADDY`로 `^Caddy ` 시험 둘을 한 번 돌린다(선례 `.tmp/company-sns-close-20261016/qa/caddy-result.json`). 11-04 이 PC에는 Caddy 바이너리가 없어 못 돌렸다 — 저장소에서 확인한 것은 괄호 짝과 바뀌지 않은 나머지 줄뿐이다.
+- 판 선택 시험에 `deploy-operations.test.mjs`가 없어(사슬 49 `operator-input.json` 확인) inert는 Caddy 어댑터를 안 돌린다. 고친 Caddyfile은 11-04 조건부 QA의 Caddy v2.11.7로 `^Caddy ` 시험 2/2 통과했고, 어댑터 결과의 상류는 `company:4191` 하나다. master 커밋마다 예약 「SYNK 조건부 시험」도 같은 시험을 S048 · S049로 돌리므로, 판에 실은 Caddyfile 바이트가 이 커밋과 같으면 따로 안 돌려도 된다.
 - 덧붙는 끊김은 0이다. 이미지 판 교체가 Caddy를 어차피 다시 띄운다(판 전체 health 실패 실측 227~331초, 사슬 47 · 48). 화면 묶음만 바꾸는 판에는 싣지 않는다.
 - 컨테이너는 `edge` 망에 그대로 떠서 HA 계약을 채운다. 반영 뒤 `curl -s https://workspace.synk.im/api/spaceship/health` 응답에 `spaceship-coop`이 없는지 본다. 바깥 요청이 닿지 않으니 버린 게임이 죽어 노드 준비를 떨어뜨릴 길도 줄어든다.
 
