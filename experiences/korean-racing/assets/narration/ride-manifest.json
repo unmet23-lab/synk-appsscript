@@ -1,0 +1,28 @@
+{
+  "voice": "Microsoft Heami Desktop",
+  "engine": "Windows System.Speech",
+  "format": "MP3 mono 24kHz 48kbps",
+  "clips": [
+    {
+      "id": "ride-boost",
+      "text": "이제 달려!",
+      "duration": 1.692,
+      "bytes": 10748,
+      "rms": 2181
+    },
+    {
+      "id": "ride-tutorial-correct",
+      "text": "정답! 내리막이 열렸어.",
+      "duration": 3.711,
+      "bytes": 22844,
+      "rms": 2439
+    },
+    {
+      "id": "ride-tutorial-boost",
+      "text": "정답을 맞히면 자전거가 저절로 빨라져. 질주해 보자!",
+      "duration": 6.189,
+      "bytes": 37676,
+      "rms": 2612
+    }
+  ]
+}

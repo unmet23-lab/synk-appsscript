@@ -69,7 +69,7 @@ export function buildGate(THREE, renderer, { q, types, lanes, words }) {
     const f = answerVisual(THREE, renderer, words[types[i]], q.mode); f.position.set(0, 2.85, -.22); lane.add(f); fruitObjects.push(f);
     panel.userData.board = true;   // 답이 적힌 판(화면 위 꼬리표가 이 판을 가리지 않는지 확인용 표시)
     const base = new THREE.Mesh(new THREE.BoxGeometry(2.97, .026, 1.4), new THREE.MeshStandardMaterial({ color: 0x95b4aa, metalness: .12, roughness: .72 }));
-    base.position.set(0, .023, -.1); lane.add(base);
+    base.position.set(0, .023, -.1); base.userData.gateFloor = true; lane.add(base);
     group.add(lane);
   }
   return { group, fruitObjects };

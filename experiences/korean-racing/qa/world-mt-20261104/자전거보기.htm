@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>자전거 · 사람 모형 보기 (QA)</title>
+<script type="importmap">{"imports":{"three":"../../vendor/three.module.js"}}</script>
+<style>html,body{margin:0;height:100%;background:#cfd8d6;font:13px system-ui}canvas{display:block;width:100%;height:100%}#bar{position:fixed;left:8px;top:8px;display:flex;gap:6px;flex-wrap:wrap}#bar button{padding:6px 10px}</style>
+</head><body><div id="bar"></div>
+<script type="module">
+// 자전거 · 상대 모형을 한 자리에서 돌려 보는 QA 화면(게임에 들어가지 않는다). ?style=city|hybrid&view=side|three|front|rider
+import * as THREE from 'three';
+import { buildBike, poseBike, bikeStats } from '../../ride/ride-bike.js';
+import { RIDERS, buildRider, poseRider, riderStats } from '../../ride/ride-riders.js';
+const q = new URLSearchParams(location.search), style = q.get('style') || 'city', view = q.get('view') || 'three';
+const renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.shadowMap.enabled = true; document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xcfd8d6);
+const pm = new THREE.PMREMGenerator(renderer), env = new THREE.Scene();
+env.add(new THREE.Mesh(new THREE.SphereGeometry(50, 32, 16), new THREE.MeshBasicMaterial({ color: 0xbfd3dd, side: THREE.BackSide })));
+const sunBall = new THREE.Mesh(new THREE.SphereGeometry(6, 16, 8), new THREE.MeshBasicMaterial({ color: 0xfff1d6 })); sunBall.position.set(20, 30, 25); env.add(sunBall);
+scene.environment = pm.fromScene(env, .02).texture;
+scene.add(new THREE.HemisphereLight(0xdfeaf2, 0x6f6a5c, .8));
+const sun = new THREE.DirectionalLight(0xfff0d8, 2.6); sun.position.set(3, 5, 4); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); scene.add(sun);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.MeshStandardMaterial({ color: 0x6d6f6c, roughness: .9 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+const who = q.get('rider');
+const bike = who ? buildRider(THREE, RIDERS[who], { style }) : buildBike(THREE, { style, detail: view === 'front' ? 'view' : 'rival' }); scene.add(bike);
+const camera = new THREE.PerspectiveCamera(32, 1, .01, 100);
+const views = { side: [[-3.6, 1.0, .1], [0, .85, .1]], three: [[-2.3, 1.6, 2.4], [0, .85, .1]], front: [[0, 1.52, -.12], [0, .62, 1.6]], rear: [[.5, 1.5, -3.2], [0, .85, .2]] };
+const bar = document.getElementById('bar');
+for (const k of [...Object.keys(views)]) { const b = document.createElement('button'); b.textContent = k; b.onclick = () => { q.set('view', k); location.search = q; }; bar.append(b); }
+for (const k of ['taeo', 'harin']) { const b = document.createElement('button'); b.textContent = k; b.onclick = () => { q.set('rider', k); location.search = q; }; bar.append(b); }
+for (const k of ['city', 'hybrid']) { const b = document.createElement('button'); b.textContent = k; b.onclick = () => { q.set('style', k); location.search = q; }; bar.append(b); }
+const stats = document.createElement('span'); stats.textContent = JSON.stringify(who ? riderStats(bike) : bikeStats(bike)); bar.append(stats);
+const nums = (k) => q.get(k)?.split(',').map(Number); const [p, t] = views[view] || views.three; camera.position.set(...(nums('eye') || p)); camera.lookAt(...(nums('look') || t)); if (view === 'front') camera.fov = Number(q.get('fov') || 68);
+let d = 0, c = 0;
+function size() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); renderer.setPixelRatio(Math.min(2, devicePixelRatio)); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+addEventListener('resize', size); size();
+renderer.setAnimationLoop(() => { if (q.get('spin') !== '0') { d += .02; c += .008; } const n = (k) => Number(q.get(k) || 0); if (who) poseRider(THREE, bike, { distance: d, cadence: c + n('crank'), standing: n('stand'), look: n('glance'), footDown: n('foot'), thumb: n('thumb'), speed: n('speed'), time: performance.now() / 1000 }); else poseBike(bike, { distance: d, cadence: c, steer: n('steer') }); renderer.render(scene, camera); });
+window.__ready = true;
+</script></body></html>

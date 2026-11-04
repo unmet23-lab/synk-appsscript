@@ -12,7 +12,7 @@ const LEVEL=.38,DUCK_LEVEL=.09;
 export function createCoastRadio({getContext,createAudio=()=>new Audio(),onUnavailable=()=>{}}){
   let media=null,context=null,source=null,gain=null,prepared=false,disposed=false;
   let pending=null,epoch=0,playing=false,blocked=false,lastError=null,primed=false;
-  let state={active:false,enabled:true,paused:false,duck:false},target=0;
+  let state={active:false,enabled:true,paused:false,duck:false,level:LEVEL,duckLevel:DUCK_LEVEL},target=0;   // level · duckLevel: WORLD 레이스 동안 낮게 깔 때
   const wanted=()=>!disposed&&state.active&&state.enabled&&!state.paused;
   function ensureMedia(){
     if(!media){media=createAudio();media.preload='none';media.loop=true;media.playsInline=true;media.addEventListener('error',failedMedia);}
@@ -49,7 +49,7 @@ export function createCoastRadio({getContext,createAudio=()=>new Audio(),onUnava
   function sync(){
     if(!wanted()){halt();return;}
     if(blocked)return;
-    if(playing){level(state.duck?DUCK_LEVEL:LEVEL);return;}
+    if(playing){level(state.duck?state.duckLevel:state.level);return;}
     if(pending)return;
     prepare();if(!connect())return;
     const ticket=epoch;level(0,true);
@@ -59,7 +59,7 @@ export function createCoastRadio({getContext,createAudio=()=>new Audio(),onUnava
     try{attempt=media.play();}catch(error){fail(error);halt();return;}
     const task=Promise.resolve(attempt).then(()=>{
       if(ticket!==epoch||!wanted()||blocked){halt();return;}
-      playing=true;lastError=null;level(state.duck?DUCK_LEVEL:LEVEL);
+      playing=true;lastError=null;level(state.duck?state.duckLevel:state.level);
     }).catch(error=>{
       if(ticket!==epoch||!wanted()){halt();return;}
       fail(error);halt();

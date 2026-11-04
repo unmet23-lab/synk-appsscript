@@ -21,7 +21,7 @@ export function renderResults(s) {
   );
   $('#r-note').textContent = s.note;
   $('#r-coins').textContent = s.coinText;
-  $('#r-mongle').src = s.passed ? 'kit/brand/mongle-cheer.webp' : 'kit/brand/mongle-smile.webp';
+  if (document.documentElement.dataset.host !== 'world') $('#r-mongle').src = s.passed ? 'kit/brand/mongle-cheer.webp' : 'kit/brand/mongle-smile.webp';   // WORLD에는 마스코트가 없다
 
   const log = $('#r-log');
   log.replaceChildren(...s.questions.map((q, i) => {

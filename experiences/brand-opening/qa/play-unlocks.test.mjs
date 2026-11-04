@@ -30,6 +30,14 @@ test('빈칸 베기는 레슨 한 번이나 카페 첫 방문 뒤에 열린다(�
   assert.equal(playState('blank', null).open, false);
 });
 
+test('바닷가 레이스는 지도 찾기 이야기(거꾸로 든 지도)를 마친 뒤에만 열린다', () => {
+  const summary = (completed) => ({ summary: { packs: [{ id: 'greetings', completed: 3 }, { id: 'directions', completed }], status: { phase: 'ready' } } });
+  assert.deepEqual(playState('racing', playRecord(summary(0))), { open: false, where: 'play.where.directions' });
+  assert.deepEqual(playState('racing', playRecord(summary(1))), { open: true });
+  assert.equal(playState('racing', playRecord(learning(1))).open, false);   // packs가 없는 옛 요약은 잠김
+  assert.equal(playState('racing', null).open, false);
+});
+
 test('생활 진도를 아직 못 읽었거나 읽는 중이면 잠김으로 본다(열렸다고 먼저 말하지 않는다)', () => {
   assert.equal(playRecord(undefined), null);
   assert.equal(playRecord({}), null);
@@ -43,7 +51,7 @@ test('규칙이 이상한 기록에 던져도 잠김으로 남는다', () => {
 
 test('잠김 안내의 여는 자리 글이 화면 글 표에 세 언어로 있다', () => {
   for (const rule of Object.values(PLAY_UNLOCKS)) {
-    for (const key of [rule.where, 'play.locked', 'game.order.title', 'game.order.detail', 'game.blank.title', 'game.blank.detail', 'game.snap.title', 'game.snap.detail']) {
+    for (const key of [rule.where, 'play.locked', 'game.order.title', 'game.order.detail', 'game.blank.title', 'game.blank.detail', 'game.snap.title', 'game.snap.detail', 'game.racing.title', 'game.racing.detail']) {
       for (const lang of ['ko', 'en', 'mn']) assert.ok(strings[key]?.[lang], `${key}.${lang}`);
     }
   }

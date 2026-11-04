@@ -93,6 +93,9 @@ export function installQaHook(api) {
     hearNow: () => api.hearNow(),
     /** 입구 그림용: 레이스 화면을 카드 없이 보이고 카메라를 앞쪽 3/4 각도에 둔다. */
     heroPose: (options) => api.heroPose(options),
+    /** WORLD 자전거 판의 장치 · 한 판 상태(장면 확인용, LAB은 rig가 null) */
+    get rig() { return api.rig; },
+    get round() { return api.round; },
     /** 3D 그리기 상태(프레임 수·평균 FPS·그리기 호출) */
     render: () => api.render(),
   };

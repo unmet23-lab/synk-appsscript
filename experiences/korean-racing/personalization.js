@@ -119,9 +119,9 @@ export function racePressure({readyAt,choseAt,cruise,campaign,roadLeft=null}){
   return Math.min(.95,Math.max(0,choseAt-readyAt)/allowed);
 }
 /** What this race changed, in the race's words (results screen). Only the settings, never a judgement. */
-export function describeRace(start,end){
+export function describeRace(start,end,speedScale=1){
   const lines=[];
-  if(start?.cruise!=null&&end?.cruise!=null&&start.cruise!==end.cruise)lines.push(`달리는 속도 ${Math.round(start.cruise*3.6)} → ${Math.round(end.cruise*3.6)}km/h`);
+  if(start?.cruise!=null&&end?.cruise!=null&&start.cruise!==end.cruise)lines.push(`달리는 속도 ${Math.round(start.cruise*3.6*speedScale)} → ${Math.round(end.cruise*3.6*speedScale)}km/h`);
   const a=start?.['item.difficulty'],b=end?.['item.difficulty'];
   // Only the direction: the five are drawn from what Core leads with, so a level may not be there (no level-2 reading).
   if(a!=null&&b!=null&&a!==b)lines.push(b>a?'다음 맞춤 5문항은 조금 더 어려운 문장도 골라요':'다음 맞춤 5문항은 조금 더 쉬운 문장부터 골라요');

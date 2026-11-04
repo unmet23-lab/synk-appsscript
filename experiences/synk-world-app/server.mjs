@@ -32,7 +32,7 @@ const townHost=mode==='rehearsal'?createAccountTownHost({directory:`${dataDir}-t
 const sessions=new Map();
 let speakingHost=null;
 const ids={'player-a':'11111111-1111-4111-8111-111111111111','player-b':'22222222-2222-4222-8222-222222222222'};
-const allowedGames=new Set(['korean-runner','korean-rhythm','hangul-stage','order-rush','blank-slice','snap-words']);
+const allowedGames=new Set(['korean-runner','korean-rhythm','hangul-stage','order-rush','blank-slice','snap-words','korean-racing']);
 const mime={'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml','.woff2':'font/woff2','.ttf':'font/ttf','.mp4':'video/mp4','.mp3':'audio/mpeg','.wav':'audio/wav','.glb':'model/gltf-binary','.wasm':'application/wasm'};
 function sessionCookieName(request){const tab=request.headers.get('x-synk-rehearsal-tab');return tab?`synk_world_rehearsal_${tab.toLowerCase()}`:'synk_world_rehearsal';}
 function cookieToken(request){const name=sessionCookieName(request);return request.headers.get('cookie')?.match(new RegExp(`(?:^|;\\s*)${name}=([A-Za-z0-9_-]+)(?:;|$)`))?.[1];}
@@ -128,7 +128,7 @@ const server=http.createServer(async(req,res)=>{
    res.writeHead(200,{'Content-Type':mime['.html'],'Cache-Control':'no-store'});res.end(req.method==='HEAD'?undefined:html);return;
   }
   if(pathname.endsWith('/'))pathname+='index.html';const target=path.resolve(base,'.'+pathname);const rel=path.relative(base,target);
-  if(rel.startsWith('..')||path.isAbsolute(rel)||rel.split(path.sep).some(p=>p.startsWith('.'))||!mime[path.extname(target)]||/^(qa|server|prepare-assets|asset-sources|README)/i.test(rel)){res.writeHead(403).end();return;}
+  if(rel.startsWith('..')||path.isAbsolute(rel)||rel.split(path.sep).some(p=>p.startsWith('.'))||!mime[path.extname(target)]||/^(qa(?:[\\/]|$)|server|prepare-assets|asset-sources|README)/i.test(rel)){res.writeHead(403).end();return;}
   const stat=fs.statSync(target);if(!stat.isFile()){res.writeHead(404).end();return;}
   let start=0,end=stat.size-1,status=200;const headers={'Content-Type':mime[path.extname(target)],'Cache-Control':'no-cache','X-Content-Type-Options':'nosniff','Accept-Ranges':'bytes'};
   if(req.headers.range){const range=req.headers.range.match(/^bytes=(\d+)-(\d*)$/);if(!range){res.writeHead(416).end();return;}start=+range[1];end=range[2]?Math.min(+range[2],end):end;if(start>end){res.writeHead(416,{'Content-Range':`bytes */${stat.size}`}).end();return;}status=206;headers['Content-Range']=`bytes ${start}-${end}/${stat.size}`;}

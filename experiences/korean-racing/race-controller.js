@@ -14,8 +14,9 @@ import { createQuestionPace, gatePosition, QUESTION_LEAD, rewardBoost } from './
 import { questionNarration } from './question-audio.js';
 import { ROAD_END } from './course.js';
 import { ALL_COURSES, labelStage } from './lobby.js';
+import { LANES, CAR_TRACK, OFFSET_LIMIT, OFFSET_EDGE, STEER_RATE, displaySpeed, laneOf, gateWait, targetSpeed, listeningRoll, rivalBandFactor } from './lane-core.js';
 
-export const LANES = [-3.45, 0, 3.45];
+export { LANES };
 // THREE.MathUtils와 같은 식(브라우저 판과 숫자가 같도록).
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value)), lerp = (x, y, t) => (1 - t) * x + t * y;
 
@@ -43,16 +44,19 @@ export function createRaceState(initial = {}) {
  *  rewards  { account(), storage, loadGarage(), storeGarage(state), wishText(), awardRace, recordRound, loadProgress }
  *  tutorial { active(), chooseLane(), tapLane(id), render(), repeat(), delivered(), clearVoice() }
  *  coastRadio · clock{getDelta} · reducedMotion · coastDrive · questionPace (기본은 새로 만든다)
+ *  track    lane-core.js의 트랙 판(기본 CAR_TRACK = LAB). 화면 속도 · 접촉 크기 · 꺾는 빠르기 · 도착 뒤 속도만 바꾸고, 판정 · 대기 · 맞춤은 그대로다.
  */
 export function createRaceController({ view, sound, scene, learning, rewards, tutorial, coastRadio, clock, reducedMotion = false,
-  coastDrive = createCoastDrive(), questionPace = createQuestionPace(), state = {} }) {
-  const s = createRaceState(state), { $, hud } = view, learn = (action, fallback = null) => learning.learn(action, fallback);
+  coastDrive = createCoastDrive(), questionPace = createQuestionPace(), state = {}, track = CAR_TRACK }) {
+  const s = createRaceState(state), { $, hud } = view, learn = (action, fallback = null) => learning.learn(action, fallback), words = track.words;
   const awardRace = rewards.awardRace || awardCoins, recordRound = rewards.recordRound || recordProgress, loadProgress = rewards.loadProgress || readProgress;
 
   function setText(node, value) { value = String(value); if (node.textContent !== value) node.textContent = value; }
   function silence() { sound.narrator.cancel(); sound.quiet(); }
   function syncCoastRadio() {
-    coastRadio.setState({ active: coastDrive.active, enabled: s.soundEnabled, paused: s.paused || !s.running || !coastDrive.driving || view.hidden() });
+    // WORLD 자전거 판은 레이스 동안에도 낮게 깔고 도착 뒤에 앞으로 나온다(track.raceMusic). LAB은 드라이브 때만.
+    const under = !!track.raceMusic && !coastDrive.active;
+    coastRadio.setState({ active: coastDrive.active || (under && s.running), enabled: s.soundEnabled, paused: s.paused || !s.running || (!coastDrive.driving && !under) || view.hidden(), ...(track.raceMusic ? (under ? track.raceMusic : { level: .38, duckLevel: .09 }) : {}) });
     $('cruise-track').textContent = coastRadio.snapshot().blocked ? '♫ 해안선 · 눌러서 음악 켜기' : s.soundEnabled ? '♫ SYNK CITY POP · 해안선' : '♫ 해안선 · 소리 켜기';
   }
   function speak(ids, text, kind = 'comment', interrupt = false, presentationId = null) { if (s.soundEnabled) sound.speak(ids, text, kind, { interrupt, presentationId }); }
@@ -72,7 +76,7 @@ export function createRaceController({ view, sound, scene, learning, rewards, tu
     s.questionChosen = true; s.auto = false; $('demo-indicator').hidden = true;
     // 답 꼬리표로 이미 고른 길로 가는 중이면 ↑는 그 길을 그대로 고른다(지금 차가 있는 길로 되돌리지 않는다).
     const steering = s.inputs.left || s.inputs.right, aimed = s.laneAim !== null && !steering ? LANES.indexOf(s.laneAim) : -1;
-    const lane = aimed >= 0 ? aimed : clamp(Math.round((s.playerOffset + 3.45) / 3.45), 0, 2);
+    const lane = aimed >= 0 ? aimed : laneOf(s.playerOffset);
     gate.intentChoice = gate.types[lane]; gate.choseAt = s.elapsed;
     if (!steering) s.laneAim = LANES[lane];
     hud.chooseLane(gate.intentChoice); setQuestionExpanded(false);
@@ -107,7 +111,7 @@ export function createRaceController({ view, sound, scene, learning, rewards, tu
     if (s.questionExpanded) {
       ask = campaign ? q.prompt : q.mode === 'picture' ? `“${q.word}” 그림이 있는 길을 찾아요` : `들은 단어: “${q.word}”`;
       help = reading ? '지문을 읽고 답이 있는 길로 가요. 고르는 동안 기다릴게요.' : fallback ? '소리 대신 글로 열었어요. 답 꼬리표를 누르면 그 길로 가요.'
-        : '펼친 동안 차가 기다려요. 답 꼬리표를 누르거나 접고 달려요.';
+        : words.expandedHelp;
     } else if (!heardAll) { ask = '잘 들어 보세요'; help = '문제와 세 길의 답을 차례로 들려줘요.'; }
     else {
       ask = campaign ? q.prompt : q.mode === 'picture' ? '들은 단어의 그림이 있는 길로 가요' : '들은 단어가 있는 길로 가요';
@@ -160,13 +164,14 @@ export function createRaceController({ view, sound, scene, learning, rewards, tu
     hud.resetLanes(); hud.hideQuestion(); hud.clearPop();
     makeGate(0, gatePosition(0)); scene.placeCar(scene.car(), s.playerS, 0);
     setText($('g-count'), `1 / ${s.questionBank.length}`); $('nitro-fill').style.clipPath = 'inset(0 100% 0 0)'; $('progress').style.width = '0%';
-    setText($('rank'), '3 / 3'); setText($('speed'), Math.round(s.cruise * 3.6)); setText($('combo'), ''); setText($('nitro-label'), '부스터');
+    setText($('rank'), '3 / 3'); setText($('speed'), displaySpeed(s.cruise, track)); setText($('combo'), ''); setText($('nitro-label'), words.boost);
     $('repeat-question').hidden = false;
     $('toast').hidden = true; $('toast').textContent = ''; s.toastTime = 0; s.laterToast = null; view.screenEl.classList.remove('boosting');
     $('left').classList.remove('held'); $('right').classList.remove('held');
     s.running = play; view.screenEl.classList.toggle('playing', play); $('demo-indicator').hidden = !s.auto;
     view.closeDialog($('pause-dialog')); $('world-error').hidden = true;
     scene.resetCamera(s.playerS);
+    if (track.raceMusic) syncCoastRadio();
   }
 
   /* ── 멈춤·이어하기 ── */
@@ -266,7 +271,7 @@ export function createRaceController({ view, sound, scene, learning, rewards, tu
     else if (earned.reason === 'account-rejected') plain.push('이번 보상 요청을 처리하지 못했어요. 요청 원본은 이 기기에 보관했으며 다른 게임은 계속할 수 있어요.');
     else if (!earned.coins) plain.push('오늘의 반복 완주 보상을 모두 받았어요.');
     if (!demo && wish) plain.push(wish);
-    const tuned = demo ? [] : describeRace(s.flowStart, flowEnd?.settings?.values);
+    const tuned = demo ? [] : describeRace(s.flowStart, flowEnd?.settings?.values, track.speedScale);
     const learningLine = demo ? '자동 시연이라 학습 기록에 남기지 않았어요.' : [`도움 없이 처음 고른 답 ${s.answers.filter(a => a.learning?.independent).length}개를 다음 추천에 반영해요.`,
       tuned.length ? `이번 주행에서 맞춘 것: ${tuned.join(' · ')}.` : '', saved ? (rewards.account().status().mode === 'account' ? '직접 달린 기록을 계정에 이어 저장해요. 위의 저장 상태를 확인해 주세요.' : '직접 달린 체험 기록은 이 브라우저에 저장했어요.') : earned.reason === 'account-rejected' ? '이번 기록은 계정에 반영되지 않았어요. 요청 원본은 이 기기에 보관했어요.' : '기록을 보관하지 못했어요. 저장 상태를 확인해 주세요.', learning.learningScope()].filter(Boolean).join(' ');
     const coinText = demo ? '자동 시연은 공통 코인을 지급하지 않아요.' : earned.coins ? `공통 코인 +${earned.coins} · 보유 ${earned.state.coins.toLocaleString('ko-KR')}`
@@ -304,7 +309,7 @@ export function createRaceController({ view, sound, scene, learning, rewards, tu
     const gate = s.gate;
     if (!gate || gate.judged) return;
     questionPace.answered(s.elapsed);
-    const lane = clamp(Math.round((s.playerOffset + 3.45) / 3.45), 0, 2), chosen = gate.types[lane], success = chosen === gate.q.answer;
+    const lane = laneOf(s.playerOffset), chosen = gate.types[lane], success = chosen === gate.q.answer;
     if (gate.presentationId && !s.roundWasDemo) {
       const assessable = gate.intentChoice === chosen;
       gate.learning = learning.answerGate(gate.presentationId, { correct: success, assessable, reason: assessable ? undefined : 'motor', choice: { selectedId: chosen, correctId: gate.q.answer } },
@@ -315,8 +320,8 @@ export function createRaceController({ view, sound, scene, learning, rewards, tu
     $('repeat-question').hidden = true; $('go').hidden = true; setQuestionExpanded(false); s.laneAim = null;
     hud.markLanes(chosen, gate.q.answer);
     if (success) {
-      s.correct++; s.combo++; s.bestCombo = Math.max(s.bestCombo, s.combo); s.boost = rewardBoost(s.combo); scene.mascotMood('cheer', 3); hud.pop(s.combo >= 3 ? `${s.combo}콤보! 부스터` : '정답! 부스터', s.combo);
-      speak(['correct', ...(gate.q.answerAudio || [gate.q.answer]), 'boost'], `맞았어! ${gate.q.word}. ${gate.q.explanation || ''} 부스터!`, 'feedback'); sound.ding(true);
+      s.correct++; s.combo++; s.bestCombo = Math.max(s.bestCombo, s.combo); s.boost = rewardBoost(s.combo); scene.mascotMood('cheer', 3); hud.pop(s.combo >= 3 ? `${s.combo}콤보! ${words.boost}` : `정답! ${words.boost}`, s.combo);
+      speak(['correct', ...(gate.q.answerAudio || [gate.q.answer]), words.boostClip], `맞았어! ${gate.q.word}. ${gate.q.explanation || ''} ${words.boost}!`, 'feedback'); sound.ding(true);
     } else {
       s.combo = 0; speak(['answer', ...(gate.q.answerAudio || [gate.q.answer]), 'retry'], `정답은 ${gate.q.word}. ${gate.q.explanation || ''}`, 'feedback'); sound.ding(false);
     }
@@ -328,9 +333,11 @@ export function createRaceController({ view, sound, scene, learning, rewards, tu
     const follow = needsPractice && gate.learning?.verdict !== 'unassessed' ? linkRacingRecheck(learn(c => racingFollowUp(c, { current: gate.q, remaining: s.questionBank.slice(s.gateIndex + 1), stage: s.selectedStage, audioAvailable: s.soundEnabled && !s.narrationUnavailable })), gate.learning) : null;
     if (follow) s.questionBank.splice(s.gateIndex + 1, s.questionBank.length - s.gateIndex - 1, ...follow.remaining);
     const nextNote = follow?.status === 'new' ? ' 비슷한 새 문제로 한 번 더 확인해 봐요.' : follow?.status === 'unavailable' ? ' 비슷한 새 문제가 없어서 원래 코스대로 이어 달려요.' : '';
-    hud.answerQuestion({ ok: success, word: gate.q.word, why: [answerFeedback(gate.q, chosen), gate.recheck?.line, nextNote].filter(Boolean).join(' '), hold: reviewing ? null : 4200 });
-    gate.reviewing = reviewing;
-    if (reviewing) {
+    // WORLD(track.stopForReview 거짓)는 틀려도 멈추지 않는다: 해설을 달리면서 보여 주고 다음 문제가 나오면 걷는다. 판정 · 기록은 같다.
+    const holdStill = reviewing && track.stopForReview;
+    hud.answerQuestion({ ok: success, word: gate.q.word, why: [answerFeedback(gate.q, chosen), gate.recheck?.line, nextNote].filter(Boolean).join(' '), hold: holdStill ? null : reviewing ? 9000 : 4200 });
+    gate.reviewing = holdStill;
+    if (holdStill) {
       s.velocity = 0; s.inputs.left = s.inputs.right = false;
       $('question-toggle').hidden = true; $('feedback-continue').hidden = false;
       $('feedback-continue').textContent = follow?.status === 'new' ? '새 문제로 확인하기' : '확인했어요 · 계속 달리기';
@@ -348,7 +355,7 @@ export function createRaceController({ view, sound, scene, learning, rewards, tu
   function updateContacts(dt, waiting, record = true) {
     s.contactTimer = Math.max(0, s.contactTimer - dt);
     if (!waiting) for (const r of scene.rivals()) {
-      const p = { s: s.playerS, offset: s.playerOffset, velocity: s.velocity }; const hit = resolveContact(p, r); if (!hit) continue; s.playerS = p.s; s.playerOffset = p.offset;
+      const p = { s: s.playerS, offset: s.playerOffset, velocity: s.velocity }; const hit = resolveContact(p, r, track.contact); if (!hit) continue; s.playerS = p.s; s.playerOffset = p.offset;
       if (s.contactTimer === 0) {
         const effect = shieldContact({ shield: s.shield, collisions: s.collisions, velocity: s.velocity, boost: s.boost }, hit); if (!record) effect.collisions = s.collisions;
         ({ shield: s.shield, collisions: s.collisions, velocity: s.velocity, boost: s.boost } = effect);
@@ -360,8 +367,8 @@ export function createRaceController({ view, sound, scene, learning, rewards, tu
   function updateCoastDrive(dt) {
     const steering = (s.inputs.left ? 1 : 0) - (s.inputs.right ? 1 : 0);
     if (s.auto) s.playerOffset = lerp(s.playerOffset, 0, 1 - Math.exp(-dt * 2.6));
-    else s.playerOffset = clamp(s.playerOffset + steering * dt * 5.8, -5.05, 5.05);
-    const desired = (s.contactTimer > .5 ? 28 : Math.abs(s.playerOffset) > 4.95 ? 32 : 42) * s.cruise / BASE_CRUISE;
+    else s.playerOffset = clamp(s.playerOffset + steering * dt * STEER_RATE, -OFFSET_LIMIT, OFFSET_LIMIT);
+    const desired = (s.contactTimer > .5 ? track.coast.contact : Math.abs(s.playerOffset) > OFFSET_EDGE ? track.coast.edge : track.coast.open) * s.cruise / BASE_CRUISE;
     s.velocity = lerp(s.velocity, desired, 1 - Math.exp(-dt * 2.4));
     const step = coastDrive.advance(s.playerS, s.velocity, dt, ROAD_END); s.playerS = step.position;
     $('cruise-loop').style.opacity = String(step.fade);
@@ -379,7 +386,7 @@ export function createRaceController({ view, sound, scene, learning, rewards, tu
     scene.placeCar(car, s.playerS, s.playerOffset, steering * .045); car.rotation.z = -steering * .008;
     for (const w of scene.wheels()) w.rotation.x -= s.velocity * dt * 2.3;
     for (const jet of car.userData.jets) { jet.visible = !reducedMotion; jet.scale.y = .65; }
-    setText($('speed'), Math.round(s.velocity * 3.6));
+    setText($('speed'), displaySpeed(s.velocity, track));
     if (s.soundEnabled) sound.engineCoast(s.velocity);
   }
   function updateGame(dt) {
@@ -392,26 +399,25 @@ export function createRaceController({ view, sound, scene, learning, rewards, tu
     if (s.auto) s.playerOffset = lerp(s.playerOffset, s.aimOffset, 1 - Math.exp(-dt * 2.6));
     // 추적 카메라는 +Z를 보므로 화면 오른쪽이 월드 -X다.
     else if (s.laneAim !== null && !s.inputs.left && !s.inputs.right) s.playerOffset = lerp(s.playerOffset, s.laneAim, 1 - Math.exp(-dt * 4));
-    else s.playerOffset += ((s.inputs.left ? 1 : 0) - (s.inputs.right ? 1 : 0)) * dt * 5.8;
-    s.playerOffset = clamp(s.playerOffset, -5.05, 5.05);
+    else s.playerOffset += ((s.inputs.left ? 1 : 0) - (s.inputs.right ? 1 : 0)) * dt * STEER_RATE;
+    s.playerOffset = clamp(s.playerOffset, -OFFSET_LIMIT, OFFSET_LIMIT);
     // 다시 듣기를 포함해 낱말을 끝까지 들을 시간을 둔다.
     const narrator = sound.narrator;
     const hearing = gate?.announced && !gate.judged && (narrator.activeKind === 'question' || narrator.queue.some(item => item.kind === 'question'));
-    const waitingForVoice = hearing && gate.s - s.playerS < 65;
-    const waitingForChoice = s.selectedStage.campaign && gate?.announced && !gate.judged && !s.auto && !s.questionChosen && gate.s - s.playerS < 65;
-    const waiting = waitingForVoice || waitingForChoice || s.questionExpanded;
+    const { choice: waitingForChoice, waiting } = gateWait({ announced: gate?.announced, judged: gate?.judged, distance: gate ? gate.s - s.playerS : Infinity, hearing, campaign: s.selectedStage.campaign, auto: s.auto, chosen: s.questionChosen, expanded: s.questionExpanded });
     ({ velocity: s.velocity, boost: s.boost } = questionPace.step({ waiting, velocity: s.velocity, boost: s.boost, dt }));
-    const edge = Math.abs(s.playerOffset) > 4.95, pace = s.cruise / BASE_CRUISE, desired = waiting ? 0 : s.contactTimer > .5 ? 22 * pace : edge ? 21 * pace : (s.boost > 0 || s.answers.length === s.questionBank.length) ? 42 * pace : s.cruise;
+    const desired = targetSpeed({ waiting, contactTimer: s.contactTimer, edge: Math.abs(s.playerOffset) > OFFSET_EDGE, boost: s.boost, allAnswered: s.answers.length === s.questionBank.length, cruise: s.cruise, baseCruise: BASE_CRUISE, rollSpeed: listeningRoll({ hearing, waiting, boost: s.boost }, track) });
     s.velocity = lerp(s.velocity, desired, 1 - Math.exp(-dt * 2.4)); s.playerS += s.velocity * dt;
-    const rivals = scene.rivals();
+    const rivals = scene.rivals(), roll = listeningRoll({ hearing, waiting, boost: s.boost }, track), rivalPace = roll ? roll / BASE_CRUISE : 1;
     for (const r of rivals) {
-      r.s += r.speed * dt * (waiting ? 0 : 1);
-      if (gate && !gate.judged && gate.s - s.playerS < 100 && Math.abs(r.s - s.playerS) < 25) {
+      r.s += r.speed * dt * (waiting ? 0 : rivalPace) * (track.rivalHover ? rivalBandFactor(s.playerS - r.s, track.rivalHover[rivals.indexOf(r)], s.correct) : 1);
+      const makeRoom = track.rivalsMakeRoom && Math.abs(r.s - s.playerS) < 40 && Math.abs(r.offset - s.playerOffset) < 2.2;
+      if (makeRoom || gate && !gate.judged && gate.s - s.playerS < 100 && Math.abs(r.s - s.playerS) < 25) {
         const safe = LANES.find(o => Math.abs(o - s.playerOffset) > 2.5 && !rivals.some(other => other !== r && Math.abs(other.s - r.s) < 7 && Math.abs(o - other.offset) < 2));
         if (safe !== undefined) r.offset = lerp(r.offset, safe, 1 - Math.exp(-dt * 3));
       }
     }
-    const rivalBody = { s: rivals[0].s, offset: rivals[0].offset, velocity: rivals[0].speed }; resolveContact(rivalBody, rivals[1]); rivals[0].s = rivalBody.s; rivals[0].offset = rivalBody.offset;
+    const rivalBody = { s: rivals[0].s, offset: rivals[0].offset, velocity: rivals[0].speed }; resolveContact(rivalBody, rivals[1], track.contact); rivals[0].s = rivalBody.s; rivals[0].offset = rivalBody.offset;
     updateContacts(dt, waiting); for (const r of rivals) { scene.placeCar(r.mesh, r.s, r.offset); for (const w of r.mesh.userData.wheels) w.rotation.x -= r.speed * dt * 2.2; }
     const steering = (s.inputs.left ? 1 : 0) - (s.inputs.right ? 1 : 0), yaw = (s.auto ? clamp(s.aimOffset - s.playerOffset, -1, 1) : steering) * .045;
     const car = scene.car();
@@ -431,9 +437,9 @@ export function createRaceController({ view, sound, scene, learning, rewards, tu
       if (distance < -15) { s.gateIndex++; if (s.gateIndex < s.questionBank.length) makeGate(s.gateIndex, gatePosition(s.gateIndex)); else disposeGate(); }
     }
     view.screenEl.classList.toggle('boosting', s.boost > 0 && !reducedMotion);
-    setText($('speed'), Math.round(s.velocity * 3.6));
+    setText($('speed'), displaySpeed(s.velocity, track));
     $('nitro-fill').style.clipPath = `inset(0 ${(100 - Math.min(100, s.boost / rewardBoost(s.combo) * 100)).toFixed(1)}% 0 0)`;
-    setText($('nitro-label'), waiting && s.boost > 0 ? '부스터 저장 중' : waitingForChoice ? '길을 골라 출발' : s.boost > 0 ? '부스터 켜짐' : '부스터');
+    setText($('nitro-label'), waiting && s.boost > 0 ? `${words.boost} 저장 중` : waitingForChoice ? '길을 골라 출발' : s.boost > 0 ? `${words.boost} 켜짐` : words.boost);
     setText($('rank'), `${1 + rivals.filter(r => r.s > s.playerS).length} / 3`);
     $('progress').style.width = `${Math.min(100, (s.playerS - 75) / (gatePosition(s.questionBank.length - 1) + 15 - 75) * 100)}%`;
     if (s.soundEnabled) sound.engineRace(s.velocity, s.boost, car.userData.vehicleKind);

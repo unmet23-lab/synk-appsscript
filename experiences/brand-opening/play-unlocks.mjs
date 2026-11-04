@@ -14,6 +14,9 @@ export const PLAY_UNLOCKS = Object.freeze({
   // 찰칵 낱말(11-04): 드라마 1화 기록이 아직 홈에 없어, 이름표를 읽고 찾는 이야기(greetings-story)가 든 첫 묶음 「처음 만난 날」을 두 강 이상 들으면 연다.
   // 강 순서를 강제하지 않아 그 강이라는 보장은 없지만, 엄격하게 막지 않는 임시 자리다. 1화 기록이 홈에 오면 그 기록으로 옮긴다.
   snap: Object.freeze({ where: 'play.where.stories', open: (record) => record.greetingLessons >= 2 }),
+  // MT 바닷가 자전거 레이스(11-04, 설계 korean-racing/qa/world-mt-20261104/설계.md): 동아리 MT 회차가 아직 없어 가장 가까운 이야기 기록으로 연다 —
+  // 지도 찾기 이야기(거꾸로 든 지도) 한 번. MT 회차가 생기면 그 회차의 기록으로 바꾼다.
+  racing: Object.freeze({ where: 'play.where.directions', open: (record) => record.directionsDone >= 1 }),
 });
 
 /** 홈이 들고 있는 생활 진도(updateLearning의 summary)에서 해금에 쓰는 기록만. 아직 못 읽었으면 null(잠김으로 본다). */
@@ -21,7 +24,7 @@ export function playRecord(learningData) {
   const summary = learningData?.summary;
   if (!summary || summary.status?.phase === 'loading') return null;
   const packs = Array.isArray(summary.packs) ? summary.packs : [];
-  return Object.freeze({ cafeVisits: Number(summary.cafe?.completed) || 0, lessons: Number(summary.completed) || 0, greetingLessons: Number(packs.find((pack) => pack?.id === 'greetings')?.completed) || 0 });
+  return Object.freeze({ cafeVisits: Number(summary.cafe?.completed) || 0, lessons: Number(summary.completed) || 0, greetingLessons: Number(packs.find((pack) => pack?.id === 'greetings')?.completed) || 0, directionsDone: Number(packs.find((pack) => pack?.id === 'directions')?.completed) || 0 });
 }
 
 /** 놀이 하나의 상태: { open } 또는 { open:false, where }. 규칙이 던지거나 기록이 없으면 잠김. */

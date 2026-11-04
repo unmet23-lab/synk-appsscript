@@ -87,6 +87,9 @@ function copyFile(source,relative,{transform=true}={}){
  if(relative==='hangul-stage/index.html')content=content.replace('id="games"','id="games" target="_top"').replace('id="grad-games"','id="grad-games" target="_top"');
  if(relative==='hangul-stage/app.mjs')content=content.replace(/const HUB = [^;]+;/,"const HUB = !hosted ? 'https://synk.im/account/client.html?product=world&play=learning-hub' : null;");
  // 주문 폭주 초보판 입구(LAB 전용)는 WORLD 사본에서 뺀다 — 초보판 파일을 싣지 않으니 링크도 남기지 않는다.
+ // 바닷가 레이스 WORLD 사본: 쓰지 않는 입구 그림 · 마스코트 img를 지운다 — 가려져 있어도 받아지므로(LAB 원본 index.html은 그대로). 결과의 몽글 칸은 src만 지운다(results.js가 찾는다).
+ if(relative==='korean-racing/index.html'){for(const [shape,to] of [[/<img class="hero-shot"[^>]*>/,''],[/<img class="hero-mongle diecut"[^>]*>/,''],[/<img src="assets\/mascots\/marin-base\.webp"[^>]*>/,''],[/<img src="assets\/mascots\/kkamong-base\.webp"[^>]*>/,''],[/(id="r-mongle") src="kit\/brand\/mongle-cheer\.webp"/,'$1'],...(racingSharedThree?[[/"three":"\.\/vendor\/three\.module\.js"/,'"three":"../scene-assets/three.module.js"']]:[]),...(racingSharedAtlas?[[/src="\.\/atlas-learning\.js/,'src="../korean-runner/atlas-learning.js']]:[])]){if(!shape.test(content))throw Error('Racing index shape changed: '+shape);content=content.replace(shape,to);}content=content.replace(/href="\/play\/(?:runner|rhythm)\/"/g,'href="#"');}
+ if(relative==='korean-racing/vehicles.js'&&racingSharedThree){const from="'./vendor/three.module.js'";if(content.split(from).length!==2)throw Error('Racing three.js import changed');content=content.replace(from,"'../scene-assets/three.module.js'");}
  if(relative==='order-rush/index.html'){const entry=/\r?\n[ \t]*<article class="paper beginner-entry">[\s\S]*?<\/article>/;if(!entry.test(content))throw Error('Order rush beginner entry shape changed');content=content.replace(entry,'');}
  // 주문 폭주 3D 작업대는 WORLD 홈이 이미 받은 공용 three.js(scene-assets)를 쓴다 — 두 사본의 바이트가 같을 때만(아래 orderSharedThree).
  if(relative==='order-rush/stage.mjs'&&orderSharedThree){const from="'./vendor/three.module.js'";if(content.split(from).length!==2)throw Error('Order rush three.js import changed');content=content.replace(from,"'../scene-assets/three.module.js'");}
@@ -162,6 +165,13 @@ for(const game of ['korean-runner','korean-rhythm','hangul-stage'])copyTree(path
 // LAB 전용 초보판 「처음 여는 작은 가게」(beginner* · 그 그림 폴더 셋)는 뺀다 — WORLD는 그 입구를 지운다(app.mjs WORLD 분기 · 위 copyFile).
 // three.js가 홈의 scene-assets와 바이트까지 같으면 vendor/는 싣지 않고 stage.mjs가 그 공용 사본을 부른다(다르면 지금처럼 자기 사본).
 const orderSharedThree=['three.module.js','three.core.js'].every(name=>fs.readFileSync(path.join(root,'experiences/order-rush/vendor',name)).equals(fs.readFileSync(path.join(home,'scene-assets',name))));
+// MT 바닷가 레이스(11-04, 1인칭 자전거 판 — 해금 표로 「놀이」에서 연다): 게임 폴더째 싣되 WORLD가 쓰지 않는 것을 뺀다 — 차 모델 · 안 쓰는 하늘 원본 ·
+// 입구 그림 · 마스코트(위 copyFile이 그 img를 지운다) · 운전자 펠트 · 음악 출처표. 펠트 쿠션은 LAB CSS가 가리켜 참조 검사가 찾으므로 싣되 겉은 world-skin.css가 덮어 받지 않는다. 내 위치 진단의 낱말 녹음도 이 폴더째 함께 실린다. 바위 모델(coastal-rocks-v6.glb)은 git 밖이라 내보낸 사본에 없을 수 있다 — 그때는 빌드에서 빠지고 공개본 사본이 그대로 남는다(공개 도구는 --지움 없이 지우지 않는다).
+// three.js가 홈의 scene-assets와 바이트까지 같으면 주문 폭주처럼 그 공용 사본을 쓴다(GLTF · Draco 로더는 three를 importmap으로 찾으므로 자기 사본 그대로).
+// Atlas 묶음도 바람길 사본과 바이트까지 같으면 그 사본을 부른다(551KB를 두 번 받지 않는다). 다르면 자기 사본. 낭독 목록 JSON · HDR 로더는 실행 중에 읽지 않아 뺀다.
+const racingSharedAtlas=fs.readFileSync(path.join(root,'experiences/korean-racing/atlas-learning.js')).equals(fs.readFileSync(path.join(root,'experiences/korean-runner/atlas-learning.js')));
+const racingSharedThree=['three.module.js','three.core.js'].every(name=>fs.readFileSync(path.join(root,'experiences/korean-racing/vendor',name)).equals(fs.readFileSync(path.join(home,'scene-assets',name))));
+copyTree(path.join(root,'experiences','korean-racing'),'korean-racing',(source,relative)=>!(racingSharedThree&&/^korean-racing\/vendor\/three\.(?:module|core)\.js$/.test(relative))&&!/^korean-racing\/(?:site-package\/|assets\/(?:car\.glb|[^/]+\.hdr|clear-sky-[^/]+|lobby-coast[^/]*|mascots\/|felt\/driver-|music\/sources\.json|narration\/[^/]+\.json)|vendor\/(?:HDR|RGBE)Loader\.js|kit\/brand\/mongle-[^/]+)/.test(relative)&&!(racingSharedAtlas&&relative==='korean-racing/atlas-learning.js'));
 copyTree(path.join(root,'experiences','order-rush'),'order-rush',(source,relative)=>relative!=='order-rush/assets/cafe-original.png'&&!/^order-rush\/(?:beginner[^/]*|assets\/(?:beginner|picnic|progress)\/.*)$/.test(relative)&&!(orderSharedThree&&relative.startsWith('order-rush/vendor/')));
 // 찰칵 낱말(11-04, 새 게임): 화면 · 그림 · 소리만 싣는다. 설계 · 시험 · qa · 개발 서버는 싣지 않는다.
 copyTree(path.join(root,'experiences','snap-words'),'snap-words',(source,relative)=>!/^snap-words\/(?:qa\/|.*\.test\.mjs$|.*\.md$|server\.mjs$)/.test(relative));
@@ -193,9 +203,9 @@ copyTree(path.join(root,'experiences','blank-slice'),'blank-slice',(source,relat
   const source=path.join(dramaRoot,'media',item.file);if(!fs.existsSync(source)||sha(fs.readFileSync(source))!==item.sha256)throw Error('Drama media differs from its manifest: '+item.file);
   copyFile(source,'drama/media/'+item.file);
  }}
-// 내 위치 짧은 진단의 낱말 듣기: 레이싱 폴더는 싣지 않고 진단이 쓰는 낱말 녹음만 싣는다. 표는 아무것도 import하지 않는
+// 내 위치 짧은 진단의 낱말 듣기: 진단이 쓰는 낱말 녹음은 위 레이싱 폴더에 함께 실린다(빠졌을 때만 여기서 싣는다). 표는 아무것도 import하지 않는
 // world-diagnostic-racing.mjs에서 읽는다(진단 묶음 전체를 부르면 공개 내보내기에 없는 게임 폴더까지 따라 부른다).
-for(const [id] of DIAG_RACING_WORDS)copyFile(path.join(root,'experiences',racingWordAudio(id)),racingWordAudio(id));
+for(const [id] of DIAG_RACING_WORDS)if(!fs.existsSync(path.join(payload,racingWordAudio(id))))copyFile(path.join(root,'experiences',racingWordAudio(id)),racingWordAudio(id));
 // 공개 TOPIK 은행(검수 통과 문항만 — tools/build-world-topik-items.mjs가 만든 파일 그대로)과 그 듣기 문항의 소리만 싣는다(10-21 ④).
 // 화면은 이 은행을 필요할 때 불러온다(world-topik-items.mjs). 초안·보류 문항의 소리는 싣지 않는다. 세트 문항은 대본(소리 파일) 하나를 함께 쓰므로 파일마다 한 번만.
 copyFile(path.join(root,'experiences/synk-world-app','world-topik-items.json'),'world-topik-items.json');

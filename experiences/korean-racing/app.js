@@ -22,7 +22,8 @@ import { buildDriver, updateDriverPose } from './drivers.js';
 import { createTutorial, loadTutorial, saveTutorialCompleted } from './tutorial.js';
 import { automaticQuality, qualitySettings, slowerQuality, createPausedFrameGate } from './graphics.js';
 import { createLandscapeHeight } from './landscape.js';
-import { ROAD_END, pathX, pathY, pathAngle } from './course.js';
+import { ROAD_END, pathX, pathY, rideY, pathAngle } from './course.js';
+import { CAR_TRACK, RIDE_TRACK, displaySpeed } from './lane-core.js';
 import { startTerrainBuild } from './terrain-startup.js';
 import { buildCoastalCity } from './cityscape.js';
 import { createCoastalRocks } from './coastal-rocks.js';
@@ -77,7 +78,7 @@ function answerGate(pid, response, flow) {
     try {
       const out = live.answer(pid, response, flow);
       if (out.change?.knob === 'cruise') setCruise(out.settings.values.cruise);
-      if (out.line?.text) round.laterToast = out.line.text;
+      if (out.line?.text) round.laterToast = worldHost ? out.line.text.replace('차가', '자전거가') : out.line.text;
       return out.recorded;
     } catch { live = null; }
   }
@@ -102,10 +103,14 @@ let worldShown = false;          // 3D가 화면에 보일 때만 그린다(입�
 let mobile = matchMedia('(max-width: 650px)').matches;
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const clamp = THREE.MathUtils.clamp, lerp = THREE.MathUtils.lerp;
+// WORLD 앱 틀 안이면 MT 바닷가 자전거 레이스다(world-host.js가 표시, 설계 qa/world-mt-20261104/설계.md). 탈것 · 시점 · 소리는 rig(ride/ride-rig.js)가 맡고 한 판의 진행은 같다.
+// LAB은 아래의 rig · worldHost 갈림을 모두 지나지 않는다.
+const worldHost = document.documentElement.dataset.host === 'world', track = worldHost ? RIDE_TRACK : CAR_TRACK, roadHeight = worldHost ? rideY : pathY;
+let rig = null, ridePlay = null, rideLobby = null;
 function roadPoint(s, offset = 0, y = 0) {
-  return new THREE.Vector3(pathX(s) + Math.cos(pathAngle(s)) * offset, pathY(s) + y, s - Math.sin(pathAngle(s)) * offset);
+  return new THREE.Vector3(pathX(s) + Math.cos(pathAngle(s)) * offset, roadHeight(s) + y, s - Math.sin(pathAngle(s)) * offset);
 }
-const groundHeight = createLandscapeHeight(pathX, pathY);
+const groundHeight = createLandscapeHeight(pathX, roadHeight);
 
 let renderer, scene, camera, car, rivals = [], wheels = [], world = null, resizeObserver = null;
 const startup = { phase: 'idle', compilePasses: 0 };
@@ -140,12 +145,12 @@ let tutorialCompleted = false;
 // 재방문 맞춤 연습을 누른 순간의 첫 문제. 조작 연습을 거쳐도(건너뛰기·완료) 이 문제로 시작한다. 다른 코스를 고르거나 입구로 돌아오면 지운다.
 let returnLead = null;
 try { tutorialCompleted = loadTutorial(progressStorage).completed; } catch { /* 저장 공간이 없으면 연습부터 */ }
-const TUTORIAL_CLIPS = ['welcome', 'right', 'listen', 'choices', 'retry', 'correct', 'boost', 'finish', 'go'].map((id) => 'tutorial-' + id);
+const TUTORIAL_CLIPS = ['welcome', 'right', 'listen', 'choices', 'retry', 'finish', 'go'].map((id) => 'tutorial-' + id).concat(track.words.tutorialCorrect, track.words.tutorialBoost);
 const tutorialFruits = ['사과', '포도', '바나나'].map((word) => WORDS.find((w) => w.word === word));
 let garageSaved = true;
 let garageOpen = false, garageStudio = null, previewCar = null, garageAngle = .65;
 const raceCars = new Map(), previewCars = new Map();
-const commonClips = ['intro', 'cue-picture', 'cue-listen', 'correct', 'answer', 'boost', 'retry', 'finish', 'shield-ready', 'shield-block', 'garage-earned', 'garage-wish', 'mission-complete', 'finale-unlock', ...LANE_AUDIO];
+const commonClips = ['intro', 'cue-picture', 'cue-listen', 'correct', 'answer', track.words.boostClip, 'retry', 'finish', 'shield-ready', 'shield-block', 'garage-earned', 'garage-wish', 'mission-complete', 'finale-unlock', ...LANE_AUDIO];
 const narrator = new Narrator({
   getContext: () => audio,
   onActive: (active) => {
@@ -168,18 +173,18 @@ const narrator = new Narrator({
 
 /* ── 한 판 진행(race-controller.js): 상태는 round, 진행은 race. 3D·소리·학습·저장은 아래 포트로만 건넨다 ── */
 const race = createRaceController({
-  view: { $, hud, screenEl, showScreen: (name) => { showScreen(name); worldShown = false; }, showRace, openDialog, closeDialog, renderResults, renderLobby, renderCollection,
+  view: { $, hud, screenEl, showScreen: (name) => { showScreen(name); worldShown = false; }, showRace, openDialog, closeDialog, renderResults: (summary) => { renderResults(summary); ridePlay?.afterResults(summary, round); }, renderLobby, renderCollection,
     syncSoundToggles: () => syncSoundToggles(), hidden: () => document.hidden },
   sound: {
     narrator, speak: (ids, text, kind, options) => narrator.speak(ids, text, kind, options), ensureAudio, ding, contact: contactSound,
-    quiet() { if (audio) { motorGain.gain.setTargetAtTime(0, audio.currentTime, .06); windGain.gain.setTargetAtTime(0, audio.currentTime, .06); } },
+    quiet() { if (worldHost) { rig?.sound?.quiet(); return; } if (audio) { motorGain.gain.setTargetAtTime(0, audio.currentTime, .06); windGain.gain.setTargetAtTime(0, audio.currentTime, .06); } },
     engineCoast(velocity) {
-      if (!audio) return;
+      if (!audio || worldHost) return;
       motor.frequency.setTargetAtTime(45 + velocity * 1.8, audio.currentTime, .15); motorGain.gain.setTargetAtTime(narrator.playing ? .01 : .026, audio.currentTime, .18);
       windGain.gain.setTargetAtTime(velocity * (narrator.playing ? .0002 : .00055), audio.currentTime, .18);
     },
     engineRace(velocity, boost, kind) {
-      if (!audio) return;
+      if (!audio || worldHost) return;
       motor.frequency.setTargetAtTime((kind === 'rally' ? 32 : kind === 'open' || kind === 'finale' ? 55 : 45) + velocity * 1.8, audio.currentTime, .15);
       motorGain.gain.setTargetAtTime(narrator.playing ? .014 : .055 + (boost > 0 ? .012 : 0), audio.currentTime, .12); windGain.gain.setTargetAtTime(velocity * (narrator.playing ? .0003 : .0015), audio.currentTime, .15);
     },
@@ -187,20 +192,21 @@ const race = createRaceController({
   scene: {
     car: () => car, wheels: () => wheels, rivals: () => rivals, placeCar, applyEquipment, mascotMood, contactSparks,
     buildGate({ q, types, s }) {
-      const built = buildGate(THREE, renderer, { q, types, lanes: LANES, words: WORD_BY_ID });
-      built.group.position.copy(roadPoint(s)); built.group.rotation.y = pathAngle(s); scene.add(built.group);
+      const built = buildGate(THREE, renderer, { q, types, lanes: LANES, words: WORD_BY_ID }), at = rig ? rig.worldS(s) : s;
+      built.group.position.copy(roadPoint(at)); built.group.rotation.y = pathAngle(at); scene.add(built.group);
+      if (rig) built.group.traverse((o) => { if (o.userData.gateFloor) o.visible = false; });   // 1인칭에서 바닥판이 손잡이 밑으로 번쩍인다
       return built;
     },
     removeGate(gate) { scene.remove(gate.group); disposeGateMeshes(gate.group); },
     hideRoundEffects() { if (car.userData.shield) car.userData.shield.visible = false; sparkLife = 0; if (scenery.sparks) scenery.sparks.visible = false; },
-    resetCamera(s) { camera.position.copy(roadPoint(s - (mobile ? 12.5 : 7.4), mobile ? -1.8 : 5.4, mobile ? 4.5 : 3.6)); camera.lookAt(roadPoint(s + (mobile ? 14 : 12), mobile ? 3.8 : 1.8, 1.2)); },
-    wrapCamera(s, offset) { camera.position.copy(roadPoint(s - (mobile ? 8.8 : 9), offset * (mobile ? .92 : .62), mobile ? 3.35 : 3.6)); },
+    resetCamera(s) { if (rig) { rig.snapCamera(round); return; } camera.position.copy(roadPoint(s - (mobile ? 12.5 : 7.4), mobile ? -1.8 : 5.4, mobile ? 4.5 : 3.6)); camera.lookAt(roadPoint(s + (mobile ? 14 : 12), mobile ? 3.8 : 1.8, 1.2)); },
+    wrapCamera(s, offset) { if (rig) { rig.snapCamera(round); return; } camera.position.copy(roadPoint(s - (mobile ? 8.8 : 9), offset * (mobile ? .92 : .62), mobile ? 3.35 : 3.6)); },
   },
   learning: { learn, presentGate, answerGate, endLive, nextPersonalized, learningScope },
   rewards: { account: () => globalThis.SynkPlayAccount, storage: progressStorage, loadGarage: loadGarageSafe, storeGarage, wishText },
   tutorial: { active: () => !!tutorial, chooseLane: chooseTutorialLane, tapLane: tutorialTapLane, render: renderTutorial, repeat: repeatTutorial, delivered: tutorialDelivered,
     clearVoice: () => { tutorialVoicePending = false; } },
-  coastRadio, clock, reducedMotion, coastDrive, questionPace,
+  coastRadio, clock, reducedMotion, coastDrive, questionPace, track,
   state: { progress: initialProgress, selectedStage: initialStage, questionBank: makeQuestions(initialStage), garage: loadGarageSafe() },
 });
 const round = race.state;
@@ -258,7 +264,7 @@ function setGarageUrl(open) {
   history.replaceState(history.state, '', url);
 }
 function openGarage() {
-  if (starting) return;
+  if (starting || worldHost) return;   // WORLD에는 차고가 없다
   if (garageOpen) { garageUI.render(); return; }
   leaveRace();
   round.garage = loadGarageSafe(); garageOpen = true;
@@ -322,7 +328,7 @@ function lobbyView() {
     targetUnavailable: targetUnavailable(), progress: round.progress, garage: round.garage, garageSaved, mission: dailyMission(round.progress, Date.now(), round.garage),
     driver: driverName, scope: learningScope(), hosted, isUnlocked, returnPlan: assignment() ? null : returnPlanNow() };
 }
-function renderLobby() { lobby.render(lobbyView()); paintResetNotice(); }
+function renderLobby() { lobby.render(lobbyView()); paintResetNotice(); rideLobby?.afterLobby(); }
 // 지우기 결과는 누른 단추 바로 옆(#learning-scope)에 남긴다. 입구가 이 칸의 바탕 글을 다시 써도 안내는 다음 판을 시작할 때까지 남고, 화면 읽기는 #sr-live로 듣는다.
 const RESET_NOTICE = {
   done: '이 브라우저의 공통 학습 기록을 지웠어요.',
@@ -403,7 +409,7 @@ function updateMascot(dt) {
   if (moodTime > 0) { moodTime -= dt; if (moodTime <= 0) driverMood = round.gate?.announced && !round.gate.judged ? 'focus' : 'base'; }
   updateDriverPose(mascot, { steer: (round.inputs.left ? 1 : 0) - (round.inputs.right ? 1 : 0), mood: driverMood, time: worldTime.value, speed: round.running && !round.paused ? round.velocity : 0, motion: !reducedMotion });
 }
-function placeCar(c, s, offset, yaw = 0) { c.position.copy(roadPoint(s, offset, .025)); c.rotation.set(0, pathAngle(s) + yaw, 0); }
+function placeCar(c, s, offset, yaw = 0) { if (rig) { rig.place(c, s, offset, yaw); return; } c.position.copy(roadPoint(s, offset, .025)); c.rotation.set(0, pathAngle(s) + yaw, 0); }
 
 /* ── 화질과 크기 ── */
 function setQuality(value) {
@@ -428,6 +434,7 @@ function resize(){
   pausedFrameGate.invalidate();
 }
 async function init() {
+  if (worldHost) void import('./ride/ride-play.mjs').then(({ prepareRideLobby }) => { rideLobby = prepareRideLobby(); }, () => { document.documentElement.dataset.rideReady = '1'; });
   const startedAt = performance.now(), mark = (name) => { startup[name] = Math.round(performance.now() - startedAt); };
   const yieldToUI = () => new Promise((resolve) => setTimeout(resolve, 0));
   startup.phase = 'assets'; startup.startedAt = Math.round(startedAt);
@@ -436,8 +443,8 @@ async function init() {
     const textures = new THREE.TextureLoader();
     draco = new DRACOLoader(); draco.setDecoderPath('./vendor/'); draco.setDecoderConfig({ type: 'wasm' });
     const loader = new GLTFLoader(); loader.setDRACOLoader(draco);
-    const assetsPending = startAssetLoad({ textures, models: loader, coarsePointer: deviceGraphics.coarsePointer }).then((result) => { mark('assetsMs'); return result; });
-    terrainBuild = startTerrainBuild();
+    const assetsPending = startAssetLoad({ textures, models: loader, coarsePointer: deviceGraphics.coarsePointer, skipCar: worldHost }).then((result) => { mark('assetsMs'); return result; });
+    terrainBuild = startTerrainBuild(worldHost ? { profile: 'ride' } : {});
     await document.fonts.ready;
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
     renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
@@ -487,6 +494,14 @@ async function init() {
     mark('environmentMs'); await yieldToUI();
     startup.phase = 'vehicles';
     scenery.rockShelves = createCoastalRocks(THREE, { source: rockScan.scene, pathX, groundHeight }); scene.add(scenery.rockShelves.group);
+    if (worldHost) {
+      const [{ createRideRig }, { setupRidePlay, savedBike }] = await Promise.all([import('./ride/ride-rig.js'), import('./ride/ride-play.mjs')]);
+      rig = createRideRig({ THREE, renderer, scene, camera, roadPoint, pathAngle, roadY: roadHeight, sunDirection, track, reducedMotion, style: savedBike() });
+      car = rig.player; wheels = []; rivals = rig.rivals; if (audio) rig.attachAudio(audio);
+      ridePlay = setupRidePlay({ rig, camera, narrator, getAudio: () => audio, soundOn: () => round.soundEnabled });
+      if (audio) void ridePlay.loadVoices();
+      rivals.forEach((r) => { const s = shadowPlane(THREE, renderer); s.scale.set(.36, 1, .42); r.mesh.add(s); });
+    } else {
     driverFeltTexture = felt; felt.wrapS = felt.wrapT = THREE.RepeatWrapping; felt.repeat.set(3, 3); felt.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
     carTemplate = gltf.scene.children[0]; car = prepareCar(THREE, renderer, scene, carTemplate, 0xaad882); wheels = car.userData.wheels;
     seatMascot(car, driverName); raceCars.set('coast', car); garageStudio = createGarageStage(scene); applyEquipment();
@@ -494,6 +509,7 @@ async function init() {
     rivals = [{ mesh: buildAlternativeCar('open', { color: 0x7c9fba }), s: 103, offset: -3.15, speed: 26.1 }, { mesh: buildAlternativeCar('rally', { color: 0xd09970 }), s: 124, offset: 3.1, speed: 25.6 }];
     rivals.forEach((r) => { r.mesh.add(shadowPlane(THREE, renderer)); scene.add(r.mesh); });
     seatMascot(rivals[0].mesh, 'kkamong'); seatMascot(rivals[1].mesh, 'marin');
+    }
     mark('worldMs'); startup.phase = 'shaders';
     startup.parallelShaders = renderer.extensions.has('KHR_parallel_shader_compile');
     await prepareFirstFrame({
@@ -580,6 +596,12 @@ function showRace() { showScreen('game'); placeWorld($('world')); worldShown = t
 // 게이트 판 위 하늘에 정답 글자를 둔다(화면 비율마다 게이트와 차의 높이가 다르다).
 function placeLaneAnchor() {
   if (!camera || stage !== $('world') || !stage.clientHeight) return;
+  if (rig) {
+    // 1인칭: 멈춤선(코스 65)에서 본 게이트 발치. 조작 연습은 멈춤선이 코스 18이라 따로 잰다.
+    for (const [name, hold] of [['--lane-top', 65], ['--lane-top-practice', 18]]) { const { foot } = rig.anchors(hold); screenEl.style.setProperty(name, `${(foot * 100).toFixed(1)}%`); }
+    const { boardTop } = rig.anchors(65); screenEl.style.setProperty('--pop-y', `${(Math.max(.2, boardTop - .07) * 100).toFixed(1)}%`);
+    return;
+  }
   const S = gatePosition(0) - 65, short = mobile && stage.clientHeight < 640, probe = camera.clone();
   probe.position.copy(roadPoint(S - (mobile ? (short ? 11.2 : 8.8) : 9), 0, mobile ? 3.35 : 3.6));
   probe.lookAt(roadPoint(S + 24, 0, short ? 1.1 : 1.55));
@@ -606,7 +628,7 @@ function renderTutorial() {
     'steer-right': ['이번엔 오른쪽으로', '→ 단추를 누르거나 D 키'],
     listen: ['소리를 듣고 그림을 골라요', '안내가 끝날 때까지 기다려 주세요'],
     choose: ['사과가 있는 길로 가요', '← → 로 옮기고 ↑로 출발해요. 사과 꼬리표를 눌러도 돼요'],
-    'boost-ready': ['정답! 부스터로 달려요', '정답을 맞히면 저절로 빨라져요'],
+    'boost-ready': [`정답! ${track.words.boost}${worldHost ? '해요' : '로 달려요'}`, '정답을 맞히면 저절로 빨라져요'],
     boosting: ['한국어가 속도가 됐어요', '좋아요! 바다를 따라 달려요'],
     complete: ['출발 준비 끝!', tutorialSaved ? '이제 고른 코스에서 달려 봐요' : '이번 화면에서는 연습 완료 · 저장이 제한돼 있어요'],
   }[step];
@@ -638,7 +660,7 @@ function repeatTutorial() {
   if (step === 'steer-left') tutorialSpeak(['tutorial-welcome'], '안녕! 먼저 왼쪽으로 움직여 볼까?');
   else if (step === 'steer-right') tutorialSpeak(['tutorial-right'], '좋아! 이번엔 오른쪽으로!');
   else if (step === 'listen' || step === 'choose') tutorialSpeak(['tutorial-listen', 'tutorial-choices'], '잘 들어 봐. 사과. 왼쪽은 바나나, 가운데는 포도, 오른쪽은 사과. 사과 쪽으로 가 봐!');
-  else if (step === 'boost-ready') tutorialSpeak(['tutorial-boost'], '정답을 맞히면 차가 저절로 빨라져. 부스터로 달려 보자!');
+  else if (step === 'boost-ready') tutorialSpeak([track.words.tutorialBoost], worldHost ? '정답을 맞히면 자전거가 저절로 빨라져. 질주해 보자!' : '정답을 맞히면 차가 저절로 빨라져. 부스터로 달려 보자!');
 }
 async function startTutorial() {
   if (!ready || starting) return;
@@ -707,8 +729,8 @@ function updateTutorial(dt) {
     const chosen = round.gate.types[clamp(Math.round((round.playerOffset + 3.45) / 3.45), 0, 2)];
     round.questionChosen = false; round.laneAim = null; round.inputs.left = round.inputs.right = false;
     if (tutorial.resolveAnswer(chosen)) {
-      hud.markLanes(chosen, round.gate.q.answer); disposeGate(); mascotMood('cheer', 3); ding(true); hud.pop('정답! 부스터', 1);
-      tutorialSpeak(['tutorial-correct', 'tutorial-boost'], '정답! 부스터가 가득 찼어. 정답을 맞히면 차가 저절로 빨라져. 부스터로 달려 보자!');
+      hud.markLanes(chosen, round.gate.q.answer); disposeGate(); mascotMood('cheer', 3); ding(true); hud.pop(`정답! ${track.words.boost}`, 1);
+      tutorialSpeak([track.words.tutorialCorrect, track.words.tutorialBoost], worldHost ? '정답! 내리막이 열렸어. 정답을 맞히면 자전거가 저절로 빨라져. 질주해 보자!' : '정답! 부스터가 가득 찼어. 정답을 맞히면 차가 저절로 빨라져. 부스터로 달려 보자!');
     } else {
       if (round.playerS > ROAD_END - 200) { round.playerS = 205; camera.position.copy(roadPoint(round.playerS - (mobile ? 10 : 7.7), round.playerOffset * (mobile ? .92 : .62), mobile ? 3.75 : 3.45)); }
       makeGate(0, round.playerS + 35); round.gate.announced = true; hud.showLanes(); round.velocity = 0; tutorialIdle = 0; tutorialGoHint = false; ding(false);
@@ -721,8 +743,8 @@ function updateTutorial(dt) {
   placeCar(car, round.playerS, round.playerOffset, steering * .045); car.rotation.z = -steering * .008;
   for (const wheel of wheels) wheel.rotation.x -= round.velocity * dt * 2.3;
   for (const jet of car.userData.jets) { jet.visible = round.boost > 0; jet.scale.y = .85; }
-  screenEl.classList.toggle('boosting', round.boost > 0 && !reducedMotion); setText($('speed'), Math.round(round.velocity * 3.6));
-  if (round.soundEnabled && audio) {
+  screenEl.classList.toggle('boosting', round.boost > 0 && !reducedMotion); setText($('speed'), displaySpeed(round.velocity, track));
+  if (round.soundEnabled && audio && motor) {
     motor.frequency.setTargetAtTime(45 + round.velocity * 1.8, audio.currentTime, .15);
     motorGain.gain.setTargetAtTime(narrator.playing ? .014 : round.running ? .045 : 0, audio.currentTime, .12);
     windGain.gain.setTargetAtTime(round.running ? round.velocity * (narrator.playing ? .0003 : .001) : 0, audio.currentTime, .15);
@@ -761,6 +783,7 @@ async function start(demo = false, bypassTutorial = false) {
   const opening = startLive();
   showRace(); reset(true); renderLobby();
   speak(['intro'], '출발! 문제를 잘 듣고, 답이 있는 길로 달려 줘!', 'intro');
+  ridePlay?.resetVoices(); ridePlay?.startLine();
   if (opening) showToast(opening, 2.6);
   clock.getDelta();
 }
@@ -770,6 +793,7 @@ async function ensureAudio() {
   if (!round.soundEnabled) return;
   const AudioContext = window.AudioContext || window.webkitAudioContext;
   if (!AudioContext) return;
+  if (!audio && worldHost) { audio = new AudioContext(); rig?.attachAudio(audio); void ridePlay?.loadVoices(); }
   if (!audio) {
     audio = new AudioContext(); motor = audio.createOscillator(); motor.type = 'sawtooth'; motor.frequency.value = 65;
     const filter = audio.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 330;
@@ -785,6 +809,7 @@ async function ensureAudio() {
 }
 function ding(success) {
   if (!audio || !round.soundEnabled) return;
+  if (worldHost) { if (success) rig?.sound?.correct(round.combo); else rig?.sound?.wrong(); return; }
   for (let i = 0; i < (success ? 3 : 1); i++) {
     const o = audio.createOscillator(), g = audio.createGain(), t = audio.currentTime + i * .07;
     o.type = 'sine'; o.frequency.value = success ? [659, 830, 988][i] : 440;
@@ -805,6 +830,7 @@ function home() { leaveRace(); showLobby(); }
 /* ── 주행 효과: 접촉 소리·불꽃·보호막 ── */
 function contactSound() {
   if (!audio || !round.soundEnabled) return;
+  if (worldHost) { rig?.sound?.bump(); return; }
   const source = audio.createBufferSource(), buffer = audio.createBuffer(1, 4800, audio.sampleRate), data = buffer.getChannelData(0);
   for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / 600);
   source.buffer = buffer;
@@ -815,6 +841,7 @@ function contactSound() {
   source.start();
 }
 function contactSparks(hit) {
+  if (rig) { rig.me.bump = 1; return; }   // 자전거는 불꽃 대신 손잡이가 튄다
   if (reducedMotion) return;
   if (!scenery.sparks) {
     const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(24 * 3), 3));
@@ -827,6 +854,7 @@ function contactSparks(hit) {
 }
 function updateShield(dt) {
   round.shieldFlash = Math.max(0, round.shieldFlash - dt);
+  if (rig) return;   // 1인칭에서는 고리가 안 보인다. 계기 옆 글이 맡는다
   if (!round.shield && !round.shieldFlash && !car.userData.shield) return;
   if (!car.userData.shield) {
     const ring = new THREE.Mesh(new THREE.TorusGeometry(1.32, .035, 5, 64), new THREE.MeshBasicMaterial({ color: 0xffe9a8, transparent: true, opacity: .65, depthWrite: false }));
@@ -839,8 +867,9 @@ function updateShield(dt) {
 
 /* ── 카메라와 한 장면 ── */
 function updateCamera(dt) {
-  light.target.position.copy(roadPoint(garageOpen ? 93 : round.playerS + 18, 0, 0)); light.position.copy(light.target.position).addScaledVector(sunDirection, 151);
+  light.target.position.copy(roadPoint(garageOpen ? 93 : (rig ? rig.worldS(round.playerS) : round.playerS) + 18, 0, 0)); light.position.copy(light.target.position).addScaledVector(sunDirection, 151);
   if (heroShot) return;   // 확인용 입구 그림 각도(?qa heroPose)는 그대로 둔다
+  if (rig) { rig.updateCamera(dt, round); return; }
   if (garageOpen) {
     // 차고 액자 가운데에 차가 오게: 액자 비율에 맞춰 거리를 정한다(차 길이 약 4.6m, 높이 약 1.3m).
     const center = garageStudio.group.position.clone().add(new THREE.Vector3(0, .7, 0)), fov = 34, tan = Math.tan(THREE.MathUtils.degToRad(fov / 2));
@@ -872,10 +901,11 @@ function frame() {
     return;
   }
   warmupFrames++;
+  const roadS = rig ? rig.worldS(round.playerS) : round.playerS;   // 3D 자리(LAB은 코스 거리 그대로)
   if (!round.paused) {
     worldTime.value += dt;
-    if (scenery.sky) scenery.sky.position.copy(roadPoint(round.playerS));
-    if (scenery.petals && !reducedMotion) { scenery.petals.position.copy(roadPoint(round.playerS, 0, 0)); scenery.petals.rotation.y = Math.sin(worldTime.value * .1) * .12; }
+    if (scenery.sky) scenery.sky.position.copy(roadPoint(roadS));
+    if (scenery.petals && !reducedMotion) { scenery.petals.position.copy(roadPoint(roadS, 0, 0)); scenery.petals.rotation.y = Math.sin(worldTime.value * .1) * .12; }
     if (sparkLife > 0) {
       sparkLife = Math.max(0, sparkLife - dt);
       const positions = scenery.sparks.geometry.attributes.position;
@@ -885,18 +915,21 @@ function frame() {
     if (round.running) { if (tutorial) updateTutorial(dt); else if (coastDrive.driving) updateCoastDrive(dt); else updateGame(dt); }
     if (round.gate) round.gate.fruitObjects.forEach((f, i) => { f.rotation.y = (f.userData.spinBase || 0) + (reducedMotion ? 0 : Math.sin(worldTime.value * .9 + i) * .11); });
     updateMascot(dt); updateShield(dt);
+    if (rig) { rig.update(dt, round); rig.updateSound(round, { narrating: narrator.playing }); }
     updateCamera(dt);
+    ridePlay?.update(dt, round);
     if (round.toastTime > 0) { round.toastTime -= dt; if (round.toastTime <= 0) $('toast').hidden = true; }
     else if (round.laterToast && round.running) { const text = round.laterToast; round.laterToast = null; showToast(text, 2.6); }
   } else updateCamera(dt);
-  const focusS = garageOpen ? 93 : round.playerS, quiet = round.paused || garageOpen || document.hidden;
-  scenery.details?.update({ time: worldTime.value, playerS: round.playerS, motion: !reducedMotion, detailDistance: renderQuality.detailDistance, quality: mode });
+  const focusS = garageOpen ? 93 : roadS, quiet = round.paused || garageOpen || document.hidden;
+  scenery.details?.update({ time: worldTime.value, playerS: roadS, motion: !reducedMotion, detailDistance: renderQuality.detailDistance, quality: mode });
   scenery.terrain?.update({ playerS: focusS, quality: mode, camera });
-  scenery.rockShelves?.update({ playerS: round.playerS, quality: mode, camera });
-  scenery.boats?.update({ dt, time: worldTime.value, playerS: round.playerS, quality: mode, camera, paused: quiet, motion: !reducedMotion });
+  scenery.rockShelves?.update({ playerS: roadS, quality: mode, camera });
+  scenery.boats?.update({ dt, time: worldTime.value, playerS: roadS, quality: mode, camera, paused: quiet, motion: !reducedMotion });
   scenery.city?.update({ playerS: focusS, quality: mode, camera, time: worldTime.value });
   scenery.cityLife?.update({ time: worldTime.value, playerS: focusS, playerX: car?.position.x ?? pathX(round.playerS), quality: mode, camera, motion: !reducedMotion, paused: quiet, celebrating: round.running && round.boost > 0 });
   renderer.render(scene, camera);
+  rig?.renderView();
   renderedFrames++;
   if (!round.paused && !document.hidden && warmupFrames > 35 && raw < .3) { frameSample.push(raw); if (frameSample.length > 120) frameSample.shift(); renderFrames++; renderTotal += raw; adaptiveTime += raw; }
   if (currentQuality === 'auto' && mode !== 'low' && adaptiveTime > 7 && frameSample.length > 90) {
@@ -1025,7 +1058,7 @@ window.__racing = {
 /* ── 확인용(?qa): 빨리 감기·음성 끝내기·입구 그림 각도 ── */
 if (QA) installQaHook({
   THREE,
-  get camera() { return camera; }, get canvas() { return renderer?.domElement; }, get gate() { return round.gate; }, get car() { return car; },
+  get camera() { return camera; }, get canvas() { return renderer?.domElement; }, get gate() { return round.gate; }, get car() { return car; }, get rig() { return rig; }, get round() { return round; },
   state: () => ({ ready, running: round.running, paused: round.paused, finished: round.finished, screen: currentScreen(), gateIndex: round.gateIndex, total: round.questionBank.length, answers: round.answers.map((a) => ({ ...a })), correct: round.correct, boost: round.boost, velocity: round.velocity, offset: round.playerOffset,
     gate: round.gate ? { announced: round.gate.announced, judged: round.gate.judged, answer: round.gate.q.answer, types: [...round.gate.types], screenOrder: [...round.gate.types].reverse(), mode: round.gate.q.mode, heard: !!round.gate.heard, readyAt: round.gate.readyAt ?? null, expanded: round.questionExpanded } : null,
     coast: coastDrive.snapshot(), tutorial: tutorial?.step ?? null, narrating: narrator.playing, narrationKind: narrator.activeKind, coins: round.garage.coins, stage: round.selectedStage.id }),
