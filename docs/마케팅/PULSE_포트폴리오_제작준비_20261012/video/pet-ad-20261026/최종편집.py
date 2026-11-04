@@ -74,6 +74,63 @@ def dog_picture():
     print(f"#9 {live}장 + 물 {C.frames_of(wet)}장")
 
 
+# B급 판(11-04 유호님 「B급처럼 재밌게」 · 「필요하면 아예 다시 뽑아도 좋아」, 결정 표) — 내레이션은 그대로, 화면은 개가 정말 외계인처럼 군다.
+# (판, 그 판에서 시작하는 장, 끝나는 화면 장) — 장 번호는 24fps. 낱말 시각은 timing.ts, 효과음은 B급소리.py, 글자는 remotion/src/p11/B.tsx가 같은 값을 쓴다.
+# 넷째 값이 있으면 그 판의 장까지를 이 자리에 맞춰 빠르게 돌린다(고정 카메라 판이라 끊긴 데 없이 낱말에 맞는다).
+CUTS_B = [
+    ("p11-b01", 20, 52, 90),     # 귀가 레이더처럼 따로 돌고 고개가 넘어간다(×1.35, 첫 프레임부터 돈다) — 외계인 닮은 우리 개는 바닷가에서
+    ("p11-b02", 30, 91),         # 달 중력으로 너무 오래 떠 있다 — 뛰어노는 걸 제일 좋아해요
+    ("p11-b03", 4, 131, 62),     # 막대기처럼 솟아 떠 있고 두 사람은 얼어붙는다(×1.45) — 근데 사람들이 보면
+    ("p11-b03", 62, 163),        # 깜짝에 비명, 남자는 넘어져 기어 나간다 — 깜짝 놀라요
+    ("p11-b04c", 0, 230, 73),    # 염력으로 조끼가 상자에서 떠오른다(×1.09) — 그래서 올해는 특별한 걸 준비했어요. 첨벙댕
+    ("p11-b04e", 0, 236),        # 조끼가 휙 날아와 철썩(6장이 「구명조끼!」)
+    ("p11-b04e", 6, 258, 42),    # 끈이 진짜 촉수가 되어 흔들린다(×1.64) — 구명조끼!
+    ("p11-b04e", 42, 280),       # 촉수가 들어가고 아무 일 없다는 듯 앉아 있다 — 값도 착하고
+    ("p11-b05", 12, 304, 54),    # 조끼를 쥔 채 고개가 뒤통수까지 돈다 — 튼튼해요
+    ("p11-b05b", 40, 318, 78),   # 점점 빨라져 빙글빙글 — 등에 손잡이가
+    ("p11-b05b", 85, 330),       # 뚝 멈춰 무표정 — 두 개라(고정 카메라 두 판이라 고개만 튄다)
+    ("p11-b07", 25, 371),        # 뽑기 집게가 손잡이를 물어 번쩍 — 물에서도 번쩍 건져요
+    ("p11-b09", 15, 453),        # 샴푸 광고 바람 → 슬그머니 공중 부양 — 올해는 진짜 멋있을 거예요. 아무도 외계인인 줄 모를걸요?
+    ("p11-b11", 0, 574),         # 물이 차고 중력이 돌아와 첨벙, 코르크처럼 떠오른다 — 물놀이 가는 날엔, 첨벙댕
+]
+
+
+def b_picture():
+    d = os.path.join(OUT, "_컷B")
+    os.makedirs(d, exist_ok=True)
+    paths, at = [], 0
+    for i, cut in enumerate(CUTS_B):
+        pid, a, end = cut[:3]
+        k = end - at
+        src = C.clip(pid)
+        have = C.frames_of(src)
+        out = os.path.join(d, f"{i:02d}.mp4")
+        if len(cut) > 3:
+            b = cut[3]
+            speed = (b - a) / k
+            if b > have:
+                raise SystemExit(f"{pid}: {b}장까지 필요한데 {have}장뿐")
+            vf = (f"select='between(n,{a},{b - 1})',setpts=N/({FPS}*{speed:.5f})/TB,fps={FPS},"
+                  f"scale={W}:{H}:flags=lanczos:out_color_matrix=bt709,format=yuv420p")
+            C.run("ffmpeg", "-y", "-v", "error", "-i", src, "-an", "-vf", vf, "-frames:v", str(k), "-c:v", "libx264", "-crf", "12", "-preset", "medium", "-r", str(FPS),
+                  "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", out)
+            print(f"{i} {pid} {a}~{b}장을 {k}장으로(×{speed:.2f}) → 화면 {at / FPS:.2f}~{end / FPS:.2f}초")
+        else:
+            if a + k > have:
+                raise SystemExit(f"{pid}: {a}장부터 {k}장이 필요한데 {have}장뿐")
+            C.cut_video(src, a, k, W, H, FPS, out)
+            print(f"{i} {pid} {a}장부터 {k}장 → 화면 {at / FPS:.2f}~{end / FPS:.2f}초")
+        if C.frames_of(out) != k:
+            raise SystemExit(f"{out}: {k}장이어야 하는데 {C.frames_of(out)}장")
+        paths.append(out)
+        at = end
+    C.join_videos(paths, os.path.join(OUT, "화면_B급.mp4"))
+
+
+def b_sound():
+    C.run(sys.executable, "-X", "utf8", os.path.join(os.path.dirname(os.path.abspath(__file__)), "B급소리.py"), VOICE)
+
+
 def sound():
     # 낱말 시각표(remotion/src/p11/timing.ts) → 그 자리에 내레이션 · 음악(말 밑 −17) · 바다 · 효과음(자막시안 시안소리.py)
     C.run(sys.executable, "-X", "utf8", os.path.join(CAP, "내레이션시각.py"), VOICE)
@@ -81,12 +138,12 @@ def sound():
     shutil.copyfile(os.path.join(PUB, "sound_narr.wav"), os.path.join(OUT, "소리.wav"))
 
 
-def render(comp="p11-AB-dog", pic_name="화면_개끝.mp4", pub_name="picture_dog.mp4", name="첨벙댕_9x16"):
+def render(comp="p11-AB-dog", pic_name="화면_개끝.mp4", pub_name="picture_dog.mp4", name="첨벙댕_9x16", jobs=4):
     pic = os.path.join(OUT, pic_name)
     if not os.path.exists(os.path.join(PUB, pub_name)) or C.md5(pic) != C.md5(os.path.join(PUB, pub_name)):
         shutil.copyfile(pic, os.path.join(PUB, pub_name))
     out, raw = os.path.join(OUT, f"{name}.mp4"), os.path.join(OUT, f"_렌더_{name}.mp4")
-    C.run(shutil.which("npx"), "remotion", "render", "src/index.ts", comp, raw, "--concurrency=4", "--log=error", cwd=os.path.join(CAP, "remotion"))
+    C.run(shutil.which("npx"), "remotion", "render", "src/index.ts", comp, raw, f"--concurrency={jobs}", "--log=error", cwd=os.path.join(CAP, "remotion"))
     # 소리만 다시 담아 올림 기준(스테레오 AAC 320k 이상)을 맞춘다 — Remotion AAC는 317k로 영상사전검사 「검토」(11-04)
     C.run("node", os.path.join(C.REPO, "tools", "음량마감.mjs"), raw, out, "--목표", "-14", "--덮어쓰기")
     C.run("ffmpeg", "-y", "-v", "error", "-i", out, "-vf", "scale=720:-2", "-c:v", "libx264", "-crf", "24", "-preset", "medium", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", os.path.join(OUT, f"{name}_폰.mp4"))
@@ -100,4 +157,6 @@ if __name__ == "__main__":
         render("p11-AB", "화면.mp4", "picture.mp4", "첨벙댕_9x16_엄지끝")
         what = [w for w in what if w != "엄지끝"]
     for w in what:
-        {"화면": picture, "소리": sound, "판": render}[w]()
+        {"화면": picture, "소리": sound, "판": render,
+         "B화면": b_picture, "B소리": b_sound,
+         "B판": lambda: render("p11-viral", "화면_B급.mp4", "picture_b.mp4", "첨벙댕_B급_9x16", jobs=2)}[w]()   # 다른 세션이 메모리를 쓰는 때 4개는 크롬이 죽었다(11-04)

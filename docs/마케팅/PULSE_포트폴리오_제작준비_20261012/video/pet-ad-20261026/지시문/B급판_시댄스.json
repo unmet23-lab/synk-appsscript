@@ -1,0 +1,72 @@
+[
+ {
+  "id": "p11-b01",
+  "시작그림": "p11-01-02 첫 그림을 세로로 늘인 판",
+  "초": 4,
+  "해상도": "720p",
+  "지시문": "Start exactly from the first frame and keep it: same hairless grey dog with huge ears and silver-white crest, same beach, light and colors. ONE CONTINUOUS SHOT of real smartphone footage, vertical 9:16, locked-off camera, no cuts.\nACTION: The dog keeps staring at the camera with a dead serious face. Immediately its two huge ears start rotating independently in opposite directions, slowly and mechanically, like radar dishes scanning the sky. At the same time it tilts its head sideways slowly, much further than any dog can, almost upside down, and holds it there without blinking. Nothing else moves except the sea breeze.\nLOOK: photorealistic, true-to-life colors, natural daylight; no text, no logos, no extra animals or people."
+ },
+ {
+  "id": "p11-b02",
+  "시작그림": "p11-01-02 해변, 개 혼자",
+  "초": 4,
+  "해상도": "720p",
+  "지시문": "Start exactly from the first frame and keep it: same hairless grey dog, same beach, sand, light and colors. ONE CONTINUOUS SHOT of real smartphone footage, vertical 9:16, locked-off camera, no cuts.\nACTION: The dog bounces across the beach in huge slow floating leaps like an astronaut on the moon: it pushes off the sand and drifts high into the air with its legs dangling, hangs there far too long, lands softly with a slow puff of sand, and bounces again even higher. Gravity clearly does not apply to it. Its face stays perfectly serious.\nLOOK: photorealistic, true-to-life colors, natural daylight; no text, no logos, no extra animals or people."
+ },
+ {
+  "id": "p11-b03",
+  "시작그림": "p11-03b 70장 — 사람이 중간 크기로 든 그림도 통과",
+  "초": 4,
+  "해상도": "720p",
+  "지시문": "Start exactly from the first frame and keep it: same beach, same man and woman, same hairless grey dog, same light and colors. ONE CONTINUOUS SHOT of real smartphone footage, vertical, locked-off camera, no cuts.\nACTION: The dog pushes off the sand and slowly floats straight up into the air like an astronaut, legs dangling, and stays hanging in mid-air between the camera and the couple. The couple freeze for half a second, then scream with mouths wide open, throw up their arms and run away in panic in opposite directions, kicking up sand. The man trips over his own feet and falls flat on his face in the sand, then scrambles away on all fours. The woman sprints out of the frame. The dog keeps floating, perfectly calm.\nLOOK: photorealistic, true-to-life colors, natural daylight; no text, no logos, no extra animals or people."
+ },
+ {
+  "id": "p11-b04c",
+  "시작그림": "p11-04 24장에서 GPT 이미지로 남자를 지우고, 상자 속 조끼를 기준 컷(p11-07-08)의 조끼로 바꿈",
+  "초": 5,
+  "해상도": "720p",
+  "지시문": "Start exactly from the first frame and keep it: same bedroom, same hairless grey dog on the chair, same open cardboard box with the same lemon-yellow life vest inside. ONE CONTINUOUS SHOT of real smartphone footage, vertical, locked-off camera, no cuts.\nACTION: The dog stares at the box with a dead serious face and does not blink. Its two huge ears slowly swivel forward and lock onto the box like radar dishes. After one second the vest starts to rise out of the box all by itself, no hands, no strings. It floats straight up, keeps the same side facing the camera and does not rotate, until it hangs in mid-air above the box, gently bobbing, showing the same two navy handles, the same curved grey reflective stripe and the same two navy buckled straps. The vest never changes shape or design. The dog stays perfectly still.\nLOOK: photorealistic, true-to-life colors, natural daylight; no zipper, no text, no logos, no people, no hands, no extra animals."
+ },
+ {
+  "id": "p11-b04e",
+  "시작그림": "첫 프레임 = p11-b04c 73장, 끝 프레임 = p11-b04d 70장에 GPT 이미지로 p11-b09의 조끼를 입힘",
+  "초": 4,
+  "해상도": "720p",
+  "지시문": "Start exactly from the first frame and end exactly on the last frame: same bedroom, same hairless grey dog sitting on the chair, same open cardboard box. ONE CONTINUOUS SHOT of real smartphone footage, vertical, locked-off camera, no cuts.\nACTION: In the first half second the hovering lemon-yellow vest suddenly shoots sideways through the air and slams onto the dog like a thrown cushion, wrapping around its chest by itself. For the next second and a half its navy straps spread out and wave around like octopus arms. Then they pull in and snap shut, and the dog is simply sitting there wearing the vest exactly as in the last frame. No hands, no people. The dog is not moved at all, does not blink, stays completely deadpan.\nLOOK: photorealistic, true-to-life colors, natural daylight; no zipper, no text, no logos, no people, no hands, no extra animals."
+ },
+ {
+  "id": "p11-b05",
+  "시작그림": "p11-05-06 72장을 잘라 키움 — 손이 든 그림 통과",
+  "초": 4,
+  "해상도": "720p",
+  "지시문": "Start exactly from the first frame and keep it: same room, same hairless grey dog in the yellow vest standing on the chair, same two hands holding the two navy handles. ONE CONTINUOUS SHOT of real smartphone footage, vertical, locked-off camera, no cuts.\nACTION: The hands keep gripping the handles and give a small tug. The dog's body stays perfectly still. Only its head slowly rotates on its neck like an owl, turning all the way around to one side in one smooth mechanical motion, past the back, a full 360-degree turn, until it faces the camera again and stares without blinking. Its two huge ears swivel independently like radar dishes. Face completely deadpan.\nLOOK: photorealistic, true-to-life colors, natural daylight; no text, no logos, no extra animals, no extra people."
+ },
+ {
+  "id": "p11-b05b",
+  "시작그림": "p11-b05와 같은 시작 그림",
+  "초": 4,
+  "해상도": "720p",
+  "지시문": "Start exactly from the first frame and keep it: same room, same hairless grey dog in the yellow vest standing on the chair, same two hands holding the two navy handles. ONE CONTINUOUS SHOT of real smartphone footage, vertical, locked-off camera, no cuts.\nACTION: The dog's body stays perfectly still and the hands stay on the handles. Only its head spins continuously in one direction on its neck, always clockwise, never reversing: face, then side, then back of the head, then other side, then face again, like a slow propeller, completing three full 360-degree rotations, getting faster. In the last half second the head stops dead, facing the camera, staring without blinking, completely deadpan, as if nothing happened.\nLOOK: photorealistic, true-to-life colors, natural daylight; no text, no logos, no extra animals, no extra people."
+ },
+ {
+  "id": "p11-b07",
+  "시작그림": "GPT 이미지 — 조끼 입고 바다에 뜬 개, 위는 빈 하늘",
+  "초": 4,
+  "해상도": "720p",
+  "지시문": "Start exactly from the first frame and keep it: same hairless grey dog, yellow life vest with two navy handles, same sea and sky. ONE CONTINUOUS SHOT of real smartphone footage, vertical 9:16, locked-off camera, no cuts.\nACTION: In the first half second a big shiny chrome arcade claw-machine claw on a thick cable drops fast from the top of the frame, and its metal prongs clamp onto the two navy handles on the back of the vest. Then in one violent instant the claw yanks the dog straight up out of the water, high into the sky, water pouring off it, legs dangling. The dog then hangs in the air from the claw, swaying and slowly rotating, dripping, with a completely deadpan face, as if this is normal.\nLOOK: photorealistic, true-to-life colors, natural daylight; no text, no logos, no people, no extra animals."
+ },
+ {
+  "id": "p11-b09",
+  "시작그림": "p11-09c 시작 그림(주황 고글)",
+  "초": 4,
+  "해상도": "720p",
+  "지시문": "Start exactly from the first frame and keep it: same hairless grey dog with huge ears, silver-white crest, orange goggles with blue mirrored lenses and yellow vest, sitting on the same chair in the same bright bedroom. ONE CONTINUOUS SHOT of real smartphone footage, vertical 9:16, locked-off camera, no cuts.\nACTION: First two seconds: a strong wind from the front blows in slow motion like a glamorous shampoo commercial, the silver crest and huge ears ripple and flow beautifully while the dog stays perfectly deadpan. Then the wind stops. Without any reaction, the dog slowly rises straight up off the chair and floats in the air, legs dangling, the towel on the chair lifting a little, and hovers half a meter above the chair, perfectly calm, no wires.\nLOOK: photorealistic, true-to-life colors, natural daylight; no text, no logos, no extra animals or people."
+ },
+ {
+  "id": "p11-b11",
+  "시작그림": "p11-b09 마지막 장",
+  "초": 5,
+  "해상도": "720p",
+  "지시문": "Start exactly from the first frame and keep it: same hairless grey dog with orange goggles and yellow life vest, hovering in the air above the same chair in the same bright bedroom. ONE CONTINUOUS SHOT of real smartphone footage, vertical 9:16, no cuts, no slow motion.\nACTION: In the first half second clear turquoise water rushes in from the bottom of the frame and fills the room up to the chair seat. At exactly one second gravity suddenly returns: the dog drops straight down like a stone, stiff and deadpan, and slams into the water with an enormous splash that sprays over the camera lens. It plunges under, then pops back up like a cork thanks to the yellow life vest, and floats upright on the surface, bobbing, goggles crooked, water running off its huge ears, completely deadpan.\nLOOK: photorealistic water, true-to-life colors, natural daylight; no text, no logos, no people, no extra animals."
+ }
+]
