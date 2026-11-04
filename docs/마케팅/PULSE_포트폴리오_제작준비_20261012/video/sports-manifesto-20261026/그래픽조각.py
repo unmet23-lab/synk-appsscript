@@ -167,7 +167,7 @@ def 로고():
     m += mask_text("GAPPEUM  RUNNING", font("InterTight/InterTight-SemiBold.ttf", 76), (LW // 2, 440), (LW, LH), "mm")   # 10-27 2차 시험 「작아서 읽기 힘듦」 — 50 → 76   # 10-27 낯선 사람 시험 「가쁨이 앱인지 브랜드인지 모른다」 — 러닝 브랜드임을 작은 줄로
     m = np.clip(m, 0, 1)
     core = blur(m, 1.2)
-    halo = blur(m, 14) * 0.9 + blur(m, 48) * 0.6
+    halo = blur(m, 9) * 0.32 + blur(m, 30) * 0.12   # 11-05 맹검 둘 다 「번짐이 싸구려 CG · 작은 글이 뭉개짐」 — 넓은 번짐을 줄임(옛 값 0.9 · 14 + 0.6 · 48)
     col = core[..., None] * np.array([1, 1, 1]) + halo[..., None] * np.array([1.0, 0.92, 0.82])
     alpha = np.clip(core + halo, 0, 1)
     rgb = np.clip(col / np.maximum(alpha[..., None], 1e-3), 0, 1)

@@ -237,11 +237,11 @@ def picture():
 
 FAIR = "C:/Users/q1212/Documents/synk-vendor/sound-library/fairlight/Media Files/"
 SON = "C:/Users/q1212/Documents/synk-vendor/sound-library/sonniss_gdc2026/풀림/"
-VOICE = os.path.join(ROOT, "소리", "p5", "내레이션후보_20261105", "JianK_1.mp3")   # 일레븐 v4 Jian.K 원고 전체 한 번에(음높이 중앙값 177Hz — 원본 180Hz). 후보 넷이 같은 폴더
+VOICE_DIR = os.path.join(ROOT, "소리", "p5", "내레이션후보_20261105")   # 일레븐 v4 Jian.K(음높이 중앙값 177Hz — 원본 180Hz). 앞은 차분한 판 1, 뒤 넷은 끝으로 갈수록 힘이 붙는 판 2(아르곤 1차 「후반이 평탄」)
 SONG = os.path.join(ROOT, "최종", "음악", "p5_일레븐", "곡_1.mp4")   # 일레븐 음악 v2.5 「Run Signal」 — Suno 내려받기가 11-11까지 0이라 임시. 곡이 평평해 크기 모양은 아래 곡선으로 만든다
-# (원고 안 시작, 끝, 화면 자리, 낱말) — 02_콘티 2절 자리. 끝 문장은 「진짜」와 「너를」 사이 빈틈에 로고가 켜지게 조금 앞으로
-LINES = [(0.00, 0.58, 1.65, "숨."), (0.98, 1.44, 4.91, "땀."), (1.79, 2.42, 9.41, "한 번 더."), (2.76, 3.60, 11.65, "한 바퀴 더."), (3.93, 5.02, 18.74, "어제보다 더."),
-         (5.55, 6.22, 20.02, "숨이,"), (6.38, 7.76, 21.62, "턱 끝까지 차오른,"), (8.00, 9.03, 23.35, "그 자리에서,"), (9.19, 9.90, 25.75, "너는,"), (10.17, 11.78, 28.06, "진짜 너를 만난다.")]
+# (판, 원고 안 시작, 끝, 화면 자리, 낱말) — 02_콘티 2절 자리. 끝 문장은 「진짜」 바로 뒤에 로고가 켜지게 조금 앞으로 · 「숨이,」는 끝 떨림을 잘랐다(아르곤 1차)
+LINES = [("JianK_1", 0.00, 0.58, 1.65, "숨."), ("JianK_1", 0.98, 1.44, 4.91, "땀."), ("JianK_1", 1.79, 2.42, 9.41, "한 번 더."), ("JianK_1", 2.76, 3.60, 11.65, "한 바퀴 더."), ("JianK_1", 3.93, 5.02, 18.74, "어제보다 더."),
+         ("JianK_1", 5.55, 6.02, 20.02, "숨이,"), ("JianK_2", 7.34, 8.71, 21.62, "턱 끝까지 차오른,"), ("JianK_2", 8.77, 9.63, 23.35, "그 자리에서,"), ("JianK_2", 9.75, 10.32, 25.75, "너는,"), ("JianK_2", 10.56, 12.05, 28.08, "진짜 너를 만난다.")]
 # 곡 크기 곡선(초, dB) — 02_콘티 4절 · 원본 0.25초 크기. 전체 곡과 저역만 남긴 곡을 나눠 움직인다(침묵 구간에도 박동이 남게)
 MUSIC_TRIM = -8
 FULL = [(0, -12), (0.9, -12), (1.1, -18), (1.55, -18), (1.7, -12), (3.9, -12), (4.05, -19), (4.75, -19), (4.85, -11), (5.8, -11), (6.13, -4), (8.9, -3), (9.02, -26), (9.45, -26), (9.7, -15), (11.4, -14), (11.6, -6), (12.6, -5), (13.2, -15), (18.4, -15), (18.55, -32), (19.0, -32), (19.15, -20), (19.7, -20),
@@ -280,13 +280,13 @@ def sound():
     k = len(dry)
     bed = dry * gain_curve(FULL, k)[:, None] + low * gain_curve(LOW, k)[:, None]
     # 말
-    voice = part(VOICE)
+    takes = {n: part(os.path.join(VOICE_DIR, n + ".mp3")) for n in {l[0] for l in LINES}}
     duck = np.zeros(k, np.float32)
-    for a, b, t, word in LINES:
-        x = voice[int((a) * C.RATE):int(b * C.RATE)]
+    for take, a, b, t, word in LINES:
+        x = takes[take][int(a * C.RATE):int(b * C.RATE)]
         rms = float(np.sqrt(np.mean(x[np.abs(x) > 0.01] ** 2)))
         g = np.clip(-19 - 20 * np.log10(rms), -3, 6) * 0.7   # 낱말마다 크기를 반쯤 고른다 — 「땀.」 · 「숨이,」가 작게 나온 판
-        m.put(t, x, g - 2 + (-5 if word == "숨이," else 0), fade=0.012, fade_out=0.05)   # 「숨이,」는 소리가 가장 가라앉은 자리에서 혼자 — 원본도 작다
+        m.put(t, x, g - 2 + (-5 if word == "숨이," else 0) + (-2.5 if take == "JianK_2" else 0), fade=0.012, fade_out=0.08)   # 「숨이,」는 소리가 가장 가라앉은 자리에서 혼자 — 원본도 작다
         i, j = int((t - 0.05) * C.RATE), int((t + (b - a) + 0.12) * C.RATE)
         duck[max(0, i):min(k, j)] = 1
     w = int(0.12 * C.RATE)
@@ -300,22 +300,24 @@ def sound():
     hum = SON + "344 Audio - East Coast America Vol. 1/AMBSubn_Electricity Hum, Lightbulb,  Coil Pickup 01_344 Audio_East Coast America.wav"
     click = SON + "InMotionAudio - USA Hotel/MECHClik_USALightSwitch_On05_InMotionAudio_USAHotel.wav"
     boom = SON + "Federico Soler - Effective Trailer Booms Vol. 2/EffectiveTrailer_Booms_Vol2_011.wav"
-    wind = SON + "344 Audio - Elemental Palette Designed Vol. 1/WINDDsgn_Wind, Rush, Whoosh, Long x5 01_344 Audio_Elemental Palette Designed Vol 1.wav"
     # 숨 — 1 유리 너머 · 2 가까이 · 12a · 19 정점 · 11 들릴락 말락
     m.put(0.0, part(resp, 12, 3.13, "lowpass=f=900"), -22, fade=0.1)
-    m.put(3.13, part(resp, 30, 1.5), -8, fade=0.03)
-    m.put(21.19, part(resp, 34, 0.29), -8, fade=0.01)
+    m.put(3.13, part(resp, 30, 1.5, "lowpass=f=3200"), -9, fade=0.03)
+    m.put(21.19, part(resp, 34, 0.29, "lowpass=f=3200"), -9, fade=0.01)
     m.put(21.38, part(boom, 0, 1.2, "lowpass=f=200"), -12, fade=0.004, fade_out=0.4)   # 21.5초 가장 큰 자리
-    m.put(25.40, part(resp, 44, 1.08), -4, fade=0.02)
+    m.put(25.40, part(resp, 44, 1.08, "lowpass=f=2600"), -9, fade=0.03)   # 아르곤 1차 「치이익 · 가스 누출」 — 바람 소리를 빼고 숨 · 심장으로
+    for t in (25.44, 26.10):
+        m.put(t, heart(), -7, fade=0.003)
     m.put(19.2, part(resp, 52, 1.7, "lowpass=f=2600,highpass=f=200"), -20, fade=0.15, fade_out=0.3)
     m.put(5.42, part(resp, 58, 0.7, "highpass=f=300"), -22, fade=0.05)
     # 발 — 1 유리 너머 · 3 · 8 느리고 무겁게 · 10 벨트 위
     m.put(0.0, part(run, 2, 3.13, "lowpass=f=700"), -24, fade=0.1)
-    m.put(4.80, part(run, 4.0, 0.62, "asetrate=48000*0.62,aresample=48000"), -8, fade=0.01, fade_out=0.1)
-    m.put(12.40, part(run, 4.0, 0.9, "asetrate=48000*0.55,aresample=48000"), -2, fade=0.005, fade_out=0.2)
+    m.put(4.80, part(run, 4.0, 0.62, "asetrate=48000*0.62,aresample=48000,lowpass=f=420"), -4, fade=0.01, fade_out=0.1)
+    m.put(12.40, part(run, 4.0, 0.9, "asetrate=48000*0.55,aresample=48000,lowpass=f=340"), 2, fade=0.005, fade_out=0.2)
     m.put(12.42, part(boom, 0, 1.5, "lowpass=f=160"), -12, fade=0.005, fade_out=0.5)
-    m.put(16.60, part(run, 8, 2.29, "highpass=f=120"), -14, fade=0.03)
-    m.put(21.73, part(run, 12, 0.29), -10, fade=0.005)
+    m.put(13.96, part(boom, 0, 1.8, "lowpass=f=120"), -18, fade=0.03, fade_out=1.2)   # 8 → 9 슬로로 넘어갈 때 소리가 뚝 끊기지 않게(아르곤 1차)
+    m.put(16.60, part(run, 8, 2.29, "highpass=f=90,lowpass=f=1000"), -14, fade=0.03)
+    m.put(21.73, part(run, 12, 0.29, "lowpass=f=1000"), -12, fade=0.005)
     # 9 — 물방울 · 심장
     m.put(14.06, part(FAIR + "Water Drips Drops.M.wav", 1.0, 2.54), -18, fade=0.1, fade_out=0.3)
     for t in (14.28, 15.18, 16.06):
@@ -327,14 +329,14 @@ def sound():
     for t, st, d, db in [(7.30, 0.2, 0.25, -14), (7.67, 0.8, 0.38, -16), (8.26, 1.4, 0.2, -14), (22.81, 2.0, 0.38, -14), (23.77, 2.6, 0.1, -14)]:
         m.put(t, part(whoosh, st, d), db, fade=0.005, fade_out=0.05)
     m.put(23.98, part(click), -14, fade=0.002)
-    # 19 바람 · 20 금빛 빛줄기
-    m.put(25.40, part(wind, 0.4, 1.1), -10, fade=0.04, fade_out=0.2)
+    # 20 금빛 빛줄기
     m.put(26.40, part(FAIR + "Sparkler Fast Whoosh.M.wav", 0, 0.5), -14, fade=0.01, fade_out=0.15)
     # 21 — 빛 기둥의 낮은 웅 · 로고 네온 딸깍 · 한 방 · 끝까지 작은 공간 소리
     m.put(26.65, part(hum, 8, END - 26.65 + 0.2, "lowpass=f=1800"), -26, fade=0.25)
     for t in (LOGO_ON, LOGO_BACK):
         m.put(t, part(click), -10, fade=0.002)
-    m.put(LOGO_ON - 0.01, part(boom, 0, 1.6, "lowpass=f=220"), -14, fade=0.004, fade_out=0.6)
+    m.put(26.65, part(SONG, 12.25, END - 26.65, "lowpass=f=1100", stereo=True), MUSIC_TRIM - 3, fade=0.12, fade_out=0.78)   # 곡 낙하 뒤가 비어 끝 3초가 힘이 없다(아르곤 1차) — 같은 박 자리의 앞 구간을 낮게 이어 29.25초부터 빠진다
+    m.put(LOGO_ON - 0.01, part(boom, 0, 1.6, "lowpass=f=220"), -8, fade=0.004, fade_out=0.6)
     m.finish(os.path.join(OUT, "소리.wav"), boost_db=1.0)
 
 
