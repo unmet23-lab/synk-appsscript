@@ -798,7 +798,7 @@ test('no room means one verification at a time, and a requested commit stays on 
   const summary = await tick(f.state, { ...f.deps, room: () => false, verifyCommit });
   assert.equal(widest, 1); assert.ok(f.queue().every(row => row.status === 'passed')); assert.ok(summary.roomHeld > 0);
   const g = tickFixture(t, commits), before = JSON.parse(fs.readFileSync(path.join(g.state, 'queue.json'))).nextTurn; const asked = [];
-  const result = await tick(g.state, { ...g.deps, requestedCommit: commits[1], verifyCommit: async (config, commit, output) => {
+  const result = await tick(g.state, { ...g.deps, meter: () => 100, requestedCommit: commits[1], verifyCommit: async (config, commit, output) => {
     asked.push([path.basename(config.state), commit]); write(path.join(output, 'result.json'), g.receiptFor(commit));
     return { count: selected.length, digest: manifest.digest };
   } });
@@ -851,6 +851,42 @@ test('a held tick opens nothing, ends so the next one can look again, and says o
   const activity = '2026-11-04T00:29:00Z', notice = statusRow('b', 'pending', 'Waiting for room on the local PC; not verified yet', activity);
   assert.equal(localStatus.judge([notice], { now: statusNow }).ok, true);
   assert.equal(localStatus.judge([notice], { now: Date.parse(activity) + localStatus.STALL_MS + 1 }).ok, false, 'a notice that stops coming still turns red');
+});
+test('an unattended registered verification waits for sustained room and keeps its place while held', async t => {
+  const commits = tickCommits(3), target = commits[1], f = tickFixture(t, commits), attempts = [];
+  const queueFile = path.join(f.state, 'queue.json');
+  const original = JSON.parse(fs.readFileSync(queueFile)), step = 30_000;
+  let now = Date.now(), cpu = 100, readings = [], samples = 0;
+  t.mock.method(Date, 'now', () => now);
+  const options = {
+    ...f.deps, requestedCommit: target, waitForRoom: true, calmMs: 120_000, holdTickMs: 900_000,
+    meter: () => { now += step; samples++; return readings.shift() ?? cpu; },
+    verifyCommit: async (checkout, commit, output) => {
+      attempts.push({ commit, atSample: samples });
+      write(path.join(output, 'result.json'), f.receiptFor(commit));
+      return { count: selected.length, digest: manifest.digest };
+    },
+  };
+  const held = await tick(f.state, options);
+  assert.deepEqual(held.requested, { commit: target, status: 'queued', attempted: false });
+  assert.equal(held.holdingAtCpu, 100);
+  assert.ok(held.roomHeld > 0);
+  assert.deepEqual(attempts, []);
+  assert.deepEqual(f.published, []);
+  assert.deepEqual(JSON.parse(fs.readFileSync(queueFile)), original);
+
+  samples = 0; readings = [80, 80, 100]; cpu = 80;
+  const done = await tick(f.state, options);
+  assert.deepEqual(done.requested, { commit: target, status: 'passed', attempted: true });
+  assert.equal(done.slots, 1);
+  assert.deepEqual(attempts, [{ commit: target, atSample: 8 }], 'the hot sample restarted the two-minute wait');
+  assert.equal(JSON.parse(fs.readFileSync(queueFile)).nextTurn, original.nextTurn);
+
+  cpu = 100;
+  const saved = await tick(f.state, options);
+  assert.deepEqual(saved.requested, { commit: target, status: 'passed', attempted: false });
+  assert.equal(saved.roomHeld, 0);
+  assert.equal(attempts.length, 1);
 });
 test('the first verification needs a calm stretch, and another needs its own after it', async t => {
   const commits = tickCommits(2), f = tickFixture(t, commits), opened = [], readings = [90, 80, 80, 80, 80]; let now = Date.now(), finishFirst;

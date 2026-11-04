@@ -236,7 +236,7 @@ async function runPool({ slots, pick, run, mayOpenFirst = () => true, mayOpenAno
   }
   if (fatal) throw fatal;
 }
-async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, requestedCommit = null, hub = github, runGit = git, cloneRoot = clone, verifyCommit = verify, first = roomForFirst, room = roomForAnother, meter = cpuMeter(), recheckMs = ROOM_RECHECK_MS, warmUpMs = ROOM_WARM_UP_MS, calmMs = CALM_MS, holdTickMs = HOLD_TICK_MS } = {}) {
+async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, requestedCommit = null, waitForRoom = false, hub = github, runGit = git, cloneRoot = clone, verifyCommit = verify, first = roomForFirst, room = roomForAnother, meter = cpuMeter(), recheckMs = ROOM_RECHECK_MS, warmUpMs = ROOM_WARM_UP_MS, calmMs = CALM_MS, holdTickMs = HOLD_TICK_MS } = {}) {
   if (requestedCommit !== null) github.validCommit(requestedCommit);
   const config = loadConfig(stateDir), release = acquire(stateDir, { reclaimDead: requestedCommit === null }), queueFile = path.join(stateDir, 'queue.json'), started = Date.now();
   try {
@@ -314,10 +314,10 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
       try { trimPassedRun(item.output); } catch (error) { console.error(`Passed run was not trimmed: ${error.message}`); }
     };
     const checkouts = requestedCommit === null ? [config, ...slotConfigs(stateDir)] : [config];
-    // Nothing to wait for without a verification to open: a requested commit, a saved result to publish, an empty queue or a spent budget.
+    // An unattended request waits only for its own verification. Publishing a saved receipt needs no spare checkout.
     const nothingToHold = () => {
-      if (requestedCommit !== null || spent()) return true;
-      const item = nextItem(queue, head, attempted);
+      if (spent() || (requestedCommit !== null && !waitForRoom)) return true;
+      const item = nextItem(queue, head, attempted, Date.now(), requestedCommit);
       return !item || item.status === 'publish-pending';
     };
     const gated = allowedNow => sinceOpened => {
@@ -330,7 +330,7 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
     const mayOpenFirst = gated(() => { const calm = calmFirst.calm(); holdingSince = calm ? null : holdingSince ?? Date.now(); return calm; });
     const mayOpenAnother = gated(sinceOpened => sinceOpened >= warmUpMs && calmAnother.calm());
     await runPool({ slots: checkouts, pick, run, recheckMs, watch, finished: () => { refresh(); settle(); }, mayOpenFirst, mayOpenAnother });
-    if (holdingSince !== null && Date.now() - (queue.heldNoticeAt || 0) >= HOLD_NOTICE_MS) {
+    if (requestedCommit === null && holdingSince !== null && Date.now() - (queue.heldNoticeAt || 0) >= HOLD_NOTICE_MS) {
       // On a commit nothing has verified yet, so it replaces no result. Pending is never a pass.
       const newest = queue.items.findLast(row => row.status === 'queued');
       try { if (newest) { hub.publish(newest.commit, 'pending', HOLDING); queue.heldNoticeAt = Date.now(); write(queueFile, queue); } }
@@ -357,7 +357,9 @@ if (require.main === module) {
   const targetIndex = args.indexOf('--registered-commit');
   if (targetIndex >= 0 && (args.includes('--initialize') || targetIndex !== args.lastIndexOf('--registered-commit'))) throw Error('Choose one registered commit per verification');
   const requestedCommit = targetIndex >= 0 ? args[targetIndex + 1] || '' : null;
-  const promise = args.includes('--initialize') ? Promise.resolve(initialize(stateDir, args[args.indexOf('--initialize') + 1])) : tick(stateDir, { requestedCommit });
+  const waitForRoom = args.includes('--wait-for-room');
+  if (waitForRoom && requestedCommit === null) throw Error('--wait-for-room requires --registered-commit');
+  const promise = args.includes('--initialize') ? Promise.resolve(initialize(stateDir, args[args.indexOf('--initialize') + 1])) : tick(stateDir, { requestedCommit, waitForRoom });
   promise.then(summary => {
     if (requestedCommit !== null && summary.requested.status !== 'passed') process.exitCode = summary.requested.status === 'failed' ? 1 : 2;
   }).catch(error => { console.error(error.message); process.exitCode = 1; });
