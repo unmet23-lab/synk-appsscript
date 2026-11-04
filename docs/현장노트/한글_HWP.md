@@ -37,7 +37,13 @@
 - 증상: 10-17 새 노트북에는 한컴오피스도, `HWPFrame.HwpObject` 등록도, pywin32도 없다. 지원사업 양식·공문·공고문이 HWP로 오면 열 프로그램이 없다.
 - 원인: 따로 프로그램이 필요한 것은 아니다. HWP 5.x는 OLE 복합 파일 안에 deflate로 눌린 레코드 스트림(`BodyText/Section*`)이고, HWPX는 zip 안의 XML(`Contents/section*.xml`)이다. 배포용 문서는 `ViewText/Section*`에 AES-128로 잠겨 있고, 열쇠는 그 스트림 머리 레코드(256바이트)에 들어 있다.
 - 고침: `python -X utf8 tools/hwp읽기.py <파일.hwp|.hwpx> [--out <글.txt>] [--정보] [--표없이]`를 쓴다. 이 PC 파이썬에 이미 있는 olefile만 쓰고, 원본은 읽기만 한다. 표는 「[표 행×열]」 아래 행마다 `| 칸 | 칸 |`으로 나오고(표 제목은 `(표 제목) …` 한 줄), `--정보`는 판·압축·암호·배포용 여부와 스트림 목록을 보여 준다. 배포용 문서는 파이썬만으로 AES를 풀어 읽는다. 다만 10-17에는 시험할 배포용 파일이 없어서, 형식 문서대로 짠 열쇠 꺼내기는 실제 파일로 확인하지 못했다(풀기에 실패하면 zlib 오류로 멈춘다). 암호를 건 문서는 읽지 않는다.
-- 다시 확인: `python -X utf8 tools/hwp읽기.py .tmp/restart-hwp-20261014/template.hwp`와 같은 파일의 `.hwpx`가 둘 다 191줄·표 29개·표 제목 2줄로 같게 나온다(10-19, 표 제목을 따로 적기 전에는 189줄). 10-14에 한글 COM으로 뽑은 `template-text.txt`와 대조하면, 다른 줄은 띄어쓰기와 칸 안 줄바꿈 차이뿐이다(10-17). AES는 FIPS-197 시험값과 Node `aes-128-ecb` 결과로 맞췄고, 배포용 경로는 만든 시험 스트림으로 왕복해 일반 경로와 같은 글이 나왔다. 10-17 이 PC에서 찾은 HWP 12개(판 5.1.0.1·5.1.1.0)와 HWPX 12개가 모두 읽혔다(배포용·암호 문서는 0개). 10-19에는 사용자 폴더의 HWP·HWPX 36개가 표 있음·`--표없이` 두 방식 모두 읽혔다.
+- 다시 확인: `python -X utf8 tools/hwp읽기.py .tmp/restart-hwp-20261014/template.hwp`와 같은 파일의 `.hwpx`가 둘 다 191줄·표 29개·표 제목 2줄로 같게 나온다(10-19, 표 제목을 따로 적기 전에는 189줄). 10-14에 한글 COM으로 뽑은 `template-text.txt`와 대조하면, 다른 줄은 띄어쓰기와 칸 안 줄바꿈 차이뿐이다(10-17). AES는 FIPS-197 시험값과 Node `aes-128-ecb` 결과로 맞췄고, 배포용 경로는 만든 시험 스트림으로 왕복해 일반 경로와 같은 글이 나왔다. 10-17 이 PC에서 찾은 HWP 12개(판 5.1.0.1·5.1.1.0)와 HWPX 12개가 모두 읽혔다(배포용·암호 문서는 0개). 10-19에는 사용자 폴더의 HWP·HWPX 36개가 표 있음·`--표없이` 두 방식 모두 읽혔다. 11-05에는 실제 배포용 문서(하이코리아 매뉴얼 11-02 판, 3,266,560바이트, `--정보`의 배포용 True · 구역 21)가 6,438줄로 읽혀 열쇠 꺼내기도 실제 파일로 확인했다.
+
+### 하이코리아 공지 첨부를 curl로 받으니 1.6KB HTML 「파일이 존재하지 않습니다」가 온다 (2026-11-05 Claude)
+- 증상: 첨부 링크가 `#this`라 주소가 안 보인다. 화면 함수 `fnNewFileDownLoad`의 값을 Git Bash `curl --data-urlencode`로 `/fileNewExistsChkAjax.pt`에 보내면 응답은 200인데 그 문구가 든 HTML이 온다.
+- 원인: 한글 파일 이름이 서버의 이름과 안 맞은 것으로 보인다(이 PC의 curl이 한글 인자를 UTF-8로 안 보낸 듯). 파이썬으로 바꾸며 `TRAN_TYPE=ComSubmit`도 함께 넣어서 둘 중 무엇이 갈랐는지는 나눠 보지 않았다.
+- 고침: 파이썬 `urllib`로 공지 쪽을 먼저 열어 쿠키를 받고, `spec · dir · apndFileNm · oriFileNm · BBS_GB_CD · BBS_SEQ · NTCCTT_SEQ · APND_SEQ · BBS_SKIN · TRAN_TYPE=ComSubmit`을 UTF-8로 인코딩해 POST한다. 값은 공지 쪽 링크의 `onclick`에서 읽는다. 머리의 Content-Type이 text/html이어도 본문이 파일이니 첫 바이트(HWP는 `d0cf11e0`)로 확인한다.
+- 다시 확인: 11-05 「261102 체류민원 자격별 안내 매뉴얼.hwp」가 3,266,560바이트로 받아졌고 첫 바이트는 `d0cf11e0a1b11ae1`, `tools/hwp읽기.py --정보`는 판 5.1.0.1을 냈다.
 
 ### 공고문 HWP를 읽으면 `UnicodeEncodeError: surrogates not allowed`로 멈춘다 (2026-10-21 Claude)
 - 증상: 한국문화관광연구원 공고문(`.tmp/contests-20261019/forms/kcti_notice/kcti_공고문.hwp`)을 `tools/hwp읽기.py`로 읽자 글을 다 뽑은 뒤 마지막 쓰기에서 「'utf-8' codec can't encode characters … surrogates not allowed」로 멈췄다. 화면 출력도 `--out` 파일 쓰기도 같았다(둘 다 엄격한 utf-8). 같은 날 다른 세션도 같은 파일에서 막혔다.
