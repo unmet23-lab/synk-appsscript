@@ -688,6 +688,13 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 다시 확인: `node tools/sync-atlas.js --all --check --local`이 `"ok": true`, `node tools/check-account-bundles.js`가 넷 모두 ok.
 - 추가 실측(2026-11-01 GPT): 드라마 시범의 새 워크트리도 node_modules가 없어 `바로올리기` 관련 시험의 `공개.test.js`에서 `Cannot find module 'parse5'`가 났다(첫 회502/511, push 안 됨). 오류 뒤 해당 시험 프로세스만 남아 끝나지 않아 PID·부모 PID·시험 경로를 대조해 그 프로세스만 끝내고 실패 요약 로그를 보존했다(임시 TAP 전문은 도구가 종료 시 지워 보존하지 못함). 이 작업본에서는 junction 대신 기존 lock의 `npm ci --no-fund --no-audit`로9개를 설치했다. package.json·lock은 바뀌지 않았다. `require('parse5').parse`와 `esbuild.transformSync`가 정상임을 확인한 뒤 같은 반영 명령으로 관련 시험을 다시 돌린다(시험을 빼거나 실패를 통과로 바꾸지 않음).
 
+### `바로올리기 --모두`가 「바뀐 것을 올리지 못했다 — warning: … LF will be replaced by CRLF」로 멈춘다 — 경고가 아니라 바깥 시간 제한이 git을 죽인 것이다 (2026-11-05 Claude)
+- 증상: `timeout 170 node tools/바로올리기.js --모두 …`가 줄끝 경고 한 줄만 보이며 멈췄다. 올라간 것은 없다.
+- 원인: 이 저장소의 임시 인덱스 `git add -A`는 PC가 바쁘면 2분 넘게 걸린다(실측 1분 57초). `timeout`이 git까지 끊어 종료 코드가 비고, 도구는 그때까지 나온 stderr(경고)만 보인다.
+- 고침: 바깥 `timeout`을 걸지 않고 뒤에서 돌리거나, 경로를 직접 준다(`git status --short` 목록을 넘기면 `add -A`를 온 작업본에 돌리지 않는다).
+- 곁들여: 짝 검사 고침으로 돌린 `experiences/korean-study/build.mjs`가 내용이 같아도 CRLF 작업본에 「바뀜」을 남기면, 이번 push에 없다는 이유로 다시 막힌다 — 원천이 안 바뀌었으면 `git restore -- experiences/korean-study`로 되돌린다.
+- 다시 확인: 같은 커밋을 경로 지정으로 `ec441db4b`에 올렸다.
+
 ### junction이 든 워크트리를 통째로 지우면 공용 node_modules가 지워질 수 있다
 - 증상: `git worktree remove --force`가 등록만 풀고 폴더를 남긴다. 남은 폴더를 `rm -rf`·`Remove-Item -Recurse`로 지우면 링크를 따라 공용 작업본의 node_modules까지 지울 수 있다(모든 세션의 빌드가 멈춤). `cmd /c rmdir`은 하네스가 막는다.
 - 원인: 빌드·시험용으로 `node_modules`를 공용 작업본에 잇는 junction을 만들어 둔다.

@@ -22,6 +22,13 @@ const W = await import('/live/world-account.bundle.mjs');
 for (const k of Object.keys(localStorage)) if (k.includes('local:synthetic-world')) localStorage.removeItem(k);
 W.createLocalWorldLearningHost({ owner: 'synthetic-world', target: window, storage: localStorage });
 await window.SYNKLearningHost.ready?.();
+// 이 묶음의 계획이 실제로 돈다: 잠긴 학생은 후보에 없고, 레슨 하나를 마치면 후보에 든다(라이브 묶음에 끼운 줄이 이름을 잘못 쓰면 여기서 던진다).
+try {
+  const { PACKS } = await import('/live/life-content.mjs');
+  const now = Date.now(), empty = { version: 1, owner: 'qa', revision: 0, activeLessonId: null, activeReview: null, lessons: {}, reviews: {} };
+  const has = (progress) => W.createWorldLearningPlan({ progress, settings: {}, now, recommendActivities: W.worldLearning.recommendActivities }).candidates.some((c) => c.id === 'world.play.subway');
+  window.__plan = { locked: has(empty), open: has({ ...empty, lessons: { [PACKS[0].lessons[0].id]: { completedAt: now - 1000, answers: {} } } }) };
+} catch (error) { window.__plan = { error: String(error?.message || error) }; }
 const f = document.createElement('iframe'); f.className = 'game-frame'; f.allow = 'autoplay'; f.src = '/live/subway-rush/index.html?${QUERY}'; document.body.append(f);
 </script></body></html>`;
 const cache = new Map(); let fromLive = 0, fromCandidate = 0, hostPatched = 0;
@@ -69,12 +76,13 @@ server.listen(0, '127.0.0.1', async () => {
   await page.waitForTimeout(1500);
   const posted = await page.evaluate(() => { const c = {}; for (const e of window.__posts) { const k = `${e.kind || e.type || '?'}${e.responseFormat ? ':' + e.responseFormat : ''}`; c[k] = (c[k] || 0) + 1; } return { n: window.__posts.length, gets: window.__gets, kinds: c }; });
   const end = await hostStatus();
+  const plan = await page.evaluate(() => window.__plan);
   const skills = await page.evaluate(() => { const c = {}; for (const e of window.__posts) { const id = e.measure?.skillId; if (e.type === 'practice.presented' && id) c[id] = (c[id] || 0) + 1; } return c; });
   const result = await fr().evaluate(() => ({ line: document.getElementById('result-line')?.textContent, score: document.getElementById('result-score')?.textContent, coin: document.getElementById('coin-row')?.textContent, error: document.body.dataset.error || null }));
   await browser.close(); server.close();
-  console.log(JSON.stringify({ done, hosted, hostPatched, fromCandidate, fromLive, before, after, end, posted, skills, result, errors: errors.slice(0, 10), failed: failed.slice(0, 10) }, null, 1));
+  console.log(JSON.stringify({ done, hosted, hostPatched, fromCandidate, fromLive, before, after, end, posted, skills, plan, result, errors: errors.slice(0, 10), failed: failed.slice(0, 10) }, null, 1));
   const blocked = [before, after, end].some((s) => s.phase === 'blocked');
-  const broken = !done || !hosted || !!result.error || errors.length > 0 || failed.length > 0 || (CANDIDATE && !fromCandidate);
+  const broken = !done || !hosted || !!result.error || errors.length > 0 || failed.length > 0 || (CANDIDATE && !fromCandidate) || !plan || plan.error || plan.locked || !plan.open;
   console.log(blocked || !posted.n ? '✗ 학습 기록 동기화가 막혔다' : broken ? '✗ 한 판이 끝나지 않았거나 오류 · 실패 요청이 있다' : `✓ 동기화 ${end.phase} · 보낸 사건 ${posted.n}건`);
   process.exit(blocked || !posted.n || broken ? 1 : 0);
 });
