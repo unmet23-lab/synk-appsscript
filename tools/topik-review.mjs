@@ -80,7 +80,7 @@ export function newItemView(item, types, labels) {
 }
 // 기존 게임 문항: 출처마다 시험 자리(맞춘 꼴)와 화면에 보이는 글. 입장 검사는 안내문·서류·짐·말을 글로 옮긴다.
 // 레이싱 그림 낱말(낱말 하나를 듣고 그림 고르기)은 맞는 공식 자리가 없어(그림 자리 TI-L-15는 대화·세부) 자리 없이 본다.
-const EXISTING_TYPE = { 'subway-rush': item => item.skillId.startsWith('ko2.') ? 'TII-L-13' : item.skillId === 'ko.listening.response' ? 'TI-L-01' : 'TI-L-26', 'blank-slice': () => 'TI-R-34', 'synk-town': item => item.skillId === 'ko.reading.main' ? 'TI-R-46' : 'TI-R-43', 'entry-check': () => 'TI-R-40',
+const EXISTING_TYPE = { 'board-decode': () => 'TII-R-09', 'subway-rush': item => item.skillId.startsWith('ko2.') ? 'TII-L-13' : item.skillId === 'ko.listening.response' ? 'TI-L-01' : 'TI-L-26', 'blank-slice': () => 'TI-R-34', 'synk-town': item => item.skillId === 'ko.reading.main' ? 'TI-R-46' : 'TI-R-43', 'entry-check': () => 'TI-R-40',
   'korean-racing': () => null, 'korean-runner': () => null, 'korean-rhythm': () => null, 'snap-words': () => null, 'talk-rally': item => item.kind === 'follow' ? 'TI-L-05' : 'TI-L-01' };
 // 듣기 게임은 진단 문항에 들리는 글이 줄여져 있어(label) 게임 원고에서 들리는 글 전체를 찾아 대본으로 보인다.
 const LISTENING_FORMAT = {
@@ -113,7 +113,7 @@ export function existingItemView(item, types, labels, { script = null } = {}) {
   const passage = item.source === 'entry-check' ? entryText(item.card) : picture ? `[소리로 들리는 낱말] ${item.label}` : item.prompt;
   // 그림 보기는 그림 글자(이모지)만으로는 검수자가 어느 낱말 그림인지 대조할 수 없어, 그 그림이 가리키는 낱말을 괄호로 붙인다.
   const choices = item.choices.map(choice => picture && wordOf(choice.id) ? `${choice.label}(${wordOf(choice.id)})` : choice.label);
-  return { existing: true, source: item.source, exam: 'topik-i', officialType: typeView(types.find(t => t.id === typeId)), fit: 'adapted',
+  return { existing: true, source: item.source, exam: item.source === 'board-decode' ? 'topik-ii' : 'topik-i', officialType: typeView(types.find(t => t.id === typeId)), fit: 'adapted',
     ...(item.format ? { format: item.format } : {}), ...(picture ? { format: '게임 꼴: 낱말 하나를 듣고 보기 그림(이모지) 셋 가운데 고른다. 공식 시험 자리는 없다(낱말 듣기 연습). 그림이 그 낱말을 하나로 가리키는지, 보기 그림끼리 헷갈리지 않는지, 1급 낱말인지 본다' } : {}),
     targetGrade: null, skillId: item.skillId, skillLabel: labels[item.skillId] || null, difficulty: item.difficulty, passage, script: null,
     question: item.question, choices, answer: item.choices.findIndex(choice => choice.id === item.correctId),
@@ -133,6 +133,16 @@ async function talkRallyItems() {
     correctId: `talk-rally.${item.id}.${item.options.indexOf(item.answer)}`, explanation: item.why }));
 }
 // 찰칵 낱말(11-04): 낱말마다 한 문항 — 부탁이 있으면 뜻 부탁(안내문은 안내문 부탁), 글 없는 물건은 낱말 부탁, 그 밖의 고정 판은 뜻 고르기. 소리 부탁 · 인화는 같은 낱말 · 같은 원고라 따로 보지 않는다.
+// 게시판 해독(11-04): 판의 칸 · 갈림 양쪽 · 정정 전부. 문항 지문 · 단서 · 장면까지 한 글에 담는다(experiences/board-decode/review-items.mjs).
+async function boardDecodeItems() {
+  const { reviewItems } = await import(pathToFileURL(path.join(root, 'experiences/board-decode/review-items.mjs')));
+  return reviewItems();
+}
+// 게시판 해독의 지금 원고 지문 — experiences/board-decode/review.test.mjs가 통과 기록과 견준다.
+export async function boardDecodeUnits() {
+  const types = readJson(path.join(root, 'strata/topik-types.json')).types, labels = skillLabels();
+  return (await boardDecodeItems()).map(item => ({ key: item.itemKey, hash: sha(JSON.stringify(existingItemView(item, types, labels, { script: null }))).slice(0, 16) }));
+}
 // 환승 러시: 근거로 세는 결정 · 만남의 변형 전체. 열쇠는 게임과 같은 decisionMeta · meetingMeta.
 async function subwayRushItems() {
   const imp = rel => import(pathToFileURL(path.join(root, rel)));
@@ -417,7 +427,7 @@ export async function prepare(name, { newFiles = null, existingSources = null, s
     for (let i = units.length - 1; i >= 0; i--) if (units[i].kind === 'new' && !kept.has(units[i].key)) units.splice(i, 1);
   }
   if (existingSources) {
-    const all = [...await diagnosticItems(), ...(existingSources.includes('talk-rally') ? await talkRallyItems() : []), ...(existingSources.includes('snap-words') ? await snapWordsItems() : []), ...(existingSources.includes('subway-rush') ? await subwayRushItems() : [])];
+    const all = [...await diagnosticItems(), ...(existingSources.includes('talk-rally') ? await talkRallyItems() : []), ...(existingSources.includes('snap-words') ? await snapWordsItems() : []), ...(existingSources.includes('board-decode') ? await boardDecodeItems() : []), ...(existingSources.includes('subway-rush') ? await subwayRushItems() : [])];
     const scriptOf = await listeningScripts();
     const pool = all.filter(item => item.source in EXISTING_TYPE && (!existingSources.length || existingSources.includes(item.source)));
     const picked = perSource ? Object.values(Object.groupBy(pool.map(item => ({ key: item.itemKey, item })), row => row.item.source)).flatMap(rows => seededPick(rows, perSource, name)).map(row => row.item) : pool;

@@ -1,0 +1,3 @@
+A REAL PHOTOGRAPH taken on a smartphone by a university student in Korea, natural light and honest colors, slightly imperfect framing, portrait 2:3. Never an illustration, never a 3D render, never a stock-photo gloss. Absolutely no text, letters, numbers, signs with writing, labels, logos or brand marks anywhere in the frame. No people, no faces, no hands unless the description says so.
+
+A bright dormitory laundry room in late morning: a row of front-loading washing machines all running, one drum in the foreground spinning with colorful clothes and motion blur, warm sunlight through a frosted window, a few laundry baskets on a bench. Lively, clean, cheerful, no people.

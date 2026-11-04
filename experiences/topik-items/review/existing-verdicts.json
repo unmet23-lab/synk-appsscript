@@ -1,7 +1,7 @@
 {
   "version": "topik-existing-verdicts-1",
   "rubric": "topik-review-r1",
-  "updatedAt": "2026-11-04T03:00:00.000Z",
+  "updatedAt": "2026-11-04T11:04:31.450Z",
   "note": "기존 게임·진단 문항의 AI 2중 검수 판정(허용 목록). verdict \"pass\"만 연습에 낸다. 첫 판은 비어 있다 — 판정이 나오는 대로 채운다.",
   "items": [
     {
@@ -963,6 +963,474 @@
       "reviewedAt": "2026-10-21T13:32:57.532Z",
       "rubric": "topik-review-r1",
       "packet": "existing-fix-r3a",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "board-decode.festival.f1.사전 접수",
+      "source": "board-decode",
+      "verdict": "pass",
+      "skillId": "ko2.reading.detail",
+      "difficulty": 1,
+      "familyKey": "board-decode.festival.f1",
+      "officialType": "TII-R-09",
+      "reason": "사전 접수 조건을 읽어 답장을 고르는 게임 문항으로, 정답이 하나로 정해지고 미끼(선착순 오해, 1시 혼동)가 그럴듯하다. 공지와 메시지의 한국어도 자연스러워 통과로 본다. | 캠퍼스 축제 공지의 '사전 접수' 조건을 정확히 물어 안내문 세부 파악과 어휘 변별을 잘 결합한 양호한 게임 문항임.",
+      "hash": "3ae5b632222eb25a",
+      "reviewedAt": "2026-11-04T10:57:30.961Z",
+      "rubric": "topik-review-r1",
+      "packet": "board-decode-6",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "board-decode.festival.f1.선착순",
+      "source": "board-decode",
+      "verdict": "pass",
+      "skillId": "ko2.reading.detail",
+      "difficulty": 1,
+      "familyKey": "board-decode.festival.f1",
+      "officialType": "TII-R-09",
+      "reason": "공지의 '낮 12시'와 '선착순 200명'으로 0번이 유일한 정답이다. 오답은 각각 신청제와 시각을 잘못 읽은 경우로 그럴듯하다. 해설의 겹친 띄어쓰기 외에는 문제가 없어 통과한다. | 대학 축제 간식 나눔 공지가 실제 공지처럼 자연스럽고, 배부 시각(낮 12시)과 '선착순' 조건으로 정답이 명확히 가려진다.",
+      "hash": "3869be208ef5ea57",
+      "reviewedAt": "2026-11-04T10:44:01.581Z",
+      "rubric": "topik-review-r1",
+      "packet": "board-decode-5",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "board-decode.festival.f2.연기",
+      "source": "board-decode",
+      "verdict": "pass",
+      "skillId": "ko2.reading.detail",
+      "difficulty": 1,
+      "familyKey": "board-decode.festival.f2",
+      "officialType": "TII-R-09",
+      "reason": "공지의 '우천 시 … 연기합니다'로 정답 '다른 날 한대요'가 하나로 확정돼요. 오답은 연기↔취소 혼동과 조건 무시로 그럴듯하고, 공지 한국어도 자연스러워요. 그대로 써도 되는 문항이에요. | 실제 대학 축제 공지처럼 자연스럽고 '우천 시·연기'로 정답(0번)이 유일하게 확정되며 단서 카드와 오답 장면도 완결성 있어 통과.",
+      "hash": "e4cba9df2bf66ab1",
+      "reviewedAt": "2026-11-04T10:44:01.581Z",
+      "rubric": "topik-review-r1",
+      "packet": "board-decode-5",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "board-decode.festival.f2.취소",
+      "source": "board-decode",
+      "verdict": "pass",
+      "skillId": "ko2.reading.detail",
+      "difficulty": 1,
+      "familyKey": "board-decode.festival.f2",
+      "officialType": "TII-R-09",
+      "reason": "우천 시와 취소의 뜻으로 답이 하나로 정해지는 자연스러운 캠퍼스 공지 문항이에요. 미끼 보기는 연기·강행으로 잘 짜였어요. 「올해 콘서트는 못 봐요」가 약간의 추론이지만 문제될 정도는 아니어서 통과로 판정해요. | u009의 대립 판('연기'→'취소')으로서 공지문과 보기가 자연스럽게 맞물리고 단서 문장이 '연기'와의 뜻 차이를 명확히 갈라 주어 통과.",
+      "hash": "69be94ea030e476a",
+      "reviewedAt": "2026-11-04T10:44:01.581Z",
+      "rubric": "topik-review-r1",
+      "packet": "board-decode-5",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "board-decode.festival.patch.연기",
+      "source": "board-decode",
+      "verdict": "pass",
+      "skillId": "ko2.reading.detail",
+      "difficulty": 1,
+      "familyKey": "board-decode.festival.patch",
+      "officialType": "TII-R-09",
+      "reason": "정정 쪽지의 「취소」 한 낱말로 정답이 하나로 확정돼요. 오답은 연기·강행으로 잘못 읽은 경우를 잘 겨누고, 공지 문구도 실제 대학 공지처럼 자연스러워요. 통과예요. | 재연기 미끼(26일) 설계와 정답 유일성이 좋음. 단독 문항으로 재사용할 때만 '비 예보로' 선행 맥락이나 '[정정 쪽지]' 표기를 다듬으면 되고 현행 게임 판 흐름에서는 문제없어 통과.",
+      "hash": "77794d95b13e68cf",
+      "reviewedAt": "2026-11-04T10:44:01.581Z",
+      "rubric": "topik-review-r1",
+      "packet": "board-decode-5",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "board-decode.festival.patch.취소",
+      "source": "board-decode",
+      "verdict": "pass",
+      "skillId": "ko2.reading.detail",
+      "difficulty": 1,
+      "familyKey": "board-decode.festival.patch",
+      "officialType": "TII-R-09",
+      "reason": "공지의 '연기'로 19일 공연을 확인하는 답장 고르기 문항이다. 정답이 하나로 확정되고 미끼도 그럴듯하며 공지도 자연스럽다. 이 판에서 쓰지 않는 〔선착순〕 표시가 함께 있는 점은 다른 판과 공유하는 꼴로 보이는 사소한 점이라 통과한다. | 취소 공지가 19일 연기로 바뀐 상황 설정, '볼 수 있어요'를 공유한 미끼 보기, 단서 카드와 후속 장면까지 모두 자연스럽고 명확해 통과.",
+      "hash": "c472967b6c79fa4b",
+      "reviewedAt": "2026-11-04T10:44:01.581Z",
+      "rubric": "topik-review-r1",
+      "packet": "board-decode-5",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "board-decode.laundry.f1.제외",
+      "source": "board-decode",
+      "verdict": "pass",
+      "skillId": "ko2.reading.detail",
+      "difficulty": 1,
+      "familyKey": "board-decode.laundry.f1",
+      "officialType": "TII-R-09",
+      "reason": "공지의 '3층을 제외한 모든 층'으로 3층만 쓸 수 있어 정답 0이 유일합니다. 오답은 '제외'를 오독하는 경우를 잘 겨누고, 공지·해설·단서 카드 모두 자연스러워 통과입니다. | 캠퍼스 세탁실 공지의 '제외' 조건을 정확히 읽어 답장을 고르는 게임 문항으로, 공지 자연스러움·정답 유일성·단서 변별력 모두 우수하여 통과(pass) 판정함.",
+      "hash": "4a5f962d4ddf8d84",
+      "reviewedAt": "2026-11-04T10:44:01.581Z",
+      "rubric": "topik-review-r1",
+      "packet": "board-decode-5",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "board-decode.laundry.f1.한함",
+      "source": "board-decode",
+      "verdict": "pass",
+      "skillId": "ko2.reading.detail",
+      "difficulty": 1,
+      "familyKey": "board-decode.laundry.f1",
+      "officialType": "TII-R-09",
+      "reason": "〔한함〕 하나로 3층만 막힌다는 것이 정해져 정답 '4층'이 유일하다. 두 미끼는 각각 대표적인 오해(빼고로 읽기, 무시하기)를 겨눠 그럴듯하다. 공지 문구도 실제처럼 자연스러워 통과. | u001의 대조판('한함')으로 개조식 공지 문체와 단서 예문, 오답 유도가 모두 자연스럽고 정답이 하나로 확정되어 통과(pass) 판정함.",
+      "hash": "a9356479273163dc",
+      "reviewedAt": "2026-11-04T10:44:01.581Z",
+      "rubric": "topik-review-r1",
+      "packet": "board-decode-5",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "board-decode.laundry.f2.보관",
+      "source": "board-decode",
+      "verdict": "pass",
+      "skillId": "ko2.reading.detail",
+      "difficulty": 1,
+      "familyKey": "board-decode.laundry.f2",
+      "officialType": "TII-R-09",
+      "reason": "공지의 〔제외〕·점검 시각·〔보관〕으로 정답 0번이 유일하게 확정된다. 미끼 보기는 핵심 낱말을 잘못 읽었을 때를 겨눠 그럴듯하다. 한국어도 자연스러워 통과다. | 공지의 대상 층·점검 시각·'보관' 규칙이 선배 메시지 상황과 빈틈없이 맞물려 정답이 유일하게 도출되며 한국어가 자연스러워 통과(pass) 판정함.",
+      "hash": "54f7080872fb6fc3",
+      "reviewedAt": "2026-11-04T10:44:01.581Z",
+      "rubric": "topik-review-r1",
+      "packet": "board-decode-5",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "board-decode.laundry.f2.폐기",
+      "source": "board-decode",
+      "verdict": "pass",
+      "skillId": "ko2.reading.detail",
+      "difficulty": 1,
+      "familyKey": "board-decode.laundry.f2",
+      "officialType": "TII-R-09",
+      "reason": "공지의 〔제외〕·〔폐기〕와 시각 정보로 정답(1번 「없을 거예요」)이 하나로 정해진다. 미끼 보기도 보관 판과 짝을 이루어 그럴듯하다. 공지와 대사가 자연스럽고 해설 근거도 정확해 통과로 판정한다. | u003의 대조판('폐기')으로 실제 기숙사 공지 문체와 부합하고 정답 유일성·오답 매력도·단서 예문 변별력이 모두 적절하여 통과(pass) 판정함.",
+      "hash": "80494bfc185691c3",
+      "reviewedAt": "2026-11-04T10:44:01.581Z",
+      "rubric": "topik-review-r1",
+      "packet": "board-decode-5",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "board-decode.laundry.patch.보관",
+      "source": "board-decode",
+      "verdict": "pass",
+      "skillId": "ko2.reading.detail",
+      "difficulty": 1,
+      "familyKey": "board-decode.laundry.patch",
+      "officialType": "TII-R-09",
+      "reason": "공지의 「보관한 뒤 폐기」와 「금요일까지」로 정답이 하나로 정해진다. 오답 둘은 각각 「보관」만 읽은 오해와 점검 날짜 「오늘」을 노려 그럴듯하다. 공지 문구도 실제 기숙사 공지처럼 자연스러워 그대로 써도 된다. | 캠퍼스 기숙사 공지와 정정 쪽지가 실제 안내문처럼 자연스럽고, '보관 후 폐기'와 기한(금요일) 정보로 정답이 하나로 확정되며 단서 문장과 장면 글도 바르다.",
+      "hash": "d6f42e6b489c17b8",
+      "reviewedAt": "2026-11-04T10:44:01.581Z",
+      "rubric": "topik-review-r1",
+      "packet": "board-decode-5",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "board-decode.laundry.patch.폐기",
+      "source": "board-decode",
+      "verdict": "pass",
+      "skillId": "ko2.reading.detail",
+      "difficulty": 1,
+      "familyKey": "board-decode.laundry.patch",
+      "officialType": "TII-R-09",
+      "reason": "정정 쪽지의 보관·기한으로 정답이 하나로 정해진다. 미끼 둘은 기한 바꿈과 폐기 오독으로 그럴듯하다. 공지와 메시지의 한국어도 자연스러워 통과한다. 점검 시간·3층 제외 줄은 이 판의 답과 상관없지만, 다른 판과 함께 쓰는 지문으로 보면 문제 되지 않는다. | u005와 대립하는 '폐기하지 않고 금요일까지 보관' 설정에서 정답과 미끼 보기가 명확히 갈리며, 단서 카드와 장면 한국어도 자연스럽다.",
+      "hash": "266b5566ba20d449",
+      "reviewedAt": "2026-11-04T10:44:01.581Z",
+      "rubric": "topik-review-r1",
+      "packet": "board-decode-5",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "board-decode.season.f1.권장",
+      "source": "board-decode",
+      "verdict": "pass",
+      "skillId": "ko2.reading.detail",
+      "difficulty": 1,
+      "familyKey": "board-decode.season.f1",
+      "officialType": "TII-R-09",
+      "reason": "〔권장〕의 뜻으로 정답이 하나로 정해지고, 미끼 보기도 공지 정보(필수로 오해, 정정 날짜)를 써서 그럴듯하다. 공지 문구가 자연스럽고 날짜·요일도 맞아 통과로 본다. | u002의 대조 판으로 '수강 권장 과목'이라는 자연스러운 대학 행정 연어를 사용해 정답 유일성과 오답 매력도를 잘 확보함.",
+      "hash": "a34199ca035fa9f3",
+      "reviewedAt": "2026-11-04T10:57:30.961Z",
+      "rubric": "topik-review-r1",
+      "packet": "board-decode-6",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "board-decode.season.f1.필수",
+      "source": "board-decode",
+      "verdict": "pass",
+      "skillId": "ko2.reading.detail",
+      "difficulty": 1,
+      "familyKey": "board-decode.season.f1",
+      "officialType": "TII-R-09",
+      "reason": "공지의 〔필수〕로 정답 0번이 하나로 확정된다. 미끼 보기(필수 오해, 정정 기간 혼동)가 그럴듯하고, 낱말·자리·난도가 맞아 통과로 판정한다. | 계절학기 공지의 '졸업 필수' 정보를 바탕으로 선배 질문에 답하게 한 문항으로, 오답 구성과 단서 문장이 깔끔함.",
+      "hash": "ee5666cf96c3c8f1",
+      "reviewedAt": "2026-11-04T10:57:30.961Z",
+      "rubric": "topik-review-r1",
+      "packet": "board-decode-6",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "board-decode.season.f2.가능",
+      "source": "board-decode",
+      "verdict": "pass",
+      "skillId": "ko2.reading.detail",
+      "difficulty": 1,
+      "familyKey": "board-decode.season.f2",
+      "officialType": "TII-R-09",
+      "reason": "공지의 〔가능〕 한 낱말로 정답(1번)이 하나로 정해진다. 미끼 보기는 공지의 날짜와 반대 뜻을 써서 그럴듯하고, 공지와 메시지도 자연스럽다. 해설의 겹친 띄어쓰기 말고는 고칠 것이 없어 통과로 판정한다. | 온라인 정정 종료(금요일) 뒤 학과 사무실 변경 〔가능〕이라는 공지 맥락과 단서·오답 설계가 모두 타당하고 정답(1번)이 하나로 확정되어 통과(pass)다.",
+      "hash": "383729f3f87b9b2f",
+      "reviewedAt": "2026-11-04T11:04:31.450Z",
+      "rubric": "topik-review-r1",
+      "packet": "board-decode-7",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "board-decode.season.f2.불가",
+      "source": "board-decode",
+      "verdict": "pass",
+      "skillId": "ko2.reading.detail",
+      "difficulty": 1,
+      "familyKey": "board-decode.season.f2",
+      "officialType": "TII-R-09",
+      "reason": "공지의 〔불가〕와 정정 기한으로 답이 0번 하나로 정해지고, 미끼도 공지의 정보를 바꿔 써서 그럴듯하다. 2번 보기의 「아직」은 지금 날짜가 없어 엄밀히는 알 수 없지만, 물음에 답하지 않는 보기라 정답을 다툴 여지는 작다. 통과. | 캠퍼스 공지와 선배 메시지, 미끼 보기, 단서 카드 모두 자연스럽고 정답(0번)이 유일하게 확정되어 통과(pass)다.",
+      "hash": "3f3ae9a3ab9a3996",
+      "reviewedAt": "2026-11-04T11:04:31.450Z",
+      "rubric": "topik-review-r1",
+      "packet": "board-decode-7",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "board-decode.season.patch.가능",
+      "source": "board-decode",
+      "verdict": "pass",
+      "skillId": "ko2.reading.detail",
+      "difficulty": 1,
+      "familyKey": "board-decode.season.patch",
+      "officialType": "TII-R-09",
+      "reason": "공지의 「한 번으로 제한」이 답을 하나로 확정하고, 두 오답은 제한을 허용·금지로 잘못 읽은 그럴듯한 미끼입니다. 공지 문구, 날짜·요일, 해설 장면도 자연스러워 통과로 판정합니다(「정정 쪽지」라는 이름은 사소한 게임 틀 표현). | 「제한」과 '금지/허용'의 혼동을 겨냥한 보기 및 단서 문장 설계가 뛰어나고 공지·장면 한국어가 자연스러워 통과(pass)함.",
+      "hash": "11e0ec879d5fca42",
+      "reviewedAt": "2026-11-04T10:57:30.961Z",
+      "rubric": "topik-review-r1",
+      "packet": "board-decode-6",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "board-decode.season.patch.불가",
+      "source": "board-decode",
+      "verdict": "pass",
+      "skillId": "ko2.reading.detail",
+      "difficulty": 1,
+      "familyKey": "board-decode.season.patch",
+      "officialType": "TII-R-09",
+      "reason": "연장된 정정 마감(12월 11일)으로 12월 8일 정정이 가능함을 고르는 문항이다. 정답이 유일하고 날짜와 요일이 정확하며, 오답 두 개가 각각 연장을 놓친 독해와 지나치게 넓힌 독해를 대표해 그럴듯하다. 게임 꼴 안에서 통과로 본다. | 공지문과 정정 쪽지의 표현이 자연스럽고 정답 유일성, 매력적 오답, 단서 문장, 장면의 날짜·요일 정합성까지 모두 정확하여 통과(pass)함.",
+      "hash": "7b84f382d599576f",
+      "reviewedAt": "2026-11-04T10:57:30.961Z",
+      "rubric": "topik-review-r1",
+      "packet": "board-decode-6",
       "by": [
         {
           "stage": "claude",

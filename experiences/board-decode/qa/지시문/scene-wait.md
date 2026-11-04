@@ -1,0 +1,3 @@
+A REAL PHOTOGRAPH taken on a smartphone by a university student in Korea, natural light and honest colors, slightly imperfect framing, portrait 2:3. Never an illustration, never a 3D render, never a stock-photo gloss. Absolutely no text, letters, numbers, signs with writing, labels, logos or brand marks anywhere in the frame. No people, no faces, no hands.
+
+A student desk at night: a paper wall calendar lying on the desk with completely blank squares and nothing written, one yellow sticky note with nothing written on it, a cold paper cup of coffee and a smartphone face up with a plain glowing blank white screen. Warm desk lamp. A feeling of waiting.

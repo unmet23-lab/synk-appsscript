@@ -1,0 +1,3 @@
+A REAL PHOTOGRAPH taken on a smartphone by a university student in Korea, natural light and honest colors, slightly imperfect framing, portrait 2:3. Never an illustration, never a 3D render, never a stock-photo gloss. Absolutely no text, letters, numbers, signs with writing, labels, logos or brand marks anywhere in the frame. No people, no faces, no hands.
+
+Early morning on a university sports field: a single retractable queue barrier and a few orange cones marking a long line where nobody is standing, one folding table far away still without anything on it. Long soft shadows, misty cold light, huge empty space. Lonely and comical.

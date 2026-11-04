@@ -1,0 +1,3 @@
+A REAL PHOTOGRAPH taken on a smartphone by a university student in Korea, natural light and honest colors, slightly imperfect framing, portrait 2:3. Never an illustration, never a 3D render, never a stock-photo gloss. Absolutely no text, letters, numbers, signs with writing, labels, logos or brand marks anywhere in the frame. No people, no faces, no hands.
+
+Straight-on close view of an empty notice board inside a Korean university student union hall: warm natural cork board filling almost the whole frame, thin light wood frame visible only at the very edges, a few old empty pushpin holes, a few colored pushpins stuck with nothing on them. Soft warm indoor light from the left. Completely empty, no paper on it.

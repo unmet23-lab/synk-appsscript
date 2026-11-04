@@ -95,6 +95,17 @@ export function townCheckAnswers({events=[],items,now=Date.now()}={}){
 //   L2 = TOPIK I 난도 2 이상에서 3개 이상을 2/3 이상, 또는 그 자리의 TOPIK I에서 6개 이상을 5/6 이상 · 나머지 L1.
 // 학습 기록이 다 읽히지 않았으면(evidenceComplete가 참이 아니면) 제안 없이 L1. 목표 급·시험일은 쓰지 않는다(능력이 아니다).
 // 독립 여부는 Trail 색인 그대로다(처음 보는 계열·도움 없음·소리 전달·빼기 — 서버 판정과 같은 규칙). 맞고 틀림은 기기 기록대로 본다(제안일 뿐이다).
+// 3급 가까이(11-04, 게시판 해독 해금 — 결정 표): 가장 최근 TOPIK II 첫 답 6개 가운데 4개 이상. 새 문턱을 짓지 않고 입장 길 ②(town-entry-r1)와 같은 말을 쓴다.
+// 급수가 아니다 — 화면에 급수로 말하지 않는다. 독립 여부는 placeTownLevels와 같은 색인이고, 기록이 다 읽히지 않았으면 거짓(잠김).
+export const TOPIK2_NEAR=Object.freeze({last:6,need:4});
+export function topik2Near({events=[],evidenceComplete=false,now=Date.now()}={}){
+ if(evidenceComplete!==true)return false;
+ const index=trail.createIndex({scope:SCOPE}),rows=[],since=now-TOWN_CHECK_POLICY.windowDays*DAY;
+ const ordered=(Array.isArray(events)?events:[]).map((event,order)=>({event,order,at:Date.parse(event?.at)})).filter(row=>record(row.event)&&Number.isFinite(row.at)).sort((a,b)=>a.at-b.at||a.order-b.order);
+ for(const {event} of ordered){let row=null;try{row=index.add(event);}catch{row=null;}if(row)rows.push(row);}
+ const two=rows.filter(row=>!row.omitted&&row.independent===true&&row.attemptNo===1&&row.measure?.skillId?.startsWith('ko2.')&&Date.parse(row.at)>=since&&Date.parse(row.at)<=now).slice(-TOPIK2_NEAR.last);
+ return two.length>=TOPIK2_NEAR.last&&two.filter(row=>row.verdict==='correct').length>=TOPIK2_NEAR.need;
+}
 export const PLACEMENT_LEVELS=Object.freeze(['L1','L2','L3','L4']);
 export function placeTownLevels({events=[],evidenceComplete=false,now=Date.now()}={}){
  const flat={reading:'L1',listening:'L1'};

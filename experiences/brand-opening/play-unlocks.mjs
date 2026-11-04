@@ -3,6 +3,9 @@
 // 잠긴 놀이도 목록에 이름과 「이야기에서 열려요 — 여는 자리」 한 줄로 보인다(무엇이 남았는지 알아야 다음 이야기를 열 까닭이 된다).
 // 바람길 · 한글 만나기 · 말의 리듬은 이 표 전부터 열려 있던 놀이라 그대로 둔다 — 말의 리듬은 축제 무대 연습 회차가 생기면 그 기록으로 옮긴다(11-1 순서 ②).
 export const PLAY_UNLOCKS = Object.freeze({
+  // 게시판 해독(11-04, 설계 board-decode/설계.md 7절): 이야기가 아니라 실력 기록으로 열린다 — 가장 최근 TOPIK II 첫 답 6개 가운데 4개(싱크타운 입장 길 ②와 같은 말).
+  // 그 수는 오답으로 도로 떨어질 수 있어, 한 번 「새로 열림」을 본 놀이는 닫지 않는다(sticky). 잠김 글은 「이야기에서 열려요」가 아니다(lockOnly).
+  board: Object.freeze({ where: 'play.locked.level', lockOnly: true, sticky: true, open: (record) => record.topik2Near === true }),
   // 주문 폭주: 싱크타운 카페 알바 시작에서 열린다. 지금 앱의 싱크타운 카페 이야기는 첫 방문(cafe-apply) 하나라 그 완료를 기록으로 읽는다 —
   // 1화 뒤 카페 알바 장면이 생기면 그 장면의 기록으로 바꾼다.
   order: Object.freeze({ where: 'play.where.cafe', open: (record) => record.cafeVisits >= 1 }),
@@ -29,11 +32,11 @@ export const PLAY_UNLOCKS = Object.freeze({
 export const PLAY_REPLACED_BY = Object.freeze({ runner: 'subway' });
 
 /** 홈이 들고 있는 생활 진도(updateLearning의 summary)에서 해금에 쓰는 기록만. 아직 못 읽었으면 null(잠김으로 본다). */
-export function playRecord(learningData) {
+export function playRecord(learningData, extra = null) {
   const summary = learningData?.summary;
   if (!summary || summary.status?.phase === 'loading') return null;
   const packs = Array.isArray(summary.packs) ? summary.packs : [];
-  return Object.freeze({ cafeVisits: Number(summary.cafe?.completed) || 0, lessons: Number(summary.completed) || 0, greetingLessons: Number(packs.find((pack) => pack?.id === 'greetings')?.completed) || 0, directionsDone: Number(packs.find((pack) => pack?.id === 'directions')?.completed) || 0 });
+  return Object.freeze({ topik2Near: extra?.topik2Near === true, cafeVisits: Number(summary.cafe?.completed) || 0, lessons: Number(summary.completed) || 0, greetingLessons: Number(packs.find((pack) => pack?.id === 'greetings')?.completed) || 0, directionsDone: Number(packs.find((pack) => pack?.id === 'directions')?.completed) || 0 });
 }
 
 /** 「놀이」 목록의 차례. 대신하는 놀이가 열렸으면 앞 놀이의 자리에 놓고 앞 놀이는 뺀다. */
@@ -48,10 +51,11 @@ export function playOrder(ids, record) {
 }
 
 /** 놀이 하나의 상태: { open } 또는 { open:false, where }. 규칙이 던지거나 기록이 없으면 잠김. */
-export function playState(id, record) {
+export function playState(id, record, seen = null) {
   const rule = PLAY_UNLOCKS[id];
   if (!rule) return { open: true };
+  if (rule.sticky && Array.isArray(seen) && seen.includes(id)) return { open: true };
   let open = false;
   try { open = !!record && rule.open(record) === true; } catch { open = false; }
-  return open ? { open: true } : { open: false, where: rule.where };
+  return open ? { open: true } : { open: false, where: rule.where, ...(rule.lockOnly ? { lockOnly: true } : {}) };
 }

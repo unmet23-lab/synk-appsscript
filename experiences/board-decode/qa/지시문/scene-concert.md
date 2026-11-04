@@ -1,0 +1,3 @@
+A REAL PHOTOGRAPH taken on a smartphone by a university student in Korea, natural light and honest colors, slightly imperfect framing, portrait 2:3. Never an illustration, never a 3D render, never a stock-photo gloss. Absolutely no text, letters, numbers, signs with writing, labels, logos or brand marks anywhere in the frame. No people, no faces, no hands.
+
+Night outdoor university festival concert seen from far back in the empty grass: warm stage lights and colored beams glowing in light mist, soft bokeh, the stage far away and out of focus so that no performer is recognizable, confetti in the air. Exciting and a little painful to have missed.

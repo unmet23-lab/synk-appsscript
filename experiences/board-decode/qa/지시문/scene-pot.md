@@ -1,0 +1,3 @@
+A REAL PHOTOGRAPH taken on a smartphone by a university student in Korea, natural light and honest colors, slightly imperfect framing, portrait 2:3. Never an illustration, never a 3D render, never a stock-photo gloss. Absolutely no text, letters, numbers, signs with writing, labels, logos or brand marks anywhere in the frame. No people, no faces, no hands.
+
+A white event tent on a university sports field at midday: on a long folding table a huge dented silver cooking pot, empty, with only a little red sauce left at the bottom and a ladle resting inside, stacks of unused paper bowls beside it. Grey daylight, a few drops on the table. A little funny and sad.
