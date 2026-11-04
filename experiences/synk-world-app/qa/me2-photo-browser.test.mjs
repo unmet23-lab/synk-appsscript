@@ -291,7 +291,7 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   tamper=data=>({...data,status:'off'});
   await openMe2();await page.locator('.me2-note').waitFor();
   assert.match(await page.locator('.me2-note').first().textContent(),/쉬고/);
-  assert.equal(await page.locator('[data-me2="order-look"],[data-me2="order-scene"],.me2-foot [data-me2="again"]').count(),0,'쉬는 동안에는 새로 맡기지 않는다');
+  assert.equal(await page.locator('[data-me2="order-look"],[data-me2="order-scene"],[data-me2="redo"],.me2-foot [data-me2="again"]').count(),0,'쉬는 동안에는 새로 맡기지 않는다');
   // (기준을 바꾸며 옛 룩은 지웠다 — 그래서 여기서는 옷장 칸 자체가 없다.)
   assert.equal(await hanger('outfit-bomber').count(),0,'안 맡긴 옷은 쉬는 동안 안 보인다');
   assert.ok(await page.locator('[data-me2="erase"]').count(),'쉬는 동안에도 지울 수 있다');
