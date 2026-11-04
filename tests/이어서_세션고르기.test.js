@@ -246,6 +246,68 @@ test('상태: 유호님 지시 대기 신호는 하나라도 있으면 대기다
   assert.equal(고르기.부모({ spawnedFrom: '{깨짐' }), null);
 });
 
+test('상태: 앱 요약이 도구 응답·한도 풀림만 기다린다고 적었으면 유호님 지시 대기가 아니다(11-04)', () => {
+  const 요약 = (글, 범주 = 'blocked') => 기록({ postTurnSummary: { status_category: 범주, needs_action: 글 } });
+  for (const 글 of [
+    "Argon's response on the missing TOPIK II level 3-4 records", // 11-04 실제 오분류
+    '주간 사용 한도가 풀린 뒤 세션 재개 (화면 검수 · WORLD 공개 · talk 굽기 · 운영 반영 · 기록)', // 10-30 실제
+    'waiting on Argon code-review result before staged release', // 앱 요약이 쓰는 꼴
+    '아르곤 검수 결과 기다림',
+    '아르곤의 응답',
+    'GPT 검수 응답 대기',
+    'CI 결과 기다리는 중',
+    'CI 통과 대기',
+    'Fable 최종 검수 결과',
+    '백그라운드 작업 끝나기를 기다림',
+    'background task result',
+    'resume once the weekly limit resets',
+  ]) {
+    const s = 고르기.상태(요약(글));
+    assert.equal(s.대기, false, 글);
+    assert.equal(s.도구기다림, true, 글);
+  }
+  for (const 글 of [
+    /* 실제 기록의 말 — 도구 이름·「results」·「세션」·「한도」가 들어 있어도 사람 일이다 */
+    'PC 재부팅 후 GPT 채팅에서 재개 말하기; 담당 세션에서 영상판과 홈 칸 덧니 선배 판 승인 여부 답하기',
+    '유호 to pick a number from the scan results',
+    "유호's answers: allow B8 to use the ChatGPT account memory for recording, and allow B6 to handle this PC's Claude app screen",
+    'press the new coordination session card task_b4476b44 to start the talk push and server rollout',
+    'ego 브라우저에 claude.ai 로그인 (한도가 남은 계정, 다른 세션이 쓰지 않는 계정)',
+    '침대 이불(제품)을 블렌더 렌더로 바꿀지 결정',
+    '공개 배포 승인 기다림',
+    /* 도구 이름으로 시작해도 사람 일이 섞이면 대기로 남긴다 */
+    '아르곤 검수 결과 보고 올릴지 결정',
+    'GPT 응답 확인 후 「올려」 답하기',
+    'Argon response — confirm and post it',
+    'Codex 앱에서 결과 붙여 넣기',
+    'Codex 앱에서 결과 가져오기',
+    'Gemini 결과 고르기',
+    'CI 빨간불 고칠지 정하기',
+    'GPT 구독 결제',
+    /* 무엇이 더 남았는지 모르는 글은 도구 기다림으로 보지 않는다 */
+    '아르곤 응답; 슬라이드 고치기',
+    '검수 결과 기다림',
+    '다음 차례 대기',
+    'Review the Argon result',
+  ]) {
+    const s = 고르기.상태(요약(글));
+    assert.equal(s.대기, true, 글);
+    assert.equal(s.도구기다림, false, 글);
+  }
+  /* 세션이 직접 물은 마무리 상자는 말과 상관없이 대기다. 요약의 말이 도구 기다림이어도 그렇다. */
+  const 직접물음 = 고르기.상태(
+    기록({ turnWrapUp: { description: 'x', needsUser: '아르곤 검수 결과' }, postTurnSummary: { status_category: 'blocked', needs_action: '아르곤 검수 결과' } }),
+  );
+  assert.equal(직접물음.대기, true);
+  assert.equal(직접물음.도구기다림, false);
+  const 상자와도구 = 고르기.상태(기록({ turnWrapUp: { description: 'x', needsUser: '어느 안으로 할까요?' }, postTurnSummary: { status_category: 'blocked', needs_action: 'GPT 응답' } }));
+  assert.equal(상자와도구.대기, true);
+  assert.equal(상자와도구.기다림, '어느 안으로 할까요?');
+  /* 빈칸은 도구 기다림이 아니다 — blocked인데 할 일이 비었으면 지금처럼 대기다. */
+  assert.equal(고르기.상태(요약('')).대기, true);
+  assert.equal(고르기.상태(요약('')).도구기다림, false);
+});
+
 /* ── 나누기 ──────────────────────────────────────────────────────────── */
 
 function 판(기록들, 끝들 = new Map(), 덧 = {}) {
@@ -273,6 +335,83 @@ test('나누기: 한도로 끊긴 세션은 보내고, 승인을 기다리는 �
     assert.equal(r.유호님차례.find((s) => s.id === 승인뒤한도.sessionId).이유, '그 뒤 사용량 한도로 끊김');
   }
   assert.equal(판([한도]).보냄[0].이유, '사용량 한도로 끊김');
+});
+
+test('나누기: 도구 응답만 기다리던 세션은 유호님 차례가 아니라 끝난 모양대로 나뉜다(11-04 지하철 환승 러시)', () => {
+  const 도구글 = "Argon's response on the missing TOPIK II level 3-4 records";
+  const 도구 = (덧 = {}) => 기록({ postTurnSummary: { status_category: 'blocked', needs_action: 도구글, summarizes_uuid: 'u-도구' }, ...덧 });
+  const 끝남 = { 종류: '끝남', 시각: 지금 - 60 * 분 };
+
+  /* 실제 사례 — 「아르곤을 기다립니다」로 차례를 끝낸 뒤 검수 실패 알림이 들어왔고, 답하지 못한 채 끊겼다 */
+  const 실패알림 = '<task-notification>\n<status>failed</status>\n<summary>Background command "공개 후보 아르곤 검수" failed with exit code 4</summary>\n</task-notification>';
+  const 답못함 = 도구();
+  const 답못함끝 = 고르기.끝판정([답('아르곤을 기다립니다.', 지금 - 40 * 분), 사람(실패알림, 지금 - 30 * 분)]);
+  assert.equal(답못함끝.종류, '답없음');
+
+  const 쉬는중 = 도구();
+  const 끝남도구완료 = 도구({ postTurnSummary: { status_category: 'completed', needs_action: 도구글, summarizes_uuid: 'u-완료' } });
+  const 고정도구 = 도구({ isStarred: true });
+  const 멈춘도구 = 도구({ lastTurnCutShort: true });
+  const 방금도구 = 도구({ lastActivityAt: 지금 - 5 * 분 });
+  const 오래도구 = 도구({ lastActivityAt: 지금 - 8 * 일 });
+  const 부모도구 = 도구();
+  const 곁일함 = 기록({ spawnedFrom: JSON.stringify({ sessionId: 부모도구.sessionId, taskId: 'task_1' }) });
+  /* 사람 일이 섞인 세션은 끊겼어도 그대로 유호님 차례다 */
+  const 사람일 = 기록({ postTurnSummary: { status_category: 'blocked', needs_action: '아르곤 검수 결과 보고 올릴지 결정' } });
+
+  const 끝들 = new Map([
+    [답못함.sessionId, 답못함끝],
+    [쉬는중.sessionId, 끝남],
+    [끝남도구완료.sessionId, 끝남],
+    [고정도구.sessionId, 끝남],
+    [멈춘도구.sessionId, { 종류: '멈춤', 시각: 지금 - 60 * 분 }],
+    [방금도구.sessionId, { 종류: '끝남', 시각: 지금 - 5 * 분 }],
+    [오래도구.sessionId, { 종류: '끝남', 시각: 지금 - 8 * 일 }],
+    [부모도구.sessionId, 끝남],
+    [곁일함.sessionId, 끝남],
+    [사람일.sessionId, 답못함끝],
+  ]);
+  const 보고들 = new Map([[끝남도구완료.sessionId, { 글: 깨끗한보고, 온전: true, uuid: 'u-완료' }]]);
+  for (const 전부 of [false, true]) {
+    const r = 판([답못함, 쉬는중, 끝남도구완료, 고정도구, 멈춘도구, 방금도구, 오래도구, 부모도구, 곁일함, 사람일], 끝들, {
+      전부,
+      보고들,
+      busy: [곁일함.sessionId],
+      워크트리상태: () => ({ 깨끗: true }),
+    });
+    const 보냄 = (s) => r.보냄.find((x) => x.id === s.sessionId);
+
+    assert.equal(칸(r, 답못함.sessionId), '보냄');
+    assert.equal(보냄(답못함).이유, '받은 글에 답하지 못하고 멈춤');
+    assert.equal(보냄(답못함).도구기다림, 도구글, '무엇을 기다리던 세션인지 보고에 쓸 수 있게 남긴다');
+
+    assert.equal(칸(r, 쉬는중.sessionId), '보냄');
+    assert.match(보냄(쉬는중).이유, /도구 응답을 기다리며 쉬는 중/);
+
+    /* 보고가 깨끗해도 끝난 일이 아니다 — 바로 보관하지 않고 깨운다 */
+    assert.equal(칸(r, 끝남도구완료.sessionId), '보냄');
+    assert.equal(r.보관.some((x) => x.id === 끝남도구완료.sessionId), false);
+
+    /* 고정 칸은 「일을 끝낸 세션」이다. 기다리던 세션은 깨운다 */
+    assert.equal(칸(r, 고정도구.sessionId), '보냄');
+    assert.equal(r.고정.length, 0);
+
+    /* 곁 세션이 일하면 지금처럼 기다린다 */
+    assert.equal(칸(r, 부모도구.sessionId), '곁세션대기');
+
+    assert.equal(칸(r, 사람일.sessionId), '유호님차례');
+    assert.equal(r.유호님차례.find((x) => x.id === 사람일.sessionId).이유, '그 뒤 받은 글에 답하지 못하고 멈춤');
+    assert.equal(r.유호님차례.length, 1, '도구 기다림은 유호님 차례에 들지 않는다');
+
+    assert.equal(칸(r, 방금도구.sessionId), '방금끝남');
+    if (전부) {
+      assert.equal(칸(r, 멈춘도구.sessionId), '보냄');
+      assert.equal(칸(r, 오래도구.sessionId), '보냄');
+    } else {
+      assert.equal(칸(r, 멈춘도구.sessionId), '직접멈춤', '사람이 멈춘 세션은 지금처럼 건드리지 않는다');
+      assert.equal(칸(r, 오래도구.sessionId), '오래쉼');
+    }
+  }
 });
 
 test('나누기: 일하는 중(전체 id·앞부분), 이 세션, 보관된 세션은 건드리지 않는다', () => {
