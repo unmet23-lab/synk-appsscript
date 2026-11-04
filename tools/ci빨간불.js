@@ -421,7 +421,7 @@ function 예약명령({ sh = 실행기() } = {}) {
     ps: [
       `$a = New-ScheduledTaskAction -Execute ${따옴(파이썬)} -Argument ${따옴(인자)} -WorkingDirectory ${따옴(공용)}`,
       `$t = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes ${예약간격분})`,
-      '$s = New-ScheduledTaskSettingsSet -StartWhenAvailable -DontStopIfGoingOnBatteries -AllowStartIfOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes 5) -MultipleInstances IgnoreNew',
+      '$s = New-ScheduledTaskSettingsSet -StartWhenAvailable -DontStopIfGoingOnBatteries -AllowStartIfOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes 5) -MultipleInstances IgnoreNew -Priority 5',
       `Register-ScheduledTask -TaskName ${따옴(예약이름)} -Action $a -Trigger $t -Settings $s -Description ${따옴('master CI가 빨개지거나 다시 초록이 되면 텔레그램 한 통(AI 없음). tools/ci빨간불.js')} -Force | Out-Null`,
       `(Get-ScheduledTask -TaskName ${따옴(예약이름)}).State`,
     ].join('; '),

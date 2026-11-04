@@ -230,6 +230,7 @@ test('예약명령 — 공용 작업본 경로의 숨김 실행기로 10분마�
   assert.ok(m.인자.includes(path.join(m.공용, 'tools', 'ci빨간불.js')));
   assert.match(m.ps, /-RepetitionInterval \(New-TimeSpan -Minutes 10\)/);
   assert.match(m.ps, /-TaskName 'SYNK CI 빨간불 알림'/);
+  assert.match(m.ps, /-Priority 5/, '우선순위 7이면 CPU가 꽉 찰 때 5분 한도에 잘려 알림이 빠진다');
 });
 
 test('예약명령 — 운영 사본이 있으면(공용 git 폴더의 synk-ops-path) 그 경로의 도구로 건다', () => {
