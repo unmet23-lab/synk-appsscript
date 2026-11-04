@@ -880,6 +880,12 @@
 - 고침: `POST https://api.elevenlabs.io/v1/voices/add/<public_owner_id>/<voice_id>`로 내 목록에 더한 뒤 `POST /v1/text-to-speech/<voice_id>?output_format=mp3_44100_128`에 `{text, model_id:"eleven_v4", language_code:"ko", voice_settings:{stability}}`를 보낸다. 쓴 크레딧은 응답 머리글 `character-cost`로 읽는다. 키 `synk-claude`에는 `user_read`가 없어 `/v1/user/subscription`이 401이니 잔액은 앱 Subscription 화면에서 읽는다. 닮은 목소리는 `POST /v1/similar-voices`(form `audio_file` · `top_k`)로 찾는다. 기능 · 값 · 조건은 [일레븐랩스 기능표](../일레븐랩스_기능표.md).
 - 다시 확인: 49자 한 줄 머리글 22, 주문 26줄 합 609크레딧. 도구는 `experiences/order-rush/qa/world-campus-20261103/손님목소리.mjs 공식`.
 
+### 일레븐 v4로 「빠른 말」을 시키면 꼬리표 · speed로 안 빨라지는 목소리가 있다 — 구운 뒤 줄인다 (2026-11-05 Claude)
+- 증상: 식당 이모 한 줄(22음절)을 공유 목소리 넷으로 구우니 초당 4.3~4.9음절이었다. `[very fast, rushed …]` · `[speaking extremely fast, run-together words]` 꼬리표에 `voice_settings.speed` 1.2를 주고 문장부호를 빼도 4.2~4.8음절이었다. 힉스필드 프리셋 Julian은 꼬리표 없이도 6~7음절이었으니(현장노트 higgsfield) 목소리마다 다르다.
+- 원인: 모른다. v4가 speed를 듣는지는 재지 않았다. 값(꼬리표 포함 44크레딧)은 그대로 나갔다.
+- 고침: 구운 뒤 `rubberband=tempo=1.5:pitch=1.0:formant=preserved`로 줄인다(이 PC ffmpeg에 있다). 초당 6.6음절, 음높이는 그대로다. 같은 필터 사슬에 `highpass=f=220,lowpass=f=5200,aecho=…`를 이으면 건너편에서 들리는 말이 된다. 귀로는 아직 안 들었다.
+- 다시 확인: `silencedetect=noise=-40dB:d=0.12`로 말 구간을 재고 음절 수로 나눈다(`.tmp/dream-path-20261102/소리/이모굽기2.py` · `15판소리.py`).
+
 ### 화자 임베딩 닮음으로 AI 목소리가 같은 사람인지는 못 가른다 — 들려 드릴 후보를 좁히는 데만 쓴다 (2026-11-04 Claude)
 - 증상: CosyVoice에 딸린 CAM++(`campplus.onnx`)로 재니 같은 목소리의 미리듣기 ↔ 한국어 줄이 0.65~0.78, 서로 다른 목소리의 한국어 줄끼리가 0.58~0.79로 겹쳤다.
 - 원인: 언어가 바뀌면 같은 화자도 값이 내려가고, AI 프리셋끼리는 결이 비슷해 다른 사람도 값이 높다(추정).
