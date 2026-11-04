@@ -35,7 +35,7 @@ const items = [];
 for (const [src, pub] of FILES) {
   const a = show(BASE, src), b = show(NEW, src);
   if (!b) throw Error('내 판에 없다: ' + src);
-  if (a && a.equals(b)) throw Error('바뀌지 않았다: ' + src);
+  if (a && a.equals(b)) continue;   // 공개한 뒤의 고침은 바뀐 파일만 싣는다
   for (const [dir, bytes] of [['base', a], ['new', b]]) {
     if (!bytes) continue;
     const file = path.join(OUT, dir, pub);

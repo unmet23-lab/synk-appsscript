@@ -1,7 +1,7 @@
 // 말의 리듬 — WORLD 캠퍼스 판(축제 무대 연습실, 2026-11-04)의 사건마다 소리 · 빛 · 움직임. 설계는 qa/world-campus-20261104/설계.md.
 // app.mjs의 WORLD 분기만 이 파일을 부른다(data-host=world일 때 동적 import). LAB 화면은 불러오지 않는다.
 // 규칙 · 보면 · 판정 · 학습 기록 · 음성 재생 길(audio.mjs)은 건드리지 않는다 — 키음은 곡과 같은 AudioContext에 따로 버스를 붙여(음악 크기 길 밖)
-// 누른 순간에 내고, 입구 미리듣기 · 결과 소리는 따로 만든 화면 소리 문맥에서 낸다(곡 문맥은 결과에서 닫힌다).
+// 누른 순간에 내고, 입구 미리듣기 · 결과 소리는 따로 만든 화면 소리 문맥에서 낸다(곡 문맥은 결과에서 재운다).
 import { createSfx } from './world-sfx.mjs';
 import * as fx from './world-fx.mjs';
 import { loadRecording } from './audio.mjs';
@@ -29,11 +29,23 @@ const holdPlayback = (on) => {
 export function createWorldPlay({ music, stage, state, tracks, sound }) {
   // 공개 직후 10분 안에는 새 app.mjs가 캐시의 옛 stage.mjs와 만날 수 있다(모듈끼리는 ?v= 없이 부른다) — 그러면 이 판을 켜지 않고 앞 판으로 돈다
   if (typeof stage?.setHush !== 'function') return null;
-  let ui = null, uiSfx = null, game = null, cue = null, keysLate = false, preview = null, previewToken = 0, previewFetch = null;
+  let ui = null, uiSfx = null, game = null, cue = null, keysLate = false, preview = null, previewToken = 0, previewLoad = null, carriedLoad = null;
   let curtainToken = 0, results = null, beatTimer = 0, curtainDone = Promise.resolve();
   const appSound = () => { try { return sound()?.getPref ? sound().getPref('sound') !== false : true; } catch { return true; } };
   const celebrate = () => { try { return sound()?.getPref ? sound().getPref('celebrate') !== false : true; } catch { return true; } };
   const keysOn = () => recall(KEYS_KEY) !== 'off' && !keysLate && appSound();
+
+  // 곡 문맥을 다시 쓴다: 「한 곡 더」 · 다시 듣기마다 새로 만들면 장치 묻기로 누른 직후 멈춘다. 재울 때 키음 · 네 박 · 안내음 버스를 끊어 예약된 소리가 다음 곡에서 깨어나지 않게 한다
+  music.keepContext = true;
+  music.onPark = () => { for (const sfx of [game, cue]) { try { sfx?.bus.out.disconnect(); } catch { /* 이미 끊김 */ } } game = null; cue = null; };
+  // 미리듣기가 받던 곡으로 바로 시작하면 처음부터 다시 받지 않고 이어 받는다(곡 하나를 두 번 받지 않게)
+  music.recordingSource = (track, ctx, signal) => {
+    const carried = carriedLoad;
+    carriedLoad = null;
+    if (carried?.url !== track.audioUrl) { carried?.ctrl.abort(); return loadRecording(track, ctx, signal); }
+    if (signal.aborted) carried.ctrl.abort(); else signal.addEventListener('abort', () => carried.ctrl.abort(), { once: true });   // 준비 중에 나가면 끊는다 — 받기가 끝날 때까지 시작 단추가 막히지 않게
+    return carried.load;
+  };
 
   // WORLD 「움직임 줄이기」(부모 창 설정)를 이 문서에 옮겨 적는다: 무대(worldCalm) · 판정 글자(.calm) · CSS 움직임(data-w-calm)
   function syncMotion() {
@@ -100,9 +112,11 @@ export function createWorldPlay({ music, stage, state, tracks, sound }) {
     if (!fx.motionOn() || state.reduced) return;
     beatTimer = setTimeout(() => { void art.offsetWidth; art.setAttribute('data-beat', ''); }, Math.max(0, delayMs));
   }
-  function stopPreview() {
+  function stopPreview({ keepLoad = false } = {}) {
     previewToken += 1;
-    previewFetch?.abort(); previewFetch = null;   // 받는 중인 곡은 끊는다(곡을 빠르게 바꾸거나 바로 시작할 때 다 받지 않게)
+    if (!keepLoad) previewLoad?.ctrl.abort();   // 받는 중인 곡은 끊는다(곡을 빠르게 바꿀 때 다 받지 않게) — 시작할 때만 곡 문맥에 넘긴다
+    else { if (carriedLoad !== previewLoad) carriedLoad?.ctrl.abort(); carriedLoad = previewLoad; }
+    previewLoad = null;
     const p = preview; preview = null;
     $$('#track-grid .song.w-playing').forEach((b) => b.classList.remove('w-playing'));
     if (!p) return;
@@ -120,8 +134,12 @@ export function createWorldPlay({ music, stage, state, tracks, sound }) {
     $(`#track-grid .song[data-track="${id}"]`)?.classList.add('w-playing');
     try {
       await ctx.resume();
-      previewFetch = new AbortController();
-      const buffer = await loadRecording(track, ctx, previewFetch.signal);
+      if (token !== previewToken) return;
+      const ctrl = new AbortController(), load = loadRecording(track, ctx, ctrl.signal), mine = { url: track.audioUrl, ctrl, load };
+      const done = () => { if (previewLoad === mine) previewLoad = null; };
+      previewLoad = mine;
+      load.then(done, done);
+      const buffer = await load;
       if (token !== previewToken || state.screen !== 'lobby') return;
       const beats = track.beatTimes, at = Math.floor((beats.length * 0.42) / 4) * 4, from = beats[at] ?? track.duration * 0.42;
       const src = ctx.createBufferSource(), gain = ctx.createGain(), t0 = ctx.currentTime + 0.06, len = 10;
@@ -263,7 +281,8 @@ export function createWorldPlay({ music, stage, state, tracks, sound }) {
       });
       // 배경 음악을 끄면 미리듣기도 멈춘다(앱 손잡이가 state를 바꾼 뒤에 본다)
       for (const b of $$('[data-sound-toggle]')) b.addEventListener('click', () => setTimeout(() => { if (!state.musicOn) stopPreview(); }, 0));
-      document.addEventListener('visibilitychange', () => { if (document.hidden) stopPreview(); });
+      // 숨으면 곡 문맥도 놓는다(곡 중에는 앱의 멈춤이 맡는다) — 숨어 있는 동안 아이폰이 끼어든 문맥을 다시 쓰지 않게
+      document.addEventListener('visibilitychange', () => { if (document.hidden) { stopPreview(); if (state.screen !== 'game') music.stop(); music.dropSpare?.(); } });
       // 화면 소리 문맥은 깨어날 때까지 손짓마다 깨운다(터치의 pointerdown은 활성화 손짓이 아니다 — world-sound.mjs와 같은 네 사건)
       const GESTURES = ['pointerdown', 'touchend', 'click', 'keydown'];
       const first = () => { const c = uiContext(); c?.resume().then(() => { if (c.state === 'running') for (const type of GESTURES) removeEventListener(type, first, true); }).catch(() => {}); };
@@ -279,7 +298,7 @@ export function createWorldPlay({ music, stage, state, tracks, sound }) {
       curtainDone = fx.motionOn() ? curtain() : Promise.resolve();
     },
     /** 무대 연습 시작을 누른 순간: 미리듣기를 멈추고 불 켜지는 소리. */
-    starting() { stopPreview(); uiPlay('open'); $('#results .res-hero')?.classList.remove('w-zoom'); },
+    starting() { stopPreview({ keepLoad: true }); uiPlay('open'); $('#results .res-hero')?.classList.remove('w-zoom'); },
     stopPreview,
     /** 곡 문맥이 준비된 뒤 · 네 박 카운트 전: 키음 버스를 곡 문맥에 붙이고 카운트 소리를 바꾼다. 출력이 늦으면 그 판의 키음을 끄고 안내 글을 돌려준다. */
     roundReady() {
@@ -325,6 +344,6 @@ export function createWorldPlay({ music, stage, state, tracks, sound }) {
     /** 곡 끝 · 결과: 무대 끝 화음 → 문장 점 → 큰 숫자 → 박자 기록 굴림 → 5/5 도장. 탭하면 끝. */
     results(round) { runResults(round); },   // 세션 자리는 결과에서도 쥔다 — 「다시 듣기」 · 새 문장 확인도 듣기다. 입구로 돌아갈 때 푼다
     /** 곡 중간에 나갈 때. */
-    leave() { holdPlayback(false); stage.setHush(false); },
+    leave() { carriedLoad?.ctrl.abort(); carriedLoad = null; holdPlayback(false); stage.setHush(false); },
   };
 }
