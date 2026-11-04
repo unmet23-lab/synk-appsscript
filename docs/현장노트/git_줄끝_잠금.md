@@ -673,6 +673,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 열쇠나 `~/.ssh`를 고치지 않고 90초 간격으로 같은 명령을 다시 낸다. 11-04에는 세 번째에 올라갔다. 되풀이 틀을 쓸 때 성공은 첫 줄 「[올림]」, 이미 올라간 뒤의 다시 내기는 「[올릴 것 없음]」으로 가른다 — 「origin 확인」만 찾으면 성공을 못 알아보고 한 번 더 낸다. 막힌 줄은 「publickey」 · 「push가 거절」 · 「access rights」로 찾는다.
 - 다시 확인: `git log origin/master --grep=<커밋 제목>`에 나오고 `git status --short`가 빈다. 거절 뒤에 다시 냈을 때 커밋이 두 번 올라가지 않는다.
 
+### 잘 되던 push가 갑자기 `Permission denied (publickey)`로 멈춰도 열쇠부터 고치지 않는다 — GitHub 장애일 수 있다 (2026-11-04 Claude)
+- 증상: 11-04 18:50 공용 작업본 `바로올리기`가 「[멈춤] fetch 실패 — git@github.com: Permission denied (publickey)」로 멈췄다. 열쇠와 설정은 그대로이고 바로 전 실행은 같은 자리를 지나갔다. `ssh -v`에서 열쇠를 내밀었는데 서버가 받지 않았다.
+- 원인: GitHub 장애로 보인다. 같은 시각 상태 페이지에 Git Operations 저하와 「Incident with Pull Requests, Git Operations and Issues」(18:49 시작)가 떠 있었고, 열쇠는 계정 공개 목록에 그대로 있었으며 https 읽기는 됐다. 아무것도 바꾸지 않았는데 약 1분 뒤 풀렸다가 그다음 시도에서 또 막혔다(들쭉날쭉하다). GitHub 쪽 원인 발표는 확인하지 않았다.
+- 고침: 열쇠 · 권한 · 원격 주소를 건드리지 말고 ① `curl -s https://github.com/<계정>.keys`에 `~/.ssh/id_ed25519.pub`이 있는지, ② `https://www.githubstatus.com/api/v2/summary.json`에 사건이 있는지, ③ `git ls-remote https://…`가 되는지 본다. 셋 다 그렇다면 `ssh -T git@github.com`이 20초 간격으로 네 번 연달아 될 때만 바로올리기를 다시 돌리는 반복을 배경으로 건다(관련 시험이 1~2분이라 한 번 된 것만 보고 돌리면 시험 끝에 push에서 또 막혀 시험만 거듭 돈다). push 자리에서 막히면 「push가 거절됐다 — … access rights」로 나오므로 다시 할 조건에 이 글도 넣는다. 바로올리기 결과는 파이프 말고 파일로 받는다 — 윈도우에서 파이프 쪽 글은 끝에 잘려 마지막 실패 줄이 안 보일 수 있다. 다른 원인(윈도우 ssh의 키 권한)은 [현장 노트 · 윈도우 셸의 ssh 절](윈도우_셸.md#ssh)에 있다.
+- 다시 확인: `ssh -T git@github.com`이 「successfully authenticated」를 낸다. 이때 CI 빨강이 checkout 단계에서 함께 늘었으므로, 장애 시각의 checkout 실패는 코드 탓부터 찾지 않는다.
+
 ## 워크트리·연결 폴더·공간 정리
 
 ### 워크트리에서 `sync-atlas --all --local`이 Study 묶음의 `Cannot find module …/node_modules/esbuild`로 멈춰 날 사본(path-vr trail 등)을 쓰지 않는다 — Study 빌드만 esbuild를 저장소 뿌리 경로로 찾는다 (2026-10-31 Claude)

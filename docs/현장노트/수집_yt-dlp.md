@@ -18,6 +18,8 @@
 - 차례(잠금)를 기다리는 동안 댓글 · 몇 개의 검색은 Data API로(`commentThreads` 1단위 · `search.list` 100단위), exa 무료 몫은 금방 끝나니 숫자 확인은 공식 · 공개 API로 ([댓글 · 검색](#댓글--검색도-data-api로-읽으면-유튜브-차례잠금가-필요-없다--댓글은-commentthreads1단위-검색은-searchlist100단위라-꼭-필요한-것만-2026-10-26-claude) · [exa · 비메오](#웹-조사exa--비메오))
 - 네이버 데이터랩은 curl로 부르면 접근 오류 쪽만 온다(10-30) → ego에서 그 쪽을 연 뒤 `page.fetch`로 쇼핑인사이트 내부 주소를 부르고, 검색어 트렌드는 하루 단위로 받아 결과 그래프의 점에서 값을 읽는다 ([쇼핑](#네이버-데이터랩은-curl로-부르면-접근-오류-쪽만-온다--ego-쪽-안에서-pagefetch로-쇼핑인사이트-내부-주소를-부른다-2026-10-30-claude) · [검색어](#데이터랩-검색어-트렌드는-주월-단위와-qctype을-받지-않고-결과-숫자는-그래프-점에만-있다-2026-10-30-claude))
 - Steam 리뷰 JSON의 옛 주소 `appreviews/<appid>?json=1`이 10-31 확인 때 302로 상점 첫 화면에 넘어갔다 → 상점 페이지가 부르는 `ajaxappreviews/<appid>?…`로 받는다(응답 꼴 같음) ([자세히](#steam-리뷰-json의-옛-주소-appreviews가-상점-첫-화면으로-302된다--상점-페이지가-부르는-ajaxappreviews로-받는다-2026-10-31-claude))
+- `ajaxappreviews`에 `day_range` · `filter_offtopic_activity`를 붙이면 `filter=all`이 500이 난다(11-04) → 둘을 빼고, 옛 평가는 `date_range_type=include&start_date=…&end_date=…`로 받는다 ([자세히](#steam-ajaxappreviews에-day_range를-붙이면-filterall이-500이-난다--옛-평가는-날짜-구간으로-2026-11-04-claude))
+- App Store 공개 평가는 검색 API가 404여도 앱 주소의 id로 RSS를 바로 부르면 된다. 틀린 id는 오류 없이 0건이다(11-04) ([자세히](#app-store-공개-평가는-앱-주소의-id로-rss를-부른다--검색-api는-404-틀린-id는-오류-없이-0건-2026-11-04-claude))
 
 ## 목차
 
@@ -41,6 +43,8 @@
 - [공모전·디자인 레퍼런스 사이트](#공모전디자인-레퍼런스-사이트) — 공모전 모음 사이트 다섯 곳의 목록 주소·API와 본문 자르기, 지자체 공고 첨부 받기(한글 주소 · 새올), Cosmos 공개 컬렉션 GraphQL과 인기 신호
 - [웹 조사(exa · 비메오)](#웹-조사exa--비메오) — exa 무료 몫은 하위 조사 하나가 11~25번에 끝남, 비메오 공개 API
 - [Steam 리뷰 JSON의 옛 주소(`appreviews`)가 상점 첫 화면으로 302된다 — 상점 페이지가 부르는 `ajaxappreviews`로 받는다](#steam-리뷰-json의-옛-주소-appreviews가-상점-첫-화면으로-302된다--상점-페이지가-부르는-ajaxappreviews로-받는다-2026-10-31-claude)
+- [Steam `ajaxappreviews`에 `day_range`를 붙이면 `filter=all`이 500이 난다 — 옛 평가는 날짜 구간으로](#steam-ajaxappreviews에-day_range를-붙이면-filterall이-500이-난다--옛-평가는-날짜-구간으로-2026-11-04-claude)
+- [App Store 공개 평가는 앱 주소의 id로 RSS를 부른다 — 검색 API는 404, 틀린 id는 오류 없이 0건](#app-store-공개-평가는-앱-주소의-id로-rss를-부른다--검색-api는-404-틀린-id는-오류-없이-0건-2026-11-04-claude)
 
 ## yt-dlp
 
@@ -196,3 +200,17 @@
 - 원인: Steam이 옛 공개 리뷰 주소를 상점 첫 화면으로 돌린다(언제부터인지 · 다시 열릴지는 모름). 상점 페이지는 리뷰를 `ajaxappreviews`로 부른다.
 - 고침: `https://store.steampowered.com/ajaxappreviews/<appid>?filter=all|recent&language=english&num_per_page=100&cursor=*`로 받는다 — curl로 되고 JSON 꼴(`query_summary` · `reviews` · `cursor`)은 옛 주소와 같다. 전체 규모는 `language=all&num_per_page=1`의 `query_summary`. 도움 순(`filter=all`)은 최근 365일 안에서만 고르므로 오래된 평가는 날짜 구간으로 따로 받는다. 원자료에는 작성자 steamid · 닉네임이 들어 있어 공개 저장소에 올리지 않는다(이번엔 `SYNK-보관함/WORLD_게임방향_20261031/벤치마크_원자료/`).
 - 다시 확인: `curl -s -o /dev/null -w "%{http_code} %{redirect_url}" "https://store.steampowered.com/appreviews/413150?json=1"`이 아직 302인지, `ajaxappreviews/413150?filter=recent&language=english&num_per_page=1&cursor=*`가 200 JSON인지.
+
+### Steam `ajaxappreviews`에 `day_range`를 붙이면 `filter=all`이 500이 난다 — 옛 평가는 날짜 구간으로 (2026-11-04 Claude)
+- 증상: 이야기 게임 18개 평가를 `filter=all&day_range=9223372036854775807&filter_offtopic_activity=1`로 받았더니 모든 게임이 HTTP 500이었고, 같은 요청의 `filter=recent`만 200이었다.
+- 원인: 두 매개변수 가운데 어느 쪽 때문인지는 따로 재지 않았다. 함께 빼면 된다.
+- 고침: `filter=all&language=english&review_type=all&purchase_type=all&num_per_page=100&cursor=*`만 준다. 도움 순은 최근 365일 안에서만 고르므로(위 절) 옛 평가는 `date_range_type=include&start_date=1420070400&end_date=1735689600`을 더해 따로 받는다. 게임당 220~583건이 모였다. 원자료에는 작성자 정보가 있어 공개 저장소에 올리지 않는다(`SYNK-보관함/시즌1_이야기지도_20261104/벤치마크_원자료/`).
+- 다시 확인: `curl -s -o /dev/null -w "%{http_code}" "https://store.steampowered.com/ajaxappreviews/413150?filter=all&language=english&num_per_page=1&cursor=*"`가 200인지.
+
+## App Store
+
+### App Store 공개 평가는 앱 주소의 id로 RSS를 부른다 — 검색 API는 404, 틀린 id는 오류 없이 0건 (2026-11-04 Claude)
+- 증상: `https://itunes.apple.com/search?term=…&entity=software&country=us&limit=3`이 파이썬 urllib에서 HTTP 404였다. 기억으로 적은 id로 RSS를 부르면 오류 없이 빈 목록이 왔다(id 넷 모두 0건).
+- 원인: 검색 API가 왜 404인지는 재지 않았다. RSS는 없는 id에도 200과 빈 `feed`를 돌려준다.
+- 고침: 웹 검색으로 `apps.apple.com/…/id<숫자>` 주소를 먼저 찾아 그 id로 `https://itunes.apple.com/us/rss/customerreviews/page=<1~10>/id=<id>/sortby=mosthelpful|mostrecent/json`을 부른다. 쪽당 50건, 정렬마다 10쪽까지이고 둘을 합쳐 중복을 빼면 Mystic Messenger(id1116027365)가 924건이었다. 0건이면 실패로 보고 id부터 다시 찾는다.
+- 다시 확인: 같은 주소의 `feed.entry`가 50건인지.
