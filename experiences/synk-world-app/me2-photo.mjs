@@ -195,7 +195,7 @@ export function createMe2Photo({show,home,close,request,doc=globalThis.document,
   // 사진이 나온 뒤 처음 볼 때만 인화지가 어둠에서 떠오른다(움직임 줄이기에서는 그대로 보인다).
   const reveal=!stage.review&&revealed!==me.job_id;
   if(!stage.review)revealed=me.job_id;
-  const big=paired?`<div class="me2-pair">${pair.map(o=>`<button type="button" class="me2-print" data-me2="variant" data-variant="${o.variant}"><img src="${esc(o.url)}" alt="${esc(text(o.variant))}" ${reveal?'class="is-revealing"':''}><span class="me2-print-cap">${esc(text(o.variant))}</span></button>`).join('')}</div>`:`<figure class="me2-print me2-big"><img src="${esc(main?.url)}" alt="${esc(text(main?.variant))}" ${reveal?'class="is-revealing"':''}></figure>`;
+  const big=paired?`<div class="me2-pair">${pair.map(o=>`<button type="button" class="me2-print" data-me2="variant" data-variant="${o.variant}"><img src="${esc(o.url)}" alt="" ${reveal?'class="is-revealing"':''}><span class="me2-print-cap">${esc(text(o.variant))}</span></button>`).join('')}</div>`:`<figure class="me2-print me2-big"><img src="${esc(main?.url)}" alt="${esc(text(main?.variant))}" ${reveal?'class="is-revealing"':''}></figure>`;
   const others=paired?ordered.filter(o=>!pair.includes(o)).map(o=>`<button type="button" class="quiet-button" data-me2="variant" data-variant="${o.variant}">${esc(text(o.variant))}</button>`).join(''):`<div class="me2-variants" role="group">${ordered.map(o=>`<button type="button" class="me2-variant" data-me2="variant" data-variant="${o.variant}" aria-pressed="${o.variant===picked}"><img src="${esc(o.url)}" alt=""><span>${esc(text(o.variant))}</span></button>`).join('')}</div>`;
   return `${view.status==='off'?note(text('off')):''}<p class="me2-arrived" role="status">${esc(text('arrived'))}</p><h3 class="me2-h">${esc(text('isThisMe'))}</h3>${big}${others}
    ${me.low?note(text('lowNote')):''}${me.chosen_job&&me.chosen_job!==me.job_id&&(view.looks||[]).length?note(text('lookReset')):''}
@@ -340,7 +340,7 @@ export function createMe2Photo({show,home,close,request,doc=globalThis.document,
    const intake=await request({action:'intake',sha256:await sha256Hex(bytes),bytes:bytes.length,...(box?{face_box:box}:{})});
    if(intake.status==='full'){if(!alive())return;view={...view,capacity:{open:false,reopens_at:intake.reopens_at}};stage={name:'home'};clearPhoto();if(['ready','choose'].includes(view.me?.state))toast(text('busy',{date:dateText(intake.reopens_at,lang())}));paint();return;}
    if(intake.status==='limit'){if(!alive())return;stage={name:'pick',message:text('limit')};clearPhoto();paint();return;}
-   if(intake.status==='off'){if(!alive())return;stage={name:'home'};await refresh();return;}
+   if(intake.status==='off'){if(!alive())return;stage={name:'home'};clearPhoto();await refresh();return;}
    if(intake.status==='busy_same'){if(!alive())return;stage={name:'home'};clearPhoto();await refresh();return;}
    if(intake.status!=='upload')throw Error('intake');
    const put=await fetcher(intake.upload_url,{method:'PUT',headers:{'Content-Type':'image/jpeg','x-upsert':'false'},body:blob,credentials:'omit',redirect:'error'});
