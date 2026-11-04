@@ -37,8 +37,14 @@ const due = (row, now = Date.now()) => ['queued', 'running', 'publish-pending'].
 // Publish an already verified receipt first. Alternate current/recent work with
 // the oldest ready entry, so a stream of new pushes cannot starve the backlog.
 // Selection never deletes or passes an older commit.
-function nextItem(queue, head, attempted = new Set(), now = Date.now()) {
+function nextItem(queue, head, attempted = new Set(), now = Date.now(), requestedCommit = null) {
   const ready = queue.items.filter(row => due(row, now) && !attempted.has(row.commit));
+  if (requestedCommit !== null) {
+    const matches = queue.items.filter(row => row.commit === requestedCommit);
+    if (matches.length !== 1) throw Error('Choose one commit already registered in the local queue');
+    if (!attempted.has(requestedCommit) && matches[0].status === 'failed') throw Error('Register the failed commit with retry.cjs before verifying it again');
+    return ready.find(row => row.commit === requestedCommit);
+  }
   const oldest = queue.nextTurn === undefined ? attempted.size % 2 === 1 : queue.nextTurn === 'oldest';
   return ready.find(row => row.status === 'publish-pending') ||
     (oldest ? ready[0] : ready.find(row => row.commit === head) || ready.at(-1));
@@ -71,16 +77,22 @@ function extendQueue(state, head, commits) {
   }
   state.seen = head; return state;
 }
-function acquire(state) {
+function acquire(state, { reclaimDead = true } = {}) {
   const file = path.join(state, 'worker.lock');
   if (fs.existsSync(file)) {
+    if (!reclaimDead) throw Error('Local verifier is already running; the scheduled worker recovers an abandoned lock');
     const owner = read(file); let alive = true;
     try { process.kill(owner.pid, 0); } catch (error) { if (error.code === 'ESRCH') alive = false; else throw error; }
     if (alive) throw Error('Local verifier is already running');
     // Remove only the dead worker's exact lock, never a process selected by its name.
     fs.unlinkSync(file);
   }
-  const fd = fs.openSync(file, 'wx'); fs.writeFileSync(fd, JSON.stringify({ pid: process.pid, createdAt: new Date().toISOString() })); fs.closeSync(fd);
+  let fd;
+  try { fd = fs.openSync(file, 'wx'); }
+  catch (error) { if (error.code === 'EEXIST') throw Error('Local verifier is already running'); throw error; }
+  try { fs.writeFileSync(fd, JSON.stringify({ pid: process.pid, createdAt: new Date().toISOString() })); }
+  catch (error) { fs.closeSync(fd); fs.unlinkSync(file); throw error; }
+  fs.closeSync(fd);
   return () => { if (read(file).pid !== process.pid) throw Error('Worker lock ownership changed'); fs.unlinkSync(file); };
 }
 function initialize(stateDir, firstCommit) {
@@ -128,8 +140,15 @@ function markCancelledRuns(queue, cancelled) {
     if (run && (item.status === 'passed' || (item.status === 'failed' && !item.publicationError)) && item.checkedRun !== run) { item.checkedRun = run; item.resumePending = true; }
   }
 }
-async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring } = {}) {
-  const config = loadConfig(stateDir), release = acquire(stateDir), queueFile = path.join(stateDir, 'queue.json'), started = Date.now();
+function checkSavedReceipt(root, item) {
+  const receipt = read(path.join(item.output, 'result.json'));
+  const savedManifest = JSON.parse(git(root, ['show', `${item.commit}:tools/conditional-qa/cases.json`]));
+  const expected = savedManifest.cases.filter(row => row.route === 'local'), digest = sha256(JSON.stringify(savedManifest));
+  if (item.digest !== digest || item.count !== expected.length || !receipt.inputsUnchanged || !coverage(receipt, { commit: item.commit, digest, cases: expected })) throw Error('Saved local proof is incomplete');
+}
+async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, requestedCommit = null } = {}) {
+  if (requestedCommit !== null) github.validCommit(requestedCommit);
+  const config = loadConfig(stateDir), release = acquire(stateDir, { reclaimDead: requestedCommit === null }), queueFile = path.join(stateDir, 'queue.json'), started = Date.now();
   try {
     const root = clone(config); let head, queue;
     // Refetched after every verification, so commits pushed meanwhile join this tick instead of waiting for the next one.
@@ -152,14 +171,14 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring } = {}
     // Each commit is attempted once per tick, so an unavailable API cannot spin on the same publication.
     const attempted = new Set();
     let diskWait = null;
-    for (let item; Date.now() - started < budgetMs && (item = nextItem(queue, head, attempted)); refresh(), settle()) {
+    for (let item; Date.now() - started < budgetMs && (item = nextItem(queue, head, attempted, Date.now(), requestedCommit)); refresh(), settle()) {
       diskWait = diskWaitFor(item, stateDir);
       if (diskWait) break;
       attempted.add(item.commit);
       git(root, ['merge-base', '--is-ancestor', item.commit, head]);
       try {
         if (item.status !== 'publish-pending') {
-          advanceTurn(queue);
+          if (requestedCommit === null) advanceTurn(queue);
           item.status = 'running'; item.startedAt = new Date().toISOString(); delete item.resumePending; write(queueFile, queue);
           github.publish(item.commit, 'pending', 'Running the registered local conditional tests');
           item.output = path.join(stateDir, 'runs', `${item.commit}-${Date.now()}`);
@@ -167,10 +186,7 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring } = {}
           item.count = result.count; item.digest = result.digest; item.status = 'publish-pending'; write(queueFile, queue);
         }
         // Re-read the receipt after a process restart, rather than trusting queue.json's success flag.
-        const receipt = read(path.join(item.output, 'result.json'));
-        const savedManifest = JSON.parse(git(root, ['show', `${item.commit}:tools/conditional-qa/cases.json`]));
-        const expected = savedManifest.cases.filter(row => row.route === 'local'), digest = sha256(JSON.stringify(savedManifest));
-        if (item.digest !== digest || item.count !== expected.length || !receipt.inputsUnchanged || !coverage(receipt, { commit: item.commit, digest, cases: expected })) throw Error('Saved local proof is incomplete');
+        checkSavedReceipt(root, item);
         github.publish(item.commit, 'success', github.description(item.count, item.digest));
         item.status = 'passed'; item.endedAt = new Date().toISOString(); item.resumePending = true; delete item.error; write(queueFile, queue);
       } catch (error) {
@@ -195,6 +211,12 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring } = {}
       incomplete: queue.items.filter(row => row.status !== 'passed').length,
       passed: queue.items.filter(row => row.status === 'passed').length, failed: queue.items.filter(row => row.status === 'failed').length,
       items: queue.items.slice(-5).map(({ commit, status, error }) => ({ commit, status, error })) };
+    if (requestedCommit !== null) {
+      const selected = queue.items.find(row => row.commit === requestedCommit);
+      if (!selected) throw Error('Choose one commit already registered in the local queue');
+      if (selected.status === 'passed' && !attempted.has(requestedCommit)) checkSavedReceipt(root, selected);
+      summary.requested = { commit: requestedCommit, status: selected.status, attempted: attempted.has(requestedCommit) };
+    }
     write(path.join(stateDir, 'last-run.json'), summary); console.log(JSON.stringify(summary)); return summary;
   } finally { release(); }
 }
@@ -203,7 +225,12 @@ if (require.main === module) {
   // on a busy PC they starved (a browser launch exceeded 30 s). Children started after this run at normal priority.
   try { if (os.getPriority() > os.constants.priority.PRIORITY_NORMAL) os.setPriority(os.constants.priority.PRIORITY_NORMAL); } catch {}
   const args = process.argv.slice(2), stateDir = args.includes('--state') ? args[args.indexOf('--state') + 1] : defaultState();
-  const promise = args.includes('--initialize') ? Promise.resolve(initialize(stateDir, args[args.indexOf('--initialize') + 1])) : tick(stateDir);
-  promise.catch(error => { console.error(error.message); process.exitCode = 1; });
+  const targetIndex = args.indexOf('--registered-commit');
+  if (targetIndex >= 0 && (args.includes('--initialize') || targetIndex !== args.lastIndexOf('--registered-commit'))) throw Error('Choose one registered commit per verification');
+  const requestedCommit = targetIndex >= 0 ? args[targetIndex + 1] || '' : null;
+  const promise = args.includes('--initialize') ? Promise.resolve(initialize(stateDir, args[args.indexOf('--initialize') + 1])) : tick(stateDir, { requestedCommit });
+  promise.then(summary => {
+    if (requestedCommit !== null && summary.requested.status !== 'passed') process.exitCode = summary.requested.status === 'failed' ? 1 : 2;
+  }).catch(error => { console.error(error.message); process.exitCode = 1; });
 }
 module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns, diskWaitFor, browserProfileDiskFull };

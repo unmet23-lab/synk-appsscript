@@ -281,6 +281,43 @@ test('local homework and registered retries run one file at a time while other w
   for (const route of ['windows', 'linux', 'all']) assert.equal(fileConcurrency(route, 'homework', true), 2);
 });
 
+test('a requested registered commit gets one local verification and keeps the scheduled turn', () => {
+  const oldest = 'b'.repeat(40), target = 'c'.repeat(40), recent = 'd'.repeat(40);
+  const queue = { nextTurn: 'recent', items: [
+    { commit: oldest, status: 'queued' },
+    { commit: target, status: 'retry', retryRequest: 'receipt', retryAt: 30 },
+    { commit: recent, status: 'queued' },
+  ] };
+  const unchanged = structuredClone(queue);
+  assert.equal(nextItem(queue, recent, new Set(), 31, target), queue.items[1]);
+  assert.equal(nextItem(queue, recent, new Set(), 29, target), undefined);
+  assert.equal(nextItem(queue, recent, new Set([target]), 31, target), undefined);
+  assert.deepEqual(queue, unchanged);
+  assert.equal(nextItem(queue, recent, new Set(), 31), queue.items[2]);
+  queue.nextTurn = 'oldest';
+  assert.equal(nextItem(queue, recent, new Set(), 31), queue.items[0]);
+  for (const status of ['queued', 'running', 'publish-pending']) {
+    queue.items[1].status = status;
+    assert.equal(nextItem(queue, recent, new Set(), 31, target), queue.items[1]);
+  }
+  queue.items[1].status = 'failed';
+  assert.throws(() => nextItem(queue, recent, new Set(), 31, target), /retry\.cjs/);
+  assert.equal(nextItem(queue, recent, new Set([target]), 31, target), undefined);
+  queue.items[1].status = 'passed';
+  assert.equal(nextItem(queue, recent, new Set(), 31, target), undefined);
+  assert.throws(() => nextItem(queue, recent, new Set(), 31, 'e'.repeat(40)), /registered/);
+  queue.items.push({ ...queue.items[1] });
+  assert.throws(() => nextItem(queue, recent, new Set(), 31, target), /registered/);
+});
+
+test('a requested verification leaves an existing lock for the scheduled worker', t => {
+  const dir = scratch(t), file = path.join(dir, 'worker.lock');
+  const lock = JSON.stringify({ pid: 2147483646, createdAt: '2026-01-01T00:00:00Z' });
+  fs.writeFileSync(file, lock);
+  assert.throws(() => acquire(dir, { reclaimDead: false }), /already running/);
+  assert.equal(fs.readFileSync(file, 'utf8'), lock);
+});
+
 test('storage pressure preserves the selected verification and lets an already verified receipt publish', () => {
   const stateDir = '/registered/qa', need = 2 * 1024 ** 3;
   const capacity = available => (target, options) => {
