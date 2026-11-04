@@ -376,8 +376,8 @@ function onSwing({ speed, x, to }) { sound.sfx('whoosh', { power: swingPower(spe
 
 function showExplain(item, choice, readingChoice) {
   fillBlank(item.answer, 'answer');
-  $('#x-kicker').textContent = say(choice != null ? `정답은 ‘${item.answer}’ · 내가 벤 말은 ‘${choice}’`
-    : readingChoice === item.answer ? `조각은 놓쳤지만 고른 답 ‘${readingChoice}’${josa(readingChoice, '이', '가')} 맞아요` : `조각을 놓쳤어요 · 고른 답은 ‘${readingChoice}’, 정답은 ‘${item.answer}’`);
+  $('#x-kicker').textContent = choice != null ? `정답은 ‘${item.answer}’ · 내가 벤 말은 ‘${choice}’`
+    : readingChoice === item.answer ? `${say('조각은 놓쳤지만')} 고른 답 ‘${readingChoice}’${josa(readingChoice, '이', '가')} 맞아요` : `${say('조각을 놓쳤어요')} · 고른 답은 ‘${readingChoice}’, 정답은 ‘${item.answer}’`;
   $('#x-sentence').innerHTML = esc(filled(item, '\u0000')).replace('\u0000', `<b>${esc(item.answer)}</b>`);
   $('#x-why').textContent = item.why;
   $('#explain').hidden = false;
@@ -414,8 +414,8 @@ function flyToBlank(word, x, y, done) {
     const px = u * u * x + 2 * u * k * cx + k * k * tx, py = u * u * y + 2 * u * k * cy + k * k * ty;
     frames.push({ transform: `translate(calc(-50% + ${px - x}px), calc(-50% + ${py - y}px)) scale(${1.3 - 0.38 * k}) rotate(${(1 - k) * -10}deg)`, offset: k });
   }
-  const run = state.run, anim = chip.animate(frames, { duration: 380, easing: 'cubic-bezier(.35,.1,.25,1)' });
-  anim.onfinish = () => { chip.remove(); if (live(run)) done(); };   // 날아가는 사이에 판을 떠나면 끼워짐 소리 · 진동을 내지 않는다
+  const run = state.run, anim = state.flight = chip.animate(frames, { duration: 380, easing: 'cubic-bezier(.35,.1,.25,1)' });
+  anim.onfinish = () => { state.flight = null; chip.remove(); if (live(run)) done(); };   // 날아가는 사이에 판을 떠나면 끼워짐 소리 · 진동을 내지 않는다
 }
 
 /** 낱말이 빈칸에 끼워진 순간: ‘톡’과 사운드킷 ‘획득’(픽), 빈칸이 눌렸다 펴지고, 반짝이가 튀고, 점수가 올라간다. */
@@ -544,6 +544,7 @@ function pause(open = true) {
   if (open && !state.paused) state.pausedAt = performance.now();
   if (!open && state.paused && state.pausedAt) { state.pausedMs += performance.now() - state.pausedAt; state.pausedAt = 0; }
   state.paused = open; stage?.pause(open); world?.roundPaused(open);
+  if (open) state.flight?.pause(); else state.flight?.play();   // 날아가는 낱말도 같이 멈춘다 — 멈춤 창 뒤나 숨긴 탭에서 끼워짐 소리 · 진동이 새지 않게
   if (open && !$('#pause-dialog').open) $('#pause-dialog').showModal();
   if (!open && $('#pause-dialog').open) $('#pause-dialog').close();
 }

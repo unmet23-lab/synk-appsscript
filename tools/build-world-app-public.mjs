@@ -179,10 +179,10 @@ copyTree(path.join(root,'experiences','korean-racing'),'korean-racing',(source,r
 copyTree(path.join(root,'experiences','order-rush'),'order-rush',(source,relative)=>relative!=='order-rush/assets/cafe-original.png'&&!/^order-rush\/(?:beginner[^/]*|assets\/(?:beginner|picnic|progress)\/.*)$/.test(relative)&&!(orderSharedThree&&relative.startsWith('order-rush/vendor/')));
 // 찰칵 낱말(11-04, 새 게임): 화면 · 그림 · 소리만 싣는다. 설계 · 시험 · qa · 개발 서버는 싣지 않는다.
 copyTree(path.join(root,'experiences','snap-words'),'snap-words',(source,relative)=>!/^snap-words\/(?:qa\/|.*\.test\.mjs$|.*\.md$|server\.mjs$)/.test(relative));
-// 빈칸 베기(11-04, 캠퍼스 판 겉 — 해금 표로 「놀이」에서 연다): 게임 폴더째 싣되, LAB 소리 시청 페이지와 펠트 입구 그림은 뺀다. 배경음은 위 order-rush의 곡을 함께 쓴다(world-play.mjs).
+// 빈칸 베기(11-04, 캠퍼스 판 겉 — 해금 표로 「놀이」에서 연다): 게임 폴더째 싣되, LAB 소리 시청 페이지 · 펠트 입구 그림 · 몽글 그림과 목소리는 뺀다(앱 사본은 world-host.js가 경로로 늘 WORLD 겉이라 부르지 않는다). 배경음은 위 order-rush의 곡을 함께 쓴다(world-play.mjs).
 // three.js는 주문 폭주와 같이 홈의 공용 사본과 바이트까지 같으면 vendor/를 싣지 않고 공용 사본을 부른다(위 copyFile).
 const blankSharedThree=['three.module.js','three.core.js'].every(name=>fs.readFileSync(path.join(root,'experiences/blank-slice/vendor',name)).equals(fs.readFileSync(path.join(home,'scene-assets',name))));
-copyTree(path.join(root,'experiences','blank-slice'),'blank-slice',(source,relative)=>!/^blank-slice\/(?:sound-lab[^/]*|assets\/hero-pieces\.webp)$/.test(relative)&&!(blankSharedThree&&relative.startsWith('blank-slice/vendor/')));
+copyTree(path.join(root,'experiences','blank-slice'),'blank-slice',(source,relative)=>!/^blank-slice\/(?:sound-lab[^/]*|assets\/hero-pieces\.webp|assets\/sound\/mongle-[^/]+|kit\/brand\/mongle-[^/]+)$/.test(relative)&&!(blankSharedThree&&relative.startsWith('blank-slice/vendor/')));
 // 말 랠리(11-04, 캠퍼스 판 겉 — 해금 표로 「놀이」에서 연다): 게임 폴더째 싣되 LAB 전용 몽글 음성 · 안내 음성 · 펠트 벽 · 몽글 소리와 제작 원본은 뺀다 — WORLD는 assets/world만 쓴다(world-play.mjs). three.js는 공용 사본과 바이트까지 같으면 vendor/를 싣지 않는다.
 const rallySharedThree=['three.module.js','three.core.js'].every(name=>fs.readFileSync(path.join(root,'experiences/talk-rally/vendor',name)).equals(fs.readFileSync(path.join(home,'scene-assets',name))));
 // 움직여 치는 영상은 저장 규칙대로 git 밖이다(드라마 재생 사본과 같다). 있으면 목록의 지문과 대조하고, 없으면 싣지 않는다 — 게임은 표정 판으로 친다. 이 게임을 올리는 공개후보.cjs는 없으면 멈춘다.

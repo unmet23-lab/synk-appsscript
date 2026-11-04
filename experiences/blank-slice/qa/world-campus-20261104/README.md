@@ -56,11 +56,9 @@
 
 ## 남은 순서
 
-11-04 오전 기준이다. 앱 공개만 남았다.
+11-04 오후 기준이다. 앱 공개만 남았다. 공개 도구가 `-b` 사슬을 앞판 불일치로 거절해서(첫 고리의 앞판은 `다시`로 못 푼다) 두 단계로 나눠 새로 검수한다. 공개 작업 폴더는 공용 작업본 `.tmp/blank-slice-publish-20261104/`(이하 `$W`), 후보 원천은 `refs/synk-tmp/blank-slice-candidate`(`aa8c99e94`, 공개 뒤 지운다)다.
 
-1. Fable 재검수(몫이 남은 계정의 세션에서): Agent `model: fable`에 공용 작업본 `.tmp/검수/blank-slice-world-20261104-b/fable.md`를 그대로 맡긴다. 다시 볼 지적이 0건이라 답의 `targets`는 빈 배열이다.
-2. `node tools/검수묶음.mjs 페이블받기 blank-slice-world-20261104-b` → P0 · P1이 있으면 고친다 → `집계 blank-slice-world-20261104-b`.
-3. 공개: 공개 미리 보기가 계획 `cf1be3119c9e`를 그대로 내면 `--계획`과 `--검수 blank-slice-world-20261104-b`를 붙여 `--실행`한다. 명령은 공개 작업 폴더 `.tmp/blank-slice-publish-20261104/`의 `new/.tmp/pub/world` · `base/.tmp/pub/world` · `바뀐목록.txt`로 짓는다(`--공개폴더 world`, 새 후보는 `--후보폴더 <빈 폴더>`).
-4. 그사이 라이브가 바뀌어 미리 보기가 걸리면: 라이브 네 파일(app-shell · brand-opening/home · play-unlocks · world-strings)을 받아 `merged/<이름>.live`로 두고 `git merge-file -p merged/<이름>.ours merged/<이름>.base merged/<이름>.live > merged/<이름>`, `merged/`에서 `공개합침.cjs`를 돌려 풀고, 합친 판을 `new/`에, 라이브 판을 `base/`에 넣은 뒤 후보를 새로 짓고 `다시`로 바뀐 부분을 보인다.
-5. 후보 원천은 `refs/synk-tmp/blank-slice-candidate`(`aca197612` — fe1ba1563 + 이 게임의 고침 둘, 찰칵 낱말 같은 남의 미공개 변경 없음). 다시 지을 때는 이 커밋에 고침만 얹어 `공개빌드.sh`에 준다. 공개 뒤 이 ref를 지운다.
-6. 공개 뒤: 라이브 `/world/`에서 한 번 열어 보고, 트랙 줄을 공개 커밋으로 고치고, 시안 페이지 영상을 최종판으로 바꾼다(`시안영상.cjs`).
+1. 게임 폴더만(새 파일뿐이라 다른 게임 공개와 겹치지 않는다): 사슬 `blank-slice-world-20261104-game`, 끝 `aca197612`. 아르곤은 끝났다(지적 4 — 반영 3 · 재현 안 됨 1, 고침은 `aa8c99e94`). 다음은 Agent `model: fable`에 공용 작업본 `.tmp/검수/blank-slice-world-20261104-game/fable.md`를 그대로 맡기고 `페이블받기` → `처리`.
+2. `$W/new/.tmp/pub/world`(`aa8c99e94` 빌드, 몽글 파일 뺌)로 `공개.js 올리기 --원본 … --공개폴더 world --기준폴더 $W/base/.tmp/pub/world --후보폴더 $W/후보A2 $(cat $W/게임목록새.txt)` → `다시 blank-slice-world-20261104-game-b --앞 blank-slice-world-20261104-game --끝 aa8c99e94 --저장소 $W/검수판 --배포후보 $W/후보A2 --함께올림 "유호님 지시(마스코트는 앱에 어떤 꼴로도 넣지 않는다) — 앱 사본을 주소로 열면 LAB 겉 · 몽글이 보여 함께 닫는다"` → 지적 낸 검수자 → `집계` → 미리 보기가 낸 계획으로 `--검수 …-b --실행 --계획 …`.
+3. 홈만(`$W/홈목록.txt`의 공용 다섯 파일): 찰칵 낱말이 먼저 나가면 그 뒤에. 라이브 네 파일을 다시 받아 `merged/`에서 합치고(`공개합침.cjs`) `new/` · `base/`에 놓은 뒤 공개 후보 → `준비 blank-slice-world-20261104-home`(`--바탕 68bdd7016 --끝 aa8c99e94 --저장소 $W/검수판`) → 아르곤 → Fable → 공개. `new/`는 다시 빌드했으니 네 파일을 꼭 다시 얹는다.
+4. 공개 뒤: 라이브 `/world/`에서 잠김 · 열림 · 판 시작을 보고, 트랙 줄을 공개 커밋으로 고치고, 시안 페이지 영상을 최종판(`시안영상.cjs`)으로 바꾼다. `git worktree remove --force $W/검수판`, 후보 ref를 지운다.
