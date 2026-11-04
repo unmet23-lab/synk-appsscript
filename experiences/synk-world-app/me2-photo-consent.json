@@ -1,0 +1,72 @@
+{
+  "version": "me2-photo-20261104",
+  "ko": {
+    "top": "이 이야기는 한국 대학교 1학년의 1년이에요. 그래서 보내 준 사진을 바탕으로 열아홉 살쯤의 내 모습으로 자동으로 바꿔 만들어요. 나이가 몇 살이든 모두 같은 나이로 함께 시작해요.",
+    "key": [
+      "사진 한 장으로 이야기 속 「제2의 나」를 만들어요. 원본 사진은 모습을 만든 뒤 바로(늦어도 하루 안에) 지워요.",
+      "만든 모습은 학생증과 추억 사진에만 쓰고, 내가 지우거나 계정을 지우면 함께 지워요.",
+      "내 사진으로 만들어요. 앨범에서 고르거나 바로 찍어도 돼요 — 다른 사람이나 연예인 사진으로는 만들지 않아요."
+    ],
+    "agree": "위 내용과 자세히 보기를 읽고, 내 사진으로 모습을 만드는 데 동의해요. 사진이 미국으로 옮겨지는 것에도 동의해요.",
+    "adult": "만 18세 이상이에요.",
+    "details": [
+      ["받는 것", "얼굴이 보이는 사진 1장. 이 단계에서는 다른 정보를 받지 않아요."],
+      ["쓰는 곳", "게임 속 내 캐릭터(「제2의 나」)의 모습을 만드는 데에만 써요 — 학생증, 회차 끝 추억 사진, 생일, 꿈 무대. 본인 확인, 다른 사람 찾기, 광고에는 쓰지 않아요. 만든 모습이 나와 닮았는지 확인하려고 SYNK 서버(한국)에서 얼굴을 숫자로 잠깐 견주지만, 그 얼굴 특징은 저장하지 않고 확인이 끝나면 바로 버려요."],
+      ["만드는 법", "사진을 AI 이미지 생성 서비스로 보내 열아홉 살쯤의 모습으로 바꾸고, 주름 · 피부 · 머리를 조금 더 깔끔하게 다듬어요. 다듬는 정도는 「더 자연스럽게」로 낮출 수 있어요."],
+      ["국외 이전", "받는 곳: OpenAI OpCo, LLC(미국, privacy@openai.com). 옮기는 것: 내 사진과 만든 모습. 목적: 내 모습 만들기. 언제 · 어떻게: 사진을 올린 뒤 하루 안에(보통 몇 시간 안에) 암호화된 통신으로 보내요. 보관: 처리용 파일은 늦어도 25시간 안에 지우고, 남용 감시 기록은 최대 30일 남을 수 있어요. 우리 요청을 처리하는 데에만 쓰고 그 회사의 AI 학습에는 쓰지 않아요. 거부: 동의하지 않아도 돼요 — 준비된 얼굴에서 골라 똑같이 플레이할 수 있어요."],
+      ["보관", "사진과 만든 모습은 SYNK 저장소(Supabase, 싱가포르)에 두어요. 원본 사진은 모습을 만든 직후 지워요(늦어도 하루 안 — 일괄로 만드는 데 하루까지 걸릴 수 있어서). 만든 모습은 계정이 있는 동안 보관하고, 내 모습 설정에서 언제든 바꾸거나 지울 수 있어요. 지우면 그 모습으로 만든 사진도 함께 지워요."],
+      ["보는 사람", "나만 봐요. 내가 앨범이나 단톡방 사진을 공유할 때만 공유한 사람이 봐요."],
+      ["내 사진으로만", "다른 사람 · 연예인 · 유명인 사진으로는 만들지 않아요. 다른 사람이 함께 나온 사진이면 누가 나인지 한 번 물어봐요."],
+      ["동의하지 않으면", "준비된 얼굴에서 골라 똑같이 플레이할 수 있어요. 나중에 언제든 사진으로 바꿀 수 있어요."],
+      ["시범 대상", "이번 시범은 초대받은 만 18세 이상만 참여해요."],
+      ["철회", "동의는 언제든 거둘 수 있어요. 내 모습 설정에서 「사진으로 만든 모습 지우기」를 누르면 만든 모습과 그 사진들이 지워지고 준비된 얼굴로 돌아가요."],
+      ["문의", "hello@synk.im"]
+    ]
+  },
+  "en": {
+    "top": "This story is one year in the life of a first-year student at a Korean university. So we use the photo you send to automatically create you at about nineteen. Whatever your age, everyone starts together at the same age.",
+    "key": [
+      "One photo creates your “second me” in the story. Your original photo is deleted right after your look is made (within a day at the latest).",
+      "Your look is used only for your student ID and memory photos, and it is deleted when you erase it or delete your account.",
+      "Use a photo of yourself. You can choose one from your album or take one now — we don’t make it from a photo of someone else or a celebrity."
+    ],
+    "agree": "I have read the above and “Read more”, and I agree to have my look made from my photo. I also agree to my photo being transferred to the United States.",
+    "adult": "I am 18 or older.",
+    "details": [
+      ["What we receive", "One photo that shows your face. We take no other information at this step."],
+      ["How it is used", "Only to create the look of your in-game character (your “second me”): your student ID, memory photos at the end of an episode, birthdays and the dream stage. Never for identity checks, finding other people or advertising. To check that your look resembles you, a SYNK server in Korea briefly compares faces as numbers. Those face features are not stored and are discarded as soon as the check ends."],
+      ["How it is made", "We send your photo to an AI image service, which changes it to how you might look at about nineteen and slightly tidies wrinkles, skin and hair. You can reduce this with “More natural”."],
+      ["Transfer abroad", "Recipient: OpenAI OpCo, LLC (United States, privacy@openai.com). What is transferred: your photo and the looks made from it. Purpose: making your look. When and how: within a day after you upload it (usually a few hours), over an encrypted connection. Retention: processing files are deleted within 25 hours at the latest, and abuse-monitoring logs may remain for up to 30 days. It is used only to process our request, not to train that company’s AI. To refuse: you don’t have to agree — choose a ready-made face and play just the same."],
+      ["Storage", "Your photo and looks are kept in SYNK’s storage (Supabase, Singapore). The original photo is deleted right after your look is made (within a day at the latest, because a batch can take up to a day). Your look is kept while you have an account, and you can change or erase it at any time in My look. Erasing it also erases the photos made from it."],
+      ["Who can see it", "Only you. If you share an album or group-chat photo, the people you share it with can see it."],
+      ["Your own photo only", "We don’t make it from a photo of someone else, a celebrity or a public figure. If someone else is in the photo, we ask once which one is you."],
+      ["If you don’t agree", "Choose a ready-made face and play just the same. You can switch to a photo at any time later."],
+      ["Who this pilot is for", "This pilot is only for invited people aged 18 or older."],
+      ["Withdrawing", "You can withdraw your consent at any time. In My look, press “Erase the look made from my photo”. Your look and its photos are erased and you return to a ready-made face."],
+      ["Contact", "hello@synk.im"]
+    ]
+  },
+  "mn": {
+    "top": "Энэ түүх бол Солонгосын их сургуулийн нэгдүгээр курсын оюутны нэг жил юм. Тиймээс таны илгээсэн зургийг үндэслэн арван ес орчим насны таны дүрийг автоматаар бүтээнэ. Хэдэн настай байсан ч бүгд ижил насаар хамтдаа эхэлнэ.",
+    "key": [
+      "Нэг зургаар түүхэн дэх «хоёр дахь би» дүрээ бүтээнэ. Эх зургийг дүр бүтээсний дараа шууд (хамгийн удаандаа нэг өдрийн дотор) устгана.",
+      "Бүтээсэн дүрийг зөвхөн оюутны үнэмлэх, дурсамжийн зурагт ашиглана. Та дүрээ эсвэл бүртгэлээ устгавал хамт устгагдана.",
+      "Өөрийн зургаар бүтээнэ. Цомгоосоо сонгох эсвэл шууд зураг авч болно. Өөр хүн эсвэл алдартны зургаар бүтээхгүй."
+    ],
+    "agree": "Дээрх агуулга болон «Дэлгэрэнгүй» хэсгийг уншиж, өөрийн зургаар дүр бүтээхийг зөвшөөрч байна. Зургаа АНУ руу шилжүүлэхийг ч зөвшөөрч байна.",
+    "adult": "Би 18 ба түүнээс дээш настай.",
+    "details": [
+      ["Авах зүйл", "Царай нь харагдах нэг зураг. Энэ шатанд өөр мэдээлэл авахгүй."],
+      ["Ашиглах зорилго", "Зөвхөн тоглоом доторх таны дүрийн («хоёр дахь би») төрхийг бүтээхэд ашиглана: оюутны үнэмлэх, түүхийн анги бүрийн төгсгөлд гарах дурсамжийн зураг, төрсөн өдөр, мөрөөдлийн тайз. Хэн болохыг баталгаажуулах, өөр хүн хайх, зар сурталчилгаанд ашиглахгүй. Бүтээсэн дүр тантай адилхан эсэхийг шалгахын тулд SYNK-ийн сервер (Солонгос) дээр царайг тоогоор түр харьцуулдаг ч царайны онцлогийг хадгалахгүй, шалгаж дуусмагц шууд устгана."],
+      ["Бүтээх арга", "Зургийг хиймэл оюуны зураг бүтээх үйлчилгээ рүү илгээж, арван ес орчим насны төрхөд шилжүүлээд үрчлээ, арьс, үсийг бага зэрэг цэвэрхэн засна. Засах хэмжээг «Илүү байгалийн төрх» сонголтоор бууруулж болно."],
+      ["Гадаад улс руу шилжүүлэх", "Хүлээн авагч: OpenAI OpCo, LLC (АНУ, privacy@openai.com). Шилжүүлэх зүйл: таны зураг, бүтээсэн дүр. Зорилго: таны дүрийг бүтээх. Хэзээ, хэрхэн: та зургаа оруулснаас хойш нэг өдрийн дотор (ихэвчлэн хэдэн цагийн дотор) шифрлэгдсэн холболтоор илгээнэ. Хадгалах хугацаа: боловсруулалтын файлыг хамгийн удаандаа 25 цагийн дотор устгах бөгөөд зүй бус ашиглалтыг хянах бүртгэл 30 хүртэл хоног үлдэж болно. Зөвхөн бидний хүсэлтийг боловсруулахад ашиглах бөгөөд тухайн компанийн хиймэл оюуныг сургахад ашиглахгүй. Татгалзах: зөвшөөрөхгүй байж болно — бэлэн царайнаас сонгоод яг адилхан тоглож болно."],
+      ["Хадгалалт", "Зураг, бүтээсэн дүрийг SYNK-ийн хадгалах санд (Supabase, Сингапур) хадгална. Эх зургийг дүр бүтээсний дараа шууд устгана (багцаар бүтээхэд нэг өдөр хүртэл зарцуулагдаж болох тул хамгийн удаандаа нэг өдрийн дотор). Бүтээсэн дүрийг бүртгэл байх хугацаанд хадгалах бөгөөд «Миний дүр» тохиргооноос хүссэн үедээ сольж эсвэл устгаж болно. Устгавал тэр дүрээр бүтээсэн зургууд хамт устгагдана."],
+      ["Хэн харах вэ", "Зөвхөн та харна. Цомог эсвэл бүлгийн чатын зургаа хуваалцсан үед л таны хуваалцсан хүмүүс харна."],
+      ["Зөвхөн өөрийн зураг", "Өөр хүн, алдартан, олон нийтэд танигдсан хүний зургаар бүтээхгүй. Зурган дээр өөр хүн хамт байвал аль нь та болохыг нэг удаа асууна."],
+      ["Зөвшөөрөхгүй бол", "Бэлэн царайнаас сонгоод яг адилхан тоглож болно. Хожим хүссэн үедээ зургаар сольж болно."],
+      ["Туршилтад оролцох хүн", "Энэ удаагийн туршилтад зөвхөн урилга авсан 18 ба түүнээс дээш насны хүмүүс оролцоно."],
+      ["Зөвшөөрлөө буцаах", "Зөвшөөрлөө хүссэн үедээ буцааж авч болно. «Миний дүр» тохиргооноос «Зургаар бүтээсэн дүрийг устгах» товчийг дарвал бүтээсэн дүр болон түүний зургууд устгагдаж, бэлэн царай руу буцна."],
+      ["Холбоо барих", "hello@synk.im"]
+    ]
+  }
+}

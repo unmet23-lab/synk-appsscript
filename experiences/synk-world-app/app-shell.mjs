@@ -128,7 +128,7 @@ if(!home.isMaru){
  $('.hero-copy .felt-button').innerHTML='첫 놀이 시작하기 <span aria-hidden="true">→</span>';
 }
 // 시트 머리의 영문 모노 라벨: 그 시트가 무엇인지 짧게(한글은 모노로 쓰지 않는다).
-const EYEBROWS={'world-reminder':'REMINDER','world-writing':'WRITING','world-profile':'ACCOUNT','world-signin':'ACCOUNT','world-entry-recovery':'ACCOUNT','world-device-records':'ACCOUNT','world-welcome':'SYNK WORLD','world-about':'ABOUT','world-wardrobe':'WARDROBE','world-pending':'SAVE','life-recovery':'SAVE','world-game-conflict':'SAVE','world-play':'FIRST SENTENCE','world-retry':'FIRST SENTENCE','world-reward':'RESULT · FIRST SENTENCE','world-town':'TOWN','game':'PLAY','world-game-loading':'PLAY','world-game-error':'PLAY','world-songs':'SONGS','world-song':'SONGS'};
+const EYEBROWS={'world-me2':'SECOND ME','world-reminder':'REMINDER','world-writing':'WRITING','world-profile':'ACCOUNT','world-signin':'ACCOUNT','world-entry-recovery':'ACCOUNT','world-device-records':'ACCOUNT','world-welcome':'SYNK WORLD','world-about':'ABOUT','world-wardrobe':'WARDROBE','world-pending':'SAVE','life-recovery':'SAVE','world-game-conflict':'SAVE','world-play':'FIRST SENTENCE','world-retry':'FIRST SENTENCE','world-reward':'RESULT · FIRST SENTENCE','world-town':'TOWN','game':'PLAY','world-game-loading':'PLAY','world-game-error':'PLAY','world-songs':'SONGS','world-song':'SONGS'};
 function show(title,html,type='world',extra={}){gameLaunch++;if(type!=='world-game-conflict')gameRecovery=null;releaseSheet();screen=type;home.showPanel(title,html,{type,eyebrow:EYEBROWS[type]||'SYNK WORLD',...extra});}
 // 시트 수명(E01): 지금 시트에 딸린 자원은 한 칸(sheet)이 갖고, 버리는 때는 네 곳뿐이다 — 다른 시트를 열 때(show)·닫을 때(close)·
 // 패널이 다 닫힌 뒤(close 이벤트, 닫기 효과가 끝난 뒤라 그 사이 칸이 먼저 빠지지 않는다)·pagehide. 몇 번 불러도 한 번만 버린다.
@@ -449,6 +449,26 @@ const speakingOn=(()=>{try{return localStorage.getItem('synk.world.speaking.prev
 const repaintSpeakingRow=()=>{if(life.ui&&document.querySelector('#world-panel[open] #panel-content .life-hub')&&!document.querySelector('#panel-content [data-world="speaking"]'))life.ui.packs();};
 // 은행을 다 읽으면 배우기 줄을 그리고, 추천·이번 주 계획을 다시 세운다 — 시험 정보에서 말하기를 고른 학생의 말하기 칸은 문항이 열려야 생긴다(쓰기와 같다).
 if(speakingOn)void import('./world-speaking-practice.mjs').then(module=>{speakingModule=module;return module.loadSpeakingBank();}).then(()=>{repaintSpeakingRow();life.education?.refresh();}).catch(()=>{});
+// 「제2의 나」 내 사진으로 만들기(11-04 시범, me2-photo.mjs · 설계 docs/제2의나_사진아바타_일괄처리_설계_20261103.md): 초대한 성인만 — 서버 status가 ok일 때만 모듈을 불러 내 정보 시트에 줄을 더한다.
+// 초대 주소는 ?me2=1. 그 밖의 학생에게는 줄도 모듈도 없다(요청 한 번만 나간다). 계정 모드 웹에서만이다.
+let me2Module=null,me2=null,me2Owner=null;
+const me2Requested=new URLSearchParams(location.search).get('me2')==='1';
+const me2Allowed=()=>operating&&!!account?.supportsMe2&&!!client.snapshot;
+async function me2Host(){
+ if(!me2Allowed())return null;
+ me2Module??=await import('./me2-photo.mjs');
+ const owner=client.snapshot?.accountId;
+ if(!me2||me2Owner!==owner){me2?.dispose();me2Owner=owner;me2=me2Module.createMe2Photo({show:(title,html)=>show(title,html,'world-me2',{eyebrow:'SECOND ME'}),home,close,request:payload=>account.me2Request(payload)});}
+ return me2;
+}
+async function openMe2(){const host=await me2Host();if(host)return host.open();if(!client.snapshot)signIn();}
+async function addMe2Row(){
+ if(!me2Allowed())return;
+ let out;try{out=await account.me2Request({action:'status'});}catch{return;}
+ if(!(out?.status==='ok'||(out?.status==='off'&&out.consent?.given)))return;
+ const host=await me2Host();const place=document.querySelector('#panel-content .ws-me');
+ if(host&&place&&screen==='world-profile'&&!place.querySelector('.me2-row'))place.querySelector('.ws-me-id')?.insertAdjacentHTML('afterend',host.rowHtml());
+}
 function openSpeaking(button){
  if(!speakingModule)return;
  const owner=writingOwnerId();
@@ -596,6 +616,7 @@ function mountResponses(){
  });
 }
 function profile(){if(!client.snapshot)return signIn();const tutorId=home.tutor?.()?.tutor,tutorName=TUTOR_NAMES[tutorId]?t(`tutor.name.${tutorId}`):null;show(t('account.meTitle'),`<div class="ws-me"><div class="ws-me-id"><span class="ws-me-portrait"><img src="${profilePortrait()}" alt=""></span><div><p class="ws-me-name">${tutorName?t('account.learningWith',{name:tutorName}):t('account.learningTogether')}</p><p class="ws-me-sub">${t('account.savedTo',{where:t(operating?'account.whereId':'account.whereTest')})}</p></div></div>${notice('SAVE',client.pending?'check':'ok',t(client.pending?'account.savePending':'account.saveOk'),t('account.revision',{revision:escape(client.snapshot.revision),kind:t(operating?'account.kindId':'account.kindTest')}))}${operating?`<section class="world-notice" data-tone="info" data-label="LEARNING"><strong>${t('account.learningRecords')}</strong>${account.preferences()?`<label><input type="checkbox" data-world-learning data-revision="${account.preferences().revision}" ${account.preferences().enabled?'checked':''}> ${t('account.learningSave')}</label><span>${t('account.learningNote')}</span>`:`<span>${t('account.learningElsewhere')}</span>`}<a class="felt-button" href="https://synk.im/account/client.html?product=world">${t('account.classSettings')} <span aria-hidden="true">→</span></a></section>`:''}${responsesSection()}<div id="world-classroom-lessons"></div><div id="world-classroom-homework"></div><div id="world-classroom-entry"></div><div class="world-actions"><button class="felt-button" data-world="wardrobe">${t('wardrobe.open')}</button><button class="quiet-button" data-world="logout">${t('account.logout')}</button></div></div>`,'world-profile');mountResponses();if(home.isMaru){const actions=$('#panel-content .ws-me>.world-actions');if(actions)actions.before(hanger);else $('#panel-content').append(hanger);renderHomeHanger(client.snapshot);}if(operating){const generation=client.generation,owner=client.snapshot.accountId,guard=()=>{account.assertActive();if(generation!==client.generation||client.snapshot?.accountId!==owner)throw Object.assign(Error('ACCOUNT_CHANGED'),{code:'ACCOUNT_CHANGED'});};
+ void addMe2Row();
  // 「우리 반 수업」은 반 연결 바로 위: 연결하면 이 시트를 다시 그려 같은 자리에 수업이 이어진다. 시트가 열려 있는 동안만 30초마다 묻는다.
  // 우리 반 수업·과제·반 연결은 이 시트 하나의 자원이다(시트를 바꾸거나 닫으면 함께 버린다).
  let lessons=null,course=null,homework=null,enrollment=null;
@@ -764,6 +785,7 @@ const commands={
  logout:async()=>{accountActionPending=true;entryGate?.invalidate();const leaving=client.snapshot?.accountId;try{try{await worldPush?.logout();}catch{/* 다음 열 때 상태가 다시 정리한다 */}await client.logout();const signedOutAt=Date.now();if(leaving)noteDeviceAccount(localStorage,leaving,signedOutAt);noteDeviceSignOut(localStorage,signedOutAt);sessionConfirmed=false;close();if(home.isMaru)await entryGate.start();else welcome();}catch(e){if(e.code==='STALE_RESPONSE')return;home.toast(t('account.logoutFailed'));if(home.isMaru)showEntryRecovery();else welcome();}finally{accountActionPending=false;}},
 };
 commands.speaking=openSpeaking;
+commands.me2=openMe2;
 document.addEventListener('click',event=>{
  const button=event.target.closest('button');if(!button)return;
  if(button.dataset.worldGame){event.preventDefault();event.stopImmediatePropagation();void launchGame(button.dataset.worldGame);return;}
@@ -847,6 +869,7 @@ entryGate=createWorldEntryGate({
    // ?drama=1(11-02): 드라마 말하기 1화 코호트 링크 — 다른 게임과 같은 launchGame(로그인 전이면 로그인부터).
    else if(dramaRequested){if(client.snapshot)try{sessionStorage.removeItem(DRAMA_PENDING);}catch{}void launchGame('drama');}
    // 한 번만 도는 바로가기라 계정이 바뀌어 멈춘 것(코드 없는 오류)은 알리지 않는다 — 「다시 시도」할 일이 아니다.
+   else if(me2Requested)void openMe2().catch(error=>{if(error?.code)home.toast(errorText(error));});
    else if(examRequested)void openExamLink().catch(error=>{if(error?.code)home.toast(errorText(error));});
    else openReminderLink();
   });

@@ -18,3 +18,11 @@ test('studio media plan also accepts a bucket without a prefix',()=>{const {medi
  const plan={backup,bucket:'b',dataDir:'/srv/synk/company',objects:[{sha256:sha,bytes:1,object:backup+'.media-'+sha,generation:'1',md5Hash:'A'.repeat(22)+'==',diskName:'61234567-1234-4234-8234-123456789abc.mp4'}]};
  assert.equal(mediaPlan(plan,{bucket:'b'}),plan);assert.throws(()=>mediaPlan({...plan,objects:[{...plan.objects[0],object:'x'+backup+'.media-'+sha}]},{bucket:'b'}),/MEDIA_PLAN_INVALID/);
 });
+test('제2의 나 사진 버킷은 서버 사본에 0건이다 — 목록 SQL · 코드 두 겹, 원본 파일의 Storage 목록은 이 SQL 하나',()=>{const {STORAGE_EXCLUDED,STORAGE_LIST_SQL,storageToBackup}=require('./backup.cjs');
+ assert.deepEqual([...STORAGE_EXCLUDED],['me2-intake','me2-media']);
+ assert.match(STORAGE_LIST_SQL,/WHERE bucket_id NOT IN \('me2-intake','me2-media'\)/);
+ const rows=[{bucket_id:'me2-intake',name:'a/b.jpg'},{bucket_id:'me2-media',name:'a/c.jpg'},{bucket_id:'learner-media',name:'voice/x.webm'},{bucket_id:'personal-media',name:'objects/y'}];
+ const kept=storageToBackup(rows);assert.equal(kept.filter(o=>STORAGE_EXCLUDED.includes(o.bucket_id)).length,0);assert.deepEqual(kept.map(o=>o.bucket_id),['learner-media','personal-media']);
+ const source=fs.readFileSync(path.join(__dirname,'backup.cjs'),'utf8');assert.equal((source.match(/FROM storage\.objects/g)||[]).length,1,'Storage 목록 SQL은 제외가 든 한 곳뿐이어야 한다');
+ assert.equal((source.match(/storageToBackup\(await commandJson/g)||[]).length,2,'전후 목록 모두 제외를 거쳐야 한다');
+});

@@ -1,0 +1,110 @@
+/* 「제2의 나」 내 사진으로 만들기(me2-photo.mjs, 2026-11-04 시범) — 월드 시그널(docs/디자인/월드_시그널/README.md) 판 그대로.
+ * 흰 알약은 한 화면에 하나, 보조는 선 알약 · 조용한 줄(home.css의 felt · plain · quiet). 사진은 흰 테두리 인화지로 보인다(즉석 사진 은유) — 「현상 중」 인화지만 움직이고, 움직임 줄이기에서는 멈춘다. */
+#panel-content:has(>.me2){container-type:inline-size}
+.me2{display:grid;gap:16px;min-width:0;text-align:left;color:var(--w-ink)}
+.me2:focus{outline:0}
+.me2 :is(h3,h4,p,ul,dl,dd,figure){margin:0}
+.me2-lead{font-size:var(--t-lead,17px);line-height:1.6;font-weight:var(--wt-body,450);color:var(--w-ink);word-break:keep-all;text-wrap:pretty}
+.me2-h{font-size:20px;line-height:1.4;font-weight:var(--wt-title,650);letter-spacing:var(--track-title,-.01em);word-break:keep-all;text-wrap:balance}
+.me2-center{text-align:center}
+.me2-small{font-size:14px;line-height:1.6;color:var(--w-ink-3);word-break:keep-all;text-wrap:pretty}
+.me2-mono{font-size:13px;font-weight:var(--wt-strong,600);color:var(--w-ink-3)}
+.me2-status{font-size:15.5px;line-height:1.5;color:var(--w-ink-2);text-align:center}
+.me2-note{padding:14px 16px;border-radius:var(--w-r-lg,18px);background:var(--w-s1);box-shadow:var(--w-card-edge,inset 0 0 0 1px var(--w-line));font-size:15px;line-height:1.55;color:var(--w-ink-2);word-break:keep-all;text-wrap:pretty}
+.me2-note[data-tone=alert]{color:var(--w-alert-text)}
+.me2-actions{display:grid;gap:10px;margin-top:4px}
+.me2-actions .felt-button,.me2-actions .plain-button{width:100%}
+.me2-actions .quiet-button{justify-self:center;min-height:44px}
+.me2 button[disabled]{opacity:.45;cursor:default}
+.me2-file{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.me2-file input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.me2-file:focus-within{outline:2px solid var(--w-ink);outline-offset:3px}
+/* 동의 */
+.me2-keys{display:grid;gap:10px;padding:0;list-style:none}
+.me2-keys li{position:relative;padding-left:16px;font-size:15.5px;line-height:1.6;color:var(--w-ink-2);word-break:keep-all;text-wrap:pretty}
+.me2-keys li::before{content:'';position:absolute;left:0;top:.72em;width:6px;height:6px;border-radius:50%;background:var(--w-ink-3)}
+.me2-more{border-top:1px solid var(--w-line);border-bottom:1px solid var(--w-line)}
+.me2-more summary{min-height:48px;display:flex;align-items:center;font-size:14px;font-weight:var(--wt-strong,600);color:var(--w-ink-2);cursor:pointer}
+.me2-more summary:focus-visible{outline:2px solid var(--w-ink);outline-offset:2px}
+.me2-more dl{display:grid;gap:4px;padding:0 0 16px}
+.me2-more dt{margin-top:10px;font-size:14px;font-weight:var(--wt-strong,600);color:var(--w-ink)}
+.me2-more dd{font-size:14px;line-height:1.65;color:var(--w-ink-3);word-break:keep-all;text-wrap:pretty}
+.me2-check{display:flex;align-items:flex-start;gap:12px;min-height:44px;padding:10px 0;font-size:15.5px;line-height:1.5;color:var(--w-ink);cursor:pointer;word-break:keep-all}
+.me2-check input{flex:none;width:22px;height:22px;margin:0;accent-color:var(--w-ink)}
+.me2-notes{display:grid;gap:6px;padding-top:6px}
+.me2-notes h4{font-size:15.5px;font-weight:var(--wt-title,650)}
+.me2-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.me2-chip{min-height:44px;padding:0 14px;border:0;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink-2);font:inherit;font-size:14px;cursor:pointer}
+.me2-chip[aria-pressed=true]{background:var(--w-ink);box-shadow:none;color:var(--w-on-ink);font-weight:var(--wt-strong,600)}
+.me2-chip:focus-visible,.me2-variant:focus-visible,.me2-face:focus-visible,.me2-print:focus-visible{outline:2px solid var(--w-ink);outline-offset:2px}
+/* 사진 — 인화지 */
+.me2-print{display:block;position:relative;width:100%;max-width:340px;justify-self:center;margin:0;padding:10px 10px 12px;border:0;border-radius:6px;background:#FAFAF7;box-shadow:0 18px 40px rgba(0,0,0,.42)}
+.me2-print img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:2px;background:#E9E7E1}
+.me2-print-cap{display:block;padding-top:8px;font-size:14px;font-weight:var(--wt-strong,600);color:#16171B;text-align:center}
+.me2-print-face{width:100%;aspect-ratio:3/4;border-radius:2px;background:#2A2B30}
+.me2-print.is-developing{max-width:240px;transform:rotate(-2deg)}
+.me2-print.is-developing .me2-print-face{background:radial-gradient(60% 46% at 50% 40%,#C9B7A4 0%,rgba(201,183,164,0) 72%),#3A3A40;animation:me2-develop 6s ease-in-out infinite alternate}
+@keyframes me2-develop{from{filter:brightness(.42) saturate(.2)}to{filter:brightness(1) saturate(1)}}
+:root[data-reduced=true] .me2-print.is-developing .me2-print-face{animation:none}
+@media (prefers-reduced-motion:reduce){.me2-print.is-developing .me2-print-face{animation:none}}
+.me2-big{max-width:340px}
+.me2-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.me2-pair .me2-print{cursor:pointer;padding:7px 7px 9px}
+.me2-arrived{font-size:14px;font-weight:var(--wt-strong,600);color:var(--w-face-text)}
+.me2-variants{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.me2-variant{display:grid;gap:6px;min-width:0;padding:6px;border:0;border-radius:12px;background:var(--w-s1);box-shadow:inset 0 0 0 1px var(--w-line);color:var(--w-ink-2);font:inherit;font-size:13px;line-height:1.35;cursor:pointer;word-break:keep-all}
+.me2-variant img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px}
+.me2-variant[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--w-ink);color:var(--w-ink);font-weight:var(--wt-strong,600)}
+.me2-preview img{display:block;width:100%;max-height:60vh;object-fit:contain;border-radius:var(--w-r-lg,18px);background:var(--w-s1)}
+.me2-who{position:relative;line-height:0}
+.me2-who img{display:block;width:100%;border-radius:var(--w-r-lg,18px)}
+.me2-face{position:absolute;min-width:44px;min-height:44px;padding:0;border:2px solid #fff;border-radius:50%;background:rgba(255,255,255,.08);box-shadow:0 0 0 2px rgba(0,0,0,.4);cursor:pointer}
+.me2-face:hover{background:rgba(255,255,255,.2)}
+/* 학생증 — 실물 카드. 게임 카드 꼴이고 인화지와 같은 종이다 */
+.me2-id{display:block;overflow:hidden;width:calc(100% - 12px);max-width:400px;justify-self:center;border-radius:14px;background:#FAFAF7;color:#16171B;box-shadow:0 18px 40px rgba(0,0,0,.42);transform:rotate(-.8deg)}
+.me2-id-band{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 16px;background:var(--w-face);color:var(--w-on-face);font-family:var(--w-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.me2-id-body{display:grid;grid-template-columns:104px minmax(0,1fr);gap:16px;align-items:end;padding:14px 16px 12px}
+.me2-id-photo img{display:block;width:104px;height:139px;object-fit:cover;border-radius:4px;background:#E9E7E1}
+.me2-id-copy{display:grid;gap:4px;justify-items:start;min-width:0}
+.me2-id-copy strong{font-size:20px;line-height:1.3;font-weight:var(--wt-title,650);letter-spacing:var(--track-title,-.01em);word-break:keep-all}
+.me2-id-copy span{font-size:14px;line-height:1.4;color:#55565C;word-break:keep-all}
+.me2-id-copy .quiet-button{min-height:44px;padding:0;margin-top:4px;color:#16171B;font-size:13.5px;text-decoration-color:rgba(22,23,27,.35)}
+.me2-section{display:grid;gap:14px;padding-top:12px}
+.me2-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 14px;align-items:start;padding:0 5px}
+.me2-grid:empty{display:none}
+@container (min-width:560px){.me2-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+/* 추억 사진 · 받은 룩 — 인화지 한 장. 받기 전은 빈 종이, 굽는 동안은 「현상 중」과 같은 그림 */
+.me2-card{display:grid;align-content:start;gap:8px;min-width:0}
+.me2-card-art{display:block;padding:7px 7px 0;border-radius:4px;background:#FAFAF7;box-shadow:0 12px 26px rgba(0,0,0,.38)}
+.me2-grid>.me2-card:nth-child(4n+1) .me2-card-art{transform:rotate(-1.1deg)}
+.me2-grid>.me2-card:nth-child(4n+2) .me2-card-art{transform:rotate(.9deg)}
+.me2-grid>.me2-card:nth-child(4n+3) .me2-card-art{transform:rotate(.6deg)}
+.me2-grid>.me2-card:nth-child(4n) .me2-card-art{transform:rotate(-.7deg)}
+.me2-card-art img,.me2-card-wait{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:2px;background:#2A2B30}
+.me2-card-wait[data-wait=develop]{background:radial-gradient(60% 46% at 50% 40%,#C9B7A4 0%,rgba(201,183,164,0) 72%),#3A3A40;animation:me2-develop 6s ease-in-out infinite alternate}
+:root[data-reduced=true] .me2-card-wait[data-wait=develop]{animation:none}
+@media (prefers-reduced-motion:reduce){.me2-card-wait[data-wait=develop]{animation:none}}
+.me2-card-cap{display:block;padding:7px 2px 9px;color:#16171B;font-size:13.5px;line-height:1.35;font-weight:var(--wt-strong,600);word-break:keep-all}
+.me2-card-body{display:grid;gap:4px;justify-items:start;padding:0 2px}
+.me2-card-go{width:100%;min-height:44px;padding:0 10px;font-size:13.5px}
+.me2-tag{font-size:13px;line-height:1.4;color:var(--w-ink-3);word-break:keep-all}
+.me2-tag[data-tone=new]{color:var(--w-face-text)}
+.me2-tag[data-tone=on]{color:var(--w-ok-text)}
+.me2-card-actions{display:flex;flex-wrap:wrap;gap:0 12px}
+.me2-card-actions .quiet-button{min-height:44px;padding:0;font-size:13.5px}
+/* 옷장 — 아직 안 입어 본 것은 옷 태그. 옷 사진 · 옷걸이 봉은 옷 상점 차례(docs/디자인/끌어넘기기_구현준비_20261104.md 3절) */
+.me2-hangtag{position:relative;display:grid;grid-template-rows:auto 1fr auto;gap:6px;min-width:0;min-height:158px;padding:28px 12px 12px;border-radius:10px 10px 12px 12px;background:#F1EFE9;color:#16171B;box-shadow:0 10px 22px rgba(0,0,0,.34)}
+.me2-hangtag::before{content:'';position:absolute;top:10px;left:50%;width:9px;height:9px;margin-left:-4.5px;border-radius:50%;background:var(--w-panel);box-shadow:inset 0 1px 1px rgba(0,0,0,.65),0 0 0 2px #D8D5CC}
+.me2-hangtag-kind{font-family:var(--w-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6C6D72}
+.me2-hangtag strong{font-size:15.5px;line-height:1.35;font-weight:var(--wt-title,650);word-break:keep-all}
+.me2-hangtag-go{min-height:44px;padding:0 10px;border:0;border-radius:999px;background:#16171B;color:#FAFAF7;font:inherit;font-size:13.5px;font-weight:var(--wt-strong,600);line-height:1.2;cursor:pointer}
+.me2-hangtag-go:focus-visible,.me2-card-go:focus-visible{outline:2px solid var(--w-ink);outline-offset:2px}
+.me2-foot{justify-items:start;gap:2px;padding-top:10px}
+.me2-foot .quiet-button{min-height:44px;padding:0;font-size:14px}
+.me2-erase{display:grid;gap:10px;width:100%;margin-top:6px;padding:14px 16px;border-radius:var(--w-r-lg,18px);background:var(--w-s1);box-shadow:var(--w-card-edge,inset 0 0 0 1px var(--w-line))}
+.me2-erase p{font-size:15px;line-height:1.55;word-break:keep-all}
+/* 내 정보 시트의 줄 */
+.me2-row{display:grid;gap:3px;width:100%;min-height:64px;margin:12px 0 0;padding:12px 16px;border:0;border-radius:var(--w-r-lg,18px);background:var(--w-s1);box-shadow:var(--w-card-edge,inset 0 0 0 1px var(--w-line));color:var(--w-ink);font:inherit;text-align:left;cursor:pointer}
+.me2-row strong{font-size:15.5px;line-height:1.4;font-weight:var(--wt-title,650);word-break:keep-all}
+.me2-row span{font-size:13.5px;color:var(--w-ink-3)}
+.me2-row:focus-visible{outline:2px solid var(--w-ink);outline-offset:2px}
