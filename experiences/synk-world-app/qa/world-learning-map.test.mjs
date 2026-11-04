@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
+import fs from 'node:fs';
+import vm from 'node:vm';
 import {worldMap,worldLearning} from '../world-learning-map.mjs';
 
 // WORLD 코치만 TOPIK I+II 합친 지도를 쓴다(2026-10-21 ④). 한 기록에 섞인 TOPIK II 능력(ko2.*) 사건을
@@ -16,6 +18,13 @@ test('합친 지도는 TOPIK I 능력과 TOPIK II 능력을 모두 갖고, 게�
  assert.ok(ids.has('ko2.reading.main')&&ids.has('ko2.listening.response'));
  assert.ok(!gameBrowser.SKILLS.some(node=>/^ko2\./.test(node.id||'')),'게임 엔진 지도에는 TOPIK II 능력이 없다');
  assert.ok(worldLearning.SKILLS.some(node=>node.id==='ko2.reading.main'));
+});
+
+test('환승 러시 묶음의 지도는 WORLD 코치 지도와 판이 같다(strata/world-map.js 한 곳)',()=>{
+ const box={console};vm.createContext(box);vm.runInContext(fs.readFileSync(new URL('../../subway-rush/atlas-learning.js',import.meta.url),'utf8'),box);
+ const game=box.SynkLearning.createGame({gameId:'subway-rush',storage:memory(),clock:()=>'2026-11-05T00:00:00.000Z'});
+ assert.equal(game.mapVersion,worldMap.map_ver);
+ assert.equal(worldLearning.engine.createGame({gameId:'world-home',storage:memory(),clock:()=>'2026-11-05T00:00:00.000Z'}).mapVersion,worldMap.map_ver);
 });
 
 test('섞인 기록: WORLD 코치가 남긴 ko2 답은 TOPIK I 지도 코치의 요약에서 빠지고, ko 답은 두 코치 모두 읽는다',()=>{

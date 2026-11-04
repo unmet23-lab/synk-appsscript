@@ -6309,6 +6309,328 @@ var require_topik_i2 = __commonJS({
   }
 });
 
+// strata/maps/topik-ii.json
+var require_topik_ii = __commonJS({
+  "strata/maps/topik-ii.json"(exports, module) {
+    module.exports = {
+      map_ver: "topik-ii-practice-1-47d0a0c19158",
+      subject: "ko",
+      sources: {
+        "practice-taxonomy": {
+          path: "strata/topik-ii.skills.json",
+          sha256: "47d0a0c1915834979d4eb07420214da084987699ae2e4c59057b1de4cfb1da8d"
+        }
+      },
+      nodes: [
+        {
+          id: "ko2.listening.response",
+          kind: "skill",
+          label_ko: "\uB4E3\uACE0 \uC54C\uB9DE\uAC8C \uB300\uB2F5\uD558\uAE30",
+          domain: "listening",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          source_refs: [
+            {
+              source: "practice-taxonomy",
+              selector: "skills"
+            }
+          ]
+        },
+        {
+          id: "ko2.listening.detail",
+          kind: "skill",
+          label_ko: "\uB4E3\uACE0 \uC138\uBD80 \uB0B4\uC6A9 \uD30C\uC545\uD558\uAE30",
+          domain: "listening",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          source_refs: [
+            {
+              source: "practice-taxonomy",
+              selector: "skills"
+            }
+          ]
+        },
+        {
+          id: "ko2.listening.main",
+          kind: "skill",
+          label_ko: "\uB4E3\uACE0 \uC911\uC2EC \uC0DD\uAC01 \uD30C\uC545\uD558\uAE30",
+          domain: "listening",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          source_refs: [
+            {
+              source: "practice-taxonomy",
+              selector: "skills"
+            }
+          ]
+        },
+        {
+          id: "ko2.listening.inference",
+          kind: "skill",
+          label_ko: "\uB4E3\uACE0 \uC0C1\uD669 \uC9D0\uC791\uD558\uAE30",
+          domain: "listening",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          source_refs: [
+            {
+              source: "practice-taxonomy",
+              selector: "skills"
+            }
+          ]
+        },
+        {
+          id: "ko2.listening.attitude",
+          kind: "skill",
+          label_ko: "\uB4E3\uACE0 \uC758\uB3C4\xB7\uD0DC\uB3C4 \uD30C\uC545\uD558\uAE30",
+          domain: "listening",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          source_refs: [
+            {
+              source: "practice-taxonomy",
+              selector: "skills"
+            }
+          ]
+        },
+        {
+          id: "ko2.reading.grammar",
+          kind: "skill",
+          label_ko: "\uBB38\uBC95 \uD45C\uD604 \uC77D\uAE30",
+          domain: "reading",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          source_refs: [
+            {
+              source: "practice-taxonomy",
+              selector: "skills"
+            }
+          ]
+        },
+        {
+          id: "ko2.reading.vocabulary",
+          kind: "skill",
+          label_ko: "\uC5B4\uD718\xB7\uAD00\uC6A9 \uD45C\uD604 \uC77D\uAE30",
+          domain: "reading",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          source_refs: [
+            {
+              source: "practice-taxonomy",
+              selector: "skills"
+            }
+          ]
+        },
+        {
+          id: "ko2.reading.detail",
+          kind: "skill",
+          label_ko: "\uC77D\uACE0 \uC138\uBD80 \uB0B4\uC6A9 \uD30C\uC545\uD558\uAE30",
+          domain: "reading",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          source_refs: [
+            {
+              source: "practice-taxonomy",
+              selector: "skills"
+            }
+          ]
+        },
+        {
+          id: "ko2.reading.main",
+          kind: "skill",
+          label_ko: "\uC77D\uACE0 \uC911\uC2EC \uB0B4\uC6A9 \uD30C\uC545\uD558\uAE30",
+          domain: "reading",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          source_refs: [
+            {
+              source: "practice-taxonomy",
+              selector: "skills"
+            }
+          ]
+        },
+        {
+          id: "ko2.reading.context",
+          kind: "skill",
+          label_ko: "\uBB38\uB9E5\uC73C\uB85C \uB0B4\uC6A9 \uC9D0\uC791\uD558\uAE30",
+          domain: "reading",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          source_refs: [
+            {
+              source: "practice-taxonomy",
+              selector: "skills"
+            }
+          ]
+        },
+        {
+          id: "ko2.reading.structure",
+          kind: "skill",
+          label_ko: "\uAE00\uC758 \uD750\uB984 \uD30C\uC545\uD558\uAE30",
+          domain: "reading",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          source_refs: [
+            {
+              source: "practice-taxonomy",
+              selector: "skills"
+            }
+          ]
+        },
+        {
+          id: "ko2.reading.attitude",
+          kind: "skill",
+          label_ko: "\uD544\uC790\xB7\uC778\uBB3C\uC758 \uD0DC\uB3C4\uC640 \uC2EC\uC815 \uD30C\uC545\uD558\uAE30",
+          domain: "reading",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          source_refs: [
+            {
+              source: "practice-taxonomy",
+              selector: "skills"
+            }
+          ]
+        },
+        {
+          id: "ko2.writing.sentence",
+          kind: "skill",
+          label_ko: "\uBB38\uB9E5\uC5D0 \uB9DE\uB294 \uBB38\uC7A5 \uC4F0\uAE30",
+          domain: "writing",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          source_refs: [
+            {
+              source: "practice-taxonomy",
+              selector: "skills"
+            }
+          ]
+        },
+        {
+          id: "ko2.writing.description",
+          kind: "skill",
+          label_ko: "\uC790\uB8CC\uB97C \uC124\uBA85\uD558\uB294 \uAE00 \uC4F0\uAE30",
+          domain: "writing",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          source_refs: [
+            {
+              source: "practice-taxonomy",
+              selector: "skills"
+            }
+          ]
+        },
+        {
+          id: "ko2.writing.argument",
+          kind: "skill",
+          label_ko: "\uC8FC\uC7A5\uD558\uB294 \uAE00 \uC4F0\uAE30",
+          domain: "writing",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          source_refs: [
+            {
+              source: "practice-taxonomy",
+              selector: "skills"
+            }
+          ]
+        }
+      ],
+      edges: [],
+      tag_vocabulary: [],
+      links: {
+        tags: [],
+        goals: []
+      }
+    };
+  }
+});
+
+// strata/world-map.js
+var require_world_map = __commonJS({
+  "strata/world-map.js"(exports, module) {
+    "use strict";
+    var topikI = require_topik_i2();
+    var topikII = require_topik_ii();
+    var II = "-ii";
+    function worldMapData2({ base = topikI.topikMap(), second = topikII } = {}) {
+      const rename = (key) => Object.hasOwn(base.sources, key) ? `${key}${II}` : key;
+      const refs = (list) => list.map((ref) => ({ ...ref, source: rename(ref.source) }));
+      return {
+        map_ver: `world:${base.map_ver}:${second.map_ver}`,
+        subject: base.subject,
+        sources: { ...base.sources, ...Object.fromEntries(Object.entries(second.sources).map(([key, value]) => [rename(key), value])) },
+        nodes: [...base.nodes, ...second.nodes.map((node) => ({ ...node, source_refs: refs(node.source_refs) }))],
+        edges: [...base.edges, ...second.edges.map((edge) => ({ ...edge, source_refs: refs(edge.source_refs) }))],
+        tag_vocabulary: [...base.tag_vocabulary, ...second.tag_vocabulary],
+        links: {
+          ...base.links,
+          tags: [...base.links.tags, ...second.links.tags.map((link) => ({ ...link, source_refs: refs(link.source_refs) }))],
+          ...base.links.goals || second.links.goals?.length ? { goals: [...base.links.goals || [], ...(second.links.goals || []).map((link) => ({ ...link, source_refs: refs(link.source_refs) }))] } : {}
+        }
+      };
+    }
+    module.exports = { worldMapData: worldMapData2 };
+  }
+});
+
 // atlas/trail.js
 var require_trail2 = __commonJS({
   "atlas/trail.js"(exports, module) {
@@ -16312,319 +16634,10 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
 
 // experiences/synk-world-app/world-learning-map.mjs
 var import_strata = __toESM(require_strata(), 1);
-var import_topik_i = __toESM(require_topik_i2(), 1);
-
-// strata/maps/topik-ii.json
-var topik_ii_default = {
-  map_ver: "topik-ii-practice-1-47d0a0c19158",
-  subject: "ko",
-  sources: {
-    "practice-taxonomy": {
-      path: "strata/topik-ii.skills.json",
-      sha256: "47d0a0c1915834979d4eb07420214da084987699ae2e4c59057b1de4cfb1da8d"
-    }
-  },
-  nodes: [
-    {
-      id: "ko2.listening.response",
-      kind: "skill",
-      label_ko: "\uB4E3\uACE0 \uC54C\uB9DE\uAC8C \uB300\uB2F5\uD558\uAE30",
-      domain: "listening",
-      level: null,
-      difficulty: {
-        authored: null,
-        measured: null,
-        n: 0
-      },
-      source_refs: [
-        {
-          source: "practice-taxonomy",
-          selector: "skills"
-        }
-      ]
-    },
-    {
-      id: "ko2.listening.detail",
-      kind: "skill",
-      label_ko: "\uB4E3\uACE0 \uC138\uBD80 \uB0B4\uC6A9 \uD30C\uC545\uD558\uAE30",
-      domain: "listening",
-      level: null,
-      difficulty: {
-        authored: null,
-        measured: null,
-        n: 0
-      },
-      source_refs: [
-        {
-          source: "practice-taxonomy",
-          selector: "skills"
-        }
-      ]
-    },
-    {
-      id: "ko2.listening.main",
-      kind: "skill",
-      label_ko: "\uB4E3\uACE0 \uC911\uC2EC \uC0DD\uAC01 \uD30C\uC545\uD558\uAE30",
-      domain: "listening",
-      level: null,
-      difficulty: {
-        authored: null,
-        measured: null,
-        n: 0
-      },
-      source_refs: [
-        {
-          source: "practice-taxonomy",
-          selector: "skills"
-        }
-      ]
-    },
-    {
-      id: "ko2.listening.inference",
-      kind: "skill",
-      label_ko: "\uB4E3\uACE0 \uC0C1\uD669 \uC9D0\uC791\uD558\uAE30",
-      domain: "listening",
-      level: null,
-      difficulty: {
-        authored: null,
-        measured: null,
-        n: 0
-      },
-      source_refs: [
-        {
-          source: "practice-taxonomy",
-          selector: "skills"
-        }
-      ]
-    },
-    {
-      id: "ko2.listening.attitude",
-      kind: "skill",
-      label_ko: "\uB4E3\uACE0 \uC758\uB3C4\xB7\uD0DC\uB3C4 \uD30C\uC545\uD558\uAE30",
-      domain: "listening",
-      level: null,
-      difficulty: {
-        authored: null,
-        measured: null,
-        n: 0
-      },
-      source_refs: [
-        {
-          source: "practice-taxonomy",
-          selector: "skills"
-        }
-      ]
-    },
-    {
-      id: "ko2.reading.grammar",
-      kind: "skill",
-      label_ko: "\uBB38\uBC95 \uD45C\uD604 \uC77D\uAE30",
-      domain: "reading",
-      level: null,
-      difficulty: {
-        authored: null,
-        measured: null,
-        n: 0
-      },
-      source_refs: [
-        {
-          source: "practice-taxonomy",
-          selector: "skills"
-        }
-      ]
-    },
-    {
-      id: "ko2.reading.vocabulary",
-      kind: "skill",
-      label_ko: "\uC5B4\uD718\xB7\uAD00\uC6A9 \uD45C\uD604 \uC77D\uAE30",
-      domain: "reading",
-      level: null,
-      difficulty: {
-        authored: null,
-        measured: null,
-        n: 0
-      },
-      source_refs: [
-        {
-          source: "practice-taxonomy",
-          selector: "skills"
-        }
-      ]
-    },
-    {
-      id: "ko2.reading.detail",
-      kind: "skill",
-      label_ko: "\uC77D\uACE0 \uC138\uBD80 \uB0B4\uC6A9 \uD30C\uC545\uD558\uAE30",
-      domain: "reading",
-      level: null,
-      difficulty: {
-        authored: null,
-        measured: null,
-        n: 0
-      },
-      source_refs: [
-        {
-          source: "practice-taxonomy",
-          selector: "skills"
-        }
-      ]
-    },
-    {
-      id: "ko2.reading.main",
-      kind: "skill",
-      label_ko: "\uC77D\uACE0 \uC911\uC2EC \uB0B4\uC6A9 \uD30C\uC545\uD558\uAE30",
-      domain: "reading",
-      level: null,
-      difficulty: {
-        authored: null,
-        measured: null,
-        n: 0
-      },
-      source_refs: [
-        {
-          source: "practice-taxonomy",
-          selector: "skills"
-        }
-      ]
-    },
-    {
-      id: "ko2.reading.context",
-      kind: "skill",
-      label_ko: "\uBB38\uB9E5\uC73C\uB85C \uB0B4\uC6A9 \uC9D0\uC791\uD558\uAE30",
-      domain: "reading",
-      level: null,
-      difficulty: {
-        authored: null,
-        measured: null,
-        n: 0
-      },
-      source_refs: [
-        {
-          source: "practice-taxonomy",
-          selector: "skills"
-        }
-      ]
-    },
-    {
-      id: "ko2.reading.structure",
-      kind: "skill",
-      label_ko: "\uAE00\uC758 \uD750\uB984 \uD30C\uC545\uD558\uAE30",
-      domain: "reading",
-      level: null,
-      difficulty: {
-        authored: null,
-        measured: null,
-        n: 0
-      },
-      source_refs: [
-        {
-          source: "practice-taxonomy",
-          selector: "skills"
-        }
-      ]
-    },
-    {
-      id: "ko2.reading.attitude",
-      kind: "skill",
-      label_ko: "\uD544\uC790\xB7\uC778\uBB3C\uC758 \uD0DC\uB3C4\uC640 \uC2EC\uC815 \uD30C\uC545\uD558\uAE30",
-      domain: "reading",
-      level: null,
-      difficulty: {
-        authored: null,
-        measured: null,
-        n: 0
-      },
-      source_refs: [
-        {
-          source: "practice-taxonomy",
-          selector: "skills"
-        }
-      ]
-    },
-    {
-      id: "ko2.writing.sentence",
-      kind: "skill",
-      label_ko: "\uBB38\uB9E5\uC5D0 \uB9DE\uB294 \uBB38\uC7A5 \uC4F0\uAE30",
-      domain: "writing",
-      level: null,
-      difficulty: {
-        authored: null,
-        measured: null,
-        n: 0
-      },
-      source_refs: [
-        {
-          source: "practice-taxonomy",
-          selector: "skills"
-        }
-      ]
-    },
-    {
-      id: "ko2.writing.description",
-      kind: "skill",
-      label_ko: "\uC790\uB8CC\uB97C \uC124\uBA85\uD558\uB294 \uAE00 \uC4F0\uAE30",
-      domain: "writing",
-      level: null,
-      difficulty: {
-        authored: null,
-        measured: null,
-        n: 0
-      },
-      source_refs: [
-        {
-          source: "practice-taxonomy",
-          selector: "skills"
-        }
-      ]
-    },
-    {
-      id: "ko2.writing.argument",
-      kind: "skill",
-      label_ko: "\uC8FC\uC7A5\uD558\uB294 \uAE00 \uC4F0\uAE30",
-      domain: "writing",
-      level: null,
-      difficulty: {
-        authored: null,
-        measured: null,
-        n: 0
-      },
-      source_refs: [
-        {
-          source: "practice-taxonomy",
-          selector: "skills"
-        }
-      ]
-    }
-  ],
-  edges: [],
-  tag_vocabulary: [],
-  links: {
-    tags: [],
-    goals: []
-  }
-};
-
-// experiences/synk-world-app/world-learning-map.mjs
+var import_world_map = __toESM(require_world_map(), 1);
 var import_game_browser = __toESM(require_game_browser(), 1);
 var import_game_learning = __toESM(require_game_learning(), 1);
-var II = "-ii";
-function worldMapData({ base = import_topik_i.default.topikMap(), second = topik_ii_default } = {}) {
-  const rename = (key) => Object.hasOwn(base.sources, key) ? `${key}${II}` : key;
-  const refs = (list) => list.map((ref) => ({ ...ref, source: rename(ref.source) }));
-  return {
-    map_ver: `world:${base.map_ver}:${second.map_ver}`,
-    subject: base.subject,
-    sources: { ...base.sources, ...Object.fromEntries(Object.entries(second.sources).map(([key, value]) => [rename(key), value])) },
-    nodes: [...base.nodes, ...second.nodes.map((node) => ({ ...node, source_refs: refs(node.source_refs) }))],
-    edges: [...base.edges, ...second.edges.map((edge) => ({ ...edge, source_refs: refs(edge.source_refs) }))],
-    tag_vocabulary: [...base.tag_vocabulary, ...second.tag_vocabulary],
-    links: {
-      ...base.links,
-      tags: [...base.links.tags, ...second.links.tags.map((link) => ({ ...link, source_refs: refs(link.source_refs) }))],
-      ...base.links.goals || second.links.goals?.length ? { goals: [...base.links.goals || [], ...(second.links.goals || []).map((link) => ({ ...link, source_refs: refs(link.source_refs) }))] } : {}
-    }
-  };
-}
+var worldMapData = import_world_map.default.worldMapData;
 var worldMap = import_strata.default.createMap(worldMapData());
 var worldLearning = Object.freeze({
   ...import_game_browser.default,
@@ -20495,6 +20508,108 @@ function planTokens(candidate) {
   return [`plan.area.${area}`, ...[...skills].sort().map((id) => `plan.skill.${id}`)];
 }
 
+// experiences/subway-rush/plan-items.mjs
+var PLAN_ITEMS = Object.freeze([
+  { id: "busy.delay.1to2", family: "busy.delay", skillId: "ko2.listening.detail", difficulty: 1 },
+  { id: "busy.exit.1.2", family: "busy.exit.1", skillId: "ko2.listening.detail", difficulty: 1 },
+  { id: "busy.exit.2.1", family: "busy.exit.2", skillId: "ko2.listening.detail", difficulty: 1 },
+  { id: "busy.exit.3.4", family: "busy.exit.3", skillId: "ko2.listening.detail", difficulty: 1 },
+  { id: "busy.exit.4.3", family: "busy.exit.4", skillId: "ko2.listening.detail", difficulty: 1 },
+  { id: "busy.exit.5.3", family: "busy.exit.5", skillId: "ko2.listening.detail", difficulty: 1 },
+  { id: "busy.exit.6.7", family: "busy.exit.6", skillId: "ko2.listening.detail", difficulty: 1 },
+  { id: "busy.exit.7.6", family: "busy.exit.7", skillId: "ko2.listening.detail", difficulty: 1 },
+  { id: "busy.express.jonggak.jonggak", family: "busy.express.jonggak", skillId: "ko2.listening.detail", difficulty: 1 },
+  { id: "busy.express.jonggak.jongno3", family: "busy.express.jongno3", skillId: "ko2.listening.detail", difficulty: 1 },
+  { id: "busy.express.jonggak.jongno5", family: "busy.express.jongno5", skillId: "ko2.listening.detail", difficulty: 1 },
+  { id: "busy.short.left", family: "busy.short", skillId: "ko2.listening.detail", difficulty: 1 },
+  { id: "busy.short.right", family: "busy.short", skillId: "ko2.listening.detail", difficulty: 1 },
+  { id: "exit.1", family: "exit.1", skillId: "ko.listening.detail", difficulty: 1 },
+  { id: "exit.2", family: "exit.2", skillId: "ko.listening.detail", difficulty: 1 },
+  { id: "exit.3", family: "exit.3", skillId: "ko.listening.detail", difficulty: 1 },
+  { id: "exit.4", family: "exit.4", skillId: "ko.listening.detail", difficulty: 1 },
+  { id: "exit.5", family: "exit.5", skillId: "ko.listening.detail", difficulty: 1 },
+  { id: "exit.6", family: "exit.6", skillId: "ko.listening.detail", difficulty: 1 },
+  { id: "exit.7", family: "exit.7", skillId: "ko.listening.detail", difficulty: 1 },
+  { id: "exit.8", family: "exit.8", skillId: "ko.listening.detail", difficulty: 1 },
+  { id: "fork.cheongnyangni.dongdaemun", family: "fork.cheongnyangni", skillId: "ko.listening.detail", difficulty: 1 },
+  { id: "fork.cheongnyangni.jonggak", family: "fork.cheongnyangni", skillId: "ko.listening.detail", difficulty: 1 },
+  { id: "fork.cheongnyangni.jongno3", family: "fork.cheongnyangni", skillId: "ko.listening.detail", difficulty: 1 },
+  { id: "fork.cheongnyangni.jongno5", family: "fork.cheongnyangni", skillId: "ko.listening.detail", difficulty: 1 },
+  { id: "stop.chungjeongno.pass.left", family: "stop.chungjeongno.pass", skillId: "ko.listening.detail", difficulty: 2 },
+  { id: "stop.chungjeongno.pass.right", family: "stop.chungjeongno.pass", skillId: "ko.listening.detail", difficulty: 2 },
+  { id: "stop.cityhall.off.left", family: "stop.cityhall.off", skillId: "ko.listening.detail", difficulty: 2 },
+  { id: "stop.cityhall.off.right", family: "stop.cityhall.off", skillId: "ko.listening.detail", difficulty: 2 },
+  { id: "stop.dongdaemun.off.left", family: "stop.dongdaemun.off", skillId: "ko.listening.detail", difficulty: 2 },
+  { id: "stop.dongdaemun.off.right", family: "stop.dongdaemun.off", skillId: "ko.listening.detail", difficulty: 2 },
+  { id: "stop.euljiro3.off.left", family: "stop.euljiro3.off", skillId: "ko.listening.detail", difficulty: 2 },
+  { id: "stop.euljiro3.off.right", family: "stop.euljiro3.off", skillId: "ko.listening.detail", difficulty: 2 },
+  { id: "stop.euljiro3.pass.left", family: "stop.euljiro3.pass", skillId: "ko.listening.detail", difficulty: 2 },
+  { id: "stop.euljiro3.pass.right", family: "stop.euljiro3.pass", skillId: "ko.listening.detail", difficulty: 2 },
+  { id: "stop.jonggak.off.left", family: "stop.jonggak.off", skillId: "ko.listening.detail", difficulty: 1 },
+  { id: "stop.jonggak.off.right", family: "stop.jonggak.off", skillId: "ko.listening.detail", difficulty: 1 },
+  { id: "stop.jongno3.off.left", family: "stop.jongno3.off", skillId: "ko.listening.detail", difficulty: 2 },
+  { id: "stop.jongno3.off.right", family: "stop.jongno3.off", skillId: "ko.listening.detail", difficulty: 2 },
+  { id: "stop.jongno3.pass.left", family: "stop.jongno3.pass", skillId: "ko.listening.detail", difficulty: 2 },
+  { id: "stop.jongno3.pass.right", family: "stop.jongno3.pass", skillId: "ko.listening.detail", difficulty: 2 },
+  { id: "stop.jongno5.off.left", family: "stop.jongno5.off", skillId: "ko.listening.detail", difficulty: 1 },
+  { id: "stop.jongno5.off.right", family: "stop.jongno5.off", skillId: "ko.listening.detail", difficulty: 1 }
+]);
+
+// experiences/subway-rush/learning.mjs
+var GAME_ID = "subway-rush";
+var FORMAT = "single-choice";
+var ITEM_VERSION2 = Object.freeze({});
+function decisionMeta(d) {
+  const version = ITEM_VERSION2[d.id] || 1;
+  return {
+    id: `${GAME_ID}.${d.id}`,
+    itemKey: `${GAME_ID}.${d.id}.v${version}`,
+    familyKey: `${GAME_ID}.${d.family}.v1`,
+    skillId: d.skillId,
+    difficulty: d.difficulty,
+    modality: "listening",
+    responseFormat: FORMAT,
+    audioRequired: true,
+    confounded: false,
+    conceptIds: []
+  };
+}
+
+// experiences/brand-opening/play-unlocks.mjs
+var PLAY_UNLOCKS = Object.freeze({
+  // 주문 폭주: 싱크타운 카페 알바 시작에서 열린다. 지금 앱의 싱크타운 카페 이야기는 첫 방문(cafe-apply) 하나라 그 완료를 기록으로 읽는다 —
+  // 1화 뒤 카페 알바 장면이 생기면 그 장면의 기록으로 바꾼다.
+  order: Object.freeze({ where: "play.where.cafe", open: (record2) => record2.cafeVisits >= 1 }),
+  // 말의 리듬: 지금은 늘 열려 있다(11-04 캠퍼스 판 겉까지 마침). 축제 무대 연습 · 아이돌 꿈 연습실 회차가 생기면 그 기록과 화면 글 키로 이 자리에 한 줄:
+  // rhythm: Object.freeze({ where: 'play.where.festival', open: (record) => record.festivalRehearsals >= 1 }),
+  // 빈칸 베기(11-04): 이야기 자리는 중간고사 전날 밤 도서관(3급 뼈대 U08). 그 회차가 아직 없어 가장 가까운 공부 기록 — 레슨 한 번 — 으로 열고,
+  // 카페 첫 방문을 먼저 한 학생도 막지 않는다(엄격하게 막지 않는다). 중간고사 회차가 생기면 그 기록으로 옮긴다.
+  blank: Object.freeze({ where: "play.where.lesson", open: (record2) => record2.lessons >= 1 || record2.cafeVisits >= 1 }),
+  // 찰칵 낱말(11-04): 드라마 1화 기록이 아직 홈에 없어, 이름표를 읽고 찾는 이야기(greetings-story)가 든 첫 묶음 「처음 만난 날」을 두 강 이상 들으면 연다.
+  // 강 순서를 강제하지 않아 그 강이라는 보장은 없지만, 엄격하게 막지 않는 임시 자리다. 1화 기록이 홈에 오면 그 기록으로 옮긴다.
+  snap: Object.freeze({ where: "play.where.stories", open: (record2) => record2.greetingLessons >= 2 }),
+  // MT 바닷가 자전거 레이스(11-04, 설계 korean-racing/qa/world-mt-20261104/설계.md): 동아리 MT 회차가 아직 없어 가장 가까운 이야기 기록으로 연다 —
+  // 지도 찾기 이야기(거꾸로 든 지도) 한 번. MT 회차가 생기면 그 회차의 기록으로 바꾼다.
+  racing: Object.freeze({ where: "play.where.directions", open: (record2) => record2.directionsDone >= 1 }),
+  // 말 랠리(11-04, 설계 talk-rally/qa/world-campus-20261104/설계.md): 동아리 탁구 회차가 아직 없어 빈칸 베기와 같이 가장 가까운 공부 기록 — 레슨 한 번(카페 첫 방문을 먼저 한 학생도 막지 않는다). 그 회차가 생기면 그 기록으로 옮긴다.
+  rally: Object.freeze({ where: "play.where.lesson", open: (record2) => record2.lessons >= 1 || record2.cafeVisits >= 1 }),
+  // 환승 러시: 이야기 자리는 1화 아침인데 드라마 기록이 생활 요약에 없어, 가장 가까운 이야기 기록인 레슨 하나를 마침으로 연다(설계 9절) —
+  // 1화에 등굣길 장면이 생기면 그 기록으로 바꾼다.
+  subway: Object.freeze({ where: "play.where.lesson", open: (record2) => record2.lessons >= 1 })
+});
+var PLAY_REPLACED_BY = Object.freeze({ runner: "subway" });
+function playState(id, record2) {
+  const rule = PLAY_UNLOCKS[id];
+  if (!rule) return { open: true };
+  let open = false;
+  try {
+    open = !!record2 && rule.open(record2) === true;
+  } catch {
+    open = false;
+  }
+  return open ? { open: true } : { open: false, where: rule.where };
+}
+
 // experiences/synk-world-app/world-learning-plan.mjs
 var PACK_GOALS = {
   greetings: ["life", "people", "expression"],
@@ -20700,6 +20815,37 @@ function buildWorldLearningCandidates({ progress: progress2 = {}, settings = {},
       ...access("hangul")
     }
   );
+  const finished = PACKS.flatMap((pack) => pack.lessons).filter((lesson2) => time2(source.lessons?.[lesson2.id]?.completedAt)).length;
+  if (playState("subway", { lessons: finished }).open) {
+    const upper = Number(settings?.targetGrade) >= 3;
+    const subwayTargets = PLAN_ITEMS.filter((item) => upper || !item.skillId.startsWith("ko2.")).map((item) => {
+      const target = decisionMeta(item);
+      return {
+        id: target.id,
+        skillIds: [target.skillId],
+        difficulty: target.difficulty,
+        modality: target.modality,
+        responseFormat: target.responseFormat,
+        familyKeys: [target.familyKey],
+        itemKey: target.itemKey,
+        conceptIds: [...target.conceptIds]
+      };
+    });
+    candidates.push({
+      id: "world.play.subway",
+      label: "\uD658\uC2B9 \uB7EC\uC2DC \xB7 \uC548\uB0B4\uBC29\uC1A1 \uB4E3\uACE0 \uAC08\uC544\uD0C0\uAE30",
+      route: "game",
+      gameId: "subway",
+      minutes: 3,
+      minutesEstimated: true,
+      targets: subwayTargets,
+      goals: ["exam", "prepare", "listening", "travel"],
+      audioRequired: true,
+      modality: "listening",
+      presentation: presentationFor(settings),
+      ...access("subway")
+    });
+  }
   return candidates;
 }
 function resumeCandidates(progress2, settings, now) {
@@ -23568,8 +23714,8 @@ var ITEMS = [
 var PRACTICE = I("practice", "\uC800\uB294 \uB9E4\uC77C \uC544\uCE68\uC5D0 {}\uB97C \uB9C8\uC154\uC694.", ["\uC6B0\uC720", "\uC758\uC790", "\uBC14\uC9C0", "\uBAA8\uC790"], V, "noun", 1, "\uBCF4\uAE30 \uC911\uC5D0\uC11C \uB9C8\uC2E4 \uC218 \uC788\uB294 \uAC83\uC740 \uC6B0\uC720\uC608\uC694.");
 
 // experiences/blank-slice/learning.mjs
-var GAME_ID = "blank-slice";
-var FORMAT = "single-choice";
+var GAME_ID2 = "blank-slice";
+var FORMAT2 = "single-choice";
 var GRAMMAR = Object.freeze({
   p01: "G203",
   p02: "G207",
@@ -23590,7 +23736,7 @@ var GRAMMAR = Object.freeze({
   e10: "G501",
   p06: "G203"
 });
-var ITEM_VERSION2 = Object.freeze({ v06: 3, v07: 3, e01: 3, e08: 3, e02: 2, e07: 2, e06: 2, v08: 2 });
+var ITEM_VERSION3 = Object.freeze({ v06: 3, v07: 3, e01: 3, e08: 3, e02: 2, e07: 2, e06: 2, v08: 2 });
 var WORD = Object.freeze({
   v01: "w0011",
   v02: "w0301",
@@ -23610,15 +23756,15 @@ var WORD = Object.freeze({
 });
 var conceptsOf = (id) => GRAMMAR[id] ? [GRAMMAR[id]] : WORD[id] ? [`ko.word.${WORD[id]}`] : [];
 function itemMetadata(item) {
-  const family = `${GAME_ID}.${item.id}.v1`, key = `${GAME_ID}.${item.id}.v${ITEM_VERSION2[item.id] || 1}`;
+  const family = `${GAME_ID2}.${item.id}.v1`, key = `${GAME_ID2}.${item.id}.v${ITEM_VERSION3[item.id] || 1}`;
   return {
-    id: `${GAME_ID}.${item.id}`,
+    id: `${GAME_ID2}.${item.id}`,
     itemKey: key,
     familyKey: family,
     skillId: item.skill,
     difficulty: item.difficulty,
     modality: "reading",
-    responseFormat: FORMAT,
+    responseFormat: FORMAT2,
     audioRequired: false,
     confounded: false,
     conceptIds: conceptsOf(item.id)
@@ -23942,7 +24088,7 @@ var READING_CHECKS = Object.freeze([
     explanation: "\u201C\uADF8\uBD84\uC5D0\uAC8C \uC815\uB9D0 \uAC10\uC0AC\uD569\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB3C4\uC640\uC900 \uC0AC\uB78C\uC5D0\uAC8C \uACE0\uB9C8\uC6B4 \uB9C8\uC74C\uC744 \uC804\uD558\uB294 \uAE00\uC774\uC5D0\uC694. \uBCD1\uC6D0\uC5D0\uB294 \u201C\uBE68\uB9AC \uAC14\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uACE0, \uCC28\uB294 \uB2E4\uC74C\uC5D0 \uB9C8\uC2DC\uACE0 \uC2F6\uB2E4\uACE0 \uD588\uC73C\uB2C8 \uC544\uC9C1 \uAC19\uC774 \uB9C8\uC2DC\uC9C0 \uC54A\uC558\uC5B4\uC694."
   }
 ]);
-var ITEM_VERSION3 = Object.freeze({
+var ITEM_VERSION4 = Object.freeze({
   "town-reading-place": 2,
   "town-reading-negation": 2,
   "town-detail-lost": 2,
@@ -23962,7 +24108,7 @@ var ITEM_VERSION3 = Object.freeze({
 function readingMetadata(item) {
   return {
     id: item.id,
-    itemKey: `synk-town.reading-check.${item.id}.v${ITEM_VERSION3[item.id] || 1}`,
+    itemKey: `synk-town.reading-check.${item.id}.v${ITEM_VERSION4[item.id] || 1}`,
     familyKey: `synk-town.reading-check.${item.id}.v1`,
     skillId: `ko.reading.${item.skill}`,
     difficulty: item.difficulty ?? 1,
@@ -24931,8 +25077,8 @@ var VENUES = [
 ];
 
 // experiences/entry-check/learning.mjs
-var GAME_ID2 = "entry-check";
-var FORMAT2 = "single-choice";
+var GAME_ID3 = "entry-check";
+var FORMAT3 = "single-choice";
 var RULE_GRAMMAR = Object.freeze({
   "pool.cap": ["G403"],
   "pool.food": ["G402"],
@@ -24949,18 +25095,18 @@ var RULE_GRAMMAR = Object.freeze({
   "concert.food": ["S104", "G402"]
 });
 var CASE_GRAMMAR = new Map(VENUES.flatMap((v) => v.cases.map((c) => [c.id, [...new Set(c.evidence.flatMap((r) => RULE_GRAMMAR[`${v.id}.${r}`] || []))]])));
-var ITEM_VERSION4 = Object.freeze({ "concert-12": 3, "pool-14": 2 });
+var ITEM_VERSION5 = Object.freeze({ "concert-12": 3, "pool-14": 2 });
 var LANGUAGE_DIFFICULTY = 2;
 function caseMetadata(c) {
-  const family = `${GAME_ID2}.${c.id}.v1`, key = `${GAME_ID2}.${c.id}.v${ITEM_VERSION4[c.id] || 1}`;
+  const family = `${GAME_ID3}.${c.id}.v1`, key = `${GAME_ID3}.${c.id}.v${ITEM_VERSION5[c.id] || 1}`;
   return {
-    id: `${GAME_ID2}.${c.id}`,
+    id: `${GAME_ID3}.${c.id}`,
     itemKey: key,
     familyKey: family,
     skillId: c.skill,
     difficulty: LANGUAGE_DIFFICULTY,
     modality: "reading",
-    responseFormat: FORMAT2,
+    responseFormat: FORMAT3,
     audioRequired: false,
     confounded: false,
     conceptIds: [...CASE_GRAMMAR.get(c.id) || []]
@@ -25675,7 +25821,7 @@ var hangul_default = {
 };
 
 // experiences/topik-items/review/existing-verdicts.json
-var existing_verdicts_default = { version: "topik-existing-verdicts-1", items: [{ itemKey: "blank-slice.a01.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.a01.v1" }, { itemKey: "blank-slice.a02.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.a02.v1" }, { itemKey: "blank-slice.e01.v3", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e01.v1" }, { itemKey: "blank-slice.e02.v2", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e02.v1" }, { itemKey: "blank-slice.e03.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 2, responseFormat: "single-choice", familyKey: "blank-slice.e03.v1" }, { itemKey: "blank-slice.e04.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e04.v1" }, { itemKey: "blank-slice.e05.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 2, responseFormat: "single-choice", familyKey: "blank-slice.e05.v1" }, { itemKey: "blank-slice.e06.v2", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e06.v1" }, { itemKey: "blank-slice.e07.v2", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e07.v1" }, { itemKey: "blank-slice.e08.v3", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e08.v1" }, { itemKey: "blank-slice.e09.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 2, responseFormat: "single-choice", familyKey: "blank-slice.e09.v1" }, { itemKey: "blank-slice.e10.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 2, responseFormat: "single-choice", familyKey: "blank-slice.e10.v1" }, { itemKey: "blank-slice.g01.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.g01.v1" }, { itemKey: "blank-slice.g02.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.g02.v1" }, { itemKey: "blank-slice.g03.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.g03.v1" }, { itemKey: "blank-slice.p01.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p01.v1" }, { itemKey: "blank-slice.p02.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p02.v1" }, { itemKey: "blank-slice.p03.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p03.v1" }, { itemKey: "blank-slice.p04.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p04.v1" }, { itemKey: "blank-slice.p05.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p05.v1" }, { itemKey: "blank-slice.p06.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p06.v1" }, { itemKey: "blank-slice.t01.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.t01.v1" }, { itemKey: "blank-slice.v01.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v01.v1" }, { itemKey: "blank-slice.v02.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v02.v1" }, { itemKey: "blank-slice.v03.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v03.v1" }, { itemKey: "blank-slice.v04.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v04.v1" }, { itemKey: "blank-slice.v05.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v05.v1" }, { itemKey: "blank-slice.v06.v3", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v06.v1" }, { itemKey: "blank-slice.v07.v3", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v07.v1" }, { itemKey: "blank-slice.v08.v2", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v08.v1" }, { itemKey: "blank-slice.v09.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v09.v1" }, { itemKey: "blank-slice.v10.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v10.v1" }, { itemKey: "blank-slice.v11.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v11.v1" }, { itemKey: "blank-slice.v12.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v12.v1" }, { itemKey: "blank-slice.v13.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v13.v1" }, { itemKey: "blank-slice.v14.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v14.v1" }, { itemKey: "entry-check.concert-10.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.concert-10.v1" }, { itemKey: "entry-check.concert-11.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.concert-11.v1" }, { itemKey: "entry-check.concert-12.v3", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.concert-12.v1" }, { itemKey: "entry-check.concert-13.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.concert-13.v1" }, { itemKey: "entry-check.concert-14.v1", verdict: "pass", skillId: "ko.reading.condition", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.concert-14.v1" }, { itemKey: "entry-check.library-10.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.library-10.v1" }, { itemKey: "entry-check.library-11.v1", verdict: "pass", skillId: "ko.reading.condition", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.library-11.v1" }, { itemKey: "entry-check.museum-09.v1", verdict: "pass", skillId: "ko.reading.condition", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.museum-09.v1" }, { itemKey: "entry-check.museum-10.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.museum-10.v1" }, { itemKey: "entry-check.museum-11.v1", verdict: "pass", skillId: "ko.reading.condition", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.museum-11.v1" }, { itemKey: "entry-check.pool-09.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.pool-09.v1" }, { itemKey: "entry-check.pool-10.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "entry-check.pool-10.v1" }, { itemKey: "entry-check.pool-11.v1", verdict: "pass", skillId: "ko.reading.condition", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.pool-11.v1" }, { itemKey: "entry-check.pool-12.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.pool-12.v1" }, { itemKey: "entry-check.pool-13.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.pool-13.v1" }, { itemKey: "entry-check.pool-14.v2", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.pool-14.v1" }, { itemKey: "korean-racing:w0001:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0001:v1" }, { itemKey: "korean-racing:w0008:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0008:v1" }, { itemKey: "korean-racing:w0012:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0012:v1" }, { itemKey: "korean-racing:w0018:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0018:v1" }, { itemKey: "korean-racing:w0025:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0025:v1" }, { itemKey: "korean-racing:w0028:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0028:v1" }, { itemKey: "korean-racing:w0035:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0035:v1" }, { itemKey: "korean-racing:w0036:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0036:v1" }, { itemKey: "korean-racing:w0042:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0042:v1" }, { itemKey: "korean-racing:w0050:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0050:v1" }, { itemKey: "korean-racing:w0051:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0051:v1" }, { itemKey: "korean-racing:w0056:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0056:v1" }, { itemKey: "korean-racing:w0061:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0061:v1" }, { itemKey: "korean-rhythm:t0q0:v1:claim0", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t0q0:v1" }, { itemKey: "korean-rhythm:t0q1:v1:claim0", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t0q1:v1" }, { itemKey: "korean-rhythm:t0q2:v1:claim0", verdict: "pass", skillId: "ko.listening.negation", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t0q2:v1" }, { itemKey: "korean-rhythm:t0q3:v1:claim0", verdict: "pass", skillId: "ko.listening.negation", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t0q3:v1" }, { itemKey: "korean-rhythm:t0q4:v1:claim0", verdict: "pass", skillId: "ko.listening.negation", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t0q4:v1" }, { itemKey: "korean-rhythm:t1q0:v1:claim1:v2", verdict: "pass", skillId: "ko.listening.reason", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t1q0:v1" }, { itemKey: "korean-rhythm:t1q1:v1:claim1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t1q1:v1" }, { itemKey: "korean-rhythm:t1q2:v1:claim0", verdict: "pass", skillId: "ko.listening.reason", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t1q2:v1" }, { itemKey: "korean-rhythm:t1q3:v1:claim1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t1q3:v1" }, { itemKey: "korean-rhythm:t1q4:v1:claim0", verdict: "pass", skillId: "ko.listening.reason", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t1q4:v1" }, { itemKey: "korean-rhythm:t2q0:v1:claim1", verdict: "pass", skillId: "ko.listening.condition", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t2q0:v1" }, { itemKey: "korean-rhythm:t2q1:v1:claim0", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t2q1:v1" }, { itemKey: "korean-rhythm:t2q2:v1:claim0:v3", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t2q2:v1" }, { itemKey: "korean-rhythm:t2q3:v1:claim0:v2", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t2q3:v1" }, { itemKey: "korean-rhythm:t2q4:v1:claim0", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t2q4:v1" }, { itemKey: "korean-runner.listening-check.check-duck-jump.v1", verdict: "pass", skillId: "ko.listening.sequence", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-duck-jump.v1" }, { itemKey: "korean-runner.listening-check.check-fence-jump.v2", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-fence-jump.v1" }, { itemKey: "korean-runner.listening-check.check-high-sign.v2", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-high-sign.v1" }, { itemKey: "korean-runner.listening-check.check-left-run.v1", verdict: "pass", skillId: "ko.listening.sequence", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-left-run.v1" }, { itemKey: "korean-runner.listening-check.check-middle-left.v1", verdict: "pass", skillId: "ko.listening.sequence", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-middle-left.v1" }, { itemKey: "korean-runner.listening-check.check-no-fence.v2", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-no-fence.v1" }, { itemKey: "korean-runner.listening-check.check-not-left.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-not-left.v1" }, { itemKey: "korean-runner.listening-check.check-not-middle.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-not-middle.v1" }, { itemKey: "korean-runner.listening-check.check-right-before-jump.v1", verdict: "pass", skillId: "ko.listening.sequence", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-right-before-jump.v1" }, { itemKey: "korean-runner.listening-check.check-sign-duck.v2", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-sign-duck.v1" }, { itemKey: "korean-runner.listening-check.check-star-middle.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-star-middle.v1" }, { itemKey: "korean-runner.listening-check.check-wide-left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-wide-left.v1" }, { itemKey: "snap-words.meaning.bank.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.bank.v1" }, { itemKey: "snap-words.meaning.bookstore.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.bookstore.v1" }, { itemKey: "snap-words.meaning.cafeteria.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.cafeteria.v1" }, { itemKey: "snap-words.meaning.dorm.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.dorm.v1" }, { itemKey: "snap-words.meaning.entrance.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.entrance.v1" }, { itemKey: "snap-words.meaning.exit.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.exit.v1" }, { itemKey: "snap-words.meaning.library.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.library.v1" }, { itemKey: "snap-words.meaning.lift.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.lift.v1" }, { itemKey: "snap-words.meaning.office.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.office.v1" }, { itemKey: "snap-words.meaning.pharmacy.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.pharmacy.v1" }, { itemKey: "snap-words.meaning.post.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.post.v1" }, { itemKey: "snap-words.meaning.stairs.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.stairs.v1" }, { itemKey: "snap-words.meaning.toilet.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.toilet.v1" }, { itemKey: "snap-words.notice.n-bike.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.notice.n-bike.v1" }, { itemKey: "snap-words.notice.n-construction.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.notice.n-construction.v1" }, { itemKey: "snap-words.notice.n-fresh.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.notice.n-fresh.v1" }, { itemKey: "snap-words.notice.n-smoke.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.notice.n-smoke.v1" }, { itemKey: "snap-words.recall-meaning.menu.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.menu.v1" }, { itemKey: "snap-words.recall-meaning.n-fix.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.n-fix.v1" }, { itemKey: "snap-words.recall-meaning.n-welcome.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.n-welcome.v1" }, { itemKey: "snap-words.recall-meaning.pull.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.pull.v1" }, { itemKey: "snap-words.recall-meaning.push.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.push.v1" }, { itemKey: "snap-words.recall-meaning.slide.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.slide.v1" }, { itemKey: "snap-words.recall-meaning.stop.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.stop.v1" }, { itemKey: "snap-words.recall-meaning.store.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.store.v1" }, { itemKey: "snap-words.recall-meaning.university.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.university.v1" }, { itemKey: "snap-words.word.bench.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.bench.v1" }, { itemKey: "snap-words.word.bike.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.bike.v1" }, { itemKey: "snap-words.word.building.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.building.v1" }, { itemKey: "snap-words.word.cat.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.cat.v1" }, { itemKey: "snap-words.word.copier.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.word.copier.v1" }, { itemKey: "snap-words.word.sofa.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.sofa.v1" }, { itemKey: "snap-words.word.tray.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.word.tray.v1" }, { itemKey: "snap-words.word.tree.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.tree.v1" }, { itemKey: "snap-words.word.umbrella.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.umbrella.v1" }, { itemKey: "snap-words.word.vending.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.word.vending.v1" }, { itemKey: "snap-words.word.water.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.word.water.v1" }, { itemKey: "subway-rush.busy.delay.1to2.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.delay.v1" }, { itemKey: "subway-rush.busy.exit.1.2.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.1.v1" }, { itemKey: "subway-rush.busy.exit.2.1.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.2.v1" }, { itemKey: "subway-rush.busy.exit.3.4.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.3.v1" }, { itemKey: "subway-rush.busy.exit.4.3.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.4.v1" }, { itemKey: "subway-rush.busy.exit.5.3.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.5.v1" }, { itemKey: "subway-rush.busy.exit.6.7.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.6.v1" }, { itemKey: "subway-rush.busy.exit.7.6.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.7.v1" }, { itemKey: "subway-rush.busy.express.jonggak.jonggak.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.express.jonggak.v1" }, { itemKey: "subway-rush.busy.express.jonggak.jongno3.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.express.jongno3.v1" }, { itemKey: "subway-rush.busy.express.jonggak.jongno5.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.express.jongno5.v1" }, { itemKey: "subway-rush.busy.short.left.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.short.v1" }, { itemKey: "subway-rush.busy.short.right.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.short.v1" }, { itemKey: "subway-rush.exit.1.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.1.v1" }, { itemKey: "subway-rush.exit.2.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.2.v1" }, { itemKey: "subway-rush.exit.3.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.3.v1" }, { itemKey: "subway-rush.exit.4.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.4.v1" }, { itemKey: "subway-rush.exit.5.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.5.v1" }, { itemKey: "subway-rush.exit.6.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.6.v1" }, { itemKey: "subway-rush.exit.7.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.7.v1" }, { itemKey: "subway-rush.exit.8.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.8.v1" }, { itemKey: "subway-rush.fork.\uCCAD\uB7C9\uB9AC.dongdaemun.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.fork.\uCCAD\uB7C9\uB9AC.v1" }, { itemKey: "subway-rush.fork.\uCCAD\uB7C9\uB9AC.jonggak.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.fork.\uCCAD\uB7C9\uB9AC.v1" }, { itemKey: "subway-rush.fork.\uCCAD\uB7C9\uB9AC.jongno3.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.fork.\uCCAD\uB7C9\uB9AC.v1" }, { itemKey: "subway-rush.fork.\uCCAD\uB7C9\uB9AC.jongno5.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.fork.\uCCAD\uB7C9\uB9AC.v1" }, { itemKey: "subway-rush.meet.traveler.cheongnyangni.airport.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.airport.v1" }, { itemKey: "subway-rush.meet.traveler.cheongnyangni.cheongnyangni.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.cheongnyangni.v1" }, { itemKey: "subway-rush.meet.traveler.cheongnyangni.myeongdong.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.myeongdong.v1" }, { itemKey: "subway-rush.meet.traveler.cityhall.airport.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.airport.v1" }, { itemKey: "subway-rush.meet.traveler.cityhall.cityhall.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.cityhall.v1" }, { itemKey: "subway-rush.meet.traveler.cityhall.myeongdong.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.myeongdong.v1" }, { itemKey: "subway-rush.meet.traveler.euljiro3.airport.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.airport.v1" }, { itemKey: "subway-rush.meet.traveler.euljiro3.euljiro3.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.euljiro3.v1" }, { itemKey: "subway-rush.meet.traveler.euljiro3.myeongdong.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.myeongdong.v1" }, { itemKey: "subway-rush.meet.worker.ahyeon.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.ahyeon.v1" }, { itemKey: "subway-rush.meet.worker.chungjeongno.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.chungjeongno.v1" }, { itemKey: "subway-rush.meet.worker.cityhall.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.cityhall.v1" }, { itemKey: "subway-rush.meet.worker.dongdaemun.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.dongdaemun.v1" }, { itemKey: "subway-rush.meet.worker.euljiro1.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.euljiro1.v1" }, { itemKey: "subway-rush.meet.worker.euljiro3.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.euljiro3.v1" }, { itemKey: "subway-rush.meet.worker.jongno3.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.jongno3.v1" }, { itemKey: "subway-rush.meet.worker.jongno5.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.jongno5.v1" }, { itemKey: "subway-rush.stop.chungjeongno.pass.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.chungjeongno.pass.v1" }, { itemKey: "subway-rush.stop.chungjeongno.pass.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.chungjeongno.pass.v1" }, { itemKey: "subway-rush.stop.cityhall.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.cityhall.off.v1" }, { itemKey: "subway-rush.stop.cityhall.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.cityhall.off.v1" }, { itemKey: "subway-rush.stop.dongdaemun.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.dongdaemun.off.v1" }, { itemKey: "subway-rush.stop.dongdaemun.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.dongdaemun.off.v1" }, { itemKey: "subway-rush.stop.euljiro3.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.euljiro3.off.v1" }, { itemKey: "subway-rush.stop.euljiro3.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.euljiro3.off.v1" }, { itemKey: "subway-rush.stop.euljiro3.pass.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.euljiro3.pass.v1" }, { itemKey: "subway-rush.stop.euljiro3.pass.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.euljiro3.pass.v1" }, { itemKey: "subway-rush.stop.jonggak.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.stop.jonggak.off.v1" }, { itemKey: "subway-rush.stop.jonggak.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.stop.jonggak.off.v1" }, { itemKey: "subway-rush.stop.jongno3.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno3.off.v1" }, { itemKey: "subway-rush.stop.jongno3.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno3.off.v1" }, { itemKey: "subway-rush.stop.jongno3.pass.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno3.pass.v1" }, { itemKey: "subway-rush.stop.jongno3.pass.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno3.pass.v1" }, { itemKey: "subway-rush.stop.jongno5.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno5.off.v1" }, { itemKey: "subway-rush.stop.jongno5.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno5.off.v1" }, { itemKey: "synk-town.reading-check.town-detail-festival.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-detail-festival.v1" }, { itemKey: "synk-town.reading-check.town-detail-library.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-detail-library.v1" }, { itemKey: "synk-town.reading-check.town-detail-lost.v2", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-detail-lost.v1" }, { itemKey: "synk-town.reading-check.town-detail-market.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-detail-market.v1" }, { itemKey: "synk-town.reading-check.town-detail-workshop.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-detail-workshop.v1" }, { itemKey: "synk-town.reading-check.town-main-cat.v1", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-cat.v1" }, { itemKey: "synk-town.reading-check.town-main-cup.v2", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-cup.v1" }, { itemKey: "synk-town.reading-check.town-main-post.v1", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-post.v1" }, { itemKey: "synk-town.reading-check.town-main-swap.v2", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-swap.v1" }, { itemKey: "synk-town.reading-check.town-main-swim.v1", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-swim.v1" }, { itemKey: "synk-town.reading-check.town-main-thanks.v2", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-thanks.v1" }, { itemKey: "synk-town.reading-check.town-negation-bike.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-negation-bike.v1" }, { itemKey: "synk-town.reading-check.town-negation-books.v2", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-negation-books.v1" }, { itemKey: "synk-town.reading-check.town-negation-bus.v2", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-negation-bus.v1" }, { itemKey: "synk-town.reading-check.town-negation-desk.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-negation-desk.v1" }, { itemKey: "synk-town.reading-check.town-negation-flowers.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-negation-flowers.v1" }, { itemKey: "synk-town.reading-check.town-reading-negation.v2", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reading-negation.v1" }, { itemKey: "synk-town.reading-check.town-reading-place.v2", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reading-place.v1" }, { itemKey: "synk-town.reading-check.town-reading-sequence.v1", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reading-sequence.v1" }, { itemKey: "synk-town.reading-check.town-reason-bakery.v1", verdict: "pass", skillId: "ko.reading.reason", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-bakery.v1" }, { itemKey: "synk-town.reading-check.town-reason-bus.v2", verdict: "pass", skillId: "ko.reading.reason", difficulty: 2, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-bus.v1" }, { itemKey: "synk-town.reading-check.town-reason-florist.v1", verdict: "pass", skillId: "ko.reading.reason", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-florist.v1" }, { itemKey: "synk-town.reading-check.town-reason-library.v2", verdict: "pass", skillId: "ko.reading.reason", difficulty: 2, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-library.v1" }, { itemKey: "synk-town.reading-check.town-reason-quiet.v1", verdict: "pass", skillId: "ko.reading.reason", difficulty: 2, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-quiet.v1" }, { itemKey: "synk-town.reading-check.town-reason-walk.v2", verdict: "pass", skillId: "ko.reading.reason", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-walk.v1" }, { itemKey: "synk-town.reading-check.town-sequence-borrow.v2", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-sequence-borrow.v1" }, { itemKey: "synk-town.reading-check.town-sequence-class.v2", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-sequence-class.v1" }, { itemKey: "synk-town.reading-check.town-sequence-garden.v2", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-sequence-garden.v1" }, { itemKey: "synk-town.reading-check.town-sequence-parcel.v1", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-sequence-parcel.v1" }, { itemKey: "synk-town.reading-check.town-sequence-ticket.v2", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-sequence-ticket.v1" }, { itemKey: "talk-rally.f01.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f01.v1" }, { itemKey: "talk-rally.f02.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f02.v1" }, { itemKey: "talk-rally.f03.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f03.v1" }, { itemKey: "talk-rally.f04.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f04.v1" }, { itemKey: "talk-rally.f05.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f05.v1" }, { itemKey: "talk-rally.f06.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f06.v1" }, { itemKey: "talk-rally.f07.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f07.v1" }, { itemKey: "talk-rally.f08.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f08.v1" }, { itemKey: "talk-rally.f09.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f09.v1" }, { itemKey: "talk-rally.f10.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f10.v1" }, { itemKey: "talk-rally.f11.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f11.v1" }, { itemKey: "talk-rally.f12.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f12.v1" }, { itemKey: "talk-rally.f13.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f13.v1" }, { itemKey: "talk-rally.f14.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f14.v1" }, { itemKey: "talk-rally.f15.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f15.v1" }, { itemKey: "talk-rally.f16.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f16.v1" }, { itemKey: "talk-rally.f17.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f17.v1" }, { itemKey: "talk-rally.f18.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f18.v1" }, { itemKey: "talk-rally.f19.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f19.v1" }, { itemKey: "talk-rally.f20.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f20.v1" }, { itemKey: "talk-rally.f21.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f21.v1" }, { itemKey: "talk-rally.f22.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f22.v1" }, { itemKey: "talk-rally.f23.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f23.v1" }, { itemKey: "talk-rally.r01.v2", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r01.v1" }, { itemKey: "talk-rally.r02.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r02.v1" }, { itemKey: "talk-rally.r03.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r03.v1" }, { itemKey: "talk-rally.r04.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r04.v1" }, { itemKey: "talk-rally.r05.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r05.v1" }, { itemKey: "talk-rally.r06.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r06.v1" }, { itemKey: "talk-rally.r07.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r07.v1" }, { itemKey: "talk-rally.r08.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 2, responseFormat: "single-choice", familyKey: "talk-rally.r08.v1" }, { itemKey: "talk-rally.r09.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r09.v1" }, { itemKey: "talk-rally.r10.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r10.v1" }, { itemKey: "talk-rally.w01.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w01.v1" }, { itemKey: "talk-rally.w02.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w02.v1" }, { itemKey: "talk-rally.w03.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w03.v1" }, { itemKey: "talk-rally.w04.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w04.v1" }, { itemKey: "talk-rally.w05.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w05.v1" }, { itemKey: "talk-rally.w06.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w06.v1" }, { itemKey: "talk-rally.w07.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w07.v1" }, { itemKey: "talk-rally.w08.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w08.v1" }, { itemKey: "talk-rally.w09.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w09.v1" }, { itemKey: "talk-rally.w10.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w10.v1" }, { itemKey: "talk-rally.w11.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w11.v1" }, { itemKey: "talk-rally.w12.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w12.v1" }, { itemKey: "talk-rally.w13.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w13.v1" }] };
+var existing_verdicts_default = { version: "topik-existing-verdicts-1", items: [{ itemKey: "blank-slice.a01.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.a01.v1" }, { itemKey: "blank-slice.a02.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.a02.v1" }, { itemKey: "blank-slice.e01.v3", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e01.v1" }, { itemKey: "blank-slice.e02.v2", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e02.v1" }, { itemKey: "blank-slice.e03.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 2, responseFormat: "single-choice", familyKey: "blank-slice.e03.v1" }, { itemKey: "blank-slice.e04.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e04.v1" }, { itemKey: "blank-slice.e05.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 2, responseFormat: "single-choice", familyKey: "blank-slice.e05.v1" }, { itemKey: "blank-slice.e06.v2", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e06.v1" }, { itemKey: "blank-slice.e07.v2", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e07.v1" }, { itemKey: "blank-slice.e08.v3", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e08.v1" }, { itemKey: "blank-slice.e09.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 2, responseFormat: "single-choice", familyKey: "blank-slice.e09.v1" }, { itemKey: "blank-slice.e10.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 2, responseFormat: "single-choice", familyKey: "blank-slice.e10.v1" }, { itemKey: "blank-slice.g01.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.g01.v1" }, { itemKey: "blank-slice.g02.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.g02.v1" }, { itemKey: "blank-slice.g03.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.g03.v1" }, { itemKey: "blank-slice.p01.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p01.v1" }, { itemKey: "blank-slice.p02.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p02.v1" }, { itemKey: "blank-slice.p03.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p03.v1" }, { itemKey: "blank-slice.p04.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p04.v1" }, { itemKey: "blank-slice.p05.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p05.v1" }, { itemKey: "blank-slice.p06.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p06.v1" }, { itemKey: "blank-slice.t01.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.t01.v1" }, { itemKey: "blank-slice.v01.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v01.v1" }, { itemKey: "blank-slice.v02.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v02.v1" }, { itemKey: "blank-slice.v03.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v03.v1" }, { itemKey: "blank-slice.v04.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v04.v1" }, { itemKey: "blank-slice.v05.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v05.v1" }, { itemKey: "blank-slice.v06.v3", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v06.v1" }, { itemKey: "blank-slice.v07.v3", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v07.v1" }, { itemKey: "blank-slice.v08.v2", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v08.v1" }, { itemKey: "blank-slice.v09.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v09.v1" }, { itemKey: "blank-slice.v10.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v10.v1" }, { itemKey: "blank-slice.v11.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v11.v1" }, { itemKey: "blank-slice.v12.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v12.v1" }, { itemKey: "blank-slice.v13.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v13.v1" }, { itemKey: "blank-slice.v14.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v14.v1" }, { itemKey: "entry-check.concert-10.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.concert-10.v1" }, { itemKey: "entry-check.concert-11.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.concert-11.v1" }, { itemKey: "entry-check.concert-12.v3", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.concert-12.v1" }, { itemKey: "entry-check.concert-13.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.concert-13.v1" }, { itemKey: "entry-check.concert-14.v1", verdict: "pass", skillId: "ko.reading.condition", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.concert-14.v1" }, { itemKey: "entry-check.library-10.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.library-10.v1" }, { itemKey: "entry-check.library-11.v1", verdict: "pass", skillId: "ko.reading.condition", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.library-11.v1" }, { itemKey: "entry-check.museum-09.v1", verdict: "pass", skillId: "ko.reading.condition", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.museum-09.v1" }, { itemKey: "entry-check.museum-10.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.museum-10.v1" }, { itemKey: "entry-check.museum-11.v1", verdict: "pass", skillId: "ko.reading.condition", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.museum-11.v1" }, { itemKey: "entry-check.pool-09.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.pool-09.v1" }, { itemKey: "entry-check.pool-10.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "entry-check.pool-10.v1" }, { itemKey: "entry-check.pool-11.v1", verdict: "pass", skillId: "ko.reading.condition", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.pool-11.v1" }, { itemKey: "entry-check.pool-12.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.pool-12.v1" }, { itemKey: "entry-check.pool-13.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.pool-13.v1" }, { itemKey: "entry-check.pool-14.v2", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.pool-14.v1" }, { itemKey: "korean-racing:w0001:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0001:v1" }, { itemKey: "korean-racing:w0008:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0008:v1" }, { itemKey: "korean-racing:w0012:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0012:v1" }, { itemKey: "korean-racing:w0018:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0018:v1" }, { itemKey: "korean-racing:w0025:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0025:v1" }, { itemKey: "korean-racing:w0028:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0028:v1" }, { itemKey: "korean-racing:w0035:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0035:v1" }, { itemKey: "korean-racing:w0036:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0036:v1" }, { itemKey: "korean-racing:w0042:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0042:v1" }, { itemKey: "korean-racing:w0050:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0050:v1" }, { itemKey: "korean-racing:w0051:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0051:v1" }, { itemKey: "korean-racing:w0056:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0056:v1" }, { itemKey: "korean-racing:w0061:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0061:v1" }, { itemKey: "korean-rhythm:t0q0:v1:claim0", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t0q0:v1" }, { itemKey: "korean-rhythm:t0q1:v1:claim0", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t0q1:v1" }, { itemKey: "korean-rhythm:t0q2:v1:claim0", verdict: "pass", skillId: "ko.listening.negation", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t0q2:v1" }, { itemKey: "korean-rhythm:t0q3:v1:claim0", verdict: "pass", skillId: "ko.listening.negation", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t0q3:v1" }, { itemKey: "korean-rhythm:t0q4:v1:claim0", verdict: "pass", skillId: "ko.listening.negation", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t0q4:v1" }, { itemKey: "korean-rhythm:t1q0:v1:claim1:v2", verdict: "pass", skillId: "ko.listening.reason", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t1q0:v1" }, { itemKey: "korean-rhythm:t1q1:v1:claim1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t1q1:v1" }, { itemKey: "korean-rhythm:t1q2:v1:claim0", verdict: "pass", skillId: "ko.listening.reason", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t1q2:v1" }, { itemKey: "korean-rhythm:t1q3:v1:claim1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t1q3:v1" }, { itemKey: "korean-rhythm:t1q4:v1:claim0", verdict: "pass", skillId: "ko.listening.reason", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t1q4:v1" }, { itemKey: "korean-rhythm:t2q0:v1:claim1", verdict: "pass", skillId: "ko.listening.condition", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t2q0:v1" }, { itemKey: "korean-rhythm:t2q1:v1:claim0", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t2q1:v1" }, { itemKey: "korean-rhythm:t2q2:v1:claim0:v3", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t2q2:v1" }, { itemKey: "korean-rhythm:t2q3:v1:claim0:v2", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t2q3:v1" }, { itemKey: "korean-rhythm:t2q4:v1:claim0", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t2q4:v1" }, { itemKey: "korean-runner.listening-check.check-duck-jump.v1", verdict: "pass", skillId: "ko.listening.sequence", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-duck-jump.v1" }, { itemKey: "korean-runner.listening-check.check-fence-jump.v2", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-fence-jump.v1" }, { itemKey: "korean-runner.listening-check.check-high-sign.v2", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-high-sign.v1" }, { itemKey: "korean-runner.listening-check.check-left-run.v1", verdict: "pass", skillId: "ko.listening.sequence", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-left-run.v1" }, { itemKey: "korean-runner.listening-check.check-middle-left.v1", verdict: "pass", skillId: "ko.listening.sequence", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-middle-left.v1" }, { itemKey: "korean-runner.listening-check.check-no-fence.v2", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-no-fence.v1" }, { itemKey: "korean-runner.listening-check.check-not-left.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-not-left.v1" }, { itemKey: "korean-runner.listening-check.check-not-middle.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-not-middle.v1" }, { itemKey: "korean-runner.listening-check.check-right-before-jump.v1", verdict: "pass", skillId: "ko.listening.sequence", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-right-before-jump.v1" }, { itemKey: "korean-runner.listening-check.check-sign-duck.v2", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-sign-duck.v1" }, { itemKey: "korean-runner.listening-check.check-star-middle.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-star-middle.v1" }, { itemKey: "korean-runner.listening-check.check-wide-left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-wide-left.v1" }, { itemKey: "snap-words.meaning.bank.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.bank.v1" }, { itemKey: "snap-words.meaning.bookstore.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.bookstore.v1" }, { itemKey: "snap-words.meaning.cafeteria.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.cafeteria.v1" }, { itemKey: "snap-words.meaning.dorm.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.dorm.v1" }, { itemKey: "snap-words.meaning.entrance.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.entrance.v1" }, { itemKey: "snap-words.meaning.exit.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.exit.v1" }, { itemKey: "snap-words.meaning.library.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.library.v1" }, { itemKey: "snap-words.meaning.lift.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.lift.v1" }, { itemKey: "snap-words.meaning.office.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.office.v1" }, { itemKey: "snap-words.meaning.pharmacy.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.pharmacy.v1" }, { itemKey: "snap-words.meaning.post.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.post.v1" }, { itemKey: "snap-words.meaning.stairs.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.stairs.v1" }, { itemKey: "snap-words.meaning.toilet.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.toilet.v1" }, { itemKey: "snap-words.notice.n-bike.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.notice.n-bike.v1" }, { itemKey: "snap-words.notice.n-construction.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.notice.n-construction.v1" }, { itemKey: "snap-words.notice.n-fresh.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.notice.n-fresh.v1" }, { itemKey: "snap-words.notice.n-smoke.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.notice.n-smoke.v1" }, { itemKey: "snap-words.recall-meaning.menu.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.menu.v1" }, { itemKey: "snap-words.recall-meaning.n-fix.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.n-fix.v1" }, { itemKey: "snap-words.recall-meaning.n-welcome.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.n-welcome.v1" }, { itemKey: "snap-words.recall-meaning.pull.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.pull.v1" }, { itemKey: "snap-words.recall-meaning.push.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.push.v1" }, { itemKey: "snap-words.recall-meaning.slide.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.slide.v1" }, { itemKey: "snap-words.recall-meaning.stop.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.stop.v1" }, { itemKey: "snap-words.recall-meaning.store.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.store.v1" }, { itemKey: "snap-words.recall-meaning.university.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.university.v1" }, { itemKey: "snap-words.word.bench.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.bench.v1" }, { itemKey: "snap-words.word.bike.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.bike.v1" }, { itemKey: "snap-words.word.building.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.building.v1" }, { itemKey: "snap-words.word.cat.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.cat.v1" }, { itemKey: "snap-words.word.copier.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.word.copier.v1" }, { itemKey: "snap-words.word.sofa.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.sofa.v1" }, { itemKey: "snap-words.word.tray.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.word.tray.v1" }, { itemKey: "snap-words.word.tree.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.tree.v1" }, { itemKey: "snap-words.word.umbrella.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.umbrella.v1" }, { itemKey: "snap-words.word.vending.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.word.vending.v1" }, { itemKey: "snap-words.word.water.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.word.water.v1" }, { itemKey: "subway-rush.busy.delay.1to2.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.delay.v1" }, { itemKey: "subway-rush.busy.exit.1.2.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.1.v1" }, { itemKey: "subway-rush.busy.exit.2.1.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.2.v1" }, { itemKey: "subway-rush.busy.exit.3.4.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.3.v1" }, { itemKey: "subway-rush.busy.exit.4.3.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.4.v1" }, { itemKey: "subway-rush.busy.exit.5.3.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.5.v1" }, { itemKey: "subway-rush.busy.exit.6.7.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.6.v1" }, { itemKey: "subway-rush.busy.exit.7.6.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.7.v1" }, { itemKey: "subway-rush.busy.express.jonggak.jonggak.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.express.jonggak.v1" }, { itemKey: "subway-rush.busy.express.jonggak.jongno3.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.express.jongno3.v1" }, { itemKey: "subway-rush.busy.express.jonggak.jongno5.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.express.jongno5.v1" }, { itemKey: "subway-rush.busy.short.left.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.short.v1" }, { itemKey: "subway-rush.busy.short.right.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.short.v1" }, { itemKey: "subway-rush.exit.1.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.1.v1" }, { itemKey: "subway-rush.exit.2.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.2.v1" }, { itemKey: "subway-rush.exit.3.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.3.v1" }, { itemKey: "subway-rush.exit.4.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.4.v1" }, { itemKey: "subway-rush.exit.5.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.5.v1" }, { itemKey: "subway-rush.exit.6.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.6.v1" }, { itemKey: "subway-rush.exit.7.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.7.v1" }, { itemKey: "subway-rush.exit.8.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.8.v1" }, { itemKey: "subway-rush.fork.cheongnyangni.dongdaemun.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.fork.cheongnyangni.v1" }, { itemKey: "subway-rush.fork.cheongnyangni.jonggak.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.fork.cheongnyangni.v1" }, { itemKey: "subway-rush.fork.cheongnyangni.jongno3.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.fork.cheongnyangni.v1" }, { itemKey: "subway-rush.fork.cheongnyangni.jongno5.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.fork.cheongnyangni.v1" }, { itemKey: "subway-rush.meet.traveler.cheongnyangni.airport.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.airport.v1" }, { itemKey: "subway-rush.meet.traveler.cheongnyangni.cheongnyangni.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.cheongnyangni.v1" }, { itemKey: "subway-rush.meet.traveler.cheongnyangni.myeongdong.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.myeongdong.v1" }, { itemKey: "subway-rush.meet.traveler.cityhall.airport.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.airport.v1" }, { itemKey: "subway-rush.meet.traveler.cityhall.cityhall.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.cityhall.v1" }, { itemKey: "subway-rush.meet.traveler.cityhall.myeongdong.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.myeongdong.v1" }, { itemKey: "subway-rush.meet.traveler.euljiro3.airport.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.airport.v1" }, { itemKey: "subway-rush.meet.traveler.euljiro3.euljiro3.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.euljiro3.v1" }, { itemKey: "subway-rush.meet.traveler.euljiro3.myeongdong.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.myeongdong.v1" }, { itemKey: "subway-rush.meet.worker.ahyeon.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.ahyeon.v1" }, { itemKey: "subway-rush.meet.worker.chungjeongno.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.chungjeongno.v1" }, { itemKey: "subway-rush.meet.worker.cityhall.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.cityhall.v1" }, { itemKey: "subway-rush.meet.worker.dongdaemun.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.dongdaemun.v1" }, { itemKey: "subway-rush.meet.worker.euljiro1.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.euljiro1.v1" }, { itemKey: "subway-rush.meet.worker.euljiro3.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.euljiro3.v1" }, { itemKey: "subway-rush.meet.worker.jongno3.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.jongno3.v1" }, { itemKey: "subway-rush.meet.worker.jongno5.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.jongno5.v1" }, { itemKey: "subway-rush.stop.chungjeongno.pass.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.chungjeongno.pass.v1" }, { itemKey: "subway-rush.stop.chungjeongno.pass.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.chungjeongno.pass.v1" }, { itemKey: "subway-rush.stop.cityhall.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.cityhall.off.v1" }, { itemKey: "subway-rush.stop.cityhall.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.cityhall.off.v1" }, { itemKey: "subway-rush.stop.dongdaemun.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.dongdaemun.off.v1" }, { itemKey: "subway-rush.stop.dongdaemun.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.dongdaemun.off.v1" }, { itemKey: "subway-rush.stop.euljiro3.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.euljiro3.off.v1" }, { itemKey: "subway-rush.stop.euljiro3.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.euljiro3.off.v1" }, { itemKey: "subway-rush.stop.euljiro3.pass.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.euljiro3.pass.v1" }, { itemKey: "subway-rush.stop.euljiro3.pass.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.euljiro3.pass.v1" }, { itemKey: "subway-rush.stop.jonggak.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.stop.jonggak.off.v1" }, { itemKey: "subway-rush.stop.jonggak.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.stop.jonggak.off.v1" }, { itemKey: "subway-rush.stop.jongno3.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno3.off.v1" }, { itemKey: "subway-rush.stop.jongno3.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno3.off.v1" }, { itemKey: "subway-rush.stop.jongno3.pass.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno3.pass.v1" }, { itemKey: "subway-rush.stop.jongno3.pass.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno3.pass.v1" }, { itemKey: "subway-rush.stop.jongno5.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno5.off.v1" }, { itemKey: "subway-rush.stop.jongno5.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno5.off.v1" }, { itemKey: "synk-town.reading-check.town-detail-festival.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-detail-festival.v1" }, { itemKey: "synk-town.reading-check.town-detail-library.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-detail-library.v1" }, { itemKey: "synk-town.reading-check.town-detail-lost.v2", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-detail-lost.v1" }, { itemKey: "synk-town.reading-check.town-detail-market.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-detail-market.v1" }, { itemKey: "synk-town.reading-check.town-detail-workshop.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-detail-workshop.v1" }, { itemKey: "synk-town.reading-check.town-main-cat.v1", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-cat.v1" }, { itemKey: "synk-town.reading-check.town-main-cup.v2", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-cup.v1" }, { itemKey: "synk-town.reading-check.town-main-post.v1", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-post.v1" }, { itemKey: "synk-town.reading-check.town-main-swap.v2", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-swap.v1" }, { itemKey: "synk-town.reading-check.town-main-swim.v1", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-swim.v1" }, { itemKey: "synk-town.reading-check.town-main-thanks.v2", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-thanks.v1" }, { itemKey: "synk-town.reading-check.town-negation-bike.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-negation-bike.v1" }, { itemKey: "synk-town.reading-check.town-negation-books.v2", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-negation-books.v1" }, { itemKey: "synk-town.reading-check.town-negation-bus.v2", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-negation-bus.v1" }, { itemKey: "synk-town.reading-check.town-negation-desk.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-negation-desk.v1" }, { itemKey: "synk-town.reading-check.town-negation-flowers.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-negation-flowers.v1" }, { itemKey: "synk-town.reading-check.town-reading-negation.v2", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reading-negation.v1" }, { itemKey: "synk-town.reading-check.town-reading-place.v2", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reading-place.v1" }, { itemKey: "synk-town.reading-check.town-reading-sequence.v1", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reading-sequence.v1" }, { itemKey: "synk-town.reading-check.town-reason-bakery.v1", verdict: "pass", skillId: "ko.reading.reason", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-bakery.v1" }, { itemKey: "synk-town.reading-check.town-reason-bus.v2", verdict: "pass", skillId: "ko.reading.reason", difficulty: 2, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-bus.v1" }, { itemKey: "synk-town.reading-check.town-reason-florist.v1", verdict: "pass", skillId: "ko.reading.reason", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-florist.v1" }, { itemKey: "synk-town.reading-check.town-reason-library.v2", verdict: "pass", skillId: "ko.reading.reason", difficulty: 2, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-library.v1" }, { itemKey: "synk-town.reading-check.town-reason-quiet.v1", verdict: "pass", skillId: "ko.reading.reason", difficulty: 2, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-quiet.v1" }, { itemKey: "synk-town.reading-check.town-reason-walk.v2", verdict: "pass", skillId: "ko.reading.reason", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-walk.v1" }, { itemKey: "synk-town.reading-check.town-sequence-borrow.v2", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-sequence-borrow.v1" }, { itemKey: "synk-town.reading-check.town-sequence-class.v2", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-sequence-class.v1" }, { itemKey: "synk-town.reading-check.town-sequence-garden.v2", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-sequence-garden.v1" }, { itemKey: "synk-town.reading-check.town-sequence-parcel.v1", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-sequence-parcel.v1" }, { itemKey: "synk-town.reading-check.town-sequence-ticket.v2", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-sequence-ticket.v1" }, { itemKey: "talk-rally.f01.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f01.v1" }, { itemKey: "talk-rally.f02.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f02.v1" }, { itemKey: "talk-rally.f03.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f03.v1" }, { itemKey: "talk-rally.f04.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f04.v1" }, { itemKey: "talk-rally.f05.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f05.v1" }, { itemKey: "talk-rally.f06.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f06.v1" }, { itemKey: "talk-rally.f07.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f07.v1" }, { itemKey: "talk-rally.f08.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f08.v1" }, { itemKey: "talk-rally.f09.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f09.v1" }, { itemKey: "talk-rally.f10.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f10.v1" }, { itemKey: "talk-rally.f11.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f11.v1" }, { itemKey: "talk-rally.f12.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f12.v1" }, { itemKey: "talk-rally.f13.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f13.v1" }, { itemKey: "talk-rally.f14.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f14.v1" }, { itemKey: "talk-rally.f15.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f15.v1" }, { itemKey: "talk-rally.f16.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f16.v1" }, { itemKey: "talk-rally.f17.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f17.v1" }, { itemKey: "talk-rally.f18.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f18.v1" }, { itemKey: "talk-rally.f19.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f19.v1" }, { itemKey: "talk-rally.f20.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f20.v1" }, { itemKey: "talk-rally.f21.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f21.v1" }, { itemKey: "talk-rally.f22.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f22.v1" }, { itemKey: "talk-rally.f23.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f23.v1" }, { itemKey: "talk-rally.r01.v2", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r01.v1" }, { itemKey: "talk-rally.r02.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r02.v1" }, { itemKey: "talk-rally.r03.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r03.v1" }, { itemKey: "talk-rally.r04.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r04.v1" }, { itemKey: "talk-rally.r05.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r05.v1" }, { itemKey: "talk-rally.r06.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r06.v1" }, { itemKey: "talk-rally.r07.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r07.v1" }, { itemKey: "talk-rally.r08.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 2, responseFormat: "single-choice", familyKey: "talk-rally.r08.v1" }, { itemKey: "talk-rally.r09.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r09.v1" }, { itemKey: "talk-rally.r10.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r10.v1" }, { itemKey: "talk-rally.w01.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w01.v1" }, { itemKey: "talk-rally.w02.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w02.v1" }, { itemKey: "talk-rally.w03.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w03.v1" }, { itemKey: "talk-rally.w04.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w04.v1" }, { itemKey: "talk-rally.w05.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w05.v1" }, { itemKey: "talk-rally.w06.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w06.v1" }, { itemKey: "talk-rally.w07.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w07.v1" }, { itemKey: "talk-rally.w08.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w08.v1" }, { itemKey: "talk-rally.w09.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w09.v1" }, { itemKey: "talk-rally.w10.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w10.v1" }, { itemKey: "talk-rally.w11.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w11.v1" }, { itemKey: "talk-rally.w12.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w12.v1" }, { itemKey: "talk-rally.w13.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w13.v1" }] };
 
 // experiences/synk-world-app/world-reading-practice.mjs
 var world_reading_practice_exports = {};

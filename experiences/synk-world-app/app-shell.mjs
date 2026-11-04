@@ -725,8 +725,8 @@ const games={runner:{get title(){return t('game.runner.title');},path:'korean-ru
  racing:{get title(){return t('game.racing.title');},path:'korean-racing/'},
  // 말 랠리(11-04, 캠퍼스 판 겉 — talk-rally/world-skin.css): 홈 「놀이」가 해금 표로 연 뒤에만 여기로 온다.
  rally:{get title(){return t('game.rally.title');},path:'talk-rally/'},
- // 환승 러시(11-04): 홈 「놀이」가 해금 표로 연 뒤에만 여기로 온다.
- subway:{get title(){return t('game.subway.title');},path:'subway-rush/'},
+ // 환승 러시(11-04): 홈 「놀이」와 이번 주 계획 · 튜터 후보가 해금 표로 연 뒤에만 여기로 온다. 찰칵 낱말처럼 시험 목표 급을 넘긴다 — 3급 이상이면 고른 난도가 없을 때 바쁜 아침부터(core.mjs startLevel).
+ subway:{get title(){return t('game.subway.title');},get path(){let grade=0;try{grade=Number(life.progress?.learningProfileValues?.().targetGrade)||0;}catch{grade=0;}return grade>=3?`subway-rush/?grade=${grade}`:'subway-rush/';}},
  // 드라마 말하기 1화(11-02, 설계 experiences/drama/qa/WORLD올리기-20261102/설계.md): 지금은 코호트 바로가기(?drama=1)로만 연다 — 첫 화면 줄은 입구 작업과 함께 정한다.
  // 제목은 번역 표 밖의 고정 글(새 키를 넣으면 모든 화면 언어의 검수가 따라온다).
  drama:{get title(){return currentLang()==='ko'?'드라마 말하기 · 1화':'Korean drama · Episode 1';},path:'drama/',microphone:true}};

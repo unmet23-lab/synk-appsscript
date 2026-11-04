@@ -190,7 +190,7 @@ const rallySharedThree=['three.module.js','three.core.js'].every(name=>fs.readFi
 {const list=JSON.parse(fs.readFileSync(path.join(root,'experiences/talk-rally/qa/world-clips.json'),'utf8')).clips;for(const [file,item] of Object.entries(list)){const clip=path.join(root,'experiences/talk-rally/assets/world/cast/taeo/clips',file);if(fs.existsSync(clip)&&sha(fs.readFileSync(clip))!==item.sha256)throw Error('Talk rally clip differs from its list: '+file);}}
 copyTree(path.join(root,'experiences','talk-rally'),'talk-rally',(source,relative)=>!/^talk-rally\/(?:assets\/(?:voice|narration|scene)\/.*|assets\/sound\/mongle-.*|kit\/brand\/mongle-[^/]+|art-source\/.*|scripts\/.*|sound-lab\..*)$/.test(relative)&&!(rallySharedThree&&relative.startsWith('talk-rally/vendor/'))&&!(rallySharedAtlas&&relative==='talk-rally/atlas-learning.js'));
 // 환승 러시(11-04): 앱 전용이라 LAB 공개 길은 없다. 시험 · 도구 · 설계와 문항 검수 원본은 싣지 않는다.
-copyTree(path.join(root,'experiences','subway-rush'),'subway-rush',(source,relative)=>!/^subway-rush\/(?:qa\/|.*\.test\.mjs$|.*\.md$|review-items\.mjs$)/.test(relative));
+copyTree(path.join(root,'experiences','subway-rush'),'subway-rush',(source,relative)=>!/^subway-rush\/(?:qa\/|.*\.test\.mjs$|.*\.md$|review-items\.mjs$|plan-items\.mjs$)/.test(relative));
 // 드라마 말하기 1화(11-02, 설계 experiences/drama/qa/WORLD올리기-20261102/설계.md): 화면 · 강의(world-lesson.json) · 기록 묶음 · 재생 사본만 싣는다.
 // content.mjs(시범 서버 전용 · 판정 명세)와 README · qa는 싣지 않는다. 재생 사본(media/)은 git 밖(tools/build-drama-pilot-assets.mjs가 승인 원천에서
 // 만든다)이라 그 manifest.json의 sha256과 하나씩 대조해 없거나 다르면 멈춘다 — manifest 자체(원천 파일 이름)는 싣지 않는다.

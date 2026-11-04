@@ -9,6 +9,9 @@ export const WRONG_MINUTES = 3;
 export const STREAK_BONUS_AT = Object.freeze([3, 5]);
 export const STREAK_BONUS = 1;
 
+/** 시작 난도. 주소로 정한 판(level=busy, 시험 · 다시 보기) > 학생이 고른 난도 > 앱이 넘긴 시험 목표 급(3급 이상이면 바쁜 아침). 능력 판단이 아니라 어디서 시작할지만 정한다. */
+export const startLevel = ({ forced = null, saved = null, grade = null } = {}) => forced === 'busy' ? 'busy' : saved === 'busy' || saved === 'basic' ? saved : Number(grade) >= 3 ? 'busy' : 'basic';
+
 export const clockText = (minutes) => `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, '0')}`;
 
 export class SubwayRun {
@@ -53,9 +56,9 @@ export class SubwayRun {
     if (this.index >= this.total) { this.minutes += LEG_MINUTES.gate; this.finished = true; }
     return result;
   }
-  /** 결과 화면 값. 맞힌 수는 근거로 세는 결정만 분모로 둔다. */
+  /** 결과 화면 값. 맞힌 수는 근거로 세는 결정만 분모로 둔다 — 찍어도 맞는 칸과 소리가 끊긴 문항은 뺀다(r.assessable). */
   summary() {
-    const counted = this.results.filter((r) => this.journey.decisions.find((d) => d.id === r.id)?.assessable);
+    const counted = this.results.filter((r) => r.assessable);
     const right = counted.filter((r) => r.correct).length;
     const stations = this.results.filter((r) => r.correct && r.kind !== 'exit').map((r) => r.station);
     return { arrive: this.minutes, arriveText: clockText(this.minutes), onTime: this.minutes <= SCHOOL_MINUTES, right, total: counted.length, bestStreak: this.bestStreak, stations: [...new Set(stations)], wrongs: this.results.filter((r) => !r.correct) };

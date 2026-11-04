@@ -199,6 +199,7 @@ export default {
  'game.slow':{ko:'연결이 조금 늦어지고 있어요. 새 화면으로도 열 수 있어요.',en:'This is taking a little longer. You can also open it on its own page.',mn:'Холболт бага зэрэг удааширч байна. Тусдаа хуудсанд ч нээж болно.'},
  'plan.game.runner':{ko:'바람길 · 짧은 지시 듣기',en:'Wind Run · short spoken directions',mn:'Салхин зам · богино заавар сонсох'},
  'plan.game.rhythm':{ko:'말의 리듬 · 듣고 내용 확인',en:'Speech Rhythm · listen and check',mn:'Үгийн хэмнэл · сонсоод утгыг шалгах'},
+ 'plan.game.subway':{ko:'환승 러시 · 안내방송 듣고 갈아타기',en:'Transfer Rush · follow station announcements',mn:'Метро дамжин суух · буудал зарлахыг сонсох'},
  'plan.game.hangul':{ko:'한글 만나기 · 소리와 글자',en:'Meet Hangul · sounds and letters',mn:'Солонгос үсэгтэй танилцах · авиа ба үсэг'},
  'plan.resume':{ko:'{title} · 이어 하기',en:'{title} · continue',mn:'{title} · үргэлжлүүлэх'},
  'plan.review':{ko:'{title} · 새 상황 복습',en:'{title} · review in a new situation',mn:'{title} · шинэ нөхцөл байдалд давтах'},

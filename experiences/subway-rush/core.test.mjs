@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { SubwayRun, clockText, START_MINUTES, SCHOOL_MINUTES, WRONG_MINUTES } from './core.mjs';
+import { SubwayRun, clockText, startLevel, START_MINUTES, SCHOOL_MINUTES, WRONG_MINUTES } from './core.mjs';
 import { buildJourney, allLines, ROUTES } from './journeys.mjs';
 import { LINES, STATIONS, transfersAt } from './lines.mjs';
 
@@ -41,6 +41,43 @@ test('틀려도 늘 도착하고, 오답은 +3분, 끝까지 맞히면 9시 전�
     assert.ok(perfect.minutes <= SCHOOL_MINUTES, `끝까지 맞힌 판 ${clockText(perfect.minutes)}`);
     assert.ok(wrong.minutes >= perfect.minutes + j.decisions.length * WRONG_MINUTES);
   }
+});
+
+test('시작 난도: 주소 > 학생이 고른 난도 > 시험 목표 급, 없으면 첫 등굣길', () => {
+  assert.equal(startLevel(), 'basic');
+  assert.equal(startLevel({ grade: '2' }), 'basic');
+  assert.equal(startLevel({ grade: '3' }), 'busy');
+  assert.equal(startLevel({ saved: 'basic', grade: '4' }), 'basic', '고른 난도를 목표 급이 덮지 않는다');
+  assert.equal(startLevel({ saved: 'busy' }), 'busy');
+  assert.equal(startLevel({ forced: 'busy', saved: 'basic' }), 'busy');
+  assert.equal(startLevel({ saved: '이상한 값', grade: 'x' }), 'basic');
+});
+
+test('소리가 끊긴 문항은 맞혔어도 「맞힌 안내」 수에 들지 않고, 도착과 시계는 그대로다', () => {
+  const j = buildJourney({ seed: 21 }), counted = j.decisions.filter((d) => d.assessable);
+  assert.ok(counted.length >= 2, '근거 결정이 둘 이상인 씨앗');
+  const cut = counted[0];
+  const run = new SubwayRun(j);
+  while (!run.finished) { run.hearingDone(run.current !== cut); run.choose(run.current.answer); }
+  const s = run.summary();
+  assert.equal(s.total, counted.length - 1, '끊긴 문항은 분모에서 빠진다');
+  assert.equal(s.right, counted.length - 1, '끊긴 문항은 분자에서도 빠진다');
+  assert.equal(run.results.find((r) => r.id === cut.id).assessable, false);
+  assert.equal(run.finished, true);
+  const clean = play(j, (d) => d.answer);
+  assert.equal(clean.summary().total, counted.length);
+  assert.equal(run.minutes, clean.minutes, '듣기가 끊겨도 맞힌 구간의 시계는 같다');
+});
+
+test('소리가 끊긴 문항을 틀려도 분자 · 분모에 안 들고, 끊긴 뒤 다음 문항은 다시 센다', () => {
+  const j = buildJourney({ seed: 21 }), counted = j.decisions.filter((d) => d.assessable);
+  const run = new SubwayRun(j);
+  while (!run.finished) { const d = run.current; run.hearingDone(d !== counted[0]); run.choose(d === counted[0] ? d.options.find((o) => o.id !== d.answer).id : d.answer); }
+  const s = run.summary();
+  assert.equal(s.total, counted.length - 1);
+  assert.equal(s.right, counted.length - 1);
+  assert.equal(s.wrongs.length, 1, '틀린 칸은 다시 들을 목록에 그대로 있다');
+  assert.equal(run.results.find((r) => r.id === counted[1].id).assessable, true, '끊김은 그 문항에서 끝난다');
 });
 
 test('한 판의 결정은 5~7번이고 시청 표지 · 내릴 역이 든다', () => {

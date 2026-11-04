@@ -4,7 +4,9 @@ import { buildJourney, reviewDecisions } from './journeys.mjs';
 import { allMeetingItems } from './people.mjs';
 import { reviewItems } from './review-items.mjs';
 import fs from 'node:fs';
+import vm from 'node:vm';
 import { GAME_ID, decisionMeta, meetingMeta, answerPayload, createExchange, preferJourney } from './learning.mjs';
+import { PLAN_ITEMS } from './plan-items.mjs';
 
 function fakeCoach({ selected = null, throws = false } = {}) {
   const calls = [];
@@ -90,6 +92,41 @@ test('다음 판 복습: 아틀라스가 고른 문항이 든 여정을 앞세�
   assert.equal(preferJourney(fakeCoach(), journeys), journeys[0]);
   assert.equal(preferJourney(null, journeys), journeys[0]);
   assert.equal(preferJourney({ recommend() { throw Error('막힘'); } }, journeys), journeys[0]);
+});
+
+const bundle = (game) => {
+  const context = vm.createContext({ console });
+  vm.runInContext(fs.readFileSync(new URL(`../${game}/atlas-learning.js`, import.meta.url), 'utf8'), context);
+  return context.SynkLearning;
+};
+const memory = () => { const rows = new Map(); return { getItem: (k) => rows.get(k) ?? null, setItem: (k, v) => rows.set(k, String(v)), removeItem: (k) => rows.delete(k) }; };
+
+test('실제 게임 묶음: 낼 수 있는 문항 모두가 제시 · 전달 · 답까지 기록되고, 3~4급 근거가 ko2.*로 남는다', () => {
+  const metas = [...reviewDecisions().map(({ decision: d }) => decisionMeta(d)), ...allMeetingItems().map(({ item }) => meetingMeta(item))];
+  const unique = [...new Map(metas.map((m) => [m.itemKey, m])).values()];
+  assert.ok(unique.length >= 60, String(unique.length));
+  let tick = Date.parse('2026-11-05T00:00:00Z');
+  const coach = bundle('subway-rush').createGame({ gameId: GAME_ID, storage: memory(), clock: () => new Date(tick += 1000).toISOString() });
+  for (const m of unique) {
+    assert.ok(/^[a-zA-Z0-9_.:-]{1,120}$/.test(m.itemKey) && /^[a-zA-Z0-9_.:-]{1,120}$/.test(m.familyKey), `기계 이름은 영문 · 숫자만: ${m.itemKey} ${m.familyKey}`);
+    assert.ok(!/undefined/.test(m.itemKey + m.familyKey), m.itemKey);
+    const pid = coach.present(m);
+    coach.delivery(pid, { audio: 'completed' });
+    coach.answer(pid, { correct: true, assessable: true });
+  }
+  const upper = coach.summary().skills.find((s) => s.id === 'ko2.listening.detail');
+  assert.ok(upper?.n > 0, '바쁜 아침 근거가 요약에 있다');
+});
+
+test('TOPIK II 능력은 이 게임 묶음에만 있고 다른 게임 묶음은 TOPIK I 지도 그대로다', () => {
+  assert.ok(bundle('subway-rush').SKILLS.some((n) => n.id === 'ko2.listening.detail'));
+  assert.ok(!bundle('blank-slice').SKILLS.some((n) => /^ko2\./.test(n.id || '')));
+});
+
+test('계획 후보 표는 근거로 세는 결정 전부와 같다', () => {
+  const want = reviewDecisions().map(({ decision: d }) => ({ id: d.id, family: d.family, skillId: d.skillId, difficulty: d.difficulty })).sort((a, b) => a.id.localeCompare(b.id));
+  assert.deepEqual([...PLAN_ITEMS], want);
+  for (const item of PLAN_ITEMS) assert.ok(reviewDecisions().some(({ decision: d }) => decisionMeta(d).itemKey === decisionMeta(item).itemKey), item.id);
 });
 
 test('내는 문항은 모두 2중 검수를 통과했다', () => {

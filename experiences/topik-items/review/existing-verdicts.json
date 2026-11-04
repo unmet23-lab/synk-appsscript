@@ -4065,13 +4065,13 @@
       ]
     },
     {
-      "itemKey": "subway-rush.fork.청량리.dongdaemun.v1",
+      "itemKey": "subway-rush.fork.cheongnyangni.dongdaemun.v1",
       "source": "subway-rush",
       "verdict": "pass",
       "skillId": "ko.listening.detail",
       "difficulty": 1,
       "responseFormat": "single-choice",
-      "familyKey": "subway-rush.fork.청량리.v1",
+      "familyKey": "subway-rush.fork.cheongnyangni.v1",
       "officialType": "TI-L-26",
       "reason": "정답이 유일하고 대본·보기·해설이 게임 꼴 안에서 바릅니다. 해설에 오답 설명을 덧붙이면 더 좋지만 그대로 써도 학습자에게 해가 없어 통과입니다. | 휴대폰 길 안내를 듣고 1호선 청량리 방면을 고르는 문항으로 초급 난도와 보기 구성이 적절함.",
       "hash": "5fd96525a5c2019c",
@@ -4092,13 +4092,13 @@
       ]
     },
     {
-      "itemKey": "subway-rush.fork.청량리.jonggak.v1",
+      "itemKey": "subway-rush.fork.cheongnyangni.jonggak.v1",
       "source": "subway-rush",
       "verdict": "pass",
       "skillId": "ko.listening.detail",
       "difficulty": 1,
       "responseFormat": "single-choice",
-      "familyKey": "subway-rush.fork.청량리.v1",
+      "familyKey": "subway-rush.fork.cheongnyangni.v1",
       "officialType": "TI-L-26",
       "reason": "안내의 「청량리 방면」으로 정답이 유일하고, 오답(반대 방향·출구)도 그럴듯합니다. 게임 꼴 안에서 문제가 없어 통과입니다. 해설에 서울역 방면이 왜 틀렸는지 한 줄 더하면 좋겠습니다. | 휴대폰 길 안내를 듣고 환승 노선과 방면을 고르는 TOPIK I 초급 게임 문항으로, 오답 매력도와 난도·표현이 모두 적절해 통과함.",
       "hash": "d3dedb3e6d46cb04",
@@ -4119,13 +4119,13 @@
       ]
     },
     {
-      "itemKey": "subway-rush.fork.청량리.jongno3.v1",
+      "itemKey": "subway-rush.fork.cheongnyangni.jongno3.v1",
       "source": "subway-rush",
       "verdict": "pass",
       "skillId": "ko.listening.detail",
       "difficulty": 1,
       "responseFormat": "single-choice",
-      "familyKey": "subway-rush.fork.청량리.v1",
+      "familyKey": "subway-rush.fork.cheongnyangni.v1",
       "officialType": "TI-L-26",
       "reason": "정답(청량리 방면)이 하나뿐이고 근거가 분명합니다. 게임 꼴 안에서 기준을 충족합니다. 해설에 「나가는 곳」이 왜 틀렸는지 한 줄 더하면 좋겠지만 필수는 아닙니다. | 환승 노선과 방면(1호선 청량리 방면) 세부 정보를 묻는 기존 게임 문항으로 모든 기준을 충족함.",
       "hash": "e7a3b68600371d81",
@@ -4146,13 +4146,13 @@
       ]
     },
     {
-      "itemKey": "subway-rush.fork.청량리.jongno5.v1",
+      "itemKey": "subway-rush.fork.cheongnyangni.jongno5.v1",
       "source": "subway-rush",
       "verdict": "pass",
       "skillId": "ko.listening.detail",
       "difficulty": 1,
       "responseFormat": "single-choice",
-      "familyKey": "subway-rush.fork.청량리.v1",
+      "familyKey": "subway-rush.fork.cheongnyangni.v1",
       "officialType": "TI-L-26",
       "reason": "청량리 방면을 그대로 듣고 고르는 짧은 게임형 문항입니다. 정답이 하나뿐이고, 반대 방향 보기가 적절한 함정입니다. 해설에 서울역 방면 오답의 까닭을 한 줄 더하면 좋겠지만 통과에 지장은 없습니다. | 휴대폰 길 안내에서 1호선 청량리 방면을 듣고 환승 방향을 고르는 초급 문항으로 모든 기준을 충족함.",
       "hash": "c6bcc86c86c14963",
