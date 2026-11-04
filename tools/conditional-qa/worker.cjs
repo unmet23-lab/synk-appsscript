@@ -94,6 +94,15 @@ function failureDisposition(error, startedAt, { slept = sleptDuring, now = new D
     publicationState: interrupted ? 'pending' : 'failure',
     description: interrupted ? 'System sleep interrupted verification; awaiting a fresh complete run' : INCOMPLETE };
 }
+// Names the failed cases only when the receipt says the tests themselves failed on unchanged source and inputs.
+// Any other end keeps the plain line, which the diagnosed ledger can never explain.
+function failureText(output) {
+  try {
+    const receipt = read(path.join(output, 'result.json')), ids = receipt.rows.filter(row => row.status !== 'pass').map(row => row.id);
+    if (receipt.sourceUnchanged !== true || receipt.inputsUnchanged !== true || !ids.length || receipt.rows.length !== receipt.expected || !ids.every(id => /^S\d{3,}$/.test(id))) return INCOMPLETE;
+    return github.failureDescription(receipt.passed, receipt.expected, ids);
+  } catch { return INCOMPLETE; }
+}
 function extendQueue(state, head, commits) {
   github.validCommit(head);
   for (const commit of commits) {
@@ -174,7 +183,7 @@ function markCancelledRuns(queue, cancelled) {
 // A failure that could not be published still reads as running. It is published again, and only then is its run woken.
 function republishFailures(queue, publish = github.publish) {
   for (const item of queue.items.filter(row => row.status === 'failed' && row.publicationError).slice(0, 10)) {
-    try { publish(item.commit, 'failure', INCOMPLETE); delete item.publicationError; item.resumePending = true; }
+    try { publish(item.commit, 'failure', failureText(item.output)); delete item.publicationError; item.resumePending = true; }
     catch { /* Tried again between verifications. */ }
   }
 }
@@ -298,6 +307,7 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
           if (disposition.interrupted) item.error = `Interrupted by system sleep; verifying again. ${item.error}`.slice(0, 1000);
           item.status = disposition.status; item.retryAt = Date.now() + 15 * 60_000;
           ({ publicationState, description } = disposition);
+          if (publicationState === 'failure' && error.code === 'TEST_FAILURE') description = failureText(item.output);
           // Not a test result: this checkout or the network is the suspect, so it stops for this tick instead of failing every commit it is handed.
           retireSlot = !['TEST_FAILURE', 'ENOSPC'].includes(error.code);
         }
@@ -364,4 +374,4 @@ if (require.main === module) {
     if (requestedCommit !== null && summary.requested.status !== 'passed') process.exitCode = summary.requested.status === 'failed' ? 1 : 2;
   }).catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns, republishFailures, diskWaitFor, browserProfileDiskFull, runPool, cpuMeter, roomForFirst, roomForAnother, calmGate, trimPassedRun };
+module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, failureDisposition, failureText, due, resumeFinished, markCancelledRuns, republishFailures, diskWaitFor, browserProfileDiskFull, runPool, cpuMeter, roomForFirst, roomForAnother, calmGate, trimPassedRun };

@@ -156,4 +156,22 @@ WORLD 계정 브라우저 시험은 부모 화면의 애니메이션 프레임�
 
 빨강은 다음 다섯 가지다. 새 실패(올라온 지 24시간 안, 커밋마다 이름이 달라 새 실패만 새로 알린다), 판 불일치, 대기가 있는데 일꾼이 155분 동안 아무 상태도 안 올린 때(`WAIT` 표시는 일꾼 활동이 아니고, [기다린다는 알림](#local-parallel)은 일꾼 활동이다), 커밋된 지 72시간 넘은 대기, 1,000커밋 창에 활성화 커밋이 안 들어올 때. 24시간이 지난 실패는 빨강에서 빠질 뿐 커밋 상태와 로그의 「kept until a retry passes」 줄에 남고, `retry.cjs`로 다시 재기 전에는 통과가 되지 않는다. 호스트 36건과 로컬 79건의 커밋별 실행은 그대로이며 경로 제외는 없다.
 
-회귀는 `node --test tests/conditional-qa.test.cjs tests/conditional-qa-retry.test.cjs tests/ci넓은시험.test.js`다. 이 자동화는 등록된 115건의 지속 검증이며, 새 보안 감사나 운영 접근 권한 전체의 재점검을 대신하지 않는다. 최초 실제 실행과 원격 CI 결과는 비공개 설치·실행 영수증과 해당 커밋의 GitHub Checks에서 확인한다.
+회귀는 `node --test tests/conditional-qa.test.cjs tests/conditional-qa-retry.test.cjs tests/conditional-qa-diagnosed.test.cjs tests/ci넓은시험.test.js`다. 이 자동화는 등록된 115건의 지속 검증이며, 새 보안 감사나 운영 접근 권한 전체의 재점검을 대신하지 않는다. 최초 실제 실행과 원격 CI 결과는 비공개 설치·실행 영수증과 해당 커밋의 GitHub Checks에서 확인한다.
+
+<a id="diagnosed-failures"></a>
+
+### 실패 읽기와 원인을 밝힌 구간
+
+`conditional-qa-local`의 빨강은 커밋 하나가 깨졌다는 뜻이 아니다. 24시간 안의 로컬 실패를 run마다 다시 세므로, 실패 네 건이면 그동안 도는 run이 모두 빨갛다(11-05 48회 연속). 그래서 11-05부터 일꾼은 실패 상태에 시험 번호를 올린다(`FAIL 78/79: S070`). 번호는 공개된 `cases.json`의 것만이고, 소스·입력이 그대로이고 모든 행이 있는 영수증에서만 쓴다. 그 밖의 끝은 예전 문구를 쓴다. 알림과 CI 로그에는 번호와 시험 파일이 찍힌다. 실패 내용은 이 PC의 `~/security-audit-skill/SYNK-conditional-qa/runs/<커밋>-*/result.json`에서 `phases[].unexpectedFailures`를 읽는다.
+
+커밋의 시험은 그 커밋에 고정되어 있다. 한 구간에서 시험이 틀렸으면 그 구간의 커밋은 일꾼이 닿을 때마다 하나씩 실패하고, 다시 재어도 통과할 수 없다. 원인을 밝힌 구간을 [`diagnosed.json`](diagnosed.json)에 적으면 그 구간·그 번호만 들어맞는 실패는 빨강에서 빠진다.
+
+- 빠지는 것은 알림뿐이다. 커밋의 실패 상태, 로그의 「kept until a retry passes」, 그 커밋 run의 빨강은 그대로이고 통과로 세지 않는다. 로그에 `diagnosed, no alert:`로 까닭과 함께 남는다.
+- 번호가 하나라도 더 있거나, 번호가 잘렸거나, 예전 문구면 빨강이다. 구간 끝(`fixedBy`)부터는 같은 번호도 빨강이다. master 줄에 없는 구간은 그 자체가 빨강이다.
+- 적는 조건: 실패를 재현해 원인을 찾았고, 뒤 커밋에서 그 시험이 통과했다. 부하·환경 때문인 실패는 적지 않고 `retry.cjs`로 다시 잰다.
+
+| 시험 | 구간 | 원인 | 재현 |
+|---|---|---|---|
+| S070 | `b5bd21079` ~ `76586f0f0` 앞 | `experiences/brand-opening/play-unlocks.mjs`의 `playOrder`가 레슨 하나를 마치면 `runner`를 목록에서 빼고 `subway`를 넣는다. 그 구간 `qa/account-browser.test.mjs:256`은 레슨을 마친 뒤 `button[data-game="runner"]`를 20초 기다린다 | `playOrder`를 커밋별로 불러 레슨 1개에서 `subway,rhythm`이 나오는 것, `b81eef130`·`5425edd70` 영수증의 같은 시간 초과, [GitHub의 같은 실패](https://github.com/unmet23-lab/synk-appsscript/actions/runs/41795766747) |
+| S072 | `a745a1f70` ~ `f577e04d1` 앞 | `experiences/synk-town/day-app.mjs`가 시간 초과된 GET을 모두 한 번 더 물어 과제 화면의 12초 오류가 24초로 늦어졌다. `qa/classroom-homework-browser.test.mjs:178`의 대기는 25초다 | `64c7ad63d` 영수증의 시간 초과, `f577e04d1`의 범위 축소 뒤 같은 시험 통과 |
+
