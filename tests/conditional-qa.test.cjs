@@ -391,7 +391,14 @@ test('offline local verification releases its runner and never manufactures a gr
   await assert.rejects(wait({ root, commit, runId: '124', cancelGraceMs: 1, read: () => ({ state: 'pending', description: 'Running' }), write: (...args) => pendingWrites.push(args), cancel: () => {} }), /did not take effect/);
   assert.equal(pendingWrites.length, 0, 'the worker already owns the pending status');
   await assert.rejects(wait({ root, commit, read: () => ({ state: 'pending' }), cancel: () => assert.fail('no run id, no cancel') }), /without a run id/);
-  await assert.rejects(wait({ root, commit, runId: '125', read: () => ({ state: 'pending' }), cancel: () => { throw Error('403'); } }), /403/);
+  await assert.rejects(wait({ root, commit, runId: '125', retryPauseMs: 1, read: () => ({ state: 'pending' }), cancel: () => { throw Error('403'); } }), /403/);
+  // One transient GitHub error does not turn a waiting run red; a lasting one fails the job, and that is still no pass.
+  let reads = 0; const flaky = [];
+  await assert.rejects(wait({ root, commit, runId: '127', retryPauseMs: 1, cancelGraceMs: 1, read: () => { if (++reads === 1) throw Error('HTTP 500'); return { state: 'pending' }; }, cancel: id => flaky.push(id) }), /did not take effect/);
+  assert.equal(reads, 2); assert.deepEqual(flaky, ['127']);
+  let tries = 0;
+  await assert.rejects(wait({ root, commit, runId: '128', retryPauseMs: 1, read: () => { tries++; throw Error('HTTP 500'); }, cancel: () => assert.fail('no status, no cancel') }), /HTTP 500/);
+  assert.equal(tries, 3);
   await assert.rejects(wait({ root, commit, read: () => ({ state: 'failure', description: 'incomplete' }) }), /not passed/);
   await assert.rejects(wait({ root, commit, runId: '126', read: () => ({ state: 'success', description: 'PASS 1/1 manifest=another' }), cancel: () => assert.fail('a success for another manifest is not pending') }), /does not match/);
 });
