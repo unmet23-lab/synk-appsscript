@@ -25,6 +25,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 공용 문서를 `open(p,"w")`·`>`로 바로 쓰다 실패하면 0바이트가 되어 남의 줄이 사라진다 → 임시 파일에 다 쓰고 교체한다 ([자세히](#공용-문서를-쓰다-실패하면-빈-파일이-남는다))
 - 앱 · PC가 갑자기 꺼진 뒤엔 막 다시 쓴 작업본 파일이 같은 크기의 NUL로 남을 수 있다 → `git ls-files --eol`에서 `w/-text`인 글 파일을 찾아 `git checkout HEAD --`로 되살린다 ([자세히](#앱--pc가-갑자기-꺼진-뒤-막-다시-쓴-작업본-파일이-같은-크기의-nul로-채워져-있다-2026-10-29-claude))
 - 파이썬 text 모드·`sed -i`로 쓰면 줄끝이 뒤집혀 diff가 통째로 난다 → 바이트로 읽고 쓰거나 `newline=""` ([자세히](#공용-문서-하나가-줄끝만-바뀌어-통째로-diff가-된다))
+- 맞는 키인데 `Permission denied (publickey)`가 번갈아 나면 GitHub 상태부터 본다(11-04 Git Operations 성능 저하) → 키를 고치지 말고 다시 돌린다 ([자세히](#맞는-키인데-git-fetch--바로올리기가-permission-denied-publickey를-번갈아-낸다--github-쪽-성능-저하일-때가-있다-2026-11-04-claude))
 - 공간 정리가 추적 파일과 안쪽 git 클론까지 지운다 → `git ls-files` 경로와 `.git` 든 폴더를 목록에서 뺀다 ([자세히](#공간-정리가-추적-파일을-지운다))
 - junction이 든 워크트리를 `rm -rf`로 지우면 공용 `node_modules`까지 지워진다 → 링크부터 끊고 지운다 ([자세히](#junction이-든-워크트리를-통째로-지우면-공용-node_modules가-지워질-수-있다))
 - 앱이 만든 새 세션 워크트리에는 docs/캐릭터·홍보물·라디오가 없다(10-31부터 git 훅이 만들 때 뺀다) → 그 폴더가 필요하면 `node tools/바로올리기.js 가볍게 --되살림 <폴더> --실행`(15초쯤) ([자세히](#세션-워크트리가-가볍게를-빠뜨려-사본마다-2gb가-그대로-쌓인다--10-31부터-git-훅이-만들-때-뺀다-2026-10-31-claude))
@@ -653,6 +654,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 세션 워크트리는 `docs/캐릭터` · `docs/홍보물`을 빼고 시작하는데, 관련 시험 고르기는 그 폴더를 읽는 시험을 고른다. 내 변경과 무관하다.
 - 고침: 그 폴더를 쓰는 일이면 `가볍게 --되살림 <폴더> --실행`, 무관한 qa · 문서면 `--시험건너뜀 "<까닭>"`. 큰 폴더를 되살리면 뒤 검사가 더 느려진다.
 - 다시 확인: `CI=1 node --test tests/계정컬렉션.test.js 2>&1 | grep -E "Cannot find|^ℹ fail"`
+
+### 맞는 키인데 `git fetch` · `바로올리기`가 「Permission denied (publickey)」를 번갈아 낸다 — GitHub 쪽 성능 저하일 때가 있다 (2026-11-04 Claude)
+- 증상: 11-04 19시대에 `git fetch` · `ls-remote` · `바로올리기 따라가기`가 `git@github.com: Permission denied (publickey).`로 끝났다. 같은 키로 `ssh -T git@github.com`이 몇 초 간격으로 「Hi unmet23-lab!」와 실패를 번갈아 냈고, `ssh -v`에는 `Offering public key` 뒤 `Authentications that can continue`만 남았다. 바로 앞 시각까지 같은 명령이 됐다.
+- 원인: 이 PC의 키 · 권한 · 설정은 그대로였고(키 ACL은 본인 `(R)` 하나), 그 시각 githubstatus.com의 Git Operations · Actions가 `degraded_performance`였다. GitHub이 까닭을 따로 밝힌 것은 아니어서, 확인한 것은 「같은 키가 번갈아 받아들여지고 그때 GitHub이 성능 저하였다」까지다.
+- 고침: 키 · 권한을 고치지 않는다. `https://www.githubstatus.com/api/v2/components.json`을 먼저 보고 멈춘 명령을 다시 돌린다. `바로올리기`는 push 뒤에 끊겼어도 다시 돌리면 「올릴 것 없음」이다.
+- 다시 확인: `ssh -o BatchMode=yes -T git@github.com`이 여러 번 잇달아 성공한다.
 
 ## 워크트리·연결 폴더·공간 정리
 
