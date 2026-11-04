@@ -15,7 +15,8 @@ const canon = (v) => JSON.stringify(v, (_, x) => (x && typeof x === 'object' && 
 /** normalizeAlbum은 이 판의 낱말표에 없는 카드를 뺀다. 다음 판에서 더한 낱말을 옛 판이 계정에서 지우지 않게, 합치고 저장할 때는 원문 그대로 들고 간다(화면은 장소의 낱말만 그린다). */
 function withUnknownCards(raw) {
   const album = normalizeAlbum(raw);
-  for (const [id, card] of Object.entries(raw?.cards || {})) if (!(id in album.cards) && id !== '__proto__' && card && typeof card === 'object') album.cards[id] = card;
+  if (raw?.v !== 1) return album; // 뒤에 나온 판의 기록은 합치지 않는다 — 같은 판의 모르는 낱말만 들고 간다
+  for (const [id, card] of Object.entries(raw.cards || {})) if (!(id in album.cards) && id !== '__proto__' && card && typeof card === 'object') album.cards[id] = card;
   return album;
 }
 const hasContent = (a) => Object.keys(a.cards).length > 0 || a.plays > 0 || Object.keys(a.daily).length > 0 || num(a.noticesAt) > 0;
@@ -125,7 +126,8 @@ export async function openAlbumStore({ win = globalThis.window, storage: given =
     clearTimeout(timer); timer = null;
     if (!port || !dirty) return;
     if (Date.now() - lastContact >= freshMs && typeof host.retry === 'function') {
-      refreshing ||= Promise.resolve().then(() => host.retry()).catch(() => {}).finally(() => { refreshing = null; lastContact = Date.now(); });
+      // 요청이 매달려도 쓰기가 묶이지 않게 제한을 둔다 — 넘으면 그대로 쓰고, 기다리는 기록으로 남아 호스트가 보낸다.
+      refreshing ||= Promise.race([Promise.resolve().then(() => host.retry()), new Promise((resolve) => { setTimeout(resolve, readyMs); })]).catch(() => {}).finally(() => { refreshing = null; lastContact = Date.now(); });
       await refreshing;
     }
     push();

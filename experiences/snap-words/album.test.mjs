@@ -259,6 +259,28 @@ test('이 판이 모르는 낱말 카드(다음 판에서 더한 낱말)를 계�
   assert.equal(JSON.parse(d.storage.getItem(`${STORE_KEY}:${ACCOUNT}`)).cards.future_word?.named, true);
 });
 
+test('뒤에 나온 판(v2)이 남긴 기기 사본은 옛 판이 합쳐 계정에 올리지 않는다', async () => {
+  const v2 = { v: 2, cards: { library: { named: true, shape: 'v2' }, future_word: { named: true } } };
+  assert.deepEqual(Object.keys(mergeAlbums(emptyAlbum(), v2).cards), []);
+  const server = fakeServer();
+  const d = device({ server, storage: memoryStorage({ [`${STORE_KEY}:${ACCOUNT}`]: JSON.stringify(v2) }) });
+  const store = await open(d);
+  await settle(d);
+  assert.deepEqual(Object.keys(store.album.cards), []);
+  assert.equal(server.state.records[STORE_KEY], undefined);
+});
+
+test('다시 읽기가 매달려도 계정 쓰기가 묶이지 않는다', async () => {
+  const server = fakeServer();
+  const d = device({ server });
+  const hanging = Object.freeze({ ...d.host, retry: () => new Promise(() => {}) });
+  d.win.SYNKPlayHost = hanging;
+  const store = await open(d, { freshMs: 0, readyMs: 10 });
+  addCard(store.album, shot('cat'), 'gate', 1); nameCard(store.album, 'cat', 2); store.saveNow();
+  await settle(d); await settle(d);
+  assert.equal(JSON.parse(server.state.records[STORE_KEY]).cards.cat.named, true);
+});
+
 test('뒤에 나온 판(v2)이 쓴 계정 기록은 합쳐 덮지 않는다', async () => {
   const server = fakeServer();
   const future = JSON.stringify({ v: 2, cards: { library: {} } });
