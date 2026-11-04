@@ -54,7 +54,8 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   // Linux CI의 가상 X 화면에는 실제 포인터가 있다. 터치 모드를 끄면 그 포인터로 돌아간다.
   const virtualDisplay=process.platform==='linux'&&process.env.SYNK_ME2_QA_X11==='1';
   if(virtualDisplay)assert.ok(process.env.DISPLAY,'사진 기기 전환 시험에는 Xvfb 화면이 필요하다');
-  browser=await playwright.chromium.launch({channel:process.platform==='win32'?'msedge':'chrome',headless:!virtualDisplay,timeout:30000});
+  browser=await playwright.chromium.launch({channel:process.platform==='win32'?'msedge':'chrome',headless:!virtualDisplay,timeout:30000,
+   ...(process.platform==='win32'?{}:{args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']})});
   const context=await browser.newContext({viewport:VIEWPORTS[0].size,locale:'ko-KR',timezoneId:'Asia/Seoul',reducedMotion:'reduce'});context.setDefaultTimeout(25000);
   await context.route('**/*',route=>{if(new URL(route.request().url()).origin===url)return route.continue();external.push(route.request().url());return route.abort('blockedbyclient');});
   if(candidate)await context.route(url+'/world/**',route=>{const rel=new URL(route.request().url()).pathname.replace(/^\//,''),file=path.join(candidate,rel.endsWith('/')?rel+'index.html':rel);if(fs.existsSync(file)&&fs.statSync(file).isFile())return route.fulfill({status:200,contentType:typeOf(file),body:fs.readFileSync(file),headers:{'Cache-Control':'no-store'}});return route.fallback();});
@@ -392,6 +393,7 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   assert.deepEqual(errors,[],'페이지 오류');
   assert.deepEqual(external.filter(u=>!/fonts\.|gstatic|example\.test/.test(u)),[],'바깥 주소');
  }catch(error){
+  console.error('사진 시험 브라우저 오류',JSON.stringify(consoleErrors.slice(-10)));
   // 실패 때 무엇이 오갔는지 남긴다(qa/*-failure.json은 .gitignore 대상).
   fs.writeFileSync(path.join(root,'experiences/synk-world-app/qa/me2-photo-failure.json'),JSON.stringify({error:String(error?.stack||error).slice(0,1500),calls,uploads,unexpected,errors,consoleErrors,external,shots,measures,panel:await page?.evaluate(()=>document.querySelector('#panel-content')?.textContent?.slice(0,800)).catch(()=>null)},null,1));
   await page?.screenshot({path:path.join(out,'실패.png')}).catch(()=>{});
