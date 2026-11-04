@@ -76,7 +76,7 @@ const examRequested=(value=>['topik1','topik2'].includes(value)?value:null)(new 
 // 로그인한 상태로 들어왔을 때 한 번 연다(로그인 전에는 launchGame이 로그인 창을 열고 표시는 남는다).
 const DRAMA_PENDING='synk.world.drama.pending';
 // 로그인을 거쳐 돌아온 드라마 바로가기는 30분 남기되, 주소가 다른 바로가기(옷장 · 카페 · 시험)를 부르면 그쪽이 이기고 남은 드라마 표시는 지운다(FA2).
-const dramaRequested=(()=>{try{const q=new URLSearchParams(location.search);if(q.get('drama')==='1')sessionStorage.setItem(DRAMA_PENDING,String(Date.now()));else if(q.get('wardrobe')==='1'||q.get('cafe')==='1'||q.has('exam')){sessionStorage.removeItem(DRAMA_PENDING);return false;}const at=Number(sessionStorage.getItem(DRAMA_PENDING));if(at&&Date.now()-at<30*60000)return true;sessionStorage.removeItem(DRAMA_PENDING);}catch{}return false;})();
+const dramaRequested=(()=>{try{const q=new URLSearchParams(location.search);if(q.get('drama')==='1')sessionStorage.setItem(DRAMA_PENDING,String(Date.now()));else if(q.get('wardrobe')==='1'||q.get('cafe')==='1'||q.has('exam')||q.get('me2')==='1'){sessionStorage.removeItem(DRAMA_PENDING);return false;}const at=Number(sessionStorage.getItem(DRAMA_PENDING));if(at&&Date.now()-at<30*60000)return true;sessionStorage.removeItem(DRAMA_PENDING);}catch{}return false;})();
 async function restoreConnectedHome(){
  // native 계정 연결은 새 인증 경계다. 진행 중인 복원(초기 복원 포함)에 합류하되 연결 완료·오류 화면은 이 경계가 맡고, 앞 시도의 화면 처리는 물러난다.
  authBoundary++;
@@ -213,7 +213,7 @@ function reconcileAccount(){
   }
  }
  life.sync();
- if(!snap&&['world-play','world-retry','world-reward','world-profile','world-device-records','game','world-game-loading','world-game-error','world-game-conflict','world-speaking'].includes(screen)){draftRun=null;answers=[];lastCompletion=null;close();}
+ if(!snap&&['world-play','world-retry','world-reward','world-profile','world-device-records','game','world-game-loading','world-game-error','world-game-conflict','world-speaking','world-me2'].includes(screen)){draftRun=null;answers=[];lastCompletion=null;close();}
 }
 function renderStatus(){
  const snap=client.snapshot;
@@ -480,7 +480,9 @@ if(speakingOn)void import('./world-speaking-practice.mjs').then(module=>{speakin
 // 「제2의 나」 내 사진으로 만들기(11-04 시범, me2-photo.mjs · 설계 docs/제2의나_사진아바타_일괄처리_설계_20261103.md): 초대한 성인만 — 서버 status가 ok일 때만 모듈을 불러 내 정보 시트에 줄을 더한다.
 // 초대 주소는 ?me2=1. 그 밖의 학생에게는 줄도 모듈도 없다(요청 한 번만 나간다). 계정 모드 웹에서만이다.
 let me2Module=null,me2=null,me2Owner=null;
-const me2Requested=new URLSearchParams(location.search).get('me2')==='1';
+// 로그인은 전체 페이지 이동이고 돌아오는 주소에 쿼리가 없다 — 초대 링크의 첫 방문은 로그인 전일 때가 많아, ?drama=1처럼 이 탭에 30분 남겨 두었다가 로그인한 뒤 한 번 연다.
+const ME2_PENDING='synk.world.me2.pending';
+const me2Requested=(()=>{try{const q=new URLSearchParams(location.search);if(q.get('me2')==='1')sessionStorage.setItem(ME2_PENDING,String(Date.now()));else if(q.get('wardrobe')==='1'||q.get('cafe')==='1'||q.has('exam')||q.get('drama')==='1'){sessionStorage.removeItem(ME2_PENDING);return false;}const at=Number(sessionStorage.getItem(ME2_PENDING));if(at&&Date.now()-at<30*60000)return true;sessionStorage.removeItem(ME2_PENDING);}catch{return new URLSearchParams(location.search).get('me2')==='1';}return false;})();
 const me2Allowed=()=>operating&&!!account?.supportsMe2&&!!client.snapshot;
 async function me2Host(){
  if(!me2Allowed())return null;
@@ -495,7 +497,8 @@ async function addMe2Row(){
  const owner=client.snapshot?.accountId;
  let out;try{out=await account.me2Request({action:'status'});}catch{return;}
  if(!(out?.status==='ok'||(out?.status==='off'&&out.consent?.given)))return;
- const host=await me2Host();const place=document.querySelector('#panel-content .ws-me');
+ let host;try{host=await me2Host();}catch{return;}
+ const place=document.querySelector('#panel-content .ws-me');
  // 기다리는 사이 계정이 바뀌었으면 앞 계정의 줄 · 사진을 새 계정 시트에 넣지 않는다.
  if(client.snapshot?.accountId!==owner||(out.accountId&&out.accountId!==owner))return;
  if(host&&place&&screen==='world-profile'&&!place.querySelector('.me2-row'))place.querySelector('.ws-me-id')?.insertAdjacentHTML('afterend',host.rowHtml(out.me?.chosen_url));
@@ -915,7 +918,7 @@ entryGate=createWorldEntryGate({
    // ?drama=1(11-02): 드라마 말하기 1화 코호트 링크 — 다른 게임과 같은 launchGame(로그인 전이면 로그인부터).
    else if(dramaRequested){if(client.snapshot)try{sessionStorage.removeItem(DRAMA_PENDING);}catch{}void launchGame('drama');}
    // 한 번만 도는 바로가기라 계정이 바뀌어 멈춘 것(코드 없는 오류)은 알리지 않는다 — 「다시 시도」할 일이 아니다.
-   else if(me2Requested)void openMe2().catch(error=>{if(error?.code)home.toast(errorText(error));});
+   else if(me2Requested){if(client.snapshot)try{sessionStorage.removeItem(ME2_PENDING);}catch{}void openMe2().catch(error=>{if(error?.code)home.toast(errorText(error));});}
    else if(examRequested)void openExamLink().catch(error=>{if(error?.code)home.toast(errorText(error));});
    else openReminderLink();
   });

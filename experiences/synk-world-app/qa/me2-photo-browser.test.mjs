@@ -132,7 +132,10 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
    const more=await panel.evaluate(el=>el.scrollHeight-el.clientHeight);
    if(more>40){await panel.evaluate(el=>{el.scrollTop=el.scrollHeight;});await page.waitForTimeout(120);const second=`${name}-${viewportTag}-아래.png`;await page.screenshot({path:path.join(out,second)});shots.push(second);await panel.evaluate(el=>{el.scrollTop=0;});}
   };
-  const both=async(name,after=async()=>{})=>{for(const {tag,size} of VIEWPORTS){viewportTag=tag;await page.setViewportSize(size);await page.waitForTimeout(150);await check(name);await shoot(name);await after(tag);}viewportTag='390';await page.setViewportSize(VIEWPORTS[0].size);};
+  // 휴대폰 폭 캡처는 터치 기기로 본다 — 고르기 화면의 단추가 기기에 따라 다르다((pointer:coarse)).
+  const cdp=await context.newCDPSession(page);
+  const touch=on=>cdp.send('Emulation.setTouchEmulationEnabled',{enabled:on,maxTouchPoints:on?5:1});
+  const both=async(name,after=async()=>{})=>{for(const {tag,size} of VIEWPORTS){viewportTag=tag;await touch(tag==='390');await page.setViewportSize(size);await page.waitForTimeout(150);await check(name);await shoot(name);await after(tag);}viewportTag='390';await touch(false);await page.setViewportSize(VIEWPORTS[0].size);};
   const finish=async(scores)=>{await fx.tick();await fx.tick();await fx.scoreAll(scores);await fx.tick();};
 
   // ── 초대 전: 줄이 없다 ──
@@ -144,6 +147,8 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   // ── 초대 뒤: 줄 → 동의 ──
   await fx.db.query('insert into engine.me2_photo_invites(synk_user_id) values($1)',[A]);
   await openProfile();await page.locator('.me2-row').waitFor();
+  assert.equal(await page.locator('.me2-row img').count(),0,'모습을 만들기 전에는 줄에 남의 얼굴을 넣지 않는다');
+  assert.equal(await page.locator('.me2-row-blank').count(),1);
   for(const {tag,size} of VIEWPORTS){await page.setViewportSize(size);await page.waitForTimeout(150);await page.locator('.me2-row').scrollIntoViewIfNeeded();const file=`00-내정보-${tag}.png`;await page.screenshot({path:path.join(out,file)});shots.push(file);}
   await page.setViewportSize(VIEWPORTS[0].size);
   await openMe2();
@@ -165,6 +170,12 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   const noted=await fx.db.query('select notes from engine.me2_photo_profiles where synk_user_id=$1',[A]);
   assert.deepEqual(noted.rows[0].notes,{glasses:true},'알려 준 것이 저장됐다');
   await both('02-고르기');
+  await touch(true);
+  assert.ok(await page.locator('label.me2-on-touch').first().isVisible(),'휴대폰에는 「지금 찍기」가 있다');
+  assert.equal(await page.locator('label.me2-on-pointer').isVisible(),false);
+  await touch(false);
+  assert.equal(await page.locator('label.me2-on-touch').first().isVisible(),false,'PC에는 같은 파일 창을 여는 단추를 둘 두지 않는다');
+  assert.ok(await page.locator('label.me2-on-pointer').isVisible());
 
   // ── 얼굴이 안 보이는 사진: 막지 않는다 ──
   const albumInput=()=>page.locator('label.plain-button [data-me2-file]');
@@ -276,6 +287,17 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   await finish(()=>({strong:.8,natural:.82,younger:.8}));
   await openMe2();await page.locator('.me2-variants').waitFor();
   await both('14-새사진-이게나');
+  // 새 판이 마음에 안 들면 지금 모습을 그대로 둔다 — 옷장은 그대로이고 새 판만 지운다.
+  await page.locator('[data-me2="keep"]').click();await page.locator('.me2-id').waitFor();
+  assert.ok((await fx.db.query("select count(*)::int as n from engine.me2_photo_jobs where synk_user_id=$1 and kind='look' and status='done'",[A])).rows[0].n>=1,'옷장은 그대로다');
+  assert.equal((await fx.db.query("select count(*)::int as n from engine.me2_photo_jobs where synk_user_id=$1 and kind='base'",[A])).rows[0].n,1,'고르지 않은 새 판을 지운다');
+  // 한 번 더 — 이번에는 새 모습으로 간다.
+  await page.locator('.me2-foot [data-me2="again"]').click();
+  await page.locator('[data-me2-file]').first().waitFor({state:'attached'});
+  await albumInput().setInputFiles(gradient);await page.locator('[data-me2="use"]').click();
+  await page.locator('.me2-id').waitFor();
+  await finish(()=>({strong:.8,natural:.82,younger:.8}));
+  await openMe2();await page.locator('.me2-variants').waitFor();
   await page.locator('[data-me2="choose"]').click();await page.locator('.me2-id').waitFor();
 
   // ── 세 판 다시 보기 → 돌아가기 ──
@@ -322,6 +344,21 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   await page.locator('[data-me2-root] .me2-note').waitFor();
   assert.equal(await page.locator('[data-me2-file],[data-me2="agree"]').count(),0,'초대받지 않으면 동의 · 올리기가 없다');
   tamper=null;
+
+  // ── 초대 링크가 로그인을 거쳐 돌아오면 쿼리가 없다 — 남겨 둔 표시로 한 번 연다. 오래된 표시로는 열지 않는다. ──
+  await page.evaluate(()=>sessionStorage.setItem('synk.world.me2.pending',String(Date.now())));
+  await page.goto(url+'/world/?opening=off',{waitUntil:'domcontentloaded'});
+  await page.locator('[data-me2-root]').waitFor();
+  assert.equal(await page.evaluate(()=>sessionStorage.getItem('synk.world.me2.pending')),null,'한 번 열면 표시를 지운다');
+  // 로그인이 풀리면 내 모습 시트도 닫는다(사진이 보이는 채 남지 않는다).
+  assert.equal(await page.evaluate(()=>window.__synkWorld.screen()),'world-me2');
+  await page.evaluate(()=>window.__synkWorld.client.invalidate());
+  await page.waitForFunction(()=>window.__synkWorld.screen()!=='world-me2');
+  await page.evaluate(()=>sessionStorage.setItem('synk.world.me2.pending',String(Date.now()-31*60000)));
+  await page.goto(url+'/world/?opening=off',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>window.__synkWorld?.client.status==='ready'&&document.querySelector('.world-shell')?.dataset.entry==='ready');
+  assert.equal(await page.locator('[data-me2-root]').count(),0,'오래된 표시로는 열지 않는다');
+  assert.equal(await page.evaluate(()=>sessionStorage.getItem('synk.world.me2.pending')),null);
 
   // ── 영어 · 몽골어: 화면과 동의 글에 한글이 없다(학습 내용이 아니라 기능 글이다) ──
   const switchLang=value=>page.evaluate(async language=>{const u=performance.getEntriesByType('resource').map(e=>e.name).find(n=>n.includes('world-lang.mjs'));const m=await import(u);m.setLang(language,{save:false});},value);
