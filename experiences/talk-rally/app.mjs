@@ -29,7 +29,7 @@ const progressStorage = globalThis.SynkPlayAccount.storage();
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; };
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const reduced = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+const reduced = () => (worldPlay ? !worldPlay.motionOn() : window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);   // WORLD: 앱 설정 「움직임 줄이기」까지 본다
 const announce = (text) => { const n = $('#sr-live'); n.textContent = ''; requestAnimationFrame(() => { n.textContent = text; }); };
 const buzz = (ms) => { try { if (sound.isOn() && navigator.vibrate) navigator.vibrate(ms); } catch { /* 진동 없는 기기 */ } };
 const punch = (node) => { if (!node) return; node.classList.remove('punch'); void node.offsetWidth; node.classList.add('punch'); };
@@ -613,7 +613,7 @@ function pause(open = true) {
   if (open) world?.pause(); else world?.resume();
   if (open && !$('#pause-dialog').open) $('#pause-dialog').showModal();
   if (!open && $('#pause-dialog').open) $('#pause-dialog').close();
-  if (!open && cur?.speechCut && cur.phase === 'talk' && state.cur === cur) { cur.speechCut = false; speakCur(cur); }
+  if (!open && cur?.speechCut && cur.phase === 'talk' && state.cur === cur) { cur.speechCut = false; if (cur.rallied) cur.token = 0; speakCur(cur); }   // WORLD 이어지는 랠리: 말을 처음부터 하니 공도 태오 라켓에서 새로 날아온다(남은 길만 날면 말보다 먼저 닿는다)
 }
 $('#pause').onclick = () => pause(true);
 $('#resume').onclick = () => { sound.unlock(); pause(false); };
@@ -622,6 +622,7 @@ $('#quit').onclick = () => {
   // 대답하지 않은 말은 응답 없음으로 닫는다(평가하지 않음)
   const cur = state.cur;
   if (cur && !['hit', 'done'].includes(cur.phase)) cur.ex?.cancel();
+  if (cur) cur.speechCut = false;   // 아래 pause(false)가 끊긴 말을 다시 시작하지 않게(입구에 말소리가 남는다)
   stopVoices(cur);
   world?.quit();
   pause(false); endFlow(); state.cur = null; tip(null); hideExplain(); hideWait(); renderLobby();
@@ -757,7 +758,8 @@ try {
 syncToggles();
 renderLobby();
 // 3D 무대를 입구에서 미리 만든다(셰이더 미리 데우기가 시작 단추를 누른 뒤의 멈춤이 되지 않게)
-(window.requestIdleCallback || ((fn) => setTimeout(fn, 600)))(() => { ensureStage().catch(() => { /* 시작할 때 다시 시도하고 안내한다 */ }); }, { timeout: 2500 });
+if (world) world.whenStill(() => ensureStage().catch(() => { /* 시작할 때 다시 시도하고 안내한다 */ }));
+else (window.requestIdleCallback || ((fn) => setTimeout(fn, 600)))(() => { ensureStage().catch(() => { /* 시작할 때 다시 시도하고 안내한다 */ }); }, { timeout: 2500 });
 
 // 시험·확인용 관찰(?qa)
 if (QA) {

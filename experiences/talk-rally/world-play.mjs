@@ -13,6 +13,7 @@ import { FEEL, LANES } from './stage.mjs';
 import { WHO, WHO_FULL, REACT, itemVoice, reactVoice, narrationVoice, NARRATION_WORLD } from './world-lines.mjs';
 
 export { WHO, WHO_FULL, SCENE };
+export { motionOn } from './world-fx.mjs';
 
 // 몽글 대신 태오: 문항 음성 · 안내 음성 · 짧은 반응 파일 자리를 바꾼다. 문항 글과 정답은 그대로다.
 for (const it of [PRACTICE, ...ITEMS]) it.voice = itemVoice(it.id);
@@ -38,10 +39,15 @@ export function createWorldPlay() {
   const clips = {};
   let rollers = null, resultsRun = null, coinWaiting = false, inGame = false, paused = false, farTimer = 0, lastLobbyAnim = false;
   let curtainOn = false, curtainToken = 0;
+  let heavy = null, heavyDone = false, earlyDone = false;
+  let plateAnim = null, clipFade = null, sayOpen = false, sayTimer = 0;
   const warmed = new Map();
   const groups = { beat: new Set(), results: new Set() };
-  const later = (ms, fn, group = 'beat') => { const id = setTimeout(() => { groups[group].delete(id); fn(); }, ms); groups[group].add(id); return id; };
-  const cancel = (group) => { for (const id of groups[group]) clearTimeout(id); groups[group].clear(); };
+  const later = (ms, fn, group = 'beat') => { const t = { fn, due: performance.now() + ms, left: 0, id: 0 }; t.id = setTimeout(() => { groups[group].delete(t); fn(); }, ms); groups[group].add(t); return t; };
+  const cancel = (group) => { for (const t of groups[group]) clearTimeout(t.id); groups[group].clear(); };
+  // 멈춘 동안은 사건 박자도 선다(3D 공이 서 있는데 받아치는 영상 때만 먼저 지나가지 않게)
+  const holdBeat = () => { const now = performance.now(); for (const t of groups.beat) { clearTimeout(t.id); t.left = Math.max(0, t.due - now); } };
+  const freeBeat = () => { const now = performance.now(); for (const t of groups.beat) { t.due = now + t.left; t.id = setTimeout(() => { groups.beat.delete(t); t.fn(); }, t.left); } };
 
   /* ── 소리 ── */
   const pref = (name) => recall(`synk.world.${name}`) !== 'false';   // WORLD 앱 설정 「효과음」 · 「진동」과 같은 열쇠
@@ -67,6 +73,8 @@ export function createWorldPlay() {
   const play = (name, opts) => (sfx ? sfx.play(name, opts) : 0);
   /** 입구에서 쉬는 동안: 오디오 문맥을 멈춘 채 만들고 곡을 푼다(첫 손짓에 만들면 그 탭이 0.2~1초 멈춘다 — 주문 폭주 11-03 실측). */
   function early() {
+    if (earlyDone) return;
+    earlyDone = true;
     sound.unlock();
     music?.preload('calm');
     warm(Object.values(PLATES));
@@ -145,21 +153,32 @@ export function createWorldPlay() {
     if (hold) plateHold = performance.now() + hold;
     plateKey = key;
     const src = PLATES[key], token = ++plateToken;
+    // 바뀌는 중이던 판은 걷는다 — 토큰만 올리고 돌아가면 그 판이 위에 남아 plateKey와 화면이 어긋난다
+    plateAnim?.cancel(); plateAnim = null;
+    back.hidden = true; back.style.zIndex = ''; front.style.zIndex = '';
     if (front.getAttribute('src') === src) return;
     back.src = src;
     const swap = () => {
       if (token !== plateToken) return;
       back.hidden = false; back.style.zIndex = '2'; front.style.zIndex = '1';
       const a = fx.effect(back, [{ opacity: 0 }, { opacity: 1 }], { duration: BEAT.plate, easing: fx.M.ebase.easing });
+      plateAnim = a || null;
       const done = () => {
         if (token !== plateToken) return;
         const old = front; front = back; back = old;
         back.hidden = true; back.style.zIndex = ''; front.style.zIndex = '';
-        a?.cancel();
+        a?.cancel(); plateAnim = null;
       };
       if (a) a.finished.then(done, done); else done();
     };
     (back.decode ? back.decode() : Promise.resolve()).then(swap, swap);
+  }
+  /** 영상이 덮고 있는 동안 아래 판을 바로 바꾼다. 영상 끝 장이 이 자세라 영상이 걷힐 때 사람이 둘로 겹쳐 보이지 않는다. */
+  function plateUnder(key) {
+    plateKey = key; plateToken += 1;
+    plateAnim?.cancel(); plateAnim = null;
+    back.hidden = true; back.style.zIndex = ''; front.style.zIndex = '';
+    if (front.getAttribute('src') !== PLATES[key]) front.src = PLATES[key];
   }
   /** 무대 표정(stage.setFace): talk · idle. 놓침 · 웃음은 landed가 정한다. 움직임 영상이 도는 동안은 영상이 끝난 뒤의 판만 정해 둔다. */
   function face(k) {
@@ -190,7 +209,13 @@ export function createWorldPlay() {
     clipNow = c; afterClip = next;
     if (el.currentTime > 0.01) try { el.currentTime = 0; } catch { /* 처음 */ }
     el.hidden = false; el.style.opacity = '0';
-    const shown = () => { if (clipNow === c) { el.style.opacity = '1'; fx.effect(el, [{ opacity: 0 }, { opacity: 1 }], { duration: 100, easing: 'linear' }); } };
+    const shown = () => {
+      if (clipNow !== c) return;
+      el.style.opacity = '1';
+      const a = fx.effect(el, [{ opacity: 0 }, { opacity: 1 }], { duration: 100, easing: 'linear' });
+      const under = () => { if (clipNow === c) plateUnder('ready'); };
+      if (a) a.finished.then(under, under); else under();
+    };
     if (el.requestVideoFrameCallback) el.requestVideoFrameCallback(shown); else el.addEventListener('playing', shown, { once: true });
     el.onended = () => { if (clipNow !== c) return; finishClip(); };
     const started = el.play();
@@ -205,10 +230,21 @@ export function createWorldPlay() {
     plateHold = 0;
     if (want) setPlate(want);
     const el = c.el, a = fx.effect(el, [{ opacity: 1 }, { opacity: 0 }], { duration: BEAT.plate, easing: fx.M.ebase.easing });
-    const hide = () => { if (clipNow !== c) { el.hidden = true; el.style.opacity = ''; rewind(el); } };
+    clipFade = { el, a };
+    const hide = () => { if (clipFade?.el === el) clearFade(); };
     if (a) a.finished.then(hide, hide); else hide();
   }
+  /** 끝나며 사라지는 중인 영상을 바로 걷는다(그 사이에 새 영상 · 멈춤 · 나가기가 오면 겹쳐 남지 않게). */
+  function clearFade() {
+    if (!clipFade) return;
+    const { el, a } = clipFade;
+    clipFade = null;
+    a?.cancel();
+    el.hidden = true; el.style.opacity = '';
+    rewind(el);
+  }
   function stopClip() {
+    clearFade();
     const c = clipNow;
     if (!c) return;
     clipNow = null;
@@ -340,30 +376,41 @@ export function createWorldPlay() {
       : kind === 'miss' ? (missStreak >= 2 ? pickLine('up', ['up1', 'up2']) : pickLine('calm', ['calm1', 'calm2'])) : kind;
     const sec = sound.fileSeconds(name);
     lastLineMs = sec * 1000;
-    sound.hooks.voice(true);
-    later(Math.max(500, lastLineMs), () => sound.hooks.voice(false));
+    sayEnd();
+    if (sound.isOn()) { sayOpen = true; sound.hooks.voice(true); sayTimer = setTimeout(sayEnd, Math.max(500, lastLineMs)); }   // 소리를 끈 때는 캡슐 · 덕킹 길을 타지 않는다
     sound.play(name);
   }
+  /** 짧은 말의 목소리 표시를 닫는다. 판이 끝나도 꼭 닫혀야 다음 판의 덕킹 · 캡슐 · 먼 공 소리가 살아 있다. */
+  function sayEnd() {
+    clearTimeout(sayTimer);
+    if (!sayOpen) return;
+    sayOpen = false;
+    sound.hooks.voice(false);
+  }
 
-  /* ── 입구 처음 등장: 사진 → 제목 → (다 선 뒤) 오디오 문맥 · 곡 풀기 → 제목의 공 박자. 끝난 등장 애니메이션은 떼어 낸다(world-fx) ── */
+  /* ── 입구 처음 등장: 사진 → 제목 → (다 선 뒤) 3D 무대 · 오디오 문맥 · 곡 풀기 → 제목의 공 박자. 끝난 등장 애니메이션은 떼어 낸다(world-fx).
+   * 3D 무대 만들기는 그래픽 칩을 0.2초쯤 잡아 화면이 선다 — 제목이 움직이는 동안 돌리면 끊겨 보인다 ── */
   function lobbyIn() {
     const art = $('.w-title');
     if (!art) return;
     const lines = $$('.w-w', art), lede = $('.w-lede'), start = $('#btn-start');
     const go = () => { art.toggleAttribute('data-rally', fx.motionOn()); };
-    if (lastLobbyAnim || !fx.motionOn()) { go(); return; }
+    if (lastLobbyAnim || !fx.motionOn()) { go(); runHeavy(); return; }
     lastLobbyAnim = true;
     lines.forEach((n, i) => {
       fx.spatial(n, [{ transform: 'translateY(105%)' }, { transform: 'none' }], fx.M.base, { delay: 120 + i * 80 });
     });
     fx.effect(lede, [{ opacity: 0 }, { opacity: 1 }], fx.M.eslow, { delay: 300 });
     fx.effect(start, [{ opacity: 0 }, { opacity: 1 }], fx.M.eslow, { delay: 360 });
-    setTimeout(go, 900);
+    setTimeout(() => { Promise.resolve(runHeavy()).then(() => { early(); setTimeout(go, 400); }, go); }, 900);
   }
+  function runHeavy() { const fn = heavy; heavy = null; heavyDone = true; return fn?.(); }
 
   /* ── 사건 ── */
   return {
     BEAT,
+    /** 입구 제목이 다 선 뒤(움직임이 멈췄을 때) 한 번 돌릴 무거운 준비. 이미 지났으면 바로 돌린다. */
+    whenStill(fn) { if (heavyDone) return fn(); heavy = fn; return null; },
     /** 3D 무대를 얹을 자리(사진 · 3D · 덧그림이 함께 다가가는 상자). */
     host: () => sceneEl,
     /** 처음 한 번: 장면 상자 · 입구 · 목소리 막대 · 랠리 칩 · 결과 자리 · 멈춤 창 크기. */
@@ -443,8 +490,8 @@ export function createWorldPlay() {
       const first = () => { sound.unlock(); removeEventListener('pointerdown', first, true); removeEventListener('keydown', first, true); };
       addEventListener('pointerdown', first, true);
       addEventListener('keydown', first, true);
-      // 오디오 문맥 · 곡 풀기 · 그림 풀기는 입구 제목이 다 선 뒤(움직임이 멈췄을 때)
-      setTimeout(() => { (window.requestIdleCallback || ((fn) => setTimeout(fn, 200)))(early, { timeout: 2000 }); }, 1200);
+      // 오디오 문맥 · 곡 풀기 · 그림 풀기는 입구 제목이 다 선 뒤(움직임이 멈췄을 때 — lobbyIn). 입구를 안 거치고 들어오면 여기서
+      setTimeout(() => { (window.requestIdleCallback || ((fn) => setTimeout(fn, 200)))(early, { timeout: 2000 }); }, 2500);
     },
     warm,
     later,
@@ -457,9 +504,10 @@ export function createWorldPlay() {
       reveal(token, waits, id === 'lobby' ? lobbyIn : null);
     },
     /** 입구로 돌아옴. */
-    lobby() { inGame = false; clearTimeout(farTimer); clearTimeout(waitTimer); music?.stop(1); cancel('beat'); stopClip(); pushOut(); },
+    lobby() { sayEnd(); inGame = false; clearTimeout(farTimer); clearTimeout(waitTimer); music?.stop(1); cancel('beat'); stopClip(); pushOut(); },
     /** 시합 시작: 공 두 번 튀기는 소리 · 음악. */
     start() {
+      sayEnd();
       play('start');
       inGame = true; paused = false; missStreak = 0; waitSaid = false; ralliedNext = false;
       loadClips();
@@ -507,11 +555,12 @@ export function createWorldPlay() {
       if (smash) return;
       setPlate(quick ? 'quick' : 'nod', { hold: 500 });
       const clip = clips[['hitL', 'hitC', 'hitR'][lane]], ballMs = (FEEL.stop.ok + (FEEL.returnSec + 0.42) * 1000);
+      const canClip = !!clip?.ready && fx.motionOn();   // 못 틀면 받아침 판을 공이 닿는 때에
       const go = () => {
         if (!inGame) return;
         if (!playClip(['hitL', 'hitC', 'hitR'][lane], 'ready')) setPlate('return', { hold: BEAT.swing });
       };
-      later(Math.max(0, ballMs - (clip?.contact ?? 0.3) * 1000), go);
+      later(Math.max(0, ballMs - (canClip ? clip.contact * 1000 : 0)), go);
     },
     /** 받아친 공이 칸에 닿음: 스매시는 랠리 길이에 따라 다른 표정, 틀리면 놓침(연달아 틀리면 응원). */
     landed({ verdict, smash, rally }) {
@@ -527,6 +576,7 @@ export function createWorldPlay() {
     /** 스매시 뒤 다음 공까지 기다릴 시간(짧은 말이 끝나도록). */
     reactMs() { return Math.max(1100, lastLineMs + 500); },
     finish(results) {
+      sayEnd();
       inGame = false; clearTimeout(farTimer); clearTimeout(waitTimer); stopClip();
       music?.stop(1.2);
       pushOut();
@@ -534,9 +584,9 @@ export function createWorldPlay() {
       playResults(results);
     },
     coin() { if (resultsRun) coinWaiting = true; else play('coin'); },
-    pause() { paused = true; music?.pause(true); clearTimeout(waitTimer); try { clipNow?.el.pause(); } catch { /* 없음 */ } },
-    resume() { paused = false; music?.pause(false); clipNow?.el.play()?.catch?.(() => finishClip()); },
-    quit() { inGame = false; clearTimeout(farTimer); clearTimeout(waitTimer); music?.stop(0.6); cancel('beat'); stopClip(); pushOut(); stopMeter(); },
+    pause() { paused = true; holdBeat(); music?.pause(true); clearTimeout(waitTimer); try { clipNow?.el.pause(); } catch { /* 없음 */ } },
+    resume() { if (paused) freeBeat(); paused = false; music?.pause(false); clipNow?.el.play()?.catch?.(() => finishClip()); },
+    quit() { sayEnd(); inGame = false; clearTimeout(farTimer); clearTimeout(waitTimer); music?.stop(0.6); cancel('beat'); stopClip(); pushOut(); stopMeter(); },
     /** 확인용(?qa). */
     state: () => ({ plate: plateKey, clip: clipNow?.src || null, clipsReady: Object.values(clips).filter((c) => c.ready).length, voices, music: music?.state?.() || null, ctx: ctx?.state || null }),
   };

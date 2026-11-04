@@ -411,4 +411,6 @@
   :root[data-host=world] :is(.felt-cta,.chip-btn,.card):active{transform:none}
 }
 :root[data-host=world][data-motion=reduced] :is(.felt-cta,.chip-btn,.card,.w-dots li,.w-stamp){transition:none}
+:root[data-host=world][data-motion=reduced] .pop.go{animation:none}
+:root[data-host=world][data-motion=reduced] :is(.felt-cta,.chip-btn,.card):active{transform:none}
 :root[data-host=world][data-motion=reduced] .res-hero::before,:root[data-host=world][data-motion=reduced] .w-title *{animation:none!important}

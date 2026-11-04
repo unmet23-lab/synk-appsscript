@@ -29,7 +29,7 @@ export const reactVoice = (k) => `${VOICE_DIR}/react-${k}.mp3`;
 export const NARRATION_WORLD = Object.freeze({
   intro: { text: '한 판 할래요? 내가 말하면, 알맞은 대답으로 받아쳐요!', tag: 'playfully' },
   practiceDone: { text: '좋아요! 이제 진짜 시작이에요.', tag: 'excited' },
-  dailyIntro: { text: '오늘의 도전이에요! 오늘은 다 같은 공 열두 개예요.', tag: 'friendly' },
+  dailyIntro: { text: '하루 도전이에요! 오늘은 모두가 같은 공 열두 개를 받아요.', tag: 'friendly' },
   dailyBest: { text: '와, 오늘 최고 기록이에요!', tag: 'excited' },
   result3: { text: '완벽해요! 하나도 안 놓쳤어요.', tag: 'impressed' },
   result2: { text: '아주 잘했어요! 거의 다 받아쳤어요.', tag: 'cheerfully' },

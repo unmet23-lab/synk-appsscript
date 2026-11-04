@@ -138,6 +138,35 @@ const check = (name, ok, note = '') => { console.log(`${ok ? '통과' : '실패'
     check('하루 도전: 넓은 화면에서 판이 끝난다', s.over && !h.errors.length, `공 ${n} · 끝 ${s.over} · 오류 ${h.errors.length} ${h.errors[0] || ''}`);
     await h.ctx.close();
   }
+  // ⑤ 이어지는 랠리에서 말 도중 멈춤: 이어 하면 공이 태오 라켓에서 새로 날아와 말이 끝나기 전에 라켓 앞에 멈추지 않는다 · 멈춘 채 처음으로 나가면 입구에 말소리가 안 남는다
+  {
+    const h = await open(browser, base);
+    await h.start();
+    await h.pick(true, 200);   // 연습
+    await sleep(2500);
+    await h.pick(true, 200);   // 첫 공을 맞혀 이어지는 랠리로
+    const talking = async () => { for (let i = 0; i < 120; i += 1) { const c = await h.cur(); if (c && c.phase === 'talk' && c.choice == null && (await h.st()).world?.voices > 0) return c; await sleep(50); } return null; };
+    let c = await talking();
+    await sleep(350);
+    await h.click('#pause'); await sleep(1400);
+    await h.click('#resume');
+    let early = false, flew = false;
+    for (let i = 0; i < 120; i += 1) {
+      const x = await h.cur();
+      if (x?.phase === 'flight') { flew = true; break; }
+      if (x?.waiting || !(await h.fr().evaluate(() => document.querySelector('#wait')?.hidden ?? true))) early = true;
+      await sleep(50);
+    }
+    check('랠리 말 도중 멈춤 → 이어 하기: 말이 끝나기 전에 공이 멈춰 서지 않는다', !!c && flew && !early, `말 ${c?.id} · 다 들음 ${flew} · 먼저 닿음 ${early}`);
+    await h.pick(true, 200);
+    c = await talking();
+    await sleep(300);
+    await h.click('#pause'); await sleep(300);
+    await h.click('#quit'); await sleep(700);
+    const left = await h.fr().evaluate(() => ({ voices: window.__rally.world()?.voices, speech: !document.querySelector('#speech')?.hidden, lobby: !document.querySelector('#lobby').hidden }));
+    check('말 도중 멈춤 → 처음으로: 입구에 말소리가 안 남는다', !!c && left.lobby && left.voices === 0 && !left.speech && !h.errors.length, JSON.stringify(left));
+    await h.ctx.close();
+  }
   await browser.close(); srv.close();
   console.log(fails.length ? `실패 ${fails.length}: ${fails.join(' · ')}` : '모두 통과');
   process.exit(fails.length ? 1 : 0);
