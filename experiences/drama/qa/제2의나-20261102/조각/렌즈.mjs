@@ -28,7 +28,7 @@ for (const [k, it] of items.entries()) {
   if (/\/sorry\//.test(await page.url())) { console.log(JSON.stringify({ id: it.id, 멈춤: "로봇 확인(sorry)" })); break; }
   await 쉬기(5000);
   for (let i = 0; i < 4; i++) { await page.mouse.move(700, 600); await page.mouse.wheel(0, 2500, { label: "scroll lens results" }); await 쉬기(1500); }
-  await page.screenshot({ path: path.join(it.out, "화면.png").replace(/\\/g, "/") });
+  await page.screenshot({ path: path.join(it.out, "화면.png").replace(/\\/g, "/") }).catch(() => {}); // 창이 가려지면 캡처가 시간 초과로 끝난다(11-04) — 기록용이라 대조는 잇는다
   const 카드 = await page.evaluate(() => {
     const out = [];
     for (const img of document.querySelectorAll("img")) {

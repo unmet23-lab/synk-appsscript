@@ -110,7 +110,7 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
    const shown=node=>node.getClientRects().length>0;
    const small=[],walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);
    for(let n=walker.nextNode();n;n=walker.nextNode()){if(!/[가-힣]/.test(n.textContent)||!shown(n.parentElement))continue;const size=parseFloat(getComputedStyle(n.parentElement).fontSize);if(size<13)small.push({text:n.textContent.trim().slice(0,20),size});}
-   const box=el.getBoundingClientRect(),overflowing=[...el.querySelectorAll('*')].filter(n=>shown(n)&&(n.getBoundingClientRect().right>box.right+4||n.getBoundingClientRect().left<box.left-4)).map(n=>String(n.className||n.tagName));
+   const box=el.getBoundingClientRect(),overflowing=[...el.querySelectorAll('*')].filter(n=>shown(n)&&!n.closest('.me2-rail')&&(n.getBoundingClientRect().right>box.right+4||n.getBoundingClientRect().left<box.left-4)).map(n=>String(n.className||n.tagName));
    const short=[...el.querySelectorAll('button,label.felt-button,label.plain-button,summary')].filter(shown).filter(n=>n.getBoundingClientRect().height<44).map(n=>({text:n.textContent.trim().slice(0,20),h:Math.round(n.getBoundingClientRect().height)}));
    return {docOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,panelOverflow:content.scrollWidth-content.clientWidth,felt:[...el.querySelectorAll('.felt-button')].filter(shown).length,small,overflowing,short};
   });
@@ -207,10 +207,11 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   // ── 이게 나? — 살핌 등급은 강 · 약 나란히 ──
   await finish(()=>({strong:.55,natural:.62,younger:.5,agree:.5}));
   await openMe2();await page.locator('.me2-pair').waitFor();
-  assert.equal(await page.locator('.me2-variant').count(),3);
+  assert.equal(await page.locator('.me2-pair .me2-print').count(),2);
+  assert.equal(await page.locator('[data-me2="variant"][data-variant="younger"]').count(),1,'세 판 모두 고를 수 있다');
   assert.equal(await page.locator('[data-me2-root]').evaluate(el=>/\b0\.\d+|점수|탈락|등급/.test(el.textContent)),false,'점수 · 탈락이 보이지 않는다');
   await both('07-이게나-나란히');
-  await page.locator('.me2-variant[data-variant="natural"]').click();
+  await page.locator('.me2-pair [data-variant="natural"]').click();
   assert.equal(await page.locator('.me2-variant[data-variant="natural"]').getAttribute('aria-pressed'),'true');
   await page.locator('.me2-print.me2-big').waitFor();
   await both('08-이게나-크게');
@@ -221,12 +222,23 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
 
   // ── 학생증 · 옷장 · 추억 사진 ──
   await both('09-학생증');
-  const menuLook=()=>page.locator('[data-me2="order-look"]').first(),menuScene=()=>page.locator('[data-me2="order-scene"]').first();
-  const lookId=await menuLook().getAttribute('data-item');
-  assert.notEqual(lookId,'acc-glasses','안경을 쓴다고 하면 안경 룩이 메뉴에 없다');
-  assert.equal(await page.locator('[data-me2="order-look"][data-item="acc-glasses"]').count(),0);
-  await menuLook().click();await page.locator(`.me2-card[data-state="shipping"]`).first().waitFor();
-  await menuScene().click();await page.waitForFunction(()=>document.querySelectorAll('.me2-card[data-state="shipping"]').length>=2);
+  const menuScene=()=>page.locator('[data-me2="order-scene"]').first();
+  const hanger=id=>page.locator(`.me2-hanger[data-item="${id}"]`);
+  assert.equal(await hanger('acc-glasses').count(),0,'안경을 쓴다고 하면 안경 룩이 옷장에 없다');
+  const allImages=()=>page.waitForFunction(()=>[...document.querySelectorAll('[data-me2-root] img')].every(img=>img.complete&&img.naturalWidth>0));
+  await allImages();
+  // 봉의 옷을 누르면 그것만 앞으로 나온다 → 닫으면 그 칸으로 돌아온다 → 다시 눌러 입어 본다
+  await hanger('outfit-denim').click();await page.locator('.me2-closet-detail').waitFor();
+  assert.equal(await page.evaluate(()=>document.activeElement?.className),'me2-closet-close','열면 닫기로 키보드가 간다');
+  assert.equal(await page.locator('.me2-closet-rows').getAttribute('inert'),'','뒤 줄은 누를 수 없다');
+  await both('09-옷-앞으로');
+  await page.locator('.me2-closet-close').click();await page.locator('.me2-closet-detail').waitFor({state:'detached'});
+  assert.equal(await page.evaluate(()=>document.activeElement?.dataset?.item),'outfit-denim','닫으면 그 옷으로 돌아온다');
+  await hanger('outfit-denim').click();
+  await page.locator('[data-me2="order-look"]').click();
+  await page.locator('.me2-hanger[data-state="shipping"]').waitFor();
+  await page.locator('.me2-closet-close').click();
+  await menuScene().click();await page.locator('.me2-card[data-state="shipping"]').waitFor();
   await both('10-배송중');
   await finish(()=>({score:.93,student:.86,taeo:.95}));
   await openMe2();await page.locator('.me2-card[data-state="arrived"]').first().waitFor();
@@ -235,7 +247,8 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   await both('11-도착');
   const seen=()=>calls.filter(c=>c.action==='seen').length;
   assert.ok(seen()>=1,'본 것을 알렸다');
-  await page.locator('[data-me2="wear"]').first().click();await page.locator('.me2-tag[data-tone="on"]').waitFor();
+  await hanger('outfit-denim').click();await page.locator('[data-me2="wear"]').click();await page.locator('.me2-closet-info .me2-tag[data-tone="on"]').waitFor();
+  await page.locator('.me2-closet-close').click();
   assert.ok((await fx.db.query('select equipped_look from engine.me2_photo_profiles where synk_user_id=$1',[A])).rows[0].equipped_look,'입었다');
   await both('12-입는중');
 
@@ -266,6 +279,8 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   await openMe2();await page.locator('.me2-note').waitFor();
   assert.match(await page.locator('.me2-note').first().textContent(),/쉬고/);
   assert.equal(await page.locator('[data-me2="order-look"],[data-me2="order-scene"],.me2-foot [data-me2="again"]').count(),0,'쉬는 동안에는 새로 맡기지 않는다');
+  // (기준을 바꾸며 옛 룩은 지웠다 — 그래서 여기서는 옷장 칸 자체가 없다.)
+  assert.equal(await hanger('outfit-bomber').count(),0,'안 맡긴 옷은 쉬는 동안 안 보인다');
   assert.ok(await page.locator('[data-me2="erase"]').count(),'쉬는 동안에도 지울 수 있다');
   await both('16-쉼');
   tamper=null;

@@ -495,7 +495,7 @@ async function addMe2Row(){
  let out;try{out=await account.me2Request({action:'status'});}catch{return;}
  if(!(out?.status==='ok'||(out?.status==='off'&&out.consent?.given)))return;
  const host=await me2Host();const place=document.querySelector('#panel-content .ws-me');
- if(host&&place&&screen==='world-profile'&&!place.querySelector('.me2-row'))place.querySelector('.ws-me-id')?.insertAdjacentHTML('afterend',host.rowHtml());
+ if(host&&place&&screen==='world-profile'&&!place.querySelector('.me2-row'))place.querySelector('.ws-me-id')?.insertAdjacentHTML('afterend',host.rowHtml(out.me?.chosen_url));
 }
 function openSpeaking(button){
  if(!speakingModule)return;

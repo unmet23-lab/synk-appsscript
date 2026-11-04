@@ -91,6 +91,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 새 세션 워크트리는 만들 때 git 훅이 큰 미디어 폴더를 sparse로 뺀다(`tools/새워크트리가볍게.js`, 10-31) — 앱은 sparse 사본에 병합하지 않는다.
 - 고침: 이 저장소에서는 앱 도구 대신 `node tools/바로올리기.js 따라가기`(미리 보기 → `--실행`)로 받는다. 미커밋이 없고 가지에 따로 쌓은 커밋이 없으면 `git fetch origin master` 뒤 `git merge --ff-only origin/master`도 된다(sparse로 빠진 폴더는 그대로 빠진 채).
 - 다시 확인: `git log --oneline HEAD..origin/master`가 비고, `git status`에 sparse 폴더가 지워진 것으로 나오지 않는다.
+- 11-04 덧붙임(Claude): 가지에 내 커밋이 있으면 `따라가기`도 「옮기면 가지에서 빠진다」로 멈춘다. 그때는 `git fetch origin` 뒤 `git merge --no-edit origin/master`를 그대로 쓴다 — sparse로 빠진 폴더는 빠진 채로 합쳐진다. 묶음(`world-account.bundle.mjs`) 충돌은 원천만 풀고 `node tools/build-world-account.mjs`로 다시 만든다.
 
 ### GitHub SSH가 같은 열쇠를 된다 안 된다 한다 — `Permission denied (publickey)`로 바로올리기 · 공개가 멈춘다 (2026-11-04 Claude)
 - **증상:** 19시 전후로 `git fetch` · `git push`가 `git@github.com: Permission denied (publickey)`로 끊겼다. 15분짜리 관련 시험을 다 돌린 바로올리기가 push에서 「push가 거절됐다」로 멈췄고, `공개.js --실행`도 같은 말로 멈췄다. 공개 도구 로그에는 `Permission denied`가 안 남고 `correct access rights`만 남기도 한다.
