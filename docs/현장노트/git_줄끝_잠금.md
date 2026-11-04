@@ -242,6 +242,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 공식 `check-account-bundles.js --build`로 포털 결과물을 다시 만들고 함께 올린다. 짝검사는 포털의 실제 6개 진입점에서 기존 상대 import 판독기로 의존 사슬을 따라가도록 보완했다. 순환·중복·저장소 밖 경로는 제외하며 무관한 게임·시험 파일은 검사 대상으로 넓히지 않는다.
 - 다시 확인: 기존 판에 새 선택 회귀 2개 모두 실패 → 수리 뒤 관련 4개 시험 파일 33/33 통과. 선택한 원천 66개는 실제 esbuild 입력 66개와 경로 집합이 같다. 생성물 갱신 뒤 원격 CI 성공은 별도 확인해야 하며, 이 기록만으로 게시·배포가 완료된 것은 아니다.
 - 같은 날 추가 확인: 부모 직접 검토에서 삭제된 외부 모듈 단독 변경은 기존 `exists` 판독에 빠짐을 실제 66원천 사본으로 재현했다. 모듈 탐색에만 없는 명시 경로와 기존 확장자 해석 후보를 포함했고, 일반 스크립트 탐색은 유지했다. 삭제·확장자 경계 4개가 수정 전 실패한 뒤 최종 관련 37/37 통과, 실제 esbuild 66개 일치를 확인했다.
+- 11-04 덧붙임(Claude): `b5bd21079`가 `experiences/korean-racing/garage-core.js`의 `MINI_GAMES`에 `subway-rush`를 더하고 WORLD 묶음만 다시 만들어 master `syntax-check`가 `Stale portal artifact: dist/client.js`로 빨개졌다(사슬: `client.mjs` → `account-view.mjs` → `play-common/account-host.mjs` → `play-data.mjs` → `garage-core.js`). 경로에 `synk-account`가 없어도 포털 원천이다. 짝 검사 표는 이 파일을 고르지만 `experiences/synk-account/node_modules`가 없는 워크트리에서는 「못 돌림」 주의만 내고 통과한다 → `garage-core.js`나 `play-common`을 고친 워크트리는 `(cd experiences/synk-account && npm ci --ignore-scripts --no-audit --no-fund)` 뒤 `node tools/check-account-bundles.js --build`. 미디어를 뺀 워크트리는 `가볍게 --되살림 docs/마케팅/맞춤도구/assets docs/홍보물/마케팅실행_20260909/브랜드킷 --실행`을 먼저 한다. 다시 만든 `teaching-host.js`가 LF로 바뀌어 내용 차이 없이 「작업본에서만 통과」로 막히면 `git update-index --refresh -- <그 파일>`로 인덱스를 맞춘다.
 
 ### 고정 문항 검수의 원시 해시가 OS마다 달라진다 (2026-10-28 GPT)
 - 증상: Town 문항 원문은 Windows에서 검수를 통과했으나 Linux CI에서 승인 원문 해시가 달랐다. 반대로 LF로 승인한 검수 증거 JSON은 Windows 체크아웃 후 달라졌다.
