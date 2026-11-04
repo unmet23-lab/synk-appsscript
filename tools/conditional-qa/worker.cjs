@@ -10,6 +10,7 @@ const defaultState = () => path.join(os.homedir(), 'security-audit-skill/SYNK-co
 // and both the scheduled task and its hidden launcher stop a tick after two hours.
 const BUDGET_MS = 60 * 60_000;
 const MIN_VERIFICATION_FREE_BYTES = 2 * 1024 ** 3;
+const INCOMPLETE = 'Local verification incomplete; inspect the private worker receipt';
 // Browser profiles, databases and test output all live on the registered state volume.
 function diskWaitFor(item, stateDir, statfs = fs.statfsSync) {
   if (item.status === 'publish-pending') return null;
@@ -67,7 +68,7 @@ function failureDisposition(error, startedAt, { slept = sleptDuring, now = new D
   const interrupted = error.code === 'TEST_FAILURE' && slept(startedAt, now);
   return { interrupted, status: error.code === 'TEST_FAILURE' && !interrupted ? 'failed' : 'retry',
     publicationState: interrupted ? 'pending' : 'failure',
-    description: interrupted ? 'System sleep interrupted verification; awaiting a fresh complete run' : 'Local verification incomplete; inspect the private worker receipt' };
+    description: interrupted ? 'System sleep interrupted verification; awaiting a fresh complete run' : INCOMPLETE };
 }
 function extendQueue(state, head, commits) {
   github.validCommit(head);
@@ -140,6 +141,13 @@ function markCancelledRuns(queue, cancelled) {
     if (run && (item.status === 'passed' || (item.status === 'failed' && !item.publicationError)) && item.checkedRun !== run) { item.checkedRun = run; item.resumePending = true; }
   }
 }
+// A failure that could not be published still reads as running. It is published again, and only then is its run woken.
+function republishFailures(queue, publish = github.publish) {
+  for (const item of queue.items.filter(row => row.status === 'failed' && row.publicationError).slice(0, 10)) {
+    try { publish(item.commit, 'failure', INCOMPLETE); delete item.publicationError; item.resumePending = true; }
+    catch { /* Tried again between verifications. */ }
+  }
+}
 function checkSavedReceipt(root, item) {
   const receipt = read(path.join(item.output, 'result.json'));
   const savedManifest = JSON.parse(git(root, ['show', `${item.commit}:tools/conditional-qa/cases.json`]));
@@ -163,7 +171,7 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
       extendQueue(queue, head, commits); write(queueFile, queue);
     };
     // Between verifications too: one tick can last two hours while a finished commit's run stays unresolved.
-    const settle = () => { resumeFinished(queue); write(queueFile, queue); };
+    const settle = () => { republishFailures(queue); resumeFinished(queue); write(queueFile, queue); };
     refresh();
     try { markCancelledRuns(queue, github.cancelledRuns()); } catch (error) { console.error(`Cancelled runs were not listed: ${error.message}`); }
     settle();
@@ -188,10 +196,10 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
         // Re-read the receipt after a process restart, rather than trusting queue.json's success flag.
         checkSavedReceipt(root, item);
         github.publish(item.commit, 'success', github.description(item.count, item.digest));
-        item.status = 'passed'; item.endedAt = new Date().toISOString(); item.resumePending = true; delete item.error; write(queueFile, queue);
+        item.status = 'passed'; item.endedAt = new Date().toISOString(); item.resumePending = true; delete item.error; delete item.publicationError; write(queueFile, queue);
       } catch (error) {
         item.error = error.message.slice(0, 1000);
-        let publicationState = 'failure', description = 'Local verification incomplete; inspect the private worker receipt';
+        let publicationState = 'failure', description = INCOMPLETE;
         if (item.status !== 'publish-pending') {
           const disposition = failureDisposition(error, item.startedAt, { slept });
           if (disposition.interrupted) item.error = `Interrupted by system sleep; verifying again. ${item.error}`.slice(0, 1000);
@@ -200,6 +208,7 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
         }
         try {
           github.publish(item.commit, publicationState, description);
+          delete item.publicationError;
           // local-coverage has released its runner, so a published failure has to wake it to turn the run red.
           if (publicationState === 'failure') item.resumePending = true;
         } catch { item.publicationError = true; }
@@ -233,4 +242,4 @@ if (require.main === module) {
     if (requestedCommit !== null && summary.requested.status !== 'passed') process.exitCode = summary.requested.status === 'failed' ? 1 : 2;
   }).catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns, diskWaitFor, browserProfileDiskFull };
+module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns, republishFailures, diskWaitFor, browserProfileDiskFull };

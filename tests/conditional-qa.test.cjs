@@ -6,7 +6,7 @@ const root = path.resolve(__dirname, '..'), c = require('../tools/conditional-qa
 const { check } = require('../tools/conditional-qa/guard.cjs');
 const { childRun, temporaryEnvironment, profileBudget, fileConcurrency } = require('../tools/conditional-qa/run.cjs');
 const { materialize, write, release, prepare } = require('../tools/conditional-qa/inputs.cjs');
-const { extendQueue, nextItem, advanceTurn, acquire, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns, diskWaitFor, browserProfileDiskFull } = require('../tools/conditional-qa/worker.cjs');
+const { extendQueue, nextItem, advanceTurn, acquire, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns, republishFailures, diskWaitFor, browserProfileDiskFull } = require('../tools/conditional-qa/worker.cjs');
 const { plan } = require('../tools/conditional-qa/install.cjs');
 const github = require('../tools/conditional-qa/github.cjs');
 const { wait } = require('../tools/conditional-qa/wait-local.cjs');
@@ -574,6 +574,14 @@ test('a finished commit stays flagged until its runs settle, and one cancelled a
   const unpublished = { items: [{ commit: a, status: 'failed', publicationError: true }, { commit: b, status: 'passed', publicationError: true }] };
   markCancelledRuns(unpublished, new Map([[a, '1:1'], [b, '2:1']]));
   assert.equal(unpublished.items[0].resumePending, undefined, 'an unpublished failure still reads as running'); assert.equal(unpublished.items[1].resumePending, true);
+  // It is published again, then woken; one that still cannot be published stays flagged, and nothing else is written.
+  const owed = { items: [{ commit: a, status: 'failed', publicationError: true }, { commit: b, status: 'failed', publicationError: true }, { commit: c, status: 'retry', publicationError: true }, { commit: d, status: 'failed' }] };
+  const sent = []; republishFailures(owed, (commit, state, text) => { if (commit === b) throw Error('HTTP 500'); sent.push([commit, state, text]); });
+  assert.equal(sent.length, 1); assert.equal(sent[0][0], a); assert.equal(sent[0][1], 'failure'); assert.match(sent[0][2], /incomplete/);
+  assert.equal(owed.items[0].publicationError, undefined); assert.equal(owed.items[0].resumePending, true);
+  assert.equal(owed.items[1].publicationError, true); assert.equal(owed.items[1].resumePending, undefined);
+  markCancelledRuns(owed, new Map([[a, '1:1'], [b, '2:1']]));
+  assert.equal(owed.items[0].resumePending, true); assert.equal(owed.items[1].resumePending, undefined);
 
   const pages = [Array.from({ length: 100 }, (_, i) => ({ id: i, run_attempt: 1, head_sha: i ? `sha${i}` : a })), [{ id: 500, run_attempt: 3, head_sha: a }, { id: 501, run_attempt: 1, head_sha: b }]], asks = [];
   const found = github.cancelledRuns(endpoint => { asks.push(endpoint); return { workflow_runs: pages[asks.length - 1] }; });

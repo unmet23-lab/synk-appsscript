@@ -8,13 +8,14 @@ const { REPO, validCommit, status, accepted, publish, cancelRun } = require('./g
 // and the worker re-runs this job once the commit has a local result (github.cjs resumeWaitingWorkflow).
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 // One GitHub HTTP 500 turned a waiting run red (2026-11-04). A lasting error still fails the job, and that is never a pass.
+// GitHub stopped this step 84 s after the cancel request, and a job that outlasts the grace ends red, so the grace leaves room. Waiting it out costs nothing once the cancel lands.
 async function persist(call, pauseMs) {
   for (let attempt = 1; ; attempt++) {
     try { return call(); }
     catch (error) { if (attempt >= 3) throw error; await pause(pauseMs); }
   }
 }
-async function wait({ commit, root, runId, read = status, write = publish, cancel = cancelRun, cancelGraceMs = 120_000, retryPauseMs = 10_000 }) {
+async function wait({ commit, root, runId, read = status, write = publish, cancel = cancelRun, cancelGraceMs = 300_000, retryPauseMs = 10_000 }) {
   validCommit(commit);
   const manifest = readManifest(root), count = manifest.cases.filter(row => row.route === 'local').length;
   const current = await persist(() => read(commit), retryPauseMs);
