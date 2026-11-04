@@ -1,0 +1,304 @@
+diff --git a/desktop/src/security.cjs b/desktop/src/security.cjs
+index bb2ee83178..64346de1e8 100644
+--- a/desktop/src/security.cjs
++++ b/desktop/src/security.cjs
+@@ -59,7 +59,7 @@ function allowedNavigation(value,entry,clientId) {
+   if(clientId==='world'){
+     const paths=entry===WORLD_CLOUD_PREVIEW_ENTRY?['learning-hub','racing','runner','rhythm','order-rush','entry-check','story-classroom','blank-slice','talk-rally','word-magic'].map(slug=>'/try/'+slug+'/'):['/learning-hub/','/korean-racing/','/korean-rhythm/','/order-rush/','/korean-runner/'];
+     const publicPages=entry===WORLD_CLOUD_PREVIEW_ENTRY&&['/try/order-rush/beginner.html','/try/learning-hub/collection.html'].includes(u.pathname);
+-    const bundled=entry===WORLD_CLOUD_PREVIEW_ENTRY&&['korean-runner','korean-rhythm','hangul-stage','order-rush','blank-slice','snap-words','korean-racing','town'].some(slug=>u.pathname==='/world/'+slug+'/'||u.pathname==='/world/'+slug+'/index.html');
++    const bundled=entry===WORLD_CLOUD_PREVIEW_ENTRY&&['korean-runner','korean-rhythm','hangul-stage','order-rush','blank-slice','snap-words','korean-racing','subway-rush','town'].some(slug=>u.pathname==='/world/'+slug+'/'||u.pathname==='/world/'+slug+'/index.html');
+     return trustedEntry(value,entry,clientId)||publicPages||bundled||paths.some(p=>u.pathname===p||u.pathname===p+'index.html');
+   }
+   return false;
+diff --git a/experiences/brand-opening/home.mjs b/experiences/brand-opening/home.mjs
+index 4a547a265a..185a72c29e 100644
+--- a/experiences/brand-opening/home.mjs
++++ b/experiences/brand-opening/home.mjs
+@@ -13,7 +13,7 @@ import {motionOn,slidePill,spring,bindPress} from './world-motion.mjs';
+ // 화면 언어(10-19 1판): 기능 글·안내는 고른 언어, 학습 내용은 한국어. 표는 world-strings.mjs, 첫 실행의 언어 고르기는 lang-picker.mjs.
+ import {t,tMessage,onLang,translateTree,currentLang,setLang} from './world-lang.mjs';
+ import {createLangStep,langSettingsMarkup} from './lang-picker.mjs';
+-import {PLAY_UNLOCKS,playRecord,playState} from './play-unlocks.mjs';
++import {PLAY_UNLOCKS,playRecord,playState,playOrder} from './play-unlocks.mjs';
+ // 문 열림은 이름 없이 꺼내 쓴다: 공개 직후 캐시에 doors가 없는 옛 world-motion.mjs가 남아 있어도 홈은 뜨고 장소만 바로 바뀐다.
+ import * as worldMotion from './world-motion.mjs';
+ const $=selector=>document.querySelector(selector);
+@@ -25,6 +25,8 @@ const panel=$('#world-panel'),content=$('#panel-content'),scene=$('.maru-scene')
+ const landscape=matchMedia('(orientation:landscape)'),spacious=matchMedia('(min-width:600px) and (min-height:600px) and (pointer:fine)'),reduced=matchMedia('(prefers-reduced-motion:reduce)');
+ // 이름·설명은 화면 언어로 그때그때 읽는다(game.<id>.title·detail).
+ const games={
++ // 환승 러시(11-04, 캠퍼스 판): 레슨 하나를 마치면 열린다(play-unlocks.mjs). 열린 뒤에는 바람길 카드 자리를 이어받는다.
++ subway:{get title(){return t('game.subway.title');},get detail(){return t('game.subway.detail');},label:'LISTEN & GO',path:'../subway-rush/',image:'world-play/subway-rush.webp',area:'지하철 안내방송을 듣고 문·통로·출구 고르기 연습'},
+  runner:{get title(){return t('game.runner.title');},get detail(){return t('game.runner.detail');},label:'LISTEN & RUN',path:'../korean-runner/',image:'world-felt/runner.webp',area:'짧은 지시의 방향·동작·부정·순서 듣기 연습'},
+  hangul:{get title(){return t('game.hangul.title');},get detail(){return t('game.hangul.detail');},label:'HANGUL',path:'../hangul-stage/',image:'world-felt/hangul.webp',area:'한글 자모와 음절의 소리·글자 연결 연습'},
+  // 말의 리듬(11-04, 캠퍼스 판 겉 — 축제 무대 연습실): 그림은 실사 인화지(흰 바탕 마이크). 해금은 축제 무대 연습 회차가 생기면 play-unlocks.mjs로.
+@@ -317,7 +319,7 @@ function showPlay(){
+  // 해금 표(play-unlocks.mjs) + 학생 기록: 열린 놀이는 그대로, 잠긴 놀이는 이름과 「이야기에서 열려요 — 여는 자리」 한 줄(누르면 같은 말을 알린다).
+  // 표로 잠겼던 놀이가 열린 뒤 처음 볼 때 한 번만 「새로 열림」(자물쇠가 열리고 흑백 → 색 · 빛 한 번 — home.css). 본 것은 계정마다 이 기기에 남긴다.
+  const record=playRecord(learningData),seen=seenPlays(),fresh=[];
+- openPanel(t('play.title'),`<div class="play-list">${Object.entries(games).map(([id,g],i)=>{const state=playState(id,record),lock=state.open?'':t('play.locked',{where:t(state.where)});const isNew=!lock&&PLAY_UNLOCKS[id]&&seen&&!seen.includes(id);if(isNew)fresh.push(id);return `<button data-game="${id}"${lock?` data-locked="" aria-disabled="true" aria-label="${g.title}. ${lock}"`:''}${isNew?' data-new=""':''}><span class="play-art w-print"><img src="${asset(`assets/${g.image}`)}" alt=""></span>${isNew?'<span class="play-sheen" aria-hidden="true"></span>':''}<span class="play-copy"><small class="play-label">${String(i+1).padStart(2,'0')} · ${g.label}</small><strong>${g.title}</strong><small>${isNew?`<span class="play-new">${t('play.new')}</span> `:''}${lock?`<span class="play-lock">${lock}</span>`:g.detail}</small></span><span class="arrow" aria-hidden="true">↗</span></button>`;}).join('')}</div><p class="panel-note">${t('play.note')}</p>${more}`,{eyebrow:'PLAY',nav:'play'});
++ openPanel(t('play.title'),`<div class="play-list">${playOrder(Object.keys(games),record).map(id=>[id,games[id]]).map(([id,g],i)=>{const state=playState(id,record),lock=state.open?'':t('play.locked',{where:t(state.where)});const isNew=!lock&&PLAY_UNLOCKS[id]&&seen&&!seen.includes(id);if(isNew)fresh.push(id);return `<button data-game="${id}"${lock?` data-locked="" aria-disabled="true" aria-label="${g.title}. ${lock}"`:''}${isNew?' data-new=""':''}><span class="play-art w-print"><img src="${asset(`assets/${g.image}`)}" alt=""></span>${isNew?'<span class="play-sheen" aria-hidden="true"></span>':''}<span class="play-copy"><small class="play-label">${String(i+1).padStart(2,'0')} · ${g.label}</small><strong>${g.title}</strong><small>${isNew?`<span class="play-new">${t('play.new')}</span> `:''}${lock?`<span class="play-lock">${lock}</span>`:g.detail}</small></span><span class="arrow" aria-hidden="true">↗</span></button>`;}).join('')}</div><p class="panel-note">${t('play.note')}</p>${more}`,{eyebrow:'PLAY',nav:'play'});
+  if(fresh.length)markPlaysSeen([...seen,...fresh]);
+ }
+ /** 「새로 열림」을 이미 본 놀이(계정마다). 저장소를 못 쓰면 null — 그때는 「새로 열림」을 띄우지 않는다(열 때마다 되풀이되지 않게). */
+diff --git a/experiences/brand-opening/play-unlocks.mjs b/experiences/brand-opening/play-unlocks.mjs
+index c89babdf86..5cbe634478 100644
+--- a/experiences/brand-opening/play-unlocks.mjs
++++ b/experiences/brand-opening/play-unlocks.mjs
+@@ -17,8 +17,15 @@ export const PLAY_UNLOCKS = Object.freeze({
+   // MT 바닷가 자전거 레이스(11-04, 설계 korean-racing/qa/world-mt-20261104/설계.md): 동아리 MT 회차가 아직 없어 가장 가까운 이야기 기록으로 연다 —
+   // 지도 찾기 이야기(거꾸로 든 지도) 한 번. MT 회차가 생기면 그 회차의 기록으로 바꾼다.
+   racing: Object.freeze({ where: 'play.where.directions', open: (record) => record.directionsDone >= 1 }),
++  // 환승 러시: 이야기 자리는 1화 아침인데 드라마 기록이 생활 요약에 없어, 가장 가까운 이야기 기록인 레슨 하나를 마침으로 연다(설계 9절) —
++  // 1화에 등굣길 장면이 생기면 그 기록으로 바꾼다.
++  subway: Object.freeze({ where: 'play.where.lesson', open: (record) => record.lessons >= 1 }),
+ });
+ 
++// 대신하는 놀이가 그 학생에게 열리면 「놀이」 목록에서 그 자리를 이어받는다. 잠겨 있는 동안은 그대로 있어 듣기 놀이가 비지 않는다.
++// 게임 자체는 그대로 남는다(WORLD 듣기 확인 도구 · 계획 줄이 쓴다) — 목록의 카드만 바뀐다.
++export const PLAY_REPLACED_BY = Object.freeze({ runner: 'subway' });
++
+ /** 홈이 들고 있는 생활 진도(updateLearning의 summary)에서 해금에 쓰는 기록만. 아직 못 읽었으면 null(잠김으로 본다). */
+ export function playRecord(learningData) {
+   const summary = learningData?.summary;
+@@ -27,6 +34,17 @@ export function playRecord(learningData) {
+   return Object.freeze({ cafeVisits: Number(summary.cafe?.completed) || 0, lessons: Number(summary.completed) || 0, greetingLessons: Number(packs.find((pack) => pack?.id === 'greetings')?.completed) || 0, directionsDone: Number(packs.find((pack) => pack?.id === 'directions')?.completed) || 0 });
+ }
+ 
++/** 「놀이」 목록의 차례. 대신하는 놀이가 열렸으면 앞 놀이의 자리에 놓고 앞 놀이는 뺀다. */
++export function playOrder(ids, record) {
++  const successors = Object.values(PLAY_REPLACED_BY), out = [];
++  for (const id of ids) {
++    const next = PLAY_REPLACED_BY[id];
++    if (next && playState(next, record).open) out.push(next);
++    else if (!successors.includes(id) || !playState(id, record).open) out.push(id);
++  }
++  return out;
++}
++
+ /** 놀이 하나의 상태: { open } 또는 { open:false, where }. 규칙이 던지거나 기록이 없으면 잠김. */
+ export function playState(id, record) {
+   const rule = PLAY_UNLOCKS[id];
+diff --git a/experiences/brand-opening/qa/play-unlocks.test.mjs b/experiences/brand-opening/qa/play-unlocks.test.mjs
+index 16135059d3..e65685f5a1 100644
+--- a/experiences/brand-opening/qa/play-unlocks.test.mjs
++++ b/experiences/brand-opening/qa/play-unlocks.test.mjs
+@@ -1,7 +1,7 @@
+ // 「놀이」 해금 표(play-unlocks.mjs, 11-03): 표에 없는 놀이는 늘 열림, 주문 폭주는 싱크타운 카페 첫 방문을 마쳐야 열림, 기록이 없거나 읽는 중이면 잠김.
+ import test from 'node:test';
+ import assert from 'node:assert/strict';
+-import { PLAY_UNLOCKS, playRecord, playState } from '../play-unlocks.mjs';
++import { PLAY_UNLOCKS, PLAY_REPLACED_BY, playRecord, playState, playOrder } from '../play-unlocks.mjs';
+ import strings from '../world-strings.mjs';
+ 
+ const learning = (cafeCompleted, phase = 'ready') => ({ summary: { cafe: { completed: cafeCompleted, total: 1, nextNumber: null }, status: { phase } } });
+@@ -38,6 +38,18 @@ test('바닷가 레이스는 지도 찾기 이야기(거꾸로 든 지도)를 
+   assert.equal(playState('racing', null).open, false);
+ });
+ 
++test('환승 러시는 레슨 하나를 마친 뒤 열리고, 열리면 바람길 자리를 이어받는다', () => {
++  const summary = (completed) => ({ summary: { completed, cafe: { completed: 0 }, status: { phase: 'ready' } } });
++  assert.deepEqual(playState('subway', playRecord(summary(0))), { open: false, where: 'play.where.lesson' });
++  assert.deepEqual(playState('subway', playRecord(summary(1))), { open: true });
++  const ids = ['runner', 'hangul', 'rhythm', 'order', 'subway'];
++  assert.deepEqual(playOrder(ids, playRecord(summary(0))), ids, '잠겨 있는 동안은 듣기 놀이가 비지 않는다');
++  assert.deepEqual(playOrder(ids, playRecord(summary(2))), ['subway', 'hangul', 'rhythm', 'order']);
++  assert.deepEqual(playOrder(ids, null), ids, '기록을 못 읽으면 내리지 않는다');
++  assert.equal(playState('runner', playRecord(summary(2))).open, true, '게임 자체는 그대로 열린다');
++  assert.deepEqual(PLAY_REPLACED_BY, { runner: 'subway' });
++});
++
+ test('생활 진도를 아직 못 읽었거나 읽는 중이면 잠김으로 본다(열렸다고 먼저 말하지 않는다)', () => {
+   assert.equal(playRecord(undefined), null);
+   assert.equal(playRecord({}), null);
+@@ -51,7 +63,7 @@ test('규칙이 이상한 기록에 던져도 잠김으로 남는다', () => {
+ 
+ test('잠김 안내의 여는 자리 글이 화면 글 표에 세 언어로 있다', () => {
+   for (const rule of Object.values(PLAY_UNLOCKS)) {
+-    for (const key of [rule.where, 'play.locked', 'game.order.title', 'game.order.detail', 'game.blank.title', 'game.blank.detail', 'game.snap.title', 'game.snap.detail', 'game.racing.title', 'game.racing.detail']) {
++    for (const key of [rule.where, 'play.locked', 'game.order.title', 'game.order.detail', 'game.subway.title', 'game.subway.detail', 'game.blank.title', 'game.blank.detail', 'game.snap.title', 'game.snap.detail', 'game.racing.title', 'game.racing.detail']) {
+       for (const lang of ['ko', 'en', 'mn']) assert.ok(strings[key]?.[lang], `${key}.${lang}`);
+     }
+   }
+diff --git a/experiences/brand-opening/world-strings-check.json b/experiences/brand-opening/world-strings-check.json
+index 18097ee0eb..b388d55573 100644
+--- a/experiences/brand-opening/world-strings-check.json
++++ b/experiences/brand-opening/world-strings-check.json
+@@ -5,14 +5,14 @@
+  "meaning": "세 겹 확인(결정 표 10-19 「현지어판 확인」): ① 직역 역번역을 Claude Opus가 원문과 줄마다 견줬다 ② Fable이 915줄을 교정했다(지적 26건 → 반영 17 · 고쳐 반영 8 · 그대로 둠 1, fable-20261019.json) ③ 제미나이 아르곤이 문법을 채점했다(tools/몽골어대조.js --구독, 맞춤법 층 spellcheck.mn 포함). 원어민 검수는 같은 결정에 따라 계획에 없다. 10-20 내 위치 position.* 95줄도 같은 세 겹으로 쟀다(① Opus 역번역 대조 ② Fable 교정 11곳 반영, mn-check-20261020-position/fable-20261020.json ③ 아르곤 문법·맞춤법 — 고친 줄은 다시 쟀다). 10-20 이름이 든 추천 이유 틀과 한글 만나기 항목 이름 11줄도 같은 세 겹으로 쟀다(① Opus 역번역 대조 ② Fable 22항목 교정 + 고친 다섯 줄 재검토 ③ 아르곤 문법·맞춤법 — 고친 줄은 다시 쟀고 마지막에 표 전체를 한 번 더 쟀다). 관심 이유의 {label}(«교통» 같은 학습 내용)은 한국어 그대로다. 「내 위치」 공개(10-20) 뒤 옛 학습 목표 창 「연습에서 본 것」의 goal.seen·goal.state.* 8줄은 표에서 지웠고 기록 줄도 뺐다. 10-20 그림 고르기 지시 position.diagnostic.ask.picture도 세 겹으로 쟀다(아르곤 정상·맞춤법 0, Fable 「그대로」, 역번역 대조). 10-21 듣기 새 항목 이름 position.skill.ko.listening.response는 아르곤 문법 정상·맞춤법 0이고, 직역 역번역(「듣고 적합한 답변 주기」)을 Claude Opus가 원문과 견줬다. Fable 교정도 「그대로」(10-21, 위치판 진단 공백 문장 n=1과 함께). 10-21 학습 알림 reminder.* 40줄도 같은 세 겹으로 쟀다(① Opus 역번역 대조 — 모두 뜻이 같음 ② Fable 교정 — 화면 최종 검수에서 exam.start 한 줄을 고치고, 재확인에서 바꾼 세 줄은 그대로 ③ 아르곤 문법·맞춤법 — 첫 검문에서 어색 다섯 줄(товч·Дээд тал нь·харин·Давтамж)을 고쳐 recheck-01 정상, 그 줄이 든 둘째·셋째 묶음 final 재검문 정상, 시험 점검 시트 글을 바꾼 세 줄(exam.body·exam.mock·exam.start) recheck-02 정상). 「reminder.push.title」(SYNK WORLD)·「reminder.when」(날짜·시각 꼴)은 몽골어 낱말이 없어 재지 않았다. 묶음·결과 파일은 qa 결과 규칙(10-20)대로 이 PC에만 두고, 묶음마다의 판정은 그 폴더 README.md에 적었다. 10-22 연습 한 판의 응답 response.* 18줄도 세 겹으로 쟀다(① Opus 역번역 대조 ③ 아르곤 문법·맞춤법 — 어색 두 줄(note30·removeNote)을 고쳐 다시 재 정상 · ② Fable 교정은 그 기능의 화면 최종 검수에서 — 몽골어는 그대로 두되 연결 꺼짐 안내를 세 언어로 새로 쓰고 30일 안내를 실제 동작으로 줄여 다시 재 정상). 11-01 /world 입구 opening.entrance.* 6줄도 같은 세 겹으로 쟀다(① Claude 역번역 대조 ② Fable 교정 ③ 아르곤 문법·맞춤법 — mn-check-20261101-entrance/README.md). 11-02 펠트 안녕 콘서트 타이틀 공개 뒤 옛 펠트 타이틀의 opening.titleAlt · opening.subtitle 2줄은 표에서 지웠고 기록 줄도 뺐다.",
+  "names": "까몽·몽글·마린 → Камон · Монгль · Марин(09-20 카드와 같은 표기), 싱크타운 → SYNK Таун, 수진·지훈 → Сүжин · Жихүн. 맞춤법 층은 이 이름들, 라틴 글자에 붙인 격 어미(WORLD-ийн · ID-д), 한글 낱자에 붙인 어미(ㄱ-г 같은 것), 들어온 말(рамён · апп · Вэб · Мини)을 늘 의심으로 낸다. 상태(status)에서는 이것들을 뺐고 spelling 칸에는 그대로 남겼다. 「Монгль」은 문법 층이 「Монгол의 오타처럼 보인다」고 여러 번 짚었지만, 유호님이 10-19 그대로 두기로 정했다(결정 표 10-19 「몽글 몽골어 이름」). 그 지목(named)은 고칠 문장이 아니다. 드라마 인물 권태오 → Квон Тэо(입구 사진 설명, 11-01).",
+  "summary": {
+-  "lines": 1187,
++  "lines": 1190,
+   "unchecked": 0,
+-  "grammarOk": 832,
+-  "grammarAwkwardBatch": 355,
++  "grammarOk": 834,
++  "grammarAwkwardBatch": 356,
+   "grammarBrokenBatch": 0,
+   "namedProblem": 3,
+   "spellingUnmeasured": 0,
+-  "clean": 832
++  "clean": 834
+  },
+  "lines": [
+   {
+@@ -10888,6 +10888,33 @@
+    "grammar": "정상",
+    "spelling": [],
+    "status": "세 겹 깨끗 · 1차 「어색」(서술어 없이 쉼표로 이음) 뒤 두 문장으로 고친 판, {lang}은 「Монгол」로 넣어 잼"
++  },
++  {
++   "source": "world-strings",
++   "key": "game.subway.title",
++   "mnHash": "8dea231587",
++   "batch": "mn-check-20261104-subway/subway-07.txt",
++   "grammar": "정상",
++   "spelling": [],
++   "status": "세 겹 깨끗 · 「Шилжих шуурга」 · 「Метроны шилжилт」 · 「Метроны шуурга」를 어색 판정으로 버린 판"
++  },
++  {
++   "source": "world-strings",
++   "key": "game.subway.detail",
++   "mnHash": "688f6d4c46",
++   "batch": "mn-check-20261104-subway/subway-07.txt",
++   "grammar": "어색",
++   "spelling": [],
++   "status": "문법 층 「어색」(зарлал이 격식 말) · 맞춤법 깨끗 · 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude가 확인"
++  },
++  {
++   "source": "world-strings",
++   "key": "position.source.subway-rush",
++   "mnHash": "8dea231587",
++   "batch": "mn-check-20261104-subway/subway-07.txt",
++   "grammar": "정상",
++   "spelling": [],
++   "status": "게임 이름과 같은 줄"
+   }
+  ]
+ }
+diff --git a/experiences/brand-opening/world-strings.mjs b/experiences/brand-opening/world-strings.mjs
+index 9d0c53e6a1..583834c350 100644
+--- a/experiences/brand-opening/world-strings.mjs
++++ b/experiences/brand-opening/world-strings.mjs
+@@ -176,6 +176,8 @@ export default {
+  'game.snap.detail':{ko:'간판과 물건을 찍어 낱말을 모아요',en:'Snap signs and objects to collect words',mn:'Самбар, эд зүйлийн зураг авч үг цуглуулна'},
+  'game.racing.title':{ko:'바닷가 레이스',en:'Seaside Race',mn:'Далайн эргийн уралдаан'},
+  'game.racing.detail':{ko:'문장을 듣고 답이 있는 길로 자전거를 달려요',en:'Hear the sentence and ride into the right lane',mn:'Өгүүлбэр сонсоод зөв хариутай зам руу дугуйгаар давхина'},
++ 'game.subway.title':{ko:'환승 러시',en:'Transfer Rush',mn:'Метро солих'},
++ 'game.subway.detail':{ko:'안내방송을 듣고 갈아타서 첫 수업에 닿아요',en:'Follow the announcements, transfer, and make it to your first class',mn:'Метроны зарлал сонсоод эхний хичээлдээ амжина'},
+  'play.locked':{ko:'이야기에서 열려요 — {where}',en:'Opens in the story — {where}',mn:'{where} нээгдэнэ'},   // 몽골어는 동사가 끝 — 「…-д очиход нээгдэнэ」(…에 가면 열려요)
+  'play.where.cafe':{ko:'싱크타운 카페 첫 방문',en:'your first visit to the SYNK Town café',mn:'SYNK Таун кафед анх очиход'},
+  'play.where.lesson':{ko:'첫 학습을 마치면',en:'after your first lesson',mn:'Эхний хичээлээ дуусгахад'},
+@@ -500,6 +502,7 @@ export default {
+  'position.source.talk-rally':{ko:'말 랠리',en:'Talk Rally',mn:'Ярианы ралли'},
+  'position.source.story-classroom':{ko:'선생님이 돌아왔다',en:'The Teacher Is Back',mn:'Багш буцаж ирлээ'},
+  'position.source.order-rush':{ko:'주문 폭주',en:'Order Rush',mn:'Захиалгын шуурга'},
++ 'position.source.subway-rush':{ko:'환승 러시',en:'Transfer Rush',mn:'Метро солих'},
+  'position.source.korean-racing':{ko:'한국어 레이싱',en:'Korean Racing',mn:'Солонгос хэлний уралдаан'},
+  'position.source.other':{ko:'다른 연습',en:'Other practice',mn:'Бусад дасгал'},
+  'position.source.practice':{ko:'짧은 연습',en:'Short practice',mn:'Богино дасгал'},
+diff --git a/experiences/korean-racing/garage-core.js b/experiences/korean-racing/garage-core.js
+index 4e03c50041..57a27344eb 100644
+--- a/experiences/korean-racing/garage-core.js
++++ b/experiences/korean-racing/garage-core.js
+@@ -63,7 +63,7 @@ const FREE_ITEMS = SHOP_ITEMS.filter(item=>item.price===0).map(item=>item.id);
+ export const DEFAULT_EQUIPMENT = Object.freeze({vehicle:'coast',paint:'mint',wheels:'silver',trail:'lime',badge:null,racket:'coral',ball:'cream',...BEGINNER_DEFAULTS});
+ export const REWARDS = Object.freeze({finish:15,correct:2,firstClear:10,correction:5,mission:15,dailyRaceLimit:10,miniGameAccuracy:10});
+ // Mini-games that share this wallet. Each pays only after its own complete-round condition.
+-export const MINI_GAMES = Object.freeze(['rhythm','runner','blank-slice','entry-check','story-classroom','talk-rally','order-rush','word-magic','spaceship-coop']);
++export const MINI_GAMES = Object.freeze(['rhythm','runner','blank-slice','entry-check','story-classroom','talk-rally','order-rush','word-magic','spaceship-coop','subway-rush']);
+ export const integer = (value,fallback=0,max=1_000_000_000) => typeof value==='number'&&Number.isFinite(value)?Math.max(0,Math.min(max,Math.floor(value))):fallback;
+ export const object = value => value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+ export const safeKey = key => typeof key==='string'&&key.length>0&&key.length<=180&&!['__proto__','prototype','constructor'].includes(key);
+diff --git a/experiences/play-common/build-collection.mjs b/experiences/play-common/build-collection.mjs
+index aa5fa22a7f..ba15c6dfd6 100644
+--- a/experiences/play-common/build-collection.mjs
++++ b/experiences/play-common/build-collection.mjs
+@@ -16,6 +16,6 @@ const account=esbuild.buildSync({entryPoints:[path.join(here,'account-client.mjs
+ const output=path.join(here,'collection.js');
+ await writeFile(output,'// Generated account bridge + canonical play economy. Run node experiences/play-common/build-collection.mjs.\n'+account+'\n'+bundled+'\n'+adapter);
+ // Every mini-game that pays common coins loads the same bytes.
+-const GAMES=['korean-racing','korean-rhythm','korean-runner','blank-slice','entry-check','story-classroom','talk-rally','order-rush','word-magic','spaceship-coop','learning-hub'];
++const GAMES=['korean-racing','korean-rhythm','korean-runner','blank-slice','entry-check','story-classroom','talk-rally','order-rush','word-magic','spaceship-coop','subway-rush','learning-hub'];
+ for(const game of GAMES)await copyFile(output,path.join(root,'experiences',game,'collection.js'));
+ console.log(`Canonical shared collection built and copied to ${GAMES.join(' / ')} (${Buffer.byteLength(await readFile(output))} bytes).`);
+diff --git a/experiences/play-common/collection-adapter.js b/experiences/play-common/collection-adapter.js
+index 1e7f2a829a..db65699f31 100644
+--- a/experiences/play-common/collection-adapter.js
++++ b/experiences/play-common/collection-adapter.js
+@@ -6,7 +6,7 @@
+   // Where racing's garage is for this page: inside racing's own package (/play/…), on synk.im (/try/…),
+   // or beside the game on a local server or the learning hub (/blank-slice/ → /korean-racing/).
+   const nestedPlay=pathname.match(/^(.*)\/play\/(?:rhythm|runner)\//);
+-  const besideRacing=pathname.match(/^(.*)\/(?:korean-[a-z]+|learning-hub|blank-slice|entry-check|story-classroom|order-rush|talk-rally|word-magic|spaceship-coop)\//);
++  const besideRacing=pathname.match(/^(.*)\/(?:korean-[a-z]+|learning-hub|blank-slice|entry-check|story-classroom|order-rush|talk-rally|word-magic|spaceship-coop|subway-rush)\//);
+   const racingPath=nestedPlay?nestedPlay[1]+'/':pathname.startsWith('/try/')?'/try/racing/':besideRacing?besideRacing[1]+'/korean-racing/':'/';
+   const garageHref=racingPath+'?garage=1';
+   function economy(){return Promise.resolve(global.SynkCollectionEconomy);}
+diff --git a/experiences/play-common/collection.test.mjs b/experiences/play-common/collection.test.mjs
+index 53137147b1..f8ae90524e 100644
+--- a/experiences/play-common/collection.test.mjs
++++ b/experiences/play-common/collection.test.mjs
+@@ -71,7 +71,7 @@ test('the coast badge is visible only when owned and equipped and garage links f
+ });
+ 
+ test('every coin-paying mini-game ships byte-identical copies of the generated canonical rules',async()=>{
+-  for(const game of ['korean-rhythm','korean-runner','blank-slice','entry-check','story-classroom','talk-rally','order-rush','word-magic','spaceship-coop','learning-hub'])assert.equal(await fs.readFile(new URL(`../${game}/collection.js`,import.meta.url),'utf8'),source);
++  for(const game of ['korean-rhythm','korean-runner','blank-slice','entry-check','story-classroom','talk-rally','order-rush','word-magic','spaceship-coop','subway-rush','learning-hub'])assert.equal(await fs.readFile(new URL(`../${game}/collection.js`,import.meta.url),'utf8'),source);
+ });
+ 
+ test('the three reading games pay from the same wallet, by accuracy rather than round length',async()=>{
+diff --git a/experiences/synk-world-app/app-shell.mjs b/experiences/synk-world-app/app-shell.mjs
+index 1e069922c4..23bd4f8144 100644
+--- a/experiences/synk-world-app/app-shell.mjs
++++ b/experiences/synk-world-app/app-shell.mjs
+@@ -674,6 +674,8 @@ function mountRewardTutor(){
+ const games={runner:{get title(){return t('game.runner.title');},path:'korean-runner/'},rhythm:{get title(){return t('game.rhythm.title');},path:'korean-rhythm/'},hangul:{get title(){return t('game.hangul.title');},path:'hangul-stage/'},
+  // 주문 폭주(11-03, 캠퍼스 판 겉 — order-rush/world-skin.css): 홈 「놀이」가 해금 표(brand-opening/play-unlocks.mjs)로 연 뒤에만 여기로 온다.
+  order:{get title(){return t('game.order.title');},path:'order-rush/'},
++ // 환승 러시(11-04): 홈 「놀이」가 해금 표로 연 뒤에만 여기로 온다.
++ subway:{get title(){return t('game.subway.title');},path:'subway-rush/'},
+  // 빈칸 베기(11-04, 캠퍼스 판 겉 — blank-slice/world-skin.css): 위와 같이 홈 「놀이」가 해금 표로 연 뒤에만 온다.
+  blank:{get title(){return t('game.blank.title');},path:'blank-slice/'},
+  // 찰칵 낱말(11-04): 학생이 고른 시험 목표 급을 넘긴다 — 능력 판단이 아니라 3급 안내문을 켠 채 시작할지 정하는 데만 쓴다(experiences/snap-words/설계.md 5-3).
+diff --git a/experiences/synk-world-app/server.mjs b/experiences/synk-world-app/server.mjs
+index ed97998b3f..d2d5816bc6 100644
+--- a/experiences/synk-world-app/server.mjs
++++ b/experiences/synk-world-app/server.mjs
+@@ -32,7 +32,7 @@ const townHost=mode==='rehearsal'?createAccountTownHost({directory:`${dataDir}-t
+ const sessions=new Map();
+ let speakingHost=null;
+ const ids={'player-a':'11111111-1111-4111-8111-111111111111','player-b':'22222222-2222-4222-8222-222222222222'};
+-const allowedGames=new Set(['korean-runner','korean-rhythm','hangul-stage','order-rush','blank-slice','snap-words','korean-racing']);
++const allowedGames=new Set(['korean-runner','korean-rhythm','hangul-stage','order-rush','blank-slice','snap-words','korean-racing','subway-rush']);
+ const mime={'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml','.woff2':'font/woff2','.ttf':'font/ttf','.mp4':'video/mp4','.mp3':'audio/mpeg','.wav':'audio/wav','.glb':'model/gltf-binary','.wasm':'application/wasm'};
+ function sessionCookieName(request){const tab=request.headers.get('x-synk-rehearsal-tab');return tab?`synk_world_rehearsal_${tab.toLowerCase()}`:'synk_world_rehearsal';}
+ function cookieToken(request){const name=sessionCookieName(request);return request.headers.get('cookie')?.match(new RegExp(`(?:^|;\\s*)${name}=([A-Za-z0-9_-]+)(?:;|$)`))?.[1];}
+diff --git a/tools/build-world-app-public.mjs b/tools/build-world-app-public.mjs
+index 1fc628bac7..a010727a47 100644
+--- a/tools/build-world-app-public.mjs
++++ b/tools/build-world-app-public.mjs
+@@ -179,6 +179,8 @@ copyTree(path.join(root,'experiences','snap-words'),'snap-words',(source,relativ
+ // three.js는 주문 폭주와 같이 홈의 공용 사본과 바이트까지 같으면 vendor/를 싣지 않고 공용 사본을 부른다(위 copyFile).
+ const blankSharedThree=['three.module.js','three.core.js'].every(name=>fs.readFileSync(path.join(root,'experiences/blank-slice/vendor',name)).equals(fs.readFileSync(path.join(home,'scene-assets',name))));
+ copyTree(path.join(root,'experiences','blank-slice'),'blank-slice',(source,relative)=>!/^blank-slice\/(?:sound-lab[^/]*|assets\/hero-pieces\.webp)$/.test(relative)&&!(blankSharedThree&&relative.startsWith('blank-slice/vendor/')));
++// 환승 러시(11-04): 게임 폴더째 싣는다(qa · 시험 · 설계는 copyTree가 뺀다). 앱 전용이라 LAB 공개 길은 없다.
++copyTree(path.join(root,'experiences','subway-rush'),'subway-rush');
+ // 드라마 말하기 1화(11-02, 설계 experiences/drama/qa/WORLD올리기-20261102/설계.md): 화면 · 강의(world-lesson.json) · 기록 묶음 · 재생 사본만 싣는다.
+ // content.mjs(시범 서버 전용 · 판정 명세)와 README · qa는 싣지 않는다. 재생 사본(media/)은 git 밖(tools/build-drama-pilot-assets.mjs가 승인 원천에서
+ // 만든다)이라 그 manifest.json의 sha256과 하나씩 대조해 없거나 다르면 멈춘다 — manifest 자체(원천 파일 이름)는 싣지 않는다.
+diff --git a/tools/lib/atlas-copies.js b/tools/lib/atlas-copies.js
+index fc766a5d62..038326d926 100644
+--- a/tools/lib/atlas-copies.js
++++ b/tools/lib/atlas-copies.js
+@@ -5,7 +5,7 @@ const fs = require('node:fs');
+ const path = require('node:path');
+ const crypto = require('node:crypto');
+ const { spawnSync } = require('node:child_process');
+-const GAMES = Object.freeze(['korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'learning-hub', 'entry-check', 'story-classroom', 'blank-slice', 'talk-rally', 'word-magic', 'snap-words']);
++const GAMES = Object.freeze(['korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'learning-hub', 'entry-check', 'story-classroom', 'blank-slice', 'talk-rally', 'word-magic', 'snap-words', 'subway-rush']);
+ // Every tool in docs/마케팅/맞춤도구/build.mjs ships atlas/engine.js as atlas-engine.js next to its dist/<name>.manifest.json.
+ const TOOL_OUTPUTS = Object.freeze({ computer: 'brief/computer', meeting: 'brief/meeting', katana: 'brief/katana', skills: 'brief/skills', move: 'builds/move', manual: 'builds/manual' });
+ const WEBSITE_GAMES = Object.freeze({ racing: 'korean-racing', runner: 'korean-runner', rhythm: 'korean-rhythm', 'order-rush': 'order-rush', 'story-classroom': 'story-classroom', 'entry-check': 'entry-check', 'blank-slice': 'blank-slice', 'talk-rally': 'talk-rally' });

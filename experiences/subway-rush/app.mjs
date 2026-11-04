@@ -1,0 +1,616 @@
+// 환승 러시 흐름(설계 v0.3): 개찰구 → 승강장 → 2호선 → 시청 환승 통로 → 1호선 → 출구 → 개찰구 → 지상 → 결과.
+// 규칙은 core.mjs, 원고는 journeys.mjs · people.mjs, 그림은 scene.mjs, 전광판은 led.mjs, 소리는 audio.mjs가 맡고 여기서는 차례만 잇는다.
+import { SubwayRun, clockText, highlightFor, SCHOOL_MINUTES } from './core.mjs';
+import { buildJourney, explainDecision } from './journeys.mjs';
+import { LINES } from './lines.mjs';
+import { PEOPLE, CARS, planDay } from './people.mjs';
+import { createScene, loadImage, paintSign } from './scene.mjs';
+import { createLed } from './led.mjs';
+import { createSound, haptic } from './audio.mjs';
+import { createMusic } from './music.mjs';
+import { GAME_ID, decisionMeta, meetingMeta, answerPayload, createExchange, preferJourney } from './learning.mjs';
+
+const $ = (id) => document.getElementById(id);
+const query = new URLSearchParams(location.search);
+const AUTO = query.has('auto');                       // 녹화용 자동 진행
+const WORLD_BASE = 'assets/world/', VOICE_BASE = 'assets/voice/';
+const reduced = () => matchMedia('(prefers-reduced-motion:reduce)').matches || document.documentElement.hasAttribute('data-reduce-motion');
+
+// ── 시간(멈춤을 지키려고 모든 움직임을 이 고리로 돌린다) ──
+const ease = {
+  linear: (k) => k, out: (k) => 1 - Math.pow(1 - k, 3), inOut: (k) => k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2,
+  run: (k) => k < 0.86 ? k * 0.93 / 0.86 : 0.93 + 0.07 * (1 - Math.pow(1 - (k - 0.86) / 0.14, 2)),
+  door: (k) => k < 0.12 ? 0.25 * k : 0.03 + 0.97 * (1 - Math.pow(1 - (k - 0.12) / 0.88, 2.4)),
+};
+const tweens = new Set();
+function tween(dur, fn, e = ease.inOut) { return new Promise((res) => { const t = { t: 0, dur, fn, e, res }; tweens.add(t); fn(e(0)); }); }
+const wait = (s) => tween(s, () => {}, ease.linear);
+let paused = false, last = performance.now();
+let stepping = 0, stepTimer = 0, stepSide = 1;
+
+// ── 준비 ──
+const assets = new Set(await fetch('assets/assets.json').then((r) => r.json()));
+const files = Object.fromEntries([...assets].flatMap((n) => [[n, `${n}.webp`], [`${n}.depth`, `${n}.depth.png`]]));
+const has = (n) => assets.has(n);
+const sound = createSound();
+const music = createMusic(sound.ctx, { destination: sound.output });
+sound.onVoice = (on) => music.voice(on);
+await Promise.all([document.fonts.load('600 20px SubwaySign'), document.fonts.load('16px SubwayLED')]).catch(() => {});
+const led = createLed($('led'));
+const scene = await createScene($('gl'), { base: WORLD_BASE, tween, ease, files });
+const coach = (() => { try { return window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }) || null; } catch { return null; } })();
+
+const availableCars = () => Object.keys(CARS).filter((id) => has(CARS[id].closed));
+const availablePeople = () => Object.keys(PEOPLE).filter((id) => has(PEOPLE[id].photo));
+const albumKey = 'synk.subway.album.v1';
+const readAlbum = () => { try { return JSON.parse(localStorage.getItem(albumKey) || '{}'); } catch { return {}; } };
+const writeAlbum = (a) => { try { localStorage.setItem(albumKey, JSON.stringify(a)); } catch { /* 저장 못 하면 이번 판만 */ } };
+
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (!paused) {
+    for (const t of [...tweens]) { t.t += dt; const k = Math.min(1, t.t / t.dur); t.fn(t.e(k)); if (k >= 1) { tweens.delete(t); t.res(); } }
+    if (stepping > 0) { stepTimer -= dt; if (stepTimer <= 0) { stepTimer += 1 / stepping; stepSide = -stepSide; sound.sfx.step(stepSide); } }
+    sound.railTick();
+    if (voiceLive) led.setLevels(sound.voiceLevels());
+    led.render(dt);
+    scene.resize(); scene.render(dt);
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// ── 전광판 · 안내 ──
+let voiceLive = false, currentLine = null, currentExchange = null, canHelp = false;
+function setStatus(role) { led.setStatus(role === 'guide' ? '길 안내' : role === 'announcer' ? '안내방송' : '', role === 'guide' ? 'green' : 'amber'); }
+async function say(line, { status = true } = {}) {
+  currentLine = line;
+  if (status) setStatus(line.role);
+  voiceLive = true;
+  const ok = await sound.speak(line.voice);
+  voiceLive = false; led.setLevels([0, 0, 0, 0, 0]);
+  return ok;
+}
+function setClock(run) { led.setClock(clockText(run.minutes)); }
+function setKeys(on) { canHelp = on; $('key-replay').disabled = !on; $('key-text').disabled = !on; }
+$('key-replay').addEventListener('click', async () => {
+  if (!canHelp || !currentLine || voiceLive) return;
+  currentExchange?.help('replay'); activeRun?.help('replay'); sound.sfx.tap();
+  await say(currentLine, { status: currentLine.role === 'announcer' || currentLine.role === 'guide' });
+});
+$('key-text').addEventListener('click', () => {
+  if (!canHelp || !currentLine) return;
+  currentExchange?.help('text'); activeRun?.help('text'); sound.sfx.tap();
+  showNotice({ head: '글로 봤어요', body: escapeHtml(currentLine.text) });
+});
+const escapeHtml = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+function showNotice({ head, body, replay = false }) {
+  const n = $('notice'); $('notice-head').textContent = head; $('notice-body').innerHTML = body; $('notice-replay').hidden = !replay;
+  n.hidden = false; n.style.animation = 'none'; void n.offsetWidth; n.style.animation = '';
+  return n;
+}
+$('notice').addEventListener('click', () => { $('notice').hidden = true; pendingLevel = null; noticeTap?.(); });
+let noticeTap = null;
+async function noticeFor(seconds) {
+  await new Promise((res) => { noticeTap = res; tween(seconds, () => {}, ease.linear).then(res); });
+  noticeTap = null; $('notice').hidden = true;
+}
+function mark(text, word) { const safe = escapeHtml(text); return word ? safe.replace(escapeHtml(word), (m) => `<mark>${m}</mark>`) : safe; }
+async function banner(text, seconds = 2) {
+  const b = $('banner'); $('banner-text').textContent = text; delete b.dataset.out; b.hidden = false;
+  await wait(seconds); b.dataset.out = ''; await wait(0.3); b.hidden = true;
+}
+async function curtain(on) { const c = $('curtain'); if (on) c.dataset.on = ''; else delete c.dataset.on; await wait(0.26); }
+
+// ── 고르기 ──
+let chooseResolve = null, hintShown = false;
+function pick(i) { const r = chooseResolve; if (!r) return; chooseResolve = null; r(i); }
+$('zones').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) pick(Number(b.dataset.i)); });
+let touchX = null;
+$('zones').addEventListener('pointerdown', (e) => { touchX = e.clientX; });
+window.addEventListener('pointerup', (e) => { if (touchX === null || !chooseResolve) { touchX = null; return; } const dx = e.clientX - touchX; touchX = null; if (Math.abs(dx) > 44) { e.preventDefault(); pick(dx < 0 ? 0 : 2); } });
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { if (!$('board').hidden && !$('voice-dialog').open) togglePause(); return; }
+  const i = { ArrowLeft: 0, a: 0, ArrowUp: 1, w: 1, ArrowRight: 2, d: 2, 1: 0, 2: 1, 3: 2 }[e.key]; if (i !== undefined) pick(i);
+});
+/** 세 칸을 띄우고 손짓을 기다린다. 자동 진행 때는 정해진 칸을 누른다. */
+function choose(options, autoId) {
+  const zones = $('zones'); zones.hidden = false;
+  [...zones.children].forEach((b, i) => { b.setAttribute('aria-label', options[i].text || (options[i].exit != null ? `${options[i].exit}번 출구` : '')); });
+  scene.paintDecals(options); scene.showDecals();
+  const hint = $('gesture-hint'); hint.hidden = readAlbum().plays >= 2 || !!hintShown; hintShown = true;
+  return new Promise((resolve) => {
+    chooseResolve = (i) => { zones.hidden = true; $('gesture-hint').hidden = true; scene.paintDecals(options, i); sound.sfx.swish(i === 0 ? -1 : 1); haptic('tap'); resolve(i); };
+    if (AUTO) { const i = options.findIndex((o) => o.id === autoId); wait(1.1).then(() => pick(i < 0 ? 0 : i)); }
+  });
+}
+
+// ── 걸이 표지 ──
+const HANG = { w: 1100, h: 200 };
+const lineColor = (n) => LINES[n]?.color;
+function drawHang(options, lit = null) {
+  const c = $('hang-canvas'); c.width = HANG.w; c.height = HANG.h; const x = c.getContext('2d');
+  x.fillStyle = '#c9cbcf'; x.fillRect(0, 0, HANG.w, HANG.h);
+  const cell = (HANG.w - 12) / 3;
+  options.forEach((o, i) => {
+    const rect = [6 + i * cell + (i ? 3 : 0), 6, 6 + (i + 1) * cell - (i < 2 ? 3 : 0), HANG.h - 6];
+    const arrow = [-Math.PI * 0.72, -Math.PI / 2, -Math.PI * 0.28][i];
+    paintCell(x, rect, o, arrow, lit === i);
+  });
+}
+function arrowGlyph(x, cx, cy, r, angle) {
+  x.save(); x.translate(cx, cy); x.rotate(angle); x.beginPath(); x.moveTo(-r, 0); x.lineTo(r * 0.45, 0); x.moveTo(r * 0.02, -r * 0.62); x.lineTo(r * 0.72, 0); x.lineTo(r * 0.02, r * 0.62);
+  x.lineWidth = r * 0.34; x.lineCap = 'butt'; x.lineJoin = 'miter'; x.stroke(); x.restore();
+}
+function paintCell(x, [x0, y0, x1, y1], o, arrow, lit) {
+  const w = x1 - x0, h = y1 - y0;
+  x.save(); x.beginPath(); x.rect(x0, y0, w, h); x.clip();
+  x.fillStyle = lit ? '#123a86' : '#081430'; x.fillRect(x0, y0, w, h);
+  const g = x.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, 'rgba(110,146,226,.14)'); g.addColorStop(0.5, lit ? 'rgba(160,200,255,.5)' : 'rgba(96,136,220,.26)'); g.addColorStop(1, 'rgba(60,90,160,.10)');
+  x.fillStyle = g; x.fillRect(x0, y0, w, h);
+  const cx = x0 + w / 2, top = y0 + h * 0.3, ink = '#f7f9ff';
+  x.textAlign = 'center'; x.textBaseline = 'middle';
+  const paint = (blur) => {
+    x.filter = blur ? `blur(${blur}px)` : 'none';
+    if (o.exit != null) {
+      const s = h * 0.46; x.fillStyle = '#ffd400'; x.beginPath(); x.roundRect(cx - s / 2 - w * 0.13, top - s * 0.42, s, s, s * 0.14); x.fill();
+      if (!blur) { x.fillStyle = '#111'; x.font = `900 ${s * 0.8}px SubwaySign`; x.fillText(String(o.exit), cx - w * 0.13, top - s * 0.42 + s * 0.54); }
+      x.strokeStyle = ink; arrowGlyph(x, cx + w * 0.2, top + h * 0.02, h * 0.15, arrow);
+      x.fillStyle = ink; x.font = `600 ${h * 0.25}px SubwaySign`; x.fillText('번 출구', cx, y0 + h * 0.8);
+    } else {
+      if (o.line) {
+        const r = h * 0.18; x.fillStyle = lineColor(o.line); x.beginPath(); x.arc(cx - w * 0.13, top, r, 0, Math.PI * 2); x.fill();
+        if (!blur) { x.fillStyle = '#fff'; x.font = `800 ${r * 1.4}px SubwaySign`; x.fillText(String(o.line), cx - w * 0.13, top + r * 0.06); }
+        x.strokeStyle = ink; arrowGlyph(x, cx + w * 0.16, top, h * 0.15, arrow);
+      } else { x.strokeStyle = ink; arrowGlyph(x, cx, top, h * 0.16, arrow); }
+      x.fillStyle = ink; let size = h * 0.27; x.font = `600 ${size}px SubwaySign`; while (x.measureText(o.text).width > w * 0.92 && size > 12) { size -= 1; x.font = `600 ${size}px SubwaySign`; }
+      x.fillText(o.text, cx, y0 + h * 0.74);
+    }
+    x.filter = 'none';
+  };
+  x.globalAlpha = 0.45; paint(h * 0.035); x.globalAlpha = 1; paint(0);
+  x.restore();
+}
+function setHang(p) { const h = $('hang'), s = 0.5 + 0.5 * p; h.style.setProperty('--hang-s', s.toFixed(3)); h.style.setProperty('--hang-y', `${Math.round((1 - p) * 34)}px`); h.style.opacity = String(Math.min(1, p * 2.4 + 0.2)); }
+
+// ── 입구 ──
+const STATION_SIGN = [0.054, 0.1725, 0.949, 0.3075];
+function drawStationSign(ctx) {
+  const W = ctx.canvas.width, H = ctx.canvas.height, [a, b, d, e] = STATION_SIGN, x0 = a * W, y0 = b * H, x1 = d * W, y1 = e * H, w = x1 - x0, h = y1 - y0;
+  const band = h * 0.24;
+  ctx.save();
+  ctx.fillStyle = '#d8532b'; ctx.fillRect(x0 + 3, y1 - band - 3, w - 6, band);   // 띠: 실제 노선 색이 아닌 우리 색
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const cy = y0 + (h - band) * 0.47;
+  ctx.fillStyle = '#16171a'; ctx.font = `800 ${h * 0.5}px SubwaySign`; ctx.fillText('환승 러시', x0 + w / 2, cy);
+  ctx.fillStyle = '#fff'; ctx.font = `600 ${band * 0.56}px SubwaySign`; ctx.textAlign = 'left'; ctx.fillText('←  개강 첫날', x0 + w * 0.05, y1 - band / 2 - 2);
+  ctx.textAlign = 'right'; ctx.fillText('8시 41분  →', x1 - w * 0.05, y1 - band / 2 - 2);
+  ctx.restore();
+}
+function lobbyLayout() {
+  // 단말기 자리: 사진 속 검은 패드(그림 좌표)를 화면 좌표로
+  const s = $('stage').getBoundingClientRect(), a = s.width / s.height, fit = scene.state.fit, drop = scene.state.drop;
+  const imgH = (a * fit) / (1024 / 1536);
+  const toY = (v) => ((v - 0.5) * imgH + drop + 0.5) * s.height, toW = (u) => u * (a * fit) * s.height;
+  const r = $('reader');
+  r.style.setProperty('--reader-y', `${toY(0.8)}px`); r.style.setProperty('--reader-w', `${toW(0.306)}px`); r.style.setProperty('--reader-h', `${toY(0.8 + 0.083) - toY(0.8 - 0.083)}px`);
+}
+async function showLobby(journey) {
+  scene.state.drop = -0.075;
+  await scene.show({ img: 'gate', dep: 'gate.depth', c: [0.5, 0.5], draw: drawStationSign });
+  $('trip-start').textContent = journey.start;
+  renderTicket(journey);
+  $('lobby').hidden = false; delete $('lobby').dataset.out; $('board').hidden = true; delete $('reader').dataset.on;
+  lobbyLayout();
+  document.documentElement.dataset.ready = '1';
+  // 천천히 다가감(빛 · 사람이 조금 움직여 살아 있게)
+  breathing = !reduced(); (async () => { while (breathing) { await tween(9, (k) => { if (breathing) scene.state.push = 0.018 + 0.024 * k; }, ease.inOut); await tween(9, (k) => { if (breathing) scene.state.push = 0.042 - 0.024 * k; }, ease.inOut); } })();
+  await new Promise((res) => {
+    const go = async () => { $('reader').removeEventListener('click', go); $('notice').hidden = true; pendingLevel = null; await sound.resume(); sound.sfx.gate(); $('reader').dataset.on = ''; res(); };
+    $('reader').addEventListener('click', go);
+    if (AUTO) wait(3.2).then(() => $('reader').click());
+  });
+  breathing = false;
+}
+let breathing = false;
+/** 승차권: 오늘의 여정 · 노선 고르기 · 내 노선도. 어려운 노선은 막지 않고 한 번 묻는다. */
+function renderTicket(journey) {
+  const album = readAlbum(), level = journey.level;
+  $('level-basic').setAttribute('aria-pressed', String(level === 'basic'));
+  $('level-busy').setAttribute('aria-pressed', String(level === 'busy'));
+  // 첫 등굣길을 넉넉히 도착하면 바쁜 아침을 권한다(막지는 않는다, 설계 3절)
+  $('level-busy').querySelector('small').textContent = level === 'basic' && album.plays >= 2 && album.best && album.best <= 8 * 60 + 55 ? '해 볼 만해요' : '3~4급';
+  $('ticket-today').textContent = level === 'busy' ? '오늘 들을 말: 운행합니다 · 서지 않습니다 · 이용하실 수 없습니다' : '오늘 들을 말: 내리실 문 · 갈아타실 분';
+  const stations = (album.stations || []).length, people = Object.keys(album.met || {}).length;
+  const chip = $('ticket-album'); chip.hidden = !(stations || people);
+  chip.textContent = `내 노선도 ${stations}역 · 만난 사람 ${people}명${album.best ? ` · 최고 ${clockText(album.best)}` : ''}`;
+}
+$('ticket-album').addEventListener('click', () => {
+  const album = readAlbum(), stamps = $('album-stamps'), people = $('album-people');
+  stamps.innerHTML = ''; people.innerHTML = '';
+  $('album-score').textContent = `지나간 역 ${(album.stations || []).length}곳${album.best ? ` · 최고 도착 ${clockText(album.best)}` : ''}`;
+  (album.stations || []).forEach((st, i) => { const c = drawStamp(st, i * 91 + 7); c.setAttribute('role', 'img'); c.setAttribute('aria-label', st); stamps.append(c); });
+  Object.keys(PEOPLE).forEach((id, i) => {
+    if (!has(PEOPLE[id].photo)) return;
+    const p = PEOPLE[id], n = album.met?.[id] || 0, card = document.createElement('figure'); card.className = `met-card${n ? '' : ' locked'}`; card.style.setProperty('--r', `${i % 2 ? 1 : -1}deg`); card.style.margin = '0';
+    card.innerHTML = `<img src="${WORLD_BASE}${n && has(p.react) ? p.react : p.photo}.webp" alt=""><b>${n ? p.name : '아직 못 만났어요'}</b><small>${n ? `${n}번 만났어요` : ''}</small>`;
+    people.append(card);
+  });
+  $('album').hidden = false; sound.sfx.tap?.();
+});
+$('album-close').addEventListener('click', () => { $('album').hidden = true; });
+for (const [id, level] of [['level-basic', 'basic'], ['level-busy', 'busy']]) $(id).addEventListener('click', () => {
+  if (chosenLevel() === level) return;
+  if (level === 'busy') { const n = showNotice({ head: '바쁜 아침', body: '조금 어려운 안내가 나와요(3~4급). 해 볼래요?' }); n.dataset.ask = '1'; $('notice-replay').hidden = false; $('notice-replay').textContent = '해 볼래요'; pendingLevel = level; return; }
+  setLevel(level); location.reload();
+});
+let pendingLevel = null;
+$('notice-replay').addEventListener('click', (e) => { e.stopPropagation(); if (pendingLevel) { setLevel(pendingLevel); location.reload(); } });
+window.addEventListener('resize', () => { if (!$('lobby').hidden) lobbyLayout(); });
+
+// ── 판 ──
+let activeRun = null;
+function voicesOf(journey, plan) {
+  const names = new Set([journey.opening.voice]);
+  for (const d of journey.decisions) { names.add(d.line_.voice); if (d.lead) names.add(d.lead.voice); if (d.after) names.add(d.after.voice); }
+  for (const m of plan.meetings) { const s = m.scene; if (s.lead) names.add(s.lead.voice); names.add(s.ask.voice); for (const r of s.replies) names.add(r.reaction.voice); }
+  return [...names];
+}
+const carScene = (id) => ({ img: CARS[id].closed, dep: `${CARS[id].closed}.depth`, c: [0.5, 0.42], streak: 1 });
+const DOOR = { right: { rect: [0.926, 0.54, 0.085, 0.3], lamp: [0.925, 0.27], target: [0.93, 0.55], pan: 0.13 }, left: { rect: [0.074, 0.54, 0.085, 0.3], lamp: [0.075, 0.27], target: [0.07, 0.55], pan: -0.13 } };
+const FORK_PANELS = [[0.0244, 0.3665, 0.3066, 0.415], [0.3695, 0.3665, 0.634, 0.415], [0.704, 0.3665, 0.9825, 0.415]];
+const WAYS = [[0.165, 0.5], [0.5, 0.515], [0.86, 0.62]];
+
+/** 문 · 통로를 지나가는 움직임. 움직임 줄이기면 다가가는 대신 가림막으로 장면만 바꾼다. */
+async function pass(target, opts) {
+  if (!reduced()) return scene.goThrough(target, opts);
+  await curtain(true);
+  scene.state.mix = scene.state.nextImg ? 1 : 0;
+  await curtain(false);
+}
+async function doorOpen(carId, side) {
+  const open = CARS[carId][side];
+  sound.sfx.doorOpen();
+  if (has(open)) await scene.openDoor(open, DOOR[side].rect, DOOR[side].lamp); else { scene.state.lamp = DOOR[side].lamp; scene.state.lampOn = 1; await wait(0.6); }
+}
+async function doorClose() {
+  sound.sfx.doorClose(); scene.state.lampOn = 0; scene.hideDecals();
+  if (scene.state.hasOpen) await tween(0.6, (k) => { scene.state.doorOpen = 1 - k; }, ease.inOut);
+  scene.state.hasOpen = 0;
+}
+/** 틀렸을 때: 묻는 두 음 → 안내문 → 우회 컷(시계 +3분) → 맞는 길로. */
+async function afterWrong(run, d, result) {
+  sound.sfx.ask();
+  showNotice({ head: '이렇게 안내했어요', body: `${mark(d.line_.text, highlightFor(d, result.cause))}<span class="why">${escapeHtml(explainDecision(d, run.journey))}</span>` });
+  await noticeFor(AUTO ? 2.8 : 4.2);
+  await curtain(true);
+  scene.state.fade = 0; scene.hideDecals();
+  if (has('detour')) await scene.show({ img: 'detour', dep: 'detour.depth', c: [0.5, 0.42] });
+  stepping = 3; stepTimer = 0; led.flash('돌아가는 길', 2.0, 'red'); setClock(run);
+  await curtain(false);
+  sound.sfx.tick();
+  await tween(2.0, (k) => { if (!reduced()) scene.state.push = 0.5 * k; }, ease.linear);
+  stepping = 0;
+}
+function streakFlash(result) { if (result.streakHit) { sound.sfx.streak(); led.flash(`빠른 환승! -1분`, 2.2, 'green'); } }
+
+async function playStop(run, d, index, carId, plan) {
+  // 달리다 안내 → 서서히 섬 → 문 열림
+  setKeys(false);
+  const ex = createExchange(coach, decisionMeta(d)); currentExchange = ex;
+  scene.trainSpeed(1); sound.railStart(); sound.railSpeed(1);
+  await wait(1.1);
+  setStatus('announcer'); sound.chime(); await wait(1.2);
+  const seconds = sound_seconds(d.line_.voice);
+  const brake = tween(Math.max(2, seconds - 0.2), (k) => { sound.railSpeed(1 - k); scene.trainSpeed(1 - k); }, ease.linear);
+  setKeys(false);
+  const heard = await say(d.line_);
+  await brake;
+  sound.railStop(); ex.heard(heard); run.hearingDone(heard);
+  sound.hallStart();
+  await doorOpen(carId, d.side);
+  setKeys(true);
+  const i = await choose(d.options, AUTO ? autoAnswer(d) : null);
+  setKeys(false); $('notice').hidden = true;
+  const chosen = d.options[i].id, result = run.choose(chosen);
+  ex.answer(answerPayload({ correct: result.correct, assessable: d.assessable, selectedId: `subway.${chosen}`, correctId: `subway.${d.answer}`, reason: d.assessable ? null : 'guessable' }));
+  noteMissed(result, d);
+  return { result, chosen };
+}
+function sound_seconds(voice) { return manifest[voice]?.seconds || 6; }
+const autoScript = query.get('wrong') ? new Set(query.get('wrong').split(',').map(Number)) : new Set();
+let autoCount = 0;
+function autoAnswer(d) { const n = autoCount++; if (autoScript.has(n)) return d.options.find((o) => o.id !== d.answer).id; return d.answer; }
+const missed = [];
+function noteMissed(result, d) { if (!result.correct) missed.push({ text: d.line_.text, voice: d.line_.voice }); }
+
+async function meeting(m, afterCarId) {
+  const p = PEOPLE[m.person], s = m.scene;
+  setKeys(false); $('zones').hidden = true; scene.hideDecals();
+  sound.railSpeed(0.35);
+  if (s.lead) { await wait(0.4); setStatus('announcer'); sound.chime(); await wait(1.1); await say(s.lead); }
+  // 그 사람 쪽으로 시점이 돌아간다
+  await scene.prepareNext({ img: p.photo, dep: `${p.photo}.depth`, c: [0.5, 0.4] });
+  await tween(0.55, (k) => { scene.state.mix = k; scene.state.pan = [0.03 * k, 0]; }, ease.inOut);
+  scene.settleNext(); scene.state.streak = 0;
+  // 말하는 동안 아주 조금 다가감(한 번 — 늘 도는 흔들림 아님)
+  tween(3.2, (k) => { scene.state.push = 0.03 * k; }, ease.out);
+  led.setStatus('');
+  const ex = s.item ? createExchange(coach, meetingMeta(s.item)) : null; currentExchange = ex;
+  setKeys(false);
+  const heard = await say(s.ask, { status: false });
+  ex?.heard(heard); setKeys(true);
+  const reply = await chooseReply(s);
+  setKeys(false); $('notice').hidden = true;
+  if (ex) ex.answer(answerPayload({ correct: reply.id === s.answer, assessable: true, selectedId: `subway.${reply.id}`, correctId: `subway.${s.answer}` }));
+  // 내 말에 따라 반응이 달라진다(벌 없음). 표정 판은 그대로 겹친다.
+  const happy = s.answer ? reply.id === s.answer : !!reply.gift;
+  if (has(p.react) && (happy || !s.answer)) { await scene.prepareNext({ img: p.react, dep: `${p.photo}.depth`, c: [0.5, 0.4] }); await tween(0.2, (k) => { scene.state.mix = k; }, ease.linear); scene.settleNext(); }
+  const line = $('their-line'); line.textContent = reply.reaction.text; line.hidden = false;
+  await say(reply.reaction, { status: false });
+  if (reply.gift && p.gift) { sound.sfx.gift(); led.flash(p.gift, 1.8, 'green'); met.push({ id: m.person, gift: p.gift }); } else met.push({ id: m.person, gift: null });
+  await wait(AUTO ? 0.9 : 1.2);
+  line.hidden = true;
+  if (afterCarId) { await curtain(true); await scene.show(carScene(afterCarId)); scene.state.streak = 0.35; led.setStatus(''); await curtain(false); }
+}
+function chooseReply(s) {
+  const box = $('replies'); box.innerHTML = ''; box.hidden = false;
+  return new Promise((resolve) => {
+    s.replies.forEach((r) => {
+      const b = document.createElement('button'); b.textContent = r.text;
+      b.addEventListener('click', () => { [...box.children].forEach((c) => { if (c === b) c.dataset.press = ''; else c.dataset.dim = ''; }); sound.sfx.tap(); setTimeout(() => { box.hidden = true; }, 200); resolve(r); }, { once: true });
+      box.append(b);
+    });
+    if (AUTO) wait(1.2).then(() => { const want = s.answer ? s.replies.find((r) => r.id === s.answer) : s.replies.find((r) => r.gift) || s.replies[0]; box.children[s.replies.indexOf(want)].click(); });
+  });
+}
+let met = [], manifest = {}, curtained = false;
+
+async function playSignDecision(run, d, { img, dep, panels, keyLine, auto }) {
+  // 달려서 갈림 입구까지 → 멈춤 → 세 칸. 안내가 끝나기 전에는 고를 수 없다.
+  const ex = createExchange(coach, decisionMeta(d)); currentExchange = ex;
+  const signs = d.options.map((o) => o.exit != null ? { exit: o.exit } : o.line ? { line: o.line, color: lineColor(o.line), text: o.text } : { text: o.text });
+  await scene.show({ img, dep, c: [0.5, 0.515], panels, signs });
+  if (curtained) { curtained = false; await curtain(false); }
+  drawHang(d.options); setHang(0); $('hang').hidden = false;
+  sound.hallStart(); stepping = 2.7; stepTimer = 0; setKeys(false);
+  const reach = 0.62;
+  const running = tween(6.2, (k) => { if (!reduced()) scene.runTo(k, reach); setHang(k); }, ease.run);
+  await wait(0.9);
+  if (d.lead) { await say(d.lead); await wait(0.5); setStatus('announcer'); sound.chime(); await wait(1.1); }
+  const heard = await say(keyLine);
+  ex.heard(heard); run.hearingDone(heard);
+  await running;
+  stepping = 0; setHang(1); setKeys(true);
+  const i = await choose(d.options, auto ? autoAnswer(d) : null);
+  setKeys(false); $('notice').hidden = true;
+  const chosen = d.options[i].id, result = run.choose(chosen);
+  ex.answer(answerPayload({ correct: result.correct, assessable: d.assessable, selectedId: `subway.${chosen}`, correctId: `subway.${d.answer}` }));
+  noteMissed(result, d);
+  drawHang(d.options, i);
+  const way = d.options.findIndex((o) => o.id === d.answer);
+  if (result.correct) { sound.sfx.pass(); streakFlash(result); setClock(run); }
+  else { sound.sfx.ask(); await scene.peek(i - 1); $('hang').hidden = true; await afterWrong(run, d, result); await scene.show({ img, dep, c: [0.5, 0.515], panels, signs, push: reach }); drawHang(d.options, way); $('hang').hidden = false; setHang(1); await wait(0.25); }
+  return { way, result };
+}
+async function dashThrough(way, next) {
+  stepping = 3.6; stepTimer = 0; scene.hideDecals();
+  sound.sfx.whoosh();
+  tween(0.55, (k) => { const h = $('hang'); h.style.setProperty('--hang-y', `${-k * 220}px`); h.style.setProperty('--hang-s', (1 + k * 0.5).toFixed(3)); h.style.opacity = String(1 - k); }, ease.inOut).then(() => { $('hang').hidden = true; });
+  if (next) await scene.prepareNext(next);
+  await pass(WAYS[way], { push: 1.5, seconds: 1.3, blur: 0.17 });
+  if (next) scene.settleNext();
+  stepping = 0; sound.hallStop();
+}
+
+async function playJourney(journey, plan) {
+  const run = new SubwayRun(journey); activeRun = run; missed.length = 0; met = []; autoCount = 0;
+  // 개찰구 → 승강장: 길 안내
+  $('lobby').dataset.out = '';
+  $('board').hidden = false; led.invalidate(); setClock(run); led.setStatus(''); setKeys(false); scene.state.drop = 0.03;
+  await curtain(true);
+  sound.hallStart();
+  await scene.show({ img: 'platform', dep: 'platform.depth', c: [0.2, 0.6] });
+  $('lobby').hidden = true;
+  await curtain(false);
+  tween(5.2, (k) => { scene.state.push = 0.12 * k; }, ease.out);
+  currentLine = journey.opening; await wait(0.5);
+  await say(journey.opening);
+  setKeys(false);
+  await wait(0.5);
+  // 열차로
+  stepping = 2.4; stepTimer = 0; sound.sfx.whoosh();
+  await scene.prepareNext(carScene(plan.cars[0]));
+  await pass([0.22, 0.6], { push: 0.9, seconds: 1.0, blur: 0.08 });
+  scene.settleNext(); stepping = 0; sound.hallStop();
+  scene.state.streak = 1; sound.railStart(); sound.railSpeed(1); led.setStatus('');
+  await wait(0.5);
+
+  const meetingAfter = (i) => plan.meetings.find((m) => m.after === i) || null;
+  for (let i = 0; i < journey.decisions.length; i++) {
+    const d = journey.decisions[i], m = meetingAfter(i);
+    if (d.kind === 'stop') {
+      const carId = plan.cars[d.leg];
+      const { result } = await playStop(run, d, i, carId, plan);
+      const next = journey.decisions[i + 1];
+      if (result.correct && !d.target) {
+        // 그대로: 문이 닫히고 다시 달린다
+        sound.sfx.pass(); streakFlash(result); await doorClose(); sound.hallStop(); setClock(run); sound.railStart(); tween(1.4, (k) => { sound.railSpeed(k); scene.trainSpeed(k); }, ease.inOut);
+        if (m) await meeting(m, carId);
+      } else if (result.correct) {
+        sound.sfx.pass(); streakFlash(result); setClock(run);
+        if (m) await meeting(m, null);
+        stepping = 2.6; stepTimer = 0;
+        if (next.kind === 'fork') await goOutOfTrain(d, { img: 'fork', dep: 'fork.depth', c: [0.5, 0.515] });
+        else if (next.kind === 'board') await goOutOfTrain(d, { img: platformFor(next), dep: `${platformFor(next)}.depth`, c: [0.5, 0.5] });
+        else if (next.kind === 'exit') await goOutOfTrain(d, { img: has('exit-fork') ? 'exit-fork' : 'fork', dep: has('exit-fork') ? 'exit-fork.depth' : 'fork.depth', c: [0.5, 0.515] });
+        stepping = 0;
+      } else {
+        await afterWrong(run, d, result);
+        if (d.target) {
+          // 맞는 길로 잇는다: 돌아가는 길에서 가림막 뒤로 다음 장면을 세운다
+          await curtain(true); sound.railStop(); sound.hallStart(); music.play('run');
+          if (next.kind === 'board') { await scene.show({ img: platformFor(next), dep: `${platformFor(next)}.depth`, c: [0.5, 0.5] }); await curtain(false); }
+          else curtained = true;   // 표지가 든 판을 세운 뒤 걷는다(playSignDecision)
+        } else { await curtain(true); await scene.show(carScene(carId)); scene.state.streak = 0; await curtain(false); sound.hallStop(); sound.railStart(); tween(1.4, (k) => { sound.railSpeed(k); scene.trainSpeed(k); }, ease.inOut); if (m) await meeting(m, carId); }
+      }
+    } else if (d.kind === 'fork') {
+      banner('교수님 아직 안 오셨어요! 어디쯤이에요?', 2);
+      const { way } = await playSignDecision(run, d, { img: 'fork', dep: 'fork.depth', panels: FORK_PANELS, keyLine: d.line_, auto: AUTO });
+      if (d.after) await say(d.after);
+      const nextD = journey.decisions[i + 1];
+      if (nextD.kind === 'board') { await dashThrough(way, { img: platformFor(nextD), dep: `${platformFor(nextD)}.depth`, c: [0.5, 0.5] }); }
+      else { await dashThrough(way, carScene(plan.cars[1])); music.stop(); scene.state.streak = 1; sound.railStart(); sound.railSpeed(1); await wait(0.4); }
+    } else if (d.kind === 'board') {
+      await playBoard(run, d, plan);
+    } else if (d.kind === 'exit') {
+      const panels = has('exit-fork') ? EXIT_PANELS : FORK_PANELS, img = has('exit-fork') ? 'exit-fork' : 'fork';
+      const { way } = await playSignDecision(run, d, { img, dep: `${img}.depth`, panels, keyLine: d.line_, auto: AUTO });
+      if (m) { $('hang').hidden = true; await meeting(m, null); }
+      await dashThrough(way, null);
+    }
+  }
+  $('zones').hidden = true; setKeys(false); setClock(run);
+  // 개찰구 「삑」 → 계단 위 아침 빛
+  await curtain(true);
+  sound.railStop();
+  if (has('gate-out')) { await scene.show({ img: 'gate-out', dep: 'gate-out.depth', c: [0.5, 0.42] }); await curtain(false); await wait(0.5); sound.sfx.gate(); led.flash('삑', 0.8, 'green'); await tween(1.0, (k) => { scene.state.push = 0.5 * k; }, ease.inOut); await curtain(true); }
+  if (has('stairs-sun')) { await scene.show({ img: 'stairs-sun', dep: 'stairs-sun.depth', c: [0.5, 0.25] }); await curtain(false); stepping = 2.8; stepTimer = 0; await tween(1.8, (k) => { scene.state.push = 0.9 * k; scene.state.fadeTo = 1; scene.state.fade = Math.max(0, (k - 0.55) / 0.45); }, ease.inOut); stepping = 0; }
+  return run;
+}
+const platformFor = () => (has('platform-1') ? 'platform-1' : 'platform');
+/** 승강장 결정(3~4급 급행): 들어오는 열차 앞에서 안내를 듣고 세 칸. */
+async function playBoard(run, d, plan) {
+  const ex = createExchange(coach, decisionMeta(d)); currentExchange = ex;
+  sound.hallStart(); setKeys(false);
+  setStatus('announcer'); sound.chime(); await wait(1.2);
+  const heard = await say(d.line_);
+  ex.heard(heard); run.hearingDone(heard); setKeys(true);
+  const i = await choose(d.options, AUTO ? autoAnswer(d) : null);
+  setKeys(false); $('notice').hidden = true;
+  const chosen = d.options[i].id, result = run.choose(chosen);
+  ex.answer(answerPayload({ correct: result.correct, assessable: d.assessable, selectedId: `subway.${chosen}`, correctId: `subway.${d.answer}` }));
+  noteMissed(result, d); scene.hideDecals();
+  if (result.correct) { sound.sfx.pass(); streakFlash(result); setClock(run); if (d.answer === 'wait') { led.flash('다음 열차를 기다려요', 2.2, 'green'); await wait(2.2); } }
+  else await afterWrong(run, d, result);
+  stepping = 2.4; stepTimer = 0; sound.sfx.whoosh();
+  await scene.prepareNext(carScene(plan.cars[1]));
+  await pass([0.3, 0.55], { push: 0.9, seconds: 1.0, blur: 0.08 });
+  scene.settleNext(); stepping = 0; sound.hallStop(); music.stop();
+  scene.state.streak = 1; sound.railStart(); sound.railSpeed(1); led.setStatus(''); await wait(0.4);
+}
+const EXIT_PANELS = [[0.0449, 0.3724, 0.2959, 0.4062], [0.3643, 0.3717, 0.6406, 0.4049], [0.7109, 0.3711, 0.96, 0.4043]];   // 출구 갈림 사진의 빈 표지 자리(실측)
+async function goOutOfTrain(d, next) {
+  scene.hideDecals(); sound.hallStart(); music.play('run');
+  await scene.prepareNext(next);
+  await pass(DOOR[d.side].target, { pan: DOOR[d.side].pan, push: 1.25, seconds: 1.25, blur: 0.13 });
+  scene.settleNext();
+}
+
+// ── 결과 ──
+function drawStamp(station, seed) {
+  const c = document.createElement('canvas'); c.width = c.height = 222; const x = c.getContext('2d'), m = 111;
+  x.strokeStyle = x.fillStyle = '#c2241d'; x.lineWidth = 7; x.beginPath(); x.arc(m, m, 98, 0, Math.PI * 2); x.stroke();
+  x.lineWidth = 2.5; x.beginPath(); x.arc(m, m, 86, 0, Math.PI * 2); x.stroke();
+  x.textAlign = 'center'; x.textBaseline = 'middle';
+  let size = 44; x.font = `800 ${size}px SubwaySign`; while (x.measureText(station).width > 148 && size > 18) { size -= 2; x.font = `800 ${size}px SubwaySign`; }
+  x.fillText(station, m, m - 2);
+  x.font = '600 19px SubwaySign'; x.fillText('환승 러시', m, m + 44);
+  // 잉크 결: 군데군데 빠진 자리
+  x.globalCompositeOperation = 'destination-out';
+  let s = seed + 1; const rand = () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; };
+  for (let i = 0; i < 700; i++) { x.globalAlpha = rand() * 0.75; const r = rand() * 2.8; x.beginPath(); x.arc(rand() * 222, rand() * 222, r, 0, Math.PI * 2); x.fill(); }
+  x.globalAlpha = 1; x.globalCompositeOperation = 'source-over';
+  c.style.setProperty('--r', `${(rand() * 14 - 7).toFixed(1)}deg`);
+  return c;
+}
+async function showResult(run, plan) {
+  const s = run.summary(), album = readAlbum();
+  sound.stopVoice(); sound.railStop(); sound.hallStop(); music.play('arrive');
+  $('board').hidden = true; $('hang').hidden = true; $('zones').hidden = true;
+  $('result-photo').style.backgroundImage = `url('${WORLD_BASE}${has('bus-stop') ? 'bus-stop' : 'platform'}.webp')`;
+  const rled = createLed($('result-led'), { rows: 24 });
+  $('result').hidden = false; $('result').scrollTop = 0;
+  rled.setClock(s.arriveText); rled.setStatus('도착', s.onTime ? 'green' : 'amber'); rled.render(0.016);
+  const best = album.best; const newBest = best == null || s.arrive < best;
+  if (newBest) album.best = s.arrive;
+  $('result-line').textContent = s.onTime ? (s.wrongs.length ? `${s.arriveText} 도착 — 셔틀 탔어요!` : `${s.arriveText} 도착 — 여유 있게!`) : `${s.arriveText} 도착 — 조금 늦었지만 첫날이니까요`;
+  $('result-score').textContent = `맞힌 안내 ${s.right} / ${s.total}${newBest && best != null ? ' · 내 최고 기록!' : best != null ? ` · 내 최고 ${clockText(best)}` : ''}`;
+  // 도장: 하나씩 찍힌다. 탭하면 모두 바로
+  const stamps = $('stamps'); stamps.innerHTML = '';
+  let skip = false; $('result').addEventListener('pointerdown', () => { skip = true; }, { once: true });
+  const seenStations = new Set(album.stations || []);
+  for (const [i, st] of s.stations.entries()) {
+    const c = drawStamp(st, i * 91 + run.journey.seed); c.setAttribute('role', 'img'); c.setAttribute('aria-label', st);
+    if (!skip) { await wait(0.08 + (i ? 0.16 : 0.5)); sound.sfx.stamp(); c.dataset.hit = ''; }
+    stamps.append(c); seenStations.add(st);
+  }
+  album.stations = [...seenStations];
+  // 오늘 만난 사람
+  const metRow = $('met-row'); metRow.innerHTML = ''; album.met = album.met || {};
+  $('met').hidden = !met.length;
+  for (const [i, m] of met.entries()) {
+    const p = PEOPLE[m.id], card = document.createElement('figure'); card.className = 'met-card'; card.style.setProperty('--r', `${i % 2 ? 1.2 : -1.4}deg`); card.style.margin = '0';
+    const isNew = !album.met[m.id];
+    card.innerHTML = `<img src="${WORLD_BASE}${has(p.react) ? p.react : p.photo}.webp" alt=""><b>${isNew ? '<span class="new">새 얼굴 </span>' : ''}${p.name}</b><small>${m.gift ? `${m.gift}을 받았어요` : p.memo}</small>`;
+    metRow.append(card); album.met[m.id] = (album.met[m.id] || 0) + 1;
+  }
+  album.plays = (album.plays || 0) + 1;
+  writeAlbum(album);
+  // 다시 들을 것
+  const list = $('again-list'); list.innerHTML = ''; $('again').hidden = !missed.length;
+  for (const a of missed) {
+    const li = document.createElement('li'), b = document.createElement('button'); b.textContent = '듣기'; b.addEventListener('click', () => sound.speak(a.voice));
+    const t = document.createElement('span'); t.textContent = a.text; li.append(b, t); list.append(li);
+  }
+  // 공통 코인(다른 게임과 같은 규칙)
+  const coin = globalThis.SynkPlayCollection;
+  const round = coin?.roundId?.(GAME_ID), row = $('coin-row');
+  if (round && s.total) { coin.award({ game: GAME_ID, total: s.total, correct: s.right, completed: true, automatic: false, roundId: round }).then((r) => { row.textContent = coin.rewardText(r); row.hidden = false; }).catch(() => {}); }
+  document.documentElement.dataset.done = '1';
+}
+function backToRoom() {
+  sound.stopVoice(); sound.railStop(); sound.hallStop(); music.stop(0.3);
+  try { const town = window.parent?.__synkHome?.goTown; if (town) { town(); return; } const close = window.parent?.document?.getElementById('panel-close'); if (close) { close.click(); return; } } catch { /* 다른 출처 */ }
+  start();
+}
+$('btn-home').addEventListener('click', backToRoom);
+$('btn-again').addEventListener('click', () => { $('result').hidden = true; music.stop(0.3); start(); });
+
+// ── 멈춤 ──
+function togglePause(force) {
+  const on = force ?? !paused; if (on === paused) return; paused = on; last = performance.now();
+  const dlg = $('pause-dialog');
+  if (on) { sound.suspend(); if (!dlg.open) dlg.showModal(); } else { dlg.close(); sound.resume(); }
+}
+$('key-pause').addEventListener('click', () => togglePause(true));
+$('btn-resume').addEventListener('click', () => togglePause(false));
+$('btn-quit').addEventListener('click', () => { togglePause(false); location.reload(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden && !$('board').hidden && !AUTO) togglePause(true); });
+
+// ── 시작 ──
+function chosenLevel() { if (query.get('level') === 'busy') return 'busy'; try { return localStorage.getItem('synk.subway.level') === 'busy' ? 'busy' : 'basic'; } catch { return 'basic'; } }
+function setLevel(level) { try { localStorage.setItem('synk.subway.level', level); } catch { /* 이번 판만 */ } }
+async function prepare(journey, plan) {
+  manifest = await fetch(`${VOICE_BASE}manifest.json`).then((r) => r.json());
+  await Promise.all(voicesOf(journey, plan).map((n) => sound.load(n, `${VOICE_BASE}${n}.mp3`)));
+  music.preload();
+}
+async function start() {
+  const seed = Number(query.get('seed')) || (Date.now() % 2147483647);
+  const level = chosenLevel();
+  // 씨앗을 정해 주면(시험 · 다시 보기) 그 판 그대로, 아니면 후보 몇 판 중 놓친 안내가 든 판을 앞세운다
+  const journey = query.get('seed') ? buildJourney({ seed, level }) : preferJourney(coach, Array.from({ length: 12 }, (_, i) => buildJourney({ seed: seed + i * 7919, level })));
+  const album = readAlbum();
+  const plan = planDay(journey, { available: { cars: availableCars(), people: availablePeople() }, seen: Object.keys(album.met || {}) });
+  try { await prepare(journey, plan); } catch (error) {
+    console.error(error); const dlg = $('voice-dialog'); dlg.showModal();
+    await new Promise((res) => $('btn-retry').addEventListener('click', res, { once: true })); dlg.close(); return start();
+  }
+  await showLobby(journey);
+  const run = await playJourney(journey, plan);
+  await showResult(run, plan);
+}
+if (query.has('qa')) window.__subway = { scene, led, sound, music, assets, tween };
+start().catch((e) => { console.error(e); document.body.dataset.error = String(e); });
+export { loadImage };

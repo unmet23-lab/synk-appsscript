@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>환승 러시</title>
+<meta name="description" content="서울 지하철 안내방송을 듣고 문 · 통로 · 출구를 고르는 한국어 듣기 게임.">
+<script src="world-host.js"></script>
+<link rel="preload" href="assets/fonts/sign.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+<script src="./atlas-learning.js"></script>
+<script src="./collection.js"></script>
+</head>
+<body>
+<main class="stage" id="stage">
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div class="floor-shade" aria-hidden="true"></div>
+
+  <!-- 입구: 개찰구 앞. 역명판은 사진에 구워지고, 단말기를 누르면 출발한다 -->
+  <section class="lobby" id="lobby">
+    <button class="reader" id="reader" aria-label="교통카드를 대고 출발">
+      <span class="reader-ring" aria-hidden="true"></span>
+      <span class="reader-card" aria-hidden="true"></span>
+      <span class="reader-text">카드를 대 주세요</span>
+    </button>
+    <div class="ticket" id="ticket">
+      <div class="ticket-route">
+        <span class="dot" style="--c:#00A84D" aria-hidden="true"></span><b id="trip-start">이대</b>
+        <span class="ticket-line" aria-hidden="true"></span><span class="ticket-q" aria-hidden="true">?</span><span class="ticket-line" aria-hidden="true"></span>
+        <b>학교 셔틀</b><em>8:41</em>
+      </div>
+      <div class="ticket-levels" role="group" aria-label="노선 고르기"><button id="level-basic" aria-pressed="true">첫 등굣길</button><button id="level-busy" aria-pressed="false">바쁜 아침 <small>3~4급</small></button></div>
+      <p class="ticket-note"><b id="ticket-today">오늘 들을 말: 내리실 문 · 갈아타실 분</b><span>문 쪽 · 출구는 게임 속 이야기예요</span></p>
+      <button class="ticket-album" id="ticket-album" hidden></button>
+    </div>
+  </section>
+
+  <!-- LED 전광판 -->
+  <header class="board" id="board" hidden>
+    <span class="board-rod" aria-hidden="true"></span><span class="board-rod" aria-hidden="true"></span>
+    <canvas id="led" aria-label="지금 시각과 안내 상태"></canvas>
+    <div class="board-keys">
+      <button class="key" id="key-pause" aria-label="멈춤"><i class="ico-pause" aria-hidden="true"></i></button>
+      <button class="key" id="key-replay"><i class="ico-replay" aria-hidden="true"></i>다시 듣기</button>
+      <button class="key" id="key-text"><i class="ico-text" aria-hidden="true"></i>글로 보기</button>
+    </div>
+  </header>
+
+  <!-- 걸이 표지: 세 칸이 아래 누름 칸과 나란하다 -->
+  <div class="hang" id="hang" hidden aria-hidden="true"><canvas id="hang-canvas"></canvas></div>
+
+  <!-- 누르는 칸: 화면 아래 28%, 폭 ⅓씩 -->
+  <div class="zones" id="zones" hidden>
+    <button data-i="0"></button><button data-i="1"></button><button data-i="2"></button>
+  </div>
+
+  <!-- 만남: 내 대답 -->
+  <div class="replies" id="replies" hidden></div>
+  <p class="their-line" id="their-line" hidden></p>
+
+  <!-- 안내문: 틀렸을 때 · 글로 보기 -->
+  <aside class="notice" id="notice" hidden role="status"><span class="tape" aria-hidden="true"></span><small id="notice-head"></small><p id="notice-body"></p><button id="notice-replay" hidden>다시 듣기</button></aside>
+
+  <!-- 휴대폰 알림 -->
+  <div class="phone-banner" id="banner" hidden><span class="banner-icon" aria-hidden="true"></span><span class="banner-text"><b>학과 단톡방</b><span id="banner-text"></span></span><time>지금</time></div>
+
+  <div class="curtain" id="curtain" aria-hidden="true"></div>
+
+  <!-- 결과 -->
+  <section class="result" id="result" hidden>
+    <div class="result-photo" id="result-photo"></div>
+    <div class="result-board"><canvas id="result-led" aria-hidden="true"></canvas></div>
+    <div class="stamp-card" id="stamp-card">
+      <p class="stamp-title" id="result-line"></p>
+      <p class="stamp-score" id="result-score"></p>
+      <div class="stamps" id="stamps" aria-label="오늘 지나간 역"></div>
+      <div class="met" id="met" hidden><h2>오늘 만난 사람</h2><div class="met-row" id="met-row"></div></div>
+      <div class="again-list" id="again" hidden><h2>이번 여정의 안내방송</h2><ol id="again-list"></ol></div>
+      <div class="coin-row" id="coin-row" hidden></div>
+      <div class="result-actions"><button class="paper-btn primary" id="btn-again">다시 달리기</button><button class="paper-btn" id="btn-home">우리 동네로</button></div>
+    </div>
+  </section>
+
+  <!-- 내 노선도 · 도감 -->
+  <section class="album" id="album" hidden aria-label="내 노선도">
+    <div class="stamp-card album-card">
+      <button class="album-close" id="album-close" aria-label="닫기">닫기</button>
+      <p class="stamp-title">내 노선도</p>
+      <p class="stamp-score" id="album-score"></p>
+      <div class="stamps" id="album-stamps"></div>
+      <h2>오늘까지 만난 사람</h2>
+      <div class="met-row" id="album-people"></div>
+    </div>
+  </section>
+
+  <!-- 처음 두 판의 손짓 안내 -->
+  <p class="gesture-hint" id="gesture-hint" hidden>끝까지 듣고, 아래를 누르거나 밀어요</p>
+
+  <!-- 멈춤 · 목소리 실패 -->
+  <dialog class="pause-dialog" id="pause-dialog"><h2>잠깐 멈췄어요</h2><p>이어 하면 같은 곳부터 다시 들어요.</p><button class="paper-btn primary" id="btn-resume">이어 하기</button><button class="paper-btn" id="btn-quit">처음으로</button></dialog>
+  <dialog class="pause-dialog" id="voice-dialog"><h2>목소리를 준비하지 못했어요</h2><p>인터넷을 확인하고 다시 해 주세요. 이 게임은 소리를 들어야 할 수 있어요.</p><button class="paper-btn primary" id="btn-retry">다시 준비하기</button></dialog>
+</main>
+<script type="module" src="./app.mjs"></script>
+</body>
+</html>

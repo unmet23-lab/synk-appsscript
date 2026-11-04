@@ -1,7 +1,7 @@
 {
   "version": "topik-existing-verdicts-1",
   "rubric": "topik-review-r1",
-  "updatedAt": "2026-11-03T23:55:03.077Z",
+  "updatedAt": "2026-11-04T03:00:00.000Z",
   "note": "기존 게임·진단 문항의 AI 2중 검수 판정(허용 목록). verdict \"pass\"만 연습에 낸다. 첫 판은 비어 있다 — 판정이 나오는 대로 채운다.",
   "items": [
     {
@@ -3474,6 +3474,1681 @@
       "reviewedAt": "2026-11-03T23:39:42.322Z",
       "rubric": "topik-review-r1",
       "packet": "snap-words-20261104d",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.busy.delay.1to2.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko2.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.busy.delay.v1",
+      "officialType": "TII-L-13",
+      "reason": "마지막 안내방송의 변경 정보(1호선 고장 → 2호선 이용)로 정답이 하나로 정해지고, 앞서 들은 안내가 좋은 오답 구실을 한다. 게임 꼴 안에서 기준을 충족해 통과다. | 1호선 고장에 따른 2호선 이용 안내를 파악하는 기존 게임 문항으로 정답 유일성과 난도·유형 적합성이 모두 양호함.",
+      "hash": "53bbf7e7b35b09bb",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.busy.exit.1.2.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko2.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.busy.exit.1.v1",
+      "officialType": "TII-L-13",
+      "reason": "정답 2번 출구가 유일하고, 1번 출구가 좋은 함정이다. 7번 출구는 약한 오답이지만 게임 꼴에서 사소한 문제라 통과로 판정한다. 고친다면 대본에 나오는 다른 숫자(예: 「이호선」에서 나온 「3번 출구」 같은 혼동 숫자)로 바꾸는 것을 고려할 수 있다. | 1번 출구 공사로 2번 출구를 이용하라는 안내를 파악하는 게임 문항으로, 모든 기준을 충족해 통과함.",
+      "hash": "7cfee44085fdf5ec",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.busy.exit.2.1.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko2.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.busy.exit.2.v1",
+      "officialType": "TII-L-13",
+      "reason": "정답 「1번 출구」가 유일하고 앞서 들은 2번을 함정으로 쓴 게임 각색 문항으로, 그대로 써도 됩니다. 「4번 출구」의 매력이 약한 점과 「이 번/이번」 소리 겹침은 사소합니다. | 2번 출구 공사로 1번 출구를 이용하라는 안내를 파악하는 게임 문항으로, 정답 유일성과 표현·해설이 적절하여 통과함.",
+      "hash": "aa74410fddeabb35",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.busy.exit.3.4.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko2.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.busy.exit.3.v1",
+      "officialType": "TII-L-13",
+      "reason": "정답 4번 출구(0번)가 유일하다. 3번 출구가 좋은 함정이고 해설도 정확하다. 5번 보기가 다소 약한 점 말고는 문제없어 통과한다. | 정답 유일성과 오답 구성은 좋으나 어휘·문형·문장 길이가 전형적인 TOPIK I 2급 수준이어서 TOPIK II(3급 이상) 배정에 맞지 않으므로 급수 재분류 또는 대본 상향이 필요함. | I solved the item before looking at the answer key and got choice 0, '4번 출구', which matches the key. The final announcement, 「삼 번 출구는 공사로 이용하실 수 없습니다. 사 번 출구를 이용해 주시기 바랍니다」, clearly gives 4번 as the only answer. 3번 is an attractive trap because it was the earlier goal, and 5번 is weak but acceptable within the game's three-choice format. The Korean explanation gives the correct basis. Because this is an existing gam",
+      "hash": "7ebe85faa7737f54",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.busy.exit.4.3.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko2.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.busy.exit.4.v1",
+      "officialType": "TII-L-13",
+      "reason": "마지막 안내방송에서 출구가 4번에서 3번으로 바뀐 것을 듣는 문항이다. 정답이 하나로 분명하고, 4번이라는 매력적인 오답이 있으며, 대본도 자연스럽다. 게임 꼴 안에서 그대로 쓸 수 있다. | 출구 공사 안내방송을 듣고 대체 출구를 고르는 문항으로 오답 구성과 어휘·표기가 깔끔함(u034와 역·출구 번호 변형 계열).",
+      "hash": "d65d9559839a6d45",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.busy.exit.5.3.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko2.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.busy.exit.5.v1",
+      "officialType": "TII-L-13",
+      "reason": "바뀐 출구 안내를 듣고 3번 출구를 고르는 게임 문항이다. 정답이 분명하고 해설도 맞다. 4번 보기가 약하지만 게임 꼴에서는 문제가 없어 통과로 판정한다. | 출구 공사 안내를 듣고 변경된 출구를 고르는 문항으로 정답 근거가 명확하고 표기가 바름(u031과 역·출구 번호 변형 계열).",
+      "hash": "af9295e90e8337a0",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.busy.exit.6.7.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko2.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.busy.exit.6.v1",
+      "officialType": "TII-L-13",
+      "reason": "6번에서 7번으로 바뀐 출구를 듣는 게임 문항이다. 정답이 유일하고 대본과 해설이 바르다. 오답 「1번 출구」가 약한 점만 사소하다. | 공사로 인한 출구 변경 안내를 듣고 맞는 출구를 고르는 기존 게임 문항으로, 정답이 유일하고 표현·난도·해설 모두 기준에 맞아 통과함.",
+      "hash": "22572834786bc891",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.busy.exit.7.6.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko2.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.busy.exit.7.v1",
+      "officialType": "TII-L-13",
+      "reason": "안내방송의 출구 변경 정보를 듣고 6번 출구를 고르는 문항이다. 정답이 하나뿐이고, 오답 7번은 바뀌기 전 정보로 매력도가 있다. 게임 꼴 안에서 기준을 모두 충족해 통과한다. | 출구 변경 안내를 듣고 6번 출구를 고르는 게임 문항으로, 오답 구성과 한국어 표현·난도·해설이 모두 적절하여 통과함.",
+      "hash": "b35fd55f26167084",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.busy.express.jonggak.jonggak.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko2.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.busy.express.jonggak.v1",
+      "officialType": "TII-L-13",
+      "reason": "무정차 안내를 듣고 다음 열차를 기다리는 것을 고르는 문항이다. 정답이 유일하고, 표현이 자연스럽고, 3급 근처 수준에 맞아 통과한다. | u001·u002와 같은 틀에서 하차역을 무정차역(종각)으로 바꿔 정답이 1번이 되도록 짠 대조 변형(같은 family) 문항이며 문제없이 통과입니다.",
+      "hash": "d7df449b0ed9778c",
+      "reviewedAt": "2026-11-04T00:55:07.519Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.busy.express.jonggak.jongno3.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko2.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.busy.express.jongno3.v1",
+      "officialType": "TII-L-13",
+      "reason": "The announcement says only 종각 is skipped, so going to 종로3가 means taking this train, and the single answer holds. The next-train distractor is appropriately attractive. Optionally add one line to the explanation on why waiting for the next train is unnecessary. | 목표 하차역(종로3가)과 무정차 통과역(종각역)을 대조해 판단하는 깔끔한 TOPIK II 난도 1 듣기 세부 파악 게임 문항입니다.",
+      "hash": "843e7f262a42ecfa",
+      "reviewedAt": "2026-11-04T00:55:07.519Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.busy.express.jonggak.jongno5.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko2.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.busy.express.jongno5.v1",
+      "officialType": "TII-L-13",
+      "reason": "목표역(종로5가)과 무정차역(종각)을 구별하는 세부 듣기 문항으로, 정답이 유일하고 함정 보기도 적절합니다. 해설에 「다음 열차」 오답 설명을 한 줄 더하면 좋겠지만 통과 수준입니다. | u001에서 하차역만 「종로 오가」로 바꾼 같은 계열(family) 변형 문항으로, 개별 문항 완성도에 문제없어 통과입니다.",
+      "hash": "ebdc9ae00d254e8b",
+      "reviewedAt": "2026-11-04T00:55:07.519Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.busy.short.left.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko2.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.busy.short.v1",
+      "officialType": "TII-L-13",
+      "reason": "종착 안내를 듣고 왼쪽 문으로 내리는 게임형 문항이다. 정답이 하나로 분명하고 표현이 자연스러우며 능력·난도 표시도 맞아 통과로 본다. | 당역 종착 및 하차 문 안내방송을 듣고 판단하는 문항으로 표현과 해설이 모두 자연스럽고 정확함.",
+      "hash": "f2f02a2db96679e3",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.busy.short.right.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko2.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.busy.short.v1",
+      "officialType": "TII-L-13",
+      "reason": "종착 안내와 「내리실 문은 오른쪽」으로 정답이 하나로 정해집니다. 게임 꼴 안에서 보기·말·해설에 문제가 없어 통과입니다. | 해설이 「~까지만 운행합니다」의 뜻을 「모두 내리라는 말」로 부정확하게 풀이했고, 대본의 어휘·문장 수준이 TOPIK II(3급 이상)에 못 미쳐 해설 수정 및 급수 재분류(또는 대본 상향)가 필요함. | 직접 풀어 보면 정답은 2(오른쪽 문)입니다. 안내방송의 「모두 내려 주시기 바랍니다」와 「내리실 문은 오른쪽입니다」가 답을 하나로 정해 줍니다. 앞서 들은 「시청역에서 일호선으로 갈아타세요」도 내려야 한다는 쪽을 가리키므로 「그대로」는 분명히 틀리고, 「왼쪽 문」은 「오른쪽」과 어긋납니다. 오답은 대본의 말을 바꾼 꼴이라 그럴듯하고, 세 칸 보기는 게임 꼴이라 문제 삼지 않습니다. 검수자 B의 해설 지적은 받아들이지 않습니다. 「시청역까지만 운행합니다」를 「모두 내리라는 말」로 푼 것은 종착 안내의 실제 뜻과 맞습니다. 대본도 바로 다음에 「모두 내려 주시기 바랍니다」라고 하니 학습자를 잘못 이끌지 않습니다. 기존 게임 문항이라 한국어 해설만 있는 것도 기준에 맞습니다. 급수 지적도 받아들이지 않습니다. 「운행합니다」「-아 주시기",
+      "hash": "4d03364a5bbcfa4f",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.exit.1.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.exit.1.v1",
+      "officialType": "TI-L-26",
+      "reason": "마지막 안내의 「일 번 출구」로 정답이 하나로 정해지는 쉬운 세부 듣기 문항이다. 해설이 짧은 점 말고는 문제가 없어 통과로 판정한다. | 기존 게임(subway-rush) 변형 문항으로 정답 유일성·오답 구성·난도(TOPIK I 난도 1) 모두 적절함.",
+      "hash": "0dcfe0861b3caa7e",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.exit.2.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.exit.2.v1",
+      "officialType": "TI-L-26",
+      "reason": "정답이 유일하고 게임 꼴 안에서 26번형 세부 듣기로 잘 작동한다. 해설이 짧고 「이 번/이번」 소리 겹침이 사소한 메모일 뿐이라 통과한다. | 안내에서 출구 번호(2번)를 듣고 고르는 난도 1 게임 문항으로 모든 검수 항목을 통과함.",
+      "hash": "a912aa5e25f0b325",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.exit.3.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.exit.3.v1",
+      "officialType": "TI-L-26",
+      "reason": "정답 유일, 5번(종로 오가) 함정이 적절하고 1급 수준에 맞는 게임 문항입니다. 해설이 짧지만 학습자에게 해가 없어 통과합니다(선택 사항: 해설에 「종로 오가의 '오'는 역 이름이에요」 한 줄 추가). | 길 안내의 「삼 번 출구」를 듣고 출구를 고르는 난도 1 문항으로 숫자 표기·오답 구성·해설 모두 적합함.",
+      "hash": "084fb102c2095323",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.exit.4.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.exit.4.v1",
+      "officialType": "TI-L-26",
+      "reason": "마지막 안내의 「사 번 출구」로 정답이 하나로 정해지는 쉬운 세부 듣기 문항입니다. 오답 번호가 대본에 없어 매력도는 낮지만, 게임 꼴에서는 문제가 되지 않아 통과입니다. | 길 안내에서 출구 번호(4번 출구)를 찾아 고르는 초급 문항으로 이상 없음.",
+      "hash": "526c81987c8576a3",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.exit.5.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.exit.5.v1",
+      "officialType": "TI-L-26",
+      "reason": "정답(5번 출구)이 마지막 안내로 분명히 유일하고, 난도·능력 표시도 맞다. 오답 숫자가 대본에 없어 매력도가 낮고 해설이 짧지만, 게임 꼴에서는 학습자에게 해가 없어 통과로 판정한다. | 종로5가역 도착 후 5번 출구를 고르는 초급 세부 정보 듣기 문항으로 적합함(u011의 역·출구 번호 변형).",
+      "hash": "2afe821998f8be7b",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.exit.6.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.exit.6.v1",
+      "officialType": "TI-L-26",
+      "reason": "마지막 안내의 「육 번 출구」로 정답이 하나로 정해진다. 오답은 일호선·이웃 숫자로 그럴듯하게 짜였고, 1급 세부 듣기 게임 문항으로 문제가 없다. 해설에 대본 문장을 인용하면 더 좋지만 사소하다. | 안내에서 출구 번호(6번)를 듣고 고르는 기존 게임 문항으로 정답 유일성·난도·자연스러움 모두 적합함.",
+      "hash": "cdc5510e3e48af3c",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.exit.7.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.exit.7.v1",
+      "officialType": "TI-L-26",
+      "reason": "대본의 「칠 번 출구」로 정답이 하나로 정해지고, 오답도 그럴듯하다. 해설이 짧지만 정확해서 통과로 본다. | u022의 역·출구 번호 변형 게임 문항으로, 초급 숫자 청취 변별과 해설이 깔끔해 그대로 사용 가능함.",
+      "hash": "618794eb3a34131a",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.exit.8.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.exit.8.v1",
+      "officialType": "TI-L-26",
+      "reason": "마지막 안내의 「팔 번 출구」로 정답 8번 출구가 유일하게 정해진다. 1급 앞쪽 세부 듣기로 게임 꼴 안에서 문제가 없어 통과한다. | 출구 번호(8번) 세부 정보를 묻는 난도 1 기존 게임 문항으로 이상 없음.",
+      "hash": "d3474dbf35c2efb2",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.fork.청량리.dongdaemun.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.fork.청량리.v1",
+      "officialType": "TI-L-26",
+      "reason": "정답이 유일하고 대본·보기·해설이 게임 꼴 안에서 바릅니다. 해설에 오답 설명을 덧붙이면 더 좋지만 그대로 써도 학습자에게 해가 없어 통과입니다. | 휴대폰 길 안내를 듣고 1호선 청량리 방면을 고르는 문항으로 초급 난도와 보기 구성이 적절함.",
+      "hash": "5fd96525a5c2019c",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.fork.청량리.jonggak.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.fork.청량리.v1",
+      "officialType": "TI-L-26",
+      "reason": "안내의 「청량리 방면」으로 정답이 유일하고, 오답(반대 방향·출구)도 그럴듯합니다. 게임 꼴 안에서 문제가 없어 통과입니다. 해설에 서울역 방면이 왜 틀렸는지 한 줄 더하면 좋겠습니다. | 휴대폰 길 안내를 듣고 환승 노선과 방면을 고르는 TOPIK I 초급 게임 문항으로, 오답 매력도와 난도·표현이 모두 적절해 통과함.",
+      "hash": "d3dedb3e6d46cb04",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.fork.청량리.jongno3.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.fork.청량리.v1",
+      "officialType": "TI-L-26",
+      "reason": "정답(청량리 방면)이 하나뿐이고 근거가 분명합니다. 게임 꼴 안에서 기준을 충족합니다. 해설에 「나가는 곳」이 왜 틀렸는지 한 줄 더하면 좋겠지만 필수는 아닙니다. | 환승 노선과 방면(1호선 청량리 방면) 세부 정보를 묻는 기존 게임 문항으로 모든 기준을 충족함.",
+      "hash": "e7a3b68600371d81",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.fork.청량리.jongno5.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.fork.청량리.v1",
+      "officialType": "TI-L-26",
+      "reason": "청량리 방면을 그대로 듣고 고르는 짧은 게임형 문항입니다. 정답이 하나뿐이고, 반대 방향 보기가 적절한 함정입니다. 해설에 서울역 방면 오답의 까닭을 한 줄 더하면 좋겠지만 통과에 지장은 없습니다. | 휴대폰 길 안내에서 1호선 청량리 방면을 듣고 환승 방향을 고르는 초급 문항으로 모든 기준을 충족함.",
+      "hash": "c6bcc86c86c14963",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.meet.traveler.cheongnyangni.airport.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.negation",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.meet.traveler.airport.v1",
+      "officialType": "TI-L-26",
+      "reason": "메타 고침 뒤 통과: 두 검수가 문항 본문 · 보기 · 정답은 맞다고 했고 능력 칸 · 난도 · 해설 고침만 요구해 그대로 반영했다(subway-r7). 정답은 유일하고 보기·대본·해설 모두 자연스럽다. 다만 답을 가르는 것은 「다른 노선을 이용해」에서 알아내는 부정 정보이므로, 대표 능력을 detail에서 negation으로 고치기를 권한다. | 문항 자체(대본·보기·정답·해설)는 결함이 없으나, 정답을 가르는 정보가 '가지 않음(다른 노선 이용)'이므로 대표 능력을 ko.listening.negation으로 고쳐야 함.",
+      "hash": "7870616170e044e6",
+      "reviewedAt": "2026-11-04T03:00:00.000Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r7",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "argon",
+          "verdict": "fix"
+        },
+        {
+          "stage": "meta-fix",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.meet.traveler.cheongnyangni.cheongnyangni.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.meet.traveler.cheongnyangni.v1",
+      "officialType": "TI-L-26",
+      "reason": "메타 고침 뒤 통과: 두 검수가 문항 본문 · 보기 · 정답은 맞다고 했고 능력 칸 · 난도 · 해설 고침만 요구해 그대로 반영했다(subway-r7). 방송의 「청량리 방면」으로 정답 1이 분명하다. 오답 둘도 방송 말을 바꿔 그럴듯하다. 게임 꼴 안에서 문제없어 통과한다. 해설에 명동 오답 이유를 한 줄 더하면 더 좋다. | u001의 행선지를 청량리로 바꾼 동형 변형 문항으로, 정답 유일성·한국어 자연스러움·대표 능력·난도가 모두 적합함.",
+      "hash": "c87be51850926815",
+      "reviewedAt": "2026-11-04T03:00:00.000Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r7",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "argon",
+          "verdict": "pass"
+        },
+        {
+          "stage": "meta-fix",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.meet.traveler.cheongnyangni.myeongdong.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.negation",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.meet.traveler.myeongdong.v1",
+      "officialType": "TI-L-26",
+      "reason": "메타 고침 뒤 통과: 두 검수가 문항 본문 · 보기 · 정답은 맞다고 했고 능력 칸 · 난도 · 해설 고침만 요구해 그대로 반영했다(subway-r7). 안내방송의 「다른 노선을 이용해 주시기 바랍니다」를 근거로 「아니요」로 답하는 게임 문항이다. 정답이 하나뿐이고 오답(청량리)이 그럴듯하며, 말이 자연스럽다. 통과로 판정한다. | u002의 행선지를 청량리로 바꾼 변형 문항으로 내용·해설은 적합하나, 정답을 가르는 정보가 명동에 가지 않는다는 부정·변경 정보이므로 skillId를 ko.listening.negation으로 고쳐야 함.",
+      "hash": "535b09037ecb1628",
+      "reviewedAt": "2026-11-04T03:00:00.000Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r7",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "argon",
+          "verdict": "fix"
+        },
+        {
+          "stage": "meta-fix",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.meet.traveler.cityhall.airport.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.negation",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.meet.traveler.airport.v1",
+      "officialType": "TI-L-26",
+      "reason": "메타 고침 뒤 통과: 두 검수가 문항 본문 · 보기 · 정답은 맞다고 했고 능력 칸 · 난도 · 해설 고침만 요구해 그대로 반영했다(subway-r7). 정답이 하나뿐이고 오답도 그럴듯한 좋은 게임 문항이다. 다만 답을 가르는 정보가 '안 감'이라는 부정 정보이므로 대표 능력을 부정(negation)으로 고치기를 권한다. | 문항 내용과 오답 구성·해설은 적절하나, 정답을 가르는 정보가 열차가 인천공항에 가지 않는다는 부정·변경 정보이므로 skillId를 ko.listening.negation으로 수정해야 함.",
+      "hash": "95664f6047d0ff69",
+      "reviewedAt": "2026-11-04T03:00:00.000Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r7",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "argon",
+          "verdict": "fix"
+        },
+        {
+          "stage": "meta-fix",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.meet.traveler.cityhall.cityhall.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.meet.traveler.cityhall.v1",
+      "officialType": "TI-L-26",
+      "reason": "메타 고침 뒤 통과: 두 검수가 문항 본문 · 보기 · 정답은 맞다고 했고 능력 칸 · 난도 · 해설 고침만 요구해 그대로 반영했다(subway-r7). 정답이 하나뿐이고 오답도 그럴듯한 게임 문항입니다. 다만 정보량이 적어 난도를 1로 낮춰야 하고, 해설에 명동 오답이 왜 틀린지 한 줄을 더해야 합니다. | 안내방송의 행선지(시청 방면)를 듣고 옆 사람의 물음에 답하는 게임형 문항으로, 정답이 분명하고 한국어·난도·대표 능력 모두 적합함.",
+      "hash": "d0ed980624503641",
+      "reviewedAt": "2026-11-04T03:00:00.000Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r7",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "argon",
+          "verdict": "pass"
+        },
+        {
+          "stage": "meta-fix",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.meet.traveler.cityhall.myeongdong.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.negation",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.meet.traveler.myeongdong.v1",
+      "officialType": "TI-L-26",
+      "reason": "메타 고침 뒤 통과: 두 검수가 문항 본문 · 보기 · 정답은 맞다고 했고 능력 칸 · 난도 · 해설 고침만 요구해 그대로 반영했다(subway-r7). 정답은 하나뿐이고 함정 보기도 좋다. 답을 가르는 것이 「다른 노선을 이용해」라는 간접 부정이므로 대표 능력을 부정으로 바꾸기만 하면 된다. | 문항 자체와 해설은 바르나, 정답을 가르는 핵심이 '다른 노선 이용(이 열차는 명동에 가지 않음)'이라는 부정·변경 정보이므로 skillId를 ko.listening.negation으로 고쳐야 함.",
+      "hash": "84edf01184bc5206",
+      "reviewedAt": "2026-11-04T03:00:00.000Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r7",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "argon",
+          "verdict": "fix"
+        },
+        {
+          "stage": "meta-fix",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.meet.traveler.euljiro3.airport.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.negation",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.meet.traveler.airport.v1",
+      "officialType": "TI-L-26",
+      "reason": "메타 고침 뒤 통과: 두 검수가 문항 본문 · 보기 · 정답은 맞다고 했고 능력 칸 · 난도 · 해설 고침만 요구해 그대로 반영했다(subway-r7). 정답이 하나뿐이고 대본과 보기 모두 자연스러운 게임 문항입니다. 다만 답을 가르는 정보가 「인천공항에 가지 않는다」는 부정이므로 대표 능력을 negation으로 바꾸면 쓸 수 있습니다. | 문항 본문과 해설은 적절하나, 정답을 가르는 정보가 '인천공항에 가지 않음(다른 노선 이용)'이므로 대표 능력을 ko.listening.negation으로 고쳐야 함.",
+      "hash": "99b4818f2723be98",
+      "reviewedAt": "2026-11-04T03:00:00.000Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r7",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "argon",
+          "verdict": "fix"
+        },
+        {
+          "stage": "meta-fix",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.meet.traveler.euljiro3.euljiro3.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.meet.traveler.euljiro3.v1",
+      "officialType": "TI-L-26",
+      "reason": "메타 고침 뒤 통과: 두 검수가 문항 본문 · 보기 · 정답은 맞다고 했고 능력 칸 · 난도 · 해설 고침만 요구해 그대로 반영했다(subway-r7). 안내방송의 행선지를 듣고 대답을 고르는 게임 문항으로, 정답이 하나이고 오답도 대본의 말을 바꿔 그럴듯하다. 공식 자리와 꼴은 다르지만 adapted로 허용된다. 해설에 명동 오답의 까닭을 한 줄 더하면 좋겠으나 고치지 않아도 학습자에게 해가 없다. | 대본·보기·해설이 자연스럽고 정답 유일성과 대표 능력(ko.listening.detail)·난도 모두 기준에 부합함.",
+      "hash": "8bcd3bb0374e0a28",
+      "reviewedAt": "2026-11-04T03:00:00.000Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r7",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "argon",
+          "verdict": "pass"
+        },
+        {
+          "stage": "meta-fix",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.meet.traveler.euljiro3.myeongdong.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.negation",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.meet.traveler.myeongdong.v1",
+      "officialType": "TI-L-26",
+      "reason": "메타 고침 뒤 통과: 두 검수가 문항 본문 · 보기 · 정답은 맞다고 했고 능력 칸 · 난도 · 해설 고침만 요구해 그대로 반영했다(subway-r7). 정답은 유일하고 대본과 보기도 자연스럽다. 다만 답을 가르는 정보가 '명동에 안 감'이라는 부정이므로 skillId를 negation으로 고쳐야 한다. | 문항 본문과 해설은 적절하나, 정답을 가르는 정보가 '명동에 가지 않음(다른 노선 이용)'이므로 대표 능력을 ko.listening.negation으로 고쳐야 함.",
+      "hash": "1f13efdbafbb9f08",
+      "reviewedAt": "2026-11-04T03:00:00.000Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r7",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "argon",
+          "verdict": "fix"
+        },
+        {
+          "stage": "meta-fix",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.meet.worker.ahyeon.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.meet.worker.ahyeon.v1",
+      "officialType": "TI-L-26",
+      "reason": "방송에서 들은 다음 역 이름을 그대로 답하는 쉬운 세부 듣기 문항이에요. 정답은 하나뿐이고 오답(인접 역)도 그럴듯해요. 게임 꼴이라 공식 26번 꼴과는 다르지만 그 안에서는 문제가 없어서 통과예요. | 안내방송의 역명('아현')을 듣고 답하는 기존 게임 문항으로 모든 기준을 충족한다.",
+      "hash": "810190e0b2280f01",
+      "reviewedAt": "2026-11-04T02:19:53.697Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r6",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.meet.worker.chungjeongno.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.meet.worker.chungjeongno.v1",
+      "officialType": "TI-L-26",
+      "reason": "안내방송의 역 이름을 듣고 옆 사람에게 대답하는 짧은 세부 듣기 문항이다. 정답이 유일하고 오답도 이웃 역 이름이라 그럴듯하다. 급과 난도에도 맞아 통과한다. | 안내방송의 역명('충정로')을 듣고 답하는 기존 게임 문항으로 모든 기준을 충족한다.",
+      "hash": "ad97fbc3520df0e8",
+      "reviewedAt": "2026-11-04T02:19:53.697Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r6",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.meet.worker.cityhall.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.meet.worker.cityhall.v1",
+      "officialType": "TI-L-26",
+      "reason": "방송의 다음 역을 그대로 대답하는 쉬운 게임 문항으로, 정답이 유일하고 해설도 바릅니다. 오답 역 이름이 대본에 나오지 않아 변별력이 낮은 점만 사소하여 통과로 판정합니다. | 안내방송의 역명('시청')을 듣고 답하는 기존 게임 문항으로 모든 기준을 충족한다.",
+      "hash": "5d5c07314bd8d043",
+      "reviewedAt": "2026-11-04T02:19:53.697Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r6",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.meet.worker.dongdaemun.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.meet.worker.dongdaemun.v1",
+      "officialType": "TI-L-26",
+      "reason": "방송의 역 이름을 듣고 옆 사람 물음에 답하는 쉬운 세부 듣기 문항이다. 정답이 유일하고 오답도 그럴듯하며, 게임 꼴 안에서 문제가 없다. 해설이 짧은 점은 사소하다. | 안내방송의 역 이름을 듣고 답하는 기초 연습 문항으로 모든 기준을 충족함.",
+      "hash": "55c9682417869b51",
+      "reviewedAt": "2026-11-04T02:19:53.697Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r6",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.meet.worker.euljiro1.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.meet.worker.euljiro1.v1",
+      "officialType": "TI-L-26",
+      "reason": "안내방송의 역 이름을 듣고 대답하는 간단한 세부 듣기 문항이다. 정답이 유일하다. 오답도 비슷한 역 이름이라 적절하다. 해설이 짧지만 기존 게임 꼴 안에서는 고칠 필요가 없어 통과로 판정한다. | '을지로' 계열 역명 보기 속에서 '을지로입구'를 정확히 듣는 기존 게임 문항으로 오답 구성과 완성도가 좋다.",
+      "hash": "ed030ea4fb83fe20",
+      "reviewedAt": "2026-11-04T02:19:53.697Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r6",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.meet.worker.euljiro3.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.meet.worker.euljiro3.v1",
+      "officialType": "TI-L-26",
+      "reason": "The answer, 을지로3가, is unique, and the similar-sounding distractors work well. Only minor points remain: the explanation's quote does not exactly match the script, and it does not say why the confusable 4가 is wrong. These do not need fixing. | 합성 음성용 한글 대본('을지로 삼가')과 역명 표기 보기('을지로3가예요')를 자연스럽게 연결한 양호한 문항이다.",
+      "hash": "7386b7893626e925",
+      "reviewedAt": "2026-11-04T02:19:53.697Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r6",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.meet.worker.jongno3.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.meet.worker.jongno3.v1",
+      "officialType": "TI-L-26",
+      "reason": "The answer comes straight from the announcement, and the item is natural in the game format. The explanation could add one line about the 종로5가 distractor, but it can be used as is. | 안내방송의 '종로 삼가'를 듣고 '종로3가예요'를 고르는 기존 게임 문항으로 모든 기준을 충족한다.",
+      "hash": "28c6b49a9dfbf3a5",
+      "reviewedAt": "2026-11-04T02:19:53.697Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r6",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.meet.worker.jongno5.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.meet.worker.jongno5.v1",
+      "officialType": "TI-L-26",
+      "reason": "방송의 역 이름을 듣고 대답하는 간단한 세부 듣기 문항이다. 정답이 유일하고 오답도 그럴듯하다. 게임 꼴 안에서 문제없으므로 통과로 판정한다. | 안내방송의 다음 역 세부 정보를 듣고 답하는 기존 게임 문항으로 전 항목 기준을 충족함.",
+      "hash": "904b02ac16fe5ec9",
+      "reviewedAt": "2026-11-04T02:19:53.697Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r6",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.stop.chungjeongno.pass.left.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.stop.chungjeongno.pass.v1",
+      "officialType": "TI-L-26",
+      "reason": "목표 환승역(시청)과 현재 역(충정로)을 비교해 「그대로」를 고르는 문항으로, 정답이 유일합니다. 「왼쪽 문」 함정도 적절합니다. 해설의 「내릴 곳」은 「갈아탈 곳」으로 다듬으면 더 좋겠지만, 그대로 통과해도 학습자에게 해가 없습니다. | u001에서 열리는 문 방향만 왼쪽으로 바꾼 변형 문항으로 정답 유일성·오답 매력도·난도 모두 적합함.",
+      "hash": "2eeb396cced2cdaa",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.stop.chungjeongno.pass.right.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.stop.chungjeongno.pass.v1",
+      "officialType": "TI-L-26",
+      "reason": "목표(시청역 환승)와 방송(충정로역, 5호선 환승)을 견줘 「그대로」를 고르는 게임 문항입니다. 정답이 하나뿐이고, 「오른쪽 문」 오답의 매력도 좋습니다. 해설도 근거를 바르게 짚어 통과입니다. | 목표 역(시청역·1호선)과 현재 역(충정로역·5호선)을 구별해 그대로 타는 문항으로 정답 유일성·오답 매력도·난도 모두 적합함.",
+      "hash": "999af8949b4b84d8",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.stop.cityhall.off.left.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.stop.cityhall.off.v1",
+      "officialType": "TI-L-26",
+      "reason": "목표 역과 문 방향을 방송에서 듣고 고르는 문항으로, 정답이 유일하고 대본이 자연스럽다. 해설에 '그대로'가 왜 틀렸는지 한 줄을 덧붙이면 더 좋지만 그대로 써도 학습자에게 해가 없어 통과로 본다. | 시청역 도착과 왼쪽 문 하차 정보를 결합해 푸는 문항으로 대본·보기·해설 모두 자연스럽고 적합함.",
+      "hash": "15423cbf85bf6796",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.stop.cityhall.off.right.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.stop.cityhall.off.v1",
+      "officialType": "TI-L-26",
+      "reason": "정답이 오른쪽 문 하나로 분명하고, 오답도 그럴듯하며, 방송 말투가 자연스러운 게임 각색 문항이에요. 해설을 조금 보완할 여지만 있어서 통과로 판정해요. | 시청역 도착 및 오른쪽 문 하차를 판단하는 기존 게임 문항으로 정답 유일성·난도·자연스러움 모두 적합함.",
+      "hash": "bbd0feda61a741a5",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.stop.dongdaemun.off.left.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.stop.dongdaemun.off.v1",
+      "officialType": "TI-L-26",
+      "reason": "목적지와 이번 역이 같고 방송이 왼쪽 문을 알려 주므로 정답이 분명하다. 오답도 흔한 실수를 잘 겨누고, 게임 꼴 안에서 기준을 모두 충족해 통과한다. | 동대문역 도착 및 왼쪽 문 하차를 판단하는 문항으로 기준에 모두 부합함(u010과 문 방향만 다른 변형 계열).",
+      "hash": "f248f531d0be3565",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.stop.dongdaemun.off.right.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.stop.dongdaemun.off.v1",
+      "officialType": "TI-L-26",
+      "reason": "길 안내의 목표 역과 방송의 역 이름·문 쪽을 이어 들으면 '오른쪽 문'만 정답이 됩니다. 오답·난도·능력이 모두 맞아 통과로 판정합니다. | 동대문역 도착 방송을 듣고 오른쪽 문 하차를 고르는 문항으로 모든 기준을 충족함.",
+      "hash": "3715e60bef1a50a4",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.stop.euljiro3.off.left.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.stop.euljiro3.off.v1",
+      "officialType": "TI-L-26",
+      "reason": "목표 역 도착과 내릴 문 방향을 대본에서 분명히 알 수 있고, 정답은 하나뿐입니다. 게임 꼴 안에서 기준을 모두 충족하므로 통과입니다. | 도착역과 왼쪽 문 하차 안내를 파악하는 TOPIK I 2급 수준 게임 문항으로 모든 기준을 충족함(u030과 방향 변형 계열).",
+      "hash": "12e2902f6c887d35",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.stop.euljiro3.off.right.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.stop.euljiro3.off.v1",
+      "officialType": "TI-L-26",
+      "reason": "목표 역과 안내방송의 문 쪽을 맞춰 「오른쪽 문」을 고르는 게임형 TI-L-26 문항이다. 정답이 유일하고 오답도 자연스러워 통과로 판정한다. | 도착역과 오른쪽 문 하차 안내를 듣고 고르는 TOPIK I 2급 수준 게임 문항으로 오답 설계와 대본 자연스러움이 적절함(u035와 방향 변형 계열).",
+      "hash": "4c5cd43e9fb2f155",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.stop.euljiro3.pass.left.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.stop.euljiro3.pass.v1",
+      "officialType": "TI-L-26",
+      "reason": "정답 「그대로」가 유일하고 오답 「왼쪽 문」이 방송 말로 잘 유인한다. 해설이 짧지만 근거를 바르게 짚으므로 통과로 판정한다. | 목표 환승역과 현재 정차역 안내방송을 대조해 하차 여부를 판단하는 TOPIK I 난도 2 문항으로 완성도가 높음.",
+      "hash": "44c330a4c6f62a3a",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.stop.euljiro3.pass.right.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.stop.euljiro3.pass.v1",
+      "officialType": "TI-L-26",
+      "reason": "목표 역(시청)과 지금 역(을지로3가)을 맞대어 「그대로」를 고르는 문항으로, 정답이 하나뿐이에요. 방송의 「오른쪽」과 「갈아타실 분」이 그럴듯한 함정이 되고, 말투·난도·해설 모두 문제가 없어 통과예요. | u024의 문 방향 변형 문항으로, 정답 유일성·오답 매력도·난도(TOPIK I 난도 2) 모두 적합함.",
+      "hash": "2bb48ea4405c90ef",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.stop.jonggak.off.left.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.stop.jonggak.off.v1",
+      "officialType": "TI-L-26",
+      "reason": "목표 역과 안내방송의 역이 같고 「내리실 문은 왼쪽」이 답을 정한다. 정답이 하나로 분명하며 게임 꼴 안에서 기준을 모두 충족해 통과로 판정한다. | 목표 하차 역과 내릴 문 방향 두 세부 정보를 결합해 판단하게 한 깔끔한 지하철 게임 번안 문항으로 그대로 사용 가능함.",
+      "hash": "b90a7ca65d191e34",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.stop.jonggak.off.right.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.stop.jonggak.off.v1",
+      "officialType": "TI-L-26",
+      "reason": "내릴 역 종각에서 방송이 말한 오른쪽 문을 고르는 문항으로, 정답이 하나뿐이고 게임 꼴 안에서 기준을 모두 충족해 통과예요. | 도착역 안내방송을 듣고 내릴 문을 고르는 TOPIK I 초급 게임 문항으로, 대본이 자연스럽고 정답 근거가 명확해 통과함.",
+      "hash": "04be273127ca9240",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.stop.jongno3.off.left.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.stop.jongno3.off.v1",
+      "officialType": "TI-L-26",
+      "reason": "목표역 도착과 「내리실 문은 왼쪽」으로 정답이 하나로 정해진다. 게임 꼴 안에서 기준을 모두 충족하므로 통과로 판정한다. | 하차 역 확인과 문 방향(왼쪽) 및 환승 방해 정보가 결합된 난도 2 게임 문항으로 완성도가 높음.",
+      "hash": "b0e20e0f6c267161",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.stop.jongno3.off.right.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.stop.jongno3.off.v1",
+      "officialType": "TI-L-26",
+      "reason": "목표 역과 안내방송의 역 이름을 맞춰 보고, 「내리실 문은 오른쪽」을 들으면 정답이 하나로 정해진다. 게임 꼴 안에서 기준을 모두 충족하므로 통과한다. | 하차 역 확인과 문 방향(오른쪽) 및 환승 방해 정보를 담은 난도 2 게임 문항으로 모든 기준을 충족함.",
+      "hash": "0be0204162b52094",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.stop.jongno3.pass.left.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.stop.jongno3.pass.v1",
+      "officialType": "TI-L-26",
+      "reason": "목표 역(종로 오가)과 이번 역(종로 삼가)을 비교해 「그대로」를 고르는 문항이다. 정답이 유일하고, 문 쪽·환승 안내가 매력적인 오답 역할을 한다. 그대로 써도 된다. | 종로5가 하차 목표에서 종로3가 안내방송을 듣고 그대로 타기를 고르는 변별력 좋은 문항임.",
+      "hash": "eae88e86a7f2e9ff",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.stop.jongno3.pass.right.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.stop.jongno3.pass.v1",
+      "officialType": "TI-L-26",
+      "reason": "목적지(종로5가)와 이번 역(종로3가)을 구별해 그대로 타는 것이 유일한 정답이에요. 「오른쪽 문」이 좋은 함정이 되고, 게임 꼴 안에서 기준을 모두 만족해서 통과예요. | 종로3가역 안내방송을 목표인 종로5가역과 비교해 그대로 타는 문항으로 오답 설계와 난도가 우수함.",
+      "hash": "b117703e1db7b1b1",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.stop.jongno5.off.left.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.stop.jongno5.off.v1",
+      "officialType": "TI-L-26",
+      "reason": "목표 역과 이번 역이 같아 내려야 하고, 방송이 문 방향을 분명히 말해 정답 「왼쪽 문」이 유일하다. 낱말·길이가 1급 앞쪽에 맞고 게임 꼴 안에서 문제가 없어 통과로 판정한다. | 방해 정보 없이 도착 역(종로5가)과 내릴 문(왼쪽)을 듣고 고르는 난도 1 게임 문항으로 적합함.",
+      "hash": "e3a8397c12513dd8",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "subway-rush.stop.jongno5.off.right.v1",
+      "source": "subway-rush",
+      "verdict": "pass",
+      "skillId": "ko.listening.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "familyKey": "subway-rush.stop.jongno5.off.v1",
+      "officialType": "TI-L-26",
+      "reason": "목표 역 도착과 문 방향이라는 세부 정보를 듣는 짧은 게임형 문항입니다. 정답이 유일하고 오답도 그럴듯하며 난도와 능력이 맞아 통과입니다. | 종로5가역 도착 및 오른쪽 문 안내를 듣고 내리는 난도 1 문항으로 명확하고 자연스러움.",
+      "hash": "4525421fc40d2f17",
+      "reviewedAt": "2026-11-04T00:21:40.314Z",
+      "rubric": "topik-review-r1",
+      "packet": "subway-r2",
       "by": [
         {
           "stage": "claude",

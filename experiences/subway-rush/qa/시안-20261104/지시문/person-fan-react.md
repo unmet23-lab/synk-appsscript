@@ -1,0 +1,1 @@
+EDIT OF IMAGE 1 — keep the same two people, same clothes, same pose, same camera, same background, same light. Change only their faces: both are now laughing warmly with bright eyes, the young woman giving a friendly little wave with her free hand. Everything else stays pixel-close to Image 1.

@@ -1,0 +1,165 @@
+/* 환승 러시 겉(2026-11-04, 설계 5절): 앱 단추 대신 실제 물건 — LED 전광판 · 걸이 표지 · 바닥 스티커 · 교통카드 단말기 · 종이 안내문 · 스탬프 카드.
+   움직임 토큰은 주문 폭주 2판과 같다. 글자는 SubwaySign(본고딕 계열) · LED는 비트맵을 점으로(led.mjs) · 휴대폰 알림만 기기 글꼴. */
+@font-face{font-family:SubwaySign;src:url('assets/fonts/sign.woff2') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:SubwayLED;src:url('assets/fonts/led.woff2') format('woff2');font-display:block}
+:root{
+  --m-fast:350ms cubic-bezier(.42,1.67,.21,.90);--m-base:500ms cubic-bezier(.38,1.21,.22,1);--m-slow:650ms cubic-bezier(.39,1.29,.35,.98);
+  --e-fast:150ms cubic-bezier(.31,.94,.34,1);--e-base:200ms cubic-bezier(.34,.80,.34,1);--e-slow:300ms cubic-bezier(.34,.88,.34,1);
+  --ink:#141414;--paper:#f6f3ea;--paper-2:#efe9da;--steel-1:#3a3d42;--steel-2:#17191c;--marker:#ffe34d;--stamp:#c2241d;
+  --sign:SubwaySign,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:#050608;color:var(--ink);font-family:var(--sign);touch-action:none;user-select:none;-webkit-user-select:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+[hidden]{display:none!important}
+/* 가로 화면에서도 세로 무대 하나. 넓으면 가운데 기둥으로 */
+.stage{position:fixed;left:0;right:0;top:0;z-index:50;width:min(100vw,calc(100dvh*.62));height:100dvh;margin:0 auto;overflow:hidden;background:#07090d;container-type:size}
+#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
+html:not([data-ready]) .stage{background:#07090d url('assets/world/gate.webp') 50% 12%/cover no-repeat}
+html:not([data-ready]) #gl,html:not([data-ready]) .reader,html:not([data-ready]) .ticket{opacity:0}
+.floor-shade{position:absolute;left:0;right:0;bottom:0;height:12%;background:linear-gradient(#06080d00,#06080db0);pointer-events:none}
+
+/* ── 입구 ── */
+.lobby{position:absolute;inset:0;transition:opacity var(--e-slow)}
+.lobby[data-out]{opacity:0;pointer-events:none}
+.reader{position:absolute;left:50%;top:var(--reader-y,62%);width:var(--reader-w,160px);height:var(--reader-h,128px);transform:translate(-50%,-50%);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#eef3f0}
+.reader:focus-visible{outline:2px solid #7ef0b0;outline-offset:6px}
+.reader-ring{position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 2.5px #3fb6ff,0 0 18px 3px #3fb6ff88,inset 0 0 14px #3fb6ff55;animation:ring-breathe 2.2s ease-in-out infinite}
+@keyframes ring-breathe{0%,100%{opacity:.55}50%{opacity:1}}
+.reader[data-on] .reader-ring{box-shadow:0 0 0 3px #49f09a,0 0 34px 8px #49f09acc,inset 0 0 26px #49f09a88;animation:none}
+.reader[data-on]{color:#d8ffe8}
+.reader-card{width:42px;height:27px;border-radius:4px;border:2px solid currentColor;position:relative;opacity:.95;transform:rotate(-8deg)}
+.reader-card::before{content:'';position:absolute;left:5px;top:5px;width:9px;height:7px;border-radius:1.5px;background:currentColor;opacity:.85}
+.reader-card::after{content:'';position:absolute;left:18px;right:4px;bottom:5px;height:2px;background:currentColor;opacity:.6}
+.reader-text{font-size:14px;font-weight:600;letter-spacing:-.01em;text-shadow:0 1px 2px #000}
+.ticket{position:absolute;left:14px;right:14px;bottom:max(14px,env(safe-area-inset-bottom));padding:11px 14px 10px;background:var(--paper);border-radius:3px;box-shadow:0 8px 26px #0009,0 1px 0 #fff8 inset;color:var(--ink);transform:rotate(-.6deg);
+  background-image:linear-gradient(90deg,#0000 0,#0000 calc(100% - 1px),#0000 100%),radial-gradient(circle at 0 50%,#0000 6px,var(--paper) 6.5px),radial-gradient(circle at 100% 50%,#0000 6px,var(--paper) 6.5px);background-size:100% 100%,51% 100%,51% 100%;background-position:0 0,0 0,100% 0;background-repeat:no-repeat;background-color:#0000;animation:ticket-in var(--m-base) .15s both}
+@keyframes ticket-in{from{opacity:0;transform:translateY(16px) rotate(-.6deg)}to{opacity:1;transform:rotate(-.6deg)}}
+.ticket-route{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:700;letter-spacing:-.02em;white-space:nowrap}
+.ticket-route .dot{width:11px;height:11px;border-radius:50%;background:var(--c);flex:none}
+.ticket-route em{margin-left:auto;font-style:normal;font-weight:800;font-variant-numeric:tabular-nums}
+.ticket-line{flex:1;min-width:10px;max-width:30px;height:0;border-top:1.5px dashed #0007}
+.ticket-q{width:20px;height:20px;border-radius:50%;border:1.5px solid #0009;display:grid;place-items:center;font-size:12px;font-weight:800;flex:none}
+.ticket-levels{display:flex;gap:6px;margin-top:8px}
+.ticket-levels button{flex:1;min-height:36px;font-size:13.5px;font-weight:700;border:1.5px solid #0005;border-radius:3px;color:#222;letter-spacing:-.02em}
+.ticket-levels button small{font-size:11px;font-weight:600;opacity:.75}
+.ticket-levels button[aria-pressed=true]{background:#141414;color:#fff;border-color:#141414}
+.ticket-note{margin:7px 0 0;font-size:12.5px;font-weight:500;color:#333;display:flex;flex-direction:column;gap:1px}
+.ticket-note b{font-weight:600}
+.ticket-note span{color:#6a6a62;font-size:11.5px}
+.ticket-album{display:block;width:100%;margin-top:7px;padding:6px 0 0;border-top:1px dashed #0004;text-align:left;font-size:12.5px;font-weight:700;color:#7a2a16;letter-spacing:-.01em}
+.ticket-album::after{content:' ›'}
+
+/* ── LED 전광판 ── */
+.board{position:absolute;left:0;right:0;top:0;padding:max(8px,env(safe-area-inset-top)) 10px 8px;background:linear-gradient(#2b2e33,#15171a 70%,#0c0d0f);box-shadow:0 2px 0 #000,0 10px 22px #0007;z-index:3;animation:board-in var(--m-base) both}
+@keyframes board-in{from{transform:translateY(-110%)}to{transform:none}}
+.board::before{content:'';position:absolute;left:0;right:0;top:0;height:1px;background:#fff2}
+.board-rod{display:none}
+#led{display:block;width:100%;height:46px;border-radius:2px;background:#080604;box-shadow:inset 0 0 0 1px #000,0 0 0 1px #fff1}
+.board-keys{display:flex;gap:6px;margin-top:6px;align-items:center}
+.key{height:30px;padding:0 10px;display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;letter-spacing:-.01em;color:#dfe3e8;background:linear-gradient(#3c4046,#24272b);border-radius:4px;box-shadow:0 1px 0 #fff2 inset,0 1px 2px #000;transition:transform var(--e-fast),background var(--e-fast)}
+.key:active{transform:translateY(1px);background:linear-gradient(#2a2d31,#1b1d20)}
+.key:focus-visible{outline:2px solid #ffc14a;outline-offset:1px}
+.key[disabled]{opacity:.45;cursor:default}
+.key#key-pause{margin-right:auto;width:34px;padding:0;justify-content:center}
+.ico-pause{width:10px;height:12px;border-left:3px solid currentColor;border-right:3px solid currentColor}
+.ico-replay{width:11px;height:11px;border:2px solid currentColor;border-right-color:#0000;border-radius:50%;position:relative}
+.ico-replay::after{content:'';position:absolute;right:-3px;top:-1px;border-left:4px solid currentColor;border-top:3px solid #0000;border-bottom:3px solid #0000;transform:rotate(25deg)}
+.ico-text{width:11px;height:11px;border-top:2px solid currentColor;border-bottom:2px solid currentColor;position:relative}
+.ico-text::after{content:'';position:absolute;left:0;right:0;top:2.5px;height:2px;background:currentColor}
+
+/* ── 걸이 표지 ── */
+.hang{position:absolute;left:8px;right:8px;top:var(--hang-top,108px);transform-origin:50% 0;transform:translateY(var(--hang-y,0)) scale(var(--hang-s,1));z-index:2;will-change:transform;filter:drop-shadow(0 6px 10px #0006)}
+.hang::before,.hang::after{content:'';position:absolute;top:-60px;width:5px;height:60px;background:linear-gradient(90deg,#8e9196,#d9dbde 45%,#6d7074)}
+.hang::before{left:12%}.hang::after{right:12%}
+#hang-canvas{display:block;width:100%;height:auto;border-radius:2px}
+
+/* ── 누르는 칸 ── */
+.zones{position:absolute;left:0;right:0;bottom:0;height:28%;display:grid;grid-template-columns:1fr 1fr 1fr;z-index:2}
+.zones button{height:100%;position:relative}
+.zones button:focus-visible{outline:2px solid #ffe34d;outline-offset:-4px}
+
+/* ── 만남 ── */
+.replies{position:absolute;left:14px;right:14px;bottom:max(16px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;align-items:flex-end;z-index:3}
+.replies button{max-width:92%;min-height:48px;padding:12px 16px;background:#fff;color:#111;border-radius:18px 18px 4px 18px;font-size:16.5px;font-weight:600;letter-spacing:-.015em;text-align:left;box-shadow:0 6px 18px #0007;animation:reply-in var(--m-fast) both;transition:transform var(--e-fast),background var(--e-fast),opacity var(--e-slow)}
+.replies button:nth-child(2){animation-delay:60ms}.replies button:nth-child(3){animation-delay:120ms}
+.replies button:active,.replies button[data-press]{transform:scale(.97);background:#ffe34d}
+.replies button[data-dim]{opacity:.28}
+@keyframes reply-in{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+.their-line{position:absolute;left:14px;right:40px;top:var(--their-top,136px);margin:0;padding:12px 16px;background:#fffffff2;color:#111;border-radius:18px 18px 18px 4px;font-size:17px;font-weight:600;letter-spacing:-.015em;box-shadow:0 6px 18px #0006;z-index:3;animation:reply-in var(--m-fast) both}
+
+/* ── 종이 안내문 ── */
+.notice{position:absolute;left:18px;right:18px;top:var(--notice-top,142px);padding:18px 18px 14px;background:var(--paper);color:var(--ink);border-radius:2px;box-shadow:0 12px 30px #000a;z-index:4;transform:rotate(-.7deg);animation:notice-in var(--m-base) both;
+  background-image:repeating-linear-gradient(0deg,#0000 0 27px,#0000000a 27px 28px)}
+@keyframes notice-in{from{opacity:0;transform:translateY(-22px) rotate(-3deg)}to{opacity:1;transform:rotate(-.7deg)}}
+.notice .tape{position:absolute;left:50%;top:-11px;width:76px;height:22px;margin-left:-38px;background:#f5e9b8d9;box-shadow:0 1px 2px #0003;transform:rotate(1.5deg)}
+.notice small{display:block;font-size:12.5px;font-weight:700;color:#5a574e;margin-bottom:5px}
+.notice p{margin:0;font-size:17px;line-height:1.55;font-weight:600;letter-spacing:-.015em;word-break:keep-all}
+.notice mark{background:linear-gradient(transparent 12%,var(--marker) 12% 88%,transparent 88%);color:inherit;padding:0 2px;font-weight:800}
+.notice .why{display:block;margin-top:7px;font-size:14.5px;font-weight:500;color:#3d3a32;line-height:1.5}
+.notice button{margin-top:10px;font-size:13.5px;font-weight:700;padding:6px 12px;border:1.5px solid #0006;border-radius:3px}
+
+/* ── 휴대폰 알림 ── */
+.phone-banner{position:absolute;left:10px;right:10px;top:var(--banner-top,104px);padding:10px 12px;display:flex;gap:10px;align-items:center;border-radius:20px;background:#f5f5f7f2;color:#111;box-shadow:0 10px 30px #0006;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:14px;z-index:5;animation:banner-in var(--m-base) both;backdrop-filter:blur(14px)}
+.phone-banner[data-out]{animation:banner-out var(--e-slow) both}
+@keyframes banner-in{from{opacity:0;transform:translateY(-26px)}to{opacity:1;transform:none}}
+@keyframes banner-out{to{opacity:0;transform:translateY(-16px)}}
+.banner-icon{width:34px;height:34px;border-radius:8px;background:#f7d648;flex:none;position:relative}
+.banner-icon::after{content:'';position:absolute;left:8px;top:9px;width:18px;height:13px;border-radius:50%;background:#3a2c0e}
+.banner-text{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1}
+.banner-text b{font-size:13px;font-weight:600}
+.phone-banner time{font-size:12px;color:#5f5f5f;align-self:flex-start}
+
+.curtain{position:absolute;inset:0;background:#07090d;opacity:0;pointer-events:none;transition:opacity 240ms ease;z-index:6}
+.curtain[data-on]{opacity:.99}
+
+/* ── 결과 ── */
+.result{position:absolute;inset:0;z-index:7;overflow-y:auto;overflow-x:hidden;touch-action:pan-y;background:#101318;-webkit-overflow-scrolling:touch}
+.result-photo{height:46%;background:center 30%/cover no-repeat}
+/* 정류장 사진 속 빈 LED 판 자리(사진 좌표 실측) — 사진과 함께 있는 물건처럼 */
+.result-board{position:absolute;left:4.2cqw;top:calc(21.8cqw + .3*(46cqh - 150cqw));width:68.4cqw;height:21.4cqw;z-index:1}
+#result-led{display:block;width:100%;height:100%;border-radius:1px}
+.stamp-card{position:relative;margin:-26px 12px 16px;padding:18px 16px 16px;background:var(--paper);color:var(--ink);border-radius:3px;box-shadow:0 14px 40px #000b;z-index:1}
+.stamp-title{margin:0;font-size:21px;font-weight:800;letter-spacing:-.025em;line-height:1.3;word-break:keep-all}
+.stamp-score{margin:3px 0 0;font-size:14px;font-weight:600;color:#55524a}
+.stamps{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.stamps canvas{width:74px;height:74px;display:block}
+.stamps canvas[data-hit]{animation:stamp-hit 240ms cubic-bezier(.3,1.5,.5,1) both}
+@keyframes stamp-hit{from{opacity:0;transform:scale(1.7) rotate(var(--r,0deg))}to{opacity:1;transform:scale(1) rotate(var(--r,0deg))}}
+.stamp-card h2{margin:16px 0 8px;font-size:14px;font-weight:800;letter-spacing:-.01em;color:#3a3830}
+.met-row{display:flex;gap:10px;flex-wrap:wrap}
+.met-card{width:104px;background:#fff;padding:5px 5px 7px;box-shadow:0 3px 10px #0004;transform:rotate(var(--r,-1deg))}
+.met-card img{display:block;width:100%;aspect-ratio:1/1.15;object-fit:cover;object-position:50% 22%}
+.met-card b{display:block;margin-top:5px;font-size:12px;font-weight:700;line-height:1.3;letter-spacing:-.02em}
+.met-card small{display:block;margin-top:2px;font-size:11.5px;font-weight:500;color:#666;line-height:1.3}
+.met-card .new{display:block;font-size:10.5px;font-weight:800;color:var(--stamp)}
+#again-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+#again-list li{display:flex;gap:8px;align-items:flex-start;font-size:14px;line-height:1.45;font-weight:500;padding:8px 0;border-top:1px solid #0000001a;word-break:keep-all}
+#again-list button{flex:none;font-size:12.5px;font-weight:700;padding:4px 9px;border:1.5px solid #0006;border-radius:3px}
+.coin-row{margin-top:12px;font-size:13.5px;font-weight:700}
+.result-actions{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.paper-btn{min-height:50px;font-size:16px;font-weight:700;border-radius:3px;border:1.5px solid #000a;color:#111;background:#0000;transition:transform var(--e-fast)}
+.paper-btn.primary{background:#111;color:#fff;border-color:#111}
+.paper-btn:active{transform:scale(.985)}
+.pause-dialog{border:0;border-radius:3px;padding:20px;background:var(--paper);color:var(--ink);width:min(86%,320px);box-shadow:0 20px 50px #000c}
+.pause-dialog::backdrop{background:#000a}
+.pause-dialog h2{margin:0 0 6px;font-size:19px;font-weight:800}
+.pause-dialog p{margin:0 0 14px;font-size:14.5px;line-height:1.5}
+.pause-dialog .paper-btn{width:100%;margin-top:8px}
+
+/* ── 내 노선도 ── */
+.album{position:absolute;inset:0;z-index:8;overflow-y:auto;touch-action:pan-y;background:#101318f2;padding:max(16px,env(safe-area-inset-top)) 0 20px}
+.album-card{margin:0 12px}
+.album-close{position:absolute;right:10px;top:12px;font-size:13.5px;font-weight:700;padding:6px 10px;border:1.5px solid #0006;border-radius:3px}
+.album .met-card.locked img{filter:grayscale(1) brightness(.55) blur(3px)}
+.album .met-card.locked b{color:#5f5f5f}
+.gesture-hint{position:absolute;left:0;right:0;bottom:calc(28cqh + 6px);margin:0;text-align:center;font-size:14px;font-weight:600;color:#fff;text-shadow:0 1px 6px #000c,0 0 2px #000;z-index:2;animation:hint-in var(--e-slow) both}
+@keyframes hint-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* 공통 계정 줄: 평소에는 숨기고(게임은 앱 안에서만 열린다), 저장이 막힐 때만 전광판 위로 올린다 */
+body .synk-play-account{position:fixed;left:0;right:0;top:0;z-index:60}
+body .synk-play-account:not([data-phase=offline],[data-phase=conflict],[data-phase=stopped]){display:none}
+
+@media (prefers-reduced-motion:reduce){*{animation-duration:.15s!important;animation-delay:0s!important}.reader-ring{animation:none!important}}
+html[data-reduce-motion] *{animation-duration:.15s!important;animation-delay:0s!important}
+html[data-reduce-motion] .reader-ring{animation:none!important}

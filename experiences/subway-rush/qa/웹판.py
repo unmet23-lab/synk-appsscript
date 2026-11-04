@@ -1,0 +1,88 @@
+"""환승 러시 그림 웹판(2026-11-04): 구운 판(공용 작업본 .tmp/subway-rush-20261104/판)의 가장 새 것을 assets/world/<이름>.webp로, 깊이 지도도 함께.
+문 열린 판은 닫힌 판의 깊이 지도를 같이 쓴다(같은 구도). 반응 판 · 평면 판은 깊이가 필요 없다. 다 돌리면 assets.json에 있는 판 목록을 쓴다 — 게임은 이 목록으로 칸 · 사람을 고른다.
+  python -I -X utf8 experiences/subway-rush/qa/웹판.py
+"""
+import json
+import re
+import sys
+from pathlib import Path
+
+import numpy as np
+import onnxruntime as ort
+from PIL import Image, ImageFilter
+
+GAME = Path(__file__).resolve().parents[1]
+ROOT = Path.home() / 'Documents' / 'SYNK-appsscript' / '.tmp' / 'subway-rush-20261104' / '판'
+OUT = GAME / 'assets' / 'world'
+OUT.mkdir(parents=True, exist_ok=True)
+MODEL = Path.home() / 'Documents' / 'synk-vendor' / 'depth' / 'onnx' / 'model.onnx'
+MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
+STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
+
+# 게임 이름 ← 판 이름. 깊이가 필요한 판만 depth True.
+TABLE = {
+    'gate': ('gate', True), 'platform': ('platform', True), 'platform-1': ('platform-1', True),
+    'car-calm': ('train', True), 'car-calm-right': ('train-open', False), 'car-calm-left': ('train-open-left', False),
+    'car-rush': ('car-rush', True), 'car-rush-right': ('car-rush-open-right', False), 'car-rush-left': ('car-rush-open-left', False),
+    'car-concert': ('car-concert', True), 'car-concert-right': ('car-concert-open-right', False), 'car-concert-left': ('car-concert-open-left', False),
+    'car-hike': ('car-hike', True), 'car-hike-right': ('car-hike-open-right', False), 'car-hike-left': ('car-hike-open-left', False),
+    'fork': ('fork', True), 'exit-fork': ('exit-fork', True), 'detour': ('detour', True), 'gate-out': ('gate-out', True), 'stairs-sun': ('stairs-sun', True), 'bus-stop': ('bus-stop', False),
+    'person-fan': ('person-fan', True), 'person-fan-react': ('person-fan-react', False), 'person-worker': ('person-worker', True), 'person-worker-react': ('person-worker-react', False),
+    'person-traveler': ('person-traveler', True), 'person-traveler-react': ('person-traveler-react', False), 'person-grandma': ('person-grandma', True), 'person-grandma-react': ('person-grandma-react', False),
+    'person-hiker': ('person-hiker', True), 'person-hiker-react': ('person-hiker-react', False), 'person-freshman': ('person-freshman', True), 'person-freshman-react': ('person-freshman-react', False),
+}
+
+
+def newest(name):
+    files = sorted(f for f in ROOT.iterdir() if re.fullmatch(re.escape(name) + r'_\d{6}(_\d)?\.png', f.name))
+    return files[-1] if files else None
+
+
+def fit23(img):
+    """게임은 2:3 판을 전제한다. 가끔 3:4로 구워지면 가운데를 2:3으로 잘라 1024×1536에 맞춘다."""
+    w, h = img.size
+    if abs(w / h - 2 / 3) < 0.005:
+        return img
+    if w / h > 2 / 3:
+        cw = round(h * 2 / 3)
+        img = img.crop(((w - cw) // 2, 0, (w - cw) // 2 + cw, h))
+    else:
+        ch = round(w * 3 / 2)
+        img = img.crop((0, (h - ch) // 2, w, (h - ch) // 2 + ch))
+    return img.resize((1024, 1536), Image.LANCZOS)
+
+
+def depth_map(session, img):
+    w, h = img.size
+    scale = 518 / min(w, h)
+    tw, th = (max(14, round(w * scale / 14) * 14), max(14, round(h * scale / 14) * 14))
+    x = (np.asarray(img.resize((tw, th), Image.BICUBIC), dtype=np.float32) / 255 - MEAN) / STD
+    d = session.run(None, {session.get_inputs()[0].name: x.transpose(2, 0, 1)[None]})[0].reshape(th, tw)
+    lo, hi = np.percentile(d, 1), np.percentile(d, 99.5)
+    d = np.clip((d - lo) / max(1e-6, hi - lo), 0, 1)
+    out = Image.fromarray((d * 255).astype(np.uint8), 'L').resize((w // 2, h // 2), Image.BICUBIC)
+    return out.filter(ImageFilter.GaussianBlur(radius=max(1, w // 800)))
+
+
+def main():
+    session = ort.InferenceSession(str(MODEL), providers=['CPUExecutionProvider'])
+    have = {}
+    for name, (src, want_depth) in TABLE.items():
+        f = newest(src)
+        if not f:
+            continue
+        dest = OUT / f'{name}.webp'
+        img = fit23(Image.open(f).convert('RGB'))
+        if not dest.exists() or dest.stat().st_mtime < f.stat().st_mtime:
+            img.save(dest, quality=84, method=6)
+        if want_depth:
+            dp = OUT / f'{name}.depth.png'
+            if not dp.exists() or dp.stat().st_mtime < f.stat().st_mtime:
+                depth_map(session, img).save(dp, optimize=True)
+        have[name] = True
+    (GAME / 'assets' / 'assets.json').write_text(json.dumps(sorted(have), ensure_ascii=False) + '\n', encoding='utf-8')
+    print(len(have), '장', sum(p.stat().st_size for p in OUT.iterdir()) // 1024 // 1024, 'MB')
+
+
+if __name__ == '__main__':
+    sys.exit(main())

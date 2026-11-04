@@ -80,12 +80,13 @@ export function newItemView(item, types, labels) {
 }
 // 기존 게임 문항: 출처마다 시험 자리(맞춘 꼴)와 화면에 보이는 글. 입장 검사는 안내문·서류·짐·말을 글로 옮긴다.
 // 레이싱 그림 낱말(낱말 하나를 듣고 그림 고르기)은 맞는 공식 자리가 없어(그림 자리 TI-L-15는 대화·세부) 자리 없이 본다.
-const EXISTING_TYPE = { 'blank-slice': () => 'TI-R-34', 'synk-town': item => item.skillId === 'ko.reading.main' ? 'TI-R-46' : 'TI-R-43', 'entry-check': () => 'TI-R-40',
+const EXISTING_TYPE = { 'subway-rush': item => item.skillId.startsWith('ko2.') ? 'TII-L-13' : item.skillId === 'ko.listening.response' ? 'TI-L-01' : 'TI-L-26', 'blank-slice': () => 'TI-R-34', 'synk-town': item => item.skillId === 'ko.reading.main' ? 'TI-R-46' : 'TI-R-43', 'entry-check': () => 'TI-R-40',
   'korean-racing': () => null, 'korean-runner': () => null, 'korean-rhythm': () => null, 'snap-words': () => null, 'talk-rally': item => item.kind === 'follow' ? 'TI-L-05' : 'TI-L-01' };
 // 듣기 게임은 진단 문항에 들리는 글이 줄여져 있어(label) 게임 원고에서 들리는 글 전체를 찾아 대본으로 보인다.
 const LISTENING_FORMAT = {
   'korean-runner': '게임 꼴: 안내 한마디를 듣고 갈 길(행동)을 보기 셋 가운데 고른다. 공식 시험 자리는 없다(세부 듣기 연습)',
   'korean-rhythm': '게임 꼴: 짧은 이야기를 듣고 묻는 말이 맞으면 O, 틀리면 X를 고른다. 공식 시험 자리는 없다(듣기 이해 O/X 연습)',
+  'subway-rush': '게임 꼴: 1인칭으로 서울 지하철을 타고 가며 안내방송 · 휴대폰 길 안내를 끝까지 듣고, 문 · 통로 · 출구 · 대답 세 칸 가운데 고른다(시험은 넷). 시간 제한 없음. 답을 가르는 말은 마지막 안내에 있다',
   'talk-rally': '게임 꼴: 몽글(마스코트)의 한마디를 듣고 알맞은 대답 카드를 셋 가운데 고른다(시험은 넷). 대답 카드는 글로 보인다',
 };
 let wordById = null;
@@ -102,7 +103,7 @@ function entryText(card) {
 export function existingItemView(item, types, labels, { script = null } = {}) {
   if (script) {
     const typeId = EXISTING_TYPE[item.source]?.(item);
-    return { existing: true, source: item.source, exam: 'topik-i', officialType: typeView(types.find(t => t.id === typeId)), fit: 'adapted',
+    return { existing: true, source: item.source, exam: String(typeId || '').startsWith('TII') ? 'topik-ii' : 'topik-i', officialType: typeView(types.find(t => t.id === typeId)), fit: 'adapted',
       format: LISTENING_FORMAT[item.source] || null, targetGrade: null, skillId: item.skillId, skillLabel: labels[item.skillId] || null,
       difficulty: item.difficulty, passage: null, script, question: item.question, choices: item.choices.map(choice => choice.label),
       answer: item.choices.findIndex(choice => choice.id === item.correctId), explanation: { ko: item.explanation }, choiceNotes: null };
@@ -132,6 +133,12 @@ async function talkRallyItems() {
     correctId: `talk-rally.${item.id}.${item.options.indexOf(item.answer)}`, explanation: item.why }));
 }
 // 찰칵 낱말(11-04): 낱말마다 한 문항 — 부탁이 있으면 뜻 부탁(안내문은 안내문 부탁), 글 없는 물건은 낱말 부탁, 그 밖의 고정 판은 뜻 고르기. 소리 부탁 · 인화는 같은 낱말 · 같은 원고라 따로 보지 않는다.
+// 환승 러시: 근거로 세는 결정 · 만남의 변형 전체. 열쇠는 게임과 같은 decisionMeta · meetingMeta.
+async function subwayRushItems() {
+  const imp = rel => import(pathToFileURL(path.join(root, rel)));
+  const [{ reviewItems }] = await Promise.all([imp('experiences/subway-rush/review-items.mjs')]);
+  return reviewItems();
+}
 async function snapWordsItems() {
   const imp = rel => import(pathToFileURL(path.join(root, rel)));
   const [{ PLACES, PLACE_ORDER }, { WORDS }, { itemMetadata }] = await Promise.all([imp('experiences/snap-words/places.mjs'), imp('experiences/snap-words/words.mjs'), imp('experiences/snap-words/learning.mjs')]);
@@ -171,6 +178,7 @@ async function listeningScripts() {
   const [{ LISTENING_CHECKS }, { TRACKS }] = await Promise.all([imp('experiences/korean-runner/listening-check.mjs'), imp('experiences/korean-rhythm/core.mjs')]);
   return item => {
     if (item.source === 'talk-rally') return [{ speaker: '몽글', text: item.line }];
+    if (item.source === 'subway-rush') return item.script;
     if (item.source === 'korean-runner') {
       const check = LISTENING_CHECKS.find(c => item.id === `korean-runner.listening-check.${c.id}` || item.itemKey?.startsWith(`korean-runner.listening-check.${c.id}.`));
       return check ? [{ speaker: '안내', text: check.text }] : null;
@@ -409,7 +417,7 @@ export async function prepare(name, { newFiles = null, existingSources = null, s
     for (let i = units.length - 1; i >= 0; i--) if (units[i].kind === 'new' && !kept.has(units[i].key)) units.splice(i, 1);
   }
   if (existingSources) {
-    const all = [...await diagnosticItems(), ...(existingSources.includes('talk-rally') ? await talkRallyItems() : []), ...(existingSources.includes('snap-words') ? await snapWordsItems() : [])];
+    const all = [...await diagnosticItems(), ...(existingSources.includes('talk-rally') ? await talkRallyItems() : []), ...(existingSources.includes('snap-words') ? await snapWordsItems() : []), ...(existingSources.includes('subway-rush') ? await subwayRushItems() : [])];
     const scriptOf = await listeningScripts();
     const pool = all.filter(item => item.source in EXISTING_TYPE && (!existingSources.length || existingSources.includes(item.source)));
     const picked = perSource ? Object.values(Object.groupBy(pool.map(item => ({ key: item.itemKey, item })), row => row.item.source)).flatMap(rows => seededPick(rows, perSource, name)).map(row => row.item) : pool;

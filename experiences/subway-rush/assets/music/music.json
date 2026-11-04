@@ -1,0 +1,74 @@
+{
+ "version": 1,
+ "target": {
+  "lufs": -18,
+  "truePeakDb": -1.5,
+  "codec": "mp3 160k 44.1kHz stereo"
+ },
+ "margin": 0.6,
+ "tracks": {
+  "run-9abc8596": {
+   "mode": "run",
+   "file": "assets/music/run-9abc8596.mp3",
+   "loopStart": 0.6,
+   "loopEnd": 54.0414,
+   "bpm": 107.78,
+   "bar": 2.2267,
+   "bars": 24,
+   "start": 6.2714,
+   "end": 59.7128,
+   "seamSimilarity": 0.9409,
+   "seamBefore": 0.9403,
+   "duration": 135.28,
+   "key": {
+    "name": "G major",
+    "r": 0.834
+   },
+   "inputLufs": -15.0,
+   "vocals": null,
+   "bytes": 1094008
+  },
+  "run-530d1648": {
+   "mode": "run",
+   "file": "assets/music/run-530d1648.mp3",
+   "loopStart": 0.6,
+   "loopEnd": 53.2292,
+   "bpm": 109.44,
+   "bar": 2.1929,
+   "bars": 24,
+   "start": 5.5936,
+   "end": 58.2228,
+   "seamSimilarity": 0.9851,
+   "seamBefore": 0.9425,
+   "duration": 107.16,
+   "key": {
+    "name": "G major",
+    "r": 0.852
+   },
+   "inputLufs": -15.7,
+   "vocals": null,
+   "bytes": 1077812
+  },
+  "arrive-2db78bb3": {
+   "mode": "arrive",
+   "file": "assets/music/arrive-2db78bb3.mp3",
+   "loopStart": 0.6,
+   "loopEnd": 82.5092,
+   "bpm": 93.76,
+   "bar": 2.5597,
+   "bars": 32,
+   "start": 3.0496,
+   "end": 84.9588,
+   "seamSimilarity": 0.993,
+   "seamBefore": 0.9485,
+   "duration": 136.8,
+   "key": {
+    "name": "C major",
+    "r": 0.851
+   },
+   "inputLufs": -14.72,
+   "vocals": null,
+   "bytes": 1663477
+  }
+ }
+}

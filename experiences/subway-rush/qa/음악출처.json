@@ -1,0 +1,23 @@
+{
+ "note": "곡 출처 · 권리(공개 게임 파일 music.json에는 싣지 않는다 — 공개 빌드의 제작 도구 이름 검사). 음악고리.py가 함께 쓴다.",
+ "tracks": {
+  "run-9abc8596": {
+   "file": "assets/music/run-9abc8596.mp3",
+   "suno": "9abc8596-fc17-44e5-9728-a520bc4dfd8b",
+   "title": "Transfer Rush Run",
+   "rights": "suno-premier-official-download"
+  },
+  "run-530d1648": {
+   "file": "assets/music/run-530d1648.mp3",
+   "suno": "530d1648-2f74-4647-b8f3-995c24e5d3a2",
+   "title": "Transfer Rush Run",
+   "rights": "suno-premier-official-download"
+  },
+  "arrive-2db78bb3": {
+   "file": "assets/music/arrive-2db78bb3.mp3",
+   "suno": "2db78bb3-e673-48b6-b29e-535ab83726ab",
+   "title": "Transfer Rush Arrive",
+   "rights": "suno-premier-official-download"
+  }
+ }
+}

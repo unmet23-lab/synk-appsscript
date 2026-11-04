@@ -1,0 +1,1 @@
+EDIT OF IMAGE 1 — keep the same person, same clothes, same pose, same camera, same background and same light. Change only the face and expression: she now smiles brightly with relief and gratitude. Everything else stays pixel-close to Image 1.
