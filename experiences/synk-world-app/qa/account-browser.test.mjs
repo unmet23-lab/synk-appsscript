@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {closedPhotoStatus} from './photo-status-fixture.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -59,7 +60,9 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   await context.addInitScript(()=>{if(window.top===window){globalThis.__qaWorldBoot=crypto.randomUUID();window.addEventListener('pageshow',event=>{if(event.persisted)sessionStorage.setItem('synk.qa.bfcache-persisted','1');});}if(window.top===window&&!sessionStorage.getItem('synk.oauth.session.world'))sessionStorage.setItem('synk.oauth.session.world',JSON.stringify({access_token:'synthetic-browser-token',refresh_token:null,expires_at:Date.now()+3600000}));});
   await context.route(new URL(runtimeConfig.accountApiUrl).origin+'/**',async route=>{
    const req=route.request(),target=new URL(req.url()),body=req.postDataJSON();calls.push({path:target.pathname,classId:target.searchParams.get('classId'),method:req.method(),body});let data={ok:true};
-   if(target.pathname.endsWith('/synk-account')){if(body?.action==='learning-consent')learning={enabled:body.enabled,revision:learning.revision+1};data=body?{ok:true,refreshRevoked:true}:{ok:true,account:{synk_user_id:A,status:'active'},learning,capabilities:{learningSync:true},sessions:[{id:C,current:true,revoked:false,product:'world'}]};}
+   const photoStatus=closedPhotoStatus(req,target,body,A);
+   if(photoStatus)data=photoStatus;
+   else if(target.pathname.endsWith('/synk-account')){if(body?.action==='learning-consent')learning={enabled:body.enabled,revision:learning.revision+1};data=body?{ok:true,refreshRevoked:true}:{ok:true,account:{synk_user_id:A,status:'active'},learning,capabilities:{learningSync:true},sessions:[{id:C,current:true,revoked:false,product:'world'}]};}
    else if(target.pathname.endsWith('/synk-play')){
     // The entry-time restore check below keeps account play reads waiting so the entry is still preparing.
     if(!body&&entryHold)await entryHold.released;

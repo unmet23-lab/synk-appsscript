@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {closedPhotoStatus} from './photo-status-fixture.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -74,7 +75,9 @@ test('계정 모드 WORLD 내 계정 시트의 「우리 반 수업」: 상태�
    try{
     if(req.method()==='OPTIONS'){await route.fulfill({status:204,headers:{...cors,'Access-Control-Allow-Headers':req.headers()['access-control-request-headers']||'*','Access-Control-Allow-Methods':'GET, POST, PUT'}});return;}
     const body=req.postDataJSON();calls.push({path:target.pathname,method:req.method()});
-    if(target.pathname==='/functions/v1/classroom'){
+    const photoStatus=closedPhotoStatus(req,target,body,A);
+    if(photoStatus)data=photoStatus;
+    else if(target.pathname==='/functions/v1/classroom'){
      const h=await req.allHeaders();classroomCalls.push({scenario,method:req.method(),search:target.search,contract:h['x-contract-ver'],authorization:h.authorization,apikey:h.apikey,contentType:h['content-type']||null});
      if(SCENARIOS[scenario].hold){const gate=hold;await gate.promise;}
      ({status,body:data}=classroomBody(scenario));

@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {closedPhotoStatus} from './photo-status-fixture.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -126,7 +127,9 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
    try{
     if(req.method()==='OPTIONS'){await route.fulfill({status:204,headers:{...cors,'Access-Control-Allow-Headers':req.headers()['access-control-request-headers']||'*','Access-Control-Allow-Methods':'GET, POST, PUT'}});return;}
     const body=req.postDataJSON();
-    if(target.pathname==='/functions/v1/synk-classroom/api/world/homework'){
+    const photoStatus=closedPhotoStatus(req,target,body,A);
+    if(photoStatus)data=photoStatus;
+    else if(target.pathname==='/functions/v1/synk-classroom/api/world/homework'){
      const h=await req.allHeaders(),query=Object.fromEntries(target.searchParams);
      homeworkCalls.push({method:req.method(),query,body,product:h['x-synk-product'],contract:h['x-synk-contract'],authorization:h.authorization,apikey:h.apikey,contentType:h['content-type']||null});
      ({status,data,drop=false}=await fake.handle(req.method(),query,body));

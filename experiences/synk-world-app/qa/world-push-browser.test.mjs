@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {closedPhotoStatus} from './photo-status-fixture.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -92,7 +93,9 @@ test('WORLD 학습 알림 2단: 동의 → 켜기 → 서비스 워커 알림 �
     const req=route.request(),target=new URL(req.url());let status=200,data={ok:true};
     if(req.method()==='OPTIONS'){await route.fulfill({status:204,headers:{...cors,'Access-Control-Allow-Headers':req.headers()['access-control-request-headers']||'*','Access-Control-Allow-Methods':'GET, POST, PUT'}});return;}
     const body=req.postDataJSON(),headers=await req.allHeaders();
-    if(target.pathname==='/functions/v1/world-push/api'){
+    const photoStatus=closedPhotoStatus(req,target,body,A);
+    if(photoStatus)data=photoStatus;
+    else if(target.pathname==='/functions/v1/world-push/api'){
      const authed=headers.authorization==='Bearer synthetic-browser-token';
      push.calls.push({action:body.action,authed,authorization:headers.authorization,apikey:headers.apikey,product:headers['x-synk-product'],contract:headers['x-synk-contract'],keepalive:false,body});
      if(body.action==='status'&&push.hold){const ms=push.hold;push.hold=0;await new Promise(r=>setTimeout(r,ms));}
