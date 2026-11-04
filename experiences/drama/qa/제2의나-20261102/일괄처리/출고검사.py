@@ -106,7 +106,7 @@ def 기준(올림, 판들, 상자=None):
         기본, 보임 = "강+", "강+가 기본 — 강 · 약도 고를 수 있음"
     else:
         특징들 = [한얼굴(p) for p in 판들]
-        세판 = min(닮(특징들[i], 특징들[j]) for i in range(len(특징들)) for j in range(i + 1, len(특징들))) if len(특징들) > 1 else None
+        세판 = min(닮(특징들[i], 특징들[j]) for i in range(len(특징들)) for j in range(i + 1, len(특징들))) if len(특징들) > 1 and all(x is not None for x in 특징들) else None
         if 세판 is not None and 세판 >= 기준관문["세판"]:
             # 어두운 피부 · 어두운 빛에서는 올린 사진과의 숫자가 0 언저리로 떨어진다 — 세 판이 서로 같은 사람이면 자가 틀린 쪽이라 기본 강 그대로 「이게 나?」로 본다(다시 구워도 같다)
             기본, 보임 = 줄[0]["판"], f"셋 다 문턱 아래지만 세 판끼리 {세판} — 숫자를 믿지 않고 강을 기본으로 「이게 나?」"

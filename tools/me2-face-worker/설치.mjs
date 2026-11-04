@@ -97,11 +97,11 @@ for (const [이름, 곳] of [['worker.py', `${뿌리}/worker.py`], ['synk-me2-fa
 
 const 황금 = 값('--황금');
 if (황금) {
-  // 임시 폴더에 올려 재고 지운다 — 지어낸 대역뿐이지만 서버에 남기지 않는다.
-  const 곳 = path.dirname(path.resolve(황금)), 임시 = '/tmp/me2-golden';
-  꼭(원격(`rm -rf ${임시}; install -d -m 0700 ${임시}`), '황금 폴더');
-  for (const 이름 of fs.readdirSync(곳)) 꼭(원격(`cat > '${임시}/${이름}'`, fs.readFileSync(path.join(곳, 이름))), `황금 ${이름}`);
-  const r = 원격(`ME2_MODEL_DIR=${뿌리}/models OPENCV_LOG_LEVEL=ERROR ${뿌리}/venv/bin/python -I -X utf8 ${뿌리}/worker.py --황금 ${임시}/황금.json; c=$?; rm -rf ${임시}; exit $c`);
+  // 임시 폴더에 올려 재고 지운다 — 지어낸 대역뿐이지만 서버에 남기지 않는다. 파일마다 접속하면 연달은 접속이 막혀 묶음 하나로 보낸다(11-04).
+  const 곳 = path.dirname(path.resolve(황금)), 이름 = path.basename(황금), 임시 = '/tmp/me2-golden';
+  const 묶음 = spawnSync('tar', ['-cf', '-', '-C', 곳.replaceAll('\\', '/'), '.'], { encoding: 'buffer', maxBuffer: 512 * 1024 * 1024 });
+  if (묶음.status !== 0) die('황금 묶기 실패');
+  const r = 원격(`rm -rf ${임시}; install -d -m 0700 ${임시}; tar -xf - -C ${임시} && ME2_MODEL_DIR=${뿌리}/models OPENCV_LOG_LEVEL=ERROR ${뿌리}/venv/bin/python -I -X utf8 ${뿌리}/worker.py --황금 '${임시}/${이름}'; c=$?; rm -rf ${임시}; exit $c`, 묶음.stdout);
   console.log(r.out.trim());
   if (r.code !== 0) die(`황금 어긋남(${r.code}) ${r.err.slice(0, 400)}`);
   console.log('  ✅ 황금 통과 · 임시 폴더 지움');

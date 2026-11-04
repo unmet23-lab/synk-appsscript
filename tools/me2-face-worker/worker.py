@@ -136,7 +136,7 @@ def score_base(faces, task):
         if feature is not None:
             features.append(feature)
     # 세 판끼리 서로 닮은 정도의 가장 낮은 값 — 올린 사진과 낮은데 이 값이 높으면 자가 믿을 수 없는 것이다(어두운 피부 · 어두운 빛, 설계 3절).
-    if len(features) >= 2:
+    if len(features) >= 2 and len(features) == len(task["candidates"]):  # 한 판이라도 얼굴을 못 찾았으면 세 판이 같다고 말할 수 없다
         scores["agree"] = min(faces.like(features[i], features[j]) for i in range(len(features)) for j in range(i + 1, len(features)))
     return scores
 
@@ -228,4 +228,7 @@ if __name__ == "__main__":
         sys.exit(2)
     except urllib.error.URLError as error:
         print(f"[me2-face] 연결 실패 {type(error.reason).__name__}", file=sys.stderr)
+        sys.exit(2)
+    except (TimeoutError, ValueError, OSError) as error:  # 본문을 읽다 끊김 · 답이 JSON이 아님 — 이름만
+        print(f"[me2-face] 연결 실패 {type(error).__name__}", file=sys.stderr)
         sys.exit(2)
