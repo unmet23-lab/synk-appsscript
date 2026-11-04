@@ -54,7 +54,7 @@ const TEXT={
   card:'Оюутны үнэмлэх',cardName:'Хоёр дахь би',cardRole:'Их сургуулийн 1-р курс',changeFace:'Гурван зургийг дахин харах',back:'Буцах',newerDeveloping:'Шинэ зургийг угааж байна. Гарахаар нь сонгож болно.',
   wardrobe:'Хувцасны шүүгээ',groupOutfit:'Хувцас',groupHair:'Үс',groupAcc:'Дагалдах хэрэгсэл',detailWear:'Дарвал таны дүрд үүнийг өмсүүлж илгээнэ. Ихэвчлэн хэдэн цагийн дотор, хамгийн удаандаа маргааш ирнэ.',detailHair:'Дарвал таны дүрийн үсийг өөрчилж илгээнэ. Ихэвчлэн хэдэн цагийн дотор, хамгийн удаандаа маргааш ирнэ.',album2:'Дурсамжийн зураг',order:'Өмсөж үзэх',orderHair:'Үсчинд цаг авах',orderScene:'Угаалгах',shipping:'Хүргэлтэд гарсан',salon:'Үсчинд цаг авсан',developingShort:'Угааж байна',delayed:'Хүргэлт хоцорч байна — ирэх өдөр: {date}',failedItem:'Энэ удаад бүтсэнгүй',again:'Дахин оролдох',
   wear:'Үүнийг өмсөх',wearing:'Өмссөн',takeOff:'Тайлах',redoItem:'Энэ зураг хачин байна',redoLook:'Дахин өмсөж үзэх',newChip:'Ирлээ',fullAlbum:'Дурсамжийн зураг дүүрсэн байна.',
-  eraseOpen:'Зургаар бүтээсэн дүрийг устгах',eraseAsk:'Бүтээсэн дүр болон бүх зургийг устгана. Тоглоомын явц хэвээр үлдэнэ. Буцаах боломжгүй.',eraseYes:'Бүгдийг устгах',eraseNo:'Хэвээр үлдээх',erased:'Устгалаа.',withdrawOpen:'Зургийн зөвшөөрлөө буцаах',withdrawAsk:'Зургийн зөвшөөрлөө буцаана. Дахин зөвшөөрөх хүртэл зураг илгээх боломжгүй. Тоглоомын явц хэвээр үлдэнэ.',withdrawYes:'Зөвшөөрлөө буцаах',withdrawn:'Зөвшөөрлөө буцаалаа.',
+  eraseOpen:'Зургаар бүтээсэн дүрийг устгах',eraseAsk:'Бүтээсэн дүр болон бүх зургийг устгана. Тоглоомын явц хэвээр үлдэнэ. Буцаах боломжгүй.',eraseYes:'Бүгдийг устгах',eraseNo:'Хэвээр үлдээх',erased:'Устгалаа.',withdrawOpen:'Зургийн зөвшөөрлөө цуцлах',withdrawAsk:'Зургийн зөвшөөрлөө цуцална. Дахин зөвшөөрөх хүртэл зураг илгээх боломжгүй. Тоглоомын явц хэвээр үлдэнэ.',withdrawYes:'Зөвшөөрлөө цуцлах',withdrawn:'Зөвшөөрлөө цуцаллаа.',
   off:'Одоогоор зургийн газар түр амарч байна.',error:'Холболт түр тасарлаа. Хэсэг хугацааны дараа дахин оролдоорой.',close:'Хаах'},
 };
 const ITEMS={
@@ -298,7 +298,7 @@ export function createMe2Photo({show,home,close,request,doc=globalThis.document,
   home?.attachPanelResource?.({dispose});
   markSeen();schedule();
  }
- function markSeen(){for(const node of root?.querySelectorAll('[data-new-job]')||[]){const job=node.dataset.newJob;node.removeAttribute('data-new-job');if(seenSent.has(job))continue;seenSent.add(job);request({action:'seen',job_id:job}).catch(()=>{});}}
+ function markSeen(){for(const node of root?.querySelectorAll('[data-new-job]')||[]){const job=node.dataset.newJob;node.removeAttribute('data-new-job');if(seenSent.has(job))continue;seenSent.add(job);request({action:'seen',job_id:job}).catch(()=>{seenSent.delete(job);});}}
 
  // ── 사진 고르기 → 손보기 → 올리기 ──
  function clearPhoto(){photo?.bitmap?.close?.();if(photo?.preview?.url)try{URL.revokeObjectURL(photo.preview.url);}catch{}photo=null;}
@@ -357,7 +357,7 @@ export function createMe2Photo({show,home,close,request,doc=globalThis.document,
   // 여기부터 사진은 서버에 있다 — 화면을 못 새로 받아도 「못 보냈어요」가 아니다. 시트를 닫아도 올리기는 끝까지 갔다(다시 열면 「현상 중」으로 보인다).
   if(!alive())return;
   clearPhoto();stage={name:'home'};
-  if(sent&&view?.me&&!view.me.chosen_url)view={...view,me:{...view.me,state:'developing'}};
+  if(sent&&view?.me)view={...view,me:view.me.chosen_url?{...view.me,newer:'developing'}:{...view.me,state:'developing'}};
   try{await refresh();}catch{toast(text('error'));paint();}
  }
 
