@@ -64,7 +64,7 @@ module.exports = {
   async 사전확인(ctx) {
     const r = ctx.실행(파이썬, [장부, 'pending']);
     let j;
-    try { j = JSON.parse(r.stdout); } catch { throw new Error(`장부 확인 실패(종료 ${r.code}): ${(r.stderr || r.stdout).slice(0, 200)}`); }
+    try { j = JSON.parse(r.stdout); } catch { throw new Error(`장부 확인 실패(종료 ${r.code}): ${(r.stderr || r.stdout).slice(-300)}`); }
     const 줄 = Array.isArray(j.rows) ? j.rows : [];
     if (!줄.length) return { 할일: false, 이유: '적용안 쓸 줄 없음' };
     if (기다릴까(줄.map(받은시각), ctx.지금 ? +ctx.지금 : Date.now())) {
