@@ -12,6 +12,29 @@ const script = step.match(/        run: \|\n([\s\S]*)/)[1].split('\n').map(line 
 const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : '/bin/bash';
 const posix = p => process.platform === 'win32' ? p.replaceAll('\\', '/').replace(/^([A-Za-z]):/, (_, drive) => '/' + drive.toLowerCase()) : p;
 
+test('experiences runs inside Xvfb and other bundles use node directly, preserving the baseline argument', t => {
+  const section = workflow.match(/      - name: run tests[^\n]*\n([\s\S]*?)(?=      - name: verify sparse)/)?.[1];
+  const body = section?.match(/        run: \|\n([\s\S]*)/)?.[1].split('\n').map(line => line.slice(10)).join('\n');
+  assert.ok(body);
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-wide-display-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  fs.mkdirSync(path.join(root, 'tests'));
+  const prefix = 'node() { printf "node"; printf " <%s>" "$@"; printf "\\n"; }\nxvfb-run() { printf "xvfb"; printf " <%s>" "$@"; printf "\\n"; }\n';
+  const command = path.join(root, 'run.sh');
+  fs.writeFileSync(command, prefix + body);
+  for (const [bundle,baseline] of [['experiences',false],['experiences',true],['desktop',true],['tools',true]]) {
+    if (baseline) fs.writeFileSync(path.join(root, 'tests/ci넓은시험_알려진실패.json'), '{}');
+    const result = spawnSync(bash, [posix(command)], {
+      cwd: root, encoding: 'utf8', windowsHide: true,
+      env: { ...process.env, BUNDLE: bundle, RUNNER_TEMP: 'fixture-output' },
+    });
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout.trim(), (bundle === 'experiences'
+      ? 'xvfb <--auto-servernum> <--server-args=-screen 0 1600x1000x24 -nolisten tcp> <node>'
+      : 'node') + ' <tools/ci넓은시험.js> <' + bundle + '> <' + (baseline ? '--후보' : '--기준선') + '> <fixture-output/wide-baseline.json>');
+  }
+});
+
 function run(t, { missing = [], updateExit = 0, updateFailures = 0, timeoutFailures = 0, probeExit = 0 } = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-wide-deps-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));

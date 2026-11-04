@@ -219,11 +219,16 @@ jobs:
           NODE_OPTIONS: --require ${{ github.workspace }}/SYNK-appsscript/tools/ci읽기기록.cjs
           # 운영 서버를 쓰지 않는 격리 fixture에서 실제 Linux flock의 120초 대기까지 확인한다.
           SYNK_TEST_REAL_BACKUP_LOCK_TIMEOUT: ${{ matrix.bundle == '회사' && '1' || '0' }}
+          SYNK_ME2_QA_X11: ${{ matrix.bundle == 'experiences' && '1' || '0' }}
         run: |
+          runner=(node)
+          if [ "$BUNDLE" = "experiences" ]; then
+            runner=(xvfb-run --auto-servernum --server-args="-screen 0 1600x1000x24 -nolisten tcp" node)
+          fi
           if [ -f tests/ci넓은시험_알려진실패.json ]; then
-            node tools/ci넓은시험.js "$BUNDLE" --후보 "$RUNNER_TEMP/wide-baseline.json"
+            "${runner[@]}" tools/ci넓은시험.js "$BUNDLE" --후보 "$RUNNER_TEMP/wide-baseline.json"
           else
-            node tools/ci넓은시험.js "$BUNDLE" --기준선 "$RUNNER_TEMP/wide-baseline.json"
+            "${runner[@]}" tools/ci넓은시험.js "$BUNDLE" --기준선 "$RUNNER_TEMP/wide-baseline.json"
           fi
       - name: verify sparse inputs were not skipped
         if: ${{ success() || failure() }}

@@ -51,7 +51,10 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
  const cors={'Access-Control-Allow-Origin':'*'};
  try{
   if(!liveMode)await serverReady(url+'/world/health',{signal:t.signal,exited:()=>server.exitCode!==null,output:()=>serverOutput});
-  browser=await playwright.chromium.launch({channel:process.platform==='win32'?'msedge':'chrome',headless:true,timeout:30000});
+  // Linux CI의 가상 X 화면에는 실제 포인터가 있다. 터치 모드를 끄면 그 포인터로 돌아간다.
+  const virtualDisplay=process.platform==='linux'&&process.env.SYNK_ME2_QA_X11==='1';
+  if(virtualDisplay)assert.ok(process.env.DISPLAY,'사진 기기 전환 시험에는 Xvfb 화면이 필요하다');
+  browser=await playwright.chromium.launch({channel:process.platform==='win32'?'msedge':'chrome',headless:!virtualDisplay,timeout:30000});
   const context=await browser.newContext({viewport:VIEWPORTS[0].size,locale:'ko-KR',timezoneId:'Asia/Seoul',reducedMotion:'reduce'});context.setDefaultTimeout(25000);
   await context.route('**/*',route=>{if(new URL(route.request().url()).origin===url)return route.continue();external.push(route.request().url());return route.abort('blockedbyclient');});
   if(candidate)await context.route(url+'/world/**',route=>{const rel=new URL(route.request().url()).pathname.replace(/^\//,''),file=path.join(candidate,rel.endsWith('/')?rel+'index.html':rel);if(fs.existsSync(file)&&fs.statSync(file).isFile())return route.fulfill({status:200,contentType:typeOf(file),body:fs.readFileSync(file),headers:{'Cache-Control':'no-store'}});return route.fallback();});
@@ -134,7 +137,10 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   };
   // 휴대폰 폭 캡처는 터치 기기로 본다 — 고르기 화면의 단추가 기기에 따라 다르다((pointer:coarse)).
   const cdp=await context.newCDPSession(page);
-  const touch=on=>cdp.send('Emulation.setTouchEmulationEnabled',{enabled:on,maxTouchPoints:on?5:1});
+  const touch=async on=>{
+   await cdp.send('Emulation.setTouchEmulationEnabled',{enabled:on,maxTouchPoints:on?5:1});
+   await page.waitForFunction(enabled=>matchMedia(enabled?'(pointer:coarse)':'(hover:hover) and (pointer:fine)').matches,on);
+  };
   const both=async(name,after=async()=>{})=>{for(const {tag,size} of VIEWPORTS){viewportTag=tag;await touch(tag==='390');await page.setViewportSize(size);await page.waitForTimeout(150);await check(name);await shoot(name);await after(tag);}viewportTag='390';await touch(false);await page.setViewportSize(VIEWPORTS[0].size);};
   const finish=async(scores)=>{await fx.tick();await fx.tick();await fx.scoreAll(scores);await fx.tick();};
 
