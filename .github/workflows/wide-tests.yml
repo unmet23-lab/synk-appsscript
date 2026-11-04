@@ -74,6 +74,8 @@ jobs:
           sparse-checkout: |
             /package.json
             /package-lock.json
+            /config/ai-prices-20261003.json
+            /lib/ai-spend.js
             /lib/atlas-memory-rules.js
             /lib/atlas/education.js
             /lib/atlas/engine.js
@@ -92,6 +94,12 @@ jobs:
             /lib/atlas/vellum-flow.js
             /lib/atlas/vellum.js
             /lib/generated/topik4-homework-key.json
+            /lib/me2-photo-batch.js
+            /lib/me2-photo-prompts.js
+            /lib/me2-photo-rules.js
+            /lib/me2-photo-runtime.js
+            /lib/me2-photo-storage.js
+            /lib/me2-photo-vendor.js
             /lib/modern-town-export.js
             /lib/sha256.js
             /lib/study-progress-rules.js
@@ -114,12 +122,14 @@ jobs:
             /lib/world-v1-server.js
             /lib/world-v1-store.js
             /lib/내정보규칙.js
+            /lib/업로드경로.js
             /lib/자격증명.js
             /lib/플래그.js
             /supabase/functions/_shared/synk-classroom-runtime.js
             /supabase/functions/_shared/synk-play-runtime.js
             /supabase/migrations/
             /tests/lib/account-lifecycle-fixture.js
+            /tests/lib/me2-photo-fixture.js
             /tests/lib/play-fixture.js
             /tests/lib/postgres-json-fixture.js
             /tools/qa-synk-classroom-fixture.cjs
