@@ -1,10 +1,10 @@
 {
-  "version": 1,
-  "checkedAt": "2026-10-11",
-  "purpose": "PULSE public model gallery in the local desktop platform",
-  "modelFactsSource": "docs/마케팅/PULSE_AI모델_캐스팅_20260930/roster-v2.json",
+  "version": 2,
+  "checkedAt": "2026-11-04",
+  "purpose": "PULSE public model gallery and works in the local desktop platform",
+  "modelFactsSource": "../SYNK-website/site-v10/content/ko.mjs (pulse.models)",
   "publicSelectionSource": "../SYNK-website/site-v10/content/ko.mjs",
-  "selectionNote": "The website copy-models.py records that M03 replaced F04 at the user request on 2026-10-01. Keep the current public selection of six. No smile/hover or unapproved media included.",
+  "selectionNote": "Keep the current public selection: twenty-one models (two idol teams included) and three works. Every file is byte-identical to the public synk.im file on the checkedAt date. No smile/hover or unapproved media included.",
   "assets": [
     {
       "id": "M01",
@@ -70,6 +70,204 @@
       "publicContentType": "image/webp",
       "bytes": 29184,
       "sha256": "b47d4a8baa2bae52ce435e3a1894419dad6a6c8faf5cdee67510e0911317aeb8",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "F04",
+      "file": "models/f04.webp",
+      "source": "../SYNK-website/dist/assets/pulse-models/pulse-model-f04-20261022.webp",
+      "publicUrl": "https://synk.im/assets/pulse-models/pulse-model-f04-20261022.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 20046,
+      "sha256": "51ae31263c8b887a1461807cafe0fd7a46a905d2cc6d171f5985864261a7db04",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "F05",
+      "file": "models/f05.webp",
+      "source": "../SYNK-website/dist/assets/pulse-models/pulse-model-f05-20261022.webp",
+      "publicUrl": "https://synk.im/assets/pulse-models/pulse-model-f05-20261022.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 38698,
+      "sha256": "a9684afff3c8809e87d08aee4ff2e07317981eef6c3c3499cd6095761c59c510",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "M04",
+      "file": "models/m04.webp",
+      "source": "../SYNK-website/dist/assets/pulse-models/pulse-model-m04-20261022.webp",
+      "publicUrl": "https://synk.im/assets/pulse-models/pulse-model-m04-20261022.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 30720,
+      "sha256": "5358bc8215ff9c7498f363dfaa3f8f833d7861a2d732c2eb27a8c627936fda2b",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "F06",
+      "file": "models/f06.webp",
+      "source": "../SYNK-website/dist/assets/pulse-models/pulse-model-f06-20261022.webp",
+      "publicUrl": "https://synk.im/assets/pulse-models/pulse-model-f06-20261022.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 21278,
+      "sha256": "4bd53a238cf35bb0085e9a965137368086257a4607ef504a8a923dbaeff63a70",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "F07",
+      "file": "models/f07.webp",
+      "source": "../SYNK-website/dist/assets/pulse-models/pulse-model-f07-20261022.webp",
+      "publicUrl": "https://synk.im/assets/pulse-models/pulse-model-f07-20261022.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 14878,
+      "sha256": "86aa5743d6b69c3bc1617b72487b1ccdad4c9edf291910f627f953cc5127dc94",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "M05",
+      "file": "models/m05.webp",
+      "source": "../SYNK-website/dist/assets/pulse-models/pulse-model-m05-20261022.webp",
+      "publicUrl": "https://synk.im/assets/pulse-models/pulse-model-m05-20261022.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 19712,
+      "sha256": "494d073a8dfb8244ef0d491604737f09ff5fdf039d9984332bfcf1ebaaf37309",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "M06",
+      "file": "models/m06.webp",
+      "source": "../SYNK-website/dist/assets/pulse-models/pulse-model-m06-20261024.webp",
+      "publicUrl": "https://synk.im/assets/pulse-models/pulse-model-m06-20261024.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 13984,
+      "sha256": "c54d656635aced652fb80f714330ba0f8645604f3eee05a1b7d9de3347b7f15c",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "F08",
+      "file": "models/f08.webp",
+      "source": "../SYNK-website/dist/assets/pulse-models/pulse-model-f08-20261103.webp",
+      "publicUrl": "https://synk.im/assets/pulse-models/pulse-model-f08-20261103.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 24186,
+      "sha256": "6683edca4def7433dfb282f9b4224ffa9d2cfec398d14245ed1de17121919050",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "F09",
+      "file": "models/f09.webp",
+      "source": "../SYNK-website/dist/assets/pulse-models/pulse-model-f09-20261103.webp",
+      "publicUrl": "https://synk.im/assets/pulse-models/pulse-model-f09-20261103.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 30034,
+      "sha256": "21ea31b184dcba783d08f0e107ecd4651aa11282a8b0b5785a295658bffbda32",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "F10",
+      "file": "models/f10.webp",
+      "source": "../SYNK-website/dist/assets/pulse-models/pulse-model-f10-20261103.webp",
+      "publicUrl": "https://synk.im/assets/pulse-models/pulse-model-f10-20261103.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 39464,
+      "sha256": "3c4f4ab199ca8b1ff7dd339438b492e86031b1bfb7453e0c554b9d8651b1f7ba",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "F11",
+      "file": "models/f11.webp",
+      "source": "../SYNK-website/dist/assets/pulse-models/pulse-model-f11-20261103.webp",
+      "publicUrl": "https://synk.im/assets/pulse-models/pulse-model-f11-20261103.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 27352,
+      "sha256": "b6eb83a6824e4fb13971e691434031356734c5ad144243f1ac4169d2022fb04b",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "M07",
+      "file": "models/m07.webp",
+      "source": "../SYNK-website/dist/assets/pulse-models/pulse-model-m07-20261103.webp",
+      "publicUrl": "https://synk.im/assets/pulse-models/pulse-model-m07-20261103.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 22858,
+      "sha256": "6da3ad5bc01209ddf655b6a39242d5b9e5a88dcabffbc271e28117cb0488ff69",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "M08",
+      "file": "models/m08.webp",
+      "source": "../SYNK-website/dist/assets/pulse-models/pulse-model-m08-20261103.webp",
+      "publicUrl": "https://synk.im/assets/pulse-models/pulse-model-m08-20261103.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 25364,
+      "sha256": "ab23ecc4f1a6367de758212a37262c06fb918f0be4a471453eb0e41f3fcb1ec5",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "M09",
+      "file": "models/m09.webp",
+      "source": "../SYNK-website/dist/assets/pulse-models/pulse-model-m09-20261103.webp",
+      "publicUrl": "https://synk.im/assets/pulse-models/pulse-model-m09-20261103.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 21380,
+      "sha256": "b3236cb582b8b98f295b6e1cd8d25fe92a5b027917273055a4b1fe7c9514e243",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "M10",
+      "file": "models/m10.webp",
+      "source": "../SYNK-website/dist/assets/pulse-models/pulse-model-m10-20261103.webp",
+      "publicUrl": "https://synk.im/assets/pulse-models/pulse-model-m10-20261103.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 24524,
+      "sha256": "e97dff1deb2313f919b255a737284c691a445d1bdeda8d40049a025dca72d990",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "yurigyeol",
+      "file": "portfolio/yurigyeol.webp",
+      "source": "../SYNK-website/dist/assets/v10/pulse-work-yurigyeol-20261103.webp",
+      "publicUrl": "https://synk.im/assets/v10/pulse-work-yurigyeol-20261103.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 115560,
+      "sha256": "0ccfe6e724779b3e254cc114b7230f73e204f1108e03f8d5405c2d2a0de94bf1",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "maejin",
+      "file": "portfolio/maejin.webp",
+      "source": "../SYNK-website/dist/assets/v10/pulse-work-maejin-20261103.webp",
+      "publicUrl": "https://synk.im/assets/v10/pulse-work-maejin-20261103.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 37608,
+      "sha256": "9ffde8a446ac9120d01b14ecee1517f95d9d6fb22a85813fb857e4ed721801dd",
+      "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "hwaseong-cf",
+      "file": "portfolio/hwaseong-cf.webp",
+      "source": "../SYNK-website/dist/assets/v10/pulse-work-hwaseong-cf-20261022.webp",
+      "publicUrl": "https://synk.im/assets/v10/pulse-work-hwaseong-cf-20261022.webp",
+      "publicHttpStatus": 200,
+      "publicContentType": "image/webp",
+      "bytes": 154684,
+      "sha256": "9497942f8f65eb23432e537c4ff15edb2aa6697485435fed8a0939bf64679a57",
       "transformation": "none; byte-for-byte copy"
     }
   ]
