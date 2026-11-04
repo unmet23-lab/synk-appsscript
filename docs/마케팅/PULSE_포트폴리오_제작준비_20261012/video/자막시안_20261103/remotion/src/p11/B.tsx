@@ -38,10 +38,10 @@ const lerpTable = (table: number[][], f: number) => {   // [장, x, y] 표 사�
 const CUT_MOON = 52 / 24;   // 귀 → 달 중력
 const CUT_RUN = 91 / 24;    // 달 중력 → 솟아 떠 있는 개 · 두 사람
 const CUT_BOX = 163 / 24;   // → 염력 상자
-const CUT_WRAP = 230 / 24;  // → 조끼가 날아와 붙고 촉수가 나오는 판(p11-b04e)
-const SHOOT = CUT_WRAP;    // 조끼가 날아가기 시작
-const TENT_END = 258 / 24; // 촉수가 다 들어갔다
-const SLAM = w(3, 1);      // 구명조끼! — 조끼가 개에게 철썩
+const CUT_WRAP = 185 / 24;  // → 조끼가 날아와 붙고 촉수가 나오는 판(p11-b04e)
+const SHOOT = CUT_WRAP;    // 조끼가 날아가기 시작(「특별한」)
+const VEST_SLAM = 191 / 24;   // 조끼가 개에게 철썩 · 촉수
+const TENT_END = 216 / 24; // 촉수가 다 들어갔다(「준비했어요」 끝)
 const CUT_OWL = 280 / 24;  // → 고개 도는 컷
 const CALLOUT_FROM = [466, 985], CALLOUT_AT = [530, 790];   // 가격 말풍선 — 당긴 화면의 조끼 오른쪽에서
 const SPIN_STOP = 318 / 24;   // 고개가 뚝 멈춘다
@@ -109,8 +109,8 @@ const HUD: [number, number, string][] = [
   [CUT_MOON + 0.04, CUT_RUN, '중력 1/6 모드'],
   [CUT_RUN + 0.04, w(1, 3), '인간 반응 관찰 중'],
   [w(1, 3) + 0.6, CUT_BOX, '인간 도주 확인'],
-  [CUT_BOX + 0.5, SHOOT, '조끼 원격 조종 중'],
-  [SLAM + 0.15, TENT_END, '촉수 정리 중'],
+  [CUT_BOX + 0.1, SHOOT, '조끼 원격 조종 중'],
+  [VEST_SLAM + 0.12, TENT_END, '촉수 정리 중'],
   [TENT_END, CUT_OWL, '착용 완료'],
   [CUT_OWL + 0.2, SPIN_STOP, '목 회전 점검 중'],
   [SPIN_STOP, CUT_CLAW, '이상 없음'],
@@ -170,16 +170,35 @@ const Moon: React.FC<{ t: number }> = ({ t }) => {   // 뛰어노는 걸 — 글
   );
 };
 
-const Huh: React.FC<{ t: number }> = ({ t }) => {   // 얼어붙은 두 사람 머리 위 물음표
+// 조준 표시 — 개의 시선. 찰칵 잠기며 깜박인다
+const LockMark: React.FC<{ x: number; y: number; r: number; t: number; at: number }> = ({ x, y, r, t, at }) => {
+  if (t < at) return null;
+  const k = t - at, u = ramp(t, at, 0.16), sc = 1 + 0.8 * (1 - u), rot = (1 - u) * 50;
+  const c = r * 0.4, d = `M${-r} ${-r + c}V${-r}H${-r + c}M${r - c} ${-r}H${r}V${-r + c}M${r} ${r - c}V${r}H${r - c}M${-r + c} ${r}H${-r}V${r - c}`;
+  const blink = k < 0.28 && Math.floor(k * 25) % 2 === 1 ? 0.35 : 1;
+  return (
+    <g transform={`translate(${x} ${y}) rotate(${rot}) scale(${sc})`} opacity={blink}>
+      <path d={d} fill="none" stroke="#0E1320" strokeOpacity={0.55} strokeWidth={15} />
+      <path d={d} fill="none" stroke={ALIEN} strokeWidth={8} />
+    </g>
+  );
+};
+const LockLabel: React.FC<{ x: number; y: number; t: number; at: number; text: string }> = ({ x, y, t, at, text }) => {
+  if (t < at) return null;
+  return <div style={{ ...abs(x, y), zIndex: 22, opacity: ramp(t, at + 0.1, 0.12), background: chipBg, color: ALIEN, fontFamily: KO, fontWeight: 700, fontSize: 40, padding: '10px 22px 11px', borderRadius: 12, whiteSpace: 'nowrap' }}>{text}</div>;
+};
+
+const HumanScan: React.FC<{ t: number }> = ({ t }) => {   // 얼어붙은 두 사람 — 개가 조준해 당황 수치를 잰다(기본 물음표는 성의 없어 보인다 — 아르곤)
   const a = 4.62, b = w(1, 3);
   if (t < a || t >= b) return null;
   return (
     <>
-      {[[300, 470, a, -8], [640, 410, a + 0.28, 7]].map(([x, y, at, r], i) => {
-        if (t < at) return null;
-        const s = Math.min(1.05, pop(t, at, 0.26)), wob = Math.sin((t - at) * 9) * 4;
-        return <div key={i} style={{ ...abs(x - 60, y + wob, 120), zIndex: 20, textAlign: 'center', transform: `rotate(${r}deg) scale(${s})` }}><span style={{ ...big(150, '#FFFFFF'), textShadow: softShadow(150) }}>?</span></div>;
-      })}
+      <svg width={1080} height={1920} style={{ position: 'absolute', left: 0, top: 0, zIndex: 21 }}>
+        <LockMark x={385} y={622} r={72} t={t} at={a} />
+        <LockMark x={640} y={602} r={72} t={t} at={a + 0.28} />
+      </svg>
+      <LockLabel x={232} y={468} t={t} at={a} text="당황 98%" />
+      <LockLabel x={600} y={448} t={t} at={a + 0.28} text="당황 99%" />
     </>
   );
 };
@@ -197,15 +216,15 @@ const Kkam: React.FC<{ t: number }> = ({ t }) => {   // 깜짝 — 집중선 + �
   );
 };
 
-// 염력 컷 — 조끼 자리(p11-b04c 장, 중심 x, 중심 y): 노랑 덩이를 장마다 잰 값. 판은 ×1.09로 돌려 73장에서 p11-b04e로 넘어간다
+// 염력 컷 — 조끼 자리(p11-b04c 장, 중심 x, 중심 y): 노랑 덩이를 장마다 잰 값. 판은 14장부터 ×2.68로 돌려 73장에서 p11-b04e로 넘어간다
 const VEST = [[0, 567, 1012], [24, 567, 1009], [32, 575, 990], [40, 582, 963], [48, 585, 939], [56, 586, 906], [64, 583, 841], [73, 581, 803]];
 const EYE = [[0, 328, 863], [40, 330, 858], [73, 312, 827]];
-const boxFrame = (t: number) => Math.min(73, (t - CUT_BOX) * FPS * (73 / 67));
+const boxFrame = (t: number) => Math.min(73, 14 + (t - CUT_BOX) * FPS * (59 / 22));
 const Telekinesis: React.FC<{ t: number }> = ({ t }) => {   // 눈에서 나간 초록 파동이 조끼를 들어 올린다 — 장면에 붙는다. 조끼가 붙는 순간 꺼진다
-  if (t < CUT_BOX || t >= SLAM) return null;
+  if (t < CUT_BOX || t >= VEST_SLAM) return null;
   const f = boxFrame(t);
   const [ex, ey] = lerpTable(EYE, f), [vx, vy] = lerpTable(VEST, f);
-  const on = ramp(t, CUT_BOX + 0.5, 0.2);
+  const on = ramp(t, CUT_BOX + 0.06, 0.12);
   const ang = Math.atan2(vy - ey, vx - ex);
   const reach = Math.hypot(vx - ex, vy - ey);
   const arcs = t >= SHOOT ? [] : Array.from({ length: 5 }, (_, i) => {
@@ -223,30 +242,16 @@ const Telekinesis: React.FC<{ t: number }> = ({ t }) => {   // 눈에서 나간 
   );
 };
 
-const HolyLight: React.FC<{ t: number }> = ({ t }) => {   // 조끼 뒤로 후광 — 떠오르는 동안만. 날아가면 뚝 꺼진다
-  const a = w(2, 2) - 0.1, b = SHOOT;
+const HolyLight: React.FC<{ t: number }> = ({ t }) => {   // 조끼 뒤로 부드러운 빛 — 방사선은 번쩍에만 쓴다(여기서는 사진이 벽지처럼 바랬다 — Fable)
+  const a = CUT_BOX + 0.12, b = SHOOT;
   if (t < a || t >= b) return null;
   const [vx, vy] = lerpTable(VEST, boxFrame(t));
-  const o = ramp(t, a, 0.7);
+  const o = ramp(t, a, 0.25);
   return (
     <>
-      <svg width={1080} height={1920} style={{ position: 'absolute', left: 0, top: 0, opacity: 0.62 * o, mixBlendMode: 'screen' }}>
-        <defs>
-          <radialGradient id="holyFall" gradientUnits="userSpaceOnUse" cx={vx} cy={vy} r={1050}><stop offset="0.14" stopColor="#000" /><stop offset="0.26" stopColor="#fff" /><stop offset="0.5" stopColor="#999" /><stop offset="1" stopColor="#000" /></radialGradient>
-          <filter id="holySoft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="28" /></filter>
-          <mask id="holyMask" maskUnits="userSpaceOnUse" x={0} y={0} width={1080} height={1920}>
-            <rect width={1080} height={1920} fill="url(#holyFall)" />
-            <ellipse cx={285} cy={1010} rx={205} ry={345} fill="#000" filter="url(#holySoft)" />
-            <rect x={400} y={990} width={400} height={400} fill="#000" filter="url(#holySoft)" />
-          </mask>
-        </defs>
-        <path mask="url(#holyMask)" fill="#FFE9A0" d={Array.from({ length: 14 }, (_, i) => {
-          const a0 = ((i * (360 / 14) + t * 16) * Math.PI) / 180, a1 = (((i + 0.5) * (360 / 14) + t * 16) * Math.PI) / 180, r = 1600;
-          return `M${vx} ${vy}L${vx + r * Math.cos(a0)} ${vy + r * Math.sin(a0)}L${vx + r * Math.cos(a1)} ${vy + r * Math.sin(a1)}Z`;
-        }).join('')} />
-      </svg>
-      {[[-230, -120, 0.1], [240, -180, 0.35], [-120, -300, 0.6], [290, 60, 0.8]].map(([x, y, d], i) => (
-        <Star key={i} x={vx + x} y={vy + y} s={46 * twinkle((t - a) % 1.6, d % 1.6, 0.7)} color="#FFF6CF" rot={t * 60} />
+      <div style={{ ...abs(vx - 300, vy - 300, 600, 600), borderRadius: '50%', opacity: 0.8 * o, mixBlendMode: 'screen', background: 'radial-gradient(closest-side, #FFF1B800 44%, #FFF1B880 58%, #FFE9A000 100%)' }} />
+      {[[-200, -120, 0.0], [210, -170, 0.15], [-110, -260, 0.3], [250, 50, 0.42]].map(([x, y, d], i) => (
+        <Star key={i} x={vx + x} y={vy + y} s={44 * twinkle(t - a, d, 0.4)} color="#FFF6CF" rot={t * 60} />
       ))}
     </>
   );
@@ -310,7 +315,7 @@ const Tough: React.FC<{ t: number }> = ({ t }) => {   // 튼튼 — 쇳덩이 �
   const [sx, sy] = shake(t, land, 30, 0.35);
   const base: React.CSSProperties = { fontFamily: KO, fontWeight: 900, fontSize: 270, lineHeight: 1, letterSpacing: '-0.03em' };
   const depth = Array.from({ length: 16 }, (_, i) => `${i + 1}px ${i + 1}px 0 ${i < 12 ? '#3D4753' : '#1F2730'}`).join(',');
-  const sparks = k >= 0 && k < 0.38 ? [[600, 622], [790, 628], [985, 620]].flatMap(([x0, y0], g) => Array.from({ length: 7 }, (_, i) => {
+  const sparks = k >= 0 && k < 0.38 ? [[600, 706], [790, 712], [985, 704]].flatMap(([x0, y0], g) => Array.from({ length: 7 }, (_, i) => {
     const ang = -Math.PI * (0.12 + 0.76 * ((i + g * 0.37) / 6.4)), v = 620 + ((i * 53 + g * 29) % 260);
     const at = (u: number) => [x0 + Math.cos(ang) * v * u, y0 + Math.sin(ang) * v * u + 1500 * u * u];
     const [x1, y1] = at(k), [x2, y2] = at(Math.max(0, k - 0.035));
@@ -319,7 +324,7 @@ const Tough: React.FC<{ t: number }> = ({ t }) => {   // 튼튼 — 쇳덩이 �
   return (
     <>
       <svg width={1080} height={1920} style={{ position: 'absolute', left: 0, top: 0, zIndex: 20 }}>{sparks}</svg>
-      <div style={{ ...abs(0, 345 + y, 1040), zIndex: 21, textAlign: 'right', transform: `translate(${sx}px,${sy}px) rotate(${rot}deg)`, transformOrigin: '780px 270px' }}>
+      <div style={{ ...abs(0, 430 + y, 1040), zIndex: 21, textAlign: 'right', transform: `translate(${sx}px,${sy}px) rotate(${rot}deg)`, transformOrigin: '780px 270px' }}>
         <span style={{ position: 'relative', display: 'inline-block' }}>
           <span style={{ ...base, color: '#3D4753', textShadow: `${depth}, 22px 28px 26px #0E132080` }}>튼튼</span>
           <span style={{ ...base, position: 'absolute', left: 0, top: 0, color: 'transparent', backgroundImage: 'linear-gradient(180deg,#F5F7FA 0%,#C2CAD3 38%,#6F7A87 50%,#DDE3E9 56%,#8A95A3 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text' }}>튼튼</span>
@@ -329,32 +334,17 @@ const Tough: React.FC<{ t: number }> = ({ t }) => {   // 튼튼 — 쇳덩이 �
   );
 };
 
-const Handles: React.FC<{ t: number }> = ({ t }) => {   // 손잡이 두 개 — 조준 표시가 찰칵 잠긴다(기본 화살표는 파워포인트 같다 — 아르곤)
-  const a = w(5, 1), b = CUT_CLAW;
+const Handles: React.FC<{ t: number }> = ({ t }) => {   // 손잡이 두 개 — 조준 표시가 찰칵 잠긴다
+  const a = w(5, 1), a2 = w(5, 2), b = CUT_CLAW;
   if (t < a || t >= b) return null;
-  const items: [number, number, number, string, number, number][] = [[650, 692, a, '손잡이 1', 470, 480], [838, 688, w(5, 2), '손잡이 2', 770, 480]];
   return (
     <>
       <svg width={1080} height={1920} style={{ position: 'absolute', left: 0, top: 0, zIndex: 21 }}>
-        {items.map(([x, y, at], i) => {
-          if (t < at) return null;
-          const k = t - at, u = ramp(t, at, 0.16), sc = 1 + 0.8 * (1 - u), rot = (1 - u) * 50;
-          const r = 76, c = 30, d = `M${-r} ${-r + c}V${-r}H${-r + c}M${r - c} ${-r}H${r}V${-r + c}M${r} ${r - c}V${r}H${r - c}M${-r + c} ${r}H${-r}V${r - c}`;
-          const blink = k < 0.28 && Math.floor(k * 25) % 2 === 1 ? 0.35 : 1;
-          return (
-            <g key={i} transform={`translate(${x} ${y}) rotate(${rot}) scale(${sc})`} opacity={blink}>
-              <path d={d} fill="none" stroke="#0E1320" strokeOpacity={0.55} strokeWidth={15} />
-              <path d={d} fill="none" stroke={ALIEN} strokeWidth={8} />
-            </g>
-          );
-        })}
+        <LockMark x={650} y={692} r={76} t={t} at={a} />
+        <LockMark x={838} y={688} r={76} t={t} at={a2} />
       </svg>
-      {items.map(([, y, at, label, lx, ly], i) => {
-        if (t < at) return null;
-        const q = ramp(t, at + 0.1, 0.12);
-        return <div key={i} style={{ ...abs(lx, ly), zIndex: 22, opacity: q, background: chipBg, color: ALIEN, fontFamily: KO, fontWeight: 700, fontSize: 40, padding: '10px 22px 11px', borderRadius: 12, whiteSpace: 'nowrap' }}>{label}</div>;
-      })}
-      {t >= w(5, 2) && <div style={{ ...abs(56, 1300), zIndex: 22, transform: `rotate(-3deg) scale(${Math.min(1.05, pop(t, w(5, 2), 0.24))})`, transformOrigin: 'left center', background: chipBg, borderRadius: 24, padding: '14px 36px 22px' }}>{'×2'.split('').map((c, i) => <GlitchLetter key={i} c={c} size={150} t={t} i={i} />)}</div>}
+      <LockLabel x={470} y={480} t={t} at={a} text="손잡이 1" />
+      <LockLabel x={770} y={480} t={t} at={a2} text="손잡이 2" />
     </>
   );
 };
@@ -518,17 +508,18 @@ const camera = (t: number) => {
   let s = 1, ox = 540, oy = 760;
   const kk = w(1, 3);
   if (t >= kk && t < CUT_BOX) { s = 1 + 0.3 * ramp(t, kk, 0.1) * (1 - ramp(t, kk + 0.34, 0.5)); ox = 470; oy = 300; }   // 깜짝 — 두 사람으로 확 당겼다가, 넘어지는 건 다 보이게 물러난다
-  if (t >= CUT_BOX && t < CUT_OWL) {   // 조끼가 뜨는 동안 슬금슬금 다가갔다가, 조끼가 붙는 순간 개로 확 당긴다
+  if (t >= CUT_BOX && t < CUT_OWL) {   // 조끼가 붙는 순간 개로 확 당겨 끝까지 둔다
     ox = 100; oy = 1100;
-    s = 1 + 0.1 * ramp(t, CUT_BOX + 0.5, SLAM - CUT_BOX - 0.5, (x) => x * x * (3 - 2 * x)) + 0.28 * ramp(t, SLAM, 0.12);
+    s = 1 + 0.38 * ramp(t, VEST_SLAM, 0.12);
   }
   if (t >= CUT_OWL && t < CUT_CLAW) { s = 1.2; ox = 540; oy = 800; }   // 고개가 잘 보이게
-  const [a1, b1] = shake(t, w(3, 1), 24, 0.4);
+  const [a1, b1] = shake(t, w(3, 1), 20, 0.32);
+  const [a0, b0] = shake(t, VEST_SLAM, 26, 0.4);
   const [a2, b2] = shake(t, w(4, 2) + 0.09, 26, 0.35);
   const [a3, b3] = shake(t, w(5, 5), 24, 0.5);
   const [a4, b4] = shake(t, w(8, 3), 22, 0.6);
   const [a5, b5] = shake(t, kk, 18, 0.35);
-  return { s, ox, oy, x: a1 + a2 + a3 + a4 + a5, y: b1 + b2 + b3 + b4 + b5 };
+  return { s, ox, oy, x: a0 + a1 + a2 + a3 + a4 + a5, y: b0 + b1 + b2 + b3 + b4 + b5 };
 };
 
 export const P11B: React.FC = () => {
@@ -551,7 +542,7 @@ export const P11B: React.FC = () => {
       <Hud t={t} />
       <Alien t={t} />
       <Moon t={t} />
-      <Huh t={t} />
+      <HumanScan t={t} />
       <Kkam t={t} />
       <Product t={t} />
       <PriceCallout t={t} />
@@ -568,7 +559,7 @@ export const P11B: React.FC = () => {
         const o = life(t, l.at - 0.05, l.end + 0.35, 0.1, 0.1);
         return <div style={{ ...abs(72, t >= CUT_CLAW && t < CUT_GLAM ? 1696 : l === LINES[7] ? 1716 : 1540, 936), zIndex: 25, textAlign: 'center', opacity: o }}><span style={{ fontFamily: KO, fontWeight: 650, fontSize: 52, lineHeight: 1.32, color: PAPER, background: '#0E1320e0', boxDecorationBreak: 'clone', WebkitBoxDecorationBreak: 'clone', padding: '10px 22px', borderRadius: 10 }}>{ws.map((x, i) => <React.Fragment key={i}>{i === cut ? <br /> : null}<span style={{ color: x.key && t >= x.t ? LEMON : PAPER }}>{i === ws.length - 1 ? noDot(x.w).replace(/,$/, '') : noDot(x.w)}</span>{i < ws.length - 1 && i + 1 !== cut ? ' ' : ''}</React.Fragment>)}</span></div>;
       })()}
-      {l === LINES[6] && <div style={{ ...abs(0, 1716, 1080), zIndex: 25, textAlign: 'center', opacity: life(t, l.at - 0.05, l.end + 0.1, 0.1, 0.1), fontFamily: KO, fontWeight: 400, fontSize: 48, color: PAPER, letterSpacing: '0.01em' }}>{l.words.map((x) => noDot(x.w)).join(' ')}</div>}
+      {l === LINES[6] && <div style={{ ...abs(0, 1716, 1080), zIndex: 25, textAlign: 'center', opacity: life(t, CUT_GLAM + 0.2, l.end + 0.1, 0.1, 0.1), fontFamily: KO, fontWeight: 400, fontSize: 48, color: PAPER, letterSpacing: '0.01em' }}>{l.words.map((x) => noDot(x.w)).join(' ')}</div>}
       <div style={{ ...abs(0, 1866, 1080), zIndex: 30, textAlign: 'center', fontFamily: KO, fontWeight: 500, fontSize: 24, color: '#ffffffeb' }}>
         <span style={{ background: '#0E132073', padding: '4px 14px 5px', borderRadius: 8 }}>가상 브랜드 · AI로 만든 가상 모델 · 음성</span>
       </div>

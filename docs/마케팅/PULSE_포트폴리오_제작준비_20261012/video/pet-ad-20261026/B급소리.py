@@ -124,10 +124,11 @@ w = lambda li, wi: lines[li]["words"][wi]["t"]
 SPLASH = w(8, 3)  # 첨벙댕 20.39
 
 # ── 화면 자리(장 → 초, CUTS_B와 같은 값)
-CUT_MOON, CUT_RUN, CUT_BOX, CUT_WRAP, CUT_OWL, CUT_CLAW, CUT_GLAM, CUT_DROP = 52 / 24, 91 / 24, 163 / 24, 230 / 24, 280 / 24, 330 / 24, 371 / 24, 453 / 24
-VEST_SHOOT = CUT_WRAP                     # p11-b04e 0장 — 조끼가 날아가기 시작
-SLAM = w(3, 1)                            # 구명조끼! — 6장, 조끼가 개에게 철썩
-STRAPS = 258 / 24                         # 촉수가 다 들어가 찰칵 조인다
+CUT_MOON, CUT_RUN, CUT_BOX, CUT_WRAP, CUT_OWL, CUT_CLAW, CUT_GLAM, CUT_DROP = 52 / 24, 91 / 24, 163 / 24, 185 / 24, 280 / 24, 330 / 24, 371 / 24, 453 / 24
+VEST_SHOOT = CUT_WRAP                     # p11-b04e 0장 — 조끼가 날아가기 시작(「특별한」)
+VEST_SLAM = 191 / 24                      # 6장 — 조끼가 개에게 철썩, 촉수
+SLAM = w(3, 1)                            # 구명조끼! — 스티커 쾅
+STRAPS = 216 / 24                         # 촉수가 다 들어가 찰칵 조인다
 MOON_LIFT = CUT_MOON + (32 - 30) / 24     # p11-b02 32장 — 발이 떨어진다
 MOON_FALL = CUT_MOON + (60 - 30) / 24     # 60장 — 내려오기 시작
 SHOOT = CUT_RUN + 0.02                    # p11-b03 — 막대기처럼 솟는다(×1.45)
@@ -185,9 +186,9 @@ m.put(MOON_LIFT + 0.55, theremin([(0, 980), (0.5, 1120), (1, 840)], CUT_RUN - MO
 # ── 근데 사람들이 보면 — 막대기처럼 쑥 솟는다, 그리고 어색한 정적(곡은 그대로, 위에서 희미한 비행접시)
 m.put(SHOOT - 0.01, slide(300, 1700, SHOOT_TOP - SHOOT + 0.05), -18)
 m.put(SHOOT_TOP, theremin([(0, 1150), (0.5, 1260), (1, 1090)], w(1, 3) - SHOOT_TOP - 0.05), -28)
-huh = C.load(H + "pop.wav")
-m.put(4.62, huh, -14)   # 두 사람 머리 위 물음표(B.tsx Huh)
-m.put(4.90, huh, -13)
+lock = chip([1319, 1760], step=0.05)   # 조준 표시가 잠기는 삐빅(B.tsx LockMark)
+m.put(4.62, lock, -21)
+m.put(4.90, lock, -20)
 
 # ── 깜짝 — 부웅 → 쿵, 비명 두 개, 처박히는 소리
 m.put(w(1, 3) - 0.34, C.load(H + "whoosh_down.wav"), -11)
@@ -199,27 +200,25 @@ m.put(w(1, 3) + 0.56, stretch(YELL_F, 1.12), -23, fade_out=0.25)
 m.put(w(1, 3) + 0.62, YELL_M, -20, fade_out=0.1)
 m.put(MAN_FALL - 0.2, part(F + "Heavy Body Fall with Hand.M.wav"), -12, fade_out=0.5)
 
-# ── 그래서 — 판이 바뀌며 조용히. 귀가 상자를 겨눈다
+# ── 그래서 — 판이 바뀌며 눈이 켜진다. 외계 소리가 부풀고 테레민이 올라가다 뚝
 m.put(CUT_BOX + 0.04, servo, -22, fade_out=0.3)
-m.put(CUT_BOX + 0.55, ping, -21)   # 눈이 켜진다(B.tsx Telekinesis)
-
-# ── 특별한 걸 — 조끼가 혼자 떠오른다: 외계 소리가 부풀고 테레민이 올라간다
+m.put(CUT_BOX + 0.08, ping, -21)
 swell = part(one("Epic Stock Media - Halloween Game - Haunted House and Horror Audio Scare Kit/UIAlert_*"), 0.0, 4.6)
-m.put(w(2, 2) - 0.45, swell[:int((VEST_SHOOT - w(2, 2) + 0.45) * RATE)], -23, fade=0.2, fade_out=0.05)
-m.put(w(2, 2) - 0.1, theremin([(0, 330), (0.7, 880), (1, 1040)], VEST_SHOOT - w(2, 2) + 0.1, release=0.012), -24)
-shine = part(one("Alexander Kopeikin - Emotion and Magic/magic, energy flow, astonishment-001*"), 2.0, 2.0 + (VEST_SHOOT - w(2, 2) - 0.15))
-m.put(w(2, 2) + 0.15, shine, -26, fade=0.3, fade_out=0.05)
+m.put(CUT_BOX + 0.1, swell[:int((VEST_SHOOT - CUT_BOX - 0.1) * RATE)], -23, fade=0.1, fade_out=0.04)
+m.put(CUT_BOX + 0.1, theremin([(0, 330), (0.8, 980), (1, 1180)], VEST_SHOOT - CUT_BOX - 0.1, release=0.012), -24)
 
-# ── 구명조끼! — 조끼가 휙 날아와 철썩 + 스티커 쾅, 촉수가 꿀렁꿀렁 나왔다 들어가 찰칵
-m.put(VEST_SHOOT, C.load(H + "swish.wav"), -17)
-m.put(VEST_SHOOT + 0.02, part(F + "Low Whoosh x2.wav"), -22, fade_out=0.15)
-m.put(SLAM - 0.04, under_word(C.load(H + "thud.wav"), hit=0.06, drop=-12, over=0.03), -9)
-m.put(SLAM - 0.01, under_word(C.load(H + "snap.wav"), hit=0.05, drop=-10), -15)
-m.put(SLAM - 0.04, under_word(part(one("Epic Stock Media - Anime Game/FGHTImpt_*")), hit=0.07, drop=-14, over=0.03), -13, fade_out=0.3)
-tentacle = part(one("Epic Stock Media - Anime Game/DSGNMisc_*"), 0, STRAPS - SLAM - 0.03)
-m.put(SLAM + 0.03, tentacle, -20, fade=0.01, fade_out=0.12)
+# ── 특별한 걸 — 조끼가 휙 날아와 철썩, 촉수가 꿀렁꿀렁 나왔다 들어가 찰칵
+m.put(VEST_SHOOT, C.load(H + "swish.wav"), -19)
+m.put(VEST_SLAM - 0.03, under_word(C.load(H + "thud.wav"), hit=0.05, drop=-12, over=0.03), -11)
+m.put(VEST_SLAM - 0.03, under_word(part(one("Epic Stock Media - Anime Game/FGHTImpt_*")), hit=0.05, drop=-14, over=0.03), -14, fade_out=0.3)
+tentacle = part(one("Epic Stock Media - Anime Game/DSGNMisc_*"), 0, STRAPS - VEST_SLAM - 0.03)
+m.put(VEST_SLAM + 0.03, tentacle, -20, fade=0.01, fade_out=0.12)
 m.put(STRAPS - 0.12, part(F + "Belt Buckle.M.wav", 0, 0.3), -20, fade_out=0.08)
 m.put(STRAPS, part(one("Epic Stock Media - HD Lock And Mechanism Sound Design Kit/MECHLtch_*")), -15)
+
+# ── 구명조끼! — 스티커 쾅
+m.put(SLAM - 0.04, under_word(C.load(H + "thud.wav"), hit=0.06, drop=-12, over=0.03), -9)
+m.put(SLAM - 0.01, under_word(C.load(H + "snap.wav"), hit=0.05, drop=-10), -15)
 
 # ── 값도 착하고 — 동전 땡그랑, 착하니까 천사 반짝
 m.put(w(4, 0) - 0.03, part(one("Cinematic Sound Design - UI Interaction Elements/Ting Coins*")), -21)
@@ -240,7 +239,6 @@ m.put(SPIN, fast, -13, fade=0.01, fade_out=0.01)
 m.put(STOP - 0.04, part(one("Epic Stock Media - HD Lock And Mechanism Sound Design Kit/MECHLtch_*")), -13)
 
 # ── 손잡이 두 개 — 조준 표시가 삐빅 잠긴다(B.tsx Handles)
-lock = chip([1319, 1760], step=0.05)
 m.put(w(5, 1) - 0.01, lock, -23)
 m.put(w(5, 3) - 0.02, lock, -21)
 
@@ -299,7 +297,7 @@ m.put(22.85, sonar(880.0), -16)
 
 # ── 시스템 메시지가 뜰 때마다 작은 틱(B.tsx HUD)
 tick = C.load(H + "tick.wav")
-for at in [0.06, CUT_MOON + 0.04, CUT_RUN + 0.04, w(1, 3) + 0.6, CUT_BOX + 0.5, SLAM + 0.15, STRAPS, CUT_OWL + 0.2, STOP, CUT_CLAW + 0.04, BEAM_ON]:
+for at in [0.06, CUT_MOON + 0.04, CUT_RUN + 0.04, w(1, 3) + 0.6, CUT_BOX + 0.1, VEST_SLAM + 0.12, STRAPS, CUT_OWL + 0.2, STOP, CUT_CLAW + 0.04, BEAM_ON]:
     m.put(at, tick, -27)
 
 m.finish(os.path.join(PUB, "sound_b.wav"), boost_db=-1.8)
