@@ -14,6 +14,7 @@ import 최종편집공통 as C
 OUT = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/최종/p11"
 PUB = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/최종/자막시안_public/p11"
 CAP = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "자막시안_20261103")
+LETTERS = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/최종/p11/튜브글자"   # 튜브글자/굽기.sh가 굽는 낱장
 VOICE = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/최종/p11/소리/일레븐후보_20261103/Kevin.mp3"   # 유호님 11-04 Kevin으로 확정(결정 표) — Andre · Miles는 같은 폴더에 후보로 남김
 FPS, W, H = 24, 1080, 1920
 T = [0, 2.17, 3.80, 6.50, 11.23, 12.83, 13.47, 14.90, 16.27, 19.33, 22.06]   # 컷 경계(02_콘티 2절)
@@ -28,7 +29,7 @@ CUTS = {
     6: (("p11-05-06",), 2.90),   # 샷2 — 손잡이를 쥔 채 살짝 당김
     7: (("p11-07-08",), 0.10),   # 샷1(1.67초에 컷)
     8: (("p11-07-08",), 1.75),   # 샷2 — 다리 사이에 매달린 무표정
-    9: (("p11-09",), 0.40),      # 첫 판 — 둘째 판(__2)은 2.4초에 고개가 휙 돌아 첫 판을 쓴다
+    9: (("p11-09c", "p11-09"), 0.40),   # 고글 테 주황(11-04 유호님 — 시작 · 끝 그림의 테만 바꿔 MonoGPT로 다시). 옛 판 p11-09의 둘째 판(__2)은 2.4초에 고개가 휙 돌아 첫 판을 썼다
     10: (("p11-10",), 0.35),     # 놓고 → 쓰다듬고 → 엄지척이 컷 안에, 엄지는 끝 브랜드 글자 아래
 }
 
@@ -51,25 +52,27 @@ def picture():
         C.cut_video(src, a, k, W, H, FPS, out)
         paths.append(out)
         print(f"#{n} {pid} {a / FPS:.2f}초부터 {k}장")
-    C.join_videos(paths, os.path.join(OUT, "화면.mp4"))
+    C.join_videos(paths, os.path.join(OUT, "화면.mp4"))   # 10번 컷까지 이은 옛 화면 — `엄지끝` 판 몫
+    dog_picture()
 
 
 def dog_picture():
-    # 고글 쓴 개로 닫는 다른 판의 화면(11-04, 크몽 세션 아르곤 · Fable 「끝이 편에서 가장 센 그림이 아니고 남자 모델 매력이 약하다」 · 고르기는 유호님) —
-    # 9번 컷을 판 끝까지 잇고 마지막 프레임을 잡아 10번 컷 자리를 채운다. 1~8번은 picture()가 자른 _컷을 그대로 쓴다
+    # 최종 화면(11-04 유호님 「고글 개 끝으로」 · 「고글 색 있는 테」 · 「밑에 첨벙댕 이거 너무 슬롭」, 결정 표) — 9번 컷(주황 고글)을 판 끝까지 잇고,
+    # 그 마지막 프레임에서 시작한 물 판(p11-11w)에 블렌더 튜브 글자를 얹어 잇는다(끝합성.py). 1~8번은 picture()가 자른 _컷을 그대로 쓴다
     d = os.path.join(OUT, "_컷")
     ids, t = CUTS[9]
     src = C.clip(C.latest(*ids))
     a = round(t * FPS)
     live = C.frames_of(src) - a
-    total = round(T[10] * FPS) - round(T[8] * FPS)
     out = os.path.join(d, "09_개끝.mp4")
-    vf = f"select='between(n,{a},{a + live - 1})',setpts=N/{FPS}/TB,scale={W}:{H}:flags=lanczos:out_color_matrix=bt709,format=yuv420p,tpad=stop_mode=clone:stop={total - live}"
-    C.run("ffmpeg", "-y", "-v", "error", "-i", src, "-an", "-vf", vf, "-frames:v", str(total), "-c:v", "libx264", "-crf", "12", "-preset", "medium", "-r", str(FPS),
-          "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", out)
-    paths = [os.path.join(d, f"{n:02d}.mp4") for n in range(1, 9)] + [out]
+    C.cut_video(src, a, live, W, H, FPS, out)
+    raw = os.path.join(d, "10_물_원판.mp4")
+    C.cut_video(C.clip("p11-11w"), 0, C.frames_of(C.clip("p11-11w")), W, H, FPS, raw)
+    wet = os.path.join(d, "10_물.mp4")
+    C.run(sys.executable, "-X", "utf8", os.path.join(os.path.dirname(os.path.abspath(__file__)), "끝합성.py"), LETTERS, wet, "--물", raw)
+    paths = [os.path.join(d, f"{n:02d}.mp4") for n in range(1, 9)] + [out, wet]
     C.join_videos(paths, os.path.join(OUT, "화면_개끝.mp4"))
-    print(f"#9 잇기 {live}장 + 잡기 {total - live}장")
+    print(f"#9 {live}장 + 물 {C.frames_of(wet)}장")
 
 
 def sound():
@@ -79,7 +82,7 @@ def sound():
     shutil.copyfile(os.path.join(PUB, "sound_narr.wav"), os.path.join(OUT, "소리.wav"))
 
 
-def render(comp="p11-AB", pic_name="화면.mp4", pub_name="picture.mp4", name="첨벙댕_9x16"):
+def render(comp="p11-AB-dog", pic_name="화면_개끝.mp4", pub_name="picture_dog.mp4", name="첨벙댕_9x16"):
     pic = os.path.join(OUT, pic_name)
     if not os.path.exists(os.path.join(PUB, pub_name)) or C.md5(pic) != C.md5(os.path.join(PUB, pub_name)):
         shutil.copyfile(pic, os.path.join(PUB, pub_name))
@@ -94,9 +97,8 @@ def render(comp="p11-AB", pic_name="화면.mp4", pub_name="picture.mp4", name="�
 
 if __name__ == "__main__":
     what = sys.argv[1:] or ["화면", "소리", "판"]
-    if "개끝" in what:   # 다른 판 — 화면 · 소리는 지금 판 것을 그대로 쓰고 끝 화면만 다르다
-        dog_picture()
-        render("p11-AB-dog", "화면_개끝.mp4", "picture_dog.mp4", "첨벙댕_9x16_개끝")
-        what = [w for w in what if w != "개끝"]
+    if "엄지끝" in what:   # 고르기 전 판(남자 엄지 + 레몬 판) — 나란히 볼 때만
+        render("p11-AB", "화면.mp4", "picture.mp4", "첨벙댕_9x16_엄지끝")
+        what = [w for w in what if w != "엄지끝"]
     for w in what:
         {"화면": picture, "소리": sound, "판": render}[w]()

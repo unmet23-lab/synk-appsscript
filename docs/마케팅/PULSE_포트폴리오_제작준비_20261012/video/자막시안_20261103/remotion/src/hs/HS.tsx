@@ -16,7 +16,6 @@ const FPS = 24;
 export const HS_FRAMES = 1743;   // 원본 31컷 72.625초 — homeshopping-horror 최종편집.py 화면.mp4
 const INK = '#0E1320', PAPER = '#F6F3EA', LEMON = '#FFD43B';
 const MASKS = masks as MaskCut[];
-const HEAD_CHANGE = 67.21;   // 원본 머리글이 바뀌는 자리(#30 도중)
 // 컷 첫 프레임(원본_샷.json f0, 끝은 f1) — 자막 꼬리를 컷에서 끊는 데 쓴다
 const SHOT_F = [0, 13, 33, 80, 112, 160, 196, 218, 245, 274, 337, 439, 462, 502, 560, 593, 615, 640, 681, 730, 762, 936, 992, 1098, 1135, 1175, 1314, 1379, 1430, 1546, 1699, 1743];
 const LAST = SHOT_F[30] / FPS;   // #31 첫 프레임
@@ -24,9 +23,9 @@ const abs = (x: number, y: number, w?: number, h?: number): React.CSSProperties 
 const noDot = (s: string) => s.replace(/\.$/, '');
 
 // 말자막 — 시각은 최종편집.py EVENTS(놓은 자리), 글은 받아쓰기(large-v3)로 확인한 실제 말. ks: ★ 낱말이 레몬으로 바뀌는 초(없으면 줄 처음)
-// up: 16:9에서 화면 위에 — 끼어듦 카드(27)는 아래에서 손이 떡볶이를 들어 올려 아래 자막이 덮는다
+// left: 16:9에서 왼쪽 아래로 — 끼어듦 카드(27)는 가운데 아래에서 손이 떡볶이를 들어 올려 가운데 자막이 덮인다. 화면 위로 올리니 시선이 튀었다(11-04 Fable)
 // 29.80은 콘티가 「잠깐만요!」였지만 판 목소리가 「안 돼!」다(받아쓰기 두 모델, 11-03)
-const CAP: { a: number; b: number; s: string; ks?: number[]; up?: boolean }[] = [
+const CAP: { a: number; b: number; s: string; ks?: number[]; left?: boolean }[] = [
   { a: 0.0, b: 1.3, s: '가진 거 다 ★내놔!', ks: [0.46] },
   { a: 1.38, b: 2.4, s: '★여기요!' },
   { a: 2.92, b: 4.85, s: '다 앉아, ★당장!', ks: [3.92] },
@@ -41,7 +40,7 @@ const CAP: { a: number; b: number; s: string; ks?: number[]; up?: boolean }[] = 
   { a: 44.56, b: 46.9, s: '안 돼! ★안 돼!', ks: [45.79] },
   { a: 47.46, b: 48.4, s: '★으!' },
   { a: 52.6, b: 54.75, s: '★세상에…!' },
-  { a: 54.9, b: 55.8, s: '…★왜?', up: true },
+  { a: 54.9, b: 55.8, s: '…★왜?', left: true },
   { a: 57.46, b: 59.58, s: '안 돼, 내 ★코케트 ★떡볶이!', ks: [58.98, 58.98] },
   { a: SHOT_F[29] / FPS, b: 66.75, s: '그거 내 ★저녁인데!', ks: [64.24] },   // 말은 63.99에 시작하지만 그땐 카드 3(아래 「1577-꽉꽉」)이라 #30 첫 프레임부터
   { a: 67.92, b: 70.79, s: '★그냥 ★죽여!', ks: [67.92, 69.32] },
@@ -59,10 +58,10 @@ const splitAt = (ws: string[]) => {
   ws.forEach((w, i) => { acc += w.length + 1; const d = Math.abs(acc - full.length / 2); if (i < ws.length - 1 && d < gap) { gap = d; best = i + 1; } });
   return best;
 };
-const Caption: React.FC<{ t: number; y: number; x: number; w: number; size: number; wrap?: boolean; upY?: number }> = ({ t, y, x, w, size, wrap, upY }) => {
+const Caption: React.FC<{ t: number; y: number; x: number; w: number; size: number; wrap?: boolean; leftW?: number }> = ({ t, y, x, w, size, wrap, leftW }) => {
   const c = capAt(t);
   if (!c) return null;
-  if (c.up && upY !== undefined) y = upY;
+  if (c.left && leftW !== undefined) w = leftW;
   const end = tailEnd(c.b);
   const o = life(t, headStart(c.a), end, 0.12, end < c.b + 0.2 - 1e-6 ? 0.001 : 0.12);   // 컷에서 끊기는 줄은 흐려지지 않고 컷과 함께 사라진다
   const ws = c.s.split(' ');
@@ -130,9 +129,10 @@ export const HS16: React.FC<{ probe?: boolean }> = ({ probe }) => {
   return (
     <AbsoluteFill style={{ background: '#000' }}>
       <Film t={t} />
-      <Caption t={t} x={0} y={918} w={1920} size={54} upY={96} />
+      <Caption t={t} x={0} y={918} w={1920} size={54} leftW={980} />
       <Brand t={t} at={LAST} style={{ ...abs(1372, 742) }} logo={420} text={44} origin="right bottom" />
-      <div style={{ ...abs(0, 1034, 1880), zIndex: 30, textAlign: 'right', fontFamily: KO, fontWeight: 500, fontSize: 22, color: '#ffffff96' }}>{NOTICE}</div>
+      {/* 끼어듦 카드(27~29)는 「1577-꽉꽉」이 오른쪽 아래라 고지 줄이 그 위를 가로질렀다(11-04 Fable) — 그동안만 왼쪽으로 */}
+      <div style={{ ...abs(40, 1034, 1840), zIndex: 30, textAlign: t >= 59.4 && t < 64.5 ? 'left' : 'right', fontFamily: KO, fontWeight: 500, fontSize: 22, color: '#ffffff96' }}>{NOTICE}</div>
       <Audio src={staticFile('hs/sound.wav')} />
     </AbsoluteFill>
   );
@@ -140,7 +140,7 @@ export const HS16: React.FC<{ probe?: boolean }> = ({ probe }) => {
 
 // 9:16 위 띠 머리글 — 원본 두 줄 그대로(글은 원본 자리 · 뜻 그대로), 꼴만 섞은 판 머리글(왼쪽 정렬 · 굵기 둘 · 얇은 줄)
 const Head9: React.FC<{ t: number }> = ({ t }) => {
-  const o = 1 - ramp(t, HEAD_CHANGE - 0.08, 0.08);
+  const o = 1 - ramp(t, LAST - 0.08, 0.08);   // 16:9 끝 블록과 같은 자리까지 — 「그냥 죽여!」 위로 광고 문의가 먼저 뜨면 웃음을 뺏는다(11-04 Fable)
   return (
     <>
       <div style={{ ...abs(64, 420, 952), zIndex: 20, opacity: o * Math.min(1, ramp(t, 0, 0.3)) }}>
@@ -159,7 +159,7 @@ export const HS9: React.FC = () => {
       <div style={{ ...abs(0, 656, 1920, 1080), transform: 'scale(0.5625)', transformOrigin: 'left top', overflow: 'hidden' }}><Film t={t} /></div>
       <Head9 t={t} />
       {/* 검은 여백이 넓어 글자를 16:9 비례보다 키운다(11-04 GPT 검수) */}
-      <Brand t={t} at={HEAD_CHANGE} style={{ ...abs(64, 318) }} logo={600} text={62} origin="left bottom" />
+      <Brand t={t} at={LAST} style={{ ...abs(64, 318) }} logo={600} text={62} origin="left bottom" />
       <Caption t={t} x={48} y={1334} w={984} size={66} wrap />
       <div style={{ ...abs(0, 1858, 1080), zIndex: 30, textAlign: 'center', fontFamily: KO, fontWeight: 500, fontSize: 22, color: '#ffffff88' }}>{NOTICE}</div>
       <Audio src={staticFile('hs/sound.wav')} />

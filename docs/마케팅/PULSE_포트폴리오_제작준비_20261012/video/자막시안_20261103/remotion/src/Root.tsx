@@ -5,7 +5,7 @@
 import './lib/fonts';
 import React from 'react';
 import { Composition } from 'remotion';
-import { P11, P11_FRAMES } from './p11/P11';
+import { P11, P11_DOG_FRAMES, P11_FRAMES } from './p11/P11';
 import { P12, P12_FRAMES } from './p12/P12';
 import { HS16, HS9, HS_FRAMES } from './hs/HS';
 
@@ -15,12 +15,13 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="p11-B" component={P11} defaultProps={{ look: 'B' as const }} durationInFrames={P11_FRAMES} fps={24} width={1080} height={1920} />
     <Composition id="p11-C" component={P11} defaultProps={{ look: 'C' as const }} durationInFrames={P11_FRAMES} fps={24} width={1080} height={1920} />
     <Composition id="p11-AB" component={P11} defaultProps={{ look: 'AB' as const }} durationInFrames={P11_FRAMES} fps={24} width={1080} height={1920} />
-    {/* 고글 쓴 개로 닫는 다른 판 — 유호님이 지금 끝과 나란히 보고 고른다 */}
-    <Composition id="p11-AB-dog" component={P11} defaultProps={{ look: 'AB' as const, dogEnd: true }} durationInFrames={P11_FRAMES} fps={24} width={1080} height={1920} />
+    {/* 최종 — 고글 쓴 개로 닫는 끝(11-04 유호님). p11-AB는 고르기 전 엄지 끝 */}
+    <Composition id="p11-AB-dog" component={P11} defaultProps={{ look: 'AB' as const, dogEnd: true }} durationInFrames={P11_DOG_FRAMES} fps={24} width={1080} height={1920} />
     {/* 가림 검사용 — 큰 낱말만(../가림검사.py) */}
     <Composition id="p11-AB-probe" component={P11} defaultProps={{ look: 'AB' as const, probe: true }} durationInFrames={P11_FRAMES} fps={24} width={1080} height={1920} />
     <Composition id="p12" component={P12} durationInFrames={P12_FRAMES} fps={24} width={1080} height={1920} />
     <Composition id="p12-probe" component={P12} defaultProps={{ probe: true }} durationInFrames={P12_FRAMES} fps={24} width={1080} height={1920} />
+    <Composition id="p12-cg" component={P12} defaultProps={{ cg: true }} durationInFrames={P12_FRAMES} fps={24} width={1080} height={1920} />
     {/* 매진 임박 — 16:9 포트폴리오판 · 9:16 릴스 띠판(원본 1:1 구성), 가림 검사용 탐침 */}
     <Composition id="hs16" component={HS16} durationInFrames={HS_FRAMES} fps={24} width={1920} height={1080} />
     <Composition id="hs9" component={HS9} durationInFrames={HS_FRAMES} fps={24} width={1080} height={1920} />
