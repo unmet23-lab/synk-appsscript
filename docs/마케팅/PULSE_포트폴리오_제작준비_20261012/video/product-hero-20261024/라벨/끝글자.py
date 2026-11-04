@@ -1,7 +1,7 @@
 """1번 6번 컷 끝 1초에 얹는 글자 — 낱말표(라벨과 같은 윤곽, i의 점은 루비 열매) + 한 줄 (2026-10-25).
 
 화면 위에 얹는 글자라 후반에서 넣는다(AI로 그리지 않음). 이 스크립트는 투명 PNG(1080×1920 자리 그대로)를 만든다.
-  python 끝글자.py [--이름 오미톡 --라틴 omitok --줄 "다섯 가지 맛, 톡."] [--가로]
+  python 끝글자.py [--이름 오미톡 --라틴 omitok --줄 "다섯 가지 맛, 톡"] [--가로]
 """
 import argparse
 import importlib.util
@@ -18,7 +18,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--이름", default="오미톡")
     ap.add_argument("--라틴", default="omitok")
-    ap.add_argument("--줄", default="다섯 가지 맛, 톡.")
+    ap.add_argument("--줄", default="다섯 가지 맛, 톡")
     ap.add_argument("--가로", action="store_true")
     a = ap.parse_args()
     W, H = (1920, 1080) if a.가로 else (1080, 1920)
