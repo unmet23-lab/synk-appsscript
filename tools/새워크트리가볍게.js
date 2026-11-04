@@ -7,6 +7,7 @@
  * `node tools/바로올리기.js 가볍게 --실행`과 같은 일을 한다 — docs/캐릭터·홍보물·라디오를 sparse-checkout으로 뺀다.
  * 세션이 시작할 때 손으로 하던 이 단계가 자주 빠져, 사본마다 2GB 남짓이 그대로 쌓였다.
  * 그 폴더가 필요한 작업은 `node tools/바로올리기.js 가볍게 --되살림 <폴더> --실행`으로 그 폴더만 꺼낸다.
+ * Claude Code가 세션 안에서 만드는 사본(EnterWorktree · 에이전트 격리, 가지 worktree-*)은 git 훅을 꺼서 여기로 오지 않는다 — 제작 품질 때문에 그대로 둔다(결정 11-04).
  *
  *   node tools/새워크트리가볍게.js --설치   공용 .git/hooks/post-checkout을 tools/git훅/post-checkout으로 깐다
  *   node tools/새워크트리가볍게.js --상태   훅이 깔렸는지와 최근 기록 다섯 줄

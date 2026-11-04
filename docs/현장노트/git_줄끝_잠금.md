@@ -27,7 +27,8 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 파이썬 text 모드·`sed -i`로 쓰면 줄끝이 뒤집혀 diff가 통째로 난다 → 바이트로 읽고 쓰거나 `newline=""` ([자세히](#공용-문서-하나가-줄끝만-바뀌어-통째로-diff가-된다))
 - 공간 정리가 추적 파일과 안쪽 git 클론까지 지운다 → `git ls-files` 경로와 `.git` 든 폴더를 목록에서 뺀다 ([자세히](#공간-정리가-추적-파일을-지운다))
 - junction이 든 워크트리를 `rm -rf`로 지우면 공용 `node_modules`까지 지워진다 → 링크부터 끊고 지운다 ([자세히](#junction이-든-워크트리를-통째로-지우면-공용-node_modules가-지워질-수-있다))
-- 새 세션 워크트리에는 docs/캐릭터·홍보물·라디오가 없다(10-31부터 git 훅이 만들 때 뺀다) → 그 폴더가 필요하면 `node tools/바로올리기.js 가볍게 --되살림 <폴더> --실행`(15초쯤) ([자세히](#세션-워크트리가-가볍게를-빠뜨려-사본마다-2gb가-그대로-쌓인다--10-31부터-git-훅이-만들-때-뺀다-2026-10-31-claude))
+- 앱이 만든 새 세션 워크트리에는 docs/캐릭터·홍보물·라디오가 없다(10-31부터 git 훅이 만들 때 뺀다) → 그 폴더가 필요하면 `node tools/바로올리기.js 가볍게 --되살림 <폴더> --실행`(15초쯤) ([자세히](#세션-워크트리가-가볍게를-빠뜨려-사본마다-2gb가-그대로-쌓인다--10-31부터-git-훅이-만들-때-뺀다-2026-10-31-claude))
+- 세션 안에서 만든 사본(가지 `worktree-*`, 예약 회차 · 에이전트 격리)은 git 훅을 안 타 미디어까지 전체다(약 6GiB) — 제작 품질 때문에 그대로 둔다 ([자세히](#세션-안에서-만든-사본은-post-checkout을-안-타-미디어까지-전체다--claude-code가-git-훅을-끈다-그대로-두기로-했다-2026-11-04-claude))
 - 그래서 앱의 「기준 가지로 맞추기」 도구는 세션 워크트리를 sparse라 거절한다 → origin 최신은 `node tools/바로올리기.js 따라가기 --실행`으로 받는다 ([자세히](#앱의-기준-가지로-맞추기sync_with_base_branch가-가벼운-워크트리를-거절한다-2026-11-01-claude))
 
 ## 목차
@@ -692,6 +693,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 다시 확인: `node tools/새워크트리가볍게.js --상태`가 「깔림」이고 최근 기록에 새 워크트리가 「가볍게 함」으로 남는다(10-31 22:21 실제 저장소 임시 판 시험: 파일 2,637개 · 2.18GiB 빠짐, 상태 0줄, 공용 작업본 그대로, `--되살림 docs/캐릭터` 15초). 새 워크트리에서 `git config --show-scope --get core.sparseCheckout`이 `worktree true`.
 - 10-31 덧붙임(Claude, 로맨스 꾸러미 세션): 가볍게 한 워크트리에서는 앱의 바탕 맞추기(`sync_with_base_branch`)가 「The worktree is a sparse checkout … the app won't merge into it. Merge yourself」로 거절한다. 내 커밋이 아직 없으면 `git fetch origin` 뒤 `git merge --ff-only origin/master`로 앞당긴다 — 빨리 감기만이라 사본에서 뺀 폴더는 그대로 빠진 채다(10-31 8779c6418 → d8010d439, 상태 0줄).
 - 11-04 덧붙임(Claude): 훅이 중간에 죽으면 사본이 반쯤 가벼운 채 남는다. 뺄 파일은 실제로 지워졌는데 `info/sparse-checkout`이 없고 `sparse-checkout.lock` · `index.lock`만 0바이트로 남아, `git ls-files -v`가 전부 `H`이고 `git status`에 ` D`가 8천 줄 뜬다(세션 시작 때는 깨끗해 보였다). `가볍게`는 「뺄 자리에 아직 커밋하지 않은 파일」로 멈추고, 이대로 통째로 올리면 지운 채 나갈 수 있으니 먼저 고친다. 고침: `node tools/git잠금.js`로 주인 없는 것을 본 뒤 `--정리`, 0바이트 `sparse-checkout.lock`을 지우고 `git-publish-core.cjs` 가볍게와 같은 무늬를 `git sparse-checkout set --no-cone --stdin`에 넘긴다. 파일을 되살리지 않고 `S`로 바뀐다(11-04 `S` 8,234개 · 내 수정 넷만 남음).
+
+### 세션 안에서 만든 사본은 post-checkout을 안 타 미디어까지 전체다 — Claude Code가 git 훅을 끈다, 그대로 두기로 했다 (2026-11-04 Claude)
+- 증상: C: 여유가 11-04에 1~30GiB까지 떨어져 재 보니 앱이 만든 사본은 1.7GiB인데 가지 `worktree-*` 사본(`agent-…` · `pulse-request-flow` · `sched-…`)은 5.9~6.0GiB였다. 공용 `.git/synk-새워크트리가볍게.log`에 그 사본 줄이 없고 `git config --worktree core.sparseCheckout`이 비어 있다. 예약 회차는 가벼운 상태로 돈 적이 없다.
+- 원인: Claude Code CLI(2.1.309)가 `EnterWorktree` · 에이전트 `isolation: worktree` · `--worktree`에서 부르는 `git worktree add`에 `-c core.hooksPath=\\.\NUL`과 `-c hook.<이름>.enabled=false`(post-checkout · reference-transaction · post-index-change 포함)를 붙인다. git 훅은 이름과 상관없이 불리지 않으므로 앞 HEAD 인자 문제가 아니고, git 훅을 넓혀도 소용없다. 앱이 만드는 사본은 앱이 맨 `git worktree add`를 불러 훅이 돈다(인자 `0000… <sha> 1`).
+- 고침: 고치지 않는다(유호님 「안 깔게」, [결정](../_ops/결정.md)). Claude Code 훅 `PostToolUse`(EnterWorktree) · `SubagentStart`로 뺄 수는 있다 — 둘 다 사본 경로를 받고 끝날 때까지 세션이 기다린다. 막는 것은 품질이다. 같은 편(LAB M29)을 `올리기전검사`로 돌리면 전체 사본은 목소리 6줄을 재지만 가벼운 사본은 `remotion/public/vo` 소리가 빠져 0줄로 「확인할 것」에 그친다. 음높이 · 잘림 문제가 있어도 「고칠 것」으로 안 뜬다. 제작 회차는 옛 편의 효과음 · remotion 재료도 사본에서 복사한다. 다른 길도 막혔다: `WorktreeCreate` 훅은 코드상 에이전트 사본 자동 삭제가 빠지고, `worktree.sparsePaths`는 cone 방식이라 docs/마케팅 안 소리 · 그림을 못 뺀다.
+- 다시 확인: 임시 저장소에 로그 찍는 훅을 깔고 진짜 `claude.exe`를 로컬 가짜 API(`ANTHROPIC_BASE_URL`, 설정은 `CLAUDE_CONFIG_DIR` 임시 폴더)에 붙여 `GIT_TRACE2_EVENT`로 본다. `worktree add` 인자에 위 `-c`가 보이고 git 훅 로그는 비어 있다(11-04, 계정 · 비용 없음). 부하가 크면 `--worktree` · `EnterWorktree`가 「protected checkout … could not be resolved」로 거절되기도 하는데, 같은 명령을 다시 돌리면 지나간다.
 
 ### 미디어 가볍게 시험이 Windows에서 통과하고 Linux에서 대문자 확장자로 깨진다 (2026-11-02 GPT)
 - 증상: `890f58862` 이후 syntax-check가 `표지.PNG`가 남았다며 실패했다(실행 `41452985614`, `tests/바로올리기.test.js`).
