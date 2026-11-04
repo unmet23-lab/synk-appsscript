@@ -21,7 +21,9 @@ const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) =
 function build() {
   const src = path.join(OUT, '_src'), out = path.join(OUT, 'build');
   fs.rmSync(src, { recursive: true, force: true }); fs.rmSync(out, { recursive: true, force: true }); fs.mkdirSync(src, { recursive: true });
-  const have = PATHS.filter((p) => { try { execFileSync('git', ['-C', ROOT, 'cat-file', '-e', `${ref}:${p}`], { stdio: 'ignore' }); return true; } catch { return false; } });
+  const tool = execFileSync('git', ['-C', ROOT, 'show', `${ref}:tools/build-world-app-public.mjs`], { maxBuffer: 1 << 26 }).toString('utf8');
+  const used = [...tool.matchAll(/experiences(?:'\s*,\s*'|\/)([a-z0-9-]+)/g)].map((m) => `experiences/${m[1]}`);
+  const have = [...new Set([...PATHS, ...used])].filter((p) => { try { execFileSync('git', ['-C', ROOT, 'cat-file', '-e', `${ref}:${p}`], { stdio: 'ignore' }); return true; } catch { return false; } });
   const tar = path.join(OUT, '_src.tar');
   execFileSync('git', ['-C', ROOT, '-c', 'core.autocrlf=false', 'archive', '--format=tar', '-o', tar, ref, ...have]);
   execFileSync('tar', ['-xf', path.relative(src, tar).replace(/\\/g, '/')], { cwd: src, stdio: 'inherit' });   // 절대 경로를 넘기면 GNU tar가 「C:」를 원격 주소로 읽는다
@@ -33,9 +35,12 @@ function build() {
   // 남의 파일 주석의 도구 이름은 공개 빌드가 멈춘다 — 내 후보에 안 드는 파일이면 이 사본에만 같은 고침을 넣는다(현장 노트 배포 · 공개).
   { const strings = path.join(src, 'experiences/drama/pilot/strings.mjs'), text = fs.readFileSync(strings, 'utf8'); fs.writeFileSync(strings, text.replace('역번역 → Fable → 아르곤 세 겹 확인', '세 겹 확인')); }
   const r = spawnSync(process.execPath, ['tools/build-world-app-public.mjs', '--config', CONFIG, '--out', '.tmp/out'], { cwd: src, encoding: 'utf8', maxBuffer: 1 << 28 });
-  if (r.status !== 0) throw Error(`빌드 실패: ${(r.stderr || r.stdout).slice(-1500)}`);
+  if (!r.stdout.includes('{')) throw Error(`빌드 실패: ${(r.stderr || r.stdout).slice(-1500)}`);
   const j = JSON.parse(r.stdout.slice(r.stdout.indexOf('{')));
-  if (!j.ok) throw Error(`빌드 ok:false — 빠진 참조 ${JSON.stringify(j.missing).slice(0, 600)} · 도구 이름 ${JSON.stringify(j.publicToolNames).slice(0, 400)}`);
+  // 이 후보에는 이 게임 폴더만 싣는다. master의 다른 미공개 게임에 걸린 참조는 알리기만 한다.
+  const mine = (j.missing || []).filter((m) => /^(?:subway-rush|brand-opening)\//.test(m.from));
+  if (mine.length || (j.publicToolNames || []).length || !fs.existsSync(path.join(src, '.tmp/out/world/subway-rush/index.html'))) throw Error(`빌드 ok:false — 빠진 참조 ${JSON.stringify(mine).slice(0, 600)} · 도구 이름 ${JSON.stringify(j.publicToolNames).slice(0, 400)}`);
+  if (!j.ok) console.log('다른 게임에 걸린 빌드 알림(이 후보에 안 든다):', JSON.stringify(j.missing).slice(0, 400));
   console.log('빌드', ref, '파일', j.files, '크기', j.totalBytes);
   fs.renameSync(path.join(src, '.tmp/out'), out);
   fs.unlinkSync(path.join(src, 'node_modules'));
@@ -44,29 +49,34 @@ function build() {
 
 // 공용 파일 넷: 라이브 판 + 환승 러시 줄. 앵커가 없으면(라이브가 움직이면) 멈춘다.
 const live = (rel) => execFileSync('git', ['-C', POLICY, 'show', `origin/main:${rel}`], { maxBuffer: 1 << 28 }).toString('utf8');
+/** 표 끝에 줄을 더한다. 끝 항목에 쉼표가 없으면 붙인다. */
+const addToTable = (start, close, lines) => (s) => {
+  const a = s.indexOf(start); if (a < 0) throw Error(`표가 없다 — ${start}`);
+  const b = s.indexOf(close, a); if (b < 0) throw Error(`표 끝이 없다 — ${start}`);
+  const head = s.slice(0, b);
+  return `${head}${head.endsWith(',') ? '' : ','}\n${lines}${s.slice(b)}`;
+};
 function edit(text, rel, pairs) {
   const crlf = text.includes('\r\n'); let s = text.replace(/\r\n/g, '\n');
-  for (const [a, b] of pairs) { if (!s.includes(a)) throw Error(`${rel}: 앵커가 없다 — ${a.slice(0, 70)}`); s = s.replace(a, () => b); }
+  for (const pair of pairs) {
+    if (typeof pair === 'function') { s = pair(s); continue; }
+    const [a, b] = pair;
+    if (!s.includes(a)) throw Error(`${rel}: 앵커가 없다 — ${a.slice(0, 70)}`);
+    s = s.replace(a, () => b);
+  }
   return crlf ? s.replace(/\n/g, '\r\n') : s;
 }
 const SHARED_EDITS = {
   'world/brand-opening/play-unlocks.mjs': [
-    [`  racing: Object.freeze({ where: 'play.where.directions', open: (record) => record.directionsDone >= 1 }),
-});
-`, `  racing: Object.freeze({ where: 'play.where.directions', open: (record) => record.directionsDone >= 1 }),
-  // 환승 러시: 이야기 자리는 1화 아침인데 드라마 기록이 생활 요약에 없어, 가장 가까운 이야기 기록인 레슨 하나를 마침으로 연다(설계 9절) —
+    addToTable('export const PLAY_UNLOCKS = Object.freeze({', '\n});', `  // 환승 러시: 이야기 자리는 1화 아침인데 드라마 기록이 생활 요약에 없어, 가장 가까운 이야기 기록인 레슨 하나를 마침으로 연다(설계 9절) —
   // 1화에 등굣길 장면이 생기면 그 기록으로 바꾼다.
-  subway: Object.freeze({ where: 'play.where.lesson', open: (record) => record.lessons >= 1 }),
-});
-
+  subway: Object.freeze({ where: 'play.where.lesson', open: (record) => record.lessons >= 1 }),`),
+    [`\n});\n\n/** 홈이 들고 있는 생활 진도`, `\n});\n
 // 대신하는 놀이가 그 학생에게 열리면 「놀이」 목록에서 그 자리를 이어받는다. 잠겨 있는 동안은 그대로 있어 듣기 놀이가 비지 않는다.
 // 게임 자체는 그대로 남는다(WORLD 듣기 확인 도구 · 계획 줄이 쓴다) — 목록의 카드만 바뀐다.
 export const PLAY_REPLACED_BY = Object.freeze({ runner: 'subway' });
-`],
-    [`    cafeVisits: Number(summary.cafe?.completed) || 0,
-`, `    cafeVisits: Number(summary.cafe?.completed) || 0,
-    lessons: Number(summary.completed) || 0,
-`],
+
+/** 홈이 들고 있는 생활 진도`],
     [`/** 놀이 하나의 상태:`, `/** 「놀이」 목록의 차례. 대신하는 놀이가 열렸으면 앞 놀이의 자리에 놓고 앞 놀이는 뺀다. */
 export function playOrder(ids, record) {
   const successors = Object.values(PLAY_REPLACED_BY), out = [];
@@ -83,18 +93,13 @@ export function playOrder(ids, record) {
   'world/brand-opening/home.mjs': [
     [`import {PLAY_UNLOCKS,playRecord,playState} from './play-unlocks.mjs';`, `import {PLAY_UNLOCKS,playRecord,playState,playOrder} from './play-unlocks.mjs';`],
     [`<div class="play-list">\${Object.entries(games).map(([id,g],i)=>{`, `<div class="play-list">\${playOrder(Object.keys(games),record).map(id=>[id,games[id]]).map(([id,g],i)=>{`],
-    [`area:'문장을 듣고 답이 있는 길로 옮기는 듣기 연습'}
-};`, `area:'문장을 듣고 답이 있는 길로 옮기는 듣기 연습'},
- // 환승 러시(11-04, 캠퍼스 판): 레슨 하나를 마치면 열린다(play-unlocks.mjs). 열린 뒤에는 바람길 카드 자리를 이어받는다.
- subway:{get title(){return t('game.subway.title');},get detail(){return t('game.subway.detail');},label:'LISTEN & GO',path:'../subway-rush/',image:'world-play/subway-rush.webp',area:'지하철 안내방송을 듣고 문·통로·출구 고르기 연습'}
-};`],
+    addToTable('const games={', '\n};', ` // 환승 러시(11-04, 캠퍼스 판): 레슨 하나를 마치면 열린다(play-unlocks.mjs). 열린 뒤에는 바람길 카드 자리를 이어받는다.
+ subway:{get title(){return t('game.subway.title');},get detail(){return t('game.subway.detail');},label:'LISTEN & GO',path:'../subway-rush/',image:'world-play/subway-rush.webp',area:'지하철 안내방송을 듣고 문·통로·출구 고르기 연습'}`),
   ],
   'world/brand-opening/world-strings.mjs': [
     [` 'play.locked':{ko:`, ` 'game.subway.title':{ko:'환승 러시',en:'Transfer Rush',mn:'Метро дамжин суух'},
  'game.subway.detail':{ko:'안내방송을 듣고 갈아타서 첫 수업에 닿아요',en:'Follow the announcements, transfer, and make it to your first class',mn:'Буудал зарлахыг сонсоод метро дамжин сууж, эхний хичээлдээ амжина'},
  'play.locked':{ko:`],
-    [` 'play.where.directions':{`, ` 'play.where.lesson':{ko:'첫 학습을 마치면',en:'after your first lesson',mn:'Эхний хичээлээ дуусгахад'},
- 'play.where.directions':{`],
     [` 'position.source.order-rush':{ko:'주문 폭주',en:'Order Rush',mn:'Захиалгын шуурга'},
 `, ` 'position.source.order-rush':{ko:'주문 폭주',en:'Order Rush',mn:'Захиалгын шуурга'},
  'position.source.subway-rush':{ko:'환승 러시',en:'Transfer Rush',mn:'Метро дамжин суух'},

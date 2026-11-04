@@ -13,9 +13,10 @@ export function createSound() {
   const ctx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' });
   const limiter = ctx.createDynamicsCompressor(); limiter.threshold.value = -5; limiter.knee.value = 3; limiter.ratio.value = 14; limiter.attack.value = 0.002; limiter.release.value = 0.12; limiter.connect(ctx.destination);
   const master = ctx.createGain(); master.gain.value = 0.78; master.connect(limiter);
-  const bed = ctx.createGain(); bed.gain.value = 1; bed.connect(master);
-  const FX = pref('sound') ? 0.8 : 0, FX_DUCK = pref('sound') ? 0.5 : 0;
-  const fx = ctx.createGain(); fx.gain.value = FX; fx.connect(master);
+  // 「효과음」을 끄면 레일 · 대합실 바닥 소리도 함께 꺼진다. 말할 때마다 설정을 다시 읽는다.
+  const bedLevel = (ducked) => (pref('sound') ? (ducked ? 0.38 : 1) : 0), fxLevel = (ducked) => (pref('sound') ? (ducked ? 0.5 : 0.8) : 0);
+  const bed = ctx.createGain(); bed.gain.value = bedLevel(false); bed.connect(master);
+  const fx = ctx.createGain(); fx.gain.value = fxLevel(false); fx.connect(master);
   const voice = ctx.createGain(); voice.gain.value = 0.92; voice.connect(master);
   const analyser = ctx.createAnalyser(); analyser.fftSize = 512; analyser.smoothingTimeConstant = 0.55;
   const buffers = new Map();
@@ -49,10 +50,11 @@ export function createSound() {
     const dry = gainAt(1); src.connect(dry); dry.connect(voice); dry.connect(analyser);
     const t = now() + 0.15;
     session('playback'); api.onVoice?.(true);
-    bed.gain.cancelScheduledValues(now()); bed.gain.setTargetAtTime(0.38, now(), 0.05); fx.gain.setTargetAtTime(FX_DUCK, now(), 0.05);
+    bed.gain.cancelScheduledValues(now()); fx.gain.cancelScheduledValues(now());   // 앞 줄이 끝나며 예약한 복귀가 새 줄을 덮지 않게
+    bed.gain.setTargetAtTime(bedLevel(true), now(), 0.05); fx.gain.setTargetAtTime(fxLevel(true), now(), 0.05);
     src.start(t);
     return new Promise((resolve) => {
-      const done = (ok) => { if (speaking?.src !== src) return; speaking = null; session('ambient'); api.onVoice?.(false); bed.gain.setTargetAtTime(1, now() + 0.4, 0.2); fx.gain.setTargetAtTime(FX, now() + 0.2, 0.1); resolve(ok); };
+      const done = (ok) => { if (speaking?.src !== src) return; speaking = null; session('ambient'); api.onVoice?.(false); bed.gain.setTargetAtTime(bedLevel(false), now() + 0.4, 0.2); fx.gain.setTargetAtTime(fxLevel(false), now() + 0.2, 0.1); resolve(ok); };
       speaking = { src, done };
       src.onended = () => done(true);
     });
@@ -91,7 +93,9 @@ export function createSound() {
   }
   function railSpeed(v) { if (!rail) return; rail.speed = v; rail.g.gain.setTargetAtTime(0.04 + 0.19 * v, now(), 0.3); rail.lp.frequency.setTargetAtTime(110 + 120 * v, now(), 0.3); rail.hum.frequency.setTargetAtTime(40 + 70 * v, now(), 0.4); rail.hg.gain.setTargetAtTime(0.006 * v, now(), 0.3); }
   function railTick() {
-    if (!rail || rail.speed < 0.04) return;
+    if (!rail) return;
+    if (rail.next < now()) rail.next = now();   // 정차 · 멈춤 동안 밀린 이음매를 한꺼번에 울리지 않는다
+    if (rail.speed < 0.04) return;
     while (rail.next < now() + 0.12) {
       const t = rail.next, gap = 0.11 / Math.max(0.25, rail.speed);
       for (const [dt, f, gn] of [[0, 900, 0.055], [gap, 700, 0.07]]) {
@@ -129,7 +133,7 @@ export function createSound() {
 
   const api = {
     ctx, output: master, limiter, onVoice: null, load, speak, stopVoice, chime, voiceLevels, sfx, railStart, railSpeed, railTick, railStop, hallStart, hallStop,
-    resume: () => ctx.state === 'suspended' ? ctx.resume() : Promise.resolve(),
+    resume: () => ctx.state !== 'running' && ctx.state !== 'closed' ? ctx.resume() : Promise.resolve(),   // 아이폰은 끊기면 interrupted가 된다
     suspend: () => ctx.state === 'running' ? ctx.suspend() : Promise.resolve(),
   };
   return api;
