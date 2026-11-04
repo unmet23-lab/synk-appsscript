@@ -53,3 +53,49 @@ export function skillReport(summary) {
     return { id, label: SKILL_LABEL[id], status, text: STATUS[status].text, tone: STATUS[status].tone, n: f?.n || 0, correct: f?.correct || 0 };
   });
 }
+
+/* 다음 달리기 안내: 달리기 칸(action)은 늘 평가하지 않음이라 비어 있다. 엔진의 「아직 기록이 적어요」를 그대로 쓰면 듣기 확인을 다 맞힌 사람에게도
+ * 듣기 자체의 기록이 적다고 말하게 되므로, 입구는 달리는 방식으로 범위를 좁혀 말한다. 해낸 일은 Core가 독립 응답으로 인정한 듣기 확인 칸의 근거만 읽는다. */
+const CHECK_FAMILY = 'korean-runner.listening-check.';
+const DONE_WHAT = Object.freeze({
+  'ko.listening.detail': '방향이나 동작을 말하는 문제',
+  'ko.listening.negation': '하지 말라거나 하지 않아도 된다는 문제',
+  'ko.listening.sequence': '두 동작의 순서를 말하는 문제',
+});
+const DONE_MIN = 4;   // Core의 안정 판정(learning.js POLICY.sample)과 같은 수. 칸은 서로 다른 계열을 한 번씩만 센다.
+export const RUN_NEXT = '이제 달리면서 동작으로 답해 봐요.';
+export const RUN_SCOPE = '달리기는 달리면서 동작으로 답하는 연습이에요. 장면을 보고도 할 수 있어서 듣기 기록은 ‘듣기 확인’에만 남아요.';
+
+/**
+ * 이 게임의 듣기 확인에서 처음 듣고 도움 없이 맞힌 근거가 충분한 능력 하나. 없으면 null.
+ * 칸의 상태는 여러 게임이 나눠 쓰므로 근거마다 출처를 확인해 이 게임의 듣기 확인만 센다. 출처를 잇지 못하는 근거(접힌 기록 등)는 세지 않는다.
+ */
+export function doneChecks(coach, prefer = null) {
+  try {
+    if (!coach || coach.assignment?.()) return null;
+    const summary = coach.summary();
+    if (summary?.storage?.available !== true || summary.evidenceComplete !== true) return null;
+    const events = coach.events(), byId = new Map(events.map((event, index) => [event.id, { event, index }])), found = [];
+    for (const skill of summary.skills || []) {
+      if (!DONE_WHAT[skill.id]) continue;
+      for (const level of Object.values(skill.levels || {})) {
+        const cell = level.formats?.[CHECK_FORMAT];
+        if (cell?.status !== 'recent-independent') continue;
+        const own = (cell.evidence || []).map((id) => byId.get(id)).filter(({ event } = {}) => {
+          const shown = byId.get(event?.presentationId)?.event, decision = byId.get(shown?.decisionId)?.event;
+          return event?.type === 'practice.attempted' && ['correct', 'incorrect'].includes(event.verdict) && shown?.type === 'practice.presented'
+            && decision?.type === 'decision.made' && decision.experienceId === 'korean-runner' && String(shown.measure?.familyKey).startsWith(CHECK_FAMILY);
+        });
+        if (own.length >= DONE_MIN && own.every(({ event }) => event.verdict === 'correct')) found.push({ skillId: skill.id, count: own.length, last: Math.max(...own.map((row) => row.index)) });
+      }
+    }
+    return found.find((row) => row.skillId === prefer) || found.sort((a, b) => b.last - a.last)[0] || null;
+  } catch { return null; }
+}
+
+/** 다음 달리기의 빈 칸을 말하는 엔진 이유 대신 쓸 말. 엔진이 다른 까닭을 말할 때(도움으로 해냄 등)는 null이고 그 말을 그대로 쓴다. */
+export function runReason(coach, plan) {
+  if (plan?.state !== 'unseen' || plan.responseFormat !== 'action') return null;
+  const done = doneChecks(coach, plan.focusSkillId);
+  return done ? `듣기 확인에서 ${DONE_WHAT[done.skillId]} ${done.count}개를 처음 듣고 도움 없이 맞혔어요. ${RUN_NEXT}` : RUN_SCOPE;
+}
