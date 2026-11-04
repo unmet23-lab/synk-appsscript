@@ -1,0 +1,48 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.92,
+  "seed": 1104,
+  "lufs": -17
+ },
+ "made": "2026-11-04T00:02:36.174Z",
+ "lines": [
+  {
+   "id": "g1",
+   "text": "괜찮아.",
+   "dur": 0.914,
+   "syllablesPerSec": 3.28,
+   "src": "g1.wav",
+   "key": "68607a69861f4e51b064c8bf2e30c0fd",
+   "words": 1
+  },
+  {
+   "id": "j1",
+   "text": "잘하고 있어.",
+   "dur": 1.169,
+   "syllablesPerSec": 4.28,
+   "src": "j1.wav",
+   "key": "2d702b907f782c491de3bb9479472800",
+   "words": 2
+  },
+  {
+   "id": "j2",
+   "text": "잘하고 있어.",
+   "dur": 1.008,
+   "syllablesPerSec": 4.96,
+   "src": "j2.wav",
+   "key": "ec305bc92cb1ff668bbd18686abb75c7",
+   "words": 2
+  }
+ ]
+}

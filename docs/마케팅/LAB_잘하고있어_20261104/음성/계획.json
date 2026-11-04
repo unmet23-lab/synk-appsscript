@@ -1,0 +1,38 @@
+{
+  "note": "LAB 영어 E25 「잘하고 있어」 — 영어 목소리 없음(말 없이 화면 글로 옮겨 두 채널 판까지 같은 소리), 한국어 두 마디만 소진 세기 1.0. 끝 줄은 시청자에게 건네는 속삭임. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_잘하고있어_20261104/음성/계획.json --굽기",
+  "voice": {
+    "id": "tc_666a9871abcf27a5169850d0",
+    "name": "소진"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "ko",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 0.92,
+    "seed": 1104,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "g1",
+      "text": "괜찮아.",
+      "prev": "오늘 하루 종일 틀렸다.",
+      "next": "잘하고 있어."
+    },
+    {
+      "id": "j1",
+      "text": "잘하고 있어.",
+      "prev": "괜찮아.",
+      "next": "정말이야."
+    },
+    {
+      "id": "j2",
+      "text": "잘하고 있어.",
+      "emotion": "whisper",
+      "tempo": 0.9
+    }
+  ]
+}

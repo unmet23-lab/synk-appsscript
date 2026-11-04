@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "happy",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1104,
+  "lufs": -17
+ },
+ "made": "2026-11-03T23:22:33.155Z",
+ "lines": [
+  {
+   "id": "c1",
+   "text": "추워요!",
+   "dur": 0.674,
+   "syllablesPerSec": 4.45,
+   "src": "c1.wav",
+   "key": "2430838dd0b0263bd79ece0196b10c26",
+   "words": 1
+  },
+  {
+   "id": "w1",
+   "text": "커피가 추워요!",
+   "dur": 1.143,
+   "syllablesPerSec": 5.25,
+   "src": "w1.wav",
+   "key": "407757c84fc27c23e416369e31696728",
+   "words": 2
+  },
+  {
+   "id": "h1",
+   "text": "커피가 차가워요!",
+   "dur": 1.18,
+   "syllablesPerSec": 5.93,
+   "src": "h1.wav",
+   "key": "edbb4e8e19f0d6aa7a263e1d9c12660d",
+   "words": 2
+  },
+  {
+   "id": "c2",
+   "text": "추워요…",
+   "dur": 0.869,
+   "syllablesPerSec": 3.45,
+   "src": "c2.wav",
+   "key": "abad06b59ae8714ddb0e69b9b23ee465",
+   "words": 1
+  },
+  {
+   "id": "d1",
+   "text": "따뜻해요…",
+   "dur": 1.25,
+   "syllablesPerSec": 3.2,
+   "src": "d1.wav",
+   "key": "4fdb04a849ccd5e3a322185e00020d20",
+   "words": 1
+  },
+  {
+   "id": "w2",
+   "text": "커피가… 차가워요!",
+   "dur": 1.59,
+   "syllablesPerSec": 4.4,
+   "src": "w2.wav",
+   "key": "a32702b1b319bdc071ad73971f63f202",
+   "words": 2
+  }
+ ]
+}

@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "j1",
+ "text": "잘하고 있어.",
+ "dur": 1.169,
+ "words": [
+  {
+   "text": "잘하고",
+   "start": 0.16,
+   "end": 0.625
+  },
+  {
+   "text": "있어.",
+   "start": 0.685,
+   "end": 1.169
+  }
+ ],
+ "source": {
+  "key": "2d702b907f782c491de3bb9479472800",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 0.92,
+   "seed": 1104,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 396
+ }
+}

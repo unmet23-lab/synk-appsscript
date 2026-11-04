@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE WIDE image, landscape.
+Plain pure white seamless background, no floor, no shadow. Handmade needle-felted three-dimensional Korean letters, thick cream-colored wool with visible fibers and a tiny coral running-stitch outline, softly glowing warm, laid out with clear wide gaps between letters so each can be cut out alone. Exactly these Korean letters in two rows, correctly formed and easily readable:
+Row 1: 괜 찮 아
+Row 2: 잘 하 고 있 어
+No other text, no objects, nothing else.

@@ -1,0 +1,12 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Mongle: the coral needle-felted wool ghost-shaped mascot in the attached reference photos (use them ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy black bead eyes with no whites, pink felt cheeks). No arms, no legs, ever — any object floats next to its body or rests on it.
+
+World: late at night in a tiny student room in Seoul. A small handmade wooden desk under a warm felt desk lamp; everything else falls into soft dark brown shadow. Behind the desk a window shows blurred warm city lights. Real handmade needle-felt craft photographed with a macro lens, visible wool fibers, one warm lamp as the only light, deep shadows, gentle depth of field — a quiet, cinematic, premium stop-motion film still, cute but not babyish (for university students and young workers). No speech bubbles, no captions, no logos.
+
+Layout: keep the TOP 26% of the image dark and calm (out of focus shadow) — text will be added there later. All the action sits in the middle and lower part.
+
+Scene: extreme close-up from desk level. An open paper notebook fills the frame: several lines of neat blue-ink Korean handwritten sentences, and next to every line a big angry red pen X mark, so many red X marks the page looks hopeless. At the bottom right the squashed coral wool edge of Mongle lies flat on the page, one bead eye half closed and looking at the viewer. A pencil rolls away on the page. Warm lamp light raking across the paper.
+The handwriting must be real, correctly formed Korean, exactly these three lines: 저는 어제 학교에 갔어요 / 친구를 만났어요 / 오늘 날씨가 좋아요. No other text.

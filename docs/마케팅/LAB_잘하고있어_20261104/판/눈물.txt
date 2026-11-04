@@ -1,0 +1,11 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Mongle: the coral needle-felted wool ghost-shaped mascot in the attached reference photos (use them ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy black bead eyes with no whites, pink felt cheeks). No arms, no legs, ever — any object floats next to its body or rests on it.
+
+World: late at night in a tiny student room in Seoul. A small handmade wooden desk under a warm felt desk lamp; everything else falls into soft dark brown shadow. Behind the desk a window shows blurred warm city lights. Real handmade needle-felt craft photographed with a macro lens, visible wool fibers, one warm lamp as the only light, deep shadows, gentle depth of field — a quiet, cinematic, premium stop-motion film still, cute but not babyish (for university students and young workers). No speech bubbles, no captions, no logos.
+
+Layout: keep the TOP 26% of the image dark and calm (out of focus shadow) — text will be added there later. All the action sits in the middle and lower part.
+
+Close-up of Mongle under the warm lamp, now fully upright on the open notebook, filling the lower half of the frame. Both glossy bead eyes look up and to the left at something floating in the air. One single clear round tear runs down its coral wool cheek, catching the lamp light. Pink felt cheeks. Lips none. The air to the upper left of Mongle stays clear and dark. No text anywhere.

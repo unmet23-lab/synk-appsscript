@@ -1,0 +1,3 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE square image. Plain pure white seamless background, no floor, no shadow. One short natural light-wood pencil, the same as the pencil in Image 1 (plain wood, sharpened dark graphite tip, no eraser, no paint), lying diagonally: the sharp tip at the bottom left corner area and the blunt end at the top right. Warm macro photo look with visible wood grain. Nothing else in the image.
