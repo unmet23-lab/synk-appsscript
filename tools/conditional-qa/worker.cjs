@@ -11,21 +11,26 @@ const defaultState = () => path.join(os.homedir(), 'security-audit-skill/SYNK-co
 const BUDGET_MS = 60 * 60_000;
 const MIN_VERIFICATION_FREE_BYTES = 2 * 1024 ** 3;
 // Under load the registered browser tests stretch until they time out (S078 takes 3 s on a quiet PC and ran past its 165 s on 11-04 at 100% CPU),
-// and a timeout stays a failure that a person has to look at. So verifications open by the load. This only waits; it never relaxes a limit or a verdict.
-// Another verification beside a running one needs real room. The first waits out a saturated PC, for a while: a worker that never publishes turns red after 155 minutes.
-const ROOM_CPU_PERCENT = 70, ROOM_FREE_MEMORY = 6 * 1024 ** 3, SATURATED_CPU_PERCENT = 95, SATURATED_WAIT_MS = 30 * 60_000;
-const ROOM_RECHECK_MS = 30_000;
+// and a timeout stays a failure that someone has to look at: five of the six runs opened on a saturated PC that day ended so, after 18-40 minutes each.
+// So a verification opens only on a PC that has stayed calm for a while, and another beside it needs more room. This only waits; it never relaxes a limit or a verdict.
+const roomFor = ({ cpu, memory }) => (busy, freeMemory = os.freemem()) => busy !== null && busy < cpu && freeMemory >= memory;
+const roomForFirst = roomFor({ cpu: 85, memory: 3 * 1024 ** 3 }), roomForAnother = roomFor({ cpu: 70, memory: 6 * 1024 ** 3 });
+const CALM_MS = 2 * 60_000, ROOM_RECHECK_MS = 30_000;
 // A reading only says something about a verification that has been running: right after one opens, it still shows the PC without it.
 const ROOM_WARM_UP_MS = 60_000;
-const hasRoom = (busy, freeMemory = os.freemem()) => busy !== null && busy < ROOM_CPU_PERCENT && freeMemory >= ROOM_FREE_MEMORY;
-function saturationGate({ now = Date.now, waitMs = SATURATED_WAIT_MS } = {}) {
+// A held tick ends, so the next one refetches master and looks at finished runs.
+const HOLD_TICK_MS = 15 * 60_000;
+// local-status turns red after 155 minutes without a worker status. That is for a stopped PC, not one waiting for room, so a held worker says so well before then.
+const HOLD_NOTICE_MS = 60 * 60_000, HOLDING = 'Waiting for room on the local PC; not verified yet';
+// One reading within the limits says little: on 11-04 a minute at 80% sat between hours at 100%.
+// Readings go on while every checkout is busy, so a PC that stayed calm through a verification opens the next one at once.
+function calmGate(hasRoom, { calmMs = CALM_MS, now = Date.now } = {}) {
   let since = null;
-  return busy => {
-    if (busy !== null && busy < SATURATED_CPU_PERCENT) { since = null; return true; }
-    since ??= now();
-    if (now() - since < waitMs) return false;
-    since = null;
-    return true;
+  return {
+    observe(busy) { if (!hasRoom(busy)) since = null; else since ??= now(); },
+    // A verification that just opened is not in the readings yet, so the stretch starts over.
+    reset() { since = null; },
+    calm: () => since !== null && now() - since >= calmMs,
   };
 }
 const INCOMPLETE = 'Local verification incomplete; inspect the private worker receipt';
@@ -205,12 +210,13 @@ function cpuMeter({ cpus = os.cpus, now = Date.now, windowMs = 20_000 } = {}) {
 }
 // Runs one job per checkout, opening each when mayOpenFirst or mayOpenAnother allows. A job holds its checkout until it settles, and can give it up for this tick.
 // The pool never returns while a job runs, so the caller's lock outlives every verification, and a failure stops new jobs without abandoning the others.
-async function runPool({ slots, pick, run, mayOpenFirst = () => true, mayOpenAnother = () => true, finished = () => {}, recheckMs = ROOM_RECHECK_MS }) {
+async function runPool({ slots, pick, run, mayOpenFirst = () => true, mayOpenAnother = () => true, finished = () => {}, watch = () => {}, recheckMs = ROOM_RECHECK_MS }) {
   const free = [...slots], running = new Set();
   let fatal = null, settled = 0, openedAt = 0;
   for (;;) {
     let waiting = false;
     try {
+      watch();
       while (!fatal && free.length) {
         if (!(running.size ? mayOpenAnother(Date.now() - openedAt) : mayOpenFirst())) { waiting = true; break; }
         const item = pick();
@@ -229,7 +235,7 @@ async function runPool({ slots, pick, run, mayOpenFirst = () => true, mayOpenAno
   }
   if (fatal) throw fatal;
 }
-async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, requestedCommit = null, hub = github, runGit = git, cloneRoot = clone, verifyCommit = verify, room = hasRoom, meter = cpuMeter(), recheckMs = ROOM_RECHECK_MS, warmUpMs = ROOM_WARM_UP_MS } = {}) {
+async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, requestedCommit = null, hub = github, runGit = git, cloneRoot = clone, verifyCommit = verify, first = roomForFirst, room = roomForAnother, meter = cpuMeter(), recheckMs = ROOM_RECHECK_MS, warmUpMs = ROOM_WARM_UP_MS, calmMs = CALM_MS, holdTickMs = HOLD_TICK_MS } = {}) {
   if (requestedCommit !== null) github.validCommit(requestedCommit);
   const config = loadConfig(stateDir), release = acquire(stateDir, { reclaimDead: requestedCommit === null }), queueFile = path.join(stateDir, 'queue.json'), started = Date.now();
   try {
@@ -253,11 +259,12 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
     settle();
     // An interrupted process or network publication is resumed; a failed test stays explicitly failed.
     // Each commit is attempted once per tick, so an unavailable API cannot spin on the same publication.
-    const attempted = new Set(), saturated = saturationGate();
-    let diskWait = null, busy = null, held = 0;
+    const attempted = new Set(), calmFirst = calmGate(first, { calmMs }), calmAnother = calmGate(room, { calmMs });
+    let diskWait = null, busy = null, held = 0, holdingSince = null;
+    const spent = () => Date.now() - started >= budgetMs || (holdingSince !== null && Date.now() - holdingSince >= holdTickMs);
     const pick = () => {
       diskWait = null;
-      if (Date.now() - started >= budgetMs) return undefined;
+      if (spent()) return undefined;
       const item = nextItem(queue, head, attempted, Date.now(), requestedCommit);
       if (!item) return undefined;
       diskWait = diskWaitFor(item, stateDir);
@@ -270,6 +277,7 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
       try {
         if (item.status !== 'publish-pending') {
           if (requestedCommit === null) advanceTurn(queue);
+          calmFirst.reset(); calmAnother.reset();
           item.status = 'running'; item.startedAt = new Date().toISOString(); item.slot = checkout === config ? 1 : Number(path.basename(checkout.state)); item.cpuAtStart = busy;
           delete item.resumePending; write(queueFile, queue);
           hub.publish(item.commit, 'pending', 'Running the registered local conditional tests');
@@ -307,20 +315,27 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
     const checkouts = requestedCommit === null ? [config, ...slotConfigs(stateDir)] : [config];
     // Nothing to wait for without a verification to open: a requested commit, a saved result to publish, an empty queue or a spent budget.
     const nothingToHold = () => {
-      if (requestedCommit !== null || Date.now() - started >= budgetMs) return true;
+      if (requestedCommit !== null || spent()) return true;
       const item = nextItem(queue, head, attempted);
       return !item || item.status === 'publish-pending';
     };
-    const gated = allowedAt => sinceOpened => {
+    const gated = allowedNow => sinceOpened => {
       if (nothingToHold()) return true;
-      busy = meter();
-      const allowed = allowedAt(busy, sinceOpened);
+      const allowed = allowedNow(sinceOpened);
       if (!allowed) held++;
       return allowed;
     };
-    await runPool({ slots: checkouts, pick, run, recheckMs, finished: () => { refresh(); settle(); }, mayOpenFirst: gated(saturated),
-      mayOpenAnother: gated((reading, sinceOpened) => sinceOpened >= warmUpMs && room(reading)) });
-    const summary = { checkedAt: new Date().toISOString(), head, slots: checkouts.length, roomHeld: held, ...(diskWait && { diskWait }), queued: queue.items.filter(row => row.status === 'queued').length,
+    const watch = () => { busy = meter(); calmFirst.observe(busy); calmAnother.observe(busy); };
+    const mayOpenFirst = gated(() => { const calm = calmFirst.calm(); holdingSince = calm ? null : holdingSince ?? Date.now(); return calm; });
+    const mayOpenAnother = gated(sinceOpened => sinceOpened >= warmUpMs && calmAnother.calm());
+    await runPool({ slots: checkouts, pick, run, recheckMs, watch, finished: () => { refresh(); settle(); }, mayOpenFirst, mayOpenAnother });
+    if (holdingSince !== null && Date.now() - (queue.heldNoticeAt || 0) >= HOLD_NOTICE_MS) {
+      // On a commit nothing has verified yet, so it replaces no result. Pending is never a pass.
+      const newest = queue.items.findLast(row => row.status === 'queued');
+      try { if (newest) { hub.publish(newest.commit, 'pending', HOLDING); queue.heldNoticeAt = Date.now(); write(queueFile, queue); } }
+      catch (error) { console.error(`The hold notice was not published: ${error.message}`); }
+    }
+    const summary = { checkedAt: new Date().toISOString(), head, slots: checkouts.length, roomHeld: held, ...(holdingSince !== null && { holdingAtCpu: busy }), ...(diskWait && { diskWait }), queued: queue.items.filter(row => row.status === 'queued').length,
       incomplete: queue.items.filter(row => row.status !== 'passed').length,
       passed: queue.items.filter(row => row.status === 'passed').length, failed: queue.items.filter(row => row.status === 'failed').length,
       items: queue.items.slice(-5).map(({ commit, status, error }) => ({ commit, status, error })) };
@@ -346,4 +361,4 @@ if (require.main === module) {
     if (requestedCommit !== null && summary.requested.status !== 'passed') process.exitCode = summary.requested.status === 'failed' ? 1 : 2;
   }).catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns, republishFailures, diskWaitFor, browserProfileDiskFull, runPool, cpuMeter, hasRoom, saturationGate, trimPassedRun };
+module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns, republishFailures, diskWaitFor, browserProfileDiskFull, runPool, cpuMeter, roomForFirst, roomForAnother, calmGate, trimPassedRun };

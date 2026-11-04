@@ -6,7 +6,7 @@ const root = path.resolve(__dirname, '..'), c = require('../tools/conditional-qa
 const { check } = require('../tools/conditional-qa/guard.cjs');
 const { childRun, temporaryEnvironment, profileBudget, fileConcurrency } = require('../tools/conditional-qa/run.cjs');
 const { materialize, write, release, prepare, slotConfigs, slotState, repairCheckout, git: runGit } = require('../tools/conditional-qa/inputs.cjs');
-const { extendQueue, nextItem, advanceTurn, acquire, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns, republishFailures, diskWaitFor, browserProfileDiskFull, runPool, cpuMeter, hasRoom, saturationGate, trimPassedRun, tick } = require('../tools/conditional-qa/worker.cjs');
+const { extendQueue, nextItem, advanceTurn, acquire, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns, republishFailures, diskWaitFor, browserProfileDiskFull, runPool, cpuMeter, roomForFirst, roomForAnother, calmGate, trimPassedRun, tick } = require('../tools/conditional-qa/worker.cjs');
 const { plan } = require('../tools/conditional-qa/install.cjs');
 const github = require('../tools/conditional-qa/github.cjs');
 const { wait } = require('../tools/conditional-qa/wait-local.cjs');
@@ -603,20 +603,24 @@ test('every checkout verifies a different commit at once, and no checkout or com
   await runPool({ slots: ['main'], pick: () => single.shift(), run: async () => { alone++; assert.equal(alone, 1); await turn(); alone--; } });
   assert.equal(single.length, 0);
 });
-test('a saturated PC holds the first verification for a while, and only that long', async () => {
+test('a busy PC holds the first verification until it has stayed calm', async () => {
   const queue = ['a'], started = []; let open = false, asked = 0;
   const pool = runPool({ slots: ['main'], pick: () => queue.shift(), recheckMs: 1, mayOpenFirst: () => { asked++; return open; }, run: async item => { started.push(item); } });
   await until(() => asked >= 3);
   assert.deepEqual(started, [], 'waiting is not the end of the tick'); assert.deepEqual(queue, ['a']);
   open = true; await pool; assert.deepEqual(started, ['a']);
   let at = 0;
-  const gate = saturationGate({ now: () => at, waitMs: 100 });
-  assert.equal(gate(94), true, 'busy but not saturated');
-  assert.equal(gate(95), false); at = 99; assert.equal(gate(100), false);
-  at = 100; assert.equal(gate(100), true, 'the wait ends, so a saturated PC still gets verified');
-  at = 101; assert.equal(gate(100), false, 'the next verification waits again');
-  at = 150; assert.equal(gate(90), true); at = 160; assert.equal(gate(99), false, 'room in between starts the wait over');
-  at = 259; assert.equal(gate(null), false, 'no reading yet is no room'); at = 260; assert.equal(gate(null), true);
+  const gate = calmGate(reading => reading !== null && reading < 85, { now: () => at, calmMs: 100 });
+  const read = reading => { gate.observe(reading); return gate.calm(); };
+  assert.equal(read(null), false, 'no reading yet is no room');
+  assert.equal(read(80), false, 'one reading under the limit is not calm'); at = 99; assert.equal(read(80), false);
+  at = 100; assert.equal(read(80), true, 'calm for the whole stretch');
+  at = 101; assert.equal(read(85), false, 'a reading at the limit starts it over');
+  at = 110; assert.equal(read(10), false); at = 209; assert.equal(read(10), false); at = 210; assert.equal(read(10), true);
+  at = 10_000; assert.equal(read(100), false, 'no matter how long it has been waiting, a saturated PC stays held');
+  at = 10_100; assert.equal(read(10), false); at = 10_200; assert.equal(read(10), true);
+  gate.reset(); assert.equal(gate.calm(), false, 'a verification just opened: the stretch starts over');
+  at = 10_250; assert.equal(read(10), false); at = 10_350; assert.equal(read(10), true);
 });
 test('a held pool with a failure ends, and an error while choosing never leaves a running verification behind', async () => {
   const none = []; await assert.rejects(runPool({ slots: ['main'], pick: () => assert.fail('held'), run: async () => {}, recheckMs: 1, mayOpenFirst: () => { throw Error('load unreadable'); } }), /load unreadable/); assert.deepEqual(none, []);
@@ -672,9 +676,11 @@ test('the load reading covers a real window and stays unknown until then', () =>
   at = 25; idle = 2000; assert.equal(meter(), 80, 'the last reading stands until the next window ends');
   at = 40; assert.equal(meter(), 0);
   const plenty = 32 * 1024 ** 3;
-  assert.equal(hasRoom(null, plenty), false, 'no reading is no room');
-  assert.equal(hasRoom(69, plenty), true); assert.equal(hasRoom(70, plenty), false);
-  assert.equal(hasRoom(10, 6 * 1024 ** 3), true); assert.equal(hasRoom(10, 6 * 1024 ** 3 - 1), false);
+  for (const room of [roomForFirst, roomForAnother]) assert.equal(room(null, plenty), false, 'no reading is no room');
+  assert.equal(roomForFirst(84, plenty), true); assert.equal(roomForFirst(85, plenty), false);
+  assert.equal(roomForFirst(10, 3 * 1024 ** 3), true); assert.equal(roomForFirst(10, 3 * 1024 ** 3 - 1), false);
+  assert.equal(roomForAnother(69, plenty), true); assert.equal(roomForAnother(70, plenty), false);
+  assert.equal(roomForAnother(10, 6 * 1024 ** 3), true); assert.equal(roomForAnother(10, 6 * 1024 ** 3 - 1), false);
 });
 test('a passed run keeps its receipt, TAP and events and drops the rest without following links', t => {
   const dir = scratch(t), output = path.join(dir, 'run'), outside = path.join(dir, 'outside');
@@ -719,15 +725,17 @@ function tickFixture(t, commits, { slot = true } = {}) {
   const runGit = (cwd, args) => { if (args[0] === 'rev-parse') return head; if (args[0] === 'rev-list') return ''; if (args[0] === 'show') return bytes; return ''; };
   const receiptFor = commit => ({ version: 1, commit, manifestDigest: manifest.digest, expected: selected.length, passed: selected.length, ok: true, candidate: false, sourceUnchanged: true, inputsUnchanged: true, rows: selected.map(row => ({ ...row, status: 'pass' })) });
   const queue = () => JSON.parse(fs.readFileSync(path.join(state, 'queue.json'))).items;
-  return { state, published, queue, receiptFor, deps: { hub, runGit, cloneRoot: config => config.root, room: () => true, meter: () => 10, recheckMs: 1, warmUpMs: 0, slept: () => false } };
+  return { state, published, queue, receiptFor, deps: { hub, runGit, cloneRoot: config => config.root, first: reading => reading !== null && reading < 85, room: () => true, meter: () => 10, recheckMs: 1, warmUpMs: 0, calmMs: 0, slept: () => false } };
 }
 const tickCommits = n => Array.from({ length: n }, (_, i) => String(i + 1).repeat(40).slice(0, 40));
 test('a tick verifies on both checkouts at once, keeps each receipt to its commit and trims only what passed', async t => {
-  const commits = tickCommits(5), f = tickFixture(t, commits), busy = new Set(), seen = []; let widest = 0;
+  const commits = tickCommits(5), f = tickFixture(t, commits), busy = new Set(), seen = []; let widest = 0, bothOpened;
+  const both = new Promise(resolve => { bothOpened = resolve; });
   const summary = await tick(f.state, { ...f.deps, verifyCommit: async (config, commit, output) => {
     assert.equal(busy.has(config.state), false, 'one verification per checkout'); busy.add(config.state); widest = Math.max(widest, busy.size); seen.push(commit);
+    if (busy.size === 2) bothOpened();
     write(path.join(output, 'result.json'), f.receiptFor(commit)); write(path.join(output, 'default/tests.tap'), {}); write(path.join(output, 'default/temp/scratch.json'), {});
-    await turn(); await turn(); busy.delete(config.state);
+    await both; await turn(); busy.delete(config.state);
     return { count: selected.length, digest: manifest.digest };
   } });
   assert.equal(widest, 2); assert.equal(summary.slots, 2);
@@ -763,9 +771,12 @@ test('a failed test stays failed with its evidence, an incomplete receipt never 
   assert.equal(byCommit(commits[2]).status, 'passed'); assert.equal(byCommit(commits[3]).status, 'passed');
 });
 test('a checkout that breaks outside the tests hands back its commit for a retry and leaves the rest to the other', async t => {
-  const commits = tickCommits(4), f = tickFixture(t, commits), byCheckout = {};
+  const commits = tickCommits(4), f = tickFixture(t, commits), byCheckout = {}; let bothOpened;
+  const both = new Promise(resolve => { bothOpened = resolve; });
   await tick(f.state, { ...f.deps, verifyCommit: async (config, commit, output) => {
-    (byCheckout[path.basename(config.state)] ||= []).push(commit); await turn();
+    (byCheckout[path.basename(config.state)] ||= []).push(commit);
+    if (Object.keys(byCheckout).length === 2) bothOpened();
+    await both;
     if (config.state !== f.state) throw Error('Validation checkout has modified tracked files');
     write(path.join(output, 'result.json'), f.receiptFor(commit));
     return { count: selected.length, digest: manifest.digest };
@@ -813,6 +824,71 @@ test('another verification waits until the reading can cover the one just opened
   assert.ok(opened[1] - opened[0] >= warmUpMs, 'second checkout must wait for a full warm-up');
   assert.equal(widest, 2, 'it does open once the reading covers the running one'); assert.ok(summary.roomHeld > 0); assert.equal(asked.length >= 1, true);
   assert.ok(f.queue().every(row => row.status === 'passed'));
+});
+test('a held tick opens nothing, ends so the next one can look again, and says once an hour that it is waiting', async t => {
+  const commits = tickCommits(3), [oldest, middle, newest] = commits, f = tickFixture(t, commits);
+  const queueFile = path.join(f.state, 'queue.json'), saved = JSON.parse(fs.readFileSync(queueFile));
+  saved.items[2].status = 'passed'; write(queueFile, saved);
+  const held = { ...f.deps, meter: () => 100, holdTickMs: 5, verifyCommit: () => assert.fail('nothing opens on a saturated PC') };
+  const summary = await tick(f.state, held);
+  assert.ok(summary.roomHeld > 0); assert.equal(summary.holdingAtCpu, 100);
+  assert.deepEqual(f.queue().map(row => row.status), ['queued', 'queued', 'passed'], 'every commit keeps its place');
+  assert.deepEqual(f.published, [[middle, 'pending', 'Waiting for room on the local PC; not verified yet']], 'the newest unverified commit, never one with a result');
+  assert.equal(f.published.some(row => row[0] === newest || row[1] === 'success'), false);
+  const noticedAt = JSON.parse(fs.readFileSync(queueFile)).heldNoticeAt;
+  assert.ok(noticedAt > 0);
+  await tick(f.state, held);
+  assert.equal(f.published.length, 1, 'not again within the hour');
+  const later = JSON.parse(fs.readFileSync(queueFile)); later.heldNoticeAt = Date.now() - 61 * 60_000; write(queueFile, later);
+  await tick(f.state, held);
+  assert.equal(f.published.length, 2, 'again after an hour, well before the 155 minute stall alarm');
+  // An unavailable API does not end anything worse than a held tick, and the next one tries again.
+  const later2 = JSON.parse(fs.readFileSync(queueFile)); later2.heldNoticeAt = 0; write(queueFile, later2);
+  const logged = t.mock.method(console, 'error', () => {});
+  await tick(f.state, { ...held, hub: { ...f.deps.hub, publish: () => { throw Error('HTTP 502'); } } });
+  assert.equal(logged.mock.callCount(), 1); assert.equal(JSON.parse(fs.readFileSync(queueFile)).heldNoticeAt, 0);
+  // The stopped-PC alarm reads this notice as the worker being alive.
+  const activity = '2026-11-04T00:29:00Z', notice = statusRow('b', 'pending', 'Waiting for room on the local PC; not verified yet', activity);
+  assert.equal(localStatus.judge([notice], { now: statusNow }).ok, true);
+  assert.equal(localStatus.judge([notice], { now: Date.parse(activity) + localStatus.STALL_MS + 1 }).ok, false, 'a notice that stops coming still turns red');
+});
+test('the first verification needs a calm stretch, and another needs its own after it', async t => {
+  const commits = tickCommits(2), f = tickFixture(t, commits), opened = [], readings = [90, 80, 80, 80, 80]; let now = Date.now(), finishFirst;
+  t.mock.method(Date, 'now', () => now);
+  const first = new Promise(resolve => { finishFirst = resolve; });
+  await tick(f.state, { ...f.deps, calmMs: 30, room: reading => reading < 70, meter: () => { now += 10; return readings.shift() ?? 10; }, verifyCommit: async (config, commit, output) => {
+    opened.push({ at: now, left: readings.length });
+    if (opened.length === 1) await first; else finishFirst();
+    write(path.join(output, 'result.json'), f.receiptFor(commit));
+    return { count: selected.length, digest: manifest.digest };
+  } });
+  assert.equal(opened.length, 2);
+  assert.equal(opened[0].left, 0, 'the 90 started the stretch over, and 80 had to last the whole of it');
+  assert.ok(opened[1].at - opened[0].at >= 30, 'another does not borrow the calm measured before the first opened');
+});
+test('a PC that stayed calm through a verification opens the next at once, and one that filled up during it waits', async t => {
+  const commits = tickCommits(3), f = tickFixture(t, commits, { slot: false }), opened = [];
+  let now = Date.now(), reading = 10, looks = 0, finish = () => {}, calmEnd, fullEnd;
+  t.mock.method(Date, 'now', () => now);
+  // The pool looks at the meter on every turn, so this script runs the three verifications without any real waiting.
+  const meter = () => {
+    now += 10; looks++;
+    const during = looks - (opened.at(-1)?.look ?? looks);
+    if (opened.length === 1 && during === 6) { calmEnd = now; finish(); }
+    if (opened.length === 2 && during === 6) reading = 100;
+    if (opened.length === 2 && during === 8) { reading = 10; fullEnd = now; finish(); }
+    if (opened.length === 3 && during === 1) finish();
+    return reading;
+  };
+  await tick(f.state, { ...f.deps, calmMs: 30, meter, verifyCommit: async (config, commit, output) => {
+    opened.push({ at: now, look: looks });
+    await new Promise(resolve => { finish = resolve; });
+    write(path.join(output, 'result.json'), f.receiptFor(commit));
+    return { count: selected.length, digest: manifest.digest };
+  } });
+  assert.equal(opened.length, 3);
+  assert.ok(opened[1].at - calmEnd <= 20, 'no second calm stretch after one that lasted through the run');
+  assert.ok(opened[2].at - fullEnd >= 30, 'readings during the run count: it waits for a new stretch');
 });
 test('a saturated PC waits before the first verification but not before publishing a saved result', async t => {
   const commits = tickCommits(1), f = tickFixture(t, commits); let opened = 0;
