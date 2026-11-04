@@ -91,6 +91,14 @@ S049는 로컬 Caddy가 연결을 받을 때까지 최대 30초 기다리고, �
 
 회귀 시험은 `node --test tests/conditional-qa-historical.test.cjs tests/conditional-qa.test.cjs tests/conditional-qa-retry.test.cjs`로 실행한다.
 
+<a id="local-browser-files"></a>
+
+### 과제 화면과 실패 재검사의 파일 실행 순서
+
+로컬 과제 묶음은 학생 화면과 교사 화면의 브라우저를 차례로 검증한다. 명시적으로 다시 등록한 실패 커밋은 기본·과제·계정 묶음 모두 한 번에 한 파일씩 실행한다. 회차 영수증의 각 묶음에 `fileConcurrency`를 기록한다. 각 파일의 제한 시간과 통과 판정은 해당 커밋에 등록된 것을 쓴다.
+
+11-04에 원래 커밋의 소스와 입력으로 학생·교사 시험을 한 번씩 비교했다. 차례로 실행했을 때 176초, 함께 실행했을 때 190초였고 양쪽 모두 학생 화면 32장, 교사 화면 18장과 교사 검사 142개를 마쳤다.
+
 <a id="local-storage-and-town-ready"></a>
 
 ### 검사 디스크와 마을 재입장

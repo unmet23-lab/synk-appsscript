@@ -4,7 +4,7 @@ const fs = require('node:fs'), path = require('node:path'), os = require('node:o
 const { pathToFileURL } = require('node:url');
 const root = path.resolve(__dirname, '..'), c = require('../tools/conditional-qa/contract.cjs');
 const { check } = require('../tools/conditional-qa/guard.cjs');
-const { childRun, temporaryEnvironment, profileBudget } = require('../tools/conditional-qa/run.cjs');
+const { childRun, temporaryEnvironment, profileBudget, fileConcurrency } = require('../tools/conditional-qa/run.cjs');
 const { materialize, write, release, prepare } = require('../tools/conditional-qa/inputs.cjs');
 const { extendQueue, nextItem, advanceTurn, acquire, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns, diskWaitFor, browserProfileDiskFull } = require('../tools/conditional-qa/worker.cjs');
 const { plan } = require('../tools/conditional-qa/install.cjs');
@@ -271,6 +271,14 @@ test('observed sleep or OS disk exhaustion is pending; a test failure remains re
     assert.notEqual(result.status, 'passed'); assert.notEqual(result.publicationState, 'success');
     assert.equal(error.message, 'original failure');
   }
+});
+
+test('local homework and registered retries run one file at a time while other work keeps two slots', () => {
+  assert.equal(fileConcurrency('local', 'homework', false), 1);
+  assert.equal(fileConcurrency('local', 'default', true), 1);
+  assert.equal(fileConcurrency('local', 'client', true), 1);
+  assert.equal(fileConcurrency('local', 'default', false), 2);
+  for (const route of ['windows', 'linux', 'all']) assert.equal(fileConcurrency(route, 'homework', true), 2);
 });
 
 test('storage pressure preserves the selected verification and lets an already verified receipt publish', () => {

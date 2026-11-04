@@ -21,6 +21,10 @@ function profileBudget(route, profile, remainingMs) {
   const reserveMs = { default: 12 * 60_000, homework: 3 * 60_000, client: 0 }[profile];
   return Math.min(profile === 'default' ? 36 * 60_000 : PROFILE_MS, remainingMs - reserveMs);
 }
+function fileConcurrency(route, profile, serialRetry) {
+  // The student capture and the teacher review share the local renderer's time.
+  return route === 'local' && (profile === 'homework' || serialRetry) ? 1 : 2;
+}
 function childRun(args, { cwd, env, log, timeoutMs = PROFILE_MS, progressFile, idleTimeoutMs = PROFILE_MS }) {
   return new Promise((resolve, reject) => {
     const fd = fs.openSync(log, 'a');
@@ -119,7 +123,8 @@ async function run({ route, output, context, root = ROOT }) {
       try {
         if (profile === 'client') { server = await rehearsal(root, env, folder); env.SYNK_WORLD_QA_URL = server.url; }
         const escaped = selected.map(row => row.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-        const args = ['--test', '--test-concurrency=2', '--test-timeout=180000', `--test-name-pattern=^(?:${escaped.join('|')})$`,
+        const concurrency = fileConcurrency(route, profile, process.env.SYNK_QA_SERIAL_RETRY === '1');
+        const args = ['--test', '--test-concurrency=' + concurrency, '--test-timeout=180000', `--test-name-pattern=^(?:${escaped.join('|')})$`,
           '--test-reporter=tap', `--test-reporter-destination=${path.join(folder, 'tests.tap')}`,
           `--test-reporter=${pathToFileURL(path.join(root, 'tools/conditional-qa/reporter.cjs')).href}`, `--test-reporter-destination=${path.join(folder, 'events.jsonl')}`,
           ...new Set(selected.map(row => row.file))];
@@ -129,7 +134,7 @@ async function run({ route, output, context, root = ROOT }) {
         const execution = await childRun(args, { cwd: root, env, log: path.join(folder, 'process.log'), timeoutMs, progressFile });
         const events = fs.readFileSync(path.join(folder, 'events.jsonl'), 'utf8').split(/\r?\n/).filter(Boolean).map(JSON.parse);
         const result = judge(selected, events, { root, ...execution });
-        receipt.phases.push({ profile, ...result, ...(execution.timedOut && { timeoutReason: execution.timeoutReason }) }); receipt.rows.push(...result.rows);
+        receipt.phases.push({ profile, fileConcurrency: concurrency, ...result, ...(execution.timedOut && { timeoutReason: execution.timeoutReason }) }); receipt.rows.push(...result.rows);
         console.log(`${profile}: ${result.passed}/${result.expected}; ${result.ok ? 'PASS' : 'INCOMPLETE OR FAILED'}`);
       } catch (error) { receipt.phases.push({ profile, ok: false, error: error.message }); }
       finally { if (server) await server.stop(); }
@@ -150,4 +155,4 @@ if (require.main === module) {
     .then(result => { console.log(JSON.stringify({ commit: result.commit, route: result.route, passed: result.passed, expected: result.expected, ok: result.ok })); process.exitCode = result.ok ? 0 : 1; })
     .catch(error => { console.error(error); process.exitCode = 1; });
 }
-module.exports = { sourceState, childRun, run, temporaryEnvironment, profileBudget };
+module.exports = { sourceState, childRun, run, temporaryEnvironment, profileBudget, fileConcurrency };

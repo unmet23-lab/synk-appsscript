@@ -93,11 +93,11 @@ function initialize(stateDir, firstCommit) {
   const state = { version: 1, activatedAt: new Date().toISOString(), seen, items: [], nextTurn: 'recent' };
   write(file, state); return state;
 }
-async function verify(config, commit, output) {
+async function verify(config, commit, output, serialRetry = false) {
   const context = prepare(config, commit), manifest = readManifest(config.root), cases = manifest.cases.filter(row => row.route === 'local');
   fs.mkdirSync(output, { recursive: true });
   const execution = await childRun([runnerFor(config.root), '--route', 'local', '--output', output, '--context', path.join(config.state, 'context.json')],
-    { cwd: config.root, env: { ...process.env }, log: path.join(output, 'runner.log'), timeoutMs: 50 * 60_000 });
+    { cwd: config.root, env: { ...process.env, SYNK_QA_SERIAL_RETRY: serialRetry ? '1' : '0' }, log: path.join(output, 'runner.log'), timeoutMs: 50 * 60_000 });
   const receipt = read(path.join(output, 'result.json'));
   receipt.inputsUnchanged = postcheck(context);
   receipt.ok = receipt.ok && execution.exitCode === 0 && !execution.timedOut && receipt.inputDigest === context.inputDigest && !git(config.root, ['status', '--porcelain', '--untracked-files=no']);
@@ -163,7 +163,7 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring } = {}
           item.status = 'running'; item.startedAt = new Date().toISOString(); delete item.resumePending; write(queueFile, queue);
           github.publish(item.commit, 'pending', 'Running the registered local conditional tests');
           item.output = path.join(stateDir, 'runs', `${item.commit}-${Date.now()}`);
-          const result = await verify(config, item.commit, item.output);
+          const result = await verify(config, item.commit, item.output, Boolean(item.retryRequest));
           item.count = result.count; item.digest = result.digest; item.status = 'publish-pending'; write(queueFile, queue);
         }
         // Re-read the receipt after a process restart, rather than trusting queue.json's success flag.
