@@ -1,0 +1,8 @@
+{
+  "g1": {"name": "니트 카디건 손님", "engine": "official", "voice": "Tia", "id": "XuzKX1PtsYzivdEFzo2g", "tag": "[carefully, warmly]", "stability": 0.75},
+  "g2": {"name": "데님 재킷 손님", "engine": "official", "voice": "Han", "id": "8jHHF8rMqMlg8if2mOUe", "tag": "[carefully, casually]", "stability": 0.75},
+  "g3": {"name": "과잠 입은 손님", "engine": "official", "voice": "Rebekah", "id": "ESELSAYNsoxwNZeqEklA", "tag": "[carefully, cheerfully]", "stability": 0.75},
+  "g4": {"name": "안경 쓴 조교 손님", "engine": "official", "voice": "Rosa", "id": "sf8Bpb1IU97NI9BHSMRf", "tag": "[carefully, calmly]", "stability": 0.75},
+  "g5": {"name": "새내기 손님", "engine": "official", "voice": "Anisia", "id": "tbMC7ogaglVnkFQgUOta", "tag": "[carefully, excitedly]", "stability": 0.75},
+  "g6": {"name": "유학생 손님", "engine": "official", "voice": "Jjeong", "id": "DMkRitQrfpiddSQT5adl", "tag": "[carefully, gently]", "stability": 0.75}
+}

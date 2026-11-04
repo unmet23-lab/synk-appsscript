@@ -1,6 +1,6 @@
 // 주문 폭주 — WORLD 안 캠퍼스 판(2026-11-03)의 손님: 싱크타운 카페에 오는 학생 여섯(실사, assets/world/guests/).
 // LAB 화면은 cafe.mjs의 펠트 동물 그대로다. 판정·주문·기록(core.mjs · learning.mjs)은 손님 그림과 상관없다.
-// 주문 음성이 여성 합성 음성 하나라서 손님도 모두 젊은 여성이다(목소리를 손님마다 다시 녹음하면 넓힌다).
+// 손님마다 목소리가 따로 있다(11-04, assets/world/voice/<손님>/<주문>.mp3 — 만드는 길은 qa/world-campus-20261103/README.md). LAB은 audio/<주문>.wav 그대로.
 // 표정 셋: order(주문하는 중) · thanks(받아 감) · puzzled(주문과 다름). 얼굴 동그라미는 face/<키>.webp.
 
 export const WORLD_GUESTS = Object.freeze([
@@ -15,6 +15,7 @@ const NAMES = Object.fromEntries(WORLD_GUESTS.map((g) => [g.id, g.name]));
 export const worldGuestName = (id) => NAMES[id] || '손님';
 export const worldGuestImage = (id, mood = 'order') => `assets/world/guests/${id}-${mood}.webp`;
 export const worldGuestFace = (id) => `assets/world/guests/face/${id}.webp`;
+export const worldGuestVoice = (id, orderId) => `assets/world/voice/${id}/${orderId}.mp3`;
 
 /**
  * 손님 고르기: 주문(손님 표)마다 처음 보일 때 한 명을 정하고, 지금 줄에 선 손님과 겹치지 않게 돌아가며 고른다

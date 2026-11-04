@@ -45,13 +45,14 @@ export class CafeAudio {
     this.context?.resume().catch(() => {});
   }
 
-  async play(order) {
+  /** src: WORLD 캠퍼스 판의 손님별 음성 파일(world-cast.mjs). 주지 않으면 LAB과 같은 audio/<주문>.wav. */
+  async play(order, src) {
     this.stop();
     const token = ++this.token;
     this.busy = true;
     this.order = order;
     this.onState('playing', order);
-    this.element.src = `audio/${order.id}.wav`;
+    this.element.src = src || `audio/${order.id}.wav`;
     const fail = () => { if (token !== this.token) return; clearTimeout(this.guard); this.busy = false; this.onState('error', order); };
     this.element.onended = () => { if (token !== this.token) return; clearTimeout(this.guard); this.busy = false; this.onState('ready', order); };
     this.element.onerror = fail;
