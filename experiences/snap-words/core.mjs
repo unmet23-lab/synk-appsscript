@@ -105,7 +105,7 @@ export function normalizeAlbum(raw) {
   const base = emptyAlbum();
   if (!raw || raw.v !== 1 || typeof raw !== 'object') return base;
   const cards = {};
-  for (const [id, c] of Object.entries(raw.cards || {})) if (WORDS[id] && c && typeof c === 'object') cards[id] = { place: String(c.place || ''), at: Number(c.at) || 0, named: !!c.named, kind: c.kind === 'thing' ? 'thing' : c.kind === 'fixed' ? 'fixed' : 'plate', q: Array.isArray(c.q) ? c.q : null, style: typeof c.style === 'string' ? c.style : null, vertical: !!c.vertical };
+  for (const [id, c] of Object.entries(raw.cards || {})) if (WORDS[id] && c && typeof c === 'object') cards[id] = { place: String(c.place || ''), at: Number(c.at) || 0, named: !!c.named, kind: c.kind === 'thing' ? 'thing' : c.kind === 'fixed' ? 'fixed' : 'plate', q: Array.isArray(c.q) ? c.q : null, style: typeof c.style === 'string' ? c.style : null, vertical: !!c.vertical, scene: Array.isArray(c.scene) ? c.scene.filter((p) => Array.isArray(p?.q)) : [], ...(c.namedAt ? { namedAt: Number(c.namedAt) || 0 } : {}) };
   return { ...base, ...raw, cards, stamps: { ...(raw.stamps || {}) }, daily: { ...(raw.daily || {}) }, placePlays: { ...(raw.placePlays || {}) }, best: { ...(raw.best || {}) }, plays: Number(raw.plays) || 0, streak: Number(raw.streak) || 0, notices: !!raw.notices };
 }
 /** 사진 한 장을 앨범에 꽂는다(아직 이름 없음). 돌려주는 값: 처음 찍은 낱말인가. */

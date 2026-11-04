@@ -3,6 +3,13 @@ import assert from 'node:assert/strict';
 import { PLACES } from './places.mjs';
 import { pickMissions, layoutPlates, judgeShot, helpLevel, makeRng, emptyAlbum, normalizeAlbum, addCard, nameCard, placeProgress, dailyMission, dayKey, finishDaily, recordRound, makeRecall } from './core.mjs';
 
+test('저장했다 다시 연 앨범도 판 글자와 이름 붙인 때를 그대로 갖는다', () => {
+  const saved = { v: 1, cards: { library: { place: 'gate', at: 5, named: true, namedAt: 9, kind: 'plate', q: [[0, 0], [1, 0], [1, 1], [0, 1]], scene: [{ q: [[0, 0], [1, 0], [1, 1], [0, 1]], text: '도서관', style: 'blade' }, null, { text: '꼴이 깨진 줄' }] } } };
+  const card = normalizeAlbum(JSON.parse(JSON.stringify(saved))).cards.library;
+  assert.deepEqual(card.scene.map((p) => p.text), ['도서관']);
+  assert.equal(card.namedAt, 9);
+});
+
 test('부탁은 넷, 꼴은 뜻 둘 · 소리 · 낱말', () => {
   for (let seed = 1; seed < 50; seed += 1) {
     const ms = pickMissions(PLACES.gate, { rng: makeRng(seed) });

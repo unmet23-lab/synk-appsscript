@@ -53,7 +53,6 @@ export function flyTo(el, to, { lift = 110, duration = 450, end = 0.16 } = {}) {
 export function rollTo(target, to) {
   const text = String(to), prev = target.dataset.shown ?? '';
   target.dataset.shown = text;
-  target.setAttribute('aria-label', text);
   if (!motionOn() || prev === text) { target.textContent = text; return; }
   target.replaceChildren(...[...text].map((ch, i) => {
     const slot = document.createElement('span'); slot.className = 'roll-slot'; slot.setAttribute('aria-hidden', 'true');
@@ -65,5 +64,6 @@ export function rollTo(target, to) {
     if (before !== ch) strip.animate([{ transform: `translateY(${-(/\d/.test(before || '') ? Number(before) : 0)}em)` }, { transform: `translateY(${-Number(ch)}em)` }], { ...M.base, delay: i * 40, fill: 'backwards' });
     return slot;
   }));
+  const read = document.createElement('span'); read.className = 'vh'; read.textContent = text; target.prepend(read);
 }
 export const mmss = (ms) => { const s = Math.max(0, Math.round(ms / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };

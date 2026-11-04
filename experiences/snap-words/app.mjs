@@ -126,7 +126,7 @@ function cropNode(placeId, box, plates, W, H, margin = 0.16) {
 }
 
 // ── 판 상태 ───────────────────────────────────────────────────────
-const S = { screen: 'lobby', placeId: 'gate', phase: 'idle', place: null, items: [], plates: [], missions: [], mi: -1, shots: [], focus: null, firstRight: 0, startedAt: 0, missionAt: 0, cardsThisRound: 0, msgMin: false, busy: false, daily: null, hintTimer: 0 };
+const S = { round: 0, screen: 'lobby', placeId: 'gate', phase: 'idle', place: null, items: [], plates: [], missions: [], mi: -1, shots: [], focus: null, firstRight: 0, startedAt: 0, missionAt: 0, cardsThisRound: 0, msgMin: false, busy: false, daily: null, hintTimer: 0 };
 const cam = { x: 0, y: 0, s: 1, base: 1, tween: null, vx: 0, vy: 0 };
 let vf = null, stage = null, focusBox = null, ff = null, vfW = 0, vfH = 0, raf = 0;
 const openPlaces = () => PLACE_ORDER.filter((id) => id === 'gate' || (album.placePlays.gate || 0) > 0);
@@ -316,6 +316,7 @@ async function startPlace(placeId, { daily = false } = {}) {
   S.missions = missions; S.plates = layoutPlates(place, missions, rng);
   S.items = [...S.plates.filter((p) => p.kind !== 'decor'), ...place.things.map((th) => ({ ...th, kind: 'thing', group: null }))];
   S.mi = -1; S.shots = []; S.focus = null; S.firstRight = 0; S.cardsThisRound = 0; S.startedAt = Date.now(); S.missionAt = 0; S.phase = 'explore'; S.msgMin = false; ff = null;
+  S.round += 1; S.dailyDone = false; S.developStarted = false;
   $('#place-name').textContent = pick(place.name, lang); $('#place-when').textContent = pick(place.when, lang);
   $('#photo').src = place.photo; $('#photo').width = place.w; $('#photo').height = place.h;
   stage.style.width = `${place.w}px`; stage.style.height = `${place.h}px`;
@@ -333,7 +334,7 @@ async function startPlace(placeId, { daily = false } = {}) {
   await wait(motionOn() ? 240 : 0);
   if (S.screen !== 'shoot') return;
   const back = (album.placePlays[placeId] || 0) > 0;
-  say({ ...taeo(back ? 'taeo.helloBack' : placeId === 'union' ? 'taeo.helloUnion' : 'taeo.hello'), actions: back ? goAction() : null, sound: 'message' });
+  say({ ...taeo(back ? 'taeo.helloBack' : helloKey(placeId)), actions: back ? goAction() : null, sound: 'message' });
   if (!back) { clearTimeout(S.hintTimer); S.hintTimer = setTimeout(firstHint, 5200); }
 }
 const goAction = () => [{ label: t('shoot.go'), run: beginMissions }];
@@ -507,6 +508,7 @@ async function flyToThumb(node, { quiet = false, step = 0 } = {}) {
   spatial($('#thumb'), [{ transform: 'scale(1)' }, { transform: 'scale(1.12)' }, { transform: 'scale(1)' }], M.fast);
 }
 
+const helloKey = (placeId) => (placeId === 'union' ? 'taeo.helloUnion' : 'taeo.hello');
 // 둘러보기: 카드가 펼쳐지고 소리가 난다. 찍은 것은 앨범에 꽂히지만 이름은 아직 없다.
 let sheetFly = null;
 async function afterExploreShot(shot, fresh) {
@@ -514,7 +516,7 @@ async function afterExploreShot(shot, fresh) {
   showSheet(shot, w, fresh);
   if (w.voice) sayWord(shot.word);
   // 셋 넘게 찍으면 「부탁 들으러 가기」 — 저절로 끊지 않는다(설계 검토 1). 찍은 뒤에도 그 자리에 머문다: 옆 판을 바로 찍을 수 있게.
-  if (S.shots.length >= 3) say({ ...taeo('taeo.hello'), actions: goAction(), min: true });
+  if (S.shots.length >= 3) say({ ...taeo(helloKey(S.placeId)), actions: goAction(), min: true });
 }
 function showSheet(shot, w, fresh) {
   const sheet = $('#sheet'); dismissSheet(true);
@@ -560,10 +562,13 @@ function nextMission() {
   const line = missionLine(m);
   say({ ...line, sound: 'message' });
   learn.present(m);
-  if (m.kind === 'sound') setTimeout(() => sayWord(m.word, () => learn.heard(m)), 420);
+  const round = S.round;
+  if (m.kind === 'sound') setTimeout(() => { if (round === S.round && S.screen === 'shoot') sayWord(m.word, () => learn.heard(m)); }, 420);
 }
 async function afterMissionShot(shot, fresh) {
-  const m = S.missions[S.mi];
+  const m = S.missions[S.mi], round = S.round;
+  // 기다리는 동안 입구로 나갔으면 이 판의 나머지를 잇지 않는다.
+  const left = () => { if (round === S.round) return false; pr.remove(); return true; };
   const right = judgeShot(m, shot);
   const pr = printNode(shot, { w: 150 }), cap = pr.querySelector('.print-cap');
   pr.classList.add('print-fly'); pr.style.left = `${vfW / 2 - 75}px`; pr.style.top = `${vfH * 0.26}px`;
@@ -580,20 +585,25 @@ async function afterMissionShot(shot, fresh) {
     }
     learn.answer(m, { correct: true, selected: shot.word, attemptNo: m.tries + 1 });
     await wait(motionOn() ? (named ? 820 : 420) : 200);
+    if (left()) return;
     const msgBox = $('#msg').getBoundingClientRect();
     await flyTo(pr, msgBox, { lift: 40, duration: 360, end: 0.2 });
+    if (left()) return;
     pr.remove(); play('right'); updateThumb();
     if (m.daily) { album.streak = finishDaily(album, Date.now()); S.dailyDone = true; }
     say({ ...taeo(`taeo.right${Math.floor(Math.random() * 4)}`), sent: shot, keepMin: false });
     stepBack(); drawDots();
     save();
     await wait(motionOn() ? 1300 : 500);
+    if (left()) return;
     nextMission();
   } else {
     learn.answer(m, { correct: false, selected: shot.word, attemptNo: m.tries + 1 });
     m.tries += 1;
     await wait(motionOn() ? 420 : 100);
+    if (left()) return;
     await flyToThumb(pr, { quiet: true });
+    if (left()) return;
     play('other');
     const level = helpLevel(m.tries), w = wordOf(m.word), got = wordOf(shot.word);
     const base = missionLine(m);
@@ -613,7 +623,9 @@ function endMissions() {
   S.missionMs = Date.now() - S.missionAt;
   say({ ...taeo('taeo.done'), sound: 'message' });
   S.phase = 'done'; stepBack();
-  setTimeout(startDevelop, motionOn() ? 1700 : 600);
+  const round = S.round;
+  // 앨범을 열어 둔 채면 닫을 때 잇는다(closeAlbum).
+  setTimeout(() => { if (round === S.round && S.screen === 'shoot') toDevelop(); }, motionOn() ? 1700 : 600);
 }
 
 // 메시지(셔터 위 — 판을 가리지 않는다)
@@ -645,6 +657,7 @@ function say({ ko, gloss = null, voice = null, actions = null, sound = null, rep
 function minimizeMsg() { const box = $('#msg'); if (!box.hidden && !box.querySelector('.msg-actions')) { box.classList.add('is-min'); S.msgMin = true; } }
 
 // ── 인화 ─────────────────────────────────────────────────────────
+function toDevelop() { if (S.developStarted) return; S.developStarted = true; startDevelop(); }
 async function startDevelop() {
   stopAmbience();
   const root = app.querySelector('[data-screen=develop]');
@@ -790,9 +803,14 @@ function openCard(id) {
   spatial(box, [{ opacity: 0, transform: 'translateY(22px)' }, { opacity: 1, transform: 'translateY(0)' }], M.base);
   over.addEventListener('click', (e) => { if (e.target === over) over.remove(); });
 }
-function closeAlbum() { const from = S.albumFrom === 'shoot' && S.phase !== 'done' ? 'shoot' : S.albumFrom === 'result' ? 'result' : 'lobby'; if (from === 'lobby') backToLobby(); else show(from); }
+function closeAlbum() {
+  if (S.albumFrom === 'shoot' && S.phase === 'done') { show('shoot'); toDevelop(); return; }
+  const from = S.albumFrom === 'shoot' ? 'shoot' : S.albumFrom === 'result' ? 'result' : 'lobby';
+  if (from === 'lobby') backToLobby(); else show(from);
+}
 function backToLobby() {
   learn.leave();
+  S.round += 1; S.busy = false; clearTimeout(S.hintTimer);
   stopAmbience(); S.phase = 'idle'; S.focus = null;
   app.querySelector('[data-screen=lobby]').replaceWith(renderLobby());
   show('lobby'); firstLobby();
