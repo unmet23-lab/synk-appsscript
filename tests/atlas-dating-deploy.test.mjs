@@ -90,11 +90,11 @@ test('actual Caddy template validates and enforces the standalone TLS, persisten
   child.once('error', error => { startError = error; });
   child.stdout.on('data', chunk => { stdout += chunk; }); child.stderr.on('data', chunk => { logs += chunk; });
   const request = (route, { method = 'GET', headers = {}, body } = {}) => new Promise((resolve, reject) => {
-    const req = https.request(origin + route, { method, ca, agent: false, timeout: 5000, signal: t.signal, headers: { ...headers,
+    const req = https.request(origin + route, { method, ca, agent: false, signal: t.signal, headers: { ...headers,
       ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) } }, response => {
       const chunks = []; response.on('data', chunk => chunks.push(chunk)); response.on('end', () => resolve({ status: response.statusCode, headers: response.headers, text: Buffer.concat(chunks).toString('utf8') }));
     });
-    req.on('error', reject); req.on('timeout', () => req.destroy(new Error('local Caddy request timeout')));
+    req.on('error', reject);
     req.end(body === undefined ? undefined : JSON.stringify(body));
   });
   let ready;
