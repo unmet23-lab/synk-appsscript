@@ -2,18 +2,31 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs'), path = require('node:path'), os = require('node:os'), crypto = require('node:crypto');
-const { execFileSync } = require('node:child_process');
+const { execFileSync, spawnSync } = require('node:child_process');
 const { Readable } = require('node:stream');
 const { createBundle, preserveRecord, BundleInspector, fileDigest, verifyDriveCoverage, selection, isolatedBundleRepository, archiveRefs,
   verifyPrerequisites } = require('../tools/Git보관묶음.cjs');
 const { reconcileEncryptedArchives, onlyArchiveTransferPending, deferNewSinceApply, PREFIX } = require('../tools/GitHub백업.cjs');
 const cryptoPath = process.env.SYNK_QA_CRYPTO_MODULE || path.join(os.homedir(), 'Documents/SYNK_원본창고/암호.js');
 const crypt = fs.existsSync(cryptoPath) ? require(cryptoPath) : null;
+
+// Git for Windows' cmd launcher starts another process for every fixture command.
+// Use the same installation's executable for the local synthetic repositories.
+let fixtureExecutable;
+function fixtureGit() {
+  if (process.platform !== 'win32' || process.env.GIT_EXEC_PATH) return 'git';
+  const found = spawnSync('where.exe', ['git.exe'], {encoding: 'utf8', windowsHide: true});
+  if (found.status !== 0) return 'git';
+  const bin = path.dirname(found.stdout.trim().split(/\r?\n/)[0]);
+  const direct = path.resolve(bin, '../mingw64/bin/git.exe');
+  return path.basename(bin).toLowerCase() === 'cmd' && fs.existsSync(direct) ? direct : 'git';
+}
 function fixture(t, { baseOnly = false } = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'git-bundle-test-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const source = path.join(root, 'source'), restore = path.join(root, 'restore');
-  function git(args, cwd = source, input) { return execFileSync('git', args, { cwd, input, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] }); }
+  const executable = fixtureExecutable ??= fixtureGit();
+  function git(args, cwd = source, input) { return execFileSync(executable, args, { cwd, input, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] }); }
   git(['init', '-b', 'main', source], root);
   git(['config', 'user.name', 'Synthetic restore']); git(['config', 'user.email', 'test@example.invalid']);
   fs.writeFileSync(path.join(source, 'README.md'), '# remote base\n');
@@ -398,16 +411,23 @@ test('public prerequisites take the first reaching remote ref (branches first, t
   { skip: !crypt && 'local archive encryption module unavailable' }, async t => {
   const f = fixture(t), remote = path.join(f.root, 'public.git');
   f.git(['init', '--bare', remote], f.root); f.git(['remote', 'add', 'origin', remote]); f.git(['push', 'origin', 'main']);
-  const commit = (branch, from, name) => {
-    f.git(['switch', '-c', branch, from]); fs.writeFileSync(path.join(f.source, name), name + '\n');
-    f.git(['add', name]); f.git(['commit', '-m', name]); return f.git(['rev-parse', 'HEAD']).toString().trim();
-  };
+  // Build the same six named branches and file trees in one real Git import.
+  const branches = [['feat-a', f.base, 'a.txt'], ['feat-b', f.base, 'b.txt'], ['pinned-only', f.base, 'p.txt'],
+    ['x', ':1', 'x.txt'], ['y', ':2', 'y.txt'], ['z', ':3', 'z.txt']];
+  const stream = [];
+  for (const [index, [branch, parent, name]] of branches.entries()) {
+    const mark = ':' + (index + 1), body = name + '\n';
+    stream.push('commit refs/heads/' + branch, 'mark ' + mark, 'committer Synthetic <test@example.invalid> 1700000000 +0000',
+      'data ' + name.length, name, 'from ' + parent, 'M 100644 inline ' + name, 'data ' + Buffer.byteLength(body), body, 'get-mark ' + mark);
+  }
+  const commits = f.git(['fast-import', '--quiet'], f.source, Buffer.from([...stream, 'done', ''].join('\n'))).toString().trim().split(/\s+/);
+  assert.equal(commits.length, branches.length);
   // 공개 원격의 끝: 가지 둘, 가지·pull에서는 닿지 않고 고정 ref에서만 닿는 커밋 하나, base를 가리키는 pull 하나와 태그 여럿.
-  const a = commit('feat-a', f.base, 'a.txt'), b = commit('feat-b', f.base, 'b.txt'), pinned = commit('pinned-only', f.base, 'p.txt');
+  const [a, b, pinned, x, y, z] = commits;
   f.git(['push', 'origin', 'feat-a', 'feat-b', `${pinned}:${PREFIX}${pinned}`, `${f.base}:refs/pull/1/head`,
     ...Array.from({ length: 30 }, (_, i) => `${f.base}:refs/tags/v${i}`)]);
   // 미게시 가지 셋이 각각 그 끝에서 갈라진다 — 선행 커밋은 a·b·pinned.
-  const heads = { x: commit('x', a, 'x.txt'), y: commit('y', b, 'y.txt'), z: commit('z', pinned, 'z.txt') };
+  const heads = {x, y, z};
   const keys = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 }), pub = path.join(f.root, 'public.pem');
   fs.writeFileSync(pub, keys.publicKey.export({ type: 'spki', format: 'pem' }));
   const record = { name: 'reach-fixture', path: f.source, repository: 'unmet23-lab/reach-fixture', private: false,
@@ -422,11 +442,19 @@ test('public prerequisites take the first reaching remote ref (branches first, t
   const ordered = f.git(['ls-remote', '--refs', 'origin']).toString().trim().split('\n').map(line => line.split('\t'))
     .map(([sha, ref]) => ({ sha, ref })).sort((x, y) => Number(y.ref.startsWith('refs/heads/')) - Number(x.ref.startsWith('refs/heads/')));
   const ancestor = (sha, tip) => { try { f.git(['merge-base', '--is-ancestor', sha, tip]); return true; } catch (_) { return false; } };
-  const expected = sha => ordered.find(row => row.sha === sha || ancestor(sha, row.sha))?.ref;
+  const firstReachingRef = sha => {
+    const visited = new Set();
+    return ordered.find(row => {
+      if (visited.has(row.sha)) return false;
+      visited.add(row.sha);
+      return row.sha === sha || ancestor(sha, row.sha);
+    })?.ref;
+  };
+  const expected = [a, b, pinned].map(sha => [sha, firstReachingRef(sha)]);
   assert.deepEqual([...receipt.requiredCommits].sort(), [a, b, pinned].sort());
   assert.deepEqual(Object.fromEntries(receipt.prerequisites.map(row => [row.sha, row.ref])),
-    Object.fromEntries([a, b, pinned].map(sha => [sha, expected(sha)])));
-  assert.deepEqual([expected(a), expected(b), expected(pinned)], ['refs/heads/feat-a', 'refs/heads/feat-b', PREFIX + pinned]);
+    Object.fromEntries(expected));
+  assert.deepEqual(expected.map(([, ref]) => ref), ['refs/heads/feat-a', 'refs/heads/feat-b', PREFIX + pinned]);
   // 원격 ref 35개를 하나씩 묻지 않는다: 그래프를 읽는 rev-list --parents가 한 번이고, ref마다 부르던 rev-list --max-count=1은
   // 없다(10-20 19:30 회차는 1,702번). 증분 묶음이 덮이지 않은 머리를 고르는 rev-list 한 번은 ref 수와 상관없다.
   const revLists = calls.filter(args => args[0] === 'rev-list');

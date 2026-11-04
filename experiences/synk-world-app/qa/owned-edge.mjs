@@ -38,6 +38,20 @@ export async function stopTutorFixture(server, edge) {
   }
 }
 
+// Node gives an after hook its own deadline and waits for it before announcing the test result.
+export function afterTutorCleanup(t, stop, report, timeout = 150_000) {
+  t.after(async hook => {
+    const start = performance.now();
+    let cleanupError;
+    try { await stop(); } catch (error) { cleanupError = error; }
+    const elapsed = performance.now() - start;
+    if (hook.signal.aborted) cleanupError ??= hook.signal.reason;
+    if (elapsed > timeout) cleanupError ??= Error('Owned tutor fixture cleanup exceeded its deadline');
+    report(Math.round(elapsed), cleanupError ?? (t.signal.aborted ? t.signal.reason : null));
+    if (cleanupError) throw cleanupError;
+  }, {timeout});
+}
+
 // The BrowserServer owns this test's Edge process tree and temporary profile.
 export async function closeOwnedEdge(server, {signal, graceMs = 10_000, diagnostic}) {
   if (!server) return;

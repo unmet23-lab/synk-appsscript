@@ -1,5 +1,5 @@
 import {handleWorldProfileRead,assetFailure} from './static-world-fixture.mjs';
-import {openOwnedEdge,stopTutorFixture} from './owned-edge.mjs';
+import {openOwnedEdge,stopTutorFixture,afterTutorCleanup} from './owned-edge.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -63,6 +63,10 @@ test('frozen /world home tutor uses actual owner history, preserves guided progr
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(assetFailure(r,config.accountApiUrl))assets.push({path:new URL(r.url()).pathname,status:r.status()});});
  }
  async function closeContext(){if(page&&!page.isClosed()){await context.unrouteAll({behavior:'ignoreErrors'});await page.goto('about:blank').catch(()=>{});}await context?.close();context=null;page=null;}
+ afterTutorCleanup(t,()=>{releaseRead();return stopTutorFixture(server,edge);},(cleanupMs,cleanupError)=>{
+  failure??=cleanupError;
+  fs.writeFileSync(path.join(out,'report.json'),JSON.stringify({ok:!failure,payload,standaloneHtml,checksCompletedAt,cleanupMs,at:new Date().toISOString(),checks,calls,errors,assets,outside,...(failure?{failure:failure.stack}:{}),scope:{frozenStatic:true,standaloneHtml:process.env.SYNK_HOME_TUTOR_STANDALONE_HTML?'fixture':'source',syntheticAccount:true,realOAuth:false,remoteDatabase:false,published:false}},null,2)+'\n');
+ });
  try{
   edge=await openOwnedEdge(chromium,t,workDeadline);await newContext();
   await page.goto(base+'/world/mobile.html?opening=off',{waitUntil:'commit'});
@@ -115,12 +119,5 @@ test('frozen /world home tutor uses actual owner history, preserves guided progr
   check('home modules, tutor images, bundle and fonts resolve beneath the frozen /world mount',!errors.length&&!assets.length&&!outside.length);
   checksCompletedAt=new Date().toISOString();
  }catch(error){failure=error;if(page&&!t.signal.aborted)await page.screenshot({path:path.join(out,'failure.png'),timeout:2000}).catch(()=>{});}
- finally{
-  releaseRead();
-  const cleanupStarted=performance.now();
-  try{await stopTutorFixture(server,edge);}catch(error){failure??=error;}
-  if(t.signal.aborted)failure??=t.signal.reason;
-  fs.writeFileSync(path.join(out,'report.json'),JSON.stringify({ok:!failure,payload,standaloneHtml,checksCompletedAt,cleanupMs:Math.round(performance.now()-cleanupStarted),at:new Date().toISOString(),checks,calls,errors,assets,outside,...(failure?{failure:failure.stack}:{}),scope:{frozenStatic:true,standaloneHtml:process.env.SYNK_HOME_TUTOR_STANDALONE_HTML?'fixture':'source',syntheticAccount:true,realOAuth:false,remoteDatabase:false,published:false}},null,2)+'\n');
- }
  if(failure)throw failure;
 });
