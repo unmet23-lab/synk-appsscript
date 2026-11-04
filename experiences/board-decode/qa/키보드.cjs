@@ -131,6 +131,15 @@ const fails = [], check = (name, ok, more = '') => { console.log(`${ok ? 'ok ' :
       check('끝 화면 단추가 한 화면 안에 들어온다(390 × 844)', await end.page.evaluate(() => document.querySelector('[data-next]').getBoundingClientRect().bottom <= innerHeight), await end.page.evaluate(() => document.querySelector('[data-next]').getBoundingClientRect().bottom));
       await end.page.close();
     }
+    { // 앨범은 끝 화면에서 엿본 그 글을 다시 보여 준다 · 저장에 없는 그림값은 없다
+      const page = await ctx.newPage();
+      await page.addInitScript(() => { try { localStorage.setItem('synk.board-decode.v1:device', JSON.stringify({ v: 1, album: { '놓친 콘서트': { pic: 'scene-concert', line: '엿본 그 글' } } })); } catch { /* 빈 저장 */ } });
+      await page.goto(`${BASE}?seed=7`); await sleep(200);
+      await page.click('.lobby-links [data-panel="album"]'); await sleep(120);
+      await page.click('[data-album="놓친 콘서트"]'); await sleep(150);
+      check('앨범에서 열면 끝 화면에서 본 글이 나온다', (await page.textContent('.scene')).includes('엿본 그 글'), await page.textContent('.scene'));
+      await page.close();
+    }
     { // 입구: 전환 중 판 바꾸기, 완료 표시, 잘못된 주소
       const { page, errors } = await open('seed=7');
       const first = await page.locator('[aria-pressed="true"][data-pick]').getAttribute('data-pick');

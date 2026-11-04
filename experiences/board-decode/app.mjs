@@ -176,9 +176,9 @@ function paintGame() {
   paintTop(); paintBoard(true); paintDock(); paintClue(); syncModal();
 }
 function sceneHtml(o, { repeat = false, ending = false } = {}) {
-  return `<section class="scene ${repeat ? 'again' : ''}" data-scene-x role="button" tabindex="0" aria-label="${esc(o.title)}. ${esc(o.line)}">
+  return `<div class="scene ${repeat ? 'again' : ''}" data-scene-x role="button" tabindex="0" aria-label="${esc(o.title)}. ${esc(o.line)}">
     <img src="${photo(o.pic)}" alt=""><div class="veil"></div>
-    <div class="tx"><h2>${esc(o.title)}</h2><p>${esc(o.line)}</p><div class="again-tx">${esc(t(ending ? 'scene.close' : 'scene.again'))}</div></div></section>`;
+    <div class="tx"><h2>${esc(o.title)}</h2><p>${esc(o.line)}</p><div class="again-tx">${esc(t(ending ? 'scene.close' : 'scene.again'))}</div></div></div>`;
 }
 function showScene(o, opts) {
   const over = $('#over');
@@ -209,8 +209,8 @@ function paintEnd() {
   const next = nextRoundId(save, S.roundId);
   app.innerHTML = `<section class="end ${endShown ? '' : 'first'}" id="end" tabindex="-1"><div class="hero"><img src="${photo(round.hero)}" alt=""></div><div class="body">
       <div><h2>${esc(p.win)}</h2><p class="react">${esc(p.react)} 「근데 ‘${esc(ask)}’${/[가-힣]/.test(ask) && (ask.charCodeAt(ask.length - 1) - 0xac00) % 28 ? '이' : '가'} 무슨 말이었어요?」</p></div>
-      <div><h4>${esc(t('end.words'))}</h4><div class="words">${S.got.map((w, i) => `<div class="wd" style="animation-delay:${200 + i * 160}ms"><b>${esc(w)}</b><span>${esc(WORDS[w].easy)}</span></div>`).join('')}</div></div>
-      <div><h4>${esc(t('end.other'))}</h4><div class="tiles">${tiles.map((o) => { const seen = !!save.album[o.title]; return `<button class="tile ${seen ? 'seen' : ''}" data-peek="${esc(o.title)}" aria-label="${esc(seen ? o.title : t('end.peek'))}"><img src="${photo(o.pic)}" alt=""><span>${esc(seen ? o.title : t('end.peek'))}</span></button>`; }).join('')}</div></div>
+      <div><h3>${esc(t('end.words'))}</h3><div class="words">${S.got.map((w, i) => `<div class="wd" style="animation-delay:${200 + i * 160}ms"><b>${esc(w)}</b><span>${esc(WORDS[w].easy)}</span></div>`).join('')}</div></div>
+      <div><h3>${esc(t('end.other'))}</h3><div class="tiles">${tiles.map((o) => { const seen = !!save.album[o.title]; return `<button class="tile ${seen ? 'seen' : ''}" data-peek="${esc(o.title)}" aria-label="${esc(seen ? o.title : t('end.peek'))}"><img src="${photo(o.pic)}" alt=""><span>${esc(seen ? o.title : t('end.peek'))}</span></button>`; }).join('')}</div></div>
       <div class="row-end"><button data-replay>${esc(t('end.again'))}</button><button class="p" data-next="${next}">${esc(t('end.next'))}</button></div>
     </div></section><div id="over">${peek ? sceneHtml(peek, { ending: true }) : ''}</div>${panelHtml()}`;
   if (!endShown && !reduced()) S.got.forEach((_, k) => setTimeout(() => sound.play('stamp'), 200 + k * 160));
@@ -238,7 +238,7 @@ function panelHtml() {
     const list = allAlbum();
     body = `<p class="empty">${esc(t('panel.albumHint'))}</p><div class="tiles">${list.map((o) => { const seen = !!save.album[o.title]; return seen ? `<button class="tile seen" data-album="${esc(o.title)}" aria-label="${esc(o.title)}"><img src="${photo(o.pic)}" alt="" loading="lazy"><span>${esc(o.title)}</span></button>` : `<div class="tile shut" aria-hidden="true"><img src="${photo(o.pic)}" alt="" loading="lazy"><span>${esc(pick(o.round.title))}</span></div>`; }).join('')}</div>`;
   }
-  return `<section class="panel" data-panel-bg role="dialog" aria-modal="true" aria-label="${esc(t(panel === 'book' ? 'panel.book' : 'panel.album'))}"><div class="sheet">${tabs}<div class="scroll">${body}</div></div></section>`;
+  return `<section class="panel" data-panel-bg role="dialog" aria-modal="true" aria-label="${esc(t(panel === 'book' ? 'panel.book' : 'panel.album'))}"><div class="sheet">${tabs}<div class="scroll" tabindex="0">${body}</div></div></section>`;
 }
 function repaintPanel() {
   $('.panel')?.remove();
@@ -329,7 +329,7 @@ app.addEventListener('click', async (e) => {
   }
   if (busy) return;   // 전환 중(뜯는 동안 · 다음 칸 · 끝 화면으로 가는 동안)에는 판을 바꾸거나 새 창을 열지 않는다
   if (b.dataset.panel) { openPanel(b.dataset.panel, b); return; }
-  if (b.dataset.album) { const o = allAlbum().find((x) => x.title === b.dataset.album); if (o) { peek = o; panel = null; repaintPanel(); if (!$('#over')) app.insertAdjacentHTML('beforeend', '<div id="over"></div>'); showScene(o, { ending: true }); sound.play('scene'); } return; }
+  if (b.dataset.album) { const found = allAlbum().find((x) => x.title === b.dataset.album); if (found) { const o = { ...found, ...save.album[found.title] }; peek = o; panel = null; repaintPanel(); if (!$('#over')) app.insertAdjacentHTML('beforeend', '<div id="over"></div>'); showScene(o, { ending: true }); sound.play('scene'); } return; }
   if (b.dataset.pick) { picked = b.dataset.pick; sound.play('tap'); repaintPanel(); return; }
   if (b.dataset.tear != null) {
     busy = true;

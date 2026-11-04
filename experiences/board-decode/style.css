@@ -1,7 +1,7 @@
 /* 게시판 해독. 한 화면 = 위 실사 게시판 + 아래 대화 칸, 게시물은 늘 보인다(설계 4절). 움직임 값은 주문 폭주 토큰 여섯과 같다. 글자는 SUIT 하나. */
 @font-face{font-family:'SUIT Variable';src:url('assets/fonts/SUIT-Variable.woff2') format('woff2');font-weight:100 900;font-display:swap}
 :root{
-  --ground:#23262b;--ink:#191b20;--ink-2:#474c55;--ink-3:#747983;--paper:#fbfaf5;--paper-2:#fff9db;--patch:#fff6c9;--line:#e2dfd5;--dock:#fff;--bubble:#eef0f4;--chip:#f3f1ea;
+  --ground:#23262b;--ink:#191b20;--ink-2:#474c55;--ink-3:#666b75;--paper:#fbfaf5;--paper-2:#fff9db;--patch:#fff6c9;--line:#e2dfd5;--dock:#fff;--bubble:#eef0f4;--chip:#f3f1ea;
   --navy:#1f2d52;--coral:#c9412b;--mint:#1a7453;--pencil:#3f4650;--felt:#8d9095;--on-dark:#f4f1ea;--on-dark-2:#c4c7cc;
   --sans:'SUIT Variable','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
   --m-fast:350ms cubic-bezier(.42,1.67,.21,.90);--m-base:500ms cubic-bezier(.38,1.21,.22,1);--m-slow:650ms cubic-bezier(.39,1.29,.35,.98);
@@ -87,7 +87,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--coral);out
 
 /* 잡음 쪽지: 진짜 게시판 냄새. 눌리지 않고 답에 쓰이지 않는다 */
 .scraps{display:flex;flex-wrap:wrap;gap:10px 12px;justify-content:center;align-items:flex-start;width:100%;margin-top:auto;padding-top:6px;pointer-events:none}
-.scrap{max-width:46%;padding:6px 8px;background:#f2efe4;color:#67644f;font-size:11px;line-height:1.35;box-shadow:0 1px 2px rgba(0,0,0,.28);opacity:.74}
+.scrap{max-width:46%;padding:6px 8px;background:#f2efe4;color:#4f4d40;font-size:11px;line-height:1.35;box-shadow:0 1px 2px rgba(0,0,0,.28);opacity:.74}
 .scrap:nth-child(1){rotate:-3deg}.scrap:nth-child(2){rotate:2deg;background:#e7ecef}.scrap:nth-child(3){rotate:-1.2deg;background:#f5e6dc}.scrap:nth-child(4){rotate:1.6deg;background:var(--paper-2)}.scrap:nth-child(5){rotate:-1.6deg;background:#e9edf1}
 .scrap b{display:block;font-size:12px;font-weight:800;color:#4d4b41}
 .fr{display:flex;margin:5px -8px -6px;border-top:1px dashed #b5b1a4;height:24px}
@@ -173,7 +173,7 @@ html[lang="mn"] .poster h1{font-size:38px;letter-spacing:-.03em}
 .end .body{display:flex;flex-direction:column;gap:14px;padding:0 16px calc(16px + var(--safe-b));flex:1;width:100%;max-width:600px;margin:0 auto}
 .end h2{margin:0;font-size:25px;line-height:1.25;font-weight:900;letter-spacing:-.03em;text-wrap:balance}
 .end .react{margin:4px 0 0;font-size:14.5px;line-height:1.5;color:var(--ink-2)}
-.end h4{margin:0 0 7px;font-size:12.5px;font-weight:800;color:var(--ink-3)}
+.end h3{margin:0 0 7px;font-size:12.5px;font-weight:800;color:var(--ink-3)}
 .words{display:grid;gap:6px}
 .wd{display:flex;gap:10px;align-items:baseline;padding:9px 12px;border-radius:12px;background:#fff}
 .end.first .wd{animation:stamp var(--m-fast) both}
@@ -205,7 +205,7 @@ html[lang="mn"] .poster h1{font-size:38px;letter-spacing:-.03em}
 .nb span{display:block;font-size:13px;color:var(--ink-2);line-height:1.4}
 .nb small{display:block;font-size:11.5px;color:var(--ink-3)}
 .empty{margin:8px 0;font-size:14px;line-height:1.55;color:var(--ink-2)}
-.panel .tiles{grid-template-columns:repeat(auto-fill,minmax(92px,1fr))}
+.panel .tiles{grid-template-columns:repeat(auto-fill,minmax(92px,1fr));max-width:none}
 .tile.shut{cursor:default}
 
 @media (min-width:700px){
