@@ -93,6 +93,11 @@ test('a read late twice is a plain sentence with a code, never the browser Abort
   t.mock.timers.reset();
  }
 });
+test('a late read outside the town does not ask twice: homework shows its retry button at the deadline',async t=>{
+ const {f,calls}=await lateFixture(t,(n,url,init)=>hang(init));
+ const pending=f.account.request('homework');pending.catch(()=>{});await flush();
+ t.mock.timers.tick(12000);await flush();await assert.rejects(pending,{code:'NETWORK_TIMEOUT'});assert.equal(calls(),1);
+});
 test('a late write is not sent again: it may have reached the server',async t=>{
  const {f,calls}=await lateFixture(t,(n,url,init)=>hang(init));
  const pending=f.account.request('town/pulse',{method:'POST',body:'{"surfaceId":"w"}'});pending.catch(()=>{});await flush();

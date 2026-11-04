@@ -206,7 +206,7 @@ function walkFrame(now) {
 function text(id, value = '') { if ($(id).textContent !== value) $(id).textContent = value; }
 function queue(work) { const next = tail.then(work, work); tail = next.catch(() => {}); return next; }
 // A late answer is a slow connection, not a lost town: a phone busy preparing the scene can hold a finished reply past the
-// account layer's deadline. A pulse or read tries again on its own next turn, and entering tries again at once. An old
+// account layer's deadline. A pulse, read or boundary tries again on its own next turn, and entering tries again at once. An old
 // cached account bundle still throws the browser's own AbortError, so both count; neither word reaches the screen.
 const lateReply = error => error?.code === 'NETWORK_TIMEOUT' || error?.name === 'AbortError';
 const LATE_REPLIES_BEFORE_ASKING = 3, ENTRY_TRIES = 3;

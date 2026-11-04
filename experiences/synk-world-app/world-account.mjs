@@ -222,9 +222,10 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   const url=new URL(config.accountApiUrl);url.pathname=url.pathname.replace(/\/$/,'').replace(/\/functions\/v1(?:\/synk-(?:account|world-v1|town))?$/,'')+`/functions/v1/${endpoint}/${suffix}`;url.search='';url.hash='';if(path.startsWith('town/')&&!TOWN_ACCOUNT_ROUTES.has(path)&&townBinding?.classId)url.searchParams.set('classId',townBinding.classId);
   if(path==='homework/submit'||path==='homework/key')url.searchParams.set('classId',JSON.parse(options.body).classId);
   // 쓰기·말하기 자동 피드백은 한 번에 수십 초가 걸린다(서버 쪽 마감 85~90초).
-  // 마감이 지나면 브라우저가 영어 AbortError를 올린다. 화면에는 쉬운 말과 코드로 넘긴다. 읽기(GET)는 부작용이 없어 한 번 더 묻고,
-  // 쓰기는 서버에 닿았을 수 있어 되풀이 여부를 부른 쪽에 맡긴다. clear()가 끊은 것이면 guard가 계정이 바뀌었다고 답한다.
-  const readOnly=(options.method||'GET')==='GET';
+  // 마감이 지나면 브라우저가 영어 AbortError를 올린다. 화면에는 쉬운 말과 코드로 넘긴다. 마을로 들어가는 읽기만 한 번 더 묻는다 — 장면을 준비하느라
+  // 답을 늦게 받는 자리이고, 부작용이 없다. 과제처럼 12초 뒤 바로 다시 시도 단추를 보이는 화면은 그대로 두고, 쓰기는 서버에 닿았을 수 있어 부른 쪽에 맡긴다.
+  // clear()가 끊은 것이면 guard가 계정이 바뀌었다고 답한다.
+  const askTwice=(options.method||'GET')==='GET'&&(path==='bootstrap'||path.startsWith('town/'));
   for(let lateReads=0;;lateReads++){
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),path==='writing'||path==='speaking'?95000:12000);controllers.add(controller);
   try{
@@ -239,7 +240,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   }catch(error){
    if(!controller.signal.aborted)throw error;
    guard(expected);
-   if(readOnly&&lateReads===0)continue;
+   if(askTwice&&lateReads===0)continue;
    throw Object.assign(Error('연결이 늦어지고 있어요. 잠시 뒤 다시 시도해 주세요.'),{code:'NETWORK_TIMEOUT'});
   }finally{clearTimeout(timer);controllers.delete(controller);}
   }
