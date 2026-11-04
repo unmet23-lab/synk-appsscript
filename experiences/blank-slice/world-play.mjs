@@ -24,6 +24,10 @@ const COPY = [
   ['#r-home', '게임 처음으로'],
 ];
 
+/** LAB 글의 「조각」은 여기서 「카드」다. 입력 기기 이름은 말하지 않는다(펜슬 · 태블릿도 쓴다). */
+const WORDS = [[/손가락이나 마우스로 /g, ''], [/조각이/g, '카드가'], [/조각은/g, '카드는'], [/조각을/g, '카드를'], [/조각/g, '카드']];
+export const say = (text) => WORDS.reduce((s, [from, to]) => s.replace(from, to), String(text));
+
 /** 움직임 줄이기: 기기 설정과 WORLD 앱 설정(부모 창 :root[data-motion=reduced]) 둘 다 본다. 무대 · 날아가는 낱말 · 채점이 함께 따른다. */
 export const reduced = () => {
   try { if (matchMedia('(prefers-reduced-motion: reduce)').matches) return true; } catch { /* 없는 환경 */ }
@@ -44,6 +48,7 @@ export const pref = (name) => { try { return localStorage.getItem(`synk.world.${
 export function setup({ onRoom }) {
   sound.useVoices(VOICES, KIT_MAP, () => pref('sound'));
   for (const [sel, text] of COPY) { const n = document.querySelector(sel); if (n) n.textContent = text; }
+  for (const sel of ['#lobby .how-steps + .fine', '#check-note', '#pause-dialog p']) { const n = document.querySelector(sel); if (n) n.textContent = say(n.textContent); }
   for (const n of document.querySelectorAll('.hero-mongle,#r-mongle,.hero-pieces,.slash')) n.remove();   // 몽글 · 펠트 그림은 앱에 두지 않는다
   // 제목: 본 글자 + 대각선으로 나뉜 두 벌(읽기 프로그램에는 본 글자만) + 칼빛 + 종이 조각. 박자는 CSS(합성기)
   const h1 = document.querySelector('#lobby .hero h1');
@@ -118,7 +123,7 @@ export function results({ correct, stars, rows = [] }) {
     if (i >= items.length) { finish(); return; }
     const li = items[i++];
     li.classList.remove('w-wait'); li.classList.add('w-pen');
-    const ok = !!rows[i - 1]?.readingCorrect;   // 큰 숫자는 scoreRound와 같은 잣대 — 놓쳤어도 멈춘 보기에서 맞힌 문장은 센다
+    const ok = rows[i - 1]?.correct === true;   // 큰 숫자는 scoreRound · ○ 표시와 같은 잣대 — 놓친 문장(△)은 멈춘 보기에서 맞혔어도 세지 않는다
     if (ok) { rung += 1; big.textContent = String(rung); }
     sound.sfx('mark', { ok, step: rung });
     timer = setTimeout(step, 150);

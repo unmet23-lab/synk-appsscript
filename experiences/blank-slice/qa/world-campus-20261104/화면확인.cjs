@@ -51,7 +51,12 @@ async function run(browser, W, H) {
   await fr().evaluate(() => { const r = document.querySelector('.how'); r?.scrollIntoView({ block: 'center' }); }); await sleep(300); await shot('입구_아래');
   await fr().evaluate(() => window.scrollTo(0, 0));
   await sleep(1800); await shot('입구_제목베기후보');
-  await fr().evaluate(() => document.querySelector('#btn-start').click());
+  await fr().evaluate(() => {   // 안내 글과 결과 큰 숫자가 지나간 값을 모은다(숫자가 내려가거나 「조각 · 손가락」이 남으면 보인다)
+    window.__seen = { tips: [], rungs: [] };
+    new MutationObserver(() => window.__seen.tips.push(document.querySelector('#tip').textContent)).observe(document.querySelector('#tip'), { childList: true, characterData: true, subtree: true });
+    new MutationObserver(() => window.__seen.rungs.push(Number(document.querySelector('#r-correct').textContent))).observe(document.querySelector('#r-correct'), { childList: true, characterData: true, subtree: true });
+    document.querySelector('#btn-start').click();
+  });
   await sleep(1500);
   const keys0 = await fr().evaluate(() => window.__slice.stage()?.gpuInfo(true).keys || []);
   report.programs = { 처음: keys0.length };   // 베기마다 셰이더를 새로 구우면 그 순간 화면이 멈춘다
@@ -88,6 +93,9 @@ async function run(browser, W, H) {
   await sleep(2600); await shot('결과'); report.overflow.결과 = await overflow();
   const doc = await fr().evaluate(() => ({ correct: document.querySelector('#r-correct').textContent, total: document.querySelector('#r-total').textContent, marks: document.querySelectorAll('#r-log li.w-pen').length, items: document.querySelectorAll('#r-log li').length, done: document.querySelector('.big').classList.contains('w-done'), mongle: !!document.querySelector('.hero-mongle,#r-mongle') }));
   report.result = doc;
+  const seen = await fr().evaluate(() => ({ ...window.__seen, 글: ['#lobby .how-steps + .fine', '#check-note', '#pause-dialog p', '#x-kicker'].map((s) => document.querySelector(s)?.textContent || '') }));
+  report.words = { 조각손가락: [...seen.tips, ...seen.글].filter((t) => /조각|손가락/.test(t)), 안내: [...new Set(seen.tips)].slice(0, 6), 글: seen.글 };
+  report.rungs = { 값: seen.rungs, 내려감: seen.rungs.some((v, i) => i && v < seen.rungs[i - 1] && v !== 0) };
   const keys1 = await fr().evaluate(() => window.__slice.stage()?.gpuInfo(true).keys || []);
   report.programs.끝 = keys1.length; report.programs.새것 = keys1.filter((k) => !keys0.includes(k)).map((k) => k.slice(0, 900));
   await page.setViewportSize({ width: W, height: Math.max(H, 1900) }); await fr().evaluate(() => { const f = window.frameElement; f.style.height = '1900px'; window.scrollTo(0, 0); }); await sleep(400); await shot('결과_전체');

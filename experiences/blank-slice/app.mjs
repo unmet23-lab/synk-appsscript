@@ -11,6 +11,7 @@ import { createStage, FEEL } from './stage.mjs';
 
 // WORLD 캠퍼스 판(world-host.js가 붙인 data-host=world)에서만 겉 · 소리를 갈아 끼운다. 규칙 · 문항 · 판정 · 기록은 그대로다.
 const world = document.documentElement.dataset.host === 'world' ? await import('./world-play.mjs') : null;
+const say = world ? world.say : (text) => text;
 
 // Restore the verified account before reading progress or enabling play.
 await globalThis.SynkPlayAccount.ready();
@@ -55,7 +56,8 @@ const state = { run: 0, queue: [], index: 0, results: [], combo: 0, score: 0, cu
 function startFlow() {
   try { state.flow?.end(); } catch { /* 이어 하기 기억은 편의 */ }
   state.tired = atlas((c) => c.today?.() === 'tired', false);
-  state.flow = atlas((c) => c.live?.(FLOW_SLICE, { words: FLOW_WORDS }) ?? null);
+  const words = world ? Object.fromEntries(Object.entries(FLOW_WORDS).map(([key, line]) => [key, say(line)])) : FLOW_WORDS;
+  state.flow = atlas((c) => c.live?.(FLOW_SLICE, { words }) ?? null);
   return atlas(() => state.flow?.intro().line?.text) || null;
 }
 function endFlow() { const flow = state.flow; state.flow = null; if (flow) atlas(() => flow.end()); }
@@ -374,8 +376,8 @@ function onSwing({ speed, x, to }) { sound.sfx('whoosh', { power: swingPower(spe
 
 function showExplain(item, choice, readingChoice) {
   fillBlank(item.answer, 'answer');
-  $('#x-kicker').textContent = choice != null ? `정답은 ‘${item.answer}’ · 내가 벤 말은 ‘${choice}’`
-    : readingChoice === item.answer ? `조각은 놓쳤지만 고른 답 ‘${readingChoice}’${josa(readingChoice, '이', '가')} 맞아요` : `조각을 놓쳤어요 · 고른 답은 ‘${readingChoice}’, 정답은 ‘${item.answer}’`;
+  $('#x-kicker').textContent = say(choice != null ? `정답은 ‘${item.answer}’ · 내가 벤 말은 ‘${choice}’`
+    : readingChoice === item.answer ? `조각은 놓쳤지만 고른 답 ‘${readingChoice}’${josa(readingChoice, '이', '가')} 맞아요` : `조각을 놓쳤어요 · 고른 답은 ‘${readingChoice}’, 정답은 ‘${item.answer}’`);
   $('#x-sentence').innerHTML = esc(filled(item, '\u0000')).replace('\u0000', `<b>${esc(item.answer)}</b>`);
   $('#x-why').textContent = item.why;
   $('#explain').hidden = false;
@@ -455,7 +457,7 @@ function popText(text, x, y, combo = 0) {
   p.classList.remove('go'); void p.offsetWidth; p.classList.add('go');
   clearTimeout(popText.t); popText.t = setTimeout(() => { p.hidden = true; }, 900);
 }
-function tip(text, { silent = false } = {}) { $('#tip').hidden = !text; if (text) { $('#tip').textContent = text; if (!silent) announce(text); } }
+function tip(text, { silent = false } = {}) { $('#tip').hidden = !text; if (text) { text = say(text); $('#tip').textContent = text; if (!silent) announce(text); } }
 
 /* ── 결과 ── */
 function finish() {
