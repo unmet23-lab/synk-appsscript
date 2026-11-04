@@ -122,15 +122,18 @@ fs.cpSync(path.join(BUILD, 'subway-rush'), path.join(NEW, 'subway-rush'), { recu
 fs.mkdirSync(path.join(NEW, 'brand-opening/assets/world-play'), { recursive: true });
 fs.copyFileSync(path.join(BUILD, 'brand-opening/assets/world-play/subway-rush.webp'), path.join(NEW, 'brand-opening/assets/world-play/subway-rush.webp'));
 execFileSync('git', ['-C', POLICY, 'fetch', '-q', 'origin']);
+const shared = [];
 for (const [rel, pairs] of Object.entries(SHARED_EDITS)) {
   const text = live(rel), inner = rel.replace(/^world\//, '');
+  if (text.includes('subway')) continue;   // 이미 라이브에 환승 러시 줄이 있으면(첫 공개 뒤) 이 판은 게임 폴더만 올린다
+  shared.push(rel);
   fs.mkdirSync(path.dirname(path.join(BASE, inner)), { recursive: true }); fs.mkdirSync(path.dirname(path.join(NEW, inner)), { recursive: true });
   fs.writeFileSync(path.join(BASE, inner), text); fs.writeFileSync(path.join(NEW, inner), edit(text, rel, pairs));
 }
 // 만든 해금 표가 바로 읽히고 환승 러시가 레슨 하나로 열리는지(문법 오류 · 쉼표 빠짐을 공개 전에 잡는다)
-for (const rel of Object.keys(SHARED_EDITS)) execFileSync(process.execPath, ['--check', path.join(OUT, 'new', rel)], { stdio: 'inherit' });
+for (const rel of shared) execFileSync(process.execPath, ['--check', path.join(OUT, 'new', rel)], { stdio: 'inherit' });
 const files = walk(path.join(OUT, 'new', 'world')).map((f) => path.relative(path.join(OUT, 'new'), f).replace(/\\/g, '/'));
 const noWorldQa = files.filter((f) => /\/qa\/|\.test\.mjs$|\.md$|review-items/.test(f));
 if (noWorldQa.length) throw Error('실으면 안 되는 파일: ' + noWorldQa.slice(0, 8).join(' '));
-fs.writeFileSync(path.join(OUT, '목록.json'), JSON.stringify({ ref, shared: Object.keys(SHARED_EDITS), items: ['world/subway-rush', 'world/brand-opening/assets/world-play/subway-rush.webp', ...Object.keys(SHARED_EDITS)], files: files.length, bytes: files.reduce((n, f) => n + fs.statSync(path.join(OUT, 'new', f)).size, 0) }, null, 1) + '\n');
+fs.writeFileSync(path.join(OUT, '목록.json'), JSON.stringify({ ref, shared, items: ['world/subway-rush', 'world/brand-opening/assets/world-play/subway-rush.webp', ...shared], files: files.length, bytes: files.reduce((n, f) => n + fs.statSync(path.join(OUT, 'new', f)).size, 0) }, null, 1) + '\n');
 console.log(fs.readFileSync(path.join(OUT, '목록.json'), 'utf8'));

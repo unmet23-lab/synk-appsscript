@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { SubwayRun, clockText, START_MINUTES, SCHOOL_MINUTES, WRONG_MINUTES } from './core.mjs';
 import { buildJourney, allLines, ROUTES } from './journeys.mjs';
@@ -189,6 +190,12 @@ test('고쳐 읽는 안내의 원고가 모두 목소리 줄에 있다(바쁜 �
     assert.ok(voices.has(j.opening.voice), j.opening.voice);
     for (const d of j.decisions) { assert.ok(voices.has(d.line_.voice), d.line_.voice); if (d.lead) assert.ok(voices.has(d.lead.voice), d.lead.voice); if (d.after) assert.ok(voices.has(d.after.voice), d.after.voice); }
   }
+});
+
+test('첫 화면 틀: 제목이 하나 있고 안내문 역할이 그 태그에 허용된다(배포 점검 접근성)', () => {
+  const html = readFileSync(fileURLToPath(new URL('./index.html', import.meta.url)), 'utf8');
+  assert.equal((html.match(/<h1[ >]/g) || []).length, 1);
+  assert.doesNotMatch(html, /<aside[^>]*role=/);
 });
 
 test('시험이 읽지 않는 화면 코드도 문법이 맞다(한 줄 고침이 줄 뒤를 잘라먹지 않게)', () => {
