@@ -62,6 +62,8 @@ export function createLobby(api) {
   function renderReturn(v) {
     const reason = $('#l-reason'), text = reasonFor(v), button = $('#return-practice'), hide = !v.returnPlan || !!v.target || returnCourse(v);
     if (reason.textContent !== text) reason.textContent = text;
+    // WORLD 입구는 안내 줄을 숨기고 재방문 안내만 보인다(world-skin.css). 그 안내가 든 때만 표식을 단다.
+    reason.classList.toggle('returning', !!v.returnPlan && !v.target);
     if (hide && !button.hidden && document.activeElement === button) $('#start').focus({ preventScroll: true });
     button.hidden = hide;
   }
