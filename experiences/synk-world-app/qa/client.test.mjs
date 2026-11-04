@@ -181,7 +181,26 @@ test('real browser tabs retain separate accounts across reload and logout', {ski
     for (const tab of [beforeA.tab, beforeB.tab]) assert.ok(cookies.some(cookie => cookie.name === `synk_world_rehearsal_${tab}` && cookie.httpOnly && cookie.sameSite === 'Strict'));
 
     step = 'reload both accounts';
-    await Promise.all([a, b].map(page => page.reload({waitUntil: 'domcontentloaded'})));
+    // Hold only A's home module. Both tabs still use their real cookies and server.
+    const homeRequested = Promise.withResolvers(), releaseHome = Promise.withResolvers();
+    await a.route('**/brand-opening/home.mjs', async route => {
+      homeRequested.resolve();
+      await releaseHome.promise;
+      if (!signal.aborted) await route.continue();
+    }, {times: 1});
+    const ownBootstrap = a.waitForResponse(response => new URL(response.url()).pathname === '/api/world/bootstrap');
+    async function checkRestoreBeforeHome() {
+      try {
+        const [response] = await Promise.all([ownBootstrap, homeRequested.promise]);
+        assert.equal(response.status(), 200);
+        assert.equal((await response.json()).accountId, beforeA.account);
+        // The reloaded document itself has finished the fetch, even if an older request was in flight.
+        await a.waitForFunction(() => performance.getEntriesByName(new URL('/api/world/bootstrap', location.origin).href).some(entry => entry.initiatorType === 'fetch'), null, {polling: 100});
+      } finally { releaseHome.resolve(); }
+    }
+    try {
+      await Promise.all([checkRestoreBeforeHome(), ...[a, b].map(page => page.reload({waitUntil: 'domcontentloaded'}))]);
+    } finally { releaseHome.resolve(); }
     step = 'restore both accounts';
     await Promise.all([ready(a), ready(b)]);
     assert.equal(await a.evaluate(() => window.__synkWorld.client.snapshot.accountId), beforeA.account);
