@@ -373,3 +373,21 @@ test('clarification answer history is retained on the next analysis as an explic
   assert.ok(result.understanding.statementHistory[0].clarificationAnswers[0].questionLabel);
   assert.equal(result.understanding.facets.find(f => f.id === 'explanation').selected[0], 'detailed');
 });
+
+test('the shipped renderer keeps order history and declarations when speaking becomes the fifth format', async () => {
+  const { buildMemberInsightReport } = await model;
+  const { accountFor, declarationsFor, formats } = require('../tools/member-format-fixture.cjs');
+  const options = { understanding: declarationsFor(asOf), understandingStatus: 'ready', understandingAsOf: asOf };
+
+  for (const count of [4, 5]) {
+    const { understanding } = buildMemberInsightReport(accountFor(formats.slice(0, count), asOf, true), options);
+    assert.equal(understanding.status, 'ready');
+    const facet = id => understanding.facets.find(row => row.id === id);
+    const order = facet('learning-topic:sit-travel-order');
+    assert.equal(order.claim.activeDays, count);
+    assert.equal(order.claim.count, count);
+    assert.deepEqual(facet('topics').selected, ['ai-tools']);
+    assert.deepEqual(facet('support').selected, ['step']);
+    assert.equal(facet('practice-response').claim, null);
+  }
+});
