@@ -197,6 +197,7 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
    await albumInput().setInputFiles(gradient);await page.locator('[data-me2="use"]').click();
   }
   await page.locator('.me2-print.is-developing').waitFor();
+  assert.ok(await page.locator('[data-me2="erase"]').count(),'현상 중에도 지울 수 있다');
   assert.equal(uploads.length,1,'한 번 올렸다');
   assert.equal(uploads[0].bucket,'me2-intake');assert.equal(uploads[0].type,'image/jpeg');assert.equal(uploads[0].upsert,'false');assert.equal(uploads[0].credentials,false,'저장소로 쿠키를 보내지 않는다');
   assert.ok(uploads[0].bytes<=3*1024*1024,'3MB 아래');
@@ -213,6 +214,7 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   // ── 이게 나? — 살핌 등급은 강 · 약 나란히 ──
   await finish(()=>({strong:.55,natural:.62,younger:.5,agree:.5}));
   await openMe2();await page.locator('.me2-pair').waitFor();
+  assert.ok(await page.locator('[data-me2="erase"]').count(),'고르기 전에도 지울 수 있다');
   assert.equal(await page.locator('.me2-pair .me2-print').count(),2);
   assert.equal(await page.locator('[data-me2="variant"][data-variant="younger"]').count(),1,'세 판 모두 고를 수 있다');
   assert.equal(await page.locator('[data-me2-root]').evaluate(el=>/\b0\.\d+|점수|탈락|등급/.test(el.textContent)),false,'점수 · 탈락이 보이지 않는다');
@@ -261,10 +263,15 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   // ── 다른 사진으로: 고른 모습은 그대로, 줄 하나로 알린다 ──
   await page.locator('.me2-foot [data-me2="again"]').click();
   await page.locator('[data-me2-file]').first().waitFor({state:'attached'});
+  assert.equal(await page.locator('[data-me2="prepared"]').count(),0,'모습이 있으면 「사진 없이」를 권하지 않는다');
+  await page.locator('[data-me2="back"]').click();await page.locator('.me2-id').waitFor();
+  await page.locator('.me2-foot [data-me2="again"]').click();
+  await page.locator('[data-me2-file]').first().waitFor({state:'attached'});
   await albumInput().setInputFiles(gradient);await page.locator('[data-me2="use"]').click();
   await page.locator('.me2-id').waitFor();
   await page.locator('.me2-note').first().waitFor();
   assert.match(await page.locator('.me2-note').first().textContent(),/현상 중/);
+  assert.ok(await page.locator('[data-me2="erase"]').count(),'현상 중에도 지울 수 있다');
   await both('13-새사진-현상중');
   await finish(()=>({strong:.8,natural:.82,younger:.8}));
   await openMe2();await page.locator('.me2-variants').waitFor();
@@ -306,6 +313,10 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   await page.locator('[data-me2-root]').waitFor();
   await page.waitForFunction(()=>!document.querySelector('[data-me2-root] .me2-status'));
   assert.ok(await page.locator('[data-me2="agree"]').count(),'지운 뒤에는 동의부터 다시');
+  tamper=data=>({...data,status:'off'});
+  await page.goto(url+'/world/?opening=off&me2=1',{waitUntil:'domcontentloaded'});
+  await page.locator('[data-me2-root] .me2-note').waitFor();
+  assert.equal(await page.locator('[data-me2="agree"]').count(),0,'꺼져 있으면 동의 안 한 사람에게 동의 화면을 열지 않는다');
   tamper=()=>({ok:true,accountId:A,status:'not_invited'});
   await page.goto(url+'/world/?opening=off&me2=1',{waitUntil:'domcontentloaded'});
   await page.locator('[data-me2-root] .me2-note').waitFor();

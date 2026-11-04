@@ -492,9 +492,12 @@ async function me2Host(){
 async function openMe2(){const host=await me2Host();if(host)return host.open();if(!client.snapshot)signIn();}
 async function addMe2Row(){
  if(!me2Allowed())return;
+ const owner=client.snapshot?.accountId;
  let out;try{out=await account.me2Request({action:'status'});}catch{return;}
  if(!(out?.status==='ok'||(out?.status==='off'&&out.consent?.given)))return;
  const host=await me2Host();const place=document.querySelector('#panel-content .ws-me');
+ // 기다리는 사이 계정이 바뀌었으면 앞 계정의 줄 · 사진을 새 계정 시트에 넣지 않는다.
+ if(client.snapshot?.accountId!==owner||(out.accountId&&out.accountId!==owner))return;
  if(host&&place&&screen==='world-profile'&&!place.querySelector('.me2-row'))place.querySelector('.ws-me-id')?.insertAdjacentHTML('afterend',host.rowHtml(out.me?.chosen_url));
 }
 function openSpeaking(button){

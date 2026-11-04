@@ -25,7 +25,7 @@ const TEXT={
   isThisMe:'이게 나?',arrived:'사진 나왔어요!',strong:'기본',natural:'더 자연스럽게',younger:'더 어리게',lowNote:'사진에 따라 덜 닮게 나올 때가 있어요. 마음에 안 들면 다른 사진으로 해 봐요.',thisOne:'이걸로 할게요',other:'다른 사진으로',lookReset:'새 모습을 고르면 옷장의 옷과 머리는 사라져요. 새 모습으로 다시 입어 볼 수 있어요.',
   card:'학생증',cardName:'제2의 나',cardRole:'대학교 1학년',changeFace:'세 판 다시 보기',back:'돌아가기',newerDeveloping:'새 사진을 현상 중이에요. 나오면 고를 수 있어요.',
   wardrobe:'옷장',groupOutfit:'옷',groupHair:'머리',groupAcc:'소품',detailWear:'누르면 내 사진에 입혀서 보내 드려요. 보통 몇 시간, 늦어도 내일 도착해요.',detailHair:'누르면 내 사진의 머리를 바꿔서 보내 드려요. 보통 몇 시간, 늦어도 내일 도착해요.',album2:'추억 사진',order:'입어 보기',orderHair:'미용실 예약',orderScene:'현상 맡기기',shipping:'배송 중',salon:'미용실 예약 중',developingShort:'현상 중',delayed:'배송 지연 — {date} 도착 예정',failedItem:'이번에는 잘 안 됐어요',again:'다시 해 볼게요',
-  wear:'이걸로 입기',wearing:'입는 중',takeOff:'벗기',redoItem:'이 사진 이상해요',redoLook:'다시 입어 보기',newChip:'도착',fullAlbum:'앨범이 다 찼어요.',
+  wear:'이걸로 입기',wearing:'입는 중',takeOff:'벗기',redoItem:'이 사진 이상해요',redoLook:'다시 입어 보기',newChip:'도착',fullAlbum:'추억 사진이 다 찼어요.',
   eraseOpen:'사진으로 만든 모습 지우기',eraseAsk:'만든 모습과 그 사진들을 모두 지워요. 게임 기록은 그대로예요. 되돌릴 수 없어요.',eraseYes:'모두 지우기',eraseNo:'그대로 두기',erased:'지웠어요.',
   off:'지금은 사진관이 잠시 쉬고 있어요.',error:'잠시 연결이 안 됐어요. 조금 뒤에 다시 해 주세요.',close:'닫기'},
  en:{title:'My look',row:'Make your “second me” from your own photo',rowNote:'Invite-only pilot',
@@ -39,7 +39,7 @@ const TEXT={
   isThisMe:'Is this me?',arrived:'Your photo is ready!',strong:'Default',natural:'More natural',younger:'Younger',lowNote:'Some photos come out less like you. If you don’t like it, try another photo.',thisOne:'This is the one',other:'Try another photo',lookReset:'If you choose a new look, the clothes and hairstyles in your wardrobe will go away. You can try them on again with your new look.',
   card:'Student ID',cardName:'Second me',cardRole:'First-year university student',changeFace:'See all three again',back:'Back',newerDeveloping:'Your new photo is developing. You can choose when it’s ready.',
   wardrobe:'Wardrobe',groupOutfit:'Clothes',groupHair:'Hair',groupAcc:'Accessories',detailWear:'We’ll dress your photo in this and send it to you. Usually a few hours, tomorrow at the latest.',detailHair:'We’ll change the hair in your photo and send it to you. Usually a few hours, tomorrow at the latest.',album2:'Memory photos',order:'Try it on',orderHair:'Book the salon',orderScene:'Send to develop',shipping:'On its way',salon:'Salon booked',developingShort:'Developing',delayed:'Delayed — arriving {date}',failedItem:'This one didn’t work out',again:'Try again',
-  wear:'Wear this',wearing:'Wearing',takeOff:'Take off',redoItem:'This photo looks wrong',redoLook:'Try it on again',newChip:'New',fullAlbum:'Your album is full.',
+  wear:'Wear this',wearing:'Wearing',takeOff:'Take off',redoItem:'This photo looks wrong',redoLook:'Try it on again',newChip:'New',fullAlbum:'Your memory photos are full.',
   eraseOpen:'Erase the look made from my photo',eraseAsk:'This erases your look and all its photos. Your game progress stays. It can’t be undone.',eraseYes:'Erase everything',eraseNo:'Keep it',erased:'Erased.',
   off:'The photo studio is closed for now.',error:'Connection problem. Please try again in a moment.',close:'Close'},
  mn:{title:'Миний дүр',row:'Өөрийн зургаар «хоёр дахь би» дүрээ бүтээх',rowNote:'Урилгаар оролцох туршилт',
@@ -53,11 +53,12 @@ const TEXT={
   isThisMe:'Энэ би мөн үү?',arrived:'Зураг гарлаа!',strong:'Үндсэн',natural:'Илүү байгалийн төрх',younger:'Илүү залуу',lowNote:'Зургаас хамаарч төдийлөн адилгүй гарах үе бий. Таалагдахгүй бол өөр зураг сонгоорой.',thisOne:'Үүнийг сонгоё',other:'Өөр зураг сонгох',lookReset:'Шинэ дүр сонговол шүүгээн дэх хувцас, үс алга болно. Шинэ дүрээрээ дахин өмсөж үзэж болно.',
   card:'Оюутны үнэмлэх',cardName:'Хоёр дахь би',cardRole:'Их сургуулийн 1-р курс',changeFace:'Гурван зургийг дахин харах',back:'Буцах',newerDeveloping:'Шинэ зургийг угааж байна. Гарахаар нь сонгож болно.',
   wardrobe:'Хувцасны шүүгээ',groupOutfit:'Хувцас',groupHair:'Үс',groupAcc:'Дагалдах хэрэгсэл',detailWear:'Дарвал таны дүрд үүнийг өмсүүлж илгээнэ. Ихэвчлэн хэдэн цагийн дотор, хамгийн удаандаа маргааш ирнэ.',detailHair:'Дарвал таны дүрийн үсийг өөрчилж илгээнэ. Ихэвчлэн хэдэн цагийн дотор, хамгийн удаандаа маргааш ирнэ.',album2:'Дурсамжийн зураг',order:'Өмсөж үзэх',orderHair:'Үсчинд цаг авах',orderScene:'Угаалгах',shipping:'Хүргэлтэд гарсан',salon:'Үсчинд цаг авсан',developingShort:'Угааж байна',delayed:'Хүргэлт хоцорч байна — ирэх өдөр: {date}',failedItem:'Энэ удаад бүтсэнгүй',again:'Дахин оролдох',
-  wear:'Үүнийг өмсөх',wearing:'Өмссөн',takeOff:'Тайлах',redoItem:'Энэ зураг хачин байна',redoLook:'Дахин өмсөж үзэх',newChip:'Ирлээ',fullAlbum:'Цомог дүүрсэн байна.',
+  wear:'Үүнийг өмсөх',wearing:'Өмссөн',takeOff:'Тайлах',redoItem:'Энэ зураг хачин байна',redoLook:'Дахин өмсөж үзэх',newChip:'Ирлээ',fullAlbum:'Дурсамжийн зураг дүүрсэн байна.',
   eraseOpen:'Зургаар бүтээсэн дүрийг устгах',eraseAsk:'Бүтээсэн дүр болон бүх зургийг устгана. Тоглоомын явц хэвээр үлдэнэ. Буцаах боломжгүй.',eraseYes:'Бүгдийг устгах',eraseNo:'Хэвээр үлдээх',erased:'Устгалаа.',
   off:'Одоогоор зургийн газар түр амарч байна.',error:'Холболт түр тасарлаа. Хэсэг хугацааны дараа дахин оролдоорой.',close:'Хаах'},
 };
 const ITEMS={
+ ko:{'hair-comma':'쉼표 머리','hair-layered':'레이어드 컷','hair-ash':'애쉬 브라운 염색','outfit-denim':'데님 재킷','outfit-vest':'셔츠와 니트 조끼','outfit-bomber':'항공 점퍼','acc-glasses':'은테 안경','acc-cap':'볼캡','s1e01-kimchi':'1화 식당 — 김치!','s1e01-fight':'1화 식당 — 파이팅!'},
  en:{'hair-comma':'Comma hair','hair-layered':'Layered cut','hair-ash':'Ash-brown dye','outfit-denim':'Denim jacket','outfit-vest':'Shirt and knit vest','outfit-bomber':'Bomber jacket','acc-glasses':'Silver-rim glasses','acc-cap':'Baseball cap','s1e01-kimchi':'Episode 1, the restaurant — Kimchi!','s1e01-fight':'Episode 1, the restaurant — Fighting!'},
  mn:{'hair-comma':'Таслал хэлбэрийн үс','hair-layered':'Шатласан засалт','hair-ash':'Үнсэн хүрэн будаг','outfit-denim':'Жинсэн хүрэм','outfit-vest':'Цамц, сүлжмэл хантааз','outfit-bomber':'Бомбер хүрэм','acc-glasses':'Мөнгөн хүрээтэй нүдний шил','acc-cap':'Бейсболын малгай','s1e01-kimchi':'1-р анги, хоолны газар — Кимчи!','s1e01-fight':'1-р анги, хоолны газар — Файтинг!'},
 };
@@ -100,8 +101,10 @@ async function findFaces(canvas){
     if(twin<0)rows.push(box);else if(box.score>rows[twin].score)rows[twin]=box;
    }
   }
-  rows.sort((a,b)=>b.w-a.w);
-  return rows.filter(face=>face.w>=rows[0].w*.4);
+  // 가장자리 얼굴은 칸이 그림 밖으로 나간다 — 그림 안으로 맞춘다.
+  const inside=rows.map(face=>{const x=Math.max(0,face.x),y=Math.max(0,face.y);return {...face,x,y,w:Math.min(canvas.width-x,face.x+face.w-x),h:Math.min(canvas.height-y,face.y+face.h-y)};}).filter(face=>face.w>0&&face.h>0);
+  inside.sort((a,b)=>b.w-a.w);
+  return inside.filter(face=>face.w>=inside[0].w*.4);
  }catch{return null;}
 }
 async function decodePhoto(file,doc){
@@ -123,17 +126,19 @@ function cropAround(face,width,height){
  let w=face.w*CROP_FACTOR,h=w*4/3;
  if(w>width){w=width;h=Math.min(height,w*4/3);}
  if(h>height){h=height;w=Math.min(width,h*3/4);}
+ // 아주 넓은 사진에서도 고른 얼굴은 잘리지 않는다.
+ w=Math.min(width,Math.max(w,face.w));h=Math.min(height,Math.max(h,face.h));
  const x=Math.min(Math.max(0,face.x+face.w/2-w/2),width-w),y=Math.min(Math.max(0,face.y+face.h*.42-h*.42),height-h);
  return {x,y,w,h};
 }
 async function encodeJpeg(canvas,quality=JPEG_Q){return new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));}
 
 export function createMe2Photo({show,home,close,request,doc=globalThis.document,win=globalThis,lang=currentLang,fetcher=(...args)=>globalThis.fetch(...args),toast=message=>home?.toast?.(message),finder=findFaces}){
- let view=null,root=null,consent=null,disposed=false,pollTimer=null,offLang=null,stage={name:'home'},photo=null,epoch=0,lastScreen='',revealed=null,afterPaint=null;
+ let view=null,root=null,consent=null,disposed=false,pollTimer=null,offLang=null,stage={name:'home'},photo=null,epoch=0,lastScreen='',revealed=null,afterPaint=null,photoRun=0;
  const text=(key,vars)=>{const pack=TEXT[lang()]||TEXT.ko;let out=pack[key]??TEXT.ko[key]??key;for(const [name,value] of Object.entries(vars||{}))out=out.replace(`{${name}}`,value);return out;};
  const consentPack=()=>consent?.[lang()]||consent?.ko||null;
  function clearPoll(){if(pollTimer)win.clearTimeout(pollTimer);pollTimer=null;}
- function dispose(){disposed=true;clearPoll();offLang?.();offLang=null;photo?.bitmap?.close?.();photo=null;root=null;}
+ function dispose(){disposed=true;photoRun++;clearPoll();offLang?.();offLang=null;clearPhoto();root=null;}
  const inFlight=()=>view&&(view.me?.state==='developing'||view.me?.newer==='developing'||[...(view.looks||[]),...(view.album||[])].some(item=>item.state==='shipping'));
  function schedule(){clearPoll();if(!root||!inFlight()||stage.name!=='home')return;pollTimer=win.setTimeout(async()=>{if(!root)return;await refresh().catch(()=>{});schedule();},POLL_MS);}
  async function refresh(){const seq=++epoch;const next=await request({action:'status'});if(seq!==epoch||disposed)return;view=next;paint();}
@@ -157,9 +162,16 @@ export function createMe2Photo({show,home,close,request,doc=globalThis.document,
    ${notesHtml()}
    <div class="me2-actions"><button type="button" class="felt-button" data-me2="agree" ${ok?'':'disabled'}>${esc(text('agreeGo'))}</button><button type="button" class="quiet-button" data-me2="prepared">${esc(text('prepared'))}</button></div>`;
  }
+ /** 지우기(동의 철회)는 동의한 뒤라면 어느 화면에서든 된다 — 초대 · 스위치와 상관없이. */
+ function eraseFoot(){
+  if(!view?.consent?.given)return '';
+  return `<section class="me2-section me2-foot">${stage.erase?`<div class="me2-erase" role="alertdialog" aria-label="${esc(text('eraseOpen'))}"><p>${esc(text('eraseAsk'))}</p><div class="me2-actions"><button type="button" class="plain-button" data-me2="erase-yes">${esc(text('eraseYes'))}</button><button type="button" class="quiet-button" data-me2="erase-no">${esc(text('eraseNo'))}</button></div></div>`:`<button type="button" class="quiet-button" data-me2="erase">${esc(text('eraseOpen'))}</button>`}</section>`;
+ }
  function pickHtml(message){
+  // 이미 만든 모습이 있으면 「사진 없이」가 아니라 돌아가기다 — 있던 모습은 그대로니까.
+  const has=['ready','choose'].includes(view?.me?.state)||Boolean(view?.me?.chosen_url);
   return `${message||''}<h3 class="me2-h">${esc(text('pickTitle'))}</h3><p class="me2-small">${esc(text('pickHint'))}</p>
-   <div class="me2-actions"><label class="felt-button me2-file">${esc(text('camera'))}<input type="file" accept="image/*" capture="user" data-me2-file></label><label class="plain-button me2-file">${esc(text('album'))}<input type="file" accept="image/*" data-me2-file></label><button type="button" class="quiet-button" data-me2="prepared">${esc(text('prepared'))}</button></div>`;
+   <div class="me2-actions"><label class="felt-button me2-file">${esc(text('camera'))}<input type="file" accept="image/*" capture="user" data-me2-file></label><label class="plain-button me2-file">${esc(text('album'))}<input type="file" accept="image/*" data-me2-file></label>${has?`<button type="button" class="quiet-button" data-me2="back">${esc(text('back'))}</button>`:`<button type="button" class="quiet-button" data-me2="prepared">${esc(text('prepared'))}</button>`}</div>${eraseFoot()}`;
  }
  function photoHtml(){
   if(stage.name==='reading')return `<div class="me2-print is-developing"><div class="me2-print-face"></div></div><p class="me2-status" role="status">${esc(text('reading'))}</p>`;
@@ -185,9 +197,9 @@ export function createMe2Photo({show,home,close,request,doc=globalThis.document,
   if(!stage.review)revealed=me.job_id;
   const big=paired?`<div class="me2-pair">${pair.map(o=>`<button type="button" class="me2-print" data-me2="variant" data-variant="${o.variant}"><img src="${esc(o.url)}" alt="${esc(text(o.variant))}" ${reveal?'class="is-revealing"':''}><span class="me2-print-cap">${esc(text(o.variant))}</span></button>`).join('')}</div>`:`<figure class="me2-print me2-big"><img src="${esc(main?.url)}" alt="${esc(text(main?.variant))}" ${reveal?'class="is-revealing"':''}></figure>`;
   const others=paired?ordered.filter(o=>!pair.includes(o)).map(o=>`<button type="button" class="quiet-button" data-me2="variant" data-variant="${o.variant}">${esc(text(o.variant))}</button>`).join(''):`<div class="me2-variants" role="group">${ordered.map(o=>`<button type="button" class="me2-variant" data-me2="variant" data-variant="${o.variant}" aria-pressed="${o.variant===picked}"><img src="${esc(o.url)}" alt=""><span>${esc(text(o.variant))}</span></button>`).join('')}</div>`;
-  return `<p class="me2-arrived" role="status">${esc(text('arrived'))}</p><h3 class="me2-h">${esc(text('isThisMe'))}</h3>${big}${others}
+  return `${view.status==='off'?note(text('off')):''}<p class="me2-arrived" role="status">${esc(text('arrived'))}</p><h3 class="me2-h">${esc(text('isThisMe'))}</h3>${big}${others}
    ${me.low?note(text('lowNote')):''}${me.chosen_job&&me.chosen_job!==me.job_id&&(view.looks||[]).length?note(text('lookReset')):''}
-   <div class="me2-actions"><button type="button" class="felt-button" data-me2="choose" data-variant="${esc(picked)}">${esc(text('thisOne'))}</button><button type="button" class="plain-button" data-me2="again">${esc(text('other'))}</button>${stage.review?`<button type="button" class="quiet-button" data-me2="back">${esc(text('back'))}</button>`:''}</div>`;
+   <div class="me2-actions"><button type="button" class="felt-button" data-me2="choose" data-variant="${esc(picked)}">${esc(text('thisOne'))}</button>${view.status==='off'?'':`<button type="button" class="plain-button" data-me2="again">${esc(text('other'))}</button>`}${stage.review?`<button type="button" class="quiet-button" data-me2="back">${esc(text('back'))}</button>`:''}</div>`;
  }
  /** 물건의 지금 상태 한 줄 — 앨범 칸과 옷장 칸이 같이 쓴다. */
  function stateTag(item,kind){
@@ -244,22 +256,23 @@ export function createMe2Photo({show,home,close,request,doc=globalThis.document,
   return `${newer}<article class="me2-id" aria-label="${esc(text('card'))}"><div class="me2-id-band"><span>Student ID</span><span>SYNK World</span></div><div class="me2-id-body"><figure class="me2-id-photo"><img src="${esc(face)}" alt=""></figure><div class="me2-id-copy"><strong>${esc(text('cardName'))}</strong><span>${esc(text('cardRole'))}</span><i class="me2-id-code" aria-hidden="true"></i>${me.options?.length?`<button type="button" class="quiet-button" data-me2="review">${esc(text('changeFace'))}</button>`:''}</div></div></article>
    ${sceneTiles?`<section class="me2-section"><h3 class="me2-h">${esc(text('album2'))}</h3><div class="me2-grid">${sceneTiles}</div></section>`:''}
    ${closet?`<section class="me2-section"><h3 class="me2-h">${esc(text('wardrobe'))}</h3>${closet}</section>`:''}
-   <section class="me2-section me2-foot">${closed?'':`<button type="button" class="quiet-button" data-me2="again">${esc(text('other'))}</button>`}${stage.erase?`<div class="me2-erase" role="alertdialog"><p>${esc(text('eraseAsk'))}</p><div class="me2-actions"><button type="button" class="plain-button" data-me2="erase-yes">${esc(text('eraseYes'))}</button><button type="button" class="quiet-button" data-me2="erase-no">${esc(text('eraseNo'))}</button></div></div>`:`<button type="button" class="quiet-button" data-me2="erase">${esc(text('eraseOpen'))}</button>`}</section>`;
+   ${closed?'':`<section class="me2-section me2-foot"><button type="button" class="quiet-button" data-me2="again">${esc(text('other'))}</button></section>`}${eraseFoot()}`;
  }
  function bodyHtml(){
   if(!view)return `<p class="me2-status" role="status">${esc(text('loading'))}</p>`;
-  if(view.status==='not_invited'||(view.status==='off'&&!view.consent))return note(text('off'));
+  if(view.status==='error')return note(text('error'),'alert');
+  if(view.status==='not_invited'||(view.status==='off'&&!view.consent?.given))return note(text('off'));
   if(stage.name==='consent')return consentHtml();
   if(['photo','reading','sending','send-failed'].includes(stage.name))return photoHtml();
   if(stage.name==='pick')return pickHtml(stage.message?note(stage.message):'');
   if(!view.consent?.given)return consentHtml();
   const me=view.me;
-  if(me.state==='developing')return developingHtml();
-  if(me.state==='choose'||stage.review)return chooseHtml();
+  if(me.state==='developing')return `${developingHtml()}${eraseFoot()}`;
+  if(me.state==='choose'||stage.review)return `${chooseHtml()}${eraseFoot()}`;
   if(me.state==='ready')return readyHtml();
   // none · uploading(올리다 멈춤) · redo · refused
-  if(view.status==='off')return note(text('off'));
-  if(view.capacity&&!view.capacity.open)return `${note(text('busy',{date:dateText(view.capacity.reopens_at,lang())}))}<div class="me2-actions"><button type="button" class="quiet-button" data-me2="prepared">${esc(text('prepared'))}</button></div>`;
+  if(view.status==='off')return `${note(text('off'))}${eraseFoot()}`;
+  if(view.capacity&&!view.capacity.open)return `${note(text('busy',{date:dateText(view.capacity.reopens_at,lang())}))}<div class="me2-actions"><button type="button" class="quiet-button" data-me2="prepared">${esc(text('prepared'))}</button></div>${eraseFoot()}`;
   return pickHtml(me.state==='redo'?note(text('redo')):me.state==='refused'?note(text('refused')):'');
  }
  function paint(){
@@ -287,12 +300,15 @@ export function createMe2Photo({show,home,close,request,doc=globalThis.document,
  function clearPhoto(){photo?.bitmap?.close?.();if(photo?.preview?.url)try{URL.revokeObjectURL(photo.preview.url);}catch{}photo=null;}
  async function takeFile(file){
   clearPhoto();stage={name:'reading'};paint();
+  const run=++photoRun;
   let bitmap;
-  try{bitmap=await decodePhoto(file,doc);}catch{stage={name:'pick',message:text('cantOpen')};paint();return;}
+  try{bitmap=await decodePhoto(file,doc);}catch{if(run===photoRun){stage={name:'pick',message:text('cantOpen')};paint();}return;}
   const width=bitmap.width,height=bitmap.height;
   const {canvas,scale}=drawScaled(bitmap,{x:0,y:0,w:width,h:height},LONG_EDGE,doc);
   const faces=await finder(canvas);
   const blob=await encodeJpeg(canvas,.8);
+  // 시트를 닫았거나 다른 사진을 고른 뒤에 끝난 일은 버린다.
+  if(run!==photoRun){bitmap.close?.();return;}
   photo={bitmap,width,height,canvas,scale,faces,preview:{url:URL.createObjectURL(blob),width:canvas.width,height:canvas.height},chosen:faces?.length===1?faces[0]:null};
   // 도구를 못 읽었으면(null) 묻지 않고 받는다 — 막지 않는다.
   stage={name:'photo'};paint();
@@ -311,25 +327,30 @@ export function createMe2Photo({show,home,close,request,doc=globalThis.document,
   }
   let blob=await encodeJpeg(out,JPEG_Q);
   if(blob.size>MAX_BYTES)blob=await encodeJpeg(out,.75);
-  return {blob,box:box?box.map(Math.round):null};
+  // 서버가 받는 칸은 올리는 그림 안의 칸이다.
+  const inBox=box?(([x,y,w,h])=>{const left=Math.max(0,x),top=Math.max(0,y);return [left,top,Math.min(out.width-left,x+w-left),Math.min(out.height-top,y+h-top)];})(box).map(Math.round):null;
+  return {blob,box:inBox&&inBox[2]>0&&inBox[3]>0?inBox:null};
  }
  async function send(){
+  const run=++photoRun,alive=()=>run===photoRun&&!disposed;
   stage={name:'sending'};paint();
   try{
    const {blob,box}=await finalImage();
    const bytes=new Uint8Array(await blob.arrayBuffer());
    const intake=await request({action:'intake',sha256:await sha256Hex(bytes),bytes:bytes.length,...(box?{face_box:box}:{})});
-   if(intake.status==='full'){view={...view,capacity:{open:false,reopens_at:intake.reopens_at}};stage={name:'home'};clearPhoto();if(view.me?.state==='ready')toast(text('busy',{date:dateText(intake.reopens_at,lang())}));paint();return;}
-   if(intake.status==='limit'){stage={name:'pick',message:text('limit')};clearPhoto();paint();return;}
-   if(intake.status==='off'){stage={name:'home'};await refresh();return;}
-   if(intake.status==='busy_same'){stage={name:'home'};clearPhoto();await refresh();return;}
+   if(intake.status==='full'){if(!alive())return;view={...view,capacity:{open:false,reopens_at:intake.reopens_at}};stage={name:'home'};clearPhoto();if(['ready','choose'].includes(view.me?.state))toast(text('busy',{date:dateText(intake.reopens_at,lang())}));paint();return;}
+   if(intake.status==='limit'){if(!alive())return;stage={name:'pick',message:text('limit')};clearPhoto();paint();return;}
+   if(intake.status==='off'){if(!alive())return;stage={name:'home'};await refresh();return;}
+   if(intake.status==='busy_same'){if(!alive())return;stage={name:'home'};clearPhoto();await refresh();return;}
    if(intake.status!=='upload')throw Error('intake');
    const put=await fetcher(intake.upload_url,{method:'PUT',headers:{'Content-Type':'image/jpeg','x-upsert':'false'},body:blob,credentials:'omit',redirect:'error'});
    if(!put.ok)throw Error('upload');
    const done=await request({action:'intake-done',job_id:intake.job_id});
    if(done.status==='bad_upload')throw Error('bad_upload');
+   // 시트를 닫아도 올리기는 끝까지 간다(다시 열면 「현상 중」으로 보인다).
+   if(!alive())return;
    clearPhoto();stage={name:'home'};await refresh();
-  }catch{stage={name:'send-failed'};paint();}
+  }catch{if(alive()){stage={name:'send-failed'};paint();}}
  }
 
  // ── 눌렀을 때 ──
@@ -361,24 +382,24 @@ export function createMe2Photo({show,home,close,request,doc=globalThis.document,
   if(kind==='again'){clearPhoto();stage={name:'pick'};paint();return;}
   if(kind==='who'){photo.chosen=photo.faces[Number(button.dataset.index)]||null;void send();return;}
   if(kind==='use'||kind==='send'){void send();return;}
-  if(kind==='variant'){stage={...stage,variant:button.dataset.variant};paint();return;}
+  if(kind==='variant'){stage={...stage,variant:button.dataset.variant};afterPaint=`.me2-variant[data-variant="${button.dataset.variant}"]`;paint();return;}
   if(kind==='review'){stage={...stage,review:true,variant:view.me.chosen_variant};paint();return;}
   if(kind==='back'){stage={name:'home'};paint();return;}
   if(kind==='choose'){void act(kind,async()=>{await request({action:'choose',job_id:view.me.job_id,variant:button.dataset.variant});stage={name:'home'};});return;}
-  if(kind==='order-look'||kind==='order-scene'){void act(kind,async()=>{const out=await request({action:kind,item:button.dataset.item});if(out.status==='full_album')toast(text('fullAlbum'));});return;}
+  if(kind==='order-look'||kind==='order-scene'){if(kind==='order-look')afterPaint='.me2-closet-close';void act(kind,async()=>{const out=await request({action:kind,item:button.dataset.item});if(out.status==='full_album')toast(text('fullAlbum'));});return;}
   if(kind==='redo'){void act(kind,async()=>{const out=await request({action:'redo',job_id:button.dataset.job});if(out.status==='limit')toast(text('limit'));});return;}
-  if(kind==='wear'||kind==='unwear'){void act(kind,()=>request({action:'equip',job_id:kind==='wear'?button.dataset.job:null}));return;}
+  if(kind==='wear'||kind==='unwear'){afterPaint=kind==='wear'?'[data-me2="unwear"]':'[data-me2="wear"]';void act(kind,()=>request({action:'equip',job_id:kind==='wear'?button.dataset.job:null}));return;}
   if(kind==='item'){stage={...stage,item:button.dataset.item};afterPaint='.me2-closet-close';paint();return;}
   if(kind==='item-close'){const id=stage.item;stage={...stage,item:null};afterPaint=`.me2-hanger[data-item="${id}"]`;paint();return;}
-  if(kind==='erase'){stage={...stage,erase:true};paint();return;}
-  if(kind==='erase-no'){stage={...stage,erase:false};paint();return;}
+  if(kind==='erase'){stage={...stage,erase:true};afterPaint='[data-me2="erase-no"]';paint();return;}
+  if(kind==='erase-no'){stage={...stage,erase:false};afterPaint='[data-me2="erase"]';paint();return;}
   if(kind==='erase-yes'){void act(kind,async()=>{await request({action:'erase'});stage={name:'home'};toast(text('erased'));close?.();});return;}
  }
 
  return {
   rowHtml(face){return `<button type="button" class="me2-row" data-world="me2"><span class="me2-row-print"><img src="${esc(face||asset('sample-base'))}" alt=""></span><span class="me2-row-copy"><strong>${esc(text(face?'title':'row'))}</strong><span>${esc(text('rowNote'))}</span></span><i class="me2-row-arrow" aria-hidden="true"></i></button>`;},
   async open(){
-   disposed=false;root=null;stage={name:'home'};view=null;
+   offLang?.();offLang=null;clearPhoto();disposed=false;root=null;stage={name:'home'};view=null;lastScreen='';
    paint();
    offLang=onLang?.(()=>{if(root)paint();})||null;
    try{

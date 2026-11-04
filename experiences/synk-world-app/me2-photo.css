@@ -108,9 +108,9 @@
 .me2-card-actions{display:flex;flex-wrap:wrap;gap:0 12px}
 .me2-card-actions .quiet-button{min-height:44px;padding:0;font-size:13.5px}
 /* 옷장 — 종이 판 위 봉에 건 옷, 소품 선반, 머리 사진. 그림의 흰 바탕은 종이에 녹인다(같은 쌓임 맥락 안이라 칸에 transform을 걸지 않는다) */
-.me2-closet{position:relative;isolation:isolate;overflow:hidden;border-radius:18px;background:#F4F3EE;color:#16171B}
+.me2-closet{display:grid;isolation:isolate;overflow:hidden;border-radius:18px;background:#F4F3EE;color:#16171B}
+.me2-closet-rows,.me2-closet-detail{grid-area:1/1;min-width:0}
 .me2-closet-rows{display:grid;gap:4px;padding:14px 0 12px;background:#F4F3EE}
-.me2-closet[data-open=yes]{min-height:590px}
 .me2-closet[data-open=yes] .me2-closet-rows{filter:blur(7px);opacity:.28}
 .me2-shelf{display:grid;gap:2px}
 .me2-shelf-name{padding:0 16px;font-size:14px;line-height:1.4;font-weight:var(--wt-title,650);color:#16171B}
@@ -126,7 +126,7 @@
 .me2-hanger .me2-tag[data-tone=new]{color:#B23A2C}
 .me2-hanger .me2-tag[data-tone=on]{color:#1E6B45}
 .me2-hanger:focus-visible,.me2-closet-close:focus-visible{outline:2px solid #16171B;outline-offset:-2px;border-radius:10px}
-.me2-closet-detail{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px}
+.me2-closet-detail{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px}
 .me2-closet-item img,.me2-closet-print,.me2-closet-info{animation:me2-pop .24s var(--w-ease,ease) both}
 @keyframes me2-pop{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
 :root[data-reduced=true] :is(.me2-closet-item img,.me2-closet-print,.me2-closet-info){animation:none}
