@@ -117,6 +117,55 @@ fs.mkdirSync(OUT, { recursive: true });
   await p3.screenshot({ path: path.join(OUT, '5_첫안내.png') });
   await phone.close();
 
+  // 8. 안내문을 끄면 찍은 안내문을 인화에서 묻지 않고 입구 수에도 세지 않는가 · q 없는 카드도 창이 열리는가 · 끈 설정이 되돌아가지 않는가(목표 3급)
+  const later = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  const p4 = await later.newPage();
+  p4.on('pageerror', (e) => errors.push(String(e)));
+  await p4.goto(BASE); await p4.waitForFunction(() => !!window.__snap); await p4.waitForTimeout(700);
+  await p4.locator('[data-go=start]').click();
+  await p4.waitForFunction(() => window.__snap.S.screen === 'shoot' && !window.__snap.S.busy, null, { timeout: 30000 });
+  await p4.evaluate(() => window.__snap.focusOn(window.__snap.S.items.find((i) => i.word === 'n-smoke'))); await p4.waitForTimeout(700);
+  await p4.locator('#shutter').click(); await p4.waitForTimeout(900);
+  await p4.evaluate(() => window.__snap.focusOn(window.__snap.S.items.find((i) => i.word === 'cat'))); await p4.waitForTimeout(700);
+  await p4.locator('#shutter').click(); await p4.waitForTimeout(900);
+  await p4.evaluate(() => { window.__snap.S.busy = false; window.__snap.beginMissions(); }); await p4.waitForTimeout(900);
+  for (let g = 0; g < 8; g += 1) {
+    const st = await p4.evaluate(() => { const { S } = window.__snap, m = S.missions[S.mi]; return { phase: S.phase, mi: S.mi, kind: m?.kind, word: m?.word }; });
+    if (st.phase !== 'mission') break;
+    await p4.evaluate(({ kind, word }) => { const { S } = window.__snap; window.__snap.focusOn(S.items.find((i) => (kind === 'word' ? i.kind === 'thing' : i.kind === 'plate') && i.word === word)); }, st);
+    await p4.waitForTimeout(600);
+    await p4.locator('#shutter').click();
+    await p4.waitForFunction((mi) => window.__snap.S.mi !== mi || window.__snap.S.phase !== 'mission', st.mi, { timeout: 12000 });
+    await p4.waitForTimeout(200);
+  }
+  await p4.waitForFunction(() => window.__snap.S.screen === 'develop', null, { timeout: 12000 });
+  const asked = [];
+  for (let i = 0; i < 3; i += 1) {
+    if (await p4.evaluate(() => window.__snap.S.screen !== 'develop')) break;
+    await p4.waitForFunction(() => document.querySelector('.dev-opt:not([disabled])'));
+    asked.push(await p4.evaluate(() => window.__snap.S.recallNow?.answer));
+    const n = await p4.evaluate(() => window.__snap.answerNow());
+    await p4.locator('.dev-opt').nth(n).click();
+    await p4.waitForTimeout(1500);
+  }
+  notes.recallWithNoticesOff = asked;
+  await p4.evaluate(() => { const { album } = window.__snap; album.cards['n-smoke'].named = true; delete album.cards.library; album.cards.library = { place: 'gate', at: 1, named: true, kind: 'plate', q: null, style: null, vertical: false, scene: [] }; localStorage.setItem(Object.keys(localStorage).find((k) => k.startsWith('synk.snap-words.v1')), JSON.stringify(album)); });
+  await p4.reload(); await p4.waitForFunction(() => !!window.__snap); await p4.waitForTimeout(800);
+  notes.lobbyCountSkipsNotice = await p4.evaluate(() => ({ shown: Number(document.querySelector('.lobby-top em').textContent), named: Object.values(window.__snap.album.cards).filter((c) => c.named).length }));
+  await p4.locator('.lobby-top [data-go=album]').click(); await p4.waitForTimeout(600);
+  notes.cardWithoutQuadOpens = await p4.evaluate(() => { const c = [...document.querySelectorAll('.alb-card:not(.is-empty)')].find((n) => n.textContent.includes('도서관')); c?.click(); return !!document.querySelector('.alb-sheet'); });
+  await later.close();
+  const third = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const p5 = await third.newPage();
+  p5.on('pageerror', (e) => errors.push(String(e)));
+  const grade3 = `${BASE}${BASE.includes('?') ? '&' : '?'}grade=3`;
+  await p5.goto(grade3); await p5.waitForFunction(() => !!window.__snap); await p5.waitForTimeout(600);
+  const firstOn = await p5.evaluate(() => window.__snap.album.notices);
+  await p5.locator('.notice-toggle').click(); await p5.waitForTimeout(400);
+  await p5.reload(); await p5.waitForFunction(() => !!window.__snap); await p5.waitForTimeout(600);
+  notes.grade3Toggle = { firstOn, afterOffAndReopen: await p5.evaluate(() => window.__snap.album.notices), placeRowRole: await p5.evaluate(() => document.querySelector('.place-row').getAttribute('role')), pressed: await p5.evaluate(() => [...document.querySelectorAll('.place-chip')].map((n) => n.getAttribute('aria-pressed'))) };
+  await third.close();
+
   // 6. 칠판 판의 글자가 판 안에 있는가(학생회관)
   const wide = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const p2 = await wide.newPage();
@@ -129,7 +178,7 @@ fs.mkdirSync(OUT, { recursive: true });
   notes.chalk = await p2.evaluate(() => { const box = document.querySelector('.pl-chalk'), t = box?.querySelector('.pl-t'); if (!t) return 'none'; const a = box.getBoundingClientRect(), b = t.getBoundingClientRect(); return { boxTop: Math.round(a.top), boxBottom: Math.round(a.bottom), textTop: Math.round(b.top), textBottom: Math.round(b.bottom), inside: b.top >= a.top - 1 && b.bottom <= a.bottom + 1 }; });
   await p2.screenshot({ path: path.join(OUT, '4_칠판.png') });
 
-  await browser.close();
+  await Promise.race([browser.close(), sleep(4000).catch(() => {})]).catch(() => {});
   const report = { notes, errors };
   console.log(JSON.stringify(report, null, 1));
   fs.writeFileSync(path.join(OUT, '고친곳.json'), JSON.stringify(report, null, 1) + '\n');

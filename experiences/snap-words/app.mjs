@@ -30,10 +30,11 @@ const oneLine = (text) => String(text).replace(/\n/g, ' ');
 // ── 저장 — 계정마다 기기에(설계 5-4: 서버 키가 들어가기 전에는 놀이 호스트 목록에 넣지 않는다) ─────
 const accountKey = (() => { try { return window.parent?.SYNKLearningHost?.status?.()?.accountKey || 'device'; } catch { return 'device'; } })();
 const saveKey = `${STORE_KEY}:${accountKey}`;
-const album = (() => { try { return normalizeAlbum(JSON.parse(localStorage.getItem(saveKey) || 'null')); } catch { return normalizeAlbum(null); } })();
+const savedAlbum = (() => { try { return localStorage.getItem(saveKey); } catch { return null; } })();
+const album = (() => { try { return normalizeAlbum(JSON.parse(savedAlbum || 'null')); } catch { return normalizeAlbum(null); } })();
 function save() { try { localStorage.setItem(saveKey, JSON.stringify(album)); } catch { /* 저장을 못 해도 판은 그대로 돈다 */ } }
 const grade = Number(query.get('grade')) || 0;
-if (album.plays === 0 && grade >= 3) album.notices = true;
+if (savedAlbum === null && grade >= 3) album.notices = true;
 const rng = query.has('seed') ? makeRng(Number(query.get('seed'))) : Math.random;
 
 // ── 학습 기록 ─ 같은 주소의 다른 SYNK 게임과 함께 쓴다(WORLD 안에서는 계정의 기록) ───────────────
@@ -44,9 +45,11 @@ const prefs = (() => { try { return { sfx: 1, amb: 1, voice: 1, ...JSON.parse(lo
 // WORLD 앱 설정 「효과음」 — world-sound.mjs PREF_KEYS와 같은 열쇠(기본 켜짐). 효과음 · 바탕 소리만 끈다. 낱말 소리는 공부 내용이라 게임의 「낱말 소리」 크기만 따른다(환승 러시와 같다).
 const hostMuted = () => { try { return localStorage.getItem('synk.world.sound') === 'false'; } catch { return false; } };
 let audio = null, bus = null, voiceOut = null, ambience = null, voiceEl = null, limiter = null;
+// 아이폰 오디오 세션 — world-sound.mjs와 같은 규칙: 낱말 소리가 나는 동안만 playback(무음 모드에서도 들린다), 그 밖에는 ambient(무음 스위치를 따른다)
+const session = (type) => { try { const s = navigator.audioSession; if (s && s.type !== type) s.type = type; } catch { /* 없음 */ } };
 function audioReady() {
   if (audio) { if (audio.state === 'suspended') audio.resume().catch(() => {}); return audio; }
-  try { if (navigator.audioSession && navigator.audioSession.type !== 'playback') navigator.audioSession.type = 'playback'; } catch { /* 없음 */ }
+  session('ambient');
   const Ctx = window.AudioContext || window.webkitAudioContext;
   if (!Ctx) return null;
   audio = new Ctx({ latencyHint: 'interactive' });
@@ -81,10 +84,10 @@ async function sayWord(id, onEnd = null) {
   try {
     voiceEl?.stop?.();
     const buf = await voiceBuffer(id), src = audio.createBufferSource();
-    src.buffer = buf; src.connect(voiceOut); voiceEl = src; ambience?.duck(true);
-    src.onended = () => { if (voiceEl === src) { voiceEl = null; ambience?.duck(false); onEnd?.(); } };
+    src.buffer = buf; src.connect(voiceOut); voiceEl = src; ambience?.duck(true); session('playback');
+    src.onended = () => { if (voiceEl === src) { voiceEl = null; ambience?.duck(false); session('ambient'); onEnd?.(); } };
     src.start();
-  } catch { ambience?.duck(false); }
+  } catch { ambience?.duck(false); session('ambient'); }
 }
 
 // ── 판 그리기 — 사진 원본 좌표(픽셀)로 그린다. 카메라는 무대 전체를 옮기고 키운다 ──────────────
@@ -107,7 +110,8 @@ function plateNode({ q, text, style, vertical = false }) {
   node.append(span);
   return node;
 }
-const bboxOf = (q) => { const xs = q.map((p) => p[0]), ys = q.map((p) => p[1]); return { x: Math.min(...xs), y: Math.min(...ys), w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) }; };
+const NO_QUAD = [[0, 0], [10, 0], [10, 10], [0, 10]];
+const bboxOf = (quad) => { const q = quad || NO_QUAD, xs = q.map((p) => p[0]), ys = q.map((p) => p[1]); return { x: Math.min(...xs), y: Math.min(...ys), w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) }; };
 const unionBox = (boxes) => { const x = Math.min(...boxes.map((b) => b.x)), y = Math.min(...boxes.map((b) => b.y)); return { x, y, w: Math.max(...boxes.map((b) => b.x + b.w)) - x, h: Math.max(...boxes.map((b) => b.y + b.h)) - y }; };
 
 /** 사진 조각(인화지 · 카드 · 앨범): 그 판과 함께 찍힌 글까지 그대로. 들고 있는 값은 곳 · 자리 · 글뿐이다. */
@@ -189,6 +193,8 @@ function loop(now) {
 // ── 들어가기 ──────────────────────────────────────────────────────
 function show(screen) { S.screen = screen; for (const n of app.children) n.hidden = n.dataset.screen !== screen; }
 
+/** 입구 앨범 수: 앨범 격자와 같은 기준(「안내문도 읽기」를 끄면 안내문은 세지 않는다). 낱말은 한 번 이름을 붙이면 어느 장소에서든 내 것이다(설계 8절). */
+const namedCount = () => new Set(PLACE_ORDER.flatMap((id) => placeWords(PLACES[id], { notices: album.notices })).filter((id) => album.cards[id]?.named)).size;
 function renderLobby() {
   const place = PLACES[S.placeId] || PLACES.gate, daily = dailyMission(openPlaces().map((id) => PLACES[id]), Date.now()), doneDaily = !!album.daily[dayKey(Date.now())];
   const root = el('section', 'lobby'); root.dataset.screen = 'lobby';
@@ -197,12 +203,12 @@ function renderLobby() {
    <div class="lobby-shade" aria-hidden="true"></div>
    <div class="focus lobby-focus" id="lobby-focus" aria-hidden="true"><div class="focus-in"><i></i><i></i><i></i><i></i></div></div>
    <header class="lobby-top">
-    <button class="glass-btn" data-go="album"><span>${t('lobby.album')}</span><em>${Object.values(album.cards).filter((c) => c.named).length}</em></button>
+    <button class="glass-btn" data-go="album"><span>${t('lobby.album')}</span><em>${namedCount()}</em></button>
     <button class="glass-icon" data-go="sound" aria-label="${t('bar.sound')}">${ICON.sound}</button>
    </header>
    <div class="lobby-title"><h1 class="vh">${t('title')}</h1><p>${t('lobby.sub')}</p></div>
    <div class="lobby-bottom">
-    <div class="place-row" role="listbox" aria-label="${esc(oneLine(pick(place.name, lang)))}">${placeChips()}</div>
+    <div class="place-row">${placeChips()}</div>
     <button class="daily ${doneDaily ? 'is-done' : ''}" data-go="daily"><span class="daily-dot"></span><span>${doneDaily ? t('lobby.dailyDone') : t('lobby.daily')}</span><small>${esc(pick(PLACES[daily.place].name, lang))}${album.streak ? ` · ${t('lobby.streak', { n: album.streak })}` : ''}</small></button>
     <label class="notice-toggle"><input type="checkbox" data-go="notices" ${album.notices ? 'checked' : ''}><span class="switch" aria-hidden="true"></span><span><b>${t('lobby.notices')}</b><small>${t('lobby.noticesWhy')}</small></span></label>
     <button class="start" data-go="start">${t('lobby.start')}</button>
@@ -243,7 +249,7 @@ const ICON = {
 };
 function placeChips() {
   const open = openPlaces();
-  const chip = (id, name, photo, state, sub) => `<button class="place-chip ${state}" data-place="${id}" ${state === 'is-locked' ? 'aria-disabled="true"' : ''}><span class="place-pic">${photo ? `<img src="${photo}" alt="" draggable="false">` : ''}</span><span class="place-name">${esc(name)}</span><small>${esc(sub)}</small></button>`;
+  const chip = (id, name, photo, state, sub) => `<button class="place-chip ${state}" data-place="${id}" ${state === 'is-locked' ? 'aria-disabled="true"' : `aria-pressed="${state === 'is-on'}"`}><span class="place-pic">${photo ? `<img src="${photo}" alt="" draggable="false">` : ''}</span><span class="place-name">${esc(name)}</span><small>${esc(sub)}</small></button>`;
   const known = PLACE_ORDER.map((id) => {
     const p = PLACES[id];
     if (!open.includes(id)) return chip(id, pick(p.name, lang), p.photo, 'is-locked', t('lobby.unlockUnion'));
@@ -662,7 +668,7 @@ function toDevelop() { if (S.developStarted) return; S.developStarted = true; st
 async function startDevelop() {
   stopAmbience();
   const root = app.querySelector('[data-screen=develop]');
-  const qs = makeRecall(S.place, S.shots.filter((s) => s.word), { rng, lang, album });
+  const qs = makeRecall(S.place, S.shots.filter((s) => s.word && (album.notices || wordOf(s.word).band !== 'notice')), { rng, lang, album });
   if (!qs.length) return finishRound();
   show('develop');
   root.replaceChildren();
@@ -780,12 +786,12 @@ function renderAlbum() {
   root.append(body);
   const grid = $('#alb-grid', body);
   for (const id of placeWords(place, { notices: album.notices })) {
-    const card = album.cards[id], w = wordOf(id), cell = el('button', `print alb-card ${card ? '' : 'is-empty'}`);
+    const card = album.cards[id], w = wordOf(id), cell = el(card ? 'button' : 'div', `print alb-card ${card ? '' : 'is-empty'}`);
     if (card) {
-      cell.append(cropNode(card.place in PLACES ? card.place : cur, bboxOf(card.q || [[0, 0], [10, 0], [10, 10], [0, 10]]), card.scene || [], 96, 76));
+      cell.append(cropNode(card.place in PLACES ? card.place : cur, bboxOf(card.q), card.scene || [], 96, 76));
       const cap = el('div', 'print-cap'); if (card.named) cap.textContent = oneLine(w.ko); cell.append(cap);
       cell.addEventListener('click', () => openCard(id));
-    } else { cell.innerHTML = '<span class="alb-q" aria-hidden="true">?</span><div class="print-cap"></div>'; cell.disabled = true; }
+    } else { cell.innerHTML = '<span class="alb-q" aria-hidden="true">?</span><div class="print-cap"></div>'; cell.setAttribute('aria-hidden', 'true'); }
     grid.append(cell);
   }
   show('album');
