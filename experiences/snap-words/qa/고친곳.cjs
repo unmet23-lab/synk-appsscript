@@ -89,6 +89,34 @@ fs.mkdirSync(OUT, { recursive: true });
   await page.locator('[data-go=album-close]').click(); await sleep(1400);
   notes.afterClosingAlbum = await page.evaluate(() => window.__snap.S.screen);
 
+  // 7. 앱 효과음을 꺼도 소리 부탁(공부 내용)은 남는가 · 폰 폭 첫 안내가 「물러나기」를 덮지 않는가
+  const soundCase = async (value) => {
+    const c = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+    const p = await c.newPage();
+    p.on('pageerror', (e) => errors.push(String(e)));
+    await p.addInitScript((v) => { if (v === null) localStorage.removeItem('synk.world.sound'); else localStorage.setItem('synk.world.sound', v); }, value);
+    await p.goto(BASE); await p.waitForFunction(() => !!window.__snap); await p.waitForTimeout(700);
+    await p.locator('[data-go=start]').click();
+    await p.waitForFunction(() => window.__snap.S.screen === 'shoot' && !window.__snap.S.busy && !document.querySelector('#msg').hidden, null, { timeout: 30000 });
+    const kinds = await p.evaluate(() => window.__snap.S.missions.map((m) => m.kind));
+    await c.close();
+    return kinds;
+  };
+  notes.missionsAppSoundOff = await soundCase('false');
+  notes.missionsAppSoundOn = await soundCase(null);
+  const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  const p3 = await phone.newPage();
+  p3.on('pageerror', (e) => errors.push(String(e)));
+  await p3.goto(BASE); await p3.waitForFunction(() => !!window.__snap); await p3.waitForTimeout(700);
+  await p3.locator('[data-go=start]').click();
+  await p3.waitForFunction(() => window.__snap.S.screen === 'shoot' && !window.__snap.S.busy, null, { timeout: 30000 });
+  await p3.waitForSelector('.toast', { state: 'visible', timeout: 15000 });
+  await p3.evaluate(() => window.__snap.focusOn(window.__snap.S.items.find((i) => i.group === 'blade')));
+  await p3.waitForTimeout(700);
+  notes.toast = await p3.evaluate(() => { const a = document.querySelector('#step-back'), n = document.querySelector('.toast'); if (!n) return 'no toast'; const A = a.getBoundingClientRect(), B = n.getBoundingClientRect(); return { backHidden: a.hidden, backBottom: Math.round(A.bottom), toastTop: Math.round(B.top), overlap: !a.hidden && B.top < A.bottom && B.bottom > A.top }; });
+  await p3.screenshot({ path: path.join(OUT, '5_첫안내.png') });
+  await phone.close();
+
   // 6. 칠판 판의 글자가 판 안에 있는가(학생회관)
   const wide = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const p2 = await wide.newPage();

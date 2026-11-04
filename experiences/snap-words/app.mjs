@@ -41,7 +41,8 @@ const learn = createLearning(() => window.SynkLearning?.createGame({ gameId: GAM
 
 // ── 소리 ─────────────────────────────────────────────────────────
 const prefs = (() => { try { return { sfx: 1, amb: 1, voice: 1, ...JSON.parse(localStorage.getItem('synk.snap-words.sound') || '{}') }; } catch { return { sfx: 1, amb: 1, voice: 1 }; } })();
-const hostMuted = () => { try { return window.parent?.document?.documentElement?.dataset?.sound === 'off'; } catch { return false; } };
+// WORLD 앱 설정 「효과음」 — world-sound.mjs PREF_KEYS와 같은 열쇠(기본 켜짐). 효과음 · 바탕 소리만 끈다. 낱말 소리는 공부 내용이라 게임의 「낱말 소리」 크기만 따른다(환승 러시와 같다).
+const hostMuted = () => { try { return localStorage.getItem('synk.world.sound') === 'false'; } catch { return false; } };
 let audio = null, bus = null, voiceOut = null, ambience = null, voiceEl = null, limiter = null;
 function audioReady() {
   if (audio) { if (audio.state === 'suspended') audio.resume().catch(() => {}); return audio; }
@@ -73,10 +74,10 @@ async function voiceBuffer(id) {
   voiceBuffers.set(id, p); return p;
 }
 /** 낱말 소리를 낼 수 있나 — 소리를 끈 사람에게는 소리 부탁을 내지 않는다. */
-const voiceOn = () => !hostMuted() && prefs.voice > 0 && !!(window.AudioContext || window.webkitAudioContext);
+const voiceOn = () => prefs.voice > 0 && !!(window.AudioContext || window.webkitAudioContext);
 async function sayWord(id, onEnd = null) {
   const w = wordOf(id);
-  if (!w?.voice || hostMuted() || prefs.voice <= 0 || !audioReady()) return;
+  if (!w?.voice || prefs.voice <= 0 || !audioReady()) return;
   try {
     voiceEl?.stop?.();
     const buf = await voiceBuffer(id), src = audio.createBufferSource();
@@ -775,7 +776,7 @@ function renderAlbum() {
    <div class="alb-tabs">${tabs.map((x) => `<button class="alb-tab ${x.id === cur ? 'is-on' : ''} ${x.open ? '' : 'is-locked'}" data-album-place="${x.id}" ${x.open ? '' : 'aria-disabled="true"'}>${esc(x.name)}</button>`).join('')}</div>
    ${album.stamps[cur] ? `<div class="stamp stamp-small"><b>${esc(pick(place.name, lang))}</b><small>${t('result.stamp')}</small></div>` : ''}
    <div class="alb-grid" id="alb-grid"></div>
-   <section class="alb-record"><h3>${t('album.record')}</h3><p>${best ? `${t('result.time')} ${mmss(best.ms)} · ${t('result.first')} ${best.first} / ${best.of}` : t('album.none')}</p>${album.streak ? `<p>${t('lobby.streak', { n: album.streak })}</p>` : ''}</section>`;
+   <section class="alb-record"><h3>${t('album.record')}</h3><p>${best ? `${mmss(best.ms)} · ${t('result.first')} ${best.first} / ${best.of}` : t('album.none')}</p>${album.streak ? `<p>${t('lobby.streak', { n: album.streak })}</p>` : ''}</section>`;
   root.append(body);
   const grid = $('#alb-grid', body);
   for (const id of placeWords(place, { notices: album.notices })) {

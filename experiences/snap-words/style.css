@@ -263,4 +263,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--focus);outline-
   .dev-opts{flex-direction:row;max-width:760px}
   .dev-opt{flex:1}
 }
+/* 폰 폭: 첫 안내가 「물러나기」를 덮지 않게 그 아래로 */
+@media (max-width:759px){.toast{top:54px}}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}.print-cap.is-writing{animation:none}}
