@@ -240,6 +240,15 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
     pieces.length = 0;
   }
 
+  /** WORLD: 판을 떠날 때 남은 찢긴 조각 · 부스러기 · 덧그림을 치운다. 안 치우면 화면이 멈춘 채 재질이 남고, 다음 판 시작에 옛 조각이 이어 떨어진다. */
+  function clearEffects() {
+    const owners = new Set(halves.map((h) => h.owner));
+    for (const h of halves) { scene.remove(h.group); h.mats.forEach((m) => m.dispose()); }
+    halves.length = 0; owners.forEach(releasePiece);
+    for (const f of flakes) { scene.remove(f.mesh); f.mesh.material.dispose(); f.mesh.dispose(); }
+    flakes.length = 0; fx.length = 0; trail.length = 0; slow = null; freezeUntil = 0;
+  }
+
   // ── 베기와 손맛 ──
   /**
    * 베인 순간: 판이 두 쪽으로 갈라진다(클리핑 면). 세상이 잠깐 멈칫하는 동안 두 쪽이 하얗게 번쩍이고,
@@ -369,6 +378,7 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
       if (!p.alive) continue;
       if (reveal === p.index) { addGlow(p); p.g *= 0.5; continue; }
       p.g *= 2.4; p.fading = true;
+      if (look) p.fall = 1;   // WORLD의 느린 내림은 떠 있는 동안만 — 맞힌 뒤 남은 카드가 다음 문장 아래까지 남지 않게 빨리 빠진다
     }
   }
 
@@ -634,7 +644,7 @@ export async function createStage({ host, overlay, onSlice, onLanded, onLaunch, 
 
   return {
     toss, settle, sliceIndex, resize,
-    clear: () => { clearPieces(); resolved = true; },
+    clear: () => { clearPieces(); resolved = true; if (look) clearEffects(); },
     setTopPx(px) { topPx = px; }, setShowNumbers(v) { view.showNumbers = !!v; },
     /** 게임 화면이 보일 때만 그린다. */
     setActive(v) { active = !!v; lastT = performance.now(); pausedDrawn = false; },

@@ -68,7 +68,7 @@ export function setup({ onRoom }) {
 }
 
 /* ── 배경음: 판 안에서만. 음악이 없거나 못 받아도 게임은 그대로다 ── */
-let music = null, musicLoading = null, musicWanted = false;
+let music = null, musicLoading = null, musicWanted = false, musicPaused = false;
 function ensureMusic() {
   const route = sound.route();
   if (!route) return Promise.resolve(null);
@@ -82,20 +82,23 @@ export async function roundStart() {
   syncMotion(); musicWanted = true;
   await sound.unlock();
   const m = await ensureMusic();
-  if (musicWanted) m?.play('calm');
+  if (!musicWanted) return;
+  m?.play('calm');
+  if (musicPaused) m?.pause(true);   // 곡을 받는 사이에 멈췄으면 낮은 채로 시작한다
 }
 export function roundEnd(fade = 1.2) { musicWanted = false; music?.stop(fade); }
-export function roundPaused(on) { music?.pause(on); }
+export function roundPaused(on) { musicPaused = !!on; music?.pause(on); }
 
 /* ── 결과 채점: 문장마다 빨간 펜이 찍히고 맞힘마다 큰 숫자가 하나씩 오른다. 첫 탭이나 움직임 줄이기면 바로 끝난다 ── */
-let cancelMarks = null;
+let cancelMarks = null, starTimers = [];
+const clearStars = () => { starTimers.forEach(clearTimeout); starTimers = []; };
 export function results({ correct, stars, rows = [] }) {
-  cancelMarks?.();
+  cancelMarks?.(); clearStars();
   syncMotion();
   const items = [...document.querySelectorAll('#r-log li')], big = document.querySelector('#r-correct'), wrap = big?.closest('.big');
   wrap?.classList.remove('w-done');
   let rung = 0, timer = 0, done = false;
-  const starSound = () => { for (let i = 0; i < stars; i++) setTimeout(() => sound.sfx('star', { i }), i * 180); };
+  const starSound = () => { starTimers = Array.from({ length: stars }, (_, i) => setTimeout(() => sound.sfx('star', { i }), i * 180)); };
   const finish = () => {
     if (done) return; done = true;
     clearTimeout(timer); document.removeEventListener('pointerdown', finish, true);
@@ -123,4 +126,5 @@ export function results({ correct, stars, rows = [] }) {
   timer = setTimeout(step, 420);   // 시험지가 뜨고 「성취」 소리가 시작된 뒤
   cancelMarks = () => { done = true; clearTimeout(timer); document.removeEventListener('pointerdown', finish, true); cancelMarks = null; };
 }
-export const stopResults = () => cancelMarks?.();
+/** 결과를 떠날 때(다른 화면으로 바꿀 때마다 불린다): 채점 · 별 소리를 멈추고 앱의 움직임 줄이기 설정을 다시 읽는다. */
+export const stopResults = () => { cancelMarks?.(); clearStars(); syncMotion(); };

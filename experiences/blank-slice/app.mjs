@@ -167,6 +167,7 @@ async function startRound() {
   try { await ensureStage(); }
   catch {
     // WebGL을 만들 수 없는 기기·브라우저: 빈 화면에 멈추지 않고 입구에서 알린다
+    world?.roundEnd(0.2);
     renderLobby();
     stageNote = '이 브라우저에서는 3D 화면을 띄울 수 없어요. 크롬이나 사파리 최신판으로 열어 주세요.';
     paintStorageNote();
@@ -411,8 +412,8 @@ function flyToBlank(word, x, y, done) {
     const px = u * u * x + 2 * u * k * cx + k * k * tx, py = u * u * y + 2 * u * k * cy + k * k * ty;
     frames.push({ transform: `translate(calc(-50% + ${px - x}px), calc(-50% + ${py - y}px)) scale(${1.3 - 0.38 * k}) rotate(${(1 - k) * -10}deg)`, offset: k });
   }
-  const anim = chip.animate(frames, { duration: 380, easing: 'cubic-bezier(.35,.1,.25,1)' });
-  anim.onfinish = () => { chip.remove(); done(); };
+  const run = state.run, anim = chip.animate(frames, { duration: 380, easing: 'cubic-bezier(.35,.1,.25,1)' });
+  anim.onfinish = () => { chip.remove(); if (live(run)) done(); };   // 날아가는 사이에 판을 떠나면 끼워짐 소리 · 진동을 내지 않는다
 }
 
 /** 낱말이 빈칸에 끼워진 순간: ‘톡’과 사운드킷 ‘획득’(픽), 빈칸이 눌렸다 펴지고, 반짝이가 튀고, 점수가 올라간다. */
@@ -479,7 +480,7 @@ function finish() {
   $('#r-stars').setAttribute('aria-label', `별 3개 중 ${s.stars}개`);
   if (!world) {   // WORLD에는 몽글이 없고(10-31), 별 소리는 빨간 펜 채점이 끝난 뒤에 난다(world-play.mjs results)
     for (let i = 0; i < s.stars; i++) setTimeout(() => sound.sfx('star', { i }), 300 + i * 220);
-    $('#r-mongle').src = s.stars >= 2 ? 'kit/brand/mongle-smile.webp' : 'kit/brand/mongle-cheer.webp';
+    const mongle = $('#r-mongle'); if (mongle) mongle.src = s.stars >= 2 ? 'kit/brand/mongle-smile.webp' : 'kit/brand/mongle-cheer.webp';   // 앱 공개본 HTML에는 몽글 그림이 없다
   }
   const notes = [`점수 ${s.score}점`];
   if (s.bestRun >= 3) notes.push(`최고 ${s.bestRun}연속`);
@@ -554,7 +555,7 @@ $('#quit').onclick = () => {
 };
 /** 결과 → 우리 동네(WORLD): 홈이 동네로 돌아가기를 알면 그걸 부르고, 아니면 게임 창의 닫기를 누른다(같은 출처 틀 — 주문 폭주와 같은 길). 닿지 않으면 게임 입구로. */
 function backToRoom() {
-  world?.roundEnd(0.3);
+  world?.roundEnd(0.3); world?.stopResults();
   try {
     const town = window.parent?.__synkHome?.goTown; if (town) { town(); return; }
     const close = window.parent?.document?.getElementById('panel-close'); if (close) { close.click(); return; }
@@ -618,7 +619,7 @@ $('#reset-learning').onclick = () => {
 document.addEventListener('keydown', (e) => {
   if ($('#game').hidden || $('#pause-dialog').open || e.altKey || e.ctrlKey || e.metaKey) return;
   if (e.key === 'Escape') { e.preventDefault(); pause(true); return; }
-  if (!$('#explain').hidden) { if ((e.key === 'Enter' || e.key === ' ') && document.activeElement !== $('#btn-next')) { e.preventDefault(); $('#btn-next').click(); } return; }
+  if (!$('#explain').hidden) { if ((e.key === 'Enter' || e.key === ' ') && !document.activeElement?.closest?.('button,a')) { e.preventDefault(); $('#btn-next').click(); } return; }
   const n = Number(/^(?:Digit|Numpad)([1-4])$/.exec(e.code)?.[1] ?? (/^[1-4]$/.test(e.key) ? e.key : NaN));
   if (!$('#answer-check').hidden) { if (n >= 1 && n <= 4 && !e.repeat) { e.preventDefault(); $('#check-options').children[n - 1]?.click(); } return; }
   if (n >= 1 && n <= 4 && stage) { e.preventDefault(); stage.sliceIndex(n - 1, { x: 0.85, y: -0.5 }); }

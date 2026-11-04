@@ -176,7 +176,7 @@ export default {
  'game.snap.detail':{ko:'간판과 물건을 찍어 낱말을 모아요',en:'Snap signs and objects to collect words',mn:'Самбар, эд зүйлийн зураг авч үг цуглуулна'},
  'play.locked':{ko:'이야기에서 열려요 — {where}',en:'Opens in the story — {where}',mn:'{where} нээгдэнэ'},   // 몽골어는 동사가 끝 — 「…-д очиход нээгдэнэ」(…에 가면 열려요)
  'play.where.cafe':{ko:'싱크타운 카페 첫 방문',en:'your first visit to the SYNK Town café',mn:'SYNK Таун кафед анх очиход'},
- 'play.where.lesson':{ko:'첫 학습 마치기',en:'finishing your first lesson',mn:'Эхний хичээлээ дуусгахад'},
+ 'play.where.lesson':{ko:'첫 학습을 마치면',en:'after your first lesson',mn:'Эхний хичээлээ дуусгахад'},
  'play.where.stories':{ko:'「처음 만난 날」 이야기',en:'the “First Meeting” story',mn:'«Анх уулзсан өдөр» түүхийг сонсоход'},
  'play.new':{ko:'새로 열림',en:'New',mn:'Шинэ'},
  'play.note':{ko:'한글이 처음이면 ‘한글 만나기’부터 시작해요.',en:'New to Hangul? Start with Meet Hangul.',mn:'Солонгос үсгийг анх удаа үзэж байгаа бол «Солонгос үсэгтэй танилцах»-аас эхлээрэй.'},

@@ -103,6 +103,19 @@ async function capture(browser, base, view) {
   for (let i = 0; i < 30; i += 1) { await run(200); await page.waitForTimeout(10); }
   await take('결과', true);
   await ctx.close();
+  // 시계가 멈춰 있어도 PC가 바쁘면 찍는 시각이 1~3ms 밀려(CPU 90%에서 실측) 조각 자리 · 칼빛이 갈린다 — 정해진 시각에 정확히 찍힌 판만 쓴다
+  const AT = { 뜬조각: 300501, 벤직후: 300501, 벤순간: 300531, 벌어짐: 300881 };
+  let got = null;
+  for (let tries = 0; tries < 15; tries += 1) {
+    got = await capture3d(browser, base, view, errors);
+    if (Object.entries(AT).every(([k, v]) => JSON.parse(got.traces[k]).now === v)) break;
+  }
+  Object.assign(shots, got.shots);
+  return { snaps, shots, errors, traces: got.traces };
+}
+
+async function capture3d(browser, base, view, errors) {
+  const shots = {};
   // 3D 판: 흐름을 멈추고 같은 낱말을 같은 시각에 던진다 — 뜬 조각 · 벤 순간(칼빛 · 두 쪽) · 그 뒤(벌어짐 · 부스러기)
   const ctx3 = await browser.newContext({ viewport: view, deviceScaleFactor: 1, reducedMotion: 'no-preference' });
   await ctx3.addInitScript(() => {
@@ -132,7 +145,7 @@ async function capture(browser, base, view) {
   await p3.clock.runFor(350); await p3.waitForTimeout(250);
   shots.판_벌어짐 = await p3.screenshot(); await trace('벌어짐');
   await ctx3.close();
-  return { snaps, shots, errors, traces };
+  return { shots, traces };
 }
 function diff(a, b) {
   const n = Math.max(a.length, b.length), rows = [];
