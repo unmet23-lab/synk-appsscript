@@ -47,7 +47,7 @@
 {{PLANS.map((p) => `| ${p} | ${R.plans[p].countries.map((c) => `${cname(c)} ${I.countries[c].open}`).join(' · ')} | 나라마다 4실 정원의 ${pct(I.targets.labFill)} | 나라마다 한 해 새 한국 유학생의 ${pct(I.targets.pathShare)} | 전 세계 학습자 + 진출한 나라는 더 닿음 |`).join('\n')}}
 
 - **학원(4실 16반):** 평일 코어 11:00·13:45·15:30·18:15 × 4실 = 16반을 모두 연다(토요일 정규 없음 — 10-28). 「4실 정원」은 설계 좌석(반 16석, 평일 256석)에 맞춘 사람 수 약 {{n0(CF('mn').cap4)}}명이고(라이트 과정은 0.5석이라 사람 수가 좌석보다 많다), 그 {{pct(I.targets.labFill)}}인 약 {{n0(CF('mn').students80)}}명을 개원 달부터 셌다. 그때 좌석은 {{pct(CF('mn').wkdFill80)}}가 차고 반 평균은 약 {{n1(CF('mn').avgClass80)}}석이다. 새 등록은 나간 학생만큼 다시 받는 수이고, 그 절반은 광고로 온다고 보고 광고비를 붙였다.
-- **유학(PATH):** 그 나라에서 한 해 새로 한국에 가는 유학생(D-2·D-4)의 {{pct(I.targets.pathShare)}}를 개원 다음 달부터 맡는다. LAB을 마치고 가는 학생(마치는 학생의 {{pct(I.path.labToKorea['기본'])}})을 먼저 세고 나머지는 LAB 밖 학생이다(계약 한 건 광고 {{mnt(I.path.extCacMNT)}}). 매출은 입학 지원(계약 30 · 합격 30 · 비자 40%, 비자 실패 {{pct(I.path.visaFailRate)}}는 마지막 몫 없음) + 협약 대학 수수료(학위 {{man(I.path.prices.univCommissionKRW)}} · 어학연수 {{man(I.path.prices.univCommissionD4KRW)}}, 협약 비중 {{pct(I.scenarios['기본'].partnerUnivShare)}}) + 정착 + 진학 지원 + 취업 준비. 상담 담당은 상담을 여는 달부터 일 시간 ÷ {{I.path.counselor.monthHours}}시간만큼 반일 단위로 늘리고, 세 명이 넘으면 여덟 명마다 팀장 한 명을 둔다.
+- **유학(PATH):** 그 나라에서 한 해 새로 한국에 가는 유학생(D-2·D-4)의 {{pct(I.targets.pathShare)}}를 개원 다음 달부터 맡는다. LAB을 마치고 가는 학생(마치는 학생의 {{pct(I.path.labToKorea['기본'])}})을 먼저 세고 나머지는 LAB 밖 학생이다(계약 한 건 광고 {{mnt(I.path.extCacMNT)}}). 매출은 입학 지원(계약 30 · 합격 30 · 입학 준비 40%, 입국 실패 {{pct(I.path.visaFailRate)}}는 마지막 몫 없이 셈) + 협약 대학 수수료(학위 {{man(I.path.prices.univCommissionKRW)}} · 어학연수 {{man(I.path.prices.univCommissionD4KRW)}}, 협약 비중 {{pct(I.scenarios['기본'].partnerUnivShare)}}) + 정착 + 진학 지원 + 취업 준비. 상담 담당은 상담을 여는 달부터 일 시간 ÷ {{I.path.counselor.monthHours}}시간만큼 반일 단위로 늘리고, 세 명이 넘으면 여덟 명마다 팀장 한 명을 둔다.
 - **WORLD:** 유료 이용자 = 학습자 × 닿는 비율 × 유료 비율({{pct1(I.world.paidRate)}}). 전 세계 한국어 학습자 약 {{n0(I.world.globalLearners / 1e4)}}만 명(범위 500만~1,500만, 해마다 {{pct(I.world.growth)}}), 진출한 나라는 개원 뒤 해마다 {{I.world.reachActive.map((x) => pct1(x.v)).join(' → ')}}(베트남·우즈베키스탄은 그 {{I.world.countries.vn.reachScale}}배), 나머지는 유료를 연 뒤 해마다 {{I.world.reachOnline.map((x) => pct2(x.v)).join(' → ')}}. 1명 순매출은 진출 나라 {{I.world.countries.mn.netKRW.toLocaleString('ko-KR')}}원, 나머지 {{I.world.netKRWGlobal.toLocaleString('ko-KR')}}원, 원가율 {{pct(I.world.costRate)}}. 근거는 [WORLD 학습자 조사](조사/WORLD_전세계학습자_20261019.md).
 - **나라 값:** 다른 나라는 몽골 값(₮)에 원화 기준 물가 배수(값 · 임금 · 임대 · 공사)를 곱해 셌고, 그 나라 법인세·사회보험·현지 책임자(대표가 상주하지 않음)를 따로 넣었다(0-2절 표).
 - **운영 계획:** 새 나라({{cname('vn')}}·{{cname('uz')}})의 유학 몫만 {{pct1(I.opPlan.newPathShare)}}로 둔다(개원 다음 달부터 그 나라 한 해 새 유학생의 {{pct1(I.opPlan.newPathShare)}}, LAB에서 가는 학생을 먼저 셈, 2030년까지 그대로). 새 나라의 유학 {{pct(I.targets.pathShare)}}는 투자 자료의 성공 시나리오로만 쓰고, 몽골은 운영 계획도 학원 {{pct(I.targets.labFill)}}·유학 {{pct(I.targets.pathShare)}}다 — 모두 10-19 유호님 확정이다. 학원 {{pct(I.targets.labFill)}}·WORLD는 두 판이 같다.
@@ -177,7 +177,7 @@ LAB은 그해 학생 1명·달 평균(강사·임대·운영·성과급 전부 �
 | 12 | LAB 온라인 | 한국 재학 몽골 유학생 TOPIK 4급(졸업 요건) 8주 반 | 유학생 | 30만원(부가세 포함) | 2027-03 | 한국 법인 | 다시 열기(10-02에 열지 않기로 한 온라인 1기와 대상·길이·가격이 거의 같다) | B |
 | 13 | LAB 온라인 | 교재 라이선스 | 다른 학원 | 학생당 월 1만₮ | 2028-09(8권 완성 뒤) | 한국 법인 | 기존(「3년 차 검토」를 앞당김) | C |
 | 14 | PATH | 유학 준비 계획 | 외부 학생 | 30만₮(재원생 무료) | 2027-10 | 몽골 법인 | 기존 + 외부 가격 새로 | A |
-| 15 | PATH | 입학 지원 패키지(계약 30% · 합격 30% · 비자 40%) | 학생·보호자 | 재원생 {{mnt(I.path.prices.admissionLab)}} · 외부 {{mnt(I.path.prices.admissionExternal)}} | 2028-03 | 몽골 법인 | 기존 + 나눠 받기 새로(10-19 재원생 값 올림) | A |
+| 15 | PATH | 입학 지원 패키지(계약 30% · 합격 30% · 입학 준비 40%, 11-04 유호님) | 학생·보호자 | 재원생 {{mnt(I.path.prices.admissionLab)}} · 외부 {{mnt(I.path.prices.admissionExternal)}} | 2028-03 | 몽골 법인 | 기존 + 나눠 받기 새로(10-19 재원생 값 올림) | A |
 | 16 | PATH | 단품: 자기소개서·학업계획서 점검, 모의 면접 | 외부·재원생 | 20만₮ | 2028-01 | 몽골 법인 | 새로(아르곤 제안) | A |
 | 17 | PATH | 협약 대학 수수료(학생에게 알림) | 한국 대학 | 학생당 {{man(I.path.prices.univCommissionKRW)}} | {{I.scenarios['기본'].partnerUnivFrom}} | 한국 법인 | 기존 가정(기본 {{pct(I.scenarios['기본'].partnerUnivShare)}}만 셈) | B |
 | 18 | PATH | 대학 진학 지원(한국 안, 어학연수 → 대학) | 학생 | {{man(I.path.transfer.priceKRW)}} | 입학 {{I.path.transfer.lagMonths}}달 뒤 | 한국 법인 | 새로(10-19) | B |
@@ -284,7 +284,7 @@ LAB은 그해 학생 1명·달 평균(강사·임대·운영·성과급 전부 �
 | 첫 상담 | 목표·예산·시기·한국어 수준 | 무료 | 0.5시간 |
 | 유학 준비 계획 | 학교 후보 비교·3개월 준비표 | 외부 30만₮, 재원생은 진로 1회에 포함 | 3시간 |
 | 단품 | 자기소개서·학업계획서 점검, 모의 면접 | 20만₮ | 2시간 |
-| 입학 지원 패키지 | 학교 3곳, 본인 서류 첨삭, 면접 2회, 비자 서류 점검, 출국 준비. 계약 30% · 합격 30% · 비자 40%로 나눠 받고 비자가 안 나오면 마지막 몫은 받지 않음 | 재원생 {{mnt(I.path.prices.admissionLab)}} · 외부 {{mnt(I.path.prices.admissionExternal)}} | {{I.path.hoursPerAdmission}}시간 |
+| 입학 지원 패키지 | 학교 3곳, 본인 서류 첨삭, 면접 2회, 입학 서류 안내, 출국 준비. 비자 서류는 학생이 등록 행정사에게 직접 맡긴다. 계약 30% · 합격 30% · 입학 준비 40%로 나눠 받고, 마지막 몫은 비자 결과에 묶지 않는다(11-04 유호님, 환불 문구는 변호사 답 뒤) | 재원생 {{mnt(I.path.prices.admissionLab)}} · 외부 {{mnt(I.path.prices.admissionExternal)}} | {{I.path.hoursPerAdmission}}시간 |
 | 협약 대학 수수료 | 협약한 대학만, 학생에게 알리고 동의를 받아 지원 자료 전달 | 대학이 학생당 {{man(I.path.prices.univCommissionKRW)}} | — |
 | 대학 진학 지원(새로) | 어학연수(D-4)로 간 학생이 한국 안에서 대학(D-2)으로 옮길 때 | {{man(I.path.transfer.priceKRW)}} | {{I.path.transfer.hours}}시간 |
 | 정착 패키지 | 공항·숙소 연결·유심·은행·외국인등록 동행(제휴사 운영) | {{man(I.path.prices.settlementKRW)}}, 제휴 실비 {{man(I.path.prices.settlementCostKRW)}} | — |
@@ -315,7 +315,7 @@ LAB은 {{U('기본').year}}년 4실 계산의 학생 1명·달 평균(강사·�
 
 ### 5-3. 가정
 
-- **LAB 학생:** 9월 입문생이 지원 단계에 오르는 개원 반년 뒤({{I.path.labConvFrom}})부터, LAB을 마치는 학생(달마다 재원생 × (1 − 유지율)) 가운데 보수 {{pct(I.path.labToKorea['보수'])}} · 기본 {{pct(I.path.labToKorea['기본'])}} · 상방 {{pct(I.path.labToKorea['상방'])}}가 PATH 입학 지원으로 한국에 간다. 몽골은 한 해 새 유학생(약 7,900명)이 TOPIK 지원(약 12,300건)과 맞먹어 준비하는 사람 대부분이 실제로 간다. LAB 학생에는 EPS 준비생(정부 송출)과 취미 학습자도 섞여 있다.
+- **LAB 학생:** 9월 입문생이 지원 단계에 오르는 개원 반년 뒤({{I.path.labConvFrom}})부터, LAB을 마치는 학생(달마다 재원생 × (1 − 유지율)) 가운데 보수 {{pct(I.path.labToKorea['보수'])}} · 기본 {{pct(I.path.labToKorea['기본'])}} · 상방 {{pct(I.path.labToKorea['상방'])}}가 PATH 입학 지원으로 한국에 간다. 몽골은 2025 유학 비자가 4,973건이고 TOPIK 지원은 약 12,300건(연인원)이다. LAB 학생에는 EPS 준비생(정부 송출)과 취미 학습자도 섞여 있다.
 - **LAB 밖 몽골 학생:** 첫 비자 사례 뒤(2028-03)부터 울란바토르 새 유학생 가운데 기본 {{I.path.extShare['기본'].map((x) => `${pct1(x.v)}(${x.from}~)`).join(' → ')}}를 PATH가 잡는다(보수 {{I.path.extShare['보수'].map((x) => pct1(x.v)).join(' → ')}} · 상방 {{I.path.extShare['상방'].map((x) => pct1(x.v)).join(' → ')}}). 계약 한 건에 광고·설명회 {{mnt(I.path.extCacMNT)}}이 든다.
 - **협약 대학:** 표준협약서가 공식 경로가 되는 쪽으로 보고 기본 {{I.scenarios['기본'].partnerUnivFrom}}부터 입학 지원 학생의 {{pct(I.scenarios['기본'].partnerUnivShare)}}(보수 {{pct(I.scenarios['보수'].partnerUnivShare)}} · 상방 {{pct(I.scenarios['상방'].partnerUnivShare)}})가 협약 대학으로 간다. 수수료는 넉 달 뒤, 비자를 받은 학생(90%)에게서만 받는다.
 - **취업까지:** 한국 체류 몽골 유학생 가운데 한 해 기본 {{I.path.careerUptake['기본'].map((x) => pct1(x.v)).join(' → ')}}가 졸업·취업 준비 4주를 산다(2029년 약 {{n0(MK('기본',2029).career)}}명). 졸업 뒤 구직(D-10) 2,412명 · 전문 취업(E-7) 775명(2026-08)이 그 바깥 단계다. 알선은 하지 않는다.
