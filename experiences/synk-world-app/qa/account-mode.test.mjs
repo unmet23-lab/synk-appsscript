@@ -98,6 +98,24 @@ test('a late read outside the town does not ask twice: homework shows its retry 
  const pending=f.account.request('homework');pending.catch(()=>{});await flush();
  t.mock.timers.tick(12000);await flush();await assert.rejects(pending,{code:'NETWORK_TIMEOUT'});assert.equal(calls(),1);
 });
+test('speaking and writing wait 95 seconds, photo status waits 30, and none of the requests repeat',async t=>{
+ for(const [method,endpoint,deadline] of [
+  ['speakingRequest','world-speaking/feedback',95000],
+  ['writingRequest','world-writing/feedback',95000],
+  ['me2Request','me2-photo/api',30000],
+ ]){
+  let signal;
+  const {f,calls}=await lateFixture(t,(_n,url,init)=>{
+   assert.equal(new URL(url).pathname,'/functions/v1/'+endpoint);
+   assert.equal(init.method,'POST');signal=init.signal;return hang(init);
+  });
+  const timeout=assert.rejects(f.account[method]({action:'status'}),{code:'NETWORK_TIMEOUT'});
+  await flush();assert.equal(calls(),1);
+  t.mock.timers.tick(deadline-1);assert.equal(signal.aborted,false,method);
+  t.mock.timers.tick(1);assert.equal(signal.aborted,true,method);
+  await timeout;assert.equal(calls(),1);t.mock.timers.reset();
+ }
+});
 test('a late write is not sent again: it may have reached the server',async t=>{
  const {f,calls}=await lateFixture(t,(n,url,init)=>hang(init));
  const pending=f.account.request('town/pulse',{method:'POST',body:'{"surfaceId":"w"}'});pending.catch(()=>{});await flush();

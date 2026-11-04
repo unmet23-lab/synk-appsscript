@@ -28,6 +28,7 @@ function fixture({operating=true,owner='alpha',generation=1,recordsFactory=null}
  const context={console,Promise,queueMicrotask,document,client,home,account,operating,localStorage:memory(),sheetResource,window:{confirm:text=>{confirms.push(text);return confirm;}},
   sheet:null,gameLaunch:0,gameRecovery:null,screen:'',EYEBROWS:{},TUTOR_NAMES:{},t:key=>key,escape:String,profilePortrait:()=>'',responsesSection:()=>'',mountResponses:no,signIn:no,
   $:selector=>nodes.get(selector)||{},renderHomeHanger:no,hanger:{},
+  addMe2Row:()=>{captures.photoRowMounts=(captures.photoRowMounts||0)+1;},
   mountClassroomLessons:args=>{captures.lessons=args;return {dispose:()=>disposed.push('lessons')};},
   mountCourseWritingEntry:args=>{captures.course=args;return {hasDraft:()=>draft,dispose:()=>disposed.push('course')};},
   mountClassroomHomework:args=>{captures.homework=args;return {dispose:()=>disposed.push('homework')};},
@@ -55,6 +56,7 @@ function fixture({operating=true,owner='alpha',generation=1,recordsFactory=null}
 
 test('profile mounts course writing alongside lessons/homework and keeps draft/disposal in the current sheet',()=>{
  const f=fixture();f.run('profile()');assert.ok(f.captures.course,'course-writing entry must be mounted');
+ assert.equal(f.captures.photoRowMounts,1);
  assert.equal(f.captures.course.container,f.captures.lessons.container);assert.equal(f.captures.course.transport,f.account.courseRequest);
  assert.equal(f.run('sheet.hasDraft()'),true);f.setDraft(false);assert.equal(f.run('sheet.hasDraft()'),false);
  f.client.generation++;assert.throws(f.captures.course.guard,{code:'ACCOUNT_CHANGED'});

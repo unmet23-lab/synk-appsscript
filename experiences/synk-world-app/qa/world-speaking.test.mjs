@@ -310,7 +310,7 @@ test('운영 통로: 은행 판 지문이 내용과 맞고, talk 함수의 서�
 test('운영 통로: 계정 모드는 SYNK-talk world-speaking 함수(feedback, 95초, 웹만)로 보내고 app-shell이 그 통로를 준다 · 화면은 판 지문을 보낸다',()=>{
  const account=fs.readFileSync(path.join(app,'world-account.mjs'),'utf8');
  assert.ok(account.includes("['speaking','POST']"));assert.ok(account.includes("path==='speaking'?'world-speaking'"));assert.ok(account.includes("path==='writing'||path==='speaking'?'feedback'"));
- assert.ok(account.includes("path==='writing'||path==='speaking'?95000:12000"));assert.ok(account.includes('get supportsSpeaking(){return !native;}'));
+ assert.ok(account.includes('get supportsSpeaking(){return !native;}'));
  assert.match(fs.readFileSync(path.join(app,'world-account.bundle.mjs'),'utf8'),/\["speaking", ?"POST"\][\s\S]*speakingRequest/,'node tools/build-world-account.mjs');
  const shell=fs.readFileSync(path.join(app,'app-shell.mjs'),'utf8');
  assert.ok(shell.includes("operating?(client.snapshot&&account?.supportsSpeaking?{status:()=>account.speakingRequest({action:'status'}),request:payload=>account.speakingRequest(payload)}:null)"));
