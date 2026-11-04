@@ -221,6 +221,44 @@ test('다른 기기가 쓴 값이 호스트에 들어오면 합쳐 두어, 다�
   assert.deepEqual(Object.keys(saved.cards).sort(), ['bank', 'cat', 'library']);
 });
 
+test('탭을 켜 둔 채 다른 기기에서 놀다 돌아와도, 쓰기 전에 다시 읽어 충돌 화면이 판을 끊지 않는다', async () => {
+  const server = fakeServer();
+  const phone = device({ server }), laptop = device({ server });
+  const onLaptop = await open(laptop, { freshMs: 0 }); // 노트북 탭은 그대로 보이는 채다 — 호스트가 저절로 다시 읽지 않는다
+  addCard(onLaptop.album, shot('library'), 'gate', 100); nameCard(onLaptop.album, 'library', 101); onLaptop.saveNow();
+  await settle(laptop);
+  const onPhone = await open(phone);
+  addCard(onPhone.album, shot('cat'), 'gate', 200); nameCard(onPhone.album, 'cat', 201); onPhone.saveNow();
+  await settle(phone);
+  addCard(onLaptop.album, shot('bank'), 'gate', 300); onLaptop.saveNow();
+  await settle(laptop);
+  assert.notEqual(laptop.host.status().phase, 'conflict');
+  const saved = JSON.parse(server.state.records[STORE_KEY]);
+  assert.deepEqual(Object.keys(saved.cards).sort(), ['bank', 'cat', 'library']);
+  assert.equal(saved.cards.cat.named, true);
+});
+
+test('이 판이 모르는 낱말 카드(다음 판에서 더한 낱말)를 계정에서 지우지 않는다', async () => {
+  const later = { ...albumWith(['library', true, 100]) };
+  later.cards.future_word = { place: 'festival', at: 50, named: true, namedAt: 51, kind: 'plate', q: Q, style: 'blade', vertical: false, scene: [] };
+  const merged = mergeAlbums(later, albumWith(['cat', true, 60]));
+  assert.equal(merged.cards.future_word.named, true);
+  sameShape(mergeAlbums(merged, merged), merged);
+  const server = fakeServer();
+  server.set(STORE_KEY, JSON.stringify(later));
+  const d = device({ server });
+  const store = await open(d);
+  await settle(d);
+  const postsAfterOpen = server.posts.length;
+  assert.equal(postsAfterOpen, 0, '받기만 하면 쓰지 않는다');
+  addCard(store.album, shot('cat'), 'gate', 200); store.saveNow();
+  await settle(d);
+  const saved = JSON.parse(server.state.records[STORE_KEY]);
+  assert.equal(saved.cards.future_word?.named, true, '새 낱말 카드가 남는다');
+  assert.ok(saved.cards.cat);
+  assert.equal(JSON.parse(d.storage.getItem(`${STORE_KEY}:${ACCOUNT}`)).cards.future_word?.named, true);
+});
+
 test('뒤에 나온 판(v2)이 쓴 계정 기록은 합쳐 덮지 않는다', async () => {
   const server = fakeServer();
   const future = JSON.stringify({ v: 2, cards: { library: {} } });
