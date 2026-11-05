@@ -344,13 +344,14 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
  }
 
  // ── 알림 ──
- let toastTimer=0,toastQ=[],lateQ=[];
- /** 알림 한 줄 — wait면 지금 떠 있는 알림이 사라진 뒤에 띄운다(늦게 온 다른 옷의 소식이 방금 알림을 덮지 않게). */
+ let toastTimer=0,toastGap=0,toastQ=[],lateQ=[];
+ /** 알림 한 줄 — wait면 지금 떠 있는 알림(과 다음 알림 앞 틈)이 끝난 뒤에 띄운다(늦게 온 다른 옷의 소식이 방금 알림을 덮지 않게). */
  function say(text,{wait=false}={}){
   const el=$('.m2s-toast');if(!el)return;
-  if(wait&&!el.hidden){toastQ.push(text);return;}
+  if(wait&&(!el.hidden||toastGap)){toastQ.push(text);return;}
+  if(toastGap){win.clearTimeout(toastGap);timers.delete(toastGap);toastGap=0;} // 틈에 끼어든 알림 — 기다리던 것은 줄에 남아 이 알림 뒤에 뜬다
   el.textContent=text;el.hidden=false;win.clearTimeout(toastTimer);timers.delete(toastTimer);
-  toastTimer=later(()=>{el.hidden=true;const next=toastQ.shift();if(next)later(()=>say(next),260);},3600);
+  toastTimer=later(()=>{el.hidden=true;if(toastQ.length)toastGap=later(()=>{toastGap=0;const next=toastQ.shift();if(next)say(next);},260);},3600);
  }
  /** 멈춘 주문의 늦은 소식 — 다른 옷을 포장하는 중이면 그 포장이 끝난 뒤에(포장 문구와 같은 자리에 겹쳐 그 옷이 실패한 것으로 읽혔다, 검수 FA1). */
  function sayLate(text){if(busy){lateQ.push(text);return;}say(text,{wait:true});}
@@ -366,7 +367,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
  function rememberUnboxed(job){unboxedNow.add(job);try{const list=unboxedList().filter(x=>x!==job);list.push(job);win.localStorage.setItem(UNBOXED_KEY,JSON.stringify(list.slice(-40)));}catch{/* 막힌 기기는 이번 가게에서만 */}}
  /** 아직 상자를 안 연 도착 — 새로 온 것(새 표시 · 이틀 안에 도착)이고 이 기기에서 연 적이 없을 때. 시트에서 먼저 도착을 봤어도 가게의 상자는 한 번 연다. */
  const recent=at=>{const t=Date.parse(at||'');return Number.isFinite(t)&&Date.now()-t<48*3600e3;};
- function boxedFor(e){const a=e?.arrived;return Boolean(a?.url&&(fresh.has(a.job_id)||a.new||recent(a.arrived_at))&&!unboxed(a.job_id)&&!reduce());}
+ function boxedFor(e){const a=e?.arrived;return Boolean(a?.url&&a.job_id&&(fresh.has(a.job_id)||a.new||recent(a.arrived_at))&&!unboxed(a.job_id)&&!reduce());}
  function queueBoxed(){unboxQ=[];swings.forEach((sw,i)=>{if(sw.querySelector('.m2s-print-tag.is-boxed'))unboxQ.push(i);});}
  /** 상자는 그 옷걸이 아래 바닥 선(옷 판 밑 18px)에 — 상자 그림의 밑면이 그림 높이 82.5% 자리라 그만큼 올려 둔다. 봉을 끌거나 옆 옷이 밀려도 따라간다(frame이 부른다). 자리 재기는 처음 · 크기 바뀔 때만. */
  function placeUnbox(remeasure){
@@ -384,7 +385,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
  function runUnbox(){
   if(unbox||!unboxQ.length||!isOpen()||openI>=0||busy||closing||shop?.dataset.ready!=='yes')return;
   const i=unboxQ[0],tag=swings[i]?.querySelector('.m2s-print-tag.is-boxed'),job=entry(items[i]?.id).arrived?.job_id;
-  if(!tag||!job){unboxQ.shift();runUnbox();return;}
+  if(!tag||!job){tag?.classList.remove('is-boxed');unboxQ.shift();runUnbox();return;}
   // 휴대폰에서 그 옷이 가운데가 아니면 먼저 데려온다(한 번만 — 그사이 손으로 넘기면 그 자리에서 연다)
   if(!fit&&R.nearestIndex(pos,items.length)!==i&&!unboxMoved){unboxMoved=true;dr?.go(i);later(runUnbox,560);return;}
   unboxQ.shift();unboxMoved=false;
@@ -626,7 +627,8 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
    const before=sw.querySelector('.m2s-print-tag,.m2s-tag')?.outerHTML||'',next=tagHtml(item,i);
    if(before!==next){
     sw.querySelector('.m2s-print-tag,.m2s-tag')?.remove();if(next)sw.insertAdjacentHTML('beforeend',next);
-    if(next.includes('m2s-print-tag')&&!before.includes('m2s-print-tag')){if(next.includes('is-boxed')){if(!unboxQ.includes(i))unboxQ.push(i);}else P[i].om+=.45;}
+    if(next.includes('is-boxed')){if(!unboxQ.includes(i))unboxQ.push(i);}
+    else if(next.includes('m2s-print-tag')&&!before.includes('m2s-print-tag'))P[i].om+=.45;
    }
   });
   countMine();setActive(active);wake();
@@ -655,7 +657,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
  function teardown(){
   if(pack){pack.aborted=true;pack.skip?.();}
   teardownRail();
-  for(const id of timers)win.clearTimeout(id);timers.clear();toastQ=[];lateQ=[];
+  for(const id of timers)win.clearTimeout(id);timers.clear();toastQ=[];lateQ=[];toastGap=0;
   win.removeEventListener('resize',relayout);
   sound?.close();sound=null;
   if(dialog){dialog.remove();dialog=null;}
