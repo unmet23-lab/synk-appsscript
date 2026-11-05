@@ -1254,8 +1254,14 @@
 ### OpenAI 플랫폼의 조직 이름은 어느 계정이든 「Personal」이다 — 프로젝트 · 키를 만들기 전에 메일을 본다 (2026-11-05 Claude)
 - 증상: 사진 전용 프로젝트를 만들려고 ego의 플랫폼 화면을 여니 왼쪽 아래에 「Personal」이 보였다. 11-08 크레딧이 들어오는 synk.yuh 조직처럼 보였지만 결제 화면 잔액이 -$0.15로, 기록의 synk.yuh(-$12.15)와 달랐다.
 - 원인: unmet23 · synk.yuh 조직 이름이 둘 다 「Personal」이고, ego의 플랫폼 세션은 10-30 밤 unmet23 키를 만든 뒤로 unmet23에 머물러 있었다. 조직 이름으로는 못 가른다.
-- 고침: `settings/profile`을 열어 입력 칸의 메일을 먼저 읽는다(글자는 늦게 뜨니 몇 초 기다린다). 다른 계정이면 만들지 않는다. 앱 안 브라우저에는 플랫폼 로그인이 없었고, Claude in Chrome은 연결되어 있지 않았다.
+- 고침: `settings/profile`을 열어 입력 칸의 메일을 먼저 읽는다(글자는 늦게 뜨니 몇 초 기다린다). 다른 계정이면 만들지 않는다. 앱 안 브라우저에는 플랫폼 로그인이 없었고, Claude in Chrome은 연결되어 있지 않았다. 계정을 바꿀 때는 왼쪽 아래 「Personal」 단추 → Log out 뒤 뜨는 확인 창 「OpenAI 플랫폼에서 로그아웃할까요?」의 「로그아웃」까지 누른다(메뉴만 누르면 창만 뜨고, `/logout` 주소는 404다). 그러면 `/loggedout`의 계정 고르기가 뜨고, 거기서 synk.yuh를 누르면 비밀번호 없이 들어온다(11-05 유호님 「네, 바꿔」).
 - 다시 확인: 프로필 메일 앞부분이 맞는 계정이고, 결제 화면 잔액이 그 계정 기록과 맞는다.
+
+### 결제 수단 없는 조직의 프로젝트 Limits에는 지출 한도 칸이 없다 · 키 권한 값은 `span[role=button]` 고르기 (2026-11-05 Claude)
+- 증상: synk.yuh 조직(무료 체험)의 사진 프로젝트 `settings/<proj>/limits`에 「Spend」 칸이 없고 Model usage · Rate limits만 보였다. unmet23 조직(Pay as you go)의 같은 화면에는 「Set spend limit」이 있다. 새 키 창에서는 권한 줄 라벨 옆 값(「None」)을 눌러야 고르기가 뜨고, 그 값을 마우스 좌표로 누르자 창이 통째로 닫혔다.
+- 원인: 지출 한도는 결제 정보가 있는 조직에만 열린다. 권한 값은 라벨 옆 `span[role=button]`이고, 누르면 `role=menuitem…` 고르기(Model capabilities: Request · None, Files · Batch: Read · Write · None)가 뜬다. 좌표는 창 밖을 눌렀다.
+- 고침: 결제 수단 없는 조직은 크레딧 밖으로 돈이 안 나가니 프로젝트 한도 대신 서버 상한으로 지킨다. 프로젝트 Limits의 「Allow or block models」에서 「선택한 모델만 허용」으로 쓰는 모델만 연다. 키 창은 값 단추 · 고른 항목에 `data-` 표식을 달고 ego `click`으로 누른다. Model capabilities Request + Files · Batch Write는 「17 selected permissions」로 보인다.
+- 다시 확인: 키 목록에 이름이 생기고, 그 키로 `GET /v1/files` · `GET /v1/batches` · 작은 파일 올리기 · 지우기가 200이다. `GET /v1/models`는 List models 권한을 안 줘도 200이었다 — 막는 데 기대지 않는다.
 
 ### 전용 키를 따로 만들어도 같은 조직이면 월 크레딧이 같이 바닥난다 — 키 목록을 다른 조직 키로 잇는다 (2026-10-30 Claude)
 - 증상: 실시간 상황극 시제품의 돌아보기(피드백)가 `OpenAI 429 credit_balance_exhausted`로 멈췄다. 상황극 전용 키 목록(`~/SYNK_보안/openai_키목록_상황극.json`)에는 「synk.yuh 상황극」 하나뿐이라 넘어갈 다음 키가 없었다.
