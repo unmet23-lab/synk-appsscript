@@ -45,7 +45,7 @@ const data = { updated: catalog.updated, industries: catalog.industries.map(({ i
 
 // 그룹(11-02 아이돌 두 팀): 주소가 #g-<id>라 id는 영문 대문자·숫자만(「-」 없이), 모델 코드 꼴([A-Z]\d\d)과 겹치지 않게.
 // 단체 컷은 원본(src)을 img/groups/<id>/<n>(-s).webp로 굽는다. 단체 컷이 아직 없는 팀은 화면이 멤버 대표 사진을 이어 붙여 대신한다.
-const memberOf = {};
+const memberOf = {}, groupLogos = {};
 for (const g of catalog.groups || []) {
   if (!/^[A-Z][A-Z0-9]{2,}$/.test(g.id) || /^[A-Z]\d\d$/.test(g.id)) throw Error('그룹 id는 영문 대문자·숫자 셋 이상(모델 코드 꼴 말고): ' + g.id);
   const cuts = [];
@@ -60,7 +60,10 @@ for (const g of catalog.groups || []) {
     memberOf[code] = { group: g.id, position, memberColor: { label: color, hex } };
     return { code, position, color, hex };
   });
-  data.groups.push({ id: g.id, name: g.name, nameKo: g.nameKo || '', hanja: g.hanja || '', line: g.line || '', why: g.why || '', look: g.look || '', members, cuts });
+  // 팀 로고(11-06 유호님 「추천판으로」): 그룹로고/<id>.webp가 있으면 팀 카드 · 그룹 머리의 영문 이름 자리에 쓴다(홈페이지판은 assets/ 파일, claude.ai 판은 심음)
+  const logoFile = path.join(here, '그룹로고', `${g.id}.webp`), logo = fs.existsSync(logoFile) ? `assets/logo-${g.id}.webp` : '';
+  if (logo) groupLogos[logo] = logoFile;
+  data.groups.push({ id: g.id, name: g.name, nameKo: g.nameKo || '', hanja: g.hanja || '', line: g.line || '', why: g.why || '', look: g.look || '', logo, members, cuts });
 }
 for (const code of Object.keys(memberOf)) if (!models.some((m) => m.code === code)) throw Error(`그룹 멤버 ${code}가 명단(roster-v2.json)에 없다`);
 
@@ -215,7 +218,7 @@ const withData = (html, d = data) => html.replace('@@DATA@@', () => dataJson(d))
 const big = (p) => (p && p.l ? { ...p, s: p.l } : p);
 const slim = {
   ...data,
-  groups: data.groups.map((g) => ({ ...g, cuts: g.cuts.map(big) })),
+  groups: data.groups.map((g) => ({ ...g, logo: g.logo ? uri(groupLogos[g.logo], 'image/webp') : '', cuts: g.cuts.map(big) })),
   models: data.models.map((m) => ({
     ...m,
     wall: { src: null, poster: m.hero.l, line: m.wall.line }, // 파일 한도 때문에 이 판의 모델 벽은 대표 사진으로 선다
@@ -283,6 +286,7 @@ const homeFiles = {
   ...Object.fromEntries(['SYNKLatin-Regular.woff2', 'SYNKLatin-SemiBold.woff2', 'SYNKLatin-Bold.woff2', 'DMMono.ttf'].map((f) => [`assets/fonts/${f}`, fs.readFileSync(path.join(pulseAssets, f))])),
   'assets/brand-pulse.webp': fs.readFileSync(logoFile),
   'assets/favicon-32.png': fs.readFileSync(faviconFile),
+  ...Object.fromEntries(Object.entries(groupLogos).map(([rel, file]) => [rel, fs.readFileSync(file)])),
 };
 for (const [rel, buf] of Object.entries(homeFiles)) { fs.mkdirSync(path.dirname(path.join(out, rel)), { recursive: true }); fs.writeFileSync(path.join(out, rel), buf); }
 // 공유 미리보기 그림(1200×630): 대표 사진을 명단 순서로 두 줄 칸에(열세 명이면 7 + 6)

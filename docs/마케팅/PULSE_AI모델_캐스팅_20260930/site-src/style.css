@@ -141,19 +141,13 @@ b,strong{font-weight:600}
 .team-go{margin-top:10px;font-size:13px;font-weight:600}
 .team-go span{display:inline-block;transition:transform .2s var(--ease)}
 .team:hover .team-go span{transform:translateX(3px)}
-[data-team="OPALIN"]{color:var(--ink);background:
-  radial-gradient(90% 120% at 0% 0%,var(--opal-sky),transparent 60%),
-  radial-gradient(90% 120% at 100% 0%,var(--opal-rose),transparent 60%),
-  radial-gradient(90% 120% at 100% 100%,var(--opal-lemon),transparent 60%),
-  radial-gradient(90% 120% at 0% 100%,var(--opal-mint),transparent 60%),var(--opal)}
-.team[data-team="OPALIN"]{box-shadow:inset 0 0 0 1px rgba(15,15,15,.08)}
-.team[data-team="OPALIN"] .team-ph{background:rgba(255,255,255,.6)}
-[data-team="OUTBLUE"]{color:#fff;background:linear-gradient(160deg,var(--cobalt) 0%,var(--cobalt-deep) 100%)}
-[data-team="OUTBLUE"] .team-k,[data-team="OUTBLUE"] .team-ko,[data-team="OUTBLUE"] .team-line{color:rgba(255,255,255,.82)}
-/* 가슴의 작은 황동 리벳 패치 하나(11-02 콘셉트 — 갑옷은 패치로만): 오른쪽 위에 4×3 점 */
-.team[data-team="OUTBLUE"] .team-tx::before{content:'';position:absolute;top:22px;right:22px;width:52px;height:38px;pointer-events:none;
-  background-image:radial-gradient(circle,var(--brass) 0 2px,rgba(210,174,98,.35) 2.6px,transparent 3.2px);background-size:13px 13px;background-position:0 0}
-[data-team="OUTBLUE"] .team-dots i{box-shadow:0 0 0 1.5px rgba(255,255,255,.75)}
+/* 팀 칸(11-06): 두 팀 로고가 검정 위에서 만든 판이라 글자 칸을 검정으로 맞춘다 — 오팔 · 칠보가 같은 문법, 장식 점은 로고의 리벳 하나로 대신 */
+[data-team]{color:#fff;background:#000}
+[data-team] .team-k,[data-team] .team-ko,[data-team] .team-line{color:rgba(255,255,255,.82)}
+.team[data-team] .team-ph{background:#111}
+[data-team] .team-dots i{box-shadow:0 0 0 1.5px rgba(255,255,255,.75)}
+.team-name:has(.team-logo){line-height:0}
+.team-logo{display:block;width:min(100%,300px);height:auto;margin:2px 0 4px}
 
 /* 그룹 페이지(#g-<id>) */
 .g-band{padding-bottom:28px}
@@ -175,17 +169,16 @@ b,strong{font-weight:600}
 .g-collage a:hover img{transform:scale(1.02)}
 .g-collage a::after{content:'';position:absolute;left:0;right:0;bottom:0;height:5px;background:var(--mc)}
 .g-collage span{position:absolute;left:12px;bottom:14px;padding:3px 8px;background:rgba(255,255,255,.88);color:var(--ink);font-size:13px;font-weight:600}
-[data-team="OUTBLUE"] .g-cut-bar{color:rgba(255,255,255,.88)}
-[data-team="OUTBLUE"] .sq{box-shadow:inset 0 0 0 1px rgba(255,255,255,.5);color:#fff}
-[data-team="OUTBLUE"] .sq:hover{box-shadow:inset 0 0 0 1.5px #fff}
-[data-team="OUTBLUE"] .btn.ink{background:#fff;color:var(--cobalt-deep)}
-[data-team="OUTBLUE"] .btn.ink:hover{background:#E8EEFF}
-[data-team="OUTBLUE"] .btn.line{box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.85);color:#fff}
-[data-team="OUTBLUE"] .btn.line:hover{background:rgba(255,255,255,.1)}
-[data-team="OUTBLUE"] :focus-visible{outline-color:#fff}
-.g-band[data-team="OUTBLUE"] .g-head{position:relative}
-.g-band[data-team="OUTBLUE"] .g-head::before{content:'';position:absolute;top:28px;right:var(--pad-r);width:68px;height:51px;pointer-events:none;
-  background-image:radial-gradient(circle,var(--brass) 0 2.6px,rgba(210,174,98,.35) 3.2px,transparent 4px);background-size:17px 17px}
+[data-team] .g-cut-bar{color:rgba(255,255,255,.88)}
+[data-team] .sq{box-shadow:inset 0 0 0 1px rgba(255,255,255,.5);color:#fff}
+[data-team] .sq:hover{box-shadow:inset 0 0 0 1.5px #fff}
+[data-team] .btn.ink{background:#fff;color:#000}
+[data-team] .btn.ink:hover{background:#E8EEFF}
+[data-team] .btn.line{box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.85);color:#fff}
+[data-team] .btn.line:hover{background:rgba(255,255,255,.1)}
+[data-team] :focus-visible{outline-color:#fff}
+.g-head h1.g-logo{line-height:0;margin-top:14px}
+.g-head h1.g-logo img{display:block;width:min(100%,640px);height:auto}
 .g-about{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 44px;padding-top:36px;padding-bottom:8px}
 .g-about > div{padding-top:14px;border-top:1.5px solid var(--ink)}
 .g-about p{font-size:15px;color:var(--ink-2);max-width:38em}
@@ -567,9 +560,7 @@ html.wall-on .pkg b.has{background:var(--berry)}
   .team{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;min-height:0}
   .team-ph{aspect-ratio:16/10}
   .team-tx{padding:16px 16px 14px}
-  .team[data-team="OUTBLUE"] .team-tx::before{top:16px;right:16px}
   .g-head{grid-template-columns:minmax(0,1fr)}
-  .g-band[data-team="OUTBLUE"] .g-head::before{top:22px;width:51px;height:34px}
   .g-collage{grid-template-columns:repeat(2,minmax(0,1fr))}
   .g-cut > button img{max-height:none;aspect-ratio:4/3}
   .g-about{grid-template-columns:minmax(0,1fr);gap:24px}

@@ -236,7 +236,7 @@
         <span class="team-ph">${ph}</span>
         <span class="team-tx">
           <span class="team-k">${E(dot(g.hanja, teamKind(ms)))}</span>
-          <b class="team-name">${E(g.name)}</b>
+          <b class="team-name">${g.logo ? `<img class="team-logo" src="${E(g.logo)}" alt="${E(g.name)}" width="1400" height="350">` : E(g.name)}</b>
           <span class="team-ko">${E(g.nameKo)}</span>
           <span class="team-line">${K(g.line)}</span>
           <span class="team-dots">${(g.members || []).map((x) => { const m = byCode(x.code); return m ? `<span><i style="background:${E(hexOk(x.hex))}"></i>${E(m.name)}</span>` : ''; }).join('')}</span>
@@ -466,7 +466,7 @@
           <a class="back" href="#board">← 모델 보드</a>
           <div>
             <p class="team-k">${E(dot(g.hanja, teamKind(ms), `${ms.length}명`))}</p>
-            <h1 id="g-title">${E(g.name)}</h1>
+            <h1 id="g-title"${g.logo ? ' class="g-logo"' : ''}>${g.logo ? `<img src="${E(g.logo)}" alt="${E(g.name)}" width="1400" height="350">` : E(g.name)}</h1>
             <p class="g-ko">${E(g.nameKo)}</p>
             <p class="g-line">${K(g.line)}</p>
           </div>
