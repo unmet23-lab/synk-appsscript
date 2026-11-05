@@ -1,0 +1,9 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Based on Image 1 (the same rainy campus bus stop, the same navy umbrella, the same late-autumn ginkgo season — NO cherry blossoms, NO snow): now a CLOSE-UP of Mongle standing safe and dry under the big navy umbrella, filling the lower-center of the frame (its body about 55% of the image width, bottom of its body at about 85% of the image height). Only the boy's hand holding the umbrella handle and the edge of his navy cardigan sleeve are visible at the right edge. Rain falls all around outside the umbrella, droplets sparkle in the warm light. Mongle's whole front glows rosy pink with a fluttery happy feeling, its glossy bead eyes shining, a few tiny golden felt sparkles and two small plump felt hearts floating just above its head under the umbrella.
+
+Mongle reference for shape only: Image 2 (coral needle-felted wool ghost, scalloped hem with cream running stitch, glossy black bead eyes with no whites, pink felt cheeks, NO mouth, NO arms, NO legs).
+
+Layout: keep the TOP 24% calm and uncluttered (the dark umbrella canopy may fill it softly). Keep the far LEFT 10% plain. Style: the same real handmade needle-felt craft diorama photographed with a macro lens, visible wool fibers, warm light. Absolutely no text, letters, numbers, logos or symbols anywhere.

@@ -1,0 +1,93 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1106,
+  "lufs": -16
+ },
+ "made": "2026-11-05T22:47:42.833Z",
+ "lines": [
+  {
+   "id": "a1",
+   "text": "두근두근…",
+   "dur": 0.785,
+   "syllablesPerSec": 5.1,
+   "src": "a1.wav",
+   "key": "65af9b90ed60b04dcb3d98e6b1713ce7",
+   "words": 1
+  },
+  {
+   "id": "a2",
+   "text": "설레!",
+   "dur": 0.594,
+   "syllablesPerSec": 3.37,
+   "src": "a2.wav",
+   "key": "61c59e3996a8b1fbe9eb963359362150",
+   "words": 1
+  },
+  {
+   "id": "a3",
+   "text": "심쿵!",
+   "dur": 0.706,
+   "syllablesPerSec": 2.83,
+   "src": "a3.wav",
+   "key": "4943d8b8ae2da2da5cdb96bf1c2cf044",
+   "words": 1
+  },
+  {
+   "id": "a4",
+   "text": "반했어…",
+   "dur": 0.659,
+   "syllablesPerSec": 4.55,
+   "src": "a4.wav",
+   "key": "74330c0244e694e830b4af02dfa6d96c",
+   "words": 1
+  },
+  {
+   "id": "a5",
+   "text": "안녕하세요…",
+   "dur": 0.949,
+   "syllablesPerSec": 5.27,
+   "src": "a5.wav",
+   "key": "64923e5d80a915261a560e7688e551c9",
+   "words": 1
+  },
+  {
+   "id": "a6",
+   "text": "네! 있어요!",
+   "dur": 1.026,
+   "syllablesPerSec": 3.9,
+   "src": "a6.wav",
+   "key": "6787ecd7c1c749e9ca39ff684804cd9e",
+   "words": 2
+  },
+  {
+   "id": "b1",
+   "text": "몽글아!",
+   "dur": 1.014,
+   "syllablesPerSec": 2.96,
+   "src": "b1.wav",
+   "key": "f1b390716fa58c7df886299a242aff47",
+   "words": 1
+  },
+  {
+   "id": "b2",
+   "text": "안녕!",
+   "dur": 0.545,
+   "syllablesPerSec": 3.67,
+   "src": "b2.wav",
+   "key": "04646fb3306419aa06839a183d3cdd9c",
+   "words": 1
+  }
+ ]
+}

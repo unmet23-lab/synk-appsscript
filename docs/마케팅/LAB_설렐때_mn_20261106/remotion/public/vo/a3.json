@@ -1,0 +1,40 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a3",
+ "text": "심쿵!",
+ "dur": 0.706,
+ "words": [
+  {
+   "text": "심쿵!",
+   "start": 0.03,
+   "end": 0.706
+  }
+ ],
+ "source": {
+  "key": "4943d8b8ae2da2da5cdb96bf1c2cf044",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1108,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 504
+ }
+}

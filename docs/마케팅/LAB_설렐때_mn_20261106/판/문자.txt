@@ -1,0 +1,14 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit Image 1: keep exactly the same campus walkway, same red-brick library, same ginkgo trees, same camera, same framing, same golden-hour light, and the same Mongle in the same spot and the same size. Season stays late autumn with golden ginkgo leaves (NO cherry blossoms, NO snow).
+
+Change only this:
+- The boy has walked away: he is now small in the far background on the path near the library steps, seen from behind with his brown backpack, walking away. He is no longer in the foreground.
+- A smartphone in a cream felt case floats in the air right next to Mongle's right side (Mongle has no arms — the phone simply hovers beside its body at the height of its eyes), screen turned toward the camera. The phone screen glows bright plain white and is completely blank (no text, no icons, no numbers — text will be added later). A tiny felt vibration motion line on each side of the phone, as if it just buzzed.
+- Mongle is still flushed rosy red and still a little stiff, its bead eyes turned toward the glowing phone.
+
+Mongle reference for shape only: Image 2 (coral needle-felted wool ghost, scalloped hem with cream running stitch, glossy black bead eyes with no whites, pink felt cheeks, NO mouth, NO arms, NO legs).
+
+Layout: keep the TOP 24% calm and uncluttered. Style: the same real handmade needle-felt craft diorama photographed with a macro lens, visible wool fibers, warm natural light. Absolutely no text, letters, numbers, logos or symbols anywhere.

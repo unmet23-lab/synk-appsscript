@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a6",
+ "text": "네! 있어요!",
+ "dur": 1.026,
+ "words": [
+  {
+   "text": "네!",
+   "start": 0.02,
+   "end": 0.141
+  },
+  {
+   "text": "있어요!",
+   "start": 0.423,
+   "end": 1.026
+  }
+ ],
+ "source": {
+  "key": "6787ecd7c1c749e9ca39ff684804cd9e",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1107,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 472
+ }
+}

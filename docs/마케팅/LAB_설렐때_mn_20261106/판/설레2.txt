@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit Image 1: keep exactly the same rainy bus stop, the same big navy umbrella held by the boy's hand at the right edge, the same camera and the same framing. Change only Mongle: it is now floating a little off the wet ground under the umbrella (a small gap and a soft shadow below its scalloped hem), its whole body glowing brighter rosy pink like a little lantern, many more tiny golden felt sparkles and small plump felt hearts swirling around it under the umbrella, its glossy black bead eyes shining. Rain keeps falling outside the umbrella. NO mouth, NO arms, NO legs.
+
+Style: real handmade needle-felt craft diorama photographed with a macro lens, visible wool fibers, warm natural light, gentle depth of field, premium and cinematic. Absolutely no text, letters, numbers, logos or symbols anywhere (no speech bubbles — they will be added later). Season stays late autumn with golden ginkgo leaves (NO cherry blossoms, NO snow).

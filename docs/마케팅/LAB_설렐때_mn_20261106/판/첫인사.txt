@@ -1,0 +1,11 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Based on Image 1 (the same campus walkway in front of the red-brick library, the same golden ginkgo trees, the same golden-hour light, the same boy and the same Mongle), make a much CLOSER shot from a slightly different angle: Mongle fills the lower-left and center of the frame (its body about 60% of the image width, bottom of its body at about 88% of the image height), frozen stiff and perfectly upright like a soldier, its whole front flushed deep hot red, two small felt sweat drops flying off its head, its wool fibers bristling as if trembling, glossy black bead eyes wide open and fixed straight ahead. On the RIGHT edge of the frame only the boy's raised waving hand and the cuff of his navy cardigan sleeve come into the frame (cut off by the edge), waving at Mongle; his face is not in the frame. The background is the softly blurred golden ginkgo trees and the library.
+
+Mongle reference for shape only: Image 2 (coral needle-felted wool ghost, scalloped hem with cream running stitch, glossy black bead eyes with no whites, pink felt cheeks, NO mouth, NO arms, NO legs).
+
+Layout: keep the TOP 22% calm (soft blurred ginkgo and sky) — a title will be added there. Leave some empty air at the upper-left above Mongle for a thought bubble that will be added later.
+
+Style: real handmade needle-felt craft diorama photographed with a macro lens, visible wool fibers, warm natural light, gentle depth of field, premium and cinematic. Absolutely no text, letters, numbers, logos or symbols anywhere (no speech bubbles — they will be added later). Season stays late autumn with golden ginkgo leaves (NO cherry blossoms, NO snow).

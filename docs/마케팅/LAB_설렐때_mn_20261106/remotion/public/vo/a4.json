@@ -1,0 +1,40 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a4",
+ "text": "반했어…",
+ "dur": 0.659,
+ "words": [
+  {
+   "text": "반했어…",
+   "start": 0.02,
+   "end": 0.659
+  }
+ ],
+ "source": {
+  "key": "74330c0244e694e830b4af02dfa6d96c",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1106,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 243
+ }
+}

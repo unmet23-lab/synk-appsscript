@@ -1,0 +1,15 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit Image 1: keep exactly the same campus walkway, same red-brick library, same ginkgo trees, same camera, same framing and the same golden-hour light. Season stays late autumn with golden ginkgo leaves (NO cherry blossoms, NO snow).
+
+Change only this:
+- The boy is gone from the foreground (the path near the library steps is empty, or he is a tiny far-away figure from behind).
+- Mongle (same coral felt ghost, same size) has bounced up into the air with joy: it floats about one Mongle-height above the path, slightly squashed-and-stretched upward, its whole body glowing hot rosy pink-red, small felt motion puffs on the path below it. Its glossy black bead eyes are squeezed into happy upside-down crescents (like Image 2, the smiling-eyes reference) — still no mouth, no arms, no legs.
+- A huge joyful explosion bursts out of the top of Mongle's head and fills the upper 60% of the image: needle-felted wool fireworks in rose pink, coral and golden yellow, many plump felt hearts of different sizes, little golden felt star sparkles, and golden ginkgo leaves swirling up with them — like the felt fireworks in Image 3, but bigger and more explosive, radiating outward from Mongle's head like one big firework.
+- A smartphone in a cream felt case still floats right beside Mongle, its screen glowing plain white and blank.
+
+Mongle reference for shape only: Image 2.
+
+Style: the same real handmade needle-felt craft diorama photographed with a macro lens, visible wool fibers, warm light plus a warm pink glow from the fireworks, premium and cinematic. Absolutely no text, letters, numbers, logos or symbols anywhere.

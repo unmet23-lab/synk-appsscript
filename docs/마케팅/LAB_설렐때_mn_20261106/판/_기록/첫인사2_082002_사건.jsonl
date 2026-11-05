@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1ae03-2051-7811-abb1-5025cb004132"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll keep Mongle and the autumn setting in place, and bring the same smiling boy into the right side.\n\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"A smiling felt boy waves hello to frozen Mongle beneath golden autumn ginkgo trees."}}
+{"type":"turn.completed","usage":{"input_tokens":72322,"cached_input_tokens":53760,"cache_write_input_tokens":0,"output_tokens":1421,"reasoning_output_tokens":383}}
