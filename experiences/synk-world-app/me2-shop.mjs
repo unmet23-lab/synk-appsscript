@@ -112,7 +112,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   const cs=win.getComputedStyle(slots[0]);
   slotW=parseFloat(cs.width);artH=parseFloat(cs.height);railW=rail.clientWidth;
   const canFit=Boolean(win.matchMedia?.('(hover: hover) and (pointer: fine)').matches)&&slotW*items.length+slotW*1.4<=railW;
-  if(canFit!==fit){fit=canFit;rail.classList.toggle('is-fit',fit);if(fit)rail.scrollLeft=0;else{rail.scrollLeft=active*slotW;pos=active;lastPos=pos;lastCenter=active;}}
+  if(canFit!==fit){fit=canFit;rail.classList.toggle('is-fit',fit);if(fit)rail.scrollLeft=0;else{rail.scrollLeft=active*slotW;pos=active;lastPos=pos;lastCenter=active;dr?.refresh();}}
   rodY=rail.offsetTop+22+artH*.025+Math.max(2,artH*.006);
   Starget=0; // 봉은 멈추면 곧다 — 처짐은 옷이 떨어져 걸릴 때만(금속 봉이 휜 채 멈추면 빨랫줄로 읽힌다, 11-05 심사)
   rod.setAttribute('viewBox',`0 0 ${floor.clientWidth} ${floor.clientHeight}`);
@@ -246,6 +246,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
  function ghost(i){slots.forEach((li,j)=>li.classList.toggle('is-ghost',Math.abs(j-i)>1));}
  function openDetail(i){
   if(busy||!items[i])return;
+  finishClosing();
   openI=i;side='front';th=0;thTarget=0;thV=0;
   setFaces(i);fillInfo(i);setSide('front',true);
   stage.hidden=false;shop.dataset.mode='detail';ghost(i);sound?.pick();
@@ -261,19 +262,24 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   runTurn();
   $('.m2s-close').focus({preventScroll:true});
  }
+ let closing=null; // 닫는 움직임이 도는 동안의 {anim, finish} — 그 사이 다시 열면 먼저 마친다(검수 C1)
+ function finishClosing(){if(!closing)return;const c=closing;closing=null;c.anim?.cancel();c.finish();}
  function closeDetail({quick=false}={}){
-  if(openI<0)return;
+  if(openI<0||closing)return;
   const i=openI;
-  const back=()=>{stage.hidden=true;hangers[i].style.visibility='';openI=-1;P[i].om+=.35;wake();if(isOpen())hangers[i].focus({preventScroll:true});};
+  let done=false;
+  const back=()=>{if(done)return;done=true;if(closing?.i===i)closing=null;stage.hidden=true;hangers[i].style.visibility='';openI=-1;P[i].om+=.35;wake();if(isOpen())hangers[i].focus({preventScroll:true});};
   shop.dataset.mode='';turnWrap.dataset.view='garment';sound?.drop();
   if(quick||reduce())return back();
   const from=turnWrap.getBoundingClientRect(),to=swings[i].querySelector('img').getBoundingClientRect();
   const dx=to.left+to.width/2-(from.left+from.width/2),dy=to.top-from.top,sc=to.width/Math.max(1,from.width);
   thTarget=Math.round(th/360)*360;
-  turnWrap.animate([{transform:'none'},{transform:`translate(${dx}px,${dy}px) scale(${sc})`}],{duration:480,easing:'cubic-bezier(.4,0,.2,1)'}).finished.then(back,back);
+  const anim=turnWrap.animate([{transform:'none'},{transform:`translate(${dx}px,${dy}px) scale(${sc})`}],{duration:480,easing:'cubic-bezier(.4,0,.2,1)'});
+  closing={i,anim,finish:back};
+  anim.finished.then(back,back);
  }
  function step(d,to){
-  if(openI<0||busy)return;
+  if(openI<0||busy||closing)return; // 닫는 중에는 넘기지 않는다
   const n=to??clamp(openI+d,0,items.length-1);
   if(to!==undefined)d=Math.sign(to-openI)||1;
   if(n===openI){swV+=d*.9;sound?.bump();runTurn();return;}
@@ -329,6 +335,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
  }
  function holdSay(){const a=$('.m2s-pack-text'),b=$('.m2s-pack-tr');a.textContent=SHOP_TEXT.ko.hold;b.textContent=L()==='ko'?'':t('hold');b.hidden=L()==='ko';}
  function clearPack(){
+  if(pack)pack.cleared=true;
   const parcel=$('.m2s-parcel');
   for(const el of [parcel,$('.m2s-parcel-open'),$('.m2s-parcel-closed'),turnWrap])el.getAnimations().forEach(a=>a.cancel());
   parcel.hidden=true;$('.m2s-pack').hidden=true;$('.m2s-tissue').classList.remove('is-on','is-wrapped');$('.m2s-label').classList.remove('is-on');parcel.classList.remove('is-closed');
@@ -342,12 +349,14 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   return card?(card.state==='delayed'?{kind:'late',date:card.arrives_after}:{kind:'sent'}):{kind:'fail'};
  }
  async function order(){
-  if(busy||openI<0||closed())return;
+  if(busy||openI<0||closed()||closing)return;
   busy=true;
   const i=openI,item=items[i],id=item.id;
   const result=Promise.resolve().then(()=>actions.order(id)).then(out=>({out}),error=>({error}));
   let answered=null;result.then(r=>{answered=r;});
-  const run=pack={aborted:false,skip:null};
+  const run=pack={aborted:false,skip:null,cleared:false};
+  // 단계 안의 작은 타이머 — 포장을 멈추거나 치운 뒤에는 아무것도 하지 않는다(검수 C2: 늦게 붙은 is-off가 옷을 잘린 채 남겼다)
+  const beat=(fn,ms)=>later(()=>{if(pack===run&&!run.aborted&&!run.cleared)fn();},ms);
   const wait=ms=>new Promise(r=>{const tid=later(r,ms);run.skip=()=>{win.clearTimeout(tid);timers.delete(tid);r();};});
   sound?.pick();
   const parcel=$('.m2s-parcel'),pOpen=$('.m2s-parcel-open'),pClosed=$('.m2s-parcel-closed'),tissue=$('.m2s-tissue'),label=$('.m2s-label');
@@ -364,8 +373,8 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
    for(const st of steps){
     if(skipped||run.aborted)break;
     packSay(st.id);
-    if(st.id==='lift'){turnWrap.style.setProperty('--line-to','-40%');later(()=>turnWrap.classList.add('is-off'),220);sound?.pick();}
-    else if(st.id==='wrap'){tissue.classList.add('is-on');sound?.tissue();later(()=>sound?.tissue(),380);later(()=>tissue.classList.add('is-wrapped'),520);}
+    if(st.id==='lift'){turnWrap.style.setProperty('--line-to','-40%');beat(()=>turnWrap.classList.add('is-off'),220);sound?.pick();}
+    else if(st.id==='wrap'){tissue.classList.add('is-on');sound?.tissue();beat(()=>sound?.tissue(),380);beat(()=>tissue.classList.add('is-wrapped'),520);}
     else if(st.id==='box'){
      parcel.hidden=false;pOpen.style.opacity=1;pClosed.style.opacity=0;
      const tw=turnWrap.getBoundingClientRect(),pr=parcel.getBoundingClientRect();
@@ -375,7 +384,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
     }else if(st.id==='tape'){
      sound?.thump();parcel.classList.add('is-closed');
      pClosed.animate([{opacity:0},{opacity:1}],{duration:160,fill:'forwards'});pOpen.animate([{opacity:1},{opacity:0}],{duration:160,delay:60,fill:'forwards'});
-     parcel.animate([{transform:'none'},{transform:'scale(1.04,.96)'},{transform:'none'}],{duration:260});later(()=>sound?.tape(),260);
+     parcel.animate([{transform:'none'},{transform:'scale(1.04,.96)'},{transform:'none'}],{duration:260});beat(()=>sound?.tape(),260);
     }else if(st.id==='label'){label.classList.add('is-on');sound?.label();}
     await wait(st.ms);
    }
@@ -562,7 +571,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
     dialog.showModal();
     measure();for(const p of P)p.x=null;
     // 휴대폰 봉은 넷째 옷에서 시작한다(양옆이 보이게) — 대화 상자를 띄운 뒤에야 칸 너비를 잴 수 있다.
-    const start=Math.min(3,items.length-1);if(!fit){rail.scrollLeft=start*slotW;pos=start;lastPos=pos;setActive(start);lastCenter=start;}else{setActive(0);lastCenter=-1;}
+    const start=Math.min(3,items.length-1);if(!fit){rail.scrollLeft=start*slotW;pos=start;lastPos=pos;setActive(start);lastCenter=start;dr?.refresh();}else{setActive(0);lastCenter=-1;}
     drawRod();
     const imgs=hangers.map(h=>h.querySelector('img'));
     await Promise.race([Promise.all(imgs.map(img=>img.decode?img.decode().catch(()=>{}):null)),new Promise(r=>later(r,1500))]);

@@ -72,7 +72,12 @@
     return sag * (1 - u * u);
   }
 
-  const reducedMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // 기기 설정 또는 앱 설정(WORLD :root[data-reduced=true] · data-motion=reduced)
+  const reducedMotion = () => {
+    const root = typeof document !== 'undefined' ? document.documentElement : null;
+    if (root && (root.dataset.reduced === 'true' || root.dataset.motion === 'reduced')) return true;
+    return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  };
 
   /**
    * 스크롤 줄 하나에 붙인다.
@@ -209,7 +214,7 @@
       go,
       center: () => center,
       lock(on) { locked = !!on; stopTween(); el.classList.toggle('is-locked', locked); },
-      refresh() { slot = slotOf(); center = -1; report(); },
+      refresh() { slot = slotOf(); center = -1; report(); wake(); }, // 멈춘 채 부르면 loop가 안 돌아 onSettle이 안 왔다
       destroy() {
         dead = true; hold = null;
         stopTween();

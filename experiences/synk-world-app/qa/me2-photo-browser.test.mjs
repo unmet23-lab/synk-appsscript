@@ -296,7 +296,8 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   };
   await openShop();
   assert.equal(await page.locator(`${SHOP} .m2s-hanger`).count(),8,'옷 여덟 벌');
-  assert.equal(await page.evaluate(()=>!!document.querySelector('#world-panel').inert||document.querySelector('#world-panel').matches(':modal')),true);
+  // 가게는 시트 위 겹 모달 — 화면 가운데를 누르면 가게가 받고, 시트 단추는 눌리지 않는다(앞 단언은 늘 참이었다, 검수 D2)
+  assert.equal(await page.evaluate(sel=>{const d=document.querySelector(sel),hit=document.elementFromPoint(innerWidth/2,innerHeight/2);return d.contains(hit)&&!document.querySelector('#world-panel').contains(hit);},SHOP),true,'가게가 시트를 덮는다');
   assert.equal(await page.locator(`${SHOP} :text("원")`).count(),0,'값은 없다');
   await shopBoth('09-가게');
   await shopHanger('outfit-denim').click();await page.locator(`${SHOP} .m2s-stage:not([hidden])`).waitFor();

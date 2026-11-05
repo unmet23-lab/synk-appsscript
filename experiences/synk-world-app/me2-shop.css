@@ -8,7 +8,7 @@
 .m2s{
   --sans:var(--w-sans,'World Latin','World Cyrillic','World SUIT',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif);
   --mono:var(--w-mono,'World Mono','World SUIT',ui-monospace,monospace);
-  --ink:#17181C;--ink-2:#5A5B61;--ink-3:#7A7B80;--line:rgba(23,24,28,.12);
+  --ink:#17181C;--ink-2:#5A5B61;--ink-3:#68696E;--line:rgba(23,24,28,.12);
   --bg:#F6F5F1;--paper:#FFFFFF;--tint-top:#F7F6F2;--tint-bottom:#F1EFE9;
   --ease:cubic-bezier(.2,.75,.2,1);--ease-in:cubic-bezier(.55,0,.75,.2);
   /* 옷 판 760×1040, 고리 끝 26px(2.5%) */
@@ -272,7 +272,8 @@
 
 /* 휴대폰 */
 @media (max-width:760px){
-  :root{--art-h:min(47vh,420px);--slot:calc(var(--art-w)*.5)}
+  /* 크기 변수는 .m2s가 들고 있다 — :root에 두면 .m2s의 PC 값에 져서 휴대폰 옷이 PC 크기로 남는다 */
+  .m2s{--art-h:min(47vh,420px);--slot:calc(var(--art-w)*.5)}
   .m2s-mark span:first-child{display:none}
   .m2s-mark span+span::before{display:none}
   .m2s-floor{align-content:start;padding-top:calc(7vh + 64px)}
@@ -282,13 +283,13 @@
   .m2s-hint{left:18px;right:auto}
   .m2s-step{display:none}
   .m2s-turn-wrap{--big-h:min(52vh,470px)}
-  .m2s-stage{display:block;overflow-y:auto;overscroll-behavior:contain;padding:calc(max(14px,env(safe-area-inset-top)) + 50px) 20px 0}
+  .m2s-stage{display:block;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;padding:calc(max(14px,env(safe-area-inset-top)) + 50px) 20px 0}
   .m2s-stage .m2s-turn-wrap{margin:0 auto}
   .m2s-close{position:fixed}
   .m2s-info{margin:8px auto 0;padding-bottom:max(18px,env(safe-area-inset-bottom))}
   .m2s-spec{text-align:left}
   .m2s-info{justify-items:start;text-align:left;padding-bottom:96px}
-  .m2s-side{order:-1;align-self:center;margin:2px 0 14px} /* 앞 · 뒤 · 입은 나는 사진 바로 아래 — 설명 밑에 두면 눌러도 바뀌는 사진이 화면 밖이다 */
+  .m2s-side{order:-1;justify-self:center;margin:2px 0 14px} /* 앞 · 뒤 · 입은 나는 사진 바로 아래 — 설명 밑에 두면 눌러도 바뀌는 사진이 화면 밖이다 */
   .m2s[data-mode=detail] .m2s-top{min-height:58px;background:var(--bg);box-shadow:0 1px 0 var(--line)}
   .m2s-actions{position:sticky;bottom:0;z-index:2;margin-top:-20px;padding:48px 0 max(12px,env(safe-area-inset-bottom));background:linear-gradient(rgba(246,245,241,0),var(--bg) 46px);pointer-events:none}
   .m2s-actions>*{pointer-events:auto} /* 위 바탕 페이드가 앞 · 뒤 탭의 누름을 가로채지 않게(11-05 시험에서 잡음) */
@@ -326,11 +327,14 @@
 .m2s-tag[data-state=failed] i{background:#B23A2C}
 .m2s-tag[data-state=delayed] i{background:#8A6A2B}
 .m2s-pack-tr{font-size:13px;color:var(--ink-2)}
-.m2s-toast{max-width:calc(100vw - 32px);white-space:normal;text-align:center}
+/* 가운데 맞춤은 translate로 — transform을 쓰면 떠오르는 움직임(transform)이 덮어 왼쪽으로 튄다. 폭은 글에 맞추되 화면 안 */
+.m2s-toast{transform:none;translate:-50% 0;width:max-content;max-width:calc(100vw - 32px);white-space:normal;text-align:center}
 /* 움직임 줄이기 — 앱 설정 또는 기기 설정 */
 :root[data-reduced=true] .m2s-dialog,:root[data-motion=reduced] .m2s-dialog{animation:none}
 :root[data-reduced=true] .m2s :is(.m2s-floor,.m2s-info>*,.m2s-tag i,.m2s-track li,.m2s-toast,.m2s-pack-text,.m2s-veil),:root[data-motion=reduced] .m2s :is(.m2s-floor,.m2s-info>*,.m2s-tag i,.m2s-track li,.m2s-toast,.m2s-pack-text,.m2s-veil){transition:none;animation:none}
+:root[data-reduced=true] .m2s :is(.m2s-track li::before,.m2s-go .dot),:root[data-motion=reduced] .m2s :is(.m2s-track li::before,.m2s-go .dot){animation:none}
 @media (prefers-reduced-motion:reduce){
   .m2s-dialog{animation:none}
   .m2s :is(.m2s-floor,.m2s-info>*,.m2s-tag i,.m2s-track li,.m2s-toast,.m2s-pack-text,.m2s-veil){transition:none;animation:none}
+  .m2s :is(.m2s-track li::before,.m2s-go .dot){animation:none}
 }
