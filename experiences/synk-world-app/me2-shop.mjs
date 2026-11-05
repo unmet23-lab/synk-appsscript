@@ -29,6 +29,8 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
  const t=(key,vars)=>{let out=SHOP_TEXT[L()][key]??SHOP_TEXT.ko[key]??key;for(const [k,v] of Object.entries(vars||{}))out=out.replaceAll(`{${k}}`,v);return out;};
  const tx=id=>ITEM_TEXT[L()]?.[id]||ITEM_TEXT.ko[id];
  const kx=id=>ITEM_TEXT.ko[id];
+ /** 옷 이름을 넣은 알림 — 한국어는 받침에 따라 은/는 · 이/가를 고른다. */
+ const named=(key,id)=>{const name=tx(id).name,c=name.charCodeAt(name.length-1),tail=c>=0xAC00&&c<=0xD7A3&&(c-0xAC00)%28!==0;return t(key,{name,'은':tail?'은':'는','이':tail?'이':'가'});};
  const reduce=()=>{const r=doc.documentElement;return r.dataset.reduced==='true'||r.dataset.motion==='reduced'||Boolean(win.matchMedia?.('(prefers-reduced-motion: reduce)').matches);};
  const later=(fn,ms)=>{const id=win.setTimeout(()=>{timers.delete(id);if(!disposed)fn();},ms);timers.add(id);return id;};
  const closed=()=>view?.status==='off';
@@ -243,13 +245,15 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
  }
  function markSide(s){for(const b of dialog.querySelectorAll('.m2s-side button'))b.setAttribute('aria-checked',String(b.dataset.side===s));$('.m2s-side').dataset.on=s;}
  function setFaces(i){faceF.src=art(items[i],'front');faceB.src=art(items[i],'back');}
+ /** 자세히 · 포장 동안 봉은 뒤에 흐리게 깔린 그림이다 — inert로 Tab · 화면 읽기에서 뺀다(포장 중 봉 옷걸이가 Tab에 잡혔다). */
+ function setMode(m){shop.dataset.mode=m;floor.inert=m==='detail';}
  function ghost(i){slots.forEach((li,j)=>li.classList.toggle('is-ghost',Math.abs(j-i)>1));}
  function openDetail(i){
   if(busy||!items[i])return;
   finishClosing();
   openI=i;side='front';th=0;thTarget=0;thV=0;
   setFaces(i);fillInfo(i);setSide('front',true);
-  stage.hidden=false;shop.dataset.mode='detail';ghost(i);sound?.pick();
+  stage.hidden=false;setMode('detail');ghost(i);sound?.pick();
   const from=swings[i].querySelector('img').getBoundingClientRect(),to=turnWrap.getBoundingClientRect();
   hangers[i].style.visibility='hidden';
   sw=P[i].th;swV=P[i].om+(Math.random()<.5?-.5:.5);
@@ -269,7 +273,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   const i=openI;
   let done=false;
   const back=()=>{if(done)return;done=true;if(closing?.i===i)closing=null;stage.hidden=true;hangers[i].style.visibility='';openI=-1;P[i].om+=.35;wake();if(isOpen())hangers[i].focus({preventScroll:true});};
-  shop.dataset.mode='';turnWrap.dataset.view='garment';sound?.drop();
+  setMode('');turnWrap.dataset.view='garment';sound?.drop();
   if(quick||reduce())return back();
   const from=turnWrap.getBoundingClientRect(),to=swings[i].querySelector('img').getBoundingClientRect();
   const dx=to.left+to.width/2-(from.left+from.width/2),dy=to.top-from.top,sc=to.width/Math.max(1,from.width);
@@ -320,8 +324,17 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
  }
 
  // ── 알림 ──
- let toastTimer=0;
- function say(text){const el=$('.m2s-toast');if(!el)return;el.textContent=text;el.hidden=false;win.clearTimeout(toastTimer);timers.delete(toastTimer);toastTimer=later(()=>{el.hidden=true;},3600);}
+ let toastTimer=0,toastQ=[],lateQ=[];
+ /** 알림 한 줄 — wait면 지금 떠 있는 알림이 사라진 뒤에 띄운다(늦게 온 다른 옷의 소식이 방금 알림을 덮지 않게). */
+ function say(text,{wait=false}={}){
+  const el=$('.m2s-toast');if(!el)return;
+  if(wait&&!el.hidden){toastQ.push(text);return;}
+  el.textContent=text;el.hidden=false;win.clearTimeout(toastTimer);timers.delete(toastTimer);
+  toastTimer=later(()=>{el.hidden=true;const next=toastQ.shift();if(next)later(()=>say(next),260);},3600);
+ }
+ /** 멈춘 주문의 늦은 소식 — 다른 옷을 포장하는 중이면 그 포장이 끝난 뒤에(포장 문구와 같은 자리에 겹쳐 그 옷이 실패한 것으로 읽혔다, 검수 FA1). */
+ function sayLate(text){if(busy){lateQ.push(text);return;}say(text,{wait:true});}
+ function flushLate(){if(busy)return;const list=lateQ;lateQ=[];for(const text of list)say(text,{wait:true});}
  function countMine(){const n=items.filter(item=>{const e=entry(item.id);return e.arrived||e.flight;}).length;const c=$('.m2s-box-count');c.dataset.count=n;c.textContent=n;$('.m2s-box').setAttribute('aria-label',`${t('closetCount',{n})} — ${t('close')}`);}
  function seen(card){if(!card?.new||fresh.has(`sent:${card.job_id}`))return;fresh.add(`sent:${card.job_id}`);fresh.add(card.job_id);Promise.resolve().then(()=>actions.seen?.(card.job_id)).catch(()=>fresh.delete(`sent:${card.job_id}`));}
 
@@ -397,12 +410,12 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   }
   // 「출발」 앞 — 답이 아직이면 기다린다(닫기 · Esc는 된다). 3초 넘으면 「조금만 기다려 주세요」.
   if(!answered&&!run.aborted&&!reduce()){later(()=>{if(!answered&&!run.aborted&&pack===run){holdSay();shop.dataset.holding='yes';}},400);}
-  // 멈춘 뒤에 온 답 — 보내지 못했으면 가게가 열려 있을 때 한 번 알린다(보낸 것은 다음 상태로 꼬리표가 붙는다)
-  const lateSay=o=>{if(isOpen()&&o.kind!=='sent'&&o.kind!=='late')say(o.kind==='off'?t('off'):o.kind==='full'?t('full'):t('packFail'));};
+  // 멈춘 뒤에 온 답 — 보내지 못했으면 가게가 열려 있을 때 그 옷 이름과 함께 한 번 알린다(보낸 것은 다음 상태로 꼬리표가 붙는다)
+  const lateSay=o=>{if(isOpen()&&o.kind!=='sent'&&o.kind!=='late')sayLate(named(o.kind==='off'?'lateOff':o.kind==='full'?'lateFull':'lateFail',id));};
   const r=await Promise.race([result,new Promise(res=>{run.skip=()=>res(null);})]);
   if(run.aborted||!r){if(pack===run){busy=false;pack=null;}result.then(late=>outcomeOf(id,late)).then(lateSay,()=>{});return;} // 멈춘 주문의 늦은 정리가 그 뒤 새 주문의 상태를 지우지 않게
   const outcome=await outcomeOf(id,r);
-  if(run.aborted||!isOpen()){if(pack===run){busy=false;pack=null;}lateSay(outcome);return;}
+  if(run.aborted||!isOpen()){if(pack===run){busy=false;pack=null;}lateSay(outcome);flushLate();return;}
   if(outcome.kind==='sent'&&!reduce()){
    packSay('go');shop.dataset.flying='yes';
    const bb=$('.m2s-box').getBoundingClientRect(),now=parcel.getBoundingClientRect();
@@ -418,7 +431,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   busy=false;pack=null;
   if(outcome.kind==='sent'||outcome.kind==='late'){
    const box=$('.m2s-box');box.classList.remove('is-bump');void box.offsetWidth;box.classList.add('is-bump');sound?.drop();
-   stage.hidden=true;shop.dataset.mode='';hangers[i].style.visibility='';openI=-1;
+   stage.hidden=true;setMode('');hangers[i].style.visibility='';openI=-1;
    P[i].drop=-artH*.12;P[i].dropV=0;P[i].om+=.5;setActive(i);wake();refreshRail();
    hangers[i].focus({preventScroll:true});
    say(outcome.kind==='late'?t('lateBox',{date:dayText(outcome.date)}):t('sent'));
@@ -428,8 +441,9 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
    say(outcome.kind==='off'?t('off'):outcome.kind==='full'?t('full'):t('packFail'));
    $('.m2s-close').focus({preventScroll:true});
   }
+  flushLate();
  }
- function abortPack(){if(!pack)return;pack.aborted=true;pack.skip?.();clearPack();busy=false;pack=null;}
+ function abortPack(){if(!pack)return;pack.aborted=true;pack.skip?.();clearPack();busy=false;pack=null;flushLate();}
  async function simple(kind){
   if(busy||openI<0)return;
   const item=items[openI],e=entry(item.id);if(!e.arrived)return;
@@ -439,7 +453,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
    else if(kind==='unwear'){await actions.unwear();sound?.drop();say(t('tookOff'));}
    else{const out=await actions.redo(e.arrived.job_id);say(out?.status==='limit'?t('limit'):out?.status==='off'?t('off'):t('again2'));}
   }catch{say(t('error'));}
-  busy=false;
+  busy=false;flushLate();
   if(openI>=0&&isOpen()){fillInfo(openI,{keepSide:true});const go=dialog.querySelector('.m2s-actions .m2s-go');go?.focus({preventScroll:true});}
  }
 
@@ -553,7 +567,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
  function teardown(){
   if(pack){pack.aborted=true;pack.skip?.();}
   teardownRail();
-  for(const id of timers)win.clearTimeout(id);timers.clear();
+  for(const id of timers)win.clearTimeout(id);timers.clear();toastQ=[];lateQ=[];
   win.removeEventListener('resize',relayout);
   sound?.close();sound=null;
   if(dialog){dialog.remove();dialog=null;}

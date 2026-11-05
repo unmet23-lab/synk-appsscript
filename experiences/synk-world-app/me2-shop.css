@@ -9,7 +9,7 @@
   --sans:var(--w-sans,'World Latin','World Cyrillic','World SUIT',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif);
   --mono:var(--w-mono,'World Mono','World SUIT',ui-monospace,monospace);
   --ink:#17181C;--ink-2:#5A5B61;--ink-3:#68696E;--line:rgba(23,24,28,.12);
-  --bg:#F6F5F1;--paper:#FFFFFF;--tint-top:#F7F6F2;--tint-bottom:#F1EFE9;
+  --bg:#F6F5F1;--sheet:var(--bg);--paper:#FFFFFF;--tint-top:#F7F6F2;--tint-bottom:#F1EFE9;
   --ease:cubic-bezier(.2,.75,.2,1);--ease-in:cubic-bezier(.55,0,.75,.2);
   /* 옷 판 760×1040, 고리 끝 26px(2.5%) */
   --art-h:clamp(320px,54vh,540px);--art-w:calc(var(--art-h)*.7308);--slot:calc(var(--art-w)*.42);--hook:.025;
@@ -147,7 +147,9 @@
 .m2s-print::after{content:'';position:absolute;left:50%;top:-14px;width:12px;height:30px;margin-left:-6px;border-radius:2px;background:linear-gradient(90deg,#C9A57A,#E2C49B 45%,#B98F62);box-shadow:0 2px 3px rgba(0,0,0,.18);transform:rotate(2.2deg)}
 .m2s-print img{position:relative}
 .m2s-turn-wrap[data-view=worn] .m2s-turn{opacity:.3;translate:-24% 2%;scale:.92;clip-path:inset(15% 0 0 0)}
-.m2s:has(.m2s-turn-wrap[data-view=worn]) .m2s-veil{background:rgba(247,243,233,.92)}
+/* 입은 나는 베일이 따뜻해진다 — 휴대폰 머리 줄 · 붙은 단추 줄 · PC 단추 페이드가 같은 --sheet를 쓴다(따로 두면 단추 줄만 회백으로 떠 보였다) */
+.m2s:has(.m2s-turn-wrap[data-view=worn]){--sheet:#F7F3EA}
+.m2s:has(.m2s-turn-wrap[data-view=worn]) .m2s-veil{background:color-mix(in srgb,var(--sheet) 92%,transparent)}
 .m2s-turn{transition:opacity .45s var(--ease),translate .6s var(--ease),scale .6s var(--ease)}
 .m2s-print figcaption{position:absolute;left:0;right:0;bottom:1.6%;text-align:center;font-family:'M2S Pencil',var(--sans);font-size:clamp(17px,1.7vw,22px);line-height:1;color:#3A3833;transform:rotate(-1deg)}
 .m2s-turn-wrap[data-view=worn] .m2s-print img{opacity:1}
@@ -235,7 +237,7 @@
   .m2s-help{max-width:34ch}
   .m2s-actions{max-width:320px}
   /* 주 단추는 글 칸 아래에 붙여 늘 보인다(글이 길면 그 위로 내려 읽는다) */
-  .m2s-info .m2s-actions{position:sticky;bottom:-28px;z-index:2;max-width:none;padding:18px 0 28px;background:linear-gradient(rgba(246,245,241,0),var(--bg) 18px);pointer-events:none}
+  .m2s-info .m2s-actions{position:sticky;bottom:-28px;z-index:2;max-width:none;padding:18px 0 28px;background:linear-gradient(color-mix(in srgb,var(--sheet) 0%,transparent),var(--sheet) 18px);pointer-events:none}
   .m2s-info .m2s-actions>*{pointer-events:auto;max-width:320px}
 }
 
@@ -293,8 +295,8 @@
   .m2s-spec{text-align:left}
   .m2s-info{justify-items:start;text-align:left;padding-bottom:96px}
   .m2s-side{order:-1;justify-self:center;margin:2px 0 14px} /* 앞 · 뒤 · 입은 나는 사진 바로 아래 — 설명 밑에 두면 눌러도 바뀌는 사진이 화면 밖이다 */
-  .m2s[data-mode=detail] .m2s-top{min-height:58px;background:var(--bg);box-shadow:0 1px 0 var(--line)}
-  .m2s-actions{position:sticky;bottom:0;z-index:2;margin-top:-20px;padding:48px 0 max(12px,env(safe-area-inset-bottom));background:linear-gradient(rgba(246,245,241,0),var(--bg) 46px);pointer-events:none}
+  .m2s[data-mode=detail] .m2s-top{min-height:58px;background:var(--sheet);box-shadow:0 1px 0 var(--line)}
+  .m2s-actions{position:sticky;bottom:0;z-index:2;margin-top:-20px;padding:48px 0 max(12px,env(safe-area-inset-bottom));background:linear-gradient(color-mix(in srgb,var(--sheet) 0%,transparent),var(--sheet) 46px);pointer-events:none}
   .m2s-actions>*{pointer-events:auto} /* 위 바탕 페이드가 앞 · 뒤 탭의 누름을 가로채지 않게(11-05 시험에서 잡음) */
   .m2s-help{order:9}
   .m2s-box-text{display:none}
