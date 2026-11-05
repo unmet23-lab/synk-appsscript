@@ -234,7 +234,7 @@ function overviewScreen(s,next){
   if(next.tab==='concepts'){const c=concepts.find(item=>imageSource(item));if(c)return `<img class="sx-q-fill" src="${esc(imageSource(c))}" alt="" decoding="async"><p class="sx-small sx-room-cap">콘셉트 ${concepts.length}개</p>`;}
   const scene=sceneList.find(item=>imageSource(item));
   if(scene)return `<img class="sx-q-fill" src="${esc(imageSource(scene))}" alt="" decoding="async"><p class="sx-small sx-room-cap">장면 ${sceneList.length}개. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.</p>`;
-  return `<img class="sx-q-fill" src="./assets/request/w-gift-snow.webp" alt="" decoding="async"><p class="sx-small sx-room-cap">다음에 받으실 장면 이미지의 예시예요. 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.</p>`;
+  return `<img class="sx-q-fill" src="./assets/request/w-gift-snow.webp" alt="" decoding="async"><p class="sx-small sx-room-cap">다음에 받으실 장면 이미지의 예시예요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.</p>`;
 }
 function legacyOverview(s){
   const p=s.project,next=nextOf(s),turn=turnOf(s,next);

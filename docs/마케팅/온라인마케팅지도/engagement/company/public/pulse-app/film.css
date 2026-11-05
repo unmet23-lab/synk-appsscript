@@ -218,7 +218,9 @@ html.sx.view-entry .app-header{display:none!important}
   .sx-shade{background:linear-gradient(0deg,rgba(0,0,0,.9) 0,rgba(0,0,0,.66) 40%,rgba(0,0,0,0) 64%),linear-gradient(180deg,rgba(0,0,0,.4) 0,rgba(0,0,0,0) 12%)}
   .sx-layer-end img{position:absolute;left:0;top:44px;right:0;width:100%;height:calc(44% - 44px);object-fit:cover;object-position:50% 62%;max-width:100%;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 16%,#000 82%,transparent 100%);mask-image:linear-gradient(180deg,transparent 0,#000 16%,#000 82%,transparent 100%)}
   .sx-p.is-end{justify-content:flex-end}
-  .sx-end .sx-display{display:none}
+  .sx-end{max-width:none}
+  /* 제목은 그림과 단추 사이에 들어갈 높이가 있을 때만 보인다 — 값 줄을 뺀 뒤 키 큰 휴대폰에 빈칸이 남았다. */
+  @media (max-height:769.98px){.sx-end .sx-display{display:none}}
   .on-end .sx-shade{background:none}
   .on-maker .sx-layer-reel{transform:none}
   .on-maker .sx-shade{background:linear-gradient(0deg,rgba(0,0,0,.94) 0,rgba(0,0,0,.82) 54%,rgba(0,0,0,0) 78%),linear-gradient(180deg,rgba(0,0,0,.4) 0,rgba(0,0,0,0) 12%)}
@@ -476,6 +478,8 @@ html.sx.view-entry .app-header{display:none!important}
   .sx-q-frame[data-ratio="16:9"],.sx-q-frame[data-ratio="1:1"]{height:100%;width:auto;max-width:100%}
   .sx-q-copy{font-size:clamp(15px,4.4vw,20px);bottom:12%}
   .sx-q-finder{height:84%;margin-right:7%}
+  /* 화면 칸이 머리 막대 바로 아래에 붙어, 테두리 위 자리는 막대와 오른쪽 위 상자에 가린다 → 테두리 안 왼쪽 위로. */
+  .sx-q-finder .sx-no{top:6px;left:6px;padding:1px 6px;background:#000}
   .sx-q-price{left:var(--sx-m);bottom:10px}
   .sx-q-price>b{font-size:24px}
   .sx-q-ticks{display:none}

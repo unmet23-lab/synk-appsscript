@@ -12,6 +12,8 @@ globalThis.location??=new URL('http://localhost/pulse-app/');
 const appDir=new URL('./public/pulse-app/',import.meta.url);
 const read=name=>readFileSync(new URL(name,appDir),'utf8');
 const SCREEN_FILES=['film-home.mjs','film-views.mjs','film-review.mjs','request-flow.mjs','demo-film.mjs','films-view.mjs','feedback-rounds-view.mjs','room-view.mjs'];
+// 손님 화면과 공개 파일에 쓰지 않는 도구 이름은 이 한 줄에서만 늘린다(검수 r2 FA1 — 시험마다 따로 두면 한쪽만 빠진다).
+const TOOL_NAMES='Claude|Fable|Seedance|Higgsfield|Gemini|GPT|Kling|Sora|Veo|Omni|Suno|아르곤|Argon|페이블|시댄스|힉스필드';
 
 test('every new screen stays inside the content security policy: no style attributes in markup, no inline scripts',()=>{
   for(const name of SCREEN_FILES)assert.doesNotMatch(read(name),/\bstyle=["']|<style|setAttribute\('style'|\son[a-z]+=["']|javascript:/,name);
@@ -32,10 +34,10 @@ test('the server serves every new file and the service worker caches the shell b
   for(const name of ["'film.css'","'film-legacy.css'","'reel-wide','reel-tall'","'reel-wide-poster','reel-tall-poster','shard','end'","'file-gift-set','file-gift-ampoule','file-gift-jar','still-shards','still-lid'","'sheet-gift-'","'model-scene-'","NotoSerifKR-300.woff2"])assert.ok(server.includes(name),name);
   for(const name of ['film.css','film-legacy.css','film-home.mjs','film-review.mjs','assets/NotoSerifKR-300.woff2'])assert.ok(sw.includes(name),name);
   assert.doesNotMatch(sw,/reel-(wide|tall)\.mp4/,'the reel is not stored on the device');
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v28-film-next-20261105';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v29-film-fit-20261105';/);
 });
 test('customer screens name no tool and promise nothing the rules forbid',()=>{
-  const words=/Claude|Fable|Seedance|Higgsfield|Gemini|GPT|Kling|Sora|Veo|Omni|Suno|같은 얼굴|결제 전|무제한|납기|최고|최초|유일|1위|모루|MORU|드립백/;
+  const words=new RegExp(`${TOOL_NAMES}|같은 얼굴|결제 전|무제한|납기|최고|최초|유일|1위|모루|MORU|드립백`);
   const body=source=>source.split('\n').filter(line=>!line.trim().startsWith('//')).join('\n');
   for(const name of ['film-home.mjs','film-views.mjs','film-review.mjs','demo-film.mjs','request-flow.mjs','films-view.mjs','feedback-rounds-view.mjs','room-view.mjs'])assert.doesNotMatch(body(read(name)),words,name);
   const text=entryView({}).replace(/<[^>]+>/g,' ');
@@ -249,10 +251,19 @@ test('the invite door closes from inside, both openers follow it, and the first 
   assert.ok(legacy.includes('  html.has-demo-nav .sx-q-top{top:var(--demo-bar)}'),'F4 예시 안 의뢰서 머리 막대는 예시 막대 아래');
   assert.doesNotMatch(film,/^\.sx-q-credits:not\(:has\(\.sx-q-line\)\)\{background:none\}/m,'F5 투명 처리는 넓은 화면 크레딧에만');
 });
+test('on narrow screens the ratio label sits inside the frame, and the end page title comes back where it fits',()=>{
+  const css=read('film.css');
+  const narrowRequest=css.slice(css.indexOf('.sx-q{--ask:100%}'),css.indexOf('/* ── 머리 막대(프로젝트 화면) ── */'));
+  assert.match(narrowRequest,/\.sx-q-finder \.sx-no\{top:6px;left:6px;padding:1px 6px;background:#000\}/,'above the frame it hides under the top bar and the box on the right');
+  assert.match(css,/@media \(max-height:769\.98px\)\{\.sx-end \.sx-display\{display:none\}\}/,'only low phones hide the title');
+  assert.equal((css.match(/\.sx-end \.sx-display\{display:none\}/g)||[]).length,1,'no other rule hides it on tall phones');
+  assert.match(css,/\.sx-p\.is-end\{justify-content:flex-end\}\s*\.sx-end\{max-width:none\}/,'on a tablet the end page lines up with the logo and the first page, not pushed to the right');
+});
 test('no public file of the customer app names an AI tool, comments included — a customer can read them with view-source',async()=>{
   const {readdirSync}=await import('node:fs');
   const dir=new URL('./public/pulse-app/',import.meta.url);
   const files=readdirSync(dir,{recursive:true}).map(String).filter(name=>/\.(mjs|js|css|html|webmanifest)$/.test(name));
   assert.ok(files.length>30,'공개 글 파일을 모두 읽는다');
-  for(const name of files)assert.doesNotMatch(readFileSync(new URL(name.split('\\').join('/'),dir),'utf8'),/Claude|Fable|Seedance|Higgsfield|Gemini|GPT|Kling|Sora|아르곤|Argon|페이블|시댄스|힉스필드/,name);
+  const tools=new RegExp(TOOL_NAMES);
+  for(const name of files)assert.doesNotMatch(readFileSync(new URL(name.split('\\').join('/'),dir),'utf8'),tools,name);
 });

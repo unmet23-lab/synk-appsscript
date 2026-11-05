@@ -50,7 +50,7 @@ test('a project with no work yet shows an example of what comes next instead of 
   const p=project();p.versions=[];p.stage='received';p.messages=[];Object.assign(p.studio,{concepts:[],scenes:[],sceneReviews:[],selectedConcept:null,references:[],preferences:{},strategy:{revision:0}});
   const html=projectView(state({project:p}));
   assert.match(html,/class="sx-room-screen"><img class="sx-q-fill" src="\.\/assets\/request\/w-gift-snow\.webp"/);
-  assert.match(html,/다음에 받으실 장면 이미지의 예시예요\. 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요\./);
+  assert.match(html,/다음에 받으실 장면 이미지의 예시예요\. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요\./);
   assert.doesNotMatch(html,/<video/);
 });
 
