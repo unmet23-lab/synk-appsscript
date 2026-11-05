@@ -1,5 +1,6 @@
 /* 게시판 해독. 한 화면 = 위 실사 게시판 + 아래 대화 칸, 게시물은 늘 보인다(설계 4절). 움직임 값은 주문 폭주 토큰 여섯과 같다. 글자는 SUIT 하나. */
 @font-face{font-family:'SUIT Variable';src:url('assets/fonts/SUIT-Variable.woff2') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'Board Pencil';src:url('assets/fonts/board-pencil.woff2') format('woff2');font-weight:400;font-display:swap}
 :root{
   --ground:#23262b;--ink:#191b20;--ink-2:#474c55;--ink-3:#666b75;--paper:#fbfaf5;--paper-2:#fff9db;--patch:#fff6c9;--line:#e2dfd5;--dock:#fff;--bubble:#eef0f4;--chip:#f3f1ea;
   --navy:#1f2d52;--coral:#c9412b;--mint:#1a7453;--pencil:#3f4650;--felt:#8d9095;--on-dark:#f4f1ea;--on-dark-2:#c4c7cc;
@@ -64,7 +65,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--coral);out
 .n-fest .w.ink{border-bottom-color:#7be0b6}
 .w.sweep{animation:ink var(--e-slow) both}
 @keyframes ink{from{border-bottom-color:transparent}to{border-bottom-color:var(--mint)}}
-.memo{position:absolute;left:50%;bottom:calc(100% - 5px);translate:-50% 0;rotate:-3deg;white-space:nowrap;font-size:12.5px;font-weight:650;font-style:italic;letter-spacing:-.02em;line-height:1;color:var(--pencil);pointer-events:none;text-indent:0;padding-bottom:3px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='3' viewBox='0 0 40 3'%3E%3Cpath d='M0 2c5-2 8 1 13 0s8-1 13 0 9 1 14-1' fill='none' stroke='%233f4650' stroke-width='.8' stroke-opacity='.55'/%3E%3C/svg%3E") repeat-x 0 100%/40px 3px}
+.memo{position:absolute;left:50%;bottom:calc(100% - 5px);translate:-50% 0;rotate:-3deg;white-space:nowrap;font-family:'Board Pencil',var(--sans);font-size:18px;font-weight:400;letter-spacing:0;line-height:1;color:var(--pencil);pointer-events:none;text-indent:0;padding-bottom:3px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='3' viewBox='0 0 40 3'%3E%3Cpath d='M0 2c5-2 8 1 13 0s8-1 13 0 9 1 14-1' fill='none' stroke='%233f4650' stroke-width='.8' stroke-opacity='.55'/%3E%3C/svg%3E") repeat-x 0 100%/40px 3px}
 .memo.new{animation:memo var(--m-fast) both}
 .memo.right{color:var(--mint)}
 .n-fest .memo{color:#dfe2ea}.n-fest .memo.right{color:#7be0b6}
@@ -108,7 +109,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--coral);out
 .clue .row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center}
 .clue .row .lab{font-size:12px;font-weight:800;color:var(--ink-3)}
 .chip{min-height:38px;padding:7px 11px;border-radius:10px;background:var(--chip);font-size:13px;font-weight:750;line-height:1.3}
-.chip.pen{font-style:italic;font-weight:650;color:var(--pencil)}
+.chip.pen{font-family:'Board Pencil',var(--sans);font-size:19px;font-weight:400;line-height:1.1;color:var(--pencil)}
 .chip.on{background:#e6e3d9;outline:1.5px solid var(--ink)}
 .chip.ghost{background:none;color:var(--ink-3);font-weight:650;padding-left:2px}
 .clue .easy{margin:8px 0 0;font-size:13.5px;font-weight:750;color:var(--navy)}

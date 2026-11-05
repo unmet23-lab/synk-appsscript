@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { ROUNDS, WORDS, PICS } from './content.mjs';
 import { albumTotal, combosOf, startRound, currentAsk, answer, applyPatch, finishRound, emptySave, normalizeSave, isRight, slotWords, patchOf, underlinedWords, noticeLines, otherScenes, peekScene, chooseCombo, openLine, makeRng, memoShown, setMemo, memoChoices } from './core.mjs';
 
@@ -83,6 +84,11 @@ test('공략: 학습 기록 코드가 없다 — ko2 사건을 만들 길이 없
     const text = fs.readFileSync(url, 'utf8').split('\n').filter((l) => !l.trim().startsWith('//')).join('\n');
     for (const bad of ['createGame', 'SynkLearning', 'ko2.', 'coach.', 'practice.submit']) assert.ok(!text.includes(bad), `${f}: ${bad}`);
   }
+});
+
+test('연필 메모 글자는 모두 서체에 들어 있다(빠지면 qa/서체굽기.mjs를 다시 돌린다)', () => {
+  const baked = new Set(readFileSync(new URL('./qa/서체글자.txt', import.meta.url), 'utf8').replace(/\r?\n/g, ''));
+  for (const w of Object.keys(WORDS)) for (const text of memoChoices(w)) for (const c of text) assert.ok(baked.has(c), `${w}: 「${c}」`);
 });
 
 test('앨범의 모든 칸은 어느 조합인가의 끝 화면에서 열 수 있다', () => {
