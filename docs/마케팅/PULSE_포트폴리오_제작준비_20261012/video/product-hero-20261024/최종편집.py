@@ -97,6 +97,12 @@ def music(total):
     g[i0:i1] = np.linspace(1, 0.02, i1 - i0)
     g[i1:i2] = 0.02
     g[i2:i3] = np.linspace(0.02, 1, i3 - i2)
+    # 붓기 · 기포 컷에서는 음악을 조금 낮춰 사건 소리가 들리게 한다(첫 타는 그대로 두고 0.18초 뒤부터). 6번 컷에서 돌아온다
+    i4, i5 = int((DROP + 0.18) * R), int((DROP + 0.26) * R)
+    i6, i7 = int((F[5] / FPS - 0.06) * R), int(F[5] / FPS * R)
+    g[i4:i5] = np.linspace(1, 0.66, i5 - i4)
+    g[i5:i6] = 0.66
+    g[i6:i7] = np.linspace(0.66, 1, i7 - i6)
     bed *= g[:, None]
     bed[-int(0.25 * R):] *= np.linspace(1, 0, int(0.25 * R))[:, None]
     return bed
@@ -122,16 +128,16 @@ EVENTS = [
     ("캔 따기", SFX + "캔따기_1.wav", 0.00, 0.30, beat(-0.5), -5, 0.12),
     ("치익", SFX + "기포_3.wav", 3.00, 0.30, beat(-0.5) + 0.05, -14, 0.05),
     # 컷 4 — 붓기(첫 프레임에 머리) 둘을 잇고 탄산을 깐다
-    ("콸콸 1", SFX + "붓기_1.wav", 0.66, 1.40, DROP, -5, 0.40),
-    ("콸콸 2", SFX + "붓기_3.wav", 0.80, 1.30, DROP + 1.05, -8, 0.50),
-    ("치익 깔림", SFX + "기포_1.wav", 3.00, 2.40, DROP, -16, 0.30),   # 아르곤 「고음 신스와 겹쳐 치지직」으로 8 dB 내림
+    ("콸콸 1", SFX + "붓기_1.wav", 0.66, 1.40, DROP, -3, 0.40),
+    ("콸콸 2", SFX + "붓기_3.wav", 0.80, 1.30, DROP + 1.05, -4, 0.50),
+    ("치익 깔림", SFX + "기포_1.wav", 3.00, 2.40, DROP, -11, 0.30),   # 아르곤 1차 「치지직」(-8) · 2차 「묻힌다」(-16) 사이
     # 컷 5 — 사르르 · 톡톡, 얼음 한 번
-    ("사르르", SFX + "기포_3.wav", 2.00, 2.30, F[4] / FPS, -11, 0.40),
+    ("사르르", SFX + "기포_3.wav", 2.00, 2.30, F[4] / FPS, -7, 0.40),
     ("얼음 톡", SFX + "얼음_3.wav", 0.55, 0.60, F[4] / FPS + 0.55, -14, 0.20),
     # 끝 — 마지막 타(곡)와 「톡」 글자가 같은 자리, 캔 따는 소리로 찍고 캔 두드림 · 유리 한 번. 그 뒤 곡 꼬리와 탄산만 남아 멈춘다
-    ("톡 칙", SFX + "캔따기_1.wav", 0.00, 0.30, TEXT_TOK, -8, 0.12),
+    ("톡 칙", SFX + "캔따기_1.wav", 0.00, 0.30, TEXT_TOK, -5, 0.12),
     ("톡", FAIR + "Can Soda Pop Touches.M.wav", 0.91, 0.40, TEXT_TOK, -3, 0.20),
-    ("팅", FAIR + "Glass Clink Toast.M.wav", 0.15, 0.40, TEXT_TOK, -14, 0.20),
+    ("팅", FAIR + "Glass Clink Toast.M.wav", 0.15, 0.40, TEXT_TOK, -11, 0.20),
     ("남은 탄산", SFX + "기포_1.wav", 6.00, 1.00, TEXT_TOK + 0.08, -13, 0.60),
 ]
 
@@ -175,7 +181,7 @@ def render():
     tmp = os.path.join(OUT, "_소리붙임.mp4")
     C.run("ffmpeg", "-y", "-v", "error", "-i", raw, "-i", wav, "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "320k", "-shortest", tmp)
     out = os.path.join(OUT, "오미톡_9x16.mp4")
-    C.run("node", os.path.join(C.REPO, "tools", "음량마감.mjs"), tmp, out, "--리미터", "0.82", "--덮어쓰기")
+    C.run("node", os.path.join(C.REPO, "tools", "음량마감.mjs"), tmp, out, "--리미터", "0.8", "--덮어쓰기")
     C.run("ffmpeg", "-y", "-v", "error", "-i", out, "-vf", "scale=720:-2", "-c:v", "libx264", "-crf", "24", "-preset", "medium", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", os.path.join(OUT, "오미톡_9x16_폰.mp4"))
     C.run("ffmpeg", "-y", "-v", "error", "-i", out, "-vf", "fps=2,scale=200:-2,tile=8x4:padding=3", "-frames:v", "1", "-q:v", "4", os.path.join(OUT, "_반초.jpg"))
     print(out)
