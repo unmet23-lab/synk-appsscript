@@ -2,7 +2,7 @@
   'use strict';
   // PULSE 모델 캐스팅북 2판(10-18). 한 페이지 안에서 주소 뒤 #으로 화면을 바꾼다.
   // 아티팩트 보기 링크에는 글자·숫자·. _ ~ - 만 넘어오므로 그 글자만 쓴다(1판의 #F02, #/m/F02도 연다).
-  //   #board            모델 보드(광고 내용으로 순서 바꾸기·거르기)   #lineup  키 순서   #row[-F02]  줄 세워 보기(11-04)
+  //   #board            모델 보드(광고 내용으로 순서 바꾸기·거르기)   #lineup  키 순서   #row[-F02]  영상으로 보기(모델 벽, 11-05)
   //   #m-F02[-탭]       모델 북(북·디지털·장면·프로필 — 10-22 「움직임」 탭은 뺐다, 옛 #m-…-motion은 북으로)         #swipe   넘기며 고르기
   //   #pkg[-inq]        패키지(컴프 카드·나란히 비교·문의 글)        #p-F02.1.0~F04.0.2  공유받은 패키지
   //   #g-OUTBLUE        그룹(11-02 아이돌 두 팀 — 단체 컷·멤버·콘셉트 룩·팀 통째로 담기)
@@ -256,7 +256,7 @@
       ${sel('concept', '콘셉트', concepts.map((c) => [c, c]))}
       ${sel('industry', '업종', D.industries.filter((i) => count(i.id)).map((i) => [i.id, `${i.label} ${count(i.id)}`]))}
       ${sel('height', '키', uniq(D.models.map((m) => L.heightBand(m.height))).sort().map((h) => [h, h]))}
-      <span class="g view" role="group" aria-label="보기">${[['board', '사진'], ['row', '줄'], ['lineup', '키 순서'], ['swipe', '한 명씩']].map(([k, l]) => `<a class="tg" href="#${k}"${mode === k ? ' aria-current="page"' : ''}>${l}</a>`).join('')}</span>
+      <span class="g view" role="group" aria-label="보기">${[['board', '사진'], ['row', '영상'], ['lineup', '키 순서'], ['swipe', '한 명씩']].map(([k, l]) => `<a class="tg" href="#${k}"${mode === k ? ' aria-current="page"' : ''}>${l}</a>`).join('')}</span>
     </div>`;
   }
   function renderBoard(mode = 'board', anchor = '') {
@@ -269,7 +269,7 @@
           <div class="field"><input id="q" type="search" value="${E(state.ask)}" placeholder="예: 딸기 라떼 신메뉴, 상큼하게" autocomplete="off" maxlength="80"></div>
           <p class="heard" id="heard" aria-live="polite"></p>
         </form>
-        <a class="swipe-cta" href="#row">줄 세워 보기<span aria-hidden="true">→</span></a>
+        <a class="swipe-cta" href="#row">영상으로 보기<span aria-hidden="true">→</span></a>
       </section>
       ${mode === 'board' ? teamsHTML() : ''}
       ${filtersHTML(mode)}
@@ -440,7 +440,7 @@
   let gLists = { cuts: [], looks: [] }, gCut = 0, curGroup = '';
   function teamActsHTML(g) {
     const codes = teamMembers(g).map((m) => m.code), all = codes.length > 0 && codes.every(inPkg);
-    return `${all ? `<a class="btn ink" href="#pkg" data-act="team-compare" data-g="${E(g.id)}">패키지에서 나란히 보기</a>` : `<button type="button" class="btn ink" data-act="team-pkg" data-g="${E(g.id)}">그룹 통째로 패키지에 담기 <span class="num">${codes.length}명</span></button>`}<a class="btn line" href="#pkg-inq" data-act="team-ask" data-g="${E(g.id)}">이 그룹으로 문의</a><a class="btn line" href="#row" data-act="team-row" data-g="${E(g.id)}">줄 세워 보기</a>`;
+    return `${all ? `<a class="btn ink" href="#pkg" data-act="team-compare" data-g="${E(g.id)}">패키지에서 나란히 보기</a>` : `<button type="button" class="btn ink" data-act="team-pkg" data-g="${E(g.id)}">그룹 통째로 패키지에 담기 <span class="num">${codes.length}명</span></button>`}<a class="btn line" href="#pkg-inq" data-act="team-ask" data-g="${E(g.id)}">이 그룹으로 문의</a><a class="btn line" href="#row" data-act="team-row" data-g="${E(g.id)}">영상으로 보기</a>`;
   }
   function stageHTML(g, ms, cuts) {
     if (cuts.length) {
@@ -612,7 +612,7 @@
     view.dataset.shared = shared ? shareCode(shared) : ''; // 빈 패키지 화면에서도 앞서 본 받은 패키지 표시를 지운다(문의 글이 그 조합으로 바뀌지 않게)
     if (!n) {
       view.innerHTML = `<section class="pk-head pad"><div><h1>패키지<sup class="num">0</sup></h1><p>마음에 드는 모델을 담으면 여기에서 한 장짜리 컴프 카드로 정리하고, 나란히 비교하고, 문의 글로 보낼 수 있어요.</p></div></section>
-        <section class="empty pad"><h2>아직 담은 모델이 없어요</h2><p>모델 화면에서 사진 위 「+ 패키지」를 누르거나, 줄 세워 보기에서 「패키지에 담기」를 눌러 보세요.</p><div class="pk-acts"><a class="btn ink" href="#swipe">넘기며 고르기</a><a class="btn line" href="#board">모델 보드</a></div></section>
+        <section class="empty pad"><h2>아직 담은 모델이 없어요</h2><p>모델 화면에서 사진 위 「+ 패키지」를 누르거나, 영상으로 보기에서 「패키지에 담기」를 눌러 보세요.</p><div class="pk-acts"><a class="btn ink" href="#swipe">넘기며 고르기</a><a class="btn line" href="#board">모델 보드</a></div></section>
         ${inqHTML([])}`;
       wireInq([]);
       if (anchor === 'inq') $('#inq')?.scrollIntoView({ block: 'start' });
@@ -854,212 +854,219 @@
     card.addEventListener('pointerup', end); card.addEventListener('pointercancel', end);
   }
 
-  /* ── 줄 세워 보기(11-04, 팁 장부 45행) ───────────────────── */
-  // 전신을 오려 같은 바닥에 세우고 끌어 넘긴다. 움직임은 공용 부품(experiences/play-common/drag-rail.js)이 계산하고,
-  // 흐림은 filter를 쓰지 않고 미리 흐린 판과 선명한 판의 불투명도만 맞바꾼다(저가 폰에서도 합성기만 쓴다).
-  // 가운데를 키우므로 키 비율로 세우지 않는다 — 키 비교는 눈금이 있는 키 순서 화면이 맡고, 여기는 패널에 키를 적는다.
-  //   #row        줄   ·   #row-F08   그 사람 크게 보기(뒤로 가기가 크게 보기만 닫는다)
-  const R = window.DragRail;
-  const ROW_BASE = 0.9; // 줄에서 가운데 사람 크기(크게 보기가 1). 옆은 줄이기만 해서 흐려지지 않는다
-  const PINS = [['face', '얼굴'], ['look', '착장'], ['body', '키 · 몸']];
-  const rowCalm = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let rail = null, rowList = [], rowRecs = [], rowFigs = [], rowSolo = '', rowPin = 'face', rpList = [], rowName = '', rowLast = '', rowOpenedHere = false;
-  const rowAt = () => (rail ? rail.center() : 0);
-  const rowModel = () => rowList[rowAt()] || null;
-
-  function rowFigHTML(m, i) {
-    const c = m.cut, ratio = c ? c.w / c.h : m.stand ? m.stand.ratio : 0.3, src = c ? c.src : (m.stand ? m.stand.src : '');
-    const blur = c ? `<img class="rf-b" src="${E(c.blur)}" alt="" draggable="false" style="left:${-c.padX * 100}%;top:${-c.padY * 100}%;width:${(1 + 2 * c.padX) * 100}%;height:${(1 + 2 * c.padY) * 100}%">` : '';
-    return `<div class="rf${c ? '' : ' plain'}" data-i="${i}" style="--r:${ratio.toFixed(4)}">
-      <div class="rf-box">
-        <span class="rf-sh" aria-hidden="true"></span>
-        <a class="rf-a" href="#row-${E(m.code)}" data-act="row-fig" data-i="${i}" draggable="false" tabindex="-1" aria-label="${E(m.name)}, ${m.height ? `키 ${E(m.height)}cm` : '키 정보 없음'}, 크게 보기">${blur}<img class="rf-s" data-src="${E(src)}" alt="" draggable="false" decoding="async"></a>
-      </div>
-    </div>`;
+  /* ── 영상으로 보기: 모델 벽(11-05, 팁 장부 45행) ─────────────── */
+  // 모델마다 세로 칸 하나. 칸 너비만 바뀌고 그림은 그대로라 끌면 다음 사람이 커튼처럼 열린다.
+  // 가운데 칸은 그 사람만의 움직임 → 광고 장면으로 돌고, 넓은 화면에서는 바로 옆 두 칸도 움직인다.
+  //   #row   벽   ·   #row-F08   그 사람부터(옛 주소 그대로)
+  let wall = null, wallLast = '';
+  const wallDestroy = () => { if (wall) { wall.destroy(); wall = null; } document.documentElement.classList.remove('wall-on'); };
+  function wallReel(m) {
+    const reel = [];
+    if (m.wall.src) reel.push({ kind: 'video', label: '움직임', src: m.wall.src, hold: 500 });
+    else reel.push({ kind: 'image', label: '장면', src: m.wall.poster, dur: 2600 });
+    const scene = (m.scenes || []).find((x) => !x.concept && x.l !== m.wall.poster && !/근접|위에서|침실|욕실/.test(`${x.label} ${x.place}`));
+    const still = scene ? scene.l : [m.shots.context, m.shots['look-2'], m.shots['look-1'], m.hero].filter(Boolean).map((x) => x.l).find((x) => x !== m.wall.poster);
+    if (still) reel.push({ kind: 'image', label: '광고 장면', src: still, dur: 3200 });
+    return reel;
   }
-  function rowFrame(pos) {
-    const calm = rowCalm();
-    for (let i = 0; i < rowFigs.length; i++) {
-      const f = rowFigs[i], d = i - pos, a = Math.abs(d);
-      if (a > 6 && f.far) continue; // 멀리 있는 사람은 한 번 정리한 뒤 건드리지 않는다
-      f.far = a > 6;
-      const look = R.itemLook(calm ? 0 : d);
-      const t = `scale(${(look.scale * ROW_BASE).toFixed(3)})`;
-      if (f.t !== t) { f.t = t; f.el.style.transform = t; }
-      if (f.z !== look.z) { f.z = look.z; f.el.style.zIndex = look.z; }
-      const o = calm ? (a < 4 ? 1 : 0) : look.opacity;
-      if (f.o !== o) { f.o = o; f.el.style.opacity = o; }
-      f.look = look.sharp;
-      rowShade(f);
-      const near = a < 3.5; // 크기가 바뀌는 사람은 모두 합성 층에 둔다(층 밖이면 그릴 때마다 다시 칠한다)
-      if (f.n !== near) { f.n = near; f.el.classList.toggle('near', near); }
-      if (a < 3.5) rowLoad(f); else if (a > 5) rowUnload(f); // 선명한 판은 가까운 사람만 메모리에 둔다
-    }
+  function wallEmpty() {
+    view.innerHTML = '<div class="empty pad"><h2>조건에 맞는 모델이 없어요</h2><p>조건을 바꾸거나 지워 보세요.</p><button type="button" class="btn line" data-act="wall-clear">조건 지우기</button></div>';
   }
-  // 선명한 판이 다 풀린 뒤에야 흐린 판을 걷는다(두 겹의 불투명도 합은 1 — 흐린 판이 밖으로 퍼져 유령처럼 남지 않게)
-  function rowShade(f) {
-    const s = f.ready ? f.look : 0;
-    if (f.s === s) return;
-    f.s = s;
-    f.sharp.style.opacity = s;
-    if (f.blur) f.blur.style.opacity = +(1 - s).toFixed(3);
-  }
-  function rowLoad(f) {
-    if (f.loading) return;
-    f.loading = true;
-    const img = f.sharp, src = img.dataset.src;
-    img.src = src;
-    // 풀린 판이 한 번 그려진 다음 프레임에 흐린 판을 걷는다(가운데가 잠깐 비어 보이지 않게)
-    const show = () => { if (img.getAttribute('src') !== src) return; img.classList.add('ready'); requestAnimationFrame(() => requestAnimationFrame(() => { if (img.getAttribute('src') !== src) return; f.ready = true; rowShade(f); })); };
-    // 받기에 실패하면(complete인데 naturalWidth 0) 흐린 판을 그대로 둔다
-    if (img.decode) img.decode().then(show, () => { if (!img.complete) img.addEventListener('load', show, { once: true }); else if (img.naturalWidth) show(); });
-    else img.addEventListener('load', show, { once: true });
-  }
-  function rowUnload(f) {
-    if (!f.loading) return;
-    f.loading = false; f.ready = false;
-    f.sharp.removeAttribute('src'); f.sharp.classList.remove('ready');
-    rowShade(f);
-  }
-  function rowCutsHTML(list, name) {
-    rpList = list;
-    return `<div class="rp-cuts" style="--n:${Math.max(list.length, 3)}">${list.map((g, i) => `<button type="button" data-act="rp-lb" data-i="${i}" aria-label="${E(name + ' ' + g.label)} 크게 보기"><img data-src="${E(g.s)}" alt=""></button>`).join('')}</div>`;
-  }
-  const rowCutsOf = (m) => [shot(m, 'look-1'), shot(m, 'look-2'), shot(m, 'exp-smile'), m.scenes[0] ? sceneShot(m.scenes[0]) : shot(m, 'context')].filter(Boolean).slice(0, 4);
-  function rowPinBody(m) {
-    if (rowPin === 'face') {
-      const rows = (m.face || []).length ? m.face : [['눈', m.eyes], ['피부', m.skin], ['머리', m.hairBase]].filter((x) => x[1]).map(([label, text]) => ({ label, text }));
-      return `<dl class="rp-face">${rows.map((r) => `<div><dt>${E(r.label)}</dt><dd>${K(r.text)}</dd></div>`).join('')}</dl>${rowCutsHTML(['exp-smile', 'angle-left', 'hair-2'].map((k) => shot(m, k)).filter(Boolean), m.name)}`;
-    }
-    if (rowPin === 'look') {
-      return `${rowCutsHTML(['look-1', 'look-2', 'fullbody'].map((k) => shot(m, k)).filter(Boolean), m.name)}<p class="rp-note">${K((m.looks || []).map((l) => l.label).join(' · '))}</p><p class="rp-note muted">다른 옷과 장면도 같은 얼굴로 더 만들 수 있어요.</p>`;
-    }
-    rpList = [];
-    return `<dl class="comp rp-comp">${compCells(m).slice(0, 6).map(([k, v]) => `<div><dt>${E(k)}</dt><dd class="num">${v}</dd></div>`).join('')}</dl>${m.bodyNote ? `<p class="rp-note">${K(m.bodyNote)}</p>` : ''}<a class="link" href="#lineup">키 순서에서 견주기</a>`;
-  }
-  function rowPanel() {
-    const box = $('#rp'), m = rowModel(); if (!box || !m) return;
-    rowLast = m.code;
-    const r = rowRecs.find((x) => x.model.code === m.code);
-    box.innerHTML = `<div class="rp-top"><span class="num rp-n">${pad2(rowAt() + 1)} / ${pad2(rowList.length)}</span>${m.realPerson ? '<span class="badge-line">실제 인물</span>' : ''}</div>
-      <h2 class="rp-name">${E(m.name)} <small class="num">${E(m.code)}</small></h2>
-      ${m.tagline ? `<p class="rp-tag">${K(`“${m.tagline}”`)}</p>` : ''}
-      <p class="rp-line">${K(dot(m.height && m.height + 'cm', m.age || m.ageBand, m.concept))}</p>
-      ${gtagHTML(m)}
-      ${r ? `<p class="rp-why">${K(whyOf(r))}</p>` : ''}
-      ${rowSolo ? `<div class="rp-tabs" role="group" aria-label="이 모델 뜯어 보기">${PINS.map(([k, l], i) => `<button type="button" class="tg" data-act="row-pin" data-v="${k}" aria-pressed="${rowPin === k}"><span class="num">${i + 1}</span> ${E(l)}</button>`).join('')}</div>
-        <div class="rp-body" id="rp-body">${rowPinBody(m)}</div>`
-        : `${rowCutsHTML(rowCutsOf(m), m.name)}${(m.fits || []).length ? `<p class="rp-fit"><b>어울리는 광고</b><span>${K(m.fits.slice(0, 4).join(' · '))}</span></p>` : ''}`}
-      <div class="rp-acts">${pkgBtn(m, 'btn ink', '패키지에 담김', '패키지에 담기')}<a class="btn line" href="#m-${E(m.code)}">모델 북</a></div>`;
-    syncPkg();
-  }
-  // 끄는 동안 패널은 글만 바꾸고, 사진은 멈춘 뒤에 받는다(지나가는 사람 사진을 받느라 끊기지 않게)
-  function rowCutsLoad() { $$('.rp-cuts img[data-src]').forEach((im) => { im.src = im.dataset.src; delete im.dataset.src; }); }
-  function rowMark(i) {
-    const held = document.activeElement && document.activeElement.classList.contains('rf-a'); // 화살표로 넘길 때 초점도 새 가운데로 옮긴다
-    rowFigs.forEach((f, k) => { const on = k === i; f.el.classList.toggle('on', on); f.a.tabIndex = on && !rowSolo ? 0 : -1; if (on && held && !rowSolo) f.a.focus({ preventScroll: true }); });
-    const n = $('#row-n'); if (n) n.textContent = `${pad2(i + 1)} / ${pad2(rowList.length)}`;
-    const pv = $('#row-prev'), nx = $('#row-next');
-    if (pv) pv.disabled = i <= 0;
-    if (nx) nx.disabled = i >= rowList.length - 1;
-  }
-  function rowPinsOn(i) {
-    $$('.pin').forEach((p) => p.remove());
-    const f = rowFigs[i], m = rowList[i]; if (!f || !m || !m.cut) return;
-    $('.rf-box', f.el).insertAdjacentHTML('beforeend', PINS.map(([k, l], n) => { const [x, y] = m.cut.pins[k]; return `<button type="button" class="pin num" data-act="row-pin" data-v="${k}" aria-label="${E(l)} 보기" aria-pressed="${rowPin === k}" style="left:${x * 100}%;top:${y * 100}%;--d:${n * 70}ms">${n + 1}</button>`; }).join(''));
-  }
-  function rowSetSolo(code, quiet) {
-    const i = code ? rowList.findIndex((m) => m.code === code) : -1;
-    const stage = $('#row-stage'); if (!stage || !rail) return;
-    const was = rowSolo;
-    rowSolo = i >= 0 ? code : '';
-    if (rowSolo) {
-      rail.go(i, false); rail.lock(true); rowMark(i);
-      stage.classList.add('solo');
-      rowFigs.forEach((f, k) => { f.el.inert = k !== i; });
-      $('#rail').tabIndex = -1; // 크게 보기에서는 줄과 사람 링크에 초점이 머물지 않는다(번호 점만)
-      rowLoad(rowFigs[i]);
-      rowPinsOn(i);
-    } else {
-      rail.lock(false);
-      stage.classList.remove('solo');
-      rowFigs.forEach((f) => { f.el.inert = false; });
-      $('#rail').tabIndex = 0;
-      rowMark(rowAt());
-      $$('.pin').forEach((p) => p.remove());
-    }
-    rowPanel();
-    rowCutsLoad();
-    if (!was !== !rowSolo && !quiet) requestAnimationFrame(() => { const t = rowSolo ? $('#row-close') : rowFigs[rowAt()] && rowFigs[rowAt()].a; if (t) t.focus({ preventScroll: true }); });
-  }
-  // 닫기: 줄에서 열었으면 뒤로 가기와 같게(역사가 쌓이지 않게), 주소로 바로 들어왔으면 같은 자리를 줄로 바꾼다
-  function rowClose() {
-    if (rowOpenedHere) { rowOpenedHere = false; history.back(); return; }
-    try { history.replaceState(null, '', '#row'); } catch { /* 무시 */ }
-    rowSetSolo('');
-  }
-  function rowStep(d) {
-    const i = R.clamp(rowAt() + d, 0, rowList.length - 1);
-    if (i === rowAt()) return;
-    if (!rowSolo) { rail.go(i); return; }
-    const m = rowList[i];
-    try { history.replaceState(null, '', `#row-${m.code}`); } catch { /* 무시 */ }
-    rowSetSolo(m.code);
-  }
-  function rowDestroy() { if (rail) { rail.destroy(); rail = null; } rowFigs = []; rowList = []; rowSolo = ''; rowOpenedHere = false; }
-  function rowNote(recs, any, count) {
-    const q = state.ask.trim();
-    if (!q && !any) return '';
-    if (!count) return '<button type="button" class="link muted" data-act="row-clear">조건 지우기</button>';
-    return `<span>${q ? (recs.length ? `「${E(q)}」에 맞는 순서로 세웠어요` : `「${E(q)}」에 맞는 모델을 찾지 못해 기본 순서로 세웠어요`) : '조건에 맞는 모델만 세웠어요'}</span><button type="button" class="link muted" data-act="row-clear">조건 지우기</button>`;
-  }
-  function rowDraw(keepCode, solo) {
-    const prev = keepCode || rowLast;
-    if (rail) { rail.destroy(); rail = null; }
-    const { order, recs } = ranked();
-    rowList = order; rowRecs = recs; rowSolo = '';
-    const any = Object.values(filters).some(Boolean);
-    $('#row-note').innerHTML = rowNote(recs, any, order.length);
-    const main = $('#row-main');
-    if (!order.length) {
-      rowFigs = [];
-      main.innerHTML = '<div class="empty pad row-empty"><h2>조건에 맞는 모델이 없어요</h2><p>조건을 바꾸거나 지워 보세요.</p></div>';
-      return;
-    }
-    main.innerHTML = `<div class="row-stage" id="row-stage">
-        <div class="rail" id="rail" tabindex="0" role="group" aria-label="모델 줄, 옆으로 넘겨 보세요">${order.map(rowFigHTML).join('')}</div>
-        <a class="row-close" id="row-close" href="#row" data-act="row-close">닫기<span aria-hidden="true"> ✕</span></a>
-        <div class="row-ctrl"><button type="button" class="sq" id="row-prev" data-act="row-step" data-d="-1" aria-label="이전 모델">←</button><span class="count num" id="row-n"></span><button type="button" class="sq" id="row-next" data-act="row-step" data-d="1" aria-label="다음 모델">→</button></div>
-      </div>
-      <aside class="rp" id="rp" aria-label="가운데 모델"></aside>`;
-    rowFigs = $$('.rf', main).map((el) => ({ el, a: $('.rf-a', el), sharp: $('.rf-s', el), blur: $('.rf-b', el), look: 0 }));
-    rail = R.attach($('#rail'), {
-      item: '.rf',
-      onFrame: rowFrame,
-      onCenter: (i) => { if (rowSolo && rowList[i].code !== rowSolo) { rail.go(rowList.findIndex((m) => m.code === rowSolo), false); return; } rowMark(i); rowPanel(); }, // 크게 보기는 잠겨 있다 — 무엇이 줄을 밀어도 그 사람으로 돌아온다
-      onSettle: (i) => { rowCutsLoad(); const m = rowList[i], live = $('#row-live'); if (m && live && m.code !== rowName) { rowName = m.code; live.textContent = `${i + 1}번째 ${m.name}, ${m.height ? `키 ${m.height}센티미터` : '키 정보 없음'}`; } },
-    });
-    const at = order.findIndex((m) => m.code === prev);
-    rail.go(at >= 0 ? at : Math.min(2, order.length - 1), false); // 처음부터 양옆에 사람이 서 있게 셋째에서 시작
-    rail.refresh();
-    rowCutsLoad();
-    if (solo) rowSetSolo(solo, true); // 주소로 바로 들어왔을 때는 초점을 옮기지 않는다
-  }
-  // 거르면 크게 보기가 풀리므로 주소도 줄로 맞춘다(같은 주소로 다시 눌러도 열리게 · 닫기가 엉뚱한 곳으로 돌아가지 않게)
-  function rowRefilter() {
-    if (location.hash !== '#row') { try { history.replaceState(null, '', '#row'); } catch { /* 무시 */ } }
-    rowOpenedHere = false;
-    rowDraw();
-  }
-  function renderRow(code) {
+  function wallMount(code) {
+    wallDestroy();
     if (code && !L.filterModels(D.models, filters).some((m) => m.code === code)) for (const k of Object.keys(filters)) filters[k] = ''; // 공유받은 주소의 모델이 거른 조건에 빠져 있을 때
-    view.innerHTML = `<section class="row-top pad"><h1 class="crumb">줄 세워 보기<sup class="num">${D.models.length}</sup></h1><p class="row-hint">끌어서 넘기고, 사람을 누르면 크게 봐요.</p></section>
-      ${filtersHTML('row')}
-      <p class="row-note pad" id="row-note"></p>
-      <div class="row-main" id="row-main"></div>
-      <p class="vh" id="row-live" aria-live="polite"></p>`;
-    for (const s of $$('.filters select')) s.addEventListener('change', () => { filters[s.dataset.f] = s.value; rowRefilter(); });
-    rowDraw(code, code);
+    const { order, recs } = ranked();
+    const q = state.ask.trim(), any = Object.values(filters).some(Boolean);
+    const curated = (D.wallOrder || []).map(byCode).filter(Boolean);
+    const M = (recs.length || any || curated.length !== D.models.length) ? order : curated; // 조건이 없으면 옆 칸과 색 · 장소가 겹치지 않게 손으로 세운 차례
+    if (!M.length) { wallEmpty(); return; }
+    const N = M.length, root = document.documentElement, ac = new AbortController(), on = { signal: ac.signal };
+    const calm = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const still = calm || !!(navigator.connection && navigator.connection.saveData); // 움직임 줄이기 · 데이터 절약에서는 영상을 저절로 틀지 않는다
+    root.classList.add('wall-on');
+    const reels = M.map(wallReel);
+    const note = q || any ? `<p class="wall-note"><span>${q ? (recs.length ? `「${E(q)}」에 맞는 순서예요` : `「${E(q)}」에 맞는 모델을 찾지 못해 기본 순서예요`) : '조건에 맞는 모델만 세웠어요'}</span><button type="button" data-act="wall-clear">조건 지우기</button></p>` : '';
+    view.innerHTML = `<div class="wall" id="wall" tabindex="0" role="group" aria-label="모델 ${N}명, 옆으로 끌어 넘겨 보세요. 화살표 키로도 넘어가요.">${M.map((m, i) => `<div class="wp" data-i="${i}"><div class="wp-in"><img class="wp-still" alt="" draggable="false" decoding="async"><span class="wp-dim"></span></div><span class="wp-lab">${E(m.name)}</span></div>`).join('')}</div>
+      ${note}
+      <div class="wall-hud" id="wall-hud">
+        <div class="wall-who" id="wall-who"><div class="k num" id="wall-k"></div><h1 id="wall-nm"></h1><div class="m" id="wall-m"></div></div>
+        <div class="wall-acts"><a class="wall-book" id="wall-book" href="#m-${E(M[0].code)}">모델 북</a>${pkgBtn(M[0], 'wall-add', '패키지에 담김', '패키지에 담기')}</div>
+        <p class="wall-legal" id="wall-legal"></p>
+      </div>
+      <div class="wall-arrows"><button type="button" id="wall-prev" data-act="wall-step" data-d="-1" aria-label="이전 모델">←</button><button type="button" id="wall-next" data-act="wall-step" data-d="1" aria-label="다음 모델">→</button></div>
+      <p class="vh" id="wall-live" aria-live="polite"></p>`;
+    const el = $('#wall'), hud = $('#wall-hud'), who = $('#wall-who');
+    const P = $$('.wp', el).map((box) => ({ box, inner: box.firstElementChild, still: $('.wp-still', box), dim: $('.wp-dim', box) }));
+    let vw = 0, vh = 0, W = 0, phone = false, low = false, table = [], step = 180, last = NaN;
+    const startAt = M.findIndex((m) => m.code === (code || wallLast));
+    let f = startAt >= 0 ? startAt : Math.max(0, M.findIndex((m) => m.code === D.wallFirst)), target = f, vel = 0;
+    const wAt = (d0) => { const d = Math.abs(d0), i = Math.min(Math.floor(d), table.length - 1), j2 = Math.min(i + 1, table.length - 1), t = Math.min(d - i, 1); return table[i] + (table[j2] - table[i]) * t; };
+    function layout(x) {
+      if (x === last) return;
+      last = x;
+      const ws = P.map((_, i) => wAt(i - x));
+      let fixed = 0, free = 0;
+      for (let i = 0; i < N; i++) { const nk = Math.max(0, 1 - Math.abs(i - x)); fixed += ws[i] * nk; free += ws[i] * (1 - nk); }
+      const alone = free < .5; // 조건에 맞는 사람이 한 명이면 가운데에 세운다
+      const fill = alone ? 1 : (vw - fixed) / free; // 가운데 몫은 그대로 두고 나머지를 풀어 화면을 정확히 채운다(넘기는 중에도 빈틈이 없게)
+      let left = alone ? (vw - fixed) / 2 : 0;
+      for (let i = 0; i < N; i++) {
+        const d = Math.abs(i - x), nk = Math.max(0, 1 - d), w = ws[i] * (nk + (1 - nk) * fill);
+        const p = P[i], px = Math.round(left), pw = Math.round(left + w) - px;
+        if (p.px !== px) { p.px = px; p.box.style.transform = `translate3d(${px}px,0,0)`; }
+        if (p.pw !== pw) { p.pw = pw; p.box.style.width = pw + 'px'; p.box.style.visibility = pw ? '' : 'hidden'; }
+        const iw = Math.max(W, pw);
+        if (p.iw !== iw) { p.iw = iw; p.inner.style.width = iw + 'px'; p.inner.style.marginLeft = -iw / 2 + 'px'; }
+        const dim = Math.min(.2, d * .07);
+        if (p.dv !== dim) { p.dv = dim; p.box.style.setProperty('--d', dim.toFixed(3)); }
+        const lab = !phone && pw > 54 && d > .6 ? 1 : 0;
+        if (p.lv !== lab) { p.lv = lab; p.box.style.setProperty('--l', lab); }
+        if (d < 6 && !p.loaded) { p.loaded = true; p.still.src = M[i].wall.poster; } // 멀리 있는 사람 그림은 다가올 때 받는다
+        left += w;
+      }
+    }
+    function measure() {
+      vw = window.innerWidth; vh = window.innerHeight; phone = vw <= 760; low = !phone && vh <= 520;
+      W = phone ? vw - 44 : Math.min(vh * (low ? .95 : 9 / 16), vw * .44);
+      el.style.setProperty('--w0', W + 'px');
+      table = phone ? [W, 22, 0] : [W, W * .46, W * .28, W * .14, 0];
+      step = phone ? Math.max(120, vw * .34) : Math.max(150, W * .36);
+      last = NaN; layout(f);
+    }
+    // 끌기 · 놓으면 가까운 칸으로
+    let dragging = false, sx = 0, sf = 0, moved = false, lx = 0, lt = 0, pid = null;
+    el.addEventListener('pointerdown', (e) => { if (e.button || dragging) return; dragging = true; moved = false; sx = lx = e.clientX; sf = target; lt = performance.now(); vel = 0; pid = e.pointerId; el.setPointerCapture(pid); }, on);
+    el.addEventListener('pointermove', (e) => {
+      if (!dragging || e.pointerId !== pid) return;
+      const dx = e.clientX - sx;
+      if (Math.abs(dx) > 5) { moved = true; el.classList.add('drag'); }
+      if (!moved) return;
+      target = Math.max(-.4, Math.min(N - .6, sf - dx / step));
+      const now = performance.now(), dt = now - lt;
+      if (dt > 0) { vel = vel * .6 + (-(e.clientX - lx) / step / (dt / 1000)) * .4; lx = e.clientX; lt = now; }
+    }, on);
+    const up = (e) => {
+      if (!dragging || e.pointerId !== pid) return;
+      dragging = false; el.classList.remove('drag');
+      if (e.type === 'pointercancel') { target = Math.max(0, Math.min(N - 1, Math.round(target))); return; }
+      if (!moved) { // 옆 칸을 누르면 그 사람으로, 가운데를 누르면 모델 북으로
+        const i = P.findIndex((p) => p.pw && p.px <= e.clientX && e.clientX < p.px + p.pw);
+        if (i < 0) return;
+        if (i !== Math.round(f)) target = i;
+        else if (Math.abs(f - target) < .02) { inUrl = M[i].code; location.hash = `#m-${M[i].code}`; } // 넘어가는 중의 누름으로 모델 북이 열리지 않게
+        return;
+      }
+      const held = performance.now() - lt > 90; // 멈췄다 놓으면 관성 없이 가까운 칸으로
+      target = Math.max(0, Math.min(N - 1, Math.round(target + (held ? 0 : Math.max(-3, Math.min(3, vel * .18))))));
+    };
+    el.addEventListener('pointerup', up, on); el.addEventListener('pointercancel', up, on);
+    el.addEventListener('lostpointercapture', (e) => { if (dragging) up({ type: 'pointercancel', pointerId: e.pointerId }); }, on);
+    let wheelAt = 0;
+    el.addEventListener('wheel', (e) => { e.preventDefault(); const now = performance.now(); if (now - wheelAt < 280) return; const v = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY; if (Math.abs(v) < 6) return; wheelAt = now; target = Math.max(0, Math.min(N - 1, Math.round(target) + Math.sign(v))); }, { passive: false, signal: ac.signal });
+    window.addEventListener('keydown', (e) => {
+      if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || $('dialog[open]') || /^(INPUT|SELECT|TEXTAREA)$/.test((e.target && e.target.tagName) || '')) return;
+      if (e.key === 'ArrowRight') { e.preventDefault(); target = Math.min(N - 1, Math.round(target) + 1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); target = Math.max(0, Math.round(target) - 1); }
+    }, on);
+    window.addEventListener('resize', measure, on);
+    // 가운데 칸의 짧은 릴
+    const mkVideo = (loop) => { const v = document.createElement('video'); v.muted = true; v.defaultMuted = true; v.playsInline = true; v.loop = loop; v.preload = 'auto'; v.setAttribute('aria-hidden', 'true'); return v; };
+    const vids = [mkVideo(false), mkVideo(false)], sides = [mkVideo(true), mkVideo(true)];
+    let seq = 0, front = 0, playing = -1, focused = -1, settledAt = 0, raf = 0, inUrl = '';
+    function placeHud(i) {
+      const p = P[i], d = Math.abs(i - f), w = Math.max(W * .8, p.pw);
+      if (hud.pw !== w) { hud.pw = w; hud.style.width = w + 'px'; }
+      hud.style.transform = `translate3d(${(p.px + (p.pw - w) / 2).toFixed(1)}px,0,0)`;
+      const o = Math.max(0, 1 - d * 5);
+      if (hud.oo !== o) { hud.oo = o; hud.style.opacity = o.toFixed(3); hud.classList.toggle('moving', o < .5); }
+    }
+    function run(i, k) {
+      const my = ++seq, reel = reels[i], p = P[i], r = reel[k];
+      const next = () => { if (my === seq) run(i, (k + 1) % reel.length); };
+      if (r.kind === 'video') {
+        const v = vids[front], o = vids[1 - front];
+        front = 1 - front;
+        v.src = r.src; v.currentTime = 0;
+        p.inner.insertBefore(v, p.dim); p.inner.insertBefore(o, v);
+        const show = () => { if (my !== seq) return; v.classList.add('on'); o.classList.remove('on'); p.still.classList.remove('kb'); };
+        if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(show); else v.addEventListener('playing', show, { once: true });
+        v.onended = () => { if (my === seq) setTimeout(next, r.hold || 350); };
+        v.onerror = () => { if (my === seq) setTimeout(next, 300); };
+        const played = v.play();
+        if (played && played.catch) played.catch(() => { if (my !== seq) return; p.still.src = M[i].wall.poster; p.still.classList.remove('kb'); setTimeout(next, 1500); }); // 저전력 모드 등 자동 재생이 막히면 첫 장면을 세우고 사진으로 넘어간다
+      } else {
+        p.still.src = r.src;
+        p.still.classList.remove('kb'); void p.still.offsetWidth; p.still.classList.add('kb');
+        vids.forEach((x) => x.classList.remove('on'));
+        setTimeout(next, r.dur);
+      }
+      const after = reel[k + 1];
+      if (after && after.kind === 'image') { const im = new Image(); im.src = after.src; }
+    }
+    function sidesOn(i) {
+      if (phone || low || still) return;
+      [i - 1, i + 1].forEach((n, k) => {
+        const v = sides[k], m = M[n];
+        if (!m || !m.wall.src) return;
+        v.src = m.wall.src; v.currentTime = 0;
+        P[n].inner.insertBefore(v, P[n].dim);
+        const show = () => v.classList.add('on');
+        if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(show); else v.addEventListener('playing', show, { once: true });
+        const played = v.play();
+        if (played && played.catch) played.catch(() => {});
+      });
+    }
+    const sidesOff = () => sides.forEach((v) => { v.pause(); v.classList.remove('on'); });
+    function stop(i) { sidesOff(); seq++; vids.forEach((v) => { v.pause(); v.classList.remove('on'); }); if (i >= 0) { P[i].still.classList.remove('kb'); P[i].still.src = M[i].wall.poster; } }
+    function text(i, at0) {
+      const m = M[i], r = recs.find((x) => x.model.code === m.code);
+      $('#wall-book').href = `#m-${m.code}`;
+      $('.wall-add', hud).dataset.code = m.code;
+      syncPkg();
+      $('#wall-prev').setAttribute('aria-disabled', i <= 0);
+      $('#wall-next').setAttribute('aria-disabled', i >= N - 1);
+      $('#wall-legal').textContent = m.realPerson ? '실제 인물을 바탕으로 만든 모델이에요.' : 'AI로 만든 가상인물이에요.';
+      el.dataset.at = m.code;
+      wallLast = m.code;
+      $('#wall-live').textContent = `${i + 1}번째 ${m.name}, ${m.height ? `키 ${m.height}센티미터` : '키 정보 없음'}`;
+      const paint = () => {
+        $('#wall-k').textContent = `${m.code}  ${pad2(i + 1)} / ${pad2(N)}`;
+        $('#wall-nm').textContent = m.name;
+        const first = dot(m.height && m.height + 'cm', m.age || m.ageBand, m.wall.line || m.concept);
+        const second = r ? whyOf(r) : (m.fits || []).slice(0, 3).map((x) => x.split('(')[0].trim()).join(', ');
+        $('#wall-m').innerHTML = `<div>${K(first)}</div>${second ? `<div>${K(second)}</div>` : ''}`;
+        who.classList.remove('swap');
+      };
+      clearTimeout(text.t);
+      if (calm || at0) { paint(); return; } // 처음 열릴 때와 움직임 줄이기에서는 전환 없이 바로
+      who.classList.add('swap');
+      text.t = setTimeout(paint, 170);
+    }
+    function loop(now) {
+      const k = calm ? 1 : dragging ? .3 : .085;
+      f += (target - f) * k;
+      if (Math.abs(target - f) < .002) f = target;
+      layout(f);
+      const nearest = Math.max(0, Math.min(N - 1, Math.round(f)));
+      if (nearest !== focused) { focused = nearest; text(nearest); }
+      placeHud(nearest);
+      if (playing !== nearest && playing >= 0) { stop(playing); playing = -1; }
+      if (!dragging && f === target && inUrl !== M[nearest].code) { inUrl = M[nearest].code; try { history.replaceState(null, '', `#row-${inUrl}`); } catch { /* 무시 */ } }
+      if (!dragging && f === target && playing < 0 && !still && !document.hidden) {
+        if (!settledAt) settledAt = now;
+        if (now - settledAt > 120) { playing = nearest; run(nearest, 0); sidesOn(nearest); }
+      } else settledAt = 0;
+      raf = requestAnimationFrame(loop);
+    }
+    document.addEventListener('visibilitychange', () => { if (document.hidden && playing >= 0) { stop(playing); playing = -1; } }, on); // 다른 탭에 있는 동안 영상을 받지 않는다
+    measure();
+    focused = Math.round(f); text(focused, true); placeHud(focused);
+    raf = requestAnimationFrame(loop);
+    wall = {
+      go: (c) => { if (!c) return; const i = M.findIndex((m) => m.code === c); if (i >= 0) target = i; else wallMount(c); },
+      step: (d) => { target = Math.max(0, Math.min(N - 1, Math.round(target) + d)); },
+      destroy: () => { ac.abort(); cancelAnimationFrame(raf); clearTimeout(text.t); seq++; [...vids, ...sides].forEach((v) => { v.pause(); v.onended = v.onerror = null; v.removeAttribute('src'); v.load(); }); },
+    };
   }
 
   /* ── 경로 ─────────────────────────────────────────────── */
@@ -1075,7 +1082,7 @@
     const old = h.match(/^#([A-Z]\d\d)$/);
     const parts = (old ? ['m', old[1]] : h.replace(/^#\/?/, '').split(/[-/]/)).filter(Boolean);
     route = parts[0] || 'board'; curModel = '';
-    if (route !== 'row') rowDestroy();
+    if (route !== 'row') wallDestroy();
     let nav = 'board';
     if (route === 'm' && byCode(parts[1])) { curModel = parts[1]; renderBook(parts[1], parts[2]); nav = ''; jump(0); }
     else if (route === 'g' && groupById(parts[1])) { renderGroup(parts[1]); nav = 'board'; jump(0); }
@@ -1084,7 +1091,7 @@
     else if (route === 'swipe') { renderSwipe(); nav = 'board'; jump(0); }
     else if (route === 'row') {
       const code = byCode(parts[1]) ? parts[1] : '';
-      if (prev === 'row' && rail) { if (code && !rowSolo) rowOpenedHere = true; if (!code) rowOpenedHere = false; rowSetSolo(code); } else { renderRow(code); jump(0); }
+      if (prev === 'row' && wall) { wall.go(code); } else { wallMount(code); jump(0); }
       nav = 'row';
     }
     else if (route === 'lineup') { renderBoard('lineup'); nav = 'lineup'; jump(prev === 'm' ? boardY : 0); }
@@ -1104,12 +1111,8 @@
       case 'pkg': e.preventDefault(); togglePkg(code); break;
       case 'skip': e.preventDefault(); $('#view').focus(); break;
       case 'eg': state.ask = v; save(); $('#q').value = v; drawBoard(route === 'lineup' ? 'lineup' : 'board'); break;
-      case 'row-fig': { const i = Number(t.dataset.i); if (rowSolo) { e.preventDefault(); break; } if (i !== rowAt()) { e.preventDefault(); rail.go(i); } break; } // 가운데 사람만 크게 본다(링크 그대로)
-      case 'row-step': rowStep(Number(t.dataset.d)); break;
-      case 'row-close': e.preventDefault(); rowClose(); break;
-      case 'row-pin': { rowPin = v; for (const b of $$('[data-act="row-pin"]')) b.setAttribute('aria-pressed', b.dataset.v === v); const m = rowModel(), b = $('#rp-body'); if (m && b) { b.innerHTML = rowPinBody(m); rowCutsLoad(); if (t.classList.contains('pin')) $('#rp').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } break; }
-      case 'rp-lb': { const m = rowModel(); if (m && rpList.length) openLb(rpList, Number(t.dataset.i) || 0, m.name); break; }
-      case 'row-clear': for (const k of Object.keys(filters)) filters[k] = ''; state.ask = ''; save(); for (const x of $$('.filters select')) x.value = ''; rowRefilter(); break;
+      case 'wall-step': if (wall) wall.step(Number(t.dataset.d)); break;
+      case 'wall-clear': for (const k of Object.keys(filters)) filters[k] = ''; state.ask = ''; save(); wallMount(); break;
       case 'team-row': for (const k of Object.keys(filters)) filters[k] = ''; filters.group = t.dataset.g; break; // 링크(#row)는 그대로 연다
       case 'ask-clear': state.ask = ''; save(); $('#q').value = ''; drawBoard(route === 'lineup' ? 'lineup' : 'board'); $('#q').focus(); break;
       case 'filters-clear': for (const k of Object.keys(filters)) filters[k] = ''; for (const s of $$('.filters select')) s.value = ''; drawBoard(route === 'lineup' ? 'lineup' : 'board'); break;
@@ -1173,7 +1176,6 @@
       return;
     }
     if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target && e.target.tagName) || '')) return;
-    if (route === 'row' && rowSolo) { if (e.key === 'Escape') { e.preventDefault(); rowClose(); } if (e.key === 'ArrowRight') rowStep(1); if (e.key === 'ArrowLeft') rowStep(-1); }
     if (route === 'swipe' && deckAt < deck.length) { if (e.key === 'ArrowRight') deckDecide(true); if (e.key === 'ArrowLeft') deckDecide(false); }
   });
   for (const id of ['lightbox', 'export']) { const d = document.getElementById(id); d.addEventListener('click', (e) => { if (e.target === d) d.close(); }); }
