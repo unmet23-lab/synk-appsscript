@@ -58,9 +58,9 @@
     },
     {
       "계정": "synkbrief-tiktok",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-04T21:00:00+09:00",
-      "주소": "https://www.tiktok.com/tiktokstudio/content (예약 글은 게시 전이라 영상 주소 없음)",
+      "주소": "https://www.tiktok.com/@synkbrief/video/7703967759951990034",
       "방법": "11-04 00:3x ego 프로필 「TikTok synkbrief」 — 옛 판 예약 줄을 검색으로 하나만 걸러 「…」 → Delete → 확인 창 Delete(다시 걸러 없어진 것 확인, del-b21.mjs) 뒤 b21_master.mp4(v2) 업로드 · 캡션(원고 caption) 일치 · AI 표시 켬 · Nov 4, 2026 21:00 → Schedule. 스크립트 C:/Users/q1212/ego/b24v2-20261103-2200/run-b21-tk.js(기록 b21-tk.txt)",
       "확인": "Studio 콘텐츠 목록 「Nov 4, 9:00 PM (GMT+9) Seoul · Everyone」 한 줄",
       "승인": "유호님 11-03 밤 「응, 둘 다」(11-04 · 11-05 예약 편도 새 결로) · 자체검수(맹검 미학 · 이해 시험 · 올리기 전 검사 고칠 것 0) 통과",
@@ -69,7 +69,9 @@
         "상태": "지움(v1 예약)",
         "시각": "2026-11-04T21:00:00+09:00",
         "방법": "ego 프로필 「TikTok synkbrief」 공간 「틱톡 @synkbrief 1102」 — username synkbrief 확인 뒤 업로드 · 캡션 붙여 넣기(공백 빼고 일치) · AI 표시 켬 · 예약 날짜(2026-11-04, .day.valid) · 시각 21:00 → Schedule. 스크립트 C:/Users/q1212/ego/plates-20261102-tiktok/tk-run.mjs + sb-04.json (기록 sb-04.txt)"
-      }
+      },
+      "게시물ID": "7703967759951990034",
+      "공개확인": "11-05 14시 회차 읽음 — Studio 줄 「Nov 4, 9:00 PM」(「(GMT+9) Seoul」 빠짐), 글 머리 「전화 속에서 딸이 우는데」"
     },
     {
       "계정": "shift-naverblog",
