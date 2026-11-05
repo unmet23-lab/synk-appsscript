@@ -3,7 +3,7 @@
 // · 옷 글(이름 · 한 줄 · 이야기 · 소재 · 핏 · 길이 · 함께 입기)은 학생 화면 언어로 보인다 — 무엇을 사는지 알아야 하니까.
 //   스타일 팁은 배우는 자리라 문장 · 색 이름을 늘 한국어로 두고, 낱말 뜻과 문장 뜻 한 줄을 학생 언어로 더한다(ko 화면이면 뜻 줄만).
 // · wear의 [[…]]는 가게 안 다른 옷(pair)으로 넘어가는 글자 링크다. 그림에 보이는 것만 쓴다(없는 소재 · 단추를 지어내지 않는다).
-// · 값은 없다(옷 가게 재화 09-20 보류). 몽골어는 세 겹 대조(역번역 → Fable → 아르곤) 뒤 싣는다.
+// · 값은 없다(옷 가게 재화 09-20 보류). 몽골어는 세 겹 대조(역번역 · 교정 · 문법 채점) 뒤 싣는다.
 
 /** 가게 차례 · 그림 · 스타일 팁(한국어). art = me2-assets/shop-<art>-front|back.webp */
 export const SHOP_ITEMS = [
@@ -197,7 +197,7 @@ export const SHOP_TEXT={
   track:'Delivery status',tOrdered:'Order received',tSent:'Sent to the photo studio',tSoon:'Going to the photo studio soon',tMaking:'Dressing your photo',tEta:'Arrives',etaBy:'by {when} at the latest',etaSoon:'Arriving soon',tDelayed:'Delayed — leaves {date}',
   shipping:'On its way',arrived:'New',labelHead:'SYNK WORLD · Campus Clothing Store',labelTo:'To',labelToValue:'My wardrobe · Second me',labelItem:'Contents',labelItemValue:'1 × {name}',labelFrom:'From',labelFromValue:'Campus Clothing Store',
   entryNote:'{n} pieces · pick one and try it on',entryOpen:'Open the store',entryMine:'{a} arrived · {s} on the way',wordOpen:'Show meaning',failedTag:'Didn’t work',readKo:'Read it in Korean',readKoOff:'Hide the Korean',etaLate:'Running a little late',today:'today {time}',tomorrow:'tomorrow {time}',lateBox:'The photo studio is busy, so it goes out on {date}',wornAlt:'My photo wearing this',newMark:'New',mine:'Mine'},
- mn:{shop:'Кампусын хувцасны дэлгүүр',kicker:'Шинэ семестр · {n} хувцас',title:'Өнөөдөр юу өмсөх вэ?',rail:'{n} хувцас — чирж үзээд, дарж дэлгэрэнгүйг харна',hint:'Чирж үзээд, дарж дэлгэрэнгүйг хараарай',more:'Дэлгэрэнгүй',
+ mn:{shop:'Кампусын хувцасны дэлгүүр',kicker:'Шинэ семестр · {n} хувцас',title:'Өнөөдөр юу өмсөх вэ?',rail:'{n} хувцас — чирч үзээд, дарж дэлгэрэнгүйг хараарай',hint:'Чирч үзээд, дарж дэлгэрэнгүйг хараарай',more:'Дэлгэрэнгүй',
   closet:'Миний шүүгээ',closetCount:'Миний шүүгээ — ирсэн болон хүргэлтэд гарсан {n} хувцас',close:'Хаах',prev:'Өмнөх',next:'Дараах',detail:'Хувцасны дэлгэрэнгүй',view:'Харах тал',front:'Урд тал',back:'Ар тал',worn:'Өмссөн би',
   material:'Материал',fit:'Тохирц',length:'Урт',pair:'Хослуулах',tipHead:'Загварын зөвлөгөө',
   order:'Өмсөж үзэх',orderHelp:'Таны зурагт үүнийг өмсүүлж илгээнэ. Ихэвчлэн хэдэн цагийн дотор, хамгийн удаандаа маргааш ирнэ.',waitNote:'Хүргэлтэд гарсан · ирэхээрээ таны шүүгээнд өлгөгдөнө',

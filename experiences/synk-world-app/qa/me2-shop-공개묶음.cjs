@@ -17,7 +17,8 @@ const OUT = path.join(공용작업본(ROOT), '.tmp', `me2-shop-pub-20261105${판
 const APP = 'experiences/synk-world-app/';
 const 그림 = git('ls-tree', '-r', '--name-only', NEW, `${APP}me2-assets`).toString().trim().split('\n').map((x) => x.slice(APP.length)).filter((x) => /^me2-assets\/shop-/.test(x));
 const FILES = [...['me2-photo.mjs', 'me2-photo.css', 'me2-shop.mjs', 'me2-shop.css', 'me2-shop-items.mjs', 'me2-shop-sound.mjs', ...그림].map((f) => [APP + f, 'world/' + f]),
-  ['experiences/play-common/drag-rail.js', 'world/play-common/drag-rail.js']];
+  // 끌기 부품은 원천이 안 바뀌어도 공개 쪽에는 처음 싣는 파일이다 — 바탕을 비워 새 파일로 낸다.
+  ['experiences/play-common/drag-rail.js', 'world/play-common/drag-rail.js', { 새공개: true }]];
 function 고쳐쓰기(bytes, pub) {
   const relative = pub.slice('world/'.length);
   if (!/\.(mjs|css)$/.test(pub)) return bytes;
@@ -35,8 +36,8 @@ function 고쳐쓰기(bytes, pub) {
 const show = (rev, file) => { try { return git('show', `${rev}:${file}`); } catch { return null; } };
 fs.rmSync(OUT, { recursive: true, force: true });
 const items = [];
-for (const [src, pub] of FILES) {
-  const a = show(BASE, src), b = show(NEW, src);
+for (const [src, pub, opt] of FILES) {
+  const a = opt?.새공개 ? null : show(BASE, src), b = show(NEW, src);
   if (!b) throw Error('내 판에 없다: ' + src);
   if (a && a.equals(b)) continue;
   for (const [dir, bytes] of [['base', a], ['new', b]]) {

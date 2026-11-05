@@ -1,6 +1,6 @@
 // 「제2의 나」 캠퍼스 옷 가게(2026-11-05 · 유호님 A판 — 흰 회백 바탕 · 곧은 금속 봉). 팁 장부 44 · 45행, 설계 docs/디자인/끌어넘기기_구현준비_20261104.md 「앱에 넣기 설계」.
 // · 시안 experiences/drama/shop/shop.mjs를 옮겼다: 봉 처짐 · 옷걸이 흔들림 · 마우스 올림 · 끌어 넘기기(공용 부품 DragRail) · 자세히 · 앞뒤 돌림 · 포장 · 배송 조회 · 입은 나.
-// · 제2의 나 시트가 <dialog>.showModal()이라 가게는 body에 붙이는 두 번째 <dialog>로 연다 — 뒤 inert · Tab 가둠 · Esc는 겹 모달이 해 준다(Fable 설계 검토 P1).
+// · 제2의 나 시트가 <dialog>.showModal()이라 가게는 body에 붙이는 두 번째 <dialog>로 연다 — 뒤 inert · Tab 가둠 · Esc는 겹 모달이 해 준다(설계 검토 11-05).
 // · 상태는 제2의 나가 넘긴다(update). 동작(주문 · 입기 · 벗기 · 다시 · 본 표시)은 제2의 나가 준 함수로 서버에 가고, 그 뒤 제2의 나가 상태를 다시 넘긴다.
 // · 값은 화면에 없다(재화 보류). 움직임 줄이기 · 효과음은 앱 설정을 따른다. 마스코트는 쓰지 않는다.
 import '../play-common/drag-rail.js';
@@ -114,7 +114,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   const canFit=Boolean(win.matchMedia?.('(hover: hover) and (pointer: fine)').matches)&&slotW*items.length+slotW*1.4<=railW;
   if(canFit!==fit){fit=canFit;rail.classList.toggle('is-fit',fit);if(fit)rail.scrollLeft=0;else{rail.scrollLeft=active*slotW;pos=active;lastPos=pos;lastCenter=active;}}
   rodY=rail.offsetTop+22+artH*.025+Math.max(2,artH*.006);
-  Starget=0; // 봉은 멈추면 곧다 — 처짐은 옷이 떨어져 걸릴 때만(Fable 11-05)
+  Starget=0; // 봉은 멈추면 곧다 — 처짐은 옷이 떨어져 걸릴 때만(금속 봉이 휜 채 멈추면 빨랫줄로 읽힌다, 11-05 심사)
   rod.setAttribute('viewBox',`0 0 ${floor.clientWidth} ${floor.clientHeight}`);
  }
  const centerX=i=>fit?(railW-slotW*items.length)/2+slotW*(i+.5):railW/2+(i-pos)*slotW;
@@ -334,7 +334,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   parcel.hidden=true;$('.m2s-pack').hidden=true;$('.m2s-tissue').classList.remove('is-on','is-wrapped');$('.m2s-label').classList.remove('is-on');parcel.classList.remove('is-closed');
   turnWrap.style.removeProperty('--line-to');turnWrap.classList.remove('is-off');delete shop.dataset.packing;delete shop.dataset.flying;
  }
- /** 주문 답 — 끊기거나 늦어도 거짓말하지 않는다: 오류면 상태를 다시 받아 그 옷이 오는 중이면 출발로 친다(Fable 설계 검토). */
+ /** 주문 답 — 끊기거나 늦어도 거짓말하지 않는다: 오류면 상태를 다시 받아 그 옷이 오는 중이면 출발로 친다(설계 검토 11-05). */
  async function outcomeOf(id,result){
   if(result.out){const s=result.out.status;if(s==='ordered'||s==='already')return {kind:'sent'};if(s==='delayed')return {kind:'late',date:result.out.arrives_after};if(s==='off')return {kind:'off'};if(s==='full_album')return {kind:'full'};}
   let next=null;try{next=await actions.status?.();}catch{next=null;}
