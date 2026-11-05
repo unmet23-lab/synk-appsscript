@@ -3,24 +3,28 @@
 const formatsOnly=process.argv.includes('--formats-only');
 const {chromium}=require(process.argv.slice(2).find(arg=>arg!=='--formats-only')||'C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const fs=require('node:fs/promises'),path=require('node:path'),assert=require('node:assert/strict');
-const {summary,signedIn:syntheticAuth,activityStore,libraryStore,understandingStore}=require('../../../desktop/tools/member-insight-fixture.cjs');
+const {currentSummary:summary,signedIn:syntheticAuth,activityStore,libraryStore,understandingStore,memoryStore,activityDocument}=require('../../../desktop/tools/member-insight-fixture.cjs');
 const understandingScenarios=require('../../../desktop/tools/member-understanding-scenarios.cjs');
 const { verifyFormatReturn }=require('./member-format-return.cjs');
-const root=path.resolve(__dirname,'..'),out=process.env.SYNK_INSIGHT_QA_OUT||path.join(__dirname,'member-understanding-20261014'),bundleOverride=process.env.SYNK_INSIGHT_WEB_BUNDLE||null,cssOverride=process.env.SYNK_INSIGHT_WEB_CSS||null;
-if(!path.isAbsolute(out)||[bundleOverride,cssOverride].some(file=>file&&!path.isAbsolute(file)))throw Error('QA output and asset override paths must be absolute');
+const root=path.resolve(__dirname,'..'),out=process.env.SYNK_INSIGHT_QA_OUT||path.join(__dirname,'member-understanding-20261014'),bundleOverride=process.env.SYNK_INSIGHT_WEB_BUNDLE||null,cssOverride=process.env.SYNK_INSIGHT_WEB_CSS||null,publishedDir=process.env.SYNK_INSIGHT_WEB_PUBLISHED||null;
+// The published page next to the published bundle: only these downloaded files replace the checkout.
+const published=['platform.html','platform.css','benefits.css','social-conversion.js'];
+if(!path.isAbsolute(out)||[bundleOverride,cssOverride,publishedDir].some(file=>file&&!path.isAbsolute(file)))throw Error('QA output and asset override paths must be absolute');
 const sourceFiles=['platform.html','platform.css','benefits.css','member-insight.css','dist/platform.js','qa/member-insight-smoke.cjs','qa/member-format-return.cjs','../../desktop/tools/member-insight-fixture.cjs','../../desktop/tools/member-format-fixture.cjs','../../desktop/tools/member-understanding-scenarios.cjs'];
-const filePath=file=>file==='dist/platform.js'&&bundleOverride?bundleOverride:file==='member-insight.css'&&cssOverride?cssOverride:path.join(root,file);
+const filePath=file=>file==='dist/platform.js'&&bundleOverride?bundleOverride:file==='member-insight.css'&&cssOverride?cssOverride:publishedDir&&published.includes(file)?path.join(publishedDir,file):path.join(root,file);
+if(publishedDir)sourceFiles.push('social-conversion.js');
 const fingerprints=async()=>Object.fromEntries(await Promise.all(sourceFiles.map(async file=>[file,require('node:crypto').createHash('sha256').update(await fs.readFile(filePath(file))).digest('hex')])));
 const origin='https://platform.example.invalid',accountOrigin='https://account.example.invalid',url=origin+'/platform.html#benefits/insight';
 const config={version:1,supabaseUrl:accountOrigin,supabasePublishableKey:'sb_publishable_synthetic',portalUrl:'https://id.example.invalid/',clients:{platform:{clientId:'synthetic-platform',redirectUri:origin+'/client.html?product=platform'}}};
-const report={checkedOn:new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()),scope:'Isolated browser, synthetic Atlas and member-insight consent HTTP only; 1440/390/320, night/day. Activity destinations are intercepted synthetic pages. No live account, AI, publication or installed profile.',checks:[],errors:[],unexpected:[],missing:[],screenshots:[],activityTargets:[]};
+const report={checkedOn:new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()),scope:'Isolated browser, synthetic Atlas and member-insight consent HTTP only; 1440/390/320, night/day. Activity destinations are intercepted synthetic pages. No live account, AI, publication or installed profile.',checks:[],errors:[],unexpected:[],missing:[],screenshots:[],activityTargets:[],knownIssues:[]};
 if(formatsOnly)report.scope='Complete account web bundle, 390/1440, synthetic responses, repeated speaking, opt-out and one fresh tab per width.';
 if(bundleOverride)report.bundleOverride=bundleOverride;
 if(cssOverride)report.cssOverride=cssOverride;
+if(publishedDir)report.publishedDir=publishedDir;
 let activePage;
 const check=(name,ok,details={})=>{report.checks.push({name,ok:!!ok,...details});assert.ok(ok,name);};
 async function fixture(browser,signedIn=true,{nativeHost=false,webSummary=summary,width=390}={}){
-  const state={owner:'A',generation:1,mode:'enabled',configured:true,hold:false,held:[],calls:[],activity:activityStore(),library:libraryStore(),understanding:understandingStore(),heldLaunches:[]};
+  const state={owner:'A',generation:1,mode:'enabled',configured:true,hold:false,held:[],calls:[],activity:activityStore(),library:libraryStore(),understanding:understandingStore(),memory:memoryStore(),heldLaunches:[]};
   const context=await browser.newContext({viewport:{width,height:900},serviceWorkers:'block'});
   context.on('page',page=>page.on('pageerror',error=>report.errors.push(error.message)));
   await context.addInitScript(({signedIn,origin})=>{if(location.origin===origin&&signedIn)sessionStorage.setItem('synk.oauth.session.platform',JSON.stringify({access_token:'synthetic-A'}));},{signedIn,origin});
@@ -47,16 +51,21 @@ async function fixture(browser,signedIn=true,{nativeHost=false,webSummary=summar
         const store=resource==='member-insight'?state.activity:resource==='member-understanding'?state.understanding:state.library,prefix=resource==='member-insight'?'insight':resource==='member-understanding'?'understanding':'platform';
         try{return route.fulfill({json:store.request(state.owner,prefix+(body?.action==='delete'?'Delete':body?'Save':'Load'),body||{})});}catch{return route.fulfill({status:503,json:{ok:false,error:{code:'SYNTHETIC_ACTIVITY_FAILURE'}}});}
       }
+      if(u.pathname.endsWith('/synk-learning')&&(u.searchParams.get('view')==='memory'||request.method()==='POST')){
+        const body=request.method()==='POST'?request.postDataJSON():null;
+        if(body&&!Array.isArray(body.memory)){report.unexpected.push('unexpected learning write '+u.pathname);return route.abort();}
+        try{return route.fulfill({json:state.memory.request(state.owner,body?'memoryPost':'memoryGet',body?{revision:body.revision,entries:body.memory}:{revision:Number(u.searchParams.get('revision'))})});}catch{return route.fulfill({status:503,json:{ok:false,error:{code:'SYNTHETIC_MEMORY_FAILURE'}}});}
+      }
       if(request.method()!=='GET'){report.unexpected.push('unexpected write '+u.pathname);return route.abort();}
       if(u.searchParams.get('view')==='atlas'){
         if(state.mode==='error')return route.fulfill({status:503,json:{ok:false,error:{code:'SYNTHETIC_FAILURE',message:'Synthetic failure'}}});
-        const result=webSummary(state.mode,state.owner);
+        const result=state.memory.apply(state.owner,webSummary(state.mode,state.owner));
         if(state.hold){state.hold=false;return new Promise(resolve=>state.held.push(async()=>{await route.fulfill({json:result}).catch(()=>{});resolve();}));}
         return route.fulfill({json:result});
       }
-      return route.fulfill({json:{ok:true,account:{synk_user_id:'synthetic-insight-'+state.owner,profile:{display_name:'합성 '+state.owner}}}});
+      return route.fulfill({json:{ok:true,account:{synk_user_id:'synthetic-insight-'+state.owner,profile:{display_name:'합성 '+state.owner}},capabilities:{learningSync:true}}});
     }
-    if(u.origin==='https://synk.im'&&u.pathname==='/account/client.html'&&u.searchParams.get('product')==='world'&&u.searchParams.get('play')==='learning-hub'){report.activityTargets.push({product:'world',path:u.pathname,play:u.searchParams.get('play')});return route.fulfill({contentType:'text/html',body:'<!doctype html><h1>Synthetic WORLD selector</h1>'});}
+    if(u.origin==='https://synk.im'&&u.pathname==='/world/'&&!u.search){report.activityTargets.push({product:'world',path:u.pathname});return route.fulfill({contentType:'text/html',body:'<!doctype html><h1>Synthetic WORLD selector</h1>'});}
     if(u.origin!==origin){report.unexpected.push(u.origin+u.pathname);return route.abort();}
     // The release feed is a separate public service, not a member-view asset.
     // Exercise its existing unavailable fallback without any live request.
@@ -65,6 +74,7 @@ async function fixture(browser,signedIn=true,{nativeHost=false,webSummary=summar
     if(u.pathname==='/client.html')return route.fulfill({contentType:'text/html; charset=utf-8',body:'<!doctype html><meta charset="utf-8"><h1>합성 계정 관리</h1>'});
     if(u.pathname==='/dist/platform.js'&&bundleOverride)return route.fulfill({body:await fs.readFile(bundleOverride),contentType:'text/javascript'});
     if(u.pathname==='/member-insight.css'&&cssOverride)return route.fulfill({body:await fs.readFile(cssOverride),contentType:'text/css'});
+    if(publishedDir&&published.includes(u.pathname.slice(1)))return route.fulfill({body:await fs.readFile(path.join(publishedDir,u.pathname.slice(1))),contentType:u.pathname.endsWith('.html')?'text/html; charset=utf-8':u.pathname.endsWith('.js')?'text/javascript':'text/css'});
     const target=path.resolve(root,'.'+decodeURIComponent(u.pathname));
     if(!target.startsWith(root+path.sep))return route.fulfill({status:404,body:''});
     try{return route.fulfill({body:await fs.readFile(target),contentType:({'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.webp':'image/webp','.png':'image/png','.svg':'image/svg+xml','.woff2':'font/woff2','.ttf':'font/ttf','.webmanifest':'application/manifest+json'})[path.extname(target)]||'application/octet-stream'});}catch{report.missing.push(u.pathname);return route.fulfill({status:404,body:''});}
@@ -77,6 +87,9 @@ async function refreshInsight(page){
   if (!await action.isVisible()) await page.locator('#mi2-why > summary').click();
   await action.click();
 }
+// Waits for the read this refresh caused, so an earlier ready screen is never mistaken for its result.
+const atlasReads=state=>state.calls.filter(call=>call.query?.includes('view=atlas')).length;
+async function refreshed(page,state,status='ready'){const before=atlasReads(state);await refreshInsight(page);await waitState(()=>atlasReads(state)>before);await ready(page,status);}
 async function waitState(predicate){for(let n=0;n<250;n++){if(predicate())return;await new Promise(resolve=>setTimeout(resolve,20));}throw Error('Timed out waiting for synthetic state');}
 async function capture(page,name,width,theme='night',scrollTarget=null){
   await page.setViewportSize({width,height:900});
@@ -86,6 +99,11 @@ async function capture(page,name,width,theme='night',scrollTarget=null){
   if(scrollTarget)await page.locator(scrollTarget).evaluate(element=>{element.scrollIntoView({block:'start'});window.scrollBy(0,-80);});
   await page.screenshot({path:path.join(out,name+'.png'),fullPage:!scrollTarget});report.screenshots.push(name+'.png');
   check(name+' no horizontal overflow',await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  const past=await page.evaluate(()=>{const view=document.querySelector('.member-insight');if(!view)return [];const edge=view.getBoundingClientRect().right;return [...view.querySelectorAll('*')].filter(node=>node.getBoundingClientRect().right>edge+.5&&node.getClientRects().length&&!node.closest('.mi2-hidden')).slice(0,8).map(node=>node.tagName+'.'+node.className);});
+  // product-issue: the floor grid minimum is 300px. Reported, not hidden: anything else past the column fails.
+  const known=width<360&&past.length>0&&past.every(node=>/^(DETAILS.mi2-fold( mi2-history)?|DIV.mi2-consent)$/.test(node));
+  if(known)report.knownIssues.push({name,width,past});
+  check(name+' stays inside its column',past.length===0||known,{past,...(known?{knownIssue:'mi2-floor-300px'}:{})});
   check(name+' heading visible',await page.locator('h1#benefit-title').isVisible());
 }
 async function verifyRun(){
@@ -110,10 +128,11 @@ async function verifyRun(){
     await page.locator('[data-insight-action="enable-activity"]:not([disabled])').waitFor();
     check('app observation defaults off without writing',!state.activity.inspect('A').consent&&!state.calls.some(call=>call.method==='POST'));
     await understandingScenarios.sparseSummaryScenario({run:script=>page.evaluate(script),until:expression=>page.waitForFunction(expression),inspect:async()=>state.understanding.inspect(state.owner),inspectActivity:async()=>state.activity.inspect(state.owner),
-      writeCount:async()=>state.calls.filter(call=>call.method==='POST'||/Save$|Delete$/.test(call.operation||'')).length,setLearning:async mode=>{state.mode=mode;},refresh:async()=>{await refreshInsight(page);await ready(page);},capture:(name,width,theme,target)=>capture(page,name,width,theme,target),check,prefix:'web'});
+      writeCount:async()=>state.calls.filter(call=>call.method==='POST'||/Save$|Delete$/.test(call.operation||'')).length,setLearning:async mode=>{state.mode=mode;},refresh:()=>refreshed(page,state),capture:(name,width,theme,target)=>capture(page,name,width,theme,target),check,prefix:'web'});
     await page.locator('[data-insight-action="enable-activity"]').click();await page.locator('[data-insight-action="disable-activity"]:not([disabled])').waitFor();
     check('opt-in stores only explicit consent and begins empty',state.activity.inspect('A').consent&&state.activity.inspect('A').eventCount===0);
-    await page.getByText('아직 앱 이용에서 확인할 관심 정보가 없어요.',{exact:true}).waitFor();
+    await page.locator('.mi2-consent').getByRole('heading',{name:'앱 이용 기록 켜짐',exact:true}).waitFor();
+    check('newly enabled app use says it is on with no opening to compare',!(await page.locator('.member-insight').innerText()).includes('앱을 연 날'));
     await page.locator('[data-route="home"]').click();await page.locator('[data-connect-button]').click();await page.locator('[data-cloud="enable"]:not([disabled])').waitFor();await page.locator('[data-cloud="enable"]').click();await page.locator('[data-cloud="favorite"][data-id="world"]:not([disabled])').waitFor();await page.locator('[data-cloud="favorite"][data-id="world"]').click();
     await waitState(()=>state.activity.inspect('A').favorites.includes('world'));
     check('account-library star synchronizes declared favorite without counting a launch',state.library.inspect('A').favorites.includes('world')&&state.activity.inspect('A').eventCount===0);
@@ -121,36 +140,47 @@ async function verifyRun(){
     await page.evaluate(()=>{window.__qaOriginalOpen=window.open;window.open=()=>null;});await page.locator('[data-insight-action="activity"][data-insight-target="world"]').last().click();await page.waitForTimeout(80);
     check('blocked web popup never creates an observation',state.activity.inspect('A').eventCount===0);await page.evaluate(()=>{window.open=window.__qaOriginalOpen;delete window.__qaOriginalOpen;});
     const popupPromise=page.waitForEvent('popup');await page.locator('[data-insight-action="activity"][data-insight-target="world"]').last().click();const popup=await popupPromise;await popup.getByRole('heading',{name:'Synthetic WORLD selector'}).waitFor();await popup.close();await page.bringToFront();
-    await waitState(()=>state.activity.inspect('A').eventCount===1);await page.waitForFunction(()=>document.querySelector('.mi-interest-list')?.innerText.includes('WORLD'));
+    await waitState(()=>state.activity.inspect('A').eventCount===1);
     check('WORLD activity opens real selector route and records one synthetic opening',report.activityTargets.length===1&&state.activity.inspect('A').eventCount===1);
     await page.locator('[data-insight-action="disable-activity"]:not([disabled])').click();await page.locator('[data-insight-action="enable-activity"]:not([disabled])').waitFor();
-    check('opt-out deletes observations and hides their UI',!state.activity.inspect('A').consent&&state.activity.inspect('A').eventCount===0&&await page.locator('.mi-interest-list').count()===0);
-    state.activity.set('A','populated');await refreshInsight(page);await page.getByText('실제 앱 열기에서 관찰',{exact:true}).waitFor();
-    check('declared favorites and observed launches stay distinct',await page.getByText('직접 고른 즐겨찾기',{exact:true}).count()===1&&await page.locator('.mi-period-table').count()===2);
-    check('activity comparison uses observation counts, not favorite changes',(await page.locator('.mi-member-activity .mi-period-table').innerText()).includes('1회 더 많음'));
-    await page.locator('.mi-member-activity .mi-period-dates summary').click();check('exact period bounds are available',await page.locator('.mi-member-activity .mi-period-dates time').count()===4);
+    check('opt-out deletes observations and hides their UI',!state.activity.inspect('A').consent&&state.activity.inspect('A').eventCount===0&&(await page.locator('.mi2-consent').innerText()).includes('앱 이용 기록도 볼까요?')&&!(await page.locator('.member-insight').innerText()).includes('앱을 연 날'));
+    state.activity.set('A','repeated');await refreshed(page,state);await page.locator('.mi2-consent').filter({hasText:'3일 동안 3번'}).waitFor();
+    check('repeated openings are said only inside the consent card',(await page.locator('.mi2-consent').innerText()).includes('WORLD')&&(await page.locator('[data-insight-row="topics"]').count())===1);
+    state.activity.set('A','populated');await refreshed(page,state);await page.locator('.mi2-compare').getByRole('rowheader',{name:'앱을 연 날',exact:true}).waitFor();
+    const usage=await understandingScenarios.activityProjection(activityDocument('populated'));
+    check('declared favorites and observed launches stay distinct',usage.interests.some(row=>row.id==='world'&&row.kind==='favorite')&&usage.interests.some(row=>row.id==='path'&&row.kind==='opened'),{layer:'model'});
+    const openingRow=await page.locator('.mi2-compare tr').filter({hasText:'앱을 연 날'}).innerText();
+    check('activity comparison uses opening days and never calls them growth',/1일/.test(openingRow)&&/2일/.test(openingRow)&&!openingRow.includes('늘었어요'),{openingRow});
+    check('exact period bounds are available',!!usage.periods.recent.from&&!!usage.periods.recent.to&&!!usage.periods.previous.from&&usage.periods.previous.to===usage.periods.recent.from,{layer:'model'});
     for(const theme of ['night','day'])for(const width of [1440,390,320])await capture(page,'web-enabled-'+theme+'-'+width,width,theme);
     await understandingScenarios({refreshResetsDraft:true,run:script=>page.evaluate(script),until:expression=>page.waitForFunction(expression),click:selector=>page.locator(selector).click(),
       inspect:async()=>state.understanding.inspect(state.owner),setMode:async mode=>state.understanding.set(state.owner,mode),replace:async value=>state.understanding.replace(state.owner,value),
-      setLearning:async mode=>{state.mode=mode;},refresh:async()=>{await refreshInsight(page);await ready(page);},
+      setLearning:async mode=>{state.mode=mode;},refresh:()=>refreshed(page,state),
+      inspectMemory:async()=>state.memory.inspect(state.owner),setMemoryMode:async mode=>state.memory.set(state.owner,mode),
       reenter:async()=>{await page.locator('.member-insight a[href="#benefits"]').click();await page.waitForURL(/#benefits$/);await page.locator('a[href="#benefits/insight"]').first().click();await ready(page);},
-      capture:(name,width,theme,target)=>capture(page,name,width,theme,target),launch:async selector=>{const next=page.waitForEvent('popup');await page.locator(selector).click();const opened=await next;await opened.getByRole('heading',{name:'Synthetic WORLD selector'}).waitFor();check('confirmed topic WORLD button opens fixed selector route',new URL(opened.url()).searchParams.get('play')==='learning-hub');await opened.close();await page.bringToFront();},check,prefix:'web'});
-    await page.locator('.mi-evidence summary').click();check('evidence distinguishes scope and limits',(await page.locator('.mi-evidence').innerText()).includes('독립 응답')&&(await page.locator('.mi-evidence').innerText()).includes('TOPIK'));await capture(page,'web-evidence-390',390);
-    const before=state.calls.filter(call=>call.query==='?view=atlas').length;await refreshInsight(page);await ready(page);check('refresh reads original Atlas endpoint',state.calls.filter(call=>call.query==='?view=atlas').length>before);
-    state.mode='empty';await refreshInsight(page);await page.getByText('첫 연습 기록을 기다리고 있어요.',{exact:true}).waitFor();check('empty clears previous account record',!(await page.locator('.member-insight').innerText()).includes('합성 A'));await capture(page,'web-empty-320',320);
-    state.mode='disabled';await refreshInsight(page);await ready(page);await page.locator('.mi-consent').waitFor();
+      capture:(name,width,theme,target)=>capture(page,name,width,theme,target),launch:async selector=>{const next=page.waitForEvent('popup');await page.locator(selector).click();const opened=await next;await opened.getByRole('heading',{name:'Synthetic WORLD selector'}).waitFor();check('confirmed topic WORLD button opens the fixed WORLD entry',opened.url()==='https://synk.im/world/');await opened.close();await page.bringToFront();await page.locator(selector+':not([disabled])').waitFor();},check,prefix:'web'});
+    await page.locator('[data-insight-action="jump"]').click();await page.locator('#mi2-why[open]').waitFor();const basis=await page.locator('#mi2-why').innerText();
+    check('「왜 이렇게 봤나요?」 opens the basis on the same page',page.url()===url);
+    check('evidence distinguishes scope and limits',basis.includes('혼자 답한 횟수에는 틀린 답도 들어 있어요')&&basis.includes('점수, 급수, 성격 유형은 매기지 않아요')&&basis.includes('메모나 고객 자료의 내용은 읽지 않아요'));await capture(page,'web-evidence-390',390);
+    const before=state.calls.filter(call=>call.query==='?view=atlas').length;await refreshed(page,state);check('refresh reads original Atlas endpoint',state.calls.filter(call=>call.query==='?view=atlas').length>before);
+    state.mode='empty';await refreshed(page,state);await page.locator('[data-mi2-kind="declared"]').waitFor();check('a member with saved settings and no practice is told their choices, never empty',(await page.locator('#mi2-now-title').innerText()).includes('골랐어요')&&!(await page.locator('.member-insight').innerText()).includes('합성 A'));state.memory.clear('A');await refreshed(page,state);await page.locator('[data-mi2-kind="empty"]').waitFor();const emptyText=await page.locator('.member-insight').innerText();check('empty clears previous account record',!emptyText.includes('합성 A')&&emptyText.includes('기록이 없다고 실력이 없다는 뜻은 아니에요')&&emptyText.includes('WORLD에서 첫 연습 해 보기'));await capture(page,'web-empty-320',320);
+    state.activity.set('A','repeated');state.mode='disabled';await refreshed(page,state);await page.locator('[data-mi2-kind="disconnected"]').waitFor();
     const disabled=await page.locator('.member-insight').innerText();check('consent off hides practice and preference fields despite stale payload',!disabled.includes('합성 A')&&!disabled.includes('단계별로 도와줘요')&&disabled.includes('한국 여행'));await capture(page,'web-disabled-320',320);
-    check('learning consent off leaves separately authorized app observations visible',await page.locator('.mi-interest-list').count()===1&&await page.locator('.mi-period-table').count()===1);
-    state.mode='enabled';state.activity.set('A','partial');await refreshInsight(page);await page.getByText('아직 비교하기 어려워요',{exact:true}).waitFor();check('partial coverage has no activity delta',!(await page.locator('.mi-member-activity .mi-period-table').innerText()).includes('더 많음')&&(await page.locator('.mi-member-activity .mi-period-table').innerText()).includes('비교 보류'));await capture(page,'web-partial-320',320);
-    for(const mode of ['malformed','error']){state.activity.set('A',mode);await refreshInsight(page);await page.getByText('앱 이용 기록을 불러오지 못했어요. 다시 연결을 확인해 주세요.',{exact:true}).waitFor();check(mode+' app data fails closed while learning remains',await page.locator('.mi-interest-list').count()===0&&(await page.locator('.member-insight').innerText()).includes('합성 A'));await capture(page,'web-activity-'+mode+'-320',320);}
+    check('learning consent off leaves separately authorized app observations visible',(await page.locator('.mi2-consent').innerText()).includes('3일 동안 3번')&&await page.locator('[data-insight-action="disable-activity"]').count()===1);
+    state.mode='enabled';state.activity.set('A','partial');await refreshed(page,state);await page.locator('.mi2-compare table').waitFor();const partial=await page.locator('.mi2-compare').innerText();check('partial coverage has no activity delta',!partial.includes('앱을 연 날')&&partial.includes('답한 횟수'));await capture(page,'web-partial-320',320);
+    for(const mode of ['malformed','error']){state.activity.set('A',mode);await refreshed(page,state);await page.getByText('앱 이용 기록을 불러오지 못했어요. 새로 불러오기로 다시 확인해 주세요.',{exact:true}).waitFor();check(mode+' app data fails closed while learning remains',await page.locator('[data-insight-action$="-activity"]:not([data-insight-action="activity"])').count()===0&&(await page.locator('.member-insight').innerText()).includes('합성 A'));await capture(page,'web-activity-'+mode+'-320',320);}
     state.activity.set('A','populated');
-    state.mode='error';await refreshInsight(page);await ready(page,'error');check('error clears all previous personal results',!(await page.locator('.member-insight').innerText()).includes('한국 여행'));await capture(page,'web-error-320',320);
+    state.mode='error';await refreshed(page,state,'error');check('error clears all previous personal results',!(await page.locator('.member-insight').innerText()).includes('한국 여행'));await capture(page,'web-error-320',320);
     await page.locator('.member-insight a[href="#benefits"]').click();await page.waitForURL(/#benefits$/);await page.locator('a[href="#benefits/insight"]').first().click();await ready(page,'error');check('read failure re-entry remains actionable',await page.locator('[data-insight-action="refresh"]').isVisible());
-    state.mode='enabled';await refreshInsight(page);await ready(page);check('retry recovers without navigation',page.url()===url);
+    state.mode='enabled';await refreshed(page,state);check('retry recovers without navigation',page.url()===url);
+    // What A chose must not follow the session into B.
+    const chosenAt=new Date().toISOString();state.understanding.replace('A',{version:1,reviews:[],overrides:[{id:'00000000-0000-4000-8000-0000000000a1',facetId:'topics',values:['ai-tools'],note:'A의 합성 메모',at:chosenAt}]});await refreshed(page,state);await page.locator('[data-insight-row="topics"]').filter({hasText:'AI 도구 활용'}).waitFor();
     state.hold=true;await refreshInsight(page);await page.waitForFunction(()=>document.querySelector('[data-insight-status="loading"]'));for(let n=0;n<100&&!state.held.length;n++)await new Promise(resolve=>setTimeout(resolve,20));check('account A response held',state.held.length===1);
     state.owner='B';await page.evaluate(()=>{sessionStorage.setItem('synk.oauth.session.platform',JSON.stringify({access_token:'synthetic-B'}));window.dispatchEvent(new Event('online'));});await page.getByRole('heading',{name:'합성 B 짧은 안내 듣기',exact:true}).waitFor();
     for(const release of state.held.splice(0))await release();await page.waitForTimeout(80);check('late account A response cannot replace B',(await page.locator('.member-insight').innerText()).includes('합성 B')&&!(await page.locator('.member-insight').innerText()).includes('합성 A'));await capture(page,'web-account-B-390',390);
-    check('account B does not inherit A observation consent',!state.activity.inspect('B').consent&&await page.locator('.mi-interest-list').count()===0);
+    check('account B does not inherit A observation consent',!state.activity.inspect('B').consent&&(await page.locator('.mi2-consent').innerText()).includes('앱 이용 기록도 볼까요?'));
+    const accountB=await page.locator('.member-insight').innerText();
+    check('account B sees none of A’s choices, notes or history',!accountB.includes('AI 도구 활용')&&!accountB.includes('A의 합성 메모')&&await page.locator('.mi2-history').count()===0&&state.understanding.inspect('B').overrides===0&&state.understanding.inspect('A').overrides===1);
     check('Atlas queries stay scoped to current account endpoint',state.calls.filter(call=>call.query.includes('view=atlas')).every(call=>call.path.endsWith('/synk-account')&&call.query==='?view=atlas'&&call.method==='GET'));
     await page.locator('.member-insight a[href="#benefits"]').click();await page.waitForURL(/#benefits$/);await page.locator('a[href="#benefits/insight"]').first().waitFor();check('back returns to member benefits',await page.locator('a[href="#benefits/insight"]').count()>0);await member.context.close();
     const hosted=await fixture(browser,true,{nativeHost:true});await hosted.page.goto(origin+'/platform.html#app/world');await hosted.page.locator('[data-action="launch"][data-id="world"]').first().waitFor();

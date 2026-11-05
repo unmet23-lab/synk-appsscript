@@ -1,10 +1,10 @@
 'use strict';
 // Test-only synthetic Atlas projection. Never loaded by production preloads.
-const AS_OF='2026-10-14T03:00:00.000Z',LAST_AT='2026-10-13T10:15:00.000Z';
+const AS_OF='2026-10-14T03:00:00.000Z',LAST_AT_GAP=16.75*3600000;
 const DAY=86400000;
-function practicePeriods(empty=false){
-  const at=Date.parse(AS_OF),stamp=days=>new Date(at-days*DAY).toISOString();
-  return {days:30,recent:{from:stamp(30),to:AS_OF,answered:empty?0:12,independent:empty?0:8,assisted:empty?0:4,activeDays:empty?0:4},previous:{from:stamp(60),to:stamp(30),answered:empty?0:6,independent:empty?0:3,assisted:empty?0:3,activeDays:empty?0:3},sufficient:!empty,reason:empty?'두 기간의 기록이 충분하지 않아 차이는 계산하지 않아요.':'같은 길이의 두 기간에 답한 횟수를 비교해요. 실력 성장이나 학습 효과를 뜻하지 않아요.',delta:empty?null:{answered:6,independent:5,assisted:1,activeDays:1}};
+function practicePeriods(empty=false,asOf=AS_OF){
+  const at=Date.parse(asOf),stamp=days=>new Date(at-days*DAY).toISOString();
+  return {days:30,recent:{from:stamp(30),to:asOf,answered:empty?0:12,independent:empty?0:8,assisted:empty?0:4,activeDays:empty?0:4},previous:{from:stamp(60),to:stamp(30),answered:empty?0:6,independent:empty?0:3,assisted:empty?0:3,activeDays:empty?0:3},sufficient:!empty,reason:empty?'두 기간의 기록이 충분하지 않아 차이는 계산하지 않아요.':'같은 길이의 두 기간에 답한 횟수를 비교해요. 실력 성장이나 학습 효과를 뜻하지 않아요.',delta:empty?null:{answered:6,independent:5,assisted:1,activeDays:1}};
 }
 function activityDocument(mode='disabled',now=Date.now()){
   if(mode==='disabled')return {version:1,consent:false,enabledAt:null,events:[],favorites:[]};
@@ -45,7 +45,21 @@ function understandingStore(){
         state:current.mode==='malformed'?{version:1,reviews:[],overrides:[],privateText:'synthetic-forbidden-understanding'}:current.state,updatedAt:current.state?new Date().toISOString():null};},
     inspect(owner){const current=row(owner);return {reviews:current.state?.reviews.length||0,overrides:current.state?.overrides.length||0,statements:current.state?.statements?.length||0,revision:current.revision,state:current.state?JSON.parse(JSON.stringify(current.state)):null};}};
 }
-function summary(mode='enabled',owner='A'){
+// The learning memory help style and explanation length are saved to (synk-learning ?view=memory).
+function memoryStore(){
+  const owners=new Map();
+  const row=owner=>{if(!owners.has(owner))owners.set(owner,{mode:'ready',posts:0,entries:new Map()});return owners.get(owner);};
+  const chosen=owner=>row(owner).entries.get('presentation:chosen')?.value||{};
+  return {set(owner,mode){row(owner).mode=mode;},clear(owner){row(owner).entries.clear();},
+    request(owner,operation,params={}){const current=row(owner);if(current.mode==='error')throw Error('Synthetic memory failure');
+      if(operation==='memoryPost'){current.posts++;for(const entry of params.entries){const key=entry.kind+':'+entry.key,old=current.entries.get(key);if(!old||Date.parse(entry.at)>Date.parse(old.at))current.entries.set(key,JSON.parse(JSON.stringify(entry)));}}
+      return {ok:true,revision:params.revision,entries:[...current.entries.values()].map(entry=>JSON.parse(JSON.stringify(entry)))};},
+    inspect(owner){return {presentation:{...chosen(owner)},posts:row(owner).posts};},
+    // The next summary reads back what was saved, only where the learning connection shares it.
+    apply(owner,result){const saved=chosen(owner);if(!Object.keys(saved).length||result?.shared!=='practice-and-settings'||!result.summary)return result;return {...result,summary:{...result.summary,presentation:{...result.summary.presentation,...saved}}};}};
+}
+function summary(mode='enabled',owner='A',asOf=AS_OF){
+  const LAST_AT=new Date(Date.parse(asOf)-LAST_AT_GAP).toISOString();
   if(mode==='sparse-quality'){
     // Aggregate-only synthetic case: overlapping topic counts are not answer counts.
     const at='2026-10-16T00:00:00.000Z',stamp=days=>new Date(Date.parse(at)-days*DAY).toISOString();
@@ -59,10 +73,10 @@ function summary(mode='enabled',owner='A'){
   }
   const empty=mode==='empty',enabled=mode!=='disabled';
   return {ok:true,scope:'synk-atlas-summary',learning:{enabled,revision:3},shared:enabled?'practice-and-settings':'declared-only',summary:{
-    version:'atlas-account-summary-1',asOf:AS_OF,presentation:empty?null:{support:'step',explanation:'brief',textSize:'large',motion:'reduced',audio:'available'},
+    version:'atlas-account-summary-1',asOf,presentation:empty?null:{support:'step',explanation:'brief',textSize:'large',motion:'reduced',audio:'available'},
     reasons:empty?null:['travel','culture'],forReasons:empty?[]:[{reason:'travel',situations:[{id:'cafe-order',label:'카페에서 주문하기',line:'여행 중 카페에서 원하는 음료를 말할 때 연습해요.'}]}],
-    practice:{answered:empty?0:18,independent:empty?0:11,assisted:empty?0:7,lastAt:empty?null:LAST_AT,periods:practicePeriods(empty),
-      observations:{from:practicePeriods().recent.from,to:AS_OF,total:empty?0:12,
+    practice:{answered:empty?0:18,independent:empty?0:11,assisted:empty?0:7,lastAt:empty?null:LAST_AT,periods:practicePeriods(empty,asOf),
+      observations:{from:practicePeriods(false,asOf).recent.from,to:asOf,total:empty?0:12,
         topics:empty?[]:[{id:'cafe-order',kind:'situation',label:'카페에서 주문하기',count:5,activeDays:3,lastAt:LAST_AT},{id:'location-words',kind:'concept',label:'위치와 방향 표현',count:4,activeDays:2,lastAt:LAST_AT}],
         modes:empty?[]:[{id:'listening',count:8,activeDays:3,lastAt:LAST_AT},{id:'reading',count:4,activeDays:2,lastAt:LAST_AT}],
         formats:empty?[]:[{id:'binary-choice',count:8,activeDays:3,lastAt:LAST_AT},{id:'single-choice',count:4,activeDays:2,lastAt:LAST_AT}]},
@@ -70,12 +84,15 @@ function summary(mode='enabled',owner='A'){
       content:empty?[]:[{id:'location-words',kind:'concept',label:'위치와 방향 표현',status:'review'}]},
     basis:empty?'cold-start':'practice',abilityClaim:false,learningEffectClaim:false,grade:null}};
 }
-function signedIn(owner='A',generation=1){return {configured:true,status:'signed-in',signedIn:true,sessionGeneration:generation,account:{synk_user_id:'synthetic-insight-'+owner,display_name:'합성 '+owner},library:{status:'ready',appIds:['world']}};}
-if(typeof module!=='undefined')module.exports={summary,signedIn,activityDocument,activityStore,libraryStore,understandingStore};
+// A review only counts within 30 days of its claim, so the browser and PC runs follow today. Whole-day
+// so the preload and the host, loaded apart, describe the same period.
+function currentSummary(mode='enabled',owner='A'){return summary(mode,owner,new Date(Math.floor(Date.now()/DAY)*DAY).toISOString());}
+function signedIn(owner='A',generation=1){return {configured:true,status:'signed-in',signedIn:true,sessionGeneration:generation,account:{synk_user_id:'synthetic-insight-'+owner,display_name:'합성 '+owner},learningSync:true,library:{status:'ready',appIds:['world']}};}
+if(typeof module!=='undefined')module.exports={summary,currentSummary,signedIn,activityDocument,activityStore,libraryStore,understandingStore,memoryStore};
 if(process.versions.electron&&process.type==='renderer'){
   const {contextBridge}=require('electron');
   let auth={configured:true,status:'signed-out',signedIn:false,sessionGeneration:0},mode='enabled',hold=false,launchAllowed=true;
-  const listeners=new Set(),calls=[],held=[],activity=activityStore(),library=libraryStore(),understanding=understandingStore();
+  const listeners=new Set(),calls=[],held=[],activity=activityStore(),library=libraryStore(),understanding=understandingStore(),memory=memoryStore();
   const owner=()=>auth.account?.synk_user_id?.replace('synthetic-insight-','')||'A';
   const denied=operation=>async()=>{calls.push({operation});return {ok:false,code:'QA_OPERATION_DISABLED'};};
   contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
@@ -88,9 +105,10 @@ if(process.versions.electron&&process.type==='renderer'){
       if(['platformLoad','platformSave'].includes(operation))return library.request(owner(),operation,params);
       if(['insightLoad','insightSave'].includes(operation))return activity.request(owner(),operation,params);
       if(['understandingLoad','understandingSave','understandingDelete'].includes(operation))return understanding.request(owner(),operation,params);
+      if(['memoryGet','memoryPost'].includes(operation))return memory.request(owner(),operation,params);
       if(operation!=='atlasSummary')throw Error('Unexpected synthetic operation: '+operation);
       if(mode==='error')throw Error('Synthetic Atlas read failure');
-      const value=summary(mode,owner());
+      const value=memory.apply(owner(),currentSummary(mode,owner()));
       if(hold){hold=false;return new Promise(resolve=>held.push(()=>resolve(value)));}
       return value;
     },
@@ -104,5 +122,6 @@ if(process.versions.electron&&process.type==='renderer'){
     libraryState:()=>library.inspect(owner()),
     setUnderstandingMode:value=>understanding.set(owner(),value),understandingState:()=>understanding.inspect(owner()),
     replaceUnderstanding:value=>understanding.replace(owner(),value),
+    setMemoryMode:value=>memory.set(owner(),value),clearMemory:()=>memory.clear(owner()),memoryState:()=>memory.inspect(owner()),
   }));
 }
