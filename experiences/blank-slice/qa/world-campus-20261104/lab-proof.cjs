@@ -20,6 +20,7 @@ const OUT = path.join(공용작업본(ROOT), '.tmp', 'blank-slice-world-20261104
 
 function extractBase() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'blank-base-'));
+  process.on('exit', () => { try { fs.rmSync(dir, { recursive: true, force: true }); } catch {} });   // 실패해도 %TEMP%에 기준 판을 남기지 않는다
   const tar = path.join(dir, 'base.tar');
   execFileSync('git', ['-C', ROOT, 'archive', '--format=tar', '-o', tar, REF, 'experiences/blank-slice'], { stdio: 'inherit' });
   execFileSync('tar', ['-xf', 'base.tar'], { cwd: dir, stdio: 'inherit' });   // 경로를 넘기면 GNU tar가 「C:」를 원격 주소로 읽는다

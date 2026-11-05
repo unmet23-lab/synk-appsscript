@@ -15,6 +15,7 @@ const REF = process.env.BASE_REF || 'origin/master';
 
 function extractBase() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythm-base-'));
+  process.on('exit', () => { try { fs.rmSync(dir, { recursive: true, force: true }); } catch {} });   // 실패해도 %TEMP%에 기준 판을 남기지 않는다
   execFileSync('git', ['-C', ROOT, 'archive', '--format=tar', '-o', path.join(dir, 'base.tar'), REF, 'experiences/korean-rhythm', 'experiences/play-common', 'experiences/brand-opening', 'experiences/topik-items', 'experiences/social-conversion.mjs', 'experiences/korean-runner/controls.mjs'], { stdio: 'inherit' });
   execFileSync('tar', ['-xf', 'base.tar'], { cwd: dir, stdio: 'inherit' });
   return path.join(dir, 'experiences');
