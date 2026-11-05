@@ -22,17 +22,17 @@ const fresh=async()=>{const context=await browser.newContext({viewport:{width:39
 
 // 가짜 앱: 실제 판(dialog)과 실제 틀을 쓰고, 계정 · 생활 기록 · 게임만 흉내 낸다.
 const harness=`
-window.__h=async function({owner=null,arrival=null,tutor=false,operating=true,blocked=false,native=false,failSave=false}={}){
+window.__h=async function({owner=null,arrival=null,tutor=false,operating=true,blocked=false,native=false,failSave=false,restoreFailed=false,unscoped=false}={}){
  document.body.innerHTML='<div class="world-topbar"><button id="settings-open"></button></div><dialog id="world-panel"><div id="panel-content"></div></dialog>';
  const panel=document.querySelector('#world-panel'),content=panel.querySelector('#panel-content');
  const {createSeoulEntry}=await import('/seoul-entry.mjs');
  const st={owner,arrival,failSave,signIns:[],shown:[],games:[],saved:[],toasts:[]};
  const client=()=>({snapshot:st.owner?{accountId:st.owner}:null,generation:1});
- const progress={arrival:()=>st.arrival,setArrival:p=>{if(st.failSave)throw Object.assign(Error('막힘'),{code:'PLAY_DATA_TOO_LARGE'});st.saved.push(p);st.arrival={...(st.arrival||{version:1}),...p};return {arrival:st.arrival};},selectedTutor:()=>tutor?'mongle':null};
+ const progress={status:()=>({scoped:!unscoped}),arrival:()=>st.arrival,setArrival:p=>{if(st.failSave)throw Object.assign(Error('막힘'),{code:'PLAY_DATA_TOO_LARGE'});st.saved.push(p);st.arrival={...(st.arrival||{version:1}),...p};return {arrival:st.arrival};},selectedTutor:()=>tutor?'mongle':null};
  const life={ensure:async()=>{},get progress(){return st.noProgress?null:progress;}};
  const show=(title,html,type)=>{st.shown.push(type);content.innerHTML=html;if(!panel.open)panel.showModal();};
  const close=()=>{if(panel.open)panel.close();content.innerHTML='';};
- const seoul=createSeoulEntry({dramaPending:()=>false,restored:Promise.resolve(),operating,client,life,home:{tutor:()=>({tutor:tutor?'mongle':null}),state:{reduced:true},toast(m){st.toasts.push(m);}},
+ const seoul=createSeoulEntry({dramaPending:()=>false,restored:Promise.resolve(restoreFailed?{failed:true}:{failed:false}),operating,client,life,home:{tutor:()=>({tutor:tutor?'mongle':null}),state:{reduced:true},toast(m){st.toasts.push(m);}},
   worldUrl:p=>new URL('/'+p,location.origin).href,launchGame:async(id,o)=>{st.games.push([id,o]);},signIn:(a,lead,guestLabel)=>{st.signIns.push(lead);st.guestLabel=guestLabel;},show,close,selectLanguage(){},tutorStatus:()=>({blocked}),native:()=>native});
  window.__seoul=seoul;window.__st=st;window.__panel=panel;
  return true;
@@ -104,7 +104,7 @@ const guestKey='synk.world.arrival.v1:guest';
  await page.close();}
 
 // 6. 돌아온 계정 · PC 앱 · 기록 충돌: 서울행 없음(스위치가 켜져 있어도)
-for(const [what,opts] of [['돌아온 계정',{owner:'acc-5',tutor:true}],['PC 앱',{owner:'acc-6',native:true}],['기록 충돌',{owner:'acc-7',blocked:true}]]){
+for(const [what,opts] of [['돌아온 계정',{owner:'acc-5',tutor:true}],['PC 앱',{owner:'acc-6',native:true}],['기록 충돌',{owner:'acc-7',blocked:true}],['로그인을 못 되살림',{owner:null,restoreFailed:true}],['계정 진도를 못 엶',{owner:'acc-8',unscoped:true}]]){
  const page=await fresh();
  await page.evaluate(()=>history.replaceState(null,'','?seoulAuto=1'));
  await setup(page,{...opts,operating:true});
@@ -245,6 +245,18 @@ for(const [stage,screen] of [['dream','#s-title'],['card','#s-path']]){
  await page.evaluate(()=>{window.SYNKSeoulHost.save({stage:'left'});window.SYNKSeoulHost.leave();});
  check(await res==='done','저장 막힘: 그래도 앱은 이어짐');
  check(await page.evaluate(()=>window.__st.toasts.length===1),'저장 막힘: 못 저장했다고 알림',await page.evaluate(()=>window.__st.toasts[0]));
+ await page.close();}
+
+// 14f. 미리 받은 틀은 올리기 전까지 숨기고 누를 수 없다 — 판별이 늦어도 서울행 첫 화면이 비치거나 먼저 눌리지 않는다
+{const page=await fresh();
+ await setup(page,{owner:null,operating:true});
+ await page.addStyleTag({url:base+'/app-shell.css'});   // 실제 앱의 층 규칙(.seoul-layer.is-waiting)
+ await page.evaluate(()=>window.__seoul.beforeTitle());
+ await page.waitForFunction(()=>!!document.querySelector('#seoul-layer'),null,{timeout:10000});
+ check(await page.evaluate(()=>{const d=document.querySelector('#seoul-layer');return d.inert&&getComputedStyle(d).visibility==='hidden';}),'올리기 전 틀은 숨김 · 누를 수 없음');
+ await page.evaluate(()=>{window.__done=window.__seoul.run();});
+ await page.waitForFunction(()=>document.querySelector('#seoul-layer')?.matches(':modal'),null,{timeout:20000});
+ check(await page.evaluate(()=>{const d=document.querySelector('#seoul-layer');return !d.inert&&getComputedStyle(d).visibility==='visible';}),'올리면 보이고 누를 수 있음');
  await page.close();}
 
 // 15. 통로는 이상한 값을 조용히 버린다

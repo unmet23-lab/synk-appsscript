@@ -70,11 +70,15 @@ export function createSeoulEntry({dramaPending,restored,operating,client,life,ho
 
  /* ── 판별 ── 복원 → 생활 기록 → 표 */
  async function decide(){
-  await restored;
+  const first=await restored;
   const who=owner(),generation=client().generation;
   if(native())return {run:false};
+  // 저장된 로그인을 서버 · 네트워크 오류로 못 되살렸으면 손님으로 보지 않고 물러난다 — 기존 학생이 서울행에 들어가지 않고 지금의 복구 창을 본다
+  if(first?.failed&&!client().snapshot)return {run:false};
   await life.ensure();
   if(who!==owner()||generation!==client().generation)return {run:false};
+  // 계정인데 계정 진도를 못 열어 이 기기 기록으로 섰으면 튜터를 읽을 수 없다 — 물러나 관문의 복구 창에 맡긴다(app-shell prepareWorldTutor와 같은 조건)
+  if(who!=='guest'&&!life.progress?.status?.()?.scoped)return {run:false};
   let blocked=false;try{blocked=!!tutorStatus(who)?.blocked;}catch{blocked=true;}
   const guest=readGuest(),arrival=who==='guest'?null:accountArrival();
   // 계정에 이미 있으면 계정이 이기고, 이 기기 손님 사본은 다음 사람에게 남기지 않는다
@@ -89,7 +93,7 @@ export function createSeoulEntry({dramaPending,restored,operating,client,life,ho
   if(session?.dialog)return session;
   const dialog=document.createElement('dialog');dialog.id='seoul-layer';dialog.className='seoul-layer';
   const frame=document.createElement('iframe');frame.title='SYNK WORLD';frame.setAttribute('allow','autoplay; fullscreen');frame.className='seoul-frame';frame.src=worldUrl('seoul-arrival/');
-  dialog.append(frame);document.body.append(dialog);dialog.show();
+  dialog.append(frame);document.body.append(dialog);dialog.inert=true;dialog.classList.add('is-waiting');dialog.show();
   const s=session||{};Object.assign(s,{dialog,frame,api:null,closing:false,tapped:false,begun:false,owner:owner(),pending:{}});session=s;
   s.ready=new Promise(res=>{s.markReady=res;});
   dialog.addEventListener('cancel',event=>event.preventDefault());
@@ -108,7 +112,8 @@ export function createSeoulEntry({dramaPending,restored,operating,client,life,ho
   try{s.dialog?.close();}catch{}s.dialog?.remove();
   if(window.SYNKSeoulHost===host)delete window.SYNKSeoulHost;
  }
- function raise(){const d=session?.dialog;if(!d)return;session.raised=true;try{if(d.open)d.close();d.showModal();}catch{/* 이미 모달 */}}
+ function reveal(d){d.inert=false;d.classList.remove('is-waiting');}
+ function raise(){const d=session?.dialog;if(!d)return;session.raised=true;reveal(d);try{if(d.open)d.close();d.showModal();}catch{/* 이미 모달 */}}
  const insets=()=>{const probe=document.createElement('div');probe.style.cssText='position:fixed;visibility:hidden;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)';document.body.append(probe);const c=getComputedStyle(probe),out={sat:parseFloat(c.paddingTop)||0,sab:parseFloat(c.paddingBottom)||0};probe.remove();return out;};
  onLang(code=>{try{session?.api?.setLang(code);}catch{}const door=document.querySelector('#my-road-button');if(door)door.textContent=seoulText('road',code);});
 
@@ -172,7 +177,8 @@ export function createSeoulEntry({dramaPending,restored,operating,client,life,ho
   const d=s.decision;
   if(d?.run&&d.fresh&&languageReady()){
    if(!hasChosenLang()){setLang('ko');try{selectLanguage?.('ko');}catch{}}
-   try{s.api.start({at:'title',handoff:true});s.begun=true;s.api.begin();}catch{s.begun=false;return false;}
+   reveal(s.dialog);
+   try{s.api.start({at:'title',handoff:true});s.begun=true;s.api.begin();}catch{s.begun=false;s.dialog.inert=true;s.dialog.classList.add('is-waiting');return false;}
    return true;
   }
   return false;

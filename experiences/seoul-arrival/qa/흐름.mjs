@@ -62,7 +62,7 @@ await page.addInitScript(({linesVersion})=>{if(window!==window.top)return;
 },{linesVersion:lesson.linesVersion});
 // /drama/: 실제 시범판 파일(공개 빌드처럼 표시를 단다), 재생 사본은 공용 작업본에서
 const frameAsked=[];page.on('request',q=>{if(/\/seoul-arrival\//.test(q.url()))frameAsked.push(q.url());});
-const switchOff=text=>{if(!/export const SEOUL_AUTO=(true|false);/.test(text))throw Error('seoul-entry.mjs에서 스위치 줄을 못 찾았다');return text.replace(/export const SEOUL_AUTO=true;/,'export const SEOUL_AUTO=false;');};
+const switchOff=text=>{if(!/export const SEOUL_AUTO=(true|false);/.test(text)){console.log('실패 seoul-entry.mjs에서 스위치 줄을 못 찾았다(--꺼짐은 끈 판을 만들 수 없다)');process.exit(1);}return text.replace(/export const SEOUL_AUTO=true;/,'export const SEOUL_AUTO=false;');};
 if(OFF&&!CAND)await page.route(/\/seoul-entry\.mjs(\?|$)/,async route=>{const r=await route.fetch();return route.fulfill({response:r,body:switchOff(await r.text())});});
 if(CAND){let served=0;
  await page.route('https://synk.im/world/**',async route=>{

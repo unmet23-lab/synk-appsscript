@@ -955,7 +955,7 @@ if(home.isMaru){const recovery=document.createElement('button');recovery.id='tut
 shellOpen=true;
 if(shellHidden)life.close();
 if(shellMissed)client.emit();
-const initial=await initialRestore;finishInitialRestore();
+const initial=await initialRestore;finishInitialRestore(initial);
 // 같은 경계에서 뒤의 복원(입장 관문·다시 연결)이 이미 계정을 세웠으면 옛 실패·미복원으로 환영 화면을 띄우지 않는다.
 const initialCurrent=()=>restoreCurrent(initial)&&!client.snapshot;
 if(initial.failed&&!home.isMaru&&initialCurrent())welcome();
