@@ -63,7 +63,8 @@ await page.addInitScript(({linesVersion})=>{
    const ko=subs.querySelector('.ko');if(!ko)return;
    const stage=document.querySelector('.stage').getBoundingClientRect(),box=ko.getBoundingClientRect(),lh=parseFloat(getComputedStyle(ko).lineHeight);
    const media=[document.querySelector('#reply'),document.querySelector('#voice')].find(m=>m&&!m.paused);
-   const pos=parseFloat(getComputedStyle(document.querySelector('.layer')).objectPosition.split(' ')[1])/100,videoH=stage.width*16/9,chin=stage.top+videoH*.38-Math.max(0,videoH-stage.height)*pos;
+   const shown=document.querySelector('.stage .'+({listen:'loop',reply:'reply'}[document.querySelector('.stage').dataset.mode]||'still'))||document.querySelector('.layer');
+   const pos=parseFloat(getComputedStyle(shown).objectPosition.split(' ')[1])/100,videoH=stage.width*16/9,chin=stage.top+videoH*.38-Math.max(0,videoH-stage.height)*pos;
    top.__cues.push({at:Date.now(),text:ko.textContent,mean:subs.querySelector('.mean')?.textContent||'',who:subs.querySelector('.who')?.textContent||'',rows:Math.round(box.height/lh),crowded:document.querySelector('.app').classList.contains('crowded'),top:Math.round(subs.getBoundingClientRect().top),chin:Math.round(chin),stageBottom:Math.round(stage.bottom),time:media?+media.currentTime.toFixed(2):null,over:document.documentElement.scrollWidth-innerWidth});
   }).observe(subs,{childList:true});
  });

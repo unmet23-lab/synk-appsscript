@@ -303,7 +303,7 @@ function subs(ko, meaning, who, motion = null, meanLang = 'en') {
  if (prevWho !== who) anim(whoEl, [{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 350 });
  if (motion === 'pop') anim(line, [{ transform: 'scale(.6)', opacity: 0 }, { transform: 'scale(1.08)', opacity: 1, offset: .6 }, { transform: 'rotate(-1.5deg) scale(1.02)', offset: .8 }, { transform: 'none', opacity: 1 }], { duration: 520 });
  else { const quick = motion === 'cue'; words.forEach((w, i) => anim(w, [{ opacity: 0, filter: 'blur(8px)', transform: 'translateY(8px)' }, { opacity: 1, filter: 'blur(0)', transform: 'none' }], { duration: quick ? 360 : 520, delay: i * (quick ? 60 : 110) })); }
- anim(meanEl, [{ opacity: 0 }, { opacity: 1 }], { duration: 400, delay: motion === 'pop' ? 150 : 150 + words.length * (motion === 'cue' ? 60 : 110) });
+ anim(meanEl, [{ opacity: 0 }, { opacity: 1 }], { duration: 400, delay: motion === 'pop' || motion === 'cue' ? 150 : 150 + words.length * 110 });
 }
 // 장면 사진은 0.6초에 떠오르고 9초 동안 1.1 → 1.0으로 아주 느리게 밀린다.
 function pushStill() { anim(ui.still, [{ transform: 'scale(1.1)' }, { transform: 'scale(1)' }], { duration: 9000, easing: 'linear' }); }
@@ -795,9 +795,12 @@ function followCues(cues, media, from) {
  };
  let raf = 0;
  const tick = () => { if (!media.paused) show(media.currentTime); raf = requestAnimationFrame(tick); };
+ // 탭을 옮기거나 창을 가리면 그림 틱이 멈춘다 — 소리는 계속 나므로 소리 시각 · 끝 소식으로도 넘긴다(끝나면 마지막 화면).
+ const onTime = () => show(media.currentTime);
+ media.addEventListener('timeupdate', onTime); media.addEventListener('ended', onTime);
  show(from);
  raf = requestAnimationFrame(tick);
- return { stop: () => cancelAnimationFrame(raf), left: () => Math.max(0, CUE_MIN_MS - (performance.now() - shownAt)) };
+ return { stop: () => { cancelAnimationFrame(raf); media.removeEventListener('timeupdate', onTime); media.removeEventListener('ended', onTime); }, left: () => Math.max(0, CUE_MIN_MS - (performance.now() - shownAt)) };
 }
 // 선배 대사: 아래 카드는 내리고 대사는 자막으로만(영상이 주인공). 구는 쉬는 상태.
 async function actorBeat(item, s, { from } = {}) {
