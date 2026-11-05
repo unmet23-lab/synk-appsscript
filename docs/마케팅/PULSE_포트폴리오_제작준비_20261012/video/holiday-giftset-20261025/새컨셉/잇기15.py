@@ -352,6 +352,14 @@ def name_layer(W, H):
     """「유리결」 + 무엇을 파는지 한 줄 — 상아 · 옅은 금, 가는 명조. 2판(「서리꽃 홀리데이 에디션」 · 글자 2 %)은 낯선 사람 시험 셋이
     폰에서 못 읽었고 「무슨 제품인지 끝까지 모름」이었다 — 없는 브랜드라 제품 종류를 글로 말해야 한다."""
     from PIL import Image, ImageDraw
+    # 11-06 브랜드를 「霜の肌理」로 바꿨다(유호님 「이 판으로 바꿔」) — 이름 층은 이름층.cjs가 HTML로 짜 크롬으로 뽑은 투명 PNG를 쓴다
+    ja = os.path.join(os.environ["USERPROFILE"], "Documents", "synk-vendor", "pulse-season4-20261025", "콘티", "holiday-giftset",
+                      "새컨셉", "결정", "이름층_ja.png")
+    if os.path.exists(ja):
+        im = Image.open(ja).convert("RGBA")
+        if im.size != (W, H):
+            im = im.resize((W, H), Image.LANCZOS)
+        return np.asarray(im, np.float32) / 255.0
     u = min(W, H)
     im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)

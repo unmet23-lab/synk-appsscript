@@ -437,7 +437,8 @@ def add_label(m, img_file, half_w, half_h, zc, ink, both=True, face_y=None):
     l.new(u, comb.inputs["X"])
     l.new(v, comb.inputs["Y"])
     t = n.new("ShaderNodeTexImage")
-    t.image = bpy.data.images.load(os.path.join(결정, img_file), check_existing=True)
+    # 라벨 원고 폴더는 환경 변수로 바꿀 수 있다(11-06 이름 바꾸기 시안 — 원래 라벨 파일은 그대로 두고 다른 말 판을 굽는다)
+    t.image = bpy.data.images.load(os.path.join(os.environ.get("SYNK_LABEL_DIR") or 결정, img_file), check_existing=True)
     t.extension = "CLIP"
     l.new(comb.outputs[0], t.inputs["Vector"])
     # 유리 안쪽에서 닿은 광선(뒷면)엔 잉크를 안 보인다 — 두꺼운 앰플 속에서 라벨 뒷면이 한 번 더 비쳐 이름이 두 번 보였다
