@@ -1,0 +1,3 @@
+PHOTOREAL PRODUCT PHOTOGRAPHY, vertical 4:5.
+A plain dark walnut wood desk surface seen straight from above, filling the whole frame edge to edge: a staff desk inside a small entrance booth. Rich, calm walnut grain running left to right, satin finish, a few very faint everyday scuffs. Soft daylight falls from the top of the frame (a window just above it), so the top edge is a little brighter and the bottom falls off gently darker. Completely empty and even, so papers can be laid on it later.
+A real photograph — never an illustration, never a 3D render. No objects, no papers, no text, no logos, no people, no hands, no strong highlights, no vignette frame.

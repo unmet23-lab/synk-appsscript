@@ -84,7 +84,7 @@ test('native tutor trust covers exact home variants and denies polluted or game-
     const url=entry+page+query;assert.equal(trustedEntry(url,entry,'world'),true,url);assert.equal(allowedNavigation(url,entry,'world'),true,url);
   }
   for(const suffix of ['?code=secret','?next=evil','?opening=off&opening=off','?tutor=other','?cafe=2','#callback','/','private.html','korean-runner/index.html'])assert.equal(trustedEntry(entry+suffix,entry,'world'),false,suffix);
-  for(const slug of ['korean-runner','korean-rhythm','hangul-stage','order-rush','blank-slice','snap-words','board-decode','korean-racing','talk-rally','town'])for(const ending of ['/','/index.html']){
+  for(const slug of ['korean-runner','korean-rhythm','hangul-stage','order-rush','entry-check','blank-slice','snap-words','board-decode','korean-racing','talk-rally','town'])for(const ending of ['/','/index.html']){
     const url=entry+slug+ending;assert.equal(allowedNavigation(url,entry,'world'),true);assert.equal(trustedEntry(url,entry,'world'),false);
   }
   assert.doesNotMatch(contentSecurityPolicy('mainFrame').split(';').find(part=>part.trim().startsWith('script-src')),/unsafe-inline|unsafe-eval/);

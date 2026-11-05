@@ -1,0 +1,1367 @@
+{
+  "items": [
+    {
+      "itemKey": "entry-check.concert-01.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.concert-01.v1",
+      "officialType": "TI-R-40",
+      "reason": "날짜 변경을 읽고 16일 표 손님을 들여보내는 판단이 유일하게 맞는 문항입니다. 오답도 지문 규칙으로 지워지므로 그대로 써도 됩니다. | 일정 변경 및 기존 표 허용 규칙을 확인하는 기존 게임 문항으로, 정답이 유일하고 오답(날짜) 매력도와 난도가 모두 적절해 통과.",
+      "hash": "1b1751862a36fdba",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.concert-02.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.concert-02.v1",
+      "officialType": "TI-R-40",
+      "reason": "정답 ‘돌려보내기 · 의자’가 하나로 분명하고, 날짜 변경이 좋은 함정 구실을 합니다. 해설에 ‘5월 16일 표로 들어올 수 있어서 날짜는 괜찮아요’를 한 줄 덧붙이면 더 좋지만, 지금 그대로 통과시켜도 됩니다. | 의자 반입 금지 규칙과 날짜 변경 예외를 함께 확인하게 하는 기존 게임 문항으로, 정답이 명확하고 오답 구성이 좋아 통과.",
+      "hash": "d1845b5622f45b62",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.concert-03.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.concert-03.v1",
+      "officialType": "TI-R-40",
+      "reason": "The answer (돌려보내기 · 날짜) is unique and clear. The item fits the game format, the grade-2 level and the detail skill, so it passes. | 안내문의 변경된 입장 가능 날짜(5월 16일 표)와 손님 입장권 날짜(5월 23일)를 대조하는 기존 게임 문항으로, 정답이 유일하고 난도·해설 모두 적절하여 통과.",
+      "hash": "afd76bb082a9a404",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.concert-04.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.concert-04.v1",
+      "officialType": "TI-R-40",
+      "reason": "날짜 변경 뒤에도 16일 표를 받는다는 규칙과 짐·나이 조건을 대조하면 들여보내기가 유일한 정답이다. 오답은 날짜·의자 쪽이 매력적이고 해설도 근거를 바르게 짚는다. 게임 꼴 기존 문항으로 통과. | 문항 구조와 정답 유일성·난도는 좋으나, '돗자리'·'보호자'·'구분'이 TOPIK I 2급 어휘 수준을 넘어가므로 초급 어휘로 다듬어 써야 함. | 직접 풀어 보면 답은 0번 「들여보내기」이고 정답 칸과 같다. 근거는 셋이다. 음악회는 17일로 바뀌었지만 안내문이 「5월 16일 표로 들어올 수 있습니다」라고 했고, 짐의 돗자리는 「가지고 와도 됩니다」이며, 손님은 어른이라 7살 이하 규칙과 상관없다. 과자를 막는 말은 안내문에 없고 지금 시각을 제한하는 말도 없으니 정답은 하나뿐이다. 날짜·의자 오답은 날짜가 바뀐 점과 짐 목록 때문에 그럴듯하다. 기존 게임 꼴(들여보내기·돌려보내기)이고 해설이 한국어만 있는 것도 허용 범위다. B는 '돗자리'·'보호자'·'구분'이 어휘 단계를 넘는다고 지적했다. 그러나 이 문항은 안내문의 낱말과 짐 목록의 낱말을 맞대어 보면 풀리므로 낱말 뜻을 몰라도 판단을 그르치지 않는다. 또 돗자리를 '가방'으로 바꾸면 '의자는 안 됨'",
+      "hash": "8f1b2da4d7c3ae2d",
+      "reviewedAt": "2026-11-03T21:48:10.376Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r5",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.concert-05.v1",
+      "source": "entry-check",
+      "verdict": "fix",
+      "skillId": "ko.reading.negation",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.concert-05.v1",
+      "officialType": "TI-R-40",
+      "reason": "정답(4)은 유일하고 함정 설계도 좋다. 다만 해설이 말하는 「6시 25분 알림」이 글에 없어 글과 해설이 어긋난다. 알림 줄을 글에 따로 넣으면 쓸 수 있다. | 지문에는 없는 ‘6시 25분 알림’을 해설과 보기(‘음식(알림)’)가 언급하고 있고 보기가 5지선다로 되어 있어, 지문에 [알림] 오후 6시 25분 구분을 복원하고 4지선다로 다듬는 수정이 필요함.",
+      "hash": "88a0e3576dbfa2df",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.concert-06.v1",
+      "source": "entry-check",
+      "verdict": "fix",
+      "skillId": "ko.reading.condition",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.concert-06.v1",
+      "officialType": "TI-R-40",
+      "suggestedSkillId": "ko.reading.negation",
+      "reason": "조건 적용형 게임 문항으로, 정답 「들여보내기」가 유일하고 근거가 분명합니다. 바로 쓸 수 있습니다. 다만 보기 「돌려보내기 · 음식(알림)」의 「(알림)」은 학습자에게 모호할 수 있으니, 다음 판에서 「돌려보내기 · 음식」으로 바꾸기를 권합니다. | 문항 구조와 정답은 타당하나, 손님 대사의 '만'이 짐 목록(돗자리 포함)과 어긋나고 정답 근거가 부정·변경에 해당하므로 대사와 skillId를 손질해야 함. | I solved it myself and got 0 (들여보내기), so the answer is unique and correct. The 16일 ticket may enter under 「5월 16일 표로 들어올 수 있습니다」, the mat is allowed by 「돗자리는 가지고 와도 됩니다」, and water is allowed by 「물은 괜찮습니다」. However, reviewer B is right about one problem: the guest says 「물 한 병만 가지고 왔어요」, but [짐] lists 물병, 돗자리. A learner who reads 「만」 literally will see a contradictio",
+      "hash": "f2b9af5e9e698954",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.concert-07.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.condition",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.concert-07.v1",
+      "officialType": "TI-R-40",
+      "reason": "정답은 3번(7살 이하 어린이)으로 하나뿐이에요. 날짜 변경을 함정으로 둔 조건 읽기 문항으로 게임 꼴 안에서 잘 짜였어요. 해설에 날짜 함정 설명을 더하면 좋지만, 고치지 않아도 통과예요. | 7살 이하 어린이의 보호자 동반 조건 위반을 명확하고 자연스럽게 묻는 양호한 문항.",
+      "hash": "1863301882aac664",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.concert-08.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.condition",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.concert-08.v1",
+      "officialType": "TI-R-40",
+      "reason": "날짜 변경·보호자 동반·소지품 조건을 모두 따져야 하는 게임형 조건 읽기 문항이다. 정답 「들여보내기」가 유일하다. 「지금부터」 표현과 「음식(알림)」 표기가 조금 어색하지만 학습자에게 해가 없어 통과로 본다. | 안내문의 변경·조건 규칙(16일 표 허용, 5살 어린이 보호자 동반, 돗자리 허용)을 모두 충족하는 손님을 판별하는 기존 게임 문항으로, 오답 함정과 해설이 탄탄하여 통과(pass) 판정함.",
+      "hash": "3487bf31507dbcd5",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.concert-09.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.concert-09.v1",
+      "officialType": "TI-R-40",
+      "reason": "16일 표 입장 허용과 의자 금지 규칙을 따져 의자 때문에 돌려보내는 것이 유일한 정답입니다. 게임 꼴 안에서 문제없이 쓸 수 있고, 해설 보강과 라벨 정리는 선택 사항입니다. | 날짜 변경 예외와 작은 의자 회유 대사 속에서 의자 반입 금지 규칙을 정확히 적용하는 기존 게임 문항으로, 부정·변경 능력과 난도 2에 잘 맞아 통과(pass) 판정함.",
+      "hash": "7976016fb4a5818c",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.concert-10.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.concert-10.v1",
+      "officialType": "TI-R-40",
+      "reason": "날짜 변경과 16일 표 허용을 읽어 들여보내기를 고르는 문항으로, 정답이 유일하고 능력·난도도 맞습니다. 사소한 칸 이름 어색함 외에 문제가 없어 통과합니다. | u037과 같은 안내문 계열의 변형 문항으로, 날짜 변경에 따른 기존 입장권 사용 가능 여부를 자연스럽게 묻고 해설도 정확해 통과.",
+      "hash": "0772552f2df37d7a",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.concert-11.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.concert-11.v1",
+      "officialType": "TI-R-40",
+      "reason": "의자 금지 규칙으로 정답(2)이 유일하다. 날짜 변경 함정과 어린이 조건이 그럴듯한 오답이며, 난도·능력·해설 모두 적절해 통과한다. | u039와 같은 조건의 변형 문항으로, 금지·변경 규칙 대조가 깔끔하고 한국어 해설이 오답 근거까지 충실히 짚어 통과.",
+      "hash": "6c41da87064d43f4",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.concert-12.v3",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.concert-12.v1",
+      "officialType": "TI-R-40",
+      "reason": "날짜 변경 안내와 손님 표를 대조해 날짜 때문에 돌려보내는 것이 유일한 정답이에요. 오답 함정이 적절하고 난도·능력도 맞아 그대로 써도 돼요. | 같은 토요일(5월 9일 vs 5월 16일)과 허용 물품(돗자리) 함정을 잘 설계한 문항으로, 정답 유일성과 해설 모두 우수하여 통과.",
+      "hash": "55e461f86736ca74",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.concert-13.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.concert-13.v1",
+      "officialType": "TI-R-40",
+      "reason": "안내문의 새 금지 조건(음식)과 날짜 변경 함정을 대조하는 게임형 문항이다. 정답이 유일하고 난도와 능력도 맞아 통과로 판정한다. | 안내문의 음식 반입 금지 규칙과 날짜 변경 예외를 정확히 겨눈 양호한 기존 게임 문항.",
+      "hash": "54398e18ed557486",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.concert-14.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.condition",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.concert-14.v1",
+      "officialType": "TI-R-40",
+      "reason": "Entry-check game item: all three conditions (date change, items, under-7 with a guardian) are met, so 「들여보내기」 is the single answer. The explanation is accurate and the distractors are tied to the rules. Pass. | 7살 이하 보호자 동반 조건의 경계값(7살)과 동반 충족 상황을 잘 설계한 양호한 문항.",
+      "hash": "9ba813858b37bb60",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.library-01.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.library-01.v1",
+      "officialType": "TI-R-40",
+      "reason": "정답이 유일하고 거절 사유 셋이 규칙과 대응해 그럴듯하다. 해설도 세 근거를 모두 짚는 기존 게임 문항이라 그대로 통과한다. | 중앙도서관 이용 안내의 카드 명의·소지품·입장 마감 시각을 대조해 통과를 판별하는 기존 게임 문항으로 모든 기준을 충족함.",
+      "hash": "64e5f0712f24f7d4",
+      "reviewedAt": "2026-11-03T21:48:06.829Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r4",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.library-02.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.library-02.v1",
+      "officialType": "TI-R-40",
+      "reason": "정답(1번 카드 사유 거절)이 유일하고 근거가 분명하다. 오답은 안내문의 실제 규칙을 써서 그럴듯하며, 2급 난도에 맞는 게임형 TI-R-40 문항이다. 「손님 서류」 칸이 다소 어색한 점은 사소하므로 통과로 판정한다. | 도서관 카드 미소지 상황을 서류와 발화로 명확히 제시해 거절 사유를 고르게 한 기존 게임 문항으로 모든 기준을 충족함.",
+      "hash": "a723d03bc415bff6",
+      "reviewedAt": "2026-11-03T21:48:06.829Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r4",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.library-03.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.condition",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.library-03.v1",
+      "officialType": "TI-R-40",
+      "reason": "카드·시각·음료 조건을 모두 만족해 들여보내기가 유일한 정답입니다. 기존 게임 꼴 안에서 조건 읽기를 잘 겨누고 있어 통과입니다. | 음료 반입 허용 조건(뚜껑 유무)을 포함한 세 규칙을 모두 확인해 통과시키는 문항으로, 구성과 해설이 완결됨.",
+      "hash": "755cecc58bfd52e5",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.library-04.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.condition",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.library-04.v1",
+      "officialType": "TI-R-40",
+      "reason": "정답이 하나뿐이고 조건 읽기를 잘 겨눈 게임형 문항입니다. 해설 보강은 선택 사항이라 통과입니다. | 뚜껑 없는 커피를 가진 손님을 안내문 조건에 따라 거절하는 문항으로, 정답 근거와 난도·유형이 모두 적절함.",
+      "hash": "68ff581a97b1d125",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.library-05.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.library-05.v1",
+      "officialType": "TI-R-40",
+      "reason": "수영장 카드로는 도서관에 들어갈 수 없다는 근거가 분명해서 정답이 하나로 정해져요. 「제 카드예요」 함정도 좋아요. 게임 꼴 안에서 기준을 모두 충족해 통과예요. | 도서관 카드 대신 수영장 회원 카드를 제시한 손님을 가려내는 기존 게임 문항으로, 정답이 유일하고 난도·능력·해설이 모두 적절하다.",
+      "hash": "a9ee7f0ea0486f8c",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.library-06.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.library-06.v1",
+      "officialType": "TI-R-40",
+      "reason": "카드·시각은 통과하고 김밥(음식) 때문에 거절하는 구조가 분명해요. 정답이 하나뿐이고 함정도 적절해서 통과예요. 해설에 시각 함정을 짚는 한 줄을 더하면 더 좋아요. | 음식(김밥) 반입 금지 규칙 위반을 판별하는 기존 게임 문항으로, 문맥 단서와 해설이 명확하고 모든 기준을 충족한다.",
+      "hash": "934f6177ea86efe0",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.library-07.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.library-07.v1",
+      "officialType": "TI-R-40",
+      "reason": "정답 1번(카드 주인과 손님이 다름)이 유일하게 맞습니다. 시각·짐 오답도 적절해 게임 꼴 안에서 문제없이 쓸 수 있는 문항입니다. | 언니 명의의 도서관 카드를 가져온 손님을 판별하는 기존 게임 문항으로, 세부 정보 대조 설계와 한국어 표기·해설이 모두 바르다.",
+      "hash": "6072a5b7215ff3bf",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.library-08.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.library-08.v1",
+      "officialType": "TI-R-40",
+      "reason": "정답이 유일하고 시간 함정이 잘 짜인 게임형 도서관 입장 문항이다. 해설에 카드·짐 확인을 한 줄 더하면 좋지만 그대로 통과해도 된다. | 입장 마감 직전(5시 26분)에 모든 이용 조건을 갖추고 방문한 손님을 통과시키는 문항으로, 정답 유일성과 변별력·해설이 모두 적절하다.",
+      "hash": "cfb5aadf1bd70109",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.library-09.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.library-09.v1",
+      "officialType": "TI-R-40",
+      "reason": "시각 규칙(5시 30분 이후 입장 불가)을 대조해 거절 사유를 고르는 기존 게임 문항이다. 정답이 유일하고 오답도 그럴듯하며, 급과 난도가 맞아 통과다. | 시간 세부 정보를 대조해 입장 불가 사유를 고르는 기존 게임 문항으로 정답 유일성·난도·해설 모두 적절함.",
+      "hash": "18fe20b0261b7cca",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.library-10.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.library-10.v1",
+      "officialType": "TI-R-40",
+      "reason": "본인 카드·책만 있음·입장 마감 전이라 들여보내기가 유일한 정답임. 게임 꼴 안에서 오답 설계·난도·해설 모두 적절해 통과임. | 도서관 안내문의 세 규칙과 손님 세부 정보를 대조해 통과를 판별하는 문항으로, 정답 유일성과 해설 모두 적절함.",
+      "hash": "f5a90dee7723d863",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.library-11.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.condition",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.library-11.v1",
+      "officialType": "TI-R-40",
+      "reason": "본인 카드, 입장 마감 전 시각, 뚜껑 있는 음료로 세 조건을 모두 충족하므로 '들여보내기'가 유일한 정답입니다. 조건 읽기를 겨눈 게임형 문항으로 문제가 없어 통과입니다. | 도서관 이용 안내의 세 가지 조건을 손님 정보와 정확히 대조하도록 짜인 자연스러운 문항으로 그대로 통과 가능함.",
+      "hash": "a24757a9a78684ee",
+      "reviewedAt": "2026-11-03T21:48:06.829Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r4",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.museum-01.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.condition",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.museum-01.v1",
+      "officialType": "TI-R-40",
+      "reason": "입장 시간, 카메라 반입, 표와 나이 조건을 모두 충족해 '들여보내기'가 유일한 정답입니다. 게임형 안에서 조건 읽기 문항으로 문제가 없어 통과입니다. | 미술관 안내문의 입장 시각·소지품·관람권 조건을 고르게 점검하는 깔끔한 문항으로 통과 가능함.",
+      "hash": "165160c626b95e7b",
+      "reviewedAt": "2026-11-03T21:48:06.829Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r4",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.museum-02.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.museum-02.v1",
+      "officialType": "TI-R-40",
+      "reason": "시간·표·나이 조건은 모두 맞고 카메라만 금지 규칙에 걸려 정답이 하나로 분명합니다. 게임 꼴 안에서 기준을 모두 충족해 통과입니다. 해설에 짐 속 카메라 근거를 덧붙이면 더 좋습니다. | 금지 품목(카메라) 반입 규정을 대조해 거절 사유를 고르는 기존 게임 문항으로 정답 유일성·난도·대표 능력·해설 모두 적절함.",
+      "hash": "3a752f4af3fd2941",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.museum-03.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.condition",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.museum-03.v1",
+      "officialType": "TI-R-40",
+      "reason": "정답 3번(표와 나이)이 유일하고, 시간·카메라 오답은 글에서 분명히 지워진다. 게임 꼴 안에서 조건 읽기를 잘 겨눠 통과한다. | 어린이 표 연령 제한(13살 이하)과 15살 손님 정보를 대조하는 기존 게임 문항으로, 조건 이해 능력과 난도·해설이 모두 적절함.",
+      "hash": "b63d1c15df7cefea",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.museum-04.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.condition",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.museum-04.v1",
+      "officialType": "TI-R-40",
+      "reason": "조건 세 개를 모두 만족해 정답 「들여보내기」가 하나로 분명해요. 오답도 각 조건을 겨눠 그럴듯하고, 해설도 정확해요. 손님 말의 「할머니는」이 조금 어색한 것 말고는 문제가 없어 통과예요. | 안내문의 세 가지 이용 조건과 손님 정보가 명확히 맞물리고 어휘·문형도 TOPIK I 2급 수준에 부합하여 그대로 사용 가능함.",
+      "hash": "ef06ded1f386e98a",
+      "reviewedAt": "2026-11-03T21:48:10.376Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r5",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.museum-05.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.condition",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.museum-05.v1",
+      "officialType": "TI-R-40",
+      "reason": "조건(65살 이상 무료)을 서류의 나이(62살)와 맞춰 보는 게임형 문항이에요. 정답은 하나뿐이고, 시간·카메라 오답도 그럴듯해요. 기존 문항 기준으로 통과예요. | 무료 관람 연령 조건(65살 이상)과 손님 나이(62살)의 불일치를 가려내는 기존 게임형 문항으로, 정답 유일성·오답 매력도·난도 모두 적절함.",
+      "hash": "71328ffacf8d9b9d",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.museum-06.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.condition",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.museum-06.v1",
+      "officialType": "TI-R-40",
+      "reason": "정답 유일하고 조건 읽기에 잘 맞는 게임형 문항이라 그대로 통과입니다. | 시각·소지품·어린이 표 연령 조건을 모두 충족하는 통과 사례를 다룬 기존 게임형 문항으로, 조건 대조 설계와 해설이 정확함.",
+      "hash": "00d4a6055cbabf43",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.museum-07.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.museum-07.v1",
+      "officialType": "TI-R-40",
+      "reason": "The answer is unique and the distractors (the 4:55 time and the 'won't take photos' line) are well built. Suitable for a game-format item. Pass. | 촬영 금지가 아닌 카메라 반입 금지 규칙을 정확히 읽어야 풀리는 기존 게임형 문항으로, 함정 대사 설계와 해설이 우수함.",
+      "hash": "7da9e2cf65a467f7",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.museum-08.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.museum-08.v1",
+      "officialType": "TI-R-40",
+      "reason": "입장 마감 5시를 4분 넘겨 돌려보내는 1번이 유일한 정답이다. 오답들도 규정에 기대어 그럴듯하고, 게임 꼴 안에서 TI-R-40의 세부 대조 능력과 2급 난도에 맞아 통과한다. | 관람 마감(6시)과 입장 마감(5시)을 구분해 현재 시각(5시 4분)과 대조하는 기존 게임형 문항으로, 세부 정보 변별력과 완성도가 높음.",
+      "hash": "e3f514f94e5371c1",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.museum-09.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.condition",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.museum-09.v1",
+      "officialType": "TI-R-40",
+      "reason": "입장 시간·반입 물품·표 종류라는 세 조건을 모두 만족해서 들여보내기가 유일한 정답입니다. 게임 꼴 안에서 기준을 다 지키므로 통과로 판정합니다. | 문항·정답·해설 모두 결함 없이 타당함(참고: u026과 같은 안내문에서 이름·시각·나이만 바꾼 동일 정답 구조이므로 계열 관리 시 참고).",
+      "hash": "74bcd8a5065f4a41",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.museum-10.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.museum-10.v1",
+      "officialType": "TI-R-40",
+      "reason": "카메라 반입 금지를 근거로 하는 정답이 하나뿐이에요. 시간·표 조건을 함정으로 쓴 게임형 문항으로 잘 짜여 있어 통과예요. | 안내문의 카메라 반입 금지 조건을 손님 소지품과 대조해 거절 사유를 고르는 기존 게임 문항으로, 정답 유일성·난도·해설 모두 적절함.",
+      "hash": "13296bda0cc9d4e2",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.museum-11.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.condition",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.museum-11.v1",
+      "officialType": "TI-R-40",
+      "reason": "정답 '들여보내기'가 유일하고, 세 조건 오답이 고르게 설계된 게임형 조건 읽기 문항으로 통과입니다. | 입장 시간·표와 나이·소지품 조건을 모두 충족한 손님을 통과시키는 기존 게임 문항으로, 지문·보기·해설 모두 완성도가 높음.",
+      "hash": "c65396be328239e4",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.pool-01.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.pool-01.v1",
+      "officialType": "TI-R-40",
+      "reason": "규칙 셋을 모두 지킨 손님이어서 들여보내기가 하나뿐인 정답이에요. 기존 게임 꼴 안에서 문제없어 통과예요. | 캠퍼스 수영장 안내문의 세 규칙을 손님 정보와 대조해 통과를 판별하는 기존 게임 문항으로, 모든 검수 기준을 충족함.",
+      "hash": "ed8fbec8d8562e57",
+      "reviewedAt": "2026-11-03T21:48:06.829Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r4",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.pool-02.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.pool-02.v1",
+      "officialType": "TI-R-40",
+      "reason": "음식 반입 금지 규칙과 손님의 김밥·점심 계획이 정답 2번을 분명히 가르는 기존 게임 문항입니다. 다른 거절 사유는 서류로 지워지고 언어 수준도 2급에 맞아 통과로 판정합니다. | 음식 반입 금지(부정) 규칙 적용이 명확하고 점심 발언으로 문화 어휘 장벽도 보완되어 그대로 사용 가능함.",
+      "hash": "aec2ae0d62c2e0ba",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.pool-03.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.condition",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.pool-03.v1",
+      "officialType": "TI-R-40",
+      "reason": "정답이 유일하고 조건 적용 능력을 잘 겨눈 기존 게임 문항이라 통과입니다. 해설에 「수영 모자가 있고 72살 어른이에요」를 덧붙이면 더 좋겠지만 필수는 아닙니다. | 음식 반입 금지 중 '물은 괜찮습니다'라는 허용 조건을 적용하는 기존 게임 문항으로, 해설이 간결하나 핵심 근거를 정확히 짚어 그대로 쓸 수 있다.",
+      "hash": "44cf3b11724dbb5d",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.pool-04.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.pool-04.v1",
+      "officialType": "TI-R-40",
+      "reason": "수영 모자가 없어 돌려보내는 것이 유일한 정답이에요. 물병 함정과 나이 정보도 잘 짜여 있어, 기존 게임 꼴 안에서 문제없이 통과예요. | 수영장 안내문의 필수 준비물(수영 모자) 규칙과 손님의 소지 상태를 대조하는 기존 게임 문항으로, 정답이 유일하고 오답 단서(물병)도 적절해 통과 가능함.",
+      "hash": "ba9a6bd8adf8f89e",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.pool-05.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.condition",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.pool-05.v1",
+      "officialType": "TI-R-40",
+      "reason": "정답이 유일하고 조건 읽기가 분명한 게임형 문항이다. 튜브를 이용한 함정이 적절하고, 해설이 근거를 정확히 짚는다. 통과. | 7살 이하 어린이의 보호자 동반 조건 위반을 가리는 기존 게임 문항으로, 함정 요소(주차장에 있는 아빠, 튜브)와 해설 모두 우수해 통과 가능함.",
+      "hash": "1b7593048dbb0d9f",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.pool-06.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.condition",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.pool-06.v1",
+      "officialType": "TI-R-40",
+      "reason": "정답이 유일하고, 나이 조건을 적용하는 조건 이해 문항으로 잘 짜였습니다. 해설에 모자·음식 확인을 덧붙이면 좋지만 고치지 않아도 학습자에게 해가 없어 통과입니다. | 7살 이하 보호자 동반 조건의 경계(9살 단독 입장)를 정확히 읽는지 묻는 기존 게임 문항으로, 매력적인 오답 설계와 명확한 정답 근거를 갖춰 통과 가능함.",
+      "hash": "33c981ac729e439c",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.pool-07.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.pool-07.v1",
+      "officialType": "TI-R-40",
+      "reason": "The answer (rejected for food) is unique, and the level and skill fit. The explanation could optionally add a line noting that the guest's statement '물만 가지고 왔어요' contradicts the bag list, but the item passes as is. | 안내문의 음식 반입 금지 규칙과 손님의 짐(과자)·발화 불일치를 잘 엮은 깔끔한 통과 문항.",
+      "hash": "f6de557ffc925360",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.pool-08.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.condition",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.pool-08.v1",
+      "officialType": "TI-R-40",
+      "reason": "규칙 셋을 모두 충족해서 '들여보내기'가 유일한 정답이에요. 거절 보기는 규칙과 짝을 이뤄 그럴듯하고, 난도·능력·해설 모두 적절해 통과예요. | 어린이 어른 동반 조건과 인원수 맞춤 준비물을 정확히 확인하도록 설계된 양질의 기존 게임 문항으로 통과 가능함.",
+      "hash": "6e43057da3854222",
+      "reviewedAt": "2026-11-03T21:48:06.829Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r4",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.pool-09.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.pool-09.v1",
+      "officialType": "TI-R-40",
+      "reason": "수영 모자 규칙을 어긴 손님을 돌려보내는 정답이 유일하고 분명합니다. 물병·나이 정보가 오답을 적절히 끌어당기며, 난도와 능력 설정도 맞으므로 통과입니다. | 물병을 활용한 오답 설계와 해설 근거가 모두 명확하고 자연스러워 그대로 사용 가능함.",
+      "hash": "55f216e19270f620",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.pool-10.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.pool-10.v1",
+      "officialType": "TI-R-40",
+      "reason": "음식 금지 규칙에 걸리는 손님을 돌려보내는 게임형 문항이에요. 정답이 유일하고, 매력 오답(나중에 먹겠다는 말)도 적절해요. 통과입니다. | 캠퍼스 수영장 안내문의 음식 반입 금지 규칙을 적용하는 기존 게임 문항으로, '수영한 다음에 먹을게요'라는 매력적인 함정과 정확한 해설을 갖추어 그대로 쓸 수 있다.",
+      "hash": "60a43918730d5e97",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.pool-11.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.condition",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.pool-11.v1",
+      "officialType": "TI-R-40",
+      "reason": "조건 셋을 모두 만족해 들여보내기가 유일한 정답입니다. 게임 꼴 안에서 보기·해설·난도가 적절해 통과입니다. | 물병 반입 허용 조건과 성인·모자 소지 조건을 확인하는 기존 게임 문항으로, 문항과 해설 모두 정확하다(u007과 같은 안내문·상황의 변형이므로 family 계열 관리만 참고).",
+      "hash": "3578c2d8a296cd96",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.pool-12.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.pool-12.v1",
+      "officialType": "TI-R-40",
+      "reason": "규칙 셋을 모두 충족하는 손님이라 정답 「들여보내기」가 유일하고, 게임 꼴 안에서 보기·해설·난도가 적절해 통과입니다. | 지문, 정답 유일성, 세 수칙을 모두 짚은 해설까지 흠잡을 곳 없이 통과 가능함.",
+      "hash": "624168efdea303bb",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.pool-13.v1",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.pool-13.v1",
+      "officialType": "TI-R-40",
+      "reason": "규칙 셋을 모두 지키는 손님이라 「들여보내기」가 유일한 정답이에요. 오답이 그럴듯하고 어휘 수준과 해설에도 문제가 없어서 통과예요. | 과자를 밖에 두고 왔다는 발화와 음식 반입 금지 규칙을 대조해 통과를 판단하는 기존 게임 문항으로, 오답 유인과 해설이 모두 탄탄하다.",
+      "hash": "029b8d4903d1f846",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "entry-check.pool-14.v2",
+      "source": "entry-check",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 2,
+      "responseFormat": "single-choice",
+      "familyKey": "entry-check.pool-14.v1",
+      "officialType": "TI-R-40",
+      "reason": "규칙 셋을 모두 만족하는 손님이라 정답 「들여보내기」가 유일합니다. 기존 게임 꼴 안에서 문제없어 통과입니다. | 모든 이용 규칙을 충족한 손님을 들여보내는 기존 게임 문항으로, 세부 정보 대조 구조와 해설이 명확하여 수정 없이 통과 가능함.",
+      "hash": "ad9ae272c5744347",
+      "reviewedAt": "2026-11-03T21:48:01.551Z",
+      "rubric": "topik-review-r1",
+      "packet": "entry-campus-r3",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    }
+  ],
+  "rubric": "topik-review-r1",
+  "updatedAt": "2026-11-03T21:48:10.376Z"
+}

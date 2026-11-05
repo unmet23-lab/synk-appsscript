@@ -746,6 +746,8 @@ function mountRewardTutor(){
 const games={runner:{get title(){return t('game.runner.title');},path:'korean-runner/'},rhythm:{get title(){return t('game.rhythm.title');},path:'korean-rhythm/'},hangul:{get title(){return t('game.hangul.title');},path:'hangul-stage/'},
  // 주문 폭주(11-03, 캠퍼스 판 겉 — order-rush/world-skin.css): 홈 「놀이」가 해금 표(brand-opening/play-unlocks.mjs)로 연 뒤에만 여기로 온다.
  order:{get title(){return t('game.order.title');},path:'order-rush/'},
+ // 입장 검사(11-04, 캠퍼스 판 겉 — entry-check/world-skin.css): 위와 같이 홈 「놀이」가 해금 표로 연 뒤에만 온다.
+ entry:{get title(){return t('game.entry.title');},path:'entry-check/'},
  // 빈칸 베기(11-04, 캠퍼스 판 겉 — blank-slice/world-skin.css): 위와 같이 홈 「놀이」가 해금 표로 연 뒤에만 온다.
  blank:{get title(){return t('game.blank.title');},path:'blank-slice/'},
  // 찰칵 낱말(11-04): 학생이 고른 시험 목표 급을 넘긴다 — 능력 판단이 아니라 3급 안내문을 켠 채 시작할지 정하는 데만 쓴다(experiences/snap-words/설계.md 5-3).

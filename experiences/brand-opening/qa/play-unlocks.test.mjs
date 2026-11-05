@@ -57,6 +57,11 @@ test('환승 러시는 레슨 하나를 마친 뒤 열리고, 열리면 바람�
   assert.deepEqual(PLAY_REPLACED_BY, { runner: 'subway' });
 });
 
+test('입장 검사도 지금은 싱크타운 카페 첫 방문을 마치면 열린다(축제 스태프 회차가 생기면 옮긴다)', () => {
+  assert.deepEqual(playState('entry', playRecord(learning(0))), { open: false, where: 'play.where.cafe' });
+  assert.deepEqual(playState('entry', playRecord(learning(1))), { open: true });
+});
+
 test('생활 진도를 아직 못 읽었거나 읽는 중이면 잠김으로 본다(열렸다고 먼저 말하지 않는다)', () => {
   assert.equal(playRecord(undefined), null);
   assert.equal(playRecord({}), null);
@@ -70,7 +75,7 @@ test('규칙이 이상한 기록에 던져도 잠김으로 남는다', () => {
 
 test('잠김 안내의 여는 자리 글이 화면 글 표에 세 언어로 있다', () => {
   for (const rule of Object.values(PLAY_UNLOCKS)) {
-    for (const key of [rule.where, 'play.locked', 'game.order.title', 'game.order.detail', 'game.subway.title', 'game.subway.detail', 'game.blank.title', 'game.blank.detail', 'game.snap.title', 'game.snap.detail', 'game.board.title', 'game.board.detail', 'play.locked.level', 'game.racing.title', 'game.racing.detail', 'game.rally.title', 'game.rally.detail']) {
+    for (const key of [rule.where, 'play.locked', 'game.order.title', 'game.order.detail', 'game.subway.title', 'game.subway.detail', 'game.blank.title', 'game.blank.detail', 'game.snap.title', 'game.snap.detail', 'game.board.title', 'game.board.detail', 'play.locked.level', 'game.racing.title', 'game.racing.detail', 'game.rally.title', 'game.rally.detail', 'game.entry.title', 'game.entry.detail']) {
       for (const lang of ['ko', 'en', 'mn']) assert.ok(strings[key]?.[lang], `${key}.${lang}`);
     }
   }

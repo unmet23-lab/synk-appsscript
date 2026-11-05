@@ -1,0 +1,2 @@
+THE VISITOR: a Korean man, about 62, a good-natured grandfather who just retired, an ordinary everyday neighbor. Short salt-and-pepper hair; a lean, weathered, sun-tanned long face with a slightly flat nose; thick straight grey eyebrows; narrow ordinary eyes; short grey stubble on his chin. A navy polo shirt; a beige bucket hat; reading glasses hooked on his collar.
+He is joking good-naturedly, a warm look — talking to the staff member in the window, lips parted mid-word, looking straight into the camera.

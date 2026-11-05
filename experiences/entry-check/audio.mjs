@@ -15,6 +15,20 @@ const read = (k, d) => { try { return localStorage.getItem(k) ?? d; } catch { re
 const write = (k, v) => { try { localStorage.setItem(k, v); } catch { /* 저장 불가: 이번 접속에만 적용 */ } };
 let enabled = read(KEY, 'on') !== 'off';
 let voiceEnabled = read(VOICE_KEY, 'on') !== 'off';
+// WORLD 안 캠퍼스 판(2026-11-04, world-play.mjs): 몽글 소리 · 안내 목소리(nar-)는 내지 않고 효과음은 world-sfx.mjs가 낸다. LAB에서는 부르지 않는다.
+let worldMode = null;
+const speakers = new Set();
+/** WORLD 안에서만: { skipVoice(id) → 참이면 그 목소리는 건너뜀 }. 사운드킷 · 몽글 파일은 받지 않고 play · stamp는 아무것도 내지 않는다. */
+export function useWorldMode({ skipVoice = () => false } = {}) { worldMode = { skipVoice }; }
+/** 지금 오디오 문맥(WORLD 효과음 · 음악이 같은 문맥을 쓴다). unlock 전에는 null. */
+export const context = () => ctx;
+/** 목소리가 지나는 마디(WORLD 목소리 막대가 분석기를 옆에 단다 — 소리 길은 그대로). */
+export const voiceOutput = () => voiceBus;
+/** 목소리 끝 마디를 스피커 대신 주어진 마디로 잇는다(WORLD 끝 리미터 — LAB은 부르지 않는다). */
+export function routeOutput(node) { if (master) { master.disconnect(); master.connect(node); } }
+/** 말하는 줄이 바뀔 때마다(id 또는 null) — onSpeaking(화면 표시)과 따로 여럿이 듣는다(WORLD 음악 덕킹 · 목소리 막대). */
+export const addSpeakingListener = (fn) => { speakers.add(fn); return () => speakers.delete(fn); };
+const speaking = (id) => { onSpeak?.(id); for (const fn of speakers) { try { fn(id); } catch { /* 듣는 쪽 오류가 말하기를 막지 않는다 */ } } };
 
 export const isOn = () => enabled;
 export function setOn(value) {
@@ -35,7 +49,7 @@ export async function unlock() {
       ctx = new (window.AudioContext || window.webkitAudioContext)();
       master = ctx.createGain(); master.gain.value = enabled ? 0.9 : 0; master.connect(ctx.destination);
       voiceBus = ctx.createGain(); voiceBus.gain.value = 1; voiceBus.connect(master);
-      await Promise.all(Object.entries(FILES).map(async ([k, url]) => {
+      if (!worldMode) await Promise.all(Object.entries(FILES).map(async ([k, url]) => {
         try { const res = await fetch(url); buffers.set(k, await ctx.decodeAudioData(await res.arrayBuffer())); } catch { /* 소리 하나가 없어도 게임은 계속 */ }
       }));
     }
@@ -44,7 +58,7 @@ export async function unlock() {
 }
 
 export function play(name, volume = 1) {
-  if (!ctx || !enabled) return;
+  if (!ctx || !enabled || worldMode) return;
   const buf = buffers.get(name);
   if (!buf) return;
   const src = ctx.createBufferSource(); const g = ctx.createGain();
@@ -53,7 +67,7 @@ export function play(name, volume = 1) {
 
 /** 도장: 낮은 사인 두 개가 짧게 눌린다(펠트를 누르는 둔한 '톡'). */
 export function stamp() {
-  if (!ctx || !enabled) return;
+  if (!ctx || !enabled || worldMode) return;
   const t = ctx.currentTime;
   for (const [f0, f1, v, d] of [[196, 65.4, .55, .16], [392, 131, .16, .09]]) {
     const o = ctx.createOscillator(); const g = ctx.createGain();
@@ -80,7 +94,7 @@ export const hasVoice = (id) => !!catalog?.[id];
 export const onSpeaking = (fn) => { onSpeak = fn; };
 
 function loadVoice(id) {
-  if (!hasVoice(id) || !ctx) return Promise.resolve(null);
+  if (!hasVoice(id) || !ctx || worldMode?.skipVoice(id)) return Promise.resolve(null);   // WORLD는 안내 목소리를 받지 않는다(공개 사본에 파일도 없다)
   if (!voiceBuffers.has(id)) {
     voiceBuffers.set(id, fetch(`assets/voice/${id}.mp3`).then((r) => (r.ok ? r.arrayBuffer() : null))
       .then((ab) => (ab ? ctx.decodeAudioData(ab) : null)).catch(() => null));
@@ -98,25 +112,28 @@ export async function preloadVoices(ids) {
 export function stopVoice() {
   speakToken += 1;
   if (current) { try { current.stop(); } catch { /* 이미 끝남 */ } current = null; }
-  onSpeak?.(null);
+  speaking(null);
 }
 
 /** 한 줄 말하기. 끝나면(또는 못 틀면 바로) 풀린다. 다른 말이 시작되면 false로 풀린다. */
 export async function say(id, { token = null } = {}) {
+  if (worldMode?.skipVoice(id)) return true;   // WORLD에서 안 낼 목소리는 말하던 손님을 끊지 않는다
   const mine = token ?? ++speakToken;
   if (!voiceEnabled || !enabled || !ctx || !hasVoice(id)) return true;
-  if (current) { try { current.stop(); } catch { /* 이미 끝남 */ } current = null; }
+  if (current) { try { current.stop(); } catch { /* 이미 끝남 */ } current = null; if (worldMode) speaking(null); }   // 다음 말을 받는 동안 음악이 내려간 채 남지 않게
   const buf = await loadVoice(id);
+  if (!buf && worldMode && mine === speakToken) speaking(null);   // 목소리를 못 받으면 손님이 입을 벌린 채 남지 않게
   if (!buf || mine !== speakToken) return mine === speakToken;
   const src = ctx.createBufferSource(); src.buffer = buf; src.connect(voiceBus);
-  current = src; onSpeak?.(id);
+  current = src; speaking(id);
   return new Promise((resolve) => {
-    src.onended = () => { if (current === src) { current = null; onSpeak?.(null); } resolve(mine === speakToken); };
+    src.onended = () => { if (current === src) { current = null; speaking(null); } resolve(mine === speakToken); };
     src.start();
   });
 }
 /** 여러 줄을 차례로. 중간에 다른 말이 시작되면 멈춘다. gap: 줄 사이 쉼(ms). */
 export async function sayAll(ids, gap = 260) {
+  if (worldMode) { ids = ids.filter((id) => !worldMode.skipVoice(id)); if (!ids.length) return true; }
   const mine = ++speakToken;
   for (let i = 0; i < ids.length; i++) {
     if (i > 0) { await new Promise((r) => setTimeout(r, gap)); if (mine !== speakToken) return false; }

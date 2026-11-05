@@ -1,0 +1,3 @@
+PHOTOREAL PRODUCT PHOTOGRAPHY, square 1:1.
+A single traditional office rubber stamp, seen from directly in front and slightly above, standing upright and centered on a plain pure white seamless background: a turned, warm honey-colored wooden handle with a rounded knob on top, a short dark wooden neck, and a flat rectangular base block of dark walnut wood with a thin black rubber plate on its underside. Soft even studio light, a very soft natural shadow only right under the base. The stamp fills about 70% of the image height, with clean white margin on all sides so it can be cut out.
+A real photograph — never an illustration, never a 3D render. No text, no letters, no logos, no ink marks, no hands, no other objects.

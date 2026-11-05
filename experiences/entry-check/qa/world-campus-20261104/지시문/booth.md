@@ -1,0 +1,1 @@
+THE VIEW WITH NOBODY AT THE WINDOW: exactly the camera, foreground and background described below, but the space just outside the window is empty — the walkway, the queue rope and the two or three blurred students far back in the line are visible, nobody stands at the window.

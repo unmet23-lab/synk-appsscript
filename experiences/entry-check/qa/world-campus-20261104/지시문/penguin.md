@@ -1,0 +1,2 @@
+THE VISITOR: a Vietnamese woman, about 33, an office worker at a company near the campus, bright and quick. Long straight black hair in a low ponytail with a few loose strands; light warm skin; almond-shaped eyes; small dimples. A crisp white short-sleeve blouse and a lanyard with a blank ID card, a light-blue denim tote on her shoulder.
+She is speaking brightly and confidently, a friendly look — talking to the staff member in the window, lips parted mid-word, looking straight into the camera.

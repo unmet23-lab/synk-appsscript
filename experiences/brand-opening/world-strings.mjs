@@ -170,6 +170,8 @@ export default {
  'game.rhythm.detail':{ko:'노래를 듣다가 O·X로 답해요',en:'Listen to a song and answer O or X',mn:'Дуу сонсож байгаад O эсвэл X гэж хариулна'},
  'game.order.title':{ko:'주문 폭주',en:'Order Rush',mn:'Захиалгын шуурга'},
  'game.order.detail':{ko:'손님 주문을 듣고 음료를 만들어요',en:'Hear the order and make the drink',mn:'Үйлчлүүлэгчийн захиалгыг сонсоод ундаа бэлтгэнэ'},
+ 'game.entry.title':{ko:'입장 검사',en:'Entry Check',mn:'Хаалганы шалгалт'},
+ 'game.entry.detail':{ko:'축제 안내문을 읽고 통과 · 거절 도장을 찍어요',en:'Read the festival notice and stamp pass or reject',mn:'Баярын зарыг уншаад нэвтрүүлэх эсвэл татгалзах тамга дарна'},
  'game.blank.title':{ko:'빈칸 베기',en:'Blank Slice',mn:'Карт урах'},
  'game.blank.detail':{ko:'문장을 읽고 맞는 낱말 카드를 베어요',en:'Read the sentence and slice the right word card',mn:'Өгүүлбэрийг уншаад тохирох үгтэй картыг урна'},
  'game.snap.title':{ko:'찰칵 낱말',en:'Snap Words',mn:'Зурган үг'},

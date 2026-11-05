@@ -1,0 +1,2 @@
+THE VISITOR: a Korean boy, about 9, energetic and proud. Short spiky black hair; a sun-browned round face; bright, mischievous eyes; one front tooth a little bigger than the other. A red sports T-shirt (no print) and a navy cap turned backwards. He is a child: his shoulders are just above the window ledge, so his face is in the lower half of the frame with open background above.
+He is speaking up proudly, chin raised — talking to the staff member in the window, lips parted mid-word, looking straight into the camera.

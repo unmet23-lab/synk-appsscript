@@ -1,0 +1,98 @@
+{
+ "measured": "2026-11-03",
+ "method": "OfflineAudioContext 48kHz mono → BS.1770 K-weighting → 400ms momentary max, hop 50ms, zero-padded (sound_check.py measure); mean of seeds 1,2,3,5,8",
+ "opts": {
+  "arrive": {
+   "guest": "raccoon"
+  },
+  "leave": {
+   "guest": "raccoon"
+  },
+  "place": {
+   "step": 2
+  },
+  "correct": {
+   "combo": 2
+  }
+ },
+ "target": {
+  "tap": -31,
+  "arrive": -24,
+  "leave": -28,
+  "open": -21,
+  "slide": -27,
+  "place": -26,
+  "stampPass": -21,
+  "stampReject": -21,
+  "choose": -26,
+  "hint": -27,
+  "notify": -22,
+  "correct": -20.8,
+  "combo": -19,
+  "differ": -26,
+  "roll": -34,
+  "land": -20,
+  "done": -17.5,
+  "coin": -21
+ },
+ "level": {
+  "tap": 15.312,
+  "arrive": 4.389,
+  "leave": 6.699,
+  "open": 7.64,
+  "slide": 9.633,
+  "place": 11.053,
+  "stampPass": 8.235,
+  "stampReject": 7.84,
+  "choose": 5.969,
+  "hint": 10.595,
+  "notify": 5.781,
+  "correct": 9.7,
+  "combo": 4.685,
+  "differ": 7.463,
+  "roll": 24.774,
+  "land": 5.191,
+  "done": 12.322,
+  "coin": 6.414
+ },
+ "measuredLufs": {
+  "tap": -31,
+  "arrive": -24,
+  "leave": -28,
+  "open": -21,
+  "slide": -27,
+  "place": -26,
+  "stampPass": -21.1,
+  "stampReject": -21.1,
+  "choose": -26,
+  "hint": -27,
+  "notify": -22,
+  "correct": -20.8,
+  "combo": -19,
+  "differ": -26,
+  "roll": -34,
+  "land": -20,
+  "done": -17.5,
+  "coin": -21
+ },
+ "peakDbfs": {
+  "tap": -2.3,
+  "arrive": -8.1,
+  "leave": -11.8,
+  "open": -5.6,
+  "slide": -3.7,
+  "place": -1.7,
+  "stampPass": -0.7,
+  "stampReject": -0.6,
+  "choose": -4.7,
+  "hint": -11.7,
+  "notify": -5.9,
+  "correct": -3.3,
+  "combo": -4.2,
+  "differ": -9,
+  "roll": -3.4,
+  "land": -1.9,
+  "done": -0.9,
+  "coin": -7.7
+ }
+}

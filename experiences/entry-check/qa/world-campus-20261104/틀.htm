@@ -1,0 +1,21 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>입장 검사 — WORLD 게임 틀(검수 캡처)</title>
+<!-- 검수 묶음 캡처용 정적 틀: WORLD 앱이 게임을 여는 같은 출처 iframe.game-frame. 이 안에서만 world-host.js가 data-host="world"를 붙인다.
+     (qa 아래 .html은 git 무시 규칙에 걸려 .htm으로 둔다 — 틀서버.mjs의 「/」와 같은 틀) -->
+<link rel="icon" href="data:,">
+<style>html,body{margin:0;height:100%;background:#060709}iframe{border:0;display:block;width:100%;height:100%}</style>
+<iframe class="game-frame" src="../../index.html?qa=1" allow="autoplay"></iframe>
+<!-- 검수 수집기는 바깥 문서의 글 · 가로 폭만 잰다(아르곤 D2, 11-05). 안쪽 게임 글을 안 보이게 옮겨 적고, 안쪽이 넘치면 바깥도 같은 폭으로 넘치게 해 그대로 재이게 한다. -->
+<div id="inner-text" style="position:absolute;left:0;top:0;height:1px;overflow:hidden;white-space:pre-wrap;color:transparent;pointer-events:none"></div>
+<script>
+setInterval(() => {
+  try {
+    const box = document.getElementById('inner-text'), doc = frames[0].document;
+    box.style.width = `${doc.documentElement.scrollWidth}px`;
+    const text = doc.body.innerText;
+    if (box.textContent !== text) box.textContent = text;
+  } catch { /* 아직 안 뜸 */ }
+}, 120);
+</script>

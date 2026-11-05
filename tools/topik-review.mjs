@@ -4,6 +4,7 @@
 // 새 LLM 실행기가 아니다 — 부르는 통로는 tools/lib/클로드키.js(일괄·한 건)와 tools/lib/제미나이구독호출.js 그대로다.
 //
 //   node tools/topik-review.mjs 준비 <이름> [--새 [<묶음…>]] [--새표본 N] [--기존 [<출처…>]] [--출처마다 N] [--표본 N] [--미판정]   검수 묶음(output/topik-review/<이름>/)
+//   node tools/topik-review.mjs 준비 <이름> --기존 entry-check --캠퍼스   입장 검사 WORLD 캠퍼스 판 원고(world-content.mjs)로 — 반영은 experiences/entry-check/review/campus-verdicts.json
 //   node tools/topik-review.mjs 준비 <이름> --찻집 [<줄 id…>]   싱크타운 찻집 주문 틀(rubric-compose-r1 — 목록이 없으면 증거 없는 요청 틀 전부), 반영은 review/town-tea-w10.json
 //   node tools/topik-review.mjs 준비 <이름> --드라마 [<줄 id…>] [--미판정]   드라마 말하기 대사 칸 명세(drama-spec-r1 — 목록이 없으면 대본의 학생 줄 + 처음 보는 대사 전부),
 //                                                                반영은 대본 검수:'passed'·검수지문과 experiences/drama/review/spec-review.json
@@ -96,6 +97,7 @@ function entryText(card) {
   if (card.date) lines.push(`[오늘] ${card.date}`); // 게임·WORLD 카드처럼 그날 날짜를 보인다(10-21)
   if (card.at) lines.push(`[지금 시각] ${card.time || card.at}`); // WORLD 카드처럼 게임 시계 꼴(오후 4시 29분, 10-22)
   if (card.doc) lines.push(`[손님 서류] ${card.doc.title}`, ...card.doc.rows.map(row => `  ${row.join(': ')}`));
+  else if (card.doc === null) lines.push('[손님 서류] 없음'); // 캠퍼스 판 묶음의 서류 없는 손님(library-02) — 게임은 「보여 준 표나 카드가 없어요.」
   if (card.bag) lines.push(`[짐] ${card.bag.length ? card.bag.join(', ') : '없음'}`); // 게임은 빈 짐도 「보여 준 짐이 없어요.」로 보인다(10-21)
   if (card.line) lines.push(`[손님 말] ${card.who ? `${card.who}: ` : ''}${card.line}`);
   return lines.join('\n');
@@ -123,6 +125,21 @@ const blindView = view => { const { answer, explanation, choiceNotes, ...rest } 
 
 async function diagnosticItems() {
   return (await import(pathToFileURL(path.join(root, 'experiences/synk-world-app/world-diagnostic-items.mjs')))).DIAGNOSTIC_ITEMS;
+}
+// 입장 검사 캠퍼스 판(--캠퍼스): 원고가 바뀐 손님 50명 모두를 WORLD 진단 카드(world-diagnostic-items.mjs diagEntryItems)와 같은 꼴로 만든다 —
+// 진단에는 글로만 쓰는 16명만 들어가지만 캠퍼스 판은 기본 손님 34명의 서류 · 해설도 바뀌어 모두 본다. 먼저 applyWorld로 덧씌운 뒤 부른다.
+async function campusEntryItems() {
+  const imp = rel => import(pathToFileURL(path.join(root, rel)));
+  const [{ VENUES, ITEMS: BAGGAGE, CAST }, { caseMetadata }, { activeRules, choicesFor, koreanTime }] = await Promise.all([imp('experiences/entry-check/content.mjs'), imp('experiences/entry-check/learning.mjs'), imp('experiences/entry-check/core.mjs')]);
+  return VENUES.flatMap(venue => venue.cases.map(item => {
+    const meta = caseMetadata(item), rules = activeRules(venue, item.at), id = choice => choice === 'pass' ? 'pass' : `reject-${choice}`;
+    const bag = (item.items || []).map(entry => Array.isArray(entry) ? `${BAGGAGE[entry[0]] || entry[0]} ${entry[1]}개` : BAGGAGE[entry] || entry);
+    return { ...meta, source: 'entry-check', audio: null, prompt: null, question: '이 손님을 들여보낼까요?', ask: 'entry',
+      card: { notice: { title: venue.notice.title, rules: rules.map(rule => rule.text) }, date: venue.date, at: item.at, time: koreanTime(item.at),
+        doc: item.doc ? { title: item.doc.title, rows: item.doc.rows.map(row => [...row]) } : null, bag, line: item.line, who: CAST[item.who]?.name || '' },
+      choices: choicesFor(venue, item.at).map(choice => ({ id: id(choice), label: choice === 'pass' ? '들여보내기' : `돌려보내기 · ${rules.find(rule => rule.id === choice)?.short || choice}` })),
+      correctId: id(item.answer), explanation: item.why };
+  }));
 }
 // 말 랠리 대답 카드(WORLD 진단·연습에 들어갈 듣기 대답하기 문항)를 진단 문항과 같은 꼴로 만든다 — 열쇠는 게임과 같은 itemMetadata.
 async function talkRallyItems() {
@@ -408,7 +425,7 @@ export function alreadyJudged(unit, { review = [], verdictHash = new Map(), dram
   return false;
 }
 
-export async function prepare(name, { newFiles = null, existingSources = null, sample = null, perSource = null, newSample = null, writingFile = null, onlyIds = null, onlyUnjudged = false, teaIds = null, dramaIds = null } = {}) {
+export async function prepare(name, { newFiles = null, existingSources = null, sample = null, perSource = null, newSample = null, writingFile = null, onlyIds = null, onlyUnjudged = false, teaIds = null, dramaIds = null, campus = false } = {}) {
   const dir = path.join(root, 'output/topik-review', name);
   if (fs.existsSync(path.join(dir, 'packet.json'))) throw new Error(`이미 있는 묶음: ${dir}`);
   const types = readJson(path.join(root, 'strata/topik-types.json')).types, labels = skillLabels(), rubric = rubricText();
@@ -427,7 +444,14 @@ export async function prepare(name, { newFiles = null, existingSources = null, s
     for (let i = units.length - 1; i >= 0; i--) if (units[i].kind === 'new' && !kept.has(units[i].key)) units.splice(i, 1);
   }
   if (existingSources) {
-    const all = [...await diagnosticItems(), ...(existingSources.includes('talk-rally') ? await talkRallyItems() : []), ...(existingSources.includes('snap-words') ? await snapWordsItems() : []), ...(existingSources.includes('board-decode') ? await boardDecodeItems() : []), ...(existingSources.includes('subway-rush') ? await subwayRushItems() : [])];
+    // 입장 검사 캠퍼스 판(--캠퍼스, 11-04): WORLD 안에서 보이는 원고 겉(손님 · 근무지 · 날짜 글)을 진단 카드를 만들기 전에 덧씌운다 —
+    // 같은 모듈 객체를 고치므로 world-diagnostic-items.mjs가 캠퍼스 판 카드를 만든다. 판정은 LAB 판정과 섞이지 않게 따로 적는다(applyToExisting).
+    if (campus) {
+      const imp = rel => import(pathToFileURL(path.join(root, rel)));
+      const [content, narration, world] = await Promise.all([imp('experiences/entry-check/content.mjs'), imp('experiences/entry-check/narration.mjs'), imp('experiences/entry-check/world-content.mjs')]);
+      world.applyWorld({ VENUES: content.VENUES, CAST: content.CAST, TUTORIAL: narration.TUTORIAL });
+    }
+    const all = campus ? await campusEntryItems() : [...await diagnosticItems(), ...(existingSources.includes('talk-rally') ? await talkRallyItems() : []), ...(existingSources.includes('snap-words') ? await snapWordsItems() : []), ...(existingSources.includes('board-decode') ? await boardDecodeItems() : []), ...(existingSources.includes('subway-rush') ? await subwayRushItems() : [])];
     const scriptOf = await listeningScripts();
     const pool = all.filter(item => item.source in EXISTING_TYPE && (!existingSources.length || existingSources.includes(item.source)));
     const picked = perSource ? Object.values(Object.groupBy(pool.map(item => ({ key: item.itemKey, item })), row => row.item.source)).flatMap(rows => seededPick(rows, perSource, name)).map(row => row.item) : pool;
@@ -457,7 +481,7 @@ export async function prepare(name, { newFiles = null, existingSources = null, s
   if (chosen.some(unit => unit.kind === 'drama') && !chosen.every(unit => unit.kind === 'drama')) throw new Error('드라마 대사 칸 명세는 다른 문항과 한 묶음에 섞지 않는다(기준이 다르다).');
   const compose = chosen.length && chosen.every(unit => unit.kind === 'compose') ? rubricText('compose') : null;
   const drama = chosen.length && chosen.every(unit => unit.kind === 'drama') ? rubricText('drama') : null;
-  const packet = { name, createdAt: new Date().toISOString(), rubric: drama ? { id: drama.id, sha: drama.sha } : compose ? { id: compose.id, sha: compose.sha } : writing && chosen.every(unit => unit.kind === 'writing') ? { id: writing.id, sha: writing.sha }
+  const packet = { name, createdAt: new Date().toISOString(), ...(campus ? { campus: 'entry-check-world' } : {}), rubric: drama ? { id: drama.id, sha: drama.sha } : compose ? { id: compose.id, sha: compose.sha } : writing && chosen.every(unit => unit.kind === 'writing') ? { id: writing.id, sha: writing.sha }
     : { id: RUBRIC_ID, sha: rubric.sha, ...(writing ? { writing: { id: writing.id, sha: writing.sha } } : {}) }, units: chosen };
   writeJson(path.join(dir, 'packet.json'), packet);
   return packet;
@@ -756,7 +780,9 @@ export function applyToItems(packet, merged, { at = new Date().toISOString(), di
 }
 export function applyToExisting(packet, merged, { at = new Date().toISOString(), dir = bankDir } = {}) {
   if (!packet.units.some(unit => unit.kind === 'existing')) return null; // 기존 문항이 없는 묶음(쓰기만 등)은 허용 목록을 건드리지 않는다
-  const file = path.join(dir, 'review/existing-verdicts.json'), doc = readJson(file);
+  // 입장 검사 캠퍼스 판 묶음(--캠퍼스)은 같은 itemKey의 LAB 판정을 덮지 않게 게임 폴더의 따로 둔 목록에 적는다
+  const file = packet.campus ? path.join(root, 'experiences/entry-check/review/campus-verdicts.json') : path.join(dir, 'review/existing-verdicts.json');
+  const doc = fs.existsSync(file) ? readJson(file) : { items: [] };
   const rows = new Map((doc.items || []).map(row => [row.itemKey, row]));
   // 같은 문항의 다른 판: 판 꼬리(.vN·:vN)를 뗀 열쇠가 같고 계열도 같다(blank-slice.e06.v1 → .v2, korean-rhythm:t1q0:v1:claim1 → …:claim1:v2).
   const itemBase = key => String(key).replace(/[.:]v\d+$/, '');
@@ -834,7 +860,7 @@ async function main([command, name, ...argv]) {
   if (!command || !name) { console.log(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 14).join('\n')); return 2; }
   const 클로드 = require('./lib/클로드키.js');
   if (command === '준비') {
-    const packet = await prepare(name, { newFiles: list(argv, '--새'), existingSources: list(argv, '--기존'), sample: num(argv, '--표본'), perSource: num(argv, '--출처마다'), newSample: num(argv, '--새표본'), writingFile: list(argv, '--쓰기')?.[0] || null, onlyIds: list(argv, '--문항'), onlyUnjudged: argv.includes('--미판정'), teaIds: list(argv, '--찻집'), dramaIds: list(argv, '--드라마') });
+    const packet = await prepare(name, { newFiles: list(argv, '--새'), existingSources: list(argv, '--기존'), sample: num(argv, '--표본'), perSource: num(argv, '--출처마다'), newSample: num(argv, '--새표본'), writingFile: list(argv, '--쓰기')?.[0] || null, onlyIds: list(argv, '--문항'), onlyUnjudged: argv.includes('--미판정'), teaIds: list(argv, '--찻집'), dramaIds: list(argv, '--드라마'), campus: argv.includes('--캠퍼스') });
     console.log(`${packetDir(name)} · 문항 ${packet.units.length}(새 ${packet.units.filter(u => u.kind === 'new').length} · 기존 ${packet.units.filter(u => u.kind === 'existing').length} · 찻집 ${packet.units.filter(u => u.kind === 'compose').length} · 드라마 ${packet.units.filter(u => u.kind === 'drama').length}) · 기준 ${packet.rubric.id} ${packet.rubric.sha}`);
     return 0;
   }

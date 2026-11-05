@@ -1,0 +1,59 @@
+{
+ "version": 1,
+ "target": {
+  "lufs": -18,
+  "truePeakDb": -1.5,
+  "codec": "mp3 160k 44.1kHz stereo"
+ },
+ "margin": 0.6,
+ "tracks": {
+  "open-a1b7366a": {
+   "mode": "calm",
+   "file": "assets/world/music/open-a1b7366a.mp3",
+   "loopStart": 0.6,
+   "loopEnd": 115.7378,
+   "bpm": 66.7,
+   "bar": 3.5981,
+   "bars": 32,
+   "start": 3.5559,
+   "end": 118.6937,
+   "seamSimilarity": 0.9801,
+   "seamBefore": null,
+   "duration": 202.76,
+   "key": {
+    "name": "D minor",
+    "r": 0.855
+   },
+   "inputLufs": -15.87,
+   "vocals": {
+    "rmsDb": -69,
+    "loudest3sDb": -57.4
+   },
+   "bytes": 2328181
+  },
+  "open-5b24e08e": {
+   "mode": "calm",
+   "file": "assets/world/music/open-5b24e08e.mp3",
+   "loopStart": 0.6,
+   "loopEnd": 116.5673,
+   "bpm": 66.23,
+   "bar": 3.624,
+   "bars": 32,
+   "start": 3.4258,
+   "end": 119.3931,
+   "seamSimilarity": 0.9777,
+   "seamBefore": null,
+   "duration": 196.36,
+   "key": {
+    "name": "D minor",
+    "r": 0.786
+   },
+   "inputLufs": -15.67,
+   "vocals": {
+    "rmsDb": -63.4,
+    "loudest3sDb": -59
+   },
+   "bytes": 2344900
+  }
+ }
+}

@@ -7,12 +7,20 @@ import * as sound from './audio.mjs';
 import { fitText, preloadImages } from './kit/lab.mjs';
 import { josa } from './kit/josa.mjs';
 import { choiceId, choiceCorrection, immediateCheck, followUpResult } from './correction.mjs';
+// WORLD 안(2026-11-04 캠퍼스 판): world-host.js가 붙인 data-host=world일 때만 원고 겉(world-content.mjs — 손님 · 근무지 · 날짜 글)과
+// 연출(world-play.mjs — 입장 부스 사진 · 소리 · 음악 · 움직임)을 불러온다. 판정 · 학습 기록 · 코인은 같은 객체를 id로 쓰므로 그대로다. LAB 화면은 그대로다.
+const WORLD = globalThis.document?.documentElement?.dataset?.host === 'world';
+if (WORLD) (await import('./world-content.mjs')).applyWorld({ VENUES, CAST, TUTORIAL });
+const worldPlay = WORLD ? (await import('./world-play.mjs')).createWorldPlay({ sound, CAST, view: () => structuredClone({ venue: state.venue, item: state.cur?.item || null, done: !!state.cur?.done, index: state.index, queue: state.queue.map((c) => c.who),
+  results: state.results.map(({ caseId, who, choice, expected, correct }) => ({ caseId, who, choice, expected, correct })), combo: state.combo, memoShown: state.memoShown, itemRule: ITEM_RULE, docRule: DOC_RULE }) }) : null;
 
 // Restore the verified account before reading progress or enabling play.
 await globalThis.SynkPlayAccount.ready();
 const progressStorage = globalThis.SynkPlayAccount.storage();
 
 const $ = (s) => document.querySelector(s);
+// 맞음 · 다름 표시 그림: WORLD는 칸 색으로 보이므로(world-skin.css) 펠트 그림을 받지 않는다 — alt만 쓴다
+const markSrc = (correct) => (WORLD ? 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==' : correct ? 'kit/felt/badge-check.webp' : 'assets/felt/drop.webp');
 const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; };
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const reduced = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -63,6 +71,7 @@ const motionOn = () => !reduced() && progress.motion !== false;
 const SCENE_VIDEO = new Set(['library']);
 let narrowNow = isNarrow();
 function setScene(v) {
+  if (WORLD) return;   // WORLD는 창 사진 위에 손님이 선다(world-play.mjs) — 펠트 근무지 그림 · 영상을 받지 않는다
   $('#scene').src = sceneSrc(v);
   const vid = $('#scene-video');
   vid.classList.remove('on');
@@ -120,7 +129,7 @@ function renderLobby() {
     const b = el('button', `venue${open ? '' : ' locked'}${v.id === venue.id ? ' is-rec' : ''}`);
     b.type = 'button'; b.dataset.venue = v.id;
     b.setAttribute('aria-label', `${v.day}일차 ${v.name}${open ? `, 별 ${stars}개` : ', 잠김'}`);
-    b.innerHTML = `<span class="thumb"><img src="assets/scenes/${v.scene}-m.webp" alt="" loading="lazy"><b class="num">${v.day}</b>${open ? '' : '<span class="lock">앞 근무지 별 1개면 열려요</span>'}</span>
+    b.innerHTML = `<span class="thumb"><img src="${WORLD ? `assets/world/venues/${v.id}.webp` : `assets/scenes/${v.scene}-m.webp`}" alt="" loading="lazy"><b class="num">${v.day}</b>${open ? '' : '<span class="lock">앞 근무지 별 1개면 열려요</span>'}</span>
       <span class="body"><strong>${esc(v.name)}</strong><small>${esc(v.notice.kind)} · 규칙 ${v.notice.rules.length + (v.memo ? 1 : 0)}개</small>
       <span class="stars" aria-hidden="true">${[1, 2, 3].map((i) => `<i class="${i <= stars ? 'on' : ''}"></i>`).join('')}</span></span>`;
     if(target&&!open){li.hidden=true;}else if(target){b.querySelector('.body small').textContent=`이번 목표 손님 ${assignmentCases(v.cases,target).length}명`;}
@@ -223,7 +232,8 @@ function fitCushions() {
   const fresh = new Set(), notice = $('#notice'), probe = !notice.classList.contains('cushions');
   // 규칙은 쿠션 판일 때의 크기로 잰다(고르기 전에 그 판 그림을 미리 받으려고). 재는 동안만 붙였다 떼므로 화면에는 그려지지 않는다
   if (probe) notice.classList.add('cushions');
-  for (const b of document.querySelectorAll('#game [data-felt]')) {
+  // WORLD는 펠트 판을 쓰지 않는다(겉은 world-skin.css) — 그림을 받지도 않는다
+  if (!WORLD) for (const b of document.querySelectorAll('#game [data-felt]')) {
     if (!b.offsetWidth || !b.offsetHeight) continue;   // 숨은 판(근무 화면이 닫혔거나 고르는 동안의 도장 판)은 보일 때 다시 잰다
     b.dataset.shape = cushionShape(b.offsetWidth, b.offsetHeight);
     const url = `kit/felt/cushion-${b.dataset.felt}-${b.dataset.shape}.webp`;
@@ -267,7 +277,7 @@ function renderShiftLog() {
   state.queue.forEach((c, i) => {
     const r = state.results[i], who = CAST[c.who];
     const li = el('li', r ? 'done' : i === state.index ? 'now' : 'later');
-    li.innerHTML = `<img class="face" src="${who.img}" alt="${esc(who.name)}">${r ? `<img class="mark" src="${r.correct ? 'kit/felt/badge-check.webp' : 'assets/felt/drop.webp'}" alt="${r.correct ? '맞음' : '다시 볼 것'}">` : ''}`;
+    li.innerHTML = `<img class="face" src="${who.img}" alt="${esc(who.name)}">${r ? `<img class="mark" src="${markSrc(r.correct)}" alt="${r.correct ? '맞음' : '다시 볼 것'}">` : ''}`;
     ol.append(li);
   });
 }
@@ -348,7 +358,7 @@ function renderDoc(item) {
   if (!d) return;
   $('#doc-title').textContent = d.title;
   const icon = DOC_ICON[d.kind];
-  $('#doc-icon').hidden = !icon; if (icon) $('#doc-icon').src = icon;
+  $('#doc-icon').hidden = !icon; if (icon && !WORLD) $('#doc-icon').src = icon;   // WORLD는 펠트 카드 그림을 쓰지 않는다
   for (const [k, val] of d.rows) { rows.append(el('dt', null, esc(k))); const dd = el('dd', null, esc(val)); dd.dataset.key = k; rows.append(dd); }
 }
 
@@ -358,7 +368,7 @@ function renderTray(item) {
   for (const entry of item.items) {
     const { id, count, label } = itemLabel(entry);
     const li = el('li'); li.dataset.item = id;
-    li.innerHTML = `<img src="assets/items/${id}.webp" alt=""><span>${esc(label)}${count > 1 ? ` <i class="n">×${count}</i>` : ''}</span>`;
+    li.innerHTML = `<img src="${WORLD ? `assets/world/items/${id}.webp` : `assets/items/${id}.webp`}" alt=""><span>${esc(label)}${count > 1 ? ` <i class="n">×${count}</i>` : ''}</span>`;
     ul.append(li);
   }
 }
@@ -481,7 +491,7 @@ async function decide(choice, e) {
   const kind = choice === 'pass' ? 'pass' : 'reject';
   stampDoc(kind, v);
   sound.stamp();
-  const react = $('#react'); react.src = kind === 'pass' ? 'assets/felt/heart.webp' : 'assets/felt/drop.webp'; react.hidden = false;
+  if (!WORLD) { const react = $('#react'); react.src = kind === 'pass' ? 'assets/felt/heart.webp' : 'assets/felt/drop.webp'; react.hidden = false; }
   await wait(380);
   if (!live(token)) { state.busy = false; return; }
   updateHud();
@@ -535,11 +545,11 @@ const NO = ['', '①', '②', '③', '④', '⑤'];
 function showFeedback(item, choice, result) {
   const who = CAST[item.who], fb = $('#feedback');
   fb.classList.toggle('miss', !result.correct);
-  $('#fb-badge').src = result.correct ? 'kit/felt/badge-check.webp' : 'assets/felt/drop.webp';
+  if (!WORLD) $('#fb-badge').src = result.correct ? 'kit/felt/badge-check.webp' : 'assets/felt/drop.webp';
   $('#fb-kicker').textContent = result.correct ? 'CORRECT' : `정답 · ${item.answer === 'pass' ? '통과' : `거절 ${NO[ruleNo(item.answer)] || ''}`}`;
   $('#fb-title').textContent = result.correct ? (state.combo >= 3 ? `정확해요! ${state.combo}연속` : '정확해요!')
     : choice === 'pass' ? '아차, 들어가면 안 됐어요' : item.answer === 'pass' ? '아차, 들어가도 됐어요' : '거절은 맞지만 이유가 달라요';
-  $('#fb-mongle').src = result.correct ? 'kit/brand/mongle-smile.webp' : 'kit/brand/mongle-curious.webp';
+  if (!WORLD) $('#fb-mongle').src = result.correct ? 'kit/brand/mongle-smile.webp' : 'kit/brand/mongle-curious.webp';
   $('#fb-face').src = who.img; $('#fb-face').alt = who.name;
   $('#fb-reply').textContent = result.correct ? item.reply : choice === 'pass' ? `${who.name}: “고마워요!”` : `${who.name}: “네? 왜요?”`;
   $('#fb-why').textContent = item.why;
@@ -554,7 +564,8 @@ function showFeedback(item, choice, result) {
     : followup?.status === 'new' ? '새 손님으로 확인' : followup?.status === 'review' ? '복습 손님으로 확인' : '다음 손님';
   $('#fb-kicker').classList.toggle('ko', !result.correct);
   fb.hidden = false;
-  announce(`${$('#fb-title').textContent}. ${correction} ${$('#fb-reply').textContent} 왜? ${item.why}${wrongPassOrReject ? ` 그 뒤에 생긴 일: ${item.oops}` : ''} ${state.cur.recheck?.line || ''} ${followup?.line || ''}`);
+  const fbTitle = $('#fb-title').textContent;   // WORLD 판정 제목은 「정확해요!」처럼 부호로 끝난다 — 마침표를 겹쳐 붙이지 않는다
+  announce(`${WORLD && /[!?.]$/.test(fbTitle) ? fbTitle : `${fbTitle}.`} ${correction} ${$('#fb-reply').textContent} 왜? ${item.why}${wrongPassOrReject ? ` 그 뒤에 생긴 일: ${item.oops}` : ''} ${state.cur.recheck?.line || ''} ${followup?.line || ''}`);
   $('#fb-reply').closest('.fb-reply').classList.remove('speaking');
   $('#btn-next').focus({ preventScroll: true });
   // 휴대폰: 아래 판이 동그라미 친 규칙을 가리지 않게 그만큼 내려 볼 자리를 만들고 규칙을 판 위로 올린다
@@ -619,7 +630,7 @@ function finishShift() {
   $('#r-correct').textContent = String(score.correct); $('#r-total').textContent = String(score.total);
   $('#r-stars').innerHTML = [1, 2, 3].map((i) => `<i class="${i <= score.stars ? 'on' : ''}"></i>`).join('');
   $('#r-stars').setAttribute('aria-label', `별 3개 중 ${score.stars}개`);
-  $('#r-mongle').src = score.stars >= 2 ? 'kit/brand/mongle-smile.webp' : 'kit/brand/mongle-cheer.webp';
+  if (!WORLD) $('#r-mongle').src = score.stars >= 2 ? 'kit/brand/mongle-smile.webp' : 'kit/brand/mongle-cheer.webp';
   const notes = [`처음 찍은 도장으로 ${score.correct}명을 바르게 맞이했어요.`];
   if (score.helped) notes.push(`돋보기를 쓴 손님은 ${score.helped}명이에요.`);
   if (score.bestRun >= 3) notes.push(`최고 ${score.bestRun}연속!`);
@@ -639,7 +650,7 @@ function finishShift() {
     const li = el('li');
     li.innerHTML = `<img class="face" src="${who.img}" alt=""><span><b>${esc(who.name)} <small style="display:inline">${esc(koreanTime(c.at))}</small></b>
       <small>정답 ${esc(answer)}${r.correct ? '' : ` · 내 도장 ${r.choice === 'pass' ? '통과' : `거절 · ${esc(ruleText(v, c, r.choice))}`}`}${r.guided ? ' · 연수' : r.hinted ? ' · 돋보기' : ''}</small>${r.recheck?.line ? `<small>${esc(r.recheck.line)}</small>` : ''}</span>
-      <img class="mark" src="${r.correct ? 'kit/felt/badge-check.webp' : 'assets/felt/drop.webp'}" alt="${r.correct ? '맞음' : '다시 볼 것'}">`;
+      <img class="mark" src="${markSrc(r.correct)}" alt="${r.correct ? '맞음' : '다시 볼 것'}">`;
     log.append(li);
   }
   const next = renderNext(v);
@@ -927,5 +938,6 @@ renderLobby();
 if (QA) {
   window.__entry = { state: () => ({ venue: state.venue?.id, index: state.index, queue: state.queue.map((c) => c.id), results: state.results.map((r) => ({ ...r })), cur: state.cur && { id: state.cur.item.id, answer: state.cur.item.answer, hint: state.cur.hint, choosing: state.cur.choosing, done: state.cur.done } }),
     progress: () => JSON.parse(JSON.stringify(progress)), summary: () => atlas((c) => c.summary()),
-    voices: () => [...qaVoice], voiceTimes: () => qaVoiceAt.map((x) => [...x]), tutorial: () => ({ on: tut.on, step: tutStep()?.id || null }) };
+    voices: () => [...qaVoice], voiceTimes: () => qaVoiceAt.map((x) => [...x]), tutorial: () => ({ on: tut.on, step: tutStep()?.id || null }),
+    world: () => worldPlay?.state() || null };
 }

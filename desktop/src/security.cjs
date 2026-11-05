@@ -59,7 +59,7 @@ function allowedNavigation(value,entry,clientId) {
   if(clientId==='world'){
     const paths=entry===WORLD_CLOUD_PREVIEW_ENTRY?['learning-hub','racing','runner','rhythm','order-rush','entry-check','story-classroom','blank-slice','talk-rally','word-magic'].map(slug=>'/try/'+slug+'/'):['/learning-hub/','/korean-racing/','/korean-rhythm/','/order-rush/','/korean-runner/'];
     const publicPages=entry===WORLD_CLOUD_PREVIEW_ENTRY&&['/try/order-rush/beginner.html','/try/learning-hub/collection.html'].includes(u.pathname);
-    const bundled=entry===WORLD_CLOUD_PREVIEW_ENTRY&&['korean-runner','korean-rhythm','hangul-stage','order-rush','blank-slice','snap-words','board-decode','korean-racing','talk-rally','subway-rush','town'].some(slug=>u.pathname==='/world/'+slug+'/'||u.pathname==='/world/'+slug+'/index.html');
+    const bundled=entry===WORLD_CLOUD_PREVIEW_ENTRY&&['korean-runner','korean-rhythm','hangul-stage','order-rush','entry-check','blank-slice','snap-words','board-decode','korean-racing','talk-rally','subway-rush','town'].some(slug=>u.pathname==='/world/'+slug+'/'||u.pathname==='/world/'+slug+'/index.html');
     return trustedEntry(value,entry,clientId)||publicPages||bundled||paths.some(p=>u.pathname===p||u.pathname===p+'index.html');
   }
   return false;
