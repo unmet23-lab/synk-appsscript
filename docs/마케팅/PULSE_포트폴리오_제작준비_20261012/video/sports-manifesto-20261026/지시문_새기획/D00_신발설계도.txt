@@ -1,0 +1,9 @@
+Create one product design reference sheet, landscape 16:9 frame, for a single premium running shoe. Image 1 is the shoe: keep its overall shape, proportions and colours exactly (white knit upper, white laces, sculpted translucent white foam midsole, white outsole, one thin amber-orange stripe wrapped around the heel). Image 2 is the brand wordmark 가쁨 — use only its letter shapes.
+
+Show the same right-foot shoe four times, side by side on a plain mid-grey seamless studio background, soft large studio light from the upper left, photorealistic product photography, every view in sharp focus:
+1. Lateral side view, toe pointing left.
+2. Outsole seen straight from below: translucent white rubber with fine curved wave-shaped grooves fanning out from the forefoot, a smooth mid-foot bridge, and a single amber-orange rubber pad under the heel. No other colours.
+3. Rear view of the heel: the amber-orange stripe crossing the heel counter, and the wordmark 가쁨 small and debossed (pressed into the white material, same colour as the material, no ink) on the outer side of the heel, copied letter for letter from Image 2.
+4. Toe seen from the front at a low angle: a tighter knit weave at the toe with tiny breathable pores in a regular pattern.
+
+Real material detail on every view: individual knit yarns, a faint glue line where the knit meets the foam, a few specks of dust — it must read as a real physical shoe, not a 3D render. No other logos, letters or text anywhere except the debossed 가쁨 on the heel. No labels, no captions, no arrows. Do not put any letters into the image other than 가쁨.
