@@ -356,9 +356,10 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   assert.match(await page.locator(`${SHOP} .m2s-print figcaption`).textContent(),/\d+월 \d+일, 학생 식당에서/);
   assert.ok((await page.locator(`${SHOP} .m2s-print img`).getAttribute('alt')).startsWith('이 옷을 입은 내 사진'));
   await shopBoth('11-가게-입은나');
+  const langLib=liveMode?'/world/brand-opening/world-lang.mjs':'/brand-opening/world-lang.mjs'; // 공개본은 /world/ 아래
   // 말 바꾸기 — 가게가 열린 채로 글을 다시 쓴다(몽골어 · 영어: 학생 언어 이름 줄 · 「한국어로 읽기」 · 긴 낱말이 넘치지 않는지)
   for(const code of ['mn','en']){
-   await page.evaluate(async code=>{const m=await import('/brand-opening/world-lang.mjs');m.setLang(code,{save:false});},code);
+   await page.evaluate(async ([code,lib])=>{const m=await import(lib);m.setLang(code,{save:false});},[code,langLib]);
    await page.waitForFunction(([sel,code])=>document.querySelector(sel+' .m2s')?.getAttribute('lang')===code,[SHOP,code]);
    await page.locator(`${SHOP} .m2s-stage:not([hidden])`).waitFor();
    assert.ok((await page.locator(`${SHOP} .m2s-name-tr`).textContent()).trim(),`${code}: 학생 언어 이름 줄`);
@@ -367,7 +368,7 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
    assert.ok(await page.locator(`${SHOP} .m2s-tip-tr`).count(),`${code}: 팁 문장 뜻 줄`);
    await shopBoth(`11-가게-${code}`);
   }
-  await page.evaluate(async()=>{const m=await import('/brand-opening/world-lang.mjs');m.setLang('ko',{save:false});});
+  await page.evaluate(async lib=>{const m=await import(lib);m.setLang('ko',{save:false});},langLib);
   await page.waitForFunction(sel=>document.querySelector(sel+' .m2s')?.getAttribute('lang')==='ko',SHOP);
   await page.locator(`${SHOP} .m2s-stage:not([hidden])`).waitFor();
   await page.locator(`${SHOP} [data-act="wear"]`).click();await page.locator(`${SHOP} [data-act="unwear"]`).waitFor();

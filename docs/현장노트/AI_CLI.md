@@ -581,6 +581,7 @@
 - 원인: 판정 모델은 사용자 메시지·실행 명령·CLAUDE.md만 보고, Claude의 말과 도구 결과는 보지 않는다. 승인은 행동과 그 대상을 이름 대야 하고 한 번에 한 행동만 덮으며, 규칙으로 저장되지 않아 압축되면 사라질 수 있다(공식 문서 permission-modes 「Approvals you state in conversation」). 번호가 가리키는 Claude의 목록은 판정 모델에 보이지 않는다.
 - 고침: 승인을 물을 때 다음 단계 상자 단추 문장에 대상과 행동을 적는다(예: 「synk.im(synk-policy main)에 회의·매뉴얼 도구 공개해」). 단추를 누르면 그 문장이 유호님 메시지로 간다. 자주 하는 정해진 길은 `~/.claude/settings.json`의 `autoMode.allow`에 둔다 — 10-19부터 본 작업본에서 돌리는 `git diff --quiet origin/master -- tools/공개.js && node tools/공개.js 올리기 <항목> -m '<메시지>' --실행 --계획 <해시>`(같은 세션에 미리 보기가 실제로 돈 뒤), 유호님이 요청한 꿀팁 글 push, 같은 세션에서 유호님 말로 `--승인`한 항목의 SNS `--발행`(앞에 같은 꼴의 `git diff --quiet origin/master` 확인, 다른 세션의 승인 기록은 안 됨). 정해진 옵션 밖의 옵션·환경 변수·리다이렉션이 붙어도 미리 허락이 아니다.
 - 다시 확인: 10-18 아침 대상을 적은 단추 한 번으로 같은 push가 통과했다. `claude auto-mode config`의 allow에 위 네 줄이 있다.
+- 11-05 덧붙임(Claude · 옷 가게 WORLD 공개): 판정기 허용 줄 「Gated synk.im publish」는 `-m` · `--실행` · `--계획`만 덮는데 공개 도구는 `--검수`를 요구해, 공용 작업본에서 꼴을 맞춰도 「Production Deploy」로 막혔다. 행동과 대상을 적은 단추(「옷가게 synk.im 공개 진행」) 한 번 뒤 같은 명령이 그대로 통과했다. `eval`로 감싸거나 뒤에 다른 명령을 붙이면 꼴부터 어긋난다. 끝에 `배포 점검 못 찾음 — gh … error connecting`이 나오면 공개는 된 것이고 `node tools/공개.js 확인 <커밋>`만 다시 돌린다.
 
 ### 예약 작업 지시문에 적은 공개·배포는 승인으로 치지 않는다 (2026-10-19 Claude)
 - 증상(예방): 예약 작업이나 무인 `claude -p`의 지시문에 「synk.im에 공개까지」를 적어도 운영 반영 단계는 막힌다. `-p` 실행은 막힌 행동만 건너뛰고 끝까지 간다.
