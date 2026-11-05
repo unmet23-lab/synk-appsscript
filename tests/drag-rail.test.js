@@ -55,3 +55,29 @@ test('끌기 방향은 문턱을 넘어야 정해지고 더 많이 움직인 쪽
   assert.equal(R.dragIntent(3, 10), 'y');
   assert.equal(R.dragIntent(4, 1, 4), 'x', '문턱을 바꿀 수 있다');
 });
+
+test('옷걸이 흔들림: 가만히 두면 그대로, 고리가 가속하면 반대로 처지고, 놓으면 잦아든다', () => {
+  let s = { th: 0, om: 0 };
+  for (let i = 0; i < 60; i++) s = R.swingStep(s, 0, 1 / 60);
+  assert.equal(s.th, 0, '가속이 없으면 움직이지 않는다');
+  for (let i = 0; i < 20; i++) s = R.swingStep(s, 3000, 1 / 60);
+  assert.ok(s.th < -0.02, `오른쪽으로 가속하면 옷은 왼쪽(음)으로 처진다: ${s.th}`);
+  const start = Math.abs(s.th) + Math.abs(s.om);
+  for (let i = 0; i < 240; i++) s = R.swingStep(s, 0, 1 / 60);
+  assert.ok(Math.abs(s.th) + Math.abs(s.om) < start * 0.05, '4초 뒤에는 거의 선다');
+});
+
+test('옷걸이 흔들림은 아무리 세게 흔들어도 최대 각을 넘지 않는다', () => {
+  let s = { th: 0, om: 0 };
+  for (let i = 0; i < 120; i++) { s = R.swingStep(s, i % 20 < 10 ? 90000 : -90000, 1 / 60); assert.ok(Math.abs(s.th) <= 0.26 + 1e-9); }
+  assert.ok(Math.abs(R.swingStep({ th: 0, om: 50 }, 0, 1 / 30, { max: 0.1 }).th) <= 0.1);
+});
+
+test('처진 봉은 양 끝이 0, 가운데가 처짐만큼 내려가고 좌우가 같다', () => {
+  assert.equal(R.sagAt(0, 0, 400, 30), 0);
+  assert.equal(R.sagAt(400, 0, 400, 30), 0);
+  assert.equal(R.sagAt(200, 0, 400, 30), 30);
+  assert.equal(R.sagAt(100, 0, 400, 30), R.sagAt(300, 0, 400, 30));
+  assert.equal(R.sagAt(-50, 0, 400, 30), 0, '끝 밖은 끝 높이');
+  assert.equal(R.sagAt(10, 5, 5, 30), 0, '길이가 0인 봉');
+});

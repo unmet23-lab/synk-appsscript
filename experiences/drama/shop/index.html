@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>캠퍼스 옷 가게 — 시안</title>
+<link rel="preload" href="../../brand-opening/assets/SUIT.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="shop.css">
+<script src="../../play-common/drag-rail.js"></script>
+<script type="module" src="shop.mjs"></script>
+</head>
+<body>
+<!-- 옷 가게 시안(2026-11-05) — 팁 장부 44 · 45행. 판: ?판=a 흰 스튜디오 봉 · ?판=b 색을 따라오는 처진 봉. 모의 자료만, 서버 없음. -->
+<div class="shop" data-ready="no">
+  <header class="shop-top">
+    <p class="shop-mark"><span>SYNK WORLD</span><span>캠퍼스 옷 가게</span></p>
+    <button type="button" class="shop-box" data-act="closet" aria-label="내 옷장">
+      <svg class="shop-box-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.2a1.9 1.9 0 1 1 1.9 1.9c-.9 0-1.9.7-1.9 1.6v.6m0 0L3.6 15.6a1 1 0 0 0 .6 1.9h15.6a1 1 0 0 0 .6-1.9Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="shop-box-text">내 옷장</span>
+      <span class="shop-box-count" data-count="0"></span>
+    </button>
+  </header>
+
+  <section class="shop-floor" aria-label="옷걸이">
+    <svg class="shop-rod" aria-hidden="true" preserveAspectRatio="none">
+      <path class="shop-rod-shadow" d=""/>
+      <path class="shop-rod-bar" d=""/>
+      <path class="shop-rod-body" d=""/>
+      <path class="shop-rod-shine" d=""/>
+      <rect class="shop-rod-plate" width="10" height="26" rx="2"/>
+      <rect class="shop-rod-plate" width="10" height="26" rx="2"/>
+      <circle class="shop-rod-cap" r="5.5"/>
+      <circle class="shop-rod-cap" r="5.5"/>
+    </svg>
+    <ol class="shop-rail" tabindex="0" aria-label="옷 여덟 벌 — 끌어서 넘기고, 눌러서 자세히"></ol>
+    <div class="shop-caption" aria-live="polite">
+      <p class="shop-caption-n"></p>
+      <p class="shop-caption-name"></p>
+      <p class="shop-caption-note"></p>
+    </div>
+    <button type="button" class="shop-more" data-act="more">자세히 보기</button>
+    <p class="shop-hint">끌어서 넘기고, 눌러서 자세히</p>
+    <div class="shop-title">
+      <p class="shop-kicker">새 학기 · 8벌</p>
+      <h1>오늘 뭐 입지?</h1>
+    </div>
+    <div class="shop-dots" aria-hidden="true"></div>
+  </section>
+
+  <div class="shop-veil" aria-hidden="true"></div>
+  <section class="shop-stage" hidden aria-label="옷 자세히">
+    <button type="button" class="shop-close" data-act="close">닫기</button>
+    <button type="button" class="shop-step" data-act="prev" aria-label="앞 옷"></button>
+    <button type="button" class="shop-step" data-act="next" aria-label="다음 옷"></button>
+    <div class="shop-turn-wrap" data-view="garment">
+      <div class="shop-turn" aria-hidden="true">
+        <img class="shop-face is-front" alt="" draggable="false">
+        <img class="shop-face is-back" alt="" draggable="false">
+      </div>
+      <!-- 입은 나 — 이 옷을 입은 내 사진(도착한 옷만). 옷걸이 자리에서 인화지처럼 떠오른다 -->
+      <figure class="shop-print" aria-hidden="true"><img alt="" draggable="false"><figcaption></figcaption></figure>
+    </div>
+    <div class="shop-info">
+      <p class="shop-num"></p>
+      <h2 class="shop-name"></h2>
+      <p class="shop-note"></p>
+      <div class="shop-side" role="radiogroup" aria-label="보는 쪽"></div>
+      <div class="shop-actions"></div>
+      <p class="shop-help"></p>
+    </div>
+  </section>
+
+  <div class="shop-parcel" hidden aria-hidden="true">
+    <img class="shop-parcel-open" alt="" src="assets/box-open.webp">
+    <img class="shop-parcel-closed" alt="" src="assets/box-closed.webp">
+  </div>
+  <p class="shop-toast" role="status" hidden></p>
+</div>
+</body>
+</html>

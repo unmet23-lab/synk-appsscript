@@ -30,6 +30,7 @@ const 뿌리 = path.resolve(process.argv[3] || path.join(__dirname, '..'));
 const 형 = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
+  '.mjs': 'text/javascript; charset=utf-8', // 모듈은 형이 맞아야 브라우저가 돌린다(11-05 옷 가게 시안)
   '.json': 'application/json; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.png': 'image/png',

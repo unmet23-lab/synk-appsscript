@@ -1,4 +1,4 @@
-// 끌어넘기기 부품 — 가운데 항목이 주인공인 가로 줄(캐스팅북 「줄 세워 보기」, 다음에 앱 옷 상점).
+// 끌어넘기기 부품 — 가운데 항목이 주인공인 가로 줄(캐스팅북 「줄 세워 보기」 · 앱 옷 가게 봉).
 // 브라우저에서는 전역 DragRail, Node에서는 require로 읽는다. 계산 함수는 DOM을 만지지 않아 시험할 수 있다.
 //
 // 바탕은 브라우저 가로 스크롤 + scroll-snap이다 — 터치 관성 · 키보드 · 화면 읽기를 그대로 받고, 스크립트가 멈춰도 넘어간다.
@@ -50,6 +50,26 @@
     const ax = Math.abs(dx), ay = Math.abs(dy);
     if (ax < threshold && ay < threshold) return null;
     return ax > ay ? 'x' : 'y';
+  }
+
+  /**
+   * 옷걸이 흔들림 한 걸음(옷 가게, 11-05) — 고리를 축으로 한 진자. 고리가 가속하면(ax, px/s²) 옷은 반대쪽으로 처지고
+   * 멈추면 몇 번 흔들리다 선다. 끌기 · 마우스 올림 · 봉 처짐이 모두 「고리가 움직인 가속도」 하나로 들어온다.
+   * s = { th: 각(rad), om: 각속도 } · k 복원(클수록 빨리 흔들림) · damp 감쇠 · couple 가속을 받는 몫 · len 진자 길이(px) · max 최대 각.
+   */
+  function swingStep(s, ax, dt, o = {}) {
+    const k = o.k ?? 46, damp = o.damp ?? 2.1, couple = o.couple ?? 0.26, len = o.len || 170, max = o.max ?? 0.26;
+    const a = -k * Math.sin(s.th) - damp * s.om - couple * ax / len;
+    const om = s.om + a * dt;
+    return { th: clamp(s.th + om * dt, -max, max), om };
+  }
+
+  /** 처진 봉의 높이 — 양 끝(a · b)에서 0, 가운데에서 sag만큼 내려가는 포물선. 끝 밖은 끝 높이. */
+  function sagAt(x, a, b, sag) {
+    const half = (b - a) / 2;
+    if (!(half > 0)) return 0;
+    const u = clamp((x - (a + b) / 2) / half, -1, 1);
+    return sag * (1 - u * u);
   }
 
   const reducedMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -210,5 +230,5 @@
     };
   }
 
-  return { clamp, positionOf, nearestIndex, flickTarget, itemLook, dragIntent, attach };
+  return { clamp, positionOf, nearestIndex, flickTarget, itemLook, dragIntent, swingStep, sagAt, attach };
 });
