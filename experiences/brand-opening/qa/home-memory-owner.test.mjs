@@ -13,7 +13,7 @@ function functionSource(start,end){
   const from=source.indexOf(start),to=source.indexOf(end,from+start.length);
   assert.ok(from>=0&&to>from,`home controller contains ${start}`);return source.slice(from,to);
 }
-const controller=[functionSource('function updateLearning(','function showPlay('),functionSource('function updateAccount(','export const home=')].join('\n');
+const controller=[functionSource('function refreshOpenPlay(','function showPlay('),functionSource('function updateAccount(','export const home=')].join('\n');
 function learned(owner,index=0){
   const question=lesson.questions[index];
   return {summary:{owner,status:{phase:'ready'}},details:{lessons:LESSONS,snapshot:{owner,daily:{days:{[homeDayKey(NOW)]:{items:{[question.id]:{lessonId:lesson.id,observedAt:NOW,outcome:'independent'}}}}}}},text:lifeTutorExpression(lesson,question)};
@@ -36,6 +36,8 @@ function harness(){
     const {memory,homeTutor,tutorUI,$}=ports;
     // 잘라 온 범위가 쓰는 home.mjs의 다른 이름(10-19 화면 언어 1판의 t·onLang, 마을 진도 town, 언어 바꿈 때 다시 그릴 lastAccount):
     // 이 시험은 주인 바꿈만 보므로 글은 키 그대로, 언어 구독은 빈 구독으로 둔다(applyLanguage는 부르지 않는다).
+    // 실제 놀이 갱신 함수도 함께 읽되, 주인 전환 시험에서는 놀이 목록을 열지 않는다.
+    const panel={open:false};
     const t=key=>key,tMessage=key=>key,currentLang=()=>'ko',onLang=()=>()=>{},town={setProgress(){}};
     let accountOwner='guest',learningData={},panelKind='',lastAccount=null;
     function closePanel(){panelKind='';ports.panelClosed();}
