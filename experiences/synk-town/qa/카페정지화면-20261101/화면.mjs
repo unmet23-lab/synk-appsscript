@@ -36,7 +36,7 @@ const 밖 = process.env.TOWN_CAFE_OUT || path.join(공용, '.tmp', 'town-cafe-1-
 // (표정 묶음은 얼굴합성.py로 같은 바탕에 얼굴만 바꾼 판), 마감 홀은 칸합성.py로 식물 벽만 붙인 판(머리 윤곽 뺌).
 export const 고른판 = {
   홀아침: '판/hall-open-gpt_141939.png',
-  카운터말할때: '판/counter-talk-gpt_141936.png',
+  카운터말할때: 'nb-1106/out/counter-talk4-nb_g1.png', // 11-06 새 교수 얼굴(Gemini) — 옛 GPT 판은 판/counter-talk-gpt_141936.png
   홀마감: '묶음/hall-rain-plant-merged.png',
 };
 
