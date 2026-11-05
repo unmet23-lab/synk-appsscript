@@ -27,11 +27,13 @@ async function throughScenes(demo){
 }
 
 // 11-04 소개글(유호님 「원고대로 올려」 · 원고 docs/마케팅/PULSE_소개글_20261103/README.md): 처음 들어온 사람의 첫 화면에 원고의 말을 해요체로 둔다. 작업 중인 손님의 현황판에는 넣지 않는다.
+// 11-05 첫 줄 판(유호님 「좋아 훌륭해」 · 「52에 같이」, 결정 표 「PULSE 첫 화면 제목」): 제목 · 소개 줄 · 만드는 사람 경력 문장 · 쪽 제목 · manifest를 새 말로. 「모든 컷 먼저」는 진행 설명 칸이 맡는다.
 const words=html=>html.replace(/<[^>]+>/g,' ').replace(/[\s\u00A0]+/g,' ');
 test('the entry page introduces PULSE in the approved words and keeps the invite door and the demo',()=>{
   const html=welcome({}),text=words(html);
   for(const line of [
-    '모든 컷을 먼저 보여 드리는 AI 광고',
+    '자연스러움은 연출입니다',
+    '시선, 제품을 쥔 손, 웃음이 나오는 타이밍. 카메라 앞과 뒤에서 10년 일한 대표가 그 자리를 연출해요.',
     '영상에 들어갈 모든 컷을 장면 이미지로 먼저 보여 드려요. AI 모델 21명 캐스팅, 제품·로고는 실제 파일로 합성해요.',
     // 장면 이미지 단서 — 장면 이미지를 말할 때는 함께 둔다.
     '장면 이미지는 영상의 첫 장면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요.',
@@ -41,7 +43,7 @@ test('the entry page introduces PULSE in the approved words and keeps the invite
     '맡기신 뒤에는 초대 링크 하나로 시안을 보고 의견을 남기고, 최종 파일까지 한곳에서 받아요.',
     // 만드는 사람
     '카메라 앞에 서 본 사람이 AI 모델의 연기를 연출해요',
-    'AI 광고가 어색해지는 곳은 대개 표정과 호흡, 말이 끝나는 타이밍이에요. SYNK PULSE는 배우로 활동한 대표 유호가 연출해요.',
+    'AI 광고가 어색해지는 곳은 대개 표정과 호흡, 말이 끝나는 타이밍이에요. SYNK PULSE는 엔터테인먼트·광고 업계에서 10년 일한 대표 유호가 연출해요.',
     '넷플릭스 공개 「보라! 데보라」 1화 오프닝 시퀀스 출연','tvN 「코미디빅리그」 코너 출연','부활 「너의 모습」 뮤직비디오 주연',
     // 값은 정가의 「부터」만, 고지
     '15초 광고 39만원부터','30초 광고와 편집본 89만원부터','기업 캠페인 250만원부터','상담은 제품 사진 한 장과 올릴 곳만으로 시작해요.',
@@ -51,6 +53,8 @@ test('the entry page introduces PULSE in the approved words and keeps the invite
   assert.equal(CASTING_MODELS.length,21,'모델 수가 바뀌면 소개글의 「21명」(첫 화면 · index.html · 원고)도 함께 고친다');
   // 쓰지 않기로 한 말(원고 1절): 도구 이름, 최상급, 납기 · 부가세 · 세금계산서 약속, 실제 촬영을 고른다는 말, 같은 얼굴 보증, 옛 머리말.
   assert.doesNotMatch(text,/실제 촬영|실사 촬영|납기|부가세|세금계산서|같은 얼굴|무제한|최고|최초|유일|1위|솔서리|Seedance|Sora|Veo|Omni|Gemini|GPT|Suno|Higgsfield|힉스필드|시댄스|CLIENT ROOM|함께 완성해요/i);
+  // 11-05: 옛 제목은 첫 화면에서 내렸고(목록 자리의 설명 줄로만 남는다), 경력은 「배우」만이 아니라 엔터테인먼트·광고 업계 10년이다. 「실사」 · 「자연스러운 ○○ 제작」 꼴은 쓰지 않는다.
+  assert.doesNotMatch(text,/모든 컷을 먼저 보여 드리는|배우로 활동한|실사|자연스러운 [가-힣]+ 제작/);
   // 초대 문과 체험은 그대로다.
   assert.match(html,/<form class="sx-invite" data-form="invite"[\s\S]*name="invite"[\s\S]*<\/form>/);
   assert.equal(html.split('href="?demo=film"').length,3,'머리의 예시 링크와 맡긴 뒤 줄');
@@ -63,7 +67,8 @@ test('the entry page introduces PULSE in the approved words and keeps the invite
   assert.equal(app.split('.sx-invite-alert').length,2,'one place');
   assert.ok(html.includes('href="https://synk.im/pulse/casting/" target="_blank" rel="noopener noreferrer"'));
   const index=readFileSync(new URL('./public/pulse-app/index.html',import.meta.url),'utf8');
-  assert.ok(index.includes('<title>SYNK PULSE — 모든 컷을 먼저 보여 드리는 AI 광고</title>'));
+  assert.ok(index.includes('<title>SYNK PULSE — 자연스러움은 연출입니다</title>'));
+  assert.equal(JSON.parse(readFileSync(new URL('./public/pulse-app/manifest.webmanifest',import.meta.url),'utf8')).description,'자연스러움은 연출입니다');
   assert.ok(index.includes('content="영상에 들어갈 모든 컷을 장면 이미지로 먼저 보여 드려요. AI 모델 21명 캐스팅, 제품·로고는 실제 파일로 합성해요."'));
   assert.ok(index.includes('<span class="header-caption">AI 광고 제작</span>'));
   assert.doesNotMatch(index,/CLIENT ROOM|함께 만드는 광고/);

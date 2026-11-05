@@ -11,8 +11,11 @@ const pad=value=>String(value).padStart(2,'0');
 export const arrow='<svg class="sx-arw" viewBox="0 0 40 16" aria-hidden="true"><path d="M0 8h38M31 1l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>';
 const lines=list=>list.map(text=>`<span class="sx-ln"><span>${esc(text)}</span></span>`).join('');
 
-const HERO_TITLE=['모든 컷을','먼저 보여 드리는','AI 광고'];
-const HERO_LEAD='영상에 들어갈 모든 컷을 장면 이미지로 먼저 보여 드려요. AI 모델 21명 캐스팅, 제품·로고는 실제 파일로 합성해요.';
+// 첫 줄 판(2026-11-05 유호님 「좋아 훌륭해」 · 「52에 같이」, 결정 표 「PULSE 첫 화면 제목」): 제목과 소개 줄은 자연스러움 · 연출이고,
+// 「모든 컷을 장면 이미지로 먼저」는 진행 설명 칸(이렇게 만들어요)이 맡는다. 옛 제목 「모든 컷을 먼저 보여 드리는 AI 광고」는 첫 화면에 쓰지 않는다.
+const HERO_TITLE=['자연스러움은','연출입니다'];
+const HERO_LEAD='시선, 제품을 쥔 손, 웃음이 나오는 타이밍. 카메라 앞과 뒤에서 10년 일한 대표가 그 자리를 연출해요.';
+const CHECK_LEAD='영상에 들어갈 모든 컷을 장면 이미지로 먼저 보여 드려요. AI 모델 21명 캐스팅, 제품·로고는 실제 파일로 합성해요.';
 const HERO_NOTE='상담은 제품 사진 한 장과 올릴 곳만으로 시작해요.';
 const CHECK_THREE=['모델 고르기','광고가 남길 한 문장과 글 콘티','컷마다 장면 이미지'];
 const CHECK_WORD={one:'서리꽃이 피는 순간을 담은 홀리데이 세트',rows:[['0:00','깜깜한 유리 위에서 눈 결정 하나가 자라요. 얼음에 금이 가는 작은 소리로 시작해요.'],['0:03','카메라가 물러나면 결정은 유리구슬 겉에 붙어 있어요. 서리가 번지고 구슬 안에 앰플과 크림이 보여요.'],['0:06','구슬이 깨지는 순간 소리가 사라지고 조각과 두 제품이 허공에 멈춰요. 카메라만 그 사이를 지나가요.'],['0:11','시간이 다시 흐르고 두 제품이 내려앉아요. 떨어진 결정이 뚜껑에 앉아 피어나고 이름이 떠요.']]};
@@ -115,11 +118,11 @@ const workRow=film=>`<li data-in><button type="button" class="sx-work" data-work
 const inviteForm=entryError=>`<form class="sx-invite" data-form="invite" data-entry-invite ${entryError?'':'hidden'}>${entryError?`<div class="sx-invite-alert" role="alert"><strong>${esc(entryError.title)}</strong><p>${esc(entryError.text)}</p></div>`:''}<label><span class="sx-small">담당자에게 받은 링크</span><input name="invite" type="text" maxlength="3000" required placeholder="https://workspace.synk.im/pulse-app/#invite=…" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="url"></label><button type="submit" class="sx-go" data-mutate><span>열기</span>${arrow}</button><p class="sx-small">가입이나 비밀번호 없이 열려요. 연결하면 이 프로젝트의 자료와 대화만 볼 수 있어요.</p><button type="button" class="sx-small sx-link" data-action="retry">이 기기에서 다시 확인</button></form>`;
 
 const pages=({start,demoHref})=>[
-  {layer:'reel',html:`<div class="sx-hero-copy"><p class="sx-kicker" data-in>SYNK PULSE · AI 광고 제작</p><h1 class="sx-display">${lines(HERO_TITLE)}</h1></div>
+  {layer:'reel',html:`<div class="sx-hero-copy"><p class="sx-kicker" data-in>SYNK PULSE · AI 광고 제작</p><h1 class="sx-display">${lines(HERO_TITLE)}</h1><p class="sx-body sx-hero-lead" data-in>${esc(HERO_LEAD)}</p></div>
     <div class="sx-hero-act"><button type="button" class="sx-credit" data-watch-now data-in><b data-cr-name></b> <span data-cr-line></span><em data-cr-note></em></button><button type="button" class="sx-go is-solid" data-entry="start" data-in><span data-start-label>${esc(start)}</span>${arrow}</button><button type="button" class="sx-open-m sx-small" data-entry="open" data-in>받은 링크로 내 프로젝트 열기</button></div>`},
   {layer:'reel',cls:'is-works',veil:true,html:`<header class="sx-works-head"><p class="sx-kicker" data-in>완성 광고</p><h2 class="sx-body" data-in>SYNK가 끝까지 만든 광고예요. 가상 브랜드로 만든 자체 작품이에요. 새 작품은 완성되는 대로 더해요.</h2></header>
     <div class="sx-works-wrap"><ol class="sx-works">${OWN.map(workRow).join('')}</ol>${CONTEST?`<button type="button" class="sx-work is-contest" data-work="${esc(CONTEST.id)}" data-in><span class="sx-small">공모전 출품작</span><span class="sx-work-name sx-serif">${esc(CONTEST.title)}</span><span class="sx-work-line sx-small">${esc(filmLine(CONTEST))}</span></button>`:''}</div>`},
-  {layer:'none',cls:'is-check',html:`<div class="sx-check"><p class="sx-kicker" data-in>이렇게 만들어요</p><h2 class="sx-display">${lines(['영상 전에 세 번 확인해요'])}</h2><p class="sx-body sx-check-lead" data-in>${esc(HERO_LEAD)}</p>
+  {layer:'none',cls:'is-check',html:`<div class="sx-check"><p class="sx-kicker" data-in>이렇게 만들어요</p><h2 class="sx-display">${lines(['영상 전에 세 번 확인해요'])}</h2><p class="sx-body sx-check-lead" data-in>${esc(CHECK_LEAD)}</p>
     <ol class="sx-check-list">${CHECK_THREE.map((text,i)=>`<li data-in><button type="button" data-check="${i}"><span class="sx-no">${i+1}/3</span><span class="sx-serif">${esc(text)}</span></button></li>`).join('')}</ol>
     <p class="sx-small" data-in>장면 이미지는 영상의 첫 장면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요.</p></div>
     <div class="sx-check-stage" aria-hidden="true">
@@ -130,7 +133,7 @@ const pages=({start,demoHref})=>[
   {layer:'none',cls:'is-paper',html:`<ol class="sx-promises">${INTRO_PROMISES.map(([title,text,link],i)=>`<li data-in><span class="sx-no">${pad(i+1)}</span><h3 class="sx-serif">${esc(title)}</h3><p class="sx-body">${esc(text)}${link?` ${link}`:''}</p></li>`).join('')}</ol>`},
   {layer:'shard',cls:'is-stages',html:`<h2 class="sx-display">${lines(['맡기면 이렇게 진행돼요'])}</h2><ol class="sx-stages">${STAGES.map(([title,text],i)=>`<li data-in><span class="sx-no">${pad(i+1)}</span><h3 class="sx-serif">${esc(title)}</h3><p class="sx-body">${esc(text)}</p></li>`).join('')}</ol>
     <p class="sx-after" data-in><span class="sx-body">맡기신 뒤에는 초대 링크 하나로 시안을 보고 의견을 남기고, 최종 파일까지 한곳에서 받아요.</span> <a class="sx-link" href="${esc(demoHref)}" data-entry-demo>예시 프로젝트 체험하기 →</a></p>`},
-  {layer:'reel',cls:'is-maker',focus:'maejin-imbak',html:`<div class="sx-maker"><p class="sx-kicker" data-in>만드는 사람</p><h2 class="sx-display">${lines(['카메라 앞에 서 본 사람이 AI 모델의 연기를 연출해요'])}</h2><p class="sx-body" data-in>AI 광고가 어색해지는 곳은 대개 표정과 호흡, 말이 끝나는 타이밍이에요. SYNK PULSE는 배우로 활동한 대표 유호가 연출해요.</p><ul class="sx-maker-credits">${MAKER_CREDITS.map(line=>`<li class="sx-small" data-in>${esc(line)}</li>`).join('')}</ul></div>`},
+  {layer:'reel',cls:'is-maker',focus:'maejin-imbak',html:`<div class="sx-maker"><p class="sx-kicker" data-in>만드는 사람</p><h2 class="sx-display">${lines(['카메라 앞에 서 본 사람이 AI 모델의 연기를 연출해요'])}</h2><p class="sx-body" data-in>AI 광고가 어색해지는 곳은 대개 표정과 호흡, 말이 끝나는 타이밍이에요. SYNK PULSE는 엔터테인먼트·광고 업계에서 10년 일한 대표 유호가 연출해요.</p><ul class="sx-maker-credits">${MAKER_CREDITS.map(line=>`<li class="sx-small" data-in>${esc(line)}</li>`).join('')}</ul></div>`},
   {layer:'end',cls:'is-end',html:`<div class="sx-end"><p class="sx-display">${lines(HERO_TITLE)}</p><button type="button" class="sx-go is-solid is-large" data-entry="start" data-in><span data-start-label>${esc(start)}</span>${arrow}</button><p class="sx-small" data-in>${esc(HERO_NOTE)}</p>
     <h2 class="sr">값</h2><ul class="sx-prices" data-in>${INTRO_PRICES.map(([label,value])=>`<li><span class="sx-small">${esc(label)}</span><strong class="sx-small">${esc(value)}</strong></li>`).join('')}</ul>
     <footer class="sx-foot" data-in><p class="sx-small">${esc(FOOT_NOTE)}</p><a class="sx-small sx-link" href="?mode=staff">제작자 공간</a></footer></div>`},
