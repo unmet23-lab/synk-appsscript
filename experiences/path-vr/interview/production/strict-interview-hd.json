@@ -15,6 +15,16 @@
     "native4k": false,
     "extraProviderCredits": 0
   },
+  "containerRewrap": {
+    "at": "2026-11-06",
+    "reason": "Remove the generator provenance box (C2PA) from the published 720p files. Container only: ffmpeg -map 0 -c copy -map_metadata -1 -movflags +faststart; packets, timestamps and decoded frames/audio are identical (framemd5). actual720 below keeps the as-generated hash; the file on disk and strict-manifest.json now use these.",
+    "files": {
+      "strict-question-720p.mp4": { "sha256": "e2d0ea7852b1be0cef96ae7e39d6f28802ba9cac82d9f9d0a8ceff8ced2316ad", "bytes": 2779440 },
+      "strict-listening-720p.mp4": { "sha256": "14eb1af29d50856c3abf9fba66695efd0d5826d009b14ecf4894dfb0289200f5", "bytes": 2895499 },
+      "strict-followup-experience-720p.mp4": { "sha256": "d17c39ee6218fc5d3aaa7fc68c7cffadaef28fe79fa9791ffceddaed3be78556", "bytes": 3133052 },
+      "strict-followup-plan-720p.mp4": { "sha256": "28aae1abf62e8e7c424248bbe66ca1b2ba2c0306583ab6daa76ad1fe1f8be5de", "bytes": 3015241 }
+    }
+  },
   "clips": [
     {
       "id": "strict-question",
