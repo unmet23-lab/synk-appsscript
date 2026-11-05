@@ -19,6 +19,7 @@ const DEMO_MEDIA=/^\/pulse-app\/demo-assets\/preview-v[12]\.mp4$/,DEMO_MEDIA_TYP
 // files under /pulse-app/assets/. The shell never leaves: its fragment can
 // carry an invite.
 const PULSE_LIBRARY='/pulse-app/production-library/',LIBRARY_QUERY=/^\?model=[A-Z][0-9]{2}$/,PUBLIC_ASSET=/^\/pulse-app\/assets\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_-]+\.(?:mp4|webp|png|jpe?g|mp3)$/;
+const PULSE_WINDOW_BACKGROUND='#000000';
 const PULSE_EXIT_TEXT={title:'SYNK PULSE',message:'아직 저장하거나 보내지 않은 내용이 있어요.',detail:'돌아가서 마저 저장하거나 보낼 수 있어요. 이미 저장하거나 보낸 내용은 그대로 남아요.'};
 function fixedUrl(value){try{if(typeof value!=='string'||value.length>4096)return null;const url=new URL(value);return url.protocol==='https:'&&!url.username&&!url.password?url:null;}catch{return null;}}
 function pulseAppNavigationAllowed(value){const url=fixedUrl(value);return !!url&&url.origin===PULSE_APP_ORIGIN&&url.pathname==='/pulse-app/'&&(!url.search||url.search===PULSE_DEMO_SEARCH);}
@@ -66,7 +67,9 @@ function createPulseApp({clientId,getAccount,BrowserWindow,session,dialog,openEx
   }
   function sameContext(expected,isolated){syncContext();return !disposed&&expected===epoch&&isolated===activeSession;}
   function createWindow(isolated){
-    const window=new BrowserWindow({width:1240,height:880,minWidth:720,minHeight:560,title:'SYNK PULSE',show:false,autoHideMenuBar:true,backgroundColor:'#f8f5f2',webPreferences:{session:isolated,sandbox:true,contextIsolation:true,nodeIntegration:false,nodeIntegrationInWorker:false,nodeIntegrationInSubFrames:false,webviewTag:false,webSecurity:true,allowRunningInsecureContent:false,experimentalFeatures:false,devTools:false}});
+    // Black like the customer app's page (html.sx background, theme-color), so
+    // a resize or a slow paint never flashes the old light frame.
+    const window=new BrowserWindow({width:1240,height:880,minWidth:720,minHeight:560,title:'SYNK PULSE',show:false,autoHideMenuBar:true,backgroundColor:PULSE_WINDOW_BACKGROUND,webPreferences:{session:isolated,sandbox:true,contextIsolation:true,nodeIntegration:false,nodeIntegrationInWorker:false,nodeIntegrationInSubFrames:false,webviewTag:false,webSecurity:true,allowRunningInsecureContent:false,experimentalFeatures:false,devTools:false}});
     const contents=window.webContents;
     const openReference=value=>{if(pulseAppMediaAllowed(value)){contents.downloadURL(value);return;}const destination=pulseAppExternalDestination(value);if(destination)void Promise.resolve(openExternal(destination)).catch(()=>{});};
     contents.setWindowOpenHandler(({url})=>{openReference(url);return {action:'deny'};});
@@ -113,4 +116,4 @@ function createPulseApp({clientId,getAccount,BrowserWindow,session,dialog,openEx
   }
   return {open,syncContext,dispose(){disposed=true;++epoch;pending=null;closeWindow();activeSession=null;}};
 }
-module.exports={createPulseApp,scopeOf,pulseAppPartition,pulseAppNavigationAllowed,pulseAppResourceAllowed,pulseAppRequestAllowed,pulseAppMediaAllowed,pulseAppExternalDestination,PULSE_APP_ORIGIN,PULSE_APP_ENTRY,PULSE_STAFF_ENTRY,PULSE_DEMO_ENTRY};
+module.exports={createPulseApp,scopeOf,pulseAppPartition,pulseAppNavigationAllowed,pulseAppResourceAllowed,pulseAppRequestAllowed,pulseAppMediaAllowed,pulseAppExternalDestination,PULSE_APP_ORIGIN,PULSE_APP_ENTRY,PULSE_STAFF_ENTRY,PULSE_DEMO_ENTRY,PULSE_WINDOW_BACKGROUND};

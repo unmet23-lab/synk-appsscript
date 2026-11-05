@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),{EventEmitter}=require('node:events'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
-const {createPulseApp,scopeOf,pulseAppPartition,pulseAppNavigationAllowed,pulseAppResourceAllowed,pulseAppRequestAllowed,pulseAppMediaAllowed,pulseAppExternalDestination,PULSE_APP_ORIGIN:ORIGIN,PULSE_APP_ENTRY:ENTRY,PULSE_STAFF_ENTRY:STAFF,PULSE_DEMO_ENTRY:DEMO}=require('../src/pulse-app.cjs');
+const {createPulseApp,scopeOf,pulseAppPartition,pulseAppNavigationAllowed,pulseAppResourceAllowed,pulseAppRequestAllowed,pulseAppMediaAllowed,pulseAppExternalDestination,PULSE_APP_ORIGIN:ORIGIN,PULSE_APP_ENTRY:ENTRY,PULSE_STAFF_ENTRY:STAFF,PULSE_DEMO_ENTRY:DEMO,PULSE_WINDOW_BACKGROUND}=require('../src/pulse-app.cjs');
 const guest={signedIn:false,status:'signed-out'},member=id=>({signedIn:true,status:'signed-in',account:{synk_user_id:id},accessToken:'SYNTHETIC-PRIVATE-TOKEN'});
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 function fixture({state=member('synthetic-owner-a'),clientId='platform',load=()=>Promise.resolve(),sessions=new Map()}={}){
@@ -47,6 +47,15 @@ test('persistent partition is deterministic per owner without exposing account I
   assert.notEqual(pulseAppPartition('guest'),pulseAppPartition('account:synthetic-owner-a'));
   assert.doesNotMatch(pulseAppPartition('account:synthetic-owner-a'),/synthetic-owner/);
 });
+// The window paints this before the page and on every resize, so it must be the
+// customer app's own page colour (html.sx background and theme-color), not a light frame.
+const CUSTOMER_PAGE=path.join(__dirname,'..','..','docs','마케팅','온라인마케팅지도','engagement','company','public','pulse-app');
+test('the PULSE window background is the customer app page colour',{skip:!fs.existsSync(CUSTOMER_PAGE)&&'customer app source not in this checkout'},()=>{
+  const css=fs.readFileSync(path.join(CUSTOMER_PAGE,'film.css'),'utf8'),html=fs.readFileSync(path.join(CUSTOMER_PAGE,'index.html'),'utf8');
+  assert.match(html,/<html[^>]*class="sx"/);assert.equal(html.match(/<meta name="theme-color" content="(#[0-9a-f]{6})">/i)?.[1].toLowerCase(),PULSE_WINDOW_BACKGROUND);
+  const page=css.match(/:where\(html\.sx\),:where\(html\.sx\) body\{margin:0;background:#([0-9a-f]{3}|[0-9a-f]{6});/i)?.[1].toLowerCase();
+  assert.equal(page&&'#'+(page.length===3?[...page].map(c=>c+c).join(''):page),PULSE_WINDOW_BACKGROUND,'film.css page background');
+});
 test('opening creates an independent sandboxed window and waits for loading, with duplicate opens joined',async()=>{
   let done;const f=fixture({load:()=>new Promise(resolve=>{done=resolve;})});let completed=false;
   const first=f.service.open();first.then(()=>{completed=true;});assert.equal(f.service.open(),first);await tick();
@@ -55,6 +64,7 @@ test('opening creates an independent sandboxed window and waits for loading, wit
   for(const key of ['sandbox','contextIsolation','webSecurity'])assert.equal(w.options.webPreferences[key],true);
   for(const key of ['nodeIntegration','nodeIntegrationInWorker','nodeIntegrationInSubFrames','webviewTag','allowRunningInsecureContent','experimentalFeatures','devTools'])assert.equal(w.options.webPreferences[key],false);
   assert.doesNotMatch(JSON.stringify(w.options),/SYNTHETIC-PRIVATE-TOKEN|synthetic-owner-a/);
+  assert.equal(w.options.backgroundColor,PULSE_WINDOW_BACKGROUND);assert.equal(PULSE_WINDOW_BACKGROUND,'#000000');
   done();assert.equal((await first).ok,true);assert.equal(w.shown,1);assert.equal(w.focused,1);
   w.minimized=true;assert.equal((await f.service.open()).reused,true);assert.equal(w.restored,true);assert.equal(f.windows.length,1);
 });
