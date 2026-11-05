@@ -99,6 +99,14 @@ const AI표현 = /AI ?생성|AI로 만든|AI가 만든|AI-generated|generated (?
  * AI 이름과 달리 맞춤 도구·vendor·처리방침까지 본다(`brief/katana/view.js`에도 있었다). 대소문자를 가린다 — 주소의 `/documents/`는 뺀다.
  * 원고 위치 머리말 `SYNK-appsscript/docs/…`와 PC 이사 안내의 OneDrive는 일부러 둔 글이라 넣지 않는다.
  */
+/**
+ * 거둔 말(11-06): 결정 표로 거둔 화면 말(드라마 감독 틀 · 옛 그룹 표기 등)이 공개 파일의 더한 줄에 다시 실리지 않게.
+ * 목록은 tools/lib/거둔말.json — 말을 거두는 결정이 나면 거기에 한 줄을 더한다. AI 이름처럼 사람이 보고 --허용으로 넘길 수 있다.
+ */
+const 거둔말 = (() => {
+  try { return JSON.parse(fs.readFileSync(path.join(__dirname, 'lib', '거둔말.json'), 'utf8')).말.map((x) => ({ 꼴: new RegExp(x.꼴), 까닭: x.까닭 })); }
+  catch { return []; }
+})();
 const 내부경로 = /synk-vendor|SYNK-worktrees|SYNK_보안|원본창고|\bq1212\b|\bAppData\b|\bDocuments[\\/]|\b[A-Za-z]:[\\/]{1,2}Users\b|\/c\/Users\b|\.claude[\\/]|scratchpad[\\/]|(?<![\w.-])\.tmp[\\/]/;
 /** AI 도구 사용법 자체가 내용인 맞춤 도구 페이지(배포 점검이 빼는 brief/와 같은 성격) — AI 이름 검사만 뺀다 */
 const 도구안내 = /^(en\/)?builds\//;
@@ -684,9 +692,15 @@ function 검사하기(항목들, 규칙, 옵션 = {}) {
       if (이름칸) 요약.더한줄 += 줄들.length;
       요약.경로줄 += 줄들.length;
       const 넘김 = (항) => { if (허용.has(p)) 알림.push({ ...항, 이유: `${항.이유} — --허용으로 넘김` }); else 걸림.push(항); };
-      let 이름봄 = !이름칸, 경로봄 = false;
+      let 이름봄 = !이름칸, 경로봄 = false, 거둔봄 = !거둔말.length || 점검밖;
       for (const 줄 of 줄들) {
         const 글 = 덩어리빼기(줄);
+        if (!거둔봄) {
+          for (const g of 거둔말) {
+            const m = 글.match(g.꼴);
+            if (m) { 넘김({ 경로: p, 검사: '거둔 말', 이유: `더한 줄에 “${글조각(글, m.index, m[0].length)}” — ${g.까닭}` }); 거둔봄 = true; break; }
+          }
+        }
         if (!이름봄) {
           const m = 글.match(AI이름) || 글.match(AI한글이름) || (/^(en\/)?pulse\//.test(p) ? null : 글.match(AI표현));
           if (m) { 넘김({ 경로: p, 검사: 'AI 이름', 이유: `더한 줄에 “${글조각(글, m.index, m[0].length)}”` }); 이름봄 = true; }
@@ -695,7 +709,7 @@ function 검사하기(항목들, 규칙, 옵션 = {}) {
           const m = 글.match(내부경로);
           if (m) { 넘김({ 경로: p, 검사: '내부 경로', 이유: `더한 줄에 이 PC·작업 자리 경로 “${글조각(글, m.index, m[0].length)}”` }); 경로봄 = true; }
         }
-        if (이름봄 && 경로봄) break;
+        if (이름봄 && 경로봄 && 거둔봄) break;
       }
     }
     // 4) 저장 용량(GitHub: 100MiB 넘는 파일은 push 거절, 50MiB 넘으면 경고)

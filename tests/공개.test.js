@@ -409,6 +409,29 @@ test('도구 이름: 후보의 check.mjs 규칙·MP3 태그·그림 제작 표�
   assert.ok(허용.알림.some((x) => x.경로 === 'app.js' && /--허용으로 넘김/.test(x.이유)));
 });
 
+test('거둔 말(11-06): 결정 표로 거둔 화면 말이 더한 줄에 다시 실리면 막고, 이미 있던 줄 · 코드 안 이름 · --허용은 넘긴다', () => {
+  const 규칙 = 속.점검규칙읽기(점검원문('suno'));
+  const 검사 = (줄들, 옵션) => 속.검사하기(줄들.map(([경로, 새, 옛]) => ({ 경로, 버퍼: 글(새), 공개버퍼: 옛 === undefined ? null : 글(옛) })), 규칙, 옵션);
+  const r = 검사([
+    ['lab/index.html', '<p>AI 감독이 고칠 점이 있으면 테이크 2로 다시 갑니다.</p>\n'],
+    ['en/lab/index.html', '<h1>Join the cast of a K-drama</h1>\n'],
+    ['index.html', '<span>TAKE 1</span>\n'],
+    ['pulse/casting/app.js', 'const 옛 = "#g-OPALINE";\n'],
+    ['world/drama/pilot.mjs', 'const 키 = { take2: "한 번 더", take2Start: "한 번 더 하기" };\n'],
+    // 공개본에 이미 있던 거둔 말 줄은 그대로 두고 새 줄만 더한 판 — 더한 줄만 보므로 걸리지 않는다(GPT 검수 GA1: 거둔 말 꼴에 맞는 옛 줄이어야 이 조건을 잰다)
+    ['shift/index.html', '<p>AI 감독 노트</p>\n<p>새 줄</p>\n', '<p>AI 감독 노트</p>\n'],
+    // 같은 거둔 말을 새로 더하면 걸린다
+    ['path/index.html', '<p>AI 감독 노트</p>\n<p>AI 감독 노트</p>\n', '<p>AI 감독 노트</p>\n'],
+    ['lab2/index.html', '<p>장면이 끝나면 코치가 고칠 점 하나만 짚습니다.</p>\n'],
+  ]);
+  const 걸린 = r.걸림.filter((x) => x.검사 === '거둔 말').map((x) => x.경로).sort();
+  assert.deepEqual(걸린, ['en/lab/index.html', 'index.html', 'lab/index.html', 'path/index.html', 'pulse/casting/app.js'], '감독 틀 · 옛 그룹 표기를 새로 더한 줄만 — 이미 있던 줄 · 코드 키 take2 · 새 코치 글은 넘긴다');
+  assert.match(r.걸림.find((x) => x.경로 === 'lab/index.html').이유, /AI 감독/);
+  const 허용 = 검사([['pulse/casting/app.js', 'const 옛 = "#g-OPALINE";\n']], { 허용: ['pulse/casting/app.js'] });
+  assert.deepEqual(허용.걸림, [], '옛 주소를 잇는 코드 한 줄은 --허용으로 넘긴다');
+  assert.ok(허용.알림.some((x) => x.검사 === '거둔 말' && /--허용으로 넘김/.test(x.이유)));
+});
+
 test('AI 이름 한글·맨 GPT와 이 PC 경로: 10-19 공개본에서 샌 줄은 잡고, 공개본의 흔한 낱말 줄은 넘긴다', () => {
   const 규칙 = 속.점검규칙읽기(점검원문('suno'));
   const 검사 = (줄들, 옵션) => 속.검사하기(줄들.map(([경로, 새, 옛]) => ({ 경로, 버퍼: 글(새), 공개버퍼: 옛 === undefined ? null : 글(옛) })), 규칙, 옵션);
