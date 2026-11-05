@@ -13,7 +13,7 @@ function 다음() {
   while (도는 < 3 && 줄.length) {
     const 이름 = 줄.shift();
     const 지시 = path.join(여기, '지시문', 이름.split('@')[0] + '.txt');
-    const 원고 = path.join(여기, '원고', 이름.startsWith('O') ? 'OFALIN_세리프.jpg' : 'OUTBLUE_넓은.jpg');
+    const 원고 = path.join(여기, '원고', /^O[89]/.test(이름) ? 'OFALIN_전용2.jpg' : /^B1[1-9]/.test(이름) ? 'OUTBLUE_전용2.jpg' : /^O[67]/.test(이름) ? 'OFALIN_전용.jpg' : /^B(9|1\d)/.test(이름) ? 'OUTBLUE_전용.jpg' : 이름.startsWith('O') ? 'OFALIN_세리프.jpg' : /^B[123]_/.test(이름) ? 'OUTBLUE_넓은.jpg' : 'OUTBLUE_높은.jpg');
     도는 += 1;
     const 자식 = spawn(process.execPath, [path.join(여기, '굽기.cjs'), 지시, 이름.replace('@', '_'), 원고], { cwd: 뿌리, stdio: 'inherit' });
     자식.on('close', (코드) => { 도는 -= 1; if (코드) { 실패 += 1; console.error(`[실패] ${이름} ${코드}`); } 다음(); });
