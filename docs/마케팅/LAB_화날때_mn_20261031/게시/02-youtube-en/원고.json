@@ -1,0 +1,21 @@
+{
+ "id": "02-youtube-en",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "audioLanguage": "en",
+ "title": "4 Korean words for when you're ANGRY 😤 …just not in front of your boss #learnkorean",
+ "caption": "Bad day? Here's how Koreans say it:\n\n짜증 나 (jja-jeung na) = So annoying!\n열받아 (yeol-ba-da) = I'm boiling! (literally \"I'm getting heated\")\n어이없어 (eo-i-eop-sseo) = Unbelievable… I'm speechless.\n억울해 (eo-gul-hae) = That's so unfair! (when you get blamed for something you didn't do)\n\nAll four are casual. Use them with friends. In front of elders or your boss, smile, say 네, 사장님~ (ne, sa-jang-nim = Yes, boss~) and keep it in your head 😅\n\nSYNK LAB\n#learnkorean #studykorean #koreanlanguage #koreanphrases",
+ "pinnedComment": "Which one do you need most? 짜증 나 · 열받아 · 어이없어 · 억울해 👇",
+ "alt": [
+  "A needle-felted comedy about one bad day, with an anger gauge on the left. A coral felt mascot misses the bus and gets splashed with muddy water: 짜증 나! (jja-jeung na) = So annoying! Someone takes the last kimbap and it turns into a whistling kettle on a stove: 열받아! (yeol-ba-da) = I am boiling! The friend who owes it money shows off new shoes and its soul floats out on a park bench: 어이없어… (eo-i-eop-sseo) = Unbelievable… A cat knocks a cup off the cafe counter and the mascot gets blamed, crying: 억울해! (eo-gul-hae) = That is so unfair! With the gauge full, the boss walks over and the mascot smiles: 네, 사장님~ (ne, sa-jang-nim) = Yes, boss~ while a volcano erupts above its head with 억울해!! inside. Closing line: With elders and bosses, keep it in your head! The cat pushes another cup off the counter."
+ ],
+ "madeForKids": false,
+ "alteredContent": false,
+ "category": "Education",
+ "_시험": "11-05 동영상 언어 시험 판 — 유호님 「제일 좋았던 판으로」(몽골 M1 인스타 24시간 16,433회 · 127배, 페북 36,563회). 같은 정본(remotion/src/film/data.ts LOCS en)에서 렌더, 소리는 몽골판과 같은 한국어 · 소진. audioLanguage en(소리는 한국어 다섯 마디와 효과음 · 음악뿐이라 말하는 언어로는 맞지 않는 값 — 72시간 판정 뒤 되돌릴지 정한다). 견줄 편: 같은 주 ko 편과, 같은 내용인데 ko로 나간 영어판 「잠이 와요」(15회) · 「미안 세 단계」(22회).",
+ "_비고": "video.mp4 = angry_en_v1(Remotion --audio-bitrate 384k) → tools/음량마감.mjs −14.7 LUFS · −1.2 dBFS · AAC 353,572bps(영상 스트림 그대로). 표지 cover.png = 1.0초(머리 글). 어린이 전용 아님. 합성 표시: 필수 아님 — 펠트 그림 · 특정인이 아닌 TTS(몽골판과 같은 판단).",
+ "version": "angry-en-v1"
+}

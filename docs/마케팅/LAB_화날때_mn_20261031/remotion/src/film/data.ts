@@ -87,7 +87,8 @@ export const SFX: { file: string; at: number; vol: number }[] = [
 
 // ── 두 채널 판(11-02, 기획장부/LAB.md 머리말 「두 채널 판」) — 샤오훙수 간체 · 틱톡 버마어. 같은 정본에서 렌더하고 판끼리 따로 고치지 않는다.
 // 한국어(말풍선 한글 · 소진 목소리)는 그대로, 읽는 법은 영어 로마자(발음대로), 뜻 · 상황 · 머리 글 · 맺음 줄은 그 나라 말로 다시 썼다(현지어 세 겹 검수 — ../../게시/검문/zhs.txt · my.txt).
-export type Loc = 'mn' | 'zhs' | 'my';
+// 11-05 영어판(유튜브 @synkkorean · 동영상 언어 시험 — 유호님 「제일 좋았던 판으로」): 두 채널 판과 같은 꼴(로마자 읽기 · 영어 뜻 · 첫 화면 김 · 끝 딱지).
+export type Loc = 'mn' | 'zhs' | 'my' | 'en';
 export type LocPack = {
   font: string; // 그 나라 글 서체 줄(한글 · 키릴 · 로마자는 SUIT · Inter Tight)
   lineH: number;
@@ -160,5 +161,23 @@ export const LOCS: Record<Loc, LocPack> = {
     end2: 'စိတ်ထဲမှာပဲ ပြောပါ!',
     endSize: 68,
     inner: 'စိတ်ထဲမှာ',
+  },
+  en: {
+    font: "'Inter Tight', 'SUIT', sans-serif",
+    lineH: 1.14,
+    hook: '4 Korean words\nfor when you’re ANGRY',
+    hookSize: 84,
+    gauge: 'ANGER',
+    sits: ['The bus left right\nin front of me…', 'Someone took\nthe last kimbap…', 'The friend who owes me money\njust bought new shoes…', 'I did NOT break that cup…'],
+    sitSize: 58,
+    reads: ['jja-jeung na', 'yeol-ba-da', 'eo-i-eop-sseo', 'eo-gul-hae'],
+    means: ['So annoying!', 'I’m boiling!', 'Unbelievable…', 'That’s so unfair!'],
+    meanSize: 56,
+    endRead: 'ne, sa-jang-nim',
+    endMn: 'Yes, boss~',
+    end1: 'With elders and bosses —',
+    end2: 'keep it in your head!',
+    endSize: 76,
+    inner: 'in my head',
   },
 };
