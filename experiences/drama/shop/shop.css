@@ -192,6 +192,21 @@ button{font:inherit;color:inherit}
 .shop-spec dd{margin:0;font-size:13.5px;line-height:1.55;color:var(--ink);word-break:keep-all}
 .shop-spec a{color:inherit;text-decoration:underline;text-decoration-color:rgba(23,24,28,.35);text-underline-offset:3px;cursor:pointer}
 .shop-spec a:hover{text-decoration-color:currentColor}
+/* 스타일 팁 — 색 칩 셋 · 조언 한 문장 · 누르면 뜻이 펼쳐지는 패션 낱말 하나. 상자 · 그림 문자 · 「TIP」 딱지 없이 표 아래 한 묶음 */
+.shop-tip{display:grid;gap:7px;width:100%;margin:14px 0 2px;text-align:left}
+.shop-tip-head{display:flex;align-items:center;gap:12px;margin:0;font-size:12px;font-weight:550;color:var(--ink-3)}
+.shop-tip-chips{display:flex;padding-left:6px}
+.shop-tip-chips i{width:16px;height:16px;margin-left:-6px;border-radius:50%;background:var(--c);box-shadow:0 0 0 1.5px var(--bg),inset 0 0 0 1px rgba(20,20,20,.1)}
+.shop-tip-names{font-size:13px;font-weight:450;color:#3A3833}
+.shop-tip-text{margin:0;font-size:13.5px;line-height:1.65;color:var(--ink-2);word-break:keep-all;text-wrap:pretty}
+.shop-word{display:inline;padding:0;border:0;background:none;font:inherit;color:var(--ink);text-decoration:underline dotted;text-decoration-color:#8A8882;text-decoration-thickness:1px;text-underline-offset:4px;cursor:pointer;transition:text-decoration-color .2s}
+.shop-word:hover,.shop-word[aria-expanded=true]{text-decoration-color:#141414}
+/* 뜻 줄 — 높이만 0에서 펼친다(grid 0fr → 1fr), 선 · 상자 없이 들여쓰기만 */
+.shop-word-gloss{display:grid;grid-template-rows:0fr;transition:grid-template-rows .18s ease-out}
+.shop-word-gloss.is-open{grid-template-rows:1fr}
+.shop-word-gloss>p{min-height:0;overflow:hidden;display:grid;grid-template-columns:auto 1fr;gap:10px;margin:0;padding-left:12px;font-size:13px;line-height:20px;color:#6F6D68}
+.shop-word-gloss.is-open>p{padding-top:8px}
+.shop-word-gloss b{font-weight:600;color:#141414;white-space:nowrap}
 /* 배송 조회 — 서버가 실제로 아는 단계만(가짜 진행 막대 없음) */
 .shop-track{display:grid;gap:0;width:100%;margin:12px 0 4px;padding:0;list-style:none;text-align:left}
 .shop-track[hidden]{display:none}
@@ -222,7 +237,7 @@ button{font:inherit;color:inherit}
   .shop-hint{right:clamp(18px,4vw,44px);left:auto;font-family:var(--mono);font-size:11px}
   .shop-stage{grid-template-columns:minmax(0,1.05fr) minmax(300px,.95fr);grid-template-rows:1fr;align-items:center;column-gap:clamp(24px,4vw,72px);padding-inline:clamp(72px,9vw,160px)}
   .shop-turn-wrap{justify-self:end;--big-h:min(66vh,640px)}
-  .shop-info{justify-items:start;text-align:left;width:min(100%,380px)}
+  .shop-info{justify-items:start;text-align:left;width:min(100%,380px);align-self:start;margin-top:max(0px,calc(22vh - 72px))}
   .shop-help{max-width:34ch}
   .shop-actions{max-width:320px}
 }
@@ -278,7 +293,7 @@ button{font:inherit;color:inherit}
   .shop-spec{text-align:left}
   .shop-info{justify-items:start;text-align:left;padding-bottom:96px}
   .shop-side{order:-1;align-self:center;margin:2px 0 14px} /* 앞 · 뒤 · 입은 나는 사진 바로 아래 — 설명 밑에 두면 눌러도 바뀌는 사진이 화면 밖이다 */
-  .shop[data-mode=detail] .shop-top{min-height:58px;background:rgba(246,245,241,.97)}
+  .shop[data-mode=detail] .shop-top{min-height:58px;background:var(--bg);box-shadow:0 1px 0 var(--line)}
   .shop-actions{position:sticky;bottom:0;z-index:2;margin-top:-20px;padding:48px 0 max(12px,env(safe-area-inset-bottom));background:linear-gradient(rgba(246,245,241,0),var(--bg) 46px);pointer-events:none}
   .shop-actions>*{pointer-events:auto} /* 위 바탕 페이드가 앞 · 뒤 탭의 누름을 가로채지 않게(11-05 시험에서 잡음) */
   .shop-help{order:9}

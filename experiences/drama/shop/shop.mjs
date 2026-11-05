@@ -194,12 +194,32 @@ function trackHtml(id) {
   const rows = [['주문 받음', hm(t0), 'done'], ['포장해서 출발', '', 'done'], [narrow ? '사진관에서 입혀 보는 중' : '사진관에서 내 사진에 입혀 보는 중', '', 'now'], ['도착 예정', `내일 ${eta.toLocaleTimeString('ko-KR', { hour: 'numeric' })} 전`, '']];
   return rows.map(([label, time, k]) => `<li ${k === 'done' ? 'data-done' : k === 'now' ? 'data-now' : ''}><span>${esc(label)}</span><time>${esc(time)}</time></li>`).join('');
 }
+/** 스타일 팁 — 색 칩 · 색 이름 · 조언 한 문장({낱말}은 누르면 뜻) */
+function tipHtml(it) {
+  if (!it.tip) return '';
+  const { colors, text, words } = it.tip;
+  // 문장 속 {낱말}은 쓰인 꼴 그대로(화사해요), 뜻 줄은 기본형(화사하다) — 사전에서 찾는 꼴을 같이 익힌다
+  const sentence = esc(text).replace(/\{(.+?)\}/g, (_, w) => { const n = words.findIndex(([f]) => f === w); return `<button type="button" class="shop-word" data-act="word" data-w="${n}" aria-expanded="false" aria-controls="shop-word-gloss">${w}</button>`; });
+  return `<p class="shop-tip-head"><span>스타일 팁</span><span class="shop-tip-chips" aria-hidden="true">${colors.map(([, c]) => `<i style="--c:${c}"></i>`).join('')}</span><span class="shop-tip-names">${colors.map(([n]) => esc(n)).join(' · ')}</span></p>
+    <p class="shop-tip-text">${sentence}</p><div class="shop-word-gloss" id="shop-word-gloss" role="region" aria-live="polite"><p><b></b><span></span></p></div>`;
+}
+/** 낱말을 누르면 뜻 줄이 아래로만 펼쳐진다(위 글은 움직이지 않는다). 다른 낱말을 누르면 그 뜻으로, 같은 낱말이면 접는다. */
+function toggleWord(b) {
+  const it = ITEMS[openI], w = it?.tip?.words[+b.dataset.w];
+  const g = $('.shop-word-gloss'); if (!w || !g) return;
+  const same = b.getAttribute('aria-expanded') === 'true';
+  for (const x of document.querySelectorAll('.shop-word')) x.setAttribute('aria-expanded', 'false');
+  if (same) { g.classList.remove('is-open'); return; }
+  g.querySelector('b').textContent = w[1]; g.querySelector('span').textContent = w[2];
+  b.setAttribute('aria-expanded', 'true'); g.classList.add('is-open');
+}
 function fillInfo(i) {
   const it = ITEMS[i], st = state[it.id];
   $('.shop-num').textContent = `${pad2(i + 1)} / ${pad2(ITEMS.length)}`;
   $('.shop-name').textContent = it.name;
   $('.shop-story').textContent = it.story;
   $('.shop-spec').innerHTML = [...it.spec, ['함께 입기', null]].map(([k, v]) => `<dt>${esc(k)}</dt><dd>${v === null ? wearHtml(it) : esc(v)}</dd>`).join('');
+  $('.shop-tip').innerHTML = tipHtml(it);
   // 도착한 옷은 「입은 나」로 내 사진을 본다 — 이 가게만의 한 수(레퍼런스 25곳 어디에도 없음)
   const worn = st === 'arrived' ? WORN[it.id] : null;
   const sides = worn ? ['front', 'back', 'worn'] : ['front', 'back'];
@@ -441,6 +461,7 @@ stage.addEventListener('click', (e) => {
   else if (act === 'order') order();
   else if (act === 'wear') { sound.pick(); say('이 옷으로 갈아입었어요'); }
   else if (act === 'pair') step(0, +b.dataset.to);
+  else if (act === 'word') { toggleWord(b); sound.brush(); }
 });
 $('.shop-close').addEventListener('click', () => close());
 boxBtn.addEventListener('click', () => { sound.brush(); say('내 옷장은 제2의 나에서 열려요'); });

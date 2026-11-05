@@ -96,6 +96,7 @@ function stutter(file) {
     // 올리면 옆 옷이 비켜나므로 올린 뒤 자리를 다시 재고 누른다
     let v = await box('.hanger', 2); await move(v.x, y, 26); await sleep(700); v = await box('.hanger', 2); await move(v.x, y, 6); await sleep(250);
     await tapAt(v.x, y); await sleep(1300); await shot('자세히');
+    await tap('.shop-word'); await sleep(1100); await shot('팁');
     await tap('.shop-side button[data-side=back]'); await sleep(1500); await shot('뒤');
     const t = await box('.shop-turn-wrap');
     await drag(t.x - 40, t.y, t.x + 260, t.y + 6, 900); await sleep(1300); await shot('끌어돌림');
@@ -123,7 +124,8 @@ function stutter(file) {
     const t = await box('.shop-turn-wrap');
     await drag(t.x - 80, t.y, t.x + 120, t.y + 4, 700); await sleep(1300); await shot('돌림');
     await drag(t.x + 60, t.y, t.x - 160, t.y - 4, 650); await sleep(1300);
-    await fr().evaluate(() => document.querySelector('.shop-stage').scrollTo({ top: 420, behavior: 'smooth' })); await sleep(1300); await shot('설명');
+    await fr().evaluate(() => document.querySelector('.shop-stage').scrollTo({ top: 560, behavior: 'smooth' })); await sleep(1300);
+    await tap('.shop-word'); await sleep(1000); await shot('설명');
     await fr().evaluate(() => document.querySelector('.shop-stage').scrollTo({ top: 0, behavior: 'smooth' })); await sleep(900);
     await tap('.shop-go[data-act=order]'); await sleep(1300); await shot('종이');
     await sleep(1150); await shot('상자'); await sleep(1450); await shot('송장');
