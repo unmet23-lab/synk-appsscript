@@ -778,6 +778,40 @@ test('a failed test stays failed with its evidence, an incomplete receipt never 
   assert.ok(fs.existsSync(path.join(byCommit(wrong).output, 'default/temp/evidence.json')));
   assert.equal(byCommit(commits[2]).status, 'passed'); assert.equal(byCommit(commits[3]).status, 'passed');
 });
+test('a file held for a moment is written after a short wait, and any other error is not waited for', t => {
+  const dir = scratch(t), file = path.join(dir, 'state.json'), rename = fs.renameSync; let tries = 0, code = 'EPERM', blocked = 2;
+  const mocked = t.mock.method(fs, 'renameSync', (from, to) => {
+    if (String(to) === file && (tries++, blocked-- > 0)) throw Object.assign(Error(`${code}: rename`), { code });
+    return rename(from, to);
+  });
+  write(file, { saved: 1 });
+  assert.equal(tries, 3); assert.equal(JSON.parse(fs.readFileSync(file)).saved, 1, 'the third try went through');
+  tries = 0; blocked = 99;
+  assert.throws(() => write(file, { saved: 2 }), /EPERM/, 'a file that stays held still fails');
+  assert.equal(tries, 6); assert.equal(JSON.parse(fs.readFileSync(file)).saved, 1, 'the old contents stay whole');
+  tries = 0; blocked = 1; code = 'EIO';
+  assert.throws(() => write(file, { saved: 3 }), /EIO/); assert.equal(tries, 1, 'only a held file is waited for');
+  mocked.mock.restore();
+});
+test('a queue that cannot be saved never turns a passing commit into a failure', async t => {
+  // A tick saves queue.json at 1 refresh and 2 settle, then for this commit at 3 running, 4 publish-pending and 5 passed.
+  const rename = fs.renameSync; t.mock.method(console, 'error', () => {});
+  for (const held of [1, 2, 3, 4, 5]) {
+    const commits = tickCommits(1), f = tickFixture(t, commits, { slot: false }); let saves = 0;
+    const mocked = t.mock.method(fs, 'renameSync', (from, to) => {
+      if (String(to).endsWith('queue.json') && ++saves === held) throw Object.assign(Error('EIO: i/o error, rename'), { code: 'EIO' });
+      return rename(from, to);
+    });
+    const summary = await tick(f.state, { ...f.deps, verifyCommit: async (config, commit, output) => {
+      write(path.join(output, 'result.json'), f.receiptFor(commit));
+      return { count: selected.length, digest: manifest.digest };
+    } });
+    mocked.mock.restore();
+    assert.deepEqual(f.published.map(row => row[1]), ['pending', 'success'], `save ${held}: the pass stays a pass`);
+    assert.equal(f.queue()[0].status, 'passed', `save ${held}: a later save catches up`);
+    assert.match(summary.queueNotSaved, /EIO/, `save ${held}: the summary says why`);
+  }
+});
 test('a checkout that breaks outside the tests hands back its commit for a retry and leaves the rest to the other', async t => {
   const commits = tickCommits(4), f = tickFixture(t, commits), byCheckout = {}; let bothOpened;
   const both = new Promise(resolve => { bothOpened = resolve; });

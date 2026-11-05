@@ -5,7 +5,18 @@ const { REPO, validCommit } = require('./github.cjs');
 const { SPARSE_PATTERNS } = require('./tested-tree.cjs');
 const testedTreePatterns = SPARSE_PATTERNS.join('\n') + '\n';
 const read = file => JSON.parse(fs.readFileSync(file, 'utf8'));
-function write(file, value) { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file + '.writing', JSON.stringify(value, null, 2) + '\n'); fs.renameSync(file + '.writing', file); }
+// On Windows a rename over a file fails while anyone holds it open: a PowerShell Get-Content, a scanner, an indexer. They let go within moments.
+const HELD_FILE = new Set(['EPERM', 'EBUSY', 'EACCES']), RENAME_WAITS_MS = Object.freeze([200, 400, 600, 800, 1000]);
+function replaceFile(from, to) {
+  for (let attempt = 0; ; attempt++) {
+    try { return fs.renameSync(from, to); }
+    catch (error) {
+      if (attempt >= RENAME_WAITS_MS.length || !HELD_FILE.has(error.code)) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, RENAME_WAITS_MS[attempt]);
+    }
+  }
+}
+function write(file, value) { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file + '.writing', JSON.stringify(value, null, 2) + '\n'); replaceFile(file + '.writing', file); }
 function git(root, args, options = {}) { const result = cp.execFileSync('git', ['-c', 'core.quotepath=false', ...args], { cwd: root, windowsHide: true, encoding: 'utf8', timeout: 120_000, maxBuffer: 64 << 20, ...options }); return Buffer.isBuffer(result) ? result : result.trim(); }
 function assertOwned(state) { const marker = read(path.join(state, 'owner.json')); if (marker.version !== 1 || marker.purpose !== 'synk-conditional-qa' || path.resolve(marker.state) !== path.resolve(state)) throw Error('Private QA directory is not owned by this worker'); }
 function hashFile(file) { return sha256(fs.readFileSync(file)); }

@@ -288,6 +288,10 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
     // Upgrade an existing queue once. Its next turn then survives every tick/restart.
     if (queue.nextTurn === undefined) queue.nextTurn = 'recent';
     if (!['recent', 'oldest'].includes(queue.nextTurn)) throw Error('Invalid queue turn');
+    // A save says nothing about the tests (11-05 at 100% CPU: 4db22931 passed, the save threw into the result's catch, and a failure followed 11 seconds later).
+    // What is in memory stays right, the next save catches up, and a restart only looks at the same commit again.
+    let queueNotSaved = null;
+    const save = () => { try { write(queueFile, queue); } catch (error) { queueNotSaved = error.message.slice(0, 300); console.error(`The queue was not saved: ${error.message}`); } };
     // Refetched after every verification, so commits pushed meanwhile join this tick instead of waiting for the next one.
     // The queue is read once: every writer holds the lock, and a running verification keeps pointing at these same items.
     const refresh = () => {
@@ -296,10 +300,10 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
       const commits = runGit(root, ['rev-list', '--reverse', '--first-parent', `${queue.seen}..${head}`]).split(/\r?\n/).filter(Boolean);
       extendQueue(queue, head, commits);
       if (requestedCommit === null) carried += carryUnchanged(queue, root, head, stateDir, { runGit, limit: CARRY_PER_TICK - carried });
-      write(queueFile, queue);
+      save();
     };
     // Between verifications too: one tick can last two hours while a finished commit's run stays unresolved.
-    const settle = () => { republishFailures(queue, hub.publish); resumeFinished(queue, hub.resumeWaitingWorkflow); write(queueFile, queue); };
+    const settle = () => { republishFailures(queue, hub.publish); resumeFinished(queue, hub.resumeWaitingWorkflow); save(); };
     refresh();
     try { markCancelledRuns(queue, hub.cancelledRuns()); } catch (error) { console.error(`Cancelled runs were not listed: ${error.message}`); }
     settle();
@@ -325,18 +329,18 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
           if (requestedCommit === null) advanceTurn(queue);
           calmFirst.reset(); calmAnother.reset();
           item.status = 'running'; item.startedAt = new Date().toISOString(); item.slot = checkout === config ? 1 : Number(path.basename(checkout.state)); item.cpuAtStart = busy;
-          delete item.resumePending; write(queueFile, queue);
+          delete item.resumePending; save();
           hub.publish(item.commit, 'pending', 'Running the registered local conditional tests');
           item.output = path.join(stateDir, 'runs', `${item.commit}-${Date.now()}`);
           const result = await verifyCommit(checkout, item.commit, item.output, Boolean(item.retryRequest));
-          item.count = result.count; item.digest = result.digest; item.status = 'publish-pending'; write(queueFile, queue);
+          item.count = result.count; item.digest = result.digest; item.status = 'publish-pending'; save();
         }
         // Re-read the receipt after a process restart, rather than trusting queue.json's success flag.
         checkSavedReceipt(root, item, runGit);
         // A timed-out call says nothing about the tests (11-05: gh at 100% CPU put a failure on a commit that had passed, and local-status alerted). The result stays saved for the next tick.
         try { hub.publish(item.commit, 'success', github.description(item.count, item.digest), undefined, item.carriedFrom || item.commit); }
-        catch (error) { item.error = `Not published yet: ${error.message}`.slice(0, 1000); write(queueFile, queue); return {}; }
-        item.status = 'passed'; item.endedAt = new Date().toISOString(); item.resumePending = true; delete item.error; delete item.publicationError; write(queueFile, queue);
+        catch (error) { item.error = `Not published yet: ${error.message}`.slice(0, 1000); save(); return {}; }
+        item.status = 'passed'; item.endedAt = new Date().toISOString(); item.resumePending = true; delete item.error; delete item.publicationError; save();
       } catch (error) {
         item.error = error.message.slice(0, 1000);
         let publicationState = 'failure', description = INCOMPLETE, retireSlot = false;
@@ -355,7 +359,7 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
           // local-coverage has released its runner, so a published failure has to wake it to turn the run red.
           if (publicationState === 'failure') item.resumePending = true;
         } catch { item.publicationError = true; }
-        write(queueFile, queue);
+        save();
         return { retireSlot };
       }
       // Outside the result's try: a file left locked or a missing folder never turns a published pass into anything else.
@@ -381,10 +385,10 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
     if (requestedCommit === null && holdingSince !== null && Date.now() - (queue.heldNoticeAt || 0) >= HOLD_NOTICE_MS) {
       // On a commit nothing has verified yet, so it replaces no result. Pending is never a pass.
       const newest = queue.items.findLast(row => row.status === 'queued');
-      try { if (newest) { hub.publish(newest.commit, 'pending', HOLDING); queue.heldNoticeAt = Date.now(); write(queueFile, queue); } }
+      try { if (newest) { hub.publish(newest.commit, 'pending', HOLDING); queue.heldNoticeAt = Date.now(); save(); } }
       catch (error) { console.error(`The hold notice was not published: ${error.message}`); }
     }
-    const summary = { checkedAt: new Date().toISOString(), head, slots: checkouts.length, roomHeld: held, ...(holdingSince !== null && { holdingAtCpu: busy }), ...(diskWait && { diskWait }), queued: queue.items.filter(row => row.status === 'queued').length, awaitingParent: queue.items.filter(row => row.awaitsParent).length, carried,
+    const summary = { checkedAt: new Date().toISOString(), head, slots: checkouts.length, roomHeld: held, ...(holdingSince !== null && { holdingAtCpu: busy }), ...(diskWait && { diskWait }), ...(queueNotSaved && { queueNotSaved }), queued: queue.items.filter(row => row.status === 'queued').length, awaitingParent: queue.items.filter(row => row.awaitsParent).length, carried,
       incomplete: queue.items.filter(row => row.status !== 'passed').length,
       passed: queue.items.filter(row => row.status === 'passed').length, failed: queue.items.filter(row => row.status === 'failed').length,
       items: queue.items.slice(-5).map(({ commit, status, error }) => ({ commit, status, error })) };
