@@ -117,5 +117,30 @@
     "금지": "섹시 연출 · 노출, 교복 · 넥타이, 10대 연출, 실존 아이돌 의상 · 세계관 옮기기",
     "업종": "운동화 · 스트리트 패션, 게임 · 앱, 스낵 · 음료, 스포츠(가안 — 캐스팅북에 올릴 때 업종 문구로 다시 정함)"
   },
+  "데이터셋": {
+    "트리거": "pls_m10",
+    "v4": {
+      "폴더": "C:/SYNK-LoRA/datasets/M10_idol_maknae/v4",
+      "장수": 33,
+      "스크립트": "C:/SYNK-LoRA/casting/idol_fresh_20261101/v4_게이트준비.py M10 → 데이터셋_v4.py (고침표 고침_v4_M10.json)",
+      "새컷": "11-03 스타일 v4 Gemini 나노바나나 2.1, 참조 4장, 19장",
+      "장면": "C:/SYNK-LoRA/casting/idol_fresh_20261101/세트새컷_v4.py · C:/SYNK-LoRA/casting/idol_fresh_20261101/스타일v4.py",
+      "한장표": "C:/SYNK-LoRA/casting/idol_fresh_20261101/새컷v4/_M10_판.jpg · C:/SYNK-LoRA/casting/idol_fresh_20261101/세트v4/_M10_판.jpg"
+    },
+    "학습설정": "C:/SYNK-LoRA/validation/M10_idol_maknae/job_config_v4.json",
+    "학습": "11-03~04 Z-Image Turbo, 33장 × 100 = 3,300스텝, 랭크 32/16, lr 1e-4, 캡션 드롭아웃 5%. 쓸 판은 마지막 판"
+  },
+  "LoRA": {
+    "v4": {
+      "트리거": "pls_m10",
+      "쓸_판": "C:/SYNK-LoRA/outputs/m10_idol_maknae_v4/m10_idol_maknae_v4.safetensors (마지막 3,300스텝)",
+      "예비": "C:/SYNK-LoRA/outputs/m10_idol_maknae_v4/ 250스텝마다 저장(판끼리 비교는 안 함)",
+      "프롬프트_꼴": "pls_m10, a young Korean man in his early twenties, <구도·표정·옷·배경·조명>",
+      "검증": "검증 10장과 조건 22장: 같은 사람 .58~.81, 다른 멤버가 대표를 넘은 장 0, 나이 19~22, 머리 칠흑·피시 프린지 전부, 볼 패치 0. 커프는 줄을 붙여도 15장 중 7장만 대표 꼴이라 캡션만 고친 재학습(v5)을 돌린다. 은빛은 「삐져나온 가닥」 문장으로, 비니·넘김 변형 됨, 촛불은 눈 줄을 앞에 두면 닫힘. 마지막 판 확정. 문서 fable/아이돌_LoRA검증_M10_스타일v4_판정_20261105.md",
+      "검증표": "C:/SYNK-LoRA/validation/M10_idol_maknae/v4_validate/verify_v4_10장.jpg",
+      "검증_작업": "C:/SYNK-LoRA/validation/M10_idol_maknae/verify_v4_jobs.json",
+      "주의": "왼쪽 귀 커프와 은빛 앞머리는 저절로 안 나와 지시문에 따로 적어야 하고, 커프는 자리·개수가 흔들려 굽고 나서 귀를 확인한다. 옷을 안 적으면 검정 티가 되고, 플래시 정면·직사광 찡그림은 매력이 깎인다. 노트북을 「민무늬」라 적으면 로고가 생기고, 배경 줄을 빼면 뒤에 사람·사진이 온다. 차분한 표정은 표의 한쪽 미소 문장으로. 영어 문장은 판정 문서 「쓸 때 붙일 지시문 조건」"
+    }
+  },
   "목소리": "없음 — 목소리는 광고 장면에 맞춰 연기로 만들고, 시안 단계에서 들려 드린다(11-03 유호님 「둘 다 전부 빼기」 — 캐스팅북 · 고객 앱 견본 목소리 모두 뺌, 아이돌 여덟의 견본은 목소리/_뺀/에 보관)"
 }
