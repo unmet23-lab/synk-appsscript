@@ -384,9 +384,9 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   // 「출발」 앞 — 답이 아직이면 기다린다(닫기 · Esc는 된다). 3초 넘으면 「조금만 기다려 주세요」.
   if(!answered&&!run.aborted&&!reduce()){const tid=later(()=>{if(!answered&&!run.aborted)holdSay();},reduce()?0:400);void tid;}
   const r=await Promise.race([result,new Promise(res=>{run.skip=()=>res(null);})]);
-  if(run.aborted||!r){busy=false;pack=null;return;}
+  if(run.aborted||!r){if(pack===run){busy=false;pack=null;}return;} // 멈춘 주문의 늦은 정리가 그 뒤 새 주문의 상태를 지우지 않게
   const outcome=await outcomeOf(id,r);
-  if(run.aborted||!isOpen()){busy=false;pack=null;return;}
+  if(run.aborted||!isOpen()){if(pack===run){busy=false;pack=null;}return;}
   if(outcome.kind==='sent'&&!reduce()){
    packSay('go');shop.dataset.flying='yes';
    const bb=$('.m2s-box').getBoundingClientRect(),now=parcel.getBoundingClientRect();
