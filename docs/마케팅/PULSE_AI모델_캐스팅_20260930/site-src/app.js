@@ -606,6 +606,9 @@
   const inAppBrowser = /KAKAOTALK|KAKAOSTORY|NAVER\(inapp|Instagram|Barcelona|FBAN|FBAV|\bLine\/|BAND\/|DaumApps|everytimeApp|MicroMessenger|Twitter/i.test(navigator.userAgent || '');
   let downloads = null;
   try { if (window.claude && typeof window.claude.use === 'function') window.claude.use('downloads').then((x) => { downloads = x; }, () => {}); } catch { /* 일반 브라우저 */ }
+  // 문의 글 주소: 받은 패키지 화면이면 그 조합의 문의 글(#p-<조합>-inq), 아니면 내 패키지 문의 글. Ctrl · ⌘ 클릭으로 새 탭에 열어도
+  // 보고 있던 조합이 열리게 「문의 글 보기」와 상단 「문의하기」가 같이 쓴다(11-06).
+  const inqHref = () => (view.dataset.shared ? `#p-${view.dataset.shared}-inq` : '#pkg-inq');
   function renderPkg(anchor = '', shared = null) {
     const items = shared || myItems();
     const n = items.length;
@@ -626,7 +629,7 @@
           ${shared ? '<button type="button" class="btn ink" data-act="take-share">내 패키지로 담기</button>' : ''}
           <button type="button" class="btn line" data-act="save-sheet">한 장으로 저장</button>
           ${canShareLink ? '<button type="button" class="btn line" data-act="share-link">공유 링크 복사</button>' : ''}
-          <a class="btn ink" href="#pkg-inq" data-act="to-inq">문의 글 보기</a>
+          <a class="btn ink" href="${E(inqHref())}" data-act="to-inq">문의 글 보기</a>
         </div>
       </section>
       <div class="pad" style="padding-top:18px"><div class="pk-modes" role="group" aria-label="보기"><button type="button" class="tg" data-act="pk-mode" data-v="cards" aria-pressed="${pkgMode === 'cards'}">컴프 카드</button><button type="button" class="tg" data-act="pk-mode" data-v="compare" aria-pressed="${pkgMode === 'compare'}"${n < 2 ? ' disabled title="두 명부터 나란히 볼 수 있어요"' : ''}>나란히 비교</button></div></div>
@@ -781,9 +784,12 @@
   }
 
   /* ── 넘기며 고르기 ────────────────────────────────────── */
-  let deck = [], deckAt = 0, deckPhoto = 0, deckTaken = [], deckKey = '';
+  // deckTimer: 카드가 날아가는 0.24초. 그동안 들어온 두 번째 입력(단추 · 방향키 · 끌기)은 받지 않는다 — 받으면 다음 모델을 보지도 못하고 넘긴다(11-06).
+  let deck = [], deckAt = 0, deckPhoto = 0, deckTaken = [], deckKey = '', deckTimer = null;
   const deckSig = () => JSON.stringify([state.ask.trim(), filters]);
+  function cancelDeckAnimation() { clearTimeout(deckTimer); deckTimer = null; }
   function startDeck() {
+    cancelDeckAnimation();
     deckKey = deckSig();
     const { order, recs } = ranked();
     deck = order.map((m) => ({ m, r: recs.find((x) => x.model.code === m.code) || null }));
@@ -822,23 +828,25 @@
     wireDrag($('#dcard'));
   }
   function deckDecide(yes) {
+    if (deckTimer !== null) return;
     const card = $('#dcard'), cur = deck[deckAt]; if (!cur) return;
     if (yes && !inPkg(cur.m.code)) { state.pkg.push(cur.m.code); save(); syncPkg(); }
     if (yes && !deckTaken.includes(cur.m.code)) deckTaken.push(cur.m.code);
-    const fly = () => { deckAt++; deckPhoto = 0; drawDeck(); };
+    // 결정은 바로 한 번만 반영하고, 다음 카드 그리기만 날아가는 움직임 뒤로 미룬다(다른 화면에 가면 render가 그 타이머를 지운다).
+    deckAt++; deckPhoto = 0;
     if (card && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
       card.style.transition = 'transform .28s ease-in, opacity .28s';
       card.style.transform = `translateX(${yes ? 130 : -130}%) rotate(${yes ? 14 : -14}deg)`; card.style.opacity = '0';
-      setTimeout(fly, 240);
-    } else fly();
+      deckTimer = setTimeout(() => { deckTimer = null; drawDeck(); }, 240);
+    } else drawDeck();
   }
   function wireDrag(card) {
     if (!card) return;
     let x0 = 0, y0 = 0, dx = 0, drag = false, id = null, moved = false;
     const yes = $('#st-yes'), no = $('#st-no');
-    card.addEventListener('pointerdown', (e) => { drag = true; moved = false; id = e.pointerId; x0 = e.clientX; y0 = e.clientY; dx = 0; card.style.transition = 'none'; });
+    card.addEventListener('pointerdown', (e) => { if (deckTimer !== null) return; drag = true; moved = false; id = e.pointerId; x0 = e.clientX; y0 = e.clientY; dx = 0; card.style.transition = 'none'; });
     card.addEventListener('pointermove', (e) => {
-      if (!drag || e.pointerId !== id) return;
+      if (deckTimer !== null || !drag || e.pointerId !== id) return;
       dx = e.clientX - x0; const dy = e.clientY - y0;
       if (!moved && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) { moved = true; try { card.setPointerCapture(id); } catch { /* 무시 */ } }
       if (!moved) return;
@@ -846,6 +854,7 @@
       yes.style.opacity = Math.max(0, Math.min(1, dx / 90)); no.style.opacity = Math.max(0, Math.min(1, -dx / 90));
     });
     const end = (e) => {
+      if (deckTimer !== null) { drag = false; return; }
       if (!drag || (e && e.pointerId !== id)) return; drag = false;
       if (moved && Math.abs(dx) > Math.min(120, card.clientWidth * 0.28)) { deckDecide(dx > 0); return; }
       card.style.transition = ''; card.style.transform = ''; yes.style.opacity = 0; no.style.opacity = 0;
@@ -1074,6 +1083,7 @@
   const jump = (y) => { try { window.scrollTo({ top: y, left: 0, behavior: 'instant' }); } catch { window.scrollTo(0, y); } };
   const go = (h) => { if (location.hash !== h) location.hash = h; else render(); };
   function render() {
+    cancelDeckAnimation(); // 날아가던 카드의 다음 그리기는 버린다 — 결정은 이미 반영했고, 돌아오면 그 다음 카드부터 그린다
     const h = decodeURIComponent(location.hash || '').replace(/^#g-O[PF]ALINE?$/, '#g-OPALIN'); // 11-05 · 11-06 걸그룹 영문 표기를 두 번 바꾸기 전 공유한 주소
     const prev = route;
     if (prev === 'board' || prev === 'lineup') boardY = window.scrollY;
@@ -1098,6 +1108,8 @@
     else if (route === 'guide') { renderBoard('board', 'guide'); nav = 'guide'; }
     else { route = 'board'; renderBoard('board'); jump(prev === 'm' || prev === 'g' || prev === 'row' ? boardY : 0); }
     for (const x of $$('[data-nav]')) { if (x.dataset.nav === nav) x.setAttribute('aria-current', 'page'); else x.removeAttribute('aria-current'); }
+    if (route !== 'p') view.dataset.shared = ''; // 받은 패키지 표시는 그 화면에서만 — 다른 화면의 상단 「문의하기」는 내 패키지 문의 글로
+    $('.bar-right a.cta').setAttribute('href', inqHref());
     syncPkg();
   }
   window.addEventListener('hashchange', render);
@@ -1135,8 +1147,17 @@
       case 'cmp-shot': cmpShot = v; { const items = view.dataset.shared ? readShare(view.dataset.shared) : myItems(); $('#pk-body').innerHTML = compareHTML(items); watchLineups($('#pk-body')); } break;
       case 'pkg-rm': state.pkg = state.pkg.filter((x) => x !== code); save(); syncPkg(); renderPkg(); break;
       case 'take-share': { const items = readShare(view.dataset.shared); for (const x of items) { if (!inPkg(x.code)) state.pkg.push(x.code); setSel(x.code, { hair: x.hair }); } save(); toast(`${items.length}명을 내 패키지에 담았어요`); go('#pkg'); break; }
-      case 'share-link': copy(`${shareBase}#p-${shareCode(myItems())}`, '공유 링크를 복사했어요. 받은 사람도 같은 조합으로 볼 수 있어요.'); break;
-      case 'to-inq': e.preventDefault(); $('#inq')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); break;
+      // 받은 패키지 화면에서는 보고 있는 그 조합을 다시 공유한다(내 패키지와 상관없이, 11-06)
+      case 'share-link': { const items = view.dataset.shared ? readShare(view.dataset.shared) : myItems(); copy(`${shareBase}#p-${shareCode(items)}`, '공유 링크를 복사했어요. 받은 사람도 같은 조합으로 볼 수 있어요.'); break; }
+      // 「문의 글 보기」와 상단 「문의하기」: 지금 화면에 문의 글이 있으면(내 패키지 · 받은 패키지) 그 글로 내려가고, 없으면 내 패키지 문의 글을 연다.
+      // 주소가 이미 #pkg-inq여도 움직인다(11-06 — 전에는 같은 주소라 아무 일도 없었다). Ctrl · ⌘ · Shift 누름은 새 창 열기로 둔다.
+      case 'to-inq': {
+        if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) break;
+        e.preventDefault();
+        const inq = $('#inq');
+        if (inq) inq.scrollIntoView({ block: 'start', behavior: 'smooth' }); else go('#pkg-inq');
+        break;
+      }
       // 양식 · 메일은 링크 그대로 열고, 글이 주소에 다 담기지 않았거나 메일 앱이 없을 때를 위해 글을 복사해 둔다
       case 'send-inq':
         if (v === 'mail') copy($('#inq-text').value, t.dataset.full ? `메일 앱을 여는 중이에요. 열리지 않으면 복사해 둔 글을 ${CONTACT.email}으로 보내 주세요.` : '메일 앱을 여는 중이에요. 본문에 복사해 둔 글을 붙여 넣어 보내 주세요.');

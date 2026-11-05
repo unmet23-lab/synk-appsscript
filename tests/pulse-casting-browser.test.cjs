@@ -1,10 +1,9 @@
 'use strict';
 // PULSE 캐스팅북 실제 Chrome 회귀 — 공유 · 문의 · 넘기며 고르기.
 // 10-18 GPT 가지 `codex/pulse-casting-fixes-20261018`(78447dc8b1)에서 그 가지의 화면 고침과 함께 만든 시험이다. 그 가지는 master에
-// 합쳐지지 않았고, 시험은 공용 작업본에 미추적으로만 남아 있었다. 11-06에 지금 캐스팅북(견본 목소리 11-03에 뺌 · 글 모양 고르기 10-26에 뺌 ·
-// 상단 메뉴에서 「넘기며 고르기」를 보드의 「한 명씩」으로 옮김 · 영상으로 보기 11-05)에 맞췄다.
-// 지금 화면에 남은 결함 셋은 아래 KNOWN의 todo로 계속 돌린다. 화면을 고치면 그 점검이 통과로 바뀌니(끝에 「이제 통과」를 찍는다) 그 todo를 지운다.
-// 고친 판은 위 GPT 가지의 app.js · template.html에 있다(지금 원고에 그대로 얹히지는 않는다 — 10-26 이후 바뀐 곳이 많다).
+// 합쳐지지 않아, 시험은 공용 작업본에 미추적으로만 남아 있었다. 11-06에 지금 캐스팅북(견본 목소리 11-03에 뺌 · 글 모양 고르기 10-26에 뺌 ·
+// 상단 메뉴에서 「넘기며 고르기」를 보드의 「한 명씩」으로 옮김 · 영상으로 보기 11-05)에 맞췄고, 같은 날 화면 결함 셋(받은 패키지 재공유 ·
+// 넘기며 고르기 이중 입력 · 상단 「문의하기」)을 그 가지와 같은 방법으로 지금 원고에 고쳤다.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -21,12 +20,6 @@ const roster = JSON.parse(read('roster-v2.json')).models;
 const sharedHash = '#p-F02.1.0~F04.0.2';
 const reshared = '#p-F02.1.0~F04.0.0';
 
-const KNOWN = {
-  reshare: '화면 결함(11-06 재현): 받은 패키지 화면의 「공유 링크 복사」가 받은 조합이 아니라 이 브라우저의 내 패키지를 복사한다(app.js share-link가 myItems()만 쓴다) — 내 패키지가 비면 「#p-」만 복사되고 토스트는 「같은 조합으로 볼 수 있어요」',
-  swipeTwice: '화면 결함(11-06 재현): 넘기며 고르기 카드가 날아가는 0.24초 사이 두 번째 입력(같은 단추 · 다른 단추 · 방향키 · 끌기 뒤 단추)이 다음 모델까지 결정해, 다음 모델을 보지도 못하고 건너뛴다(「3 / 21」) — deckDecide에 진행 중 막기가 없다',
-  ctaSameHash: '화면 결함(11-06 재현): 패키지 문의 글(#pkg-inq)에서 위로 올린 뒤 상단 「문의하기」를 누르면 주소가 같아 아무 일도 없다 — 문의하기 링크가 #pkg-inq이고 그 id를 가진 요소가 없다',
-  ctaShared: '화면 결함(11-06 재현): 받은 패키지 화면에서 상단 「문의하기」를 누르면 받은 조합이 아니라 내 패키지의 문의 글(#pkg-inq)로 바뀐다',
-};
 
 // 원고 그대로 실행한다. build-site.cjs가 만드는 자료 꼴을 따르되 사진·영상은 무해한 SVG로 바꾸고, 실제 계정·바깥 주소는 쓰지 않는다.
 function fixture() {
@@ -80,9 +73,7 @@ test('PULSE: 공유·문의·스와이프 실제 Chrome 회귀', { timeout: 120_
   t.after(async () => {
     await browser?.close();
     if (server.listening) await new Promise(resolve => server.close(resolve));
-    run.finish({ ok: checks.length > 0 && checks.every(check => check.ok || check.todo), checks });
-    const fixed = checks.filter(check => check.todo && check.ok);
-    if (fixed.length) console.log('이제 통과 — KNOWN의 todo를 지울 점검: ' + fixed.map(check => check.name).join(' / '));
+    run.finish({ ok: checks.length > 0 && checks.every(check => check.ok), checks });
     console.log('PULSE 브라우저 근거: ' + path.relative(ROOT, run.manifestPath));
   });
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve); });
@@ -103,11 +94,10 @@ test('PULSE: 공유·문의·스와이프 실제 Chrome 회귀', { timeout: 120_
     try { await fn(page); assert.deepEqual(errors, [], '브라우저 실행 오류가 없어야 한다'); }
     finally { await context.close(); }
   }
-  // todo: 지금 화면에 남은 결함(KNOWN). 점검은 그대로 돌고, 지면 todo로 적히며 이 시험을 실패로 치지 않는다.
-  async function check(name, fn, todo) {
-    await t.test(name, todo ? { todo } : {}, async () => {
-      try { await fn(); checks.push({ name, ok: true, ...(todo ? { todo } : {}) }); }
-      catch (error) { checks.push({ name, ok: false, error: error.message, ...(todo ? { todo } : {}) }); throw error; }
+  async function check(name, fn) {
+    await t.test(name, async () => {
+      try { await fn(); checks.push({ name, ok: true }); }
+      catch (error) { checks.push({ name, ok: false, error: error.message }); throw error; }
     });
   }
   const position = (page, n) => page.waitForFunction(n => document.querySelector('#deck-n')?.textContent.startsWith(n + ' /'), n);
@@ -141,7 +131,7 @@ test('PULSE: 공유·문의·스와이프 실제 Chrome 회귀', { timeout: 120_
       await page.locator('[data-act="share-link"]').click();
       assert.equal(await copiedHash(page), reshared, '내 패키지 ' + JSON.stringify(own));
     });
-  }, KNOWN.reshare);
+  });
 
   await check('받은 패키지에서 빈 내 패키지로 이동해도 문의 글에 받은 모델이 섞이지 않는다', async () => {
     await withPage([], async page => {
@@ -177,7 +167,7 @@ test('PULSE: 공유·문의·스와이프 실제 Chrome 회귀', { timeout: 120_
         await position(page, 3);
       });
     }
-  }, KNOWN.swipeTwice);
+  });
 
   await check('스와이프 결정 직후 다른 화면에 갔다 돌아와도 예전 타이머가 다음 모델을 넘기지 않는다', async () => {
     await withPage([], async page => {
@@ -222,7 +212,7 @@ test('PULSE: 공유·문의·스와이프 실제 Chrome 회귀', { timeout: 120_
       assert.match(await page.locator('#deck-n').innerText(), /^2 \/ /);
       assert.equal((await pkgOf(page)).length, 1);
     }, phone);
-  }, KNOWN.swipeTwice);
+  });
 
   await check('움직임 줄이기에서는 연속 결정·마지막 카드·처음부터 다시가 정상 동작한다', async () => {
     await withPage([], async page => {
@@ -267,12 +257,16 @@ test('PULSE: 공유·문의·스와이프 실제 Chrome 회귀', { timeout: 120_
       assert.equal(await page.evaluate(() => location.hash), '#pkg-inq');
       await page.screenshot({ path: path.join(run.out, 'inquiry-repeated.png') });
     });
-  }, KNOWN.ctaSameHash);
+  });
 
   await check('받은 패키지에서 상단 문의하기를 눌러도 받은 조합의 문의 글로 간다', async () => {
     await withPage(['M01'], async page => {
       await page.goto(url + sharedHash);
       await page.locator('.comp-card').first().waitFor();
+      // Ctrl · ⌘ 클릭(새 탭)도 받은 조합으로 열리게 두 단추의 주소가 그 조합의 문의 글을 가리킨다
+      const sharedInq = '#p-F02.1.0~F04.0.0-inq';
+      assert.equal(await page.locator('.bar-right a.cta').getAttribute('href'), sharedInq);
+      assert.equal(await page.locator('.pk-head [data-act="to-inq"]').getAttribute('href'), sharedInq);
       await page.waitForFunction(() => [...document.images].every(img => img.complete));
       await page.locator('.bar-right a.cta').click();
       await inquiryVisible(page);
@@ -280,6 +274,13 @@ test('PULSE: 공유·문의·스와이프 실제 Chrome 회귀', { timeout: 120_
       const inquiry = await page.locator('#inq-text').inputValue();
       assert.match(inquiry, /F02/); assert.match(inquiry, /F04/); assert.doesNotMatch(inquiry, /M01/);
       await page.screenshot({ path: path.join(run.out, 'inquiry-shared.png') });
+      // 그 주소를 새로 열면 받은 조합의 문의 글이고, 다른 화면으로 가면 상단 문의하기는 다시 내 패키지 문의 글을 가리킨다
+      await page.goto(url + sharedInq);
+      await inquiryVisible(page);
+      assert.match(await page.locator('#inq-text').inputValue(), /F02/);
+      await page.locator('.bar-nav [data-nav="board"]').click();
+      await page.locator('#q').waitFor();
+      assert.equal(await page.locator('.bar-right a.cta').getAttribute('href'), '#pkg-inq');
     });
-  }, KNOWN.ctaShared);
+  });
 });
