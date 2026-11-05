@@ -423,7 +423,8 @@ async function journey(r){
   SND.felt('buzz');await sleep(350);guard(r);banner('mom');await sleep(1700);guard(r);
   await narrate(r,'엄마 목소리였어요. “앞주머니 열어 봐.”',{hold:1800});
   $('#banner').classList.remove('on');
-  await narrate(r,'쪽지 한 장. 엄마가 번역기를 보며 한 글자씩 따라 그린 한글이었어요.',{hold:1500});
+  await narrate(r,'쪽지 한 장.',{hold:900});
+  await narrate(r,'엄마가 번역기를 보며 한 글자씩 따라 그린 한글이었어요.',{hold:1500});
   SND.felt('page');$('#note').classList.add('on');$('#tapHint').classList.add('on');narrSub('도착하면 전화해. 밥 잘 먹어. 사랑해.');$('#narr').innerHTML='';
   // 엄마의 쪽지는 가장 감정적인 장면이라 읽을 만큼 둔다(누르면 넘어감 —
   await waitTap(9000);guard(r);$('#tapHint').classList.remove('on');$('#note').classList.remove('on');$('#narrSub').hidden=true;await sleep(400);guard(r);
@@ -761,7 +762,8 @@ async function gate(r){
   guard(r);
   await say(r,'seoha','역시! 캐리어 보고 딱 알았어요.');
   await say(r,'seoha','반가워요! 저는 국제학부 2학년 서하예요. 오늘 신입생 도우미예요.');
-  await say(r,'jiho','안녕하세요, 학생회 지호예요. 여기 신입생 명단에 이름 좀 적어 줄래요?');
+  await say(r,'jiho','안녕하세요, 학생회 지호예요.');
+  await say(r,'jiho','여기 신입생 명단에 이름 좀 적어 줄래요?');
   state.name=null;state.nameEn=null;state.from=null;state.call=null;
   const raw=await pad({title:'신입생 명단',label:'이름 (영어나 내 나라 글자로)',ph:'예: Bolor'});guard(r);
   if(raw){
@@ -1032,7 +1034,7 @@ function flyToSlit(from,yIn){
 }
 
 let rolling=false;
-$('#toPath').onclick=()=>{if(rolling)return;const viewing=$('#s-card').classList.contains('view');CardFX.stop();if(state.replayOf){const a=state.replayOf;state.replayOf=null;loadState(a);}SND.sfx('pix_whoosh_short',.5);buildRoad();show('s-path');if(viewing){$('#s-card').classList.remove('view');const r=$('#road');r.scrollTop=r.scrollHeight;return;}rolling=true;setTimeout(()=>{rolling=false;},2700);rollRoad();};
+$('#toPath').onclick=()=>{if(rolling)return;const viewing=$('#s-card').classList.contains('view');CardFX.stop();if(state.replayOf){const a=state.replayOf;state.replayOf=null;loadState(a);}SND.sfx('pix_whoosh_short',.5);buildRoad();show('s-path');if(viewing){$('#s-card').classList.remove('view');const r=$('#road');r.scrollTop=r.scrollHeight;momMaybe();return;}rolling=true;setTimeout(()=>{rolling=false;},2700);rollRoad();};
 $('#changeDream').onclick=()=>{fillLazy('data-dream-src');unpick();$('#s-dream').classList.add('change');show('s-dream');};
 $('#meBadge').onclick=()=>openCardView();
 
@@ -1113,7 +1115,7 @@ function playScene(){
   },()=>{playing=false;});
 }
 function noteScene(s){if(!s?.id||state.scenes.some(x=>x.id===s.id&&s.id!==EP+'.wrap'))return;state.scenes=[...state.scenes,{id:s.id,at:Date.now(),...(s.lines!=null?{lines:s.lines}:{})}].slice(-200);save({scenes:state.scenes});}
-function backToRoad(){SND.play('bgm_campus',{vol:.45,fade:1.5});SND.play('amb_campus',{vol:.6,fade:1.5,bus:'amb'});buildRoad();show('s-path');const r=$('#road');r.scrollTop=r.scrollHeight;}
+function backToRoad(){SND.play('bgm_campus',{vol:.45,fade:1.5});SND.play('amb_campus',{vol:.6,fade:1.5,bus:'amb'});buildRoad();show('s-path');const r=$('#road');r.scrollTop=r.scrollHeight;momMaybe();}
 let crowdRun=0;
 // 이번 회까지 켜진 자리: 사람은 말한 줄 수만큼, 친구는 테이크 2 · 새 상황을 한 판에 한 마리(지어내지 않는다)
 const litSeats=(H,b)=>[...H.data.people.slice(0,b.n),...(b.t2?[H.data.friendSeats[0]]:[]),...(b.tr?[H.data.friendSeats[1]]:[])];
@@ -1224,7 +1226,7 @@ function drawCinema(seated,freshSeats,keep){
   if(cv.width!==S.w||cv.height!==S.h){cv.width=S.w;cv.height=S.h;}
   const sat=seated.map(s=>({s,t0:-1e9})),fresh=freshSeats;
   // 이번 보상에 처음 앉는 친구가 있으면 발판과 함께 속마음 한 줄
-  const fr=S.friendSeats.findIndex(s=>fresh.includes(s));aside.textContent=fr>=0?FRIEND_LINES[fr]:'';$('#crowdAsideSub').textContent=fr>=0?sub(FRIEND_LINES[fr]):'';aside.hidden=fr<0;
+  const fr=S.friendSeats.some(s=>fresh.includes(s))?Math.min(S.friendSeats.filter(s=>seated.includes(s)&&!fresh.includes(s)).length,FRIEND_LINES.length-1):-1;aside.textContent=fr>=0?FRIEND_LINES[fr]:'';$('#crowdAsideSub').textContent=fr>=0?sub(FRIEND_LINES[fr]):'';aside.hidden=fr<0;
   // 화면에 들어올 때마다 천천히 다가가는 움직임을 처음부터(동작 줄이기면 CSS가 끈다)
   if(!keep){cv.style.animation='none';void cv.offsetWidth;cv.style.animation='';}
   let pics=null;
@@ -1248,7 +1250,7 @@ function drawCinema(seated,freshSeats,keep){
   cineLoad(dream).then(v=>{
     if(!$('#s-crowd').classList.contains('on')||state.dream!==dream)return;
     // 그림을 끝내 못 풀면 그린 응원봉 객석으로 대신한다(검은 화면에 「+2」만 남지 않게)
-    if(!v){crowdStop();aside.hidden=true;document.body.classList.add('no-cine');drawCrowd(seated.length,gain);return;}
+    if(!v){crowdStop();aside.hidden=true;$('#crowdAsideSub').textContent='';document.body.classList.add('no-cine');drawCrowd(seated.length,gain);return;}
     // 그림이 늦게 풀려 이미 앉았어야 할 사람은 지금부터 앉힌다(늦은 만큼 연출이 사라지지 않게 —
     const now=performance.now();sat.forEach(p=>{if(p.t0>0&&p.t0<now)p.t0=now;});
     pics=v;kick();
@@ -1260,10 +1262,12 @@ $('#backPath').onclick=()=>{crowdRun++;crowdStop();SND.stop('bgm_anthem',1);SND.
 /* 1화 끝 쪽지(시즌 1 이야기 지도 1절 · 5절): 엄마가 손글씨를 찍어 보낸다. 고쳐 줘도 되고 「맞아」 해도 되고 안 해도 이야기는 간다. 어느 쪽에도 정답 표시 · 칭찬을 달지 않고, 엄마 글에 펜을 대지 않는다(고친 글자는 다음 쪽지에서 맞게 온다).
  * 쪽지 아래 작은 번역은 실제 앱의 화면 언어 몫(결정 11-03) — 이 시안은 화면이 한국어라 뺐다. */
 function momMaybe(){if(episodeDone()&&!state.momSeen)setTimeout(momNote,reduce?200:800);}
+const MOM_FIX='있어. ㅅ 두 개!',MOM_OK='맞아.';
+function momOptionSubs(){for(const [id,ko] of [['#momFixSub',MOM_FIX],['#momOkSub',MOM_OK]]){const v=sub(ko),el=$(id);el.textContent=v;el.hidden=!v;}}
 async function momNote(){
   if(state.momSeen||!$('#s-path').classList.contains('on'))return;
   state.momSeen=true;const r=++RUN,box=$('#mom'),ph=$('#momPhoto');
-  ph.src=IMG.note1;$('#momList').innerHTML='';$('#momSub').textContent=sub('공부 잘 돼? 친구 잇어? 엄마도 한국말 해 볼래. 맞아?');$('#momSub').hidden=!$('#momSub').textContent;for(const id of ['#momActs','#momLater','#momBye'])$(id).hidden=true;
+  momOptionSubs();ph.src=IMG.note1;$('#momList').innerHTML='';$('#momSub').textContent=sub('공부 잘 돼? 친구 잇어? 엄마도 한국말 해 볼래. 맞아?');$('#momSub').hidden=!$('#momSub').textContent;for(const id of ['#momActs','#momLater','#momBye'])$(id).hidden=true;
   box.hidden=false;$('#s-path').inert=true;void box.offsetWidth;box.classList.add('on');$('#momCard').focus({preventScroll:true});
   SND.sfx('pix_notification',.7);SND.level('bgm_campus',.2,.6);
   try{
@@ -1274,10 +1278,10 @@ async function momNote(){
 async function momAnswer(fix){
   if($('#momActs').hidden)return;
   const r=++RUN;state.momAnswer=fix?'fix':'ok';save({momAnswer:state.momAnswer,momAt:Date.now()});$('#momActs').hidden=true;$('#momLater').hidden=true;$('#momCard').focus({preventScroll:true});
-  const b=document.createElement('div');b.className='mom-b';b.textContent=fix?'있어. ㅅ 두 개!':'맞아.';$('#momList').append(b);SND.felt('tap');
+  const b=document.createElement('div'),said=fix?MOM_FIX:MOM_OK,meaning=sub(said);b.className='mom-b';b.textContent=said;if(meaning){const s=document.createElement('small');s.textContent=meaning;b.append(s);}$('#momList').append(b);SND.felt('tap');
   try{
     await sleep(reduce?0:800);guard(r);
-    const k=document.createElement('span');k.className='mom-read';k.textContent='읽음';$('#momList').append(k);
+    const k=document.createElement('span');k.className='mom-read';k.dataset.l='읽음';k.textContent=L('읽음');$('#momList').append(k);
     await sleep(reduce?0:700);guard(r);
     $('#momBye').hidden=false;$('#momBye').focus({preventScroll:true});
   }catch(e){if(e!==SKIP)throw e;}
@@ -1294,6 +1298,7 @@ function applyStatic(){
   document.querySelectorAll('[data-l]').forEach(el=>{el.textContent=L(el.dataset.l||el.textContent.trim());});
   document.querySelectorAll('[data-l-aria]').forEach(el=>{el.setAttribute('aria-label',L(el.dataset.lAria));});
   document.querySelectorAll('[data-l-html]').forEach(el=>{el.innerHTML=L(el.dataset.lHtml);});
+  momOptionSubs();
   $('#bigSub').textContent=sub('안녕, 서울.');$('#bigSub').hidden=!$('#bigSub').textContent;
 }
 function loadState(a){

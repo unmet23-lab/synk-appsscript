@@ -36,6 +36,8 @@ function syncDock() {
  const dh = Math.ceil(dockEl.getBoundingClientRect().height);
  ui.app.style.setProperty('--dock-h', `${dh}px`);
  ui.app.classList.toggle('crowded', dh > ui.app.clientHeight - 230);
+ // 표지는 키가 커서 자막보다 먼저 얼굴에 닿는다 — 표지 키(약 140)와 얼굴 자리(화면 위 30%)를 뺀 만큼만 판이 높을 때 띄운다.
+ ui.app.classList.toggle('slate-tight', dh > ui.app.clientHeight * .7 - 174);
 }
 if (window.ResizeObserver && dockEl) new ResizeObserver(syncDock).observe(dockEl);
 
@@ -282,19 +284,24 @@ function startHeldLoop() {
 // 그 차례의 쇼케이스 고리: 장면에서 아직 어긋남이 없는 첫 시도면 listenFirst(C3), 그다음은 listen(C2·C4).
 const listenOf = (item, ctx) => (ctx.phase === 'scene' && !line(item.id).misses && item.listenFirst) || item.listen || null;
 const subsShowing = (ko) => !!ko && ui.subs.querySelector('.ko')?.textContent === ko;
-// 자막: 말하는 사람(고정폭 영문) · 대사 · 뜻. motion 'words'는 낱말마다 110ms로 흐림에서 떠오르고, 'pop'은 0.6배에서 톡 튀어 들어온다(되묻기).
+// 자막: 말하는 사람(고정폭 영문) · 대사 · 뜻. motion 'words'는 낱말마다 110ms로 흐림에서 떠오르고, 'cue'는 넘어가는 화면이라 60ms로 더 빠르게(읽을 시간을 먹지 않게), 'pop'은 0.6배에서 톡 튀어 들어온다(되묻기). 글의 \n은 한 화면 안 줄바꿈.
 function subs(ko, meaning, who, motion = null, meanLang = 'en') {
  if (!ko) { ui.subs.replaceChildren(); return; }
  syncDock();
- const words = ko.split(' ').map((w) => h('span', { class: 'w' }, w));
- const line = h('p', { class: 'ko', lang: 'ko' }, words.flatMap((w, i) => (i ? [' ', w] : [w])));
+ const words = [];
+ const kids = ko.split('\n').flatMap((row, r) => {
+  const ws = row.split(' ').map((w) => h('span', { class: 'w' }, w));
+  words.push(...ws);
+  return [...(r ? [h('br')] : []), ...ws.flatMap((w, i) => (i ? [' ', w] : [w]))];
+ });
+ const line = h('p', { class: 'ko', lang: 'ko' }, kids);
  const whoEl = who ? h('span', { class: 'who' }, who) : null;
  const meanEl = meaning ? h('p', { class: 'mean', lang: meanLang }, meaning) : null;
  ui.subs.replaceChildren(...[whoEl, line, meanEl].filter(Boolean));
  if (!motion) return;
  anim(whoEl, [{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 350 });
  if (motion === 'pop') anim(line, [{ transform: 'scale(.6)', opacity: 0 }, { transform: 'scale(1.08)', opacity: 1, offset: .6 }, { transform: 'rotate(-1.5deg) scale(1.02)', offset: .8 }, { transform: 'none', opacity: 1 }], { duration: 520 });
- else words.forEach((w, i) => anim(w, [{ opacity: 0, filter: 'blur(8px)', transform: 'translateY(8px)' }, { opacity: 1, filter: 'blur(0)', transform: 'none' }], { duration: 520, delay: i * 110 }));
+ else { const quick = motion === 'cue'; words.forEach((w, i) => anim(w, [{ opacity: 0, filter: 'blur(8px)', transform: 'translateY(8px)' }, { opacity: 1, filter: 'blur(0)', transform: 'none' }], { duration: quick ? 360 : 520, delay: i * (quick ? 60 : 110) })); }
  anim(meanEl, [{ opacity: 0 }, { opacity: 1 }], { duration: 400, delay: motion === 'pop' ? 150 : 150 + words.length * 110 });
 }
 // 장면 사진은 0.6초에 떠오르고 9초 동안 1.1 → 1.0으로 아주 느리게 밀린다.
@@ -773,16 +780,38 @@ async function runScene(i) {
  return studentTurn(item, s, { phase: 'scene', onDone: () => runScene(i + 1) });
 }
 
+// 자막 규칙(결정 11-05 · docs/디자인/드라마_장면/README.md): 선배 대사는 소리가 쉬는 자리에서 다음 화면으로 넘어간다(item.cues). 시각은 재생 중인 소리에서 읽어
+// 시작이 늦거나 끊겨도 어긋나지 않고, 테이크 2처럼 중간부터 틀어도 맞는 화면을 찾는다. 한 화면은 최소 1.5초 — 소리가 먼저 끝나면 그만큼 더 둔다.
+const CUE_MIN_MS = 1500;
+function followCues(cues, media, from) {
+ let shown = -1, shownAt = 0;
+ const show = (t) => {
+  let i = 0;
+  for (let k = 1; k < cues.length; k++) if (t >= cues[k].at) i = k;
+  if (i === shown) return;
+  shown = i; shownAt = performance.now();
+  subs(cues[i].text, meaningOf(cues[i]), 'Taeo', 'cue', meaningLang(cues[i]));
+ };
+ const onTime = () => { if (!media.paused) show(media.currentTime); };
+ show(from);
+ media.addEventListener('timeupdate', onTime);
+ return { stop: () => media.removeEventListener('timeupdate', onTime), left: () => Math.max(0, CUE_MIN_MS - (performance.now() - shownAt)) };
+}
 // 선배 대사: 아래 카드는 내리고 대사는 자막으로만(영상이 주인공). 구는 쉬는 상태.
 async function actorBeat(item, s, { from } = {}) {
  S.cardKey = null; panel();
  orbMode('idle', 'Listen');
- subs(item.text, meaningOf(item), 'Taeo', 'words', meaningLang(item));
+ const start = item.video ? from ?? item.videoStart ?? 0 : 0;
+ const cues = item.cues?.length ? followCues(item.cues, item.video ? ui.reply : ui.voice, start) : null;
+ if (!cues) subs(item.text, meaningOf(item), 'Taeo', 'words', meaningLang(item));
  let ok;
- if (item.video) { stageMode('reply'); ok = await playVideo(item.video, from ?? item.videoStart ?? 0, item.videoEnd, s); }
+ if (item.video) { stageMode('reply'); ok = await playVideo(item.video, start, item.videoEnd, s); }
  else { stageMode('still'); pushStill(); ok = await playUrl(item.audio, s); }
+ cues?.stop();
  if (!live(s)) return false;
+ if (ok && cues?.left()) { await sleep(s, cues.left()); if (!live(s)) return false; }
  if (!ok) {
+  if (cues) subs(item.text, meaningOf(item), 'Taeo', null, meaningLang(item)); // 소리가 안 나면 시각을 읽을 수 없다 — 대사를 통째로
   const v = await choose(s, (go) => [stepper(S.step === 'scene' ? 'scene' : 'take2'), h('div', { class: 'beat' }, h('p', { class: 'actor-line', lang: 'ko' }, item.text), h('div', { class: 'notice quiet' }, tx('mediaFail')),
    h('div', { class: 'row' }, h('button', { type: 'button', class: 'ghost', on: { click: () => go('again') } }, tx('replay')), h('button', { type: 'button', class: 'pill', on: { click: () => go('next') } }, tx('continue'))))]);
   if (v === 'again') return actorBeat(item, s, { from });

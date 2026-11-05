@@ -64,7 +64,21 @@
     "videoStart": 0,
     "videoEnd": null,
     "retakeStart": 0,
-    "meaningMn": "Уучлаарай, та шинэ элсэгч үү? Түрүүн гол хаалганы дэргэдэх газрын зургийн өмнө эргэлдээд байсан биз дээ?"
+    "meaningMn": "Уучлаарай, та шинэ элсэгч үү? Түрүүн гол хаалганы дэргэдэх газрын зургийн өмнө эргэлдээд байсан биз дээ?",
+    "cues": [
+     {
+      "at": 0,
+      "text": "저기, 혹시 신입생이에요?",
+      "meaning": "Hey, are you a freshman by any chance?",
+      "meaningMn": "Уучлаарай, та шинэ элсэгч үү?"
+     },
+     {
+      "at": 3.5,
+      "text": "아까 정문 안내 지도 앞에서 빙빙 돌고 있었죠?",
+      "meaning": "You were circling around the campus map by the main gate earlier, right?",
+      "meaningMn": "Түрүүн гол хаалганы дэргэдэх газрын зургийн өмнө эргэлдээд байсан биз дээ?"
+     }
+    ]
    },
    {
     "type": "student",
@@ -96,7 +110,27 @@
     "videoStart": 0,
     "videoEnd": null,
     "retakeStart": 2,
-    "meaningMn": "Хаха, энд анх ирсэн хүн бүр төөрдөг. Би 3-р курсийн Квон Тэо. Зүгээр л «선배» (ахлах курсийн оюутан) гэж дуудаарай."
+    "meaningMn": "Хаха, энд анх ирсэн хүн бүр төөрдөг. Би 3-р курсийн Квон Тэо. Зүгээр л «선배» (ахлах курсийн оюутан) гэж дуудаарай.",
+    "cues": [
+     {
+      "at": 0,
+      "text": "하하, 여기 처음 오면 다 헤매요.",
+      "meaning": "Haha, everyone gets lost here at first.",
+      "meaningMn": "Хаха, энд анх ирсэн хүн бүр төөрдөг."
+     },
+     {
+      "at": 4.25,
+      "text": "나는 3학년 권태오예요.",
+      "meaning": "I'm Taeo, a third-year.",
+      "meaningMn": "Би 3-р курсийн Квон Тэо."
+     },
+     {
+      "at": 6.35,
+      "text": "편하게 선배라고 불러요.",
+      "meaning": "Just call me sunbae (senior).",
+      "meaningMn": "Зүгээр л «선배» (ахлах курсийн оюутан) гэж дуудаарай."
+     }
+    ]
    },
    {
     "type": "student",
@@ -127,7 +161,21 @@
     "videoStart": 0,
     "videoEnd": null,
     "retakeStart": 0,
-    "meaningMn": "«선배님» гэхээр жаахан эвгүй юм... за, өөрт тань тохиромжтойгоор дуудаарай. Хоол идчихээд хамт явъя. Би хүргэж өгье."
+    "meaningMn": "«선배님» гэхээр жаахан эвгүй юм... за, өөрт тань тохиромжтойгоор дуудаарай. Хоол идчихээд хамт явъя. Би хүргэж өгье.",
+    "cues": [
+     {
+      "at": 0,
+      "text": "선배님은 좀 부담스러운데…\n뭐, 편한 대로 해요.",
+      "meaning": "\"Sunbae-nim\" feels like a bit much... well, whatever you're comfortable with.",
+      "meaningMn": "«선배님» гэхээр жаахан эвгүй юм... за, өөрт тань тохиромжтойгоор дуудаарай."
+     },
+     {
+      "at": 4.44,
+      "text": "밥 먹고 같이 가요.\n내가 데려다줄게요.",
+      "meaning": "Let's go together after we eat. I'll take you there.",
+      "meaningMn": "Хоол идчихээд хамт явъя. Би хүргэж өгье."
+     }
+    ]
    },
    {
     "type": "student",
@@ -153,7 +201,21 @@
     "audio": "media/senior-04.mp3",
     "image": "media/taeo-still.webp",
     "last": true,
-    "meaningMn": "Зүгээр дээ, юу ч биш. Оронд нь ирэх долоо хоногийн клубүүдийн үзэсгэлэн дээр нэг кофе авч өгөөрэй. Би дагуулаад явъя."
+    "meaningMn": "Зүгээр дээ, юу ч биш. Оронд нь ирэх долоо хоногийн клубүүдийн үзэсгэлэн дээр нэг кофе авч өгөөрэй. Би дагуулаад явъя.",
+    "cues": [
+     {
+      "at": 0,
+      "text": "에이, 뭘요. 대신 다음 주 동아리 박람회 때 커피 한 잔 사요.",
+      "meaning": "Oh, it's nothing. But you're buying me a coffee at the club fair next week.",
+      "meaningMn": "Зүгээр дээ, юу ч биш. Оронд нь ирэх долоо хоногийн клубүүдийн үзэсгэлэн дээр нэг кофе авч өгөөрэй."
+     },
+     {
+      "at": 4.92,
+      "text": "내가 데려갈게요.",
+      "meaning": "I'll take you there.",
+      "meaningMn": "Би дагуулаад явъя."
+     }
+    ]
    }
   ],
   "transfer": {

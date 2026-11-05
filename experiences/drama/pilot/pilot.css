@@ -39,11 +39,11 @@ button { font: inherit; color: inherit; }
  .app { width: min(440px, calc(100vw - 48px)); height: min(calc(100dvh - 48px), 940px); border-radius: 36px; box-shadow: 0 50px 120px -40px rgba(120,100,255,.35), inset 0 0 0 1px rgba(255,255,255,.08), 0 0 0 1px #000; }
 }
 
-/* 1 장면 — 위 74%, 위는 어둡게 아래는 바탕으로 녹는다 */
-.stage { position: absolute; inset: 0 0 auto 0; height: 74%; overflow: hidden; background: #000; }
+/* 1 장면 — 영상은 위에 밝게, 글자는 그 아래 어두운 판에(결정 11-05 자막 규칙: 글자가 사람을 덮지 않는다). 높이는 아래 판 크기와 상관없이 일정해 화면이 바뀌어도 영상이 뛰지 않는다. */
+.stage { position: absolute; inset: 0 0 auto 0; height: max(46%, calc(100% - 300px)); overflow: hidden; background: #000; }
 .layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; opacity: 0; transition: opacity .5s var(--spring); }
 .stage[data-mode="still"] .still, .stage[data-mode="listen"] .loop, .stage[data-mode="reply"] .reply { opacity: 1; }
-.stage::after { content: ''; position: absolute; inset: -1px; z-index: 2; pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,.6), transparent 18%, transparent 40%, rgba(9,9,11,.8) 72%, #09090b 96%); }
+.stage::after { content: ''; position: absolute; inset: -1px; z-index: 2; pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,.55), transparent 18%, transparent 86%, #09090b 100%); }
 .grain { position: absolute; inset: 0; z-index: 3; opacity: .08; mix-blend-mode: overlay; pointer-events: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E"); }
 body.is-recording .stage::before { content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none; box-shadow: inset 0 0 60px rgba(139,123,255,.28); }
 
@@ -62,21 +62,26 @@ body.is-recording .stage::before { content: ''; position: absolute; inset: 0; z-
 .prog i { position: relative; flex: 1; height: 3px; border-radius: 2px; background: rgba(255,255,255,.18); overflow: hidden; }
 .prog i::after { content: ''; position: absolute; inset: 0; background: #fff; transform: scaleX(var(--p, 0)); transform-origin: left; transition: transform .6s var(--spring); }
 
-/* 3 자막 — 영상이 주인공이라 말풍선 없이 */
-/* 자막은 아래 판(카드 + 구) 바로 위에서 끝난다 — 판이 낮으면 화면 가운데쯤(아래에서 42%), 판이 높으면 그 위로 밀린다(--dock-h는 pilot.mjs가 잰다). */
-.subs { position: absolute; z-index: 10; left: 18px; right: 18px; bottom: max(calc(var(--dock-h, 160px) + 16px), 42%); display: grid; justify-items: center; gap: 4px; text-align: center; pointer-events: none; }
-.subs .who { font: 500 10.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--label); }
-.subs .ko { margin: 0; font-weight: 760; font-size: 23px; line-height: 1.32; letter-spacing: -.035em; text-shadow: 0 2px 18px rgba(0,0,0,.65); text-wrap: balance; }
+/* 3 자막 — 영상이 주인공이라 말풍선 없이. 아래 판(카드 + 구) 바로 위에서 끝난다(--dock-h는 pilot.mjs가 잰다, 26px = 판 아래 띄움 14 + 틈 12). */
+/* 글자 뒤는 늘 어둡다: 판이 높아 자막이 영상까지 올라가도 ::before가 따라와 흰 글자가 배경에 묻히지 않는다. */
+.subs { position: absolute; z-index: 10; left: 0; right: 0; padding: 0 20px; bottom: calc(var(--dock-h, 160px) + 26px); display: grid; justify-items: center; gap: 6px; text-align: center; pointer-events: none; }
+.subs:not(:empty)::before { content: ''; position: absolute; z-index: -1; inset: -30px 0 -14px; background: linear-gradient(180deg, rgba(9,9,11,0), rgba(9,9,11,.92) 30px); }
+.subs .who { font: 500 10.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.62); }
+.subs .ko { margin: 0; font-weight: 720; font-size: clamp(19px, 5.6vw, 22px); line-height: 1.36; letter-spacing: -.03em; text-wrap: balance; }
 .subs .ko .w { display: inline-block; }
-.subs .mean { margin: 0; font-size: 12px; color: var(--dim); text-shadow: 0 1px 8px rgba(0,0,0,.8); text-wrap: balance; }
+.subs .mean { margin: 0; font-size: 12.5px; line-height: 1.45; color: rgba(255,255,255,.74); text-wrap: balance; }
+/* 좁은 화면: 위 띠가 넘치지 않게 회차 알약을 빼고, 얼굴이 띠에 닿지 않게 영상을 조금 내린다 */
+@media (max-width: 340px) { #epTag { display: none; } .layer { object-position: 50% 4%; } }
 
-.app.crowded .subs, .app.crowded .slate { visibility: hidden; }
+.app.crowded .subs, .app.crowded .slate, .app.slate-tight .slate { visibility: hidden; }
 /* 회차 표지 · 장면 끝 */
-.slate { position: absolute; z-index: 15; left: 0; right: 0; bottom: max(calc(var(--dock-h, 160px) + 20px), 40%); display: grid; justify-items: center; gap: 10px; text-align: center; pointer-events: none; }
+.slate { position: absolute; z-index: 15; left: 0; right: 0; bottom: calc(var(--dock-h, 160px) + 34px); display: grid; justify-items: center; gap: 10px; text-align: center; pointer-events: none; }
 .slate .k { font: 500 11px/1 var(--mono); letter-spacing: .32em; color: var(--dim); text-transform: uppercase; }
 .slate .t { font-weight: 820; font-size: 44px; letter-spacing: -.05em; line-height: 1.05; text-shadow: 0 4px 30px rgba(0,0,0,.6); }
 .slate .t span { display: inline-block; }
 .slate .t { padding: 0 16px; }
+.slate:not([hidden])::before { content: ''; position: absolute; z-index: -1; inset: -44px 0 -20px; background: linear-gradient(180deg, rgba(9,9,11,0), rgba(9,9,11,.82) 44px); }
+html:not([lang="ko"]) .slate .t { font-size: clamp(26px, 8.4vw, 34px); } /* 영어 · 몽골어 제목은 길어 두 줄로 올라가 얼굴에 닿는다 */
 .slate .t .w { white-space: nowrap; }
 html[lang="mn"] { --sans: var(--mn-sans); }
 html[lang="mn"] .slate .t { font-weight: 700; letter-spacing: -.03em; } /* 큰 굵기에서 Ө · ө의 속이 막힌다 */
@@ -94,9 +99,10 @@ html[lang="mn"] [lang="ko"] { font-family: 'Pilot SUIT', system-ui, -apple-syste
 
 /* 4 아래 판 — 유리 카드 + 음성 구 */
 .dock { position: absolute; z-index: 12; left: 12px; right: 12px; bottom: max(14px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 10px; max-height: calc(100% - 96px); }
-.panel { flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; border-radius: 22px; padding: 14px 15px 15px; background: rgba(18,18,24,.62); box-shadow: var(--edge); backdrop-filter: blur(16px) saturate(1.2); -webkit-backdrop-filter: blur(16px) saturate(1.2); scrollbar-width: thin; }
+.panel { flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; border-radius: 22px; padding: 14px 15px 15px; background: rgba(18,18,24,.86); box-shadow: var(--edge); backdrop-filter: blur(16px) saturate(1.2); -webkit-backdrop-filter: blur(16px) saturate(1.2); scrollbar-width: thin; }
 .panel:empty { display: none; }
-.panel.busy { opacity: .62; pointer-events: none; transition: opacity .15s; }
+.panel.busy { pointer-events: none; }
+.panel.busy > * { opacity: .62; transition: opacity .15s; } /* 카드 바탕은 그대로 두어 뒤 사진이 비치지 않게 */
 .panel h1, .panel h2 { margin: 2px 0 10px; font-weight: 780; letter-spacing: -.035em; line-height: 1.2; }
 .panel h1 { font-size: 26px; }
 .panel h2 { font-size: 21px; }

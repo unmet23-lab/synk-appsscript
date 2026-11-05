@@ -97,6 +97,44 @@ function withMongolian(scene) {
  return scene;
 }
 
+// 자막 규칙(결정 2026-11-05 · docs/디자인/드라마_장면/README.md): 선배 대사는 소리가 쉬는 자리에서 넘어가는 화면으로 나눠 보인다.
+// 글은 대사 · 뜻을 문장 자리에서 자른 것뿐이다 — withCues가 이어 붙여 본디 글과 대조하고, 다르면 멈춘다. media는 시각을 잰 소리 파일이라 다른 파일이 붙으면 통째 자막으로 돌아간다.
+// at: 소리 안 시각(초), 문장 사이 쉼의 가운데(ffmpeg silencedetect로 쟀다). end: 소리 끝. \n은 한 화면 안 줄바꿈 — 짧은 문장 둘을 묶은 화면에서 문장마다 줄을 바꾼다.
+export const SUB_CUES = {
+ a1: { media: 'c1-reply.mp4', end: 8.04, cues: [
+  { at: 0, text: '저기, 혹시 신입생이에요?', meaning: 'Hey, are you a freshman by any chance?', meaningMn: 'Уучлаарай, та шинэ элсэгч үү?' },
+  { at: 3.5, text: '아까 정문 안내 지도 앞에서 빙빙 돌고 있었죠?', meaning: 'You were circling around the campus map by the main gate earlier, right?', meaningMn: 'Түрүүн гол хаалганы дэргэдэх газрын зургийн өмнө эргэлдээд байсан биз дээ?' },
+ ] },
+ a2: { media: 'c2-reply.mp4', end: 9.39, cues: [
+  { at: 0, text: '하하, 여기 처음 오면 다 헤매요.', meaning: 'Haha, everyone gets lost here at first.', meaningMn: 'Хаха, энд анх ирсэн хүн бүр төөрдөг.' },
+  { at: 4.25, text: '나는 3학년 권태오예요.', meaning: "I'm Taeo, a third-year.", meaningMn: 'Би 3-р курсийн Квон Тэо.' },
+  { at: 6.35, text: '편하게 선배라고 불러요.', meaning: 'Just call me sunbae (senior).', meaningMn: 'Зүгээр л «선배» (ахлах курсийн оюутан) гэж дуудаарай.' },
+ ] },
+ // 뒤 세 문장은 1초 안팎이라 하나씩 넘기면 뜻을 못 읽는다 — 두 화면으로 묶는다.
+ a3: { media: 'c4-reply.mp4', end: 7.74, cues: [
+  { at: 0, text: '선배님은 좀 부담스러운데…\n뭐, 편한 대로 해요.', meaning: "\"Sunbae-nim\" feels like a bit much... well, whatever you're comfortable with.", meaningMn: '«선배님» гэхээр жаахан эвгүй юм... за, өөрт тань тохиромжтойгоор дуудаарай.' },
+  { at: 4.44, text: '밥 먹고 같이 가요.\n내가 데려다줄게요.', meaning: "Let's go together after we eat. I'll take you there.", meaningMn: 'Хоол идчихээд хамт явъя. Би хүргэж өгье.' },
+ ] },
+ // 「에이, 뭘요.」를 따로 두면 다음 화면의 몽골어 뜻이 초당 24자라 못 읽는다 — 앞 두 문장을 묶는다.
+ a4: { media: 'senior-04.mp3', end: 6.12, cues: [
+  { at: 0, text: '에이, 뭘요. 대신 다음 주 동아리 박람회 때 커피 한 잔 사요.', meaning: "Oh, it's nothing. But you're buying me a coffee at the club fair next week.", meaningMn: 'Зүгээр дээ, юу ч биш. Оронд нь ирэх долоо хоногийн клубүүдийн үзэсгэлэн дээр нэг кофе авч өгөөрэй.' },
+  { at: 4.92, text: '내가 데려갈게요.', meaning: "I'll take you there.", meaningMn: 'Би дагуулаад явъя.' },
+ ] },
+};
+function withCues(scene) {
+ const flat = (s) => s.replace(/\n/g, ' ');
+ for (const line of scene) {
+  const c = SUB_CUES[line.id];
+  if (!c) continue;
+  const same = (key, whole) => { if (c.cues.map((x) => flat(x[key])).join(' ') !== whole) throw new Error(`자막 조각이 본디 글과 다르다: ${line.id} ${key}`); };
+  same('text', line.text);
+  same('meaning', line.meaning.replace(/\s+—\s+/g, '. '));
+  same('meaningMn', line.meaningMn);
+  if (String(line.video || line.audio || '').endsWith(`/${c.media}`)) line.cues = c.cues;
+ }
+ return scene;
+}
+
 export const PILOT = {
  id: 's1e01-pilot',
  title: '1화 · 개강 첫날 — 점심, 태오 선배',
@@ -108,7 +146,7 @@ export const PILOT = {
  role: { me: '새로 온 유학생', partner: '권태오 · 3학년 선배', place: '점심시간, 캠퍼스' },
  // 상대 → 나 → 상대 → 나(목표) → 상대 → 나 → 상대. 내 대사는 셋.
  // 쇼케이스 영상을 구워 넣으면 a1·a2·a3은 그 영상으로, 6·7번 줄의 듣는 고리와 6번 줄 첫 되묻기도 그 영상으로 바뀐다(withShowcase).
- scene: withMongolian(withShowcase([
+ scene: withCues(withMongolian(withShowcase([
   actor('a1', 0, { audio: '/media/senior-01.mp3', image: STILL }),
   student('s1e01-6', '/media/model-6.mp3'),
   actor('a2', 1, { audio: null, image: STILL }), // 선배 2는 쇼케이스 C2 영상(웃음 + 대사)으로만 — withShowcase가 붙인다
@@ -116,7 +154,7 @@ export const PILOT = {
   actor('a3', 2, { audio: '/media/senior-03.mp3', image: STILL }),
   student('s1e01-8', '/media/model-8.mp3'),
   actor('a4', 3, { audio: '/media/senior-04.mp3', image: STILL, last: true }),
- ])),
+ ]))),
  // 장면 안 1번째 어긋남에 선배가 되묻는 녹음(ep01 되묻기.선배 순서 그대로).
  reasks: ep01.되묻기.선배.map((text, i) => ({ text, audio: `/media/senior-ask-${i + 1}.mp3` })),
  // audio가 null이면 녹음 전 — 화면에 코치 글만 보이고 소리는 내지 않는다.
