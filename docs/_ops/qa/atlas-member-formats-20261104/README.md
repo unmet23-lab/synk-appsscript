@@ -73,3 +73,9 @@ PC 공개판 0.4.76은 공개 릴리스 목록과 동결 원천 176개 해시를
 세 설치 파일은 공개 다운로드에서 각각 끝까지 읽어 Windows 407,602,176바이트, Mac arm64 461,960,868바이트, Mac x64 478,510,239바이트와 조립한 SHA-256을 맞췄다. 0.4.77의 하위 WORLD와 Workspace 실행 파일, PULSE, 본체 보안 모듈은 같은 판을 사용한다. [0.4.78 공개 설치 파일](https://github.com/unmet23-lab/synk-policy/releases/tag/platform-preview-0.4.78) · [홈페이지·업데이트 피드 커밋](https://github.com/unmet23-lab/synk-policy/commit/2ecf0cf8f64ee0cde6afd9c35bcec40e70f87137)
 
 같은 PC의 0.4.77이 실제 업데이트 피드에서 0.4.78을 찾았고, Windows 설치 기록에서 0.4.77 → 0.4.78 자동 업데이트가 끝난 것을 확인했다(2026-11-04 19:50 KST). 설치된 파일 75개가 CI 배포본과 모두 일치했다. 설치된 ASAR로 네 방식 → 다섯 방식 → 창 닫고 다시 열기를 반복해도 주문 5일 5회와 직접 고른 관심사가 남았다. 웹 배포 대상 23개도 공개 주소에서 대조했다. [공개 업데이트 피드](https://synk.im/desktop/releases/preview.json) · [공개 반영 커밋](https://github.com/unmet23-lab/synk-policy/commit/2ecf0cf8f64ee0cde6afd9c35bcec40e70f87137) · [이 파일들을 포함한 후속 공개판의 사이트 전체 점검 통과](https://github.com/unmet23-lab/synk-policy/actions/runs/41825599132)
+
+## 11월 5일 좁은 화면과 전체 회원 검증
+
+회원 이해 카드의 최소 열 너비가 320px 화면에서 12px 넘치던 현상을 고쳤다. 실제 공개 CSS와 HTML의 버전 연결을 대조한 뒤 320·390·960·1440px에서 새 창으로 확인했다. 네 크기의 넘침은 모두 0px였고, 390px 이상의 열 너비는 이전과 같았다. 원천 CSS와 회원 웹 생성물을 함께 맞췄다. [공개 수정](https://github.com/unmet23-lab/synk-policy/commit/8e07ac7ffad5509ae83acb5c57693a71c1e22368)
+
+같은 공개 파일을 쓰는 격리 회원 계정으로 네 응답 방식에서 말하기를 더하고 창을 다시 연 뒤 다섯 방식과 주문 5일·직접 고른 관심사가 남는 것을 확인했다. 정보 제공 동의 해제도 포함한 실제 웹 47개 판정이 통과했다. 설치된 PC 0.4.78의 ASAR을 별도 프로필에서 실행한 전체 회원 시험은 315개 판정을 통과했다. 현재 회원 화면에 맞춘 전체 웹 시험에는 아직 정적 파일 제공과 화면 갱신 대기 조건의 보완이 남아 있다. 실제 학습자 관찰은 참여자가 생기면 진행한다는 사용자 지시에 따라 대기한다.

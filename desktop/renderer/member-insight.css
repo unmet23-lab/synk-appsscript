@@ -127,7 +127,7 @@
 .mi2-up{margin-left:6px;font-size:.8125rem;font-weight:600;color:var(--ink-2,rgba(250,250,249,.72))}
 
 /* 바닥: 항목 수대로 칸을 나눈다 */
-.mi2-floor{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;align-items:start}
+.mi2-floor{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:14px;align-items:start}
 .mi2-stack .mi2-floor{grid-template-columns:1fr}
 .mi2-fold,.mi2-consent{border-radius:18px;border:1px solid var(--line,rgba(255,255,255,.075));padding:4px 18px}
 .mi2-fold>summary{min-height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;cursor:pointer;font-size:.9375rem;font-weight:600}
