@@ -1074,7 +1074,7 @@
   const jump = (y) => { try { window.scrollTo({ top: y, left: 0, behavior: 'instant' }); } catch { window.scrollTo(0, y); } };
   const go = (h) => { if (location.hash !== h) location.hash = h; else render(); };
   function render() {
-    const h = decodeURIComponent(location.hash || '').replace(/^#g-OPALINE$/, '#g-OFALIN'); // 11-05 팀 이름을 OFALIN으로 바꾸기 전 공유한 주소
+    const h = decodeURIComponent(location.hash || '').replace(/^#g-(OPALINE|OFALIN)$/, '#g-OPALIN'); // 11-05 · 11-06 팀 영문 표기를 바꾸기 전 공유한 주소
     const prev = route;
     if (prev === 'board' || prev === 'lineup') boardY = window.scrollY;
     if ($('#lightbox').open) $('#lightbox').close();

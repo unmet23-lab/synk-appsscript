@@ -32,7 +32,7 @@
 
 ## 아이돌 여덟(11-03 밤, Google Flow)
 
-OFALIN F08~F11 · OUTBLUE M07~M10. 유호님 「Flow로 먼저 시험」(77yuhbs Ultra 몫, 힉스필드 안 씀).
+OPALIN F08~F11 · OUTBLUE M07~M10. 유호님 「Flow로 먼저 시험」(77yuhbs Ultra 몫, 힉스필드 안 씀).
 
 - 시작 · 끝 그림: 대표 사진(`C:\SYNK-LoRA\casting\idol_fresh_20261101\대표v4\<슬롯>_h1.jpg` — 보드 `hero.webp`와 같은 틀). Flow 비율이 16:9 · 9:16뿐이라 가로 1080에 맞춰 9:16 칸 아래에 두고 위는 벽을 이어 그렸다(`loop_flow\프레임준비.py`). 받은 720×1280에서 아래 720×964 → 가운데 720×960을 잘랐고, 첫 장을 대표 사진과 대 보니 여덟 판 모두 어긋남 0줄이다. 끝에 같은 장이 서 있으면 하나만 남겨(`루프_다듬기.py`) 93장(3.875초, F09는 90장), 소리 없음 · 24fps · crf 25 · faststart, 합계 약 2.4MB.
 - 고른 판(원본은 `_raw/<코드>_flow_<판>.mp4`, 모든 판은 `C:\SYNK-LoRA\casting\idol_fresh_20261101\loop_flow\받음\`): F08 · F10 · F11 · M07 · M10은 Omni 1.1 Flash 720p 4초(M10은 고개를 덜 기울이게 고쳐 두 번째 판), F09 · M08은 Veo 3.1 Quality 4초, M09는 Veo 3.1 Fast 4초. Omni가 F09 · M08 · M09를 「유명인」으로 막아 그 셋만 Veo로 냈다. 지시문은 `loop_flow\지시문_만들기.py`(대표 사진 웃음 · 입 그대로, 가운데 깜빡임 한 번, 작은 숨 · 머리카락, 고개 거의 그대로).

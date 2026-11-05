@@ -44,14 +44,14 @@ test('제품 설명의 낱말은 긴 낱말부터 찾고 영문은 낱말 경계
 
 test('거르기는 고른 조건만 보고, 업종·키 구간도 거른다', () => {
   assert.equal(L.filterModels(models, { gender: '전체', age: '전체', concept: '전체', height: '전체', industry: '' }).length, models.length);
-  // 11-02 아이돌 OFALIN: 윤슬 「음료·카페」 · 새봄 「음료·디저트」 · 해인 「음료·생수」는 식음료, 로하는 아니다
+  // 11-02 아이돌 OPALIN: 윤슬 「음료·카페」 · 새봄 「음료·디저트」 · 해인 「음료·생수」는 식음료, 로하는 아니다
   assert.deepEqual(L.filterModels(models, { gender: '여', industry: 'food' }).map((m) => m.code), ['F02', 'F04', 'F05', 'F08', 'F10', 'F11'], '소연은 간편식으로, 은정의 「건강기능식품」은 식음료가 아니다');
   // 11-02 새봄 「댄스·운동」 · 하람 「운동화·스포츠」 · 지온 「운동화·스트리트 패션」도 스포츠(문구의 「운동」)
   assert.deepEqual(L.filterModels(models, { industry: 'sports' }).map((m) => m.code), ['F07', 'M06', 'F10', 'M08', 'M10'], '2차 한결(10-24)이 스포츠의 남자 자리');
   assert.deepEqual(L.filterModels(models, { industry: 'health' }).map((m) => m.code), ['F05', 'F06', 'M05']);
   assert.deepEqual(L.filterModels(models, { height: '180cm대' }).map((m) => m.code).sort(), ['M01', 'M02', 'M03', 'M07', 'M09'], '11-02 도현 182 · 서율 180');
   assert.deepEqual(L.filterModels(models, { group: 'OUTBLUE' }).map((m) => m.code), ['M07', 'M08', 'M09', 'M10'], '그룹 거르기(11-02)');
-  assert.deepEqual(L.filterModels(models, { group: 'OFALIN', height: '160cm대' }).map((m) => m.code), ['F08', 'F09', 'F10', 'F11']);
+  assert.deepEqual(L.filterModels(models, { group: 'OPALIN', height: '160cm대' }).map((m) => m.code), ['F08', 'F09', 'F10', 'F11']);
   assert.equal(L.filterModels(models, { group: '전체' }).length, models.length);
   assert.equal(L.heightBand(165), '160cm대');
   assert.equal(L.heightBand(null), '');
@@ -232,7 +232,7 @@ test('문의 글: 고른 모델·헤어·메모, 손댄 브리프만, 함께 비
 
 test('같은 성별 안에서의 위치와 조사', () => {
   const r = L.rankAmong(models, byCode('F02'), (m) => m.height);
-  // 11-02 OFALIN 넷(164 · 169 · 160 · 167)이 들어와 여자 열한 명 — 가장 작은 키는 은정 · 새봄 160, 가장 큰 키는 그대로 170
+  // 11-02 OPALIN 넷(164 · 169 · 160 · 167)이 들어와 여자 열한 명 — 가장 작은 키는 은정 · 새봄 160, 가장 큰 키는 그대로 170
   assert.deepEqual([r.min, r.max, r.count, r.lowest], [160, 170, 11, false], '여자 열한 명 가운데 하린은 가장 작지 않다');
   const e = L.rankAmong(models, byCode('F06'), (m) => m.height);
   assert.deepEqual([e.min, e.count, e.lowest], [160, 11, true], '은정 160cm가 가장 작다(새봄과 같은 키)');
@@ -280,11 +280,11 @@ test('명단의 모든 모델에 명세서(몸 비율·색)와 얼굴 기준·�
   }
 });
 
-// 11-02 아이돌 두 팀(OFALIN · OUTBLUE): 그룹 페이지 주소 #g-<id>, 멤버 넷은 명단에 있고 한 팀에만, 멤버 색은 대문자 HEX
+// 11-02 아이돌 두 팀(OPALIN · OUTBLUE): 그룹 페이지 주소 #g-<id>, 멤버 넷은 명단에 있고 한 팀에만, 멤버 색은 대문자 HEX
 test('그룹: 멤버는 명단의 같은 성별 넷이고, 주소 id는 모델 코드 꼴과 겹치지 않으며, 화면이 그룹 페이지를 연다', () => {
   const fs = require('node:fs');
   const groups = catalog.groups || [];
-  assert.deepEqual(groups.map((g) => g.id), ['OFALIN', 'OUTBLUE']);
+  assert.deepEqual(groups.map((g) => g.id), ['OPALIN', 'OUTBLUE']);
   const seen = new Set();
   for (const g of groups) {
     assert.match(g.id, /^[A-Z][A-Z0-9]{2,}$/, `${g.id}: 주소에 「-」가 들어가면 #g-… 를 나눌 때 깨진다`);

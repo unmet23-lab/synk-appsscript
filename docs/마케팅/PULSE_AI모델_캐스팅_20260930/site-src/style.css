@@ -5,7 +5,7 @@
 :root{
   --paper:#FFFFFF;--shade:#F2F2F0;--ink:#0F0F0F;--ink-2:#45453F;--ink-3:#77776F;--rule:#E4E4E0;--rule-2:#CDCDC8;
   --berry:#A3265F;--berry-ink:#8C1E50;--berry-wash:#FBEFF4;--ok:#2F9E5C;
-  /* 그룹 색(11-02): OFALIN 오팔 흰 빛 — 멤버 색 넷이 은은하게 도는 반투명 흰 바탕, OUTBLUE 청람 — 루미너스 블루(코발트)와 황동 리벳 */
+  /* 그룹 색(11-02): OPALIN 오팔 흰 빛 — 멤버 색 넷이 은은하게 도는 반투명 흰 바탕, OUTBLUE 청람 — 루미너스 블루(코발트)와 황동 리벳 */
   --opal:#FBFBFD;--opal-sky:rgba(142,197,232,.34);--opal-rose:rgba(233,166,184,.30);--opal-lemon:rgba(242,220,107,.28);--opal-mint:rgba(159,220,196,.32);
   --cobalt:#1A44C8;--cobalt-deep:#10308F;--brass:#D2AE62;
   --sans:'SYNK Latin','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
@@ -141,13 +141,13 @@ b,strong{font-weight:600}
 .team-go{margin-top:10px;font-size:13px;font-weight:600}
 .team-go span{display:inline-block;transition:transform .2s var(--ease)}
 .team:hover .team-go span{transform:translateX(3px)}
-[data-team="OFALIN"]{color:var(--ink);background:
+[data-team="OPALIN"]{color:var(--ink);background:
   radial-gradient(90% 120% at 0% 0%,var(--opal-sky),transparent 60%),
   radial-gradient(90% 120% at 100% 0%,var(--opal-rose),transparent 60%),
   radial-gradient(90% 120% at 100% 100%,var(--opal-lemon),transparent 60%),
   radial-gradient(90% 120% at 0% 100%,var(--opal-mint),transparent 60%),var(--opal)}
-.team[data-team="OFALIN"]{box-shadow:inset 0 0 0 1px rgba(15,15,15,.08)}
-.team[data-team="OFALIN"] .team-ph{background:rgba(255,255,255,.6)}
+.team[data-team="OPALIN"]{box-shadow:inset 0 0 0 1px rgba(15,15,15,.08)}
+.team[data-team="OPALIN"] .team-ph{background:rgba(255,255,255,.6)}
 [data-team="OUTBLUE"]{color:#fff;background:linear-gradient(160deg,var(--cobalt) 0%,var(--cobalt-deep) 100%)}
 [data-team="OUTBLUE"] .team-k,[data-team="OUTBLUE"] .team-ko,[data-team="OUTBLUE"] .team-line{color:rgba(255,255,255,.82)}
 /* 가슴의 작은 황동 리벳 패치 하나(11-02 콘셉트 — 갑옷은 패치로만): 오른쪽 위에 4×3 점 */

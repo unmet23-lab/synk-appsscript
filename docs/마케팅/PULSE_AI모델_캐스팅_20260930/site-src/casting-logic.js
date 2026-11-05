@@ -57,7 +57,7 @@
 
   const heightBand = (cm) => (Number(cm) > 0 ? Math.floor(Number(cm) / 10) * 10 + 'cm대' : '');
 
-  // 거르기. 값이 ''이거나 '전체'면 그 조건은 보지 않는다. group은 그룹 id(11-02 아이돌 두 팀 — OFALIN · OUTBLUE).
+  // 거르기. 값이 ''이거나 '전체'면 그 조건은 보지 않는다. group은 그룹 id(11-02 아이돌 두 팀 — OPALIN · OUTBLUE).
   function filterModels(models, f) {
     const on = (v) => v && v !== '전체';
     return models.filter((m) =>

@@ -105,14 +105,14 @@ app.whenReady().then(async()=>{
       await click('#pulse-client [data-pulse-tab="models"]');await click('#pulse-client button.pulse-pick[data-pulse-pick-model="F08"]');await click('#pulse-client [data-pulse-tab="brief"]');await click('#pulse-client [data-pulse-save]');
       const stored=await run(`JSON.parse(localStorage.getItem('synk.pulse.brief.v1:'+encodeURIComponent('probe-c')))`);
       check('saving-keeps-the-new-pick-and-the-removal',stored.models.includes('F08')&&stored.models.length===7&&!stored.works.length,{stored:{models:stored.models,works:stored.works}});
-      check('request-names-the-team',/윤슬 \(F08\) · 가상 AI 모델 · OFALIN/.test(await run(`document.getElementById('pulse-request-text').value`)));
+      check('request-names-the-team',/윤슬 \(F08\) · 가상 AI 모델 · OPALIN/.test(await run(`document.getElementById('pulse-request-text').value`)));
       // First visit, nothing saved.
       await open();await account('probe-d');await openFromSettings();
       const names=()=>run(`[...document.querySelectorAll('#pulse-results .pulse-model-card h3')].map(node=>node.textContent)`),teams=()=>run(`[...document.querySelectorAll('#pulse-results .pulse-team h2')].map(node=>node.firstChild.textContent.trim())`);
       const search=async value=>{await run(`(()=>{const input=document.getElementById('pulse-search');input.value=${JSON.stringify(value)};input.dispatchEvent(new Event('input',{bubbles:true}));})()`);await settle();};
       check('no-draft-opens-on-the-models',/모델 캐스팅/.test(await run('document.querySelector("#pulse-client [aria-current=page]")?.textContent')));
-      check('twenty-one-models-and-two-teams',(await names()).length===21&&SAME(await teams(),['OFALIN','OUTBLUE']),{names:await names()});
-      await search('오팔린');check('korean-team-name-finds-that-team',SAME(await names(),['윤슬','로하','새봄','해인'])&&SAME(await teams(),['OFALIN']));
+      check('twenty-one-models-and-two-teams',(await names()).length===21&&SAME(await teams(),['OPALIN','OUTBLUE']),{names:await names()});
+      await search('오팔린');check('korean-team-name-finds-that-team',SAME(await names(),['윤슬','로하','새봄','해인'])&&SAME(await teams(),['OPALIN']));
       await search('없는낱말');check('nothing-found-says-so',await run(`!!document.querySelector('#pulse-results .pulse-empty')`));await click('#pulse-client [data-pulse-reset]');
       await click('#pulse-client [data-pulse-gender="남"]');check('gender-filter-keeps-the-matching-team',SAME(await teams(),['OUTBLUE'])&&(await names()).length===10);await click('#pulse-client [data-pulse-gender="all"]');
       await click('#pulse-client [data-pulse-tab="portfolio"]');check('three-works-with-no-draft',await run(`document.querySelectorAll('#pulse-client .pulse-work-card').length`)===3);

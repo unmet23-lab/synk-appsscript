@@ -2,7 +2,7 @@
 // with the website's pulse.models and pulse.works (SYNK-website site-v10/content/ko.mjs).
 // Image provenance and exact copy hashes: assets/pulse/sources.json.
 export const TEAMS = Object.freeze([
-  { id: 'OFALIN', ko: '오팔린', kind: '걸그룹 · 네 명', line: '네 파장, 네 사람 — 같은 빛에서 갈라진 네 색' },
+  { id: 'OPALIN', ko: '오팔린', kind: '걸그룹 · 네 명', line: '네 파장, 네 사람 — 같은 빛에서 갈라진 네 색' },
   { id: 'OUTBLUE', ko: '아웃블루', kind: '보이그룹 · 네 명', line: '쪽에서 나왔지만 넷 다 다른 파랑' },
 ]);
 
@@ -99,28 +99,28 @@ export const MODELS = Object.freeze([
     sourceUrl: 'https://synk.im/assets/pulse-models/pulse-model-m06-20261024.webp',
   },
   {
-    id: 'F08', name: '윤슬', kind: '가상 AI 모델', gender: '여', team: 'OFALIN',
+    id: 'F08', name: '윤슬', kind: '가상 AI 모델', gender: '여', team: 'OPALIN',
     summary: '20대 초반 · 164cm. 상큼하고 친근한 인상의 모델이에요.',
     tags: ['음료·카페', '앱·통신', '상큼한', '친근한'],
     image: '/assets/pulse/models/f08.webp',
     sourceUrl: 'https://synk.im/assets/pulse-models/pulse-model-f08-20261103.webp',
   },
   {
-    id: 'F09', name: '로하', kind: '가상 AI 모델', gender: '여', team: 'OFALIN',
+    id: 'F09', name: '로하', kind: '가상 AI 모델', gender: '여', team: 'OPALIN',
     summary: '20대 초반 · 169cm. 청순하고 세련된 인상의 모델이에요.',
     tags: ['뷰티·스킨케어', '패션', '청순한', '세련된'],
     image: '/assets/pulse/models/f09.webp',
     sourceUrl: 'https://synk.im/assets/pulse-models/pulse-model-f09-20261103.webp',
   },
   {
-    id: 'F10', name: '새봄', kind: '가상 AI 모델', gender: '여', team: 'OFALIN',
+    id: 'F10', name: '새봄', kind: '가상 AI 모델', gender: '여', team: 'OPALIN',
     summary: '20대 초반 · 160cm. 발랄하고 상큼한 인상의 모델이에요.',
     tags: ['음료·디저트', '앱·게임', '발랄한', '상큼한'],
     image: '/assets/pulse/models/f10.webp',
     sourceUrl: 'https://synk.im/assets/pulse-models/pulse-model-f10-20261103.webp',
   },
   {
-    id: 'F11', name: '해인', kind: '가상 AI 모델', gender: '여', team: 'OFALIN',
+    id: 'F11', name: '해인', kind: '가상 AI 모델', gender: '여', team: 'OPALIN',
     summary: '20대 초반 · 167cm. 상큼하고 청순한 인상의 모델이에요.',
     tags: ['음료·생수', '뷰티·스킨케어', '상큼한', '청순한'],
     image: '/assets/pulse/models/f11.webp',
