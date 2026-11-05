@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1a979-ec91-7df3-b44d-8c5f07f0d8a3"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 사용해, 바삭한 튀김옷과 촉촉한 등심 단면이 돋보이는 세로형 메뉴 사진을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"바삭한 튀김옷과 촉촉한 등심 단면을 살린 **2:3 세로형 메뉴 사진**입니다."}}
+{"type":"turn.completed","usage":{"input_tokens":98631,"cached_input_tokens":83328,"cache_write_input_tokens":0,"output_tokens":961,"reasoning_output_tokens":178}}

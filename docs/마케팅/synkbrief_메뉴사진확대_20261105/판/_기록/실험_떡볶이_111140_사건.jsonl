@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1a979-eced-7bb0-8058-16269c62b8c3"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬로, 치즈가 길게 늘어나는 순간을 담은 세로형 분식집 메뉴 사진을 만들게요.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"치즈가 쭉 늘어나는 순간을 담은 세로형 메뉴 사진입니다."}}
+{"type":"turn.completed","usage":{"input_tokens":169418,"cached_input_tokens":152192,"cache_write_input_tokens":0,"output_tokens":933,"reasoning_output_tokens":180}}

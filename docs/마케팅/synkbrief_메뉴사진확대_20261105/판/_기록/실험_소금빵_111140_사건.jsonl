@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1a979-ecd8-7901-9c92-1911e0bf6cc6"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬로, 갓 구운 소금빵의 바삭한 껍질과 촉촉한 단면이 돋보이는 세로 메뉴 사진을 만들게요.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"바삭한 황금빛 껍질과 촉촉한 단면이 돋보이는 세로 메뉴 사진으로 만들었어요."}}
+{"type":"turn.completed","usage":{"input_tokens":165399,"cached_input_tokens":152448,"cache_write_input_tokens":0,"output_tokens":1151,"reasoning_output_tokens":242}}

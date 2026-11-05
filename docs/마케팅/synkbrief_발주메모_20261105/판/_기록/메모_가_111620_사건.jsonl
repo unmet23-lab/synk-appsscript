@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1a97e-3080-70f1-8133-be00581291d8"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬을 사용해, 구겨진 메모지의 질감과 급하게 쓴 악필이 자연스럽게 보이는 세로 사진을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":126705,"cached_input_tokens":113792,"cache_write_input_tokens":0,"output_tokens":1206,"reasoning_output_tokens":263}}

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1a979-ecde-7831-ad12-9d42545c1550"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬로, 녹은 치즈가 흘러내리는 더블 치즈버거를 화면 가득 담은 세로 메뉴 사진을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":113482,"cached_input_tokens":100736,"cache_write_input_tokens":0,"output_tokens":788,"reasoning_output_tokens":103}}

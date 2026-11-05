@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1a9c5-383e-7552-a4f3-e20171963e99"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬로 참고 사진의 구도와 인물, 아침빛을 유지하면서 콩나물 소금빵과 두 사람의 표정·동작을 바꾸겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"완성했습니다."}}
+{"type":"turn.completed","usage":{"input_tokens":172012,"cached_input_tokens":154752,"cache_write_input_tokens":0,"output_tokens":1389,"reasoning_output_tokens":202}}

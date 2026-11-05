@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1a979-ed8f-7892-ad78-641e95446de1"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬로, 나무 도마 위 미니 버거 여섯 개가 먹음직스럽게 보이는 세로 메뉴 사진을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":78093,"cached_input_tokens":67072,"cache_write_input_tokens":0,"output_tokens":658,"reasoning_output_tokens":141}}

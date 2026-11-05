@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1a9e0-273d-7800-9d00-d75007a95162"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬로 참고 사진 속 제빵사의 얼굴과 의상을 유지하고, 요청하신 정면 클로즈업 장면을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"완성했습니다."}}
+{"type":"turn.completed","usage":{"input_tokens":168013,"cached_input_tokens":151936,"cache_write_input_tokens":0,"output_tokens":1308,"reasoning_output_tokens":236}}
