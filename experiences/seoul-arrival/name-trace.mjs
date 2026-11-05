@@ -38,7 +38,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
   // word: 학생증 한글 이름 · called: 긴 이름일 때 쓸 부르는 이름 · knows: 한글을 아는 학생(흐린 글씨 · 시범 없이 빈 칸에)
   run(word,{knows=false,called=null}={}){
    if(active)active.cancel();
-   return new Promise(resolve=>{active=session(word,{knows,called},res=>{active=null;resolve(res);});});
+   return new Promise(resolve=>{const me=session(word,{knows,called},res=>{if(active===me)active=null;resolve(res);});active=me;});
   },
   cancel(){active?.cancel();},
   get open(){return !!active;},
@@ -53,7 +53,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
   const {word,syl}=nameSyllables(fullWord,called);
   const HINT=L(knows?'이름 쓰기 안내 아는 학생':'이름 쓰기 안내',{w:word});
   const d=devicePixelRatio||1;
-  let W=0,lw=10,i=0,model=[],strokes=[],last=null,pid=null,ptype='',penT=-1e9,lastT=0,timer=0,acceptT=0,finished=false;
+  let W=0,lw=10,i=0,model=[],strokes=[],last=null,pid=null,ptype='',penT=-1e9,lastT=0,timer=0,acceptT=0,finished=false,switching=false,swT=0,swT2=0;
   let soLen=[],soDone=[],soCur=0,soFoc=-1,soRaf=0,demoRun=0,demoing=false,guideOn=!knows;
   const inks=[];   // 음절마다 다 쓴 잉크(칸 [0,1]²)
   box.classList.remove('done');box.classList.toggle('knows',knows);cv.setAttribute('aria-label',L('이름 쓰는 칸',{w:word}));
@@ -126,6 +126,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
   function demoStop(){if(!demoing)return;demoRun++;demoing=false;so.querySelectorAll('.so-run').forEach(p=>{p.getAnimations().forEach(a=>a.cancel());p.style.opacity=0;});soShow(false);}
 
   function openSyllable(auto){
+   switching=false;last=null;pid=null;
    model=syllableStrokes(syl[i].ch);strokes=[];soDone=model.map(()=>false);clearTimeout(timer);clearTimeout(acceptT);btnAccept.hidden=true;
    guideOn=!knows;fit();paintRow();
    if(auto&&!knows)setTimeout(()=>{if(!finished&&!strokes.length&&active===self)demo();},420);
@@ -137,23 +138,27 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
    drawGuide();soBuild();redraw();if(!demoing)soShow(true);
   }
   // 음절 끝: 잉크를 음절 줄 칸으로 옮겨 그리고 다음 음절로
+  // 「획순 보기」 시범 중이면 전환 안내 타이머가 시범 선을 지우지 않는다(화면 검수 C2)
   function nextSyllable(){
+   if(switching||finished)return;
+   switching=true;clearTimeout(timer);clearTimeout(acceptT);btnAccept.hidden=true;last=null;pid=null;
    inks[i]=strokes.map(s=>s.slice());
    const c=cell(i);if(c)c.innerHTML=inkSvg([inks[i]],{width:.09});
    SND.felt('ok');
    i++;
    if(i>=syl.length){finish(true);return;}
    if(!reduce){pad.animate([{opacity:1},{opacity:.0,offset:.45},{opacity:1}],{duration:520,easing:'ease-in-out'});}
-   setTimeout(()=>{if(!finished)openSyllable(false);hint.textContent=L('좋아요! 다음 글자');setTimeout(()=>{if(!finished&&!strokes.length)soShow(false);},900);},reduce?0:240);
+   swT=setTimeout(()=>{if(finished)return;openSyllable(false);hint.textContent=L('좋아요! 다음 글자');swT2=setTimeout(()=>{if(!finished&&!strokes.length&&!demoing)soShow(false);},900);},reduce?0:240);
   }
   const pos=e=>{const b=cv.getBoundingClientRect(),k=W/(b.width||W);return {x:(e.clientX-b.left)*k,y:(e.clientY-b.top)*k};};
   const down=e=>{
+   if(switching||finished)return;
    if(e.pointerType==='pen')penT=performance.now();else if(e.pointerType==='touch'&&performance.now()-penT<2500)return;
    if(last){if(e.pointerType==='pen'&&ptype!=='pen'){strokes.pop();redraw();last=null;pid=null;}else return;}
    e.preventDefault();clearTimeout(timer);if(demoing)demoStop();
    pid=e.pointerId;ptype=e.pointerType;last=pos(e);const cur=[[last.x/W,last.y/W]];strokes.push(cur);try{cv.setPointerCapture(e.pointerId);}catch{}
    x.beginPath();x.moveTo(last.x,last.y);x.lineTo(last.x+.1,last.y);x.stroke();};
-  const move=e=>{if(!last||e.pointerId!==pid)return;if(ptype==='pen')penT=performance.now();if(e.pointerType==='mouse'&&!e.buttons){up();return;}const p=pos(e),dist=Math.hypot(p.x-last.x,p.y-last.y);if(dist<1.5)return;
+  const move=e=>{if(!last||e.pointerId!==pid||!strokes.length)return;if(ptype==='pen')penT=performance.now();if(e.pointerType==='mouse'&&!e.buttons){up();return;}const p=pos(e),dist=Math.hypot(p.x-last.x,p.y-last.y);if(dist<1.5)return;
    x.beginPath();x.moveTo(last.x,last.y);x.lineTo(p.x,p.y);x.stroke();
    const cur=strokes[strokes.length-1];for(let k=1,n=Math.ceil(dist/3);k<=n;k++)cur.push([(last.x+(p.x-last.x)*k/n)/W,(last.y+(p.y-last.y)*k/n)/W]);
    last=p;const now=performance.now();if(now-lastT>45){SND.felt('pencil');lastT=now;}};
@@ -168,18 +173,20 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
    else hint.textContent=L('조금만 더 써 보세요');
    acceptT=setTimeout(()=>{if(!finished&&strokes.length)btnAccept.hidden=false;},2500);};
   const cancelPt=e=>{if(e.pointerId===pid){last=null;pid=null;}};
-  const clear=e=>{e?.stopPropagation();clearTimeout(timer);clearTimeout(acceptT);if(demoing)demoStop();strokes=[];last=null;pid=null;redraw();soDone=model.map(()=>false);btnAccept.hidden=true;soShow(false);SND.felt('page');};
-  const order=e=>{e.stopPropagation();clearTimeout(timer);demo();};
-  const accept=e=>{e.stopPropagation();if(!strokes.length)return;clearTimeout(timer);nextSyllable();};
+  const clear=e=>{e?.stopPropagation();if(switching)return;clearTimeout(timer);clearTimeout(acceptT);if(demoing)demoStop();strokes=[];last=null;pid=null;redraw();soDone=model.map(()=>false);btnAccept.hidden=true;soShow(false);SND.felt('page');};
+  const order=e=>{e.stopPropagation();if(switching)return;clearTimeout(timer);clearTimeout(swT2);demo();};
+  const accept=e=>{e.stopPropagation();if(!strokes.length||switching)return;nextSyllable();};
   const skip=e=>{e.stopPropagation();finish(false);};
-  function cleanup(){cancelAnimationFrame(soRaf);demoRun++;clearTimeout(timer);clearTimeout(acceptT);
+  function cleanup(){cancelAnimationFrame(soRaf);demoRun++;clearTimeout(timer);clearTimeout(acceptT);clearTimeout(swT);clearTimeout(swT2);
    cv.removeEventListener('pointerdown',down);cv.removeEventListener('pointermove',move);removeEventListener('pointerup',up);cv.removeEventListener('pointercancel',cancelPt);removeEventListener('resize',onResize);
    btnOrder.removeEventListener('click',order);btnClear.removeEventListener('click',clear);btnAccept.removeEventListener('click',accept);btnSkip.removeEventListener('click',skip);}
   function finish(ok,quiet){
    if(finished)return;finished=true;cleanup();paintRow();
    let sign=null;
    if(ok){const s=encodeSign(inks);if(s)sign={w:word,s};box.classList.add('done');hint.textContent=L('잘 썼어요!');}
-   setTimeout(()=>{box.classList.remove('on');setTimeout(()=>{strokes=[];x.clearRect(0,0,W,W);box.classList.remove('done','knows');so.innerHTML='';guide.innerHTML='';row.innerHTML='';hint.textContent='';},500);done({sign,skipped:!ok&&!quiet,cancelled:!!quiet});},quiet?0:ok?1100:200);
+   // 칸 · 줄 DOM은 세션끼리 같이 쓴다 — 닫는 사이에 새 세션이 열렸으면(다시 열기) 옛 세션의 늦은 정리는 손대지 않는다(화면 검수 A5)
+   const mine=()=>!active||active===self;
+   setTimeout(()=>{if(mine())box.classList.remove('on');setTimeout(()=>{if(!mine())return;strokes=[];x.clearRect(0,0,W,W);box.classList.remove('done','knows');so.innerHTML='';guide.innerHTML='';row.innerHTML='';hint.textContent='';},500);done({sign,skipped:!ok&&!quiet,cancelled:!!quiet});},quiet?0:ok?1100:200);
   }
   const onResize=()=>{if(!finished&&!last){fit();}};
   cv.addEventListener('pointerdown',down);cv.addEventListener('pointermove',move);addEventListener('pointerup',up);cv.addEventListener('pointercancel',cancelPt);addEventListener('resize',onResize);

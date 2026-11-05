@@ -353,7 +353,9 @@ p{text-wrap:pretty}
 .sheetpad .ko-note{margin-top:6px;font-size:13px;font-weight:500;color:rgba(20,24,38,.62)}
 .sheetpad .ko-row{display:flex;gap:8px;margin-top:12px}
 .sheetpad .ko-row .ok{flex:1}
-.sheetpad .ko-other{flex:1;height:48px;border-radius:24px;font-size:15px;font-weight:650;color:#141826;background:rgba(20,24,38,.07);box-shadow:inset 0 0 0 1px rgba(20,24,38,.16)}
+.sheetpad .ko-other{flex:1;min-width:0;min-height:48px;padding:8px 14px;border-radius:24px;font-size:15px;font-weight:650;line-height:1.2;color:#141826;background:rgba(20,24,38,.07);box-shadow:inset 0 0 0 1px rgba(20,24,38,.16);text-wrap:balance}
+/* 영어 · 몽골어 단추 글이 반쪽 폭에 다 들어가게(화면 검수 D1): 두 단추 모두 높이를 고정하지 않고 글이 길면 두 줄로 */
+.sheetpad .ko-row .ok{min-width:0;height:auto;min-height:48px;padding:8px 14px;line-height:1.2}
 .sheetpad .later{display:block;min-height:44px;padding:0 16px;margin:4px auto 0;font-size:14px;font-weight:600;color:rgba(20,24,38,.68)}
 /* 배운 말 카드 · 한국어 메모 */
 .learn{padding:16px 18px;border-radius:16px;background:rgba(8,9,12,.8);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--dream) 50%,transparent),0 0 24px color-mix(in srgb,var(--dream) 12%,transparent)}

@@ -124,27 +124,37 @@ export const NAME_DICT={
  minh:'민',linh:'린',
 };
 
+// 베트남 이름인지: 성조 글자가 있거나, 성조 없이 적었어도 낱말이 모두 베트남 음절표에 있거나(Nguyen Thi Minh Anh),
+// 한글로 친 여러 낱말 이름의 첫 낱말이 흔한 베트남 성씨일 때(응우옌 호앙 민). 성이 앞이라 부르는 이름은 마지막 낱말이다(화면 검수 A1)
+const VN_SURNAME_KO=new Set(['응우옌','쩐','레','팜','호앙','후인','판','부','보','당','부이','도','호','응오','즈엉','딘','쯔엉','르엉','브엉']);
+export function isVNName(raw){
+ const s=String(raw||'').normalize('NFC').trim(),ws=s.split(/\s+/).filter(Boolean);
+ if(isVN(s))return true;
+ if(ws.length>=2&&ws.every(x=>/^[a-z]+$/i.test(x)&&VN[strip(x)]))return true;
+ return ws.length>=2&&/^[가-힣]+$/.test(ws[0])&&VN_SURNAME_KO.has(ws[0]);
+}
 export function hangulName(raw){
- const s=String(raw||'').trim().replace(/\s+/g,' ');if(!s)return null;
+ // 결합 문자로 친 성조(베트남어 자판) · 자모로 갈라 붙여 넣은 한글도 받게 먼저 NFC로 모은다(화면 검수 A3)
+ const s=String(raw||'').normalize('NFC').trim().replace(/\s+/g,' ');if(!s)return null;
  if(/^[가-힣]+( [가-힣]+)*$/.test(s))return {ko:s,via:'hangul'};
  const key=s.toLowerCase();
  if(NAME_DICT[key])return {ko:NAME_DICT[key],via:'dict'};
- const words=s.split(/[ ]+/),vn=isVN(s);
+ const words=s.split(/[ ]+/),vn=isVNName(s);
  const one=w=>{const k=w.toLowerCase();if(NAME_DICT[k])return NAME_DICT[k];
-  // 하이픈 이름은 조각마다 바꿔 붙인다(Bat-Erdene → 바트에르덴)
-  if(w.includes('-'))return w.split('-').filter(Boolean).map(one).join('');
-  if(vn||(/^[a-z]+$/i.test(w)&&VN[strip(w)]&&words.length>=2&&words.every(x=>VN[strip(x)])))return VN[strip(w)]||build(lat(w));
-  if(/^[\u0400-\u04ff]+$/.test(w))return build(cyr(w));
-  if(/^[a-z\u00c0-\u024f'’`ʻʼ]+$/i.test(w))return build(lat(w));
+  // 하이픈 이름은 조각마다 바꿔 붙인다(Bat-Erdene → 바트에르덴). 바꿀 수 없는 조각이 하나라도 있으면 후보를 내지 않는다(화면 검수 A4)
+  if(w.includes('-')){const ps=w.split('-').filter(Boolean).map(one);return ps.length&&ps.every(Boolean)?ps.join(''):null;}
+  if(vn&&/^[a-zÀ-ɏḀ-ỿ]+$/i.test(w))return VN[strip(w)]||build(lat(w));
+  if(/^[Ѐ-ӿ]+$/.test(w))return build(cyr(w));
+  if(/^[a-zÀ-ɏ'’`ʻʼ]+$/i.test(w))return build(lat(w));
   return null;};
  const parts=words.map(one);if(parts.some(p=>!p))return null;
  let ko=parts.join(' ');
- // 길면 부르는 이름 하나만: 베트남 · 병음 꼴(성이 앞)은 마지막 낱말, 그 밖(몽골 · 우즈베크 · 영어권)은 첫 낱말(설계 검토 F3-1)
+ // 길면 부르는 이름 하나만: 베트남(성이 앞)은 마지막 낱말, 그 밖(몽골 · 우즈베크 · 영어권)은 첫 낱말(설계 검토 F3-1)
  if(ko.length>10)ko=vn?parts[parts.length-1]:parts[0];
  if(!ko||ko.length>10)return null;
  return {ko,via:'rule'};
 }
+// 긴 이름에서 손으로 쓸 부르는 이름: 베트남어(성이 앞)는 마지막 낱말, 그 밖은 첫 낱말. 한 낱말이면 없음(전부 쓴다)
+export function calledName(ko,raw){const w=String(ko||'').split(' ').filter(Boolean);if(w.length<2)return null;return isVNName(raw)||isVNName(ko)?w[w.length-1]:w[0];}
 // 시험용: 사전을 거치지 않은 규칙 결과
 export const _rule={cyr:w=>build(cyr(w)),lat:w=>build(lat(w))};
-// 긴 이름에서 손으로 쓸 부르는 이름: 베트남어(성이 앞)는 마지막 낱말, 그 밖은 첫 낱말. 한 낱말이면 없음(전부 쓴다)
-export function calledName(ko,raw){const w=String(ko||'').split(' ').filter(Boolean);if(w.length<2)return null;return isVN(raw||'')?w[w.length-1]:w[0];}

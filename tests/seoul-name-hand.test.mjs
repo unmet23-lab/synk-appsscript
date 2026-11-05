@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {syllableStrokes,decompose,strokeCount} from '../experiences/seoul-arrival/hangul-strokes.mjs';
 import {score,which,samples,encodeSign,decodeSign} from '../experiences/seoul-arrival/name-hand.mjs';
-import {hangulName,calledName,_rule,NAME_DICT} from '../experiences/seoul-arrival/name-hangul.mjs';
+import {hangulName,calledName,isVNName,_rule,NAME_DICT} from '../experiences/seoul-arrival/name-hangul.mjs';
 import {nameSyllables} from '../experiences/seoul-arrival/name-trace.mjs';
 import {readArrival} from '../experiences/synk-world-app/seoul-record.mjs';
 import {L,sub,TEXT_TABLES} from '../experiences/seoul-arrival/strings.mjs';
@@ -127,4 +127,15 @@ test('이름 손글씨 글: 영어 · 몽골어가 다 있다(변수 열쇠 · �
  for(const lang of ['en','mn'])for(const k of keys){assert.ok(k in TEXT_TABLES.UI[lang],lang+' '+k);assert.ok(!L(k,{j:'ㅂ',w:'볼로르'},lang).includes('{'),lang+' '+k);}
  for(const k of keys)assert.ok(k in TEXT_TABLES.KO,'ko '+k);
  for(const lang of ['en','mn'])for(const line of ['Bolor… 한글로는 이렇게 쓰면 돼요.','이름이 길어서, 오늘은 아인만 써 봐요.'])assert.ok(sub(line,lang),lang+' '+line);
+});
+
+test('화면 검수 A1 · A3 · A4: 성조 없는 베트남 이름 · 결합 문자 · 하이픈 조각', () => {
+ assert.equal(isVNName('Nguyen Thi Minh Anh'),true);assert.equal(isVNName('Nguyễn Văn An'),true);assert.equal(isVNName('응우옌 호앙 민'),true);
+ assert.equal(isVNName('Anna Kim'),false);assert.equal(isVNName('Bolor'),false);assert.equal(isVNName('안나 킴'),false);
+ assert.equal(calledName('응우옌 호앙 민','Nguyen Hoang Minh'),'민');assert.equal(calledName('응우옌 호앙 민','응우옌 호앙 민'),'민');
+ assert.equal(calledName('응우옌 티 민 아인','Nguyen Thi Minh Anh'),'아인');
+ assert.equal(hangulName('Thảo').ko,'타오','결합 문자 성조');
+ assert.equal(hangulName('볼로르').ko,'볼로르','자모로 갈라 붙인 한글');
+ for(const raw of ['Bat-龍','Minh-2','-'])assert.equal(hangulName(raw),null,raw);
+ assert.equal(hangulName('Bat-Erdene').ko,'바트에르덴');
 });

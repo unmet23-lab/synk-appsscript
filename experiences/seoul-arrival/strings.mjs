@@ -53,7 +53,7 @@ const UI={
   '그날 밤, 꿈이 하나 생겼어요.':'That night, I found a dream.','꿈은 언제든 바꿀 수 있어요.':'You can change your dream anytime.','어떤 꿈이었나요?':'What was it?','어떤 꿈으로 갈까요?':'Which dream will it be?','닫기':'Close','아이돌 — 무대에 서는 날까지':'Idol — until the day on stage','무대에 서는 날까지':'Until the day on stage','배우 — 주연으로 서는 날까지':'Actor — until the day I play the lead','주연으로 서는 날까지':'Until the day I play the lead','꿈은 나중에 바꿔도 돼요. 한국 생활 이야기는 그대로 이어져요.':'You can change your dream later. Your life in Korea carries on.','새솔대 정문 신입생 맞이 부스':'New student welcome booth at the Saesol main gate',
   'WORLD에서 열어 주세요':'Please open this in WORLD','WORLD 열기':'Open WORLD',
   '좋아요! 다음 글자':'Nice! Next letter','칸 안에 또박또박 써 보세요':'Write it clearly inside the box','조금만 더 써 보세요':'Write a little more','이대로 쓸게요':'Keep it like this',
-  '소리 나는 대로 적었어요':'Written the way it sounds','좋아요':'Sounds good','다르게 쓸래요':'I’ll write it differently','한글 이름은 나중에':'Hangul name later',
+  '소리 나는 대로 적었어요':'Written the way it sounds','좋아요':'Sounds good','다르게 쓸래요':'Write it my way','한글 이름은 나중에':'Hangul name later',
   '이름 쓰기 안내':'‘{w}’ — write it in stroke order','이름 쓰기 안내 아는 학생':'‘{w}’ — write it in your own hand','이름 쓰는 칸':'Space to write ‘{w}’',
   '획 안내 가로':'{j} — left to right','획 안내 세로':'{j} — top to bottom','획 안내 ㄱ꼴':'{j} — across, then turn down','획 안내 ㄴ꼴':'{j} — down, then turn right',
   '획 안내 왼삐침':'{j} — from the top, down to the left','획 안내 오른내림':'{j} — down to the right','획 안내 동그라미':'{j} — start at the top and go round','획 안내 ㅈ꼴':'{j} — across, then down to the left','획 안내 꼭지':'{j} — a short stroke down at the top',

@@ -175,7 +175,19 @@ if(FULL){
  for(let k=0;k<3;k++){
   await until('음절 '+(k+1),()=>inF(i=>window.__seoulQA.nameTrace.state()?.i===i,k),6000);await sleep(k?900:2600);
   const strokes=await inF(()=>window.__seoulQA.nameTrace.paths());
-  for(const s of strokes){await page.mouse.move(s[0][0]+offN.x,s[0][1]+offN.y);await page.mouse.down();for(let i=1;i<s.length;i++)await page.mouse.move(s[i][0]+offN.x,s[i][1]+offN.y,{steps:s.length>4?2:10});await page.mouse.up();await sleep(160);}
+  const draw=async list=>{for(const s of list){await page.mouse.move(s[0][0]+offN.x,s[0][1]+offN.y);await page.mouse.down();for(let i=1;i<s.length;i++)await page.mouse.move(s[i][0]+offN.x,s[i][1]+offN.y,{steps:s.length>4?2:10});await page.mouse.up();await sleep(160);}};
+  if(k===1){
+   // 둘째 음절은 한 획만 쓰고 「이대로 쓸게요」를 두 번 빨리 누른다 → 한 음절만 넘어가야 하고, 넘어가는 사이 펜을 대도 오류가 없어야 한다(화면 검수 A2)
+   await draw(strokes.slice(0,1));
+   check(await until('이대로 쓸게요',()=>inF(()=>window.__seoulQA.nameTrace.state()?.accept),5000),'못 넘기면 「이대로 쓸게요」가 나옴');
+   await F().evaluate(()=>{const b=document.querySelector('#ntAccept');b.click();b.click();});
+   const p0=strokes[0][0];await page.mouse.move(p0[0]+offN.x,p0[1]+offN.y);await page.mouse.down();await page.mouse.move(p0[0]+offN.x+30,p0[1]+offN.y+30,{steps:4});await page.mouse.up();
+   await sleep(500);
+   check(await inF(()=>window.__seoulQA.nameTrace.state()?.i)===2,'두 번 눌러도 한 음절만 넘어감',String(await inF(()=>window.__seoulQA.nameTrace.state()?.i)));
+   await inF(()=>document.querySelector('#ntClear').click());await sleep(300);
+   continue;
+  }
+  await draw(strokes);
   if(k===0){await sleep(200);await shot('06c-첫음절씀');}
  }
  await until('이름 쓰기 끝',()=>inF(()=>!document.querySelector('#nameTrace').classList.contains('on')),8000);check(true,'모형대로 쓰면 이름 쓰기가 끝남');
@@ -209,7 +221,7 @@ await sleep(600);await shot('13-학생증');
 const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('synk.world.arrival.v1:guest')||'null'));
 check(saved?.stage==='card'&&saved?.name==='볼로르'&&saved?.from==='몽골'&&saved?.call==='선배'&&!!saved?.look,'손님 기록: 학생증 칸',JSON.stringify(saved));
 {const sg=await inF(()=>({hidden:document.querySelector('#idSign').hidden,lines:document.querySelectorAll('#idSign polyline').length}));
- check(FULL?(!sg.hidden&&sg.lines>=15):(sg.hidden&&!saved?.sign),FULL?'학생증에 내 이름 글씨':'넘어가면 학생증에 글씨 없음',JSON.stringify(sg));}
+ check(FULL?(!sg.hidden&&sg.lines>=12):(sg.hidden&&!saved?.sign),FULL?'학생증에 내 이름 글씨':'넘어가면 학생증에 글씨 없음',JSON.stringify(sg));}
 await F().click('#toPath');
 await until('내 길',()=>inF(()=>document.querySelector('#s-path').classList.contains('on')));
 await sleep(3000);await shot('14-내길');await overflow('내 길');
@@ -318,7 +330,7 @@ await sleep(800);await shot('26-내길다시');
 await F().click('#meBadge');
 await until('학생증 다시 보기',()=>inF(()=>document.querySelector('#s-card').classList.contains('view')),4000);
 await sleep(600);await shot('27-학생증다시');
-if(FULL||FROM==='road')check(await inF(n=>document.querySelectorAll('#idSign polyline').length>=n,FROM==='road'?SEED_LINES:15),'다시 열어도 학생증에 이름 글씨');
+if(FULL||FROM==='road')check(await inF(n=>document.querySelectorAll('#idSign polyline').length>=n,FROM==='road'?SEED_LINES:12),'다시 열어도 학생증에 이름 글씨');
 {const o=await inF(()=>{const a=document.querySelector('#idSign svg g')?.getBoundingClientRect(),hit=[...document.querySelectorAll('#idcard .id-info > *, #idcard .id-foot > *, #idcard .id-school')].filter(e=>{const b=e.getBoundingClientRect();if(!a)return false;const rs=e.matches('.id-bar,.id-dream')?[b]:(()=>{const out=[],w=document.createTreeWalker(e,NodeFilter.SHOW_TEXT);for(let n=w.nextNode();n;n=w.nextNode()){if(!n.textContent.trim())continue;const r=document.createRange();r.selectNodeContents(n);out.push(...[...r.getClientRects()].filter(x=>x.width>1&&x.height>1));}return out;})();return rs.some(t=>!(t.right<a.left+1||t.left>a.right-1||t.bottom<a.top+1||t.top>a.bottom-1));}).map(e=>e.className||e.id||e.tagName);return hit;});
  if(FULL||FROM==='road')check(!o.length,'학생증 글씨가 인쇄된 글과 겹치지 않음',o.join(','));}
 await F().click('#reLook');
