@@ -117,17 +117,12 @@ test('시범판 끝 읽기: 실제 글(한 · 영 · 몽)에서 말한 줄을 �
 
 test('시범판 꼬리표 · 표시가 그대로다(바뀌면 끝 읽기를 함께 고친다)', () => {
  const pilot=read('experiences/drama/pilot/pilot.mjs');
- for(const tag of Object.values(STEP_TAGS))assert.ok(pilot.includes(`'${tag}'`),tag);
+ for(const tag of Object.values(STEP_TAGS))assert.ok(pilot.includes(`'${tag}'`),`시범판에 없는 꼬리표: ${tag}`);
  assert.match(read('experiences/drama/pilot/index.html'),/id="epTag"/);
  assert.match(pilot,/h\('ul', \{ class: 'log' \}/);
  assert.match(pilot,/h\('div', \{ class: 'wrap' \}/);
  assert.match(pilot,/class: `tick \$\{on \? 'on' : ''\}`/);
  assert.match(pilot,/class: 'intro'/);
-});
-
-test('단계 꼬리표가 시범판의 실제 글과 같다(시범판 글을 바꾸면 여기서 걸린다)', () => {
- const pilot=read('experiences/drama/pilot/pilot.mjs');
- for(const tag of Object.values(STEP_TAGS))assert.ok(pilot.includes(`'${tag}'`),`시범판에 없는 꼬리표: ${tag}`);
 });
 
 test('단계 꼬리표 차례 → 장면 끝 기록', () => {
