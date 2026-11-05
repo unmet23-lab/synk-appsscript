@@ -19,11 +19,15 @@ if (값.includes('--보기')) {
   for (const s of ['SYNK account and learning records', 'What we do not', 'What SYNK does not', 'do not guess', 'Only if you choose', 'If you choose']) 찾기(s);
   process.exit(0);
 }
-// 첫 이야기 줄은 11-05에 공개됐다(공개본 102d816a) — 지금은 그 안의 말만 고친다. 줄을 새로 얹는 판은 이 파일의 git 기록에 있다.
-// 11-06 결정 「테이크 2 → 한 번 더」: 화면에서 쓰지 않는 말이 처리방침에 남지 않게.
+// 첫 이야기 줄은 11-05에 공개됐다(공개본 102d816a), 11-06 「테이크 2 → 한 번 더」 말 맞춤도 공개됐다(5c97a26). 그 판들은 이 파일의 git 기록에 있다.
+// 11-06 부스 이름 손글씨(experiences/seoul-arrival/이름손글씨.md 6절): 손으로 쓴 이름 글씨를 학생증에 남긴다 — 획의 점 좌표만이고 시각 · 속도 · 필압은 남기지 않는다.
 const 자리 = [
-  ['테이크 2 · 새 상황까지 했는지', '「한 번 더」 · 새 상황까지 했는지'],
-  ['whether you did take 2 and the new situation', 'whether you did “one more time” and the new situation'],
+  ['직접 적거나 고른 이름과 나라(칸마다 「나중에 말할래요」를 고르면 그 칸은 받지 않습니다), ',
+   '직접 적거나 고른 이름과 나라(칸마다 「나중에 말할래요」를 고르면 그 칸은 받지 않습니다), 손으로 따라 쓴 이름 글씨(획의 점 좌표만 남기고 쓴 시각 · 속도 · 필압은 남기지 않습니다. 「넘어가기」를 고르면 받지 않습니다), '],
+  ['the name and country you enter (choose “I’ll tell you later” for either and we don’t collect that one), ',
+   'the name and country you enter (choose “I’ll tell you later” for either and we don’t collect that one), the name you trace by hand (only the points of each stroke — not when, how fast or how hard you wrote; choose “Skip” and we don’t collect it), '],
+  ['첫 이야기 기록 추가: 2026년 11월 5일', `첫 이야기 기록 추가: 2026년 11월 5일 · 손으로 쓴 이름 글씨 추가: ${y}년 ${m}월 ${d}일`],
+  ['First-story records added 5 November 2026.', `First-story records added 5 November 2026. Handwritten name added ${d} ${영월} ${y}.`],
 ];
 let html = live;
 for (const [from, to] of 자리) {

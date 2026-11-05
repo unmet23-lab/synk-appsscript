@@ -135,7 +135,7 @@ test('단계 꼬리표 차례 → 장면 끝 기록', () => {
 });
 
 test('화면 글: 쓰는 글이 모두 영어 · 몽골어 표에 있다', () => {
- const app=read('experiences/seoul-arrival/app.mjs'),html=read('experiences/seoul-arrival/index.html');
+ const app=['app.mjs','name-trace.mjs'].map(f=>read('experiences/seoul-arrival/'+f)).join(String.fromCharCode(10)),html=read('experiences/seoul-arrival/index.html');
  const code=app.replace(/\/\*[\s\S]*?\*\//g,'').split('\n').filter(l=>!/^\s*\/\//.test(l)).join('\n');
  const keys=new Set();
  for(const m of code.matchAll(/\bL\('((?:[^'\\]|\\.)+)'/g))keys.add(m[1]);
@@ -165,7 +165,7 @@ test('이야기 줄: 해설 · 대사마다 번역이 있고 이름 든 줄도 �
 
 test('공개 파일에 도구 · 검수자 이름이 없다', () => {
  const dir=path.join(ROOT,'experiences/seoul-arrival');
- const texts=['app.mjs','data.mjs','strings.mjs','style.css','index.html'].map(f=>[f,fs.readFileSync(path.join(dir,f),'utf8')]);
+ const texts=['app.mjs','data.mjs','strings.mjs','style.css','index.html','hangul-strokes.mjs','name-hand.mjs','name-hangul.mjs','name-trace.mjs'].map(f=>[f,fs.readFileSync(path.join(dir,f),'utf8')]);
  texts.push(['seoul-entry.mjs',entrySource],['seoul-watch.mjs',read('experiences/synk-world-app/seoul-watch.mjs')]);
  const NAMES=/suno|higgsfield|힉스필드|nano banana|나노바나나|midjourney|gpt[- ]?image|gpt[- ]?이미지|elevenlabs|일레븐|typecast|타입캐스트|mmaudio|seedance|시댄스|kling|gemini|아르곤|fable|페이블|\bsam\b/i;
  for(const [name,text] of texts)assert.equal(NAMES.exec(text)?.[0],undefined,name);

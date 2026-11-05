@@ -3,6 +3,8 @@
 // 움직임 · 소리 값은 시안에서 재서 정한 값이라 함부로 바꾸지 않는다.
 import {THEATER,ARENA,LOOK_FACES as LOOK_FACES_DATA} from './data.mjs';
 import {LANG,L,sub,setLang} from './strings.mjs';
+import {hangulName,calledName} from './name-hangul.mjs';
+import {createNameTrace,nameSyllables,signSvg} from './name-trace.mjs';
 const HOST=(()=>{try{if(window.parent!==window&&window.parent.location.origin===location.origin)return window.parent.SYNKSeoulHost||null;}catch{}return null;})();
 const A=name=>new URL(`./assets/img/${name}.webp`,import.meta.url).href;
 const CONCERT=new URL('../brand-opening/assets/world-title-concert-port-v1.webp',import.meta.url).href;
@@ -194,7 +196,7 @@ async function narrate(r,text,{hold=null,marks=[]}={}){
   state.seenHint=true;$('#tapHint').classList.remove('on');
   n.classList.add('out');$('#narrSub').classList.add('out');await sleep(380);guard(r);
 }
-const state={dream:'idol',lights:0,best:{},scenes:[],replayOf:null,prologue:false,seenHint:false,name:null,nameEn:null,from:null,call:null,look:null,dreamPicked:false,momSeen:false,momAnswer:null};
+const state={dream:'idol',lights:0,best:{},scenes:[],replayOf:null,prologue:false,seenHint:false,name:null,nameEn:null,sign:null,from:null,call:null,look:null,dreamPicked:false,momSeen:false,momAnswer:null};
 function show(id){if(id==='s-path')ambient(IMG[state.dream+'Goal']);else if(id==='s-gate')ambient(IMG.booth);document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));$('#skipBtn').hidden=!(id==='s-cut'&&!state.prologue);}
 
 /* 0 → 1: 입구를 누르면 콘서트가 터지고, 그 화면이 내 방 휴대폰 속이었음이 드러난다 */
@@ -697,7 +699,6 @@ document.querySelectorAll('.dream').forEach(b=>b.addEventListener('click',()=>{s
 /* ══ 정문: 국제학부 신입생 맞이 부스의 선배 둘이 이야기 안에서 이름 · 나라 · 부르는 말을 묻는다 ══
  * 동아리가 학생증을 만들지는 않으니, 명단 · 학생증을 다루는 「신입생 맞이 도우미」로 둔다. */
 const WHO={officer:{n:'입국심사관',r:''},seoha:{n:'서하',r:'국제학부 2학년 · 신입생 도우미',ft:'translate(5%,2%) scale(1.07)'},jiho:{n:'지호',r:'국제학부 3학년 · 학생회',ft:'translate(-5%,3%) scale(1.07)'}};
-const NAMES={bolor:'볼로르','болор':'볼로르',minh:'민',aziz:'아지즈',anna:'안나',bat:'바트','bat-erdene':'바트에르덴',linh:'린'};
 const COUNTRY=['몽골','베트남','우즈베키스탄','중국','일본','미국'];
 const HELLO={'몽골':'와, 몽골! 여기 봄은 몽골보다 따뜻하죠?','베트남':'베트남! 따뜻한 나라에서 왔네요. 여기 아침은 좀 춥죠?','우즈베키스탄':'우즈베키스탄! 멀리서 왔네요. 비행기 오래 탔죠?','중국':'와, 중국! 가까워서 금방 왔죠?','일본':'와, 일본! 한국은 처음이에요?','미국':'미국! 정말 멀리서 왔네요. 시차 괜찮아요?'};
 const hasBatchim=w=>{const c=w.charCodeAt(w.length-1)-0xAC00;return c>=0&&c<11172&&c%28!==0;};
@@ -740,8 +741,27 @@ function pad({title,label,ph,later=true}){return new Promise(res=>{
   const done=v=>{SND.felt('select');closePanel();res(v);};
   p.querySelector('form').onsubmit=e=>{e.preventDefault();const v=p.querySelector('input').value.trim();if(v)done(v);};
   const l=p.querySelector('[data-later]');if(l)l.onclick=e=>{e.stopPropagation();done(null);};});}
+/* ══ 부스 · 한글 이름 후보와 이름 손글씨(설계 이름손글씨.md) ══ */
+const nameTrace=createNameTrace({$,L,SND,reduce,sleep});
+// 후보 판: 지호가 명단에 소리 나는 대로 적어 준 이름 — 「좋아요」 · 「다르게 쓸래요」(한글 타자) · 「한글 이름은 나중에」
+function offerName(ko){
+  const p=panel(`<div class="sheetpad"><span class="lab">${L('새솔대 국제학부 · 신입생 맞이')}</span><h3>${L('신입생 명단')}</h3><label>${L('한글 이름')}</label><p class="ko-cand">${esc(ko)}</p><p class="ko-note">${L('소리 나는 대로 적었어요')}</p><div class="ko-row"><button type="button" class="ok" data-a="ok">${L('좋아요')}</button><button type="button" class="ko-other" data-a="other">${L('다르게 쓸래요')}</button></div><button type="button" class="later" data-a="later">${L('한글 이름은 나중에')}</button></div>`);
+  return pick(p,'[data-a]',b=>b.dataset.a);
+}
+// 이름 손글씨: 쓰는 동안 말풍선을 내리고(390 폭에서 칸과 겹치지 않게), 다 쓰면 학생증 글씨로 남긴다. 넘어가면 서명 없이 지금 학생증 그대로
+async function writeName(r,ko,knows,raw){
+  const called=calledName(ko,raw),{word,syl}=nameSyllables(ko,called);
+  if(!syl.length)return;
+  await say(r,'seoha','학생증에 들어갈 이름, 한글로 직접 써 볼래요?');
+  if(word!==ko)await say(r,'seoha',`이름이 길어서, 오늘은 ${word}만 써 봐요.`);
+  await say(r,'seoha',knows?'여기 칸에 써 주면 돼요.':'제가 흐리게 써 둘게요. 위에 따라 써 봐요.');
+  $('#vn').classList.remove('on');$('#s-gate').classList.remove('focus');$('#s-gate').classList.add('writing');
+  const res=await nameTrace.run(ko,{knows,called}).finally(()=>$('#s-gate').classList.remove('writing'));guard(r);
+  if(res.sign){state.sign=res.sign;save({sign:res.sign});await say(r,'seoha',knows?'글씨 예쁘다! 학생증에 이대로 넣을게요.':'와, 처음 쓴 거 맞아요? 학생증에 이대로 넣을게요.');}
+  else await say(r,'seoha','괜찮아요. 쓰는 건 다음에 같이 해 봐요.');
+}
 async function gate(r){
-  state.prologue=true;$('#skipBtn').hidden=true;traceGa.cancel?.();warm(WARM.road(state.dream));fillLazy();
+  state.prologue=true;$('#skipBtn').hidden=true;traceGa.cancel?.();nameTrace.cancel();warm(WARM.road(state.dream));fillLazy();
   // 정문 그림 위에서 옆쪽 누군가가 부른다 → 고개를 돌리면 부스
   const g=$('#s-gate'),bg0=$('#gateBg'),gst=$('#gstage');
   g.classList.remove('focus','ask');$('#vn').className='vn';$('#vnText').textContent='';
@@ -766,16 +786,25 @@ async function gate(r){
   await say(r,'seoha','반가워요! 저는 국제학부 2학년 서하예요. 오늘 신입생 도우미예요.');
   await say(r,'jiho','안녕하세요, 학생회 지호예요.');
   await say(r,'jiho','여기 신입생 명단에 이름 좀 적어 줄래요?');
-  state.name=null;state.nameEn=null;state.from=null;state.call=null;
+  state.name=null;state.nameEn=null;state.sign=null;state.from=null;state.call=null;
   const raw=await pad({title:'신입생 명단',label:'이름 (영어나 내 나라 글자로)',ph:'예: Bolor'});guard(r);
   if(raw){
-    let ko=NAMES[raw.toLowerCase()]||(okHangulName(raw)?raw:null);
     await me(r,raw);
-    if(!ko){await say(r,'jiho',`${raw}… 한글로는 어떻게 써요?`);const v=await pad({title:'신입생 명단',label:'한글 이름',ph:'한글로 써 보기',later:'아직 모르겠어요'});guard(r);if(v&&okHangulName(v)){ko=v;await me(r,v);}}
-    state.name=ko||raw;state.nameEn=raw;save({name:state.name,nameEn:raw});
+    // 한글 이름(설계 이름손글씨.md 3절): 한글로 적었으면 그대로(아는 학생), 아니면 후보(사전 · 규칙)를 보여 고르게, 후보가 없으면 지금처럼 묻는다
+    const hn=hangulName(raw);let ko=null,knows=false;
+    const askKo=async()=>{const v=await pad({title:'신입생 명단',label:'한글 이름',ph:'한글로 써 보기',later:'아직 모르겠어요'});guard(r);if(v&&okHangulName(v)){await me(r,v);return v;}return null;};
+    if(hn?.via==='hangul'&&okHangulName(hn.ko)){ko=hn.ko;knows=true;}
+    else if(hn&&okHangulName(hn.ko)){
+      await say(r,'jiho',`${raw}… 한글로는 이렇게 쓰면 돼요.`);
+      const a=await offerName(hn.ko);guard(r);
+      if(a==='ok')ko=hn.ko;
+      else if(a==='other'){const v=await askKo();if(v){ko=v;knows=true;}else ko=hn.ko;}   // 「아직 모르겠어요」면 후보로 돌아간다(설계 검토 F1-4)
+    }else{await say(r,'jiho',`${raw}… 한글로는 어떻게 써요?`);const v=await askKo();if(v){ko=v;knows=true;}}
+    state.name=ko||raw;state.nameEn=raw;save({name:state.name,nameEn:raw,sign:null});
     if(!ko){await say(r,'seoha',`${raw} 씨! 반가워요. 한글로 쓰는 건 다음에 같이 해 봐요.`);}
     else{
       await say(r,'seoha',`${ko} 씨! 반가워요.`);
+      await writeName(r,ko,knows,raw);
       const b=hasBatchim(ko);
       const p=panel(`<div class="learn"><span class="mono">${L('이렇게 말해 봐요')}</span><b>제 이름은 ${esc(ko)}<em>${b?'이에요':'예요'}</em>.</b><p>${esc(L(b?'받침있음':'받침없음',{ch:ko.slice(-1)}))}<br>${L('소리 내어 말해 보세요.')}</p><button type="button" class="opt" data-n>${L('말해 봤어요')}</button></div>`);
       await pick(p,'[data-n]',()=>{SND.felt('ok');});guard(r);
@@ -967,11 +996,28 @@ function fillCard(){
   const D=DREAM[state.dream],ko=state.name||'신입생';
   // 사진 칸: 찍은 사진(나중에 찍기를 고르면 실루엣)
   $('#idPhoto').innerHTML='<svg viewBox="0 0 92 120" aria-hidden="true"><circle cx="46" cy="46" r="19" fill="rgba(255,255,255,.8)"/><path d="M10 120c3-24 18-38 36-38s33 14 36 38z" fill="rgba(255,255,255,.8)"/></svg>';
-  $('#idName').innerHTML=`${esc(ko)}<small>${!state.name?'New student':state.nameEn&&state.nameEn!==ko?esc(state.nameEn):''}</small>`;
+  $('#idName').innerHTML=`<span class="nm-ko">${esc(ko)}</span><small><span class="nm-en">${!state.name?'New student':state.nameEn&&state.nameEn!==ko?esc(state.nameEn):''}</span></small>`;
+  // 부스에서 손으로 쓴 이름 글씨(있을 때만). 쓴 이름이 지금 이름과 다르면 그리지 않는다
+  const sg=state.sign&&state.name&&(state.sign.w===state.name||state.name.split(' ').includes(state.sign.w))?signSvg(state.sign,{width:.075,tight:true}):'';
+  $('#idSign').innerHTML=sg;$('#idSign').hidden=!sg;placeSign();
   $('#idDept').innerHTML='국제학부 1학년'+(state.from?` · <b>${esc(state.from)}</b>`:'');
   $('#idDream').textContent='꿈 · '+D.ko;
   $('#cardLine').textContent=LANG==='ko'?`${state.name?state.name+' 씨의':'이제'} 한국 생활이 시작돼요. 이 길 끝에 ${D.goal}${hasBatchim(D.goal)?'이':'가'} 있어요.`:L('학생증 한 줄',{goal:L(D.goal)});
 }
+// 이름 글씨 자리: 인쇄된 한글 이름이 끝난 오른쪽(빈자리가 모자라면 영어 이름 줄 오른쪽). 배치 크기(offset)로 재서 카드가 흔들리는 중에도 같다.
+// 둘 다 자리가 없으면(아주 긴 이름) 그리지 않는다 — 글씨는 기록에 남아 있다
+function placeSign(tries=0){
+  const sg=$('#idSign'),card=$('#idcard'),ko=$('#idName .nm-ko'),en=$('#idName .nm-en');
+  if(sg.hidden||!ko)return;
+  if(!card.offsetWidth||!ko.offsetWidth){if(tries<60)requestAnimationFrame(()=>placeSign(tries+1));return;}
+  const W=card.offsetWidth,edge=W-16,box=(el,h)=>({left:el.offsetLeft+el.offsetWidth+10,top:el.offsetTop+(el.offsetHeight-h)/2,h});
+  const hKo=Math.min(32,ko.offsetHeight*1.05),lines=Math.round(ko.offsetHeight/(parseFloat(getComputedStyle(ko).lineHeight)||ko.offsetHeight));
+  let at=lines<=1?box(ko,hKo):null;
+  if(!at||edge-at.left<64){const b=en&&en.offsetWidth?box(en,15):null;if(b)b.top+=1;at=b&&edge-b.left>=56?b:null;}   // 영어 이름 줄은 글이 작아 아래 학과 줄에 닿지 않게 낮게
+  if(!at){sg.style.visibility='hidden';return;}
+  Object.assign(sg.style,{visibility:'',left:at.left+'px',right:'16px',top:at.top+'px',height:at.h+'px'});
+}
+addEventListener('resize',()=>{if($('#s-card').classList.contains('on'))placeSign();});
 // 사진은 카드의 배치 크기로 자른다(움직이는 중의 화면 크기가 아니라)
 function putPhoto(){if(!state.look)return;const p=$('#idPhoto'),r=lookRects.crop(state.look,p.clientWidth,p.clientHeight,.6),im=new Image();im.alt='';im.src=state.look.src;Object.assign(im.style,px(r));p.replaceChildren(im);}
 function cardEnd(){$('#cardHead').classList.add('on');setTimeout(()=>$('#cardFoot').classList.add('on'),reduce?0:240);}
@@ -1305,7 +1351,7 @@ function applyStatic(){
 }
 function loadState(a){
   if(!a)return;
-  Object.assign(state,{dream:a.dream||state.dream,name:a.name??null,nameEn:a.nameEn??null,from:a.from??null,call:a.call??null,look:a.look?lookById(a.look):null,lights:a.lights||0,best:a.best||{},scenes:a.scenes||[],momSeen:!!a.momAt,momAnswer:a.momAnswer||null,dreamPicked:!!a.dream});
+  Object.assign(state,{dream:a.dream||state.dream,name:a.name??null,nameEn:a.nameEn??null,sign:a.sign??null,from:a.from??null,call:a.call??null,look:a.look?lookById(a.look):null,lights:a.lights||0,best:a.best||{},scenes:a.scenes||[],momSeen:!!a.momAt,momAnswer:a.momAnswer||null,dreamPicked:!!a.dream});
   document.body.dataset.dream=state.dream;
 }
 if(location.hash!=='#road')warm(WARM.first);
@@ -1328,7 +1374,7 @@ window.__seoulFrame=Object.freeze({
     $('#titleSkip').hidden=!state.dreamPicked;
   },
 });
-window.__seoulQA={state,show,get SND(){return SND;},traceGa,buildRoad,crowdScene,momNote};
+window.__seoulQA={state,show,get SND(){return SND;},traceGa,nameTrace,buildRoad,crowdScene,momNote};
 if(!HOST){
   if(['127.0.0.1','localhost'].includes(location.hostname)&&new URLSearchParams(location.search).has('qa')){window.__seoulFrame.start({at:new URLSearchParams(location.search).get('qa')==='road'?'road':'title'});}
   else outside();

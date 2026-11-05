@@ -13,6 +13,8 @@ import {spawn} from 'node:child_process';
 import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
 import {judgeLine,nextTake} from '../../../tools/lib/드라마판정.mjs';
+import {syllableStrokes} from '../hangul-strokes.mjs';
+import {encodeSign} from '../name-hand.mjs';
 import {dramaLines,readEpisodes} from '../../../tools/build-world-speaking-talk.mjs';
 
 const ROOT=fileURLToPath(new URL('../../../',import.meta.url));
@@ -28,6 +30,10 @@ const lesson=JSON.parse(fs.readFileSync(path.join(PILOT,'world-lesson.json'),'ut
 const lines=dramaLines(await readEpisodes()),byId=new Map(lines.map(l=>[l.id,l]));
 const TRANSCRIPTS={'s1e01-6':['네, 맞아요. 길을 잃어서 한참 헤맸어','네, 맞아요. 길을 잃어서 한참 헤맸어요'],'s1e01-7':['네 선배님 그런데 혹시 도서관이 어디에 있는지 아세요'],'s1e01-8':['정말요? 선배님 덕분에 살았어요'],'s1e01-t9':['선배님, 혹시 편의점이 어디에 있는지 아세요?'],'s1e01-t4':['선생님, 혹시 복사실이 어디에 있는지 아세요?']};
 const used=new Map();
+// 내 길 씨앗(--자리 road): 학생증 이름과 손으로 쓴 이름 글씨. --씨앗이름 "응우옌 티 민 아인" --씨앗글씨 아인 처럼 바꿔 긴 이름의 학생증 자리를 본다
+const SEED_NAME=opt('--씨앗이름','볼로르'),SEED_W=opt('--씨앗글씨',SEED_NAME);
+const SEED_SYL=[...SEED_W].filter(ch=>syllableStrokes(ch)),SEED_SIGN=encodeSign(SEED_SYL.map(ch=>syllableStrokes(ch).map(s=>s.p)));
+const SEED_LINES=SEED_SYL.reduce((a,ch)=>a+syllableStrokes(ch).length,0);
 function fakeTake(body){
  const line=byId.get(body.line_id);if(!line)return {ok:true,status:'unavailable'};
  const list=TRANSCRIPTS[line.id]||[line.line],n=used.get(line.id)||0;used.set(line.id,n+1);
@@ -106,7 +112,7 @@ if(OFF){
 // ── 타이틀 ──
 if(FROM==='road'){
  await page.goto(`${base}/mobile.html?seoulAuto=1`,{waitUntil:'domcontentloaded'});
- await page.evaluate(({lang,dream})=>{sessionStorage.setItem('synk.brand-opening.v1.seen','1');if(lang!=='ko')localStorage.setItem('synk.world.lang',lang);localStorage.setItem('synk.world.arrival.v1:guest',JSON.stringify({version:1,stage:'card',dream,name:'볼로르',nameEn:'Bolor',from:'몽골',call:'선배',look:'mn_m'}));},{lang:LANG,dream:DREAM});
+ await page.evaluate(({lang,dream,seed})=>{sessionStorage.setItem('synk.brand-opening.v1.seen','1');if(lang!=='ko')localStorage.setItem('synk.world.lang',lang);localStorage.setItem('synk.world.arrival.v1:guest',JSON.stringify({version:1,stage:'card',dream,name:seed.name,nameEn:'Bolor',from:'몽골',call:'선배',look:'mn_m',sign:{w:seed.w,s:seed.sign}}));},{lang:LANG,dream:DREAM,seed:{name:SEED_NAME,w:SEED_W,sign:SEED_SIGN}});
  await page.reload({waitUntil:'domcontentloaded'});
  await until('내 길',async()=>!!F()&&await inF(()=>document.querySelector('#s-path')?.classList.contains('on')),30000);
  await sleep(800);
@@ -154,6 +160,30 @@ await sleep(1600);await shot('05e-정문');   // 부스 판 위 종이 안내판
 check(await advance(()=>inF(()=>!!document.querySelector('#panel.on .sheetpad input'))),'이름 묻기까지');
 await sleep(400);await shot('06-이름');
 await F().fill('#panel .sheetpad input','Bolor');await F().click('#panel .sheetpad .ok');
+// 이름 손글씨(설계 이름손글씨.md): 한글 이름 후보 → 「좋아요」 → 쓰기 칸. 기본 길은 「넘어가기」, --완주는 모형 획대로 실제로 쓴다
+check(await advance(()=>inF(()=>!!document.querySelector('#panel.on .ko-cand'))),'한글 이름 후보');
+check(await inF(()=>document.querySelector('#panel .ko-cand').textContent)==='볼로르','후보가 볼로르');
+await sleep(400);await shot('06a-이름후보');await overflow('이름 후보');
+await F().click('#panel [data-a="ok"]');
+check(await advance(()=>inF(()=>document.querySelector('#nameTrace').classList.contains('on'))),'이름 쓰기 칸');
+await sleep(1500);await shot('06b-이름쓰기');await overflow('이름 쓰기');
+check(await inF(()=>!document.querySelector('#vn').classList.contains('on')),'쓰는 동안 말풍선을 내림');
+{const r=await inF(()=>{const a=document.querySelector('#ntPad').getBoundingClientRect(),b=[...document.querySelectorAll('#nameTrace .trace-skip')].filter(x=>!x.hidden).map(x=>x.getBoundingClientRect());return {pad:a.width,top:a.top,bottom:Math.max(...b.map(x=>x.bottom)),h:innerHeight};});
+ check(r.pad>=200&&r.top>=0&&r.bottom<=r.h,'이름 칸이 화면 안',JSON.stringify(r));}
+if(FULL){
+ const offN=await page.evaluate(()=>{const b=document.querySelector('.seoul-frame').getBoundingClientRect();return {x:b.left,y:b.top};});
+ for(let k=0;k<3;k++){
+  await until('음절 '+(k+1),()=>inF(i=>window.__seoulQA.nameTrace.state()?.i===i,k),6000);await sleep(k?900:2600);
+  const strokes=await inF(()=>window.__seoulQA.nameTrace.paths());
+  for(const s of strokes){await page.mouse.move(s[0][0]+offN.x,s[0][1]+offN.y);await page.mouse.down();for(let i=1;i<s.length;i++)await page.mouse.move(s[i][0]+offN.x,s[i][1]+offN.y,{steps:s.length>4?2:10});await page.mouse.up();await sleep(160);}
+  if(k===0){await sleep(200);await shot('06c-첫음절씀');}
+ }
+ await until('이름 쓰기 끝',()=>inF(()=>!document.querySelector('#nameTrace').classList.contains('on')),8000);check(true,'모형대로 쓰면 이름 쓰기가 끝남');
+ check(await until('저장: 이름 글씨',()=>page.evaluate(()=>JSON.parse(localStorage.getItem('synk.world.arrival.v1:guest')||'null')?.sign?.w==='볼로르')),'손님 기록에 이름 글씨');
+}else{
+ await F().click('#ntSkip');
+ await until('이름 쓰기 닫힘',()=>inF(()=>!document.querySelector('#nameTrace').classList.contains('on')),4000);
+}
 check(await advance(()=>inF(()=>!!document.querySelector('#panel.on .learn'))),'이름 말해 보기');
 await sleep(400);await shot('07-말해보기');
 await F().click('#panel [data-n]');
@@ -178,6 +208,8 @@ await until('내 길 단추',()=>inF(()=>document.querySelector('#cardFoot').cla
 await sleep(600);await shot('13-학생증');
 const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('synk.world.arrival.v1:guest')||'null'));
 check(saved?.stage==='card'&&saved?.name==='볼로르'&&saved?.from==='몽골'&&saved?.call==='선배'&&!!saved?.look,'손님 기록: 학생증 칸',JSON.stringify(saved));
+{const sg=await inF(()=>({hidden:document.querySelector('#idSign').hidden,lines:document.querySelectorAll('#idSign polyline').length}));
+ check(FULL?(!sg.hidden&&sg.lines>=15):(sg.hidden&&!saved?.sign),FULL?'학생증에 내 이름 글씨':'넘어가면 학생증에 글씨 없음',JSON.stringify(sg));}
 await F().click('#toPath');
 await until('내 길',()=>inF(()=>document.querySelector('#s-path').classList.contains('on')));
 await sleep(3000);await shot('14-내길');await overflow('내 길');
@@ -286,6 +318,9 @@ await sleep(800);await shot('26-내길다시');
 await F().click('#meBadge');
 await until('학생증 다시 보기',()=>inF(()=>document.querySelector('#s-card').classList.contains('view')),4000);
 await sleep(600);await shot('27-학생증다시');
+if(FULL||FROM==='road')check(await inF(n=>document.querySelectorAll('#idSign polyline').length>=n,FROM==='road'?SEED_LINES:15),'다시 열어도 학생증에 이름 글씨');
+{const o=await inF(()=>{const a=document.querySelector('#idSign svg g')?.getBoundingClientRect(),hit=[...document.querySelectorAll('#idcard .id-info > *, #idcard .id-foot > *, #idcard .id-school')].filter(e=>{const b=e.getBoundingClientRect();if(!a)return false;const rs=e.matches('.id-bar,.id-dream')?[b]:(()=>{const out=[],w=document.createTreeWalker(e,NodeFilter.SHOW_TEXT);for(let n=w.nextNode();n;n=w.nextNode()){if(!n.textContent.trim())continue;const r=document.createRange();r.selectNodeContents(n);out.push(...[...r.getClientRects()].filter(x=>x.width>1&&x.height>1));}return out;})();return rs.some(t=>!(t.right<a.left+1||t.left>a.right-1||t.bottom<a.top+1||t.top>a.bottom-1));}).map(e=>e.className||e.id||e.tagName);return hit;});
+ if(FULL||FROM==='road')check(!o.length,'학생증 글씨가 인쇄된 글과 겹치지 않음',o.join(','));}
 await F().click('#reLook');
 await until('모습 고르기 다시',()=>inF(()=>document.querySelector('#look').classList.contains('on')),4000);
 await F().click('.lk-th[data-i="3"]');await sleep(500);await F().click('#lkShoot');await sleep(500);

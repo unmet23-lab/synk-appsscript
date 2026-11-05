@@ -14593,6 +14593,20 @@ var MOM = /* @__PURE__ */ new Set(["fix", "ok", "later"]);
 var object2 = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 var time = (value) => Number.isSafeInteger(value) && value >= 0;
 var text = (value) => typeof value === "string" && value.trim() ? value.trim().slice(0, 40) : null;
+var SIGN_TEXT = /^[A-Za-z0-9_\-]*(?:,[A-Za-z0-9_\-]*)*(?:\|[A-Za-z0-9_\-]*(?:,[A-Za-z0-9_\-]*)*)*$/;
+function readSign(value, name) {
+  if (!object2(value) || typeof value.w !== "string" || typeof value.s !== "string" || !name) return null;
+  const w = value.w.trim(), s = value.s;
+  if (!/^[가-힣]+( [가-힣]+)*$/.test(w) || w.length > 10 || !s || s.length > 3e3 || !SIGN_TEXT.test(s)) return null;
+  if (w !== name && !name.split(" ").includes(w)) return null;
+  const syl = s.split("|");
+  if (syl.length !== w.replace(/ /g, "").length) return null;
+  for (const one of syl) {
+    const st = one.split(",");
+    if (!one || st.length > 40 || st.some((x) => !x || x.length % 2 || x.length > 400)) return null;
+  }
+  return { w, s };
+}
 function readArrival(value) {
   if (!object2(value) || value.version !== 1) return null;
   const scenes = Array.isArray(value.scenes) ? value.scenes.filter((s) => object2(s) && typeof s.id === "string" && /^[a-z0-9._-]{1,40}$/i.test(s.id) && time(s.at)).slice(-200).map((s) => ({ id: s.id, at: s.at, ...Number.isSafeInteger(s.lines) && s.lines >= 0 && s.lines <= 200 ? { lines: s.lines } : {} })) : [];
@@ -14606,6 +14620,7 @@ function readArrival(value) {
     dream: DREAMS.has(value.dream) ? value.dream : null,
     name: text(value.name),
     nameEn: text(value.nameEn),
+    sign: readSign(value.sign, text(value.name)),
     from: text(value.from),
     call: CALLS.has(value.call) ? value.call : null,
     look: typeof value.look === "string" && /^[a-z]{2}_[mf]$/.test(value.look) ? value.look : null,
