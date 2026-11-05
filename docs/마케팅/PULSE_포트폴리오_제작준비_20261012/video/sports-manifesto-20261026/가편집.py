@@ -62,12 +62,7 @@ def f(t):
     return round(t * FPS)
 
 
-SKIN = {"S18": "S18_131631.jpg", "S19": "S19_131404.jpg"}   # 이마 점을 뺀 판(11-05 유호님 「응, 구워」) — 확인 뒤 정지컷에 넣기 전까지 여기서 읽는다
-
-
 def still(name):
-    if name in SKIN:
-        return np.asarray(Image.open(os.path.join(ROOT, "콘티", "검수", "한결피부_20261105", "받음", SKIN[name])).convert("RGB"))
     for d in ("정지컷", "그래픽"):
         p = os.path.join(V, d, name + ".png")
         if os.path.exists(p):
