@@ -483,6 +483,65 @@ test('검수 AI 이름(10-23): 더한 줄의 Fable·아르곤·아스트라·arg
   assert.deepEqual(걸린(흔한), []);
 });
 
+test('제작 표시 · 영상과 소리(11-06): C2PA를 빼고 남는 handler · 태그 · SEI의 생성 도구 표시를 잡고, ffmpeg · Remotion 영상과 Pixel 사진은 넘긴다', () => {
+  const 규칙 = 속.점검규칙읽기(점검원문('suno'));
+  const 검사 = (항목, 옵션) => 속.검사하기(항목.map(([경로, 버퍼]) => ({ 경로, 버퍼, 공개버퍼: null })), 규칙, 옵션);
+  const 걸린 = (r) => r.걸림.filter((x) => x.검사 === '제작 표시').map((x) => x.경로).sort();
+  const 상자 = (종류, ...몸) => { const b = Buffer.concat(몸.map((x) => (Buffer.isBuffer(x) ? x : Buffer.from(x, 'latin1')))); const 머리 = Buffer.alloc(8); 머리.writeUInt32BE(8 + b.length); 머리.write(종류, 4, 'latin1'); return Buffer.concat([머리, b]); };
+  const hdlr = (종류, 이름) => 상자('hdlr', Buffer.alloc(8), 종류, Buffer.alloc(12), `${이름}\0`);
+  const 태그 = (열쇠, 값) => 상자(열쇠, 상자('data', Buffer.from([0, 0, 0, 1, 0, 0, 0, 0]), 값));
+  const 키태그 = (값들) => 상자('meta', Buffer.alloc(4), hdlr('mdta', ''), 상자('keys', Buffer.alloc(4), ...Object.keys(값들).map((k) => 상자('mdta', k))),
+    상자('ilst', ...Object.values(값들).map((v, i) => { const b = 태그('xxxx', v); b.writeUInt32BE(i + 1, 4); return b; })));
+  const 무작위 = (n, 씨) => { const b = Buffer.alloc(n); let x = 씨; for (let i = 0; i < n; i++) { x = (Math.imul(x, 1103515245) + 12345) >>> 0; b[i] = x >>> 24; } return b; };
+  // ffmpeg가 쓰는 보통 MP4 — 트랙 handler · 인코더 · x264 SEI(재인코딩 판)와 Remotion comment
+  const mp4 = (...안) => Buffer.concat([상자('ftyp', 'isom', Buffer.from([0, 0, 2, 0]), 'isomiso2avc1mp41'), 상자('moov', ...안), 상자('mdat', 무작위(4096, 7))]);
+  const 보통트랙 = [hdlr('vide', 'VideoHandler'), hdlr('soun', 'SoundHandler')];
+  const 보통인코더 = 상자('udta', 상자('meta', Buffer.alloc(4), hdlr('mdir', ''), 상자('ilst', 태그('\xa9too', 'Lavf63.1.102'))));
+
+  // 11-06 실측: 이 PC의 생성 원본을 ffmpeg로 그릇만 다시 싸거나(-c copy) 재인코딩하면 C2PA는 빠지고 아래가 남았다.
+  const 샌 = 검사([
+    // Flow · Veo — 트랙 handler(공개본 world-menu-*-omni11-v6-web.mp4 둘, 11-04 캐스팅북 루프 다섯)
+    ['flow-copy.mp4', mp4(hdlr('vide', 'ISO Media file produced by Google Inc. Created on: 11/03/2026.'), hdlr('soun', 'ISO Media file produced by Google Inc. Created on: 11/03/2026.'), 보통인코더)],
+    // Flow 원본의 인코더 칸 ©too = Google(C2PA를 걷어 낸 판)
+    ['flow-encoder.mp4', mp4(...보통트랙, 상자('udta', 상자('meta', Buffer.alloc(4), hdlr('mdir', ''), 상자('ilst', 태그('\xa9too', 'Google')))))],
+    // 드리미나 · Seedance — 재인코딩해도 comment로 남는 생성 번호, 원본의 LvMetaInfo · aigc_label_type
+    ['dreamina-reencode.mp4', mp4(...보통트랙, 상자('udta', 상자('meta', Buffer.alloc(4), hdlr('mdir', ''), 상자('ilst', 태그('\xa9too', 'Lavf63.1.102'), 태그('\xa9cmt', 'vid:v1c762g50003dbm847vog65gs1g9cb70')))))],
+    ['dreamina-raw.mp4', mp4(...보통트랙, 키태그({ LvMetaInfo: '{"data":{"os":"","product":"dreamina","exportType":"generation","videoId":"0"}}' }))],
+    ['dreamina-label.mp4', mp4(...보통트랙, 키태그({ UserComment: '{"aigc_label_type":0,"source_info":"web"}' }))],
+    // Wan · Kling — 중국 표시 규정 AIGC 칸(원본), Kling 비트스트림 SEI(-c copy 뒤에도 남는다)
+    ['wan-raw.mp4', mp4(...보통트랙, 키태그({ AIGC: '{"Label":"1","ContentProducer":"001191000000000000000000000","ProduceID":"R-x","ReservedCode1":"K-x"}' }))],
+    ['kling-copy.mp4', Buffer.concat([mp4(...보통트랙, 보통인코더), Buffer.from([0, 0, 0, 0x20, 0x06, 0x05]), 무작위(16, 3), Buffer.from('kling-ai', 'latin1'), 무작위(64, 5)])],
+    ['xmp.png', Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47]), Buffer.from('<rdf:Description TC260:AIGC="{&quot;Label&quot;:&quot;1&quot;}"/>', 'latin1')])],
+    // ComfyUI 워크플로(로컬 H3 원본 영상 · ComfyUI PNG의 tEXt)
+    ['h3-raw.mp4', mp4(...보통트랙, 키태그({ prompt: '{"1": {"class_type": "UNETLoader", "inputs": {"unet_name": "model.safetensors"}}}' }))],
+    ['comfy.png', Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47]), 상자('tEXt', 'workflow\0{"nodes": [{"id": 1, "class_type": "KSampler"}]}')])],
+    // Suno m4a — AAC로 재인코딩해도 comment가 따라온다
+    ['bgm.m4a', mp4(hdlr('soun', 'SoundHandler'), 상자('udta', 상자('meta', Buffer.alloc(4), hdlr('mdir', ''), 상자('ilst', 태그('\xa9cmt', 'made with suno; created=2026-09-06T19:34:05Z')))))],
+    // HyperFrames 렌더 태그(공개본 world/assets/videos/ 셋)
+    ['hyperframes.mp4', mp4(...보통트랙, 키태그({ hyperframes_version: '0.8.140', hyperframes_renderer: 'hyperframes' }))],
+  ]);
+  assert.deepEqual(걸린(샌), ['bgm.m4a', 'comfy.png', 'dreamina-label.mp4', 'dreamina-raw.mp4', 'dreamina-reencode.mp4', 'flow-copy.mp4', 'flow-encoder.mp4',
+    'h3-raw.mp4', 'hyperframes.mp4', 'kling-copy.mp4', 'wan-raw.mp4', 'xmp.png'], '11-06 이전 검사는 이 열둘을 모두 넘겼다');
+  assert.match(샌.걸림.find((x) => x.경로 === 'flow-copy.mp4').이유, /produced by Google/);
+  assert.match(샌.걸림.find((x) => x.경로 === 'flow-encoder.mp4').이유, /“·too.*Google”/, '눈에 안 보이는 바이트는 ·로 보인다');
+
+  // 정상 영상 · 그림 — ffmpeg 재인코딩(x264 SEI), Remotion, -map_metadata -1로 지운 판, Pixel 사진 EXIF, 큰 영상 속 우연한 짧은 낱말
+  const 정상 = 검사([
+    ['clean.mp4', Buffer.concat([mp4(...보통트랙, 보통인코더), Buffer.from('x264 - core 165 - H.264/MPEG-4 AVC codec - Copyleft 2003-2025 - http://www.videolan.org/x264.html', 'latin1')])],
+    ['remotion.mp4', mp4(...보통트랙, 상자('udta', 상자('meta', Buffer.alloc(4), hdlr('mdir', ''), 상자('ilst', 태그('\xa9too', 'Lavf63.1.102'), 태그('\xa9cmt', 'Made with Remotion 4.0.535')))))],
+    ['pixel.jpg', Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe1]), Buffer.from('Exif\0\0MM\0*Google\0Pixel 9 Pro\0HDR+ 1.0.0', 'latin1')])],
+    ['noise.mp4', Buffer.concat([mp4(...보통트랙, 보통인코더), Buffer.from('..veo..Sora..AIGC..kling..chuckling..vid:v12..Seed..Google..', 'latin1')])],
+    ['quicktime.mov', mp4(hdlr('vide', 'Core Media Video'), hdlr('soun', 'Core Media Audio'))],
+  ]);
+  assert.deepEqual(걸린(정상), [], 'ffmpeg · Remotion 영상, 사진의 Google 제조사 칸, 짧은 낱말 조각은 막지 않는다');
+  assert.equal(정상.요약.미디어, 5);
+
+  // --허용은 사람이 본 제작 표시를 알림으로 넘긴다(그대로)
+  const 허용 = 검사([['flow-copy.mp4', mp4(hdlr('vide', 'ISO Media file produced by Google Inc.'))]], { 허용: ['flow-copy.mp4'] });
+  assert.deepEqual(허용.걸림, []);
+  assert.ok(허용.알림.some((x) => x.검사 === '제작 표시' && /--허용으로 넘김/.test(x.이유)));
+});
+
 test('도구 사본 = 배포 점검 목록(10-23 판): 샌 꼴은 잡고 공개본의 낱말 조각은 넘긴다 · check.mjs와 같으면 조용하다 · WORLD 공개 빌드와 같은 목록', async (t) => {
   const 사본 = 속.점검규칙읽기(null);
   const 풀기 = (b64) => Buffer.from(b64, 'base64').toString('utf8');

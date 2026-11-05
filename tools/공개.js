@@ -72,10 +72,16 @@ const 한도 = { 파일: 100 * 1024 * 1024, 파일경고: 50 * 1024 * 1024, 합�
 const 토큰파일 = /\.(html?|css|m?js|json|webmanifest|svg|xml)$/i;
 const 미디어파일 = /\.(png|jpe?g|webp|avif|gif|heic|mp4|m4v|mov|webm|m4a|wav|glb)$/i;
 /**
- * 그림·영상 안의 생성 도구 표시(C2PA 등) — 메모 「AI 도구 이름 표기 금지」(10-10)와 같은 낱말. C2PA 조각의 이름표는
+ * 그림·영상·소리 안의 생성 도구 표시(C2PA 등) — 메모 「AI 도구 이름 표기 금지」(10-10)와 같은 낱말. C2PA 조각의 이름표는
  * `c2pa.claim`·`c2pa.signature`처럼 점이 붙는다 — 맨 `c2pa` 넉 자는 큰 영상에서 우연히 나와(10-19 검수) 점까지 본다.
+ * 11-06에 C2PA 밖에 남는 표시를 더했다(도구마다 원본 · ffmpeg로 다시 싼 판 · 재인코딩 판을 재서 남는 꼴만, 현장 노트 배포_공개):
+ * Flow · Veo 트랙 handler 「ISO Media file produced by Google Inc.」(ffmpeg가 그대로 옮긴다)와 원본의 `©too` Google,
+ * 드리미나 · Seedance의 LvMetaInfo · aigc_label_type · aigc_info와 ffmpeg 뒤에도 comment로 남는 생성 번호 `vid:v…`,
+ * 중국 표시 규정의 AIGC 칸(Wan · Kling — `"ContentProducer"`, XMP 꼴은 TC260:AIGC)과 Kling 비트스트림 SEI의 `kling-ai`,
+ * ComfyUI가 영상 · PNG에 심는 워크플로(`"class_type"`), Suno m4a comment 「made with suno」(재인코딩해도 남는다), HyperFrames 태그.
+ * 맨 veo · sora · kling 같은 짧은 이름은 큰 영상 바이트에서 우연히 나와(공개본 영상 수십 개) 넣지 않는다.
  */
-const 제작표시 = /c2pa\.|openai|chatgpt|gpt-image|trainedAlgorithmicMedia/i;
+const 제작표시 = /c2pa\.|openai|chatgpt|gpt-image|trainedAlgorithmicMedia|produced by Google|\xa9too[\s\S]{0,16}?Google|"ContentProducer"|TC260:AIGC|LvMetaInfo|aigc_label_type|aigc_info|dreamina|seedance|vid:v[0-9a-z]{20}|kling-ai|KLingMuse|"class_type"|made with suno|hyperframes/i;
 /**
  * 배포 점검에는 없는 AI 이름(더한 줄만 본다). 화면·데이터·주석에 도구 이름을 남기지 않는 원칙.
  * 맨 `gpt`는 10-19 몽글 시범 공개에서 「GPT 이미지」가 새어 더했다(`\b`라 MonoGPT·gpt2 같은 붙은 이름은 따로 적는다).
@@ -664,7 +670,8 @@ function 검사하기(항목들, 규칙, 옵션 = {}) {
       요약.미디어++;
       const m = x.버퍼.toString('latin1').match(제작표시);
       if (m) {
-        const 항 = { 경로: p, 검사: '제작 표시', 이유: `파일 안에 생성 도구 표시 “${m[0]}”가 있다(그림은 C2PA 조각을 빼고 올린다)` };
+        const 표시 = m[0].replace(/[^\x20-\x7e]/g, '·');
+        const 항 = { 경로: p, 검사: '제작 표시', 이유: `파일 안에 생성 도구 표시 “${표시}”가 있다(그림은 C2PA 조각을, 영상 · 소리는 ffmpeg -map_metadata -1로 태그를 빼고 올린다 — 현장 노트 배포_공개)` };
         if (허용.has(p)) 알림.push({ ...항, 이유: `${항.이유} — --허용으로 넘김` }); else 걸림.push(항);
       }
     }
