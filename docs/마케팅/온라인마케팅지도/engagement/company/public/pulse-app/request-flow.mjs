@@ -142,12 +142,12 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
       <div class="sx-q-top-right sx-small"><span class="sx-q-saved" data-saved></span><button type="button" class="sx-q-open-credits" data-do="sheet">의뢰서 <b class="sx-no" data-slate-count>0</b></button><button type="button" data-do="later">나중에 이어서</button></div>
       <i class="sx-q-progress" aria-hidden="true"><i data-progress></i></i></header>
     <div class="sx-q-stage">
-      <section class="sx-q-ask"><form class="sx-q-form" data-ask novalidate></form>
-        <footer class="sx-q-foot"><button type="button" class="sx-small sx-q-back" data-do="back">이전</button><p class="sx-small sx-q-error" role="alert" data-error hidden></p><button type="button" class="sx-go is-solid" data-do="next"><span data-next-label>다음</span>${arrow}</button></footer>
-      </section>
+      <section class="sx-q-ask"><form class="sx-q-form" data-ask novalidate></form></section>
       <aside class="sx-q-screen" aria-label="미리 보기"><div class="sx-q-view" data-mon></div>
         <div class="sx-q-credits" data-slate><button type="button" class="sx-small sx-q-credits-head" data-do="sheet">의뢰서</button><div class="sx-q-lines" data-lines></div></div>
       </aside>
+      <!-- 이전 · 다음은 화면 칸 뒤에 둔다: 모델 단계는 고르는 칸이 화면 칸에 있어 Tab · 읽는 차례가 「고르기 → 다음」이어야 한다. 보이는 자리는 CSS가 정한다. -->
+      <footer class="sx-q-foot"><button type="button" class="sx-small sx-q-back" data-do="back">이전</button><p class="sx-small sx-q-error" role="alert" data-error hidden></p><button type="button" class="sx-go is-solid" data-do="next"><span data-next-label>다음</span>${arrow}</button></footer>
     </div>
     <p class="sr" role="status" aria-live="polite" data-live></p>
   </div>`;
@@ -156,6 +156,8 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   const blobs=new Set();
   const step=()=>STEPS[index];
   const say=text=>{$('[data-live]').textContent=text;};
+  // 휴대폰 의뢰서 시트: 닫힌 시트는 초점 밖(CSS visibility)이라, 열면 시트 머리로 초점을 넣고 닫으면 시트 안에 있던 초점을 여는 단추로 돌린다.
+  const setSheet=open=>{host.classList.toggle('sheet-open',open);const sheet=$('[data-slate]');if(open)sheet.querySelector('[data-do="sheet"]')?.focus({preventScroll:true});else if(sheet.contains(document.activeElement))$('.sx-q-open-credits')?.focus({preventScroll:true});};
 
   // 초안이 기한으로 사라졌을 때: 글은 그대로 두고, 함께 지워진 파일만 칸에서 빼고 알린다. 올리는 중인 파일은 새 초안으로 간다.
   backend.onExpired=()=>{
@@ -185,9 +187,11 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   function render(direction=1){
     const s=step();
     host.dataset.step=s.id;
+    $('.sx-q-screen').setAttribute('aria-label',s.id==='model'?'모델 고르기':'미리 보기');
     showError('');
     form.innerHTML=views[s.id](a,s,index,STEPS.length);
-    form.scrollTop=0;$('.sx-q-ask').scrollTop=0;
+    // 휴대폰은 질문 칸이 아니라 바깥 칸(.sx-q-stage)이 스크롤된다 — 단계를 바꾸면 그것도 처음으로(모델 단계에서 내린 채 「이전」을 누르면 제목이 위 막대 밑에 있었다).
+    form.scrollTop=0;$('.sx-q-ask').scrollTop=0;$('.sx-q-stage').scrollTop=0;
     const title=form.querySelector('[data-title]');
     revealWords(title,{delay:40});
     riseAll(form.querySelectorAll('[data-in]'),{start:120,gap:34,y:14*direction});
@@ -274,7 +278,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     back(){go(index-1,-1);},
     goto(el){const to=STEPS.findIndex(item=>item.id===el.dataset.id);if(to>=0)go(to,-1);},
     async later(){if(await writeNow()){backend.later?.(a,step().id);toast('저장했어요. 이 기기에서 다시 열면 여기부터 이어서 쓸 수 있어요.');}else toast('지금은 저장하지 못했어요. 인터넷 연결을 확인해 주세요.');},
-    sheet(){host.classList.toggle('sheet-open');},
+    sheet(){setSheet(!host.classList.contains('sheet-open'));},
     kind(el){a.kind=el.dataset.id;setRows('kind',a.kind);crossfade($('[data-still]'),kindOf(a).shot);const cap=$('[data-still-cap]');if(cap)cap.textContent=kindOf(a).who;renderSlate();saved();},
     channel(el){toggleIn(a.channels,el.dataset.id);setChip(el,a.channels.includes(el.dataset.id));const f=$('[data-frame]'),ratio=ratioOf(a);if(f&&f.dataset.ratio!==ratio){f.dataset.ratio=ratio;const label=$('[data-ratio-label]');if(label)label.textContent=ratio;crossfade($('[data-ratio-still]'),still(RATIO_STILL[ratio]));}renderSlate();saved();},
     package(el){a.package=el.dataset.id;setRows('package',a.package);const pkg=pkgOf(a),p=$('[data-price]');if(p){if(pkg)roll(p,pkg.price,{format:price});else{delete p.dataset.value;p.textContent='상담';}$('[data-price-from]').hidden=!pkg;}const cuts=$('[data-cuts]');if(cuts){roll(cuts,pkg?.cuts||0);fillStrip(pkg?.cuts||0);const label=$('[data-cuts-label]');if(label)label.textContent=pkg?.photo?'받으실 사진':'영상 전에 먼저 보여 드리는 컷';}renderSlate();saved();},
@@ -369,7 +373,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   const trap=()=>{try{history.pushState({requestFlow:true},'');}catch{}};
   const onPop=()=>{
     if(sent){onRoom?.(sent,a);return;}
-    if(host.classList.contains('sheet-open')){host.classList.remove('sheet-open');trap();return;}
+    if(host.classList.contains('sheet-open')){setSheet(false);trap();return;}
     if(index>0){trap();go(index-1,-1);return;}
     writeNow();onExit?.();
   };

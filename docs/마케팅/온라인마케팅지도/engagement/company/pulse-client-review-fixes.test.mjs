@@ -5,6 +5,7 @@ import {welcome,projectView,PULSE_INQUIRY_URL} from './public/pulse-app/views.mj
 import {createDemoSession} from './public/pulse-app/demo.mjs';
 import {CASTING_MODELS} from './public/pulse-app/casting-catalog.mjs';
 import {castingView} from './public/pulse-app/casting-view.mjs';
+import {PACKAGES,price} from './public/pulse-app/request-data.mjs';
 
 // Fixes from the 2026-11-02 client review of the live client room and casting book: a real
 // inquiry path for people without a project, a confirmed scene that cannot be confirmed
@@ -45,8 +46,8 @@ test('the entry page introduces PULSE in the approved words and keeps the invite
     '카메라 앞에 서 본 사람이 AI 모델의 연기를 연출해요',
     'AI 광고가 어색해지는 곳은 대개 표정과 호흡, 말이 끝나는 타이밍이에요. SYNK PULSE는 엔터테인먼트·광고 업계에서 10년 일한 대표 유호가 연출해요.',
     '넷플릭스 공개 「보라! 데보라」 1화 오프닝 시퀀스 출연','tvN 「코미디빅리그」 코너 출연','부활 「너의 모습」 뮤직비디오 주연',
-    // 값은 정가의 「부터」만, 고지
-    '15초 광고 39만원부터','30초 광고와 편집본 89만원부터','기업 캠페인 250만원부터','상담은 제품 사진 한 장과 올릴 곳만으로 시작해요.',
+    // 고지
+    '상담은 제품 사진 한 장과 올릴 곳만으로 시작해요.',
     '영상 속 사람과 목소리는 모두 AI로 만들어요. 실존 인물을 닮게 만드는 요청은 받지 않아요.',
     '가상 브랜드로 만든 자체 작품이에요.',
   ])assert.ok(text.includes(line),line);
@@ -55,6 +56,10 @@ test('the entry page introduces PULSE in the approved words and keeps the invite
   assert.doesNotMatch(text,/실제 촬영|실사 촬영|납기|부가세|세금계산서|같은 얼굴|무제한|최고|최초|유일|1위|솔서리|Seedance|Sora|Veo|Omni|Gemini|GPT|Suno|Higgsfield|힉스필드|시댄스|CLIENT ROOM|함께 완성해요/i);
   // 11-05: 옛 제목은 첫 화면에서 내렸고(목록 자리의 설명 줄로만 남는다), 경력은 「배우」만이 아니라 엔터테인먼트·광고 업계 10년이다. 「실사」 · 「자연스러운 ○○ 제작」 꼴은 쓰지 않는다.
   assert.doesNotMatch(text,/모든 컷을 먼저 보여 드리는|배우로 활동한|실사|자연스러운 [가-힣]+ 제작/);
+  // 11-05 유호님 「의뢰서로만 옮기기」(결정 표 「PULSE 첫 화면 값 줄」): 첫 화면에는 값을 두지 않는다. 값은 의뢰서의 길이 · 구성 칸에 정가의 「부터」로 그대로 있다.
+  assert.doesNotMatch(text,/만원/);assert.doesNotMatch(html,/sx-prices/);
+  assert.deepEqual(['s15','s30','corp'].map(id=>price(PACKAGES.find(item=>item.id===id).price)),['39만원','89만원','250만원']);
+  assert.match(readFileSync(new URL('request-flow.mjs',appDir),'utf8'),/\$\{price\(item\.price\)\}부터/);
   // 초대 문과 체험은 그대로다.
   assert.match(html,/<form class="sx-invite" data-form="invite"[\s\S]*name="invite"[\s\S]*<\/form>/);
   assert.equal(html.split('href="?demo=film"').length,3,'머리의 예시 링크와 맡긴 뒤 줄');
@@ -85,7 +90,7 @@ test('a customer working in a project sees the board, not the introduction',asyn
 test('someone with no project yet can start a request right here, try the example, or open a link they already have',()=>{
   assert.equal(PULSE_INQUIRY_URL,'https://synk.im/pulse/#contact');
   const html=welcome({});
-  assert.equal(html.split('data-entry="start"').length,3,'the request button is at the top and after the prices');
+  assert.equal(html.split('data-entry="start"').length,3,'the request button is at the top and on the last page');
   assert.match(html,/광고 의뢰하기/);
   assert.match(html,/href="\?demo=film"/);
   assert.match(html,/<form class="sx-invite" data-form="invite"/);

@@ -94,11 +94,12 @@ function mountScreens(){
   const classes=document.documentElement.classList;classes.toggle('view-dr',!!(draft||review));
   const model=draft?draftModel(s.project):null,key=entry?'entry':model?`draft:${model.round}`:room?`room:${s.tab}:${roomState(s.project)}`:'',animate=key!==screenKey;screenKey=key;
   // PC 앱 창은 예시 주소로 옮겨 가지 못한다(desktop/src/pulse-app.cjs 허용 목록) — 그 창에서는 제자리에서 연다.
-  if(entry){if(!entryHandle)entryHandle=mountEntry(main,{animate,onStart:openPublicRequest,onDemo:s.desktopApp?openFilmDemo:null});checkResume();}
+  // 예시 · 의뢰서가 곧바로 위에 열리는 주소(?demo=film · ?start=request)에서는 쇼릴을 받지 않고 기다린다(덮개를 닫으면 그때 붙는다).
+  if(entry){if(!entryHandle)entryHandle=mountEntry(main,{animate,onStart:openPublicRequest,onDemo:s.desktopApp?openFilmDemo:null,held:!!(filmDemo||startRequest)});checkResume();}
   if(model)mountDraftScreen(model,animate);
   if(review){const previews=(s.project.versions||[]).filter(v=>v.kind==='preview'),at=previews.findIndex(v=>v.id===(s.versionId||previews.at(-1)?.id)),prior=at>0?previews[at-1]:null;reviewHandle=mountReview(main,{previous:prior?.media?.url?{id:prior.id,src:prior.media.url}:null,onError:()=>{const box=document.querySelector('#video-error');if(box)box.hidden=false;}});}
   if(main.querySelector('[data-final]'))finalHandle=mountFinal(main);
-  if(main.querySelector('.sx-films'))mountFilmList(main);
+  mountFilmList(main);
   if(room)mountRoom(main,{animate,onGo:goRoom,onEdit:()=>openProjectRequest('review'),onContact:()=>goRoom('contact'),onModel:answerModel,onFiles:sendMoreFiles});
 }
 // 쓰던 의뢰서가 있으면 첫 화면 단추가 「이어 쓰기」로 바뀐다. 한 번만 물어본다.

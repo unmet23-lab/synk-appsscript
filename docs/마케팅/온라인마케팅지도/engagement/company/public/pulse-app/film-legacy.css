@@ -135,7 +135,7 @@ html:has(:is(.sx-shell-head,.sx-room-left)>.sx-guide) .notice{top:calc(var(--gui
 .sx-legacy :is(.strategy-channels,.strategy-scene-values) input:checked+span{background:var(--sx-on);color:var(--sx-ink);box-shadow:none}
 .sx-legacy .strategy-value-no{border-radius:0;background:none;box-shadow:none;color:var(--sx-on-dim)}
 
-/* 어두운 탭(콘셉트 · 장면 · 취향 보드): 인화지 글자 · 선 토큰을 통째로 밝은 값으로 뒤집는다. 규칙마다 덮어쓰면 빠지는 곳이 생긴다(아르곤 C1). */
+/* 어두운 탭(콘셉트 · 장면 · 취향 보드): 인화지 글자 · 선 토큰을 통째로 밝은 값으로 뒤집는다. 규칙마다 덮어쓰면 빠지는 곳이 생긴다(검수 C1). */
 .sx-shell:is([data-tab=concepts],[data-tab=storyboard],[data-tab=direction]) .sx-legacy{--sx-on:var(--sx-ink);--sx-on-dim:var(--sx-dim);--sx-on-rule:var(--sx-rule);--bg:#000;--surface-1:rgba(244,241,234,.05);--surface-2:rgba(244,241,234,.08);--surface-3:rgba(244,241,234,.12);--berry:var(--sx-ink);--berry-text:var(--sx-ink);--berry-wash:rgba(244,241,234,.08);--tint:var(--sx-ink);--glass-strong:#000}
 /* 콘셉트: 끝에서 끝까지 나란히 큰 그림 */
 .sx-shell[data-tab=concepts] .sx-legacy,.sx-shell[data-tab=storyboard] .sx-legacy,.sx-shell[data-tab=direction] .sx-legacy{--ink:var(--sx-ink);--ink-2:var(--sx-dim);--ink-3:var(--sx-dim);--ink-q:var(--sx-dim);--line:var(--sx-rule);--line-2:var(--sx-faint);--field-line:var(--sx-faint);background:#000;color:var(--sx-ink);padding:clamp(8px,2vh,20px) 0 calc(var(--sx-m) + 24px)}
@@ -439,8 +439,9 @@ html.has-demo-nav #request-root{top:var(--demo-bar);overflow-y:auto;padding-top:
 html.has-demo-nav .sx-dr{position:absolute;inset:0}
 html.has-demo-nav .sx-q-top-right{top:calc(var(--demo-bar) + var(--sx-m) - 6px)}
 html.has-demo-nav .sx-q-progress{top:var(--demo-bar)}
-html.has-demo-nav .sx-room-hero{min-height:calc(100dvh - var(--demo-bar))}
-@media (min-width:821px) and (min-aspect-ratio:1/1){html.has-demo-nav .sx-room-screen{height:calc(100dvh - var(--demo-bar))}}
+/* 좁은 화면 질의 (max-width:820px),(max-aspect-ratio:1/1)의 정확한 여집합: 가로세로가 딱 1:1인 넓은 창은 좁은 쪽이다.
+   예시 방의 높이는 넓은 화면에서만 채운다 — 좁은 화면 방은 column-reverse라 남는 높이가 예시 막대 아래 검은 띠가 된다(검수 F2). */
+@media (min-width:821px) and (min-aspect-ratio:10001/10000){html.has-demo-nav .sx-room-hero{min-height:calc(100dvh - var(--demo-bar))}html.has-demo-nav .sx-room-screen{height:calc(100dvh - var(--demo-bar))}}
 
 html.sx textarea{resize:none;field-sizing:content;max-height:40vh}
 /* ── 납품 · 완성 광고 ── */
@@ -484,6 +485,9 @@ p.sx-receipt{display:block}
   .sx-shell[data-tab=storyboard] .scene-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 10px}
   html.has-demo-nav .sx-dr{position:relative}
   html.has-demo-nav .sx-q-stage{top:0}
+  /* 예시 안 의뢰서: 머리 막대(로고 · 의뢰서 · 나중에 이어서)는 예시 막대 바로 아래(검수 F4). 칸들은 #request-root가 이미 막대만큼 내려 있다. */
+  html.has-demo-nav .sx-q-top{top:var(--demo-bar)}
+  html.has-demo-nav .sx-q-top-right{top:calc(var(--demo-bar) + 10px)}
   .sx-demo-nav>span{display:none}
   .sx-dr{--top:0px}
   .sx-dr-left{padding-top:56px}

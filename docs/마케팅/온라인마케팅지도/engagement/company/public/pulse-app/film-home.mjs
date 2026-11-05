@@ -37,8 +37,8 @@ const STAGES=[
   ['파일을 받아요','올릴 곳에 맞는 파일로 받아요. 다음 편도 같은 모델과 같은 자막 규격으로 이어요.'],
 ];
 const MAKER_CREDITS=['넷플릭스 공개 「보라! 데보라」 1화 오프닝 시퀀스 출연','tvN 「코미디빅리그」 코너 출연','부활 「너의 모습」 뮤직비디오 주연'];
-// 값은 정가의 「부터」만 둔다(결정 10-29). 부가세 · 세금계산서 · 기간 표기는 사업자 결정 뒤에.
-const INTRO_PRICES=[['15초 광고','39만원부터'],['30초 광고와 편집본','89만원부터'],['기업 캠페인','250만원부터']];
+// 값은 첫 화면에 두지 않고 의뢰서(길이 · 구성 칸, 의뢰서 줄, 보내기 전 확인)에만 정가의 「부터」로 둔다
+// (2026-11-05 유호님 「의뢰서로만 옮기기」, 결정 표 「PULSE 첫 화면 값 줄」 — 맹검 심사마다 첫 화면의 값 세 줄을 「메뉴판」 · 저가 신호로 읽었다).
 const FOOT_NOTE='앱을 설치하지 않아도 휴대폰과 컴퓨터에서 열려요. 영상 속 사람과 목소리는 모두 AI로 만들어요. 실존 인물을 닮게 만드는 요청은 받지 않아요.';
 
 // 쇼릴: 작품 여럿의 자막 없는 구간을 이은 소리 없는 반복 영상. 시간표는 만든 도구(synk-vendor/pulse-rebuild-20261104/media/works/build_reel.cjs)의 값이다.
@@ -52,10 +52,14 @@ const reelSrc=()=>`${A}reel-${isTall()?'tall':'wide'}.mp4`;
 const reelPoster=()=>`${A}reel-${isTall()?'tall':'wide'}-poster.webp`;
 
 // 쇼릴 하나를 video에 잇는다. focus(id)를 부르면 그 작품의 컷만 돌고, focus(null)이면 전체가 돈다.
-export function mountReel(video,{onCut}={}){
+// held면 파일을 바로 받지 않고 처음 play()에서 붙인다(예시 · 의뢰서가 첫 화면 위에 곧바로 열릴 때).
+export function mountReel(video,{onCut,held=false}={}){
   video.muted=true;video.playsInline=true;video.loop=true;video.preload='auto';video.setAttribute('aria-hidden','true');
-  video.poster=reelPoster();video.src=reelSrc();
-  let only=null,index=0,wanted=true,raf=0;
+  video.poster=reelPoster();
+  let only=null,index=0,wanted=!held,raf=0,frame=0,attached=false,keep=0,onMeta=null;
+  const dropMeta=()=>{if(onMeta)video.removeEventListener('loadedmetadata',onMeta);onMeta=null;};
+  const attach=()=>{if(attached)return;attached=true;video.src=reelSrc();if(keep>0){const at=keep;onMeta=()=>{onMeta=null;try{video.currentTime=at;}catch{}};video.addEventListener('loadedmetadata',onMeta,{once:true});}};
+  if(!held)attach();
   const cutAt=time=>{let at=0;for(let i=0;i<REEL.length;i++)if(time>=REEL[i].at)at=i;return at;};
   const endOf=at=>at+1<REEL.length?REEL[at+1].at:REEL_TOTAL;
   const cutsOf=id=>REEL.map((cut,i)=>[cut,i]).filter(([cut])=>cut.work===id).map(([,i])=>i);
@@ -63,15 +67,23 @@ export function mountReel(video,{onCut}={}){
   const go=at=>{index=at;video.currentTime=REEL[at].at+.02;report();};
   // 고른 작품만 돌 때는 다음 컷이 한 프레임도 비치지 않도록 매 프레임 본다.
   const watch=()=>{raf=requestAnimationFrame(watch);if(!only||video.seeking)return;const time=video.currentTime;if(time>=endOf(index)-.07||time<REEL[index].at){const list=cutsOf(only);go(list[(list.indexOf(index)+1)%list.length]);}};
-  const onTime=()=>{if(only)return;const at=cutAt(video.currentTime);if(at!==index){index=at;report();}};
+  // 보통 재생도 화면에 나간 프레임의 시간으로 컷을 본다. timeupdate(약 0.25초마다)만 보면 작품 이름이 장면보다 늦게 바뀐다(운영 11-05, 최대 0.24초).
+  const frames=typeof video.requestVideoFrameCallback==='function';
+  const onFrame=(_,meta)=>{frame=video.requestVideoFrameCallback(onFrame);if(only)return;const at=cutAt(meta?.mediaTime??video.currentTime);if(at!==index){index=at;report();}};
+  if(frames)frame=video.requestVideoFrameCallback(onFrame);
+  const onTime=()=>{if(only||frames)return;const at=cutAt(video.currentTime);if(at!==index){index=at;report();}};
   video.addEventListener('timeupdate',onTime);
-  const play=()=>{wanted=true;if(!reduced())video.play().catch(()=>{});if(only&&!raf)raf=requestAnimationFrame(watch);};
+  const play=()=>{wanted=true;attach();if(!reduced())video.play().catch(()=>{});if(only&&!raf)raf=requestAnimationFrame(watch);};
   const pause=()=>{wanted=false;video.pause();cancelAnimationFrame(raf);raf=0;};
+  // 예시 · 의뢰서가 위를 덮으면 멈추고, 다 받지 못한 쇼릴은 내려받기도 놓는다. 다시 play()하면 그 자리에서 잇는다.
+  const whole=()=>{const got=video.buffered;return got.length===1&&got.start(0)<=.1&&got.end(0)>=(video.duration||Infinity)-.15;};
+  // 다시 붙인 뒤 메타데이터가 오기 전(readyState 0)이면 currentTime은 아직 0이라 떼던 자리(keep)를 그대로 둔다(검수 A1).
+  const suspend=()=>{pause();if(!attached||whole())return;if(video.readyState>=1)keep=video.currentTime||0;dropMeta();attached=false;video.removeAttribute('src');video.load?.();};
   report();
-  return {play,pause,video,
+  return {play,pause,suspend,video,
     focus(id){if(id===only){if(wanted)play();return;}only=id;cancelAnimationFrame(raf);raf=0;if(id&&cutsOf(id).length){go(cutsOf(id)[0]);raf=requestAnimationFrame(watch);}else{only=null;report();}if(wanted)play();},
     current:()=>filmOf(REEL[index].work),
-    stop(){pause();video.removeEventListener('timeupdate',onTime);video.removeAttribute('src');video.load?.();}};
+    stop(){pause();if(frame)video.cancelVideoFrameCallback?.(frame);frame=0;dropMeta();video.removeEventListener('timeupdate',onTime);attached=false;video.removeAttribute('src');video.load?.();}};
 }
 
 // 열린 창 안에서만 Tab이 돈다.
@@ -101,7 +113,8 @@ export function openScreening(film,{onClose}={}){
   // 휴대폰 뒤로 가기는 앱을 나가지 않고 상영만 닫는다.
   let pushed=false;try{history.pushState({sxScreening:true},'');pushed=true;}catch{}
   const onPop=()=>{pushed=false;close();};
-  function close(){video.pause();clearTimeout(idle);box.classList.remove('is-on');setTimeout(()=>box.remove(),reduced()?0:420);removeEventListener('keydown',key);removeEventListener('popstate',onPop);if(pushed){pushed=false;if(history.state?.sxScreening)history.back();}opener?.focus?.();onClose?.();}
+  let closed=false;
+  function close(){if(closed)return;closed=true;video.pause();clearTimeout(idle);box.classList.remove('is-on');setTimeout(()=>box.remove(),reduced()?0:420);removeEventListener('keydown',key);removeEventListener('popstate',onPop);if(pushed){pushed=false;if(history.state?.sxScreening)history.back();}opener?.focus?.();onClose?.();}
   addEventListener('keydown',key);addEventListener('popstate',onPop);
   box.querySelector('[data-close]').addEventListener('click',close);
   box.addEventListener('pointermove',wake);box.addEventListener('pointerdown',wake);wake();
@@ -115,7 +128,7 @@ export function openScreening(film,{onClose}={}){
 }
 
 const workRow=film=>`<li data-in><button type="button" class="sx-work" data-work="${esc(film.id)}"><span class="sx-work-name sx-serif">${esc(film.title)}</span><span class="sx-work-line sx-small"><span>${esc(filmLine(film))}${film.tag?` · ${esc(film.tag)}`:''}</span></span></button></li>`;
-const inviteForm=entryError=>`<form class="sx-invite" data-form="invite" data-entry-invite ${entryError?'':'hidden'}>${entryError?`<div class="sx-invite-alert" role="alert"><strong>${esc(entryError.title)}</strong><p>${esc(entryError.text)}</p></div>`:''}<label><span class="sx-small">담당자에게 받은 링크</span><input name="invite" type="text" maxlength="3000" required placeholder="https://workspace.synk.im/pulse-app/#invite=…" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="url"></label><button type="submit" class="sx-go" data-mutate><span>열기</span>${arrow}</button><p class="sx-small">가입이나 비밀번호 없이 열려요. 연결하면 이 프로젝트의 자료와 대화만 볼 수 있어요.</p><button type="button" class="sx-small sx-link" data-action="retry">이 기기에서 다시 확인</button></form>`;
+const inviteForm=entryError=>`<form class="sx-invite" data-form="invite" data-entry-invite ${entryError?'':'hidden'}>${entryError?`<div class="sx-invite-alert" role="alert"><strong>${esc(entryError.title)}</strong><p>${esc(entryError.text)}</p></div>`:''}<label><span class="sx-small">담당자에게 받은 링크</span><input name="invite" type="text" maxlength="3000" required placeholder="https://workspace.synk.im/pulse-app/#invite=…" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="url"></label><button type="submit" class="sx-go" data-mutate><span>열기</span>${arrow}</button><p class="sx-small">가입이나 비밀번호 없이 열려요. 연결하면 이 프로젝트의 자료와 대화만 볼 수 있어요.</p><button type="button" class="sx-small sx-link" data-action="retry">이 기기에서 다시 확인</button><button type="button" class="sx-small sx-invite-close" data-entry="close">닫기</button></form>`;
 
 const pages=({start,demoHref})=>[
   {layer:'reel',html:`<div class="sx-hero-copy"><p class="sx-kicker" data-in>SYNK PULSE · AI 광고 제작</p><h1 class="sx-display">${lines(HERO_TITLE)}</h1><p class="sx-body sx-hero-lead" data-in>${esc(HERO_LEAD)}</p></div>
@@ -135,7 +148,6 @@ const pages=({start,demoHref})=>[
     <p class="sx-after" data-in><span class="sx-body">맡기신 뒤에는 초대 링크 하나로 시안을 보고 의견을 남기고, 최종 파일까지 한곳에서 받아요.</span> <a class="sx-link" href="${esc(demoHref)}" data-entry-demo>예시 프로젝트 체험하기 →</a></p>`},
   {layer:'reel',cls:'is-maker',focus:'maejin-imbak',html:`<div class="sx-maker"><p class="sx-kicker" data-in>만드는 사람</p><h2 class="sx-display">${lines(['카메라 앞에 서 본 사람이 AI 모델의 연기를 연출해요'])}</h2><p class="sx-body" data-in>AI 광고가 어색해지는 곳은 대개 표정과 호흡, 말이 끝나는 타이밍이에요. SYNK PULSE는 엔터테인먼트·광고 업계에서 10년 일한 대표 유호가 연출해요.</p><ul class="sx-maker-credits">${MAKER_CREDITS.map(line=>`<li class="sx-small" data-in>${esc(line)}</li>`).join('')}</ul></div>`},
   {layer:'end',cls:'is-end',html:`<div class="sx-end"><p class="sx-display">${lines(HERO_TITLE)}</p><button type="button" class="sx-go is-solid is-large" data-entry="start" data-in><span data-start-label>${esc(start)}</span>${arrow}</button><p class="sx-small" data-in>${esc(HERO_NOTE)}</p>
-    <h2 class="sr">값</h2><ul class="sx-prices" data-in>${INTRO_PRICES.map(([label,value])=>`<li><span class="sx-small">${esc(label)}</span><strong class="sx-small">${esc(value)}</strong></li>`).join('')}</ul>
     <footer class="sx-foot" data-in><p class="sx-small">${esc(FOOT_NOTE)}</p><a class="sx-small sx-link" href="?mode=staff">제작자 공간</a></footer></div>`},
 ];
 const LAYERS=[{id:'reel'},{id:'none'},{id:'shard',image:`${A}shard.webp`},{id:'end',image:`${A}end.webp`}];
@@ -153,13 +165,14 @@ export function entryView({demoHref='?demo=film',entryError=null,resume=false}={
 }
 
 // 듣개는 화면과 함께 사라지는 래퍼에 걸고, 창에 건 것은 unmount에서 뗀다. 앱은 첫 화면을 다시 그리지 않고 update로 글만 바꾼다(쇼릴이 처음으로 돌아가지 않게).
-export function mountEntry(root,{onStart,onInvite,onDemo,animate=true,demoHref='?demo=film'}={}){
+export function mountEntry(root,{onStart,onInvite,onDemo,animate=true,demoHref='?demo=film',held=false}={}){
   const host=root.querySelector('.sx-home');if(!host)return {unmount(){},update(){}};
   const list=pages({start:'',demoHref});
   const $=selector=>host.querySelector(selector),$$=selector=>[...host.querySelectorAll(selector)];
   if(!animate)host.classList.add('no-enter');
   document.documentElement.classList.add('view-entry');
-  const reelApi=mountReel($('[data-reel]'),{onCut:film=>{const name=$('[data-cr-name]');if(!name||!film)return;name.textContent=film.title;$('[data-cr-line]').textContent=filmLine(film);$('[data-cr-note]').textContent=filmNote(film);}});
+  let hold=held;
+  const reelApi=mountReel($('[data-reel]'),{held,onCut:film=>{const name=$('[data-cr-name]');if(!name||!film)return;name.textContent=film.title;$('[data-cr-line]').textContent=filmLine(film);$('[data-cr-note]').textContent=filmNote(film);}});
   const layers=new Map($$('.sx-layer').map(el=>[el.dataset.layer,el]));
   const numbers=$$('.sx-nums button'),sections=$$('.sx-p'),reel=$('.sx-reel');
   let current=-1,cursor=null,screening=null;
@@ -177,7 +190,7 @@ export function mountEntry(root,{onStart,onInvite,onDemo,animate=true,demoHref='
     const page=list[i],id=page.layer;
     layers.forEach((el,key)=>el.classList.toggle('is-on',key===id));
     if(i!==1){reelApi.focus(page.focus??null);clearWork();}
-    if(id==='reel'&&!screening)reelApi.play();else reelApi.pause();
+    if(id==='reel'&&!screening&&!hold)reelApi.play();else reelApi.pause();
     autoCheck(page.cls==='is-check');
     $('[data-veil]').classList.toggle('is-on',!!page.veil);
     numbers.forEach((button,k)=>{button.classList.toggle('is-now',k===i);if(k===i)button.setAttribute('aria-current','true');else button.removeAttribute('aria-current');});
@@ -223,18 +236,25 @@ export function mountEntry(root,{onStart,onInvite,onDemo,animate=true,demoHref='
   // 작품 이름에 손을 올리면 뒤 화면이 그 작품으로.
   $$('.sx-work').forEach(button=>{const on=()=>{host.classList.add('has-work');$$('.sx-work').forEach(item=>item.classList.toggle('is-on',item===button));reelApi.focus(button.dataset.work);};button.addEventListener('pointerenter',on);button.addEventListener('focus',on);});
   $('.sx-works-wrap')?.addEventListener('pointerleave',()=>{clearWork();reelApi.focus(null);});
-  const watch=film=>{reelApi.pause();screening=openScreening(film,{onClose:()=>{screening=null;if(list[current]?.layer==='reel')reelApi.play();}});};
+  const watch=film=>{reelApi.pause();screening=openScreening(film,{onClose:()=>{screening=null;if(list[current]?.layer==='reel'&&!hold)reelApi.play();}});};
+  // 받은 링크 폼: 여는 단추 둘(넓은 화면 머리 · 휴대폰 1쪽)이 같은 상태를 따르고, 닫으면 연 단추(없으면 보이는 단추)로 초점이 돌아간다.
+  // 휴대폰은 폼을 연 채 다른 쪽으로 넘길 수 있다 — 연 단추가 화면 밖이면 첫 화면을 그 쪽으로 되감지 않는다(검수 F1).
+  const invite=$('[data-entry-invite]');let inviteFrom=null;
+  const markInvite=open=>{invite.hidden=!open;$$('[data-entry="open"]').forEach(button=>button.setAttribute('aria-expanded',open?'true':'false'));};
+  const setInvite=(open,from)=>{markInvite(open);if(open){if(from)inviteFrom=from;invite.querySelector('input').focus();return;}const back=[inviteFrom,...$$('[data-entry="open"]')].find(button=>button?.isConnected&&button.offsetParent!==null);if(!back)return;const box=back.getBoundingClientRect();back.focus({preventScroll:box.bottom<=0||box.top>=innerHeight});};
+  markInvite(!invite.hidden);
   host.addEventListener('click',event=>{
     if(onDemo&&event.target.closest('[data-entry-demo]')){event.preventDefault();onDemo();return;}
     const work=event.target.closest('[data-work]');if(work){watch(filmOf(work.dataset.work));return;}
     if(event.target.closest('[data-watch-now]')){watch(reelApi.current());return;}
     const what=event.target.closest('[data-entry]')?.dataset.entry;
     if(what==='start'){onStart?.();return;}
-    if(what==='open'){const form=$('[data-entry-invite]');form.hidden=!form.hidden;event.target.closest('[data-entry]').setAttribute('aria-expanded',form.hidden?'false':'true');if(!form.hidden)form.querySelector('input').focus();return;}
+    if(what==='open'){setInvite(invite.hidden,event.target.closest('[data-entry]'));return;}
+    if(what==='close'){setInvite(false);return;}
     // 쇼릴 위 빈 곳을 누르면 그 작품을 소리와 함께.
     if(current===0&&cursor&&!event.target.closest('button,a,input,form,.sx-hero-copy'))watch(reelApi.current());
   });
-  $('[data-entry-invite]').addEventListener('keydown',event=>{if(event.key==='Escape'){event.currentTarget.hidden=true;const opener=$('[data-entry="open"]');opener?.setAttribute('aria-expanded','false');opener?.focus();}});
+  invite.addEventListener('keydown',event=>{if(event.key==='Escape')setInvite(false);});
   if(onInvite)$('[data-entry-invite]').addEventListener('submit',event=>{event.preventDefault();onInvite(event.target.invite.value);});
   // 쇼릴 위에서는 커서가 곧 재생 안내다(마우스일 때만).
   let cursorRaf=0,onPointer=null;
@@ -249,15 +269,16 @@ export function mountEntry(root,{onStart,onInvite,onDemo,animate=true,demoHref='
   activate(0);sections[0].classList.add('is-in');
   return {
     // 받은 링크 오류 · 이어 쓰기는 쇼릴을 끊지 않고 글만 바꾼다.
-    pause(){reelApi.pause();},
-    resume(){if(list[current]?.layer==='reel'&&!screening)reelApi.play();},
+    // 예시 · 의뢰서 덮개가 열리고 닫힐 때(app.mjs overlayState).
+    pause(){hold=true;reelApi.suspend();},
+    resume(){hold=false;if(list[current]?.layer==='reel'&&!screening)reelApi.play();},
     update({resume,entryError,busy}={}){
       if(busy!==undefined){const send=$('[data-entry-invite] button[type=submit]');if(send){send.disabled=!!busy;send.querySelector('span').textContent=busy?'확인하고 있어요':'열기';}}
       if(resume!==undefined)$$('[data-start-label]').forEach(node=>{node.textContent=startLabel(resume);});
       if(entryError!==undefined){
         host.classList.toggle('has-entry-error',!!entryError);
         const form=$('[data-entry-invite]');form.querySelector('.sx-invite-alert')?.remove();
-        if(entryError){const box=document.createElement('div');box.className='sx-invite-alert';box.setAttribute('role','alert');const title=document.createElement('strong');title.textContent=entryError.title;const text=document.createElement('p');text.textContent=entryError.text;box.append(title,text);form.prepend(box);form.hidden=false;}
+        if(entryError){const box=document.createElement('div');box.className='sx-invite-alert';box.setAttribute('role','alert');const title=document.createElement('strong');title.textContent=entryError.title;const text=document.createElement('p');text.textContent=entryError.text;box.append(title,text);form.prepend(box);markInvite(true);}
       }
     },
     unmount(){
@@ -270,9 +291,11 @@ export function mountEntry(root,{onStart,onInvite,onDemo,animate=true,demoHref='
 }
 
 // 완성 광고 칸: 이름에 손을 올리면 오른쪽 스크린이 그 작품으로, 누르면 소리와 함께 상영한다.
+// 앱은 화면을 그릴 때마다 부른다. 목록이 사라진 화면(다른 곳으로 옮김)에서는 그 목록에서 연 상영을 닫는다.
+let listScreening=null;
 export function mountFilmList(root){
-  const host=root.querySelector('.sx-films');if(!host)return;
+  const host=root.querySelector('.sx-films');if(!host){listScreening?.close();return;}
   const poster=host.querySelector('[data-film-poster]');
   const show=row=>{const film=filmOf(row.dataset.filmOpen);if(poster&&film?.poster&&poster.getAttribute('src')!==film.poster)poster.src=film.poster;host.querySelectorAll('.sx-film-row').forEach(item=>item.classList.toggle('is-on',item===row));};
-  host.querySelectorAll('.sx-film-row').forEach(row=>{row.addEventListener('pointerenter',()=>show(row));row.addEventListener('focus',()=>show(row));row.addEventListener('click',()=>openScreening(filmOf(row.dataset.filmOpen)));});
+  host.querySelectorAll('.sx-film-row').forEach(row=>{row.addEventListener('pointerenter',()=>show(row));row.addEventListener('focus',()=>show(row));row.addEventListener('click',()=>{listScreening?.close();listScreening=openScreening(filmOf(row.dataset.filmOpen),{onClose:()=>{listScreening=null;}});});});
 }

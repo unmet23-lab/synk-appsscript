@@ -32,7 +32,7 @@ test('the server serves every new file and the service worker caches the shell b
   for(const name of ["'film.css'","'film-legacy.css'","'reel-wide','reel-tall'","'reel-wide-poster','reel-tall-poster','shard','end'","'file-gift-set','file-gift-ampoule','file-gift-jar','still-shards','still-lid'","'sheet-gift-'","'model-scene-'","NotoSerifKR-300.woff2"])assert.ok(server.includes(name),name);
   for(const name of ['film.css','film-legacy.css','film-home.mjs','film-review.mjs','assets/NotoSerifKR-300.woff2'])assert.ok(sw.includes(name),name);
   assert.doesNotMatch(sw,/reel-(wide|tall)\.mp4/,'the reel is not stored on the device');
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v27-film-20261105';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v28-film-next-20261105';/);
 });
 test('customer screens name no tool and promise nothing the rules forbid',()=>{
   const words=/Claude|Fable|Seedance|Higgsfield|Gemini|GPT|Kling|Sora|Veo|Omni|Suno|같은 얼굴|결제 전|무제한|납기|최고|최초|유일|1위|모루|MORU|드립백/;
@@ -181,4 +181,78 @@ test('a customer is not shown empty scene fields, staff still are',()=>{
   const customer=build('customer');
   assert.doesNotMatch(customer,/<dd>없음<\/dd>/);assert.match(customer,/<dd>한번 발라 봐요<\/dd>/);assert.match(customer,/<dd>유리결<\/dd>/);
   assert.match(build('staff'),/<dd>없음<\/dd>/,'staff keep the full table');
+});
+// 11-05 밤 다음 판: 아르곤 H2 · M2, B3, B6, Fable F5, FA1 · FA2(r2), FA1(r3)과 운영에서 잰 쇼릴 이름 늦음.
+// 브라우저처럼: src를 붙이거나 load()하면 시각 0 · readyState 0, loadedmetadata가 오면 readyState 1. once 듣개는 한 번 돌고 빠진다.
+const reelVideo=()=>{const attrs=new Map(),handlers={},frames=[];let src='';
+  return {muted:false,playsInline:false,loop:false,preload:'',poster:'',paused:true,currentTime:0,readyState:0,duration:17.7,loads:0,
+    buffered:{length:0,start:()=>0,end:()=>0},
+    get src(){return src;},set src(value){src=value;attrs.set('src',value);this.currentTime=0;this.readyState=0;},
+    setAttribute(key,value){attrs.set(key,value);},removeAttribute(key){attrs.delete(key);if(key==='src')src='';},getAttribute(key){return attrs.get(key)??null;},
+    load(){this.loads++;this.currentTime=0;this.readyState=0;},play(){this.paused=false;return Promise.resolve();},pause(){this.paused=true;},
+    addEventListener(type,fn,opts){(handlers[type]??=[]).push({fn,once:!!opts?.once});},removeEventListener(type,fn){handlers[type]=(handlers[type]||[]).filter(item=>item.fn!==fn);},
+    listeners(type){return (handlers[type]||[]).length;},
+    fire(type){if(type==='loadedmetadata')this.readyState=1;const list=handlers[type]||[];handlers[type]=list.filter(item=>!item.once);for(const item of list)item.fn();},
+    requestVideoFrameCallback(fn){frames.push(fn);return frames.length;},cancelVideoFrameCallback(){},
+    frame(mediaTime){for(const fn of frames.splice(0))fn(0,{mediaTime});}};};
+test('the reel names each film on the frame it cuts, waits when held, and lets go of the file under the demo',async()=>{
+  globalThis.requestAnimationFrame??=()=>0;globalThis.cancelAnimationFrame??=()=>{};
+  const {mountReel}=await import('./public/pulse-app/film-home.mjs');
+  const seen=[];
+  const video=reelVideo(),api=mountReel(video,{held:true,onCut:film=>seen.push(film?.id)});
+  assert.equal(video.getAttribute('src'),null,'붙잡은 쇼릴은 파일을 받지 않는다');
+  api.focus(null);assert.equal(video.getAttribute('src'),null,'첫 쪽을 켜도 붙잡은 동안은 받지 않는다');
+  api.play();assert.match(video.getAttribute('src'),/reel-(wide|tall)\.mp4$/);video.fire('loadedmetadata');
+  // 작품 이름은 화면에 나간 프레임의 시간으로 바뀐다(2.6초 컷). timeupdate만 보면 최대 0.25초 늦는다.
+  seen.length=0;video.frame(2.55);assert.deepEqual(seen,[]);video.frame(2.62);assert.deepEqual(seen,['hwaseong-light']);
+  video.currentTime=4.9;video.fire('timeupdate');assert.deepEqual(seen,['hwaseong-light'],'프레임을 보는 브라우저에서는 timeupdate로 바꾸지 않는다');
+  // 덮개가 열리면 멈추고, 다 받지 못한 파일은 놓는다. 다시 재생하면 그 자리에서 잇는다.
+  video.currentTime=5.2;api.suspend();assert.equal(video.paused,true);assert.equal(video.getAttribute('src'),null);
+  api.play();assert.match(video.getAttribute('src'),/reel-/);assert.equal(video.currentTime,0);video.fire('loadedmetadata');assert.equal(video.currentTime,5.2);
+  // 아르곤 A1: 다시 붙인 뒤 메타데이터가 오기 전에 또 덮여도 떼던 자리를 잃지 않고, 자리를 되돌리는 듣개는 하나뿐이다.
+  video.currentTime=7.4;api.suspend();api.play();assert.equal(video.listeners('loadedmetadata'),1);
+  api.suspend();assert.equal(video.listeners('loadedmetadata'),0,'떼면 기다리던 듣개도 뗀다');
+  api.play();assert.equal(video.listeners('loadedmetadata'),1);video.fire('loadedmetadata');assert.equal(video.currentTime,7.4);assert.equal(video.listeners('loadedmetadata'),0);
+  // 다 받은 쇼릴은 놓지 않고 멈추기만 한다.
+  const whole=reelVideo();whole.buffered={length:1,start:()=>0,end:()=>17.7};const wholeApi=mountReel(whole,{});
+  wholeApi.play();wholeApi.suspend();assert.equal(whole.paused,true);assert.match(whole.getAttribute('src'),/reel-/);
+  api.stop();wholeApi.stop();
+});
+test('the request form reads choose-then-next: back and next come after the screen, which is named for what it holds',()=>{
+  const flow=read('request-flow.mjs');
+  const aside=flow.indexOf('<aside class="sx-q-screen"'),asideEnd=flow.indexOf('</aside>'),foot=flow.indexOf('<footer class="sx-q-foot">');
+  assert.ok(aside>0&&asideEnd>aside&&foot>asideEnd,'이전 · 다음은 화면 칸 뒤 — 모델 단계에서 Tab이 모델 칸을 먼저 지난다');
+  assert.ok(flow.includes(`$('.sx-q-screen').setAttribute('aria-label',s.id==='model'?'모델 고르기':'미리 보기');`));
+  assert.ok(flow.includes(`form.scrollTop=0;$('.sx-q-ask').scrollTop=0;$('.sx-q-stage').scrollTop=0;`),'휴대폰은 바깥 칸이 스크롤된다 — 단계를 바꾸면 맨 위에서 연다');
+  const css=read('film.css');
+  assert.match(css,/\.sx-q-foot\{grid-column:1;grid-row:2;/);assert.match(css,/\.sx-q-screen\{grid-column:2;grid-row:1\/3;/);assert.match(css,/  \.sx-q-foot\{order:3;position:sticky;bottom:0;/);
+});
+test('the invite door closes from inside, both openers follow it, and the first screen keeps to the rules it set itself',()=>{
+  const html=entryView({});
+  assert.match(html,/<form class="sx-invite"[^>]*>[\s\S]*<button type="button" class="sx-small sx-invite-close" data-entry="close">닫기<\/button><\/form>/);
+  const home=read('film-home.mjs');
+  assert.ok(home.includes(`if(what==='close'){setInvite(false);return;}`));
+  assert.ok(home.includes(`$$('[data-entry="open"]').forEach(button=>button.setAttribute('aria-expanded',open?'true':'false'))`),'여는 단추 둘이 같은 상태');
+  assert.ok(home.includes('let closed=false;\n  function close(){if(closed)return;closed=true;')||home.includes('let closed=false;\r\n  function close(){if(closed)return;closed=true;'),'상영 창은 한 번만 닫힌다');
+  assert.ok(home.includes(`if(!host){listScreening?.close();return;}`),'완성 광고 목록이 사라지면 그 목록에서 연 상영도 닫는다');
+  assert.ok(read('app.mjs').includes(`held:!!(filmDemo||startRequest)`),'예시 · 의뢰서가 곧바로 열리는 주소에서는 쇼릴을 받지 않는다');
+  const css=read('film.css')+read('film-legacy.css');
+  assert.doesNotMatch(css,/min-aspect-ratio:1\/1\)/,'넓은 화면 질의는 좁은 화면 질의((max-aspect-ratio:1/1))의 정확한 여집합');
+  assert.doesNotMatch(css,/box-shadow:0 -22px/,'가리는 것은 그라데이션으로 — 그림자 없음');
+  assert.doesNotMatch(read('film.css'),/font-size:14px/,'글자 크기는 넷(제목 · 준제목 · 본문 15 · 작은 글 13)');
+  // Fable 최종(pulse-film-20261105-next) F1~F5.
+  assert.ok(home.includes('back.focus({preventScroll:box.bottom<=0||box.top>=innerHeight})'),'F1 휴대폰에서 닫아도 첫 화면을 되감지 않는다');
+  const legacy=read('film-legacy.css'),film=read('film.css'),flow=read('request-flow.mjs');
+  assert.match(legacy,/@media \(min-width:821px\) and \(min-aspect-ratio:10001\/10000\)\{html\.has-demo-nav \.sx-room-hero\{min-height:calc\(100dvh - var\(--demo-bar\)\)\}/,'F2 예시 방 높이는 넓은 화면만');
+  assert.doesNotMatch(legacy,/^html\.has-demo-nav \.sx-room-hero\{/m);
+  assert.match(film,/  \.sx-q\.sheet-open \.sx-q-credits\{transform:none;visibility:visible;/,'F3 닫힌 시트는 초점 밖');assert.ok(flow.includes('sheet(){setSheet(!host.classList.contains(\'sheet-open\'));}'));
+  assert.ok(legacy.includes('  html.has-demo-nav .sx-q-top{top:var(--demo-bar)}'),'F4 예시 안 의뢰서 머리 막대는 예시 막대 아래');
+  assert.doesNotMatch(film,/^\.sx-q-credits:not\(:has\(\.sx-q-line\)\)\{background:none\}/m,'F5 투명 처리는 넓은 화면 크레딧에만');
+});
+test('no public file of the customer app names an AI tool, comments included — a customer can read them with view-source',async()=>{
+  const {readdirSync}=await import('node:fs');
+  const dir=new URL('./public/pulse-app/',import.meta.url);
+  const files=readdirSync(dir,{recursive:true}).map(String).filter(name=>/\.(mjs|js|css|html|webmanifest)$/.test(name));
+  assert.ok(files.length>30,'공개 글 파일을 모두 읽는다');
+  for(const name of files)assert.doesNotMatch(readFileSync(new URL(name.split('\\').join('/'),dir),'utf8'),/Claude|Fable|Seedance|Higgsfield|Gemini|GPT|Kling|Sora|아르곤|Argon|페이블|시댄스|힉스필드/,name);
 });

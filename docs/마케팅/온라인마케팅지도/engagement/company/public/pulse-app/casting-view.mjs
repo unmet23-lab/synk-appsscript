@@ -163,7 +163,7 @@ export function castingCodeResult({text='',saved={},review='',fromIntake=false}=
 }
 // 받침이 있으면 「으로」, 없으면 「로」(ㄹ 받침도 「로」).
 const josa=word=>{const code=String(word||'').trim().slice(-1).charCodeAt(0)-0xac00;if(code<0||code>11171)return '(으)로';const last=code%28;return last===0||last===8?'로':'으로';};
-// open: 담당자가 접거나 편 상태(null이면 글이 있을 때 편다). 접어 둔 칸이 화면을 다시 그릴 때마다 열리지 않게 한다(Fable 10-19).
+// open: 담당자가 접거나 편 상태(null이면 글이 있을 때 편다). 접어 둔 칸이 화면을 다시 그릴 때마다 열리지 않게 한다(검수 10-19).
 export function castingCodeBox({text='',saved={},review='',fromIntake=false,open=null}={}){
   return `<details class="casting-code"${(open??!!String(text).trim())?' open':''}><summary><span><strong>캐스팅북 문의로 채우기</strong><small>고객이 캐스팅북에서 고른 모델·헤어를 그대로 저장해요</small></span></summary><div class="casting-code-body"><label class="field">고객이 보낸 캐스팅북 문의 글<textarea data-casting-code rows="3" maxlength="20000" spellcheck="false" autocomplete="off" placeholder="예: [진행하고 싶은 모델] 1. F02 하린 … 헤어 2번 하이 포니테일">${esc(text)}</textarea></label><div class="casting-code-result" data-casting-code-result aria-live="polite">${castingCodeResult({text,saved,review,fromIntake})}</div></div></details>`;
 }
