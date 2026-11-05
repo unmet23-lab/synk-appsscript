@@ -25,7 +25,9 @@ SONG_DROP = 8.805      # 곡 안 드롭 첫 박(고역 어택)
 SONG_LAST_HIT = 25.796 # 곡 끝 마지막 타 — 이 뒤로 몸통이 0.58초 울리고 1.4초 꼬리
 BEAT = 0.5483
 # 마지막 타는 콘티 자리(8마디 첫 박 15.37초)이고, 그 뒤로 두 박을 더 둔다 — 심사 「글이 뜨자마자 꺼진다」. 원본은 이 자리에 검은 끝 카드 2초가 있는데 우리는 끝 그림을 그대로 둔다(카메라는 15.47초에 닿아 멈춤)
-F = [0, 27, 106, 211, 237, 316, 395]   # 컷 경계 프레임(24fps). 11-05 오후 유호님 「캔에서 음료수 나오는 시간이 너무 길어」로 4번을 두 박(26장)으로 줄이고 5번을 79장으로
+# 11-06 유호님 「첫 시작하자마자 2초정도는 너무 좋은데 그 뒤로 너무 늘어지는것같은데 ? … 오래 머물러있는 장면들이 오래 머무는 의미가 딱히 없어」 → 드롭 앞을 넉 마디에서 두 마디(8박 · 4.39초)로:
+# 2번 접사 3.3초 → 두 박, 3번 초점 넘김 4.4초 → 네 박. 곡은 셋째 마디 첫 박부터 튼다(드롭까지 그대로). 끝은 마지막 타 뒤 「오미톡」 말이 들어가도록 세 박.
+F = [0, 27, 53, 105, 131, 210, 302]   # 컷 경계 프레임(24fps). 옛 판(16.46초)은 [0, 27, 106, 211, 237, 316, 395]
 DROP = F[3] / FPS
 
 
@@ -41,11 +43,13 @@ ICE_FROM = 0
 ICE_HIT = (12 - ICE_FROM) / 24       # 얼음 둘레로 물이 튀기 시작하는 때(물보라 토막 안 초, p1-05p__2 12장)
 SPLASH_BACK = (42 - ICE_FROM) / 24   # 왕관이 무너져 수면으로 내려앉는 때(42~46장)
 PLIP = (48 - ICE_FROM) / 24          # 가운데 물기둥이 솟는 때(46~50장) — 실제 물에서 「퐁」이 나는 자리
-CUT3_FROM = 8                        # p1-03i__2 앞 8장은 첫 장의 선명도가 잦아드는 자리(2804 → 1612), 120장은 끝 장만 선명도가 튀어(804 → 1483) 둘 다 뺀다
+C2_FROM = 14                         # 2번 접사는 두 박만 — 큰 물방울이 흐르기 시작하는 20장 바로 앞부터
+DRIP_START = (20 - C2_FROM) / 24     # 2번 컷 안에서 물방울이 움직이기 시작하는 때
+CUT3_FROM = 28                       # p1-03i__2 네 박: 캔이 또렷한 끝(28~40장) → 초점이 넘어감(40~72장) → 잔이 또렷(72~80장). 앞 8장 · 120장은 원래 안 씀
 GLASS_FOCUS = (74 - CUT3_FROM) / 24  # 3번 컷에서 초점이 잔에 닿는 때(p1-03i__2 40~76장)
 CUTS = {
     1: (("p1-01c",), 0),            # d(캔이 일찍 또렷)는 뚜껑이 느려 컷 끝에도 엠블럼이 반만 나오고 뚜껑 밑에 없던 홈이 생겨 안 쓴다 — c는 끝까지 조금 흐리지만 원본도 그렇다
-    2: (("p1-02e", "p1-02d"), 0),   # d: 첫 · 끝 그림을 한 사진에서 잘라 카메라를 묶은 판(첫끝자르기.py). c는 다가감이 17.5%로 콘티 6.6%의 2.6배였다
+    2: (("p1-02e", "p1-02d"), C2_FROM),   # d: 첫 · 끝 그림을 한 사진에서 잘라 카메라를 묶은 판(첫끝자르기.py). c는 다가감이 17.5%로 콘티 6.6%의 2.6배였다
     # 3번 컷: 유호님 11-05 「똑같은 캔이라 … 맹한느낌」 → 열매 컷은 「엥두가 너무 뜬금없이 … 억지로 만든 슬롭」으로 버림 → 시안을 거쳐 「E-2로」. 캔에서 오미자 · 레몬 잔으로 초점이 넘어가는 한 판(드리미나 시댄스 2.5 첫 · 끝 프레임).
     # p1-03g는 유호님 「컵이 자기 혼자 조금 움직이고 컵 내용물이 움직여」 — 84~100장에 배경은 멈췄는데 잔만 18 px, 얼음 · 오미자 배치도 바뀌었다(지시문의 「열매가 까딱」, 처음 · 끝 그림의 잔 크기 1.7배 차이 탓).
     # h: 한 사진에서 초점만 바꾼 처음 · 끝 그림(어긋남 0~1 px) + 카메라 고정. 세 벌 모두 잔 · 내용물 · 캔 위치 변화가 거의 0 px(한 벌 레몬 1 px). __2는 캔이 42장까지 또렷하고 90장에 잔으로 넘어가 시점이 알맞다(첫 벌은 28장부터 흐려지고 셋째는 잔이 104장 뒤에야 또렷).
@@ -72,9 +76,25 @@ CUTS = {
     6: (("p1-06e", "p1-06d"), 0),   # e: 짙은 파랑 + 네온 테두리. d: 첫 · 끝 그림으로 묶음. c는 카메라가 콘티와 반대로 가서 낱말표가 잘리고 작은 한글이 「지통」으로 깨졌다
 }
 
-# 끝 글: 낱말표 전체가 캔에 보이니 이름을 다시 얹지 않고, 위 오른쪽 어두운 파란 자리에 「다섯 가지 맛,」(한 박 앞) → 「톡」(마지막 타)
-TEXT_LINE = beat(11)
+# 끝 글: 11-06 유호님 「"다섯 가지 맛, 톡" 이거 좀 짜친다. cg나 더 세련되게 타이포그래피를 써줘야해」(슬롭 점검표 24번) — 글로 친 「다섯 가지 맛,」은 빼고 내레이션이 말한다.
+# 화면에는 그린 「톡」 마크(라벨/톡마크.py — ㅗ 세로획 자리가 라벨 i 점과 같은 빨간 열매 점) 하나: 획 셋이 한 박 앞에 끊어 들어오고, 빨간 점이 기포처럼 떠올라 마지막 타에 박힌다.
+TOK_STROKES = beat(11)
 TEXT_TOK = beat(12)
+TOK_POS = (885, 300, 400)   # 마크 가운데 x · y · 높이(1080×1920) — 캔 모서리 네온 위 남색 자리. Fable 맹검 「세련됐지만 소심하다」로 330 → 400
+
+# 내레이션: 일레븐 v4 Mr. K 한 번에 구운 판에서 낱말을 잘라 박에 놓는다(유호님 11-06 「나레이션을 추가해보자」). 드롭 앞 다섯 박에 다섯 맛, 드롭 뒤는 효과음만, 끝에서 받는다.
+NARR_FILE = ROOT + "/소리/p1/내레이션후보_20261106/" + os.environ.get("P1_NARR", "MrK") + ".mp3"
+# (낱말, 파일 안 시작, 끝) — 소리 덩이는 -38 dB 문턱으로 잼. 쉼 자리에 지어낸 말(Yoojin 「다시?」 · Jisoo 「달을?」 · Krys 「맛이야」)은 자르지 않는다. Krys는 「옹이톡」이라 뺐다
+NARR_CUTS = {
+    "MrK": [(0.02, 0.64), (1.08, 1.60), (2.00, 2.50), (3.00, 3.48), (3.90, 4.52), (6.76, 8.42), (8.78, 9.06), (9.62, 10.30)],
+    "YoojinKim": [(0.02, 0.70), (1.10, 1.58), (2.14, 2.50), (3.04, 3.46), (3.90, 4.50), (6.38, 8.04), (8.44, 8.62), (9.18, 9.72)],
+}
+# 다섯 맛은 둘째 컷 첫 박부터 한 박에 하나 — 「맵고」가 잔이 또렷해지는 자리(3.29초)에 온다. 첫 컷(뚜껑이 열림)은 효과음만.
+# 처음엔 0.28초부터 놓았는데 Fable 맹검 「맵고가 끝난 뒤 드롭까지 약 1.4초 동안 정물만」으로 한 박씩 뒤로 옮겼다
+NARR_AT = [("달고", beat(-6)), ("시고", beat(-5)), ("쓰고", beat(-4)), ("짜고", beat(-3)), ("맵고", beat(-2)),
+           ("다섯 가지 맛이, 한 캔에", beat(8.5)), ("톡", TEXT_TOK), ("오미톡", beat(13))]
+NARR = [(w, a0, a1, at) for (w, at), (a0, a1) in zip(NARR_AT, NARR_CUTS[os.environ.get("P1_NARR", "MrK")])]   # (낱말, 파일 안 시작, 끝, 화면 시각)
+NARR_DB = -4
 
 
 def picture():
@@ -137,6 +157,14 @@ def music(total):
     g[i4:i5] = np.linspace(1, 0.66, i5 - i4)
     g[i5:i6] = 0.66
     g[i6:i7] = np.linspace(0.66, 1, i7 - i6)
+    # 내레이션 아래에서는 음악을 5 dB 내린다(앞뒤 40 ms 기울기)
+    duck = 10 ** (-5 / 20)
+    r = int(0.04 * R)
+    for _, a0, a1, at in NARR:
+        j0, j1 = int((at - 0.05) * R), int((at + (a1 - a0) + 0.05) * R)
+        g[j0:j1] = np.minimum(g[j0:j1], duck)
+        g[max(0, j0 - r):j0] = np.minimum(g[max(0, j0 - r):j0], np.linspace(1, duck, j0 - max(0, j0 - r)))
+        g[j1:j1 + r] = np.minimum(g[j1:j1 + r], np.linspace(duck, 1, len(g[j1:j1 + r])))
     bed *= g[:, None]
     bed[-int(0.25 * R):] *= np.linspace(1, 0, int(0.25 * R))[:, None]
     return bed
@@ -155,7 +183,7 @@ EVENTS = [
     ("찬 공기", SFX + "기포_3.wav", 2.00, 1.00, 0.20, -24, 0.40),
     ("얼음", SFX + "얼음_1.wav", 0.60, 0.70, 0.60, -11, 0.25),
     # 컷 2 — 또르르(물방울_3 어택 0.82초를 물방울이 움직이기 시작하는 자리에)
-    ("또르르", SFX + "물방울_3.wav", 0.30, 1.90, F[1] / FPS + 0.85 - 0.52, -21, 0.50),
+    ("또르르", SFX + "물방울_3.wav", 0.30, 1.40, F[1] / FPS + DRIP_START - 0.52, -21, 0.50),
     # 컷 3 — 카메라가 멈춰 있어 「휙」은 뺐다. 초점이 잔에 닿을 때 탄산이 사르르 올라오고 얼음이 한 번 달그락
     ("잔 탄산", SFX + "기포_3.wav", 2.00, 1.50, F[2] / FPS + GLASS_FOCUS - 0.35, -24, 0.50),
     ("잔 얼음", SFX + "얼음_1.wav", 0.60, 0.50, F[2] / FPS + GLASS_FOCUS, -19, 0.25),
@@ -174,7 +202,7 @@ EVENTS = [
     ("철썩", FAIR + "Water Light Splashing.M.wav", 0.10, 0.60, (F[4] + C5_ICE) / FPS + SPLASH_BACK - 0.04, -12, 0.25),   # 왕관이 무너짐(파일 첫 어택 0.141초)
     ("방울 톡", SFX + "물방울_3.wav", 0.72, 0.45, (F[4] + C5_ICE) / FPS + PLIP - 0.10, -13, 0.25),   # 물기둥이 솟는 「퐁」(물방울_3 가장 큰 어택 0.82초)
     # 끝 — 마지막 타(곡)와 「톡」 글자가 같은 자리, 캔 따는 소리로 찍고 캔 두드림 · 유리 한 번. 그 뒤 곡 꼬리와 탄산만 남아 멈춘다
-    ("톡 칙", SFX + "캔따기_1.wav", 0.00, 0.30, TEXT_TOK, -5, 0.12),
+    ("톡 칙", SFX + "캔따기_1.wav", 0.00, 0.30, TEXT_TOK, -9, 0.12),   # 내레이션 「톡」과 겹쳐 4 dB 내림
     ("톡", FAIR + "Can Soda Pop Touches.M.wav", 0.91, 0.40, TEXT_TOK, -3, 0.20),
     ("팅", FAIR + "Glass Clink Toast.M.wav", 0.15, 0.40, TEXT_TOK, -11, 0.20),
     ("남은 탄산", SFX + "기포_1.wav", 6.00, 1.00, TEXT_TOK + 0.08, -13, 0.60),
@@ -188,33 +216,64 @@ def sound():
     for name, path, start, dur, at, db, out in EVENTS:
         x = cut(path, start, dur)
         m.put(at, x, db=db, fade=0.004, fade_out=out)
+    # 내레이션 — 쓰는 낱말들을 합친 RMS로 한 번에 맞춘다(목소리마다 원래 크기가 −19 ~ −26 LUFS로 달라 봉우리로 맞추면 크기가 갈린다). 낱말 사이 세기 차이는 그대로
+    v = C.load(NARR_FILE)
+    used = np.concatenate([v[int(a0 * C.RATE):int(a1 * C.RATE)] for _, a0, a1, _ in NARR])
+    v = v * (0.12 / (float(np.sqrt(np.mean(used ** 2))) or 1.0))
+    for name, a0, a1, at in NARR:
+        m.put(at, v[int(a0 * C.RATE):int(a1 * C.RATE)], db=NARR_DB, fade=0.01, fade_out=0.05)
     m.finish(os.path.join(OUT, "소리.wav"), boost_db=0)
+
+
+def tok_frames(d):
+    # 「톡」 마크 장마다(1080×1920 RGBA) — 마크가 없는 장은 투명 한 장을 함께 쓴다
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "라벨"))
+    import 톡마크 as T
+    os.makedirs(d, exist_ok=True)
+    for f in os.listdir(d):
+        os.remove(os.path.join(d, f))
+    cx, cy, h = TOK_POS
+    ease = lambda u: 1 - (1 - max(0.0, min(1.0, u))) ** 3
+    blank = None
+    for i in range(F[-1]):
+        t = i / FPS
+        layer = np.zeros((1920, 1080, 4), np.uint8)
+        if t >= TOK_STROKES:
+            grow = 1.06 - 0.06 * ease((t - TOK_STROKES) / (6 / FPS))
+            for k, name in enumerate(("ㅌ", "ㅗ", "ㄱ")):
+                u = (t - TOK_STROKES - k * 2 / FPS) / (3 / FPS)
+                if u <= 0:
+                    continue
+                m = T.draw(1080, 1920, cx, cy, h, parts=[name], dot_scale=0, scale=grow, alpha=min(1.0, u))
+                a = m[..., 3:4].astype(np.float32) / 255
+                layer[..., :3] = (layer[..., :3] * (1 - a) + m[..., :3] * a).astype(np.uint8)
+                layer[..., 3] = np.maximum(layer[..., 3], m[..., 3])
+            rise0 = TEXT_TOK - 5 / FPS
+            if t >= rise0:
+                u = (t - rise0) / (5 / FPS)
+                dy = -2.4 * T.S * (1 - ease(u)) if u < 1 else 0.0
+                pop = 1.0 if u < 1 else 1.0 + 0.28 * np.exp(-(t - TEXT_TOK) * 14) * np.cos((t - TEXT_TOK) * 22)
+                m = T.draw(1080, 1920, cx, cy, h, parts=[], dot_scale=max(0.55, min(1.0, 0.55 + u * 0.45)) * pop, dot_dy=dy, scale=grow)
+                a = m[..., 3:4].astype(np.float32) / 255
+                layer[..., :3] = (layer[..., :3] * (1 - a) + m[..., :3] * a).astype(np.uint8)
+                layer[..., 3] = np.maximum(layer[..., 3], m[..., 3])
+        ok, buf = cv2.imencode(".png", layer)
+        buf.tofile(os.path.join(d, f"{i:04d}.png"))
 
 
 def render():
     pic = os.path.join(OUT, "화면.mp4")
     wav = os.path.join(OUT, "소리.wav")
-    here = os.path.dirname(os.path.abspath(__file__))
-    txt = os.path.join(OUT, "끝글")
-    os.makedirs(txt, exist_ok=True)
-    C.run(sys.executable, "-X", "utf8", os.path.join(here, "라벨", "끝글자.py"), "--오른쪽위", txt)
+    seq = os.path.join(OUT, "톡마크")
+    tok_frames(seq)
     raw = os.path.join(OUT, "_합침.mp4")
-    a, b = TEXT_LINE, TEXT_TOK
-    # 「톡」은 글자 칸만 잘라 3장 동안 0.9 → 1배로 커지며 들어온다(글자 오른쪽 아래를 붙잡음). 다른 글은 0.2초 줄 단위로 조용히
-    im = cv2.imdecode(np.fromfile(os.path.join(txt, "끝글_톡.png"), np.uint8), cv2.IMREAD_UNCHANGED)
-    ys, xs = np.where(im[..., 3] > 0)
-    x0, x1, y0, y1 = int(xs.min()), int(xs.max()) + 1, int(ys.min()), int(ys.max()) + 1
-    ok, buf = cv2.imencode(".png", im[y0:y1, x0:x1])
-    assert ok
-    tok = os.path.join(txt, "끝글_톡_칸.png")
-    buf.tofile(tok)
+    b = TEXT_TOK
+    # 마지막 타에 화면이 2.5% 밀렸다 돌아온다(옛 판 그대로). 「톡」 마크는 화면에 붙은 글자라 밀리지 않는다
     S = f"(1+0.025*gte(t,{b:.4f})*exp(-max(0,t-{b:.4f})*10))"
     vf = (f"[0:v]scale=w='trunc(1080*{S}/2)*2':h='trunc(1920*{S}/2)*2':eval=frame:flags=lanczos,crop=1080:1920:(iw-1080)/2:(ih-1920)/2[p];"
-          f"[1:v]format=rgba,fade=t=in:st={a:.4f}:d=0.2:alpha=1[l];"
-          f"[2:v]format=rgba,scale=w='iw*min(1,0.9+max(0,t-{b:.4f})/0.125*0.1)':h='ih*min(1,0.9+max(0,t-{b:.4f})/0.125*0.1)':eval=frame:flags=lanczos,fade=t=in:st={b:.4f}:d=0.05:alpha=1[k];"
-          f"[p][l]overlay=x=0:y='if(lt(t,{a + 0.2:.4f}),12*(1-max(0,t-{a:.4f})/0.2),0)':enable='gte(t,{a:.4f})':shortest=1[v1];"
-          f"[v1][k]overlay=x='{x1}-overlay_w':y='{y1}-overlay_h':eval=frame:enable='gte(t,{b:.4f})':shortest=1,scale=out_color_matrix=bt709,format=yuv420p[v]")
-    C.run("ffmpeg", "-y", "-v", "error", "-i", pic, "-loop", "1", "-framerate", str(FPS), "-i", os.path.join(txt, "끝글_줄.png"), "-loop", "1", "-framerate", str(FPS), "-i", tok,
+          f"[1:v]format=rgba[k];"
+          f"[p][k]overlay=0:0:shortest=1,scale=out_color_matrix=bt709,format=yuv420p[v]")
+    C.run("ffmpeg", "-y", "-v", "error", "-i", pic, "-framerate", str(FPS), "-i", os.path.join(seq, "%04d.png"),
           "-filter_complex", vf, "-map", "[v]", "-frames:v", str(F[-1]), "-c:v", "libx264", "-crf", "14", "-preset", "medium", "-r", str(FPS),
           "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", raw)
     tmp = os.path.join(OUT, "_소리붙임.mp4")
