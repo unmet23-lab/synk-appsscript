@@ -1,0 +1,11 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Mongle: the coral needle-felted wool ghost-shaped mascot in the attached reference photos (use them ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy black bead eyes with no whites, pink felt cheeks). Mongle has NO mouth, NO arms, NO legs, ever — any object floats right next to its body or rests on it.
+
+Layout: keep the TOP 24% of the image calm and uncluttered (plain wall or sky, softly out of focus) — text will be added there later. All the action sits in the middle and lower part.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, warm natural light, gentle depth of field, cute but not babyish (for university students and young workers). Absolutely no text, letters, numbers, logos or symbols anywhere (no speech bubbles — they will be added later).
+
+Use Image 1 as the composition reference: the same busy needle-felted Korean barbecue restaurant, warm evening lamps, wooden walls, tables packed with laughing felt diners and sizzling meat with many side dishes. Change: REMOVE the waiter completely — no staff in the picture at all. A clear open aisle runs from a kitchen doorway at the back (middle right) down to the foreground right, with nobody standing in it. Bottom left: Mongle alone at a small round table with one empty water cup and a cold grey unlit round grill, no food at all. Mongle looks straight ahead, patient and hopeful. No sweat drop, no tears. Everyone else is busy eating; nobody notices Mongle.
