@@ -34,7 +34,8 @@ def beat(k):
     return DROP + k * BEAT
 
 
-# 컷 번호 → (판 차례, 그 판에서 시작하는 프레임)
+# 컷 번호 → (판 차례, 그 판에서 시작하는 프레임). 한 컷을 토막 내면 [(판 차례, 시작, 장수, 자르기 칸), …]
+CUT5_SPLIT = 13   # 5번 컷 앞 토막 장수 = 드롭 뒤 다섯째 박(beat(5))
 CUTS = {
     1: (("p1-01c",), 0),            # d(캔이 일찍 또렷)는 뚜껑이 느려 컷 끝에도 엠블럼이 반만 나오고 뚜껑 밑에 없던 홈이 생겨 안 쓴다 — c는 끝까지 조금 흐리지만 원본도 그렇다
     2: (("p1-02e", "p1-02d"), 0),   # d: 첫 · 끝 그림을 한 사진에서 잘라 카메라를 묶은 판(첫끝자르기.py). c는 다가감이 17.5%로 콘티 6.6%의 2.6배였다
@@ -42,7 +43,12 @@ CUTS = {
     # h: 입구 전체에서 세차게 쏟아진다(흐름 초당 126 px, 원본 47). 처음 14장은 매끈하다가 출렁이기 시작해 그 뒤부터 쓴다.
     # e는 유호님 11-05 「물 떨어지는데가 좀 부자연스럽거든」 — 줄기 옆 방울이 공중에 떠 있거나 위로 올라가고 입구가 비어 아래 턱에서만 얇게 나왔다. d · c는 젤리 · 리본
     4: ((os.environ.get("P1_CUT4", "p1-04h"),), int(os.environ.get("P1_CUT4_FROM", "14"))),
-    5: (("p1-05d", "p1-05c"), 0),   # d: 잔이 차오르고 줄기가 닿는 자리가 끓는다. c는 움직임이 원본의 1/4이었다
+    # 5번 컷은 박에 맞춰 두 토막: e 13장(한 박, 줄기가 파고들며 기포 구름이 핀다) + k 39장(세 박, 줄기 없이 잔물결 치며 차오르고 얼음이 떠올라 모서리가 수면을 뚫는다).
+    # 유호님 11-05 「담길때 이 모습이 부자연스러워서」 — 옛 d는 빈 유리에 기포가 뜨고 줄기가 막대처럼 꽂히고 수면이 납작했다.
+    # 시댄스는 줄기 닿는 자리를 1초 넘게 살려 두지 못한다(e · f는 뒤로 갈수록 거품 언덕 위에 얹히고, g는 거의 멈추고, h는 유리 막대가 되고 물방울이 위로 뜬다) — 그래서 줄기는 한 박만 쓴다.
+    # 뒤 토막: i는 위에서 가는 줄기가 튀어나오고, j는 수면이 왼쪽 한 자리에서 봉긋 자라기만 하고 얼음이 잠겨 맹검 「고치고 통과」, l은 오른쪽 가에 줄기가 보였다.
+    # k 앞 16장은 오른쪽 가 아래에 붉은 세로 띠(시작 그림에 있던 것)가 남아 뺀다. 판이 720×1278이라 9:16로 1 px씩 잘라 늘림을 없앤다.
+    5: [(("p1-05e",), 0, CUT5_SPLIT, None), (("p1-05k",), 16, 52 - CUT5_SPLIT, "718:1276:1:1")],
     6: (("p1-06e", "p1-06d"), 0),   # e: 짙은 파랑 + 네온 테두리. d: 첫 · 끝 그림으로 묶음. c는 카메라가 콘티와 반대로 가서 낱말표가 잘리고 작은 한글이 「지통」으로 깨졌다
 }
 
@@ -55,19 +61,25 @@ def picture():
     d = os.path.join(OUT, "_컷")
     os.makedirs(d, exist_ok=True)
     paths = []
-    for n, (ids, a) in CUTS.items():
-        k = F[n] - F[n - 1]
-        pid = C.latest(*ids)
-        src = C.clip(pid)
-        have = C.frames_of(src)
-        if a + k > have:
-            raise SystemExit(f"#{n} {pid}: {a}장부터 {k}장이 필요한데 {have}장뿐")
-        out = os.path.join(d, f"{n:02d}.mp4")
-        C.cut_video(src, a, k, W, H, FPS, out)
-        if C.frames_of(out) != k:
-            raise SystemExit(f"{out}: {k}장이어야 하는데 {C.frames_of(out)}장")
-        paths.append(out)
-        print(f"#{n} {pid} {a}장부터 {k}장 → {F[n - 1] / FPS:.3f}~{F[n] / FPS:.3f}초")
+    for n, spec in CUTS.items():
+        total = F[n] - F[n - 1]
+        parts = spec if isinstance(spec, list) else [(spec[0], spec[1], total, None)]
+        if sum(p[2] for p in parts) != total:
+            raise SystemExit(f"#{n}: 토막 장수 합이 {total}장이 아니다")
+        at = F[n - 1]
+        for i, (ids, a, k, crop) in enumerate(parts):
+            pid = C.latest(*ids)
+            src = C.clip(pid)
+            have = C.frames_of(src)
+            if a + k > have:
+                raise SystemExit(f"#{n} {pid}: {a}장부터 {k}장이 필요한데 {have}장뿐")
+            out = os.path.join(d, f"{n:02d}{'abc'[i]}.mp4" if len(parts) > 1 else f"{n:02d}.mp4")
+            C.cut_video(src, a, k, W, H, FPS, out, crop=crop)
+            if C.frames_of(out) != k:
+                raise SystemExit(f"{out}: {k}장이어야 하는데 {C.frames_of(out)}장")
+            paths.append(out)
+            print(f"#{n} {pid} {a}장부터 {k}장 → {at / FPS:.3f}~{(at + k) / FPS:.3f}초")
+            at += k
     C.join_videos(paths, os.path.join(OUT, "화면.mp4"))
 
 
@@ -133,9 +145,10 @@ EVENTS = [
     ("콸콸 1", SFX + "붓기_1.wav", 0.66, 1.40, DROP, -3, 0.40),
     ("콸콸 2", SFX + "붓기_3.wav", 0.80, 1.30, DROP + 1.05, -4, 0.50),
     ("치익 깔림", SFX + "기포_1.wav", 3.00, 2.40, DROP, -11, 0.30),   # 아르곤 1차 「치지직」(-8) · 2차 「묻힌다」(-16) 사이
-    # 컷 5 — 사르르 · 톡톡, 얼음 한 번
+    # 컷 5 — 줄기가 꽂히는 앞 토막부터 붓는 소리를 이어 차오르는 동안 잦아든다. 사르르를 깔고, 얼음이 보이는 첫 프레임(뒤 토막 시작)에 얼음 한 번
+    ("콸콸 3", SFX + "붓기_1.wav", 1.00, 1.20, F[4] / FPS - 0.03, -9, 0.40),   # 붓기 파일은 2초 뒤로 -52 dB 아래라 쓸 수 없다
     ("사르르", SFX + "기포_3.wav", 2.00, 2.30, F[4] / FPS, -7, 0.40),
-    ("얼음 톡", SFX + "얼음_3.wav", 0.55, 0.60, F[4] / FPS + 0.55, -14, 0.20),
+    ("얼음 톡", SFX + "얼음_3.wav", 0.55, 0.60, (F[4] + CUT5_SPLIT) / FPS, -12, 0.20),
     # 끝 — 마지막 타(곡)와 「톡」 글자가 같은 자리, 캔 따는 소리로 찍고 캔 두드림 · 유리 한 번. 그 뒤 곡 꼬리와 탄산만 남아 멈춘다
     ("톡 칙", SFX + "캔따기_1.wav", 0.00, 0.30, TEXT_TOK, -5, 0.12),
     ("톡", FAIR + "Can Soda Pop Touches.M.wav", 0.91, 0.40, TEXT_TOK, -3, 0.20),

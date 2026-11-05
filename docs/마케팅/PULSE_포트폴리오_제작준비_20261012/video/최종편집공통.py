@@ -43,9 +43,10 @@ def latest(*pids):
     raise SystemExit(f"판이 없다: {pids}")
 
 
-def cut_video(src, a, k, w, h, fps, out):
-    # 판의 a번째 프레임부터 k장 — 색 · 속도는 그대로
-    vf = f"select='between(n,{a},{a + k - 1})',setpts=N/{fps}/TB,scale={w}:{h}:flags=lanczos:out_color_matrix=bt709,format=yuv420p"
+def cut_video(src, a, k, w, h, fps, out, crop=None):
+    # 판의 a번째 프레임부터 k장 — 색 · 속도는 그대로. crop은 「너비:높이:x:y」(판 크기 기준, 없으면 판 전체)
+    c = f"crop={crop}," if crop else ""
+    vf = f"select='between(n,{a},{a + k - 1})',setpts=N/{fps}/TB,{c}scale={w}:{h}:flags=lanczos:out_color_matrix=bt709,format=yuv420p"
     run("ffmpeg", "-y", "-v", "error", "-i", src, "-an", "-vf", vf, "-frames:v", str(k), "-c:v", "libx264", "-crf", "12", "-preset", "medium", "-r", str(fps),
         "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", out)
 
