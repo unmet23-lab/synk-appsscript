@@ -30,8 +30,9 @@
 .m2s-box{position:relative;display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px 0 12px;border:0;border-radius:999px;background:rgba(255,255,255,.66);box-shadow:inset 0 0 0 1px var(--line);font-size:13px;font-weight:600;cursor:pointer;transition:transform .3s var(--ease),background-color .2s}
 .m2s-box:hover{background:#fff}
 /* 자세히 동안 옷장 단추 자리는 닫기 단추가 쓴다 */
-.m2s[data-mode=detail]:not([data-flying]) .m2s-box{opacity:0;pointer-events:none}
-.m2s-box{transition:transform .3s var(--ease),background-color .2s,opacity .25s}
+/* 투명만으로 숨기면 Tab에 그대로 잡힌다 — 보이지 않는 단추로 가게가 닫혔다(검수) */
+.m2s[data-mode=detail]:not([data-flying]) .m2s-box{opacity:0;visibility:hidden;pointer-events:none}
+.m2s-box{transition:transform .3s var(--ease),background-color .2s,opacity .25s,visibility .25s}
 .m2s-box.is-bump{animation:m2s-bump .5s var(--ease)}
 @keyframes m2s-bump{40%{transform:scale(1.08)}}
 .m2s-box-icon{width:18px;height:18px;color:var(--ink)}
@@ -261,7 +262,9 @@
 .m2s-pack[hidden]{display:none}
 .m2s-pack-text{font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--ink);animation:m2s-rise .35s var(--ease) both}
 .m2s-pack-skip{font-size:13px;color:var(--ink-3)}
-.m2s[data-packing] :is(.m2s-info,.m2s-step,.m2s-close){opacity:0;pointer-events:none;transition:opacity .25s}
+.m2s[data-packing] :is(.m2s-info,.m2s-step,.m2s-close){opacity:0;visibility:hidden;pointer-events:none;transition:opacity .25s,visibility .25s}
+/* 주문 답을 기다리는 동안은 닫을 수 있다 */
+.m2s[data-packing][data-holding] .m2s-close{opacity:1;visibility:visible;pointer-events:auto}
 .m2s[data-packing] .m2s-floor{opacity:0;transition:opacity .3s,transform .6s var(--ease)}
 .m2s[data-packing] .m2s-stage{cursor:pointer}
 .m2s-toast{position:absolute;z-index:9;left:50%;bottom:max(28px,env(safe-area-inset-bottom));transform:translateX(-50%);margin:0;padding:12px 18px;border-radius:999px;background:var(--ink);color:#fff;font-size:14px;font-weight:600;white-space:nowrap;box-shadow:0 12px 30px rgba(0,0,0,.18);animation:m2s-rise .45s var(--ease) both}

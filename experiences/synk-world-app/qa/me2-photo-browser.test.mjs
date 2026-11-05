@@ -302,6 +302,7 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   await shopBoth('09-가게');
   await shopHanger('outfit-denim').click();await page.locator(`${SHOP} .m2s-stage:not([hidden])`).waitFor();
   assert.equal(await page.evaluate(()=>document.activeElement?.className),'m2s-close','열면 닫기로 키보드가 간다');
+  await page.waitForFunction(sel=>getComputedStyle(document.querySelector(sel+' .m2s-box')).visibility==='hidden',SHOP); // 자세히에서 안 보이는 「내 옷장」이 Tab에 잡히지 않는다
   assert.match(await page.locator(`${SHOP} .m2s-name`).textContent(),/연청 데님 재킷/);
   await page.locator(`${SHOP} .m2s-side [data-side="back"]`).click();
   assert.equal(await page.locator(`${SHOP} .m2s-side [data-side="back"]`).getAttribute('aria-checked'),'true','뒤로 돌린다');

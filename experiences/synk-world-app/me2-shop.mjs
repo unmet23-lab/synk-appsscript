@@ -53,10 +53,10 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   const e=entry(item.id);
   if(e.state==='arrived'&&e.arrived.url){const isNew=fresh.has(e.arrived.job_id)||e.arrived.new;return `<span class="m2s-print-tag" aria-hidden="true"><img src="${esc(e.arrived.url)}" alt="" draggable="false">${isNew?`<b class="m2s-new">${esc(t('newMark'))}</b>`:''}</span>`;}
   if(e.state==='open'||(e.state==='arrived'&&!e.arrived.url))return '';
-  const word=e.state==='failed'?t('failedTag'):t('shipping');
+  const word=e.state==='failed'?t('failedTag'):e.state==='delayed'?t('delayedTag'):t('shipping');
   return `<span class="m2s-tag" data-state="${e.state}" aria-hidden="true"><b>No.${pad2(i+1)}</b><span><i></i>${esc(word)}</span></span>`;
  }
- const stateWord=item=>{const e=entry(item.id);return e.state==='open'?'':e.state==='arrived'?(wearing(e.arrived)?t('wearing'):t('mine')):e.state==='failed'?t('failed'):t('shipping');};
+ const stateWord=item=>{const e=entry(item.id);return e.state==='open'?'':e.state==='arrived'?(wearing(e.arrived)?t('wearing'):t('mine')):e.state==='failed'?t('failed'):e.state==='delayed'?t('delayedTag'):t('shipping');};
  const hangerLabel=item=>{const w=stateWord(item);return `${kx(item.id).name}${L()==='ko'?'':` · ${tx(item.id).name}`}${w?` — ${w}`:''}`;};
  function shellHtml(){
   const n=items.length;
@@ -339,7 +339,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   const parcel=$('.m2s-parcel');
   for(const el of [parcel,$('.m2s-parcel-open'),$('.m2s-parcel-closed'),turnWrap])el.getAnimations().forEach(a=>a.cancel());
   parcel.hidden=true;$('.m2s-pack').hidden=true;$('.m2s-tissue').classList.remove('is-on','is-wrapped');$('.m2s-label').classList.remove('is-on');parcel.classList.remove('is-closed');
-  turnWrap.style.removeProperty('--line-to');turnWrap.classList.remove('is-off');delete shop.dataset.packing;delete shop.dataset.flying;
+  turnWrap.style.removeProperty('--line-to');turnWrap.classList.remove('is-off');delete shop.dataset.packing;delete shop.dataset.flying;delete shop.dataset.holding;
  }
  /** 주문 답 — 끊기거나 늦어도 거짓말하지 않는다: 오류면 상태를 다시 받아 그 옷이 오는 중이면 출발로 친다(설계 검토 11-05). */
  async function outcomeOf(id,result){
@@ -359,6 +359,10 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   const beat=(fn,ms)=>later(()=>{if(pack===run&&!run.aborted&&!run.cleared)fn();},ms);
   const wait=ms=>new Promise(r=>{const tid=later(r,ms);run.skip=()=>{win.clearTimeout(tid);timers.delete(tid);r();};});
   sound?.pick();
+  // 곧 사라질 단추에서 초점을 빼 둔다(뒤 앱은 inert라 초점이 빠지면 키보드가 죽는다)
+  stage.focus({preventScroll:true});
+  // 움직임 줄이기에는 포장 연출이 없다 — 답이 올 때까지 단추를 끄고 「조금만 기다려 주세요」(눌린 줄 모르고 다시 누르지 않게)
+  if(reduce()){for(const b of dialog.querySelectorAll('.m2s-actions button'))b.disabled=true;$('.m2s-help').textContent=t('hold');}
   const parcel=$('.m2s-parcel'),pOpen=$('.m2s-parcel-open'),pClosed=$('.m2s-parcel-closed'),tissue=$('.m2s-tissue'),label=$('.m2s-label');
   let skipped=false;
   if(!reduce()){
@@ -369,6 +373,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
    const d=new Date();$('.m2s-label-date').textContent=dayText(d);$('.m2s-label-no').textContent=`No. ${pad2(d.getMonth()+1)}${pad2(d.getDate())}-${String(i+1).padStart(3,'0')}`;
    thTarget=Math.round(th/360)*360;runTurn();
    const onSkip=()=>{skipped=true;run.skip?.();};
+   run.skipAll=onSkip;
    stage.addEventListener('pointerdown',onSkip);
    for(const st of steps){
     if(skipped||run.aborted)break;
@@ -388,14 +393,16 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
     }else if(st.id==='label'){label.classList.add('is-on');sound?.label();}
     await wait(st.ms);
    }
-   stage.removeEventListener('pointerdown',onSkip);
+   stage.removeEventListener('pointerdown',onSkip);run.skipAll=null;
   }
   // 「출발」 앞 — 답이 아직이면 기다린다(닫기 · Esc는 된다). 3초 넘으면 「조금만 기다려 주세요」.
-  if(!answered&&!run.aborted&&!reduce()){const tid=later(()=>{if(!answered&&!run.aborted)holdSay();},reduce()?0:400);void tid;}
+  if(!answered&&!run.aborted&&!reduce()){later(()=>{if(!answered&&!run.aborted&&pack===run){holdSay();shop.dataset.holding='yes';}},400);}
+  // 멈춘 뒤에 온 답 — 보내지 못했으면 가게가 열려 있을 때 한 번 알린다(보낸 것은 다음 상태로 꼬리표가 붙는다)
+  const lateSay=o=>{if(isOpen()&&o.kind!=='sent'&&o.kind!=='late')say(o.kind==='off'?t('off'):o.kind==='full'?t('full'):t('packFail'));};
   const r=await Promise.race([result,new Promise(res=>{run.skip=()=>res(null);})]);
-  if(run.aborted||!r){if(pack===run){busy=false;pack=null;}return;} // 멈춘 주문의 늦은 정리가 그 뒤 새 주문의 상태를 지우지 않게
+  if(run.aborted||!r){if(pack===run){busy=false;pack=null;}result.then(late=>outcomeOf(id,late)).then(lateSay,()=>{});return;} // 멈춘 주문의 늦은 정리가 그 뒤 새 주문의 상태를 지우지 않게
   const outcome=await outcomeOf(id,r);
-  if(run.aborted||!isOpen()){if(pack===run){busy=false;pack=null;}return;}
+  if(run.aborted||!isOpen()){if(pack===run){busy=false;pack=null;}lateSay(outcome);return;}
   if(outcome.kind==='sent'&&!reduce()){
    packSay('go');shop.dataset.flying='yes';
    const bb=$('.m2s-box').getBoundingClientRect(),now=parcel.getBoundingClientRect();
@@ -454,6 +461,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   else if(act==='readko'){const open=b.getAttribute('aria-expanded')!=='true';b.setAttribute('aria-expanded',String(open));$('.m2s-story-ko').hidden=!open;b.textContent=t(open?'readKoOff':'readKo');}
  }
  function onKey(e){
+  if(busy&&pack?.skipAll&&(e.key==='Enter'||e.key===' ')){e.preventDefault();pack.skipAll();return;}
   // Esc는 여기서 받는다 — 크롬은 연달아 막은 cancel을 두 번째에 안 보낼 때가 있다(자세히 닫기 → 가게 닫기가 끊겼다). cancel은 다른 닫기 요청(뒤로 가기)만 맡는다.
   if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeRequest();return;}
   if(openI<0)return;
@@ -502,16 +510,16 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
 
  // ── 짓기 · 고치기 ──
  const itemsKey=list=>`${L()}|${list.map(x=>x.id).join(',')}`;
- function build(){
+ function build({at=null}={}){
   teardownRail();
   dialog.innerHTML=shellHtml();
   grab();wire();
   builtKey=itemsKey(items);
   countMine();
   measure();
-  const start=Math.min(3,items.length-1);
-  if(!fit){rail.scrollLeft=start*slotW;pos=start;lastPos=pos;}
-  setActive(fit?0:start);lastCenter=fit?-1:start;
+  const start=at??Math.min(3,items.length-1);
+  if(!fit){rail.scrollLeft=start*slotW;pos=start;lastPos=pos;dr?.refresh();}
+  setActive(fit&&at===null?0:start);lastCenter=fit?-1:start;
  }
  /** 상태만 바뀌었을 때 — 봉은 그대로 두고 꼬리표 · 이름 · 자세히만 간다(끌던 손 · 흔들림이 안 끊긴다). */
  function refreshRail(){
@@ -592,7 +600,8 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
    const list=shopItemsFor(view.menu);
    if(itemsKey(list)!==builtKey){
     if(busy)return; // 포장 중에는 다시 짓지 않는다 — 끝난 뒤 다음 update가 짓는다
-    const keep=openI>=0?items[openI]?.id:null;items=list;build();for(const p of P)p.x=null;shop.dataset.ready='yes';wake();
+    // 언어가 바뀌거나 메뉴가 바뀌어도 보던 옷 자리를 지킨다
+    const keep=openI>=0?items[openI]?.id:null,seeing=keep||items[active]?.id,at=list.findIndex(x=>x.id===seeing);items=list;build({at:at>=0?at:null});for(const p of P)p.x=null;shop.dataset.ready='yes';wake();
     const again=keep?items.findIndex(x=>x.id===keep):-1;if(again>=0)openDetail(again);
     return;
    }
