@@ -1,0 +1,48 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1106,
+  "lufs": -17
+ },
+ "made": "2026-11-05T22:47:21.087Z",
+ "lines": [
+  {
+   "id": "A",
+   "text": "제 대사 음성을 에이아이 영상에 넣었더니, 입은 딱 맞는데 말이 딴 말이에요.",
+   "dur": 4.108,
+   "syllablesPerSec": 7.3,
+   "src": "A.wav",
+   "key": "bdf10fa96c7d7ff3d3cdfddcf9a006fe",
+   "words": 12
+  },
+  {
+   "id": "B",
+   "text": "보기엔 멀쩡해서, 받아써서 원고랑 맞대 보고서야 알았어요. 그래서 모델을 바꿔 다시 뽑았더니,",
+   "dur": 5.899,
+   "syllablesPerSec": 6.44,
+   "src": "B.wav",
+   "key": "3c86cee2fbdcffb26f9d7c4b2697986b",
+   "words": 12
+  },
+  {
+   "id": "C",
+   "text": "입이 맞는다고, 말까지 맞는 건 아니에요.",
+   "dur": 2.375,
+   "syllablesPerSec": 6.74,
+   "src": "C.wav",
+   "key": "d47f66675ebc86cd13dba364aac47870",
+   "words": 6
+  }
+ ]
+}

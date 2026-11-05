@@ -1,0 +1,95 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "A",
+ "text": "제 대사 음성을 에이아이 영상에 넣었더니, 입은 딱 맞는데 말이 딴 말이에요.",
+ "dur": 4.108,
+ "words": [
+  {
+   "text": "제",
+   "start": 0.02,
+   "end": 0.124
+  },
+  {
+   "text": "대사",
+   "start": 0.183,
+   "end": 0.361
+  },
+  {
+   "text": "음성을",
+   "start": 0.435,
+   "end": 0.747
+  },
+  {
+   "text": "에이아이",
+   "start": 0.791,
+   "end": 1.029
+  },
+  {
+   "text": "영상에",
+   "start": 1.073,
+   "end": 1.355
+  },
+  {
+   "text": "넣었더니,",
+   "start": 1.399,
+   "end": 1.8
+  },
+  {
+   "text": "입은",
+   "start": 2.408,
+   "end": 2.571
+  },
+  {
+   "text": "딱",
+   "start": 2.615,
+   "end": 2.719
+  },
+  {
+   "text": "맞는데",
+   "start": 2.764,
+   "end": 3.105
+  },
+  {
+   "text": "말이",
+   "start": 3.179,
+   "end": 3.327
+  },
+  {
+   "text": "딴",
+   "start": 3.372,
+   "end": 3.52
+  },
+  {
+   "text": "말이에요.",
+   "start": 3.565,
+   "end": 4.108
+  }
+ ],
+ "source": {
+  "key": "bdf10fa96c7d7ff3d3cdfddcf9a006fe",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1106,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 161
+ }
+}
