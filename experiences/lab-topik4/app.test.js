@@ -5,6 +5,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { pathToFileURL } = require('node:url');
 const C = require('./src/copy.js');
 const A = require('./src/app.js');
 
@@ -88,6 +89,65 @@ test('「이메일을 고쳐 다시 등록하기」 뒤의 등록에는 다시 �
   assert.match(A.buildBody({ ...v, resubmit: true }), /다시 등록: 앞서 보낸 등록의 이메일을 고쳐 다시 보냄/);
 });
 
+test('값 의향: 안 고르면 줄이 없어 등록은 예전과 같고, 고르면 한 줄로 실린다', () => {
+  const v = { email: 'a@b.mn', level: 'has3', when: 'y2026', time: 'evening', note: '54번 시간이 모자라요', from: 'x', lang: 'mn', consent: true };
+  // 선택 칸이다 — 안 골라도, 이상한 값이어도 등록은 막히지 않는다
+  assert.deepEqual(A.validate(v), {});
+  assert.deepEqual(A.validate({ ...v, price: 'nope' }), {});
+  assert.ok(!A.buildBody(v).includes('값 의향'));
+  assert.ok(!A.buildBody({ ...v, price: 'nope', amount: '25만' }).includes('값 의향'));
+  const line = x => A.buildBody({ ...v, ...x }).split('\n').find(l => l.startsWith('값 의향:'));
+  assert.equal(line({ price: 'ok' }), '값 의향: 이 값이면 듣겠다');
+  assert.equal(line({ price: 'lower' }), '값 의향: 더 낮으면 듣겠다');
+  // 얼마는 늘 원 단위로 적는다 — 한국어 화면은 만 원, 몽골어 화면은 вон으로 받는다
+  for (const [typed, won] of [['25', '250,000'], [' 25만 원 ', '250,000'], ['25만', '250,000'], ['250,000', '250,000'], ['250000', '250,000'], ['250.000', '250,000'], ['1,000,000', '1,000,000'], ['27.5', '275,000'], ['27,5', '275,000'], ['25.5만', '255,000'], ['20~25만', '200,000'], ['150,000~200,000', '150,000']]) {
+    assert.equal(line({ price: 'lower', amount: typed }), `값 의향: 더 낮으면 듣겠다 · 얼마면 ${won}원`, typed);
+  }
+  // 숫자가 없으면 얼마를 붙이지 않는다(깨진 값 「.원」·「-원」이 실리지 않는다)
+  for (const typed of ['', '.', '-', ',', '0', '글쎄요.', 'Мэдэхгүй.', '이십만원', '조금만 낮춰주세요']) {
+    assert.equal(line({ price: 'lower', amount: typed }), '값 의향: 더 낮으면 듣겠다', typed);
+  }
+  assert.equal(line({ price: 'other' }), '값 의향: 값보다 다른 게 고민');
+  // 얼마 칸은 「더 낮으면」일 때만 실린다 — 썼다가 다른 답으로 바꾸면 버린다
+  assert.equal(line({ price: 'ok', amount: '25만' }), '값 의향: 이 값이면 듣겠다');
+  // 자유 글·줄바꿈이 줄을 늘리거나 메모로 새지 않는다
+  assert.equal(line({ price: 'lower', amount: '잘 모르겠어요\n토요일 시간: 오전' }), '값 의향: 더 낮으면 듣겠다');
+  assert.equal(A.buildBody({ ...v, price: 'lower', amount: '1\n이름: 가짜' }).split('\n').filter(l => l.startsWith('이름:')).length, 1);
+  // 자리: 표식이 첫 줄, 값 의향은 쓰기 메모 앞(회사 서버가 메모 뒤를 메모로 읽는다), 들어온 곳이 끝 줄
+  const body = A.buildBody({ ...v, price: 'ok' }).split('\n');
+  assert.equal(body[0], C.FORM.marker);
+  assert.ok(body.indexOf('값 의향: 이 값이면 듣겠다') < body.findIndex(l => l.startsWith('쓰기에서 어려운 점:')));
+  assert.equal(body.at(-1), '들어온 곳: x · 화면 언어 몽골어');
+  // 폼 질문 넷은 그대로이고 값 의향은 문의 내용 줄로만 간다
+  assert.deepEqual([...new Set(A.buildPayload({ ...v, price: 'lower', amount: '25만' }).keys())].filter(k => k.startsWith('entry.')).sort(), [C.FORM.type, C.FORM.body, C.FORM.consent].sort());
+});
+
+test('값 의향 글: 지금 값을 그대로 보이고, 값 변경·다른 값·비교 대상을 적지 않는다', () => {
+  assert.ok(C.ko.price.includes('30만 원'));
+  assert.ok(C.mn.price.includes('300,000 вон'));
+  assert.ok(C.ko.priceHint.includes('약속은 아니에요'));
+  assert.ok(C.mn.priceHint.includes('амлалт биш'));
+  const shown = JSON.stringify([C.PRICE.map(o => [o.ko, o.mn]), C.ko.price, C.ko.priceAmount, C.ko.priceUnit, C.ko.priceHint, C.mn.price, C.mn.priceAmount, C.mn.priceUnit, C.mn.priceHint]);
+  // 화면에 나오는 숫자는 30만 원과 8주뿐이다(예시 금액으로 값을 끌어내리지 않는다)
+  assert.deepEqual([...new Set(shown.match(/\d[\d,]*/g))].sort(), ['30', '300,000', '8'].sort());
+  assert.doesNotMatch(shown, /세종|학원|다른 곳|경쟁|저렴|싸|깎|хямдрал|хөнгөлөлт/);
+  assert.doesNotMatch(fs.readFileSync(path.join(__dirname, 'src/index.html'), 'utf8'), /id="f-amount"[^>]*placeholder/);
+});
+
+test('회사 서버 등록 읽기: 값 의향을 골라도 관심 등록으로 세고 답장 검토를 만들지 않는다', async () => {
+  const { websiteInquiryRegistration } = await import(pathToFileURL(path.join(__dirname, '../../docs/마케팅/온라인마케팅지도/engagement/company/website-inquiry-registration.mjs')).href);
+  const parse = v => { const p = A.buildPayload(v); return websiteInquiryRegistration({ type: p.get(C.FORM.type), message: p.get(C.FORM.body) }); };
+  const v = { email: 'a@b.mn', level: 'has3', when: 'y2026', time: 'evening', from: 'x', lang: 'ko', consent: true };
+  for (const price of [undefined, ...C.PRICE.map(o => o.id)]) {
+    const r = parse({ ...v, price, amount: price === 'lower' ? '25만' : '' });
+    assert.equal(r.productId, 'topik4', price);
+    assert.equal(r.waitlistOnly, true, price);
+    assert.equal(r.manualReviewRequired, false, price);
+  }
+  // 쓰기 메모가 있으면 값 의향과 상관없이 사람이 본다
+  assert.equal(parse({ ...v, price: 'ok', note: '54번이 어려워요' }).manualReviewRequired, true);
+});
+
 test('친구에게 보낼 주소는 from=friend로 바꾸고 화면 언어를 지킨다', () => {
   assert.equal(A.shareUrl('https://synk.im/lab/topik4/?from=univ-a&lang=ko#signup', 'mn'), 'https://synk.im/lab/topik4/?from=friend&lang=mn');
 });
@@ -105,7 +165,7 @@ test('두 언어의 글 키·목록 길이가 같다', () => {
   for (const k of Object.keys(C.ko)) {
     if (Array.isArray(C.ko[k])) assert.equal(C.mn[k].length, C.ko[k].length, k);
   }
-  for (const L of [C.LEVELS, C.WHEN, C.TIMES]) for (const o of L) assert.ok(o.ko && o.mn && o.record && o.id);
+  for (const L of [C.LEVELS, C.WHEN, C.TIMES, C.PRICE]) for (const o of L) assert.ok(o.ko && o.mn && o.record && o.id);
   assert.equal(C.WEEKS.length, 8);
 });
 

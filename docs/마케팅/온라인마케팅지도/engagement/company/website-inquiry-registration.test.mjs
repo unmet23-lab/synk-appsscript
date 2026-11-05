@@ -25,6 +25,19 @@ test('free notes without question marks, resubmissions and unexpected content al
   assert.equal(websiteInquiryRegistration(ub(true,{message:ub(true).message+'\n궁금한 점: 한국 대학 입학 준비'})).hasNote,true);
 });
 
+test('an optional price-intent line stays a plain registration, but only on TOPIK and only once',()=>{
+  const withLine=(line,row=topik())=>({...row,message:row.message.replace('\n들어온 곳',`\n${line}\n들어온 곳`)});
+  for(const line of ['값 의향: 이 값이면 듣겠다','값 의향: 더 낮으면 듣겠다 · 얼마면 25만원','값 의향: 값보다 다른 게 고민']){
+    const parsed=websiteInquiryRegistration(withLine(line));
+    assert.equal(parsed.waitlistOnly,true,line);assert.equal(parsed.manualReviewRequired,false,line);assert.equal(parsed.hasNote,false,line);
+  }
+  assert.equal(websiteInquiryRegistration(topik()).waitlistOnly,true,'the line is optional, registrations without it stay plain');
+  assert.equal(websiteInquiryRegistration(withLine('값 의향:')).manualReviewRequired,true,'an empty line is unexpected');
+  assert.equal(websiteInquiryRegistration(withLine('값 의향: 이 값이면 듣겠다\n값 의향: 더 낮으면 듣겠다')).manualReviewRequired,true,'a repeated line is unexpected');
+  assert.equal(websiteInquiryRegistration(withLine('값 의향: 이 값이면 듣겠다\n쓰기에서 어려운 점: 54번')).hasNote,true,'a note still needs review');
+  assert.equal(websiteInquiryRegistration(withLine('값 의향: 이 값이면 듣겠다',ub())).manualReviewRequired,true,'other products do not accept the line');
+});
+
 test('test and privacy responses never enter registration summaries even with a valid product marker',()=>{
   for(const row of [topik({message:topik().message+'\n[SYNK 기능 점검 · 실제 문의 아님]'}),topik({message:topik().message+'\n개인정보 삭제 요청'}),topik({classification:{isTest:true}}),topik({classification:{category:'privacy'}})]){
     assert.equal(websiteInquiryRegistration(row),null);assert.equal(summarizeWebsiteRegistrations([row]).products[0].records,0);

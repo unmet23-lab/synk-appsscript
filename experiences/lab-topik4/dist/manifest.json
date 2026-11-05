@@ -1,11 +1,11 @@
 {
   "app.css": {
-    "bytes": 84273,
-    "sha256": "8213d11150f8967133d89d02cbd39db9bccf08cfe363cfa1915bc75f254d7097"
+    "bytes": 84696,
+    "sha256": "6dd9a12586f56d57ea42735a592054957d85f550415317e43dd19a5deb8cd680"
   },
   "app.js": {
-    "bytes": 17467,
-    "sha256": "1f40a6365fc03e5b66e05f16495999e586ae622c4466dadb068bc50e59004529"
+    "bytes": 18652,
+    "sha256": "b72cf1aa27fcfada5acc7d158dcf7f7a2183ac61710ee350b8de303d41123c94"
   },
   "assets/DMMono-400.woff2": {
     "bytes": 5896,
@@ -28,8 +28,8 @@
     "sha256": "a1f8ef8722cee826313d0b56816757e4afef9bf37d77a1a8eb42055792a137ac"
   },
   "assets/SUIT-subset.woff2": {
-    "bytes": 105212,
-    "sha256": "ada120bfb7c306e7a96600e2ad6f116a069fee076fe0a355b815bedcb6a87e3f"
+    "bytes": 108192,
+    "sha256": "b5421dad5c40220c1e9a3b1b0d8ccdb8a86e6a4bcfd62a222820603d5085f7aa"
   },
   "assets/favicon-32.png": {
     "bytes": 2310,
@@ -52,20 +52,20 @@
     "sha256": "7497243a9bda0720878a78972fce5fbfab449f9febb091a831f8b393f977bc4f"
   },
   "assets/topik4-sample-class-20261023.mp4": {
-    "bytes": 19943394,
-    "sha256": "86c099c64bee6b769f55afed8a0d463b1735590be3d2e72624b179bdd5e35a67"
+    "bytes": 19918331,
+    "sha256": "77592721fcb25c08847a8ce77f901475f9da8558b9d9d85cabd509c351f3885e"
   },
   "assets/topik4-sample-class-poster.jpg": {
     "bytes": 65910,
     "sha256": "bd9e6440f393ef7e55e94c09ded84d701f0b7e028c3739959b282d20cdbee255"
   },
   "copy.js": {
-    "bytes": 27530,
-    "sha256": "d4d1a685baca3a0a2fe4dca44f81ceb1373966f11fe52adaf6ce3710d6f8dafe"
+    "bytes": 28830,
+    "sha256": "caceb23f0587ad64ead779bfba3d89667c813c0075237bd1161bad236b8c4efd"
   },
   "index.html": {
-    "bytes": 12913,
-    "sha256": "d1f983aa12f78957738d4e44ffbe915dc5312c23b8aaaaa42379f9aec1267761"
+    "bytes": 13857,
+    "sha256": "391335728b00ef54e2f6d5fc29c84547dc84aca4afafb85b824cdfb8507c316a"
   },
   "og.png": {
     "bytes": 354497,

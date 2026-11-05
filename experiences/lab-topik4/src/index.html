@@ -153,6 +153,16 @@
               <div class="t4-opts t4-opts-row" id="opt-time"></div>
             </fieldset>
 
+            <fieldset class="t4-field" data-field="price" aria-describedby="h-price">
+              <legend><span data-t="price">8주 30만 원, 어떠세요?</span> <small>(<span data-t="optional">선택</span>)</small></legend>
+              <div class="t4-opts" id="opt-price"></div>
+              <div class="t4-amount" id="price-amount" hidden>
+                <label for="f-amount" data-t="priceAmount">얼마면 들으시겠어요?</label>
+                <div class="t4-amount-row"><input id="f-amount" name="amount" type="text" inputmode="numeric" autocomplete="off" maxlength="14" aria-describedby="price-unit"><span id="price-unit" data-t="priceUnit">만 원</span></div>
+              </div>
+              <p class="t4-hint" id="h-price" data-t="priceHint">이 답은 반을 열 준비에 써요. 값이 바뀐다는 약속은 아니에요.</p>
+            </fieldset>
+
             <div class="t4-field" data-field="note">
               <label for="f-note"><span data-t="note">쓰기에서 어려운 점</span> <small>(<span data-t="optional">선택</span>)</small></label>
               <textarea id="f-note" name="note" rows="3" maxlength="300" data-t-attr="placeholder:notePlaceholder"></textarea>

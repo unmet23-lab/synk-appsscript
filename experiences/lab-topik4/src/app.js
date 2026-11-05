@@ -54,7 +54,24 @@
     return err;
   }
 
-  /** 폼의 「문의 내용」 칸에 들어갈 글. 받는 쪽이 한국어로 읽고, 첫 줄 표식으로 관심 등록만 거른다. */
+  /** 얼마 칸 → 원 단위 숫자 글. 첫 숫자만 읽어 자유 글이 섞이지 않게 한다. 뒤에 세 자리가 붙은 쉼표·점은 자릿수(250,000)이고 그 밖은 소수점(27.5)이다.
+   * 1,000보다 작으면 만 원 단위로 쓴 값으로 본다(25 → 250,000). 숫자가 없으면 ''. */
+  function amountWon(s) {
+    const m = /\d+(?:[.,]\d+)?/.exec(String(s || '').replace(/\s/g, '').replace(/[,.](?=\d{3}(?!\d))/g, ''));
+    const n = m ? Number(m[0].replace(',', '.')) : 0;
+    return n ? Math.round(n < 1000 ? n * 10000 : n).toLocaleString('en-US') : '';
+  }
+
+  /** 값 의향 줄. 안 골랐으면 ''(줄을 넣지 않아 옛 등록과 같은 꼴이다). 「더 낮으면」만 얼마인지 덧붙인다. */
+  function priceLine(v) {
+    const p = pick(C.PRICE, v.price);
+    if (!p) return '';
+    const amount = p.id === 'lower' ? amountWon(v.amount) : '';
+    return `값 의향: ${p.record}${amount ? ` · 얼마면 ${amount}원` : ''}`;
+  }
+
+  /** 폼의 「문의 내용」 칸에 들어갈 글. 받는 쪽이 한국어로 읽고, 첫 줄 표식으로 관심 등록만 거른다.
+   * 값 의향은 쓰기 메모 앞에 둔다 — 회사 서버는 메모 줄 뒤를 모두 메모로 읽는다(website-inquiry-registration.mjs). */
   function buildBody(v) {
     const level = pick(C.LEVELS, v.level);
     const when = pick(C.WHEN, v.when);
@@ -66,6 +83,8 @@
       `4급이 필요한 때: ${when ? when.record : '(안 고름)'}`,
       `토요일 시간: ${time ? time.record : '(안 고름)'}`,
     ];
+    const price = priceLine(v);
+    if (price) lines.push(price);
     const note = clip(v.note, 300);
     if (note) lines.push(`쓰기에서 어려운 점: ${note}`);
     lines.push(`들어온 곳: ${v.from || 'direct'} · 화면 언어 ${v.lang === 'mn' ? '몽골어' : '한국어'}`);
@@ -145,10 +164,11 @@
 
     // 선택지는 언어가 바뀌어도 고른 값을 지킨다.
     const keep = {};
-    ['level', 'when', 'time'].forEach(n => { const c = $(`input[name="${n}"]:checked`); if (c) keep[n] = c.value; });
+    ['level', 'when', 'time', 'price'].forEach(n => { const c = $(`input[name="${n}"]:checked`); if (c) keep[n] = c.value; });
     $('#opt-level').innerHTML = radios('level', C.LEVELS, true);
     $('#opt-when').innerHTML = radios('when', C.WHEN, true);
     $('#opt-time').innerHTML = radios('time', C.TIMES, false);
+    $('#opt-price').innerHTML = radios('price', C.PRICE, false);
     Object.entries(keep).forEach(([n, v]) => { const el = $(`input[name="${n}"][value="${v}"]`); if (el) el.checked = true; });
     markChecked();
     showErrors();
@@ -164,13 +184,15 @@
     const val = n => { const c = $(`input[name="${n}"]:checked`, f); return c ? c.value : ''; };
     return {
       name: f.elements.name.value, email: f.elements.email.value, level: val('level'), when: val('when'), time: val('time'),
-      note: f.elements.note.value, consent: f.elements.consent.checked, from: state.from, lang: state.lang, resubmit: state.resubmit,
+      price: val('price'), amount: f.elements.amount.value, note: f.elements.note.value, consent: f.elements.consent.checked, from: state.from, lang: state.lang, resubmit: state.resubmit,
     };
   }
 
-  /** 고른 선택지 칸에 on — :has()를 못 쓰는 브라우저에서도 고른 칸이 보이게(10-21 검수). */
+  /** 고른 선택지 칸에 on — :has()를 못 쓰는 브라우저에서도 고른 칸이 보이게(10-21 검수). 「더 낮으면」을 골랐을 때만 얼마 칸을 연다. */
   function markChecked() {
     $$('.t4-opt').forEach(l => { const i = l.querySelector('input'); l.classList.toggle('on', Boolean(i && i.checked)); });
+    const lower = $('input[name="price"][value="lower"]');
+    $('#price-amount').hidden = !(lower && lower.checked);
   }
 
   /** 오류 글·테두리·aria-invalid를 state.errors대로. 오류가 없는 칸은 aria-invalid를 지운다(처음부터 false를 찍지 않는다). */

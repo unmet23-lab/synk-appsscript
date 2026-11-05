@@ -1,7 +1,7 @@
 // Read-only interpretation of the three existing interest-registration forms.
 // No customer text or email is retained in the returned metadata or summary.
 const PRODUCTS=[
-  {id:'topik4',label:'TOPIK 4급 온라인 반',marker:'[TOPIK 4급 온라인 반 관심 등록]',types:['LAB · 한국어 교육'],fields:['이름','지금 급수','4급이 필요한 때','토요일 시간'],note:'쓰기에서 어려운 점'},
+  {id:'topik4',label:'TOPIK 4급 온라인 반',marker:'[TOPIK 4급 온라인 반 관심 등록]',types:['LAB · 한국어 교육'],fields:['이름','지금 급수','4급이 필요한 때','토요일 시간'],optional:['값 의향'],note:'쓰기에서 어려운 점'},
   {id:'ub-academy',label:'울란바토르 한국어 학원',marker:'[울란바토르 관심 등록 · 학원]',types:['LAB · 한국어 교육'],fields:['이름','누가 적었나','학생 한국어','한국에 가려는 때','다니기 좋은 때'],note:'궁금한 점'},
   {id:'ub-consult',label:'한국 유학 상담',marker:'[울란바토르 관심 등록 · 유학 상담]',types:['PATH · 유학·취업 연계','SHIFT · 유학·취업 연계'],fields:['이름','누가 적었나','학생 한국어','한국에 가려는 때','생각하는 유학'],note:'궁금한 점'},
 ];
@@ -20,7 +20,7 @@ export function websiteInquiryRegistration(input){
     if(line.startsWith('다시 등록:')){resubmitted=true;inNote=false;continue;}
     if(line.startsWith(product.note+':')){hasNote||=!!line.slice(product.note.length+1).trim();inNote=true;continue;}
     if(inNote){hasNote=true;continue;}
-    const field=product.fields.find(name=>line.startsWith(name+':'));
+    const field=[...product.fields,...(product.optional||[])].find(name=>line.startsWith(name+':'));
     if(field){if(seen.has(field)||!line.slice(field.length+1).trim())unrecognized=true;seen.add(field);continue;}
     if(product.id!=='topik4'&&line.startsWith('함께 등록:')&&line.slice(6).trim())continue;
     unrecognized=true;
