@@ -121,7 +121,7 @@ function mountDraftScreen(model,animate){
       const send=()=>mutate(()=>studioAction('approve_draft',{round:model.round}),{message:model.kind==='script'?'글 콘티를 확인했어요. 장면 이미지를 만들어 보내 드릴게요.':'장면 이미지를 확인했어요. 이 컷으로 제작을 시작해요.',after:()=>{drafts.delete(key);closeDialog();s.tab='overview';}});
       if(model.kind==='script')return send();
       const rest=(state||[]).filter(item=>!item.react).length;
-      confirmAction=send;openDialog('confirm',{title:'이대로 제작을 시작할까요?',text:`${rest?`아직 확인하지 않은 컷 ${rest}개도 이대로 만들어요. `:''}이 장면 이미지로 소리와 영상을 만들어요. 장면 이미지는 영상의 첫 장면이라, 움직이는 동안 작은 부분은 달라질 수 있어요.`,button:'제작 시작'});
+      confirmAction=send;openDialog('confirm',{title:'이대로 제작을 시작할까요?',text:`${rest?`아직 확인하지 않은 컷 ${rest}개도 이대로 만들어요. `:''}이 장면 이미지로 소리와 영상을 만들어요. 장면 이미지는 그 컷의 첫 화면이라, 움직이는 동안 작은 부분은 달라질 수 있어요.`,button:'제작 시작'});
     }});
 }
 const requestFileUpload=(file,slot)=>request('/pulse/api/studio/request-file',{...options(),file,headers:{'Content-Type':file.type||'application/octet-stream','X-File-Name':encodeURIComponent(file.name),'X-Request-Slot':slot}});

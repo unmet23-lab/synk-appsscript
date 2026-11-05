@@ -41,7 +41,7 @@ test('customer screens name no tool and promise nothing the rules forbid',()=>{
   const text=entryView({}).replace(/<[^>]+>/g,' ');
   assert.doesNotMatch(text,words);
   // 장면 이미지를 말하면 단서를 함께 둔다.
-  assert.match(text,/장면 이미지는 영상의 첫 장면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요\./);
+  assert.match(text,/장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요\./);
 });
 test('the reel credits every film it shows: own films as virtual brands, the contest film as a contest entry',()=>{
   for(const id of ['yurigyeol-holiday','maejin-imbak','hwaseong-light']){

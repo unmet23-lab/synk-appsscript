@@ -23,7 +23,7 @@ const CHECK_WORD={one:'서리꽃이 피는 순간을 담은 홀리데이 세트'
 const CHECK_CAST=[['f01','유나','도시의 뮤즈'],['m02','태준','위스키가 어울리는 남자'],['f09','로하','바이올렛빛 우아한 비주얼'],['m01','이안','책 읽는 남자친구']];
 // PULSE 소개글(2026-11-04 유호님 「원고대로 올려」): 사실과 낱말은 그대로 옮겼다. 처음 들어온 사람이 읽는 첫 화면에만 두고, 작업 중인 손님의 고객 방에는 넣지 않는다. 모델 수가 늘면 시험(pulse-client-review-fixes)이 알린다.
 const INTRO_PROMISES=[
-  ['컷마다 장면 먼저','대표 그림 한두 장이 아니라 들어갈 모든 컷을 완성 화질로 먼저 보여 드려요. 장면 이미지는 영상의 첫 장면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요.'],
+  ['컷마다 장면 먼저','대표 그림 한두 장이 아니라 들어갈 모든 컷을 완성 화질로 먼저 보여 드려요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요.'],
   ['출연자는 캐스팅','이름과 얼굴이 정해진 AI 모델 21명 가운데 골라요. 다음 편도 같은 모델과 같은 자막 규격으로 이어요.',`<a class="sx-link sx-promise-link" href="${CASTING_BOOK_URL}" target="_blank" rel="noopener noreferrer">캐스팅북 보기 <span aria-hidden="true">↗</span><span class="sr"> (새 탭)</span></a>`],
   ['제품·로고·화면 위 글자는 진짜로','다시 그리지 않고 보내 주신 사진과 파일로 합성해, 글자가 뭉개지거나 로고가 바뀌지 않아요.'],
   ['무엇으로 남길지 먼저','이야기로 여운을 남길지, 한 장면의 임팩트로 남길지 기획 첫 줄에 정해요.'],
@@ -32,7 +32,7 @@ const INTRO_PROMISES=[
 const STAGES=[
   ['의뢰서를 써요','제품 이름, 올릴 곳, 사진 몇 장이면 돼요. 쓰는 동안 화면에서 어떻게 보일지 바로 보여 드려요.'],
   ['저희가 먼저 확인해요','빠진 게 있으면 그 칸만 다시 여쭤요. 같은 말을 두 번 묻지 않아요. 진행과 값도 이때 안내해 드려요.'],
-  ['1차안을 받아요','모델, 광고가 남길 한 문장과 글 콘티, 모든 컷의 장면 이미지를 영상 전에 차례로 보여 드려요. 컷마다 의견을 남기세요. 장면 이미지는 영상의 첫 장면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요.'],
+  ['1차안을 받아요','모델, 광고가 남길 한 문장과 글 콘티, 모든 컷의 장면 이미지를 영상 전에 차례로 보여 드려요. 컷마다 의견을 남기세요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요.'],
   ['확인하신 컷으로 만들어요','목소리와 음악을 먼저 만들고 그 박자에 컷을 맞춰요. 제품 · 로고 · 글자는 실제 파일을 그대로 얹어요.'],
   ['파일을 받아요','올릴 곳에 맞는 파일로 받아요. 다음 편도 같은 모델과 같은 자막 규격으로 이어요.'],
 ];
@@ -137,7 +137,7 @@ const pages=({start,demoHref})=>[
     <div class="sx-works-wrap"><ol class="sx-works">${OWN.map(workRow).join('')}</ol>${CONTEST?`<button type="button" class="sx-work is-contest" data-work="${esc(CONTEST.id)}" data-in><span class="sx-small">공모전 출품작</span><span class="sx-work-name sx-serif">${esc(CONTEST.title)}</span><span class="sx-work-line sx-small">${esc(filmLine(CONTEST))}</span></button>`:''}</div>`},
   {layer:'none',cls:'is-check',html:`<div class="sx-check"><p class="sx-kicker" data-in>이렇게 만들어요</p><h2 class="sx-display">${lines(['영상 전에 세 번 확인해요'])}</h2><p class="sx-body sx-check-lead" data-in>${esc(CHECK_LEAD)}</p>
     <ol class="sx-check-list">${CHECK_THREE.map((text,i)=>`<li data-in><button type="button" data-check="${i}"><span class="sx-no">${i+1}/3</span><span class="sx-serif">${esc(text)}</span></button></li>`).join('')}</ol>
-    <p class="sx-small" data-in>장면 이미지는 영상의 첫 장면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요.</p></div>
+    <p class="sx-small" data-in>장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요.</p></div>
     <div class="sx-check-stage" aria-hidden="true">
       <div class="sx-pane sx-pane-cast is-on">${CHECK_CAST.map(([id,name,line])=>`<figure><img src="${A}model-scene-${id}.webp" alt="" loading="lazy" decoding="async" width="960" height="1285"><figcaption class="sx-small"><b>${name}</b> ${line}</figcaption></figure>`).join('')}</div>
       <div class="sx-pane sx-pane-word"><p class="sx-serif sx-pane-one">${esc(CHECK_WORD.one)}</p><ol>${CHECK_WORD.rows.map(([at,text])=>`<li><span class="sx-no">${at}</span><span class="sx-small">${esc(text)}</span></li>`).join('')}</ol></div>

@@ -121,7 +121,7 @@ test('the view says the new introduction and none of what it must not say',async
   // Wherever a scene image is promised the caveat is on the same screen. The heading no longer promises one
   // (every cut first is a process line now, as on the website), so the caveat sits with the brief's three checks.
   for(const screen of [models,portfolio])assert.doesNotMatch(screen,/장면 이미지/);
-  assert.match(brief,/컷마다 장면 이미지\. 장면 이미지는 영상의 첫 장면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요/);
+  assert.match(brief,/컷마다 장면 이미지\. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요/);
   assert.match(portfolio,/가상 브랜드로 만든 자체 광고와 공모전 출품작이에요/);
   assert.match(portfolio,/카메라 앞에 서 본 사람이 AI 모델의 연기를 연출해요/);
   assert.match(portfolio,/SYNK PULSE는 엔터테인먼트·광고 업계에서 10년 일한 대표 유호가 연출해요/);
