@@ -1,5 +1,6 @@
 import {CAFE_COMPOSE_ID,CAFE_LESSON_IDS,isCafeLesson,isCafeCheckpoint,isCafeOrder,isCafeListen} from './cafe-activity.mjs';
 import {readWorldLearningProfile,updateWorldLearningProfile,clearWorldLearningProfile,worldLearningProfileValues} from './world-learning-profile.mjs';
+import {readArrival} from './seoul-record.mjs';
 // One bounded record owns the life-Korean curriculum. The official PlayHost can
 // supply its storage port; guest/device records remain in their owner's namespace.
 export const LIFE_PROGRESS_KEY='synk.life-korean.progress.v1';
@@ -282,6 +283,13 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   const next=clone(state);next.display={version:1,language};commit(next,{preserveDaily:true});
   return {language,duplicate:false,status:status()};
  }
+ function arrival(){check();if(readError)throw readError;return readArrival(state.arrival);}
+ function setArrival(patch){
+  checkDailyWrite();
+  const value=readArrival({...(object(state.arrival)?state.arrival:{}),...patch,version:1,updatedAt:now()});
+  const next=clone(state);next.arrival=value;commit(next,{preserveDaily:true});
+  return {arrival:clone(value),status:status()};
+ }
  function learningProfile(){check();if(readError)throw readError;return readWorldLearningProfile(state.learningProfile,{owner,at:now()});}
  function learningProfileValues(){check();if(readError)throw readError;return worldLearningProfileValues(state.learningProfile,{owner,at:now()});}
  function updateLearningProfile(options={}){
@@ -363,7 +371,7 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   check();if(readError)throw readError;if(saving)return saving;
   saving=(async()=>{check();if(writeError){storage.setItem(key,JSON.stringify(state));writeError=null;}const result=save?await save():status();check();emit();return result;})().finally(()=>{saving=null;});return saving;
  }
- const api=Object.freeze({key,owner,status,summary,lessonState,startLesson,setStage,recordAnswer,finishLesson,dueReviews,startReview,markReviewHelp,answerReview,recordGuidedPractice,markDayComplete,selectedTutor,selectTutor,hangulReading,setHangulReading,displayLanguage,setDisplayLanguage,importRecords,learningProfile,learningProfileValues,updateLearningProfile,clearLearningProfile,flush,
+ const api=Object.freeze({arrival,setArrival,key,owner,status,summary,lessonState,startLesson,setStage,recordAnswer,finishLesson,dueReviews,startReview,markReviewHelp,answerReview,recordGuidedPractice,markDayComplete,selectedTutor,selectTutor,hangulReading,setHangulReading,displayLanguage,setDisplayLanguage,importRecords,learningProfile,learningProfileValues,updateLearningProfile,clearLearningProfile,flush,
   exportSnapshot(){check();return clone(state);},stop(){stopped=true;},registerLesson:register});
  return api;
 }

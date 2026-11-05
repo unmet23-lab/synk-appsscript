@@ -21,6 +21,7 @@ import {profilePhoto,welcomePhoto} from '../brand-opening/tutor-photos.mjs';
 // 화면 언어(10-19 1판): 계정 연결·로그인 안내·저장 확인·오류는 고른 언어로. 첫 문장 놀이·타운·노래 화면은 2판까지 한국어다.
 import {t,tMessage,currentLang} from '../brand-opening/world-lang.mjs';
 import {restoreDisplayLanguage,commitDisplayLanguage} from './display-language-sync.mjs';
+import {createSeoulEntry,seoulText} from './seoul-entry.mjs';
 const $=s=>document.querySelector(s);
 // pagehide closes this capability object; a restored document must reverify it.
 // 첫 await보다 먼저 듣는다: 입장(세션 복원·학습 준비·오프닝)이 끝나기 전에 떠났다가 돌아온 문서도 다시 불러야 한다(10-19).
@@ -38,7 +39,7 @@ const worldUrl=path=>new URL(connection.basePath+path,location.origin).href;
 // 자원 수명은 두 갈래다(world-session.mjs). 계정 수명 — life: 지금 주인·세대의 생활 진도 통로·진도·학습 호스트·「내 성향」 답·배우기 화면(생활·학습·알림).
 // 시트 수명 — sheet: 지금 시트 하나에 딸린 자원(내 계정의 우리 반 수업·과제·반 연결, 싱크타운 호스트). 시트를 바꾸거나 닫으면 버린다(attachSheet·releaseSheet).
 let client,sheet=null,writing=null,writingOwner=null;
-let entryGate=null,worldRequested=false,sessionTask=null,sessionConfirmed=false,accountActionPending=false,entryIdentity='',entryDestinationHandled=false;
+let seoul=null,entryGate=null,worldRequested=false,sessionTask=null,sessionConfirmed=false,accountActionPending=false,entryIdentity='',entryDestinationHandled=false;
 let finishInitialRestore;const initialRestoreReady=new Promise(resolve=>{finishInitialRestore=resolve;});
 // 초기 세션 복원은 로그인과 무관한 home.mjs를 기다리지 않고 여기서 시작한다(11-04). game-tutor-support.mjs는 결과 화면에서만 부른다(loadFirstSupport).
 // 화면이 서기 전(shellOpen=false)의 WorldClient 변경은 화면에 잇지 않고 표시만 해 두었다가, 원래 준비 시점에 client.emit()으로 한 번 다시 알린다.
@@ -60,9 +61,14 @@ const languageChoice={language:null,owner:null};
 function startOpening(replay=false){
  worldRequested=false;entryGate?.invalidate();home.setSceneActive?.(false);home.setEntryState?.({phase:'restoring'});
  return import(worldUrl('brand-opening/opening.mjs')).then(async({mountBrandOpening})=>{
-  const opening=mountBrandOpening({replay,reducedMotion:home.state.reduced,onLanguage:language=>{void selectLanguage(language).catch(()=>{});}});window.__synkOpening=opening;
+  // 서울행(새 학생 첫 실행, experiences/seoul-arrival/설계.md 3절): 살펴볼 까닭이 없으면 아래 길은 지금과 똑같다.
+  const withSeoul=!replay&&seoul.active();
+  if(withSeoul)seoul.beforeTitle();
+  const opening=mountBrandOpening({replay,reducedMotion:home.state.reduced,onLanguage:language=>{void selectLanguage(language).catch(()=>{});},...(withSeoul?{onTap:()=>seoul.tap()}:{})});window.__synkOpening=opening;
   const reason=await opening.done;
   if(['pagehide','destroy'].includes(reason))return;
+  // 서울행 동안은 worldRequested를 거짓으로 둔다 — 로그인 판 닫힘 · 계정 연결이 관문을 서울행 위로 올리지 않게. 끝나면 지금의 관문으로 넘긴다. openingReady를 붙잡지 않는다.
+  if(withSeoul){void seoul.run().catch(()=>{}).then(()=>{worldRequested=true;return initialRestoreReady.then(()=>entryGate?.start());}).catch(showEntryRecovery);return;}
   worldRequested=true;await initialRestoreReady;return entryGate?.start();
  }).catch(()=>{document.querySelector('.synk-opening')?.remove();document.querySelector('#synk-opening-cover')?.remove();clearTimeout(window.__synkOpeningSafetyTimer);worldRequested=true;return initialRestoreReady.then(()=>entryGate?.start());});
 }
@@ -213,6 +219,7 @@ function reconcileAccount(){
   }
  }
  life.sync();
+ seoul?.onIdentity();
  if(!snap&&['world-play','world-retry','world-reward','world-profile','world-device-records','game','world-game-loading','world-game-error','world-game-conflict','world-speaking','world-me2'].includes(screen)){draftRun=null;answers=[];lastCompletion=null;close();}
 }
 function renderStatus(){
@@ -554,7 +561,7 @@ const accountPrint=()=>`<span class="world-account-mascot w-print"><img src="${w
 // 계정 연결 머리: 왼쪽 큰 글 한 줄 + 오른쪽 인화지(가운데 정렬 대신 한쪽으로 기울인 배치)
 const signInHead=line=>`<div class="ws-signin-head"><p class="ws-lead">${line}</p>${accountPrint()}</div>`;
 // trial: 체험 판을 마친 게임(launchGame·체험 결과의 로그인 단추가 넘긴다). 단추가 바로 부를 때는 단추 요소가 온다.
-function signIn(trial){if(operating){const game=typeof trial==='string'&&GUEST_TRIAL_GAMES.includes(trial)?games[trial]:null;show(t('account.title'),`<div class="ws-signin">${signInHead(game?t('account.trialLead',{title:game.title}):t('account.lead'))}${game?notice('TRIAL','info',t('account.trialTitle'),t('account.trialBody')):notice('ACCOUNT','info',t('account.oneId'),t('account.oneIdBody'))}<div class="world-actions"><button class="felt-button" data-world="account-login" data-world-submit>${t('account.login')}</button><button class="plain-button" data-world="guest">${t('account.guest')}</button></div></div>`,'world-signin');return;}show(t('account.title'),`<div class="ws-signin">${signInHead(t('account.testLead'))}${notice('REHEARSAL','info',t('account.testTitle'),t('account.testBody'))}<div class="world-actions"><button class="felt-button" data-world="login-a" data-world-submit>${t('account.testA')}</button><button class="plain-button" data-world="login-b" data-world-submit>${t('account.testB')}</button></div><p class="dialog-note">${t('account.testNote')}</p></div>`,'world-signin');}
+function signIn(trial,lead){if(operating){const game=typeof trial==='string'&&GUEST_TRIAL_GAMES.includes(trial)?games[trial]:null;show(t('account.title'),`<div class="ws-signin">${signInHead(game?t('account.trialLead',{title:game.title}):typeof lead==='string'?escape(lead):t('account.lead'))}${game?notice('TRIAL','info',t('account.trialTitle'),t('account.trialBody')):notice('ACCOUNT','info',t('account.oneId'),t('account.oneIdBody'))}<div class="world-actions"><button class="felt-button" data-world="account-login" data-world-submit>${t('account.login')}</button><button class="plain-button" data-world="guest">${t('account.guest')}</button></div></div>`,'world-signin');return;}show(t('account.title'),`<div class="ws-signin">${signInHead(t('account.testLead'))}${notice('REHEARSAL','info',t('account.testTitle'),t('account.testBody'))}<div class="world-actions"><button class="felt-button" data-world="login-a" data-world-submit>${t('account.testA')}</button><button class="plain-button" data-world="login-b" data-world-submit>${t('account.testB')}</button></div><p class="dialog-note">${t('account.testNote')}</p></div>`,'world-signin');}
 async function login(account){accountActionPending=true;authBoundary++;entryGate?.invalidate();try{await client.signIn(account);sessionConfirmed=true;try{localStorage.setItem('synk-world-v1-welcomed','1');}catch{}close();home.toast(t('account.loaded'));if(worldRequested)await entryGate?.start();if(wardrobeRequested&&entryGate?.state().phase==='ready')wardrobe();}catch(e){home.toast(errorText(e));}finally{accountActionPending=false;}}
 function about(){if(operating){show(t('account.aboutTitle'),`<div class="review-note"><p>${t('account.about1')}</p><p>${t('account.about2')}</p></div>`,'world-about');return;}show('SYNK WORLD 소개','<div class="review-note"><p><strong>지금 되는 것</strong><br>테스트 계정으로 첫 문장 놀이를 마치고, 받은 목도리와 앞치마를 함께 입어요. 같은 계정의 다른 화면에서도 차림을 불러오고, 지금 차림을 3D 사진으로 남겨요.</p><p><strong>아직 확인할 것</strong><br>실제 SYNK 로그인, 설치형 앱 실행, 휴대폰 성능은 따로 확인해야 해요. 미니게임과 노래는 지금도 열 수 있어요.</p><p>이 개발판은 이 PC의 로컬 서버와 합성 계정만 써요. 운영 계정과 공개 앱은 바뀌지 않아요.</p></div>','world-about');}
 async function photo(){
@@ -781,11 +788,12 @@ function showGameConflict(id,session){
  gameRecovery={id,session,busy:false};
  show(t('account.conflictTitle'),`${notice('SAVE','check',t('account.conflictNotice'),t('account.conflictBody'))}<div class="world-actions"><button class="felt-button" data-world="resolve-play" data-choice="remote">${t('account.conflictRemote')}</button>${status.code==='IMPORT_CONFLICT'?'':`<button class="plain-button" data-world="resolve-play" data-choice="local">${t('account.conflictLocal')}</button>`}<button class="quiet-button" data-world="home">${t('account.conflictLater')}</button></div><p class="dialog-note">${t('account.conflictNote')}</p>`,'world-game-conflict');
 }
-async function launchGame(id){
- const game=games[id];if(!game)return;
+// seoul: 서울행 내 길에서 여는 1화 — 튜터 고르기는 우리 동네에 들어갈 때 한다. 제목은 화면 언어로.
+async function launchGame(id,{seoul:fromSeoul=false}={}){
+ const listed=games[id];if(!listed)return;const game=fromSeoul?{...listed,title:seoulText('dramaTitle')}:listed;
  const owner=client.snapshot?.accountId;let launchTicket=gameLaunch,session,trialHost=null,companion,dramaHost=null;
  try{
- if(home.ensureTutor&&!home.tutor()?.tutor)return await home.ensureTutor(()=>launchGame(id));
+ if(!fromSeoul&&home.ensureTutor&&!home.tutor()?.tutor)return await home.ensureTutor(()=>launchGame(id));
  // 손님의 한글 만나기는 계정 놀이 기록 없이 기기 진도로, 바람길·리듬은 체험이 남아 있으면 한 판 체험으로 연다(계정 호스트를 설치하지 않는다).
  const guest=operating&&!client.snapshot,trial=guest&&guestTrials.open().includes(id);
  if(operating&&!(guest&&(GUEST_GAMES.has(id)||trial))){
@@ -869,7 +877,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&client.sn
 const worldPanel=$('#world-panel')||$('#panel');
 worldPanel.addEventListener('close',()=>{if(!worldPanel.open){gameLaunch++;gameRecovery=null;screen='';hangerSignature='';renderHomeHanger(client.snapshot);releaseSheet();}});
 window.__synkWorld={client,screen:()=>screen,wardrobe:()=>wardrobeStudio?.metrics(),life:()=>life.ui?.metrics()};
-home.connectHost?.({profile,wardrobe,play,town,about,photo,songs,launchGame,prepareTutor,selectTutor,selectLanguage,tutorStatus,hangulReading,setHangulReading,learn:()=>openLife('next'),packs:()=>openLife('packs'),stories:()=>openLife('stories'),review:()=>openLife('review'),cafe:()=>openLife('cafe'),pack:id=>openLife('pack',id),lesson:id=>openLife('start',id),replayOpening:()=>{close();return startOpening(true);}});
+home.connectHost?.({road:()=>seoul.openRoad(),profile,wardrobe,play,town,about,photo,songs,launchGame,prepareTutor,selectTutor,selectLanguage,tutorStatus,hangulReading,setHangulReading,learn:()=>openLife('next'),packs:()=>openLife('packs'),stories:()=>openLife('stories'),review:()=>openLife('review'),cafe:()=>openLife('cafe'),pack:id=>openLife('pack',id),lesson:id=>openLife('start',id),replayOpening:()=>{close();return startOpening(true);}});
 // 공개판 설계 §2: 로그인할 때 이 기기의 손님 한글 기록(한글 만나기 진도·첫 실행 답)을 계정으로 옮길지 한 번 묻는다(device-records.mjs).
 // 계정 생활 진도와 학습 호스트가 준비된 뒤 입장 관문이 튜터 고르기 앞에서 연다. 다른 계정의 기록에는 쓰지 않는다.
 const accountLife=()=>{const owner=client.snapshot?.accountId,ui=life.ui;if(!owner||owner!==life.owner||!ui)throw Object.assign(Error('로그인한 계정이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});return ui;};
@@ -896,8 +904,10 @@ const deviceRecords=createDeviceRecordsOffer({storage:localStorage,learningStatu
  importLife:importDeviceLife,importLearning:operating?events=>account.importDeviceLearning(events):null,
  accountAnswer:()=>accountLife().hangulReading(),setAccountAnswer:async(answer,options)=>{const ui=accountLife();try{return await ui.setHangulReading(answer,options);}finally{refreshLife();}},
  present:({title,html,onClose})=>{show(title,html,'world-device-records');home.attachPanelResource({dispose:onClose});},close,toast:message=>home.toast(message),head:accountPrint(),text:deviceRecordsText});
+commands['seoul-move']=button=>seoul.moveChoice(button.dataset.choice);
 commands['device-records']=button=>{const line=document.querySelector('[data-device-records-status]');return deviceRecords.choose(button.dataset.choice,{owner:client.snapshot?.accountId||'guest',
  status:(text,busy)=>{if(line)line.textContent=text;document.querySelectorAll('[data-world="device-records"]').forEach(node=>{node.disabled=busy;});}});};
+seoul=createSeoulEntry({dramaPending:()=>dramaRequested||me2Requested,restored:initialRestoreReady,operating,client:()=>client,life,home,worldUrl,launchGame,signIn,show,close,selectLanguage,tutorStatus,native:()=>operating&&account?.supportsSpeaking===false});
 entryGate=createWorldEntryGate({
  restore:async()=>{await initialRestoreReady;if(sessionTask)await sessionTask;else if(!sessionConfirmed)await restoreSession();},
  prepare:prepareWorldTutor,
@@ -916,6 +926,7 @@ entryGate=createWorldEntryGate({
  choose:then=>home.ensureTutor?.(then),
  onState:state=>{home.setEntryState?.(state);home.setSceneActive?.(state.phase==='ready');},
  onEnter:identity=>{
+  seoul.syncDoor();
   if(entryDestinationHandled)return;entryDestinationHandled=true;
   queueMicrotask(()=>{
    if(entryGate.state().phase!=='ready'||identity.owner!==(client.snapshot?.accountId||'guest')||identity.generation!==client.generation)return;

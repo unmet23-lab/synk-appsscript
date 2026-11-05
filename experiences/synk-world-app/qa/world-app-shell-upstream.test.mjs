@@ -40,6 +40,7 @@ function fixture({operating=true,owner='alpha',generation=1,recordsFactory=null}
   createWorldReminders:()=>({schedule:no,dispose:()=>disposed.push('reminders')}),reminderInputs:no,openReminder:no,repaintReminderCard:no,worldPush:null,pushOn:false,
   refreshLife:no,repaintWritingRow:no,showEntryRecovery:no,commands:{},accountPrint:()=>'',initialRestoreReady:Promise.resolve(),sessionTask:null,sessionConfirmed:true,restoreSession:async()=>{},prepareWorldTutor:no,
   createDeviceRecordsOffer:args=>{captures.device=args;return recordsFactory?recordsFactory(args):{offer:id=>{captures.offered=id;return 'offered';}};},createWorldEntryGate:args=>{captures.gate=args;return args;},
+  dramaRequested:false,close:no,selectLanguage:no,tutorStatus:no,createSeoulEntry:()=>({active:()=>false,syncDoor:no,onIdentity:no,moveChoice:no,openRoad:no}),
  };
  vm.createContext(context);
  const run=text=>vm.runInContext(text,context);

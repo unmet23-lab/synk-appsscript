@@ -43,7 +43,7 @@ var require_strata = __commonJS({
     var fail2 = (message) => {
       throw new TypeError(`Strata: ${message}`);
     };
-    var text = (value) => typeof value === "string" && value.length > 0;
+    var text2 = (value) => typeof value === "string" && value.length > 0;
     var compare = (a, b) => a < b ? -1 : a > b ? 1 : 0;
     function freeze(value) {
       if (value && typeof value === "object") {
@@ -53,12 +53,12 @@ var require_strata = __commonJS({
       return value;
     }
     function validateMap(data) {
-      if (!data || !text(data.map_ver) || !text(data.subject) || !Array.isArray(data.nodes) || !Array.isArray(data.edges) || !Array.isArray(data.links?.tags) || !Array.isArray(data.tag_vocabulary) || !data.sources || typeof data.sources !== "object") fail2("invalid map envelope");
+      if (!data || !text2(data.map_ver) || !text2(data.subject) || !Array.isArray(data.nodes) || !Array.isArray(data.edges) || !Array.isArray(data.links?.tags) || !Array.isArray(data.tag_vocabulary) || !data.sources || typeof data.sources !== "object") fail2("invalid map envelope");
       const ids = /* @__PURE__ */ new Map();
       const refs = (item) => {
         if (!Array.isArray(item.source_refs) || !item.source_refs.length) fail2("source references required");
         for (const ref of item.source_refs) {
-          if (!ref || !Object.hasOwn(data.sources, ref.source) || !text(ref.selector)) fail2("unknown source reference");
+          if (!ref || !Object.hasOwn(data.sources, ref.source) || !text2(ref.selector)) fail2("unknown source reference");
         }
       };
       const confidence = (item) => {
@@ -66,12 +66,12 @@ var require_strata = __commonJS({
         refs(item);
       };
       for (const [key, source] of Object.entries(data.sources)) {
-        if (!text(key) || !text(source.path) || !/^[a-f0-9]{64}$/.test(source.sha256)) fail2("invalid source hash");
+        if (!text2(key) || !text2(source.path) || !/^[a-f0-9]{64}$/.test(source.sha256)) fail2("invalid source hash");
       }
       for (const node of data.nodes) {
-        if (!text(node.id) || ids.has(node.id) || !KINDS.includes(node.kind) || !text(node.label_ko)) fail2("invalid or duplicate node");
-        if (node.level !== null && (!Number.isInteger(node.level?.intro) || node.level.intro < 1 || node.level.intro > 6 || !text(node.level.basis))) fail2("invalid level");
-        if (node.when_ko !== void 0 && (node.kind !== "situation" || !text(node.when_ko))) fail2("invalid situation words");
+        if (!text2(node.id) || ids.has(node.id) || !KINDS.includes(node.kind) || !text2(node.label_ko)) fail2("invalid or duplicate node");
+        if (node.level !== null && (!Number.isInteger(node.level?.intro) || node.level.intro < 1 || node.level.intro > 6 || !text2(node.level.basis))) fail2("invalid level");
+        if (node.when_ko !== void 0 && (node.kind !== "situation" || !text2(node.when_ko))) fail2("invalid situation words");
         refs(node);
         ids.set(node.id, node);
       }
@@ -84,8 +84,8 @@ var require_strata = __commonJS({
         uniqueEdges.add(key);
         if (edge.type === "part_of" && (ids.get(edge.from).kind !== "grammar_point" || ids.get(edge.to).kind !== "skill")) fail2("invalid grammar membership");
         if (edge.type === "recommended_before") {
-          if (edge.blocking !== false || !text(edge.basis?.official_scope) || !text(edge.basis?.interpretation) || !text(edge.basis?.source_url) || !text(edge.reason_ko)) fail2("recommendation needs nonblocking interpretation and source");
-          if (edge.reviewed && (!text(edge.review?.task) || !text(edge.review?.reviewer) || !text(edge.review?.evidence))) fail2("reviewed recommendation needs review evidence");
+          if (edge.blocking !== false || !text2(edge.basis?.official_scope) || !text2(edge.basis?.interpretation) || !text2(edge.basis?.source_url) || !text2(edge.reason_ko)) fail2("recommendation needs nonblocking interpretation and source");
+          if (edge.reviewed && (!text2(edge.review?.task) || !text2(edge.review?.reviewer) || !text2(edge.review?.evidence))) fail2("reviewed recommendation needs review evidence");
         }
         if (edge.type === "prerequisite") {
           const before = ids.get(edge.from).level?.intro, after = ids.get(edge.to).level?.intro;
@@ -105,7 +105,7 @@ var require_strata = __commonJS({
       }
       for (const id of ids.keys()) visit(id);
       const tags = /* @__PURE__ */ new Set();
-      if (new Set(data.tag_vocabulary).size !== data.tag_vocabulary.length || data.tag_vocabulary.some((tag) => !text(tag))) fail2("invalid tag vocabulary");
+      if (new Set(data.tag_vocabulary).size !== data.tag_vocabulary.length || data.tag_vocabulary.some((tag) => !text2(tag))) fail2("invalid tag vocabulary");
       for (const link of data.links.tags) {
         if (!data.tag_vocabulary.includes(link.tag) || tags.has(link.tag)) fail2("invalid or duplicate tag");
         if (!["full", "none"].includes(link.fit) || (link.fit === "none" ? link.node !== null : !ids.has(link.node))) fail2("tag must be exactly mapped or explicitly missing");
@@ -118,7 +118,7 @@ var require_strata = __commonJS({
         if (!Array.isArray(data.links.goals)) fail2("invalid goal links");
         const goals = /* @__PURE__ */ new Set();
         for (const link of data.links.goals) {
-          if (!text(link?.goal) || goals.has(link.goal)) fail2("invalid or duplicate goal");
+          if (!text2(link?.goal) || goals.has(link.goal)) fail2("invalid or duplicate goal");
           if (!Array.isArray(link.nodes) || !link.nodes.length || new Set(link.nodes).size !== link.nodes.length || link.nodes.some((id) => !ids.has(id))) fail2("goal must lead to known nodes");
           confidence(link);
           goals.add(link.goal);
@@ -191,7 +191,7 @@ var require_strata = __commonJS({
       }
       function candidates(state = { lines: [] }, { limit = 10 } = {}) {
         if (!Array.isArray(state.lines) || !Number.isInteger(limit) || limit < 0 || limit > 100) fail2("invalid candidate input");
-        if (state.mastered != null && (!Array.isArray(state.mastered) || state.mastered.some((id) => !text(id)))) fail2("invalid mastered nodes");
+        if (state.mastered != null && (!Array.isArray(state.mastered) || state.mastered.some((id) => !text2(id)))) fail2("invalid mastered nodes");
         const mastered = new Set(state.mastered || []), selected = /* @__PURE__ */ new Map();
         for (const line of state.lines) {
           if (!line || line.usable !== true || line.status === "denied" || line.source === "estimated") continue;
@@ -6658,7 +6658,7 @@ var require_trail2 = __commonJS({
         if (!value || typeof value !== "object" || Array.isArray(value) || ![Object.prototype, null].includes(Object.getPrototypeOf(value)) || Object.keys(value).length !== 2 || !Object.hasOwn(value, "selectedId") || !Object.hasOwn(value, "correctId") || !optionId(value.selectedId) || !optionId(value.correctId)) throw new TypeError("Trail: invalid choice IDs");
         return { selectedId: value.selectedId, correctId: value.correctId };
       }
-      const time3 = (value) => {
+      const time4 = (value) => {
         const n = Date.parse(value);
         if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Trail: invalid time");
         return n;
@@ -6676,8 +6676,8 @@ var require_trail2 = __commonJS({
         return value;
       };
       const scopeOf = (e) => vouched.get(e)?.scope ?? key(e.scope);
-      const atOf = (e) => vouched.get(e)?.at ?? time3(e.at);
-      const recordedOf = (e) => vouched.get(e)?.recordedAt ?? time3(e.recordedAt);
+      const atOf = (e) => vouched.get(e)?.at ?? time4(e.at);
+      const recordedOf = (e) => vouched.get(e)?.recordedAt ?? time4(e.recordedAt);
       const uniqueList = (values, valid, max) => Array.isArray(values) && values.length <= max && values.every(valid) && new Set(values).size === values.length;
       const tag = (v) => typeof v === "string" && v.trim() === v && v.length > 0 && v.length <= 120 && !/[\r\n]/.test(v);
       function validate2(event) {
@@ -6685,7 +6685,7 @@ var require_trail2 = __commonJS({
         const fields = [...BASE, ...FIELDS[event.type]];
         if (Object.keys(event).some((k) => !fields.includes(k) && !(OPTIONAL[event.type] || []).includes(k)) || fields.some((k) => !Object.hasOwn(event, k))) throw new TypeError("Trail: unexpected or missing practice field");
         key(event.scope);
-        if (time3(event.recordedAt) < time3(event.at)) throw new TypeError("Trail: recorded before occurrence");
+        if (time4(event.recordedAt) < time4(event.at)) throw new TypeError("Trail: recorded before occurrence");
         if (event.type === TYPES[0]) {
           if (![event.decisionId, event.taskId, event.taskVersion, event.itemKey].every(id) || !uniqueList(event.conceptIds, id, 32) || ![true, false, null].includes(event.firstExposure)) throw new TypeError("Trail: invalid presentation");
           if (event.measure != null) {
@@ -6718,14 +6718,14 @@ var require_trail2 = __commonJS({
         if (TYPES.includes(event?.type)) validate2(event);
         else if (!event?.scope || ![event.scope.domain, event.scope.workspace, event.scope.subject].every((v) => typeof v === "string")) throw new TypeError("Trail: invalid log entry");
         freeze(event);
-        vouched.set(event, { scope: `${event.scope.domain}/${event.scope.workspace}/${event.scope.subject}`, at: time3(event.at), recordedAt: time3(event.recordedAt) });
+        vouched.set(event, { scope: `${event.scope.domain}/${event.scope.workspace}/${event.scope.subject}`, at: time4(event.at), recordedAt: time4(event.recordedAt) });
         return event;
       }
       function checkLink(events, event) {
         const attempts = { count: 0, latest: -Infinity };
         for (const earlier of events) if (earlier.type === TYPES[2] && earlier.presentationId === event.presentationId) {
           attempts.count += 1;
-          attempts.latest = Math.max(attempts.latest, time3(earlier.at));
+          attempts.latest = Math.max(attempts.latest, time4(earlier.at));
         }
         return linked(
           event,
@@ -6771,7 +6771,7 @@ var require_trail2 = __commonJS({
       const BITS = Object.freeze({ attempt: 1, answer: 2, help: 4 });
       const foldedBefore = (prior, traceKey, kind) => !!prior && Object.prototype.hasOwnProperty.call(prior.keys, traceKey) && (prior.keys[traceKey] & BITS[kind]) !== 0;
       function summarize(events, { scope, asOf, recordedAsOf = asOf, decisions = null, prior = null } = {}) {
-        const scopeId = key(scope), cutoff = time3(asOf), recordedCutoff = time3(recordedAsOf);
+        const scopeId = key(scope), cutoff = time4(asOf), recordedCutoff = time4(recordedAsOf);
         if (!Array.isArray(events)) throw new TypeError("Trail: log must be an array");
         if (decisions !== null && (!Array.isArray(decisions) || !decisions.every(id))) throw new TypeError("Trail: invalid decision filter");
         const reported = (decisionId) => decisions === null || decisions.includes(decisionId);
@@ -7006,11 +7006,11 @@ var require_trail2 = __commonJS({
       }
       function createPracticeOutcomeIndex(summary) {
         if (!summary || summary.version !== VERSION || !Array.isArray(summary.attempts)) throw new TypeError("Trail: use a practice summary");
-        const owner = key(summary.scope), cutoff = time3(summary.asOf), recordedCutoff = time3(summary.recordedAsOf ?? summary.asOf);
+        const owner = key(summary.scope), cutoff = time4(summary.asOf), recordedCutoff = time4(summary.recordedAsOf ?? summary.asOf);
         const attempts = /* @__PURE__ */ new Map();
         for (const item of summary.attempts) {
           if (!id(item.eventId) || !id(item.presentationId) || !id(item.decisionId) || !Array.isArray(item.conceptIds) || item.conceptIds.some((value) => !id(value)) || attempts.has(item.eventId)) throw new TypeError("Trail: invalid practice outcome evidence");
-          const at = time3(item.at), recordedAt = time3(item.recordedAt);
+          const at = time4(item.at), recordedAt = time4(item.recordedAt);
           if (recordedAt < at || at > cutoff || recordedAt > recordedCutoff) throw new TypeError("Trail: practice evidence outside summary");
           attempts.set(item.eventId, {
             eventId: item.eventId,
@@ -7024,7 +7024,7 @@ var require_trail2 = __commonJS({
         }
         return Object.freeze({ find(outcome, { targetLine, since, maxAgeMs } = {}) {
           if (!outcome || outcome.type !== "outcome.observed" || !id(outcome.id) || key(outcome.scope) !== owner || typeof targetLine !== "string" || !/^(need|due|trait):[a-zA-Z0-9_.:-]{1,120}$/.test(targetLine) || !Number.isFinite(maxAgeMs) || maxAgeMs < 0) throw new TypeError("Trail: invalid practice outcome query");
-          const start = time3(since), at = time3(outcome.at), recordedAt = time3(outcome.recordedAt);
+          const start = time4(since), at = time4(outcome.at), recordedAt = time4(outcome.recordedAt);
           if (at > cutoff || recordedAt > recordedCutoff || recordedAt < at || at < start || cutoff - at > maxAgeMs || outcome.measure !== "independent" || outcome.assisted !== false || outcome.targetLine !== targetLine) return null;
           const attempt = attempts.get(outcome.attemptId);
           const concept = targetLine.replace(/^(need|due):/, "").replace(/^(skill|node)\./, "");
@@ -7040,7 +7040,7 @@ var require_trail2 = __commonJS({
         for (const now of summary.attempts) {
           const concept = now.conceptIds[0];
           if (!now.independent || now.verdict !== "correct" || !concept || told.has(concept) || known.has(now.itemKey)) continue;
-          const before = earlier.filter((p) => p.verdict === "incorrect" && p.itemKey !== now.itemKey && p.conceptIds[0] === concept && Date.parse(p.at) < time3(now.at)).sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
+          const before = earlier.filter((p) => p.verdict === "incorrect" && p.itemKey !== now.itemKey && p.conceptIds[0] === concept && Date.parse(p.at) < time4(now.at)).sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
           if (!before) continue;
           told.add(concept);
           facts.push({
@@ -7806,14 +7806,14 @@ var require_vellum = __commonJS({
     }
     function learningReason({ status, label }) {
       if (typeof label !== "string") throw new TypeError("Vellum: invalid learning reason");
-      const topic = `${label}${particle(label, "\uC740", "\uB294")}`, object3 = `${label}${particle(label, "\uC744", "\uB97C")}`;
+      const topic = `${label}${particle(label, "\uC740", "\uB294")}`, object4 = `${label}${particle(label, "\uC744", "\uB97C")}`;
       const reasons2 = {
         unseen: `${topic} \uC544\uC9C1 \uAE30\uB85D\uC774 \uC801\uC5B4\uC694. \uC9E7\uAC8C \uD655\uC778\uD574 \uBD10\uC694.`,
-        checking: `${object3} \uC870\uAE08 \uB354 \uD655\uC778\uD574 \uBD10\uC694.`,
-        practice: `\uCD5C\uADFC \uB193\uCE5C ${object3} \uC870\uAE08 \uB354 \uC5F0\uC2B5\uD574 \uBD10\uC694.`,
-        supported: `${object3} \uB3C4\uC6C0\uACFC \uD568\uAED8 \uD574\uB0C8\uC5B4\uC694. \uC774\uC5B4\uC11C \uC0B4\uD3B4\uBD10\uC694.`,
-        "recent-independent": `${object3} \uCD5C\uADFC \uD63C\uC790 \uD574\uB0C8\uC5B4\uC694. \uAC00\uBCCD\uAC8C \uC774\uC5B4\uAC00\uC694.`,
-        review: `${object3} \uB2E4\uC2DC \uC0B4\uD3B4\uBCFC \uB54C\uC608\uC694.`
+        checking: `${object4} \uC870\uAE08 \uB354 \uD655\uC778\uD574 \uBD10\uC694.`,
+        practice: `\uCD5C\uADFC \uB193\uCE5C ${object4} \uC870\uAE08 \uB354 \uC5F0\uC2B5\uD574 \uBD10\uC694.`,
+        supported: `${object4} \uB3C4\uC6C0\uACFC \uD568\uAED8 \uD574\uB0C8\uC5B4\uC694. \uC774\uC5B4\uC11C \uC0B4\uD3B4\uBD10\uC694.`,
+        "recent-independent": `${object4} \uCD5C\uADFC \uD63C\uC790 \uD574\uB0C8\uC5B4\uC694. \uAC00\uBCCD\uAC8C \uC774\uC5B4\uAC00\uC694.`,
+        review: `${object4} \uB2E4\uC2DC \uC0B4\uD3B4\uBCFC \uB54C\uC608\uC694.`
       };
       if (!Object.hasOwn(reasons2, status)) throw new TypeError("Vellum: invalid learning reason");
       return reasons2[status];
@@ -7848,9 +7848,9 @@ var require_vellum = __commonJS({
       return source === "activity" ? "\uAC19\uC740 \uAE38\uC774\uC758 \uB450 \uAE30\uAC04\uC5D0 \uC571\uC744 \uC5F0 \uD69F\uC218\uC640 \uB0A0\uC9DC\uB97C \uBE44\uAD50\uD574\uC694. \uD65C\uB3D9 \uC644\uB8CC\uB098 \uAD00\uC2EC\uC758 \uAC15\uB3C4\uB97C \uB73B\uD558\uC9C0 \uC54A\uC544\uC694." : "\uAC19\uC740 \uAE38\uC774\uC758 \uB450 \uAE30\uAC04\uC5D0 \uB2F5\uD55C \uD69F\uC218\uB97C \uBE44\uAD50\uD574\uC694. \uD63C\uC790 \uC751\uB2F5\uC5D0\uB294 \uC624\uB2F5\uB3C4 \uD3EC\uD568\uD558\uBA70, \uC2E4\uB825 \uC131\uC7A5\uC774\uB098 \uD559\uC2B5 \uD6A8\uACFC\uB97C \uB73B\uD558\uC9C0 \uC54A\uC544\uC694.";
     }
     var memberDate = (value) => {
-      const time3 = typeof value === "string" ? Date.parse(value) : NaN;
-      if (!Number.isFinite(time3)) throw new TypeError("Vellum: invalid member evidence date");
-      const [year, month, day] = new Date(time3 + 9 * 36e5).toISOString().slice(0, 10).split("-").map(Number);
+      const time4 = typeof value === "string" ? Date.parse(value) : NaN;
+      if (!Number.isFinite(time4)) throw new TypeError("Vellum: invalid member evidence date");
+      const [year, month, day] = new Date(time4 + 9 * 36e5).toISOString().slice(0, 10).split("-").map(Number);
       return `${year}\uB144 ${month}\uC6D4 ${day}\uC77C`;
     };
     function memberUnderstandingLine({ kind, label, count = 0, activeDays = 0, state = "observed", selection = null, periodEnd = null } = {}) {
@@ -8319,8 +8319,8 @@ var require_learning_ledger = __commonJS({
       const base = previous || empty2();
       const ledger = { ...base, keys: { ...base.keys }, cells: { ...base.cells }, content: { ...base.content }, parents: Object.assign(/* @__PURE__ */ Object.create(null), base.parents) };
       if (!events.length) return ledger;
-      const time3 = (e) => Math.max(Date.parse(e.at), Date.parse(e.recordedAt));
-      const latest = log.reduce((max, e) => Math.max(max, time3(e)), -Infinity);
+      const time4 = (e) => Math.max(Date.parse(e.at), Date.parse(e.recordedAt));
+      const latest = log.reduce((max, e) => Math.max(max, time4(e)), -Infinity);
       const decisions = events.filter((e) => e.type === "decision.made").map((e) => e.id);
       const summary = Trail2.summarize(log, { scope, asOf: new Date(latest).toISOString(), prior: previous, decisions });
       const deliveries = /* @__PURE__ */ new Map(), proof = /* @__PURE__ */ new Map(), seen = /* @__PURE__ */ new Set();
@@ -8367,7 +8367,7 @@ var require_learning_ledger = __commonJS({
         table[key] = { ind: [...cell.ind].sort((x, y) => x[1] - y[1]).slice(-KEEP), helped: helped.sort((x, y) => helpedAt(x) - helpedAt(y)), unassessed: cell.unassessed };
       }
       ledger.counts = ledger.counts ? Temper.combine(ledger.counts, Temper.measure(summary)) : Temper.measure(summary);
-      ledger.cutoff = Math.max(ledger.cutoff ?? -Infinity, events.reduce((max, e) => Math.max(max, time3(e)), -Infinity));
+      ledger.cutoff = Math.max(ledger.cutoff ?? -Infinity, events.reduce((max, e) => Math.max(max, time4(e)), -Infinity));
       ledger.folded += events.length;
       if (local) ledger.local = true;
       return trimParents(ledger);
@@ -8816,8 +8816,8 @@ var require_learning_pages = __commonJS({
       const entries = JSON.parse(plain).map(pack), packed = JSON.stringify({ codec: 1, strings, entries });
       return packed.length < plain.length ? packed : plain;
     }
-    function decodePage(text) {
-      const value = JSON.parse(text);
+    function decodePage(text2) {
+      const value = JSON.parse(text2);
       if (Array.isArray(value)) return value;
       if (!value || value.codec !== 1 || Object.keys(value).some((k) => !["codec", "strings", "entries"].includes(k)) || !Array.isArray(value.strings) || !value.strings.every((s) => typeof s === "string") || !Array.isArray(value.entries)) throw failure();
       const string = (index) => {
@@ -8878,11 +8878,11 @@ var require_learning_pages = __commonJS({
           for (const page of pages) {
             if (!page || !validKey(page.key) || seen.has(page.key) || !Number.isInteger(page.count) || page.count < 1 || page.count > PAGE_ITEMS) throw failure();
             seen.add(page.key);
-            const text = storage.getItem(page.key);
-            if (typeof text !== "string") throw failure();
-            const rows2 = decodePage(text);
+            const text2 = storage.getItem(page.key);
+            if (typeof text2 !== "string") throw failure();
+            const rows2 = decodePage(text2);
             if (!Array.isArray(rows2) || rows2.length !== page.count) throw failure();
-            cache.set(page.key, text);
+            cache.set(page.key, text2);
             data[name].push(...rows2);
           }
         }
@@ -8929,13 +8929,13 @@ var require_learning_pages = __commonJS({
             delete next.data[name];
             next.arrays[name] = [];
             for (let at = 0; at < data[name].length; at += PAGE_ITEMS) {
-              const rows2 = data[name].slice(at, at + PAGE_ITEMS), text = encodePage(rows2), prior = root?.arrays?.[name]?.[at / PAGE_ITEMS];
-              if (prior && (cache.get(prior.key) ?? storage.getItem(prior.key)) === text) next.arrays[name].push(prior);
+              const rows2 = data[name].slice(at, at + PAGE_ITEMS), text2 = encodePage(rows2), prior = root?.arrays?.[name]?.[at / PAGE_ITEMS];
+              if (prior && (cache.get(prior.key) ?? storage.getItem(prior.key)) === text2) next.arrays[name].push(prior);
               else {
                 const pageKey = `${staging}${at}-${name}`;
                 created.push(pageKey);
-                storage.setItem(pageKey, text);
-                cache.set(pageKey, text);
+                storage.setItem(pageKey, text2);
+                cache.set(pageKey, text2);
                 next.arrays[name].push({ key: pageKey, count: rows2.length });
               }
             }
@@ -9422,7 +9422,7 @@ var require_memory_sync = __commonJS({
     var MAX_BYTES = 4096;
     var AHEAD_MS = 864e5;
     var KINDS = Object.freeze(["presentation", "flow", "declined"]);
-    var object3 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+    var object4 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
     var instant = (value) => typeof value === "string" && Number.isFinite(Date.parse(value));
     var failure = (code, message) => Object.assign(new Error(message), { code });
     var errorCode = (error2) => error2?.code || error2?.error?.code || error2?.body?.error?.code || "NETWORK_ERROR";
@@ -9443,14 +9443,14 @@ var require_memory_sync = __commonJS({
       "ACCOUNT_UNAVAILABLE"
     ]);
     var keyOf = (entry) => `${entry.kind}\0${entry.key}`;
-    var canonical = (value) => JSON.stringify(value, (_key, part) => object3(part) ? Object.fromEntries(Object.keys(part).sort().map((key) => [key, part[key]])) : part);
+    var canonical = (value) => JSON.stringify(value, (_key, part) => object4(part) ? Object.fromEntries(Object.keys(part).sort().map((key) => [key, part[key]])) : part);
     var sameEntry = (a, b) => canonical(a) === canonical(b);
     var sameValue = (a, b) => canonical(a.value ?? null) === canonical(b.value ?? null);
     function entriesOf(state) {
       const out = [];
-      if (object3(state?.presentation)) out.push({ kind: "presentation", key: "chosen", value: state.presentation.value ?? null, at: state.presentation.at });
-      for (const [key, memory] of Object.entries(object3(state?.flow) ? state.flow : {})) out.push({ kind: "flow", key, value: memory, at: memory?.at });
-      for (const [key, at] of Object.entries(object3(state?.declined) ? state.declined : {})) out.push({ kind: "declined", key, value: null, at });
+      if (object4(state?.presentation)) out.push({ kind: "presentation", key: "chosen", value: state.presentation.value ?? null, at: state.presentation.at });
+      for (const [key, memory] of Object.entries(object4(state?.flow) ? state.flow : {})) out.push({ kind: "flow", key, value: memory, at: memory?.at });
+      for (const [key, at] of Object.entries(object4(state?.declined) ? state.declined : {})) out.push({ kind: "declined", key, value: null, at });
       return out;
     }
     function stateOf(entries) {
@@ -9464,11 +9464,11 @@ var require_memory_sync = __commonJS({
     }
     function sendable(entry) {
       if (!KINDS.includes(entry.kind) || !ID.test(entry.key || "") || !instant(entry.at)) return false;
-      if (entry.kind === "presentation") return entry.key === "chosen" && (entry.value === null || object3(entry.value));
+      if (entry.kind === "presentation") return entry.key === "chosen" && (entry.value === null || object4(entry.value));
       if (entry.kind === "declined") return entry.value === null;
-      return object3(entry.value) && entry.value.content === entry.key && Date.parse(entry.value.at) === Date.parse(entry.at) && JSON.stringify(entry.value).length <= MAX_BYTES;
+      return object4(entry.value) && entry.value.content === entry.key && Date.parse(entry.value.at) === Date.parse(entry.at) && JSON.stringify(entry.value).length <= MAX_BYTES;
     }
-    var received = (entry) => object3(entry) && KINDS.includes(entry.kind) && ID.test(entry.key || "") && instant(entry.at) && (entry.kind === "flow" ? object3(entry.value) : entry.kind === "declined" ? entry.value === null : entry.value === null || object3(entry.value));
+    var received = (entry) => object4(entry) && KINDS.includes(entry.kind) && ID.test(entry.key || "") && instant(entry.at) && (entry.kind === "flow" ? object4(entry.value) : entry.kind === "declined" ? entry.value === null : entry.value === null || object4(entry.value));
     function createMemorySync({
       adapter,
       accountKey,
@@ -9727,7 +9727,7 @@ var require_flow = __commonJS({
       const logit = (p) => Math.log(p / (1 - p));
       const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
       const round = (value, digits) => Math.round(value * 10 ** digits) / 10 ** digits;
-      const time3 = (value) => {
+      const time4 = (value) => {
         const n = Date.parse(value);
         if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Flow: invalid time");
         return n;
@@ -9842,7 +9842,7 @@ var require_flow = __commonJS({
         if (condition !== null && !CONDITIONS.includes(condition)) fail2("invalid condition");
         if (!["adapted", "baseline"].includes(arm)) fail2("invalid arm");
         if (prior !== null && (typeof prior !== "object" || !within(prior.content, -20, 20))) fail2("invalid prior");
-        const startedAt = time3(now), remembered = validMemory(spec, memory);
+        const startedAt = time4(now), remembered = validMemory(spec, memory);
         let overall = spec.target + (mode === "easier" ? 0.1 : mode === "harder" ? -0.1 : 0) + (condition === "tired" ? 0.08 : 0);
         overall = clamp(overall, 0.55, 0.92);
         const aim = targets(spec, overall);
@@ -9859,7 +9859,7 @@ var require_flow = __commonJS({
           estimates.content.theta = prior.content;
           basis = "prior";
         }
-        const returning = !!remembered && startedAt - time3(remembered.at) > RETURN_AFTER;
+        const returning = !!remembered && startedAt - time4(remembered.at) > RETURN_AFTER;
         if (returning) for (const dimension of DIMENSIONS) estimates[dimension].reversals = Math.min(estimates[dimension].reversals, 1);
         const adaptive = arm === "adapted" && mode !== "fixed";
         const calm = condition === "tired";
@@ -10116,7 +10116,7 @@ var require_flow = __commonJS({
             content: spec.id,
             specVersion: spec.version,
             policy: VERSION,
-            at: new Date(time3(at)).toISOString(),
+            at: new Date(time4(at)).toISOString(),
             estimates: Object.fromEntries(DIMENSIONS.map((d) => [d, { theta: round(estimates[d].theta, 4), n: round(estimates[d].n, 2), reversals: estimates[d].reversals }])),
             indices: Object.fromEntries(spec.knobs.map((k) => [k.id, adaptive && !locked(k) ? clamp(indices[k.id] - (todayOnly[k.id] || 0), 0, k.values.length - 1) : reached[k.id]])),
             latencies: [...latencies]
@@ -10140,7 +10140,7 @@ var require_vellum_flow = __commonJS({
       const DAY3 = 864e5;
       const STUCK = Object.freeze({ afterMs: 4e4, misses: 2 });
       const within = (value, min, max) => typeof value === "number" && Number.isFinite(value) && value >= min && value <= max;
-      const time3 = (value) => {
+      const time4 = (value) => {
         const n = Date.parse(value);
         if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Vellum: invalid time");
         return n;
@@ -10159,7 +10159,7 @@ var require_vellum_flow = __commonJS({
         if (declared) return { offer: false, reason: "declared" };
         if (at >= last) return { offer: false, reason: "least-help" };
         if (streak < need && steady < need + 1) return { offer: false, reason: "not-yet" };
-        if (declinedAt !== null && time3(now) - time3(declinedAt) < quietDays * DAY3) return { offer: false, reason: "declined-recently" };
+        if (declinedAt !== null && time4(now) - time4(declinedAt) < quietDays * DAY3) return { offer: false, reason: "declined-recently" };
         return { offer: true, from: at, to: at + 1, reason: streak >= need ? "quiet-streak" : "steady-with-help" };
       }
       const WORDS = Object.freeze({
@@ -10204,8 +10204,8 @@ var require_vellum_flow = __commonJS({
         if (!Object.hasOwn(WORDS, level) || !words || typeof words !== "object") throw new TypeError("Vellum: invalid line options");
         const key = keyOf(event);
         if (!key) return null;
-        const text = Object.hasOwn(words, key) ? words[key] : WORDS[level][key];
-        return typeof text === "string" && text ? { key, text } : null;
+        const text2 = Object.hasOwn(words, key) ? words[key] : WORDS[level][key];
+        return typeof text2 === "string" && text2 ? { key, text: text2 } : null;
       }
       return Object.freeze({ VERSION, STUCK, WORDS, stuckFor, supportStep, line });
     });
@@ -10223,8 +10223,8 @@ var require_game_flow = __commonJS({
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     };
     var SEEN = Object.freeze(["practice", "supported", "checking", "review"]);
-    var object3 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
-    var presentationOf = (value) => object3(value) && Object.keys(value).length > 0 && Object.entries(value).every(([key, choice]) => Object.hasOwn(Flow.PRESENTATION, key) && (choice === null || Flow.PRESENTATION[key].includes(choice)));
+    var object4 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+    var presentationOf = (value) => object4(value) && Object.keys(value).length > 0 && Object.entries(value).every(([key, choice]) => Object.hasOwn(Flow.PRESENTATION, key) && (choice === null || Flow.PRESENTATION[key].includes(choice)));
     function createFlowPort({ storage, key, clock: clock2, epoch = () => null, canPersist = () => true }) {
       const FLOW = `${key}.flow`, TODAY = `${key}.today`, PRESENT = `${key}.presentation`;
       const listeners = /* @__PURE__ */ new Set();
@@ -10263,8 +10263,8 @@ var require_game_flow = __commonJS({
       };
       const memories = (current = epoch(), strict = false) => {
         const value = read(FLOW, strict);
-        if (strict && value != null && (value.v !== 1 || !object3(value.contents) || !object3(value.declined))) throw storageError();
-        return value && value.v === 1 && (value.epoch ?? null) === current && object3(value.contents) && object3(value.declined) ? value : { v: 1, epoch: current, contents: {}, declined: {} };
+        if (strict && value != null && (value.v !== 1 || !object4(value.contents) || !object4(value.declined))) throw storageError();
+        return value && value.v === 1 && (value.epoch ?? null) === current && object4(value.contents) && object4(value.declined) ? value : { v: 1, epoch: current, contents: {}, declined: {} };
       };
       const update = (since, change, targetKind, key2) => {
         const current = epoch();
@@ -10284,12 +10284,12 @@ var require_game_flow = __commonJS({
       const copy3 = (value) => JSON.parse(JSON.stringify(value));
       const pendingKey = (kind, id) => `${kind}|${id}`;
       const intent = (entry) => ({ id: `${Date.now().toString(36)}-${++sequence}-${Math.random().toString(36).slice(2)}`, epoch: epoch(), entry: copy3(entry), assignedAt: null });
-      const currentIntent = (value) => value && value.epoch === epoch() && typeof value.id === "string" && object3(value.entry);
+      const currentIntent = (value) => value && value.epoch === epoch() && typeof value.id === "string" && object4(value.entry);
       const intents = () => {
         const present = read(PRESENT, true), all = memories(epoch(), true);
-        if (all.pending != null && !object3(all.pending)) throw storageError();
+        if (all.pending != null && !object4(all.pending)) throw storageError();
         const rows2 = [present?.pending, ...Object.values(all.pending || {})].filter((value) => value !== void 0);
-        if (rows2.some((value) => !object3(value) || typeof value.id !== "string" || !value.id || value.id.length > 120 || !object3(value.entry) || !["presentation", "flow", "declined"].includes(value.entry.kind) || typeof value.entry.key !== "string" || !(value.assignedAt === null || instant(value.assignedAt)))) throw storageError();
+        if (rows2.some((value) => !object4(value) || typeof value.id !== "string" || !value.id || value.id.length > 120 || !object4(value.entry) || !["presentation", "flow", "declined"].includes(value.entry.kind) || typeof value.entry.key !== "string" || !(value.assignedAt === null || instant(value.assignedAt)))) throw storageError();
         return rows2.filter(currentIntent).map(copy3);
       };
       const mutateIntent = (id, change) => {
@@ -10304,7 +10304,7 @@ var require_game_flow = __commonJS({
           return result;
         }
         const all = memories(epoch(), true);
-        for (const [slot, pending] of Object.entries(object3(all.pending) ? all.pending : {})) {
+        for (const [slot, pending] of Object.entries(object4(all.pending) ? all.pending : {})) {
           if (!currentIntent(pending) || pending.id !== id) continue;
           const result = change(pending, (entry) => {
             if (entry.kind === "flow") all.contents[entry.key] = copy3(entry.value);
@@ -10394,22 +10394,22 @@ var require_game_flow = __commonJS({
         // Takes another device's values where they are newer than this device's, entry by entry.
         // Subscribers hear it as 'import', so a synchroniser does not send it back.
         merge(remote) {
-          if (!object3(remote)) throw new TypeError("Atlas: invalid memory");
+          if (!object4(remote)) throw new TypeError("Atlas: invalid memory");
           let changed = false;
           const pending = new Set(intents().map((item) => pendingKey(item.entry.kind, item.entry.key)));
           const present = remote.presentation;
-          if (object3(present) && instant(present.at) && (present.value === null || presentationOf(present.value)) && later(present.at, chosen(true)?.at) && !pending.has("presentation|chosen")) {
+          if (object4(present) && instant(present.at) && (present.value === null || presentationOf(present.value)) && later(present.at, chosen(true)?.at) && !pending.has("presentation|chosen")) {
             saveRequired(PRESENT, { v: 1, presentation: present.value && { ...present.value }, at: present.at });
             changed = true;
           }
           const all = memories(epoch(), true);
           let touched = false;
-          for (const [id, memory] of Object.entries(object3(remote.flow) ? remote.flow : {})) {
-            if (!object3(memory) || memory.content !== id || !instant(memory.at) || !later(memory.at, all.contents[id]?.at) || pending.has(pendingKey("flow", id))) continue;
+          for (const [id, memory] of Object.entries(object4(remote.flow) ? remote.flow : {})) {
+            if (!object4(memory) || memory.content !== id || !instant(memory.at) || !later(memory.at, all.contents[id]?.at) || pending.has(pendingKey("flow", id))) continue;
             all.contents[id] = JSON.parse(JSON.stringify(memory));
             touched = true;
           }
-          for (const [id, at] of Object.entries(object3(remote.declined) ? remote.declined : {})) {
+          for (const [id, at] of Object.entries(object4(remote.declined) ? remote.declined : {})) {
             if (!instant(at) || !later(at, all.declined[id]) || pending.has(pendingKey("declined", id))) continue;
             all.declined[id] = at;
             touched = true;
@@ -10498,7 +10498,7 @@ var require_game_flow = __commonJS({
           answer(pid, response, flow = {}) {
             const known = typeof coach.events === "function" ? coach.events() : null;
             const recorded = coach.answer(pid, response);
-            const eventId = object3(recorded) && recorded.accepted !== false && typeof recorded.eventId === "string" && recorded.eventId ? recorded.eventId : null;
+            const eventId = object4(recorded) && recorded.accepted !== false && typeof recorded.eventId === "string" && recorded.eventId ? recorded.eventId : null;
             const fresh = !!eventId && Array.isArray(known) && (owed.has(eventId) || !known.some((event) => event.id === eventId));
             if (!fresh) return { recorded, change: null, settings: run.settings(), evidence: false, line: null };
             const outcome = flow.outcome ?? (recorded.verdict === "correct" ? "success" : recorded.verdict === "incorrect" ? "fail" : "void");
@@ -11766,7 +11766,7 @@ var require_ask = __commonJS({
       const DAY3 = 864e5;
       const id = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
       const canonical = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
-      const time3 = (value) => {
+      const time4 = (value) => {
         const n = Date.parse(value);
         if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Ask: invalid time");
         return n;
@@ -11816,7 +11816,7 @@ var require_ask = __commonJS({
         if (typeof decide !== "function" || !answers || typeof answers !== "object" || !Array.isArray(denied) || !asked || typeof asked !== "object") throw new TypeError("Ask: invalid input");
         if (evaluate !== void 0 && typeof evaluate !== "function") throw new TypeError("Ask: evaluate must be a function");
         if (!finite(quietDays) || quietDays < 0 || quietDays > 36500) throw new TypeError("Ask: invalid question cooldown");
-        const currentTime = now === null ? null : time3(now);
+        const currentTime = now === null ? null : time4(now);
         const valued = typeof evaluate === "function";
         if (!valued && questions.some((q2) => owns(q2, "cost") || owns(q2, "responseProbability"))) throw new TypeError("Ask: question cost and response probability require evaluate");
         const current = decide({ ...answers });
@@ -11828,7 +11828,7 @@ var require_ask = __commonJS({
             result.push({ id: q2.id, kind: q2.kind ?? "setting", about, impact: 0, skippable: true, reason: "denied" });
             continue;
           }
-          if (Object.hasOwn(asked, q2.id) && currentTime !== null && currentTime - time3(asked[q2.id]) < quietDays * DAY3) {
+          if (Object.hasOwn(asked, q2.id) && currentTime !== null && currentTime - time4(asked[q2.id]) < quietDays * DAY3) {
             result.push({ id: q2.id, kind: q2.kind ?? "setting", about, impact: 0, skippable: true, reason: "asked-recently" });
             continue;
           }
@@ -11983,8 +11983,8 @@ var require_game_browser = __commonJS({
 });
 
 // experiences/synk-world-app/life-content.mjs
-var choices = (texts) => texts.map((text, index) => ({ id: ["a", "b", "c"][index], text }));
-var scene = (speaker, text) => ({ speaker, text });
+var choices = (texts) => texts.map((text2, index) => ({ id: ["a", "b", "c"][index], text: text2 }));
+var scene = (speaker, text2) => ({ speaker, text: text2 });
 var expression = (id, korean, meaning) => ({ id, korean, meaning });
 var transfer = (prompt, context, texts, answerId, explanation) => ({
   prompt,
@@ -12664,7 +12664,7 @@ var require_trail = __commonJS2({
         if (!value || typeof value !== "object" || Array.isArray(value) || ![Object.prototype, null].includes(Object.getPrototypeOf(value)) || Object.keys(value).length !== 2 || !Object.hasOwn(value, "selectedId") || !Object.hasOwn(value, "correctId") || !optionId(value.selectedId) || !optionId(value.correctId)) throw new TypeError("Trail: invalid choice IDs");
         return { selectedId: value.selectedId, correctId: value.correctId };
       }
-      const time3 = (value) => {
+      const time4 = (value) => {
         const n = Date.parse(value);
         if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Trail: invalid time");
         return n;
@@ -12682,8 +12682,8 @@ var require_trail = __commonJS2({
         return value;
       };
       const scopeOf = (e) => vouched.get(e)?.scope ?? key(e.scope);
-      const atOf = (e) => vouched.get(e)?.at ?? time3(e.at);
-      const recordedOf = (e) => vouched.get(e)?.recordedAt ?? time3(e.recordedAt);
+      const atOf = (e) => vouched.get(e)?.at ?? time4(e.at);
+      const recordedOf = (e) => vouched.get(e)?.recordedAt ?? time4(e.recordedAt);
       const uniqueList = (values, valid, max) => Array.isArray(values) && values.length <= max && values.every(valid) && new Set(values).size === values.length;
       const tag = (v) => typeof v === "string" && v.trim() === v && v.length > 0 && v.length <= 120 && !/[\r\n]/.test(v);
       function validate2(event) {
@@ -12691,7 +12691,7 @@ var require_trail = __commonJS2({
         const fields = [...BASE, ...FIELDS[event.type]];
         if (Object.keys(event).some((k) => !fields.includes(k) && !(OPTIONAL[event.type] || []).includes(k)) || fields.some((k) => !Object.hasOwn(event, k))) throw new TypeError("Trail: unexpected or missing practice field");
         key(event.scope);
-        if (time3(event.recordedAt) < time3(event.at)) throw new TypeError("Trail: recorded before occurrence");
+        if (time4(event.recordedAt) < time4(event.at)) throw new TypeError("Trail: recorded before occurrence");
         if (event.type === TYPES[0]) {
           if (![event.decisionId, event.taskId, event.taskVersion, event.itemKey].every(id) || !uniqueList(event.conceptIds, id, 32) || ![true, false, null].includes(event.firstExposure)) throw new TypeError("Trail: invalid presentation");
           if (event.measure != null) {
@@ -12724,14 +12724,14 @@ var require_trail = __commonJS2({
         if (TYPES.includes(event?.type)) validate2(event);
         else if (!event?.scope || ![event.scope.domain, event.scope.workspace, event.scope.subject].every((v) => typeof v === "string")) throw new TypeError("Trail: invalid log entry");
         freeze(event);
-        vouched.set(event, { scope: `${event.scope.domain}/${event.scope.workspace}/${event.scope.subject}`, at: time3(event.at), recordedAt: time3(event.recordedAt) });
+        vouched.set(event, { scope: `${event.scope.domain}/${event.scope.workspace}/${event.scope.subject}`, at: time4(event.at), recordedAt: time4(event.recordedAt) });
         return event;
       }
       function checkLink(events, event) {
         const attempts = { count: 0, latest: -Infinity };
         for (const earlier of events) if (earlier.type === TYPES[2] && earlier.presentationId === event.presentationId) {
           attempts.count += 1;
-          attempts.latest = Math.max(attempts.latest, time3(earlier.at));
+          attempts.latest = Math.max(attempts.latest, time4(earlier.at));
         }
         return linked(
           event,
@@ -12777,7 +12777,7 @@ var require_trail = __commonJS2({
       const BITS = Object.freeze({ attempt: 1, answer: 2, help: 4 });
       const foldedBefore = (prior, traceKey, kind) => !!prior && Object.prototype.hasOwnProperty.call(prior.keys, traceKey) && (prior.keys[traceKey] & BITS[kind]) !== 0;
       function summarize(events, { scope, asOf, recordedAsOf = asOf, decisions = null, prior = null } = {}) {
-        const scopeId = key(scope), cutoff = time3(asOf), recordedCutoff = time3(recordedAsOf);
+        const scopeId = key(scope), cutoff = time4(asOf), recordedCutoff = time4(recordedAsOf);
         if (!Array.isArray(events)) throw new TypeError("Trail: log must be an array");
         if (decisions !== null && (!Array.isArray(decisions) || !decisions.every(id))) throw new TypeError("Trail: invalid decision filter");
         const reported = (decisionId) => decisions === null || decisions.includes(decisionId);
@@ -13012,11 +13012,11 @@ var require_trail = __commonJS2({
       }
       function createPracticeOutcomeIndex(summary) {
         if (!summary || summary.version !== VERSION || !Array.isArray(summary.attempts)) throw new TypeError("Trail: use a practice summary");
-        const owner = key(summary.scope), cutoff = time3(summary.asOf), recordedCutoff = time3(summary.recordedAsOf ?? summary.asOf);
+        const owner = key(summary.scope), cutoff = time4(summary.asOf), recordedCutoff = time4(summary.recordedAsOf ?? summary.asOf);
         const attempts = /* @__PURE__ */ new Map();
         for (const item of summary.attempts) {
           if (!id(item.eventId) || !id(item.presentationId) || !id(item.decisionId) || !Array.isArray(item.conceptIds) || item.conceptIds.some((value) => !id(value)) || attempts.has(item.eventId)) throw new TypeError("Trail: invalid practice outcome evidence");
-          const at = time3(item.at), recordedAt = time3(item.recordedAt);
+          const at = time4(item.at), recordedAt = time4(item.recordedAt);
           if (recordedAt < at || at > cutoff || recordedAt > recordedCutoff) throw new TypeError("Trail: practice evidence outside summary");
           attempts.set(item.eventId, {
             eventId: item.eventId,
@@ -13030,7 +13030,7 @@ var require_trail = __commonJS2({
         }
         return Object.freeze({ find(outcome, { targetLine, since, maxAgeMs } = {}) {
           if (!outcome || outcome.type !== "outcome.observed" || !id(outcome.id) || key(outcome.scope) !== owner || typeof targetLine !== "string" || !/^(need|due|trait):[a-zA-Z0-9_.:-]{1,120}$/.test(targetLine) || !Number.isFinite(maxAgeMs) || maxAgeMs < 0) throw new TypeError("Trail: invalid practice outcome query");
-          const start = time3(since), at = time3(outcome.at), recordedAt = time3(outcome.recordedAt);
+          const start = time4(since), at = time4(outcome.at), recordedAt = time4(outcome.recordedAt);
           if (at > cutoff || recordedAt > recordedCutoff || recordedAt < at || at < start || cutoff - at > maxAgeMs || outcome.measure !== "independent" || outcome.assisted !== false || outcome.targetLine !== targetLine) return null;
           const attempt = attempts.get(outcome.attemptId);
           const concept = targetLine.replace(/^(need|due):/, "").replace(/^(skill|node)\./, "");
@@ -13046,7 +13046,7 @@ var require_trail = __commonJS2({
         for (const now of summary.attempts) {
           const concept = now.conceptIds[0];
           if (!now.independent || now.verdict !== "correct" || !concept || told.has(concept) || known.has(now.itemKey)) continue;
-          const before = earlier.filter((p) => p.verdict === "incorrect" && p.itemKey !== now.itemKey && p.conceptIds[0] === concept && Date.parse(p.at) < time3(now.at)).sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
+          const before = earlier.filter((p) => p.verdict === "incorrect" && p.itemKey !== now.itemKey && p.conceptIds[0] === concept && Date.parse(p.at) < time4(now.at)).sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
           if (!before) continue;
           told.add(concept);
           facts.push({
@@ -13692,7 +13692,7 @@ var require_domain = __commonJS2({
       };
       const copy3 = (value) => JSON.parse(JSON.stringify(value));
       const canonical = (value) => JSON.stringify(value, (_key, v) => plain(v) ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, v[k]])) : v);
-      const time3 = (value) => typeof value === "string" && Number.isFinite(Date.parse(value)) ? Date.parse(value) : fail2("invalid time");
+      const time4 = (value) => typeof value === "string" && Number.isFinite(Date.parse(value)) ? Date.parse(value) : fail2("invalid time");
       const finite = (n) => typeof n === "number" && Number.isFinite(n);
       const keys = (value, allowed) => plain(value) && Object.keys(value).every((k) => allowed.includes(k));
       const scopeKey = (scope) => {
@@ -13735,7 +13735,7 @@ var require_domain = __commonJS2({
         return fields;
       }
       function project(contract, scope, observations, at) {
-        const fields = validateContract(contract), owner = scopeKey(scope), cutoff = time3(at);
+        const fields = validateContract(contract), owner = scopeKey(scope), cutoff = time4(at);
         if (!Array.isArray(observations) || observations.length > 1e4) fail2("invalid observations");
         const byId = /* @__PURE__ */ new Map(), rows2 = [], replaced = /* @__PURE__ */ new Set();
         for (const row of observations) {
@@ -13748,8 +13748,8 @@ var require_domain = __commonJS2({
           if (row.independentKey != null && !token(row.independentKey)) fail2("invalid independence key");
           if (row.quality != null && !["usable", "confounded", "unassessed"].includes(row.quality)) fail2("invalid evidence quality");
           if (row.source === "declared" && row.quality != null && row.quality !== "usable") fail2("a declaration is not a measured outcome");
-          const happened = time3(row.at), recorded = time3(row.recordedAt ?? row.at);
-          if (recorded < happened || row.until != null && time3(row.until) <= happened) fail2("invalid observation chronology");
+          const happened = time4(row.at), recorded = time4(row.recordedAt ?? row.at);
+          if (recorded < happened || row.until != null && time4(row.until) <= happened) fail2("invalid observation chronology");
           if (row.refs != null && (!Array.isArray(row.refs) || row.refs.length > 100 || row.refs.some((r) => !token(r)) || new Set(row.refs).size !== row.refs.length)) fail2("invalid evidence references");
           if (row.source === "inferred" && !row.refs?.length) fail2("an inferred proposal needs source references");
           if (row.supersedes != null && !token(row.supersedes)) fail2("invalid correction reference");
@@ -13763,11 +13763,11 @@ var require_domain = __commonJS2({
         for (const row of rows2) {
           for (const ref of row.source === "inferred" ? row.refs : []) {
             const source = byId.get(ref);
-            if (!source || source.id === row.id || source.source === "inferred" || time3(source.recordedAt ?? source.at) > time3(row.recordedAt ?? row.at) || time3(source.at) > time3(row.at)) fail2("invalid proposal source");
+            if (!source || source.id === row.id || source.source === "inferred" || time4(source.recordedAt ?? source.at) > time4(row.recordedAt ?? row.at) || time4(source.at) > time4(row.at)) fail2("invalid proposal source");
           }
           if (row.supersedes) {
             const prior = byId.get(row.supersedes);
-            if (!prior || prior.id === row.id || prior.field !== row.field || prior.source !== row.source || time3(prior.at) > time3(row.at) || time3(prior.recordedAt ?? prior.at) > time3(row.recordedAt ?? row.at)) fail2("invalid correction");
+            if (!prior || prior.id === row.id || prior.field !== row.field || prior.source !== row.source || time4(prior.at) > time4(row.at) || time4(prior.recordedAt ?? prior.at) > time4(row.recordedAt ?? row.at)) fail2("invalid correction");
             replaced.add(prior.id);
           }
         }
@@ -13782,11 +13782,11 @@ var require_domain = __commonJS2({
           }
           for (const id of path) checked.add(id);
         }
-        rows2.sort((a, b) => time3(a.at) - time3(b.at) || time3(a.recordedAt ?? a.at) - time3(b.recordedAt ?? b.at));
+        rows2.sort((a, b) => time4(a.at) - time4(b.at) || time4(a.recordedAt ?? a.at) - time4(b.recordedAt ?? b.at));
         const byField = /* @__PURE__ */ new Map(), orderedKeys = /* @__PURE__ */ new Map(), latestDeclarations = /* @__PURE__ */ new Map(), latestIndependent = /* @__PURE__ */ new Map();
         for (const row of rows2) if (!replaced.has(row.id)) {
           if (row.source !== "inferred") {
-            const key = canonical([row.field, row.source, row.source === "observed" ? row.independentKey : "", time3(row.at), time3(row.recordedAt ?? row.at)]);
+            const key = canonical([row.field, row.source, row.source === "observed" ? row.independentKey : "", time4(row.at), time4(row.recordedAt ?? row.at)]);
             const previous = orderedKeys.get(key);
             if (previous && (previous.value !== row.value || (previous.quality ?? "usable") !== (row.quality ?? "usable") || previous.until !== row.until)) fail2("ambiguous observation order");
             orderedKeys.set(key, row);
@@ -13800,7 +13800,7 @@ var require_domain = __commonJS2({
           const row = byId.get(id);
           if (!row || replaced.has(id) || row.value === null || row.quality && row.quality !== "usable") return false;
           const field = fields.get(row.field);
-          if (cutoff >= (row.until ? time3(row.until) : time3(row.at) + (field.maxAgeDays ?? 30) * DAY3)) return false;
+          if (cutoff >= (row.until ? time4(row.until) : time4(row.at) + (field.maxAgeDays ?? 30) * DAY3)) return false;
           const declared = latestDeclarations.get(row.field);
           if (declared && (declared.value === null || row.source === "declared" && declared.id !== row.id)) return false;
           if (row.source === "observed" && latestIndependent.get(canonical([row.field, row.independentKey]))?.id !== row.id) return false;
@@ -13809,7 +13809,7 @@ var require_domain = __commonJS2({
         const result = [];
         for (const field of fields.values()) {
           const all = byField.get(field.id) || [];
-          const fresh = (row) => cutoff < (row.until ? time3(row.until) : time3(row.at) + (field.maxAgeDays ?? 30) * DAY3);
+          const fresh = (row) => cutoff < (row.until ? time4(row.until) : time4(row.at) + (field.maxAgeDays ?? 30) * DAY3);
           const base = { id: field.id, status: "unknown", value: null, usable: false, evidence: [], independent: 0, agreement: null, alternatives: [], proposals: [], excluded: [] };
           const declaration = all.filter((r) => r.source === "declared").at(-1);
           if (declaration) {
@@ -14585,6 +14585,39 @@ function worldLearningProfileValues(value, options) {
   return current.profile.consent ? { ...copy(current.profile.values), ...copy(current.today?.values || {}) } : {};
 }
 
+// experiences/synk-world-app/seoul-record.mjs
+var STAGES = /* @__PURE__ */ new Set(["prologue", "dream", "card", "left"]);
+var DREAMS = /* @__PURE__ */ new Set(["idol", "actor"]);
+var CALLS = /* @__PURE__ */ new Set(["\uB204\uB098", "\uC5B8\uB2C8", "\uC120\uBC30"]);
+var MOM = /* @__PURE__ */ new Set(["fix", "ok", "later"]);
+var object2 = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+var time = (value) => Number.isSafeInteger(value) && value >= 0;
+var text = (value) => typeof value === "string" && value.trim() ? value.trim().slice(0, 40) : null;
+function readArrival(value) {
+  if (!object2(value) || value.version !== 1) return null;
+  const scenes = Array.isArray(value.scenes) ? value.scenes.filter((s) => object2(s) && typeof s.id === "string" && /^[a-z0-9._-]{1,40}$/i.test(s.id) && time(s.at)).slice(-200).map((s) => ({ id: s.id, at: s.at, ...Number.isSafeInteger(s.lines) && s.lines >= 0 && s.lines <= 200 ? { lines: s.lines } : {} })) : [];
+  const best = {};
+  if (object2(value.best)) {
+    for (const [id, b] of Object.entries(value.best).slice(0, 100)) if (/^[a-z0-9]{1,12}$/.test(id) && object2(b) && Number.isSafeInteger(b.n) && b.n >= 0 && b.n <= 200) best[id] = { n: b.n, t2: b.t2 === true, tr: b.tr === true };
+  }
+  return {
+    version: 1,
+    stage: STAGES.has(value.stage) ? value.stage : "prologue",
+    dream: DREAMS.has(value.dream) ? value.dream : null,
+    name: text(value.name),
+    nameEn: text(value.nameEn),
+    from: text(value.from),
+    call: CALLS.has(value.call) ? value.call : null,
+    look: typeof value.look === "string" && /^[a-z]{2}_[mf]$/.test(value.look) ? value.look : null,
+    lights: Number.isSafeInteger(value.lights) && value.lights >= 0 && value.lights <= 1e5 ? value.lights : 0,
+    best,
+    scenes,
+    momAnswer: MOM.has(value.momAnswer) ? value.momAnswer : null,
+    momAt: time(value.momAt) ? value.momAt : null,
+    updatedAt: time(value.updatedAt) ? value.updatedAt : null
+  };
+}
+
 // experiences/synk-world-app/life-progress.mjs
 var LIFE_PROGRESS_KEY = "synk.life-korean.progress.v1";
 var LIFE_PROGRESS_VERSION = 1;
@@ -14594,8 +14627,8 @@ var INTERVALS = [1, 3, 7, 14, 30];
 var clone2 = (value) => JSON.parse(JSON.stringify(value));
 var fail = (code, message) => Object.assign(new Error(message || code), { code });
 var safeId = (value) => typeof value === "string" && /^[a-z0-9][a-z0-9_-]{0,119}$/i.test(value);
-var object2 = (value) => value !== null && typeof value === "object" && !Array.isArray(value) && [Object.prototype, null].includes(Object.getPrototypeOf(value));
-var time = (value) => Number.isSafeInteger(value) && value >= 0;
+var object3 = (value) => value !== null && typeof value === "object" && !Array.isArray(value) && [Object.prototype, null].includes(Object.getPrototypeOf(value));
+var time2 = (value) => Number.isSafeInteger(value) && value >= 0;
 var empty = (owner) => ({ version: LIFE_PROGRESS_VERSION, owner, revision: 0, activeLessonId: null, activeReview: null, lessons: {}, reviews: {} });
 var TUTORS = /* @__PURE__ */ new Set(["marin", "kkamong", "mongle"]);
 var OUTCOMES = /* @__PURE__ */ new Set(["independent", "assisted", "retry"]);
@@ -14604,7 +14637,7 @@ var HANGUL_ANSWERS = /* @__PURE__ */ new Set(["new", "reads"]);
 var HANGUL_VIA = /* @__PURE__ */ new Set(["question", "graduation", "skip", "unskip"]);
 var dailyId = (value) => safeId(value) && !["constructor", "prototype"].includes(value);
 var DAILY_MAX_TIME = 253402268399999;
-var dailyTime = (value) => time(value) && value <= DAILY_MAX_TIME;
+var dailyTime = (value) => time2(value) && value <= DAILY_MAX_TIME;
 function lifeDayKey(at) {
   if (!dailyTime(at)) throw TypeError("Invalid learning time");
   return new Date(at + 9 * 36e5).toISOString().slice(0, 10);
@@ -14632,13 +14665,13 @@ function validateDaily(daily) {
   const invalid = () => {
     throw fail("LIFE_PROGRESS_UNREADABLE");
   };
-  if (!object2(daily) || daily.version !== 1 || !object2(daily.days) || Object.keys(daily).some((key) => !["version", "days"].includes(key)) || Object.keys(daily.days).length > 30) invalid();
+  if (!object3(daily) || daily.version !== 1 || !object3(daily.days) || Object.keys(daily).some((key) => !["version", "days"].includes(key)) || Object.keys(daily.days).length > 30) invalid();
   for (const [key, day] of Object.entries(daily.days)) {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(key) || !object2(day) || Object.keys(day).some((key2) => !["items", "closedAt"].includes(key2)) || !object2(day.items) || !Object.keys(day.items).length || Object.keys(day.items).length > 100) invalid();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(key) || !object3(day) || Object.keys(day).some((key2) => !["items", "closedAt"].includes(key2)) || !object3(day.items) || !Object.keys(day.items).length || Object.keys(day.items).length > 100) invalid();
     const sameDay = (at) => dailyTime(at) && lifeDayKey(at) === key;
     if (day.closedAt !== void 0 && !sameDay(day.closedAt)) invalid();
     for (const [id, item] of Object.entries(day.items)) {
-      if (!dailyId(id) || !object2(item) || Object.keys(item).some((key2) => !["lessonId", "observedAt", "outcome", "guidedAt", "tutorId"].includes(key2)) || !dailyId(item.lessonId)) invalid();
+      if (!dailyId(id) || !object3(item) || Object.keys(item).some((key2) => !["lessonId", "observedAt", "outcome", "guidedAt", "tutorId"].includes(key2)) || !dailyId(item.lessonId)) invalid();
       if (item.observedAt === void 0 ? item.outcome !== void 0 : item.outcome === void 0 || !sameDay(item.observedAt) || !OUTCOMES.has(item.outcome)) invalid();
       if (item.guidedAt === void 0 ? item.tutorId !== void 0 : !sameDay(item.guidedAt) || !TUTORS.has(item.tutorId)) invalid();
       if (item.observedAt === void 0 && item.guidedAt === void 0) invalid();
@@ -14676,27 +14709,27 @@ function validate(raw, owner) {
   } catch {
     throw fail("LIFE_PROGRESS_UNREADABLE");
   }
-  if (!object2(value) || value.version !== 1 || value.owner !== owner || !time(value.revision) || !object2(value.lessons) || !object2(value.reviews) || Object.keys(value.lessons).length > 100 || Object.keys(value.reviews).length > 400) throw fail("LIFE_PROGRESS_UNREADABLE");
+  if (!object3(value) || value.version !== 1 || value.owner !== owner || !time2(value.revision) || !object3(value.lessons) || !object3(value.reviews) || Object.keys(value.lessons).length > 100 || Object.keys(value.reviews).length > 400) throw fail("LIFE_PROGRESS_UNREADABLE");
   if (value.activeLessonId !== null && !safeId(value.activeLessonId)) throw fail("LIFE_PROGRESS_UNREADABLE");
   for (const [id, lesson2] of Object.entries(value.lessons)) {
-    if (!safeId(id) || !object2(lesson2) || !safeId(lesson2.attemptId) || !time(lesson2.startedAt) || lesson2.completedAt !== null && !time(lesson2.completedAt) || !object2(lesson2.answers) || Object.keys(lesson2.answers).length > 100 || !Array.isArray(lesson2.questionIds) || lesson2.questionIds.length > 100 || !lesson2.questionIds.every(safeId) || new Set(lesson2.questionIds).size !== lesson2.questionIds.length) throw fail("LIFE_PROGRESS_UNREADABLE");
+    if (!safeId(id) || !object3(lesson2) || !safeId(lesson2.attemptId) || !time2(lesson2.startedAt) || lesson2.completedAt !== null && !time2(lesson2.completedAt) || !object3(lesson2.answers) || Object.keys(lesson2.answers).length > 100 || !Array.isArray(lesson2.questionIds) || lesson2.questionIds.length > 100 || !lesson2.questionIds.every(safeId) || new Set(lesson2.questionIds).size !== lesson2.questionIds.length) throw fail("LIFE_PROGRESS_UNREADABLE");
     if (lesson2.questionIds.some((id2) => !safeId(id2)) || Object.keys(lesson2.answers).some((id2) => !lesson2.questionIds.includes(id2))) throw fail("LIFE_PROGRESS_UNREADABLE");
-    for (const [qid, answer] of Object.entries(lesson2.answers)) if (!object2(answer) || typeof answer.correct !== "boolean" || typeof answer.helped !== "boolean" || !time(answer.at) || answer.choiceId !== null && !safeId(answer.choiceId) || answer.helpSource !== void 0 && (answer.helpSource !== "setting" || answer.helped !== true) || answer.order !== void 0 && (id !== CAFE_COMPOSE_ID || qid !== "cafe-compose-order" || !isCafeOrder(answer.order, { complete: true })) || answer.input !== void 0 && (!isCafeLesson(id) || !isCafeListen(answer.input))) throw fail("LIFE_PROGRESS_UNREADABLE");
-    if (lesson2.stage !== void 0 && (!object2(lesson2.stage) || !["intro", "story", "questions"].includes(lesson2.stage.phase) || !time(lesson2.stage.sceneIndex) || !time(lesson2.stage.questionIndex) || lesson2.stage.sceneIndex > 100 || lesson2.stage.questionIndex > 100 || lesson2.stage.helped !== void 0 && typeof lesson2.stage.helped !== "boolean" || lesson2.stage.helpSource !== void 0 && (lesson2.stage.helpSource !== "setting" || lesson2.stage.helped !== true))) throw fail("LIFE_PROGRESS_UNREADABLE");
+    for (const [qid, answer] of Object.entries(lesson2.answers)) if (!object3(answer) || typeof answer.correct !== "boolean" || typeof answer.helped !== "boolean" || !time2(answer.at) || answer.choiceId !== null && !safeId(answer.choiceId) || answer.helpSource !== void 0 && (answer.helpSource !== "setting" || answer.helped !== true) || answer.order !== void 0 && (id !== CAFE_COMPOSE_ID || qid !== "cafe-compose-order" || !isCafeOrder(answer.order, { complete: true })) || answer.input !== void 0 && (!isCafeLesson(id) || !isCafeListen(answer.input))) throw fail("LIFE_PROGRESS_UNREADABLE");
+    if (lesson2.stage !== void 0 && (!object3(lesson2.stage) || !["intro", "story", "questions"].includes(lesson2.stage.phase) || !time2(lesson2.stage.sceneIndex) || !time2(lesson2.stage.questionIndex) || lesson2.stage.sceneIndex > 100 || lesson2.stage.questionIndex > 100 || lesson2.stage.helped !== void 0 && typeof lesson2.stage.helped !== "boolean" || lesson2.stage.helpSource !== void 0 && (lesson2.stage.helpSource !== "setting" || lesson2.stage.helped !== true))) throw fail("LIFE_PROGRESS_UNREADABLE");
     if (lesson2.stage?.cafe !== void 0 && (!isCafeLesson(id) || lesson2.stage.phase !== "questions" || !isCafeCheckpoint(lesson2.stage.cafe, id) || lesson2.stage.questionIndex !== lesson2.stage.cafe.step || lesson2.stage.sceneIndex !== lesson2.stage.cafe.step || lesson2.stage.cafe.phase === "complete" && lesson2.questionIds.some((qid) => !lesson2.answers[qid]))) throw fail("LIFE_PROGRESS_UNREADABLE");
   }
   for (const [id, review] of Object.entries(value.reviews)) {
-    if (!safeId(id) || !object2(review) || review.id !== id || !safeId(review.questionId) || !safeId(review.lessonId) || !safeId(review.packId) || !safeId(review.skillId) || !time(review.dueAt) || !time(review.lastAt) || !time(review.streak) || review.streak > 1e3 || !time(review.lapses) || !time(review.intervalDays) || review.intervalDays > 30) throw fail("LIFE_PROGRESS_UNREADABLE");
+    if (!safeId(id) || !object3(review) || review.id !== id || !safeId(review.questionId) || !safeId(review.lessonId) || !safeId(review.packId) || !safeId(review.skillId) || !time2(review.dueAt) || !time2(review.lastAt) || !time2(review.streak) || review.streak > 1e3 || !time2(review.lapses) || !time2(review.intervalDays) || review.intervalDays > 30) throw fail("LIFE_PROGRESS_UNREADABLE");
   }
   if (value.activeReview !== null) {
     const run = value.activeReview;
-    if (!object2(run) || !safeId(run.id) || !time(run.startedAt) || !Array.isArray(run.ids) || run.ids.length > 100 || !run.ids.every((id) => safeId(id) && value.reviews[id]) || !object2(run.answers) || Object.keys(run.answers).some((id) => !run.ids.includes(id))) throw fail("LIFE_PROGRESS_UNREADABLE");
-    for (const answer of Object.values(run.answers)) if (!object2(answer) || typeof answer.correct !== "boolean" || typeof answer.helped !== "boolean" || !time(answer.at)) throw fail("LIFE_PROGRESS_UNREADABLE");
-    if (run.pendingHelp !== void 0 && (!object2(run.pendingHelp) || Object.entries(run.pendingHelp).some(([id, value2]) => !run.ids.includes(id) || value2 !== true))) throw fail("LIFE_PROGRESS_UNREADABLE");
+    if (!object3(run) || !safeId(run.id) || !time2(run.startedAt) || !Array.isArray(run.ids) || run.ids.length > 100 || !run.ids.every((id) => safeId(id) && value.reviews[id]) || !object3(run.answers) || Object.keys(run.answers).some((id) => !run.ids.includes(id))) throw fail("LIFE_PROGRESS_UNREADABLE");
+    for (const answer of Object.values(run.answers)) if (!object3(answer) || typeof answer.correct !== "boolean" || typeof answer.helped !== "boolean" || !time2(answer.at)) throw fail("LIFE_PROGRESS_UNREADABLE");
+    if (run.pendingHelp !== void 0 && (!object3(run.pendingHelp) || Object.entries(run.pendingHelp).some(([id, value2]) => !run.ids.includes(id) || value2 !== true))) throw fail("LIFE_PROGRESS_UNREADABLE");
   }
   if (value.daily !== void 0) validateDaily(value.daily);
-  if (value.tutor !== void 0 && (!object2(value.tutor) || value.tutor.version !== 1 || !TUTORS.has(value.tutor.selected) || Object.keys(value.tutor).some((key) => !["version", "selected"].includes(key)))) throw fail("LIFE_PROGRESS_UNREADABLE");
-  if (value.hangul !== void 0 && (!object2(value.hangul) || value.hangul.version !== 1 || !HANGUL_ANSWERS.has(value.hangul.answer) || !time(value.hangul.at) || !HANGUL_VIA.has(value.hangul.via) || Object.keys(value.hangul).some((key) => !["version", "answer", "at", "via"].includes(key)))) throw fail("LIFE_PROGRESS_UNREADABLE");
+  if (value.tutor !== void 0 && (!object3(value.tutor) || value.tutor.version !== 1 || !TUTORS.has(value.tutor.selected) || Object.keys(value.tutor).some((key) => !["version", "selected"].includes(key)))) throw fail("LIFE_PROGRESS_UNREADABLE");
+  if (value.hangul !== void 0 && (!object3(value.hangul) || value.hangul.version !== 1 || !HANGUL_ANSWERS.has(value.hangul.answer) || !time2(value.hangul.at) || !HANGUL_VIA.has(value.hangul.via) || Object.keys(value.hangul).some((key) => !["version", "answer", "at", "via"].includes(key)))) throw fail("LIFE_PROGRESS_UNREADABLE");
   return value;
 }
 function createLifeProgress({ storage = globalThis.localStorage, owner = "guest", now = Date.now, uuid = () => crypto.randomUUID(), onChange = () => {
@@ -14779,7 +14812,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     return status();
   }
   function register(lesson2) {
-    if (!object2(lesson2) || !safeId(lesson2.id) || !safeId(lesson2.packId) || !Array.isArray(lesson2.questions) || !lesson2.questions.length) throw TypeError("Life lesson required");
+    if (!object3(lesson2) || !safeId(lesson2.id) || !safeId(lesson2.packId) || !Array.isArray(lesson2.questions) || !lesson2.questions.length) throw TypeError("Life lesson required");
     if (lesson2.questions.some((q2) => !safeId(q2.id) || !safeId(q2.skillId) || !safeId(q2.review?.id))) throw TypeError("Stable question and review ids required");
     lessons.set(lesson2.id, lesson2);
     for (const question2 of lesson2.questions) questions.set(question2.id, { ...question2, lessonId: lesson2.id, packId: lesson2.packId });
@@ -14787,7 +14820,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
   }
   function catalog(packs = [], flat = []) {
     for (const lesson2 of flat) register(lesson2);
-    for (const pack of packs) for (const lesson2 of pack.lessons || []) if (object2(lesson2)) register({ ...lesson2, packId: lesson2.packId || pack.id });
+    for (const pack of packs) for (const lesson2 of pack.lessons || []) if (object3(lesson2)) register({ ...lesson2, packId: lesson2.packId || pack.id });
   }
   function lessonState(id) {
     check3();
@@ -14802,7 +14835,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
   }
   function startLesson(value, { replay = false } = {}) {
     check3();
-    const lesson2 = object2(value) ? register(value) : lessons.get(value);
+    const lesson2 = object3(value) ? register(value) : lessons.get(value);
     if (!lesson2) throw TypeError("Unknown life lesson");
     const previous = state.lessons[lesson2.id];
     if (!previous || replay) {
@@ -14818,7 +14851,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     return lessonState(lesson2.id);
   }
   function stageValue(id, run, { phase, sceneIndex = 0, questionIndex = 0, helped = false, helpSource, cafe } = {}) {
-    if (!run || !["intro", "story", "questions"].includes(phase) || !time(sceneIndex) || !time(questionIndex) || sceneIndex > 100 || questionIndex > run.questionIds.length || typeof helped !== "boolean" || helpSource !== void 0 && helpSource !== null && !["setting", "user"].includes(helpSource)) throw TypeError("Invalid lesson stage");
+    if (!run || !["intro", "story", "questions"].includes(phase) || !time2(sceneIndex) || !time2(questionIndex) || sceneIndex > 100 || questionIndex > run.questionIds.length || typeof helped !== "boolean" || helpSource !== void 0 && helpSource !== null && !["setting", "user"].includes(helpSource)) throw TypeError("Invalid lesson stage");
     if (cafe !== void 0 && (!isCafeLesson(id) || phase !== "questions" || !isCafeCheckpoint(cafe, id) || questionIndex !== cafe.step || sceneIndex !== cafe.step || cafe.phase === "complete" && run.questionIds.some((qid) => !run.answers[qid]))) throw TypeError("Invalid cafe stage");
     return { phase, sceneIndex, questionIndex, helped, ...helped && helpSource === "setting" ? { helpSource: "setting" } : {}, ...cafe !== void 0 ? { cafe: clone2(cafe) } : {} };
   }
@@ -14978,7 +15011,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     check3();
     if (readError) throw readError;
     const value = state.display;
-    return object2(value) && value.version === 1 && DISPLAY_LANGS.has(value.language) ? value.language : null;
+    return object3(value) && value.version === 1 && DISPLAY_LANGS.has(value.language) ? value.language : null;
   }
   function setDisplayLanguage(language) {
     checkDailyWrite();
@@ -14988,6 +15021,19 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     next.display = { version: 1, language };
     commit(next, { preserveDaily: true });
     return { language, duplicate: false, status: status() };
+  }
+  function arrival() {
+    check3();
+    if (readError) throw readError;
+    return readArrival(state.arrival);
+  }
+  function setArrival(patch) {
+    checkDailyWrite();
+    const value = readArrival({ ...object3(state.arrival) ? state.arrival : {}, ...patch, version: 1, updatedAt: now() });
+    const next = clone2(state);
+    next.arrival = value;
+    commit(next, { preserveDaily: true });
+    return { arrival: clone2(value), status: status() };
   }
   function learningProfile() {
     check3();
@@ -15018,7 +15064,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     const next = clone2(state), added = { lessons: 0, reviews: 0, days: 0, profile: false };
     const capacitySkipped = { lessons: 0, reviews: 0, days: 0, questions: 0 }, skippedLessons = /* @__PURE__ */ new Set();
     const result = () => ({ ...added, ...Object.values(capacitySkipped).some(Boolean) ? { capacitySkipped } : {}, status: status() });
-    for (const [id, lesson2] of Object.entries(object2(lessons2) ? lessons2 : {})) {
+    for (const [id, lesson2] of Object.entries(object3(lessons2) ? lessons2 : {})) {
       if (next.lessons[id]) continue;
       if (Object.keys(next.lessons).length >= 100) {
         capacitySkipped.lessons++;
@@ -15028,7 +15074,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
       next.lessons[id] = clone2(lesson2);
       added.lessons++;
     }
-    for (const [id, review] of Object.entries(object2(reviews) ? reviews : {})) {
+    for (const [id, review] of Object.entries(object3(reviews) ? reviews : {})) {
       if (next.reviews[id]) continue;
       if (!next.lessons[review?.lessonId]) {
         if (skippedLessons.has(review?.lessonId)) capacitySkipped.reviews++;
@@ -15041,7 +15087,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
       next.reviews[id] = clone2(review);
       added.reviews++;
     }
-    for (const [day, value] of Object.entries(object2(days) ? days : {})) {
+    for (const [day, value] of Object.entries(object3(days) ? days : {})) {
       const daily = next.daily ??= { version: 1, days: {} }, mine = daily.days[day];
       if (!mine) {
         if (Object.keys(daily.days).length < 30) {
@@ -15051,9 +15097,9 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
         continue;
       }
       let got = 0;
-      for (const [questionId, item] of Object.entries(object2(value?.items) ? value.items : {})) {
-        if (object2(mine.items) && mine.items[questionId]) continue;
-        if (object2(mine.items) && Object.keys(mine.items).length >= 100) {
+      for (const [questionId, item] of Object.entries(object3(value?.items) ? value.items : {})) {
+        if (object3(mine.items) && mine.items[questionId]) continue;
+        if (object3(mine.items) && Object.keys(mine.items).length >= 100) {
           capacitySkipped.questions++;
           continue;
         }
@@ -15062,7 +15108,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
       }
       if (got) added.days += 1;
     }
-    if (object2(profile?.values) && readWorldLearningProfile(next.learningProfile, { owner, at: now() }).profile.status === "new") {
+    if (object3(profile?.values) && readWorldLearningProfile(next.learningProfile, { owner, at: now() }).profile.status === "new") {
       next.learningProfile = updateWorldLearningProfile(next.learningProfile, { owner, at: now(), values: clone2(profile.values), consent: true, expectedRevision: 0 });
       added.profile = true;
     }
@@ -15123,6 +15169,8 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     return saving;
   }
   const api = Object.freeze({
+    arrival,
+    setArrival,
     key,
     owner,
     status,
@@ -15187,7 +15235,7 @@ function cafeSpeechLabel({ available = true, phase = "idle", heard = false } = {
   return !available ? "\uC18C\uB9AC \uB2E4\uC2DC \uC900\uBE44" : phase === "playing" ? "\uBA48\uCD94\uAE30" : phase === "paused" ? "\uC774\uC5B4 \uB4E3\uAE30" : heard ? "\uB2E4\uC2DC \uB4E3\uAE30" : "\uB4E3\uAE30";
 }
 var two = (n) => String(n).padStart(2, "0");
-var actions = (text, attribute, extra = "") => `<div class="life-actions cafe-actions"><button class="felt-button" ${attribute}>${text} <span aria-hidden="true">\u2192</span></button>${extra}<button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`;
+var actions = (text2, attribute, extra = "") => `<div class="life-actions cafe-actions"><button class="felt-button" ${attribute}>${text2} <span aria-hidden="true">\u2192</span></button>${extra}<button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`;
 var cast = (photo) => `<div class="cafe-friends">${["mongle", "kkamong", "marine"].map((id) => photo(id)).join("")}</div>`;
 var speakerName = (id) => ({ mongle: "\uBABD\uAE00", kkamong: "\uAE4C\uBABD", marine: "\uB9C8\uB9B0", narrator: "\uC774\uC57C\uAE30" })[id] || "\uCE5C\uAD6C";
 var progress = (done, total) => `<span class="life-progress" aria-hidden="true"><i style="width:${Math.round(Math.max(0, Math.min(1, done / total)) * 100)}%"></i></span>`;
@@ -15251,9 +15299,9 @@ function createCafeSpeech({ asset, onChange = () => {
       if (!response.ok) throw Error("Questions unavailable");
       const bank = await response.json();
       const required = CAFE_VISITS.flatMap((v) => v.steps.map((step, i) => ({ id: `${v.id}-${i + 1}`, text: step.staff })));
-      if (bank.version !== 1 || bank.approved !== true || !bank.clips || required.some(({ id, text }) => {
+      if (bank.version !== 1 || bank.approved !== true || !bank.clips || required.some(({ id, text: text2 }) => {
         const c = bank.clips[id];
-        return !c || c.text !== text || c.file !== `${id}.mp3` || !Number.isFinite(c.durationSeconds) || c.durationSeconds <= 0 || c.durationSeconds > 15;
+        return !c || c.text !== text2 || c.file !== `${id}.mp3` || !Number.isFinite(c.durationSeconds) || c.durationSeconds <= 0 || c.durationSeconds > 15;
       })) throw Error("Question bank incomplete");
       if (!disposed) {
         clips = bank.clips;
@@ -15370,8 +15418,8 @@ var storySigns = (pack) => STORY_SIGNS[pack] || [];
 import { storyVoice } from "../world-sound.mjs";
 var escape = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 var expressionKey = (korean) => String(korean || "").replace(/[.!?。…]+$/, "").trim();
-function storyLineMarkup(text, expressions = []) {
-  const source = String(text ?? ""), keys = expressions.map((e, index) => ({ index, key: expressionKey(e.korean) })).filter((k) => k.key.length >= 2);
+function storyLineMarkup(text2, expressions = []) {
+  const source = String(text2 ?? ""), keys = expressions.map((e, index) => ({ index, key: expressionKey(e.korean) })).filter((k) => k.key.length >= 2);
   const marks = [];
   for (const match of source.matchAll(/‘([^‘’]{1,80})’/g)) {
     const inner = match[1], hit = keys.find((k) => inner.includes(k.key) || k.key.includes(inner));
@@ -16142,14 +16190,14 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     paint(t("life.learn"), `<div class="life-hub life-heading" tabindex="-1">${now.html}${lead ? `<section class="life-rows life-lead-rows" aria-label="${t("goal.reason.exam")}"><p class="life-section-label">EXAM</p>${lead}</section>` : ""}<section class="life-pack-section" aria-label="${t("life.packsSection")}"><div class="life-section-head"><p class="life-section-label">LIFE PACKS</p><small class="life-library-note">${s.completed ? t("life.lessonsDone", { done: s.completed, total: s.total }) : t("life.packsAndLessons", { packs: PACKS.length, lessons: LESSONS.length })}</small></div><div class="life-pack-grid">${PACKS.map((p, i) => packCard(p, i, now.kind === "lesson" ? now.packId : null)).join("")}</div></section><section class="life-rows" aria-label="${t("life.more")}"><p class="life-section-label">MORE</p>${rows2.join("")}</section></div>`);
   }
   function lessonRow(l, number, { nowId = null, className = "", lead = null, kicker = phaseName(l.type), labels = [t("life.state.done"), t("life.state.doing"), ""] } = {}) {
-    const state = stateOf(l.id), now = l.id === nowId, text = state === "completed" ? labels[0] : state === "started" ? labels[1] : now ? t("life.state.now") : labels[2];
-    return `<button data-life-lesson="${l.id}" class="life-lesson-card ${className}" data-state="${state}"${now ? " data-now" : ""}>${lead ?? `<span class="life-step-number">${pad(number)}</span>`}<span><small>${escape2(kicker)}</small><strong lang="ko">${escape2(l.title)}</strong><span>${escape2(lessonGoal(l))}</span></span>${text ? `<em>${escape2(text)}</em>` : ""}</button>`;
+    const state = stateOf(l.id), now = l.id === nowId, text2 = state === "completed" ? labels[0] : state === "started" ? labels[1] : now ? t("life.state.now") : labels[2];
+    return `<button data-life-lesson="${l.id}" class="life-lesson-card ${className}" data-state="${state}"${now ? " data-now" : ""}>${lead ?? `<span class="life-step-number">${pad(number)}</span>`}<span><small>${escape2(kicker)}</small><strong lang="ko">${escape2(l.title)}</strong><span>${escape2(lessonGoal(l))}</span></span>${text2 ? `<em>${escape2(text2)}</em>` : ""}</button>`;
   }
   const nowIn = (lessons) => (lessons.find((l) => stateOf(l.id) === "started") || lessons.find((l) => stateOf(l.id) !== "completed"))?.id || null;
   function cafeVisitCards(nowId = null) {
     return CAFE_VISITS.map((visit) => {
-      const state = stateOf(visit.id), now = visit.id === nowId, text = state === "completed" ? t("life.state.done") : state === "started" ? t("life.state.doing") : now ? t("life.state.now") : "";
-      return `<button data-life-lesson="${visit.id}" class="life-lesson-card cafe-visit-card" data-state="${state}"${now ? " data-now" : ""}><span class="life-step-number">${pad(visit.number)}</span><span><small>${t("life.visitN", { n: visit.number })}</small><strong>${escape2(visit.title)}</strong><span>${escape2(visit.description)}</span></span>${text ? `<em>${text}</em>` : ""}</button>`;
+      const state = stateOf(visit.id), now = visit.id === nowId, text2 = state === "completed" ? t("life.state.done") : state === "started" ? t("life.state.doing") : now ? t("life.state.now") : "";
+      return `<button data-life-lesson="${visit.id}" class="life-lesson-card cafe-visit-card" data-state="${state}"${now ? " data-now" : ""}><span class="life-step-number">${pad(visit.number)}</span><span><small>${t("life.visitN", { n: visit.number })}</small><strong>${escape2(visit.title)}</strong><span>${escape2(visit.description)}</span></span>${text2 ? `<em>${text2}</em>` : ""}</button>`;
     }).join("");
   }
   function stories() {
@@ -20692,13 +20740,13 @@ var BROAD_GOALS = ["explore", "study", "work", "clarity", "expression", "prepare
 var supports = ["choose", "step", "independent"];
 var own = (value, key) => Object.prototype.hasOwnProperty.call(value || {}, key);
 var record = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
-var time2 = (value) => typeof value === "number" && Number.isFinite(value) && value >= 0;
+var time3 = (value) => typeof value === "number" && Number.isFinite(value) && value >= 0;
 var copy2 = (value) => JSON.parse(JSON.stringify(value));
 var knownLessons = new Map(LESSONS.map((lesson2) => [lesson2.id, lesson2]));
 var iso2 = (value) => new Date(value).toISOString();
 function clock(value) {
   const at = value instanceof Date ? value.getTime() : typeof value === "string" ? Date.parse(value) : value;
-  if (!time2(at)) throw TypeError("WORLD learning plan needs a valid time");
+  if (!time3(at)) throw TypeError("WORLD learning plan needs a valid time");
   return at;
 }
 var PACK_SITUATIONS = {
@@ -20772,7 +20820,7 @@ function lessonCandidate(lesson2, index, settings) {
 function verifiedReviews(progress2) {
   return Object.values(record(progress2?.reviews) ? progress2.reviews : {}).flatMap((review) => {
     const lesson2 = knownLessons.get(review?.lessonId), question2 = lesson2?.questions.find((q2) => q2.id === review.questionId && q2.review.id === review.id);
-    if (!question2 || review.packId !== lesson2.packId || review.skillId !== question2.skillId || !time2(review.dueAt) || !time2(review.lastAt)) return [];
+    if (!question2 || review.packId !== lesson2.packId || review.skillId !== question2.skillId || !time3(review.dueAt) || !time3(review.lastAt)) return [];
     return [{ ...review, lesson: lesson2, question: question2 }];
   });
 }
@@ -20787,14 +20835,14 @@ function practiceNeed(review, progress2, now) {
     const item = day?.items?.[review.questionId];
     if (item?.lessonId === review.lessonId && ["retry", "assisted", "independent"].includes(item.outcome)) observations.push({ at: item.observedAt, kind: item.outcome });
   }
-  const latest = observations.filter((value) => time2(value.at) && value.at <= now).sort((a, b) => b.at - a.at)[0];
+  const latest = observations.filter((value) => time3(value.at) && value.at <= now).sort((a, b) => b.at - a.at)[0];
   if (!latest || latest.at < review.lastAt || !["retry", "assisted"].includes(latest.kind)) return null;
   return { kind: latest.kind, at: iso2(latest.at), evidenceRefs: [`life.${review.lessonId}.${review.questionId}`] };
 }
 function buildWorldLearningCandidates({ progress: progress2 = {}, settings = {}, now = Date.now(), openGames = null } = {}) {
   const at = clock(now), source = record(progress2) ? progress2 : {}, candidates = [];
   PACKS.forEach((pack, index) => {
-    const next = pack.lessons.find((lesson2) => !time2(source.lessons?.[lesson2.id]?.completedAt));
+    const next = pack.lessons.find((lesson2) => !time3(source.lessons?.[lesson2.id]?.completedAt));
     if (next) candidates.push(lessonCandidate(knownLessons.get(next.id), index, settings));
   });
   const reviews = verifiedReviews(source).filter((review) => review.dueAt <= at && review.lastAt <= at);
@@ -20883,7 +20931,7 @@ function buildWorldLearningCandidates({ progress: progress2 = {}, settings = {},
       ...access("hangul")
     }
   );
-  const finished = PACKS.flatMap((pack) => pack.lessons).filter((lesson2) => time2(source.lessons?.[lesson2.id]?.completedAt)).length;
+  const finished = PACKS.flatMap((pack) => pack.lessons).filter((lesson2) => time3(source.lessons?.[lesson2.id]?.completedAt)).length;
   if (playState("subway", { lessons: finished }).open) {
     const upper = Number(settings?.targetGrade) >= 3;
     const subwayTargets = PLAN_ITEMS.filter((item) => upper || !item.skillId.startsWith("ko2.")).map((item) => {
@@ -20922,12 +20970,12 @@ function resumeCandidates(progress2, settings, now) {
   const answered = record(saved?.answers) && Object.keys(saved.answers).length > 0;
   const stage = record(saved?.stage) ? saved.stage : null;
   const moved = !!stage && (stage.phase === "story" || stage.phase === "questions" || stage.sceneIndex > 0 || stage.questionIndex > 0);
-  if (lesson2 && saved && (answered || moved) && time2(saved.startedAt) && saved.startedAt <= now) {
+  if (lesson2 && saved && (answered || moved) && time3(saved.startedAt) && saved.startedAt <= now) {
     const index = PACKS.findIndex((pack) => pack.id === lesson2.packId);
     result.push({ ...lessonCandidate(lesson2, index, settings), id: `world.resume.lesson.${lesson2.id}`, resume: true, label: `${lesson2.title} \xB7 \uC774\uC5B4 \uD558\uAE30` });
   }
   const session = progress2?.activeReview;
-  if (!session || !Array.isArray(session.ids) || !time2(session.startedAt) || session.startedAt > now) return result;
+  if (!session || !Array.isArray(session.ids) || !time3(session.startedAt) || session.startedAt > now) return result;
   const pending = session.ids.filter((id) => !own(session.answers, id)), reviews = verifiedReviews(progress2), first = reviews.find((review) => review.id === pending[0]);
   if (!first) return result;
   result.push({
@@ -20999,7 +21047,7 @@ function createWorldLearningPlan({ summary = null, progress: progress2 = {}, set
   const interest = (chosen.matchedGoals || []).find((goal) => goal.startsWith("interest."));
   const pushed = interest && !(chosen.reasons || []).some((reason) => ["review.due", "activity.retry", "activity.assisted"].includes(reason) || reason.startsWith("practice."));
   const label = interest ? (profile.concepts || []).find((concept) => concept?.id === interest.slice(9))?.label : null;
-  const history = Number.isFinite(profile.independent) && profile.independent > 0 || Object.values(record(source.lessons) ? source.lessons : {}).some((lesson2) => time2(lesson2?.completedAt));
+  const history = Number.isFinite(profile.independent) && profile.independent > 0 || Object.values(record(source.lessons) ? source.lessons : {}).some((lesson2) => time3(lesson2?.completedAt));
   const labels = Object.fromEntries(profile.skills.filter((skill2) => typeof skill2?.label === "string").map((skill2) => [skill2.id, skill2.label]));
   const own2 = pushed ? null : hostReason(chosen, { history, plan: planned, labels });
   const ranked = pushed ? {
@@ -21203,11 +21251,11 @@ function createWorldEducation({
       }
       const node = box.querySelector("[data-set-response-box]");
       if (!node) return;
-      const text = typeof view.setResponseText === "function" ? view.setResponseText({ kind, value: chosen, failed: failed2 }) : null;
+      const text2 = typeof view.setResponseText === "function" ? view.setResponseText({ kind, value: chosen, failed: failed2 }) : null;
       const ask = node.querySelector?.("#wpos-response-ask"), status = node.querySelector?.("[data-set-response-status]");
-      if (text && ask && status) {
-        ask.textContent = text.ask;
-        status.textContent = text.status;
+      if (text2 && ask && status) {
+        ask.textContent = text2.ask;
+        status.textContent = text2.status;
         for (const pill of node.querySelectorAll("[data-set-response]")) pill.setAttribute("aria-pressed", pill.dataset.setResponse === chosen ? "true" : "false");
       } else {
         node.outerHTML = view.renderSetResponse({ kind, value: chosen, failed: failed2 });
@@ -23740,7 +23788,7 @@ var SKILL_LABEL = {
 };
 var V = "ko.reading.vocabulary";
 var G = "ko.reading.grammar";
-var I = (id, text, options, skill2, kind, difficulty, why) => ({ id, text, options, answer: options[0], skill: skill2, kind, difficulty, why });
+var I = (id, text2, options, skill2, kind, difficulty, why) => ({ id, text: text2, options, answer: options[0], skill: skill2, kind, difficulty, why });
 var ITEMS = [
   I("p01", "\uC800\uB294 \uC544\uCE68\uC5D0 \uBE75{} \uBA39\uC5B4\uC694.", ["\uC744", "\uC5D0", "\uC774", "\uACFC"], G, "particle", 1, "\uBB34\uC5C7\uC744 \uBA39\uB294\uC9C0 \uB9D0\uD560 \uB54C\uB294 \u2018\uC744/\uB97C\u2019\uC744 \uBD99\uC5EC\uC694. \u2018\uBE75\u2019\uC740 \uBC1B\uCE68\uC774 \uC788\uC5B4\uC11C \u2018\uBE75\uC744\u2019\uC774\uC5D0\uC694."),
   I("v01", "\uBAA9\uC774 \uB9D0\uB77C\uC694. {}\uC744 \uB9C8\uC2DC\uACE0 \uC2F6\uC5B4\uC694.", ["\uBB3C", "\uBE75", "\uC637", "\uCC45"], V, "noun", 1, "\uBAA9\uC774 \uB9C8\uB97C \uB54C\uB294 \uBB3C\uC744 \uB9C8\uC154\uC694. \uBE75\uC740 \uBA39\uACE0, \uC637\uC740 \uC785\uACE0, \uCC45\uC740 \uC77D\uC5B4\uC694."),
@@ -24221,7 +24269,7 @@ var ITEMS2 = {
   chair: "\uC811\uC774\uC2DD \uC758\uC790",
   umbrella: "\uC6B0\uC0B0"
 };
-var R = (id, text, skill2, short) => ({ id, text, skill: skill2, short });
+var R = (id, text2, skill2, short) => ({ id, text: text2, skill: skill2, short });
 var doc = (title, rows2, kind = "ticket") => ({ title, rows: rows2, kind });
 var VENUES = [
   {
@@ -25242,8 +25290,8 @@ function diagArrange(id, values) {
   }
   return out;
 }
-var diagShort = (text, max = 26) => {
-  const value = String(text || "").replace(/\s+/g, " ").trim();
+var diagShort = (text2, max = 26) => {
+  const value = String(text2 || "").replace(/\s+/g, " ").trim();
   return value.length > max ? `${value.slice(0, max - 1)}\u2026` : value;
 };
 function diagRunnerItems() {
@@ -25529,8 +25577,8 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     const value = item?.explanation;
     if (typeof value === "string" && value) return { text: value, lang: "ko" };
     if (value && typeof value === "object") {
-      const want = screenLang(), text = typeof value[want] === "string" && value[want] ? value[want] : value.ko;
-      if (typeof text === "string" && text) return { text, lang: text === value[want] ? want : "ko" };
+      const want = screenLang(), text2 = typeof value[want] === "string" && value[want] ? value[want] : value.ko;
+      if (typeof text2 === "string" && text2) return { text: text2, lang: text2 === value[want] ? want : "ko" };
     }
     return null;
   }
@@ -25653,7 +25701,7 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     return formatDate3 ? formatDate3(at, match[3] ? { year: "numeric", month: "long", day: "numeric" } : { year: "numeric", month: "long" }) : value;
   };
   const DOTS_MAX = 8, dots = (planned, done) => `<span class="wplan-dots" aria-hidden="true">${Array.from({ length: Math.min(DOTS_MAX, Math.max(planned, done)) }, (_, i) => `<i${i < done ? " data-done" : ""}></i>`).join("")}</span>`;
-  const koSpan = (text) => `<span lang="ko">${posEscape(text)}</span>`;
+  const koSpan = (text2) => `<span lang="ko">${posEscape(text2)}</span>`;
   const withKo = (key, title) => {
     const mark = "\0";
     return posEscape(t3(key, { title: mark })).replace(mark, koSpan(title));
@@ -26160,8 +26208,8 @@ function createPracticeSession({ coach, items } = {}) {
 
 // experiences/synk-world-app/world-topik-items.mjs
 var tiRecord = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
-var tiShort = (text, max = 26) => {
-  const value = String(text || "").replace(/\s+/g, " ").trim();
+var tiShort = (text2, max = 26) => {
+  const value = String(text2 || "").replace(/\s+/g, " ").trim();
   return value.length > max ? `${value.slice(0, max - 1)}\u2026` : value;
 };
 var SKILL = /^ko2?\.(listening|reading)\.[a-z]+$/;

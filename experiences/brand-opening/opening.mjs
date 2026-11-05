@@ -22,7 +22,7 @@ function glowSprite(rgb){
 }
 
 /** Shared company splash. Product hosts own loading, sign-in, and launch. */
-export function mountBrandOpening({product='SYNK WORLD',replay=false,companyOnly=false,reducedMotion=false,onEnter=()=>{},onLanguage=null}={}){
+export function mountBrandOpening({product='SYNK WORLD',replay=false,companyOnly=false,reducedMotion=false,onEnter=()=>{},onLanguage=null,onTap=null}={}){
   const cover=document.querySelector('#synk-opening-cover');
   const removeCover=()=>{cover?.remove();clearTimeout(window.__synkOpeningSafetyTimer);};
   let previouslySeen=false;try{previouslySeen=sessionStorage.getItem(SEEN)==='1';}catch{}
@@ -164,10 +164,12 @@ export function mountBrandOpening({product='SYNK WORLD',replay=false,companyOnly
   langButton.addEventListener('click',()=>{const next=LANG_ORDER[(LANG_ORDER.indexOf(currentLang())+1)%LANG_ORDER.length];setLang(next);applyLang();try{onLanguage?.(next);}catch(error){console.warn('Opening language save failed',error);}});
   const offLang=onLang(()=>{if(!settled)applyLang();});
   // 누르면 응원봉이 한꺼번에 밝아지고 꽃가루가 오른 뒤(0.65초) 들어간다. 움직임 줄이기면 바로 들어간다.
+  // onTap(선택): 누른 바로 그 순간 동기로 부른다(뒤에 깔린 화면이 이 누름으로 소리를 깨운다). 참을 돌려주면 꽃가루 없이 바로 닫는다.
   const enterWorld=()=>{
+    let instant=false;if(!leaving&&!settled)try{instant=onTap?.()===true;}catch{}
     if(stage==='company'){finish('skip');return;}
     if(leaving||settled)return;
-    if(!moving()){finish('start');return;}
+    if(instant||!moving()){finish('start');return;}
     leaving=true;dialog.dataset.leaving='';tapAt=(performance.now()-startedAt)/1000;burst(tapAt);hint.textContent='LET’S GO';
     leaveTimer=setTimeout(()=>finish('start'),650);
   };

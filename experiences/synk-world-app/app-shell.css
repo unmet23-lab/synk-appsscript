@@ -501,3 +501,16 @@ img.world-account-mascot{height:auto;padding:5px;border-radius:10px;background:#
  html[data-connected=true] #world-panel.wardrobe-dialog .panel-header h2{font-size:18px;margin:0;max-width:150px}
  html[data-connected=true] #world-panel.wardrobe-dialog #panel-eyebrow{display:none}
 }
+
+/* 서울행(새 학생 첫 실행): 앱 위 전체 화면 틀. 드라마 판은 이 위에 뜬다. */
+.seoul-layer{position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;background:#050b1a;z-index:2147483000;overflow:hidden}
+.seoul-layer::backdrop{background:#000}
+.seoul-frame{display:block;width:100%;height:100%;border:0;background:#050b1a}
+/* 1화 오늘 기록 아래 띠. 시범판 단추를 가리지 않게 틀을 그만큼 줄인다. */
+#panel-content:has(>.seoul-cta) .game-frame{height:calc(100% - 84px)}
+#panel-content:has(>.seoul-cta){position:relative}
+#panel-content>.seoul-cta{position:absolute;left:0;right:0;bottom:0;height:84px;display:flex;align-items:center;justify-content:center;padding:0 16px max(8px,env(safe-area-inset-bottom,0px));background:var(--w-bg,#060608)}
+#panel-content>.seoul-cta .felt-button{width:min(100%,420px)}
+/* 우리 동네 윗줄의 「내 길」 문: 서울행 기록이 있는 학생에게만 보인다. */
+.road-door{margin-left:auto;height:44px;padding:0 18px;border:0;border-radius:999px;background:rgba(14,15,19,.72);color:var(--w-ink,#fafaf9);font:inherit;font-size:14px;font-weight:650;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);cursor:pointer;flex:none}
+.road-door[hidden]{display:none}

@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="theme-color" content="#050b1a">
+<link rel="icon" href="data:,">
+<title>SYNK WORLD</title>
+<link rel="preload" href="../brand-opening/assets/SUIT.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-dream="idol">
+<div class="ambient" aria-hidden="true"><img id="ambientImg" alt=""></div>
+<main id="app">
+
+  <div class="hud">
+    <button class="snd" id="sndBtn" type="button" data-l-aria="소리 끄기" aria-label="소리 끄기" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z"/><path id="sndWave" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/><path id="sndOff" d="M16 9.5l5 5M21 9.5l-5 5" style="display:none"/></svg></button>
+    <button class="skip" id="skipBtn" type="button" hidden><span data-l="건너뛰기">건너뛰기</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l6 6-6 6M13 6l6 6-6 6"/></svg></button>
+  </div>
+
+  <section id="s-title" class="screen on" data-l-aria="시작" aria-label="시작">
+    <img src="../brand-opening/assets/world-title-concert-port-v1.webp" alt="" id="titleImg">
+    <div class="pulse"></div><div class="tflash"></div>
+    <div class="title-foot"><b data-l="화면을 눌러 시작">화면을 눌러 시작</b><button type="button" class="title-skip" id="titleSkip" hidden data-l="이야기 건너뛰고 정문부터">이야기 건너뛰고 정문부터</button><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg>소리를 켜고 보세요</span></div>
+  </section>
+
+  <section id="s-cut" class="screen" aria-live="polite">
+    <div class="cut-img" id="cutA"><img alt=""></div>
+    <div class="cut-img" id="cutB"><img alt=""></div>
+    <div class="stage" id="roomStage"><img data-k="ROOM" src="assets/img/room.webp" alt=""><div class="screen-in"><img id="roomConcert" src="../brand-opening/assets/world-title-concert-port-v1.webp" alt=""><img class="drama" src="assets/img/drama.webp" alt=""></div></div>
+    <div class="cut-scrim"></div>
+    <div class="banner" id="banner" aria-hidden="true">
+      <i id="bnIcon"></i>
+      <div><div class="meta"><span id="bnApp">메일</span><span data-l="지금">지금</span></div><b id="bnTitle">새솔대학교 입학처</b><p id="bnBody"></p><p class="bn-sub" id="bnSub" hidden></p></div>
+    </div>
+    <div class="trace" id="trace"><p class="trace-hint" id="traceHint" role="status"></p><div class="trace-pad" id="tracePad"><canvas class="trace-guide" id="traceGuide" aria-hidden="true"></canvas><svg class="trace-order" id="traceOrder" aria-hidden="true"></svg><canvas id="traceInk" data-l-aria="‘가’ 따라 쓰는 칸" aria-label="‘가’ 따라 쓰는 칸"></canvas></div><div class="trace-btns"><button type="button" class="trace-skip" id="traceOrderBtn" data-l="획순 보기">획순 보기</button><button type="button" class="trace-skip" id="traceClear" data-l="다시 쓰기">다시 쓰기</button><button type="button" class="trace-skip" id="traceSkip" data-l="넘어가기">넘어가기</button></div></div>
+    <div class="note" id="note"><img data-k="NOTE" data-src="assets/img/note0.webp" alt="엄마의 쪽지: 도착하면 전화해. 밥 잘 먹어. 사랑해. — 엄마" width="900" height="675"></div>
+    <div class="stamp" id="stamp" aria-hidden="true"><div class="stamp-page"><span class="pp-head">VISAS</span><span class="pp-no">17</span><svg class="stamp-ink" viewBox="0 0 200 200" aria-hidden="true"><defs><filter id="rubber" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="1.6" result="d"/><feGaussianBlur in="d" stdDeviation=".35" result="b"/><feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="1" seed="3" result="g"/><feColorMatrix in="g" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1.3 1.5" result="m"/><feComposite in="b" in2="m" operator="in"/></filter></defs><g filter="url(#rubber)"><circle cx="100" cy="100" r="86" fill="none" stroke="currentColor" stroke-width="7"/><circle cx="100" cy="100" r="70" fill="none" stroke="currentColor" stroke-width="2.5"/><text x="100" y="92" text-anchor="middle" font-size="30" font-weight="700" fill="currentColor" letter-spacing="-1">입국 허가</text><text x="100" y="124" text-anchor="middle" font-size="19" font-weight="600" fill="currentColor" style="font-family:var(--sans)">2027. 2. 23.</text><text x="100" y="148" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">인천</text></g></svg></div></div>
+    <div class="pa" id="pa" aria-hidden="true"><span class="mono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6"/></svg><span data-l="기내 방송">기내 방송</span></span><p id="paText"></p><p class="pa-sub" id="paSub" hidden></p></div>
+    <div class="place" id="place"></div>
+    <button type="button" class="spot" id="spot" hidden></button>
+    <div class="mirror" id="mirror">
+      <div class="mr-stage"><div class="mr-dim"></div>
+        <button class="mr-pick" type="button" data-dream="idol"><span data-l="연습화와 이어폰">연습화와 이어폰</span></button>
+        <button class="mr-pick" type="button" data-dream="actor"><span data-l="밑줄 친 대본">밑줄 친 대본</span></button>
+      </div>
+      <p class="mr-hint" id="mrHint" role="status" data-l="마음이 가는 쪽을 눌러 보세요">마음이 가는 쪽을 눌러 보세요</p>
+      <div class="sheet" id="mrSheet" role="dialog" aria-labelledby="mrTitle">
+        <span class="lab" id="mrEn"></span>
+        <h2 id="mrTitle"></h2>
+        <p id="mrLine"></p>
+        <button class="go-btn" id="mrGo" type="button" data-l="이 꿈을 안고 출발">이 꿈을 안고 출발</button>
+        <button class="back-btn" id="mrBack" type="button" data-l="다시 고르기">다시 고르기</button>
+      </div>
+    </div>
+    <div class="narr-box"><p class="narr" id="narr"></p><p class="narr-sub" id="narrSub" hidden></p></div>
+    <div class="big-box"><p class="big-title" id="bigTitle"><span class="w"><span>안녕,</span></span> <span class="w"><span>서울.</span></span></p><p class="big-sub" id="bigSub" hidden></p></div>
+    <p class="tap-hint" id="tapHint" data-l="눌러서 넘기기">눌러서 넘기기</p>
+    <div class="veil" id="veil"></div>
+  </section>
+
+  <section id="s-dream" class="screen" aria-labelledby="dreamAsk">
+    <div class="dream-ask"><small class="in-story" data-l="그날 밤, 꿈이 하나 생겼어요.">그날 밤, 꿈이 하나 생겼어요.</small><small class="in-change" data-l="꿈은 언제든 바꿀 수 있어요.">꿈은 언제든 바꿀 수 있어요.</small><strong id="dreamAsk"><span class="in-story" data-l="어떤 꿈이었나요?">어떤 꿈이었나요?</span><span class="in-change" data-l="어떤 꿈으로 갈까요?">어떤 꿈으로 갈까요?</span></strong></div>
+    <button type="button" class="close-dream" id="closeDream" data-l-aria="닫기" aria-label="닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button class="dream" data-dream="idol" type="button" data-l-aria="아이돌 — 무대에 서는 날까지" aria-label="아이돌 — 무대에 서는 날까지">
+      <img data-k="IDOL" data-dream-src="assets/img/idol.webp" alt="">
+      <span class="dream-label"><b data-l="아이돌">아이돌</b><span data-l="무대에 서는 날까지">무대에 서는 날까지</span></span>
+    </button>
+    <button class="dream" data-dream="actor" type="button" data-l-aria="배우 — 주연으로 서는 날까지" aria-label="배우 — 주연으로 서는 날까지">
+      <img data-k="ACTOR" data-dream-src="assets/img/actor.webp" alt="">
+      <span class="dream-label"><b data-l="배우">배우</b><span data-l="주연으로 서는 날까지">주연으로 서는 날까지</span></span>
+    </button>
+    <svg class="seam" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="seamG" x1="0" x2="1"><stop offset="0" stop-color="#A77CFF" stop-opacity="0"/><stop offset=".3" stop-color="#A77CFF"/><stop offset=".5" stop-color="#fff"/><stop offset=".7" stop-color="#66CCFF"/><stop offset="1" stop-color="#66CCFF" stop-opacity="0"/></linearGradient></defs><line x1="0" y1="47" x2="100" y2="53.36" stroke="url(#seamG)" stroke-width="1" vector-effect="non-scaling-stroke"/></svg>
+    <p class="dream-hint" data-l="꿈은 나중에 바꿔도 돼요. 한국 생활 이야기는 그대로 이어져요.">꿈은 나중에 바꿔도 돼요. 한국 생활 이야기는 그대로 이어져요.</p>
+    <div class="flash" id="flash"></div>
+    <canvas id="confetti" aria-hidden="true"></canvas>
+    <div class="sheet" id="sheet" role="dialog" aria-labelledby="sheetTitle">
+      <span class="lab" id="sheetEn"></span>
+      <h2 id="sheetTitle"></h2>
+      <p id="sheetLine"></p><div class="chips" id="sheetChips"></div>
+      <button class="go-btn" id="goPath" type="button" data-l="이 꿈을 안고 출발">이 꿈을 안고 출발</button>
+      <button class="back-btn" id="rePick" type="button" data-l="다시 고르기">다시 고르기</button>
+    </div>
+  </section>
+
+  <section id="s-gate" class="screen" data-l-aria="새솔대 정문 신입생 맞이 부스" aria-label="새솔대 정문 신입생 맞이 부스">
+    <img data-k="GATE" class="bg0" id="gateBg" data-src="assets/img/gate.webp" alt="">
+    <div class="gstage" id="gstage"><img data-k="BOOTH" class="bg" data-src="assets/img/booth.webp" alt=""><p class="sign">국제학부<br>신입생 맞이</p></div>
+    <div class="gate-shade"></div>
+  </section>
+
+  <div class="look" id="look" role="dialog" data-l-aria="내 모습 고르기" aria-label="내 모습 고르기">
+    <div class="lk-title" data-l="한국에서의 내 모습">한국에서의 내 모습</div>
+    <div class="lk-vf" id="lkVf"><div class="lk-blank" id="lkBlank"></div><div class="lk-empty"><span data-l-html="아래에서 내 모습을<br>골라 보세요"></span></div><div class="lk-af" id="lkAf"></div><div class="lk-flash" id="lkFlash"></div></div>
+    <div class="lk-rail" id="lkRail"></div>
+    <div class="lk-hint" id="lkHint"></div>
+    <div class="lk-row"><button class="lk-later" id="lkLater" type="button"></button><button class="lk-shoot" id="lkShoot" type="button" data-l-aria="이 모습으로 찍기" aria-label="이 모습으로 찍기" disabled></button></div>
+  </div>
+
+  <section id="s-card" class="screen" data-l-aria="학생증" aria-label="학생증">
+    <div class="card-head" id="cardHead"><b><span data-l="학생증이 나왔어요">학생증이 나왔어요</span></b></div>
+    <div class="card-rig" id="cardRig">
+      <div class="printer" id="printer" aria-hidden="true"><small>SAESOL · ID</small><i></i></div>
+      <i class="card-shadow" aria-hidden="true"></i>
+      <div class="card-box" id="cardBox">
+        <div class="card-swing" id="cardSwing">
+          <div class="card-tilt" id="cardTilt">
+            <div class="idcard" id="idcard">
+      <div class="id-school"><b><svg class="id-crest" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8 3v6.2c0 4.7-3.3 8.3-8 9.8-4.7-1.5-8-5.1-8-9.8V5.5z" fill="currentColor"/><path d="M8 9.5h8M8 12.5h8M12 7v9" stroke="#fbf8f2" stroke-width="1.4" stroke-linecap="round"/></svg>새솔대학교</b><span>Saesol University</span></div>
+      <div class="id-photo" id="idPhoto"></div>
+      <div class="id-info">
+        <div class="nm" id="idName"></div>
+        <span id="idDept">국제학부 1학년</span>
+        <span>학번 <b>2027-0412</b></span>
+        <span class="id-issue">발급 2027. 2. 23.</span>
+      </div>
+      <div class="id-foot"><span class="id-dream" id="idDream"></span><span class="id-bar" aria-hidden="true"><svg viewBox="0 0 90 22" preserveAspectRatio="none" fill="currentColor"><rect x="0" width="2" height="22"/><rect x="4" width="1" height="22"/><rect x="6" width="1" height="22"/><rect x="9" width="1" height="22"/><rect x="11" width="3" height="22"/><rect x="15" width="2" height="22"/><rect x="19" width="3" height="22"/><rect x="24" width="1" height="22"/><rect x="26" width="2" height="22"/><rect x="30" width="1" height="22"/><rect x="33" width="1" height="22"/><rect x="36" width="1" height="22"/><rect x="38" width="2" height="22"/><rect x="42" width="2" height="22"/><rect x="46" width="3" height="22"/><rect x="50" width="3" height="22"/><rect x="54" width="1" height="22"/><rect x="56" width="3" height="22"/><rect x="60" width="3" height="22"/><rect x="65" width="3" height="22"/><rect x="69" width="3" height="22"/><rect x="74" width="2" height="22"/><rect x="78" width="1" height="22"/><rect x="81" width="3" height="22"/><rect x="86" width="2" height="22"/></svg></span></div>
+              <i class="id-holo" aria-hidden="true"></i><i class="id-shade" aria-hidden="true"></i><i class="id-glare" aria-hidden="true"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-foot" id="cardFoot">
+      <p class="card-hint" id="cardHint"></p>
+      <div class="cf-in">
+        <p id="cardLine"></p>
+        <button class="go-btn" id="toPath" type="button" data-l="내 길 보기">내 길 보기</button>
+        <button class="back-btn re-look" id="reLook" type="button" data-l="모습 바꾸기">모습 바꾸기</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="s-path" class="screen" data-l-aria="내 길" aria-label="내 길">
+    <header class="bar">
+      <button class="me" id="meBadge" type="button" data-l-aria="학생증 보기" aria-label="학생증 보기"><svg viewBox="0 0 24 24"><use href="#stick"/></svg></button>
+      <div class="who"><b id="whoName"></b><span id="dreamChip"></span><button id="changeDream" type="button" data-l="바꾸기">바꾸기</button></div>
+      <div class="lights"><small data-l="내 객석">내 객석</small><b><svg viewBox="0 0 24 24"><use id="lightIcon" href="#stick"/></svg><span id="lightNum">0</span></b></div>
+    </header>
+    <div class="road" id="road"></div>
+  </section>
+
+  <section id="s-scene" class="screen" aria-live="polite">
+    <span class="ep" aria-hidden="true">01</span>
+    <span class="lab" data-l="1화">1화</span>
+    <b data-l="개강 첫날">개강 첫날</b>
+    <p id="sceneWhat"></p>
+    <div class="bar2"><i></i></div>
+  </section>
+
+  <section id="s-crowd" class="screen">
+    <img class="stage" id="crowdStage" alt="">
+    <canvas id="crowd" aria-hidden="true"></canvas>
+    <canvas id="cinema" aria-hidden="true"></canvas>
+    <div class="crowd-copy" aria-live="polite">
+      <span class="lab" id="crowdLab"></span>
+      <span class="plus" id="plus"></span>
+      <b id="crowdCount"></b>
+      <p><span id="crowdWhy"></span><br><span id="goalLine"></span></p>
+    </div>
+    <div class="crowd-foot" id="crowdFoot">
+      <p class="crowd-aside" id="crowdAside" hidden></p><p class="crowd-aside-sub" id="crowdAsideSub"></p>
+      <div class="next"><span id="nextWhat"></span><b id="nextLeft"></b></div>
+      <button class="go-btn" id="backPath" type="button" data-l="내 길로">내 길로</button>
+    </div>
+  </section>
+
+  <div class="mom" id="mom" role="dialog" aria-modal="true" data-l-aria="엄마에게서 온 쪽지 사진" aria-label="엄마에게서 온 쪽지 사진" hidden>
+    <div class="mom-card" id="momCard" tabindex="-1">
+      <div class="mom-head"><b data-l="엄마">엄마</b><span data-l="사진">사진</span></div>
+      <img class="mom-photo" id="momPhoto" alt="엄마의 손글씨 쪽지 사진: 공부 잘 돼? 친구 잇어? 엄마도 한국말 해 볼래. 맞아?" width="900" height="675">
+      <p class="mom-sub" id="momSub" hidden></p>
+      <div class="mom-list" id="momList" aria-live="polite"></div>
+      <div class="mom-foot">
+        <div class="mom-acts" id="momActs" role="group" data-l-aria="엄마에게 보내는 답" aria-label="엄마에게 보내는 답" hidden>
+          <button type="button" id="momFix">있어. ㅅ 두 개!</button>
+          <button type="button" id="momOk">맞아.</button>
+        </div>
+        <button type="button" class="mom-later" id="momLater" hidden data-l="그냥 닫기">그냥 닫기</button>
+        <button type="button" class="go-btn mom-bye" id="momBye" hidden data-l="내 길로">내 길로</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel"></div>
+  <div class="vn" id="vn" aria-live="polite"><div class="vn-name" id="vnName"></div><p class="vn-text" id="vnText"></p><p class="vn-sub" id="vnSub" hidden></p><i class="vn-next"></i></div>
+</main>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <radialGradient id="stickGlow"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><symbol id="stick" viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="7" fill="url(#stickGlow)" opacity=".35"/><ellipse cx="12" cy="7.5" rx="3.6" ry="4.6" fill="#fff"/><rect x="11.1" y="12.2" width="1.8" height="10" rx=".9" fill="currentColor" opacity=".75"/></symbol>
+    <symbol id="seat" viewBox="0 0 24 24"><rect x="5.5" y="2.5" width="13" height="12.5" rx="4.5" fill="#fff"/><rect x="3.5" y="13" width="17" height="5.5" rx="2.2" fill="currentColor" opacity=".85"/><rect x="5" y="18" width="2.2" height="4" rx="1.1" fill="currentColor" opacity=".6"/><rect x="16.8" y="18" width="2.2" height="4" rx="1.1" fill="currentColor" opacity=".6"/></symbol>
+  </defs>
+</svg>
+<script type="module" src="app.mjs"></script>
+</body>
+</html>
