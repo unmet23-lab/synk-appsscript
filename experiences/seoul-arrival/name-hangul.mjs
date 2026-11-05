@@ -157,6 +157,6 @@ export function hangulName(raw){
  return {ko,via:'rule'};
 }
 // 긴 이름에서 손으로 쓸 부르는 이름: 베트남어(성이 앞)는 마지막 낱말, 그 밖은 첫 낱말. 한 낱말이면 없음(전부 쓴다)
-export function calledName(ko,raw){const w=String(ko||'').split(' ').filter(Boolean);if(w.length<2)return null;return isVNName(raw)||isVNName(ko)?w[w.length-1]:w[0];}
+export function calledName(ko,raw){const w=String(ko||'').split(' ').filter(Boolean);if(w.length<2)return null;return isVNName(raw)||(/^[가-힣 ]+$/.test(String(raw||'').trim())&&isVNName(ko))?w[w.length-1]:w[0];}   // 한글 후보로 성씨를 보는 것은 한글로 친 이름일 때만(다시 검수 FA2)
 // 시험용: 사전을 거치지 않은 규칙 결과
 export const _rule={cyr:w=>build(cyr(w)),lat:w=>build(lat(w))};

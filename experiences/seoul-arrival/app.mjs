@@ -997,10 +997,10 @@ function fillCard(){
   // 사진 칸: 찍은 사진(나중에 찍기를 고르면 실루엣)
   $('#idPhoto').innerHTML='<svg viewBox="0 0 92 120" aria-hidden="true"><circle cx="46" cy="46" r="19" fill="rgba(255,255,255,.8)"/><path d="M10 120c3-24 18-38 36-38s33 14 36 38z" fill="rgba(255,255,255,.8)"/></svg>';
   $('#idName').innerHTML=`<span class="nm-ko">${esc(ko)}</span><small><span class="nm-en">${!state.name?'New student':state.nameEn&&state.nameEn!==ko?esc(state.nameEn):'&nbsp;'}</span></small>`;   // 빈 영어 줄도 한 줄 자리를 남겨 이름 글씨가 앉을 곳이 있게
+  $('#idDept').innerHTML='<span class="dp-t">국제학부 1학년'+(state.from?` · <b>${esc(state.from)}</b>`:'')+'</span>';   // 이름 글씨 자리(placeSign)가 학과 줄을 재므로 그보다 먼저 쓴다(다시 검수 FA1)
   // 부스에서 손으로 쓴 이름 글씨(있을 때만). 쓴 이름이 지금 이름과 다르면 그리지 않는다
   const sg=state.sign&&state.name&&(state.sign.w===state.name||state.name.split(' ').includes(state.sign.w))?signSvg(state.sign,{width:.075,tight:true}):'';
   $('#idSign').innerHTML=sg;$('#idSign').hidden=!sg;placeSign();
-  $('#idDept').innerHTML='<span class="dp-t">국제학부 1학년'+(state.from?` · <b>${esc(state.from)}</b>`:'')+'</span>';
   $('#idDream').textContent='꿈 · '+D.ko;
   $('#cardLine').textContent=LANG==='ko'?`${state.name?state.name+' 씨의':'이제'} 한국 생활이 시작돼요. 이 길 끝에 ${D.goal}${hasBatchim(D.goal)?'이':'가'} 있어요.`:L('학생증 한 줄',{goal:L(D.goal)});
 }

@@ -148,3 +148,8 @@ test('화면 검수 F2 · F3: 판정을 통과한 글씨는 저장 검증도 통
  const many=[Array.from({length:60},(_,i)=>[[i/60,.2],[i/60,.8]])];const sm=encodeSign(many);assert.equal(sm.split(',').length,40,'음절당 획 40개까지');
  assert.equal(hangulName('Nguyen').ko,'응우옌');assert.equal(hangulName('Tran').ko,'쩐');assert.equal(hangulName('Nguyen Van An').ko,'응우옌 반 안');
 });
+
+test('Fable 다시 검수 FA2: 라틴으로 친 이름은 한글 후보의 한 음절 성씨로 베트남이라 보지 않는다', () => {
+ const k=hangulName('Bo Erdenechimeg').ko;assert.equal(calledName(k,'Bo Erdenechimeg'),'보');
+ assert.equal(calledName('응우옌 호앙 민','응우옌 호앙 민'),'민');assert.equal(calledName('응우옌 티 민 아인','Nguyen Thi Minh Anh'),'아인');
+});
