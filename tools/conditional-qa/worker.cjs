@@ -333,7 +333,9 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
         }
         // Re-read the receipt after a process restart, rather than trusting queue.json's success flag.
         checkSavedReceipt(root, item, runGit);
-        hub.publish(item.commit, 'success', github.description(item.count, item.digest), undefined, item.carriedFrom || item.commit);
+        // A timed-out call says nothing about the tests (11-05: gh at 100% CPU put a failure on a commit that had passed, and local-status alerted). The result stays saved for the next tick.
+        try { hub.publish(item.commit, 'success', github.description(item.count, item.digest), undefined, item.carriedFrom || item.commit); }
+        catch (error) { item.error = `Not published yet: ${error.message}`.slice(0, 1000); write(queueFile, queue); return {}; }
         item.status = 'passed'; item.endedAt = new Date().toISOString(); item.resumePending = true; delete item.error; delete item.publicationError; write(queueFile, queue);
       } catch (error) {
         item.error = error.message.slice(0, 1000);

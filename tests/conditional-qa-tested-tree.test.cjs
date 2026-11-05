@@ -213,6 +213,17 @@ test('a long backlog carries a tick\'s worth at a time, and the rest waits inste
   assert.equal(carryUnchanged(queue, 'root', hex(5), f.state, { runGit: f.deps.runGit, limit: 0 }), 0, 'used up for this tick');
   assert.deepEqual(queue.items.map(row => Boolean(row.awaitsParent)), [false, false, false, true, true]);
 });
+test('a pass that could not be published stays a pass to publish, and never reads as a failure', async t => {
+  const f = carryFixture(t, [CODE, DOC], { statuses: { [hex(1)]: 'passed' } }), [, b] = f.commits;
+  const down = { ...f.deps.hub, publish: (commit, state, text) => { f.published.push({ commit, state, text }); throw Error('spawnSync gh ETIMEDOUT'); } };
+  await tick(f.state, { ...f.deps, hub: down, verifyCommit: () => assert.fail('nothing to run') });
+  assert.deepEqual(f.published.map(row => row.state), ['success'], 'the failed call is not followed by a failure status');
+  assert.equal(f.queue()[1].status, 'publish-pending'); assert.match(f.queue()[1].error, /Not published yet: spawnSync gh ETIMEDOUT/);
+  f.published.length = 0;
+  await tick(f.state, { ...f.deps, verifyCommit: () => assert.fail('nothing to run') });
+  assert.deepEqual(f.published.map(row => [row.commit, row.state]), [[b, 'success']]);
+  assert.equal(f.queue()[1].status, 'passed'); assert.equal(f.queue()[1].error, undefined);
+});
 test('a parent receipt that cannot be read costs a real run, never a pass', async t => {
   const f = carryFixture(t, [CODE, DOC], { statuses: { [hex(1)]: 'passed' } }), [a, b] = f.commits, verified = [];
   const output = f.queue()[0].output; write(path.join(output, 'result.json'), { ...f.receiptFor(a), ok: false });
