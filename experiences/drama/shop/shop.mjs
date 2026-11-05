@@ -2,7 +2,7 @@
 // 끌기 · 붙기 · 키보드는 공용 부품 DragRail(../../play-common/drag-rail.js)이 맡고, 여기서는 그 위에 얹는 것만 한다:
 //   봉 처짐 스프링, 옷걸이 흔들림(고리를 축으로 한 진자 — 고리가 움직이는 가속도를 받는다), 마우스 올림, 자세히 · 앞뒤 돌림, 택배 상자, 소리.
 // 판: ?판=a 흰 스튜디오 봉(곧은 봉) · ?판=b 색을 따라오는 처진 봉. 모의 자료만.
-import { ITEMS, MOCK_STATE, MOCK_NOTE, art } from './shop-items.mjs';
+import { ITEMS, MOCK_STATE, MOCK_NOTE, MOCK_ORDERED, PACK_STEPS, art } from './shop-items.mjs';
 import { createSound } from './shop-sound.mjs';
 
 const R = window.DragRail;
@@ -175,21 +175,42 @@ let openI = -1, side = 'front', th = 0, thV = 0, thTarget = 0, sw = 0, swV = 0, 
 const sideGroup = $('.shop-side');
 const SIDES = { front: '앞', back: '뒤', worn: '입은 나' };
 const printImg = $('.shop-print img'), printNote = $('.shop-print figcaption');
+const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const orderedAt = {}; // 이 화면에서 주문한 때(앱에서는 서버 일감 시각)
+for (const [id, min] of Object.entries(MOCK_ORDERED)) orderedAt[id] = Date.now() - min * 60000;
+const hm = (t) => new Date(t).toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' });
+/** 「이렇게 입어요」 — 가게 안 다른 옷 이름이 나오면 누르면 그 옷으로 넘어가는 글자 링크 */
+function wearHtml(it) {
+  const other = it.pair && ITEMS.find((x) => x.id === it.pair);
+  if (!other || !it.wear.includes(other.name)) return esc(it.wear);
+  const [a, b] = it.wear.split(other.name);
+  return `${esc(a)}<a data-act="pair" data-to="${ITEMS.indexOf(other)}" tabindex="0" role="button">${esc(other.name)}</a>${esc(b)}`;
+}
+/** 배송 조회 — 주문 받음 · 포장 · 출발 · 사진관에서 입혀 보는 중 · 도착 예정. 서버가 실제로 아는 단계만 보인다. */
+function trackHtml(id) {
+  const t0 = orderedAt[id] || Date.now(), eta = new Date(t0 + 24 * 3600000);
+  eta.setMinutes(0, 0, 0); eta.setHours(eta.getHours() + 1); // 「내일 오후 4시 전」 — 분 단위 마감은 계산기 값으로 읽힌다
+  const narrow = matchMedia('(max-width: 760px)').matches;
+  const rows = [['주문 받음', hm(t0), 'done'], ['포장해서 출발', '', 'done'], [narrow ? '사진관에서 입혀 보는 중' : '사진관에서 내 사진에 입혀 보는 중', '', 'now'], ['도착 예정', `내일 ${eta.toLocaleTimeString('ko-KR', { hour: 'numeric' })} 전`, '']];
+  return rows.map(([label, time, k]) => `<li ${k === 'done' ? 'data-done' : k === 'now' ? 'data-now' : ''}><span>${esc(label)}</span><time>${esc(time)}</time></li>`).join('');
+}
 function fillInfo(i) {
   const it = ITEMS[i], st = state[it.id];
   $('.shop-num').textContent = `${pad2(i + 1)} / ${pad2(ITEMS.length)}`;
   $('.shop-name').textContent = it.name;
-  $('.shop-note').textContent = it.note;
+  $('.shop-story').textContent = it.story;
+  $('.shop-spec').innerHTML = [...it.spec, ['함께 입기', null]].map(([k, v]) => `<dt>${esc(k)}</dt><dd>${v === null ? wearHtml(it) : esc(v)}</dd>`).join('');
   // 도착한 옷은 「입은 나」로 내 사진을 본다 — 이 가게만의 한 수(레퍼런스 25곳 어디에도 없음)
   const worn = st === 'arrived' ? WORN[it.id] : null;
   const sides = worn ? ['front', 'back', 'worn'] : ['front', 'back'];
-  sideGroup.innerHTML = sides.map((k) => `<button type="button" role="radio" data-side="${k}" aria-checked="false">${SIDES[k]}</button>`).join('') + '<i class="shop-side-knob" aria-hidden="true"></i>';
-  sideGroup.style.setProperty('--n', sides.length);
+  sideGroup.innerHTML = sides.map((k) => `<button type="button" role="radio" data-side="${k}" aria-checked="false">${SIDES[k]}</button>`).join('') ;
   if (worn) printImg.src = worn; else printImg.removeAttribute('src');
-  const act = $('.shop-actions');
+  const act = $('.shop-actions'), track = $('.shop-track');
+  track.hidden = st !== 'shipping';
+  track.innerHTML = st === 'shipping' ? trackHtml(it.id) : '';
   if (st === 'shipping') {
-    act.innerHTML = '<button type="button" class="shop-go" disabled><i class="dot"></i>배송 중</button>';
-    $('.shop-help').textContent = '내 사진에 입혀서 보내는 중이에요. 늦어도 내일까지 도착해요.';
+    act.innerHTML = '<p class="shop-wait">배송 중 · 도착하면 알려 드려요</p>';
+    $('.shop-help').textContent = '';
   } else if (st === 'arrived') {
     act.innerHTML = '<button type="button" class="shop-go" data-act="wear">이 옷으로 갈아입기</button>';
     $('.shop-help').textContent = MOCK_NOTE[it.id] ? `${MOCK_NOTE[it.id].split(', ')[0]}에 도착했어요.` : '입은 사진이 도착했어요.';
@@ -199,11 +220,11 @@ function fillInfo(i) {
   }
   printNote.textContent = MOCK_NOTE[it.id] || '';
   for (const el of $('.shop-info').children) { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; }
+  if (stage.scrollTop) stage.scrollTop = 0;
 }
 function markSide(s) {
   const btns = [...sideGroup.querySelectorAll('button')];
   btns.forEach((b) => b.setAttribute('aria-checked', String(b.dataset.side === s)));
-  sideGroup.style.setProperty('--at', Math.max(0, btns.findIndex((b) => b.dataset.side === s)));
   sideGroup.dataset.on = s;
 }
 function setFaces(i) {
@@ -245,9 +266,10 @@ function close() {
   thTarget = Math.round(th / 360) * 360;
   turnWrap.animate([{ transform: 'none' }, { transform: `translate(${dx}px,${dy}px) scale(${sc})` }], { duration: 480, easing: 'cubic-bezier(.4,0,.2,1)' }).finished.then(back);
 }
-function step(d) {
+function step(d, to) {
   if (openI < 0 || busy) return;
-  const n = clamp(openI + d, 0, ITEMS.length - 1);
+  const n = to ?? clamp(openI + d, 0, ITEMS.length - 1);
+  if (to !== undefined) d = Math.sign(to - openI) || 1;
   if (n === openI) { swV += d * 0.9; sound.bump(); runTurn(); return; }
   const old = openI;
   hangers[old].style.visibility = '';
@@ -326,46 +348,87 @@ let toastTimer = 0;
 function say(text) { toast.textContent = text; toast.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { toast.hidden = true; }, 3200); }
 function countShipping() { const n = Object.values(state).filter((s) => s === 'shipping' || s === 'arrived').length; boxCount.dataset.count = n; boxCount.textContent = n; }
 countShipping();
+const tissue = $('.shop-tissue'), label = $('.shop-label'), pack = $('.shop-pack'), packText = $('.shop-pack-text');
+let packedOnce = false, skipPack = null;
+const wait = (ms) => new Promise((r) => { const t = setTimeout(r, ms); skipPack = () => { clearTimeout(t); r(); }; });
+function packSay(text) { packText.textContent = text; packText.style.animation = 'none'; void packText.offsetWidth; packText.style.animation = ''; }
+/**
+ * 입어 보기 → 포장 → 출발. 처음 한 번은 전 과정(내리기 · 얇은 종이 · 상자 · 테이프 · 송장 · 출발), 다음부터는 상자 · 테이프 · 출발만.
+ * 화면 어디를 눌러도 바로 끝(출발)으로 간다. 앱에서는 이 동안 서버 주문이 함께 돌고, 끝나지 않았으면 「출발」 앞에서 기다린다.
+ */
 async function order() {
   if (busy || openI < 0) return;
   busy = true;
-  const i = openI, id = ITEMS[i].id;
+  const i = openI, it = ITEMS[i], id = it.id;
   sound.pick();
+  const steps = PACK_STEPS.filter((x) => !packedOnce || !x.first);
+  packedOnce = true;
+  let skipped = false;
   if (!reduce) {
+    shop.dataset.packing = 'yes';
+    pack.hidden = false;
+    $('.shop-label-item').textContent = `${it.name} 1벌`;
+    const d = new Date();
+    $('.shop-label-date').textContent = `${d.getMonth() + 1}월 ${d.getDate()}일`;
+    $('.shop-label-no').textContent = `No. ${pad2(d.getMonth() + 1)}${pad2(d.getDate())}-${String(Object.keys(orderedAt).length + 4).padStart(3, '0')}`;
     thTarget = Math.round(th / 360) * 360; runTurn();
-    parcel.hidden = false; pOpen.style.opacity = 1; pClosed.style.opacity = 0;
-    const tw = turnWrap.getBoundingClientRect(), pr = parcel.getBoundingClientRect();
-    const boxIn = parcel.animate([{ transform: 'translateY(40%) scale(.9)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 420, easing: 'cubic-bezier(.2,.75,.2,1)', fill: 'both' });
-    await boxIn.finished;
-    const dy = pr.top + pr.height * 0.3 - (tw.top + tw.height * 0.1);
-    const fold = turnWrap.animate([
-      { transform: 'none', opacity: 1 },
-      { transform: `translateY(${dy * 0.55}px) scale(.55)`, opacity: 1, offset: 0.6 },
-      { transform: `translateY(${dy}px) scale(.3)`, opacity: 0 },
-    ], { duration: 620, easing: 'cubic-bezier(.55,0,.6,1)', fill: 'both' });
-    await fold.finished;
-    sound.thump();
-    pClosed.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, fill: 'forwards' });
-    pOpen.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 160, delay: 60, fill: 'forwards' });
-    await parcel.animate([{ transform: 'none' }, { transform: 'scale(1.04,.96)' }, { transform: 'none' }], { duration: 260 }).finished;
-    sound.tape();
-    await new Promise((r) => setTimeout(r, 320));
-    shop.dataset.flying = 'yes'; // 상자가 날아갈 곳(내 옷장)을 다시 보인다
-    const bb = boxBtn.getBoundingClientRect(), now = parcel.getBoundingClientRect();
-    const fx = bb.left + bb.width * 0.2 - (now.left + now.width / 2), fy = bb.top + bb.height / 2 - (now.top + now.height / 2);
-    await parcel.animate([{ transform: 'none', opacity: 1 }, { transform: `translate(${fx}px,${fy}px) scale(.08)`, opacity: 0.9 }], { duration: 560, easing: 'cubic-bezier(.5,0,.3,1)', fill: 'both' }).finished;
-    parcel.hidden = true; parcel.getAnimations().forEach((a) => a.cancel()); pOpen.getAnimations().forEach((a) => a.cancel()); pClosed.getAnimations().forEach((a) => a.cancel());
-    turnWrap.getAnimations().forEach((a) => a.cancel());
+    const onSkip = () => { skipped = true; if (skipPack) skipPack(); };
+    stage.addEventListener('pointerdown', onSkip);
+    for (const st of steps) {
+      if (skipped) break;
+      packSay(st.text);
+      if (st.id === 'lift') {
+        // 고리줄에서 들어 올렸다가 내려놓는다
+        turnWrap.style.setProperty('--line-to', '-40%'); // 고리줄이 올라가 사라지고
+        setTimeout(() => turnWrap.classList.add('is-off'), 220); // 옷걸이를 걷어 옷이 살짝 내려앉는다
+        sound.pick();
+      } else if (st.id === 'wrap') {
+        tissue.classList.add('is-on'); sound.tissue(); setTimeout(() => sound.tissue(), 380);
+        setTimeout(() => tissue.classList.add('is-wrapped'), 520);
+      } else if (st.id === 'box') {
+        parcel.hidden = false; pOpen.style.opacity = 1; pClosed.style.opacity = 0;
+        const tw = turnWrap.getBoundingClientRect(), pr = parcel.getBoundingClientRect();
+        parcel.animate([{ transform: 'translateY(40%) scale(.9)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 380, easing: 'cubic-bezier(.2,.75,.2,1)', fill: 'both' });
+        // 종이에 싼 꾸러미가 상자 폭에 맞게 줄어 상자 안(앞면 뒤)으로 들어간다
+        const k = Math.min(1, (pr.width * 0.5) / tw.width), dy = pr.top + pr.height * 0.42 - (tw.top + tw.height * 0.5 * k + tw.height * 0.1);
+        turnWrap.animate([
+          { transform: 'none', opacity: 1 },
+          { transform: `translateY(${dy * 0.5 - pr.height * 0.12}px) scale(${(1 + k) / 2})`, opacity: 1, offset: 0.55 },
+          { transform: `translateY(${dy}px) scale(${k})`, opacity: 1, offset: 0.92 },
+          { transform: `translateY(${dy + pr.height * 0.04}px) scale(${k})`, opacity: 0 },
+        ], { duration: 700, delay: 160, easing: 'cubic-bezier(.45,0,.4,1)', fill: 'both' });
+      } else if (st.id === 'tape') {
+        sound.thump();
+        parcel.classList.add('is-closed');
+        pClosed.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, fill: 'forwards' });
+        pOpen.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 160, delay: 60, fill: 'forwards' });
+        parcel.animate([{ transform: 'none' }, { transform: 'scale(1.04,.96)' }, { transform: 'none' }], { duration: 260 });
+        setTimeout(() => sound.tape(), 260);
+      } else if (st.id === 'label') {
+        label.classList.add('is-on'); sound.label();
+      } else if (st.id === 'go') {
+        shop.dataset.flying = 'yes'; // 상자가 날아갈 곳(내 옷장)을 다시 보인다
+        const bb = boxBtn.getBoundingClientRect(), now = parcel.getBoundingClientRect();
+        const fx = bb.left + bb.width * 0.2 - (now.left + now.width / 2), fy = bb.top + bb.height / 2 - (now.top + now.height / 2);
+        parcel.animate([{ transform: 'none', opacity: 1 }, { transform: `translate(${fx}px,${fy}px) scale(.08)`, opacity: 0.9 }], { duration: 560, delay: 120, easing: 'cubic-bezier(.5,0,.3,1)', fill: 'both' });
+      }
+      await wait(st.ms);
+    }
+    stage.removeEventListener('pointerdown', onSkip);
+    for (const el of [parcel, pOpen, pClosed, turnWrap]) el.getAnimations().forEach((a) => a.cancel());
+    parcel.hidden = true; pack.hidden = true; tissue.classList.remove('is-on', 'is-wrapped'); label.classList.remove('is-on'); parcel.classList.remove('is-closed');
+    turnWrap.style.removeProperty('--line-to'); turnWrap.classList.remove('is-off');
+    delete shop.dataset.packing;
   }
   delete shop.dataset.flying;
-  state[id] = 'shipping'; countShipping();
+  state[id] = 'shipping'; orderedAt[id] = Date.now(); countShipping();
   boxBtn.classList.remove('is-bump'); void boxBtn.offsetWidth; boxBtn.classList.add('is-bump');
   sound.drop();
   swings[i].insertAdjacentHTML('beforeend', tagHtml(id));
-  hangers[i].setAttribute('aria-label', `${ITEMS[i].name} — 배송 중`);
+  hangers[i].setAttribute('aria-label', `${it.name} — 배송 중`);
   stage.hidden = true; shop.dataset.mode = ''; hangers[i].style.visibility = ''; openI = -1; busy = false;
   P[i].drop = -artH * 0.12; P[i].dropV = 0; P[i].om += 0.5; setActive(i); wake();
-  say('배송 중이에요 — 늦어도 내일까지 도착해요');
+  say('출발했어요 — 늦어도 내일까지 도착해요');
 }
 
 stage.addEventListener('click', (e) => {
@@ -377,10 +440,13 @@ stage.addEventListener('click', (e) => {
   else if (act === 'next') step(1);
   else if (act === 'order') order();
   else if (act === 'wear') { sound.pick(); say('이 옷으로 갈아입었어요'); }
+  else if (act === 'pair') step(0, +b.dataset.to);
 });
+$('.shop-close').addEventListener('click', () => close());
 boxBtn.addEventListener('click', () => { sound.brush(); say('내 옷장은 제2의 나에서 열려요'); });
 document.addEventListener('keydown', (e) => {
   if (openI < 0) return;
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.closest('[data-act=pair]')) { e.preventDefault(); step(0, +e.target.dataset.to); return; }
   if (e.key === 'Escape') { e.preventDefault(); close(); }
   else if (e.key === 'ArrowRight' && !e.target.closest('.shop-side')) step(1);
   else if (e.key === 'ArrowLeft' && !e.target.closest('.shop-side')) step(-1);
@@ -411,5 +477,5 @@ const entry = () => {
 };
 Promise.all(hangers.map((h) => { const img = h.querySelector('img'); return img.decode ? img.decode().catch(() => {}) : Promise.resolve(); })).then(() => requestAnimationFrame(entry));
 // 뒤 판은 쉬는 때에 미리 받아 둔다(누르고 나서 돌릴 때 비지 않게)
-setTimeout(() => ITEMS.forEach((it) => { const im = new Image(); im.src = art(it.id, 'back'); }), 1200);
+setTimeout(() => { ITEMS.forEach((it) => { const im = new Image(); im.src = art(it.id, 'back'); }); for (const im of [pOpen, pClosed]) im.decode?.().catch(() => {}); }, 1200);
 window.__shop = { open, close, step, setSide, order, go: (i) => dr.go(i), state, P };

@@ -115,7 +115,7 @@ button{font:inherit;color:inherit}
 .shop-rail:not(.is-fit)~.shop-dots{display:flex}
 
 /* 자세히 — 같은 공간에서 고른 옷만 앞으로 */
-.shop-stage{position:absolute;inset:0;z-index:7;display:grid;grid-template-rows:1fr auto;justify-items:center;padding:calc(max(18px,env(safe-area-inset-top)) + 54px) 18px max(22px,env(safe-area-inset-bottom))}
+.shop-stage{position:absolute;inset:0;z-index:6;display:grid;grid-template-rows:1fr auto;justify-items:center;padding:calc(max(18px,env(safe-area-inset-top)) + 54px) 18px max(22px,env(safe-area-inset-bottom))}
 .shop-stage[hidden]{display:none}
 .shop-turn-wrap{position:relative;align-self:center;width:calc(var(--big-h)*.7308);height:var(--big-h);perspective:1600px;touch-action:pan-y;cursor:grab;
   --big-h:min(60vh,600px)}
@@ -132,6 +132,25 @@ button{font:inherit;color:inherit}
   transform:translateY(14px) rotate(-2.2deg) scale(.96);opacity:0;pointer-events:none;transition:opacity .45s var(--ease),transform .7s var(--ease)}
 .shop-print img{display:block;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.3s var(--ease) .2s}
 .shop-print::before{content:'';position:absolute;inset:3.2% 3.2% 12%;background:#EFEDE6}
+.shop-tissue{position:absolute;inset:9% -2% 1%;pointer-events:none;opacity:0;transition:opacity .2s}
+.shop-tissue i{position:absolute;top:0;bottom:0;width:62%;opacity:0;background:
+  linear-gradient(98deg,transparent 0 22%,rgba(255,255,255,.5) 22.6%,transparent 24% 47%,rgba(60,50,35,.06) 48%,transparent 53% 71%,rgba(255,255,255,.45) 71.5%,transparent 73%),
+  linear-gradient(176deg,transparent 0 38%,rgba(60,50,35,.05) 40%,transparent 46%),
+  rgba(251,250,246,.72);
+  filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.07))}
+.shop-tissue i:first-child{left:0;transform:translateX(-55%) rotate(-5deg);clip-path:polygon(4% 3%,38% 0,71% 4%,100% 1%,97% 36%,100% 69%,96% 100%,62% 97%,30% 100%,2% 96%,0 62%,3% 30%)}
+.shop-tissue i:nth-child(2){right:0;transform:translateX(55%) rotate(4deg);clip-path:polygon(0 2%,33% 0,66% 3%,97% 0,100% 33%,97% 66%,100% 98%,70% 100%,36% 96%,4% 100%,1% 67%,4% 31%)}
+.shop-tissue.is-on i{opacity:1;transition:transform .6s var(--ease),opacity .3s}
+/* 다 감싸면 종이가 짙어져 옷은 거의 안 비치는 꾸러미가 된다 */
+.shop-turn-wrap:has(.shop-tissue.is-wrapped) .shop-turn{opacity:.55;transition:opacity .4s}
+/* 옷걸이에서 내리기 — 고리 · 나무 막대가 걷히고 옷이 살짝 내려앉는다 */
+.shop-turn-wrap.is-off .shop-turn{clip-path:inset(13% 0 0 0);translate:0 2.2%;transition:clip-path .35s var(--ease),translate .45s cubic-bezier(.3,1.4,.5,1)}
+.shop-tissue b{position:absolute;left:50%;top:42%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;filter:drop-shadow(0 1px 2px rgba(0,0,0,.18));transform:scale(0)}
+.shop-tissue b svg{display:block;width:100%;height:100%}
+.shop-tissue.is-on{opacity:1}
+.shop-tissue.is-on i{transform:none;transition:transform .6s var(--ease)}
+.shop-tissue.is-on i:nth-child(2){transition-delay:.12s}
+.shop-tissue.is-on b{transform:scale(1);transition:transform .35s cubic-bezier(.3,1.6,.5,1) .55s}
 .shop-print::after{content:'';position:absolute;left:50%;top:-14px;width:12px;height:30px;margin-left:-6px;border-radius:2px;background:linear-gradient(90deg,#C9A57A,#E2C49B 45%,#B98F62);box-shadow:0 2px 3px rgba(0,0,0,.18);transform:rotate(2.2deg)}
 .shop-print img{position:relative}
 .shop-turn-wrap[data-view=worn] .shop-turn{opacity:.3;translate:-24% 2%;scale:.92;clip-path:inset(15% 0 0 0)}
@@ -143,9 +162,10 @@ button{font:inherit;color:inherit}
 .shop-turn-wrap[data-view=worn]::before{left:57.4%}
 .shop-turn-wrap::before{transition:bottom .55s var(--ease),left .6s var(--ease)}
 .shop-turn-wrap[data-view=worn]{cursor:default}
-.shop-close{position:absolute;top:calc(max(18px,env(safe-area-inset-top)) - 2px);right:clamp(10px,4vw,36px);display:flex;align-items:center;gap:10px;min-height:44px;padding:0 8px;border:0;background:none;font-size:13px;font-weight:550;color:var(--ink);cursor:pointer}
+.shop-close{position:absolute;z-index:9;top:calc(max(18px,env(safe-area-inset-top)) - 2px);right:clamp(10px,4vw,36px);display:flex;align-items:center;gap:10px;min-height:44px;padding:0 8px;border:0;background:none;font-size:13px;font-weight:550;color:var(--ink);cursor:pointer}
 .shop-close::after{content:'';width:12px;height:12px;background:linear-gradient(45deg,transparent calc(50% - .7px),currentColor calc(50% - .7px) calc(50% + .7px),transparent calc(50% + .7px)),linear-gradient(-45deg,transparent calc(50% - .7px),currentColor calc(50% - .7px) calc(50% + .7px),transparent calc(50% + .7px))}
 .shop-close:hover{text-decoration:underline;text-underline-offset:4px}
+.shop:not([data-mode=detail]) .shop-close{display:none}
 .shop-step{position:absolute;top:calc(50% - 60px);width:44px;height:44px;border:1px solid #C9C7C0;border-radius:50%;background:none;cursor:pointer;transition:border-color .2s,transform .2s var(--ease)}
 .shop-step:hover{border-color:var(--ink)}
 .shop-step:active{transform:scale(.94)}
@@ -163,23 +183,36 @@ button{font:inherit;color:inherit}
 .shop-side button[aria-checked=true]{color:var(--ink)}
 .shop-side button::after{content:'';position:absolute;left:0;right:0;bottom:5px;height:1.5px;background:currentColor;transform:scaleX(0);transform-origin:0 50%;transition:transform .35s var(--ease)}
 .shop-side button[aria-checked=true]::after{transform:none}
-.shop-side-knob{display:none}
 .shop-side button[data-side=worn]{white-space:nowrap}
 .shop-num{margin:0;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--ink-3)}
 .shop-name{margin:4px 0 0;font-size:clamp(28px,3.2vw,42px);line-height:1.1;font-weight:560;letter-spacing:-.045em;word-break:keep-all}
-.shop-note{margin:4px 0 0;font-size:13.5px;line-height:1.55;color:var(--ink-2);word-break:keep-all}
-.shop-price{display:flex;gap:8px;align-items:baseline;margin:2px 0 6px;font-size:13px;color:var(--ink-3)}
-.shop-price span:first-child{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase}
+.shop-story{margin:10px 0 0;max-width:34em;font-size:15px;line-height:1.72;color:var(--ink-2);word-break:keep-all;text-wrap:pretty}
+.shop-spec{display:grid;grid-template-columns:auto 1fr;gap:8px 18px;width:100%;margin:16px 0 2px;padding:14px 0;border-block:1px solid var(--line);text-align:left}
+.shop-spec dt{font-size:12px;font-weight:550;line-height:1.55;color:var(--ink-3);white-space:nowrap}
+.shop-spec dd{margin:0;font-size:13.5px;line-height:1.55;color:var(--ink);word-break:keep-all}
+.shop-spec a{color:inherit;text-decoration:underline;text-decoration-color:rgba(23,24,28,.35);text-underline-offset:3px;cursor:pointer}
+.shop-spec a:hover{text-decoration-color:currentColor}
+/* 배송 조회 — 서버가 실제로 아는 단계만(가짜 진행 막대 없음) */
+.shop-track{display:grid;gap:0;width:100%;margin:12px 0 4px;padding:0;list-style:none;text-align:left}
+.shop-track[hidden]{display:none}
+.shop-track li{position:relative;display:grid;grid-template-columns:14px 1fr auto;align-items:start;column-gap:10px;padding:0 0 11px;font-size:13.5px;line-height:1.45;color:var(--ink-3)}
+.shop-track li span{min-width:0;word-break:keep-all}
+.shop-track time{white-space:nowrap;text-align:right}
+.shop-track li::before{content:'';width:9px;height:9px;margin:5px 0 0 2px;border-radius:50%;box-shadow:inset 0 0 0 1.5px currentColor}
+.shop-track li::after{content:'';position:absolute;left:6px;top:17px;bottom:1px;width:1px;background:var(--line)}
+.shop-track li:last-child::after{display:none}
+.shop-track li[data-done]{color:var(--ink)}
+.shop-track li[data-done]::before{background:var(--ink);box-shadow:none}
+.shop-track li[data-now]{color:var(--ink);font-weight:600}
+.shop-track li[data-now]::before{background:#D98A2B;box-shadow:0 0 0 4px rgba(217,138,43,.18);animation:shop-blink 1.6s ease-in-out infinite}
+.shop-track time{font-family:var(--mono);font-size:11px;font-weight:400;letter-spacing:.04em;color:var(--ink-3)}
 .shop-actions{display:grid;gap:8px;width:100%}
 .shop-go{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;border:0;border-radius:999px;background:var(--ink);color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:transform .2s var(--ease),background-color .2s}
 .shop-go:hover{background:#000}
 .shop-go:active{transform:scale(.98)}
 .shop-go[disabled]{background:rgba(23,24,28,.1);color:var(--ink-2);cursor:default}
+.shop-wait{margin:2px 0 0;font-size:12.5px;color:var(--ink-3)}
 .shop-go .dot{width:7px;height:7px;border-radius:50%;background:#D98A2B;animation:shop-blink 1.6s ease-in-out infinite}
-.shop-worn{display:flex;align-items:center;gap:12px;padding:8px 14px 8px 8px;border-radius:16px;background:rgba(255,255,255,.75);box-shadow:inset 0 0 0 1px var(--line);text-align:left}
-.shop-worn img{width:44px;height:58px;border-radius:8px;object-fit:cover}
-.shop-worn span{font-size:13px;line-height:1.4;color:var(--ink-2)}
-.shop-worn strong{display:block;font-size:14px;color:var(--ink)}
 .shop-help{margin:2px 0 0;font-size:13px;line-height:1.5;color:var(--ink-3);word-break:keep-all;text-wrap:pretty}
 
 /* PC: 옷은 가운데에서 조금 왼쪽, 이름 · 값 · 단추는 옷 오른쪽(레퍼런스 평균 — 봉 상점 상세 02 · 04 · 18) */
@@ -195,10 +228,31 @@ button{font:inherit;color:inherit}
 }
 
 /* 택배 상자 */
-.shop-parcel{position:absolute;z-index:8;left:50%;top:50%;width:min(44vw,300px);aspect-ratio:1;margin:calc(min(44vw,300px)/-2) 0 0 calc(min(44vw,300px)/-2);pointer-events:none}
+.shop-parcel{--pw:min(66vw,420px);position:absolute;z-index:8;left:50%;top:50%;width:var(--pw);aspect-ratio:1;margin:calc(var(--pw)/-2) 0 0 calc(var(--pw)/-2);pointer-events:none}
+.shop-parcel::before{content:'';position:absolute;left:14%;right:14%;top:80%;height:7%;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.18),transparent);z-index:-1}
 .shop-parcel[hidden]{display:none}
-.shop-parcel img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 18px 20px rgba(40,32,22,.16))}
+.shop-parcel img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
 .shop-parcel-closed{opacity:0}
+.shop-label{position:absolute;left:29%;top:50.5%;width:41%;padding:3% 3.4% 2.6%;border-radius:2px;background:#FBFAF6;box-shadow:0 1px 2px rgba(0,0,0,.14);transform:rotate(-2deg) scale(1.25);opacity:0;font-family:var(--sans);color:var(--ink)}
+.shop-label p{display:flex;gap:6%;margin:0 0 2.4%;font-size:calc(var(--pw)*.0215);line-height:1.32}
+.shop-label p span{flex:none;width:3.6em;color:var(--ink-3)}
+.shop-label p b{flex:1;min-width:0;font-weight:600;word-break:keep-all}
+.shop-label p em{font-style:normal}
+.shop-label .shop-label-from{font-size:calc(var(--pw)*.018);color:var(--ink-3)}
+.shop-label .shop-label-from b{font-weight:450;color:var(--ink-2)}
+.shop-label-no{justify-content:center;margin:1.6% 0 0!important;font-family:var(--mono);font-size:calc(var(--pw)*.016)!important;letter-spacing:.08em;color:var(--ink-2)}
+.shop-parcel-tape{position:absolute;left:46.4%;width:7.4%;top:47%;height:11%;opacity:0;background:repeating-linear-gradient(180deg,transparent 0 14%,rgba(90,65,35,.32) 14% 16%,transparent 16% 30%);mix-blend-mode:multiply}
+.shop-parcel.is-closed .shop-parcel-tape{opacity:1;transition:opacity .2s .15s}
+.shop-label .shop-label-head{padding-bottom:2.6%;margin-bottom:3.4%;border-bottom:.5px solid rgba(0,0,0,.35);font-family:var(--mono);font-size:calc(var(--pw)*.0175);font-weight:600;letter-spacing:.04em}
+.shop-label-code{display:block;height:calc(var(--pw)*.045);margin-top:3%;background:repeating-linear-gradient(90deg,#222 0 1px,transparent 1px 2px,#222 2px 4px,transparent 4px 5px,#222 5px 6px,transparent 6px 8px)}
+.shop-label.is-on{opacity:1;transform:rotate(-2.5deg);transition:transform .28s cubic-bezier(.3,1.5,.5,1),opacity .12s}
+.shop-pack{position:absolute;z-index:9;left:50%;bottom:max(34px,env(safe-area-inset-bottom));transform:translateX(-50%);width:max-content;max-width:92vw;display:grid;justify-items:center;gap:6px;margin:0;text-align:center;pointer-events:none}
+.shop-pack[hidden]{display:none}
+.shop-pack-text{font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--ink);animation:shop-rise .35s var(--ease) both}
+.shop-pack-skip{font-size:12px;color:var(--ink-3)}
+.shop[data-packing] :is(.shop-info,.shop-step,.shop-close){opacity:0;pointer-events:none;transition:opacity .25s}
+.shop[data-packing] .shop-floor{opacity:0;transition:opacity .3s,transform .6s var(--ease)}
+.shop[data-packing] .shop-stage{cursor:pointer}
 .shop-toast{position:absolute;z-index:9;left:50%;bottom:max(28px,env(safe-area-inset-bottom));transform:translateX(-50%);margin:0;padding:12px 18px;border-radius:999px;background:var(--ink);color:#fff;font-size:14px;font-weight:600;white-space:nowrap;box-shadow:0 12px 30px rgba(0,0,0,.18);animation:shop-rise .45s var(--ease) both}
 .shop-toast[hidden]{display:none}
 
@@ -217,7 +271,17 @@ button{font:inherit;color:inherit}
   .shop-hint{left:18px;right:auto}
   .shop-step{display:none}
   .shop-turn-wrap{--big-h:min(52vh,470px)}
-  .shop-stage{padding-top:calc(max(14px,env(safe-area-inset-top)) + 50px)}
+  .shop-stage{display:block;overflow-y:auto;overscroll-behavior:contain;padding:calc(max(14px,env(safe-area-inset-top)) + 50px) 20px 0}
+  .shop-stage .shop-turn-wrap{margin:0 auto}
+  .shop-close{position:fixed}
+  .shop-info{margin:8px auto 0;padding-bottom:max(18px,env(safe-area-inset-bottom))}
+  .shop-spec{text-align:left}
+  .shop-info{justify-items:start;text-align:left;padding-bottom:96px}
+  .shop-side{order:-1;align-self:center;margin:2px 0 14px} /* 앞 · 뒤 · 입은 나는 사진 바로 아래 — 설명 밑에 두면 눌러도 바뀌는 사진이 화면 밖이다 */
+  .shop[data-mode=detail] .shop-top{min-height:58px;background:rgba(246,245,241,.97)}
+  .shop-actions{position:sticky;bottom:0;z-index:2;margin-top:-20px;padding:48px 0 max(12px,env(safe-area-inset-bottom));background:linear-gradient(rgba(246,245,241,0),var(--bg) 46px);pointer-events:none}
+  .shop-actions>*{pointer-events:auto} /* 위 바탕 페이드가 앞 · 뒤 탭의 누름을 가로채지 않게(11-05 시험에서 잡음) */
+  .shop-help{order:9}
   .shop-box-text{display:none}
   .shop-box{min-height:40px;padding:0 10px 0 8px;gap:6px}
   .shop-more{display:block}
@@ -228,5 +292,5 @@ button{font:inherit;color:inherit}
   .shop-hint{margin-top:12px}
 }
 @media (prefers-reduced-motion:reduce){
-  .shop-floor,.shop-info>*,.shop-side-knob{transition:none;animation:none}
+  .shop-floor,.shop-info>*{transition:none;animation:none}
 }

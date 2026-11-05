@@ -69,7 +69,7 @@ function analyze(buf) {
     });
     await trace('열기', async () => { await page.click('.shop-more'); await sleep(1400); });
     await trace('돌리기', async () => { await page.click('.shop-side button[data-side=back]'); await sleep(1300); await page.click('.shop-side button[data-side=front]'); await sleep(1300); });
-    await trace('상자', async () => { await page.click('.shop-go[data-act=order]'); await sleep(3600); });
+    await trace('상자', async () => { await page.click('.shop-go[data-act=order]'); await sleep(5600); });
     await trace('입은나', async () => { await page.evaluate(() => window.__shop.go(1)); await sleep(1200); await page.click('.shop-more'); await sleep(900); await page.click('.shop-side button[data-side=worn]'); await sleep(1500); await page.click('.shop-close'); await sleep(1200); });
     await ctx.close(); await browser.close();
   }

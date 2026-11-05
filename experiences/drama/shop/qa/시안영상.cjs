@@ -99,10 +99,11 @@ function stutter(file) {
     await tap('.shop-side button[data-side=back]'); await sleep(1500); await shot('뒤');
     const t = await box('.shop-turn-wrap');
     await drag(t.x - 40, t.y, t.x + 260, t.y + 6, 900); await sleep(1300); await shot('끌어돌림');
-    await tap('.shop-step[data-act=next]'); await sleep(1100);
+    await tap('.shop-step[data-act=next]'); await sleep(1500); await shot('배송조회');
     await tap('.shop-step[data-act=next]'); await sleep(1200); await shot('다음');
-    await tap('.shop-go[data-act=order]'); await sleep(950); await shot('상자');
-    await sleep(2600); await shot('배송중'); await sleep(900);
+    await tap('.shop-go[data-act=order]'); await sleep(1300); await shot('종이');
+    await sleep(1150); await shot('상자'); await sleep(1450); await shot('송장');
+    await sleep(1900); await shot('배송중'); await sleep(900);
     let c = await box('.hanger', 1); await move(c.x, y, 30); await sleep(800); c = await box('.hanger', 1); await move(c.x, y, 6); await sleep(250);
     await tapAt(c.x, y); await sleep(1500); await shot('내옷');
     await tap('.shop-side button[data-side=worn]'); await sleep(2300); await shot('입은나');
@@ -122,8 +123,11 @@ function stutter(file) {
     const t = await box('.shop-turn-wrap');
     await drag(t.x - 80, t.y, t.x + 120, t.y + 4, 700); await sleep(1300); await shot('돌림');
     await drag(t.x + 60, t.y, t.x - 160, t.y - 4, 650); await sleep(1300);
-    await tap('.shop-go[data-act=order]'); await sleep(950); await shot('상자');
-    await sleep(2700); await shot('배송중'); await sleep(900);
+    await fr().evaluate(() => document.querySelector('.shop-stage').scrollTo({ top: 420, behavior: 'smooth' })); await sleep(1300); await shot('설명');
+    await fr().evaluate(() => document.querySelector('.shop-stage').scrollTo({ top: 0, behavior: 'smooth' })); await sleep(900);
+    await tap('.shop-go[data-act=order]'); await sleep(1300); await shot('종이');
+    await sleep(1150); await shot('상자'); await sleep(1450); await shot('송장');
+    await sleep(1900); await shot('배송중'); await sleep(900);
     // 도착한 카디건으로 가서 「입은 나」
     await drag(80, y, 340, y + 4, 420); await sleep(700);
     await fr().evaluate(() => window.__shop.go(1)); await sleep(1400);

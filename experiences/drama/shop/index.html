@@ -50,7 +50,6 @@
 
   <div class="shop-veil" aria-hidden="true"></div>
   <section class="shop-stage" hidden aria-label="옷 자세히">
-    <button type="button" class="shop-close" data-act="close">닫기</button>
     <button type="button" class="shop-step" data-act="prev" aria-label="앞 옷"></button>
     <button type="button" class="shop-step" data-act="next" aria-label="다음 옷"></button>
     <div class="shop-turn-wrap" data-view="garment">
@@ -58,23 +57,31 @@
         <img class="shop-face is-front" alt="" draggable="false">
         <img class="shop-face is-back" alt="" draggable="false">
       </div>
+      <!-- 포장 — 얇은 종이 두 장이 옷을 감싸고 둥근 봉인 스티커 -->
+      <div class="shop-tissue" aria-hidden="true"><i></i><i></i><b><svg viewBox="0 0 44 44"><defs><path id="seal-ring" d="M22 22m-15.2 0a15.2 15.2 0 1 1 30.4 0a15.2 15.2 0 1 1-30.4 0"/></defs><circle cx="22" cy="22" r="21.4" fill="#EFE6D6"/><circle cx="22" cy="22" r="20.4" fill="none" stroke="rgba(110,85,50,.3)" stroke-width=".6"/><text font-size="4.4" letter-spacing=".9" fill="#6E5A3E" font-family="Shop Mono, ui-monospace, monospace"><textPath href="#seal-ring">SYNK WORLD · CAMPUS · SYNK WORLD · CAMPUS ·</textPath></text><g transform="translate(15.5 15) scale(.55)"><path d="M12 6.2a1.9 1.9 0 1 1 1.9 1.9c-.9 0-1.9.7-1.9 1.6v.6m0 0L3.6 15.6a1 1 0 0 0 .6 1.9h15.6a1 1 0 0 0 .6-1.9Z" fill="none" stroke="#3A3833" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g></svg></b></div>
       <!-- 입은 나 — 이 옷을 입은 내 사진(도착한 옷만). 옷걸이 자리에서 인화지처럼 떠오른다 -->
       <figure class="shop-print" aria-hidden="true"><img alt="" draggable="false"><figcaption></figcaption></figure>
     </div>
     <div class="shop-info">
       <p class="shop-num"></p>
       <h2 class="shop-name"></h2>
-      <p class="shop-note"></p>
+      <p class="shop-story"></p>
+      <dl class="shop-spec"></dl>
       <div class="shop-side" role="radiogroup" aria-label="보는 쪽"></div>
+      <ol class="shop-track" hidden aria-label="배송 조회"></ol>
       <div class="shop-actions"></div>
       <p class="shop-help"></p>
     </div>
   </section>
 
+  <!-- 닫기는 자세히 밖에 둔다 — 휴대폰에서 설명을 넘기면 자세히 판이 머리 줄 아래로 지나가야 해서(자세히 판 > 머리 줄 > 닫기) -->
+  <button type="button" class="shop-close" data-act="close">닫기</button>
   <div class="shop-parcel" hidden aria-hidden="true">
     <img class="shop-parcel-open" alt="" src="assets/box-open.webp">
     <img class="shop-parcel-closed" alt="" src="assets/box-closed.webp">
+    <div class="shop-label"><p class="shop-label-head">SYNK WORLD · 캠퍼스 옷 가게</p><p><span>받는 곳</span><b>내 옷장 · 제2의 나</b></p><p><span>내용물</span><b class="shop-label-item"></b></p><p class="shop-label-from"><span>보낸 곳</span><b>캠퍼스 옷 가게 · <em class="shop-label-date"></em></b></p><i class="shop-label-code"></i><p class="shop-label-no"></p></div><i class="shop-parcel-tape" aria-hidden="true"></i>
   </div>
+  <p class="shop-pack" role="status" hidden><span class="shop-pack-text"></span><span class="shop-pack-skip">눌러서 건너뛰기</span></p>
   <p class="shop-toast" role="status" hidden></p>
 </div>
 </body>
