@@ -1,0 +1,6 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE square image.
+Plain pure white seamless background, no floor, no shadow. One handmade needle-felted square card with rounded corners, thick coral-red felt with visible fibers and a cream running-stitch border. On the card, one large three-dimensional cream wool Korean syllable, correctly formed and easily readable:
+배
+Nothing else, no other text, no objects.

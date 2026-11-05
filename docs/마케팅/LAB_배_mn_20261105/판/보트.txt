@@ -1,0 +1,11 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Mongle: the coral needle-felted wool ghost-shaped mascot in the attached reference photos (use them ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy black bead eyes with no whites, pink felt cheeks). Mongle has NO mouth, NO arms, NO legs, ever — any object floats right next to its body or rests on it.
+
+Layout: keep the TOP 24% of the image calm and uncluttered (plain wall or sky, softly out of focus) — text will be added there later. All the action sits in the middle and lower part.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, warm natural light, gentle depth of field, cute but not babyish (for university students and young workers). Absolutely no text, letters, numbers, logos or symbols anywhere (no speech bubbles — they will be added later).
+
+New scene, same two characters: the roommate from Image 1 with the same face and the same grey hoodie, and Mongle. A calm Korean lake in late-afternoon autumn light. A small handmade needle-felted wooden rowboat fills the lower two thirds of the picture, seen slightly from the front. The roommate rows happily at the back with two felt oars, big carefree smile, a little white felt sailor cap on his head. Mongle sits at the front of the boat hunched over, tinted pale green, the same cream hot-water bottle resting against its tummy, eyes squeezed shut, sweat drops. Felt ripples around the boat, felt autumn maple trees and a soft mountain far behind, out of focus. The top of the picture is plain pale sky.
