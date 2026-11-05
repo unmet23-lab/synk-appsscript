@@ -124,7 +124,7 @@ function cardIn(key) {
 }
 
 /* ───────── 위 띠: 회차 알약 · 진행 띠 ───────── */
-const PHASE_TAG = { intro: 'EP.01 · Scene 2', scene: 'EP.01 · Scene 2', take2: 'EP.01 · Take 2', transfer: 'New situation', wrap: 'EP.01 · Today' };
+const PHASE_TAG = { intro: 'EP.01 · Scene 2', scene: 'EP.01 · Scene 2', take2: 'EP.01 · One more', transfer: 'New situation', wrap: 'EP.01 · Today' };
 function progCells() { return S.boot ? sceneItems().length + 3 : 10; }
 function setProg(n) {
  const total = progCells();
@@ -846,7 +846,7 @@ function turnPanel(item, s, ctx, extra = []) {
   return [
    stepper(ctx.phase === 'scene' ? 'scene' : 'take2'),
    h('div', { class: 'turn' },
-    h('p', { class: 'k' }, h('span', { class: 'dot', 'aria-hidden': 'true' }), ctx.phase === 'retake' ? 'Take 2 · Your turn' : 'Your turn', h('b', {}, hint)),
+    h('p', { class: 'k' }, h('span', { class: 'dot', 'aria-hidden': 'true' }), ctx.phase === 'retake' ? 'One more · Your turn' : 'Your turn', h('b', {}, hint)),
     micNotice(),
     ...extra,
     practice
@@ -1135,7 +1135,7 @@ async function retakeResult(item, r) {
  // 해낸 순간은 처음 그릴 때 한 번만(언어 바꾸기 · 확인 단추로 다시 그릴 때는 없이).
  if (passed && !r.celebrated) { r.celebrated = true; celebrate(s); }
  const render = () => choose(s, (go) => [stepper('take2'), h('div', { class: 'director' },
-  h('p', { class: 'k' }, R.mode === 'practice' ? 'Practice · Take 2' : 'Take 2'),
+  h('p', { class: 'k' }, R.mode === 'practice' ? 'Practice · One more' : 'One more'),
   h('h2', {}, R.mode === 'practice' ? tx('practiceTitle') : tx('take2')),
   data?.transcript ? h('div', { class: 'heard' }, h('p', { class: 'fine' }, tx('heardAs')), h('p', { class: 'ko', lang: 'ko' }, data.transcript)) : null,
   msg ? h('p', { class: passed ? 'lead passed' : 'lead' }, passed ? h('span', { class: 'tick on', 'aria-hidden': 'true' }) : null, msg) : null,
