@@ -24,9 +24,9 @@ H = V + "/homeshopping-horror-20261021/remotion_v1-v3_워크트리사본/public/
 F = V + "/sound-library/fairlight/Media Files/"
 S = V + "/sound-library/sonniss_gdc2026/풀림/"
 END = 563 / 24   # 물 컷이 끝나는 자리 — 여기서 우주 집게 컷으로 소리째 뚝 끊는다(11-05 유호님 「집게 컷으로」). 574장까지 두니 물에서 한 번, 우주에서 한 번 끝이 두 번이었다(맹검 둘)
-TOTAL = 621 / 24   # 우주 2초 + 검정 0.42초
+TOTAL = 628 / 24   # 우주 2.29초(판 42~96장) + 검정 0.42초 — 집게가 나간 뒤 개만 남은 그림을 0.5초 둔다(11-05 Fable 맹검)
 KEVIN_LINE = V + "/pulse-portfolio12-20261024/최종/p11/소리/일레븐후보_20261103/Kevin_우주_smug.mp3"   # 「우주에서도 뜹니다.」 같은 프리셋 [smug, playful](본 내레이션 끝 줄과 같은 꼬리표). [serious] 판은 음높이 156 Hz · 무게중심 515 Hz로 본 내레이션(189 · 688)보다 낮고 어두워 「따로 붙인 다른 목소리」로 들렸다(11-05 아르곤 · 수치)
-SPACE_MISS = 0.46   # 집게가 놓치는 자리(우주 컷 머리에서 초, p11-s1 32장 = 21장부터 11장 — B.tsx와 같은 값)
+SPACE_MISS = 0.46   # 집게가 놓치는 자리(우주 컷 머리에서 초, p11-s2__2 53장 = 42장부터 11장 — B.tsx와 같은 값)
 rng = np.random.default_rng(11)
 
 

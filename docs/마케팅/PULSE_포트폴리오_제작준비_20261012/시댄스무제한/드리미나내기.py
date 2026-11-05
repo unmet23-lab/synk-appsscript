@@ -1,13 +1,16 @@
 # 드리미나 시댄스 2.5 — 꾸러미 판을 공식 CLI(dreamina-canvas)로 내고 받는다(2026-11-04, 유호님 「필요하면 cli 설치하고 진행해도돼」).
-#   python -X utf8 드리미나내기.py <꾸러미 폴더> [<판 id>…] [--받을곳 <폴더>] [--상한 크레딧] [--동시 3] [--실행]
+#   python -X utf8 드리미나내기.py <꾸러미 폴더> [<판 id>…] [--받을곳 <폴더>] [--상한 크레딧] [--동시 3] [--계정 ultra] [--실행]
+#   --계정은 CLI 로그인 칸(--profile)이다. 안 주면 기본 칸(옛 기본 요금제 계정), ultra는 11-05 울트라를 결제한 계정 — 캔버스 id는 칸마다 캔버스_<칸>.txt(git 밖).
 #   기본은 미리 보기(낼 판 · 초 · 크레딧 · 잔액)만 찍는다. --실행일 때만 낸다. 견적이 --상한(안 주면 잔액)을 넘으면 내지 않는다.
 # 판 읽기는 크레딧내기.py의 boards()와 같다(_순서.json 또는 순서표.md). 판을 안 주면 받을곳에 아직 없는 판 전부(판 수만큼), 판을 주면 판마다 한 번씩만 낸다.
 # 입력: 소리 · 끝 외 참고 · 두 샷이 없으면 first_last_frame(시작 · 끝 프레임을 서버가 프레임으로 받음),
 #   소리나 참고 그림이 있으면 m2v(옴니 레퍼런스) — 이때 시작 그림은 참고일 뿐 프레임으로 고정되지 않는다(CLI · 웹 모두 첫 프레임과 소리를 함께 받는 칸이 없다).
 #   지시문의 @이미지 N · @오디오 N은 올린 파일의 {{res:<id>}}로 바꾼다. 비율은 판대로(CLI 필수), 720p, 소리 끄는 칸은 없다 — 소리 끔 판도 소리가 붙어 나오면 쓸 때 뺀다.
 # 받은 파일: 계정 설정 「AI 워터마크 삭제」가 꺼져 있으면 왼쪽 위에 「AI」 표시가 박힌다 — 11-04 켰고, 이미 구운 판도 같은 resourceId로 다시 받으면 표시 없는 파일이 온다(크레딧 0, README 「드리미나 비교(11-04)」). 첫 프레임 판은 크기가 시작 그림 비율을 따른다(2752x1536 → 1284x716).
+#   이 설정은 계정마다 따로다 — 11-05 울트라 계정에서도 켰다(그 전에 받은 첫 판은 표시가 있어 같은 resourceId로 다시 받았다).
 #   파일 머리의 프레임률이 60으로 적혀 재기.py 등이 장을 겹쳐 읽는다 — 실제 97장 · 24fps라 잴 때는 fps=24로 옮겨 잰다.
-# 값: 720p 초당 37크레딧(11-04 기본 요금제 화면 · 실제 차감, 받은 뒤 잔액으로 다시 잰다). 영상 받은 것은 받을곳/<판>.mp4(둘째부터 __2), 기록은 받을곳/_드리미나.json.
+# 값: 720p 초당 37크레딧(11-04 기본 요금제 화면 · 실제 차감), 울트라 칸은 초당 18(11-05 실측 — 5초 90 · 13초 234). 견적 · 상한은 칸마다 PER_SEC_OF(울트라는 요금표 값 19로 조금 넉넉히).
+#   받은 뒤 잔액으로 다시 잰다. 영상 받은 것은 받을곳/<판>.mp4(둘째부터 __2), 기록은 받을곳/_드리미나.json.
 # 끊기면 다시 내지 않는다 — 기록에 submitId가 있으니 그 id로 `dreamina-canvas operation wait <submitId> --project-id <캔버스>`를 본다.
 import json, os, re, subprocess, sys, threading, time
 from concurrent.futures import ThreadPoolExecutor
@@ -18,14 +21,17 @@ from 크레딧내기 import boards, PIC
 HOME = os.path.join(os.path.expanduser("~"), ".ai-tools", "dreamina-canvas")
 EXE = os.path.join(HOME, "dreamina-canvas.exe")
 DAY = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028"
-PROJECT = open(os.path.join(HOME, "캔버스.txt"), encoding="utf-8").read().strip()   # 내는 캔버스 id — 공개 저장소라 git 밖에 둔다
-PER_SEC = 37
+PROFILE = None   # CLI 로그인 칸 — main()의 --계정이 정한다
+PROJECT = open(os.path.join(HOME, "캔버스.txt"), encoding="utf-8").read().strip()   # 내는 캔버스 id — 공개 저장소라 git 밖에 둔다(칸이 있으면 캔버스_<칸>.txt)
+PER_SEC_OF = {None: 37, "ultra": 19}
+PER_SEC = 37   # main()이 칸에 맞춰 PER_SEC_OF에서 고른다
 lock = threading.Lock()
-TAKEN = []
+TAKEN = []   # 이번 실행에서 받으려고 잡아 둔 파일 이름
 
 
 def cli(*args, check=True, timeout=3000):
-    r = subprocess.run([EXE, "--format", "json", "--non-interactive", *args], capture_output=True, text=True, encoding="utf-8", timeout=timeout)
+    prof = ["--profile", PROFILE] if PROFILE else []
+    r = subprocess.run([EXE, *prof, "--format", "json", "--non-interactive", *args], capture_output=True, text=True, encoding="utf-8", timeout=timeout)
     try:
         j = json.loads(r.stdout or r.stderr)
     except ValueError:
@@ -72,6 +78,19 @@ def have(out, pan):
     return sum(1 for f in os.listdir(out) if re.fullmatch(re.escape(pan) + r"(__\d+)?\.mp4", f)) if os.path.isdir(out) else 0
 
 
+def pick_name(out, pid):
+    """디스크에도 없고 이번 실행에서 잡지도 않은 첫 이름 — CLI는 있는 파일에 받지 않으니 빈 파일로 자리를 잡지 않고 이름만 메모리에 잡는다.
+    예전엔 판 수(파일 + 잡은 수)로 셌더니 먼저 받은 판이 두 번 세어져 __2 대신 __3이 붙었다(11-05)."""
+    with lock:
+        k = 1
+        while True:
+            name = f"{pid}.mp4" if k == 1 else f"{pid}__{k}.mp4"
+            if name not in TAKEN and not os.path.exists(os.path.join(out, name)):
+                TAKEN.append(name)
+                return name
+            k += 1
+
+
 def save(out, key, row):
     p = os.path.join(out, "_드리미나.json")
     with lock:
@@ -114,10 +133,7 @@ def run_one(pack, out, b):
             print(f"  ⚠ {b['id']} 안 끝남: {json.dumps(made.get('error') or state, ensure_ascii=False)[:300]} — 다시 내지 않음(기록의 submitId로 확인)", flush=True)
         return b["id"]
     save(out, key, row)   # 받기가 막혀도 구운 판의 id는 남긴다
-    with lock:   # CLI는 있는 파일에 받지 않는다 — 빈 파일로 자리를 잡지 않고 이름만 메모리에 잡는다
-        n = have(out, b["id"]) + sum(1 for x in TAKEN if x == b["id"])
-        TAKEN.append(b["id"])
-    name = f"{b['id']}.mp4" if not n else f"{b['id']}__{n + 1}.mp4"
+    name = pick_name(out, b["id"])
     os.makedirs(out, exist_ok=True)
     for n_try in range(3):   # 11-04 일곱 판 동시 받기에서 한 번이 30분 넘게 멈췄다 — 끊고 다시 받는다(다시 받기는 크레딧이 나가지 않는다)
         try:
@@ -143,11 +159,16 @@ def safe(*a):
 def main():
     a = sys.argv[1:]
     opt = lambda k, d: a[a.index(k) + 1] if k in a else d
+    global PROFILE, PROJECT, PER_SEC
     cap, conc, go, out = opt("--상한", None), int(opt("--동시", "3")), "--실행" in a, opt("--받을곳", None)
-    vals = {a.index(k) + 1 for k in ("--상한", "--동시", "--받을곳") if k in a}
+    PROFILE = opt("--계정", None)
+    PER_SEC = PER_SEC_OF.get(PROFILE, PER_SEC_OF[None])
+    if PROFILE:
+        PROJECT = open(os.path.join(HOME, f"캔버스_{PROFILE}.txt"), encoding="utf-8").read().strip()
+    vals = {a.index(k) + 1 for k in ("--상한", "--동시", "--받을곳", "--계정") if k in a}
     pos = [x for i, x in enumerate(a) if not x.startswith("--") and i not in vals]
     if not pos:
-        raise SystemExit("쓰는 법: python -X utf8 드리미나내기.py <꾸러미> [<판>…] [--받을곳 폴더] [--상한 크레딧] [--동시 3] [--실행]")
+        raise SystemExit("쓰는 법: python -X utf8 드리미나내기.py <꾸러미> [<판>…] [--받을곳 폴더] [--상한 크레딧] [--동시 3] [--계정 ultra] [--실행]")
     pack, want = os.path.abspath(pos[0]), pos[1:]
     out = out or (os.path.join(DAY, "받음", "_드리미나비교") if pack.replace("\\", "/").startswith(DAY) else os.path.join(os.path.dirname(pack), "받음"))
     bs = boards(pack)
@@ -163,7 +184,7 @@ def main():
         todo += [b] if want else [b] * max(0, b["판 수"] - have(out, b["id"]))
     total = sum(PER_SEC * b["길이"] for b in todo)
     bal = balance()
-    print(f"잔액 {bal} · 받을곳 {out}")
+    print(f"잔액 {bal} · 칸 {PROFILE or '기본'} · 받을곳 {out}")
     for b in todo:
         s, e, r, au = split_media(pack, b)
         print(f"  {b['id']:<14} {b['길이']}초 {b['비율']} · {PER_SEC * b['길이']}크레딧 · {mode_of(s, e, r, au)} · 시작 {len(s)} 끝 {len(e)} 참고 {len(r)} 소리 {len(au)}")

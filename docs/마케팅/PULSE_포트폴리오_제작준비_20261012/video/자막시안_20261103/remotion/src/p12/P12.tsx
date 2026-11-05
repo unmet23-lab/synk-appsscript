@@ -14,8 +14,8 @@ import { ProbeMeta, probeChars } from '../lib/subject';
 import phones from './폰자리.json';
 
 const FPS = 24;
-export const P12_FRAMES = Math.round(38 * FPS);   // 끝 포스터가 다 선 뒤 1.6초 멈춘다(읽을 시간 — 11-04에 37.64에서 늘림)
-const T = [0, 1.87, 3.87, 7.2, 11.73, 15.1, 18.3, 21.77, 22.87, 27.07, 27.77, 28.47, 29.17, 29.87, 30.57, 31.27, 35.14, 38];
+export const P12_FRAMES = Math.round(38.71 * FPS);   // 끝 글이 다 선 뒤 1.6초 읽을 시간 — 17은 식당 전체 와이드(11-05, comedy-montage 02_콘티 7절)
+const T = [0, 1.87, 3.87, 7.2, 11.73, 15.1, 18.3, 21.77, 22.87, 27.07, 27.77, 28.47, 29.17, 29.87, 30.57, 31.27, 35.14, 38.71];
 const MINT = '#20B296', INK = '#101414', PAPER = '#F7F6F1';
 // 컷 → [일차, 장소, 마주친 횟수] (7 · 8은 같은 곳)
 const PLACE: [string, string, number][] = [
@@ -54,7 +54,8 @@ const firstAt = (i: number) => NUM[i]?.at ?? TT[PLACE.findIndex((p) => p[2] === 
 // 남아 있으면 두 폰보다 글이 먼저 보인다(11-04 GPT 검수). 먼저 그 사람과 두 폰을 보고 「같은 코스」는 0.5초 뒤(BLOCK_AT, 최종편집.py와 같은 값)
 const ZOOM = (Math.round(T[15] * FPS) + phones.from) / FPS;
 const BLOCK_AT = ZOOM + 0.5;
-const BRAND_AT = TT[16] + 0.95;   // 끝 포스터가 닫히는 순간(딩) — 최종편집.py와 같은 값
+const COUNT_AT = TT[16] + 0.55;   // 와이드에서 손님들을 먼저 본 뒤 숫자가 오른다 — 최종편집.py와 같은 값
+const BRAND_AT = COUNT_AT + 0.85;   // 딩 — 최종편집.py와 같은 값
 const numBox = (t: number, i: number): React.CSSProperties => {
   const n = NUM[i]!;
   const a = firstAt(i);
@@ -184,7 +185,7 @@ const Probe: React.FC<{ t: number }> = ({ t }) => {
 // 끝 글자(11-04) — 민트 판(슬롭 점검표 1번)을 버리고 그림 위 평면 글자만. 입체 글자 · 간판은 플라스틱 · 스티커, 탁자에 세운 핀 · 구슬 · 빛 코스는 압정 · 네온 링으로 읽혀
 // 왜 거기 있는지 설명이 안 됐다(아르곤 · Fable 세 차례) — 그래서 CG 물건을 빼고 움직임을 글자 안의 이야기로 옮겼다: 「또 그 사람」 → 「같은 코스」 → 그 사람만이 아니라 12,480명.
 // 머리글과 같은 색으로 「같은」이 답하고, 숫자가 틱(최종편집.py)을 타고 올라가, 딩에 브랜드로 바뀐다. 튀지 않고 흐림이 풀리며 올라온다(결정 10-29 영상 글자 방법)
-const COUNT_FROM = T[16] + 0.1 - 0.055, COUNT_TO = T[16] + 0.1 + 14 * 0.055;   // 틱 15번과 같은 자리
+const COUNT_FROM = COUNT_AT - 0.055, COUNT_TO = COUNT_AT + 14 * 0.055;   // 틱 15번과 같은 자리
 const rise = (t: number, at: number, dy = 12): React.CSSProperties => {
   const q = ramp(t, at, 0.34, EXPO);
   return { opacity: q, transform: `translateY(${(1 - q) * dy}px)`, filter: `blur(${(1 - q) * 8}px)` };
@@ -220,7 +221,10 @@ export const P12: React.FC<{ probe?: boolean; cg?: boolean }> = ({ probe, cg }) 
   // 끝에서는 멈춘 그림으로 천천히 들어간다(판이 올라와도 그 사람이 살아 있게) — 두 폰 테두리도 그림에 붙어 함께
   // 폭로부터 끝까지 천천히 들어간다 — 끝 5초가 멈춘 사진 같았다(11-04 아르곤)
   // 브랜드가 뜨는 딩에 한 번 더 당긴다 — 끝 33~38초가 멈춘 듯 조용했다(11-05 크몽 세션 Fable · 아르곤)
-  const push = cg ? 1 + 0.05 * ramp(t, ZOOM + 0.1, P12_FRAMES / FPS - ZOOM - 0.1, (x) => x) + 0.05 * ramp(t, BRAND_AT - 0.04, 0.5) : 1 + 0.03 * ramp(t, TT[16], P12_FRAMES / FPS - TT[16]);
+  // 와이드(17)는 판의 다가감에만 맡긴다 — 16번 위 밀기는 컷에서 끝나고(하드컷이라 배율이 바뀌는 게 안 보인다),
+  // 딩 밀기를 더하면 뒤 줄 머리가 끝 글 아래선까지 올라온다(11-05 Fable)
+  const wide = cg && t >= TT[16];
+  const push = cg ? (wide ? 1 : 1 + 0.05 * ramp(t, ZOOM + 0.1, TT[16] - ZOOM - 0.1, (x) => x)) : 1 + 0.03 * ramp(t, TT[16], P12_FRAMES / FPS - TT[16]);
   const legalRight = t >= ZOOM;   // 폭로부터는 앞 폰 위를 가로지르지 않게 오른쪽 어두운 바닥으로
   const onPanel = !cg && t >= BRAND_AT + 0.1;   // 포스터가 닫히면 판 안 어두운 글자로
   return (

@@ -8,7 +8,7 @@ import { EN, KO } from '../lib/fonts';
 import { life, pop, ramp } from '../lib/motion';
 import { LINES } from './timing';
 
-export const P11B_FRAMES = 621;   // 물 컷 563장 + 우주 48장 + 검정 10장(11-05 유호님 「집게 컷으로」)
+export const P11B_FRAMES = 628;   // 물 컷 563장 + 우주 55장 + 검정 10장(11-05 유호님 「집게 컷으로」 · 판 마지막 장까지 써서 개만 남은 0.5초 — Fable 맹검)
 const FPS = 24;
 const INK = '#0E1320', PAPER = '#F6F3EA', LEMON = '#FFD43B', NAVY = '#17224D', ALIEN = '#B8FF3C';
 const abs = (x: number, y: number, w?: number, h?: number): React.CSSProperties => ({ position: 'absolute', left: x, top: y, width: w, height: h });
@@ -51,8 +51,8 @@ const CUT_DROP = 453 / 24;  // → 물 · 떨어짐
 const BEAM_ON = w(7, 0) - 0.04;   // 띠가 열리고 납치 빔이 켜진다
 const BEAM_OFF = CUT_DROP + 30 / 24;   // 빔이 꺼진다 — 그래서 p11-b11 31장부터 떨어진다
 const SPACE_AT = 563 / FPS;   // → 궤도 집게 컷(574장까지 두니 끝이 두 번이었다 — 맹검 둘)
-const BLACK_AT = 611 / FPS;   // → 검정으로 끝. 로고를 다시 넣지 않는다
-const SPACE_MISS = 0.46;   // 집게가 놓치는 자리(우주 컷 머리에서 초, p11-s1 32장 = 21장부터 11장 — B급소리.py와 같은 값)
+const BLACK_AT = 618 / FPS;   // → 검정으로 끝. 로고를 다시 넣지 않는다
+const SPACE_MISS = 0.46;   // 집게가 놓치는 자리(우주 컷 머리에서 초, p11-s2__2 53장 = 42장부터 11장 — B급소리.py와 같은 값)
 
 // 큰 낱말 결 — 고른 테두리를 쓰지 않는다(유호님 11-03 「흰 굵은 글자 + 검은 테」는 촌스럽다, 아르곤 11-04 「무료 앱 프리셋」). 낱말마다 뜻대로 그린다
 const big = (size: number, color: string): React.CSSProperties => ({ fontFamily: KO, fontWeight: 900, fontSize: size, lineHeight: 1, letterSpacing: '-0.045em', color });
@@ -120,7 +120,7 @@ const HUD: [number, number, string][] = [
   [BEAM_ON, BEAM_OFF, '귀환 빔 작동 중'],
   [BEAM_OFF, w(8, 3) + 1.2, '신호 끊김'],
   [21.95, SPACE_AT, '수면 착륙 성공'],
-  [SPACE_AT + SPACE_MISS, BLACK_AT, '궤도 부력 정상'],
+  [SPACE_AT + SPACE_MISS + 0.3, BLACK_AT, '궤도 부력 정상'],   // 놓는 박자가 먼저 읽히게 0.3초 뒤에 뜬다(11-05 Fable 맹검 「놓는 순간과 같은 프레임에 떠서 시선을 다툼」)
 ];
 const Hud: React.FC<{ t: number }> = ({ t }) => {
   const cur = HUD.find(([a, b]) => t >= a && t < b);
@@ -487,6 +487,9 @@ const Beam: React.FC<{ t: number }> = ({ t }) => {   // 천장에서 내려오�
 };
 
 const GOG = [[84, 655, 867], [90, 674, 875], [96, 671, 860], [102, 654, 851], [108, 637, 865], [114, 626, 869], [120, 621, 875]];   // p11-b11 장, 주황 테 중심
+// 우주 컷(p11-s2__2, 42장부터)의 왼 · 오른 렌즈 가운데 — [컷 안 장, 왼 x, 왼 y, 오른 x, 오른 y], 1080x1920 자리를 2장마다 잰 값(11-05).
+// 집게가 당기고 놓치는 동안 개가 떠다녀 렌즈가 위아래로 100px 남짓 움직인다
+const SPACE_GOG = [[0, 774, 870, 886, 902], [2, 774, 863, 887, 892], [4, 774, 862, 887, 891], [6, 774, 865, 887, 893], [8, 773, 866, 886, 896], [10, 772, 864, 885, 894], [12, 772, 854, 885, 886], [14, 772, 846, 885, 876], [16, 770, 853, 886, 879], [18, 768, 876, 883, 898], [20, 771, 907, 884, 929], [22, 774, 930, 888, 953], [24, 777, 942, 890, 970], [26, 780, 945, 892, 975], [28, 783, 939, 895, 969], [30, 784, 928, 895, 959], [32, 783, 916, 894, 946], [34, 782, 909, 894, 937], [36, 780, 905, 892, 933], [38, 779, 908, 891, 934], [40, 778, 913, 891, 939], [42, 778, 919, 891, 945], [44, 779, 923, 891, 950], [46, 779, 925, 891, 952], [48, 779, 925, 892, 951], [50, 779, 923, 892, 950], [52, 779, 920, 892, 947], [54, 780, 917, 892, 944]];
 const LensGlow: React.FC<{ t: number }> = ({ t }) => {   // 끝 한 방 — 물에 뜬 무표정한 개의 고글이 초록으로 켜진다
   const a = 22.07;   // Kevin 「우주」에서 켜진다
   if (t < a || t >= BLACK_AT) return null;
@@ -494,8 +497,12 @@ const LensGlow: React.FC<{ t: number }> = ({ t }) => {   // 끝 한 방 — 물�
   const glow = (x: number, y: number, w: number, h: number, i: number) => (
     <div key={i} style={{ ...abs(x - w / 2, y - h / 2, w, h), borderRadius: '50%', opacity: on, mixBlendMode: 'screen', background: `radial-gradient(closest-side, #F4FFD0 0%, ${ALIEN} 26%, ${ALIEN}66 52%, ${ALIEN}00 100%)` }} />
   );
-  // 우주에서도 켜진 채 — 물에서 켜진 초록이 우주 판에서 파랑으로 돌아가 「가장 큰 불일치」였다(11-05 Fable). p11-s1 판의 개는 제자리라 렌즈 자리를 한 번 잰 값으로 둔다
-  if (t >= SPACE_AT) return <>{[[805, 996], [918, 1001]].map(([x, y], i) => glow(x, y, 150, 120, i))}</>;
+  // 우주에서도 켜진 채 — 물에서 켜진 초록이 옛 우주 판(p11-s1)에서 파랑으로 돌아가 「가장 큰 불일치」였다(11-05 Fable).
+  // 지금 판은 렌즈가 원래 초록으로 빛나지만 물 컷과 같은 빛 · 깜빡임으로 잇는다 — 개가 떠다니니 렌즈 자리를 장마다 따라간다
+  if (t >= SPACE_AT) {
+    const [lx, ly, rx, ry] = lerpTable(SPACE_GOG, (t - SPACE_AT) * FPS);
+    return <>{[[lx, ly], [rx, ry]].map(([x, y], i) => glow(x, y, 150, 120, i))}</>;
+  }
   const [gx, gy] = lerpTable(GOG, (t - CUT_DROP) * FPS);
   return <>{[[-126, 30], [98, 25]].map(([dx, dy], i) => glow(gx + dx, gy + dy, 270, 220, i))}</>;
 };

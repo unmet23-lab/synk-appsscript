@@ -5,7 +5,6 @@ import os
 import shutil
 import sys
 
-import cv2
 import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
@@ -25,13 +24,14 @@ SONG_IN = 3.70   # 곡 27.5초 루프가 크게 올라오는 자리(저역 +26 d
 CAP = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "자막시안_20261103")   # Remotion 섞은 판(p12)
 PUB = os.path.join(ROOT, "최종", "자막시안_public", "p12")
 FPS, W, H = 24, 1080, 1920
-T = [0, 1.87, 3.87, 7.20, 11.73, 15.10, 18.30, 21.77, 22.87, 27.07, 27.77, 28.47, 29.17, 29.87, 30.57, 31.27, 35.14, 38]   # 컷 경계(02_콘티 3절) — 끝만 37.64에서 늘림: 끝 포스터가 다 선 뒤 1.6초 멈춰 읽게(11-04)
+T = [0, 1.87, 3.87, 7.20, 11.73, 15.10, 18.30, 21.77, 22.87, 27.07, 27.77, 28.47, 29.17, 29.87, 30.57, 31.27, 35.14, 38.71]   # 컷 경계(02_콘티 3절) — 17은 식당 전체 와이드(02_콘티 7절, 11-05 유호님 「시안으로 바꿔」): 끝 글이 다 선 뒤 1.6초 읽게
 END = T[-1]
 ZOOM = (round(T[15] * FPS) + 폰.ZOOM_AT) / FPS   # 16컷 안 — 폰 디지털 줌으로 그 사람이 폰을 든 판이 뜨는 프레임(33.08초). 폭로의 한 방이 여기다
 BLOCK_AT = ZOOM + 0.5   # 먼저 그 사람과 두 폰을 보고 「같은 코스」는 그다음(P12.tsx와 같은 값)
-BRAND_AT = T[16] + 0.95   # 끝 포스터가 닫히는 순간 — 딩(P12.tsx와 같은 값)
+COUNT_AT = T[16] + 0.55   # 와이드로 넘어가 손님들을 먼저 본 뒤 숫자가 오른다(P12.tsx와 같은 값)
+BRAND_AT = COUNT_AT + 0.85   # 숫자가 다 오르면 딩에 브랜드(P12.tsx와 같은 값)
 
-# 컷 번호 → (판, 그 판에서 시작하는 초). 17은 16 마지막 프레임을 잡아 둔다(끝 판이 그 위로 올라온다)
+# 컷 번호 → (판, 그 판에서 시작하는 초)
 CUTS = {
     1: ("p12-01", 0.00),     # 0초부터 이쪽을 보다 1.2초쯤 앞으로
     2: ("p12-02", 1.40),     # 첫 판 — 창밖으로 휙 돌았다가 그에게 도착하는 끝 구간(둘째 판은 내내 그에게 머물러 도착이 없음)
@@ -49,38 +49,15 @@ CUTS = {
     14: ("p12-14", 1.00),    # 15보다 크지 않게
     15: ("p12-15", 3.34),
     16: ("p12-16", 0.00),    # 여행자 폰을 판 첫머리부터(또렷한 시간 0.2 → 0.35초) → 맞은편 테이블 → 1.83초 당김 → 같은 화면의 폰
+    17: ("p12-17", 0.00),    # 식당 전체가 같은 앱 화면을 든 와이드(드리미나 첫 프레임 · 02_콘티 7절)
 }
-
-
-def live_hold(n, out):
-    """끝 멈춤 — 한 장을 세워 두니 불판 연기까지 얼어 사진 같았다(11-04 아르곤). 판 끝 17장을 마지막 장에 맞춰 세우고(카메라는 멈춘 채) 겹쳐 돌려 연기 · 숨결만 살린다"""
-    fr = 폰.read_all(폰.OUT)[-17:]
-    ref = np.float32(cv2.cvtColor(fr[-1], cv2.COLOR_BGR2GRAY))[1000:1400, 200:880]
-    aligned = []
-    for f in fr:
-        (dx, dy), _ = cv2.phaseCorrelate(np.float32(cv2.cvtColor(f, cv2.COLOR_BGR2GRAY))[1000:1400, 200:880], ref)
-        aligned.append(cv2.warpAffine(f, np.float32([[1, 0, dx], [0, 1, dy]]), (W, H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE).astype(np.float32))
-    L, X = len(aligned), 5     # X장씩 겹쳐 이음매를 없앤다 — 되돌려 틀면 연기가 거꾸로 간다
-    P = L - X
-    res = []
-    for k in range(n):
-        pos = k % P
-        im = aligned[pos]
-        if pos < X:
-            w = (pos + 1) / (X + 1)
-            im = aligned[pos + P] * (1 - w) + aligned[pos] * w
-        if k < X:   # 16컷 마지막 장에서 부드럽게 들어간다
-            w = (k + 1) / (X + 1)
-            im = aligned[-1] * (1 - w) + im * w
-        res.append(np.clip(im + 0.5, 0, 255).astype(np.uint8))
-    폰.write_all(res, out)
 
 
 def picture():
     d = os.path.join(OUT, "_컷")
     os.makedirs(d, exist_ok=True)
     paths = []
-    for n in range(1, 17):
+    for n in range(1, 18):
         pid, t = CUTS[n]
         k = round(T[n] * FPS) - round(T[n - 1] * FPS)
         src = C.clip(pid)
@@ -93,12 +70,9 @@ def picture():
         C.cut_video(src, a, k, W, H, FPS, out)
         paths.append(out)
         print(f"#{n} {pid} {a / FPS:.2f}초부터 {k}장")
-    # 16은 앱 화면을 다시 얹고 잔 상표를 지운 판으로(폰다시얹기.py) · 17은 그 판 끝부분을 이어 돌린다 — 끝 판이 폭로 그림 위로 올라온다(11-04)
+    # 16은 앱 화면을 다시 얹고 잔 상표를 지운 판으로(폰다시얹기.py). 17은 판 그대로 — 예전엔 16 끝 17장을 이어 돌린 멈춤이었다(11-04 · 크몽 세션 Fable 「정지 한 장 + 글자 세 겹」)
     폰.main()
-    paths[-1] = 폰.OUT
-    out = os.path.join(d, "17.mp4")
-    live_hold(round(END * FPS) - round(T[16] * FPS), out)
-    paths.append(out)
+    paths[15] = 폰.OUT
     C.join_videos(paths, os.path.join(OUT, "화면.mp4"))
 
 
@@ -217,7 +191,7 @@ def sound():
     x = C.load(os.path.join(SFX, "tick.wav"))
     for k in range(15):
         y = pitched(x, 1 + k * 0.07)
-        m.put(T[16] + 0.1 + k * 0.055, y * ((0.32 if k == 14 else 0.17) * pk / float(np.max(np.abs(y)))), 0, fade=0.001)   # 0.2 · 0.1이면 곡에 묻혀 「숫자가 오를 때 효과음이 없다」로 들렸다(11-05 크몽 세션 아르곤)
+        m.put(COUNT_AT + k * 0.055, y * ((0.32 if k == 14 else 0.17) * pk / float(np.max(np.abs(y)))), 0, fade=0.001)   # 0.2 · 0.1이면 곡에 묻혀 「숫자가 오를 때 효과음이 없다」로 들렸다(11-05 크몽 세션 아르곤)
     # 딩에 무게 — 딩만으로는 끝의 한 방으로 안 들렸다(11-04 아르곤 「소리 한 방이 없다」). 폰 스피커에도 남게 툭을 깐다
     x = C.load(os.path.join(SFX, "thud.wav"))
     m.put(BRAND_AT, x * (0.42 * pk / float(np.max(np.abs(x)))), 0, fade=0.001, fade_out=0.25)
