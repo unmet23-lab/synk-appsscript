@@ -3,6 +3,7 @@
 // tools/공개.js가 「공개본 + (바탕 → 내 판)」 3방향으로 얹는다 — 남의 아직 안 올린 변경은 두 판에 같이 있어 실리지 않는다.
 // 경로 고쳐 쓰기는 공개 빌드(tools/build-world-app-public.mjs rewrite)와 같다: 뿌리 모듈의 ../brand-opening/ → ./brand-opening/, me2-shop.mjs의 끌기 부품 한 줄 → ./play-common/.
 //   node experiences/synk-world-app/qa/me2-shop-공개묶음.cjs [바탕] [내 판=HEAD] [--판 <글자>]
+//   바탕은 지금 공개본을 만든 원천 커밋이다(11-06 다음 판은 aaeef8d617 — 11-05 공개 기록 커밋, 가게 파일은 4f63783f5와 같다).
 const path = require('node:path'), fs = require('node:fs');
 const { execFileSync } = require('node:child_process');
 const { 공용작업본 } = require('../../../tools/lib/공용작업본.js');
@@ -17,8 +18,8 @@ const OUT = path.join(공용작업본(ROOT), '.tmp', `me2-shop-pub-20261105${판
 const APP = 'experiences/synk-world-app/';
 const 그림 = git('ls-tree', '-r', '--name-only', NEW, `${APP}me2-assets`).toString().trim().split('\n').map((x) => x.slice(APP.length)).filter((x) => /^me2-assets\/shop-/.test(x));
 const FILES = [...['me2-photo.mjs', 'me2-photo.css', 'me2-shop.mjs', 'me2-shop.css', 'me2-shop-items.mjs', 'me2-shop-sound.mjs', ...그림].map((f) => [APP + f, 'world/' + f]),
-  // 끌기 부품은 원천이 안 바뀌어도 공개 쪽에는 처음 싣는 파일이다 — 바탕을 비워 새 파일로 낸다.
-  ['experiences/play-common/drag-rail.js', 'world/play-common/drag-rail.js', { 새공개: true }]];
+  // 끌기 부품은 11-05 첫 공개 때 새 파일로 실었다(그때는 { 새공개: true }) — 이제 공개본에 있으니 바뀐 때만 싣는다.
+  ['experiences/play-common/drag-rail.js', 'world/play-common/drag-rail.js']];
 function 고쳐쓰기(bytes, pub) {
   const relative = pub.slice('world/'.length);
   if (!/\.(mjs|css)$/.test(pub)) return bytes;
