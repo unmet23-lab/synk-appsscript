@@ -356,8 +356,8 @@ test('PULSE sidebar opens separately without replacing the current app and failu
 test('PULSE intro opens from the home card with the approved words while launching stays on the buttons',async()=>{
   let opened=0;const f=await fixture({initialAuth:account('customer',['world','pulse']),bridgeOverrides:{openPulseApp:async()=>{opened++;return {ok:true};}}});assert.equal(await f.ready,'true');
   await f.element('view-home').handlers.get('click')({target:{closest:()=>({dataset:{memberApp:'pulse'}})}});await settleLibrary();
-  assert.equal(opened,0);assert.equal(f.element('breadcrumb-app').textContent,'SYNK PULSE');assert.equal(f.element('pulse-client').hidden,true);assert.equal(f.element('hero-description').textContent,'모든 컷을 먼저 보여 드리는 AI 광고예요.');
-  const overview=f.element('detail-content').innerHTML;assert.match(overview,/AI 모델 21명/);assert.match(overview,/진행·시안·승인/);assert.match(overview,/카메라 앞에 서 본 사람이 AI 모델의 연기를 연출해요/);assert.match(overview,/data-pulse-legacy="open"/);
+  assert.equal(opened,0);assert.equal(f.element('breadcrumb-app').textContent,'SYNK PULSE');assert.equal(f.element('pulse-client').hidden,true);assert.equal(f.element('hero-description').textContent,'자연스러움은 연출입니다.');
+  const overview=f.element('detail-content').innerHTML;assert.match(overview,/시선, 제품을 쥔 손, 웃음이 나오는 타이밍\. 카메라 앞과 뒤에서 10년 일한 대표가 그 자리를 연출해요\./);assert.match(overview,/AI 모델 21명/);assert.match(overview,/진행·시안·승인/);assert.match(overview,/카메라 앞에 서 본 사람이 AI 모델의 연기를 연출해요/);assert.match(overview,/엔터테인먼트·광고 업계에서 10년 일한 대표 유호가 연출해요/);assert.doesNotMatch(overview,/배우로 활동한|모든 컷을 먼저 보여 드리는/);assert.match(overview,/data-pulse-legacy="open"/);
   await f.action({detail:'info'});assert.match(f.element('detail-content').innerHTML,/알아 둘 것/);assert.match(f.element('detail-content').innerHTML,/초대 링크로 연결한 프로젝트만 보여요/);
   await f.click('primary-action');assert.equal(opened,1);
 });

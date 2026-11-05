@@ -109,20 +109,27 @@ test('the view says the new introduction and none of what it must not say',async
   const {root,show}=mount();
   const models=visibleText(root.innerHTML),portfolio=visibleText(await show('portfolio')),brief=visibleText(await show('brief'));
   const all=models+portfolio+brief+pulseRequestText(oldDraft())+JSON.stringify([MODELS,PORTFOLIO,RETIRED_WORKS,TEAMS]);
-  assert.match(models,/모든 컷을 먼저 보여 드리는/);
-  assert.match(models,/AI 광고/);
+  // 11-05 first line (Yuho: 「좋아 훌륭해」): the heading says what synk.im/pulse says, in 해요체.
+  for(const screen of [models,portfolio,brief]){
+    assert.match(screen,/자연스러움은\s+연출입니다/);
+    assert.match(screen,/시선, 제품을 쥔 손, 웃음이 나오는 타이밍\. 카메라 앞과 뒤에서 10년 일한 대표가 그 자리를 연출해요\. 상담은 제품 사진 한 장과 올릴 곳만으로 시작해요\./);
+  }
+  assert.match(models,/AI 광고 제작/);
   assert.match(models,/AI 모델 21명 가운데/);
   assert.match(models,/다음 편도 같은 모델/);
   assert.match(models,/나머지 20명은 실제 인물이 아닌 가상 모델/);
-  // Wherever a scene image is promised the caveat is on the same screen: the heading stays on every tab.
-  for(const screen of [models,portfolio,brief])assert.match(screen,/장면 이미지는 영상의 첫 장면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요/);
+  // Wherever a scene image is promised the caveat is on the same screen. The heading no longer promises one
+  // (every cut first is a process line now, as on the website), so the caveat sits with the brief's three checks.
+  for(const screen of [models,portfolio])assert.doesNotMatch(screen,/장면 이미지/);
+  assert.match(brief,/컷마다 장면 이미지\. 장면 이미지는 영상의 첫 장면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요/);
   assert.match(portfolio,/가상 브랜드로 만든 자체 광고와 공모전 출품작이에요/);
   assert.match(portfolio,/카메라 앞에 서 본 사람이 AI 모델의 연기를 연출해요/);
-  assert.match(portfolio,/배우로 활동한 대표 유호가 연출해요/);
+  assert.match(portfolio,/SYNK PULSE는 엔터테인먼트·광고 업계에서 10년 일한 대표 유호가 연출해요/);
   assert.match(portfolio,/넷플릭스 공개 「보라! 데보라」 1화 오프닝 시퀀스 출연 · tvN 「코미디빅리그」 코너 출연 · 부활 「너의 모습」 뮤직비디오 주연/);
   assert.match(brief,/모델 고르기, 광고가 남길 한 문장과 글 콘티, 컷마다 장면 이미지/);
   assert.match(brief,/15초 광고 39만원부터 · 30초 광고와 편집본 89만원부터 · 기업 캠페인 250만원부터/);
-  for(const old of ['CLIENT STUDIO','광고 모델을 고르고','맡길 작업을','뮤직비디오와 기업 영상은','6명','참고 작업'])assert.ok(!all.includes(old),old);
+  for(const old of ['CLIENT STUDIO','광고 모델을 고르고','맡길 작업을','뮤직비디오와 기업 영상은','6명','참고 작업','모든 컷을 먼저 보여 드리는','배우로 활동한'])assert.ok(!all.includes(old),old);
+  assert.ok(!root.innerHTML.includes('pulse-heading-fine'),'the heading keeps no fine print');
   for(const banned of ['실제 촬영','실사 촬영','납기','부가세','세금계산서','같은 얼굴','무제한','최고','최초','유일','몽글','까몽','마린'])assert.ok(!all.includes(banned),banned);
   assert.doesNotMatch(all,/Higgsfield|Seedance|Sunburst|Omni|Veo|Kling|Runway|Sora|Midjourney|Gemini|Nano|ChatGPT|GPT|ElevenLabs|Typecast/i);
   assert.doesNotMatch(all,/\d+만원(?!부터)/);

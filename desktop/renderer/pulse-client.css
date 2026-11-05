@@ -92,8 +92,7 @@
 
 .pulse-favorite{min-width:44px;min-height:44px;border:1px solid var(--line-2);border-radius:50%;background:transparent;color:var(--ink);font-size:23px}.pulse-favorite[aria-pressed=true]{color:#F5C445}
 
-/* 2026-11-04 new PULSE copy: fine print, section leads, idol teams, single-image works, the maker box. */
-.pulse-heading .pulse-heading-fine{font-size:13px;line-height:1.6;margin-top:10px}
+/* 2026-11-04 new PULSE copy: section leads, idol teams, single-image works, the maker box. The scene-image caveat moved from the heading to the brief's three checks on 11-05. */
 .pulse-search .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .pulse-lead{font-size:15px;line-height:1.7;color:var(--ink-2);margin:0 0 18px;max-width:760px}
 .pulse-team{grid-column:1/-1;margin-top:14px;padding-top:24px;border-top:1px solid var(--line-2)}
