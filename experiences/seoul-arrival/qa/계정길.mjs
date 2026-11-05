@@ -259,6 +259,15 @@ for(const [stage,screen] of [['dream','#s-title'],['card','#s-path']]){
  check(await page.evaluate(()=>{const d=document.querySelector('#seoul-layer');return !d.inert&&getComputedStyle(d).visibility==='visible';}),'올리면 보이고 누를 수 있음');
  await page.close();}
 
+// 14g. 앱 밖에서 바로 연 판(배포 점검이 /world/seoul-arrival/을 그렇게 연다): 안내만 보이고, 크기가 바뀌어도 오류가 없다
+{const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const page=await context.newPage();const errs=[];
+ page.on('pageerror',e=>errs.push(String(e).slice(0,160)));
+ await page.goto(base+'/seoul-arrival/index.html',{waitUntil:'load'});await sleep(1500);
+ check(await page.evaluate(()=>!!document.querySelector('.outside .go-btn')&&getComputedStyle(document.querySelector('#s-title')).display==='none'),'앱 밖: WORLD 열기 안내만 보임');
+ await page.setViewportSize({width:380,height:800});await sleep(800);await page.setViewportSize({width:1440,height:900});await sleep(800);
+ check(!errs.length,'앱 밖: 크기가 바뀌어도 오류 없음',errs[0]||'');
+ await context.close();}
+
 // 15. 통로는 이상한 값을 조용히 버린다
 {const page=await fresh();
  await setup(page,{owner:'acc-17',arrival:{version:1,stage:'card',dream:'idol'},operating:true});

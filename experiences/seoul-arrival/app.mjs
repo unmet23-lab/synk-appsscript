@@ -1356,7 +1356,8 @@ function loadState(a){
 }
 if(location.hash!=='#road')warm(WARM.first);
 const insets=()=>{const s=HOST?.insets?.();if(!s)return;for(const [k,v] of Object.entries(s))document.documentElement.style.setProperty('--'+k,v+'px');};
-function outside(){const box=document.createElement('div');box.className='outside';box.innerHTML=`<p>${L('WORLD에서 열어 주세요')}</p><a class="go-btn" href="../?seoul=1" target="_top">${L('WORLD 열기')}</a>`;document.getElementById('app').replaceChildren(box);}
+// 앱 밖에서 바로 연 판: 화면들을 지우지 않고 가린다 — 크기 바뀜 처리기(거울 · 정문 · 객석)가 지운 요소를 찾다 오류를 내지 않게(11-06 배포 점검)
+function outside(){const app=document.getElementById('app'),box=document.createElement('div');box.className='outside';box.innerHTML=`<p>${L('WORLD에서 열어 주세요')}</p><a class="go-btn" href="../?seoul=1" target="_top">${L('WORLD 열기')}</a>`;for(const el of [...app.children])el.style.display='none';app.append(box);}
 applyStatic();
 SND.ensure();
 window.__seoulFrame=Object.freeze({
