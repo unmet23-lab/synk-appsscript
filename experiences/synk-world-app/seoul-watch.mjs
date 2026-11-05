@@ -4,7 +4,7 @@
 // 시험(tests/seoul-arrival.test.mjs)이 실제 시범판 글(한 · 영 · 몽)과 꼬리표로 이 읽기를 지킨다.
 
 export const EPISODE='s1e01';
-export const STEP_TAGS=Object.freeze({scene:'EP.01 · Scene 2',take2:'EP.01 · Take 2',transfer:'New situation',wrap:'EP.01 · Today'});
+export const STEP_TAGS=Object.freeze({scene:'EP.01 · Scene 2',take2:'EP.01 · One more',transfer:'New situation',wrap:'EP.01 · Today'});
 
 // 오늘 기록의 첫 줄 글은 언어마다 숫자 차례가 달라(「3줄 중 2줄」 · 「2 of 3」) 작은 값을 말한 줄로 본다.
 export function spokenOf(text){const nums=(String(text||'').match(/\d+/g)||[]).map(Number);return nums.length?Math.min(...nums):0;}

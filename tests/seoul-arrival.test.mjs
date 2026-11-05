@@ -125,6 +125,11 @@ test('시범판 꼬리표 · 표시가 그대로다(바뀌면 끝 읽기를 함�
  assert.match(pilot,/class: 'intro'/);
 });
 
+test('단계 꼬리표가 시범판의 실제 글과 같다(시범판 글을 바꾸면 여기서 걸린다)', () => {
+ const pilot=read('experiences/drama/pilot/pilot.mjs');
+ for(const tag of Object.values(STEP_TAGS))assert.ok(pilot.includes(`'${tag}'`),`시범판에 없는 꼬리표: ${tag}`);
+});
+
 test('단계 꼬리표 차례 → 장면 끝 기록', () => {
  const run=(tags)=>{const seen=new Set(['started']);const out=[];let prev=STEP_TAGS.scene;for(const t of tags){out.push(...stepsDone(prev,t,seen));prev=t;}return out;};
  assert.deepEqual(run([STEP_TAGS.take2,STEP_TAGS.transfer,STEP_TAGS.wrap]),[`${EPISODE}.scene`,`${EPISODE}.take2`,`${EPISODE}.transfer`]);

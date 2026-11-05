@@ -1136,7 +1136,7 @@ async function crowdScene({n=0,t2=false,tr=false}={}){
   const P=H.data.people,F=H.data.friendSeats;
   // 첫 판은 세 박자(장면에서 말한 줄 → 테이크 2 → 처음 보는 말). 다시 할 때는 늘어난 만큼 한 번에 — 못 건너뛰는 반복 연출을 만들지 않는다
   const beats=first
-    ?[{lab:'1화 · 식당 장면 끝',seats:P.slice(0,next.n)},{lab:'1화 · 테이크 2',seats:next.t2?[F[0]]:[]},{lab:'1화 · 처음 보는 말',seats:next.tr?[F[1]]:[]}].filter(b=>b.seats.length)
+    ?[{lab:'1화 · 식당 장면 끝',seats:P.slice(0,next.n)},{lab:'1화 · 한 번 더',seats:next.t2?[F[0]]:[]},{lab:'1화 · 처음 보는 말',seats:next.tr?[F[1]]:[]}].filter(b=>b.seats.length)
     :[{lab:'1화 끝',seats:[...P.slice(was.n,next.n),...(next.t2&&!was.t2?[F[0]]:[]),...(next.tr&&!was.tr?[F[1]]:[])]}].filter(b=>b.seats.length);
   const total=next.n+(next.t2?1:0)+(next.tr?1:0);
   if(!beats.length){
