@@ -22,9 +22,11 @@ const 앱폴더 = git('ls-tree', '-r', '--name-only', NEW, ARR).toString().trim(
 const FILES = [
   ...['app-shell.mjs', 'app-shell.css', 'life-progress.mjs', 'seoul-entry.mjs', 'seoul-watch.mjs', 'seoul-record.mjs'].map((f) => [APP + f, 'world/' + f]),
   [BO + 'opening.mjs', 'world/brand-opening/opening.mjs'],
-  [BO + 'content/life-standalone.mjs', 'world/brand-opening/content/life-standalone.mjs'],
   ...앱폴더.map((f) => [ARR + f, 'world/seoul-arrival/' + f]),
 ];
+// 생활 단독 묶음(content/life-standalone.mjs)은 싣지 않는다(11-05): 공개본은 CJS 모듈을 공백 압축한 다른 묶는 설정이라 줄 3방향이 13곳 겹치고,
+// 그 묶음을 쓰는 혼자 여는 홈은 arrival()·setArrival()을 부르지 않는다. 옛 묶음도 arrival 칸을 지우지 않는다 — validate()가 읽은 값을
+// 그대로 돌려주고 commit이 clone(state)에 칸만 바꾼다. 저장소 묶음에는 들어 있으니 다음 묶음 공개 때 함께 나간다.
 function 고쳐쓰기(bytes, pub) {
   const relative = pub.slice('world/'.length);
   if (!/\.(mjs|js|html|css)$/.test(pub)) return bytes;
@@ -36,7 +38,8 @@ function 고쳐쓰기(bytes, pub) {
   return Buffer.from(text, 'utf8');
 }
 const show = (rev, file) => { try { return git('show', `${rev}:${file}`); } catch { return null; } };
-fs.rmSync(OUT, { recursive: true, force: true });
+// base · new만 새로 쓴다 — 후보 폴더는 검수에 묶인 배포 증거라 지우지 않는다(처리방침묶음.cjs와 같은 까닭, 11-05)
+for (const dir of ['base', 'new']) fs.rmSync(path.join(OUT, dir), { recursive: true, force: true });
 const items = [];
 for (const [src, pub] of FILES) {
   const a = show(BASE, src), b = show(NEW, src);
@@ -52,5 +55,7 @@ for (const [src, pub] of FILES) {
 }
 const posix = (p) => p.replaceAll('\\', '/');
 fs.writeFileSync(path.join(OUT, '항목.txt'), items.join('\n') + '\n');
+let 후보 = path.join(OUT, '후보');
+for (let n = 2; fs.existsSync(후보); n++) 후보 = path.join(OUT, '후보' + n);
 console.log(`원천 ${git('rev-parse', '--short', NEW).toString().trim()} · 바탕 ${git('rev-parse', '--short', BASE).toString().trim()} · 파일 ${items.length}개`);
-console.log(['node tools/공개.js 올리기', '--원본', posix(path.join(OUT, 'new')), '--기준폴더', posix(path.join(OUT, 'base')), ...items, '--후보폴더', posix(path.join(OUT, '후보'))].join(' '));
+console.log(['node tools/공개.js 올리기', '--원본', posix(path.join(OUT, 'new')), '--기준폴더', posix(path.join(OUT, 'base')), ...items, '--후보폴더', posix(후보)].join(' '));
