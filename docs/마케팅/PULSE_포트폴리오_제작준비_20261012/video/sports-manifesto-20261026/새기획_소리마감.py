@@ -26,11 +26,6 @@ CUTS = {
                      ("step_turf_3", 3.67, "어택", -18, {"lp": 6000}), ("exhale_2", 7.10, "어택", -31, {"fadein": 0.15}),
                      # 맹검 3차: 「충격과 알갱이 긁힘이 조금 과해 트레일러 효과음처럼 들릴 여지」 → 2 dB 낮추고 알갱이 올림을 뺀다
                      ("impact_sole_1", 11.40, "어택", -9, {})]},
-    # 6초: 원곡 6.41 큰 타격 → 1.60(N08s), 3.0초 컷에서 원곡 14.665(거의 무음)로 건너뛰어 16.015 가장 큰 타격 → 4.35(로고). 날숨은 말과 겹쳐 뺀다.
-    # 맹검 2차: 6초는 「충격과 into joy.가 여백 없이 붙어 조급하다」 → 휙을 빼고 충격을 4 dB 낮추고, 뒷말을 0.05초 늦춘다.
-    # 맹검 3차: 「빌드업 없이 4초대 한 방이 갑작스럽게 크다」 → 한 방을 4.45초로 0.1초 늦춰(뒷말 끝과 0.2초 사이) 그 뒤 음악을 3 dB 낮춘다. 로고도 4.45초(콘티가편집 CUTS6).
-    "6초": {"len": 6.0, "vid": OUT_V / "p5n_콘티가편집_6초.mp4", "표": [(0.0, 4.81), (3.0, 14.565)], "끊음": 5.8, "앞말": 1.62, "뒷말끝": 4.25, "뒤낮춤": (4.40, -3),
-           "효과음": [("impact_sole_1", 3.00, "어택", -11, {})]},
 }
 
 
@@ -144,4 +139,18 @@ for name, c in CUTS.items():
     except Exception: fin = {"출력": r.stdout[-400:], "오류": r.stderr[-400:]}
     rec[name] = {"음악편집표_우리초_원곡초": c["표"], "끊음": c["끊음"], "말": {"앞말": [c["앞말"], round(c["앞말"] + len(A) / SR, 2)], "뒷말": [round(b0 / SR, 2), c["뒷말끝"]]}, "효과음": placed, "마감": fin}
     print(name, json.dumps(rec[name], ensure_ascii=False)[:900])
+# 6초 판: 15초 줄기의 9.0~15.0초를 그대로 자른다(유호님 「너무 급하고 전달도 잘 안돼」 → 압축하지 않고 같은 빠르기). 말 1.05~2.22 · 2.59~3.70초, 한 방 3.865초, 뚝 5.6초.
+t0 = int(9.0 * SR); fade = int(0.15 * SR); parts = {}   # 맹검(Gemini 3.8 Flash): 12ms로는 시작이 잘린 듯 들렸다 → 0.15초
+for stem in ("음악", "말", "효과음"):
+    x = load(OUT_A / f"15초_{stem}.wav")[t0: t0 + int(6.0 * SR)]
+    x[:fade] *= np.linspace(0, 1, fade)[:, None]; parts[stem] = x; wav(x, OUT_A / f"6초_{stem}.wav")
+wav(parts["음악"] + parts["말"] + parts["효과음"], OUT_A / "6초_섞음.wav")
+raw = OUT_V / "p5n_소리마감_6초.mov"
+subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(OUT_V / "p5n_콘티가편집_6초.mp4"), "-i", str(OUT_A / "6초_섞음.wav"), "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "pcm_s24le", "-shortest", str(raw)])
+r = subprocess.run(["node", str(REPO / "tools/음량마감.mjs"), str(raw), str(OUT_V / "p5n_소리마감_6초_final.mp4"), "--덮어쓰기", "--json"], capture_output=True, text=True, encoding="utf-8", errors="replace")
+raw.unlink()
+try: fin = json.loads(r.stdout.strip().splitlines()[-1])
+except Exception: fin = {"출력": r.stdout[-400:], "오류": r.stderr[-400:]}
+rec["6초"] = {"짜임": "15초 줄기 9.0~15.0초를 그대로", "말": {"앞말": [1.05, 2.22], "뒷말": [2.59, 3.70]}, "한방": 3.865, "끊음": 5.6, "마감": fin}
+print("6초", fin.get("after"))
 (OUT_A / "마감.json").write_text(json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")

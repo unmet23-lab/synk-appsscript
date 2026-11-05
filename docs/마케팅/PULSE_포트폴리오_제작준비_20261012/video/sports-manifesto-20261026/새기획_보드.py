@@ -46,7 +46,7 @@ def board(with_src=True):
     img = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(img)
     d.text((40, 34), "5번 「가쁨 GAPPEUM」 15초 — 이미지 콘티" + (" (원본 첫 프레임 ↔ 우리 시작 그림)" if with_src else " 한눈"), font=F("ExtraBold", 40), fill=INK)
-    d.text((40, 96), "뼈대 원본 A 본편 13컷 가운데 11컷 · 세로 9:16 · 밤 트랙과 세로 빛 기둥 · 끝 로고는 후반에서 얹음 · N08s(숨 연기) 확정 · 로고 · 말은 영어(11-05 밤) · 뒤꿈치 글자는 합성", font=F("Medium", 22), fill=DIM)
+    d.text((40, 96), "뼈대 원본 A 본편 13컷 가운데 11컷 · 세로 9:16 · 밤 트랙과 세로 빛 기둥 · 끝 로고는 후반에서 얹음 · N08s(숨 연기) 확정 · 로고 · 말은 영어(11-05 밤) · 로고는 직접 그림", font=F("Medium", 22), fill=DIM)
     for i, (n, t, src, what, cam, snd) in enumerate(CUTS):
         r, c = divmod(i, per_row)
         x0, y0 = 40 + c * cell_w, 150 + r * cell_h
