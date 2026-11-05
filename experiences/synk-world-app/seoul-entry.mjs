@@ -7,7 +7,8 @@ import {openLangPicker} from '../brand-opening/lang-picker.mjs';
 
 // 스위치: 참이면 새 학생에게 저절로 연다. 거짓이면 ?seoul=1과 이 기기에서 시작한 손님만 열린다 — 로그인한 채 시작한 학생은 우리 동네의 「내 길」 문으로 돌아온다(설계 11절 공개 순서).
 // 설정값(features)은 계정 묶음 안 operating-mode가 걸러 묶음을 다시 만들어야 해서, 이 파일의 상수로 둔다. 켜는 것도 공개 한 번이다.
-export const SEOUL_AUTO=false;
+// 11-06 켬(유호님 「synk.im 서울행 스위치 켜기」 — 끈 채 공개한 라이브 ?seoul=1을 보신 뒤). 튜터를 고른 학생 · PC 앱 창은 그대로다(seoulDecision).
+export const SEOUL_AUTO=true;
 const autoOn=()=>SEOUL_AUTO||(['127.0.0.1','localhost'].includes(location.hostname)&&new URLSearchParams(location.search).get('seoulAuto')==='1');
 export const GUEST_ARRIVAL_KEY='synk.world.arrival.v1:guest';
 const FRAME_WAIT_MS=15000;

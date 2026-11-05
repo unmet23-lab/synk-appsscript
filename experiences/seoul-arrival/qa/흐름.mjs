@@ -1,6 +1,6 @@
 // 서울행 실제 앱 흐름 시험: 새 손님이 타이틀부터 1화 끝 쪽지 · 우리 동네까지 지나간다(운영 계정 · talk를 건드리지 않는다).
 //   node experiences/seoul-arrival/qa/흐름.mjs [--폭 390x844] [--언어 ko|en|mn] [--꿈 idol|actor] [--찍기] [--끝 road] [--완주]
-// --꺼짐: 스위치가 꺼졌을 때 새 손님 길이 지금과 같은지만 본다(틀을 받지 않는다).
+// --꺼짐: 스위치를 끈 판(seoul-entry.mjs의 SEOUL_AUTO만 false로 바꿔 내줌)에서 새 손님 길이 서울행 전과 같은지만 본다(틀을 받지 않는다). 켠 뒤에도 끄면 돌아가는 길을 지킨다.
 // --후보 <폴더>: synk.im/world의 후보 파일만 그 폴더에서 내주고 나머지는 지금 공개본을 받는다(공개본은 안 바꾼다). 로그인 없이 갈 수 있는 데까지 — 1화는 로컬 시험 몫.
 // --언어판: 언어를 고른 적 없는 한국어 밖 기기 — 타이틀을 누르면 지금의 언어 판이 먼저 뜨고, 고르면 이야기가 이어진다.
 // --완주: 프롤로그를 건너뛰지 않는다. 「가」는 실제 획으로 쓰고, 입국심사는 일부러 한 번 틀리고, 첫 아침의 누를 자리는 개찰구만 누른다.
@@ -62,12 +62,15 @@ await page.addInitScript(({linesVersion})=>{if(window!==window.top)return;
 },{linesVersion:lesson.linesVersion});
 // /drama/: 실제 시범판 파일(공개 빌드처럼 표시를 단다), 재생 사본은 공용 작업본에서
 const frameAsked=[];page.on('request',q=>{if(/\/seoul-arrival\//.test(q.url()))frameAsked.push(q.url());});
+const switchOff=text=>{if(!/export const SEOUL_AUTO=(true|false);/.test(text))throw Error('seoul-entry.mjs에서 스위치 줄을 못 찾았다');return text.replace(/export const SEOUL_AUTO=true;/,'export const SEOUL_AUTO=false;');};
+if(OFF&&!CAND)await page.route(/\/seoul-entry\.mjs(\?|$)/,async route=>{const r=await route.fetch();return route.fulfill({response:r,body:switchOff(await r.text())});});
 if(CAND){let served=0;
  await page.route('https://synk.im/world/**',async route=>{
   const u=new URL(route.request().url());let rel=decodeURIComponent(u.pathname.replace(/^\/world\//,''));if(!rel||rel.endsWith('/'))rel+='index.html';
   const file=path.join(path.resolve(CAND),'world',rel);
-  if(!fs.existsSync(file)||!fs.statSync(file).isFile())return route.continue();
-  served++;return route.fulfill({status:200,headers:{'content-type':TYPES[path.extname(file)]||'application/octet-stream','cache-control':'no-store','accept-ranges':'bytes'},body:fs.readFileSync(file)});
+  if(!fs.existsSync(file)||!fs.statSync(file).isFile()){if(OFF&&rel==='seoul-entry.mjs'){const r=await route.fetch();return route.fulfill({response:r,body:switchOff(await r.text())});}return route.continue();}
+  let body=fs.readFileSync(file);if(OFF&&rel==='seoul-entry.mjs')body=switchOff(body.toString('utf8'));
+  served++;return route.fulfill({status:200,headers:{'content-type':TYPES[path.extname(file)]||'application/octet-stream','cache-control':'no-store','accept-ranges':'bytes'},body});
  });
  process.on('exit',()=>console.log('후보에서 내준 파일',served));
 }else await page.route(/\/drama\//,async route=>{
