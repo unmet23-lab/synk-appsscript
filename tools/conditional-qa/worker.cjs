@@ -5,6 +5,7 @@ const { read, write, git, loadConfig, clone, prepare, postcheck, slotConfigs, CH
 const github = require('./github.cjs');
 const { childRun } = require('./run.cjs');
 const { runnerFor } = require('./legacy-profile.cjs');
+const { LIST_DIGEST, testedChanges, traceEnvironment, touchedOutside } = require('./tested-tree.cjs');
 const defaultState = () => path.join(os.homedir(), 'security-audit-skill/SYNK-conditional-qa');
 // A tick opens new verifications only within this budget: one verification may take 50 minutes,
 // and both the scheduled task and its hidden launcher stop a tick after two hours.
@@ -63,7 +64,8 @@ const due = (row, now = Date.now()) => ['queued', 'running', 'publish-pending'].
 // the oldest ready entry, so a stream of new pushes cannot starve the backlog.
 // Selection never deletes or passes an older commit.
 function nextItem(queue, head, attempted = new Set(), now = Date.now(), requestedCommit = null) {
-  const ready = queue.items.filter(row => due(row, now) && !attempted.has(row.commit));
+  // A commit waiting on its parent's result needs no run of its own, so the turn goes to the commit that does. A requested commit is always measured itself.
+  const ready = queue.items.filter(row => due(row, now) && !attempted.has(row.commit) && (requestedCommit !== null || !row.awaitsParent));
   if (requestedCommit !== null) {
     const matches = queue.items.filter(row => row.commit === requestedCommit);
     if (matches.length !== 1) throw Error('Choose one commit already registered in the local queue');
@@ -148,14 +150,16 @@ async function verify(config, commit, output, serialRetry = false) {
   ensureCommit(config.root, commit);
   const context = prepare(config, commit), manifest = readManifest(config.root), cases = manifest.cases.filter(row => row.route === 'local');
   fs.mkdirSync(output, { recursive: true });
+  const trace = path.join(output, 'tested-tree-trace');
   const execution = await childRun([runnerFor(config.root), '--route', 'local', '--output', output, '--context', path.join(config.state, 'context.json')],
-    { cwd: config.root, env: { ...process.env, SYNK_QA_SERIAL_RETRY: serialRetry ? '1' : '0' }, log: path.join(output, 'runner.log'), timeoutMs: 50 * 60_000 });
+    { cwd: config.root, env: { ...process.env, SYNK_QA_SERIAL_RETRY: serialRetry ? '1' : '0', ...traceEnvironment(config.root, trace) }, log: path.join(output, 'runner.log'), timeoutMs: 50 * 60_000 });
   const receipt = read(path.join(output, 'result.json'));
   receipt.inputsUnchanged = postcheck(context);
-  receipt.ok = receipt.ok && execution.exitCode === 0 && !execution.timedOut && receipt.inputDigest === context.inputDigest && !git(config.root, ['status', '--porcelain', '--untracked-files=no'], { timeout: CHECKOUT_MS });
+  receipt.testedTree = LIST_DIGEST; receipt.touchedOutside = touchedOutside(trace);
+  receipt.ok = receipt.ok && !receipt.touchedOutside.length && execution.exitCode === 0 && !execution.timedOut && receipt.inputDigest === context.inputDigest && !git(config.root, ['status', '--porcelain', '--untracked-files=no'], { timeout: CHECKOUT_MS });
   write(path.join(output, 'result.json'), receipt);
   if (!coverage(receipt, { commit, digest: manifest.digest, cases })) {
-    const error = Error(`Local tests incomplete: ${receipt.passed}/${cases.length}`);
+    const error = Error(receipt.touchedOutside.length ? `Tests touched docs left out of the checkout: ${receipt.touchedOutside.slice(0, 5).join(', ')}` : `Local tests incomplete: ${receipt.passed}/${cases.length}`);
     const ownInput = receipt.commit === commit && receipt.manifestDigest === manifest.digest && receipt.inputDigest === context.inputDigest;
     error.code = ownInput && browserProfileDiskFull(receipt, output) ? 'ENOSPC' : 'TEST_FAILURE';
     throw error;
@@ -192,6 +196,34 @@ function checkSavedReceipt(root, item, runGit = git) {
   const savedManifest = JSON.parse(runGit(root, ['show', `${item.commit}:tools/conditional-qa/cases.json`]));
   const expected = savedManifest.cases.filter(row => row.route === 'local'), digest = sha256(JSON.stringify(savedManifest));
   if (item.digest !== digest || item.count !== expected.length || !receipt.inputsUnchanged || !coverage(receipt, { commit: item.commit, digest, cases: expected })) throw Error('Saved local proof is incomplete');
+}
+// A commit that changed nothing under test runs on exactly the bytes of its first parent, so the parent's complete pass is its pass too, and its receipt says which run proved it.
+// Only a pass carries: a failed parent proves nothing about a later attempt, so such a commit is verified itself, and a deliberate retry always runs.
+// One still waiting on its parent needs no turn of its own. A receipt that cannot be read costs a real run, never a pass.
+// Each carried commit wakes its waiting hosted run, so a long backlog goes a tick's worth at a time and the account's job limit stays free for Pages deploys (11-04).
+const CARRY_PER_TICK = 60;
+function carryUnchanged(queue, root, head, stateDir, { runGit = git, now = Date.now(), limit = CARRY_PER_TICK } = {}) {
+  for (const row of queue.items) delete row.awaitsParent;
+  const open = row => row.status === 'queued' || (row.status === 'retry' && !row.retryRequest), start = queue.items.findIndex(open);
+  if (start < 0) return 0;
+  let changes, carried = 0;
+  try { changes = testedChanges(root, start ? queue.items[start - 1].commit : `${queue.items[0].commit}^`, head, runGit); }
+  catch (error) { console.error(`Nothing carried this time: ${error.message}`); return 0; }
+  // The first item of all has no parent in the queue, so it is always verified itself.
+  for (let n = Math.max(start, 1); n < queue.items.length; n++) {
+    const item = queue.items[n], parent = queue.items[n - 1], change = changes.get(item.commit);
+    if (!open(item) || change?.unchanged !== true || change.parent !== parent.commit || parent.status === 'failed') continue;
+    if (carried >= limit || (parent.status !== 'passed' && !(parent.status === 'publish-pending' && parent.carriedFrom))) { item.awaitsParent = true; continue; }
+    try {
+      checkSavedReceipt(root, parent, runGit);
+      const { phases, sourceBefore, ...proof } = read(path.join(parent.output, 'result.json')), origin = parent.carriedFrom || parent.commit;
+      const output = path.join(stateDir, 'runs', `${item.commit}-${now}`), at = new Date(now).toISOString();
+      write(path.join(output, 'result.json'), { ...proof, commit: item.commit, carriedFrom: { origin, parent: parent.commit, parentOutput: parent.output, at } });
+      Object.assign(item, { output, count: parent.count, digest: parent.digest, carriedFrom: origin, status: 'publish-pending', startedAt: at });
+      delete item.error; delete item.carryError; delete item.retryAt; carried++;
+    } catch (error) { item.carryError = error.message.slice(0, 300); }
+  }
+  return carried;
 }
 // A passed run keeps its receipt, TAP and events. Its screens, database and temp files are 70 MB a run: at 300 runs a day that outgrows this disk
 // before a daily sweep comes round, and nothing reads them again. A failed or unfinished run keeps everything; the space guard sweeps what a crash left behind.
@@ -250,6 +282,8 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
   const config = loadConfig(stateDir), release = acquire(stateDir, { reclaimDead: requestedCommit === null }), queueFile = path.join(stateDir, 'queue.json'), started = Date.now();
   try {
     const root = cloneRoot(config), queue = read(queueFile); let head;
+    // What a stopped tick left to publish wakes hosted runs too, so it counts against this tick's share.
+    let carried = queue.items.filter(row => row.status === 'publish-pending' && row.carriedFrom).length;
     if (queue.version !== 1 || !Array.isArray(queue.items)) throw Error('Invalid local queue');
     // Upgrade an existing queue once. Its next turn then survives every tick/restart.
     if (queue.nextTurn === undefined) queue.nextTurn = 'recent';
@@ -260,7 +294,9 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
       runGit(root, ['fetch', 'origin', 'master']); head = runGit(root, ['rev-parse', 'origin/master']);
       github.validCommit(queue.seen); runGit(root, ['merge-base', '--is-ancestor', queue.seen, head]);
       const commits = runGit(root, ['rev-list', '--reverse', '--first-parent', `${queue.seen}..${head}`]).split(/\r?\n/).filter(Boolean);
-      extendQueue(queue, head, commits); write(queueFile, queue);
+      extendQueue(queue, head, commits);
+      if (requestedCommit === null) carried += carryUnchanged(queue, root, head, stateDir, { runGit, limit: CARRY_PER_TICK - carried });
+      write(queueFile, queue);
     };
     // Between verifications too: one tick can last two hours while a finished commit's run stays unresolved.
     const settle = () => { republishFailures(queue, hub.publish); resumeFinished(queue, hub.resumeWaitingWorkflow); write(queueFile, queue); };
@@ -297,7 +333,7 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
         }
         // Re-read the receipt after a process restart, rather than trusting queue.json's success flag.
         checkSavedReceipt(root, item, runGit);
-        hub.publish(item.commit, 'success', github.description(item.count, item.digest));
+        hub.publish(item.commit, 'success', github.description(item.count, item.digest), undefined, item.carriedFrom || item.commit);
         item.status = 'passed'; item.endedAt = new Date().toISOString(); item.resumePending = true; delete item.error; delete item.publicationError; write(queueFile, queue);
       } catch (error) {
         item.error = error.message.slice(0, 1000);
@@ -346,7 +382,7 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
       try { if (newest) { hub.publish(newest.commit, 'pending', HOLDING); queue.heldNoticeAt = Date.now(); write(queueFile, queue); } }
       catch (error) { console.error(`The hold notice was not published: ${error.message}`); }
     }
-    const summary = { checkedAt: new Date().toISOString(), head, slots: checkouts.length, roomHeld: held, ...(holdingSince !== null && { holdingAtCpu: busy }), ...(diskWait && { diskWait }), queued: queue.items.filter(row => row.status === 'queued').length,
+    const summary = { checkedAt: new Date().toISOString(), head, slots: checkouts.length, roomHeld: held, ...(holdingSince !== null && { holdingAtCpu: busy }), ...(diskWait && { diskWait }), queued: queue.items.filter(row => row.status === 'queued').length, awaitingParent: queue.items.filter(row => row.awaitsParent).length, carried,
       incomplete: queue.items.filter(row => row.status !== 'passed').length,
       passed: queue.items.filter(row => row.status === 'passed').length, failed: queue.items.filter(row => row.status === 'failed').length,
       items: queue.items.slice(-5).map(({ commit, status, error }) => ({ commit, status, error })) };
@@ -374,4 +410,4 @@ if (require.main === module) {
     if (requestedCommit !== null && summary.requested.status !== 'passed') process.exitCode = summary.requested.status === 'failed' ? 1 : 2;
   }).catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, failureDisposition, failureText, due, resumeFinished, markCancelledRuns, republishFailures, diskWaitFor, browserProfileDiskFull, runPool, cpuMeter, roomForFirst, roomForAnother, calmGate, trimPassedRun };
+module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, failureDisposition, failureText, due, resumeFinished, markCancelledRuns, republishFailures, diskWaitFor, browserProfileDiskFull, runPool, cpuMeter, roomForFirst, roomForAnother, calmGate, trimPassedRun, carryUnchanged };

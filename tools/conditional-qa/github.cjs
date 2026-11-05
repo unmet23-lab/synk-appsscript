@@ -37,11 +37,12 @@ function failureDescription(passed, expected, ids) {
 }
 // complete is false when the line ran out of room; a partial list can never be explained by the diagnosed ledger.
 function failedCases(text) { const match = FAILURE_LINE.exec(text || ''); return match ? { ids: match[3].split(' '), complete: !match[4] } : null; }
-function publish(commit, state, text, api = request) {
-  validCommit(commit);
+// A carried pass links the commit whose run proved it (README #tested-tree). The line itself stays the exact PASS that every older commit's frozen wait-local.cjs compares.
+function publish(commit, state, text, api = request, proof = commit) {
+  validCommit(commit); validCommit(proof);
   if (!['pending', 'failure', 'error', 'success'].includes(state) || text.length > 140) throw Error('Invalid public check summary');
   return api(`repos/${REPO}/statuses/${commit}`, { state, context: CONTEXT, description: text,
-    target_url: `https://github.com/${REPO}/commit/${commit}/checks` });
+    target_url: `https://github.com/${REPO}/commit/${proof}/checks` });
 }
 function cancelRun(runId, api = request) { return api(`repos/${REPO}/actions/runs/${runId}/cancel`, {}); }
 const listRuns = commit => JSON.parse(cp.execFileSync('gh', ['run', 'list', '--repo', REPO, '--workflow', 'conditional-qa.yml', '--commit', validCommit(commit), '--limit', '10', '--json', 'databaseId,status,conclusion,attempt,createdAt'], { encoding: 'utf8', windowsHide: true, timeout: 60_000 }));

@@ -2,6 +2,8 @@
 const fs = require('node:fs'), path = require('node:path'), cp = require('node:child_process');
 const { sha256, relativePath, within } = require('./contract.cjs');
 const { REPO, validCommit } = require('./github.cjs');
+const { SPARSE_PATTERNS } = require('./tested-tree.cjs');
+const testedTreePatterns = SPARSE_PATTERNS.join('\n') + '\n';
 const read = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 function write(file, value) { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file + '.writing', JSON.stringify(value, null, 2) + '\n'); fs.renameSync(file + '.writing', file); }
 function git(root, args, options = {}) { const result = cp.execFileSync('git', ['-c', 'core.quotepath=false', ...args], { cwd: root, windowsHide: true, encoding: 'utf8', timeout: 120_000, maxBuffer: 64 << 20, ...options }); return Buffer.isBuffer(result) ? result : result.trim(); }
@@ -57,7 +59,7 @@ function clone(config, { timeout } = {}) {
     git(root, ['config', 'core.hooksPath', hooks]); git(root, ['config', 'core.autocrlf', 'true']);
     git(root, ['config', 'core.longpaths', 'true']);
     git(root, ['remote', 'set-url', 'origin', `https://github.com/${REPO}.git`]);
-    git(root, ['sparse-checkout', 'set', '--no-cone', '--stdin'], { input: '/*\n!/docs/캐릭터/\n!/docs/홍보물/\n!/docs/라디오/\n' });
+    git(root, ['sparse-checkout', 'set', '--no-cone', '--stdin'], { input: testedTreePatterns });
   }
   if (git(root, ['remote', 'get-url', 'origin']).toLowerCase() !== `https://github.com/${REPO}.git`.toLowerCase()) throw Error('Unexpected validation remote');
   if (!fs.existsSync(path.join(root, '.git/index'))) {
@@ -120,12 +122,21 @@ function repairCheckout(root, state) {
   git(root, ['reset', '--hard', 'HEAD'], { timeout: CHECKOUT_MS });
   return true;
 }
+// A checkout made before the list changed takes it here, on a clean tree: repairCheckout has just run, and git refuses to leave out a modified file.
+function ensureTestedTree(root) {
+  let current = '';
+  try { current = fs.readFileSync(path.join(root, '.git/info/sparse-checkout'), 'utf8').replace(/\r\n/g, '\n'); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+  if (current === testedTreePatterns) return false;
+  git(root, ['sparse-checkout', 'set', '--no-cone', '--stdin'], { input: testedTreePatterns, timeout: CHECKOUT_MS });
+  return true;
+}
 function prepare(config, commit, { overlay, refreshTalk = true } = {}) {
   validCommit(commit); const { state } = config;
   if (['released.json', 'releasing.lock', ...RELEASED.map(name => `${name}.releasing`)].some(name => fs.existsSync(path.join(state, name))))
     throw Error('This candidate state was released or is being released; prepare a new one');
   const root = clone(config);
   repairCheckout(root, state);
+  ensureTestedTree(root);
   git(root, ['checkout', '--detach', commit], { timeout: CHECKOUT_MS });
   const manifest = read(path.join(state, 'inputs.json'));
   const tracked = new Set(git(root, ['ls-files', '-z']).split('\0'));
@@ -348,7 +359,7 @@ function release(state) {
     return receipt;
   } finally { fs.rmSync(lock, { force: true }); }
 }
-module.exports = { read, write, git, hashFile, provision, loadConfig, clone, prepare, postcheck, materialize, verifyBlob, dependencyInstall, assertOwned, candidate, withCandidate, release, releasePreview, provisionSlot, slotConfigs, slotState, repairCheckout, CHECKOUT_MS };
+module.exports = { read, write, git, hashFile, provision, loadConfig, clone, prepare, postcheck, materialize, verifyBlob, dependencyInstall, assertOwned, candidate, withCandidate, release, releasePreview, provisionSlot, slotConfigs, slotState, repairCheckout, ensureTestedTree, CHECKOUT_MS };
 if (require.main === module) {
   const [command, state, flag] = process.argv.slice(2);
   if (!['release', 'slot'].includes(command) || !state) { console.error('usage: node tools/conditional-qa/inputs.cjs release <candidate state> [--preview]\n       node tools/conditional-qa/inputs.cjs slot <worker state> <2-9>'); process.exitCode = 2; }
