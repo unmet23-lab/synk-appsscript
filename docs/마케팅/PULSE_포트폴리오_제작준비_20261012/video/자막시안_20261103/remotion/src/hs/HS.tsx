@@ -27,7 +27,7 @@ const noDot = (s: string) => s.replace(/\.$/, '');
 // 말자막 — 시각은 최종편집.py EVENTS(놓은 자리), 글은 받아쓰기(large-v3)로 확인한 실제 말. ks: ★ 낱말이 레몬으로 바뀌는 초(없으면 줄 처음)
 // left: 16:9에서 왼쪽 아래로 — 끼어듦 카드(27)는 가운데 아래에서 손이 떡볶이를 들어 올려 가운데 자막이 덮인다. 화면 위로 올리니 시선이 튀었다(11-04 Fable)
 // 29.80은 콘티가 「잠깐만요!」였지만 판 목소리가 「안 돼!」다(받아쓰기 두 모델, 11-03)
-const CAP: { a: number; b: number; s: string; ks?: number[]; left?: boolean }[] = [
+const CAP: { a: number; b: number; s: string; ks?: number[]; left?: boolean; step?: boolean }[] = [   // step: ★ 낱말이 그 초에 나타난다(말 사이가 긴 줄만)
   { a: 0.0, b: 1.3, s: '가진 거 다 ★내놔!', ks: [0.46] },
   { a: 1.38, b: 2.4, s: '★여기요!' },
   { a: 2.92, b: 4.85, s: '다 앉아, ★당장!', ks: [3.92] },
@@ -45,7 +45,7 @@ const CAP: { a: number; b: number; s: string; ks?: number[]; left?: boolean }[] 
   { a: 54.9, b: 55.8, s: '★왜?', left: true },
   { a: 57.46, b: 59.58, s: '안 돼, 내 ★코케트 ★떡볶이!', ks: [58.98, 58.98] },
   { a: SHOT_F[29] / FPS, b: 66.75, s: '그거 내 ★저녁인데!', ks: [64.92] },   // 말과 자막 모두 #30 첫 프레임부터(최종편집.py EVENTS)
-  { a: 67.92, b: 70.79, s: '★그냥 ★죽여!', ks: [67.92, 69.32] },
+  { a: 67.92, b: 70.79, s: '★그냥 ★죽여!', ks: [67.92, 69.48], step: true },   // 「그냥」 뒤 1.5초를 흐느끼다 69.5초에 「죽여!」 — 한꺼번에 띄우니 절규보다 먼저 보여 김이 샜다(11-05 아르곤)
 ];
 // 꼬리 0.2초는 다음 컷에서 끊는다 — 컷 끝에서 끝나는 줄이 홈쇼핑 카드 첫 프레임까지 남았다(11-04 경계 검수)
 const tailEnd = (b: number) => { const nx = SHOT_F.find((f) => f / FPS >= b - 1 / FPS); return Math.min(b + 0.2, nx !== undefined ? nx / FPS : b + 0.2); };
@@ -66,7 +66,8 @@ const Caption: React.FC<{ t: number; y: number; x: number; w: number; size: numb
   if (c.left && leftW !== undefined) w = leftW;
   const end = tailEnd(c.b);
   const o = life(t, headStart(c.a), end, 0.12, end < c.b + 0.2 - 1e-6 ? 0.001 : 0.12);   // 컷에서 끊기는 줄은 흐려지지 않고 컷과 함께 사라진다
-  const ws = c.s.split(' ');
+  let ws = c.s.split(' ');
+  if (c.step) { let kk = -1; ws = ws.filter((s) => !s.startsWith('★') || t >= (c.ks?.[++kk] ?? c.a)); }
   const cut = wrap ? splitAt(ws.map((s) => s.replace('★', ''))) : ws.length;
   let k = -1;
   return (

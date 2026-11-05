@@ -8,7 +8,7 @@ import { EN, KO } from '../lib/fonts';
 import { life, pop, ramp } from '../lib/motion';
 import { LINES } from './timing';
 
-export const P11B_FRAMES = 632;   // 물 컷 574장 + 우주 48장 + 검정 10장(11-05 유호님 「집게 컷으로」)
+export const P11B_FRAMES = 621;   // 물 컷 563장 + 우주 48장 + 검정 10장(11-05 유호님 「집게 컷으로」)
 const FPS = 24;
 const INK = '#0E1320', PAPER = '#F6F3EA', LEMON = '#FFD43B', NAVY = '#17224D', ALIEN = '#B8FF3C';
 const abs = (x: number, y: number, w?: number, h?: number): React.CSSProperties => ({ position: 'absolute', left: x, top: y, width: w, height: h });
@@ -50,8 +50,8 @@ const CUT_GLAM = 371 / 24;  // → 샴푸 광고 · 떠오름
 const CUT_DROP = 453 / 24;  // → 물 · 떨어짐
 const BEAM_ON = w(7, 0) - 0.04;   // 띠가 열리고 납치 빔이 켜진다
 const BEAM_OFF = CUT_DROP + 30 / 24;   // 빔이 꺼진다 — 그래서 p11-b11 31장부터 떨어진다
-const SPACE_AT = 574 / FPS;   // → 궤도 집게 컷
-const BLACK_AT = 622 / FPS;   // → 검정으로 끝. 로고를 다시 넣지 않는다
+const SPACE_AT = 563 / FPS;   // → 궤도 집게 컷(574장까지 두니 끝이 두 번이었다 — 맹검 둘)
+const BLACK_AT = 611 / FPS;   // → 검정으로 끝. 로고를 다시 넣지 않는다
 const SPACE_MISS = 0.46;   // 집게가 놓치는 자리(우주 컷 머리에서 초, p11-s1 32장 = 21장부터 11장 — B급소리.py와 같은 값)
 
 // 큰 낱말 결 — 고른 테두리를 쓰지 않는다(유호님 11-03 「흰 굵은 글자 + 검은 테」는 촌스럽다, 아르곤 11-04 「무료 앱 프리셋」). 낱말마다 뜻대로 그린다
@@ -416,7 +416,7 @@ const Splash: React.FC<{ t: number }> = ({ t }) => {   // 첨벙댕 — 말 그�
   const a = w(8, 3);
   if (t < a || t >= SPACE_AT) return null;
   const at = [a, a + 0.27, a + 0.54];
-  const tag = a + 1.36, joke = a + 1.91;   // 22.30 — Kevin 끝 줄 「우주」
+  const tag = a + 1.36, joke = a + 1.66;   // 22.05 — Kevin 끝 줄 「우주」
   const q = ramp(t, tag, 0.3), r = ramp(t, joke, 0.3);
   const [sx, sy] = shake(t, a, 24, 0.5);
   const W = 268, H = 330, FS = 300;
@@ -488,7 +488,7 @@ const Beam: React.FC<{ t: number }> = ({ t }) => {   // 천장에서 내려오�
 
 const GOG = [[84, 655, 867], [90, 674, 875], [96, 671, 860], [102, 654, 851], [108, 637, 865], [114, 626, 869], [120, 621, 875]];   // p11-b11 장, 주황 테 중심
 const LensGlow: React.FC<{ t: number }> = ({ t }) => {   // 끝 한 방 — 물에 뜬 무표정한 개의 고글이 초록으로 켜진다
-  const a = 22.30;   // Kevin 「우주」에서 켜진다
+  const a = 22.07;   // Kevin 「우주」에서 켜진다
   if (t < a || t >= BLACK_AT) return null;
   const on = ramp(t, a, 0.12, (x) => x) * (0.84 + 0.16 * Math.sin(t * 22));
   const glow = (x: number, y: number, w: number, h: number, i: number) => (

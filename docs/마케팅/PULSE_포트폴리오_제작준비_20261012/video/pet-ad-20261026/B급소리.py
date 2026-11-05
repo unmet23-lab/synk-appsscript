@@ -23,9 +23,9 @@ BGM = V + "/pulse-portfolio12-20261024/최종/음악/p11_Splash_A.mp3"
 H = V + "/homeshopping-horror-20261021/remotion_v1-v3_워크트리사본/public/sfx/"
 F = V + "/sound-library/fairlight/Media Files/"
 S = V + "/sound-library/sonniss_gdc2026/풀림/"
-END = 574 / 24   # 물 컷이 끝나는 자리 — 여기서 우주 집게 컷으로 소리째 뚝 끊는다(11-05 유호님 「집게 컷으로」)
-TOTAL = 632 / 24   # 우주 2초 + 검정 0.42초
-KEVIN_LINE = V + "/pulse-portfolio12-20261024/최종/p11/소리/일레븐후보_20261103/Kevin_우주.mp3"   # 「우주에서도, 뜹니다.」 같은 프리셋, founder 계정 0.23크레딧
+END = 563 / 24   # 물 컷이 끝나는 자리 — 여기서 우주 집게 컷으로 소리째 뚝 끊는다(11-05 유호님 「집게 컷으로」). 574장까지 두니 물에서 한 번, 우주에서 한 번 끝이 두 번이었다(맹검 둘)
+TOTAL = 621 / 24   # 우주 2초 + 검정 0.42초
+KEVIN_LINE = V + "/pulse-portfolio12-20261024/최종/p11/소리/일레븐후보_20261103/Kevin_우주_smug.mp3"   # 「우주에서도 뜹니다.」 같은 프리셋 [smug, playful](본 내레이션 끝 줄과 같은 꼬리표). [serious] 판은 음높이 156 Hz · 무게중심 515 Hz로 본 내레이션(189 · 688)보다 낮고 어두워 「따로 붙인 다른 목소리」로 들렸다(11-05 아르곤 · 수치)
 SPACE_MISS = 0.46   # 집게가 놓치는 자리(우주 컷 머리에서 초, p11-s1 32장 = 21장부터 11장 — B.tsx와 같은 값)
 rng = np.random.default_rng(11)
 
@@ -91,6 +91,17 @@ def theremin(points, dur, rate=5.4, depth=0.028, release=0.25):
     ph = 2 * np.pi * np.cumsum(f) / RATE
     x = (np.sin(ph) + 0.25 * np.sin(2 * ph) + 0.08 * np.sin(3 * ph)) * env(len(t), 0.12, release)
     return room(x / np.abs(x).max(), 0.32, 0.7)
+
+
+def ring(x, seconds=1.25, wet_db=-9.0):
+    """짧은 소리에 꼬리를 단다 — 지수로 줄어드는 잡음과 합성곱(그 시간에 −60 dB)"""
+    n = int(seconds * RATE)
+    ir = np.random.default_rng(12).standard_normal(n) * np.exp(-np.arange(n) / RATE / (seconds / 6.9))
+    size = n + len(x)
+    wet = np.fft.irfft(np.fft.rfft(x, size) * np.fft.rfft(ir, size), size).astype(np.float32)
+    wet *= (np.max(np.abs(x)) / (np.max(np.abs(wet)) or 1)) * (10 ** (wet_db / 20))
+    wet[:len(x)] += x
+    return wet
 
 
 def sonar(f=1320.0, dur=0.55):
@@ -164,7 +175,7 @@ head *= (10 ** (np.interp(tt, [0, CUT_GLAM - 0.02, CUT_GLAM + 0.03, CUT_DROP - 0
 m.put(0, head, 0, fade_out=0.03)
 tail = song[int((SPLASH + 16.0) * RATE):].copy()
 tt = np.arange(len(tail)) / RATE + SPLASH
-tail *= (10 ** (np.interp(tt, [SPLASH, 21.25, 21.75, 22.1, 22.32, 40], [-17, -17, -10.5, -10.5, -21, -21]) / 20))[:, None].astype(np.float32)   # 22.18부터 Kevin 끝 줄 — 곡을 내려 말이 들리게
+tail *= (10 ** (np.interp(tt, [SPLASH, 21.25, 21.75, 21.8, 21.95, 40], [-17, -17, -10.5, -10.5, -21, -21]) / 20))[:, None].astype(np.float32)   # 21.95부터 Kevin 끝 줄 — 곡을 내려 말이 들리게
 m.put(SPLASH, tail, 0, fade=0.01, fade_out=0.3)
 
 # ── 바다 — 바닷가 컷에만
@@ -294,10 +305,9 @@ m.put(POPUP - 0.03, stretch(boing, 1.25), -9)
 
 # ── 브랜드 땡, 착륙 성공 음, 끝 농담에 비행접시 한 번, 고글이 켜지는 핑
 m.put(21.75, C.load(H + "ding1.wav"), -9)
-m.put(21.95, part(one("Cinematic Sound Design - Hybrid Game & UI Elements/Game Entry Happy Short*")), -18)
-m.put(22.26, theremin([(0, 1050), (0.35, 1320), (1, 760)], 0.95), -25)
-m.put(22.30, sonar(880.0), -19)   # 「우주」에서 고글이 켜진다
-m.put(22.18, C.load(KEVIN_LINE), -1, fade=0.005)   # 끝 줄 — 진지하게 읽는다. 말 칸 RMS를 본 내레이션(−16.6)에 맞춘다
+m.put(21.80, part(one("Cinematic Sound Design - Hybrid Game & UI Elements/Game Entry Happy Short*")), -24)   # 착륙 성공 — 끝 줄 앞으로 당겨 작게(말과 겹치면 뭉개진다)
+m.put(22.07, sonar(880.0), -19)   # 「우주」에서 고글이 켜진다. 테레민은 뺐다 — 끝 줄과 겹쳐 「UFO 고음이 날카롭다」(11-05 크몽 세션 아르곤)
+m.put(21.85, C.load(KEVIN_LINE), 1.3, fade=0.005)   # 끝 줄 — 파일 머리 0.10초가 비어 21.95에 말이 난다. 말 칸 RMS를 본 내레이션(−16.8)에 맞춘다
 
 # ── 시스템 메시지가 뜰 때마다 작은 틱(B.tsx HUD)
 tick = C.load(H + "tick.wav")
@@ -308,7 +318,11 @@ for at in [0.06, CUT_MOON + 0.04, CUT_RUN + 0.04, w(1, 3) + 0.6, CUT_BOX + 0.1, 
 cut = int(END * RATE)
 m.a[cut - int(0.004 * RATE):cut] *= np.linspace(1, 0, int(0.004 * RATE))[:, None].astype(np.float32)
 m.a[cut:] = 0
-m.put(END + SPACE_MISS, chip([784, 622, 494, 392], step=0.085), -15)
+fail = chip([784, 622, 494, 392], step=0.085)
+m.put(END + SPACE_MISS, ring(fail, 1.4, wet_db=-8), -15)   # 놓친 음에 잔향을 달아 검정까지 맺는다 — 그 뒤 1초가 완전한 무음이라 힘이 빠졌다(11-05 아르곤)
+st = np.arange(int((TOTAL - END) * RATE)) / RATE
+hum = (np.sin(2 * np.pi * 55 * st) + 0.5 * np.sin(2 * np.pi * 110.3 * st)) * (10 ** (np.interp(st, [0, 0.3, TOTAL - END - 0.6, TOTAL - END], [-60, 0, 0, -60]) / 20))
+m.put(END, hum.astype(np.float32) * 0.2, -26, fade=0.004)   # 궤도의 낮은 웅 — 「거의 무음」이 디지털 무음으로 들리지 않게
 
 m.finish(os.path.join(PUB, "sound_b.wav"), boost_db=-1.8)
 
