@@ -383,7 +383,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   u.tag.classList.remove('is-boxed');u.el.hidden=true;u.el.classList.remove('is-open');
  }
  function runUnbox(){
-  // 문지기에서 돌아가면 데려오기 표시도 푼다 — 남으면 자세히에서 봉을 옮긴 뒤 데려오기를 건너뛰고 화면 밖에서 상자를 열었다(Fable 11-06)
+  // 문지기에서 돌아가면 데려오기 표시도 푼다 — 남으면 자세히에서 봉을 옮긴 뒤 데려오기를 건너뛰고 화면 밖에서 상자를 열었다(11-06 검수)
   if(unbox||!unboxQ.length||!isOpen()||openI>=0||busy||closing||shop?.dataset.ready!=='yes'){unboxMoved=false;return;}
   const i=unboxQ[0],tag=swings[i]?.querySelector('.m2s-print-tag.is-boxed'),job=entry(items[i]?.id).arrived?.job_id;
   if(!tag||!job){tag?.classList.remove('is-boxed');unboxQ.shift();runUnbox();return;}
@@ -680,7 +680,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
     dialog=doc.createElement('dialog');dialog.className='m2s-dialog';dialog.setAttribute('aria-label',t('shop'));
     doc.body.append(dialog);
     sound=createShopSound({enabled:soundOn,win});
-    sound.unlock(); // 입구 단추를 누른 뒤라 열 수 있다 — 안 열면 열자마자 시작하는 도착 상자가 소리 없이 지나갔다(Fable 11-06). 효과음을 끈 사람은 unlock이 바로 돌아간다
+    sound.unlock(); // 입구 단추를 누른 뒤라 열 수 있다 — 안 열면 열자마자 시작하는 도착 상자가 소리 없이 지나갔다(11-06 검수). 효과음을 끈 사람은 unlock이 바로 돌아간다
     build();wireDialog();
     dialog.showModal();
     measure();for(const p of P)p.x=null;
