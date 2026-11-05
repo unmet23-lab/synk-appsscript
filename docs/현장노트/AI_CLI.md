@@ -803,6 +803,12 @@
 - 고침: 세션 안 예약에만 기대지 않는다 — 트랙 줄에 「언제 뒤 아무 세션이 손으로」와 읽는 법을 같이 적고, 깨어날 때마다 CronList와 결과 칸을 대조한다. 막힌 호출은 같은 꼴로 다시 부르지 않고, 파일을 직접 써서 우회하지도 않는다.
 - 다시 확인: `CronList`에 그 번호가 있는지, 결과가 저장소에 있는지(`git show origin/master:<기록 파일>`).
 
+### 아티팩트 `publish_files`는 작업 폴더 밖 파일을 받지 않는다 (2026-11-06 Claude)
+- 증상: git 밖 `synk-vendor/`의 그림을 넣어 부르자 「only files this session is allowed to read can be attached」로 통째로 거절했다. 하나만 밖에 있어도 아무것도 안 올라간다.
+- 원인: 도구가 세션에 허락된 폴더의 파일만 붙인다. 저장소 안 파일은 된다.
+- 고침: git 무시 폴더 `.tmp/<작업>/`에 복사해 그 경로를 넘긴다. 다시 올릴 때는 slug · base_version과 바뀐 파일만 주면 나머지는 그대로다.
+- 다시 확인: `git check-ignore .tmp/x`가 경로를 찍는지, 결과의 `own_file_count`가 넘긴 파일 수와 같은지.
+
 ## Claude 서브에이전트
 
 ### 병렬 서브에이전트가 같은 scratchpad에 같은 이름의 보조 파일을 써서 남의 묶음 글을 읽는다 (2026-10-19 Claude)

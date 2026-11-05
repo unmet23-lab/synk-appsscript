@@ -1,0 +1,134 @@
+/* 방향 제안 시안(2026-11-06). 고객 앱 시사실 판(film.css)의 낱말을 그대로 쓴다: 검정 · 미색 · 명조 300, 글자 넷, 둥글림 · 카드 · 그림자 없음. */
+@font-face{font-family:SUIT;src:url('./assets/SUIT.woff2') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'SX Latin';src:url('./assets/SUIT.woff2') format('woff2');font-weight:100 900;font-display:swap;unicode-range:U+0021-007E,U+00D7}
+@font-face{font-family:'DM Mono';src:url('./assets/DMMono.ttf') format('truetype');font-weight:400 500;font-display:swap}
+@font-face{font-family:'Noto Serif KR';src:url('./assets/NotoSerifKR-300.woff2') format('woff2');font-weight:300;font-display:swap}
+:root{--sx-ink:#f4f1ea;--sx-dim:rgba(244,241,234,.78);--sx-faint:rgba(244,241,234,.5);--sx-rule:rgba(244,241,234,.2);--sx-m:clamp(20px,2.8vw,40px);--sx-t1:clamp(36px,3.5vw,54px);--sx-t2:clamp(20px,1.7vw,25px);--sx-out:cubic-bezier(.16,1,.3,1);--sx-serif:'SX Latin','Noto Serif KR',serif;--sx-sans:SUIT,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;--sx-mono:'DM Mono',SUIT,'Apple SD Gothic Neo','Malgun Gothic',ui-monospace,monospace}
+*{box-sizing:border-box}
+html.sx,html.sx body{margin:0;background:#000;color:var(--sx-ink);font-family:var(--sx-sans);font-size:15px;line-height:1.6;letter-spacing:-.012em;-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:anywhere;color-scheme:dark}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;letter-spacing:inherit}
+:focus-visible{outline:2px solid var(--sx-ink);outline-offset:3px}
+h1,p,ol,dl,dd{margin:0;padding:0}ol{list-style:none}[hidden]{display:none!important}
+.sx-serif{font-family:var(--sx-serif);font-weight:300;letter-spacing:-.04em}
+.sx-body{font-size:15px;line-height:1.65;color:var(--sx-dim)}
+.sx-small{font-size:13px;line-height:1.55;color:var(--sx-dim)}
+.sx-small b{color:var(--sx-ink);font-weight:600}
+.sx-no{font-family:var(--sx-mono);font-size:13px;letter-spacing:.02em;color:var(--sx-dim)}
+.sx-link{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;color:var(--sx-ink)}
+@media (hover:hover){.sx-link:hover{text-decoration-thickness:2px}}
+.sx-go{display:inline-flex;align-items:center;justify-content:space-between;gap:14px;font-weight:600;line-height:1.2}
+.sx-go.is-solid{background:var(--sx-ink);color:#0a0a0a;padding:17px 22px;transition:background .25s}
+.sx-arw{width:40px;height:16px;flex:none;transition:transform .3s var(--sx-out)}
+@media (hover:hover){.sx-go:hover .sx-arw{transform:translateX(7px)}.sx-go.is-solid:hover{background:#fff}}
+.sx-go:active{opacity:.75}
+.sx-field{display:block}
+.sx-field textarea{display:block;width:100%;margin-top:14px;background:none;border:0;border-bottom:1px solid var(--sx-rule);color:var(--sx-ink);font:inherit;line-height:1.6;padding:0 0 12px;resize:none}
+.sx-field textarea:focus{outline:none;border-bottom-color:var(--sx-ink)}
+.sx-field textarea::placeholder{color:var(--sx-faint)}
+
+/* 넓은 화면: 그림 둘이 양쪽 끝까지, 가운데 설명 한 장. 고른 쪽만 색이 살아난다. */
+.dp{--frame:min(37vw,calc(100dvh*9/16),calc((100vw - 400px)/2));--a:var(--frame);--b:var(--frame);display:grid;grid-template-columns:var(--a) minmax(0,1fr) var(--b);grid-template-rows:auto minmax(0,1fr);grid-template-areas:"a head b" "a sheet b";height:100dvh;overflow:hidden;transition:grid-template-columns .9s var(--sx-out)}
+.dp-reel{display:contents}
+.dp-head{grid-area:head;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:clamp(16px,2.6vh,28px) var(--sx-m) 0}
+.dp-logo{display:block;width:92px;height:auto}
+.dp-frame{position:relative;display:block;overflow:hidden;height:100dvh;background:#000}
+.dp-frame[data-frame="wait"]{grid-area:a}
+.dp-frame[data-frame="tok"]{grid-area:b}
+.dp-frame img{display:block;width:100%;height:100%;object-fit:cover;filter:grayscale(1) brightness(.5);transition:filter .9s var(--sx-out),transform 1.4s var(--sx-out);transform:scale(1.01)}
+.dp-frame[data-frame="tok"] img{object-position:62% 50%}
+.dp-frame[data-frame="wait"] img{object-position:80% 50%}
+.dp-frame[aria-pressed="true"] img{filter:none;transform:none}
+@media (hover:hover){.dp-frame[aria-pressed="false"]:hover img{filter:grayscale(.4) brightness(.78)}}
+.dp-frame-no{position:absolute;left:14px;bottom:12px;color:#fff;text-shadow:0 0 12px rgba(0,0,0,.8),0 0 2px rgba(0,0,0,.5);text-align:left}
+.dp-frame-no .sx-no{color:inherit;margin-right:4px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.dp-film{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+.dp-film.is-model{object-fit:cover}
+.dp-film-cap{position:absolute;left:14px;right:14px;bottom:12px;color:#fff;text-align:left;text-shadow:0 0 10px rgba(0,0,0,.8)}
+.dp-frame:has(.dp-film) .dp-frame-no{display:none}
+.dp[data-state="neither"] .dp-frame img{filter:grayscale(1) brightness(.34);transform:scale(1.01)}
+.dp[data-state="done"] .dp-frame[aria-pressed="false"] img{filter:grayscale(1) brightness(.34)}
+.dp-sheet{grid-area:sheet;display:flex;flex-direction:column;gap:clamp(12px,2.2vh,24px);min-height:0;overflow-y:auto;padding:clamp(12px,2vh,24px) var(--sx-m) clamp(16px,2.8vh,30px);scrollbar-width:none}
+.dp-sheet::-webkit-scrollbar{display:none}
+.dp-step{display:block;margin-top:2px;color:var(--sx-faint)}.dp-step b{color:var(--sx-ink)}
+.dp-lead{margin-top:clamp(8px,1.4vh,14px)}
+.dp-choose,.dp-neither,.dp-done{display:flex;flex-direction:column;flex:1;min-height:0}
+.dp-tabs{display:flex;gap:18px;border-top:1px solid var(--sx-rule);padding-top:clamp(10px,1.6vh,16px)}
+.dp-tab{color:var(--sx-faint);padding:2px 0;border-bottom:1px solid transparent;transition:color .25s}
+.dp-tab .sx-no{color:inherit}
+.dp-tab.is-on{color:var(--sx-ink);border-bottom-color:var(--sx-ink)}
+@media (hover:hover){.dp-tab:hover{color:var(--sx-ink)}}
+.dp-detail{margin-top:clamp(10px,1.8vh,20px)}
+.dp-detail.is-casting .dp-why{display:none}
+.dp-sheet:has(.is-casting) .dp-lead{display:none}
+.dp-title{font-size:var(--sx-t1);line-height:1.14;outline:none}
+.dp-title:focus-visible{outline:none}
+.dp-sentence{font-size:var(--sx-t2);line-height:1.34;margin-top:clamp(6px,1vh,10px);color:var(--sx-ink)}
+.dp-flow{margin-top:clamp(10px,1.8vh,18px);border-top:1px solid var(--sx-rule)}
+.dp-flow li{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px;padding:clamp(5px,.9vh,9px) 0;border-bottom:1px solid var(--sx-rule)}
+.dp-flow .sx-no{padding-top:2px}
+.dp-why{margin-top:clamp(8px,1.4vh,14px)}
+.dp-model{margin-top:clamp(8px,1.4vh,14px)}
+.dp-label{color:var(--sx-faint);margin-right:10px}
+.dp-model-open{margin-left:12px}
+.dp-model-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 14px}
+.dp-casts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:10px}
+.dp-cast{display:block;text-align:left}
+.dp-cast img{display:block;width:100%;height:auto;aspect-ratio:3/4;object-fit:cover;object-position:50% 22%;filter:grayscale(1);transition:filter .5s var(--sx-out)}
+.dp-cast.is-on img{filter:none}
+.dp-cast.is-on .sx-small{color:var(--sx-ink);font-weight:600}
+@media (hover:hover){.dp-cast:hover img{filter:none}}
+.dp-cast-note{margin-top:8px}
+.dp-terms{margin-top:auto;padding-top:clamp(12px,2vh,20px)}
+.dp-kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--sx-rule);padding-top:clamp(8px,1.4vh,14px)}
+.dp-kv dt{color:var(--sx-faint)}
+.dp-kv dd{font-size:var(--sx-t2);line-height:1.25;margin-top:1px}
+.dp-incl{margin-top:clamp(6px,1vh,10px)}
+.dp-incl .sx-link{margin-left:2px}
+.dp-more{margin-top:10px;border-top:1px solid var(--sx-rule)}
+.dp-more>div{display:grid;grid-template-columns:78px minmax(0,1fr);gap:8px;padding:7px 0;border-bottom:1px solid var(--sx-rule)}
+.dp-more dt{color:var(--sx-faint)}
+.dp-more dd{margin:0}
+.dp-sheet:has(.dp-more:not([hidden])) .dp-lead,.dp-sheet:has(.dp-more:not([hidden])) .dp-why{display:none}
+.dp-note{display:block;margin-top:10px}
+.dp-note input{width:100%;background:none;border:0;border-bottom:1px solid var(--sx-rule);color:var(--sx-ink);font:inherit;padding:6px 0}
+.dp-note input:focus{outline:none;border-bottom-color:var(--sx-ink)}
+.dp-note input::placeholder{color:var(--sx-faint)}
+.dp-go{display:flex;width:100%;margin-top:clamp(10px,1.6vh,16px)}
+.dp-foot{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 16px;margin-top:clamp(8px,1.4vh,14px)}
+.dp-foot span{color:var(--sx-faint)}
+.dp-neither{justify-content:center}
+.dp-say{margin-top:clamp(16px,3vh,28px)}
+.dp-done{justify-content:center}
+.dp-done-kicker{margin-bottom:10px}
+.dp-done-kv{margin-top:clamp(14px,2.4vh,24px)}
+.dp-done-note{margin-top:10px}
+.dp-done-text{margin-top:18px;color:var(--sx-ink);max-width:34em}
+.dp[data-state="done"] .dp-lead{display:none}
+.dp-road{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:clamp(18px,3vh,30px);padding-top:14px;border-top:1px solid var(--sx-rule);color:var(--sx-faint)}
+.dp-road .is-done{color:var(--sx-dim)}
+.dp-road .is-now{color:var(--sx-ink);font-weight:600}
+
+/* 낮은 노트북: 설명을 한 칸 더 줄인다. */
+@media (max-height:760px) and (min-width:861px){
+  .dp-lead{display:none}
+  .dp-step{display:inline;margin:0 0 0 10px}
+  .dp-title{font-size:clamp(34px,3.2vw,46px)}
+  .dp-why{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+}
+
+/* 휴대폰: 안내 → 두 그림 나란히 → 설명 순서. 두 안을 넘기지 않고 한눈에 견주고, 고정 띠는 두지 않는다. */
+@media (max-width:860px){
+  .dp{display:flex;flex-direction:column;height:auto;overflow:visible}
+  .dp-head{order:1;padding:16px 20px 10px}
+  .dp-sheet{display:contents}
+  .dp-top{order:2;padding:0 20px 14px}
+  .dp-reel{order:3;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:0 20px}
+  .dp-frame,.dp-frame[data-frame="tok"],.dp-frame[data-frame="wait"]{grid-area:auto;height:auto;width:100%;aspect-ratio:9/16}
+  .dp-frame img{filter:grayscale(1) brightness(.6)}
+  .dp-frame-no{left:10px;bottom:8px}
+  .dp-film-cap{left:10px;right:10px;bottom:8px}
+  .dp-choose,.dp-neither,.dp-done{order:4;padding:16px 20px 28px}
+  .dp[data-state="done"] .dp-reel,.dp[data-state="neither"] .dp-reel{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
