@@ -17,6 +17,7 @@
  *
  * ■ 열쇠
  *   C:\Users\q1212\SYNK_보안\openai.txt (git 밖). env OPENAI_KEY_FILE 로 경로를 바꾼다.
+ *   2026-11-03 · 11-05 유호님: OpenAI 월 API 크레딧은 받아쓰기 몫이라 실제 API는 부르지 않는다 — SYNK_OPENAI_BASE(가짜 서버)를 줄 때만 돈다. 그림은 구독 경로로 굽는다.
  *
  * 쓰기:
  *   node tools/옷GPT굽기.js --설정                        # 모델·대체 여부만 조회, 생성 없음
@@ -156,7 +157,7 @@ async function 한벌({ 열쇠값, 마스코트, 옷들, 몸참조, 크기 }) {
     fd.append('image[]', new Blob([fs.readFileSync(p)], { type: 'image/jpeg' }), path.basename(p));
   }
 
-  const res = await fetch('https://api.openai.com/v1/images/edits', {
+  const res = await fetch(`${process.env.SYNK_OPENAI_BASE.replace(/\/$/, '')}/images/edits`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${열쇠값}` },
     body: fd,
@@ -226,6 +227,10 @@ async function 한벌({ 열쇠값, 마스코트, 옷들, 몸참조, 크기 }) {
 
   if (!인자['유료-api'] && process.env.SYNK_ALLOW_PAID_API !== '1') {
     throw new Error('OpenAI 이미지 생성은 종량제 API라 기본 차단됐다. 실제 생성에 동의한 실행만 --유료-api를 붙인다.');
+  }
+
+  if (!process.env.SYNK_OPENAI_BASE) {
+    throw new Error('OpenAI API 크레딧은 받아 적기에만 쓴다(유호님 11-03 · 11-05). 이 도구는 실제 API를 부르지 않는다 — 그림은 구독 경로(node tools/codex계정.js exec)로 굽는다.');
   }
 
   const 열쇠값 = 열쇠();

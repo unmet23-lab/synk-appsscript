@@ -19,6 +19,7 @@
  * 결과: docs/디자인/펠트부품/raw/<판>_<시각>.png (git 제외) + 기록 docs/디자인/펠트부품/생성기록.json
  * 원문(쓰는 곳·오리기·늘이기·마감 점검표): docs/디자인/펠트부품/README.md
  * 열쇠: C:\Users\q1212\SYNK_보안\openai.txt (git 밖). env OPENAI_KEY_FILE로 바꾼다.
+ * 2026-11-03 · 11-05 유호님: OpenAI 월 API 크레딧은 받아쓰기 몫이라 실제 API는 부르지 않는다 — SYNK_OPENAI_BASE(가짜 서버)를 줄 때만 돈다. 그림은 구독 경로로 굽는다.
  */
 'use strict';
 const fs = require('fs');
@@ -104,6 +105,7 @@ async function main() {
   if (!판) throw new Error('--판 ' + Object.keys(판들).join('|'));
   const 크기 = Number(인자.크기 || 2048);
   if (!인자['유료-api']) { console.log(`생성 안 함: GPT Image 2.5 종량제다. 한 판(${크기}²)에 대략 100~400원. 실행하려면 --유료-api`); return; }
+  if (!process.env.SYNK_OPENAI_BASE) throw new Error('OpenAI API 크레딧은 받아 적기에만 쓴다(유호님 11-03 · 11-05). 이 도구는 실제 API를 부르지 않는다 — 그림은 구독 경로(node tools/codex계정.js exec)로 굽는다.');
   const refs = 참조준비();
   const fd = new FormData();
   fd.append('model', 모델);
@@ -112,7 +114,7 @@ async function main() {
   fd.append('n', '1');
   for (const p of refs) fd.append('image[]', new Blob([fs.readFileSync(p)], { type: 'image/jpeg' }), path.basename(p));
   const t0 = Date.now();
-  const res = await fetch('https://api.openai.com/v1/images/edits', { method: 'POST', headers: { Authorization: `Bearer ${열쇠()}` }, body: fd });
+  const res = await fetch(`${process.env.SYNK_OPENAI_BASE.replace(/\/$/, '')}/images/edits`, { method: 'POST', headers: { Authorization: `Bearer ${열쇠()}` }, body: fd });
   const j = await res.json();
   if (j.error) throw new Error(j.error.message);
   const raw = path.join(방, 'raw'); fs.mkdirSync(raw, { recursive: true });

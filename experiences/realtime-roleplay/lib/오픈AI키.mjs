@@ -28,6 +28,8 @@ export function 키차례(목록파일 = process.env.SYNK_OPENAI_KEYLIST || 기�
 }
 
 export function 키읽기({ 이름, 파일 }) {
+  // 키로부르기를 거치지 않고 키차례 + 키읽기로 바로 부르던 시험(받아적기속도.mjs)도 여기서 멈춘다(2026-11-05 유호님 「그거에 쓰기로 하자」)
+  if (!process.env.SYNK_OPENAI_BASE) throw Object.assign(new Error('OpenAI API 크레딧은 받아 적기에만 쓴다(2026-11-03 · 11-05) — 상황극 시제품은 부르지 않는다'), { 상태: 503 });
   if (!fs.existsSync(파일)) throw new Error(`키 파일이 없다(${이름})`);
   const 값 = fs.readFileSync(파일, 'utf8').replace(/^﻿/, '').trim();
   if (!/^sk-\S+$/.test(값)) throw new Error(`키 파일에 sk- 로 시작하는 값이 없다(${이름})`);

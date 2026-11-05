@@ -13,6 +13,7 @@
  *   node experiences/entry-check/art-source/bake.mjs --판 도구 --유료-api
  * 결과: art-source/raw/<판>_<시각>.png (git 제외) + art-source/생성기록.json
  * 열쇠: C:\Users\q1212\SYNK_보안\openai.txt (git 밖). env OPENAI_KEY_FILE로 바꾼다.
+ * 2026-11-03 · 11-05 유호님: OpenAI 월 API 크레딧은 받아쓰기 몫이라 실제 API는 부르지 않는다 — SYNK_OPENAI_BASE(가짜 서버)를 줄 때만 돈다. 그림은 구독 경로로 굽는다.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -195,7 +196,7 @@ async function bake(name) {
   if (transparent) { fd.append('background', 'transparent'); fd.append('output_format', 'png'); }
   for (const r of board.refs) fd.append('image[]', new Blob([fs.readFileSync(ref(r))], { type: 'image/jpeg' }), `${r}.jpg`);
   const t0 = Date.now();
-  const res = await fetch('https://api.openai.com/v1/images/edits', { method: 'POST', headers: { Authorization: `Bearer ${key()}` }, body: fd });
+  const res = await fetch(`${process.env.SYNK_OPENAI_BASE.replace(/\/$/, '')}/images/edits`, { method: 'POST', headers: { Authorization: `Bearer ${key()}` }, body: fd });
   const j = await res.json();
   if (j.error) throw new Error(`${name}: ${j.error.message}`);
   fs.mkdirSync(path.join(here, 'raw'), { recursive: true });
@@ -212,6 +213,7 @@ async function bake(name) {
 
 if (args.목록) { for (const [k, v] of Object.entries(BOARDS)) console.log(`${k} (${v.kind} ${v.size}): ${v.note}`); process.exit(0); }
 if (!args['유료-api']) { console.log('생성 안 함: GPT Image 2.5 종량제다. 한 판 대략 60~200원. 실행하려면 --유료-api'); process.exit(0); }
+if (!process.env.SYNK_OPENAI_BASE) { console.error('OpenAI API 크레딧은 받아 적기에만 쓴다(유호님 11-03 · 11-05). 이 도구는 실제 API를 부르지 않는다 — 그림은 구독 경로(node tools/codex계정.js exec)로 굽는다.'); process.exit(3); }
 const names = String(args.판 || '').split(',').filter(Boolean);
 if (!names.length) throw new Error('--판 이름[,이름…]');
 const results = await Promise.allSettled(names.map(bake));

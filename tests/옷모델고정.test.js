@@ -11,11 +11,11 @@ const source = fs.readFileSync(tool, 'utf8');
 const expectedModel = 'gpt-image-2.5-sunburst';
 
 // 실제 자격증명·네트워크·이미지·쓰기에는 닿지 않고 CLI 전체 흐름을 실행한다.
-async function run(args, apiError = null) {
+async function run(args, apiError = null, env = { OPENAI_KEY_FILE: '/test-only/key', SYNK_OPENAI_BASE: 'https://fake.test/v1' }) {
   const calls = [], writes = [], logs = [];
   let reads = 0, preparations = 0;
   const fakeProcess = {
-    argv: ['node', tool, ...args], env: { OPENAI_KEY_FILE: '/test-only/key' },
+    argv: ['node', tool, ...args], env,
     exitCode: 0, exit(code) { this.exitCode = code; },
   };
   const fakeFs = {
@@ -62,7 +62,7 @@ test('실제 전송 폼의 모델만 2.5로 바꾸고 몸·옷 참조와 크기�
   const r = await run(['--것', '목도리', '--유료-api']);
   assert.equal(r.exitCode, 0);
   assert.equal(r.calls.length, 1);
-  assert.equal(r.calls[0].url, 'https://api.openai.com/v1/images/edits');
+  assert.equal(r.calls[0].url, 'https://fake.test/v1/images/edits');
   assert.equal(r.calls[0].model, expectedModel);
   assert.equal(r.calls[0].size, '2560x2560');
   assert.equal(r.calls[0].images, 2);
@@ -84,6 +84,13 @@ test('명시적인 --유료-api 없이는 자격증명·가공·네트워크·�
   assert.equal(r.exitCode, 1);
   assert.equal(r.reads + r.preparations + r.calls.length + r.writes.length, 0);
   assert.ok(r.logs.some(s => s.includes('종량제 API라 기본 차단')));
+});
+
+test('가짜 서버가 아니면 --유료-api를 줘도 키를 읽지 않는다 — OpenAI API 크레딧은 받아 적기 몫이다', async () => {
+  const r = await run(['--것', '목도리', '--유료-api'], null, { OPENAI_KEY_FILE: '/test-only/key' });
+  assert.equal(r.exitCode, 1);
+  assert.equal(r.reads + r.preparations + r.calls.length + r.writes.length, 0);
+  assert.ok(r.logs.some(s => s.includes('받아 적기에만')));
 });
 
 test('2.5 사용 불가여도 2.0이나 다른 모델로 다시 요청하지 않는다', async () => {

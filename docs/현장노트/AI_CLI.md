@@ -1259,6 +1259,7 @@
 - 원인: 키 권한이 모델 호출(Model capabilities)만이라 목록 읽기 권한이 없다.
 - 고침: 목록으로 접근을 판단하지 않고 실제 호출로 본다 — 실시간 WebSocket의 `session.created`/`session.started`, TTS 한 줄. 둘 다 됐다.
 - 다시 확인: 위 녹음 도구의 `학습자` 명령이 `[녹음] 학습자 … · 키 synk.yuh`를 찍는지.
+- 더(2026-11-05): talk `transcribe` 비밀값을 이런 키로 바꾸면 `?점검=모델목록`이 `벤더상태 403`이고 `tools/전사모델점검.js --서버`는 「못 잼」(종료 2)이 된다. 키가 고장 난 것이 아니다 — `?점검=대조`로 실제 호출을 보면 된다(잔액이 없으면 429 `credit_balance_exhausted`, 키가 틀리면 401). Files · Batch 권한까지 준 사진 키는 같은 호출이 200이었다.
 
 ### GPT-Live WebRTC에 완전한 무음 트랙을 넣으면 첫 인사가 안 나오고 「The session closed before the estimated context injection completed」로 끝난다 (2026-10-30 Claude)
 - 증상: 시제품 시험 모드(마이크 대신 Web Audio `MediaStreamDestination` 트랙, 견본 소리 사이는 아무것도 안 흘림)에서 `session.started` 뒤 `session.instructions.append`의 `appended` 확인도, 하온 소리 · 자막도 없었다. 20~30초 뒤 위 오류.

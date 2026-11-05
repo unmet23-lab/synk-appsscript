@@ -60,6 +60,8 @@ const 쉼 = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /** 쓸 키 차례 — 이름과 파일만. 값은 부르기 직전에 읽는다(GPT콘티굽기.mjs와 같은 규칙). */
 function 키차례() {
+  // 2026-11-03 · 11-05 유호님: OpenAI 월 API 크레딧은 받아쓰기 몫 — 가짜 서버 시험이 아니면 키를 내주지 않는다(gemini 갈래는 이 키를 부르지 않아 그대로 돈다)
+  if (!process.env.SYNK_OPENAI_BASE) 멈춤('OpenAI API 크레딧은 받아 적기에만 쓴다(유호님 11-03 · 11-05) — 이 시험의 OpenAI 갈래는 실제 API를 부르지 않는다', 3);
   if (process.env.OPENAI_KEY_FILE) return [{ 이름: path.basename(process.env.OPENAI_KEY_FILE), 파일: process.env.OPENAI_KEY_FILE }];
   if (!fs.existsSync(목록파일)) return [{ 이름: 'openai.txt', 파일: path.join(보안, 'openai.txt') }];
   const 목록 = JSON.parse(fs.readFileSync(목록파일, 'utf8').replace(/^﻿/, ''));
