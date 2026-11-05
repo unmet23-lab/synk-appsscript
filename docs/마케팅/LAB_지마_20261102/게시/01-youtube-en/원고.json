@@ -5,7 +5,7 @@
  "account": "@synkkorean",
  "format": "shorts",
  "language": "en",
- "audioLanguage": "en",
+ "audioLanguage": "ko",
  "title": "Every day he told me 먹지 마 (don't eat it)… until his last day 🥺 #learnkorean",
  "caption": "-지 마 = don't. Put it right after a verb stem:\n\n먹지 마 (meok-ji ma) = Don't eat it!\n입지 마 (ip-ji ma) = Don't wear it!\n열지 마 (yeol-ji ma) = Don't open it!\n가지 마 (ga-ji ma) = Don't go…\n울지 마 (ul-ji ma) = Don't cry.\n\nDrop 지 마 and add 어 — the \"don't\" turns into a yes: 먹어 (meo-geo) = Eat it.\n\n-지 마 is casual, for friends and family. To someone older or your boss, say 먹지 마세요.\n\nSYNK LAB\n#learnkorean #studykorean #koreanlanguage #koreangrammar",
  "pinnedComment": "Who would you say 가지 마 (don't go) to? 👇",
@@ -17,5 +17,5 @@
  "category": "Education",
  "_비고": "video.mp4 = e21 v6(20.2초 · 관문 못 넘음 — 기획.md 「판정」, 원천은 v6 상태로 되돌려 다시 렌더한 e21_v6r · 첫 v6과 PSNR 50dB) → 음량마감 −14.6 LUFS / −1.5 dBFS(리미터 0.72) → CBR 10M 다시 담기. 10MB 올림판 upload_10MB.mp4(6.9MB). 표지 cover.png = 3.0초(계산대 안 — 그의 큰 앞치마를 뒤집어쓴 몽글 · 「입지 마!」). 어린이 전용 아님. 합성 표시: 필수 아님 — 장면은 GPT 이미지로 구운 펠트 그림(실존 인물 · 실제 사건처럼 보이는 장면 없음), 목소리는 특정인이 아닌 TTS(E22 · E24와 같은 판단). 11-05 소리만 다시 담음 — 11-03에 생긴 업로드 소리 하한(스테레오 320kbps)에 옛 판 240.97kbps가 걸려 다시 등록이 막혔다. 공용 음량마감은 조용한 펠트 음악이라 210~254kbps에서 멈춰, ffmpeg AAC twoloop에 M/S · 세기 스테레오 · 잡음 대체를 끄고(-aac_ms 0 -aac_is 0 -aac_pns 0 -b:a 384k) 실측 343,481bps. 영상 스트림 MD5 같음 · 길이 같음 · −14.6 LUFS · 최대 −1.5 dBFS 그대로, 빼기 시험 차이 RMS −59.0 dB(본 소리 −17.4 dB). 옛 판은 video_전_aac241k.mp4.",
  "version": "e21-en-v6",
- "_시험": "11-05 동영상 언어 시험 — audioLanguage ko → en(유호님 「그 한 편만 시험해」 · 「검수해보고 올리자」). 소리는 한국어 여섯 마디(먹지 마 · 입지 마 · 열지 마 · 가지 마 · 울지 마 · 먹어)뿐이라 en은 말하는 언어로는 맞지 않는 값이다 — 72시간 판정 뒤 ko로 되돌릴지 정한다. 비교군: 같은 주 ko 편 ㅋ 하나(11-05) · 이름 F(11-07) · 잘하고 있어(11-08). 근거: 현장노트 브라우저_게시 「@synkkorean 쇼츠 — 동영상 언어가 ko인 편은…」"
+ "_시험": "11-05 동영상 언어 시험 판이었다가(ko → en) 같은 날 유호님 「제일 좋았던 판으로」로 시험 편이 몽골 최고 편 「화날 때」 영어판(LAB_화날때_mn_20261031 · 02-youtube-en)으로 바뀌어 ko로 되돌림. 11-06 칸은 그 편이 쓰고 이 편은 11-10 21:00으로 옮김. 소리 343kbps 다시 담음은 그대로(업로드 하한)."
 }
