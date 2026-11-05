@@ -20555,6 +20555,59 @@ var PLAN_ITEMS = Object.freeze([
   { id: "stop.jongno5.off.right", family: "stop.jongno5.off", skillId: "ko.listening.detail", difficulty: 1 }
 ]);
 
+// experiences/subway-rush/lines.mjs
+var LINES = Object.freeze({
+  1: Object.freeze({ color: "#0052A4", say: "\uC77C\uD638\uC120", order: Object.freeze(["\uC11C\uC6B8\uC5ED", "\uC2DC\uCCAD", "\uC885\uAC01", "\uC885\uB85C3\uAC00", "\uC885\uB85C5\uAC00", "\uB3D9\uB300\uBB38"]) }),
+  2: Object.freeze({ color: "#00A84D", say: "\uC774\uD638\uC120", order: Object.freeze(["\uC2E0\uCD0C", "\uC774\uB300", "\uC544\uD604", "\uCDA9\uC815\uB85C", "\uC2DC\uCCAD", "\uC744\uC9C0\uB85C\uC785\uAD6C", "\uC744\uC9C0\uB85C3\uAC00", "\uC744\uC9C0\uB85C4\uAC00"]) }),
+  3: Object.freeze({ color: "#EF7C1C", say: "\uC0BC\uD638\uC120", order: Object.freeze(["\uC885\uB85C3\uAC00", "\uC744\uC9C0\uB85C3\uAC00"]) }),
+  4: Object.freeze({ color: "#00A5DE", say: "\uC0AC\uD638\uC120", order: Object.freeze(["\uB3D9\uB300\uBB38", "\uC11C\uC6B8\uC5ED"]) }),
+  5: Object.freeze({ color: "#996CAC", say: "\uC624\uD638\uC120", order: Object.freeze(["\uCDA9\uC815\uB85C", "\uC885\uB85C3\uAC00", "\uC744\uC9C0\uB85C4\uAC00"]) })
+});
+var STATIONS = Object.freeze({
+  \uC2E0\uCD0C: Object.freeze({ slug: "sinchon", lines: Object.freeze([2]) }),
+  \uC774\uB300: Object.freeze({ slug: "ewha", lines: Object.freeze([2]) }),
+  \uC544\uD604: Object.freeze({ slug: "ahyeon", lines: Object.freeze([2]) }),
+  \uCDA9\uC815\uB85C: Object.freeze({ slug: "chungjeongno", lines: Object.freeze([2, 5]) }),
+  \uC2DC\uCCAD: Object.freeze({ slug: "cityhall", lines: Object.freeze([1, 2]) }),
+  \uC744\uC9C0\uB85C\uC785\uAD6C: Object.freeze({ slug: "euljiro1", lines: Object.freeze([2]) }),
+  \uC744\uC9C0\uB85C3\uAC00: Object.freeze({ slug: "euljiro3", say: "\uC744\uC9C0\uB85C \uC0BC\uAC00", lines: Object.freeze([2, 3]) }),
+  \uC744\uC9C0\uB85C4\uAC00: Object.freeze({ slug: "euljiro4", say: "\uC744\uC9C0\uB85C \uC0AC\uAC00", lines: Object.freeze([2, 5]) }),
+  \uC11C\uC6B8\uC5ED: Object.freeze({ slug: "seoulstation", lines: Object.freeze([1, 4]) }),
+  \uC885\uAC01: Object.freeze({ slug: "jonggak", lines: Object.freeze([1]) }),
+  \uC885\uB85C3\uAC00: Object.freeze({ slug: "jongno3", say: "\uC885\uB85C \uC0BC\uAC00", lines: Object.freeze([1, 3, 5]) }),
+  \uC885\uB85C5\uAC00: Object.freeze({ slug: "jongno5", say: "\uC885\uB85C \uC624\uAC00", lines: Object.freeze([1]) }),
+  \uB3D9\uB300\uBB38: Object.freeze({ slug: "dongdaemun", lines: Object.freeze([1, 4]) })
+});
+
+// experiences/subway-rush/journeys.mjs?v=return-20261105
+var SIDE_WORD = Object.freeze({ left: "\uC67C\uCABD", right: "\uC624\uB978\uCABD" });
+var EXIT_NEAR = Object.freeze({ 1: [2, 7], 2: [1, 4], 3: [4, 5], 4: [3, 2], 5: [3, 4], 6: [7, 1], 7: [6, 1], 8: [7, 6] });
+var SLUG = Object.freeze({ \uC2E0\uCD0C: "sinchon", \uC774\uB300: "ewha", \uC544\uD604: "ahyeon", \uCDA9\uC815\uB85C: "chungjeongno", \uC2DC\uCCAD: "cityhall", \uC744\uC9C0\uB85C\uC785\uAD6C: "euljiro1", \uC744\uC9C0\uB85C3\uAC00: "euljiro3", \uC744\uC9C0\uB85C4\uAC00: "euljiro4", \uC885\uAC01: "jonggak", \uC885\uB85C3\uAC00: "jongno3", \uC885\uB85C5\uAC00: "jongno5", \uB3D9\uB300\uBB38: "dongdaemun", \uCCAD\uB7C9\uB9AC: "cheongnyangni" });
+var LINE2_ROUTES = Object.freeze([
+  { start: "\uCDA9\uC815\uB85C", stops: ["\uC2DC\uCCAD"] },
+  { start: "\uC544\uD604", stops: ["\uCDA9\uC815\uB85C", "\uC2DC\uCCAD"] },
+  { start: "\uC774\uB300", stops: ["\uC544\uD604", "\uCDA9\uC815\uB85C", "\uC2DC\uCCAD"] },
+  { start: "\uC744\uC9C0\uB85C\uC785\uAD6C", stops: ["\uC2DC\uCCAD"] },
+  { start: "\uC744\uC9C0\uB85C3\uAC00", stops: ["\uC744\uC9C0\uB85C\uC785\uAD6C", "\uC2DC\uCCAD"] },
+  { start: "\uC744\uC9C0\uB85C4\uAC00", stops: ["\uC744\uC9C0\uB85C3\uAC00", "\uC744\uC9C0\uB85C\uC785\uAD6C", "\uC2DC\uCCAD"] }
+]);
+var LINE1_DESTS = Object.freeze([
+  { dest: "\uC885\uB85C3\uAC00", stops: ["\uC885\uAC01", "\uC885\uB85C3\uAC00"] },
+  { dest: "\uC885\uB85C5\uAC00", stops: ["\uC885\uAC01", "\uC885\uB85C3\uAC00", "\uC885\uB85C5\uAC00"] },
+  { dest: "\uB3D9\uB300\uBB38", stops: ["\uC885\uAC01", "\uC885\uB85C3\uAC00", "\uC885\uB85C5\uAC00", "\uB3D9\uB300\uBB38"] }
+]);
+var ROUTES = Object.freeze({ line2: LINE2_ROUTES, line1: LINE1_DESTS });
+var DOORS = Object.freeze([{ id: "left", text: "\uC67C\uCABD \uBB38", arrow: "left" }, { id: "stay", text: "\uADF8\uB300\uB85C", arrow: "stay" }, { id: "right", text: "\uC624\uB978\uCABD \uBB38", arrow: "right" }]);
+var BASIC = Object.freeze({ stop: "ko.listening.detail", fork: "ko.listening.detail", exit: "ko.listening.detail" });
+var BUSY_START = Object.freeze([{ start: "\uC544\uD604", stops: ["\uCDA9\uC815\uB85C", "\uC2DC\uCCAD"] }, { start: "\uC774\uB300", stops: ["\uC544\uD604", "\uCDA9\uC815\uB85C", "\uC2DC\uCCAD"] }, { start: "\uCDA9\uC815\uB85C", stops: ["\uC2DC\uCCAD"] }]);
+var BUSY_EXPRESS = Object.freeze([
+  { dest: "\uC885\uAC01", stops: ["\uC885\uAC01"], skip: "\uC885\uAC01", answer: "wait" },
+  // 내릴 역을 건너뛰는 급행 → 다음 열차
+  { dest: "\uC885\uB85C3\uAC00", stops: ["\uC885\uB85C3\uAC00"], skip: "\uC885\uAC01", answer: "board" },
+  // 건너뛰는 역이 내 역이 아니면 → 이 열차(종각은 지나친다)
+  { dest: "\uC885\uB85C5\uAC00", stops: ["\uC885\uB85C3\uAC00", "\uC885\uB85C5\uAC00"], skip: "\uC885\uAC01", answer: "board" }
+]);
+
 // experiences/subway-rush/learning.mjs
 var GAME_ID = "subway-rush";
 var FORMAT = "single-choice";
@@ -20574,6 +20627,14 @@ function decisionMeta(d) {
     conceptIds: []
   };
 }
+var RETURN_PATTERNS3 = Object.freeze({
+  off: { minEvidence: 2, why: "\uC804\uC5D0 \uB0B4\uB9B4 \uC5ED\uC5D0 \uC130\uC744 \uB54C \uC548\uB0B4\uB97C \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC774\uBC88 \uCCAB \uC548\uB0B4\uB3C4 \uADF8\uB7F0 \uB9D0\uC774\uC5D0\uC694. \uC5ED \uC774\uB984\uACFC \uBB38 \uCABD\uC744 \uB05D\uAE4C\uC9C0 \uB4E3\uACE0 \uACE8\uB77C \uBCF4\uC138\uC694." },
+  pass: { minEvidence: 2, why: "\uC804\uC5D0 \u2018\uAC08\uC544\uD0C0\uC2E4 \uBD84\uC740 \uB0B4\uB9AC\uC2DC\uAE30 \uBC14\uB78D\uB2C8\uB2E4\u2019\uB97C \uB4E3\uACE0 \uB0B4 \uC5ED\uC774 \uC544\uB2CC\uB370 \uB0B4\uB9B0 \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC774\uBC88 \uCCAB \uC548\uB0B4\uC5D0\uB3C4 \uAC08\uC544\uD0C0\uB294 \uB9D0\uC774 \uB098\uC640\uC694. \uB0B4\uAC00 \uB0B4\uB9B4 \uC5ED\uC778\uC9C0 \uB05D\uAE4C\uC9C0 \uB4E4\uC5B4 \uBCF4\uC138\uC694." },
+  exit: { minEvidence: 2, why: "\uC804\uC5D0 \uAE38 \uC548\uB0B4\uAC00 \uB9D0\uD55C \uCD9C\uAD6C \uBC88\uD638\uB97C \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC774\uBC88 \uCCAB \uC548\uB0B4\uB3C4 \uCD9C\uAD6C \uBC88\uD638\uB97C \uB9D0\uD574\uC694. \uC22B\uC790\uB97C \uB05D\uAE4C\uC9C0 \uB4E3\uACE0 \uACE8\uB77C \uBCF4\uC138\uC694." },
+  closed: { minEvidence: 2, why: "\uC804\uC5D0 \uACF5\uC0AC\uB85C \uB9C9\uD78C \uCD9C\uAD6C \uB300\uC2E0 \uC5B4\uB290 \uCD9C\uAD6C\uB85C \uAC00\uB77C\uB294 \uC548\uB0B4\uB97C \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC774\uBC88 \uCCAB \uC548\uB0B4\uB3C4 \uADF8\uB7F0 \uB9D0\uC774\uC5D0\uC694. \uB9C9\uD78C \uBC88\uD638\uC640 \uC4F8 \uC218 \uC788\uB294 \uBC88\uD638\uB97C \uAC00\uB824 \uB4E4\uC5B4 \uBCF4\uC138\uC694." },
+  service: { minEvidence: 2, why: "\uC804\uC5D0 \u2018\uAE4C\uC9C0\uB9CC \uC6B4\uD589\uD569\uB2C8\uB2E4\u2019\uB098 \u2018\uC11C\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4\u2019\uCC98\uB7FC \uC6B4\uD589\uC774 \uBC14\uB00C\uB294 \uC548\uB0B4\uB97C \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC774\uBC88 \uCCAB \uC548\uB0B4\uB3C4 \uADF8\uB7F0 \uB9D0\uC774\uC5D0\uC694. \uBB34\uC5C7\uC774 \uBC14\uB00C\uC5C8\uB294\uC9C0 \uB05D\uAE4C\uC9C0 \uB4E3\uACE0 \uACE8\uB77C \uBCF4\uC138\uC694." }
+});
+var OFF_WHY = Object.freeze({ door: "\uC804\uC5D0 \u2018\uB0B4\uB9AC\uC2E4 \uBB38\uC740\u2019 \uB4A4\uC5D0 \uB098\uC624\uB294 \uBB38 \uCABD\uC744 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", station: "\uC804\uC5D0 \uC548\uB0B4\uC758 \uC5ED \uC774\uB984\uC744 \uB193\uCCD0 \uB0B4\uB9B4 \uC5ED\uC744 \uC9C0\uB098\uCE5C \uC801\uC774 \uC788\uC5B4\uC694." });
 
 // experiences/brand-opening/play-unlocks.mjs
 var PLAY_UNLOCKS = Object.freeze({
@@ -23777,7 +23838,7 @@ function itemMetadata(item) {
     conceptIds: conceptsOf(item.id)
   };
 }
-var RETURN_PATTERNS3 = Object.freeze({
+var RETURN_PATTERNS4 = Object.freeze({
   particle: { why: "\uC9C0\uB09C \uD310\uC5D0\uC11C \uB0B1\uB9D0 \uB4A4\uC5D0 \uBD99\uB294 \uC870\uC0AC\uB97C \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC774\uBC88 \uCCAB \uBB38\uC7A5\uB3C4 \uADF8\uB7F0 \uBB38\uC7A5\uC774\uC5D0\uC694. \uBE48\uCE78 \uC55E\uB4A4 \uB9D0\uC744 \uD568\uAED8 \uC77D\uC5B4 \uBCF4\uC138\uC694." },
   ending: { why: "\uC9C0\uB09C \uD310\uC5D0\uC11C \uBB38\uC7A5 \uB05D\uC774\uB098 \uC911\uAC04\uC758 \uBB38\uD615\uC744 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC774\uBC88 \uCCAB \uBB38\uC7A5\uB3C4 \uADF8\uB7F0 \uBB38\uC7A5\uC774\uC5D0\uC694. \uBB38\uC7A5 \uC804\uCCB4\uC758 \uB73B\uC744 \uC77D\uACE0 \uACE8\uB77C \uBCF4\uC138\uC694." },
   connector: { minEvidence: 2, why: "\uC9C0\uB09C \uD310\uC5D0\uC11C \uB450 \uBB38\uC7A5\uC744 \uC787\uB294 \uB9D0\uC744 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC774\uBC88 \uCCAB \uBB38\uC7A5\uB3C4 \uADF8\uB7F0 \uBB38\uC7A5\uC774\uC5D0\uC694. \uC55E\uB4A4 \uBB38\uC7A5\uC774 \uC5B4\uB5A4 \uAD00\uACC4\uC778\uC9C0 \uC77D\uC5B4 \uBCF4\uC138\uC694." },
@@ -25119,7 +25180,7 @@ function caseMetadata(c) {
     conceptIds: [...CASE_GRAMMAR.get(c.id) || []]
   };
 }
-var RETURN_PATTERNS4 = Object.freeze({
+var RETURN_PATTERNS5 = Object.freeze({
   detail: { skillId: "ko.reading.detail", why: "\uC9C0\uB09C \uADFC\uBB34\uC5D0\uC11C \uD45C\uB098 \uC9D0\uC758 \uC138\uBD80 \uB0B4\uC6A9\uC744 \uC548\uB0B4\uBB38\uACFC \uB9DE\uCD94\uB294 \uAC78 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC624\uB298 \uADFC\uBB34\uC5D0\uB3C4 \uADF8\uB7F0 \uC190\uB2D8\uC774 \uC640\uC694. \uC548\uB0B4\uBB38\uC744 \uD55C \uC904\uC529 \uB2E4 \uC77D\uACE0 \uB3C4\uC7A5\uC744 \uCC0D\uC5B4 \uBCF4\uC138\uC694." },
   negation: { skillId: "ko.reading.negation", why: "\uC9C0\uB09C \uADFC\uBB34\uC5D0\uC11C \uC548\uB0B4\uBB38\uC758 \uBD80\uC815 \uD45C\uD604\uC744 \uC190\uB2D8\uACFC \uB9DE\uCD94\uB294 \uAC78 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC624\uB298 \uADFC\uBB34\uC5D0\uB3C4 \uADF8\uB7F0 \uC190\uB2D8\uC774 \uC640\uC694. \uC548\uB0B4\uBB38\uC744 \uD55C \uC904\uC529 \uB2E4 \uC77D\uACE0 \uB3C4\uC7A5\uC744 \uCC0D\uC5B4 \uBCF4\uC138\uC694." },
   condition: { skillId: "ko.reading.condition", why: "\uC9C0\uB09C \uADFC\uBB34\uC5D0\uC11C \uC548\uB0B4\uBB38\uC758 \uC870\uAC74\uC744 \uC190\uB2D8\uACFC \uB9DE\uCD94\uB294 \uAC78 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC624\uB298 \uADFC\uBB34\uC5D0\uB3C4 \uADF8\uB7F0 \uC190\uB2D8\uC774 \uC640\uC694. \uC548\uB0B4\uBB38\uC744 \uD55C \uC904\uC529 \uB2E4 \uC77D\uACE0 \uB3C4\uC7A5\uC744 \uCC0D\uC5B4 \uBCF4\uC138\uC694." }

@@ -138,6 +138,31 @@ function buildBusy(r, seed) {
 }
 const guideAfterDelay = (dest) => ({ voice: `guide-after-delay-${slugOf(dest)}`, role: 'guide', say: `이호선으로 ${sayStation(dest)}까지 가세요.`, text: `2호선으로 ${dest}까지 가세요.`, key: [dest] });
 
+// 재방문 맞춤 판: 같은 유형의 새 문항을 그 판의 첫 평가 문항으로 낸다. 문항 · 안내는 그대로 두고 여정의 들어가는 자리만 옮긴다 —
+// 그 결정 앞에서 들었을 길 안내(검수 맥락과 같다)를 첫 안내로 삼아, 내릴 역 · 방면을 모른 채 답하는 일이 없게 한다.
+// 출구 문항만 예외다: 이미 내린 역에서 시작하니 그 역에 내리라는 앞 안내는 지금 상황과 어긋나고 답에도 필요 없다. opening 없이 출구 안내가 첫 소리다.
+const starts = new Map();
+/** 그 수준에서 첫 문항으로 낼 수 있는 결정 전체(id → { journey, decision, heard, index }). */
+export function practiceStarts(level) {
+  if (starts.has(level)) return starts.get(level);
+  const out = new Map();
+  for (let n = 1; n < 1500; n++) {
+    const journey = buildJourney({ seed: n * 37 + 11, level });
+    let heard = journey.opening;
+    journey.decisions.forEach((decision, index) => {
+      if (decision.assessable && !out.has(decision.id)) out.set(decision.id, { journey, decision, heard, index });
+      if (decision.kind === 'fork' && decision.id !== 'busy.delay.1to2') heard = decision.line_;
+      if (decision.after) heard = decision.after;
+    });
+  }
+  starts.set(level, out);
+  return out;
+}
+/** 그 결정부터 시작하는 여정. 앞 결정이 없으니 첫 평가 응답이 곧 이 결정이다. */
+export function journeyFrom({ journey, decision, heard, index }) {
+  return { ...journey, start: index ? journey.decisions[index - 1].station : journey.start, opening: decision.kind === 'exit' ? null : heard, decisions: journey.decisions.slice(index), focus: decision.id };
+}
+
 /** 원고 전체(중복 없음) — 목소리 굽기가 읽는다. */
 export function allLines() {
   const out = new Map();

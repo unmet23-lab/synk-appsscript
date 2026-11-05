@@ -42,7 +42,7 @@ test('찍어도 맞는 그대로는 평가하지 않는 응답으로 닫는다',
     const d = buildJourney({ seed }).decisions.find((x) => x.kind === 'stop' && !x.assessable);
     if (!d) continue;
     const p = answerPayload({ correct: true, assessable: d.assessable, selectedId: 'subway.stay', correctId: 'subway.stay', reason: 'guessable' });
-    assert.equal(p.assessable, false); assert.equal(p.reason, 'guessable');
+    assert.equal(p.assessable, false); assert.equal(Object.hasOwn(p, 'reason'), false, 'Trail 사유 목록에 없는 말은 넘기지 않는다');
     return;
   }
   assert.fail(`근거 아닌 그대로를 못 찾음(${j.seed})`);

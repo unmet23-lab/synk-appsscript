@@ -9,7 +9,7 @@ import { createScene, loadImage, paintSign } from './scene.mjs';
 import { createLed } from './led.mjs';
 import { createSound, haptic } from './audio.mjs';
 import { createMusic } from './music.mjs';
-import { GAME_ID, decisionMeta, meetingMeta, answerPayload, createExchange, preferJourney } from './learning.mjs';
+import { GAME_ID, decisionMeta, meetingMeta, answerPayload, createExchange, preferJourney, missedPractice, entryNote } from './learning.mjs?v=return-20261105';
 
 const $ = (id) => document.getElementById(id);
 const query = new URLSearchParams(location.search);
@@ -206,20 +206,21 @@ function drawStationSign(ctx) {
   ctx.restore();
 }
 function lobbyLayout() {
-  // 단말기 자리: 사진 속 검은 패드(그림 좌표)를 화면 좌표로
-  const s = $('stage').getBoundingClientRect(), a = s.width / s.height, fit = scene.state.fit, drop = scene.state.drop;
+  // 단말기 자리: 사진 속 검은 패드(그림 좌표)를 화면 좌표로. 옆 배치에서는 사진이 캔버스 칸만 차지하고 칸이 세로 가운데에 놓일 수 있다
+  scene.resize();   // 칸 크기가 막 바뀌었으면 그림 맞춤(fit)을 먼저 맞춘다
+  const s = $('gl').getBoundingClientRect(), top = s.top - $('stage').getBoundingClientRect().top, a = s.width / s.height, fit = scene.state.fit, drop = scene.state.drop;
   const imgH = (a * fit) / (1024 / 1536);
-  const toY = (v) => ((v - 0.5) * imgH + drop + 0.5) * s.height, toW = (u) => u * (a * fit) * s.height;
+  const toY = (v) => top + ((v - 0.5) * imgH + drop + 0.5) * s.height, toW = (u) => u * (a * fit) * s.height;
   const r = $('reader');
   r.style.setProperty('--reader-y', `${toY(0.8)}px`); r.style.setProperty('--reader-w', `${toW(0.306)}px`); r.style.setProperty('--reader-h', `${toY(0.8 + 0.083) - toY(0.8 - 0.083)}px`);
 }
 async function showLobby(journey) {
-  scene.state.drop = -0.075;
+  scene.state.drop = LOBBY_DROP;
   await scene.show({ img: 'gate', dep: 'gate.depth', c: [0.5, 0.5], draw: drawStationSign });
   $('trip-start').textContent = journey.start;
   renderTicket(journey);
   $('lobby').hidden = false; delete $('lobby').dataset.out; $('board').hidden = true; delete $('reader').dataset.on;
-  lobbyLayout();
+  lobbyJourney = journey; fitLobby(); document.fonts?.ready.then(() => { if (lobbyJourney) fitLobby(); });
   document.documentElement.dataset.ready = '1';
   // 천천히 다가감(빛 · 사람이 조금 움직여 살아 있게)
   breathing = !reduced(); (async () => { while (breathing) { await tween(9, (k) => { if (breathing) scene.state.push = 0.018 + 0.024 * k; }, ease.inOut); await tween(9, (k) => { if (breathing) scene.state.push = 0.042 - 0.024 * k; }, ease.inOut); } })();
@@ -228,9 +229,10 @@ async function showLobby(journey) {
     $('reader').addEventListener('click', go);
     if (AUTO) wait(3.2).then(() => $('reader').click());
   });
-  breathing = false;
+  breathing = false; lobbyJourney = null;   // 여기부터 본게임 — 입구 자리잡기가 본게임 scene.state.drop을 덮지 않게 한다
 }
-let breathing = false;
+let breathing = false, lobbyJourney = null;
+const LOBBY_DROP = -0.075, LOBBY_LIFT = 0.1;   // 입구 사진 자리 · 역명판이 화면에 남는 데까지 올릴 수 있는 양(무대 높이 비율)
 /** 승차권: 오늘의 여정 · 노선 고르기 · 내 노선도. 어려운 노선은 막지 않고 한 번 묻는다. */
 function renderTicket(journey) {
   const album = readAlbum(), level = journey.level;
@@ -238,10 +240,26 @@ function renderTicket(journey) {
   $('level-busy').setAttribute('aria-pressed', String(level === 'busy'));
   // 첫 등굣길을 넉넉히 도착하면 바쁜 아침을 권한다(막지는 않는다, 설계 3절)
   $('level-busy').querySelector('small').textContent = level === 'basic' && album.plays >= 2 && album.best && album.best <= 8 * 60 + 55 ? '해 볼 만해요' : '3~4급';
-  $('ticket-today').textContent = level === 'busy' ? '오늘 들을 말: 운행합니다 · 서지 않습니다 · 이용하실 수 없습니다' : '오늘 들을 말: 내리실 문 · 갈아타실 분';
+  $('ticket-today').textContent = journey.note || (level === 'busy' ? '오늘 들을 말: 운행합니다 · 서지 않습니다 · 이용하실 수 없습니다' : '오늘 들을 말: 내리실 문 · 갈아타실 분');
   const stations = (album.stations || []).length, people = Object.keys(album.met || {}).length;
   const chip = $('ticket-album'); chip.hidden = !(stations || people);
   chip.textContent = `내 노선도 ${stations}역 · 만난 사람 ${people}명${album.best ? ` · 최고 ${clockText(album.best)}` : ''}`;
+}
+/**
+ * 표의 글과 단추는 줄이지 않고, 표가 단말기에 닿을 때만 자리를 옮긴다.
+ * 1) 안 닿으면 원래 배치. 2) 표를 조금 조이고 사진 · 단말기를 함께 올린다. 3) 그래도 모자라는 아주 낮은 화면은 사진과 표를 옆으로 나눈다.
+ * 첫 방문도 재방문도 단말기 글자까지 트여 있어야 원래 배치를 지킨다.
+ */
+function fitLobby() {
+  const root = document.documentElement, lobby = $('lobby'), ticket = $('ticket'), reader = $('reader'), TEXT = 33;   // 단말기 가운데에서 「카드를 대 주세요」 아래까지(px)
+  delete root.dataset.lobbyFit; scene.state.drop = LOBBY_DROP; lobbyLayout();
+  const ticketTop = () => lobby.clientHeight - parseFloat(getComputedStyle(ticket).bottom) - ticket.offsetHeight;   // 표의 등장 움직임과 상관없는 자리
+  const readerY = parseFloat(reader.style.getPropertyValue('--reader-y')), ringBottom = readerY + parseFloat(reader.style.getPropertyValue('--reader-h')) / 2;
+  if (ticketTop() >= readerY + TEXT) return;
+  root.dataset.lobbyFit = 'compact';
+  const H = lobby.clientHeight, need = (readerY + TEXT - ticketTop()) / H, whole = (ringBottom - ticketTop()) / H;
+  if (need > LOBBY_LIFT) { root.dataset.lobbyFit = 'side'; lobbyLayout(); return; }
+  scene.state.drop = LOBBY_DROP - Math.min(LOBBY_LIFT, Math.max(0, need, whole)); lobbyLayout();
 }
 $('ticket-album').addEventListener('click', () => {
   const album = readAlbum(), stamps = $('album-stamps'), people = $('album-people');
@@ -264,12 +282,12 @@ for (const [id, level] of [['level-basic', 'basic'], ['level-busy', 'busy']]) $(
 });
 let pendingLevel = null;
 $('notice-replay').addEventListener('click', (e) => { e.stopPropagation(); if (pendingLevel) { setLevel(pendingLevel); location.reload(); } });
-window.addEventListener('resize', () => { if (!$('lobby').hidden) lobbyLayout(); });
+window.addEventListener('resize', () => { if (lobbyJourney) fitLobby(); });
 
 // ── 판 ──
 let activeRun = null;
 function voicesOf(journey, plan) {
-  const names = new Set([journey.opening.voice]);
+  const names = new Set(journey.opening ? [journey.opening.voice] : []);
   for (const d of journey.decisions) { names.add(d.line_.voice); if (d.lead) names.add(d.lead.voice); if (d.after) names.add(d.after.voice); }
   for (const m of plan.meetings) { const s = m.scene; if (s.lead) names.add(s.lead.voice); names.add(s.ask.voice); for (const r of s.replies) names.add(r.reaction.voice); }
   return [...names];
@@ -384,12 +402,13 @@ function chooseReply(s) {
 }
 let met = [], manifest = {}, curtained = false;
 
-async function playSignDecision(run, d, { img, dep, panels, keyLine, auto }) {
+async function playSignDecision(run, d, { img, dep, panels, keyLine, auto, note = null }) {
   // 달려서 갈림 입구까지 → 멈춤 → 세 칸. 안내가 끝나기 전에는 고를 수 없다.
   const ex = createExchange(coach, decisionMeta(d)); currentExchange = ex;
   const signs = d.options.map((o) => o.exit != null ? { exit: o.exit } : o.line ? { line: o.line, color: lineColor(o.line), text: o.text } : { text: o.text });
   await scene.show({ img, dep, c: [0.5, 0.515], panels, signs });
   if (curtained) { curtained = false; await curtain(false); }
+  if (note) banner(note, 2.4);
   drawHang(d.options); setHang(0); $('hang').hidden = false;
   sound.hallStart(); stepping = 2.7; stepTimer = 0; setKeys(false);
   const reach = 0.62;
@@ -428,21 +447,32 @@ async function playJourney(journey, plan) {
   $('board').hidden = false; led.invalidate(); setClock(run); led.setStatus(''); setKeys(false); scene.state.drop = 0.03;
   await curtain(true);
   sound.hallStart();
-  await scene.show({ img: 'platform', dep: 'platform.depth', c: [0.2, 0.6] });
-  $('lobby').hidden = true;
-  await curtain(false);
-  tween(5.2, (k) => { if (!reduced()) scene.state.push = 0.12 * k; }, ease.out);
-  currentLine = journey.opening; await wait(0.5);
-  await say(journey.opening);
-  setKeys(false);
-  await wait(0.5);
-  // 열차로
-  stepping = 2.4; stepTimer = 0; sound.sfx.whoosh();
-  await scene.prepareNext(carScene(plan.cars[0]));
-  await pass([0.22, 0.6], { push: 0.9, seconds: 1.0, blur: 0.08 });
-  scene.settleNext(); stepping = 0; sound.hallStop();
-  scene.state.streak = 1; sound.railStart(); sound.railSpeed(1); led.setStatus('');
-  await wait(0.5);
+  // 출구 맞춤 판은 이미 내린 역에서 시작한다: 승강장 컷과 앞 길 안내 없이 가림막 뒤로 출구 갈림을 세운다.
+  if (journey.opening) await scene.show({ img: 'platform', dep: 'platform.depth', c: [0.2, 0.6] });
+  $('lobby').hidden = true; delete document.documentElement.dataset.lobbyFit;
+  if (journey.opening) {
+    await curtain(false);
+    tween(5.2, (k) => { if (!reduced()) scene.state.push = 0.12 * k; }, ease.out);
+    currentLine = journey.opening; await wait(0.5);
+    await say(journey.opening);
+    setKeys(false);
+    await wait(0.5);
+  }
+  const first = journey.decisions[0];
+  if (first.kind === 'stop') {
+    // 열차로
+    stepping = 2.4; stepTimer = 0; sound.sfx.whoosh();
+    await scene.prepareNext(carScene(plan.cars[first.leg]));
+    await pass([0.22, 0.6], { push: 0.9, seconds: 1.0, blur: 0.08 });
+    scene.settleNext(); stepping = 0; sound.hallStop();
+    scene.state.streak = 1; sound.railStart(); sound.railSpeed(1); led.setStatus('');
+    await wait(0.5);
+  } else {
+    // 맞춤 판의 첫 문항이 통로 · 승강장 · 출구면 열차 컷 없이 그 앞으로 바로 간다.
+    music.play('run'); await curtain(true);
+    if (first.kind === 'board') { await scene.show({ img: platformFor(first), dep: `${platformFor(first)}.depth`, c: [0.5, 0.5] }); await curtain(false); }
+    else curtained = true;   // 표지가 든 판을 세운 뒤 걷는다(playSignDecision)
+  }
 
   const meetingAfter = (i) => plan.meetings.find((m) => m.after === i) || null;
   for (let i = 0; i < journey.decisions.length; i++) {
@@ -483,7 +513,7 @@ async function playJourney(journey, plan) {
       await playBoard(run, d, plan);
     } else if (d.kind === 'exit') {
       const panels = has('exit-fork') ? EXIT_PANELS : FORK_PANELS, img = has('exit-fork') ? 'exit-fork' : 'fork';
-      const { way } = await playSignDecision(run, d, { img, dep: `${img}.depth`, panels, keyLine: d.line_, auto: AUTO });
+      const { way } = await playSignDecision(run, d, { img, dep: `${img}.depth`, panels, keyLine: d.line_, auto: AUTO, note: i === 0 && !journey.opening ? `${d.station}역 도착! 이제 출구만 찾아요.` : null });
       if (m) { $('hang').hidden = true; await meeting(m, null); }
       await dashThrough(way, null);
     }
@@ -550,11 +580,12 @@ async function showResult(run, plan) {
   const rled = createLed($('result-led'), { rows: 24 });
   $('result').hidden = false; $('result').scrollTop = 0;
   rled.setClock(s.arriveText); rled.setStatus('도착', s.onTime ? 'green' : 'amber'); rled.render(0.016);
-  const best = album.best; const newBest = best == null || s.arrive < best;
+  // 맞춤 판은 여정 중간에서 시작해 도착이 빠르다 — 최고 기록에 넣지 않고, 기준이 다른 전체 여정 최고와 나란히 보이지도 않는다.
+  const best = album.best; const newBest = !run.journey.focus && (best == null || s.arrive < best);
   if (newBest) album.best = s.arrive;
   $('result-line').textContent = s.onTime ? (s.wrongs.length ? `${s.arriveText} 도착 — 셔틀 탔어요!` : `${s.arriveText} 도착 — 여유 있게!`) : `${s.arriveText} 도착 — 조금 늦었지만 첫날이니까요`;
   // 소리가 끊긴 문항은 세지 않는다(core.mjs summary) — 모두 끊긴 판은 「0 / 0」 대신 기록만 보인다.
-  $('result-score').textContent = [s.total ? `맞힌 안내 ${s.right} / ${s.total}` : '', newBest && best != null ? '내 최고 기록!' : best != null ? `내 최고 ${clockText(best)}` : ''].filter(Boolean).join(' · ');
+  $('result-score').textContent = [s.total ? `맞힌 안내 ${s.right} / ${s.total}` : '', newBest && best != null ? '내 최고 기록!' : best != null && !run.journey.focus ? `내 최고 ${clockText(best)}` : ''].filter(Boolean).join(' · ');
   // 도장: 하나씩 찍힌다. 탭하면 모두 바로
   const stamps = $('stamps'); stamps.innerHTML = '';
   let skip = false; $('result').addEventListener('pointerdown', () => { skip = true; }, { once: true });
@@ -615,11 +646,28 @@ async function prepare(journey, plan) {
   await Promise.all(voicesOf(journey, plan).map((n) => sound.load(n, `${VOICE_BASE}${n}.mp3`)));
   music.preload();
 }
+// 학습 공유를 끈 계정은 기록이 이 기기에만 남는다(호스트 phase 'local'). 그 기록으로 안내하거나 판을 고르지 않고 기록만 그대로 쌓는다.
+function personalCoach() {
+  try { return (window.SYNKLearningHost || (window.parent !== window ? window.parent.SYNKLearningHost : null))?.status?.().phase === 'local' ? null : coach; } catch { return coach; }
+}
+// 계정 기록이 다 내려오기 전에는 오답을 말하지 못한다(Trail evidenceComplete). 입구를 오래 막지 않도록 잠깐만 기다린다.
+async function historySettled() {
+  try { await globalThis.SynkPlayAccount?.ready?.(); } catch { /* 연결이 막혀도 기본 입구로 간다 */ }
+  const until = performance.now() + 4000;
+  while (coach && performance.now() < until) {
+    try { if (coach.summary().evidenceComplete) return; } catch { return; }
+    await new Promise((res) => setTimeout(res, 150));
+  }
+}
 async function start() {
   const seed = Number(query.get('seed')) || (Date.now() % 2147483647);
   const level = chosenLevel();
-  // 씨앗을 정해 주면(시험 · 다시 보기) 그 판 그대로, 아니면 후보 몇 판 중 놓친 안내가 든 판을 앞세운다
-  const journey = query.get('seed') ? buildJourney({ seed, level }) : preferJourney(coach, Array.from({ length: 12 }, (_, i) => buildJourney({ seed: seed + i * 7919, level })));
+  if (!query.get('seed')) await historySettled();
+  const learner = personalCoach();
+  // 씨앗을 정해 주면(시험 · 다시 보기) 그 판 그대로. 놓친 유형이 있으면 그 유형의 새 문항이 첫 평가인 여정, 아니면 후보 몇 판 중 아틀라스가 고른 문항이 든 판.
+  const returning = query.get('seed') ? null : missedPractice(learner, level);
+  const journey = query.get('seed') ? buildJourney({ seed, level }) : returning?.journey || preferJourney(learner, Array.from({ length: 12 }, (_, i) => buildJourney({ seed: seed + i * 7919, level })));
+  journey.note = query.get('seed') ? null : entryNote(learner, returning);
   const album = readAlbum();
   const plan = planDay(journey, { available: { cars: availableCars(), people: availablePeople() }, seen: Object.keys(album.met || {}) });
   try { await prepare(journey, plan); } catch (error) {

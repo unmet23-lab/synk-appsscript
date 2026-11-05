@@ -13,6 +13,9 @@ export const KIT_GAMES = ['talk-rally', 'order-rush', 'story-classroom', 'korean
 // brand-opening(WORLD 홈·튜터 말)도 같다(10-19: 「「안녕하세요.」을」·「‘빈’와」 같은 받침 조사 오류를 고치며 더함).
 export const JOSA_ONLY_GAMES = ['hangul-stage', 'daily-fortune', 'brand-opening', 'snap-words'];
 export const JOSA_FILE = 'josa.mjs';
+// 키트 화면은 쓰지 않고 재방문 맞춤 판정만 같은 원본을 쓰는 게임 — kit/에 이 한 파일만 복사한다.
+export const RETURN_ONLY_GAMES = ['subway-rush'];
+export const RETURN_FILE = 'return-practice.mjs';
 
 export function kitFiles(dir = KIT_SRC, base = '') {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((d) => {
@@ -45,4 +48,13 @@ export function buildJosa(games = JOSA_ONLY_GAMES) {
   }
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) { buildKit(); buildJosa(); }
+export function buildReturnOnly(games = RETURN_ONLY_GAMES) {
+  for (const game of games) {
+    const dst = path.join(here, '..', game, 'kit');
+    fs.mkdirSync(dst, { recursive: true });
+    fs.copyFileSync(path.join(KIT_SRC, RETURN_FILE), path.join(dst, RETURN_FILE));
+    console.log(`${game}/kit ← ${RETURN_FILE}`);
+  }
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) { buildKit(); buildJosa(); buildReturnOnly(); }

@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { KIT_SRC, KIT_GAMES, JOSA_ONLY_GAMES, JOSA_FILE, kitFiles } from './build-kit.mjs';
+import { KIT_SRC, KIT_GAMES, JOSA_ONLY_GAMES, JOSA_FILE, RETURN_ONLY_GAMES, RETURN_FILE, kitFiles } from './build-kit.mjs';
 import { josa, finalOf } from './kit/josa.mjs';
 
 test('키트 CSS가 부르는 파일이 모두 키트 안에 있다', () => {
@@ -25,6 +25,14 @@ for (const game of JOSA_ONLY_GAMES) {
     const dst = path.join(KIT_SRC, '..', '..', game, 'kit');
     assert.deepEqual(kitFiles(dst), [JOSA_FILE]);
     assert.ok(fs.readFileSync(path.join(dst, JOSA_FILE)).equals(fs.readFileSync(path.join(KIT_SRC, JOSA_FILE))));
+  });
+}
+
+for (const game of RETURN_ONLY_GAMES) {
+  test(`${game}/kit에는 재방문 판정 사본 한 파일만 있고 원본과 같다`, () => {
+    const dst = path.join(KIT_SRC, '..', '..', game, 'kit');
+    assert.deepEqual(kitFiles(dst), [RETURN_FILE]);
+    assert.ok(fs.readFileSync(path.join(dst, RETURN_FILE)).equals(fs.readFileSync(path.join(KIT_SRC, RETURN_FILE))));
   });
 }
 

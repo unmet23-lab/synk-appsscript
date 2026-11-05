@@ -31,7 +31,7 @@ html:not([data-ready]) #gl,html:not([data-ready]) .reader,html:not([data-ready])
 .reader-card{width:42px;height:27px;border-radius:4px;border:2px solid currentColor;position:relative;opacity:.95;transform:rotate(-8deg)}
 .reader-card::before{content:'';position:absolute;left:5px;top:5px;width:9px;height:7px;border-radius:1.5px;background:currentColor;opacity:.85}
 .reader-card::after{content:'';position:absolute;left:18px;right:4px;bottom:5px;height:2px;background:currentColor;opacity:.6}
-.reader-text{font-size:14px;font-weight:600;letter-spacing:-.01em;text-shadow:0 1px 2px #000}
+.reader-text{font-size:14px;font-weight:600;letter-spacing:-.01em;text-shadow:0 1px 2px #000;white-space:nowrap}
 .ticket{position:absolute;left:14px;right:14px;bottom:max(14px,env(safe-area-inset-bottom));padding:11px 14px 10px;background:var(--paper);border-radius:3px;box-shadow:0 8px 26px #0009,0 1px 0 #fff8 inset;color:var(--ink);transform:rotate(-.6deg);
   background-image:linear-gradient(90deg,#0000 0,#0000 calc(100% - 1px),#0000 100%),radial-gradient(circle at 0 50%,#0000 6px,var(--paper) 6.5px),radial-gradient(circle at 100% 50%,#0000 6px,var(--paper) 6.5px);background-size:100% 100%,51% 100%,51% 100%;background-position:0 0,0 0,100% 0;background-repeat:no-repeat;background-color:#0000;animation:ticket-in var(--m-base) .15s both}
 @keyframes ticket-in{from{opacity:0;transform:translateY(16px) rotate(-.6deg)}to{opacity:1;transform:rotate(-.6deg)}}
@@ -49,6 +49,20 @@ html:not([data-ready]) #gl,html:not([data-ready]) .reader,html:not([data-ready])
 .ticket-note span{color:#6a6a62;font-size:11.5px}
 .ticket-album{display:block;width:100%;margin-top:7px;padding:6px 0 0;border-top:1px dashed #0004;text-align:left;font-size:12.5px;font-weight:700;color:#7a2a16;letter-spacing:-.01em}
 .ticket-album::after{content:' ›'}
+/* 표가 단말기에 닿을 때만(app.mjs fitLobby). 넉넉한 화면과 원래 배치로 충분한 첫 방문은 위 그대로 */
+html[data-lobby-fit] .ticket{padding:8px 12px 7px}
+html[data-lobby-fit] .ticket-levels{margin-top:6px}
+html[data-lobby-fit] .ticket-levels button{min-height:34px}
+html[data-lobby-fit] .ticket-note{margin-top:5px;line-height:1.32}
+html[data-lobby-fit] .ticket-album{margin-top:5px;padding-top:5px;line-height:1.32}
+/* 아주 낮은 화면: 사진은 왼쪽 칸, 표는 오른쪽 칸. 표가 칸보다 길면 표 안에서 밀어 본다. 사진 칸은 무대 비율(.62)을 지켜 세로 가운데에 둔다 — 더 길면 그림이 칸을 못 채운다 */
+html[data-lobby-fit=side] .stage{width:min(100vw,calc(100dvh*.62 + 360px));--lobby-photo:clamp(112px,62cqh,42cqw)}
+html[data-lobby-fit=side] #gl{right:auto;width:var(--lobby-photo);height:calc(var(--lobby-photo)/.62);top:calc(50% - var(--lobby-photo)/1.24)}
+html[data-lobby-fit=side] .floor-shade{right:auto;width:var(--lobby-photo);height:calc(var(--lobby-photo)*.1935);bottom:calc(50% - var(--lobby-photo)/1.24)}
+html[data-lobby-fit=side] .reader{left:calc(var(--lobby-photo)/2);width:max(var(--reader-w,160px),72px);height:max(var(--reader-h,128px),60px)}
+html[data-lobby-fit=side] .reader-text{text-shadow:0 0 2px #000,0 1px 3px #000,0 0 7px #000}
+html[data-lobby-fit=side] .ticket{left:calc(var(--lobby-photo) + 10px);right:10px;top:10px;bottom:10px;height:fit-content;max-height:calc(100% - 20px);margin:auto 0;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;scrollbar-width:thin}
+html[data-lobby-fit=side] .ticket-route{flex-wrap:wrap;row-gap:2px;white-space:normal}
 
 /* ── LED 전광판 ── */
 .board{position:absolute;left:0;right:0;top:0;padding:max(8px,env(safe-area-inset-top)) 10px 8px;background:linear-gradient(#2b2e33,#15171a 70%,#0c0d0f);box-shadow:0 2px 0 #000,0 10px 22px #0007;z-index:3;animation:board-in var(--m-base) both}
