@@ -156,6 +156,8 @@ p{text-wrap:pretty}
 .nt-cell.gap{margin-left:10px}
 .nt-cell.cur{box-shadow:inset 0 0 0 2px #D65C5C;transform:translateY(-2px)}
 .nt-cell svg{display:block;width:100%;height:100%}
+/* 「이대로 쓸게요」는 처음부터 자리를 차지하고 보이지만 않게 — 나타날 때 단추 줄이 접혀 칸이 위로 튀지 않게(화면 검수 F5) */
+.nt .trace-skip.off{visibility:hidden}
 .nt-guide{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .45s}
 .nt-guide.on{opacity:.22}
 .nt .trace-order{opacity:0}
@@ -163,7 +165,7 @@ p{text-wrap:pretty}
 .trace.nt.done .trace-order{opacity:0}
 /* 학생증: 내가 쓴 이름 글씨 — 인쇄된 이름 오른쪽 빈자리에 볼펜 서명처럼 조금 기울여 얹는다(글줄을 더하거나 덮지 않게) */
 .id-sign{position:absolute;left:60%;right:16px;top:26%;height:30px;pointer-events:none;opacity:.9;transform:rotate(-3deg);transform-origin:0 50%}
-.id-info .nm .nm-ko,.id-info .nm small .nm-en{display:inline}
+.id-info .nm .nm-ko,.id-info .nm small .nm-en,#idDept .dp-t{display:inline}
 .id-sign svg{display:block;width:100%;height:100%}
 .id-sign svg g{stroke:#24306b}
 .note{position:absolute;z-index:9;left:50%;top:44%;width:min(86%,340px);padding:0;border-radius:3px;overflow:hidden;box-shadow:0 24px 48px rgba(0,0,0,.45);transform:translate(-50%,-40%) rotate(-3deg);opacity:0;transition:opacity .5s,transform .6s var(--sp-slow,cubic-bezier(.16,1,.3,1));pointer-events:none}

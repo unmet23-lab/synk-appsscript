@@ -31,7 +31,7 @@ const lines=dramaLines(await readEpisodes()),byId=new Map(lines.map(l=>[l.id,l])
 const TRANSCRIPTS={'s1e01-6':['네, 맞아요. 길을 잃어서 한참 헤맸어','네, 맞아요. 길을 잃어서 한참 헤맸어요'],'s1e01-7':['네 선배님 그런데 혹시 도서관이 어디에 있는지 아세요'],'s1e01-8':['정말요? 선배님 덕분에 살았어요'],'s1e01-t9':['선배님, 혹시 편의점이 어디에 있는지 아세요?'],'s1e01-t4':['선생님, 혹시 복사실이 어디에 있는지 아세요?']};
 const used=new Map();
 // 내 길 씨앗(--자리 road): 학생증 이름과 손으로 쓴 이름 글씨. --씨앗이름 "응우옌 티 민 아인" --씨앗글씨 아인 처럼 바꿔 긴 이름의 학생증 자리를 본다
-const SEED_NAME=opt('--씨앗이름','볼로르'),SEED_W=opt('--씨앗글씨',SEED_NAME);
+const SEED_NAME=opt('--씨앗이름','볼로르'),SEED_W=opt('--씨앗글씨',SEED_NAME),SEED_EN=opt('--씨앗영어','Bolor')==='같음'?SEED_NAME:opt('--씨앗영어','Bolor');   // --씨앗영어 같음 = 한글로 이름을 친 학생
 const SEED_SYL=[...SEED_W].filter(ch=>syllableStrokes(ch)),SEED_SIGN=encodeSign(SEED_SYL.map(ch=>syllableStrokes(ch).map(s=>s.p)));
 const SEED_LINES=SEED_SYL.reduce((a,ch)=>a+syllableStrokes(ch).length,0);
 function fakeTake(body){
@@ -112,7 +112,7 @@ if(OFF){
 // ── 타이틀 ──
 if(FROM==='road'){
  await page.goto(`${base}/mobile.html?seoulAuto=1`,{waitUntil:'domcontentloaded'});
- await page.evaluate(({lang,dream,seed})=>{sessionStorage.setItem('synk.brand-opening.v1.seen','1');if(lang!=='ko')localStorage.setItem('synk.world.lang',lang);localStorage.setItem('synk.world.arrival.v1:guest',JSON.stringify({version:1,stage:'card',dream,name:seed.name,nameEn:'Bolor',from:'몽골',call:'선배',look:'mn_m',sign:{w:seed.w,s:seed.sign}}));},{lang:LANG,dream:DREAM,seed:{name:SEED_NAME,w:SEED_W,sign:SEED_SIGN}});
+ await page.evaluate(({lang,dream,seed})=>{sessionStorage.setItem('synk.brand-opening.v1.seen','1');if(lang!=='ko')localStorage.setItem('synk.world.lang',lang);localStorage.setItem('synk.world.arrival.v1:guest',JSON.stringify({version:1,stage:'card',dream,name:seed.name,nameEn:seed.en,from:'몽골',call:'선배',look:'mn_m',sign:{w:seed.w,s:seed.sign}}));},{lang:LANG,dream:DREAM,seed:{name:SEED_NAME,w:SEED_W,en:SEED_EN,sign:SEED_SIGN}});
  await page.reload({waitUntil:'domcontentloaded'});
  await until('내 길',async()=>!!F()&&await inF(()=>document.querySelector('#s-path')?.classList.contains('on')),30000);
  await sleep(800);

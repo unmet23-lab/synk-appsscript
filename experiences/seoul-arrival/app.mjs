@@ -996,11 +996,11 @@ function fillCard(){
   const D=DREAM[state.dream],ko=state.name||'신입생';
   // 사진 칸: 찍은 사진(나중에 찍기를 고르면 실루엣)
   $('#idPhoto').innerHTML='<svg viewBox="0 0 92 120" aria-hidden="true"><circle cx="46" cy="46" r="19" fill="rgba(255,255,255,.8)"/><path d="M10 120c3-24 18-38 36-38s33 14 36 38z" fill="rgba(255,255,255,.8)"/></svg>';
-  $('#idName').innerHTML=`<span class="nm-ko">${esc(ko)}</span><small><span class="nm-en">${!state.name?'New student':state.nameEn&&state.nameEn!==ko?esc(state.nameEn):''}</span></small>`;
+  $('#idName').innerHTML=`<span class="nm-ko">${esc(ko)}</span><small><span class="nm-en">${!state.name?'New student':state.nameEn&&state.nameEn!==ko?esc(state.nameEn):'&nbsp;'}</span></small>`;   // 빈 영어 줄도 한 줄 자리를 남겨 이름 글씨가 앉을 곳이 있게
   // 부스에서 손으로 쓴 이름 글씨(있을 때만). 쓴 이름이 지금 이름과 다르면 그리지 않는다
   const sg=state.sign&&state.name&&(state.sign.w===state.name||state.name.split(' ').includes(state.sign.w))?signSvg(state.sign,{width:.075,tight:true}):'';
   $('#idSign').innerHTML=sg;$('#idSign').hidden=!sg;placeSign();
-  $('#idDept').innerHTML='국제학부 1학년'+(state.from?` · <b>${esc(state.from)}</b>`:'');
+  $('#idDept').innerHTML='<span class="dp-t">국제학부 1학년'+(state.from?` · <b>${esc(state.from)}</b>`:'')+'</span>';
   $('#idDream').textContent='꿈 · '+D.ko;
   $('#cardLine').textContent=LANG==='ko'?`${state.name?state.name+' 씨의':'이제'} 한국 생활이 시작돼요. 이 길 끝에 ${D.goal}${hasBatchim(D.goal)?'이':'가'} 있어요.`:L('학생증 한 줄',{goal:L(D.goal)});
 }
@@ -1012,8 +1012,11 @@ function placeSign(tries=0){
   if(!card.offsetWidth||!ko.offsetWidth){if(tries<60)requestAnimationFrame(()=>placeSign(tries+1));return;}
   const W=card.offsetWidth,edge=W-16,box=(el,h)=>({left:el.offsetLeft+el.offsetWidth+10,top:el.offsetTop+(el.offsetHeight-h)/2,h});
   const hKo=Math.min(32,ko.offsetHeight*1.05),lines=Math.round(ko.offsetHeight/(parseFloat(getComputedStyle(ko).lineHeight)||ko.offsetHeight));
-  let at=lines<=1?box(ko,hKo):null;
-  if(!at||edge-at.left<64){const b=en&&en.offsetWidth?box(en,15):null;if(b)b.top+=1;at=b&&edge-b.left>=56?b:null;}   // 영어 이름 줄은 글이 작아 아래 학과 줄에 닿지 않게 낮게
+  // 자리 차례: ① 인쇄 이름 오른쪽(한 줄일 때) ② 영어 이름 오른쪽 ③ 학과 줄 오른쪽 ④ 빈 영어 줄 맨 왼쪽(작게).
+  // 한글로 이름을 친 학생은 영어 이름 줄이 비어 있어(빈칸 하나로 자리만 남김) 긴 이름이어도 ③ · ④에 앉는다 — 숨기지 않는다(화면 검수 F4)
+  const blank=en&&!en.textContent.trim(),dp=$('#idDept .dp-t');
+  const seats=[()=>lines<=1?box(ko,hKo):null,()=>en&&en.offsetWidth&&!blank?{...box(en,15),top:box(en,15).top+1}:null,()=>dp&&dp.offsetWidth?box(dp,16):null,()=>blank&&en.offsetWidth?{left:en.offsetLeft,top:en.offsetTop+2,h:10}:null];
+  let at=null;for(const seat of seats){const b=seat();if(b&&edge-b.left>=(b.h>=30?64:56)){at=b;break;}}
   if(!at){sg.style.visibility='hidden';return;}
   Object.assign(sg.style,{visibility:'',left:at.left+'px',right:'16px',top:at.top+'px',height:at.h+'px'});
 }

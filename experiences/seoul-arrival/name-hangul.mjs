@@ -122,6 +122,8 @@ export const NAME_DICT={
  eric:'에릭',adam:'애덤',nick:'닉',ben:'벤',max:'맥스',leo:'레오',mary:'메리',linda:'린다',lisa:'리사',amy:'에이미',julia:'줄리아',maria:'마리아',sofia:'소피아',lucy:'루시',
  // 지금 부스 사전(NAMES)
  minh:'민',linh:'린',
+ // 흔한 베트남 성씨 — 홑낱말로 쳐도 라틴 소리 규칙(느구옌 · 트란)이 아니라 흔한 표기로(화면 검수 F3)
+ nguyen:'응우옌',tran:'쩐',huynh:'후인',duong:'즈엉',truong:'쯔엉',ngo:'응오',vuong:'브엉',luong:'르엉',trinh:'찐',
 };
 
 // 베트남 이름인지: 성조 글자가 있거나, 성조 없이 적었어도 낱말이 모두 베트남 음절표에 있거나(Nguyen Thi Minh Anh),

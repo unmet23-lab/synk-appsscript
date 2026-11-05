@@ -139,3 +139,12 @@ test('화면 검수 A1 · A3 · A4: 성조 없는 베트남 이름 · 결합 문
  for(const raw of ['Bat-龍','Minh-2','-'])assert.equal(hangulName(raw),null,raw);
  assert.equal(hangulName('Bat-Erdene').ko,'바트에르덴');
 });
+
+test('화면 검수 F2 · F3: 판정을 통과한 글씨는 저장 검증도 통과하고, 홑낱말 베트남 성씨는 흔한 표기로', () => {
+ // 펜을 떼지 않고 한 획으로 길게 이어 쓴 음절(점이 많다)도 encodeSign이 readSign 상한 안으로 솎는다
+ const long=ch=>[syllableStrokes(ch).flatMap(s=>samples(s.p,.002)).map(([x,y],i)=>[x+Math.sin(i)*.01,y+Math.cos(i*1.3)*.01])];
+ for(const w of ['뺨빨','볼로르','옌쭝']){const syl=[...w].map(long);assert.ok(syl[0][0].length>200,'점이 상한보다 많은 획');
+  const s=encodeSign(syl);assert.ok(s,w);const rec=readArrival({version:1,name:w,sign:{w,s}});assert.deepEqual(rec.sign,{w,s},w);}
+ const many=[Array.from({length:60},(_,i)=>[[i/60,.2],[i/60,.8]])];const sm=encodeSign(many);assert.equal(sm.split(',').length,40,'음절당 획 40개까지');
+ assert.equal(hangulName('Nguyen').ko,'응우옌');assert.equal(hangulName('Tran').ko,'쩐');assert.equal(hangulName('Nguyen Van An').ko,'응우옌 반 안');
+});

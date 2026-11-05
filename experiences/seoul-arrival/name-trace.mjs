@@ -56,6 +56,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
   let W=0,lw=10,i=0,model=[],strokes=[],last=null,pid=null,ptype='',penT=-1e9,lastT=0,timer=0,acceptT=0,finished=false,switching=false,swT=0,swT2=0;
   let soLen=[],soDone=[],soCur=0,soFoc=-1,soRaf=0,demoRun=0,demoing=false,guideOn=!knows;
   const inks=[];   // 음절마다 다 쓴 잉크(칸 [0,1]²)
+  const showAccept=on=>{btnAccept.classList.toggle('off',!on);btnAccept.disabled=!on;};
   box.classList.remove('done');box.classList.toggle('knows',knows);cv.setAttribute('aria-label',L('이름 쓰는 칸',{w:word}));
   // 음절 줄: 쓴 음절은 내 잉크, 지금 음절은 테두리
   row.innerHTML=syl.map((s,k)=>`<i class="nt-cell${s.gap?' gap':''}" data-k="${k}"></i>`).join('');
@@ -127,7 +128,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
 
   function openSyllable(auto){
    switching=false;last=null;pid=null;
-   model=syllableStrokes(syl[i].ch);strokes=[];soDone=model.map(()=>false);clearTimeout(timer);clearTimeout(acceptT);btnAccept.hidden=true;
+   model=syllableStrokes(syl[i].ch);strokes=[];soDone=model.map(()=>false);clearTimeout(timer);clearTimeout(acceptT);showAccept(false);
    guideOn=!knows;fit();paintRow();
    if(auto&&!knows)setTimeout(()=>{if(!finished&&!strokes.length&&active===self)demo();},420);
    else soShow(false);
@@ -141,7 +142,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
   // 「획순 보기」 시범 중이면 전환 안내 타이머가 시범 선을 지우지 않는다(화면 검수 C2)
   function nextSyllable(){
    if(switching||finished)return;
-   switching=true;clearTimeout(timer);clearTimeout(acceptT);btnAccept.hidden=true;last=null;pid=null;
+   switching=true;clearTimeout(timer);clearTimeout(acceptT);showAccept(false);last=null;pid=null;
    inks[i]=strokes.map(s=>s.slice());
    const c=cell(i);if(c)c.innerHTML=inkSvg([inks[i]],{width:.09});
    SND.felt('ok');
@@ -167,15 +168,15 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
    const r=score(model,strokes,lw/W);api.last=r;
    soDone=model.map((_,k)=>soDone[k]||r.done[k]);soShow(true);
    clearTimeout(acceptT);
-   if(r.ok){hint.textContent=L('좋아요, 다 썼어요!');btnAccept.hidden=true;timer=setTimeout(nextSyllable,700);return;}
+   if(r.ok){hint.textContent=L('좋아요, 다 썼어요!');showAccept(false);timer=setTimeout(nextSyllable,700);return;}
    if(r.inside<.75||r.stray)hint.textContent=L(knows&&!guideOn?'칸 안에 또박또박 써 보세요':'흐린 글자 위를 따라 써 보세요');
    else if(soCur>=0&&guideOn)tip();
    else hint.textContent=L('조금만 더 써 보세요');
-   acceptT=setTimeout(()=>{if(!finished&&strokes.length)btnAccept.hidden=false;},2500);};
+   acceptT=setTimeout(()=>{if(!finished&&strokes.length)showAccept(true);},2500);};
   const cancelPt=e=>{if(e.pointerId===pid){last=null;pid=null;}};
-  const clear=e=>{e?.stopPropagation();if(switching)return;clearTimeout(timer);clearTimeout(acceptT);if(demoing)demoStop();strokes=[];last=null;pid=null;redraw();soDone=model.map(()=>false);btnAccept.hidden=true;soShow(false);SND.felt('page');};
+  const clear=e=>{e?.stopPropagation();if(switching)return;clearTimeout(timer);clearTimeout(acceptT);if(demoing)demoStop();strokes=[];last=null;pid=null;redraw();soDone=model.map(()=>false);showAccept(false);soShow(false);SND.felt('page');};
   const order=e=>{e.stopPropagation();if(switching)return;clearTimeout(timer);clearTimeout(swT2);demo();};
-  const accept=e=>{e.stopPropagation();if(!strokes.length||switching)return;nextSyllable();};
+  const accept=e=>{e.stopPropagation();if(!strokes.length||switching||btnAccept.disabled)return;nextSyllable();};
   const skip=e=>{e.stopPropagation();finish(false);};
   function cleanup(){cancelAnimationFrame(soRaf);demoRun++;clearTimeout(timer);clearTimeout(acceptT);clearTimeout(swT);clearTimeout(swT2);
    cv.removeEventListener('pointerdown',down);cv.removeEventListener('pointermove',move);removeEventListener('pointerup',up);cv.removeEventListener('pointercancel',cancelPt);removeEventListener('resize',onResize);
@@ -194,7 +195,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
   const self={
    cancel(){finish(false,true);},
    paths(){const b=cv.getBoundingClientRect(),k=b.width/W;return model.map(s=>s.p.map(([u,v])=>[b.left+u*W*k,b.top+v*W*k]));},
-   state(){return {i,n:syl.length,word,knows,done:soDone.slice(),hint:hint.textContent,accept:!btnAccept.hidden,demo:demoing};},
+   state(){return {i,n:syl.length,word,knows,done:soDone.slice(),hint:hint.textContent,accept:!btnAccept.classList.contains('off'),demo:demoing};},
   };
   hint.textContent=HINT;box.classList.add('on');
   requestAnimationFrame(()=>{if(!finished)openSyllable(true);});

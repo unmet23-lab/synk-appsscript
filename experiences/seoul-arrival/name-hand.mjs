@@ -54,9 +54,16 @@ function simplify(pts,eps){if(pts.length<3)return pts;let i0=0,dm=0;const [a,b]=
  for(let i=1;i<pts.length-1;i++){const d=segDist(pts[i],[a,b]);if(d>dm){dm=d;i0=i;}}
  if(dm<=eps)return [a,b];return [...simplify(pts.slice(0,i0+1),eps).slice(0,-1),...simplify(pts.slice(i0),eps)];}
 const q=v=>AB[Math.max(0,Math.min(63,Math.round(v*63)))];
-export function encodeSign(syllables,max=3000){
- for(const eps of [.006,.012,.02,.035]){
-  const s=syllables.map(st=>st.map(pts=>simplify(pts,eps).map(([x,y])=>q(x)+q(y)).join('')).filter(Boolean).join(',')).join('|');
+// 저장 검증(seoul-record.mjs readSign)과 같은 상한: 음절당 획 40개 · 획당 점 200개 · 전체 3,000자.
+// 판정이 통과시킨 글씨가 저장에서만 조용히 버려지지 않게, 솎아서라도 이 상한 안으로 맞춘다(화면 검수 F2)
+export const SIGN_LIMIT={strokes:40,points:200,chars:3000};
+const thin=(pts,n)=>pts.length<=n?pts:Array.from({length:n},(_,i)=>pts[Math.round(i*(pts.length-1)/(n-1))]);
+export function encodeSign(syllables,max=SIGN_LIMIT.chars){
+ const fit=syllables.map(st=>{const keep=st.filter(p=>p.length).slice();
+  if(keep.length>SIGN_LIMIT.strokes){const len=p=>p.reduce((a,q,i)=>i?a+Math.hypot(q[0]-p[i-1][0],q[1]-p[i-1][1]):0,0);keep.sort((a,b)=>len(b)-len(a));keep.length=SIGN_LIMIT.strokes;}
+  return keep;});
+ for(const eps of [.006,.012,.02,.035,.06]){
+  const s=fit.map(st=>st.map(pts=>thin(simplify(pts,eps),SIGN_LIMIT.points).map(([x,y])=>q(x)+q(y)).join('')).filter(Boolean).join(',')).join('|');
   if(s.length<=max)return s;
  }
  return null;
