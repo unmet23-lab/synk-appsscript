@@ -47,6 +47,17 @@
         "화면필요": []
       },
       {
+        "계정": "yuhobuilds-tiktok",
+        "채널": "틱톡 @yuhobuilds",
+        "주소": "https://www.tiktok.com/@yuhobuilds/video/7704678270200990996?utm_campaign=tt4d_open_api&utm_source=sbawa7xabwj54nyv5i",
+        "형식": "tiktok-video",
+        "게시": "2026-11-05T13:26:44.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "yuhobuilds-youtube",
         "채널": "유튜브 @yuhobuilds",
         "주소": "https://www.youtube.com/watch?v=XKCS9J8koMY",
