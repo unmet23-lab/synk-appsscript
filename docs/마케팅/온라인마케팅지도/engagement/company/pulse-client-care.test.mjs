@@ -111,7 +111,7 @@ const at='2026-10-19T00:00:00Z';
 const confirmedStrategy={revision:2,data:{primaryPromise:'오래 쓰는 제품',evidence1:'시험 장면',desiredAction:'자세히 보기'},request:{strategyRevision:2},confirmation:{strategyRevision:2},history:[]};
 const base=(studio={})=>({id:'p',revision:5,title:'고객 돌봄 시험',stage:'producing',versions:[],messages:[],studio:{preferences:{},assets:[],references:[],concepts:[],scenes:[],sceneReviews:[],comments:[],strategy:structuredClone(confirmedStrategy),...studio}});
 const view=(p,extra={})=>projectView({mode:'customer',tab:'overview',project:p,...extra});
-const nextBanner=html=>(html.match(/<section class="next-decision">[^]*?<\/section>/)||[''])[0];
+const nextBanner=html=>(html.match(/<section class="sx-next-block">[^]*?<\/section>/)||[''])[0];
 
 test('the next step follows the real stage: delivery specs, the team turn after confirmed scenes and after shared taste',()=>{
   const specs=base({deliverables:{revision:3,request:{deliverableRevision:3},confirmation:null}});
@@ -126,7 +126,7 @@ test('a staff note is shown as its own memo and never replaces the stage explana
   const p=base({scenes:[{id:'s1',title:'첫 장면',revision:1,visibility:'customer'}],sceneReviews:[{id:'r1',sceneId:'s1',status:'confirmed',current:true,at}],concepts:[{id:'c1',title:'콘셉트',revision:1,visibility:'customer'}]});
   p.nextStep='금요일까지 로고 원본을 보내 주세요';
   const next=nextDecision(p);assert.equal(next.text,'확인한 장면으로 시안 영상을 만들고 있어요. 시안이 오면 알려 드릴게요.');assert.equal(next.note,'금요일까지 로고 원본을 보내 주세요');
-  const html=view(p);assert.match(html,/<p class="focus-memo"><span>담당자 안내<\/span>금요일까지 로고 원본을 보내 주세요<\/p>/);
+  const html=view(p);assert.match(html,/<p class="sx-note"><span>담당자 안내<\/span>금요일까지 로고 원본을 보내 주세요<\/p>/);
   assert.match(html,/건너뜀/,'03 concepts were skipped once 04 scenes were confirmed');
   const shared=base({references:[{id:'ref',author:'staff',label:'제작팀 예시'}]});shared.studio.strategy={revision:0,data:{},history:[]};
   assert.doesNotMatch(view(shared),/건너뜀/,'material the team shared first does not skip the customer\'s plan');
@@ -144,17 +144,17 @@ test('recent news on the overview counts what the team shared, not only messages
 
 test('the entrance explains a failed or ended link in place, and only the customer header drops the logout button',()=>{
   const failed=welcome({entryError:{title:'이 초대 링크로는 열 수 없어요',text:'<담당자>에게 새 링크를 요청해 주세요.'}});
-  assert.match(failed,/<div class="entry-alert" role="alert"><strong>이 초대 링크로는 열 수 없어요<\/strong><p>&lt;담당자&gt;에게 새 링크를 요청해 주세요\.<\/p><\/div>/);
-  assert.doesNotMatch(welcome({}),/entry-alert/);
+  assert.match(failed,/<div class="sx-invite-alert" role="alert"><strong>이 초대 링크로는 열 수 없어요<\/strong><p>&lt;담당자&gt;에게 새 링크를 요청해 주세요\.<\/p><\/div>/);
+  assert.doesNotMatch(welcome({}),/sx-invite-alert/);
   assert.doesNotMatch(header({mode:'customer',project:{id:'p'},live:{}}),/data-action="logout"/);
   assert.match(header({mode:'staff',user:{name:'제작자'},live:{}}),/data-action="logout"/);
-  const offered=view(base(),{rememberOffer:true});assert.match(offered,/class="remember-offer"/);assert.match(offered,/data-action="remember-device"/);assert.match(offered,/data-action="remember-dismiss"/);
+  const offered=view(base(),{rememberOffer:true});assert.match(offered,/class="sx-offer remember-offer"/);assert.match(offered,/data-action="remember-device"/);assert.match(offered,/data-action="remember-dismiss"/);
   assert.match(offered,/초대 링크 없이 이 브라우저에서 프로젝트가 열려요/);assert.match(view(base(),{rememberOffer:true,desktopApp:true}),/초대 링크 없이 이 PC 앱에서 프로젝트가 열려요/);
   assert.doesNotMatch(view(base(),{rememberOffer:true,demo:true,demoGuide:{step:1,total:7,title:'체험',description:'체험 설명',tab:'direction',action:'taste',button:'열기'}}),/remember-offer/);assert.match(view(base(),{demo:true,demoPersistent:true,demoGuide:{step:1,total:7,title:'체험',description:'체험 설명',tab:'direction',action:'taste',button:'열기'}}),/실제 의뢰나 승인으로 이어지지 않아요/,'체험 안내 띠의 면책 한 줄');assert.doesNotMatch(view(base(),{rememberOffer:false}),/remember-offer/);
   const panel=remembered=>liveView({mode:'customer',live:{open:true,status:'connected',notifications:[],unreadCount:0,rememberKnown:true,remembered}});
   assert.match(panel(false),/class="button quiet small-button panel-logout is-customer" data-action="logout"/);
   const css=readFileSync(new URL('app.css',appDir),'utf8');assert.match(css,/\.panel-logout\.is-customer\{display:inline-flex\}/,'customers close the connection from the inbox at every width');
-  assert.match(failed,/^<div class="entry has-entry-error">/,'the error keeps the invite form open on the entrance');assert.doesNotMatch(failed,/data-entry-invite hidden/);assert.match(welcome({}),/data-entry-invite hidden/);
+  assert.match(failed,/^<div class="sx-home has-entry-error">/,'the error keeps the invite form open on the entrance');assert.doesNotMatch(failed,/data-entry-invite hidden/);assert.match(welcome({}),/data-entry-invite hidden/);
   assert.match(panel(false),/data-action="remember-device"/);assert.match(panel(true),/이 기기는 기억돼 있어요/);assert.doesNotMatch(panel(true),/data-action="remember-device"/);
 });
 

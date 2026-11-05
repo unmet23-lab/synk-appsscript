@@ -102,13 +102,13 @@ test('an expired draft with nothing to lose sends straight through, and removing
   assert.equal(seen.length,1);
 });
 test('the rail keeps the first draft closed until a round exists and marks only the page that is open',()=>{
-  const open=html=>Array.from(html.matchAll(/class="rail-item ([^"]*)" ([^>]*)data-room-go="([^"]+)"/g),match=>({id:match[3],now:match[1].includes('is-now'),disabled:match[2].includes('disabled'),current:match[2].includes('aria-current')}));
+  const open=html=>Array.from(html.matchAll(/class="sx-step ([^"]*)" ([^>]*)data-room-go="([^"]+)"/g),match=>({id:match[3],now:match[1].includes('is-now'),disabled:match[2].includes('disabled'),current:match[2].includes('aria-current')}));
   const waiting=open(roomRail({stage:'draft',hasRound:false})).find(item=>item.id==='draft');
   assert.equal(waiting.now,true);assert.equal(waiting.disabled,true,'choosing a model comes first');
   assert.equal(open(roomRail({stage:'draft',hasRound:true})).find(item=>item.id==='draft').disabled,false);
   const films=roomRail({stage:'check',hasRound:false,films:true},{tab:'films'});
   assert.equal(open(films).filter(item=>item.now||item.current).length,0,'no stage claims the page');
-  assert.match(films,/is-now" aria-current="page" data-room-go="films"/);
+  assert.match(films,/class="is-now" aria-current="page" data-room-go="films"/);
 });
 const request=extra=>({number:'P-1',status:'submitted',answers:{...normalizeRequestAnswers(answersForServer(full())),models:[]},files:[],asks:[],notes:[],rounds:[],...extra});
 const project=(r,extra={})=>({id:'p',title:'오미톡',stage:'received',versions:[],studio:{assets:[],scenes:[{id:'s',revision:1,duration:2,description:'벤치 위 캔',narration:'',screenText:'',assetId:null,imageUrl:'https://example.com/c.png'}],request:r,strategy:{data:{}}},...extra});
@@ -178,7 +178,7 @@ test('the desk flags what staff must look at, and retired requests still open',(
   assert.equal(retired.status,'retired');
 });
 test('customer screens never name a tool, and the internal desk stays out of their bundle',async()=>{
-  for(const name of ['request-flow.mjs','request-data.mjs','request-backend.mjs','film-views.mjs','room-view.mjs','demo-film.mjs','motion.mjs']){
+  for(const name of ['request-flow.mjs','request-data.mjs','request-backend.mjs','film-views.mjs','film-home.mjs','film-review.mjs','room-view.mjs','demo-film.mjs','motion.mjs']){
     const source=await readFile(new URL('./public/pulse-app/'+name,import.meta.url),'utf8');
     assert.doesNotMatch(source,/Claude|Fable|Seedance|Higgsfield|Gemini|GPT|Kling|Sora/,name);
     assert.doesNotMatch(source,/desk-view/,name);
@@ -198,26 +198,26 @@ const roomState2=(r,extra={})=>({mode:'customer',tab:'overview',live:{},project:
 test('a customer with a request gets the new room; the review and delivery tabs keep working inside its rail',()=>{
   const r=request({status:'submitted'});
   const room=projectView(roomState2(r));
-  assert.match(room,/^<div class="room">/);
-  assert.doesNotMatch(room,/room-bar/,'the app header is already on top');
+  assert.match(room,/^<div class="sx-room" data-state="check">/);
+  assert.doesNotMatch(room,/sx-room-bar/,'the app header is already on top');
   assert.match(room,/지금은 저희 차례예요/);
   const script=request({status:'confirmed',rounds:[{round:1,kind:'script',oneLine:'한 문장',scenes:[{id:'s',revision:1}]}]});
   const draft=projectView({...roomState2(script),tab:'draft'});
-  assert.match(draft,/^<div class="draft is-script"/);
+  assert.match(draft,/^<div class="sx-draft sx-dr is-script"/);
   assert.doesNotMatch(draft,/ONE LINE|ROUND|CUTS|CUT \d/,'the words a customer reads are Korean');assert.match(draft,/1판 · 1컷/);assert.match(draft,/광고가 남길 한 문장/);
   assert.match(projectView({...roomState2(script),tab:'draft',error:'그사이 새 소식이 생겼어요',conflict:true}),/role="alert"[\s\S]*data-action="refresh"/,'a conflict on the draft can be refreshed from the draft');
   const legacy=projectView({...roomState2(script),tab:'review'});
-  assert.match(legacy,/class="project-shell is-room"/);
-  assert.match(legacy,/class="room-rail"/);
+  assert.match(legacy,/^<div class="sx-shell sx-room" data-mode="customer" data-tab="review"/,'before any video the review tab is the ask-only room');
+  assert.match(legacy,/<nav class="sx-steps" aria-label="단계">/);
   const asking=projectView({...roomState2(request({status:'submitted'})),tab:'review'});
   assert.doesNotMatch(asking,/의견은 모아서 한 번에 보내요/,'before any preview there is no such box');assert.match(asking,/궁금한 점을 남겨 주세요/);assert.equal(asking.split('후속 문의').length,1);
-  assert.match(room,/<div class="rail-steps">[\s\S]*<\/div><div class="rail-foot">[\s\S]*담당자에게 묻기/,'on a phone the steps scroll and the way to ask stays outside them');
-  assert.equal(room.split('class="rail-item').length-1,6,'the six steps are drawn once, on the rail');assert.doesNotMatch(room,/class="leader"/);
+  assert.match(room,/<div class="sx-steps-run">[\s\S]*<\/div><div class="sx-steps-foot sx-small">[\s\S]*담당자에게 묻기/,'on a phone the steps scroll and the way to ask stays outside them');
+  assert.equal(room.split('class="sx-step ').length-1,6,'the six steps are drawn once');assert.doesNotMatch(room,/class="leader"/);
   assert.doesNotMatch(legacy,/class="rail"/);
   assert.doesNotMatch(legacy,/next-decision/,'the room says what to do, not the old next-step card');
   assert.doesNotMatch(legacy,/production-scope/);
   assert.doesNotMatch(projectView({...roomState2(script),tab:'strategy'}),/data-form="strategy"/,'the long form stays closed unless staff asked for a check');
-  assert.doesNotMatch(projectView({mode:'customer',tab:'overview',live:{},project:{id:'old',title:'옛',stage:'review',versions:[{id:'v',kind:'preview'}],messages:[],studio:{scenes:[],concepts:[],references:[],assets:[],comments:[],sceneReviews:[]}}}),/class="room"/,'old projects keep the old room');
+  assert.doesNotMatch(projectView({mode:'customer',tab:'overview',live:{},project:{id:'old',title:'옛',stage:'review',versions:[{id:'v',kind:'preview'}],messages:[],studio:{scenes:[],concepts:[],references:[],assets:[],comments:[],sceneReviews:[]}}}),/^<div class="sx-room" data-state=/,'old projects keep their own overview');
 });
 test('the room asks only what is open and offers the extra work staff requested',()=>{
   const r=request({asks:[{id:'a',label:'로고 파일',why:'끝 화면에 얹어요',status:'open'},{id:'b',label:'받은 것',status:'answered',answer:'네'}]});

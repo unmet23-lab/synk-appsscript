@@ -219,10 +219,15 @@ function project(){
 }
 const state=(over={})=>({mode:'customer',tab:'overview',project:project(),workflow:[],...over});
 
-test('the rail and the folding phone list carry one finished films entry below the six steps, outside step progress',()=>{
+test('the step line carries one finished films entry apart from the six steps',()=>{
   for(const tab of ['overview',...tabs.map(t=>t[0]),'films']){
-    const html=projectView(state({tab}));
-    // 레일·휴대폰 목록 둘 + 제작 설계에서는 모델·스타일 칸 머리의 「완성 광고 보기」 하나.
+    const customer=projectView(state({tab}));
+    // 단계 줄 바깥에 하나 + 제작 설계에서는 모델·스타일 칸 머리의 「완성 광고 보기」 하나.
+    assert.equal((customer.match(/data-action="tab" data-tab="films"/g)||[]).length,tab==='strategy'?2:1,tab);
+    assert.match(customer,/<div class="sx-steps-foot sx-small"><button type="button" class="[^"]*" data-action="tab" data-tab="films"/,tab);
+    assert.equal((customer.match(/class="sx-step[ "]/g)||[]).length,7,'현황과 여섯 단계만 센다: '+tab);
+    const html=projectView(state({tab,mode:'staff',canEdit:true}));
+    // 직원 화면: 레일·휴대폰 목록 둘 + 제작 설계에서는 모델·스타일 칸 머리의 「완성 광고 보기」 하나.
     assert.equal((html.match(/data-action="tab" data-tab="films"/g)||[]).length,tab==='strategy'?3:2,tab);
     assert.equal((html.match(/<p class="rail-label">SYNK 작품<\/p><button type="button" class="rail-home rail-films" data-action="tab" data-tab="films" aria-current="(?:page|false)">/g)||[]).length,2,tab);
     assert.match(html,new RegExp(`data-tab="films" aria-current="${tab==='films'?'page':'false'}"`),tab);
@@ -231,8 +236,16 @@ test('the rail and the folding phone list carry one finished films entry below t
   }
 });
 
-test('the films page has its own head, the next step and the film list, and no project tools, confirmation or schedule blocks',()=>{
-  for(const mode of ['customer','staff']){
+test('the customer films page lists every film by name and opens it in the screening room, with no project tools, confirmation or schedule blocks',()=>{
+  const customer=projectView(state({tab:'films'}));
+  assert.match(customer,/<h1 class="sx-display">SYNK가 끝까지 만든 광고예요<\/h1>/);
+  assert.equal((customer.match(/class="sx-film-row" data-film-open="/g)||[]).length,FINISHED_FILMS.length);
+  assert.match(customer,/data-film-poster src="\.\/assets\/films\/yurigyeol-holiday-poster-v1\.webp"/);
+  assert.match(customer,/공모전 출품작/);assert.match(customer,/가상 브랜드로 만든 자체 작품/);
+  assert.doesNotMatch(customer,/refresh-button|staff-note|confirmation-scope|schedule-|casting-configurator|<form/);
+});
+test('the staff films page has its own head, the next step and the film list, and no project tools, confirmation or schedule blocks',()=>{
+  for(const mode of ['staff']){
     const html=projectView(state({tab:'films',mode,canEdit:true}));
     assert.match(html,/<section class="tab-panel" data-current-tab="films"/);
     assert.match(html,/<header class="canvas-head"><div class="canvas-copy"><p class="canvas-kicker">완성 광고<\/p><h1>SYNK가 끝까지 <span>만든 광고예요\.<\/span><\/h1><p class="canvas-lead">기획부터 마지막 편집까지 마친 작품만 모았어요\. 새 광고가 완성되면 여기에 더해요\.<\/p><\/div><\/header>/,mode);
@@ -248,7 +261,7 @@ test('the films page has its own head, the next step and the film list, and no p
 test('live refresh waits while a film excerpt plays, and the offline shell caches the films module instead of the withdrawn plan module',()=>{
   const app=readFileSync(new URL('app.mjs',appDir),'utf8'),sw=readFileSync(new URL('sw.js',appDir),'utf8');
   assert.match(app,/Array\.from\(document\.querySelectorAll\('\[data-preview-test\],\[data-film-player\]'\)\)\.some\(video=>!video\.paused&&!video\.ended\)/);
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v26-request-flow-20261104';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v27-film-20261105';/);
   assert.match(sw,/'casting-catalog\.mjs','films-view\.mjs',/);
   assert.doesNotMatch(sw,/production-catalog/);
 });

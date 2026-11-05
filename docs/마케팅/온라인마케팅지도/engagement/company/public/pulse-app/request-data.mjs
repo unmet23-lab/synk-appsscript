@@ -2,14 +2,14 @@ import {CASTING_MODELS} from './casting-catalog.mjs';
 
 // 의뢰서에서 무엇을 왜 묻는지(2026-11-04). 칸마다 근거는 docs/마케팅/PULSE_의뢰흐름_20261104/README.md 「받는 정보 판단」.
 // 값은 결정 10-29 정가의 「부터」만 쓴다. 기간·수정 횟수는 아직 공개하지 않기로 한 약속이라(트랙 §1) 여기 두지 않는다.
-const shot=code=>`./assets/casting/photos/${code}-context.webp`;
+const shot=code=>`./assets/request/model-scene-${code}.webp`;
 export const KINDS=Object.freeze([
   {id:'food',label:'음료 · 식품',note:'먹고 마시는 제품',shot:shot('f02'),who:'하린 · 상큼한 막내',group:'product'},
-  {id:'beauty',label:'화장품 · 뷰티',note:'스킨케어, 색조, 뷰티 기기',shot:shot('f01'),who:'유나 · 도시의 뮤즈',group:'product'},
+  {id:'beauty',label:'화장품 · 뷰티',note:'스킨케어, 색조, 뷰티 기기',shot:'./assets/request/w-gift-sphere.webp',who:'「유리결」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품',group:'product'},
   {id:'fashion',label:'패션 · 잡화',note:'옷, 가방, 신발, 액세서리',shot:shot('m09'),who:'서율 · 블루 그레이빛 차가운 비주얼',group:'wear'},
-  {id:'living',label:'생활용품 · 가전',note:'집과 일상에서 쓰는 물건',shot:shot('f05'),who:'소연 · 믿고 사는 언니',group:'product'},
+  {id:'living',label:'생활용품 · 가전',note:'집과 일상에서 쓰는 물건',shot:'./assets/films/maejin-imbak-poster-v1.webp',who:'「매진 임박」 홈쇼핑 × 공포 코미디 · 가상 브랜드로 만든 자체 작품',group:'product'},
   {id:'app',label:'앱 · 웹 서비스',note:'화면으로 쓰는 서비스',shot:shot('m04'),who:'민재 · 옆집 자취생',group:'app'},
-  {id:'place',label:'매장 · 공간 · 서비스',note:'찾아오거나 예약하는 곳',shot:shot('m02'),who:'태준 · 위스키가 어울리는 남자',group:'place'},
+  {id:'place',label:'매장 · 공간 · 서비스',note:'찾아오거나 예약하는 곳',shot:'./assets/films/hwaseong-cf-light-poster-v1.webp',who:'「1억 년의 빛」 화성 CF · 공모전 출품작',group:'place'},
   {id:'brand',label:'브랜드 · 기업 전체',note:'제품 하나가 아니라 회사 이야기',shot:shot('m05'),who:'준호 · 믿음직한 생활형',group:'brand'},
 ]);
 export const CHANNELS=Object.freeze([
@@ -81,7 +81,7 @@ export const ACTIONS=Object.freeze([
 ]);
 export const WIN=Object.freeze([
   {id:'story',label:'이야기로 여운을',note:'끝까지 보게 하고, 끝에서 마음이 움직여요.',work:'매진 임박',poster:'./assets/request/w-maejin.webp',film:'./assets/request/film-maejin.mp4',kind:'1m 13s · 16:9',ratio:'16:9'},
-  {id:'impact',label:'한 장면의 임팩트로',note:'한 번 보면 잊히지 않는 그림 하나로 이겨요.',work:'유리결',poster:'./assets/request/w-gift-sphere.webp',film:'./assets/request/film-gift.mp4',kind:'15s · 9:16',ratio:'9:16'},
+  {id:'impact',label:'한 장면의 임팩트로',note:'한 번 보면 잊히지 않는 그림 하나로 이겨요.',work:'유리결',poster:'./assets/request/w-gift-sphere.webp',film:'./assets/request/film-gift.mp4',kind:'15초 · 9:16',ratio:'9:16'},
 ]);
 export const REFERENCE_POINTS=Object.freeze(['전개 · 구성','색감 · 빛','카메라 · 속도','모델 연기','소리 · 음악']);
 // 모델 추천: 캐스팅북 명세(roster-v2.json의 tagline · fits)에서 옮긴 한 줄과 업종이다.
@@ -108,11 +108,21 @@ export const MODEL_LINES=Object.freeze({
   M09:{line:'블루 그레이빛 차가운 비주얼',fits:['fashion','beauty','brand']},
   M10:{line:'장난기 가득 래퍼 막내',fits:['food','app','fashion']},
 });
+// 모델 단계의 첫 판: 제작사가 업종마다 고른 넷. 빛 · 나이 · 성별이 겹치지 않게 골랐다. 21명 전체는 손님이 「모두 보기」를 누를 때만 펼친다(맹검 6차 「얼굴 격자는 판매 목록 같다」).
+export const MODEL_PICKS=Object.freeze({
+  beauty:['F01','F09','M09','F06'],
+  food:['F02','M02','F11','M06'],
+  fashion:['M09','F01','F08','M02'],
+  living:['F05','M04','F06','M05'],
+  app:['M04','F03','M10','F10'],
+  place:['F05','F07','M05','F06'],
+  brand:['F03','M01','F06','M02'],
+});
 export const STEPS=Object.freeze([
   {id:'what',part:'무엇을'},{id:'where',part:'무엇을'},
   {id:'files',part:'준비물'},
   {id:'message',part:'전할 말'},{id:'words',part:'전할 말'},
-  {id:'feel',part:'느낌'},{id:'model',part:'느낌'},
+  {id:'feel',part:'느낌'},{id:'model',part:'모델'},
   {id:'contact',part:'연락'},{id:'review',part:'확인'},
 ]);
 export const emptyAnswers=()=>({

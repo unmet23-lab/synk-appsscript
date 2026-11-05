@@ -12,7 +12,7 @@ import {castingView} from './public/pulse-app/casting-view.mjs';
 // the button or player a person is using.
 globalThis.location=new URL('http://localhost/pulse-app/');
 const appDir=new URL('./public/pulse-app/',import.meta.url);
-const INQUIRY=`<a class="inquiry-link" href="${PULSE_INQUIRY_URL}" target="_blank" rel="noopener noreferrer">영상 제작 문의하기 <span aria-hidden="true">↗</span><span class="sr-only"> (새 탭)</span></a>`;
+const INQUIRY=`<a class="sx-link" href="${PULSE_INQUIRY_URL}" target="_blank" rel="noopener noreferrer">영상 제작 문의하기 <span aria-hidden="true">↗</span><span class="sr-only"> (새 탭)</span></a>`;
 function setup(){const values=new Map();let tick=0;return createDemoSession({storage:{getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,value),removeItem:key=>values.delete(key)},clock:()=>new Date(Date.UTC(2026,10,2,1,0,tick++)).toISOString()});}
 const project=demo=>demo.snapshot().project;
 const post=(demo,path,body)=>demo.request(path,{body:{...body,revision:project(demo).revision}});
@@ -35,7 +35,8 @@ test('the entry page introduces PULSE in the approved words and keeps the invite
     '영상에 들어갈 모든 컷을 장면 이미지로 먼저 보여 드려요. AI 모델 21명 캐스팅, 제품·로고는 실제 파일로 합성해요.',
     // 장면 이미지 단서 — 장면 이미지를 말할 때는 함께 둔다.
     '장면 이미지는 영상의 첫 장면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요.',
-    '모델 고르기, 광고가 남길 한 문장과 글 콘티, 컷마다 장면 이미지.',
+    // 「영상 전에 세 번 확인해요」의 세 가지: 원고의 한 문장을 시사실 판에서는 그 말 그대로 세 줄로 놓는다(유호님이 A를 고르실 때 보신 짜임).
+    '영상 전에 세 번 확인해요','1/3 모델 고르기','2/3 광고가 남길 한 문장과 글 콘티','3/3 컷마다 장면 이미지',
     '다음 편도 같은 모델과 같은 자막 규격으로 이어요.',
     '맡기신 뒤에는 초대 링크 하나로 시안을 보고 의견을 남기고, 최종 파일까지 한곳에서 받아요.',
     // 만드는 사람
@@ -51,15 +52,15 @@ test('the entry page introduces PULSE in the approved words and keeps the invite
   // 쓰지 않기로 한 말(원고 1절): 도구 이름, 최상급, 납기 · 부가세 · 세금계산서 약속, 실제 촬영을 고른다는 말, 같은 얼굴 보증, 옛 머리말.
   assert.doesNotMatch(text,/실제 촬영|실사 촬영|납기|부가세|세금계산서|같은 얼굴|무제한|최고|최초|유일|1위|솔서리|Seedance|Sora|Veo|Omni|Gemini|GPT|Suno|Higgsfield|힉스필드|시댄스|CLIENT ROOM|함께 완성해요/i);
   // 초대 문과 체험은 그대로다.
-  assert.match(html,/<form class="entry-invite" data-form="invite"[\s\S]*name="invite"[\s\S]*<\/form>/);
+  assert.match(html,/<form class="sx-invite" data-form="invite"[\s\S]*name="invite"[\s\S]*<\/form>/);
   assert.equal(html.split('href="?demo=film"').length,3,'머리의 예시 링크와 맡긴 뒤 줄');
   // 「이 기기에서 다시 확인」은 입장 칸 안에 둔다 — 첫 화면이 길어 맨 아래에 두면 누른 뒤 알림이 화면 밖에 난다.
-  assert.match(html,/<form class="entry-invite"[^>]*>[\s\S]*?data-action="retry"[\s\S]*?<\/form>/);
+  assert.match(html,/<form class="sx-invite"[^>]*>[\s\S]*?data-action="retry"[\s\S]*?<\/form>/);
   assert.equal(html.split('data-action="retry"').length,2);
   // 알림은 어느 길로 왔든(연결 다시 확인 · 초대 링크 실패 · 프로젝트 접근이 끊김) 다시 그리는 한 곳에서 보인다.
   const app=readFileSync(new URL('app.mjs',appDir),'utf8');
-  assert.ok(app.includes("welcome(s);if(s.project||!s.entryError)shownEntryError=null;else if(s.entryError!==shownEntryError){shownEntryError=s.entryError;main.querySelector('.entry-alert')?.scrollIntoView?.({block:'nearest'});}restore(main);"));
-  assert.equal(app.split('.entry-alert').length,2,'one place');
+  assert.ok(app.includes("welcome(s);}if(s.project||!s.entryError)shownEntryError=null;else if(s.entryError!==shownEntryError){shownEntryError=s.entryError;main.querySelector('.sx-invite-alert')?.scrollIntoView?.({block:'nearest'});}"));
+  assert.equal(app.split('.sx-invite-alert').length,2,'one place');
   assert.ok(html.includes('href="https://synk.im/pulse/casting/" target="_blank" rel="noopener noreferrer"'));
   const index=readFileSync(new URL('./public/pulse-app/index.html',import.meta.url),'utf8');
   assert.ok(index.includes('<title>SYNK PULSE — 모든 컷을 먼저 보여 드리는 AI 광고</title>'));
@@ -72,7 +73,7 @@ test('a customer working in a project sees the board, not the introduction',asyn
   const demo=setup();
   for(const tab of ['overview','direction','films']){
     const html=view(demo,tab);
-    assert.doesNotMatch(html,/entry-promise|entry-maker|entry-price|카메라 앞에 서 본|39만원부터/,tab);
+    assert.doesNotMatch(html,/sx-promises|sx-maker|sx-prices|카메라 앞에 서 본|39만원부터/,tab);
   }
 });
 
@@ -82,7 +83,7 @@ test('someone with no project yet can start a request right here, try the exampl
   assert.equal(html.split('data-entry="start"').length,3,'the request button is at the top and after the prices');
   assert.match(html,/광고 의뢰하기/);
   assert.match(html,/href="\?demo=film"/);
-  assert.match(html,/<form class="entry-invite" data-form="invite"/);
+  assert.match(html,/<form class="sx-invite" data-form="invite"/);
   assert.equal(html.includes(PULSE_INQUIRY_URL),false,'the request starts in the app, not on another site');
   assert.match(welcome({requestResume:true}),/쓰던 의뢰서 이어 쓰기/);
 });
@@ -90,7 +91,7 @@ test('someone with no project yet can start a request right here, try the exampl
 test('the finished demo ends on the inquiry, keeps restart as the second choice, and only the demo inquiry box says where real questions go',async()=>{
   const demo=setup();
   const first=view(demo,'direction');
-  assert.doesNotMatch(first.slice(first.indexOf('demo-guide-actions')),/button primary" href="https:\/\/synk\.im/,'steps before the end keep one compact action');
+  assert.doesNotMatch(first.slice(first.indexOf('sx-guide-act')),/sx-go is-solid" href="https:\/\/synk\.im/,'steps before the end keep one compact action');
   await throughScenes(demo);demo.advance();
   const v1=project(demo).versions.at(-1);
   const reviewing=view(demo,'review',{versionId:v1.id});
@@ -101,8 +102,8 @@ test('the finished demo ends on the inquiry, keeps restart as the second choice,
   demo.advance();
   const v2=project(demo).versions.at(-1);await action(demo,{action:'approve',versionId:v2.id});demo.advance();
   assert.equal(demo.guide().complete,true);
-  const done=view(demo,'history'),actions=done.slice(done.indexOf('<div class="demo-guide-actions">'));
-  assert.ok(actions.startsWith(`<div class="demo-guide-actions"><a class="button primary" href="${PULSE_INQUIRY_URL}" target="_blank" rel="noopener noreferrer">영상 제작 문의하기 <span aria-hidden="true">↗</span><span class="sr-only"> (새 탭)</span></a><button type="button" class="button " data-action="demo-reset" >처음부터 다시 체험</button><span class="small">체험한 방식 그대로 실제 광고를 함께 만들어요.</span></div>`),actions.slice(0,400));
+  const done=view(demo,'history'),actions=done.slice(done.indexOf('<div class="sx-guide-act">'));
+  assert.ok(actions.startsWith(`<div class="sx-guide-act"><a class="sx-go is-solid" href="${PULSE_INQUIRY_URL}" target="_blank" rel="noopener noreferrer">영상 제작 문의하기 <span aria-hidden="true">↗</span><span class="sr-only"> (새 탭)</span></a><button type="button" class="sx-small sx-link" data-action="demo-reset" >처음부터 다시 체험</button><span class="sx-small">체험한 방식 그대로 실제 광고를 함께 만들어요.</span></div>`),actions.slice(0,400));
 });
 
 test('a confirmed scene shows no second confirm button and a repeated demo confirmation records nothing, but a returned revision asks again',async()=>{

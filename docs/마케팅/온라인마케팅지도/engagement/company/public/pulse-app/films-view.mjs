@@ -14,21 +14,21 @@ import {esc} from './api.mjs';
 const HWASEONG_ENTRY='2026 별별화성 Awards(화성특례시 공모전)',HWASEONG_MARK='로고·슬로건 화성특례시 「화성의 상징」(공공누리 제4유형)',SELF_MADE='가상 브랜드로 만든 자체 작품';
 export const FINISHED_FILMS=Object.freeze([
   {
-    id:'yurigyeol-holiday',kind:'ad',title:'유리결',orientation:'portrait',featured:true,
+    id:'yurigyeol-holiday',kind:'ad',title:'유리결',orientation:'portrait',featured:true,line:'홀리데이 기프트 · 15초',tag:'대표작',
     poster:'./assets/films/yurigyeol-holiday-poster-v1.webp',
     full:{src:'./assets/films/yurigyeol-holiday-v1.mp4',duration:'15초'},
     description:'가상 스킨케어 브랜드 「유리결」의 홀리데이 세트를 흩날리는 유리 조각 사이에서 보여 주는 15초 광고예요. 한 장면의 임팩트로 기억에 남게 만들었어요.',
     origin:SELF_MADE,finished:'2026년 11월',
   },
   {
-    id:'maejin-imbak',kind:'ad',title:'매진 임박',featured:true,
+    id:'maejin-imbak',kind:'ad',title:'매진 임박',featured:true,line:'홈쇼핑 × 공포 코미디',
     poster:'./assets/films/maejin-imbak-poster-v1.webp',
     full:{src:'./assets/films/maejin-imbak-v1.mp4',duration:'1분 13초'},
     description:'공포 영화 같은 밤에 홈쇼핑 방송이 끼어드는 1분 13초 코미디 광고예요. 이야기로 끝까지 보게 만들었어요.',
     origin:SELF_MADE,finished:'2026년 11월',
   },
   {
-    id:'hwaseong-light',kind:'ad',title:'1억 년의 빛',
+    id:'hwaseong-light',kind:'ad',title:'1억 년의 빛',line:'화성 CF · 55초',
     poster:'./assets/films/hwaseong-cf-light-poster-v1.webp',
     full:{src:'./assets/films/hwaseong-cf-light-v1.mp4',duration:'55초'},
     description:'1억 년 전 공룡알에서 오늘 107만 시민의 불빛까지, 화성의 시간과 사람을 둥근 빛 하나로 이은 도시 광고예요.',
@@ -57,6 +57,9 @@ export const FINISHED_FILMS=Object.freeze([
     cast:'유호 · M03',finished:'2026년 10월',
   },
 ]);
+// 시사실 판(2026-11-05)의 크레딧 한 줄. 자료에 없으면 길이만 쓴다.
+export const filmLine=film=>film?.line||film?.full?.duration||'';
+export const filmNote=film=>film?.origin||(film?.entry?'공모전 출품작':'');
 const KINDS={'music-video':'뮤직비디오',ad:'광고',short:'숏폼',song:'CM송',film:'브랜드 필름'};
 const media=(value,extension)=>typeof value==='string'&&new RegExp(`^\\./assets/(?:films|casting/video)/[A-Za-z0-9_-]+\\.${extension}$`).test(value)?value:'';
 function filmCard(film){

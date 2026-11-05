@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {projectView,headerCrumb,tabs} from './public/pulse-app/views.mjs';
 
-// PULSE 고객 화면 구조(2026-10-17): 머리 막대 · 왼쪽 단계 레일(휴대폰은 접는 한 줄) · 처음 현황판 · 아래 승인 막대.
+// PULSE 고객 화면 구조(2026-11-05 시사실 판): 머리 막대 · 단계 낱말 줄 · 현황은 왼쪽 할 일 · 오른쪽 작업물 · 아래 인화지.
 globalThis.location=new URL('http://localhost/pulse-app/');
 const at='2026-10-16T09:00:00Z';
 const media=name=>({url:`http://localhost/pulse-app/${name}`,mimeType:name.endsWith('.mp4')?'video/mp4':'image/png'});
@@ -19,47 +19,46 @@ function project(){
 }
 const state=(over={})=>({mode:'customer',tab:'overview',project:project(),workflow:[],...over});
 
-test('every project page has the step rail, the folding phone step bar and one next-decision section',()=>{
+test('every project page has one step line that opens every stage and says where the customer is',()=>{
   for(const tab of ['overview',...tabs.map(t=>t[0])]){
     const html=projectView(state({tab}));
-    assert.match(html,/<aside class="rail" aria-label="프로젝트 단계">/,tab);
-    assert.match(html,/<details class="mstep">/,tab);
-    assert.equal((html.match(/<section class="next-decision">/g)||[]).length,1,tab);
-    // 레일과 휴대폰 목록이 같은 단추 계약을 쓴다: 현황 + 6단계, 각각 data-action="tab"
-    assert.equal((html.match(/data-action="tab" data-tab="overview"/g)||[]).length,2,tab);
-    for(const [key] of tabs)assert.equal((html.match(new RegExp(`data-action="tab" data-tab="${key}" aria-current`,'g'))||[]).length,2,tab+' '+key);
+    assert.equal((html.match(/<nav class="sx-steps" aria-label="제작 단계">/g)||[]).length,1,tab);
+    // 단계 줄의 단추 계약은 그대로다: 현황 + 6단계, 각각 data-action="tab"
+    assert.equal((html.match(/class="sx-step[^"]*" data-action="tab" data-tab="overview"/g)||[]).length,1,tab);
+    for(const [key] of tabs)assert.equal((html.match(new RegExp(`class="sx-step[^"]*" data-action="tab" data-tab="${key}"`,'g'))||[]).length,1,tab+' '+key);
     assert.match(html,new RegExp(`data-tab="${tab}" aria-current="page"`),tab);
+    // 왼쪽 레일 · 카드 격자로 돌아가지 않는다.
+    assert.doesNotMatch(html,/class="rail"|class="mstep"|class="project-shell/,tab);
     assert.doesNotMatch(html,/class="journey|stage-poster|stage-index|project-head/,tab);
   }
 });
 
 test('the overview leads with the work itself, what changed, progress and the chosen concept and scenes',()=>{
   const html=projectView(state());
-  assert.match(html,/<h1>유리결 15초 광고<\/h1>/);
-  assert.match(html,/<section class="focus" aria-label="지금 할 일"><button type="button" class="focus-media" data-action="tab" data-tab="review" data-scroll="content"/);
-  assert.match(html,/<video src="http:\/\/localhost\/pulse-app\/v2\.mp4#t=0\.5" preload="metadata" muted playsinline/);
-  assert.match(html,/<span class="media-tag is-new">새 시안<\/span>/);
+  assert.match(html,/<section class="sx-next-block">[\s\S]*<h1 class="sx-display">[\s\S]*data-tab="review"/);
+  assert.match(html,/class="sx-room-screen"><video class="sx-q-fill" src="http:\/\/localhost\/pulse-app\/v2\.mp4" preload="metadata" muted playsinline aria-hidden="true" data-hold>/,'the overview shows the latest cut, and it rests on its end shot rather than its first frame');
+  assert.match(html,/sx-room-cap">시안 v2</);
   assert.match(html,/<p class="focus-memo"><span>제작팀 메모<\/span>마지막 문구를 단추로 바꿨어요\.<\/p>/);
   assert.match(html,/시안 v1에 남긴 의견 1개를 반영했어요/);assert.match(html,/<time>0:03<\/time><p>제품 이름 글자를 크게 해 주세요\.<\/p>/);
-  assert.match(html,/<b>4 \/ 6 단계 끝<\/b>/);
+  assert.match(html,/6단계 중 4단계 끝/);
   assert.match(html,/고른 콘셉트[\s\S]*A\. 나만의 아침 루틴/);
   assert.match(html,/장면 4개 · 15초/);assert.match(html,/4개 모두 확인했어요/);
   assert.match(html,/담당자 답변 · 두 의견 모두 반영했어요\./);
-  assert.match(html,/<section class="next-decision">[\s\S]*data-tab="review" data-scroll="content"/);
 });
 
-test('a project with no work yet shows the stage object instead of an empty frame',()=>{
+test('a project with no work yet shows an example of what comes next instead of an empty frame, and says it is an example',()=>{
   const p=project();p.versions=[];p.stage='received';p.messages=[];Object.assign(p.studio,{concepts:[],scenes:[],sceneReviews:[],selectedConcept:null,references:[],preferences:{},strategy:{revision:0}});
   const html=projectView(state({project:p}));
-  assert.match(html,/class="focus-media studio-board" data-stage="[a-z]+"/);
-  assert.match(html,/<img class="cut" src="\.\/assets\/stage\/stage-[a-z]+\.webp"/);
+  assert.match(html,/class="sx-room-screen"><img class="sx-q-fill" src="\.\/assets\/request\/w-gift-snow\.webp"/);
+  assert.match(html,/다음에 받으실 장면 이미지의 예시예요\. 영상의 첫 장면이라 움직이는 동안 작은 부분은 달라질 수 있어요\./);
   assert.doesNotMatch(html,/<video/);
 });
 
 test('step pages keep the stage title and the refresh tool, and staff also get the manage step',()=>{
-  const html=projectView(state({tab:'review'}));
-  assert.match(html,/<header class="canvas-head"><div class="canvas-copy"><p class="canvas-kicker">05 · 영상 확인<\/p><h1>이제 영상으로 <span>확인해요\.<\/span><\/h1>/);
+  const html=projectView(state({tab:'strategy'}));
+  assert.match(html,/<header class="sx-shell-head">[\s\S]*<p class="sx-kicker">01 · 제작 설계<\/p><h1 class="sx-display">만들기 전에, 같은 목표를 봐요\.<\/h1>/);
   assert.match(html,/data-action="refresh"/);
+  assert.match(projectView(state({tab:'review'})),/data-action="refresh"/);
   const staff=projectView(state({mode:'staff',canEdit:true,tab:'manage'}));
   assert.match(staff,/data-action="tab" data-tab="manage" aria-current="page"/);
   assert.match(staff,/<p class="canvas-kicker">프로젝트 관리<\/p>/);

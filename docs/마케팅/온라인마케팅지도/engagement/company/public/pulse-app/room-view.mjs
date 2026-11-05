@@ -49,6 +49,8 @@ export const modelCard=id=>{const item=CASTING_MODELS.find(model=>model.id===id)
 const assetUrl=asset=>asset?.media?.url||asset?.url||'';
 function slotsWithFiles(answers,files=[]){const slots={...(answers.slots||{})};for(const file of files){slots[file.slot]={...slots[file.slot],files:[...(slots[file.slot]?.files||[]),file]};}return slots;}
 const filled=r=>({...emptyAnswers(),...(r?.answers||{}),slots:slotsWithFiles(r?.answers||{},r?.files)});
+// 영상이 도착한 상태면 고객 방 스크린에 그 영상을 소리 없이 튼다.
+const screenFilm=(p,state)=>{const version=state==='deliver'?finals(p).at(-1):state==='review'?previews(p).at(-1):null,src=version?.media?.mimeType?.startsWith('video/')?version.media.url:'';return src?{src,label:version.label,go:state==='deliver'?'history':'review'}:null;};
 export function roomModel(p){
   const r=requestOf(p),state=roomState(p),answers=filled(r);
   const slotLabel=asset=>slotsFor(answers.kind).find(slot=>slot.id===(r?.files||[]).find(file=>file.id===asset.id)?.slot)?.label||'';
@@ -62,6 +64,7 @@ export function roomModel(p){
     state,stage:roomStage(state),title:p?.title||'',number:r?.number||'',manager:p?.ownerName||'PULSE 담당자',hasRound:!!lastRound(r),
     brief:r?briefRows(answers).filter(row=>!row.missing).slice(0,8).map(row=>[row.key,row.value]):[],
     files,others,proposal,asks:(r?.asks||[]).filter(ask=>ask.status==='open'),answered:(r?.asks||[]).filter(ask=>ask.status==='answered'),canEdit:!!r&&r.status!=='confirmed',
+    draft:['script','images','revise','prepare-images'].includes(state)?draftModel(p):null,film:screenFilm(p,state),
   };
 }
 export function draftModel(p){

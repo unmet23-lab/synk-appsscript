@@ -151,7 +151,7 @@ const memoryStorage=()=>{const memory=new Map();return {getItem:key=>memory.get(
 
 test('the demo guide says the record stays in this PC app inside the PC app window and in this browser elsewhere',()=>{
   const session=createDemoSession({storage:memoryStorage()}),guide=session.guide();
-  const note=extra=>projectView({mode:'customer',demo:true,demoGuide:guide,project:session.snapshot().project,tab:guide.tab,...extra}).match(/<p class="demo-storage-note">([^<]*)<\/p>/)?.[1];
+  const note=extra=>projectView({mode:'customer',demo:true,demoGuide:guide,project:session.snapshot().project,tab:guide.tab,...extra}).match(/<p class="sx-small sx-guide-note">([^<]*)<\/p>/)?.[1];
   assert.equal(note({desktopApp:true,demoPersistent:true}),'체험 기록은 이 PC 앱에만 남고, 실제 의뢰나 승인으로 이어지지 않아요.');
   assert.equal(note({desktopApp:true,demoPersistent:false}),'이 PC 앱에서는 체험 기록을 저장할 수 없어 창을 닫으면 사라져요. 실제 의뢰나 승인으로 이어지지 않아요.');
   assert.equal(note({demoPersistent:true}),'체험 기록은 이 브라우저에만 남고, 실제 의뢰나 승인으로 이어지지 않아요.');
