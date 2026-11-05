@@ -26,10 +26,10 @@ const visibleText=html=>html.replace(/<[^>]+>/g,' ');
 test('the roster matches the website: twenty-one models and two idol teams of four',()=>{
   assert.equal(MODELS.length,21);
   assert.equal(new Set(MODELS.map(m=>m.id)).size,21);
-  assert.deepEqual(TEAMS.map(t=>t.id),['OPALINE','OUTBLUE']);
-  assert.deepEqual(MODELS.filter(m=>m.team==='OPALINE').map(m=>m.name),['윤슬','로하','새봄','해인']);
+  assert.deepEqual(TEAMS.map(t=>t.id),['OFALIN','OUTBLUE']);
+  assert.deepEqual(MODELS.filter(m=>m.team==='OFALIN').map(m=>m.name),['윤슬','로하','새봄','해인']);
   assert.deepEqual(MODELS.filter(m=>m.team==='OUTBLUE').map(m=>m.name),['도현','하람','서율','지온']);
-  assert.ok(MODELS.filter(m=>m.team==='OPALINE').every(m=>m.gender==='여'));
+  assert.ok(MODELS.filter(m=>m.team==='OFALIN').every(m=>m.gender==='여'));
   assert.ok(MODELS.filter(m=>m.team==='OUTBLUE').every(m=>m.gender==='남'));
   assert.deepEqual(MODELS.find(m=>m.id==='M03').tags.slice(2),['미스터리한','4차원']);
 });
@@ -94,7 +94,7 @@ test('with no saved draft the view opens on the models and lists the teams under
   assert.equal(root.innerHTML.match(/class="pulse-model-card"/g).length,21);
   assert.match(root.innerHTML,/<strong>21<\/strong>/);
   for(const team of TEAMS){assert.ok(root.innerHTML.includes(team.line),team.id);assert.ok(root.innerHTML.includes('id="pulse-team-'+team.id+'"'),team.id);}
-  assert.match(root.innerHTML,/F08 · 가상 AI 모델 · OPALINE/);
+  assert.match(root.innerHTML,/F08 · 가상 AI 모델 · OFALIN/);
 });
 
 test('a picked team member is saved and named with its team in the request',async()=>{
