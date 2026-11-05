@@ -110,7 +110,9 @@ for(;;){
   console.log('  ',Math.round((Date.now()-start)/1000)+'초',st);lastSt=st;
   if(SHOTS&&st!=='wait'){await sleep(700);await page.screenshot({path:path.join(OUT,`${String(++n).padStart(2,'0')}-${st.replace(/[^\w가-힣]+/g,'_').slice(0,24)}.png`)}).catch(()=>{});}
  }
- await sleep(RECORD&&st==='orb'?2600:500);
+ // 구를 누르면 녹음이 시작되고, 다음 바퀴에 같은 구를 눌러 멈춘다. 시범판은 0.6초보다 짧은 녹음을 「너무 짧아요」로 돌려보내므로
+ // 0.5초 간격이면 PC가 바쁠 때 경계에 걸려 「다시 녹음」만 돈다(11-06) — 녹음은 넉넉히 잡는다.
+ await sleep(st==='orb'?(RECORD?2600:1400):500);
 }
 await sleep(RECORD?5000:1200);
 if(SHOTS)await page.screenshot({path:path.join(OUT,'99-wrap.png')});
