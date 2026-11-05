@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ko" data-theme="a">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>오늘 · 새 판 시안</title>
+<link rel="stylesheet" href="shared.css">
+<script>(()=>{const q=new URLSearchParams(location.search);if(q.get('theme')==='b')document.documentElement.dataset.theme='b';if(q.get('fail'))document.documentElement.dataset.fail='1';})();</script>
+<style>
+.page{margin:8px 8px 8px 0;background:var(--paper);border-radius:var(--r12);box-shadow:0 0 0 1px var(--paper-line),0 1px 3px rgba(11,12,15,.04);overflow:auto;min-height:0}
+:root[data-theme="b"] .page{border-radius:16px;box-shadow:none}
+.wrap{max-width:1180px;margin:0 auto;padding:30px 48px 48px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:34px}
+.when{display:flex;align-items:center;gap:8px;font-size:var(--t13);color:var(--ink3)}
+.when .iconbtn{width:28px;height:28px}
+.ask{display:flex;align-items:center;gap:10px;height:38px;width:340px;padding:0 8px 0 12px;border-radius:var(--r8);background:#F5F5F4;color:var(--ink3);font-size:var(--t14);text-align:left}
+.ask .ph{flex:1}
+.lede{font-size:40px;font-weight:var(--w6);letter-spacing:-.01em;line-height:1.3;max-width:20em;margin-bottom:40px}
+.pill{display:inline-grid;place-items:center;min-width:1.35em;height:1.2em;padding:0 .22em;margin:0 .06em;border-radius:.26em;background:var(--ink);color:#fff;font-family:var(--num);font-weight:var(--w6);font-size:1em;line-height:1;vertical-align:.04em;letter-spacing:-.01em}
+.pill.soft{background:#EDEDEB;color:var(--ink)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:44px;align-items:start}
+.sec-head{display:flex;align-items:baseline;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.sec-head h2{font-size:var(--t18);font-weight:var(--w6);letter-spacing:-.01em}
+.sec-head .c{font-family:var(--num);font-size:var(--t18);font-weight:var(--w6);color:var(--ink3)}
+.sec-head .tools{margin-left:auto;display:flex;align-items:center;gap:6px}
+.glabel{display:flex;align-items:center;gap:8px;margin:18px 0 6px;font-size:var(--t13);font-weight:var(--w6);color:var(--ink2)}
+.glabel .num{color:var(--ink3);font-weight:var(--w6)}
+.item{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.item b{display:block;font-size:var(--t15);font-weight:var(--w6);margin-bottom:3px}
+.item .meta{font-size:var(--t13);color:var(--ink3);display:flex;flex-wrap:wrap;gap:0 10px;align-items:center}
+.item .meta .sep{width:3px;height:3px;border-radius:9px;background:var(--ink4)}
+.item q{display:block;margin-top:6px;font-size:var(--t14);color:var(--ink2);quotes:"“" "”"}
+.stage{height:22px;padding:0 8px;border-radius:var(--rp);display:inline-flex;align-items:center;gap:5px;font-size:var(--t13);font-weight:var(--w6);box-shadow:0 0 0 1px var(--line2);color:var(--ink2)}
+.fold{display:flex;width:100%;text-align:left;align-items:center;gap:10px;padding:13px 0;border-bottom:1px solid var(--line);font-size:var(--t14);color:var(--ink2)}
+.fold .lab{font-weight:var(--w6);color:var(--ink);white-space:nowrap}
+.fold .lab .num{color:var(--ink3);margin-left:4px}
+.fold .pv{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink3);font-size:var(--t13)}
+.foot{display:flex;flex-wrap:wrap;gap:6px 20px;margin-top:16px;font-size:var(--t13)}
+.foot a{color:var(--ink2);text-decoration:none;border-bottom:1px solid var(--line2)}
+.foot a.go{color:var(--ink);font-weight:var(--w6);border-bottom-color:var(--ink4)}
+.note{display:none;align-items:flex-start;gap:8px;margin-top:14px;padding:10px 12px;border-radius:var(--r8);background:#FBF5E6;font-size:var(--t13);color:#6B5310}
+:root[data-fail="1"] .note.fail{display:flex}
+:root[data-fail="1"] .ok-only{display:none}
+.fail-only{display:none}
+:root[data-fail="1"] .fail-only{display:inline}
+.card{background:#F7F7F6;border-radius:var(--r12);padding:16px 16px 10px;margin-bottom:16px}
+:root[data-theme="b"] .card{background:#F7F7F6}
+.card h3{display:flex;align-items:baseline;gap:8px;font-size:var(--t15);font-weight:var(--w6);margin-bottom:8px}
+.card h3 .num{color:var(--ink3);font-weight:var(--w6)}
+.card h3 a{margin-left:auto;font-size:var(--t13);font-weight:var(--w4);color:var(--ink2);text-decoration:none}
+.crow{display:flex;align-items:center;gap:10px;height:38px;font-size:var(--t14);color:var(--ink);border-top:1px solid var(--line)}
+.crow:first-of-type{border-top:0}
+.crow .ic{width:24px;height:24px;display:grid;place-items:center;color:var(--ink3)}
+.crow .av{width:24px;height:24px;border-radius:var(--rp);display:grid;place-items:center;font-size:var(--t13);font-weight:var(--w6)}
+.av.c3{background:#E5F0E8}.av.c4{background:#EEE8F5}
+.crow .name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:var(--w6)}
+.crow .t{font-family:var(--num);font-size:var(--t12);color:var(--ink3)}
+.ch{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;padding:9px 0;border-top:1px solid var(--line);font-size:var(--t13)}
+.ch:first-of-type{border-top:0}
+.ch .k{color:var(--ink3);font-weight:var(--w6)}
+.ch .v{color:var(--ink);min-width:0}
+.ch .s{grid-column:2;color:var(--ink3)}
+.empty{font-size:var(--t13);color:var(--ink3);padding:4px 0 8px;line-height:1.55}
+.empty button{color:var(--ink);font-weight:var(--w6);border-bottom:1px solid var(--ink4);margin-left:6px}
+.top .me-m{display:none}
+@media (max-width:1180px) and (min-width:761px){.lede{font-size:var(--t32)}}
+@media (max-width:760px){
+  .page{margin:0;border-radius:0;box-shadow:none}
+  :root[data-theme="b"] .page{border-radius:0}
+  .card h3 a{padding:12px 0;margin:-12px 0}
+  .empty button{display:inline-block;padding:12px 0;margin-block:-12px}
+  .wrap{padding:16px 16px 28px}
+  .top{margin-bottom:22px;flex-wrap:wrap}
+  .when{order:2;width:100%}
+  .ask{width:auto;flex:1;height:44px}
+  .ask .kbd{display:none}
+  .top .me-m{display:grid;width:44px;height:44px;border-radius:var(--rp);background:var(--ink);color:#fff;place-items:center;font-size:var(--t14);font-weight:var(--w6)}
+  .lede{font-size:24px;margin-bottom:26px}
+  .grid{grid-template-columns:minmax(0,1fr);gap:28px}
+  .sec-head{flex-wrap:wrap}
+  .item{grid-template-columns:1fr}
+  .item .btn{justify-self:start}
+  .crow{height:48px}
+  .when .iconbtn{width:44px;height:44px}
+  .foot a{padding:10px 0}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-today" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v1.5M12 19.5V21M3 12h1.5M19.5 12H21M5.6 5.6l1.1 1.1M17.3 17.3l1.1 1.1M5.6 18.4l1.1-1.1M17.3 6.7l1.1-1.1"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12.5a7.5 7.5 0 0 1-11 6.6L4 20l1-4.3A7.5 7.5 0 1 1 20 12.5Z"/></symbol>
+  <symbol id="i-make" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/></symbol>
+  <symbol id="i-sns" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4M16 3v4M4 10h16"/></symbol>
+  <symbol id="i-class" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3.2"/><path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6s4.9 1.6 5.5 4.6"/><path d="M15 6.2a3 3 0 0 1 0 5.6M17.5 14.6c1.6.6 2.7 2 3 4.4"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4h-4"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m10 7 5 5-5 5"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-10Z"/></symbol>
+  <symbol id="i-logo" viewBox="0 0 560 328" fill="currentColor"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></symbol>
+</svg>
+
+<div class="app">
+  <nav class="rail" aria-label="주요 공간">
+    <div class="logo" aria-label="싱ㅋ 워크스페이스"><svg viewBox="0 0 560 328"><use href="#i-logo"/></svg></div>
+    <a href="today.html" aria-current="page"><span class="ico"><svg width="20" height="20"><use href="#i-today"/></svg></span>오늘</a>
+    <a href="messenger.html"><span class="ico"><svg width="20" height="20"><use href="#i-chat"/></svg></span>메신저<span class="badge">3</span></a>
+    <a href="#"><span class="ico"><svg width="20" height="20"><use href="#i-make"/></svg></span>작업실</a>
+    <a href="#"><span class="ico"><svg width="20" height="20"><use href="#i-sns"/></svg></span>SNS</a>
+    <a href="#"><span class="ico"><svg width="20" height="20"><use href="#i-class"/></svg></span>수업</a>
+    <span class="spacer"></span>
+    <a href="#" class="rail-find"><span class="ico"><svg width="20" height="20"><use href="#i-search"/></svg></span>찾기</a>
+    <button class="me" type="button" aria-label="유호 · 계정 메뉴 — 내 업무 카드 · 회사 안내 · 팀 · 설정">유</button>
+  </nav>
+
+  <main class="page"><div class="wrap">
+    <div class="top">
+      <div class="when"><span>11월 6일 금요일 · 오전 <span class="num">10:42</span> 기준</span><button class="iconbtn" aria-label="새로 불러오기"><svg width="16" height="16"><use href="#i-refresh"/></svg></button></div>
+      <button class="ask" type="button" aria-label="찾거나 마린에게 묻기 (Ctrl K)"><svg width="16" height="16"><use href="#i-search"/></svg><span class="ph">찾거나 마린에게 묻기</span><span class="kbd">Ctrl K</span></button><button class="me-m" type="button" aria-label="유호 · 계정 메뉴">유</button>
+    </div>
+
+    <h1 class="lede"><span class="ok-only">오늘 내 차례 <span class="pill">1</span>건, 안 읽은 대화 <span class="pill soft">3</span>곳이에요.</span><span class="fail-only">불러온 내 차례 <span class="pill">1</span>건, 안 읽은 대화 <span class="pill soft">3</span>곳이에요.</span></h1>
+
+    <div class="grid">
+      <section aria-label="내 차례">
+        <div class="sec-head"><h2>내 차례</h2><span class="c num">1</span>
+          <div class="tools"><button class="btn"><svg width="15" height="15"><use href="#i-plus"/></svg>할 일 추가</button></div></div>
+        <div class="note fail"><span class="dot butter" style="margin-top:6px"></span><span>고객 업무를 불러오지 못해 대화에서 온 할 일만 보여요. 고객 일과 기한이 겹치는지도 지금은 볼 수 없어요. <button style="font-weight:600;border-bottom:1px solid currentColor">다시 불러오기</button></span></div>
+        <div class="glabel"><span class="dot blue"></span>답할 요청 <span class="num">1</span></div>
+        <div class="item">
+          <div><b>썸네일 B안 최종 확인</b>
+            <div class="meta"><span>마케팅팀</span><span class="sep"></span><span>서연 요청</span><span class="sep"></span><span>오늘까지</span><span class="stage"><span class="dot butter"></span>수락 전</span></div>
+            <q>@유호 다듬은 판 올렸어요. 확인 부탁드려요!</q></div>
+          <button class="btn">열기</button>
+        </div>
+        <button class="fold" type="button" aria-expanded="false"><svg width="16" height="16"><use href="#i-chev"/></svg><span class="lab">기다리는 일 <span class="num">1</span></span><span class="pv">LAB 11월 편 썸네일 B안 자막 다듬기 · 서연 · 수락 전</span></button>
+        <div class="foot"><a class="go" href="#">모든 할 일 보기</a><a href="#">마감 알림 · 평일 오전 9시</a><a href="#">무엇이 내 차례에 들어오나요?</a></div>
+      </section>
+
+      <aside>
+        <div class="card"><h3>안 읽은 대화 <span class="num">3</span><a href="messenger.html">메신저 열기</a></h3>
+          <a class="crow" href="messenger.html"><span class="ic"><svg width="16" height="16"><use href="#i-folder"/></svg></span><span class="name">브랜드 사이트 개편</span><span class="t">10:20</span><span class="badge">1</span></a>
+          <a class="crow" href="messenger.html"><span class="av c3">지</span><span class="name">지우</span><span class="t">10:31</span><span class="badge">1</span></a>
+          <a class="crow" href="messenger.html"><span class="av c4">민</span><span class="name">민준</span><span class="t">10:40</span><span class="badge">1</span></a>
+        </div>
+        <div class="card"><h3>바뀐 것 <span class="num">3</span><a href="#">모두 보기</a></h3>
+          <div class="ch"><span class="k">결정</span><span class="v">11월 LAB 썸네일은 B안 틀로 통일</span><span class="s">유호 · 마케팅팀</span></div>
+          <div class="ch"><span class="k">할 일</span><span class="v">썸네일 B안 최종 확인</span><span class="s">서연 요청 · 유호 담당</span></div>
+          <div class="ch"><span class="k">할 일</span><span class="v">LAB 11월 편 썸네일 B안 자막 다듬기</span><span class="s">유호 요청 · 서연 담당</span></div>
+        </div>
+        <div class="card"><h3>오늘 나가는 것<a href="#">SNS 열기</a></h3>
+          <div class="empty">SNS 정리 자료를 아직 못 불러왔어요. 나갈 편이 없다는 뜻은 아니에요. <button type="button">다시 불러오기</button></div>
+        </div>
+      </aside>
+    </div>
+  </div></main>
+</div>
+</body>
+</html>

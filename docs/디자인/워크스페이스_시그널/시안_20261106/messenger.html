@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="ko" data-theme="a">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>메신저 · 새 판 시안</title>
+<link rel="stylesheet" href="shared.css">
+<script>(()=>{const q=new URLSearchParams(location.search);if(q.get('theme')==='b')document.documentElement.dataset.theme='b';if(q.get('panel'))document.documentElement.dataset.panel=q.get('panel');if(q.get('sheet')){document.documentElement.dataset.sheet='1';addEventListener('DOMContentLoaded',()=>{const sh=document.querySelector('.sheet');sh.removeAttribute('aria-hidden');sh.setAttribute('role','dialog');sh.setAttribute('aria-modal','true');sh.setAttribute('aria-label','메시지 동작');const f=sh.querySelector('.emo button');if(f)f.focus();});}if(q.get('hover')!=='0')document.documentElement.dataset.hover='1';})();</script>
+<style>
+/* ── 메신저 화면 ── */
+.msgr{display:grid;grid-template-columns:288px 1fr;min-height:0;margin:8px 8px 8px 0}
+:root[data-panel] .msgr{grid-template-columns:288px 1fr 360px}
+.list{display:flex;flex-direction:column;min-height:0;overflow-y:auto;padding:10px 10px 12px 6px}
+.conv{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--paper);border-radius:var(--r12);box-shadow:0 0 0 1px var(--paper-line),0 1px 3px rgba(11,12,15,.04)}
+.side{display:none}
+:root[data-panel] .side{display:flex;flex-direction:column;min-height:0;background:var(--paper);border-radius:var(--r12);margin-left:8px;box-shadow:0 0 0 1px var(--paper-line)}
+:root[data-theme="b"] .msgr{background:var(--paper);border-radius:16px;overflow:hidden}
+:root[data-theme="b"] .list{background:#F7F7F6;padding:12px 10px}
+:root[data-theme="b"] .conv{border-radius:0;box-shadow:none}
+:root[data-theme="b"] .side{margin:0;border-radius:0;box-shadow:-1px 0 0 var(--line)}
+
+.list-head{display:flex;align-items:center;justify-content:space-between;padding:6px 6px 10px 10px}
+.list-head h1{font-size:var(--t18);font-weight:var(--w6);letter-spacing:-.01em}
+.list-head .tools{display:flex;gap:2px}
+.find{display:flex;width:calc(100% - 8px);text-align:left;align-items:center;gap:8px;height:36px;margin:0 4px 10px;padding:0 10px;border-radius:var(--r8);background:var(--paper);box-shadow:0 0 0 1px var(--line);color:var(--ink3);font-size:var(--t14)}
+.find span{flex:1}
+.seg{display:flex;gap:2px;margin:0 4px 14px;padding:3px;border-radius:var(--r8);background:var(--select)}
+.seg button{flex:1;height:28px;border-radius:6px;font-size:var(--t13);color:var(--ink2);display:flex;align-items:center;justify-content:center;gap:6px}
+.seg button[aria-pressed="true"]{background:var(--paper);color:var(--ink);font-weight:var(--w6);box-shadow:0 1px 2px rgba(11,12,15,.08)}
+.seg .n{font-family:var(--num);font-size:var(--t12);font-weight:var(--w7);color:var(--ink)}
+.group{margin-bottom:14px}
+.group-head{display:flex;align-items:center;justify-content:space-between;padding:0 6px 4px 10px;font-size:var(--t13);font-weight:var(--w6);color:var(--ink3)}
+.group-head .l{display:flex;align-items:center;gap:4px}
+.row{display:flex;align-items:center;gap:10px;height:34px;padding:0 8px 0 10px;border-radius:var(--r8);color:var(--ink2);text-decoration:none;font-size:var(--t14)}
+.row:hover{background:var(--hover)}
+.row .ic{width:24px;height:24px;display:grid;place-items:center;color:var(--ink3)}
+.row .av{width:24px;height:24px;border-radius:var(--rp);display:grid;place-items:center;font-size:var(--t13);font-weight:var(--w6);color:var(--ink);background:#E7E7E9}
+.row .name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .t{font-family:var(--num);font-size:var(--t12);color:var(--ink3)}
+.row.unread{color:var(--ink);font-weight:var(--w6)}
+.row.muted{color:var(--ink3);font-size:var(--t13)}
+.row[aria-current="page"]{background:var(--select);color:var(--ink);font-weight:var(--w6)}
+:root[data-theme="a"] .row[aria-current="page"]{background:var(--paper);box-shadow:0 0 0 1px var(--line),0 1px 2px rgba(11,12,15,.05)}
+
+/* 대화 머리 */
+.conv-head{display:flex;align-items:center;gap:12px;height:58px;padding:0 14px 0 22px;border-bottom:1px solid var(--line);flex:none}
+.conv-head .back{display:none}
+.conv-head .title{display:flex;align-items:baseline;gap:10px;flex:1;min-width:0}
+.conv-head h2{font-size:var(--t18);font-weight:var(--w6);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.conv-head .sub{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.conv-head .sub{font-size:var(--t13);color:var(--ink3);white-space:nowrap}
+.conv-head .tools{display:flex;align-items:center;gap:2px}
+.iconbtn .badge{position:absolute;transform:translate(10px,-9px);min-width:17px;height:17px;padding:0 4px}
+.iconbtn{position:relative}
+.iconbtn[aria-pressed="true"]{background:var(--select);color:var(--ink)}
+
+/* 메시지 */
+.stream{flex:1;min-height:0;overflow:auto;padding:8px 0 16px;display:flex;flex-direction:column}
+.stream>:first-child{margin-top:auto}
+.day{display:flex;align-items:center;gap:12px;margin:14px 22px 6px;font-size:var(--t13);color:var(--ink3)}
+.day::before,.day::after{content:"";height:1px;background:var(--line);flex:1}
+.msg{position:relative;display:grid;grid-template-columns:36px 1fr;gap:12px;padding:8px 22px 8px 22px}
+.msg:hover,:root[data-hover="1"] .msg.is-hover{background:rgba(11,12,15,.022)}
+.msg .av{width:36px;height:36px;border-radius:var(--rp);display:grid;place-items:center;font-size:var(--t13);font-weight:var(--w6);color:var(--ink)}
+.av.c1{background:#E3EAF9}.av.c2{background:#F3E6E1}.av.c3{background:#E5F0E8}.av.c4{background:#EEE8F5}.av.c0{background:#0B0C0F;color:#fff}
+.msg .who{display:flex;align-items:baseline;gap:8px;line-height:1.3;margin-bottom:2px}
+.msg .who b{font-size:var(--t14);font-weight:var(--w6)}
+.msg .who .t{font-family:var(--num);font-size:var(--t12);color:var(--ink3)}
+.msg .who .pin{display:inline-flex;align-items:center;gap:3px;font-size:var(--t13);color:var(--ink3)}
+.msg .body{font-size:var(--t15);line-height:1.6;color:var(--ink);max-width:68ch}
+.mention{color:var(--accent);font-weight:var(--w6)}
+.msg.for-me{background:var(--accent-soft);box-shadow:inset 2px 0 0 var(--accent)}
+.file{display:flex;align-items:center;gap:12px;width:min(380px,100%);margin-top:8px;padding:10px 12px;border-radius:var(--r12);box-shadow:0 0 0 1px var(--line2)}
+.file .fi{width:36px;height:36px;border-radius:var(--r8);background:#F4F4F5;display:grid;place-items:center;color:var(--ink2)}
+.file .fn{flex:1;min-width:0}
+.file .fn b{display:block;font-size:var(--t14);font-weight:var(--w6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file .fn span{font-size:var(--t13);color:var(--ink3)}
+.thread{display:inline-flex;align-items:center;gap:8px;margin-top:6px;padding:3px 8px 3px 4px;border-radius:var(--r8);font-size:var(--t13);color:var(--ink2)}
+.thread:hover{background:var(--hover)}
+.thread .stack{display:flex}
+.thread .stack i{width:24px;height:24px;border-radius:var(--rp);display:grid;place-items:center;font-style:normal;font-size:var(--t13);font-weight:var(--w6);box-shadow:0 0 0 2px var(--paper)}
+.thread .stack i+i{margin-left:-5px}
+.thread b{color:var(--accent);font-weight:var(--w6)}
+.chip:hover{background:#F0F0EF}
+.reacts{display:flex;gap:6px;margin-top:8px}
+.react{height:26px;padding:0 8px;border-radius:var(--rp);display:inline-flex;align-items:center;gap:5px;font-size:var(--t13);box-shadow:0 0 0 1px var(--line2)}
+.react .num{font-size:var(--t12);font-weight:var(--w6);color:var(--ink2)}
+.react.mine{background:var(--accent-soft);box-shadow:0 0 0 1px rgba(61,107,201,.35)}
+.chips{display:flex;flex-direction:column;gap:6px;margin-top:8px;max-width:520px}
+.chip{display:flex;align-items:center;gap:10px;padding:8px 10px 8px 10px;border-radius:var(--r8);background:#F7F7F8;font-size:var(--t13);color:var(--ink2)}
+.chip .k{display:inline-flex;align-items:center;gap:5px;font-weight:var(--w6);color:var(--ink);flex:none}
+.chip .tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+.chip .meta{flex:none;white-space:nowrap}
+.stage{height:22px;padding:0 8px;border-radius:var(--rp);display:inline-flex;align-items:center;gap:5px;font-size:var(--t13);font-weight:var(--w6);background:var(--paper);box-shadow:0 0 0 1px var(--line2);color:var(--ink2);flex:none}
+/* 마우스 올림 막대 */
+.hovbar{display:none;position:absolute;top:-14px;right:22px;padding:3px;gap:2px;border-radius:var(--r8);background:var(--paper);box-shadow:var(--shadow-pop)}
+.msg:hover .hovbar,.msg:focus-within .hovbar,:root[data-hover="1"] .msg.is-hover .hovbar{display:flex}
+.msg:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:0}
+.msg .who .saved{display:inline-flex;align-items:center;gap:3px;font-size:var(--t13);color:var(--accent)}
+.hovbar button{height:30px;min-width:30px;padding:0 7px;border-radius:6px;display:inline-flex;align-items:center;gap:5px;font-size:var(--t13);color:var(--ink2)}
+.hovbar button:hover{background:var(--hover);color:var(--ink)}
+.hovbar .sep{width:1px;background:var(--line);margin:5px 2px}
+
+/* 입력창 */
+.composer{flex:none;padding:6px 18px 16px}
+.box{display:flex;align-items:center;gap:4px;min-height:48px;padding:6px 6px 6px 6px;border-radius:var(--r12);box-shadow:0 0 0 1px var(--line2);background:var(--paper)}
+.box .ph{flex:1;padding:0 6px;font-size:var(--t15);color:var(--ink3)}
+.send{width:36px;height:36px;border-radius:var(--r8);display:grid;place-items:center;background:#EDEDEE;color:var(--ink3)}
+
+/* 오른쪽 칸(스레드) */
+.side-head{display:flex;align-items:center;gap:8px;height:58px;padding:0 10px 0 18px;border-bottom:1px solid var(--line)}
+.side-head h3{font-size:var(--t15);font-weight:var(--w6);flex:1}
+.side-head .sub{font-size:var(--t13);color:var(--ink3);font-weight:var(--w4);margin-left:6px}
+.tabs{display:flex;gap:2px;flex:1;align-self:stretch;align-items:stretch;margin-left:-8px}
+.tabs button{padding:0 10px;font-size:var(--t14);color:var(--ink2);border-bottom:2px solid transparent;display:inline-flex;align-items:center;gap:6px}
+.tabs button[aria-selected="true"]{color:var(--ink);font-weight:var(--w6);border-bottom-color:var(--ink)}
+.tabs .num{font-size:var(--t12);color:var(--ink3);font-weight:var(--w6)}
+.nt{display:grid;grid-template-columns:32px 1fr auto;gap:4px 12px;padding:12px 18px;border-bottom:1px solid var(--line)}
+.nt .av{width:32px;height:32px;border-radius:var(--rp);display:grid;place-items:center;font-size:var(--t13);font-weight:var(--w6)}
+.nt .h{font-size:var(--t13);color:var(--ink3)}
+.nt .h b{color:var(--ink);font-weight:var(--w6)}
+.nt .tx{grid-column:2/4;font-size:var(--t14);color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nt .t{font-family:var(--num);font-size:var(--t12);color:var(--ink3)}
+.nt.unread .h b::after{content:"";display:inline-block;width:6px;height:6px;border-radius:9px;background:var(--accent);margin-left:6px;vertical-align:2px}
+.side-foot{display:flex;justify-content:space-between;padding:12px 18px;font-size:var(--t13)}
+.side-foot button{color:var(--ink2);border-bottom:1px solid var(--line2)}
+.side .inbox,.side .threadv{display:none;flex-direction:column;min-height:0;flex:1}
+:root[data-panel="thread"] .side .threadv,:root[data-panel="inbox"] .side .inbox{display:flex}
+.side .stream{padding-top:6px}
+.side .stream>:first-child{margin-top:0}
+.side .msg{padding:8px 18px}
+.side .composer{padding:6px 14px 14px}
+.side-sep{display:flex;align-items:center;gap:10px;margin:6px 18px;font-size:var(--t13);color:var(--ink3)}
+.side-sep::after{content:"";height:1px;background:var(--line);flex:1}
+
+/* 휴대폰: 대화 화면만, 아래 메뉴 없음 */
+.sheet{display:none}
+@media (max-width:760px){
+  .app{display:block;height:100vh;height:100dvh}
+  .app>.rail{display:none}
+  .msgr{display:block;margin:0;height:100vh;height:100dvh}
+  :root[data-theme="b"] .msgr{border-radius:0}
+  .list{display:none!important}
+  .side{display:none!important}
+  :root[data-panel] .side{display:flex!important;position:fixed;inset:0;margin:0;border-radius:0;z-index:4}
+  :root[data-panel] .conv{display:none}
+  .conv{height:100vh;height:100dvh;border-radius:0;box-shadow:none}
+  .conv-head{height:52px;padding:0 8px 0 4px;gap:4px}
+  .conv-head .back{display:grid}
+  .conv-head .title{flex-direction:column;gap:0;align-items:flex-start}
+  .conv-head h2{font-size:var(--t15)}
+  .conv-head .sub{font-size:var(--t13);line-height:1.2}
+  .conv-head .tools .hide-m{display:none}
+  .msg{grid-template-columns:32px 1fr;gap:10px;padding:7px 14px}
+  .msg .av{width:32px;height:32px}
+  .day{margin:10px 14px 4px}
+  .hovbar{display:none!important}
+  .msg:focus-within .hovbar{display:flex!important;top:6px;right:10px}
+  .msg:focus-within .hovbar button:not(.more),.msg:focus-within .hovbar .sep{display:none}
+  .chip{display:grid;grid-template-columns:auto 1fr;column-gap:8px;row-gap:2px}
+  .chip .tt{white-space:normal}
+  .chip .meta{grid-column:2;display:flex;align-items:center;gap:8px}
+  .chip .stage{grid-column:2;justify-self:start}
+  .composer{padding:6px 10px calc(10px + env(safe-area-inset-bottom))}
+  .box .hide-m{display:none}
+  .send{width:44px;height:44px}
+  .react{height:34px;padding:0 10px;position:relative}
+  .react::after{content:"";position:absolute;inset:-5px -2px}
+  .side-foot button{padding:12px 0}
+  .tabs button{min-height:44px}
+  .thread{padding:8px 10px 8px 4px}
+  :root[data-sheet="1"] .sheet{display:block;position:fixed;inset:0;background:rgba(11,12,15,.32);z-index:5}
+  .sheet .pan{position:absolute;left:0;right:0;bottom:0;background:var(--paper);border-radius:16px 16px 0 0;padding:8px 0 calc(12px + env(safe-area-inset-bottom))}
+  .sheet-head{display:flex;align-items:center;justify-content:space-between;padding:0 8px 4px 20px;font-size:var(--t14);font-weight:var(--w6)}
+  .sheet .grab{width:36px;height:4px;border-radius:2px;background:var(--line2);margin:0 auto 10px}
+  .sheet .emo{display:flex;justify-content:space-around;padding:4px 16px 12px;border-bottom:1px solid var(--line)}
+  .sheet .emo button{width:48px;height:48px;border-radius:var(--rp);background:#F4F4F5;display:grid;place-items:center;font-size:22px}
+  .sheet ul{list-style:none;padding:6px 0 0}
+  .sheet li button{display:flex;align-items:center;gap:14px;width:100%;height:48px;padding:0 20px;font-size:var(--t15);text-align:left}
+  .sheet li svg{color:var(--ink2)}
+  .sheet li.danger{color:#C8372B}.sheet li.danger svg{color:#C8372B}
+  .sheet .quote{margin:0 16px 10px;padding:10px 12px;border-radius:var(--r8);background:#F7F7F8;font-size:var(--t14);color:var(--ink2)}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-today" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v1.5M12 19.5V21M3 12h1.5M19.5 12H21M5.6 5.6l1.1 1.1M17.3 17.3l1.1 1.1M5.6 18.4l1.1-1.1M17.3 6.7l1.1-1.1"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12.5a7.5 7.5 0 0 1-11 6.6L4 20l1-4.3A7.5 7.5 0 1 1 20 12.5Z"/></symbol>
+  <symbol id="i-make" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/></symbol>
+  <symbol id="i-sns" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4M16 3v4M4 10h16"/></symbol>
+  <symbol id="i-class" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3.2"/><path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6s4.9 1.6 5.5 4.6"/><path d="M15 6.2a3 3 0 0 1 0 5.6M17.5 14.6c1.6.6 2.7 2 3 4.4"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></symbol>
+  <symbol id="i-compose" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><path d="M18.5 3.5a2.1 2.1 0 0 1 3 3L13 15l-4 1 1-4 8.5-8.5Z"/></symbol>
+  <symbol id="i-hash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5 9h15M4 15h15M10 4 8 20M16 4l-2 16"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-10Z"/></symbol>
+  <symbol id="i-mega" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h3l7 4V6l-7 4H4Z"/><path d="M18 9.5a3.5 3.5 0 0 1 0 5"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15L6 16Z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="i-later" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1Z"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M7 3.5h7l4 4v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1Z"/><path d="M14 3.5v4h4"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6l-1 5 3 3v2H7v-2l3-3-1-5ZM12 14v6"/></symbol>
+  <symbol id="i-task" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="m8.5 12 2.5 2.5 4.5-5"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></symbol>
+  <symbol id="i-react" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-8-8"/><path d="M9 10h.01M15 10h.01M8.5 14.5a4 4 0 0 0 7 0M19 3v5M16.5 5.5h5"/></symbol>
+  <symbol id="i-reply" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6 4 12l6 6"/><path d="M4 12h10a6 6 0 0 1 6 6v1"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-at" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="3.5"/><path d="M15.5 12v1.5a2.5 2.5 0 0 0 5 0V12a8.5 8.5 0 1 0-3.3 6.7"/></symbol>
+  <symbol id="i-smile" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M9 10h.01M15 10h.01M8.5 14.5a4 4 0 0 0 7 0"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7 10 5 5 5-5"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3.9a7 7 0 0 0-2.1-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2.1 1.2l-2.3-.9-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.3-.9a7 7 0 0 0 2.1 1.2L10 21h4l.5-2.6a7 7 0 0 0 2.1-1.2l2.3.9 2-3.4-2-1.5c.1-.4.1-.8.1-1.2Z"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13"/></symbol>
+  <symbol id="i-logo" viewBox="0 0 560 328" fill="currentColor"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></symbol>
+</svg>
+
+<div class="app">
+  <nav class="rail" aria-label="주요 공간">
+    <div class="logo" aria-label="싱ㅋ 워크스페이스"><svg viewBox="0 0 560 328"><use href="#i-logo"/></svg></div>
+    <a href="today.html"><span class="ico"><svg width="20" height="20"><use href="#i-today"/></svg></span>오늘</a>
+    <a href="messenger.html" aria-current="page"><span class="ico"><svg width="20" height="20"><use href="#i-chat"/></svg></span>메신저<span class="badge">3</span></a>
+    <a href="#"><span class="ico"><svg width="20" height="20"><use href="#i-make"/></svg></span>작업실</a>
+    <a href="#"><span class="ico"><svg width="20" height="20"><use href="#i-sns"/></svg></span>SNS</a>
+    <a href="#"><span class="ico"><svg width="20" height="20"><use href="#i-class"/></svg></span>수업</a>
+    <span class="spacer"></span>
+    <a href="#" class="rail-find"><span class="ico"><svg width="20" height="20"><use href="#i-search"/></svg></span>찾기</a>
+    <button class="me" type="button" aria-label="유호 · 계정 메뉴 — 내 업무 카드 · 회사 안내 · 팀 · 설정">유</button>
+  </nav>
+
+  <div class="msgr">
+    <aside class="list" aria-label="대화 목록">
+      <div class="list-head"><h1>메신저</h1><div class="tools"><button class="iconbtn" aria-label="새 대화 — 1:1 · 새 대화방 · 팀 방 열기"><svg width="18" height="18"><use href="#i-compose"/></svg></button></div></div>
+      <button class="find" type="button"><svg width="16" height="16"><use href="#i-search"/></svg><span>대화방 · 사람 찾기</span></button>
+      <div class="seg"><button aria-pressed="true">전체</button><button aria-pressed="false">안 읽음 <span class="n">3</span></button></div>
+      <section class="group">
+        <div class="group-head"><button class="l" type="button" aria-expanded="true"><svg width="14" height="14"><use href="#i-chev"/></svg>대화방</button><button class="iconbtn" style="width:24px;height:24px" aria-label="대화방 만들기"><svg width="14" height="14"><use href="#i-plus"/></svg></button></div>
+        <a class="row" aria-current="page" href="#"><span class="ic"><svg width="16" height="16"><use href="#i-hash"/></svg></span><span class="name">마케팅팀</span><span class="t">10:05</span></a>
+        <a class="row unread" href="#"><span class="ic"><svg width="16" height="16"><use href="#i-folder"/></svg></span><span class="name">브랜드 사이트 개편</span><span class="t">10:20</span><span class="badge">1</span></a>
+        <a class="row" href="#"><span class="ic"><svg width="16" height="16"><use href="#i-mega"/></svg></span><span class="name">공지</span></a>
+        <a class="row" href="#"><span class="ic"><svg width="16" height="16"><use href="#i-hash"/></svg></span><span class="name">정보방</span></a>
+        <a class="row" href="#"><span class="ic"><svg width="16" height="16"><use href="#i-hash"/></svg></span><span class="name">수다방</span></a>
+        <a class="row muted" href="#"><span class="ic"></span><span class="name">삭제된 대화방</span></a>
+      </section>
+      <section class="group">
+        <div class="group-head"><button class="l" type="button" aria-expanded="true"><svg width="14" height="14"><use href="#i-chev"/></svg>사람</button><button class="iconbtn" style="width:24px;height:24px" aria-label="1:1 대화 시작"><svg width="14" height="14"><use href="#i-plus"/></svg></button></div>
+        <a class="row unread" href="#"><span class="av c3">지</span><span class="name">지우</span><span class="t">10:31</span><span class="badge">1</span></a>
+        <a class="row unread" href="#"><span class="av c4">민</span><span class="name">민준</span><span class="t">10:40</span><span class="badge">1</span></a>
+        <a class="row" href="#"><span class="av c0">유</span><span class="name">나에게</span><span class="t">08:50</span></a>
+      </section>
+    </aside>
+
+    <main class="conv" aria-label="마케팅팀 대화">
+      <header class="conv-head">
+        <button class="iconbtn back" aria-label="대화 목록"><svg width="20" height="20"><use href="#i-back"/></svg></button>
+        <div class="title"><h2>마케팅팀</h2><span class="sub">우리 팀 크루만 · 5명</span></div>
+        <div class="tools">
+          <a class="iconbtn" href="?panel=inbox" aria-label="알림 4개 · 나중에 보기 · 결정"><svg width="19" height="19"><use href="#i-bell"/></svg><span class="badge">4</span></a>
+          <button class="iconbtn" aria-label="방 정보 — 참여 크루 · 초대 · 알림 모드 · 파일 · 고정 메시지 · 정보 수정"><svg width="19" height="19"><use href="#i-info"/></svg></button>
+        </div>
+      </header>
+
+      <div class="stream">
+        <div class="day">오늘 · 11월 6일 금요일</div>
+
+        <article class="msg" tabindex="0"><div class="av c3">지</div><div>
+          <div class="who"><b>지우</b><span class="t">09:12</span></div>
+          <div class="body">어제 LAB 편 24시간 숫자 들어왔어요. 조회 1.2만, 저장 340이에요.</div>
+        </div></article>
+
+        <article class="msg" tabindex="0"><div class="av c2">서</div><div>
+          <div class="who"><b>서연</b><span class="t">09:30</span><span class="pin"><svg width="13" height="13"><use href="#i-pin"/></svg>고정됨</span><span class="saved"><svg width="13" height="13"><use href="#i-later"/></svg>저장함</span></div>
+          <div class="body">내일 LAB 편 썸네일 두 안 올려요. 오후 2시 전에 골라 주시면 예약 걸게요.</div>
+          <div class="file"><span class="fi"><svg width="18" height="18"><use href="#i-file"/></svg></span><span class="fn"><b>LAB_11월편_썸네일_A·B.pdf</b><span><span class="num">2.1 MB</span> · PDF</span></span><button class="iconbtn" aria-label="내려받기"><svg width="18" height="18"><use href="#i-down"/></svg></button></div>
+          <a class="thread" href="?panel=thread"><svg width="15" height="15"><use href="#i-reply"/></svg><b>답글 2개</b></a>
+        </div></article>
+
+        <article class="msg is-hover" tabindex="0"><div class="av c0">유</div><div>
+          <div class="who"><b>유호</b><span class="t">09:44</span></div>
+          <div class="body">B안으로 가죠. 자막 첫 줄만 짧게 다듬어 주세요.</div>
+          <div class="reacts"><button class="react" type="button" aria-label="👍 반응 2명">👍 <span class="num">2</span></button><button class="react" type="button" aria-label="✅ 반응 1명">✅ <span class="num">1</span></button></div>
+          <div class="chips">
+            <a class="chip" href="#"><span class="k"><svg width="15" height="15"><use href="#i-task"/></svg>할 일</span><span class="tt">LAB 11월 편 썸네일 B안 자막 다듬기</span><span class="meta">서연 · 오늘까지</span><span class="stage"><span class="dot butter"></span>수락 전</span></a>
+            <a class="chip" href="#"><span class="k"><svg width="15" height="15"><use href="#i-flag"/></svg>결정</span><span class="tt">11월 LAB 썸네일은 B안 틀로 통일</span><span class="meta">유호 확정</span></a>
+          </div>
+        </div>
+        <div class="hovbar" role="toolbar" aria-label="메시지 동작">
+          <button aria-label="반응"><svg width="18" height="18"><use href="#i-react"/></svg></button>
+          <button aria-label="답글"><svg width="18" height="18"><use href="#i-reply"/></svg></button>
+          <button aria-label="할 일로 만들기"><svg width="18" height="18"><use href="#i-task"/></svg>할 일로</button>
+          <span class="sep"></span>
+          <button class="more" aria-label="더 보기 — 나중에 보기(저장 · 다시 볼 시각) · 고정 · 결정·최종본 기록 · 수정 · 삭제"><svg width="18" height="18"><use href="#i-more"/></svg></button>
+        </div></article>
+
+        <article class="msg for-me" tabindex="0"><div class="av c2">서</div><div>
+          <div class="who"><b>서연</b><span class="t">10:05</span></div>
+          <div class="body"><span class="mention">@유호</span> 다듬은 판 올렸어요. 확인 부탁드려요!</div>
+          <div class="chips">
+            <a class="chip" href="#"><span class="k"><svg width="15" height="15"><use href="#i-task"/></svg>내 할 일</span><span class="tt">썸네일 B안 최종 확인</span><span class="meta">오늘까지 · 서연 요청</span><span class="stage"><span class="dot butter"></span>수락 전</span></a>
+          </div>
+        </div></article>
+      </div>
+
+      <div class="composer"><div class="box">
+        <button class="iconbtn" aria-label="파일 올리기"><svg width="20" height="20"><use href="#i-plus"/></svg></button>
+        <span class="ph">마케팅팀에 보내기</span>
+        <button class="iconbtn hide-m" aria-label="크루 부르기"><svg width="19" height="19"><use href="#i-at"/></svg></button>
+        <button class="iconbtn hide-m" aria-label="이모지"><svg width="19" height="19"><use href="#i-smile"/></svg></button>
+        <button type="button" class="send" aria-label="보내기"><svg width="18" height="18"><use href="#i-send"/></svg></button>
+      </div></div>
+    </main>
+
+    <aside class="side" aria-label="오른쪽 칸 — 스레드 · 알림 · 나중에 보기 · 결정">
+      <div class="threadv">
+      <div class="side-head"><h3>스레드 <span class="sub">마케팅팀</span></h3><button class="iconbtn" aria-label="닫기"><svg width="18" height="18"><use href="#i-x"/></svg></button></div>
+      <div class="stream">
+        <article class="msg" tabindex="0"><div class="av c2">서</div><div>
+          <div class="who"><b>서연</b><span class="t">09:30</span></div>
+          <div class="body">내일 LAB 편 썸네일 두 안 올려요. 오후 2시 전에 골라 주시면 예약 걸게요.</div>
+          <div class="file"><span class="fi"><svg width="18" height="18"><use href="#i-file"/></svg></span><span class="fn"><b>LAB_11월편_썸네일_A·B.pdf</b><span><span class="num">2.1 MB</span> · PDF</span></span></div>
+        </div></article>
+        <div class="side-sep">답글 <span class="num">2</span></div>
+        <article class="msg" tabindex="0"><div class="av c3">지</div><div>
+          <div class="who"><b>지우</b><span class="t">09:38</span></div>
+          <div class="body">B안 글자 한 단계 줄인 판도 같이 넣었어요.</div>
+        </div></article>
+        <article class="msg" tabindex="0"><div class="av c2">서</div><div>
+          <div class="who"><b>서연</b><span class="t">09:41</span></div>
+          <div class="body">확인했어요, 그 판으로 비교해 볼게요.</div>
+        </div></article>
+      </div>
+      <div class="composer"><div class="box"><span class="ph">답글 쓰기</span><button type="button" class="send" aria-label="답글 보내기"><svg width="18" height="18"><use href="#i-send"/></svg></button></div></div>
+      </div>
+      <div class="inbox">
+        <div class="side-head"><div class="tabs" role="tablist" aria-label="오른쪽 칸"><button role="tab" aria-selected="true">알림 <span class="num">4</span></button><button role="tab" aria-selected="false">나중에 보기 <span class="num">1</span></button><button role="tab" aria-selected="false">결정 <span class="num">1</span></button></div><button class="iconbtn" aria-label="알림 설정 — 마감 알림 · 통화 알림 · 이 기기 알림"><svg width="18" height="18"><use href="#i-gear"/></svg></button><a class="iconbtn" href="messenger.html" aria-label="닫기"><svg width="18" height="18"><use href="#i-x"/></svg></a></div>
+        <div class="stream" style="display:block">
+          <a class="nt unread" href="#"><span class="av c4">민</span><span class="h"><b>민준</b> · 1:1</span><span class="t">10:40</span><span class="tx">로고 여백 규칙 한 장으로 묶어 뒀어요.</span></a>
+          <a class="nt unread" href="#"><span class="av c3">지</span><span class="h"><b>지우</b> · 1:1</span><span class="t">10:31</span><span class="tx">내일 오전에 10분만 통화 가능하세요? 미얀마 계정 일정 여쭤볼게요.</span></a>
+          <a class="nt unread" href="#"><span class="av c2">서</span><span class="h"><b>서연</b> · 마케팅팀 · 할 일을 맡겼어요</span><span class="t">10:05</span><span class="tx">썸네일 B안 최종 확인</span></a>
+          <a class="nt unread" href="#"><span class="av c2">서</span><span class="h"><b>서연</b> · 마케팅팀 · 나를 불렀어요</span><span class="t">10:05</span><span class="tx">@유호 다듬은 판 올렸어요. 확인 부탁드려요!</span></a>
+        </div>
+        <div class="side-foot"><button type="button">모두 읽음</button><button type="button">알림 설정</button></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="sheet" aria-hidden="true"><div class="pan">
+  <div class="grab"></div>
+  <div class="sheet-head"><span>메시지 동작</span><button type="button" class="iconbtn" aria-label="닫기"><svg width="18" height="18"><use href="#i-x"/></svg></button></div>
+  <div class="quote">유호 · B안으로 가죠. 자막 첫 줄만 짧게 다듬어 주세요.</div>
+  <div class="emo"><button type="button" aria-label="👍 반응">👍</button><button type="button" aria-label="❤️ 반응">❤️</button><button type="button" aria-label="✅ 반응">✅</button><button type="button" aria-label="👀 반응">👀</button><button type="button" aria-label="🎉 반응">🎉</button></div>
+  <ul>
+    <li><button type="button"><svg width="20" height="20"><use href="#i-reply"/></svg>답글</button></li>
+    <li><button type="button"><svg width="20" height="20"><use href="#i-task"/></svg>할 일로 만들기</button></li>
+    <li><button type="button"><svg width="20" height="20"><use href="#i-later"/></svg>나중에 보기<span style="margin-left:auto;font-size:13px;color:var(--ink3)">저장 · 다시 볼 시각</span></button></li>
+    <li><button type="button"><svg width="20" height="20"><use href="#i-pin"/></svg>고정</button></li>
+    <li><button type="button"><svg width="20" height="20"><use href="#i-flag"/></svg>결정 · 최종본으로 기록</button></li>
+    <li><button type="button"><svg width="20" height="20"><use href="#i-edit"/></svg>수정</button></li>
+    <li class="danger"><button type="button"><svg width="20" height="20"><use href="#i-trash"/></svg>삭제</button></li>
+  </ul>
+</div></div>
+</body>
+</html>
