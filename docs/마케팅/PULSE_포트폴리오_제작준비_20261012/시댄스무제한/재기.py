@@ -30,19 +30,23 @@ FR = cv2.FaceRecognizerSF.create(os.path.join(MOD, "face_recognition_sface_2021d
 
 
 def probe(path):
-    r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "stream=codec_type,width,height,r_frame_rate", "-show_entries", "format=duration",
+    r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "stream=codec_type,width,height,r_frame_rate,avg_frame_rate", "-show_entries", "format=duration",
                         "-of", "json", path], capture_output=True, text=True, encoding="utf-8")
     j = json.loads(r.stdout)
     v = next(s for s in j["streams"] if s["codec_type"] == "video")
-    num, den = v["r_frame_rate"].split("/")
-    return {"w": int(v["width"]), "h": int(v["height"]), "fps": float(num) / float(den), "dur": float(j["format"]["duration"]),
+    rate = lambda t: float(t.split("/")[0]) / float(t.split("/")[1]) if t and not t.endswith("/0") else 0.0
+    fps, avg = rate(v["r_frame_rate"]), rate(v.get("avg_frame_rate"))
+    if avg and fps > 1.5 * avg:   # 드리미나 파일은 머리에 60으로 적혔지만 실제 장은 24(11-05) — 실제 장 빠르기로 센다
+        fps = avg
+    return {"w": int(v["width"]), "h": int(v["height"]), "fps": fps, "dur": float(j["format"]["duration"]),
             "audio": any(s["codec_type"] == "audio" for s in j["streams"])}
 
 
 def frames(path, w, h):
     s = LONG / max(w, h)
     W, H = int(round(w * s / 2) * 2), int(round(h * s / 2) * 2)
-    r = subprocess.run(["ffmpeg", "-v", "error", "-i", path, "-vf", f"scale={W}:{H}", "-f", "rawvideo", "-pix_fmt", "bgr24", "-"], capture_output=True)
+    # passthrough — 머리가 60인 드리미나 파일을 60으로 늘려 같은 장을 겹쳐 읽지 않게(힉스필드 24 파일은 장 수가 같다)
+    r = subprocess.run(["ffmpeg", "-v", "error", "-i", path, "-fps_mode", "passthrough", "-vf", f"scale={W}:{H}", "-f", "rawvideo", "-pix_fmt", "bgr24", "-"], capture_output=True)
     a = np.frombuffer(r.stdout, np.uint8)
     n = a.size // (W * H * 3)
     return a[:n * W * H * 3].reshape(n, H, W, 3)

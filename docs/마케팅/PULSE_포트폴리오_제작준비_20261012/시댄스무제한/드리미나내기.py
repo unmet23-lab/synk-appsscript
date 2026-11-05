@@ -11,6 +11,9 @@
 #   파일 머리의 프레임률이 60으로 적혀 재기.py 등이 장을 겹쳐 읽는다 — 실제 97장 · 24fps라 잴 때는 fps=24로 옮겨 잰다.
 # 값: 720p 초당 37크레딧(11-04 기본 요금제 화면 · 실제 차감), 울트라 칸은 초당 18(11-05 실측 — 5초 90 · 13초 234). 견적 · 상한은 칸마다 PER_SEC_OF(울트라는 요금표 값 19로 조금 넉넉히).
 #   받은 뒤 잔액으로 다시 잰다. 영상 받은 것은 받을곳/<판>.mp4(둘째부터 __2), 기록은 받을곳/_드리미나.json.
+#   받은 판은 받을곳/_받음.json(받기.py와 같은 꼴)에도 적는다(11-05) — 견본떼기.py · 웹꾸러미.py의 끝 프레임(rs-C53b · hg-F6) · 재기.py가 그 장부로 판을 찾는다.
+# 받은 파일마다 왼쪽 위 「AI」 표시를 잰다(11-05, 유호님 「표시 지우긱는 꼭 지워줘」) — 장 평균 높은 결을 표시 견본과 견줌, 표시 있음 0.86~1.00 · 없음 0.09~0.22로
+#   갈려 0.5 넘으면 같은 resourceId로 두 번까지 다시 받고, 그래도 있으면 알린다. 견본은 받음/_드리미나비교/hs-S07-B_dr.mp4(표시 있는 판)에서 한 번 떠 둔다.
 # 끊기면 다시 내지 않는다 — 기록에 submitId가 있으니 그 id로 `dreamina-canvas operation wait <submitId> --project-id <캔버스>`를 본다.
 import json, os, re, subprocess, sys, threading, time
 from concurrent.futures import ThreadPoolExecutor
@@ -91,13 +94,73 @@ def pick_name(out, pid):
             k += 1
 
 
-def save(out, key, row):
-    p = os.path.join(out, "_드리미나.json")
+def save(out, key, row, name="_드리미나.json"):
+    # 다른 세션도 같은 장부에 쓴다(11-05 — 1번 오미톡 판) — 잠금 파일로 프로세스 사이도 막고, 쓰기 직전에 다시 읽어 바꿔치기한다. 30초 넘게 남은 잠금은 주인이 죽은 것으로 본다.
+    p = os.path.join(out, name)
+    os.makedirs(out, exist_ok=True)
+    guard = p + ".잠금"
     with lock:
-        led = json.load(open(p, encoding="utf-8")) if os.path.exists(p) else {}
-        led[key] = row
-        os.makedirs(out, exist_ok=True)
-        json.dump(led, open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        t0 = time.time()
+        while True:
+            try:
+                os.close(os.open(guard, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
+                break
+            except FileExistsError:
+                try:
+                    if time.time() - os.path.getmtime(guard) > 30:
+                        os.remove(guard)
+                except OSError:
+                    pass
+                if time.time() - t0 > 120:
+                    raise RuntimeError(f"장부 잠금을 못 잡음: {guard}")
+                time.sleep(0.2)
+        try:
+            led = json.load(open(p, encoding="utf-8")) if os.path.exists(p) else {}
+            led[key] = row
+            tmp = f"{p}.{os.getpid()}.tmp"
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(led, f, ensure_ascii=False, indent=1)
+            for k in range(10):   # 윈도우에서 다른 프로세스가 읽는 중이면 바꿔치기가 잠깐 막힌다
+                try:
+                    os.replace(tmp, p)
+                    break
+                except PermissionError:
+                    if k == 9:
+                        raise
+                    time.sleep(0.3)
+        finally:
+            os.remove(guard)
+
+
+MARK_SRC = os.path.join(DAY, "받음", "_드리미나비교", "hs-S07-B_dr.mp4")   # 표시가 박힌 판(11-04 기본 계정)
+MARK_TPL = os.path.join(DAY, "받음", "_표시견본.npy")
+MARK_AT = 0.5
+
+
+def corner_hp(path, n=16):
+    """왼쪽 위 200×140의 장 평균 높은 결 — 겹쳐 박힌 표시는 같은 자리에 쌓이고 움직이는 화면은 흐려진다."""
+    import numpy as np, cv2
+    r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "json", path], capture_output=True, text=True, encoding="utf-8")
+    dur = float(json.loads(r.stdout)["format"]["duration"])
+    acc = []
+    for k in range(n):
+        rr = subprocess.run(["ffmpeg", "-v", "error", "-ss", f"{dur * (k + 0.5) / n:.3f}", "-i", path, "-frames:v", "1", "-vf", "crop=200:140:0:0",
+                             "-f", "rawvideo", "-pix_fmt", "gray", "-"], capture_output=True)
+        a = np.frombuffer(rr.stdout, np.uint8)
+        if a.size >= 200 * 140:
+            f = a[:200 * 140].reshape(140, 200).astype(np.float32)
+            acc.append(f - cv2.GaussianBlur(f, (0, 0), 6))
+    return np.mean(acc, axis=0)
+
+
+def mark_score(path):
+    import numpy as np, cv2
+    with lock:
+        if not os.path.exists(MARK_TPL):
+            np.save(MARK_TPL, corner_hp(MARK_SRC, 24)[6:48, 6:58].copy())
+        tpl = np.load(MARK_TPL)
+    r = cv2.matchTemplate(corner_hp(path).astype(np.float32), tpl.astype(np.float32), cv2.TM_CCOEFF_NORMED)
+    return round(float(r[:40, :40].max()), 3)   # 표시는 6~58px 자리 — 조금 어긋나도 잡게 40px 안을 찾는다
 
 
 def result_of(data):   # 정상 답은 data.node · data.submission, 끊긴 답은 partialData.items[0]
@@ -112,21 +175,31 @@ def run_one(pack, out, b):
     t0 = time.time()
     start, end, refs, audio = split_media(pack, b)
     mode = mode_of(start, end, refs, audio)
-    image_ids = [upload(pack, b, f) for f in start + end + refs]
-    audio_ids = [upload(pack, b, f) for f in audio]
-    prompt = build_prompt(pack, b, image_ids, audio_ids)
-    ref_args = [x for i in image_ids + audio_ids for x in ("--ref", f"res:{i}")]
     ceiling = PER_SEC * b["길이"]
     with lock:
         print(f"냄 {b['id']:<14} {mode} {b['길이']}초 상한 {ceiling}", flush=True)
-    made = cli("node", "create", "video", "--model", "seedance_2.5", "--mode", mode, *ref_args, "--prompt", prompt, "--ratio", b["비율"],
-               "--resolution", "720p", "--duration", str(b["길이"]), "--title", b["id"], "--project-id", PROJECT,
-               "--run", "--credit-ceiling", str(ceiling), "--wait", "--timeout", "45m", check=False)
-    data = made.get("data") or made.get("partialData") or {}
-    node, submit, rid, state, raw = result_of(data)
+    for k_try in range(3):   # 올린 그림의 크기를 서버가 아직 못 읽으면 견적 단계에서 끝난다(11-05 p7-1-32-새로 VIDEO_FIRST_FRAME_UNAVAILABLE, 차감 없음) — 잠시 뒤 다시 올려 다시 낸다
+        image_ids = [upload(pack, b, f) for f in start + end + refs]
+        audio_ids = [upload(pack, b, f) for f in audio]
+        prompt = build_prompt(pack, b, image_ids, audio_ids)
+        ref_args = [x for i in image_ids + audio_ids for x in ("--ref", f"res:{i}")]
+        made = cli("node", "create", "video", "--model", "seedance_2.5", "--mode", mode, *ref_args, "--prompt", prompt, "--ratio", b["비율"],
+                   "--resolution", "720p", "--duration", str(b["길이"]), "--title", b["id"], "--project-id", PROJECT,
+                   "--run", "--credit-ceiling", str(ceiling), "--wait", "--timeout", "45m", check=False)
+        data = made.get("data") or made.get("partialData") or {}
+        node, submit, rid, state, raw = result_of(data)
+        if not ((raw.get("validation") or {}).get("reasonCode") == "VIDEO_FIRST_FRAME_UNAVAILABLE" and k_try < 2):
+            break
+        time.sleep(60)
     row = {"판": b["id"], "길": "드리미나 CLI", "모드": mode, "길이": b["길이"], "비율": b["비율"], "nodeId": node, "submitId": submit, "resourceId": rid,
            "상태": state, "상한": ceiling, "걸린초": round(time.time() - t0), "지시문": prompt, "오류": made.get("error"), "답": raw if not rid else None}
     key = submit or f"{b['id']}-{int(t0)}"
+    if state == "failed" and submit:   # 실패 코드(11-05 20114 등)를 기록에 남긴다
+        try:
+            st = cli("operation", "wait", submit, "--project-id", PROJECT, "--timeout", "20s", check=False, timeout=60)
+            row["실패코드"] = [r.get("serviceCode") for r in ((st.get("data") or {}).get("resources") or [])]
+        except Exception:
+            pass
     if not made.get("ok") or not rid:
         save(out, key, row)
         with lock:
@@ -135,17 +208,34 @@ def run_one(pack, out, b):
     save(out, key, row)   # 받기가 막혀도 구운 판의 id는 남긴다
     name = pick_name(out, b["id"])
     os.makedirs(out, exist_ok=True)
-    for n_try in range(3):   # 11-04 일곱 판 동시 받기에서 한 번이 30분 넘게 멈췄다 — 끊고 다시 받는다(다시 받기는 크레딧이 나가지 않는다)
+    dst = os.path.join(out, name)
+    for mark_try in range(3):   # 표시가 있으면 같은 resourceId로 다시 받는다(크레딧 0)
+        if os.path.exists(dst):
+            os.remove(dst)
+        for n_try in range(3):   # 11-04 일곱 판 동시 받기에서 한 번이 30분 넘게 멈췄다 — 끊고 다시 받는다(다시 받기는 크레딧이 나가지 않는다)
+            try:
+                cli("resource", "download", rid, "--project-id", PROJECT, "-o", dst, timeout=180)
+                break
+            except subprocess.TimeoutExpired:
+                if n_try == 2:
+                    raise
         try:
-            cli("resource", "download", rid, "--project-id", PROJECT, "-o", os.path.join(out, name), timeout=180)
+            row["표시"] = mark_score(dst)
+        except Exception as e:   # 재기가 막혀도 받은 파일은 남기고 알린다
+            row["표시"] = f"못 잼: {e}"[:200]
             break
-        except subprocess.TimeoutExpired:
-            if n_try == 2:
-                raise
+        if row["표시"] < MARK_AT:
+            break
+        time.sleep(20)
     row["파일"], row["걸린초"] = name, round(time.time() - t0)
     save(out, key, row)
+    now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    save(out, key, {"판": b["id"], "순서": b.get("순서", 0), "파일": name, "만든때": now, "받은때": now, "길이": b["길이"], "비율": b["비율"], "화질": "720p",
+                    "소리": True, "모델": "dreamina seedance_2.5", "길": f"드리미나 CLI({PROFILE or '기본'})", "지시문": prompt}, "_받음.json")
+    mark = row["표시"]
+    warn = f"  ⚠ 표시가 남음({mark}) — 계정 설정 「워터마크 삭제」를 보고 같은 resourceId로 다시 받는다" if not isinstance(mark, float) or mark >= MARK_AT else ""
     with lock:
-        print(f"받음 {b['id']:<14} → {name} · {row['걸린초']}초 걸림", flush=True)
+        print(f"받음 {b['id']:<14} → {name} · {row['걸린초']}초 걸림 · 표시 {mark}{warn}", flush=True)
 
 
 def safe(*a):
@@ -168,27 +258,33 @@ def main():
     vals = {a.index(k) + 1 for k in ("--상한", "--동시", "--받을곳", "--계정") if k in a}
     pos = [x for i, x in enumerate(a) if not x.startswith("--") and i not in vals]
     if not pos:
-        raise SystemExit("쓰는 법: python -X utf8 드리미나내기.py <꾸러미> [<판>…] [--받을곳 폴더] [--상한 크레딧] [--동시 3] [--계정 ultra] [--실행]")
-    pack, want = os.path.abspath(pos[0]), pos[1:]
-    out = out or (os.path.join(DAY, "받음", "_드리미나비교") if pack.replace("\\", "/").startswith(DAY) else os.path.join(os.path.dirname(pack), "받음"))
-    bs = boards(pack)
-    miss = [w for w in want if w not in {b["id"] for b in bs}]
+        raise SystemExit("쓰는 법: python -X utf8 드리미나내기.py <꾸러미> [<꾸러미>…] [<판>…] [--받을곳 폴더] [--상한 크레딧] [--동시 3] [--계정 ultra] [--실행]")
+    # 꾸러미를 여럿 줄 수 있다(11-05) — 폴더인 인자는 꾸러미, 나머지는 판 id. 한 프로세스로 내야 장부(_드리미나.json · _받음.json)를 두 프로세스가 덮어쓰지 않는다
+    packs = [os.path.abspath(x) for x in pos if os.path.isdir(x)]
+    want = [x for x in pos if not os.path.isdir(x)]
+    if not packs:
+        raise SystemExit(f"꾸러미 폴더가 없다: {pos[0]}")
+    pack0 = packs[0]
+    out = out or (os.path.join(DAY, "받음", "_드리미나비교") if pack0.replace("\\", "/").startswith(DAY) else os.path.join(os.path.dirname(pack0), "받음"))
+    bs = [(p, b) for p in packs for b in boards(p)]
+    ids = {b["id"] for _, b in bs}
+    miss = [w for w in want if w not in ids]
     if miss:
         raise SystemExit(f"꾸러미에 없는 판: {miss}")
     todo, held = [], []
-    for b in (bs if not want else [b for w in want for b in bs if b["id"] == w]):
-        lost = list(b.get("빠진 파일") or []) + [f for f in b["파일"] if not os.path.exists(os.path.join(pack, b["폴더"], f))]
+    for p, b in (bs if not want else [next(x for x in bs if x[1]["id"] == w) for w in want]):
+        lost = list(b.get("빠진 파일") or []) + [f for f in b["파일"] if not os.path.exists(os.path.join(p, b["폴더"], f))]
         if lost:
             held.append(f"{b['id']}(빠짐 {', '.join(sorted(set(lost)))})")
             continue
-        todo += [b] if want else [b] * max(0, b["판 수"] - have(out, b["id"]))
-    total = sum(PER_SEC * b["길이"] for b in todo)
+        todo += [(p, b)] if want else [(p, b)] * max(0, b["판 수"] - have(out, b["id"]))
+    total = sum(PER_SEC * b["길이"] for _, b in todo)
     bal = balance()
     print(f"잔액 {bal} · 칸 {PROFILE or '기본'} · 받을곳 {out}")
-    for b in todo:
-        s, e, r, au = split_media(pack, b)
-        print(f"  {b['id']:<14} {b['길이']}초 {b['비율']} · {PER_SEC * b['길이']}크레딧 · {mode_of(s, e, r, au)} · 시작 {len(s)} 끝 {len(e)} 참고 {len(r)} 소리 {len(au)}")
-    print(f"낼 것 {len(todo)}판 · {sum(b['길이'] for b in todo)}초 · {total}크레딧" + (f" · 건너뜀 {len(held)}: {' · '.join(held)}" if held else ""))
+    for p, b in todo:
+        s, e, r, au = split_media(p, b)
+        print(f"  {b['id']:<18} {b['길이']}초 {b['비율']} · {PER_SEC * b['길이']}크레딧 · {mode_of(s, e, r, au)} · 시작 {len(s)} 끝 {len(e)} 참고 {len(r)} 소리 {len(au)} · {os.path.basename(p)}")
+    print(f"낼 것 {len(todo)}판 · {sum(b['길이'] for _, b in todo)}초 · {total}크레딧" + (f" · 건너뜀 {len(held)}: {' · '.join(held)}" if held else ""))
     limit = min(float(cap) if cap else bal, bal)
     if total > limit:
         raise SystemExit(f"멈춤: 견적 {total}크레딧이 상한 {cap or '-'} · 잔액 {bal}을 넘는다.")
@@ -196,7 +292,7 @@ def main():
         print("미리 보기만 했다 — 내려면 --실행" if todo else "낼 판이 없다")
         return
     with ThreadPoolExecutor(conc) as ex:
-        bad = [x for x in ex.map(lambda b: safe(pack, out, b), todo) if x]
+        bad = [x for x in ex.map(lambda pb: safe(pb[0], out, pb[1]), todo) if x]
     print(f"\n끝 · 잔액 {bal} → {balance()} (견적 {total})" + (f" · 못 낸 판 {bad}" if bad else ""))
 
 
