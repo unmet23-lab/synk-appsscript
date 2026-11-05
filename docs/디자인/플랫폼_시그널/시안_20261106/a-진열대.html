@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A 진열대 — SYNK 플랫폼 시안</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+/* A 진열대: 흰 판 위 회색 선반에 내 앱과 혜택이 펠트 물건으로 서 있다. 물건을 집으면(누르면) 그 앱이 열린다. */
+.top{position:sticky;top:0;z-index:10;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:72px;padding:0 40px;background:rgba(255,255,255,.86);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid transparent}
+.top.scrolled{border-bottom-color:var(--line)}
+.nav{display:flex;gap:4px}
+.nav a{position:relative;height:40px;display:inline-flex;align-items:center;padding:0 14px;border-radius:999px;font-size:var(--t15);font-weight:600;color:var(--ink-3)}
+.nav a:hover{color:var(--ink)}
+.nav a[aria-current="page"]{color:var(--ink)}
+.nav a[aria-current="page"]::after{content:"";position:absolute;left:50%;bottom:2px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--ink)}
+.tools{display:flex;justify-content:flex-end;align-items:center;gap:4px}
+.acct{display:inline-flex;align-items:center;gap:10px;height:44px;padding:0 14px 0 6px;border-radius:999px;border:0;background:transparent;font-size:var(--t15);font-weight:600}
+.acct:hover{background:rgba(0,0,0,.05)}
+.avatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:#fff;font-size:var(--t13);font-weight:700}
+.wrap{max-width:1360px;margin:0 auto;padding:0 40px}
+
+/* 인사 */
+.hello{padding:64px 0 40px}
+.hello .who{font-size:var(--t17);font-weight:600;color:var(--ink-3)}
+.hello h1{margin-top:10px;font-size:var(--t56);line-height:1.14;font-weight:600;letter-spacing:-.01em}
+.hello h1 span{color:#808086}
+
+/* 선반 */
+.shelf{position:relative;display:grid;grid-template-columns:1.7fr 1fr 1fr 1fr;gap:0;margin:0;padding:0;list-style:none}
+.shelf>.li{display:flex;flex-direction:column}
+.shelf>.li>.item{flex:1}
+.shelf::before{content:"";position:absolute;left:0;right:0;top:0;height:360px;background:var(--surface)}
+.item{position:relative;display:flex;flex-direction:column;outline-offset:-6px}
+.item .stage{position:relative;height:360px;display:flex;align-items:flex-end;justify-content:center;padding:0 24px 44px}
+.item .stage img{position:relative;z-index:1;max-height:230px;width:auto;object-fit:contain;filter:drop-shadow(0 18px 18px rgba(0,0,0,.14)) drop-shadow(0 3px 4px rgba(0,0,0,.12));transition:transform .45s var(--ease),filter .45s var(--ease);transform-origin:50% 100%}
+.item .stage::after{content:"";position:absolute;left:50%;bottom:36px;width:62%;height:18px;margin-left:-31%;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.18),rgba(0,0,0,0));transition:transform .45s var(--ease),opacity .45s var(--ease)}
+.item.big .stage img{max-height:290px}
+.item:hover .stage img,.item:focus-visible .stage img{transform:translateY(-14px) rotate(-1.5deg);filter:drop-shadow(0 30px 26px rgba(0,0,0,.16)) drop-shadow(0 4px 6px rgba(0,0,0,.1))}
+.item:hover .stage::after,.item:focus-visible .stage::after{transform:scale(.82);opacity:.7}
+.label{padding:20px 24px 0}
+.label h2{font-size:var(--t17);font-weight:600;line-height:1.4}
+.item.big .label h2{font-size:var(--t22)}
+.label p{margin-top:4px;font-size:var(--t15);color:var(--ink-2);line-height:1.55;max-width:34em}
+.label .meta{margin-top:10px;font-size:var(--t13);color:var(--ink-3)}
+.label .go{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:var(--t15);font-weight:600;opacity:0;transform:translateY(4px);transition:.3s var(--ease)}
+.item:hover .go,.item:focus-visible .go{opacity:1;transform:none}
+.item.big .go{opacity:1;transform:none}
+
+/* 메모 */
+.notes{display:grid;grid-template-columns:1fr 1fr;gap:64px;padding:88px 0 72px}
+.notes h2{font-size:var(--t22);font-weight:600;display:flex;align-items:baseline;justify-content:space-between}
+.notes h2 .link{font-size:var(--t13)}
+.rows{margin-top:16px;border-top:1px solid var(--ink)}
+.row{display:flex;align-items:center;gap:14px;min-height:60px;border-bottom:1px solid var(--line);font-size:var(--t17)}
+.row input{appearance:none;width:22px;height:22px;flex:none;margin:0;border-radius:7px;box-shadow:inset 0 0 0 1.5px #b9b9be;cursor:pointer;display:grid;place-items:center}
+.row input:checked{background:var(--ink);box-shadow:none}
+.row input:checked::after{content:"";width:10px;height:6px;border:2px solid #fff;border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+.row .tag{margin-left:auto;font-size:var(--t13);color:var(--ink-3)}
+.row .bullet{width:22px;flex:none;color:var(--ink-3);text-align:center}
+.foot{display:flex;justify-content:space-between;gap:16px;padding:22px 0 40px;border-top:1px solid var(--line);font-size:var(--t13);color:var(--ink-3)}
+
+/* 앱 소개 */
+.crumb{display:flex;align-items:center;gap:8px;padding:28px 0 0;font-size:var(--t13);color:var(--ink-3)}
+.crumb a:hover{color:var(--ink)}
+.detail{display:grid;grid-template-columns:7fr 5fr;gap:64px;padding:24px 0 88px}
+.detail .scenes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}
+.detail .scene{margin:0}
+.detail .scene:nth-child(2){margin-top:48px}
+.detail .scene .fr{aspect-ratio:9/16;overflow:hidden;background:var(--surface)}
+.detail .scene img{width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease)}
+.detail .scene:hover img{transform:scale(1.03)}
+.detail .scene figcaption{display:flex;justify-content:space-between;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--ink);font-size:var(--t13);color:var(--ink-2)}
+.detail .scene figcaption span{color:var(--ink-3)}
+.detail .text{padding-top:24px}
+.detail .aud{font-size:var(--t15);font-weight:600;color:var(--ink-3)}
+.detail h1{margin-top:10px;font-family:var(--num);font-size:var(--t56);line-height:1.05;font-weight:600;letter-spacing:-.025em}
+.detail .sum{margin-top:20px;font-size:var(--t17);line-height:1.7;color:var(--ink-2);max-width:30em}
+.detail .acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:32px}
+.detail .state{margin-top:16px;font-size:var(--t13);color:var(--ink-3)}
+.feats{margin-top:48px;border-top:1px solid var(--ink)}
+.feat{padding:20px 0;border-bottom:1px solid var(--line)}
+.feat h3{font-size:var(--t17);font-weight:600}
+.feat p{margin-top:4px;font-size:var(--t15);color:var(--ink-2)}
+
+/* 좁은 창 · 휴대폰 */
+.tabbar{display:none}
+@media (max-width:900px){
+  .top{grid-template-columns:auto 1fr;padding:0 16px;height:60px}
+  .nav{display:none}
+  .tools .hide-s{display:none}
+  .wrap{padding:0 16px}
+  .hello{padding:28px 0 24px}
+  .hello h1{font-size:var(--t34);line-height:1.22}
+  .shelf{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:16px;margin:0 -16px;padding:0 16px;scrollbar-width:none}
+  .shelf::-webkit-scrollbar{display:none}
+  .shelf::before{display:none}
+  .shelf>.li{flex:0 0 78%;scroll-snap-align:start}
+  .item .stage{height:280px;background:var(--surface);padding-bottom:36px}
+  .item .stage img,.item.big .stage img{max-height:200px}
+  .item .stage::after{bottom:28px}
+  .shelf>.li+.li{margin-left:10px}
+  .label{padding:16px 4px 0}
+  .item .go{opacity:1;transform:none}
+  .notes{grid-template-columns:1fr;gap:48px;padding:56px 0 40px}
+  .foot{flex-direction:column;padding-bottom:104px}
+  .detail{grid-template-columns:1fr;gap:28px;padding:16px 0 104px}
+  .detail .scenes{grid-template-columns:repeat(3,72%);overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:16px;margin:0 -16px;padding:0 16px;scrollbar-width:none}
+  .detail .scenes::-webkit-scrollbar{display:none}
+  .detail .scene{scroll-snap-align:start}
+  .detail .scene:nth-child(2){margin-top:0}
+  .detail h1{font-size:var(--t34)}
+  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:20;height:72px;padding-bottom:env(safe-area-inset-bottom);background:rgba(255,255,255,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line)}
+  .tabbar a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:var(--t13);font-weight:600;color:var(--ink-3)}
+  .tabbar a[aria-current="page"]{color:var(--ink)}
+}
+</style>
+</head>
+<body data-view="home">
+<a class="sr" href="#main">본문으로 건너뛰기</a>
+<header class="top" id="top">
+  <a href="#home" aria-label="SYNK 내 홈"><svg class="wordmark" viewBox="0 0 560 328" role="img" aria-label="싱ㅋ"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></svg></a>
+  <nav class="nav" aria-label="주 메뉴">
+    <a href="#home" aria-current="page">내 홈</a><a href="#home">라이브러리</a><a href="#home">회원 혜택</a><a href="#home">설치·업데이트</a><a href="#home">설정</a>
+  </nav>
+  <div class="tools">
+    <button class="icon-btn" aria-label="찾기 (Ctrl+K)"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg></button>
+    <button class="icon-btn hide-s" aria-label="알림"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15Z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/></svg></button>
+    <button class="acct" aria-label="내 계정 — Bolor"><span class="avatar" aria-hidden="true">B</span><span class="hide-s">Bolor</span></button>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+  <!-- 내 홈 -->
+  <section class="v-home" aria-labelledby="hello-h">
+    <div class="hello">
+      <p class="who">Bolor 님</p>
+      <h1 id="hello-h">어제 하던 WORLD,<br><span>이어서 열까요?</span></h1>
+    </div>
+    <ul class="shelf" aria-label="내 앱과 회원 혜택">
+      <li class="li"><a class="item big" href="#world">
+        <div class="stage"><img src="../../../../desktop/assets/launcher/world-book.avif" alt="코랄색 표지에 크림색 장을 펼친 펠트 책"></div>
+        <div class="label">
+          <h2>SYNK WORLD</h2>
+          <p>TOPIK 진단부터 쓰기 연습, 한국어 게임까지 들어 있어요.</p>
+          <p class="meta"><span class="dot" aria-hidden="true"></span>설치됨 · 어제 오후 <span class="num">9:40</span>에 열었어요</p>
+          <span class="go">이어서 열기 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </div>
+      </a></li>
+      <li class="li"><a class="item" href="#home">
+        <div class="stage"><img src="../../../../desktop/assets/launcher/benefit-insight.webp" alt="책갈피 셋을 꽂은 남색 펠트 수첩과 노란 테 돋보기"></div>
+        <div class="label">
+          <h2>내 성향</h2>
+          <p>내가 고른 것과 실제로 한 것을 나눠서 봐요.</p>
+          <p class="meta">회원 혜택 · 로그인하면 바로</p>
+          <span class="go">보기 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </div>
+      </a></li>
+      <li class="li"><a class="item" href="#home">
+        <div class="stage"><img src="../../../../desktop/assets/launcher/benefit-subscriptions.webp" alt="남은 양을 가리키는 바늘이 달린 반원 펠트 계기판"></div>
+        <div class="label">
+          <h2>AI 구독 계정판</h2>
+          <p>AI 구독마다 이번 주에 남은 양을 보여 줘요.</p>
+          <p class="meta">회원 혜택 · PC 앱 · 회원 무료</p>
+          <span class="go">보기 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </div>
+      </a></li>
+      <li class="li"><a class="item" href="#home">
+        <div class="stage"><img src="../../../../desktop/assets/launcher/benefit-care.webp" alt="코랄 하트로 봉한 노란 펠트 편지 봉투"></div>
+        <div class="label">
+          <h2>플레저</h2>
+          <p>오늘 연락할 사람과 다가오는 날을 먼저 알려 줘요.</p>
+          <p class="meta">회원 혜택 · 웹에서 무료</p>
+          <span class="go">웹에서 열기 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></span>
+        </div>
+      </a></li>
+    </ul>
+
+    <div class="notes">
+      <section aria-labelledby="todo-h">
+        <h2 id="todo-h">이어서 할 일 <a class="link" href="#home">적어 두기</a></h2>
+        <div class="rows">
+          <label class="row"><input type="checkbox"><span>TOPIK II 쓰기 53번 다시 써 보기</span><span class="tag">WORLD</span></label>
+          <label class="row"><input type="checkbox" checked><span>바람길 한 판 끝까지</span><span class="tag">WORLD</span></label>
+        </div>
+      </section>
+      <section aria-labelledby="memo-h">
+        <h2 id="memo-h">결과 메모 <a class="link" href="#home">적어 두기</a></h2>
+        <div class="rows">
+          <div class="row"><span class="bullet" aria-hidden="true">—</span><span>받침 ㄹ 소리가 헷갈림, 다시 듣기</span><span class="tag">WORLD</span></div>
+        </div>
+      </section>
+    </div>
+    <footer class="foot"><span>설치 중인 앱 없음 · SYNK Platform · Windows x64</span><a class="link" href="#home">업데이트 확인</a></footer>
+  </section>
+
+  <!-- 앱 소개: SYNK WORLD -->
+  <section class="v-world" aria-labelledby="world-h">
+    <nav class="crumb" aria-label="위치"><a href="#home">내 홈</a><span aria-hidden="true">/</span><span>SYNK WORLD</span></nav>
+    <div class="detail">
+      <div class="scenes" aria-label="WORLD 장면">
+        <figure class="scene"><div class="fr"><img src="../../../../experiences/seoul-arrival/assets/img/train.webp" alt="지하철 창밖 한강 위에 선 크림색 펠트 글자 「안녕」"></div><figcaption>서울의 첫 아침<span>첫 실행</span></figcaption></figure>
+        <figure class="scene"><div class="fr"><img src="../../../../experiences/seoul-arrival/assets/img/gate.webp" alt="대학 정문 앞 광장에 선 펠트 글자 「환영」"></div><figcaption>정문<span>첫 실행</span></figcaption></figure>
+        <figure class="scene"><div class="fr"><img src="../../../../experiences/seoul-arrival/assets/img/idol.webp" alt="응원봉 불빛이 가득한 공연장 무대의 펠트 글자 「데뷔」와 무대를 보는 뒷모습"></div><figcaption>내 꿈 · 데뷔<span>첫 실행</span></figcaption></figure>
+      </div>
+      <div class="text">
+        <p class="aud">한국어를 배우는 학생</p>
+        <h1 id="world-h">SYNK WORLD</h1>
+        <p class="sum">짧은 진단으로 TOPIK I 내 위치를 보고, 그에 맞춘 이번 주 연습과 게임을 이어서 해요.</p>
+        <div class="acts"><button class="btn btn-solid">WORLD 열기</button><button class="btn btn-line" aria-pressed="false">즐겨찾기</button></div>
+        <p class="state"><span class="dot" aria-hidden="true"></span>설치됨 · 어제 오후 <span class="num">9:40</span>에 열었어요 · <a class="link" href="#world">업데이트 확인</a></p>
+        <div class="feats">
+          <div class="feat"><h3>TOPIK 준비</h3><p>TOPIK I 짧은 진단으로 내 위치를 보고, 듣기·읽기 연습과 TOPIK II 쓰기 연습을 해요.</p></div>
+          <div class="feat"><h3>한국어 놀이</h3><p>바람길·말의 리듬·한글 만나기 같은 게임으로 소리와 글자를 익혀요.</p></div>
+          <div class="feat"><h3>튜터와 옷장</h3><p>까몽·몽글·마린 중 고른 친구가 튜터로 같이 다녀요. 옷장에서 친구들 옷도 골라 입혀요.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<nav class="tabbar" aria-label="주 메뉴">
+  <a href="#home" aria-current="page"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7v9h-5v-6H9v6H4Z"/></svg>내 홈</a>
+  <a href="#home"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>라이브러리</a>
+  <a href="#home"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M3 9h18M12 9v11M12 9c-2-4-6-4-6-1.5S10 9 12 9Zm0 0c2-4 6-4 6-1.5S14 9 12 9Z"/></svg>혜택</a>
+  <a href="#home"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>설치</a>
+  <a href="#home"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>설정</a>
+</nav>
+<script>
+const show=()=>{const v=location.hash==='#world'?'world':'home';document.body.dataset.view=v;scrollTo(0,0)};
+addEventListener('hashchange',show);show();
+addEventListener('scroll',()=>document.getElementById('top').classList.toggle('scrolled',scrollY>4),{passive:true});
+</script>
+</body>
+</html>
