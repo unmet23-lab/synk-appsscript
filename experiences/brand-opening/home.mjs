@@ -262,10 +262,24 @@ function loadLearning(){
  if(!learningLoader)learningLoader=import('./content/life-standalone.mjs').then(({setupLife})=>{learningUI=setupLife(home,path=>asset('assets/'+path));return learningUI;}).catch(error=>{learningLoader=null;toast(t('msg.lifeLoadFailed'));throw error;});
  return learningLoader;
 }
+// 놀이 목록이 열린 채 학습 진도가 도착하면(진도를 읽는 중에 연 목록 · 게임을 닫자마자 연 목록 · 다른 기기 진도 · 계정 바뀜) 카드의 차례나 잠김이 showPlay가 그릴 결과와 다를 때만 판 전체를 다시 그린다.
+// showPlay와 같은 기록 · 본 놀이 · 차례로 모든 카드를 견준다: 실력으로 열린 게시판과 「새로 열림」을 본 sticky 놀이는 어긋나지 않아 다시 그리지 않는다. 진도를 읽는 중(record 없음)이면 그대로 둔다.
+// 다시 그려도 스크롤과 초점을 지킨다. 초점 카드가 교체로 사라지면(runner → subway) 같은 자리의 카드로 옮긴다.
+function refreshOpenPlay(){
+ const cards=panel.open&&!panel.__closeTimer?[...content.querySelectorAll('.play-list>[data-game]')]:[],record=cards.length?playRecordNow():null;
+ if(!record)return;
+ const seen=seenPlays(),want=playOrder(Object.keys(games),record).map(id=>`${id}:${playState(id,record,seen).open}`).join();
+ if(want===cards.map(card=>`${card.dataset.game}:${!card.hasAttribute('data-locked')}`).join())return;
+ const active=document.activeElement?.closest?.('[data-game],[data-world]'),name=active&&(active.dataset.game?`[data-game="${active.dataset.game}"]`:`[data-world="${active.dataset.world}"]`),at=cards.indexOf(active),top=panel.scrollTop;
+ showPlay();
+ panel.scrollTop=top;
+ if(name)(content.querySelector(name)||content.querySelectorAll('.play-list>[data-game]')[at])?.focus({preventScroll:true});
+}
 function updateLearning(summary,details){
  homeTutor?.update(summary,details);town.setProgress(summary);
  learningData={summary,snapshot:details?.snapshot,lessons:details?.lessons,details};
  void memory.update({owner:accountOwner,...learningData});
+ refreshOpenPlay();
  const next=summary.nextLesson,button=$('#life-next-button'),label=$('#life-next-title'),kicker=$('#life-next-kicker'),caption=$('#life-progress-caption'),review=$('#life-review-count');
  if(!button)return;
  button.disabled=summary.status?.phase==='loading';

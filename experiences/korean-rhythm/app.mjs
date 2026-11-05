@@ -207,6 +207,9 @@ function show(name) {
   worldPlay?.screen(name);
 }
 function toast(message) { clearTimeout(toastTimer); $('toast').textContent = message; $('toast').hidden = false; toastTimer = setTimeout(() => { $('toast').hidden = true; }, 4200); }
+// 곡 준비 실패 안내만 다음 시작에서 거둔다. 남겨 두면 곡이 시작된 뒤에도 O/X를 가린다. 그사이 다른 안내로 바뀌었으면 그대로 둔다.
+let startFailureToast = '';
+function clearStartFailureToast() { if (!startFailureToast || $('toast').textContent !== startFailureToast) return; clearTimeout(toastTimer); $('toast').hidden = true; startFailureToast = ''; }
 function tip(text) { $('tip').hidden = !text; if (text) $('tip').textContent = text; }
 
 /* ── 한 곡 ── */
@@ -216,6 +219,7 @@ async function start() {
   if (needsCalibration() && openCalibration()) return;   // WORLD 처음 한 번: 박자 맞추기 → 「노래 시작하기」로 다시 여기
   state.loading = true;
   clearResetNotice();
+  clearStartFailureToast();
   const generation = ++startGeneration;
   $('start-button').disabled = true; $('replay-button').disabled = true;
   worldPlay?.starting();
@@ -247,7 +251,7 @@ async function start() {
   } catch (error) {
     if (generation !== startGeneration) return;
     music.stop(); state.round = null; tip(null); show('lobby'); renderRecommendation(!trackChosen);
-    toast(error?.message || '곡을 준비하지 못했어요. 다시 시작해 주세요.');
+    toast(startFailureToast = /[가-힣]/.test(error?.message || '') ? error.message : '곡을 준비하지 못했어요. 인터넷 연결을 확인하고 다시 시작해 주세요.');   // 브라우저의 영어 오류는 그대로 내보내지 않는다
   } finally {
     state.loading = false;
     $('start-button').disabled = false; $('replay-button').disabled = false;

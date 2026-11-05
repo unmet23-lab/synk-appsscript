@@ -148,6 +148,12 @@
 - 고침: 원래 실행 세션의 종료 코드0까지 확인한 뒤 소스를 동결하고, 그 지문으로 필요한 시험·캡처·Fable을 순서대로 한다. 검수 마감 호출에서는 Monitor와 `run_in_background:true`를 쓰지 않고 Agent/Bash의 실제 완료·공식 접수를 기다린다. 옛 캡처/지문은 고쳐 원본인 것처럼 쓰지 않고 별도 폴더에 보존한다.
 - 다시 확인: `drama-pilot-20261031` 수정 호출의 result3개·원래 실행 세션 종료0·최종 소스 지문을 대조했다. `review-captures-before-final`에 옮긴 옛 그림은 삭제된 것이 아니며, 최종 후보의 새 시험/캡처를 별도 회차로 남긴다. 크레딧 집계는 호출별 마지막 누적 total_cost_usd 한 번만 쓴다.
 
+### Claude print 모드가 백그라운드 Fable을 마지막 턴 10분 뒤 중단한다 (2026-11-05 GPT·Claude)
+- 증상: 실제 Fable이 검수 중인데 부모 CLI가 먼저 대기 안내를 끝내고 10분 뒤 `Background tasks still running 10m after the last turn; stopping them`으로 자식을 중단했다. 계정 한도는 남았고 완독 답은 없었다.
+- 원인: 공식 CLI print 모드의 백그라운드 대기 상한이다. 부모 프로세스의 종료 코드 0이나 먼저 나온 result는 자식 검수 완료를 보장하지 않는다.
+- 고침: 실패 로그와 미완료 답을 보존하고, 공식 CLI가 안내한 `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0`을 해당 실행에만 주어 같은 부모 세션을 이었다. 검수자는 실제 완료 뒤 공식 도구로 접수하고 입력 해시·끝 표식·coverage·확인 통과를 대조했다. 계정과 전역 설정은 바꾸지 않았다.
+- 다시 확인: `atlas-transit-racing-return-1105`는 중단 영수증을 유지한 뒤 Fable 완독 답(complete=true, missing=[])과 공식 확인 통과·실제 CLI 종료 0을 얻었다. 미완료 첫 실행은 통과 횟수에서 뺐다.
+
 ### 검수 캡처를 다시 가져오면 옛 그림도 남는다 (2026-10-31 Claude·GPT)
 - 증상: 시범판 최종 캡처를 12장으로 바꿨는데 Fable 입력의 `캡처-가져옴`에 이전 `intro.png`·`transfer.png` 두 장도 섞였다.
 - 원인: `검수묶음.mjs`의 가져오기는 기존 폴더에 `cpSync`로 합친다. 이번 원천에서 빠진 옛 파일은 지우지 않는다.

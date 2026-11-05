@@ -122,3 +122,21 @@ test('stopping releases the source, context and old gain while retaining the mut
   player.context={state:'running',close:()=>{closed=true;return Promise.resolve()}};player.master={};player.enabled=false;player.stop();
   assert.ok(stopped&&disconnected&&closed);assert.equal(player.context,null);assert.equal(player.master,null);assert.equal(player.source,null);assert.equal(player.enabled,false);assert.doesNotThrow(()=>player.setSound(true));assert.doesNotThrow(()=>player.stop());
 });
+
+test('받는 중 연결이 끊겨도 영어 오류를 내보내지 않고, 연결이 돌아오면 다시 받는다', async () => {
+  const realFetch = globalThis.fetch, context = { sampleRate: 48000, decodeAudioData: async () => ({ duration: 1 }) };
+  const voice = { url: 'assets/narration/offline-then-online.mp3', duration: 1 };
+  try {
+    globalThis.fetch = async () => { throw new TypeError('Failed to fetch'); };
+    await assert.rejects(loadNarration(voice, context), (error) => { assert.match(error.message, /문장 소리를 불러오지 못했어요\. 인터넷 연결을 확인/); assert.doesNotMatch(error.message, /fetch/i); return true; });
+    await assert.rejects(loadRecording({ audioUrl: 'assets/music/offline.mp3', duration: 1 }, context), /곡을 불러오지 못했어요\. 인터넷 연결을 확인/);
+    globalThis.fetch = async () => ({ ok: true, arrayBuffer: async () => { throw new TypeError('network error'); } });
+    await assert.rejects(loadNarration(voice, context), /문장 소리를 불러오지 못했어요/);
+    globalThis.fetch = async () => { throw new DOMException('Cancelled', 'AbortError'); };
+    await assert.rejects(loadNarration(voice, context), { name: 'AbortError' });
+    let asked = 0;
+    globalThis.fetch = async () => { asked += 1; return { ok: true, arrayBuffer: async () => new ArrayBuffer(8) }; };
+    assert.equal((await loadNarration(voice, context)).duration, 1);
+    assert.equal(asked, 1, '실패가 캐시에 남지 않는다');
+  } finally { globalThis.fetch = realFetch; }
+});

@@ -4,14 +4,23 @@
 const cache = new Map();
 const voiceCache = new Map();
 const frequency = (m) => 440 * 2 ** ((m - 69) / 12);
+// 받는 중에 연결이 끊기면 브라우저 오류는 영어(Failed to fetch · Load failed)다. 화면에 나가는 말은 여기서 정한다. 실패는 캐시에 남지 않아 연결이 돌아오면 다시 시작으로 받는다.
+async function download(url, signal, message) {
+  try {
+    const response = await fetch(url, { signal });
+    if (!response.ok) throw new Error(message);
+    return await response.arrayBuffer();
+  } catch (error) {
+    if (error?.name === 'AbortError' || signal?.aborted) throw error;
+    throw new Error(message);
+  }
+}
 
 export async function loadRecording(track, context, signal) {
   if (!track.audioUrl) throw new Error('이 곡의 음원 파일을 찾지 못했어요.');
   const key = track.audioUrl + '@' + context.sampleRate;
   if (cache.has(key)) return cache.get(key);
-  const response = await fetch(track.audioUrl, { signal });
-  if (!response.ok) throw new Error('곡을 불러오지 못했어요. 연결을 확인하고 다시 시작해 주세요.');
-  const bytes = await response.arrayBuffer();
+  const bytes = await download(track.audioUrl, signal, '곡을 불러오지 못했어요. 인터넷 연결을 확인하고 다시 시작해 주세요.');
   if (signal?.aborted) throw new DOMException('Cancelled', 'AbortError');
   const buffer = await context.decodeAudioData(bytes);
   if (!Number.isFinite(buffer.duration) || Math.abs(buffer.duration - track.duration) > 0.15) throw new Error('곡을 제대로 불러오지 못했어요. 새로고침한 뒤 다시 시작해 주세요.');
@@ -23,9 +32,7 @@ export async function loadNarration(voice, context, signal) {
   if (!voice?.url || !(voice.duration > 0)) throw new Error('이 문장의 소리 파일을 찾지 못했어요. 새로고침해 주세요.');
   const key = voice.url + '@' + context.sampleRate;
   if (voiceCache.has(key)) return voiceCache.get(key);
-  const response = await fetch(voice.url, { signal });
-  if (!response.ok) throw new Error('문장 소리를 불러오지 못했어요. 다시 시작해 주세요.');
-  const buffer = await context.decodeAudioData(await response.arrayBuffer());
+  const buffer = await context.decodeAudioData(await download(voice.url, signal, '문장 소리를 불러오지 못했어요. 인터넷 연결을 확인하고 다시 시작해 주세요.'));
   if (Math.abs(buffer.duration - voice.duration) > 0.15) throw new Error('문장 소리를 제대로 불러오지 못했어요. 새로고침해 주세요.');
   voiceCache.set(key, buffer);
   return buffer;
