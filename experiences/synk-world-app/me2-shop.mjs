@@ -4,19 +4,22 @@
 // · 상태는 제2의 나가 넘긴다(update). 동작(주문 · 입기 · 벗기 · 다시 · 본 표시)은 제2의 나가 준 함수로 서버에 가고, 그 뒤 제2의 나가 상태를 다시 넘긴다.
 // · 값은 화면에 없다(재화 보류). 움직임 줄이기 · 효과음은 앱 설정을 따른다. 마스코트는 쓰지 않는다.
 import '../play-common/drag-rail.js';
-import {ITEM_TEXT,SHOP_TEXT,PACK_STEPS,printNote,shopItemsFor,shopEntry} from './me2-shop-items.mjs';
+import {ITEM_TEXT,SHOP_TEXT,PACK_STEPS,printNote,printBack,shopItemsFor,shopEntry} from './me2-shop-items.mjs';
 import {getPref} from '../brand-opening/world-sound.mjs';
 import {createShopSound} from './me2-shop-sound.mjs';
 
 const STYLE_URL=new URL('./me2-shop.css',import.meta.url).href;
 const asset=name=>new URL(`./me2-assets/${name}`,import.meta.url).href;
 const art=(item,side)=>asset(`shop-${item.art}-${side}.webp`);
-const PACKED_KEY='synk.world.me2.shop.packed';
+const PACKED_KEY='synk.world.me2.shop.packed',UNBOXED_KEY='synk.world.me2.shop.unboxed';
 const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v)),lerp=(a,b,k)=>a+(b-a)*k,pad2=n=>String(n).padStart(2,'0');
 const LOCALE={ko:'ko-KR',en:'en-US',mn:'mn-MN'};
 const HANGER_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.2a1.9 1.9 0 1 1 1.9 1.9c-.9 0-1.9.7-1.9 1.6v.6m0 0L3.6 15.6a1 1 0 0 0 .6 1.9h15.6a1 1 0 0 0 .6-1.9Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const SEAL='<svg viewBox="0 0 44 44"><defs><path id="m2s-seal-ring" d="M22 22m-15.2 0a15.2 15.2 0 1 1 30.4 0a15.2 15.2 0 1 1-30.4 0"/></defs><circle cx="22" cy="22" r="21.4" fill="#EFE6D6"/><circle cx="22" cy="22" r="20.4" fill="none" stroke="rgba(110,85,50,.3)" stroke-width=".6"/><text font-size="4.4" letter-spacing=".9" fill="#6E5A3E" font-family="ui-monospace, monospace"><textPath href="#m2s-seal-ring">SYNK WORLD · CAMPUS · SYNK WORLD · CAMPUS ·</textPath></text><g transform="translate(15.5 15) scale(.55)"><path d="M12 6.2a1.9 1.9 0 1 1 1.9 1.9c-.9 0-1.9.7-1.9 1.6v.6m0 0L3.6 15.6a1 1 0 0 0 .6 1.9h15.6a1 1 0 0 0 .6-1.9Z" fill="none" stroke="#3A3833" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g></svg>';
+
+// 상자 테이프의 가게 글자 — 윗면(원근으로 눌린 쪽)과 앞면 두 토막. 글자는 반투명 · 곱하기로 테이프에 찍힌 것처럼(11-06)
+const TAPE='<i class="m2s-parcel-tape" aria-hidden="true"><b><span>SYNK WORLD · SYNK WORLD · SYNK WORLD · SYNK WORLD ·</span></b><b><span>SYNK WORLD · SYNK WORLD ·</span></b></i>';
 
 export {shopItemsFor,shopEntry};
 
@@ -53,7 +56,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
  // ── 그리기 ──
  function tagHtml(item,i){
   const e=entry(item.id);
-  if(e.state==='arrived'&&e.arrived.url){const isNew=fresh.has(e.arrived.job_id)||e.arrived.new;return `<span class="m2s-print-tag" aria-hidden="true"><img src="${esc(e.arrived.url)}" alt="" draggable="false">${isNew?`<b class="m2s-new">${esc(t('newMark'))}</b>`:''}</span>`;}
+  if(e.state==='arrived'&&e.arrived.url){const isNew=fresh.has(e.arrived.job_id)||e.arrived.new;return `<span class="m2s-print-tag${boxedFor(e)?' is-boxed':''}" aria-hidden="true"><img src="${esc(e.arrived.url)}" alt="" draggable="false">${isNew?`<b class="m2s-new">${esc(t('newMark'))}</b>`:''}</span>`;}
   if(e.state==='open'||(e.state==='arrived'&&!e.arrived.url))return '';
   const word=e.state==='failed'?t('failedTag'):e.state==='delayed'?t('delayedTag'):t('shipping');
   return `<span class="m2s-tag" data-state="${e.state}" aria-hidden="true"><b>No.${pad2(i+1)}</b><span><i></i>${esc(word)}</span></span>`;
@@ -73,14 +76,15 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   <p class="m2s-hint">${esc(t('hint'))}</p>
   <div class="m2s-title"><p class="m2s-kicker">${esc(t('kicker',{n}))}</p><h2>${esc(t('title'))}</h2></div>
   <div class="m2s-dots" aria-hidden="true">${items.map(()=>'<i></i>').join('')}</div>
+  <div class="m2s-unbox" hidden aria-hidden="true"><div class="m2s-unbox-box"><img class="m2s-unbox-closed" alt="" src="${esc(asset('shop-box-closed.webp'))}"><img class="m2s-unbox-open" alt="" src="${esc(asset('shop-box-open.webp'))}">${TAPE}</div></div>
  </section>
  <div class="m2s-veil" aria-hidden="true"></div>
  <section class="m2s-stage" hidden tabindex="-1" aria-label="${esc(t('detail'))}">
   <button type="button" class="m2s-step" data-act="prev" aria-label="${esc(t('prev'))}"></button><button type="button" class="m2s-step" data-act="next" aria-label="${esc(t('next'))}"></button>
-  <div class="m2s-turn-wrap" data-view="garment">
+  <div class="m2s-turn-wrap" data-m2s-view="garment">
    <div class="m2s-turn" aria-hidden="true"><img class="m2s-face is-front" alt="" draggable="false"><img class="m2s-face is-back" alt="" draggable="false"></div>
    <div class="m2s-tissue" aria-hidden="true"><i></i><i></i><b>${SEAL}</b></div>
-   <figure class="m2s-print"><img alt="" draggable="false"><figcaption lang="ko"></figcaption></figure>
+   <figure class="m2s-print"><div class="m2s-print-in"><div class="m2s-print-face is-front"><img alt="" draggable="false"><p class="m2s-print-note" lang="ko"></p></div><div class="m2s-print-face is-back" aria-hidden="true"><p class="m2s-print-back" lang="ko"></p></div></div><button type="button" class="m2s-print-flip" data-act="flip" aria-pressed="false" aria-label="${esc(t('flipPrint'))}"></button></figure>
   </div>
   <div class="m2s-info">
    <p class="m2s-num"></p><h3 class="m2s-name" lang="ko"></h3><p class="m2s-name-tr"></p>
@@ -93,7 +97,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
  </section>
  <button type="button" class="m2s-close" data-act="close">${esc(t('close'))}</button>
  <div class="m2s-parcel" hidden aria-hidden="true"><img class="m2s-parcel-open" alt="" src="${esc(asset('shop-box-open.webp'))}"><img class="m2s-parcel-closed" alt="" src="${esc(asset('shop-box-closed.webp'))}">
-  <div class="m2s-label"><p class="m2s-label-head">${esc(t('labelHead'))}</p><p><span>${esc(t('labelTo'))}</span><b>${esc(t('labelToValue'))}</b></p><p><span>${esc(t('labelItem'))}</span><b class="m2s-label-item"></b></p><p class="m2s-label-from"><span>${esc(t('labelFrom'))}</span><b>${esc(t('labelFromValue'))} · <em class="m2s-label-date"></em></b></p><i class="m2s-label-code"></i><p class="m2s-label-no"></p></div><i class="m2s-parcel-tape" aria-hidden="true"></i></div>
+  <div class="m2s-label"><p class="m2s-label-head">${esc(t('labelHead'))}</p><p><span>${esc(t('labelTo'))}</span><b>${esc(t('labelToValue'))}</b></p><p><span>${esc(t('labelItem'))}</span><b class="m2s-label-item"></b></p><p class="m2s-label-from"><span>${esc(t('labelFrom'))}</span><b>${esc(t('labelFromValue'))} · <em class="m2s-label-date"></em></b></p><i class="m2s-label-code"></i><p class="m2s-label-no"></p></div>${TAPE}</div>
  <p class="m2s-pack" role="status" hidden><span class="m2s-pack-text" lang="ko"></span><span class="m2s-pack-tr"></span><span class="m2s-pack-skip">${esc(t('skip'))}</span></p>
  <p class="m2s-toast" role="status" hidden></p>
 </div>`;
@@ -154,13 +158,14 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
    if(p.drop!==0||p.dropV!==0){p.dropV+=(-260*p.drop-20*p.dropV)*dt;p.drop+=p.dropV*dt;if(Math.abs(p.drop)<.2&&Math.abs(p.dropV)<2){p.drop=0;p.dropV=0;}}
    const y=sagAt(x)+p.drop;
    hangers[i].style.transform=`translate3d(${(x-centerX(i)).toFixed(2)}px,${y.toFixed(2)}px,0) scale(${p.s.toFixed(4)})`;
-   hangers[i].style.zIndex=fit?(i===hover?20:10-Math.abs(i-(hover>=0?hover:(items.length-1)/2))|0):20-Math.round(Math.abs(i-pos)*2);
+   // 상자를 여는 옷은 맨 앞으로 — PC 봉에서 걸리는 폴라로이드가 옆 옷 뒤로 가렸다
+   hangers[i].style.zIndex=unbox?.i===i?30:fit?(i===hover?20:10-Math.abs(i-(hover>=0?hover:(items.length-1)/2))|0):20-Math.round(Math.abs(i-pos)*2);
    swings[i].style.transform=`rotate(${(p.th*57.2958).toFixed(3)}deg)`;
    const far=!fit&&Math.abs(i-pos)>1.15; // 휴대폰에서 화면 끝에 잘리는 꼬리표는 숨긴다
    if(far!==p.far){p.far=far;hangers[i].classList.toggle('is-far',far);}
    if(Math.abs(p.om)>.004||Math.abs(p.th)>.002||Math.abs(p.s-sT)>.001||Math.abs(p.push-pushT)>.3||p.drop)moving=true;
   }
-  drawRod();
+  drawRod();if(unbox)placeUnbox();
   if(moving||now-quietSince<300)raf=win.requestAnimationFrame(frame);else sound?.slide(0);
  }
  function setActive(i){
@@ -173,7 +178,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
  }
 
  // ── 자세히 ──
- let openI=-1,side='front',th=0,thV=0,thTarget=0,sw=0,swV=0,turning=null,busy=false,pack=null;
+ let openI=-1,side='front',th=0,thV=0,thTarget=0,sw=0,swV=0,turning=null,busy=false,pack=null,peeked=false;
  function wearHtml(item){
   const w=tx(item.id).wear,other=item.pair&&items.findIndex(x=>x.id===item.pair);
   return esc(w).replace(/\[\[(.+?)\]\]/g,(_,label)=>other>=0?`<button type="button" class="m2s-pair" data-act="pair" data-to="${other}">${label}</button>`:label);
@@ -236,8 +241,10 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   $('.m2s-side').innerHTML=sides.map(s=>`<button type="button" role="radio" data-side="${s}" aria-checked="${s===side}">${esc(t(s))}</button>`).join('');
   $('.m2s-side').dataset.on=side;
   const print=$('.m2s-print img');
-  if(worn){if(print.getAttribute('src')!==worn)print.src=worn;print.alt=`${t('wornAlt')}${e.arrived.arrived_at?` · ${dayText(e.arrived.arrived_at)}`:''}`;$('.m2s-print figcaption').textContent=printNote(e.arrived.arrived_at);}
-  else{print.removeAttribute('src');print.alt='';$('.m2s-print figcaption').textContent='';}
+  if(worn){if(print.getAttribute('src')!==worn)print.src=worn;print.alt=`${t('wornAlt')}${e.arrived.arrived_at?` · ${dayText(e.arrived.arrived_at)}`:''}`;$('.m2s-print-note').textContent=printNote(e.arrived.arrived_at);$('.m2s-print-back').textContent=printBack(e.arrived.arrived_at,k.name);}
+  else{print.removeAttribute('src');print.alt='';$('.m2s-print-note').textContent='';$('.m2s-print-back').textContent='';}
+  if(!keepSide)flipPrint(false,true);
+  $('.m2s-print-flip').setAttribute('aria-label',t('flipPrint'));
   const track=$('.m2s-track');track.hidden=!e.flight;track.innerHTML=e.flight?trackHtml(e.flight):'';
   const act=actionsHtml(item);$('.m2s-actions').innerHTML=act.html;$('.m2s-help').textContent=act.help;
   if(!keepSide){for(const el of $('.m2s-info').children){el.style.animation='none';void el.offsetWidth;el.style.animation='';}if(stage.scrollTop)stage.scrollTop=0;}
@@ -250,7 +257,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
  function ghost(i){slots.forEach((li,j)=>li.classList.toggle('is-ghost',Math.abs(j-i)>1));}
  function openDetail(i){
   if(busy||!items[i])return;
-  finishClosing();
+  finishClosing();finishUnbox();
   openI=i;side='front';th=0;thTarget=0;thV=0;
   setFaces(i);fillInfo(i);setSide('front',true);
   stage.hidden=false;setMode('detail');ghost(i);sound?.pick();
@@ -272,8 +279,8 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   if(openI<0||closing)return;
   const i=openI;
   let done=false;
-  const back=()=>{if(done)return;done=true;if(closing?.i===i)closing=null;stage.hidden=true;hangers[i].style.visibility='';openI=-1;P[i].om+=.35;wake();if(isOpen())hangers[i].focus({preventScroll:true});};
-  setMode('');turnWrap.dataset.view='garment';sound?.drop();
+  const back=()=>{if(done)return;done=true;if(closing?.i===i)closing=null;stage.hidden=true;hangers[i].style.visibility='';openI=-1;P[i].om+=.35;wake();if(isOpen()){hangers[i].focus({preventScroll:true});if(unboxQ.length)later(runUnbox,420);}};
+  setMode('');turnWrap.dataset.m2sView='garment';sound?.drop();
   if(quick||reduce())return back();
   const from=turnWrap.getBoundingClientRect(),to=swings[i].querySelector('img').getBoundingClientRect();
   const dx=to.left+to.width/2-(from.left+from.width/2),dy=to.top-from.top,sc=to.width/Math.max(1,from.width);
@@ -300,10 +307,23 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   },()=>{});
  }
  function setSide(s,quiet){
-  const wasWorn=turnWrap.dataset.view==='worn';
-  side=s;markSide(s);turnWrap.dataset.view=s==='worn'?'worn':'garment';
-  if(s==='worn'){if(!quiet)sound?.print();return;}
+  const wasWorn=turnWrap.dataset.m2sView==='worn';
+  side=s;markSide(s);turnWrap.dataset.m2sView=s==='worn'?'worn':'garment';
+  if(s!=='worn')flipPrint(false,true);
+  // 처음 입은 나를 열면 인화지 모서리를 한 번 살짝 들어 뒤집힌다는 것을 보인다(글 안내 없이)
+  if(s==='worn'){if(!quiet){sound?.print();if(!peeked&&!reduce()){peeked=true;const p=$('.m2s-print');p.classList.add('is-peek');p.addEventListener('animationend',()=>p.classList.remove('is-peek'),{once:true});}}return;}
   if(!quiet){thTarget=(s==='back'?180:0)+Math.round((th-(s==='back'?180:0))/360)*360;if(!wasWorn||s==='back')sound?.turn();runTurn();}
+ }
+ /** 인화지 뒤집기 — 집게에 매달린 채 세로축으로 돈다. 뒷면은 손글씨(도착한 날 · 옷 이름). on 없이 부르면 바꾼다. */
+ function flipPrint(on,quiet){
+  const p=$('.m2s-print');if(!p)return;
+  const next=on??!p.classList.contains('is-flipped');
+  p.classList.remove('is-peek');
+  if(next===p.classList.contains('is-flipped'))return;
+  p.classList.toggle('is-flipped',next);
+  $('.m2s-print-flip').setAttribute('aria-pressed',String(next));
+  p.querySelector('.is-front').setAttribute('aria-hidden',String(next));p.querySelector('.is-back').setAttribute('aria-hidden',String(!next));
+  if(!quiet)sound?.flip();
  }
  function runTurn(){
   if(turnRaf)return;let t0=win.performance.now();
@@ -337,6 +357,62 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
  function flushLate(){if(busy)return;const list=lateQ;lateQ=[];for(const text of list)say(text,{wait:true});}
  function countMine(){const n=items.filter(item=>{const e=entry(item.id);return e.arrived||e.flight;}).length;const c=$('.m2s-box-count');c.dataset.count=n;c.textContent=n;$('.m2s-box').setAttribute('aria-label',`${t('closetCount',{n})} — ${t('close')}`);}
  function seen(card){if(!card?.new||fresh.has(`sent:${card.job_id}`))return;fresh.add(`sent:${card.job_id}`);fresh.add(card.job_id);Promise.resolve().then(()=>actions.seen?.(card.job_id)).catch(()=>fresh.delete(`sent:${card.job_id}`));}
+
+ // ── 도착 — 상자가 봉 아래로 내려와 열리고, 그 옷을 입은 폴라로이드가 고리에 집게로 걸린다(11-06) ──
+ // 한 옷의 도착은 한 번만 연다(기기에 저장, 막힌 기기는 이번 가게에서만). 움직임 줄이기면 꼬리표만 바로 붙는다.
+ let unboxQ=[],unbox=null,unboxMoved=false;const unboxedNow=new Set();
+ function unboxedList(){try{const v=JSON.parse(win.localStorage.getItem(UNBOXED_KEY)||'[]');return Array.isArray(v)?v:[];}catch{return [];}}
+ const unboxed=job=>unboxedNow.has(job)||unboxedList().includes(job);
+ function rememberUnboxed(job){unboxedNow.add(job);try{const list=unboxedList().filter(x=>x!==job);list.push(job);win.localStorage.setItem(UNBOXED_KEY,JSON.stringify(list.slice(-40)));}catch{/* 막힌 기기는 이번 가게에서만 */}}
+ /** 아직 상자를 안 연 도착 — 새로 온 것(새 표시 · 이틀 안에 도착)이고 이 기기에서 연 적이 없을 때. 시트에서 먼저 도착을 봤어도 가게의 상자는 한 번 연다. */
+ const recent=at=>{const t=Date.parse(at||'');return Number.isFinite(t)&&Date.now()-t<48*3600e3;};
+ function boxedFor(e){const a=e?.arrived;return Boolean(a?.url&&(fresh.has(a.job_id)||a.new||recent(a.arrived_at))&&!unboxed(a.job_id)&&!reduce());}
+ function queueBoxed(){unboxQ=[];swings.forEach((sw,i)=>{if(sw.querySelector('.m2s-print-tag.is-boxed'))unboxQ.push(i);});}
+ /** 상자는 그 옷걸이 아래 바닥 선(옷 판 밑 18px)에 — 상자 그림의 밑면이 그림 높이 82.5% 자리라 그만큼 올려 둔다. 봉을 끌거나 옆 옷이 밀려도 따라간다(frame이 부른다). 자리 재기는 처음 · 크기 바뀔 때만. */
+ function placeUnbox(remeasure){
+  const u=unbox;if(!u)return;
+  if(remeasure||!u.base){const ub=u.el.offsetWidth;u.base={x:rail.offsetLeft,y:rail.offsetTop+22+artH+18-ub*.325};}
+  const x=u.base.x+centerX(u.i)+(P[u.i]?.push||0);
+  u.el.style.translate=`${x.toFixed(1)}px ${u.base.y.toFixed(1)}px`;
+ }
+ /** 지금 여는 상자를 끝 상태로 — 자세히를 열거나 다시 지을 때. 남은 차례는 그대로 둔다. */
+ function finishUnbox(){
+  if(!unbox)return;const u=unbox;unbox=null;
+  for(const a of u.anims)a.cancel();
+  u.tag.classList.remove('is-boxed');u.el.hidden=true;u.el.classList.remove('is-open');
+ }
+ function runUnbox(){
+  if(unbox||!unboxQ.length||!isOpen()||openI>=0||busy||closing||shop?.dataset.ready!=='yes')return;
+  const i=unboxQ[0],tag=swings[i]?.querySelector('.m2s-print-tag.is-boxed'),job=entry(items[i]?.id).arrived?.job_id;
+  if(!tag||!job){unboxQ.shift();runUnbox();return;}
+  // 휴대폰에서 그 옷이 가운데가 아니면 먼저 데려온다(한 번만 — 그사이 손으로 넘기면 그 자리에서 연다)
+  if(!fit&&R.nearestIndex(pos,items.length)!==i&&!unboxMoved){unboxMoved=true;dr?.go(i);later(runUnbox,560);return;}
+  unboxQ.shift();unboxMoved=false;
+  rememberUnboxed(job);
+  if(reduce()){tag.classList.remove('is-boxed');P[i].om+=.45;wake();runUnbox();return;}
+  const el=$('.m2s-unbox'),box=el.querySelector('.m2s-unbox-box');
+  const u=unbox={i,tag,el,anims:[],base:null};
+  const play=(target,frames,opts)=>{const a=target.animate(frames,opts);u.anims.push(a);return a;};
+  const cue=(fn,ms)=>later(()=>{if(unbox===u)fn();},ms);
+  el.classList.remove('is-open');el.hidden=false;placeUnbox(true);
+  const top=el.getBoundingClientRect().top;
+  // ① 위에서 떨어져 ② 바닥에 착 앉는다
+  play(box,[{transform:`translateY(${-(top+el.offsetHeight+40).toFixed(0)}px) rotate(-6deg)`},{transform:'translateY(0) rotate(0)'}],{duration:560,easing:'cubic-bezier(.55,0,.9,.55)',fill:'backwards'});
+  cue(()=>{sound?.thump();play(box,[{transform:'scale(1)'},{transform:'scale(1.07,.9)',offset:.35},{transform:'scale(.98,1.03)',offset:.7},{transform:'scale(1)'}],{duration:340,easing:'ease-out'});},560);
+  // ③ 테이프를 뜯고 뚜껑이 열린다
+  cue(()=>{sound?.tape();el.classList.add('is-open');},980);
+  // ④ 그 옷을 입은 폴라로이드가 상자 안에서 올라와 고리로
+  cue(()=>{
+   sound?.tissue();sound?.print();
+   const a=tag.getBoundingClientRect(),b=box.getBoundingClientRect(),s=P[i]?.s||1;
+   const dx=(b.left+b.width/2-(a.left+a.width/2))/s,dy=(b.top+b.height*.5-(a.top+a.height/2))/s;
+   tag.classList.remove('is-boxed');
+   play(tag,[{translate:`${dx.toFixed(1)}px ${dy.toFixed(1)}px`,scale:.46,opacity:0},{translate:`${dx.toFixed(1)}px ${(dy-10).toFixed(1)}px`,scale:.5,opacity:1,offset:.14},{translate:`${(dx*.12).toFixed(1)}px -16px`,scale:1.05,opacity:1,offset:.74},{translate:'0px 0px',scale:1,opacity:1}],{duration:860,easing:'cubic-bezier(.3,.7,.3,1)'});
+  },1240);
+  // ⑤ 집게 딸깍 — 옷걸이가 흔들리고 상자는 내려가 사라진다
+  cue(()=>{sound?.pick();P[i].om+=.55;wake();say(named('arrivedSay',items[i].id),{wait:true});play(box,[{transform:'none',opacity:1},{transform:'translateY(18px) scale(.94)',opacity:0}],{duration:420,easing:'cubic-bezier(.4,0,.6,1)',fill:'forwards'});},2100);
+  cue(()=>{finishUnbox();later(runUnbox,360);},2540);
+ }
 
  // ── 입어 보기 → 포장 → 출발 ──
  function firstPacked(){try{return win.localStorage.getItem(PACKED_KEY)==='1';}catch{return false;}}
@@ -471,6 +547,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   else if(act==='order')void order();
   else if(act==='wear'||act==='unwear'||act==='redo')void simple(act);
   else if(act==='pair')step(0,Number(b.dataset.to));
+  else if(act==='flip'){if(!busy)flipPrint();}
   else if(act==='word'){toggleWord(b);sound?.brush();}
   else if(act==='readko'){const open=b.getAttribute('aria-expanded')!=='true';b.setAttribute('aria-expanded',String(open));$('.m2s-story-ko').hidden=!open;b.textContent=t(open?'readKoOff':'readKo');}
  }
@@ -494,6 +571,8 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
  /** 대화 상자 자체의 듣기 — 열 때 한 번(다시 지을 때 겹으로 붙지 않게). */
  function wireDialog(){
   dialog.addEventListener('click',onClick);
+  // 가게 안 누름은 가게가 다 받는다 — 앱 전체의 위임 누름(문서의 [data-view] 등)이 가게 속 속성을 자기 메뉴로 읽어 시트까지 닫았다(11-06: 큰 옷을 누르거나 끌어 돌리면 닫혔다)
+  dialog.addEventListener('click',e=>e.stopPropagation());
   dialog.addEventListener('keydown',onKey);
   dialog.addEventListener('cancel',onCancel);
   dialog.addEventListener('close',()=>teardown());
@@ -508,7 +587,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   rail.addEventListener('focusin',e=>{const h=e.target.closest('.m2s-hanger');if(h&&fit){hover=Number(h.dataset.i);wake();}});
   rail.addEventListener('keydown',e=>{if(!fit)return;const to=e.key==='ArrowRight'?active+1:e.key==='ArrowLeft'?active-1:null;if(to===null)return;e.preventDefault();hangers[clamp(to,0,items.length-1)]?.focus();});
   // 옷을 끌어 돌리기 — 놓으면 가까운 쪽(앞 · 뒤)으로
-  turnWrap.addEventListener('pointerdown',e=>{if(busy||turnWrap.dataset.view==='worn'||(e.pointerType==='mouse'&&e.button!==0))return;turning={x:e.clientX,y:e.clientY,th,lastX:e.clientX,lastT:win.performance.now(),v:0,on:false,id:e.pointerId};});
+  turnWrap.addEventListener('pointerdown',e=>{if(busy||turnWrap.dataset.m2sView==='worn'||(e.pointerType==='mouse'&&e.button!==0))return;turning={x:e.clientX,y:e.clientY,th,lastX:e.clientX,lastT:win.performance.now(),v:0,on:false,id:e.pointerId};});
   turnWrap.addEventListener('pointermove',e=>{
    if(!turning||e.pointerId!==turning.id)return;const dx=e.clientX-turning.x;
    if(!turning.on){const way=R.dragIntent(dx,e.clientY-turning.y,6);if(way==='y'){turning=null;return;}if(way!=='x')return;turning.on=true;turnWrap.classList.add('is-turning');try{turnWrap.setPointerCapture(e.pointerId);}catch{}sound?.turn();}
@@ -520,7 +599,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   turnWrap.addEventListener('pointerup',endTurn);turnWrap.addEventListener('pointercancel',endTurn);
   dr=R.attach(rail,{item:'.m2s-slot',onFrame:wake,onSettle:()=>wake()});
  }
- function relayout(){if(!isOpen())return;measure();for(const p of P)p.x=null;wake();}
+ function relayout(){if(!isOpen())return;measure();for(const p of P)p.x=null;placeUnbox(true);wake();}
 
  // ── 짓기 · 고치기 ──
  const itemsKey=list=>`${L()}|${list.map(x=>x.id).join(',')}`;
@@ -531,19 +610,27 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   builtKey=itemsKey(items);
   countMine();
   measure();
-  const start=at??Math.min(3,items.length-1);
+  const start=at??firstStop();
   if(!fit){rail.scrollLeft=start*slotW;pos=start;lastPos=pos;dr?.refresh();}
   setActive(fit&&at===null?0:start);lastCenter=fit?-1:start;
+  queueBoxed();
  }
+ /** 휴대폰 봉의 첫 자리 — 아직 안 연 도착이 있으면 그 옷, 없으면 넷째 옷(양옆이 보이게). */
+ function firstStop(){const at=items.findIndex(item=>boxedFor(entry(item.id)));return at>=0?at:Math.min(3,items.length-1);}
  /** 상태만 바뀌었을 때 — 봉은 그대로 두고 꼬리표 · 이름 · 자세히만 간다(끌던 손 · 흔들림이 안 끊긴다). */
  function refreshRail(){
   items.forEach((item,i)=>{
    const sw=swings[i];if(!sw)return;
-   const before=sw.querySelector('.m2s-print-tag,.m2s-tag')?.outerHTML||'',next=tagHtml(item,i);
-   if(before!==next){sw.querySelector('.m2s-print-tag,.m2s-tag')?.remove();if(next)sw.insertAdjacentHTML('beforeend',next);if(next.includes('m2s-print-tag')&&!before.includes('m2s-print-tag'))P[i].om+=.45;}
    hangers[i].setAttribute('aria-label',hangerLabel(item));
+   if(unbox?.i===i)return; // 상자를 여는 중인 꼬리표는 건드리지 않는다
+   const before=sw.querySelector('.m2s-print-tag,.m2s-tag')?.outerHTML||'',next=tagHtml(item,i);
+   if(before!==next){
+    sw.querySelector('.m2s-print-tag,.m2s-tag')?.remove();if(next)sw.insertAdjacentHTML('beforeend',next);
+    if(next.includes('m2s-print-tag')&&!before.includes('m2s-print-tag')){if(next.includes('is-boxed')){if(!unboxQ.includes(i))unboxQ.push(i);}else P[i].om+=.45;}
+   }
   });
   countMine();setActive(active);wake();
+  if(unboxQ.length)later(runUnbox,300);
   for(const item of items){const e=entry(item.id);if(e.arrived?.new&&e.arrived.url)later(()=>seen(e.arrived),1600);}
  }
  function enter(){
@@ -561,6 +648,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
  }
  function teardownRail(){
   if(raf)win.cancelAnimationFrame(raf);if(turnRaf)win.cancelAnimationFrame(turnRaf);raf=0;turnRaf=0;
+  finishUnbox();unboxQ=[];unboxMoved=false;
   dr?.destroy();dr=null;
   openI=-1;busy=false;pack=null;turning=null;hover=-1;fit=false;
  }
@@ -593,13 +681,14 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
     dialog.showModal();
     measure();for(const p of P)p.x=null;
     // 휴대폰 봉은 넷째 옷에서 시작한다(양옆이 보이게) — 대화 상자를 띄운 뒤에야 칸 너비를 잴 수 있다.
-    const start=Math.min(3,items.length-1);if(!fit){rail.scrollLeft=start*slotW;pos=start;lastPos=pos;setActive(start);lastCenter=start;dr?.refresh();}else{setActive(0);lastCenter=-1;}
+    const start=firstStop();if(!fit){rail.scrollLeft=start*slotW;pos=start;lastPos=pos;setActive(start);lastCenter=start;dr?.refresh();}else{setActive(0);lastCenter=-1;}
     drawRod();
     const imgs=hangers.map(h=>h.querySelector('img'));
     await Promise.race([Promise.all(imgs.map(img=>img.decode?img.decode().catch(()=>{}):null)),new Promise(r=>later(r,1500))]);
     if(!isOpen())return;
     win.requestAnimationFrame(()=>{if(isOpen())enter();});
-    later(()=>{for(const item of items){const im=new win.Image();im.src=art(item,'back');}for(const im of dialog?.querySelectorAll('.m2s-parcel img')||[])im.decode?.().catch(()=>{});},1200);
+    later(runUnbox,80+items.length*70+520); // 옷이 다 걸린 뒤 도착 상자를 연다
+    later(()=>{for(const item of items){const im=new win.Image();im.src=art(item,'back');}for(const im of dialog?.querySelectorAll('.m2s-parcel img,.m2s-unbox img')||[])im.decode?.().catch(()=>{});},1200);
     rail.focus({preventScroll:true});
     for(const item of items){const e=entry(item.id);if(e.arrived?.new&&e.arrived.url)later(()=>seen(e.arrived),1600);}
    })().finally(()=>{opening=null;});
@@ -615,7 +704,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
    if(itemsKey(list)!==builtKey){
     if(busy)return; // 포장 중에는 다시 짓지 않는다 — 끝난 뒤 다음 update가 짓는다
     // 언어가 바뀌거나 메뉴가 바뀌어도 보던 옷 자리를 지킨다
-    const keep=openI>=0?items[openI]?.id:null,seeing=keep||items[active]?.id,at=list.findIndex(x=>x.id===seeing);items=list;build({at:at>=0?at:null});for(const p of P)p.x=null;shop.dataset.ready='yes';wake();
+    const keep=openI>=0?items[openI]?.id:null,seeing=keep||items[active]?.id,at=list.findIndex(x=>x.id===seeing);items=list;build({at:at>=0?at:null});for(const p of P)p.x=null;shop.dataset.ready='yes';wake();later(runUnbox,400);
     const again=keep?items.findIndex(x=>x.id===keep):-1;if(again>=0)openDetail(again);
     return;
    }

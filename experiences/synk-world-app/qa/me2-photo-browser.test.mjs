@@ -305,6 +305,13 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   await page.waitForFunction(sel=>getComputedStyle(document.querySelector(sel+' .m2s-box')).visibility==='hidden',SHOP); // 자세히에서 안 보이는 「내 옷장」이 Tab에 잡히지 않는다
   assert.equal(await page.locator(`${SHOP} .m2s-floor`).getAttribute('inert'),'','자세히 · 포장 동안 뒤의 봉은 Tab에 잡히지 않는다');
   assert.match(await page.locator(`${SHOP} .m2s-name`).textContent(),/연청 데님 재킷/);
+  // 큰 옷을 누르거나 끌어 돌려도 가게 · 시트가 닫히지 않는다(11-06: 문서의 [data-view] 위임 누름이 옷 판 속성을 메뉴로 읽어 둘 다 닫았다)
+  const big=await page.locator(`${SHOP} .m2s-turn-wrap`).boundingBox();
+  await page.mouse.click(big.x+big.width/2,big.y+big.height*.55);
+  await page.mouse.move(big.x+big.width*.35,big.y+big.height*.55);await page.mouse.down();await page.mouse.move(big.x+big.width*.7,big.y+big.height*.55,{steps:6});await page.mouse.up();
+  await page.waitForTimeout(250);
+  assert.deepEqual(await page.evaluate(sel=>({shop:Boolean(document.querySelector(sel)),panel:Boolean(document.querySelector('#world-panel')?.open)}),SHOP),{shop:true,panel:true},'큰 옷을 누르고 끌어도 닫히지 않는다');
+  await page.locator(`${SHOP} .m2s-side [data-side="front"]`).click();
   await page.locator(`${SHOP} .m2s-side [data-side="back"]`).click();
   assert.equal(await page.locator(`${SHOP} .m2s-side [data-side="back"]`).getAttribute('aria-checked'),'true','뒤로 돌린다');
   await page.locator(`${SHOP} .m2s-word`).first().click();
@@ -347,18 +354,41 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   await both('11-도착');
   const seen=()=>calls.filter(c=>c.action==='seen').length;
   assert.ok(seen()>=1,'본 것을 알렸다');
-  // 도착한 옷 — 봉 고리의 폴라로이드(「도착」) → 입은 나(인화지 · 손글씨) → 갈아입기
+  // 도착한 옷 — 움직임을 켜면 봉 아래로 상자가 내려와 열리고 그 옷을 입은 폴라로이드가 고리에 걸린다(11-06, 한 옷에 한 번)
+  await page.emulateMedia({reducedMotion:'no-preference'});
   await openShop();
+  await page.locator(`${SHOP} .m2s-unbox.is-open`).waitFor({timeout:8000});
+  await page.waitForTimeout(420);const unboxShot='11-가게-도착상자-390.png';await page.screenshot({path:path.join(out,unboxShot)});shots.push(unboxShot);
+  await page.waitForFunction(sel=>!document.querySelector(sel+' .m2s-print-tag.is-boxed')&&document.querySelector(sel+' .m2s-unbox').hidden,SHOP,{timeout:20000});
+  assert.match(await page.locator(`${SHOP} .m2s-toast`).textContent(),/도착했어요/,'도착을 알린다');
+  const opened=await page.evaluate(()=>JSON.parse(localStorage.getItem('synk.world.me2.shop.unboxed')||'[]'));
+  assert.ok(opened.length>=2,`연 상자를 기기에 적는다 ${JSON.stringify(opened)}`);
+  await closeShop();await openShop();
+  assert.equal(await page.locator(`${SHOP} .m2s-print-tag.is-boxed`).count(),0,'한 번 연 상자는 다시 열지 않는다');
+  await page.emulateMedia({reducedMotion:'reduce'});
   await shopHanger('outfit-denim').locator('.m2s-print-tag').waitFor();
   assert.ok(await shopHanger('outfit-denim').locator('.m2s-new').count(),'시트가 먼저 본 표시를 보내도 가게에서는 「도착」');
   await shopHanger('outfit-denim').click();await page.locator(`${SHOP} .m2s-stage:not([hidden])`).waitFor();
   await page.locator(`${SHOP} .m2s-side [data-side="worn"]`).click();
-  assert.equal(await page.locator(`${SHOP} .m2s-turn-wrap`).getAttribute('data-view'),'worn');
-  assert.match(await page.locator(`${SHOP} .m2s-print figcaption`).textContent(),/\d+월 \d+일, 학생 식당에서/);
+  assert.equal(await page.locator(`${SHOP} .m2s-turn-wrap`).getAttribute('data-m2s-view'),'worn');
+  assert.match(await page.locator(`${SHOP} .m2s-print-note`).textContent(),/\d+월 \d+일, 학생 식당에서/);
   assert.ok((await page.locator(`${SHOP} .m2s-print img`).getAttribute('alt')).startsWith('이 옷을 입은 내 사진'));
   // 입은 나는 베일이 따뜻해진다 — 휴대폰 머리 줄 · 붙은 단추 줄도 같은 색(따로 두면 단추 줄만 회백으로 떴다)
   assert.deepEqual(await page.evaluate(sel=>{const d=document.querySelector(sel),c=el=>getComputedStyle(el);return {top:c(d.querySelector('.m2s-top')).backgroundColor,bar:/rgb\(247, 243, 234\)\s*(18|46)px/.test(c(d.querySelector('.m2s-actions')).backgroundImage),sheet:c(d.querySelector('.m2s')).getPropertyValue('--sheet').trim()};},SHOP),{top:'rgb(247, 243, 234)',bar:true,sheet:'#F7F3EA'},'입은 나의 머리 줄 · 단추 줄 바탕이 베일과 같다');
   await shopBoth('11-가게-입은나');
+  // 인화지를 누르면 뒤집혀 뒷면 손글씨(도착한 날 · 옷 이름) — 다시 누르면 앞으로, 다른 쪽(앞 · 뒤)으로 가면 앞면으로 돌아온다
+  await page.locator(`${SHOP} .m2s-print-flip`).click();
+  assert.equal(await page.locator(`${SHOP} .m2s-print-flip`).getAttribute('aria-pressed'),'true');
+  assert.match(await page.locator(`${SHOP} .m2s-print-back`).textContent(),/^\d+월 \d+일 도착\n연청 데님 재킷$/,'뒷면 손글씨');
+  assert.equal(await page.locator(`${SHOP} .m2s-print-face.is-back`).getAttribute('aria-hidden'),'false','뒤집으면 뒷면을 읽어 준다');
+  await shopBoth('11-가게-입은나-뒷면');
+  await page.locator(`${SHOP} .m2s-print-flip`).press('Enter');
+  assert.equal(await page.locator(`${SHOP} .m2s-print-flip`).getAttribute('aria-pressed'),'false','키보드로도 뒤집는다');
+  await page.locator(`${SHOP} .m2s-print-flip`).click();
+  await page.locator(`${SHOP} .m2s-side [data-side="front"]`).click();
+  assert.equal(await page.locator(`${SHOP} .m2s-print.is-flipped`).count(),0,'다른 쪽으로 가면 앞면으로');
+  assert.equal(await page.locator(`${SHOP} .m2s-print-flip`).evaluate(el=>getComputedStyle(el).visibility),'hidden','입은 나가 아니면 뒤집기 단추가 Tab에 잡히지 않는다');
+  await page.locator(`${SHOP} .m2s-side [data-side="worn"]`).click();
   const langLib=liveMode?'/world/brand-opening/world-lang.mjs':'/brand-opening/world-lang.mjs'; // 공개본은 /world/ 아래
   // 말 바꾸기 — 가게가 열린 채로 글을 다시 쓴다(몽골어 · 영어: 학생 언어 이름 줄 · 「한국어로 읽기」 · 긴 낱말이 넘치지 않는지)
   for(const code of ['mn','en']){

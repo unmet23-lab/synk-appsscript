@@ -115,16 +115,34 @@
 .m2s-turn-wrap.is-turning{cursor:grabbing}
 .m2s-turn{position:absolute;inset:0;transform-style:preserve-3d;transform-origin:50% calc(var(--hook)*100%)}
 .m2s-turn-wrap::before{content:'';position:absolute;left:50%;bottom:calc(100% - var(--line-to,2.6%));width:1px;height:100vh;margin-left:-.5px;background:linear-gradient(rgba(23,24,28,0),rgba(23,24,28,.32) 40%);transition:bottom .55s var(--ease)}
-.m2s-turn-wrap[data-view=worn]{--line-to:9.5%}
+.m2s-turn-wrap[data-m2s-view=worn]{--line-to:9.5%}
 .m2s-face{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;backface-visibility:hidden;-webkit-backface-visibility:hidden;user-select:none;pointer-events:none;
   filter:drop-shadow(16px 28px 24px rgba(52,42,28,.16)) drop-shadow(1px 3px 3px rgba(40,32,22,.10))}
 .m2s-face.is-back{transform:rotateY(180deg)}
 /* 입은 나 — 이 옷을 입은 내 사진. 옷이 물러나고 그 자리에서 인화지가 떠오른다 */
 
-.m2s-print{position:absolute;left:50%;top:9%;width:74%;aspect-ratio:3/4;margin:0 0 0 -37%;padding:3.2% 3.2% 12%;background:#FDFCF8;box-shadow:0 1px 1px rgba(0,0,0,.08),0 24px 44px rgba(40,32,22,.2);
-  transform:translateY(14px) rotate(-2.2deg) scale(.96);opacity:0;pointer-events:none;transition:opacity .45s var(--ease),transform .7s var(--ease)}
-.m2s-print img{display:block;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.3s var(--ease) .2s}
-.m2s-print::before{content:'';position:absolute;inset:3.2% 3.2% 12%;background:#EFEDE6}
+.m2s-print{position:absolute;left:50%;top:9%;width:74%;aspect-ratio:3/4;margin:0 0 0 -37%;perspective:1000px;
+  transform:translateY(14px) rotate(-2.2deg) scale(.96);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .45s var(--ease),transform .7s var(--ease),visibility 0s .45s}
+/* 앞뒤 두 면이 집게 아래 세로축으로 돈다 — 집게(::after)는 돌지 않는다(11-06) */
+.m2s-print-in{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.3,1.25,.45,1)}
+.m2s-print.is-flipped .m2s-print-in{transform:rotateY(180deg)}
+.m2s-print-face{position:absolute;inset:0;padding:3.2% 3.2% 12%;background:#FDFCF8;box-shadow:0 1px 1px rgba(0,0,0,.08),0 24px 44px rgba(40,32,22,.2);backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.m2s-print-face.is-front::before{content:'';position:absolute;inset:3.2% 3.2% 12%;background:#EFEDE6}
+.m2s-print-face img{position:relative;display:block;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.3s var(--ease) .2s}
+/* 뒷면 — 인화지 뒤의 옅은 인쇄 무늬 위에 연필 손글씨 두 줄(도착한 날 · 옷 이름) */
+.m2s-print-face.is-back{transform:rotateY(180deg);padding:15% 11% 12% 13%;background:#F8F6F0 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='170' height='64'%3E%3Ctext x='4' y='40' transform='rotate(-14 85 32)' font-family='ui-monospace,monospace' font-size='8.5' letter-spacing='1.6' fill='%233A3833' fill-opacity='.08'%3ESYNK WORLD %26%23183; PHOTO PAPER%3C/text%3E%3C/svg%3E") 0 0/170px 64px}
+.m2s-print-back{margin:0;font-family:'M2S Pencil',var(--sans);font-size:clamp(21px,2.2vw,28px);line-height:1.42;color:rgba(52,50,46,.86);white-space:pre-line;word-break:keep-all;transform:rotate(-2.5deg);transform-origin:0 0}
+/* 누르는 자리는 인화지 전체 — 입은 나가 아니면 숨겨 Tab에 잡히지 않게 */
+.m2s-print-flip{position:absolute;inset:-2%;z-index:3;padding:0;border:0;border-radius:3px;background:none;cursor:pointer;visibility:hidden}
+.m2s-turn-wrap[data-m2s-view=worn] .m2s-print-flip{visibility:visible;pointer-events:auto}
+.m2s-print-flip:focus-visible{outline:2px solid var(--ink);outline-offset:6px}
+@media (hover:hover){
+  .m2s-turn-wrap[data-m2s-view=worn] .m2s-print:not(.is-flipped):has(.m2s-print-flip:hover) .m2s-print-in{transform:rotateY(-12deg)}
+  .m2s-turn-wrap[data-m2s-view=worn] .m2s-print.is-flipped:has(.m2s-print-flip:hover) .m2s-print-in{transform:rotateY(192deg)}
+}
+/* 처음 입은 나를 열면 한 번 모서리를 들어 뒤가 있다는 것을 보인다 */
+.m2s-print.is-peek .m2s-print-in{animation:m2s-peek 1.2s cubic-bezier(.3,.9,.4,1) .8s}
+@keyframes m2s-peek{35%{transform:rotateY(-34deg)}72%{transform:rotateY(5deg)}}
 .m2s-tissue{position:absolute;inset:9% -2% 1%;pointer-events:none;opacity:0;transition:opacity .2s}
 .m2s-tissue i{position:absolute;top:0;bottom:0;width:62%;opacity:0;background:
   linear-gradient(98deg,transparent 0 22%,rgba(255,255,255,.5) 22.6%,transparent 24% 47%,rgba(60,50,35,.06) 48%,transparent 53% 71%,rgba(255,255,255,.45) 71.5%,transparent 73%),
@@ -144,19 +162,18 @@
 .m2s-tissue.is-on i{transform:none;transition:transform .6s var(--ease)}
 .m2s-tissue.is-on i:nth-child(2){transition-delay:.12s}
 .m2s-tissue.is-on b{transform:scale(1);transition:transform .35s cubic-bezier(.3,1.6,.5,1) .55s}
-.m2s-print::after{content:'';position:absolute;left:50%;top:-14px;width:12px;height:30px;margin-left:-6px;border-radius:2px;background:linear-gradient(90deg,#C9A57A,#E2C49B 45%,#B98F62);box-shadow:0 2px 3px rgba(0,0,0,.18);transform:rotate(2.2deg)}
-.m2s-print img{position:relative}
-.m2s-turn-wrap[data-view=worn] .m2s-turn{opacity:.3;translate:-24% 2%;scale:.92;clip-path:inset(15% 0 0 0)}
+.m2s-print::after{content:'';position:absolute;z-index:2;left:50%;top:-14px;width:12px;height:30px;margin-left:-6px;border-radius:2px;background:linear-gradient(90deg,#C9A57A,#E2C49B 45%,#B98F62);box-shadow:0 2px 3px rgba(0,0,0,.18);transform:rotate(2.2deg)}
+.m2s-turn-wrap[data-m2s-view=worn] .m2s-turn{opacity:.3;translate:-24% 2%;scale:.92;clip-path:inset(15% 0 0 0)}
 /* 입은 나는 베일이 따뜻해진다 — 휴대폰 머리 줄 · 붙은 단추 줄 · PC 단추 페이드가 같은 --sheet를 쓴다(따로 두면 단추 줄만 회백으로 떠 보였다) */
-.m2s:has(.m2s-turn-wrap[data-view=worn]){--sheet:#F7F3EA}
-.m2s:has(.m2s-turn-wrap[data-view=worn]) .m2s-veil{background:color-mix(in srgb,var(--sheet) 92%,transparent)}
+.m2s:has(.m2s-turn-wrap[data-m2s-view=worn]){--sheet:#F7F3EA}
+.m2s:has(.m2s-turn-wrap[data-m2s-view=worn]) .m2s-veil{background:color-mix(in srgb,var(--sheet) 92%,transparent)}
 .m2s-turn{transition:opacity .45s var(--ease),translate .6s var(--ease),scale .6s var(--ease)}
-.m2s-print figcaption{position:absolute;left:0;right:0;bottom:1.6%;text-align:center;font-family:'M2S Pencil',var(--sans);font-size:clamp(17px,1.7vw,22px);line-height:1;color:#3A3833;transform:rotate(-1deg)}
-.m2s-turn-wrap[data-view=worn] .m2s-print img{opacity:1}
-.m2s-turn-wrap[data-view=worn] .m2s-print{opacity:1;transform:translateX(10%) rotate(-2.2deg)}
-.m2s-turn-wrap[data-view=worn]::before{left:57.4%}
+.m2s-print-note{position:absolute;left:0;right:0;bottom:1.6%;margin:0;text-align:center;font-family:'M2S Pencil',var(--sans);font-size:clamp(17px,1.7vw,22px);line-height:1;color:#3A3833;transform:rotate(-1deg)}
+.m2s-turn-wrap[data-m2s-view=worn] .m2s-print-face img{opacity:1}
+.m2s-turn-wrap[data-m2s-view=worn] .m2s-print{opacity:1;visibility:visible;transform:translateX(10%) rotate(-2.2deg);transition-delay:0s}
+.m2s-turn-wrap[data-m2s-view=worn]::before{left:57.4%}
 .m2s-turn-wrap::before{transition:bottom .55s var(--ease),left .6s var(--ease)}
-.m2s-turn-wrap[data-view=worn]{cursor:default}
+.m2s-turn-wrap[data-m2s-view=worn]{cursor:default}
 .m2s-close{position:absolute;z-index:9;top:calc(max(18px,env(safe-area-inset-top)) - 2px);right:clamp(10px,4vw,36px);display:flex;align-items:center;gap:10px;min-height:44px;padding:0 8px;border:0;background:none;font-size:13px;font-weight:550;color:var(--ink);cursor:pointer}
 .m2s-close::after{content:'';width:12px;height:12px;background:linear-gradient(45deg,transparent calc(50% - .7px),currentColor calc(50% - .7px) calc(50% + .7px),transparent calc(50% + .7px)),linear-gradient(-45deg,transparent calc(50% - .7px),currentColor calc(50% - .7px) calc(50% + .7px),transparent calc(50% + .7px))}
 .m2s-close:hover{text-decoration:underline;text-underline-offset:4px}
@@ -255,8 +272,25 @@
 .m2s-label .m2s-label-from{font-size:calc(var(--pw)*.018);color:var(--ink-3)}
 .m2s-label .m2s-label-from b{font-weight:450;color:var(--ink-2)}
 .m2s-label-no{justify-content:center;margin:1.6% 0 0!important;font-family:var(--mono);font-size:calc(var(--pw)*.016)!important;letter-spacing:.08em;color:var(--ink-2)}
-.m2s-parcel-tape{position:absolute;left:46.4%;width:7.4%;top:47%;height:11%;opacity:0;background:repeating-linear-gradient(180deg,transparent 0 14%,rgba(90,65,35,.32) 14% 16%,transparent 16% 30%);mix-blend-mode:multiply}
-.m2s-parcel.is-closed .m2s-parcel-tape{opacity:1;transition:opacity .2s .15s}
+/* 테이프의 가게 글자(11-06) — 그림 속 테이프(가로 46.8~52.7% · 세로 33~60%) 위에 반투명으로 찍는다. 윗면 토막은 원근만큼 세로로 눌러 그리고, 봉할 때 위에서 아래로 붙어 나간다 */
+.m2s-parcel-tape{position:absolute;left:46.9%;width:5.7%;top:33.6%;height:26.2%;opacity:0;clip-path:inset(0 0 100% 0);pointer-events:none}
+.m2s-parcel-tape b{position:absolute;left:0;right:0;display:flex;justify-content:center;overflow:hidden}
+.m2s-parcel-tape b:first-child{top:0;height:72%}
+.m2s-parcel-tape b:last-child{top:77%;height:23%}
+.m2s-parcel-tape span{writing-mode:vertical-rl;white-space:nowrap;font-family:var(--mono);font-size:calc(var(--pw)*.02);font-weight:600;line-height:1;letter-spacing:.18em;color:rgba(96,62,26,.46);mix-blend-mode:multiply}
+.m2s-parcel-tape b:first-child span{transform:scaleY(.6);transform-origin:50% 0}
+.m2s-parcel.is-closed .m2s-parcel-tape{opacity:1;clip-path:inset(0);transition:opacity .01s .12s,clip-path .42s cubic-bezier(.45,0,.2,1) .12s}
+/* 도착 상자(11-06) — 그 옷걸이 아래 바닥 선에 내려와 열린다. 자리(translate)는 봉 계산이 따라 준다 */
+.m2s-unbox{--pw:calc(var(--slot)*1.3);position:absolute;left:0;top:0;z-index:4;width:var(--pw);aspect-ratio:1;margin:calc(var(--pw)/-2) 0 0 calc(var(--pw)/-2);pointer-events:none}
+.m2s-unbox[hidden]{display:none}
+.m2s-unbox-box{position:absolute;inset:0;transform-origin:50% 82%}
+.m2s-unbox-box::before{content:'';position:absolute;left:16%;right:16%;top:79%;height:6%;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.16),transparent)}
+.m2s-unbox img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.m2s-unbox-open{opacity:0}
+.m2s-unbox .m2s-parcel-tape{opacity:1;clip-path:none}
+.m2s-unbox.is-open .m2s-unbox-open{opacity:1;transition:opacity .16s}
+.m2s-unbox.is-open :is(.m2s-unbox-closed,.m2s-parcel-tape){opacity:0;transition:opacity .16s .05s}
+.m2s-print-tag.is-boxed{opacity:0;transition:none}
 .m2s-label .m2s-label-head{padding-bottom:2.6%;margin-bottom:3.4%;border-bottom:.5px solid rgba(0,0,0,.35);font-family:var(--mono);font-size:calc(var(--pw)*.0175);font-weight:600;letter-spacing:.04em}
 .m2s-label-code{display:block;height:calc(var(--pw)*.045);margin-top:3%;background:repeating-linear-gradient(90deg,#222 0 1px,transparent 1px 2px,#222 2px 4px,transparent 4px 5px,#222 5px 6px,transparent 6px 8px)}
 .m2s-label.is-on{opacity:1;transform:rotate(-2.5deg);transition:transform .28s cubic-bezier(.3,1.5,.5,1),opacity .12s}
@@ -336,10 +370,10 @@
 .m2s-toast{transform:none;translate:-50% 0;width:max-content;max-width:calc(100vw - 32px);white-space:normal;text-align:center}
 /* 움직임 줄이기 — 앱 설정 또는 기기 설정 */
 :root[data-reduced=true] .m2s-dialog,:root[data-motion=reduced] .m2s-dialog{animation:none}
-:root[data-reduced=true] .m2s :is(.m2s-floor,.m2s-info>*,.m2s-tag i,.m2s-track li,.m2s-toast,.m2s-pack-text,.m2s-veil),:root[data-motion=reduced] .m2s :is(.m2s-floor,.m2s-info>*,.m2s-tag i,.m2s-track li,.m2s-toast,.m2s-pack-text,.m2s-veil){transition:none;animation:none}
+:root[data-reduced=true] .m2s :is(.m2s-floor,.m2s-info>*,.m2s-tag i,.m2s-track li,.m2s-toast,.m2s-pack-text,.m2s-veil,.m2s-print-in),:root[data-motion=reduced] .m2s :is(.m2s-floor,.m2s-info>*,.m2s-tag i,.m2s-track li,.m2s-toast,.m2s-pack-text,.m2s-veil,.m2s-print-in){transition:none;animation:none}
 :root[data-reduced=true] .m2s :is(.m2s-track li::before,.m2s-go .dot),:root[data-motion=reduced] .m2s :is(.m2s-track li::before,.m2s-go .dot){animation:none}
 @media (prefers-reduced-motion:reduce){
   .m2s-dialog{animation:none}
-  .m2s :is(.m2s-floor,.m2s-info>*,.m2s-tag i,.m2s-track li,.m2s-toast,.m2s-pack-text,.m2s-veil){transition:none;animation:none}
+  .m2s :is(.m2s-floor,.m2s-info>*,.m2s-tag i,.m2s-track li,.m2s-toast,.m2s-pack-text,.m2s-veil,.m2s-print-in){transition:none;animation:none}
   .m2s :is(.m2s-track li::before,.m2s-go .dot){animation:none}
 }

@@ -2,6 +2,7 @@
 // 앱 옷 가게(me2-shop.mjs) — 움직임마다 끊김을 크롬 추적으로 잰다(2026-11-05). 시안 experiences/drama/shop/qa/부드러움재기.cjs와 같은 셈:
 //   버림 = PipelineReporter STATE_DROPPED · affects_smoothness인 장, 합성 실패 = 합성기로 못 간 애니메이션, 가장 긴 GPU 장.
 // 앱 껍데기 없이 가게 모듈만 모의 상태로 띄운다(서버 · 계정 없음, 주문 답 0.3초). 휴대폰 390×844 · 배율 3 · GPU.
+// 11-06: 포장 뒤 그 옷이 도착하면 봉 아래 상자가 열리는 연출(도착 상자)과 입은 나 인화지 뒤집기도 잰다.
 //   node experiences/synk-world-app/qa/me2-shop-부드러움재기.cjs [--횟수 2] [--CPU 4]
 const path = require('node:path'), fs = require('node:fs'), os = require('node:os'), http = require('node:http');
 const NM = process.env.SYNK_QA_NODE_MODULES || path.join(process.env.USERPROFILE || os.homedir(), '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules');
@@ -24,7 +25,9 @@ const view={status:'ok',consent:{given:true},me:{state:'ready',equipped_look:nul
 const shop=createMe2Shop({lang:()=>'ko',soundOn:()=>false,actions:{
  order:async id=>{await new Promise(r=>setTimeout(r,300));view.looks=[{job_id:'00000000-0000-4000-8000-000000000001',item:id,state:'shipping',new:false,url:null,ordered_at:new Date().toISOString(),sent_at:null,arrived_at:null,arrives_by:new Date(Date.now()+25*3600000).toISOString(),arrives_after:null},...view.looks];shop.update(view);return {status:'ordered'};},
  status:async()=>view,seen:async()=>{},wear:async()=>{},unwear:async()=>{},redo:async()=>({status:'ordered'})}});
-window.__m2s={shop,view,open:()=>shop.open(view,{fresh:[]})};
+// 도착 — 배송 중이던 그 옷을 도착(새 표시 · 입은 사진)으로 바꿔 넘긴다
+const arrive=id=>{const now=new Date().toISOString();view.looks=[{job_id:'00000000-0000-4000-8000-000000000002',item:id,state:'arrived',new:true,url:'/experiences/synk-world-app/me2-assets/sample-base.webp',ordered_at:now,sent_at:now,arrived_at:now,arrives_by:null,arrives_after:null},...view.looks.filter(x=>x.item!==id)];shop.update(view);};
+window.__m2s={shop,view,arrive,open:()=>shop.open(view,{fresh:[]})};
 </script></body></html>`;
 function serve() {
   return new Promise((resolve) => {
@@ -85,6 +88,9 @@ function analyze(buf) {
     await trace('돌리기', async () => { await page.click('.m2s-side button[data-side=back]'); await sleep(1300); await page.click('.m2s-side button[data-side=front]'); await sleep(1300); });
     await trace('포장(처음 여섯 단계)', async () => { await page.click('.m2s-go[data-act=order]'); await sleep(5600); });
     await trace('닫고 다시 열기', async () => { await page.click('.m2s-more'); await sleep(1100); await page.click('.m2s-close'); await sleep(900); });
+    const ordered = await page.evaluate(() => window.__m2s.view.looks[0]?.item);
+    await trace('도착 상자', async () => { await page.evaluate((id) => window.__m2s.arrive(id), ordered); await page.waitForSelector('.m2s-unbox:not([hidden])', { timeout: 4000 }); await page.waitForSelector('.m2s-unbox[hidden]', { state: 'attached', timeout: 6000 }); await sleep(500); });
+    await trace('인화지 뒤집기', async () => { await page.click('.m2s-more'); await sleep(900); await page.click('.m2s-side button[data-side=worn]'); await sleep(2300); await page.click('.m2s-print-flip'); await sleep(1100); await page.click('.m2s-print-flip'); await sleep(1100); });
     if (errors.length) console.log('페이지 오류', errors);
     await ctx.close(); await browser.close();
   }

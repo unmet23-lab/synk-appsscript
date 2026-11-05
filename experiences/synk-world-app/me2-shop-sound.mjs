@@ -72,6 +72,8 @@ export function createShopSound({ enabled = () => true, win = globalThis } = {})
     },
     /** 입은 나 — 인화지가 떠오를 때: 종이 스침 + 아주 작은 맑은 소리 */
     print() { if (!ready()) return; const t = ctx.currentTime; noise(t, 0.28, 'bandpass', 3200, 0.6, 0.035, 0.24, 0.03); tone(t + 0.18, 1568, 0.035, 0.5); tone(t + 0.18, 2349, 0.018, 0.4); },
+    /** 인화지를 뒤집을 때 — 종이가 바람을 가르는 짧은 소리 + 끝의 작은 툭 */
+    flip() { if (!ready()) return; const t = ctx.currentTime; noise(t, 0.16, 'bandpass', 2400, 0.7, 0.04, 0.13, 0.012); noise(t + 0.12, 0.04, 'highpass', 3600, 0.8, 0.022, 0.035, 0.003); },
     /** 얇은 종이 — 바스락 */
     tissue() { if (!ready()) return; const t = ctx.currentTime; for (let i = 0; i < 6; i++) noise(t + i * 0.07 + Math.random() * 0.03, 0.06, 'highpass', 2600 + Math.random() * 2000, 0.6, 0.03 + Math.random() * 0.02, 0.05, 0.004); },
     /** 송장 스티커 — 톡 */

@@ -169,7 +169,12 @@ export const PACK_STEPS=[
 
 /** 인화지 손글씨 — 늘 한국어(제2의 나가 사진 아래 적은 글). 서체 조각 me2-assets/shop-pencil.woff2에 이 글자들이 든다(experiences/drama/shop/qa/서체굽기.mjs). */
 export const PRINT_PLACE='학생 식당에서';
-export const printNote=at=>{if(at===null||at===undefined||at==='')return PRINT_PLACE;const d=new Date(at);if(!Number.isFinite(d.getTime()))return PRINT_PLACE;const kst=new Date(d.getTime()+9*3600000);return `${kst.getUTCMonth()+1}월 ${kst.getUTCDate()}일, ${PRINT_PLACE}`;};
+const kstDay=at=>{if(at===null||at===undefined||at==='')return null;const d=new Date(at);if(!Number.isFinite(d.getTime()))return null;const kst=new Date(d.getTime()+9*3600000);return `${kst.getUTCMonth()+1}월 ${kst.getUTCDate()}일`;};
+export const printNote=at=>{const day=kstDay(at);return day?`${day}, ${PRINT_PLACE}`:PRINT_PLACE;};
+/** 인화지 뒷면 손글씨(11-06) — 도착한 날과 옷 이름 두 줄. 서체에 가운뎃점이 없어 줄로 나눈다. 글자는 PRINT_BACK_WORD와 옷 한국어 이름에서만 나온다(서체 조각). */
+export const PRINT_BACK_WORD='도착';
+export const printBack=(at,name)=>{const day=kstDay(at);return day?`${day} ${PRINT_BACK_WORD}
+${name}`:name;};
 
 /** 가게 화면 글 — 한 자리 한 언어, 빠진 언어는 한국어. */
 export const SHOP_TEXT={
@@ -185,6 +190,7 @@ export const SHOP_TEXT={
   track:'배송 조회',tOrdered:'주문 받음',tSent:'사진관에 보냄',tSoon:'곧 사진관에 보내요',tMaking:'내 사진에 입혀 보는 중',tEta:'도착 예정',etaBy:'늦어도 {when} 전',etaSoon:'곧 도착해요',tDelayed:'배송 지연 — {date} 출발',
   shipping:'배송 중',arrived:'도착',labelHead:'SYNK WORLD · 캠퍼스 옷 가게',labelTo:'받는 곳',labelToValue:'내 옷장 · 제2의 나',labelItem:'내용물',labelItemValue:'{name} 1벌',labelFrom:'보낸 곳',labelFromValue:'캠퍼스 옷 가게',
   entryNote:'옷 {n}벌 · 골라서 입어 봐요',entryOpen:'옷 가게 열기',entryMine:'도착 {a} · 배송 중 {s}',wordOpen:'뜻 보기',failedTag:'잘 안 됐어요',readKo:'한국어로 읽기',readKoOff:'한국어 접기',etaLate:'조금 늦어지고 있어요',today:'오늘 {time}',tomorrow:'내일 {time}',lateBox:'사진관이 붐벼서 {date}에 보내요',wornAlt:'이 옷을 입은 내 사진',newMark:'도착',mine:'내 옷',delayedTag:'배송 지연',
+  arrivedSay:'{name}{이} 도착했어요',flipPrint:'인화지 뒤집기 — 뒷면 손글씨 보기',
   lateOff:'{name}{은} 못 보냈어요. 지금은 사진관이 잠시 쉬고 있어요.',lateFull:'{name}{은} 못 보냈어요. 옷장이 가득 찼어요.',lateFail:'{name}{은} 포장을 못 했어요 — 다시 해 볼게요'},
  en:{shop:'Campus Clothing Store',kicker:'New semester · {n} pieces',title:'What should I wear today?',rail:'{n} pieces — drag to browse, tap for details',hint:'Drag to browse, tap for details',more:'See details',
   closet:'My wardrobe',closetCount:'My wardrobe — {n} pieces received or on the way',close:'Close',prev:'Previous',next:'Next',detail:'Item details',view:'View',front:'Front',back:'Back',worn:'On me',
@@ -198,6 +204,7 @@ export const SHOP_TEXT={
   track:'Delivery status',tOrdered:'Order received',tSent:'Sent to the photo studio',tSoon:'Going to the photo studio soon',tMaking:'Dressing your photo',tEta:'Arrives',etaBy:'by {when} at the latest',etaSoon:'Arriving soon',tDelayed:'Delayed — leaves {date}',
   shipping:'On its way',arrived:'New',labelHead:'SYNK WORLD · Campus Clothing Store',labelTo:'To',labelToValue:'My wardrobe · Second me',labelItem:'Contents',labelItemValue:'1 × {name}',labelFrom:'From',labelFromValue:'Campus Clothing Store',
   entryNote:'{n} pieces · pick one and try it on',entryOpen:'Open the store',entryMine:'{a} arrived · {s} on the way',wordOpen:'Show meaning',failedTag:'Didn’t work',readKo:'Read it in Korean',readKoOff:'Hide the Korean',etaLate:'Running a little late',today:'today {time}',tomorrow:'tomorrow {time}',lateBox:'The photo studio is busy, so it goes out on {date}',wornAlt:'My photo wearing this',newMark:'New',mine:'Mine',delayedTag:'Delayed',
+  arrivedSay:'Arrived: {name}',flipPrint:'Flip the print — see the note on the back',
   lateOff:'{name}: not sent — the photo studio is closed for now.',lateFull:'{name}: not sent — your wardrobe is full.',lateFail:'{name}: we couldn’t pack it — let’s try again'},
  mn:{shop:'Кампусын хувцасны дэлгүүр',kicker:'Шинэ семестр · {n} хувцас',title:'Өнөөдөр юу өмсөх вэ?',rail:'{n} хувцас — чирч үзээд, дарж дэлгэрэнгүйг хараарай',hint:'Чирч үзээд, дарж дэлгэрэнгүйг хараарай',more:'Дэлгэрэнгүй',
   closet:'Миний шүүгээ',closetCount:'Миний шүүгээ — ирсэн болон хүргэлтэд гарсан {n} хувцас',close:'Хаах',prev:'Өмнөх',next:'Дараах',detail:'Хувцасны дэлгэрэнгүй',view:'Харах тал',front:'Урд тал',back:'Ар тал',worn:'Өмссөн би',
@@ -211,5 +218,6 @@ export const SHOP_TEXT={
   track:'Хүргэлтийн явц',tOrdered:'Захиалга хүлээн авсан',tSent:'Зургийн газар руу илгээсэн',tSoon:'Удахгүй зургийн газар руу илгээнэ',tMaking:'Энэ хувцсыг өмссөн зургийг тань бэлдэж байна',tEta:'Ирэх хугацаа',etaBy:'{when} гэхэд',etaSoon:'Удахгүй ирнэ',tDelayed:'Хүргэлт хоцорч байна — гарах өдөр: {date}',
   shipping:'Хүргэлтэд гарсан',arrived:'Ирсэн',labelHead:'SYNK WORLD · Кампусын хувцасны дэлгүүр',labelTo:'Хүлээн авагч',labelToValue:'Миний шүүгээ · Хоёр дахь би',labelItem:'Агуулга',labelItemValue:'{name} — 1 ширхэг',labelFrom:'Илгээгч',labelFromValue:'Кампусын хувцасны дэлгүүр',
   entryNote:'{n} хувцас · сонгоод өмсөж үзээрэй',entryOpen:'Дэлгүүрт орох',entryMine:'Ирсэн {a} · Хүргэлтэд {s}',wordOpen:'Утгыг харах',failedTag:'Бүтсэнгүй',readKo:'Солонгосоор унших',readKoOff:'Солонгос эх бичвэрийг хаах',etaLate:'Бага зэрэг хоцорч байна',today:'өнөөдөр {time}',tomorrow:'маргааш {time}',lateBox:'Зургийн газар завгүй байгаа тул илгээх өдрийг хойшлууллаа: {date}',wornAlt:'Үүнийг өмссөн миний зураг',newMark:'Ирлээ',mine:'Минийх',delayedTag:'Хоцорч байна',
+  arrivedSay:'{name} ирлээ',flipPrint:'Зургийг эргүүлэх — ар талын гар бичмэлийг харах',
   lateOff:'{name}: илгээгдсэнгүй — одоогоор зургийн газар түр амарч байна.',lateFull:'{name}: илгээгдсэнгүй — таны шүүгээ дүүрсэн байна.',lateFail:'{name}: савлаж чадсангүй — дахин оролдъё'},
 };

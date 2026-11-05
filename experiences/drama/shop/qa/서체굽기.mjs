@@ -9,14 +9,16 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { MOCK_NOTE } from '../shop-items.mjs';
-import { PRINT_PLACE } from '../../../synk-world-app/me2-shop-items.mjs';
+import { PRINT_PLACE, PRINT_BACK_WORD, ITEM_TEXT } from '../../../synk-world-app/me2-shop-items.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const src = process.argv[2];
 if (!src) throw Error('사용법은 파일 머리글');
 // 날짜 · 곳을 바꿔도 다시 굽지 않게 숫자 · 월 · 일 · 쉼표는 늘 넣는다(이 서체에는 가운뎃점이 없다)
 // 앱 옷 가게(11-05)의 인화지 글 「11월 6일, 학생 식당에서」도 같은 조각에 넣는다(앱은 me2-assets/shop-pencil.woff2로 복사).
-const chars = [...new Set(Object.values(MOCK_NOTE).join('') + PRINT_PLACE + '0123456789월일 ,.')].sort().join('');
+// 11-06 인화지 뒷면 「11월 6일 도착 / 버터색 카디건」 — 옷 한국어 이름 여덟 벌의 글자도 넣는다(옷을 더하면 다시 굽는다).
+const names = Object.values(ITEM_TEXT.ko).map((x) => x.name).join('');
+const chars = [...new Set(Object.values(MOCK_NOTE).join('') + PRINT_PLACE + PRINT_BACK_WORD + names + '0123456789월일 ,.')].sort().join('');
 const out = path.join(here, '..', 'assets', 'shop-pencil.woff2');
 const py = String.raw`
 import sys
