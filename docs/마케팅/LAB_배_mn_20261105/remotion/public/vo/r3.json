@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "r3",
+ "text": "배 줄까?",
+ "dur": 0.599,
+ "words": [
+  {
+   "text": "배",
+   "start": 0.02,
+   "end": 0.101
+  },
+  {
+   "text": "줄까?",
+   "start": 0.161,
+   "end": 0.599
+  }
+ ],
+ "source": {
+  "key": "c8f8ac689f143d8319a74afef7cdd429",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 164
+ }
+}

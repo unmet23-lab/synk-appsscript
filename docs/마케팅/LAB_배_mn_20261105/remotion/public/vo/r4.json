@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "r4",
+ "text": "내 배!",
+ "dur": 0.689,
+ "words": [
+  {
+   "text": "내",
+   "start": 0.02,
+   "end": 0.081
+  },
+  {
+   "text": "배!",
+   "start": 0.573,
+   "end": 0.635
+  }
+ ],
+ "source": {
+  "key": "cc507a5bb91069b277ced3cf8bc53ec2",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "sad",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 119
+ }
+}

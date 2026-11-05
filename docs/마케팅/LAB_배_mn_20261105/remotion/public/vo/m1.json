@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m1",
+ "text": "배가 아파요…",
+ "dur": 1.012,
+ "words": [
+  {
+   "text": "배가",
+   "start": 0.02,
+   "end": 0.342
+  },
+  {
+   "text": "아파요…",
+   "start": 0.402,
+   "end": 1.012
+  }
+ ],
+ "source": {
+  "key": "0bf06df00e748ce0dc85560817410e23",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "sad",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": null
+ }
+}

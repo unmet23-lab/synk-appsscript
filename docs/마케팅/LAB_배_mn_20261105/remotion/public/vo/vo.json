@@ -1,0 +1,93 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_6a3350f8e5a50a4abe948fa8",
+  "name": "도윤"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "sad",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1109,
+  "lufs": -17
+ },
+ "made": "2026-11-05T04:10:23.766Z",
+ "lines": [
+  {
+   "id": "m1",
+   "text": "배가 아파요…",
+   "dur": 1.012,
+   "syllablesPerSec": 4.94,
+   "src": "m1.wav",
+   "key": "0bf06df00e748ce0dc85560817410e23",
+   "words": 2
+  },
+  {
+   "id": "r1",
+   "text": "배 줄게!",
+   "dur": 0.734,
+   "syllablesPerSec": 4.09,
+   "src": "r1.wav",
+   "key": "ec481adb66ccf071151c1b95da38cbe0",
+   "words": 2
+  },
+  {
+   "id": "m2",
+   "text": "아니요…",
+   "dur": 1.208,
+   "syllablesPerSec": 2.48,
+   "src": "m2.wav",
+   "key": "ea776c50e40fe2accf3dab69e538dbba",
+   "words": 1
+  },
+  {
+   "id": "r2",
+   "text": "그럼 배 타러 가자!",
+   "dur": 1.179,
+   "syllablesPerSec": 5.94,
+   "src": "r2.wav",
+   "key": "bb2cb5e12063bc4a77e478ae98503d9d",
+   "words": 4
+  },
+  {
+   "id": "m3",
+   "text": "배가… 아파요…",
+   "dur": 1.469,
+   "syllablesPerSec": 3.4,
+   "src": "m3.wav",
+   "key": "eb3441215d09ae97f9eacc76ff63dd5d",
+   "words": 2
+  },
+  {
+   "id": "r3",
+   "text": "배 줄까?",
+   "dur": 0.599,
+   "syllablesPerSec": 5.01,
+   "src": "r3.wav",
+   "key": "c8f8ac689f143d8319a74afef7cdd429",
+   "words": 2
+  },
+  {
+   "id": "m4",
+   "text": "내 배…",
+   "dur": 1.093,
+   "syllablesPerSec": 1.83,
+   "src": "m4.wav",
+   "key": "432de1dc6943457a69dd4a4c68b1c786",
+   "words": 2
+  },
+  {
+   "id": "r4",
+   "text": "내 배!",
+   "dur": 0.689,
+   "syllablesPerSec": 2.9,
+   "src": "r4.wav",
+   "key": "cc507a5bb91069b277ced3cf8bc53ec2",
+   "words": 2
+  }
+ ]
+}

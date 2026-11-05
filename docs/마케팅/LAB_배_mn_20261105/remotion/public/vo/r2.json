@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "r2",
+ "text": "그럼 배 타러 가자!",
+ "dur": 1.179,
+ "words": [
+  {
+   "text": "그럼",
+   "start": 0.02,
+   "end": 0.243
+  },
+  {
+   "text": "배",
+   "start": 0.304,
+   "end": 0.385
+  },
+  {
+   "text": "타러",
+   "start": 0.466,
+   "end": 0.649
+  },
+  {
+   "text": "가자!",
+   "start": 0.71,
+   "end": 1.179
+  }
+ ],
+ "source": {
+  "key": "bb2cb5e12063bc4a77e478ae98503d9d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": null
+ }
+}

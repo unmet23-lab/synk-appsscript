@@ -1,0 +1,79 @@
+{
+  "note": "LAB 몽골 M28 「배」 — 화면 글 편(몽골어 목소리 없음, 제작 방식 §4-3)에 한국어 문장만 소리로. 몽글 = 도윤, 룸메이트 = 범수. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_배_mn_20261105/음성/계획.json --굽기",
+  "voice": {
+    "id": "tc_6a3350f8e5a50a4abe948fa8",
+    "name": "도윤"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "ko",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1109,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "m1",
+      "text": "배가 아파요…",
+      "emotion": "sad"
+    },
+    {
+      "id": "r1",
+      "text": "배 줄게!",
+      "voice": {
+        "id": "tc_5c3c52cb5827e00008dd7f3b",
+        "name": "범수"
+      },
+      "emotion": "happy"
+    },
+    {
+      "id": "m2",
+      "text": "아니요…",
+      "emotion": "sad"
+    },
+    {
+      "id": "r2",
+      "text": "그럼 배 타러 가자!",
+      "voice": {
+        "id": "tc_5c3c52cb5827e00008dd7f3b",
+        "name": "범수"
+      },
+      "emotion": "happy"
+    },
+    {
+      "id": "m3",
+      "text": "배가… 아파요…",
+      "emotion": "sad",
+      "seed": 1110
+    },
+    {
+      "id": "r3",
+      "text": "배 줄까?",
+      "voice": {
+        "id": "tc_5c3c52cb5827e00008dd7f3b",
+        "name": "범수"
+      },
+      "emotion": "happy"
+    },
+    {
+      "id": "m4",
+      "text": "내 배…",
+      "emotion": "sad",
+      "seed": 1111
+    },
+    {
+      "id": "r4",
+      "text": "내 배!",
+      "voice": {
+        "id": "tc_5c3c52cb5827e00008dd7f3b",
+        "name": "범수"
+      },
+      "emotion": "sad",
+      "seed": 1112
+    }
+  ]
+}
