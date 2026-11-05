@@ -1,0 +1,71 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n07",
+ "text": "여섯 번 다, 그 칸에 물음표가 붙었어요.",
+ "show": "여섯 번 다, 그 칸에 물음표가 붙었어요",
+ "dur": 2.353,
+ "words": [
+  {
+   "text": "여섯",
+   "start": 0.02,
+   "end": 0.195
+  },
+  {
+   "text": "번",
+   "start": 0.243,
+   "end": 0.355
+  },
+  {
+   "text": "다,",
+   "start": 0.402,
+   "end": 0.498
+  },
+  {
+   "text": "그",
+   "start": 1.024,
+   "end": 1.104
+  },
+  {
+   "text": "칸에",
+   "start": 1.168,
+   "end": 1.327
+  },
+  {
+   "text": "물음표가",
+   "start": 1.391,
+   "end": 1.726
+  },
+  {
+   "text": "붙었어요.",
+   "start": 1.774,
+   "end": 2.353
+  }
+ ],
+ "source": {
+  "key": "008859ffc0ac88712b47f399866360a6",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1105,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 145
+ }
+}

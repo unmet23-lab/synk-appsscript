@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1aa01-083f-7033-ae6d-a112c9bcccae"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬을 사용해 참고 사진의 빵집과 의상, 상자를 유지하면서 크루아상 철판을 가까이 담은 세로 사진으로 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"완성했습니다."}}
+{"type":"turn.completed","usage":{"input_tokens":206062,"cached_input_tokens":167040,"cache_write_input_tokens":0,"output_tokens":1814,"reasoning_output_tokens":230}}

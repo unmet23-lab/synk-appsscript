@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n09",
+ "text": "남은 콩나물은, 콩나물 소금빵이 됐고요.",
+ "show": "남은 콩나물은, 콩나물 소금빵이 됐고요",
+ "dur": 2.221,
+ "words": [
+  {
+   "text": "남은",
+   "start": 0.02,
+   "end": 0.233
+  },
+  {
+   "text": "콩나물은,",
+   "start": 0.275,
+   "end": 0.799
+  },
+  {
+   "text": "콩나물",
+   "start": 0.983,
+   "end": 1.294
+  },
+  {
+   "text": "소금빵이",
+   "start": 1.337,
+   "end": 1.733
+  },
+  {
+   "text": "됐고요.",
+   "start": 1.776,
+   "end": 2.221
+  }
+ ],
+ "source": {
+  "key": "3481ec84391fd78a2cebd9894ec08a8d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1105,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 173
+ }
+}

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1a9f2-c794-7a50-9991-3f1fc35e5033"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 사용해, 참고 사진의 빵집 분위기를 살린 세로형 드라마 스틸을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":195657,"cached_input_tokens":158976,"cache_write_input_tokens":0,"output_tokens":1690,"reasoning_output_tokens":521}}

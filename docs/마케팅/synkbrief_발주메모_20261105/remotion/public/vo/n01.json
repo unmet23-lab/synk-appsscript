@@ -1,0 +1,71 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n01",
+ "text": "시킨 건 달걀이었어요. 이 메모를, AI한테 맡겼거든요.",
+ "show": "시킨 건 달걀이었어요. 이 메모를, AI한테 맡겼거든요",
+ "dur": 3.63,
+ "words": [
+  {
+   "text": "시킨",
+   "start": 0.02,
+   "end": 0.221
+  },
+  {
+   "text": "건",
+   "start": 0.281,
+   "end": 0.361
+  },
+  {
+   "text": "달걀이었어요.",
+   "start": 0.421,
+   "end": 1.003
+  },
+  {
+   "text": "이",
+   "start": 1.564,
+   "end": 1.584
+  },
+  {
+   "text": "메모를,",
+   "start": 1.644,
+   "end": 2.026
+  },
+  {
+   "text": "AI한테",
+   "start": 2.386,
+   "end": 2.828
+  },
+  {
+   "text": "맡겼거든요.",
+   "start": 2.888,
+   "end": 3.63
+  }
+ ],
+ "source": {
+  "key": "4f8836939d8ade7d09414a18948d1c14",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1105,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 192
+ }
+}

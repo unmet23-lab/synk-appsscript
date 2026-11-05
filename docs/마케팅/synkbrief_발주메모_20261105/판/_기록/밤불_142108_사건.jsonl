@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1aa27-6490-7f03-b765-2c4e4c2c64d1"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"참고 사진의 빵집 주방을 바탕으로, 화면이 켜진 폰과 닫히는 문틈의 빛만 남은 조용한 밤 장면을 만들겠습니다. 이미지 생성 스킬을 사용합니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"완성했습니다."}}
+{"type":"turn.completed","usage":{"input_tokens":156389,"cached_input_tokens":138624,"cache_write_input_tokens":0,"output_tokens":1310,"reasoning_output_tokens":136}}

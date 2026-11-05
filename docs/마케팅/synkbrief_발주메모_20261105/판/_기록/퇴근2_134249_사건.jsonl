@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1aa04-4b06-7672-84fb-c07d70b1ab8e"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬을 사용해 참고 사진 속 제빵사의 얼굴과 옷차림을 유지한 밤의 빵집 장면을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":149459,"cached_input_tokens":134400,"cache_write_input_tokens":0,"output_tokens":1254,"reasoning_output_tokens":179}}

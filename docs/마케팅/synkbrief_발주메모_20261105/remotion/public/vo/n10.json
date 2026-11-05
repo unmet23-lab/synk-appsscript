@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n10",
+ "text": "달걀 대신, 콩나물 다섯 상자.",
+ "show": "달걀 대신, 콩나물 다섯 상자",
+ "dur": 1.944,
+ "words": [
+  {
+   "text": "달걀",
+   "start": 0.02,
+   "end": 0.343
+  },
+  {
+   "text": "대신,",
+   "start": 0.403,
+   "end": 0.706
+  },
+  {
+   "text": "콩나물",
+   "start": 0.827,
+   "end": 1.21
+  },
+  {
+   "text": "다섯",
+   "start": 1.271,
+   "end": 1.473
+  },
+  {
+   "text": "상자.",
+   "start": 1.553,
+   "end": 1.944
+  }
+ ],
+ "source": {
+  "key": "a2581ea3fcad9c66f86db8abf35d44d1",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1105,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 151
+ }
+}

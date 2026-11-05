@@ -1,0 +1,56 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n03",
+ "text": "아침, 달걀 들어오는 날.",
+ "show": "아침, 달걀 들어오는 날",
+ "dur": 1.445,
+ "words": [
+  {
+   "text": "아침,",
+   "start": 0.02,
+   "end": 0.304
+  },
+  {
+   "text": "달걀",
+   "start": 0.467,
+   "end": 0.73
+  },
+  {
+   "text": "들어오는",
+   "start": 0.791,
+   "end": 1.096
+  },
+  {
+   "text": "날.",
+   "start": 1.157,
+   "end": 1.445
+  }
+ ],
+ "source": {
+  "key": "d98bc2667df364b20277306b9b1fca19",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1105,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 132
+ }
+}

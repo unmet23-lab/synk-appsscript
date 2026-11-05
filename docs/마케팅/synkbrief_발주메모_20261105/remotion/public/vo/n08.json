@@ -1,0 +1,76 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n08",
+ "text": "열일곱 번 넣었는데, 달걀은 한 번도 안 나왔어요.",
+ "show": "열일곱 번 넣었는데, 달걀은 한 번도 안 나왔어요",
+ "dur": 2.493,
+ "words": [
+  {
+   "text": "열일곱",
+   "start": 0.03,
+   "end": 0.334
+  },
+  {
+   "text": "번",
+   "start": 0.372,
+   "end": 0.461
+  },
+  {
+   "text": "넣었는데,",
+   "start": 0.499,
+   "end": 0.867
+  },
+  {
+   "text": "달걀은",
+   "start": 1.121,
+   "end": 1.439
+  },
+  {
+   "text": "한",
+   "start": 1.477,
+   "end": 1.566
+  },
+  {
+   "text": "번도",
+   "start": 1.604,
+   "end": 1.781
+  },
+  {
+   "text": "안",
+   "start": 1.845,
+   "end": 1.896
+  },
+  {
+   "text": "나왔어요.",
+   "start": 1.946,
+   "end": 2.493
+  }
+ ],
+ "source": {
+  "key": "5996f4497d005274b382681f231cd191",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1105,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 162
+ }
+}

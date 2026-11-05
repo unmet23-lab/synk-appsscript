@@ -1,0 +1,91 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n06",
+ "text": "끝에 이걸 붙여요. 확실하지 않은 글자는, 추측하지 말고 물음표로 남겨 줘.",
+ "show": "끝에 이걸 붙여요. 확실하지 않은 글자는, 추측하지 말고 ?로 남겨 줘",
+ "dur": 4.78,
+ "words": [
+  {
+   "text": "끝에",
+   "start": 0.02,
+   "end": 0.261
+  },
+  {
+   "text": "이걸",
+   "start": 0.321,
+   "end": 0.462
+  },
+  {
+   "text": "붙여요.",
+   "start": 0.522,
+   "end": 0.843
+  },
+  {
+   "text": "확실하지",
+   "start": 1.585,
+   "end": 1.966
+  },
+  {
+   "text": "않은",
+   "start": 2.026,
+   "end": 2.166
+  },
+  {
+   "text": "글자는,",
+   "start": 2.226,
+   "end": 2.547
+  },
+  {
+   "text": "추측하지",
+   "start": 2.848,
+   "end": 3.249
+  },
+  {
+   "text": "말고",
+   "start": 3.309,
+   "end": 3.55
+  },
+  {
+   "text": "물음표로",
+   "start": 3.971,
+   "end": 4.332
+  },
+  {
+   "text": "남겨",
+   "start": 4.392,
+   "end": 4.593
+  },
+  {
+   "text": "줘.",
+   "start": 4.653,
+   "end": 4.78
+  }
+ ],
+ "source": {
+  "key": "79ce7b89d31fea286d5f2f62179a9b2a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1105,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 168
+ }
+}

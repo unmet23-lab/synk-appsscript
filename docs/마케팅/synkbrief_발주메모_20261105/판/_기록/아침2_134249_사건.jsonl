@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1aa04-4b42-7bf2-b22b-e9a172b2be5a"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬로 참고 사진 속 제빵사의 얼굴과 옷차림을 유지하면서, 푸른 새벽빛과 따뜻한 오븐 불빛이 어우러지는 장면을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":210996,"cached_input_tokens":193280,"cache_write_input_tokens":0,"output_tokens":1595,"reasoning_output_tokens":430}}

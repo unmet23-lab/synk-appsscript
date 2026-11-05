@@ -1,0 +1,76 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n04",
+ "text": "메모엔 달걀 다섯. 사람은 읽는 글자를, 콩나물로 읽었어요.",
+ "show": "메모엔 달걀 다섯. 사람은 읽는 글자를, 콩나물로 읽었어요",
+ "dur": 3.517,
+ "words": [
+  {
+   "text": "메모엔",
+   "start": 0.02,
+   "end": 0.335
+  },
+  {
+   "text": "달걀",
+   "start": 0.383,
+   "end": 0.651
+  },
+  {
+   "text": "다섯.",
+   "start": 0.699,
+   "end": 0.951
+  },
+  {
+   "text": "사람은",
+   "start": 1.362,
+   "end": 1.693
+  },
+  {
+   "text": "읽는",
+   "start": 1.741,
+   "end": 1.93
+  },
+  {
+   "text": "글자를,",
+   "start": 1.978,
+   "end": 2.357
+  },
+  {
+   "text": "콩나물로",
+   "start": 2.515,
+   "end": 2.925
+  },
+  {
+   "text": "읽었어요.",
+   "start": 2.972,
+   "end": 3.517
+  }
+ ],
+ "source": {
+  "key": "61b078bba376b114afdbef80029b4038",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1105,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 173
+ }
+}

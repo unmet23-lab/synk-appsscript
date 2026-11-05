@@ -1,0 +1,131 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1105,
+  "lufs": -17
+ },
+ "made": "2026-11-05T06:30:22.670Z",
+ "lines": [
+  {
+   "id": "n01",
+   "text": "시킨 건 달걀이었어요. 이 메모를, AI한테 맡겼거든요.",
+   "show": "시킨 건 달걀이었어요. 이 메모를, AI한테 맡겼거든요",
+   "scene": "메모 — 훅",
+   "dur": 3.63,
+   "syllablesPerSec": 5.51,
+   "src": "n01.wav",
+   "key": "4f8836939d8ade7d09414a18948d1c14",
+   "words": 7
+  },
+  {
+   "id": "n02",
+   "text": "표가 깔끔해서, 아래 작은 글은 안 읽고 보내고 퇴근.",
+   "show": "표가 깔끔해서, 아래 작은 글은 안 읽고 보내고 퇴근",
+   "scene": "표 — 깔끔",
+   "dur": 3.654,
+   "syllablesPerSec": 5.47,
+   "src": "n02.wav",
+   "key": "fcacf82a512c7d729e0e6dd5326eeb0f",
+   "words": 9
+  },
+  {
+   "id": "n03",
+   "text": "아침, 달걀 들어오는 날.",
+   "show": "아침, 달걀 들어오는 날",
+   "scene": "아침",
+   "dur": 1.445,
+   "syllablesPerSec": 6.23,
+   "src": "n03.wav",
+   "key": "d98bc2667df364b20277306b9b1fca19",
+   "words": 4
+  },
+  {
+   "id": "n10",
+   "text": "달걀 대신, 콩나물 다섯 상자.",
+   "show": "달걀 대신, 콩나물 다섯 상자",
+   "scene": "가운데 — 쏟아짐",
+   "dur": 1.944,
+   "syllablesPerSec": 5.66,
+   "src": "n10.wav",
+   "key": "a2581ea3fcad9c66f86db8abf35d44d1",
+   "words": 5
+  },
+  {
+   "id": "n04",
+   "text": "메모엔 달걀 다섯. 사람은 읽는 글자를, 콩나물로 읽었어요.",
+   "show": "메모엔 달걀 다섯. 사람은 읽는 글자를, 콩나물로 읽었어요",
+   "scene": "메모와 표",
+   "dur": 3.517,
+   "syllablesPerSec": 6.54,
+   "src": "n04.wav",
+   "key": "61b078bba376b114afdbef80029b4038",
+   "words": 8
+  },
+  {
+   "id": "n05",
+   "text": "같은 사진을 또 넣으니, 호박, 당근, 호두볼.",
+   "show": "같은 사진을 또 넣으니, 호박, 당근, 호두볼",
+   "scene": "또 넣기",
+   "dur": 2.89,
+   "syllablesPerSec": 5.54,
+   "src": "n05.wav",
+   "key": "b2f242f252816ce95b1249cedbf07a96",
+   "words": 7
+  },
+  {
+   "id": "n08",
+   "text": "열일곱 번 넣었는데, 달걀은 한 번도 안 나왔어요.",
+   "show": "열일곱 번 넣었는데, 달걀은 한 번도 안 나왔어요",
+   "scene": "열일곱 번",
+   "dur": 2.493,
+   "syllablesPerSec": 7.62,
+   "src": "n08.wav",
+   "key": "5996f4497d005274b382681f231cd191",
+   "words": 8
+  },
+  {
+   "id": "n06",
+   "text": "끝에 이걸 붙여요. 확실하지 않은 글자는, 추측하지 말고 물음표로 남겨 줘.",
+   "show": "끝에 이걸 붙여요. 확실하지 않은 글자는, 추측하지 말고 ?로 남겨 줘",
+   "scene": "요청문",
+   "dur": 4.78,
+   "syllablesPerSec": 6.07,
+   "src": "n06.wav",
+   "key": "79ce7b89d31fea286d5f2f62179a9b2a",
+   "words": 11
+  },
+  {
+   "id": "n07",
+   "text": "여섯 번 다, 그 칸에 물음표가 붙었어요.",
+   "show": "여섯 번 다, 그 칸에 물음표가 붙었어요",
+   "scene": "물음표 표",
+   "dur": 2.353,
+   "syllablesPerSec": 6.37,
+   "src": "n07.wav",
+   "key": "008859ffc0ac88712b47f399866360a6",
+   "words": 7
+  },
+  {
+   "id": "n09",
+   "text": "남은 콩나물은, 콩나물 소금빵이 됐고요.",
+   "show": "남은 콩나물은, 콩나물 소금빵이 됐고요",
+   "scene": "끝",
+   "dur": 2.221,
+   "syllablesPerSec": 7.2,
+   "src": "n09.wav",
+   "key": "3481ec84391fd78a2cebd9894ec08a8d",
+   "words": 5
+  }
+ ]
+}

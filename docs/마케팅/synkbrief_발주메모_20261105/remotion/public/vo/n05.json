@@ -1,0 +1,71 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n05",
+ "text": "같은 사진을 또 넣으니, 호박, 당근, 호두볼.",
+ "show": "같은 사진을 또 넣으니, 호박, 당근, 호두볼",
+ "dur": 2.89,
+ "words": [
+  {
+   "text": "같은",
+   "start": 0.05,
+   "end": 0.291
+  },
+  {
+   "text": "사진을",
+   "start": 0.351,
+   "end": 0.611
+  },
+  {
+   "text": "또",
+   "start": 0.671,
+   "end": 0.752
+  },
+  {
+   "text": "넣으니,",
+   "start": 0.812,
+   "end": 1.092
+  },
+  {
+   "text": "호박,",
+   "start": 1.353,
+   "end": 1.694
+  },
+  {
+   "text": "당근,",
+   "start": 1.814,
+   "end": 2.195
+  },
+  {
+   "text": "호두볼.",
+   "start": 2.395,
+   "end": 2.89
+  }
+ ],
+ "source": {
+  "key": "b2f242f252816ce95b1249cedbf07a96",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1105,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 162
+ }
+}

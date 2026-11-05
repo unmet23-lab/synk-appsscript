@@ -1,0 +1,81 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n02",
+ "text": "표가 깔끔해서, 아래 작은 글은 안 읽고 보내고 퇴근.",
+ "show": "표가 깔끔해서, 아래 작은 글은 안 읽고 보내고 퇴근",
+ "dur": 3.654,
+ "words": [
+  {
+   "text": "표가",
+   "start": 0.06,
+   "end": 0.261
+  },
+  {
+   "text": "깔끔해서,",
+   "start": 0.321,
+   "end": 0.822
+  },
+  {
+   "text": "아래",
+   "start": 1.163,
+   "end": 1.303
+  },
+  {
+   "text": "작은",
+   "start": 1.364,
+   "end": 1.624
+  },
+  {
+   "text": "글은",
+   "start": 1.684,
+   "end": 1.865
+  },
+  {
+   "text": "안",
+   "start": 1.925,
+   "end": 1.985
+  },
+  {
+   "text": "읽고",
+   "start": 2.086,
+   "end": 2.266
+  },
+  {
+   "text": "보내고",
+   "start": 2.607,
+   "end": 2.968
+  },
+  {
+   "text": "퇴근.",
+   "start": 3.289,
+   "end": 3.654
+  }
+ ],
+ "source": {
+  "key": "fcacf82a512c7d729e0e6dd5326eeb0f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1105,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 152
+ }
+}
