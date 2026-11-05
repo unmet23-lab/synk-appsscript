@@ -39,7 +39,9 @@ CUTS = {
     1: (("p1-01c",), 0),            # d(캔이 일찍 또렷)는 뚜껑이 느려 컷 끝에도 엠블럼이 반만 나오고 뚜껑 밑에 없던 홈이 생겨 안 쓴다 — c는 끝까지 조금 흐리지만 원본도 그렇다
     2: (("p1-02e", "p1-02d"), 0),   # d: 첫 · 끝 그림을 한 사진에서 잘라 카메라를 묶은 판(첫끝자르기.py). c는 다가감이 17.5%로 콘티 6.6%의 2.6배였다
     3: (("p1-03d", "p1-03c"), 0),   # d: 부제를 라벨대로 「오미톡 오미자 스파클링」. c는 시작 그림을 구울 때 낱말 순서가 바뀌었다
-    4: (("p1-04e", "p1-04d"), 0),   # e: 밝은 루비 + 잔기포 + 입구 거품. d: 원본처럼 좁고 맑은 줄기였지만 「와인 색 · 탄산이 아니다」. c는 넓은 리본이고 움직임이 원본의 2/3이었다
+    # h: 입구 전체에서 세차게 쏟아진다(흐름 초당 126 px, 원본 47). 처음 14장은 매끈하다가 출렁이기 시작해 그 뒤부터 쓴다.
+    # e는 유호님 11-05 「물 떨어지는데가 좀 부자연스럽거든」 — 줄기 옆 방울이 공중에 떠 있거나 위로 올라가고 입구가 비어 아래 턱에서만 얇게 나왔다. d · c는 젤리 · 리본
+    4: ((os.environ.get("P1_CUT4", "p1-04h"),), int(os.environ.get("P1_CUT4_FROM", "14"))),
     5: (("p1-05d", "p1-05c"), 0),   # d: 잔이 차오르고 줄기가 닿는 자리가 끓는다. c는 움직임이 원본의 1/4이었다
     6: (("p1-06e", "p1-06d"), 0),   # e: 짙은 파랑 + 네온 테두리. d: 첫 · 끝 그림으로 묶음. c는 카메라가 콘티와 반대로 가서 낱말표가 잘리고 작은 한글이 「지통」으로 깨졌다
 }
@@ -180,9 +182,9 @@ def render():
           "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", raw)
     tmp = os.path.join(OUT, "_소리붙임.mp4")
     C.run("ffmpeg", "-y", "-v", "error", "-i", raw, "-i", wav, "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "320k", "-shortest", tmp)
-    out = os.path.join(OUT, "오미톡_9x16.mp4")
+    out = os.path.join(OUT, os.environ.get("P1_NAME", "오미톡_9x16") + ".mp4")
     C.run("node", os.path.join(C.REPO, "tools", "음량마감.mjs"), tmp, out, "--리미터", "0.8", "--덮어쓰기")
-    C.run("ffmpeg", "-y", "-v", "error", "-i", out, "-vf", "scale=720:-2", "-c:v", "libx264", "-crf", "24", "-preset", "medium", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", os.path.join(OUT, "오미톡_9x16_폰.mp4"))
+    C.run("ffmpeg", "-y", "-v", "error", "-i", out, "-vf", "scale=720:-2", "-c:v", "libx264", "-crf", "24", "-preset", "medium", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", os.path.join(OUT, os.environ.get("P1_NAME", "오미톡_9x16") + "_폰.mp4"))
     C.run("ffmpeg", "-y", "-v", "error", "-i", out, "-vf", "fps=2,scale=200:-2,tile=8x4:padding=3", "-frames:v", "1", "-q:v", "4", os.path.join(OUT, "_반초.jpg"))
     print(out)
 
