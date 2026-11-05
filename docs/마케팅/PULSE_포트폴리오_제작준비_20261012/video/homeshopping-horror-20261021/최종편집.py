@@ -26,7 +26,10 @@ SFX = os.path.join(V, "remotion_v1-v3_워크트리사본", "public", "sfx")
 SHOTS = {s["n"]: s for s in json.load(open(os.path.join(V, "원본", "원본_샷.json"), encoding="utf-8"))}
 FPS = 24
 RATE = 48000
-ENDT = SHOTS[31]["f1"] / FPS
+EXTRA_END = 53   # 끝 컷만 원본보다 2.2초 — 원본은 머리글로 닫고 우리는 도장 · 브랜드를 읽을 시간이 필요하다(11-05 크몽 세션 지적 「끝 3초가 절규보다 약함」)
+ENDT = (SHOTS[31]["f1"] + EXTRA_END) / FPS
+STAMP_AT = SHOTS[31]["f0"] / FPS + 1.08   # 강도가 말없이 허리 숙여 인사하고, 가장 깊이 숙인 순간(hs-S31c 36장)에 「매진 감사합니다」 쾅 — HS.tsx와 같은 값. 인사 첫머리에 찍으니 인사가 도장 뒤 어둠에 묻혔다(11-05 Fable)
+BRAND_AT = STAMP_AT + 3 * 0.4925   # 도장을 읽는 곡의 세 박 — 곡의 착지에 강도가 다시 서서 렌즈를 본다(72장). 인사 도중에 로고가 들어오면 결을 밟는다(11-05 Fable)
 
 # 컷 번호 → (받은 판, 그 판에서 시작하는 초). 대사 컷은 말 시작이 원본 받아쓰기 시각에 오게 골랐다. 카드는 판이 None(영상/v4/카드/C<컷>.mp4).
 CUTS = {
@@ -60,7 +63,7 @@ CUTS = {
     28: ("hs-S28-B", 0.60),
     29: (None, 0),
     30: ("hs-S30-B", 0.00),
-    31: ("hs-S31", 0.30),
+    31: ("hs-S31c", 0.42),   # 꾸벅 인사 판(11-05) — 10장부터면 도장이 찍히는 20장에 고개를 숙이기 시작하고, 곡의 착지 뒤 일어나 72장부터 상자를 든 채 렌즈를 본다. 옛 판 hs-S31은 가만히 서 있어 끝이 맹했다(아르곤 두 번), hs-S31b는 2초 넘게 숙여 상자가 빠지고 어두운 덩어리로 보였다
 }
 
 
@@ -81,7 +84,7 @@ def picture():
     with open(lst, "w", encoding="utf-8") as f:
         for n, (cid, t) in CUTS.items():
             s = SHOTS[n]
-            k = s["f1"] - s["f0"]
+            k = s["f1"] - s["f0"] + (EXTRA_END if n == 31 else 0)
             src = os.path.join(CARD, f"C{n}.mp4") if cid is None else os.path.join(DAY, cid + ".mp4")
             a = round(t * FPS)
             have = probe_frames(src)
@@ -131,7 +134,7 @@ EVENTS = [
     (57.46, "hs-S28-B", 0.60, 3.58, 0),     # C 「안 돼, 내 코케트 떡볶이!」
     (61.30, "hs-말-통2", 2.58, 3.18, 0),    # 「안 돼!」
     (62.50, "hs-말-통2", 4.44, 5.13, 0),    # 「안 돼!」
-    (64.42, "hs-말-통2", 6.09, 6.52, 0),    # 「그거 내」 → #30의 「저녁인데!」로 이어짐. 63.99에 두면 그 사이 0.5초가 −38 dB로 비어 말이 끊겨 들렸다(11-04 아르곤 · 수치) — #30 첫머리는 휙 도는 흐림이라 입이 안 보인다
+    (64.42, "hs-말-통2", 6.09, 6.58, 0),    # 「그거 내」 — 6.52에서 자르면 「내」가 −8 dB 도중에 잘리고 0.08초 비어 「저- 저녁인데」처럼 들렸다(11-05 아르곤 네 번, 수치) · → #30의 「저녁인데!」로 이어짐. 63.99에 두면 그 사이 0.5초가 −38 dB로 비어 말이 끊겨 들렸다(11-04 아르곤 · 수치) — #30 첫머리는 휙 도는 흐림이라 입이 안 보인다
     (64.42, "hs-S30-B", 0.00, 6.38, 0),     # C 「…저녁인데!」 · 「그냥 죽여!」
     (66.75, "hs-S26-B", 1.51, 2.27, -4),    # 고개 떨구고 흐느낌(판 소리가 비는 자리)
     (67.85, "hs-S26-B", 2.48, 2.82, -4),
@@ -139,7 +142,16 @@ EVENTS = [
 MUSIC = {"곡": BGM, "시작": 0.0, "dB": -7, "구간": [(SHOTS[n]["f0"] / FPS, SHOTS[n]["f1"] / FPS) for n in (11, 21, 27, 29)]}
 ROOM = (os.path.join(AMB, "candle.wav"), -7)   # 공포 구간 −45~−50 dB 정적(원본 실측)
 HITS = [(15.80, "ding1.wav", -14), (33.00, "ding1.wav", -14), (45.30, "thud.wav", -20), (62.10, "thud.wav", -8), (62.70, "ding2.wav", -10),
-        (70.87, "ding1.wav", 0)]   # 끝 로고에 앞 카드들과 같은 딩 한 번 — 「그냥 죽여!」 뒤 정적만으로는 끝의 소리 한 방이 없었다(11-04 아르곤), 뒤는 다시 정적
+        (STAMP_AT, "thud.wav", -2), (BRAND_AT, "thud.wav", -8)]   # 끝 — 도장 쾅에 카드 음악이 돌아오고 브랜드에 딩. 정적만으로는 끝의 소리 한 방이 없었다(11-04 아르곤 · 11-05 −46 dB로 힘이 빠짐)
+
+
+def ring(x, seconds, wet_db=-6):
+    # 곡 끝 토막의 잔향만 돌려준다 — 지수로 줄어드는 잡음과 합성곱(그 시간에 −60 dB)
+    n = int(seconds * RATE)
+    ir = np.random.default_rng(12).standard_normal(n) * np.exp(-np.arange(n) / RATE / (seconds / 6.9))
+    size = n + len(x)
+    wet = np.stack([np.fft.irfft(np.fft.rfft(x[:, c], size) * np.fft.rfft(ir, size), size) for c in range(x.shape[1])], axis=1).astype(np.float32)
+    return wet * (np.max(np.abs(x)) / (np.max(np.abs(wet)) or 1) * 10 ** (wet_db / 20))
 
 
 def mix_audio():
@@ -152,6 +164,7 @@ def mix_audio():
     gate = np.ones(len(m.a), np.float32)
     for a, b in MUSIC["구간"]:
         gate[int(a * RATE):int(b * RATE)] = 0
+    gate[int(STAMP_AT * RATE):] = 0   # 끝 곡 아래 방 소리는 뺀다 — 잔향이 맺힌 뒤 44 Hz 울렁임만 남았다(11-05 수치)
     m.a += np.stack([room * gate, room * gate], axis=1)
     # 카드 음악 — 하드컷에서 뚝 끊긴다(원본 실측), 곡은 카드마다 이어진다
     bgm = load_stereo(MUSIC["곡"])
@@ -160,9 +173,29 @@ def mix_audio():
         n = int((b - a) * RATE)
         m.put(a, bgm[pos:pos + n], MUSIC["dB"], fade=0.004)
         pos += n
+    # 끝 — 도장과 함께 홈쇼핑 곡이 돌아와 강도까지 광고 화면이 된다. 곡 자기 맺음(맨 끝 음)을 끝 컷에 맞춘다
+    # 카드 크기(말 없이 −32 dB)로 두니 절규(−13) 뒤에 들리지 않아 8 dB 크게 — 말이 없는 끝이라 곡이 주인공이다(11-05 수치).
+    # 이 곡 파일에는 맺는 끝이 없다(박 격자 실측 — 파일 끝이 다음 마디 첫 박, 그 앞 0.5초는 −30 dB 1 kHz 울림만) 그래서 곡 끝을 그대로 쓰니 연주 도중에 끊겼다(11-05 아르곤 두 번).
+    # 곡에서 앞 대비 크게 착지하는 26.88초 박(121.8 BPM 격자)을 브랜드에 맞춰 거기서 연주를 멈추고, 그 한 방의 잔향으로 끝 컷 끝까지 맺는다
+    landing = 26.88
+    seg = bgm[int((landing - (BRAND_AT - STAMP_AT)) * RATE):int((landing + 0.30) * RATE)].copy()
+    seg[-int(0.1 * RATE):] *= np.linspace(1, 0, int(0.1 * RATE))[:, None]
+    wet = ring(bgm[int(landing * RATE):int((landing + 0.30) * RATE)], ENDT - BRAND_AT + 1.0, wet_db=-4)
+    out = np.zeros((int((ENDT - STAMP_AT) * RATE), 2), np.float32)
+    out[:len(seg)] = seg
+    i = int((BRAND_AT - STAMP_AT) * RATE)
+    k = min(len(out) - i, len(wet))
+    out[i:i + k] += wet[:k]
+    m.put(STAMP_AT, out, MUSIC["dB"] + 8, fade=0.004, fade_out=0.25)
     for t, name, db in HITS:
         m.put(t, load(os.path.join(SFX, name)), db)
-    m.finish(os.path.join(OUT, "소리.wav"), boost_db=-2.8)   # 스테레오 기준 원본 크기(−14.6 LUFS) 안팎
+    # 브랜드 한 방 — 모두의코스와 같은 알림음에 꼬리를 단다. 꼬리 없이 +6 dB로는 곡의 착지에 묻혀 「소리 한 방이 없다」로 들렸다(11-05 아르곤 세 번)
+    d = load(os.path.join(SFX, "ding1.wav"))
+    d = np.stack([d, d], axis=1) if d.ndim == 1 else d
+    w = ring(d, 1.25, wet_db=-9)
+    w[:len(d)] += d
+    m.put(BRAND_AT + 0.04, w, 11)
+    m.finish(os.path.join(OUT, "소리.wav"), boost_db=1.1)   # 스테레오 기준 원본 크기(−14.6 LUFS) 안팎 — 브랜드 알림음이 합 봉우리라 올린 만큼 한계기가 잡는다
 
 
 # 화면 글 — 11-03 밤 유호님 「세 편에 넣기」: 흰 가운데 머리글 · 로고 덧씌우기를 버리고, 자막시안_20261103/remotion의 섞은 판(hs16 · hs9)이 굽는다
@@ -172,7 +205,27 @@ CAP = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "자막시�
 PUB = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/최종/자막시안_public/hs"
 
 
+def stamp_png():
+    # 끝 도장 — 카드 3 「특별 할인」 도장과 같은 글꼴 · 테(카드움직임_v4.py card3), 어두운 벽에서 읽히게 밝은 빨강.
+    # 글은 「매진 감사합니다」 — 방송 자막의 그 말을 강도 앞에 찍어 다 털린 것이 곧 완판이 되게 한다. 「매진 임박」은 앞 절규와 이어지지 않아 사족처럼 읽혔다(11-05 아르곤)
+    from PIL import Image, ImageDraw, ImageFont
+    S = 2
+    w, h = 800 * S, 372 * S
+    im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    red = (255, 58, 58, 255)
+    d.rounded_rectangle([7 * S, 7 * S, w - 7 * S, h - 7 * S], radius=14 * S, outline=red, width=14 * S)
+    y = 34 * S
+    for text, size in (("매진", 186), ("감사합니다", 122)):
+        f = ImageFont.truetype(os.path.join(V, "fonts", "BlackHanSans-Regular.ttf"), size * S)
+        l, tp, r, b = d.textbbox((0, 0), text, font=f)
+        d.text(((w - (r - l)) / 2 - l, y - tp), text, font=f, fill=red)
+        y += (b - tp) + 26 * S
+    im.save(os.path.join(PUB, "stamp.png"))
+
+
 def render():
+    stamp_png()
     for src, dst in ((os.path.join(OUT, "화면.mp4"), "picture.mp4"), (os.path.join(OUT, "소리.wav"), "sound.wav")):
         if not os.path.exists(os.path.join(PUB, dst)) or md5(src) != md5(os.path.join(PUB, dst)):
             shutil.copyfile(src, os.path.join(PUB, dst))

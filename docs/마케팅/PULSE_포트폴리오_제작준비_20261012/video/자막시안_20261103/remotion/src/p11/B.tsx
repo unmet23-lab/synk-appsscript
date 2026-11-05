@@ -8,7 +8,7 @@ import { EN, KO } from '../lib/fonts';
 import { life, pop, ramp } from '../lib/motion';
 import { LINES } from './timing';
 
-export const P11B_FRAMES = 574;
+export const P11B_FRAMES = 632;   // 물 컷 574장 + 우주 48장 + 검정 10장(11-05 유호님 「집게 컷으로」)
 const FPS = 24;
 const INK = '#0E1320', PAPER = '#F6F3EA', LEMON = '#FFD43B', NAVY = '#17224D', ALIEN = '#B8FF3C';
 const abs = (x: number, y: number, w?: number, h?: number): React.CSSProperties => ({ position: 'absolute', left: x, top: y, width: w, height: h });
@@ -50,7 +50,9 @@ const CUT_GLAM = 371 / 24;  // → 샴푸 광고 · 떠오름
 const CUT_DROP = 453 / 24;  // → 물 · 떨어짐
 const BEAM_ON = w(7, 0) - 0.04;   // 띠가 열리고 납치 빔이 켜진다
 const BEAM_OFF = CUT_DROP + 30 / 24;   // 빔이 꺼진다 — 그래서 p11-b11 31장부터 떨어진다
-const THE_END = P11B_FRAMES / FPS;
+const SPACE_AT = 574 / FPS;   // → 궤도 집게 컷
+const BLACK_AT = 622 / FPS;   // → 검정으로 끝. 로고를 다시 넣지 않는다
+const SPACE_MISS = 0.46;   // 집게가 놓치는 자리(우주 컷 머리에서 초, p11-s1 32장 = 21장부터 11장 — B급소리.py와 같은 값)
 
 // 큰 낱말 결 — 고른 테두리를 쓰지 않는다(유호님 11-03 「흰 굵은 글자 + 검은 테」는 촌스럽다, 아르곤 11-04 「무료 앱 프리셋」). 낱말마다 뜻대로 그린다
 const big = (size: number, color: string): React.CSSProperties => ({ fontFamily: KO, fontWeight: 900, fontSize: size, lineHeight: 1, letterSpacing: '-0.045em', color });
@@ -117,7 +119,8 @@ const HUD: [number, number, string][] = [
   [CUT_CLAW + 0.04, w(5, 5), '회수 장치 가동'],
   [BEAM_ON, BEAM_OFF, '귀환 빔 작동 중'],
   [BEAM_OFF, w(8, 3) + 1.2, '신호 끊김'],
-  [21.95, THE_END, '수면 착륙 성공'],
+  [21.95, SPACE_AT, '수면 착륙 성공'],
+  [SPACE_AT + SPACE_MISS, BLACK_AT, '궤도 부력 정상'],
 ];
 const Hud: React.FC<{ t: number }> = ({ t }) => {
   const cur = HUD.find(([a, b]) => t >= a && t < b);
@@ -304,7 +307,7 @@ const Product: React.FC<{ t: number }> = ({ t }) => {   // 첨벙댕 구명조�
   );
 };
 
-const Tough: React.FC<{ t: number }> = ({ t }) => {   // 튼튼 — 쇳덩이 글자가 조끼 위에 떨어져 불꽃이 튀고 튕긴다. 조끼도 개도 꿈쩍 안 한다
+const Tough: React.FC<{ t: number }> = ({ t }) => {   // 튼튼 — 딱지가 조끼 위에 쿵 떨어져 불꽃이 튀고 튕긴다. 조끼도 개도 꿈쩍 안 한다
   const a = w(4, 2), b = w(5, 0);
   if (t < a || t >= b) return null;
   const land = a + 0.1, k = t - land;
@@ -313,8 +316,6 @@ const Tough: React.FC<{ t: number }> = ({ t }) => {   // 튼튼 — 쇳덩이 �
   else if (k < 0.26) { const u = k / 0.26; y = -120 * 4 * u * (1 - u); rot = 2 + Math.sin(u * Math.PI) * 5; }
   else if (k < 0.42) { const u = (k - 0.26) / 0.16; y = -30 * 4 * u * (1 - u); rot = 2 - Math.sin(u * Math.PI) * 2; }
   const [sx, sy] = shake(t, land, 30, 0.35);
-  const base: React.CSSProperties = { fontFamily: KO, fontWeight: 900, fontSize: 270, lineHeight: 1, letterSpacing: '-0.03em' };
-  const depth = Array.from({ length: 16 }, (_, i) => `${i + 1}px ${i + 1}px 0 ${i < 12 ? '#3D4753' : '#1F2730'}`).join(',');
   const sparks = k >= 0 && k < 0.38 ? [[600, 706], [790, 712], [985, 704]].flatMap(([x0, y0], g) => Array.from({ length: 7 }, (_, i) => {
     const ang = -Math.PI * (0.12 + 0.76 * ((i + g * 0.37) / 6.4)), v = 620 + ((i * 53 + g * 29) % 260);
     const at = (u: number) => [x0 + Math.cos(ang) * v * u, y0 + Math.sin(ang) * v * u + 1500 * u * u];
@@ -325,10 +326,7 @@ const Tough: React.FC<{ t: number }> = ({ t }) => {   // 튼튼 — 쇳덩이 �
     <>
       <svg width={1080} height={1920} style={{ position: 'absolute', left: 0, top: 0, zIndex: 20 }}>{sparks}</svg>
       <div style={{ ...abs(0, 430 + y, 1040), zIndex: 21, textAlign: 'right', transform: `translate(${sx}px,${sy}px) rotate(${rot}deg)`, transformOrigin: '780px 270px' }}>
-        <span style={{ position: 'relative', display: 'inline-block' }}>
-          <span style={{ ...base, color: '#3D4753', textShadow: `${depth}, 22px 28px 26px #0E132080` }}>튼튼</span>
-          <span style={{ ...base, position: 'absolute', left: 0, top: 0, color: 'transparent', backgroundImage: 'linear-gradient(180deg,#F5F7FA 0%,#C2CAD3 38%,#6F7A87 50%,#DDE3E9 56%,#8A95A3 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text' }}>튼튼</span>
-        </span>
+        <span style={{ display: 'inline-block', ...big(226, INK), background: LEMON, padding: '20px 48px 30px', borderRadius: 28, boxShadow: `12px 16px 0 ${INK}` }}>튼튼</span>{/* 깜짝!과 같은 딱지 — 은색 입체 글자는 편에서 혼자 결이 달라 「옛날 예능 자막」으로 읽혔다(11-05 맹검 둘, 점검표 16번) */}
       </div>
     </>
   );
@@ -416,9 +414,9 @@ const AlienQ: React.FC<{ t: number }> = ({ t }) => {   // 외계인? — 뜬 발
 
 const Splash: React.FC<{ t: number }> = ({ t }) => {   // 첨벙댕 — 말 그대로 첨벙, 글자마다 물이 튀고 차올라 출렁인다. 판을 깔지 않는다
   const a = w(8, 3);
-  if (t < a) return null;
+  if (t < a || t >= SPACE_AT) return null;
   const at = [a, a + 0.27, a + 0.54];
-  const tag = a + 1.36, joke = a + 2.2;
+  const tag = a + 1.36, joke = a + 1.91;   // 22.30 — Kevin 끝 줄 「우주」
   const q = ramp(t, tag, 0.3), r = ramp(t, joke, 0.3);
   const [sx, sy] = shake(t, a, 24, 0.5);
   const W = 268, H = 330, FS = 300;
@@ -490,17 +488,16 @@ const Beam: React.FC<{ t: number }> = ({ t }) => {   // 천장에서 내려오�
 
 const GOG = [[84, 655, 867], [90, 674, 875], [96, 671, 860], [102, 654, 851], [108, 637, 865], [114, 626, 869], [120, 621, 875]];   // p11-b11 장, 주황 테 중심
 const LensGlow: React.FC<{ t: number }> = ({ t }) => {   // 끝 한 방 — 물에 뜬 무표정한 개의 고글이 초록으로 켜진다
-  const a = 22.85;
-  if (t < a) return null;
-  const [gx, gy] = lerpTable(GOG, (t - CUT_DROP) * FPS);
+  const a = 22.30;   // Kevin 「우주」에서 켜진다
+  if (t < a || t >= BLACK_AT) return null;
   const on = ramp(t, a, 0.12, (x) => x) * (0.84 + 0.16 * Math.sin(t * 22));
-  return (
-    <>
-      {[[-126, 30], [98, 25]].map(([dx, dy], i) => (
-        <div key={i} style={{ ...abs(gx + dx - 135, gy + dy - 110, 270, 220), borderRadius: '50%', opacity: on, mixBlendMode: 'screen', background: `radial-gradient(closest-side, #F4FFD0 0%, ${ALIEN} 26%, ${ALIEN}66 52%, ${ALIEN}00 100%)` }} />
-      ))}
-    </>
+  const glow = (x: number, y: number, w: number, h: number, i: number) => (
+    <div key={i} style={{ ...abs(x - w / 2, y - h / 2, w, h), borderRadius: '50%', opacity: on, mixBlendMode: 'screen', background: `radial-gradient(closest-side, #F4FFD0 0%, ${ALIEN} 26%, ${ALIEN}66 52%, ${ALIEN}00 100%)` }} />
   );
+  // 우주에서도 켜진 채 — 물에서 켜진 초록이 우주 판에서 파랑으로 돌아가 「가장 큰 불일치」였다(11-05 Fable). p11-s1 판의 개는 제자리라 렌즈 자리를 한 번 잰 값으로 둔다
+  if (t >= SPACE_AT) return <>{[[805, 996], [918, 1001]].map(([x, y], i) => glow(x, y, 150, 120, i))}</>;
+  const [gx, gy] = lerpTable(GOG, (t - CUT_DROP) * FPS);
+  return <>{[[-126, 30], [98, 25]].map(([dx, dy], i) => glow(gx + dx, gy + dy, 270, 220, i))}</>;
 };
 
 // ── 카메라(판 전체를 움직인다)
@@ -560,9 +557,10 @@ export const P11B: React.FC = () => {
         return <div style={{ ...abs(72, t >= CUT_CLAW && t < CUT_GLAM ? 1696 : l === LINES[7] ? 1716 : 1540, 936), zIndex: 25, textAlign: 'center', opacity: o }}><span style={{ fontFamily: KO, fontWeight: 650, fontSize: 52, lineHeight: 1.32, color: PAPER, background: '#0E1320e0', boxDecorationBreak: 'clone', WebkitBoxDecorationBreak: 'clone', padding: '10px 22px', borderRadius: 10 }}>{ws.map((x, i) => <React.Fragment key={i}>{i === cut ? <br /> : null}<span style={{ color: x.key && t >= x.t ? LEMON : PAPER }}>{i === ws.length - 1 ? noDot(x.w).replace(/,$/, '') : noDot(x.w)}</span>{i < ws.length - 1 && i + 1 !== cut ? ' ' : ''}</React.Fragment>)}</span></div>;
       })()}
       {l === LINES[6] && <div style={{ ...abs(0, 1716, 1080), zIndex: 25, textAlign: 'center', opacity: life(t, CUT_GLAM + 0.2, l.end + 0.1, 0.1, 0.1), fontFamily: KO, fontWeight: 400, fontSize: 48, color: PAPER, letterSpacing: '0.01em' }}>{l.words.map((x) => noDot(x.w)).join(' ')}</div>}
-      <div style={{ ...abs(0, 1866, 1080), zIndex: 30, textAlign: 'center', fontFamily: KO, fontWeight: 500, fontSize: 24, color: '#ffffffeb' }}>
+      {t < BLACK_AT && <div style={{ ...abs(0, 1866, 1080), zIndex: 30, textAlign: 'center', fontFamily: KO, fontWeight: 500, fontSize: 24, color: '#ffffffeb' }}>
         <span style={{ background: '#0E132073', padding: '4px 14px 5px', borderRadius: 8 }}>가상 브랜드 · AI로 만든 가상 모델 · 음성</span>
-      </div>
+      </div>}
+      {t >= BLACK_AT && <div style={{ ...abs(0, 0, 1080, 1920), zIndex: 60, background: '#000' }} />}
       <Audio src={staticFile('p11/sound_b.wav')} />
     </AbsoluteFill>
   );

@@ -149,7 +149,7 @@ def sound():
         m.put(0, song[:int(ZOOM * C.RATE)], -6, fade_out=0.015)
         # 끝은 곡 자기 맺음(맨 끝 음이 잦아드는 자리)을 끝 판에 맞춘다 — 곡 중간 토막을 페이드로 자르자 마지막 0.1초에 −20 dB에서 끊겼다
         outro = full[-int((END - T[16]) * C.RATE) - 1:]
-        m.put(T[16], outro, -2.5, fade_out=1.5)
+        m.put(T[16], outro, -5.5, fade_out=1.5)   # 숫자 틱 · 딩이 들릴 자리 — −2.5면 곡에 묻혀 「효과음이 없다」로 들렸다(11-05 크몽 세션 아르곤)
     # 장소마다 현장음 — 컷 경계에서 끊김(하드컷), 음악 밑에 깐다
     bed = -22 if have_song else -16
     places = [
@@ -187,13 +187,22 @@ def sound():
     walla = os.path.join(SON, "Sonik Sound Library - Spanish Wallas", "CRWDWalla_Dinner Party Crowd in Terrace, Walla, Toast with Pomada, Mixed Group of Adults, Men and Women, Spanish, Catalan Language, Menorcan Language-Atmos_KSL_KS014.wav")
     for path, start, db in ((walla, 15, bed), (camp, 40, bed + 8)):
         m.put(T[15], amb(path, start, ZOOM - T[15]), db, fade=0.004)
-        m.put(ZOOM, amb(path, start + ZOOM - T[15], T[16] - ZOOM), db + 13, fade=0.004)
+    # 폭로 뒤 2초는 불판 소리만 — 웅성을 같이 올리니 「야하…」 「음~」처럼 뭉개진 말로 들렸다(11-05 크몽 세션 아르곤 두 판 연속, 받아쓰기에 뜻 있는 말 없음).
+    # 지글거리는 18초 자리(파일 RMS −38 dB · 무게중심 4 kHz, 40초 자리는 −44 dB에 낮은 소리라 빼면 거의 무음이었다). 끝 컷도 같은 식당이라 곡 밑으로 이어 간다
+    sizzle = amb(camp, 18, END - ZOOM)
+    # 숯 튀는 소리가 앞뒤보다 30 dB 높아(34.9초 RMS −30에 봉우리 +1 dBFS) 마감의 한계기를 뚫었다 → 봉우리만 부드럽게 눌러(RMS의 3.5배, 약 11 dB) 지글거림은 고르게 둔다
+    th = 3.5 * float(np.sqrt(np.mean(sizzle ** 2)))
+    sizzle = lowpass(th * np.tanh(sizzle / th), 7500)   # 8 kHz 위를 깎아 고기 굽는 소리로 — 그대로면 화이트 노이즈처럼 치직거린다(11-05 아르곤)
+    st = np.arange(len(sizzle)) / C.RATE + ZOOM
+    sizzle = sizzle * (10 ** (np.interp(st, [ZOOM, T[16] - 0.08, T[16] + 0.25, END - 1.2, END], [7, 7, -3, -3, -30]) / 20))[:, None].astype(np.float32)
+    m.put(ZOOM, sizzle, 0, fade=0.004)
     # 16 끝 휙
     m.put(T[16] - 0.12, C.load(os.path.join(FAIR, "Low Whoosh x2.wav"))[:int(0.5 * C.RATE)], 3, fade_out=0.15)   # 파일 자체가 작아(RMS −27) −10이면 곡 꼬리에 묻혔다(Fable P2)
     # 브랜드 카드에 앱 알림 같은 한 방 — 처음엔 끝 글이 잦아들기만 해 소리 사건이 없었다(Fable P2, 재확인에서 −10은 겨우 보여 −4)
-    m.put(BRAND_AT, ring(C.load(DING)), -2)   # 꼬리를 달아 끝 판 뒤로 맺힌다(11-04 — 곡 토막이 끝에서 끊긴다는 지적)
     # 속사포 조각은 합 봉우리의 20%(−14 dB)에 봉우리를 맞춘다 — 마감의 정규화 · +1 dB 뒤 −7 dBFS 안팎(40%는 한계기 천장 −1까지 갔다)
     pk = float(np.max(np.abs(m.a)))
+    # 브랜드에 앱 알림 같은 한 방 — pk를 잰 뒤에 넣는다. 앞뒤보다 4 dB뿐이라 약했다(11-05 수치). 꼬리를 달아 끝 판 뒤로 맺힌다(11-04 — 곡 토막이 끝에서 끊긴다는 지적)
+    m.put(BRAND_AT, ring(C.load(DING)), 0)
     for t, x, fo in hits:
         m.put(t, x * (0.2 * pk / (float(np.max(np.abs(x))) or 1.0)), 0, fade=0.002, fade_out=fo)
     # 폭로 한 방 — 코드 임팩트(차오름 뒤 0.86초에 터짐)에 붐으로 무게, 툭으로 앞머리를 세운다(폰 스피커엔 붐이 안 들려 임팩트 · 툭이 몫을 한다)
@@ -208,11 +217,11 @@ def sound():
     x = C.load(os.path.join(SFX, "tick.wav"))
     for k in range(15):
         y = pitched(x, 1 + k * 0.07)
-        m.put(T[16] + 0.1 + k * 0.055, y * ((0.2 if k == 14 else 0.1) * pk / float(np.max(np.abs(y)))), 0, fade=0.001)
+        m.put(T[16] + 0.1 + k * 0.055, y * ((0.32 if k == 14 else 0.17) * pk / float(np.max(np.abs(y)))), 0, fade=0.001)   # 0.2 · 0.1이면 곡에 묻혀 「숫자가 오를 때 효과음이 없다」로 들렸다(11-05 크몽 세션 아르곤)
     # 딩에 무게 — 딩만으로는 끝의 한 방으로 안 들렸다(11-04 아르곤 「소리 한 방이 없다」). 폰 스피커에도 남게 툭을 깐다
     x = C.load(os.path.join(SFX, "thud.wav"))
-    m.put(BRAND_AT, x * (0.32 * pk / float(np.max(np.abs(x)))), 0, fade=0.001, fade_out=0.25)
-    m.finish(os.path.join(OUT, "소리.wav"), boost_db=3.2)   # 휙 봉우리에 맞춰 줄어든 만큼 올려 −14 LUFS 안팎(한계기가 봉우리를 잡음)
+    m.put(BRAND_AT, x * (0.42 * pk / float(np.max(np.abs(x)))), 0, fade=0.001, fade_out=0.25)
+    m.finish(os.path.join(OUT, "소리.wav"), boost_db=3.9)   # 합 봉우리(폭로 한 방)에 맞춰 줄어든 만큼 올려 −14 LUFS 안팎, 한계기가 봉우리를 잡는다. 숯 튀는 소리를 누르기 전엔 그 소리가 합 봉우리라 −18.7까지 작아져 마감이 못 맞췄다(11-05)
 
 
 def render(mint=False):
@@ -223,7 +232,7 @@ def render(mint=False):
         if C.md5(src) != C.md5(os.path.join(PUB, to)):
             shutil.copyfile(src, os.path.join(PUB, to))
     out, raw = os.path.join(OUT, name + ".mp4"), os.path.join(OUT, "_렌더.mp4")
-    C.run(shutil.which("npx"), "remotion", "render", "src/index.ts", comp, raw, "--concurrency=4", "--log=error", cwd=os.path.join(CAP, "remotion"))
+    C.run(shutil.which("npx"), "remotion", "render", "src/index.ts", comp, raw, "--concurrency=3", "--log=error", cwd=os.path.join(CAP, "remotion"))
     C.run("node", os.path.join(C.REPO, "tools", "음량마감.mjs"), raw, out, "--목표", "-14", "--덮어쓰기")   # 소리 AAC 320k 이상(영상사전검사)
     C.run("ffmpeg", "-y", "-v", "error", "-i", out, "-vf", "scale=720:-2", "-c:v", "libx264", "-crf", "24", "-preset", "medium", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", os.path.join(OUT, name + "_폰.mp4"))
     if not mint:

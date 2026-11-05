@@ -1,0 +1,30 @@
+[
+ {
+  "id": "hs-C27b",
+  "시작그림": "빈 방(아래 손상자 그림에서 GPT 이미지로 손 · 상자를 지움)",
+  "끝그림": "손상자",
+  "초": 4,
+  "해상도": "720p",
+  "지시문": "Start exactly from the first frame and end exactly on the last frame: same dark living room, same dim warm candle light. ONE CONTINUOUS SHOT, landscape, locked-off camera, no cuts.\nACTION: For the first second the room is empty and nothing moves. Then a bare forearm rises quickly from below the bottom edge of the frame, palm up, carrying the ribbon-tied food container, and stops exactly where it is in the last frame. It stays there with a tiny natural hand tremble while the ribbon tails sway slightly. The container keeps the same shape the whole time.\nLOOK: photorealistic, same light and colors; no text, no logos, no face, no other people."
+ },
+ {
+  "id": "hs-C29b",
+  "시작그림": "손상자 — 블렌더 합성 카드에 #31 상자 크롭을 참고로 GPT 이미지 편집",
+  "끝그림": null,
+  "초": 5,
+  "해상도": "720p",
+  "지시문": "Start exactly from the first frame and keep it: same dark living room, same forearm and hand, same ribbon-tied food container with the white lid, the mint clip and the red sauce. ONE CONTINUOUS SHOT, landscape, locked-off camera, no cuts.\nACTION: The hand keeps holding the container still in the same place, with only a tiny natural hand tremble. The cream ribbon tails sway very slightly and the candle flame flickers. Nothing else moves. The container never changes shape and the food inside stays the same.\nLOOK: photorealistic, same dim warm light and colors; no text, no logos, no face, no other people."
+ },
+ {
+  "id": "hs-S31b",
+  "시작그림": "옛 끝 판 hs-S31의 8번째 장",
+  "초": 5,
+  "해상도": "Start exactly from the first frame and keep it: same room, same low camera angle, same dim warm light. ONE CONTINUOUS SHOT, landscape, locked-off camera, no cuts.\nACTION: The masked man in the black balaclava stands still for half a second, staring straight into the lens, holding the ribbon-tied food container up by its long ribbon in his raised hand. Then he bows politely from the waist toward the camera, one deep, slow, formal Korean thank-you bow, back straight, his free hand flat on his stomach, exactly like a TV shopping host thanking viewers. He holds the bow for a moment, then slowly straightens up and stares into the lens again, completely deadpan. The container hangs from the ribbon, swings slightly and never changes shape. The food inside stays the same.\nLOOK: photorealistic, same light and colors as the first frame; the balaclava stays on the whole time; no text, no logos, no other people."
+ },
+ {
+  "id": "hs-S31c",
+  "시작그림": "옛 끝 판 hs-S31의 8번째 장",
+  "초": 5,
+  "해상도": "Start exactly from the first frame and keep it: same room, same low camera angle, same dim warm light. ONE CONTINUOUS SHOT, landscape, locked-off camera, no cuts.\nACTION: The masked man in the black balaclava stands still for one second, staring straight into the lens, holding the ribbon-tied food container up by its long ribbon in his raised hand. Then one quick, polite Korean thank-you bow, like a TV shopping host: he bends forward at the waist, his free hand flat on his stomach, keeps the raised hand up so the whole container stays inside the frame, pauses at the bottom for less than half a second and straightens up again. The whole bow takes about one and a half seconds. Then he stands perfectly still for the rest of the shot, staring into the lens, completely deadpan. The container swings gently and never changes shape.\nLOOK: photorealistic, same light and colors as the first frame; the balaclava stays on the whole time; no text, no logos, no other people."
+ }
+]

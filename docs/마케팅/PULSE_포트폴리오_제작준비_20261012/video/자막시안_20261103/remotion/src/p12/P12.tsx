@@ -94,7 +94,7 @@ const Head: React.FC<{ t: number; cg?: boolean }> = ({ t, cg }) => {
       <div style={{ ...abs(64, 200, 952), zIndex: 30, fontFamily: KO, fontWeight: 700, fontSize: 38, letterSpacing: '-0.03em', color: PAPER, textShadow: '0 2px 14px #000a', opacity: ramp(t, TT[1], 0.2) * out, transform: `translateY(${(1 - ramp(t, TT[1], 0.3, EXPO)) * 14}px)` }}>
         제주 2박 3일, 가는 데마다 <span style={{ color: '#7DF0D3' }}>또 그 사람</span>
       </div>
-      <div style={{ ...abs(64, 262, 952, 2), zIndex: 29, background: PAPER, opacity: 0.5 * d * out }} />
+      <div style={{ ...abs(64, 262, 952, 2), zIndex: 29, background: PAPER, opacity: 0.5 * ramp(t, TT[1], 0.2) * out }} />{/* 머리글과 함께 — d로 뜨게 하니 글자 없는 흰 줄이 0.5초 먼저 떴다(11-05 크몽 세션 Fable) */}
     </>
   );
 };
@@ -108,7 +108,7 @@ const Chip: React.FC<{ t: number; i: number; cg?: boolean }> = ({ t, i, cg }) =>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: MINT, color: '#fff', borderRadius: 40, padding: '12px 24px 12px 16px', boxShadow: '0 10px 30px #0003' }}>
         <Pin size={34} color="#fff" />
         <span style={{ fontFamily: KO, fontWeight: 800, fontSize: 38, letterSpacing: '-0.03em' }}>{name}</span>
-        <span style={{ fontFamily: KO, fontWeight: 600, fontSize: 28, letterSpacing: '-0.02em', opacity: 0.86, marginLeft: 4 }}>{day}</span>{/* 알약 밖에 두니 밝은 하늘 · 천막에서 사라졌다(11-04 아르곤 · 프레임 확인) */}
+        <span style={{ fontFamily: KO, fontWeight: 700, fontSize: 34, letterSpacing: '-0.02em', marginLeft: 6 }}>{day}</span>{/* 알약 밖에 두니 밝은 하늘 · 천막에서 사라졌다(11-04 아르곤 · 프레임 확인). 28px에 흐리면 휴대폰에서 안 읽혔다(11-05 크몽 세션 Fable) */}
       </div>
     </div>
   );
@@ -219,7 +219,8 @@ export const P12: React.FC<{ probe?: boolean; cg?: boolean }> = ({ probe, cg }) 
   if (probe) return <AbsoluteFill style={{ background: '#000' }}><Probe t={t} /></AbsoluteFill>;
   // 끝에서는 멈춘 그림으로 천천히 들어간다(판이 올라와도 그 사람이 살아 있게) — 두 폰 테두리도 그림에 붙어 함께
   // 폭로부터 끝까지 천천히 들어간다 — 끝 5초가 멈춘 사진 같았다(11-04 아르곤)
-  const push = cg ? 1 + 0.05 * ramp(t, ZOOM + 0.1, P12_FRAMES / FPS - ZOOM - 0.1, (x) => x) : 1 + 0.03 * ramp(t, TT[16], P12_FRAMES / FPS - TT[16]);
+  // 브랜드가 뜨는 딩에 한 번 더 당긴다 — 끝 33~38초가 멈춘 듯 조용했다(11-05 크몽 세션 Fable · 아르곤)
+  const push = cg ? 1 + 0.05 * ramp(t, ZOOM + 0.1, P12_FRAMES / FPS - ZOOM - 0.1, (x) => x) + 0.05 * ramp(t, BRAND_AT - 0.04, 0.5) : 1 + 0.03 * ramp(t, TT[16], P12_FRAMES / FPS - TT[16]);
   const legalRight = t >= ZOOM;   // 폭로부터는 앞 폰 위를 가로지르지 않게 오른쪽 어두운 바닥으로
   const onPanel = !cg && t >= BRAND_AT + 0.1;   // 포스터가 닫히면 판 안 어두운 글자로
   return (

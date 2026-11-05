@@ -2,6 +2,8 @@
 # 층 셋: 바탕(손 그림에서 손 · 물건을 지워 메운 판) · 손과 물건(카드합성_v4.py의 합성판을 사람 분할 u2net_human_seg + 블렌더 렌더 알파로 오린 층)
 # · 글자(04 4절 박표 — 원본 마지막 화면을 10% 격자로 잰 자리). 카드 1은 손이 아래에서 올라오고, 카드 2는 위에서 상자가 내려오고 둘째 손이
 # 가리켰다 빠지며, 「?」 카드는 아래에서 도시락이 올라오고, 카드 3은 같은 손이 멈춰 있다. 번호는 한 자씩, 이름은 한 줄씩, 띠는 깜박인다.
+# 11-05: 카드 ? · 3(27 · 29)은 층을 버리고 영상 판 위에 글자만 얹는다 — 블렌더 상자가 끝 컷(#31)의 실물 상자와 다른 물건으로 보였고(크몽 세션 아르곤 · Fable 공통) 납작한 CG 리본이 패러디가 아니라 실수로 읽혔다.
+#   판은 MonoGPT 시댄스 2.5 hs-C27b · hs-C29b(시작 · 끝 그림 = #31 상자를 참고로 GPT 이미지 편집, 지시문 지시문/카드상자_시댄스.json). 이 상자에는 인쇄 글자가 없어 판이 글자를 다시 그릴 일이 없다.
 #   python -X utf8 카드움직임_v4.py [11 21 27 29]  → synk-vendor/…/영상/v4/카드/C<컷>.mp4(1920×1080 · 24fps · 소리 없음, 원본 컷 프레임 수) · C<컷>_끝.jpg
 # 서체: 숫자 · 띠 Black Han Sans, 카드 2 · 3 번호는 원본처럼 세리프(한컴 바탕 굵게), 상품 이름 필기체 자리는 궁서(batang.ttc 3번째),
 # 「???」는 Brush Script(원본 분홍 이탤릭 필기체) — 이미지 콘티 Fable 검토의 「글자 서체는 최종에서」(P3-7)를 여기서 고쳤다.
@@ -24,6 +26,7 @@ V = K.V
 W, H, FPS = 1920, 1080, 24
 SH = {s["n"]: s for s in json.load(open(os.path.join(V, "원본", "원본_샷.json"), encoding="utf-8"))}
 OUT = os.path.join(V, "영상", "v4", "카드")
+DAY = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028/받음"
 BHS = K.BHS
 SUIT_EB = os.path.join(K.SUIT, "SUIT-ExtraBold.otf")
 SUIT_M = os.path.join(K.SUIT, "SUIT-Medium.otf")
@@ -284,15 +287,14 @@ def card2():
     bub.alpha_composite(tim, ((bw - tim.size[0]) // 2, (bh - tim.size[1]) // 2))
     c.add(bub, (1535, 875), 0.0, anchor="cc", blink=(0.0, 0.27, 0.13, 99))
     # 「단독」 원 딱지
-    st = Image.new("RGBA", (290, 290), (0, 0, 0, 0))
+    # 11-05: 상자 띠 글자를 덮었고 작은 두 줄은 휴대폰에서 안 읽혔다(크몽 세션 · 프레임 확인) — 「뚜껑 색 다른 버전」은 오른쪽 줄, 「라벨 스티커」는 노란 띠에 있으니 원에는 「단독」만
+    st = Image.new("RGBA", (216, 216), (0, 0, 0, 0))
     sd = ImageDraw.Draw(st)
-    sd.ellipse([0, 0, 289, 289], fill=(200, 26, 62, 255), outline=(255, 255, 255, 255), width=4)
-    for i, s in enumerate(["뚜껑 색 다른 버전", "+ 라벨 스티커"]):
-        f = font(SUIT_EB, 24)
-        sd.text(((290 - sd.textlength(s, font=f)) / 2, 70 + i * 30), s, font=f, fill=(255, 255, 255))
+    sd.ellipse([0, 0, 215, 215], fill=(200, 26, 62, 255), outline=(255, 255, 255, 255), width=4)
     f = font(BHS, 92)
-    sd.text(((290 - sd.textlength("단독", font=f)) / 2, 138), "단독", font=f, fill=(255, 255, 255))
-    c.add(st, (190, 880), 0.35, anchor="cc", pop=0.12)
+    l, tp, r, b = sd.textbbox((0, 0), "단독", font=f)
+    sd.text(((216 - (r - l)) / 2 - l, (216 - (b - tp)) / 2 - tp), "단독", font=f, fill=(255, 255, 255))
+    c.add(st, (138, 948), 0.35, anchor="cc", pop=0.12)
     c.typing("1577-꽉꽉", font(SERIF_B, 124), (255, 255, 255), (330, 918), 0.35, 0.62, anchor="lt", shadow=(10, 6, 6, 255), off=6)
     pink = (236, 66, 146)
     c.typing("핑크 에디션!", font(BHS, 76), pink, (1060, 56), 0.45, 0.85, anchor="lt")
@@ -330,8 +332,8 @@ def card3():
     script_lines(c, ["코케트", "떡볶이"], 160, (232, 156, 204), 1800, 400, [0.62, 1.22], gap=1.1, shadow=(60, 20, 40, 160))
     stp = Image.new("RGBA", (960, 180), (0, 0, 0, 0))
     sdr = ImageDraw.Draw(stp)
-    sdr.rectangle([0, 0, 959, 179], outline=(196, 28, 40, 255), width=12)
-    tim, _ = text_piece("특별 할인", font(BHS, 124), (196, 28, 40))
+    sdr.rectangle([0, 0, 959, 179], outline=(235, 52, 52, 255), width=12)   # 끝 도장(최종편집.py stamp_png)과 같은 밝은 빨강 — 196 · 28 · 40은 어두운 바탕에서 약했다(11-05)
+    tim, _ = text_piece("특별 할인", font(BHS, 124), (235, 52, 52))
     stp.alpha_composite(tim, ((960 - tim.size[0]) // 2, (180 - tim.size[1]) // 2))
     stp = stp.rotate(12, expand=True, resample=Image.BICUBIC)
     c.add(stp, (600, 215), 2.52, anchor="cc", pop=-0.1)
@@ -354,21 +356,25 @@ JOBS = {
     21: dict(hand="H2", prop="giftbox/giftbox_0001.png", narrow=0.5, tint=(0.66, 0.78, 0.92), bottom=False, split=True, card=card2,
              main=lambda t: (0.0, -1000 * (1 - ease_out(ramp(t, 0.35, 0.78)))),
              pointer=lambda t: None if t < 4.33 or t > 5.66 else (0.0, 520 * (1 - ease_out(ramp(t, 4.33, 4.56))) + 520 * ease_out(ramp(t, 5.42, 5.66)))),
-    27: dict(hand="H3", prop="tteok/tteok_0001.png", narrow=0.55, tint=(0.66, 0.78, 0.92), bottom=True, split=False, card=card_q,
-             main=lambda t: (0.0, 760 * (1 - ease_out(ramp(t, 0.45, 0.95))))),
-    29: dict(hand="H3", prop="tteok/tteok_0001.png", narrow=0.55, tint=(0.66, 0.78, 0.92), bottom=True, split=False, card=card3,
-             main=lambda t: (0.0, 0.0)),
+    27: dict(plate="hs-C27b", start=6, card=card_q),   # start: 손이 카드 0.45~0.95초에 올라오는 장
+    29: dict(plate="hs-C29b", start=0, card=card3),
 }
 
 
 def render(n):
     j = JOBS[n]
     nf = SH[n]["f1"] - SH[n]["f0"]
-    bg, (mi, ma), (pi_, pa_), _ = layers(j["hand"], j["prop"], j["narrow"], j["tint"], j["bottom"], j["split"])
-    if "bg_lab" in j:   # 손 · 물건 층은 그대로 두고 바탕만 원본 색으로
-        lab = cv2.cvtColor(np.clip(bg, 0, 255).astype(np.uint8), cv2.COLOR_BGR2LAB).astype(np.float32)
-        lab += np.array(j["bg_lab"], np.float32) - lab.reshape(-1, 3).mean(0)
-        bg = cv2.cvtColor(np.clip(lab, 0, 255).astype(np.uint8), cv2.COLOR_LAB2BGR).astype(np.float32)
+    src = None
+    if "plate" in j:
+        a = j["start"]
+        vf = f"select='between(n,{a},{a + nf - 1})',setpts=N/{FPS}/TB,scale={W}:{H}:flags=lanczos:in_color_matrix=bt709:in_range=tv,format=bgr24"
+        src = subprocess.Popen(["ffmpeg", "-v", "error", "-i", os.path.join(DAY, j["plate"] + ".mp4"), "-an", "-vf", vf, "-f", "rawvideo", "-pix_fmt", "bgr24", "-"], stdout=subprocess.PIPE)
+    else:
+        bg, (mi, ma), (pi_, pa_), _ = layers(j["hand"], j["prop"], j["narrow"], j["tint"], j["bottom"], j["split"])
+        if "bg_lab" in j:   # 손 · 물건 층은 그대로 두고 바탕만 원본 색으로
+            lab = cv2.cvtColor(np.clip(bg, 0, 255).astype(np.uint8), cv2.COLOR_BGR2LAB).astype(np.float32)
+            lab += np.array(j["bg_lab"], np.float32) - lab.reshape(-1, 3).mean(0)
+            bg = cv2.cvtColor(np.clip(lab, 0, 255).astype(np.uint8), cv2.COLOR_LAB2BGR).astype(np.float32)
     card = j["card"]()
     os.makedirs(OUT, exist_ok=True)
     out = os.path.join(OUT, f"C{n}.mp4")
@@ -377,15 +383,21 @@ def render(n):
     last = None
     for f in range(nf):
         t = f / FPS
-        # 손에 든 느낌의 작은 흔들림
-        jx, jy = 4.0 * np.sin(2 * np.pi * 0.55 * t + 0.7), 3.0 * np.sin(2 * np.pi * 0.8 * t + 1.9)
-        canvas = bg.copy()
-        dx, dy = j["main"](t)
-        canvas = paste(canvas, mi, ma, dx + jx, dy + jy)
-        if "pointer" in j:
-            pp = j["pointer"](t)
-            if pp is not None:
-                canvas = paste(canvas, pi_, pa_, pp[0] + jx * 0.6, pp[1] + jy * 0.6)
+        if src is not None:
+            raw = src.stdout.read(W * H * 3)
+            if len(raw) < W * H * 3:
+                raise SystemExit(f"{j['plate']}: {f}장에서 판이 끝났다(필요 {nf}장)")
+            canvas = np.frombuffer(raw, np.uint8).reshape(H, W, 3)
+        else:
+            # 손에 든 느낌의 작은 흔들림
+            jx, jy = 4.0 * np.sin(2 * np.pi * 0.55 * t + 0.7), 3.0 * np.sin(2 * np.pi * 0.8 * t + 1.9)
+            canvas = bg.copy()
+            dx, dy = j["main"](t)
+            canvas = paste(canvas, mi, ma, dx + jx, dy + jy)
+            if "pointer" in j:
+                pp = j["pointer"](t)
+                if pp is not None:
+                    canvas = paste(canvas, pi_, pa_, pp[0] + jx * 0.6, pp[1] + jy * 0.6)
         frame = Image.fromarray(cv2.cvtColor(np.clip(canvas, 0, 255).astype(np.uint8), cv2.COLOR_BGR2RGB)).convert("RGBA")
         frame.alpha_composite(card.draw(t))
         bgr = cv2.cvtColor(np.asarray(frame.convert("RGB")), cv2.COLOR_RGB2BGR)

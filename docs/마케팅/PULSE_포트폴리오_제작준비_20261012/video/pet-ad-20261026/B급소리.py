@@ -23,7 +23,10 @@ BGM = V + "/pulse-portfolio12-20261024/최종/음악/p11_Splash_A.mp3"
 H = V + "/homeshopping-horror-20261021/remotion_v1-v3_워크트리사본/public/sfx/"
 F = V + "/sound-library/fairlight/Media Files/"
 S = V + "/sound-library/sonniss_gdc2026/풀림/"
-END = 574 / 24
+END = 574 / 24   # 물 컷이 끝나는 자리 — 여기서 우주 집게 컷으로 소리째 뚝 끊는다(11-05 유호님 「집게 컷으로」)
+TOTAL = 632 / 24   # 우주 2초 + 검정 0.42초
+KEVIN_LINE = V + "/pulse-portfolio12-20261024/최종/p11/소리/일레븐후보_20261103/Kevin_우주.mp3"   # 「우주에서도, 뜹니다.」 같은 프리셋, founder 계정 0.23크레딧
+SPACE_MISS = 0.46   # 집게가 놓치는 자리(우주 컷 머리에서 초, p11-s1 32장 = 21장부터 11장 — B.tsx와 같은 값)
 rng = np.random.default_rng(11)
 
 
@@ -145,7 +148,7 @@ WATER = CUT_DROP + 11 / 24                # 11장 — 물이 들어온다
 UNDER = CUT_DROP + 56 / 24                # 56장 — 물속
 POPUP = CUT_DROP + 70 / 24                # 70장 — 코르크처럼 솟는다
 
-m = C.Mix(END + 0.3)
+m = C.Mix(TOTAL + 0.3)
 
 # ── 내레이션 — 낱말 시각표 그대로
 voice = C.load(VOICE)
@@ -161,7 +164,7 @@ head *= (10 ** (np.interp(tt, [0, CUT_GLAM - 0.02, CUT_GLAM + 0.03, CUT_DROP - 0
 m.put(0, head, 0, fade_out=0.03)
 tail = song[int((SPLASH + 16.0) * RATE):].copy()
 tt = np.arange(len(tail)) / RATE + SPLASH
-tail *= (10 ** (np.interp(tt, [SPLASH, 21.25, 21.75, 40], [-17, -17, -10.5, -10.5]) / 20))[:, None].astype(np.float32)
+tail *= (10 ** (np.interp(tt, [SPLASH, 21.25, 21.75, 22.1, 22.32, 40], [-17, -17, -10.5, -10.5, -21, -21]) / 20))[:, None].astype(np.float32)   # 22.18부터 Kevin 끝 줄 — 곡을 내려 말이 들리게
 m.put(SPLASH, tail, 0, fade=0.01, fade_out=0.3)
 
 # ── 바다 — 바닷가 컷에만
@@ -292,18 +295,25 @@ m.put(POPUP - 0.03, stretch(boing, 1.25), -9)
 # ── 브랜드 땡, 착륙 성공 음, 끝 농담에 비행접시 한 번, 고글이 켜지는 핑
 m.put(21.75, C.load(H + "ding1.wav"), -9)
 m.put(21.95, part(one("Cinematic Sound Design - Hybrid Game & UI Elements/Game Entry Happy Short*")), -18)
-m.put(22.59, theremin([(0, 1050), (0.35, 1320), (1, 760)], 0.95), -19)
-m.put(22.85, sonar(880.0), -16)
+m.put(22.26, theremin([(0, 1050), (0.35, 1320), (1, 760)], 0.95), -25)
+m.put(22.30, sonar(880.0), -19)   # 「우주」에서 고글이 켜진다
+m.put(22.18, C.load(KEVIN_LINE), -1, fade=0.005)   # 끝 줄 — 진지하게 읽는다. 말 칸 RMS를 본 내레이션(−16.6)에 맞춘다
 
 # ── 시스템 메시지가 뜰 때마다 작은 틱(B.tsx HUD)
 tick = C.load(H + "tick.wav")
 for at in [0.06, CUT_MOON + 0.04, CUT_RUN + 0.04, w(1, 3) + 0.6, CUT_BOX + 0.1, VEST_SLAM + 0.12, STRAPS, CUT_OWL + 0.2, STOP, CUT_CLAW + 0.04, BEAM_ON]:
     m.put(at, tick, -27)
 
+# ── 우주 — 「뜹니다」가 끝나는 장에서 모든 소리를 뚝 끊고, 집게가 놓칠 때 오락실 음 하나만
+cut = int(END * RATE)
+m.a[cut - int(0.004 * RATE):cut] *= np.linspace(1, 0, int(0.004 * RATE))[:, None].astype(np.float32)
+m.a[cut:] = 0
+m.put(END + SPACE_MISS, chip([784, 622, 494, 392], step=0.085), -15)
+
 m.finish(os.path.join(PUB, "sound_b.wav"), boost_db=-1.8)
 
 # ── 말 대 나머지를 낱말마다 잰다(귀로 못 들어 숫자로 본다) — 말이 실제로 나는 칸(20ms)만 견준다. 낱말 뒤 빈자리까지 평균 내면 비명 · 물소리가 낱말을 먹는 것처럼 나온다
-only = C.Mix(END + 0.3)
+only = C.Mix(TOTAL + 0.3)
 for ln in lines:
     a, b = ln["src"]
     only.put(ln["at"] - 0.04, voice[int(max(0, a - 0.04) * RATE):int((b + 0.18) * RATE)], 0, fade=0.01, fade_out=0.08)

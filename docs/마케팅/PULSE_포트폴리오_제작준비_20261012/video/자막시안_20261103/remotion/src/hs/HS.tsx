@@ -13,12 +13,14 @@ import { MaskCut, maskAt, ProbeMeta, probeChars, Subject } from '../lib/subject'
 import masks from './masks.json';
 
 const FPS = 24;
-export const HS_FRAMES = 1743;   // 원본 31컷 72.625초 — homeshopping-horror 최종편집.py 화면.mp4
+export const HS_FRAMES = 1796;   // 원본 31컷 72.625초 + 끝 컷 2.2초(11-05) — homeshopping-horror 최종편집.py 화면.mp4
 const INK = '#0E1320', PAPER = '#F6F3EA', LEMON = '#FFD43B';
 const MASKS = masks as MaskCut[];
 // 컷 첫 프레임(원본_샷.json f0, 끝은 f1) — 자막 꼬리를 컷에서 끊는 데 쓴다
-const SHOT_F = [0, 13, 33, 80, 112, 160, 196, 218, 245, 274, 337, 439, 462, 502, 560, 593, 615, 640, 681, 730, 762, 936, 992, 1098, 1135, 1175, 1314, 1379, 1430, 1546, 1699, 1743];
+const SHOT_F = [0, 13, 33, 80, 112, 160, 196, 218, 245, 274, 337, 439, 462, 502, 560, 593, 615, 640, 681, 730, 762, 936, 992, 1098, 1135, 1175, 1314, 1379, 1430, 1546, 1699, 1796];
 const LAST = SHOT_F[30] / FPS;   // #31 첫 프레임
+const STAMP_AT = LAST + 1.08;    // 강도가 말없이 인사해 가장 깊이 숙인 순간에 도장 쾅 — 최종편집.py와 같은 값
+const BRAND_AT = STAMP_AT + 3 * 0.4925;   // 도장을 읽는 곡의 세 박 — 0.55초면 로고가 도장에 붙어 들어와 한 방이 약했다(11-05 Fable). 곡의 착지가 여기에 떨어진다
 const abs = (x: number, y: number, w?: number, h?: number): React.CSSProperties => ({ position: 'absolute', left: x, top: y, width: w, height: h });
 const noDot = (s: string) => s.replace(/\.$/, '');
 
@@ -39,8 +41,8 @@ const CAP: { a: number; b: number; s: string; ks?: number[]; left?: boolean }[] 
   { a: 42.4, b: 44.45, s: '방금 그거 ★한국말이야?', ks: [43.3] },
   { a: 44.56, b: 46.9, s: '안 돼! ★안 돼!', ks: [45.79] },
   { a: 47.46, b: 48.4, s: '★으!' },
-  { a: 52.6, b: 54.75, s: '★세상에…!' },
-  { a: 54.9, b: 55.8, s: '…★왜?', left: true },
+  { a: 52.6, b: 54.75, s: '★세상에!' },
+  { a: 54.9, b: 55.8, s: '★왜?', left: true },
   { a: 57.46, b: 59.58, s: '안 돼, 내 ★코케트 ★떡볶이!', ks: [58.98, 58.98] },
   { a: SHOT_F[29] / FPS, b: 66.75, s: '그거 내 ★저녁인데!', ks: [64.92] },   // 말과 자막 모두 #30 첫 프레임부터(최종편집.py EVENTS)
   { a: 67.92, b: 70.79, s: '★그냥 ★죽여!', ks: [67.92, 69.32] },
@@ -94,6 +96,8 @@ const bigBox = (t: number, b: Big): React.CSSProperties => {
   return { ...abs(56, b.y, 1808), textAlign: b.x === 'c' ? 'center' : b.x === 'r' ? 'right' : 'left', fontFamily: KO, fontWeight: 800, fontSize: b.size, letterSpacing: '-0.05em', lineHeight: 1, whiteSpace: 'nowrap', opacity: Math.min(1, p) * out, transform: `translateY(${(1 - p) * 90}px)` };
 };
 
+const endShake = (t: number) => { const x = (t - STAMP_AT) / 0.34; return x < 0 || x > 1 ? 0 : Math.sin(t * 91) * 22 * (1 - x); };
+
 // 16:9 화면 한 장 — 원본 그림 + 큰 낱말 + 강도 다시 얹기. 9:16은 이 판을 0.5625로 줄여 가운데 띠에 둔다
 const Film: React.FC<{ t: number; probe?: boolean }> = ({ t, probe }) => {
   const i = BIG.findIndex((b) => t >= b.a && t < b.b);
@@ -101,7 +105,11 @@ const Film: React.FC<{ t: number; probe?: boolean }> = ({ t, probe }) => {
   if (probe) return b ? <><ProbeMeta i={i} behind={behind(t, b)} light={b.light} /><div style={bigBox(t, b)}>{probeChars(b.w)}</div></> : null;
   return (
     <>
-      <OffthreadVideo src={staticFile('hs/picture.mp4')} muted style={{ ...abs(0, 0, 1920, 1080) }} />
+      {/* 끝 컷은 판이 거의 멈춰 있어(프레임 차이 0.27) 천천히 들어가고, 도장에 한 번 흔들린다 */}
+      <div style={{ ...abs(0, 0, 1920, 1080), transformOrigin: '760px 560px', transform: t >= LAST ? `translate(${endShake(t)}px,${endShake(t + 0.13) * 0.7}px) scale(${1 + 0.05 * ramp(t, LAST, HS_FRAMES / FPS - LAST, (x) => x)})` : undefined }}>
+        <OffthreadVideo src={staticFile('hs/picture.mp4')} muted style={{ width: '100%', height: '100%' }} />
+      </div>
+      {t >= STAMP_AT && <Img src={staticFile('hs/stamp.png')} style={{ ...abs(1108, 124, 760), zIndex: 7, transformOrigin: '380px 177px', transform: `rotate(-7deg) scale(${1.62 - 0.62 * ramp(t, STAMP_AT, 0.11, (x) => x)})`, opacity: ramp(t, STAMP_AT, 0.04, (x) => x) }} />}
       {b && <div style={{ ...bigBox(t, b), zIndex: behind(t, b) ? 3 : 6, color: b.light ? PAPER : INK, textShadow: b.light ? '0 6px 40px #0E132080' : undefined }}>{b.w}</div>}
       <Subject film="hs" cuts={MASKS} t={t} />
     </>
@@ -134,8 +142,9 @@ export const HS16: React.FC<{ probe?: boolean }> = ({ probe }) => {
     <AbsoluteFill style={{ background: '#000' }}>
       <Film t={t} />
       <Caption t={t} x={0} y={918} w={1920} size={54} leftW={980} />
-      {/* 오른쪽 아래 구석은 고지 줄과 붙어 워터마크처럼 보였다(11-04 아르곤) — 문 쪽 가운데 높이로 올려 끝 제목으로 */}
-      <Brand t={t} at={LAST} style={{ ...abs(1216, 588, 620) }} logo={620} text={50} align="right" shade="radial-gradient(760px 340px at 1540px 690px, #00000080, #0000)" />
+      {/* 오른쪽 아래 구석은 고지 줄과 붙어 워터마크처럼 보였다(11-04 아르곤) — 문 쪽 가운데 높이로 올려 끝 제목으로.
+          PULSE 베리가 어두운 벽에서 약했다(11-05) — 사업명 색은 바꾸지 않는다(로고 정본 「사업명만 임의로 밝히지 않는다」) → 로고를 키우고 뒤를 더 어둡게 */}
+      <Brand t={t} at={BRAND_AT} style={{ ...abs(1166, 610, 700) }} logo={700} text={50} align="right" shade="radial-gradient(860px 400px at 1520px 720px, #000000c0, #0000)" />{/* 도장과 같은 열에 같은 폭이면 시선이 다퉜다(11-05 Fable) — 조금 줄여 아래로 */}
       {/* 끼어듦 카드(27~29)는 「1577-꽉꽉」이 오른쪽 아래라 고지 줄이 그 위를 가로질렀다(11-04 Fable) — 그동안만 왼쪽으로 */}
       <div style={{ ...abs(40, 1034, 1840), zIndex: 30, textAlign: t >= 59.4 && t < 64.5 ? 'left' : 'right', fontFamily: KO, fontWeight: 500, fontSize: 22, color: '#ffffff96' }}>{NOTICE}</div>
       <Audio src={staticFile('hs/sound.wav')} />
@@ -145,7 +154,7 @@ export const HS16: React.FC<{ probe?: boolean }> = ({ probe }) => {
 
 // 9:16 위 띠 머리글 — 원본 두 줄 그대로(글은 원본 자리 · 뜻 그대로), 꼴만 섞은 판 머리글(왼쪽 정렬 · 굵기 둘 · 얇은 줄)
 const Head9: React.FC<{ t: number }> = ({ t }) => {
-  const o = 1 - ramp(t, LAST - 0.08, 0.08);   // 16:9 끝 블록과 같은 자리까지 — 「그냥 죽여!」 위로 광고 문의가 먼저 뜨면 웃음을 뺏는다(11-04 Fable)
+  const o = 1 - ramp(t, BRAND_AT - 0.08, 0.08);   // 16:9 끝 블록과 같은 자리까지 — 「그냥 죽여!」 위로 광고 문의가 먼저 뜨면 웃음을 뺏는다(11-04 Fable)
   return (
     <>
       <div style={{ ...abs(64, 420, 952), zIndex: 20, opacity: o * Math.min(1, ramp(t, 0, 0.3)) }}>
@@ -164,7 +173,7 @@ export const HS9: React.FC = () => {
       <div style={{ ...abs(0, 656, 1920, 1080), transform: 'scale(0.5625)', transformOrigin: 'left top', overflow: 'hidden' }}><Film t={t} /></div>
       <Head9 t={t} />
       {/* 검은 여백이 넓어 글자를 16:9 비례보다 키운다(11-04 GPT 검수) */}
-      <Brand t={t} at={LAST} style={{ ...abs(56, 330, 760) }} logo={700} text={62} align="left" />
+      <Brand t={t} at={BRAND_AT} style={{ ...abs(56, 330, 760) }} logo={700} text={62} align="left" />
       <Caption t={t} x={48} y={1334} w={984} size={66} wrap />
       <div style={{ ...abs(0, 1858, 1080), zIndex: 30, textAlign: 'center', fontFamily: KO, fontWeight: 500, fontSize: 22, color: '#ffffff88' }}>{NOTICE}</div>
       <Audio src={staticFile('hs/sound.wav')} />
