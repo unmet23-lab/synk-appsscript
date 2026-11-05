@@ -134,7 +134,7 @@ python -I -X utf8 experiences/drama/qa/제2의나-20261102/사진시험/줄세�
 - ② 20대 올림에 원본으로 강+: 유호님 0.622 · u1 0.859 · u2 0.809(강은 0.618 · 0.778 · 0.818). 어려 보이지 않고 강과 거의 같다.
 - 그래서 일괄 처리 첫 묶음은 강 · 약 · 강+ 셋이다(설계 4절 끝). 판은 `.tmp/me2-20261102/photo-gpt/강플편집판/`.
 
-결과 페이지는 `결과모으기.py` → `결과페이지.py`로 만든다(유호님 사진이 들어가 비공개, HTML은 git 밖). 11-03 밤 판 [결과 페이지](https://claude.ai/artifact/TMbHzTLETmwhLScWKrQtgd)에 GPT 셀카 줄 · 장면 판 편집 칸 · Fable 판정 · 갱신한 결론이 들어갔다. 첫 판(https://claude.ai/artifact/8SoffK38vYrNkBGmyUceGS)은 다른 계정에서 올려 이 판으로 덮지 못했고, 그 HTML은 `.tmp/me2-20261102/photo-gpt/결과/*_1811판.*`로 남겼다.
+결과 페이지는 `결과모으기.py` → `결과페이지.py`로 만든다(유호님 사진이 들어가 비공개, HTML은 git 밖). 11-03 밤 판 [결과 페이지](https://claude.ai/artifact/BApUoidQGumoyAXzKYgeMX)(synk.yuh 계정 사본, unmet27 계정 주소는 TMbHzTLETmwhLScWKrQtgd)에 GPT 셀카 줄 · 장면 판 편집 칸 · Fable 판정 · 갱신한 결론이 들어갔다. 첫 판(https://claude.ai/artifact/8SoffK38vYrNkBGmyUceGS)은 다른 계정에서 올려 이 판으로 덮지 못했고, 그 HTML은 `.tmp/me2-20261102/photo-gpt/결과/*_1811판.*`로 남겼다.
 
 **같은 입력 · 같은 지시문으로 오픈 편집 모델(자체 GPU 후보)을 견준 결과는 [오픈모델](../오픈모델/README.md)(11-03)** — 상업 사용이 되는 셋(Qwen-Image-Edit-2511 · FireRed-Image-Edit-1.1 · LongCat-Image-Edit)과 그 빠른 판, 같은 SFace · 같은 Fable 눈가림 검수.
 

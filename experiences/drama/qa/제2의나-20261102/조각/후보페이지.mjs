@@ -37,7 +37,7 @@ const 조각들 = 쌍.map(([id, 그림]) => {
   if (!c) throw new Error(`조각표에 없는 id: ${id}`);
   const d = 대조[id];
   return { id, 지역: c.지역, 묶음: 지역묶음(c.지역), 성별: c.성별, 얼굴형: c.얼굴형, 다시: c.다시 || null, 그림: 작게(그림),
-    대조: d ? { 판정: d.판정, 렌즈: d.렌즈 ? `${d.렌즈.판정} · 공인 카드 최고 ${d.렌즈.공인최고 ?? '-'}` : '안 돌림', gemini: d.gemini || '-', gpt: d.gpt || '-', 메모: d.메모 || '' } : null };
+    대조: d ? { 판정: d.판정, 렌즈: d.렌즈 ? `${d.렌즈.판정} · 공인 카드 최고 ${d.렌즈.공인최고 ?? '-'}` : '안 돌림', gemini: d.gemini || '-', gpt: d.gpt || '-', 메모: d.까닭 || '' } : null };
 });
 
 const 틀 = fs.readFileSync(path.join(여기, '후보페이지.htm'), 'utf8');

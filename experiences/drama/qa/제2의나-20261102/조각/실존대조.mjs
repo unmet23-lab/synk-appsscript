@@ -8,7 +8,7 @@
  *      하나가 0.40 이상이면 살핌(`실존대조_얼굴.py` 머리말에 까닭).
  *   ② 판별 모델 둘: 같은 얼굴을 Gemini 4 Argon(웹 구독, `tools/아르곤웹.js`)과 GPT(구독, `tools/codex계정.js exec -i`)에 따로 묻는다 —
  *      이름 · 실존 인물 비교 없이 「유명인 본뜨기로 오해받을 만큼 특정한 인상인가」(흔함 · 중간 · 높음과 그렇게 본 생김새). 공인 대조를 직접 시키면 거절한다.
- *   ③ 조각마다 한 줄: 하나라도 걸림(렌즈 0.47 이상 · 모델 하나라도 높음 · 두 모델 모두 중간)이면 「다시 굽기」 —
+ *   ③ 조각마다 한 줄: 하나라도 걸림(렌즈 걸림 · 모델 하나라도 높음 · 두 모델 모두 중간)이면 「다시 굽기」 —
  *      얼굴 특징 둘 이상(얼굴형 · 눈 · 눈썹 · 코 · 입 · 머리)을 바꿔 다시 굽고 처음부터 다시 돌린다. 살핌은 나란히 놓고 눈으로 정해 적는다.
  * 현금은 0이다(구글 렌즈 무료 · Gemini 웹 구독 · ChatGPT 구독). 실존 인물의 이름 · 사진은 git 밖(.tmp)에만 두고, 저장소 기록에는 숫자 · 판정만 쓴다.
  *
@@ -69,6 +69,8 @@ function 렌즈(xs) {
   const 글 = `${r.stdout || ''}${r.stderr || ''}`;
   console.log(글.split('\n').filter((l) => l.startsWith('{')).join('\n'));
   if (/로봇 확인/.test(글)) throw new Error('구글 로봇 확인(sorry) — 누르지 않고 멈춤. 유호님께 맡긴다');
+  // ego가 도중에 죽으면 위 줄이 비어 「결과 없음」만 남는다(11-05 GPU가 꽉 찼을 때 찍기 시간 초과로 일곱 장 다 그랬다) — 까닭을 보인다.
+  if (r.status !== 0) console.log(`[렌즈] ego 종료 ${r.status} — ${글.split('\n').filter((l) => /Error/.test(l)).at(-1)?.slice(0, 200) || '까닭 없음'}`);
   for (const [id, 그림] of 쌍) {
     if (!fs.existsSync(path.join(밖, id, '렌즈', '결과.json'))) { console.log(JSON.stringify({ id, 렌즈: '결과 없음' })); continue; }
     console.log(JSON.stringify({ id, ...파이썬('렌즈닮음', 그림, path.join(밖, id, '렌즈')) }));
@@ -101,7 +103,7 @@ function 모델(묶음, xs) {
   }
   const gem답 = path.join(폴더, '답_gemini.md');
   if (!fs.existsSync(gem답)) {
-    const r = spawnSync(process.execPath, ['tools/아르곤웹.js', '보내기', '--파일', ...얼굴들, '--지시문', 질문파일, '--답', gem답, '--이름', `me2-pc-${묶음}`], { cwd: 뿌리, encoding: 'utf8', timeout: 60 * 60_000, stdio: ['ignore', 'pipe', 'pipe'] });
+    const r = spawnSync(process.execPath, ['tools/아르곤웹.js', '보내기', '--파일', ...얼굴들, '--지시문', 질문파일, '--답', gem답, '--이름', `me2-pc-${묶음}`], { cwd: 뿌리, encoding: 'utf8', timeout: 4 * 60 * 60_000, stdio: ['ignore', 'pipe', 'pipe'] }); // 줄이 붐비면 차례만 한 시간 넘게 기다린다(11-05 b2가 줄에서 시한에 끊김)
     console.log(`[Gemini] 종료 ${r.status} — ${fs.existsSync(gem답) ? '답 있음' : `${r.stdout || ''}${r.stderr || ''}`.slice(-400)}`);
   }
 }
