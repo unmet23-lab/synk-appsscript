@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SYNK SHIFT — 시안 「운행표」</title>
+<!-- synk.im/shift 리디자인 시안(2026-11-06). 지금 쪽은 그림이 0.3%이고(창업자 사진 한 장) 「아직 없습니다 · 약속하지 않습니다」 같은 방어 문장이 8곳이다.
+     무엇으로 이기나: 증거. SHIFT가 파는 「반복 업무 자동화」를 SYNK가 자기 회사에 실제로 돌리고 있다 — 그 예약표를 역 전광판처럼 첫 화면에 건다.
+     판의 줄은 docs/_ops/관문_자동화.md(11-06)의 실제 예약 작업이다(이름은 도구 이름 없이 쉬운 말로, 시각 · 주기는 표 그대로). 숫자 46 · 31도 그 표의 줄 수.
+     바닥(11-04 크롤링 평균): 흰/인화지 바탕 + 색 한 곳(SHIFT 파랑) · 큰 글자 · 칸 없이 줄과 여백 · 만져지는 작은 장치(전광판). 글은 지금 공개 원고 그대로 쓰고, 새 글은 판 머리와 한 줄 설명뿐. -->
+<style>
+@font-face{font-family:SUIT;src:url(/pa/SUIT.woff2) format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'DM Mono';src:url(/pa/DMMono.ttf) format('truetype');font-weight:400;font-display:swap}
+:root{
+  --paper:#f1efe9;--ink:#111214;--ink-2:#55575c;--ink-3:#6b6c70;--line:rgba(17,18,20,.14);
+  --shift:#2f5fd0;--shift-ink:#24448c;--board:#0c0e12;--led:#f3c34a;--led-dim:rgba(243,195,74,.38);
+  --pad:clamp(20px,3vw,40px);--ease:cubic-bezier(.19,1,.22,1);
+}
+*{box-sizing:border-box}
+html{background:var(--paper)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:SUIT,system-ui,sans-serif;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:anywhere}
+a{color:inherit;text-decoration:none}
+.small{font-size:13px}
+.mono{font-family:'DM Mono',ui-monospace,monospace;letter-spacing:.02em}
+
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:20px var(--pad);background:rgba(241,239,233,.88);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.brand{display:flex;align-items:center;gap:9px}
+.brand svg{width:54px;height:auto;display:block}
+.brand b{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--shift)}
+.top nav{display:flex;gap:26px}
+.top nav a{font-size:13px;color:var(--ink-2);transition:color .25s}
+.top nav a:hover{color:var(--ink)}
+.top nav a.ask{color:var(--ink);font-weight:650}
+
+/* 첫 화면: 왼쪽 큰 글자, 오른쪽 전광판 */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:clamp(32px,5vw,80px);align-items:center;min-height:calc(100svh - 72px);padding:clamp(32px,5vw,64px) var(--pad) clamp(56px,7vw,96px)}
+.hero .small{color:var(--ink-2)}
+.hero h1{margin:16px 0 0;font-size:clamp(46px,6.4vw,104px);line-height:1.04;letter-spacing:-.012em;font-weight:760}
+.hero h1 em{font-style:normal;color:var(--shift)}
+.hero p.lead{margin:26px 0 0;max-width:31em;font-size:17px;color:var(--ink-2)}
+.acts{display:flex;gap:22px;align-items:center;margin-top:34px;flex-wrap:wrap}
+.cta{display:inline-flex;align-items:center;gap:18px;padding:15px 22px;background:var(--ink);color:var(--paper);font-weight:650;transition:gap .25s var(--ease)}
+.cta:hover{gap:26px}
+.cta i,.link i{display:inline-block;width:26px;height:1px;background:currentColor;position:relative}
+.cta i::after,.link i::after{content:'';position:absolute;right:0;top:-4px;width:8px;height:8px;border-top:1px solid currentColor;border-right:1px solid currentColor;transform:rotate(45deg)}
+.link{display:inline-flex;gap:12px;align-items:center;font-size:14px;font-weight:600;border-bottom:1px solid var(--ink);padding-bottom:3px}
+
+/* 전광판 */
+.board{background:var(--board);color:#e9e7e1;padding:22px clamp(18px,2.2vw,28px) 18px;box-shadow:0 30px 60px -30px rgba(12,14,18,.55)}
+.board-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding-bottom:14px;border-bottom:1px solid rgba(233,231,225,.14)}
+.board-head strong{font-size:14px;font-weight:650}
+.board-head .clock{font-size:22px;color:var(--led);font-variant-numeric:tabular-nums;white-space:nowrap;flex:none;overflow-wrap:normal}
+.board-head strong{flex:1;min-width:0}
+.board-foot .mono{white-space:nowrap}
+.rows{list-style:none;margin:0;padding:0}
+.rows li{display:grid;grid-template-columns:5.6em minmax(0,1fr) auto;gap:14px;align-items:baseline;padding:11px 0;border-bottom:1px solid rgba(233,231,225,.08);transition:opacity .8s var(--ease)}
+.rows li .t{color:var(--led);font-size:15px;font-variant-numeric:tabular-nums}
+.rows li .what{font-size:14.5px}
+.rows li .every{font-size:13px;color:rgba(233,231,225,.5);white-space:nowrap}
+.rows li.past{opacity:.55}
+.rows li.off{opacity:.42}
+.rows li.off .every{color:rgba(233,231,225,.7)}
+.rows li.next{background:linear-gradient(90deg,rgba(243,195,74,.12),rgba(243,195,74,0));margin:0 -12px;padding-left:12px;padding-right:12px}
+.rows li.next .every{color:var(--led)}
+.rows li.flip .t,.rows li.flip .what{animation:flip .7s var(--ease)}
+@keyframes flip{0%{opacity:0;transform:translateY(-40%)}100%{opacity:1;transform:none}}
+.board-foot{display:flex;justify-content:space-between;gap:16px;margin-top:14px;font-size:13px;color:rgba(233,231,225,.55)}
+.always{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:16px;padding-top:14px;border-top:1px solid rgba(233,231,225,.14);font-size:13px;color:rgba(233,231,225,.72)}
+.always b{color:var(--led);font-weight:500;margin-right:6px}
+
+/* 숫자 띠 */
+.figures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.figures div{padding:clamp(28px,4vw,48px) var(--pad);border-left:1px solid var(--line)}
+.figures div:first-child{border-left:0}
+.figures b{display:block;font-size:clamp(56px,7vw,112px);line-height:1;letter-spacing:-.02em;font-weight:700}
+.figures span{display:block;margin-top:12px;font-size:14px;color:var(--ink-2);max-width:20em}
+
+section{padding:clamp(88px,12vw,160px) var(--pad)}
+.head{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--ink);padding-top:14px;margin-bottom:clamp(40px,6vw,80px)}
+.services{list-style:none;margin:0;padding:0}
+.services li{display:grid;grid-template-columns:4.2em minmax(0,1fr) minmax(0,28em);gap:clamp(16px,3vw,48px);align-items:baseline;padding:clamp(22px,3vw,34px) 0;border-bottom:1px solid var(--line)}
+.services .no{color:var(--shift);font-size:14px}
+.services h3{margin:0;font-size:clamp(30px,3.6vw,56px);line-height:1.1;letter-spacing:-.01em;font-weight:700}
+.services p{margin:0;color:var(--ink-2)}
+.services li:hover h3{color:var(--shift-ink)}
+.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-top:clamp(56px,7vw,96px)}
+.flow div{padding:22px 22px 0 0;border-top:2px solid var(--ink);position:relative}
+.flow div:not(:last-child)::after{content:'';position:absolute;top:-6px;right:18px;width:10px;height:10px;border-top:2px solid var(--ink);border-right:2px solid var(--ink);transform:rotate(45deg)}
+.flow b{display:block;font-size:20px;font-weight:700;margin:8px 0 6px}
+.flow p{margin:0;font-size:14px;color:var(--ink-2);padding-right:20px}
+.teacher{display:grid;grid-template-columns:260px minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:start}
+.teacher img{width:100%;height:auto;aspect-ratio:1;object-fit:cover;filter:grayscale(1)}
+.teacher h3{margin:0;font-size:clamp(28px,3vw,44px);letter-spacing:-.01em;font-weight:700}
+.teacher ul{list-style:none;margin:16px 0 0;padding:0}
+.teacher li{padding:10px 0;border-top:1px solid var(--line);font-size:14px;color:var(--ink-2)}
+.ask-band{background:var(--ink);color:var(--paper);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:32px;align-items:end}
+.ask-band h2{margin:0;font-size:clamp(36px,5vw,76px);line-height:1.08;letter-spacing:-.012em;font-weight:760}
+.ask-band .cta{background:var(--paper);color:var(--ink)}
+.ask-band p{margin:18px 0 0;font-size:13px;color:rgba(241,239,233,.72);max-width:44em}
+.qlinks{display:grid;gap:0;min-width:min(100%,340px)}
+.qlink{display:flex;justify-content:space-between;gap:24px;padding:14px 0;border-top:1px solid rgba(241,239,233,.2);font-weight:600;transition:padding .25s var(--ease)}
+.qlink:hover{padding-left:6px}
+.qlink:last-child{border-bottom:1px solid rgba(241,239,233,.2)}
+footer{padding:26px var(--pad);display:flex;justify-content:space-between;font-size:13px;color:var(--ink-3)}
+
+@media (max-width:900px){
+  .top nav a:not(.ask){display:none}
+  .hero{grid-template-columns:1fr;min-height:0}
+  .figures{grid-template-columns:1fr}
+  .figures div{border-left:0;border-top:1px solid var(--line)}
+  .services li{grid-template-columns:3em minmax(0,1fr)}
+  .services li p{grid-column:2}
+  .flow{grid-template-columns:1fr 1fr;row-gap:28px}
+  .teacher,.ask-band{grid-template-columns:1fr}
+  .teacher img{max-width:200px}
+  .rows li{grid-template-columns:4.2em minmax(0,1fr) auto;gap:10px}
+  .rows li .every{font-size:12px}
+  .board-foot{flex-wrap:wrap}
+  .flow div:nth-child(2)::after{display:none}
+}
+@media (prefers-reduced-motion:reduce){.rows li.flip .t,.rows li.flip .what{animation:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#" aria-label="SYNK SHIFT"><svg viewBox="0 32 156 70" fill="currentColor" aria-hidden="true"><path d="M35.8 57.9 25.9 58.5Q25.5 56.6 23.8 55.3Q22.1 53.9 19.3 53.9Q16.7 53.9 15.0 55.0Q13.3 56.0 13.3 57.8Q13.3 59.2 14.4 60.2Q15.5 61.2 18.2 61.8L25.4 63.2Q31.1 64.3 33.9 66.9Q36.7 69.5 36.7 73.8Q36.7 77.7 34.5 80.6Q32.2 83.5 28.3 85.1Q24.4 86.8 19.3 86.8Q11.5 86.8 6.8 83.5Q2.2 80.2 1.4 74.6L12.1 74.1Q12.6 76.5 14.5 77.7Q16.3 78.9 19.3 78.9Q22.1 78.9 23.9 77.8Q25.7 76.7 25.7 75.0Q25.7 72.0 20.6 71.0L13.8 69.6Q8.1 68.5 5.3 65.6Q2.5 62.8 2.5 58.4Q2.5 54.6 4.5 51.9Q6.6 49.2 10.4 47.7Q14.1 46.2 19.1 46.2Q26.6 46.2 30.8 49.3Q35.1 52.5 35.8 57.9Z M44.0 100.7Q41.9 100.7 40.1 100.4Q38.3 100.1 37.1 99.6L39.6 91.5L39.9 91.6Q42.7 92.4 44.6 91.9Q46.6 91.5 47.6 88.8L48.2 87.1L34.1 46.7H45.6L53.7 75.6H54.1L62.3 46.7H73.8L58.6 90.3Q57.5 93.4 55.6 95.8Q53.7 98.1 50.9 99.4Q48.0 100.7 44.0 100.7Z M84.0 63.3V86.0H73.1V46.7H83.8V53.7H84.2Q85.5 50.2 88.4 48.2Q91.4 46.2 95.7 46.2Q99.8 46.2 102.9 48.0Q105.9 49.8 107.6 53.1Q109.3 56.4 109.3 61.0V86.0H98.4V62.9Q98.4 59.4 96.6 57.3Q94.7 55.2 91.4 55.2Q89.2 55.2 87.6 56.2Q85.9 57.2 84.9 59.0Q84.0 60.8 84.0 63.3Z"/><path d="M117.3 86.0V33.6H126.6V62.5H127.2L141.3 46.7H152.1L136.9 63.7L153.0 86.0H141.9L129.9 69.2L126.6 72.8V86.0Z"/></svg><b>SHIFT</b></a>
+  <nav aria-label="SHIFT 차례"><a href="#services">강의</a><a href="#flow">자동화</a><a href="#teacher">강사</a><a class="ask" href="#ask">문의하기</a></nav>
+</header>
+
+<main>
+<section class="hero" aria-labelledby="hero-title" style="padding-top:clamp(32px,5vw,64px)">
+  <div>
+    <p class="small" style="margin:0">SYNK SHIFT · AI 강의와 업무 자동화</p>
+    <h1 id="hero-title">AI를 강의하고,<br>반복 업무는<br><em>자동화합니다</em></h1>
+    <p class="lead">학교·기업·기관에서 AI 시대에 필요한 역량을 강의하고, 강의를 들은 회사의 반복 업무를 AI로 자동화해 고정비를 줄입니다.</p>
+    <div class="acts"><a class="cta" href="#ask">강의 문의하기 <i aria-hidden="true"></i></a><a class="link" href="#flow">자동화는 이렇게 <i aria-hidden="true"></i></a></div>
+  </div>
+
+  <div class="board" role="img" aria-label="SYNK가 자기 회사에 돌리는 예약 작업 표">
+    <div class="board-head"><strong>SYNK가 자기 회사에 돌리는 자동화 · 오늘</strong><span class="clock mono" id="clock">--:--</span></div>
+    <ul class="rows" id="rows"></ul>
+    <div class="always" id="always"></div>
+    <div class="board-foot"><span>실제 예약표 가운데 일부 · 서울 시각</span><span class="mono" id="nextIn"></span></div>
+  </div>
+</section>
+
+<div class="figures">
+  <div><b>30+</b><span>시각마다 저절로 도는 예약 작업 — 백업, 코드 시험, SNS 게시, 광고 의뢰서 받기까지</span></div>
+  <div><b>20+</b><span>올리기 전마다 서는 검사 — 빠진 파일 · 깨진 주소 · 사진 속 제작 표시 같은 실수를 공개 전에 막습니다</span></div>
+  <div><b class="mono">14:00</b><span>매일 이 시각, 세 브랜드의 SNS 편을 스스로 검수한 뒤 모든 계정에 겁니다</span></div>
+</div>
+
+<span id="how"></span><span id="lectures"></span><section id="services" aria-labelledby="services-title">
+  <div class="head small"><span id="services-title">하는 일 — 강의로 시작해 업무 자동화로 잇습니다</span><span style="color:var(--ink-3)">의뢰마다 견적</span></div>
+  <ul class="services">
+    <li><span class="no mono">01</span><h3>AI 특강</h3><p>도구 목록을 훑는 특강이 아니라, 직원이 자기 업무에서 AI로 결과물 하나를 만들어 보는 실습 특강입니다.</p></li>
+    <li><span class="no mono">02</span><h3>학교 AI 진로 강의</h3><p>일반 진로 강의가 아니라, AI 시대에 진로를 어떻게 맞춰 가고 어떤 소양을 준비할지 다루는 진로 강의입니다.</p></li>
+    <li><span class="no mono">03</span><h3>강사 에이전시</h3><p>의뢰의 목표와 청중을 듣고 맞는 AI 강사나 AI 진로 강사를 찾아 배정합니다.</p></li>
+    <li><span class="no mono">04</span><h3>AI 업무 자동화</h3><p>같은 입력과 정리를 사람이 매주 되풀이하는 일이 있다면, 그 일 하나를 골라 AI로 자동화합니다. 값은 자동화 전후로 줄어드는 비용을 근거로 정합니다.</p></li>
+  </ul>
+
+  <span id="process"></span><span id="pricing"></span>
+  <div class="flow" id="flow">
+    <div><span class="small mono" style="color:var(--shift)">01</span><b>강의</b><p>회사가 AI에 맡길 수 있는 일과 사람이 남아야 하는 일을 먼저 함께 봅니다.</p></div>
+    <div><span class="small mono" style="color:var(--shift)">02</span><b>반나절 진단</b><p>업무 흐름을 같이 보고, 자동화할 일 하나를 시연한 뒤 범위와 비용을 적은 제안서를 드립니다.</p></div>
+    <div><span class="small mono" style="color:var(--shift)">03</span><b>업무 하나 구축</b><p>사람이 확인할 자리와, 멈추면 알리는 방식도 함께 만듭니다.</p></div>
+    <div><span class="small mono" style="color:var(--shift)">04</span><b>월 유지·개선</b><p>매달 잘 돌아가는지 점검하고, 업무나 서비스가 바뀌면 고칩니다.</p></div>
+  </div>
+</section>
+
+<section id="teacher" aria-labelledby="teacher-title" style="padding-top:0">
+  <div class="head small"><span>강사</span><span style="color:var(--ink-3)">지금 문의 받는 강사</span></div>
+  <div class="teacher">
+    <img src="/assets/yuho-founder-20260919.png" alt="SYNK 창업자 양유호" width="440" height="440" loading="lazy">
+    <div><h3 id="teacher-title">양유호</h3><p class="small" style="color:var(--ink-2);margin:6px 0 0">SYNK 창업자 · 일정·지역 협의</p>
+      <ul><li>몽골 Skyline Edu 전 부원장(2026) — 학생 상담과 수업 운영</li><li>중앙대학교 심리학과</li><li>SYNK 창업 — 개인화 엔진 아틀라스와 SYNK 플랫폼을 만들고 있습니다</li></ul></div>
+    <div><p style="margin:0;color:var(--ink-2)">위 운행표를 만들고 돌리는 사람이 직접 강의합니다. 강의에서는 이 방법을 듣는 회사의 실제 업무로 바꿔 결과물 하나를 함께 만듭니다.</p><p style="margin:18px 0 0"><a class="link" href="https://synk.im/founder/">창업자 소개 <i aria-hidden="true"></i></a></p></div>
+  </div>
+</section>
+
+<span id="contact"></span><section class="ask-band" id="ask" aria-labelledby="ask-title">
+  <div>
+    <h2 id="ask-title">되풀이하는 일 하나를<br>알려 주세요</h2>
+    <p>강의·강사·자동화 모두 문의 양식 하나로 받습니다. 진행 여부와 일정·견적을 이메일로 답드립니다. 학생이나 직원의 개인 자료는 적지 말아 주세요.</p>
+  </div>
+  <div class="qlinks"><a class="qlink" href="https://docs.google.com/forms/d/e/1FAIpQLSc4Z1BdhPxMi0bWP7enSganI4xCIsTcCxRJ8EpxiWRxyVfsIg/viewform?usp=pp_url&amp;entry.1425474537=SHIFT%20%C2%B7%20%ED%95%99%EA%B5%90%C2%B7%EA%B8%B0%EC%97%85%C2%B7%EA%B8%B0%EA%B4%80%20AI%20%EA%B0%95%EC%9D%98&amp;entry.1372278933=%EC%95%88%EB%85%95%ED%95%98%EC%84%B8%EC%9A%94.%20SYNK%20SHIFT%20%ED%99%88%ED%8E%98%EC%9D%B4%EC%A7%80%EC%97%90%EC%84%9C%20%EA%B0%95%EC%9D%98%EC%99%80%20%EA%B0%95%EC%82%AC%EB%A5%BC%20%EB%B3%B4%EA%B3%A0%20%EB%AC%B8%EC%9D%98%EB%93%9C%EB%A0%A4%EC%9A%94.%0A%0A%EA%B0%95%EC%9D%98%3A%20AI%20%ED%8A%B9%EA%B0%95%0A%0A%5B%EC%95%84%EB%8A%94%20%EA%B2%83%EB%A7%8C%20%EC%A0%81%EC%96%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94%5D%0A%EA%B8%B0%EA%B4%80(%ED%95%99%EA%B5%90%20%C2%B7%20%ED%9A%8C%EC%82%AC%20%C2%B7%20%EA%B8%B0%EA%B4%80%20%EC%9D%B4%EB%A6%84)%3A%20%0A%EA%B5%90%EC%9C%A1%20%EB%AA%A9%ED%91%9C(%ED%95%9C%20%EC%A4%84)%3A%20%0A%EC%B2%AD%EC%A4%91(%ED%95%99%EB%85%84%20%EB%98%90%EB%8A%94%20%EC%A7%81%EB%AC%B4%20%2F%20%EC%9D%B8%EC%9B%90%20%2F%20AI%EB%A5%BC%20%EC%8D%A8%20%EB%B3%B8%20%EC%A0%95%EB%8F%84)%3A%20%0A%EB%82%A0%EC%A7%9C%20%C2%B7%20%EC%8B%9C%EA%B0%84(%EB%AF%B8%EC%A0%95%EC%9D%B4%EB%A9%B4%20%EB%AF%B8%EC%A0%95)%20%C2%B7%20%ED%9A%9F%EC%88%98%20%C2%B7%20%EC%9E%A5%EC%86%8C(%EC%A7%80%EC%97%AD)%3A%20%0A%EC%93%B8%20%EC%88%98%20%EC%9E%88%EB%8A%94%20%EA%B8%B0%EA%B8%B0%20%C2%B7%20%EC%9D%B8%ED%84%B0%EB%84%B7%20%C2%B7%20AI%20%EC%84%9C%EB%B9%84%EC%8A%A4%3A%20%0A%EC%8B%A4%EC%8A%B5%EC%97%90%20%EB%84%A3%EC%9C%BC%EB%A9%B4%20%EC%95%88%20%EB%90%98%EB%8A%94%20%EC%9E%90%EB%A3%8C%3A%20%0A%EA%B0%95%EC%9D%98%20%EB%92%A4%EC%97%90%20%EB%82%A8%EC%95%98%EC%9C%BC%EB%A9%B4%20%ED%95%98%EB%8A%94%20%EA%B2%83%3A%20%0A%EC%98%88%EC%82%B0%20%EB%B2%94%EC%9C%84(%EC%A0%95%ED%95%B4%EC%A0%B8%20%EC%9E%88%EB%8B%A4%EB%A9%B4)%3A%20" target="_blank" rel="noopener">이 강의로 문의 · AI 특강 <span aria-hidden="true">↗</span></a><a class="qlink" href="https://docs.google.com/forms/d/e/1FAIpQLSc4Z1BdhPxMi0bWP7enSganI4xCIsTcCxRJ8EpxiWRxyVfsIg/viewform?usp=pp_url&amp;entry.1425474537=SHIFT%20%C2%B7%20%ED%95%99%EA%B5%90%C2%B7%EA%B8%B0%EC%97%85%C2%B7%EA%B8%B0%EA%B4%80%20AI%20%EA%B0%95%EC%9D%98&amp;entry.1372278933=%EC%95%88%EB%85%95%ED%95%98%EC%84%B8%EC%9A%94.%20SYNK%20SHIFT%20%ED%99%88%ED%8E%98%EC%9D%B4%EC%A7%80%EC%97%90%EC%84%9C%20%EA%B0%95%EC%9D%98%EC%99%80%20%EA%B0%95%EC%82%AC%EB%A5%BC%20%EB%B3%B4%EA%B3%A0%20%EB%AC%B8%EC%9D%98%EB%93%9C%EB%A0%A4%EC%9A%94.%0A%0A%EA%B0%95%EC%9D%98%3A%20%ED%95%99%EA%B5%90%20AI%20%EC%A7%84%EB%A1%9C%20%EA%B0%95%EC%9D%98%0A%0A%5B%EC%95%84%EB%8A%94%20%EA%B2%83%EB%A7%8C%20%EC%A0%81%EC%96%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94%5D%0A%EA%B8%B0%EA%B4%80(%ED%95%99%EA%B5%90%20%C2%B7%20%ED%9A%8C%EC%82%AC%20%C2%B7%20%EA%B8%B0%EA%B4%80%20%EC%9D%B4%EB%A6%84)%3A%20%0A%EA%B5%90%EC%9C%A1%20%EB%AA%A9%ED%91%9C(%ED%95%9C%20%EC%A4%84)%3A%20%0A%EC%B2%AD%EC%A4%91(%ED%95%99%EB%85%84%20%EB%98%90%EB%8A%94%20%EC%A7%81%EB%AC%B4%20%2F%20%EC%9D%B8%EC%9B%90%20%2F%20AI%EB%A5%BC%20%EC%8D%A8%20%EB%B3%B8%20%EC%A0%95%EB%8F%84)%3A%20%0A%EB%82%A0%EC%A7%9C%20%C2%B7%20%EC%8B%9C%EA%B0%84(%EB%AF%B8%EC%A0%95%EC%9D%B4%EB%A9%B4%20%EB%AF%B8%EC%A0%95)%20%C2%B7%20%ED%9A%9F%EC%88%98%20%C2%B7%20%EC%9E%A5%EC%86%8C(%EC%A7%80%EC%97%AD)%3A%20%0A%EC%93%B8%20%EC%88%98%20%EC%9E%88%EB%8A%94%20%EA%B8%B0%EA%B8%B0%20%C2%B7%20%EC%9D%B8%ED%84%B0%EB%84%B7%20%C2%B7%20AI%20%EC%84%9C%EB%B9%84%EC%8A%A4%3A%20%0A%EC%8B%A4%EC%8A%B5%EC%97%90%20%EB%84%A3%EC%9C%BC%EB%A9%B4%20%EC%95%88%20%EB%90%98%EB%8A%94%20%EC%9E%90%EB%A3%8C%3A%20%0A%EA%B0%95%EC%9D%98%20%EB%92%A4%EC%97%90%20%EB%82%A8%EC%95%98%EC%9C%BC%EB%A9%B4%20%ED%95%98%EB%8A%94%20%EA%B2%83%3A%20%0A%EC%98%88%EC%82%B0%20%EB%B2%94%EC%9C%84(%EC%A0%95%ED%95%B4%EC%A0%B8%20%EC%9E%88%EB%8B%A4%EB%A9%B4)%3A%20" target="_blank" rel="noopener">학교 AI 진로 강의로 문의 <span aria-hidden="true">↗</span></a><a class="qlink" href="https://docs.google.com/forms/d/e/1FAIpQLSc4Z1BdhPxMi0bWP7enSganI4xCIsTcCxRJ8EpxiWRxyVfsIg/viewform?usp=pp_url&amp;entry.1425474537=SHIFT%20%C2%B7%20AI%20%EA%B0%95%EC%82%AC%C2%B7%EC%A7%84%EB%A1%9C%20%EA%B0%95%EC%82%AC%20%EC%97%90%EC%9D%B4%EC%A0%84%EC%8B%9C&amp;entry.1372278933=%EC%95%88%EB%85%95%ED%95%98%EC%84%B8%EC%9A%94.%20SYNK%20SHIFT%20%ED%99%88%ED%8E%98%EC%9D%B4%EC%A7%80%EC%97%90%EC%84%9C%20%EA%B0%95%EC%9D%98%EC%99%80%20%EA%B0%95%EC%82%AC%EB%A5%BC%20%EB%B3%B4%EA%B3%A0%20%EB%AC%B8%EC%9D%98%EB%93%9C%EB%A0%A4%EC%9A%94.%0A%0A%EA%B0%95%EC%82%AC%3A%20SYNK%EA%B0%80%20%EB%A7%9E%EB%8A%94%20%EA%B0%95%EC%82%AC%EB%A5%BC%20%EC%B6%94%EC%B2%9C%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94%0A%0A%5B%EC%95%84%EB%8A%94%20%EA%B2%83%EB%A7%8C%20%EC%A0%81%EC%96%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94%5D%0A%EA%B8%B0%EA%B4%80(%ED%95%99%EA%B5%90%20%C2%B7%20%ED%9A%8C%EC%82%AC%20%C2%B7%20%EA%B8%B0%EA%B4%80%20%EC%9D%B4%EB%A6%84)%3A%20%0A%EA%B5%90%EC%9C%A1%20%EB%AA%A9%ED%91%9C(%ED%95%9C%20%EC%A4%84)%3A%20%0A%EC%B2%AD%EC%A4%91(%ED%95%99%EB%85%84%20%EB%98%90%EB%8A%94%20%EC%A7%81%EB%AC%B4%20%2F%20%EC%9D%B8%EC%9B%90%20%2F%20AI%EB%A5%BC%20%EC%8D%A8%20%EB%B3%B8%20%EC%A0%95%EB%8F%84)%3A%20%0A%EB%82%A0%EC%A7%9C%20%C2%B7%20%EC%8B%9C%EA%B0%84(%EB%AF%B8%EC%A0%95%EC%9D%B4%EB%A9%B4%20%EB%AF%B8%EC%A0%95)%20%C2%B7%20%ED%9A%9F%EC%88%98%20%C2%B7%20%EC%9E%A5%EC%86%8C(%EC%A7%80%EC%97%AD)%3A%20%0A%EC%93%B8%20%EC%88%98%20%EC%9E%88%EB%8A%94%20%EA%B8%B0%EA%B8%B0%20%C2%B7%20%EC%9D%B8%ED%84%B0%EB%84%B7%20%C2%B7%20AI%20%EC%84%9C%EB%B9%84%EC%8A%A4%3A%20%0A%EC%8B%A4%EC%8A%B5%EC%97%90%20%EB%84%A3%EC%9C%BC%EB%A9%B4%20%EC%95%88%20%EB%90%98%EB%8A%94%20%EC%9E%90%EB%A3%8C%3A%20%0A%EA%B0%95%EC%9D%98%20%EB%92%A4%EC%97%90%20%EB%82%A8%EC%95%98%EC%9C%BC%EB%A9%B4%20%ED%95%98%EB%8A%94%20%EA%B2%83%3A%20%0A%EC%98%88%EC%82%B0%20%EB%B2%94%EC%9C%84(%EC%A0%95%ED%95%B4%EC%A0%B8%20%EC%9E%88%EB%8B%A4%EB%A9%B4)%3A%20" target="_blank" rel="noopener">강사 추천 문의 <span aria-hidden="true">↗</span></a><a class="qlink" href="https://docs.google.com/forms/d/e/1FAIpQLSc4Z1BdhPxMi0bWP7enSganI4xCIsTcCxRJ8EpxiWRxyVfsIg/viewform" target="_blank" rel="noopener">자동화 · 그 밖의 문의 <span aria-hidden="true">↗</span></a></div>
+</section>
+</main>
+<footer><span>© 2026 SYNK</span><span>hello@synk.im</span></footer>
+
+<script>
+// 운행표: docs/_ops/관문_자동화.md(11-06)의 예약 작업 가운데 공개해도 되는 줄만, 도구 이름 없이 쉬운 말로. 시각 · 주기는 표 그대로.
+const DAILY = [
+  ['05:00', '인기 공개 콘텐츠 조사 · 제작 가이드', '매일'],
+  ['05:30', '회사 서버 · DB 암호화 백업', '매일'],
+  ['07:00', '고른 기획을 최종본까지 제작', '매일 두 번'],
+  ['10:00', '게시 성과 판정', '화 · 금', [2, 5]],
+  ['12:30', '미디어 원본 백업', '매일'],
+  ['14:00', '오늘 SNS 편 자체 검수 → 모든 계정에 게시', '매일'],
+  ['15:00', '고른 기획을 최종본까지 제작', '매일 두 번'],
+  ['19:30', '수요 스캔 · 다음 기획 후보', '매일'],
+  ['20:52', '스레드 게시', '매일'],
+];
+const ALWAYS = [['5분', '바뀐 코드 시험'], ['10분', '새 광고 의뢰서 받기'], ['15분', '백업 · 디스크 상태 확인'], ['30분', '저장 공간 지킴이']];
+const rows = document.getElementById('rows'), clock = document.getElementById('clock'), nextIn = document.getElementById('nextIn');
+document.getElementById('always').innerHTML = ALWAYS.map(([e, w]) => `<span><b class="mono">${e}마다</b>${w}</span>`).join('');
+rows.innerHTML = DAILY.map(([t, w, e]) => `<li><span class="t mono">${t}</span><span class="what">${w}</span><span class="every">${e}</span></li>`).join('');
+const items = [...rows.children];
+// 서울 시각 · 요일(0=일). 요일이 정해진 줄(화 · 금)은 그날만 돈다 — 안 도는 날은 「오늘 없음」으로 흐리게(Fable 시안 검수 P2).
+const seoul = () => { const d = new Date(Date.now() + 9 * 3600e3); return { h: d.getUTCHours(), m: d.getUTCMinutes(), w: d.getUTCDay() }; };
+const runsToday = (row, w) => !row[3] || row[3].includes(w);
+let lastNext = -1;
+function draw() {
+  const { h, m, w } = seoul();
+  clock.textContent = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  const nowMin = h * 60 + m;
+  const at = t => { const [a, b] = t.split(':').map(Number); return a * 60 + b; };
+  const next = DAILY.findIndex(row => runsToday(row, w) && at(row[0]) > nowMin);
+  items.forEach((li, i) => {
+    const on = runsToday(DAILY[i], w);
+    li.classList.toggle('off', !on);
+    li.querySelector('.every').textContent = on ? DAILY[i][2] : '오늘 없음';
+    li.classList.toggle('past', on && (next >= 0 ? i < next : true));
+    li.classList.toggle('next', i === next);
+  });
+  if (next !== lastNext && next >= 0) { items[next].classList.remove('flip'); void items[next].offsetWidth; items[next].classList.add('flip'); lastNext = next; }
+  if (next >= 0) {
+    const left = at(DAILY[next][0]) - nowMin;
+    nextIn.textContent = `다음까지 ${Math.floor(left / 60) ? Math.floor(left / 60) + '시간 ' : ''}${left % 60}분`;
+  } else nextIn.textContent = '오늘 예약 끝 · 내일 05:00';
+}
+draw(); setInterval(draw, 15000);
+</script>
+</body>
+</html>

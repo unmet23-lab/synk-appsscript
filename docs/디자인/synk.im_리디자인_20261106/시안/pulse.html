@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SYNK PULSE — 시안 「시사실」</title>
+<!-- synk.im/pulse 리디자인 시안(2026-11-06). 고객 앱이 11-05에 고른 「시사실」(검정 · 명조 · 화면 전부를 덮는 소리 없는 쇼릴)을 회사 쪽 첫 화면으로 잇는다.
+     바닥: 11-04 크롤링 평균(Recent 1,097 · Cosmos 45,391 · 제작사 등 91곳 실측 — docs/마케팅/PULSE_프론트재구성_20261104 3 · 4절):
+     작품이 화면 87~100% · 글자 3~4단(아주 크거나 아주 작게) · 단추 · 칸 · 둥글림 없음 · 작은 글은 귀퉁이 · 전환 0.7~1.2초, 손 반응 0.2~0.3초.
+     글은 지금 공개 원고 그대로(제목 · 소개 · 작품 글 · 이력). 새로 쓴 글은 머리 막대 낱말과 의뢰 띠 한 줄뿐. 값 줄은 의뢰서로만(11-05 고객 앱 결정과 같은 까닭). -->
+<style>
+@font-face{font-family:SUIT;src:url(/pa/SUIT.woff2) format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'Serif KR';src:url(/pa/NotoSerifKR-300.woff2) format('woff2');font-weight:300;font-display:swap}
+:root{
+  --bg:#0a0a0b;--ink:#f2efe9;--ink-2:rgba(242,239,233,.68);--ink-3:rgba(242,239,233,.58);--line:rgba(242,239,233,.16);
+  --pulse:#c2477f;--pad:clamp(20px,3vw,40px);
+  --ease:cubic-bezier(.19,1,.22,1);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:SUIT,system-ui,sans-serif;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:anywhere}
+a{color:inherit;text-decoration:none}
+.serif{font-family:'Serif KR',serif;font-weight:300;letter-spacing:-.01em}
+.small{font-size:13px;letter-spacing:.01em}
+.dim{color:var(--ink-2)}
+.faint{color:var(--ink-3)}
+.gothic{font-family:SUIT,'Yu Gothic','Malgun Gothic',sans-serif;font-weight:500;letter-spacing:0}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* 머리 — 로고 하나와 네 낱말, 칸 없이 */
+.top{position:fixed;inset:0 0 auto 0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:22px var(--pad);transition:background .6s var(--ease)}
+.top.solid{background:rgba(10,10,11,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.brand{display:flex;align-items:center;gap:9px}
+.brand svg{width:54px;height:auto;display:block}
+.brand b{font-size:13px;font-weight:700;letter-spacing:.12em;color:#de6a9d}
+.top nav{display:flex;gap:26px}
+.top nav a{font-size:13px;color:var(--ink-2);transition:color .25s}
+.top nav a:hover{color:var(--ink)}
+.top nav a.ask{color:var(--ink)}
+
+/* 첫 화면 = 시사실 */
+.hall{position:relative;height:100svh;min-height:560px;overflow:hidden;background:#000}
+.hall video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hall::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.62),rgba(0,0,0,0) 58%),linear-gradient(0deg,rgba(0,0,0,.55),rgba(0,0,0,0) 42%);pointer-events:none}
+.hall-copy{position:absolute;left:var(--pad);bottom:clamp(88px,12vh,128px);z-index:2;max-width:min(64vw,920px)}
+.hall-copy .small{color:var(--ink-2)}
+.hall h1{margin:14px 0 0;font-size:clamp(34px,5.6vw,86px);line-height:1.08;white-space:nowrap}
+.hall p.lead{margin:22px 0 0;max-width:34em;font-size:17px;color:var(--ink-2);white-space:normal}
+.hall-side{position:absolute;right:var(--pad);bottom:clamp(88px,12vh,128px);z-index:2;display:flex;flex-direction:column;align-items:flex-end;gap:18px;text-align:right}
+.now{min-height:42px}
+.now strong{display:block;font-weight:600;font-size:14px}
+.now span{font-size:13px;color:var(--ink-2)}
+.now.swap{animation:nowin .9s var(--ease)}
+@keyframes nowin{from{opacity:0;transform:translateY(6px)}}
+.cta{display:inline-flex;align-items:center;gap:18px;padding:15px 22px;background:var(--ink);color:#0a0a0b;font-weight:650;font-size:15px;transition:gap .25s var(--ease)}
+.cta:hover{gap:26px}
+.cta i{display:block;width:30px;height:1px;background:currentColor;position:relative}
+.cta i::after{content:'';position:absolute;right:0;top:-4px;width:8px;height:8px;border-top:1px solid currentColor;border-right:1px solid currentColor;transform:rotate(45deg)}
+.reel-index{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);z-index:2;display:flex;gap:22px}
+.reel-index button{all:unset;cursor:pointer;display:grid;gap:8px;justify-items:center;font-size:13px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.reel-index button span{display:block;width:44px;height:1px;background:var(--line);position:relative;overflow:hidden}
+.reel-index button span::after{content:'';position:absolute;inset:0;background:var(--ink);transform:scaleX(var(--p,0));transform-origin:left}
+.reel-index button.on{color:var(--ink)}
+.reel-index button:focus-visible{outline:1px solid var(--ink);outline-offset:6px}
+
+/* 작품 — 어긋나게 놓인 큰 영상 */
+section{position:relative;padding:clamp(64px,8vw,112px) var(--pad)}
+.eyebrow{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--line);padding-top:16px;margin-bottom:clamp(36px,5vw,64px)}
+.work{display:grid;gap:22px;margin:0 0 clamp(56px,7vw,96px)}
+.work:nth-of-type(odd){width:min(86vw,1240px)}
+.work:nth-of-type(even){width:min(72vw,1040px);margin-left:auto}
+.work figure{margin:0;position:relative;aspect-ratio:16/9;background:#111;overflow:hidden}
+.work figure.tall{aspect-ratio:16/9}
+.work video{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.02);transition:transform 1.2s var(--ease)}
+.work:hover video{transform:scale(1)}
+.work .cap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,26em);gap:24px;align-items:start}
+.work h2{margin:0;font-size:clamp(28px,3.2vw,44px);line-height:1.15}
+.work .meta{font-size:13px;color:var(--ink-2)}
+.work .meta b{display:block;color:var(--ink);font-weight:600;letter-spacing:.08em;margin-bottom:6px}
+
+/* 배우 — 한 줄로 흐르는 얼굴 */
+.cast-row{display:flex;gap:14px;overflow-x:auto;padding-bottom:18px;scroll-snap-type:x proximity;scroll-padding-left:0;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.cast-row figure{flex:0 0 clamp(150px,13vw,200px);margin:0;scroll-snap-align:start}
+.cast-row img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block;filter:grayscale(1) contrast(1.05);transition:filter .7s var(--ease)}
+.cast-row figure:hover img{filter:none}
+.cast-row figcaption{margin-top:10px;font-size:13px;color:var(--ink-2)}
+.cast-head{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:40px}
+.cast-head h2{margin:0;font-size:clamp(36px,4.6vw,68px);line-height:1.1}
+.link{font-size:13px;border-bottom:1px solid var(--ink-3);padding-bottom:2px}
+.cast-acts{display:flex;align-items:center;gap:10px}
+.cast-acts button{all:unset;cursor:pointer;width:40px;height:40px;display:grid;place-items:center;border:1px solid var(--line);font-size:15px;transition:border-color .25s}
+.cast-acts button:hover{border-color:var(--ink)}
+.cast-acts button:focus-visible{outline:1px solid var(--ink);outline-offset:3px}
+.cast-acts .link{margin-left:14px}
+
+/* 만드는 사람 */
+.maker{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:clamp(32px,6vw,96px);align-items:end}
+.maker h2{margin:0;font-size:clamp(34px,4.2vw,62px);line-height:1.18}
+.maker ul{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.maker li{padding:14px 0;border-bottom:1px solid var(--line);font-size:14px;color:var(--ink-2)}
+.maker li b{color:var(--ink);font-weight:600;margin-right:10px}
+
+/* 의뢰 — 인화지 띠 하나 */
+.ask-band{background:#efece6;color:#111;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:32px;align-items:end;padding-top:clamp(56px,7vw,96px);padding-bottom:clamp(56px,7vw,96px)}
+.ask-band h2{margin:0;font-size:clamp(34px,4.6vw,68px);line-height:1.12}
+.ask-band .cta{background:#111;color:#efece6}
+.ask-band p{margin:18px 0 0;font-size:13px;color:#555}
+footer{padding:28px var(--pad);display:flex;justify-content:space-between;gap:24px;font-size:13px;color:var(--ink-3)}
+footer .clarity{max-width:56em;text-align:right}
+footer a{text-decoration:underline}
+@media (max-width:820px){footer{flex-direction:column}footer .clarity{text-align:left}}
+
+.reveal{opacity:0;transform:translateY(24px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+
+@media (max-width:820px){
+  .top nav a:not(.ask){display:none}
+  .hall-copy{bottom:178px;right:var(--pad);max-width:none}
+  .hall h1{white-space:normal}
+  .now{display:none}
+  .hall-side{left:var(--pad);right:var(--pad);bottom:84px;align-items:flex-start;text-align:left}
+  .reel-index{bottom:26px}
+  .work:nth-of-type(odd),.work:nth-of-type(even){width:100%}
+  .work .cap{grid-template-columns:1fr}
+  .maker,.ask-band{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.now.swap{animation:none}.work video{transition:none}}
+</style>
+</head>
+<body>
+<header class="top" id="top">
+  <a class="brand" href="#" aria-label="SYNK PULSE"><svg viewBox="0 32 156 70" fill="currentColor" aria-hidden="true"><path d="M35.8 57.9 25.9 58.5Q25.5 56.6 23.8 55.3Q22.1 53.9 19.3 53.9Q16.7 53.9 15.0 55.0Q13.3 56.0 13.3 57.8Q13.3 59.2 14.4 60.2Q15.5 61.2 18.2 61.8L25.4 63.2Q31.1 64.3 33.9 66.9Q36.7 69.5 36.7 73.8Q36.7 77.7 34.5 80.6Q32.2 83.5 28.3 85.1Q24.4 86.8 19.3 86.8Q11.5 86.8 6.8 83.5Q2.2 80.2 1.4 74.6L12.1 74.1Q12.6 76.5 14.5 77.7Q16.3 78.9 19.3 78.9Q22.1 78.9 23.9 77.8Q25.7 76.7 25.7 75.0Q25.7 72.0 20.6 71.0L13.8 69.6Q8.1 68.5 5.3 65.6Q2.5 62.8 2.5 58.4Q2.5 54.6 4.5 51.9Q6.6 49.2 10.4 47.7Q14.1 46.2 19.1 46.2Q26.6 46.2 30.8 49.3Q35.1 52.5 35.8 57.9Z M44.0 100.7Q41.9 100.7 40.1 100.4Q38.3 100.1 37.1 99.6L39.6 91.5L39.9 91.6Q42.7 92.4 44.6 91.9Q46.6 91.5 47.6 88.8L48.2 87.1L34.1 46.7H45.6L53.7 75.6H54.1L62.3 46.7H73.8L58.6 90.3Q57.5 93.4 55.6 95.8Q53.7 98.1 50.9 99.4Q48.0 100.7 44.0 100.7Z M84.0 63.3V86.0H73.1V46.7H83.8V53.7H84.2Q85.5 50.2 88.4 48.2Q91.4 46.2 95.7 46.2Q99.8 46.2 102.9 48.0Q105.9 49.8 107.6 53.1Q109.3 56.4 109.3 61.0V86.0H98.4V62.9Q98.4 59.4 96.6 57.3Q94.7 55.2 91.4 55.2Q89.2 55.2 87.6 56.2Q85.9 57.2 84.9 59.0Q84.0 60.8 84.0 63.3Z"/><path d="M117.3 86.0V33.6H126.6V62.5H127.2L141.3 46.7H152.1L136.9 63.7L153.0 86.0H141.9L129.9 69.2L126.6 72.8V86.0Z"/></svg><b>PULSE</b></a>
+  <nav aria-label="PULSE 차례"><a href="#works">작품</a><a href="#cast">배우</a><a href="#maker">만드는 사람</a><a class="ask" href="#ask">광고 의뢰하기</a></nav>
+</header>
+
+<main>
+<section class="hall" aria-label="첫 화면" style="padding:0">
+  <video id="reel" muted playsinline autoplay loop preload="auto" poster="/media/reel2-wide-poster.webp" aria-hidden="true"></video>
+  <div class="hall-copy">
+    <p class="small" style="margin:0">SYNK PULSE · AI 광고 제작</p>
+    <h1 class="serif">AI 모델에게<br>연기를 가르칩니다</h1>
+    <p class="lead">배우·광고 모델로 10년 일한 대표가 시선, 제품을 쥔 손, 웃음이 나오는 타이밍까지 직접 연출합니다.</p>
+  </div>
+  <div class="hall-side">
+    <div class="now" id="now"><strong>화성 CF 「1억 년의 빛」</strong><span>55초 · 2026 별별화성 Awards 출품</span></div>
+    <p class="sr-only" id="nowLive" aria-live="polite"></p>
+    <a class="cta" href="#ask">광고 의뢰하기 <i aria-hidden="true"></i></a>
+  </div>
+  <div class="reel-index" id="index" aria-label="쇼릴 속 작품"></div>
+</section>
+
+<span id="film"></span><section id="works" aria-labelledby="works-title">
+  <div class="eyebrow small"><span id="works-title">작품 — 직접 만든 광고</span><span class="faint">3편 · 2026</span></div>
+
+  <article class="work reveal">
+    <figure><video muted playsinline loop preload="none" poster="/pa/films/hwaseong-cf-light-poster-v1.webp" data-src="/pa/films/hwaseong-cf-light-v1.mp4"></video></figure>
+    <div class="cap"><h2 class="serif">화성 CF 「1억 년의 빛」</h2><p class="meta"><b>CF · 55초</b>1억 년 전 공룡알의 빛이 바다의 노을과 솔숲의 햇무리를 지나 오늘의 도시 불빛으로 이어지는 55초 CF입니다. 2026 별별화성 Awards AI CF 부문에 출품했습니다.</p></div>
+  </article>
+
+  <article class="work reveal">
+    <figure><video muted playsinline loop preload="none" poster="/pa/films/maejin-imbak-poster-v1.webp" data-src="/pa/films/maejin-imbak-v1.mp4"></video></figure>
+    <div class="cap"><h2 class="serif">「매진 임박」</h2><p class="meta"><b>COMEDY · 1분 13초</b>공포 영화 같은 밤에 홈쇼핑 방송이 끼어드는 1분 13초 코미디 광고입니다. 이야기로 끝까지 보게 만들었습니다.</p></div>
+  </article>
+
+  <article class="work reveal">
+    <figure><video muted playsinline loop preload="none" poster="/pa/films/yurigyeol-holiday-poster-v1.webp" data-src="/pa/films/yurigyeol-holiday-v1.mp4"></video></figure>
+    <div class="cap"><h2 class="serif">홀리데이 기프트 「<span class="gothic">霜の肌理</span>」</h2><p class="meta"><b>PRODUCT · 15초</b>가상 스킨케어 브랜드 「霜の肌理」의 홀리데이 세트를 흩날리는 유리 조각 사이에서 보여 주는 15초 광고입니다. 한 장면의 임팩트로 기억에 남게 만들었습니다.</p></div>
+  </article>
+</section>
+
+<span id="models"></span><section id="cast" aria-labelledby="cast-title" style="padding-top:0">
+  <div class="cast-head">
+    <h2 class="serif" id="cast-title">AI 모델 스물한 명</h2>
+    <div class="cast-acts"><button type="button" data-scroll="-1" aria-label="앞 모델">←</button><button type="button" data-scroll="1" aria-label="다음 모델">→</button><a class="link" href="https://synk.im/pulse/casting/">캐스팅북에서 고르기 ↗</a></div>
+  </div>
+  <div class="cast-row" id="castRow"></div>
+  <p class="small dim" style="margin:18px 0 0">AI로 만든 모델입니다. 유호는 SYNK 창업자 양유호 본인을 바탕으로 만들었고, 나머지 스무 명은 실제 인물이 아닌 가상 모델입니다.</p>
+</section>
+
+<section id="maker" aria-labelledby="maker-title">
+  <div class="maker">
+    <h2 class="serif reveal" id="maker-title">카메라 앞에 서 본 사람이<br>AI 모델의 연기를 연출합니다</h2>
+    <div class="reveal">
+      <p class="dim" style="margin:0 0 22px">AI 광고가 어색해지는 곳은 대개 표정과 호흡, 말이 끝나는 타이밍입니다. SYNK PULSE는 엔터테인먼트·광고 업계에서 10년 일한 대표 유호가 연출합니다.</p>
+      <ul>
+        <li><b>넷플릭스</b>「보라! 데보라」 1화 오프닝 시퀀스 출연</li>
+        <li><b>tvN</b>「코미디빅리그」 코너 출연</li>
+        <li><b>뮤직비디오</b>부활 「너의 모습」 주연</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<span id="contact"></span><span id="soon"></span><section class="ask-band" id="ask" aria-labelledby="ask-title">
+  <div>
+    <h2 class="serif" id="ask-title">제품 사진 한 장과<br>올릴 곳만 있으면 시작합니다</h2>
+    <p>의뢰서에서 길이와 구성을 고르면 그 자리에서 값이 보입니다. 영상 전에 모든 컷을 장면 이미지로 먼저 보여 드립니다.</p>
+  </div>
+  <a class="cta" href="https://workspace.synk.im/pulse-app/?start=request">광고 의뢰하기 <i aria-hidden="true"></i></a>
+</section>
+</main>
+<footer><span>© 2026 SYNK · hello@synk.im</span><span class="clarity">이 페이지는 안내와 광고를 개선하기 위해 Microsoft Clarity로 스크롤·클릭 같은 이용 기록을 수집하며, 이용하시면 SYNK와 Microsoft의 수집·이용에 동의하신 것으로 봅니다. 질문창에 적은 글은 수집하지 않습니다. <a href="https://synk.im/privacy/#pulse-clarity">수집 항목과 막는 방법</a></span></footer>
+
+<script>
+// 쇼릴: 넓은 화면은 가로 판, 좁은 화면은 세로 판. 쇼릴 시각표(reel.json)로 지금 나오는 작품의 이름 · 번호를 맞춘다.
+const WORKS = {
+  cf: { no: '01', t: '화성 CF 「1억 년의 빛」', s: '55초 · 2026 별별화성 Awards 출품' },
+  maejin: { no: '02', t: '「매진 임박」', s: '1분 13초 코미디 광고' },
+  gift: { no: '03', t: '홀리데이 기프트 「霜の肌理」', s: '15초 광고 · 가상 스킨케어 브랜드' },
+};
+const reel = document.getElementById('reel');
+const tall = matchMedia('(max-aspect-ratio: 4/5)').matches;
+// 움직임 줄이기면 쇼릴을 틀지 않고 첫 그림만 둔다
+const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (tall) reel.poster = '/media/reel2-tall-poster.webp';
+if (still) { reel.removeAttribute('autoplay'); reel.preload = 'none'; } else reel.src = tall ? '/media/reel2-tall.mp4' : '/media/reel2-wide.mp4';
+const now = document.getElementById('now'), index = document.getElementById('index');
+let timeline = [], total = 12.8, shown = 'cf';
+const order = ['cf', 'maejin', 'gift'];
+const live = document.getElementById('nowLive');
+for (const k of order) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.dataset.work = k; b.innerHTML = `${WORKS[k].no}<span></span>`;
+  b.setAttribute('aria-label', WORKS[k].t + ' 장면으로');
+  b.addEventListener('click', () => { const seg = timeline.find(x => x.work === k); if (seg && !still) reel.currentTime = seg.at + .05; live.textContent = WORKS[k].t; });
+  index.append(b);
+}
+fetch('/media/reel2.json').then(r => r.json()).then(j => { timeline = j.timeline; total = j.total; }).catch(() => {});
+function tick() {
+  const t = reel.currentTime;
+  let cur = timeline[0];
+  for (const seg of timeline) if (t >= seg.at) cur = seg;
+  if (cur && cur.work !== shown) {
+    shown = cur.work;
+    now.innerHTML = `<strong>${WORKS[shown].t}</strong><span>${WORKS[shown].s}</span>`;
+    now.classList.remove('swap'); void now.offsetWidth; now.classList.add('swap');
+  }
+  if (cur) {
+    const i = timeline.indexOf(cur), end = (timeline[i + 1] || { at: total }).at;
+    for (const b of index.children) {
+      const on = b.dataset.work === shown;
+      b.classList.toggle('on', on);
+      b.querySelector('span').style.setProperty('--p', on ? Math.min(1, (t - cur.at) / (end - cur.at)).toFixed(3) : 0);
+    }
+  }
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+// 머리: 첫 화면을 지나면 바탕을 깐다
+const bar = document.getElementById('top');
+addEventListener('scroll', () => bar.classList.toggle('solid', scrollY > innerHeight * .6), { passive: true });
+
+// 작품 영상: 화면에 들어오면 받아서 재생, 나가면 멈춤
+// 작품 영상: 포스터(끝 장면)로 멈춰 두고, 손을 올리거나 화면 가운데에 1초 머물면 재생. 나가면 멈추고 포스터로 되돌린다.
+const play = v => { if (still) return; if (!v.src) v.src = v.dataset.src; v.play().catch(() => {}); };
+const rest = v => { clearTimeout(v._t); if (v.src && !v.paused) { v.pause(); v.load(); } };
+const io = new IntersectionObserver(es => {
+  for (const e of es) {
+    const v = e.target;
+    if (e.isIntersecting) { clearTimeout(v._t); v._t = setTimeout(() => play(v), 1000); } else rest(v);
+  }
+}, { threshold: .7 });
+document.querySelectorAll('.work video').forEach(v => { io.observe(v); v.parentElement.addEventListener('pointerenter', () => play(v)); });
+const ro = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) { e.target.classList.add('in'); ro.unobserve(e.target); } }, { threshold: .15 });
+document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+
+// 배우 스물한 명(지금 공개 쪽과 같은 사진 · 이름)
+const CAST = [['m01-20260930','이안'],['f02-20260930','하린'],['m03-20260930','유호'],['f03-20260930','서진'],['m02-20260930','태준'],['f01-20260930','유나'],['f04-20261022','지유'],['f05-20261022','소연'],['m04-20261022','민재'],['f06-20261022','은정'],['f07-20261022','채원'],['m05-20261022','준호'],['m06-20261024','한결'],['f08-20261103','윤슬'],['f09-20261103','로하'],['f10-20261103','새봄'],['f11-20261103','해인'],['m07-20261103','도현'],['m08-20261103','하람'],['m09-20261103','서율'],['m10-20261103','지온']];
+for (const b of document.querySelectorAll('[data-scroll]')) b.addEventListener('click', () => { const r = document.getElementById('castRow'); r.scrollBy({ left: Number(b.dataset.scroll) * r.clientWidth * .8, behavior: still ? 'auto' : 'smooth' }); });
+document.getElementById('castRow').innerHTML = CAST.map(([f, n]) => `<figure><img src="/assets/pulse-models/pulse-model-${f}.webp" alt="PULSE AI 모델 ${n}" loading="lazy" width="300" height="400"><figcaption>${n}</figcaption></figure>`).join('');
+</script>
+</body>
+</html>
