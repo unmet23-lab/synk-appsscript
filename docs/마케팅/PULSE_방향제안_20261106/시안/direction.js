@@ -11,17 +11,19 @@
       ],
       why: '처음 나오는 제품은 이름부터 남아야 해요. 「톡」이 소리와 그림으로 한 번에 남아요.',
       work: '유리결', film: './assets/film-gift.mp4',
+      taste: './assets/taste-tok.mp4', tasteCap: '멈춘 코트에서 「…왜요?」까지 · 5초',
     },
     wait: {
       name: '아니, 잠깐',
       sentence: '맛을 설명하려다 말을 다섯 번 바꿔요.',
       flow: [
         ['0:00', '경기가 끝나고 친구 폰 앞. “이거 무슨 맛이야?”'],
-        ['0:03', '한 모금마다 말이 바뀌어요. “달아. 아니, 셔. 어, 쌉쌀… 왜 끝이 알싸해?”'],
+        ['0:03', '한 모금마다 말이 바뀌어요. “달아. 아니, 새콤해. 어… 근데 끝이 알싸해?”'],
         ['0:11', '친구가 뺏어 마셔요. “달아. 아니, 잠깐…” 다섯 가지 맛, 톡. 11월, 편의점에서.'],
       ],
       why: '「다섯 가지 맛」이 대사로 풀려요. 친구 폰으로 찍은 결이라, 요청하신 「너무 광고 같지 않게」에 맞아요.',
       work: '매진 임박', film: './assets/film-maejin.mp4',
+      taste: './assets/taste-wait.mp4', tasteCap: '말을 바꾸다 캔을 뺏기기까지 · 8초',
     },
   };
   const MODELS = [
@@ -63,19 +65,23 @@
     const item = DIRECTIONS[id], frame = root.querySelector(`[data-frame="${id}"]`);
     stopFilm();
     const video = document.createElement('video');
-    video.className = `dp-film${kind === 'model' ? ' is-model' : ''}`;
-    video.src = kind === 'model' ? `./assets/wall-${model.id}.mp4` : item.film;
-    video.muted = true; video.loop = true; video.playsInline = true; video.autoplay = !still;
+    const taste = kind === 'taste';
+    video.className = `dp-film${taste ? ' is-model' : ''}`;
+    video.src = taste ? item.taste : item.film;
+    // 미리 움직여 보기는 손님이 누른 순간이라 소리를 켜고 한 번만 튼다. 끝나면 그림으로 돌아간다.
+    video.muted = !taste; video.loop = !taste; video.playsInline = true; video.autoplay = taste || !still;
+    if (taste) video.addEventListener('ended', () => { stopFilm(); drawDetail(false); }, { once: true });
     const cap = document.createElement('span');
     cap.className = 'dp-film-cap sx-small';
-    cap.textContent = kind === 'model' ? `${model.name} · 저희가 만든 AI 모델` : `「${item.work}」 · 가상 브랜드로 만든 자체 작품`;
+    cap.textContent = taste ? `미리 움직여 본 첫 판 · ${item.tasteCap} · 소리 있음` : `「${item.work}」 · 가상 브랜드로 만든 자체 작품`;
     frame.append(video, cap);
-    video.play?.().catch(() => {});
+    video.play?.().catch(() => { video.muted = true; video.play?.().catch(() => {}); });
     playing = id; playingKind = kind;
   }
   function modelRow() {
     const list = modelOpen ? `<div class="dp-casts" role="group" aria-label="다른 모델 고르기">${MODELS.map((item) => `<button type="button" class="dp-cast ${item.id === model.id ? 'is-on' : ''}" aria-pressed="${item.id === model.id}" data-model="${item.id}"><img src="./assets/model-scene-${item.id}.webp" alt="" width="538" height="720" loading="lazy"><span class="sx-small">${esc(item.name)}</span></button>`).join('')}</div>${model.id === MODELS[0].id ? '' : '<p class="sx-small dp-cast-note">이 모델로 바꿔 장면 이미지에서 보여 드려요.</p>'}` : '';
-    return `<div class="dp-model"><div class="dp-model-row sx-small"><p><span class="dp-label">AI 모델</span><b>${esc(model.name)}</b><button type="button" class="sx-link dp-model-open" data-film="model" aria-pressed="${playing === focus && playingKind === 'model'}">${playing === focus && playingKind === 'model' ? '그림으로' : '움직임 보기'}</button><button type="button" class="sx-link dp-model-open" data-model-open aria-expanded="${modelOpen}">${modelOpen ? '닫기' : '다른 모델로'}</button></p><button type="button" class="sx-link" data-film="work" aria-pressed="${playing === focus && playingKind === 'work'}">${playing === focus && playingKind === 'work' ? '그림으로' : '비슷한 작품 보기'}</button></div>${list}</div>`;
+    const on = (kind) => playing === focus && playingKind === kind;
+    return `<div class="dp-model"><button type="button" class="dp-taste" data-film="taste" aria-pressed="${on('taste')}"><span class="dp-taste-mark" aria-hidden="true">${on('taste') ? '<svg viewBox="0 0 10 10"><rect x="1" y="1" width="8" height="8"/></svg>' : '<svg viewBox="0 0 10 10"><path d="M2 0.5 9.5 5 2 9.5z"/></svg>'}</span><span><b>${on('taste') ? '그림으로 돌아가기' : '미리 움직여 보기'}</b><span class="sx-small">${esc(DIRECTIONS[focus].tasteCap)} · 소리 있음</span></span></button><div class="dp-model-row sx-small"><p><span class="dp-label">AI 모델</span><b>${esc(model.name)}</b><button type="button" class="sx-link dp-model-open" data-model-open aria-expanded="${modelOpen}">${modelOpen ? '닫기' : '다른 모델로'}</button></p><button type="button" class="sx-link" data-film="work" aria-pressed="${on('work')}">${on('work') ? '그림으로' : '비슷한 작품 보기'}</button></div>${list}</div>`;
   }
   function drawDetail(animate) {
     const item = DIRECTIONS[focus];
@@ -124,7 +130,7 @@
     if (hit.hasAttribute('data-neither')) { stopFilm(); show('neither'); views.neither.querySelector('textarea').focus({ preventScroll: true }); drawDetail(false); }
     if (hit.hasAttribute('data-back')) show('choose');
     if (hit.hasAttribute('data-model-open')) { modelOpen = !modelOpen; detail.classList.toggle('is-casting', modelOpen); drawDetail(false); detail.querySelector('[data-model-open]').focus({ preventScroll: true }); }
-    if (hit.dataset.model) { model = MODELS.find((item) => item.id === hit.dataset.model); if (playing && playingKind === 'model') stopFilm(); drawDetail(false); detail.querySelector(`[data-model="${model.id}"]`).focus({ preventScroll: true }); }
+    if (hit.dataset.model) { model = MODELS.find((item) => item.id === hit.dataset.model); drawDetail(false); detail.querySelector(`[data-model="${model.id}"]`).focus({ preventScroll: true }); }
     if (hit.dataset.film) { const kind = hit.dataset.film; if (playing === focus && playingKind === kind) stopFilm(); else playFilm(focus, kind); drawDetail(false); detail.querySelector(`[data-film="${kind}"]`).focus({ preventScroll: true }); }
     if (hit.hasAttribute('data-more')) { moreBox.hidden = !moreBox.hidden; hit.setAttribute('aria-expanded', String(!moreBox.hidden)); hit.textContent = moreBox.hidden ? '자세히' : '접기'; }
     if (hit.hasAttribute('data-note-open')) { noteBox.hidden = !noteBox.hidden; hit.setAttribute('aria-expanded', String(!noteBox.hidden)); if (!noteBox.hidden) noteBox.querySelector('input').focus({ preventScroll: true }); }

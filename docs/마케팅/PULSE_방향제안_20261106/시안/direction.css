@@ -72,6 +72,13 @@ h1,p,ol,dl,dd{margin:0;padding:0}ol{list-style:none}[hidden]{display:none!import
 .dp-label{color:var(--sx-faint);margin-right:10px}
 .dp-model-open{margin-left:12px}
 .dp-model-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 14px}
+.dp-taste{display:flex;align-items:center;gap:14px;width:100%;padding:clamp(6px,1vh,10px) 0;margin-bottom:clamp(6px,1vh,10px);border-top:1px solid var(--sx-rule);border-bottom:1px solid var(--sx-rule);text-align:left}
+.dp-taste>span:last-child{display:flex;flex-direction:column}
+.dp-taste b{font-size:15px;font-weight:600;color:var(--sx-ink)}
+.dp-taste-mark{flex:none;display:grid;place-items:center;width:34px;height:34px;border:1px solid var(--sx-ink);transition:background .25s,color .25s}
+.dp-taste-mark svg{width:10px;height:10px;fill:currentColor}
+.dp-taste[aria-pressed="true"] .dp-taste-mark{background:var(--sx-ink);color:#0a0a0a}
+@media (hover:hover){.dp-taste:hover .dp-taste-mark{background:var(--sx-ink);color:#0a0a0a}}
 .dp-casts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:10px}
 .dp-cast{display:block;text-align:left}
 .dp-cast img{display:block;width:100%;height:auto;aspect-ratio:3/4;object-fit:cover;object-position:50% 22%;filter:grayscale(1);transition:filter .5s var(--sx-out)}
@@ -110,11 +117,15 @@ h1,p,ol,dl,dd{margin:0;padding:0}ol{list-style:none}[hidden]{display:none!import
 .dp-road .is-now{color:var(--sx-ink);font-weight:600}
 
 /* 낮은 노트북: 설명을 한 칸 더 줄인다. */
-@media (max-height:760px) and (min-width:861px){
+@media (max-height:960px) and (min-width:861px){
   .dp-lead{display:none}
+  .dp-flow li{padding:clamp(3px,.6vh,7px) 0}
+  .dp-taste{margin-bottom:4px}
+}
+@media (max-height:760px) and (min-width:861px){
+  .dp-why{display:none!important}
   .dp-step{display:inline;margin:0 0 0 10px}
   .dp-title{font-size:clamp(34px,3.2vw,46px)}
-  .dp-why{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 }
 
 /* 휴대폰: 안내 → 두 그림 나란히 → 설명 순서. 두 안을 넘기지 않고 한눈에 견주고, 고정 띠는 두지 않는다. */
