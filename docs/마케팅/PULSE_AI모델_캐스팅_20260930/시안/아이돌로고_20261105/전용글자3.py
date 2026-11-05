@@ -1,5 +1,5 @@
 # OUTBLUE 날 선 뼈대(2026-11-06) — 유호님 「뭉뚝한 느낌」 뒤. 좁고 높은 글자, OFALIN과 비슷한 획 굵기,
-# 모든 굽는 자리는 45° 사선으로 벤다(OFALIN이 원 · 삼각형이면 OUTBLUE는 직선 · 날).
+# 둥근 글자가 굽는 자리만 45° 사선으로 벤다(O 넷 · U 아래 둘 · B 오른쪽), 곧은 기둥(B · L · E 왼쪽 · T)은 그대로(OFALIN이 원 · 삼각형이면 OUTBLUE는 직선 · 날).
 # 판 A 「날」: 획만. 판 B 「갑편」: A에 단어 전체를 가로지르는 가는 틈 하나 — 두정갑 판이 겹친 자리.
 # 판 C 「칼집」: A에서 O의 속을 비스듬한 칼자국 하나로. 리벳은 셋 다 한 개(B 허리).
 import os
@@ -34,6 +34,7 @@ def letters():
     x += W + GAP
     # B: 위 · 아래 두 칸, 오른쪽 모서리를 사선으로
     a, b, m = x + h, x + W - h, H * 0.47
+    # 왼쪽 기둥은 곧게 — 네 모서리를 다 베면 8로 읽힌다(11-06 시안)
     out.append(('B', pl([(a, 0), (a, H)]) + pl([(x, h), (b - CH * .8, h), (b, h + CH * .8), (b, m - h - CH * .5), (b - CH * .5, m), (x + h, m)])
                 + pl([(b - CH * .5 - 30, m), (b, m + CH * .6), (b, H - h - CH * .8), (b - CH * .8, H - h), (x, H - h)])))
     b_rivet = (b - CH * .5 - 15, m)
@@ -57,7 +58,7 @@ def blade_cuts(ls, w):
     # 위로 열린 기둥 끝(U 둘 · L · B 기둥)을 바깥쪽이 높게 45°로 벤다
     out, x = [], 0
     for name in [n for n, _ in ls]:
-        wid = {'L': W - 30, 'E': W - 10, 'T': W}.get(name, W)
+        wid = {'L': W - 30, 'E': W - 10, 'T': W - 20}.get(name, W)
         if name == 'U':
             out.append(pl([(x - 5, -5), (x + SW + 5, -5), (x + SW + 5, SW * .9)], True))
             out.append(pl([(x + wid - SW - 5, -5), (x + wid + 5, -5), (x + wid - SW - 5, SW * .9)], True))
@@ -67,7 +68,7 @@ def blade_cuts(ls, w):
     return out
 
 
-def svg(kind, ink, bg, rivet):
+def svg(kind, ink, bg, rivet, ring=True):
     ls, w, o_box, br = letters()
     body = ''
     for name, d in ls:
@@ -88,12 +89,12 @@ def svg(kind, ink, bg, rivet):
         cuts = ''.join(f'<path d="{d}" fill="{bg}"/>' for d in blade_cuts(ls, w))
         body += cuts
     if rivet:
-        body += f'<circle cx="{br[0]:.1f}" cy="{br[1]:.1f}" r="{SW * 1.05:.0f}" fill="{bg}"/><circle cx="{br[0]:.1f}" cy="{br[1]:.1f}" r="{SW * .78:.0f}" fill="{rivet}"/>'
+        body += (f'<circle cx="{br[0]:.1f}" cy="{br[1]:.1f}" r="{SW * 1.05:.0f}" fill="{bg}"/>' if ring else '') + f'<circle cx="{br[0]:.1f}" cy="{br[1]:.1f}" r="{SW * (.78 if ring else 1.1):.0f}" fill="{rivet}"/>'
     pad = 180
     return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{-pad} {-pad} {w + 2 * pad} {H + 2 * pad}"><defs>{mask}</defs><rect x="{-pad}" y="{-pad}" width="{w + 2 * pad}" height="{H + 2 * pad}" fill="{bg}"/>{body}</svg>'
 
 
 for k in 'AB':
-    open(os.path.join(OUT, f'{k}_흑.svg'), 'w', encoding='utf-8').write(svg(k, '#111111', '#FFFFFF', '#111111'))
+    open(os.path.join(OUT, f'{k}_흑.svg'), 'w', encoding='utf-8').write(svg(k, '#111111', '#FFFFFF', '#111111', ring=False))
     open(os.path.join(OUT, f'{k}_원고.svg'), 'w', encoding='utf-8').write(svg(k, '#1743B5', '#FFFFFF', '#D9B46A'))
 print('ok')
