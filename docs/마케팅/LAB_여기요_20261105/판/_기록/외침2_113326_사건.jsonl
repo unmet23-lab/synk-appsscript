@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1a98e-36e4-7203-ae5b-e0fcac74a348"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m using the imagegen skill to create one edited image with Mongle puffed wide and the restaurant frozen in surprise."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle puffs wide with bristling wool as the cup and grill leap into the air and startled diners stare."}}
+{"type":"turn.completed","usage":{"input_tokens":185343,"cached_input_tokens":168704,"cache_write_input_tokens":0,"output_tokens":1684,"reasoning_output_tokens":423}}

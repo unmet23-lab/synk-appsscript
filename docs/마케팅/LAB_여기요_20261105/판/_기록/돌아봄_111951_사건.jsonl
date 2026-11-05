@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1a981-6bb6-7b93-b644-b618f6a70513"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one portrait image with the three servers frozen in surprise, keeping the top quarter clear.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Three felt servers freeze mid-stride in surprise as diners continue eating, beneath a clear warm wooden wall."}}
+{"type":"turn.completed","usage":{"input_tokens":138950,"cached_input_tokens":112896,"cache_write_input_tokens":0,"output_tokens":1554,"reasoning_output_tokens":125}}

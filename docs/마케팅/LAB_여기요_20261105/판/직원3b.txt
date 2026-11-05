@@ -1,0 +1,6 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE square image, sharp and detailed.
+Plain pure white seamless background, no floor, no shadow at all. Absolutely no text.
+
+Edit Image 1: take the doll in Image 1 and show it ONCE, large and centered, nothing touching the edges. Keep exactly the same doll, same face, same hair, same outfit, same held objects, same felt texture, same three-quarter view. Only the legs and body height change: this is the passing moment of a run, between two strides — body upright and bouncing higher, knees close together, one foot flat under the body and the other foot lifted just behind the opposite knee.

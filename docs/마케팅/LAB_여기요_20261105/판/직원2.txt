@@ -1,0 +1,8 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE WIDE image, landscape, sharp and detailed.
+Plain pure white seamless background, no floor, no shadow at all. Real handmade needle-felt craft doll with visible wool fibers, photographed evenly lit. The SAME doll is shown TWICE side by side with a very wide clear white gap between the two so each can be cut out alone; nothing touches the image edge. Absolutely no text anywhere.
+
+Both poses are a three-quarter front view running toward the lower left of the picture, body leaning forward, expression big delighted smile with eyes wide, comic urgency. LEFT copy: left leg forward, right leg kicked back. RIGHT copy: right leg forward, left leg kicked back, otherwise the same doll, same size, same outfit, same held objects.
+
+The doll: a cheerful needle-felted Korean restaurant server young man, round head, bead eyes, short messy black hair, cream long-sleeve shirt, bright red apron, dark trousers, felt shoes. He carries long metal barbecue tongs raised in one hand and a pair of scissors in the other.

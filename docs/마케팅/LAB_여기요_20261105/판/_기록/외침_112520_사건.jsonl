@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1a986-6efa-70b2-9db0-8f35756f6ad8"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 도구로 원본의 식당과 구도를 유지하면서, 몽글이 길게 솟아오르고 컵과 불판이 공중에 튀어 오른 순간을 만들겠습니다."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle stretches skyward in a mouthless shout as the cup and grill grate leap and diners stare."}}
+{"type":"turn.completed","usage":{"input_tokens":185419,"cached_input_tokens":162816,"cache_write_input_tokens":0,"output_tokens":1537,"reasoning_output_tokens":356}}

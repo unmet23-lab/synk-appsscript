@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1a981-6c64-7471-b40e-b0bce7a03069"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"같은 인형의 모습과 질감을 유지하고, 달리기 중 두 무릎이 가까워지는 순간으로 바꿔 한 장 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"One centered felt doll in a passing run pose on a pure white, shadow-free square background."}}
+{"type":"turn.completed","usage":{"input_tokens":83603,"cached_input_tokens":51456,"cache_write_input_tokens":0,"output_tokens":746,"reasoning_output_tokens":138}}
