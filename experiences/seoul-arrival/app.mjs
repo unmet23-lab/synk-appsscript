@@ -140,7 +140,7 @@ const SND=(()=>{
   return {ensure,unlock,warmAll,stopAll(d=.6){for(const k of Object.keys(loops))stop(k,d);for(const k of Object.keys(tracks))stop(k,d);},play,level,stop,muffle,sfx,felt,voice,toggle,get on(){return on;},get ctx(){return ctx;},tracks,loops};
 })();
 SND.ensure();
-$('#sndBtn').onclick=e=>{e.stopPropagation();const on=SND.toggle();$('#sndBtn').setAttribute('aria-pressed',on);$('#sndBtn').setAttribute('aria-label',on?L('소리 끄기'):L('소리 켜기'));$('#sndWave').style.display=on?'':'none';$('#sndOff').style.display=on?'none':'';};
+$('#sndBtn').onclick=e=>{e.stopPropagation();const on=SND.toggle(),label=on?'소리 끄기':'소리 켜기';$('#sndBtn').dataset.lAria=label;$('#sndBtn').setAttribute('aria-label',L(label));$('#sndWave').style.display=on?'':'none';$('#sndOff').style.display=on?'none':'';};
 if(!SND.on){$('#sndWave').style.display='none';$('#sndOff').style.display='';}
 // 다시 들어온 뒤의 첫 누름(로그인 복귀 등)에서도 소리를 깨운다
 document.addEventListener('pointerdown',e=>{SND.unlock();if(e.target.closest('button,.opt')&&!e.target.closest('.spot'))SND.felt('tap');},{passive:true});

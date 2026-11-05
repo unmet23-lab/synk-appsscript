@@ -22,17 +22,17 @@ const fresh=async()=>{const context=await browser.newContext({viewport:{width:39
 
 // 가짜 앱: 실제 판(dialog)과 실제 틀을 쓰고, 계정 · 생활 기록 · 게임만 흉내 낸다.
 const harness=`
-window.__h=async function({owner=null,arrival=null,tutor=false,operating=true,blocked=false,native=false}={}){
- document.body.innerHTML='<dialog id="world-panel"><div id="panel-content"></div></dialog>';
+window.__h=async function({owner=null,arrival=null,tutor=false,operating=true,blocked=false,native=false,failSave=false}={}){
+ document.body.innerHTML='<div class="world-topbar"><button id="settings-open"></button></div><dialog id="world-panel"><div id="panel-content"></div></dialog>';
  const panel=document.querySelector('#world-panel'),content=panel.querySelector('#panel-content');
  const {createSeoulEntry}=await import('/seoul-entry.mjs');
- const st={owner,arrival,signIns:[],shown:[],games:[],saved:[]};
+ const st={owner,arrival,failSave,signIns:[],shown:[],games:[],saved:[],toasts:[]};
  const client=()=>({snapshot:st.owner?{accountId:st.owner}:null,generation:1});
- const progress={arrival:()=>st.arrival,setArrival:p=>{st.saved.push(p);st.arrival={...(st.arrival||{version:1}),...p};},selectedTutor:()=>tutor?'mongle':null};
+ const progress={arrival:()=>st.arrival,setArrival:p=>{if(st.failSave)throw Object.assign(Error('막힘'),{code:'PLAY_DATA_TOO_LARGE'});st.saved.push(p);st.arrival={...(st.arrival||{version:1}),...p};return {arrival:st.arrival};},selectedTutor:()=>tutor?'mongle':null};
  const life={ensure:async()=>{},get progress(){return st.owner||true?progress:null;}};
  const show=(title,html,type)=>{st.shown.push(type);content.innerHTML=html;if(!panel.open)panel.showModal();};
  const close=()=>{if(panel.open)panel.close();content.innerHTML='';};
- const seoul=createSeoulEntry({dramaPending:()=>false,restored:Promise.resolve(),operating,client,life,home:{tutor:()=>({tutor:tutor?'mongle':null}),state:{reduced:true},toast(){}},
+ const seoul=createSeoulEntry({dramaPending:()=>false,restored:Promise.resolve(),operating,client,life,home:{tutor:()=>({tutor:tutor?'mongle':null}),state:{reduced:true},toast(m){st.toasts.push(m);}},
   worldUrl:p=>new URL('/'+p,location.origin).href,launchGame:async(id,o)=>{st.games.push([id,o]);},signIn:(a,lead)=>st.signIns.push(lead),show,close,selectLanguage(){},tutorStatus:()=>({blocked}),native:()=>native});
  window.__seoul=seoul;window.__st=st;window.__panel=panel;
  return true;
@@ -133,6 +133,108 @@ for(const [what,opts] of [['돌아온 계정',{owner:'acc-5',tutor:true}],['PC �
  await f.evaluate(()=>window.parent.SYNKSeoulHost.save({scenes:[{id:'s1e01.wrap',at:Date.now(),lines:3}],best:{s1e01:{n:3,t2:true,tr:false}}}));
  const saved=await page.evaluate(k=>JSON.parse(localStorage.getItem(k)),guestKey);
  check(saved.scenes.length===1&&saved.best.s1e01.n===3,'틀에서 온 값 저장',JSON.stringify(saved.best));
+ await page.close();}
+
+// 9. ?seoul=1로 온 손님이 1화 앞에서 로그인해 다시 불린 뒤 저장하면 내 길로 이어진다(타이틀로 돌아가지 않는다)
+{const page=await fresh();
+ await page.evaluate(([k,g])=>{localStorage.setItem(k,JSON.stringify(g));history.replaceState(null,'','?seoul=1');},[guestKey,GUEST]);
+ await setup(page,{owner:'acc-10',operating:true});
+ await page.evaluate(()=>{window.__seoul.run();});
+ await page.waitForFunction(()=>window.__panel.open&&document.querySelector('[data-world="seoul-move"]'),null,{timeout:15000});
+ await page.evaluate(()=>window.__seoul.moveChoice('yes'));
+ await page.waitForFunction(()=>document.querySelector('#seoul-layer')?.matches(':modal'),null,{timeout:20000});
+ await page.waitForFunction(()=>[...document.querySelectorAll('iframe')].some(i=>i.contentWindow?.__seoulFrame));
+ await sleep(800);
+ const f=page.frames().find(x=>x!==page.mainFrame()&&x.url().includes('/seoul-arrival/'));
+ check(await f.evaluate(()=>document.querySelector('#s-path').classList.contains('on')),'?seoul=1 · 저장 뒤 내 길로');
+ check(await f.evaluate(()=>!document.querySelector('#s-title').classList.contains('on')),'?seoul=1 · 저장 뒤 타이틀이 아님');
+ await page.close();}
+
+// 10. 계정 저장이 막히면 손님 사본(유일한 원본)을 지우지 않고 관문으로 — 다음에 다시 묻는다
+{const page=await fresh();
+ await page.evaluate(([k,g])=>{localStorage.setItem(k,JSON.stringify(g));},[guestKey,GUEST]);
+ await setup(page,{owner:'acc-11',operating:true,failSave:true});
+ const res=page.evaluate(()=>window.__seoul.run());
+ await page.waitForFunction(()=>window.__panel.open&&document.querySelector('[data-world="seoul-move"]'),null,{timeout:15000});
+ await page.evaluate(()=>window.__seoul.moveChoice('yes'));
+ check(await res==='later','저장 막힘: 관문으로');
+ check(await page.evaluate(k=>JSON.parse(localStorage.getItem(k))?.name==='볼로르',guestKey),'저장 막힘: 손님 사본이 남음');
+ check(await page.evaluate(()=>window.__st.toasts.length===1),'저장 막힘: 다시 열어 달라는 안내',await page.evaluate(()=>window.__st.toasts[0]));
+ await page.close();}
+
+// 11. 묻는 사이 계정이 바뀌면 새 계정에 쓰지 않고 손님 사본을 남긴다
+{const page=await fresh();
+ await page.evaluate(([k,g])=>{localStorage.setItem(k,JSON.stringify(g));},[guestKey,GUEST]);
+ await setup(page,{owner:'acc-12',operating:true});
+ const res=page.evaluate(()=>window.__seoul.run());
+ await page.waitForFunction(()=>window.__panel.open&&document.querySelector('[data-world="seoul-move"]'),null,{timeout:15000});
+ await page.evaluate(()=>{window.__st.owner='acc-13';window.__seoul.moveChoice('yes');});
+ check(await res==='later','묻는 사이 계정 바뀜: 관문으로');
+ check(await page.evaluate(()=>window.__st.saved.length===0),'묻는 사이 계정 바뀜: 새 계정에 안 씀');
+ check(await page.evaluate(k=>localStorage.getItem(k)!==null,guestKey),'묻는 사이 계정 바뀜: 손님 사본이 남음');
+ await page.close();}
+
+// 12. 바로가기는 그 길 그대로: 손님 사본이 있어도 서울행을 살펴보지 않는다
+for(const search of ['?drama=1','?wardrobe=1','?cafe=1']){
+ const page=await fresh();
+ await page.evaluate(([k,g,s])=>{localStorage.setItem(k,JSON.stringify(g));history.replaceState(null,'',s);},[guestKey,GUEST,search]);
+ await setup(page,{owner:null,operating:true});
+ check(await page.evaluate(()=>window.__seoul.active()===false),`바로가기 ${search}: 서울행을 살펴보지 않음`);
+ await page.close();
+}
+
+// 13. 끝낸 손님: 틀을 미리 받지 않는다. 다음 방문에 서울행도 없다. 로그인했으면 저장을 묻는다
+{const page=await fresh();
+ await page.evaluate(([k,g])=>{localStorage.setItem(k,JSON.stringify({...g,stage:'left'}));},[guestKey,GUEST]);
+ await setup(page,{owner:null,operating:true});
+ await page.evaluate(()=>window.__seoul.beforeTitle());
+ check(await page.evaluate(()=>!document.querySelector('#seoul-layer')),'끝낸 손님: 틀을 미리 받지 않음');
+ check(await page.evaluate(()=>window.__seoul.run())==='skipped','끝낸 손님: 서울행 없음');
+ await page.close();}
+{const page=await fresh();
+ await page.evaluate(([k,g])=>{localStorage.setItem(k,JSON.stringify({...g,stage:'left'}));},[guestKey,GUEST]);
+ await setup(page,{owner:'acc-14',operating:true});
+ await page.evaluate(()=>window.__seoul.beforeTitle());
+ const res=page.evaluate(()=>window.__seoul.run());
+ await page.waitForFunction(()=>window.__panel.open&&document.querySelector('[data-world="seoul-move"]'),null,{timeout:15000});
+ await page.evaluate(()=>window.__seoul.moveChoice('yes'));
+ check(await res==='skipped','끝낸 손님이 로그인: 묻고 저장한 뒤 서울행 없음');
+ check(await page.evaluate(()=>window.__st.arrival?.stage==='left'),'끝낸 손님이 로그인: 계정에 옮겨짐');
+ await page.close();}
+
+// 14. 「내 길」 문: 언어를 바꾸면 글이 바뀌고, 주인이 바뀌면 그 주인 기록으로 맞춘다
+{const page=await fresh();
+ await setup(page,{owner:'acc-15',arrival:{version:1,stage:'left',dream:'idol'},operating:true});
+ await page.evaluate(()=>window.__seoul.syncDoor());
+ const door=()=>page.evaluate(()=>{const d=document.querySelector('#my-road-button');return d?{text:d.textContent,hidden:d.hidden}:null;});
+ check((await door())?.hidden===false,'문: 기록이 있는 계정에 보임');
+ await page.evaluate(async()=>{const {setLang}=await import('/brand-opening/world-lang.mjs');setLang('en');});
+ check((await door())?.text==='My road','문: 언어를 바꾸면 글이 바뀜',(await door())?.text);
+ await page.evaluate(()=>{window.__st.owner='acc-16';window.__st.arrival=null;window.__seoul.onIdentity();});
+ check((await door())?.hidden===true,'문: 기록 없는 계정으로 바뀌면 숨음');
+ await page.close();}
+
+// 14b. 학생증 전에 멈춘 학생이 문으로 돌아오면 내 길이 아니라 틀의 시작 화면으로
+for(const [stage,screen] of [['dream','#s-title'],['card','#s-path']]){
+ const page=await fresh();
+ await setup(page,{owner:'acc-18',arrival:{version:1,stage,dream:'idol'},operating:true});
+ await page.evaluate(()=>{window.__seoul.openRoad();});
+ await page.waitForFunction(()=>document.querySelector('#seoul-layer')?.matches(':modal'),null,{timeout:20000});
+ await page.waitForFunction(()=>[...document.querySelectorAll('iframe')].some(i=>i.contentWindow?.__seoulFrame));
+ await sleep(800);
+ const f=page.frames().find(x=>x!==page.mainFrame()&&x.url().includes('/seoul-arrival/'));
+ check(await f.evaluate(s=>document.querySelector(s).classList.contains('on'),screen),`문으로 돌아옴 · ${stage} → ${screen}`);
+ await page.close();
+}
+
+// 15. 통로는 이상한 값을 조용히 버린다
+{const page=await fresh();
+ await setup(page,{owner:'acc-17',arrival:{version:1,stage:'card',dream:'idol'},operating:true});
+ await page.evaluate(()=>{window.__seoul.run();});
+ await page.waitForFunction(()=>document.querySelector('#seoul-layer')?.matches(':modal'),null,{timeout:20000});
+ const threw=await page.evaluate(()=>{try{window.SYNKSeoulHost.save();window.SYNKSeoulHost.save(null);window.SYNKSeoulHost.save('x');window.SYNKSeoulHost.save([1]);return false;}catch(e){return String(e);}});
+ check(threw===false,'통로: 이상한 값에 던지지 않음',String(threw));
+ check(await page.evaluate(()=>window.__st.saved.length===0),'통로: 이상한 값은 안 씀');
  await page.close();}
 
 await browser.close();server.kill();

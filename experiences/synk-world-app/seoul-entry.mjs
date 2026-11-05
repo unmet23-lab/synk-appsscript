@@ -5,7 +5,7 @@ import {watchEpisode,EPISODE} from './seoul-watch.mjs';
 import {currentLang,hasChosenLang,setLang,suggestedLang,onLang} from '../brand-opening/world-lang.mjs';
 import {openLangPicker} from '../brand-opening/lang-picker.mjs';
 
-// 스위치: 참이면 새 학생에게 저절로 연다. 거짓이면 ?seoul=1과 이미 시작한 학생만 열린다(설계 11절 공개 순서).
+// 스위치: 참이면 새 학생에게 저절로 연다. 거짓이면 ?seoul=1과 이 기기에서 시작한 손님만 열린다 — 로그인한 채 시작한 학생은 우리 동네의 「내 길」 문으로 돌아온다(설계 11절 공개 순서).
 // 설정값(features)은 계정 묶음 안 operating-mode가 걸러 묶음을 다시 만들어야 해서, 이 파일의 상수로 둔다. 켜는 것도 공개 한 번이다.
 export const SEOUL_AUTO=false;
 const autoOn=()=>SEOUL_AUTO||(['127.0.0.1','localhost'].includes(location.hostname)&&new URLSearchParams(location.search).get('seoulAuto')==='1');
@@ -21,7 +21,7 @@ const TEXT={
  moveLead:{ko:'이 기기에서 만든 학생증이 있어요. 이 계정에 저장할까요?',en:'There’s a student ID made on this device. Save it to this account?',mn:'Энэ төхөөрөмж дээр хийсэн оюутны үнэмлэх байна. Энэ бүртгэлд хадгалах уу?'},
  moveBody:{ko:'내가 만든 학생증이 아니면 「아니요」를 눌러 주세요.',en:'If you didn’t make this one, choose “No.”',mn:'Хэрэв өөрөө хийгээгүй бол «Үгүй»-г дараарай.'},
  moveYes:{ko:'저장하고 이어 가기',en:'Save and continue',mn:'Хадгалаад үргэлжлүүлэх'},
- moveNo:{ko:'아니요, 처음부터',en:'No, start over',mn:'Үгүй, эхнээс нь'},
+ moveNo:{ko:'아니요, 저장 안 할게요',en:'No, don’t save it',mn:'Үгүй, хадгалахгүй'},
  dreamIdol:{ko:'아이돌의 꿈',en:'An idol’s dream',mn:'Айдолын мөрөөдөл'},
  dreamActor:{ko:'배우의 꿈',en:'An actor’s dream',mn:'Жүжигчний мөрөөдөл'},
  failed:{ko:'잠시 뒤 다시 열어 주세요.',en:'Please try again in a moment.',mn:'Түр хүлээгээд дахин нээнэ үү.'},
@@ -30,21 +30,21 @@ export const seoulText=(key,lang=currentLang())=>TEXT[key]?.[lang]??TEXT[key]?.k
 const t=key=>seoulText(key);
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-// 주소의 바로가기는 그 길 그대로 간다. ?seoul=1은 스위치와 상관없이 연다.
+// 주소의 바로가기는 그 길 그대로 간다(bypass — 손님 사본이 있어도 서울행 · 저장 묻기로 가로채지 않는다). ?seoul=1은 스위치와 상관없이 연다.
 export function seoulMode({search='',feature=false,dramaPending=false}={}){
  const q=new URLSearchParams(search);
  if(q.get('seoul')==='1')return 'force';
- if(dramaPending||q.get('drama')==='1'||q.get('me2')==='1'||q.get('cafe')==='1'||q.get('wardrobe')==='1'||q.has('exam')||q.has('tutor')||q.get('opening')==='off')return null;
+ if(dramaPending||q.get('drama')==='1'||q.get('me2')==='1'||q.get('cafe')==='1'||q.get('wardrobe')==='1'||q.has('exam')||q.has('tutor')||q.get('opening')==='off')return 'bypass';
  return feature?'auto':null;
 }
 // 무엇을 할지 — 순수 함수(시험이 표로 본다). at: 'title'(틀의 시작 화면) | 'road'(내 길)
 export function seoulDecision({mode=null,owner='guest',arrival=null,guest=null,tutor=false,blocked=false,native=false}={}){
- if(native||blocked)return {run:false};
+ if(native||blocked||mode==='bypass')return {run:false};
  if(owner!=='guest'&&!arrival&&guest)return {run:true,ask:true};
  const own=owner==='guest'?guest:arrival;
  if(own){
-  if(mode==='force')return {run:true,at:'title',replay:true};
-  if(own.stage==='left')return {run:false};
+  // ?seoul=1이 처음부터 다시 보여 주는 것은 끝낸 기록뿐이다. 가는 중이면 이어 간다 — 1화 앞 로그인으로 다시 불린 ?seoul=1이 내 길 대신 타이틀로 돌려보내면 안 된다.
+  if(own.stage==='left')return mode==='force'?{run:true,at:'title',replay:true}:{run:false};
   return {run:true,at:own.stage==='card'?'road':'title'};
  }
  if(!mode||(mode==='auto'&&tutor))return {run:false};
@@ -63,7 +63,7 @@ export function createSeoulEntry({dramaPending,restored,operating,client,life,ho
  const hasLocalTutor=()=>{try{for(let i=0;i<localStorage.length;i++)if(localStorage.key(i)?.startsWith('synk.world.tutor.v1:'))return true;}catch{}return false;};
  const languageReady=()=>hasChosenLang()||suggestedLang()==='ko';
  // 서울행을 살펴볼 까닭이 있는가(없으면 입구 길은 지금 코드 그대로다).
- function active(){return !!mode()||!!readGuest();}
+ function active(){const m=mode();return m!=='bypass'&&(!!m||!!readGuest());}
 
  /* ── 판별 ── 복원 → 생활 기록 → 표 */
  async function decide(){
@@ -87,7 +87,7 @@ export function createSeoulEntry({dramaPending,restored,operating,client,life,ho
   const dialog=document.createElement('dialog');dialog.id='seoul-layer';dialog.className='seoul-layer';
   const frame=document.createElement('iframe');frame.title='SYNK WORLD';frame.setAttribute('allow','autoplay; fullscreen');frame.className='seoul-frame';frame.src=worldUrl('seoul-arrival/');
   dialog.append(frame);document.body.append(dialog);dialog.show();
-  const s=session||{};Object.assign(s,{dialog,frame,api:null,closing:false,tapped:false,begun:false,replay:false,owner:owner(),pending:{}});session=s;
+  const s=session||{};Object.assign(s,{dialog,frame,api:null,closing:false,tapped:false,begun:false,owner:owner(),pending:{}});session=s;
   s.ready=new Promise(res=>{s.markReady=res;});
   dialog.addEventListener('cancel',event=>event.preventDefault());
   // 안드로이드 뒤로 가기 등으로 닫히면 다시 올린다. 페이지를 떠나면 저장된 자리에서 이어진다.
@@ -102,11 +102,11 @@ export function createSeoulEntry({dramaPending,restored,operating,client,life,ho
  }
  function raise(){const d=session?.dialog;if(!d)return;session.raised=true;try{if(d.open)d.close();d.showModal();}catch{/* 이미 모달 */}}
  const insets=()=>{const probe=document.createElement('div');probe.style.cssText='position:fixed;visibility:hidden;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)';document.body.append(probe);const c=getComputedStyle(probe),out={sat:parseFloat(c.paddingTop)||0,sab:parseFloat(c.paddingBottom)||0};probe.remove();return out;};
- onLang(code=>{try{session?.api?.setLang(code);}catch{}});
+ onLang(code=>{try{session?.api?.setLang(code);}catch{}const door=document.querySelector('#my-road-button');if(door)door.textContent=seoulText('road',code);});
 
- /* ── 부모 통로 ── 틀(같은 출처)이 부른다. 저장은 그때의 주인에게만 쓴다 */
+ /* ── 부모 통로 ── 틀(같은 출처)이 부른다. 저장은 그때의 주인에게만 쓴다. 다시 보기 중에는 틀이 부르지 않는다(app.mjs save · state.replayOf) */
  function save(patch){
-  const s=session;if(!s)return;
+  const s=session;if(!s||!patch||typeof patch!=='object'||Array.isArray(patch))return;
   const who=owner();if(who!==s.owner)return;
   // 틀에서 온 값은 다른 창의 객체라 이 창의 검사(프로토타입 비교)를 못 지난다 — 글자로 옮겨 받는다
   const merged={...s.pending,...JSON.parse(JSON.stringify(patch))};
@@ -151,7 +151,9 @@ export function createSeoulEntry({dramaPending,restored,operating,client,life,ho
  /* ── 타이틀 ── 타이틀을 누른 바로 그 순간(opening.mjs onTap, 동기). 참이면 타이틀이 꽃가루 없이 바로 닫힌다 */
  function beforeTitle(){
   if(!active()||native())return;
-  if(hasLocalTutor()&&!readGuest()&&mode()!=='force')return;   // 돌아온 학생에게 괜히 받지 않는다
+  const guest=readGuest();
+  // 돌아온 학생 · 끝낸 손님에게 틀을 괜히 받지 않는다(저장 묻기 뒤 필요해지면 run이 그때 받는다)
+  if(mode()!=='force'&&(guest?guest.stage==='left':hasLocalTutor()))return;
   mountFrame();
   void decided().then(d=>{note(d);if(!d.run&&session&&!session.begun&&!session.tapped)dropFrame();});
  }
@@ -198,8 +200,12 @@ export function createSeoulEntry({dramaPending,restored,operating,client,life,ho
    const guest=readGuest();
    const answer=guest?await askMove(guest):'no';
    if(answer==='later'){dropFrame();return 'later';}
-   if(answer==='yes'&&guest){try{life.progress?.setArrival?.({...guest,updatedAt:Date.now()});}catch{}dropGuest();}
-   else dropGuest();
+   if(answer==='yes'&&guest){
+    // 계정에 실제로 저장됐을 때만 기기 사본을 지운다. 막히면(쓰기 막힘 · 아직 준비 전 · 그새 계정이 바뀜) 유일한 원본을 남기고 다음에 다시 묻는다.
+    let saved=false;try{saved=owner()===d.owner&&!!life.progress?.setArrival?.({...guest,updatedAt:Date.now()});}catch{}
+    if(!saved){home.toast?.(t('failed'));dropFrame();return 'later';}
+   }
+   dropGuest();
    d=note(await decided());decision=null;
   }
   if(!d.run){dropFrame();return 'skipped';}
@@ -208,7 +214,6 @@ export function createSeoulEntry({dramaPending,restored,operating,client,life,ho
   if(!session.begun)await language();
   const api=await Promise.race([session.ready,new Promise(res=>setTimeout(()=>res(null),FRAME_WAIT_MS))]);
   if(!api){dropFrame();return 'failed';}
-  session.replay=!!d.replay;
   raise();
   if(!session.begun){
    // 처음 온 학생이 타이틀을 눌렀으면 그 누름으로 깨운 소리로 바로 잇는다. 이어 오는 학생은 틀의 시작 화면(한 번 누름 · 정문부터)이나 내 길로.
@@ -234,11 +239,13 @@ export function createSeoulEntry({dramaPending,restored,operating,client,life,ho
   mountFrame();session.owner=owner();
   const api=await Promise.race([session.ready,new Promise(res=>setTimeout(()=>res(null),FRAME_WAIT_MS))]);
   if(!api){dropFrame();home.toast?.(t('failed'));return;}
-  raise();api.start({at:'road',arrival});
+  // 학생증 전에 멈춘 학생(로그인한 채 시작하고 스위치가 꺼져 문으로 돌아온 경우)은 내 길이 아니라 틀의 시작 화면으로
+  raise();api.start({at:['card','left'].includes(arrival.stage)?'road':'title',arrival});
   await new Promise(res=>{finish=res;});
   finish=()=>{};dropFrame();syncDoor();
  }
  // 서울행 중 주인이 바뀌면(다른 탭 로그인 · PC 창 연결) 다시 불러 판별부터 한다. 저장은 걸음마다 되어 있다.
- function onIdentity(){const s=session;if(s?.raised&&s.owner!==owner())location.reload();}
+ // 서울행 밖이면 「내 길」 문만 새 주인에게 맞춘다(새 계정의 생활 기록이 아직이면 숨고, 관문의 onEnter가 다시 맞춘다).
+ function onIdentity(){const s=session;if(s?.raised&&s.owner!==owner())location.reload();else if(!s)syncDoor();}
  return Object.freeze({active,beforeTitle,tap,run,openRoad,syncDoor,onIdentity,moveChoice:value=>moveAnswer?.(value==='yes'?'yes':'no'),get open(){return !!session?.dialog;}});
 }

@@ -31,8 +31,8 @@ test('주소의 바로가기는 서울행을 띄우지 않는다', () => {
  assert.equal(seoulMode({search:'',feature:true}),'auto');
  assert.equal(seoulMode({search:'',feature:false}),null);
  assert.equal(seoulMode({search:'?seoul=1',feature:false}),'force');
- for(const search of ['?drama=1','?me2=1','?cafe=1','?wardrobe=1','?exam=topik1','?tutor=choose','?opening=off'])assert.equal(seoulMode({search,feature:true}),null,search);
- assert.equal(seoulMode({search:'',feature:true,dramaPending:true}),null,'로그인을 거쳐 돌아오는 드라마 바로가기');
+ for(const search of ['?drama=1','?me2=1','?cafe=1','?wardrobe=1','?exam=topik1','?tutor=choose','?opening=off'])assert.equal(seoulMode({search,feature:false}),'bypass',search);
+ assert.equal(seoulMode({search:'',feature:true,dramaPending:true}),'bypass','로그인을 거쳐 돌아오는 드라마 바로가기');
 });
 
 test('판별 표', () => {
@@ -51,9 +51,18 @@ test('판별 표', () => {
  assert.deepEqual(d({mode:null,guest:{stage:'dream'}}),{run:true,at:'title'});
  assert.deepEqual(d({mode:null,owner:'a',arrival:{stage:'card'}}),{run:true,at:'road'});
  assert.deepEqual(d({mode:'auto',guest:{stage:'left'}}),{run:false});
- // 다시 보기: 기록이 있으면 덮지 않는다
+ // 바로가기는 그 길 그대로: 손님 사본 · 계정 기록이 있어도 서울행 · 저장 묻기로 가로채지 않는다
+ assert.deepEqual(d({mode:'bypass',guest:{stage:'card'}}),{run:false});
+ assert.deepEqual(d({mode:'bypass',owner:'a',guest:{stage:'card'}}),{run:false});
+ assert.deepEqual(d({mode:'bypass',owner:'a',arrival:{stage:'card'}}),{run:false});
+ // 다시 보기: ?seoul=1이 처음부터 보여 주는 것은 끝낸 기록뿐이고, 기록을 덮지 않는다
  assert.deepEqual(d({mode:'force',owner:'a',arrival:{stage:'left'}}),{run:true,at:'title',replay:true});
+ assert.deepEqual(d({mode:'force',guest:{stage:'left'}}),{run:true,at:'title',replay:true});
  assert.deepEqual(d({mode:'force'}),{run:true,at:'title',fresh:true});
+ // ?seoul=1이어도 가는 중이면 이어 간다 — 1화 앞 로그인으로 다시 불리거나 손님 사본을 옮긴 뒤 내 길로
+ assert.deepEqual(d({mode:'force',owner:'a',arrival:{stage:'card'}}),{run:true,at:'road'});
+ assert.deepEqual(d({mode:'force',guest:{stage:'card'}}),{run:true,at:'road'});
+ assert.deepEqual(d({mode:'force',guest:{stage:'dream'}}),{run:true,at:'title'});
  // 손님 사본 + 계정에 없음 = 묻는다(저절로 안 옮긴다). 계정에 있으면 안 묻는다
  assert.deepEqual(d({mode:null,owner:'a',guest:{stage:'card'}}),{run:true,ask:true});
  assert.deepEqual(d({mode:null,owner:'a',arrival:{stage:'left'},guest:{stage:'card'}}),{run:false});
