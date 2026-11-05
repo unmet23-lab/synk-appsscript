@@ -248,11 +248,17 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
    await record(tag,'reading');
    // 3) 다섯 문항을 고르고 낸다 → 정답·근거(정답 자료는 낸 뒤에 읽는다)
    for(const [item,n] of [['R4-4',4],['R4-5',2]])await press(`option:${C}:${item}:${n}`);
-   const beforePosts=posts().length;await press(`send:${C}:4:reading`);
-   await page.waitForFunction(()=>document.querySelector('#world-classroom-homework .ws-hw-task[data-kind="reading"] .ws-hw-notice')?.textContent==='답을 냈어요. 정답과 근거를 확인해 보세요.');
-   assert.equal(await card.locator('.ws-hw-reading .ws-hw-summary').textContent(),'정답을 불러오는 중이에요.','지난 주 정답을 받는 중에 낸 주');
-   keyGate.resolve();fake.holdKeys(null);
-   await card.locator('.ws-hw-reading .ws-hw-judge').first().waitFor();
+   const beforePosts=posts().length;
+   // 이 구간은 「정답 묶음을 받는 중에 낸 주도 이어서 받는다」만 본다. 묶음은 시트를 열 때부터 잡혀 있어, 앱의 12초 제한이 낸 직후에 끝나면 정답을 받지 않고 새로고침 안내로 끝난다(정해진 동작, 11-05 0036e4e18).
+   // 앞 캡처가 몇 초 걸렸는지에 결과가 달리지 않게 이 구간만 브라우저 시계를 멈춘다. 12초를 넘긴 요청의 오류와 복구는 아래 「정말 응답이 12초를 넘기면」이 그대로 본다.
+   await context.clock.pauseAt(clock);
+   try{
+    await press(`send:${C}:4:reading`);
+    await page.waitForFunction(()=>document.querySelector('#world-classroom-homework .ws-hw-task[data-kind="reading"] .ws-hw-notice')?.textContent==='답을 냈어요. 정답과 근거를 확인해 보세요.');
+    assert.equal(await card.locator('.ws-hw-reading .ws-hw-summary').textContent(),'정답을 불러오는 중이에요.','지난 주 정답을 받는 중에 낸 주');
+    keyGate.resolve();fake.holdKeys(null);
+    await card.locator('.ws-hw-reading .ws-hw-judge').first().waitFor();
+   }finally{keyGate.resolve();fake.holdKeys(null);await context.clock.resume();}
    assert.ok(keyCalls.some(c=>c.body?.week===4&&c.body?.kind==='reading'),'받던 묶음이 끝나면 새로 낸 주의 정답을 이어서 받는다');
    checks[`${tag}-key-after-batch`]=true;
    const sent=posts().at(-1);assert.equal(posts().length,beforePosts+1);
