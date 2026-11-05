@@ -383,7 +383,8 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
   u.tag.classList.remove('is-boxed');u.el.hidden=true;u.el.classList.remove('is-open');
  }
  function runUnbox(){
-  if(unbox||!unboxQ.length||!isOpen()||openI>=0||busy||closing||shop?.dataset.ready!=='yes')return;
+  // 문지기에서 돌아가면 데려오기 표시도 푼다 — 남으면 자세히에서 봉을 옮긴 뒤 데려오기를 건너뛰고 화면 밖에서 상자를 열었다(Fable 11-06)
+  if(unbox||!unboxQ.length||!isOpen()||openI>=0||busy||closing||shop?.dataset.ready!=='yes'){unboxMoved=false;return;}
   const i=unboxQ[0],tag=swings[i]?.querySelector('.m2s-print-tag.is-boxed'),job=entry(items[i]?.id).arrived?.job_id;
   if(!tag||!job){tag?.classList.remove('is-boxed');unboxQ.shift();runUnbox();return;}
   // 휴대폰에서 그 옷이 가운데가 아니면 먼저 데려온다(한 번만 — 그사이 손으로 넘기면 그 자리에서 연다)
@@ -679,6 +680,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
     dialog=doc.createElement('dialog');dialog.className='m2s-dialog';dialog.setAttribute('aria-label',t('shop'));
     doc.body.append(dialog);
     sound=createShopSound({enabled:soundOn,win});
+    sound.unlock(); // 입구 단추를 누른 뒤라 열 수 있다 — 안 열면 열자마자 시작하는 도착 상자가 소리 없이 지나갔다(Fable 11-06). 효과음을 끈 사람은 unlock이 바로 돌아간다
     build();wireDialog();
     dialog.showModal();
     measure();for(const p of P)p.x=null;
@@ -690,7 +692,7 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
     if(!isOpen())return;
     win.requestAnimationFrame(()=>{if(isOpen())enter();});
     later(runUnbox,80+items.length*70+520); // 옷이 다 걸린 뒤 도착 상자를 연다
-    later(()=>{for(const item of items){const im=new win.Image();im.src=art(item,'back');}for(const im of dialog?.querySelectorAll('.m2s-parcel img,.m2s-unbox img')||[])im.decode?.().catch(()=>{});},1200);
+    later(()=>{for(const item of items){const im=new win.Image();im.src=art(item,'back');}for(const im of dialog?.querySelectorAll('.m2s-parcel img')||[])im.decode?.().catch(()=>{}); /* 도착 상자는 같은 그림이라 따로 풀지 않는다(요소마다 GPU에 한 번 더 올려 입구 끝 장이 무거워졌다) */},1200);
     rail.focus({preventScroll:true});
     for(const item of items){const e=entry(item.id);if(e.arrived?.new&&e.arrived.url)later(()=>seen(e.arrived),1600);}
    })().finally(()=>{opening=null;});
