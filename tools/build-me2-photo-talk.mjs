@@ -11,7 +11,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { 알림줄 } from '../experiences/drama/qa/제2의나-20261102/사진시험/본판조립.mjs';
 import { 판편집 } from '../experiences/drama/qa/제2의나-20261102/사진시험/판편집조립.mjs';
-import { 룩들, 장면들 } from '../experiences/drama/qa/제2의나-20261102/사진시험/룩목록.mjs';
+import { 룩들, 장면들, 옷참고글 } from '../experiences/drama/qa/제2의나-20261102/사진시험/룩목록.mjs';
 
 const 뿌리 = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const 시험 = path.join(뿌리, 'experiences', 'drama', 'qa', '제2의나-20261102', '사진시험');
@@ -35,9 +35,11 @@ export function 사본글() {
   const LOOK_HEAD = `PHOTO EDIT of Image 1, vertical 3:4 — the same real smartphone photo, re-taken with ONE change: @@CHANGE@@.
 KEEP EXACTLY: the same person — face shape and width, eyes and eyelids, brows, nose, lips, ears, skin tone and the same youthful, wrinkle-free, firm skin with a fine natural texture; the same smile, head angle, pose, camera distance and framing; the same empty university cafeteria, window light and colours. Everything that is not the change stays as in Image 1.`;
   const LOOK_TAIL = 'Realistic and natural, as if the student really looks like this today — not a costume, not a fashion shoot, no airbrushing. No text, letters, logos or brand marks on anything. Hands have five fingers.';
-  const LOOKS = 룩들.map((x) => ({ id: x.id, group: x.묶음, gate: x.문턱, label: x.이름, exclude: x.뺌, change: x.바꿈, keep: x.지킴 }));
+  // garment: 옷 가게 상점 사진을 Image 2로 넣을 때의 옷 글(없으면 null — 글만으로 굽는다). LOOK_GARMENT의 @@GARMENT@@ 자리에 들어간다.
+  const LOOK_GARMENT = 옷참고글;
+  const LOOKS = 룩들.map((x) => ({ id: x.id, group: x.묶음, gate: x.문턱, label: x.이름, exclude: x.뺌, change: x.바꿈, garment: x.옷 ?? null, keep: x.지킴 }));
   const SCENES = 장면들.map((x) => ({ id: x.id, label: x.이름, gesture: x.몸짓, plates: x.판 }));
-  const 몸 = { PARTS, ALERTS, SCENE_TEMPLATE, LOOK_HEAD, LOOK_TAIL, LOOKS, SCENES };
+  const 몸 = { PARTS, ALERTS, SCENE_TEMPLATE, LOOK_HEAD, LOOK_TAIL, LOOK_GARMENT, LOOKS, SCENES };
   const 판 = sha(JSON.stringify(몸)).slice(0, 16);
   const 동의 = 동의판();
   const 얼림 = (이름, 값) => `const ${이름} = Object.freeze(${JSON.stringify(값)});\n`;
@@ -47,7 +49,8 @@ const PROMPTS_HASH = ${JSON.stringify(판)};
 ${얼림('CONSENT', { version: 동의.version, docHash: 동의.docHash })}${얼림('PARTS', PARTS)}${얼림('ALERTS', ALERTS)}const SCENE_TEMPLATE = ${JSON.stringify(SCENE_TEMPLATE)};
 const LOOK_HEAD = ${JSON.stringify(LOOK_HEAD)};
 const LOOK_TAIL = ${JSON.stringify(LOOK_TAIL)};
-${얼림('LOOKS', LOOKS)}${얼림('SCENES', SCENES)}module.exports = { PROMPTS_HASH, CONSENT, PARTS, ALERTS, SCENE_TEMPLATE, LOOK_HEAD, LOOK_TAIL, LOOKS, SCENES };
+const LOOK_GARMENT = ${JSON.stringify(LOOK_GARMENT)};
+${얼림('LOOKS', LOOKS)}${얼림('SCENES', SCENES)}module.exports = { PROMPTS_HASH, CONSENT, PARTS, ALERTS, SCENE_TEMPLATE, LOOK_HEAD, LOOK_TAIL, LOOK_GARMENT, LOOKS, SCENES };
 `;
 }
 

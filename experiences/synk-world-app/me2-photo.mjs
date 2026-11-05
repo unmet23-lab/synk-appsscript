@@ -5,6 +5,8 @@
 // · 화면에 점수 · 탈락 · 등급은 나오지 않는다. 학생은 만든 판 가운데 언제든 고르고, 「다른 사진으로」를 누를 수 있다.
 // · 움직임은 「현상 중」 인화지 하나뿐이고, 움직임 줄이기에서는 멈춘다. 마스코트는 쓰지 않는다.
 import {currentLang,onLang} from '../brand-opening/world-lang.mjs';
+// 옷 가게(11-05): 옷장의 옷 줄은 가게 입구 한 장이 되고, 가게 본체(me2-shop.mjs)는 처음 열 때 부른다. 옷 이름 · 글의 정본은 가게 글 하나다.
+import {ITEM_TEXT as SHOP_ITEM_TEXT,SHOP_TEXT,shopItemsFor,shopEntry} from './me2-shop-items.mjs';
 
 if(globalThis.document&&!document.querySelector('[data-me2-style]')){const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('./me2-photo.css',import.meta.url).href;style.dataset.me2Style='';document.head.append(style);}
 
@@ -24,7 +26,7 @@ const TEXT={
   developing:'사진 현상 중',developingNote:'보통 몇 시간, 늦어도 내일이면 나와요. 창을 닫아도 돼요.',
   isThisMe:'이게 나?',arrived:'사진 나왔어요!',strong:'기본',natural:'더 자연스럽게',younger:'더 어리게',lowNote:'사진에 따라 덜 닮게 나올 때가 있어요. 마음에 안 들면 다른 사진으로 해 봐요.',thisOne:'이걸로 할게요',other:'다른 사진으로',keepCurrent:'지금 모습 그대로 두기',lookReset:'새 모습을 고르면 옷장의 옷과 머리는 사라져요. 새 모습으로 다시 입어 볼 수 있어요.',
   card:'학생증',cardName:'제2의 나',cardRole:'대학교 1학년',changeFace:'세 판 다시 보기',back:'돌아가기',newerDeveloping:'새 사진을 현상 중이에요. 나오면 고를 수 있어요.',
-  wardrobe:'옷장',groupOutfit:'옷',groupHair:'머리',groupAcc:'소품',detailWear:'누르면 내 사진에 입혀서 보내 드려요. 보통 몇 시간, 늦어도 내일 도착해요.',detailHair:'누르면 내 사진의 머리를 바꿔서 보내 드려요. 보통 몇 시간, 늦어도 내일 도착해요.',album2:'추억 사진',order:'입어 보기',orderHair:'미용실 예약',orderScene:'현상 맡기기',shipping:'배송 중',salon:'미용실 예약 중',developingShort:'현상 중',delayed:'배송 지연 — {date} 도착 예정',failedItem:'이번에는 잘 안 됐어요',again:'다시 해 볼게요',
+  wardrobe:'옷장',salonAcc:'미용실 · 소품',fullCloset:'옷장이 가득 찼어요.',groupOutfit:'옷',groupHair:'머리',groupAcc:'소품',detailWear:'누르면 내 사진에 입혀서 보내 드려요. 보통 몇 시간, 늦어도 내일 도착해요.',detailHair:'누르면 내 사진의 머리를 바꿔서 보내 드려요. 보통 몇 시간, 늦어도 내일 도착해요.',album2:'추억 사진',order:'입어 보기',orderHair:'미용실 예약',orderScene:'현상 맡기기',shipping:'배송 중',salon:'미용실 예약 중',developingShort:'현상 중',delayed:'배송 지연 — {date} 도착 예정',failedItem:'이번에는 잘 안 됐어요',again:'다시 해 볼게요',
   wear:'이걸로 입기',wearing:'입는 중',takeOff:'벗기',redoItem:'이 사진 이상해요',redoLook:'다시 입어 보기',newChip:'도착',fullAlbum:'추억 사진이 다 찼어요.',
   eraseOpen:'사진으로 만든 모습 지우기',eraseAsk:'만든 모습과 그 사진들을 모두 지우고 사진 동의도 거둬요. 게임 기록은 그대로예요. 되돌릴 수 없어요.',eraseYes:'모두 지우기',eraseNo:'그대로 두기',erased:'지웠어요.',withdrawOpen:'사진 동의 거두기',withdrawAsk:'사진 동의를 거둬요. 현상 중인 사진이 있으면 취소돼요. 다시 동의하기 전에는 사진을 보낼 수 없어요. 게임 기록은 그대로예요.',withdrawYes:'동의 거두기',withdrawn:'동의를 거뒀어요.',
   off:'지금은 사진관이 잠시 쉬고 있어요.',error:'잠시 연결이 안 됐어요. 조금 뒤에 다시 해 주세요.',close:'닫기'},
@@ -38,7 +40,7 @@ const TEXT={
   developing:'Developing your photo',developingNote:'It usually takes a few hours, tomorrow at the latest. You can close this window.',
   isThisMe:'Is this me?',arrived:'Your photo is ready!',strong:'Default',natural:'More natural',younger:'Younger',lowNote:'Some photos come out less like you. If you don’t like it, try another photo.',thisOne:'This is the one',other:'Try another photo',keepCurrent:'Keep my current look',lookReset:'If you choose a new look, the clothes and hairstyles in your wardrobe will go away. You can try them on again with your new look.',
   card:'Student ID',cardName:'Second me',cardRole:'First-year university student',changeFace:'See all three again',back:'Back',newerDeveloping:'Your new photo is developing. You can choose when it’s ready.',
-  wardrobe:'Wardrobe',groupOutfit:'Clothes',groupHair:'Hair',groupAcc:'Accessories',detailWear:'We’ll dress your photo in this and send it to you. Usually a few hours, tomorrow at the latest.',detailHair:'We’ll change the hair in your photo and send it to you. Usually a few hours, tomorrow at the latest.',album2:'Memory photos',order:'Try it on',orderHair:'Book the salon',orderScene:'Send to develop',shipping:'On its way',salon:'Salon booked',developingShort:'Developing',delayed:'Delayed — arriving {date}',failedItem:'This one didn’t work out',again:'Try again',
+  wardrobe:'Wardrobe',salonAcc:'Salon · accessories',fullCloset:'Your wardrobe is full.',groupOutfit:'Clothes',groupHair:'Hair',groupAcc:'Accessories',detailWear:'We’ll dress your photo in this and send it to you. Usually a few hours, tomorrow at the latest.',detailHair:'We’ll change the hair in your photo and send it to you. Usually a few hours, tomorrow at the latest.',album2:'Memory photos',order:'Try it on',orderHair:'Book the salon',orderScene:'Send to develop',shipping:'On its way',salon:'Salon booked',developingShort:'Developing',delayed:'Delayed — arriving {date}',failedItem:'This one didn’t work out',again:'Try again',
   wear:'Wear this',wearing:'Wearing',takeOff:'Take off',redoItem:'This photo looks wrong',redoLook:'Try it on again',newChip:'New',fullAlbum:'Your memory photos are full.',
   eraseOpen:'Erase the look made from my photo',eraseAsk:'This erases your look and all its photos, and withdraws your photo consent. Your game progress stays. It can’t be undone.',eraseYes:'Erase everything',eraseNo:'Keep it',erased:'Erased.',withdrawOpen:'Withdraw photo consent',withdrawAsk:'This withdraws your photo consent and cancels any photo still developing. You can’t send a photo unless you agree again. Your game progress stays.',withdrawYes:'Withdraw consent',withdrawn:'Consent withdrawn.',
   off:'The photo studio is closed for now.',error:'Connection problem. Please try again in a moment.',close:'Close'},
@@ -52,15 +54,15 @@ const TEXT={
   developing:'Зураг угааж байна',developingNote:'Ихэвчлэн хэдэн цагийн дотор, хамгийн удаандаа маргааш гарна. Цонхоо хааж болно.',
   isThisMe:'Энэ би мөн үү?',arrived:'Зураг гарлаа!',strong:'Үндсэн',natural:'Илүү байгалийн төрх',younger:'Илүү залуу',lowNote:'Зургаас хамаарч төдийлөн адилгүй гарах үе бий. Таалагдахгүй бол өөр зураг сонгоорой.',thisOne:'Үүнийг сонгоё',other:'Өөр зураг сонгох',keepCurrent:'Одоогийн дүрээ хэвээр үлдээх',lookReset:'Шинэ дүр сонговол шүүгээн дэх хувцас, үс алга болно. Шинэ дүрээрээ дахин өмсөж үзэж болно.',
   card:'Оюутны үнэмлэх',cardName:'Хоёр дахь би',cardRole:'Их сургуулийн 1-р курс',changeFace:'Гурван зургийг дахин харах',back:'Буцах',newerDeveloping:'Шинэ зургийг угааж байна. Гарахаар нь сонгож болно.',
-  wardrobe:'Хувцасны шүүгээ',groupOutfit:'Хувцас',groupHair:'Үс',groupAcc:'Дагалдах хэрэгсэл',detailWear:'Дарвал таны дүрд үүнийг өмсүүлж илгээнэ. Ихэвчлэн хэдэн цагийн дотор, хамгийн удаандаа маргааш ирнэ.',detailHair:'Дарвал таны дүрийн үсийг өөрчилж илгээнэ. Ихэвчлэн хэдэн цагийн дотор, хамгийн удаандаа маргааш ирнэ.',album2:'Дурсамжийн зураг',order:'Өмсөж үзэх',orderHair:'Үсчинд цаг авах',orderScene:'Угаалгах',shipping:'Хүргэлтэд гарсан',salon:'Үсчинд цаг авсан',developingShort:'Угааж байна',delayed:'Хүргэлт хоцорч байна — ирэх өдөр: {date}',failedItem:'Энэ удаад бүтсэнгүй',again:'Дахин оролдох',
+  wardrobe:'Хувцасны шүүгээ',salonAcc:'Үс засалт · аксессуар',fullCloset:'Таны шүүгээ дүүрсэн байна.',groupOutfit:'Хувцас',groupHair:'Үс',groupAcc:'Дагалдах хэрэгсэл',detailWear:'Дарвал таны дүрд үүнийг өмсүүлж илгээнэ. Ихэвчлэн хэдэн цагийн дотор, хамгийн удаандаа маргааш ирнэ.',detailHair:'Дарвал таны дүрийн үсийг өөрчилж илгээнэ. Ихэвчлэн хэдэн цагийн дотор, хамгийн удаандаа маргааш ирнэ.',album2:'Дурсамжийн зураг',order:'Өмсөж үзэх',orderHair:'Үсчинд цаг авах',orderScene:'Угаалгах',shipping:'Хүргэлтэд гарсан',salon:'Үсчинд цаг авсан',developingShort:'Угааж байна',delayed:'Хүргэлт хоцорч байна — ирэх өдөр: {date}',failedItem:'Энэ удаад бүтсэнгүй',again:'Дахин оролдох',
   wear:'Үүнийг өмсөх',wearing:'Өмссөн',takeOff:'Тайлах',redoItem:'Энэ зураг хачин байна',redoLook:'Дахин өмсөж үзэх',newChip:'Ирлээ',fullAlbum:'Дурсамжийн зураг дүүрсэн байна.',
   eraseOpen:'Зургаар бүтээсэн дүрийг устгах',eraseAsk:'Бүтээсэн дүр болон бүх зургийг устгаж, зургийн зөвшөөрлийг цуцална. Тоглоомын явц хэвээр үлдэнэ. Буцаах боломжгүй.',eraseYes:'Бүгдийг устгах',eraseNo:'Хэвээр үлдээх',erased:'Устгалаа.',withdrawOpen:'Зургийн зөвшөөрлөө цуцлах',withdrawAsk:'Зургийн зөвшөөрлөө цуцална. Угааж буй зураг байвал цуцлагдана. Дахин зөвшөөрөх хүртэл зураг илгээх боломжгүй. Тоглоомын явц хэвээр үлдэнэ.',withdrawYes:'Зөвшөөрлөө цуцлах',withdrawn:'Зөвшөөрлөө цуцаллаа.',
   off:'Одоогоор зургийн газар түр амарч байна.',error:'Холболт түр тасарлаа. Хэсэг хугацааны дараа дахин оролдоорой.',close:'Хаах'},
 };
 const ITEMS={
- ko:{'hair-comma':'쉼표 머리','hair-layered':'레이어드 컷','hair-ash':'애쉬 브라운 염색','outfit-denim':'데님 재킷','outfit-vest':'셔츠와 니트 조끼','outfit-bomber':'항공 점퍼','acc-glasses':'은테 안경','acc-cap':'볼캡','s1e01-kimchi':'1화 식당 — 김치!','s1e01-fight':'1화 식당 — 파이팅!'},
- en:{'hair-comma':'Comma hair','hair-layered':'Layered cut','hair-ash':'Ash-brown dye','outfit-denim':'Denim jacket','outfit-vest':'Shirt and knit vest','outfit-bomber':'Bomber jacket','acc-glasses':'Silver-rim glasses','acc-cap':'Baseball cap','s1e01-kimchi':'Episode 1, the restaurant — Kimchi!','s1e01-fight':'Episode 1, the restaurant — Fighting!'},
- mn:{'hair-comma':'Таслал хэлбэрийн үс','hair-layered':'Шатласан засалт','hair-ash':'Үнсэн хүрэн будаг','outfit-denim':'Жинсэн хүрэм','outfit-vest':'Цамц, сүлжмэл хантааз','outfit-bomber':'Бомбер хүрэм','acc-glasses':'Мөнгөн хүрээтэй нүдний шил','acc-cap':'Бейсболын малгай','s1e01-kimchi':'1-р анги, хоолны газар — Кимчи!','s1e01-fight':'1-р анги, хоолны газар — Файтинг!'},
+ ko:{'hair-comma':'쉼표 머리','hair-layered':'레이어드 컷','hair-ash':'애쉬 브라운 염색','acc-glasses':'은테 안경','acc-cap':'볼캡','s1e01-kimchi':'1화 식당 — 김치!','s1e01-fight':'1화 식당 — 파이팅!'},
+ en:{'hair-comma':'Comma hair','hair-layered':'Layered cut','hair-ash':'Ash-brown dye','acc-glasses':'Silver-rim glasses','acc-cap':'Baseball cap','s1e01-kimchi':'Episode 1, the restaurant — Kimchi!','s1e01-fight':'Episode 1, the restaurant — Fighting!'},
+ mn:{'hair-comma':'Таслал хэлбэрийн үс','hair-layered':'Шатласан засалт','hair-ash':'Үнсэн хүрэн будаг','acc-glasses':'Мөнгөн хүрээтэй нүдний шил','acc-cap':'Бейсболын малгай','s1e01-kimchi':'1-р анги, хоолны газар — Кимчи!','s1e01-fight':'1-р анги, хоолны газар — Файтинг!'},
 };
 const VARIANTS=['strong','natural','younger'];
 const GROUPS=[['outfit','groupOutfit'],['hair','groupHair'],['acc','groupAcc']];
@@ -135,11 +137,12 @@ async function encodeJpeg(canvas,quality=JPEG_Q){return new Promise(resolve=>can
 
 export function createMe2Photo({show,home,close,request,doc=globalThis.document,win=globalThis,lang=currentLang,fetcher=(...args)=>globalThis.fetch(...args),toast=message=>home?.toast?.(message),finder=findFaces}){
  let view=null,root=null,consent=null,disposed=false,pollTimer=null,offLang=null,stage={name:'home'},photo=null,epoch=0,lastScreen='',revealed=null,afterPaint=null,photoRun=0;
+ let shopModule=null,shop=null,shopLoading=false;
  const seenSent=new Set();
  const text=(key,vars)=>{const pack=TEXT[lang()]||TEXT.ko;let out=pack[key]??TEXT.ko[key]??key;for(const [name,value] of Object.entries(vars||{}))out=out.replace(`{${name}}`,value);return out;};
  const consentPack=()=>consent?.[lang()]||consent?.ko||null;
  function clearPoll(){if(pollTimer)win.clearTimeout(pollTimer);pollTimer=null;}
- function dispose(){disposed=true;photoRun++;clearPoll();offLang?.();offLang=null;clearPhoto();root=null;}
+ function dispose(){disposed=true;photoRun++;clearPoll();offLang?.();offLang=null;clearPhoto();shop?.dispose();shop=null;root=null;}
  const inFlight=()=>view&&(view.me?.state==='developing'||view.me?.newer==='developing'||[...(view.looks||[]),...(view.album||[])].some(item=>item.state==='shipping'));
  function schedule(){clearPoll();if(!root||!inFlight()||stage.name!=='home')return;pollTimer=win.setTimeout(async()=>{if(!root)return;await refresh().catch(()=>{});schedule();},POLL_MS);}
  async function refresh(){const seq=++epoch;const next=await request({action:'status'});if(seq!==epoch||disposed)return;view=next;paint();}
@@ -223,12 +226,25 @@ export function createMe2Photo({show,home,close,request,doc=globalThis.document,
    :`${stateTag(item,'scene')}${closed?'':state==='arrived'?`<div class="me2-card-actions"><button type="button" class="quiet-button" data-me2="redo" data-job="${item.job_id}">${esc(text('redoItem'))}</button></div>`:state==='failed'?`<div class="me2-card-actions"><button type="button" class="quiet-button" data-me2="order-scene" data-item="${esc(entry.id)}">${esc(text('again'))}</button></div>`:''}`;
   return `<article class="me2-card" data-state="${state}" ${item?.new?`data-new-job="${item.job_id}"`:''}><div class="me2-card-art">${image}<span class="me2-card-cap">${esc(label)}</span></div><div class="me2-card-body">${body}</div></article>`;
  }
- /** 옷장 — 봉에 걸린 옷, 소품, 머리 사진. 누르면 그것만 앞으로 나온다(참고: 팁 장부 44 · 45행). */
+ /** 옷 가게 입구 — 봉에 걸린 앞 판 띠 + 내 옷 몇 벌. 누르면 가게(두 번째 대화 상자)가 열린다. 쉬는 동안에도 열린다(설명은 읽히고 입어 보기 자리에 안내). */
+ function shopDoorHtml(looks,menu){
+  const list=shopItemsFor(menu);
+  if(!list.length)return '';
+  const pack=SHOP_TEXT[lang()]||SHOP_TEXT.ko,say=(key,vars)=>{let out=pack[key]??SHOP_TEXT.ko[key];for(const [k,v] of Object.entries(vars||{}))out=out.replace(`{${k}}`,v);return out;};
+  const rows=list.map(item=>({item,e:shopEntry(looks,item.id)}));
+  const got=rows.filter(x=>x.e.arrived).length,coming=rows.filter(x=>x.e.flight).length;
+  const strip=rows.map(({item,e})=>`<span class="me2-door-item" data-state="${e.state}" ${e.arrived?.new?`data-new-job="${e.arrived.job_id}"`:''}><img src="${esc(asset('shop-'+item.art+'-front'))}" alt="" loading="lazy" decoding="async">${e.state!=='open'?'<i></i>':''}</span>`).join('');
+  return `<button type="button" class="me2-door" data-me2="shop"><span class="me2-door-rail" aria-hidden="true">${strip}</span><span class="me2-door-copy"><strong>${esc(say('shop'))}</strong><span>${esc(say('entryNote',{n:list.length}))}</span>${got||coming?`<span class="me2-door-mine">${esc(say('entryMine',{a:got,s:coming}))}</span>`:''}</span><span class="me2-door-go">${esc(say('entryOpen'))}</span></button>`;
+ }
+ /** 옷장 — 맨 위 옷 가게 입구, 그 아래 미용실 · 소품(머리 사진 · 소품). 누르면 그것만 앞으로 나온다(참고: 팁 장부 44 · 45행). */
  function closetHtml(looks,menu,lookLabel,closed){
   const known=new Map(menu.looks.map(entry=>[entry.id,entry]));
   const all=[...menu.looks,...looks.filter(item=>!known.has(item.item)).map(item=>({id:item.item,group:item.item.startsWith('hair')?'hair':item.item.startsWith('acc')?'acc':'outfit',label:item.item}))];
-  const shown=all.filter(entry=>!closed||looks.some(item=>item.item===entry.id));
-  if(!shown.length)return '';
+  // 가게가 그리는 옷은 입구로 간다 — 가게가 모르는 옷(그림이 없는 옛 옷)만 옛 옷 줄에 남는다.
+  const inShop=new Set(shopItemsFor(menu).map(item=>item.id));
+  const shown=all.filter(entry=>!inShop.has(entry.id)&&(!closed||looks.some(item=>item.item===entry.id)));
+  const door=shopDoorHtml(looks,menu);
+  if(!shown.length&&!door)return '';
   const opened=stage.item&&shown.find(entry=>entry.id===stage.item);
   const row=([group,key])=>{
    const entries=shown.filter(entry=>entry.group===group);
@@ -244,11 +260,12 @@ export function createMe2Photo({show,home,close,request,doc=globalThis.document,
     :item.state==='failed'&&!closed?`<button type="button" class="felt-button" data-me2="order-look" data-item="${esc(opened.id)}">${esc(text('again'))}</button>`:'';
    detail=`<div class="me2-closet-detail"><button type="button" class="me2-closet-close" data-me2="item-close" aria-label="${esc(text('close'))}"></button>${picture}<div class="me2-closet-info"><strong>${esc(lookLabel(opened.id))}</strong>${item?stateTag(item,'look'):''}${actions}</div></div>`;
   }
-  return `<div class="me2-closet" data-open="${opened?'yes':'no'}"><div class="me2-closet-rows" ${opened?'inert':''}>${GROUPS.map(row).join('')}</div>${detail}</div>`;
+  const rows=GROUPS.map(row).join('');
+  return `<div class="me2-closet" data-open="${opened?'yes':'no'}"><div class="me2-closet-rows" ${opened?'inert':''}>${door}${rows?`${door?`<p class="me2-closet-sub">${esc(text('salonAcc'))}</p>`:''}${rows}`:''}</div>${detail}</div>`;
  }
  function readyHtml(){
   const me=view.me,looks=view.looks||[],album=view.album||[],menu=view.menu||{looks:[],scenes:[]};
-  const named=id=>ITEMS[lang()]?.[id];
+  const named=id=>ITEMS[lang()]?.[id]||SHOP_ITEM_TEXT[lang()]?.[id]?.name||SHOP_ITEM_TEXT.ko[id]?.name;
   const lookLabel=id=>named(id)||menu.looks.find(x=>x.id===id)?.label||id,sceneLabel=id=>named(id)||menu.scenes.find(x=>x.id===id)?.label||id;
   // 사진관이 쉬면(스위치를 끄면) 새로 맡기지 않는다. 받은 것을 보고 지우는 일은 늘 된다.
   const closed=view.status==='off';
@@ -290,15 +307,38 @@ export function createMe2Photo({show,home,close,request,doc=globalThis.document,
    if(changed){root.closest('#world-panel')?.scrollTo?.(0,0);root.focus?.({preventScroll:true});}
    if(afterPaint){const target=root.querySelector(afterPaint);afterPaint=null;target?.focus?.({preventScroll:false});}
    if(finder===findFaces&&root.querySelector('[data-me2-file]'))void loadFaces();
-   markSeen();schedule();return;
+   markSeen();schedule();syncShop();return;
   }
   show(text('title'),`<div class="me2" data-me2-root tabindex="-1">${html}</div>`);
   root=doc.querySelector('[data-me2-root]');
   if(!root)return;
   root.addEventListener('click',onClick);root.addEventListener('change',onChange);
   home?.attachPanelResource?.({dispose});
-  markSeen();schedule();
+  markSeen();schedule();syncShop();
  }
+ /** 가게가 열려 있으면 새 상태를 넘긴다 — 「ready」를 벗어나면 가게가 스스로 닫는다. */
+ function syncShop(){if(shop?.isOpen())shop.update(view,{fresh:[...seenSent]});}
+ /** 가게의 동작 — 서버에 보내고 상태를 다시 받는다(그 상태가 syncShop으로 가게에 간다). 알림은 가게가 스스로 한다(시트 알림은 가게 아래라 안 보인다). */
+ const shopActions={
+  order:async item=>{const out=await request({action:'order-look',item});await refresh().catch(()=>{});return out;},
+  status:async()=>{await refresh();return view;},
+  wear:async job=>{await request({action:'equip',job_id:job});await refresh().catch(()=>{});},
+  unwear:async()=>{await request({action:'equip',job_id:null});await refresh().catch(()=>{});},
+  redo:async job=>{const out=await request({action:'redo',job_id:job});await refresh().catch(()=>{});return out;},
+  seen:async job=>{if(seenSent.has(job))return;seenSent.add(job);try{await request({action:'seen',job_id:job});}catch(error){seenSent.delete(job);throw error;}},
+ };
+ async function openShop(button){
+  if(shopLoading||!view||view.me?.state!=='ready')return;
+  shopLoading=true;if(button)button.disabled=true;
+  try{
+   shopModule??=await import('./me2-shop.mjs');
+   if(disposed)return;
+   shop??=shopModule.createMe2Shop({doc,win,lang,actions:shopActions,onClosed:()=>{if(!root?.isConnected)return;root.querySelector('[data-me2="shop"]')?.focus({preventScroll:false});}});
+   await shop.open(view,{fresh:[...seenSent]});
+  }catch{toast(text('error'));}
+  finally{shopLoading=false;if(button?.isConnected)button.disabled=false;}
+ }
+
  function markSeen(){for(const node of root?.querySelectorAll('[data-new-job]')||[]){const job=node.dataset.newJob;node.removeAttribute('data-new-job');if(seenSent.has(job))continue;seenSent.add(job);request({action:'seen',job_id:job}).catch(()=>{seenSent.delete(job);});}}
 
  // ── 사진 고르기 → 손보기 → 올리기 ──
@@ -396,9 +436,10 @@ export function createMe2Photo({show,home,close,request,doc=globalThis.document,
   if(kind==='back'){stage={name:'home'};paint();return;}
   if(kind==='choose'){void act(kind,async()=>{await request({action:'choose',job_id:view.me.job_id,variant:button.dataset.variant});stage={name:'home'};});return;}
   if(kind==='keep'){void act(kind,async()=>{await request({action:'keep',job_id:view.me.job_id});stage={name:'home'};});return;}
-  if(kind==='order-look'||kind==='order-scene'){if(kind==='order-look')afterPaint='.me2-closet-close';void act(kind,async()=>{const out=await request({action:kind,item:button.dataset.item});if(out.status==='full_album')toast(text('fullAlbum'));if(out.status==='off')toast(text('off'));});return;}
+  if(kind==='order-look'||kind==='order-scene'){if(kind==='order-look')afterPaint='.me2-closet-close';void act(kind,async()=>{const out=await request({action:kind,item:button.dataset.item});if(out.status==='full_album')toast(text(kind==='order-look'?'fullCloset':'fullAlbum'));if(out.status==='off')toast(text('off'));});return;}
   if(kind==='redo'){void act(kind,async()=>{const out=await request({action:'redo',job_id:button.dataset.job});if(out.status==='limit')toast(text('limit'));if(out.status==='off')toast(text('off'));});return;}
   if(kind==='wear'||kind==='unwear'){afterPaint=kind==='wear'?'[data-me2="unwear"]':'[data-me2="wear"]';void act(kind,()=>request({action:'equip',job_id:kind==='wear'?button.dataset.job:null}));return;}
+  if(kind==='shop'){void openShop(button);return;}
   if(kind==='item'){stage={...stage,item:button.dataset.item};afterPaint='.me2-closet-close';paint();return;}
   if(kind==='item-close'){const id=stage.item;stage={...stage,item:null};afterPaint=`.me2-hanger[data-item="${id}"]`;paint();return;}
   if(kind==='erase'){stage={...stage,erase:true};afterPaint='[data-me2="erase-no"]';paint();return;}

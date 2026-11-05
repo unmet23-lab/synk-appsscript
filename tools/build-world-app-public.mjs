@@ -31,6 +31,8 @@ function write(relative,bytes,source=null){
 }
 function rewrite(text,relative=''){
  text=text.replaceAll('../synk-world-home/',relative.startsWith('brand-opening/')?'../':'./').replaceAll('href=\"../learning-hub/\"','href=\"'+config.account.learningUrl+'\"');
+ // 옷 가게(11-05)의 끌기 부품은 WORLD 사본 안 play-common/에 싣는다 — 그 한 줄만 바꾼다(다른 모듈의 ../play-common은 묶음에 들어 있다).
+ if(relative==='me2-shop.mjs'){const from="'../play-common/drag-rail.js'";if(text.split(from).length!==2)throw Error('Me2 shop drag-rail import changed');text=text.replace(from,"'./play-common/drag-rail.js'");}
  if(!relative.includes('/'))text=text.replaceAll('../brand-opening/','./brand-opening/');
  // All mounted standalone games/assets live beneath this public WORLD path.
  text=text.replace(/(["'`])\/(scene-assets|[a-zA-Z0-9_-]+\.mjs|engine|korean-runner|korean-rhythm|hangul-stage|brand-opening|world-town-client\.mjs)(?=[/"'`])/g,(_,quote,folder)=>quote+config.basePath+folder);
@@ -124,7 +126,9 @@ for(const name of ['world-bootstrap.js','app-shell.mjs','world-session.mjs','app
 // 말하기 연습(10-21 공개 판부터 app-shell이 기본으로 부른다): 3번 문항 그림 네 칸. 출처 기록(sources.json)은 내보내지 않는다.
 for(const name of fs.readdirSync(path.join(root,'experiences/synk-world-app/speaking-assets')).filter(name=>/^[a-z0-9-]+\.webp$/.test(name)).sort())copyFile(path.join(root,'experiences/synk-world-app/speaking-assets',name),'speaking-assets/'+name);
 // 「제2의 나」 내 사진으로 만들기(11-04 시범): app-shell이 초대한 계정에서만 동적으로 부른다. 얼굴 찾기 도구는 그때 이 기기에서만 돈다.
-for(const name of ['me2-photo.mjs','me2-photo.css','me2-photo-consent.json','vendor/face-api/face-api.esm.js','vendor/face-api/tiny_face_detector_model.bin','vendor/face-api/tiny_face_detector_model-weights_manifest.json','vendor/face-api/LICENSE',...fs.readdirSync(path.join(root,'experiences/synk-world-app/me2-assets')).map(file=>'me2-assets/'+file)])copyFile(path.join(root,'experiences/synk-world-app',name),name);
+for(const name of ['me2-photo.mjs','me2-photo.css','me2-photo-consent.json','me2-shop.mjs','me2-shop.css','me2-shop-items.mjs','me2-shop-sound.mjs','vendor/face-api/face-api.esm.js','vendor/face-api/tiny_face_detector_model.bin','vendor/face-api/tiny_face_detector_model-weights_manifest.json','vendor/face-api/LICENSE',...fs.readdirSync(path.join(root,'experiences/synk-world-app/me2-assets')).map(file=>'me2-assets/'+file)])copyFile(path.join(root,'experiences/synk-world-app',name),name);
+// 옷 가게(11-05)는 처음 열 때 부르고, 봉 끌기는 공용 부품(캐스팅북과 같은 파일)을 쓴다.
+copyFile(path.join(root,'experiences/play-common/drag-rail.js'),'play-common/drag-rail.js');
 copyFile(path.join(root,'experiences/synk-account/src/enrollment.mjs'),'enrollment.mjs');
 // 바람길·말의 리듬이 ../social-conversion.mjs(SNS로 들어온 방문의 익명 체험 기록, synk.im에서만 동작)를 정적으로 부른다.
 copyFile(path.join(root,'experiences/social-conversion.mjs'),'social-conversion.mjs');

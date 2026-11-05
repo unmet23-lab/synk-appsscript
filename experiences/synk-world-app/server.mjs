@@ -102,6 +102,9 @@ const server=http.createServer(async(req,res)=>{
   // 말하기 연습 시범(10-21, 플래그 꺼짐 · 공개 빌드 목록에는 아직 없다): 모듈·글·문항과 3번 문항 그림 칸.
   else if(['/world-speaking-practice.mjs','/world-speaking-items.json','/world-speaking.css'].includes(pathname)||/^\/speaking-assets\/[a-z0-9-]+\.webp$/.test(pathname))base=root;
   // 「제2의 나」 내 사진으로 만들기(11-04): 모듈 · 글 · 동의 글 · 이 기기 얼굴 찾기 도구.
+  // 옷 가게(11-05): 가게 모듈 · 글 · 소리 · 손글씨 서체 조각, 봉 끌기 공용 부품.
+  else if(['/me2-shop.mjs','/me2-shop.css','/me2-shop-items.mjs','/me2-shop-sound.mjs','/me2-assets/shop-pencil.woff2'].includes(pathname))base=root;
+  else if(pathname==='/play-common/drag-rail.js'){base=path.resolve(root,'..');}
   else if(['/me2-photo.mjs','/me2-photo.css','/me2-photo-consent.json','/vendor/face-api/face-api.esm.js','/vendor/face-api/tiny_face_detector_model.bin','/vendor/face-api/tiny_face_detector_model-weights_manifest.json'].includes(pathname)||/^\/me2-assets\/[a-z0-9-]+\.webp$/.test(pathname))base=root;
   // Preview-only route (10-14 redesign worktree): the games import ../social-conversion.mjs (shared trial tracking, in progress elsewhere).
   else if(pathname==='/social-conversion.mjs'){base=path.resolve(root,'..');}

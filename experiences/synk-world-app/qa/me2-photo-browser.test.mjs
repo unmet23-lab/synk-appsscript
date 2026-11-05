@@ -78,7 +78,7 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
     if(req.method()==='OPTIONS'){await route.fulfill({status:204,headers:{...cors,'Access-Control-Allow-Headers':req.headers()['access-control-request-headers']||'*','Access-Control-Allow-Methods':'GET, POST, PUT'}});return;}
     const body=req.postDataJSON();
     if(target.pathname==='/functions/v1/me2-photo/api'){
-     const h=await req.allHeaders();calls.push({action:body?.action,contract:h['x-synk-contract'],product:h['x-synk-product'],authorization:Boolean(h.authorization)});
+     const h=await req.allHeaders();calls.push({action:body?.action,item:body?.item,contract:h['x-synk-contract'],product:h['x-synk-product'],authorization:Boolean(h.authorization)});
      const response=await fx.service(new Request('https://x.invalid/me2-photo/api',{method:'POST',headers:{'x-synk-contract':h['x-synk-contract']||'','x-synk-product':h['x-synk-product']||'','x-test-auth':A},body:JSON.stringify(body)}));
      status=response.status;data=await response.json();
      if(tamper&&body?.action==='status')data=tamper(data);
@@ -246,35 +246,131 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   const chosen=await fx.db.query('select chosen_variant from engine.me2_photo_profiles where synk_user_id=$1',[A]);
   assert.equal(chosen.rows[0].chosen_variant,'natural');
 
-  // ── 학생증 · 옷장 · 추억 사진 ──
+  // ── 학생증 · 옷장(옷 가게 입구 · 미용실 · 소품) · 추억 사진 ──
   await both('09-학생증');
   const menuScene=()=>page.locator('[data-me2="order-scene"]').first();
   const hanger=id=>page.locator(`.me2-hanger[data-item="${id}"]`);
   assert.equal(await hanger('acc-glasses').count(),0,'안경을 쓴다고 하면 안경 룩이 옷장에 없다');
   const allImages=()=>page.waitForFunction(()=>[...document.querySelectorAll('[data-me2-root] img')].every(img=>img.complete&&img.naturalWidth>0));
   await allImages();
-  // 봉의 옷을 누르면 그것만 앞으로 나온다 → 닫으면 그 칸으로 돌아온다 → 다시 눌러 입어 본다
-  await hanger('outfit-denim').click();await page.locator('.me2-closet-detail').waitFor();
+  assert.equal(await page.locator('[data-me2-root] [data-me2="shop"]').count(),1,'옷장 맨 위에 옷 가게 입구');
+  assert.equal(await hanger('outfit-denim').count(),0,'옷은 가게로 갔다 — 옛 옷 줄이 없다');
+  // 머리 줄은 그대로 — 누르면 그것만 앞으로 나온다 → 닫으면 그 칸으로 돌아온다
+  await hanger('hair-comma').click();await page.locator('.me2-closet-detail').waitFor();
   assert.equal(await page.evaluate(()=>document.activeElement?.className),'me2-closet-close','열면 닫기로 키보드가 간다');
   assert.equal(await page.locator('.me2-closet-rows').getAttribute('inert'),'','뒤 줄은 누를 수 없다');
-  await both('09-옷-앞으로');
   await page.locator('.me2-closet-close').click();await page.locator('.me2-closet-detail').waitFor({state:'detached'});
-  assert.equal(await page.evaluate(()=>document.activeElement?.dataset?.item),'outfit-denim','닫으면 그 옷으로 돌아온다');
-  await hanger('outfit-denim').click();
-  await page.locator('[data-me2="order-look"]').click();
-  await page.locator('.me2-hanger[data-state="shipping"]').waitFor();
-  await page.locator('.me2-closet-close').click();
+  assert.equal(await page.evaluate(()=>document.activeElement?.dataset?.item),'hair-comma','닫으면 그 칸으로 돌아온다');
+
+  // ── 옷 가게(11-05) — 시트 위에 뜨는 두 번째 대화 상자. 봉 · 자세히 · 앞뒤 · 팁 · 입어 보기 · 배송 조회 ──
+  const SHOP='dialog.m2s-dialog[open]',SHOP_ORDER=['outfit-trench','outfit-cardigan','outfit-varsity','outfit-bomber','outfit-rugby','outfit-leather','outfit-denim','outfit-vest'];
+  const shopHanger=id=>page.locator(`${SHOP} .m2s-hanger[data-i="${SHOP_ORDER.indexOf(id)}"]`);
+  const openShop=async()=>{await page.locator('[data-me2-root] [data-me2="shop"]').click();await page.locator(`${SHOP} .m2s[data-ready="yes"]`).waitFor();await page.waitForFunction(sel=>[...document.querySelectorAll(sel+' img')].filter(img=>img.getAttribute('src')).every(img=>img.complete&&img.naturalWidth>0),SHOP);};
+  const closeShop=async()=>{if(await page.locator(`${SHOP} .m2s-stage:not([hidden])`).count()){await page.keyboard.press('Escape');await page.locator(`${SHOP} .m2s-stage[hidden]`).waitFor({state:'attached'});}await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.querySelector('dialog.m2s-dialog'));};
+  const shopMeasure=()=>page.evaluate(sel=>{
+   const d=document.querySelector(sel);
+   const seen=n=>{if(!n||!n.getClientRects().length||n.closest('[aria-hidden="true"],[hidden]'))return false;for(let x=n;x&&x!==d;x=x.parentElement){const cs=getComputedStyle(x);if(cs.visibility==='hidden'||Number(cs.opacity)===0||cs.display==='none')return false;}return true;};
+   const small=[],walker=document.createTreeWalker(d,NodeFilter.SHOW_TEXT);
+   for(let n=walker.nextNode();n;n=walker.nextNode()){if(!/[가-힣]/.test(n.textContent)||!seen(n.parentElement))continue;const size=parseFloat(getComputedStyle(n.parentElement).fontSize);if(size<13)small.push({text:n.textContent.trim().slice(0,20),size});}
+   const short=[...d.querySelectorAll('button')].filter(seen).filter(n=>!n.matches('.m2s-word,.m2s-pair,.m2s-hanger')).filter(n=>n.getBoundingClientRect().height<44).map(n=>({text:(n.textContent||n.getAttribute('aria-label')||'').trim().slice(0,20),h:Math.round(n.getBoundingClientRect().height)}));
+   const vw=innerWidth,out=[...d.querySelectorAll('.m2s-info *,.m2s-top *,.m2s-caption *,.m2s-title *,.m2s-toast,.m2s-pack *')].filter(seen).filter(n=>{const r=n.getBoundingClientRect();return r.right>vw+2||r.left<-2;}).map(n=>String(n.className||n.tagName));
+   // 단추가 화면 밖에 있으면 그 단추를 내려 볼 수 있는 칸이 있어야 한다(PC 자세히 글이 길어지면 단추가 갇혔다)
+   const scroller=n=>{for(let x=n.parentElement;x&&x!==d.parentElement;x=x.parentElement){const cs=getComputedStyle(x);if(/(auto|scroll)/.test(cs.overflowY)&&x.scrollHeight>x.clientHeight+1)return x;}return null;};
+   const stuck=[...d.querySelectorAll('.m2s-go,.m2s-quiet,.m2s-side button,.m2s-readko')].filter(seen).filter(n=>{const r=n.getBoundingClientRect();return (r.bottom>innerHeight+1||r.top<-1)&&!scroller(n);}).map(n=>n.textContent.trim().slice(0,20));
+   return {docOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,dialogOverflow:d.scrollWidth-d.clientWidth,small,short,out,stuck,modal:d.matches(':modal')&&document.querySelector('#world-panel').matches(':modal')};
+  },SHOP);
+  const shopBoth=async name=>{
+   for(const {tag,size} of VIEWPORTS){
+    viewportTag=tag;await touch(tag==='390');await page.setViewportSize(size);await page.waitForTimeout(260);
+    const value=await shopMeasure();measures[`${name}-${tag}`]=value;
+    assert.ok(value.modal,`${name}: 가게는 시트 위 겹 모달`);
+    assert.ok(value.docOverflow<=0,`${name}: 문서 가로 넘침 ${value.docOverflow}`);assert.ok(value.dialogOverflow<=0,`${name}: 가게 가로 넘침 ${value.dialogOverflow}`);
+    assert.equal(value.small.length,0,`${name}: 13px 아래 한글 ${JSON.stringify(value.small)}`);assert.equal(value.short.length,0,`${name}: 44px 아래 단추 ${JSON.stringify(value.short)}`);
+    assert.equal(value.out.length,0,`${name}: 화면 밖으로 나감 ${JSON.stringify(value.out)}`);
+    assert.equal(value.stuck.length,0,`${name}: 닿을 수 없는 단추 ${JSON.stringify(value.stuck)}`);
+    await page.evaluate(()=>document.fonts.ready);const file=`${name}-${tag}.png`;await page.screenshot({path:path.join(out,file)});shots.push(file);
+    const stage=page.locator(`${SHOP} .m2s-stage:not([hidden])`);
+    if(await stage.count()){const more=await stage.evaluate(el=>el.scrollHeight-el.clientHeight);if(more>40){await stage.evaluate(el=>{el.scrollTop=el.scrollHeight;});await page.waitForTimeout(150);const second=`${name}-${tag}-아래.png`;await page.screenshot({path:path.join(out,second)});shots.push(second);await stage.evaluate(el=>{el.scrollTop=0;});}}
+   }
+   viewportTag='390';await touch(false);await page.setViewportSize(VIEWPORTS[0].size);await page.waitForTimeout(200);
+  };
+  await openShop();
+  assert.equal(await page.locator(`${SHOP} .m2s-hanger`).count(),8,'옷 여덟 벌');
+  assert.equal(await page.evaluate(()=>!!document.querySelector('#world-panel').inert||document.querySelector('#world-panel').matches(':modal')),true);
+  assert.equal(await page.locator(`${SHOP} :text("원")`).count(),0,'값은 없다');
+  await shopBoth('09-가게');
+  await shopHanger('outfit-denim').click();await page.locator(`${SHOP} .m2s-stage:not([hidden])`).waitFor();
+  assert.equal(await page.evaluate(()=>document.activeElement?.className),'m2s-close','열면 닫기로 키보드가 간다');
+  assert.match(await page.locator(`${SHOP} .m2s-name`).textContent(),/연청 데님 재킷/);
+  await page.locator(`${SHOP} .m2s-side [data-side="back"]`).click();
+  assert.equal(await page.locator(`${SHOP} .m2s-side [data-side="back"]`).getAttribute('aria-checked'),'true','뒤로 돌린다');
+  await page.locator(`${SHOP} .m2s-word`).first().click();
+  await page.locator(`${SHOP} .m2s-word-gloss.is-open`).waitFor();
+  assert.match(await page.locator(`${SHOP} .m2s-word-gloss`).textContent(),/청재킷과 청바지/);
+  await page.keyboard.press('ArrowRight');await page.waitForFunction(sel=>/니트 조끼와 셔츠/.test(document.querySelector(sel+' .m2s-name')?.textContent||''),SHOP);
+  await page.keyboard.press('ArrowLeft');await page.waitForFunction(sel=>/연청 데님 재킷/.test(document.querySelector(sel+' .m2s-name')?.textContent||''),SHOP);
+  await shopBoth('09-가게-자세히');
+  // 입어 보기 — 움직임 줄이기에서는 포장 없이 바로 주문 → 봉으로, 「배송 중」 택
+  await page.locator(`${SHOP} [data-act="order"]`).click();
+  await page.locator(`${SHOP} .m2s-stage[hidden]`).waitFor({state:'attached'});
+  await shopHanger('outfit-denim').locator('.m2s-tag[data-state="shipping"]').waitFor();
+  assert.match(await page.locator(`${SHOP} .m2s-toast`).textContent(),/출발했어요/);
+  assert.ok(calls.some(c=>c.action==='order-look'&&c.item==='outfit-denim'),'주문을 보냈다');
+  // 움직임을 켜면 포장 여섯 단계 — 처음 한 번은 「옷걸이에서 내리는 중」부터, 누르면 건너뛴다
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  await shopHanger('outfit-cardigan').click();await page.locator(`${SHOP} .m2s-stage:not([hidden])`).waitFor();
+  await page.locator(`${SHOP} [data-act="order"]`).click();
+  await page.locator(`${SHOP} .m2s-pack:not([hidden])`).waitFor();
+  assert.match(await page.locator(`${SHOP} .m2s-pack-text`).textContent(),/옷걸이에서 조심히 내리는 중/);
+  await page.waitForTimeout(900);
+  await page.locator(`${SHOP} .m2s-stage`).click({position:{x:20,y:200}});
+  await shopHanger('outfit-cardigan').locator('.m2s-tag[data-state="shipping"]').waitFor({timeout:15000});
+  assert.equal(await page.locator(`${SHOP} .m2s-pack`).isHidden(),true,'포장이 끝나면 문구를 치운다');
+  await page.emulateMedia({reducedMotion:'reduce'});
+  // 배송 조회 — 서버가 아는 때만
+  await shopHanger('outfit-denim').click();await page.locator(`${SHOP} .m2s-track:not([hidden])`).waitFor();
+  assert.match(await page.locator(`${SHOP} .m2s-track`).textContent(),/주문 받음/);
+  assert.match(await page.locator(`${SHOP} .m2s-track`).textContent(),/곧 사진관에 보내요|사진관에 보냄/);
+  assert.equal(await page.locator(`${SHOP} [data-act="order"]`).count(),0,'배송 중에는 다시 주문하지 않는다');
+  await shopBoth('10-가게-배송조회');
+  await closeShop();
+  assert.equal(await page.evaluate(()=>document.activeElement?.dataset?.me2),'shop','닫으면 가게 입구로 돌아온다');
+  assert.match(await page.locator('[data-me2-root] .me2-door-mine').textContent(),/배송 중 2/);
   await menuScene().click();await page.locator('.me2-card[data-state="shipping"]').waitFor();
   await both('10-배송중');
   await finish(()=>({score:.93,student:.86,taeo:.95}));
   await openMe2();await page.locator('.me2-card[data-state="arrived"]').first().waitFor();
   assert.ok(await page.locator('.me2-tag[data-tone="new"]').count()>=1,'도착 표시');
-  await page.waitForFunction(()=>true);
   await both('11-도착');
   const seen=()=>calls.filter(c=>c.action==='seen').length;
   assert.ok(seen()>=1,'본 것을 알렸다');
-  await hanger('outfit-denim').click();await page.locator('[data-me2="wear"]').click();await page.locator('.me2-closet-info .me2-tag[data-tone="on"]').waitFor();
-  await page.locator('.me2-closet-close').click();
+  // 도착한 옷 — 봉 고리의 폴라로이드(「도착」) → 입은 나(인화지 · 손글씨) → 갈아입기
+  await openShop();
+  await shopHanger('outfit-denim').locator('.m2s-print-tag').waitFor();
+  assert.ok(await shopHanger('outfit-denim').locator('.m2s-new').count(),'시트가 먼저 본 표시를 보내도 가게에서는 「도착」');
+  await shopHanger('outfit-denim').click();await page.locator(`${SHOP} .m2s-stage:not([hidden])`).waitFor();
+  await page.locator(`${SHOP} .m2s-side [data-side="worn"]`).click();
+  assert.equal(await page.locator(`${SHOP} .m2s-turn-wrap`).getAttribute('data-view'),'worn');
+  assert.match(await page.locator(`${SHOP} .m2s-print figcaption`).textContent(),/\d+월 \d+일, 학생 식당에서/);
+  assert.ok((await page.locator(`${SHOP} .m2s-print img`).getAttribute('alt')).startsWith('이 옷을 입은 내 사진'));
+  await shopBoth('11-가게-입은나');
+  // 말 바꾸기 — 가게가 열린 채로 글을 다시 쓴다(몽골어 · 영어: 학생 언어 이름 줄 · 「한국어로 읽기」 · 긴 낱말이 넘치지 않는지)
+  for(const code of ['mn','en']){
+   await page.evaluate(async code=>{const m=await import('/brand-opening/world-lang.mjs');m.setLang(code,{save:false});},code);
+   await page.waitForFunction(([sel,code])=>document.querySelector(sel+' .m2s')?.getAttribute('lang')===code,[SHOP,code]);
+   await page.locator(`${SHOP} .m2s-stage:not([hidden])`).waitFor();
+   assert.ok((await page.locator(`${SHOP} .m2s-name-tr`).textContent()).trim(),`${code}: 학생 언어 이름 줄`);
+   assert.match(await page.locator(`${SHOP} .m2s-name`).textContent(),/연청 데님 재킷/,`${code}: 큰 이름은 한국어`);
+   await page.locator(`${SHOP} .m2s-readko`).click();await page.locator(`${SHOP} .m2s-story-ko:not([hidden])`).waitFor();
+   assert.ok(await page.locator(`${SHOP} .m2s-tip-tr`).count(),`${code}: 팁 문장 뜻 줄`);
+   await shopBoth(`11-가게-${code}`);
+  }
+  await page.evaluate(async()=>{const m=await import('/brand-opening/world-lang.mjs');m.setLang('ko',{save:false});});
+  await page.waitForFunction(sel=>document.querySelector(sel+' .m2s')?.getAttribute('lang')==='ko',SHOP);
+  await page.locator(`${SHOP} .m2s-stage:not([hidden])`).waitFor();
+  await page.locator(`${SHOP} [data-act="wear"]`).click();await page.locator(`${SHOP} [data-act="unwear"]`).waitFor();
+  assert.match(await page.locator(`${SHOP} .m2s-toast`).textContent(),/갈아입었어요/);
+  await closeShop();
   assert.ok((await fx.db.query('select equipped_look from engine.me2_photo_profiles where synk_user_id=$1',[A])).rows[0].equipped_look,'입었다');
   await both('12-입는중');
 
@@ -321,8 +417,13 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   await openMe2();await page.locator('.me2-note').waitFor();
   assert.match(await page.locator('.me2-note').first().textContent(),/쉬고/);
   assert.equal(await page.locator('[data-me2="order-look"],[data-me2="order-scene"],[data-me2="redo"],.me2-foot [data-me2="again"]').count(),0,'쉬는 동안에는 새로 맡기지 않는다');
-  // (기준을 바꾸며 옛 룩은 지웠다 — 그래서 여기서는 옷장 칸 자체가 없다.)
-  assert.equal(await hanger('outfit-bomber').count(),0,'안 맡긴 옷은 쉬는 동안 안 보인다');
+  // (기준을 바꾸며 옛 룩은 지웠다.) 가게 입구는 쉬는 동안에도 열린다 — 설명은 읽히고 입어 보기 자리에 쉬는 안내.
+  assert.equal(await hanger('outfit-bomber').count(),0,'안 맡긴 옷은 쉬는 동안 옷장 줄에 없다');
+  await openShop();await shopHanger('outfit-bomber').click();await page.locator(`${SHOP} .m2s-stage:not([hidden])`).waitFor();
+  assert.equal(await page.locator(`${SHOP} [data-act="order"]`).count(),0,'쉬는 동안에는 입어 보기가 없다');
+  assert.match(await page.locator(`${SHOP} .m2s-actions`).textContent(),/쉬고/);
+  await shopBoth('16-가게-쉼');
+  await closeShop();
   assert.ok(await page.locator('[data-me2="erase"]').count(),'쉬는 동안에도 지울 수 있다');
   await both('16-쉼');
   tamper=null;

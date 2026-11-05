@@ -1,0 +1,336 @@
+/* 「제2의 나」 캠퍼스 옷 가게(2026-11-05 · A판 흰 스튜디오) — 시안 experiences/drama/shop/shop.css를 옮겼다. 화면 하나가 곧 가게: 메뉴판 대신 봉, 고른 옷만 같은 공간에서 앞으로.
+   제2의 나 시트 위에 뜨는 두 번째 <dialog>(me2-shop.mjs). 이름은 모두 m2s-로 앱 글과 부딪히지 않는다. 한글 글자 13px 이상 · 단추 44px 이상(글 안 낱말 링크는 뺀다). */
+@font-face{font-family:'M2S Pencil';src:url(me2-assets/shop-pencil.woff2) format('woff2');font-display:swap}
+.m2s-dialog{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;overflow:hidden;background:#F6F5F1;color:#17181C;color-scheme:light;animation:m2s-in .34s cubic-bezier(.2,.75,.2,1) both}
+.m2s-dialog::backdrop{background:rgba(246,245,241,.6)}
+.m2s-dialog.is-leaving{opacity:0;transform:scale(.985);transition:opacity .2s ease,transform .2s ease}
+@keyframes m2s-in{from{opacity:0;transform:scale(.985)}}
+.m2s{
+  --sans:var(--w-sans,'World Latin','World Cyrillic','World SUIT',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif);
+  --mono:var(--w-mono,'World Mono','World SUIT',ui-monospace,monospace);
+  --ink:#17181C;--ink-2:#5A5B61;--ink-3:#7A7B80;--line:rgba(23,24,28,.12);
+  --bg:#F6F5F1;--paper:#FFFFFF;--tint-top:#F7F6F2;--tint-bottom:#F1EFE9;
+  --ease:cubic-bezier(.2,.75,.2,1);--ease-in:cubic-bezier(.55,0,.75,.2);
+  /* 옷 판 760×1040, 고리 끝 26px(2.5%) */
+  --art-h:clamp(320px,54vh,540px);--art-w:calc(var(--art-h)*.7308);--slot:calc(var(--art-w)*.42);--hook:.025;
+  box-sizing:border-box;color:var(--ink);font-family:var(--sans);font-weight:450;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+/* :where로 낮춘다 — .m2s button이 .m2s-go · .m2s-more 같은 단추 색보다 세면 검은 단추에 검은 글자가 된다 */
+:where(.m2s) *,:where(.m2s) *::before,:where(.m2s) *::after{box-sizing:border-box}
+:where(.m2s) button{font:inherit;color:inherit}
+:where(.m2s) :focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.m2s-stage:focus,.m2s-info:focus{outline:none}
+.m2s{position:relative;display:grid;grid-template-rows:auto 1fr;grid-template-columns:minmax(0,1fr);height:100%;min-height:100%;overflow:hidden;isolation:isolate;
+  background:linear-gradient(180deg,var(--tint-top,var(--bg)),var(--tint-bottom,var(--bg)))}
+
+/* 머리 */
+.m2s-top{position:relative;z-index:7;display:flex;align-items:center;justify-content:space-between;padding:max(18px,env(safe-area-inset-top)) clamp(18px,4vw,44px) 0}
+.m2s-mark{display:flex;align-items:center;gap:12px;margin:0;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.m2s-mark span+span{display:flex;align-items:center;gap:12px;font-family:var(--sans);font-size:13px;letter-spacing:-.006em;text-transform:none;color:var(--ink);font-weight:600}
+.m2s-mark span+span::before{content:'';width:22px;height:1px;background:var(--line)}
+.m2s-box{position:relative;display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px 0 12px;border:0;border-radius:999px;background:rgba(255,255,255,.66);box-shadow:inset 0 0 0 1px var(--line);font-size:13px;font-weight:600;cursor:pointer;transition:transform .3s var(--ease),background-color .2s}
+.m2s-box:hover{background:#fff}
+/* 자세히 동안 옷장 단추 자리는 닫기 단추가 쓴다 */
+.m2s[data-mode=detail]:not([data-flying]) .m2s-box{opacity:0;pointer-events:none}
+.m2s-box{transition:transform .3s var(--ease),background-color .2s,opacity .25s}
+.m2s-box.is-bump{animation:m2s-bump .5s var(--ease)}
+@keyframes m2s-bump{40%{transform:scale(1.08)}}
+.m2s-box-icon{width:18px;height:18px;color:var(--ink)}
+.m2s-box-count{min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--ink);color:#fff;font-family:var(--mono);font-size:12px;line-height:20px;text-align:center}
+.m2s-box-count[data-count="0"]{display:none}
+
+/* 바닥 — 봉과 옷 */
+.m2s-floor{position:relative;display:grid;align-content:center;min-height:0;padding-bottom:6vh;transition:transform .6s var(--ease)}
+.m2s[data-mode=detail] .m2s-floor{transform:scale(.965);pointer-events:none}
+.m2s-slot{transition:opacity .4s var(--ease)}
+.m2s[data-mode=detail] .m2s-slot.is-ghost{opacity:0}
+/* 뒤로 흐림은 GPU가 한다(backdrop-filter 막 하나의 불투명도만 바꾼다) — 바닥에 filter를 걸어 옮기면 장마다 다시 그려 끊겼다(11-05 추적: 열 때 버림 2~4%) */
+.m2s-veil{position:absolute;inset:0;z-index:6;pointer-events:none;opacity:0;background:color-mix(in srgb,var(--tint-top,var(--bg)) 86%,transparent);-webkit-backdrop-filter:blur(14px) saturate(.6);backdrop-filter:blur(14px) saturate(.6);transition:opacity .45s var(--ease)}
+.m2s[data-mode=detail] .m2s-veil{opacity:1}
+.m2s-floor>:is(.m2s-caption,.m2s-more,.m2s-hint,.m2s-dots){transition:opacity .3s}
+.m2s[data-mode=detail] .m2s-floor>:is(.m2s-caption,.m2s-more,.m2s-hint,.m2s-dots){opacity:0}
+.m2s-rod{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:1}
+.m2s-rod-bar{fill:none;stroke:#8B8E93;stroke-width:7;stroke-linecap:round}
+.m2s-rod-body{fill:none;stroke:#C9CBCE;stroke-width:4.6;stroke-linecap:round}
+.m2s-rod-shine{fill:none;stroke:rgba(255,255,255,.95);stroke-width:1.2;stroke-linecap:round;transform:translateY(-1.3px)}
+.m2s-rod-shadow{fill:none;stroke:rgba(40,32,22,.09);stroke-width:8;filter:blur(4px);transform:translate(6px,16px)}
+.m2s-rod-cap{fill:#A9ACB0;stroke:#7F8287;stroke-width:1}
+.m2s-rod-plate{fill:#D3D5D8;stroke:#9A9DA2;stroke-width:1}
+.m2s-rail{position:relative;z-index:2;display:flex;margin:0;padding:22px calc(50% - var(--slot)/2) 30px;list-style:none;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;outline:none;cursor:grab;
+  height:calc(var(--art-h) + 52px)}
+.m2s-rail::-webkit-scrollbar{display:none}
+.m2s-rail.is-dragging{cursor:grabbing}
+.m2s-rail.is-fit{justify-content:center;padding-inline:0;scroll-snap-type:none;cursor:default}
+.m2s-rail:focus-visible{outline:2px solid var(--ink);outline-offset:-6px;border-radius:12px}
+.m2s-slot{position:relative;flex:0 0 var(--slot);height:var(--art-h);scroll-snap-align:center}
+/* 누르는 자리는 칸 너비만 — 옷 그림은 양옆으로 넘쳐 겹치지만, 투명한 가장자리가 옆 옷의 마우스 올림을 가로채지 않게 */
+.m2s-hanger{position:absolute;left:0;top:0;width:var(--slot);height:var(--art-h);padding:0;border:0;background:none;cursor:pointer;
+  transform-origin:50% calc(var(--hook)*100%);will-change:transform;-webkit-user-drag:none}
+.m2s-rail.is-dragging .m2s-hanger{cursor:grabbing}
+.m2s-swing{position:absolute;top:0;left:calc((var(--slot) - var(--art-w))/2);width:var(--art-w);height:var(--art-h);transform-origin:50% calc(var(--hook)*100%);will-change:transform;pointer-events:none}
+.m2s-swing img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;user-select:none;
+  filter:drop-shadow(14px 26px 18px rgba(30,25,15,.18)) drop-shadow(1px 2px 2px rgba(40,32,22,.10))}
+.m2s-hanger:focus-visible{outline:none}
+.m2s-hanger.is-far .m2s-tag{opacity:0}
+.m2s-tag{transition:opacity .25s}
+.m2s-hanger:focus-visible .m2s-swing::after{content:'';position:absolute;left:50%;bottom:-14px;width:28px;height:2px;margin-left:-14px;background:var(--ink);border-radius:2px}
+/* 옷걸이 꼬리표 — 배송 중 · 내 옷 */
+.m2s-tag{position:absolute;left:calc(50% + var(--art-w)*.07);top:calc(var(--art-h)*.072);z-index:2;display:grid;gap:1px;padding:9px 8px 6px;border-radius:1.5px;background:#FBFAF6;box-shadow:0 1px 1.5px rgba(0,0,0,.14),0 4px 10px rgba(40,32,22,.08);
+  font-family:var(--sans);font-size:13px;font-weight:600;line-height:1.2;white-space:nowrap;transform:rotate(5deg);transform-origin:0 0;color:var(--ink)}
+.m2s-tag::after{content:'';position:absolute;left:50%;top:3px;width:3px;height:3px;margin-left:-1.5px;border-radius:50%;background:var(--bg);box-shadow:inset 0 0 0 .6px rgba(0,0,0,.25)}
+.m2s-tag b{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.08em;color:var(--ink-3)}
+.m2s-tag::before{content:'';position:absolute;right:100%;top:5px;width:calc(var(--art-w)*.06);height:1px;background:rgba(23,24,28,.35);transform:rotate(-24deg);transform-origin:100% 0}
+.m2s-tag i{display:inline-block;width:5px;height:5px;margin-right:5px;border-radius:50%;background:#D98A2B;vertical-align:1px}
+.m2s-tag[data-state=shipping] i{animation:m2s-blink 1.6s ease-in-out infinite}
+.m2s-tag[data-state=arrived] i{background:#2F6B4A}
+@keyframes m2s-blink{50%{opacity:.25}}
+
+/* 아래 이름 줄 */
+.m2s-caption{position:relative;z-index:3;display:grid;justify-items:center;gap:4px;min-height:46px;margin-top:2px;text-align:center}
+.m2s-caption p{margin:0}
+
+.m2s-caption-note{font-size:13.5px;line-height:1.45;color:var(--ink-2);word-break:keep-all;transition:opacity .25s}
+.m2s-more{display:none;justify-self:center;position:relative;z-index:3;min-height:44px;margin-top:14px;padding:0 22px;border:0;border-radius:999px;background:var(--ink);color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+.m2s-more:active{transform:scale(.97)}
+.m2s-caption-n{font-family:var(--mono);font-size:13px;letter-spacing:.08em;color:var(--ink-3)}
+.m2s-caption-name{font-size:20px;line-height:1.25;font-weight:600;letter-spacing:-.024em}
+.m2s-title{position:absolute;z-index:3;left:clamp(18px,4vw,44px);bottom:clamp(40px,9vh,96px);pointer-events:none}
+.m2s-title h2{margin:0;font-size:clamp(34px,4.4vw,60px);line-height:1.02;font-weight:560;letter-spacing:-.03em;color:var(--ink)}
+.m2s-kicker{margin:0 0 10px;font-size:13px;font-weight:550;letter-spacing:-.006em;color:var(--ink-3)}
+.m2s[data-mode=detail] .m2s-title{opacity:0}
+.m2s-title{transition:opacity .3s}
+.m2s-hint{position:absolute;z-index:3;right:clamp(18px,4vw,44px);bottom:max(18px,env(safe-area-inset-bottom));margin:0;font-size:13px;color:var(--ink-3);transition:opacity .6s}
+.m2s-hint.is-gone{opacity:0}
+.m2s-dots{position:relative;z-index:3;display:none;justify-content:center;gap:6px;margin-top:14px}
+.m2s-dots i{width:5px;height:5px;border-radius:3px;background:rgba(23,24,28,.18);transition:transform .3s var(--ease),background-color .3s}
+.m2s-dots i.on{transform:scaleX(2.4);background:var(--ink)}
+.m2s-dots{gap:9px}
+.m2s-rail:not(.is-fit)~.m2s-dots{display:flex}
+
+/* 자세히 — 같은 공간에서 고른 옷만 앞으로 */
+.m2s-stage{position:absolute;inset:0;z-index:6;display:grid;grid-template-rows:1fr auto;justify-items:center;padding:calc(max(18px,env(safe-area-inset-top)) + 54px) 18px max(22px,env(safe-area-inset-bottom))}
+.m2s-stage[hidden]{display:none}
+.m2s-turn-wrap{position:relative;align-self:center;width:calc(var(--big-h)*.7308);height:var(--big-h);perspective:1600px;touch-action:pan-y;cursor:grab;
+  --big-h:min(60vh,600px)}
+.m2s-turn-wrap.is-turning{cursor:grabbing}
+.m2s-turn{position:absolute;inset:0;transform-style:preserve-3d;transform-origin:50% calc(var(--hook)*100%)}
+.m2s-turn-wrap::before{content:'';position:absolute;left:50%;bottom:calc(100% - var(--line-to,2.6%));width:1px;height:100vh;margin-left:-.5px;background:linear-gradient(rgba(23,24,28,0),rgba(23,24,28,.32) 40%);transition:bottom .55s var(--ease)}
+.m2s-turn-wrap[data-view=worn]{--line-to:9.5%}
+.m2s-face{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;backface-visibility:hidden;-webkit-backface-visibility:hidden;user-select:none;pointer-events:none;
+  filter:drop-shadow(16px 28px 24px rgba(52,42,28,.16)) drop-shadow(1px 3px 3px rgba(40,32,22,.10))}
+.m2s-face.is-back{transform:rotateY(180deg)}
+/* 입은 나 — 이 옷을 입은 내 사진. 옷이 물러나고 그 자리에서 인화지가 떠오른다 */
+
+.m2s-print{position:absolute;left:50%;top:9%;width:74%;aspect-ratio:3/4;margin:0 0 0 -37%;padding:3.2% 3.2% 12%;background:#FDFCF8;box-shadow:0 1px 1px rgba(0,0,0,.08),0 24px 44px rgba(40,32,22,.2);
+  transform:translateY(14px) rotate(-2.2deg) scale(.96);opacity:0;pointer-events:none;transition:opacity .45s var(--ease),transform .7s var(--ease)}
+.m2s-print img{display:block;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.3s var(--ease) .2s}
+.m2s-print::before{content:'';position:absolute;inset:3.2% 3.2% 12%;background:#EFEDE6}
+.m2s-tissue{position:absolute;inset:9% -2% 1%;pointer-events:none;opacity:0;transition:opacity .2s}
+.m2s-tissue i{position:absolute;top:0;bottom:0;width:62%;opacity:0;background:
+  linear-gradient(98deg,transparent 0 22%,rgba(255,255,255,.5) 22.6%,transparent 24% 47%,rgba(60,50,35,.06) 48%,transparent 53% 71%,rgba(255,255,255,.45) 71.5%,transparent 73%),
+  linear-gradient(176deg,transparent 0 38%,rgba(60,50,35,.05) 40%,transparent 46%),
+  rgba(251,250,246,.72);
+  filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.07))}
+.m2s-tissue i:first-child{left:0;transform:translateX(-55%) rotate(-5deg);clip-path:polygon(4% 3%,38% 0,71% 4%,100% 1%,97% 36%,100% 69%,96% 100%,62% 97%,30% 100%,2% 96%,0 62%,3% 30%)}
+.m2s-tissue i:nth-child(2){right:0;transform:translateX(55%) rotate(4deg);clip-path:polygon(0 2%,33% 0,66% 3%,97% 0,100% 33%,97% 66%,100% 98%,70% 100%,36% 96%,4% 100%,1% 67%,4% 31%)}
+.m2s-tissue.is-on i{opacity:1;transition:transform .6s var(--ease),opacity .3s}
+/* 다 감싸면 종이가 짙어져 옷은 거의 안 비치는 꾸러미가 된다 */
+.m2s-turn-wrap:has(.m2s-tissue.is-wrapped) .m2s-turn{opacity:.55;transition:opacity .4s}
+/* 옷걸이에서 내리기 — 고리 · 나무 막대가 걷히고 옷이 살짝 내려앉는다 */
+.m2s-turn-wrap.is-off .m2s-turn{clip-path:inset(13% 0 0 0);translate:0 2.2%;transition:clip-path .35s var(--ease),translate .45s cubic-bezier(.3,1.4,.5,1)}
+.m2s-tissue b{position:absolute;left:50%;top:42%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;filter:drop-shadow(0 1px 2px rgba(0,0,0,.18));transform:scale(0)}
+.m2s-tissue b svg{display:block;width:100%;height:100%}
+.m2s-tissue.is-on{opacity:1}
+.m2s-tissue.is-on i{transform:none;transition:transform .6s var(--ease)}
+.m2s-tissue.is-on i:nth-child(2){transition-delay:.12s}
+.m2s-tissue.is-on b{transform:scale(1);transition:transform .35s cubic-bezier(.3,1.6,.5,1) .55s}
+.m2s-print::after{content:'';position:absolute;left:50%;top:-14px;width:12px;height:30px;margin-left:-6px;border-radius:2px;background:linear-gradient(90deg,#C9A57A,#E2C49B 45%,#B98F62);box-shadow:0 2px 3px rgba(0,0,0,.18);transform:rotate(2.2deg)}
+.m2s-print img{position:relative}
+.m2s-turn-wrap[data-view=worn] .m2s-turn{opacity:.3;translate:-24% 2%;scale:.92;clip-path:inset(15% 0 0 0)}
+.m2s:has(.m2s-turn-wrap[data-view=worn]) .m2s-veil{background:rgba(247,243,233,.92)}
+.m2s-turn{transition:opacity .45s var(--ease),translate .6s var(--ease),scale .6s var(--ease)}
+.m2s-print figcaption{position:absolute;left:0;right:0;bottom:1.6%;text-align:center;font-family:'M2S Pencil',var(--sans);font-size:clamp(17px,1.7vw,22px);line-height:1;color:#3A3833;transform:rotate(-1deg)}
+.m2s-turn-wrap[data-view=worn] .m2s-print img{opacity:1}
+.m2s-turn-wrap[data-view=worn] .m2s-print{opacity:1;transform:translateX(10%) rotate(-2.2deg)}
+.m2s-turn-wrap[data-view=worn]::before{left:57.4%}
+.m2s-turn-wrap::before{transition:bottom .55s var(--ease),left .6s var(--ease)}
+.m2s-turn-wrap[data-view=worn]{cursor:default}
+.m2s-close{position:absolute;z-index:9;top:calc(max(18px,env(safe-area-inset-top)) - 2px);right:clamp(10px,4vw,36px);display:flex;align-items:center;gap:10px;min-height:44px;padding:0 8px;border:0;background:none;font-size:13px;font-weight:550;color:var(--ink);cursor:pointer}
+.m2s-close::after{content:'';width:12px;height:12px;background:linear-gradient(45deg,transparent calc(50% - .7px),currentColor calc(50% - .7px) calc(50% + .7px),transparent calc(50% + .7px)),linear-gradient(-45deg,transparent calc(50% - .7px),currentColor calc(50% - .7px) calc(50% + .7px),transparent calc(50% + .7px))}
+.m2s-close:hover{text-decoration:underline;text-underline-offset:4px}
+.m2s:not([data-mode=detail]) .m2s-close{display:none}
+.m2s-step{position:absolute;top:calc(50% - 60px);width:44px;height:44px;border:1px solid #C9C7C0;border-radius:50%;background:none;cursor:pointer;transition:border-color .2s,transform .2s var(--ease)}
+.m2s-step:hover{border-color:var(--ink)}
+.m2s-step:active{transform:scale(.94)}
+.m2s-step[data-act=prev]{left:clamp(12px,6vw,96px)}
+.m2s-step[data-act=next]{right:clamp(12px,6vw,96px)}
+.m2s-step::before{content:'';position:absolute;left:50%;top:50%;width:9px;height:9px;margin:-5px 0 0 -3px;border:solid var(--ink);border-width:1.6px 1.6px 0 0;transform:rotate(45deg)}
+.m2s-step[data-act=prev]::before{margin-left:-6px;transform:rotate(-135deg)}
+.m2s-info{display:grid;justify-items:center;gap:6px;width:min(100%,360px);text-align:center}
+.m2s-info>*{animation:m2s-rise .5s var(--ease) both}
+.m2s-info>*:nth-child(2){animation-delay:.04s}.m2s-info>*:nth-child(3){animation-delay:.07s}.m2s-info>*:nth-child(4){animation-delay:.1s}.m2s-info>*:nth-child(5){animation-delay:.13s}
+@keyframes m2s-rise{from{opacity:0;transform:translateY(10px)}}
+.m2s-side{position:relative;display:flex;gap:22px;margin:14px 0 6px}
+.m2s-side button{position:relative;min-height:44px;padding:0;border:0;background:none;font-size:13.5px;font-weight:550;color:var(--ink-3);cursor:pointer;transition:color .25s}
+.m2s-side button:hover{color:var(--ink-2)}
+.m2s-side button[aria-checked=true]{color:var(--ink)}
+.m2s-side button::after{content:'';position:absolute;left:0;right:0;bottom:5px;height:1.5px;background:currentColor;transform:scaleX(0);transform-origin:0 50%;transition:transform .35s var(--ease)}
+.m2s-side button[aria-checked=true]::after{transform:none}
+.m2s-side button[data-side=worn]{white-space:nowrap}
+.m2s-num{margin:0;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--ink-3)}
+.m2s-name{margin:4px 0 0;font-size:clamp(28px,3.2vw,42px);line-height:1.1;font-weight:560;letter-spacing:-.045em;word-break:keep-all}
+.m2s-story{margin:10px 0 0;max-width:34em;font-size:15px;line-height:1.72;color:var(--ink-2);word-break:keep-all;text-wrap:pretty}
+.m2s-spec{display:grid;grid-template-columns:auto 1fr;gap:8px 18px;width:100%;margin:16px 0 2px;padding:14px 0;border-block:1px solid var(--line);text-align:left}
+.m2s-spec dt{font-size:13px;font-weight:550;line-height:1.55;color:var(--ink-3);white-space:nowrap}
+.m2s-spec dd{margin:0;font-size:13.5px;line-height:1.55;color:var(--ink);word-break:keep-all}
+.m2s-spec a{color:inherit;text-decoration:underline;text-decoration-color:rgba(23,24,28,.35);text-underline-offset:3px;cursor:pointer}
+.m2s-spec a:hover{text-decoration-color:currentColor}
+/* 스타일 팁 — 색 칩 셋 · 조언 한 문장 · 누르면 뜻이 펼쳐지는 패션 낱말 하나. 상자 · 그림 문자 · 「TIP」 딱지 없이 표 아래 한 묶음 */
+.m2s-tip{display:grid;gap:7px;width:100%;margin:14px 0 2px;text-align:left}
+.m2s-tip-head{display:flex;align-items:center;gap:12px;margin:0;font-size:13px;font-weight:550;color:var(--ink-3)}
+.m2s-tip-chips{display:flex;padding-left:6px}
+.m2s-tip-chips i{width:16px;height:16px;margin-left:-6px;border-radius:50%;background:var(--c);box-shadow:0 0 0 1.5px var(--bg),inset 0 0 0 1px rgba(20,20,20,.1)}
+.m2s-tip-names{font-size:13px;font-weight:450;color:#3A3833}
+.m2s-tip-text{margin:0;font-size:13.5px;line-height:1.65;color:var(--ink-2);word-break:keep-all;text-wrap:pretty}
+.m2s-word{display:inline;padding:0;border:0;background:none;font:inherit;color:var(--ink);text-decoration:underline dotted;text-decoration-color:#8A8882;text-decoration-thickness:1px;text-underline-offset:4px;cursor:pointer;transition:text-decoration-color .2s}
+.m2s-word:hover,.m2s-word[aria-expanded=true]{text-decoration-color:#141414}
+/* 뜻 줄 — 높이만 0에서 펼친다(grid 0fr → 1fr), 선 · 상자 없이 들여쓰기만 */
+.m2s-word-gloss{display:grid;grid-template-rows:0fr;transition:grid-template-rows .18s ease-out}
+.m2s-word-gloss.is-open{grid-template-rows:1fr}
+.m2s-word-gloss>p{min-height:0;overflow:hidden;display:grid;grid-template-columns:auto 1fr;gap:10px;margin:0;padding-left:12px;font-size:13px;line-height:20px;color:#6F6D68}
+.m2s-word-gloss.is-open>p{padding-top:8px}
+.m2s-word-gloss b{font-weight:600;color:#141414;white-space:nowrap}
+/* 배송 조회 — 서버가 실제로 아는 단계만(가짜 진행 막대 없음) */
+.m2s-track{display:grid;gap:0;width:100%;margin:12px 0 4px;padding:0;list-style:none;text-align:left}
+.m2s-track[hidden]{display:none}
+.m2s-track li{position:relative;display:grid;grid-template-columns:14px 1fr auto;align-items:start;column-gap:10px;padding:0 0 11px;font-size:13.5px;line-height:1.45;color:var(--ink-3)}
+.m2s-track li span{min-width:0;word-break:keep-all}
+.m2s-track time{white-space:nowrap;text-align:right}
+.m2s-track li::before{content:'';width:9px;height:9px;margin:5px 0 0 2px;border-radius:50%;box-shadow:inset 0 0 0 1.5px currentColor}
+.m2s-track li::after{content:'';position:absolute;left:6px;top:17px;bottom:1px;width:1px;background:var(--line)}
+.m2s-track li:last-child::after{display:none}
+.m2s-track li[data-done]{color:var(--ink)}
+.m2s-track li[data-done]::before{background:var(--ink);box-shadow:none}
+.m2s-track li[data-now]{color:var(--ink);font-weight:600}
+.m2s-track li[data-now]::before{background:#D98A2B;box-shadow:0 0 0 4px rgba(217,138,43,.18);animation:m2s-blink 1.6s ease-in-out infinite}
+.m2s-track time{font-family:var(--mono);font-size:13px;font-weight:400;letter-spacing:.04em;color:var(--ink-3)}
+.m2s-actions{display:grid;gap:8px;width:100%}
+.m2s-go{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;border:0;border-radius:999px;background:var(--ink);color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:transform .2s var(--ease),background-color .2s}
+.m2s-go:hover{background:#000}
+.m2s-go:active{transform:scale(.98)}
+.m2s-go[disabled]{background:rgba(23,24,28,.1);color:var(--ink-2);cursor:default}
+.m2s-wait{margin:2px 0 0;font-size:13px;color:var(--ink-3)}
+.m2s-go .m2s-dot{width:7px;height:7px;border-radius:50%;background:#D98A2B;animation:m2s-blink 1.6s ease-in-out infinite}
+.m2s-help{margin:2px 0 0;font-size:13px;line-height:1.5;color:var(--ink-3);word-break:keep-all;text-wrap:pretty}
+
+/* PC: 옷은 가운데에서 조금 왼쪽, 이름 · 값 · 단추는 옷 오른쪽(레퍼런스 평균 — 봉 상점 상세 02 · 04 · 18) */
+@media (min-width:761px){
+  /* 봉 화면: 왼쪽 아래 큰 제목, 오른쪽 아래 지금 옷 — 같은 밑선에 둘(가운데에 떠 있던 캡션이 제목과 겹쳐 보였다) */
+  .m2s-caption{position:absolute;right:clamp(18px,4vw,44px);bottom:clamp(44px,calc(9vh + 4px),100px);justify-items:end;text-align:right;min-height:0}
+  .m2s-hint{right:clamp(18px,4vw,44px);left:auto;font-size:13px}
+  .m2s-stage{grid-template-columns:minmax(0,1.05fr) minmax(300px,.95fr);grid-template-rows:1fr;align-items:center;column-gap:clamp(24px,4vw,72px);padding-inline:clamp(72px,9vw,160px)}
+  .m2s-turn-wrap{justify-self:end;--big-h:min(66vh,640px)}
+  /* 학생 언어 줄 · 한국어 원문 · 팁 뜻 줄이 더해지면 글이 길어진다 — 글 칸만 따로 내려 단추가 화면 밖에 갇히지 않게 */
+  .m2s-info{justify-items:start;text-align:left;width:min(100%,380px);align-self:center;align-content:start;margin-top:0;max-height:calc(100dvh - 150px);overflow-y:auto;overscroll-behavior:contain;padding:4px 12px 28px 2px;scrollbar-width:thin}
+  .m2s-help{max-width:34ch}
+  .m2s-actions{max-width:320px}
+  /* 주 단추는 글 칸 아래에 붙여 늘 보인다(글이 길면 그 위로 내려 읽는다) */
+  .m2s-info .m2s-actions{position:sticky;bottom:-28px;z-index:2;max-width:none;padding:18px 0 28px;background:linear-gradient(rgba(246,245,241,0),var(--bg) 18px);pointer-events:none}
+  .m2s-info .m2s-actions>*{pointer-events:auto;max-width:320px}
+}
+
+/* 택배 상자 */
+.m2s-parcel{--pw:min(66vw,420px);position:absolute;z-index:8;left:50%;top:50%;width:var(--pw);aspect-ratio:1;margin:calc(var(--pw)/-2) 0 0 calc(var(--pw)/-2);pointer-events:none}
+.m2s-parcel::before{content:'';position:absolute;left:14%;right:14%;top:80%;height:7%;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.18),transparent);z-index:-1}
+.m2s-parcel[hidden]{display:none}
+.m2s-parcel img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.m2s-parcel-closed{opacity:0}
+.m2s-label{position:absolute;left:29%;top:50.5%;width:41%;padding:3% 3.4% 2.6%;border-radius:2px;background:#FBFAF6;box-shadow:0 1px 2px rgba(0,0,0,.14);transform:rotate(-2deg) scale(1.25);opacity:0;font-family:var(--sans);color:var(--ink)}
+.m2s-label p{display:flex;gap:6%;margin:0 0 2.4%;font-size:calc(var(--pw)*.0215);line-height:1.32}
+.m2s-label p span{flex:none;width:3.6em;color:var(--ink-3)}
+.m2s-label p b{flex:1;min-width:0;font-weight:600;word-break:keep-all}
+.m2s-label p em{font-style:normal}
+.m2s-label .m2s-label-from{font-size:calc(var(--pw)*.018);color:var(--ink-3)}
+.m2s-label .m2s-label-from b{font-weight:450;color:var(--ink-2)}
+.m2s-label-no{justify-content:center;margin:1.6% 0 0!important;font-family:var(--mono);font-size:calc(var(--pw)*.016)!important;letter-spacing:.08em;color:var(--ink-2)}
+.m2s-parcel-tape{position:absolute;left:46.4%;width:7.4%;top:47%;height:11%;opacity:0;background:repeating-linear-gradient(180deg,transparent 0 14%,rgba(90,65,35,.32) 14% 16%,transparent 16% 30%);mix-blend-mode:multiply}
+.m2s-parcel.is-closed .m2s-parcel-tape{opacity:1;transition:opacity .2s .15s}
+.m2s-label .m2s-label-head{padding-bottom:2.6%;margin-bottom:3.4%;border-bottom:.5px solid rgba(0,0,0,.35);font-family:var(--mono);font-size:calc(var(--pw)*.0175);font-weight:600;letter-spacing:.04em}
+.m2s-label-code{display:block;height:calc(var(--pw)*.045);margin-top:3%;background:repeating-linear-gradient(90deg,#222 0 1px,transparent 1px 2px,#222 2px 4px,transparent 4px 5px,#222 5px 6px,transparent 6px 8px)}
+.m2s-label.is-on{opacity:1;transform:rotate(-2.5deg);transition:transform .28s cubic-bezier(.3,1.5,.5,1),opacity .12s}
+.m2s-pack{position:absolute;z-index:9;left:50%;bottom:max(34px,env(safe-area-inset-bottom));transform:translateX(-50%);width:max-content;max-width:92vw;display:grid;justify-items:center;gap:6px;margin:0;text-align:center;pointer-events:none}
+.m2s-pack[hidden]{display:none}
+.m2s-pack-text{font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--ink);animation:m2s-rise .35s var(--ease) both}
+.m2s-pack-skip{font-size:13px;color:var(--ink-3)}
+.m2s[data-packing] :is(.m2s-info,.m2s-step,.m2s-close){opacity:0;pointer-events:none;transition:opacity .25s}
+.m2s[data-packing] .m2s-floor{opacity:0;transition:opacity .3s,transform .6s var(--ease)}
+.m2s[data-packing] .m2s-stage{cursor:pointer}
+.m2s-toast{position:absolute;z-index:9;left:50%;bottom:max(28px,env(safe-area-inset-bottom));transform:translateX(-50%);margin:0;padding:12px 18px;border-radius:999px;background:var(--ink);color:#fff;font-size:14px;font-weight:600;white-space:nowrap;box-shadow:0 12px 30px rgba(0,0,0,.18);animation:m2s-rise .45s var(--ease) both}
+.m2s-toast[hidden]{display:none}
+
+/* 들어올 때 */
+.m2s[data-ready=no] .m2s-slot{opacity:0}
+
+/* 휴대폰 */
+@media (max-width:760px){
+  :root{--art-h:min(47vh,420px);--slot:calc(var(--art-w)*.5)}
+  .m2s-mark span:first-child{display:none}
+  .m2s-mark span+span::before{display:none}
+  .m2s-floor{align-content:start;padding-top:calc(7vh + 64px)}
+  .m2s-title{top:calc(max(14px,env(safe-area-inset-top)) + 58px);bottom:auto;left:18px}
+  .m2s-title h2{font-size:32px}
+  .m2s-kicker{margin-bottom:6px}
+  .m2s-hint{left:18px;right:auto}
+  .m2s-step{display:none}
+  .m2s-turn-wrap{--big-h:min(52vh,470px)}
+  .m2s-stage{display:block;overflow-y:auto;overscroll-behavior:contain;padding:calc(max(14px,env(safe-area-inset-top)) + 50px) 20px 0}
+  .m2s-stage .m2s-turn-wrap{margin:0 auto}
+  .m2s-close{position:fixed}
+  .m2s-info{margin:8px auto 0;padding-bottom:max(18px,env(safe-area-inset-bottom))}
+  .m2s-spec{text-align:left}
+  .m2s-info{justify-items:start;text-align:left;padding-bottom:96px}
+  .m2s-side{order:-1;align-self:center;margin:2px 0 14px} /* 앞 · 뒤 · 입은 나는 사진 바로 아래 — 설명 밑에 두면 눌러도 바뀌는 사진이 화면 밖이다 */
+  .m2s[data-mode=detail] .m2s-top{min-height:58px;background:var(--bg);box-shadow:0 1px 0 var(--line)}
+  .m2s-actions{position:sticky;bottom:0;z-index:2;margin-top:-20px;padding:48px 0 max(12px,env(safe-area-inset-bottom));background:linear-gradient(rgba(246,245,241,0),var(--bg) 46px);pointer-events:none}
+  .m2s-actions>*{pointer-events:auto} /* 위 바탕 페이드가 앞 · 뒤 탭의 누름을 가로채지 않게(11-05 시험에서 잡음) */
+  .m2s-help{order:9}
+  .m2s-box-text{display:none}
+  .m2s-box{min-height:44px;padding:0 10px 0 8px;gap:6px}
+  .m2s-more{display:block}
+  .m2s-floor{display:flex;flex-direction:column;min-width:0}
+  .m2s-dots{order:1;margin:2px 0 14px}
+  .m2s-caption{order:2}
+  .m2s-more{order:3;align-self:center}
+  .m2s-hint{margin-top:12px}
+}
+
+
+/* 앱에 넣으며 더한 것(11-05) */
+.m2s-caption-sub{font-size:13.5px;line-height:1.3;color:var(--ink-2)}
+.m2s-name-tr{margin:2px 0 0;font-size:15px;line-height:1.4;color:var(--ink-2)}
+.m2s-name-tr[hidden],.m2s-readko[hidden],.m2s-story-ko[hidden],.m2s-pack-tr[hidden]{display:none}
+.m2s-readko{justify-self:start;min-height:44px;margin:2px 0 -6px;padding:0;border:0;background:none;font-size:13.5px;font-weight:550;color:var(--ink);text-decoration:underline;text-decoration-color:rgba(23,24,28,.3);text-underline-offset:4px;cursor:pointer}
+.m2s-readko:hover{text-decoration-color:currentColor}
+.m2s-story-ko{margin:4px 0 0;padding-left:12px;border-left:1.5px solid var(--line);max-width:34em;font-size:15px;line-height:1.75;color:var(--ink);word-break:keep-all;text-wrap:pretty}
+.m2s-tip-tr{margin:2px 0 0;font-size:13px;line-height:1.55;color:var(--ink-3);text-wrap:pretty}
+.m2s-pair{display:inline;padding:0;border:0;background:none;font:inherit;color:inherit;text-decoration:underline;text-decoration-color:rgba(23,24,28,.35);text-underline-offset:3px;cursor:pointer}
+.m2s-pair:hover{text-decoration-color:currentColor}
+.m2s-quiet{min-height:44px;padding:0 12px;border:0;border-radius:999px;background:none;font-size:14px;font-weight:550;color:var(--ink-2);cursor:pointer}
+.m2s-quiet:hover{color:var(--ink);text-decoration:underline;text-underline-offset:4px}
+.m2s-go[disabled],.m2s-quiet[disabled]{opacity:.5;cursor:default}
+.m2s-new{position:absolute;left:50%;bottom:-11px;transform:translateX(-50%);padding:1px 7px 2px;border-radius:999px;background:#B23A2C;color:#fff;font-size:13px;font-weight:600;line-height:18px;white-space:nowrap}
+.m2s-print-tag{position:absolute;left:calc(50% + var(--art-w)*.06);top:calc(var(--art-h)*.045);z-index:2;width:calc(var(--art-w)*.235);aspect-ratio:84/104;padding:4px 4px 13px;background:#FCFBF7;box-shadow:0 1px 1.5px rgba(0,0,0,.14),0 6px 10px rgba(0,0,0,.18);transform:rotate(-6deg);transform-origin:50% 0;transition:transform .35s var(--ease),opacity .25s}
+.m2s-print-tag img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 22%}
+.m2s-print-tag::before{content:'';position:absolute;left:50%;top:-14px;width:7px;height:26px;margin-left:-3.5px;border-radius:1.5px;background:linear-gradient(90deg,#C9A57A,#E6C99F 45%,#B98F62);box-shadow:0 1px 2px rgba(0,0,0,.22)}
+@media (hover:hover){.m2s-hanger:hover .m2s-print-tag{transform:rotate(-3deg) scale(1.18)}}
+.m2s-hanger.is-far .m2s-print-tag{opacity:0}
+.m2s-tag[data-state=failed] i{background:#B23A2C}
+.m2s-tag[data-state=delayed] i{background:#8A6A2B}
+.m2s-pack-tr{font-size:13px;color:var(--ink-2)}
+.m2s-toast{max-width:calc(100vw - 32px);white-space:normal;text-align:center}
+/* 움직임 줄이기 — 앱 설정 또는 기기 설정 */
+:root[data-reduced=true] .m2s-dialog,:root[data-motion=reduced] .m2s-dialog{animation:none}
+:root[data-reduced=true] .m2s :is(.m2s-floor,.m2s-info>*,.m2s-tag i,.m2s-track li,.m2s-toast,.m2s-pack-text,.m2s-veil),:root[data-motion=reduced] .m2s :is(.m2s-floor,.m2s-info>*,.m2s-tag i,.m2s-track li,.m2s-toast,.m2s-pack-text,.m2s-veil){transition:none;animation:none}
+@media (prefers-reduced-motion:reduce){
+  .m2s-dialog{animation:none}
+  .m2s :is(.m2s-floor,.m2s-info>*,.m2s-tag i,.m2s-track li,.m2s-toast,.m2s-pack-text,.m2s-veil){transition:none;animation:none}
+}

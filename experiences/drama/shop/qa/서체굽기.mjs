@@ -9,12 +9,14 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { MOCK_NOTE } from '../shop-items.mjs';
+import { PRINT_PLACE } from '../../../synk-world-app/me2-shop-items.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const src = process.argv[2];
 if (!src) throw Error('사용법은 파일 머리글');
 // 날짜 · 곳을 바꿔도 다시 굽지 않게 숫자 · 월 · 일 · 쉼표는 늘 넣는다(이 서체에는 가운뎃점이 없다)
-const chars = [...new Set(Object.values(MOCK_NOTE).join('') + '0123456789월일 ,.')].sort().join('');
+// 앱 옷 가게(11-05)의 인화지 글 「11월 6일, 학생 식당에서」도 같은 조각에 넣는다(앱은 me2-assets/shop-pencil.woff2로 복사).
+const chars = [...new Set(Object.values(MOCK_NOTE).join('') + PRINT_PLACE + '0123456789월일 ,.')].sort().join('');
 const out = path.join(here, '..', 'assets', 'shop-pencil.woff2');
 const py = String.raw`
 import sys
@@ -48,4 +50,5 @@ const r = spawnSync('python', ['-I', '-c', py, path.resolve(src), out, chars], {
 process.stdout.write(r.stdout || '');
 process.stderr.write(r.stderr || '');
 if (r.status !== 0) process.exit(r.status || 1);
-console.log(`${path.basename(out)} ${fs.statSync(out).size}B`);
+fs.copyFileSync(out, path.join(here, '..', '..', '..', 'synk-world-app', 'me2-assets', 'shop-pencil.woff2'));
+console.log(`${path.basename(out)} ${fs.statSync(out).size}B · 앱 사본도 고침`);
