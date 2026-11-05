@@ -2,7 +2,7 @@
   "id": "/pulse-app/",
   "name": "SYNK PULSE",
   "short_name": "PULSE",
-  "description": "자연스러움은 연출입니다",
+  "description": "AI 모델에게 연기를 가르칩니다",
   "lang": "ko",
   "start_url": "/pulse-app/",
   "scope": "/pulse-app/",
