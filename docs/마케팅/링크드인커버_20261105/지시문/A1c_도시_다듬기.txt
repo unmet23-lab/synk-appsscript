@@ -1,0 +1,15 @@
+Generate ONE image with your image generation tool. Do not write code, do not crop or post-process; just generate the image and finish.
+
+Canvas: 3:1 panoramic landscape (e.g. 3072x1024, or the widest you can). The final use is a 4:1 LinkedIn cover, so keep every important element inside the middle 70% of the height and leave clear headroom above the crane.
+
+Image 1 is the approved company wordmark "synk" (lowercase, soft rounded letters, the k ascender taller than the other letters, the y descender dropping below the baseline). Keep these exact letter shapes, proportions and spacing. Do not add, remove or change any letter. No other text anywhere.
+
+Scene: a real cinematic architectural photograph at blue hour, just after sunset. A monumental building in the exact shape of the wordmark "synk" stands on a stone plaza beside a river in a modern Korean city. The letters are clad in dense, smooth, tightly felted deep charcoal wool used as an architectural skin — an even, velvety matte surface with very fine fibres, softly rounded edges, catching the last cool light on its upper edges. NOT brown, NOT coarse or curly, NOT rope or yarn texture. All four letters stand on the same ground line, with the y descender going into a shallow pit in the plaza (no letter floats on scaffolding).
+
+The building is almost finished: one slim tower crane behind the "k" lowers the very last felt piece onto the top of the k ascender, with a visible gap of air below the hanging piece. Only the "k" still has light steel scaffolding with a few warm work lamps. Exactly three tiny workers for scale, placed naturally at different spots — one on the k scaffolding, one at the base of the n, one on the plaza looking up — never standing in a row.
+
+Sky: a real blue-hour sky with soft high clouds faintly lit from below the horizon, natural tonal variation — not a flat CG backdrop. Ground: real granite plaza, damp after rain, with soft uneven reflections, ending at a low riverside railing; distant city lights low on the far bank. Not an infinite glossy floor.
+
+Composition: the wordmark building occupies the RIGHT half of the frame (from about 50% to 90% of the width), seen almost straight on from a slightly low angle. The LEFT half is calm sky, river and plaza with nothing important in it.
+
+Look: quiet, premium, editorial — like an architecture magazine cover shot on film. Near-black, charcoal and deep navy palette; warm light only from the few work lamps. Photoreal, 35mm lens, soft natural haze, subtle film grain. No CGI gloss, no neon, no lens flare, no logos, no signage, no watermark.

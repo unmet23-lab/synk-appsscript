@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>B3 경력 두 줄</title>
+<!--폰트-->
+<style>
+  /* 11-05 GPT 심사 반영: 이름 줄 · 가로선 · 서비스 목록을 빼고(프로필과 겹침) 두 줄 문구의 조판만 남긴다.
+     휴대폰에서 첫 줄이 힘겹다는 지적 → 첫 줄을 밝히고 굵기를 조금 올린다. */
+  :root { --검정:#0A0A0A; --흰:#FFFFFF; --옅은:#D4D4D4; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { width:1584px; height:396px; background:var(--검정); overflow:hidden; }
+  body { font-family:'SUIT Variable', sans-serif; position:relative; }
+  /* 휴대폰에서 사진이 x≈750까지 덮는다 → 800에서 시작, 위아래 가운데 */
+  h1 { position:absolute; left:800px; top:50%; transform:translateY(-52%); font-size:64px; line-height:1.3;
+       letter-spacing:-.028em; white-space:nowrap; font-weight:400; }
+  h1 > span { display:block; }
+  .하나 { font-weight:560; color:var(--옅은); }
+  .둘 { font-weight:760; color:var(--흰); }
+  .점 { display:inline; margin:0 -.06em; }
+</style></head>
+<body>
+  <h1><span class="하나">엔터테인먼트<span class="점">·</span>광고 업계 10년.</span><span class="둘">지금은 AI로 직접 만듭니다.</span></h1>
+</body></html>

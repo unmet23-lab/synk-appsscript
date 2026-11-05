@@ -1,0 +1,13 @@
+Generate ONE image with your image generation tool. Do not write code, do not crop or post-process; just generate the image and finish.
+
+Canvas: 3:1 panoramic landscape (e.g. 3072x1024, or the widest you can). The final use is a 4:1 LinkedIn cover, so keep every important element inside the middle 70% of the height.
+
+Image 1 is the approved company wordmark "synk" (lowercase, soft rounded letters, the k ascender taller than the other letters, the y descender dropping below the baseline). Keep these exact letter shapes, proportions and spacing. Do not add, remove or change any letter. No other text anywhere.
+
+Scene: a luxury still-life studio photograph. The wordmark "synk" made of dense, smooth, tightly felted dark charcoal wool — like the surface of a premium felt hat: an even, velvety matte surface with very fine fibres and softly rounded edges. NOT coarse, NOT curly, NOT steel wool, NOT yarn or rope. The letters stand upright on a low matte black plinth whose top surface is slightly lighter than the background. Nothing else on the set except two quiet traces of hand-making on the plinth just right of the "k": a slim steel felting needle lying flat, and one small soft tuft of raw undyed charcoal wool. No scaffolding, no crane, no people, no figures, no tools other than the single needle.
+
+Lighting: sculptural and dramatic but calm. A large soft key light from the upper right shapes the rounded letters; one clean rim light from the back right traces every letter edge against the background so the word reads clearly even as a small phone thumbnail. Lit felt surfaces mid-grey, shadow sides dark grey, both clearly lighter than the background. Background: a seamless studio sweep from very dark grey at the top (#161616) to near black at the bottom (#070707). No coloured light.
+
+Composition: the wordmark sits in the RIGHT half of the frame (from about 52% to 88% of the width), straight-on product view at the letters' mid-height, shallow depth of field. The LEFT half is empty studio sweep with soft falloff — nothing in it.
+
+Look: minimal luxury, editorial, like a high-end fashion house campaign still or a museum object photograph. Photoreal, 100mm lens, gentle film grain. No CGI gloss, no plastic look, no particles, no dust bokeh, no logos, no signage, no watermark.

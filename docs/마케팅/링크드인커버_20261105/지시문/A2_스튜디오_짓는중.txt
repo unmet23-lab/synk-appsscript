@@ -1,0 +1,11 @@
+Generate ONE image with your image generation tool. Do not write code, do not crop or post-process; just generate the image and finish.
+
+Canvas: the widest landscape size you can generate (ideally 3:1 panoramic, e.g. 3072x1024; otherwise 1536x1024). The final use is a 4:1 LinkedIn cover cropped from the vertical middle band, so keep every important element inside the middle 60% of the height.
+
+Image 1 is the approved company wordmark "synk" (lowercase, soft rounded felt letters, the k ascender taller than the other letters, the y descender dropping below the baseline). Keep these exact letter shapes, proportions and spacing. Do not add, remove or change any letter. No other text anywhere.
+
+Scene: a luxury still-life studio photograph. The wordmark "synk" made of thick charcoal wool felt (same felt texture as Image 1 but in deep charcoal, almost black) stands upright on a black matte plinth in a dark studio. It is shown as a miniature construction site: delicate miniature steel scaffolding wraps the "k" and part of the "n"; a tiny tower crane (about as tall as the k) stands behind the "k" and lowers the last small felt piece onto the top of the k; two or three tiny miniature workers (about 1 cm tall in scale) stand on the scaffolding and at the base. A single soft key light from the upper right rakes across the felt fibres; one small warm butter-yellow work lamp (#F5C445) glows on the scaffolding.
+
+Composition: the wordmark and crane sit in the RIGHT half of the frame (from about 50% to 92% of the width), straight-on product view, slight low angle, shallow depth of field. The LEFT half is empty black studio space with a very soft falloff of light — nothing important in it.
+
+Look: minimal luxury, editorial, like a high-end brand campaign still. Near-black and charcoal palette, only one butter-yellow accent. Photoreal macro photography, 100mm lens, crisp felt fibre detail, gentle film grain. No CGI gloss, no plastic look, no neon, no logos, no signage, no watermark.

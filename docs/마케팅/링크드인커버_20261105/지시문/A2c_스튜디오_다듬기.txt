@@ -1,0 +1,15 @@
+Generate ONE image with your image generation tool. Do not write code, do not crop or post-process; just generate the image and finish.
+
+Canvas: 3:1 panoramic landscape (e.g. 3072x1024, or the widest you can). The final use is a 4:1 LinkedIn cover, so keep every important element inside the middle 70% of the height and leave clear headroom above the crane.
+
+Image 1 is the approved company wordmark "synk" (lowercase, soft rounded letters, the k ascender taller than the other letters, the y descender dropping below the baseline). Keep these exact letter shapes, proportions and spacing. Do not add, remove or change any letter. No other text anywhere.
+
+Scene: a luxury still-life studio photograph of a finely crafted miniature. The wordmark "synk" is made of dense, smooth, tightly felted dark charcoal wool — like the surface of a premium felt hat: an even, velvety matte surface with very fine fibres, softly rounded edges. NOT coarse, NOT curly, NOT steel wool, NOT yarn or rope. The four letters are complete and stand upright on a low matte black plinth whose top surface is slightly lighter than the background so it separates clearly.
+
+The build is almost finished: a slim miniature tower crane stands just to the right of the "k" and is lowering the very last small felt piece onto the top of the k ascender, with a clear gap of air between the hanging piece and the k. One single section of delicate miniature steel scaffolding stands only on the LEFT side of the "k" (none on the right). Exactly two tiny miniature workers in plain dark work clothes: one on the scaffolding guiding the piece with both hands, one on the plinth at the base checking a level. Calm working poses only — no waving, no cute poses.
+
+Lighting: the wordmark must read clearly even as a small phone thumbnail. A large soft key light from the upper right, plus one clean rim light from the back right that outlines every letter against the background. Lit felt surfaces mid-grey, shadow sides dark grey, both clearly lighter than the background. Background: a seamless studio sweep from very dark grey at the top (#161616) to near black at the bottom (#070707). One small warm work lamp on the scaffolding (#FFB85A) is the only coloured light in the image.
+
+Composition: the wordmark sits in the RIGHT half of the frame (from about 50% to 90% of the width), straight-on product view at the letters' mid-height, shallow depth of field. The LEFT half is empty studio sweep with soft falloff — nothing in it.
+
+Look: minimal luxury, editorial, like a high-end brand campaign still. Photoreal macro photography, 100mm lens, gentle film grain. No CGI gloss, no plastic look, no particles, no dust bokeh, no logos, no signage, no watermark.

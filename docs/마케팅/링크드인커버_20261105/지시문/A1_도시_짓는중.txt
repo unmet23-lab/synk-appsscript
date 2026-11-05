@@ -1,0 +1,11 @@
+Generate ONE image with your image generation tool. Do not write code, do not crop or post-process; just generate the image and finish.
+
+Canvas: the widest landscape size you can generate (ideally 3:1 panoramic, e.g. 3072x1024; otherwise 1536x1024). The final use is a 4:1 LinkedIn cover cropped from the vertical middle band, so keep every important element inside the middle 60% of the height.
+
+Image 1 is the approved company wordmark "synk" (lowercase, soft rounded felt letters, the k ascender taller than the other letters, the y descender dropping below the baseline). Keep these exact letter shapes, proportions and spacing. Do not add, remove or change any letter. No other text anywhere.
+
+Scene: a cinematic architectural photograph at blue hour, just after sunset. A monumental building in the exact shape of the wordmark "synk" stands on a quiet plaza in a modern city. The letters are built of deep charcoal wool felt used as an architectural skin — thick, soft-edged, matte, with visible fibre texture catching the last light. The building is still under construction: the "k" and the right half of the "n" are wrapped in fine steel scaffolding with a few warm work lamps; one slim tower crane rises behind the "k", its hook lowering the final felt piece onto the top of the k. Tiny human figures in work clothes at the base and on the scaffolding give a sense of huge scale. Distant city lights sit low on the horizon.
+
+Composition: the wordmark building occupies the RIGHT half of the frame (from about 50% to 92% of the width), seen almost straight on with a slight low angle. The LEFT half is calm open sky and plaza with nothing important in it — a dark navy-to-black gradient that fades smoothly.
+
+Look: quiet, premium, editorial — like a cover of an architecture magazine or a luxury brand film still. Near-black, charcoal and deep navy palette with one warm butter-yellow accent (#F5C445) coming only from the work lamps. Photoreal, 35mm lens, soft natural haze, subtle film grain. No CGI gloss, no neon, no lens flare, no logos, no signage, no watermark.

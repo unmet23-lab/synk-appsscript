@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>B 한 줄</title>
+<!--폰트-->
+<style>
+  :root { --검정:#0A0A0A; --종이:#F4F1EA; --회색:#8C8A86; --선:#262523; --버터:#F5C445; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { width:1584px; height:396px; background:var(--검정); overflow:hidden; }
+  body { font-family:'SUIT Variable', sans-serif; color:var(--종이); position:relative; }
+  /* 아주 옅은 입자 — 평평한 디지털 검정을 피한다 */
+  .결 { position:absolute; inset:0; opacity:.07; mix-blend-mode:screen; }
+  /* 글 덩어리 자리: 휴대폰에서 사진이 덮는 왼쪽 46%(≈729px) 오른쪽에서 시작 */
+  .판 { position:absolute; left:792px; right:72px; top:0; bottom:0; }
+  .머리 { position:absolute; top:58px; left:0; right:0; display:flex; justify-content:space-between; align-items:baseline;
+          font-size:17px; font-weight:560; letter-spacing:.16em; color:var(--회색); }
+  .머리 b { color:var(--종이); font-weight:640; letter-spacing:.16em; }
+  .줄 { position:absolute; top:92px; left:0; right:0; height:1px; background:var(--선); }
+  h1 { position:absolute; top:114px; left:-4px; font-size:76px; line-height:1.12; font-weight:760; letter-spacing:-.04em; }
+  h1 em { font-style:normal; color:var(--버터); }
+  .발 { position:absolute; bottom:52px; left:0; right:0; display:flex; justify-content:space-between;
+        font-size:17px; font-weight:520; letter-spacing:.02em; color:var(--회색); }
+</style></head>
+<body>
+  <svg class="결" width="1584" height="396"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>
+  <div class="판">
+    <div class="머리"><span><b>YUHO YANG</b>&nbsp;&nbsp;FOUNDER, SYNK</span><span>synk.im</span></div>
+    <div class="줄"></div>
+    <h1>회사를 짓고 있습니다.<br>직원은 <em>AI</em>입니다.</h1>
+    <div class="발"><span>웹 · 앱 · 광고 영상 · AI 교육, 전부 직접 만듭니다</span><span>Jeonju, KR</span></div>
+  </div>
+</body></html>

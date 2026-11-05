@@ -1,0 +1,99 @@
+<title>링크드인 커버 시안</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<!--폰트-->
+<style>
+  /* 짜임: 지금 커버의 문제 → 추천 두 판(원본 크게 + 실제 데스크톱·휴대폰 화면) → 심사에서 떨어진 두 판(작게) → 고르는 법.
+     커버와 같은 검정 세계 한 테마로 고정(일부러). 버터는 추천 표시 한 곳에만. */
+  :root {
+    --바탕:#0B0B0A; --면:#151513; --선:#2A2926; --글:#F4F3EF; --옅은:#A6A39C; --버터:#F5C445;
+    --제목:'SUIT Variable', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    --본문:'SUIT Variable', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--바탕); color:var(--글); font-family:var(--본문); font-size:16px; line-height:1.65;
+         padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); }
+  main { max-width:1120px; margin:0 auto; padding-block:56px 96px; display:grid; gap:64px; }
+  h1, h2, h3, p, figure { margin:0; }
+  h1 { font-family:var(--제목); font-size:clamp(28px, 4.4vw, 42px); font-weight:760; letter-spacing:-.025em; line-height:1.25; text-wrap:balance; }
+  .들머리 { display:grid; gap:14px; }
+  .들머리 p { color:var(--옅은); max-width:64ch; }
+  .들머리 b, .설명 b, .끝 b { color:var(--글); font-weight:640; }
+  .나란히 { display:grid; grid-template-columns:minmax(0, 1.7fr) minmax(0, 1fr); gap:14px; align-items:start; }
+  figure { background:var(--면); border:1px solid var(--선); border-radius:10px; overflow:hidden; min-width:0; }
+  figure img { display:block; width:100%; height:auto; max-width:100%; }
+  figcaption { font-size:13px; color:var(--옅은); padding:9px 13px; }
+  .판 { display:grid; gap:16px; }
+  .머리 { display:flex; gap:12px 14px; align-items:center; flex-wrap:wrap; }
+  .머리 h2 { font-family:var(--제목); font-size:26px; font-weight:740; letter-spacing:-.015em; }
+  .이름 { font-size:14px; font-weight:700; letter-spacing:.06em; color:var(--옅은); border:1px solid var(--선); border-radius:6px; padding:1px 9px; }
+  .추천 { font-size:14px; font-weight:760; color:var(--바탕); background:var(--버터); border-radius:6px; padding:2px 10px; }
+  .설명 { color:var(--옅은); max-width:70ch; }
+  .원본 { border:1px solid var(--선); border-radius:8px; overflow:hidden; }
+  .원본 img { display:block; width:100%; max-width:100%; aspect-ratio:4 / 1; object-fit:cover; }
+  .심사 { font-size:14.5px; color:var(--옅은); border-left:2px solid var(--선); padding-left:12px; max-width:76ch; }
+  .심사 b { color:var(--글); font-weight:600; }
+  .묶음제목 { font-family:var(--제목); font-size:15px; font-weight:700; letter-spacing:.04em; color:var(--옅은); border-top:1px solid var(--선); padding-top:22px; }
+  .작은판 { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:28px; }
+  .작은판 .머리 h2 { font-size:20px; }
+  .끝 { border-top:1px solid var(--선); padding-top:26px; color:var(--옅은); display:grid; gap:12px; max-width:76ch; }
+  @media (max-width:720px) { .나란히, .작은판 { grid-template-columns:1fr; } main { gap:52px; padding-block:36px 72px; } }
+</style>
+
+<main>
+  <header class="들머리">
+    <h1>링크드인 커버, 두 판 중에 골라 주세요</h1>
+    <p>지금 커버는 휴대폰에서 프로필 사진이 왼쪽 절반을 덮어 <b>「설팅」 두 글자와 발표판 그림만</b> 남습니다. 새 판은 모두 중요한 것을 오른쪽 절반에 두었고, 아래 화면은 실제 프로필 쪽에 끼워 본 모습입니다. 링크드인에는 아직 아무것도 올리지 않았습니다.</p>
+    <div class="나란히">
+      <figure><img src="img/now-d.png" alt="지금 커버를 단 데스크톱 프로필 화면"><figcaption>지금 · 데스크톱</figcaption></figure>
+      <figure><img src="img/now-m.png" alt="지금 커버를 단 휴대폰 프로필 화면"><figcaption>지금 · 휴대폰. 제목이 사진에 가립니다</figcaption></figure>
+    </div>
+  </header>
+
+  <section class="판" aria-labelledby="a2d">
+    <div class="머리"><span class="이름">A</span><h2 id="a2d">펠트 로고 정물</h2><span class="추천">추천</span></div>
+    <p class="설명">결이 고운 숯색 펠트로 만든 synk 네 글자를 검은 스튜디오에 놓고 빛 하나로 찍었습니다. 옆에는 펠트 바늘과 양모 한 줌만 두었고, 양모 뭉치가 마침표처럼 보입니다. <b>넷 중 가장 비싸 보이는 판</b>이고, 설명은 바로 아래 헤드라인이 맡습니다.</p>
+    <div class="원본"><img src="img/a2d.png" alt="A 펠트 로고 정물 커버 원본"></div>
+    <div class="나란히">
+      <figure><img src="img/a2d-d.png" alt="A를 단 데스크톱 프로필 화면"><figcaption>데스크톱</figcaption></figure>
+      <figure><img src="img/a2d-m.png" alt="A를 단 휴대폰 프로필 화면"><figcaption>휴대폰</figcaption></figure>
+    </div>
+    <p class="심사"><b>블라인드 심사(GPT)</b> · 1위. 「펠트와 소문자 로고만으로 브랜드가 남는다. 이대로 납품 가능.」 바늘과 양모를 빼면 더 단단해진다는 의견도 있었습니다. 원하시면 빼고 다시 굽겠습니다.</p>
+  </section>
+
+  <section class="판" aria-labelledby="b3">
+    <div class="머리"><span class="이름">B</span><h2 id="b3">경력 두 줄</h2></div>
+    <p class="설명">「엔터테인먼트·광고 업계 10년. / 지금은 AI로 직접 만듭니다.」 지금 헤드라인에 없는 <b>경력을 커버가 채우는 판</b>입니다. 심사위원에게는 경력이, 고객에게는 지금 하는 일이 보입니다. 이름 줄이나 서비스 목록처럼 프로필과 겹치는 글은 뺐습니다.</p>
+    <div class="원본"><img src="img/b3.png" alt="B 경력 두 줄 커버 원본"></div>
+    <div class="나란히">
+      <figure><img src="img/b3-d.png" alt="B를 단 데스크톱 프로필 화면"><figcaption>데스크톱</figcaption></figure>
+      <figure><img src="img/b3-m.png" alt="B를 단 휴대폰 프로필 화면"><figcaption>휴대폰</figcaption></figure>
+    </div>
+    <p class="심사"><b>블라인드 심사</b> · Fable은 이 짜임을 1위로 봤습니다(휴대폰에서 제목이 또렷한 유일한 안). GPT는 2위로 「흠 없음, 이대로 납품 가능. 다만 시각적 개성은 A보다 약하다」고 했습니다.</p>
+  </section>
+
+  <section class="판" aria-labelledby="떨어진">
+    <h3 class="묶음제목" id="떨어진">심사에서 떨어진 두 판 · 마음에 드시면 고르셔도 됩니다</h3>
+    <div class="작은판">
+      <div class="판">
+        <div class="머리"><span class="이름">C</span><h2>한강, 짓는 중</h2></div>
+        <p class="설명">해 질 녘 한강 강변의 synk 펠트 건물 위로 크레인이 마지막 조각을 내립니다.</p>
+        <div class="원본"><img src="img/a1c.png" alt="C 한강 커버 원본"></div>
+        <figure><img src="img/a1c-m.png" alt="C를 단 휴대폰 프로필 화면"><figcaption>휴대폰</figcaption></figure>
+        <p class="심사"><b>심사</b> · 「거대 로고 + 야경 + 공사 장치가 생성형 광고 샘플처럼 보인다.」 y 아래 구멍도 이유 없는 장치로 읽혔습니다.</p>
+      </div>
+      <div class="판">
+        <div class="머리"><span class="이름">D</span><h2>스튜디오, 짓는 중</h2></div>
+        <p class="설명">A와 같은 펠트 로고를 미니어처 크레인과 작업자 둘이 마무리하는 장면입니다.</p>
+        <div class="원본"><img src="img/a2c.png" alt="D 스튜디오 공사 커버 원본"></div>
+        <figure><img src="img/a2c-m.png" alt="D를 단 휴대폰 프로필 화면"><figcaption>휴대폰</figcaption></figure>
+        <p class="심사"><b>심사</b> · 두 심사 모두 2위였지만, 「로고를 짓는 작은 사람들은 흔한 AI 브랜드 영상 문법」이라는 지적에 A로 다시 만들었습니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="끝">
+    <p><b>뺀 판</b> · 실제 작업 장면 네 장을 띠로 늘어놓은 판은 복면 광고 장면이 기관 쪽 화면에서 범죄 이미지로 읽히고, 휴대폰에서 아무것도 안 보여 기각했습니다. 「회사를 짓고 있습니다. / 직원은 AI입니다.」 문구는 두 심사 모두 「고객에게 인력 없음으로 읽힌다」고 봐서 뺐습니다.</p>
+    <p><b>고르는 법</b> · 판 이름(A · B · C · D)을 말씀해 주시면 그 판을 링크드인 개인 프로필 커버로 바로 올리고, 올린 뒤 데스크톱·휴대폰 화면을 다시 확인합니다. 바늘 빼기, 문구 바꾸기 같은 손질을 붙여 말씀하셔도 됩니다.</p>
+  </footer>
+</main>
