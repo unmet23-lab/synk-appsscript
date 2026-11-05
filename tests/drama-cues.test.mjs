@@ -56,8 +56,12 @@ test('시범판은 나눈 화면을 소리 시각으로 따라가고, 소리가 
  const pilot=fs.readFileSync(new URL('../experiences/drama/pilot/pilot.mjs',import.meta.url),'utf8');
  assert.match(pilot,/followCues\(item\.cues,\s*item\.video \? ui\.reply : ui\.voice,\s*start\)/);
  assert.match(pilot,/const CUE_MIN_MS = 1500/);
+ assert.match(pilot,/requestAnimationFrame\(tick\)/,'자막 넘김은 그림마다 읽는다(timeupdate는 0.25초 늦을 수 있다)');
+ assert.match(pilot,/words\.length \* \(motion === 'cue' \? 60 : 110\)/,'뜻 줄도 넘어가는 화면 간격으로 뜬다');
  assert.match(pilot,/if \(cues\) subs\(item\.text, meaningOf\(item\), 'Taeo', null, meaningLang\(item\)\)/);
  const css=fs.readFileSync(new URL('../experiences/drama/pilot/pilot.css',import.meta.url),'utf8');
  assert.ok(!/bottom:[^;]*42%/.test(css),'자막을 화면 가운데에 묶는 옛 규칙이 돌아왔다');
+ assert.match(css,/--dock-gap: max\(14px, env\(safe-area-inset-bottom\)\)/,'자막의 아래 띄움은 판과 같아야 한다');
+ assert.match(css,/\.dock \{[^}]*bottom: max\(14px, env\(safe-area-inset-bottom\)\)/,'판의 아래 띄움이 바뀌면 --dock-gap도 바꾼다');
  assert.ok(!/\.stage \{[^}]*height: 74%/.test(css),'영상이 글자 자리까지 내려오는 옛 높이가 돌아왔다');
 });

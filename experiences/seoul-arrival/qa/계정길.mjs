@@ -29,11 +29,11 @@ window.__h=async function({owner=null,arrival=null,tutor=false,operating=true,bl
  const st={owner,arrival,failSave,signIns:[],shown:[],games:[],saved:[],toasts:[]};
  const client=()=>({snapshot:st.owner?{accountId:st.owner}:null,generation:1});
  const progress={arrival:()=>st.arrival,setArrival:p=>{if(st.failSave)throw Object.assign(Error('막힘'),{code:'PLAY_DATA_TOO_LARGE'});st.saved.push(p);st.arrival={...(st.arrival||{version:1}),...p};return {arrival:st.arrival};},selectedTutor:()=>tutor?'mongle':null};
- const life={ensure:async()=>{},get progress(){return st.owner||true?progress:null;}};
+ const life={ensure:async()=>{},get progress(){return st.noProgress?null:progress;}};
  const show=(title,html,type)=>{st.shown.push(type);content.innerHTML=html;if(!panel.open)panel.showModal();};
  const close=()=>{if(panel.open)panel.close();content.innerHTML='';};
  const seoul=createSeoulEntry({dramaPending:()=>false,restored:Promise.resolve(),operating,client,life,home:{tutor:()=>({tutor:tutor?'mongle':null}),state:{reduced:true},toast(m){st.toasts.push(m);}},
-  worldUrl:p=>new URL('/'+p,location.origin).href,launchGame:async(id,o)=>{st.games.push([id,o]);},signIn:(a,lead)=>st.signIns.push(lead),show,close,selectLanguage(){},tutorStatus:()=>({blocked}),native:()=>native});
+  worldUrl:p=>new URL('/'+p,location.origin).href,launchGame:async(id,o)=>{st.games.push([id,o]);},signIn:(a,lead,guestLabel)=>{st.signIns.push(lead);st.guestLabel=guestLabel;},show,close,selectLanguage(){},tutorStatus:()=>({blocked}),native:()=>native});
  window.__seoul=seoul;window.__st=st;window.__panel=panel;
  return true;
 };`;
@@ -49,6 +49,7 @@ const guestKey='synk.world.arrival.v1:guest';
  await page.waitForFunction(()=>document.querySelector('#seoul-layer')?.matches(':modal'),null,{timeout:20000});
  const out=await page.evaluate(()=>window.SYNKSeoulHost.prepareEpisode());
  check(out.status==='signin','손님 · 1화 시작 → 로그인 판');
+ check(await page.evaluate(()=>/내 길/.test(window.__st.guestLabel||'')),'로그인 판 둘째 단추는 내 길로 돌아간다는 말',await page.evaluate(()=>window.__st.guestLabel));
  check(await page.evaluate(()=>window.__st.signIns.length===1&&/학생증/.test(window.__st.signIns[0])),'로그인 판 글이 이야기 말',await page.evaluate(()=>window.__st.signIns[0]));
  const f=page.frames().find(x=>x.url().includes('/seoul-arrival/')&&x!==page.mainFrame());
  await page.waitForFunction(()=>[...document.querySelectorAll('iframe')].some(i=>i.contentWindow?.__seoulFrame));
@@ -226,6 +227,25 @@ for(const [stage,screen] of [['dream','#s-title'],['card','#s-path']]){
  check(await f.evaluate(s=>document.querySelector(s).classList.contains('on'),screen),`문으로 돌아옴 · ${stage} → ${screen}`);
  await page.close();
 }
+
+// 14c. 생활 기록을 다시 세우는 사이의 저장은 잃지 않고 다음 저장이 함께 쓴다
+{const page=await fresh();
+ await setup(page,{owner:'acc-19',arrival:{version:1,stage:'card',dream:'idol'},operating:true});
+ await page.evaluate(()=>{window.__seoul.run();});
+ await page.waitForFunction(()=>document.querySelector('#seoul-layer')?.matches(':modal'),null,{timeout:20000});
+ await page.evaluate(()=>{window.__st.noProgress=true;window.SYNKSeoulHost.save({name:'가'});window.__st.noProgress=false;window.SYNKSeoulHost.save({from:'몽골'});});
+ check(await page.evaluate(()=>window.__st.arrival.name==='가'&&window.__st.arrival.from==='몽골'),'기록을 다시 세우는 사이의 저장도 남음');
+ await page.close();}
+
+// 14d. 저장이 끝까지 막히면 닫을 때 조용히 버리지 않고 알린다
+{const page=await fresh();
+ await setup(page,{owner:'acc-20',arrival:{version:1,stage:'card',dream:'idol'},operating:true,failSave:true});
+ const res=page.evaluate(()=>window.__seoul.run());
+ await page.waitForFunction(()=>document.querySelector('#seoul-layer')?.matches(':modal'),null,{timeout:20000});
+ await page.evaluate(()=>{window.SYNKSeoulHost.save({stage:'left'});window.SYNKSeoulHost.leave();});
+ check(await res==='done','저장 막힘: 그래도 앱은 이어짐');
+ check(await page.evaluate(()=>window.__st.toasts.length===1),'저장 막힘: 못 저장했다고 알림',await page.evaluate(()=>window.__st.toasts[0]));
+ await page.close();}
 
 // 15. 통로는 이상한 값을 조용히 버린다
 {const page=await fresh();

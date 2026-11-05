@@ -40,7 +40,8 @@ button { font: inherit; color: inherit; }
 }
 
 /* 1 장면 — 영상은 위에 밝게, 글자는 그 아래 어두운 판에(결정 11-05 자막 규칙: 글자가 사람을 덮지 않는다). 높이는 아래 판 크기와 상관없이 일정해 화면이 바뀌어도 영상이 뛰지 않는다. */
-.stage { position: absolute; inset: 0 0 auto 0; height: max(46%, calc(100% - 300px)); overflow: hidden; background: #000; }
+.app { --stage-h: max(46%, calc(100% - 300px)); --dock-gap: max(14px, env(safe-area-inset-bottom)); } /* --dock-gap은 .dock의 아래 띄움과 같아야 글자가 구에 닿지 않는다 */
+.stage { position: absolute; inset: 0 0 auto 0; height: var(--stage-h); overflow: hidden; background: #000; }
 .layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; opacity: 0; transition: opacity .5s var(--spring); }
 .stage[data-mode="still"] .still, .stage[data-mode="listen"] .loop, .stage[data-mode="reply"] .reply { opacity: 1; }
 .stage::after { content: ''; position: absolute; inset: -1px; z-index: 2; pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,.55), transparent 18%, transparent 86%, #09090b 100%); }
@@ -62,20 +63,20 @@ body.is-recording .stage::before { content: ''; position: absolute; inset: 0; z-
 .prog i { position: relative; flex: 1; height: 3px; border-radius: 2px; background: rgba(255,255,255,.18); overflow: hidden; }
 .prog i::after { content: ''; position: absolute; inset: 0; background: #fff; transform: scaleX(var(--p, 0)); transform-origin: left; transition: transform .6s var(--spring); }
 
-/* 3 자막 — 영상이 주인공이라 말풍선 없이. 아래 판(카드 + 구) 바로 위에서 끝난다(--dock-h는 pilot.mjs가 잰다, 26px = 판 아래 띄움 14 + 틈 12). */
+/* 3 자막 — 영상이 주인공이라 말풍선 없이. 아래 판(카드 + 구) 바로 위에서 끝난다(--dock-h는 pilot.mjs가 잰다). */
 /* 글자 뒤는 늘 어둡다: 판이 높아 자막이 영상까지 올라가도 ::before가 따라와 흰 글자가 배경에 묻히지 않는다. */
-.subs { position: absolute; z-index: 10; left: 0; right: 0; padding: 0 20px; bottom: calc(var(--dock-h, 160px) + 26px); display: grid; justify-items: center; gap: 6px; text-align: center; pointer-events: none; }
+.subs { position: absolute; z-index: 10; left: 0; right: 0; padding: 0 20px; bottom: calc(var(--dock-h, 160px) + var(--dock-gap) + 12px); display: grid; justify-items: center; gap: 6px; text-align: center; pointer-events: none; }
 .subs:not(:empty)::before { content: ''; position: absolute; z-index: -1; inset: -30px 0 -14px; background: linear-gradient(180deg, rgba(9,9,11,0), rgba(9,9,11,.92) 30px); }
 .subs .who { font: 500 10.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.62); }
 .subs .ko { margin: 0; font-weight: 720; font-size: clamp(19px, 5.6vw, 22px); line-height: 1.36; letter-spacing: -.03em; text-wrap: balance; }
 .subs .ko .w { display: inline-block; }
 .subs .mean { margin: 0; font-size: 12.5px; line-height: 1.45; color: rgba(255,255,255,.74); text-wrap: balance; }
 /* 좁은 화면: 위 띠가 넘치지 않게 회차 알약을 빼고, 얼굴이 띠에 닿지 않게 영상을 조금 내린다 */
-@media (max-width: 340px) { #epTag { display: none; } .layer { object-position: 50% 4%; } }
+@media (max-width: 340px) { #epTag { display: none; } .layer { object-position: 50% 4%; } .stage[data-mode="listen"] .layer { object-position: 50% 22%; } }
 
 .app.crowded .subs, .app.crowded .slate, .app.slate-tight .slate { visibility: hidden; }
 /* 회차 표지 · 장면 끝 */
-.slate { position: absolute; z-index: 15; left: 0; right: 0; bottom: calc(var(--dock-h, 160px) + 34px); display: grid; justify-items: center; gap: 10px; text-align: center; pointer-events: none; }
+.slate { position: absolute; z-index: 15; left: 0; right: 0; bottom: max(calc(var(--dock-h, 160px) + var(--dock-gap) + 20px), calc((100% - var(--stage-h)) / 2 - 48px)); display: grid; justify-items: center; gap: 10px; text-align: center; pointer-events: none; }
 .slate .k { font: 500 11px/1 var(--mono); letter-spacing: .32em; color: var(--dim); text-transform: uppercase; }
 .slate .t { font-weight: 820; font-size: 44px; letter-spacing: -.05em; line-height: 1.05; text-shadow: 0 4px 30px rgba(0,0,0,.6); }
 .slate .t span { display: inline-block; }

@@ -292,17 +292,18 @@ function subs(ko, meaning, who, motion = null, meanLang = 'en') {
  const kids = ko.split('\n').flatMap((row, r) => {
   const ws = row.split(' ').map((w) => h('span', { class: 'w' }, w));
   words.push(...ws);
-  return [...(r ? [h('br')] : []), ...ws.flatMap((w, i) => (i ? [' ', w] : [w]))];
+  return [...(r ? [' ', h('br')] : []), ...ws.flatMap((w, i) => (i ? [' ', w] : [w]))];
  });
  const line = h('p', { class: 'ko', lang: 'ko' }, kids);
+ const prevWho = ui.subs.querySelector('.who')?.textContent;
  const whoEl = who ? h('span', { class: 'who' }, who) : null;
  const meanEl = meaning ? h('p', { class: 'mean', lang: meanLang }, meaning) : null;
  ui.subs.replaceChildren(...[whoEl, line, meanEl].filter(Boolean));
  if (!motion) return;
- anim(whoEl, [{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 350 });
+ if (prevWho !== who) anim(whoEl, [{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 350 });
  if (motion === 'pop') anim(line, [{ transform: 'scale(.6)', opacity: 0 }, { transform: 'scale(1.08)', opacity: 1, offset: .6 }, { transform: 'rotate(-1.5deg) scale(1.02)', offset: .8 }, { transform: 'none', opacity: 1 }], { duration: 520 });
  else { const quick = motion === 'cue'; words.forEach((w, i) => anim(w, [{ opacity: 0, filter: 'blur(8px)', transform: 'translateY(8px)' }, { opacity: 1, filter: 'blur(0)', transform: 'none' }], { duration: quick ? 360 : 520, delay: i * (quick ? 60 : 110) })); }
- anim(meanEl, [{ opacity: 0 }, { opacity: 1 }], { duration: 400, delay: motion === 'pop' ? 150 : 150 + words.length * 110 });
+ anim(meanEl, [{ opacity: 0 }, { opacity: 1 }], { duration: 400, delay: motion === 'pop' ? 150 : 150 + words.length * (motion === 'cue' ? 60 : 110) });
 }
 // 장면 사진은 0.6초에 떠오르고 9초 동안 1.1 → 1.0으로 아주 느리게 밀린다.
 function pushStill() { anim(ui.still, [{ transform: 'scale(1.1)' }, { transform: 'scale(1)' }], { duration: 9000, easing: 'linear' }); }
@@ -792,10 +793,11 @@ function followCues(cues, media, from) {
   shown = i; shownAt = performance.now();
   subs(cues[i].text, meaningOf(cues[i]), 'Taeo', 'cue', meaningLang(cues[i]));
  };
- const onTime = () => { if (!media.paused) show(media.currentTime); };
+ let raf = 0;
+ const tick = () => { if (!media.paused) show(media.currentTime); raf = requestAnimationFrame(tick); };
  show(from);
- media.addEventListener('timeupdate', onTime);
- return { stop: () => media.removeEventListener('timeupdate', onTime), left: () => Math.max(0, CUE_MIN_MS - (performance.now() - shownAt)) };
+ raf = requestAnimationFrame(tick);
+ return { stop: () => cancelAnimationFrame(raf), left: () => Math.max(0, CUE_MIN_MS - (performance.now() - shownAt)) };
 }
 // 선배 대사: 아래 카드는 내리고 대사는 자막으로만(영상이 주인공). 구는 쉬는 상태.
 async function actorBeat(item, s, { from } = {}) {

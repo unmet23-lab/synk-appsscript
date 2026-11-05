@@ -209,6 +209,8 @@ async function begin(){
   try{await prologue(r);}catch(e){if(e!==SKIP)throw e;}
 }
 $('#s-title').addEventListener('click',begin);
+// 키보드 · 스위치 입력으로도 시작한다(안의 「정문부터」 단추는 제 일을 한다)
+$('#s-title').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target===e.currentTarget){e.preventDefault();begin();}});
 /* 방 판 자리: 그림(941×1672)을 화면에 덮어 깔고, 휴대폰 화면 사각형이 화면을 꼭 채우는 배율 · 이동을 잰다 */
 const RS={l:.3337,t:.2919,w:.3358,h:.3732,ar:941/1672,over:1.06};
 function stageFit(){

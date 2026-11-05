@@ -1,5 +1,5 @@
 // 1화 자막 규칙을 실제 브라우저에서 재고(결정 11-05 · docs/디자인/드라마_장면/README.md), 원하면 소리를 입힌 녹화를 만든다.
-//   node experiences/drama/qa/자막시험.mjs [--폭 390x780] [--언어 en|ko|mn] [--찍기] [--녹화] [--출력 <폴더>]
+//   node experiences/drama/qa/자막시험.mjs [--폭 390x780] [--언어 en|ko|mn] [--찍기] [--녹화] [--출력 <폴더>] [--후보 <공개 후보 폴더>]
 // · 앱과 같은 틀(같은 출처 부모 창 + 판정 통로 흉내)로 시범판 파일을 그대로 띄워 장면 끝까지 지나간다. 운영 계정 · talk를 건드리지 않는다.
 // · 재는 것: 화면이 시각표 차례로 넘어가는가 · 한국어 두 줄 이내 · 글자가 영상(사람) 위로 올라오지 않는가 · 가로 넘침 · 콘솔 오류.
 // · 재생 사본(media/)은 git 밖이라 공용 작업본의 것을 읽는다. 녹화의 소리는 틀에서 실제로 재생된 구간을 적어 뒤에 입힌다(학생 말은 없다).
@@ -18,6 +18,7 @@ const require=createRequire(path.join(fs.existsSync(path.join(ROOT,'node_modules
 const {chromium}=require('playwright');
 const args=process.argv.slice(2),opt=(n,d=null)=>{const i=args.indexOf(n);return i<0?d:args[i+1];},has=n=>args.includes(n);
 const [W,H]=opt('--폭','390x780').split('x').map(Number),LANG=opt('--언어','en'),SHOTS=has('--찍기'),RECORD=has('--녹화');
+const CAND=opt('--후보');
 const OUT=path.resolve(opt('--출력',path.join(ROOT,'.tmp','drama-cues',`${W}-${LANG}`)));fs.mkdirSync(OUT,{recursive:true});
 const PILOT=path.join(ROOT,'experiences/drama/pilot'),MEDIA=path.join(MAIN,'experiences/drama/pilot');
 const lesson=JSON.parse(fs.readFileSync(path.join(PILOT,'world-lesson.json'),'utf8'));
@@ -28,7 +29,7 @@ function fakeTake(body){
  const line=byId.get(body.line_id);if(!line)return {ok:true,status:'unavailable'};
  // 녹화는 대사 흐름을 보이는 몫이라 학생 차례를 바로 통과시킨다(되묻기 길은 녹화 없이 도는 시험이 지난다).
  const list=RECORD?[line.line]:TRANSCRIPTS[line.id]||[line.line],n=used.get(line.id)||0;used.set(line.id,n+1);
- const transcript=list[Math.min(n,list.length-1)],seconds=RECORD?Math.max(body.seconds,4):body.seconds;
+ const transcript=list[Math.min(n,list.length-1)],seconds=Math.max(body.seconds,4);
  const result=judgeLine(line.spec,{transcript,seconds,speechSeconds:seconds,language:''}),gated=result.status!=='ok';
  const next=nextTake({result,attempt:body.take.judged+(gated?0:1),unheard:gated?body.take.unheard+1:0});
  return {ok:true,accountId:'synthetic',status:'ok',take:{lineId:line.id,lineKind:line.kind,status:result.status,verdict:result.verdict,note:result.note,sure:result.sure,next,heard:transcript}};
@@ -71,7 +72,8 @@ await page.route('https://drama.test/**',route=>{
  const u=new URL(route.request().url());let rel=decodeURIComponent(u.pathname.replace(/^\//,''));
  if(rel==='parent.html')return route.fulfill({status:200,headers:{'content-type':'text/html; charset=utf-8'},body:'<!doctype html><html><body style="margin:0;background:#000"></body></html>'});
  rel=rel.replace(/^drama\//,'');if(!rel)rel='index.html';
- const file=rel.startsWith('media/')?path.join(MEDIA,rel):path.join(PILOT,rel);
+ const inCand=CAND&&path.join(path.resolve(CAND),'world/drama',rel);
+ const file=rel.startsWith('media/')?path.join(MEDIA,rel):inCand&&fs.existsSync(inCand)?inCand:path.join(PILOT,rel);
  if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
  let body=fs.readFileSync(file);
  if(rel==='index.html')body=Buffer.from(body.toString('utf8').replace('<html lang="ko">','<html lang="ko" data-drama="world">'));
@@ -137,6 +139,12 @@ check(actorRows.length>0&&!overlap.length,'선배 대사가 영상 아래에 앉
 const onFace=log.cues.filter(c=>!c.crowded&&c.top<c.chin);
 check(!onFace.length,'어떤 자막도 얼굴을 덮지 않음',onFace.length?JSON.stringify(onFace[0]):`가장 높은 글 ${Math.min(...log.cues.filter(c=>!c.crowded).map(c=>c.top))} · 턱 선 ${log.cues[0]?.chin}`);
 check(log.cues.every(c=>c.over<=0),'가로 넘침 없음');
+if(!RECORD){
+ check(log.media.some(m=>/c3-reask/.test(m.src)),'되묻기 영상 길을 지남');
+ check(log.cues.some(c=>c.who==='Coach'),'코치 자막 길을 지남');
+ const coach=log.cues.filter(c=>c.who==='Coach'&&!c.crowded);
+ check(coach.every(c=>c.top>=c.chin),'코치 자막도 얼굴을 덮지 않음',coach[0]?`가장 높은 글 ${Math.min(...coach.map(c=>c.top))} · 턱 선 ${coach[0].chin}`:'숨김');
+}
 check(!errors.length,'콘솔 · 페이지 오류 없음',errors.slice(0,3).join(' / '));
 
 if(cdp)await cdp.send('Page.stopScreencast').catch(()=>{});

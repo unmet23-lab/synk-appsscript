@@ -25,6 +25,8 @@ const TEXT={
  dreamIdol:{ko:'아이돌의 꿈',en:'An idol’s dream',mn:'Айдолын мөрөөдөл'},
  dreamActor:{ko:'배우의 꿈',en:'An actor’s dream',mn:'Жүжигчний мөрөөдөл'},
  failed:{ko:'잠시 뒤 다시 열어 주세요.',en:'Please try again in a moment.',mn:'Түр хүлээгээд дахин нээнэ үү.'},
+ backRoad:{ko:'내 길로 돌아가기',en:'Back to my road',mn:'Зам руугаа буцах'},
+ unsaved:{ko:'이번 이야기는 계정에 저장하지 못했어요.',en:'We couldn’t save this story to your account.',mn:'Энэ түүхийг бүртгэлдээ хадгалж чадсангүй.'},
 };
 export const seoulText=(key,lang=currentLang())=>TEXT[key]?.[lang]??TEXT[key]?.ko??key;
 const t=key=>seoulText(key);
@@ -95,6 +97,11 @@ export function createSeoulEntry({dramaPending,restored,operating,client,life,ho
   installHost();
   return s;
  }
+ function flushPending(){
+  const s=session;if(!s||s.owner==='guest'||!Object.keys(s.pending||{}).length||owner()!==s.owner)return;
+  let saved=false;try{saved=!!life.progress?.setArrival?.(s.pending);}catch{}
+  if(saved)s.pending={};else home.toast?.(t('unsaved'));
+ }
  function dropFrame(){
   if(!session)return;const s=session;session=null;s.closing=true;
   try{s.dialog?.close();}catch{}s.dialog?.remove();
@@ -111,10 +118,10 @@ export function createSeoulEntry({dramaPending,restored,operating,client,life,ho
   // 틀에서 온 값은 다른 창의 객체라 이 창의 검사(프로토타입 비교)를 못 지난다 — 글자로 옮겨 받는다
   const merged={...s.pending,...JSON.parse(JSON.stringify(patch))};
   if(who==='guest'){const value=readArrival({...(readGuest()||{}),...merged,version:1,updatedAt:Date.now()});if(value)writeGuest(value);s.pending={};return;}
-  try{life.progress?.setArrival?.(merged);s.pending={};}catch{s.pending=merged;/* 끊김 · 불러오는 중: 다음 저장이 함께 쓴다. 충돌은 관문의 복구 창이 맡는다 */}
+  try{if(!life.progress?.setArrival?.(merged)){s.pending=merged;return;}s.pending={};}catch{s.pending=merged;/* 끊김 · 불러오는 중 · 기록을 다시 세우는 중: 다음 저장이 함께 쓴다. 충돌은 관문의 복구 창이 맡는다 */}
  }
  function prepareEpisode(){
-  if(operating&&!client().snapshot){signIn(undefined,t('signIn'));return {status:'signin'};}
+  if(operating&&!client().snapshot){signIn(undefined,t('signIn'),t('backRoad'));return {status:'signin'};}
   return {status:'ok'};
  }
  async function openEpisode({onScene=()=>{}}={}){
@@ -223,6 +230,7 @@ export function createSeoulEntry({dramaPending,restored,operating,client,life,ho
   }
   await new Promise(res=>{finish=res;});
   finish=()=>{};
+  flushPending();
   dropFrame();
   syncDoor();
   return 'done';
@@ -242,7 +250,7 @@ export function createSeoulEntry({dramaPending,restored,operating,client,life,ho
   // 학생증 전에 멈춘 학생(로그인한 채 시작하고 스위치가 꺼져 문으로 돌아온 경우)은 내 길이 아니라 틀의 시작 화면으로
   raise();api.start({at:['card','left'].includes(arrival.stage)?'road':'title',arrival});
   await new Promise(res=>{finish=res;});
-  finish=()=>{};dropFrame();syncDoor();
+  finish=()=>{};flushPending();dropFrame();syncDoor();
  }
  // 서울행 중 주인이 바뀌면(다른 탭 로그인 · PC 창 연결) 다시 불러 판별부터 한다. 저장은 걸음마다 되어 있다.
  // 서울행 밖이면 「내 길」 문만 새 주인에게 맞춘다(새 계정의 생활 기록이 아직이면 숨고, 관문의 onEnter가 다시 맞춘다).
