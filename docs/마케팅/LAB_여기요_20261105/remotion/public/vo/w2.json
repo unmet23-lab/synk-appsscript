@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w2",
+ "text": "네! 또 뭐 드릴까요?",
+ "dur": 1.38,
+ "words": [
+  {
+   "text": "네!",
+   "start": 0.02,
+   "end": 0.081
+  },
+  {
+   "text": "또",
+   "start": 0.283,
+   "end": 0.365
+  },
+  {
+   "text": "뭐",
+   "start": 0.425,
+   "end": 0.506
+  },
+  {
+   "text": "드릴까요?",
+   "start": 0.567,
+   "end": 1.297
+  }
+ ],
+ "source": {
+  "key": "2831459d6ea5bd6147bc923b5cbbdc36",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1105,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 187
+ }
+}

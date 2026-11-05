@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m1",
+ "text": "저… 저기…",
+ "dur": 1.7,
+ "words": [
+  {
+   "text": "저…",
+   "start": 0.02,
+   "end": 0.182
+  },
+  {
+   "text": "저기…",
+   "start": 0.829,
+   "end": 1.7
+  }
+ ],
+ "source": {
+  "key": "64a0b7f6993444d208a22e745c3e456f",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "whisper",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1105,
+   "lufs": -17,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": null
+ }
+}

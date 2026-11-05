@@ -1,0 +1,116 @@
+{
+  "note": "LAB 영어 E27 「여기요!」 — 영어 목소리 없음(말 없이 화면 글로 옮겨 두 채널 판까지 같은 소리). 몽글 = 도윤, 직원 = 범수, 옆자리 손님 · 직원 합창 = 소진(세기 1.0). 외침은 후보 셋을 구워 재어 고른다. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_여기요_20261105/음성/계획.json --굽기",
+  "voice": {
+    "id": "tc_666a9871abcf27a5169850d0",
+    "name": "소진"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "ko",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1105,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "m1",
+      "text": "저… 저기…",
+      "voice": {
+        "id": "tc_6a3350f8e5a50a4abe948fa8",
+        "name": "도윤"
+      },
+      "emotion": "whisper"
+    },
+    {
+      "id": "m2",
+      "text": "안녕하세요?",
+      "voice": {
+        "id": "tc_6a3350f8e5a50a4abe948fa8",
+        "name": "도윤"
+      }
+    },
+    {
+      "id": "w1",
+      "text": "네, 안녕하세요!",
+      "voice": {
+        "id": "tc_5c3c52cb5827e00008dd7f3b",
+        "name": "범수"
+      },
+      "emotion": "happy"
+    },
+    {
+      "id": "a1",
+      "text": "여기요!",
+      "emotion": "happy"
+    },
+    {
+      "id": "s1",
+      "text": "네!",
+      "voice": {
+        "id": "tc_5c3c52cb5827e00008dd7f3b",
+        "name": "범수"
+      },
+      "emotion": "happy"
+    },
+    {
+      "id": "s2",
+      "text": "네!",
+      "emotion": "happy"
+    },
+    {
+      "id": "a2",
+      "text": "여기요.",
+      "tempo": 0.92
+    },
+    {
+      "id": "b1",
+      "text": "여기.",
+      "tempo": 0.92
+    },
+    {
+      "id": "b2",
+      "text": "요.",
+      "tempo": 0.92
+    },
+    {
+      "id": "y1b",
+      "text": "여기요!",
+      "voice": {
+        "id": "tc_6a3350f8e5a50a4abe948fa8",
+        "name": "도윤"
+      },
+      "emotion": "toneup"
+    },
+    {
+      "id": "y1c",
+      "text": "여기요!",
+      "voice": {
+        "id": "tc_6a3350f8e5a50a4abe948fa8",
+        "name": "도윤"
+      },
+      "emotion": "happy"
+    },
+    {
+      "id": "y3",
+      "text": "여기요…",
+      "voice": {
+        "id": "tc_6a3350f8e5a50a4abe948fa8",
+        "name": "도윤"
+      },
+      "emotion": "whisper"
+    },
+    {
+      "id": "w2",
+      "text": "네! 또 뭐 드릴까요?",
+      "voice": {
+        "id": "tc_5c3c52cb5827e00008dd7f3b",
+        "name": "범수"
+      },
+      "emotion": "happy"
+    }
+  ]
+}

@@ -1,0 +1,156 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_6a3350f8e5a50a4abe948fa8",
+  "name": "도윤"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "whisper",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1105,
+  "lufs": -17
+ },
+ "made": "2026-11-05T03:25:43.704Z",
+ "lines": [
+  {
+   "id": "m1",
+   "text": "저… 저기…",
+   "dur": 1.7,
+   "syllablesPerSec": 1.76,
+   "src": "m1.wav",
+   "key": "64a0b7f6993444d208a22e745c3e456f",
+   "words": 2
+  },
+  {
+   "id": "m2",
+   "text": "안녕하세요?",
+   "dur": 0.675,
+   "syllablesPerSec": 7.41,
+   "src": "m2.wav",
+   "key": "64ade4c06196aa08bb67d251ce676fbd",
+   "words": 1
+  },
+  {
+   "id": "w1",
+   "text": "네, 안녕하세요!",
+   "dur": 1.113,
+   "syllablesPerSec": 5.39,
+   "src": "w1.wav",
+   "key": "0ee0b087cacf3ff399c6c3a50d368b9c",
+   "words": 2
+  },
+  {
+   "id": "a1",
+   "text": "여기요!",
+   "dur": 0.71,
+   "syllablesPerSec": 4.23,
+   "src": "a1.wav",
+   "key": "7c02b0152833f3daf1eb0e376e06d57f",
+   "words": 1
+  },
+  {
+   "id": "s1",
+   "text": "네!",
+   "dur": 0.719,
+   "syllablesPerSec": 1.39,
+   "src": "s1.wav",
+   "key": "d0ea01f1940da304ad72a9d96d79f1d5",
+   "words": 1
+  },
+  {
+   "id": "s2",
+   "text": "네!",
+   "dur": 0.343,
+   "syllablesPerSec": 2.92,
+   "src": "s2.wav",
+   "key": "021ca4f3712df96b16469fdf159ab8a0",
+   "words": 1
+  },
+  {
+   "id": "a2",
+   "text": "여기요.",
+   "dur": 0.635,
+   "syllablesPerSec": 4.72,
+   "src": "a2.wav",
+   "key": "d638cd79b2af3874ee342e7525a60378",
+   "words": 1
+  },
+  {
+   "id": "b1",
+   "text": "여기.",
+   "dur": 0.746,
+   "syllablesPerSec": 2.68,
+   "src": "b1.wav",
+   "key": "c44553c7e05b404529ef8290aabcb5e7",
+   "words": 1
+  },
+  {
+   "id": "b2",
+   "text": "요.",
+   "dur": 0.337,
+   "syllablesPerSec": 2.97,
+   "src": "b2.wav",
+   "key": "1da011355ee6f8227b547d3d93aadb1c",
+   "words": 1
+  },
+  {
+   "id": "y1",
+   "text": "여기요!",
+   "dur": 0.723,
+   "syllablesPerSec": 4.15,
+   "src": "y1.wav",
+   "key": "50b7fa9121295912f64a9204cd76d165",
+   "words": 1
+  },
+  {
+   "id": "y1b",
+   "text": "여기요!",
+   "dur": 0.77,
+   "syllablesPerSec": 3.9,
+   "src": "y1b.wav",
+   "key": "86210d38a8c40872cbf3e9dff06cbd59",
+   "words": 1
+  },
+  {
+   "id": "y1c",
+   "text": "여기요!",
+   "dur": 0.671,
+   "syllablesPerSec": 4.47,
+   "src": "y1c.wav",
+   "key": "18d239162bdadb53b6f227dad578bf38",
+   "words": 1
+  },
+  {
+   "id": "y2",
+   "text": "여기요!",
+   "dur": 0.645,
+   "syllablesPerSec": 4.65,
+   "src": "y2.wav",
+   "key": "6e452ba2cfcbecab178c508992e70759",
+   "words": 1
+  },
+  {
+   "id": "y3",
+   "text": "여기요…",
+   "dur": 0.926,
+   "syllablesPerSec": 3.24,
+   "src": "y3.wav",
+   "key": "7e56266cecacf9da6c3d442e0946572b",
+   "words": 1
+  },
+  {
+   "id": "w2",
+   "text": "네! 또 뭐 드릴까요?",
+   "dur": 1.38,
+   "syllablesPerSec": 5.07,
+   "src": "w2.wav",
+   "key": "2831459d6ea5bd6147bc923b5cbbdc36",
+   "words": 4
+  }
+ ]
+}

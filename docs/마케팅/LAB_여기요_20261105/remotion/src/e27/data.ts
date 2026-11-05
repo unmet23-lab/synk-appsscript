@@ -1,0 +1,66 @@
+// LAB 영어 E27 「여기요!」 화면 글 정본 — 영어 · 간체 · 버마어를 같은 정본에서 렌더한다(판끼리 따로 고치지 않는다).
+// 간체 · 버마어는 세 겹 검수(../../../게시/검문/)를 거친 글만 둔다. 읽는 법 줄은 영어 로마자(두 나라 공통, LAB 장부 「두 채널 판」).
+export type Lang = 'en' | 'cn' | 'mm';
+const NL = String.fromCharCode(10);
+export const ROMAN = { word: 'yeo-gi-yo', here: 'yeo-gi', yo: 'yo' };
+export const FONT: Record<Lang, string> = {
+  en: "'Inter Tight', 'SUIT', sans-serif",
+  cn: "'Microsoft YaHei', 'Inter Tight', 'SUIT', sans-serif",
+  mm: "'Inter Tight', 'SUIT', 'Myanmar Text', sans-serif",
+};
+export const TEXT: Record<Lang, { hook: string; wait: string; um: string; hi: string; hello: string; left: string; then: string; over: string; here: string; polite: string; yes: string; tooWell: string; anything: string; endTag: string; size: number; tagSize: number }> = {
+  en: {
+    hook: `In Korea, no one comes${NL}until you say one word`,
+    wait: 'So you wait politely…',
+    um: 'um… excuse me?',
+    hi: 'hello?',
+    hello: 'hello!',
+    left: 'He just says hi back',
+    then: 'Then someone shouts this',
+    over: 'over here, please!',
+    here: 'here',
+    polite: 'polite ending',
+    yes: 'yes!',
+    tooWell: 'Maybe too well…',
+    anything: 'Anything else?',
+    endTag: 'here + polite ending',
+    size: 68,
+    tagSize: 58,
+  },
+  cn: {
+    hook: `在韩国，除非你说这个词${NL}不然没人会过来`,
+    wait: '你只好乖乖等着…',
+    um: '那个…不好意思？',
+    hi: '你好？',
+    hello: '你好！',
+    left: '他只回了一句“你好”',
+    then: '这时，有人喊了这个词',
+    over: '这边，麻烦一下！',
+    here: '这里',
+    polite: '敬语词尾',
+    yes: '来了！',
+    tooWell: '好像太管用了…',
+    anything: '还要点什么吗？',
+    endTag: '这里 + 敬语词尾',
+    size: 64,
+    tagSize: 58,
+  },
+  mm: {
+    hook: `ကိုရီးယားမှာ ဒီစကားလုံး${NL}မပြောမချင်း ဘယ်သူမှ မလာဘူး`,
+    wait: 'ယဉ်ယဉ်ကျေးကျေး စောင့်နေတယ်…',
+    um: 'ဟို… တစ်ဆိတ်လောက်?',
+    hi: 'မင်္ဂလာပါ?',
+    hello: 'မင်္ဂလာပါ!',
+    left: 'သူက "မင်္ဂလာပါ" လို့ ပြန်ပြောရုံပဲ',
+    then: 'အဲဒီအချိန်မှာ လူတစ်ယောက်က ဒီစကားလုံးကို အော်ပြောလိုက်တယ်',
+    over: 'ဒီကို ခဏလာပေးပါ!',
+    here: 'ဒီမှာ',
+    polite: 'ယဉ်ကျေးတဲ့ စကားအဆုံးသတ်',
+    yes: 'ဟုတ်ကဲ့!',
+    tooWell: 'ထိရောက်လွန်းနေပြီ ထင်တယ်…',
+    anything: 'တခြား ဘာယူဦးမလဲ?',
+    endTag: 'ဒီမှာ + ယဉ်ကျေးတဲ့ စကားအဆုံးသတ်',
+    size: 50,
+    tagSize: 44,
+  },
+};
