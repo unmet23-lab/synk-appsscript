@@ -119,7 +119,9 @@
               "views": 488,
               "likes": 1,
               "comments": 0,
-              "shares": 0
+              "shares": 0,
+              "averageWatchSeconds": 8.4,
+              "completionRatePct": 8.6
             },
             "평소대비": {
               "배수": 4.48,
@@ -138,10 +140,14 @@
             "까닭": null
           }
         },
-        "화면필요": [
-          "평균 시청",
-          "완주율"
-        ]
+        "화면필요": [],
+        "화면": {
+          "읽은때": "2026-11-06T01:28:58.780Z",
+          "지표": {
+            "averageWatchSeconds": 8.4,
+            "completionRatePct": 8.6
+          }
+        }
       },
       {
         "계정": "synkbrief-youtube",
