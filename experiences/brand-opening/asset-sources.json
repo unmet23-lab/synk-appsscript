@@ -457,7 +457,7 @@
       "bytes": 146068,
       "width": 1916,
       "height": 821,
-      "transform": "WebP quality 84 · method 6, v1과 같은 크기(1916x821). 원본은 GPT 이미지 2.5(ChatGPT 구독 Codex 편집 굽기, 11-07) — v1 판을 Image 1로 넣고 ㅕ만 옆 글자와 같은 크림 펠트로 바꿈(지시문 .tmp/title-cream-20261107/land-지시문-a.txt), 유호님 「크림색으로 다시」 · 「이 판으로 바꿔」(11-07). v1은 펠트 안녕 콘서트 타이틀(결정 11-02, kfelt-v3)"
+      "transform": "WebP quality 84 · method 6, v1과 같은 크기(1916x821) — GPT 출력은 1915x821이라 가로 1px 늘려(PIL LANCZOS) 맞춤. 원본은 GPT 이미지 2.5(ChatGPT 구독 Codex 편집 굽기, 11-07) — v1 판을 Image 1로 넣고 ㅕ만 옆 글자와 같은 크림 펠트로 바꿈(지시문 .tmp/title-cream-20261107/land-지시문-a.txt), 유호님 「크림색으로 다시」 · 「이 판으로 바꿔」(11-07). v1은 펠트 안녕 콘서트 타이틀(결정 11-02, kfelt-v3)"
     }
   ],
   "titleArtwork": {
