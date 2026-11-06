@@ -51,6 +51,28 @@
    ],
    "TEXTRULE": "The only lettering allowed is the felt word itself, and it must match the letter shapes in Image 1 exactly: the two Korean syllables 안 and 녕, every stroke, final consonant and circle present, nothing added. No other text, letters, numbers, logos or symbols anywhere.",
    "OBJECT": "the Korean word 안녕 made as one chunky needle-felted word sculpture, exactly the letter shapes shown in Image 1 (a typeset reference — copy the shapes, not the flat style), thick, rounded and plush; the letters are made of fluffy warm cream wool felt (#EFE3D0) with soft long fibers, the same felt and the same color scheme as the giant 안녕 letters in Image 2 (Image 2 is a night concert photo, so its colors look darker — use the same cream and pink under bright studio light); exactly like Image 2, ONLY the two short horizontal vowel strokes of 녕 are raspberry-pink felt (#E2689A) and every other stroke, including the vertical stroke of 녕's vowel, is cream; the letters stand side by side in front of a charcoal felt backing plate (#2A2A2E) that fills the gaps between them, on a low charcoal felt base, with faint charcoal stitched seams along the letter edges. Ignore the stage, lights and people in Image 2."
+  },
+  {
+   "BGNAME": "lapis blue",
+   "BG": "#3D6BC9",
+   "앞참고": [
+    "refs/annyeong-type.png",
+    "refs/title-annyeong.jpg"
+   ],
+   "TEXTRULE": "The only lettering allowed is the felt word itself, and it must match the letter shapes in Image 1 exactly: the two Korean syllables 안 and 녕, every stroke, final consonant and circle present, nothing added. No other text, letters, numbers, logos or symbols anywhere.",
+   "OBJECT": "the Korean word 안녕 made as one chunky needle-felted word sculpture, exactly the letter shapes shown in Image 1 (a typeset reference — copy the shapes, not the flat style), thick, rounded and plush; the letters are made of fluffy warm cream wool felt (#EFE3D0) with soft long fibers, the same felt as the giant 안녕 letters in Image 2 (Image 2 is a night concert photo, so its colors look darker — use the same cream under bright studio light); EVERY stroke of both syllables is the same cream felt — there is NO pink, purple or any other accent color on any stroke, even though Image 2 has a pink accent (ignore that accent); the letters stand side by side in front of a charcoal felt backing plate (#2A2A2E) that fills the gaps between them, on a low charcoal felt base, with faint charcoal stitched seams along the letter edges. Ignore the stage, lights and people in Image 2.",
+   "이름": "world-annyeong-allcream-a"
+  },
+  {
+   "BGNAME": "lapis blue",
+   "BG": "#3D6BC9",
+   "앞참고": [
+    "refs/annyeong-type.png",
+    "refs/title-annyeong.jpg"
+   ],
+   "TEXTRULE": "The only lettering allowed is the felt word itself, and it must match the letter shapes in Image 1 exactly: the two Korean syllables 안 and 녕, every stroke, final consonant and circle present, nothing added. No other text, letters, numbers, logos or symbols anywhere.",
+   "OBJECT": "the Korean word 안녕 made as one chunky needle-felted word sculpture, exactly the letter shapes shown in Image 1 (a typeset reference — copy the shapes, not the flat style), thick, rounded and plush; the letters are made of fluffy warm cream wool felt (#EFE3D0) with soft long fibers, the same felt as the giant 안녕 letters in Image 2 (Image 2 is a night concert photo, so its colors look darker — use the same cream under bright studio light); EVERY stroke of both syllables is the same cream felt — there is NO pink, purple or any other accent color on any stroke, even though Image 2 has a pink accent (ignore that accent); the letters stand side by side in front of a charcoal felt backing plate (#2A2A2E) that fills the gaps between them, on a low charcoal felt base, with faint charcoal stitched seams along the letter edges. Ignore the stage, lights and people in Image 2.",
+   "이름": "world-annyeong-allcream-b"
   }
  ]
 }
