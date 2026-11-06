@@ -345,6 +345,10 @@ if (require.main === module) {
   } else if ('일수' in 옵션 && !(Number.isInteger(옵션.일수) && 옵션.일수 >= 1)) {
     console.error('--일수 뒤에는 1 이상의 정수를 적는다 — 아무것도 하지 않았다.');
     process.exitCode = 1;
+  } else if (argv[0] !== '--옮기기' && argv.some((a) => !['--json', '--보내지않기', '--자세히'].includes(a))) {
+    // 모르는 옵션(--help 같은)을 기본 동작(텔레그램 보내기)으로 흘려보내지 않는다(10-30 · 11-06 두 번 띄움)
+    console.error(`모르는 옵션 ${argv.filter((a) => !['--json', '--보내지않기', '--자세히'].includes(a)).join(' ')} — 아무것도 하지 않았다. 쓰는 법은 파일 맨 위 설명.`);
+    process.exitCode = 1;
   } else if (argv[0] === '--옮기기') {
     const 묶음자리 = argv.indexOf('--묶음');
     let 이름들;

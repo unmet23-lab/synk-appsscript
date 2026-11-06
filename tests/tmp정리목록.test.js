@@ -43,10 +43,14 @@ test('14일 넘게 손대지 않은 폴더만 후보로 — 최근 파일이 하
     assert.match(글, /맨 위 파일 중 14일 넘은 것 1개/);
     assert.match(글, /지우지는 않아요/);
 
-    const r = 정리.옮기기(['옛작은것', '섞임', '../밖'], { 임시, 대기, 지금: new Date(2026, 10, 1).getTime() });
+    // 기준 시각은 파일 시각을 만든 「지금」과 같아야 한다 — 11-01로 고정하면 20일 전 폴더가 11-07부터 14일 기준을 못 넘었다(11-07)
+    const 지금 = Date.now();
+    const 날 = new Date(지금);
+    const 날이름 = `${날.getFullYear()}${String(날.getMonth() + 1).padStart(2, '0')}${String(날.getDate()).padStart(2, '0')}`;
+    const r = 정리.옮기기(['옛작은것', '섞임', '../밖'], { 임시, 대기, 지금 });
     assert.deepEqual(r.옮김, ['옛작은것']);
     assert.deepEqual(r.남김.map((x) => x.이름), ['섞임', '../밖']);
-    assert.ok(fs.existsSync(path.join(대기, '20261101', '옛작은것', 'c.txt')));
+    assert.ok(fs.existsSync(path.join(대기, 날이름, '옛작은것', 'c.txt')));
     assert.ok(fs.existsSync(path.join(임시, '섞임', '새.txt')), '후보가 아닌 폴더는 그대로');
     assert.equal(정리.글로(정리.목록만들기({ 임시: path.join(방, '없음'), 대기 })).includes('정리할 폴더 없음'), true);
   } finally { fs.rmSync(방, { recursive: true, force: true }); }

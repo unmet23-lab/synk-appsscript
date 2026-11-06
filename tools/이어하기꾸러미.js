@@ -337,6 +337,9 @@ function 목록(root = ROOT, { onProgress = () => {} } = {}) {
   return Object.assign([...rows.values(), ...system], { scopes: system.scopes });
 }
 const sourceScopeCache = new Map();
+function realRoot(p) {
+  try { return fs.realpathSync.native(p); } catch { return p; }
+}
 function systemScopes(root) {
   const parent = path.dirname(path.resolve(root));
   const home = path.basename(parent).toLowerCase() === 'documents' ? path.dirname(parent) : parent;
@@ -353,8 +356,10 @@ function systemScopes(root) {
     { name: 'SYNK_원본창고', mode: 'vault', root: path.resolve(root, '..', 'SYNK_원본창고') },
     { name: 'Videos', mode: 'markdown', root: path.join(home, 'Videos') },
     { name: '개인작업규칙', mode: 'markdown', root: path.join(home, '.agents/skills') },
+    // 11-07 둘째 SSD: C:\SYNK-LoRA는 D:\SYNK-LoRA를 가리키는 junction이 된다. 링크 아래 파일은 모두 「link-or-reparse-point」로
+    // 빠지므로 범위 뿌리는 실제 자리로 푼다(상대 경로·OneDrive 대상 경로는 그대로).
     ...(path.basename(parent).toLowerCase() === 'documents' ? [{ name: 'SYNK-LoRA', mode: 'creation-source',
-      root: path.join(path.parse(parent).root, 'SYNK-LoRA') }] : []),
+      root: realRoot(path.join(path.parse(parent).root, 'SYNK-LoRA')) }] : []),
     ...['PC_백업_20261003', 'PC_백업_20261014_HappyGangster'].map(name => ({ name, mode: 'restore-tools',
       root: path.resolve(root, '..', name) })),
   ];
