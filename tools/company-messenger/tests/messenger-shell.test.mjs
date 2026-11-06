@@ -1,6 +1,7 @@
+// 메신저 틀(2026-11-06 새 판): 목록 하나(대화방 · 사람) + 대화 머리 한 줄 + 오른쪽 칸 하나. 위 막대 · 칸 탭 · 대화/파일/고정 탭은 없다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CHAT_CATEGORIES, shellHtml } from '../public/messenger-shell.js';
+import { NAV_GROUPS, shellHtml } from '../public/messenger-shell.js';
 
 const helpers = {
   icon: name => `<svg data-icon="${name}"></svg>`,
@@ -8,61 +9,57 @@ const helpers = {
   avatar: user => `<span class="avatar">${user.name.slice(0, 1)}</span>`,
   initials: name => [...(name || '?')].slice(0, 2).join(''),
 };
-const view = overrides => ({ embedded: false, workspaceName: 'SYNK <검수>', user: { name: '유호 & 팀', role: 'owner' }, chatCategory: 'personal', platformEntry: '<a class="platform-entry" href="https://synk.im/">SYNK 플랫폼</a>', uploadDestination: '새 파일은 이 PC에 저장', fileLimit: '100.0 MB', ...overrides });
+const view = overrides => ({ embedded: false, workspaceName: 'SYNK <검수>', user: { name: '유호 & 팀', role: 'owner' }, platformEntry: '<a class="platform-entry" href="https://synk.im/">SYNK 플랫폼</a>', uploadDestination: '새 파일은 이 PC에 저장', fileLimit: '100.0 MB', ...overrides });
 const between = (html, start, end) => { const from = html.indexOf(start); assert.ok(from >= 0, start); return html.slice(from, html.indexOf(end, from)); };
 // Elements app.js wires or fills after the shell is drawn.
-const WIRED = ['chat-category-tabs', 'room-filter', 'clear-room-filter', 'sidebar', 'mobile-menu', 'mobile-scrim', 'create-channel', 'deleted-projects', 'channel-members', 'personal-bell', 'personal-unread', 'channel-notifications', 'global-search', 'workspace-settings', 'tab-chat', 'tab-files', 'tab-pins', 'employee-search', 'directory-team', 'employee-directory', 'directory-back', 'directory-count', 'directory-list', 'composer-form', 'composer-input', 'mention-picker', 'compose-extras', 'attach-file', 'file-input', 'composer-emoji', 'composer-mention', 'reply-context', 'upload-queue', 'message-list', 'message-scroll', 'pins-view', 'files-view', 'jump-latest', 'chat-area', 'drop-overlay', 'send-message', 'composer-status', 'composer-storage', 'channel-title', 'channel-about', 'breadcrumb-type', 'member-number', 'connection', 'self-nav', 'dm-nav', 'team-nav', 'channel-nav', 'unread-empty', 'room-filter-empty', 'nav-unread-count', 'project-participation', 'channel-write-notice', 'drawer', 'conversation-panel'];
+const WIRED = ['sidebar', 'room-filter', 'clear-room-filter', 'mobile-menu', 'create-channel', 'new-dm', 'new-conversation', 'new-menu', 'deleted-projects', 'personal-bell', 'personal-unread', 'room-info', 'global-search', 'workspace-settings', 'employee-search', 'directory-team', 'employee-directory', 'directory-back', 'directory-count', 'directory-list', 'composer-form', 'composer-input', 'mention-picker', 'compose-extras', 'attach-file', 'file-input', 'composer-emoji', 'composer-mention', 'reply-context', 'upload-queue', 'message-list', 'message-scroll', 'pins-view', 'files-view', 'jump-latest', 'chat-area', 'drop-overlay', 'send-message', 'composer-status', 'channel-title', 'channel-sub', 'connection', 'dm-nav', 'channel-nav', 'unread-empty', 'room-filter-empty', 'nav-unread-count', 'channel-write-notice', 'drawer', 'conversation-panel', 'message-menu', 'message-sheet'];
+const RETIRED = ['chat-category-tabs', 'mobile-scrim', 'channel-members', 'channel-notifications', 'tab-chat', 'tab-files', 'tab-pins', 'composer-storage', 'channel-about', 'breadcrumb-type', 'member-number', 'self-nav', 'team-nav', 'project-participation', 'channel-search'];
 
 for (const embedded of [false, true]) {
-  test(`${embedded ? 'the workspace-embedded' : 'the standalone'} shell has each wired element exactly once`, () => {
+  test(`${embedded ? 'the workspace-embedded' : 'the standalone'} shell has each wired element exactly once and no retired control`, () => {
     const html = shellHtml(view({ embedded }), helpers);
     for (const id of WIRED) assert.equal(html.split(`id="${id}"`).length - 1, 1, id);
+    for (const id of RETIRED) assert.ok(!html.includes(`id="${id}"`), id);
     const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
     assert.equal(new Set(ids).size, ids.length, 'ids are unique');
-    assert.ok(!html.includes('id="channel-search"') && !html.includes('id="new-dm"'), 'retired controls stay out');
+    for (const [, target] of html.matchAll(/aria-controls="([^"]+)"/g)) assert.ok(ids.includes(target), `aria-controls ${target} points at a real element`);
+    assert.ok(!html.includes('messenger-topbar') && !html.includes('data-chat-category'), 'no top bar and no category tabs');
   });
 }
 
-test('the standalone page puts brand, chat tabs and my-work tools in the top bar', () => {
-  const html = shellHtml(view(), helpers);
-  const topbar = between(html, '<div class="messenger-topbar">', '<button class="mobile-scrim"');
-  assert.ok(topbar.indexOf('class="messenger-brand"') < topbar.indexOf('id="chat-category-tabs"'));
-  assert.ok(topbar.indexOf('id="chat-category-tabs"') < topbar.indexOf('class="messenger-quick-tools"'));
-  assert.ok(topbar.indexOf('class="platform-entry"') < topbar.indexOf('id="personal-bell"'), 'the platform link comes before my work');
-  assert.ok(!between(html, '<aside class="sidebar"', '</aside>').includes('chat-category-tabs'));
-  assert.ok(!between(html, 'class="header-actions"', '</header>').includes('personal-bell'));
+test('one list: the rooms group comes before people, and deleted rooms are the last row of the rooms group', () => {
+  const html = shellHtml(view(), helpers), list = between(html, '<aside class="sidebar"', '</aside>');
+  assert.deepEqual(NAV_GROUPS.map(([key]) => key), ['rooms', 'people']);
+  assert.ok(list.indexOf('data-nav-group="rooms"') < list.indexOf('data-nav-group="people"'));
+  const rooms = between(list, 'data-nav-group="rooms"', 'data-nav-group="people"');
+  assert.ok(rooms.indexOf('id="channel-nav"') < rooms.indexOf('id="deleted-projects"'));
+  assert.match(rooms, /id="create-channel"/);assert.match(between(list, 'data-nav-group="people"', '</section>'), /id="new-dm"/);
+  assert.ok(list.indexOf('id="room-filter"') < list.indexOf('data-nav-filter="all"'), 'finder above the 전체 · 안 읽음 filter');
 });
 
-test('inside the company workspace the tabs move to the sidebar and my work joins the header actions', () => {
-  const html = shellHtml(view({ embedded: true }), helpers);
-  assert.ok(!html.includes('messenger-topbar'));
-  assert.ok(!html.includes('platform-entry'), 'the workspace already shows the platform');
-  const sidebar = between(html, '<aside class="sidebar"', '</aside>');
-  assert.ok(sidebar.indexOf('id="chat-category-tabs"') < sidebar.indexOf('id="global-search"'));
-  const actions = between(html, 'class="header-actions"', '</header>');
-  assert.ok(actions.indexOf('class="messenger-quick-tools"') < actions.indexOf('id="channel-members"'));
-  assert.ok(actions.indexOf('id="channel-members"') < actions.indexOf('id="channel-notifications"'));
+test('the standalone page keeps its platform link in the list head; inside the company workspace the rail already has it', () => {
+  const standalone = shellHtml(view(), helpers), embedded = shellHtml(view({ embedded: true }), helpers);
+  const tools = between(standalone, 'class="list-tools"', '</div>');
+  assert.ok(tools.indexOf('class="platform-entry"') < tools.indexOf('id="global-search"'));
+  assert.ok(!embedded.includes('platform-entry'));
 });
 
-test('the selected chat category is the focusable selected tab and every tab controls the conversation panel', () => {
-  for (const [selected] of CHAT_CATEGORIES) {
-    const tabs = between(shellHtml(view({ chatCategory: selected }), helpers), 'id="chat-category-tabs"', '</div>');
-    for (const [key, label, icon] of CHAT_CATEGORIES) {
-      const button = between(tabs, `id="chat-category-${key}"`, '</button>');
-      assert.match(button, new RegExp(`aria-selected="${key === selected}" tabindex="${key === selected ? 0 : -1}"`));
-      assert.match(button, /aria-controls="conversation-panel"/);
-      assert.ok(button.includes(`data-icon="${icon}"`) && button.includes(`<span>${label}</span>`));
-    }
-  }
+test('the conversation head is one line: title, scope, then the bell and room info', () => {
+  const html = shellHtml(view({ embedded: true }), helpers), head = between(html, '<header class="main-header"', '</header>');
+  assert.ok(head.indexOf('id="channel-title"') < head.indexOf('id="channel-sub"'));
+  const actions = between(head, 'class="header-actions"', '</div>');
+  assert.ok(actions.indexOf('id="personal-bell"') < actions.indexOf('id="room-info"'));
+  assert.match(actions, /id="personal-bell"[^>]*aria-label="알림 · 나중에 보기 · 결정"/);
+  assert.ok(!head.includes('header-breadcrumb') && !head.includes('channel-bar'));
 });
 
-test('names are escaped and the composer starts accessible and locked', () => {
+test('the composer starts as one accessible, locked line with no Enter or storage hint lines', () => {
   const html = shellHtml(view({ user: { name: '<b>크루</b>', role: 'member' } }), helpers);
-  assert.ok(html.includes('SYNK &lt;검수&gt;') && !html.includes('SYNK <검수>'));
-  assert.ok(html.includes('&lt;b&gt;크루&lt;/b&gt;') && html.includes('<small>팀원</small>'));
-  assert.match(html, /<textarea id="composer-input"[^>]* aria-controls="mention-picker" aria-autocomplete="list" aria-expanded="false">/);
-  assert.match(html, /<button class="send-button" type="submit" id="send-message" aria-label="메시지 보내기" disabled>/);
-  assert.ok(html.includes('새 파일은 이 PC에 저장 · 파일당 최대 100.0 MB'));
-  assert.ok(html.includes('<small>워크스페이스 관리자</small>') === false);
-  assert.ok(shellHtml(view(), helpers).includes('<small>워크스페이스 관리자</small>'));
+  assert.match(html, /<textarea id="composer-input"[^>]* rows="1"[^>]* aria-controls="mention-picker" aria-autocomplete="list" aria-expanded="false" aria-describedby="composer-status">/);
+  assert.match(html, /<button class="send-button" type="submit" id="send-message" aria-label="보내기" disabled>/);
+  const box = between(html, 'class="composer-box"', '</div>');
+  assert.ok(box.indexOf('id="attach-file"') < box.indexOf('id="composer-input"') && box.indexOf('id="composer-emoji"') < box.indexOf('id="send-message"'));
+  assert.ok(!html.includes('Enter로 전송') && !html.includes('composer-footnote'));
+  assert.match(html, /<p class="composer-status" id="composer-status" aria-live="polite">/);
+  assert.ok(html.includes('파일당 최대 100.0 MB · 새 파일은 이 PC에 저장'), 'the storage note only appears while dragging files');
 });

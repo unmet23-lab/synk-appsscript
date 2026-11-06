@@ -21,8 +21,11 @@ test('delete and restore require server permission and participating writable cr
  f.context.archived=archived;assert.equal(f.run('canRestoreProject(archived)'),true);f.run("state.user.id='outside'");assert.equal(f.run('canDeleteProject(state.channels[0])'),false);assert.equal(f.run('canRestoreProject(archived)'),false);f.run("state.user.id='u1';state.integrated.canWrite=false");assert.equal(f.run('canDeleteProject(state.channels[0])'),false);assert.equal(f.run('canRestoreProject(archived)'),false);
 });
 
-test('project participation has visible text settings and settings exposes a separate recoverable delete action',()=>{
- const f=fixture();f.run('syncProjectParticipation()');assert.ok(f.get('#project-participation').innerHTML.includes('data-project-settings'));assert.ok(f.get('#project-participation').innerHTML.includes('대화방 설정'));f.run('editChannelDialog()');assert.ok(f.modal.innerHTML.includes('id="delete-project"'));assert.ok(f.modal.innerHTML.includes('‘삭제된 대화방’에서 복원'));f.run('state.channels[0].canManage=false;syncProjectParticipation()');assert.ok(f.get('#project-participation').innerHTML.includes('data-project-settings'),'members retain their personal notification settings');
+test('room info has visible text settings and settings exposes a separate recoverable delete action',()=>{
+ // 11-06 새 판: 참여 막대 대신 「방 정보」 칸 — 관리자는 정보 수정 · 대화방 삭제, 참여 크루는 이 방 알림을 그대로 본다.
+ const f=fixture(),info=()=>{f.run("state.drawer='room';renderRoomInfo()");return f.get('#drawer-body').innerHTML;};let html=info();assert.ok(html.includes('data-room-action="edit"')&&html.includes('정보 수정'));assert.ok(html.includes('data-room-action="delete"')&&html.includes('대화방 삭제'));assert.ok(html.includes('data-room-action="notifications"'));
+ f.run('editChannelDialog()');assert.ok(f.modal.innerHTML.includes('id="delete-project"'));assert.ok(f.modal.innerHTML.includes('‘삭제된 대화방’에서 복원'));
+ f.run('state.channels[0].canManage=false;state.channels[0].canDelete=false');html=info();assert.ok(html.includes('data-room-action="notifications"'),'members retain their personal notification settings');assert.ok(!html.includes('data-room-action="edit"')&&!html.includes('data-room-action="delete"'));
 });
 
 test('delete confirmation names the room and audience, explains restore, and cancellation makes no request',()=>{
@@ -33,11 +36,11 @@ test('deletion blocks another submission, purges only this room local state, and
  const f=fixture();let aborted=0;const upload={xhr:{abort(){aborted++;}},status:'uploading'};f.state.queues.set('project',[upload]);f.state.queues.set('self',[{name:'다른 첨부'}]);for(const type of ['draft','reply','compose','attachments']){f.storage.set(`synk-messenger:${type}:u1:project`,'old');f.storage.set(`synk-messenger:${type}:u1:self`,'keep');}f.storage.set('synk-messenger:last:u1','project');f.state.messages=[{id:'old',channelId:'project'}];f.state.drawer='thread';f.state.thread={parent:{id:'old',channelId:'project'}};f.state.sharedFiles=[{id:'file'}];f.state.pins=[{id:'old'}];f.get('#composer-input').value='삭제될 초안';
  f.run("deleteProjectDialog('project')");const pending=f.run("deleteProjectChannel('project',$('#confirm-delete-project'))");await f.run("deleteProjectChannel('project',$('#confirm-delete-project'))");assert.equal(f.requests.length,1);assert.equal(f.run('canPostToChannel()'),false);f.requests[0].resolve({ok:true});await pending;
  assert.deepEqual(f.selected,['public']);assert.equal(f.state.channelId,'public');assert.equal(f.state.messages.length,0);assert.equal(f.state.drawer,null);assert.equal(f.state.pins.length,0);assert.equal(f.state.sharedFiles.length,0);assert.equal(aborted,1);assert.equal(upload.channelUnavailable,true);assert.equal(f.state.queues.has('project'),false);assert.equal(f.state.queues.has('self'),true);
- for(const type of ['draft','reply','compose','attachments']){assert.equal(f.storage.has(`synk-messenger:${type}:u1:project`),false);assert.equal(f.storage.get(`synk-messenger:${type}:u1:self`),'keep');}assert.notEqual(f.state.categoryChannels.all,'project');assert.notEqual(f.storage.get('synk-messenger:last:u1'),'project');assert.equal(f.requests.some(request=>request.path.startsWith('/api/files')),false,'recoverable room deletion must not physically delete uploads');
+ for(const type of ['draft','reply','compose','attachments']){assert.equal(f.storage.has(`synk-messenger:${type}:u1:project`),false);assert.equal(f.storage.get(`synk-messenger:${type}:u1:self`),'keep');}assert.notEqual(f.storage.get('synk-messenger:last:u1'),'project');assert.equal(f.requests.some(request=>request.path.startsWith('/api/files')),false,'recoverable room deletion must not physically delete uploads');
 });
 
 test('deleting the only room in a category leaves a safe empty selection',async()=>{
- const f=fixture();f.state.channels=f.state.channels.filter(channel=>channel.id!=='public');const pending=f.run("deleteProjectChannel('project',null)");f.requests[0].resolve({ok:true});await pending;assert.equal(f.state.channelId,null);assert.equal(f.state.chatCategory,'all');assert.equal(f.run('canPostToChannel()'),false);assert.deepEqual(f.selected,[]);
+ const f=fixture();f.state.channels=f.state.channels.filter(channel=>channel.id!=='public');const pending=f.run("deleteProjectChannel('project',null)");f.requests[0].resolve({ok:true});await pending;assert.equal(f.state.channelId,null);assert.equal(f.run('canPostToChannel()'),false);assert.deepEqual(f.selected,[]);
 });
 
 test('a failed deletion leaves the room, draft and posting access intact',async()=>{

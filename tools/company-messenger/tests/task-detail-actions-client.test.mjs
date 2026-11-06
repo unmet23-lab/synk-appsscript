@@ -114,7 +114,7 @@ test('the drawer tabs carry today and notification counts and the footer shows t
   const f=fixture(),counts=new Map();for(const name of ['workday','notifications']){const node={hidden:true,textContent:''};counts.set(name,node);f.nodes.set(`[data-tab-count="${name}"]`,node);}
   f.run("setPersonalTabCount('workday',7);setPersonalTabCount('notifications',120)");assert.deepEqual({...counts.get('workday')},{hidden:false,textContent:'7'});assert.deepEqual({...counts.get('notifications')},{hidden:false,textContent:'99+'});
   f.run("setPersonalTabCount('workday',0)");assert.equal(counts.get('workday').hidden,true);f.run("setPersonalTabCount('workday',null)");assert.equal(counts.get('workday').hidden,true);
-  assert.deepEqual(Array.from(f.run('personalTabs'),([,label])=>label),['오늘','바뀐 것','전체','알림','결정·최종본','저장']);
+  assert.deepEqual(Array.from(f.run('personalTabs'),([,label])=>label),['알림','나중에 보기','결정','할 일']);assert.deepEqual(Array.from(f.run('todoTabs'),([,label])=>label),['오늘','바뀐 것','전체']);
   for(const [settings,label] of [[{enabled:false},'마감 알림 꺼짐'],[{enabled:true,schedulerEnabled:false},'마감 알림 · 회사 알림 꺼짐'],[{enabled:true,includeWeekends:true,schedulerEnabled:true},'마감 알림 · 매일 오전 9시'],[{enabled:true,includeWeekends:false,schedulerEnabled:true},'마감 알림 · 평일 오전 9시']]){f.context.settings=settings;assert.equal(f.run('deadlineSettingsLabel(settings)'),label);}
   const button={hidden:true,isConnected:true,textContent:'마감 알림 설정',dataset:{deadlineLabel:''}};f.nodes.set('#deadline-settings',button);const attaching=f.run('attachDeadlineSettings()');f.requests[0].resolve({enabled:true,includeWeekends:false,schedulerEnabled:true});await attaching;assert.equal(button.hidden,false);assert.equal(button.textContent,'마감 알림 · 평일 오전 9시');
 });

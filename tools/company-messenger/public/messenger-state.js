@@ -5,14 +5,14 @@
 // initial values, the resets and the late-response checks; none reads the DOM.
 
 const DEFAULT_FILE_BYTES = 104857600;
-const categoryFilters = () => ({ personal: 'all', team: 'all', all: 'all' });
 
 export const sessionFields = () => ({ user: null, workspace: { name: 'SYNK' }, storage: { provider: 'local' }, integrated: null, needsSetup: false, fileBytes: DEFAULT_FILE_BYTES, events: null, connected: false });
 export const transferFields = () => ({ queues: new Map(), sending: false, transferSession: 0, sendAttempts: new Map(), transferFocusRevision: 0 });
 export const conversationFields = () => ({
   channels: [], members: [], teams: [], channelId: null, messages: [], hasMore: false, mode: 'chat', drawer: null,
   loadSeq: 0, searchSeq: 0, refreshSeq: 0, channelsSeq: 0, navigationSeq: 0, threadSeq: 0, pinsSeq: 0, filesSeq: 0,
-  navFilter: 'all', roomQuery: '', chatCategory: 'personal', categoryFilters: categoryFilters(), categoryChannels: {},
+  // 한 목록(11-06 새 판): 걸러보기 하나와, 방을 떠날 때만 다시 세우는 줄 순서(읽어도 줄이 튀지 않게).
+  navFilter: 'all', roomQuery: '', navOrder: null,
   replyTarget: null, thread: null, pins: [], fileQuery: '', fileType: 'all', fileScope: 'channel', fileOffset: 0, sharedFiles: [],
   directoryQuery: '', directoryTeam: 'all', searchMessages: [], searchOffset: 0,
   unavailableChannels: new Set(), deletingChannels: new Set(), leavingChannels: new Set(), restoringChannels: new Set(),
@@ -40,7 +40,7 @@ export function enterWorkspaceState(state, data) {
     sendRecovery: { messages: data.sendRecovery?.messages === true, uploads: data.sendRecovery?.uploads === true },
     channels: data.channels, members: data.members, teams: data.teams || [], channelId: null, mode: 'chat', messages: [], drawer: null,
     navFilter: 'all', roomQuery: '', replyTarget: null, thread: null, pins: [], sharedFiles: [], directoryQuery: '', directoryTeam: 'all',
-    chatCategory: 'personal', categoryFilters: categoryFilters(), categoryChannels: {}, navigationSeq: state.navigationSeq + 1,
+    navOrder: null, navigationSeq: state.navigationSeq + 1,
     unavailableChannels: new Set(), deletingChannels: new Set(), leavingChannels: new Set(), restoringChannels: new Set(),
   });
 }

@@ -33,8 +33,9 @@ test('invitation requires server permission, writable role, project and actual r
 });
 
 test('project participation controls clearly distinguish public membership from invitations',()=>{
- const f=fixture();f.run('syncProjectParticipation()');let html=f.get('#project-participation').innerHTML;assert.ok(html.includes('참여 크루 2명'));assert.ok(html.includes('data-project-invite'));assert.ok(html.includes('고른 크루만 참여'));
- f.run("state.channelId='public';syncProjectParticipation()");html=f.get('#project-participation').innerHTML;assert.ok(html.includes('전체 공개'));assert.ok(html.includes('참여 크루 4명'));assert.ok(!html.includes('data-project-invite'));
+ // 11-06 새 판: 참여 막대 대신 「방 정보」 칸의 참여 크루 · 초대.
+ const f=fixture(),info=()=>{f.run("state.drawer='room';renderRoomInfo()");return f.get('#drawer-body').innerHTML;};let html=info();assert.ok(html.includes('참여 크루 <span class="num">2</span>'));assert.ok(html.includes('data-room-action="invite"'));assert.ok(html.includes('고른 크루만'));
+ f.run("state.channelId='public'");html=info();assert.ok(html.includes('전체 공개 프로젝트'));assert.ok(html.includes('참여 크루 <span class="num">4</span>'));assert.ok(!html.includes('data-room-action="invite"'));assert.ok(html.includes('data-room-action="members"'));
 });
 
 test('public project roster explains current participation and reinvitation and a solo admin can reach crew registration',()=>{

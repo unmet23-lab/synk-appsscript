@@ -46,7 +46,7 @@ function wire(base, path, { headers = {}, method = 'GET' } = {}) {
 
 test('embedded messenger JS and CSS use compressed public responses with unchanged decoded bytes and security headers', async t => {
   const fx = await companyFixture(t);
-  for (const file of ['app.js', 'styles.css', 'messenger-design.css', 'signal.css']) {
+  for (const file of ['app.js', 'signal.css']) {
     const expected = await readFile(join(publicDir, file));
     const response = await wire(fx.base, `/messenger/${file}`, { headers: { 'Accept-Encoding': 'br, gzip' } });
     assert.equal(response.status, 200, file);
@@ -118,13 +118,13 @@ test('embedded CSS is rewritten before its digest and compression, and changed s
     const address = await app.listen();
     return { base: address.url, close: () => app.close() };
   });
-  const first = await wire(fx.base, '/messenger/styles.css', { headers: { 'Accept-Encoding': 'br' } });
+  const first = await wire(fx.base, '/messenger/signal.css', { headers: { 'Accept-Encoding': 'br' } });
   assert.equal(first.status, 200);
   assert.deepEqual(brotliDecompressSync(first.body), expected);
   assert.equal(first.headers.etag, `"${createHash('sha256').update(expected).digest('base64url')}.br"`);
   assert.notEqual(first.headers.etag, `"${createHash('sha256').update(original).digest('base64url')}.br"`);
   await writeFile(source, original + '.changed{color:blue}\n');
-  const changed = await wire(fx.base, '/messenger/styles.css', { headers: { 'Accept-Encoding': 'br', 'If-None-Match': first.headers.etag } });
+  const changed = await wire(fx.base, '/messenger/signal.css', { headers: { 'Accept-Encoding': 'br', 'If-None-Match': first.headers.etag } });
   assert.equal(changed.status, 200);
   assert.notEqual(changed.headers.etag, first.headers.etag);
   assert.deepEqual(brotliDecompressSync(changed.body), Buffer.concat([expected, Buffer.from('.changed{color:blue}\n')]));

@@ -31,7 +31,7 @@ test('both no-store entry documents version their public scripts and styles; exa
       for(const added of ['/website-inquiries.js','/website-inquiries.css'])assert.ok(expected.includes(added),added);
       expectedCount+=expected.length;
     }else{
-      const expected=['app.js','styles.css','messenger-design.css','signal.css','messenger-state.js','messenger-session.js','messenger-shell.js','messenger-task-model.js'].map(file=>'/messenger/'+file).sort();
+      const expected=['app.js','signal.css','messenger-state.js','messenger-session.js','messenger-shell.js','messenger-task-model.js'].map(file=>'/messenger/'+file).sort();
       assert.deepEqual(urls.map(url=>url.pathname).sort(),expected);expectedCount+=expected.length;
     }
     for(const url of urls){const asset=await wire(base,url.pathname+url.search,{headers:{'Accept-Encoding':'br'}});assert.equal(asset.status,200,url.pathname);assert.equal(asset.headers['cache-control'],'public, max-age=31536000, immutable',url.pathname);assert.equal(hash(decoded(asset)),url.searchParams.get('v'),url.pathname);count++;}
@@ -91,6 +91,6 @@ test('rewritten messenger CSS digest, compressed bytes and entry URLs use the sa
   const root=await directory(t),source=join(root,'test.css'),raw=Buffer.from('.x{background:url("/assets/example.svg")}\n'.repeat(32));await writeFile(source,raw);
   const final=Buffer.from(raw.toString().replaceAll('/assets/','/messenger/assets/'));
   const app=createMessenger({dataDir:join(root,'data'),port:0,basePath:'/messenger',driveStorage:drive,backgroundJobsEnabled:false,staticResponderFactory:({read})=>createStaticResponder({read:()=>read(source),inspect:(_path,options)=>stat(source,options)})});closers.set(root,()=>app.close());const address=await app.listen();
-  const response=await wire(address.url,'/messenger/styles.css?v='+hash(final),{headers:{'Accept-Encoding':'br'}});assert.equal(response.status,200);assert.equal(response.headers['cache-control'],'public, max-age=31536000, immutable');assert.deepEqual(decoded(response),final);assert.notEqual(hash(raw),hash(final));
+  const response=await wire(address.url,'/messenger/signal.css?v='+hash(final),{headers:{'Accept-Encoding':'br'}});assert.equal(response.status,200);assert.equal(response.headers['cache-control'],'public, max-age=31536000, immutable');assert.deepEqual(decoded(response),final);assert.notEqual(hash(raw),hash(final));
   assert.deepEqual([...publicScriptAndStylePaths('<script src="/app.js"></script><img src="/logo.svg"><link href="https://elsewhere/a.css"><script src="/child.js?attempt=1"></script>','/')],['/app.js']);
 });

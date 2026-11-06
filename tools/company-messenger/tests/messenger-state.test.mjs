@@ -10,16 +10,16 @@ test('every state field has exactly one owner and a fresh state shares no contai
   for (const [owner, fields] of Object.entries(STATE_OWNERS)) for (const key of Object.keys(fields())) { assert.ok(!seen.has(key), `${key} is owned by ${seen.get(key)} and ${owner}`); seen.set(key, owner); }
   const a = createMessengerState(), b = createMessengerState();
   assert.deepEqual(Object.keys(a).sort(), [...seen.keys()].sort());
-  assert.notEqual(a.queues, b.queues); assert.notEqual(a.unavailableChannels, b.unavailableChannels); assert.notEqual(a.categoryFilters, b.categoryFilters);
+  assert.notEqual(a.queues, b.queues); assert.notEqual(a.unavailableChannels, b.unavailableChannels); assert.equal(a.navOrder, null); assert.ok(!('chatCategory' in a) && !('categoryFilters' in a) && !('categoryChannels' in a), 'the one list has no category state');
   assert.equal(seen.get('user'), 'session'); assert.equal(seen.get('channelId'), 'conversation'); assert.equal(seen.get('workNotificationSession'), 'personal'); assert.equal(seen.get('sendAttempts'), 'transfer');
 });
 
 test('entering a workspace replaces the login and the conversation but keeps view settings', () => {
   const state = createMessengerState();
-  Object.assign(state, { channelId: 'old', messages: [{ id: '1' }], drawer: 'personal', chatCategory: 'all', navigationSeq: 4, fileQuery: '견적', personalTab: 'notifications', roomQuery: '운영' });
+  Object.assign(state, { channelId: 'old', messages: [{ id: '1' }], drawer: 'personal', navOrder: ['old'], navigationSeq: 4, fileQuery: '견적', personalTab: 'notifications', roomQuery: '운영' });
   state.unavailableChannels.add('gone');
   enterWorkspaceState(state, { user: { id: 'u1' }, workspace: { name: 'SYNK' }, channels: [{ id: 'self' }], members: [], limits: { fileBytes: 10 }, sendRecovery: { messages: true }, platformUrl: '' });
-  assert.equal(state.user.id, 'u1'); assert.equal(state.channelId, null); assert.deepEqual(state.messages, []); assert.equal(state.drawer, null); assert.equal(state.chatCategory, 'personal'); assert.equal(state.roomQuery, '');
+  assert.equal(state.user.id, 'u1'); assert.equal(state.channelId, null); assert.deepEqual(state.messages, []); assert.equal(state.drawer, null); assert.equal(state.navOrder, null); assert.equal(state.roomQuery, '');
   assert.equal(state.navigationSeq, 5, 'pending navigation from the previous login is invalidated');
   assert.equal(state.unavailableChannels.size, 0); assert.equal(state.fileBytes, 10); assert.equal(state.platformUrl, null); assert.deepEqual(state.storage, { provider: 'local' });
   assert.deepEqual(state.sendRecovery, { messages: true, uploads: false });

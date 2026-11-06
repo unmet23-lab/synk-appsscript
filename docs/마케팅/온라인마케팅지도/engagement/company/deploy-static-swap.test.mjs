@@ -94,7 +94,7 @@ test('public spot checks map the plain company and teacher paths only',()=>{
   assert.equal(publicPath(C+'/public/index.html'),'/');assert.equal(publicPath(C+'/public/pulse-app/app.mjs'),'/pulse-app/app.mjs');
   assert.equal(publicPath(C+'/public/customer-computer.html'),null);assert.equal(publicPath('experiences/teacher-world/app.mjs'),'/teacher-world/app.mjs');
   assert.equal(publicPath('tools/company-messenger/public/app.js'),'/messenger/app.js');
-  assert.equal(publicPath('tools/company-messenger/public/styles.css'),null);assert.equal(publicPath('tools/company-messenger/public/index.html'),null);
+  assert.equal(publicPath('tools/company-messenger/public/signal.css'),null);assert.equal(publicPath('tools/company-messenger/public/index.html'),null);
   assert.deepEqual(selectStaticPaths([C+'/server.mjs',C+'/public/b.js',C+'/public/a.js']),[C+'/public/a.js',C+'/public/b.js']);
 });
 

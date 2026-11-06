@@ -18,8 +18,10 @@ test('current project participants may leave including viewers, creators and the
  const f=fixture();assert.equal(f.run('canLeaveProject(state.channels[0])'),true);f.run("state.integrated.canWrite=false;state.channels[0].memberIds=['u1']");assert.equal(f.run('canLeaveProject(state.channels[0])'),true);f.run("state.channels[0].scope='public'");assert.equal(f.run('canLeaveProject(state.channels[0])'),true);f.run('state.channels[0].canLeave=false');assert.equal(f.run('canLeaveProject(state.channels[0])'),false);f.run('state.channels[1].canLeave=true');assert.equal(f.run('canLeaveProject(state.channels[1])'),false);f.run("state.channels[0].canLeave=true;state.channels[0].memberIds=['other']");assert.equal(f.run('canLeaveProject(state.channels[0])'),false);
 });
 
-test('the visible leave control is a separate sibling button and names the correct room',()=>{
- const f=fixture(),html=f.run('conversationNavItem(state.channels[0])');assert.ok(html.includes('data-channel="project"'));assert.ok(html.includes('data-project-leave="project"'));assert.ok(html.includes('title="가을 &lt;캠페인&gt; 대화방 나가기"'));assert.ok(html.includes('aria-label="가을 &lt;캠페인&gt; 대화방 나가기"'));assert.match(html,/<\/button><button type="button" class="project-leave-button"/);assert.equal((html.match(/<button/g)||[]).length,2);assert.ok(!f.run('conversationNavItem(state.channels[1])').includes('data-project-leave'));
+test('the room row stays one button and the leave control lives in room info, naming the correct room',()=>{
+ // 11-06 새 판: 목록 줄에는 방 열기 단추 하나만, 나가기는 「방 정보」 칸의 줄로 옮겼다.
+ const f=fixture(),html=f.run('conversationNavItem(state.channels[0])');assert.ok(html.includes('data-channel="project"'));assert.equal((html.match(/<button/g)||[]).length,1);assert.ok(!html.includes('data-project-leave'));assert.ok(html.includes('가을 &lt;캠페인&gt;'));
+ f.run("state.drawer='room';renderRoomInfo()");const info=f.get('#drawer-body').innerHTML;assert.match(info,/<button type="button" class="info-row" data-room-action="leave" id="current-project-leave">/);assert.ok(info.includes('대화방 나가기')&&info.includes('가을 &lt;캠페인&gt;'));
 });
 
 test('clicking a room X does not select that room or overwrite the currently open draft',()=>{
@@ -43,11 +45,11 @@ test('a rejected leave keeps membership and the draft and restores posting',asyn
 });
 
 test('the last person gets an archive explanation and an empty category remains safe',async()=>{
- const f=fixture();f.state.channels=f.state.channels.filter(channel=>channel.id!=='public');f.state.channels[0].memberIds=['u1'];f.run("leaveProjectDialog('project')");assert.ok(f.modal.innerHTML.includes('혼자 남은 방이라 보관해 두고, ‘삭제된 대화방’에서 복원'));const pending=f.run("leaveProjectChannel('project',null)");f.requests[0].resolve({ok:true,archived:true});await pending;assert.equal(f.state.channelId,null);assert.equal(f.state.chatCategory,'all');assert.ok(f.notices.some(text=>text.includes('‘삭제된 대화방’에서 복원')));
+ const f=fixture();f.state.channels=f.state.channels.filter(channel=>channel.id!=='public');f.state.channels[0].memberIds=['u1'];f.run("leaveProjectDialog('project')");assert.ok(f.modal.innerHTML.includes('혼자 남은 방이라 보관해 두고, ‘삭제된 대화방’에서 복원'));const pending=f.run("leaveProjectChannel('project',null)");f.requests[0].resolve({ok:true,archived:true});await pending;assert.equal(f.state.channelId,null);assert.ok(f.notices.some(text=>text.includes('‘삭제된 대화방’에서 복원')));
 });
 
 test('last-participant copy uses server active membership instead of historical inactive membership IDs',()=>{
- const f=fixture();assert.equal(f.state.channels[0].memberIds.length,2);f.state.channels[0].activeMemberCount=1;f.run("leaveProjectDialog('project')");assert.ok(f.modal.innerHTML.includes('참여 크루 1명'));assert.ok(f.modal.innerHTML.includes('혼자 남은 방이라 보관'));f.run('syncProjectParticipation()');assert.ok(f.get('#project-participation').innerHTML.includes('참여 크루 1명'));
+ const f=fixture();assert.equal(f.state.channels[0].memberIds.length,2);f.state.channels[0].activeMemberCount=1;f.run("leaveProjectDialog('project')");assert.ok(f.modal.innerHTML.includes('참여 크루 1명'));assert.ok(f.modal.innerHTML.includes('혼자 남은 방이라 보관'));f.run("state.drawer='room';renderRoomInfo()");assert.ok(f.get('#drawer-body').innerHTML.includes('참여 크루 <span class="num">1</span>'),'room info counts active members');
 });
 
 test('server-granted restoration for a last-leaver archive works for viewers without weakening ordinary restore permissions',()=>{
@@ -65,18 +67,21 @@ test('a public project can re-invite departed crew only when the server grants i
 });
 
 test('the crew directory presents one range selector and retains direct crew clicks',()=>{
- const f=fixture(),opened=[];const html=f.run(shell(true)),directory=html.slice(html.indexOf('id="employee-directory"'));assert.ok(directory.includes('id="directory-team"'));assert.ok(!html.includes('data-directory-filter'));assert.ok(directory.includes('크루를 누르면<br>개인 대화가 바로 열려요.'));
+ const f=fixture(),opened=[];const html=f.run(shell(true)),directory=html.slice(html.indexOf('id="employee-directory"'));assert.ok(directory.includes('id="directory-team"'));assert.ok(!html.includes('data-directory-filter'));assert.ok(directory.includes('id="directory-back"'),'the directory opens inside the list and returns to it');
  f.context.opened=opened;f.run('openDirectMessage=(personId,button)=>opened.push([personId,button.dataset.contact]);wireShell()');const person={dataset:{contact:'u2'}};f.get('#employee-directory').onclick({target:{closest:selector=>selector==='[data-contact]'?person:null}});assert.deepEqual(opened.map(item=>[...item]),[['u2','u2']]);
 });
 
 test('the concise header retains notifications, search and room settings without a duplicate task button',()=>{
- const f=fixture();for(const embedded of [false,true]){const html=f.run(shell(embedded)),header=html.slice(html.indexOf('class="header-actions"'),html.indexOf('</header>'));assert.ok(html.includes('id="personal-bell"'));assert.ok(!html.includes('id="personal-tools"'));assert.ok(html.includes('id="global-search"'));assert.ok(header.includes('id="channel-notifications"'));assert.equal(header.includes('id="personal-bell"'),embedded,'inside the workspace my-work joins the header actions');}
+ const f=fixture();for(const embedded of [false,true]){const html=f.run(shell(embedded)),header=html.slice(html.indexOf('class="header-actions"'),html.indexOf('</header>'));assert.ok(!html.includes('id="personal-tools"'));assert.ok(html.includes('id="global-search"'));assert.ok(header.includes('id="personal-bell"')&&header.includes('id="room-info"'),'both pages keep the bell and room info in the one-line head');assert.ok(header.indexOf('id="personal-bell"')<header.indexOf('id="room-info"'));assert.ok(!html.includes('id="channel-notifications"'),'room settings moved into room info');}
 });
 
 test('the restoration list distinguishes a last-leaver archive from a deleted room',()=>{
  const f=fixture();f.context.archived={...f.state.channels[0],deletedAt:'2026-09-30T00:00:00Z',archivedByLeave:true};let html=f.run('deletedProjectRows([archived])');assert.ok(html.includes('보관 · 마지막 사람이 나간 방'));f.context.archived.archivedByLeave=false;html=f.run('deletedProjectRows([archived])');assert.ok(html.includes('삭제</small>'));assert.ok(!html.includes('마지막 사람이 나간 방'));
 });
 
-test('the current project title has a mobile leave shortcut that opens the same confirmation and follows room permissions',()=>{
- const f=fixture();f.run('actualSyncChannelHeader()');let html=f.get('#channel-title').innerHTML;assert.ok(html.includes('id="current-project-leave"'));assert.ok(html.includes('aria-label="가을 &lt;캠페인&gt; 대화방 나가기"'));f.get('#current-project-leave').onclick();assert.ok(f.modal.innerHTML.includes('대화방에서 나갈까요?'));assert.equal(f.requests.length,0);f.state.channels[0].canLeave=false;f.run('actualSyncChannelHeader()');assert.ok(!f.get('#channel-title').innerHTML.includes('current-project-leave'));f.state.channelId='public';f.run('actualSyncChannelHeader()');assert.ok(!f.get('#channel-title').innerHTML.includes('current-project-leave'));
+test('room info carries the leave shortcut on every width, opens the same confirmation and follows room permissions',()=>{
+ // 11-06 새 판: 제목 옆 X 대신 「방 정보」 칸의 나가기 줄(휴대폰 · 넓은 화면 같음). 제목은 글자만.
+ const f=fixture(),info=()=>{f.run("state.drawer='room';renderRoomInfo()");return f.get('#drawer-body').innerHTML;};f.run('actualSyncChannelHeader()');assert.equal(f.get('#channel-title').textContent,'가을 <캠페인>');assert.ok(info().includes('data-room-action="leave"'));
+ f.context.leaveEvent={target:{closest:selector=>selector==='[data-room-action]'?{dataset:{roomAction:'leave'}}:null}};f.run('handleRoomInfoAction(leaveEvent)');assert.ok(f.modal.innerHTML.includes('대화방에서 나갈까요?'));assert.equal(f.requests.length,0);
+ f.state.channels[0].canLeave=false;assert.ok(!info().includes('data-room-action="leave"'));f.state.channels[0].canLeave=true;f.state.channelId='public';assert.ok(!info().includes('data-room-action="leave"'));
 });

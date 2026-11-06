@@ -19,7 +19,7 @@ test('reply markup escapes user data, preserves deleted-parent context, and hide
   const f=fixture();
   f.context.message={id:'m1',channelId:'c1',body:'확인했어요',user:{id:'u1',name:'담당자'},createdAt:'2026-09-29T00:00:00Z',files:[],reactions:[],replyToId:'m0',replyTo:{id:'m0',body:'<img src=x onerror=alert(1)>',user:{name:'<script>bad</script>'}},replyCount:2,pinned:true};
   const html=f.run('messageHtml(message)');
-  assert.ok(html.includes('&lt;img'));assert.ok(!html.includes('<script>'));assert.ok(html.includes('data-action="thread"'));assert.ok(html.includes('메시지 고정 해제'));
+  assert.ok(html.includes('&lt;img'));assert.ok(!html.includes('<script>'));assert.ok(html.includes('data-action="thread"'));assert.ok(html.includes('고정됨'));assert.ok(f.run('messageMenuItems(message)').some(([action,label])=>action==='pin'&&label==='고정 풀기'),'unpin lives in the ⋯ menu');
   f.run('message.replyTo.deleted=true;');
   const deleted=f.run('messageHtml(message)');
   assert.ok(deleted.includes('원래 메시지가 삭제'));assert.ok(!deleted.includes('data-action="reply-origin"'));
@@ -69,8 +69,8 @@ test('a reply completing after switching rooms cannot clear the new room draft o
 
 test('conversation sections use real team scope and keep legacy team labels in company public rooms',()=>{
   const f=fixture();f.context.rooms=[{id:'public',kind:'channel',category:'team',scope:'public'},{id:'legacy',kind:'channel',category:'team'},{id:'project',kind:'channel',category:'project',scope:'public'},{id:'team',kind:'channel',category:'team',scope:'team',teamId:'marketing'},{id:'dm',kind:'dm',scope:'private'},{id:'self',kind:'self',scope:'private'}];
-  const groups=f.run('conversationGroups(rooms)');
-  assert.deepEqual(Array.from(groups.public,room=>room.id),['public','legacy','project']);assert.deepEqual(Array.from(groups.team,room=>room.id),['team']);assert.deepEqual(Array.from(groups.personal,room=>room.id),['dm','self']);
+  // 11-06 새 판: 세 칸 대신 한 목록의 두 묶음 — 팀 · 공용 · 옛 팀 이름 공용방 · 프로젝트는 대화방, 1:1 · 나에게는 사람.
+  assert.deepEqual(Array.from(f.run('rooms.map(navGroup)')),['rooms','rooms','rooms','rooms','people','people']);
 });
 
 test('employee directory filters actual teams and shows the real user when no team is assigned',()=>{

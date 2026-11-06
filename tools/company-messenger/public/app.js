@@ -7,7 +7,7 @@ const modal = $('#modal');
 // Browser modules loaded before this file (index.html). Tests evaluate this file as a classic script and install the same namespaces.
 const {createMessengerState,enterWorkspaceState,createSessionOwner,createSendAttemptStore,createPersonalPanelOwner}=window.SynkMessengerState;
 const {createCompanySessionRecovery,createApiClient,createBootstrapRefresh}=window.SynkMessengerSession;
-const {CHAT_CATEGORIES,shellHtml}=window.SynkMessengerShell;
+const {shellHtml}=window.SynkMessengerShell;
 const taskModel=window.SynkMessengerTasks;
 const icons = {
   chat:'<path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z"/>',
@@ -49,6 +49,11 @@ const icons = {
   task:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="m8 12 3 3 5-6"/>',
   refresh:'<path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/>',
   more:'<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>',
+  compose:'<path d="M12 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><path d="M18.5 3.5a2.1 2.1 0 0 1 3 3L13 15l-4 1 1-4 8.5-8.5z"/>',
+  info:'<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/>',
+  back:'<path d="m15 5-7 7 7 7"/>',
+  at:'<circle cx="12" cy="12" r="3.5"/><path d="M15.5 12v1.5a2.5 2.5 0 0 0 5 0V12a8.5 8.5 0 1 0-3.3 6.7"/>',
+  arrowup:'<path d="M12 19V5M6 11l6-6 6 6"/>',
   calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/>',
 };
 const icon = (name) => `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">${icons[name] || icons.chat}</svg>`;
@@ -56,7 +61,8 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;',
 const id = value => encodeURIComponent(value);
 const initials = name => [...(name || '?')].slice(0,2).join('');
 const color = name => [...(name || '')].reduce((sum,c) => sum + c.charCodeAt(0),0) % 5;
-const avatar = user => `<span class="avatar" data-color="${color(user.name)}" aria-hidden="true">${esc(initials(user.name))}</span>`;
+// 얼굴 동그라미는 이름 첫 글자 하나(24px 목록에서도 넘치지 않게, 시안 11-06).
+const avatar = user => `<span class="avatar" data-color="${color(user.name)}" aria-hidden="true">${esc([...(user.name || '?')][0])}</span>`;
 const bytes = value => {
   const amount=Number(value);
   if(value===null||value===undefined||!Number.isFinite(amount)||amount<0)return '알 수 없음';
@@ -72,16 +78,18 @@ const timeLabel = date => new Date(date).toLocaleTimeString('ko-KR',{hour:'2-dig
 // 대화·다시 볼 시간은 PC 시간(입력 칸과 같은 기준)으로, 오늘 할 일·할 일 상세는 taskMoment로 한국 시간으로 적는다.
 const dateTimeLabel = date => new Date(date).toLocaleString('ko-KR',{month:'long',day:'numeric',hour:'numeric',minute:'2-digit'});
 const state = createMessengerState();
-const chatCategories=CHAT_CATEGORIES;
 const systemRoomMeta={announcements:{icon:'announcement',description:'회사 일정과 꼭 볼 안내',intro:'회사 일정과 결정, 꼭 알아야 할 안내가 올라와요.'},info:{icon:'note',description:'일 자료와 링크',intro:'일에 필요한 자료와 링크, 쓸 만한 정보를 나눠요.'},social:{icon:'chat',description:'가벼운 이야기와 일상',intro:'가벼운 안부부터 오늘 있었던 일까지 편하게 나눠요.'}};
 // Each field has one owner (messenger-state.js); the renderer below reads and writes through these.
 const sessionOwner=createSessionOwner(state);
 const sendAttemptStore=createSendAttemptStore(state,{storage:{getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value),removeItem:key=>localStorage.removeItem(key)},transferCurrent:context=>transferContextCurrent(context)});
 const personalPanel=createPersonalPanelOwner(state,{cancelRefresh:()=>cancelWorkdayRefresh(),setNotificationStatus:(enabled,options)=>setWorkNotificationStatus(enabled,options),showReminderStatus:()=>$$('[data-reminder-status]').forEach(label=>{label.textContent=reminderStatusLabel({deliveredAt:label.dataset.reminderDelivered==='1'});}),setTimer:(callback,delay)=>setTimeout(callback,delay),clearTimer:timer=>clearTimeout(timer)});
-function sortedPublicChannels(channels){const order=Object.keys(systemRoomMeta);return channels.map((channel,index)=>({channel,index,rank:order.includes(channel.systemKey)?order.indexOf(channel.systemKey):order.length})).sort((a,b)=>a.rank-b.rank||a.index-b.index).map(item=>item.channel);}
-function channelCategory(channel){return channel?.kind==='self'||channel?.kind==='dm'?'personal':channel?.scope==='team'?'team':'all';}
-function selectedConversation(){const channel=currentChannel();return channel&&channelCategory(channel)===state.chatCategory?channel:null;}
-function categoryLabel(){return chatCategories.find(([key])=>key===state.chatCategory)?.[1]||'개인채팅';}
+// 한 목록(11-06 새 판): 대화방(팀 · 공용 · 프로젝트 · 회사 방)과 사람(1:1 · 나에게) 두 묶음. 고른 방이 곧 지금 대화다.
+function navGroup(channel){return channel?.kind==='self'||channel?.kind==='dm'?'people':'rooms';}
+function selectedConversation(){return currentChannel()||null;}
+function roomLabel(channel){return channel?.kind==='self'?'나에게':channel?.name||'';}
+function scopeLabel(channel){if(!channel)return '';if(channel.kind==='self')return '나만 보는 메모';if(channel.kind==='dm')return state.members.find(person=>person.id!==state.user?.id&&channel.memberIds?.includes(person.id))?.teamName||'1:1 대화';if(channel.scope==='team')return '우리 팀 크루만';if(isProject(channel))return channel.scope==='private'?'고른 크루만':'전체 공개 프로젝트';return '회사 크루 모두';}
+function roomMemberCount(channel){if(!channel||channel.kind!=='channel')return 0;if(isProject(channel))return projectParticipantCount(channel);return Number(channel.activeMemberCount)||channel.memberIds?.length||0;}
+const REACTIONS=['👍','❤️','✅','👀','🎉'];
 let eventTimer, searchTimer, modalReturnFocus, composition = false, dragDepth = 0, modalVersion = 0;
 const pendingUpdates = new Set();
 const mobileLayout=window.matchMedia('(max-width: 680px)');
@@ -206,6 +214,7 @@ function enterWorkspace(data){
   let last;try{last=localStorage.getItem(`synk-messenger:last:${state.user.id}`);}catch{}
   const channel=state.channels.find(c=>c.id===last)||state.channels.find(c=>c.kind==='self')||state.channels[0];
   const initialMessages=channel?selectChannel(channel.id):clearChannelSelection();
+  if(mobileLayout.matches)setMobileMenu(true,{focus:false,restoreFocus:false});
   // The shell and its message loader are usable before history/read receipts
   // finish. Keeping the parent hidden until those requests settle looks blank.
   announceWorkspaceReady();
@@ -216,7 +225,7 @@ function enterWorkspace(data){
 }
 // The final shell comes from one template (messenger-shell.js); this only wires it and runs the layout and permission passes.
 function renderShell(){
-  app.innerHTML=shellHtml({embedded:Boolean(moduleBase),workspaceName:state.workspace.name,user:state.user,chatCategory:state.chatCategory,platformEntry:platformEntry(),uploadDestination:uploadDestination(),fileLimit:bytes(state.fileBytes)},{icon,esc,avatar,initials});
+  app.innerHTML=shellHtml({embedded:Boolean(moduleBase),workspaceName:state.workspace.name,user:state.user,platformEntry:platformEntry(),uploadDestination:uploadDestination(),fileLimit:bytes(state.fileBytes)},{icon,esc,avatar,initials});
   wireShell();
   applyDirectoryLayout();renderDirectory();
   renderNavigation();
@@ -224,38 +233,38 @@ function renderShell(){
   applyIntegratedUI();
 }
 function wireShell(){
-  $('#chat-category-tabs').onclick=event=>{const button=event.target.closest('[data-chat-category]');if(button)selectChatCategory(button.dataset.chatCategory);};
-  $('#chat-category-tabs').onkeydown=event=>{const button=event.target.closest('[data-chat-category]');if(!button||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const index=chatCategories.findIndex(([key])=>key===button.dataset.chatCategory),next=event.key==='Home'?0:event.key==='End'?2:(index+(event.key==='ArrowRight'?1:2))%3;const key=chatCategories[next][0];selectChatCategory(key);$(`[data-chat-category="${key}"]`)?.focus({preventScroll:true});};
-  $$('[data-nav-filter]').forEach(button=>button.onclick=()=>{state.navFilter=button.dataset.navFilter;state.categoryFilters[state.chatCategory]=state.navFilter;renderNavigation();});
+  $$('[data-nav-filter]').forEach(button=>button.onclick=()=>{state.navFilter=button.dataset.navFilter;renderNavigation();});
   $('#room-filter').oninput=event=>{state.roomQuery=event.target.value;renderNavigation();};
   $('#clear-room-filter').onclick=()=>{state.roomQuery='';$('#room-filter').value='';renderNavigation();$('#room-filter').focus();};
   $('#sidebar').onclick=handleSidebarAction;
-  $('#mobile-menu').onclick=()=>setMobileMenu(true);$('#mobile-scrim').onclick=()=>setMobileMenu(false);
-  $('#create-channel').onclick=createChannelDialog;$('#channel-members').onclick=focusDirectory;
+  $('#mobile-menu').onclick=()=>setMobileMenu(true);
+  $('#create-channel').onclick=createChannelDialog;$('#new-dm').onclick=focusDirectory;
+  $('#new-conversation').onclick=()=>toggleNewMenu();$('#new-menu').onclick=handleNewMenu;$('#new-menu').onkeydown=event=>menuKeyboard(event,closeNewMenu);
   $('#deleted-projects').onclick=deletedProjectsDialog;
   $('#global-search').onclick=()=>openDrawer('search',false);
   $('#workspace-settings').onclick=settingsDialog;$('#invite-button')?.addEventListener('click',inviteDialog);
-  $('#tab-chat').onclick=()=>setMode('chat');$('#tab-files').onclick=()=>setMode('files');
-  $('#tab-pins').onclick=()=>setMode('pins');
+  $('#room-info').onclick=()=>state.drawer==='room'?closeDrawer():openRoomInfo();
+  $('#files-view').addEventListener('click',event=>{if(event.target.closest('[data-action="view-back"]'))setMode('chat');});
   $('#employee-search').oninput=event=>{state.directoryQuery=event.target.value;renderDirectory();};
   $('#directory-team').onchange=event=>{state.directoryTeam=event.target.value;renderDirectory();};
   $('#employee-directory').onclick=event=>{const filter=event.target.closest('[data-directory-filter]');if(filter){state.directoryTeam=filter.dataset.directoryFilter;renderDirectory();}const person=event.target.closest('[data-contact]');if(person)openDirectMessage(person.dataset.contact,person);};
-  $('#directory-back').onclick=()=>{$('.shell').classList.remove('directory-open');$('#sidebar').classList.remove('directory-focus');$('#global-search')?.focus({preventScroll:true});};
+  $('#directory-back').onclick=()=>closeDirectory();
   $('#composer-form').onsubmit=sendMessage;
   $('#composer-input').addEventListener('input',()=>{saveDraft();resizeComposer();updateSend();updateMentionPicker();});
   $('#composer-input').addEventListener('compositionstart',()=>composition=true);$('#composer-input').addEventListener('compositionend',()=>{composition=false;updateMentionPicker();});
   $('#composer-input').addEventListener('keydown',event=>{if(mentionKeyboard(event))return;if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing&&!composition&&event.keyCode!==229){event.preventDefault();if(!$('#send-message').disabled)$('#composer-form').requestSubmit();}});
-  $('#composer-input').addEventListener('click',updateMentionPicker);$('#personal-bell').onclick=()=>openPersonalPanel('workday');$('#channel-notifications').onclick=roomSettingsDialog;
+  $('#composer-input').addEventListener('click',updateMentionPicker);$('#personal-bell').onclick=()=>state.drawer==='personal'?closeDrawer():openPersonalPanel('notifications');
   $('#mention-picker').onmousedown=event=>event.preventDefault();$('#mention-picker').onclick=event=>{const button=event.target.closest('[data-mention-index]');if(button)chooseMention(Number(button.dataset.mentionIndex));};
   $('#attach-file').onclick=()=>$('#file-input').click();$('#file-input').onchange=event=>{addFiles([...event.target.files]);event.target.value='';};
   $('#composer-emoji').onclick=()=>reactionDialog(null);
   $('#composer-mention').onclick=()=>{if(!canPostToChannel())return;const box=$('#composer-input');box.focus();const before=box.value.slice(0,box.selectionStart);box.setRangeText((before&&!/\s$/.test(before)?' ':'')+'@',box.selectionStart,box.selectionEnd,'end');saveDraft();resizeComposer();updateSend();updateMentionPicker();};
   $('#reply-context').onclick=event=>{if(event.target.closest('[data-cancel-reply]'))clearReply();};
   $('#upload-queue').onclick=event=>{const retry=event.target.closest('[data-upload-retry]');if(retry)return retryUpload(retry.dataset.uploadRetry);const btn=event.target.closest('[data-upload-remove]');if(btn)removeUpload(btn.dataset.uploadRemove);};
-  $('#message-list').onclick=handleMessageAction;
+  $('#message-list').onclick=handleMessageAction;wireMessagePress($('#message-list'));
+  $('#message-menu').onclick=handleMessageMenu;$('#message-menu').onkeydown=event=>menuKeyboard(event,closeMessageMenu);$('#message-sheet').onclick=handleMessageSheet;$('#message-sheet').onkeydown=sheetKeyboard;
   $('#pins-view').onclick=handleMessageAction;
   $('#jump-latest').onclick=()=>scrollToBottom();
-  $('#message-scroll').onscroll=()=>{const box=$('#message-scroll');$('#jump-latest').classList.toggle('hidden',box.scrollHeight-box.scrollTop-box.clientHeight<200);};
+  $('#message-scroll').onscroll=()=>{closeMessageMenu({restore:false});const box=$('#message-scroll');$('#jump-latest').classList.toggle('hidden',box.scrollHeight-box.scrollTop-box.clientHeight<200);};
   const area=$('#chat-area');area.addEventListener('dragenter',event=>{if(canPostToChannel()&&[...event.dataTransfer.types].includes('Files')){event.preventDefault();dragDepth++;$('#drop-overlay').classList.remove('hidden');}});area.addEventListener('dragover',event=>{if(canPostToChannel()&&[...event.dataTransfer.types].includes('Files')){event.preventDefault();event.dataTransfer.dropEffect='copy';}});area.addEventListener('dragleave',()=>{dragDepth=Math.max(0,dragDepth-1);if(!dragDepth)$('#drop-overlay').classList.add('hidden');});area.addEventListener('drop',event=>{event.preventDefault();dragDepth=0;$('#drop-overlay').classList.add('hidden');addFiles([...event.dataTransfer.files]);});
 }
 function syncSidebarAccess(){
@@ -268,16 +277,22 @@ function syncSidebarAccess(){
   if(main)main.inert=open;
   $('#mobile-menu')?.setAttribute('aria-expanded',String(open));
   $('#mobile-menu')?.setAttribute('aria-controls','sidebar');
+  postMessengerView();
 }
-function setMobileMenu(open,{restoreFocus=true}={}){
+// 휴대폰에서 방 화면이면 회사 셸이 아래 막대를 숨긴다(messenger:view, 설계 P2-P). 목록 · 빈 화면 · 넓은 화면은 list.
+function postMessengerView(){
+  const view=mobileLayout.matches&&selectedConversation()&&!$('#sidebar')?.classList.contains('open')?'room':'list';
+  if(document.body?.dataset)document.body.dataset.messengerView=view;if(view!==state.messengerView){state.messengerView=view;parentMessage('messenger:view',{view});}
+}
+function setMobileMenu(open,{restoreFocus=true,focus=true}={}){
   const sidebar=$('#sidebar');if(!sidebar)return;
   const wasOpen=sidebar.classList.contains('open');
   open=Boolean(open&&mobileLayout.matches);
   if(open&&!wasOpen)sidebarReturnFocus=document.activeElement;
-  sidebar.classList.toggle('open',open);$('#mobile-scrim')?.classList.toggle('open',open);syncSidebarAccess();
-  if(!open)sidebar.classList.remove('directory-focus');
-  if(open&&!wasOpen)$('#global-search')?.focus({preventScroll:true});
-  else if(wasOpen&&restoreFocus){const target=sidebarReturnFocus?.isConnected?sidebarReturnFocus:$('#mobile-menu');if(target&&!target.closest('[inert]'))target.focus({preventScroll:true});}
+  sidebar.classList.toggle('open',open);syncSidebarAccess();
+  if(!open)closeDirectory({focus:false});
+  if(open&&!wasOpen&&focus)$('#global-search')?.focus({preventScroll:true});
+  else if(wasOpen&&!open&&restoreFocus){const target=sidebarReturnFocus?.isConnected?sidebarReturnFocus:$('#mobile-menu');if(target&&!target.closest('[inert]'))target.focus({preventScroll:true});}
   if(wasOpen&&!open&&state.messages.length)markRead(state.channelId);
 }
 function matchesRoomQuery(room){
@@ -285,90 +300,99 @@ function matchesRoomQuery(room){
   const person=room.kind==='dm'?state.members.find(member=>member.id!==state.user.id&&room.memberIds?.includes(member.id)):null;
   return [room.name,room.description,systemRoomMeta[room.systemKey]?.description,person?.name,person?.teamName].filter(Boolean).join(' ').toLocaleLowerCase().includes(query);
 }
+function navTime(value){const date=new Date(value);if(Number.isNaN(date.getTime()))return '';const now=new Date();if(date.toDateString()===now.toDateString())return timeLabel(value);return date.getFullYear()===now.getFullYear()?`${date.getMonth()+1}/${date.getDate()}`:`${String(date.getFullYear()).slice(2)}/${date.getMonth()+1}/${date.getDate()}`;}
 function conversationNavItem(channel){
-  const person=channel.kind==='dm'?state.members.find(m=>channel.memberIds.includes(m.id)&&m.id!==state.user.id):null,room=systemRoomMeta[channel.systemKey];
-  const detail=room?.description||(channel.kind==='self'?'메모 · 아이디어 · 파일':person?.teamName||channel.description||(channel.scope==='team'?'우리 팀 대화':isProject(channel)?'프로젝트 대화':'공용 대화방'));
-  const symbol=person?avatar(person):`<span class="room-symbol" data-room-kind="${esc(channel.systemKey||(channel.kind==='self'?'self':channel.scope==='team'?'team':'project'))}">${icon(channel.scope==='team'?'users':channelIcon(channel))}</span>`;
-  const button=`<button class="nav-item${room?' system-room':''}${channel.id===state.channelId?' active':''}" data-channel="${esc(channel.id)}" ${room?`data-system-key="${esc(channel.systemKey)}"`:''} ${channel.id===state.channelId?'aria-current="page"':''}>${symbol}<span class="nav-name"><strong>${esc(channel.name)}</strong><small>${esc(detail)}</small></span>${isProject(channel)&&channel.scope==='private'?`<span class="project-private-mark" aria-label="고른 크루만 참여">${icon('lock')}</span>`:''}${channel.unread?`<span class="unread" aria-label="안 읽은 메시지 ${channel.unread}개">${channel.unread>99?'99+':channel.unread}</span>`:''}${channel.kind==='self'?'<span class="tiny muted">나</span>':''}</button>`;
-  return isProject(channel)?`<div class="project-nav-row${channel.id===state.channelId?' active':''}">${button}${canLeaveProject(channel)?`<button type="button" class="project-leave-button" data-project-leave="${esc(channel.id)}" title="${esc(channel.name)} 대화방 나가기" aria-label="${esc(channel.name)} 대화방 나가기">${icon('close')}</button>`:''}</div>`:button;
+  const person=channel.kind==='dm'?state.members.find(m=>channel.memberIds.includes(m.id)&&m.id!==state.user.id):null,room=systemRoomMeta[channel.systemKey],active=channel.id===state.channelId,label=roomLabel(channel);
+  const symbol=person?avatar(person):channel.kind==='self'?avatar(state.user):`<span class="room-symbol" data-room-kind="${esc(channel.systemKey||(channel.scope==='team'?'team':'project'))}">${icon(channel.scope==='team'?'hash':channelIcon(channel))}</span>`;
+  const time=channel.lastMessageAt?navTime(channel.lastMessageAt):'';
+  return `<button type="button" class="nav-item${room?' system-room':''}${channel.unread?' is-unread':''}${active?' active':''}" data-channel="${esc(channel.id)}" ${room?`data-system-key="${esc(channel.systemKey)}"`:''} ${active?'aria-current="page"':''} aria-label="${esc(label)}${channel.unread?` · 안 읽은 메시지 ${channel.unread}개`:''}">${symbol}<span class="nav-name">${esc(label)}</span>${isProject(channel)&&channel.scope==='private'?`<span class="project-private-mark" title="고른 크루만 참여">${icon('lock')}</span>`:''}${time?`<time class="nav-time" datetime="${esc(channel.lastMessageAt)}">${time}</time>`:''}${channel.unread?`<span class="unread" aria-hidden="true">${channel.unread>99?'99+':channel.unread}</span>`:''}</button>`;
 }
 function handleSidebarAction(event){
+  const toggle=event.target.closest('[data-group-toggle]');if(toggle){toggleNavGroup(toggle.dataset.groupToggle);return;}
   const leave=event.target.closest('[data-project-leave]');if(leave){event.preventDefault();event.stopPropagation();leaveProjectDialog(leave.dataset.projectLeave);return;}
   const button=event.target.closest('[data-channel]');if(button)selectChannel(button.dataset.channel);const team=event.target.closest('[data-team-open]');if(team)openTeamConversation(team.dataset.teamOpen,team);if(event.target.closest('[data-team-manage]'))inviteDialog();
 }
+// 줄 순서: 최근 대화가 위, 묶음 안 「나에게」는 끝. 읽어서 안 읽음이 빠져도 줄이 튀지 않게 방을 바꿀 때만 다시 세운다(설계 P2-Q).
+function navRecency(channel){return Date.parse(channel?.lastMessageAt||'')||0;}
+function computeNavOrder(){state.navOrder=state.channels.map((channel,index)=>({channel,index})).sort((a,b)=>(a.channel.kind==='self')-(b.channel.kind==='self')||navRecency(b.channel)-navRecency(a.channel)||a.index-b.index).map(item=>item.channel.id);}
+function orderedChannels(channels){if(!state.navOrder)computeNavOrder();const rank=new Map(state.navOrder.map((channelId,index)=>[channelId,index])),place=channel=>rank.has(channel.id)?rank.get(channel.id):-1;return channels.map((channel,index)=>({channel,index})).sort((a,b)=>place(a.channel)-place(b.channel)||navRecency(b.channel)-navRecency(a.channel)||a.index-b.index).map(item=>item.channel);}
+function navCollapseKey(){return `synk-messenger:nav-collapsed:${state.user?.id}`;}
+function navCollapsed(){try{return JSON.parse(localStorage.getItem(navCollapseKey())||'{}')||{};}catch{return {};}}
+function toggleNavGroup(key){if(!['rooms','people'].includes(key))return;const collapsed=navCollapsed();collapsed[key]=!collapsed[key];try{localStorage.setItem(navCollapseKey(),JSON.stringify(collapsed));}catch{}renderNavigation();$(`[data-group-toggle="${key}"]`)?.focus({preventScroll:true});}
 function renderNavigation(){
   if(!state.user||!$('#channel-nav'))return;
-  const focusedChannel=document.activeElement?.closest('[data-channel]')?.dataset.channel,focusedLeave=document.activeElement?.closest('[data-project-leave]')?.dataset.projectLeave;
-  const item=conversationNavItem;
-  const categoryChannels=state.channels.filter(c=>channelCategory(c)===state.chatCategory);
-  const shown=categoryChannels.filter(c=>(state.navFilter!=='unread'||c.unread>0)&&matchesRoomQuery(c));
-  const groups=conversationGroups(shown);
-  $('#self-nav').innerHTML=groups.personal.filter(c=>c.kind==='self').map(item).join('');
-  const publicRooms=groups.public.filter(channel=>channel.category!=='project'),projects=groups.public.filter(channel=>channel.category==='project');
-  $('#channel-nav').innerHTML=sortedPublicChannels(publicRooms).map(item).join('')+(projects.length?'<div class="project-nav-heading">프로젝트</div>'+projects.map(item).join(''):'')||(state.navFilter==='all'?'<p class="sidebar-hint">들어가 있는 대화방이 없어요.</p>':'');
-  const unopened=state.teams.filter(team=>team.canOpen&&!state.channels.some(channel=>channel.scope==='team'&&channel.teamId===team.id)&&matchesRoomQuery(team));
-  $('#team-nav').innerHTML=groups.team.map(item).join('')+(state.navFilter==='all'?unopened.map(team=>canWriteMessages()?`<button class="nav-item team-open" data-team-open="${esc(team.id)}">${icon('users')}<span class="nav-name">${esc(team.name)}</span>${icon('plus')}</button>`:`<p class="sidebar-hint">${esc(team.name)} 대화방은<br>팀원이 열면 보여요.</p>`).join(''):'');
-  if(state.navFilter==='all'&&!groups.team.length&&!unopened.length)$('#team-nav').innerHTML=`<p class="sidebar-hint team-empty">${state.user.teamId?'팀 정보를 불러오고 있어요.':'아직 팀이 정해지지 않았어요.'}${state.integrated?.canManage?'<button class="text-button" data-team-manage>팀 관리에서 정하기</button>':''}</p>`;
-  const dms=groups.personal.filter(c=>c.kind==='dm');$('#dm-nav').innerHTML=dms.length?dms.map(item).join(''):(state.navFilter==='all'?'<p class="sidebar-hint">크루 목록에서 이름을 누르면 개인 대화가 열려요.</p>':'');
+  const focusedChannel=document.activeElement?.closest('[data-channel]')?.dataset.channel;
+  const query=Boolean(state.roomQuery?.trim()),collapsed=navCollapsed();
+  // 안 읽음만 볼 때도 지금 연 방은 남긴다 — 읽자마자 목록에서 사라지지 않게.
+  const shown=state.channels.filter(c=>(state.navFilter!=='unread'||c.unread>0||c.id===state.channelId)&&matchesRoomQuery(c));
+  const ordered=orderedChannels(shown),groups={rooms:ordered.filter(c=>navGroup(c)==='rooms'),people:ordered.filter(c=>navGroup(c)==='people')};
+  // 접은 묶음도 안 읽은 방과 지금 연 방은 보인다.
+  const visible=key=>collapsed[key]&&!query?groups[key].filter(c=>c.unread>0||c.id===state.channelId):groups[key];
+  const empty=state.navFilter==='all'&&!query;
+  $('#channel-nav').innerHTML=visible('rooms').map(conversationNavItem).join('')||(empty&&!collapsed.rooms?'<p class="sidebar-hint">들어가 있는 대화방이 없어요.</p>':'');
+  $('#dm-nav').innerHTML=visible('people').map(conversationNavItem).join('')||(empty&&!collapsed.people?'<p class="sidebar-hint">＋를 누르면 크루와 1:1 대화가 열려요.</p>':'');
   $('#create-channel').classList.toggle('hidden',!canWriteMessages());
-  const unread=categoryChannels.reduce((count,c)=>count+(c.unread||0),0);
+  $('#deleted-projects')?.classList.toggle('hidden',!empty||Boolean(collapsed.rooms));
+  for(const group of $$('[data-nav-group]')){const key=group.dataset.navGroup,closed=Boolean(collapsed[key])&&!query;group.classList.toggle('is-collapsed',closed);$('[data-group-toggle]',group)?.setAttribute('aria-expanded',String(!closed));group.classList.toggle('hidden',!empty&&!groups[key].length);}
+  const unread=state.channels.reduce((count,c)=>count+(c.unread||0),0);
   $('#nav-unread-count').textContent=unread>99?'99+':String(unread);
   $('#nav-unread-count').classList.toggle('hidden',!unread);
-  $('#unread-empty').classList.toggle('hidden',state.navFilter!=='unread'||shown.length>0||Boolean(state.roomQuery?.trim()));
-  $('#room-filter-empty')?.classList.toggle('hidden',!state.roomQuery?.trim()||shown.length>0||(state.chatCategory==='team'&&unopened.length>0));
+  $('#unread-empty').classList.toggle('hidden',state.navFilter!=='unread'||shown.length>0||query);
+  $('#room-filter-empty')?.classList.toggle('hidden',!query||shown.length>0);
   $('#clear-room-filter')?.classList.toggle('hidden',!state.roomQuery);
-  for(const section of $$('[data-chat-section]'))section.classList.toggle('hidden',section.dataset.chatSection!==state.chatCategory||(state.navFilter==='unread'&&section.dataset.chatSection!=='all'&&!section.querySelector('[data-channel]')));
-  for(const button of $$('[data-chat-category]')){
-    const active=button.dataset.chatCategory===state.chatCategory,count=state.channels.filter(c=>channelCategory(c)===button.dataset.chatCategory).reduce((sum,c)=>sum+(c.unread||0),0);
-    button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;
-    const badge=$('.category-unread',button);badge.textContent=count>99?'99+':String(count);badge.classList.toggle('hidden',!count);badge.setAttribute('aria-label',`안 읽은 메시지 ${count}개`);
-  }
-  $('.main')?.setAttribute('aria-labelledby',`chat-category-${state.chatCategory}`);
   $$('[data-nav-filter]').forEach(button=>{button.classList.toggle('active',button.dataset.navFilter===state.navFilter);button.setAttribute('aria-pressed',String(button.dataset.navFilter===state.navFilter));});
-  $('#member-number').textContent=String(state.members.length);
   renderDirectory();
-  if(focusedLeave)$(`[data-project-leave="${CSS.escape(focusedLeave)}"]`)?.focus({preventScroll:true});
-  else if(focusedChannel)$(`[data-channel="${CSS.escape(focusedChannel)}"]`)?.focus({preventScroll:true});
+  if(focusedChannel)$(`[data-channel="${CSS.escape(focusedChannel)}"]`)?.focus({preventScroll:true});
+}
+// 「새 대화」: 1:1(크루 목록) · 새 대화방 · 아직 안 연 팀 대화방.
+function newMenuItems(){
+  const teams=state.teams.filter(team=>team.canOpen&&!state.channels.some(channel=>channel.scope==='team'&&channel.teamId===team.id));
+  return [['new-dm','크루와 1:1','chat'],canWriteMessages()&&['new-room','새 대화방 만들기','plus'],...(canWriteMessages()?teams.map(team=>['open-team',`${team.name} 대화방 열기`,'users',team.id]):[]),state.integrated?.canManage&&['team-manage','팀 관리','settings']].filter(Boolean);
+}
+function toggleNewMenu(){const menu=$('#new-menu');if(!menu)return;if(!menu.classList.contains('hidden')){closeNewMenu();return;}closeMessageMenu({restore:false});menu.innerHTML=newMenuItems().map(([action,label,glyph,teamId])=>`<button type="button" role="menuitem" class="menu-item" data-new="${action}" ${teamId?`data-team="${esc(teamId)}"`:''} tabindex="-1">${icon(glyph)}<span>${esc(label)}</span></button>`).join('');menu.classList.remove('hidden');$('#new-conversation')?.setAttribute('aria-expanded','true');menu.querySelector('[role="menuitem"]')?.focus({preventScroll:true});}
+function closeNewMenu({restore=true}={}){const menu=$('#new-menu');if(!menu||menu.classList.contains('hidden'))return;menu.classList.add('hidden');menu.innerHTML='';$('#new-conversation')?.setAttribute('aria-expanded','false');if(restore)$('#new-conversation')?.focus({preventScroll:true});}
+function handleNewMenu(event){const item=event.target.closest('[data-new]');if(!item)return;const action=item.dataset.new,teamId=item.dataset.team;closeNewMenu();if(action==='new-dm')focusDirectory();else if(action==='new-room')createChannelDialog();else if(action==='open-team')openTeamConversation(teamId,$('#new-conversation'));else if(action==='team-manage')inviteDialog();}
+function menuKeyboard(event,close){
+  const items=[...event.currentTarget.querySelectorAll('[role="menuitem"]:not(:disabled)')];if(!items.length)return;
+  const index=items.indexOf(document.activeElement);
+  if(event.key==='ArrowDown'||event.key==='ArrowUp'){event.preventDefault();items[(index+(event.key==='ArrowDown'?1:-1)+items.length)%items.length].focus();}
+  else if(event.key==='Home'||event.key==='End'){event.preventDefault();items[event.key==='Home'?0:items.length-1].focus();}
+  else if(event.key==='Escape'){event.preventDefault();event.stopPropagation();close();}
+  else if(event.key==='Tab')close({restore:false});
 }
 async function refreshChannels(){
   const previousCanPost=canPostToChannel(),sequence=++state.channelsSeq,result=await api('/api/channels');if(sequence!==state.channelsSeq)return;
   const missing=state.channels.filter(channel=>!result.channels.some(next=>next.id===channel.id));for(const channel of missing)forgetChannelState(channel.id);
   state.channels=result.channels;for(const channel of state.channels)state.unavailableChannels.delete(channel.id);
-  if(state.channelId&&!selectedConversation()){const next=state.channels.find(channel=>channelCategory(channel)===state.chatCategory);if(next)await selectChannel(next.id,{preserveFilter:true});else clearChannelSelection();}
+  if(state.channelId&&!selectedConversation())clearChannelSelection();
   renderNavigation();syncChannelHeader();syncComposerAccess();refreshProjectPicker();
   if(!selectedConversation())renderEmptyChannel();else if(previousCanPost!==canPostToChannel())renderMessages({preserve:true});
   if(missing.length||previousCanPost!==canPostToChannel()){await refreshDetailViews();if(state.drawer==='search')await runSearch();}
   parentMessage('messenger:unread');
 }
 function syncChannelHeader(){
-  const channel=selectedConversation();syncProjectParticipation();voice?.syncChannel(channel?.id||null);if(!$('#channel-title'))return;
-  if(!channel){$('#channel-title').textContent=categoryLabel();$('#breadcrumb-type').textContent=categoryLabel();$('#channel-about').textContent='대화방을 골라 주세요';$('#channel-options')?.classList.add('hidden');return;}
-  $('#channel-title').innerHTML=`${icon(channelIcon(channel))}<span>${esc(channel.name)}</span>${canLeaveProject(channel)?`<button type="button" class="project-leave-button current-project-leave" id="current-project-leave" title="${esc(channel.name)} 대화방 나가기" aria-label="${esc(channel.name)} 대화방 나가기">${icon('close')}</button>`:''}`;
-  $('#current-project-leave')?.addEventListener('click',()=>leaveProjectDialog(channel.id));
-  $('#breadcrumb-type').textContent=categoryLabel();
-  $('#channel-about').textContent=systemRoomMeta[channel.systemKey]?.description||channel.description||(channel.kind==='self'?'나만 볼 수 있는 대화':'함께 쓰는 대화방');
-  $('#channel-options')?.classList.toggle('hidden',channel.kind!=='channel'||!channel.canManage||!canWriteMessages());
+  const channel=selectedConversation();voice?.syncChannel(channel?.id||null);if(!$('#channel-title'))return;
+  const info=$('#room-info');if(info)info.disabled=!channel;
+  if(!channel){$('#channel-title').textContent='메신저';$('#channel-sub').textContent='대화를 골라 주세요';syncHeaderToggles();return;}
+  $('#channel-title').textContent=roomLabel(channel);
+  const count=roomMemberCount(channel);$('#channel-sub').textContent=[scopeLabel(channel),count?`${count}명`:''].filter(Boolean).join(' · ');
+  syncHeaderToggles();if(state.drawer==='room')renderRoomInfo();
 }
-function conversationGroups(channels){return{public:channels.filter(channel=>channel.kind==='channel'&&channel.scope!=='team'),team:channels.filter(channel=>channel.kind==='channel'&&channel.scope==='team'),personal:channels.filter(channel=>channel.kind==='dm'||channel.kind==='self')};}
+function syncHeaderToggles(){$('#personal-bell')?.setAttribute('aria-pressed',String(state.drawer==='personal'));$('#room-info')?.setAttribute('aria-pressed',String(state.drawer==='room'));}
 function syncComposerAccess(){
   const channel=selectedConversation(),selected=Boolean(channel),writable=canPostToChannel(channel),box=$('#composer-input');
   const notice=state.leavingChannels.has(channel?.id)?'대화방에서 나가는 중이에요.':state.deletingChannels.has(channel?.id)?'대화방을 삭제하는 중이에요.':selected&&!writable?(channel.systemKey==='announcements'?'공지는 관리자만 쓸 수 있어요. 읽고 파일을 받을 수는 있어요.':'보기 전용 계정이에요. 대화와 파일을 볼 수만 있어요.') : '';
   if(box){box.disabled=!selected;box.readOnly=!writable;box.setAttribute('aria-label',!selected?'메시지 입력 · 대화방을 먼저 골라 주세요':!writable?'메시지 입력 · 보기 전용':'메시지 입력');box.placeholder=!selected?'대화방을 고르면 메시지를 쓸 수 있어요':!writable?(channel.systemKey==='announcements'?'공지는 관리자만 쓸 수 있어요':'보기 전용 계정이에요.'):channel.kind==='self'?'메모, 아이디어, 보관할 파일을 남겨 보세요':`${channel.name}에 메시지 보내기`;}
   const noticeBox=$('#channel-write-notice');if(noticeBox){noticeBox.textContent=notice;noticeBox.classList.toggle('hidden',!notice);}
   for(const selector of ['#attach-file','#composer-emoji','#composer-mention','#file-input']){const button=$(selector);if(button)button.disabled=!writable;}
-  for(const selector of ['#channel-search','#channel-notifications','#tab-files','#tab-pins']){const button=$(selector);if(button)button.disabled=!selected;}
+  for(const selector of ['#room-info']){const button=$(selector);if(button)button.disabled=!selected;}
   $('.main')?.classList.toggle('no-conversation',!selected);$('.main')?.classList.toggle('channel-readonly',selected&&!writable);if(!writable)closeMentionPicker();renderComposeExtras();updateSend();
 }
 function renderEmptyChannel(){
   const list=$('#message-list');if(!list)return;
-  const category=state.chatCategory,teams=state.teams.filter(team=>team.canOpen),rooms=state.channels.filter(channel=>channelCategory(channel)===category);
-  let title='대화방을 골라 주세요',copy='대화 목록에서 대화방을 골라 주세요.';
-  if(!rooms.length&&category==='personal'){title='개인 대화를 시작해 보세요';copy='크루 목록에서 이름을 누르면 둘만의 대화가 열려요.';}
-  if(!rooms.length&&category==='all'){title='아직 전체 대화방이 없어요';copy=canWriteMessages()?'대화 목록의 ‘새 대화방’으로 공용 대화나 프로젝트를 열 수 있어요.':'누군가 대화방을 열면 여기에 보여요.';}
-  if(!rooms.length&&category==='team'){
-    title=teams.length?'팀 대화를 시작해 보세요':'아직 팀 대화방이 없어요';copy=teams.length?(canWriteMessages()?'대화 목록에서 우리 팀을 누르면 시작돼요.':'팀 크루가 대화방을 열면 여기에 보여요.'):'팀이 정해지면 팀 대화를 시작할 수 있어요.';
-  }
-  list.classList.add('empty');list.innerHTML=`<section class="category-empty" aria-live="polite"><span class="category-empty-icon">${icon(chatCategories.find(([key])=>key===category)?.[2]||'chat')}</span><h2>${title}</h2><p>${copy}</p></section>`;
+  const any=state.channels.length>0;
+  const title=any?'대화를 골라 주세요':'아직 대화가 없어요',copy=any?'목록에서 대화방이나 크루를 고르면 여기서 이어져요.':canWriteMessages()?'크루와 1:1을 열거나 새 대화방을 만들어 보세요.':'누군가 대화를 열면 여기에 보여요.';
+  list.classList.add('empty');list.innerHTML=`<section class="category-empty" aria-live="polite"><span class="category-empty-icon">${icon('chat')}</span><h2>${title}</h2><p>${copy}</p><div class="category-empty-actions">${mobileLayout.matches?'<button type="button" class="button" data-action="category-list">대화 목록</button>':''}<button type="button" class="button" data-action="category-people">크루와 1:1</button>${canWriteMessages()?'<button type="button" class="button" data-action="category-create">새 대화방</button>':''}</div></section>`;
 }
 function clearChannelSelection(){
   saveDraft();state.navigationSeq++;state.directSequence=(state.directSequence||0)+1;
@@ -376,21 +400,14 @@ function clearChannelSelection(){
   state.loadSeq++;state.refreshSeq++;state.filesSeq++;state.pinsSeq++;state.threadSeq++;state.searchSeq++;clearTimeout(state.fileSearchTimer);
   closeDrawer();setMode('chat');const box=$('#composer-input');if(box){box.value='';box.placeholder='대화방을 고르면 메시지를 쓸 수 있어요';resizeComposer();}
   renderReplyContext();renderQueue();renderNavigation();syncChannelHeader();syncComposerAccess();renderEmptyChannel();$('#jump-latest')?.classList.add('hidden');
+  if(mobileLayout.matches)setMobileMenu(true,{focus:false,restoreFocus:false});else postMessengerView();
 }
-async function selectChatCategory(category){
-  if(!chatCategories.some(([key])=>key===category))return;
-  state.navigationSeq++;state.directSequence=(state.directSequence||0)+1;
-  if(state.chatCategory===category){setMobileMenu(false);return;}
-  saveDraft();state.categoryFilters[state.chatCategory]=state.navFilter;
-  if(selectedConversation())state.categoryChannels[state.chatCategory]=state.channelId;
-  state.chatCategory=category;state.navFilter=state.categoryFilters[category]||'all';$('#sidebar')?.classList.remove('directory-focus');
-  const available=state.channels.filter(channel=>channelCategory(channel)===category),channels=category==='all'?sortedPublicChannels(available):available,next=channels.find(channel=>channel.id===state.categoryChannels[category])||channels[0];
-  if(next)await selectChannel(next.id,{preserveFilter:true});else{clearChannelSelection();setMobileMenu(false);}
-}
-async function selectChannel(channelId, {keepDrawer=false,preserveFilter=false} = {}){
+async function selectChannel(channelId, {keepDrawer=false} = {}){
   const target=state.channels.find(c=>c.id===channelId);if(!target)return;
   state.roomQuery='';if($('#room-filter'))$('#room-filter').value='';
-  saveDraft();state.navigationSeq++;state.directSequence=(state.directSequence||0)+1;state.categoryFilters[state.chatCategory]=state.navFilter;state.chatCategory=channelCategory(target);state.navFilter=preserveFilter?(state.categoryFilters[state.chatCategory]||'all'):'all';state.categoryFilters[state.chatCategory]=state.navFilter;state.categoryChannels[state.chatCategory]=channelId;
+  saveDraft();state.navigationSeq++;state.directSequence=(state.directSequence||0)+1;
+  // 방을 떠날 때만 줄 순서를 다시 세운다 — 읽어서 안 읽음이 빠져도 그 자리에서 줄이 튀지 않게(설계 P2-Q).
+  if(state.channelId!==channelId)computeNavOrder();
   state.channelId=channelId;state.messages=[];state.hasMore=false;state.mode='chat';state.loadSeq++;state.refreshSeq++;state.filesSeq++;state.pinsSeq++;const seq=state.loadSeq;
   state.fileQuery='';state.fileType='all';state.fileScope='channel';state.sharedFiles=[];state.pins=[];restoreReply();restoreComposeExtras();renderReplyContext();
   setMobileMenu(false);if(!keepDrawer)closeDrawer();
@@ -416,22 +433,41 @@ function introHtml(){
   const description=canPostToChannel(channel)?'메시지와 파일을 아래에 남겨 보세요.':'새 메시지가 오면 여기에 보여요.';
   return `<section class="channel-intro is-empty"><div class="intro-copy"><h2>${title}</h2><p class="intro-description">${description}</p></div><div class="intro-collage" aria-hidden="true"><div class="collage-arch"><img class="collage-mascot" src="assets/marin-smile.webp" alt="" width="960" height="1400"></div><img class="collage-sticker" src="assets/${self?'sticker-book.webp':'sticker-envelope.webp'}" alt="" width="192" height="133"><span class="collage-mark">${icon('spark')}</span></div></section>`;
 }
-function messageHtml(message,{panel=false}={}){
+function mentionsMe(message){return Boolean(state.user&&message.user?.id!==state.user.id&&message.mentions?.some(person=>person?.id===state.user.id));}
+function messageMarksHtml(message){return `${message.editedAt?'<span class="edited">수정됨</span>':''}${message.pinned?`<span class="message-pinned" title="고정 메시지">${icon('pin')}고정됨</span>`:''}${message.saved?`<button type="button" class="message-saved" data-action="save" aria-label="나중에 보기에서 빼기">${icon('bookmark')}저장함</button>`:''}`;}
+// 메시지 동작(설계 P1-E): 올림 · 초점 막대는 반응 · 답글 · 할 일로 셋 + ⋯. ⋯(휴대폰은 길게 누름 시트)에 나중에 보기 · 다시 볼 시각 · 고정 · 결정/최종본 · 확인 명단 · 수정 · 삭제.
+function messageToolsHtml(message,writable){
+  const tools=[];
+  if(canWriteMessages())tools.push(`<button type="button" class="icon-button" data-action="reaction-picker" aria-label="반응 남기기" title="반응">${icon('smile')}</button>`);
+  if(writable)tools.push(`<button type="button" class="icon-button" data-action="reply" aria-label="답글 쓰기" title="답글">${icon('reply')}</button>`);
+  if(writable||message.task)tools.push(`<button type="button" class="tool-text" data-action="task" aria-label="${message.task?'할 일 보기':'할 일로 만들기'}">${icon('task')}<span>${message.task?'할 일':'할 일로'}</span></button>`);
+  return `<div class="message-tools" role="toolbar" aria-label="메시지 동작">${tools.join('')}${tools.length?'<span class="tool-sep" aria-hidden="true"></span>':''}<button type="button" class="icon-button message-more" data-action="message-more" aria-haspopup="menu" aria-expanded="false" aria-label="더 보기 — 나중에 보기 · 고정 · 결정 · 수정 · 삭제" title="더 보기">${icon('more')}</button></div>`;
+}
+function messageMenuItems(message){
   const writable=canPostMessage(message),own=canWriteMessages()&&message.user.id===state.user.id,canDelete=canWriteMessages()&&(own||(state.user.role==='owner'&&currentChannel()?.kind==='channel'));
-  const reply=message.replyTo?.deleted?null:message.replyTo;
-  return `<article class="message${message.user.id===state.user.id?' is-own':''}${message.pinned?' is-pinned':''}" ${panel?'':`id="message-${esc(message.id)}"`} data-message-id="${esc(message.id)}">${avatar(message.user)}<div class="message-content"><div class="message-meta"><span class="message-name">${esc(message.user.name)}</span><time class="message-time" datetime="${esc(message.createdAt)}" title="${esc(dateLabel(message.createdAt))}">${timeLabel(message.createdAt)}</time>${message.editedAt?'<span class="edited">수정됨</span>':''}${message.pinned?`<span class="message-pinned" title="고정 메시지">${icon('pin')}고정</span>`:''}</div>${reply?`<button class="reply-preview" data-action="reply-origin"><span>${icon('reply')}${esc(reply.user?.name||'원래 메시지')}</span><p>${esc(messagePreview(reply))}</p></button>`:message.replyToId?'<p class="reply-unavailable">원래 메시지가 삭제됐어요.</p>':''}${message.body?`<div class="message-text">${textBody(message.body)}</div>`:''}${message.files?.length?`<div class="message-files">${message.files.map(fileHtml).join('')}</div>`:''}${message.reactions?.length?`<div class="reaction-list">${message.reactions.map(r=>`<button class="reaction${r.mine?' mine':''}" data-action="react" data-emoji="${esc(r.emoji)}" aria-label="${esc(r.emoji)} 반응 ${r.count}개${r.mine?', 나도 반응함':''}" aria-pressed="${r.mine}">${esc(r.emoji)}<span>${r.count}</span></button>`).join('')}</div>`:''}${messageProductivityHtml(message)}${message.replyCount?`<button class="thread-link" data-action="thread">${icon('reply')}답글 ${message.replyCount}개${icon('chevron')}</button>`:''}${panel?`<button class="message-jump" data-action="jump">대화에서 보기 ${icon('arrow')}</button>`:''}</div><div class="message-tools">${messageProductivityTools(message)}${writable?`<button class="icon-button" data-action="reply" aria-label="답글 쓰기">${icon('reply')}</button><button class="icon-button" data-action="pin" aria-label="${message.pinned?'메시지 고정 해제':'메시지 고정'}" aria-pressed="${Boolean(message.pinned)}">${icon('pin')}</button>`:''}${canWriteMessages()?`<button class="icon-button reaction-add" data-action="reaction-picker" aria-label="메시지에 반응">${icon('smile')}</button>`:''}${own&&writable?`<button class="icon-button" data-action="edit" aria-label="메시지 수정">${icon('edit')}</button>`:''}${canDelete?`<button class="icon-button" data-action="delete" aria-label="메시지 삭제">${icon('trash')}</button>`:''}<button type="button" class="icon-button message-more" data-action="message-more" aria-label="메시지 작업 더 보기" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></button></div></article>`;
+  return [['save',message.saved?'나중에 보기에서 빼기':'나중에 보기에 저장','bookmark'],['remind',message.reminder?'다시 볼 시각 바꾸기':'다시 볼 시각 정하기','clock'],writable&&['pin',message.pinned?'고정 풀기':'고정','pin'],writable&&['decision','결정 · 최종본으로 기록','note'],message.ackRequired&&['ack-list','확인 명단 보기','users'],own&&writable&&['edit','수정','edit'],canDelete&&['delete','삭제','trash',true]].filter(Boolean);
+}
+function messageHtml(message,{panel=false,continued=false}={}){
+  const writable=canPostMessage(message),own=message.user.id===state.user.id;
+  const reply=message.replyTo?.deleted?null:message.replyTo,marks=messageMarksHtml(message);
+  const meta=continued?`<div class="message-meta is-compact"><span class="sr-only">${esc(message.user.name)} ${timeLabel(message.createdAt)}</span>${marks}</div>`:`<div class="message-meta"><span class="message-name">${esc(message.user.name)}</span><time class="message-time" datetime="${esc(message.createdAt)}" title="${esc(dateLabel(message.createdAt))}">${timeLabel(message.createdAt)}</time>${marks}</div>`;
+  const gutter=continued?`<time class="message-gutter-time" datetime="${esc(message.createdAt)}" title="${esc(dateLabel(message.createdAt))}" aria-hidden="true">${timeLabel(message.createdAt)}</time>`:avatar(message.user);
+  return `<article class="message${own?' is-own':''}${message.pinned?' is-pinned':''}${continued?' is-continued':''}${mentionsMe(message)?' for-me':''}" ${panel?'':`id="message-${esc(message.id)}"`} data-message-id="${esc(message.id)}">${gutter}<div class="message-content">${meta}${reply?`<button class="reply-preview" data-action="reply-origin"><span>${icon('reply')}${esc(reply.user?.name||'원래 메시지')}</span><p>${esc(messagePreview(reply))}</p></button>`:message.replyToId?'<p class="reply-unavailable">원래 메시지가 삭제됐어요.</p>':''}${message.body?`<div class="message-text">${textBody(message.body)}</div>`:''}${message.files?.length?`<div class="message-files">${message.files.map(fileHtml).join('')}</div>`:''}${message.reactions?.length?`<div class="reaction-list">${message.reactions.map(r=>`<button class="reaction${r.mine?' mine':''}" data-action="react" data-emoji="${esc(r.emoji)}" aria-label="${esc(r.emoji)} 반응 ${r.count}개${r.mine?', 나도 반응함':''}" aria-pressed="${r.mine}">${esc(r.emoji)}<span>${r.count}</span></button>`).join('')}</div>`:''}${messageProductivityHtml(message)}${message.replyCount?`<button class="thread-link" data-action="thread">${icon('reply')}<b>답글 ${message.replyCount}개</b></button>`:''}${panel?`<button class="message-jump" data-action="jump">대화에서 보기 ${icon('arrow')}</button>`:''}</div>${messageToolsHtml(message,writable)}</article>`;
 }
 function fileHtml(file){return `<a class="file-card" href="${esc(file.url || moduleUrl(`/api/files/${id(file.id)}`))}" download="${esc(file.name)}"><span class="file-icon">${icon('file')}</span><span class="file-details"><span class="file-name" title="${esc(file.name)}">${esc(file.name)}</span><span class="file-meta">${bytes(file.size)} · ${shortDate(file.createdAt)}${file.storageProvider==='google-drive'?`<span class="file-cloud" aria-label="Google Drive에 보관">${icon('cloud')}Drive</span>`:''}</span></span>${icon('download')}</a>`;}
+// 같은 사람이 5분 안에 이어 쓰면 이름 · 얼굴을 한 번만(날짜가 바뀌거나 답글 인용이 붙으면 다시 보인다).
+function continuesMessage(prev,message){return Boolean(prev&&prev.user?.id===message.user?.id&&!message.replyTo&&!message.replyToId&&Date.parse(message.createdAt)-Date.parse(prev.createdAt)<300000);}
+function dayLabel(value){const date=new Date(value),now=new Date(),yesterday=new Date(now);yesterday.setDate(now.getDate()-1);const long=date.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'});if(date.toDateString()===now.toDateString())return `오늘 · ${long}`;if(date.toDateString()===yesterday.toDateString())return `어제 · ${long}`;return date.getFullYear()===now.getFullYear()?long:date.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'});}
 function renderMessages({preserve=false}={}){
   if(!selectedConversation()){renderEmptyChannel();return;}
+  closeMessageMenu({restore:false});
   const focused=document.activeElement;
   const focusedAction=focused?.closest('#message-list [data-action]');
   const focusKey=focusedAction?{messageId:focusedAction.closest('[data-message-id]')?.dataset.messageId,action:focusedAction.dataset.action,emoji:focusedAction.dataset.emoji}:null;
   const focusedFile=focused?.closest('#message-list .file-card')?.getAttribute('href');
   const scroller=$('#message-scroll');if(!scroller)return;const oldHeight=scroller.scrollHeight,oldTop=scroller.scrollTop,atBottom=oldHeight-oldTop-scroller.clientHeight<160;
-  let lastDate='';let html=state.hasMore?'<button class="load-earlier" data-action="earlier">이전 대화 불러오기</button>':introHtml();
-
-  for(const message of state.messages){const day=new Date(message.createdAt).toDateString();if(day!==lastDate){html+=`<div class="date-separator">${dateLabel(message.createdAt)}</div>`;lastDate=day;}html+=messageHtml(message);}
+  let lastDate='',prev=null;let html=state.hasMore?'<button class="load-earlier" data-action="earlier">이전 대화 불러오기</button>':introHtml();
+  for(const message of state.messages){const day=new Date(message.createdAt).toDateString();if(day!==lastDate){html+=`<div class="date-separator">${esc(dayLabel(message.createdAt))}</div>`;lastDate=day;prev=null;}html+=messageHtml(message,{continued:continuesMessage(prev,message)});prev=message;}
   $('#message-list').classList.toggle('empty',!state.messages.length&&!state.hasMore);
   $('#message-list').innerHTML=html;
   if(preserve&&!atBottom)scroller.scrollTop=oldTop;else if(preserve)scrollToBottom();
@@ -488,7 +524,8 @@ function updateSend(){
   const allUploads=queue(),uploads=allUploads.filter(item=>!item.cancelled),attempt=sendAttempt(),busy=Boolean(attempt?.busy);
   $$('[data-upload-remove]').forEach(item=>item.disabled=busy||Boolean(allUploads.find(file=>file.key===item.dataset.uploadRemove)?.checking)||Boolean(attempt?.payload.fileIds.includes(uploads.find(file=>file.key===item.dataset.uploadRemove)?.file?.id)));
   button.disabled=!canPostToChannel()||Boolean(attempt)||!selectedConversation()||uploads.some(f=>f.status!=='done')||(!box.value.trim()&&!uploads.length&&!state.workspaceLink);
-  $('#composer-status').textContent=!selectedConversation()?'대화방을 고르면 메시지를 보낼 수 있어요.':!canPostToChannel()?'이 대화방은 읽기만 할 수 있어요.':attempt?'앞 메시지가 보내졌는지 먼저 확인해 주세요.':uploads.some(f=>f.status==='uploading')?'파일을 올리는 중이에요. 다 올라가면 보낼 수 있어요.':uploads.some(f=>f.status==='error')?'못 올린 파일의 ‘다시 시도’를 눌러 주세요.':`파일을 끌어다 놓아도 돼요. ${uploadDestination()}.`;
+  const statusText=!selectedConversation()?'대화방을 고르면 메시지를 보낼 수 있어요.':!canPostToChannel()?'이 대화방은 읽기만 할 수 있어요.':attempt?'앞 메시지가 보내졌는지 먼저 확인해 주세요.':uploads.some(f=>f.status==='uploading')?'파일을 올리는 중이에요. 다 올라가면 보낼 수 있어요.':uploads.some(f=>f.status==='error')?'못 올린 파일의 ‘다시 시도’를 눌러 주세요.':`파일을 끌어다 놓아도 돼요. ${uploadDestination()}.`,status=$('#composer-status');
+  if(status){status.textContent=statusText;status.classList.toggle('is-quiet',Boolean(selectedConversation())&&canPostToChannel()&&!attempt&&!uploads.some(f=>['uploading','error'].includes(f.status)));}
   renderSendRecovery();
 }
 async function sendMessage(event){
@@ -608,18 +645,81 @@ async function removeUpload(key){
   catch(error){if(current()){if(['UPLOAD_CANCELLED','UPLOAD_DELETED','UPLOAD_CONSUMED'].includes(error.code)){complete();if(error.code==='UPLOAD_CONSUMED')toast('이미 보낸 첨부 파일은 대화에 그대로 있어요.');}else{upload.errorCode=error.code||null;upload.error='빠졌는지 확인하지 못했어요. 연결이 돌아오면 ‘다시 확인’을 눌러 주세요.';}}}
   finally{if(transferContextCurrent(context)){upload.checking=false;persistQueue(channelId);if(channelId===state.channelId){renderQueue();updateSend();}finishTransferFocus(focusReturn);}}
 }
+function findMessage(messageId){return [...state.messages,...state.pins,...state.personalItems.map(item=>item.message||item),...(state.thread?.messages||[]),state.thread?.parent].find(m=>m?.id===messageId);}
 async function handleMessageAction(event){
   const button=event.target.closest('[data-action]');if(!button)return;
   const action=button.dataset.action,messageId=button.closest('[data-message-id]')?.dataset.messageId;
-  if(action==='message-more'){const tools=button.closest('.message-tools');const expanded=tools.classList.toggle('is-expanded');button.setAttribute('aria-expanded',String(expanded));button.setAttribute('aria-label',expanded?'메시지 작업 접기':'메시지 작업 더 보기');return;}
-  if(action==='category-list'){if(mobileLayout.matches)setMobileMenu(true);else $('#global-search')?.focus();return;}
+  if(action==='view-back'){setMode('chat');return;}
+  if(action==='category-list'){if(mobileLayout.matches)setMobileMenu(true);else $('#room-filter')?.focus();return;}
   if(action==='category-people')return focusDirectory();if(action==='category-create')return createChannelDialog('generic');if(action==='category-manage')return inviteDialog();if(action==='category-team')return openTeamConversation(button.dataset.teamId,button);
-  const message=[...state.messages,...state.pins,...state.personalItems.map(item=>item.message||item),...(state.thread?.messages||[]),state.thread?.parent].find(m=>m?.id===messageId);
+  const message=findMessage(messageId);
   if(action==='retry')return selectChannel(state.channelId);if(action==='earlier')return loadEarlier(button);if(action==='focus'){if(canPostToChannel())$('#composer-input').focus();return;}if(action==='attach'){if(canPostToChannel())$('#file-input').click();return;}if(action==='invite')return inviteDialog();
   if(!message)return;
+  if(action==='message-more'){if(mobileLayout.matches)openMessageSheet(message,button);else openMessageMenu(button,message);return;}
+  return runMessageAction(action,message,button);
+}
+function runMessageAction(action,message,button){
   if(['save','remind','task','decision','ack','ack-list','workspace-link'].includes(action))return handleProductivityAction(action,message,button);
   if(action==='reply')return startReply(message);if(action==='thread')return openThread(message);if(action==='reply-origin')return openThread({...message.replyTo,channelId:message.channelId});if(action==='jump')return openSearchMessage(message);if(action==='pin')return togglePin(message,button);
-  if(action==='reaction-picker')return reactionDialog(message);if(action==='react')return toggleReaction(message,button.dataset.emoji);if(action==='edit')return editMessageDialog(message);if(action==='delete')return deleteMessageDialog(message);
+  if(action==='reaction-picker')return reactionDialog(message);if(action==='react')return toggleReaction(message,button?.dataset.emoji);if(action==='edit')return editMessageDialog(message);if(action==='delete')return deleteMessageDialog(message);
+}
+// ⋯ 메뉴(넓은 화면): 메시지 하나에 하나만 뜬다. 고르면 메뉴를 닫고 ⋯로 초점을 돌린 뒤 동작한다(대화창이 닫히면 그 자리로 돌아온다).
+let menuReturnFocus=null,sheetReturnFocus=null;
+function openMessageMenu(button,message){
+  const menu=$('#message-menu');if(!menu)return;
+  if(!menu.classList.contains('hidden')&&menu.dataset.messageId===message.id){closeMessageMenu();return;}
+  closeMessageMenu({restore:false});closeNewMenu({restore:false});menuReturnFocus=button;menu.dataset.messageId=message.id;
+  menu.innerHTML=messageMenuItems(message).map(([action,label,glyph,danger])=>`<button type="button" role="menuitem" class="menu-item${danger?' danger':''}" data-action="${action}" tabindex="-1">${icon(glyph)}<span>${label}</span></button>`).join('');
+  menu.classList.remove('hidden');button.setAttribute('aria-expanded','true');button.closest('.message')?.classList.add('menu-open');
+  const rect=button.getBoundingClientRect(),width=menu.offsetWidth||240,height=menu.offsetHeight||200;
+  const top=rect.bottom+6+height>innerHeight-8?Math.max(8,rect.top-height-6):rect.bottom+6,left=Math.max(8,Math.min(rect.right-width,innerWidth-width-8));
+  menu.style.left=`${Math.round(left)}px`;menu.style.top=`${Math.round(top)}px`;
+  menu.querySelector('[role="menuitem"]')?.focus({preventScroll:true});
+}
+function closeMessageMenu({restore=true}={}){
+  const menu=$('#message-menu');if(!menu||menu.classList.contains('hidden'))return;
+  menu.classList.add('hidden');menu.innerHTML='';delete menu.dataset.messageId;
+  $$('.message.menu-open').forEach(element=>element.classList.remove('menu-open'));$$('[data-action="message-more"][aria-expanded="true"]').forEach(element=>element.setAttribute('aria-expanded','false'));
+  const target=menuReturnFocus;menuReturnFocus=null;if(restore&&target?.isConnected)target.focus({preventScroll:true});
+}
+function handleMessageMenu(event){
+  const item=event.target.closest('[role="menuitem"]');if(!item)return;
+  const menu=$('#message-menu'),message=findMessage(menu?.dataset.messageId),source=menuReturnFocus;closeMessageMenu();if(!message)return;
+  runMessageAction(item.dataset.action,message,source);
+}
+// 휴대폰: 늘 보이는 막대 없이 길게 누르면 아래 시트(설계). 길게 누름은 시트만 열고 반응을 바로 보내지 않는다.
+function openMessageSheet(message,source){
+  const sheet=$('#message-sheet');if(!sheet||!message)return;
+  closeMessageMenu({restore:false});sheetReturnFocus=source||document.activeElement;
+  const writable=canPostMessage(message),rows=[writable&&['reply','답글','reply'],(writable||message.task)&&['task',message.task?'할 일 보기':'할 일로 만들기','task'],...messageMenuItems(message)].filter(Boolean);
+  sheet.dataset.messageId=message.id;
+  sheet.innerHTML=`<div class="sheet-scrim" data-sheet-close></div><div class="sheet-pan" role="dialog" aria-modal="true" aria-labelledby="message-sheet-title"><div class="sheet-grab" aria-hidden="true"></div><div class="sheet-head"><h2 id="message-sheet-title">메시지 동작</h2><button type="button" class="icon-button" data-sheet-close aria-label="닫기">${icon('close')}</button></div><p class="sheet-quote"><b>${esc(message.user.name)}</b> ${esc(messagePreview(message).slice(0,90))}</p>${canWriteMessages()?`<div class="sheet-emoji" role="group" aria-label="반응">${REACTIONS.map(emoji=>`<button type="button" data-action="react" data-emoji="${emoji}" aria-label="${emoji} 반응" aria-pressed="${Boolean(message.reactions?.find(r=>r.emoji===emoji)?.mine)}">${emoji}</button>`).join('')}</div>`:''}<ul class="sheet-list">${rows.map(([action,label,glyph,danger])=>`<li${danger?' class="danger"':''}><button type="button" data-action="${action}">${icon(glyph)}<span>${label}</span></button></li>`).join('')}</ul></div>`;
+  sheet.classList.remove('hidden');document.body.classList.add('sheet-open');
+  sheet.querySelector('.sheet-emoji button, .sheet-list button')?.focus({preventScroll:true});
+}
+function closeMessageSheet({restore=true}={}){const sheet=$('#message-sheet');if(!sheet||sheet.classList.contains('hidden'))return;sheet.classList.add('hidden');sheet.innerHTML='';delete sheet.dataset.messageId;document.body.classList.remove('sheet-open');const target=sheetReturnFocus;sheetReturnFocus=null;if(restore&&target?.isConnected)target.focus({preventScroll:true});}
+function handleMessageSheet(event){
+  if(event.target.closest('[data-sheet-close]')){closeMessageSheet();return;}
+  const button=event.target.closest('[data-action]');if(!button)return;
+  const sheet=$('#message-sheet'),message=findMessage(sheet?.dataset.messageId),action=button.dataset.action,emoji=button.dataset.emoji;closeMessageSheet();if(!message)return;
+  if(action==='react')return toggleReaction(message,emoji);
+  runMessageAction(action,message,null);
+}
+function sheetKeyboard(event){
+  if(event.key==='Escape'){event.preventDefault();closeMessageSheet();return;}
+  if(event.key!=='Tab')return;const items=[...event.currentTarget.querySelectorAll('.sheet-pan button')].filter(element=>element.getClientRects().length);if(!items.length)return;
+  const first=items[0],last=items.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+}
+// 길게 누름: 손가락 · 펜으로 0.45초 누르고 거의 움직이지 않으면 시트를 연다. 단추 · 링크 · 파일 위에서는 그 단추가 먼저다.
+function wireMessagePress(root){
+  if(!root)return;let timer=null,origin=null,fired=false;
+  const cancel=()=>{clearTimeout(timer);timer=null;origin=null;};
+  root.addEventListener('pointerdown',event=>{if(event.pointerType==='mouse'||!mobileLayout.matches)return;const article=event.target.closest('.message[data-message-id]');if(!article||event.target.closest('button,a,input,textarea,select'))return;fired=false;origin={x:event.clientX,y:event.clientY,id:article.dataset.messageId};clearTimeout(timer);timer=setTimeout(()=>{const message=findMessage(origin?.id);cancel();if(!message)return;fired=true;openMessageSheet(message,article.querySelector('[data-action="message-more"]'));},450);});
+  root.addEventListener('pointermove',event=>{if(origin&&Math.hypot(event.clientX-origin.x,event.clientY-origin.y)>10)cancel();});
+  for(const type of ['pointerup','pointercancel','pointerleave'])root.addEventListener(type,cancel);
+  root.addEventListener('scroll',cancel,{passive:true});
+  root.addEventListener('contextmenu',event=>{if(!mobileLayout.matches)return;const article=event.target.closest('.message[data-message-id]');if(!article)return;event.preventDefault();if(!fired&&$('#message-sheet')?.classList.contains('hidden')){cancel();fired=true;openMessageSheet(findMessage(article.dataset.messageId),article.querySelector('[data-action="message-more"]'));}});
+  root.addEventListener('click',event=>{if(fired){fired=false;event.stopPropagation();event.preventDefault();}},true);
 }
 async function toggleReaction(message,emoji){if(!canWriteMessages())return;try{const result=await api(`/api/messages/${id(message.id)}/reactions`,{method:'POST',body:{emoji}});const index=state.messages.findIndex(m=>m.id===message.id);if(index>=0){state.messages[index]=result.message;renderMessages({preserve:true});}}catch(error){toast(error.message,true);}}
 function connectEvents(){
@@ -657,7 +757,7 @@ function setMode(mode){
 }
 function renderFilesShell(){
   const wrap=$('#files-view');if(!wrap)return;
-  wrap.innerHTML=`<div class="files-view-title"><div><h2>공유한 파일</h2><p class="view-description">대화에 올린 파일을 이름과 종류로 찾아요.</p></div><span class="tag" id="files-count"></span></div><div class="file-toolbar"><label class="file-search">${icon('search')}<input id="file-search-input" aria-label="파일 이름 검색" type="search" placeholder="파일 이름 검색" value="${esc(state.fileQuery)}" maxlength="200"></label><label class="file-select"><span class="sr-only">파일 검색 범위</span><select id="file-scope"><option value="channel" ${state.fileScope==='channel'?'selected':''}>이 대화방</option><option value="all" ${state.fileScope==='all'?'selected':''}>모든 대화방</option></select></label><label class="file-select"><span class="sr-only">파일 종류</span><select id="file-type">${[['all','모든 파일'],['document','문서'],['image','이미지'],['video','영상'],['audio','음성'],['archive','압축 파일'],['other','기타']].map(([value,label])=>`<option value="${value}" ${state.fileType===value?'selected':''}>${label}</option>`).join('')}</select></label></div><div id="file-results"></div>`;
+  wrap.innerHTML=`<div class="files-view-title"><button type="button" class="text-button view-back" data-action="view-back">${icon('back')}대화로</button><div><h2>공유한 파일</h2><p class="view-description">대화에 올린 파일을 이름과 종류로 찾아요.</p></div><span class="tag" id="files-count"></span></div><div class="file-toolbar"><label class="file-search">${icon('search')}<input id="file-search-input" aria-label="파일 이름 검색" type="search" placeholder="파일 이름 검색" value="${esc(state.fileQuery)}" maxlength="200"></label><label class="file-select"><span class="sr-only">파일 검색 범위</span><select id="file-scope"><option value="channel" ${state.fileScope==='channel'?'selected':''}>이 대화방</option><option value="all" ${state.fileScope==='all'?'selected':''}>모든 대화방</option></select></label><label class="file-select"><span class="sr-only">파일 종류</span><select id="file-type">${[['all','모든 파일'],['document','문서'],['image','이미지'],['video','영상'],['audio','음성'],['archive','압축 파일'],['other','기타']].map(([value,label])=>`<option value="${value}" ${state.fileType===value?'selected':''}>${label}</option>`).join('')}</select></label></div><div id="file-results"></div>`;
   $('#file-search-input').oninput=event=>{state.fileQuery=event.target.value;clearTimeout(state.fileSearchTimer);state.filesSeq++;state.fileSearchTimer=setTimeout(()=>loadFiles(),220);};
   $('#file-type').onchange=event=>{state.fileType=event.target.value;loadFiles();};
   $('#file-scope').onchange=event=>{state.fileScope=event.target.value;loadFiles();};
@@ -682,8 +782,8 @@ function syncDrawerAccess(){
   if(blocked&&!modal.open&&areas.some(area=>area.contains?.(document.activeElement)))$('#close-drawer')?.focus({preventScroll:true});
   for(const area of areas)area.inert=blocked;
 }
-function closeDrawer(){cancelWorkdayRefresh();const hadDrawer=Boolean(state.drawer),focusedInDrawer=$('#drawer')?.contains(document.activeElement);state.drawer=null;state.threadSeq++;state.thread=null;$('#drawer')?.classList.add('hidden');syncDrawerAccess();state.searchSeq++;state.personalSeq++;if(hadDrawer&&focusedInDrawer){const target=drawerReturnFocus?.isConnected&&!drawerReturnFocus.closest('[inert]')?drawerReturnFocus:$('#mobile-menu');target?.focus({preventScroll:true});}if(hadDrawer&&state.messages.length)markRead(state.channelId);}
-function openDrawer(kind,scoped=false){scoped=Boolean(scoped&&selectedConversation());drawerReturnFocus=document.activeElement;setMobileMenu(false,{restoreFocus:false});state.drawer=kind;const drawer=$('#drawer');drawer.classList.remove('hidden');if(kind==='people'){drawer.innerHTML=`<div class="drawer-head"><h2>크루</h2><button class="icon-button" id="close-drawer" aria-label="패널 닫기">${icon('close')}</button></div><div class="drawer-body" id="drawer-body"></div>`;renderPeople();}else{drawer.innerHTML=`<div class="drawer-head"><h2>메시지 검색</h2><button class="icon-button" id="close-drawer" aria-label="패널 닫기">${icon('close')}</button></div><div class="search-box">${icon('search')}<input id="search-input" aria-label="검색어" placeholder="기억나는 단어를 적어 보세요" maxlength="200" autocomplete="off"></div><label class="search-scope"><input type="checkbox" id="search-scope" ${scoped?'checked':''} ${!selectedConversation()?'disabled':''}>이 대화방에서만 찾기</label><div class="drawer-body" id="drawer-body"><div class="drawer-empty">${icon('search')}찾을 단어를 적어 보세요.<br>나에게 남긴 메모도 찾을 수 있어요.</div></div>`;$('#search-input').addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(runSearch,280);});$('#search-scope').onchange=runSearch;installAdvancedSearch();$('#search-input').focus();}$('#close-drawer').onclick=closeDrawer;if(kind==='people')$('#close-drawer').focus();syncDrawerAccess();}
+function closeDrawer(){cancelWorkdayRefresh();const hadDrawer=Boolean(state.drawer),focusedInDrawer=$('#drawer')?.contains(document.activeElement);state.drawer=null;state.threadSeq++;state.thread=null;$('#drawer')?.classList.add('hidden');syncDrawerAccess();state.searchSeq++;state.personalSeq++;if(hadDrawer&&focusedInDrawer){const target=drawerReturnFocus?.isConnected&&!drawerReturnFocus.closest('[inert]')?drawerReturnFocus:$('#mobile-menu');target?.focus({preventScroll:true});}if(hadDrawer&&state.messages.length)markRead(state.channelId);syncHeaderToggles();}
+function openDrawer(kind,scoped=false){scoped=Boolean(scoped&&selectedConversation());drawerReturnFocus=document.activeElement;setMobileMenu(false,{restoreFocus:false});state.drawer=kind;syncHeaderToggles();const drawer=$('#drawer');drawer.classList.remove('hidden');if(kind==='people'){drawer.innerHTML=`<div class="drawer-head"><h2>크루</h2><button class="icon-button" id="close-drawer" aria-label="패널 닫기">${icon('close')}</button></div><div class="drawer-body" id="drawer-body"></div>`;renderPeople();}else{drawer.innerHTML=`<div class="drawer-head"><h2>메시지 검색</h2><button class="icon-button" id="close-drawer" aria-label="패널 닫기">${icon('close')}</button></div><div class="search-box">${icon('search')}<input id="search-input" aria-label="검색어" placeholder="기억나는 단어를 적어 보세요" maxlength="200" autocomplete="off"></div><label class="search-scope"><input type="checkbox" id="search-scope" ${scoped?'checked':''} ${!selectedConversation()?'disabled':''}>이 대화방에서만 찾기</label><div class="drawer-body" id="drawer-body"><div class="drawer-empty">${icon('search')}찾을 단어를 적어 보세요.<br>나에게 남긴 메모도 찾을 수 있어요.</div></div>`;$('#search-input').addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(runSearch,280);});$('#search-scope').onchange=runSearch;installAdvancedSearch();$('#search-input').focus();}$('#close-drawer').onclick=closeDrawer;if(kind==='people')$('#close-drawer').focus();syncDrawerAccess();}
 function renderPeople(){const body=$('#drawer-body');if(!body||state.drawer!=='people')return;body.innerHTML=`<p class="modal-description">${state.members.length}명이 함께하고 있어요.<br>이름을 누르면 1:1 대화가 열려요.</p><div class="people-list">${state.members.map(person=>`<button class="person-row" data-person="${esc(person.id)}">${avatar(person)}<span class="person-info"><strong>${esc(person.name)}${person.id===state.user.id?' (나)':''}</strong><small>${person.role==='owner'?'관리자':'크루'} · @${esc(person.username)}</small></span>${icon('chevron')}</button>`).join('')}</div>${state.members.length===1&&state.user.role==='owner'?'<div class="drawer-empty">팀원을 부를 준비가 되면<br>초대 코드를 만들어 주세요.<button class="button" id="people-invite">팀원 초대</button></div>':''}`;$$('[data-person]',body).forEach(button=>button.onclick=()=>openDirectMessage(button.dataset.person,button));$('#people-invite')?.addEventListener('click',inviteDialog);}
 function installAdvancedSearch(){
   $('.search-scope').insertAdjacentHTML('afterend',`<details class="advanced-search" id="advanced-search"><summary>작성자 · 날짜 · 파일 종류</summary><div class="search-filter-grid"><label>작성자<select id="search-author"><option value="">모든 크루</option>${state.members.map(person=>`<option value="${esc(person.id)}">${esc(person.name)}</option>`).join('')}</select></label><label>파일 종류<select id="search-file-type">${[['','모든 메시지'],['image','이미지'],['video','영상'],['audio','음성'],['document','문서'],['archive','압축 파일'],['other','기타 파일']].map(([key,label])=>`<option value="${key}">${label}</option>`).join('')}</select></label><label>시작일<input type="date" id="search-from" aria-label="검색 시작일"></label><label>종료일<input type="date" id="search-to" aria-label="검색 종료일"></label></div></details>`);
@@ -745,10 +845,41 @@ function createChannelDialog(category='team'){
   bindProjectRegistration();render();$('#new-channel-name').focus();$('#cancel-channel').onclick=()=>modal.close();
   form.onsubmit=async event=>{event.preventDefault();if(!canWriteMessages())return;const button=$('button[type=submit]',form),sequence=++state.navigationSeq;button.disabled=true;try{const payload=channelCreationPayload(Object.fromEntries(new FormData(form)),selected),data=await api('/api/channels',{method:'POST',body:payload});await refreshChannels();if(sequence!==state.navigationSeq||version!==modalVersion||!modal.open)return;modal.close();await selectChannel(data.channel.id);toast('새 대화방을 만들었어요.');}catch(error){if(version===modalVersion&&modal.open){formError(error.message);button.disabled=false;}}};
 }
-function syncProjectParticipation(){
-  const wrap=$('#project-participation'),channel=selectedConversation();$('#channel-notifications')?.classList.toggle('hidden',isProject(channel));if(!wrap)return;wrap.classList.toggle('hidden',!isProject(channel));if(!isProject(channel)){wrap.innerHTML='';return;}
-  const count=projectParticipantCount(channel);wrap.innerHTML=`<span class="project-access-badge">${icon(channel.scope==='private'?'lock':'globe')}${channel.scope==='private'?'고른 크루만 참여':'전체 공개'}</span><button type="button" class="text-button" data-project-members>참여 크루 ${count}명 ${icon('chevron')}</button>${canInviteProject(channel)?'<button type="button" class="button project-invite-button" data-project-invite>크루 초대</button>':''}<button type="button" class="text-button project-settings-button" data-project-settings>${icon('settings')}대화방 설정</button>`;
-  $('[data-project-members]',wrap).onclick=()=>projectMembersDialog(channel.id);$('[data-project-invite]',wrap)?.addEventListener('click',()=>projectMembersDialog(channel.id,{invite:true}));$('[data-project-settings]',wrap)?.addEventListener('click',roomSettingsDialog);
+function syncProjectParticipation(){if(state.drawer==='room')renderRoomInfo();}
+// 방 정보(오른쪽 칸): 참여 크루 · 초대 · 알림 모드 · 최근 파일 + 모두 보기 · 고정 메시지 · 정보 수정 · 나가기 · 삭제(설계 P1-C · P2-R).
+function openRoomInfo(){
+  const channel=selectedConversation();if(!channel)return;
+  closeDrawer();drawerReturnFocus=document.activeElement;setMobileMenu(false,{restoreFocus:false});state.drawer='room';state.roomInfo=null;
+  const drawer=$('#drawer');drawer.classList.remove('hidden');drawer.innerHTML=`<div class="drawer-head"><h2>방 정보</h2><button class="icon-button" id="close-drawer" aria-label="오른쪽 칸 닫기">${icon('close')}</button></div><div class="drawer-body room-info" id="drawer-body"></div>`;
+  $('#close-drawer').onclick=closeDrawer;$('#drawer-body').onclick=handleRoomInfoAction;$('#close-drawer').focus({preventScroll:true});syncDrawerAccess();syncHeaderToggles();renderRoomInfo();void loadRoomInfoDetails();
+}
+async function loadRoomInfoDetails(){
+  const channel=selectedConversation();if(state.drawer!=='room'||!channel)return;const seq=state.roomInfoSeq=(state.roomInfoSeq||0)+1,channelId=channel.id;
+  try{const [files,pins]=await Promise.all([api(`/api/files?${new URLSearchParams({channelId,limit:'3',offset:'0'})}`),api(`/api/channels/${id(channelId)}/pins`)]);if(seq!==state.roomInfoSeq||state.drawer!=='room'||state.channelId!==channelId)return;state.roomInfo={channelId,files:files.files||[],filesMore:Boolean(files.hasMore),pins:pins.messages||[]};}
+  catch(error){if(seq!==state.roomInfoSeq||state.drawer!=='room')return;state.roomInfo={channelId,error:error.message,files:[],pins:[]};}
+  renderRoomInfo();
+}
+function roomPeople(channel){if(channel.kind==='self')return state.members.filter(person=>person.id===state.user.id);return state.members.filter(person=>channel.memberIds?.includes(person.id));}
+function renderRoomInfo(){
+  const body=$('#drawer-body'),channel=selectedConversation();if(state.drawer!=='room'||!body)return;if(!channel){closeDrawer();return;}
+  const info=state.roomInfo?.channelId===channel.id?state.roomInfo:null,people=roomPeople(channel),count=roomMemberCount(channel)||people.length,project=isProject(channel);
+  const about=channel.description||systemRoomMeta[channel.systemKey]?.description||'';
+  const notify={mentions:'나와 관련된 소식만',all:'모든 새 메시지',mute:'알림 끔'}[channel.notificationMode||'mentions'];
+  const manage=[channel.kind==='channel'&&channel.canManage&&canWriteMessages()&&['edit','정보 수정','edit'],canLeaveProject(channel)&&['leave','대화방 나가기','logout'],canDeleteProject(channel)&&['delete','대화방 삭제','trash',true]].filter(Boolean);
+  body.innerHTML=`<section class="info-head"><strong>${esc(roomLabel(channel))}</strong><span>${esc([scopeLabel(channel),count&&channel.kind==='channel'?`${count}명`:''].filter(Boolean).join(' · '))}</span>${about?`<p>${esc(about)}</p>`:''}</section>`
+    +(channel.kind==='self'?'':`<section class="info-block"><h3>참여 크루 <span class="num">${count}</span></h3><div class="info-people">${people.slice(0,8).map(person=>`<span class="info-person">${avatar(person)}<span>${esc(person.name)}${person.id===state.user.id?' (나)':''}</span></span>`).join('')}${people.length>8?`<span class="info-more">외 ${people.length-8}명</span>`:''}</div><div class="info-actions">${project?`<button type="button" class="button" data-room-action="members">참여 크루 보기</button>${canInviteProject(channel)?'<button type="button" class="button" data-room-action="invite">크루 초대</button>':''}`:'<button type="button" class="button" data-room-action="people">크루 목록</button>'}</div></section>`)
+    +(channel.kind==='self'?'':`<section class="info-block"><h3>이 방 알림</h3><button type="button" class="info-row" data-room-action="notifications"><span>${notify}</span>${icon('chevron')}</button></section>`)
+    +`<section class="info-block"><h3>최근 파일${info&&!info.error?` <span class="num">${info.files.length}${info.filesMore?'+':''}</span>`:''}</h3>${!info?'<p class="info-empty">불러오고 있어요.</p>':info.error?`<p class="info-empty">${esc(info.error)}</p>`:info.files.length?`<div class="info-files">${info.files.map(fileHtml).join('')}</div>`:'<p class="info-empty">아직 올린 파일이 없어요.</p>'}<button type="button" class="text-button" data-room-action="files">파일 모두 보기</button></section>`
+    +`<section class="info-block"><h3>고정 메시지${info&&!info.error?` <span class="num">${info.pins.length}</span>`:''}</h3>${!info||info.error?'':info.pins.length?info.pins.slice(0,3).map(message=>`<button type="button" class="info-pin" data-room-pin="${esc(message.id)}"><b>${esc(message.user.name)}</b><span>${esc(messagePreview(message).slice(0,90))}</span></button>`).join(''):'<p class="info-empty">고정한 메시지가 없어요.</p>'}${info?.pins?.length?'<button type="button" class="text-button" data-room-action="pins">고정 메시지 모두 보기</button>':''}</section>`
+    +(manage.length?`<section class="info-block info-manage">${manage.map(([action,label,glyph,danger])=>`<button type="button" class="info-row${danger?' danger':''}" data-room-action="${action}" ${action==='leave'?'id="current-project-leave"':''}>${icon(glyph)}<span>${label}</span></button>`).join('')}</section>`:'');
+}
+function handleRoomInfoAction(event){
+  const channel=selectedConversation();if(!channel)return;
+  const pin=event.target.closest('[data-room-pin]');if(pin){const message=state.roomInfo?.pins?.find(item=>item.id===pin.dataset.roomPin);if(message)openSearchMessage(message);return;}
+  const action=event.target.closest('[data-room-action]')?.dataset.roomAction;if(!action)return;
+  if(action==='members')return projectMembersDialog(channel.id);if(action==='invite')return projectMembersDialog(channel.id,{invite:true});if(action==='people')return focusDirectory();
+  if(action==='notifications')return channelNotificationsDialog();if(action==='files')return setMode('files');if(action==='pins')return setMode('pins');
+  if(action==='edit')return editChannelDialog();if(action==='leave')return leaveProjectDialog(channel.id);if(action==='delete')return deleteProjectDialog(channel.id);
 }
 function projectMembersDialog(channelId,{invite=false}={}){
   const channel=state.channels.find(room=>room.id===channelId);if(!isProject(channel)||!channel.memberIds?.includes(state.user.id))return;
@@ -772,13 +903,13 @@ function forgetChannelState(channelId){
   state.unavailableChannels.add(channelId);state.searchSeq++;state.personalSeq++;state.filesSeq++;
   if(state.thread?.parent?.channelId===channelId)closeDrawer();
   for(const upload of state.queues.get(channelId)||[]){upload.channelUnavailable=true;upload.xhr?.abort();}state.queues.delete(channelId);
-  for(const key of Object.keys(state.categoryChannels))if(state.categoryChannels[key]===channelId)delete state.categoryChannels[key];
   try{for(const key of [draftKey(channelId),replyDraftKey(channelId),composeExtrasKey(channelId),attachmentKey(channelId)])localStorage.removeItem(key);const lastKey=`synk-messenger:last:${state.user?.id}`;if(localStorage.getItem(lastKey)===channelId)localStorage.removeItem(lastKey);}catch{}
   state.searchMessages=state.searchMessages.filter(message=>message.channelId!==channelId);state.personalItems=state.personalItems.filter(item=>(item.channelId||item.message?.channelId)!==channelId);
 }
 async function removeChannelFromWorkspace(channelId){
-  const active=state.channelId===channelId;state.channelsSeq++;forgetChannelState(channelId);state.channels=state.channels.filter(channel=>channel.id!==channelId);
-  if(active){const next=sortedPublicChannels(state.channels.filter(channel=>channelCategory(channel)===state.chatCategory))[0];clearChannelSelection();if(next)await selectChannel(next.id,{preserveFilter:true});}
+  const active=state.channelId===channelId,removed=state.channels.find(channel=>channel.id===channelId);state.channelsSeq++;forgetChannelState(channelId);state.channels=state.channels.filter(channel=>channel.id!==channelId);
+  // 지운 · 나간 방이 지금 방이면 같은 묶음(대화방 · 사람)의 맨 위 방으로 — 옛 판의 「같은 칸의 다른 방」 흐름. 서버가 거둔 방(refreshChannels)은 다른 방을 저절로 열지 않는다.
+  if(active){const next=removed?orderedChannels(state.channels.filter(channel=>navGroup(channel)===navGroup(removed)))[0]:null;clearChannelSelection();if(next)await selectChannel(next.id);}
   else{if(state.thread?.parent?.channelId===channelId)closeDrawer();renderNavigation();syncChannelHeader();syncComposerAccess();}
 }
 function deleteProjectDialog(channelId){
@@ -886,17 +1017,13 @@ async function loadInvites(){try{const result=await api('/api/invites');const li
 function canWriteMessages(){return state.integrated?.canWrite!==false;}
 function canPostToChannel(channel=selectedConversation()){return Boolean(channel)&&!state.unavailableChannels.has(channel.id)&&!state.deletingChannels.has(channel.id)&&!state.leavingChannels.has(channel.id)&&canWriteMessages()&&channel.canPost!==false;}
 function canPostMessage(message){const channel=message?.channelId?state.channels.find(item=>item.id===message.channelId):selectedConversation();return canPostToChannel(channel||null);}
-function applyDirectoryLayout(){
-  const directory=$('#employee-directory'),shell=$('.shell'),sidebar=$('#sidebar');if(!directory||!shell||!sidebar)return;
-  const wide=directoryWide.matches;shell.classList.toggle('directory-wide',wide);sidebar.classList.toggle('directory-inside',!wide);
-  if(wide)sidebar.classList.remove('directory-focus');
-  if(wide){if(directory.parentElement!==shell)shell.append(directory);}else if(directory.parentElement!==sidebar)sidebar.insertBefore(directory,$('.sidebar-bottom',sidebar));
-  syncSidebarAccess();
-}
+function applyDirectoryLayout(){const directory=$('#employee-directory'),sidebar=$('#sidebar');if(!directory||!sidebar)return;if(directory.parentElement!==sidebar)sidebar.append(directory);syncSidebarAccess();}
+// 크루 목록: 목록 칸 안에서 열린다(「새 대화 → 크루와 1:1」 · 사람 묶음 ＋ · 방 정보의 크루 목록).
 function focusDirectory(){
-  $('.shell')?.classList.add('directory-open');
-  if(mobileLayout.matches)setMobileMenu(true);closeDrawer();if(!directoryWide.matches)$('#sidebar')?.classList.add('directory-focus');$('#employee-search')?.focus({preventScroll:true});
+  closeNewMenu({restore:false});$('.shell')?.classList.add('directory-open');$('#sidebar')?.classList.add('directory-focus');
+  if(mobileLayout.matches)setMobileMenu(true,{focus:false});closeDrawer();$('#employee-search')?.focus({preventScroll:true});
 }
+function closeDirectory({focus=true}={}){const open=$('.shell')?.classList.contains('directory-open');$('.shell')?.classList.remove('directory-open');$('#sidebar')?.classList.remove('directory-focus');if(open&&focus)$('#new-conversation')?.focus({preventScroll:true});}
 function directoryMembers(){
   const teamId=state.directoryTeam==='mine'?state.user?.teamId:state.directoryTeam.startsWith('team:')?state.directoryTeam.slice(5):null;
   if(state.directoryTeam==='mine'&&!teamId)return[];
@@ -956,19 +1083,19 @@ function startReply(message){
   state.replyTarget={id:message.id,channelId:message.channelId,body:message.body,user:message.user,files:message.files?.map(file=>({name:file.name}))};saveReply();renderReplyContext();setMode('chat');closeDrawer();$('#composer-input').focus();
 }
 async function togglePin(message,button){
-  if(!canPostMessage(message))return;button.disabled=true;
-  try{await api(`/api/messages/${id(message.id)}/pin`,{method:message.pinned?'DELETE':'POST',...(message.pinned?{}:{body:{}})});await refreshMessages();if(state.mode==='pins')await loadPins();if(state.drawer==='thread'&&state.thread?.parent)await loadThread(state.thread.parent.id);toast(message.pinned?'고정을 해제했어요.':'메시지를 고정했어요.');}
-  catch(error){toast(error.message,true);}finally{if(button.isConnected)button.disabled=false;}
+  if(!canPostMessage(message))return;if(button)button.disabled=true;
+  try{await api(`/api/messages/${id(message.id)}/pin`,{method:message.pinned?'DELETE':'POST',...(message.pinned?{}:{body:{}})});await refreshMessages();if(state.mode==='pins')await loadPins();if(state.drawer==='thread'&&state.thread?.parent)await loadThread(state.thread.parent.id);if(state.drawer==='room')void loadRoomInfoDetails();toast(message.pinned?'고정을 풀었어요.':'메시지를 고정했어요.');}
+  catch(error){toast(error.message,true);}finally{if(button?.isConnected)button.disabled=false;}
 }
 async function loadPins({preserve=false}={}){
   const channelId=state.channelId,seq=++state.pinsSeq,wrap=$('#pins-view');if(!channelId||!wrap)return;
   if(!preserve)wrap.innerHTML='<div class="message-loading"><span class="spinner"></span>고정 메시지를 불러오고 있어요.</div>';
-  try{const result=await api(`/api/channels/${id(channelId)}/pins`);if(seq!==state.pinsSeq||channelId!==state.channelId||state.mode!=='pins')return;state.pins=result.messages;wrap.innerHTML=`<div class="files-view-title"><div><h2>고정 메시지</h2><p class="view-description">다시 찾을 공지와 결정을 여기에 모아 둬요.</p></div><span class="tag">${state.pins.length}개</span></div>${state.pins.length?`<div class="pinned-messages">${state.pins.map(message=>messageHtml(message,{panel:true})).join('')}</div>`:`<div class="large-empty"><div class="empty-tile">${icon('pin')}</div><strong>고정한 메시지가 없어요</strong><p>메시지의 고정 단추를 누르면<br>이 대화방 사람 모두가 여기서 봐요.</p><button class="button" data-pins-chat>대화로 돌아가기</button></div>`}`;$('[data-pins-chat]',wrap)?.addEventListener('click',()=>setMode('chat'));}
+  try{const result=await api(`/api/channels/${id(channelId)}/pins`);if(seq!==state.pinsSeq||channelId!==state.channelId||state.mode!=='pins')return;state.pins=result.messages;wrap.innerHTML=`<div class="files-view-title"><button type="button" class="text-button view-back" data-action="view-back">${icon('back')}대화로</button><div><h2>고정 메시지</h2><p class="view-description">다시 찾을 공지와 결정을 여기에 모아 둬요.</p></div><span class="tag">${state.pins.length}개</span></div>${state.pins.length?`<div class="pinned-messages">${state.pins.map(message=>messageHtml(message,{panel:true})).join('')}</div>`:`<div class="large-empty"><div class="empty-tile">${icon('pin')}</div><strong>고정한 메시지가 없어요</strong><p>메시지의 고정 단추를 누르면<br>이 대화방 사람 모두가 여기서 봐요.</p><button class="button" data-pins-chat>대화로 돌아가기</button></div>`}`;$('[data-pins-chat]',wrap)?.addEventListener('click',()=>setMode('chat'));}
   catch(error){if(seq!==state.pinsSeq)return;wrap.innerHTML=`<div class="large-empty"><p>${esc(error.message)}</p><button class="button" data-retry-pins>다시 불러오기</button></div>`;$('[data-retry-pins]',wrap)?.addEventListener('click',loadPins);}
 }
 async function openThread(message){
-  if(!message?.id)return;drawerReturnFocus=document.activeElement;setMobileMenu(false,{restoreFocus:false});state.drawer='thread';state.thread={parent:message,messages:[]};
-  const drawer=$('#drawer');drawer.classList.remove('hidden');drawer.innerHTML=`<div class="drawer-head"><h2>답글</h2><button class="icon-button" id="close-drawer" aria-label="패널 닫기">${icon('close')}</button></div><div class="drawer-body thread-body" id="drawer-body"></div>`;
+  if(!message?.id)return;drawerReturnFocus=document.activeElement;setMobileMenu(false,{restoreFocus:false});state.drawer='thread';state.thread={parent:message,messages:[]};syncHeaderToggles();
+  const drawer=$('#drawer');drawer.classList.remove('hidden');drawer.innerHTML=`<div class="drawer-head"><h2>스레드 <span class="drawer-sub">${esc(roomLabel(currentChannel()))}</span></h2><button class="icon-button" id="close-drawer" aria-label="오른쪽 칸 닫기">${icon('close')}</button></div><div class="drawer-body thread-body" id="drawer-body"></div>`;
   $('#close-drawer').onclick=closeDrawer;$('#drawer-body').onclick=handleMessageAction;$('#close-drawer').focus({preventScroll:true});syncDrawerAccess();await loadThread(message.id);
 }
 async function loadThread(messageId,{before=null,preserve=false}={}){
@@ -1000,13 +1127,11 @@ function returnToCompanyLogin(){
 }
 function applyIntegratedUI(){
   if(!state.integrated)return;
-  const brand=$('.sidebar-brand');if(brand)brand.innerHTML='<div class="sidebar-heading"><span class="sidebar-eyebrow">CONVERSATIONS</span><strong class="module-sidebar-title">대화 목록</strong></div>';
-  $('.workspace-card')?.remove();
-  const profile=$('#workspace-settings');
-  if(profile){if(state.integrated.canManage){profile.innerHTML=`${icon('folder')}<span><strong>파일 저장소</strong><small>Drive 연결과 용량</small></span>${icon('settings')}`;profile.setAttribute('aria-label','메신저 파일 저장소 설정');}else profile.classList.add('hidden');}
-  const invite=$('#invite-button');if(invite){invite.innerHTML=`${icon('users')}<span>팀 관리</span>`;invite.setAttribute('aria-label','회사 팀 관리');}
+  // 회사 안에서는 회사 레일 · 계정 메뉴가 계정을 맡는다. 톱니는 저장소를 바꿀 수 있는 사람(관리자)에게만 남긴다.
+  const settings=$('#workspace-settings');
+  if(settings){settings.classList.toggle('hidden',!state.integrated.canManage);settings.setAttribute('aria-label','메신저 설정 — 연결 · 파일 저장소');}
   document.body.classList.toggle('viewer-mode',!canWriteMessages());
-  for(const selector of ['#create-channel','#create-project','#new-dm']){const button=$(selector);if(button)button.disabled=!canWriteMessages();}
+  for(const selector of ['#create-channel','#create-project','#new-dm']){const button=$(selector);if(button)button.disabled=!canWriteMessages()&&selector!=='#new-dm';}
   syncComposerAccess();
 }
 async function handleWorkspaceOpen(value){
@@ -1099,7 +1224,7 @@ function messageProductivityHtml(message){
   return workspaceCardHtml(message.workspaceLink)+(task?`<button class="message-task" data-action="task">${icon('task')}<span><strong>${esc(task.title)}</strong><small>${esc(task.assignee?.name||'담당 미정')} · ${taskStatusLabel(taskStage(task))}${task.dueDate?' · '+workdayDueHtml(task.dueDate,taskStage(task)==='done'?'':task.workday?.date||''):''}</small></span>${icon('chevron')}</button>`:'')+(message.ackRequired?`<div class="message-ack"><button type="button" class="ack-button${message.acknowledged?' checked':''}" data-action="ack" ${message.acknowledged?'disabled':''}>${icon('check')}${message.acknowledged?'확인함':'확인했어요'}</button><button class="text-button" data-action="ack-list">확인 ${Number(message.ackCount)||0}명 · 명단 보기</button></div>`:'')+(reminder?`<span class="message-reminder">${icon('clock')}${esc(dateTimeLabel(reminder.remindAt))} ${reminderStatusHtml(reminder)}</span>`:'');
 }
 function messageProductivityTools(message){return `<button class="icon-button" data-action="save" aria-label="${message.saved?'저장 해제':'메시지 저장'}" aria-pressed="${Boolean(message.saved)}">${icon('bookmark')}</button><button class="icon-button" data-action="remind" aria-label="나중에 다시 보기">${icon('clock')}</button>${canPostMessage(message)||message.task?`<button class="icon-button" data-action="task" aria-label="${message.task?'할 일 보기':'할 일로 만들기'}">${icon('task')}</button>`:''}${canPostMessage(message)?`<button class="icon-button" data-action="decision" aria-label="결정·최종본으로 기록">${icon('note')}</button>`:''}`;}
-async function refreshNotificationCount(){const seq=state.notificationSeq=(state.notificationSeq||0)+1,userId=state.user?.id;try{const data=await api('/api/notifications?unread=1&limit=1');if(seq!==state.notificationSeq||userId!==state.user?.id)return;state.notificationCount=data.unreadCount||0;const badge=$('#personal-unread');if(badge){badge.hidden=!state.notificationCount;badge.textContent=state.notificationCount>99?'99+':String(state.notificationCount);}setPersonalTabCount('notifications',state.notificationCount);$('#personal-bell')?.setAttribute('aria-label',`내 업무 · 안 읽은 알림 ${state.notificationCount}개`);}catch{}}
+async function refreshNotificationCount(){const seq=state.notificationSeq=(state.notificationSeq||0)+1,userId=state.user?.id;try{const data=await api('/api/notifications?unread=1&limit=1');if(seq!==state.notificationSeq||userId!==state.user?.id)return;state.notificationCount=data.unreadCount||0;const badge=$('#personal-unread');if(badge){badge.hidden=!state.notificationCount;badge.textContent=state.notificationCount>99?'99+':String(state.notificationCount);}setPersonalTabCount('notifications',state.notificationCount);$('#personal-bell')?.setAttribute('aria-label',`알림 · 나중에 보기 · 결정${state.notificationCount?` · 안 읽은 알림 ${state.notificationCount}개`:''}`);}catch{}}
 const notificationLabels={dm:'개인 대화',mention:'나를 멘션',reply:'내 글에 답글',message:'새 메시지',reminder:'다시 볼 시간',task:'할 일 바뀜',client_workflow:'고객 업무',automation_health:'자동화 상태',social_publishing:'SNS 게시',due_digest:'마감 알림'};
 function taskStatusLabel(value){return{todo:'할 일',requested:'수락 전',accepted:'수락함',doing:'진행 중',review:'검토 중',changes:'수정 요청',done:'완료'}[value]||'할 일';}
 function taskStage(task){return taskModel.taskStage(task);}
@@ -1110,17 +1235,30 @@ function scheduleWorkdayRefresh(delay){
   personalPanel.startRefresh(delay,()=>{if(workdayRefreshActive())loadPersonalPanel({background:true}).catch(()=>{});});
 }
 async function refreshVisibleWorkday(){if(workdayRefreshActive())await loadPersonalPanel({background:true});else cancelWorkdayRefresh();}
-const personalTabs=[['workday','오늘'],['catchup','바뀐 것'],['tasks','전체'],['notifications','알림'],['decisions','결정·최종본'],['saved','저장']];
+// 오른쪽 칸 「알림」(설계): 알림 · 나중에 보기 · 결정 + 톱니(마감 · 통화 · 이 기기 알림 설정). 「오늘」 화면이 오기 전까지 할 일(오늘 · 바뀐 것 · 전체)은 넷째 탭에 둔다.
+const personalTabs=[['notifications','알림'],['saved','나중에 보기'],['decisions','결정'],['todo','할 일']];
+const todoTabs=[['workday','오늘'],['catchup','바뀐 것'],['tasks','전체']];
+function personalTopTab(tab){return ['workday','catchup','tasks'].includes(tab)?'todo':tab;}
 let personalTabsResizeBound=false;
 function setPersonalTabCount(key,value){const node=$(`[data-tab-count="${key}"]`);if(!node)return;const shown=Number.isInteger(value)&&value>0;node.hidden=!shown;node.textContent=shown?(value>99?'99+':String(value)):'';syncPersonalTabsOverflow();}
 function syncPersonalTabsOverflow(){const tabs=$('.wd-tabs');if(tabs&&Number.isFinite(tabs.scrollWidth))tabs.classList.toggle('is-overflowing',tabs.scrollWidth>tabs.clientWidth+1);}
-function openPersonalPanel(tab='workday'){
+function syncPersonalTabs(drawer=$('#drawer')){if(!drawer)return;const top=personalTopTab(state.personalTab);$$('.wd-tabs [data-personal-tab]',drawer).forEach(button=>{const on=button.dataset.personalTab===top;button.setAttribute('aria-selected',String(on));button.setAttribute('aria-pressed',String(on));button.tabIndex=on?0:-1;});$('.todo-tabs',drawer)?.classList.toggle('hidden',top!=='todo');$$('.todo-tabs [data-personal-tab]',drawer).forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.personalTab===state.personalTab)));}
+function openPersonalPanel(tab='notifications'){
   state.notificationOpenSeq=(state.notificationOpenSeq||0)+1;
-  closeDrawer();drawerReturnFocus=document.activeElement;setMobileMenu(false,{restoreFocus:false});state.drawer='personal';state.personalTab=tab;state.personalItems=[];
-  const drawer=$('#drawer');drawer.classList.remove('hidden');drawer.innerHTML=`<div class="drawer-head"><h2>내 업무</h2><button class="icon-button" id="close-drawer" aria-label="패널 닫기">${icon('close')}</button></div><div class="personal-tabs productivity-tabs wd-tabs" role="group" aria-label="개인 도구">${personalTabs.map(([key,label])=>`<button type="button" data-personal-tab="${key}" aria-pressed="${tab===key}">${label}${key==='workday'||key==='notifications'?`<span class="wd-tab-count" data-tab-count="${key}" hidden></span>`:''}</button>`).join('')}</div><div class="drawer-body personal-body" id="personal-body" aria-live="polite"></div>`;
-  $('#close-drawer').onclick=closeDrawer;$$('[data-personal-tab]',drawer).forEach(button=>button.onclick=()=>{state.notificationOpenSeq=(state.notificationOpenSeq||0)+1;if(button.dataset.personalTab!==state.personalTab)state.personalItems=[];state.personalTab=button.dataset.personalTab;$$('[data-personal-tab]',drawer).forEach(item=>item.setAttribute('aria-pressed',String(item===button)));button.scrollIntoView?.({block:'nearest',inline:'nearest'});loadPersonalPanel();});$('#close-drawer').focus({preventScroll:true});
+  closeDrawer();drawerReturnFocus=document.activeElement;setMobileMenu(false,{restoreFocus:false});state.drawer='personal';state.personalTab=tab==='todo'?'workday':tab;state.personalItems=[];
+  const drawer=$('#drawer');drawer.classList.remove('hidden');
+  drawer.innerHTML=`<div class="drawer-head inbox-head"><div class="drawer-tabs productivity-tabs wd-tabs" role="tablist" aria-label="알림 · 나중에 보기 · 결정 · 할 일">${personalTabs.map(([key,label])=>`<button type="button" role="tab" data-personal-tab="${key}" aria-selected="false" aria-pressed="false">${label}${key==='todo'||key==='notifications'?`<span class="wd-tab-count" data-tab-count="${key==='todo'?'workday':key}" hidden></span>`:''}</button>`).join('')}</div><button type="button" class="icon-button" id="inbox-settings" aria-label="알림 설정 — 마감 · 통화 · 이 기기" aria-haspopup="menu" aria-expanded="false" aria-controls="inbox-settings-menu">${icon('settings')}</button><button class="icon-button" id="close-drawer" aria-label="오른쪽 칸 닫기">${icon('close')}</button><div class="pop-menu inbox-settings-menu hidden" id="inbox-settings-menu" role="menu" aria-label="알림 설정"><button type="button" role="menuitem" tabindex="-1" class="menu-item deadline-settings-entry" id="deadline-settings" hidden>${icon('clock')}<span>마감 알림 설정</span></button><button type="button" role="menuitem" tabindex="-1" class="menu-item deadline-settings-entry" id="voice-preferences-entry" hidden>${icon('bell')}<span>통화 알림 설정</span></button>${moduleBase?`<button type="button" role="menuitem" tabindex="-1" class="menu-item deadline-settings-entry" id="device-notifications-entry">${icon('settings')}<span>이 기기 알림 설정</span></button>`:''}<p class="menu-empty" id="inbox-settings-empty">바꿀 알림 설정이 없어요.</p></div></div><div class="todo-tabs hidden" role="group" aria-label="할 일 보기">${todoTabs.map(([key,label])=>`<button type="button" data-personal-tab="${key}" aria-pressed="false">${label}</button>`).join('')}</div><div class="drawer-body personal-body" id="personal-body" aria-live="polite"></div>`;
+  $('#close-drawer').onclick=closeDrawer;
+  $$('[data-personal-tab]',drawer).forEach(button=>button.onclick=()=>{state.notificationOpenSeq=(state.notificationOpenSeq||0)+1;let next=button.dataset.personalTab;if(next==='todo')next=personalTopTab(state.personalTab)==='todo'?state.personalTab:'workday';if(next!==state.personalTab)state.personalItems=[];state.personalTab=next;syncPersonalTabs(drawer);button.scrollIntoView?.({block:'nearest',inline:'nearest'});loadPersonalPanel();});
+  const tablist=$('.wd-tabs',drawer);if(tablist)tablist.onkeydown=event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;const tabs=[...$$('.wd-tabs [data-personal-tab]',drawer)],index=tabs.indexOf(document.activeElement);if(index<0)return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;tabs[next].focus();tabs[next].click();};
+  const settings=$('#inbox-settings'),menu=$('#inbox-settings-menu');
+  if(settings&&menu)settings.onclick=()=>{const open=menu.classList.contains('hidden');menu.classList.toggle('hidden',!open);settings.setAttribute('aria-expanded',String(open));$('#inbox-settings-empty').hidden=Boolean([...menu.querySelectorAll('[role="menuitem"]')].some(item=>!item.hidden));if(open)[...menu.querySelectorAll('[role="menuitem"]')].find(item=>!item.hidden)?.focus({preventScroll:true});};
+  const closeSettings=({restore=true}={})=>{menu?.classList.add('hidden');settings?.setAttribute('aria-expanded','false');if(restore)settings?.focus({preventScroll:true});};
+  if(menu){menu.onkeydown=event=>menuKeyboard(event,closeSettings);menu.onclick=event=>{if(event.target.closest('[role="menuitem"]'))closeSettings({restore:false});};}
+  attachDeadlineSettings();const voiceEntry=$('#voice-preferences-entry');if(voiceEntry&&voice?.enabled()){voiceEntry.hidden=false;voiceEntry.onclick=()=>voice.preferencesDialog();}$('#device-notifications-entry')?.addEventListener('click',()=>parentMessage('messenger:device-notifications'));
+  syncPersonalTabs(drawer);$('#close-drawer').focus({preventScroll:true});
   setPersonalTabCount('workday',state.workdayCount);setPersonalTabCount('notifications',state.notificationCount);syncPersonalTabsOverflow();if(!personalTabsResizeBound){personalTabsResizeBound=true;window.addEventListener?.('resize',syncPersonalTabsOverflow);}
-  syncDrawerAccess();loadPersonalPanel();
+  syncDrawerAccess();syncHeaderToggles();loadPersonalPanel();
 }
 async function loadPersonalPanel({append=false,background=false}={}){
   cancelWorkdayRefresh();const body=$('#personal-body'),tab=state.personalTab,seq=++state.personalSeq;if(state.drawer!=='personal'||!body)return;const offset=append?state.personalItems.length:0;
@@ -1132,11 +1270,10 @@ async function loadPersonalPanel({append=false,background=false}={}){
     const endpoint=tab==='notifications'?`/api/notifications?offset=${offset}&limit=30`:tab==='tasks'?`/api/tasks?scope=${state.taskScope==='channel'&&!selectedConversation()?'all':state.taskScope}&offset=${offset}&limit=30${state.taskScope==='channel'&&selectedConversation()?'&channelId='+id(state.channelId):''}${state.taskFilter==='all'?'':'&status='+state.taskFilter}`:state.savedView==='reminders'?`/api/reminders?status=pending&offset=${offset}&limit=30`:`/api/saved?offset=${offset}&limit=30`,data=await api(endpoint);if(seq!==state.personalSeq||state.drawer!=='personal'||state.personalTab!==tab)return;
     const items=tab==='notifications'?data.items:tab==='tasks'?data.tasks:state.savedView==='reminders'?data.reminders.map(item=>({...item,message:{...item.message,reminder:{id:item.id,remindAt:item.remindAt}}})):data.messages;state.personalItems=append?[...state.personalItems,...items]:items;
     if(tab==='notifications'){state.notificationCount=data.unreadCount||0;refreshNotificationCount();}
-    const header=tab==='notifications'?'<div class="personal-toolbar notification-toolbar"><span>대화 · 고객 업무 · 마감 · 자동화</span><button class="text-button" id="notifications-read-all">모두 읽음</button></div><div class="personal-toolbar" role="group" aria-label="알림 설정"><button class="text-button deadline-settings-entry" type="button" id="deadline-settings" hidden>마감 알림 설정</button><button class="text-button deadline-settings-entry" type="button" id="voice-preferences-entry" hidden>통화 알림 설정</button>'+ (moduleBase?'<button class="text-button deadline-settings-entry" type="button" id="device-notifications-entry">이 기기 알림 설정</button>':'')+'</div>':tab==='tasks'?`<div class="personal-toolbar"><select id="personal-task-scope" aria-label="할 일 범위"><option value="mine" ${state.taskScope==='mine'?'selected':''}>내가 맡은 일</option><option value="channel" ${state.taskScope==='channel'?'selected':''} ${selectedConversation()?'':'disabled'}>이 대화방</option><option value="all" ${state.taskScope==='all'?'selected':''}>내가 있는 모든 방</option></select><select id="personal-task-filter" aria-label="할 일 상태">${[['all','모든 상태'],['todo','시작 전'],['doing','진행 중'],['done','완료']].map(([key,label])=>`<option value="${key}" ${state.taskFilter===key?'selected':''}>${label}</option>`).join('')}</select></div>`:`<div class="personal-toolbar"><span>나만 보는 보관함</span><select id="personal-saved-filter" aria-label="저장 목록 고르기"><option value="saved" ${state.savedView==='saved'?'selected':''}>저장한 메시지</option><option value="reminders" ${state.savedView==='reminders'?'selected':''}>다시 볼 예약</option></select></div>`;
-    body.innerHTML=header+(state.personalItems.length?state.personalItems.map((item,index)=>personalItemHtml(item,index,tab)).join(''):`<div class="drawer-empty">${icon(tab==='notifications'?'bell':tab==='tasks'?'task':'bookmark')}<strong>${tab==='notifications'?'아직 알림이 없어요':tab==='tasks'?'할 일이 없어요':'저장한 메시지가 없어요'}</strong><p>${tab==='saved'?'메시지의 책갈피를 누르면 여기에 모여요.':tab==='tasks'?'메시지에서 ‘할 일로 만들기’를 누르고 담당을 정하면 여기에 모여요.':'나와 관련된 소식이 오면 여기에 모여요.'}</p></div>`)+(data.hasMore?'<button class="button personal-more" id="personal-more">더 보기</button>':'')+(tab==='tasks'?taskSelectionHtml():'');
+    const header=tab==='notifications'?'<div class="personal-toolbar notification-toolbar"><span>대화 · 고객 업무 · 마감 · 자동화</span><button class="text-button" id="notifications-read-all">모두 읽음</button></div>':tab==='tasks'?`<div class="personal-toolbar"><select id="personal-task-scope" aria-label="할 일 범위"><option value="mine" ${state.taskScope==='mine'?'selected':''}>내가 맡은 일</option><option value="channel" ${state.taskScope==='channel'?'selected':''} ${selectedConversation()?'':'disabled'}>이 대화방</option><option value="all" ${state.taskScope==='all'?'selected':''}>내가 있는 모든 방</option></select><select id="personal-task-filter" aria-label="할 일 상태">${[['all','모든 상태'],['todo','시작 전'],['doing','진행 중'],['done','완료']].map(([key,label])=>`<option value="${key}" ${state.taskFilter===key?'selected':''}>${label}</option>`).join('')}</select></div>`:`<div class="personal-toolbar"><span>나만 보는 보관함</span><select id="personal-saved-filter" aria-label="나중에 보기 고르기"><option value="saved" ${state.savedView==='saved'?'selected':''}>시각 없이 저장한 것</option><option value="reminders" ${state.savedView==='reminders'?'selected':''}>다시 볼 시각을 정한 것</option></select></div>`;
+    body.innerHTML=header+(state.personalItems.length?state.personalItems.map((item,index)=>personalItemHtml(item,index,tab)).join(''):`<div class="drawer-empty">${icon(tab==='notifications'?'bell':tab==='tasks'?'task':'bookmark')}<strong>${tab==='notifications'?'아직 알림이 없어요':tab==='tasks'?'할 일이 없어요':'나중에 볼 메시지가 없어요'}</strong><p>${tab==='saved'?'메시지 ⋯에서 「나중에 보기에 저장」이나 「다시 볼 시각」을 고르면 여기에 모여요.':tab==='tasks'?'메시지에서 ‘할 일로 만들기’를 누르고 담당을 정하면 여기에 모여요.':'나와 관련된 소식이 오면 여기에 모여요.'}</p></div>`)+(data.hasMore?'<button class="button personal-more" id="personal-more">더 보기</button>':'')+(tab==='tasks'?taskSelectionHtml():'');
     $('#personal-task-scope')?.addEventListener('change',event=>{state.taskScope=event.target.value;loadPersonalPanel();});$('#personal-task-filter')?.addEventListener('change',event=>{state.taskFilter=event.target.value;loadPersonalPanel();});$('#personal-saved-filter')?.addEventListener('change',event=>{state.savedView=event.target.value;loadPersonalPanel();});
     $('#personal-more')?.addEventListener('click',event=>{event.currentTarget.disabled=true;loadPersonalPanel({append:true});});$('#notifications-read-all')?.addEventListener('click',async event=>{event.currentTarget.disabled=true;try{await api('/api/notifications/read-all',{method:'POST',body:{}});await loadPersonalPanel();await refreshNotificationCount();}catch(error){toast(error.message,true);event.currentTarget.disabled=false;}});
-    if(tab==='notifications'){attachDeadlineSettings();const voiceEntry=$('#voice-preferences-entry');if(voiceEntry&&voice?.enabled()){voiceEntry.hidden=false;voiceEntry.onclick=()=>voice.preferencesDialog();}$('#device-notifications-entry')?.addEventListener('click',()=>parentMessage('messenger:device-notifications'));}
     body.onclick=async event=>{const target=event.target.closest('[data-personal-index]');if(!target)return;const item=state.personalItems[Number(target.dataset.personalIndex)];if(!item)return;if(tab==='notifications')return openPersonalNotification(item);const message=tab==='tasks'?taskMessage(item):item.message||item;if(!message)return;const action=target.dataset.personalAction;
       if(action==='task')return openTaskDetail(message);if(action==='remind')return reminderDialog(message);if(action==='save')return handleProductivityAction('save',message,target);
       try{const navigation=state.navigationSeq;if(tab==='notifications'&&!item.readAt){await api(`/api/notifications/${id(item.id)}/read`,{method:'POST',body:{}});refreshNotificationCount();}if(navigation!==state.navigationSeq||state.drawer!=='personal'||state.personalTab!==tab)return;await openSearchMessage(message);}catch(error){toast(error.message,true);}};
@@ -1804,17 +1941,17 @@ function reminderDialog(message){
 // Document- and window-wide listeners, registered once: layout breakpoints, transfer focus tracking,
 // keyboard shortcuts, boot recovery on visibility/restore, draft saving, file-drop guards and company messages.
 function installGlobalEvents(){
-  mobileLayout.addEventListener('change',()=>{setMobileMenu(false,{restoreFocus:false});syncSidebarAccess();});
+  mobileLayout.addEventListener('change',()=>{closeMessageSheet({restore:false});closeMessageMenu({restore:false});setMobileMenu(mobileLayout.matches&&!selectedConversation(),{restoreFocus:false,focus:false});syncSidebarAccess();});
   directoryWide.addEventListener('change',()=>{applyDirectoryLayout();syncDrawerAccess();});
   document.addEventListener('focusin',event=>{if(event.target!==document.body&&event.target!==document.documentElement)state.transferFocusRevision++;});
-  document.addEventListener('pointerdown',()=>{state.transferFocusRevision++;});
+  document.addEventListener('pointerdown',event=>{state.transferFocusRevision++;if(!event.target.closest?.('#message-menu,[data-action="message-more"]'))closeMessageMenu({restore:false});if(!event.target.closest?.('#new-menu,#new-conversation'))closeNewMenu({restore:false});if(!event.target.closest?.('#inbox-settings-menu,#inbox-settings')){$('#inbox-settings-menu')?.classList.add('hidden');$('#inbox-settings')?.setAttribute('aria-expanded','false');}});
   window.addEventListener('blur',()=>{state.transferFocusRevision++;});
   document.addEventListener('keydown',event=>{if(event.key==='Tab')state.transferFocusRevision++;});
   document.addEventListener('keydown',event=>{
     if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'&&state.user){event.preventDefault();if(!modal.open)openDrawer('search');}
-    if(event.key==='Escape'&&!modal.open){setMobileMenu(false);closeDrawer();}
+    if(event.key==='Escape'&&!modal.open){if(!$('#message-sheet')?.classList.contains('hidden')){closeMessageSheet();return;}if(!$('#message-menu')?.classList.contains('hidden')){closeMessageMenu();return;}if(!$('#new-menu')?.classList.contains('hidden')){closeNewMenu();return;}if($('.shell')?.classList.contains('directory-open')){closeDirectory();return;}if(state.drawer){closeDrawer();return;}setMobileMenu(false);}
     if(event.key==='Tab'&&mobileLayout.matches&&$('#sidebar')?.classList.contains('open')&&!modal.open){
-      const targets=[...$$('[data-chat-category][aria-selected="true"]'),$('#mobile-scrim'),...$$('button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled)',$('#sidebar'))].filter(element=>element?.getClientRects().length);
+      const targets=$$('button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled)',$('#sidebar')).filter(element=>element?.getClientRects().length);
       if(!targets.length)return;const first=targets[0],last=targets.at(-1);
       if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
       else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}

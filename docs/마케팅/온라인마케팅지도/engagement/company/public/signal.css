@@ -681,7 +681,7 @@
   :root .synk-workspace .growth-stat:nth-child(odd){border-left:0!important}
   :root .synk-workspace .growth-stat:nth-child(n+3){border-top:1px solid var(--sg-line)!important}
   :root .synk-workspace .growth-stat-value,:root .synk-workspace .growth-stat.is-primary .growth-stat-value{font-size:32px}
-  :root .workspace-messenger{border-radius:20px}
+  :root .workspace-messenger,:root .messenger-module-slot{border-radius:0}
 }
 
 /* 휴대폰: 16px보다 작은 입력 칸은 iOS가 누를 때 화면을 확대한다. 앞 층처럼 700px 이하에서는 16px로 둔다(10-10 공식 검수 P2) */

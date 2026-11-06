@@ -386,7 +386,7 @@ test('mounted static assets and file URLs remain under /messenger without exposi
   const admin = await fx.client();
   const state = await admin.json('/messenger/api/bootstrap');
   const channel = state.channels.find(c => c.kind === 'channel');
-  for (const pathname of ['/messenger/', '/messenger/app.js', '/messenger/styles.css', '/messenger/assets/synk-ko.svg']) {
+  for (const pathname of ['/messenger/', '/messenger/app.js', '/messenger/signal.css', '/messenger/assets/synk-ko.svg']) {
     const response = await admin.raw(pathname);
     assert.equal(response.status, 200, pathname);
     await response.arrayBuffer();
