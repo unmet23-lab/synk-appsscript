@@ -712,9 +712,9 @@ function sheetKeyboard(event){
 }
 // 길게 누름: 손가락 · 펜으로 0.45초 누르고 거의 움직이지 않으면 시트를 연다. 단추 · 링크 · 파일 위에서는 그 단추가 먼저다.
 // 누른 상태는 하나만 둔다(목록이 다시 그려져도 같은 상태). 손을 떼는 사건은 시트 위에서 날 수 있어 문서에서 듣는다.
-const messagePress={timer:null,origin:null,pointer:null,fired:false,suppressUntil:0,documentBound:false};
+const messagePress={timer:null,origin:null,pointer:null,fired:false,suppressUntil:0,suppressAt:null,documentBound:false};
 function cancelMessagePress(){clearTimeout(messagePress.timer);messagePress.timer=null;messagePress.origin=null;}
-function finishMessagePress(event){if(event.pointerId!==messagePress.pointer)return;messagePress.pointer=null;cancelMessagePress();if(messagePress.fired){messagePress.fired=false;messagePress.suppressUntil=Date.now()+700;}}
+function finishMessagePress(event){if(event.pointerId!==messagePress.pointer)return;messagePress.pointer=null;cancelMessagePress();if(messagePress.fired){messagePress.fired=false;messagePress.suppressUntil=Date.now()+700;messagePress.suppressAt={x:event.clientX,y:event.clientY};}}
 function wireMessagePress(root){
   if(!root)return;
   const open=messageId=>{const message=findMessage(messageId);if(!message)return;messagePress.fired=true;openMessageSheet(message,null);};
@@ -723,11 +723,11 @@ function wireMessagePress(root){
   root.addEventListener('pointermove',event=>{const origin=messagePress.origin;if(origin&&event.pointerId===messagePress.pointer&&Math.hypot(event.clientX-origin.x,event.clientY-origin.y)>10)cancelMessagePress();});
   root.addEventListener('pointerleave',event=>{if(event.pointerId===messagePress.pointer&&!messagePress.fired)cancelMessagePress();});
   root.addEventListener('scroll',cancelMessagePress,{passive:true});
-  root.addEventListener('contextmenu',event=>{if(!mobileLayout.matches)return;const article=event.target.closest('.message[data-message-id]');if(!article)return;event.preventDefault();if(!messagePress.fired&&$('#message-sheet')?.classList.contains('hidden')){cancelMessagePress();open(article.dataset.messageId);}});
+  root.addEventListener('contextmenu',event=>{if(!mobileLayout.matches)return;const article=event.target.closest('.message[data-message-id]');if(!article||event.target.closest('button,a,input,textarea,select,[contenteditable]')||!findMessage(article.dataset.messageId))return;event.preventDefault();if(!messagePress.fired&&$('#message-sheet')?.classList.contains('hidden')){cancelMessagePress();open(article.dataset.messageId);}});
   if(messagePress.documentBound)return;messagePress.documentBound=true;
   // 시트를 연 누름에서 손을 떼면 그 자리(이제 시트 가림막)에 클릭 한 번이 떨어진다 — 그 한 번은 버린다(손을 떼자마자 시트가 닫히던 것, 11-07 터치 시험).
   document.addEventListener('pointerup',finishMessagePress,true);document.addEventListener('pointercancel',finishMessagePress,true);
-  document.addEventListener('click',event=>{if(Date.now()<messagePress.suppressUntil){messagePress.suppressUntil=0;event.stopPropagation();event.preventDefault();}},true);
+  document.addEventListener('click',event=>{if(Date.now()>=messagePress.suppressUntil)return;const at=messagePress.suppressAt;messagePress.suppressUntil=0;messagePress.suppressAt=null;if(at&&Math.hypot(event.clientX-at.x,event.clientY-at.y)>16)return;event.stopPropagation();event.preventDefault();},true);
 }
 async function toggleReaction(message,emoji){if(!canWriteMessages())return;try{const result=await api(`/api/messages/${id(message.id)}/reactions`,{method:'POST',body:{emoji}});const index=state.messages.findIndex(m=>m.id===message.id);if(index>=0){state.messages[index]=result.message;renderMessages({preserve:true});}}catch(error){toast(error.message,true);}}
 function connectEvents(){
@@ -1957,7 +1957,7 @@ function installGlobalEvents(){
   document.addEventListener('keydown',event=>{if(event.key==='Tab')state.transferFocusRevision++;});
   document.addEventListener('keydown',event=>{
     if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'&&state.user){event.preventDefault();if(!modal.open)openDrawer('search');}
-    if(event.key==='Escape'&&!modal.open){if(!$('#message-sheet')?.classList.contains('hidden')){closeMessageSheet();return;}if(!$('#message-menu')?.classList.contains('hidden')){closeMessageMenu();return;}if(!$('#new-menu')?.classList.contains('hidden')){closeNewMenu();return;}if($('.shell')?.classList.contains('directory-open')){closeDirectory();return;}if(state.drawer){closeDrawer();return;}setMobileMenu(false);}
+    if(event.key==='Escape'&&!modal.open){if(!$('#message-sheet')?.classList.contains('hidden')){closeMessageSheet();return;}if(!$('#message-menu')?.classList.contains('hidden')){closeMessageMenu();return;}if(!$('#new-menu')?.classList.contains('hidden')){closeNewMenu();return;}const inboxMenu=$('#inbox-settings-menu');if(inboxMenu&&!inboxMenu.classList.contains('hidden')){inboxMenu.classList.add('hidden');$('#inbox-settings')?.setAttribute('aria-expanded','false');$('#inbox-settings')?.focus({preventScroll:true});return;}if($('.shell')?.classList.contains('directory-open')){closeDirectory();return;}if(state.drawer){closeDrawer();return;}setMobileMenu(false);}
     if(event.key==='Tab'&&mobileLayout.matches&&$('#sidebar')?.classList.contains('open')&&!modal.open){
       const targets=$$('button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled)',$('#sidebar')).filter(element=>element?.getClientRects().length);
       if(!targets.length)return;const first=targets[0],last=targets.at(-1);
