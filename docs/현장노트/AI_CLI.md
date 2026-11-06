@@ -1,7 +1,7 @@
 # 현장 노트 · AI CLI·구독 통로
 
 > 판: Antigravity CLI `agy` 1.4.2(Windows winget, 10-18 코드 검수 비교에서 확인)·1.4.0(Linux 별도 사용자) · Gemini API 무료 몫 · `tools/몽골어대조.js`·`tools/lib/제미나이구독호출.js` · Hermes Agent v0.22.2(`%LOCALAPPDATA%\hermes`, 텔레그램 팁 봇 게이트웨이) · Codex 세션 기록(`~/.codex/sessions`·`~/.codex/archived_sessions`)
-> 마지막 확인: 2026-10-22(서버 agy 두 계정 HOME·SSH 로그인 60초·settings 기본값 키), 2026-10-19(조사 예약의 작업 파일 읽기·명령 거절 실패 — 원인 조회·고침·고친 뒤 첫 회차 complete), 2026-10-18(Linux 파일 인증 복원·실제 timer Argon 실행·계정별 모델 목록·headless 도구 권한, 기존 노트북 항목은10-17)
+> 마지막 확인: 2026-11-07(PC agy 1.5.2 재시작 뒤 다시 로그인 · 대화형 기본 모델 High), 2026-10-22(서버 agy 두 계정 HOME·SSH 로그인 60초·settings 기본값 키), 2026-10-19(조사 예약의 작업 파일 읽기·명령 거절 실패 — 원인 조회·고침·고친 뒤 첫 회차 complete), 2026-10-18(Linux 파일 인증 복원·실제 timer Argon 실행·계정별 모델 목록·headless 도구 권한, 기존 노트북 항목은10-17)
 > 쓴 AI: Claude Code·GPT(Codex) — 누가 언제 무엇을 더했는지는 [지난 기록](지난기록/AI_CLI.md#쓴-기록)에 있다.
 
 어느 AI·계정이 무엇을 맡는지는 [AI 운영 원칙 · 역할](../AI_운영원칙.md#역할), 유료 호출 승인은 [비용과 권한](../AI_운영원칙.md#비용과-권한)이 정한다. GPT 그림 굽기의 주간 한도와 계정 돌려쓰기는 [그림 굽기·오리기](그림_굽기_오리기.md#gpt-그림-굽기)에 있다. 여기는 AI CLI·구독 통로·세션 기록이 예상과 다르게 움직인 함정이다. 틀은 [README](README.md)를 따른다.
@@ -10,6 +10,7 @@
 
 > 도구를 쓰기 전에 여기와 목차만 읽고, 걸리는 절은 `rg -n "^###" docs/현장노트/AI_CLI.md`로 제목을 찾아 그 항목만 읽는다.
 
+- PC를 다시 켜면 agy 로그인이 사라져 모든 세션의 아르곤 호출이 60초 뒤 「auth timed out」으로 끝난다 → 앱 터미널 탭에 인자 없는 `agy`를 **하나만** 띄워 유호님이 승인 · 코드 넣기(창 둘이면 코드가 섞인다). 대화형 기본 모델은 settings.json `"model": "Gemini 4 Argon (High)"`로 둔다 ([로그인](#pc를-다시-켜면-agy-로그인이-사라져-모든-세션의-아르곤-호출이-60초씩-기다리다-auth-timed-out으로-끝난다--로그인-창을-두-개-띄우면-코드가-섞여-token-exchange-failed-2026-11-07-claude), [기본 모델](#대화형-agy-창의-기본-모델이-argon-medium으로-뜬다--settingsjson에-model-키가-없으면-목록-첫-줄을-쓴다-2026-11-07-claude))
 - 무인 키가 소진되면 팁 적용안은 `~/.claude`의 터미널 로그인으로 넘어가는데, 앱 세션이 멀쩡해도 이 로그인은 따로 끊길 수 있다 → `claude auth status`로 본다 ([자세히](#팁-적용안이-oauth-session-expired로-실패하고-재부팅에-죽은-실행의-잠금이-3시간-동안-다음-회차를-막는다-2026-11-04-claude))
 - hermes-synk 감시는 10-22부터 운영 사본(origin 판)의 계약 파일을 고정한다 — 공용 작업본 저장으로는 안 멈추고, push 뒤 운영 사본 갱신이 다시 잡는다. 감시 검사기 `automation.py`·플러그인을 바꾼 push만 그 세션이 `install-automation.cjs --apply` ([자세히](#감시-계약-파일을-공용-작업본에서-저장하면-그-즉시-라이브-감시가-멈추고-유호님께-알림이-간다-2026-10-20-claude))
 - 구독 로그인 PC에서 `claude -p`에 API 키를 줘도 구독으로 청구된다 → `node tools/크레딧실행.js`(전용 `CLAUDE_CONFIG_DIR`)로 띄운다 ([자세히](#구독에-로그인된-pc에서-claude--p에-api-키를-줘도-구독으로-청구된다))
@@ -427,6 +428,19 @@
 - 원인: agy에는 로그인 옵션이 없고 로그인은 대화형 화면의 `/login`으로만 한다(위 「agy가 어느 계정으로 도는지 …」). 브라우저 승인 뒤 나온 코드를 그 화면에 넣어야 끝난다.
 - 고침: `%APPDATA%\npm\node_modules\@google\gemini-cli\node_modules\@lydell\node-pty`로 가짜 터미널을 만들어 agy를 띄우고, 브라우저 승인 뒤 나오는 코드는 유호님이 넣게 PC 화면 맨 위에 작은 입력 창(WinForms TopMost)을 띄워 받는다. Claude는 인증 코드를 대신 넣지 않는다. 서버 agy도 같은 꼴(pty 연결기 + 붙여넣기 창)로 한다 — 위 「SSH로 띄운 agy 로그인은 …」.
 - 다시 확인: 10-24 읽기만 — `@lydell` 아래에 `node-pty`·`node-pty-win32-x64`가 있고, `agy --help`(WinGet 판)에 로그인·인증 옵션이 없다. 실제 로그인은 계정을 건드리는 일이라 (10-24 메모에서 옮김, 다시 확인 전).
+- 덧붙임(11-07, 1.5.2): 유호님이 지금 이 세션을 보고 있으면 가짜 터미널 없이 앱 터미널 탭(`run_in_terminal`로 인자 없는 `agy`)으로 끝난다. 아래 「PC를 다시 켜면 …」 절.
+
+### PC를 다시 켜면 agy 로그인이 사라져, 모든 세션의 아르곤 호출이 60초씩 기다리다 「auth timed out」으로 끝난다 — 로그인 창을 두 개 띄우면 코드가 섞여 「token exchange failed」 (2026-11-07 Claude)
+- 증상: 11-07 04시 무렵 PC 재시작 뒤 05:35~06:04에 agy 호출 9건(`synk-agy-review-*` 검수 6건, 공용 작업본 2건, seoul-arrival 워크트리 1건)이 모두 실패했다. `cli.log`에 `Print mode: not authenticated, trying silent auth` → `triggering interactive OAuth` → 60초 뒤 `Print mode: auth timed out`가 찍혔다. 11-06 15:21까지는 `authenticated successfully as 77yuhbs@gmail.com`이었다. 같은 재시작으로 ego · Aside 로그인도 풀렸다.
+- 원인: agy 로그인이 들어 있는 Windows 자격 증명 항목이 재시작 뒤 없어졌다(`cmdkey /list`에 antigravity · google 항목 없음). print 모드는 로그인 화면을 띄울 곳이 없어 60초만 기다린다(위 「SSH로 띄운 agy 로그인은 …」과 같은 60초). 로그인하려고 앱 터미널 탭과 데스크톱 창에 agy를 하나씩 띄웠더니, 데스크톱 창이 연 승인 화면의 코드를 탭에 넣게 됐다. 창마다 PKCE 짝이 달라 `consumerOAuth: token exchange failed`로 끝났다.
+- 고침: `run_in_terminal`로 앱 터미널 탭에 인자 없는 `agy`를 하나만 띄운다. 「1. Google OAuth」 Enter → 「Click here to authenticate」 → 77yuhbs 허용 → 나온 코드를 **같은 탭**에 붙여 넣는 것까지 유호님 몫이다. Claude는 코드를 넣지 않는다. 탭이 안 보인다고 하시면 창을 더 띄우지 말고 탭 링크를 다시 드린다. 이미 떠 있는 로그인 창은 그대로 두고 하나로 끝낸다.
+- 다시 확인: 11-07 06:22 `authenticated successfully as 77yuhbs@gmail.com`, PowerShell `agy models`에 gemini-4-argon low · medium · high, `agy -p "/usage" --output-format json`이 8초 · 토큰 0으로 읽혔다(Gemini 주간 54% 남음, 초기화 11-08 14:00Z). 재시작 뒤 아르곤을 부르기 전에 `cli.log` 끝에 `not logged into`가 있는지 먼저 본다.
+
+### 대화형 agy 창의 기본 모델이 Argon Medium으로 뜬다 — settings.json에 `model` 키가 없으면 목록 첫 줄을 쓴다 (2026-11-07 Claude)
+- 증상: 11-07 로그인 뒤 대화형 창 머리에 「Gemini 4 Argon (Medium)」이 떴다. 유호님 「왜 아르곤은 또 미디움으로 되어있어」.
+- 원인: `~/.gemini/antigravity-cli/settings.json`에 `model` 키가 없었다(기본값 `""`). 그러면 agy는 모델 목록 첫 줄인 gemini-4-argon-medium을 쓴다. 공식 [CLI 참고](https://antigravity.google/docs/cli/reference)에 따르면 `model`은 `/model`로 고른 모델을 **라벨로** 저장하고, effort를 저장하는 키는 없다. 우리 도구(`tools/lib/제미나이구독호출.js`)는 늘 `--model … --effort …`를 넘기므로(사고 수준 기본 high) 이 기본값의 영향을 받지 않는다. 받는 것은 사람이 여는 대화형 창과 `--model` 없이 부른 `agy -p`다.
+- 고침: settings.json에 `"model": "Gemini 4 Argon (High)"`(`agy models`의 라벨 그대로)를 넣었다. 기본값이 아닌 키라 agy가 다시 써도 지우지 않는다(위 「서버 agy가 settings.json을 다시 쓰며 …」는 기본값 키만 지운다).
+- 다시 확인: 11-07 `--model` 없이 부른 `agy -p`의 로그가 `Propagating selected model override to backend: label="Gemini 4 Argon (High)"`였다. 이미 떠 있던 창은 다시 열어야 바뀐다.
 
 ### 아르곤(웹)에 남의 광고 영상을 주고 샷표를 받으면 소리 · 디테일은 강하고 컷 경계 · 카메라 숫자는 약하다 (2026-10-25 Claude)
 - 증상: 10-25 정답이 있는 PULSE 1묶음 네 편을 Gemini 웹(4 Argon · 높음)에 올려 샷표를 받았다. 컷 수는 21/21 · 1/1 · 22→21 · 13→14로 거의 맞았고, 정답이 놓친 영어 노래 가사 · 음악 밑 대사 · 세월 소품 · 손잡이 동작까지 잡았다. 그러나 컷 경계는 중앙 0.2~0.3초 · 최대 0.9초 어긋났고, 소리가 있는 편은 거의 다 일찍(평균 −0.35초) 찍혔다. 3초에 4% 다가감이나 옆 이동은 「고정」으로, 고정 컷에는 「0.9배 물러남」을 적었다. 줌 배율은 작게 적었다(1.83→1.6배, 1.4→1.1배). 먼 와이드의 작은 얼굴에 「입 움직임 보임」을 적거나, 결혼 가족사진을 「졸업사진」으로 지어내기도 했다.
