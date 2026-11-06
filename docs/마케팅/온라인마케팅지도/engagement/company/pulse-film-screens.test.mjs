@@ -263,6 +263,48 @@ test('on narrow screens the ratio label sits inside the frame, and the end page 
   assert.equal((css.match(/\.sx-end \.sx-display\{display:none\}/g)||[]).length,1,'no other rule hides it on tall phones');
   assert.match(css,/\.sx-p\.is-end\{justify-content:flex-end\}\s*\.sx-end\{max-width:none\}/,'on a tablet the end page lines up with the logo and the first page, not pushed to the right');
 });
+// end.webp(1080×1920)에서 화소로 잰 자리: 로고 글자 위 405, 병 뚜껑 위 693, 상자 바닥 1335, 병 왼쪽 165, 상자 오른쪽 895.
+const END_PHOTO={logoTop:405,capTop:693,boxBottom:1335,left:165,right:895};
+const webpSize=bytes=>{
+  const kind=bytes.toString('latin1',12,16);
+  if(kind==='VP8 ')return [bytes.readUInt16LE(26)&0x3fff,bytes.readUInt16LE(28)&0x3fff];
+  if(kind==='VP8L'){const bits=bytes.readUInt32LE(21);return [(bits&0x3fff)+1,((bits>>>14)&0x3fff)+1];}
+  if(kind==='VP8X')return [bytes.readUIntLE(24,3)+1,bytes.readUIntLE(27,3)+1];
+  throw new Error(`not a webp: ${kind}`);
+};
+const maskStops=(rule,angle)=>{const found=rule.match(new RegExp(`mask-image:[^;]*linear-gradient\\(${angle},transparent 0,#000 ([\\d.]+)%,#000 ([\\d.]+)%,transparent 100%\\)`));return found?[Number(found[1])/100,Number(found[2])/100]:null;};
+test('on a portrait tablet the end page shows the whole cap and box: one centred column from the logo to the box, while phones keep their crop',()=>{
+  const css=read('film.css');
+  const narrow=css.slice(css.indexOf('@media (max-width:820px),(max-aspect-ratio:1/1){\n')>=0?css.indexOf('@media (max-width:820px),(max-aspect-ratio:1/1){\n'):css.indexOf('@media (max-width:820px),(max-aspect-ratio:1/1){\r\n'),css.indexOf('/* 제목 어절 나타나기(motion.mjs) */'));
+  const phone='  .sx-layer-end img{position:absolute;left:0;top:44px;right:0;width:100%;height:calc(44% - 44px);object-fit:cover;object-position:50% 62%;max-width:100%;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 16%,#000 82%,transparent 100%);mask-image:linear-gradient(180deg,transparent 0,#000 16%,#000 82%,transparent 100%)}';
+  assert.ok(narrow.includes(phone),'phones keep the full-width crop byte for byte');
+  const tablet=narrow.match(/@media \(min-width:(\d+)px\) and \(max-aspect-ratio:1\/1\)\{\s*\.sx-layer-end img\{([^}]*)\}\s*\}/);
+  assert.ok(tablet&&narrow.indexOf(tablet[0])>narrow.indexOf(phone),'the tablet frame comes after the phone crop inside the narrow block, so it wins only there');
+  const from=Number(tablet[1]);
+  assert.ok(from>440&&from<=600,'phones up to 440 wide keep their look; every tablet from 600 gets the frame');
+  const rule=tablet[2];
+  assert.match(rule,/width:auto;margin:0 auto;/,'a column centred under the logo row, not a full-width strip');
+  // 가로를 다 보이는 칸: 칸 비율 a/b면 원본 너비 전부와 높이 nw·b/a만큼의 띠가 보이고, 띠의 시작은 object-position 세로 값이 정한다.
+  const [nw,nh]=webpSize(readFileSync(new URL('assets/request/end.webp',appDir)));
+  assert.deepEqual([nw,nh],[1080,1920],'the measured places belong to this size; re-measure them if the end photo changes');
+  const [,ratioW,ratioH]=rule.match(/aspect-ratio:(\d+)\/(\d+)/).map(Number);
+  const band=nw*ratioH/ratioW,start=Number(rule.match(/object-position:50% ([\d.]+)%/)[1])/100*(nh-band);
+  const vertical=maskStops(rule,'180deg'),horizontal=maskStops(rule,'90deg');
+  assert.ok(vertical&&horizontal,'the fade above and below stays, and a thin one on the sides hides the edge of the warm light at the top');
+  assert.ok(start+vertical[0]*band<=END_PHOTO.logoTop-8,'the logo lettering starts below the top fade');
+  assert.ok(start+vertical[0]*band<=END_PHOTO.capTop-200,'so the cap is never faded');
+  assert.ok(start+vertical[1]*band>=END_PHOTO.boxBottom+8,'the bottom of the box sits above the bottom fade');
+  assert.ok(start+band<=nh&&start>=0,'the band stays inside the photo');
+  assert.ok(horizontal[0]*nw<=END_PHOTO.left-60&&horizontal[1]*nw>=END_PHOTO.right+60,'the side fade stays clear of the bottle and the box');
+  assert.match(rule,/-webkit-mask-composite:source-in;mask-image:[^;]*;mask-composite:intersect$/,'the two fades multiply in every engine instead of adding up');
+  // 칸 높이는 제목 위 남는 자리: 아래 글 묶음(제목 두 줄 + 단추 · 고지 · 바닥 줄)을 뺀다.
+  assert.match(rule,/height:calc\(100% - 422px - 2\.28\*var\(--sx-t1\)\)/);
+  assert.match(css,/\.sx-display\{font-size:var\(--sx-t1\);line-height:1\.14;/,'two title lines are 2 × 1.14 = 2.28 title sizes');
+  const end=entryView({}).match(/<div class="sx-end"><p class="sx-display">([\s\S]*?)<\/p>/);
+  assert.equal((end[1].match(/class="sx-ln"/g)||[]).length,2,'the end title is two lines; the frame height counts on it');
+  const hide=css.match(/@media \(max-height:([\d.]+)px\)\{\.sx-end \.sx-display\{display:none\}\}/)[1];
+  assert.ok(narrow.includes(`@media (min-width:${from}px) and (max-aspect-ratio:1/1) and (max-height:${hide}px){.sx-layer-end img{height:calc(100% - 359px)}}`),'where the title hides, the frame takes the room down to the button');
+});
 test('no public file of the customer app names an AI tool, comments included — a customer can read them with view-source',async()=>{
   const {readdirSync}=await import('node:fs');
   const dir=new URL('./public/pulse-app/',import.meta.url);
