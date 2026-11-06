@@ -1,8 +1,8 @@
 {
   "kind": "fictional-advertising-project-demo",
-  "brand": "유리결",
+  "brand": "霜の肌理",
   "disclaimer": "PULSE 체험용 · 가상 브랜드로 만든 자체 작품",
-  "origin": "대표작 「유리결」 홀리데이 세트 15초의 실제 제작 자료. 1차 시안은 4.2판, 수정본은 5.1판(대표작 웹판과 같은 바이트), 콘셉트 B는 기획 때 견준 안 3 「창에 쓴 말」 시안, 그림은 영상에서 뽑은 장면(540×960, 256색).",
+  "origin": "대표작 「霜の肌理」(11-06 옛 이름 유리결에서 바꿈) 홀리데이 세트 15초의 실제 제작 자료. 1차 시안은 4.2판(11-06 일본어 라벨로 다시 구운 판), 수정본은 5.1판(대표작 웹판과 같은 바이트), 콘셉트 B는 기획 때 견준 안 3 「창에 쓴 말」 시안, 그림은 영상에서 뽑은 장면(540×960, 256색).",
   "outsideGit": [
     "preview-v1.mp4",
     "preview-v2.mp4"
@@ -18,48 +18,48 @@
   "assets": [
     {
       "file": "preview-v1.mp4",
-      "bytes": 8821459,
-      "sha256": "595db6642e39cc776f3b434eab0f1112618456bf3da6a6495401b571df21b4b4"
+      "bytes": 9596533,
+      "sha256": "1f112208a4328fb552d83f4f0e154cb3141fe2a5c33e27bcce4894fc10a80f87"
     },
     {
       "file": "preview-v2.mp4",
-      "bytes": 9005105,
-      "sha256": "197720f2186f39725202200b4aaeac1613768563d6454a1e9785d6905e13ee59"
+      "bytes": 8982498,
+      "sha256": "f0dc4ef3b0992ea7357964540d229b82d3a117e62bc9d6e5bcd4890b9233adf1"
     },
     {
       "file": "reference-bold.png",
-      "bytes": 71543,
-      "sha256": "e7f500f9d9e06190df9bf4f79d8f556f1da8e0a8ea9c91aa7672835577a04755"
+      "bytes": 401364,
+      "sha256": "d86af46e76d59f1882b3a7cca5b371587b70cd9335f1cfc19111ee6234ead2e4"
     },
     {
       "file": "reference-calm.png",
-      "bytes": 70994,
-      "sha256": "42f8a867cfadb893b54b85a6002ae5e570394829e79f5a0302a2f5eed6cfa01d"
+      "bytes": 70724,
+      "sha256": "11c0823f32c64cbd8bc4c0db93b74874dbdf0f50138fc6602d6fd7de0248c78b"
     },
     {
       "file": "reference-warm.png",
-      "bytes": 175291,
-      "sha256": "346f03e4978aa68badfb033934fbd5496ab0d0f084523126967d502a65f0edd6"
+      "bytes": 173256,
+      "sha256": "6d83f70902f5e99a2ea274af383fcc4368bc6bcd35c8708f5adbb782a96e7bd2"
     },
     {
       "file": "scene-1.png",
-      "bytes": 120509,
-      "sha256": "177889a39e9b7d610215a60cee3e10558d3103362cb50e2adc2c85edddd807d8"
+      "bytes": 121017,
+      "sha256": "406f241ea3f9686ce88606aec09f8cb05ec2f3988055bded46ee7fb986695ee7"
     },
     {
       "file": "scene-2.png",
-      "bytes": 204307,
-      "sha256": "fa47dd897cad94abc4e327597262228eab0c8e1d2d29d64c1626813b4bda2f98"
+      "bytes": 203865,
+      "sha256": "b007f544b584c4b9115a236b6279f0d2333097bd3d8d337171ffb319837683be"
     },
     {
       "file": "scene-3.png",
-      "bytes": 164374,
-      "sha256": "397e0c5c3d2f9cb818aff0e0c9fdff7366cf995f08dc31dc7d721ac3a135a856"
+      "bytes": 162421,
+      "sha256": "894615dfd8fbc0f6e7043d29ac10f22a327eefe49c31386493eedee9eb0ce866"
     },
     {
       "file": "scene-4.png",
-      "bytes": 57765,
-      "sha256": "e8adf77fc01ea5a152c67d61c16ec784a68284c1ea0f0f9089092c8787ce6fac"
+      "bytes": 60337,
+      "sha256": "e7b25c55166dedeefbfb9315b990e02190ceaba79d3ff31566701e3b23cc2897"
     }
   ]
 }
