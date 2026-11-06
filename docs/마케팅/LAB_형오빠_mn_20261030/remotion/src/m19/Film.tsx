@@ -113,7 +113,7 @@ const Bubbles: React.FC<{ k: number; t: number }> = ({ k, t }) => {
       return (
         <>
           {t < T.fix2 ? <Bubble at={sc.bubble} text="언니!" t={t} from={T.scenes[2] + 0.05} tail={sc.tail} /> : <Bubble at={sc.bubble} text="누나!" t={t} from={T.fix2} tail={sc.tail} />}
-          <WrongMark at={sc.bubble} t={t} from={T.subs[2]} until={T.fix2} />
+          <WrongMark at={sc.bubble} t={t} from={T.wrong2} until={T.fix2} />
         </>
       );
     }
@@ -146,13 +146,16 @@ const BottomBand: React.FC = () => {
     const ko = stage === 2 ? '오빠' : '형';
     const read = stage === 2 ? L.reads[1] : L.reads[0];
     const x = stage === 1 ? interpolate(t, [T.wrong, T.wrong + 0.15], [0, 1], clamp) : 0;
+    const xs = L.why ? 0 : x; // 11-07 두 채널 판 v3: 띠의 낱말엔 ✗를 긋지 않는다 — ✗는 말풍선에만
     return (
       <div style={{ ...band, padding: '22px 30px 30px', transform: `translateY(${(1 - a) * 16}px)` }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 28, position: 'relative' }}>
-          <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 130, lineHeight: 1.0, color: C.coralShade, opacity: 1 - 0.45 * x }}>{ko}</div>
-          <div style={{ fontFamily: MN, fontWeight: 700, fontSize: 56, color: C.coralShade, opacity: 1 - 0.45 * x }}>🔊 {read}</div>
-          {x > 0 ? <div style={{ position: 'absolute', left: -20, top: -14, fontFamily: MN, fontWeight: 900, fontSize: 150, lineHeight: 1, color: '#D93A2B', opacity: x }}>✗</div> : null}
+          <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 130, lineHeight: 1.0, color: C.coralShade, opacity: 1 - 0.45 * xs }}>{ko}</div>
+          <div style={{ fontFamily: MN, fontWeight: 700, fontSize: 56, color: C.coralShade, opacity: 1 - 0.45 * xs }}>🔊 {read}</div>
+          {xs > 0 ? <div style={{ position: 'absolute', left: -20, top: -14, fontFamily: MN, fontWeight: 900, fontSize: 150, lineHeight: 1, color: '#D93A2B', opacity: x }}>✗</div> : null}
         </div>
+        {/* 11-07 두 채널 판 시험관 둘 「여동생의 형!이 맞는 말처럼 보임」 → 첫 「형」에 「남자가 부르는 말」 줄을 먼저 — 여동생이 형! 하는 순간 어긋남이 보인다(몽골 판은 why가 null이라 그대로) */}
+        {L.why && stage <= 1 ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.meanSize, lineHeight: L.lineH, color: C.brown, marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: stage === 0 ? fadeIn(t, T.boy + 0.15, 0.2) : 1 }}>{L.means[0]}</div> : null}
         {stage === 2 ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L === LOCS.mn ? 44 : L.meanSize, lineHeight: L === LOCS.mn ? 1.2 : L.lineH, color: C.brown, marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: fadeIn(t, T.reveal + 0.15, 0.2) }}>{L.means[1]}</div> : null}
         {stage === 1 && L.why && x > 0 ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.whySize, lineHeight: L.lineH, color: '#D93A2B', marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: fadeIn(t, T.wrong + 0.1, 0.2) }}>{L.why[0]}</div> : null}
       </div>
@@ -170,16 +173,18 @@ const BottomBand: React.FC = () => {
     );
   }
   if (k === 2 && t < T.fix2) {
-    // 누나 장면: 남동생이 먼저 「언니!」 — 17.1초 ✗
-    const x = interpolate(t, [T.subs[2], T.subs[2] + 0.15], [0, 1], clamp);
+    // 누나 장면: 남동생이 먼저 「언니!」 — ✗(wrong2) → 「누나!」(fix2)
+    const x = interpolate(t, [T.wrong2, T.wrong2 + 0.15], [0, 1], clamp);
+    const xs = L.why ? 0 : x;
     return (
       <div style={{ ...band, padding: '22px 30px 30px', transform: `translateY(${(1 - a) * 16}px)` }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 28, position: 'relative' }}>
-          <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 130, lineHeight: 1.0, color: C.coralShade, opacity: 1 - 0.45 * x }}>언니</div>
-          <div style={{ fontFamily: MN, fontWeight: 700, fontSize: L.readSize, color: C.coralShade, opacity: 1 - 0.45 * x }}>🔊 {L.reads[3]}</div>
-          {x > 0 ? <div style={{ position: 'absolute', left: -20, top: -14, fontFamily: MN, fontWeight: 900, fontSize: 150, lineHeight: 1, color: '#D93A2B', opacity: x }}>✗</div> : null}
+          <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 130, lineHeight: 1.0, color: C.coralShade, opacity: 1 - 0.45 * xs }}>언니</div>
+          <div style={{ fontFamily: MN, fontWeight: 700, fontSize: L.readSize, color: C.coralShade, opacity: 1 - 0.45 * xs }}>🔊 {L.reads[3]}</div>
+          {xs > 0 ? <div style={{ position: 'absolute', left: -20, top: -14, fontFamily: MN, fontWeight: 900, fontSize: 150, lineHeight: 1, color: '#D93A2B', opacity: x }}>✗</div> : null}
         </div>
-        {L.why && x > 0 ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.whySize, lineHeight: L.lineH, color: '#D93A2B', marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: fadeIn(t, T.subs[2] + 0.1, 0.2) }}>{L.why[1]}</div> : null}
+        {L.why ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.meanSize, lineHeight: L.lineH, color: C.brown, marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: fadeIn(t, T.scenes[2] + 0.2, 0.2) }}>{L.means[3]}</div> : null}
+        {L.why && x > 0 ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.whySize, lineHeight: L.lineH, color: '#D93A2B', marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: fadeIn(t, T.wrong2 + 0.1, 0.2) }}>{L.why[1]}</div> : null}
       </div>
     );
   }
@@ -292,7 +297,7 @@ const Sound: React.FC = () => (
         <Vo id={i === 2 ? 'b2' : sc.vo} at={T.scenes[i] + 0.1} />
       </React.Fragment>
     ))}
-    <Sfx file="boing.wav" at={T.subs[2]} vol={0.3} />
+    <Sfx file="boing.wav" at={T.wrong2} vol={0.3} />
     <Sfx file="pop.wav" at={T.fix2} vol={0.22} />
     <Vo id="n1" at={T.fix2 + 0.05} />
     <Sfx file="pop.wav" at={T.table} vol={0.22} />
