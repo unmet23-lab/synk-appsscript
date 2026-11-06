@@ -315,7 +315,7 @@ function handleSidebarAction(event){
 // 줄 순서: 최근 대화가 위, 묶음 안 「나에게」는 끝. 읽어서 안 읽음이 빠져도 줄이 튀지 않게 방을 바꿀 때만 다시 세운다(설계 P2-Q).
 function navRecency(channel){return Date.parse(channel?.lastMessageAt||'')||0;}
 function computeNavOrder(){state.navOrder=state.channels.map((channel,index)=>({channel,index})).sort((a,b)=>(a.channel.kind==='self')-(b.channel.kind==='self')||navRecency(b.channel)-navRecency(a.channel)||a.index-b.index).map(item=>item.channel.id);}
-function orderedChannels(channels){if(!state.navOrder)computeNavOrder();const rank=new Map(state.navOrder.map((channelId,index)=>[channelId,index])),place=channel=>rank.has(channel.id)?rank.get(channel.id):-1;return channels.map((channel,index)=>({channel,index})).sort((a,b)=>place(a.channel)-place(b.channel)||navRecency(b.channel)-navRecency(a.channel)||a.index-b.index).map(item=>item.channel);}
+function orderedChannels(channels){if(!state.navOrder||(!state.navOrder.length&&state.channels.length))computeNavOrder();const rank=new Map(state.navOrder.map((channelId,index)=>[channelId,index])),place=channel=>rank.has(channel.id)?rank.get(channel.id):-1;return channels.map((channel,index)=>({channel,index})).sort((a,b)=>(a.channel.kind==='self')-(b.channel.kind==='self')||place(a.channel)-place(b.channel)||navRecency(b.channel)-navRecency(a.channel)||a.index-b.index).map(item=>item.channel);}
 function navCollapseKey(){return `synk-messenger:nav-collapsed:${state.user?.id}`;}
 function navCollapsed(){try{return JSON.parse(localStorage.getItem(navCollapseKey())||'{}')||{};}catch{return {};}}
 function toggleNavGroup(key){if(!['rooms','people'].includes(key))return;const collapsed=navCollapsed();collapsed[key]=!collapsed[key];try{localStorage.setItem(navCollapseKey(),JSON.stringify(collapsed));}catch{}renderNavigation();$(`[data-group-toggle="${key}"]`)?.focus({preventScroll:true});}
@@ -355,10 +355,10 @@ function handleNewMenu(event){const item=event.target.closest('[data-new]');if(!
 function menuKeyboard(event,close){
   const items=[...event.currentTarget.querySelectorAll('[role="menuitem"]:not(:disabled)')];if(!items.length)return;
   const index=items.indexOf(document.activeElement);
-  if(event.key==='ArrowDown'||event.key==='ArrowUp'){event.preventDefault();items[(index+(event.key==='ArrowDown'?1:-1)+items.length)%items.length].focus();}
+  if(event.key==='ArrowDown'||event.key==='ArrowUp'){event.preventDefault();const down=event.key==='ArrowDown';items[index<0?(down?0:items.length-1):(index+(down?1:-1)+items.length)%items.length].focus();}
   else if(event.key==='Home'||event.key==='End'){event.preventDefault();items[event.key==='Home'?0:items.length-1].focus();}
   else if(event.key==='Escape'){event.preventDefault();event.stopPropagation();close();}
-  else if(event.key==='Tab')close({restore:false});
+  else if(event.key==='Tab')close();
 }
 async function refreshChannels(){
   const previousCanPost=canPostToChannel(),sequence=++state.channelsSeq,result=await api('/api/channels');if(sequence!==state.channelsSeq)return;
@@ -441,7 +441,7 @@ function messageToolsHtml(message,writable){
   if(canWriteMessages())tools.push(`<button type="button" class="icon-button" data-action="reaction-picker" aria-label="반응 남기기" title="반응">${icon('smile')}</button>`);
   if(writable)tools.push(`<button type="button" class="icon-button" data-action="reply" aria-label="답글 쓰기" title="답글">${icon('reply')}</button>`);
   if(writable||message.task)tools.push(`<button type="button" class="tool-text" data-action="task" aria-label="${message.task?'할 일 보기':'할 일로 만들기'}">${icon('task')}<span>${message.task?'할 일':'할 일로'}</span></button>`);
-  return `<div class="message-tools" role="toolbar" aria-label="메시지 동작">${tools.join('')}${tools.length?'<span class="tool-sep" aria-hidden="true"></span>':''}<button type="button" class="icon-button message-more" data-action="message-more" aria-haspopup="menu" aria-expanded="false" aria-label="더 보기 — 나중에 보기 · 고정 · 결정 · 수정 · 삭제" title="더 보기">${icon('more')}</button></div>`;
+  return `<div class="message-tools" role="toolbar" aria-label="메시지 동작">${tools.join('')}${tools.length?'<span class="tool-sep" aria-hidden="true"></span>':''}<button type="button" class="icon-button message-more" data-action="message-more" aria-haspopup="menu" aria-expanded="false" aria-label="메시지 더 보기" title="더 보기">${icon('more')}</button></div>`;
 }
 function messageMenuItems(message){
   const writable=canPostMessage(message),own=canWriteMessages()&&message.user.id===state.user.id,canDelete=canWriteMessages()&&(own||(state.user.role==='owner'&&currentChannel()?.kind==='channel'));
@@ -690,14 +690,14 @@ function handleMessageMenu(event){
 // 휴대폰: 늘 보이는 막대 없이 길게 누르면 아래 시트(설계). 길게 누름은 시트만 열고 반응을 바로 보내지 않는다.
 function openMessageSheet(message,source){
   const sheet=$('#message-sheet');if(!sheet||!message)return;
-  closeMessageMenu({restore:false});sheetReturnFocus=source||null;source?.closest('.message')?.classList.add('menu-open');
+  closeMessageMenu({restore:false});sheetReturnFocus=source||null;source?.closest('.message')?.classList.add('menu-open');if(source?.matches?.('[data-action="message-more"]'))source.setAttribute('aria-expanded','true');
   const writable=canPostMessage(message),rows=[writable&&['reply','답글','reply'],(writable||message.task)&&['task',message.task?'할 일 보기':'할 일로 만들기','task'],...messageMenuItems(message)].filter(Boolean);
   sheet.dataset.messageId=message.id;
   sheet.innerHTML=`<div class="sheet-scrim" data-sheet-close></div><div class="sheet-pan" role="dialog" aria-modal="true" aria-labelledby="message-sheet-title"><div class="sheet-grab" aria-hidden="true"></div><div class="sheet-head"><h2 id="message-sheet-title">메시지 동작</h2><button type="button" class="icon-button" data-sheet-close aria-label="닫기">${icon('close')}</button></div><p class="sheet-quote"><b>${esc(message.user.name)}</b> ${esc(messagePreview(message).slice(0,90))}</p>${canWriteMessages()?`<div class="sheet-emoji" role="group" aria-label="반응">${REACTIONS.map(emoji=>`<button type="button" data-action="react" data-emoji="${emoji}" aria-label="${emoji} 반응" aria-pressed="${Boolean(message.reactions?.find(r=>r.emoji===emoji)?.mine)}">${emoji}</button>`).join('')}</div>`:''}<ul class="sheet-list">${rows.map(([action,label,glyph,danger])=>`<li${danger?' class="danger"':''}><button type="button" data-action="${action}">${icon(glyph)}<span>${label}</span></button></li>`).join('')}</ul></div>`;
   sheet.classList.remove('hidden');document.body.classList.add('sheet-open');
   sheet.querySelector('.sheet-emoji button, .sheet-list button')?.focus({preventScroll:true});
 }
-function closeMessageSheet({restore=true}={}){const sheet=$('#message-sheet');if(!sheet||sheet.classList.contains('hidden'))return;const target=sheetReturnFocus;sheetReturnFocus=null;if(restore&&target?.isConnected)target.focus({preventScroll:true});sheet.classList.add('hidden');sheet.innerHTML='';delete sheet.dataset.messageId;document.body.classList.remove('sheet-open');$$('.message.menu-open').forEach(element=>element.classList.remove('menu-open'));}
+function closeMessageSheet({restore=true}={}){const sheet=$('#message-sheet');if(!sheet||sheet.classList.contains('hidden'))return;const target=sheetReturnFocus;sheetReturnFocus=null;if(restore&&target?.isConnected)target.focus({preventScroll:true});sheet.classList.add('hidden');sheet.innerHTML='';delete sheet.dataset.messageId;document.body.classList.remove('sheet-open');$$('.message.menu-open').forEach(element=>element.classList.remove('menu-open'));$$('[data-action="message-more"][aria-expanded="true"]').forEach(element=>element.setAttribute('aria-expanded','false'));}
 function handleMessageSheet(event){
   if(event.target.closest('[data-sheet-close]')){closeMessageSheet();return;}
   const button=event.target.closest('[data-action]');if(!button)return;

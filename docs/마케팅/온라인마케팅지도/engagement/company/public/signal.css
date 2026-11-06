@@ -656,7 +656,8 @@
   :root .synk-workspace>.sidebar>.workspace-sidebar-toggle,:root .synk-workspace[data-sidebar-open="false"]>.sidebar>.workspace-sidebar-toggle{position:fixed;top:16px;left:16px;z-index:93;visibility:visible;pointer-events:auto;width:44px;height:44px;margin:0;border-radius:999px;background:#fff;color:var(--sg-ink);box-shadow:0 0 0 1px var(--sg-line),0 4px 14px rgba(8,9,12,.12)}
   :root .synk-workspace[data-sidebar-open="true"]>.sidebar>.workspace-sidebar-toggle{position:static;align-self:flex-end;margin:10px 10px 0;box-shadow:none;background:transparent}
   :root .synk-workspace:has(>.sidebar)>.main .page-body{padding-top:72px}
-  :root .synk-workspace[data-sidebar-open="true"]>.workspace-sidebar-scrim:not([hidden]){display:block;position:fixed;inset:0;z-index:91;border:0;border-radius:0;padding:0}
+  :root .synk-workspace[data-sidebar-open="true"]>.workspace-sidebar-scrim:not([hidden]){display:block;position:fixed;inset:0;z-index:91;border:0;border-radius:0;padding:0;background:rgba(3,4,6,.55)}
+  :root .synk-workspace>.sidebar>.workspace-sidebar-toggle:hover,:root .synk-workspace[data-sidebar-open="false"]>.sidebar>.workspace-sidebar-toggle:hover{background:#F4F4F5;color:var(--sg-ink)}
   :root .synk-workspace .cg-categories{display:flex;flex-wrap:nowrap;max-width:100%;overflow-x:auto;scrollbar-width:none}
   :root .synk-workspace .cg-categories::-webkit-scrollbar{display:none}
   :root .synk-workspace .cg-categories button{flex:none}

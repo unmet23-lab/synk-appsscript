@@ -66,6 +66,13 @@ test('direct room navigation clears a stale room query while retaining the sourc
   const count=f.requests.length;await f.run("selectChannel('inaccessible-room')");assert.equal(f.requests.length,count);assert.equal(f.state.channelId,'team');
 });
 
+test('나에게 stays last even when it arrives after the order was fixed, and an order fixed before rooms loaded is measured again (아르곤 F1)',()=>{
+  const f=fixture(),rooms=f.state.channels;f.state.channels=[];f.state.navOrder=null;f.run('renderNavigation()');
+  f.state.channels=rooms.filter(room=>room.id!=='self');f.run('renderNavigation()');assert.deepEqual(order(f.get('#channel-nav').innerHTML).sort(),['legacy','project','public','team']);
+  assert.ok(f.state.navOrder.length>0,'the empty order made before rooms arrived was measured again');
+  f.state.channels=[...f.state.channels,{...rooms.find(room=>room.id==='self'),lastMessageAt:'2026-11-06T09:30:00Z'}];f.run('renderNavigation()');
+  assert.deepEqual(order(f.get('#dm-nav').innerHTML),['dm','self']);
+});
 test('the list follows recent activity, keeps 나에게 last, and only re-sorts when the user leaves a room',async()=>{
   // 「나에게」를 가장 최근으로 두어도 사람 묶음 끝에 있어야 한다(최근순만으로 우연히 맞지 않게, 아르곤 H1).
   const f=fixture();f.state.channels.find(room=>room.id==='self').lastMessageAt='2026-11-06T09:30:00Z';f.run('renderNavigation()');
