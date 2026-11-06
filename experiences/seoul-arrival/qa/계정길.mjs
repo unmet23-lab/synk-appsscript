@@ -254,9 +254,10 @@ for(const [stage,screen] of [['dream','#s-title'],['card','#s-path']]){
  await page.evaluate(()=>window.__seoul.beforeTitle());
  await page.waitForFunction(()=>!!document.querySelector('#seoul-layer'),null,{timeout:10000});
  check(await page.evaluate(()=>{const d=document.querySelector('#seoul-layer');return d.inert&&getComputedStyle(d).visibility==='hidden';}),'올리기 전 틀은 숨김 · 누를 수 없음');
+ check(await page.evaluate(()=>{const r=document.querySelector('#seoul-layer').getBoundingClientRect();return r.right<=0&&r.width>0;}),'올리기 전 틀은 화면 밖(배포 점검 캡처가 덮지 않게), 크기는 그대로');
  await page.evaluate(()=>{window.__done=window.__seoul.run();});
  await page.waitForFunction(()=>document.querySelector('#seoul-layer')?.matches(':modal'),null,{timeout:20000});
- check(await page.evaluate(()=>{const d=document.querySelector('#seoul-layer');return !d.inert&&getComputedStyle(d).visibility==='visible';}),'올리면 보이고 누를 수 있음');
+ check(await page.evaluate(()=>{const d=document.querySelector('#seoul-layer'),r=d.getBoundingClientRect();return !d.inert&&getComputedStyle(d).visibility==='visible'&&Math.abs(r.left)<1;}),'올리면 보이고 누를 수 있음');
  await page.close();}
 
 // 14g. 앱 밖에서 바로 연 판(배포 점검이 /world/seoul-arrival/을 그렇게 연다): 안내만 보이고, 크기가 바뀌어도 오류가 없다

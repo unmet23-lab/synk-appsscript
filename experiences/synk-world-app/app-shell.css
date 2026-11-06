@@ -505,7 +505,8 @@ img.world-account-mascot{height:auto;padding:5px;border-radius:10px;background:#
 /* 서울행(새 학생 첫 실행): 앱 위 전체 화면 틀. 드라마 판은 이 위에 뜬다. */
 .seoul-layer{position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;background:#050b1a;z-index:2147483000;overflow:hidden}
 .seoul-layer::backdrop{background:#000}
-.seoul-layer.is-waiting{visibility:hidden}
+/* 미리 받은 서울행 틀: 올리기 전에는 숨기고 화면 밖에 둔다 — 숨겨도 자리가 남으면 배포 점검의 캡처가 iframe 자리를 분홍으로 덮어 /world/ 첫 화면을 못 본다(11-06). 크기는 그대로라 틀 안 배치는 바뀌지 않는다 */
+.seoul-layer.is-waiting{visibility:hidden;transform:translateX(-200vw)}
 .seoul-frame{display:block;width:100%;height:100%;border:0;background:#050b1a}
 /* 1화 오늘 기록 아래 띠. 시범판 단추를 가리지 않게 틀을 그만큼 줄인다. */
 #panel-content:has(>.seoul-cta) .game-frame{height:calc(100% - 84px)}
