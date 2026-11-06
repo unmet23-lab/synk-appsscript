@@ -440,24 +440,24 @@
       "sha256": "3cbd4a6948bb68ab6352655dacc5157bf385552bf2f6a773f6b84b7d857424d1"
     },
     {
-      "file": "assets/world-title-concert-port-v1.webp",
-      "source": ".tmp/world-entrance-20261102/시안/판/kfelt-v3_022611.png (공용 작업본 · git 밖)",
-      "sourceSha256": "8b0c0e156238ed45266a69150df8cdd5b1c16c71961a47088828c319e5438990",
-      "sha256": "600486247051fb3ec2e385b618fc8f5901246ebbd6db3c3bbf7bbb6c36d643f2",
-      "bytes": 124898,
+      "file": "assets/world-title-concert-port-v2.webp",
+      "source": ".tmp/title-cream-20261107/port-gpt-a.png (공용 작업본 · git 밖)",
+      "sourceSha256": "6ce03d4daa651320753fb0e3b4e3697c5c268cf02ee5c752cba614c56332423b",
+      "sha256": "e3b8416e93523f307d9fc75b14210eaa09da59cf2f480646d96442a604068853",
+      "bytes": 116020,
       "width": 941,
       "height": 1672,
-      "transform": "WebP quality 84 · method 6, 크기 그대로. 원본은 GPT 이미지 2.5(ChatGPT 구독 굽기, 11-02) — 지시문 .tmp/world-entrance-20261102/지시문/kfelt-v3.codex.txt · 펠트 안녕 콘서트 타이틀(결정 11-02)"
+      "transform": "WebP quality 84 · method 6, v1과 같은 크기(941x1672). 원본은 GPT 이미지 2.5(ChatGPT 구독 Codex 편집 굽기, 11-07) — v1 판을 Image 1로 넣고 ㅕ만 옆 글자와 같은 크림 펠트로 바꿈(지시문 .tmp/title-cream-20261107/port-지시문-a.txt), 유호님 「크림색으로 다시」 · 「이 판으로 바꿔」(11-07). v1은 펠트 안녕 콘서트 타이틀(결정 11-02, kfelt-v3)"
     },
     {
-      "file": "assets/world-title-concert-land-v1.webp",
-      "source": ".tmp/world-entrance-20261102/시안/판/kfelt-v3-wide_022611.png (공용 작업본 · git 밖)",
-      "sourceSha256": "7b9c5e5e1ec258afa37160e074ca799f431695651e07ba2dbf683df23511e3d1",
-      "sha256": "5451296e67db404ef8121c01edf2c70190fc513ae1d690be2954caac2ac00509",
-      "bytes": 159304,
+      "file": "assets/world-title-concert-land-v2.webp",
+      "source": ".tmp/title-cream-20261107/land-gpt-a.png (공용 작업본 · git 밖)",
+      "sourceSha256": "2deebcbf2e2e6464831e8e0e68595ede6809b37c7ceb57ed9cff0978e768edef",
+      "sha256": "711b5ce4e68ddb50c6b6351ad7ea38431dc352e982deb84d8e0790a6559435c2",
+      "bytes": 146068,
       "width": 1916,
       "height": 821,
-      "transform": "WebP quality 84 · method 6, 크기 그대로. 원본은 GPT 이미지 2.5(ChatGPT 구독 굽기, 11-02) — 지시문 .tmp/world-entrance-20261102/지시문/kfelt-v3-wide.codex.txt · 펠트 안녕 콘서트 타이틀(결정 11-02)"
+      "transform": "WebP quality 84 · method 6, v1과 같은 크기(1916x821). 원본은 GPT 이미지 2.5(ChatGPT 구독 Codex 편집 굽기, 11-07) — v1 판을 Image 1로 넣고 ㅕ만 옆 글자와 같은 크림 펠트로 바꿈(지시문 .tmp/title-cream-20261107/land-지시문-a.txt), 유호님 「크림색으로 다시」 · 「이 판으로 바꿔」(11-07). v1은 펠트 안녕 콘서트 타이틀(결정 11-02, kfelt-v3)"
     }
   ],
   "titleArtwork": {

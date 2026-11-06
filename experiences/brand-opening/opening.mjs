@@ -7,8 +7,8 @@ const asset=name=>new URL(`./assets/${name}`,import.meta.url).href;
 // 사진 안 비율로 적은 값 — lx 글자 가로 범위 · ly 글자 가운데 높이 · crowd 관객 시작 줄 · lights 빔이 나오는 자리 · sky 사진 맨 위 색.
 // 빔은 글자 바깥(양옆)과 글자 윗선에서만 나와 펠트 위를 긋지 않는다.
 const SCENES={
- port:{src:'world-title-concert-port-v1.webp',w:941,h:1672,lx:[.14,.86],ly:.64,crowd:.78,lights:[[.05,.62],[.95,.62],[.3,.52],[.7,.52]],sky:'#040b1a'},
- land:{src:'world-title-concert-land-v1.webp',w:1916,h:821,lx:[.53,.92],ly:.46,crowd:.76,lights:[[.5,.5],[.97,.5],[.62,.2],[.82,.2]],sky:'#0f1324'}
+ port:{src:'world-title-concert-port-v2.webp',w:941,h:1672,lx:[.14,.86],ly:.64,crowd:.78,lights:[[.05,.62],[.95,.62],[.3,.52],[.7,.52]],sky:'#040b1a'},
+ land:{src:'world-title-concert-land-v2.webp',w:1916,h:821,lx:[.53,.92],ly:.46,crowd:.76,lights:[[.5,.5],[.97,.5],[.62,.2],[.82,.2]],sky:'#0f1324'}
 };
 const LANG_ORDER=['ko','en','mn'];
 const BEAT=.5,DROP=.5;

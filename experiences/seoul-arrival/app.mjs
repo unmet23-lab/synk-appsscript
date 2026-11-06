@@ -7,7 +7,7 @@ import {hangulName,calledName} from './name-hangul.mjs';
 import {createNameTrace,nameSyllables,signSvg} from './name-trace.mjs';
 const HOST=(()=>{try{if(window.parent!==window&&window.parent.location.origin===location.origin)return window.parent.SYNKSeoulHost||null;}catch{}return null;})();
 const A=name=>new URL(`./assets/img/${name}.webp`,import.meta.url).href;
-const CONCERT=new URL('../brand-opening/assets/world-title-concert-port-v1.webp',import.meta.url).href;
+const CONCERT=new URL('../brand-opening/assets/world-title-concert-port-v2.webp',import.meta.url).href;
 const IMG={note1:A('note1'),mirror:A('mirror'),desk_idol:A('desk-idol'),desk_actor:A('desk-actor'),note:A('note0'),mom:A('mom'),airport:A('airport'),immigration:A('immigration'),concert:CONCERT,room:A('room'),drama:A('drama'),bag_idol:A('bag-idol'),bag_actor:A('bag-actor'),plane:A('plane'),train:A('train'),gate:A('gate'),booth:A('booth'),idol:A('idol'),actor:A('actor'),idolGoal:CONCERT,actorGoal:A('premiere'),theaterBase:A('theater-base'),theaterSeats:A('theater-seats'),arenaBase:A('arena-base'),arenaSeats:A('arena-seats'),tmoney:A('tmoney'),bus:A('bus')};
 const AUD=Object.fromEntries(['amb_airport','amb_cabin','amb_campus','amb_canteen','amb_clock','amb_dawn','amb_hall','amb_room','amb_train','bgm_anthem','bgm_campus','bgm_journey','pix_impact_bass_1','pix_notification','pix_riser','pix_sparkle','pix_whoosh_cinematic','pix_whoosh_short','sfx_applause','sfx_crowd','sfx_imo','sfx_print','sfx_stamp','sfx_walk','sfx_zip'].map(name=>[name,new URL(`./assets/snd/${name}.mp3`,import.meta.url).href]));
 /* 곡 안 박 시각(초) */
