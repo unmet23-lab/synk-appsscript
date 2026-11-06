@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n07",
+ "text": "이번엔 딱 맞게 갈라 줬어요.",
+ "show": "이번엔 딱 맞게",
+ "dur": 1.44,
+ "words": [
+  {
+   "text": "이번엔",
+   "start": 0.02,
+   "end": 0.273
+  },
+  {
+   "text": "딱",
+   "start": 0.316,
+   "end": 0.414
+  },
+  {
+   "text": "맞게",
+   "start": 0.499,
+   "end": 0.626
+  },
+  {
+   "text": "갈라",
+   "start": 0.668,
+   "end": 0.851
+  },
+  {
+   "text": "줬어요.",
+   "start": 0.894,
+   "end": 1.44
+  }
+ ],
+ "source": {
+  "key": "a1225af9ae90a7c136e22ef2b734b0f9",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1107,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 189
+ }
+}

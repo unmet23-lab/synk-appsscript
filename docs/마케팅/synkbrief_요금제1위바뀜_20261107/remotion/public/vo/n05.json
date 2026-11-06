@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n05",
+ "text": "누르는 칸마다, 1위가 바뀌는 거죠.",
+ "show": "누르는 칸마다 1위가 바뀐다",
+ "dur": 2.206,
+ "words": [
+  {
+   "text": "누르는",
+   "start": 0.02,
+   "end": 0.302
+  },
+  {
+   "text": "칸마다,",
+   "start": 0.362,
+   "end": 0.724
+  },
+  {
+   "text": "1위가",
+   "start": 1.187,
+   "end": 1.409
+  },
+  {
+   "text": "바뀌는",
+   "start": 1.469,
+   "end": 1.771
+  },
+  {
+   "text": "거죠.",
+   "start": 1.831,
+   "end": 2.206
+  }
+ ],
+ "source": {
+  "key": "65415a482d9033c0d7b7d3b1f0e72536",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1107,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 131
+ }
+}

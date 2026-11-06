@@ -1,0 +1,76 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n04",
+ "text": "일 년 치를 한 번에 내면, 어도비가 싸요.",
+ "show": "1년 치를 한 번에 내면 어도비",
+ "dur": 2.446,
+ "words": [
+  {
+   "text": "일",
+   "start": 0.02,
+   "end": 0.084
+  },
+  {
+   "text": "년",
+   "start": 0.132,
+   "end": 0.245
+  },
+  {
+   "text": "치를",
+   "start": 0.293,
+   "end": 0.503
+  },
+  {
+   "text": "한",
+   "start": 0.551,
+   "end": 0.648
+  },
+  {
+   "text": "번에",
+   "start": 0.696,
+   "end": 0.841
+  },
+  {
+   "text": "내면,",
+   "start": 0.889,
+   "end": 1.227
+  },
+  {
+   "text": "어도비가",
+   "start": 1.614,
+   "end": 1.952
+  },
+  {
+   "text": "싸요.",
+   "start": 2.001,
+   "end": 2.446
+  }
+ ],
+ "source": {
+  "key": "b12f1c0bbae066f80e574e2c1670c012",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1107,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 182
+ }
+}

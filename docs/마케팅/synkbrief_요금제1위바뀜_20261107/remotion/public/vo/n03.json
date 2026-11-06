@@ -1,0 +1,66 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n03",
+ "text": "한 달씩 내면, 미리캔버스가 더 싸고,",
+ "show": "한 달씩 내면 미리캔버스",
+ "dur": 2.177,
+ "words": [
+  {
+   "text": "한",
+   "start": 0.02,
+   "end": 0.114
+  },
+  {
+   "text": "달씩",
+   "start": 0.161,
+   "end": 0.379
+  },
+  {
+   "text": "내면,",
+   "start": 0.425,
+   "end": 0.737
+  },
+  {
+   "text": "미리캔버스가",
+   "start": 0.986,
+   "end": 1.609
+  },
+  {
+   "text": "더",
+   "start": 1.656,
+   "end": 1.719
+  },
+  {
+   "text": "싸고,",
+   "start": 1.781,
+   "end": 2.177
+  }
+ ],
+ "source": {
+  "key": "2d21002c33a1527a183cbb5ea5b3fdbd",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1107,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 167
+ }
+}

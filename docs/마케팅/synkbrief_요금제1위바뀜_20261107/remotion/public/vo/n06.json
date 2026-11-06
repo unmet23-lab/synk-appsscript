@@ -1,0 +1,101 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n06",
+ "text": "그래서 결제 화면 값을 그대로 붙여 넣고, 한 달, 일 년 나눠서 물었더니,",
+ "show": "결제 화면 값을 그대로 붙여 넣고 · 한 달 · 1년 나눠서",
+ "dur": 4.238,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.236
+  },
+  {
+   "text": "결제",
+   "start": 0.308,
+   "end": 0.581
+  },
+  {
+   "text": "화면",
+   "start": 0.638,
+   "end": 0.811
+  },
+  {
+   "text": "값을",
+   "start": 0.854,
+   "end": 1.113
+  },
+  {
+   "text": "그대로",
+   "start": 1.156,
+   "end": 1.387
+  },
+  {
+   "text": "붙여",
+   "start": 1.43,
+   "end": 1.631
+  },
+  {
+   "text": "넣고,",
+   "start": 1.674,
+   "end": 1.904
+  },
+  {
+   "text": "한",
+   "start": 2.336,
+   "end": 2.465
+  },
+  {
+   "text": "달,",
+   "start": 2.509,
+   "end": 2.667
+  },
+  {
+   "text": "일",
+   "start": 2.998,
+   "end": 3.07
+  },
+  {
+   "text": "년",
+   "start": 3.113,
+   "end": 3.228
+  },
+  {
+   "text": "나눠서",
+   "start": 3.271,
+   "end": 3.559
+  },
+  {
+   "text": "물었더니,",
+   "start": 3.602,
+   "end": 4.238
+  }
+ ],
+ "source": {
+  "key": "14fcee052e7f522da5011f31a1fe7c06",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1107,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 173
+ }
+}

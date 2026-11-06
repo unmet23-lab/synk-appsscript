@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n02",
+ "text": "결제 화면엔, 만 오천이백 원.",
+ "show": "결제 화면엔 15,200원",
+ "dur": 1.709,
+ "words": [
+  {
+   "text": "결제",
+   "start": 0.03,
+   "end": 0.261
+  },
+  {
+   "text": "화면엔,",
+   "start": 0.323,
+   "end": 0.662
+  },
+  {
+   "text": "만",
+   "start": 0.754,
+   "end": 0.908
+  },
+  {
+   "text": "오천이백",
+   "start": 0.954,
+   "end": 1.339
+  },
+  {
+   "text": "원.",
+   "start": 1.385,
+   "end": 1.709
+  }
+ ],
+ "source": {
+  "key": "c5868706f092b5f23d395652bcb4789c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1107,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 144
+ }
+}

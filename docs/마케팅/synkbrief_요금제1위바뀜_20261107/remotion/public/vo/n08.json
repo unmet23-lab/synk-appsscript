@@ -1,0 +1,76 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n08",
+ "text": "요금 비교는, AI 기억 말고, 결제 화면 값으로.",
+ "show": "요금 비교는 AI 기억 말고 결제 화면 값으로",
+ "dur": 3.324,
+ "words": [
+  {
+   "text": "요금",
+   "start": 0.03,
+   "end": 0.211
+  },
+  {
+   "text": "비교는,",
+   "start": 0.272,
+   "end": 0.613
+  },
+  {
+   "text": "AI",
+   "start": 1.056,
+   "end": 1.317
+  },
+  {
+   "text": "기억",
+   "start": 1.377,
+   "end": 1.578
+  },
+  {
+   "text": "말고,",
+   "start": 1.638,
+   "end": 1.88
+  },
+  {
+   "text": "결제",
+   "start": 2.342,
+   "end": 2.583
+  },
+  {
+   "text": "화면",
+   "start": 2.644,
+   "end": 2.825
+  },
+  {
+   "text": "값으로.",
+   "start": 2.885,
+   "end": 3.324
+  }
+ ],
+ "source": {
+  "key": "4f237bbf60ba76a50a40b375abd1b36f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1107,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 140
+ }
+}

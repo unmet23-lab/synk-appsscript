@@ -1,0 +1,109 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1107,
+  "lufs": -17
+ },
+ "made": "2026-11-06T23:13:35.190Z",
+ "lines": [
+  {
+   "id": "n01",
+   "text": "AI가 한 달에 천칠백 원 싸다던 요금제,",
+   "show": "AI가 1,700원 싸다던 요금제",
+   "scene": "훅 — AI가 고른 1위",
+   "dur": 2.399,
+   "syllablesPerSec": 5.84,
+   "src": "n01.wav",
+   "key": "71810e455f41150ac526f9247b84283e",
+   "words": 7
+  },
+  {
+   "id": "n02",
+   "text": "결제 화면엔, 만 오천이백 원.",
+   "show": "결제 화면엔 15,200원",
+   "scene": "결제 화면 — 다른 값",
+   "dur": 1.709,
+   "syllablesPerSec": 6.44,
+   "src": "n02.wav",
+   "key": "c5868706f092b5f23d395652bcb4789c",
+   "words": 5
+  },
+  {
+   "id": "n03",
+   "text": "한 달씩 내면, 미리캔버스가 더 싸고,",
+   "show": "한 달씩 내면 미리캔버스",
+   "scene": "시소 — 월간",
+   "dur": 2.177,
+   "syllablesPerSec": 6.43,
+   "src": "n03.wav",
+   "key": "2d21002c33a1527a183cbb5ea5b3fdbd",
+   "words": 6
+  },
+  {
+   "id": "n04",
+   "text": "일 년 치를 한 번에 내면, 어도비가 싸요.",
+   "show": "1년 치를 한 번에 내면 어도비",
+   "scene": "시소 — 연간",
+   "dur": 2.446,
+   "syllablesPerSec": 6.13,
+   "src": "n04.wav",
+   "key": "b12f1c0bbae066f80e574e2c1670c012",
+   "words": 8
+  },
+  {
+   "id": "n05",
+   "text": "누르는 칸마다, 1위가 바뀌는 거죠.",
+   "show": "누르는 칸마다 1위가 바뀐다",
+   "scene": "시소 — 되풀이",
+   "dur": 2.206,
+   "syllablesPerSec": 5.89,
+   "src": "n05.wav",
+   "key": "65415a482d9033c0d7b7d3b1f0e72536",
+   "words": 5
+  },
+  {
+   "id": "n06",
+   "text": "그래서 결제 화면 값을 그대로 붙여 넣고, 한 달, 일 년 나눠서 물었더니,",
+   "show": "결제 화면 값을 그대로 붙여 넣고 · 한 달 · 1년 나눠서",
+   "scene": "고친 요청 — 붙여 넣기",
+   "dur": 4.238,
+   "syllablesPerSec": 6.37,
+   "src": "n06.wav",
+   "key": "14fcee052e7f522da5011f31a1fe7c06",
+   "words": 13
+  },
+  {
+   "id": "n07",
+   "text": "이번엔 딱 맞게 갈라 줬어요.",
+   "show": "이번엔 딱 맞게",
+   "scene": "고친 답",
+   "dur": 1.44,
+   "syllablesPerSec": 7.64,
+   "src": "n07.wav",
+   "key": "a1225af9ae90a7c136e22ef2b734b0f9",
+   "words": 5
+  },
+  {
+   "id": "n08",
+   "text": "요금 비교는, AI 기억 말고, 결제 화면 값으로.",
+   "show": "요금 비교는 AI 기억 말고 결제 화면 값으로",
+   "scene": "끝 한마디",
+   "dur": 3.324,
+   "syllablesPerSec": 4.81,
+   "src": "n08.wav",
+   "key": "4f237bbf60ba76a50a40b375abd1b36f",
+   "words": 8
+  }
+ ]
+}
