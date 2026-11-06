@@ -115,7 +115,7 @@ test('결과를 낸 뒤 끝나지 않는 agy(손주까지 버팀)에서도 답�
       selectedModel: 'gemini-4-argon-high',
     });
     assert.deepEqual(첫.argv, ['--input-format', 'stream-json', '--output-format', 'stream-json',
-      '--model', 'gemini-4-argon-high', '--effort', 'high', '--print-timeout', '60s', '--sandbox', '--disable-slash-commands']);
+      '--model', 'gemini-4-argon-high', '--print-timeout', '60s', '--sandbox', '--disable-slash-commands']);
     assert.equal(첫.유료허용, null, 'agy에는 유료 API 허용 변수를 넘기지 않는다');
     assert.ok(첫.글자 > '짧은 질문'.length, '도구 없이 답하라는 머리말을 붙인다');
     assert.match(path.basename(첫.cwd), /^synk-agy-review-/);

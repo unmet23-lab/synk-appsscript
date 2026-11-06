@@ -522,6 +522,13 @@
 - 고침: 큰 생성물만 `--뺌 <글롭…>`으로 뺀다. 회사 판 도구 검수 목록은 넘김 증명 · `bootstrap-inputs.json` · `operator-input*.json` · `candidate-validation.json` · `operator-preparation.json` · `rearm/actual-prior-*.json` · `rearm-port-<N>.json` · `candidate-pin.json` · `rearm/scope-data.cjs`다.
 - 다시 확인: 사슬 53 같은 목록으로 파일 84개(뺌 12) · 묶음 3개(118 · 145 · 63KB), GPT 세 묶음 모두 「읽음」.
 
+
+### agy 1.5.2로 저절로 올라간 뒤 아르곤 묶음이 15초 만에 「invalid model selection … --effort is not supported for model "gemini-4-argon-high"」로 실패한다 (2026-11-07 Claude)
+- 증상: 11-07 워크스페이스 메신저 화면 검수 `검수묶음.mjs 아르곤 … --묶음`을 세 줄로 보낸 가운데 첫 묶음 A만 읽히고, 그 뒤 묶음 C · E · F · G · H · I가 모두 15~16초 만에 「구독 통로 실패(종료 2) — agy 상태 ERROR: invalid model selection (--model "gemini-4-argon-high" --effort "high"): --effort is not supported for model …」로 끝났다. `agy --version`은 1.5.2(노트 머리의 1.4.2에서 저절로 올라감), `agy models`에는 `gemini-4-argon-high`가 그대로 있었다. 몫은 줄지 않았다(54.2%).
+- 원인: 새 agy는 수준이 이름에 든 모델(`…-low` · `-medium` · `-high`)에 `--effort`를 같이 주면 거절한다. `tools/lib/제미나이구독호출.js`가 slug와 `--effort`를 늘 함께 넘겼다.
+- 고침: slug가 `-(low|medium|high)`로 끝나면 `--effort`를 빼게 고쳤다(수준은 slug가 이미 고른다). `tests/제미나이구독호출.test.js`의 인자 기대값도 함께 고침. 실패한 묶음만 `--묶음 … --다시`로 다시 보냈다.
+- 다시 확인: `node --test tests/제미나이구독호출.test.js` 통과, 다시 보낸 묶음 로그에 「읽음」.
+
 ## Claude API
 
 ### 새 키의 조직에 월 API 크레딧이 없어 충전 잔액이 나갔다
@@ -829,6 +836,13 @@
 - 원인: 도구가 세션에 허락된 폴더의 파일만 붙인다. 저장소 안 파일은 된다.
 - 고침: git 무시 폴더 `.tmp/<작업>/`에 복사해 그 경로를 넘긴다. 다시 올릴 때는 slug · base_version과 바뀐 파일만 주면 나머지는 그대로다.
 - 다시 확인: `git check-ignore .tmp/x`가 경로를 찍는지, 결과의 `own_file_count`가 넘긴 파일 수와 같은지.
+
+
+### 앱이 세션을 다시 열면 그 세션의 scratchpad가 빈 폴더로 돌아와, 거기 둔 편집 도우미 · 합성 서버 · 캡처 스크립트가 사라진다 (2026-11-07 Claude)
+- 증상: 11-06 밤 워크스페이스 메신저 작업 중 세션이 끊겼다가 11-07 「다시 시도해 주세요」로 이어 받자 scratchpad(`%TEMP%\claude\…\scratchpad`)가 비어 있었다. 저장소 파일의 변경은 그대로였지만 `ed.cjs` · `prune.cjs` · `port.cjs` · 캡처 도구가 없었고, 공용 작업본 `.tmp/workspace-redesign-20261106/scene-server.mjs`(합성 서버)도 그사이 정리돼 없었다.
+- 원인: 앱이 새 프로세스로 세션을 이을 때 scratchpad를 새로 만든다(같은 경로라도 비어 있음). 공용 작업본 `.tmp`의 오래된 작업 폴더는 공간 지킴이가 치운다.
+- 고침: 다시 만들 도구 · 합성 서버 사본 · 캡처는 워크트리 안 `.tmp/<작업>/`(git 무시)에 둔다 — 세션이 다시 열려도 남고, 워크트리를 보관하기 전에만 옮기면 된다. 합성 서버처럼 남이 쓴 도구는 처음 읽을 때 사본을 떠 둔다.
+- 다시 확인: 세션을 이은 뒤 `ls .tmp/<작업>`에 도구가 있는지.
 
 ## Claude 서브에이전트
 

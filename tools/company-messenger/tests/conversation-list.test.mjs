@@ -67,7 +67,8 @@ test('direct room navigation clears a stale room query while retaining the sourc
 });
 
 test('the list follows recent activity, keeps 나에게 last, and only re-sorts when the user leaves a room',async()=>{
-  const f=fixture();f.run('renderNavigation()');
+  // 「나에게」를 가장 최근으로 두어도 사람 묶음 끝에 있어야 한다(최근순만으로 우연히 맞지 않게, 아르곤 H1).
+  const f=fixture();f.state.channels.find(room=>room.id==='self').lastMessageAt='2026-11-06T09:30:00Z';f.run('renderNavigation()');
   assert.deepEqual(order(f.get('#channel-nav').innerHTML),['project','team','public','legacy']);assert.deepEqual(order(f.get('#dm-nav').innerHTML),['dm','self']);
   let pending=f.run("selectChannel('legacy')");await settleLast(f);await pending;
   // 읽거나 새 메시지가 와도 이 방에 있는 동안은 줄이 그 자리에 있다.

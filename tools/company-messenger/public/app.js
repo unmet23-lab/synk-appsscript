@@ -678,9 +678,9 @@ function openMessageMenu(button,message){
 }
 function closeMessageMenu({restore=true}={}){
   const menu=$('#message-menu');if(!menu||menu.classList.contains('hidden'))return;
+  const target=menuReturnFocus;menuReturnFocus=null;if(restore&&target?.isConnected)target.focus({preventScroll:true});
   menu.classList.add('hidden');menu.innerHTML='';delete menu.dataset.messageId;
   $$('.message.menu-open').forEach(element=>element.classList.remove('menu-open'));$$('[data-action="message-more"][aria-expanded="true"]').forEach(element=>element.setAttribute('aria-expanded','false'));
-  const target=menuReturnFocus;menuReturnFocus=null;if(restore&&target?.isConnected)target.focus({preventScroll:true});
 }
 function handleMessageMenu(event){
   const item=event.target.closest('[role="menuitem"]');if(!item)return;
@@ -690,14 +690,14 @@ function handleMessageMenu(event){
 // 휴대폰: 늘 보이는 막대 없이 길게 누르면 아래 시트(설계). 길게 누름은 시트만 열고 반응을 바로 보내지 않는다.
 function openMessageSheet(message,source){
   const sheet=$('#message-sheet');if(!sheet||!message)return;
-  closeMessageMenu({restore:false});sheetReturnFocus=source||document.activeElement;
+  closeMessageMenu({restore:false});sheetReturnFocus=source||null;source?.closest('.message')?.classList.add('menu-open');
   const writable=canPostMessage(message),rows=[writable&&['reply','답글','reply'],(writable||message.task)&&['task',message.task?'할 일 보기':'할 일로 만들기','task'],...messageMenuItems(message)].filter(Boolean);
   sheet.dataset.messageId=message.id;
   sheet.innerHTML=`<div class="sheet-scrim" data-sheet-close></div><div class="sheet-pan" role="dialog" aria-modal="true" aria-labelledby="message-sheet-title"><div class="sheet-grab" aria-hidden="true"></div><div class="sheet-head"><h2 id="message-sheet-title">메시지 동작</h2><button type="button" class="icon-button" data-sheet-close aria-label="닫기">${icon('close')}</button></div><p class="sheet-quote"><b>${esc(message.user.name)}</b> ${esc(messagePreview(message).slice(0,90))}</p>${canWriteMessages()?`<div class="sheet-emoji" role="group" aria-label="반응">${REACTIONS.map(emoji=>`<button type="button" data-action="react" data-emoji="${emoji}" aria-label="${emoji} 반응" aria-pressed="${Boolean(message.reactions?.find(r=>r.emoji===emoji)?.mine)}">${emoji}</button>`).join('')}</div>`:''}<ul class="sheet-list">${rows.map(([action,label,glyph,danger])=>`<li${danger?' class="danger"':''}><button type="button" data-action="${action}">${icon(glyph)}<span>${label}</span></button></li>`).join('')}</ul></div>`;
   sheet.classList.remove('hidden');document.body.classList.add('sheet-open');
   sheet.querySelector('.sheet-emoji button, .sheet-list button')?.focus({preventScroll:true});
 }
-function closeMessageSheet({restore=true}={}){const sheet=$('#message-sheet');if(!sheet||sheet.classList.contains('hidden'))return;sheet.classList.add('hidden');sheet.innerHTML='';delete sheet.dataset.messageId;document.body.classList.remove('sheet-open');const target=sheetReturnFocus;sheetReturnFocus=null;if(restore&&target?.isConnected)target.focus({preventScroll:true});}
+function closeMessageSheet({restore=true}={}){const sheet=$('#message-sheet');if(!sheet||sheet.classList.contains('hidden'))return;const target=sheetReturnFocus;sheetReturnFocus=null;if(restore&&target?.isConnected)target.focus({preventScroll:true});sheet.classList.add('hidden');sheet.innerHTML='';delete sheet.dataset.messageId;document.body.classList.remove('sheet-open');$$('.message.menu-open').forEach(element=>element.classList.remove('menu-open'));}
 function handleMessageSheet(event){
   if(event.target.closest('[data-sheet-close]')){closeMessageSheet();return;}
   const button=event.target.closest('[data-action]');if(!button)return;
@@ -711,15 +711,23 @@ function sheetKeyboard(event){
   const first=items[0],last=items.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
 }
 // 길게 누름: 손가락 · 펜으로 0.45초 누르고 거의 움직이지 않으면 시트를 연다. 단추 · 링크 · 파일 위에서는 그 단추가 먼저다.
+// 누른 상태는 하나만 둔다(목록이 다시 그려져도 같은 상태). 손을 떼는 사건은 시트 위에서 날 수 있어 문서에서 듣는다.
+const messagePress={timer:null,origin:null,pointer:null,fired:false,suppressUntil:0,documentBound:false};
+function cancelMessagePress(){clearTimeout(messagePress.timer);messagePress.timer=null;messagePress.origin=null;}
+function finishMessagePress(event){if(event.pointerId!==messagePress.pointer)return;messagePress.pointer=null;cancelMessagePress();if(messagePress.fired){messagePress.fired=false;messagePress.suppressUntil=Date.now()+700;}}
 function wireMessagePress(root){
-  if(!root)return;let timer=null,origin=null,fired=false;
-  const cancel=()=>{clearTimeout(timer);timer=null;origin=null;};
-  root.addEventListener('pointerdown',event=>{if(event.pointerType==='mouse'||!mobileLayout.matches)return;const article=event.target.closest('.message[data-message-id]');if(!article||event.target.closest('button,a,input,textarea,select'))return;fired=false;origin={x:event.clientX,y:event.clientY,id:article.dataset.messageId};clearTimeout(timer);timer=setTimeout(()=>{const message=findMessage(origin?.id);cancel();if(!message)return;fired=true;openMessageSheet(message,article.querySelector('[data-action="message-more"]'));},450);});
-  root.addEventListener('pointermove',event=>{if(origin&&Math.hypot(event.clientX-origin.x,event.clientY-origin.y)>10)cancel();});
-  for(const type of ['pointerup','pointercancel','pointerleave'])root.addEventListener(type,cancel);
-  root.addEventListener('scroll',cancel,{passive:true});
-  root.addEventListener('contextmenu',event=>{if(!mobileLayout.matches)return;const article=event.target.closest('.message[data-message-id]');if(!article)return;event.preventDefault();if(!fired&&$('#message-sheet')?.classList.contains('hidden')){cancel();fired=true;openMessageSheet(findMessage(article.dataset.messageId),article.querySelector('[data-action="message-more"]'));}});
-  root.addEventListener('click',event=>{if(fired){fired=false;event.stopPropagation();event.preventDefault();}},true);
+  if(!root)return;
+  const open=messageId=>{const message=findMessage(messageId);if(!message)return;messagePress.fired=true;openMessageSheet(message,null);};
+  root.addEventListener('pointerdown',event=>{if(event.pointerType==='mouse'||!mobileLayout.matches)return;const article=event.target.closest('.message[data-message-id]');if(!article||event.target.closest('button,a,input,textarea,select'))return;messagePress.fired=false;messagePress.pointer=event.pointerId;messagePress.origin={x:event.clientX,y:event.clientY,id:article.dataset.messageId};clearTimeout(messagePress.timer);messagePress.timer=setTimeout(()=>{const messageId=messagePress.origin?.id;cancelMessagePress();if(messageId)open(messageId);},450);});
+  // 누른 그 손가락 · 펜의 사건만 본다 — 붙잡는 동안 다른 포인터(마우스 흉내)의 pointerleave가 타이머를 지우던 것(11-07 터치 시험).
+  root.addEventListener('pointermove',event=>{const origin=messagePress.origin;if(origin&&event.pointerId===messagePress.pointer&&Math.hypot(event.clientX-origin.x,event.clientY-origin.y)>10)cancelMessagePress();});
+  root.addEventListener('pointerleave',event=>{if(event.pointerId===messagePress.pointer&&!messagePress.fired)cancelMessagePress();});
+  root.addEventListener('scroll',cancelMessagePress,{passive:true});
+  root.addEventListener('contextmenu',event=>{if(!mobileLayout.matches)return;const article=event.target.closest('.message[data-message-id]');if(!article)return;event.preventDefault();if(!messagePress.fired&&$('#message-sheet')?.classList.contains('hidden')){cancelMessagePress();open(article.dataset.messageId);}});
+  if(messagePress.documentBound)return;messagePress.documentBound=true;
+  // 시트를 연 누름에서 손을 떼면 그 자리(이제 시트 가림막)에 클릭 한 번이 떨어진다 — 그 한 번은 버린다(손을 떼자마자 시트가 닫히던 것, 11-07 터치 시험).
+  document.addEventListener('pointerup',finishMessagePress,true);document.addEventListener('pointercancel',finishMessagePress,true);
+  document.addEventListener('click',event=>{if(Date.now()<messagePress.suppressUntil){messagePress.suppressUntil=0;event.stopPropagation();event.preventDefault();}},true);
 }
 async function toggleReaction(message,emoji){if(!canWriteMessages())return;try{const result=await api(`/api/messages/${id(message.id)}/reactions`,{method:'POST',body:{emoji}});const index=state.messages.findIndex(m=>m.id===message.id);if(index>=0){state.messages[index]=result.message;renderMessages({preserve:true});}}catch(error){toast(error.message,true);}}
 function connectEvents(){
@@ -817,7 +825,7 @@ async function openSearchMessage(message,{isCurrent=()=>true}={}){
   }catch(error){if(isCurrent())toast(error.message,true);}
 }
 function openModal(title,body){modalVersion++;state.projectPicker=null;modal.classList.remove('project-dialog','task-detail-dialog');modal.classList.toggle('workspace-modal',title==='워크스페이스');if(!modal.open)modalReturnFocus=document.activeElement;modal.innerHTML=`<div class="modal-head"><h2 id="modal-title">${esc(title)}</h2><button class="icon-button" id="close-modal" aria-label="창 닫기">${icon('close')}</button></div><div class="modal-body">${body}</div>`;if(!modal.open)modal.showModal();$('#close-modal').onclick=()=>modal.close();}
-modal.addEventListener('close',()=>modalReturnFocus?.isConnected&&modalReturnFocus.focus());modal.addEventListener('click',event=>{if(event.target===modal){const rect=modal.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)modal.close();}});
+modal.addEventListener('close',()=>{const target=modalReturnFocus;if(!target?.isConnected)return;const host=target.closest?.('.message');host?.classList.add('menu-open');target.focus();host?.classList.remove('menu-open');});modal.addEventListener('click',event=>{if(event.target===modal){const rect=modal.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)modal.close();}});
 function formError(message){const el=$('#modal-error');if(el){el.textContent=message;el.classList.remove('hidden');}else toast(message,true);}
 function canManageCrew(){return state.integrated?Boolean(state.integrated.canManage):state.user?.role==='owner';}
 function isProject(channel){return channel?.kind==='channel'&&channel.category==='project';}

@@ -40,6 +40,7 @@ test('one list: the rooms group comes before people, and deleted rooms are the l
 test('the standalone page keeps its platform link in the list head; inside the company workspace the rail already has it', () => {
   const standalone = shellHtml(view(), helpers), embedded = shellHtml(view({ embedded: true }), helpers);
   const tools = between(standalone, 'class="list-tools"', '</div>');
+  assert.ok(tools.includes('class="platform-entry"') && tools.includes('id="global-search"'), 'both live in the list head tools');
   assert.ok(tools.indexOf('class="platform-entry"') < tools.indexOf('id="global-search"'));
   assert.ok(!embedded.includes('platform-entry'));
 });

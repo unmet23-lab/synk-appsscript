@@ -290,7 +290,8 @@ async function main(argv = process.argv.slice(2)) {
   try {
     const args = [
       '--input-format', 'stream-json', '--output-format', 'stream-json',
-      '--model', selectedModel, '--effort', thinking,
+      // agy 1.5.2(11-07)부터 모델 이름에 수준이 든 slug(gemini-4-argon-high 등)에 --effort를 같이 주면 「--effort is not supported」로 거절한다 — 수준은 slug가 이미 고른다.
+      '--model', selectedModel, ...(/-(low|medium|high)$/.test(selectedModel) ? [] : ['--effort', thinking]),
       '--print-timeout', `${Math.ceil(timeoutMs / 1000)}s`,
       '--sandbox', '--disable-slash-commands',
       ...(schema ? ['--json-schema', schema] : []),
