@@ -7,6 +7,9 @@ export const RemotionRoot: React.FC = () => (
   <>
     {/* 11-06 LAB 몽골 M31 「설렐 때 네 마디」 — 우리편 M1 「화날 때 네 마디」 1:1(기획.md 「원본 1:1」) */}
     <Composition id="m31-mn" component={Film} durationInFrames={TOTAL_FRAMES} fps={FPS} width={1080} height={1920} />
+    {/* 두 채널 판 — 샤오훙수 간체 · 틱톡 버마어(같은 정본 · 같은 소리) */}
+    <Composition id="m31-zhs" component={Film} defaultProps={{ loc: 'zhs' as const }} durationInFrames={TOTAL_FRAMES} fps={FPS} width={1080} height={1920} />
+    <Composition id="m31-my" component={Film} defaultProps={{ loc: 'my' as const }} durationInFrames={TOTAL_FRAMES} fps={FPS} width={1080} height={1920} />
     {/* 한 장면 먼저 — 끝 장면(그 사람 앞 굳은 인사 → 문자 → 불꽃놀이)만 */}
     <Composition id="m31-scene" component={SceneFilm} durationInFrames={TOTAL_FRAMES - Math.round(SCENE_FROM * FPS)} fps={FPS} width={1080} height={1920} />
   </>

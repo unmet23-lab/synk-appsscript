@@ -265,6 +265,13 @@ const Gauge: React.FC<{ i: number; t: number; L: LocPack }> = ({ i, t, L }) => {
   const glow = holding ? 0.5 + 0.5 * beat : 0;
   if (t >= BURST_AT) return null;
   const S = 150;
+  // 날아간 하트가 닿을 때(말풍선 + 0.75초) 셈이 하나 오른다
+  let count = 0;
+  let cntPop = 0;
+  CELLS.forEach((c) => {
+    if (c.bubble && t >= c.at + 0.75) count = c.bubble.n;
+    if (c.bubble) cntPop = Math.max(cntPop, bump(t, c.at + 0.75, 0.05, 0.3));
+  });
   const fillTop = 30 * (1 - Math.min(1, v));
   return (
     <div style={{ position: 'absolute', left: 52, top: 770, width: S + 20, display: 'flex', flexDirection: 'column', alignItems: 'center', transform: `translateX(${shake}px) scale(${grow})`, transformOrigin: '50% 40%' }}>
@@ -283,6 +290,8 @@ const Gauge: React.FC<{ i: number; t: number; L: LocPack }> = ({ i, t, L }) => {
         <path d="M16 29 C 6 21, 0 15, 0 8.5 C 0 3.5, 4 0, 8.5 0 C 12 0, 14.5 2, 16 4.8 C 17.5 2, 20 0, 23.5 0 C 28 0, 32 3.5, 32 8.5 C 32 15, 26 21, 16 29 Z" fill="none" stroke={INK} strokeWidth={1.6} />
         {[0.25, 0.5, 0.75].map((g) => <line key={g} x1={3} x2={29} y1={30 * (1 - g)} y2={30 * (1 - g)} stroke={INK} strokeWidth={0.5} strokeDasharray="1.2 1.2" opacity={0.45} clipPath="url(#heartClip)" />)}
       </svg>
+      {/* 몇 마디째인지 — 말풍선의 n/4와 같은 셈(두 채널 시험 v3 · v4 넷 다 「게이지가 무엇을 재나」) */}
+      <div style={{ position: 'absolute', left: 0, right: 0, top: S * 0.3, textAlign: 'center', fontFamily: EN, fontWeight: 900, fontSize: 40, color: INK, textShadow: '0 0 4px #fff, 0 0 8px #fff, 0 0 2px #fff', transform: `scale(${1 + 0.25 * cntPop})` }}>{count}/4</div>
       <div style={{ marginTop: 6, fontFamily: L.font, fontWeight: 800, fontSize: 28, color: '#fff', background: 'rgba(28,22,20,0.86)', borderRadius: 12, padding: '4px 10px 6px', whiteSpace: 'nowrap' }}>{L.gauge}</div>
     </div>
   );
@@ -377,7 +386,7 @@ const Small: React.FC<{ t: number; from: number; until: number; left: number; to
       </svg>
       <div style={{ position: 'absolute', left, top, width, height: h, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', background: CREAM, border: `6px solid ${INK}`, borderRadius: 40, padding: '8px 18px 10px', boxShadow: '0 10px 24px rgba(0,0,0,0.28)', transform: `scale(${p})`, transformOrigin: `${((bx - left) / width) * 100}% 100%` }}>
         <div style={{ fontFamily: KO, fontWeight: 800, fontSize: koSize, color: INK, lineHeight: 1.14, whiteSpace: 'nowrap' }}>{ko}</div>
-        <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 42, color: '#5F4E42', lineHeight: 1.15 }}>🔊 {read}</div>
+        <div style={{ fontFamily: EN, fontWeight: 800, fontSize: read.length > 13 ? 32 : 42, color: '#5F4E42', lineHeight: 1.15, whiteSpace: 'nowrap' }}>🔊 {read}</div>
         {mn ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: 46, color: MEAN, lineHeight: L.lineH, marginTop: 4, whiteSpace: 'nowrap' }}>{mn}</div> : null}
       </div>
     </div>
@@ -512,7 +521,7 @@ export const Film: React.FC<{ loc?: Loc; bare?: boolean }> = ({ loc = 'mn', bare
       {i === 0 ? <Small t={t} from={0.72} until={3.2} left={470} top={500} width={440} ko={TEXT.replyKo} read={L.replyRead} mn={L.replyMn} tip={[600, 850]} L={L} koSize={74} /> : null}
       {i === 0 && t >= OPEN_INNER_AT ? <Thought t={t} at={OPEN_INNER_AT} L={L} left={24} top={520} w={420} dots={[[290, 812], [262, 772]]} /> : null}
       {c.sit ? <Sit text={L.sits[sitN]} at={c.at} t={t} L={L} /> : null}
-      {img === 'hall1.jpg' ? <Small t={t} from={12.6} until={14.4} left={540} top={560} width={460} ko={TEXT.call.ko} read={L.callRead} mn={L.callMn} tip={[800, 880]} L={L} koSize={84} /> : null}
+      {img === 'hall1.jpg' ? <Small t={t} from={12.6} until={14.4} left={440} top={560} width={470} ko={TEXT.call.ko} read={L.callRead} mn={L.callMn} tip={[800, 880]} L={L} koSize={84} /> : null}
       {c.bubble ? <Speech b={c.bubble} at={c.at} t={t} L={L} /> : null}
       {c.bubble && t < BURST_AT ? <FlyHeart b={c.bubble} at={c.at} t={t} /> : null}
       {img === 'lib1.jpg' ? <Spark t={t} from={3.55} until={5.0} a={[300, 1120]} b={[700, 1060]} /> : null}
