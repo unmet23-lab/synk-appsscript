@@ -260,7 +260,7 @@ function wireShell(){
   $('#composer-mention').onclick=()=>{if(!canPostToChannel())return;const box=$('#composer-input');box.focus();const before=box.value.slice(0,box.selectionStart);box.setRangeText((before&&!/\s$/.test(before)?' ':'')+'@',box.selectionStart,box.selectionEnd,'end');saveDraft();resizeComposer();updateSend();updateMentionPicker();};
   $('#reply-context').onclick=event=>{if(event.target.closest('[data-cancel-reply]'))clearReply();};
   $('#upload-queue').onclick=event=>{const retry=event.target.closest('[data-upload-retry]');if(retry)return retryUpload(retry.dataset.uploadRetry);const btn=event.target.closest('[data-upload-remove]');if(btn)removeUpload(btn.dataset.uploadRemove);};
-  $('#message-list').onclick=handleMessageAction;wireMessagePress($('#message-list'));
+  $('#message-list').onclick=handleMessageAction;wireMessagePress($('.content-body'));
   $('#message-menu').onclick=handleMessageMenu;$('#message-menu').onkeydown=event=>menuKeyboard(event,closeMessageMenu);$('#message-sheet').onclick=handleMessageSheet;$('#message-sheet').onkeydown=sheetKeyboard;
   $('#pins-view').onclick=handleMessageAction;
   $('#jump-latest').onclick=()=>scrollToBottom();
@@ -717,12 +717,12 @@ function cancelMessagePress(){clearTimeout(messagePress.timer);messagePress.time
 function finishMessagePress(event){if(event.pointerId!==messagePress.pointer)return;messagePress.pointer=null;cancelMessagePress();if(messagePress.fired){messagePress.fired=false;messagePress.suppressUntil=Date.now()+700;messagePress.suppressAt={x:event.clientX,y:event.clientY};}}
 function wireMessagePress(root){
   if(!root)return;
-  const open=messageId=>{const message=findMessage(messageId);if(!message)return;messagePress.fired=true;openMessageSheet(message,null);};
+  const open=messageId=>{const message=findMessage(messageId);if(!message)return;messagePress.fired=messagePress.pointer!=null;openMessageSheet(message,null);};
   root.addEventListener('pointerdown',event=>{if(event.pointerType==='mouse'||!mobileLayout.matches)return;const article=event.target.closest('.message[data-message-id]');if(!article||event.target.closest('button,a,input,textarea,select'))return;messagePress.fired=false;messagePress.pointer=event.pointerId;messagePress.origin={x:event.clientX,y:event.clientY,id:article.dataset.messageId};clearTimeout(messagePress.timer);messagePress.timer=setTimeout(()=>{const messageId=messagePress.origin?.id;cancelMessagePress();if(messageId)open(messageId);},450);});
   // 누른 그 손가락 · 펜의 사건만 본다 — 붙잡는 동안 다른 포인터(마우스 흉내)의 pointerleave가 타이머를 지우던 것(11-07 터치 시험).
   root.addEventListener('pointermove',event=>{const origin=messagePress.origin;if(origin&&event.pointerId===messagePress.pointer&&Math.hypot(event.clientX-origin.x,event.clientY-origin.y)>10)cancelMessagePress();});
   root.addEventListener('pointerleave',event=>{if(event.pointerId===messagePress.pointer&&!messagePress.fired)cancelMessagePress();});
-  root.addEventListener('scroll',cancelMessagePress,{passive:true});
+  root.addEventListener('scroll',cancelMessagePress,{passive:true,capture:true});
   root.addEventListener('contextmenu',event=>{if(!mobileLayout.matches)return;const article=event.target.closest('.message[data-message-id]');if(!article||event.target.closest('button,a,input,textarea,select,[contenteditable]')||!findMessage(article.dataset.messageId))return;event.preventDefault();if(!messagePress.fired&&$('#message-sheet')?.classList.contains('hidden')){cancelMessagePress();open(article.dataset.messageId);}});
   if(messagePress.documentBound)return;messagePress.documentBound=true;
   // 시트를 연 누름에서 손을 떼면 그 자리(이제 시트 가림막)에 클릭 한 번이 떨어진다 — 그 한 번은 버린다(손을 떼자마자 시트가 닫히던 것, 11-07 터치 시험).
