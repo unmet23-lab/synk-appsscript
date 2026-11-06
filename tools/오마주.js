@@ -9,7 +9,7 @@
  * (docs/마케팅/기획장부/제작절차.md 「오마주」).
  *
  *   node tools/오마주.js 분해 <주소|원본.mp4> [--편 <편 폴더>] [--갈래 같은분야|형식만|우리편] [--주소 <원본 주소>] [--다시]
- *   node tools/오마주.js 아르곤 <원본 ID> [--u 4|1]        Gemini 웹 4 Argon에 원본을 올려 첫 분석을 받는다(ego, 차례를 잡은 뒤)
+ *   node tools/오마주.js 아르곤 <원본 ID> [--u <번호> --계정 <이름>]   Gemini 웹 4 Argon에 원본을 올려 첫 분석을 받는다(ego, 차례를 잡은 뒤)
  *   node tools/오마주.js 나란히 <편 폴더> [--영상 <우리.mp4>] [--json]
  *
  * 분해: 원본을 git 밖 <공용 작업본>/.tmp/오마주/<원본 ID>/에 받는다(유튜브 · 틱톡은 yt-dlp — H.264 + AAC를 먼저 고른다.
@@ -18,7 +18,9 @@
  *   --편을 주면 그 편 폴더에 오마주.json(원본 주소 · 숫자 · 컷 시작 초만)을 쓰고 기획.md에 붙일 컷표 뼈대를 찍는다.
  *   원본의 영상 · 소리 · 말 · 화면 글은 저장소에 넣지 않는다(공개 저장소) — 오마주.json과 컷표에는 초와 우리 말로 쓴 구조만 둔다.
  * 아르곤: 분해 폴더의 원본(소리째)을 Gemini 웹 「4 Argon」 · 사고 수준 「높음」 새 대화에 올려 지시문을 보내고 답을 받는다. 같은 계정을 여러
- *   세션이 쓰므로 먼저 `python synk-vendor/_공용차례/차례.py gemini 기다리기 <이름> <할 일>`로 차례를 잡고 --u에 그 줄의 계정 번호를 준다.
+ *   세션이 쓰므로 먼저 `python synk-vendor/_공용차례/차례.py gemini 기다리기 <이름> <할 일>`로 차례를 잡고 --u · --계정에 `계정`이 준 그 줄의
+ *   번호와 계정 이름을 준다(「gemini-a 77yuhbs https://gemini.google.com/u/1/」 → --u 1 --계정 77yuhbs — 화면의 계정 표시와 다르면 멈춘다).
+ *   둘 다 빼면 a 줄(11-07부터 ego Profile 2의 /u/1 · 77yuhbs)이다.
  *   영상 권리 동의 창 · 한도 · 로봇 확인이 보이면 누르지 않고 멈춘다. 답은 .tmp(git 밖)에만 남는다 — 남의 말 · 가사 · 화면 글이 들어 있다.
  *   화면 다루기는 tools/아르곤웹.mjs(사진 · 지시문 검수와 같은 페이지 스크립트, 10-31). 보내기를 누른 뒤 끝나면 `아르곤_답.md.보냄.json`
  *   표시가 남는다 — 그때 같은 명령을 다시 부르면 다시 보내지 않고 같은 작업 공간의 탭에서 읽기만 한다(10-29 같은 원본을 두 번 보냄).
@@ -431,13 +433,14 @@ function argon(id, opts = {}) {
   const 측정 = JSON.parse(fs.readFileSync(path.join(dir, '측정.json'), 'utf8'));
   const video = path.join(dir, 측정.아르곤판 || '원본.mp4');
   const prompt = fs.readFileSync(path.join(dir, '아르곤_지시문.md'), 'utf8').trim();
-  const u = String(opts.u || 4);
-  if (!/^\d$/.test(u)) throw new Error('--u는 Gemini 계정 번호 한 자리(a 줄 77yuhbs = 4 · b 줄 unmet25 = 1)');
+  const u = String(opts.u || 1);
+  if (!/^\d$/.test(u)) throw new Error('--u는 Gemini 계정 번호 한 자리 — 차례 `계정`이 준 그 줄의 번호(11-07부터 a 줄 77yuhbs = 1 · b 줄 unmet25 = 5)');
+  const 계정 = opts.계정 || (opts.u ? '' : '77yuhbs'); // --u만 주면 대조 없이, 둘 다 빼면 a 줄 기본
   const job = argonJob(dir, video, prompt);
   const 웹 = require('./아르곤웹.js');
   const mode = fs.existsSync(웹.표시경로(job.out)) ? '읽기' : '보내기';
   const 시작 = Date.now();
-  const r = spawnSync('ego-browser nodejs', { input: 웹.페이지글(job, u, mode), encoding: 'utf8', windowsHide: true, timeout: (job.answerMin + 18) * 60_000, shell: true });
+  const r = spawnSync('ego-browser nodejs', { input: 웹.페이지글(job, u, mode, 계정), encoding: 'utf8', windowsHide: true, timeout: (job.answerMin + 18) * 60_000, shell: true });
   const 출력 = `${r.stdout || ''}\n${r.stderr || ''}`; // ego는 스크립트 출력을 표준 오류로 낸다(10-31)
   process.stdout.write(`${출력.trim()}\n`);
   const 결과 = 웹.결과가르기(출력, fs.existsSync(웹.표시경로(job.out)), 웹.새답(job.out, 시작));
@@ -450,7 +453,7 @@ function argon(id, opts = {}) {
 function argonJob(dir, video, prompt) {
   return {
     이름: path.basename(dir), files: [video], prompt, out: path.join(dir, '아르곤_답.md'), shots: dir,
-    head: '아르곤 첫 분석', space: 'synk-homage-argon', failShot: path.join(dir, '아르곤_실패.png'), answerMin: 15,
+    head: '아르곤 첫 분석', space: 'synk-homage-argon-p2', failShot: path.join(dir, '아르곤_실패.png'), answerMin: 15,
   };
 }
 
@@ -476,7 +479,7 @@ function main(argv) {
     console.log(`원본 ${r.원본.주소 || arg} · ${초(r.영상.길이)} · ${r.영상.폭}x${r.영상.높이} · ${r.컷.length}컷(${r.컷.map((t) => t.toFixed(1)).join(' ')}) · 박자 ${r.박자.length}칸(${r.박자.map((t) => t.toFixed(1)).join(' ')})`);
     console.log(`  측정 · 묶음 그림 · 아르곤 지시문: ${r.dir}(git 밖)`);
     if (r.편) { console.log(`  편: ${r.편.file}\n\n${r.편.컷표}\n`); }
-    console.log('다음: 칸.jpg · 첫3초.jpg로 컷 · 박자를 눈으로 확정해 오마주.json 「컷」 · 「박자」 · 「뼈대」(훅 · 반전 · 끝이 시작하는 원본 초)를 고치고 「확정」: true → 아르곤 첫 분석(node tools/오마주.js 아르곤 <원본 ID> --u <계정 번호>, 차례를 잡은 뒤) → 컷표의 원본 칸을 우리 말로 채우고 우리 화면 · 말 칸을 쓴다.');
+    console.log('다음: 칸.jpg · 첫3초.jpg로 컷 · 박자를 눈으로 확정해 오마주.json 「컷」 · 「박자」 · 「뼈대」(훅 · 반전 · 끝이 시작하는 원본 초)를 고치고 「확정」: true → 아르곤 첫 분석(node tools/오마주.js 아르곤 <원본 ID> --u <번호> --계정 <이름>, 차례를 잡은 뒤 `계정`이 준 그 줄로) → 컷표의 원본 칸을 우리 말로 채우고 우리 화면 · 말 칸을 쓴다.');
     return 0;
   }
   if (cmd === '아르곤' && arg) { console.log(`아르곤 답: ${argon(arg, o)}(git 밖)`); return 0; }
@@ -489,7 +492,7 @@ function main(argv) {
     return r.맞음 ? 0 : 1;
   }
   console.error('사용: node tools/오마주.js 분해 <주소|원본.mp4> [--편 <편 폴더>] [--갈래 같은분야|형식만|우리편] [--주소 <원본 주소>] [--다시]\n'
-    + '      node tools/오마주.js 아르곤 <원본 ID> [--u 4|1]\n      node tools/오마주.js 나란히 <편 폴더> [--영상 <우리.mp4>] [--json]');
+    + '      node tools/오마주.js 아르곤 <원본 ID> [--u <번호> --계정 <이름>]\n      node tools/오마주.js 나란히 <편 폴더> [--영상 <우리.mp4>] [--json]');
   return 2;
 }
 

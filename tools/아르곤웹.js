@@ -6,12 +6,14 @@
  *   node tools/아르곤웹.js 점검 <지시문 파일…> [--json] [--없이 <항목,…>]
  *        굽기 전 지시문(작업 JSON 배열 · 「## 컷」 마크다운 · 글 한 편)을 길이 · 필수 문장 · 충돌 · 좌우 표기로 본다. 빠짐 · 넘침이 있으면 종료 1.
  *        항목: 길이 · 영상 · 나이 · 점 · 결 · 글자 · 혼자 · 충돌 · 좌우 · 비율 (--없이 혼자,좌우 처럼 뺀다 — 단체 컷 등)
- *   node tools/아르곤웹.js 보내기 <작업.json…> [--이름 <줄 이름>] [--두줄] [--덮어쓰기] [--차례없이 --u <번호>] [--공간 <작업 공간>]
+ *   node tools/아르곤웹.js 보내기 <작업.json…> [--이름 <줄 이름>] [--두줄] [--덮어쓰기] [--차례없이 --u <번호> [--계정 <이름>]] [--공간 <작업 공간>]
  *   node tools/아르곤웹.js 보내기 --파일 <사진·글…> --지시문 <지시문 파일> --답 <답.md> [--머리 <답 머리 글>]
  *        공용 차례(gemini)를 잡고 → 작업마다 새 대화(새 탭)에 올려 보내고 → 답을 파일로 받고 → 내려놓는다.
  *        한 차례(보내기 · 읽기 6번 · 20분)를 넘길 것 같으면 내려놓고 다시 줄을 선다. 답 파일이 이미 있는 작업은 건너뛴다.
  *   node tools/아르곤웹.js 읽기 <작업.json…> [같은 선택]
  *        보낸 대화를 같은 작업 공간의 탭에서 읽기만 한다(주소를 옮기거나 다시 보내지 않는다).
+ *   node tools/아르곤웹.js 확인 [--이름 <줄 이름>] [--두줄] [--차례없이 --u <번호> --계정 <이름>] [--공간 <작업 공간>]
+ *        차례를 잡고 그 줄 계정의 새 대화 화면만 열어 「Google 계정 … @」 표시가 차례의 계정과 같은지 본다 — 올리기 · 보내기 없음(11-07).
  *
  * 작업 파일: { "files": [...], "prompt": "<지시문>" | "promptFile": "<파일>", "out": "<답.md>", "shots"?, "head"?, "space"?, "answerMin"? }
  *   경로는 작업 파일 폴더 기준으로도 쓴다. 첨부는 한 번에 10개까지, 지시문은 4,300자 안(긴 자료는 글 파일로 붙인다).
@@ -22,6 +24,9 @@
  * 한 ego 브라우저에서 파일을 올리는 실행기는 하나만 돈다(10-31 a · b 두 줄 동시 올리기에서 첨부 0장) — 이 도구끼리는 임시 폴더의
  *   잠금으로 차례를 지키고, 「--두줄」은 다른 올리기 실행기가 안 도는 것을 알 때만 붙인다.
  * 차례: 사용자 폴더의 synk-vendor/_공용차례/차례.py(README). 막힘 · 한도 · 동의 창은 누르지 않고 멈춘다 — sorry면 두 줄 다 끈다(off 파일).
+ * 계정: 차례의 `계정` 출력(「gemini-a 77yuhbs https://gemini.google.com/u/1/」)에서 번호와 계정 이름을 함께 받아, 페이지 스크립트가 화면의 계정
+ *   표시와 대조한다 — 다르면 올리기 전에 멈춘다. 11-07 ego 기본 프로필이 `Profile 2`(「유호 (Chrome)」)로 바뀌어 구글 로그인이 그 프로필에만 있고
+ *   순번도 달라졌다(a 77yuhbs /u/1 · b unmet25 /u/5). 공간은 그 프로필에 새 이름(`-p2`)으로 만든다 — 이름이 같은 옛 공간은 「유호」 프로필 그대로 열린다.
  * 함정: docs/현장노트/gemini_사진.md 「영상 올려 분석시키기」. 시험: node --test tests/아르곤웹.test.js
  */
 const fs = require('node:fs');
@@ -31,7 +36,8 @@ const crypto = require('node:crypto');
 const { spawn, spawnSync } = require('node:child_process');
 
 const 페이지 = path.join(__dirname, '아르곤웹.mjs');
-const 기본공간 = 'synk-argon-web';
+const 기본공간 = 'synk-argon-web-p2'; // 11-07 Profile 2로 옮김(옛 'synk-argon-web'은 「유호」 프로필 — 구글 로그아웃)
+const 기본프로필 = 'Profile 2';
 const 첨부한도 = 10;
 const 지시문한도 = 4300;
 const 한차례 = { 건: 6, 새건마감: 12 * 60_000, 다시읽기마감: 15 * 60_000 }; // 한 건 3~8분 — 12분 뒤에는 새 건을 시작하지 않는다(20분 안)
@@ -132,10 +138,11 @@ function 줄이름(jobs, o = {}) {
   return `argonweb-${crypto.createHash('sha1').update(seed).digest('hex').slice(0, 6)}`;
 }
 
-function 페이지글(job, u, mode) {
+function 페이지글(job, u, mode, 계정 = '') {
   const JOB = {
     mode, files: job.files.map(슬래시), prompt: job.prompt, out: 슬래시(job.out), shots: 슬래시(job.shots), u: Number(u),
-    space: job.space || 기본공간, head: job.head || '아르곤 답', mark: 슬래시(표시경로(job.out)),
+    account: 계정 || job.account || '', space: job.space || 기본공간, profile: job.profile || 기본프로필,
+    head: job.head || '아르곤 답', mark: 슬래시(표시경로(job.out)),
     ...(job.failShot ? { failShot: 슬래시(job.failShot) } : {}),
     ...(job.answerMin ? { answerMin: job.answerMin } : {}), ...(job.sentWaitSec ? { sentWaitSec: job.sentWaitSec } : {}),
   };
@@ -177,6 +184,12 @@ function 다시할일(j) {
 function 계정번호(글) {
   const m = /\/u\/(\d+)\//.exec(String(글 || ''));
   return m ? Number(m[1]) : null;
+}
+
+// 차례 `계정` 출력의 둘째 칸(계정 이름) — 번호를 계정 이름으로 바꾸는 표를 따로 두지 않는다(로그인이 바뀌면 순번이 바뀐다, 11-07)
+function 계정이름(글) {
+  const m = /^gemini-[a-z]+\s+(\S+)\s+https:\/\/gemini\.google\.com\/u\/\d+\//m.exec(String(글 || ''));
+  return m ? m[1] : '';
 }
 
 // ── 차례 · 잠금 ──
@@ -228,9 +241,9 @@ async function 올리기잠금(이름) {
 
 // ── 한 건 ──
 
-function 페이지돌리기(job, u, mode) {
-  const script = 페이지글(job, u, mode);
-  const 상한 = ((job.answerMin || 12) + 18) * 60_000; // 페이지 스크립트 자체 상한(올리기 · 보냄 확인 · 답) 뒤의 마지막 그물
+function 페이지돌리기(job, u, mode, 계정) {
+  const script = 페이지글(job, u, mode, 계정);
+  const 상한 = (mode === '확인' ? 5 : (job.answerMin || 12) + 18) * 60_000; // 페이지 스크립트 자체 상한(올리기 · 보냄 확인 · 답) 뒤의 마지막 그물 — 확인은 화면 하나라 5분
   return new Promise((resolve) => {
     const child = spawn('ego-browser nodejs', { shell: true, windowsHide: true });
     const 조각 = [];
@@ -247,10 +260,10 @@ function 페이지돌리기(job, u, mode) {
   });
 }
 
-async function 한건(job, u, mode) {
-  console.log(`  ${시각()} ${mode} ${job.이름} — 첨부 ${job.files.length}개 · 지시문 ${job.prompt.length}자 · 계정 /u/${u}`);
+async function 한건(job, u, mode, 계정) {
+  console.log(`  ${시각()} ${mode} ${job.이름} — 첨부 ${job.files.length}개 · 지시문 ${job.prompt.length}자 · 계정 /u/${u}${계정 ? ` ${계정}` : ''}`);
   const 시작 = Date.now();
-  const run = await 페이지돌리기(job, u, mode);
+  const run = await 페이지돌리기(job, u, mode, 계정);
   const r = 결과가르기(run.출력, fs.existsSync(표시경로(job.out)), 새답(job.out, 시작));
   if (r.결과 === '받음') fs.rmSync(표시경로(job.out), { force: true }); // 답을 썼는데 표시가 남은 판 — 다음 부름이 읽기로 가지 않게
   return r;
@@ -261,7 +274,7 @@ async function 한건(job, u, mode) {
 async function 돌리기(jobs, o, 처음) {
   const 문제 = jobs.flatMap((j) => 작업문제(j).map((p) => `${j.이름}: ${p}`));
   if (문제.length) { for (const p of 문제) console.error(`  ✗ ${p}`); console.error('작업 파일을 고친 뒤 다시 부른다(아무것도 보내지 않았다).'); return 2; }
-  if (o.차례없이 && !/^\d$/.test(String(o.u || ''))) { console.error('--차례없이는 --u <계정 번호>(a 줄 4 · b 줄 1)와 함께 — 차례는 부르는 쪽이 쥐고 있어야 한다'); return 2; }
+  if (o.차례없이 && !/^\d$/.test(String(o.u || ''))) { console.error('--차례없이는 --u <계정 번호>(차례 `계정`이 준 번호 — 11-07부터 a 줄 1 · b 줄 5)와 함께, --계정 <이름>도 주면 화면 계정과 대조한다 — 차례는 부르는 쪽이 쥐고 있어야 한다'); return 2; }
   const 결과 = [];
   const 남은 = [];
   for (const j of jobs) {
@@ -277,11 +290,13 @@ async function 돌리기(jobs, o, 처음) {
   try {
     let 이어실패 = 0;
     while (남은.length && !멈춤) {
-      let u = Number(o.u);
+      let u = Number(o.u), 계정 = o.계정 || '';
       if (!o.차례없이) {
         await 차례기다리기(이름, 할일글, o.두줄);
-        u = 계정번호(차례(['계정', 이름]).out);
-        if (!u) { 차례(['내려놓기', 이름]); throw new Error('잡은 줄의 계정 주소를 못 읽음'); }
+        const 줄 = 차례(['계정', 이름]).out;
+        u = 계정번호(줄);
+        계정 = 계정이름(줄);
+        if (u === null || !계정) { 차례(['내려놓기', 이름]); throw new Error(`잡은 줄의 계정 주소 · 이름을 못 읽음: ${줄}`); }
       }
       const 시작 = Date.now();
       let 건 = 0, 잃음 = false;
@@ -290,12 +305,12 @@ async function 돌리기(jobs, o, 처음) {
         while (남은.length && !멈춤 && !잃음 && 건 < 한차례.건 && Date.now() - 시작 < 한차례.새건마감) {
           const j = 남은.shift();
           건 += 1;
-          let r = await 한건(j, u, j.할일);
+          let r = await 한건(j, u, j.할일, 계정);
           if (!o.차례없이 && 차례(['살아있음', 이름]).code !== 0) 잃음 = true;
           if (r.결과 === '보냄' && !r.늦음 && !잃음 && 건 < 한차례.건 && Date.now() - 시작 < 한차례.다시읽기마감) {
             await 쉬기(60_000); // 보낸 뒤 끊긴 판 — 다시 보내지 않고 같은 탭을 읽는다
             건 += 1;
-            const r2 = await 한건(j, u, '읽기');
+            const r2 = await 한건(j, u, '읽기', 계정);
             if (r2.결과 === '받음') r = r2;
           }
           if (r.결과 === '실패') {
@@ -321,6 +336,35 @@ async function 돌리기(jobs, o, 처음) {
   } finally { 풀기(); }
   for (const j of 남은) 결과.push({ 작업: j, 결과: '안 함', 까닭: 멈춤 || '' });
   return 보고(결과, 멈춤);
+}
+
+// 계정 확인만 — 차례를 잡고 그 줄 계정의 새 대화 화면을 열어 계정 표시만 대조하고 닫는다(올리기 · 보내기 없음). 로그인 · 프로필이 바뀐 뒤 쓴다(11-07).
+async function 확인(o) {
+  const 이름 = o.이름 || 'argonweb-check';
+  if (/[_\s]/.test(이름)) { console.error('--이름에는 밑줄 · 띄어쓰기를 쓰지 않는다'); return 2; }
+  if (o.차례없이 && (!/^\d$/.test(String(o.u || '')) || !o.계정)) { console.error('--차례없이 확인은 --u <번호> --계정 <이름>과 함께 — 차례는 부르는 쪽이 쥐고 있어야 한다'); return 2; }
+  const out = path.join(os.tmpdir(), `synk-argonweb-${이름}-확인.md`);
+  const job = { 이름: '계정 확인', files: [], prompt: '', out, shots: path.dirname(out), space: o.공간 || 기본공간, head: '계정 확인', answerMin: 1 };
+  let u = Number(o.u), 계정 = o.계정 || '';
+  if (!o.차례없이) {
+    await 차례기다리기(이름, '아르곤웹 계정 확인(올리기 · 보내기 없음)', o.두줄);
+    const 줄 = 차례(['계정', 이름]).out;
+    u = 계정번호(줄);
+    계정 = 계정이름(줄);
+  }
+  try {
+    if (u === null || !계정) { console.error('잡은 줄의 계정 주소 · 이름을 못 읽음'); return 1; }
+    console.log(`  ${시각()} 확인 — 계정 /u/${u} ${계정} · 공간 ${job.space}`);
+    const run = await 페이지돌리기(job, u, '확인', 계정);
+    const 본 = String(run.출력).split(/\r?\n/).map((l) => { try { return JSON.parse(l.trim()); } catch { return null; } }).find((x) => x && x.step === 'account');
+    const r = 결과가르기(run.출력, false);
+    const 통과 = r.결과 === '받음';
+    console.log(`${통과 ? '통과' : '안 됨'} · /u/${u} ${계정} — 화면 ${본 ? 본.who || '계정 표시 없음' : '계정 단계 전에 끝남'}${통과 ? '' : ` · ${r.까닭}`}`);
+    if (r.결과 === '멈춤' && /sorry|로봇/.test(r.까닭) && !o.차례없이) { 줄끄기(`로봇 확인(sorry) · ${이름} 계정 확인`); console.log('  두 줄을 껐다(gemini-a.off · gemini-b.off) — 유호님이 ego에서 확인을 누르신 뒤 지운다'); }
+    return 통과 ? 0 : 1;
+  } finally {
+    if (!o.차례없이) console.log(`  차례 · ${차례(['내려놓기', 이름]).out.split(/\r?\n/).pop()}`);
+  }
 }
 
 function 보고(결과, 멈춤) {
@@ -465,6 +509,7 @@ async function main(argv) {
     if (o.json) console.log(JSON.stringify(r, null, 1)); else 점검보고(r);
     return r.막힘 ? 1 : 0;
   }
+  if (cmd === '확인') return 확인(o);
   if ((cmd === '보내기' || cmd === '읽기') && (rest.length || o.파일.length)) {
     let jobs;
     try { jobs = o.파일.length ? [깃발작업(o)] : rest.map((f) => 작업읽기(f, o)); } catch (e) { console.error(e.message); return 2; }
@@ -473,7 +518,8 @@ async function main(argv) {
   console.error('사용: node tools/아르곤웹.js 점검 <지시문 파일…> [--json] [--없이 <항목,…>]\n'
     + '      node tools/아르곤웹.js 보내기 <작업.json…> [--이름 <줄 이름>] [--두줄] [--덮어쓰기] [--차례없이 --u <번호>]\n'
     + '      node tools/아르곤웹.js 보내기 --파일 <사진·글…> --지시문 <지시문 파일> --답 <답.md> [--머리 <답 머리 글>]\n'
-    + '      node tools/아르곤웹.js 읽기 <작업.json…> [같은 선택]');
+    + '      node tools/아르곤웹.js 읽기 <작업.json…> [같은 선택]\n'
+    + '      node tools/아르곤웹.js 확인 [--이름 <줄 이름>] [--두줄] [--차례없이 --u <번호> --계정 <이름>]');
   return 2;
 }
 
@@ -482,6 +528,6 @@ if (require.main === module) {
 }
 
 module.exports = {
-  parseArgs, 작업만들기, 작업읽기, 작업문제, 할일정하기, 줄이름, 페이지글, 결과가르기, 계정번호, 표시경로, 종류, 칩이름,
-  지시문읽기, 점검한편, 점검, 모호한좌우, 충돌표, 첨부한도, 지시문한도, 기본공간, 페이지, 새답, 다시할일,
+  parseArgs, 작업만들기, 작업읽기, 작업문제, 할일정하기, 줄이름, 페이지글, 결과가르기, 계정번호, 계정이름, 표시경로, 종류, 칩이름,
+  지시문읽기, 점검한편, 점검, 모호한좌우, 충돌표, 첨부한도, 지시문한도, 기본공간, 기본프로필, 페이지, 새답, 다시할일,
 };

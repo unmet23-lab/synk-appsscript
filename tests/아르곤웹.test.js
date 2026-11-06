@@ -94,17 +94,22 @@ test('줄 이름 — 같은 작업이면 같은 이름(내 차례 사이 5분), 
 
 test('페이지 글 — JOB 머리(슬래시 경로 · 계정 번호 · 표시 경로) + 페이지 스크립트, 오마주 영상 작업도 같은 스크립트', () => {
   const j = 웹.작업만들기({ files: ['C:\\a\\대표.jpg', 'C:\\a\\지시문.txt'], prompt: '질문', out: 'C:\\a\\답.md' }, 'C:\\a', 't');
-  const s = 웹.페이지글(j, '4', '보내기');
+  const s = 웹.페이지글(j, '1', '보내기', '77yuhbs');
   const JOB = JSON.parse(s.split('\n')[0].replace(/^globalThis\.JOB = /, '').replace(/;$/, ''));
   assert.equal(JOB.mode, '보내기');
-  assert.equal(JOB.u, 4);
+  assert.equal(JOB.u, 1);
+  assert.equal(JOB.account, '77yuhbs', '차례가 준 계정 이름을 페이지 스크립트가 화면 계정과 대조한다(11-07)');
   assert.ok(JOB.files.every((f) => !f.includes('\\')), JOB.files.join(','));
   assert.equal(JOB.mark, `${JOB.out}.보냄.json`);
   assert.equal(JOB.space, 웹.기본공간);
-  assert.ok(s.includes('await taskSpace(space)'));
+  assert.equal(JOB.profile, 'Profile 2', '11-07부터 구글 로그인은 ego 「유호 (Chrome)」 프로필에만 있다');
+  assert.notEqual(웹.기본공간, 'synk-argon-web', '옛 이름 공간은 「유호」(Profile 1) 그대로 열려 로그아웃 화면이다');
+  assert.ok(s.includes('await taskSpace(space, { profileId: profile })'));
+  assert.equal(JSON.parse(웹.페이지글(j, 5, '확인').split('\n')[0].replace(/^globalThis\.JOB = /, '').replace(/;$/, '')).account, '', '계정을 안 주면 대조하지 않는다');
   const oj = 오마주.argonJob(path.join('C:', 'x', 'yt_abc'), path.join('C:', 'x', 'yt_abc', '원본.mp4'), '첫 분석');
-  const OJ = JSON.parse(웹.페이지글(oj, 4, '보내기').split('\n')[0].replace(/^globalThis\.JOB = /, '').replace(/;$/, ''));
-  assert.equal(OJ.space, 'synk-homage-argon', '오마주는 예전 작업 공간 그대로(밖의 읽기 스크립트가 그 공간을 본다)');
+  const OJ = JSON.parse(웹.페이지글(oj, 1, '보내기').split('\n')[0].replace(/^globalThis\.JOB = /, '').replace(/;$/, ''));
+  assert.equal(OJ.space, 'synk-homage-argon-p2', '오마주도 11-07 Profile 2 새 공간(옛 synk-homage-argon은 「유호」 프로필)');
+  assert.equal(OJ.profile, 'Profile 2');
   assert.equal(OJ.files.length, 1);
   assert.match(OJ.out, /아르곤_답\.md$/);
   assert.match(OJ.failShot, /아르곤_실패\.png$/);
@@ -145,9 +150,13 @@ test('새 답 · 다시 할 일 — 이번 실행에 써진 답만 받음, 실�
 });
 
 test('계정 번호 · 파일 종류 — 잡은 줄의 주소에서 /u/번호, 글 파일 칩 이름은 확장자를 뺀다', () => {
-  assert.equal(웹.계정번호('gemini-a 계정 https://gemini.google.com/u/4/'), 4);
-  assert.equal(웹.계정번호('gemini-b 계정 https://gemini.google.com/u/1/'), 1);
+  assert.equal(웹.계정번호('gemini-a 77yuhbs https://gemini.google.com/u/1/'), 1);
+  assert.equal(웹.계정번호('gemini-b unmet25 https://gemini.google.com/u/5/'), 5);
   assert.equal(웹.계정번호('쥔 줄 없음'), null);
+  // 계정 이름은 번호에서 바꾸지 않고 차례 출력의 둘째 칸으로 — 로그인이 바뀌면 순번이 바뀐다(11-07 a /u/4 → /u/1)
+  assert.equal(웹.계정이름('gemini-a 77yuhbs https://gemini.google.com/u/1/'), '77yuhbs');
+  assert.equal(웹.계정이름('잡음\ngemini-b unmet25 https://gemini.google.com/u/5/\n'), 'unmet25');
+  assert.equal(웹.계정이름('쥔 줄 없음'), '');
   assert.equal(웹.종류('A_h1.jpg'), '사진');
   assert.equal(웹.종류('원본.MP4'), '영상');
   assert.equal(웹.종류('지시문_리더세트15_굽기전.txt'), '글');
@@ -171,6 +180,12 @@ test('페이지 스크립트 — 읽기는 주소를 옮기거나 누르지 않�
   assert.match(s, /const chipN = files\.filter\(\(f\) => kind\(f\) !== "글"\)\.length/, '「첨부파일 닫기」로는 사진 · 영상만 센다(10-31 글 칩)');
   assert.match(s, /insertText\("\."\)/, '빈 입력창 모드 단추(10-31) — 「.」을 먼저 넣는다');
   assert.doesNotMatch(s, /\/u\/4\//, '계정 번호는 JOB.u로만');
+  // 11-07 계정 대조 · 확인 모드 — 계정이 다르면 올리기 전에 멈추고, 확인은 화면만 열고 닫는다
+  const 확인 = s.slice(s.indexOf('if (mode === "확인") {'), s.indexOf('} else {', s.indexOf('if (mode === "확인") {')));
+  assert.ok(확인.length > 20, '확인 갈래를 찾음');
+  assert.match(s, /for \(let i = 0; i < 45; i\+\+\) \{ await page\.waitForTimeout\(2000\); if \(\/sorry\/\.test\(await page\.url\(\)/, '첫 화면 기다림은 바퀴마다 sorry 주소부터 본다(11-07 26분 쥠)');
+  assert.doesNotMatch(확인, /메시지 보내기|파일 업로드|writeMark|insertText/, '확인은 올리거나 보내지 않는다');
+  assert.ok(s.indexOf('계정이 ${account}가 아님') > 0 && s.indexOf('계정이 ${account}가 아님') < s.indexOf('await writeMark(null)'), '계정 대조는 올리기 · 보내기 전에');
 });
 
 test('지시문 점검 — 필수 문장을 다 갖추면 빠짐 없음', () => {
