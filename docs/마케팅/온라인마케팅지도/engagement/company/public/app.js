@@ -499,7 +499,7 @@ async function loginInfoModal() {
   // Opened from the settings window, whose entry button disappears: closing returns to the account button instead.
   const fromDialog = overlay.contains(document.activeElement);
   modal('로그인 정보', escape(state.user?.name || ''), '<p class="notice" role="status">로그인 정보를 불러오고 있어요.</p>');
-  if (fromDialog) state.returnFocus = $('.appbar-account') || null;
+  if (fromDialog) state.returnFocus = $('.rail-me') || null;
   const request = state.modalRequest;
   try {
     const [me, synk] = await Promise.all([api('/api/me'), typeof synkCompanyRequest === 'function' ? synkCompanyRequest('status').catch(() => null) : null]);

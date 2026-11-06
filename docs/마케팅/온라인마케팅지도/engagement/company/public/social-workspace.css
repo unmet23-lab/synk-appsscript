@@ -4,7 +4,6 @@
    선택자는 :root .synk-workspace .sw-workspace 로 시작해 signal.css(뒤에 읽힘)의 공통 단추·입력 규칙보다 앞선다. */
 @font-face{font-family:'SNS Latin';src:url('/messenger/assets/InterTight-Medium.ttf') format('truetype');font-weight:100 599;font-display:swap;unicode-range:U+0020-007E}
 @font-face{font-family:'SNS Latin';src:url('/messenger/assets/InterTight-Bold.ttf') format('truetype');font-weight:600 1000;font-display:swap;unicode-range:U+0020-007E}
-.workspace-rail .rail-item[data-tab=social]>span{letter-spacing:-.05em;white-space:nowrap}
 
 /* ── 토큰 ── */
 :root .synk-workspace .sw-workspace{

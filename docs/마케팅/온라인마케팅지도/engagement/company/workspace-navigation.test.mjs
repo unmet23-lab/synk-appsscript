@@ -135,7 +135,7 @@ test('resize before the app state script loads does not break workspace initiali
 
 test('only daily work is in primary navigation; management remains role scoped',()=>{
   for(const [role,count] of [['admin',3],['manager',2],['member',1],['viewer',1]]){
-    const f=fixture(role);assert.deepEqual(Array.from(f.run('workspacePrimaryTabs.map(row=>row[0])')),['workroom','teaching','social','messenger']);
+    const f=fixture(role);assert.deepEqual(Array.from(f.run('workspacePrimaryTabs.map(row=>row[0])')),['home','messenger','workroom','social','teaching']);
     assert.equal(f.run('workspaceUtilityTabs().length'),count);
   }
 });
