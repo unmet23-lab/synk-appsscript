@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1ade7-ac20-7033-8ef4-0248f55a5603"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 사용해, 사장의 집중한 표정과 유리문 밖 대기 줄이 함께 또렷하게 보이는 세로 사진으로 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":92390,"cached_input_tokens":83968,"cache_write_input_tokens":0,"output_tokens":1805,"reasoning_output_tokens":583}}

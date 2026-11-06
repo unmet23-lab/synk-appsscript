@@ -1,0 +1,66 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n11",
+ "text": "리뷰 백 개를 요약시켰더니, 1번이 국물.",
+ "show": "리뷰 100개를 요약시켰더니 1번이 국물",
+ "dur": 2.277,
+ "words": [
+  {
+   "text": "리뷰",
+   "start": 0.02,
+   "end": 0.203
+  },
+  {
+   "text": "백",
+   "start": 0.26,
+   "end": 0.358
+  },
+  {
+   "text": "개를",
+   "start": 0.401,
+   "end": 0.598
+  },
+  {
+   "text": "요약시켰더니,",
+   "start": 0.64,
+   "end": 1.246
+  },
+  {
+   "text": "1번이",
+   "start": 1.443,
+   "end": 1.767
+  },
+  {
+   "text": "국물.",
+   "start": 1.809,
+   "end": 2.277
+  }
+ ],
+ "source": {
+  "key": "44535d5848559a6f04f42f7d10ebe533",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1106,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 149
+ }
+}

@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n01",
+ "text": "리뷰 백 개를, AI한테 요약시켰더니,",
+ "show": "리뷰 100개를 AI한테 요약시켰더니",
+ "dur": 2.398,
+ "words": [
+  {
+   "text": "리뷰",
+   "start": 0.03,
+   "end": 0.211
+  },
+  {
+   "text": "백",
+   "start": 0.271,
+   "end": 0.372
+  },
+  {
+   "text": "개를,",
+   "start": 0.432,
+   "end": 0.673
+  },
+  {
+   "text": "AI한테",
+   "start": 1.074,
+   "end": 1.576
+  },
+  {
+   "text": "요약시켰더니,",
+   "start": 1.636,
+   "end": 2.398
+  }
+ ],
+ "source": {
+  "key": "5e14bea38c500246bc9a7991cc2ad3c0",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1106,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 168
+ }
+}

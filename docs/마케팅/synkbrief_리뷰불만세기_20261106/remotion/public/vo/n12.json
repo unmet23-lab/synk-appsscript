@@ -1,0 +1,46 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n12",
+ "text": "기다림은, 그다음이었고요.",
+ "show": "기다림은 그다음이었고요",
+ "dur": 1.316,
+ "words": [
+  {
+   "text": "기다림은,",
+   "start": 0.02,
+   "end": 0.417
+  },
+  {
+   "text": "그다음이었고요.",
+   "start": 0.464,
+   "end": 1.316
+  }
+ ],
+ "source": {
+  "key": "fc1edf2ac1f0eee60147cba55b5473ac",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1106,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 158
+ }
+}

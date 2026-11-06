@@ -1,0 +1,66 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n08",
+ "text": "리뷰는, 요약 말고 세어 달라고 하세요.",
+ "show": "리뷰는 요약 말고 세어 달라고 하세요",
+ "dur": 2.256,
+ "words": [
+  {
+   "text": "리뷰는,",
+   "start": 0.02,
+   "end": 0.402
+  },
+  {
+   "text": "요약",
+   "start": 0.745,
+   "end": 0.966
+  },
+  {
+   "text": "말고",
+   "start": 1.026,
+   "end": 1.268
+  },
+  {
+   "text": "세어",
+   "start": 1.328,
+   "end": 1.509
+  },
+  {
+   "text": "달라고",
+   "start": 1.57,
+   "end": 1.791
+  },
+  {
+   "text": "하세요.",
+   "start": 1.851,
+   "end": 2.256
+  }
+ ],
+ "source": {
+  "key": "8413d94ea0896af6aa784851fcb6ab64",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1106,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 173
+ }
+}

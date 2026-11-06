@@ -1,0 +1,66 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n04",
+ "text": "근데 같은 리뷰를, 이렇게 다시 물었어요.",
+ "show": "근데 같은 리뷰를 이렇게 다시 물었어요",
+ "dur": 2.258,
+ "words": [
+  {
+   "text": "근데",
+   "start": 0.02,
+   "end": 0.206
+  },
+  {
+   "text": "같은",
+   "start": 0.252,
+   "end": 0.531
+  },
+  {
+   "text": "리뷰를,",
+   "start": 0.577,
+   "end": 0.886
+  },
+  {
+   "text": "이렇게",
+   "start": 1.211,
+   "end": 1.412
+  },
+  {
+   "text": "다시",
+   "start": 1.459,
+   "end": 1.675
+  },
+  {
+   "text": "물었어요.",
+   "start": 1.737,
+   "end": 2.258
+  }
+ ],
+ "source": {
+  "key": "cc45cb2dfd765d700baf834edb9a445f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1106,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 144
+ }
+}

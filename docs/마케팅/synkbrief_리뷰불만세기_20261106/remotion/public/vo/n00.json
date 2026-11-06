@@ -1,0 +1,51 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n00",
+ "text": "AI가, 국물부터 고치래서요.",
+ "show": "AI가 국물부터 고치래서요",
+ "dur": 2.078,
+ "words": [
+  {
+   "text": "AI가,",
+   "start": 0.02,
+   "end": 0.462
+  },
+  {
+   "text": "국물부터",
+   "start": 0.823,
+   "end": 1.305
+  },
+  {
+   "text": "고치래서요.",
+   "start": 1.365,
+   "end": 2.078
+  }
+ ],
+ "source": {
+  "key": "269a1318775b0f711ce39f491fe7ff41",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1106,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 143
+ }
+}

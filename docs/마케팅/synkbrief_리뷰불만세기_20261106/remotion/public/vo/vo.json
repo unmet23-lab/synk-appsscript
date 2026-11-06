@@ -1,0 +1,153 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1106,
+  "lufs": -17
+ },
+ "made": "2026-11-06T00:18:12.531Z",
+ "lines": [
+  {
+   "id": "n01",
+   "text": "리뷰 백 개를, AI한테 요약시켰더니,",
+   "show": "리뷰 100개를 AI한테 요약시켰더니",
+   "scene": "훅 뒤 — 무엇을 했나",
+   "dur": 2.398,
+   "syllablesPerSec": 5.42,
+   "src": "n01.wav",
+   "key": "5e14bea38c500246bc9a7991cc2ad3c0",
+   "words": 5
+  },
+  {
+   "id": "n02",
+   "text": "먼저 고칠 1번이, 국물이래요.",
+   "show": "먼저 고칠 1번이 국물이래요",
+   "scene": "실제 답 — 먼저 고칠 1번",
+   "dur": 1.609,
+   "syllablesPerSec": 6.84,
+   "src": "n02.wav",
+   "key": "1ab89601ea649fed86c0891c83acf16f",
+   "words": 4
+  },
+  {
+   "id": "n03",
+   "text": "그래서 사흘째, 국물만 끓였죠.",
+   "show": "그래서 사흘째 국물만 끓였죠",
+   "scene": "사흘째 국물",
+   "dur": 1.846,
+   "syllablesPerSec": 6.5,
+   "src": "n03.wav",
+   "key": "b46be043004a1e0993bdc8166f06ed81",
+   "words": 4
+  },
+  {
+   "id": "n04",
+   "text": "근데 같은 리뷰를, 이렇게 다시 물었어요.",
+   "show": "근데 같은 리뷰를 이렇게 다시 물었어요",
+   "scene": "반전 — 다시 묻기",
+   "dur": 2.258,
+   "syllablesPerSec": 7.09,
+   "src": "n04.wav",
+   "key": "cc45cb2dfd765d700baf834edb9a445f",
+   "words": 6
+  },
+  {
+   "id": "n05",
+   "text": "불만을 종류별로 세어서, 많은 순서로.",
+   "show": "불만을 종류별로 세어서 많은 순서로",
+   "scene": "따라 할 한 줄",
+   "dur": 2.292,
+   "syllablesPerSec": 6.54,
+   "src": "n05.wav",
+   "key": "dd77167a8a24903f7f0460f7525d19a0",
+   "words": 5
+  },
+  {
+   "id": "n06",
+   "text": "1위는 기다림. 국물은, 백 개 중에 네 개.",
+   "show": "1위는 기다림 · 국물은 100개 중 4개",
+   "scene": "실제 세기 답",
+   "dur": 2.089,
+   "syllablesPerSec": 6.7,
+   "src": "n06.wav",
+   "key": "797c87c73bbb62b54b99d8b0fc1e9c4b",
+   "words": 8
+  },
+  {
+   "id": "n07",
+   "text": "그날부터, 국자 대신 진동벨.",
+   "show": "그날부터 국자 대신 진동벨",
+   "scene": "끝 앞",
+   "dur": 1.961,
+   "syllablesPerSec": 5.61,
+   "src": "n07.wav",
+   "key": "f5c735859feee4e1a27b5299163f8d05",
+   "words": 4
+  },
+  {
+   "id": "n00",
+   "text": "AI가, 국물부터 고치래서요.",
+   "show": "AI가 국물부터 고치래서요",
+   "scene": "머리 — 해설로 연다(v4)",
+   "dur": 2.078,
+   "syllablesPerSec": 4.81,
+   "src": "n00.wav",
+   "key": "269a1318775b0f711ce39f491fe7ff41",
+   "words": 3
+  },
+  {
+   "id": "n11",
+   "text": "리뷰 백 개를 요약시켰더니, 1번이 국물.",
+   "show": "리뷰 100개를 요약시켰더니 1번이 국물",
+   "scene": "실제 답 — 1번이 국물(v4)",
+   "dur": 2.277,
+   "syllablesPerSec": 6.59,
+   "src": "n11.wav",
+   "key": "44535d5848559a6f04f42f7d10ebe533",
+   "words": 6
+  },
+  {
+   "id": "n12",
+   "text": "기다림은, 그다음이었고요.",
+   "show": "기다림은 그다음이었고요",
+   "scene": "실제 답 — 기다림은 2번(v4)",
+   "dur": 1.316,
+   "syllablesPerSec": 8.36,
+   "src": "n12.wav",
+   "key": "fc1edf2ac1f0eee60147cba55b5473ac",
+   "words": 2
+  },
+  {
+   "id": "n13",
+   "text": "사흘 밤낮 국물만 끓였는데, 줄은 그대로.",
+   "show": "사흘 밤낮 국물만 끓였는데 줄은 그대로",
+   "scene": "사흘 밤낮(v4)",
+   "dur": 2.595,
+   "syllablesPerSec": 6.17,
+   "src": "n13.wav",
+   "key": "e9659c94a11f8c337e385f8c391f5880",
+   "words": 6
+  },
+  {
+   "id": "n08",
+   "text": "리뷰는, 요약 말고 세어 달라고 하세요.",
+   "show": "리뷰는 요약 말고 세어 달라고 하세요",
+   "scene": "끝 — 따라 할 한 줄로 맺음(v6)",
+   "dur": 2.256,
+   "syllablesPerSec": 6.65,
+   "src": "n08.wav",
+   "key": "8413d94ea0896af6aa784851fcb6ab64",
+   "words": 6
+  }
+ ]
+}

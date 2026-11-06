@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n05",
+ "text": "불만을 종류별로 세어서, 많은 순서로.",
+ "show": "불만을 종류별로 세어서 많은 순서로",
+ "dur": 2.292,
+ "words": [
+  {
+   "text": "불만을",
+   "start": 0.02,
+   "end": 0.392
+  },
+  {
+   "text": "종류별로",
+   "start": 0.441,
+   "end": 0.845
+  },
+  {
+   "text": "세어서,",
+   "start": 0.894,
+   "end": 1.201
+  },
+  {
+   "text": "많은",
+   "start": 1.59,
+   "end": 1.816
+  },
+  {
+   "text": "순서로.",
+   "start": 1.865,
+   "end": 2.292
+  }
+ ],
+ "source": {
+  "key": "dd77167a8a24903f7f0460f7525d19a0",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1106,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 151
+ }
+}
