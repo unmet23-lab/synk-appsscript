@@ -34,12 +34,16 @@ test('the server serves every new file and the service worker caches the shell b
   for(const name of ["'film.css'","'film-legacy.css'","'reel-wide','reel-tall'","'reel-wide-poster','reel-tall-poster','shard','end'","'file-gift-set','file-gift-ampoule','file-gift-jar','still-shards','still-lid'","'sheet-gift-'","'model-scene-'","NotoSerifKR-300.woff2"])assert.ok(server.includes(name),name);
   for(const name of ['film.css','film-legacy.css','film-home.mjs','film-review.mjs','assets/NotoSerifKR-300.woff2'])assert.ok(sw.includes(name),name);
   assert.doesNotMatch(sw,/reel-(wide|tall)\.mp4/,'the reel is not stored on the device');
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v29-film-fit-20261105';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v30-shimo-20261106';/);
 });
 test('customer screens name no tool and promise nothing the rules forbid',()=>{
   const words=new RegExp(`${TOOL_NAMES}|같은 얼굴|결제 전|무제한|납기|최고|최초|유일|1위|모루|MORU|드립백`);
   const body=source=>source.split('\n').filter(line=>!line.trim().startsWith('//')).join('\n');
   for(const name of ['film-home.mjs','film-views.mjs','film-review.mjs','demo-film.mjs','request-flow.mjs','films-view.mjs','feedback-rounds-view.mjs','room-view.mjs'])assert.doesNotMatch(body(read(name)),words,name);
+  // 11-06 대표작 이름을 「霜の肌理」로 바꿨다(유호님 「이 판으로 바꿔」) — 손님이 읽는 글에 옛 이름 · 뺀 라인 이름(서리꽃 앰플 = 霜花)이 남지 않는다.
+  for(const name of ['film-home.mjs','film-views.mjs','demo-film.mjs','demo.mjs','request-data.mjs','request-flow.mjs','films-view.mjs','views.mjs'])assert.doesNotMatch(body(read(name)),/유리결|YURIGYEOL|서리꽃 앰플|霜花/,name);
+  // 명조 칸(제목 · 작품 이름)에 들어간 「霜の肌理」는 기기 명조가 아니라 고딕으로 그린다 — 앱 글꼴 줄인 판에는 이 네 글자가 없다.
+  const css=read('film.css');assert.match(css,/@font-face\{font-family:'SX Name';src:local\('Malgun Gothic'\)[^}]*unicode-range:U\+306E,U\+7406,U\+808C,U\+971C\}/);assert.match(css,/--sx-serif:'SX Latin','Noto Serif KR','SX Name',serif/);
   const text=entryView({}).replace(/<[^>]+>/g,' ');
   assert.doesNotMatch(text,words);
   // 장면 이미지를 말하면 단서를 함께 둔다.
@@ -150,13 +154,13 @@ test('delivery draws its own player over the same film and keeps live refresh fr
   assert.ok(app.includes("if(main.querySelector('[data-final]'))finalHandle=mountFinal(main);"));
   assert.ok(app.includes("finalHandle?.unmount();finalHandle=null;"),'the old listeners go when the screen is redrawn');
 });
-const scriptDraft={round:1,oneLine:'서리꽃이 피는 순간',ratio:'9:16',model:null,cuts:[{seconds:1.5,what:'결정이 자라요.',say:'',text:''},{seconds:2,what:'이름이 떠요.',say:'한번 발라 봐요',text:'유리결'}]};
+const scriptDraft={round:1,oneLine:'서리꽃이 피는 순간',ratio:'9:16',model:null,cuts:[{seconds:1.5,what:'결정이 자라요.',say:'',text:''},{seconds:2,what:'이름이 떠요.',say:'한번 발라 봐요',text:'霜の肌理'}]};
 test('the text script is one lit sheet that reads every cut, with no empty strip',()=>{
   const html=draftView(scriptDraft);
   assert.match(html,/^<div class="sx-draft sx-dr is-script"/);
   assert.doesNotMatch(html,/sx-dr-bottom|data-frame|data-blank/,'no empty strip and no empty picture frame');
   assert.equal(html.split('class="sx-strip-cut sx-sheet-row').length-1,2);
-  assert.match(html,/data-cut="1"[^>]*>[\s\S]*0:01[\s\S]*이름이 떠요\.[\s\S]*한번 발라 봐요[\s\S]*유리결/,'a row carries the time, the action, the line and the on-screen words');
+  assert.match(html,/data-cut="1"[^>]*>[\s\S]*0:01[\s\S]*이름이 떠요\.[\s\S]*한번 발라 봐요[\s\S]*霜の肌理/,'a row carries the time, the action, the line and the on-screen words');
   // mountDraft가 찾는 칸은 모두 있어야 한다.
   for(const hook of ['data-strip','data-head','data-tc','data-tc-no','data-cut-no','data-cut-sec','data-cut-what','data-cut-say','data-cut-text','data-draft-do="play"','data-draft-do="approve"','data-comment-input'])assert.ok(html.includes(hook),hook);
   const pictures=draftView({...scriptDraft,cuts:scriptDraft.cuts.map(cut=>({...cut,src:'./a.webp'}))});
@@ -178,10 +182,10 @@ test('every kind offers four hand-picked models who fit that kind, and the whole
 });
 test('a customer is not shown empty scene fields, staff still are',()=>{
   const scene={id:'s1',title:'한 장면',description:'설명',duration:3,visibility:'customer',narration:'없음',screenText:''};
-  const said={...scene,id:'s2',narration:'한번 발라 봐요',screenText:'유리결'};
+  const said={...scene,id:'s2',narration:'한번 발라 봐요',screenText:'霜の肌理'};
   const build=mode=>projectView({mode,tab:'storyboard',canEdit:true,project:{id:'p',title:'편',ownerName:'담당',stage:'review',revision:1,versions:[],messages:[],studio:{scenes:[scene,said],sceneReviews:[],assets:[],comments:[]}}});
   const customer=build('customer');
-  assert.doesNotMatch(customer,/<dd>없음<\/dd>/);assert.match(customer,/<dd>한번 발라 봐요<\/dd>/);assert.match(customer,/<dd>유리결<\/dd>/);
+  assert.doesNotMatch(customer,/<dd>없음<\/dd>/);assert.match(customer,/<dd>한번 발라 봐요<\/dd>/);assert.match(customer,/<dd>霜の肌理<\/dd>/);
   assert.match(build('staff'),/<dd>없음<\/dd>/,'staff keep the full table');
 });
 // 11-05 밤 다음 판: 아르곤 H2 · M2, B3, B6, Fable F5, FA1 · FA2(r2), FA1(r3)과 운영에서 잰 쇼릴 이름 늦음.

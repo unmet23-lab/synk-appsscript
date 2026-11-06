@@ -7,7 +7,8 @@
 // v26(11-04): 의뢰 흐름 — 첫 화면 · 의뢰서 · 고객 방 · 1차안 · 내부 확인 모듈과 슬레이트 판 스타일.
 // v27(11-05): 시사실 판 — 첫 화면 · 의뢰서 · 고객 방 · 1차안 · 영상 확인 · 납품을 다시 그렸다. 첫 화면은 film.css만 싣고, 옛 CSS는 직원 화면과 프로젝트를 열 때 읽는다(목록에는 그대로 둔다). 쇼릴 영상은 이 목록에 없다.
 // v28(11-05 밤): 다음 판 — 첫 화면 값 줄을 의뢰서로만, 의뢰서 이전 · 다음 차례, 받은 링크 폼 닫기, 쇼릴 이름을 프레임에 맞춤. 목록은 그대로이고 바뀐 화면 모듈을 새로 받게 판만 올린다.
-const CACHE = 'synk-pulse-shell-v29-film-fit-20261105';
+// v30(11-06): 대표작 이름을 「霜の肌理」로 바꿨다(유호님 「이 판으로 바꿔」) — 그림 · 영상은 같은 이름에 바이트만 바뀌고 목록은 그대로다. 바뀐 화면 모듈 · film.css를 새로 받게 판만 올린다.
+const CACHE = 'synk-pulse-shell-v30-shimo-20261106';
 const BASE = '/pulse-app/';
 const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/SUIT.woff2','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);
 FILES.push(BASE+'assets/casting/f04.webp');

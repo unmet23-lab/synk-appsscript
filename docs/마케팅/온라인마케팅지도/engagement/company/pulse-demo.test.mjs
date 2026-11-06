@@ -24,14 +24,14 @@ test('seed uses fictional planning, local media and no pre-recorded customer cho
   assert.ok(s.assets.every(a=>a.url.startsWith('/pulse-app/demo-assets/')));
 });
 
-test('the demo is the flagship film 유리결 with its real revision and the old ad is gone from every line a customer can read',async()=>{
+test('the demo is the flagship film 霜の肌理 (renamed from 유리결 on 11-06) with its real revision and the old ad is gone from every line a customer can read',async()=>{
   const {demo}=setup(),p=project(demo);
-  assert.match(p.title,/유리결/);assert.match(p.summary,/가상 브랜드로 만든 자체 작품/);assert.equal(p.studio.strategy.data.channels.join(),'instagram,youtube');assert.equal(p.studio.strategy.data.durationSeconds,15);
+  assert.match(p.title,/霜の肌理/);assert.match(p.summary,/가상 브랜드로 만든 자체 작품/);assert.equal(p.studio.strategy.data.channels.join(),'instagram,youtube');assert.equal(p.studio.strategy.data.durationSeconds,15);
   assert.deepEqual(p.studio.scenes.map(scene=>scene.duration),[3,3,5,4],'the scene plan is the first draft: the products float for five seconds');
   await throughScenes(demo);demo.advance();const first=project(demo).versions.at(-1);assert.match(first.guide,/떠 있는 시간/);await action(demo,{action:'feedback',versionId:first.id,seconds:8,text:'떠 있는 시간이 길어요.'});assert.match(demo.guide().description,/뚜껑 접사/);demo.advance();
   const second=project(demo).versions.at(-1);assert.match(second.label,/뚜껑 접사/);assert.match(project(demo).messages.at(-1).text,/5초에서 2초/);
   const old=/모루|MORU|Moru|드립백|커피|마지막 문구|960×540|가로/;
-  for(const text of [JSON.stringify(project(demo)),JSON.stringify(demo.guide())])assert.doesNotMatch(text,old);
+  for(const text of [JSON.stringify(project(demo)),JSON.stringify(demo.guide())]){assert.doesNotMatch(text,old);assert.doesNotMatch(text,/유리결|YURIGYEOL|서리꽃 앰플|霜花/);}
   for(const file of ['demo.mjs','views.mjs','app.mjs'])assert.doesNotMatch(await readFile(new URL('./public/pulse-app/'+file,import.meta.url),'utf8'),/모루|MORU|Moru|드립백/,file);
   assert.match(await readFile(new URL('./public/pulse-app/views.mjs',import.meta.url),'utf8'),/href="\?demo=gift"/);
 });
@@ -111,7 +111,7 @@ test('storage-disabled and quota cases remain explicitly memory-only with no net
 });
 
 test('corrupt or manipulated local records never render server media or turn into real projects',()=>{
-  const store=storage();store.setItem(DEMO_STORAGE_KEY,'{invalid');let demo=createDemoSession({storage:store});assert.equal(demo.guide().action,'taste');demo.reset();assert.equal(JSON.parse(store.getItem(DEMO_STORAGE_KEY)).schema,3);
+  const store=storage();store.setItem(DEMO_STORAGE_KEY,'{invalid');let demo=createDemoSession({storage:store});assert.equal(demo.guide().action,'taste');demo.reset();assert.equal(JSON.parse(store.getItem(DEMO_STORAGE_KEY)).schema,4);{const old=JSON.parse(store.getItem(DEMO_STORAGE_KEY));old.schema=3;old.project.title='유리결 홀리데이 세트 15초 광고';store.setItem(DEMO_STORAGE_KEY,JSON.stringify(old));const again=createDemoSession({storage:store});assert.match(project(again).title,/霜の肌理/,'a schema 3 record that still carries the old name starts over');again.reset();}
   for(const mutate of [s=>{s.project.id='real-project';},s=>{s.project.studio.assets[0].url='/api/client-media/secret';},s=>{s.project.studio.concepts[0].imageUrl='https://example.com/tracking.png';},s=>{s.project.studio.scenes=[null];},s=>{s.project.studio.strategy.data.channels='invalid';}]){const record=JSON.parse(store.getItem(DEMO_STORAGE_KEY));mutate(record);store.setItem(DEMO_STORAGE_KEY,JSON.stringify(record));demo=createDemoSession({storage:store});assert.equal(project(demo).id,'00000000-0000-4000-8000-000000000001');assert.equal(demo.guide().action,'taste');assert.equal(project(demo).studio.assets[0].url,'/pulse-app/demo-assets/reference-warm.png');demo.reset();}
 });
 

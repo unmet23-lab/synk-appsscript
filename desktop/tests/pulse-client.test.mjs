@@ -35,6 +35,8 @@ test('the roster matches the website: twenty-one models and two idol teams of fo
 });
 
 test('the portfolio lists the three finished works and keeps the contest entry apart from the virtual brands',()=>{
+  // 11-06 대표작 이름은 「霜の肌理」다 — 손님이 읽는 글에 옛 이름이 남지 않는다.
+  assert.ok(PORTFOLIO[0].title.includes('「霜の肌理」'));assert.doesNotMatch(JSON.stringify(PORTFOLIO),/유리결|YURIGYEOL|서리꽃 앰플/);
   assert.deepEqual(PORTFOLIO.map(w=>w.id),['yurigyeol','maejin','hwaseong-cf']);
   assert.deepEqual(PORTFOLIO.map(w=>w.kind),['가상 브랜드로 만든 자체 작품','가상 브랜드로 만든 자체 작품','공모전 출품작']);
   assert.ok(!PORTFOLIO.some(w=>w.id==='model-casting'));
@@ -48,6 +50,8 @@ test('every model and work image is a recorded byte-for-byte copy of its public 
     const bytes=fs.readFileSync(path.join(desktop,'assets/pulse',file));
     assert.equal(bytes.length,row.bytes,file);
     assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),row.sha256,file);
+    // 11-06 대표작 霜の肌理: synk.im이 이 작품을 영상으로 보여 정지 그림이 없다 — 그 영상의 같은 원본에서 뽑은 장 하나만 출처를 적고 받는다.
+    if(row.publicFilm){assert.equal(file,'portfolio/yurigyeol.webp');assert.match(row.publicFilm,/^https:\/\/synk\.im\/assets\/.+\.mp4$/);assert.match(row.transformation,/^frame at [\d.]+ s of the approved 15 s film/);continue;}
     assert.match(row.publicUrl,/^https:\/\/synk\.im\/assets\//);
     assert.equal(row.transformation,'none; byte-for-byte copy');
   }

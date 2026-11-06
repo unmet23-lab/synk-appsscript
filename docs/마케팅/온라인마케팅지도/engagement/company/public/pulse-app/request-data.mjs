@@ -5,7 +5,7 @@ import {CASTING_MODELS} from './casting-catalog.mjs';
 const shot=code=>`./assets/request/model-scene-${code}.webp`;
 export const KINDS=Object.freeze([
   {id:'food',label:'음료 · 식품',note:'먹고 마시는 제품',shot:shot('f02'),who:'하린 · 상큼한 막내',group:'product'},
-  {id:'beauty',label:'화장품 · 뷰티',note:'스킨케어, 색조, 뷰티 기기',shot:'./assets/request/w-gift-sphere.webp',who:'「유리결」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품',group:'product'},
+  {id:'beauty',label:'화장품 · 뷰티',note:'스킨케어, 색조, 뷰티 기기',shot:'./assets/request/w-gift-sphere.webp',who:'「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품',group:'product'},
   {id:'fashion',label:'패션 · 잡화',note:'옷, 가방, 신발, 액세서리',shot:shot('m09'),who:'서율 · 블루 그레이빛 차가운 비주얼',group:'wear'},
   {id:'living',label:'생활용품 · 가전',note:'집과 일상에서 쓰는 물건',shot:'./assets/films/maejin-imbak-poster-v1.webp',who:'「매진 임박」 홈쇼핑 × 공포 코미디 · 가상 브랜드로 만든 자체 작품',group:'product'},
   {id:'app',label:'앱 · 웹 서비스',note:'화면으로 쓰는 서비스',shot:shot('m04'),who:'민재 · 옆집 자취생',group:'app'},
@@ -81,7 +81,7 @@ export const ACTIONS=Object.freeze([
 ]);
 export const WIN=Object.freeze([
   {id:'story',label:'이야기로 여운을',note:'끝까지 보게 하고, 끝에서 마음이 움직여요.',work:'매진 임박',poster:'./assets/request/w-maejin.webp',film:'./assets/request/film-maejin.mp4',kind:'1m 13s · 16:9',ratio:'16:9'},
-  {id:'impact',label:'한 장면의 임팩트로',note:'한 번 보면 잊히지 않는 그림 하나로 이겨요.',work:'유리결',poster:'./assets/request/w-gift-sphere.webp',film:'./assets/request/film-gift.mp4',kind:'15초 · 9:16',ratio:'9:16'},
+  {id:'impact',label:'한 장면의 임팩트로',note:'한 번 보면 잊히지 않는 그림 하나로 이겨요.',work:'霜の肌理',poster:'./assets/request/w-gift-sphere.webp',film:'./assets/request/film-gift.mp4',kind:'15초 · 9:16',ratio:'9:16'},
 ]);
 export const REFERENCE_POINTS=Object.freeze(['전개 · 구성','색감 · 빛','카메라 · 속도','모델 연기','소리 · 음악']);
 // 모델 추천: 캐스팅북 명세(roster-v2.json의 tagline · fits)에서 옮긴 한 줄과 업종이다.

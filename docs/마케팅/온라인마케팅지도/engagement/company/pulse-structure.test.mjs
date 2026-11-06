@@ -8,11 +8,11 @@ globalThis.location=new URL('http://localhost/pulse-app/');
 const at='2026-10-16T09:00:00Z';
 const media=name=>({url:`http://localhost/pulse-app/${name}`,mimeType:name.endsWith('.mp4')?'video/mp4':'image/png'});
 function project(){
-  return {id:'p',revision:7,title:'유리결 15초 광고',customerName:'유리결',ownerName:'김하늘',stage:'review',dueDate:'2026-10-31',
+  return {id:'p',revision:7,title:'霜の肌理 15초 광고',customerName:'霜の肌理',ownerName:'김하늘',stage:'review',dueDate:'2026-10-31',
     versions:[{id:'v1',kind:'preview',label:'시안 v1',media:media('v1.mp4')},{id:'v2',kind:'preview',label:'시안 v2',guide:'마지막 문구를 단추로 바꿨어요.',media:media('v2.mp4')}],
-    messages:[{id:'m1',author:'customer',authorName:'유리결 팀',action:'feedback',versionId:'v1',seconds:3,text:'제품 이름 글자를 크게 해 주세요.',resolved:true,at},
+    messages:[{id:'m1',author:'customer',authorName:'霜の肌理 팀',action:'feedback',versionId:'v1',seconds:3,text:'제품 이름 글자를 크게 해 주세요.',resolved:true,at},
       {id:'m2',author:'staff',authorName:'김하늘',action:'reply',versionId:'v2',text:'두 의견 모두 반영했어요.',at:'2026-10-17T03:00:00Z'}],
-    studio:{preferences:{brand:'유리결'},assets:[],references:[{id:'r',label:'참고',preference:'like'}],
+    studio:{preferences:{brand:'霜の肌理'},assets:[],references:[{id:'r',label:'참고',preference:'like'}],
       concepts:[{id:'c1',title:'A. 나만의 아침 루틴',tagline:'한 잔으로 시작하는 루틴',media:media('a.png'),revision:1},{id:'c2',title:'B. 선명한 한 잔',media:media('b.png'),revision:1}],
       selectedConcept:{conceptId:'c1',current:true},scenes:[1,2,3,4].map(i=>({id:'s'+i,title:'장면 '+i,duration:i===1?3:4,media:media(`s${i}.png`),revision:1})),
       sceneReviews:[1,2,3,4].map(i=>({id:'sr'+i,sceneId:'s'+i,status:'confirmed',current:true})),comments:[],strategy:{revision:1,confirmation:{strategyRevision:1}}}};
@@ -68,7 +68,7 @@ test('step pages keep the stage title and the refresh tool, and staff also get t
 test('the header shows the open project, its stage and due date, and nothing without a project',()=>{
   assert.equal(headerCrumb({project:null}),'');
   const crumb=headerCrumb(state());
-  assert.match(crumb,/<b class="crumb-title">유리결 15초 광고<\/b><span class="crumb-stage stage-review">시안 확인<\/span>/);
+  assert.match(crumb,/<b class="crumb-title">霜の肌理 15초 광고<\/b><span class="crumb-stage stage-review">시안 확인<\/span>/);
   assert.match(crumb,/<span class="crumb-due">전달 예정 <time datetime="2026-10-31">/);
 });
 

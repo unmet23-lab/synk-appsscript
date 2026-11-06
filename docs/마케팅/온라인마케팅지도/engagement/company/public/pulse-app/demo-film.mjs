@@ -7,12 +7,12 @@ import {mountReview,mountFinal} from './film-review.mjs';
 import {esc} from './api.mjs';
 import {play} from './motion.mjs';
 
-// 예시 프로젝트(2026-11-05 시사실 판): 서버 없이 도는 둘러보기. 대표작 「유리결」 한 편이 의뢰서에서 납품까지 어떻게 흘렀는지 보여 준다. 유리결은 가상 브랜드로 만든 자체 작품이다.
+// 예시 프로젝트(2026-11-05 시사실 판): 서버 없이 도는 둘러보기. 대표작 「霜の肌理」(11-06 옛 이름 유리결에서 바꿈) 한 편이 의뢰서에서 납품까지 어떻게 흘렀는지 보여 준다. 霜の肌理는 가상 브랜드로 만든 자체 작품이다.
 const S='./assets/request/';
 const still=name=>`${S}${name}.webp`;
 export const DEMO_FILES=[{src:still('file-gift-set'),label:'세트 정면',size:'3024 × 4032'},{src:still('file-gift-ampoule'),label:'앰플',size:'3024 × 4032'},{src:still('file-gift-jar'),label:'크림',size:'3024 × 4032'}];
-export const DEMO_BRIEF=[['광고할 것','유리결 홀리데이 세트 · 화장품 · 뷰티'],['올릴 곳','릴스 · 쇼츠 · 틱톡'],['길이 · 구성','15초 · 한 편 · 39만원부터'],['보는 사람','연말 선물로 화장품 세트를 고르는 사람'],['남길 것','서리꽃이 피는 순간'],['화면 글자','유리결\n서리꽃 앰플 · 크림 홀리데이 세트'],['피할 말','재생, 치료, 주름 제거'],['무엇으로','한 장면의 임팩트로'],['모델','사람 없이 제품만'],['받고 싶은 날','11월 21일 (토)'],['최종 확인','의뢰하신 분']];
-const ROOM={title:'유리결 홀리데이 세트 15초 광고',number:'P-1104-7F3A',manager:'김하늘',brief:DEMO_BRIEF.slice(0,6),files:DEMO_FILES,others:[],answered:[],canEdit:true,asks:[{id:'demo-logo',label:'로고 파일',why:'끝 화면에 그대로 얹어요. AI · SVG가 가장 좋고, 배경이 없는 PNG도 괜찮아요.'},{id:'demo-top',label:'크림 뚜껑을 위에서 찍은 사진',why:'결정이 내려앉는 컷의 기준이에요. 원본이 있으면 보내 주세요.'}],proposal:{...modelCard('F01'),note:'세트를 손에 든 컷을 더한다면 이 모델이 어울려요.'}};
+export const DEMO_BRIEF=[['광고할 것','霜の肌理 홀리데이 세트 · 화장품 · 뷰티'],['올릴 곳','릴스 · 쇼츠 · 틱톡'],['길이 · 구성','15초 · 한 편 · 39만원부터'],['보는 사람','연말 선물로 화장품 세트를 고르는 사람'],['남길 것','서리꽃이 피는 순간'],['화면 글자','霜の肌理\n美容液とクリームのホリデーコフレ'],['피할 말','재생, 치료, 주름 제거'],['무엇으로','한 장면의 임팩트로'],['모델','사람 없이 제품만'],['받고 싶은 날','11월 21일 (토)'],['최종 확인','의뢰하신 분']];
+const ROOM={title:'霜の肌理 홀리데이 세트 15초 광고',number:'P-1104-7F3A',manager:'김하늘',brief:DEMO_BRIEF.slice(0,6),files:DEMO_FILES,others:[],answered:[],canEdit:true,asks:[{id:'demo-logo',label:'로고 파일',why:'끝 화면에 그대로 얹어요. AI · SVG가 가장 좋고, 배경이 없는 PNG도 괜찮아요.'},{id:'demo-top',label:'크림 뚜껑을 위에서 찍은 사진',why:'결정이 내려앉는 컷의 기준이에요. 원본이 있으면 보내 주세요.'}],proposal:{...modelCard('F01'),note:'세트를 손에 든 컷을 더한다면 이 모델이 어울려요.'}};
 const CUTS=[
   {seconds:1.5,what:'깜깜한 유리 위에서 눈 결정 하나가 자라요. 얼음에 금이 가는 작은 소리로 시작해요.',say:'',text:'',shot:'sheet-gift-01'},
   {seconds:1.5,what:'결정이 화면을 채울 만큼 자라요. 뒤에는 빛망울만 남아요.',say:'',text:'',shot:'sheet-gift-03'},
@@ -21,7 +21,7 @@ const CUTS=[
   {seconds:2.5,what:'구슬이 깨지는 순간 소리가 사라지고 조각과 두 제품이 허공에 멈춰요.',say:'',text:'',shot:'sheet-gift-06'},
   {seconds:2.5,what:'카메라만 멈춘 조각 사이를 지나가요.',say:'',text:'',shot:'sheet-gift-07'},
   {seconds:2,what:'시간이 다시 흐르고 떨어진 결정이 크림 뚜껑에 앉아 피어나요.',say:'',text:'',shot:'sheet-gift-11'},
-  {seconds:2,what:'두 제품이 나란히 서고 이름이 떠요.',say:'',text:'유리결 / 서리꽃 앰플 · 크림 홀리데이 세트',shot:'sheet-gift-12'},
+  {seconds:2,what:'두 제품이 나란히 서고 이름이 떠요.',say:'',text:'霜の肌理 / 美容液とクリームのホリデーコフレ',shot:'sheet-gift-12'},
 ].map(({shot,...cut})=>({...cut,src:still(shot)}));
 const ONE_LINE='서리꽃이 피는 순간을 담은 홀리데이 세트';
 const DRAFT={round:2,oneLine:ONE_LINE,cuts:CUTS,model:null,ratio:'9:16'};
@@ -35,16 +35,16 @@ const NOT_REAL='예시라 보내지 않아요. 실제 의뢰에서는 담당자�
 const BASE='/pulse-app/demo-assets/';
 const AT='2026-11-04T05:00:00.000Z';
 function exampleState(){
-  const v1={id:'demo-v1',kind:'preview',label:'1차 시안',guide:'제품이 떠 있는 시간과 끝 장면을 중심으로 봐 주세요.',createdAt:AT,media:{url:BASE+'preview-v1.mp4',mimeType:'video/mp4',fileName:'유리결_1차.mp4'}};
-  const v2={id:'demo-v2',kind:'preview',label:'2차 시안',guide:'제품이 떠 있는 시간을 줄이고, 결정이 뚜껑에 피어나는 순간을 접사로 크게 보여 드려요.',createdAt:AT,media:{url:BASE+'preview-v2.mp4',mimeType:'video/mp4',fileName:'유리결_2차.mp4'}};
+  const v1={id:'demo-v1',kind:'preview',label:'1차 시안',guide:'제품이 떠 있는 시간과 끝 장면을 중심으로 봐 주세요.',createdAt:AT,media:{url:BASE+'preview-v1.mp4',mimeType:'video/mp4',fileName:'霜の肌理_1차.mp4'}};
+  const v2={id:'demo-v2',kind:'preview',label:'2차 시안',guide:'제품이 떠 있는 시간을 줄이고, 결정이 뚜껑에 피어나는 순간을 접사로 크게 보여 드려요.',createdAt:AT,media:{url:BASE+'preview-v2.mp4',mimeType:'video/mp4',fileName:'霜の肌理_2차.mp4'}};
   const asked={id:'demo-m1',author:'customer',authorName:'예시 고객',action:'feedback',versionId:'demo-v1',seconds:8,text:'떠 있는 시간이 길어요. 뚜껑 위 결정을 더 크게 보여 주세요.',resolved:true,at:AT};
   const scenes=[['결정이 자라요',3],['서리가 구슬을 덮어요',3],['깨지고, 멈춰요',5],['이름을 남겨요',4]].map(([title,duration],i)=>({id:`demo-s${i}`,title,duration,visibility:'customer'}));
   return {mode:'customer',demo:false,example:true,tab:'review',versionId:'',compare:false,reviewPanel:'note',error:'',rememberOffer:false,project:{id:'demo-film',title:ROOM.title,ownerName:'김하늘',stage:'review',revision:1,requestFlow:true,versions:[v1,v2],messages:[asked],
     closeout:{deliveryKey:'demo',canConfirm:true,files:[{id:'demo-final',label:'15초 광고 최종본'}]},
-    studio:{scenes,assets:[],comments:[],sceneReviews:[],request:{status:'confirmed',number:ROOM.number,answers:{name:'유리결 홀리데이 세트',kind:'beauty',channels:['shorts'],package:'s15'},files:[],asks:[],rounds:[{round:1,kind:'images',oneLine:ONE_LINE,scenes:[],approvedAt:AT}],approvedAt:AT},
+    studio:{scenes,assets:[],comments:[],sceneReviews:[],request:{status:'confirmed',number:ROOM.number,answers:{name:'霜の肌理 홀리데이 세트',kind:'beauty',channels:['shorts'],package:'s15'},files:[],asks:[],rounds:[{round:1,kind:'images',oneLine:ONE_LINE,scenes:[],approvedAt:AT}],approvedAt:AT},
       feedbackRounds:{latestVersionId:'demo-v2',latestVersionLabel:'2차 시안',canDraft:true,maxItems:30,nextNumber:2,drafts:[],rounds:[{id:'demo-r1',number:1,versionId:'demo-v1',versionLabel:'1차 시안',representativeName:'예시 고객',submittedAt:AT,items:[{id:'demo-i1',messageId:'demo-m1',seconds:8,text:asked.text,resolved:true,classification:{label:'합의한 범위 안의 수정',scopeNote:'제품이 떠 있는 시간과 끝 컷',scheduleNote:'2차 시안에 반영'}}]}]}}}};
 }
-const asFinal=state=>{const v2=state.project.versions[1];state.project.stage='delivered';state.project.versions=[...state.project.versions.map(v=>({...v,approvedAt:AT})),{id:'demo-final',kind:'final',label:'15초 광고 최종본',guide:'릴스 · 쇼츠 · 틱톡에 그대로 올릴 수 있는 9:16 파일이에요.',createdAt:AT,media:{...v2.media,fileName:'유리결_15초.mp4'}}];return state;};
+const asFinal=state=>{const v2=state.project.versions[1];state.project.stage='delivered';state.project.versions=[...state.project.versions.map(v=>({...v,approvedAt:AT})),{id:'demo-final',kind:'final',label:'15초 광고 최종본',guide:'릴스 · 쇼츠 · 틱톡에 그대로 올릴 수 있는 9:16 파일이에요.',createdAt:AT,media:{...v2.media,fileName:'霜の肌理_15초.mp4'}}];return state;};
 
 // 둘러보기. 시안은 extra로 첫 화면 · 내부 확인 같은 장면을 앞에 더한다. 손님 예시에는 내부 화면을 싣지 않는다.
 export function mountFilmDemo(host,{internal=false,start='',onLeave,extra=[]}={}){

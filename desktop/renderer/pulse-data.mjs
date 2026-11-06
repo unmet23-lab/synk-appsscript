@@ -156,13 +156,14 @@ export const MODELS = Object.freeze([
   },
 ]);
 
+// 11-06 대표작 이름을 「霜の肌理」로 바꿨다(유호님 「이 판으로 바꿔」, 옛 이름 유리결). id · 그림 파일 이름은 저장된 요청서가 고른 작품을 잃지 않게 그대로 둔다.
 export const PORTFOLIO = Object.freeze([
   {
-    id: 'yurigyeol', title: '홀리데이 기프트 「유리결」', category: '15초 · 대표작',
+    id: 'yurigyeol', title: '홀리데이 기프트 「霜の肌理」', category: '15초 · 대표작',
     kind: '가상 브랜드로 만든 자체 작품',
-    description: '가상 스킨케어 브랜드 「유리결」의 홀리데이 세트를 흩날리는 유리 조각 사이에서 보여 주는 15초 광고예요. 한 장면의 임팩트로 기억에 남게 만들었어요.',
+    description: '가상 스킨케어 브랜드 「霜の肌理」의 홀리데이 세트를 흩날리는 유리 조각 사이에서 보여 주는 15초 광고예요. 한 장면의 임팩트로 기억에 남게 만들었어요.',
     image: '/assets/pulse/portfolio/yurigyeol.webp',
-    gallery: [{ image: '/assets/pulse/portfolio/yurigyeol.webp', caption: '흩날리는 유리 조각 사이에 선 「유리결」 세럼 병과 남색 육각 상자. 홀리데이 기프트 광고 「유리결」의 한 장면' }],
+    gallery: [{ image: '/assets/pulse/portfolio/yurigyeol.webp', caption: '흩날리는 유리 조각 사이에 선 「霜の肌理」 세럼 병과 남색 육각 상자. 홀리데이 기프트 광고 「霜の肌理」의 한 장면' }],
     tags: ['제품 광고', '홀리데이', '임팩트'],
     sourceUrl: 'https://synk.im/pulse/#works',
   },

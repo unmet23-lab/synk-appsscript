@@ -5,7 +5,7 @@ import {esc} from './api.mjs';
 //   ① 포스터 webp와 영상 mp4를 public/pulse-app/assets/films/에 둔다(mp4는 .gitignore라 git 밖 — 운영 원문은 회사 릴리스 후보).
 //      1분 안쪽 작품은 발췌 없이 본편(full)만 두고 카드에서 바로 튼다. 긴 작품은 발췌를 카드에서 틀고 본편은 새 탭으로 연다.
 //   ② server.mjs 공개 파일 목록에 그 파일들을 더한다. ③ 아래 FINISHED_FILMS에 한 칸을 더한다(주소는 아래 규칙만 받는다).
-// 유리결 · 매진 임박(11-04 더함, 소개글 1절의 완성작 둘 — 첫 화면에도 featured로 보인다): 유리결은 대표작 5.1판 웹판 그대로(결정 11-01), 매진 임박은 11-04 최종 16:9에서 720p로 만들었다. 두 파일 모두 만든 도구 표시(메타데이터)는 뺐다.
+// 霜の肌理(11-06 옛 이름 유리결에서 바꿈) · 매진 임박(11-04 더함, 소개글 1절의 완성작 둘 — 첫 화면에도 featured로 보인다): 霜の肌理는 대표작 5.1판 웹판 그대로(결정 11-01, 11-06 일본어 라벨 판으로 바이트만 바꿈 — 회사 판은 부모 파일을 못 지워 id · 파일 이름은 옛 로마자 그대로), 매진 임박은 11-04 최종 16:9에서 720p로 만들었다. 두 파일 모두 만든 도구 표시(메타데이터)는 뺐다.
 // 화성 세 편(10-22 더함)은 「2026 별별화성 Awards」 제출본의 720p 웹판이다. 공모 요건으로 끝에 붙인 출처 카드(제작 도구 이름)는
 // 앞 로고 장면을 그 길이만큼 이어 보여 대신했고 소리는 제출본 그대로다(CF 1224장째·숏폼 854장째부터, CM송은 소리가 끝난 1229장째에서 끊음).
 // 공공누리·통계 출처는 카드 글(credits)로 옮겼다 — 사이트에는 제작 도구 이름을 쓰지 않는다(2026-10-02).
@@ -14,10 +14,10 @@ import {esc} from './api.mjs';
 const HWASEONG_ENTRY='2026 별별화성 Awards(화성특례시 공모전)',HWASEONG_MARK='로고·슬로건 화성특례시 「화성의 상징」(공공누리 제4유형)',SELF_MADE='가상 브랜드로 만든 자체 작품';
 export const FINISHED_FILMS=Object.freeze([
   {
-    id:'yurigyeol-holiday',kind:'ad',title:'유리결',orientation:'portrait',featured:true,line:'홀리데이 기프트 · 15초',tag:'대표작',
+    id:'yurigyeol-holiday',kind:'ad',title:'霜の肌理',orientation:'portrait',featured:true,line:'홀리데이 기프트 · 15초',tag:'대표작',
     poster:'./assets/films/yurigyeol-holiday-poster-v1.webp',
     full:{src:'./assets/films/yurigyeol-holiday-v1.mp4',duration:'15초'},
-    description:'가상 스킨케어 브랜드 「유리결」의 홀리데이 세트를 흩날리는 유리 조각 사이에서 보여 주는 15초 광고예요. 한 장면의 임팩트로 기억에 남게 만들었어요.',
+    description:'가상 스킨케어 브랜드 「霜の肌理」의 홀리데이 세트를 흩날리는 유리 조각 사이에서 보여 주는 15초 광고예요. 한 장면의 임팩트로 기억에 남게 만들었어요.',
     origin:SELF_MADE,finished:'2026년 11월',
   },
   {

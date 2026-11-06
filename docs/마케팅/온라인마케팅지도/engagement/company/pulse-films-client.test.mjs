@@ -20,9 +20,9 @@ const HWASEONG=[
 ];
 const MARK='로고·슬로건 화성특례시 「화성의 상징」(공공누리 제4유형)';
 
-// 11-04 유리결 · 매진 임박(소개글 1절의 완성작 둘): 맨 앞에 두고 첫 화면에도 보인다. 공모 작품이 아니라 가상 브랜드로 만든 자체 작품이다.
+// 11-04 유리결(11-06 「霜の肌理」로 이름을 바꿈 — id · 파일 이름은 옛 로마자 그대로, 바이트만 일본어 라벨 판) · 매진 임박(소개글 1절의 완성작 둘): 맨 앞에 두고 첫 화면에도 보인다. 공모 작품이 아니라 가상 브랜드로 만든 자체 작품이다.
 const OWN=[
-  ['yurigyeol-holiday','유리결','yurigyeol-holiday','15초','portrait','094651da54564eb30db044062e5dc0860bd8240abfdb2c726e257127797e6bfb','197720f2186f39725202200b4aaeac1613768563d6454a1e9785d6905e13ee59'],
+  ['yurigyeol-holiday','霜の肌理','yurigyeol-holiday','15초','portrait','6347222fa25e92998a7f79e0a3284482c0533380c2af2dc4028dc4c04ca6482a','f0dc4ef3b0992ea7357964540d229b82d3a117e62bc9d6e5bcd4890b9233adf1'],
   ['maejin-imbak','매진 임박','maejin-imbak','1분 13초',undefined,'877c73a9ab8e47ca1b14a7896a230dc9154acdb780a7f9eecf004f307c47dd3a','76e4f4f2ab278a4ddd0320d32c05f156cce7f36bda86058e3fd7291f05145500'],
 ];
 
@@ -72,7 +72,7 @@ test('short films play in full inside their card and only the long music video k
     ['film-yurigyeol-holiday','film-card film-card--portrait'],['film-maejin-imbak','film-card'],['film-hwaseong-light','film-card'],['film-hwaseong-first','film-card film-card--portrait'],['film-hwaseong-koriyo','film-card'],['film-happy-happy-gangster','film-card'],
   ]);
   assert.deepEqual(Array.from(html.matchAll(/<span class="eyebrow ko">([^<]+)<\/span><h2 id="([^"]+)">([^<]+)<\/h2>/g),match=>match.slice(1)),[
-    ['광고','film-yurigyeol-holiday','유리결'],['광고','film-maejin-imbak','매진 임박'],['광고','film-hwaseong-light','1억 년의 빛'],['숏폼','film-hwaseong-first','화성에서 처음'],['CM송','film-hwaseong-koriyo','코리요와 화성 한 바퀴'],['뮤직비디오','film-happy-happy-gangster','Happy, Happy Gangster'],
+    ['광고','film-yurigyeol-holiday','霜の肌理'],['광고','film-maejin-imbak','매진 임박'],['광고','film-hwaseong-light','1억 년의 빛'],['숏폼','film-hwaseong-first','화성에서 처음'],['CM송','film-hwaseong-koriyo','코리요와 화성 한 바퀴'],['뮤직비디오','film-happy-happy-gangster','Happy, Happy Gangster'],
   ]);
   for(const film of films)assert.ok(html.includes(`<p>${film.description}</p>`),film.id);
   assert.ok(html.includes('<dl class="film-facts"><div><dt>길이</dt><dd>15초</dd></div><div><dt>구분</dt><dd>가상 브랜드로 만든 자체 작품</dd></div><div><dt>완성</dt><dd>2026년 11월</dd></div></dl>'));
@@ -93,7 +93,7 @@ test('short films play in full inside their card and only the long music video k
 test('the entry page shows only the two own films, playing in place with no autoplay, and only safe media paths',()=>{
   const html=featuredFilmsView();
   assert.deepEqual(Array.from(html.matchAll(/<article class="([^"]+)"><video controls playsinline preload="none" data-film-player poster="([^"]+)" src="([^"]+)" aria-label="([^"]+)"><\/video><h3>([^<]+)<\/h3>/g),match=>match.slice(1)),[
-    ['welcome-work welcome-work--portrait','./assets/films/yurigyeol-holiday-poster-v1.webp','./assets/films/yurigyeol-holiday-v1.mp4','유리결 · 15초','유리결'],
+    ['welcome-work welcome-work--portrait','./assets/films/yurigyeol-holiday-poster-v1.webp','./assets/films/yurigyeol-holiday-v1.mp4','霜の肌理 · 15초','霜の肌理'],
     ['welcome-work','./assets/films/maejin-imbak-poster-v1.webp','./assets/films/maejin-imbak-v1.mp4','매진 임박 · 1분 13초','매진 임박'],
   ]);
   assert.doesNotMatch(html,/autoplay|\bloop\b|preload="auto"|hwaseong|gangster/i);
@@ -214,7 +214,7 @@ test('the finished films rules in app.css pair one to one with the cards films-v
 
 const at='2026-10-16T09:00:00Z';
 function project(){
-  return {id:'p',revision:3,title:'유리결 15초 광고',customerName:'유리결',ownerName:'김하늘',stage:'planning',dueDate:'2026-10-31',versions:[],messages:[{id:'m1',author:'staff',authorName:'김하늘',action:'reply',text:'안녕하세요.',at}],
+  return {id:'p',revision:3,title:'霜の肌理 15초 광고',customerName:'霜の肌理',ownerName:'김하늘',stage:'planning',dueDate:'2026-10-31',versions:[],messages:[{id:'m1',author:'staff',authorName:'김하늘',action:'reply',text:'안녕하세요.',at}],
     studio:{preferences:{},assets:[],references:[],concepts:[],scenes:[],sceneReviews:[],comments:[],strategy:{revision:1,data:{castingSelection:{modelId:'F02'}}}}};
 }
 const state=(over={})=>({mode:'customer',tab:'overview',project:project(),workflow:[],...over});
@@ -261,7 +261,7 @@ test('the staff films page has its own head, the next step and the film list, an
 test('live refresh waits while a film excerpt plays, and the offline shell caches the films module instead of the withdrawn plan module',()=>{
   const app=readFileSync(new URL('app.mjs',appDir),'utf8'),sw=readFileSync(new URL('sw.js',appDir),'utf8');
   assert.match(app,/Array\.from\(document\.querySelectorAll\('\[data-preview-test\],\[data-film-player\]'\)\)\.some\(video=>!video\.paused&&!video\.ended\)/);
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v29-film-fit-20261105';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v30-shimo-20261106';/);
   assert.match(sw,/'casting-catalog\.mjs','films-view\.mjs',/);
   assert.doesNotMatch(sw,/production-catalog/);
 });

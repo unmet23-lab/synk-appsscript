@@ -4,7 +4,7 @@
   "purpose": "PULSE public model gallery and works in the local desktop platform",
   "modelFactsSource": "../SYNK-website/site-v10/content/ko.mjs (pulse.models)",
   "publicSelectionSource": "../SYNK-website/site-v10/content/ko.mjs",
-  "selectionNote": "Keep the current public selection: twenty-one models (two idol teams included) and three works. Every file is byte-identical to the public synk.im file on the checkedAt date. No smile/hover or unapproved media included.",
+  "selectionNote": "Keep the current public selection: twenty-one models (two idol teams included) and three works. Every file is byte-identical to the public synk.im file on the checkedAt date, except the flagship work (renamed 霜の肌理 on 2026-11-06), which is a recorded frame of the film synk.im now shows. No smile/hover or unapproved media included.",
   "assets": [
     {
       "id": "M01",
@@ -240,13 +240,11 @@
     {
       "id": "yurigyeol",
       "file": "portfolio/yurigyeol.webp",
-      "source": "../SYNK-website/dist/assets/v10/pulse-work-yurigyeol-20261103.webp",
-      "publicUrl": "https://synk.im/assets/v10/pulse-work-yurigyeol-20261103.webp",
-      "publicHttpStatus": 200,
-      "publicContentType": "image/webp",
-      "bytes": 115560,
-      "sha256": "0ccfe6e724779b3e254cc114b7230f73e204f1108e03f8d5405c2d2a0de94bf1",
-      "transformation": "none; byte-for-byte copy"
+      "source": "synk-vendor/pulse-season4-20261025/콘티/holiday-giftset/새컨셉/움직임/15초/기프트세트_안12_15초.mp4",
+      "publicFilm": "https://synk.im/assets/v10/pulse-film-shimo-20261106.mp4",
+      "bytes": 100096,
+      "sha256": "e91a5df2761da443d3cbae58584b5edd9d17832f81eaed95cd18af076f5c151b",
+      "transformation": "frame at 6.5 s of the approved 15 s film (1080x1920), crop x 0 y 461 1080x810, Lanczos 1304x978, WebP q86 — the same 4:3 frame as the Kmong lead image; synk.im shows this work as the film itself since 2026-11-06, so there is no still to copy"
     },
     {
       "id": "maejin",
