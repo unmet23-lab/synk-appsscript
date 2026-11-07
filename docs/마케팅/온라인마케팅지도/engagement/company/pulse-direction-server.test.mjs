@@ -170,7 +170,7 @@ test('sending a direction tells the customer, and the customer answer tells the 
   const events=()=>h.f.app.store.get('clientProjects',h.id).notificationEvents.map(event=>[event.type,event.audiences.join(),event.tab||'']);
   assert.deepEqual(events().filter(([type])=>type==='direction_proposed'),[['direction_proposed','customer','overview']]);
   const live=(await h.f.call('/pulse/api/live')).data;const note=live?.notifications?.find(item=>item.type==='direction_proposed');
-  assert.ok(note,'the customer sees the alert '+JSON.stringify(live).slice(0,200));assert.equal(note.title,'두 방향 중 하나를 골라 주세요');assert.match(note.body,/두 방향/);assert.equal(live.unreadCount>=1,true);
+  assert.ok(note,'the customer sees the alert '+JSON.stringify(live).slice(0,200));assert.equal(note.title,'방향 제안이 도착했어요');assert.match(note.body,/방향을 나눠 보내 드렸어요/);assert.doesNotMatch(note.title+note.body,/두 방향|세 방향/,'a business proposal may carry three options');assert.equal(live.unreadCount>=1,true);
   const d=h.row.studio.request.directionProposal;await h.cact({action:'answer_direction',optionId:d.options[0].id});
   assert.ok(events().some(([type,audiences,tab])=>type==='customer_direction_answer'&&audiences==='owner,reviewer'&&tab==='desk'),JSON.stringify(events()));
 });

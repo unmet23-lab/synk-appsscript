@@ -11,7 +11,7 @@ export const CASTING_OPTIONS={
   earrings:{label:'귀걸이',values:{none:'없음',stud:'작은 스터드',hoop:'링 귀걸이',drop:'드롭 귀걸이',custom:'직접 설명'}},
   ring:{label:'반지',values:{none:'없음',simple:'심플한 반지',layered:'레이어드',custom:'직접 설명'}}
 };
-// voice는 11-03에 뺀 목소리 칸이다(유호님 「둘 다 전부 빼기」). 저장 모양을 그대로 두려고 키는 남기고, 옛 화면·저장본이 보내는
+// voice는 11-03에 뺀 목소리 칸이다. 저장 모양을 그대로 두려고 키는 남기고, 옛 화면·저장본이 보내는
 // A·B·C는 받되 늘 빈 값으로 둔다 — 서버(pulse-strategy의 normalizeCastingSelection)와 같은 규칙이다.
 export const CASTING_KEYS=['modelId','hair','makeup','jacket','top','bottom','voice','earrings','ring','notes'];
 export const emptyCastingSelection=()=>Object.fromEntries(CASTING_KEYS.map(key=>[key,'']));
@@ -40,7 +40,7 @@ function optionsFor(selection,key){
   return [['','미정'],...entries];
 }
 function choices(selection,key){const o=CASTING_OPTIONS[key];return `<fieldset class="casting-options" data-casting-choice="${key}"><legend>${o.label}</legend><div class="casting-chips">${optionsFor(selection,key).map(([id,label])=>`<label><input type="radio" name="cast_${key}" value="${esc(id)}" ${(selection[key]||'')===id?'checked':''}><span>${esc(label)}</span></label>`).join('')}</div></fieldset>`;}
-// 모델은 사진만(2026-10-22 유호님 결정): 영상 칸·작품·광고 기획안을 거두고 그 모델의 사진 넉 장(전신·룩 둘·장면)만 보인다.
+// 모델은 사진만(2026-10-22 결정): 영상 칸·작품·광고 기획안을 거두고 그 모델의 사진 넉 장(전신·룩 둘·장면)만 보인다.
 // 누르면 앱의 이미지 대화상자로 크게 본다. 사진을 더 보려면 공개 캐스팅북의 그 모델 쪽(북·디지털·장면·프로필)으로 간다.
 export const CASTING_BOOK_URL='https://synk.im/pulse/casting/';
 const photoSource=value=>typeof value==='string'&&/^\.\/assets\/casting\/photos\/[a-z]\d\d-[a-z0-9-]+\.webp$/.test(value)?value:'';
@@ -49,7 +49,7 @@ export function castingPhotos(selection={}){
   const name=esc(model.name),photos=(Array.isArray(model.photos)?model.photos:[]).filter(photo=>photoSource(photo?.src));
   return `<div class="casting-photos-head"><div><span class="eyebrow ko">사진</span><h4>${name}의 사진</h4></div><span class="tag">${esc(model.id)}</span></div>${photos.length?`<ul class="casting-photo-grid">${photos.map(photo=>{const label=esc(model.name+' · '+photo.label);return `<li><button type="button" class="casting-photo" data-action="image" data-src="${esc(photo.src)}" data-label="${label}" aria-label="${label} 크게 보기"><img src="${esc(photo.src)}" alt="${label}" width="540" height="720" loading="lazy" decoding="async"></button><span>${esc(photo.label)}</span></li>`;}).join('')}</ul>`:''}<a class="casting-photos-more" href="${CASTING_BOOK_URL}#m-${esc(model.id)}" target="_blank" rel="noopener noreferrer">캐스팅북에서 ${name} 사진 더 보기 <span aria-hidden="true">↗</span><span class="sr-only"> (새 탭)</span></a>`;
 }
-// 목소리는 고르지 않는다(11-03 유호님 「둘 다 전부 빼기」): 모델마다 미리 만든 목소리 A·B·C와 듣기 단추를 거두고, 그 자리에 이 한 줄만 둔다.
+// 목소리는 고르지 않는다(11-03): 모델마다 미리 만든 목소리 A·B·C와 듣기 단추를 거두고, 그 자리에 이 한 줄만 둔다.
 export const CASTING_VOICE_NOTE='목소리는 광고 장면에 맞춰 연기로 만들고, 시안 단계에서 들려 드려요.';
 export function castingView(selection={}, {editable=true}={}){return `<section class="casting-configurator" aria-label="모델과 스타일 선택" data-choices-model="${esc(selection.modelId||'')}">
   <div class="casting-intro"><span class="eyebrow ko">모델 · 스타일</span><h3>우리 광고에 어울리는 한 사람.</h3><p>모델과 스타일을 골라 원하는 장면을 그려 보세요. 정하지 않은 항목은 비워 둬도 괜찮아요.</p><p class="small">사진은 그 모델의 기준 이미지예요. 고른 스타일은 바라는 방향으로 남기고, 실제 모습은 담당자와 확인해요.</p>${hasFinishedFilms()?'<p class="small casting-films-link">SYNK가 처음부터 끝까지 만든 광고는 「완성 광고」에서 볼 수 있어요. <button type="button" class="casting-films-button" data-action="tab" data-tab="films">완성 광고 보기 <span aria-hidden="true">→</span></button></p>':''}</div>

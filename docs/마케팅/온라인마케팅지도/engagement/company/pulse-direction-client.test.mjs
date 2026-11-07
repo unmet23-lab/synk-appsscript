@@ -99,3 +99,17 @@ test('a product-only proposal keeps the similar-work slot; a changed proposal dr
   assert.match(read('film-views.mjs'),/matchMedia\?\.\('\(max-width: 820px\), \(max-aspect-ratio: 1\/1\)'\)/,'the phone scroll uses the same switch as film.css');
   assert.doesNotMatch(read('film-views.mjs'),/\$\('\.sx-dp-sheet'\)\?\.scrollIntoView/,'the sheet has no box on phones');
 });
+test('Fable final 1b: a photo order is not promised directions; three options say three; a repick starts on the chosen option with its note; a settled note reads as the manager note; a similar film keeps its real origin',()=>{
+  const photo=roomModel(project({status:'submitted',answers:{package:'photo'}}));
+  assert.equal(photo.state,'check');assert.equal(photo.photo,true);
+  const photoHtml=roomView(photo);assert.match(photoHtml,/확인이 끝나면 첫 장을 먼저 보내 드려요/);assert.doesNotMatch(photoHtml,/방향 두 안|날짜는 방향을 보내 드릴 때/);
+  assert.match(roomView(roomModel(project({status:'submitted'}))),/확인이 끝나면 방향 두 안을 보내 드려요/);
+  const flow=read('request-flow.mjs');assert.ok(flow.includes("pkgOf(a)?.photo?'보내 주시면 저희가 내용을 확인하고 첫 장을 먼저 보내 드려요"));assert.ok(flow.includes("${pkg?.photo?'<li><b>첫 장을 먼저 보내 드려요</b>"));
+  const three=roomModel(project({status:'submitted',direction:open({options:[option('a','가',{recommended:true}),option('b','나'),option('c','다')]})}));
+  assert.equal(three.options,3);
+  const chosen=roomModel(project({direction:open({status:'chosen',chosenId:'b',answer:'쌉쌀은 빼 주세요'})}));
+  const repick=directionView(chosen);assert.match(repick,/data-dp-frame="b" data-at="1" aria-pressed="true"/,'the chosen option is in focus');assert.match(repick,/value="쌉쌀은 빼 주세요"/);assert.match(repick,/data-dp-do="note" aria-expanded="false"/,'the kept note rides along folded, so the decision row stays on the first screen');
+  const settled=roomView(roomModel(project({direction:open({status:'settled',chosenId:'b',answer:'통화로 정했어요'})})));
+  assert.match(settled,/담당자와 정한 내용: 통화로 정했어요/);assert.doesNotMatch(settled,/덧붙이신 말: 통화로/);
+  const film=read('film-views.mjs');assert.ok(film.includes('note:filmNote(film)'));assert.ok(!film.includes('가상 브랜드로 만든 자체 작품`'));
+});

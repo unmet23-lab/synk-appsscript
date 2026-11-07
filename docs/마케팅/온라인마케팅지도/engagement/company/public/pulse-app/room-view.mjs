@@ -62,7 +62,7 @@ function roomBrief(r,answers){
   // 날짜는 방향을 보내 드릴 때 한 번 정해 보인다(결제 · 자료 시점이 정해지기 전 달력 날짜를 약속하지 않는다 — 설계 검토 3).
   // 방향 제안이 오면 거기 적힌 날 하나만 보인다(같은 화면에 날짜 둘이 서지 않게 — 설계 검토 9).
   const due=r.directionProposal?.dueDate;
-  if(r.submittedAt&&at>=0)rows.splice(at+1,0,['받으실 날',due?`${Number(due.slice(5,7))}월 ${Number(due.slice(8,10))}일 · 방향 제안에 적힌 날`:pkg?.days?`자료가 다 모인 날부터 ${pkg.days}일 · 날짜는 방향을 보내 드릴 때 알려 드려요`:'구성에 맞춰 함께 정해요']);
+  if(r.submittedAt&&at>=0)rows.splice(at+1,0,['받으실 날',due?`${Number(due.slice(5,7))}월 ${Number(due.slice(8,10))}일 · 방향 제안에 적힌 날`:pkg?.days?(pkg.photo?`자료가 다 모인 날부터 ${pkg.days}일`:`자료가 다 모인 날부터 ${pkg.days}일 · 날짜는 방향을 보내 드릴 때 알려 드려요`):'구성에 맞춰 함께 정해요']);
   return rows;
 }
 export function roomModel(p){
@@ -75,7 +75,7 @@ export function roomModel(p){
   const shown=new Set(files.map(file=>file.src)),drawn=new Set(images.map(asset=>asset.id)),others=[...images.filter(asset=>!shown.has(assetUrl(asset))).map(asset=>asset.fileName),...(r?.files||[]).filter(file=>!drawn.has(file.id)).map(file=>file.fileName)];
   const proposed=r?.modelProposal?.status==='open'?modelCard(r.modelProposal.modelId):null,proposal=proposed?{...proposed,note:r.modelProposal.note||''}:null,direction=directionModel(p);
   return {
-    state,stage:roomStage(state),title:p?.title||'',number:r?.number||'',manager:p?.ownerName||'PULSE 담당자',hasRound:!!lastRound(r),
+    state,stage:roomStage(state),photo:answers.package==='photo',options:r?.directionProposal?.options?.length||0,title:p?.title||'',number:r?.number||'',manager:p?.ownerName||'PULSE 담당자',hasRound:!!lastRound(r),
     brief:r?roomBrief(r,answers):[],
     files,others,proposal,direction,asks:(r?.asks||[]).filter(ask=>ask.status==='open'),answered:(r?.asks||[]).filter(ask=>ask.status==='answered'),canEdit:!!r&&r.status!=='confirmed',
     draft:['script','images','revise','prepare-images'].includes(state)?draftModel(p):null,film:screenFilm(p,state),

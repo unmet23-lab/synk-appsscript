@@ -2,7 +2,7 @@ import {esc} from './api.mjs';
 import {CASTING_MODELS} from './casting-catalog.mjs';
 import {MODEL_LINES,MODEL_PICKS} from './request-data.mjs';
 import {ROOM_STAGES,ROOM_COPY,CONFIRM_OF,modelCard} from './room-view.mjs';
-import {FINISHED_FILMS} from './films-view.mjs';
+import {FINISHED_FILMS,filmNote} from './films-view.mjs';
 import {revealWords,riseAll,rise,play,reduced} from './motion.mjs';
 import {arrow} from './film-home.mjs';
 import {holdPoster} from './film-review.mjs';
@@ -54,7 +54,7 @@ function dpModel(d,ui){
   return `<div class="sx-dp-model sx-small"><p><span class="sx-dp-label">AI 모델</span><b data-dp-model-name>${esc(now?.name||'')}</b><button type="button" class="sx-link sx-dp-model-open" data-dp-do="casting" aria-expanded="${ui.casting?'true':'false'}">${ui.casting?'닫기':'다른 모델로'}</button></p><span data-dp-work-slot></span></div><div class="sx-dp-casts" role="group" aria-label="다른 모델 고르기" data-dp-casts ${ui.casting?'':'hidden'}>${picks.map(m=>`<button type="button" class="sx-dp-cast ${m.id===now?.id?'is-on':''}" aria-pressed="${m.id===now?.id?'true':'false'}" data-dp-model="${esc(m.id)}"><img src="${esc(modelScene(m.id))}" alt="" width="538" height="720" loading="lazy" decoding="async"><span class="sx-small">${esc(m.name)}</span></button>`).join('')}<p class="sx-small sx-dp-cast-note" data-dp-cast-note ${now?.id&&now.id!==d.model?.id?'':'hidden'}>이 모델로 바꿔 장면 이미지에서 보여 드려요.</p></div>`;
 }
 export function directionView(p,{top='',ui={}}={}){
-  const d=p.direction,focus=d.options.some(o=>o.id===ui.focus)?ui.focus:(d.options.find(o=>o.recommended)||d.options[0]).id,view=ui.view==='neither'?'neither':'choose',item=d.options.find(o=>o.id===focus);
+  const d=p.direction,focus=d.options.some(o=>o.id===ui.focus)?ui.focus:(d.chosen&&d.options.find(o=>o.id===d.chosen.id)||d.options.find(o=>o.recommended)||d.options[0]).id,keep=d.status==='chosen'&&d.note?d.note:'',noteOpen=!!ui.note,view=ui.view==='neither'?'neither':'choose',item=d.options.find(o=>o.id===focus);
   const terms=`<dl class="sx-dp-kv"><div><dt class="sx-small">값</dt><dd class="sx-serif">${esc(d.price)}</dd></div><div><dt class="sx-small">받으실 날</dt><dd class="sx-serif">${esc(d.due)}</dd></div><div><dt class="sx-small">수정</dt><dd class="sx-serif">${esc(d.revisions)}회</dd></div></dl>`;
   return `<div class="sx-room is-direction" data-state="direction">
     <section class="sx-dp" data-count="${d.options.length}" data-view="${view}" data-dp>
@@ -69,8 +69,8 @@ export function directionView(p,{top='',ui={}}={}){
           <div class="sx-dp-terms">${terms}
             <p class="sx-small sx-dp-incl">어느 방향이든 값은 같고, 모델 · 목소리 · 음악 · 자막이 모두 들어 있어요. 결제는 글 콘티를 보신 뒤에 해요. <button type="button" class="sx-link" data-dp-do="more" aria-expanded="${ui.more?'true':'false'}">${ui.more?'접기':'자세히'}</button></p>
             <dl class="sx-dp-more sx-small" data-dp-more ${ui.more?'':'hidden'}><div><dt>만드는 법</dt><dd>사람과 목소리는 모두 AI로 만들어요. 제품 · 로고 · 글자는 보내 주신 파일을 그대로 얹어요. 지금 그림은 방향을 보여 드리는 첫 그림이에요</dd></div>${d.gets?`<div><dt>받으시는 것</dt><dd>${esc(d.gets)}</dd></div>`:''}<div><dt>쓸 수 있는 곳</dt><dd>온라인 광고 · SNS · 자사몰 · 상세페이지(음악 · 목소리 포함). TV · 옥외 · 극장 · 인쇄는 따로 여쭤 주세요</dd></div><div><dt>받으실 날</dt><dd>사진 · 로고 · 꼭 넣을 말이 다 모였을 때 기준이에요. 주말과 공휴일을 포함한 날이고, 확인이 늦어지면 그만큼 함께 미뤄요</dd></div><div><dt>수정</dt><dd>${d.photo?'사진':'영상'}이 나온 뒤 ${esc(d.revisions)}번. 글 콘티와 장면 이미지의 의견은 횟수에 세지 않아요</dd></div><div><dt>결제</dt><dd>글 콘티를 보신 뒤, 장면 이미지 전에 해요. 글 콘티까지는 값을 받지 않아요. 결제 방법은 그때 담당자가 안내해 드려요</dd></div></dl>
-            <form class="sx-dp-answer" data-form="direction-pick"><input type="hidden" name="optionId" value="${esc(focus)}"><input type="hidden" name="modelId" value="${esc(ui.modelId||'')}"><label class="sx-dp-note" data-dp-note ${ui.note?'':'hidden'}><span class="sr">덧붙일 말</span><input type="text" name="note" maxlength="200" placeholder="예) 「쌉쌀」은 빼 주세요"></label><button type="submit" class="sx-go is-solid sx-dp-go" data-mutate><span data-dp-go>「${esc(item.name)}」${withRo(item.name)} 정하고 글 콘티 받기</span>${arrow}</button></form>
-            <p class="sx-small sx-dp-foot"><button type="button" class="sx-link" data-dp-do="note" aria-expanded="${ui.note?'true':'false'}">한마디 덧붙이기</button><button type="button" class="sx-link" data-dp-do="neither">${d.options.length>2?'모두 아니에요':'둘 다 아니에요'}</button></p>
+            <form class="sx-dp-answer" data-form="direction-pick"><input type="hidden" name="optionId" value="${esc(focus)}"><input type="hidden" name="modelId" value="${esc(ui.modelId||'')}"><label class="sx-dp-note" data-dp-note ${noteOpen?'':'hidden'}><span class="sr">덧붙일 말</span><input type="text" name="note" maxlength="200" placeholder="예) 「쌉쌀」은 빼 주세요" value="${esc(keep)}"></label><button type="submit" class="sx-go is-solid sx-dp-go" data-mutate><span data-dp-go>「${esc(item.name)}」${withRo(item.name)} 정하고 글 콘티 받기</span>${arrow}</button></form>
+            <p class="sx-small sx-dp-foot"><button type="button" class="sx-link" data-dp-do="note" aria-expanded="${noteOpen?'true':'false'}">한마디 덧붙이기</button><button type="button" class="sx-link" data-dp-do="neither">${d.options.length>2?'모두 아니에요':'둘 다 아니에요'}</button></p>
           </div>
         </div>
         <form class="sx-dp-neither" data-form="direction-neither" ${view==='neither'?'':'hidden'}><h1 class="sx-serif sx-dp-title" tabindex="-1">어떤 점이 아쉬웠나요?</h1><label class="sx-field sx-dp-say"><span class="sx-small">${d.last?'한 줄이면 돼요. 담당자가 직접 연락드려 함께 정해요.':'한 줄이면 돼요. 같은 값으로 한 번 더 제안해 드려요.'}</span><textarea name="note" rows="3" maxlength="300" required placeholder="예) 더 고급스러웠으면 좋겠어요"></textarea></label><button type="submit" class="sx-go is-solid sx-dp-go" data-mutate><span>${d.last?'담당자와 이야기하기':'다시 제안받기'}</span>${arrow}</button><p class="sx-small sx-dp-foot"><button type="button" class="sx-link" data-dp-do="back">${d.options.length>2?'안 다시 보기':'두 방향 다시 보기'}</button></p></form>
@@ -84,8 +84,8 @@ export function mountDirection(root,d,{ui={},animate=true}={}){
   const host=root.querySelector('[data-dp]');if(!host)return {unmount(){}};
   const $=selector=>host.querySelector(selector),works=Object.fromEntries(FINISHED_FILMS.map(film=>[film.id,film]));
   let playing=null;
-  if(!ui.focus||!d.options.some(o=>o.id===ui.focus))ui.focus=(d.options.find(o=>o.recommended)||d.options[0]).id;
-  const workOf=o=>{const film=works[o.workId];return film?{src:film.excerpt?.src||film.full?.src||'',title:film.title}:null;};
+  if(!ui.focus||!d.options.some(o=>o.id===ui.focus))ui.focus=(d.chosen&&d.options.find(o=>o.id===d.chosen.id)||d.options.find(o=>o.recommended)||d.options[0]).id;
+  const workOf=o=>{const film=works[o.workId];return film?{src:film.excerpt?.src||film.full?.src||'',title:film.title,note:filmNote(film)}:null;};
   function stopFilm(){if(!playing)return;playing.video.pause?.();playing.video.remove();playing.cap.remove();const was=playing;playing=null;syncFilmButtons();return was;}
   function playFilm(kind){
     const o=d.options.find(item=>item.id===ui.focus),frame=host.querySelector(`[data-dp-frame="${CSS.escape(o.id)}"]`),work=workOf(o),taste=kind==='taste',src=taste?o.film:work?.src;if(!frame||!src)return;
@@ -94,7 +94,7 @@ export function mountDirection(root,d,{ui={},animate=true}={}){
     // 미리 움직여 보기는 손님이 누른 순간이라 소리를 켜고 한 번만, 끝나면 그림으로. 비슷한 작품은 소리 없이 되풀이.
     video.muted=!taste;video.loop=!taste;
     if(taste)video.addEventListener('ended',()=>{if(playing?.video===video)stopFilm();},{once:true});
-    const cap=document.createElement('span');cap.className='sx-dp-film-cap sx-small';cap.textContent=taste?`미리 움직여 본 첫 판 · ${o.filmNote||''} · 소리 있음`.replace(' ·  ·',' ·'):`「${work.title}」 · 가상 브랜드로 만든 자체 작품`;
+    const cap=document.createElement('span');cap.className='sx-dp-film-cap sx-small';cap.textContent=taste?`미리 움직여 본 첫 판 · ${o.filmNote||''} · 소리 있음`.replace(' ·  ·',' ·'):`「${work.title}」${work.note?` · ${work.note}`:''}`;
     frame.append(video,cap);playing={video,cap,kind};
     video.play?.().catch(()=>{video.muted=true;video.play?.().catch(()=>{});});
     syncFilmButtons();
@@ -175,12 +175,14 @@ function roomPaper(p){
 function copyOf(p){
   if(p.state==='prepare'&&p.direction?.chosen)return {turn:'us',title:'이 방향으로 정했어요',text:'광고가 남길 한 문장과 글 콘티를 만들어 보내 드려요. 보시고 마음에 드시면 그때 결제를 안내해 드려요.'};
   if(p.state==='redirect'&&p.direction?.last)return {turn:'us',title:'담당자가 직접 연락드려요',text:'주신 말씀을 들고 담당자가 연락드려 함께 정해요. 정해지면 글 콘티를 보내 드려요.'};
+  if(p.state==='check'&&p.photo)return {...ROOM_COPY.check,text:'보내 주신 의뢰서를 확인하고 있어요. 평일 10~19시에 보고, 빠진 게 있으면 그 칸만 다시 여쭤요. 확인이 끝나면 첫 장을 먼저 보내 드려요.'};
+  if(p.state==='direction'&&p.options>2)return {...ROOM_COPY.direction,title:'세 방향 중 하나를 골라 주세요'};
   return ROOM_COPY[p.state]||ROOM_COPY.check;
 }
 // 고른 방향: 이름 · 한 문장 · 값 · 받으실 날 · 수정 · 다음 길. 판이 오기 전까지 다시 고를 수 있다.
 function chosenCard(d){
   const o=d.chosen;
-  return `<section class="sx-dp-chosen" data-room-in><p class="sx-small">고르신 방향${d.status==='settled'?' · 담당자와 정함':''}</p><h2 class="sx-serif">${esc(o.name)}</h2><p class="sx-body">${esc(o.sentence)}</p>${d.note?`<p class="sx-small">덧붙이신 말: ${esc(d.note)}</p>`:''}<dl class="sx-dp-kv"><div><dt class="sx-small">값</dt><dd class="sx-serif">${esc(d.price)}</dd></div><div><dt class="sx-small">받으실 날</dt><dd class="sx-serif">${esc(d.due)}</dd></div><div><dt class="sx-small">수정</dt><dd class="sx-serif">${esc(d.revisions)}회</dd></div></dl><ol class="sx-dp-road sx-small"><li class="is-done">방향</li><li class="is-now">글 콘티</li><li>장면 이미지</li><li>영상</li></ol>${d.canPick?'<button type="button" class="sx-small sx-link" data-room-go="pick">다시 고르기</button>':''}</section>`;
+  return `<section class="sx-dp-chosen" data-room-in><p class="sx-small">고르신 방향${d.status==='settled'?' · 담당자와 정함':''}</p><h2 class="sx-serif">${esc(o.name)}</h2><p class="sx-body">${esc(o.sentence)}</p>${d.note?`<p class="sx-small">${d.status==='settled'?'담당자와 정한 내용':'덧붙이신 말'}: ${esc(d.note)}</p>`:''}<dl class="sx-dp-kv"><div><dt class="sx-small">값</dt><dd class="sx-serif">${esc(d.price)}</dd></div><div><dt class="sx-small">받으실 날</dt><dd class="sx-serif">${esc(d.due)}</dd></div><div><dt class="sx-small">수정</dt><dd class="sx-serif">${esc(d.revisions)}회</dd></div></dl><ol class="sx-dp-road sx-small"><li class="is-done">방향</li><li class="is-now">글 콘티</li><li>장면 이미지</li><li>영상</li></ol>${d.canPick?'<button type="button" class="sx-small sx-link" data-room-go="pick">다시 고르기</button>':''}</section>`;
 }
 // 되묻기: 칸마다 글로 답하거나 파일을 보낸다. 파일만, 글만 보내도 된다.
 function askList(p){return `<ul class="sx-asks" data-room-in>${p.asks.map(item=>`<li><div class="sx-ask-head"><b class="sx-serif">${esc(item.label)}</b>${item.why?`<p class="sx-small">${esc(item.why)}</p>`:''}</div><form class="sx-ask-reply" data-form="ask" data-id="${esc(item.id||'')}"><textarea name="text" rows="1" maxlength="1000" placeholder="글로 답하거나 파일을 보내 주세요" aria-label="${esc(item.label)} 답"></textarea><div class="sx-ask-tools"><label class="sx-small sx-link"><input type="file" class="sr" name="file" data-ask-file><span data-ask-name>파일 고르기</span></label><button type="submit" class="sx-go" data-mutate><span>보내기</span>${arrow}</button></div></form></li>`).join('')}${(p.answered||[]).map(item=>`<li class="is-answered"><div class="sx-ask-head"><b>${esc(item.label)}</b><p class="sx-small">${esc(item.answer||item.fileName||'파일을 보내 주셨어요.')}</p></div><span class="sx-small">보냈어요</span></li>`).join('')}</ul>`;}

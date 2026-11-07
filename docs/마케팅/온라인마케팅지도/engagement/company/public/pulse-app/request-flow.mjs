@@ -3,7 +3,7 @@ import {CASTING_MODELS} from './casting-catalog.mjs';
 import {KINDS,CHANNELS,PACKAGES,slotsFor,WATCH_WORDS,ACTIONS,WIN,REFERENCE_POINTS,MODEL_LINES,MODEL_PICKS,STEPS,emptyAnswers,photoAdvice,price,DRAFT_FILES_GONE,pkgOf,kindOf,channelText,modelOf,modelList,filesOf,slotCount,briefRows,ratioOf,termsOf,dueDay,revisionNote} from './request-data.mjs';
 import {rise,riseAll,sink,revealWords,roll,typeIn,play,ease,reduced} from './motion.mjs';
 
-// 고객이 초대 없이 직접 시작하는 의뢰서(2026-11-04 유호님 「클라이언트가 의뢰 > 준비할 것들 작성 > 너와 내가 확인 > 1차 전달 후 수정 > 제작」).
+// 고객이 초대 없이 직접 시작하는 의뢰서(2026-11-04 — 의뢰 → 준비할 것 작성 → 함께 확인 → 1차 전달 뒤 수정 → 제작).
 // 시사실 판(2026-11-05): 왼쪽은 묻는 말 하나, 오른쪽은 온 화면 스크린이다. 고른 답이 스크린에서 바로 어떻게 되는지 보이고, 답은 크레딧처럼 스크린 아래에 쌓인다. 어떤 칸도 보내기를 막지 않고, 없으면 무엇이 달라지는지만 말한다.
 const ASSET='./assets/request/';
 const still=name=>`${ASSET}${name}.webp`;
@@ -90,7 +90,7 @@ const views={
       `<div class="sx-duo">${field({bind:'email',label:'이메일',value:a.email,type:'email',auto:'email',max:254})}${field({bind:'phone',label:'휴대폰 · 선택',value:a.phone,type:'tel',auto:'tel',max:30})}</div>`);
   },
   review(a,step,i,n){
-    return ask(step,i,n,'이대로 보낼까요?','보내 주시면 저희가 내용을 확인하고 방향 두 안과 값 · 받으실 날을 보내 드려요. 영상을 만들기 전에 방향 · 글 콘티 · 컷마다 장면 이미지를 먼저 보여 드리고, 확인하시기 전에는 영상을 만들지 않아요.',
+    return ask(step,i,n,'이대로 보낼까요?',pkgOf(a)?.photo?'보내 주시면 저희가 내용을 확인하고 첫 장을 먼저 보내 드려요. 첫 장으로 방향을 맞춘 뒤 나머지 사진을 만들어요.':'보내 주시면 저희가 내용을 확인하고 방향 두 안과 값 · 받으실 날을 보내 드려요. 영상을 만들기 전에 방향 · 글 콘티 · 컷마다 장면 이미지를 먼저 보여 드리고, 확인하시기 전에는 영상을 만들지 않아요.',
       `<div class="sx-brief" data-in>${briefRows(a).map(item=>`<div class="sx-brief-row ${item.missing?'is-missing':''}"><span class="sx-small">${esc(item.key)}</span><span class="sx-brief-val">${item.missing?`<em>${esc(item.missing)}</em>`:esc(item.value)}</span><button type="button" class="sx-small sx-brief-edit" data-do="goto" data-id="${item.step}" aria-label="${esc(item.key)} 고치기">고치기</button></div>`).join('')}</div>`+
       `${dueLine(a)}`+
       `<label class="sx-tick" data-in><input type="checkbox" data-bind="consent" ${a.consent?'checked':''}><span>이 내용과 연락처를 의뢰 확인과 제작에 쓰는 데 동의해요</span><small class="sx-small">제작으로 이어지지 않으면 90일 뒤 지워요.</small></label>`+
@@ -336,7 +336,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     host.classList.add('is-sent');$('[data-next-label]').textContent='보냈어요';
     host.querySelectorAll('.sx-q-top,.sx-q-stage,[data-live]').forEach(node=>{node.inert=true;});
     const overlay=document.createElement('div');overlay.className='sx-rc';
-    overlay.innerHTML=`<div class="sx-rc-wrap"><article class="sx-rc-paper" tabindex="-1" aria-label="의뢰 접수증"><header><img src="./assets/request/logo-paper.webp" alt="SYNK PULSE" width="120" height="32"><h2 class="sx-serif">의뢰 접수증</h2></header><dl class="sx-rc-rows"><div><dt>접수 번호</dt><dd class="sx-no">${esc(receipt.number)}</dd></div><div><dt>접수 시각</dt><dd class="sx-no">${esc(stamp)}</dd></div>${rows.map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl><ol class="sx-rc-next"><li><b>저희가 내용을 확인해요</b><span>평일 10~19시에 보고, 빠진 게 있으면 그 칸만 다시 여쭤요.</span></li><li><b>방향 두 안을 보내 드려요</b><span>무엇으로 기억에 남길지 두 방향과 모델, 값 · 받으실 날 · 수정 횟수예요. 고르시면 한 문장과 글 콘티, 컷마다 장면 이미지를 차례로 보내 드려요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.</span></li><li><b>의견을 반영한 뒤 제작해요</b><span>확인하시기 전에는 영상을 만들지 않아요.</span></li></ol></article></div><div class="sx-rc-actions"><button type="button" class="sx-go is-solid" data-rc="room"><span>내 의뢰 보기</span>${arrow}</button>${receipt.link?'<button type="button" class="sx-small sx-link" data-rc="copy">이 의뢰로 돌아올 링크 복사</button><p class="sx-small" data-rc-note>이 링크로 30일 안에 어느 기기에서든 돌아올 수 있어요.</p>':''}</div>`;
+    overlay.innerHTML=`<div class="sx-rc-wrap"><article class="sx-rc-paper" tabindex="-1" aria-label="의뢰 접수증"><header><img src="./assets/request/logo-paper.webp" alt="SYNK PULSE" width="120" height="32"><h2 class="sx-serif">의뢰 접수증</h2></header><dl class="sx-rc-rows"><div><dt>접수 번호</dt><dd class="sx-no">${esc(receipt.number)}</dd></div><div><dt>접수 시각</dt><dd class="sx-no">${esc(stamp)}</dd></div>${rows.map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl><ol class="sx-rc-next"><li><b>저희가 내용을 확인해요</b><span>평일 10~19시에 보고, 빠진 게 있으면 그 칸만 다시 여쭤요.</span></li>${pkg?.photo?'<li><b>첫 장을 먼저 보내 드려요</b><span>모델이 제품을 든 첫 장으로 방향을 맞춰요. 의견을 주시면 그 결로 나머지를 만들어요.</span></li><li><b>나머지 사진을 보내 드려요</b><span>사진이 나온 뒤에도 정해진 횟수만큼 고칠 수 있어요.</span></li>':'<li><b>방향 두 안을 보내 드려요</b><span>무엇으로 기억에 남길지 두 방향과 모델, 값 · 받으실 날 · 수정 횟수예요. 고르시면 한 문장과 글 콘티, 컷마다 장면 이미지를 차례로 보내 드려요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.</span></li><li><b>의견을 반영한 뒤 제작해요</b><span>확인하시기 전에는 영상을 만들지 않아요.</span></li>'}</ol></article></div><div class="sx-rc-actions"><button type="button" class="sx-go is-solid" data-rc="room"><span>내 의뢰 보기</span>${arrow}</button>${receipt.link?'<button type="button" class="sx-small sx-link" data-rc="copy">이 의뢰로 돌아올 링크 복사</button><p class="sx-small" data-rc-note>이 링크로 30일 안에 어느 기기에서든 돌아올 수 있어요.</p>':''}</div>`;
     host.append(overlay);
     play(overlay,[{opacity:0},{opacity:1}],{duration:360});
     const paper=overlay.querySelector('.sx-rc-paper');

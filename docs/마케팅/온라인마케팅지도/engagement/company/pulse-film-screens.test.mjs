@@ -342,6 +342,13 @@ test('on a portrait phone the end page shows the product from just under the sma
   assert.ok(K2<K&&K2>=330+(top-44),'the lower copy without the title still keeps the button clear');
   for(const text of [`height:calc(100vh - ${K2}px);height:calc(100dvh - ${K2}px)`,`width:min(100%,calc((100dvh - ${K2}px)*${ratioText}))`,`object-position:50% max(-${vwText}vw,calc((${K2}px - 100dvh)*${heightText}))`])assert.ok(low[2].includes(text),text);
 });
+test('no public file of the customer app quotes internal decisions by name — comments included, a customer can read them with view-source',async()=>{
+  const {readdirSync}=await import('node:fs');
+  const dir=new URL('./public/pulse-app/',import.meta.url);
+  const files=readdirSync(dir,{recursive:true}).map(String).filter(name=>/\.(mjs|js|css|html|webmanifest)$/.test(name));
+  assert.ok(files.length>30);
+  for(const name of files)assert.doesNotMatch(readFileSync(new URL(name.split('\\').join('/'),dir),'utf8'),/유호님/,name);
+});
 test('no public file of the customer app names an AI tool, comments included — a customer can read them with view-source',async()=>{
   const {readdirSync}=await import('node:fs');
   const dir=new URL('./public/pulse-app/',import.meta.url);
