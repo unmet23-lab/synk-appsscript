@@ -79,6 +79,11 @@ def main():
             prompt = open(os.path.join(DAY, src, "지시문.txt"), encoding="utf-8").read()
             new, n = re.subn(r"^ACTION:.*$", "ACTION: " + act, prompt, count=1, flags=re.M)
             assert n == 1, pid
+            if img.startswith("2_참고"):   # m2v(시작 그림을 참고로) — 첫 줄은 「시작 자세」(굽기 시트 지시문 틀, 4번 세션 11-07: 「start from it unchanged」는 그림을 멈춰 두라는 말로 읽힘)
+                new, n = re.subn(r"^@이미지 1 is the exact first frame of this video: start from it unchanged — .*$",
+                                 "@이미지 1 shows the worker's starting pose, framing and light for this shot — from there he moves naturally and the picture "
+                                 "never holds still; he stays the same person in the same work clothes and white hard hat.", new, count=1, flags=re.M)
+                assert n == 1, pid
             os.makedirs(d, exist_ok=True)
             shutil.copyfile(os.path.join(DAY, src, img), os.path.join(d, img))
             open(os.path.join(d, "지시문.txt"), "w", encoding="utf-8").write(new)
