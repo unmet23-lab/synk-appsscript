@@ -71,6 +71,20 @@ assert P11C.count("hangs flat against it") == 1 and "rustle" not in P11C
 # p6-22c: 22b는 웃음이 판 3.3초에 시작해 마지막 장(4.0초)에서야 다 피어, 편 끝에서 웃음에 머무는 시간이 0초였다(11-07 Fable 둘째 판 「꼭 고칠 것」).
 #   22b 마지막 장(96장)을 첫 프레임으로 이어 웃음이 머무는 판 — 편집은 21번을 줄인 만큼 이 판 앞 1.4초를 쓴다.
 #   시선이 렌즈 왼쪽 2~5°라 「카메라 보고 웃는 모델」로 읽힐 수 있어(Fable), 2초쯤 눈이 복도 왼쪽으로 조금 옮겨 가게 했다.
+# p6-12b: 12번 엄마가 원본보다 안 보였다(11-07 Fable 둘째 판 · 유호님 「12번 다시 내기」) — 원본은 빨간 윗옷이 어둠에서 튄다.
+#   시작 그림을 다시_12_그림.py(나노바나나 2.1)로 카디건만 짙은 빨강 · 얼굴에 스탠드 빛 조금으로 고치고(S12w_2를 지금 시작 그림 틀에 맞춤),
+#   지시문은 옛 p6-12에서 「거의 실루엣 · 얼굴은 깊은 그림자」만 뺐다. 편집이 판 0.5초부터 쓰고 엄마 말(따로 받은 판)이 판 1.9~3.9초에 들어가므로 입을 그때 움직인다.
+S12_START = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p6/다시굽기_1107/S12w_2_맞춤.jpg"
+P12B = (HEAD +
+        "MOM_NIGHT: the same Korean woman in her forties as in the first frame — dark-brown, wavy, shoulder-length hair, a deep red knit cardigan, dark jeans — "
+        "sitting in the dim, warm spill of the table lamp; her face, red cardigan and hands stay softly visible in the dark the whole time.\n"
+        "ACTION: Night: the dark living room is lit only by the table lamp, and a thin line of warm light glows under the closed bedroom door — the daughter is inside. "
+        "The mother sits still on the piano bench at the left, turned toward the door, hands on her knees. At about 1.4 s she leans a little toward the door, "
+        "and from about 1.9 s to 3.9 s she says a few gentle words to her daughter through it — her lips move softly, her head tilts slightly — then she stays leaning, quiet, to the end. "
+        "The thin line of light under the door stays lit and still; the door stays shut.\n"
+        + CAMERA + LOOK + "Night stays night: the room never gets brighter than the first frame.\n"
+        "SOUND: silent clip — no dialogue, no narration, no music.\n")
+
 JOIN22B = 96
 P22C = (HEAD +
         "MOM50: the same Korean woman as in the first frame, in her mid-fifties — a sleek chin-length dark bob with a few grey strands, a pearl stud earring, an oat-beige knit cardigan over a light-blue shirt, a long taupe skirt.\n"
@@ -124,6 +138,12 @@ def main():
     open(os.path.join(d, "지시문.txt"), "w", encoding="utf-8").write(P22C)
     boards.append({"순서": 5, "id": "p6-22c", "편": "p6", "컷": ["22"], "폴더": "005_p6-22c", "길이": 4, "비율": "16:9", "소리": "끔", "묶음": False, "대안": False, "방식": "A",
                    "시험": False, "낱판": [], "쓰는초": [1.42], "파일": ["1_시작.jpg"], "빠진 파일": [], "지시문 머리": P22C[:150], "지시문 글자 수": len(P22C)})
+    d = os.path.join(OUT, "006_p6-12b")
+    os.makedirs(d, exist_ok=True)
+    shutil.copyfile(S12_START, os.path.join(d, "1_시작.jpg"))
+    open(os.path.join(d, "지시문.txt"), "w", encoding="utf-8").write(P12B)
+    boards.append({"순서": 6, "id": "p6-12b", "편": "p6", "컷": ["12"], "폴더": "006_p6-12b", "길이": 5, "비율": "16:9", "소리": "끔", "묶음": False, "대안": False, "방식": "A",
+                   "시험": False, "낱판": [], "쓰는초": [3.63], "파일": ["1_시작.jpg"], "빠진 파일": [], "지시문 머리": P12B[:150], "지시문 글자 수": len(P12B)})
     json.dump(boards, open(os.path.join(OUT, "_순서.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(OUT, [b["id"] for b in boards], [b["지시문 글자 수"] for b in boards])
 
