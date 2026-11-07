@@ -9,6 +9,8 @@ import { P11, P11_DOG_FRAMES, P11_FRAMES } from './p11/P11';
 import { P11B, P11B_FRAMES } from './p11/B';
 import { P12, P12_FRAMES } from './p12/P12';
 import { HS16, HS9, HS_FRAMES } from './hs/HS';
+import { S3, S3_FRAMES } from './s3/S3';
+import { S4, S4_FRAMES } from './s4/S4';
 import { P6, P6_FRAMES } from './p6/P6';
 import { S1, S1_FRAMES } from './s1/S1';
 
@@ -31,6 +33,14 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="hs16" component={HS16} durationInFrames={HS_FRAMES} fps={24} width={1920} height={1080} />
     <Composition id="hs9" component={HS9} durationInFrames={HS_FRAMES} fps={24} width={1080} height={1920} />
     <Composition id="hs16-probe" component={HS16} defaultProps={{ probe: true }} durationInFrames={HS_FRAMES} fps={24} width={1920} height={1080} />
+    {/* 시즌 3 블프 세일 「힘껏」(11-07) — 판 없는 끝(기본) · 원본 짜임 끝(견줄 판, -card) */}
+    <Composition id="s3-15" component={S3} defaultProps={{ len: 15 as const }} durationInFrames={S3_FRAMES[15]} fps={24} width={1080} height={1920} />
+    <Composition id="s3-15-card" component={S3} defaultProps={{ len: 15 as const, end: 'card' as const }} durationInFrames={S3_FRAMES[15]} fps={24} width={1080} height={1920} />
+    <Composition id="s3-6" component={S3} defaultProps={{ len: 6 as const }} durationInFrames={S3_FRAMES[6]} fps={24} width={1080} height={1920} />
+    <Composition id="s3-6-card" component={S3} defaultProps={{ len: 6 as const, end: 'card' as const }} durationInFrames={S3_FRAMES[6]} fps={24} width={1080} height={1920} />
+    {/* 시즌 4 블프 스나이퍼 「느지막」(11-07) — 16:9 33.46초, 판 없는 끝(기본) · 콘티 끝 카드(견줄 판, -card) */}
+    <Composition id="s4" component={S4} durationInFrames={S4_FRAMES} fps={24} width={1920} height={1080} />
+    <Composition id="s4-card" component={S4} defaultProps={{ end: 'card' as const }} durationInFrames={S4_FRAMES} fps={24} width={1920} height={1080} />
     {/* 6번 연말 빈방(11-07) — 16:9 60초, 말자막 · 글판 · 끝 문구 · 그린 로고 「솜채」 */}
     <Composition id="p6" component={P6} durationInFrames={P6_FRAMES} fps={24} width={1920} height={1080} />
     {/* 시즌 1 옆집의 크리스마스(11-07) — 16:9 60.04초, 말자막 · 켜지는 끝 문구 · 그린 워드마크 「늘켬」 */}
