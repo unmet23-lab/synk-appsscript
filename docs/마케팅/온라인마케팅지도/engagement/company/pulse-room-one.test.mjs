@@ -93,7 +93,7 @@ test('one head: the name leads back to the room, the number and five steps sit i
   assert.match(app,/document\.querySelector\('\.app-header'\)\?\.addEventListener\('click',event=>\{if\(!roomCustomer\(\)\)return;/,'the head sits outside main, so it has its own listener');
   assert.match(app,/previousFocus=remote&&\(main\.contains\(document\.activeElement\)\|\|headBox\?\.contains\(document\.activeElement\)\)/,'live refresh keeps keyboard focus in the head (Fable N2)');
   const legacyCss=read('film-legacy.css'),css=read('film.css');
-  assert.match(legacyCss,/html\.view-dr:not\(\.has-room-head\) \.header-crumb/);assert.match(legacyCss,/html\.has-room-head \.sx-dr-left\{padding-top:12px\}/,'no 56px gap under the in-flow phone head (Fable N4)');
+  assert.match(legacyCss,/html\.view-dr:not\(\.has-room-head\) \.app-header>\.header-crumb/,'the example head inside the screen keeps its name and steps');assert.match(legacyCss,/html\.has-room-head \.sx-dr-left\{padding-top:12px\}/,'no 56px gap under the in-flow phone head (Fable N4)');
   assert.match(css,/\.sx-head-steps\{flex:none;flex-wrap:nowrap/,'the wide head stays one line so it never covers the version picker (Fable N3)');
 });
 
@@ -120,7 +120,8 @@ test('video and delivery are one screen: one player, the final first, files and 
     assert.match(html,/^<div class="sx-review sx-dr sx-shell"/,tab);assert.match(html,/<video id="review-video" playsinline preload="metadata" src="[^"]*\/pulse\/api\/media\/f2" data-version="f2"/,tab+': the last final first');
     assert.doesNotMatch(html,/data-final|\scontrols[\s>=]/,tab+': no second player');assert.equal(html.split('data-film-toggle').length-1,1);assert.equal(html.split('data-review-full').length-1,1);
     assert.match(html,/<section class="sx-review-deliver" id="review-delivery" tabindex="-1" aria-label="납품">/);assert.doesNotMatch(html,/data-panel="note"|id="review-approval"/,tab+': no notes or approval on a final');
-    assert.equal(html.split('>파일 받기<').length-1,2,'one row per final');assert.match(html,/<summary class="sx-small">사용 안내<\/summary><p class="sx-small">릴스에 그대로 올리세요\.<\/p>/);
+    assert.equal(html.split('>파일 받기<').length-1,2,'one row per final');assert.match(html,/<p class="sx-small sx-deliver-guide">릴스에 그대로 올리세요\.<\/p>/,'the guide is open before the receipt button');
+    assert.match(html,/<p class="sx-review-line sx-serif">완성본을 받으세요<\/p>/);assert.ok(html.indexOf('>15초 최종본</span>')<html.indexOf('>세로 30초</span>'),'files in the same order as the version picker');
     assert.match(html,/data-action="confirm-delivery"/);
   }
   const first=projectView(state(delivered(),{tab:'review',versionId:'f1'}));assert.match(first,/data-version="f1"/);

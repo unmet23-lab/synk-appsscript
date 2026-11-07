@@ -918,7 +918,10 @@ html.sx.has-room-head:not(.is-staff) .header-crumb .crumb-no,.sx-room-bar.is-hea
   html.sx.has-room-head:not(.is-staff) .app-header>#pulse-live{order:2}
   :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-break{display:block;order:3;flex-basis:100%;height:0}
   :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-steps{order:4;flex:1 1 0;min-width:0;margin:0;padding:4px 0 10px;border:0}
-  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-steps .sx-steps-run{flex:1 1 auto;min-width:0}
+  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-steps .sx-steps-run{flex:1 1 auto;min-width:0;gap:0 10px;font-size:12.5px}
+  /* 둘째 줄은 단계 다섯과 「담당자에게 묻기」만 — 완성 광고는 고객 방 맨 아래 한 줄로(390에서 잘리거나 꺾이지 않게). */
+  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-steps .sx-steps-foot{display:none}
+  .sx-room>.sx-room-films{display:block}
   :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .header-actions>.sx-head-ask{order:5;padding:4px 0 10px}
   html.sx.has-room-head:not(.is-staff) .header-crumb .crumb-no{display:none}
   /* 겹쳐 뜨는 머리를 피하던 위 여백은 흐름 안 머리에서는 뺀다. */
@@ -930,6 +933,13 @@ html.sx.has-room-head:not(.is-staff) .header-crumb .crumb-no,.sx-room-bar.is-hea
   html.sx.has-room-head:not(.is-staff) .sx-dp-sheet{padding-top:calc(var(--sx-m) + 40px)}
   html.sx.has-room-head:not(.is-staff) .sx-dp-name{display:none}
 }
+@media (min-width:821px) and (min-aspect-ratio:10001/10000) and (max-height:700px){html.sx.has-room-head:not(.is-staff) .sx-dp-sheet{padding-top:calc(var(--sx-m) + 26px)}}
+/* 고객 방 맨 아래 완성 광고 한 줄은 휴대폰에서만(넓은 화면은 머리에 있다). */
+.sx-room-films{display:none;padding:20px var(--sx-m) 28px;margin:0}
+/* 알림 토스트는 머리 아래에 — 머리의 단계 줄을 덮지 않게. */
+html.sx.has-room-head:not(.is-staff) .notice{top:calc(var(--sx-m) + 40px)}
 /* 묻기 화면: 입력 칸은 제목 줄에 맞추고, 보내기 단추는 다른 화면의 결정 단추와 같은 크기. */
 .sx-ask-form{margin-top:clamp(8px,2vh,18px)}
 .sx-ask-form .sx-say-tools .sx-go.is-solid{padding:14px 18px}
+/* 손님 머리의 「앱 설치」는 글자 단추라, 옛 화면(app.css)의 휴대폰 아이콘 조각이 글 앞에 점으로 남지 않게. */
+html.sx:not(.is-staff) .header-actions .install-button::before{display:none}

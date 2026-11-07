@@ -327,7 +327,7 @@ function reviewRoom(s){
     <aside class="sx-dr-right">
       ${alertBox(s)}
       <div class="sx-vers sx-small" role="group" aria-label="시안">${versions.slice().reverse().filter(v=>v.kind==='preview'||v.id===current.id||v.kind==='final').reverse().map(v=>`<button type="button" class="${v.id===current.id?'is-now':''}" aria-pressed="${v.id===current.id}" data-action="version-pick" data-id="${esc(v.id)}">${esc(v.label)}</button>`).join('')}${previous&&latestActive&&video?`<button type="button" class="sx-vs" data-action="compare">${comparing?'한 편만 보기':'나란히 보기'}</button>`:''}</div>
-      <p class="sx-review-line sx-serif">${esc(reviewLine(p,current,latest,previews))}</p>
+      <p class="sx-review-line sx-serif">${finalShown?'완성본을 받으세요':esc(reviewLine(p,current,latest,previews))}</p>
       ${!latestActive&&latest&&current.kind==='preview'&&!s.demo?`<p class="sx-small sx-review-new">새 시안이 도착했어요. 보던 영상과 쓰던 의견은 그대로 있어요. ${lnk('최신 시안 보기','latest-version')}</p>`:''}
       <p id="video-error" class="sx-small sx-review-error" hidden>영상을 재생하지 못했어요. 인터넷 연결을 확인하고, 계속 안 되면 담당자에게 알려 주세요.</p>
       ${finalShown?'':`<div class="sx-panel" data-panel="note" ${panel==='note'?'':'hidden'}>${s.demo?demoNotes(s,current,latest,latestActive,messages):feedbackRoundsColumn(s)}</div>`}
@@ -354,13 +354,13 @@ function reviewRoom(s){
     </div>`:''}
   </div>`;
 }
-// 영상 화면의 납품 칸(의뢰 흐름, 판 3): 최종본을 볼 때 의견 · 승인 자리에 파일 줄과 수령 확인. 안내는 줄마다 접어 둔다(낮은 노트북에서 기둥이 400px쯤).
+// 영상 화면의 납품 칸(의뢰 흐름, 판 3): 최종본을 볼 때 의견 · 승인 자리에 파일 줄과 수령 확인. 판 고르기와 같은 차례로, 사용 안내는 펼친 채(안내를 읽고 「확인했어요」를 누르게).
 function deliverBlock(s,finals){
   const p=s.project,c=p.closeout,received=!!c?.receipt,specs=!!studio(p).deliverables?.revision;
-  const row=v=>{const media=safeUrl(v.media?.url,{media:true}),link=!media&&safeUrl(v.url);return `<li><div class="sx-deliver-row"><span class="sx-body">${esc(v.label)}</span>${media?`<a class="sx-go" href="${esc(media)}" download="${esc(downloadName(p,v))}"><span>파일 받기</span>${arrow}</a>`:link?`<a class="sx-go" href="${esc(link)}" target="_blank" rel="noopener noreferrer"><span>자료 열기</span>${arrow}</a>`:''}</div>${v.guide?`<details class="sx-deliver-guide"><summary class="sx-small">사용 안내</summary><p class="sx-small">${esc(v.guide)}</p></details>`:''}</li>`;};
+  const row=v=>{const media=safeUrl(v.media?.url,{media:true}),link=!media&&safeUrl(v.url);return `<li><div class="sx-deliver-row"><span class="sx-body">${esc(v.label)}</span>${media?`<a class="sx-go" href="${esc(media)}" download="${esc(downloadName(p,v))}"><span>파일 받기</span>${arrow}</a>`:link?`<a class="sx-go" href="${esc(link)}" target="_blank" rel="noopener noreferrer"><span>자료 열기</span>${arrow}</a>`:''}</div>${v.guide?`<p class="sx-small sx-deliver-guide">${esc(v.guide)}</p>`:''}</li>`;};
   const receipt=!c?.deliveryKey?'':received?`<p class="sx-small sx-receipt" aria-label="납품 수령 확인"><b>수령 확인 완료</b> · <time datetime="${esc(c.receipt.confirmedAt)}">${esc(stamp(c.receipt.confirmedAt))}</time></p>`:s.mode==='customer'&&c.canConfirm?`<div class="sx-receipt">${go('파일과 안내 확인했어요','confirm-delivery')}<p class="sx-small">받아 보신 뒤 눌러 주세요. 확인한 시각이 담당자에게 가요.</p></div>`:'';
   return `<section class="sx-review-deliver" id="review-delivery" tabindex="-1" aria-label="납품">
-        <ul class="sx-deliver-files">${finals.slice().reverse().map(row).join('')}</ul>
+        <ul class="sx-deliver-files">${finals.map(row).join('')}</ul>
         ${receipt}
         <p class="sx-small sx-deliver-foot">파일은 여기서 언제든 다시 받으실 수 있어요. 다른 형식 · 길이가 필요하면 <button type="button" class="sx-link" data-room-do="contact">담당자에게 묻기</button>${specs?' · <button type="button" class="sx-link" data-room-do="paper" data-paper="deliverables">납품 규격 보기</button>':''}</p>
       </section>`;

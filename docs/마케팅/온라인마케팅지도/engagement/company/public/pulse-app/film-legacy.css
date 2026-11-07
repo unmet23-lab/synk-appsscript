@@ -297,7 +297,7 @@ html.sx:not(.is-staff) .crumb-no{font-family:var(--sx-mono);font-size:13px;color
 html.sx:not(.is-staff) .demo-tag{color:var(--sx-dim)!important;padding:0!important}
 html.sx:not(.is-staff) .demo-tag::before{display:none}
 .sx-step.is-next:not(.is-now)::after{content:'';display:inline-block;width:6px;height:6px;margin-left:6px;background:var(--sx-ink);vertical-align:2px}
-html.view-dr:not(.has-room-head) .header-crumb,html.view-dr .header-caption{display:none!important}
+html.view-dr:not(.has-room-head) .app-header>.header-crumb,html.view-dr .header-caption{display:none!important}
 html.view-dr .app-header{background:none!important}
 .sx-dr{--top:clamp(64px,8vh,76px)}
 .sx-dr-left,.sx-dr-right{top:var(--top)}
@@ -530,11 +530,7 @@ p.sx-receipt{display:block}
 .sx-deliver-row{display:flex;justify-content:space-between;align-items:center;gap:14px}
 .sx-deliver-row>.sx-body{min-width:0;font-size:15px;font-weight:600;color:var(--sx-ink)}
 .sx-deliver-row .sx-go{flex:none}
-.sx-deliver-guide summary{cursor:pointer;color:var(--sx-dim);width:max-content;list-style:none}
-.sx-deliver-guide summary::-webkit-details-marker{display:none}
-.sx-deliver-guide summary::after{content:'';display:inline-block;width:5px;height:5px;margin-left:8px;border-right:1px solid currentColor;border-bottom:1px solid currentColor;transform:rotate(45deg);vertical-align:3px;transition:transform .25s}
-.sx-deliver-guide[open] summary::after{transform:rotate(-135deg);vertical-align:0}
-.sx-deliver-guide p{margin-top:4px;color:var(--sx-dim)}
+.sx-deliver-guide{color:var(--sx-dim);max-width:34em}
 .sx-review-deliver .sx-receipt .sx-go{width:100%}
 .sx-review-deliver .sx-receipt .sx-go.is-solid{padding:16px 18px}
 .sx-review-deliver .sx-receipt p{color:var(--sx-dim)}
@@ -546,6 +542,10 @@ p.sx-receipt{display:block}
   html.has-room-head .sx-review .sx-dr-credit>h1,.sx-review:has(>.sx-room-bar.is-head) .sx-dr-credit>h1{padding-top:12px}
   html.has-room-head .sx-review:has(.sx-review-decide),.sx-review:has(>.sx-room-bar.is-head):has(.sx-review-decide){padding-bottom:calc(env(safe-area-inset-bottom) + 150px)}
   html.has-room-head .sx-ask-thread{padding-top:20px}
+  /* 최종본을 볼 때(휴대폰): 영상을 조금 줄이고 납품 칸을 띠 위로 — 첫 화면에 영상 · 「완성본을 받으세요」 · 첫 파일. */
+  .sx-review:has(#review-delivery) .sx-dr-films{height:44vh;height:44dvh}
+  .sx-review:has(#review-delivery) .sx-dr-right{order:2}
+  .sx-review:has(#review-delivery) .sx-dr-bottom{order:3}
 }
 /* 넓은 화면의 어두운 방(1차안 · 영상): 머리 한 줄이 가운데 틀(영상 · 밝은 대본 판) 위에 겹치지 않게, 틀도 양옆 기둥과 같은 높이에서 시작한다. */
-@media (min-width:821px) and (min-aspect-ratio:10001/10000){html.has-room-head .sx-dr-films{top:var(--top)}}
+@media (min-width:821px) and (min-aspect-ratio:10001/10000){html.has-room-head .sx-dr-films,.sx-dr:has(>.sx-room-bar.is-head) .sx-dr-films{top:var(--top)}}

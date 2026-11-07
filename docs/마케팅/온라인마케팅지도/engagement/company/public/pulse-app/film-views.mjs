@@ -57,7 +57,7 @@ function dpModel(d,ui){
   const now=modelCard(ui.modelId)||d.model;
   // 얼굴 줄(판 3): 후보 넷을 작은 얼굴로 늘 보이고, 큰 사진은 「크게 보기」로 접어 둔다. 단추 값은 큰 사진과 같다.
   const face=m=>`<button type="button" class="sx-dp-face ${m.id===now?.id?'is-on':''}" aria-pressed="${m.id===now?.id?'true':'false'}" data-dp-model="${esc(m.id)}" aria-label="${esc(m.name)}"><img src="${esc(m.image)}" alt="" width="44" height="44" loading="lazy" decoding="async"></button>`;
-  return `<div class="sx-dp-model sx-small"><p><span class="sx-dp-label">AI 모델</span><b data-dp-model-name>${esc(now?.name||'')}</b></p>${picks.length>1?`<div class="sx-dp-faces" role="group" aria-label="모델 고르기">${picks.map(face).join('')}<button type="button" class="sx-link sx-dp-model-open" data-dp-do="casting" aria-expanded="${ui.casting?'true':'false'}">${ui.casting?'접기':'크게 보기'}</button></div>`:''}<span data-dp-work-slot></span></div><div class="sx-dp-casts" role="group" aria-label="다른 모델 고르기" data-dp-casts ${ui.casting?'':'hidden'}>${picks.map(m=>`<button type="button" class="sx-dp-cast ${m.id===now?.id?'is-on':''}" aria-pressed="${m.id===now?.id?'true':'false'}" data-dp-model="${esc(m.id)}"><img src="${esc(modelScene(m.id))}" alt="" width="538" height="720" loading="lazy" decoding="async"><span class="sx-small">${esc(m.name)}</span></button>`).join('')}<p class="sx-small sx-dp-cast-note" data-dp-cast-note ${now?.id&&now.id!==d.model?.id?'':'hidden'}>이 모델로 바꿔 장면 이미지에서 보여 드려요.</p></div>`;
+  return `<div class="sx-dp-model sx-small"><p><span class="sx-dp-label">AI 모델</span><b data-dp-model-name>${esc(now?.name||'')}</b></p>${picks.length>1?`<div class="sx-dp-faces" role="group" aria-label="모델 고르기"><span class="sx-dp-label">다른 모델</span>${picks.map(face).join('')}<button type="button" class="sx-link sx-dp-model-open" data-dp-do="casting" aria-expanded="${ui.casting?'true':'false'}">${ui.casting?'접기':'크게 보기'}</button></div>`:''}<span data-dp-work-slot></span></div><div class="sx-dp-casts" role="group" aria-label="다른 모델 고르기" data-dp-casts ${ui.casting?'':'hidden'}>${picks.map(m=>`<button type="button" class="sx-dp-cast ${m.id===now?.id?'is-on':''}" aria-pressed="${m.id===now?.id?'true':'false'}" data-dp-model="${esc(m.id)}"><img src="${esc(modelScene(m.id))}" alt="" width="538" height="720" loading="lazy" decoding="async"><span class="sx-small">${esc(m.name)}</span></button>`).join('')}<p class="sx-small sx-dp-cast-note" data-dp-cast-note ${now?.id&&now.id!==d.model?.id?'':'hidden'}>이 모델로 바꿔 장면 이미지에서 보여 드려요.</p></div>`;
 }
 export function directionView(p,{top='',ui={}}={}){
   const d=p.direction,focus=d.options.some(o=>o.id===ui.focus)?ui.focus:(d.chosen&&d.options.find(o=>o.id===d.chosen.id)||d.options.find(o=>o.recommended)||d.options[0]).id,keep=d.status==='chosen'&&d.note?d.note:'',noteOpen=!!ui.note,view=ui.view==='neither'?'neither':'choose',item=d.options.find(o=>o.id===focus);
@@ -167,6 +167,7 @@ export function roomView(p,{bar=true,top='',after='',foot='',prep=''}={}){
     ${foot?`<div class="sx-room-foot">${foot}</div>`:''}
     ${roomPaper(p)}
     ${prep}
+    ${p.films?'<p class="sx-room-films"><button type="button" class="sx-small sx-link" data-room-go="films">SYNK가 끝까지 만든 완성 광고 보기</button></p>':''}
   </div>`;
 }
 // 아래 인화지 쪽: 보내 주신 의뢰서 · 받은 자료. 고객 방과 방향 화면이 같이 쓴다.
