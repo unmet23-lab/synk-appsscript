@@ -262,7 +262,7 @@ function playVideo(url, from, to, s) {
   if (!url || !live(s) || S.rec) return res(false);
   stopSound();
   const v = ui.reply; let settled = false; let unguard = () => {}; let go = null;
-  // 정보 받음(loadedmetadata)을 기다리던 go도 접을 때 뗀다 — 안전 시계 · 단계 정리가 먼저 접은 뒤 늦게 온 소식이 접힌 영상을 혼자 틀지 않게(아르곤 drama-stall-20261107 A1)
+  // 정보 받음(loadedmetadata)을 기다리던 go도 접을 때 뗀다 — 안전 시계 · 단계 정리가 먼저 접은 뒤 늦게 온 소식이 접힌 영상을 혼자 틀지 않게(11-07)
   const done = (ok) => { if (settled) return; settled = true; unguard(); if (go) v.removeEventListener('loadedmetadata', go); v.removeEventListener('ended', onEnd); v.removeEventListener('error', onErr); v.removeEventListener('timeupdate', onTime); s.signal.removeEventListener('abort', onAbort); try { v.pause(); } catch {} setPlaying(false); res(ok); };
   const onEnd = () => done(true); const onErr = () => done(false); const onAbort = () => done(false);
   const onTime = () => { if (to && v.currentTime >= to - 0.04) done(true); };
