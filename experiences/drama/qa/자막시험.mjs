@@ -17,7 +17,7 @@ const MAIN=path.join(os.homedir(),'Documents','SYNK-appsscript');
 const require=createRequire(path.join(fs.existsSync(path.join(ROOT,'node_modules'))?ROOT:MAIN,'x.js'));
 const {chromium}=require('playwright');
 const args=process.argv.slice(2),opt=(n,d=null)=>{const i=args.indexOf(n);return i<0?d:args[i+1];},has=n=>args.includes(n);
-const [W,H]=opt('--폭','390x780').split('x').map(Number),LANG=opt('--언어','en'),SHOTS=has('--찍기'),RECORD=has('--녹화'),NO_END=has('--끝소식없음'),REPLAY=has('--다시듣기');
+const [W,H]=opt('--폭','390x780').split('x').map(Number),LANG=opt('--언어','en'),SHOTS=has('--찍기'),RECORD=has('--녹화'),NO_END=has('--끝소식없음'),REPLAY=has('--다시듣기'),MIDSTOP=has('--중간멈춤');
 const CAND=opt('--후보');
 const OUT=path.resolve(opt('--출력',path.join(ROOT,'.tmp','drama-cues',`${W}-${LANG}`)));fs.mkdirSync(OUT,{recursive:true});
 const PILOT=path.join(ROOT,'experiences/drama/pilot'),MEDIA=path.join(MAIN,'experiences/drama/pilot');
@@ -47,6 +47,8 @@ page.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource/.test(m.t
 await page.exposeFunction('__fakeTake',fakeTake);
 // 어느 소리가 언제 재생됐는지(녹화에 입힌다), 자막이 언제 바뀌었는지 적는다.
 // --끝소식없음: 헤드리스 · 블루투스 전환처럼 재생 끝(ended) 소식이 끝내 안 오는 기기를 흉내 낸다 — 시범판의 안전 시계만으로 이어 가야 한다
+// --중간멈춤: 첫 선배 영상이 2초쯤에서 멈추고(전화 · 다른 앱이 소리를 가져간 기기) 끝 소식도 없다 — 시범판은 그 대사를 통째 자막으로 보이고 다시 듣기 길로 이어야 한다
+if(MIDSTOP)await page.addInitScript(()=>{if(window===window.top)return;const play=HTMLMediaElement.prototype.play;let done=false;HTMLMediaElement.prototype.play=function(){const el=this;if(!done&&el.id==='reply'){done=true;setTimeout(()=>{try{el.pause();}catch{}},2000);}return play.call(el);};});
 if(NO_END)await page.addInitScript(()=>{if(window===window.top)return;const add=EventTarget.prototype.addEventListener;HTMLMediaElement.prototype.addEventListener=function(t,f,o){if(t==='ended')return;return add.call(this,t,f,o);};});
 await page.addInitScript(({linesVersion})=>{
  if(window===window.top){window.__media=[];window.__cues=[];window.SYNKDramaHost=Object.freeze({status:async()=>({ok:true,dramaEnabled:true,dramaLimit:30,dramaRemaining:30,linesVersion}),take:p=>window.__fakeTake(p)});return;}
@@ -128,7 +130,9 @@ fs.writeFileSync(path.join(OUT,'자막기록.json'),JSON.stringify(log,null,1));
 // 대사마다: 시각표 차례대로 넘어갔나
 const flat=s=>s.replace(/\s+/g,'');
 const seen=log.cues.filter(c=>c.who==='Taeo');
+const stoppedId=MIDSTOP?lesson.lesson.scene.find(x=>x.type==='actor'&&x.video)?.id:null;   // --중간멈춤으로 멈춘 줄은 넘김 차례를 보지 않는다(통째 자막이 맞다)
 for(const item of lesson.lesson.scene.filter(x=>x.type==='actor')){
+ if(item.id===stoppedId)continue;
  const wants=(item.cues||[]).map(c=>flat(c.text));
  check(wants.length>=2,`${item.id}: 나눈 화면이 있다`,`${wants.length}개`);
  let at=-1,inOrder=true;
@@ -136,7 +140,8 @@ for(const item of lesson.lesson.scene.filter(x=>x.type==='actor')){
  check(inOrder,`${item.id}: 화면이 차례대로 나옴`);
 }
 const whole=lesson.lesson.scene.filter(x=>x.type==='actor').map(x=>flat(x.text));
-check(!seen.some(c=>whole.includes(flat(c.text))),'선배 대사가 통째로 나온 적 없음');
+if(MIDSTOP)check(seen.some(c=>whole.includes(flat(c.text))),'중간에 멈춘 선배 대사는 통째 자막으로 보임');
+else check(!seen.some(c=>whole.includes(flat(c.text))),'선배 대사가 통째로 나온 적 없음');
 const cueRows=seen.filter(c=>c.rows>0);
 check(cueRows.every(c=>c.rows<=2),'한국어 두 줄 이내',`가장 많은 줄 ${Math.max(0,...cueRows.map(c=>c.rows))}`);
 // 선배 대사 화면은 영상 아래에 앉는다(44px은 영상 끝이 바탕으로 녹는 자리). 되묻기처럼 대사 카드가 떠 있는 때는 카드 위로 올라가도 되지만 얼굴(턱 선)은 덮지 않는다.

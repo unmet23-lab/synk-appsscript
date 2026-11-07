@@ -241,10 +241,21 @@ function stopSound() {
 const END_GRACE_MS = 8000, END_CAP_S = 30, START_WAIT_MS = 15000;
 function endGuard(m, s, left, isDone, finish) {
  const started = { v: false };
+ let lastAt = -1, rearms = 0;
+ const arm = (sec) => s.timer(check, (Number.isFinite(sec) ? Math.max(0, sec) : END_CAP_S) * 1000 + END_GRACE_MS);
+ // 시계가 울리면: 아직 나아가는 중이면(느린 망) 남은 만큼 다시 기다리고, 멈춰 있으면 끝 근처일 때만 끝난 것으로 —
+ // 아니면 false로 풀어 대사를 통째 자막 · 다시 듣기로 보인다(반만 듣고 자막이 사라진 채 넘어가지 않게).
+ function check() {
+  if (isDone()) return;
+  const at = m.currentTime;
+  if (!m.paused && !m.ended && at > lastAt + 0.5 && rearms < 4) { lastAt = at; rearms++; arm(left()); return; }
+  const near = m.ended || !(left() > 1);
+  try { m.pause(); } catch {}
+  finish(near);
+ }
  const onPlaying = () => {
   if (started.v) return; started.v = true;
-  const sec = left();
-  s.timer(() => { if (isDone()) return; try { m.pause(); } catch {} finish(true); }, (Number.isFinite(sec) ? Math.max(0, sec) : END_CAP_S) * 1000 + END_GRACE_MS);
+  lastAt = m.currentTime; arm(left());
  };
  m.addEventListener('playing', onPlaying);
  s.timer(() => { if (!isDone() && !started.v) { try { m.pause(); } catch {} finish(false); } }, START_WAIT_MS);

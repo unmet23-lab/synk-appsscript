@@ -60,6 +60,8 @@ test('시범판은 나눈 화면을 소리 시각으로 따라가고, 소리가 
  assert.match(pilot,/media\.addEventListener\('timeupdate', onTime\); media\.addEventListener\('ended', onTime\)/,'탭을 옮겨 그림 틱이 멈춰도 소리 시각 · 끝 소식으로 넘긴다');
  assert.match(pilot,/const onTime = \(\) => \{ if \(!media\.paused \|\| media\.ended\) show/,'재생 위치가 0으로 돌아가는 불러오기 때의 timeupdate로 첫 화면을 그리지 않는다');
  assert.match(pilot,/unguard = endGuard\(m, s,/,'소리 재생에 끝 소식이 안 와도 잇는 안전 시계');
+ assert.match(pilot,/if \(!m\.paused && !m\.ended && at > lastAt \+ 0\.5 && rearms < 4\) \{ lastAt = at; rearms\+\+; arm\(left\(\)\); return; \}/,'안전 시계: 아직 나아가는 재생(느린 망)은 남은 만큼 다시 기다린다');
+ assert.match(pilot,/const near = m\.ended \|\| !\(left\(\) > 1\);[\s\S]{0,60}finish\(near\);/,'안전 시계: 멈춘 재생은 끝 근처일 때만 끝난 것으로, 아니면 통째 자막 길로');
  assert.match(pilot,/unguard = endGuard\(v, s,/,'영상 재생에 끝 소식이 안 와도 잇는 안전 시계');
  assert.match(pilot,/if \(go\) v\.removeEventListener\('loadedmetadata', go\)/,'접은 영상의 정보 받음 듣기를 뗀다');
  assert.match(pilot,/if \(settled \|\| gen !== playGen\) return;\r?\n   if \(S\.rec \|\| !live\(s\)\) \{ done\(false\); return; \}/,'늦게 온 정보 받음이 접힌 영상을 틀지 않고, 녹음 중 · 단계가 끝났으면 바로 접는다');
