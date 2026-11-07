@@ -261,14 +261,15 @@ function playVideo(url, from, to, s) {
  return new Promise((res) => {
   if (!url || !live(s) || S.rec) return res(false);
   stopSound();
-  const v = ui.reply; let settled = false; let unguard = () => {};
-  const done = (ok) => { if (settled) return; settled = true; unguard(); v.removeEventListener('ended', onEnd); v.removeEventListener('error', onErr); v.removeEventListener('timeupdate', onTime); s.signal.removeEventListener('abort', onAbort); try { v.pause(); } catch {} setPlaying(false); res(ok); };
+  const v = ui.reply; let settled = false; let unguard = () => {}; let go = null;
+  // 정보 받음(loadedmetadata)을 기다리던 go도 접을 때 뗀다 — 안전 시계 · 단계 정리가 먼저 접은 뒤 늦게 온 소식이 접힌 영상을 혼자 틀지 않게(아르곤 drama-stall-20261107 A1)
+  const done = (ok) => { if (settled) return; settled = true; unguard(); if (go) v.removeEventListener('loadedmetadata', go); v.removeEventListener('ended', onEnd); v.removeEventListener('error', onErr); v.removeEventListener('timeupdate', onTime); s.signal.removeEventListener('abort', onAbort); try { v.pause(); } catch {} setPlaying(false); res(ok); };
   const onEnd = () => done(true); const onErr = () => done(false); const onAbort = () => done(false);
   const onTime = () => { if (to && v.currentTime >= to - 0.04) done(true); };
   v.addEventListener('ended', onEnd); v.addEventListener('error', onErr); v.addEventListener('timeupdate', onTime); s.signal.addEventListener('abort', onAbort, { once: true });
   unguard = endGuard(v, s, () => (to || v.duration) - v.currentTime, () => settled, done);
   if (!v.src.endsWith(url)) v.src = url;
-  const go = () => { try { v.currentTime = from || 0; } catch {} v.muted = false; setPlaying(true); v.play().catch(() => done(false)); };
+  go = () => { if (settled) return; try { v.currentTime = from || 0; } catch {} v.muted = false; setPlaying(true); v.play().catch(() => done(false)); };
   if (v.readyState >= 1) go(); else v.addEventListener('loadedmetadata', go, { once: true });
  });
 }
