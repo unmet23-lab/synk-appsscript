@@ -105,6 +105,8 @@ test('페이지 글 — JOB 머리(슬래시 경로 · 계정 번호 · 표시 �
   assert.equal(JOB.profile, 'Profile 2', '11-07부터 구글 로그인은 ego 「유호 (Chrome)」 프로필에만 있다');
   assert.notEqual(웹.기본공간, 'synk-argon-web', '옛 이름 공간은 「유호」(Profile 1) 그대로 열려 로그아웃 화면이다');
   assert.ok(s.includes('await taskSpace(space, { profileId: profile })'));
+  assert.ok(/oldSpace \? await taskSpace\(space\) :/.test(s), '이미 있는 공간에 profileId를 넘기면 ego가 막는다 — 있으면 이름만으로 연다(11-07 두 번째 실행 실패)');
+  assert.ok(s.indexOf('listTaskSpaces()') < s.indexOf('await taskSpace('), '공간이 있는지 먼저 본다');
   assert.equal(JSON.parse(웹.페이지글(j, 5, '확인').split('\n')[0].replace(/^globalThis\.JOB = /, '').replace(/;$/, '')).account, '', '계정을 안 주면 대조하지 않는다');
   const oj = 오마주.argonJob(path.join('C:', 'x', 'yt_abc'), path.join('C:', 'x', 'yt_abc', '원본.mp4'), '첫 분석');
   const OJ = JSON.parse(웹.페이지글(oj, 1, '보내기').split('\n')[0].replace(/^globalThis\.JOB = /, '').replace(/;$/, ''));

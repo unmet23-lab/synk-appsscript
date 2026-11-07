@@ -17,7 +17,7 @@ const files = J.files || (J.video ? [J.video] : []);
 const { prompt, out, u } = J;
 const shots = J.shots || out.replace(/[\\/][^\\/]*$/, "");
 const space = J.space || "synk-argon-web-p2";
-const profile = J.profile || "Profile 2"; // 공간을 처음 만들 때만 쓰인다 — 이름이 같은 옛 공간(Profile 1)은 그 프로필 그대로 열린다
+const profile = J.profile || "Profile 2"; // 공간을 처음 만들 때만 넘긴다 — 같은 이름 공간이 있으면 그 프로필이 이것과 같은지만 본다
 const account = J.account || "";
 const head = J.head || "아르곤 답";
 const mark = J.mark || `${out}.보냄.json`;
@@ -92,7 +92,11 @@ const finish = async (text, url) => {
   await page.close().catch(() => {});
 };
 
-const task = await taskSpace(space, { profileId: profile });
+// profileId는 공간을 처음 만들 때만 받는다 — 이미 있는 이름에 넘기면 ego가 「profileId only applies when creating」으로 막는다(11-07, 두 번째 실행부터 전부 실패).
+// 있으면 그 공간의 프로필이 맞는지만 보고 이름으로 다시 연다.
+const oldSpace = (await listTaskSpaces()).find((s) => s.name === space);
+if (oldSpace && oldSpace.profileId && oldSpace.profileId !== profile) await fail(`공간 「${space}」이 ${oldSpace.profileId}에 있다(${profile} 아님) — 다른 이름으로 새로 만든다`, "멈춤");
+const task = oldSpace ? await taskSpace(space) : await taskSpace(space, { profileId: profile });
 
 if (mode === "읽기") {
   // 보낸 대화가 남은 탭을 지시문 앞머리로 찾아 읽기만 한다 — 주소를 옮기거나 새로 고치지 않는다(10-27 대화가 사라짐).
