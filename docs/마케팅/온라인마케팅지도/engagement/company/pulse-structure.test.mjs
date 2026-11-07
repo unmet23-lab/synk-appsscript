@@ -55,10 +55,12 @@ test('a project with no work yet shows an example of what comes next instead of 
 });
 
 test('step pages keep the stage title and the refresh tool, and staff also get the manage step',()=>{
+  // 고객 영상 확인(시사실 판)은 실시간 갱신이 있어 상시 「최신 내용 불러오기」를 두지 않는다(의뢰 흐름 9절 5번). 충돌 알림 안의 링크는 남는다.
   const html=projectView(state({tab:'strategy'}));
   assert.match(html,/<header class="sx-shell-head">[\s\S]*<p class="sx-kicker">01 · 제작 설계<\/p><h1 class="sx-display">만들기 전에, 같은 목표를 봐요\.<\/h1>/);
   assert.match(html,/data-action="refresh"/);
-  assert.match(projectView(state({tab:'review'})),/data-action="refresh"/);
+  assert.doesNotMatch(projectView(state({tab:'review'})),/data-action="refresh"/);
+  assert.match(projectView(state({tab:'review',error:'이미 바뀌었어요.',conflict:true})),/data-action="refresh"/);
   const staff=projectView(state({mode:'staff',canEdit:true,tab:'manage'}));
   assert.match(staff,/data-action="tab" data-tab="manage" aria-current="page"/);
   assert.match(staff,/<p class="canvas-kicker">프로젝트 관리<\/p>/);

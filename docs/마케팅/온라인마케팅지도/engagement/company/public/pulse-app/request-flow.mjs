@@ -1,6 +1,6 @@
 import {esc} from './api.mjs';
 import {CASTING_MODELS} from './casting-catalog.mjs';
-import {KINDS,CHANNELS,PACKAGES,slotsFor,WATCH_WORDS,ACTIONS,WIN,REFERENCE_POINTS,MODEL_LINES,MODEL_PICKS,STEPS,emptyAnswers,photoAdvice,price,DRAFT_FILES_GONE,pkgOf,kindOf,channelText,modelOf,modelList,filesOf,slotCount,briefRows,ratioOf} from './request-data.mjs';
+import {KINDS,CHANNELS,PACKAGES,slotsFor,WATCH_WORDS,ACTIONS,WIN,REFERENCE_POINTS,MODEL_LINES,MODEL_PICKS,STEPS,emptyAnswers,photoAdvice,price,DRAFT_FILES_GONE,pkgOf,kindOf,channelText,modelOf,modelList,filesOf,slotCount,briefRows,ratioOf,termsOf,dueDay,revisionNote} from './request-data.mjs';
 import {rise,riseAll,sink,revealWords,roll,typeIn,play,ease,reduced} from './motion.mjs';
 
 // 고객이 초대 없이 직접 시작하는 의뢰서(2026-11-04 유호님 「클라이언트가 의뢰 > 준비할 것들 작성 > 너와 내가 확인 > 1차 전달 후 수정 > 제작」).
@@ -16,6 +16,8 @@ const bigScene=item=>`${ASSET}model-scene-${String(item.id).toLowerCase()}.webp`
 
 const part=(step,index,total)=>`<p class="sx-q-part"><span class="sx-no">${String(index+1).padStart(2,'0')} / ${String(total).padStart(2,'0')}</span><b>${esc(step.part)}</b></p>`;
 const ask=(step,index,total,title,lead,body)=>`${part(step,index,total)}<h1 class="sx-q-title sx-serif" tabindex="-1" data-title>${esc(title)}</h1>${lead?`<p class="sx-body sx-q-lead" data-in>${esc(lead)}</p>`:''}${body}`;
+// 보내기 전 확인의 받으실 날 · 수정 한 줄(결정 11-07). 날은 달력 기준이고 자료가 다 모인 날부터 센다.
+const dueLine=a=>{const pkg=pkgOf(a);if(!pkg)return '';return `<p class="sx-small sx-q-due" data-in>${pkg.days?`받으실 날은 사진 · 로고 · 꼭 넣을 말이 다 모인 날부터 ${pkg.days}일이에요(주말 · 공휴일 포함). 오늘 다 모이면 <b>${esc(dueDay(pkg))}</b>이에요. 수정은 ${esc(revisionNote(pkg))}.`:'받으실 날과 수정 횟수는 구성에 맞춰 함께 정해요.'}</p>`;};
 const row=({i,label,note,on,attr,meta=''})=>`<button type="button" class="sx-row ${on?'is-on':''}" role="radio" aria-checked="${on?'true':'false'}" ${attr} data-in><span class="sx-no">${String(i+1).padStart(2,'0')}</span><span class="sx-row-main"><b class="sx-serif">${esc(label)}</b>${note?`<small class="sx-small">${esc(note)}</small>`:''}</span>${meta?`<span class="sx-row-meta">${meta}</span>`:''}<span class="sx-row-mark" aria-hidden="true"></span></button>`;
 const field=({bind,label,value,placeholder='',help='',type='text',rows=0,max=400,auto=''})=>`<label class="sx-field" data-in><span class="sx-small">${esc(label)}</span>${rows?`<textarea data-bind="${bind}" rows="${rows}" maxlength="${max}" placeholder="${esc(placeholder)}">${esc(value)}</textarea>`:`<input data-bind="${bind}" type="${type}" value="${esc(value)}" maxlength="${max}" placeholder="${esc(placeholder)}" ${auto?`autocomplete="${auto}"`:''}>`}${help?`<small class="sx-small">${esc(help)}</small>`:''}</label>`;
 const chip=(label,on,attr)=>`<button type="button" class="sx-chip ${on?'is-on':''}" aria-pressed="${on?'true':'false'}" ${attr}>${esc(label)}</button>`;
@@ -36,12 +38,12 @@ const views={
   what(a,step,i,n){
     return ask(step,i,n,'무엇을 광고할까요?','종류에 따라 준비하실 것이 달라져요. 맞는 것 하나만 골라 주세요.',
       field({bind:'name',label:'제품이나 브랜드 이름',value:a.name,placeholder:'예) 오미톡 오미자 스파클링',max:120})+
-      `<div class="sx-rows" role="radiogroup" aria-label="광고할 것의 종류">${KINDS.map((item,index)=>row({i:index,label:item.label,note:item.note,on:a.kind===item.id,attr:`data-do="kind" data-id="${item.id}"`})).join('')}</div>`);
+      `<div class="sx-rows is-kinds" role="radiogroup" aria-label="광고할 것의 종류">${KINDS.map((item,index)=>row({i:index,label:item.label,note:item.note,on:a.kind===item.id,attr:`data-do="kind" data-id="${item.id}"`})).join('')}</div>`);
   },
   where(a,step,i,n){
     return ask(step,i,n,'어디에 올리고, 얼마나 길게 할까요?','올릴 곳에 따라 화면 비율이 정해져요. 모르면 비워 두셔도 저희가 제안해요.',
       `<div class="sx-chips" data-in role="group" aria-label="올릴 곳">${CHANNELS.map(item=>chip(item.label,a.channels.includes(item.id),`data-do="channel" data-id="${item.id}"`)).join('')}</div>`+
-      `<div class="sx-rows is-tight" role="radiogroup" aria-label="길이와 구성">${PACKAGES.map((item,index)=>row({i:index,label:item.label,note:item.note?`${item.title} · ${item.note}`:item.title,on:a.package===item.id,attr:`data-do="package" data-id="${item.id}"`,meta:`<span class="sx-small">${price(item.price)}부터</span>`})).join('')}${row({i:PACKAGES.length,label:'추천해 주세요',note:'올릴 곳을 보고 맞는 구성을 말씀드려요',on:a.package==='ask',attr:'data-do="package" data-id="ask"'})}</div>`+
+      `<div class="sx-rows is-tight" role="radiogroup" aria-label="길이와 구성">${PACKAGES.map((item,index)=>row({i:index,label:item.label,note:item.note?`${item.title} · ${item.note}`:item.title,on:a.package===item.id,attr:`data-do="package" data-id="${item.id}"`,meta:`<span class="sx-small">${price(item.price)}부터</span><span class="sx-small sx-row-terms">${esc(termsOf(item))}</span>`})).join('')}${row({i:PACKAGES.length,label:'추천해 주세요',note:'올릴 곳을 보고 맞는 구성을 말씀드려요',on:a.package==='ask',attr:'data-do="package" data-id="ask"'})}</div>`+
       `<label class="sx-tick" data-in><input type="checkbox" data-bind="paid" ${a.paid?'checked':''}><span>광고비를 써서 돌릴 거예요</span><small class="sx-small">심사에 필요한 표시와 규격까지 함께 챙겨 드려요.</small></label>`);
   },
   files(a,step,i,n){
@@ -90,6 +92,7 @@ const views={
   review(a,step,i,n){
     return ask(step,i,n,'이대로 보낼까요?','보내 주시면 저희가 내용을 확인하고 진행과 값을 안내해 드려요. 영상을 만들기 전에 한 문장 · 글 콘티 · 컷마다 장면 이미지를 먼저 보여 드리고, 확인하시기 전에는 영상을 만들지 않아요.',
       `<div class="sx-brief" data-in>${briefRows(a).map(item=>`<div class="sx-brief-row ${item.missing?'is-missing':''}"><span class="sx-small">${esc(item.key)}</span><span class="sx-brief-val">${item.missing?`<em>${esc(item.missing)}</em>`:esc(item.value)}</span><button type="button" class="sx-small sx-brief-edit" data-do="goto" data-id="${item.step}" aria-label="${esc(item.key)} 고치기">고치기</button></div>`).join('')}</div>`+
+      `${dueLine(a)}`+
       `<label class="sx-tick" data-in><input type="checkbox" data-bind="consent" ${a.consent?'checked':''}><span>이 내용과 연락처를 의뢰 확인과 제작에 쓰는 데 동의해요</span><small class="sx-small">제작으로 이어지지 않으면 90일 뒤 지워요.</small></label>`+
       `<label class="sx-tick" data-in><input type="checkbox" data-bind="rights" ${a.rights?'checked':''}><span>보내는 사진 · 로고 · 문구를 쓸 권리가 있어요</span><small class="sx-small">영상 속 사람과 목소리는 모두 AI로 만들어요. 실존 인물을 닮게 만드는 요청은 받지 않아요.</small></label>`);
   },
@@ -122,7 +125,7 @@ function slateRows(a){
   if(a.name)rows.push(['광고할 것',a.name]);
   if(a.kind)rows.push(['종류',kindOf(a)?.label]);
   if(a.channels.length)rows.push(['올릴 곳',channelText(a)]);
-  if(a.package)rows.push(['길이',pkg?`${pkg.label} · ${price(pkg.price)}부터`:'추천해 주세요']);
+  if(a.package)rows.push(['길이',pkg?`${pkg.label} · ${price(pkg.price)}부터 · ${termsOf(pkg)}`:'추천해 주세요']);
   if(slotCount(a))rows.push(['받은 자료',`${slotCount(a)}개`]);
   if(a.oneThing)rows.push(['남길 것',a.oneThing]);
   if(a.screenText)rows.push(['화면 글자',a.screenText.split('\n')[0]]);
@@ -139,7 +142,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   root.innerHTML=`<div class="sx-q" data-step="">
     <header class="sx-q-top"><a class="sx-logo" href="./" data-do="exit" aria-label="SYNK PULSE 처음으로"><img src="./assets/request/logo-paper.webp" alt="SYNK PULSE" width="164" height="44"></a>
       <ol class="sx-q-parts sx-small" aria-hidden="true">${[...new Set(STEPS.map(step=>step.part))].map(name=>`<li data-part="${name}">${name}</li>`).join('')}</ol>
-      <div class="sx-q-top-right sx-small"><span class="sx-q-saved" data-saved></span><button type="button" class="sx-q-open-credits" data-do="sheet">의뢰서 <b class="sx-no" data-slate-count>0</b></button><button type="button" data-do="later">나중에 이어서</button></div>
+      <div class="sx-q-top-right sx-small"><span class="sx-q-saved" data-saved></span><button type="button" class="sx-q-open-credits" data-do="sheet">적은 내용 <b class="sx-no" data-slate-count>0</b></button><button type="button" data-do="later">나중에 이어서</button></div>
       <i class="sx-q-progress" aria-hidden="true"><i data-progress></i></i></header>
     <div class="sx-q-stage">
       <section class="sx-q-ask"><form class="sx-q-form" data-ask novalidate></form></section>
@@ -230,7 +233,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   function renderMonitor(id){
     if(id!=='model')allModels=false;
     if(id==='what'){const kind=kindOf(a);monSwap(`<img class="sx-q-fill" data-still src="${esc(kind?.shot||still('w-gift-sphere'))}" alt=""><p class="sx-small sx-q-cap" data-still-cap>${esc(kind?.who||`「霜の肌理」 홀리데이 기프트 · ${VIRTUAL}`)}</p>`);return;}
-    if(id==='where'){const pkg=pkgOf(a);monSwap(`<div class="sx-q-where"><img class="sx-q-fill" src="${still(RATIO_STILL[ratioOf(a)])}" data-ratio-still alt=""><div class="sx-q-finder" data-frame data-ratio="${ratioOf(a)}"><span class="sx-no" data-ratio-label>${ratioOf(a)}</span></div><div class="sx-q-price"><b class="sx-serif"><span data-price>${pkg?price(pkg.price):'—'}</span><small data-price-from ${pkg?'':'hidden'}>부터</small></b><span class="sx-small"><span data-cuts-label>${pkg?.photo?'받으실 사진':'영상 전에 먼저 보여 드리는 컷'}</span> <b class="sx-no" data-cuts>${pkg?pkg.cuts:0}</b></span><div class="sx-q-ticks" data-strip aria-hidden="true"></div></div></div>`);fillStrip(pkg?.cuts||0);return;}
+    if(id==='where'){const pkg=pkgOf(a);monSwap(`<div class="sx-q-where"><img class="sx-q-fill" src="${still(RATIO_STILL[ratioOf(a)])}" data-ratio-still alt=""><div class="sx-q-finder" data-frame data-ratio="${ratioOf(a)}"><span class="sx-no" data-ratio-label>${ratioOf(a)}</span></div><div class="sx-q-price"><b class="sx-serif"><span data-price>${pkg?price(pkg.price):'—'}</span><small data-price-from ${pkg?'':'hidden'}>부터</small></b><span class="sx-small" data-cuts-line ${pkg?'':'hidden'}><span data-cuts-label>${pkg?.photo?'받으실 사진':'영상 전에 먼저 보여 드리는 컷'}</span> <b class="sx-no" data-cuts>${pkg?pkg.cuts:0}</b></span><span class="sx-small" data-terms ${pkg?'':'hidden'}>${esc(termsOf(pkg))}</span><div class="sx-q-ticks" data-strip aria-hidden="true"></div></div></div>`);fillStrip(pkg?.cuts||0);return;}
     if(id==='files'){const own=ownPhoto(a);monSwap(`<div class="sx-q-how"><figure><img src="${esc(own||still('file-gift-set'))}" alt=""><figcaption class="sx-small"><span class="sx-no">01</span> ${own?'보내 주신 사진':'이런 사진이면 돼요'}</figcaption></figure>${[['02','장면 이미지 · 확인','sheet-gift-05'],['03','완성 영상','w-gift']].map(([no,label,name])=>`<figure><img src="${still(name)}" alt=""><figcaption class="sx-small"><span class="sx-no">${no}</span> ${label}</figcaption></figure>`).join('')}<p class="sx-small sx-q-how-note">제품 · 로고 · 글자는 AI로 그리지 않고 실제 파일을 얹어요. 영상을 만들기 전에 02에서 모든 컷을 먼저 보여 드려요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.</p></div>`);return;}
     if(id==='message'||id==='words'){const own=ownPhoto(a);monSwap(`${frame({channels:a.channels.length?a.channels:['shorts']},`<img class="sx-q-fill" src="${esc(own||still(id==='words'?'w-gift':'w-gift-snow'))}" alt=""><div class="sx-q-copy${id==='words'?' is-top':''}" data-copy></div>`)}<p class="sx-small sx-q-cap">${id==='words'?'적으신 글자는 이 자리에 그대로 얹어요':'1차안에서 이 말을 한 문장으로 다듬어요'}</p>`);updateCopy();return;}
     if(id==='feel'){const pick=WIN.find(item=>item.id===a.win)||WIN[1];monSwap(`${frame({channels:[pick.ratio==='16:9'?'youtube':'shorts']},`<video class="sx-q-fill" data-win-film src="${esc(pick.film)}" poster="${esc(pick.poster)}" muted loop playsinline preload="metadata" ${reduced()?'':'autoplay'}></video>`)}<p class="sx-small sx-q-cap"><span data-win-kind>${esc(pick.kind)}</span> · <span data-win-cap>「${esc(pick.work)}」 · ${esc(pick.label)} · ${VIRTUAL}</span></p>`);return;}
@@ -244,7 +247,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     const note=$('[data-date-advice]');if(!note)return;
     if(!a.date||a.dateFree){note.hidden=true;return;}
     const today=new Date(Date.now()+9*3600000).toISOString().slice(0,10),days=Math.round((Date.parse(a.date)-Date.parse(today))/86400000);
-    note.hidden=days>=10;note.textContent=days<0?'지난 날짜예요. 다시 골라 주세요.':'이 날짜는 빠듯해요. 맞출 수 있는지 먼저 말씀드릴게요.';
+    note.hidden=days>=(pkgOf(a)?.days||10);note.textContent=days<0?'지난 날짜예요. 다시 골라 주세요.':'이 날짜는 빠듯해요. 맞출 수 있는지 먼저 말씀드릴게요.';
   }
   function renderSlate(){
     const rows=slateRows(a);
@@ -281,7 +284,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     sheet(){setSheet(!host.classList.contains('sheet-open'));},
     kind(el){a.kind=el.dataset.id;setRows('kind',a.kind);crossfade($('[data-still]'),kindOf(a).shot);const cap=$('[data-still-cap]');if(cap)cap.textContent=kindOf(a).who;renderSlate();saved();},
     channel(el){toggleIn(a.channels,el.dataset.id);setChip(el,a.channels.includes(el.dataset.id));const f=$('[data-frame]'),ratio=ratioOf(a);if(f&&f.dataset.ratio!==ratio){f.dataset.ratio=ratio;const label=$('[data-ratio-label]');if(label)label.textContent=ratio;crossfade($('[data-ratio-still]'),still(RATIO_STILL[ratio]));}renderSlate();saved();},
-    package(el){a.package=el.dataset.id;setRows('package',a.package);const pkg=pkgOf(a),p=$('[data-price]');if(p){if(pkg)roll(p,pkg.price,{format:price});else{delete p.dataset.value;p.textContent='상담';}$('[data-price-from]').hidden=!pkg;}const cuts=$('[data-cuts]');if(cuts){roll(cuts,pkg?.cuts||0);fillStrip(pkg?.cuts||0);const label=$('[data-cuts-label]');if(label)label.textContent=pkg?.photo?'받으실 사진':'영상 전에 먼저 보여 드리는 컷';}renderSlate();saved();},
+    package(el){a.package=el.dataset.id;setRows('package',a.package);const pkg=pkgOf(a),p=$('[data-price]');if(p){if(pkg)roll(p,pkg.price,{format:price});else{delete p.dataset.value;p.textContent='상담';}$('[data-price-from]').hidden=!pkg;}const cuts=$('[data-cuts]');if(cuts){roll(cuts,pkg?.cuts||0);fillStrip(pkg?.cuts||0);const label=$('[data-cuts-label]');if(label)label.textContent=pkg?.photo?'받으실 사진':'영상 전에 먼저 보여 드리는 컷';const line=$('[data-cuts-line]');if(line)line.hidden=!pkg;const terms=$('[data-terms]');if(terms){terms.hidden=!pkg;terms.textContent=termsOf(pkg);}}renderSlate();saved();},
     action(el){a.action=a.action===el.dataset.id?'':el.dataset.id;form.querySelectorAll('[data-do="action"]').forEach(item=>setChip(item,item.dataset.id===a.action));renderSlate();saved();},
     avoid(el){toggleIn(a.avoid,el.dataset.id);setChip(el,a.avoid.includes(el.dataset.id));saved();},
     win(el){a.win=el.dataset.id;setRows('win',a.win);const pick=WIN.find(item=>item.id===a.win);if(pick){const film=$('[data-win-film]');if(film&&film.getAttribute('src')!==pick.film){film.poster=pick.poster;film.src=pick.film;film.closest('[data-frame]').dataset.ratio=pick.ratio;if(!reduced())film.play().catch(()=>{});play(film,[{opacity:.3},{opacity:1}],{duration:320});}$('[data-win-cap]').textContent=`「${pick.work}」 · ${pick.label} · 가상 브랜드로 만든 자체 작품`;$('[data-win-kind]').textContent=pick.kind;}renderSlate();saved();},
@@ -329,7 +332,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   function showReceipt(receipt){
     const pkg=pkgOf(a),when=new Date(receipt.at||Date.now());
     const stamp=`${when.getFullYear()}.${String(when.getMonth()+1).padStart(2,'0')}.${String(when.getDate()).padStart(2,'0')} ${String(when.getHours()).padStart(2,'0')}:${String(when.getMinutes()).padStart(2,'0')}`;
-    const rows=[['광고할 것',a.name],['길이',pkg?`${pkg.label} · ${price(pkg.price)}부터`:'추천해 주세요'],['올릴 곳',channelText(a)||'제안해 주세요'],['모델',a.modelChoice==='none'?'사람 없이 제품만':modelList(a)||'추천해 주세요'],['받은 자료',`${slotCount(a)}개`]].filter(([,value])=>value);
+    const rows=[['광고할 것',a.name],['길이',pkg?`${pkg.label} · ${price(pkg.price)}부터`:'추천해 주세요'],['받으실 날',pkg?.days?`자료가 다 모인 날부터 ${pkg.days}일`:pkg?'구성에 맞춰 함께 정해요':''],['수정',revisionNote(pkg)],['올릴 곳',channelText(a)||'제안해 주세요'],['모델',a.modelChoice==='none'?'사람 없이 제품만':modelList(a)||'추천해 주세요'],['받은 자료',`${slotCount(a)}개`]].filter(([,value])=>value);
     host.classList.add('is-sent');$('[data-next-label]').textContent='보냈어요';
     host.querySelectorAll('.sx-q-top,.sx-q-stage,[data-live]').forEach(node=>{node.inert=true;});
     const overlay=document.createElement('div');overlay.className='sx-rc';

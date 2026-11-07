@@ -18,10 +18,11 @@ const sceneOf=item=>item.photos?.find(photo=>photo.kind==='scene')?.src||item.im
 // ── 고객 방 ──
 // 단계 낱말 줄: 지금 단계까지만 열린다. 영상 확인 · 납품도 이 줄을 함께 쓴다.
 export function roomRail(p,{tab='overview'}={}){
-  const at=ROOM_STAGES.findIndex(item=>item.id===p.stage),now=['draft','review','history','films'].includes(tab)?tab:p.stage;
+  // tab 'contact'는 문의 화면(영상이 오기 전): 단계 줄은 지금 단계를, 아래 「담당자에게 묻기」를 지금 자리로 보인다.
+  const at=ROOM_STAGES.findIndex(item=>item.id===p.stage),now=['draft','review','history','films'].includes(tab)?tab:p.stage,asking=tab==='contact';
   // 판이 오기 전의 1차안 칸은 지금 단계여도 열지 않는다(모델을 정하기 전에 글 콘티로 넘어가지 않게).
   const locked=(item,i)=>item.id==='draft'&&!p.hasRound||item.id!==now&&i>at;
-  return `<nav class="sx-steps" aria-label="단계"><div class="sx-steps-run">${ROOM_STAGES.map((item,i)=>`<button type="button" class="sx-step ${item.id===now?'is-now':i<at?'is-done':''}" ${item.id===now?'aria-current="page"':''} ${locked(item,i)?'disabled':''} data-room-go="${item.id}">${esc(item.name)}</button>`).join('')}</div><div class="sx-steps-foot sx-small">${p.films?`<button type="button" class="${tab==='films'?'is-now':''}" ${tab==='films'?'aria-current="page"':''} data-room-go="films">완성 광고</button>`:''}<button type="button" data-room-do="contact">담당자에게 묻기</button></div></nav>`;
+  return `<nav class="sx-steps" aria-label="단계"><div class="sx-steps-run">${ROOM_STAGES.map((item,i)=>`<button type="button" class="sx-step ${item.id===now?'is-now':i<at?'is-done':''}" ${item.id===now?'aria-current="page"':''} ${locked(item,i)?'disabled':''} data-room-go="${item.id}">${esc(item.name)}</button>`).join('')}</div><div class="sx-steps-foot sx-small">${p.films?`<button type="button" class="${tab==='films'?'is-now':''}" ${tab==='films'?'aria-current="page"':''} data-room-go="films">완성 광고</button>`:''}<button type="button" class="${asking?'is-now':''}" ${asking?'aria-current="page"':''} data-room-do="contact">담당자에게 묻기</button></div></nav>`;
 }
 // 오른쪽 스크린: 그 상태에 가장 알맞은 실제 자료. 손님 자료가 없을 때만 예시를 놓고 예시라고 쓴다.
 function roomScreen(p){
@@ -108,7 +109,7 @@ const moment=value=>`${Math.floor(value/60)}:${pad(Math.floor(value%60))}`;
 function scriptSheet(d,total){
   let from=0;
   const rows=d.cuts.map((cut,i)=>{const at=from;from+=cut.seconds;return `<button type="button" class="sx-strip-cut sx-sheet-row ${i===0?'is-on':''}" role="option" aria-selected="${i===0?'true':'false'}" aria-label="${esc(cutName(i,cut))}" data-cut="${i}" data-w="${cut.seconds}"><span class="sx-no sx-sheet-at"><b>${pad(i+1)}</b>${moment(at)}</span><span class="sx-sheet-what"><span class="sx-serif">${esc(cut.what)}</span>${cut.say?`<span class="sx-sheet-line"><b>말</b> ${esc(cut.say)}</span>`:''}${cut.text?`<span class="sx-sheet-line"><b>화면 글자</b> ${esc(cut.text)}</span>`:''}</span><i class="sx-strip-state" aria-hidden="true"></i></button>`;}).join('');
-  return `<figure class="sx-dr-films sx-sheet-room"><div class="sx-sheet"><header class="sx-sheet-head"><span class="sx-small">글 콘티 ${esc(d.round)}판</span><span class="sx-small"><span class="sx-no">${d.cuts.length}</span>컷 · <span class="sx-no">${total.toFixed(1)}</span>초 · <span class="sx-no">${esc(d.ratio||'9:16')}</span></span></header><div class="sx-sheet-rows" data-strip role="listbox" aria-label="컷 목록">${rows}<i class="sx-strip-head" data-head hidden></i></div><footer class="sx-sheet-foot"><button type="button" class="sx-dr-play" data-draft-do="play" aria-label="이어서 보기"><i aria-hidden="true"></i><span>이어서 보기</span></button><p class="sx-no sx-strip-tc"><span data-tc>00:00.00</span> <span class="sx-small" data-tc-no>컷 01</span></p></footer></div></figure>`;
+  return `<figure class="sx-dr-films sx-sheet-room"><div class="sx-sheet"><header class="sx-sheet-head"><span class="sx-small">글 콘티 ${esc(d.round)}판</span><span class="sx-small"><span class="sx-no">${d.cuts.length}</span>컷 · <span class="sx-no">${total.toFixed(1)}</span>초 · <span class="sx-no">${esc(d.ratio||'9:16')}</span></span></header><div class="sx-sheet-rows" data-strip role="listbox" aria-label="컷 목록">${rows}<i class="sx-strip-head" data-head hidden></i></div><footer class="sx-sheet-foot"><p class="sx-no sx-strip-tc"><span data-tc>00:00.00</span> <span class="sx-small" data-tc-no>컷 01</span></p></footer></div></figure>`;
 }
 export function draftView(d,{top=''}={}){
   const total=d.cuts.reduce((sum,cut)=>sum+cut.seconds,0),script=d.cuts.every(cut=>!cut.src),locked=d.approved?'이 판은 확인을 마쳤어요.':d.feedbackAt?'보내 주신 의견을 반영하고 있어요. 새 판이 오면 알려 드려요.':'';
@@ -168,9 +169,10 @@ export function mountDraft(root,d,{animate=true,state:kept,at:startAt=0,onChange
     $('[data-count]').textContent=fixes.length;$('[data-draft-do="send"]').hidden=!fixes.length;$('[data-draft-do="approve"]').hidden=!!fixes.length;
     $('[data-decide-note]').textContent=blank?`고칠 곳 ${fixes.length}개 중 ${blank}개가 비어 있어요. 무엇을 바꾸면 좋을지 적어 주세요.`:fixes.length?`고칠 곳 ${fixes.length}개를 모았어요. 보내 주시면 반영한 판을 다시 보여 드려요.`:seen===d.cuts.length?(script?'모든 컷을 확인하셨어요. 이대로 괜찮으면 장면 이미지를 만들어요.':'모든 컷을 확인하셨어요. 이대로 괜찮으면 제작을 시작해요.'):seen?`${d.cuts.length}컷 중 ${seen}컷을 확인하셨어요.`:'컷을 하나씩 보고 의견을 남겨 주세요.';
   }
-  function stop(){clearTimeout(nextTimer);playing=false;delete host.dataset.playing;cancelAnimationFrame(timer);$('.sx-dr-play').classList.remove('is-playing');}
+  function stop(){clearTimeout(nextTimer);playing=false;delete host.dataset.playing;cancelAnimationFrame(timer);$('.sx-dr-play')?.classList.remove('is-playing');}
   function playAll(){
     if(playing){stop();return;}
+    if(!$('.sx-dr-play'))return;
     playing=true;host.dataset.playing='true';$('.sx-dr-play').classList.add('is-playing');
     startTime=performance.now()-startOf(at)*1000;
     const tick=now=>{const t=(now-startTime)/1000;if(t>=total){stop();show(0);return;}moveHead(t);$('[data-tc]').textContent=fmt(t);let index=d.cuts.length-1;for(let i=0;i<d.cuts.length;i++){if(t<startOf(i+1)){index=i;break;}}if(index!==at)show(index,{quick:true});timer=requestAnimationFrame(tick);};

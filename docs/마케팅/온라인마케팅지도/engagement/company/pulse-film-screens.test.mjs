@@ -162,9 +162,11 @@ test('the text script is one lit sheet that reads every cut, with no empty strip
   assert.equal(html.split('class="sx-strip-cut sx-sheet-row').length-1,2);
   assert.match(html,/data-cut="1"[^>]*>[\s\S]*0:01[\s\S]*이름이 떠요\.[\s\S]*한번 발라 봐요[\s\S]*霜の肌理/,'a row carries the time, the action, the line and the on-screen words');
   // mountDraft가 찾는 칸은 모두 있어야 한다.
-  for(const hook of ['data-strip','data-head','data-tc','data-tc-no','data-cut-no','data-cut-sec','data-cut-what','data-cut-say','data-cut-text','data-draft-do="play"','data-draft-do="approve"','data-comment-input'])assert.ok(html.includes(hook),hook);
+  for(const hook of ['data-strip','data-head','data-tc','data-tc-no','data-cut-no','data-cut-sec','data-cut-what','data-cut-say','data-cut-text','data-draft-do="approve"','data-comment-input'])assert.ok(html.includes(hook),hook);
+  // 글을 시간에 맞춰 넘기면 읽기에 방해라(의뢰 흐름 9절 5번) 글 콘티 판에는 「이어서 보기」가 없다. 장면 이미지 판은 그대로 있다.
+  assert.doesNotMatch(html,/data-draft-do="play"|이어서 보기/);
   const pictures=draftView({...scriptDraft,cuts:scriptDraft.cuts.map(cut=>({...cut,src:'./a.webp'}))});
-  assert.match(pictures,/<img data-frame src="\.\/a\.webp"/);assert.match(pictures,/sx-dr-bottom sx-draft-strip/);assert.doesNotMatch(pictures,/sx-sheet/,'once there are pictures the room shows pictures');
+  assert.match(pictures,/<img data-frame src="\.\/a\.webp"/);assert.match(pictures,/data-draft-do="play"/);assert.match(pictures,/sx-dr-bottom sx-draft-strip/);assert.doesNotMatch(pictures,/sx-sheet/,'once there are pictures the room shows pictures');
 });
 // 맹검 6차: 21명 얼굴 격자는 「판매 목록」으로 읽혔다. 첫 판은 제작사가 고른 넷이고 21명은 손님이 열 때만 펼친다.
 test('every kind offers four hand-picked models who fit that kind, and the whole cast stays one press away',async()=>{

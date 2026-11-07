@@ -1,16 +1,16 @@
 import {CASTING_MODELS} from './casting-catalog.mjs';
 
 // 의뢰서에서 무엇을 왜 묻는지(2026-11-04). 칸마다 근거는 docs/마케팅/PULSE_의뢰흐름_20261104/README.md 「받는 정보 판단」.
-// 값은 결정 10-29 정가의 「부터」만 쓴다. 기간·수정 횟수는 아직 공개하지 않기로 한 약속이라(트랙 §1) 여기 두지 않는다.
+// 값은 결정 10-29 정가의 「부터」만 쓴다. 기간 · 수정 횟수는 결정 11-07(가격표 · 크몽 상품 글과 같게)대로 보인다.
 const shot=code=>`./assets/request/model-scene-${code}.webp`;
 export const KINDS=Object.freeze([
-  {id:'food',label:'음료 · 식품',note:'먹고 마시는 제품',shot:shot('f02'),who:'하린 · 상큼한 막내',group:'product'},
+  {id:'food',label:'음료 · 식품',note:'먹고 마시는 제품',shot:shot('f02'),who:'예시 장면 · 하린 · 상큼한 막내',group:'product'},
   {id:'beauty',label:'화장품 · 뷰티',note:'스킨케어, 색조, 뷰티 기기',shot:'./assets/request/w-gift-sphere.webp',who:'「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품',group:'product'},
-  {id:'fashion',label:'패션 · 잡화',note:'옷, 가방, 신발, 액세서리',shot:shot('m09'),who:'서율 · 블루 그레이빛 차가운 비주얼',group:'wear'},
+  {id:'fashion',label:'패션 · 잡화',note:'옷, 가방, 신발, 액세서리',shot:shot('m09'),who:'예시 장면 · 서율 · 블루 그레이빛 차가운 비주얼',group:'wear'},
   {id:'living',label:'생활용품 · 가전',note:'집과 일상에서 쓰는 물건',shot:'./assets/films/maejin-imbak-poster-v1.webp',who:'「매진 임박」 홈쇼핑 × 공포 코미디 · 가상 브랜드로 만든 자체 작품',group:'product'},
-  {id:'app',label:'앱 · 웹 서비스',note:'화면으로 쓰는 서비스',shot:shot('m04'),who:'민재 · 옆집 자취생',group:'app'},
+  {id:'app',label:'앱 · 웹 서비스',note:'화면으로 쓰는 서비스',shot:shot('m04'),who:'예시 장면 · 민재 · 옆집 자취생',group:'app'},
   {id:'place',label:'매장 · 공간 · 서비스',note:'찾아오거나 예약하는 곳',shot:'./assets/films/hwaseong-cf-light-poster-v1.webp',who:'「1억 년의 빛」 화성 CF · 공모전 출품작',group:'place'},
-  {id:'brand',label:'브랜드 · 기업 전체',note:'제품 하나가 아니라 회사 이야기',shot:shot('m05'),who:'준호 · 믿음직한 생활형',group:'brand'},
+  {id:'brand',label:'브랜드 · 기업 전체',note:'제품 하나가 아니라 회사 이야기',shot:shot('m05'),who:'예시 장면 · 준호 · 믿음직한 생활형',group:'brand'},
 ]);
 export const CHANNELS=Object.freeze([
   {id:'shorts',label:'릴스 · 쇼츠 · 틱톡',ratio:'9:16'},
@@ -19,13 +19,20 @@ export const CHANNELS=Object.freeze([
   {id:'screen',label:'매장 화면 · 행사',ratio:'16:9',note:'화면 규격을 나중에 알려 주세요'},
 ]);
 // 컷 수는 상품 글 FAQ와 같은 어림(15초 5~8컷 · 30초 10~16컷)이다.
+// 기간은 달력 기준(주말 · 공휴일 포함)이고 사진 · 로고 · 꼭 넣을 말이 다 모인 날부터 센다. 수정은 영상(사진)이 나온 뒤에 쓰는 횟수다.
+// 기업은 기간 · 수정을 협의로 둔다(days · revisions 없음). gets는 방향 제안의 「받으시는 것」 한 줄.
 export const PACKAGES=Object.freeze([
-  {id:'s15',label:'15초',title:'한 편',note:'릴스 · 쇼츠에 맞는 길이',price:39,cuts:6},
-  {id:'s30',label:'30초',title:'30초 + 15초 · 6초 편집본',note:'한 번 만들어 채널마다 나눠 써요',price:89,cuts:12},
-  {id:'s60',label:'60초',title:'브랜드 필름, 또는 같은 모델 시리즈 3편',note:'',price:199,cuts:20},
-  {id:'corp',label:'기업',title:'기업 캠페인',note:'30~60초 + 편집본, 기획서 포함',price:250,cuts:16},
-  {id:'photo',label:'사진',title:'모델이 제품을 든 사진 5장',note:'영상 전에 먼저 써 보는 분이 많아요',price:9.9,cuts:5,photo:true},
+  {id:'s15',label:'15초',title:'한 편',note:'릴스 · 쇼츠에 맞는 길이',price:39,cuts:6,days:10,revisions:2,gets:'영상 파일 한 편(자막 있는 판 · 없는 판), 확정한 글 콘티와 장면 이미지'},
+  {id:'s30',label:'30초',title:'30초 + 15초 · 6초 편집본',note:'한 번 만들어 채널마다 나눠 써요',price:89,cuts:12,days:14,revisions:3,gets:'30초 · 15초 · 6초 영상 파일(자막 있는 판 · 없는 판), 확정한 글 콘티와 장면 이미지'},
+  {id:'s60',label:'60초',title:'브랜드 필름, 또는 같은 모델 시리즈 3편',note:'',price:199,cuts:20,days:21,revisions:3,gets:'60초 한 편이나 시리즈 세 편의 영상 파일(자막 있는 판 · 없는 판), 확정한 글 콘티와 장면 이미지'},
+  {id:'corp',label:'기업',title:'기업 캠페인',note:'30~60초 + 편집본, 기획서 포함',price:250,cuts:16,gets:'협의한 구성의 영상 파일과 기획서, 확정한 글 콘티와 장면 이미지'},
+  {id:'photo',label:'사진',title:'모델이 제품을 든 사진 5장',note:'영상 전에 먼저 써 보는 분이 많아요',price:9.9,cuts:5,photo:true,days:3,revisions:2,gets:'모델이 제품을 든 사진 다섯 장(긴 변 2048px)'},
 ]);
+// 「10일 · 수정 2회」. 기업은 협의.
+export const termsOf=pkg=>pkg?.days?`${pkg.days}일 · 수정 ${pkg.revisions}회`:pkg?'기간 · 수정 협의':'';
+// 받으실 날: 기준일(보내기 전 오늘, 보낸 뒤 접수일)에서 달력으로 days일 뒤. 「11월 17일」.
+export function dueDay(pkg,from=new Date()){if(!pkg?.days)return '';const at=new Date(from);if(Number.isNaN(at.getTime()))return '';at.setDate(at.getDate()+pkg.days);return `${at.getMonth()+1}월 ${at.getDate()}일`;}
+export const revisionNote=pkg=>pkg?.days?`${pkg.photo?'사진':'영상'}이 나온 뒤 ${pkg.revisions}번. 글 콘티 · 장면 이미지 의견은 세지 않아요`:'';
 // 준비물: 「꼭」은 없으면 그 자리를 비워 두고 1차안을 만들어야 하는 것, 「있으면」은 있으면 수정이 줄어드는 것이다. 어느 쪽도 보내기를 막지 않는다.
 const LOGO={id:'logo',label:'로고 파일',need:true,accept:'image/*,.svg,.ai,.eps,.pdf',why:'끝 화면과 자막에 그대로 얹어요. AI · SVG가 가장 좋고, 배경이 없는 PNG도 괜찮아요.',kind:'logo'};
 const USE={id:'use',label:'쓰는 모습',accept:'image/*,video/*',why:'여는 법, 쓰는 법이 틀리면 장면을 다시 만들어야 해요. 찍어 둔 게 없으면 한 줄로 적어 주세요.',note:'예) 뚜껑을 돌려 열고 손등에 펴 발라요'};
@@ -161,7 +168,7 @@ export function briefRows(a){
   const rows=[
     {key:'광고할 것',step:'what',value:[a.name,kindOf(a)?.label].filter(Boolean).join(' · '),missing:a.name?'':'이름을 알려 주세요'},
     {key:'올릴 곳',step:'where',value:[channelText(a),a.paid?'광고비 집행':''].filter(Boolean).join(' · '),missing:a.channels.length?'':'모르면 저희가 제안해요'},
-    {key:'길이 · 구성',step:'where',value:pkg?`${pkg.label} · ${pkg.title} · ${price(pkg.price)}부터`:a.package==='ask'?'추천해 주세요':'',missing:a.package?'':'모르면 저희가 제안해요'},
+    {key:'길이 · 구성',step:'where',value:pkg?`${pkg.label} · ${pkg.title} · ${price(pkg.price)}부터 · ${termsOf(pkg)}`:a.package==='ask'?'추천해 주세요':'',missing:a.package?'':'모르면 저희가 제안해요'},
     {key:'받은 자료',step:'files',value:[fileCount?`파일 ${fileCount}개`:'',...written,missing.length?`아직 없음: ${missing.join(', ')}`:''].filter(Boolean).join(' · '),missing:fileCount||written.length?'':'아직 없어요. 1차안에는 자리만 잡아 둘게요'},
     {key:'보는 사람',step:'message',value:a.audience,missing:a.audience?'':'저희가 제안해요'},
     {key:'남길 것',step:'message',value:a.oneThing,missing:a.oneThing?'':'저희가 한 문장으로 제안해요'},

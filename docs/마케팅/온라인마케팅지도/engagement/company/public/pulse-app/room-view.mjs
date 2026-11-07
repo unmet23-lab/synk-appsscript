@@ -1,5 +1,5 @@
 import {CASTING_MODELS} from './casting-catalog.mjs';
-import {KINDS,MODEL_LINES,briefRows,slotsFor,emptyAnswers,ratioOf} from './request-data.mjs';
+import {KINDS,MODEL_LINES,briefRows,slotsFor,emptyAnswers,ratioOf,pkgOf} from './request-data.mjs';
 
 // 실제 프로젝트를 슬레이트 판 화면(film-views.mjs)의 자료로 옮긴다. 판단은 여기 한 곳에서 한다.
 // 흐름: 의뢰서 → 확인(되묻기) → 1차안(모델 → 글 콘티 판 → 장면 이미지 판) → 제작 → 영상 확인 → 납품. 공개 약속 「영상 전에 세 번 확인」과 같은 순서다.
@@ -51,6 +51,13 @@ function slotsWithFiles(answers,files=[]){const slots={...(answers.slots||{})};f
 const filled=r=>({...emptyAnswers(),...(r?.answers||{}),slots:slotsWithFiles(r?.answers||{},r?.files)});
 // 영상이 도착한 상태면 고객 방 스크린에 그 영상을 소리 없이 튼다.
 const screenFilm=(p,state)=>{const version=state==='deliver'?finals(p).at(-1):state==='review'?previews(p).at(-1):null,src=version?.media?.mimeType?.startsWith('video/')?version.media.url:'';return src?{src,label:version.label,go:state==='deliver'?'history':'review'}:null;};
+// 보내 주신 의뢰서: 길이 · 구성 다음에 받으실 날(접수일 + 기간, 달력 기준 — 결정 11-07)을 둔다.
+function roomBrief(r,answers){
+  const rows=briefRows(answers).filter(row=>!row.missing).slice(0,8).map(row=>[row.key,row.value]),pkg=pkgOf(answers),at=rows.findIndex(([key])=>key==='길이 · 구성');
+  // 날짜는 방향을 보내 드릴 때 한 번 정해 보인다(결제 · 자료 시점이 정해지기 전 달력 날짜를 약속하지 않는다 — 설계 검토 3).
+  if(r.submittedAt&&at>=0)rows.splice(at+1,0,['받으실 날',pkg?.days?`자료가 다 모인 날부터 ${pkg.days}일 · 날짜는 방향을 보내 드릴 때 알려 드려요`:'구성에 맞춰 함께 정해요']);
+  return rows;
+}
 export function roomModel(p){
   const r=requestOf(p),state=roomState(p),answers=filled(r);
   const slotLabel=asset=>slotsFor(answers.kind).find(slot=>slot.id===(r?.files||[]).find(file=>file.id===asset.id)?.slot)?.label||'';
@@ -62,7 +69,7 @@ export function roomModel(p){
   const proposed=r?.modelProposal?.status==='open'?modelCard(r.modelProposal.modelId):null,proposal=proposed?{...proposed,note:r.modelProposal.note||''}:null;
   return {
     state,stage:roomStage(state),title:p?.title||'',number:r?.number||'',manager:p?.ownerName||'PULSE 담당자',hasRound:!!lastRound(r),
-    brief:r?briefRows(answers).filter(row=>!row.missing).slice(0,8).map(row=>[row.key,row.value]):[],
+    brief:r?roomBrief(r,answers):[],
     files,others,proposal,asks:(r?.asks||[]).filter(ask=>ask.status==='open'),answered:(r?.asks||[]).filter(ask=>ask.status==='answered'),canEdit:!!r&&r.status!=='confirmed',
     draft:['script','images','revise','prepare-images'].includes(state)?draftModel(p):null,film:screenFilm(p,state),
   };
@@ -97,6 +104,8 @@ export function deskChecks(p){
   const words=[...(a.avoid||[])].filter(word=>a.screenText?.includes(word)||a.oneThing?.includes(word));
   if(words.length)checks.push({ok:false,label:'피할 말이 글에 들어 있어요',note:words.join(', ')});
   if(a.approver==='many')checks.push({ok:false,label:'여러 명이 확인해요',note:'의견을 모아 받도록 안내해요.'});
+  // 고객 방에는 옛 제작 설계 확인이 보이지 않는다(뒷문을 막았다). 요청해 두면 손님이 모른 채 기다리게 된다.
+  const st=p.studio?.strategy;if(st?.request&&Number(st.request.strategyRevision)===Number(st.revision)&&Number(st.confirmation?.strategyRevision)!==Number(st.revision))checks.push({ok:false,label:'고객 방에는 제작 설계 확인이 보이지 않아요',note:'물을 것은 「빠진 것 다시 묻기」로 보내 주세요.'});
   return checks;
 }
 export function deskModel(p){

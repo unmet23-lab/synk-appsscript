@@ -190,7 +190,7 @@ const ROOM_LEGACY=new Set(['review','history','strategy','films']);
 const strategyRequested=p=>{const st=studio(p).strategy;return !!st?.request&&Number(st.request.strategyRevision)===Number(st.revision)&&Number(st.confirmation?.strategyRevision)!==Number(st.revision);};
 function roomExtras(p){
   const out=[],deliver=deliverablesNext(p);
-  if(strategyRequested(p))out.push({title:'제작 설계를 확인해 주세요',text:'담당자가 정리한 내용을 살펴보고 확인을 남겨 주세요.',tab:'strategy',button:'제작 설계 보기'});
+  // 고객 방 손님은 옛 제작 설계 폼(입력 100여 개)으로 가지 않는다(의뢰 흐름 9절 「뒷문」). 물을 것은 되묻기로 받는다.
   if(deliver)out.push(deliver);
   if(p.kickoff?.enabled&&p.kickoff.status==='waiting')out.push({title:'제작 전에 준비할 자료가 있어요',text:'필요한 자료를 보내고, 아직 정하지 않은 내용을 확인해 주세요.',tab:'strategy',button:'준비 자료 확인'});
   if(p.changes?.enabled&&!['clean','reviewed'].includes(p.changes.status))out.push({title:'확인한 뒤 바뀐 것이 있어요',text:'바뀐 내용을 보고 다시 확인해 주세요.',tab:'strategy',button:'바뀐 내용 보기'});
@@ -258,7 +258,7 @@ function legacyOverview(s){
 // 옛 탭(제작 설계 · 취향 보드 · 콘셉트 · 장면, 의뢰 흐름 손님의 준비 자료 · 규격표 · 바뀐 내용): 위는 검정 제목, 아래는 불을 켠 인화지 문서. 그림이 주인공인 콘셉트 · 장면은 끝까지 어둡게.
 function legacyStage(s){
   const p=s.project,room=isCustomerRoom(s),next=room?null:nextOf(s),here=next?.tab===s.tab,info=STAGE[s.tab]||STAGE.strategy,label=tabs.find(t=>t[0]===s.tab)?.[2]||'';
-  const body=room&&s.tab==='strategy'&&!strategyRequested(p)?'':({strategy:strategyView,direction:directionView,concepts:conceptView,storyboard:storyboardView}[s.tab]||strategyView)(s);
+  const body=room&&s.tab==='strategy'?'':({strategy:strategyView,direction:directionView,concepts:conceptView,storyboard:storyboardView}[s.tab]||strategyView)(s);
   const nextRow=!room&&!s.demo&&!here&&next?`<p class="sx-next sx-small"><b>${esc(turnLabel(s,turnOf(s,next)))}</b> ${esc(next.title)} <button type="button" class="sx-link" data-action="tab" data-tab="${esc(next.tab)}"${next.scroll?` data-scroll="${esc(next.scroll)}"`:' data-scroll="content"'}>${esc(next.button)}</button></p>`:'';
   return `<div class="sx-shell${s.demo?' is-demo':''}" data-mode="${esc(s.mode)}" data-tab="${esc(s.tab)}">
     <header class="sx-shell-head">
@@ -310,7 +310,7 @@ function reviewRoom(s){
     <figure class="sx-dr-films${comparing?' compare-grid':''}"><div class="sx-dr-box" data-film-box>${reviewFilm(current)}${video?`<button type="button" class="sx-dr-play" data-film-toggle><i aria-hidden="true"></i><span>재생</span></button>`:''}${comparing?`<figcaption class="sx-small sx-film-label">${esc(current.label)}</figcaption>`:''}</div>${comparing?`<div class="sx-dr-box is-other"><video playsinline muted preload="metadata" src="${esc(safeUrl(previous.media?.url,{media:true}))}" data-version="${esc(previous.id)}" aria-label="${esc(previous.label)}"></video><figcaption class="sx-small sx-film-label">${esc(previous.label)}</figcaption></div>`:''}</figure>
     <header class="sx-dr-left">
       ${s.demo?demoCredit(s):`<div class="sx-dr-credit"><h1 class="sx-serif">${esc(p.title)}</h1><p class="sx-small">${esc(tabs.find(t=>t[0]==='review')[2])} · ${esc(current.label)}</p>${current.guide?`<p class="sx-body sx-dr-memo"><span class="sx-small">담당 ${esc(p.ownerName||'')}</span>${esc(current.guide)}</p>`:''}${next&&next.tab!=='review'?`<p class="sx-next sx-small"><b>${esc(turnLabel(s,turnOf(s,next)))}</b> ${esc(next.title)} <button type="button" class="sx-link" data-action="tab" data-tab="${esc(next.tab)}"${next.scroll?` data-scroll="${esc(next.scroll)}"`:' data-scroll="content"'}>${esc(next.button)}</button></p>`:''}</div>`}
-      <div class="sx-dr-left-foot">${stepsOf(s,next)}${s.demo?'':lnk('최신 내용 불러오기','refresh')}</div>
+      <div class="sx-dr-left-foot">${stepsOf(s,next)}</div>
     </header>
     <aside class="sx-dr-right">
       ${alertBox(s)}
@@ -360,8 +360,7 @@ function askRoom(s){
         <h1 class="sx-display">${first?'궁금한 점을 남겨 주세요':'시안이 오면 여기에 보여요'}</h1>
         <p class="sx-body sx-room-lead">${first?'일정이나 파일에 대해 물어보시면 담당자가 여기로 답해 드려요.':'앱에서 바로 재생하고, 멈춘 장면에 의견을 남길 수 있어요.'}</p>
         <form class="review-form sx-say is-open" data-form="feedback" id="review-feedback"><input type="hidden" name="action" value="support"><textarea name="text" rows="2" required maxlength="3000" placeholder="궁금한 점을 적어 주세요." aria-label="궁금한 점" data-grow></textarea><div class="sx-say-tools"><button type="submit" class="sx-go" data-mutate><span>문의 보내기</span>${arrow}</button></div><p class="sx-small">${s.demo?`체험 기록에만 남아요. 실제로 맡기거나 물어보려면 ${inquiryLink('sx-link')}`:'보내면 담당자에게 바로 보여요.'}</p></form>
-        ${s.demo?'':lnk('최신 내용 불러오기','refresh')}
-        ${stepsOf(s,isCustomerRoom(s)?null:nextOf(s))}
+        ${isCustomerRoom(s)?roomRail(roomInfo(s),{tab:'contact'}):stepsOf(s,nextOf(s))}
       </div>
       ${messages.length||(p.studio?.comments||[]).some(m=>m.targetType==='project')?`<div class="sx-room-screen sx-ask-thread"><h2 class="sx-serif">문의와 답변</h2><div class="sx-thread">${messages.slice().reverse().map(threadRow).join('')}</div>${comments(p.studio?.comments||[],'project',null,s.notificationCommentId)}</div>`:`<div class="sx-room-screen"><img class="sx-q-fill" src="./assets/request/w-gift.webp" alt="" decoding="async"><p class="sx-small sx-room-cap">「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품</p></div>`}
     </section>
@@ -428,7 +427,7 @@ export function projectView(s){
   }
   const room=false;
   const p=s.project,next=s.demo?{title:s.demoGuide.title,text:s.demoGuide.description,tab:s.demoGuide.tab,button:'이 단계 해 보기'}:nextDecision(p,s.mode==='staff'&&s.canEdit),here=s.tab===next.tab,turn=turnOf(s,next),nextStage=STAGE[next.tab]||STAGE.strategy,nextName=tabs.find(t=>t[0]===next.tab)?.[2]||'',overview=s.tab==='overview',films=s.tab==='films';
-  const body=overview||films||room&&s.tab==='strategy'&&!strategyRequested(p)?'':({strategy:strategyView,direction:directionView,concepts:conceptView,storyboard:storyboardView,review:reviewView,history:historyView,manage:manageView}[s.tab]||strategyView)(s);
+  const body=overview||films||room&&s.tab==='strategy'?'':({strategy:strategyView,direction:directionView,concepts:conceptView,storyboard:storyboardView,review:reviewView,history:historyView,manage:manageView}[s.tab]||strategyView)(s);
   const requestDesk=s.mode==='staff'&&p.studio?.request;
   const nextBlock=room?'':requestDesk?`<section class="next-decision"><div class="next-copy"><span class="next-label"><span class="next-where">의뢰 ${esc(p.studio.request.number)}</span></span><h3>이 프로젝트는 의뢰서로 들어왔어요</h3><p>고객과 주고받는 일은 의뢰 확인에서 해요. 여기서는 장면과 파일을 준비해요.</p></div>${btn('의뢰 확인으로','tab','data-tab="desk"','soft')}</section>`:`<section class="next-decision"><div class="next-copy turn-${turn}"><span class="next-label"><span class="turn-chip is-${turn}">${esc(turnLabel(s,turn))}</span><span class="next-where">${esc(nextStage.no)} · ${esc(nextName)}</span></span><h3>${esc(next.title)}</h3><p>${esc(next.text)}</p></div>${btn(next.button,'tab',`data-tab="${next.tab}"${next.scroll?` data-scroll="${next.scroll}"`:here||overview?' data-scroll="content"':''}`,turn==='customer'?'primary':'soft')}</section>`;
   const tools=btn('최신 내용 불러오기','refresh','title="최신 내용 불러오기"','quiet small-button refresh-button');
