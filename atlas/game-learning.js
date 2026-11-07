@@ -523,8 +523,10 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     syncPort: history.port,
     summary: () => report(current()),
     followups() {
-      const saved = current();
-      return readFollowups(saved.log, { scope, asOf: monotonicClock(), prior: saved.ledger, complete: saved.durable, retain: followups });
+      const saved = current(), report = readFollowups(saved.log, { scope, asOf: monotonicClock(), prior: saved.ledger, complete: saved.durable, retain: followups });
+      // A row can still be offered while its ability is a skill of the same modality in this map (rows from older map editions included).
+      for (const row of report.items) { const node = map.getNode(row.measure.skillId); row.current = node?.kind === 'skill' && node.domain === row.measure.modality; }
+      return report;
     },
     recommend(candidates, options = {}) {
       const saved = current(), profile = report(saved);
@@ -578,9 +580,9 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
       if (events.some(event => event.type === 'record.excluded' && relevant.has(event.targetId))) return unavailable('excluded-evidence');
       if (sourceDecision.experienceId !== targetDecision.experienceId) return unavailable('different-game');
       const a = sourcePresentation.measure, b = targetPresentation.measure;
+      // The ability cell decides, not the map edition: a grown Strata map keeps the pair (followup-2, 2026-11-08).
       if (!a || !b || !Learning.RESPONSE_FORMATS.includes(a.responseFormat) || a.responseFormat === 'unknown'
-        || ['skillId', 'difficulty', 'responseFormat', 'modality', 'audioRequired'].some(key => a[key] !== b[key])
-        || sourcePresentation.taskVersion !== targetPresentation.taskVersion) return unavailable('different-measurement');
+        || ['skillId', 'difficulty', 'responseFormat', 'modality', 'audioRequired'].some(key => a[key] !== b[key])) return unavailable('different-measurement');
       if (sourcePresentation.itemKey === targetPresentation.itemKey || a.familyKey === b.familyKey) return unavailable('same-family');
       // Trail's exposure is based on attempts/reveals. "New" here additionally forbids
       // a previous presentation, including one with no answer and folded presentations.

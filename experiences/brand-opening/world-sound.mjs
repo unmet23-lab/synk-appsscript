@@ -1,4 +1,5 @@
 /* SYNK WORLD 공통 소리·진동·연출 설정 (2026-10-14 2차 · 10-15 펠트 소리)
+ * Reed(소리 엔진)의 WORLD 원천이다(2026-11-08 — docs/엔진8종_상향설계_v3.md 담당 표): 소리를 낼지의 판정(설정 · 녹음 중 0)과 마이크 알림을 맡는다.
  * 조사(월드_시그널/조사 §5-1 ⑤·⑥, §5-2)에서 칭찬이 더 많은 유일한 기능이 소리였다. 효과음은 짧고 낮게, 목소리보다 작게,
  * 따로 끌 수 있게. 「보상 연출」과 「캐릭터 반응」은 한 덩어리가 아니라 각각 끈다(Finch 「다 끄면 앱이 죽은 것 같다」).
  * 소리는 파일 없이 WebAudio로 합성한다(단추 ≤40ms, 판정 ≤220ms). 게임·레슨·시트는 모두 이 모듈 하나를 부른다.
@@ -123,6 +124,8 @@ export function renderSound(name,ctx,dest,when=0){const make=FELT[name];if(!make
 export function play(name){
   if(!getPref('sound'))return false;
   if(!FELT[name])return false;
+  // Reed: 마이크가 열린 동안은 0 — 그 요청은 버리고 끝난 뒤 몰아 내지 않는다(녹음에 섞이면 받아 적기·판정이 흐려진다).
+  if(micOpen())return false;
   const ctx=ensure();if(!ctx)return false;
   if(ctx.state==='suspended'){ctx.resume().catch(()=>{});if(ctx.state==='suspended')return false;}
   ambient();
@@ -170,7 +173,7 @@ export function storyVoice(who,text,{cps=23,render=null}={}){
   return {chars,at(k,when=null){
     const h=hangul(chars[k]);if(!h)return false;const n=syllables++;
     if(render)return draw(render.ctx,render.dest,when??0,k,h,n);
-    if(!getPref('sound')||!getPref('storyVoice'))return false;
+    if(!getPref('sound')||!getPref('storyVoice')||micOpen())return false;
     const ctx=context;if(!ctx||ctx.state!=='running')return false;
     ambient();return draw(ctx,master,ctx.currentTime+.004,k,h,n);
   }};
@@ -184,7 +187,7 @@ function canSwitch(){try{return typeof document!=='undefined'&&'switch' in HTMLI
 export const hapticAvailable=()=>canVibrate()||canSwitch();
 /** 아주 짧은 진동. 넘기기·정답·완료 정도에만 쓴다. */
 export function haptic(kind='ok'){
-  if(!getPref('haptic'))return false;
+  if(!getPref('haptic')||micOpen())return false;
   if(canVibrate()){const pattern=kind==='done'?[14,40,18]:kind==='miss'?[22]:kind==='tap'?[8]:[10];try{return Boolean(navigator.vibrate(pattern));}catch{return false;}}
   if(!canSwitch())return false;
   try{
@@ -204,26 +207,59 @@ export function bindTaps(root=document,{selector='button,[role=button],a.felt-bu
   return()=>{root.removeEventListener('pointerdown',handler);root.__synkTapsBound=false;};
 }
 
-/* ── 마이크 알림(싱크타운 머무는 모드 W7b — 마을 설계 인수 기준 11 「녹음 중에는 0」) ──
- * 마이크가 열려 있는 동안 같은 출처의 다른 창(나란히 띄운 마을 등)이 제 소리를 0으로 둔다. 정본은 localStorage 열쇠 하나
- * (synk.world.mic = 열린 동안 5초마다 새로 쓰는 시각, 닫으면 지움) — 다른 창은 storage 이벤트로 바로 받고, 늦게 열린 창·
- * 얼었다 돌아온 창은 읽기만 하면 된다. 마을은 15초 지난 시각을 닫힌 것으로 본다(town/data/stay.json sound.record).
- * BroadcastChannel이 있으면 같은 말을 빠른 길로도 보낸다. 같은 탭의 마을은 녹음 화면이 패널을 바꿀 때 이미 닫힌다(home.mjs). */
+/* ── 마이크 알림(Reed 「녹음 중에는 0」 · 싱크타운 머무는 모드 W7b — 마을 설계 인수 기준 11) ──
+ * 마이크가 열려 있는 동안 이 창과 같은 출처의 다른 창(나란히 띄운 마을 · WORLD 틀 안 드라마 등)이 제 소리를 0으로 둔다.
+ * 받는 쪽이 읽는 정본은 localStorage 열쇠 하나(synk.world.mic = 가장 최근 박동 시각) — storage 이벤트로 바로 받고, 늦게 열린 창·
+ * 얼었다 돌아온 창은 읽기만 하면 된다. 15초 지난 시각은 닫힌 것으로 본다(마을 town/data/stay.json sound.record와 같은 값).
+ * 보내는 쪽은 녹음 주체마다 synk.world.mic:<주체>를 5초마다 쓰고, 끝낼 때 자기 열쇠만 지운다. 15초 안에 박동한 다른 주체
+ * (아래 옛 판 기억 ~older 포함)가 남으면 공유 열쇠를 그 시각으로 두고 「열림」을 다시 알린다 — 한 창이
+ * 끝내도 다른 창의 녹음 동안 소리가 새지 않는다(2026-11-08 검수 GA2). 주체 열쇠가 없는 옛 판(이 규약 앞의 창)의 박동은 새 판들이
+ * 함께 synk.world.mic:~older 하나에 기억해 주체처럼 센다 — 누가 먼저 끝내도 마지막 새 주체가 옛 창의 녹음을 알고, 옛 판이 끝내며
+ * 공유 열쇠를 지운 것을 어느 새 주체가 보든 그 기억을 지운다(검수 GB1 · 다시 검수 GA1 · FA1 · 무작위 시험).
+ * BroadcastChannel이 있으면 같은 말을 빠른 길로도 보낸다.
+ * 드라마 시범판(experiences/drama/pilot/takes.mjs)이 같은 규약의 사본을 둔다 — tests/reed-mic-signal.test.mjs가 둘의 결과를 묶는다. */
 export const MIC_KEY='synk.world.mic';
-const MIC_CHANNEL='synk-world-audio',MIC_BEAT_MS=5000;
-let micChannel=null,micTimer=0;
+export const MIC_STALE_MS=15000;
+const MIC_CHANNEL='synk-world-audio',MIC_BEAT_MS=5000,MIC_OLDER=`${MIC_KEY}:~older`;
+let micChannel=null,micDefault=null;
 function micBus(){
   if(!micChannel&&typeof BroadcastChannel==='function')try{micChannel=new BroadcastChannel(MIC_CHANNEL);}catch{micChannel=null;}
   return micChannel;
 }
-function micBeat(open){
-  try{if(open)localStorage.setItem(MIC_KEY,String(Date.now()));else localStorage.removeItem(MIC_KEY);}catch{}
-  try{micBus()?.postMessage({type:'mic',open});}catch{}
+const micStore=()=>{try{return globalThis.localStorage||null;}catch{return null;}};
+/** 녹음 주체 하나의 알림. 시험은 storage · bus · now · every · stop을 넣어 드라마 사본과 같은 규칙으로 돌린다. */
+export function createMicSignal({storage=micStore(),bus=micBus,now=()=>Date.now(),every=(fn,ms)=>setInterval(fn,ms),stop=id=>clearInterval(id),
+  owner=`${Date.now().toString(36)}${Math.random().toString(36).slice(2,8)}`}={}){
+  const own=`${MIC_KEY}:${owner}`;let timer=0,open=false;
+  const send=value=>{try{bus()?.postMessage({type:'mic',open:value});}catch{}};
+  const owners=()=>{const out=[];for(let i=0;i<(storage?.length||0);i++){const k=storage.key(i);if(k?.startsWith(`${MIC_KEY}:`))out.push(Number(storage.getItem(k)));}return out;};
+  // 공유 열쇠의 시각이 15초 안이고 어느 주체 열쇠(~older 포함)에도 없으면 옛 판의 박동이다 — 덮기 전에 함께 기억한다.
+  const note=(v,at)=>{if(Number.isFinite(v)&&at-v<MIC_STALE_MS&&!owners().includes(v)){const k=Number(storage?.getItem(MIC_OLDER));if(!(Number.isFinite(k)&&k>=v))storage?.setItem(MIC_OLDER,String(v));}};
+  // 공유 열쇠가 비면 옛 판이 끝낸 것이다(새 판은 살아 있는 주체가 있는 동안 지우지 않는다) — 새 주체 누구든 박동 · 끝낼 때 보고 지운다.
+  const forget=()=>{try{storage?.removeItem(MIC_OLDER);}catch{}};
+  const beat=()=>{const at=now();try{const raw=storage?.getItem(MIC_KEY);if(raw==null)forget();else note(Number(raw),at);
+    storage?.setItem(own,String(at));storage?.setItem(MIC_KEY,String(at));}catch{}send(true);};
+  const close=()=>{
+    const at=now();let still=0;
+    try{
+      const raw=storage?.getItem(MIC_KEY);
+      if(raw==null)forget();else note(Number(raw),at);   // 내 열쇠를 지우기 전에 본다 — 내 시각은 옛 판 것으로 세지 않는다
+      storage?.removeItem(own);
+      for(const v of owners())if(Number.isFinite(v)&&at-v<MIC_STALE_MS)still=Math.max(still,v);
+      if(still)storage?.setItem(MIC_KEY,String(still));else storage?.removeItem(MIC_KEY);
+    }catch{}
+    send(still>0);
+  };
+  return Object.freeze({set(next){next=Boolean(next);if(timer){stop(timer);timer=0;}if(next){beat();timer=every(beat,MIC_BEAT_MS);}else if(open)close();open=next;},open:()=>open});
 }
-/** 마이크를 열었으면 true(스트림을 얻은 직후), 닫았으면 false(트랙을 멈추는 모든 곳). */
-export function recordingSignal(open){
-  clearInterval(micTimer);micTimer=0;micBeat(Boolean(open));
-  if(open)micTimer=setInterval(()=>micBeat(true),MIC_BEAT_MS);
+// 이 창의 녹음은 저장소가 아니라 창 안 상태로 안다 — 한 문서에 이 모듈이 둘 들어와도(바로 연 home.html의 묶음 + 낱개 모듈), 저장소가 막혀도 같다.
+const micHere=globalThis.__synkMicHere||(globalThis.__synkMicHere=new Set());
+/** 마이크를 열었으면 true(스트림을 얻은 직후), 닫았으면 false(트랙을 멈추는 모든 곳). 이 창의 기본 주체 하나다. */
+export function recordingSignal(open){(micDefault||=createMicSignal()).set(open);if(open)micHere.add(micDefault);else micHere.delete(micDefault);}
+/** Reed 판정: 이 창이 녹음 중이거나 같은 출처의 다른 창이 15초 안에 알렸으면 마이크가 열린 것이다. */
+export function micOpen(at=Date.now()){
+  if(micHere.size)return true;
+  try{const v=Number(micStore()?.getItem(MIC_KEY));return Number.isFinite(v)&&v>0&&at-v<MIC_STALE_MS;}catch{return false;}
 }
 
 /** 판정 한 번: 소리 + 진동 + (켜져 있으면) 캐릭터 반응 콜백. */
@@ -232,4 +268,4 @@ export function verdict(correct,{react=null}={}){
   if(react&&getPref('reactions')){try{react(correct);}catch{}}
 }
 
-export default {play,haptic,hapticAvailable,getPref,setPref,onPref,bindTaps,verdict,storyVoice,renderSound,recordingSignal,PREF_KEYS,PREF_LABELS};
+export default {play,haptic,hapticAvailable,getPref,setPref,onPref,bindTaps,verdict,storyVoice,renderSound,recordingSignal,micOpen,createMicSignal,PREF_KEYS,PREF_LABELS};

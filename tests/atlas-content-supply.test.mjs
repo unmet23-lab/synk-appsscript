@@ -86,7 +86,9 @@ test('cup follow-up selects the exact due response cell and never treats an expo
  t+=2*86400000;const due=delayedOrders(coach,pool);assert.deepEqual(due.map(o=>o.id),['n06','n07']);
  coach.present(orderMetadata(due[0]));assert.deepEqual(delayedOrders(coach,pool).map(o=>o.id),['n07']);
  assert.deepEqual(delayedOrders({...coach,exposure:()=>({seen:null})},pool),[]);
- assert.deepEqual(delayedOrders({...coach,mapVersion:'different'},pool),[]);
+ // followup-2(11-08): 지도판이 아니라 Core의 current가 가른다 — 그 능력이 지금 지도에 없으면(current:false) 내지 않는다.
+ const gone=c=>({...c,followups:()=>{const r=c.followups();return {...r,items:r.items.map(x=>({...x,current:false}))};}});
+ assert.deepEqual(delayedOrders(gone(coach),pool),[]);
 });
 test('rhythm delay preserves its original cell and stops proposing reserves after one independent follow-up',()=>{
  let t=Date.parse('2026-10-25T12:00:00Z');const mem=new Map();
@@ -96,7 +98,7 @@ test('rhythm delay preserves its original cell and stops proposing reserves afte
  assert.deepEqual(delayedSupplemental(coach),[]);t+=2*86400000;
  const candidates=delayedSupplemental(coach);assert.equal(candidates.length,2);
  assert.ok(candidates.every(i=>i.responseFormat==='binary-choice'&&i.skillId===first.skillId&&i.difficulty===first.difficulty&&i.familyKey!==first.familyKey));
- assert.deepEqual(delayedSupplemental({...coach,mapVersion:'different'}),[]);
+ assert.deepEqual(delayedSupplemental({...coach,followups:()=>{const r=coach.followups();return {...r,items:r.items.map(x=>({...x,current:false}))};}}),[]);
  assert.deepEqual(delayedSupplemental({...coach,exposure:()=>({seen:null})}),[]);
  const next=coach.present(candidates[0]);coach.delivery(next,{audio:'completed'});coach.answer(next,{correct:true,assessable:true});
  assert.deepEqual(delayedSupplemental(coach),[]);

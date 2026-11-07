@@ -6,7 +6,7 @@ export function followupRows({projection,pool=[],seen,taskVersion,audioAvailable
  const limited=projection.evidenceComplete!==true||projection.coverage?.limited===true||projection.coverage?.retentionLimited===true;
  const rows=projection.items.filter(row=>row.gameId==='world-practice').map(row=>{
   const m=row.measure||{};
-  const candidates=!limited&&row.status==='due'&&m.taskVersion===taskVersion&&(!m.audioRequired||audioAvailable)?pool.filter(item=>
+  const candidates=!limited&&row.status==='due'&&(row.current??m.taskVersion===taskVersion)&&(!m.audioRequired||audioAvailable)?pool.filter(item=>
    item.skillId===m.skillId&&item.difficulty===m.difficulty&&item.responseFormat===m.responseFormat&&item.modality===m.modality&&
    (item.audioRequired??item.modality==='listening')===m.audioRequired&&seenFalse(seen,item)&&
    (!item.setId||pool.filter(peer=>peer.setId===item.setId).every(peer=>seenFalse(seen,peer)))):[];

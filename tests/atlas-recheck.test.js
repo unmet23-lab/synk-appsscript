@@ -76,7 +76,7 @@ test('another item in the same family and an item shown before without any answe
   assert.equal(pair(shown, c, d).reason, 'previously-presented');
 });
 
-test('all measurement axes and the authored version must agree', () => {
+test('all measurement axes must agree; the map edition alone does not split the cell (followup-2)', () => {
   const variants = [{ skillId: 'ko.reading.negation' }, { difficulty: 2 }, { responseFormat: 'binary-choice' },
     { skillId: 'ko.listening.detail', modality: 'listening', audioRequired: false }, { audioRequired: true }, { responseFormat: 'unknown' }];
   for (const metadata of variants) {
@@ -84,8 +84,9 @@ test('all measurement axes and the authored version must agree', () => {
     assert.equal(pair(f, a, b).reason, 'different-measurement', JSON.stringify(metadata));
   }
   const f = fixture(), a = f.play('source'), b = f.play('target', { correct: true }), value = stored(f);
+  // 2026-11-08: a target recorded under a grown map edition is the same measurement when every axis agrees.
   value.events.find(event => event.id === b.pid).taskVersion = 'other-version';
-  assert.equal(replace(f, value).recheck(a.answer.eventId, b.answer.eventId).reason, 'different-measurement');
+  assert.equal(replace(f, value).recheck(a.answer.eventId, b.answer.eventId).status, 'independent-correct');
   const legacy = fixture(), c = legacy.play('source'), d = legacy.play('target', { correct: true }), old = stored(legacy);
   for (const event of old.events) if (event.type === 'practice.presented') delete event.measure.responseFormat;
   assert.equal(replace(legacy, old).recheck(c.answer.eventId, d.answer.eventId).reason, 'different-measurement');

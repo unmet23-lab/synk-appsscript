@@ -15,7 +15,7 @@ export function shuffled(items,seed){
 export function delayedSupplemental(coach){
  if(!coach?.followups||!coach?.exposure)return [];
  const opportunities=coach.followups().items.filter(row=>row.status==='due'&&row.gameId==='korean-rhythm'
-  &&row.measure.taskVersion===coach.mapVersion
+  &&(row.current??row.measure.taskVersion===coach.mapVersion)
   &&row.measure.responseFormat==='binary-choice'&&row.measure.modality==='listening'&&row.measure.audioRequired===true);
  const pool=supplementalItems({purpose:'delayed',seen:item=>coach.exposure(item).seen});
  return pool.filter(item=>opportunities.some(row=>row.measure.skillId===item.skillId&&row.measure.difficulty===item.difficulty));

@@ -57,3 +57,50 @@ export function settleTake(state, { phase, turn, out, reviewed }) {
   return { ...out, take: { attempt: turn.attempt, hinted: turn.hinted, firstUnhintedAttempt: turn.independentEligible, independentEligible },
     trail: trailOf({ phase, status: out.status, transcript: out.transcript, observation: out.observation, independentEligible, reviewed: reviewed === true }) };
 }
+
+// Reed 마이크 알림(2026-11-08): 녹음하는 동안 같은 출처의 다른 창(WORLD 셸 · 나란히 띄운 마을)이 효과음 · 진동 · 말소리를 0으로 두게 알린다.
+// experiences/brand-opening/world-sound.mjs createMicSignal과 같은 규약의 사본이다 — 공개 빌드가 드라마의 가져오기 셋을 고정 검사하고 brand-opening
+// 경로로 바꿔 주지 않아 여기 둔다(가져오기 주소의 ?v= 토큰은 공개 빌드 · 공개 도구가 내용 해시로 붙여, 새 pilot은 늘 새 takes 주소를 부른다). 받는 쪽은 공유 열쇠 synk.world.mic(가장 최근 박동 시각, 15초 지나면 닫힘)만 읽고, 주체마다 synk.world.mic:<주체>를 따로 둬
+// 한 창이 끝내도 다른 주체의 녹음 동안에는 공유 열쇠를 남긴다. 주체 열쇠가 없는 옛 판(이 규약 앞의 창)의 박동은 새 판들이 함께
+// synk.world.mic:~older 하나에 기억해 주체처럼 센다 — 누가 먼저 끝내도 마지막 새 주체가 옛 창의 녹음을 알고, 옛 판이 끝내며 공유 열쇠를
+// 지운 것을 어느 새 주체가 보든 그 기억을 지운다(검수 GB1 · 다시 검수 GA1 · FA1 · 무작위 시험). tests/reed-mic-signal.test.mjs가 두 사본이 같은 저장 결과를 내는지 본다.
+export const MIC_KEY = 'synk.world.mic';
+export const MIC_STALE_MS = 15000;
+const MIC_CHANNEL = 'synk-world-audio', MIC_BEAT_MS = 5000, MIC_OLDER = `${MIC_KEY}:~older`;
+let micChannel = null;
+function micBus() {
+  if (!micChannel && typeof BroadcastChannel === 'function') try { micChannel = new BroadcastChannel(MIC_CHANNEL); } catch { micChannel = null; }
+  return micChannel;
+}
+const micStore = () => { try { return globalThis.localStorage || null; } catch { return null; } };
+export function createMicSignal({ storage = micStore(), bus = micBus, now = () => Date.now(), every = (fn, ms) => setInterval(fn, ms), stop = (id) => clearInterval(id),
+  owner = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}` } = {}) {
+  const own = `${MIC_KEY}:${owner}`; let timer = 0, open = false;
+  const send = (value) => { try { bus()?.postMessage({ type: 'mic', open: value }); } catch {} };
+  const owners = () => { const out = []; for (let i = 0; i < (storage?.length || 0); i++) { const k = storage.key(i); if (k?.startsWith(`${MIC_KEY}:`)) out.push(Number(storage.getItem(k))); } return out; };
+  // 공유 열쇠의 시각이 15초 안이고 어느 주체 열쇠(~older 포함)에도 없으면 옛 판의 박동이다 — 덮기 전에 함께 기억한다.
+  const note = (v, at) => { if (Number.isFinite(v) && at - v < MIC_STALE_MS && !owners().includes(v)) { const k = Number(storage?.getItem(MIC_OLDER)); if (!(Number.isFinite(k) && k >= v)) storage?.setItem(MIC_OLDER, String(v)); } };
+  // 공유 열쇠가 비면 옛 판이 끝낸 것이다(새 판은 살아 있는 주체가 있는 동안 지우지 않는다) — 새 주체 누구든 박동 · 끝낼 때 보고 지운다.
+  const forget = () => { try { storage?.removeItem(MIC_OLDER); } catch {} };
+  const beat = () => {
+    const at = now();
+    try {
+      const raw = storage?.getItem(MIC_KEY);
+      if (raw == null) forget(); else note(Number(raw), at);
+      storage?.setItem(own, String(at)); storage?.setItem(MIC_KEY, String(at));
+    } catch {}
+    send(true);
+  };
+  const close = () => {
+    const at = now(); let still = 0;
+    try {
+      const raw = storage?.getItem(MIC_KEY);
+      if (raw == null) forget(); else note(Number(raw), at);   // 내 열쇠를 지우기 전에 본다 — 내 시각은 옛 판 것으로 세지 않는다
+      storage?.removeItem(own);
+      for (const v of owners()) if (Number.isFinite(v) && at - v < MIC_STALE_MS) still = Math.max(still, v);
+      if (still) storage?.setItem(MIC_KEY, String(still)); else storage?.removeItem(MIC_KEY);
+    } catch {}
+    send(still > 0);
+  };
+  return Object.freeze({ set(next) { next = Boolean(next); if (timer) { stop(timer); timer = 0; } if (next) { beat(); timer = every(beat, MIC_BEAT_MS); } else if (open) close(); open = next; }, open: () => open });
+}

@@ -8097,7 +8097,7 @@ var SynkLearning = (() => {
           };
         }
         const FOLLOWUP = Object.freeze({
-          version: "temper-followup-1",
+          version: "temper-followup-2",
           maxAnchors: 24,
           keepDays: 45,
           windows: Object.freeze([["d1", 1, 3], ["d7", 7, 10], ["d30", 30, 37]].map(Object.freeze))
@@ -8116,7 +8116,6 @@ var SynkLearning = (() => {
           const game = (a) => byId.get(a.decisionId)?.experienceId;
           const tuple = (a) => JSON.stringify([
             game(a),
-            a.taskVersion,
             a.measure?.skillId,
             a.measure?.difficulty,
             a.measure?.responseFormat,
@@ -11284,8 +11283,12 @@ var SynkLearning = (() => {
           syncPort: history.port,
           summary: () => report(current()),
           followups() {
-            const saved = current();
-            return readFollowups(saved.log, { scope, asOf: monotonicClock(), prior: saved.ledger, complete: saved.durable, retain: followups });
+            const saved = current(), report2 = readFollowups(saved.log, { scope, asOf: monotonicClock(), prior: saved.ledger, complete: saved.durable, retain: followups });
+            for (const row of report2.items) {
+              const node = map.getNode(row.measure.skillId);
+              row.current = node?.kind === "skill" && node.domain === row.measure.modality;
+            }
+            return report2;
           },
           recommend(candidates, options = {}) {
             const saved = current(), profile = report(saved);
@@ -11337,7 +11340,7 @@ var SynkLearning = (() => {
             if (events.some((event) => event.type === "record.excluded" && relevant.has(event.targetId))) return unavailable("excluded-evidence");
             if (sourceDecision.experienceId !== targetDecision.experienceId) return unavailable("different-game");
             const a = sourcePresentation.measure, b = targetPresentation.measure;
-            if (!a || !b || !Learning.RESPONSE_FORMATS.includes(a.responseFormat) || a.responseFormat === "unknown" || ["skillId", "difficulty", "responseFormat", "modality", "audioRequired"].some((key2) => a[key2] !== b[key2]) || sourcePresentation.taskVersion !== targetPresentation.taskVersion) return unavailable("different-measurement");
+            if (!a || !b || !Learning.RESPONSE_FORMATS.includes(a.responseFormat) || a.responseFormat === "unknown" || ["skillId", "difficulty", "responseFormat", "modality", "audioRequired"].some((key2) => a[key2] !== b[key2])) return unavailable("different-measurement");
             if (sourcePresentation.itemKey === targetPresentation.itemKey || a.familyKey === b.familyKey) return unavailable("same-family");
             const priorPresentation = events.some((event) => event.type === "practice.presented" && event.id !== targetPresentation.id && (positions.get(event.id) < positions.get(targetPresentation.id) || Date.parse(event.at) < Date.parse(targetPresentation.at)) && (event.itemKey === targetPresentation.itemKey || (event.measure?.familyKey || event.itemKey) === b.familyKey));
             if (priorPresentation || (saved.ledger?.presented || []).some(([_task, item, family]) => item === targetPresentation.itemKey || family === b.familyKey)) return unavailable("previously-presented");

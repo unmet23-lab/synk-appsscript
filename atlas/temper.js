@@ -151,7 +151,7 @@
   // Personal observation opportunities, not assigned experiments or proof of effect. The
   // original reading chooses anchors before exclusions; the current reading can withdraw
   // them, never silently replace an excluded error with a more favourable later answer.
-  const FOLLOWUP = Object.freeze({ version: 'temper-followup-1', maxAnchors: 24, keepDays: 45,
+  const FOLLOWUP = Object.freeze({ version: 'temper-followup-2', maxAnchors: 24, keepDays: 45,
     windows: Object.freeze([['d1', 1, 3], ['d7', 7, 10], ['d30', 30, 37]].map(Object.freeze)) });
   function followups({ events, summary, original = summary, prior = null, complete = true, asOf = summary?.asOf } = {}) {
     summaries(summary); summaries(original);
@@ -165,7 +165,9 @@
     const stamp = a => Date.parse(a.at), before = (a, b) => position.get(a.eventId ?? a.id) < position.get(b.eventId ?? b.id)
       && stamp(a) <= stamp(b) && Date.parse(a.recordedAt) <= Date.parse(b.recordedAt);
     const game = a => byId.get(a.decisionId)?.experienceId;
-    const tuple = a => JSON.stringify([game(a), a.taskVersion, a.measure?.skillId, a.measure?.difficulty,
+    // The same ability cell, not the same map edition (followup-2, 2026-11-08): a map that only grew keeps its pairs.
+    // An ability that changes what it measures takes a new id; the modality recorded on each attempt stays in the cell.
+    const tuple = a => JSON.stringify([game(a), a.measure?.skillId, a.measure?.difficulty,
       a.measure?.responseFormat, a.measure?.modality, a.measure?.audioRequired]);
     const framed = a => {
       const p = byId.get(a.presentationId), d = byId.get(a.decisionId), done = completion.get(a.decisionId);

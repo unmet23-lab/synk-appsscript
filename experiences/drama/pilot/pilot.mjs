@@ -18,7 +18,7 @@
 //    있을 때만 남고, 호스트는 학습 기록 동의가 켜진 계정에서만 보낸다 — 없으면 아무것도 남지 않는다. 받아 적은 글 · 소리는 넣지 않고,
 //    「혼자 해 봄」 여부는 서버가 테이크 응답의 trail로 정한다.
 import { STR, endingFix } from './strings.mjs';
-import { newAttemptState, resetAttempts, beginTake, talkObservation, nextCount, settleTake } from './takes.mjs';
+import { newAttemptState, resetAttempts, beginTake, talkObservation, nextCount, settleTake, createMicSignal } from './takes.mjs';
 
 const $ = (id) => document.getElementById(id);
 const ui = { stage: $('stage'), still: $('still'), loop: $('loop'), reply: $('reply'), subs: $('subs'), slate: $('slate'), panel: $('panel'), dialog: $('dialog'), voice: $('voice'), chip: $('analysisChip'), lang: $('langBtn'),
@@ -546,6 +546,9 @@ async function getStream(wait = null) {
  }
 }
 const stopStream = (st) => st?.getTracks().forEach((tr) => tr.stop());
+// Reed 마이크 알림(takes.mjs): 녹음기가 도는 동안 같은 출처의 다른 창이 소리를 0으로 둔다. 시작 직전에 열고 recordOnce의 finish 하나에서 닫는다.
+let micSignal = null;
+const micSet = (open) => { try { (micSignal ||= createMicSignal()).set(open); } catch {} };
 function stopRecorder(cancel) {
  // 마이크 허용을 기다리는 중의 취소: 권한 창에 답이 없어도 대기를 바로 풀고(내 차례로 돌아감),
  // 허용이 늦게 오면 그 스트림은 바로 닫고 녹음을 시작하지 않는다(recordOnce).
@@ -586,7 +589,8 @@ async function recordOnce(s, { onStart, onTick } = {}) {
   state.finish = () => {
    if (finished) return; finished = true;
    clearInterval(iv); clearTimeout(deadline); unlisten(); stopStream(stream);
-   if (S.rec === state) S.rec = null;
+   // 알림은 녹음기를 쥔 테이크가 끈다 — 늦게 온 앞 테이크의 onstop이 다음 테이크의 알림을 끄지 않게(검수 KD1).
+   if (S.rec === state) { S.rec = null; micSet(false); }
    syncPlayable(); document.body.classList.remove('is-recording');
    const seconds = (performance.now() - t0) / 1000;
    // 녹음기가 시작조차 못 함(NotSupportedError 등): 생성자 실패와 같이 지원 안 됨으로 두고 따라 읽기로 잇는다.
@@ -597,6 +601,7 @@ async function recordOnce(s, { onStart, onTick } = {}) {
   rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
   rec.onstop = state.finish; rec.onerror = () => { state.cancelled = true; state.finish(); };
   S.rec = state;
+  micSet(true);
   try { rec.start(250); } catch { state.unsupported = true; state.finish(); return; }
   document.body.classList.add('is-recording');
   unlisten = orbListen(stream);

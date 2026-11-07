@@ -27,7 +27,7 @@ export function chooseOrder(coach,orders){return coach.recommend(orderCandidates
 export function delayedOrders(coach,orders){
  if(!coach?.followups||!coach?.exposure||!coach.mapVersion)return [];
  try{
-  const due=coach.followups().items.filter(row=>row.status==='due'&&row.gameId==='order-rush'&&row.measure.taskVersion===coach.mapVersion
+  const due=coach.followups().items.filter(row=>row.status==='due'&&row.gameId==='order-rush'&&(row.current??row.measure.taskVersion===coach.mapVersion)
    &&row.measure.responseFormat==='cup-compose'&&row.measure.modality==='listening'&&row.measure.audioRequired===true);
   return orders.filter(order=>{const m=orderMetadata(order);return coach.exposure(m).seen===false&&due.some(row=>row.measure.skillId===m.skillId&&row.measure.difficulty===m.difficulty);});
  }catch{return [];}

@@ -111,7 +111,7 @@ function createRecorder({ win = typeof window === 'undefined' ? null : window, o
       const report = c.followups();
       if (report?.evidenceComplete !== true) return null;
       const due = report.items.some(row => row.status === 'due' && row.window === 'd7' && row.gameId === GAME_ID
-        && row.measure.taskVersion === map.map_ver && row.measure.skillId === skillId && row.measure.difficulty === 2
+        && (row.current ?? row.measure.taskVersion === map.map_ver) && row.measure.skillId === skillId && row.measure.difficulty === 2
         && row.measure.responseFormat === 'spoken' && row.measure.modality === 'speaking' && row.measure.audioRequired === false);
       if (!due) return false;
       const seen = c.exposure({ itemKey: lineId, familyKey: lineId }).seen;

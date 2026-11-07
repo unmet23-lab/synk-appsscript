@@ -8119,7 +8119,7 @@ var require_temper = __commonJS({
         };
       }
       const FOLLOWUP = Object.freeze({
-        version: "temper-followup-1",
+        version: "temper-followup-2",
         maxAnchors: 24,
         keepDays: 45,
         windows: Object.freeze([["d1", 1, 3], ["d7", 7, 10], ["d30", 30, 37]].map(Object.freeze))
@@ -8138,7 +8138,6 @@ var require_temper = __commonJS({
         const game = (a) => byId.get(a.decisionId)?.experienceId;
         const tuple = (a) => JSON.stringify([
           game(a),
-          a.taskVersion,
           a.measure?.skillId,
           a.measure?.difficulty,
           a.measure?.responseFormat,
@@ -11306,8 +11305,12 @@ var require_game_learning = __commonJS({
         syncPort: history.port,
         summary: () => report(current()),
         followups() {
-          const saved = current();
-          return readFollowups(saved.log, { scope, asOf: monotonicClock(), prior: saved.ledger, complete: saved.durable, retain: followups });
+          const saved = current(), report2 = readFollowups(saved.log, { scope, asOf: monotonicClock(), prior: saved.ledger, complete: saved.durable, retain: followups });
+          for (const row of report2.items) {
+            const node = map.getNode(row.measure.skillId);
+            row.current = node?.kind === "skill" && node.domain === row.measure.modality;
+          }
+          return report2;
         },
         recommend(candidates, options = {}) {
           const saved = current(), profile = report(saved);
@@ -11359,7 +11362,7 @@ var require_game_learning = __commonJS({
           if (events.some((event) => event.type === "record.excluded" && relevant.has(event.targetId))) return unavailable("excluded-evidence");
           if (sourceDecision.experienceId !== targetDecision.experienceId) return unavailable("different-game");
           const a = sourcePresentation.measure, b = targetPresentation.measure;
-          if (!a || !b || !Learning.RESPONSE_FORMATS.includes(a.responseFormat) || a.responseFormat === "unknown" || ["skillId", "difficulty", "responseFormat", "modality", "audioRequired"].some((key2) => a[key2] !== b[key2]) || sourcePresentation.taskVersion !== targetPresentation.taskVersion) return unavailable("different-measurement");
+          if (!a || !b || !Learning.RESPONSE_FORMATS.includes(a.responseFormat) || a.responseFormat === "unknown" || ["skillId", "difficulty", "responseFormat", "modality", "audioRequired"].some((key2) => a[key2] !== b[key2])) return unavailable("different-measurement");
           if (sourcePresentation.itemKey === targetPresentation.itemKey || a.familyKey === b.familyKey) return unavailable("same-family");
           const priorPresentation = events.some((event) => event.type === "practice.presented" && event.id !== targetPresentation.id && (positions.get(event.id) < positions.get(targetPresentation.id) || Date.parse(event.at) < Date.parse(targetPresentation.at)) && (event.itemKey === targetPresentation.itemKey || (event.measure?.familyKey || event.itemKey) === b.familyKey));
           if (priorPresentation || (saved.ledger?.presented || []).some(([_task, item, family]) => item === targetPresentation.itemKey || family === b.familyKey)) return unavailable("previously-presented");
@@ -21126,7 +21129,7 @@ function followupRows({ projection, pool = [], seen, taskVersion, audioAvailable
   const limited = projection.evidenceComplete !== true || projection.coverage?.limited === true || projection.coverage?.retentionLimited === true;
   const rows2 = projection.items.filter((row) => row.gameId === "world-practice").map((row) => {
     const m = row.measure || {};
-    const candidates = !limited && row.status === "due" && m.taskVersion === taskVersion && (!m.audioRequired || audioAvailable) ? pool.filter((item) => item.skillId === m.skillId && item.difficulty === m.difficulty && item.responseFormat === m.responseFormat && item.modality === m.modality && (item.audioRequired ?? item.modality === "listening") === m.audioRequired && seenFalse(seen, item) && (!item.setId || pool.filter((peer) => peer.setId === item.setId).every((peer) => seenFalse(seen, peer)))) : [];
+    const candidates = !limited && row.status === "due" && (row.current ?? m.taskVersion === taskVersion) && (!m.audioRequired || audioAvailable) ? pool.filter((item) => item.skillId === m.skillId && item.difficulty === m.difficulty && item.responseFormat === m.responseFormat && item.modality === m.modality && (item.audioRequired ?? item.modality === "listening") === m.audioRequired && seenFalse(seen, item) && (!item.setId || pool.filter((peer) => peer.setId === item.setId).every((peer) => seenFalse(seen, peer)))) : [];
     candidates.sort((a, b) => Number(b.supplyRole === "delayed") - Number(a.supplyRole === "delayed") || hash(row.id + a.itemKey) - hash(row.id + b.itemKey));
     return { ...row, item: candidates[0] || null, available: candidates.length > 0 };
   });
