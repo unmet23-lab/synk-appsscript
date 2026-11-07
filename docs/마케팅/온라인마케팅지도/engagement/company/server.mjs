@@ -47,6 +47,7 @@ import {receiveDeliveryMedia,commitDeliveryMedia,discardDeliveryMedia,serveDeliv
 import { createPulseStudioService } from './pulse-studio.mjs';
 import { createPulseRequests, streamDraftFile, REQUEST_LIMITS } from './pulse-requests.mjs';
 import { createPulseAutoReplyService } from './pulse-auto-reply.mjs';
+import { createPulseMailService } from './pulse-mail.mjs';
 import { CASTING_MODELS } from './public/pulse-app/casting-catalog.mjs';
 import { createClientIntake,discardIntakeFiles,serveIntakeFile } from './client-intake.mjs';
 import { createBrandQualityService } from './brand-quality-service.mjs';
@@ -254,7 +255,9 @@ export function createCompanyApp(options={}) {
     },()=>{deliveryCheckRuntime.lastScanErrorAt=clock();finishRuntime(deliveryCheckRuntime,false);return {failed:true};}).finally(()=>{deliveryCheckTick=null;});
     return deliveryCheckTick;
   }
-  const pulseStudio=createPulseStudioService({store,clientProjects,clock});
+  // 판 2 메일 알림: 서비스는 고객 알림 투영(pulseLive)이 생긴 뒤 만든다 — 그 전에는 손님 · 직원 보기에 메일 칸이 없다.
+  let pulseMail=null;
+  const pulseStudio=createPulseStudioService({store,clientProjects,clock,mailState:{customer:row=>pulseMail?.customerState(row),staff:row=>pulseMail?.staffState(row)}});
   const pulseRequests=createPulseRequests({store,clientProjects,clock,freeBytes:options.pulseRequestFreeBytes});
   // PULSE 고객 문의 자동 안내(2026-10-19). 관리자가 설정 화면에서 Claude 키를 넣고 켰을 때만 답한다. 업무실 예약 작업과 같은 스위치를 따르고,
   // 문의가 들어오면 1.5초 뒤 바로 한 번, 그 밖에는 15초마다 남은 문의를 본다.
@@ -284,6 +287,9 @@ export function createCompanyApp(options={}) {
   const pulseEventAuth=new WeakMap();
   clientNotifications=createClientNotificationsService({store,clientProjects,clientWorkflow,clock,onChange:ids=>{messenger.notifyCompanyUsers(ids);pulseLiveEvents?.changed();notifyPulseDevices();}});
   const pulseLive=createPulseLiveService({store,clientProjects,clientNotifications,clock,onChange:()=>{pulseLiveEvents?.changed();notifyPulseDevices();}});
+  pulseMail=createPulseMailService({store,clock,fetchImpl:options.pulseMailFetch||globalThis.fetch,notificationsFor:row=>pulseLive.customerPushNotifications(`pulse:${row.id}:${row.inviteRevision}`)});
+  const pulseMailSchedule=options.pulseMailSchedule??(workroomScheduleEnabled&&options.schedule!==false);
+  let pulseMailTimer=null;
   pulseLiveEvents=createCreativeResearchEvents({resolveAccess(req){
     const original=pulseEventAuth.get(req);if(stopRequested||!original)return null;
     if(original.customerToken){const current=clientProjects.session(original.customerToken);if(current.auth.hash!==original.hash)return null;return {revision:pulseLive.customerState(original.customerToken).revision};}
@@ -312,6 +318,9 @@ export function createCompanyApp(options={}) {
   const automationRuntimeStart=clock(),automationRuntime={};
   function runtimeJob(id,enabled,intervalMs){return automationRuntime[id]??(automationRuntime[id]={enabled:!!enabled,running:false,intervalMs,startAt:automationRuntimeStart,lastAttemptAt:null,lastSuccessAt:null,lastErrorAt:null});}
   const deliveryCheckRuntime=Object.assign(runtimeJob('deliveryCheck',deliveryCheckSchedule,60000),{projects:{},lastScanErrorAt:null});
+// 메일 일(판 2)은 runtimeJob 표가 생긴 뒤에 등록한다.
+  const pulseMailRuntime=runtimeJob('pulseMail',pulseMailSchedule,30000);
+  const scanPulseMail=()=>{if(stopRequested||pulseMailRuntime.running)return;beginRuntime(pulseMailRuntime);return pulseMail.tick().then(()=>finishRuntime(pulseMailRuntime,true),()=>finishRuntime(pulseMailRuntime,false));};
   const inboxRuntime=runtimeJob('inbox',publicationInboxLocal&&(options.publicationInboxSchedule??(options.schedule!==false)),5000);
   function beginRuntime(job){job.running=true;job.lastAttemptAt=clock();}
   function finishRuntime(job,ok){job.running=false;if(ok){job.lastSuccessAt=clock();job.lastErrorAt=null;}else job.lastErrorAt=clock();}
@@ -1572,6 +1581,8 @@ export function createCompanyApp(options={}) {
       const member=path.match(/^\/api\/members\/([^/]+)\/status$/);
       if(member){admin(user);const target=store.get('users',member[1]);if(!target||target.id===user.id||target.role==='admin')throw httpError('이 크루의 이용 상태는 바꿀 수 없어요.');store.put('users',target.id,{...target,active:input.active===true});store.revokeUser(target.id);if(input.active!==true)for(const c of store.all('channels'))if(connection(c)?.connectedBy===target.id)disconnectChannel(c);audit(user,'member-status',target.id);return send(res,200,{ok:true});}
       if(path==='/api/settings'){admin(user);const hour=Number(input.hourKst);if(!Number.isInteger(hour)||hour<0||hour>23)throw httpError('수집 시각은 0~23시 가운데서 골라 주세요.');store.put('settings','company',{...store.get('settings','company'),hourKst:hour,enabled:input.enabled===true,companyName:text(input.companyName,80)||store.get('settings','company').companyName});return send(res,200,{ok:true});}
+      if(path==='/api/settings/pulse-mail'){const result=pulseMail.configure(user,input);audit(user,'pulse-mail-settings','pulse-mail',{enabled:result.enabled,requested:result.requested,relayChanged:input?.relayUrl!==undefined});return send(res,200,result);}
+      if(path==='/api/settings/pulse-mail/ping'){const result=await pulseMail.ping(user);audit(user,'pulse-mail-ping','pulse-mail',{state:result.connection?.state||null,code:result.connection?.code||null});return send(res,200,result);}
       if(path==='/api/settings/pulse-auto-reply'){const result=pulseAutoReply.configure(user,input);audit(user,'pulse-auto-reply-settings','pulse-auto-reply',{enabled:result.enabled,keyChanged:input?.apiKey!==undefined,dailyUsd:result.dailyUsd,monthlyUsd:result.monthlyUsd,perProjectDaily:result.perProjectDaily});return send(res,200,result);}
       if(path==='/api/settings/provider'){admin(user);if(!['youtube','instagram','facebook','tiktok'].includes(input.platform))throw httpError('지원하지 않는 플랫폼이에요.');const cfg=store.secret('provider:'+input.platform)||{};for(const key of ['clientId','clientSecret','apiKey'])if(input[key])cfg[key]=text(input[key],16000);store.setSecret('provider:'+input.platform,cfg);audit(user,'provider-config',input.platform);return send(res,200,{ok:true});}
       if(path==='/api/import-legacy')return send(res,200,await importLegacy(user));
@@ -1791,6 +1802,7 @@ export function createCompanyApp(options={}) {
       if(contentDetail)return send(res,200,content.readDraft(user,contentDetail[1]));
       const contentExport=path.match(/^\/api\/content-drafts\/([^/]+)\/export$/);
       if(contentExport){const result=content.exportDraft(user,contentExport[1]);res.setHeader('Content-Disposition',`attachment; filename="content-${result.id.replace(/[^a-zA-Z0-9-]/g,'')}.md"`);return send(res,200,result.markdown,'text/markdown; charset=utf-8');}
+      if(path==='/api/settings/pulse-mail')return send(res,200,pulseMail.settings(user));
       if(path==='/api/settings/pulse-auto-reply')return send(res,200,pulseAutoReply.settings(user));
       if(path==='/api/state'){
         const channels=visibleChannels(user),ids=new Set(channels.map(c=>c.id)),members=visibleMembers(store,user),teamIds=new Set([...channels.map(c=>c.teamId),user.teamId]),schedule=store.get('settings','company');
@@ -1917,10 +1929,10 @@ export function createCompanyApp(options={}) {
     });
   }
   function shutdown(){
-    ready=false;clearInterval(timer);clearInterval(pushTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);clearInterval(pulseAutoReplyTimer);clearInterval(pulseRequestTimer);clearTimeout(pulseAutoReplySoonTimer);pulseAutoReplyTimer=null;socialAbort.abort();publicationAbort.abort();creativeResearchEvents.stop();pulseLiveEvents.stop();clientNotifications.close();const identityStopped=synkIdentity.close(),customerIdentityStopped=customerIdentity.close(),teachingStopped=teaching.close();
+    ready=false;clearInterval(timer);clearInterval(pushTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);clearInterval(pulseAutoReplyTimer);clearInterval(pulseRequestTimer);clearInterval(pulseMailTimer);clearTimeout(pulseAutoReplySoonTimer);pulseAutoReplyTimer=null;socialAbort.abort();publicationAbort.abort();creativeResearchEvents.stop();pulseLiveEvents.stop();clientNotifications.close();const identityStopped=synkIdentity.close(),customerIdentityStopped=customerIdentity.close(),teachingStopped=teaching.close();
     if(shutdownTask)return shutdownTask;
     shutdownTask=(async()=>{
-      await Promise.all([dmRegistration.close(),websiteInquiries.close(),websiteInquiryTick,pulseAutoReply.stop(),socialPublishMedia.stop(),socialPublishing.stop?.(),socialReplies.stop(),socialProvider.stopHealth?.(),socialReview.stop(),socialAi.stop(),socialInboxRecovery.stop(),socialInboxProvider.stop(),socialTick,socialExtras,socialDistribution.waitForIdle(),deliveryFileInspector.close(),deliveryCheckTick,automationHealthTick,identityStopped,customerIdentityStopped,teachingStopped,queue,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.stop(),publicationInbox.stop(),postPerformance.stop(),publicationPackages.stop(),dailyTrends.stop(),creativeResearchSync.stop(),creativeResearch.stop(),computerInterpretation.stop(),deviceNotifications.stop()]);messenger.endConnections();
+      await Promise.all([dmRegistration.close(),websiteInquiries.close(),websiteInquiryTick,pulseAutoReply.stop(),pulseMail.stop(),socialPublishMedia.stop(),socialPublishing.stop?.(),socialReplies.stop(),socialProvider.stopHealth?.(),socialReview.stop(),socialAi.stop(),socialInboxRecovery.stop(),socialInboxProvider.stop(),socialTick,socialExtras,socialDistribution.waitForIdle(),deliveryFileInspector.close(),deliveryCheckTick,automationHealthTick,identityStopped,customerIdentityStopped,teachingStopped,queue,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.stop(),publicationInbox.stop(),postPerformance.stop(),publicationPackages.stop(),dailyTrends.stop(),creativeResearchSync.stop(),creativeResearch.stop(),computerInterpretation.stop(),deviceNotifications.stop()]);messenger.endConnections();
       for(const listener of [redirectServer,server])if(listener?.listening)await new Promise(resolve=>{listener.close(resolve);listener.closeIdleConnections();});
       try{await messenger.close();}finally{synkIdentity.dispose();customerIdentity.dispose();teaching.dispose();store.close();}
     })();
@@ -1946,6 +1958,7 @@ export function createCompanyApp(options={}) {
         if(automationHealthSchedule&&!stopRequested){automationHealthTimer=setInterval(scanAutomationHealthScheduled,60000);automationHealthTimer.unref();void scanAutomationHealthScheduled();}
         if(deliveryCheckSchedule&&!stopRequested){deliveryCheckTimer=setInterval(scanDeliveryChecks,60000);deliveryCheckTimer.unref();void scanDeliveryChecks();}
         if(socialSchedule&&!stopRequested){socialTimer=setInterval(scanSocialPublishing,15000);socialTimer.unref();void scanSocialPublishing();}
+        if(pulseMailSchedule&&!stopRequested){pulseMailTimer=setInterval(scanPulseMail,30000);pulseMailTimer.unref();void scanPulseMail();}
         if(pulseAutoReplySchedule&&!stopRequested){pulseAutoReplyTimer=setInterval(scanPulseAutoReplies,15000);pulseAutoReplyTimer.unref();void scanPulseAutoReplies();pulseRequestTimer=setInterval(retirePulseRequests,6*3600000);pulseRequestTimer.unref();void retirePulseRequests();}
         ready=!stopRequested;
         if(ready&&webPushEnabled){pushTimer=setInterval(()=>deviceNotifications.tick().catch(()=>{}),30000);pushTimer.unref();void deviceNotifications.tick().catch(()=>{});}
@@ -1954,8 +1967,8 @@ export function createCompanyApp(options={}) {
     })();
     return startTask;
   }
-  async function stop(){ready=false;stopRequested=true;clearInterval(timer);clearInterval(pushTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);clearInterval(pulseAutoReplyTimer);clearInterval(pulseRequestTimer);clearTimeout(pulseAutoReplySoonTimer);pulseAutoReplyTimer=null;socialAbort.abort();publicationAbort.abort();if(startTask)await startTask.catch(()=>{});await shutdown();}
-  return {server,store,pulseRequests,dmRegistration,researchProduction,websiteInquiries,collectWebsiteInquiries,socialPublishMedia,socialPublishing,socialMarketing,socialProvider,socialDistribution,socialInboxProvider,socialAi,socialRecovery,socialTracking,socialInquiries,socialWorkflows,socialReview,socialReplies,socialCapacity,socialCopyInsights,socialFollowups,scanSocialPublishing,clientProjects,pulseAutoReply,scanPulseAutoReplies,clientDelivery,messenger,deviceNotifications,dailyTrends,creativeResearch,creativeResearchSync,computerInterpretation,publicationPackages,publicationInbox,postPerformance,publicationLinks,weeklySummary,scanWeeklySummary,automationHealth,automationNotifications,scanAutomationHealth,scanAutomationHealthScheduled,scanDeliveryChecks,origin,host,port,importLegacy,scheduledTick,collectPublicationPerformance,scanPublicationInbox,scanPublicationLinks,report,enqueueCollection,waitForIdle:async()=>{await socialTick;await Promise.all([websiteInquiryTick,socialExtras,socialPublishMedia.waitForIdle(),socialPublishing.waitForIdle(),socialReplies.waitForIdle(),socialProvider.waitForHealthIdle?.(),socialReview.waitForIdle(),socialDistribution.waitForIdle(),socialAi.waitForIdle(),socialInboxProvider.waitForIdle(),queue,deliveryCheckTick,automationHealthTick,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.waitForIdle(),publicationInbox.waitForIdle(),postPerformance.waitForIdle(),publicationPackages.waitForIdle(),dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),creativeResearchSync.waitForIdle(),computerInterpretation.waitForIdle()]);},start,stop};
+  async function stop(){ready=false;stopRequested=true;clearInterval(timer);clearInterval(pushTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);clearInterval(pulseAutoReplyTimer);clearInterval(pulseRequestTimer);clearInterval(pulseMailTimer);clearTimeout(pulseAutoReplySoonTimer);pulseAutoReplyTimer=null;socialAbort.abort();publicationAbort.abort();if(startTask)await startTask.catch(()=>{});await shutdown();}
+  return {server,store,pulseRequests,pulseMail,dmRegistration,researchProduction,websiteInquiries,collectWebsiteInquiries,socialPublishMedia,socialPublishing,socialMarketing,socialProvider,socialDistribution,socialInboxProvider,socialAi,socialRecovery,socialTracking,socialInquiries,socialWorkflows,socialReview,socialReplies,socialCapacity,socialCopyInsights,socialFollowups,scanSocialPublishing,clientProjects,pulseAutoReply,scanPulseAutoReplies,clientDelivery,messenger,deviceNotifications,dailyTrends,creativeResearch,creativeResearchSync,computerInterpretation,publicationPackages,publicationInbox,postPerformance,publicationLinks,weeklySummary,scanWeeklySummary,automationHealth,automationNotifications,scanAutomationHealth,scanAutomationHealthScheduled,scanDeliveryChecks,origin,host,port,importLegacy,scheduledTick,collectPublicationPerformance,scanPublicationInbox,scanPublicationLinks,report,enqueueCollection,waitForIdle:async()=>{await socialTick;await Promise.all([websiteInquiryTick,socialExtras,socialPublishMedia.waitForIdle(),socialPublishing.waitForIdle(),socialReplies.waitForIdle(),socialProvider.waitForHealthIdle?.(),socialReview.waitForIdle(),socialDistribution.waitForIdle(),socialAi.waitForIdle(),socialInboxProvider.waitForIdle(),queue,deliveryCheckTick,automationHealthTick,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.waitForIdle(),publicationInbox.waitForIdle(),postPerformance.waitForIdle(),publicationPackages.waitForIdle(),dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),creativeResearchSync.waitForIdle(),computerInterpretation.waitForIdle()]);},start,stop};
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   let app;

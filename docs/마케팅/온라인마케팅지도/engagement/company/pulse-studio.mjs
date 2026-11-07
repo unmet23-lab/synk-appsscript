@@ -26,7 +26,7 @@ function studioOf(row){if(!row.studio)return empty();if(row.studio.schemaVersion
 // All creative state belongs to the authoritative clientProjects document.
 // Existing project revisions, invite revocation, ACL and backup transactions
 // therefore remain authoritative; this module creates no second customer login.
-export function createPulseStudioService({store,clientProjects,clock=()=>new Date().toISOString()}){
+export function createPulseStudioService({store,clientProjects,clock=()=>new Date().toISOString(),mailState=null}){
   function customer(token){return clientProjects.session(token);}
   function customerWrite(token,csrf){const context=customer(token);if(typeof csrf!=='string'||context.auth.body.csrf!==csrf)throw fail('고객 화면을 다시 열어 주세요.',403);return context;}
   function revision(row,value){if(!Number.isSafeInteger(value)||value!==row.revision)throw fail('그사이 프로젝트가 바뀌었어요. 최신 내용을 불러온 뒤 다시 저장해 주세요.',409);}
@@ -49,14 +49,18 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
     const selection=value=>value?{...card(value),current:concepts.some(item=>item.id===value.conceptId&&item.revision===value.conceptRevision&&item.visibility==='customer')}:null;
     return {schemaVersion:1,request:requestView(studio,{staff}),preferences:studio.preferences,strategy:strategyView(studio.strategy),deliverables:deliverableView(studio,row,staff),feedbackRounds:feedbackRoundsView(studio,row,staff),previews:previewsView(studio,row,staff),assets:[...assetMap.values()],references:studio.references.map(card),concepts:concepts.map(card),scenes:scenes.map(card),selectedConcept:selection(studio.selectedConcept),conceptSelections:studio.conceptSelections.map(selection),sceneReviews:studio.sceneReviews.filter(value=>staff||scenes.some(scene=>scene.id===value.sceneId)).map(value=>({...card(value),current:scenes.some(item=>item.id===value.sceneId&&item.revision===value.sceneRevision&&item.visibility==='customer')})),comments:studio.comments.filter(value=>staff||value.visibility==='customer'&&publicTarget(value.targetType,value.targetId)).map(card),cardRevisions:studio.history.filter(value=>staff||value.visibility==='customer').map(card)};
   }
-  function customerState(token){const {row}=customer(token),result=clientProjects.read(token);return {...result,project:{...result.project,studio:view(row),requestFlow:usesRequestFlow(row,studioOf(row))}};}
+  // 메일 알림(판 2): 손님 보기에는 켜졌는지와 가린 주소만, 직원 보기에는 연결 · 순간별 상태.
+  const customerMail=row=>{try{return mailState?.customer?.(row)||null;}catch{return null;}};
+  const staffMail=row=>{try{return mailState?.staff?.(row)||null;}catch{return null;}};
+  function customerState(token){const {row}=customer(token),result=clientProjects.read(token),mail=customerMail(row);return {...result,project:{...result.project,studio:view(row),requestFlow:usesRequestFlow(row,studioOf(row)),...(mail?{mail}:{})}};}
   function staffState(user,projectId){
     const row=clientProjects.project(user,projectId),{inviteHash,inviteRevision,notificationEvents,studio,...safe}=row;
     let canEdit=true;try{clientProjects.project(user,projectId,true);}catch{canEdit=false;}
     // Staff media must use staff routes. A staff session cannot impersonate
     // a customer's capability merely to render an image or video.
     const versions=row.versions.map(version=>({...version,...(version.media?{media:{...media(row,version.media,true),url:'/api/client-media/'+version.media.id}}:{})}));
-    return {project:{...safe,requestFlow:usesRequestFlow(row,studioOf(row)),versions,kickoff:buildClientKickoff(row,{now:clock(),canEdit}),changes:buildClientChanges(row,{now:clock(),canEdit}),sceneRequests:buildSceneRequests(row,clientProjects.sceneRequestContext(row,user)),schedule:buildClientSchedule(row,{now:clock(),canEdit,reviewerId:clientProjects.sceneRequestContext(row,user).reviewerId}),ownerName:store.get('users',row.ownerId)?.name||'담당자',reviewerName:store.get('users',row.reviewerId)?.name||'',inviteActive:!!inviteHash&&Date.parse(row.inviteExpiresAt)>Date.parse(clock()),studio:view(row,true)},canEdit};
+    const mail=staffMail(row);
+    return {project:{...safe,requestFlow:usesRequestFlow(row,studioOf(row)),...(mail?{mail}:{}),versions,kickoff:buildClientKickoff(row,{now:clock(),canEdit}),changes:buildClientChanges(row,{now:clock(),canEdit}),sceneRequests:buildSceneRequests(row,clientProjects.sceneRequestContext(row,user)),schedule:buildClientSchedule(row,{now:clock(),canEdit,reviewerId:clientProjects.sceneRequestContext(row,user).reviewerId}),ownerName:store.get('users',row.ownerId)?.name||'담당자',reviewerName:store.get('users',row.reviewerId)?.name||'',inviteActive:!!inviteHash&&Date.parse(row.inviteExpiresAt)>Date.parse(clock()),studio:view(row,true)},canEdit};
   }
   function asset(studio,assetId,{image=false}={}){if(!assetId)return null;const found=studio.assets.find(value=>value.id===id(assetId));if(!found||image&&!found.mimeType.startsWith('image/'))throw fail(image?'프로젝트의 이미지 자료를 선택해 주세요.':'이 프로젝트의 자료를 선택해 주세요.',404);return found;}
   function pointer(studio,input,{image=false}={}){const found=asset(studio,input.assetId,{image});return {assetId:found?.id||null,imageUrl:image?url(input.imageUrl):undefined};}

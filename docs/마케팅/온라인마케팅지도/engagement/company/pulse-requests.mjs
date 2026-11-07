@@ -7,6 +7,7 @@ import {validMediaSignature} from './studio-media.mjs';
 import {emptyPulseStudio} from './pulse-studio.mjs';
 import {recordSceneReview} from './client-scene-requests.mjs';
 import {CASTING_MODELS} from './public/pulse-app/casting-catalog.mjs';
+import {validPulseMailAddress} from './pulse-mail.mjs';
 
 // 초대 없이 시작하는 공개 의뢰서(2026-11-04, 설계 docs/마케팅/PULSE_의뢰흐름_20261104/README.md 5절).
 // 공개 경로라 프로젝트는 「보내기」에서만 생긴다. 그 전의 초안 · 파일은 따로 두어 스팸이 직원 서버의 프로젝트 · 백업으로 번지지 않게 하고,
@@ -345,10 +346,10 @@ export async function streamDraftFile(res,{paths,file},req){
 const FIELDS={
   request_note:['note'],request_ask:['items'],request_confirm:[],propose_model:['modelId','note'],send_draft:['oneLine','note'],
   request_answer:['askId','text','fileId'],answer_model:['accept','modelId','note'],request_save:['answers'],request_submit:['answers'],submit_draft_review:['round','items'],approve_draft:['round'],
-  propose_direction:['lead','options','modelId','price','dueDate','revisions'],settle_direction:['optionId','note'],answer_direction:['optionId','modelId','note','neither'],
+  propose_direction:['lead','options','modelId','price','dueDate','revisions'],request_contact:['email','mailOff'],settle_direction:['optionId','note'],answer_direction:['optionId','modelId','note','neither'],
 };
 export const requestActions=action=>Object.hasOwn(FIELDS,action)?FIELDS[action]:undefined;
-const STAFF_ONLY=['request_note','request_ask','request_confirm','propose_model','send_draft','propose_direction','settle_direction'],CUSTOMER_ONLY=['request_answer','answer_model','request_save','request_submit','submit_draft_review','approve_draft','answer_direction'];
+const STAFF_ONLY=['request_note','request_ask','request_confirm','propose_model','send_draft','propose_direction','settle_direction','request_contact'],CUSTOMER_ONLY=['request_answer','answer_model','request_save','request_submit','submit_draft_review','approve_draft','answer_direction'];
 export function applyRequestAction({studio,row,input,staff,stamp}){
   const action=input.action,now=stamp.at;
   if(STAFF_ONLY.includes(action)&&!staff)throw fail('담당자 화면에서만 할 수 있어요.',403);
@@ -362,6 +363,19 @@ export function applyRequestAction({studio,row,input,staff,stamp}){
     return;
   }
   if(!studio.request)throw fail('의뢰서가 아직 없어요.',409);
+  // 담당자가 확인 뒤에도 알림 메일 주소를 고치거나 메일을 끈다(판 2 메일). 그때의 의뢰서 주소(basedOn)를 적어 두어
+  // 손님이 그 뒤 의뢰서 주소를 고치면 손님 주소가 이긴다. 직원 화면의 연락처 줄도 함께 고친다.
+  if(action==='request_contact'){
+    const answers=request.answers||{},prev=request.contact||{};
+    if(input.email===undefined&&input.mailOff===undefined)throw fail('고칠 내용을 골라 주세요.');
+    const email=input.email===undefined?(prev.email||''):text(input.email,254);
+    if(email&&!validPulseMailAddress(email))throw fail('이메일 주소를 확인해 주세요.');
+    if(input.mailOff!==undefined&&typeof input.mailOff!=='boolean')throw fail('메일 끄기를 다시 골라 주세요.');
+    const contact={email,mailOff:input.mailOff===undefined?prev.mailOff===true:input.mailOff,basedOn:String(answers.email||'').trim(),at:now,by:stamp.authorName};
+    studio.request={...request,contact};
+    row.contact=[answers.contactName,email||answers.email,answers.phone].filter(Boolean).join(' · ').slice(0,300);
+    return;
+  }
   if(action==='request_note'){
     if(!object(input.note)||Object.keys(input.note).some(key=>!['summary','lines','model','ref','risks','by'].includes(key)))throw fail('메모 항목을 확인해 주세요.');
     const note={id:randomUUID(),at:now,by:text(input.note.by,40)||stamp.authorName,summary:text(input.note.summary,1000),lines:many(input.note.lines,null,5,200),model:text(input.note.model,300),ref:text(input.note.ref,500),risks:many(input.note.risks,null,8,300)};
@@ -552,6 +566,7 @@ function strategyWith(strategy,data,stamp){
 }
 export function requestView(studio,{staff=false}={}){
   const request=studio.request;if(!request)return null;
-  const {notes,...safe}=request;
-  return staff?{...safe,notes:notes||[]}:safe;
+  const {notes,contact,...safe}=request;
+  // 담당자가 고친 메일 주소 · 끈 사실은 손님 보기에 내리지 않는다(고객 방은 초대 링크를 가진 누구나 연다).
+  return staff?{...safe,notes:notes||[],contact:contact||null}:safe;
 }

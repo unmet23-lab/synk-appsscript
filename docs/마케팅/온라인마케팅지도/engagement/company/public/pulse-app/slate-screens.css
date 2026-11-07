@@ -260,6 +260,15 @@
 .desk-brief{min-width:0;padding:22px clamp(20px,3vw,44px) 60px}
 .desk-kicker{margin:0 0 8px;font-size:13px;color:var(--ink-3)}
 .desk-contact{margin:-10px 0 16px;font-size:14px;color:var(--ink-2)}
+.desk-mail{margin:-8px 0 18px;font-size:13px;color:var(--ink-2)}
+.desk-mail-head{margin:0}
+.desk-mail-list{margin:4px 0 0;padding-left:18px;line-height:1.6}
+.desk-mail-edit{margin-top:6px}
+.desk-mail-edit summary{cursor:pointer;width:max-content}
+.desk-mail-edit form{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:flex-end;margin-top:8px}
+.desk-mail-edit label{display:grid;gap:4px}
+.desk-mail-edit input[type=email]{min-width:260px;padding:8px 10px;border:1px solid var(--line,#ccc);border-radius:8px;font:inherit}
+.desk-mail-edit .desk-mail-off{display:flex;gap:6px;align-items:center}
 .desk-files{margin:10px 0 0;padding:0;list-style:none;font-size:14px}
 .desk-files li{padding:4px 0}
 .desk-files a{color:var(--berry)}
