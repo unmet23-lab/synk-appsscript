@@ -20,7 +20,7 @@ if(!process.versions.electron){
   const {app,BrowserWindow,protocol,session,Menu}=require('electron');
   const {createNativeContent}=require('../src/native-content.cjs'),{preferences}=require('../src/security.cjs'),{installDraftExitGuard}=require('../src/draft-exit.cjs');
   const profile=process.argv.find(value=>value.startsWith('--profile='))?.slice(10);
-  if(!profile||path.dirname(profile)!==os.tmpdir()||!path.basename(profile).startsWith('synk-continuity-exit-'))throw Error('Isolated profile required');
+  if(!profile||path.dirname(profile)!==os.tmpdir()||!path.basename(profile).startsWith('synk-continuity-exit-'))require('./electron-child-guard.cjs').refuse(__filename,'Isolated profile required');
   app.enableSandbox();app.setPath('userData',profile);app.commandLine.appendSwitch('force-device-scale-factor','1');
   protocol.registerSchemesAsPrivileged([{scheme:'synk-desktop',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
   app.on('window-all-closed',()=>{});

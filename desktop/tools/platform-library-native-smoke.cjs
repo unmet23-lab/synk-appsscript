@@ -7,7 +7,7 @@ if(!process.versions.electron){
   finally{if(path.dirname(path.resolve(profile))!==path.resolve(os.tmpdir())||!path.basename(profile).startsWith('synk-library-native-'))throw Error('Unsafe QA profile');fs.rmSync(profile,{recursive:true,force:true,maxRetries:20,retryDelay:300});}
 }else{
   const {app,BrowserWindow,session,protocol,ipcMain,safeStorage}=require('electron'),{createDraftRecovery}=require('../src/draft-recovery.cjs');
-  const profile=process.argv.find(arg=>arg.startsWith('--profile='))?.slice(10);if(!profile||path.dirname(profile)!==os.tmpdir()||!path.basename(profile).startsWith('synk-library-native-'))throw Error('Isolated profile required');
+  const profile=process.argv.find(arg=>arg.startsWith('--profile='))?.slice(10);if(!profile||path.dirname(profile)!==os.tmpdir()||!path.basename(profile).startsWith('synk-library-native-'))require('./electron-child-guard.cjs').refuse(__filename,'Isolated profile required');
   app.enableSandbox();app.setPath('userData',profile);app.setPath('sessionData',path.join(profile,'Session'));app.on('window-all-closed',()=>{});protocol.registerSchemesAsPrivileged([{scheme:'synk-library-qa',privileges:{standard:true,secure:true,supportFetchAPI:true,corsEnabled:true}}]);
   app.whenReady().then(async()=>{
     let win,auth={signedIn:true,configured:true,status:'signed-in',sessionGeneration:1,account:{synk_user_id:'synthetic-library-a'}},writes=0;

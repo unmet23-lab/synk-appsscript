@@ -23,7 +23,7 @@ if(!process.versions.electron){
   const {app,BrowserWindow,ipcMain,session,protocol}=require('electron');
   const {createPlatformUpdater,MANIFEST_URL}=require('../src/platform-update.cjs'),{createStartupUpdateGate}=require('../src/platform-startup-update.cjs');
   const {createStartupUpdateWindow}=require('../src/platform-startup-window.cjs'),{launchWindowsUpdate}=require('../src/platform-update-handoff.cjs'),{installDraftExitGuard}=require('../src/draft-exit.cjs');
-  const scenario=arg('scenario');if(!['cold','draft','handoff-retry'].includes(scenario))throw Error('Synthetic scenario required');
+  const scenario=arg('scenario');if(!['cold','draft','handoff-retry'].includes(scenario))require('../tools/electron-child-guard.cjs').refuse(__filename,'Synthetic scenario required');
   for(const leaf of ['appdata','profile','session'])fs.mkdirSync(path.join(output,leaf),{recursive:true});
   app.setPath('appData',path.join(output,'appdata'));app.setPath('userData',path.join(output,'profile'));app.setPath('sessionData',path.join(output,'session'));app.setName('SYNK Synthetic Startup Quit');app.enableSandbox();
   protocol.registerSchemesAsPrivileged([{scheme:'synk-desktop',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);

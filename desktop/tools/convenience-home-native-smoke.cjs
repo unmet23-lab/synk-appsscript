@@ -14,7 +14,7 @@ if(!process.versions.electron){
   }finally{if(path.dirname(path.resolve(profile))!==path.resolve(os.tmpdir())||!path.basename(profile).startsWith('synk-convenience-home-'))throw Error('Unsafe QA profile');fs.rmSync(profile,{recursive:true,force:true,maxRetries:20,retryDelay:300});}
 }else{
   const {app,BrowserWindow,protocol,session,ipcMain,safeStorage}=require('electron'),{createNativeContent}=require('../src/native-content.cjs'),{preferences}=require('../src/security.cjs'),{createDraftRecovery}=require('../src/draft-recovery.cjs'),{createDraftRecoveryRequests}=require('../src/draft-recovery-ipc.cjs');
-  const profile=process.argv.find(arg=>arg.startsWith('--profile='))?.slice(10);if(!profile||path.dirname(profile)!==os.tmpdir()||!path.basename(profile).startsWith('synk-convenience-home-'))throw Error('Isolated profile required');
+  const profile=process.argv.find(arg=>arg.startsWith('--profile='))?.slice(10);if(!profile||path.dirname(profile)!==os.tmpdir()||!path.basename(profile).startsWith('synk-convenience-home-'))require('./electron-child-guard.cjs').refuse(__filename,'Isolated profile required');
   app.enableSandbox();app.setPath('userData',profile);app.commandLine.appendSwitch('force-device-scale-factor','1');protocol.registerSchemesAsPrivileged([{scheme:'synk-desktop',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);app.on('window-all-closed',()=>{});
   app.whenReady().then(async()=>{
     let window,auth={configured:true,status:'signed-in',signedIn:true,sessionGeneration:1,account:{synk_user_id:'qa-member-a',display_name:'검증 계정'},library:{status:'ready',appIds:['world','care']}};

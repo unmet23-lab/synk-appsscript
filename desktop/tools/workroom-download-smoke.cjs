@@ -18,7 +18,7 @@ if(!process.versions.electron){
   const {app,BrowserWindow,session}=require('electron'),{createServer}=require('node:http');
   const {preferences,contentSecurityPolicy}=require('../src/security.cjs'),{createDownloadHandler}=require('../src/downloads.cjs');
   const profile=process.argv.find(value=>value.startsWith('--profile='))?.slice(10);
-  if(!profile||path.dirname(profile)!==os.tmpdir()||!path.basename(profile).startsWith('synk-workroom-download-'))throw Error('Isolated profile required');
+  if(!profile||path.dirname(profile)!==os.tmpdir()||!path.basename(profile).startsWith('synk-workroom-download-'))require('./electron-child-guard.cjs').refuse(__filename,'Isolated profile required');
   app.enableSandbox();app.setPath('userData',profile);
   app.whenReady().then(async()=>{
     const errors=[],checks=[],denied=[];let window,server,loggedIn=true,complete;

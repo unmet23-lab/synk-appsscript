@@ -26,7 +26,7 @@ if(!process.versions.electron){
   }
 }else{
   const {app,globalShortcut}=require('electron'),{createDesktopPreferences}=require('../src/desktop-preferences.cjs');
-  const profile=argument('profile'),name=argument('qa-name');if(!safeProfile(profile)||!/^SYNK\.QA\.StartupResume\.[0-9a-f-]{36}$/.test(name||''))throw Error('Isolated QA identity required');
+  const profile=argument('profile'),name=argument('qa-name');if(!safeProfile(profile)||!/^SYNK\.QA\.StartupResume\.[0-9a-f-]{36}$/.test(name||''))require('./electron-child-guard.cjs').refuse(__filename,'Isolated QA identity required');
   app.enableSandbox();app.setName(name);app.setAppUserModelId(name);app.setPath('userData',profile);app.setPath('sessionData',path.join(profile,'Session'));
   app.whenReady().then(()=>{
     const startup={path:process.execPath,args:['--synk-autostart'],name},checks=[],details={};let preferences,error;

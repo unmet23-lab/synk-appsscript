@@ -20,7 +20,7 @@ if(!process.versions.electron){
   const {app,BrowserWindow,protocol,session,Menu,ipcMain}=require('electron');
   const {createNativeContent}=require(path.join(source,'src/native-content.cjs')),{preferences}=require(path.join(source,'src/security.cjs'));
   const profile=path.resolve(arg('profile')||'');
-  if(path.dirname(profile)!==out||!path.basename(profile).startsWith('isolated-'))throw Error('Isolated QA profile required');
+  if(path.dirname(profile)!==out||!path.basename(profile).startsWith('isolated-'))require('./electron-child-guard.cjs').refuse(__filename,'Isolated QA profile required');
   for(const name of ['userData','sessionData','logs'])fs.mkdirSync(path.join(profile,name));
   app.enableSandbox();app.setPath('appData',path.join(profile,'appdata'));app.setPath('userData',path.join(profile,'userData'));app.setPath('sessionData',path.join(profile,'sessionData'));app.setAppLogsPath(path.join(profile,'logs'));
   app.commandLine.appendSwitch('force-device-scale-factor','1');

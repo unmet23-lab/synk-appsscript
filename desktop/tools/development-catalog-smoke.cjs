@@ -16,7 +16,7 @@ if(!process.versions.electron){
 }else{
   const {app,BrowserWindow,protocol,session,Menu}=require('electron'),{createNativeContent}=require('../src/native-content.cjs'),{preferences}=require('../src/security.cjs');
   const profile=process.argv.find(value=>value.startsWith('--profile='))?.slice(10),artifacts=process.argv.find(value=>value.startsWith('--artifacts='))?.slice(12);
-  if(!profile||!path.isAbsolute(profile)||!path.basename(profile).startsWith('synk-dev-catalog-')||!artifacts||path.dirname(path.resolve(artifacts))!==path.resolve(base))throw Error('Explicit isolated profile and evidence directory required');
+  if(!profile||!path.isAbsolute(profile)||!path.basename(profile).startsWith('synk-dev-catalog-')||!artifacts||path.dirname(path.resolve(artifacts))!==path.resolve(base))require('./electron-child-guard.cjs').refuse(__filename,'Explicit isolated profile and evidence directory required');
   app.enableSandbox();app.setPath('appData',path.join(profile,'Roaming'));app.setPath('userData',path.join(profile,'UserData'));app.setPath('sessionData',path.join(profile,'Session'));app.commandLine.appendSwitch('force-device-scale-factor','1');
   protocol.registerSchemesAsPrivileged([{scheme:'synk-desktop',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
   // Sequential scenarios close their isolated window before creating the next one.

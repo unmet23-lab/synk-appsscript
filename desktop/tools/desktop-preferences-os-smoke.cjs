@@ -45,7 +45,7 @@ if(!process.versions.electron){
   const {createDesktopPreferences}=require('../src/desktop-preferences.cjs');
   const {createWindowPlacement}=require('../src/window-placement.cjs');
   const profile=argument('profile'),worker=argument('worker'),name=argument('qa-name');
-  if(!profile||!isolatedPath(profile)||!/^SYNK\.QA\.Convenience\.[0-9a-f-]{36}$/.test(name||''))throw Error('Isolated profile and unique QA name required');
+  if(!profile||!isolatedPath(profile)||!/^SYNK\.QA\.Convenience\.[0-9a-f-]{36}$/.test(name||''))require('./electron-child-guard.cjs').refuse(__filename,'Isolated profile and unique QA name required');
   const directory=worker?path.join(profile,'worker-'+worker):profile;
   fs.mkdirSync(directory,{recursive:true});
   app.enableSandbox();app.setName(name);app.setAppUserModelId(name);app.setPath('userData',directory);app.setPath('sessionData',path.join(directory,'Session'));app.on('window-all-closed',()=>{});

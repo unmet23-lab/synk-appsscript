@@ -27,7 +27,7 @@ if(!process.versions.electron){
   const {createConnectionContent}=require('../src/connection-content.cjs');
   const {createConnectionRecovery,STATUS_URL}=require('../src/connection-recovery.cjs');
   const profile=process.argv.find(value=>value.startsWith('--profile='))?.slice(10);
-  if(!profile||path.dirname(path.resolve(profile))!==path.resolve(os.tmpdir())||!path.basename(profile).startsWith('synk-connection-'))throw Error('Isolated QA profile required');
+  if(!profile||path.dirname(path.resolve(profile))!==path.resolve(os.tmpdir())||!path.basename(profile).startsWith('synk-connection-'))require('./electron-child-guard.cjs').refuse(__filename,'Isolated QA profile required');
   const entry='https://world.preview.invalid/entry';
   for(const directory of ['appData','userData','session'])fs.mkdirSync(path.join(profile,directory),{recursive:true});
   app.enableSandbox();app.setName('SYNK Connection Synthetic QA');app.setPath('appData',path.join(profile,'appData'));app.setPath('userData',path.join(profile,'userData'));app.setPath('sessionData',path.join(profile,'session'));

@@ -21,7 +21,7 @@ if(!process.versions.electron){
 }else{
   const {app,BrowserWindow,screen}=require('electron'),{EventEmitter}=require('node:events');
   const {createWindowPlacement}=require('../src/window-placement.cjs');
-  const profile=argument('profile');if(!profile||path.dirname(path.resolve(profile))!==path.resolve(os.tmpdir())||!path.basename(profile).startsWith('synk-window-resume-audit-'))throw Error('Isolated profile required');
+  const profile=argument('profile');if(!profile||path.dirname(path.resolve(profile))!==path.resolve(os.tmpdir())||!path.basename(profile).startsWith('synk-window-resume-audit-'))require('./electron-child-guard.cjs').refuse(__filename,'Isolated profile required');
   app.enableSandbox();app.setName('SYNK isolated window resume audit');app.setPath('userData',profile);app.setPath('sessionData',path.join(profile,'Session'));app.on('window-all-closed',()=>{});
   app.whenReady().then(async()=>{
     const findings=[],checks=[],windows=[];const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));

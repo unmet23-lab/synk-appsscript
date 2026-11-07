@@ -6,7 +6,7 @@ const root=path.resolve(__dirname,'..'),artifacts=path.join(root,'artifacts'),pr
 const reportFile=path.join(artifacts,'care-recovery-native-20261007.json');
 function checkedProfile(value){
   const target=path.resolve(value||'');
-  if(!value||path.dirname(target)!==path.resolve(os.tmpdir())||!path.basename(target).startsWith('synk-care-recovery-native-'))throw Error('Isolated temporary profile required');
+  if(!value||path.dirname(target)!==path.resolve(os.tmpdir())||!path.basename(target).startsWith('synk-care-recovery-native-'))require('./electron-child-guard.cjs').refuse(__filename,'Isolated temporary profile required');
   const stat=fs.lstatSync(target);if(!stat.isDirectory()||stat.isSymbolicLink()||fs.realpathSync(target)!==target)throw Error('Unsafe test profile');
   return target;
 }

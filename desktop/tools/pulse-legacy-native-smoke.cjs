@@ -27,7 +27,7 @@ if(!process.versions.electron){
 }
 const {app,BrowserWindow,protocol,session,Menu}=require('electron');
 const profile=arg('profile');
-if(!profile||!path.basename(profile).startsWith('synk-pulse-legacy-'))throw Error('Explicit isolated profile required');
+if(!profile||!path.basename(profile).startsWith('synk-pulse-legacy-'))require('./electron-child-guard.cjs').refuse(__filename,'Explicit isolated profile required');
 const appRoot=arg('app-root'),out=arg('out'),widths=arg('widths').split(',').map(Number),theme=arg('theme');
 const {createNativeContent}=require(path.join(appRoot,'src/native-content.cjs')),{preferences}=require(path.join(appRoot,'src/security.cjs'));
 app.enableSandbox();app.setPath('appData',path.join(profile,'Roaming'));app.setPath('userData',path.join(profile,'UserData'));app.setPath('sessionData',path.join(profile,'Session'));app.commandLine.appendSwitch('force-device-scale-factor','1');

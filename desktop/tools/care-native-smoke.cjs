@@ -24,7 +24,7 @@ if(!process.versions.electron){
   const {createNativeContent}=require('../src/native-content.cjs'),{preferences}=require('../src/security.cjs');
   const {PRODUCT_PREVIEWS,productPolicy,productResource,createProductDownloadHandler}=require('../src/product-preview.cjs');
   const profile=process.argv.find(value=>value.startsWith('--profile='))?.slice(10);
-  if(!profile||path.dirname(profile)!==os.tmpdir()||!path.basename(profile).startsWith('synk-care-native-'))throw Error('Isolated profile required');
+  if(!profile||path.dirname(profile)!==os.tmpdir()||!path.basename(profile).startsWith('synk-care-native-'))require('./electron-child-guard.cjs').refuse(__filename,'Isolated profile required');
   app.enableSandbox();app.setPath('userData',profile);app.commandLine.appendSwitch('force-device-scale-factor','1');protocol.registerSchemesAsPrivileged([{scheme:'synk-desktop',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
   app.whenReady().then(async()=>{
     let platformWindow,careWindow,completion;const checks=[],errors=[],blockedRequests=[],denied=[];

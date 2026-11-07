@@ -18,7 +18,7 @@ if(!process.versions.electron){
   }finally{if(!safeProfile(profile))throw Error('Unsafe temporary profile');fs.rmSync(profile,{recursive:true,force:true,maxRetries:20,retryDelay:300});}
 }else{
   const {app,BrowserWindow,protocol,session,Menu}=require('electron'),profile=option('profile','');
-  if(!profile||!safeProfile(profile))throw Error('Isolated profile required');
+  if(!profile||!safeProfile(profile))require('./electron-child-guard.cjs').refuse(__filename,'Isolated profile required');
   app.enableSandbox();app.setPath('userData',profile);app.commandLine.appendSwitch('force-device-scale-factor','1');
   protocol.registerSchemesAsPrivileged([{scheme:'synk-notes',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);app.on('window-all-closed',()=>{});
   app.whenReady().then(async()=>{

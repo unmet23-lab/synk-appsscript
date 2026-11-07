@@ -20,7 +20,7 @@ if(!process.versions.electron){
 }else{
   const {app,BrowserWindow,Tray,Menu,screen,safeStorage,globalShortcut,session}=require('electron');
   const {createDesktopPreferences}=require('../src/desktop-preferences.cjs'),{createWindowPlacement}=require('../src/window-placement.cjs'),{createDraftRecovery}=require('../src/draft-recovery.cjs'),{createDraftRecoveryRequests}=require('../src/draft-recovery-ipc.cjs'),{createPlatformTray}=require('../src/platform-tray.cjs');
-  const profile=argument('profile');if(!profile||path.dirname(path.resolve(profile))!==path.resolve(os.tmpdir())||!path.basename(profile).startsWith('synk-native-preferences-'))throw Error('Isolated profile required');
+  const profile=argument('profile');if(!profile||path.dirname(path.resolve(profile))!==path.resolve(os.tmpdir())||!path.basename(profile).startsWith('synk-native-preferences-'))require('./electron-child-guard.cjs').refuse(__filename,'Isolated profile required');
   app.enableSandbox();app.setName('SYNK native preferences isolated QA');app.setPath('userData',profile);app.setPath('sessionData',path.join(profile,'Session'));app.on('window-all-closed',()=>{});
   app.whenReady().then(async()=>{
     let window,preferences,tray,menu;const checks=[],requests=[];

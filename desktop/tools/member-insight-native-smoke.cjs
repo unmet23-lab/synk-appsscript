@@ -24,7 +24,7 @@ if(!process.versions.electron){
 }else{
   const {app,BrowserWindow,protocol,session,Menu}=require('electron'),{createNativeContent}=require(path.join(root,'src/native-content.cjs')),{preferences}=require(path.join(root,'src/security.cjs')),{signedIn,activityDocument}=require('./member-insight-fixture.cjs');
   const profile=process.argv.find(value=>value.startsWith('--profile='))?.slice(10);
-  if(!profile||path.dirname(path.resolve(profile))!==path.resolve(os.tmpdir())||!path.basename(profile).startsWith('synk-insight-'))throw Error('Isolated profile required');
+  if(!profile||path.dirname(path.resolve(profile))!==path.resolve(os.tmpdir())||!path.basename(profile).startsWith('synk-insight-'))require('./electron-child-guard.cjs').refuse(__filename,'Isolated profile required');
   app.enableSandbox();app.setPath('userData',profile);app.commandLine.appendSwitch('force-device-scale-factor','1');protocol.registerSchemesAsPrivileged([{scheme:'synk-desktop',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
   app.whenReady().then(async()=>{
     let window;const checks=[],errors=[],requests=[],screenshots=[],popupIntents=[],captureRecoveries=[],knownIssues=[],sourceHashes=fingerprints();

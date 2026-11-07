@@ -31,7 +31,7 @@ if(!process.versions.electron){
   const {createPlatformTray}=require('../src/platform-tray.cjs');
   const {installDraftExitGuard}=require('../src/draft-exit.cjs');
   const profile=argument('profile');
-  if(!profile||path.dirname(path.resolve(profile))!==path.resolve(os.tmpdir())||!path.basename(profile).startsWith('synk-platform-tray-'))throw Error('Isolated profile required');
+  if(!profile||path.dirname(path.resolve(profile))!==path.resolve(os.tmpdir())||!path.basename(profile).startsWith('synk-platform-tray-'))require('./electron-child-guard.cjs').refuse(__filename,'Isolated profile required');
   app.enableSandbox();app.setName('SYNK tray isolated QA');app.setPath('userData',profile);app.setPath('sessionData',path.join(profile,'Session'));
   app.on('window-all-closed',()=>{});
   app.whenReady().then(async()=>{
