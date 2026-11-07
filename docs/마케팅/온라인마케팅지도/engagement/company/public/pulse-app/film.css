@@ -322,7 +322,7 @@ html.sx.view-entry .app-header{display:none!important}
 .sx-rows.is-tight .sx-row-main b{font-size:clamp(18px,1.6vw,22px)}
 .sx-row-meta{white-space:nowrap;display:grid;justify-items:end}
 .sx-row-terms{color:var(--sx-faint)}
-.sx-row.is-on .sx-row-terms{color:var(--sx-dim)}
+.sx-row.is-on .sx-row-meta .sx-row-terms{color:var(--sx-dim)}
 /* 낮은 노트북(1366×650 등): 종류 일곱 줄이 다음 단추 뒤로 숨지 않게 두 칸으로, 설명은 접는다. */
 @media (min-width:861px) and (max-height:760px){.sx-rows.is-kinds{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:18px}.sx-rows.is-kinds .sx-row-main small{display:none}.sx-rows.is-kinds .sx-row-main b{font-size:clamp(17px,1.4vw,20px)}}
 .sx-row-mark{width:9px;height:9px;background:var(--sx-ink);transform:scale(0);transition:transform .3s var(--sx-out)}
@@ -554,6 +554,7 @@ html.sx .loading-mark{display:block;width:44px;height:1px;background:var(--sx-in
 @media (min-width:821px) and (min-aspect-ratio:10001/10000){html.sx:has(.sx-room-project) #header-crumb{display:none}.sx-room-bar-title b{display:none}}
 .sx-room-screen{position:sticky;top:0;height:100vh;height:100dvh;overflow:hidden;background:#0a0a0a}
 .sx-room-screen::after{content:'';position:absolute;left:0;right:0;bottom:0;height:170px;background:linear-gradient(0deg,rgba(0,0,0,.66),rgba(0,0,0,0));z-index:1;pointer-events:none}
+.sx-room-screen.sx-ask-thread::after{display:none}
 .sx-room-cap{position:absolute;right:var(--sx-m);bottom:calc(var(--sx-m) - 10px);max-width:min(420px,76%);text-align:right;color:var(--sx-ink);text-shadow:0 0 12px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.6);z-index:2}
 .sx-room-cap b{font-weight:600}
 .sx-room-play{position:absolute;inset:0;cursor:pointer;z-index:1}

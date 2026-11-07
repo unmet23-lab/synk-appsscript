@@ -34,6 +34,7 @@ test('the request form shows days and revisions next to the price and before sen
   assert.match(flow,/오늘 다 모이면 <b>\$\{esc\(dueDay\(pkg\)\)\}<\/b>이에요/,'only the check before sending names a day, and only on a condition');
   assert.match(flow,/\['받으실 날',pkg\?\.days\?`자료가 다 모인 날부터 \$\{pkg\.days\}일`/,'the receipt carries the rule, not a date');
   assert.match(flow,/data-cuts-line \$\{pkg\?'':'hidden'\}/,'no 「컷 0」 before a length is picked');
+  assert.ok(flow.includes("['수정',pkg&&!pkg.days?'구성에 맞춰 함께 정해요':revisionNote(pkg)]"),'a company campaign receipt still says how revisions are agreed (argon A4)');
   const a={...emptyAnswers(),name:'오미톡',kind:'food',package:'s15'};
   assert.equal(briefRows(a).find(row=>row.key==='길이 · 구성').value,'15초 · 한 편 · 39만원부터 · 10일 · 수정 2회');
 });
@@ -57,7 +58,8 @@ test('the room never sends its customer to the old strategy form, and the desk w
 });
 test('asking before any video keeps the room rail on the current stage and marks the question as where you are',()=>{
   const model=roomModel(roomProject()),rail=roomRail(model,{tab:'contact'});
-  assert.match(rail,/class="sx-step is-now" aria-current="page" [^>]*data-room-go="check"/);
+  assert.match(rail,/class="sx-step is-now"  [^>]*data-room-go="check"/,'the stage stays lit without claiming to be the page');
+  assert.equal(rail.split('aria-current="page"').length-1,1,'only the question is the current place (argon A1)');
   assert.match(rail,/class="is-now" aria-current="page" data-room-do="contact">담당자에게 묻기/);
   assert.doesNotMatch(roomRail(model),/data-room-do="contact" aria-current/);
   const views=read('views.mjs');
@@ -70,6 +72,8 @@ test('pictures carry their words on a shade, not in a black box',()=>{
   const css=read('film.css');
   for(const rule of [/\.sx-q-cap\{[^}]*\}/,/\.sx-room-cap\{position:absolute[^}]*\}/,/\.sx-q-top-right\{[^}]*\}/])assert.doesNotMatch(css.match(rule)[0],/background:#000/);
   assert.match(css,/\.sx-q-screen::before\{content:'';[^}]*linear-gradient/);
+  assert.match(css,/\.sx-room-screen\.sx-ask-thread::after\{display:none\}/,'the question thread is text, not a picture (argon A2)');
+  assert.match(css,/\.sx-row\.is-on \.sx-row-meta \.sx-row-terms\{color:var\(--sx-dim\)\}/,'wins over the generic on-row colour (argon A3)');
   assert.match(css,/\.sx-room-screen::after\{content:'';[^}]*linear-gradient/);
   assert.match(css,/\.sx-q-progress,\.sx-q-parts\{display:none!important\}/,'one progress mark per screen');
   assert.match(css,/@media \(min-width:861px\) and \(max-height:760px\)\{\.sx-rows\.is-kinds\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);

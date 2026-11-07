@@ -22,7 +22,7 @@ export function roomRail(p,{tab='overview'}={}){
   const at=ROOM_STAGES.findIndex(item=>item.id===p.stage),now=['draft','review','history','films'].includes(tab)?tab:p.stage,asking=tab==='contact';
   // 판이 오기 전의 1차안 칸은 지금 단계여도 열지 않는다(모델을 정하기 전에 글 콘티로 넘어가지 않게).
   const locked=(item,i)=>item.id==='draft'&&!p.hasRound||item.id!==now&&i>at;
-  return `<nav class="sx-steps" aria-label="단계"><div class="sx-steps-run">${ROOM_STAGES.map((item,i)=>`<button type="button" class="sx-step ${item.id===now?'is-now':i<at?'is-done':''}" ${item.id===now?'aria-current="page"':''} ${locked(item,i)?'disabled':''} data-room-go="${item.id}">${esc(item.name)}</button>`).join('')}</div><div class="sx-steps-foot sx-small">${p.films?`<button type="button" class="${tab==='films'?'is-now':''}" ${tab==='films'?'aria-current="page"':''} data-room-go="films">완성 광고</button>`:''}<button type="button" class="${asking?'is-now':''}" ${asking?'aria-current="page"':''} data-room-do="contact">담당자에게 묻기</button></div></nav>`;
+  return `<nav class="sx-steps" aria-label="단계"><div class="sx-steps-run">${ROOM_STAGES.map((item,i)=>`<button type="button" class="sx-step ${item.id===now?'is-now':i<at?'is-done':''}" ${item.id===now&&!asking?'aria-current="page"':''} ${locked(item,i)?'disabled':''} data-room-go="${item.id}">${esc(item.name)}</button>`).join('')}</div><div class="sx-steps-foot sx-small">${p.films?`<button type="button" class="${tab==='films'?'is-now':''}" ${tab==='films'?'aria-current="page"':''} data-room-go="films">완성 광고</button>`:''}<button type="button" class="${asking?'is-now':''}" ${asking?'aria-current="page"':''} data-room-do="contact">담당자에게 묻기</button></div></nav>`;
 }
 // 오른쪽 스크린: 그 상태에 가장 알맞은 실제 자료. 손님 자료가 없을 때만 예시를 놓고 예시라고 쓴다.
 function roomScreen(p){

@@ -332,7 +332,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   function showReceipt(receipt){
     const pkg=pkgOf(a),when=new Date(receipt.at||Date.now());
     const stamp=`${when.getFullYear()}.${String(when.getMonth()+1).padStart(2,'0')}.${String(when.getDate()).padStart(2,'0')} ${String(when.getHours()).padStart(2,'0')}:${String(when.getMinutes()).padStart(2,'0')}`;
-    const rows=[['광고할 것',a.name],['길이',pkg?`${pkg.label} · ${price(pkg.price)}부터`:'추천해 주세요'],['받으실 날',pkg?.days?`자료가 다 모인 날부터 ${pkg.days}일`:pkg?'구성에 맞춰 함께 정해요':''],['수정',revisionNote(pkg)],['올릴 곳',channelText(a)||'제안해 주세요'],['모델',a.modelChoice==='none'?'사람 없이 제품만':modelList(a)||'추천해 주세요'],['받은 자료',`${slotCount(a)}개`]].filter(([,value])=>value);
+    const rows=[['광고할 것',a.name],['길이',pkg?`${pkg.label} · ${price(pkg.price)}부터`:'추천해 주세요'],['받으실 날',pkg?.days?`자료가 다 모인 날부터 ${pkg.days}일`:pkg?'구성에 맞춰 함께 정해요':''],['수정',pkg&&!pkg.days?'구성에 맞춰 함께 정해요':revisionNote(pkg)],['올릴 곳',channelText(a)||'제안해 주세요'],['모델',a.modelChoice==='none'?'사람 없이 제품만':modelList(a)||'추천해 주세요'],['받은 자료',`${slotCount(a)}개`]].filter(([,value])=>value);
     host.classList.add('is-sent');$('[data-next-label]').textContent='보냈어요';
     host.querySelectorAll('.sx-q-top,.sx-q-stage,[data-live]').forEach(node=>{node.inert=true;});
     const overlay=document.createElement('div');overlay.className='sx-rc';
