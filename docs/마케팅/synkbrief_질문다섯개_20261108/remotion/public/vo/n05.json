@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n05",
+ "text": "쉬는 날을 바꾼 걸 적었더니,",
+ "show": "쉬는 날을 바꾼 걸 적었더니",
+ "dur": 1.435,
+ "words": [
+  {
+   "text": "쉬는",
+   "start": 0.02,
+   "end": 0.247
+  },
+  {
+   "text": "날을",
+   "start": 0.285,
+   "end": 0.436
+  },
+  {
+   "text": "바꾼",
+   "start": 0.474,
+   "end": 0.701
+  },
+  {
+   "text": "걸",
+   "start": 0.738,
+   "end": 0.814
+  },
+  {
+   "text": "적었더니,",
+   "start": 0.852,
+   "end": 1.435
+  }
+ ],
+ "source": {
+  "key": "337efbbc8844ea5426c285aead5b8654",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1108,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 170
+ }
+}

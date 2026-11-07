@@ -1,0 +1,98 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1108,
+  "lufs": -17
+ },
+ "made": "2026-11-07T23:28:17.891Z",
+ "lines": [
+  {
+   "id": "n01",
+   "text": "가게 매출이 줄어서, AI한테 물어봤어요.",
+   "show": "가게 매출이 줄어서 AI한테 물어봤어요",
+   "scene": "훅 — 마감한 가게, 폰을 보는 사장님",
+   "dur": 2.317,
+   "syllablesPerSec": 6.47,
+   "src": "n01.wav",
+   "key": "ad5f042f13a1047687205a887a01a97a",
+   "words": 5
+  },
+  {
+   "id": "n02",
+   "text": "맞는 말은 많은데, 우리 가게 얘기는 없어요.",
+   "show": "맞는 말은 많은데 우리 가게 얘기는 없어요",
+   "scene": "일반 답 — 방법 목록이 줄줄이",
+   "dur": 2.582,
+   "syllablesPerSec": 6.58,
+   "src": "n02.wav",
+   "key": "973d45f3c37a1a73dcb9260cfb6b65ad",
+   "words": 7
+  },
+  {
+   "id": "n03",
+   "text": "이번엔, 답부터 말고, 질문 다섯 개만 해 달라고 했더니,",
+   "show": "이번엔 「답부터 말고, 먼저 나한테 질문 다섯 개만 해 줘」",
+   "scene": "다시 — 바꾼 요청",
+   "dur": 2.914,
+   "syllablesPerSec": 7.21,
+   "src": "n03.wav",
+   "key": "1a6de2e47074e801fb8300991d614d28",
+   "words": 9
+  },
+  {
+   "id": "n04",
+   "text": "AI가 거꾸로 묻습니다.",
+   "show": "AI가 거꾸로 묻습니다",
+   "scene": "AI가 되묻는 질문 목록",
+   "dur": 1.323,
+   "syllablesPerSec": 6.05,
+   "src": "n04.wav",
+   "key": "10db3637c68aa3a01c22eb348ed24a29",
+   "words": 3
+  },
+  {
+   "id": "n05",
+   "text": "쉬는 날을 바꾼 걸 적었더니,",
+   "show": "쉬는 날을 바꾼 걸 적었더니",
+   "scene": "사장님이 치는 답",
+   "dur": 1.435,
+   "syllablesPerSec": 7.67,
+   "src": "n05.wav",
+   "key": "337efbbc8844ea5426c285aead5b8654",
+   "words": 5
+  },
+  {
+   "id": "n06",
+   "text": "AI가 제일 먼저 짚은 게, 바로 그거예요.",
+   "show": "AI가 제일 먼저 짚은 게 바로 그거예요",
+   "scene": "AI 답 — 휴무일 변경",
+   "dur": 2.553,
+   "syllablesPerSec": 5.48,
+   "src": "n06.wav",
+   "key": "0e4318deb85c7f2a4914ac25ca93bf93",
+   "words": 7
+  },
+  {
+   "id": "n07",
+   "text": "물어봐 주니까, 그제야 보이더라고요.",
+   "show": "물어봐 주니까 그제야 보이더라고요",
+   "scene": "끝 — 달력 동그라미(11-08 v3: 첫 판 「답보다, 질문부터 받아 보세요」가 지난 편 끝 「A 말고 B」 꼴과 같아 보인다는 시험관 둘 · 「구호로 끝나 김이 빠진다」는 볼 이유 심사로 바꿈)",
+   "dur": 2.275,
+   "syllablesPerSec": 6.59,
+   "src": "n07.wav",
+   "key": "16b619bc849f76eb269cc5cd6941780f",
+   "words": 4
+  }
+ ]
+}

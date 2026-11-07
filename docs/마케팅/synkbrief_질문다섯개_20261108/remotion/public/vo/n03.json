@@ -1,0 +1,81 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n03",
+ "text": "이번엔, 답부터 말고, 질문 다섯 개만 해 달라고 했더니,",
+ "show": "이번엔 「답부터 말고, 먼저 나한테 질문 다섯 개만 해 줘」",
+ "dur": 2.914,
+ "words": [
+  {
+   "text": "이번엔,",
+   "start": 0.05,
+   "end": 0.28
+  },
+  {
+   "text": "답부터",
+   "start": 0.323,
+   "end": 0.669
+  },
+  {
+   "text": "말고,",
+   "start": 0.712,
+   "end": 0.942
+  },
+  {
+   "text": "질문",
+   "start": 1.302,
+   "end": 1.575
+  },
+  {
+   "text": "다섯",
+   "start": 1.618,
+   "end": 1.82
+  },
+  {
+   "text": "개만",
+   "start": 1.863,
+   "end": 2.021
+  },
+  {
+   "text": "해",
+   "start": 2.064,
+   "end": 2.107
+  },
+  {
+   "text": "달라고",
+   "start": 2.151,
+   "end": 2.352
+  },
+  {
+   "text": "했더니,",
+   "start": 2.395,
+   "end": 2.914
+  }
+ ],
+ "source": {
+  "key": "1a6de2e47074e801fb8300991d614d28",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1108,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 137
+ }
+}

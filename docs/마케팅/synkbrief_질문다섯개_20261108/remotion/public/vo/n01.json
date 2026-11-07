@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n01",
+ "text": "가게 매출이 줄어서, AI한테 물어봤어요.",
+ "show": "가게 매출이 줄어서 AI한테 물어봤어요",
+ "dur": 2.317,
+ "words": [
+  {
+   "text": "가게",
+   "start": 0.02,
+   "end": 0.206
+  },
+  {
+   "text": "매출이",
+   "start": 0.268,
+   "end": 0.531
+  },
+  {
+   "text": "줄어서,",
+   "start": 0.577,
+   "end": 0.84
+  },
+  {
+   "text": "AI한테",
+   "start": 1.149,
+   "end": 1.629
+  },
+  {
+   "text": "물어봤어요.",
+   "start": 1.691,
+   "end": 2.317
+  }
+ ],
+ "source": {
+  "key": "ad5f042f13a1047687205a887a01a97a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1108,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 145
+ }
+}

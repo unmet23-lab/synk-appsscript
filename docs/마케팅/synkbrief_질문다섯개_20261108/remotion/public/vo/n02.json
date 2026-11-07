@@ -1,0 +1,71 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n02",
+ "text": "맞는 말은 많은데, 우리 가게 얘기는 없어요.",
+ "show": "맞는 말은 많은데 우리 가게 얘기는 없어요",
+ "dur": 2.582,
+ "words": [
+  {
+   "text": "맞는",
+   "start": 0.01,
+   "end": 0.254
+  },
+  {
+   "text": "말은",
+   "start": 0.302,
+   "end": 0.481
+  },
+  {
+   "text": "많은데,",
+   "start": 0.53,
+   "end": 0.854
+  },
+  {
+   "text": "우리",
+   "start": 1.341,
+   "end": 1.471
+  },
+  {
+   "text": "가게",
+   "start": 1.52,
+   "end": 1.715
+  },
+  {
+   "text": "얘기는",
+   "start": 1.763,
+   "end": 2.023
+  },
+  {
+   "text": "없어요.",
+   "start": 2.072,
+   "end": 2.582
+  }
+ ],
+ "source": {
+  "key": "973d45f3c37a1a73dcb9260cfb6b65ad",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1108,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 134
+ }
+}
