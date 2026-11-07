@@ -1,0 +1,72 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f1",
+ "text": "Then my Korean friend left me this.",
+ "dur": 1.856,
+ "words": [
+  {
+   "text": "Then",
+   "start": 0.02,
+   "end": 0.162
+  },
+  {
+   "text": "my",
+   "start": 0.218,
+   "end": 0.332
+  },
+  {
+   "text": "Korean",
+   "start": 0.389,
+   "end": 0.772
+  },
+  {
+   "text": "friend",
+   "start": 0.843,
+   "end": 1.07
+  },
+  {
+   "text": "left",
+   "start": 1.155,
+   "end": 1.311
+  },
+  {
+   "text": "me",
+   "start": 1.382,
+   "end": 1.439
+  },
+  {
+   "text": "this.",
+   "start": 1.495,
+   "end": 1.856
+  }
+ ],
+ "source": {
+  "key": "970533323f1b2acaa2698dd22737eefb",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "Wait, is that Japanese? I crossed it out. The next day, a sticky note was on my notebook.",
+   "next": "Same shape."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 528
+ }
+}

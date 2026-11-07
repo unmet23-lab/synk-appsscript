@@ -1,0 +1,125 @@
+{
+  "note": "LAB E29 「처음 쓰는 ㅈ」 나레이션 — 해설 소진 세기 1.0(LAB 장부 머리말 「목소리」 10-28), 영어 줄 + 한국어 낱말 한 줄(지읒). 원본(우리편) E5 「처음 쓰는 ㄹ」의 줄 자리를 따른다. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_처음쓰는ㅈ_20261107/음성/계획.json --굽기",
+  "voice": {
+    "id": "tc_666a9871abcf27a5169850d0",
+    "name": "소진"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "en",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1101,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "h1",
+      "text": "My first try at this letter...",
+      "emotion": "smart",
+      "prev": "A beginner opens a Korean handwriting notebook and picks up a pencil.",
+      "next": "That's a Z."
+    },
+    {
+      "id": "a1",
+      "text": "That's a Z.",
+      "emotion": "smart",
+      "prev": "My first try at this letter... It came out looking like the English letter Z.",
+      "next": "Okay... that one's right."
+    },
+    {
+      "id": "a2",
+      "text": "Okay... that one's right.",
+      "emotion": "smart",
+      "prev": "That's a Z. The second try is slow and careful: a line on top, then two legs.",
+      "next": "Wait... is that Japanese?"
+    },
+    {
+      "id": "a3",
+      "text": "Wait... is that Japanese?",
+      "emotion": "smart",
+      "prev": "Okay, that one's right. But the third one came out fast, and the top line bent down into the leg.",
+      "next": "Then my Korean friend left me this."
+    },
+    {
+      "id": "f1",
+      "text": "Then my Korean friend left me this.",
+      "emotion": "smart",
+      "prev": "Wait, is that Japanese? I crossed it out. The next day, a sticky note was on my notebook.",
+      "next": "Same shape."
+    },
+    {
+      "id": "s1",
+      "text": "Same shape.",
+      "emotion": "smart",
+      "prev": "Then my Korean friend left me this. Look at the first letter on the note, and look at the one I crossed out.",
+      "next": "It was right all along!"
+    },
+    {
+      "id": "s2",
+      "text": "It was right all along!",
+      "emotion": "smart",
+      "prev": "Same shape. So the one I crossed out was not Japanese at all.",
+      "next": "Two ways to write it."
+    },
+    {
+      "id": "n1",
+      "text": "Two ways to write it.",
+      "emotion": "normal",
+      "prev": "It was right all along! A line on top with two legs, or a line that bends into the leg.",
+      "next": ""
+    },
+    {
+      "id": "k1",
+      "text": "지읒.",
+      "lang": "ko",
+      "emotion": "normal",
+      "intensity": 1
+    },
+    {
+      "id": "e1",
+      "text": "Both are right.",
+      "emotion": "smart",
+      "prev": "Two ways to write this Korean letter. The name is jieut.",
+      "next": "Just... never a Z."
+    },
+    {
+      "id": "e2",
+      "text": "Just... never a Z.",
+      "emotion": "smart",
+      "prev": "Both are right.",
+      "next": ""
+    },
+    {
+      "id": "r1",
+      "text": "One more time...",
+      "emotion": "smart",
+      "prev": "Wait, is that Japanese? Okay, new page. I write it again, bigger and slower.",
+      "next": "Nope. Still wrong."
+    },
+    {
+      "id": "r2",
+      "text": "Nope. Still wrong.",
+      "emotion": "smart",
+      "prev": "One more time... and it came out the same shape again. I scribble it out.",
+      "next": "Then my Korean friend left me this."
+    },
+    {
+      "id": "r3",
+      "text": "Nope. Still Japanese.",
+      "emotion": "smart",
+      "prev": "One more time... and it came out the same shape again, the one that looks like a Japanese letter. I scribble it out.",
+      "next": "Then my Korean friend wrote this."
+    },
+    {
+      "id": "f2",
+      "text": "Then my Korean friend wrote this.",
+      "emotion": "smart",
+      "prev": "Nope. Still Japanese. I scribbled it out. Later my Korean friend picked up a blue pen and wrote on my page.",
+      "next": "Same shape."
+    }
+  ]
+}

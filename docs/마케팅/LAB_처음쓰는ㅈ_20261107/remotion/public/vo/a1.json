@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a1",
+ "text": "That's a Z.",
+ "dur": 1.044,
+ "words": [
+  {
+   "text": "That's",
+   "start": 0.03,
+   "end": 0.332
+  },
+  {
+   "text": "a",
+   "start": 0.554,
+   "end": 0.574
+  },
+  {
+   "text": "Z.",
+   "start": 0.634,
+   "end": 0.957
+  }
+ ],
+ "source": {
+  "key": "fe7651f1e3e07af7da0c09963484afbe",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "My first try at this letter... It came out looking like the English letter Z.",
+   "next": "Okay... that one's right."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 406
+ }
+}

@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "r3",
+ "text": "Nope. Still Japanese.",
+ "dur": 1.67,
+ "words": [
+  {
+   "text": "Nope.",
+   "start": 0.05,
+   "end": 0.312
+  },
+  {
+   "text": "Still",
+   "start": 0.493,
+   "end": 0.714
+  },
+  {
+   "text": "Japanese.",
+   "start": 0.774,
+   "end": 1.639
+  }
+ ],
+ "source": {
+  "key": "34638fea8879b500665fa9781654ec63",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "One more time... and it came out the same shape again, the one that looks like a Japanese letter. I scribble it out.",
+   "next": "Then my Korean friend wrote this."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 360
+ }
+}

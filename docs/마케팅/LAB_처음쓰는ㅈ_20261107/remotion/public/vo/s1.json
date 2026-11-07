@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s1",
+ "text": "Same shape.",
+ "dur": 0.951,
+ "words": [
+  {
+   "text": "Same",
+   "start": 0.02,
+   "end": 0.346
+  },
+  {
+   "text": "shape.",
+   "start": 0.407,
+   "end": 0.951
+  }
+ ],
+ "source": {
+  "key": "f06d01f8c5043d98c71c509bcd39945e",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "Then my Korean friend left me this. Look at the first letter on the note, and look at the one I crossed out.",
+   "next": "It was right all along!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 456
+ }
+}

@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n1",
+ "text": "Two ways to write it.",
+ "dur": 1.356,
+ "words": [
+  {
+   "text": "Two",
+   "start": 0.02,
+   "end": 0.203
+  },
+  {
+   "text": "ways",
+   "start": 0.284,
+   "end": 0.547
+  },
+  {
+   "text": "to",
+   "start": 0.607,
+   "end": 0.668
+  },
+  {
+   "text": "write",
+   "start": 0.729,
+   "end": 1.012
+  },
+  {
+   "text": "it.",
+   "start": 1.073,
+   "end": 1.356
+  }
+ ],
+ "source": {
+  "key": "49c1bb3c6087cdca15b0fd506e40fcd1",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 444
+ }
+}

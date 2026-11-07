@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e1",
+ "text": "Both are right.",
+ "dur": 0.878,
+ "words": [
+  {
+   "text": "Both",
+   "start": 0.02,
+   "end": 0.264
+  },
+  {
+   "text": "are",
+   "start": 0.326,
+   "end": 0.427
+  },
+  {
+   "text": "right.",
+   "start": 0.509,
+   "end": 0.878
+  }
+ ],
+ "source": {
+  "key": "847334dfa8014691b3a42321b6979e8b",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "Two ways to write this Korean letter. The name is jieut.",
+   "next": "Just... never a Z."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 457
+ }
+}

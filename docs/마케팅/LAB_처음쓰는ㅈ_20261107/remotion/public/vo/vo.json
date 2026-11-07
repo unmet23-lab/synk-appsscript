@@ -1,0 +1,156 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "en",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1101,
+  "lufs": -17
+ },
+ "made": "2026-11-06T23:36:27.819Z",
+ "lines": [
+  {
+   "id": "h1",
+   "text": "My first try at this letter...",
+   "dur": 1.505,
+   "syllablesPerSec": null,
+   "src": "h1.wav",
+   "key": "4395e046c725405571902fec37d46e5b",
+   "words": 6
+  },
+  {
+   "id": "a1",
+   "text": "That's a Z.",
+   "dur": 1.044,
+   "syllablesPerSec": null,
+   "src": "a1.wav",
+   "key": "fe7651f1e3e07af7da0c09963484afbe",
+   "words": 3
+  },
+  {
+   "id": "a2",
+   "text": "Okay... that one's right.",
+   "dur": 1.412,
+   "syllablesPerSec": null,
+   "src": "a2.wav",
+   "key": "cacb76e52d26d013baa6bbbb59c2fd1f",
+   "words": 4
+  },
+  {
+   "id": "a3",
+   "text": "Wait... is that Japanese?",
+   "dur": 1.802,
+   "syllablesPerSec": null,
+   "src": "a3.wav",
+   "key": "87ea39f1d9838fa6bf0f2894710ca623",
+   "words": 4
+  },
+  {
+   "id": "f1",
+   "text": "Then my Korean friend left me this.",
+   "dur": 1.856,
+   "syllablesPerSec": null,
+   "src": "f1.wav",
+   "key": "970533323f1b2acaa2698dd22737eefb",
+   "words": 7
+  },
+  {
+   "id": "s1",
+   "text": "Same shape.",
+   "dur": 0.951,
+   "syllablesPerSec": null,
+   "src": "s1.wav",
+   "key": "f06d01f8c5043d98c71c509bcd39945e",
+   "words": 2
+  },
+  {
+   "id": "s2",
+   "text": "It was right all along!",
+   "dur": 1.238,
+   "syllablesPerSec": null,
+   "src": "s2.wav",
+   "key": "e4cc1b051b4e14dd3db8869cc8d28169",
+   "words": 5
+  },
+  {
+   "id": "n1",
+   "text": "Two ways to write it.",
+   "dur": 1.356,
+   "syllablesPerSec": null,
+   "src": "n1.wav",
+   "key": "49c1bb3c6087cdca15b0fd506e40fcd1",
+   "words": 5
+  },
+  {
+   "id": "k1",
+   "text": "지읒.",
+   "dur": 0.482,
+   "syllablesPerSec": 4.15,
+   "src": "k1.wav",
+   "key": "e0a302f256171a4047e9ad7c5a9aab16",
+   "words": 1
+  },
+  {
+   "id": "e1",
+   "text": "Both are right.",
+   "dur": 0.878,
+   "syllablesPerSec": null,
+   "src": "e1.wav",
+   "key": "847334dfa8014691b3a42321b6979e8b",
+   "words": 3
+  },
+  {
+   "id": "e2",
+   "text": "Just... never a Z.",
+   "dur": 1.669,
+   "syllablesPerSec": null,
+   "src": "e2.wav",
+   "key": "d2bc86d276b6ea20bfdd243001d13fce",
+   "words": 4
+  },
+  {
+   "id": "r1",
+   "text": "One more time...",
+   "dur": 1.208,
+   "syllablesPerSec": null,
+   "src": "r1.wav",
+   "key": "edcfde3bc30c75c139844752d0c345af",
+   "words": 3
+  },
+  {
+   "id": "r2",
+   "text": "Nope. Still wrong.",
+   "dur": 1.747,
+   "syllablesPerSec": null,
+   "src": "r2.wav",
+   "key": "0ef920d040e798f8bd04ac1f5ded35df",
+   "words": 3
+  },
+  {
+   "id": "r3",
+   "text": "Nope. Still Japanese.",
+   "dur": 1.67,
+   "syllablesPerSec": null,
+   "src": "r3.wav",
+   "key": "34638fea8879b500665fa9781654ec63",
+   "words": 3
+  },
+  {
+   "id": "f2",
+   "text": "Then my Korean friend wrote this.",
+   "dur": 1.755,
+   "syllablesPerSec": null,
+   "src": "f2.wav",
+   "key": "8d55579688bfe82701e5fcfeec7ef052",
+   "words": 6
+  }
+ ]
+}

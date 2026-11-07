@@ -1,0 +1,20 @@
+{
+  "id": "01-youtube-en",
+  "brand": "LAB",
+  "platform": "youtube",
+  "account": "@synkkorean",
+  "format": "shorts",
+  "language": "en",
+  "audioLanguage": "en",
+  "title": "I crossed out my ㅈ… but it was right 😳 #learnkorean",
+  "caption": "ㅈ (say \"jee-eut\") has 2 shapes — both are correct:\n1 a line on top, then two legs (like most fonts on your phone)\n2 the top line bends down into the left leg, then one more leg (common in Korean handwriting and some fonts)\n\nThe only wrong one? A Z.\n\nSYNK LAB\n#learnkorean #studykorean #hangul #koreanalphabet",
+  "pinnedComment": "Which ㅈ do you write — line + two legs, or the bent one? 👇",
+  "alt": [
+    "Top-down view of a Korean handwriting notebook with a pencil. In four practice boxes, a gray model letter ㅈ sits top-left; the first try turns into the English letter Z, the second is written slowly as a line with two legs and gets a check, the third comes out fast with the top line bending into the leg, gets a tag asking if it is the Japanese letter ス, and is crossed out. On the next page the learner writes it big again, it still looks the same, and scribbles it out. A Korean friend writes 잘했어! (Well done!) in blue pen; a red pen circles the ㅈ in 잘 and traces the same shape over the scribbled letter, the scribble is erased and it gets a red check. Both shapes sit side by side with checks and the words both right!, and the first Z try is scribbled out with never Z!"
+  ],
+  "madeForKids": false,
+  "alteredContent": false,
+  "category": "Education",
+  "_비고": "video.mp4 = jieut v3c(시험 받은 v3에서 끝 「never Z!」 손글씨 · 6초 「copy this」 걷기 · 제목 글자 · 끝 손글씨 자리만 — 18.6초 · 관문 못 넘음 — 기획.md 「판정」) → 음량마감 −14.6 LUFS. 10MB 올림판 upload_10MB.mp4(9.15MB). 표지 cover.png = 13.5초(「Same shape!」 · 지운 꼴에 ✓ · 친구 손글씨). 어린이 전용 아님. 합성 표시: 필수 아님 — 화면은 코드로 그은 손글씨 · 나눔손글씨 펜 서체와 E5에서 구운 공책 · 연필 사진, 목소리는 특정인이 아닌 TTS(E23과 같은 판단).",
+  "version": "e29-en-v3c"
+}

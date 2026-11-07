@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "r2",
+ "text": "Nope. Still wrong.",
+ "dur": 1.747,
+ "words": [
+  {
+   "text": "Nope.",
+   "start": 0.04,
+   "end": 0.343
+  },
+  {
+   "text": "Still",
+   "start": 0.747,
+   "end": 1.01
+  },
+  {
+   "text": "wrong.",
+   "start": 1.07,
+   "end": 1.747
+  }
+ ],
+ "source": {
+  "key": "0ef920d040e798f8bd04ac1f5ded35df",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "One more time... and it came out the same shape again. I scribble it out.",
+   "next": "Then my Korean friend left me this."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 389
+ }
+}

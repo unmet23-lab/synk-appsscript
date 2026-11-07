@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a3",
+ "text": "Wait... is that Japanese?",
+ "dur": 1.802,
+ "words": [
+  {
+   "text": "Wait...",
+   "start": 0.02,
+   "end": 0.343
+  },
+  {
+   "text": "is",
+   "start": 0.707,
+   "end": 0.767
+  },
+  {
+   "text": "that",
+   "start": 0.828,
+   "end": 0.969
+  },
+  {
+   "text": "Japanese?",
+   "start": 1.03,
+   "end": 1.802
+  }
+ ],
+ "source": {
+  "key": "87ea39f1d9838fa6bf0f2894710ca623",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "Okay, that one's right. But the third one came out fast, and the top line bent down into the leg.",
+   "next": "Then my Korean friend left me this."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 473
+ }
+}

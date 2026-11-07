@@ -1,0 +1,62 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s2",
+ "text": "It was right all along!",
+ "dur": 1.238,
+ "words": [
+  {
+   "text": "It",
+   "start": 0.02,
+   "end": 0.084
+  },
+  {
+   "text": "was",
+   "start": 0.133,
+   "end": 0.246
+  },
+  {
+   "text": "right",
+   "start": 0.343,
+   "end": 0.536
+  },
+  {
+   "text": "all",
+   "start": 0.585,
+   "end": 0.682
+  },
+  {
+   "text": "along!",
+   "start": 0.73,
+   "end": 1.238
+  }
+ ],
+ "source": {
+  "key": "e4cc1b051b4e14dd3db8869cc8d28169",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "Same shape. So the one I crossed out was not Japanese at all.",
+   "next": "Two ways to write it."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 455
+ }
+}

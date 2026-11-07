@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a2",
+ "text": "Okay... that one's right.",
+ "dur": 1.412,
+ "words": [
+  {
+   "text": "Okay...",
+   "start": 0.02,
+   "end": 0.303
+  },
+  {
+   "text": "that",
+   "start": 0.667,
+   "end": 0.829
+  },
+  {
+   "text": "one's",
+   "start": 0.91,
+   "end": 1.112
+  },
+  {
+   "text": "right.",
+   "start": 1.173,
+   "end": 1.412
+  }
+ ],
+ "source": {
+  "key": "cacb76e52d26d013baa6bbbb59c2fd1f",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1101,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "That's a Z. The second try is slow and careful: a line on top, then two legs.",
+   "next": "Wait... is that Japanese?"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 373
+ }
+}
