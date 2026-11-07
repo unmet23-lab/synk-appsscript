@@ -311,6 +311,8 @@ docs/마케팅/LAB_관용구퀴즈3_20261019/판/판1_074138.png
 # 이미 추적 중인 파일은 계속 추적된다. 결과를 일부러 남길 때는 git add -f로 올린다.
 **/qa/*/**/*.json
 !docs/_ops/qa/company-social-health-20261102/operating47.json
+# 서울 하루 장소 재확인 대장(11-08): tests/path-travel-live-catalog.test.mjs가 확인일로 recheck-<날짜>/sources.json을 읽는다 — CI에도 있어야 한다
+!experiences/path-travel/qa/recheck-*/sources.json
 **/qa/*/**/*.jsonl
 **/qa/*/**/*.ndjson
 **/qa/*/**/*.log
