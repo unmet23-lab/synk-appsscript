@@ -1260,6 +1260,12 @@
 - 고침: `ChatGPT.exe` 전부와 그 자식 `codex.exe`를 끄고 `explorer.exe "shell:AppsFolder\OpenAI.Codex_2p2nqsd0c76g0!App"`로 다시 켜자 바로 떴다. 진단 자리는 화면 로그 `%LOCALAPPDATA%\Packages\OpenAI.Codex_2p2nqsd0c76g0\LocalCache\Local\Codex\Logs\YYYY\MM\DD\codex-desktop-*-t0-*.log`와 엔진 기록 `~/.codex/logs_2.sqlite`의 `logs` 표(ts·level·target·feedback_log_body — 읽기 전용으로 열면 앱이 도는 중에도 읽힌다)다. 열려 있는 로그는 `Get-ChildItem` 크기가 실제보다 늦게 잡히니(10-03 0바이트, 10-24 9.00MB 대 실제 9.34MB) 파일을 직접 열어 읽는다. 정상 실행은 로그인 확인 직후 `Concurrent reasoning summaries feature override resolved` → `Codex runtime config selected`가 1초 안에 나온다.
 - 다시 확인: 10-24 돌림(읽기만, 앱이 도는 중) — 그날 t0 로그에서 두 줄이 0.09초 사이로 나왔다(06:27:23.757Z → .844Z). `Get-StartApps`의 AppID가 `OpenAI.Codex_2p2nqsd0c76g0!App` 그대로이고, `logs_2.sqlite`를 `mode=ro`로 열어 `logs` 표 칸을 읽었다. 멈춤 재현과 다시 켜기는 하지 않았다.
 
+### 윈도를 다시 설치한 뒤 GPT 백엔드 검수가 「덜 읽음」으로만 끝난다 — Codex의 읽기 도구가 모두 `CryptUnprotectData failed: 2148073483`로 안 돈다, 격리 실행 비밀(`.sandbox-secrets`)이 옛 윈도 키로 잠겼다 (2026-11-07 Claude)
+- 증상: 11-07 재설치 뒤 `검수묶음.mjs GPT <이름>`(배포 점검 기준 그림 묶음)이 두 번 다 「덜 읽음」 — 답의 coverage에 「로컬 읽기 도구가 모두 CryptUnprotectData failed: 2148073483 오류로 실행되지 않았다」. 같은 날 Codex 그림 굽기(내장 그림 도구, 파일 읽기 없음)는 됐고, 아르곤(agy)은 다시 로그인한 뒤 읽음이었다.
+- 원인(추정): `~/.codex/config.toml`의 `sandbox = "elevated"`가 쓰는 격리 실행 비밀 `~/.codex/.sandbox-secrets/`가 10-18에 만들어져 옛 윈도의 DPAPI 키로 암호화돼 있다. 새 윈도는 그 키를 못 풀어 셸 · 파일 읽기 도구가 시작조차 못 한다(0x8009000B = 이 키로 쓸 수 없음).
+- 고침: Claude가 하지 않는다 — 격리 실행을 다시 세우면 윈도 격리 계정 · 권한을 새로 만들고 관리자 승인이 든다(보안 설정). 유호님이 GPT(Codex) 앱에서 격리 실행을 다시 준비하거나(앱이 권하면 승인), `.sandbox-secrets`를 옮겨 두고 앱을 다시 켜 새로 만들게 한다. 그 사이 GPT가 필수인 백엔드 검수는 배포 조건이 차지 않는다(아르곤 대신은 한도 · 로그인 막힘에만 인정).
+- 다시 확인: `node tools/검수묶음.mjs GPT <작은 묶음>`의 답 coverage에 CryptUnprotectData가 없고 「읽음」이면 풀린 것이다.
+
 ## Claude Code·공식 CLI 읽기(계정판)
 
 ### 다른 저장소 검수를 재개할 때 공용 검수 폴더가 작업 경로에 빠지면 읽기부터 거절된다 (2026-10-24 GPT)
