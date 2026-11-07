@@ -19,6 +19,7 @@ NAME = os.environ.get("OM2_NAME", "오미톡15_9x16")
 START = "C:/Users/q1212/Documents/synk-vendor/pulse-rehearsal-20261029/새판/사람판_1107"
 S1 = os.environ.get("OM2_S1", "om2-s1")
 S2 = os.environ.get("OM2_S2", "om2-s2")
+S2B = os.environ.get("OM2_S2B", "om2-s2b")
 S4 = os.environ.get("OM2_S4", "om2-s4")
 
 # ---------- 화면 — (컷, 판, 처음 장, 장수, 라벨 다시 얹기 [(시작 그림, 캔 칸(시작 그림 화소), 멈춘 캔인가), …] 또는 None)
@@ -30,22 +31,30 @@ PACK = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028/웹올�
 CUTS = [
     # 1 친구 폰이 땡볕 코트에 뻗은 한결 얼굴로 다가가며 「아… 목 타 죽겠다」(치익톡 2판의 2번 그대로)
     #   (판 2.17초부터 — 2번 컷 머리를 닿는 순간 가까이 두려고 이 컷을 0.25초 앞에서 연다. 말은 0.41초에 시작)
-    (1, "om2-2", 52, 48, None),
+    #   다섯 맛 판에서 저녁 「후—」 1초를 다시 넣느라 판 2.42초부터(말은 0.16초에 시작)
+    (1, "om2-2", 58, 42, None),
     # 2 볼에 찬 캔 — 1.48초에 닿아 움찔 · 눈이 동그래졌다가 캔을 곁눈질하며 씩 웃음(손이 캔에 닿기 전 3.5초까지).
     #   판 1.25초부터 — 1.0초부터 열었더니 Fable 재검 「닿고 → 부릅뜸이 0.75~1초로 늦어짐, 옛 판의 빠른 움찔이 더 셌다」
-    (2, S1, 30, 54, [(PACK + "/001_om2-s1/1_시작.jpg", (690, 560, 1110, 1250), False)]),
-    # 3 이미 딴 캔을 입으로(물안개 뒤 1.0초부터) — 캔 따는 「치익」은 실제 녹음을 이 컷 머리에 얹는다
-    (3, S2, 24, 24, None),
-    # 4 캔을 내리며 눈을 질끈 「크…」 → 「…살았다.」(같은 판 4.0초부터 — 폰 영상이라 한 테이크 안의 점프 컷).
-    #   말 끝(판 6.2초) 바로 뒤 6.29초에서 끊는다 — Fable 맹검 「…살았다 뒤 입을 벌린 채 1초 가까이 멈춤, AI 티」
-    (4, S2, 96, 55, None),
-    # 5 해가 지고 조명이 켜진 코트에 누워 「후—」(치익톡 2판의 6번 — 소리는 om2-6b 숨, 최종편집.py 주석). 판 1.0~4.0초 전부:
-    #   건배를 12.38초로 미뤄 「오미톡.」 뒤 멈춤을 1초로(Fable 「끝 5.5초가 거의 정지」 · opus 「10~14.7초 거의 같은 그림」)
-    (5, "om2-6c", 24, 72, None),
-    # 6 누운 채 건배 「톡」 · 눈웃음 — 끝까지(두 캔 라벨을 차례로 얹음). 친구 캔이 0.25초에 물러났다가 1.84초에 닿는다
-    (6, S4, 0, 107, [(PACK + "/003_om2-s4/1_시작.jpg", (170, 200, 585, 920), False),
+    #   다섯 맛 판에서는 곁눈질 미소(판 3.25초)에서 끊는다 — 이 컷 끝에 캔 따는 「치익」(친구가 따 주는 것으로 읽힘)
+    (2, S1, 30, 48, [(PACK + "/001_om2-s1/1_시작.jpg", (690, 560, 1110, 1250), False)]),
+    # 11-07 밤 opus 볼 이유 2점 「다섯 가지 맛을 말로만」 → 유호님 「다섯 맛 표정 굽기」: 옛 3 · 4번(om2-s2 「크…」 「…살았다」)과 저녁 「후—」(om2-6c)를
+    #   이미 딴 캔에서 시작한 om2-s2b 한 판으로 바꿨다(그 앞 판은 커밋 97b9558). s2b 두 벌 중 첫 벌 — 일레븐 받아쓰기 「새콤(3.84) 달고(4.80) 끝은(6.30) 알싸해(7.32~7.72)」,
+    #   둘째 벌은 「새콤달고」가 붙음.
+    # 3 한 모금(판 0.75~1.75초) — 캔 따는 「치익」은 실제 녹음을 이 컷 머리에 얹는다
+    (3, S2B, 18, 24, None),
+    # 4 다섯 맛 — 신 표정 → 「새콤…」 → 「달고…」 → 놀람 → 「끝은… 알싸해」 → 활짝 웃음(판 2.75~7.79초, 끊지 않고 한 번에). 캔이 가슴 앞에 서 있어 라벨을 얹는다
+    #   (판이 그린 작은 줄이 「오미륵 오미자 스타클링」)
+    (4, S2B, 66, 121, [(PACK + "/004_om2-s2b/1_시작.jpg", (400, 960, 800, 1660), False)]),
+    # 5 해가 지고 조명이 켜진 코트에 누워 「후—」 1초(om2-6c 판 1.83~2.83초, 숨은 om2-6b 2.15~2.4초) — Fable 「노을 활짝 웃음 → 밤 건배가 다리 없이 뛰어
+    #   「목 타 죽겠다」의 보상이 없다」
+    (5, "om2-6c", 44, 24, None),
+    # 6 저녁 건배 「톡」 · 눈웃음 — 끝까지(두 캔 라벨을 차례로 얹음). 판 0.33초부터 — 두 캔이 붙은 첫 장을 빼고 친구 캔이 물러나는 데서 연다(Fable),
+    #   1.84초에 닿는다
+    (6, S4, 8, 101, [(PACK + "/003_om2-s4/1_시작.jpg", (170, 200, 585, 920), False),
                      (PACK + "/003_om2-s4/1_시작.jpg", (575, 220, 930, 920), False)]),
 ]
+TI = next(i for i, c in enumerate(CUTS) if c[1] == S4)          # 건배 컷 자리
+DI = next(i for i, c in enumerate(CUTS) if c[1] == "om2-6c")    # 저녁 「후—」 컷 자리 — 낮 → 저녁 소리가 여기서 바뀐다
 F = [0]
 for c in CUTS:
     F.append(F[-1] + c[3])
@@ -53,7 +62,7 @@ T = [f / FPS for f in F]
 TOTAL = T[-1]
 assert F[-1] == 360, f"15.00초(360장)여야 하는데 {F[-1]}장"
 CLINK_IN_S4 = float(os.environ.get("OM2_CLINK", "1.84"))   # S4 판 안에서 두 캔이 닿는 때(소리 봉우리 1.84초, 주변보다 +29 dB)
-CLINK = T[5] + CLINK_IN_S4 - CUTS[5][2] / FPS
+CLINK = T[TI] + CLINK_IN_S4 - CUTS[TI][2] / FPS
 
 
 def picture():
@@ -106,7 +115,7 @@ def sound():
     total = TOTAL
     m = C.Mix(total)
     ends = end_times()
-    hot_end = T[4]
+    hot_end = T[DI]   # 저녁 「후—」 컷 머리에서 낮 → 저녁
     # 더위 바탕 — 매미(stable-audio 매미_a). 「아… 목 타 죽겠다」와 볼에 찬 캔(1~2번) 동안은 4 dB 숙이고(치익톡 2판 맹검 「대사가 매미에 묻힘」,
     # 사람판 맹검 둘 「볼에 닿는 반응이 안 들림」), 저녁 컷 머리에서 풀벌레와 0.8초 겹쳐 바뀐다(맹검 셋 「낮 → 저녁 7.5~8초에 소리가 뚝 끊김」)
     #   (셋째 맹검 둘 「0~8초 농구장 바탕 소리가 없어 건조 · 무음마다 끊긴 듯」 → 매미 −31에서 −29 dB, 숙임은 대사 컷만)
@@ -125,25 +134,28 @@ def sound():
     m.put(0, to_rms(air, -42), fade=0.4, fade_out=0.9)
     # 1~4, 6 — 판이 낸 소리 그대로(크기만 맞춤). 컷마다 판의 바탕 소음이 바뀌니 머리 · 꼬리를 조금 길게 풀고, 낮 → 저녁(4번 꼬리)은 0.3초에 걸쳐 뺀다.
     # 2번은 닿는 순간의 숨(판 1.48초)이 눌리지 않게, 6번은 건배 소리(판 1.84초, 주변보다 +29 dB)가 눌리지 않게 봉우리 누르기를 느슨하게
-    for n, pid, a, k, _ in CUTS:
-        if n == 5:
-            continue
-        lvl = {1: -21, 2: -21, 3: -24, 4: -24, 6: -24}[n]   # 3 · 4번(꿀꺽 · 「크…」 「살았다」)은 셋째 맹검 셋 모두 「갑자기 커서 귀를 자극」 → 3 dB 내림
-        over = {2: 12, 6: 14}.get(n, 8)
-        m.put(T[n - 1], own(pid, a, k, lvl, over), fade=0.03, fade_out={4: 0.15, 6: 0.9}.get(n, 0.06))
+    for i, (n, pid, a, k, _) in enumerate(CUTS):
+        if i == DI:
+            continue   # 저녁 컷 숨은 아래 om2-6b 판 소리로
+        # 꿀꺽은 셋째 맹검 셋 모두 「갑자기 커서 귀를 자극」이라 −24, 다섯 맛 말은 또렷하게 −21(3.1 Lite 「독백이 작아 묻힘」), 건배 컷은 봉우리 누르기를 느슨하게
+        lvl = -24 if pid == S2B and a < 60 else -21 if pid == S2B else -24 if i == TI else -21
+        over = 12 if pid == S1 else 14 if i == TI else 8
+        m.put(T[i], own(pid, a, k, lvl, over), fade=0.03, fade_out=0.9 if i == TI else 0.15 if i == DI - 1 else 0.06)
+    # 저녁 「후—」 — 그림은 om2-6c, 숨은 om2-6b 판(두 판 모두 2.15~2.4초, 6b가 4 dB 또렷 — 최종편집.py)
+    v6 = seg(C.clip("om2-6b"), CUTS[DI][2] / FPS, (CUTS[DI][2] + CUTS[DI][3]) / FPS, stereo=True)
+    m.put(T[DI], tame(to_rms(v6, -27), 8), fade=0.05, fade_out=0.1)
     # 건배 「톡」 — 실제 알루미늄 캔끼리 닿는 녹음(Fairlight 「Can Soda Pop Touches」 2.975초, 20ms에 꺼지는 깨끗한 한 번)을 판의 건배 소리에 겹친다
     #   (사람판 맹검 3.6 Flash 「건배 소리가 아예 안 들리거나 음악에 묻힘」 — 판 소리를 −24 dB에 맞추고 RMS+8 dB로 누르던 탓)
     clink = seg(FAIR + "Can Soda Pop Touches.M.wav", 2.955, 3.30)
     m.put(CLINK - 0.02, to_peak(clink, -7), fade=0.002, fade_out=0.15)
     # 캔 따는 「치익」 — 판에서 따는 순간은 물안개가 얼굴을 덮어 그림은 빼고, 소리만 이미 딴 캔을 드는 3번 컷 머리에(실제 녹음 Fairlight 「Soda Can Open Pour」 머리)
     #   (사람판 맹검 둘 「캔 따는 소리가 작고 건조 · 탄산 소리가 작다」 → −9에서 −6 dB)
+    #   다섯 맛 판: 3번 컷 첫 장부터 캔이 입에 닿아 있어 Fable 「따는 그림 없이 마시는 입 위에 따는 소리」 → 2번 컷 끝(캔 보며 웃는 칸, 친구가 따 주는 것으로) 0.3초 앞으로
     can = seg(FAIR + "Soda Can Open Pour.M.wav", 0.95, 1.65)
-    m.put(T[2] - 0.06, tame(to_peak(can, -6), 7), fade=0.003, fade_out=0.25)
-    # 5 저녁 — 그림은 om2-6c, 숨은 om2-6b 판(두 판 모두 2.15~2.4초, 6b가 4 dB 또렷 — 최종편집.py)
-    v6 = seg(C.clip("om2-6b"), CUTS[4][2] / FPS, (CUTS[4][2] + CUTS[4][3]) / FPS, stereo=True)
-    m.put(T[4], tame(to_rms(v6, -27), 8), fade=0.05, fade_out=0.1)
+    m.put(T[2] - 0.30, tame(to_peak(can, -6), 7), fade=0.003, fade_out=0.25)
+    # 저녁 — 풀벌레가 건배 컷 앞 0.5초부터 매미와 겹쳐 들어온다
     crk = tame(to_rms(C.load_stereo(SND + "/곡_스테이블/풀벌레_a.wav"), -34), 8)
-    m.put(T[4] - 0.5, crk[:int((total - T[4] + 0.5) * RATE)], fade=0.4, fade_out=0.9)   # 끝 1초는 바탕 · 곡 · 판 소리가 같이 잦아든다(3.5 Lite 「오미톡 뒤 칼같이 닫힘」)
+    m.put(T[DI] - 0.5, crk[:int((total - T[DI] + 0.5) * RATE)], fade=0.4, fade_out=0.9)   # 끝 1초는 바탕 · 곡 · 판 소리가 같이 잦아든다(3.5 Lite 「오미톡 뒤 칼같이 닫힘」)
     # 끝말 — Mr. K(1번 오미톡의 브랜드 목소리), 「톡.」이 건배 소리에 겹친다
     vo = C.load(END_VO)
     used = np.concatenate([vo[int(a * RATE):int(b * RATE)] for a, b in END_CUTS])
@@ -153,7 +165,7 @@ def sound():
     # 곡 c — 저녁 컷 머리의 박부터 두 박에 걸쳐 차올라 맺는 박이 건배 「톡」에, 끝말 밑에서는 7 dB 아래
     path, hit, beat = MUSIC["c"]
     s = C.load_stereo(path)
-    n_beats = max(4, int(np.ceil((CLINK - T[4] + 0.05) / beat)))
+    n_beats = max(4, int(np.ceil((CLINK - T[DI] + 0.05) / beat)))   # 저녁 컷 머리 앞 박부터 — 「알싸해」 끝 웃음에서 깔리기 시작해 저녁으로 넘어간다
     t_in = CLINK - n_beats * beat
     song_in = hit - n_beats * beat
     bed = s[int(song_in * RATE):][:int((total - t_in) * RATE)].copy()
