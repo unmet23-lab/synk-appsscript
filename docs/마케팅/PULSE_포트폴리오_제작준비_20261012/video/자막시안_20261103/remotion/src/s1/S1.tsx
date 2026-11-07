@@ -8,7 +8,7 @@
 //     지난 판들: 밤하늘 흰 워드마크 + 낱말마다 떠오르는 꼬리말 + 점(Fable 1차 「간판과 로고가 둘 · 타자 효과」) → 글자 없이 간판의 점만(Fable 끝 맹검
 //     「이름이 작은 간판 한 곳뿐 — 폰 · 소리 끈 시청자에게 브랜드가 안 남음」) → 이 판. 「켬」 뒤 글로켄 한 점은 소리.py.
 import React from 'react';
-import { AbsoluteFill, Img, OffthreadVideo, staticFile, useCurrentFrame } from 'remotion';
+import { AbsoluteFill, OffthreadVideo, staticFile, useCurrentFrame } from 'remotion';
 import { Audio } from '@remotion/media';
 import { KO } from '../lib/fonts';
 import { EXPO, life, ramp } from '../lib/motion';
@@ -61,23 +61,11 @@ const EndCopy: React.FC<{ t: number }> = ({ t }) => {
   );
 };
 
-// 끝 로고 판 — 원본처럼 길 소실점(세로 50~60%)에 앉힌다. 꼬리말이 내레이션 순서대로 위, 로고 판이 아래 — 함께 0.9초에 걸쳐 떠오른다.
-//   하늘 자리(세로 18%)에 두었던 판은 Fable 끝 맹검 2차 「붕 떠 워터마크처럼」, 얇은 꼬리말은 「폰에서 안 읽힘」.
-const Lockup: React.FC<{ t: number }> = ({ t }) => {
-  const a0: number = timing.lockup_at;
-  if (t < a0) return null;
-  const o = ramp(t, a0, 0.9, EXPO);
-  return (
-    <>
-      <AbsoluteFill style={{ zIndex: 14, opacity: o * 0.9, background: 'radial-gradient(560px 260px at 975px 560px, #00000047, #0000)' }} />
-      <div style={{ ...abs(675, 476, 600), zIndex: 15, textAlign: 'center', opacity: o }}>
-        <div style={{ fontFamily: KO, fontWeight: 500, fontSize: 34, letterSpacing: '0.01em', color: '#FAF6EE', whiteSpace: 'nowrap',
-          textShadow: '0 0 2px #000000a0, 0 2px 14px #00000099' }}>옆집까지 늘 켜 둡니다</div>
-        <Img src={staticFile('s1/logo_box.png')} style={{ height: 104, display: 'inline-block', marginTop: 16, boxShadow: '0 6px 26px #00000066' }} />
-      </div>
-    </>
-  );
-};
+// 끝(36) — 화면 글은 없다. 이름은 끝 컷 간판에만 진한 적갈 글자로 있다(최종편집.py 간판36끝 — 켜지는 효과 없음, 끝 후보 넷 맹검으로 고름).
+//   11-08 유호님 「늘켬이라고 쓴거 전부 다 없애. 마지막에 강조하자」 — 장면 속 간판 · 봉투의 「늘켬」을 모두 뺐다. 지난 판들(git 기록):
+//   소실점의 꼬리말 + 로고 D 판(11-07) → 로고 판 150px(Fable 「가장 밝은 건 글 없는 간판 — 로고 판은 붙인 스티커, 서로 깎아먹음 → 빠졌던 이름이
+//   제자리에」) → 꼬리말만 + 간판 켜짐(Fable 「정중앙 꼬리말이 간판보다 먼저 켜지고 내레이션을 되풀이 — 흰 글자 둘이 깎아먹음」) →
+//   호박 글자 켜짐(Fable 「밝은 띠 위에 어두운 글자가 생겨 켜짐이 아님」, 이해 시험관 「작아서 반쯤 읽힘」) → 이 판.
 
 const NOTICE = '가상 브랜드 · AI로 만든 가상 모델 · 음성';
 
@@ -88,7 +76,6 @@ export const S1: React.FC = () => {
     <AbsoluteFill style={{ background: '#000' }}>
       <OffthreadVideo src={staticFile('s1/picture.mp4')} muted style={{ width: '100%', height: '100%' }} />
       <EndCopy t={t} />
-      <Lockup t={t} />
       <Caption t={t} />
       <div style={{ ...abs(40, 1036, 1840), zIndex: 30, textAlign: 'right', fontFamily: KO, fontWeight: 500, fontSize: 22, color: '#ffffff96' }}>{NOTICE}</div>
       <Audio src={staticFile('s1/sound.wav')} />

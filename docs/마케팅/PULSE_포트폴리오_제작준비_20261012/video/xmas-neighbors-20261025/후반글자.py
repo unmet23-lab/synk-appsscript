@@ -168,30 +168,49 @@ def sign_fixed(frames, height_frac=0.66):
     return out, {"간판": box}
 
 
-def sign_moving(frames, near, height_frac=0.55, blur=3.2, glow_sigma=8.0, mode="shift", shear=0.0, center=None, height=None, glow=0.32):
-    """움직이는 컷의 간판 — 첫 장에서 간판 면을 재고(또는 center · height를 받아) 특징점으로 따라간다."""
+def smooth_sim(Ms, deg=2):
+    """장마다 따라 잰 닮음 변환(2×3, [[a, -b, tx], [b, a, ty]])을 시간에 대한 deg차 곡선으로 맞춘다(11-08) — 광학 흐름이 장마다 조금씩 튀어
+    글자가 장면과 따로 떨던 것(유호님 「7초쯤에 늘켬이라는 자막이 계속 자기 혼자 흔들리거든?」)을 없앤다. 고른 카메라 움직임 컷에만 쓴다."""
+    P = np.array([[M[0, 0], M[1, 0], M[0, 2], M[1, 2]] for M in Ms], np.float64)
+    n = np.arange(len(Ms), dtype=np.float64)
+    fit = np.stack([np.polyval(np.polyfit(n, P[:, i], deg), n) for i in range(4)], axis=1)
+    return [np.array([[a, -b, tx], [b, a, ty]], np.float64) for a, b, tx, ty in fit]
+
+
+def sign_moving(frames, near, height_frac=0.55, blur=3.2, glow_sigma=8.0, mode="shift", shear=0.0, center=None, height=None, glow=0.32,
+                smooth_deg=None, on=None, ramp=4, color=None, raster_h=260):
+    """움직이는 컷의 간판 — 첫 장에서 간판 면을 재고(또는 center · height를 받아) 특징점으로 따라간다.
+    smooth_deg: 따라 잰 변환을 그 차수 곡선으로 맞춘다(잔떨림 없음). on: 그 장부터 ramp장에 걸쳐 글자가 켜진다(그 앞은 글 없는 간판 그대로).
+    color: 글자 색(RGB) — 안 주면 불 켜진 흰 아크릴(LIT). 간판 면이 크림색으로 날린 컷은 흰 글자가 묻혀 색 글자로 대비를 낸다(11-08 끝 컷).
+    raster_h: 글자를 그리는 높이 — 놓는 높이의 두 배쯤이면 줄일 때 획이 덜 뭉갠다(11-08 Fable 「ㅋ 획이 번져 『늘컴』으로도 읽힘」)."""
     box = band_box(frames[0], near=near)
     if box is None:
         raise SystemExit("간판을 못 찾음")
     x0, y0, x1, y1 = box
     cx, cy = center if center else ((x0 + x1) / 2, (y0 + y1) / 2)
     hh = height if height else (y1 - y0) * height_frac
-    col, a = graphic("늘켬", 260)
+    col, a = graphic("늘켬", raster_h) if color is None else rgba(WM.raster(WM.wordmark(), raster_h, pad=0.0, color=color))
     gh, gw = a.shape
     M0 = affine_for(gw, gh, cx, cy, hh, shear=shear)
     pad = 60
     Ms = track(frames, (max(0, x0 - pad), max(0, y0 - pad), x1 + pad, y1 + pad), mode=mode)
+    if smooth_deg is not None:
+        Ms = smooth_sim(Ms, smooth_deg)
     out, placed = [], []
-    for f, Mt in zip(frames, Ms):
+    for k, (f, Mt) in enumerate(zip(frames, Ms)):
         M = compose(Mt, M0)
         placed.append(M)
+        lv = 1.0 if on is None else float(np.clip((k - on + 1) / max(1, ramp), 0.0, 1.0))
+        if lv <= 0:
+            out.append(f)
+            continue
         c, al = place(col, a, (f.shape[1], f.shape[0]), M)
         q = cv2.transform(np.array([[[x0, y0]], [[x1, y1]]], np.float32), Mt).reshape(-1, 2)
         bx = (int(max(0, q[0, 0] - 8)), int(max(0, q[0, 1] - 8)), int(min(f.shape[1], q[1, 0] + 8)), int(min(f.shape[0], q[1, 1] + 8)))
         mt = amber_matte(f, bx, soft=1.5)
         g = cv2.cvtColor(f, cv2.COLOR_BGR2GRAY).astype(np.float32)
         ref = max(1.0, float(np.percentile(g[bx[1]:bx[3], bx[0]:bx[2]], 70)))
-        out.append(lit(f, c, al * mt, blur=blur, glow=glow, glow_sigma=glow_sigma, mod=np.clip(g / ref, 0.6, 1.1)))
+        out.append(lit(f, c, al * mt * lv, blur=blur, glow=glow * lv, glow_sigma=glow_sigma, mod=np.clip(g / ref, 0.6, 1.1)))
     return out, {"간판": box, "M": placed, "g": (gw, gh)}
 
 
