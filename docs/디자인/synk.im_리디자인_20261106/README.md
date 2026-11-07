@@ -57,6 +57,21 @@
 - 같은 날 PULSE 제목을 「카메라 앞에서 10년, 배우가 AI 모델을 연출합니다」로(유호님 「어감이 좀 별로 … 배우 · 현장 경력 어필」 → 실제 칸 시안 셋 중 A, 홈 칸 · PULSE 첫 화면 둘 다), 2026 서울로미디어캔버스 단편 애니메이션 공모 당선 「다리가 기억하는 것」(12월~2월 전시)을 이력 세 곳에 넣었다(`8c04f0d`). 기준 그림 아홉 쪽은 실행 42376261951 캡처로 바꿨다(synk-policy `136d6d4`, 뒤 배포 점검 42378677605 통과 — 남은 차이는 다른 세션이 바꾼 쪽뿐).
 - 장소 자료는 같은 날 다른 세션이 다시 확인해 공개했다(확인일 11-07, synk-policy `e7edd3c`) — PATH 하루에서 「운영 확인 필요」는 공식 안내로 확인하지 못한 곳에만 붙는다.
 
+### 5-2. 예시 하루 다시 굽기 (장소 자료를 다시 확인할 때마다)
+
+PATH 첫 화면 · 홈 PATH 칸의 예시 하루(엔진을 못 불러올 때 남는 판과 홈 칸의 지도)는 고정한 날의 하루를 구운 것이다. 장소 자료는 30일마다 다시 확인하고(정기 예약 「SYNK 서울 하루 자료 재확인」, [재확인 기록](../../../experiences/path-travel/qa/recheck-20261107/README.md)), 예시는 그 확인일 30일 안의 날이어야 「운영 확인」이 맞는 말이다. 그래서 재확인 회차가 자료를 공개한 뒤 이 순서로 같이 굽는다(예약 지시문 `tools/크레딧작업/서울하루재확인.js`가 이 절을 가리킨다).
+
+1. 원고: SYNK-website에서 synk.im 원고의 가장 최근 가지(트랙 「synk.im 리디자인」 줄과 결정 표의 마지막 원고 가지 — 11-08 `claude/site-refresh-20261107`)를 새 워크트리로 받는다. `git -C C:/Users/q1212/Documents/SYNK-website fetch origin` → `git -C C:/Users/q1212/Documents/SYNK-website worktree add C:/Users/q1212/Documents/SYNK-worktrees/path-sample-<날짜>/SYNK-website -b claude/path-sample-<날짜> origin/<그 가지>`.
+2. 날: `site-v10/make-path-sample.mjs`의 `SAMPLE`을 새 확인일 뒤 30일 안의 월요일 아닌 날로(`now`는 그 전날 10:00 KST = 01:00Z, `weekday` 맞춤), 원고 `site-v10/content/ko.mjs` · `en.mjs`의 `path.travel.sample`(「예시 — 11월 11일(수)」 · 「Example — Wednesday 11 November」)을 같은 날로.
+3. 굽기: `SYNK_CANON_ROOT=C:/Users/q1212/Documents/SYNK-appsscript node site-v10/make-path-sample.mjs` — 운영을 확인하지 못한 곳이 있으면 멈추므로 날을 다시 고른다. `path-sample.svg` · `.json` · `path-place-chars.txt`가 바뀐다.
+4. 빌드: `node site-v10/knowledge.mjs --base site-v10/knowledge/base --out dist && node site-v10/prepare-runtime.mjs && node site-v10/build.mjs --out dist --assets dist && node sync-social-conversion.mjs`(같은 `SYNK_CANON_ROOT`). `path-place-chars.txt`가 바뀌었으면(새 장소 이름) `python -X utf8 site-v10/font-subset.py --dist dist --keep site-v10/font-chars.txt` 뒤 다시 빌드. 바뀌는 쪽은 `index.html` · `en/index.html` · `path/index.html` · `en/path/index.html`(+ 글꼴).
+5. 시험: `npm run check`.
+6. 공개: `node tools/공개.js 올리기 --원본 dist <바뀐 경로…> --기준 <그 가지가 마지막으로 실린 synk-policy 커밋> --후보폴더 …`(공용 작업본에서) → `tools/검수묶음.mjs 준비 … --종류 화면 --배포후보 …`(지도 그림이 바뀌므로 아르곤 → Fable) → `--실행` → `기준 --점검 <실행> home en path en/path`. 원고 가지는 origin에 올린다.
+7. 막히면 자료 공개는 그대로 두고 까닭을 남긴다 — 예시는 지난 날로 남아도 쪽이 깨지지 않는다(그 날의 운영은 확인된 값이었다).
+
 ## 6. 남은 일
 
-- PC 판을 내는 길이 공개본 홈의 PC 소식 줄에서 판 번호만 바꾸고 날짜는 두어(0.4.80 · 0.4.81 · 0.4.82가 10-31로 보였다), 다음 판부터는 그 길이 날짜도 같이 고쳐야 한다.
+없음(11-08). 2회차 뒤 남았던 셋은 닫았다.
+- PC 판 공개 도구가 홈 소식의 PC 앱 줄을 판을 낸 날로 고쳐 맨 앞에 두고 바닥 기준일도 맞춘다(SYNK-appsscript `6e7024627` · 원고 `99a9041`, 지금 판 0.4.83은 공개본이 이미 맞았다).
+- 아무 쪽도 부르지 않던 옛 그림 · 소리 21개(옛 PATH 사진 · 펠트 VR 헤드셋 · 霜の肌理 전 이름 그림 · 걷은 연출 대사 셋)를 synk.im과 원고에서 지웠다(원고 `81b1845`, 다시 빌드한 쪽 출력 그대로).
+- 예시 하루는 11-07 확인 자료로 다시 구워도 그대로였고(11-11 수), 다음 재확인부터는 위 5-2절이 예약 회차의 순서에 들었다.

@@ -52,6 +52,7 @@ synk-policy `e7edd3c`(11-07 17:28 KST) — 자료 세 파일과 그 자료를 �
 2. 바뀐 값만 고친다. 기간이 붙은 값(야간 개방·무료 기간·부분 휴관)은 새 확인일+30일 범위의 날짜만 넣고 지난 날짜는 걷어 낸다. 달력은 새 확인일+30일을 덮게 늘린다(2027년은 우주항공청 2027 월력요항).
 3. `qa/recheck-<YYYYMMDD>/`를 새로 만들고 이 폴더의 `apply-recheck.mjs`·`gen-ledger.mjs`를 본떠 반영기·대장을 둔다. `tests/path-travel-live-catalog.test.mjs`는 확인일로 그 폴더를 찾는다.
 4. `node --test tests/path-travel-*.test.mjs` → 공개(아래)와 같은 길.
+5. 자료를 공개한 뒤 synk.im PATH 첫 화면 · 홈 PATH 칸의 예시 하루를 새 확인일 30일 안의 날로 다시 굽는다 — [리디자인 설명 5-2절](../../../../docs/디자인/synk.im_리디자인_20261106/README.md#5-2-예시-하루-다시-굽기-장소-자료를-다시-확인할-때마다)(11-08 더함, 예약 지시문 8번).
 
 공개: 공개본의 세 자료 파일은 원본 바이트 그대로라 `node tools/공개.js 올리기 try/travel/places-v2.mjs=experiences/path-travel/places-v2.mjs try/travel/real-places.mjs=… try/travel/real-course-data.mjs=… --후보폴더 <폴더>`로 후보를 만들고(공개 도구가 부르는 쪽 `?v=`만 바꾼다), `검수묶음.mjs 준비 … --종류 화면 --페이블생략 "<까닭>"` → 아르곤 → `--실행`. 화면 코드까지 다시 실을 때는 SYNK-website **origin 판**(`codex/company-conversations`)의 `sync-travel-experience.mjs`를 워크트리로 받아 돌린다 — 공용 `Documents/SYNK-website` 작업본은 origin보다 37커밋 뒤(11-07)라 옛 목록이 지워진 파일을 찾다 멈춘다. origin 판은 origin/master 사본으로 92개 파일을 내고 자료 세 파일이 공개본과 같았다(11-07 확인).
 
