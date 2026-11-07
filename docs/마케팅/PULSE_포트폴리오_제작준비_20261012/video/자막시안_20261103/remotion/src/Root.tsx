@@ -13,6 +13,7 @@ import { S3, S3_FRAMES } from './s3/S3';
 import { S4, S4_FRAMES } from './s4/S4';
 import { P6, P6_FRAMES } from './p6/P6';
 import { S1, S1_FRAMES } from './s1/S1';
+import { P8, P8_FRAMES } from './p8/P8';
 
 export const RemotionRoot: React.FC = () => (
   <>
@@ -45,5 +46,9 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="p6" component={P6} durationInFrames={P6_FRAMES} fps={24} width={1920} height={1080} />
     {/* 시즌 1 옆집의 크리스마스(11-07) — 16:9 60.04초, 말자막 · 켜지는 끝 문구 · 그린 워드마크 「늘켬」 */}
     <Composition id="s1" component={S1} durationInFrames={S1_FRAMES} fps={24} width={1920} height={1080} />
+    {/* 8번 앱 소개 30초 캐스팅북(11-07 v4) — 16:9 30초, 글자 1 · 2 · 그린 제목 · 장면 안 끝(기본). 견줄 판: -card(10-26 흰 끝 화면) · -type(친 글자 제목) */}
+    <Composition id="p8" component={P8} durationInFrames={P8_FRAMES} fps={24} width={1920} height={1080} />
+    <Composition id="p8-card" component={P8} defaultProps={{ end: 'card' as const }} durationInFrames={P8_FRAMES} fps={24} width={1920} height={1080} />
+    <Composition id="p8-type" component={P8} defaultProps={{ title: 'type' as const }} durationInFrames={P8_FRAMES} fps={24} width={1920} height={1080} />
   </>
 );
