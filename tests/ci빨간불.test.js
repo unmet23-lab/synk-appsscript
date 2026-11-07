@@ -32,21 +32,48 @@ const 로그 = [
   'check\trun SYNK safety tests\t2026-10-21T12:23:33.5539344Z ##[error]Process completed with exit code 1.',
 ].join('\n');
 
-/** 가짜 실행기 — 부른 명령을 적고, 준비한 답을 돌려준다. */
-function 가짜({ runs = [], 로그글 = 로그, jobs = null, 원격 = 'https://github.com/o/r.git', 공용 = os.tmpdir(), gh막힘 = false } = {}) {
+// 위 로그를 낸 작업(로그 첫 칸이 check)
+const 기본jobs = [{ name: 'check', databaseId: 1, conclusion: 'failure', steps: [{ name: 'run SYNK safety tests', conclusion: 'failure' }] }];
+
+/** 가짜 실행기 — 부른 명령을 적고, 준비한 답을 돌려준다. 로그글·jobs는 run 번호를 받는 함수여도 된다(jobs가 null이면 그 run은 못 읽음). */
+function 가짜({ runs = [], 로그글 = 로그, jobs = 기본jobs, 원격 = 'https://github.com/o/r.git', 공용 = os.tmpdir(), gh막힘 = false, 부를때 = null } = {}) {
   const 부름 = [];
   const sh = (cmd, args) => {
     부름.push([cmd, ...args].join(' '));
+    if (부를때) 부를때(cmd, args);
     if (cmd === 'git' && args[0] === 'remote') return { ok: true, out: `${원격}\n` };
     if (cmd === 'git' && args[0] === 'rev-parse') return { ok: true, out: `${공용}\n` };
     if (gh막힘) return { ok: false, 사유: 'gh 실행 불가 (ENOENT)' };
     if (cmd === 'gh' && args[1] === 'list') return { ok: true, out: JSON.stringify(runs) };
-    if (cmd === 'gh' && args.includes('--log-failed')) return { ok: true, out: 로그글 };
-    if (cmd === 'gh' && args.includes('jobs')) return { ok: true, out: JSON.stringify({ jobs: jobs || [] }) };
+    const id = Number(args[2]);
+    if (cmd === 'gh' && args.includes('--log-failed')) return { ok: true, out: typeof 로그글 === 'function' ? 로그글(id) : 로그글 };
+    if (cmd === 'gh' && args.includes('jobs')) {
+      const j = typeof jobs === 'function' ? jobs(id) : jobs;
+      return j ? { ok: true, out: JSON.stringify({ jobs: j }) } : { ok: false, 사유: 'HTTP 502: Server Error' };
+    }
     return { ok: false, 사유: `모르는 명령 ${cmd} ${args.join(' ')}` };
   };
   return { sh, 부름 };
 }
+
+// 11-08 conditional-qa 꼴 — run마다 깨진 작업이 다르다. 작업 이름은 로그 첫 칸과 같다.
+const 윈도 = 'hosted (windows-latest, windows)', 리눅스 = 'hosted (ubuntu-24.04, linux)', 로컬 = 'local-coverage';
+const 윈도단계 = 'verify exact registered cases, with no skips', 로컬단계 = "check the exact commit's complete local result";
+const 작업 = (name, 결론, 단계 = []) => ({ name, conclusion: 결론, steps: 결론 === 'skipped' ? [] : [{ name: 'set up job', conclusion: 'success' }, ...단계.map((s) => ({ name: s, conclusion: 'failure' }))] });
+const 조건부jobs = (깨진) => [
+  작업(윈도, 깨진.includes(윈도) ? 'failure' : 'success', 깨진.includes(윈도) ? [윈도단계] : []),
+  작업(리눅스, 깨진.includes(리눅스) ? 'failure' : 'success', 깨진.includes(리눅스) ? ['run tests'] : []),
+  작업(로컬, 깨진.includes(로컬) ? 'failure' : 깨진.includes(윈도) ? 'skipped' : 'success', 깨진.includes(로컬) ? [로컬단계] : []),
+];
+const 조건부로그 = (깨진, { 로컬시험 = false } = {}) => [
+  ...(깨진.includes(윈도) ? [`${윈도}\t${윈도단계}\t2026-11-07T18:40:00.0000000Z default: 27/28`] : []),
+  ...(깨진.includes(리눅스) ? [`${리눅스}\trun tests\t2026-11-07T17:20:00.0000000Z not ok 1 - 리눅스에서만 깨진 시험`,
+    `${리눅스}\trun tests\t2026-11-07T17:20:00.0000000Z   ---`, `${리눅스}\trun tests\t2026-11-07T17:20:00.0000000Z   location: '/home/runner/work/a/a/SYNK-appsscript/tests/리눅스.test.js:7:1'`,
+    `${리눅스}\trun tests\t2026-11-07T17:20:00.0000000Z   ...`] : []),
+  ...(깨진.includes(로컬) ? [`${로컬}\t${로컬단계}\t2026-11-07T18:04:36.3196017Z Local QA has not passed: FAIL 75/79: S063 S064 S065 S067`] : []),
+  ...(로컬시험 ? [`${로컬}\t${로컬단계}\t2026-11-07T17:20:00.0000000Z not ok 9 - 로컬 작업 줄의 시험`] : []),
+].join('\n');
+const 조건부run = (id, 결론, 시각) => run(id, 결론, 시각, { workflowName: 'conditional-qa' });
 
 test('판정하기 — 마지막 초록 바로 뒤가 첫 빨강이고, 취소·PR run은 셈에서 뺀다', () => {
   const runs = [
@@ -67,6 +94,8 @@ test('판정하기 — 마지막 초록 바로 뒤가 첫 빨강이고, 취소·
   assert.equal(syntax.첫빨강확실, true);
   assert.equal(syntax.최신.run, 5);
   assert.equal(syntax.도는중, 1);
+  assert.deepEqual(syntax.빨강들.map((r) => r.run), [5, 3], '연속 구간의 빨강 run만(취소는 뺀다)');
+  assert.equal(syntax.뒤셈밖, 0, '취소 4는 최신 빨강 5보다 앞이다');
   assert.equal(records.상태, '초록');
 });
 
@@ -376,4 +405,139 @@ test('알림 — 못 읽던 사이에 한 번 읽히면 그 회차의 보내기�
     assert.deepEqual([한번.못읽음.회수, 한번.못읽음.알림], [1, false], '1회부터 다시 센다');
     assert.equal(fs.existsSync(환경.SYNK_TG_DRYRUN_DIR), false, '「멈췄다」를 잘못 보내지 않는다');
   } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
+// ── 연속 구간의 작업별 읽기(11-08) ─────────────────────────────────────────────
+// conditional-qa 「적어도 14회 연속」 아래에 최신 빨강 run 하나의 Windows 단계만 보여 「Windows 14회 연속」으로 읽혔다.
+// 실제로는 13회가 local-coverage였고 Windows는 한 번이었다.
+const 단계식별자 = (s) => require('node:crypto').createHash('sha256').update(`step:${s}`).digest('hex');
+const 섞인표 = { 6: [윈도], 5: [로컬], 4: [로컬], 3: [로컬, 리눅스] };
+const 섞인runs = [조건부run(6, 'failure', '2026-11-07T18:15:21Z'), 조건부run(5, 'failure', '2026-11-07T17:35:55Z'),
+  조건부run(4, 'failure', '2026-11-07T17:27:15Z'), 조건부run(3, 'failure', '2026-11-07T17:09:57Z'), 조건부run(2, 'success', '2026-11-07T16:00:00Z')];
+const 섞인가짜 = (덧 = {}) => 가짜({ runs: 섞인runs, jobs: (id) => 조건부jobs(섞인표[id] || []),
+  로그글: (id) => 조건부로그(섞인표[id] || [], { 로컬시험: id === 3 }), ...덧 });
+const 본run = (부름) => 부름.filter((c) => c.startsWith('gh run view')).map((c) => Number(c.split(' ')[3]));
+
+test('연속 구간 안에서 run마다 깨진 작업이 다르면 작업별 횟수 · 최근 빨강 run을 보이고, 깨진 시험 · 단계는 작업마다 그 run에서 읽는다(11-08)', () => {
+  const r = ci.지금읽기({ sh: 섞인가짜().sh, 파일들: [] });
+  const [w] = r.워크플로;
+  assert.deepEqual([w.워크플로, w.회수, w.최신.run], ['conditional-qa', 4, 6]);
+  assert.deepEqual(w.작업별.작업.map((x) => [x.이름, x.회수, x.최신.run]), [[로컬, 3, 5], [윈도, 1, 6], [리눅스, 1, 3]],
+    '횟수가 많은 작업부터, 같으면 최근 것부터');
+  assert.equal(w.작업별.모름, 0);
+  const 자세히 = Object.fromEntries(w.작업별.작업.map((x) => [x.이름, x.자세히]));
+  assert.deepEqual(자세히[로컬].단계, [로컬단계], 'local-coverage는 자기 최근 빨강 run 5의 단계');
+  assert.deepEqual(자세히[윈도].단계, [윈도단계]);
+  assert.deepEqual(자세히[리눅스].시험.map((t) => [t.이름, t.위치]), [['리눅스에서만 깨진 시험', 'tests/리눅스.test.js:7']],
+    '같은 run 3 로그의 local-coverage 줄(로컬 작업 줄의 시험)은 리눅스 작업에 섞지 않는다');
+
+  const 글 = ci.상태글(r);
+  assert.match(글, /conditional-qa: 4회 연속 빨강/);
+  assert.match(글, /깨진 작업\(빨강 run 4개를 run마다 셈\): local-coverage 3회\(최근 0005aaaaa\) · hosted \(windows-latest, windows\) 1회\(0006aaaaa\) · hosted \(ubuntu-24\.04, linux\) 1회\(0003aaaaa\)/);
+  assert.match(글, /▸ local-coverage — 최근 빨강 11-08 02:35 0005aaaaa 「커밋 5」\n {4}깨진 단계: check the exact commit's complete local result\n {4}run: https:\/\/github\.com\/o\/r\/actions\/runs\/5/);
+  assert.match(글, /▸ hosted \(windows-latest, windows\) — 최근 빨강 11-08 03:15 0006aaaaa 「커밋 6」\n {4}깨진 단계: verify exact registered cases, with no skips/);
+  assert.match(글, /▸ hosted \(ubuntu-24\.04, linux\) — .*\n {4}깨진 시험: tests\/리눅스\.test\.js:7 — 리눅스에서만 깨진 시험/);
+  assert.doesNotMatch(글, /로컬 작업 줄의 시험/);
+
+  // 알림 식별자는 그대로 최신 빨강 run 하나(run 6)의 것이다 — 작업별 읽기로 새 실패 알림이 늘지 않는다
+  assert.deepEqual(w.자세히.단계, [윈도단계]);
+  assert.deepEqual(ci.알림계획(null, r).새상태.워크플로['conditional-qa'].알린실패, [단계식별자(윈도단계)]);
+});
+
+test('최신 빨강 뒤 run이 모두 취소면 그 수를 밝히고, 취소 run은 읽지 않으며, 작업마다 자기 최근 빨강 run에서 읽는다(11-08)', () => {
+  const 표 = { 6: [윈도], 5: [로컬], 4: [로컬] };
+  const runs = [조건부run(10, null, '2026-11-07T20:43:00Z'), 조건부run(9, 'cancelled', '2026-11-07T20:38:10Z'), 조건부run(8, 'cancelled', '2026-11-07T20:31:58Z'),
+    조건부run(7, 'cancelled', '2026-11-07T20:25:33Z'), 조건부run(6, 'failure', '2026-11-07T18:15:21Z'), 조건부run(5, 'failure', '2026-11-07T17:35:55Z'),
+    조건부run(4, 'failure', '2026-11-07T17:27:15Z'), 조건부run(2, 'success', '2026-11-07T16:00:00Z')];
+  const { sh, 부름 } = 가짜({ runs, jobs: (id) => 조건부jobs(표[id] || []), 로그글: (id) => 조건부로그(표[id] || []) });
+  const r = ci.지금읽기({ sh, 파일들: [] });
+  const [w] = r.워크플로;
+  assert.deepEqual([w.최신.run, w.회수, w.뒤셈밖, w.도는중], [6, 3, 3, 1]);
+  assert.deepEqual(본run(부름).filter((id) => id >= 7), [], '취소 · 도는 run은 작업을 읽지 않는다');
+  assert.deepEqual(w.작업별.작업.map((x) => [x.이름, x.회수, x.최신.run]), [[로컬, 2, 5], [윈도, 1, 6]]);
+  const 글 = ci.상태글(r);
+  assert.match(글, /최신 빨강\(11-08 03:15 0006aaaaa\) 뒤 run 3개는 취소·건너뜀이라 셈에서 뺐다/);
+  assert.match(글, /local-coverage 2회\(최근 0005aaaaa\) · hosted \(windows-latest, windows\) 1회\(0006aaaaa\)/);
+  assert.match(글, /▸ local-coverage — .*\n {4}깨진 단계: check the exact commit's complete local result\n {4}run: \S+\/runs\/5\n/,
+    'local-coverage의 깨진 단계는 최신 빨강 run 6이 아니라 그 작업의 최근 빨강 run 5에서');
+  assert.match(글, /\(지금 도는·기다리는 run 1개/);
+});
+
+test('알림은 보낼 글이 있을 때만 작업별로 읽는다 — 글에는 작업별 횟수를 싣고, 바뀐 것 없는 회차는 최신 빨강 run만 읽는다(11-08)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-ci빨간불-'));
+  try {
+    const 환경 = { SYNK_TG_DRYRUN_DIR: path.join(방, 'tg'), SYNK_CI빨간불_상태: path.join(방, '상태.json') };
+    const 지금ms = Date.parse('2026-11-07T18:50:00Z');
+    assert.equal(ci.알림({ sh: 섞인가짜().sh, 파일들: [], 환경, 지금ms }).결과, '보냄');
+    const 보낸글 = () => fs.readdirSync(환경.SYNK_TG_DRYRUN_DIR).sort().map((n) => fs.readFileSync(path.join(환경.SYNK_TG_DRYRUN_DIR, n), 'utf8'));
+    assert.match(보낸글()[0], /깨진 작업\(빨강 run 4개를 run마다 셈\): local-coverage 3회\(최근 0005aaaaa\) · hosted \(windows-latest, windows\) 1회\(0006aaaaa\)/);
+    assert.match(보낸글()[0], /▸ hosted \(windows-latest, windows\) — .*\n {4}깨진 단계: verify exact registered cases, with no skips/);
+    const 상태 = JSON.parse(fs.readFileSync(환경.SYNK_CI빨간불_상태, 'utf8'));
+    assert.deepEqual(상태.워크플로['conditional-qa'].알린실패, [단계식별자(윈도단계)], '상태 · 식별자는 작업별 읽기와 상관없다');
+    assert.equal(상태.워크플로['conditional-qa'].작업별, undefined);
+
+    const 둘째 = 섞인가짜();
+    assert.equal(ci.알림({ sh: 둘째.sh, 파일들: [], 환경, 지금ms: 지금ms + 600e3 }).결과, '바뀐 것 없음');
+    assert.deepEqual(본run(둘째.부름), [6, 6], '최신 빨강 run의 로그 · 작업 목록만');
+    assert.equal(보낸글().length, 1);
+
+    // 이미 알린 conditional-qa는 그대로이고 syntax-check만 새로 빨개지면, 작업별로는 syntax-check만 읽는다
+    const 문법runs = [run(23, 'failure', '2026-11-07T19:30:00Z'), run(22, 'failure', '2026-11-07T19:20:00Z'), run(21, 'success', '2026-11-07T19:00:00Z')];
+    const 셋째 = 가짜({ runs: [...섞인runs, ...문법runs], jobs: (id) => (id >= 20 ? 기본jobs : 조건부jobs(섞인표[id] || [])),
+      로그글: (id) => (id >= 20 ? 로그 : 조건부로그(섞인표[id] || [], { 로컬시험: id === 3 })) });
+    const r = ci.알림({ sh: 셋째.sh, 파일들: [], 환경, 지금ms: 지금ms + 3600e3 });
+    assert.equal(r.결과, '보냄');
+    assert.match(r.글, /syntax-check: 2회 연속 빨강[^]*깨진 작업\(빨강 run 2개를 run마다 셈\): check 2회\(최근 0023aaaaa\)/);
+    assert.doesNotMatch(r.글, /conditional-qa/);
+    assert.deepEqual(본run(셋째.부름).filter((id) => id < 20), [6, 6], 'conditional-qa는 알림 식별자용 최신 빨강 run만 — 옛 run 5 · 4 · 3은 안 읽는다');
+    assert.deepEqual(본run(셋째.부름).filter((id) => id >= 20).sort(), [22, 23, 23], 'run 23은 로그 · 작업 목록, run 22는 작업 목록');
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
+test('알림 — 회차 시작 140초가 지나 작업을 더 못 읽어도 받아 둔 것으로 보내고 나머지는 「모름」(보내기 몫을 남긴다)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-ci빨간불-'));
+  try {
+    const 환경 = { SYNK_TG_DRYRUN_DIR: path.join(방, 'tg'), SYNK_CI빨간불_상태: path.join(방, '상태.json') };
+    let t = 0;
+    const { sh, 부름 } = 섞인가짜({ 부를때: (cmd, args) => { if (args[1] === 'list') t += 200000; } }); // run 목록 읽기에 200초가 걸린 바쁜 PC
+    const r = ci.알림({ sh, 파일들: [], 환경, 지금ms: Date.parse('2026-11-07T18:50:00Z'), 시계: () => t });
+    assert.equal(r.결과, '보냄');
+    assert.match(r.글, /hosted \(windows-latest, windows\) 1회\(0006aaaaa\) · 모름 3회\(시간 한도\)/, '최신 빨강 run의 작업 목록은 알림 식별자를 읽을 때 받아 두었다');
+    assert.deepEqual(본run(부름), [6, 6]);
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
+test('작업 읽기는 최신부터 상한까지 · 시간 한도 안에서만 하고, 못 읽은 run은 까닭과 함께 「모름」으로 센다(11-08)', () => {
+  const runs = [6, 5, 4, 3, 2].map((id, i) => run(id, 'failure', `2026-11-07T1${8 - i}:00:00Z`)).concat(run(1, 'success', '2026-11-07T12:00:00Z'));
+  const 상한 = 가짜({ runs, jobs: (id) => (id === 4 ? null : 기본jobs) });
+  const r = ci.지금읽기({ sh: 상한.sh, 파일들: [], 작업한도: { 상한: 3 } });
+  assert.deepEqual([r.워크플로[0].작업별.모름, r.워크플로[0].작업별.모름까닭], [3, ['최신 3회까지만 읽음', 'HTTP 502: Server Error']]);
+  assert.match(ci.상태글(r), /깨진 작업\(빨강 run 5개를 run마다 셈\): check 2회\(최근 0006aaaaa\) · 모름 3회\(최신 3회까지만 읽음 · HTTP 502: Server Error\)/);
+  assert.match(ci.상태글(r), /▸ check — .*\n {4}깨진 시험: tests\/지면폰트\.test\.js:356 — ⑦ SUIT/, '깨진 시험은 그 작업의 로그 줄에서');
+  assert.ok(!본run(상한.부름).some((id) => id <= 3), '상한 밖 run은 부르지 않는다');
+
+  let t = 0;
+  const 느림 = 가짜({ runs, 부를때: (cmd, args) => { if (args.includes('jobs')) t += 20000; } }); // 작업 목록 하나에 20초
+  const r2 = ci.지금읽기({ sh: 느림.sh, 파일들: [], 시계: () => t, 작업한도: { ms: 30000 } });
+  const 작업별 = r2.워크플로[0].작업별;
+  assert.deepEqual([작업별.작업[0].회수, 작업별.모름, 작업별.모름까닭], [2, 3, ['시간 한도']]);
+  assert.equal(느림.부름.filter((c) => c.includes('--json jobs')).length, 2, '마감이 지나면 더 부르지 않는다');
+});
+
+test('실행기.여럿 — 명령 여럿을 동시에 돌려 sh와 같은 꼴로 돌려준다(성공 · 종료 코드 · 없는 명령 · 명령 한도 · 전체 한도)', () => {
+  const sh = ci.실행기(os.tmpdir());
+  const node = process.execPath;
+  const t0 = Date.now();
+  const rs = sh.여럿([
+    [node, ['-e', 'setTimeout(() => process.stdout.write("하나"), 400)']],
+    [node, ['-e', 'setTimeout(() => process.stdout.write("둘"), 400)']],
+    [node, ['-e', 'process.stderr.write("망가짐\\n둘째 줄"); process.exit(3)']],
+    ['synk-없는-명령-xyz', []],
+    [node, ['-e', 'setTimeout(() => {}, 8000)']],
+  ], { timeout: 1500, 전체ms: 20000 });
+  assert.deepEqual(rs.slice(0, 3), [{ ok: true, out: '하나' }, { ok: true, out: '둘' }, { ok: false, 사유: '망가짐' }]);
+  assert.match(rs[3].사유, /^synk-없는-명령-xyz 실행 불가 \(ENOENT\)$/);
+  assert.match(rs[4].사유, /실행 불가 \(ETIMEDOUT\)$/);
+  assert.ok(Date.now() - t0 < 7000, '명령 한도에서 끊는다(8초 잠을 기다리지 않는다 — 바쁜 PC를 생각해 넉넉히)');
+  assert.deepEqual(sh.여럿([[node, ['-e', 'setTimeout(() => {}, 3000)']]], { timeout: 20000, 전체ms: 500 }), [{ ok: false, 사유: '시간 한도' }]);
 });
