@@ -38,6 +38,20 @@
       "승인": "유호님 10-31 04:3x 앱 세션 「네 편 다 올려」(M19 — 인스타 @synk.mn · 페북 SYNK · 틱톡 @synk.mn · 텔레그램 SYNK LAB 21:00, 편 · 판 · 계정 · 시각을 보인 뒤)",
       "교체": "유호님 10-31 18:2x 앱 「세 편 다 교체」 — 배경음을 끝까지 이은 m19_v5로 옛 예약을 지우고 같은 시각에 다시 예약(18:32~18:44, 스크립트 C:/Users/q1212/ego/plates-20261031/rep/). 게시 파일은 새 판으로 바뀜",
       "확인": "10-31 21:14 Claude가 ego 프로필 「TikTok synk.mn」(username synk.mn)으로 Studio 목록 「Oct 31, 9:00 PM · Everyone」 0:27 · 조회 1을 확인"
+    },
+    {
+      "계정": "lab-mm-tiktok",
+      "상태": "대기",
+      "시각": "2026-11-10T22:30:00+09:00",
+      "비고": "자체검수 통과(11-07 14시 회차 — 04-tiktok-mm/video.mp4 sha cee7e4df · −14.8 LUFS · 무음 없음 · 띠 8장) · ego Profile 1 틱톡 로그인 풀림(@synklab.mm). 로그인 뒤 username synklab.mm 확인하고 건다.",
+      "편ID": "LAB_형오빠_mn_20261030"
+    },
+    {
+      "계정": "lab-cn-xiaohongshu",
+      "상태": "대기",
+      "시각": "2026-11-11T22:00:00+09:00",
+      "비고": "자체검수 통과(11-07 14시 회차 — 03-xiaohongshu-cn/video.mp4 sha 8d0bdd19 · −14.8 LUFS · 무음 없음 · 띠 8장) · 샤오훙수 크리에이터 센터 로그인 풀림(creator.xiaohongshu.com/login 문자 인증). 로그인 뒤 upload_10MB.mp4로 定时发布 21:00(GMT+8).",
+      "편ID": "LAB_형오빠_mn_20261030"
     }
   ]
 }
