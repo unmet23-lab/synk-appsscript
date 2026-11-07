@@ -48,8 +48,10 @@ test('the direction screen follows the mock: two pictures, the recommendation fi
   assert.match(html,/<span data-dp-go>「아니, 잠깐」으로 정하고 글 콘티 받기<\/span>/);
   assert.match(html,/data-form="direction-pick"><input type="hidden" name="optionId" value="a"><input type="hidden" name="modelId" value=""><label class="sx-dp-note" data-dp-note hidden><span class="sr">덧붙일 말<\/span><input type="text" name="note"/,'the one-line note lives in a named form field so live redraws keep it');
   assert.match(html,/data-dp-do="neither">둘 다 아니에요<\/button>/);assert.match(html,/data-form="direction-neither" hidden>/);
-  assert.match(html,/data-dp-film="taste"/);assert.match(html,/data-room-brief/);assert.match(html,/class="sx-dp-rail"><nav class="sx-steps"/);
-  assert.equal((html.match(/data-dp-model=/g)||[]).length,4,'four hand-picked models, not the whole cast');
+  assert.match(html,/data-dp-film="taste"/);assert.match(html,/data-room-brief/);assert.doesNotMatch(html,/sx-dp-rail|class="sx-steps/,'판 3: the steps live in the one head, not in the screen');
+  assert.equal(new Set(html.match(/data-dp-model="[^"]+"/g)||[]).size,4,'four hand-picked models, not the whole cast');
+  // 판 3(D15): 넷은 작은 얼굴(캐스팅 사진에서 얼굴만)로 늘 보이고, 큰 장면 사진은 「크게 보기」로 접혀 있다.
+  assert.equal((html.match(/class="sx-dp-face [^"]*"/g)||[]).length,4);assert.match(html,/class="sx-dp-face[^>]*><img src="\.\/assets\/casting\//);assert.match(html,/data-dp-casts hidden/);assert.match(html,/>크게 보기<\/button>/);
 });
 test('what the customer was looking at survives a redraw',()=>{
   const p=roomModel(project({direction:open()})),html=directionView(p,{ui:{focus:'b',casting:true,more:true,note:true,modelId:'F02',view:'choose'}});

@@ -883,3 +883,53 @@ html.is-staff{color-scheme:light}
   .sx-dp-frame-no,.sx-dp-film-cap{left:10px;right:auto;bottom:8px}
   .sx-dp-choose,.sx-dp-neither{order:3;padding:16px var(--sx-m) 28px}
 }
+/* ── 머리 하나(판 3, 11-08) ──
+   의뢰 흐름 손님은 앱 머리에 프로젝트 이름(고객 방으로) · 접수 번호 · 단계 다섯 · 「담당자에게 묻기」. 화면 안에는 단계 줄이 없다.
+   넓은 화면은 겹쳐 뜨는 한 줄(줄바꿈 없음 — 접히면 영상 화면의 판 고르기를 가린다), 휴대폰 · 세로 화면은 흐름 안 두 줄. 예시는 같은 마크업을 .sx-room-bar.is-head에 그린다. */
+.sx-head-title{flex:0 1 auto;min-width:0;max-width:min(28vw,340px);padding:4px 0;color:var(--sx-ink);text-align:left}
+.sx-head-title .crumb-title{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (hover:hover){.sx-head-title:hover .crumb-title{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}}
+.sx-head-break{display:none}
+.sx-head-steps{flex:none;flex-wrap:nowrap;align-items:baseline;gap:0 14px;margin-left:4px;padding-left:14px;border-left:1px solid var(--sx-rule)}
+.sx-head-steps .sx-steps-run{flex-wrap:nowrap;gap:0 14px;font-size:13px}
+.sx-head-steps .sx-steps-foot{font-size:13px}
+html.sx.has-room-head:not(.is-staff) .header-crumb,.sx-room-bar.is-head .header-crumb{flex:1 1 auto;min-width:0;align-items:center;overflow:hidden}
+html.sx.has-room-head:not(.is-staff) .header-crumb .crumb-no,.sx-room-bar.is-head .crumb-no{display:inline;flex:none;font-family:var(--sx-mono);font-size:13px;color:var(--sx-dim)}
+.sx-head-ask{white-space:nowrap}
+.header-actions .sx-head-ask.is-now{font-weight:600;text-decoration-thickness:2px}
+.sx-room-bar.is-head{right:var(--sx-m);width:auto;gap:14px;font-size:13px}
+.sx-room-bar.is-head .header-actions{margin-left:auto;display:flex;gap:18px;align-items:center}
+@media (max-width:1180px){html.sx.has-room-head:not(.is-staff) .header-crumb .crumb-no,.sx-room-bar.is-head .crumb-no{display:none}}
+@media (min-width:821px) and (max-width:1000px) and (min-aspect-ratio:10001/10000){.sx-head-steps .sx-steps-foot{display:none}}
+/* 모델 얼굴 줄(방향 화면): 후보 넷을 작은 얼굴로, 큰 사진은 「크게 보기」로 접어 둔다. */
+.sx-dp-faces{display:flex;align-items:center;gap:6px}
+.sx-dp-face{flex:none;width:40px;height:40px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 1px var(--sx-rule)}
+.sx-dp-face img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 20%;filter:grayscale(1);transition:filter .4s var(--sx-out)}
+.sx-dp-face.is-on{box-shadow:0 0 0 2px var(--sx-ink)}
+.sx-dp-face.is-on img{filter:none}
+@media (hover:hover){.sx-dp-face:hover img{filter:none}}
+.sx-dp-faces .sx-dp-model-open{margin-left:8px}
+@media (max-height:800px) and (min-width:821px) and (min-aspect-ratio:10001/10000){.sx-dp-face{width:32px;height:32px}}
+@media (max-width:820px),(max-aspect-ratio:1/1){
+  html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head{position:relative;left:auto;right:auto;top:auto;width:auto;flex-wrap:wrap;align-items:center;gap:2px 12px;padding:10px var(--sx-m) 0;background:#000}
+  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) :is(.header-crumb,.header-actions){display:contents}
+  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-title{order:1;flex:1 1 0;max-width:none}
+  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .header-actions>*{order:2}
+  html.sx.has-room-head:not(.is-staff) .app-header>#pulse-live{order:2}
+  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-break{display:block;order:3;flex-basis:100%;height:0}
+  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-steps{order:4;flex:1 1 0;min-width:0;margin:0;padding:4px 0 10px;border:0}
+  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-steps .sx-steps-run{flex:1 1 auto;min-width:0}
+  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .header-actions>.sx-head-ask{order:5;padding:4px 0 10px}
+  html.sx.has-room-head:not(.is-staff) .header-crumb .crumb-no{display:none}
+  /* 겹쳐 뜨는 머리를 피하던 위 여백은 흐름 안 머리에서는 뺀다. */
+  html.sx.has-room-head:not(.is-staff) .sx-dp-top{padding-top:14px}
+  html.sx.has-room-head:not(.is-staff) .sx-dp-sheet>.sx-alert{margin-top:14px}
+}
+/* 방향 화면(넓은 화면): 머리가 설명 칸 위에 겹치지 않게 머리 높이만큼 띄우고, 머리에 있는 프로젝트 이름은 칸 첫 줄에서 뺀다. */
+@media (min-width:821px) and (min-aspect-ratio:10001/10000){
+  html.sx.has-room-head:not(.is-staff) .sx-dp-sheet{padding-top:calc(var(--sx-m) + 40px)}
+  html.sx.has-room-head:not(.is-staff) .sx-dp-name{display:none}
+}
+/* 묻기 화면: 입력 칸은 제목 줄에 맞추고, 보내기 단추는 다른 화면의 결정 단추와 같은 크기. */
+.sx-ask-form{margin-top:clamp(8px,2vh,18px)}
+.sx-ask-form .sx-say-tools .sx-go.is-solid{padding:14px 18px}

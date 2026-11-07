@@ -297,7 +297,7 @@ html.sx:not(.is-staff) .crumb-no{font-family:var(--sx-mono);font-size:13px;color
 html.sx:not(.is-staff) .demo-tag{color:var(--sx-dim)!important;padding:0!important}
 html.sx:not(.is-staff) .demo-tag::before{display:none}
 .sx-step.is-next:not(.is-now)::after{content:'';display:inline-block;width:6px;height:6px;margin-left:6px;background:var(--sx-ink);vertical-align:2px}
-html.view-dr .header-crumb,html.view-dr .header-caption{display:none!important}
+html.view-dr:not(.has-room-head) .header-crumb,html.view-dr .header-caption{display:none!important}
 html.view-dr .app-header{background:none!important}
 .sx-dr{--top:clamp(64px,8vh,76px)}
 .sx-dr-left,.sx-dr-right{top:var(--top)}
@@ -522,3 +522,30 @@ p.sx-receipt{display:block}
   html.is-dr-idle .sx-review .sx-line{opacity:1}
   html.is-dr-idle,html.is-dr-idle .sx-review video{cursor:auto}
 }
+/* ── 영상 · 납품 한 화면(판 3, 11-08, 의뢰 흐름 손님): 최종본을 볼 때 오른쪽 기둥의 납품 칸 · 크게 보기 ── */
+.sx-review-deliver{flex:none;display:grid;gap:10px;padding-top:12px;background:#000}
+.sx-review-deliver:focus{outline:none}
+.sx-deliver-files{display:grid;border-bottom:1px solid var(--sx-rule)}
+.sx-deliver-files li{display:grid;gap:2px;padding:10px 0;border-top:1px solid var(--sx-rule)}
+.sx-deliver-row{display:flex;justify-content:space-between;align-items:center;gap:14px}
+.sx-deliver-row>.sx-body{min-width:0;font-size:15px;font-weight:600;color:var(--sx-ink)}
+.sx-deliver-row .sx-go{flex:none}
+.sx-deliver-guide summary{cursor:pointer;color:var(--sx-dim);width:max-content;list-style:none}
+.sx-deliver-guide summary::-webkit-details-marker{display:none}
+.sx-deliver-guide summary::after{content:'';display:inline-block;width:5px;height:5px;margin-left:8px;border-right:1px solid currentColor;border-bottom:1px solid currentColor;transform:rotate(45deg);vertical-align:3px;transition:transform .25s}
+.sx-deliver-guide[open] summary::after{transform:rotate(-135deg);vertical-align:0}
+.sx-deliver-guide p{margin-top:4px;color:var(--sx-dim)}
+.sx-review-deliver .sx-receipt .sx-go{width:100%}
+.sx-review-deliver .sx-receipt .sx-go.is-solid{padding:16px 18px}
+.sx-review-deliver .sx-receipt p{color:var(--sx-dim)}
+.sx-deliver-foot{color:var(--sx-dim)}
+.sx-deliver-foot .sx-link{color:var(--sx-ink)}
+.sx-review-full{order:2;margin-left:auto;padding:2px 0;color:var(--sx-ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+@media (max-width:820px),(max-aspect-ratio:1/1){
+  html.has-room-head .sx-dr-left{padding-top:12px}
+  html.has-room-head .sx-review .sx-dr-credit>h1,.sx-review:has(>.sx-room-bar.is-head) .sx-dr-credit>h1{padding-top:12px}
+  html.has-room-head .sx-review:has(.sx-review-decide),.sx-review:has(>.sx-room-bar.is-head):has(.sx-review-decide){padding-bottom:calc(env(safe-area-inset-bottom) + 150px)}
+  html.has-room-head .sx-ask-thread{padding-top:20px}
+}
+/* 넓은 화면의 어두운 방(1차안 · 영상): 머리 한 줄이 가운데 틀(영상 · 밝은 대본 판) 위에 겹치지 않게, 틀도 양옆 기둥과 같은 높이에서 시작한다. */
+@media (min-width:821px) and (min-aspect-ratio:10001/10000){html.has-room-head .sx-dr-films{top:var(--top)}}

@@ -6,7 +6,9 @@ import {readFileSync} from 'node:fs';
 const read=name=>readFileSync(new URL('./public/pulse-app/'+name,import.meta.url),'utf8');
 test('다시 고르기: 앞서 덧붙인 말이 접혀 있어도 한 줄로 보이고 단추가 「덧붙인 말 고치기」가 된다',()=>{
   const src=read('film-views.mjs');
-  assert.match(src,/keep&&!noteOpen\?`<p class="sx-small sx-dp-kept">덧붙이신 말 · \$\{esc\(keep\)\}<\/p>`:''/);
+  // 판 3(판 2 Fable FA1): 「덧붙인 말 고치기」를 열면 같은 말을 입력 칸이 보이므로 이 줄은 숨는다.
+  assert.match(src,/keep\?`<p class="sx-small sx-dp-kept" \$\{noteOpen\?'hidden':''\}>덧붙이신 말 · \$\{esc\(keep\)\}<\/p>`:''/);
+  assert.match(src,/if\(act==='note'\)\{toggle\('note',\$\('\[data-dp-note\]'\),what,\[\]\);const kept=\$\('\.sx-dp-kept'\);if\(kept\)kept\.hidden=!!ui\.note;/);
   assert.match(src,/\$\{keep\?'덧붙인 말 고치기':'한마디 덧붙이기'\}/);
 });
 test('휴대폰 방향 화면: 오류 상자가 앞서면 제목 위 여백을 한 번만 둔다',()=>{

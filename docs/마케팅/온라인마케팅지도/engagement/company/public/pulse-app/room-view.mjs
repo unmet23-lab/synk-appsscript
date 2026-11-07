@@ -26,12 +26,26 @@ export function roomState(p){
   if(r.status==='confirmed')return 'prepare';
   return 'check';
 }
+// 단계는 다섯(판 3, 11-08): 영상 확인과 납품은 같은 화면이라 한 단계다.
 export const ROOM_STAGES=Object.freeze([
   {id:'request',no:'01',name:'의뢰서'},{id:'check',no:'02',name:'확인'},{id:'draft',no:'03',name:'1차안'},
-  {id:'make',no:'04',name:'제작'},{id:'review',no:'05',name:'영상 확인'},{id:'history',no:'06',name:'납품'},
+  {id:'make',no:'04',name:'제작'},{id:'review',no:'05',name:'영상 · 납품'},
 ]);
-const STAGE_OF={write:'request',check:'check',ask:'check',direction:'draft',redirect:'draft',model:'draft',prepare:'draft','prepare-images':'draft',script:'draft',images:'draft',revise:'draft',make:'make',review:'review',deliver:'history'};
+const STAGE_OF={write:'request',check:'check',ask:'check',direction:'draft',redirect:'draft',model:'draft',prepare:'draft','prepare-images':'draft',script:'draft',images:'draft',revise:'draft',make:'make',review:'review',deliver:'review'};
 export const roomStage=state=>STAGE_OF[state]||'check';
+// 단계 id · 옛 탭 이름을 고객 방의 화면 하나로. 머리의 단계 줄 · 방 안 이동 · 알림 이동이 이것만 쓴다.
+export const roomTab=id=>id==='history'||id==='review'?'review':['draft','films','contact','pick'].includes(id)?id:'overview';
+// 알림을 누르면 의뢰 흐름 손님이 갈 화면. 대화(담당자 답 · 자동 안내 · 프로젝트 답변)는 묻기 화면, 최종본은 영상 화면의 그 최종본, 옛 탭 소식은 고객 방.
+export function roomRoute(item,p){
+  if(item?.tab==='history')return {tab:'review',versionId:item.versionId||finals(p).at(-1)?.id||'',focus:'delivery'};
+  if(item?.tab==='review'){
+    if(item.feedbackRoundId||item.target==='approval')return {tab:'review',versionId:item.versionId||''};
+    if(item.messageId||item.commentId)return {tab:'contact',versionId:''};
+    return {tab:'review',versionId:item.versionId||''};
+  }
+  if(item?.tab==='draft')return {tab:lastRound(requestOf(p))?'draft':'overview',versionId:''};
+  return {tab:'overview',versionId:''};
+}
 // 영상 전 세 번 확인 중 몇 번째인지. 손님이 지금 어디쯤인지 한눈에 보이게 한다.
 export const CONFIRM_OF=Object.freeze({direction:'1/3',model:'1/3',script:'2/3',images:'3/3'});
 export const ROOM_COPY={
@@ -48,14 +62,14 @@ export const ROOM_COPY={
   revise:{turn:'us',title:'의견을 반영하고 있어요',text:'보내 주신 의견대로 고쳐서 새 판을 보내 드려요.'},
   make:{turn:'us',title:'확인하신 컷으로 만들고 있어요',text:'목소리와 음악을 먼저 만들고 그 박자에 컷을 맞춰요. 다음에 받으실 것은 소리까지 들어간 영상이에요.'},
   review:{turn:'you',title:'영상이 도착했어요',text:'영상을 보면서 고칠 시점에 의견을 남겨 주세요.',action:{label:'영상 보기',go:'review'}},
-  deliver:{turn:'you',title:'완성본을 받으세요',text:'올릴 곳에 맞는 파일을 내려받으실 수 있어요.',action:{label:'파일 받기',go:'history'}},
+  deliver:{turn:'you',title:'완성본을 받으세요',text:'올릴 곳에 맞는 파일을 내려받으실 수 있어요.',action:{label:'파일 받기',go:'review'}},
 };
 export const modelCard=id=>{const item=CASTING_MODELS.find(model=>model.id===id);return item?{id,name:item.name,line:MODEL_LINES[id]?.line||item.description,image:item.image}:null;};
 const assetUrl=asset=>asset?.media?.url||asset?.url||'';
 function slotsWithFiles(answers,files=[]){const slots={...(answers.slots||{})};for(const file of files){slots[file.slot]={...slots[file.slot],files:[...(slots[file.slot]?.files||[]),file]};}return slots;}
 const filled=r=>({...emptyAnswers(),...(r?.answers||{}),slots:slotsWithFiles(r?.answers||{},r?.files)});
 // 영상이 도착한 상태면 고객 방 스크린에 그 영상을 소리 없이 튼다.
-const screenFilm=(p,state)=>{const version=state==='deliver'?finals(p).at(-1):state==='review'?previews(p).at(-1):null,src=version?.media?.mimeType?.startsWith('video/')?version.media.url:'';return src?{src,label:version.label,go:state==='deliver'?'history':'review'}:null;};
+const screenFilm=(p,state)=>{const version=state==='deliver'?finals(p).at(-1):state==='review'?previews(p).at(-1):null,src=version?.media?.mimeType?.startsWith('video/')?version.media.url:'';return src?{src,label:version.label,go:'review'}:null;};
 // 보내 주신 의뢰서: 길이 · 구성 다음에 받으실 날(접수일 + 기간, 달력 기준 — 결정 11-07)을 둔다.
 function roomBrief(r,answers){
   const rows=briefRows(answers).filter(row=>!row.missing).slice(0,8).map(row=>[row.key,row.value]),pkg=pkgOf(answers),at=rows.findIndex(([key])=>key==='길이 · 구성');

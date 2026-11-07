@@ -3,7 +3,7 @@ import {emptyAnswers} from './request-data.mjs';
 import {roomView,mountRoom,draftView,mountDraft} from './film-views.mjs';
 import {modelCard} from './room-view.mjs';
 import {projectView} from './views.mjs';
-import {mountReview,mountFinal} from './film-review.mjs';
+import {mountReview} from './film-review.mjs';
 import {esc} from './api.mjs';
 import {play} from './motion.mjs';
 
@@ -62,15 +62,16 @@ export function mountFilmDemo(host,{internal=false,start='',onLeave,extra=[]}={}
     const old=root.querySelector('#review-video'),kept=old?{node:old,t:old.dataset.holding?0:old.currentTime,playing:!old.paused}:null;
     handle?.unmount?.();
     root.innerHTML=projectView(state);
-    if(tab==='review'){
+    // 영상 확인과 납품은 의뢰 흐름 손님과 같은 화면 하나다(판 3). 납품은 최종본이 고른 채로 열린다.
+    {
       document.documentElement.classList.add('view-dr');
       const fresh=root.querySelector('#review-video');
       if(kept&&fresh&&kept.node.dataset.version===fresh.dataset.version){fresh.replaceWith(kept.node);if(kept.playing)kept.node.play().catch(()=>{});}
       else if(kept&&fresh&&kept.t){fresh.addEventListener('loadedmetadata',()=>{fresh.currentTime=Math.min(kept.t,fresh.duration||kept.t);if(kept.playing)fresh.play().catch(()=>{});},{once:true});}
-      const current=state.versionId||state.project.versions.filter(v=>v.kind==='preview').at(-1)?.id,prior=current==='demo-v2'?{id:'demo-v1',src:BASE+'preview-v1.mp4'}:null;
+      const versions=state.project.versions,current=state.versionId||versions.filter(v=>v.kind==='final').at(-1)?.id||versions.filter(v=>v.kind==='preview').at(-1)?.id,prior=current==='demo-v2'?{id:'demo-v1',src:BASE+'preview-v1.mp4'}:null;
       handle=mountReview(root,{previous:prior});
-    }else{document.documentElement.classList.remove('view-dr');handle=mountFinal(root);}
-    mountRoom(root,{animate:false,onGo:to=>{if(to==='request')go('request');else if(to==='check')go('room');else if(to==='draft')go('draft');else if(to==='review')go('review');else if(to==='history')go('history');},onContact:()=>{nextPanel='ask';go('review');}});
+    }
+    mountRoom(root,{animate:false,onGo:to=>{if(to==='request')go('request');else if(to==='check'||to==='room')go('room');else if(to==='draft')go('draft');else if(to==='review')go(state.project.stage==='delivered'?'history':'review');},onContact:()=>say(NOT_REAL),onPaper:()=>say('예시 자료예요.')});
   }
   function bindProject(root){
     root.addEventListener('click',event=>{
@@ -120,7 +121,7 @@ export function mountFilmDemo(host,{internal=false,start='',onLeave,extra=[]}={}
       root.innerHTML=roomView({...ROOM,state:stateName,stage});
       root.querySelector('.sx-room').classList.add('is-example');
       root.addEventListener('submit',event=>event.stopPropagation());
-      mountRoom(root,{onGo:to=>{if(to==='request')go('request');else if(to==='check')go('room');else if(to==='draft')go('script');},onModel:()=>go('script'),onEdit:()=>go('request'),onForm:()=>go('room'),onContact:()=>say(NOT_REAL),onFiles:()=>say('예시라 올리지 않아요. 실제 의뢰에서는 여기서 자료를 더 보내실 수 있어요.')});return;
+      mountRoom(root,{onGo:to=>{if(to==='request')go('request');else if(to==='check'||to==='room')go('room');else if(to==='draft')go('script');},onModel:()=>go('script'),onEdit:()=>go('request'),onForm:()=>go('room'),onContact:()=>say(NOT_REAL),onFiles:()=>say('예시라 올리지 않아요. 실제 의뢰에서는 여기서 자료를 더 보내실 수 있어요.')});return;
     }
     if(id==='script'){root.innerHTML=draftView(SCRIPT);document.documentElement.classList.add('view-dr');handle=mountDraft(root,SCRIPT,{onBack:()=>go('room'),onApprove:()=>go('draft'),onSend:()=>go('room'),onRecast:()=>go('model')});return;}
     if(id==='draft'){root.innerHTML=draftView(DRAFT);document.documentElement.classList.add('view-dr');handle=mountDraft(root,DRAFT,{onBack:()=>go('room'),onApprove:()=>go('review'),onSend:()=>go('room')});return;}

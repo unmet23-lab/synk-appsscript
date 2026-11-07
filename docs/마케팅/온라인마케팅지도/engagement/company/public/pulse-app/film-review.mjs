@@ -196,12 +196,16 @@ export function mountReview(root,{previous=null,onError}={}){
   };
   if(video){
     for(const [type,fn] of Object.entries({play(){cancelAnimationFrame(raf);raf=requestAnimationFrame(tick);syncPlaying();},pause(){cancelAnimationFrame(raf);paintTime();syncPlaying();},seeked:paintTime,timeupdate(){if(video.paused)paintTime();},loadedmetadata(){setShape();placeMarks();placeScenes();paintTime();drawStrip();},canplay:drawStrip,error(){onError?.();}}))video.addEventListener(type,fn,{signal});
-    video.addEventListener('click',toggle,{signal});
+    // 전체 화면에서는 브라우저 조작 막대가 재생을 맡는다(크게 보기). 같이 뒤집지 않는다.
+    video.addEventListener('click',()=>{if(document.fullscreenElement!==video)toggle();},{signal});
     if(video.readyState>=1){setShape();placeMarks();placeScenes();paintTime();}
     if(video.readyState>=2)drawStrip();
     syncPlaying();if(!video.paused){raf=requestAnimationFrame(tick);}
   }
   playButton?.addEventListener('click',toggle,{signal});
+  // 크게 보기(의뢰 흐름의 영상 · 납품 화면): 납품 재생기와 같은 방식.
+  const full=$('[data-review-full]');
+  if(full&&video){full.addEventListener('click',()=>{(video.requestFullscreen||video.webkitEnterFullscreen)?.call(video);},{signal});addEventListener('fullscreenchange',()=>{video.controls=document.fullscreenElement===video;},{signal});}
   // 끌어서 시간 옮기기
   if(line&&video){
     let down=false;
@@ -219,7 +223,7 @@ export function mountReview(root,{previous=null,onError}={}){
     line.addEventListener('keydown',event=>{if(withModifier(event)||event.target!==slider)return;if(event.key==='ArrowLeft'){event.preventDefault();event.stopPropagation();seek(video.currentTime-1);}if(event.key==='ArrowRight'){event.preventDefault();event.stopPropagation();seek(video.currentTime+1);}},{signal});
   }
   addEventListener('keydown',event=>{
-    if(!video||keysAreBusy()||withModifier(event))return;
+    if(!video||keysAreBusy()||withModifier(event)||document.fullscreenElement===video)return;
     if(event.key===' '){event.preventDefault();toggle();}
     if(event.key==='ArrowLeft'){event.preventDefault();seek(video.currentTime-1);}
     if(event.key==='ArrowRight'){event.preventDefault();seek(video.currentTime+1);}

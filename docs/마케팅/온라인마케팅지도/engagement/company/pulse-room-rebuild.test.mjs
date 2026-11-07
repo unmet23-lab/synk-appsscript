@@ -56,15 +56,16 @@ test('the room never sends its customer to the old strategy form, and the desk w
   assert.ok(deskChecks(p).some(item=>item.label==='고객 방에는 제작 설계 확인이 보이지 않아요'));
   assert.equal(deskChecks(roomProject()).some(item=>/제작 설계/.test(item.label)),false);
 });
-test('asking before any video keeps the room rail on the current stage and marks the question as where you are',()=>{
+test('asking keeps the head on the current stage and marks the question as where you are',()=>{
+  // 판 3: 묻기는 머리 오른쪽 단추 하나와 묻기 화면 하나. 단계 줄은 지금 단계를 켜 두되 「여기」라고 하지 않는다.
   const model=roomModel(roomProject()),rail=roomRail(model,{tab:'contact'});
   assert.match(rail,/class="sx-step is-now"  [^>]*data-room-go="check"/,'the stage stays lit without claiming to be the page');
-  assert.equal(rail.split('aria-current="page"').length-1,1,'only the question is the current place (argon A1)');
-  assert.match(rail,/class="is-now" aria-current="page" data-room-do="contact">담당자에게 묻기/);
-  assert.doesNotMatch(roomRail(model),/data-room-do="contact" aria-current/);
+  assert.equal(rail.split('aria-current="page"').length-1,0,'the question, not a stage, is the current place (argon A1)');
+  assert.doesNotMatch(rail,/data-room-do="contact"/,'the way to ask is once, in the head actions');
   const views=read('views.mjs');
-  assert.match(views,/\$\{isCustomerRoom\(s\)\?roomRail\(roomInfo\(s\),\{tab:'contact'\}\):stepsOf\(s,nextOf\(s\)\)\}/);
-  const ask=views.slice(views.indexOf('function askRoom('),views.indexOf('function deliveryRoom('));
+  assert.match(views,/class="sx-head-ask\$\{roomTab\(s\.tab\)==='contact'\?' is-now':''\}" data-room-do="contact"\$\{roomTab\(s\.tab\)==='contact'\?' aria-current="page"':''\}>담당자에게 묻기/);
+  const ask=views.slice(views.indexOf('function contactRoom('),views.indexOf('// 체험의 의견 칸'));
+  assert.ok(ask.includes('data-form="support"'));
   assert.doesNotMatch(ask,/refresh/,'the question screen has no standing refresh link (live updates bring answers)');
   assert.match(roomView(model),/data-room-brief/);
 });

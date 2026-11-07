@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {projectView} from './public/pulse-app/views.mjs';
+import {usesRoom,roomRoute} from './public/pulse-app/room-view.mjs';
 
 const source=readFileSync(new URL('./public/pulse-app/app.mjs',import.meta.url),'utf8');
 const clickStart=source.indexOf("document.addEventListener('click',async event=>{"),clickSource=source.slice(clickStart,source.indexOf('\n});',clickStart)+4);
@@ -54,7 +55,9 @@ function harness(item,{mode='customer',read,request,nodes={},draft=false}={}){
     render:()=>renders.push({tab:s.tab,project:s.project?.id,versionId:s.versionId,focusId:s.notificationCommentId}),
     openDialog:type=>dialogs.push(type),closeDialog(){},
     cancelInviteNavigation(){},setBusy:value=>{sandbox.busy=value;},recordReset:()=>{resets++;},
-    production:{click:async()=>false,reset(){}}
+    production:{click:async()=>false,reset(){}},
+    // 판 3: 의뢰 흐름 손님은 대응표 하나(roomRoute)로 간다. 클릭 원문만 vm에 넣으므로 바깥 함수는 진짜를 넣는다.
+    roomCustomer:()=>s.mode==='customer'&&!!s.project&&usesRoom(s.project),roomRoute,window:{scrollTo:()=>{sandbox.scrolledTop=true;}}
   };
   vm.createContext(sandbox);vm.runInContext(resetContextSource+'\nconst originalResetContext=resetContext;resetContext=(...args)=>{recordReset();return originalResetContext(...args);};\n'+loadProjectSource+'\n'+withLeaveSource+'\n'+clickSource,sandbox);
   return {s,sandbox,drafts,notices,loads,reads,renders,dialogs,stage,get pulls(){return pulls;},get resets(){return resets;},click:()=>handler({target:{closest:()=>({dataset:{action:'open-notification',id:item.id}})}}),async confirmLeave(){drafts.clear();await sandbox.leaveAction?.();}};
@@ -122,4 +125,14 @@ test('the old notification request cannot clear a newer context load flag',async
   f.sandbox.resetContext();f.s.project=project('q');f.s.tab='concepts';f.sandbox.loading=true;
   wait.resolve({project:project('p')});await pending;
   assert.equal(f.s.project.id,'q');assert.equal(f.s.tab,'concepts');assert.equal(f.sandbox.loading,true);assert.equal(f.renders.length,0);
+});
+
+test('a request-flow customer: a reply opens the one ask screen, a final opens the video screen on that final, others the room top (판 3)',async()=>{
+  const room=id=>{const p=project(id);return {...p,requestFlow:true,versions:[{id:'v1',kind:'preview',label:'시안'},{id:'f1',kind:'final',label:'최종본'}],studio:{...p.studio,request:{status:'confirmed',rounds:[]}}};};
+  const reply=node('message','staff-reply'),f=harness({id:'n1',projectId:'p',tab:'review',messageId:'staff-reply'},{request:()=>({project:room('p')}),nodes:{'[data-message-id]':[node('message','other'),reply]}});
+  await f.click();assert.equal(f.s.tab,'contact');assert.equal(reply.focusCount,1);assert.equal(f.stage.scrollCount,0);
+  const delivery=node('delivery','review-delivery'),g=harness({id:'n2',projectId:'p',tab:'history',versionId:'f1'},{request:()=>({project:room('p')}),nodes:{'#review-delivery':delivery}});
+  await g.click();assert.equal(g.s.tab,'review');assert.equal(g.s.versionId,'f1');assert.equal(delivery.focusCount,1);
+  const top=harness({id:'n3',projectId:'p',tab:'strategy'},{request:()=>({project:room('p')})});
+  await top.click();assert.equal(top.s.tab,'overview');assert.equal(top.sandbox.scrolledTop,true,'the room has no stage content to scroll to');assert.equal(top.stage.scrollCount,0);
 });

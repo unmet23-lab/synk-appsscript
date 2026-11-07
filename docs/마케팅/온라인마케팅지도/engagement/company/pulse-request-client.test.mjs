@@ -7,7 +7,7 @@ import {publicBackend} from './public/pulse-app/request-backend.mjs';
 import {roomRail} from './public/pulse-app/film-views.mjs';
 import {roomState,roomStage,roomModel,draftModel,deskChecks,deskModel,usesRoom,ROOM_COPY,ROOM_STAGES} from './public/pulse-app/room-view.mjs';
 import {CASTING_MODELS} from './public/pulse-app/casting-catalog.mjs';
-import {projectView,welcome,dialogContent,picker,headerCrumb} from './public/pulse-app/views.mjs';
+import {projectView,welcome,dialogContent,picker,headerCrumb,header} from './public/pulse-app/views.mjs';
 import {deskView} from './public/pulse-app/desk-view.mjs';
 import {deskQueue} from './public/pulse-app/room-view.mjs';
 
@@ -206,13 +206,19 @@ test('a customer with a request gets the new room; the review and delivery tabs 
   assert.match(draft,/^<div class="sx-draft sx-dr is-script"/);
   assert.doesNotMatch(draft,/ONE LINE|ROUND|CUTS|CUT \d/,'the words a customer reads are Korean');assert.match(draft,/1판 · 1컷/);assert.match(draft,/광고가 남길 한 문장/);
   assert.match(projectView({...roomState2(script),tab:'draft',error:'그사이 새 소식이 생겼어요',conflict:true}),/role="alert"[\s\S]*data-action="refresh"/,'a conflict on the draft can be refreshed from the draft');
+  // 판 3: 영상이 오기 전 review 탭(옛 링크 · 알림)은 고객 방으로, 묻기는 contact 화면 하나. 단계 줄은 화면이 아니라 앱 머리에 한 번.
   const legacy=projectView({...roomState2(script),tab:'review'});
-  assert.match(legacy,/^<div class="sx-shell sx-room" data-mode="customer" data-tab="review"/,'before any video the review tab is the ask-only room');
-  assert.match(legacy,/<nav class="sx-steps" aria-label="단계">/);
-  const asking=projectView({...roomState2(request({status:'submitted'})),tab:'review'});
+  assert.match(legacy,/^<div class="sx-room" data-state="script">/,'before any video the review tab is the room');
+  assert.doesNotMatch(legacy,/class="sx-steps/,'no step line inside the screen');
+  const asking=projectView({...roomState2(request({status:'submitted'})),tab:'contact'});
+  assert.match(asking,/^<div class="sx-shell sx-room" data-mode="customer" data-tab="contact" data-state="contact">/);assert.match(asking,/data-form="support"/);
   assert.doesNotMatch(asking,/의견은 모아서 한 번에 보내요/,'before any preview there is no such box');assert.match(asking,/궁금한 점을 남겨 주세요/);assert.equal(asking.split('후속 문의').length,1);
-  assert.match(room,/<div class="sx-steps-run">[\s\S]*<\/div><div class="sx-steps-foot sx-small">[\s\S]*담당자에게 묻기/,'on a phone the steps scroll and the way to ask stays outside them');
-  assert.equal(room.split('class="sx-step ').length-1,6,'the six steps are drawn once');assert.doesNotMatch(room,/class="leader"/);
+  const head=headerCrumb(roomState2(r)),actions=header({...roomState2(r),desktopApp:false});
+  assert.match(head,/<nav class="sx-steps sx-head-steps" aria-label="단계"><div class="sx-steps-run">/,'on a phone the steps scroll in the head');
+  assert.match(head,/data-room-go="room"/,'the project name leads back to the room');
+  assert.equal(head.split('class="sx-step ').length-1,5,'five steps, drawn once');assert.doesNotMatch(room,/class="sx-step |class="leader"/);
+  assert.equal(actions.split('data-room-do="contact"').length-1,1,'the way to ask stays outside the steps, once');
+  assert.doesNotMatch(asking,/class="sx-steps/);
   assert.doesNotMatch(legacy,/class="rail"/);
   assert.doesNotMatch(legacy,/next-decision/,'the room says what to do, not the old next-step card');
   assert.doesNotMatch(legacy,/production-scope/);
@@ -226,7 +232,8 @@ test('the room asks only what is open and offers the extra work staff requested'
   const model=projectView(roomState2(request({modelProposal:{modelId:'M06',status:'open',note:'잘 어울려요'}})));
   assert.match(model,/이 모델로 갈까요/);assert.match(model,/data-room-do="model-accept"/);assert.match(model,/data-room-model="F01"/);assert.match(model,/영상 전 확인/);
   const kickoff=projectView(roomState2(request(),{kickoff:{enabled:true,status:'waiting'}}));
-  assert.match(kickoff,/제작 전에 준비할 자료가 있어요/);assert.match(kickoff,/data-tab="strategy"/);
+  // 판 3: 준비 자료 · 바뀐 내용 · 납품 규격은 탭을 옮기지 않고 방 아래 준비 칸으로.
+  assert.match(kickoff,/제작 전에 준비할 자료가 있어요/);assert.match(kickoff,/data-room-do="paper" data-paper="kickoff"/);assert.doesNotMatch(kickoff,/data-tab="strategy"/);
   const written=projectView(roomState2(null,{requestFlow:true}));
   assert.match(written,/의뢰서를 써 주세요/);assert.match(written,/data-room-go="write"/);
 });
