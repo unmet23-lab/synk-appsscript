@@ -39,7 +39,7 @@
  *      확인할 것 — 10-28 · 29 B8 · B14가 같은 청금석 틀에 같은 끝 줄로 이틀 잇달아 나갔다
  *   ⑰ 소리 빈자리(10-31, tools/소리빈자리.js) — 처음 · 끝 0.4초 말고 −62 dB 아래가 0.25초 넘게 이어지는 자리의 합이 4초를 넘고 가장 긴 자리가
  *      1초를 넘으면 고칠 것, 하나만 넘으면 확인할 것 — 18초 배경음이 끝나 말 사이가 빈 M19 · E17이 ④ 음량을 넘겨 예약까지 갔다
- *   ⑱ 미학 맹검(11-08) — 편 폴더 게시/미학맹검.json(node tools/미학맹검.js <대표 프레임 · 카드…> --편 <편 폴더>)이 없거나(11-09부터 만든 편),
+ *   ⑱ 미학 맹검(11-08) — 편 폴더 게시/미학맹검.json(node tools/미학맹검.js <대표 프레임 · 카드…> --편 <편 폴더>)이 없거나(11-08부터 검사하는 모든 편 — 만든 날 상관없이),
  *      맹검 뒤 영상이 바뀌었거나, 답이 빠졌거나, 「기각」이 있으면 고칠 것. 그래도 낼 까닭은 준비.json 「맹검판단」, 아르곤이 막혔으면 「맹검못함」(확인할 것)
  *
  * 「고칠 것」은 올리기 전에 꼭 고칠 것(서버·API가 거절하거나 기준을 어김), 「확인할 것」은 기계가 확신하지 못해 눈으로 볼 것이다.
@@ -397,14 +397,14 @@ async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.bas
 // ── ⑮ 원본과 나란히(10-28) ──
 // ⑱ 미학 맹검(11-08 유호님 「내 피드백도 … 검수, 검토작업에 적용해줬으면 해」) — 보여 드리기 · 게시 전에 대표 프레임 · 카드를
 // tools/미학맹검.js(아르곤 그림 맹검, 슬롭 점검표의 유호님 말씀을 붙여 묻는다)로 보고 그 결과를 편 폴더 게시/미학맹검.json에 둔다(--편 <편 폴더>).
-// 11-09부터 만든 편 폴더만 묻는다(만들던 편을 갑자기 막지 않게). 맹검 뒤 영상이 바뀌었거나 답이 빠졌거나 「기각」이면 고칠 것 —
+// 11-08부터 검사하는 모든 편에 묻는다 — 만든 날 상관없이, 이미 만들어 둔 비축 편도(유호님 「오늘 회차부터 걸지 왜 내일부터 … 그냥 지금부터 걸어」).
+// 맹검 뒤 영상이 바뀌었거나 답이 빠졌거나 「기각」이면 고칠 것 —
 // 고쳐 다시 맹검하거나, 그래도 낼 까닭(빈 날 없음 · 지적이 이 자리와 무관 등)을 준비.json 「맹검판단」에 적으면 확인할 것으로 내린다.
 // 아르곤이 막혀 맹검을 못 했으면 준비.json 「맹검못함」에 까닭을 적는다(확인할 것).
-const AESTHETIC_FROM = '20261109';
+const AESTHETIC_FROM = '20261108'; // 관문을 건 날(기록용 — 날짜로 거르지 않는다)
 function aestheticFindings(bundle, videoFiles) {
   const findings = [];
   const add = (level, code, message) => findings.push({ level, code, where: '미학 맹검', message });
-  const day = (String(bundle.name).match(/_(\d{8})$/) || [])[1];
   const 글칸 = k => (typeof bundle.prep[k] === 'string' ? bundle.prep[k].trim() : '');
   const 판단 = 글칸('맹검판단'), 못함 = 글칸('맹검못함');
   const file = path.join(bundle.dir, '게시', '미학맹검.json');
@@ -412,7 +412,7 @@ function aestheticFindings(bundle, videoFiles) {
   try { 결과 = JSON.parse(fs.readFileSync(file, 'utf8')); } catch { /* 없다 */ }
   if (!결과) {
     if (못함) add(LOOK, 'aesthetic-skipped', `미학 맹검을 못 했다 — 「맹검못함」: ${못함}`);
-    else if (day && day >= AESTHETIC_FROM) add(FIX, 'aesthetic-missing', '보여 드리기 · 게시 전 미학 맹검이 없다(11-09부터, 제작 절차 3 관문) — node tools/미학맹검.js <대표 프레임 · 카드…> --편 <편 폴더>. 아르곤이 막혔으면 준비.json 「맹검못함」에 까닭');
+    else add(FIX, 'aesthetic-missing', '보여 드리기 · 게시 전 미학 맹검이 없다(11-08부터 모든 편, 제작 절차 3 관문) — node tools/미학맹검.js <대표 프레임 · 카드…> --편 <편 폴더>. 아르곤이 막혔으면 준비.json 「맹검못함」에 까닭');
     return findings;
   }
   const 만든때 = Date.parse(결과.만든때 || '') || (() => { try { return fs.statSync(file).mtimeMs; } catch { return 0; } })();

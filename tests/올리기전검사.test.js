@@ -401,14 +401,15 @@ test('⑰ 소리 빈자리 — 합계 · 최장이 다 넘으면 고칠 것, 하
   assert.equal(검사.gapFinding(판정([], 20)), null);
 });
 
-test('⑱ 미학 맹검(11-08): 11-09부터 만든 편은 결과가 있어야 하고, 기각 · 빠짐 · 맹검 뒤 바뀐 영상은 고칠 것, 판단 · 못함은 확인할 것', (t) => {
+test('⑱ 미학 맹검(11-08): 만든 날 상관없이 모든 편은 결과가 있어야 하고, 기각 · 빠짐 · 맹검 뒤 바뀐 영상은 고칠 것, 판단 · 못함은 확인할 것', (t) => {
   const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'aesthetic-'));
   t.after(() => fs.rmSync(뿌리, { recursive: true, force: true }));
   const 편 = (name, prep = {}) => { const dir = path.join(뿌리, name); fs.mkdirSync(path.join(dir, '게시'), { recursive: true }); return { name, dir, prep }; };
   const 결과쓰기 = (b, body) => fs.writeFileSync(path.join(b.dir, '게시', '미학맹검.json'), JSON.stringify(body));
   const 레벨 = (list) => list.map((f) => `${f.level}:${f.code}`);
 
-  assert.deepEqual(레벨(검사.aestheticFindings(편('synkbrief_옛편_20261108'), [])), [], '11-08까지 만든 편은 묻지 않는다');
+  assert.deepEqual(레벨(검사.aestheticFindings(편('synkbrief_옛편_20261104'), [])), ['고칠 것:aesthetic-missing'], '이미 만들어 둔 비축 편도 묻는다(11-08 「그냥 지금부터 걸어」)');
+  assert.deepEqual(레벨(검사.aestheticFindings(편('synkbrief_날짜없는편'), [])), ['고칠 것:aesthetic-missing']);
   assert.deepEqual(레벨(검사.aestheticFindings(편('synkbrief_새편_20261109'), [])), ['고칠 것:aesthetic-missing']);
   assert.deepEqual(레벨(검사.aestheticFindings(편('synkbrief_막힘_20261109', { 맹검못함: '아르곤 한도' }), [])), ['확인할 것:aesthetic-skipped']);
 
