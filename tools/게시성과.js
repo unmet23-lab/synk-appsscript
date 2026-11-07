@@ -30,6 +30,7 @@ const 편 = require('./lib/게시성과편.js');
 const 배수 = require('./lib/평소배수.js');
 const 시험 = require('./lib/게시성과시험.js');
 const 연결 = require('./lib/게시성과연결.js');
+const 관문 = require('./lib/관문대조.js');
 
 const REPO_DEFAULT = path.resolve(__dirname, '..');
 const LEDGER = 'docs/_ops/게시성과.jsonl';
@@ -406,6 +407,9 @@ function summarize({ ledger, now, unregistered = [], unmapped = [], index = null
     .sort((a, b) => String(a.publishedAt).localeCompare(String(b.publishedAt)));
   const lastAt = ledger.map(l => l.at).filter(Boolean).sort().pop();
   const test = 시험.시험판정({ ledger: usableLedger, screens: screensOf(usableLedger), index, accounts, now });
+  // 관문과 실제 반응(11-08) — 재기만 하는 표라 읽다 막혀도 요약 전체를 멈추지 않는다
+  let 관문절 = [];
+  try { 관문절 = 관문.요약절(관문.표({ judgments: latest, index, now })); } catch { 관문절 = []; }
 
   const lines = [
     '# 게시 성과 판정',
@@ -423,6 +427,7 @@ function summarize({ ledger, now, unregistered = [], unmapped = [], index = null
     `- **훅 이름표:** ${hooks.filter(h => h.m72n >= 2).length ? hooks.filter(h => h.m72n >= 2).map(h => `${h.key} ${배글(h.m72)}(${h.m72n}판)`).join(' · ') : '72시간 배수가 둘 이상 쌓인 이름표가 아직 없다'} — 판이 적은 이름표는 우연일 수 있다. 이름표·역할 없는 판 ${noHook}·${noRole}(10-21 전 편은 첫 줄에 이름표가 없다).`,
     '',
     ...시험절(test),
+    ...관문절,
     '## 훅 이름표별',
     '',
     '| 이름표 | 판 | 72시간 배수 중앙값 | 7일 배수 중앙값 | 상위·보통·하위·그 밖 | 브랜드 |',
@@ -463,9 +468,11 @@ function summarize({ ledger, now, unregistered = [], unmapped = [], index = null
     '',
     '## 서버에 등록되지 않은 게시',
     '',
-    '편 폴더 게시결과.json에 「게시됨」으로 적혔는데 서버 게시 성과에 없는 주소다. 이 편은 판정이 쌓이지 않으니 작업실 「게시 주소로 추가」로 등록한다(24시간 창은 게시 + 30시간에 닫힌다).',
+    '편 폴더 게시결과.json에 「게시됨」으로 적혔는데 서버 게시 성과에 없는 주소다. 이 편은 판정이 쌓이지 않으니 작업실 「게시 주소로 추가」로 등록한다(24시간 창은 게시 + 30시간에 닫힌다). 「주소 없음」 줄은 서버가 재는 계정(인스타 · 페북 · 유튜브 · 틱톡) 판이 게시물 주소 없이 「게시됨」인 것이다 — 그 판의 공개 주소를 게시결과.json 「주소」에 적으면 다음 회차에 위 등록 줄로 바뀐다(14시 게시 작업 1단계 「어제 슬롯 판 공개 확인」).',
     '',
-    ...(unregistered.length ? unregistered.map(u => `- ${kst(u.at)} ${u.folder} · ${u.account || '계정 모름'} · ${u.url}`) : ['- 없음']),
+    ...(unregistered.length ? unregistered.map(u => (u.주소없음
+      ? `- ${kst(u.at)} ${u.folder} · ${u.account} · 주소 없음${u.url ? `(게시물 주소가 아님: ${u.url})` : ''}`
+      : `- ${kst(u.at)} ${u.folder} · ${u.account || '계정 모름'} · ${u.url}`)) : ['- 없음']),
     '',
     ...(unmapped.length ? ['## 편 폴더를 못 찾은 등록', '', '서버 등록은 있는데 어느 편인지 못 찾았다. 계정·원고·공개 주소를 대조한 뒤 --연결목록으로 기록한다. 시각만 비슷한 게시물은 잇지 않는다.', '',
       ...unmapped.map(u => `- ${kst(u.publishedAt)} ${u.channel} · ${u.url}${u.ambiguous ? ` (여러 폴더: ${u.ambiguous.join(', ')})` : ''}`), ''] : []),
@@ -475,16 +482,24 @@ function summarize({ ledger, now, unregistered = [], unmapped = [], index = null
   return lines.join('\n');
 }
 
-/** 게시결과.json에 「게시됨」인데 서버 등록에 없는 주소(최근 14일) */
+// 서버가 숫자를 받는 플랫폼의 계정(인스타 · 페북 · 유튜브 · 틱톡). 이 계정 판이 주소 없이 「게시됨」이면 서버 등록도 미등록 경고도
+// 안 돼 판정이 조용히 빠진다(11-08 평가 — LAB 몽골 「와요」 인스타 · 페북처럼 Business Suite로 건 판이 「게시확인」 글만 남겼다).
+const TRACKED_ACCOUNT = /instagram|facebook|youtube|tiktok/;
+
+/** 게시결과.json에 「게시됨」인데 서버 등록에 없는 주소(최근 14일) — 서버가 재는 계정 판이 게시물 주소 없이 「게시됨」이면 주소없음으로 함께 */
 function unregisteredOf(index, registeredKeys, now) {
   const out = [];
   for (const info of index.folders.values()) {
     for (const p of 연결.resultRows(info.result)) {
       if (!p || p.상태 !== '게시됨') continue;
-      const id = 판정.postIdOf(p.주소);
-      if (!id || registeredKeys.has(id.key)) continue;
       const at = Date.parse(p.시각);
       if (!Number.isFinite(at) || at < now - RECENT_DAYS * 86_400_000 || at > now) continue;
+      const id = 판정.postIdOf(p.주소);
+      if (!id) {
+        if (typeof p.계정 === 'string' && TRACKED_ACCOUNT.test(p.계정)) out.push({ folder: info.folder, account: p.계정, url: p.주소 || null, at, 주소없음: true });
+        continue;
+      }
+      if (registeredKeys.has(id.key)) continue;
       out.push({ folder: info.folder, account: p.계정 || null, url: p.주소, at });
     }
   }
@@ -613,7 +628,7 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
   report.화면목록 = screenList.sort((a, b) => String(a.게시).localeCompare(String(b.게시)));
   const registeredKeys = new Set([...source.entries, ...source.posts].map(p => 판정.postIdOf(p.url)?.key).filter(Boolean));
   const unregistered = unregisteredOf(index, registeredKeys, now);
-  report.미등록 = unregistered.map(u => `${u.folder} ${u.url}`);
+  report.미등록 = unregistered.map(u => `${u.folder} ${u.주소없음 ? `${u.account} 주소 없음${u.url ? `(${u.url})` : ''}` : u.url}`);
   // 2주 시험 — 이번 판정 줄까지 들어간 장부로(미리 보기도 쓸 때와 같은 표)
   const ledgerAfter = [...ledger, ...linkLines, ...newLines];
   report.미연결 = unmapped;

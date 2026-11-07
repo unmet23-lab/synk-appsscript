@@ -894,3 +894,32 @@ test('2주 시험 갈래 — 계정표에서 못 찾은 판 계정 키는 「계
   assert.match(text, /- 계정 키 확인\([^\n]*\): \[편1\]\([^)]+\) synkbrief-youtbe/);
   assert.match(text, /- 서버가 받지 않아 세지 않는 판: 네이버 블로그 3/);
 });
+
+test('서버가 재는 계정 판이 주소 없이 「게시됨」이면 「주소 없음」으로 미등록 절에 띄우고, 텔레그램 같은 판 · 14일 밖은 뺀다(11-08)', t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-post-perf-noaddr-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const root = path.join(dir, 'docs', '마케팅');
+  const now = T0 + 20 * 24 * H;
+  const at = d => iso(now - d * 24 * H);
+  const folder = path.join(root, 'LAB_와요_mn_20261030', '게시');
+  fs.mkdirSync(folder, { recursive: true });
+  fs.writeFileSync(path.join(folder, '게시결과.json'), JSON.stringify({ 판: [
+    { 계정: 'lab-instagram', 상태: '게시됨', 시각: at(3), 게시확인: 'Business Suite 게시물 목록 「릴스 · synk.mn」' },
+    { 계정: 'lab-facebook', 상태: '게시됨', 시각: at(3), 주소: 'https://www.facebook.com/synkworld' },
+    { 계정: 'lab-telegram', 상태: '게시됨', 시각: at(3) },
+    { 계정: 'lab-tiktok', 상태: '게시됨', 시각: at(20) },
+    { 계정: 'lab-youtube', 상태: '예약됨', 시각: at(1) },
+    { 계정: 'lab-tiktok', 상태: '게시됨', 시각: at(2), 주소: 'https://www.tiktok.com/@synk.mn/video/7700000000000000001' },
+  ] }));
+  const index = 편.buildIndex(root);
+  const out = 도구.unregisteredOf(index, new Set(), now);
+  assert.deepEqual(out.map(u => [u.account, Boolean(u.주소없음), u.url]), [
+    ['lab-instagram', true, null],
+    ['lab-facebook', true, 'https://www.facebook.com/synkworld'],
+    ['lab-tiktok', false, 'https://www.tiktok.com/@synk.mn/video/7700000000000000001'],
+  ]);
+  const text = 도구.summarize({ ledger: [], now, unregistered: out, index });
+  assert.match(text, /LAB_와요_mn_20261030 · lab-instagram · 주소 없음\n/);
+  assert.match(text, /lab-facebook · 주소 없음\(게시물 주소가 아님: https:\/\/www\.facebook\.com\/synkworld\)/);
+  assert.doesNotMatch(text, /lab-telegram/);
+});
