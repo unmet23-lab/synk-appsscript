@@ -147,6 +147,17 @@
         }
       },
       {
+        "계정": "lab-mm-tiktok",
+        "채널": "틱톡 @synklab.mm",
+        "주소": "https://www.tiktok.com/@synklab.mm/video/7703436926342253832?utm_campaign=tt4d_open_api&utm_source=sbawa7xabwj54nyv5i",
+        "형식": "tiktok-video",
+        "게시": "2026-11-06T13:30:00.000Z",
+        "훅": null,
+        "역할": "육성",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-tiktok",
         "채널": "틱톡 @synk.mn",
         "주소": "https://www.tiktok.com/@synk.mn/video/7703271110686575880?utm_campaign=tt4d_open_api&utm_source=sbawa7xabwj54nyv5i",
@@ -216,6 +227,17 @@
             "completionRatePct": 16
           }
         }
+      },
+      {
+        "계정": "lab-youtube",
+        "채널": "유튜브 @synkkorean",
+        "주소": "https://www.youtube.com/watch?v=unqTCDvSamI",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-06T12:01:44.000Z",
+        "훅": null,
+        "역할": "육성",
+        "시점": {},
+        "화면필요": []
       }
     ]
   }
