@@ -58,7 +58,7 @@ ACT_17 = ("A wide view in the white-lit assembly hall: the turbine stands on its
           "through the whole clip.")
 
 # 11-08 받은 판: 23n은 다리만 번갈아 움직이고 나아가지 않는 제자리걸음(옛 23g와 같음 — 작은 먼 사람의 걷기는 시댄스가 못 냄) → 제자리 연기로.
-#   08n은 4장 멈칫 6/6(다가가는 판이라 눈에 보임) → 같은 지시문으로 한 번 더(같은 그림에서 처음 멈칫).
+#   08n은 4장 멈칫 6/6(다가가는 판이라 눈에 보임) → 같은 지시문을 시작 그림 참고(m2v)로(현장노트 드리미나: 첫 · 끝 프레임 판의 4장 멈칫은 m2v로 없어짐).
 ACT_23Q = ("Midday: a wide view of the huge concrete test building's open entrance; the turbine sits in its steel frame in the doorway, a small worker standing "
            "near it, a strip of green grass in the foreground. The small worker stays where he is and is busy there: from the very first frame he turns his head "
            "to look up along the turbine, at about 0.8 s he lifts his right hand to the brim of his hard hat as he looks up, and at about 1.4 s he lowers the "
@@ -72,7 +72,7 @@ JOBS = [  # (id, 꾸러미 폴더, 원래 판 폴더(DAY 아래), 새 ACTION, �
     ("p10-11n", "005_p10-11n", "웹올리기_p10다시_1107/003_p10-11m", ACT_11, 1.6, ["11"], "2_참고1_시작.jpg", "켬"),
     ("p10-14n", "006_p10-14n", "웹올리기_여섯편/136_p10-14", ACT_14, 1.7, ["14"], "1_시작.jpg", "끔"),
     ("p10-17n", "007_p10-17n", "웹올리기_p10발전_1107/002_p10-17e", ACT_17, 1.7, ["17"], "1_시작.jpg", "끔"),
-    ("p10-08q", "008_p10-08q", "웹올리기_여섯편/131_p10-08", ACT_08, 1.9, ["8"], "1_시작.jpg", "끔"),
+    ("p10-08q", "008_p10-08q", "웹올리기_여섯편/131_p10-08", ACT_08, 1.9, ["8"], "2_참고1_시작.jpg", "끔"),   # 4장 멈칫 → m2v(현장노트 드리미나 「일곱에 하나꼴 …」)
     ("p10-23q", "009_p10-23q", "웹올리기_p10발전_1107/014_p10-23g", ACT_23Q, 1.6, ["23"], "1_시작.jpg", "끔"),
 ]
 
@@ -94,7 +94,8 @@ def main():
                                  "never holds still; he stays the same person in the same work clothes and white hard hat.", new, count=1, flags=re.M)
                 assert n == 1, pid
             os.makedirs(d, exist_ok=True)
-            shutil.copyfile(os.path.join(DAY, src, img), os.path.join(d, img))
+            srcimg = img if os.path.exists(os.path.join(DAY, src, img)) else "1_시작.jpg"   # 첫 장 판의 시작 그림을 참고(m2v) 이름으로
+            shutil.copyfile(os.path.join(DAY, src, srcimg), os.path.join(d, img))
             open(os.path.join(d, "지시문.txt"), "w", encoding="utf-8").write(new)
         boards.append({"순서": k, "id": pid, "편": "p10", "컷": cuts, "폴더": folder, "길이": 4, "비율": "16:9", "소리": sound, "묶음": False, "대안": False,
                        "방식": None, "시험": False, "낱판": [], "쓰는초": [use], "파일": [img], "빠진 파일": [],
