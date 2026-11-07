@@ -1262,9 +1262,11 @@
 
 ### 윈도를 다시 설치한 뒤 GPT 백엔드 검수가 「덜 읽음」으로만 끝난다 — Codex의 읽기 도구가 모두 `CryptUnprotectData failed: 2148073483`로 안 돈다, 격리 실행 비밀(`.sandbox-secrets`)이 옛 윈도 키로 잠겼다 (2026-11-07 Claude)
 - 증상: 11-07 재설치 뒤 `검수묶음.mjs GPT <이름>`(배포 점검 기준 그림 묶음)이 두 번 다 「덜 읽음」 — 답의 coverage에 「로컬 읽기 도구가 모두 CryptUnprotectData failed: 2148073483 오류로 실행되지 않았다」. 같은 날 Codex 그림 굽기(내장 그림 도구, 파일 읽기 없음)는 됐고, 아르곤(agy)은 다시 로그인한 뒤 읽음이었다.
-- 원인(추정): `~/.codex/config.toml`의 `sandbox = "elevated"`가 쓰는 격리 실행 비밀 `~/.codex/.sandbox-secrets/`가 10-18에 만들어져 옛 윈도의 DPAPI 키로 암호화돼 있다. 새 윈도는 그 키를 못 풀어 셸 · 파일 읽기 도구가 시작조차 못 한다(0x8009000B = 이 키로 쓸 수 없음).
-- 고침: Claude가 하지 않는다 — 격리 실행을 다시 세우면 윈도 격리 계정 · 권한을 새로 만들고 관리자 승인이 든다(보안 설정). 유호님이 GPT(Codex) 앱에서 격리 실행을 다시 준비하거나(앱이 권하면 승인), `.sandbox-secrets`를 옮겨 두고 앱을 다시 켜 새로 만들게 한다. 그 사이 GPT가 필수인 백엔드 검수는 배포 조건이 차지 않는다(아르곤 대신은 한도 · 로그인 막힘에만 인정).
-- 다시 확인: `node tools/검수묶음.mjs GPT <작은 묶음>`의 답 coverage에 CryptUnprotectData가 없고 「읽음」이면 풀린 것이다.
+- 원인: `~/.codex/config.toml`의 `[windows] sandbox = "elevated"`는 컴퓨터 전체 격리 계정 `CodexSandboxOffline` · `CodexSandboxOnline`과 방화벽 · WFP 규칙을 쓰는 방식이다. 그 계정의 비밀번호를 담은 `~/.codex/.sandbox-secrets/sandbox_users.json`은 10-18에 옛 윈도의 DPAPI 키로 암호화됐다. 11-07 밤에 `Get-LocalUser`로 보니 새 윈도에는 그 두 계정이 아예 없고, 새 윈도는 옛 키를 못 풀어 셸 · 파일 읽기 도구가 시작조차 못 한다(0x8009000B = 이 키로 쓸 수 없음).
+- 영향 범위: 격리 모드(`read-only` · `workspace-write`)로 도는 실행만 막힌다. 앱 대화가 「전체 접근」(`danger-full-access`)이면 격리를 거치지 않아 그대로 돈다. 11-07 19:14 앱 세션은 도구 결과 17건에 이 오류가 0건이었다. 막히는 쪽은 `검수묶음.mjs GPT`(`-s read-only`)와 앱에서 격리 모드로 시킨 일이다.
+- 막다른 길: 한 번만 `-c 'windows.sandbox="unelevated"'`(제한 토큰)로 돌려 봤다. 이번에는 `CreateProcessAsUserW failed: 5`가 났다. 셸이 스토어 앱 별칭 pwsh(`…\WindowsApps\pwsh.exe`)라서 제한 토큰으로는 못 띄운다. `mxc`(컨테이너)는 실험 기능이라 시험하지 않았다.
+- 고침: Claude가 하지 않는다 — 다시 세우면 윈도 로컬 계정과 방화벽 규칙이 관리자 권한으로 새로 생긴다(운영체제 보안 설정). 유호님이 터미널에서 `codex sandbox setup --elevated --current-user`를 치고 관리자 승인(UAC) 창에서 「예」를 누른다. 도움말에 안 보이는 숨은 하위 명령이고, 0.167.0의 오류 문구에 이 꼴이 나온다. 「setup is still running」이 나오면 Codex 앱을 다시 켜고 한 번 더 친다. 그 사이 GPT가 필수인 백엔드 검수는 배포 조건이 차지 않는다(아르곤 대신은 한도 · 로그인 막힘에만 인정).
+- 다시 확인: 먼저 `Get-LocalUser`에 `CodexSandboxOffline`이 보이는지 본다. 그다음 `codex exec -s read-only`로 파일 한 줄을 읽게 해 CryptUnprotectData 없이 글이 돌아오면 된다(스크래치 시험기 꼴: 빈 폴더에 probe.txt, 추론 low). 마지막으로 `node tools/검수묶음.mjs GPT <작은 묶음>`의 답이 「읽음」이면 풀린 것이다.
 
 ## Claude Code·공식 CLI 읽기(계정판)
 
