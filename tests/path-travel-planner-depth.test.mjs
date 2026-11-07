@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { planTravel, replanTravel, normalizePlannerInput, DETAIL_PREFERENCE_CATEGORIES, PREFERENCE_LABELS } from '../experiences/path-travel/planner.mjs';
+import './fixtures/path-travel-catalog-20261009/use-snapshot.mjs';
+const { planTravel, replanTravel, normalizePlannerInput, DETAIL_PREFERENCE_CATEGORIES, PREFERENCE_LABELS } = await import('../experiences/path-travel/planner.mjs');
 
 const now = '2026-10-09T03:00:00.000Z';
 const sourceUrl = 'https://example.org/official';

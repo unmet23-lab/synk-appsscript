@@ -1,12 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  normalizeRealCourse, createRealCourseExample, createRealCourseFromSelection, evaluateRealCourse,
-  replaceRealCourseStop, suggestRealCourseAlternatives, exportRealCourseMemo,
-} from '../experiences/path-travel/real-course.mjs';
-import { REAL_PLACES } from '../experiences/path-travel/real-places.mjs';
-import { REAL_COURSE_OFFERINGS } from '../experiences/path-travel/real-course-data.mjs';
-import { normalizeRealState, serializeRealState, readRealState, setRealVisit } from '../experiences/path-travel/real-guide.mjs';
+import './fixtures/path-travel-catalog-20261009/use-snapshot.mjs';
+const { normalizeRealCourse, createRealCourseExample, createRealCourseFromSelection, evaluateRealCourse, replaceRealCourseStop, suggestRealCourseAlternatives, exportRealCourseMemo } = await import('../experiences/path-travel/real-course.mjs');
+const { REAL_PLACES } = await import('../experiences/path-travel/real-places.mjs');
+const { REAL_COURSE_OFFERINGS } = await import('../experiences/path-travel/real-course-data.mjs');
+const { normalizeRealState, serializeRealState, readRealState, setRealVisit } = await import('../experiences/path-travel/real-guide.mjs');
 
 const now = '2026-10-07T01:00:00.000Z', sourceUrl = 'https://official.example/visit';
 const calendar = { from: '2026-10-07', through: '2026-11-06', holidays: ['2026-10-09'], verifiedAt: '2026-10-07', sourceUrl };

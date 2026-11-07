@@ -2,10 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import { TRAVEL_PLACES, SOURCES, PHOTO_CREDITS, TRAVEL_META, findPlace } from '../experiences/path-travel/places-v2.mjs';
-import { REAL_PLACES, REAL_CONDITION_CALENDAR } from '../experiences/path-travel/real-places.mjs';
-import { evaluateRealConditions, evaluateRealStay } from '../experiences/path-travel/real-conditions.mjs';
-import { planTravel } from '../experiences/path-travel/planner.mjs';
+import './fixtures/path-travel-catalog-20261009/use-snapshot.mjs';
+const { TRAVEL_PLACES, SOURCES, PHOTO_CREDITS, TRAVEL_META, findPlace } = await import('../experiences/path-travel/places-v2.mjs');
+const { REAL_PLACES, REAL_CONDITION_CALENDAR } = await import('../experiences/path-travel/real-places.mjs');
+const { evaluateRealConditions, evaluateRealStay } = await import('../experiences/path-travel/real-conditions.mjs');
+const { planTravel } = await import('../experiences/path-travel/planner.mjs');
 
 const now = '2026-10-09T03:00:00.000Z';
 const options = { now, calendar: REAL_CONDITION_CALENDAR };

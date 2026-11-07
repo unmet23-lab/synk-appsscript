@@ -1,15 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { TRAVEL_PLACES } from '../experiences/path-travel/places-v2.mjs';
-import { planTravel, replanRemainingTravel, assessPlannerRequirements, plannerInputFingerprint, SEMANTIC_KEYS } from '../experiences/path-travel/planner.mjs';
-import { createWalkingRouter } from '../experiences/path-travel/walking-router.mjs';
-import { TRAVEL_STORAGE_KEY, createTravelMemory, validateTravelMemory, setTravelConsent, saveTravelMemory,
-  loadTravelMemory, clearTravelMemory, exportTravelMemory, importTravelMemory, migrateLegacyTravel } from '../experiences/path-travel/planner-storage.mjs';
-import { recordPlanDecision, recordPlanExposure, recordVisit, recordTripOutcome, proposeVisitPreference,
-  confirmTravelPreference, removeTravelPreference, removeTravelVisit, editTravelVisit, clearTravelHistory,
-  summarizeTravelMemory, TRAVEL_PREFERENCE_KEYS } from '../experiences/path-travel/planner-feedback.mjs';
-import { TRAVEL_ACCOUNT_CONTRACT, travelAccountDocument, travelDeviceState } from '../experiences/path-travel/planner-account.mjs';
+import './fixtures/path-travel-catalog-20261009/use-snapshot.mjs';
+const { TRAVEL_PLACES } = await import('../experiences/path-travel/places-v2.mjs');
+const { planTravel, replanRemainingTravel, assessPlannerRequirements, plannerInputFingerprint, SEMANTIC_KEYS } = await import('../experiences/path-travel/planner.mjs');
+const { createWalkingRouter } = await import('../experiences/path-travel/walking-router.mjs');
+const { TRAVEL_STORAGE_KEY, createTravelMemory, validateTravelMemory, setTravelConsent, saveTravelMemory, loadTravelMemory, clearTravelMemory, exportTravelMemory, importTravelMemory, migrateLegacyTravel } = await import('../experiences/path-travel/planner-storage.mjs');
+const { recordPlanDecision, recordPlanExposure, recordVisit, recordTripOutcome, proposeVisitPreference, confirmTravelPreference, removeTravelPreference, removeTravelVisit, editTravelVisit, clearTravelHistory, summarizeTravelMemory, TRAVEL_PREFERENCE_KEYS } = await import('../experiences/path-travel/planner-feedback.mjs');
+const { TRAVEL_ACCOUNT_CONTRACT, travelAccountDocument, travelDeviceState } = await import('../experiences/path-travel/planner-account.mjs');
 
 const T0 = '2026-10-09T02:00:00.000Z';
 const T1 = '2026-10-09T03:00:00.000Z';

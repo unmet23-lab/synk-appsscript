@@ -135,6 +135,8 @@ Core의 후보 판단·질문, Trail의 사건 기록, Temper의 노출/결과 �
 
 실제 이용자 테스트는 사용자 요청에 따라 **준비까지만** 한다. 모집·연락·실사용·현장 방문·만족도 결과는 없다. [테스트 안내와 빈 기록지](../../../SYNK-website/qa/travel-halfday-20261007/field-test-guide.md), [공식 정보 수동 갱신 안내](../../../SYNK-website/qa/travel-halfday-20261007/source-maintenance.md), [이번 검증 기록](../../../SYNK-website/qa/travel-halfday-20261007/README.md)에 실행 범위를 구분한다.
 
+**장소 자료 재확인(2026-11-07):** 25곳과 공휴일 달력을 공식 안내로 다시 열어 확인일을 2026-11-07로 옮겼다. 다음 만료는 2026-12-07이다. 바뀐 값·출처·다음 절차·정기 재확인 판단은 [재확인 기록](qa/recheck-20261107/README.md), 지금 자료 검사는 `tests/path-travel-live-catalog.test.mjs`, 엔진 규칙 시험의 10월 표본은 `tests/fixtures/path-travel-catalog-20261009/`에 있다.
+
 ## 이전 실제 장소 조건 비교 v1 · 공개 검증 완료 (2026-10-07)
 
 실제11곳의 방문 날짜·서울 도착 시간·한 곳 성인1인 예산을 비교한다. 조건 맞음/확인 필요/조건과 다름 순서 안에서 기존 Core 취향 순서를 적용하며, 이번 조건은 저장 기록과 분리했다. 여행115/115·빌드5/5·격리source441/441, 최종 로컬·공개 각각117/117그룹+시간대2/2, 공개31파일 HTTP200·SHA256·크기·MIME 일치. 공식 Claude Code Opus5.5 최대 추론 최종 통과(실제모델 claude-opus-5-5, 완료, is_error:false). 공개4a93d273, Pages37618641888 성공, 전체 CI 37618644638 성공(2026-10-07T12:17:22Z).

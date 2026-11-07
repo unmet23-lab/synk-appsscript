@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { TRAVEL_PLACES } from '../experiences/path-travel/places-v2.mjs';
-import { planTravel, replanTravel, normalizePlannerInput, estimateWalkingLeg } from '../experiences/path-travel/planner.mjs';
+import './fixtures/path-travel-catalog-20261009/use-snapshot.mjs';
+const { TRAVEL_PLACES } = await import('../experiences/path-travel/places-v2.mjs');
+const { planTravel, replanTravel, normalizePlannerInput, estimateWalkingLeg } = await import('../experiences/path-travel/planner.mjs');
 
 const now = '2026-10-09T03:00:00.000Z';
 const base = {

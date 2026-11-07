@@ -2,7 +2,7 @@
 export const REAL_COURSE_META = Object.freeze({
   "version": 1,
   "area": "서울 종로·안국·인사동·북촌",
-  "verifiedAt": "2026-10-07",
+  "verifiedAt": "2026-11-07",
   "freshnessDays": 30,
   "sourceKind": "official-web-notices",
   "liveAvailability": false,
@@ -22,7 +22,7 @@ export const REAL_COURSE_OFFERINGS = Object.freeze({
     "unit": "menu-item",
     "taxStatus": "not-stated",
     "sourceUrl": "https://www.koong.co.kr/2020/menuinfo/meals.php",
-    "verifiedAt": "2026-10-07",
+    "verifiedAt": "2026-11-07",
     "availabilityNote": "메뉴 1개 표시가격이에요. 인분·세금·주문 가능 여부는 매장 확인이 필요해요."
   }
 });
@@ -31,8 +31,8 @@ export const REAL_COURSE_RECHECKS = Object.freeze([
   {
     "placeId": "gaeseong-mandu-koong",
     "name": "개성만두 궁",
-    "verifiedAt": "2026-10-07",
-    "reviewBy": "2026-11-06",
+    "verifiedAt": "2026-11-07",
+    "reviewBy": "2026-12-07",
     "sourceUrls": [
       "https://www.koong.co.kr/2020/menuinfo/meals.php",
       "https://www.koong.co.kr/2020/storeinfo/headoffice.php",
@@ -43,18 +43,18 @@ export const REAL_COURSE_RECHECKS = Object.freeze([
   {
     "placeId": "balwoo-gongyang",
     "name": "발우공양",
-    "verifiedAt": "2026-10-07",
-    "reviewBy": "2026-11-06",
+    "verifiedAt": "2026-11-07",
+    "reviewBy": "2026-12-07",
     "sourceUrls": [
-      "https://korean.visitseoul.net/restaurants/BalwooGongyang/KOP4vpx7k"
+      "https://korean.visitseoul.net/restaurants/%EB%B0%9C%EC%9A%B0-%EA%B3%B5%EC%96%91/KOP030871"
     ],
-    "note": "메뉴별 제공 요일·시간·인분·세금과 정기휴무를 확인하기 전에는 표시가격을 합산하지 않아요."
+    "note": "점심 1·2부의 시작 시각에 맞춘 입장·예약 조건과 코스의 인원 단위·세금을 확인하기 전에는 표시가격을 합산하지 않아요."
   },
   {
     "placeId": "kyungin-traditional-teahouse",
     "name": "경인미술관 전통다원",
-    "verifiedAt": "2026-10-07",
-    "reviewBy": "2026-11-06",
+    "verifiedAt": "2026-11-07",
+    "reviewBy": "2026-12-07",
     "sourceUrls": [
       "https://korean.visitseoul.net/restaurants/%EA%B2%BD%EC%9D%B8%EB%AF%B8%EC%88%A0%EA%B4%80%EC%A0%84%ED%86%B5%EB%8B%A4%EC%9B%90/KOP010878"
     ],
@@ -63,8 +63,8 @@ export const REAL_COURSE_RECHECKS = Object.freeze([
   {
     "placeId": "osulloc-bukchon",
     "name": "오설록 티하우스 북촌점",
-    "verifiedAt": "2026-10-07",
-    "reviewBy": "2026-11-06",
+    "verifiedAt": "2026-11-07",
+    "reviewBy": "2026-12-07",
     "sourceUrls": [
       "https://www.osulloc.com/kr/ko/store-introduction/312"
     ],
@@ -73,8 +73,8 @@ export const REAL_COURSE_RECHECKS = Object.freeze([
   {
     "placeId": "nine-tree-insadong",
     "name": "나인트리 바이 파르나스 서울 인사동",
-    "verifiedAt": "2026-10-07",
-    "reviewBy": "2026-11-06",
+    "verifiedAt": "2026-11-07",
+    "reviewBy": "2026-12-07",
     "sourceUrls": [
       "https://www.ninetreehotels.com/ko/insadong/room/standard-double"
     ],
@@ -83,8 +83,8 @@ export const REAL_COURSE_RECHECKS = Object.freeze([
   {
     "placeId": "orakai-insadong-suites",
     "name": "오라카이 인사동 스위츠",
-    "verifiedAt": "2026-10-07",
-    "reviewBy": "2026-11-06",
+    "verifiedAt": "2026-11-07",
+    "reviewBy": "2026-12-07",
     "sourceUrls": [
       "https://insa.orakaihotels.com/kr/about/guest_info.asp?mCode=1"
     ],
@@ -93,30 +93,32 @@ export const REAL_COURSE_RECHECKS = Object.freeze([
   {
     "placeId": "seoul-museum-craft-art",
     "name": "서울공예박물관",
-    "verifiedAt": "2026-10-07",
-    "reviewBy": "2026-10-13",
+    "verifiedAt": "2026-11-07",
+    "reviewBy": "2026-12-07",
     "sourceUrls": [
       "https://craftmuseum.seoul.go.kr/preview/visit",
       "https://craftmuseum.seoul.go.kr/introduce/news_view/NTT_0000000444",
       "https://craftmuseum.seoul.go.kr/introduce/news_view/NTT_0000000452"
     ],
-    "note": "로비 부분휴관·야간 대상 공간·입장마감과 대관전시·예약 프로그램의 별도 조건을 확인해요."
+    "note": "야간 연장(11.30 종료) 뒤 운영시간, 부분 휴관 공지와 대관전시·예약 프로그램의 별도 조건을 확인해요."
   },
   {
     "placeId": "unhyeongung",
     "name": "운현궁",
-    "verifiedAt": "2026-10-07",
-    "reviewBy": "2026-11-01",
+    "verifiedAt": "2026-11-07",
+    "reviewBy": "2026-12-07",
     "sourceUrls": [
+      "https://www.unhyeongung.or.kr/sub/introduce/preview.php",
+      "https://www.unhyeongung.or.kr/sub/notice_guide/notice.php?group=basic&code=B10&abmode=view&no=1974",
       "https://korean.visitseoul.net/attractions/%EC%9A%B4%ED%98%84%EA%B6%81_/471"
     ],
-    "note": "11월 일반 운영시간과 야간 개방의 종료·공휴일 적용 여부를 확인해요."
+    "note": "야간 개방 종료(11.29) 뒤 동절기 운영과 공휴일 적용 여부를 확인해요."
   },
   {
     "placeId": "gyeongbokgung",
     "name": "경복궁",
-    "verifiedAt": "2026-10-07",
-    "reviewBy": "2026-11-01",
+    "verifiedAt": "2026-11-07",
+    "reviewBy": "2026-12-07",
     "sourceUrls": [
       "https://royal.khs.go.kr/ROYAL/contents/R703000000.do",
       "https://royal.khs.go.kr/ROYAL/contents/R403000000.do?id=20260930144202825885&schM=view",
@@ -125,48 +127,36 @@ export const REAL_COURSE_RECHECKS = Object.freeze([
       "https://royal.khs.go.kr/ROYAL/contents/R403000000.do?id=20260830151817711582&schM=view",
       "https://royal.khs.go.kr/ROYAL/contents/R707000000.do?schGroupCode=gbg"
     ],
-    "note": "근정전 월대 제한 종료, 11월 운영시간, 무료 관람일과 휴궁일을 함께 확인해요."
+    "note": "12월 운영시간과 무료 관람일(코리아 그랜드 페스티벌 11.15 종료, 매월 마지막 수요일), 휴궁일을 함께 확인해요."
   },
   {
     "placeId": "changgyeonggung",
     "name": "창경궁",
-    "verifiedAt": "2026-10-07",
-    "reviewBy": "2026-11-01",
+    "verifiedAt": "2026-11-07",
+    "reviewBy": "2026-12-07",
     "sourceUrls": [
       "https://royal.khs.go.kr/ROYAL/contents/R703000000.do",
       "https://royal.khs.go.kr/ROYAL/contents/R702000000.do?schGroupCode=cgg",
       "https://royal.khs.go.kr/ROYAL/contents/R403000000.do?id=20260930093346212667&schM=view",
       "https://royal.khs.go.kr/ROYAL/contents/R403000000.do?id=20261007095901706396&schM=view",
-      "https://royal.khs.go.kr/ROYAL/contents/R707000000.do?schGroupCode=cgg"
+      "https://royal.khs.go.kr/ROYAL/contents/R707000000.do?schGroupCode=cgg",
+      "https://royal.khs.go.kr/ROYAL/contents/R403000000.do?id=20260902131858531105&schM=view"
     ],
-    "note": "수요일 무료 관람·축제 기간·휴궁일과 11월 야간 공개 구역 경계를 함께 확인해요."
+    "note": "「동궐동락」 기간(11.10~11.15) 야간 일반관람 중단 뒤 재개, 수요일 무료 관람과 휴궁일을 함께 확인해요."
   },
   {
     "placeId": "national-folk-museum",
     "name": "국립민속박물관 본관",
-    "verifiedAt": "2026-10-07",
-    "reviewBy": "2026-11-01",
+    "verifiedAt": "2026-11-07",
+    "reviewBy": "2026-12-07",
     "sourceUrls": [
       "https://nfm.go.kr/home/subIndex/1239.do"
     ],
-    "note": "상설전시관1 휴관 종료 예정일과 실제 재개, 동절기 시간·야간 중단, 옥외 내부 제한을 확인해요."
+    "note": "상설전시관1 휴관 종료 예정일(12.21)과 실제 재개, 동절기 시간과 옥외 내부 제한을 확인해요."
   }
 ]);
 
 export const REAL_COURSE_PERIODS = Object.freeze([
-  {
-    "id": "craft-lobby-closure",
-    "placeIds": [
-      "seoul-museum-craft-art"
-    ],
-    "kind": "partial-closure",
-    "from": "2026-10-13",
-    "through": "2026-10-25",
-    "reviewOn": "2026-10-13",
-    "sourceUrl": "https://craftmuseum.seoul.go.kr/introduce/news_view/NTT_0000000452",
-    "verifiedAt": "2026-10-07",
-    "note": "전시1동 1층 로비 휴관·통행 제한. 10월 27일 정상운영 안내이며, 26일은 정기휴관일이에요."
-  },
   {
     "id": "craft-extended-evening",
     "placeIds": [
@@ -177,7 +167,7 @@ export const REAL_COURSE_PERIODS = Object.freeze([
     "through": "2026-11-30",
     "reviewOn": "2026-11-30",
     "sourceUrl": "https://craftmuseum.seoul.go.kr/introduce/news_view/NTT_0000000444",
-    "verifiedAt": "2026-10-07",
+    "verifiedAt": "2026-11-07",
     "note": "화·수·금·토·일 전시1동 1~2층의 야간 연장 기간이에요. 전체 전시실 연장이 아니에요."
   },
   {
@@ -188,23 +178,10 @@ export const REAL_COURSE_PERIODS = Object.freeze([
     "kind": "extension",
     "from": "2026-09-01",
     "through": "2026-11-29",
-    "reviewOn": "2026-11-01",
-    "sourceUrl": "https://korean.visitseoul.net/attractions/%EC%9A%B4%ED%98%84%EA%B6%81_/471",
-    "verifiedAt": "2026-10-07",
-    "note": "화·수·금·토·일 야간 개방 안내. 기존 조건자료는 11월 일반시간 미확인으로 10월 31일까지 사용해요."
-  },
-  {
-    "id": "gyeongbokgung-woldae",
-    "placeIds": [
-      "gyeongbokgung"
-    ],
-    "kind": "partial-closure",
-    "from": "2026-09-02",
-    "through": "2026-10-31",
-    "reviewOn": "2026-11-01",
-    "sourceUrl": "https://royal.khs.go.kr/ROYAL/contents/R403000000.do?id=20260830151817711582&schM=view",
-    "verifiedAt": "2026-10-07",
-    "note": "근정전 월대 출입 제한 기간이에요. 11월 재개 여부와 새 공지를 확인해요."
+    "reviewOn": "2026-11-29",
+    "sourceUrl": "https://www.unhyeongung.or.kr/sub/notice_guide/notice.php?group=basic&code=B10&abmode=view&no=1974",
+    "verifiedAt": "2026-11-07",
+    "note": "화·수·금·토·일 야간 개방 안내. 목요일과 그 밖의 동절기 날은 09:00~18:00이에요."
   },
   {
     "id": "royal-autumn-free",
@@ -215,10 +192,10 @@ export const REAL_COURSE_PERIODS = Object.freeze([
     "kind": "free-admission-period",
     "from": "2026-10-29",
     "through": "2026-11-15",
-    "reviewOn": "2026-11-06",
+    "reviewOn": "2026-11-15",
     "sourceUrl": "https://royal.khs.go.kr/ROYAL/contents/R403000000.do?id=20260930093346212667&schM=view",
-    "verifiedAt": "2026-10-07",
-    "note": "일반 관람 무료 기간이며 휴궁일·별도 특별관람은 제외돼요. 현재 조건자료에는 11월 6일까지의 날짜만 반영돼요."
+    "verifiedAt": "2026-11-07",
+    "note": "일반 관람 무료 기간이며 휴궁일·별도 특별관람은 제외돼요."
   },
   {
     "id": "gyeongbokgung-winter-hours",
@@ -227,9 +204,9 @@ export const REAL_COURSE_PERIODS = Object.freeze([
     ],
     "kind": "season-change",
     "startsOn": "2026-11-01",
-    "reviewOn": "2026-11-01",
+    "reviewOn": "2026-12-07",
     "sourceUrl": "https://royal.khs.go.kr/ROYAL/contents/R403000000.do?id=20260930144202825885&schM=view",
-    "verifiedAt": "2026-10-07",
+    "verifiedAt": "2026-11-07",
     "note": "11월 일반 관람 09:00~17:00, 입장마감 16:00으로 바뀌어요."
   },
   {
@@ -239,10 +216,23 @@ export const REAL_COURSE_PERIODS = Object.freeze([
     ],
     "kind": "season-change",
     "startsOn": "2026-11-01",
-    "reviewOn": "2026-11-01",
+    "reviewOn": "2026-12-07",
     "sourceUrl": "https://royal.khs.go.kr/ROYAL/contents/R702000000.do?schGroupCode=cgg",
-    "verifiedAt": "2026-10-07",
+    "verifiedAt": "2026-11-07",
     "note": "야간 공개 구역으로 제한되는 경계가 10월 18:00에서 11월 17:30으로 바뀌어요."
+  },
+  {
+    "id": "changgyeonggung-night-pause",
+    "placeIds": [
+      "changgyeonggung"
+    ],
+    "kind": "partial-closure",
+    "from": "2026-11-10",
+    "through": "2026-11-15",
+    "reviewOn": "2026-11-15",
+    "sourceUrl": "https://royal.khs.go.kr/ROYAL/contents/R403000000.do?id=20260902131858531105&schM=view",
+    "verifiedAt": "2026-11-07",
+    "note": "「동궐동락」 야간 특별 프로그램 기간이라 17:30~21:00 야간 일반관람을 쉬어요. 주간 입장마감 16:30, 관람 종료 17:30이에요."
   },
   {
     "id": "folk-winter-hours",
@@ -251,9 +241,9 @@ export const REAL_COURSE_PERIODS = Object.freeze([
     ],
     "kind": "season-change",
     "startsOn": "2026-11-01",
-    "reviewOn": "2026-11-01",
+    "reviewOn": "2026-12-07",
     "sourceUrl": "https://nfm.go.kr/home/subIndex/1239.do",
-    "verifiedAt": "2026-10-07",
+    "verifiedAt": "2026-11-07",
     "note": "11~2월 09:00~17:00, 종료 1시간 전 입장마감이며 수요일 야간 연장은 운영하지 않아요."
   },
   {
@@ -265,9 +255,9 @@ export const REAL_COURSE_PERIODS = Object.freeze([
     "from": "2026-09-30",
     "through": "2026-12-21",
     "endIsTentative": true,
-    "reviewOn": "2026-11-06",
+    "reviewOn": "2026-12-07",
     "sourceUrl": "https://nfm.go.kr/home/subIndex/1239.do",
-    "verifiedAt": "2026-10-07",
+    "verifiedAt": "2026-11-07",
     "note": "상설전시관1 휴관 종료는 12월 21일 예정이에요. 확정 재개일로 사용하지 않아요."
   }
 ]);

@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { planTravel, replanTravel, replanRemainingTravel, suggestTravelRecovery, normalizePlannerInput } from '../experiences/path-travel/planner.mjs';
-import { TRAVEL_PLACES } from '../experiences/path-travel/places-v2.mjs';
-import { createWalkingRouter } from '../experiences/path-travel/walking-router.mjs';
+import './fixtures/path-travel-catalog-20261009/use-snapshot.mjs';
+const { planTravel, replanTravel, replanRemainingTravel, suggestTravelRecovery, normalizePlannerInput } = await import('../experiences/path-travel/planner.mjs');
+const { TRAVEL_PLACES } = await import('../experiences/path-travel/places-v2.mjs');
+const { createWalkingRouter } = await import('../experiences/path-travel/walking-router.mjs');
 
 const now = '2026-10-09T03:00:00.000Z', sourceUrl = 'https://example.org/official';
 const hours = (open = '09:00', close = '20:00') => ({ verifiedAt: '2026-10-09', sourceUrl, scope: 'full', holidayPolicy: 'same', weekly: Object.fromEntries(Array.from({ length: 7 }, (_, day) => [day, [{ open, close }]])) });

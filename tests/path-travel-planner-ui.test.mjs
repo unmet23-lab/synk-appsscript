@@ -2,11 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
-import { TRAVEL_PLACES } from '../experiences/path-travel/places-v2.mjs';
-import { normalizePlannerInput, planTravel, replanRemainingTravel, plannerInputFingerprint, PREFERENCE_LABELS } from '../experiences/path-travel/planner.mjs';
-import { createTravelMemory, validateTravelMemory } from '../experiences/path-travel/planner-storage.mjs';
-import { recordPlanDecision, recordPlanExposure, recordVisit, confirmTravelPreference, removeTravelPreference, removeTravelVisit, clearTravelHistory, recordTripOutcome } from '../experiences/path-travel/planner-feedback.mjs';
-import { createMapOrigin } from '../experiences/path-travel/planner-origin.mjs';
+import './fixtures/path-travel-catalog-20261009/use-snapshot.mjs';
+const { TRAVEL_PLACES } = await import('../experiences/path-travel/places-v2.mjs');
+const { normalizePlannerInput, planTravel, replanRemainingTravel, plannerInputFingerprint, PREFERENCE_LABELS } = await import('../experiences/path-travel/planner.mjs');
+const { createTravelMemory, validateTravelMemory } = await import('../experiences/path-travel/planner-storage.mjs');
+const { recordPlanDecision, recordPlanExposure, recordVisit, confirmTravelPreference, removeTravelPreference, removeTravelVisit, clearTravelHistory, recordTripOutcome } = await import('../experiences/path-travel/planner-feedback.mjs');
+const { createMapOrigin } = await import('../experiences/path-travel/planner-origin.mjs');
 
 // Exercise the shipped controller functions with small DOM stubs. Browser visual,
 // focus and download verification remain separate; this covers state regressions.

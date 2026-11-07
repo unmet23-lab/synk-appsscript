@@ -6,7 +6,7 @@ export const SOURCES = Object.freeze([
     "id": "osulloc-bukchon",
     "url": "https://www.osulloc.com/kr/ko/store-introduction/312",
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinates": {
       "lat": 37.5809985877276,
       "lon": 126.984600900483
@@ -26,21 +26,21 @@ export const SOURCES = Object.freeze([
   },
   {
     "id": "balwoo-gongyang",
-    "url": "https://korean.visitseoul.net/restaurants/BalwooGongyang/KOP4vpx7k",
+    "url": "https://korean.visitseoul.net/restaurants/%EB%B0%9C%EC%9A%B0-%EA%B3%B5%EC%96%91/KOP030871",
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinates": {
-      "lat": 37.5739364016111,
-      "lon": 126.983185979719
+      "lat": 37.57393739290491,
+      "lon": 126.9831873379122
     },
     "details": [
       [
         "이용시간",
-        "11:30-21:00 (브레이크타임 15:00-18:00, 라스트오더 19:40)"
+        "점심 1부 – 11:30 ~ 13:20 / 점심 2부 – 13:30 ~ 14:50 / 저녁시간 – 18:00 ~ 20:20 (주문마감 19:10)"
       ],
       [
-        "이것만은 꼭!",
-        "주류 판매 Ⓧ 무슬림 조리사 Ⓧ"
+        "휴무일",
+        "일요일, 1월 1일, 설날, 추석 휴무"
       ],
       [
         "대표메뉴",
@@ -48,15 +48,16 @@ export const SOURCES = Object.freeze([
       ],
       [
         "주소",
-        "03145 서울 종로구 우정국로 56 (견지동) 템플스테이 통합정보센터 5층"
+        "03145 서울 종로구 우정국로 56 (견지동)"
       ]
-    ]
+    ],
+    "note": "2026-11-07 재확인 때 옛 안내(KOP4vpx7k)는 「페이지를 찾을 수 없습니다」였고 같은 곳의 새 안내(KOP030871, 수정일 2026.10.27)로 옮김. 운영 단체(balwoo.or.kr) 안내와 시간·휴무가 일치"
   },
   {
     "id": "kyungin-traditional-teahouse",
     "url": "https://korean.visitseoul.net/restaurants/%EA%B2%BD%EC%9D%B8%EB%AF%B8%EC%88%A0%EA%B4%80%EC%A0%84%ED%86%B5%EB%8B%A4%EC%9B%90/KOP010878",
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinates": {
       "lat": 37.574513,
       "lon": 126.985597
@@ -88,7 +89,7 @@ export const SOURCES = Object.freeze([
     "id": "gaeseong-mandu-koong",
     "url": "https://korean.visitseoul.net/restaurants/%EA%B6%81/KOP011155",
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinates": {
       "lat": 37.57423,
       "lon": 126.985393
@@ -124,7 +125,7 @@ export const SOURCES = Object.freeze([
     "id": "orakai-insadong-suites",
     "url": "https://insa.orakaihotels.com/kr/default.asp",
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinates": null,
     "details": []
   },
@@ -132,7 +133,7 @@ export const SOURCES = Object.freeze([
     "id": "unhyeongung",
     "url": "https://korean.visitseoul.net/attractions/%EC%9A%B4%ED%98%84%EA%B6%81_/471",
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinates": {
       "lat": 37.57612550316581,
       "lon": 126.98712636763388
@@ -162,13 +163,14 @@ export const SOURCES = Object.freeze([
         "주소",
         "03131 서울 종로구 삼일대로 464 (운현궁)"
       ]
-    ]
+    ],
+    "note": "위 이용시간은 비짓서울 원문 그대로(수정일 2026.09.12, 하절기 시간만 적힘). 운영 판정은 운현궁 공식 누리집의 동절기(11~3월 09:00~18:00, 입장마감 17:30) 표와 야간 개방 공지를 쓴다"
   },
   {
     "id": "seoul-museum-craft-art",
     "url": "https://korean.visitseoul.net/palace/%EC%84%9C%EC%9A%B8%EA%B3%B5%EC%98%88%EB%B0%95%EB%AC%BC%EA%B4%80/KOP038092",
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinates": {
       "lat": 37.5766481740232,
       "lon": 126.983533363501
@@ -204,7 +206,7 @@ export const SOURCES = Object.freeze([
     "id": "nine-tree-insadong",
     "url": "https://www.ninetreehotels.com/ko/insadong",
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinates": {"lat":37.574721,"lon":126.983216},
     "coordinateSourceUrl": "https://www.ninetreehotels.com/ko/hub/hotel-find",
     "coordinateEvidence": "호텔찾기 공식 화면의 인사동 호텔 marker 설정(pointer). 지도 중심이나 다른 지점 좌표가 아님. 입구 실측은 미확인",
@@ -212,9 +214,9 @@ export const SOURCES = Object.freeze([
   },
   {
     "id": "changgyeonggung",
-    "url": "https://english.visitseoul.net/attractions/Changgyeonggung%20Palace/ENP000297",
+    "url": "https://english.visitseoul.net/attractions/Changgyeonggung-Palace/ENP000297",
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinates": {
       "lat": 37.57762529910132,
       "lon": 126.9938415437186
@@ -226,7 +228,7 @@ export const SOURCES = Object.freeze([
     "id": "national-folk-museum",
     "url": "https://korean.visitseoul.net/attractions/%EA%B5%AD%EB%A6%BD%EB%AF%BC%EC%86%8D%EB%B0%95%EB%AC%BC%EA%B4%80_/1647",
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinates": {
       "lat": 37.57948320107131,
       "lon": 126.97876185479451
@@ -262,7 +264,7 @@ export const SOURCES = Object.freeze([
     "id": "gyeongbokgung",
     "url": "https://korean.visitseoul.net/attractions/%EA%B2%BD%EB%B3%B5%EA%B6%81/KOP000072",
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinates": {
       "lat": 37.579617,
       "lon": 126.977041
@@ -298,7 +300,7 @@ export const SOURCES = Object.freeze([
     "id": "hwangsaengga",
     "url": "https://korean.visitseoul.net/restaurants/%ED%99%A9%EC%83%9D%EA%B0%80%EC%B9%BC%EA%B5%AD%EC%88%98/KOP003496",
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinates": {
       "lat": 37.580078184627475,
       "lon": 126.98066815278152
@@ -334,7 +336,7 @@ export const SOURCES = Object.freeze([
     "id": "fritz-wonseo",
     "url": "https://www.fritz.co.kr/store/detail.html?cate_no=125&display_group=1&product_no=2242",
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinates": {
       "lat": 37.577669,
       "lon": 126.988491
@@ -355,7 +357,7 @@ export const SOURCES = Object.freeze([
     "id": "mmca-seoul",
     "url": "https://korean.visitseoul.net/area/%EA%B5%AD%EB%A6%BD%ED%98%84%EB%8C%80%EB%AF%B8%EC%88%A0%EA%B4%80-%EC%84%9C%EC%9A%B8%EA%B4%80/KOP011658",
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinates": {
       "lat": 37.57862929003526,
       "lon": 126.98008890019835
@@ -387,7 +389,7 @@ export const SOURCES = Object.freeze([
     "id": "tosokchon",
     "url": "https://korean.visitseoul.net/restaurants/TosokchonSamgyetang/KOPywjsmm",
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinates": {
       "lat": 37.57760304027,
       "lon": 126.971632166657
@@ -415,7 +417,7 @@ export const SOURCES = Object.freeze([
     "id": "tongin-market",
     "url": "https://korean.visitseoul.net/attractions/%ED%86%B5%EC%9D%B8%EC%8B%9C%EC%9E%A5/KOP000281",
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinates": {
       "lat": 37.58076790578016,
       "lon": 126.9699490933066
@@ -439,7 +441,7 @@ export const SOURCES = Object.freeze([
     "id": "jogyesa",
     "url": "https://korean.visitseoul.net/attractions1/%EC%A1%B0%EA%B3%84%EC%82%AC/KOP002586",
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinates": {
       "lat": 37.573878,
       "lon": 126.982295
@@ -463,7 +465,7 @@ export const SOURCES = Object.freeze([
     "id": "gyeonghuigung",
     "url": "https://korean.visitseoul.net/attractions/%EA%B2%BD%ED%9D%AC%EA%B6%81/KOP001159",
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinates": {
       "lat": 37.572175511252766,
       "lon": 126.96800100114343
@@ -499,7 +501,7 @@ export const SOURCES = Object.freeze([
     "id": "seoul-history-museum",
     "url": "https://korean.visitseoul.net/attractions/%EC%84%9C%EC%9A%B8%EC%97%AD%EC%82%AC%EB%B0%95%EB%AC%BC%EA%B4%80/KOP002722",
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinates": {
       "lat": 37.5705002796,
       "lon": 126.9703743087
@@ -528,7 +530,7 @@ export const SOURCES = Object.freeze([
     ],
     "conditionEvidence": {
       "url": "https://museum.seoul.go.kr/www/guide/vis/infomation.jsp?sso=ok",
-      "checkedAt": "2026-10-09",
+      "checkedAt": "2026-11-07",
       "facts": [
         "2026.9.15~11.30 화·수·금·토·일09:00~21:00, 입장20:30",
         "목요일09:00~18:00, 입장17:30",
@@ -541,7 +543,7 @@ export const SOURCES = Object.freeze([
     "id": "bukchon-hanok",
     "url": "https://korean.visitseoul.net/attractions/%EB%B6%81%EC%B4%8C%ED%95%9C%EC%98%A5%EB%A7%88%EC%9D%84/KOP000261",
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinates": {
       "lat": 37.57906987420643,
       "lon": 126.98642849263337
@@ -567,16 +569,17 @@ export const SOURCES = Object.freeze([
   },
   {
     "id": "gyeonghuigung-last-entry",
-    "url": "https://data.visitkorea.or.kr/linkedview/1604784",
-    "checkedAt": "2026-10-09",
+    "url": "https://museum.seoul.go.kr/www/intro/annexIntro/annex_20/annex_20_01.jsp?sso=ok",
+    "checkedAt": "2026-11-07",
     "facts": [
-      "일반 관람 09:00~18:00 · 입장마감 17:30"
-    ]
+      "관람시간 09:00~18:00 · 입장마감 17:30 · 1월 1일·매주 월요일 휴관 · 관람요금 무료"
+    ],
+    "note": "2026-11-07 재확인 때 옛 출처(data.visitkorea.or.kr linkedview 1604784)가 503이라 경희궁을 관리하는 서울역사박물관 분관 안내로 옮김"
   },
   {
     "id": "jogyesa-fee",
     "url": "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=b434467f-d98b-49be-9cae-c7c1cec29f8c",
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "facts": [
       "경내 방문 무료 안내. 프로그램 별도."
     ]
@@ -603,7 +606,7 @@ export const SOURCES = Object.freeze([
       ]
     ],
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinateEvidence": "한국관광공사 장소 안내 HTML의 GeoCoordinates 및 지도 lat/lot. 장소 대표점으로 입구 실측 아님"
   },
   {
@@ -628,7 +631,7 @@ export const SOURCES = Object.freeze([
       ]
     ],
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinateEvidence": "한국관광공사 장소 안내 HTML의 GeoCoordinates 및 지도 lat/lot. 장소 대표점으로 입구 실측 아님"
   },
   {
@@ -653,7 +656,7 @@ export const SOURCES = Object.freeze([
       ]
     ],
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinateEvidence": "한국관광공사 장소 안내 HTML의 GeoCoordinates 및 지도 lat/lot. 장소 대표점으로 입구 실측 아님"
   },
   {
@@ -678,7 +681,7 @@ export const SOURCES = Object.freeze([
       ]
     ],
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinateEvidence": "한국관광공사 장소 안내 HTML의 GeoCoordinates 및 지도 lat/lot. 장소 대표점으로 입구 실측 아님"
   },
   {
@@ -708,7 +711,7 @@ export const SOURCES = Object.freeze([
       ]
     ],
     "httpStatus": 200,
-    "checkedAt": "2026-10-09",
+    "checkedAt": "2026-11-07",
     "coordinateEvidence": "서울관광재단 장소 안내 HTML 지도 lat/lng. 공식 박물관 주소와 일치"
   }
 ]);
@@ -1459,7 +1462,7 @@ const EXTRA_PLACES = [
       "scope": "child-one",
       "taxStatus": "included",
       "sourceUrl": "https://museum.seoul.go.kr/www/guide/vis/infomation.jsp?sso=ok",
-      "verifiedAt": "2026-10-09",
+      "verifiedAt": "2026-11-07",
       "note": "공식 관람료 무료 안내에 연령 제한 없음. 별도 체험·유료 프로그램 제외"
     }
   },
@@ -1966,18 +1969,18 @@ const EXTRA_PLACES = [
       "scope": "child-one",
       "taxStatus": "included",
       "sourceUrl": "https://www.much.go.kr/MUCH/contents/M01020100000.do",
-      "verifiedAt": "2026-10-09",
+      "verifiedAt": "2026-11-07",
       "note": "일반관람 무료 안내에 연령제한 없음. 별도 예약 프로그램 제외"
     }
   }
 ];
 
 export const PERSONALIZATION_TAGS = Object.freeze(['noodles', 'dumplings', 'soup', 'templeFood', 'marketFood', 'coffee', 'bakery', 'traditionalTea']);
-const detailCheckedAt = '2026-10-09';
+const detailCheckedAt = '2026-11-07';
 const detailUrls = {
   koongMenu:'https://www.koong.co.kr/2020/menuinfo/meals.php',
   koongVisit:'https://www.koong.co.kr/2020/storeinfo/headoffice.php',
-  balwoo:'https://korean.visitseoul.net/restaurants/BalwooGongyang/KOP4vpx7k',
+  balwoo:'https://korean.visitseoul.net/restaurants/%EB%B0%9C%EC%9A%B0-%EA%B3%B5%EC%96%91/KOP030871',
   balwooVisit:'http://balwoo.or.kr/responsible_start.php',
   balwooMenu:'http://balwoo.or.kr/responsible_foodmenu_fall.php',
   balwooEntrance:'http://balwoo.or.kr/responsible_contact.php',
@@ -2053,8 +2056,8 @@ const PLACE_DETAILS = {
       menuItem('마음식 코스',70000,detailUrls.balwooMenu,'가을 메뉴 · 주문 인원 단위는 별도 확인',{unit:'course-menu',taxStatus:'included'}),
       menuItem('희식 코스',120000,detailUrls.balwooMenu,'가을 메뉴 · 3일 전 예약, 4~8명, 선입금 50% 안내 · 실제 예약 가능 여부와 주문 단위 확인 필요',{unit:'course-menu',taxStatus:'included'}),
     ],
-    visitInfo:visitInfo('업주 안내는 월~토 점심 11:30~13:20 / 13:30~14:50, 저녁 18:00~20:20, 일요일 휴무입니다. 서울관광 안내의 21:00 폐점·19:40 주문마감과 달라 자동 시간 판정은 미확인으로 둡니다.','희식은 공식 가을 메뉴에 사전예약 조건이 있습니다. 일반 코스 예약 가능 여부·인원 단위는 02-733-2081로 확인해 주세요.','우정국로 56 템플스테이 통합정보센터 5층, 조계사 맞은편 건물입니다. 엘리베이터·계단 없는 전체 동선은 확인하지 못했습니다.',[detailUrls.balwooVisit,detailUrls.balwoo,detailUrls.balwooMenu,detailUrls.balwooEntrance]),
-    hoursOverride:{weekly:{},scope:'partial',note:'업주와 서울관광의 마감·주문마감 시간이 충돌함. 업주는 일요일 휴무와 점심 2부제를 안내하나 방문일 운영·예약은 별도 확인'},
+    visitInfo:visitInfo('운영 단체와 서울관광 안내 모두 월~토 점심 1부 11:30~13:20 · 2부 13:30~14:50, 저녁 18:00~20:20(주문마감 19:10), 일요일·1월 1일·설날·추석 휴무로 안내합니다. 각 부의 시작 시각에 맞춘 입장과 예약 조건은 확인하지 못해 운영 시간 안의 방문도 따로 확인해야 합니다.','희식은 공식 가을 메뉴에 사전예약 조건이 있습니다. 일반 코스 예약 가능 여부·인원 단위는 02-733-2081로 확인해 주세요.','우정국로 56 템플스테이 통합정보센터 5층, 조계사 맞은편 건물입니다. 엘리베이터·계단 없는 전체 동선은 확인하지 못했습니다.',[detailUrls.balwooVisit,detailUrls.balwoo,detailUrls.balwooMenu,detailUrls.balwooEntrance]),
+    hoursOverride:{scope:'partial',note:'운영 단체와 서울관광 안내가 점심 1·2부, 저녁 시간, 일요일 휴무로 일치함. 각 부의 입장·예약 조건은 미확인이라 운영 시간 안의 방문도 확인 필요'},
     priceOverride:{kind:'unknown',label:'코스 표시가격은 있으나 인원별 주문 단위 확인 필요',taxStatus:'not-stated',note:'공식 가을 메뉴는 선식 36,000원·원식 50,000원 등 세금 포함 가격을 표시함. 코스의 인원 단위·계절 적용·예약·추가 주문을 확인하지 못해 총예산 계산에는 사용하지 않음'},
   },
   'kyungin-traditional-teahouse':{
@@ -2112,7 +2115,7 @@ const VISITOR_DETAILS = {
   },
   'seoul-museum-craft-art':{
     childPrice:{allChildren:true,kind:'free',amount:0,label:'일반 전시 관람',scope:'child-one',taxStatus:'included',sourceUrl:detailUrls.craftVisit,verifiedAt:detailCheckedAt,note:'연령 제한 없는 일반전시 무료 안내. 어린이박물관 사전예약·대관전시·별도 프로그램은 포함하지 않음'},
-    visitInfo:visitInfo('일반 전시는 10:00~18:00·입장 17:30 마감입니다. 가을 야간개관은 일부 전시동만 적용되며 10월13~25일 전시1동 로비 제한 등 기존 날짜별 조건을 확인해 주세요.','개인 일반전시는 자유 관람입니다. 어린이박물관은 사전예약 확인 후 입장하며 대관전시는 유료일 수 있습니다.','안국역 1번 출구 안내. 안내데스크에서 신분증을 맡기고 유모차·휠체어를 무료 대여할 수 있으며 전시동별 승강기·장애인화장실 위치가 공식 지도에 표시됩니다. 외부부터 모든 전시실까지의 무장애 경로는 미확인입니다.',[detailUrls.craftVisit,detailUrls.craftFacilities,detailUrls.craftFloors]),
+    visitInfo:visitInfo('일반 전시는 10:00~18:00·입장 17:30 마감입니다. 가을 야간개관(2026.9.15~11.30 화·수·금·토·일 21:00까지)은 전시1동만 적용되고 전시2·3동과 어린이박물관은 18:00에 닫습니다.','개인 일반전시는 자유 관람입니다. 어린이박물관은 사전예약 확인 후 입장하며 대관전시는 유료일 수 있습니다.','안국역 1번 출구 안내. 안내데스크에서 신분증을 맡기고 유모차·휠체어를 무료 대여할 수 있으며 전시동별 승강기·장애인화장실 위치가 공식 지도에 표시됩니다. 외부부터 모든 전시실까지의 무장애 경로는 미확인입니다.',[detailUrls.craftVisit,detailUrls.craftFacilities,detailUrls.craftFloors]),
   },
   'seoul-history-museum':{
     visitInfo:visitInfo('2026년9월15일~11월30일 화·수·금·토·일 09:00~21:00, 목요일 18:00까지입니다. 입장은 폐관30분 전 마감, 월요일·1월1일 휴관이며 공휴일 월요일은 개관합니다.','일반관람 무료·개인 자유 관람. 교육·체험·별도 프로그램은 신청 조건을 따로 확인해 주세요.','정문으로 들어와 왼쪽 화장실 앞에 엘리베이터가 있습니다. 유아24개월 미만·노약자를 위한 유모차·휠체어 이용 안내와 1층 아기쉼터가 있습니다. 외부에서 이어지는 전체 무장애 동선은 미확인입니다.',[detailUrls.seoulHistoryVisit,detailUrls.seoulHistoryFacilities]),
@@ -2121,7 +2124,7 @@ const VISITOR_DETAILS = {
 
 const byId = Object.fromEntries(SOURCES.map(s => [s.id, s]));
 const photoById = Object.fromEntries(PHOTO_CREDITS.map(s => [s.id, s]));
-const checkedAt = '2026-10-09';
+const checkedAt = '2026-11-07';
 function enrich(place, properties = {}) {
   const source = byId[place.id];
   const url = source?.url || place.sourceUrl;

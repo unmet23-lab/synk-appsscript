@@ -1,13 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  normalizeRealQuery, evaluateRealConditions, evaluateRealStay, REAL_CONDITION_MAX_BUDGET,
-} from '../experiences/path-travel/real-conditions.mjs';
-import { REAL_PLACES, REAL_CONDITION_CALENDAR } from '../experiences/path-travel/real-places.mjs';
-import {
-  normalizeRealState, rankRealPlaces, setRealReaction, setRealVisit, setRealCategoryPreference,
-  serializeRealState, readRealState, exportRealMemo, formatRealQuery,
-} from '../experiences/path-travel/real-guide.mjs';
+import './fixtures/path-travel-catalog-20261009/use-snapshot.mjs';
+const { normalizeRealQuery, evaluateRealConditions, evaluateRealStay, REAL_CONDITION_MAX_BUDGET } = await import('../experiences/path-travel/real-conditions.mjs');
+const { REAL_PLACES, REAL_CONDITION_CALENDAR } = await import('../experiences/path-travel/real-places.mjs');
+const { normalizeRealState, rankRealPlaces, setRealReaction, setRealVisit, setRealCategoryPreference, serializeRealState, readRealState, exportRealMemo, formatRealQuery } = await import('../experiences/path-travel/real-guide.mjs');
 
 const now = '2026-10-07T01:00:00.000Z';
 const sourceUrl = 'https://official.example/visit';
