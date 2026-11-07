@@ -527,6 +527,27 @@ test('the status read walks first parents down to the activation commit and bind
   for (let n = 0; n < 2; n++) assert.deepEqual(localStatus.manifestAt('blob', { api, cache }), { count: selected.length, digest: manifest.digest });
   assert.equal(reads, 1);
 });
+// 11-06 00:28 the line since activation passed the old 1000-commit window and every run turned red with nothing broken.
+test('the status read ends at a settled run past the alert horizon, and an old commit that still waits or failed afresh keeps it going', () => {
+  const now = Date.parse('2026-11-08T00:00:00Z'), hour = 3600_000, ok = (at) => ({ contexts: [{ context: 'conditional-qa/local', state: 'SUCCESS', description: 'PASS', createdAt: at }] });
+  // 300 commits an hour apart, newest first; each page holds 50. The activation commit is never reached.
+  const build = (status) => Array.from({ length: 300 }, (_, n) => ({ oid: String(n).padStart(40, 'a'), committedDate: new Date(now - n * hour).toISOString(),
+    parents: { nodes: [{ oid: String(n + 1).padStart(40, 'a') }] }, file: { oid: 'blob' }, status: status(n) }));
+  const reader = nodes => { let pages = 0; return { query: (text, { after }) => { const from = after ? Number(after) : 0; pages++;
+    return { data: { repository: { object: { history: { pageInfo: { hasNextPage: from + 50 < nodes.length, endCursor: String(from + 50) }, nodes: nodes.slice(from, from + 50) } } } } }; }, pages: () => pages }; };
+  const settled = reader(build(n => ok(new Date(now - n * hour).toISOString())));
+  const read = localStatus.fetchHistory({ query: settled.query, first: 'f'.repeat(40), now });
+  // 96 h horizon: after the third page the oldest 50 read (100..149 h old) are all past it and settled.
+  assert.deepEqual([read.complete, read.reachedFirst, read.line.length, settled.pages()], [true, false, 150, 3]);
+  const waiting = reader(build(n => (n === 120 ? null : ok(new Date(now - n * hour).toISOString()))));
+  const kept = localStatus.fetchHistory({ query: waiting.query, first: 'f'.repeat(40), now });
+  assert.deepEqual([kept.complete, kept.line.length], [true, 200], 'the waiting commit 120 stays in the rows and the run starts after it');
+  assert.match(localStatus.judge(kept.line.map(node => localStatus.toRow(node, { count: 79, digest: 'x' })), { now, reachedFirst: kept.complete }).problems.join(), /older than the limit/);
+  const fresh = reader(build(n => ok(new Date(now - n * hour).toISOString())).map((node, n) => n === 130 ? { ...node, status: { contexts: [{ context: 'conditional-qa/local', state: 'FAILURE', description: 'FAIL 78/79: S070', createdAt: new Date(now - hour).toISOString() }] } } : node));
+  assert.equal(localStatus.fetchHistory({ query: fresh.query, first: 'f'.repeat(40), now }).line.length, 200, 'a retry that failed an hour ago is read and alerts');
+  const capped = localStatus.fetchHistory({ query: reader(build(() => null)).query, first: 'f'.repeat(40), now, limit: 1000 });
+  assert.deepEqual([capped.complete, capped.line.length], [false, 300], 'nothing settled: the read runs out without completing');
+});
 test('a passing GitHub read error is retried, and a lasting one is an error rather than a green check', () => {
   const node = { oid: localStatus.FIRST_COMMIT, committedDate: '2026-11-04T00:00:00Z', parents: { nodes: [] }, file: null, status: null };
   const page = { data: { repository: { object: { history: { pageInfo: { hasNextPage: false, endCursor: null }, nodes: [node] } } } } };

@@ -5,11 +5,22 @@ const { REPO, request, accepted, failedCases, failureDescription, graphql } = re
 // local-coverage cancels its own run while the PC verifies, and a cancelled run is never counted as red. So a stopped PC or
 // a failure on an older commit would make no signal at all. This reads every queued commit's status; it never runs a test or writes a pass.
 const FIRST_COMMIT = 'df9ec0dff34be52fc0fabff03381a0a2e59e639f'; // The worker's activation point; older commits were never queued.
-const MAX_COMMITS = 1000, PAGE = 50, READ_ATTEMPTS = 3; // A page of 100 with statuses drew an HTTP 502 (2026-11-04).
+const MAX_COMMITS = 3000, PAGE = 50, READ_ATTEMPTS = 3; // A page of 100 with statuses drew an HTTP 502 (2026-11-04).
 const STALL_MS = 155 * 60_000; // Current verification, one backlog turn, one newest turn (each <=50 min), and a scheduler interval.
 const OVERDUE_MS = 72 * 3600_000; // The backlog may not outlast this: half the worker's turns go to the oldest commit.
 const FAILURE_RED_MS = 24 * 3600_000; // A failure stays listed until retried; red only while new, so a later failure is not buried.
 const WAITING_PREFIX = 'WAIT '; // Written by local-coverage, not by the worker.
+// The line since activation outgrew the first 1000-commit window on 11-06 00:28 and every run turned red; at 200-300 pushes a day a larger
+// fixed window only moves that date. Every alert needs a young commit or a fresh status: a waiting commit turns red at 72 h and a failure stays
+// red for 24 h. So the read may end once a page's worth of the oldest commits read are older than both together and settled
+// (a pass, or a failure no longer red). The worker takes the oldest ready commit every other turn, so nothing older still waits behind such a run;
+// an old commit that is waiting or failed afresh keeps the read going. Reading the activation commit also ends it.
+const HORIZON_MS = OVERDUE_MS + FAILURE_RED_MS, SETTLED_RUN = PAGE;
+function settledLongAgo(node, now) {
+  const found = (node.status?.contexts || []).find(row => row.context === CONTEXT);
+  if (!found || (found.description || '').startsWith(WAITING_PREFIX)) return false;
+  return found.state === 'SUCCESS' || (['FAILURE', 'ERROR'].includes(found.state) && now - Date.parse(found.createdAt) >= FAILURE_RED_MS);
+}
 const HISTORY = `query($owner:String!,$name:String!,$after:String){repository(owner:$owner,name:$name){object(expression:"master"){... on Commit{history(first:${PAGE},after:$after){pageInfo{hasNextPage endCursor}
   nodes{oid committedDate parents(first:1){nodes{oid}} file(path:"tools/conditional-qa/cases.json"){oid} status{contexts{context state description createdAt}}}}}}}}`;
 
@@ -20,21 +31,27 @@ function readPage(query, variables, pause) {
     catch (error) { if (attempt >= READ_ATTEMPTS) throw error; pause(attempt * 10_000); }
   }
 }
-function fetchHistory({ query = graphql, first = FIRST_COMMIT, limit = MAX_COMMITS, pause = waitBriefly } = {}) {
-  const [owner, name] = REPO.split('/'), byOid = new Map(); let head, reachedFirst = false;
-  for (let after = null, more = true; more && byOid.size < limit && !byOid.has(first);) {
+// complete: the read reached the activation commit, or a settled run past the horizon (see HORIZON_MS). Anything else stays red.
+function fetchHistory({ query = graphql, first = FIRST_COMMIT, limit = MAX_COMMITS, pause = waitBriefly, now = Date.now(), horizonMs = HORIZON_MS } = {}) {
+  const [owner, name] = REPO.split('/'), byOid = new Map(); let head, line = [], reachedFirst = false, pastHorizon = false;
+  // Follow first parents, the same line the worker queues; a merged side branch is verified through its merge.
+  const walk = () => {
+    line = [];
+    for (let node = byOid.get(head); node && line.length < limit; node = byOid.get(node.parents.nodes[0]?.oid)) {
+      line.push(node);
+      if (node.oid === first) { reachedFirst = true; break; }
+    }
+    const oldest = line.slice(-SETTLED_RUN);
+    pastHorizon = !reachedFirst && oldest.length === SETTLED_RUN && oldest.every(node => now - Date.parse(node.committedDate) >= horizonMs && settledLongAgo(node, now));
+  };
+  for (let after = null, more = true; more && byOid.size < limit && !reachedFirst && !pastHorizon;) {
     const history = readPage(query, { owner, name, ...(after ? { after } : {}) }, pause).data?.repository?.object?.history;
     if (!history) throw Error('The master history could not be read');
     for (const node of history.nodes) { head ||= node.oid; byOid.set(node.oid, node); }
     more = history.pageInfo.hasNextPage; after = history.pageInfo.endCursor;
+    walk();
   }
-  // Follow first parents, the same line the worker queues; a merged side branch is verified through its merge.
-  const line = [];
-  for (let node = byOid.get(head); node && line.length < limit; node = byOid.get(node.parents.nodes[0]?.oid)) {
-    line.push(node);
-    if (node.oid === first) { reachedFirst = true; break; }
-  }
-  return { line, reachedFirst };
+  return { line, reachedFirst, complete: reachedFirst || pastHorizon };
 }
 function manifestAt(oid, { api = request, cache = new Map() } = {}) {
   if (!cache.has(oid)) {
@@ -61,10 +78,13 @@ function readDiagnosed(file = path.join(__dirname, 'diagnosed.json'), manifest =
   return ledger.ranges;
 }
 // Newest first: a range holds from `from` up to, but not including, the commit that stopped the failure.
-function placeRanges(rows, diagnosed) {
+// truncated: the read ended at the alert horizon, not at the activation commit. Then a range wholly older than the rows has nothing to explain,
+// and one whose `from` is older runs to the oldest row read. A missing fixedBy with `from` in the rows is still a broken range.
+function placeRanges(rows, diagnosed, { truncated = false } = {}) {
   const position = new Map(rows.map((row, index) => [row.commit, index])), spans = [], broken = [];
   for (const range of diagnosed) {
-    const newest = position.get(range.fixedBy), oldest = position.get(range.from);
+    const newest = position.get(range.fixedBy); let oldest = position.get(range.from);
+    if (truncated && oldest === undefined) { if (newest === undefined) continue; oldest = rows.length - 1; }
     if (newest === undefined || oldest === undefined || newest >= oldest) broken.push(range); else spans.push({ ...range, newest, oldest });
   }
   return { position, spans, broken };
@@ -87,7 +107,7 @@ function failureLine(row, manifestCases) {
   return { text: `${text}: ${label}`, location: first?.file, cases: named.ids };
 }
 // Every state other than an exact PASS of that commit's own manifest stays unfinished. Pending, absent or offline never passes.
-function judge(rows, { now = Date.now(), reachedFirst = true, diagnosed = [], manifestCases = new Map() } = {}) {
+function judge(rows, { now = Date.now(), reachedFirst = true, truncated = false, diagnosed = [], manifestCases = new Map() } = {}) {
   const passed = [], waiting = [], failed = [], invalid = [], explained = [], details = new Map(); let activityAt = 0;
   for (const row of rows) {
     const { status: value, manifest } = row;
@@ -97,7 +117,7 @@ function judge(rows, { now = Date.now(), reachedFirst = true, diagnosed = [], ma
     else if (value?.state === 'success') invalid.push(row);
     else waiting.push(row);
   }
-  const oldest = waiting.at(-1), problems = [], placed = placeRanges(rows, diagnosed);
+  const oldest = waiting.at(-1), problems = [], placed = placeRanges(rows, diagnosed, { truncated });
   for (const range of placed.broken) problems.push(`diagnosed range ${range.from} to ${range.fixedBy} is not on the master line`);
   for (const row of failed) {
     const reason = explain(row, placed);
@@ -109,7 +129,8 @@ function judge(rows, { now = Date.now(), reachedFirst = true, diagnosed = [], ma
   for (const row of invalid) problems.push(`local success does not match the manifest of ${row.commit}`);
   if (waiting.length && now - activityAt > STALL_MS) problems.push('local worker published no new result within the limit');
   if (oldest && now - Date.parse(oldest.committedAt) > OVERDUE_MS) problems.push('local backlog is older than the limit');
-  if (!reachedFirst) problems.push('the status window ended before the first queued commit');
+  // reachedFirst is fetchHistory's `complete`: the activation commit, or a settled run past the horizon.
+  if (!reachedFirst) problems.push('the status window ended before the first queued commit or a settled run past the alert horizon');
   return { ok: problems.length === 0, problems, details, explained, failedCases: new Map(failed.map(row => [row.commit, failedCases(row.status.description)?.ids || []])), passed: passed.length, waiting: waiting.length, failed: failed.map(row => row.commit), invalid: invalid.length, oldest: oldest?.commit || null, oldestAt: oldest?.committedAt || null, activityAt: activityAt ? new Date(activityAt).toISOString() : null };
 }
 // TAP lines: tools/ci빨간불.js names each problem from them, so only a new failure sends a new alert.
@@ -128,9 +149,9 @@ function report(result) {
   return lines.join('\n');
 }
 function check({ now = Date.now(), query = graphql, api = request, diagnosed = readDiagnosed(), manifestCases = new Map(readManifest(path.resolve(__dirname, '../..')).cases.map(row => [row.id, row])) } = {}) {
-  const { line, reachedFirst } = fetchHistory({ query }), cache = new Map();
+  const { line, complete, reachedFirst } = fetchHistory({ query, now }), cache = new Map();
   const rows = line.map(node => toRow(node, node.file ? manifestAt(node.file.oid, { api, cache }) : { count: -1, digest: '' }));
-  return judge(rows, { now, reachedFirst, diagnosed, manifestCases });
+  return judge(rows, { now, reachedFirst: complete, truncated: !reachedFirst, diagnosed, manifestCases });
 }
 if (require.main === module) {
   try {

@@ -109,6 +109,19 @@ test('a range that is not on the master line turns red instead of hiding anythin
   assert.match(localStatus.judge([row('a', 'success', 'x'), row('c', 'failure', 'FAIL 78/79: S070')], { now: NOW, diagnosed: [reversed], manifestCases }).problems.join(), /not on the master line/);
 });
 
+// 11-08 the status read stops at the alert horizon, so a range written days ago leaves the rows; that alone must not turn red.
+test('when the read ends at the horizon, a range older than the rows is skipped and one that starts before them still explains', () => {
+  const rows = [row('a', 'success', 'x'), row('b', 'failure', 'FAIL 78/79: S070')];
+  const older = { ...range, from: sha('e'), fixedBy: sha('d') };
+  assert.match(localStatus.judge(rows, { now: NOW, diagnosed: [older], manifestCases }).problems.join(), /not on the master line/, 'a full read still refuses it');
+  const skipped = localStatus.judge(rows, { now: NOW, truncated: true, diagnosed: [older], manifestCases });
+  assert.doesNotMatch(skipped.problems.join(), /not on the master line/); assert.match(skipped.problems.join(), /failed at b{40}: S070/);
+  const starts = localStatus.judge(rows, { now: NOW, truncated: true, diagnosed: [{ ...range, from: sha('e') }], manifestCases });
+  assert.deepEqual(starts.explained.map(x => x.commit), [sha('b')]); assert.doesNotMatch(starts.problems.join(), /failed at b|not on the master line/);
+  const noEnd = localStatus.judge(rows, { now: NOW, truncated: true, diagnosed: [{ ...range, from: sha('b'), fixedBy: sha('z') }], manifestCases });
+  assert.match(noEnd.problems.join(), /not on the master line/, 'a fixedBy that is not read while its from is still is broken');
+});
+
 test('the ledger on master is well formed and every entry names a local case', t => {
   const ranges = localStatus.readDiagnosed();
   assert.ok(ranges.length >= 1);
