@@ -113,8 +113,10 @@ const pressTown=async(h,key)=>{h.handlers.click({target:{closest:selector=>selec
 test('the town records card sits under the records as 05 TOWN, sends rights commands at its revision and asks once more before clearing',async()=>{
   const h=harness({replies:{accountView:accountView(),identity:identity(),townRecords:townCard(5),townRights:params=>townCard(6)}}),page=await mount(h);page.show();await settle();
   const html=h.root.innerHTML;
-  assert.ok(html.includes('05 / TOWN')&&html.includes('마을 기록')&&html.includes('찻집 주인 · 찻집 일 — 같이 했어요'),'the card under the records');
-  assert.ok(html.indexOf('04 / RECORDS')<html.indexOf('05 / TOWN')&&html.indexOf('05 / TOWN')<html.indexOf('06 / DELETE'),'the sections count on');
+  assert.ok(html.includes('data-section="05-town"><h2>마을 기록</h2>')&&html.includes('찻집 주인 · 찻집 일 — 같이 했어요'),'the card under the records');
+  assert.ok(html.indexOf('data-section="04-records"')<html.indexOf('data-section="05-town"')&&html.indexOf('data-section="05-town"')<html.indexOf('data-section="06-delete"'),'the sections count on');
+  // A 진열대: 구역 머리에 번호 · 영문 꼬리표를 보이지 않는다.
+  assert.doesNotMatch(html,/MY SYNK ID|\d\d \/ [A-Z]+|class="label"/);
   await pressTown(h,'known.r0');
   const sent=h.calls.filter(row=>row.operation==='townRights');assert.equal(sent.length,1);
   assert.deepEqual({...sent[0].params,id:undefined},{id:undefined,type:'MEMORY_FORGET',payload:{npc:'cafe-owner',eventId:'20749.tea-order'},expectedRevision:5});

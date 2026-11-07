@@ -1,60 +1,65 @@
-/* 「내 계정」 (account-page.mjs): 설정 화면 문법 그대로 — 계기판 같은 줄, 1px 선, 상태 LED. */
-#view-account .ap-title h1{margin-top:10px}
-.ap-back{display:flex;width:max-content;margin-bottom:16px}
-.ap-hero{display:flex;align-items:center;gap:20px;padding:22px 24px;margin-bottom:18px;border-radius:var(--r-lg);background:var(--surface-1);border:1px solid var(--line)}
-.ap-avatar{display:grid;place-items:center;flex:none;width:64px;height:64px;border-radius:50%;background:var(--ink);color:var(--on-ink);font-size:1.625rem;font-weight:900}
-.ap-hero-copy{display:grid;gap:4px;min-width:0}
-.ap-name{font-size:1.375rem;font-weight:800;letter-spacing:-.02em;overflow-wrap:anywhere}
-.ap-email{color:var(--ink-2);overflow-wrap:anywhere}
-.ap-status{display:inline-flex;align-items:center;gap:8px;margin-top:6px;font-size:.8125rem;color:var(--ink-2)}
-.ap-message{margin:0 0 18px;padding:12px 16px;border-radius:var(--r-md);background:var(--surface-2);font-size:.875rem;word-break:keep-all;overflow-wrap:anywhere}
+/* 「내 계정」 (account-page.mjs): 설정 화면 문법 그대로 — 제목 블록(34) + 1px 선 줄 목록. 3차 A 진열대(2026-11-08). */
+#view-account .ap-title{align-items:flex-end}
+#view-account .ap-title h1{margin-top:6px}
+.ap-back{display:inline-flex;align-items:center;gap:6px;width:max-content;margin-bottom:10px;font-size:var(--t13);font-weight:400;color:var(--ink-3);text-decoration:none}
+.ap-back:hover{color:var(--ink)}
+.ap-back .i{width:16px;height:16px}
+.ap-hero{display:flex;align-items:center;gap:20px;padding:0 0 8px}
+.ap-avatar{display:grid;place-items:center;flex:none;width:56px;height:56px;border-radius:50%;background:var(--ink);color:var(--on-ink);font-size:var(--t22);font-weight:700}
+.ap-hero-copy{display:grid;gap:2px;min-width:0}
+.ap-name{font-size:var(--t22);font-weight:600;overflow-wrap:anywhere}
+.ap-email{font-size:var(--t15);color:var(--ink-2);overflow-wrap:anywhere}
+.ap-status{display:inline-flex;align-items:center;gap:6px;margin-top:4px;font-size:var(--t13);color:var(--ink-3)}
+.ap-message{margin:0 0 24px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t15);color:var(--ink-2);word-break:keep-all;overflow-wrap:anywhere}
 .ap-live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
-.ap-message.is-error{background:color-mix(in srgb,#F96859 16%,var(--surface-1));color:var(--ink)}
-.ap-failed{margin-bottom:18px}
-.ap-section-head{display:flex;align-items:baseline;gap:14px;margin:30px 0 12px}
-.ap-section-head h2{font-size:1.125rem;font-weight:800;letter-spacing:-.02em}
-#view-account .setting-row h3{font-size:.96875rem;font-weight:800;letter-spacing:-.02em}
+.ap-message.is-error{color:var(--alert);border-color:color-mix(in srgb,var(--alert) 40%,var(--line))}
+.ap-failed{margin-bottom:24px}
+.ap-section-head{margin:56px 0 0}
+.ap-section-head h2{font-size:var(--t22);font-weight:600}
+#view-account .ap-section-head+.settings-group{margin-top:16px}
+#view-account .settings-group{margin-bottom:0}
+#view-account .setting-row h3{font-size:var(--t17);font-weight:600}
 #view-account .setting-row>div:first-child{min-width:0}
 #view-account .setting-row p{word-break:keep-all;overflow-wrap:anywhere}
 .ap-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;min-width:0}
-.ap-value{font-weight:700;overflow-wrap:anywhere;text-align:right}
+.ap-value{font-size:var(--t15);font-weight:600;overflow-wrap:anywhere;text-align:right}
 .ap-name-form{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.ap-name-form input{height:40px;min-width:220px;padding:0 16px;border-radius:999px;border:1px solid var(--line-2);background:var(--surface-2);color:var(--ink);font:inherit}
-.ap-name-form input:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.ap-name-form input{height:44px;min-width:220px;padding:0 2px;border:0;border-bottom:1px solid var(--line-2);border-radius:0;background:transparent;color:var(--ink);font:inherit;font-size:var(--t17)}
+.ap-name-form input:focus-visible{outline:none;border-bottom-color:var(--ink)}
 .ap-chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-.ap-chip{display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:999px;border:1px solid var(--line-2);font-size:.8125rem;font-weight:700}
-.ap-current{display:inline-flex;align-items:center;height:22px;margin-left:6px;padding:0 9px;border-radius:999px;background:var(--ink);color:var(--on-ink);font-size:.6875rem;font-weight:800;vertical-align:2px}
-.ap-browser-note{margin-top:4px}
-.ap-switch[aria-checked=true]{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
-.ap-danger{color:#F96859;border-color:color-mix(in srgb,#F96859 55%,var(--line-2))}
-.ap-danger-solid{background:#F96859;color:#1E0E0A}
-.ap-support{margin:26px 0 8px;font-size:.8125rem;color:var(--ink-2)}
-.ap-support summary{cursor:pointer;font-weight:700}
+.ap-chip{display:inline-flex;align-items:center;height:32px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--line-2);font-size:var(--t13);font-weight:600}
+.ap-current{display:inline-flex;align-items:center;height:22px;margin-left:8px;padding:0 9px;border-radius:999px;background:var(--ink);color:var(--on-ink);font-size:var(--t13);font-weight:600;vertical-align:1px}
+.ap-browser-note{margin-top:24px}
+.ap-switch[aria-checked=true]{background:var(--ink);color:var(--on-ink);box-shadow:none}
+.ap-danger{color:var(--alert);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--alert) 50%,var(--line-2))}
+.ap-danger:hover:not(:disabled){box-shadow:inset 0 0 0 1px var(--alert)}
+.ap-danger-solid{background:var(--alert);color:#fff}
+.ap-support{margin:40px 0 0;font-size:var(--t13);color:var(--ink-3)}
+.ap-support summary{cursor:pointer;font-weight:600;color:var(--ink-2)}
 .ap-support p{margin:8px 0 6px}
-.ap-support code{display:inline-block;padding:6px 10px;border-radius:var(--r-md);background:var(--surface-2);color:var(--ink);overflow-wrap:anywhere}
-/* 05 TOWN 「마을 기록」 (town-records-card.mjs): 갈래마다 작은 제목 · 줄과 단추는 설정 줄처럼 한 줄, 좁으면 단추가 아래로. */
-.ap-town{padding:18px 22px}
-.ap-town .town-records{display:grid;gap:18px}
-.ap-town .ap-town-note{margin:0;color:var(--ink-2);font-size:.875rem;word-break:keep-all;overflow-wrap:anywhere}
+.ap-support code{display:inline-block;padding:6px 10px;border-radius:8px;background:var(--surface);color:var(--ink);font-family:var(--num);overflow-wrap:anywhere}
+/* 05 「마을 기록」 (town-records-card.mjs): 갈래마다 작은 제목 · 줄과 단추는 설정 줄처럼 한 줄, 좁으면 단추가 아래로. */
+.ap-town{padding:16px 0}
+.ap-town .town-records{display:grid;gap:20px}
+.ap-town .ap-town-note{margin:0;color:var(--ink-2);font-size:var(--t15);word-break:keep-all;overflow-wrap:anywhere}
 .ap-town .town-records-lead{color:var(--ink-3)}
-.ap-town .town-records-message{padding:10px 14px;border-radius:var(--r-md);background:var(--surface-2);color:var(--ink)}
-.ap-town .town-records-message.is-error{background:color-mix(in srgb,#F96859 16%,var(--surface-1))}
+.ap-town .town-records-message{padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);color:var(--ink)}
+.ap-town .town-records-message.is-error{color:var(--alert)}
 .ap-town .town-records-section{display:grid;gap:8px;padding-top:16px;border-top:1px solid var(--line)}
-.ap-town .town-records-section h3{margin:0;font-size:.96875rem;font-weight:800;letter-spacing:-.02em}
+.ap-town .town-records-section h3{margin:0;font-size:var(--t17);font-weight:600}
 .ap-town .town-records-rows{display:grid;gap:8px;margin:0;padding:0;list-style:none}
-.ap-town .town-records-row{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:40px}
+.ap-town .town-records-row{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:44px}
 .ap-town .town-records-text{min-width:0;word-break:keep-all;overflow-wrap:anywhere}
 .ap-town .town-records-row .ghost-button,.ap-town .town-records-actions .ghost-button{flex:none}
 .ap-town .town-records-actions{display:flex;gap:10px;flex-wrap:wrap}
-.ap-town .town-records-detail{display:grid;gap:6px;padding:12px 14px;border-radius:var(--r-md);background:var(--surface-2)}
+.ap-town .town-records-detail{display:grid;gap:6px;padding:12px 0;border-top:1px solid var(--line)}
 .ap-town .town-records-detail p{margin:0}
 .ap-town .text-link{justify-self:start}
-@media (max-width:760px){
-  .ap-town{padding:16px}
+@media (max-width:900px){
   .ap-town .town-records-row{flex-direction:column;align-items:flex-start;gap:8px}
-  .ap-hero{padding:18px}
-  .ap-avatar{width:52px;height:52px;font-size:1.375rem}
+  .ap-hero{padding-bottom:28px}
   .ap-actions,.ap-chips{justify-content:flex-start}
   .ap-value{text-align:left}
   .ap-name-form input{min-width:0;width:100%}
+  .ap-section-head{margin-top:40px}
 }

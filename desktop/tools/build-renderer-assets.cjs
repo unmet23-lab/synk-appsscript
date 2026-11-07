@@ -28,6 +28,17 @@ const sources={
   // 회원 혜택 포스터 물건(2026-10-17): 사업 색 바탕에서 GPT 이미지 2.5로 굽고 tools/펠트_바탕색오리기.py로 오렸다.
   // 앨범·리허설 혜택은 10-1x에 지웠다(그림도 혜택물건 폴더에 없다).
   ...Object.fromEntries(['gift','insight','subscriptions','care','fortune'].map(id=>['benefit-'+id+'.webp','docs/디자인/플랫폼_시그널/혜택물건/benefit-'+id+'.webp'])),
+  // 3차 A 진열대(2026-11-08): WORLD 물건은 크림 한 색 펠트 「안녕」(옛 책은 설치 창 그림이 아직 쓴다), 앱 소개의 서울행 장면 셋(11-07 크림판),
+  // PATH는 웹 플랫폼·synk.im과 같은 펠트 VR 고글(800px 사본).
+  // 「안녕」 정본은 웹 갈래가 받침 아래 옅은 청금석 줄을 지운 웹그림 판(11-08)이다 — PC · 웹이 같은 바이트를 쓴다.
+  'world-annyeong.webp':'docs/디자인/플랫폼_시그널/웹그림/world-annyeong.webp',
+  ...Object.fromEntries(['train','gate','idol'].map(id=>['scene-'+id+'.webp','experiences/seoul-arrival/assets/img/'+id+'.webp'])),
+  'path-vr-felt.webp':'experiences/path-vr/assets/path-vr-felt-800.webp',
+  // 흰 바탕 사진 표지(PULSE · 교사)를 오린 누끼(11-08): 크림 소매 · 종이 · 이젤은 tools/AI누끼.py(isnet) 형태 + 크림 · 베리 색 규칙.
+  // 오린 과정 · 확인 시트는 git 밖 SYNK-보관함/조사/디자인참고_20261106/구현_PC/누끼/. 웹 플랫폼도 같은 파일을 쓴다.
+  'pulse-object.webp':'docs/디자인/플랫폼_시그널/앱물건/pulse-object.webp','teacher-object.webp':'docs/디자인/플랫폼_시그널/앱물건/teacher-object.webp',
+  // 숫자 글꼴 Inter Tight: 700 하나뿐이라 작은 회색 숫자까지 굵게 나왔다. 웹 플랫폼과 같은 400 · 600 조각을 더한다.
+  'InterTight-Regular.woff2':'docs/브랜드_폰트/플랫폼_웹/InterTight-Regular.woff2','InterTight-SemiBold.woff2':'docs/브랜드_폰트/플랫폼_웹/InterTight-SemiBold.woff2',
   'engine.js':'atlas/engine.js','personalization.js':'atlas/personalization.js',
   // WORLD 「들어 있는 것」의 게임 화면(2026-10-21 지금 WORLD 게임을 휴대폰 세로로 찍은 것). 옛 LAB 시절 사진과 WORLD에 없는 레이싱은 뺐다.
   ...Object.fromEntries(['runner','rhythm','hangul'].map(id=>[id+'.jpg','docs/디자인/플랫폼_시그널/WORLD게임화면/'+id+'.jpg'])),

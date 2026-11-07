@@ -47,7 +47,7 @@ if(!process.versions.electron){
       await run("document.querySelector('[data-member-toggle]').click()");check('task-reopen',await run("document.querySelector('[data-member-toggle]').getAttribute('aria-pressed')==='false'"));
       for(const width of [1280,390,320]){
         window.setContentSize(width,960);await run("document.getElementById('main').scrollTop=0;window.scrollTo(0,0);document.getElementById('toast').hidden=true");await settle();const info=await inspect();check('home-layout-'+width,info.home&&!info.pageOverflow&&!info.mainOverflow&&info.records===2,{...info,screenshot:await capture('member-home-'+width)});
-        await run("document.querySelector('.member-record-columns').scrollIntoView({block:'center'})");check('record-layout-'+width,!(await inspect()).mainOverflow,{screenshot:await capture('member-home-records-'+width)});
+        await run("document.getElementById('member-record-results').scrollIntoView({block:'center'})");check('record-layout-'+width,!(await inspect()).mainOverflow,{screenshot:await capture('member-home-records-'+width)});
         await run("document.querySelector('[data-member-add]').click();document.querySelector('#member-record-form [name=title]').value='새로고침 중인 초안'");
         await run("window.__synkFixture.setClients([])");check('draft-survives-refresh-'+width,await run("document.querySelector('#member-record-form [name=title]').value==='새로고침 중인 초안'"));
         const form=await inspect();check('form-layout-'+width,!form.pageOverflow&&!form.mainOverflow);await run("document.querySelector('[data-member-cancel]').click()");

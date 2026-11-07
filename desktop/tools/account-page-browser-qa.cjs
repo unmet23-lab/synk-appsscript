@@ -74,8 +74,9 @@ const results=[];const check=(name,ok,details={})=>{results.push({name,ok:!!ok,.
         await page.click('[data-account-action=security]');await page.waitForFunction(()=>/로그인과 보안」을 열었어요/.test(document.getElementById('view-account').textContent));
         check('student: password and e-mail go to the browser SYNK ID',(await page.evaluate(()=>window.__accountQaCalls)).includes('authSecurity'),{});
         // 05 TOWN 「마을 기록」(W6c): the card under the records, one rights command at a time, clearing asks once more.
-        check('student: the town records card reads as the notebook does',['05 / TOWN','주민이 아는 나','찻집 주인 · 찻집 일 — 같이 했어요','덜 추천하는 생활','단추가 없는 줄은']
-          .every(value=>text.includes(value))&&text.indexOf('04 / RECORDS')<text.indexOf('05 / TOWN'),{});
+        // A 진열대(2026-11-08): 구역 머리는 한글 제목만(번호 · 영문 꼬리표 없음) — 「학습 기록과 내 데이터」 다음에 「마을 기록」.
+        check('student: the town records card reads as the notebook does',['마을 기록','주민이 아는 나','찻집 주인 · 찻집 일 — 같이 했어요','덜 추천하는 생활','단추가 없는 줄은']
+          .every(value=>text.includes(value))&&text.indexOf('학습 기록과 내 데이터')<text.indexOf('마을 기록')&&!/\d\d \/ [A-Z]+|MY SYNK ID/.test(text),{});
         await page.click('[data-town="known.r0"]');await page.waitForFunction(()=>/그 주민의 기억에서 뺐어요/.test(document.getElementById('view-account').textContent));
         await page.click('[data-town="clear.a0"]');await page.waitForSelector('dialog.ap-confirm[open]');await page.screenshot({path:path.join(outDir,'account-student-town-clear-confirm-1440.png')});
         await page.click('dialog.ap-confirm button[value=confirm]');await page.waitForFunction(()=>/맞춤 기록을 모두 비웠어요/.test(document.getElementById('view-account').textContent));

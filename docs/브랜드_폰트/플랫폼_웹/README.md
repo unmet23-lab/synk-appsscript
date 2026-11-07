@@ -8,6 +8,7 @@
 | `SYNKSans-rest.woff2` | 같은 원본 | 그 밖의 글자. 사용자 이름·작품 제목처럼 화면판에 없는 글자가 나올 때만 받는다 |
 | `SYNKArrow.woff2` | `../InterTight/InterTight-Medium.ttf` | 화살표 네 글자(U+2190-2193)만. SUIT의 →가 꺾쇠처럼 보여 따로 쓰는 면이다 |
 | `InterTight-Regular.woff2`·`InterTight-Medium.woff2` | `../InterTight/*.ttf` | 글자·힌팅 그대로 형식만 WOFF2 |
+| `InterTight-SemiBold.woff2` | `../InterTight/InterTight-SemiBold.ttf` | 기본 라틴 · 라틴-1 · 문장부호(U+0020-007E, U+00A0-00FF, U+2010-206F)만 — A 진열대(2026-11-08)의 앱 이름 56 · 숫자 600. CSS 범위도 같다 |
 | `DMMono-Medium.woff2` | `../DM_Mono/DMMono-Medium.ttf` | CSS 범위(U+0021-007E, U+00A0-00FF, U+2010-2027, U+2190-21FF)만 |
 
 라이선스: 모두 SIL Open Font License 1.1. SUIT의 OFL은 예약 이름(Reserved Font Name) SUIT가 있어, 줄인 수정본의 글꼴 이름을 SYNK Sans로 바꿨다(저작권 «Copyright © 2022 Sun.»·라이선스 문구·주소는 그대로). Inter Tight·DM Mono의 OFL에는 예약 이름이 없다. 원본 라이선스 전문은 각 원본 글꼴 폴더에 있다.

@@ -1,7 +1,7 @@
 import {MEMBER_BENEFITS} from './benefits.mjs';
 export const INSTALLABLE_IDS=['world','messenger'];
 export const APPS={
-  world:{name:'SYNK WORLD',short:'WORLD',icon:'world.png',category:'KOREAN · TOPIK · PLAY',description:'TOPIK 진단부터 쓰기 연습, 한국어 게임까지 들어 있어요.',cover:'world-book.avif',alt:'코랄색 표지에 크림색 장을 펼친 펠트 책',caption:'SYNK WORLD · 싱크 월드',stage:'development',audience:'한국어를 배우는 학생',keywords:'월드 학습 게임 학생 토픽 TOPIK 진단 쓰기 듣기 읽기 한글 바람길 리듬 튜터 옷장 싱크타운',summary:'짧은 진단으로 TOPIK I 내 위치를 보고, 그에 맞춘 이번 주 연습과 게임을 이어서 해요.',features:[['TOPIK 준비','TOPIK I 짧은 진단으로 내 위치를 보고, 듣기·읽기 연습과 TOPIK II 쓰기 연습을 해요.'],['한국어 놀이','바람길·말의 리듬·한글 만나기 같은 게임으로 소리와 글자를 익혀요.'],['튜터와 옷장','까몽·몽글·마린 중 고른 친구가 튜터로 같이 다녀요. 옷장에서 친구들 옷도 골라 입혀요.']]},
+  world:{name:'SYNK WORLD',short:'WORLD',icon:'world.png',category:'KOREAN · TOPIK · PLAY',description:'TOPIK 진단부터 쓰기 연습, 한국어 게임까지 들어 있어요.',cover:'world-annyeong.webp',alt:'짙은 받침 위에 선 크림색 펠트 글자 「안녕」',caption:'SYNK WORLD · 싱크 월드',stage:'development',audience:'한국어를 배우는 학생',keywords:'월드 학습 게임 학생 토픽 TOPIK 진단 쓰기 듣기 읽기 한글 바람길 리듬 튜터 옷장 싱크타운',summary:'진단에서 본 내 위치에 맞춰 이번 주 연습과 게임이 차례로 이어져요.',features:[['TOPIK 준비','TOPIK I 짧은 진단으로 내 위치를 보고, 듣기·읽기 연습과 TOPIK II 쓰기 연습을 해요.'],['한국어 놀이','바람길·말의 리듬·한글 만나기 같은 게임으로 소리와 글자를 익혀요.'],['튜터와 옷장','까몽·몽글·마린 중 고른 친구가 튜터로 같이 다녀요. 옷장에서 친구들 옷도 골라 입혀요.']]},
   messenger:{name:'SYNK Workspace',short:'WORKSPACE',icon:'messenger.png',category:'CHAT · TASKS · CLASS',description:'SYNK 팀이 대화하고 일하는 업무 앱이에요.',cover:'laptop.webp',alt:'SYNK의 파란 펠트 노트북',caption:'SYNK WORKSPACE · 싱크 워크스페이스',stage:'development',audience:'SYNK 회사 구성원·담당 교사',keywords:'워크스페이스 Workspace 싱크 내 수업 교사 학급 학생 과제 메신저 사내 회사 팀 업무 할일 알림 내 작업실 제작 콘텐츠 스튜디오 Studio SHIFT 시프트 인공지능 AI 연습 검토',summary:'팀 대화, 오늘 할 일, 작업실과 제작 도구, 교사의 「내 수업」이 들어 있어요.',features:[['팀 대화','개인·팀 대화방에서 이야기하고 파일을 주고받아요.'],['내 업무','오늘 할 일과 기한, 내 차례인 검토와 알림을 한 화면에서 챙겨요.'],['작업실','트렌드·레퍼런스를 모으고, 제작 데스크에서 기획부터 게시 전 점검까지 해요. AI 업무 연습도 여기서 해요.']]},
   teacher:{name:'워크스페이스 · 내 수업',short:'워크스페이스 / 내 수업',icon:'world.png',category:'TEACH · GUIDE · GROW',description:'학생 기록으로 다음 수업을 준비해요.',cover:'world.png',alt:'SYNK의 펠트 책',caption:'SYNK WORKSPACE · 내 수업',stage:'preview',audience:'한국어 교사·교육기관 운영자',keywords:'교사 선생님 기관 학원 학교 수업 숙제 평가 교육',summary:'워크스페이스 안의 「내 수업」이에요. 담당 반 학생이 공유한 학습 기록을 보고, 과제를 보내고, 챙길 일을 정해요.',boundary:'학생이 공유한 기록만 보여요. 담당 반 권한과 회사 자료 권한은 따로 확인해요.',features:[['담당 반','반마다 학생의 최근 활동과 문항 기록을 한눈에 봐요.'],['기록과 과제','학생이 공유한 학습 기록을 보고, 읽기·게임 과제를 보내 결과를 봐요.'],['관찰과 챙길 일','수업에서 본 것은 관찰로 남기고, 학생마다 챙길 일을 정해요.']]},
   path:{name:'SYNK PATH',short:'PATH',icon:'world.png',category:'INTERVIEW · PRACTICE',description:'세 면접관 앞에서 미리 해 보는 60~90초 면접 연습이에요.',cover:'world.png',alt:'진로 준비를 나타내는 승인 펠트 책',caption:'VR INTERVIEW · 60–90 SECONDS',stage:'preview',previewLabel:'웹에서 연습',audience:'한국 유학·진로·취업을 준비하는 학습자',keywords:'패스 VR Quest 가상 캠퍼스 진로 진학 취업 이력서 면접 목표 음성 경청 필기',summary:'요양보호사 지원 면접을 세 면접관 앞에서 연습해요. 말이나 글로 답하면 내 답에 맞춘 후속 질문이 하나 더 나와요. 한 번에 60~90초예요.',boundary:'PC 브라우저에서는 말이나 글로, Quest 브라우저에서는 VR로 연습해요. 답은 계정에 저장하지 않아요.',features:[['면접관 세 명','면접관들이 답을 들으며 메모해요. 실제 면접장처럼 세 사람의 시선을 받으며 답해요.'],['내 답에 맞춘 후속 질문','말하거나 입력한 답을 보고, 경험을 묻는 질문과 준비를 묻는 질문 중 하나가 이어져요.'],['앉은 채로 둘러보기','PC에서는 화면을 끌어 30도까지 둘러보고, Quest에서는 고개를 돌려 둘러봐요.']]},
@@ -26,9 +26,9 @@ for(const benefit of MEMBER_BENEFITS){
 export const BRAND_PRESENTATION={
   world:{brand:'LAB · 학생',accent:'#F96859',ink:'#AE322A'},
   messenger:{brand:'SYNK · 팀',accent:'#000000',ink:'#000000'},
-  teacher:{brand:'LAB · 교사',accent:'#F96859',ink:'#AE322A',icon:'teacher-cover.png',cover:'teacher-cover.png',alt:'수업 내용을 정리한 코럴색 펠트 발표 보드와 연단'},
-  path:{brand:'PATH · 면접 연습',accent:'#526956',ink:'#526956',icon:'path-cover.png',cover:'path-cover.png',alt:'유학 계획 노트에서 대학 건물로 이어지는 초록색 펠트 길'},
-  pulse:{brand:'PULSE · AI 광고 제작',accent:'#99295D',ink:'#99295D',icon:'pulse-cover.png',cover:'pulse-cover.png',alt:'작품을 담은 베리색 펠트 레코드와 사용 범위 서류'},
+  teacher:{brand:'LAB · 교사',accent:'#F96859',ink:'#AE322A',icon:'teacher-cover.png',cover:'teacher-object.webp',alt:'수업 내용을 정리한 코럴색 펠트 발표 보드와 연단'},
+  path:{brand:'PATH · 면접 연습',accent:'#526956',ink:'#526956',icon:'path-cover.png',cover:'path-vr-felt.webp',alt:'초록 펠트 VR 고글'},
+  pulse:{brand:'PULSE · AI 광고 제작',accent:'#99295D',ink:'#99295D',icon:'pulse-cover.png',cover:'pulse-object.webp',alt:'작품을 담은 베리색 펠트 레코드와 사용 범위 서류'},
   care:{brand:'SYNK · 회원 혜택',accent:'#3D6BC9',ink:'#24448C'},
   fortune:{brand:'SYNK · 회원 혜택',accent:'#F5C445',ink:'#7E5A10'},
 };
@@ -38,6 +38,10 @@ const DISPLAY_WORDS={world:['월드','월'],messenger:['워크\n스페이스','�
 // 회원 혜택 목록에서 내린 것(10-30 무료 운세)은 앱 칸이 없으니 꾸밈도 건너뛴다.
 for(const [id,presentation] of Object.entries(BRAND_PRESENTATION)){if(!APPS[id])continue;const short=String(APPS[id].short||APPS[id].name),[word,mark]=DISPLAY_WORDS[id]||[short,short.slice(0,1)];Object.assign(APPS[id],presentation,{word,mark});}
 export const APP_IDS=Object.keys(APPS);
+// 3차 A 진열대(2026-11-08): 회색 선반 위에 세우는 물건은 모두 누끼다. 흰 바탕 사진 표지였던 PULSE · 교사도
+// 지금 그림을 오린 누끼(pulse-object · teacher-object)로 바꿨다. 그림 색은 다시 칠하지 않는다.
+export function appArt(id){const cover=APPS[id]?.cover;return cover?{src:'/assets/launcher/'+cover,alt:APPS[id].alt||''}:null;}
+export function josa(word,withFinal,withoutFinal){const text=String(word||'').replace(/[^가-힣A-Za-z0-9]+$/,''),last=text.at(-1)||'';if(/[가-힣]/.test(last))return ((last.charCodeAt(0)-0xAC00)%28?withFinal:withoutFinal);return /[LMNlmn136780]$/.test(last)?withFinal:withoutFinal;}
 // 목록에서 잠시 내린 앱(10-30 무료 운세). 화면·새 기록에는 안 나오지만, 이미 저장된 기록을 읽고 지키는 검사에서는 아는 앱으로 친다.
 export const PAUSED_APP_IDS=Object.freeze(['fortune']);
 export function clientRows(snapshot=[],{native=true}={}){return APP_IDS.map(id=>{const app=APPS[id];if(app.stage==='planned')return {id,status:'planned',canLaunch:false,reason:'PRODUCT_PLANNED'};if(app.stage==='preview')return {id,status:'preview',canLaunch:false,reason:'LOCAL_PREVIEW'};return snapshot.find(row=>row?.id===id)||{id,status:'unavailable',reason:native?'CHECKING':'BROWSER_PREVIEW'};});}
@@ -58,7 +62,7 @@ export function primaryAction(client,{native=true,busy=false,teacherPreviewAvail
   }
   if(!native)return {label:'PC 앱에서 설치',action:'none',disabled:true};
   if(!client)return {label:'확인 중…',action:'none',disabled:true};
-  if(client.canLaunch)return {label:'실행',action:'launch',disabled:false};
+  if(client.canLaunch)return {label:({world:'WORLD',messenger:'워크스페이스'})[client.id]?({world:'WORLD',messenger:'워크스페이스'})[client.id]+' 열기':'열기',action:'launch',disabled:false};
   const installer=client.installer||{};
   if(installer.status==='preparing')return {label:'설치 파일 준비 중',action:'none',disabled:true};
   if(installer.status==='opening')return {label:'설치 파일 확인 중',action:'none',disabled:true};

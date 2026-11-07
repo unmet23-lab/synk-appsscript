@@ -313,3 +313,14 @@ for(const appId of ['world','messenger'])test('discarding only current input pre
   assert.match(fixture.root.innerHTML,/data-member-recover>/);fixture.click({memberRecover:''});await new Promise(resolve=>setImmediate(resolve));
   assert.equal(fixture.field('title').value,JSON.parse(original).title);assert.equal(fixture.field('body').value,JSON.parse(original).body);assert.equal(fixture.field('appId').value,appId);assert.equal(fixture.field('consent').checked,false);assert.equal(stored,original);assert.equal(clears,0);home.dispose();
 });
+test('each column opens its own kind: the 결과 메모 「적어 두기」 opens a note, and switching keeps what was typed',async()=>{
+  const {mountMemberHome}=await loaded,fixture=homeFixture();
+  const home=mountMemberHome(fixture.root,{storage:memory(),getSnapshot:()=>({library:member(),personal:{},prefs:{}})});
+  home.render();const html=fixture.root.innerHTML;
+  assert.match(html,/member-tasks-title">[^]*?<\/h2><button class="text-link member-add" data-member-add\s*>/);
+  assert.match(html,/member-notes-title">[^]*?<\/h2><button class="text-link member-add" data-member-add data-member-kind="note"\s*>/);
+  fixture.click({memberAdd:'',memberKind:'note'});assert.match(fixture.root.innerHTML,/<option value="note" selected>/);
+  fixture.field('title').value='쓰던 제목';fixture.click({memberAdd:''});
+  assert.equal(fixture.field('kind').value,'task');assert.equal(fixture.field('title').value,'쓰던 제목');assert.match(fixture.root.innerHTML,/<option value="task" selected>/);
+  home.dispose();
+});

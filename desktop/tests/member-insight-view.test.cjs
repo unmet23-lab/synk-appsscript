@@ -436,3 +436,15 @@ test('dates use one shared formatter in Korea\'s calendar, and invalid dates are
     assert.equal(constructors, 1);
   } finally { Intl.DateTimeFormat = original; }
 });
+
+test('A shelf (2026-11-08): the head is a grey stage object, a Korean label and the title — no English tags, mono numbers or poster colours', async () => {
+  const { renderMemberInsight } = await loaded;
+  for (const state of [{ status: 'ready', report: report() }, { status: 'loading' }, { status: 'signed-out' }]) {
+    const html = renderMemberInsight(state, { poster: { art: './assets/member/benefit-insight.webp', label: '회원 혜택', badge: '로그인하면 바로', status: 'integrated' } });
+    assert.match(html, /<header class="mi2-poster"><img class="mi2-object" src="\.\/assets\/member\/benefit-insight\.webp" alt=""><div class="mi2-poster-top"><span class="mi2-eyebrow">회원 혜택<\/span>/);
+    assert.match(html, /<h1 id="benefit-title" tabindex="-1">내 성향<\/h1>/);
+    assert.doesNotMatch(html, /SYNK FOR YOU|CHOSEN|>DONE<|30 DAYS|mi2-en/);
+  }
+  // A caller without a label gets the Korean one, never the old English tag.
+  assert.match(renderMemberInsight({ status: 'loading' }), /<span class="mi2-eyebrow">회원 혜택<\/span>/);
+});

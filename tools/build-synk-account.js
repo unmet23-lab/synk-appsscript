@@ -44,9 +44,14 @@ for (const file of ['SUIT-Variable.woff2', 'InterTight-700.woff2', 'scrapbook.cs
 for (const file of ['slab-coral-long.webp', 'slab-cream-long.webp', 'chip-blush-long.webp', 'badge-cream.webp', 'badge-check.webp']) output(`assets/${file}`, fs.readFileSync(path.join(sourceRoot, 'docs/디자인/펠트부품/assets/ui', file)));
 output('assets/tex-blush.webp', fs.readFileSync(path.join(sourceRoot, 'docs/디자인/펠트부품/assets/ui/tex-blush.webp')));
 // 플랫폼 글꼴: SUIT를 화면 글자·나머지 두 조각(SYNK Sans), 화살표 네 글자 조각, TTF의 WOFF2(tools/build-platform-fonts.py).
-for (const file of ['SYNKSans-ui.woff2', 'SYNKSans-rest.woff2', 'SYNKArrow.woff2', 'InterTight-Regular.woff2', 'InterTight-Medium.woff2', 'DMMono-Medium.woff2']) output(`assets/${file}`, fs.readFileSync(path.join(sourceRoot, 'docs/브랜드_폰트/플랫폼_웹', file)));
+for (const file of ['SYNKSans-ui.woff2', 'SYNKSans-rest.woff2', 'SYNKArrow.woff2', 'InterTight-Regular.woff2', 'InterTight-Medium.woff2', 'InterTight-SemiBold.woff2', 'DMMono-Medium.woff2']) output(`assets/${file}`, fs.readFileSync(path.join(sourceRoot, 'docs/브랜드_폰트/플랫폼_웹', file)));
 // 플랫폼 카드(235px)·상세(453px)에는 800px 사본이면 고해상도 화면에서도 같아 보인다(168KB→99KB).
 output('assets/path-vr-felt.webp', fs.readFileSync(path.join(sourceRoot, 'experiences/path-vr/assets/path-vr-felt-800.webp')));
+// A 진열대(2026-11-08): 선반의 WORLD 물건은 크림 한 색 펠트 「안녕」(시안 원본에서 받침 아래 청금석 기운만 회색으로 지운 웹그림 판),
+// Workspace는 PC 런처와 같은 펠트 노트북, 앱 소개의 WORLD 그림은 서울행 장면 셋(PC 런처와 같은 원본).
+output('assets/world-annyeong.webp', fs.readFileSync(path.join(sourceRoot, 'docs/디자인/플랫폼_시그널/웹그림/world-annyeong.webp')));
+output('assets/laptop.webp', fs.readFileSync(path.join(sourceRoot, 'docs/디자인/SNS키트/assets/felt-laptop.webp')));
+for (const id of ['train', 'gate', 'idol']) output(`assets/scene-${id}.webp`, fs.readFileSync(path.join(sourceRoot, 'experiences/seoul-arrival/assets/img', `${id}.webp`)));
 output('member-insight.css', fs.readFileSync(path.join(sourceRoot, 'desktop/renderer/member-insight.css')));
 for (const file of ['wide-lapis.webp', 'wide-butter.webp']) output(`assets/member/${file}`, fs.readFileSync(path.join(sourceRoot, 'desktop/assets/launcher', file)));
 // 회원 혜택 포스터 물건은 웹에서 가장 크게 보이는 크기에 맞춘 판이다(이름은 데스크톱 앱과 같고, 데스크톱 앱은 원본을 쓴다).

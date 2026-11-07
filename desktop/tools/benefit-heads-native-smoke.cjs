@@ -5,14 +5,15 @@
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os');
 const root=path.resolve(__dirname,'..'),out=process.env.SYNK_BENEFIT_HEADS_OUT||path.join(root,'artifacts','benefit-heads'),prefix='SYNK_BENEFIT_HEADS ';
 if(!path.isAbsolute(out))throw Error('Output path must be absolute');
-const IDS=['insight','subscriptions','care','fortune'];
+// 무료 운세는 10-30에 목록에서 내렸다. 3차 A 진열대(11-08)부터 플레저 소개는 회색 무대(물건) + 옆 글 칸이고, 성향 · 구독 머리는 회색 무대로 바뀐 포스터다.
+const IDS=['insight','subscriptions','care'];
 // [폭, 높이] — 1100~761은 본문이 좁아지는 구간, 760 아래는 물건이 흐름 안으로 들어오는 휴대폰 틀.
 const SIZES=[[1440,900],[1366,768],[1280,720],[1180,800],[1100,800],[1020,800],[960,800],[900,800],[860,800],[820,800],[780,800],[761,800],[760,800],[600,800],[390,844],[320,700]];
 const SHOT_WIDTHS=new Set([1440,1020,900,820,390]);
 
 function measure(){
-  const heads=[['detail','.benefit-detail-hero','img.benefit-object','.benefit-detail-top>*','.benefit-detail-title .poster-word','#benefit-title'],
-    ['insight','.member-insight .mi-hero.has-art','.mi-object','.mi-hero-top>*','h1','.mi-hero-title>p'],
+  const heads=[['detail','.benefit-detail','.app-stage img','.app-stage .stage>:not(img)','#benefit-title','.app-text .sum'],
+    ['insight','.mi2-poster','.mi2-object','.mi2-poster-top>*','.mi2-poster-title h1','.mi2-poster-title p'],
     ['subscriptions','.member-subs .ms-hero.has-art','.ms-object','.ms-hero-top>*','h1','.ms-hero-title>p']];
   const ctx=document.createElement('canvas').getContext('2d');
   const points=img=>{const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,0,0);const d=g.getImageData(0,0,c.width,c.height).data,list=[];for(let y=0;y<c.height;y+=6)for(let x=0;x<c.width;x+=6)if(d[(y*c.width+x)*4+3]>40)list.push([x/c.width,y/c.height]);return list;};
@@ -32,7 +33,9 @@ function measure(){
   for(const [kind,headSel,objSel,topSel,wordSel,titleSel] of heads){
     const head=document.querySelector(headSel);if(!head||!head.getClientRects().length)continue;const img=head.querySelector(objSel);if(!img||!img.naturalWidth)return {error:'object not loaded'};
     const pts=cloud(img),tops=[...head.querySelectorAll(topSel)].map(rect),word=head.querySelector(wordSel),title=head.querySelector(titleSel);
-    const gaps=tops.map(b=>below(pts,b)).filter(v=>v!==null),hb=head.getBoundingClientRect();
+    // 위 줄(라벨 · 상태)이 물건보다 아래에 놓인 틀(3차 A 진열대: 회색 무대 아래 글 줄)은 물건 아래와의 거리를 잰다.
+    const mid=pts.length?(Math.min(...pts.map(p=>p[1]))+Math.max(...pts.map(p=>p[1])))/2:0;
+    const gaps=tops.map(b=>b.t>mid?above(pts,b):below(pts,b)).filter(v=>v!==null),hb=head.getBoundingClientRect();
     return {kind,headWidth:Math.round(hb.width),headHeight:Math.round(hb.height),top:gaps.length?Math.min(...gaps):null,word:word?above(pts,glyph(word)):null,title:title?above(pts,rect(title)):null,clash:(()=>{if(!word||!title)return null;const w=glyph(word),t=rect(title),dx=Math.max(t.l-w.r,w.l-t.r),dy=Math.max(t.t-w.b,w.t-t.b);return Math.round(Math.max(dx,dy));})(),wrapped:word?word.getBoundingClientRect().height>parseFloat(getComputedStyle(word).lineHeight)*1.5:false,
       object:(()=>{const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);return [Math.round(Math.min(...xs)-hb.left),Math.round(Math.min(...ys)-hb.top),Math.round(Math.max(...xs)-hb.left),Math.round(Math.max(...ys)-hb.top)];})(),
       wordOut:(()=>{if(!word)return null;const w=glyph(word),cs=getComputedStyle(head);return Math.round(w.r-(hb.right-parseFloat(cs.paddingRight)));})(),

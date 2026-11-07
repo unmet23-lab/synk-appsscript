@@ -15,7 +15,8 @@ async function probeNativeUI(contents,artifacts){
     check('catalogue-matches-current-runtime',displayed.length===expectedApps.length&&expectedApps.every(id=>displayed.includes(id)));
     check('retired-and-shared-cards-not-duplicated',!q('[data-app="teacher"]')&&!q('[data-app="studio"]')&&!q('[data-app="shift"]')&&!q('[data-app="partners"]'));
     check('teacher-web-link-hidden',q('#teacher-web-link').hidden);
-    const tiles=[...document.querySelectorAll('.app-item .tile')];check('library-marks-render-at-readable-size',tiles.length===expectedApps.length&&tiles.every(tile=>tile.textContent.trim()&&tile.getBoundingClientRect().width>=32&&tile.getBoundingClientRect().height>=32));
+    // 3차 A 진열대(11-08): 앱 칸은 글자 타일 대신 회색 선반 위 펠트 물건 그림이다.
+    const marks=[...document.querySelectorAll('#app-list .shelf-item .stage img')];check('library-objects-render',marks.length===expectedApps.length&&marks.every(img=>img.complete&&img.naturalWidth>0&&img.getAttribute('src')));
     q('[data-view="downloads"]').click();check('installation-manager-matches-runtime-catalogue',!q('#view-downloads').hidden&&q('#view-library').hidden&&document.querySelectorAll('.download-row').length===(development?2:1));
     q('[data-view="settings"]').click();check('settings-view',!q('#view-settings').hidden&&q('#view-downloads').hidden);
     q('#density').value='compact';q('#density').dispatchEvent(new Event('change',{bubbles:true}));check('density-persisted',document.documentElement.classList.contains('compact')&&JSON.parse(localStorage.getItem('synk-launcher-view-v1')).density==='compact');q('#density').value='comfortable';q('#density').dispatchEvent(new Event('change',{bubbles:true}));
@@ -36,7 +37,7 @@ async function probeNativeUI(contents,artifacts){
     ['platform-account-hidden-preview.png',"document.getElementById('account-button').click()"],
   ]){await contents.executeJavaScript(script);await contents.capturePage(undefined,{stayHidden:true,stayAwake:true});await new Promise(resolve=>setTimeout(resolve,180));fs.writeFileSync(path.join(artifacts,name),(await contents.capturePage(undefined,{stayHidden:true,stayAwake:true})).toPNG());}
   await contents.executeJavaScript(original===null?"localStorage.removeItem('synk-launcher-view-v1')":"localStorage.setItem('synk-launcher-view-v1',"+JSON.stringify(original)+")");
-  await contents.executeJavaScript("document.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());document.querySelector('[data-app=world]').click();document.querySelector('#main').scrollTop=0;document.querySelector('.library').scrollTop=0;");
+  await contents.executeJavaScript("document.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());document.querySelector('[data-app=world]').click();document.querySelector('#main').scrollTop=0;");
   await contents.executeJavaScript("document.fonts.ready.then(()=>Promise.all([...document.images].map(image=>image.decode().catch(()=>{}))))");
   await contents.executeJavaScript(original===null?"localStorage.removeItem('synk-launcher-view-v1')":"localStorage.setItem('synk-launcher-view-v1',"+JSON.stringify(original)+")");
   return {ok:checks.every(c=>c.ok),checks,installerOpened:false,clientLaunched:false,accountLoginStarted:false};

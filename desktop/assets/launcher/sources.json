@@ -160,8 +160,8 @@
     {
       "name": "benefit-subscriptions.webp",
       "source": "docs/디자인/플랫폼_시그널/혜택물건/benefit-subscriptions.webp",
-      "bytes": 422352,
-      "sha256": "31aa473e95af3db7a9fa2a7f82865a1153c70c74579a62b9945792d01338f7f3"
+      "bytes": 225180,
+      "sha256": "21f9ab71db5823e9cb9c7e58120231f25f73aa32f3e508f2c9a97267b168fed8"
     },
     {
       "name": "benefit-care.webp",
@@ -174,6 +174,60 @@
       "source": "docs/디자인/플랫폼_시그널/혜택물건/benefit-fortune.webp",
       "bytes": 277358,
       "sha256": "0cbc7f01325679e4103b846ba88f2f6bf55cc8954f6f3ccf708f80404e33ec22"
+    },
+    {
+      "name": "world-annyeong.webp",
+      "source": "docs/디자인/플랫폼_시그널/웹그림/world-annyeong.webp",
+      "bytes": 157742,
+      "sha256": "1b3f74df3fd63de436e0f95a8fc84ec859ad31461d44cb63f700f34357f70fec"
+    },
+    {
+      "name": "scene-train.webp",
+      "source": "experiences/seoul-arrival/assets/img/train.webp",
+      "bytes": 159704,
+      "sha256": "26b09b1525650557a221c624884ef7d3655854a3a2959724e7d91bade9a7f750"
+    },
+    {
+      "name": "scene-gate.webp",
+      "source": "experiences/seoul-arrival/assets/img/gate.webp",
+      "bytes": 168914,
+      "sha256": "93df4b18604293c0d318080f9a90320c6d1a71632641a78f28fffeb4be305339"
+    },
+    {
+      "name": "scene-idol.webp",
+      "source": "experiences/seoul-arrival/assets/img/idol.webp",
+      "bytes": 102650,
+      "sha256": "46df06c35b66b640902f215d37e56cd28e5c3293ff2d3552dccd3a77cb545add"
+    },
+    {
+      "name": "path-vr-felt.webp",
+      "source": "experiences/path-vr/assets/path-vr-felt-800.webp",
+      "bytes": 100944,
+      "sha256": "b7a2c746e7afe59ff0cb7eeeff0b1325080246b66b94613b4bdd7f38ae5fb628"
+    },
+    {
+      "name": "pulse-object.webp",
+      "source": "docs/디자인/플랫폼_시그널/앱물건/pulse-object.webp",
+      "bytes": 144416,
+      "sha256": "ff0cfe28d89c503f2f68ff9677e75daca3d6e0a27cf36324061fa67f8497ff32"
+    },
+    {
+      "name": "teacher-object.webp",
+      "source": "docs/디자인/플랫폼_시그널/앱물건/teacher-object.webp",
+      "bytes": 120546,
+      "sha256": "26b859d354f9fde9abae6744f5fb48974dcb8048eb9dfc779cf764b28431a354"
+    },
+    {
+      "name": "InterTight-Regular.woff2",
+      "source": "docs/브랜드_폰트/플랫폼_웹/InterTight-Regular.woff2",
+      "bytes": 108048,
+      "sha256": "141691dedbf7ae404140c4666a7f654c5c9dceb3d9e7f1a3ba5aef84a6b093d5"
+    },
+    {
+      "name": "InterTight-SemiBold.woff2",
+      "source": "docs/브랜드_폰트/플랫폼_웹/InterTight-SemiBold.woff2",
+      "bytes": 25216,
+      "sha256": "354af8ae232a7132e66a4d023e18b1fbb6e36e0793976cffbe09e82891101f55"
     },
     {
       "name": "engine.js",

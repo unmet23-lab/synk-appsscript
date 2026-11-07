@@ -4,7 +4,7 @@
   조각과 그 밖의 글자 조각으로 나눈다. 나머지판은 사용자 이름·작품 제목처럼 화면판에 없는 글자가 나올 때만 받는다.
   SUIT는 OFL 「Reserved Font Name SUIT」라 줄인 수정본의 글꼴 이름을 SYNK Sans로 바꾼다(저작권·라이선스 항목은 그대로).
 - SYNK Arrow: 화살표 네 글자(U+2190-2193)만 쓰는 면이 Inter Tight Medium TTF 전체를 받던 것을 그 네 글자로 줄인다.
-- Inter Tight 400·500, DM Mono 500: TTF를 같은 글자 그대로 WOFF2로 바꾼다(DM Mono는 CSS 범위만 남김).
+- Inter Tight 400·500·600, DM Mono 500: TTF를 같은 글자 그대로 WOFF2로 바꾼다(DM Mono는 CSS 범위만 남김).
   Inter Tight·DM Mono의 OFL에는 예약 이름이 없다.
 결과는 docs/브랜드_폰트/플랫폼_웹/에 쓰고, tools/build-synk-account.js가 experiences/synk-account/assets/로 복사한다.
 지금 작업본에도 같은 바이트를 바로 넣고 platform.css의 글꼴 선언·범위를 맞춘다.
@@ -20,6 +20,7 @@ OUT = REPO / 'docs/브랜드_폰트/플랫폼_웹'
 SUIT = REPO / 'experiences/learning-hub/assets/SUIT-Variable.woff2'
 INTER_REGULAR = REPO / 'docs/브랜드_폰트/InterTight/InterTight-Regular.ttf'
 INTER_MEDIUM = REPO / 'docs/브랜드_폰트/InterTight/InterTight-Medium.ttf'
+INTER_SEMIBOLD = REPO / 'docs/브랜드_폰트/InterTight/InterTight-SemiBold.ttf'
 DM_MONO = REPO / 'docs/브랜드_폰트/DM_Mono/DMMono-Medium.ttf'
 CSS = ACCOUNT / 'platform.css'
 
@@ -124,6 +125,9 @@ built = {
     'SYNKArrow.woff2': subset_font(INTER_MEDIUM, set(range(0x2190, 0x2194))),
     'InterTight-Regular.woff2': subset_font(INTER_REGULAR, None, keep_all=True),
     'InterTight-Medium.woff2': subset_font(INTER_MEDIUM, None, keep_all=True),
+    # A 진열대(2026-11-08): 앱 이름(56 · 600)과 숫자는 Inter Tight 600으로 쓴다(PC 런처 시안과 같은 굵기).
+    # 앱 이름 · 숫자만 쓰는 굵기라 기본 라틴 · 라틴-1 · 문장부호만 남긴다(전체 113KB → 약 30KB).
+    'InterTight-SemiBold.woff2': subset_font(INTER_SEMIBOLD, set(range(0x20, 0x7F)) | set(range(0xA0, 0x100)) | set(range(0x2010, 0x2070))),
     'DMMono-Medium.woff2': subset_font(DM_MONO, parse_range(DM_RANGE) & set(TTFont(DM_MONO).getBestCmap())),
 }
 
@@ -166,7 +170,7 @@ pairs = [
 ]
 for pattern, replacement in pairs:
     css = re.sub(pattern, lambda m: m.expand(replacement) if '\\1' in replacement else replacement, css)
-for needle in ("SYNKSans-ui.woff2", "SYNKSans-rest.woff2", "SYNKArrow.woff2", "InterTight-Regular.woff2", "InterTight-Medium.woff2') format('woff2');font-weight:500", "DMMono-Medium.woff2", "--sans:'SYNK Arrow','SYNK Sans'"):
+for needle in ("SYNKSans-ui.woff2", "SYNKSans-rest.woff2", "SYNKArrow.woff2", "InterTight-Regular.woff2", "InterTight-Medium.woff2') format('woff2');font-weight:500", "InterTight-SemiBold.woff2') format('woff2');font-weight:600", "DMMono-Medium.woff2", "--sans:'SYNK Arrow','SYNK Sans'"):
     assert needle in css, needle
 assert 'SUIT-Variable.woff2' not in css and '.ttf' not in css
 if crlf:

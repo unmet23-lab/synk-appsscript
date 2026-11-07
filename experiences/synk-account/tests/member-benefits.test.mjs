@@ -27,7 +27,8 @@ test('benefits are discoverable without being treated as installed or entitled a
   // The PC-only AI subscription board is discoverable on the web but has no web or local entry.
   assert.equal(localBenefitPreview('subscriptions', 'http://localhost/'), null);
   assert.equal(publicBenefitEntry('subscriptions'), null);
-  assert.match(benefitCards(), /benefit-subscriptions[\s\S]*?class="benefit-link"[^>]*>소개 보기/);
+  // 칸 아래 행동 한 줄: PC 전용 구독 계정판은 PC 앱 받기로(웹에서 여는 길이 없다).
+  assert.match(benefitCards(), /benefit-subscriptions[\s\S]*?<a class="go-link benefit-link" href="#downloads">PC 앱 받기 →<\/a>/);
   assert.deepEqual(filterBenefits('성향').map(v => v.id), ['insight']);
   assert.equal(localBenefitPreview('insight', 'http://localhost/'), null);
   assert.equal(publicBenefitEntry('insight'), null);
@@ -88,10 +89,16 @@ test('benefit detail reflects device save and favorite state without creating a 
   assert.match(benefitDetail('care', 'http://localhost/', { library: normalizeLibrary() }), /data-action="save" data-id="care" aria-pressed="false"/);
   // PC 앱 안 혜택(구독 계정판)은 기기 바로가기 목록에 없어 담기·즐겨찾기 단추를 내지 않는다.
   assert.doesNotMatch(benefitDetail('subscriptions', 'http://localhost/', { library }), /data-action="(save|favorite)"/);
-  // 웹 소개는 PC 앱 받기로 잇고, 카드는 「내 성향 보기」가 아니라 소개로 간다(그 단추는 성향만).
-  assert.ok(benefitDetail('subscriptions', 'http://localhost/').includes('<a class="benefit-link" href="#downloads">PC 앱 받기 →</a>'));
-  assert.ok(benefitCards('계정판').includes('소개 보기'));
+  // 웹 소개는 PC 앱 받기(그 화면의 주 행동 — 검정 알약)로 잇고, 카드는 「내 성향 보기」가 아니라 소개로 간다(그 단추는 성향만).
+  assert.ok(benefitDetail('subscriptions', 'http://localhost/').includes('<a class="sb-btn" href="#downloads">PC 앱 받기 →</a>'));
+  assert.ok(benefitCards('계정판').includes('PC 앱 받기 →'));
   assert.ok(!benefitCards('계정판').includes('내 성향 보기'));
+  // 웹에서 바로 여는 플레저는 칸 아래에서 공개 입구로 바로 열고, 내 성향은 이 화면의 소개로. 로그인한 사람에게는 「로그인하면 바로」 대신 「회원 혜택 · 바로 보기」.
+  assert.match(benefitCards('플레저'), /<a class="go-link benefit-link" href="https:\/\/synk\.im\/care\/" data-web="care"[^>]*>웹에서 열기 ↗<\/a>/);
+  assert.match(benefitCards('성향'), /<a class="go-link benefit-link" href="#benefits\/insight">내 성향 보기 →<\/a>/);
+  assert.match(benefitCards('성향'), /로그인하면 바로/);
+  assert.match(benefitCards('성향', { signedIn: true }), /회원 혜택 · 바로 보기/);
+  assert.doesNotMatch(benefitCards('성향', { signedIn: true }), /로그인하면 바로/);
 });
 
 test('preview server serves only named public benefit assets, not source modules or private files', () => {
@@ -101,11 +108,14 @@ test('preview server serves only named public benefit assets, not source modules
   for (const file of ['src/member-benefits.mjs', 'assets/member/private.json', 'assets/member/unknown.png', 'assets/member/care-note.webp']) assert.equal(targetFor('/synk-account/' + file), null);
 });
 
-test('web benefit posters use the PC felt objects, and every object the web draws is built and served', () => {
-  const cards = benefitCards(), total = String(MEMBER_BENEFITS.length).padStart(2, '0');
-  const files = ['benefit-gift.webp', ...MEMBER_BENEFITS.map(item => item.asset)];
+test('web benefit shelf uses the PC felt objects, and every object the web draws is built and served', () => {
+  const cards = benefitCards();
+  const files = MEMBER_BENEFITS.map(item => item.asset);
   for (const item of MEMBER_BENEFITS) assert.ok(cards.includes(`<img class="benefit-object" src="./assets/member/${item.asset}"`), item.id);
-  assert.ok(benefitHero().includes('<img class="benefit-object" src="./assets/member/benefit-gift.webp" alt="">'));
+  // A 진열대: 첫머리는 선물 포스터 · 영문 꼬리표 없이 두 줄 제목, 혜택은 회색 선반 칸에 선다.
+  assert.ok(benefitHero().includes('<h1 id="benefit-heading">회원이면<br><span>모두 무료.</span></h1>'));
+  assert.doesNotMatch(benefitHero(), /benefit-gift|SYNK FOR YOU|MEMBER BENEFITS/);
+  assert.match(cards, /^<ul class="shelf benefit-grid cols-3" aria-label="회원 혜택">/);
   for (const file of files) {
     assert.ok(targetFor('/synk-account/assets/member/' + file), file);
     assert.ok(fs.existsSync(new URL('../assets/member/' + file, import.meta.url)), file);
@@ -113,11 +123,15 @@ test('web benefit posters use the PC felt objects, and every object the web draw
   // 성향 소개도 PC 앱처럼 포스터(물건·번호 라벨·상태 스티커)를 받아 다른 소개 머리와 같은 틀로 연다.
   const insight = benefitDetail('insight', 'https://synk.im/platform/');
   assert.ok(insight.includes('<header class="mi2-poster"><img class="mi2-object" src="./assets/member/benefit-insight.webp"'));
-  assert.ok(insight.includes(`SYNK FOR YOU · 01 / ${total}`));
+  // A 진열대: 머리 꼬리표는 PC와 같은 한글 「회원 혜택」(영문 · 번호 없음).
+  assert.ok(insight.includes('<span class="mi2-eyebrow">회원 혜택</span>'));
+  assert.doesNotMatch(insight, /SYNK FOR YOU|mi2-en/);
+  // 다른 혜택 소개는 앱 소개와 같은 7 : 5 — 회색 무대 위 물건 하나, 이름 · 한 줄 제목 · 위치 줄.
   const care = benefitDetail('care', 'https://synk.im/platform/');
-  assert.ok(care.includes('<header class="benefit-detail-hero benefit-care"><img class="benefit-object" src="./assets/member/benefit-care.webp"'));
-  assert.ok(care.includes(`SYNK FOR YOU · 03 / ${total}`));
-  assert.ok(care.includes('<h1><span class="sr-only">플레저. </span>'));
+  assert.ok(care.includes('<div class="detail-stage"><img class="benefit-object" src="./assets/member/benefit-care.webp"'));
+  assert.ok(care.includes('<nav class="crumb" aria-label="위치"><a href="#benefits">회원 혜택</a>'));
+  assert.ok(care.includes('<h1>플레저</h1><p class="sub">오늘 연락할 사람과 다가오는 날을 먼저 알려 줘요.</p>'));
+  assert.doesNotMatch(care, /SYNK FOR YOU|HOW IT WORKS|COMING SOON/);
 });
 
 test('removed member apps have no catalogue, search, launch link or public assets', () => {

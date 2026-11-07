@@ -329,7 +329,11 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   // 지금 로그인되지 않은 Gemini 계정은 「다시 로그인」이 아니라 PC의 Antigravity를 그 계정으로 바꾸는 일이다(가이드가 /logout → /login을 안내한다).
   const reloginLabel = row => (row && AUTO[row.service]?.key ? '키 다시 넣기' : row?.state === 'elsewhere' ? (row.awayReason === 'none' ? '이 계정으로 로그인' : '이 계정으로 바꾸기') : '다시 로그인');
 
-  /* 포스터(다른 혜택 소개 머리와 같은 틀) */
+  /* 머리(3차 A 진열대, 11-08): 내 성향 소개와 같은 짜임 — 왼쪽 회색 무대 위 물건 → 「회원 혜택 · 상태」 → 이름 56 → 한 줄 설명 → 상태 한 줄과 단추.
+     본문(지금 쓸 계정 · 다음에 풀려요 · 하루 사용량 · 요금)은 오른쪽 칸에 1px 선 목록으로 놓는다(frame). */
+  function frame(now, groups, body) {
+    return `<button type="button" class="ms-back" data-view="benefits">${arrowBack}회원 혜택 모두 보기</button><div class="ms-top">${hero(now, groups)}<div class="ms-stack">${body}</div></div>`;
+  }
   function hero(now, groups) {
     const check = snapshot?.check, rows = snapshot?.rows || [], auto = rows.some(r => r.source === 'auto');
     const total = groups.reduce((n, g) => n + g.accounts.length, 0), ready = groups.reduce((n, g) => n + g.ready.length, 0);
@@ -338,6 +342,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     let note;
     if (!context.native) note = 'SYNK Platform PC 앱에서 쓸 수 있어요.';
     else if (!context.signedIn) note = 'SYNK ID로 로그인하면 바로 시작할 수 있어요.';
+    else if (!snapshot && loadError) note = '계정판을 불러오지 못했어요.';
     else if (!snapshot) note = '계정판을 준비하고 있어요…';
     else if (snapshot.checking) note = `공식 프로그램으로 읽는 중이에요…${progress?.total ? ` <b class="ms-num">${progress.done}/${progress.total}</b>` : ''}`;
     else if (!rows.length) note = '연결한 계정 0개 · 계정 관리에서 연결해요.';
@@ -352,10 +357,9 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const actions = context.native && context.signedIn && snapshot
       ? `${rows.length ? `<button type="button" class="ms-button ms-button-primary" data-subs="check" ${busy || snapshot.checking || !auto ? 'disabled' : ''}>${snapshot.checking || busy === 'check' ? '확인 중…' : '지금 확인'}</button>` : ''}<button type="button" class="ms-button" data-subs="manage">계정 관리</button>`
       : context.native && !context.signedIn ? '<button type="button" class="ms-button ms-button-primary" data-insight-action="account">SYNK ID로 로그인</button>' : '';
-    return `<button type="button" class="ms-back" data-view="benefits">${arrowBack}회원 혜택 모두 보기</button>
-      <header class="ms-hero${poster?.art ? ' has-art' : ''}">${poster?.art ? `<img class="ms-object" src="${esc(poster.art)}" alt="">` : ''}
-        <div class="ms-hero-top"><span class="ms-eyebrow">${esc(poster?.label || 'SYNK FOR YOU / AI SUBSCRIPTIONS')}</span>${poster?.badge ? `<span class="ms-badge${poster.status === 'integrated' ? ' is-integrated' : ''}"><span class="ms-led" aria-hidden="true"></span>${esc(poster.badge)}</span>` : ''}</div>
-        <div class="ms-hero-title"><h1 id="benefit-title" tabindex="-1">구독</h1><p>AI 구독마다<br>얼마나 썼고 얼마나 남았는지 보여 줘요.</p></div>
+    return `<header class="ms-hero${poster?.art ? ' has-art' : ''}">${poster?.art ? `<img class="ms-object" src="${esc(poster.art)}" alt="">` : ''}
+        <div class="ms-hero-top"><span class="ms-eyebrow">${esc(poster?.label || '회원 혜택')}</span>${poster?.badge ? `<span class="ms-badge${poster.status === 'integrated' ? ' is-integrated' : ''}"><span class="ms-led" aria-hidden="true"></span>${esc(poster.badge)}</span>` : ''}</div>
+        <div class="ms-hero-title"><h1 id="benefit-title" tabindex="-1">AI 구독 계정판</h1><p>AI 구독마다 얼마나 썼고 얼마나 남았는지 보여 줘요.</p></div>
         <div class="ms-hero-note"><span class="ms-note">${note}</span><div class="ms-hero-actions">${actions}</div></div>
       </header>`;
   }
@@ -763,7 +767,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   function glanceView(now, rows, groups) {
     const checkAt = snapshot?.check?.at || null, stale = freshness(checkAt, now) === 'stale';
     const next = nextSection(now, rows, checkAt);
-    return `${hero(now, groups)}${fixBand(groups, now)}${nowSection(now, groups, stale)}${next}${usageSection(now, groups, next ? '03' : '02')}${rows.length ? footer(now, rows) : ''}`;
+    return frame(now, groups, `${fixBand(groups, now)}${nowSection(now, groups, stale)}${next}${usageSection(now, groups, next ? '03' : '02')}${rows.length ? footer(now, rows) : ''}`);
   }
 
   /* 계정 관리 */
@@ -1111,7 +1115,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     return `<div class="ms-help">${HELP.map(([q, a], i) => { const key = String(i), open = ui.help.has(key); return `<div class="ms-help-item${open ? ' open' : ''}"><button type="button" class="ms-help-q" data-subs="help-item" data-id="${key}" aria-expanded="${open}"><span>${esc(q)}</span>${chevron}</button>${open ? `<p class="ms-help-a">${esc(a)}</p>` : ''}</div>`; }).join('')}</div>`;
   }
   function section(number, title, description, body, id = '') {
-    return `<section class="ms-section"${id ? ` id="${id}"` : ''}><div class="ms-section-heading"><h2><span class="ms-section-number">${number}</span>${title}</h2>${description ? `<p>${description}</p>` : ''}</div>${body}</section>`;
+    return `<section class="ms-section" data-section="${number}"${id ? ` id="${id}"` : ''}><div class="ms-section-heading"><h2>${title}</h2>${description ? `<p>${description}</p>` : ''}</div>${body}</section>`;
   }
 
   // 고리 숫자는 처음 보일 때와 새로 읽은 값이 바뀔 때만 한 번 굴리고 고리를 그린다.
@@ -1137,10 +1141,10 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (!container || !visible) return;
     const now = Date.now(), rows = snapshot?.rows || [], checkAt = snapshot?.check?.at || null, groups = serviceGroups(rows, now, checkAt);
     let html;
-    if (!context.native) html = hero(now, groups) + section('01', 'PC 앱에서 쓰는 혜택이에요', '이 혜택은 회원 PC에 설치된 공식 프로그램으로 사용량을 읽기 때문에 SYNK Platform PC 앱에서만 열려요.', '<p class="ms-soft">PC 앱을 설치하고 SYNK ID로 로그인한 뒤 회원 혜택에서 열어 주세요.</p>');
-    else if (!context.signedIn) html = hero(now, groups) + section('01', '로그인하고 시작해요', '회원 무료 혜택이에요. 로그인 정보와 사용량 기록은 이 PC에만 저장돼요.', '<p class="ms-soft">위 초록 판의 「SYNK ID로 로그인」을 눌러 주세요. 처음이라면 창 오른쪽 위 「회원가입」부터 해요.</p>');
-    else if (loadError) html = hero(now, groups) + section('01', '불러오지 못했어요', esc(loadError), '<button type="button" class="ms-button" data-subs="recheck-tools">다시 시도</button>');
-    else if (!snapshot) html = hero(now, groups);
+    if (!context.native) html = frame(now, groups, section('01', 'PC 앱에서 쓰는 혜택이에요', '이 혜택은 회원 PC에 설치된 공식 프로그램으로 사용량을 읽기 때문에 SYNK Platform PC 앱에서만 열려요.', '<p class="ms-soft">PC 앱을 설치하고 SYNK ID로 로그인한 뒤 회원 혜택에서 열어 주세요.</p>'));
+    else if (!context.signedIn) html = frame(now, groups, section('01', '로그인하고 시작해요', '회원 무료 혜택이에요. 로그인 정보와 사용량 기록은 이 PC에만 저장돼요.', '<p class="ms-soft">「SYNK ID로 로그인」을 눌러 주세요. 처음이라면 창 오른쪽 위 「회원가입」부터 해요.</p>'));
+    else if (loadError) html = frame(now, groups, section('01', '불러오지 못했어요', esc(loadError), '<button type="button" class="ms-button" data-subs="recheck-tools">다시 시도</button>'));
+    else if (!snapshot) html = frame(now, groups, '');
     else if (ui.view === 'manage') html = manageView(now, rows);
     else html = glanceView(now, rows, groups);
     const stale = !!snapshot && ui.view !== 'manage' && groups.length > 0 && freshness(checkAt, now) === 'stale';

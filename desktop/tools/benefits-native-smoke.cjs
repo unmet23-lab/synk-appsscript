@@ -36,7 +36,8 @@ if(!process.versions.electron){
       for(const width of [1280,390,320]){
         window.setContentSize(width,960);await run("document.querySelector('.nav-links [data-view=benefits]').click()");await settle();
         let info=await inspect();check('overview-'+width,info.benefitsVisible&&!info.pageOverflow&&!info.mainOverflow&&info.imagesLoaded&&info.focus==='benefits-title'&&info.libraryIds.join(',')==='world',{...info,screenshot:await capture('platform-benefits-'+width)});
-        for(const id of ['care','fortune']){
+        // 무료 운세는 10-30에 회원 혜택 목록에서 내렸다(benefits.mjs) — 남은 웹 혜택은 플레저 하나다.
+        for(const id of ['care']){
           await run("document.querySelector('[data-benefit=\""+id+"\"]').click()");await settle();info=await inspect();
           check(id+'-detail-'+width,info.benefitsVisible&&!info.pageOverflow&&!info.mainOverflow&&info.imagesLoaded&&info.focus==='benefit-title'&&!info.launchCount,{...info,screenshot:await capture('platform-benefit-'+id+'-'+width)});
         }
@@ -48,7 +49,7 @@ if(!process.versions.electron){
       await run("window.__synkFixture.switchAccount({configured:true,status:'signed-in',signedIn:true,sessionGeneration:2,account:{synk_user_id:'synthetic-benefit-member'},library:{status:'ready',appIds:[]}})");
       check('revocation-removes-action-keeps-public-detail',await run("!document.getElementById('benefit-detail').hidden&&document.querySelector('[data-benefit-preview]')===null&&document.querySelectorAll('[data-app]').length===0"));
       check('window-remains-hidden',!window.isVisible());
-      check('retired-benefits-absent',await run("document.querySelector('[data-benefit=rehearsal]')===null&&document.querySelector('[data-benefit=family-album]')===null&&document.querySelectorAll('.benefit-card').length===4"));
+      check('retired-benefits-absent',await run("document.querySelector('[data-benefit=rehearsal]')===null&&document.querySelector('[data-benefit=family-album]')===null&&document.querySelectorAll('.benefit-card').length===3&&document.querySelector('[data-benefit=fortune]')===null"));
       const report={ok:checks.every(item=>item.ok)&&!errors.length&&!requests.length,checkedOn:new Date().toISOString(),scope:'Hidden Electron launcher at 1280/390/320, public benefit navigation and synthetic native preview permissions. No live login, product launch, paid AI or deployment.',checks,consoleErrors:errors,requests};
       process.stdout.write(prefix+JSON.stringify(report)+'\n');window.destroy();app.exit(report.ok?0:1);
     }catch(error){process.stdout.write(prefix+JSON.stringify({ok:false,error:error.message,checks,consoleErrors:errors,requests})+'\n');window?.destroy();app.exit(1);}

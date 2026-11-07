@@ -70,7 +70,7 @@ export function signInMethods(identity) {
 // Pure view of one state; the controller below owns requests and events.
 export function renderAccountPage(state) {
   const { signedIn, native, auth = {}, data, identity, loadError, identityError, loading, message, editingName, nameDraft = '', busy = new Set(), allSessions, workspace, securityHint, town = null } = state;
-  const head = `<div class="section-title ap-title"><div><button class="text-link ap-back" type="button" data-account-action="back"><svg class="i" aria-hidden="true"><use href="#i-arrow-left"/></svg>설정</button><span class="label">MY SYNK ID</span><h1 id="account-page-title" tabindex="-1">내 계정</h1><p>SYNK ID 하나로 쓰는 모든 SYNK 앱의 회원정보예요.</p></div>${signedIn ? '<button class="ghost-button" type="button" data-account-action="sign-out">로그아웃</button>' : ''}</div>`;
+  const head = `<div class="section-title ap-title"><div><button class="text-link ap-back" type="button" data-account-action="back"><svg class="i" aria-hidden="true"><use href="#i-arrow-left"/></svg>설정</button><h1 id="account-page-title" tabindex="-1">내 계정</h1><p>SYNK ID 하나로 쓰는 모든 SYNK 앱의 회원정보예요.</p></div>${signedIn ? '<button class="ghost-button" type="button" data-account-action="sign-out">로그아웃</button>' : ''}</div>`;
   if (!native) return `${head}<div class="quiet-note"><strong>PC 앱에서 볼 수 있어요</strong><p>회원정보는 SYNK Platform PC 앱이나 synk.im/id에서 보고 바꿔요.</p></div>`;
   if (!signedIn) return `${head}<div class="quiet-note"><strong>로그인하면 회원정보를 볼 수 있어요</strong><p>${securityHint ? '비밀번호를 바꿨다면 새 비밀번호로 다시 로그인해 주세요. ' : ''}이름, 로그인 방법, 로그인한 곳, 계정 지우기를 여기서 해요.</p><button class="solid-button" type="button" data-account-action="sign-in">로그인</button></div>`;
   const account = data?.account, name = account?.profile?.display_name || auth.account?.display_name || 'SYNK 회원', deletion = pendingDeletion(data), deleting = account?.status === 'deletion-requested';
@@ -81,7 +81,8 @@ export function renderAccountPage(state) {
   const hero = `<section class="ap-hero" aria-label="계정 요약"><span class="ap-avatar" aria-hidden="true">${esc([...name][0] || 'S')}</span><div class="ap-hero-copy"><strong class="ap-name">${esc(name)}</strong><span class="ap-email">${email ? esc(email) : identityError ? '로그인 이메일을 불러오지 못했어요' : '로그인 이메일을 불러오는 중'}</span>${status}</div></section>`;
   const note = message?.text ? `<p class="ap-message${message.tone === 'error' ? ' is-error' : ''}">${esc(message.text)}</p>` : '';
   const failed = loadError ? `<div class="quiet-note ap-failed"><strong>계정 정보를 불러오지 못했어요</strong><p>${esc(loadError)}</p><button class="ghost-button" type="button" data-account-action="retry"${disabled('load')}>다시 불러오기</button></div>` : '';
-  const section = (number, english, title) => `<div class="ap-section-head"><span class="label">${number} / ${english}</span><h2>${title}</h2></div>`;
+  // A 진열대(2026-11-08): 구역 머리는 한글 제목(22)과 위 1px 선뿐 — 「01 / PROFILE」 같은 번호 · 영문 꼬리표는 두지 않는다. 차례는 data-section에 남긴다.
+  const section = (number, key, title) => `<div class="ap-section-head" data-section="${number}-${key.toLowerCase()}"><h2>${title}</h2></div>`;
   const nameRow = editingName
     ? `<form class="ap-name-form" data-account-form="name"><input id="account-name-input" name="name" aria-label="새 이름" value="${esc(nameDraft)}" maxlength="60" autocomplete="nickname" required><button class="solid-button" type="submit"${disabled('name')}>${busy.has('name') ? '저장 중…' : '저장'}</button><button class="ghost-button" type="button" data-account-action="name-cancel"${disabled('name')}>취소</button></form>`
     : `<div class="ap-actions"><strong class="ap-value">${esc(name)}</strong><button class="ghost-button" type="button" aria-label="이름 바꾸기" data-account-action="name-edit"${account && !deleting ? '' : ' disabled'}>바꾸기</button></div>`;

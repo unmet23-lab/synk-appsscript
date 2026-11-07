@@ -1,0 +1,15 @@
+{
+ "_설명": "AI 구독 계정판 펠트 계기판(benefit-subscriptions) 다시 굽기 — 2026-11-08. 10-17 판은 받침 아래 접지 그림자가 알파 안쪽에 구워져 밤 선반(#1A1A1C)에서 검은 조각으로 보였다. 같은 물건 · 같은 각도 · 같은 색과 질감, 순백 바탕, 그림자 없음으로 두 판(a · b)을 굽고 a를 골랐다.",
+ "엔진": "GPT 이미지 2.5 (ChatGPT 구독 · Codex CLI, node tools/codex계정.js exec)",
+ "참고": [
+  "Image 1: desktop/assets/launcher/benefit-subscriptions.webp(10-17 판)를 흰 바탕에 눕힌 JPEG"
+ ],
+ "지시문": "Use your built-in image generation tool to create exactly ONE image. Do not run any shell commands and do not create or edit any files yourself. After the image is generated, reply with only the absolute path of the saved image file.\n\nImage 1 is an approved product photo of a handmade needle-felted wool object. Re-photograph THE SAME OBJECT: a chunky dashboard gauge meter shaped like a half circle. A thick charcoal felt body and rim (#2A2A2E); inside the rim a cream felt dial face with three thick arc segments from left to right in butter yellow, coral and lapis blue; a charcoal felt needle with a round butter-yellow pivot cap points at the butter-yellow segment. The gauge sits on a solid low charcoal felt base.\n\nKeep everything about the object exactly as in Image 1: the same half-circle shape and proportions, the same slight three-quarter front view from slightly above, the same colors (charcoal body and base, cream dial face, butter-yellow, coral and lapis-blue arcs, charcoal needle with a butter-yellow cap), the same dense wool-felt fiber texture, stitched seams and soft fuzzy edges, and the same soft key light from the upper left.\n\nChange only the background and shadows: one seamless, perfectly flat pure white background (#FFFFFF) edge to edge. NO shadow of any kind — no contact shadow, no cast shadow, no dark patch or floor under the base, no reflection, no ground line. The bottom of the charcoal felt base is the lowest thing in the picture and ends cleanly against pure white.\n\nComposition: the single object centered, filling about 70% of the frame width, with an even empty white margin on every side; nothing touches or is cut off by the frame edge. Square 1:1 image. Absolutely no text, letters, numbers, logos or symbols.",
+ "오리기": "흰바탕오리기_단순.py의 「테두리에 닿은 순백만」 + 둘레 10칸 안은 숯색 펠트(≈65·61·64)와 흰색 사이 밝기로 알파를 다시 잡아 털끝 흰빛을 뺌(오린 스크립트 · 원판 · 비교 시트는 git 밖 SYNK-보관함/조사/디자인참고_20261106/구현_PC/계정판/)",
+ "고른 판": "a — 받침 오른쪽 끝의 두께가 10-17 판처럼 보이는 쪽(b는 더 정면)",
+ "쓰는 곳": [
+  "docs/디자인/플랫폼_시그널/혜택물건/benefit-subscriptions.webp (PC 원본 → desktop/assets/launcher)",
+  "docs/디자인/플랫폼_시그널/웹그림/benefit-subscriptions.webp (웹 → experiences/synk-account/assets/member)",
+  "같은 바이트 978×775"
+ ]
+}

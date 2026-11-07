@@ -210,7 +210,7 @@ function toldBlock(report, state, vm) {
   const editors = `${topics ? understandingEditor(topics, state) : ''}${settingsEditor(report, state)}${statementEditor(report, state)}${interruptedEditor(report, state)}`;
   const say = vm.understanding && !state.understandingStatementEditor ? link('understanding-describe', '내 말로 알려 주기', {}, busy, 'mi2-say') : '';
   const apps = vm.activities.length ? `<div class="mi2-apps"><h4 class="mi2-sub">고른 관심과 이어지는 앱</h4><ul>${vm.activities.map(row => `<li><p>${escape(row.reason)}</p>${ghost('activity', activityTargets.get(row.targetId), { target: row.targetId }, busy || state.activityPending === true, 'mi2-small')}</li>`).join('')}</ul></div>` : '';
-  const head = `<div class="mi2-block-head"><div><span class="mi2-label mi2-en">CHOSEN</span><h3 id="mi2-told-title">내가 고른 것</h3><p class="mi2-block-sub">직접 고르거나 알려 준 것이에요.</p></div></div>`;
+  const head = `<div class="mi2-block-head"><div><h3 id="mi2-told-title">내가 고른 것</h3><p class="mi2-block-sub">직접 고르거나 알려 준 것이에요.</p></div></div>`;
   if (!vm.toldCount && !editors) return `<section class="mi2-block" id="mi2-told" aria-labelledby="mi2-told-title">${head}<p class="mi2-invite">아직 고른 것이 없어요. 배우는 이유를 알려 주면 그 이유에 맞는 연습 상황을 함께 보여 드려요.</p><div class="mi2-row">${ghost('account', '배우는 이유 알려 주기')}${topics?.available ? ghost('understanding-edit', '관심 주제 고르기', { facet: 'topics' }, busy) : ''}${say ? ghost('understanding-describe', '내 말로 알려 주기', {}, busy) : ''}</div></section>`;
   return `<section class="mi2-block" id="mi2-told" aria-labelledby="mi2-told-title">${head}<dl class="mi2-told">${rows}</dl>${editors}<p class="mi2-foot">${escape(foot)}</p>${say}${apps}</section>`;
 }
@@ -221,11 +221,11 @@ function seenBlock(vm) {
   const askedFoot = vm.worldReads ? '기록일 뿐 내 취향으로 정하지 않았어요. 맞는지 알려 주면 WORLD 연습 고르기에 써요.'
     : '기록일 뿐 내 취향으로 정하지 않았어요. 맞는지 알려 주면 이 화면 설명에 먼저 써요. WORLD 연습 고르기에는 아직 쓰지 않아요.';
   const body = `${vm.strongRows.length ? `<h4 class="mi2-sub">해낸 것</h4><ul class="mi2-seen">${rowList(vm.strongRows)}</ul>` : ''}${vm.moreRows.length ? `<h4 class="mi2-sub">한 번 더 보면 좋은 것</h4><ul class="mi2-seen">${rowList(vm.moreRows)}</ul>` : ''}${vm.tried.length ? `<h4 class="mi2-sub">해 본 것</h4><p class="mi2-foot mi2-foot-top">하루치 기록이라 아직 묻지 않아요. 며칠 더 하면 맞는지 물어볼게요.</p><ul class="mi2-tried">${vm.tried.map(row => `<li><span>${escape(row.title)}</span><span class="mi2-count">${escape(row.fact)}</span></li>`).join('')}</ul>` : ''}${vm.asked.length ? `<h4 class="mi2-sub">자주 한 연습</h4><p class="mi2-foot mi2-foot-top">${escape(askedFoot)}</p><ul class="mi2-seen">${askedRows}</ul>` : ''}`;
-  return `<section class="mi2-block mi2-seen-block" aria-labelledby="mi2-seen-title"><div class="mi2-block-head"><div><span class="mi2-label mi2-en">DONE</span><h3 id="mi2-seen-title">내가 해본 것</h3><p class="mi2-block-sub">연습 기록에서 보인 것이에요.</p></div></div>${body || '<p class="mi2-invite">연습 기록이 쌓이면 해낸 것과 한 번 더 볼 것을 여기서 나눠 보여 드려요.</p>'}</section>`;
+  return `<section class="mi2-block mi2-seen-block" aria-labelledby="mi2-seen-title"><div class="mi2-block-head"><div><h3 id="mi2-seen-title">내가 해본 것</h3><p class="mi2-block-sub">연습 기록에서 보인 것이에요.</p></div></div>${body || '<p class="mi2-invite">연습 기록이 쌓이면 해낸 것과 한 번 더 볼 것을 여기서 나눠 보여 드려요.</p>'}</section>`;
 }
 
 function compareBlock(vm) {
-  if (vm.compare.length) return `<section class="mi2-block mi2-compare" aria-labelledby="mi2-compare-title"><div class="mi2-block-head"><div><span class="mi2-label mi2-en">30 DAYS</span><h3 id="mi2-compare-title">그 전 30일과 비교</h3></div></div><table><caption class="mi2-hidden">그 전 30일과 최근 30일 비교</caption><thead><tr><th scope="col">기록</th><th scope="col">그 전 30일</th><th scope="col">최근 30일</th></tr></thead><tbody>${vm.compare.map(([label, before, after, unit, mark]) => `<tr><th scope="row">${escape(label)}</th><td>${number(before)}${unit}</td><td><b>${number(after)}${unit}</b>${mark && after > before ? ' <span class="mi2-up">늘었어요</span>' : ''}</td></tr>`).join('')}</tbody></table><p class="mi2-foot">해 본 횟수만 비교해요. 실력 점수가 아니에요.</p></section>`;
+  if (vm.compare.length) return `<section class="mi2-block mi2-compare" aria-labelledby="mi2-compare-title"><div class="mi2-block-head"><div><h3 id="mi2-compare-title">그 전 30일과 비교</h3></div></div><table><caption class="mi2-hidden">그 전 30일과 최근 30일 비교</caption><thead><tr><th scope="col">기록</th><th scope="col">그 전 30일</th><th scope="col">최근 30일</th></tr></thead><tbody>${vm.compare.map(([label, before, after, unit, mark]) => `<tr><th scope="row">${escape(label)}</th><td>${number(before)}${unit}</td><td><b>${number(after)}${unit}</b>${mark && after > before ? ' <span class="mi2-up">늘었어요</span>' : ''}</td></tr>`).join('')}</tbody></table><p class="mi2-foot">해 본 횟수만 비교해요. 실력 점수가 아니에요.</p></section>`;
   return vm.periodsShort ? '<section class="mi2-block mi2-compare" aria-label="그 전 30일과 비교"><p class="mi2-foot">아직 비교할 만큼 기록이 쌓이지 않았어요. 며칠 더 쌓이면 그 전 30일과 견줘 보여 드려요.</p></section>' : '';
 }
 
@@ -258,9 +258,10 @@ function floor(vm, state) {
   return `<footer class="mi2-floor">${basis}${historyFold(vm, state)}${consent}</footer>`;
 }
 
+// 머리(A 진열대, 2026-11-08): 회색 무대 위 펠트 물건 → 회색 한 줄(「회원 혜택」 · 상태) → 제목 「내 성향」 56 → 한 줄 설명. 영문 꼬리표 · 번호는 두지 않는다.
 function poster(value) {
   const art = value && typeof value.art === 'string' ? value.art : '';
-  return `<header class="mi2-poster">${art ? `<img class="mi2-object" src="${escape(art)}" alt="">` : ''}<div class="mi2-poster-top"><span class="mi2-eyebrow">${escape(text(value?.label, 'SYNK FOR YOU'))}</span>${value?.badge ? `<span class="mi2-badge${value.status === 'integrated' ? ' is-integrated' : ''}"><span class="mi2-badge-led" aria-hidden="true"></span>${escape(value.badge)}</span>` : ''}</div><div class="mi2-poster-title"><h1 id="benefit-title" tabindex="-1">내 성향</h1><p>내가 고른 것과 실제로 한 것을 나눠서 봐요.</p></div></header>`;
+  return `<header class="mi2-poster">${art ? `<img class="mi2-object" src="${escape(art)}" alt="">` : ''}<div class="mi2-poster-top"><span class="mi2-eyebrow">${escape(text(value?.label, '회원 혜택'))}</span>${value?.badge ? `<span class="mi2-badge${value.status === 'integrated' ? ' is-integrated' : ''}"><span class="mi2-badge-led" aria-hidden="true"></span>${escape(value.badge)}</span>` : ''}</div><div class="mi2-poster-title"><h1 id="benefit-title" tabindex="-1">내 성향</h1><p>내가 고른 것과 실제로 한 것을 나눠서 봐요.</p></div></header>`;
 }
 
 function notice(state, report) {

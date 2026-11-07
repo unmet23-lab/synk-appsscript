@@ -107,7 +107,7 @@ test('the glance board shows one row per service and rolls each number only when
     assert.match(el.innerHTML,/<span class="ms-basis">Codex 한도 기준<\/span>/);
     assert.match(el.innerHTML,/<span class="ms-basis">Antigravity CLI\(agy\) 한도 기준 · Gemini 웹·앱 사용량이 아니에요<\/span>/);
     // 상단 안내는 남은 양만이 아니라 쓴 양과 남은 양을, 01 읽는 법은 두 창의 뜻과 큰 숫자가 어느 창인지와 그 까닭을 말한다.
-    assert.match(el.innerHTML,/<p>AI 구독마다<br>얼마나 썼고 얼마나 남았는지 보여 줘요\.<\/p>/);
+    assert.match(el.innerHTML,/<p>AI 구독마다 얼마나 썼고 얼마나 남았는지 보여 줘요\.<\/p>/);
     assert.doesNotMatch(el.innerHTML,/이번 주에 남은 양/);
     assert.match(el.innerHTML,/<p class="ms-legend"><b>주간<\/b> 한도는 7일, <b>5시간<\/b> 한도는 5시간 단위로 다시 차요\. 한 한도 안에서 사용과 남음을 더하면 100%예요\. 두 한도를 모두 확인했으면 남은 비율이 더 적은 한도를 크게 보여 줘요\.<\/p>/);
     // 주간과 5시간은 분모가 달라 남은 % 비교만으로 어느 쪽에 먼저 막힐지 말하지 않는다(10-31 GPT 확인).
@@ -633,8 +633,10 @@ test('the glance board puts today\'s account first and shows the last 7 days aft
   const html=el.innerHTML;
   // 01: 초기화가 하루 안인 계정을 먼저, 주간 초기화 때와 주간 쓴 %로(큰 숫자는 5시간 창일 수 있어 창 이름을 밝힌다, 10-31).
   assert.match(html,/<span class="ms-pick-label is-today">오늘은 이 계정부터<\/span><span class="ms-pick-name"><span>soon<\/span><small>Max<\/small><\/span><span class="ms-pick-note">[^<]*\u00a0주간\u00a0초기화 · 아직 주간\u00a014%만\u00a0썼어요<\/span>/);
-  // 01 → 02 다음에 풀려요 → 03 하루 사용량.
-  const order=['01</span>지금 쓸 계정','02</span>다음에 풀려요','03</span>하루 사용량'].map(t=>html.indexOf(t));
+  // 지금 쓸 계정 → 다음에 풀려요 → 하루 사용량(번호 머리는 11-08 A 진열대에서 화면에서 뺐고, 차례는 data-section이 지킨다).
+  const order=['<h2>지금 쓸 계정','<h2>다음에 풀려요','<h2>하루 사용량'].map(t=>html.indexOf(t));
+  assert.match(html,/data-section="03"[^>]*><div class="ms-section-heading"><h2>하루 사용량/);
+  assert.ok(!html.includes('ms-section-number'));
   assert.ok(order.every(i=>i>0)&&order[0]<order[1]&&order[1]<order[2]);
   // 하루 막대 일곱(11-02, 마지막이 오늘): 한도형 꼭대기는 하루 몫의 1.5배(약 21.4%)와 가장 많이 쓴 날 가운데 큰 값, 하루 몫(약 14%)을 넘긴 날만 주의 색.
   assert.equal((html.match(/<span class="mu-week[ "]/g)||[]).length,14);
@@ -686,7 +688,7 @@ test('a new board says it is collecting records and numbers the section by what 
   const f=usageFixture({withOut:false,usage:buckets=>({since:null,buckets,services:{},accounts:{}})}),el=fakeContainer(),board=createSubscriptionsBoard({bridge:f.bridge});
   board.render(el,{signedIn:true,native:true});await tick();
   assert.ok(!el.innerHTML.includes('다음에 풀려요'));
-  assert.match(el.innerHTML,/<span class="ms-section-number">02<\/span>하루 사용량/);
+  assert.match(el.innerHTML,/data-section="02"[^>]*><div class="ms-section-heading"><h2>하루 사용량/);
   assert.equal((el.innerHTML.match(/<span class="mu-cmp is-empty"><span>기록 모으는 중<\/span><span>\d+\/\d+부터<\/span><\/span>/g)||[]).length,2);
   assert.equal((el.innerHTML.match(/class="mu-bar[^"]*is-empty"/g)||[]).length,14);
   assert.ok(!el.innerHTML.includes('왜 이 숫자'));
