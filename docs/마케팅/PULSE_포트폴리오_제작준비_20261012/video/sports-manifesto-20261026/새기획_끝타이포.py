@@ -19,6 +19,7 @@ P = Path(r"C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘�
 OUT = P / "로고시안"; OUT.mkdir(parents=True, exist_ok=True)
 W, H, FPS = 1080, 1920, 30
 HIT = 12.865
+END = "N11en"   # 끝 판 — 11-07 슬롭 점검표 25번으로 바닥 연기를 뺀 판(옛 판 N11e는 연기 · 먼지 구름이 솟음, 05_콘티 11절). 캐시도 판마다 따로
 COOL = np.array([236, 241, 248], np.float32)
 FONT = Path.home() / "Documents/SYNK-appsscript/docs/브랜드_폰트/InterTight/InterTight-Medium.ttf"
 
@@ -30,9 +31,9 @@ def disc(img, r):
 
 
 def plate():
-    f = OUT / "_판.npy"
+    f = OUT / ("_판.npy" if END == "N11e" else f"_판_{END}.npy")
     if f.exists(): return np.load(f)
-    a = np.asarray(Image.open(P / "정지컷_916/N11e.png").convert("RGB")).astype(np.float32)
+    a = np.asarray(Image.open(P / f"정지컷_916/{END}.png").convert("RGB")).astype(np.float32)
     yy = np.linspace(0, 1, H)[:, None, None]
     k1 = np.clip((0.58 - yy) / 0.25, 0, 1); k2 = np.clip((0.46 - yy) / 0.20, 0, 1)
     b = a * (1 - k1) + disc(a, 14) * k1
@@ -42,11 +43,11 @@ def plate():
 
 
 def matte():
-    f = OUT / "_신발가림.png"
+    f = OUT / ("_신발가림.png" if END == "N11e" else f"_신발가림_{END}.png")
     if not f.exists():
         from rembg import remove, new_session
         s = new_session("isnet-general-use")
-        im = Image.open(P / "정지컷_916/N11e.png").convert("RGB")
+        im = Image.open(P / f"정지컷_916/{END}.png").convert("RGB")
         Image.fromarray(np.asarray(remove(im, session=s, only_mask=True))).save(f)
     m = np.asarray(Image.open(f).convert("L")).astype(np.float32) / 255
     yy = np.linspace(0, 1, H)[:, None]

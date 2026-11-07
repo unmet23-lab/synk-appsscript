@@ -3067,7 +3067,7 @@
     "2-48"
    ],
    "길이": 4,
-   "설명": "디졸브 → 꽉 찬 도시락 두 개 위 「사랑 한 칸 — 반찬 정기배송 칸찬」 — 요즘 기법: 위에서 느린 다가감 약 5% · 밥에서 오르는 김",
+   "설명": "디졸브 → 꽉 찬 도시락 두 개 위 「사랑 한 칸 — 반찬 정기배송 칸찬」 — 요즘 기법: 위에서 느린 다가감 약 5%(밥에서 오르는 김은 11-07 슬롭 점검표 25번으로 뺌)",
    "소리": "끔",
    "샷": [
     {
@@ -3077,10 +3077,10 @@
      "누구": [
       "LUNCHBOXES"
      ],
-     "동작": "Top-down still life: two lunchboxes packed full of side dishes on the light-oak table, wooden lids and chopsticks beside them; a few thin wisps of steam rise slowly from the white rice in both boxes and drift up out of the frame. Everything else is still. (The logo and words are added later in editing — draw none.)",
+     "동작": "Top-down still life: two lunchboxes packed full of side dishes on the light-oak table, wooden lids and chopsticks beside them. Nothing moves — no steam, no vapor, no smoke rises from the food. (The logo and words are added later in editing — draw none.)",
      "카메라": "very slow top-down push-in: the camera physically lowers straight toward the two lunchboxes in one slow, steady move, about 5% closer, no lens zoom, no shake; it ends with the two boxes a little larger, still centered, and holds.",
      "원본카메라": "static top-down frame — the camera stays in place, perfectly still.",
-     "바꾼까닭": "끝 장(브랜드). 움직이는 김이 먹음직함을 올리고 정지된 김은 효과가 없음(Zhang · Spence 외 2024, 실험 3개), 제품만 천천히 보이면 고급스러움 · 지불 의사 · 클릭이 오름(Jung & Dubois 2023, JMR, 실험 12개 · 2만 7천 명). 끝 그림을 가장 세게. 시댄스 느린 다가가기 「확인됨」은 눈높이 얼굴 근거이고 위에서 내려다보며 다가가기는 공식 시연뿐, 김은 시험 근거 없음 — 원본 카메라 판 p7-2-48o와 나란히 보고 고른다. 로고 · 글자는 편집에서 고정으로 얹음(밑판만 천천히 움직임).",
+     "바꾼까닭": "끝 장(브랜드). 움직이는 김이 먹음직함을 올리고 정지된 김은 효과가 없음(Zhang · Spence 외 2024, 실험 3개), 제품만 천천히 보이면 고급스러움 · 지불 의사 · 클릭이 오름(Jung & Dubois 2023, JMR, 실험 12개 · 2만 7천 명). 끝 그림을 가장 세게. 시댄스 느린 다가가기 「확인됨」은 눈높이 얼굴 근거이고 위에서 내려다보며 다가가기는 공식 시연뿐, 김은 시험 근거 없음 — 원본 카메라 판 p7-2-48o와 나란히 보고 고른다. 로고 · 글자는 편집에서 고정으로 얹음(밑판만 천천히 움직임). 11-07: AI 영상의 김이 연기 기둥으로 나온 오미톡 om2(슬롭 점검표 25번) 뒤로 김은 뺐다 — 다가감만 남는다.",
      "원본동작": "Top-down still life: two lunchboxes packed full of side dishes on the light-oak table, wooden lids and chopsticks beside them. Nothing moves. (The logo and words are added later in editing — draw none.)"
     }
    ]
