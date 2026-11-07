@@ -39,6 +39,8 @@
  *      확인할 것 — 10-28 · 29 B8 · B14가 같은 청금석 틀에 같은 끝 줄로 이틀 잇달아 나갔다
  *   ⑰ 소리 빈자리(10-31, tools/소리빈자리.js) — 처음 · 끝 0.4초 말고 −62 dB 아래가 0.25초 넘게 이어지는 자리의 합이 4초를 넘고 가장 긴 자리가
  *      1초를 넘으면 고칠 것, 하나만 넘으면 확인할 것 — 18초 배경음이 끝나 말 사이가 빈 M19 · E17이 ④ 음량을 넘겨 예약까지 갔다
+ *   ⑱ 미학 맹검(11-08) — 편 폴더 게시/미학맹검.json(node tools/미학맹검.js <대표 프레임 · 카드…> --편 <편 폴더>)이 없거나(11-09부터 만든 편),
+ *      맹검 뒤 영상이 바뀌었거나, 답이 빠졌거나, 「기각」이 있으면 고칠 것. 그래도 낼 까닭은 준비.json 「맹검판단」, 아르곤이 막혔으면 「맹검못함」(확인할 것)
  *
  * 「고칠 것」은 올리기 전에 꼭 고칠 것(서버·API가 거절하거나 기준을 어김), 「확인할 것」은 기계가 확신하지 못해 눈으로 볼 것이다.
  * 결과는 그 편 게시/준비.json의 「검사」 칸에 남긴다(--저장안함이면 안 남김). 영상마다 크기·수정 시각·SHA-256을 같이 적어 두어,
@@ -393,6 +395,40 @@ async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.bas
 }
 
 // ── ⑮ 원본과 나란히(10-28) ──
+// ⑱ 미학 맹검(11-08 유호님 「내 피드백도 … 검수, 검토작업에 적용해줬으면 해」) — 보여 드리기 · 게시 전에 대표 프레임 · 카드를
+// tools/미학맹검.js(아르곤 그림 맹검, 슬롭 점검표의 유호님 말씀을 붙여 묻는다)로 보고 그 결과를 편 폴더 게시/미학맹검.json에 둔다(--편 <편 폴더>).
+// 11-09부터 만든 편 폴더만 묻는다(만들던 편을 갑자기 막지 않게). 맹검 뒤 영상이 바뀌었거나 답이 빠졌거나 「기각」이면 고칠 것 —
+// 고쳐 다시 맹검하거나, 그래도 낼 까닭(빈 날 없음 · 지적이 이 자리와 무관 등)을 준비.json 「맹검판단」에 적으면 확인할 것으로 내린다.
+// 아르곤이 막혀 맹검을 못 했으면 준비.json 「맹검못함」에 까닭을 적는다(확인할 것).
+const AESTHETIC_FROM = '20261109';
+function aestheticFindings(bundle, videoFiles) {
+  const findings = [];
+  const add = (level, code, message) => findings.push({ level, code, where: '미학 맹검', message });
+  const day = (String(bundle.name).match(/_(\d{8})$/) || [])[1];
+  const 글칸 = k => (typeof bundle.prep[k] === 'string' ? bundle.prep[k].trim() : '');
+  const 판단 = 글칸('맹검판단'), 못함 = 글칸('맹검못함');
+  const file = path.join(bundle.dir, '게시', '미학맹검.json');
+  let 결과 = null;
+  try { 결과 = JSON.parse(fs.readFileSync(file, 'utf8')); } catch { /* 없다 */ }
+  if (!결과) {
+    if (못함) add(LOOK, 'aesthetic-skipped', `미학 맹검을 못 했다 — 「맹검못함」: ${못함}`);
+    else if (day && day >= AESTHETIC_FROM) add(FIX, 'aesthetic-missing', '보여 드리기 · 게시 전 미학 맹검이 없다(11-09부터, 제작 절차 3 관문) — node tools/미학맹검.js <대표 프레임 · 카드…> --편 <편 폴더>. 아르곤이 막혔으면 준비.json 「맹검못함」에 까닭');
+    return findings;
+  }
+  const 만든때 = Date.parse(결과.만든때 || '') || (() => { try { return fs.statSync(file).mtimeMs; } catch { return 0; } })();
+  const 새영상 = videoFiles.filter(v => { try { return fs.statSync(v).mtimeMs > 만든때 + 1000; } catch { return false; } });
+  if (새영상.length) add(FIX, 'aesthetic-stale', `맹검 뒤 영상이 바뀌었다(${새영상.map(v => path.basename(v)).join(', ')}) — 바뀐 판의 대표 프레임으로 다시 맹검한다`);
+  const 낱장 = Array.isArray(결과.낱장) ? 결과.낱장 : [];
+  const 빠짐 = Array.isArray(결과.빠짐) ? 결과.빠짐 : [];
+  if (빠짐.length) add(판단 ? LOOK : FIX, 'aesthetic-incomplete', `맹검 답을 못 받은 화면 ${빠짐.join(', ')} — 통과로 치지 않는다${판단 ? ` · 「맹검판단」: ${판단}` : ''}`);
+  const 짧게 = x => `${x.번호}(${x.점수 ?? '—'}점) ${String((x.약점 || [])[0] || '').slice(0, 70)}`;
+  const 기각 = 낱장.filter(x => x.판정 === '기각');
+  if (기각.length) add(판단 ? LOOK : FIX, 'aesthetic-reject', `아르곤 맹검 「기각」 ${기각.length}장 — ${기각.slice(0, 3).map(짧게).join(' · ')}${판단 ? ` · 「맹검판단」: ${판단}` : ' — 지적대로 고쳐 다시 맹검하거나, 그래도 낼 까닭을 준비.json 「맹검판단」에 적는다'}`);
+  const 고쳐 = 낱장.filter(x => x.판정 === '고쳐서 냄');
+  if (고쳐.length) add(LOOK, 'aesthetic-fix', `아르곤 맹검 「고쳐서 냄」 ${고쳐.length}장 — ${고쳐.slice(0, 3).map(짧게).join(' · ')}`);
+  return findings;
+}
+
 // 오마주(제작 절차 「오마주」)는 원본 컷 · 박자 1:1이 기본이다. 10-29부터 만든 편 폴더는 원본이 있어야 하고(없으면 준비.json 「원본없음」에 까닭),
 // 원본이 정지 장면 칸으로 짜였으면 그만큼 멈춘 우리 편을 ② · ⑬이 막지 않게 한다 — 나란히가 맞을 때만.
 const HOMAGE_FROM = '20261029';
@@ -788,6 +824,7 @@ async function run(dir, opts = {}) {
 
   const homage = homageFindings(bundle, [...videos.keys()]);
   findings.push(...homage.findings);
+  findings.push(...aestheticFindings(bundle, [...videos.keys()]));
   let repeat = { findings: [], summary: null };
   try { repeat = 반복.repeatFindings(bundle, plates, { skipOcr: opts.skipOcr, work: out }); } catch (error) {
     add(LOOK, 'repeat-failed', '지난 편', `지난 편 되풀이를 못 봤다(${error.message}) — 첫 · 끝 장면과 끝 줄을 지난 두 편과 눈으로 견준다`);
@@ -901,4 +938,4 @@ async function main() {
 if (require.main === module) main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 2; });
 
 module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, tiktokDayFindings, labelOf, plainWhite, shotRanges, inShot, voiceFiles, voiceFindings, parseTangle, tangledVoices,
-  homageFindings, compositionLikeOriginal, stillLikeOriginal, gapFinding, SAFE };
+  homageFindings, aestheticFindings, AESTHETIC_FROM, compositionLikeOriginal, stillLikeOriginal, gapFinding, SAFE };

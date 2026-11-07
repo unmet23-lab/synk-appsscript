@@ -64,6 +64,9 @@ const 점검원문 = (낱말, 태그 = 'suno|\\budio\\b') => [
   '',
 ].join('\n');
 
+/** 공개 전 점검의 측정 자리에 끼우는 빈 측정(오류 · 위반 없음) */
+const 빈쪽재기 = async (일) => ({ 주소: 일.주소, 실림: true, 오류: [], 콘솔: [], axe: { 좁은: { 어긴것: [] }, 넓은: { 어긴것: [] } }, 문제: null });
+
 /** 임시 공개 저장소: bare origin(main) + 남이 올리는 작업본. 도구 사본(bare 부분 클론)은 도구가 따로 받는다. */
 function 새공개본(t, 파일 = {}) {
   const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-publish-test-'));
@@ -99,8 +102,9 @@ function 새공개본(t, 파일 = {}) {
     /** 로컬 폴더(빌드 출력 흉내) */
     로컬: (이름, 파일들) => { const d = path.join(뿌리, 이름); fs.mkdirSync(d, { recursive: true }); for (const [p, v] of Object.entries(파일들)) 쓰기(d, p, v); return d; },
     후보폴더: () => path.join(뿌리, `후보-${crypto.randomBytes(3).toString('hex')}`),
+    // 공개 전 점검(4-1)은 크롬 대신 빈 측정을 쓴다 — 그 점검 자체는 tests/공개전점검.test.js가 본다
     옵션: (덧 = {}) => ({ 사본, 원격주소, 주소: 'http://127.0.0.1:9', 점검안함: true, 검수저장소: 작업,
-      _검수시험: { 저장소: 작업, 바탕, 뿌리 }, ...덧 }),
+      _검수시험: { 저장소: 작업, 바탕, 뿌리 }, _쪽재기: 빈쪽재기, ...덧 }),
   };
 }
 
@@ -1566,4 +1570,129 @@ test('배포 점검 결과·기준: 칸이 빠진 결과 JSON도 출력이 터�
   const 못받음 = await 도구.기준(공.옵션({ gh: 가짜gh(회차) }));
   assert.equal(못받음.결과, '멈춤');
   assert.match(못받음.이유, /점검 90의 캡처 아티팩트\(site-check-shots\)를 못 받았다 — gh run download 실패 — no artifact matches site-check-shots/);
+});
+
+// ── 공개 전 점검(4-1, 11-08) ────────────────────────────────────────────────
+
+/**
+ * 쪽 글의 표시(<!--치명:규칙:선택자--> · <!--오류:말-->)를 읽는 가짜 측정 — 공개 도구가 띄운 로컬 서버에서 받은 글로 잰다.
+ * 받은 판 · 쪽 · 글은 .본에 남는다(후보 서버는 후보 바이트, 공개본 서버는 앞 공개본 바이트를 내주는지 본다).
+ */
+function 표시측정() {
+  const 본 = [];
+  const 재기 = async (일) => {
+    const res = await fetch(일.주소);
+    const html = await res.text();
+    본.push({ 판: 일.판, 쪽: 일.쪽.주소, 상태: res.status, html });
+    const 표 = [...html.matchAll(/<!--(치명|오류):([^>]*?)-->/g)];
+    const 어긴것 = 표.filter((m) => m[1] === '치명').map((m) => { const [id, 대상] = m[2].split(':'); return { id, impact: 'critical', help: id, n: 1, 곳: [{ 대상, html: '' }] }; });
+    const 오류 = 표.filter((m) => m[1] === '오류').map((m) => ({ 말: m[2], 곳: '', 열쇠: m[2], 수: 1 }));
+    return { 주소: 일.주소, 실림: true, 오류, 콘솔: [], axe: { 좁은: { 어긴것 }, 넓은: { 어긴것 } }, 문제: null };
+  };
+  재기.본 = 본;
+  return 재기;
+}
+
+test('공개 전 점검: 미리 보기에서 바뀐 쪽의 새 치명 위반 · 잡히지 않은 오류는 걸림 — 후보 · 앞 공개본 바이트를 로컬 서버로 재고, 있던 것은 알림', async (t) => {
+  const 옛 = '<main><h1>찰칵</h1><!--치명:image-alt:#old--></main>\n';
+  const 공 = 새공개본(t, { 'world/snap/index.html': 옛, 'world/snap/app.js': 'export const a = 1;\n', 'a.txt': '1\n' });
+  const 새 = '<main><h1>찰칵</h1><!--치명:image-alt:#old--><div class="entry" role="listbox"><button>찍기</button></div><!--치명:aria-required-children:.entry--><!--오류:TypeError: 지워진 요소--></main>\n';
+  const 로컬 = 공.로컬('빌드', { 'world/snap/index.html': 새, 'world/new/index.html': '<main><h1>새</h1></main>\n', 'a.txt': '2\n' });
+  const 측정 = 표시측정();
+  const argv = ['올리기', '--원본', 로컬, 'world/snap/index.html', 'world/new/index.html', 'a.txt'];
+  const r = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: argv.slice(3), _쪽재기: 측정 }));
+  assert.equal(r.결과, '걸림');
+  const 점검걸림 = r.걸림.filter((x) => x.검사 === '공개 전 점검');
+  assert.equal(점검걸림.length, 2, JSON.stringify(r.걸림));
+  assert.ok(점검걸림.every((x) => x.경로 === 'world/snap/index.html'));
+  assert.match(점검걸림.map((x) => x.이유).join('\n'), /잡히지 않은 오류 1가지\(앞 공개본의 같은 쪽에는 없던 것\): TypeError: 지워진 요소/);
+  assert.match(점검걸림.map((x) => x.이유).join('\n'), /aria-required-children 새 1곳/);
+  assert.ok(r.알림.some((x) => x.검사 === '공개 전 점검' && /image-alt 1곳은 앞 공개본에도/.test(x.이유)), '공개본에도 있던 치명 위반은 알림');
+  assert.equal(r.공개전점검.결과, '걸림');
+  assert.deepEqual(r.공개전점검.쪽.map((x) => [x.주소, x.새쪽]), [['/world/new/', true], ['/world/snap/', false]], '후보 항목 차례(경로순)');
+  // 후보 서버는 후보 바이트를, 공개본 서버는 앞 공개본 바이트를 내줬다 · 새 쪽은 공개본을 재지 않는다 · 막힌 쪽은 공개본을 한 번 더
+  const 본 = (판, 쪽) => 측정.본.filter((x) => x.판 === 판 && x.쪽 === 쪽);
+  assert.equal(본('후보', '/world/snap/')[0].html, 새);
+  assert.ok(본('공개본', '/world/snap/').length === 2 && 본('공개본', '/world/snap/').every((x) => x.html === 옛));
+  assert.equal(본('공개본', '/world/new/').length, 0);
+  assert.equal(본('후보', '/world/new/')[0].상태, 200);
+  const 글줄 = 속.올리기글(r, argv);
+  assert.match(글줄, /공개 전 점검 — 걸림 · 쪽 2개\(새 1\)를 후보 · 앞 공개본으로 로컬에서 직접 열어 잼/);
+  assert.match(글줄, /걸림 \[공개 전 점검\] world\/snap\/index\.html — axe 치명 위반/);
+  assert.match(글줄, /--공개전점검건너뜀 "<까닭>"/);
+  assert.equal(공.머리(), 공.바탕);
+  // 바뀐 HTML이 없으면 재지 않는다
+  const 글만 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['a.txt'], _쪽재기: 측정 }));
+  assert.equal(글만.결과, '미리 보기');
+  assert.equal(글만.공개전점검.결과, '볼 쪽 없음');
+});
+
+test('공개 전 점검: --공개전점검건너뜀 "<까닭>"이면 재지 않고 넘기며 까닭은 커밋 메시지 끝에 남는다 · 크롬이 없으면 「못 잼」 알림으로 막지 않는다', async (t) => {
+  const 공 = 새공개본(t, { 'g/index.html': '<main>옛</main>\n' });
+  const 새 = '<main>새<!--치명:aria-required-children:.entry--></main>\n';
+  const 로컬 = 공.로컬('빌드', { 'g/index.html': 새 });
+  const 측정 = 표시측정();
+  const 까닭 = '의도한 listbox — 화면 검수에서 봄';
+  const 넘김 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['g/index.html'], _쪽재기: 측정, 공개전점검건너뜀: 까닭 }));
+  assert.equal(넘김.결과, '미리 보기', JSON.stringify(넘김.걸림));
+  assert.equal(넘김.공개전점검.결과, '건너뜀');
+  assert.equal(측정.본.length, 0, '건너뛰면 재지 않는다');
+  assert.ok(넘김.알림.some((x) => x.검사 === '공개 전 점검' && x.이유.includes(`건너뜀 — ${까닭}`)));
+  const 글줄 = 속.올리기글(넘김, ['올리기', '--원본', 로컬, 'g/index.html', '--공개전점검건너뜀', 까닭]);
+  assert.match(글줄, /공개 전 점검 — 건너뜀: 의도한 listbox/);
+  assert.match(글줄, /--공개전점검건너뜀 "의도한 listbox — 화면 검수에서 봄" .*--실행 --계획 [0-9a-f]{12}/, '올리는 명령에도 까닭이 그대로 실린다');
+  const 서버 = await 공개서버(t);
+  서버.파일.set('g/index.html', Buffer.from(새));
+  const 올림 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['g/index.html'], _쪽재기: 측정, 공개전점검건너뜀: 까닭,
+    실행: true, 계획: 넘김.계획, 메시지: 'g 쪽 listbox', 주소: 서버.주소, 기다림: 0.1, 간격: 0.2 }));
+  assert.equal(올림.결과, '올림', JSON.stringify({ 이유: 올림.이유, 걸림: 올림.걸림 }));
+  assert.equal(공.og('log', '-1', '--format=%B', 'main').toString().trim(), `g 쪽 listbox\n\n공개 전 점검 건너뜀: ${까닭}`);
+  // 크롬을 못 띄우는 PC: 막지 않고 「못 잼」을 알린다
+  const 못 = await 도구.올리기(공.옵션({ 원본: 공.로컬('빌드2', { 'g/index.html': '<main>또<!--치명:button-name:#go--></main>\n' }), 항목: ['g/index.html'],
+    _쪽재기: null, _브라우저열기: async () => { throw new Error('크롬을 못 찾았다 (SYNK_CHROME 으로 경로를 줄 수 있다)'); } }));
+  assert.equal(못.결과, '미리 보기', JSON.stringify(못.걸림));
+  assert.equal(못.공개전점검.결과, '못 잼');
+  assert.ok(못.알림.some((x) => x.검사 === '공개 전 점검' && /못 잼 — 크롬을 못 찾았다/.test(x.이유)));
+  assert.match(속.올리기글(못, ['올리기']), /공개 전 점검 — 못 잼: 크롬을 못 찾았다/);
+  // 까닭 없는 건너뜀은 사용법 오류(커밋 메시지에 남길 말이 없다)
+  assert.throws(() => 도구.인자읽기(['올리기', 'a=b', '--공개전점검건너뜀']), /뒤에 값이 없다/);
+  assert.throws(() => 도구.인자읽기(['올리기', 'a=b', '--공개전점검건너뜀', '--실행']), /까닭을 적는다/);
+  assert.throws(() => 도구.인자읽기(['올리기', 'a=b', '--공개전점검건너뜀', '  ']), /까닭을 적는다/);
+  assert.equal(도구.인자읽기(['올리기', 'a=b', '--공개전점검건너뜀', '의도']).공개전점검건너뜀, '의도');
+  await assert.rejects(원도구.올리기(공.옵션({ 원본: 로컬, 항목: ['g/index.html'], 공개전점검건너뜀: ' ' })), /까닭을 적는다/);
+});
+
+test('공개 전 점검 읽개: 처음 읽을 때 git cat-file을 띄우고, 닫기는 그 git이 끝난 뒤에 돌아간다(사본 폴더를 쥔 채 동기 일로 넘어가지 않는다)', async (t) => {
+  const 공 = 새공개본(t, { 'a/index.html': '<main>a</main>\n' });
+  await 도구.올리기(공.옵션({ 원본: 공.로컬('빌드', { 'a/index.html': '<main>b</main>\n' }), 항목: ['a/index.html'] })); // 도구 사본을 만든다
+  const git = 속.git도구(공.사본);
+  const oid = git.글(['rev-parse', 'refs/remotes/origin/main:a/index.html']);
+  const 안읽음 = 속.차례읽개(git);
+  await 안읽음.닫기(); // 읽지 않았으면 git을 띄우지 않는다
+  const 읽개 = 속.차례읽개(git);
+  assert.equal((await 읽개.읽기(oid)).toString(), '<main>a</main>\n');
+  assert.equal(await 읽개.읽기('0'.repeat(40)), null, '사본에 없는 blob은 null');
+  await 읽개.닫기();
+  // 닫기 바로 뒤 이벤트 고리를 돌리지 않고 사본 폴더를 옮긴다 — 11-08 실측: stdin.end()만 하고 돌아가면 git이 살아 남아 Windows가 그 폴더를 못 옮긴다
+  fs.renameSync(공.사본, `${공.사본}-옮김`);
+  fs.renameSync(`${공.사본}-옮김`, 공.사본);
+  await assert.rejects(읽개.읽기(oid), /닫았다/);
+});
+
+test('공개 전 점검: --실행도 push 전에 다시 잰다 — 미리 보기 뒤 걸리면 커밋 · push 없이 걸림', async (t) => {
+  const 공 = 새공개본(t, { 'g/index.html': '<main>옛</main>\n' });
+  const 로컬 = 공.로컬('빌드', { 'g/index.html': '<main>새</main>\n' });
+  const 후보 = 공.후보폴더();
+  const 입력 = 공.옵션({ 원본: 로컬, 항목: ['g/index.html'], 후보폴더: 후보 });
+  const 미리 = await 원도구.올리기(입력);
+  assert.equal(미리.결과, '미리 보기');
+  assert.equal(미리.공개전점검.결과, '통과');
+  const 검수 = await 검수증거({ 저장소: 공.작업, 바탕: 공.바탕, 배포후보: 후보, 폴더: path.join(공.뿌리, 'review') });
+  // 그사이 이 PC의 측정이 새 오류를 본다(예: 미리 보기 뒤에 바뀐 판정 · 가끔 나는 오류가 이번엔 남)
+  const 막는측정 = async (일) => ({ 주소: 일.주소, 실림: true, 오류: 일.판 === '후보' ? [{ 말: 'TypeError: x', 곳: '', 열쇠: 'TypeError: x', 수: 1 }] : [], 콘솔: [],
+    axe: { 좁은: { 어긴것: [] }, 넓은: { 어긴것: [] } }, 문제: null });
+  const r = await 원도구.올리기({ ...입력, 후보폴더: undefined, 실행: true, 계획: 미리.계획, 메시지: 'x', 검수, _쪽재기: 막는측정 });
+  assert.equal(r.결과, '걸림');
+  assert.ok(r.걸림.some((x) => x.검사 === '공개 전 점검' && /TypeError: x/.test(x.이유)));
+  assert.equal(공.머리(), 공.바탕, '걸리면 push하지 않는다');
 });

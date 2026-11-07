@@ -246,16 +246,22 @@ test('준비 → 아르곤(가짜) → 처리 → 집계: 생성물은 빼고, �
   assert.equal(막힘[0].실패들.at(-1).상태, '막힘', '앞의 읽은 답은 두고 막힌 시도만 적는다');
   const 끝몫 = await 아르곤보내기(폴더, 목록, { call: async () => assert.fail('몫이 0이면 부르지 않는다'), 몫: () => ({ 주간: 0 }), 다시: true });
   assert.equal(끝몫[0].실패들.at(-1).상태, '막힘');
-  // 쓸 만한 답이 없던 묶음이 막히면 그 묶음은 「막힘」이다. 백엔드는 GPT가 먼저라 아르곤만 막혀서는 Fable 차례가 아니고, GPT·아르곤이 다 막히면 Fable로 대신하라고 한다
+  // 쓸 만한 답이 없던 묶음이 막히면 그 묶음은 「막힘」이다. 백엔드는 GPT가 먼저라 아르곤만 막혀서는 Fable 차례가 아니고,
+  // GPT·아르곤이 다 막히면 그록(정책 판 6, 11-08), 그록도 막히면 Fable로 대신하라고 한다(판 5 묶음의 GPT·아르곤 → Fable은 「정책 판 2·5」 시험)
   const 새폴더 = path.join(r.뿌리, 'out-막힘');
   const 막힌목록 = (await 준비하기({ 이름: '막힘', 폴더: 새폴더, 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 })).목록;
   const 처음막힘 = await 아르곤보내기(새폴더, 막힌목록, { call: async () => { throw new Error('login required'); }, 몫 });
   assert.equal(처음막힘[0].상태, '막힘');
   assert.ok(!집계하기(막힌목록, 처음막힘, 지적표읽기(새폴더)).조건.some(x => /Fable 검수로 대신/.test(x)), 'GPT를 안 돌렸으면 Fable 차례가 아니다');
-  const { GPT보내기 } = await tool();
+  const { GPT보내기, 그록보내기 } = await tool();
   const G막힘 = await GPT보내기(새폴더, 막힌목록, { call: async () => { throw new Error('You have hit your usage limit'); }, 몫 });
   assert.equal(G막힘[0].상태, '막힘');
-  assert.ok(집계하기(막힌목록, 처음막힘, 지적표읽기(새폴더), G막힘).조건.some(x => /GPT·아르곤 검수가 막혀 Fable 검수로 대신/.test(x)));
+  const 막힌집계 = (K = []) => 집계하기(막힌목록, 처음막힘, 지적표읽기(새폴더), G막힘, [], [], K).조건;
+  assert.ok(막힌집계().some(x => /GPT·아르곤 검수가 막혀 그록 검수로 대신/.test(x)), 막힌집계().join(' / '));
+  assert.ok(!막힌집계().some(x => /Fable 검수로 대신/.test(x)), '그록 차례를 건너뛰어 Fable을 부르지 않는다');
+  const K막힘 = await 그록보내기(새폴더, 막힌목록, { call: async () => { throw new Error('그록 로그인이 필요하다 — grok login'); } });
+  assert.equal(K막힘[0].상태, '막힘');
+  assert.ok(막힌집계(K막힘).some(x => /GPT·아르곤·그록 검수가 막혀 Fable 검수로 대신/.test(x)), 막힌집계(K막힘).join(' / '));
 });
 
 test('화면 캡처: 「전」은 바뀐 파일만 바탕 판으로 끼우고, 두 폭의 그림 차이·보이는 글 차이·새 콘솔 오류를 묶음에 싣는다', async t => {
@@ -688,7 +694,8 @@ test('GPT 작성은 외부 Claude 응답 필요, 한도 실패 원문만 대체 
 
 test('정책 판 2·5: Claude 백엔드는 GPT 하나 — 막히면 아르곤 → Fable, 옛 판 1 증거(아르곤+GPT·GPT만)도 통과', async t => {
   const api = await tool(), r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
-  const 준비 = (이름, 덧 = {}) => api.준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕, ...덧 });
+  // 판 5로 봉인한 묶음(11-08 판 6 전) — 판 6의 그록 차례는 아래 「그록 대체(정책 판 6 · 11-08)」 시험이 본다
+  const 준비 = (이름, 덧 = {}) => api.준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕, 정책판: 5, ...덧 });
   const 한도 = 누구 => async () => { throw new Error(누구 === 'GPT' ? 'You have hit your usage limit' : 'RESOURCE_EXHAUSTED quota'); };
   // GPT 하나로 통과 — 아르곤은 돌리지 않는다
   const a = await 준비('gpt-only');
@@ -1200,4 +1207,193 @@ test('그록(11-07): 같은 묶음 · 같은 대조로 보내고 지적은 KA1�
   assert.equal(그록답JSON('{"a":'), '{"a":');
   assert.equal(그록답JSON('{"findings":[1]}{"findings":[2],"q":"}{"}'), '{"findings":[2],"q":"}{"}', '답이 두 번 이어 붙으면 마지막 덩이(글자열 속 괄호는 안 셈)');
   assert.equal(그록답JSON('앞말 {"a":1} 가운데 {"b":'), '{"a":1}', '깨진 뒤 덩이는 빼고 읽히는 것만');
+});
+
+// 그록 대체(정책 판 6 · 2026-11-08 눈가림 시험 뒤 유호님과 정함): Claude 백엔드는 GPT → 아르곤 → 그록 → Fable, 그록이 대신 본 사슬은 그록 P2도 처리.
+const 막힌말 = { GPT: 'You have hit your usage limit', 아르곤: 'RESOURCE_EXHAUSTED quota', 그록: '그록 사용량 한도 — 429' };
+const 한도로 = 누구 => async () => { throw new Error(막힌말[누구]); };
+const GPT아르곤막기 = async (api, x) => {
+  await api.GPT보내기(x.폴더, x.목록, { call: 한도로('GPT'), 몫: 몫충분 });
+  await api.아르곤보내기(x.폴더, x.목록, { call: 한도로('아르곤'), 몫: 몫충분 });
+};
+const 그록판정 = (api, x) => ({ 사유: api.검수확인(x.폴더).사유.join(' / '),
+  집계: api.집계하기(x.목록, api.결과들읽기(x.폴더, x.목록), api.지적표읽기(x.폴더), api.결과들읽기(x.폴더, x.목록, 'GPT'), [], [], api.결과들읽기(x.폴더, x.목록, '그록')) });
+
+test('그록 대체(정책 판 6 · 11-08): 백엔드는 GPT·아르곤이 둘 다 막힌 증거가 있을 때만 그록 — 읽으면 Fable 없이 충족, 그록도 막히면 Fable, 막힌 증거가 모자라면 그록 차례가 아니다', async t => {
+  const api = await tool(), 증명 = await import(pathToFileURL(path.join(root, 'tools/lib/검수증명.mjs')));
+  const r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
+  const 준비 = (이름, 덧 = {}) => api.준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕, ...덧 });
+  // ① 새 묶음은 판 6 — 필수는 그대로 GPT 하나, 차례는 GPT → 아르곤 → 그록 → Fable
+  const a = await 준비('k-sub');
+  assert.equal(증명.정책판, 6); assert.equal(a.목록.정책.판, 6); assert.deepEqual(a.목록.정책.필수, ['GPT']); assert.deepEqual(증명.실제필수(a.목록.정책), ['GPT']);
+  assert.deepEqual(증명.대체순서(a.목록.정책), ['GPT', '아르곤', '그록', 'Fable']); assert.equal(증명.그록대체정책(a.목록.정책), true);
+  assert.equal(증명.필수글(a.목록.정책), 'GPT(한도·로그인으로 막히면 아르곤 → 그록 → Fable · 그록이 대신 본 사슬은 그록 P2도 처리를 적는다)');
+  assert.deepEqual(증명.대신할검수자(a.목록.정책, 'GPT'), ['GPT', '아르곤', '그록', 'Fable']);
+  assert.deepEqual(증명.대신할검수자(a.목록.정책, '아르곤'), ['아르곤', 'GPT', '그록', 'Fable'], '아르곤이 다시 볼 때 막히면 그록보다 GPT가 먼저다');
+  assert.deepEqual(증명.대신할검수자(a.목록.정책, '그록'), ['그록', 'Fable']); assert.deepEqual(증명.대신할검수자(a.목록.정책, 'Fable'), ['Fable']);
+  assert.equal(api.대체안내(증명.대체순서(a.목록.정책), 'k-sub'), '한도·로그인으로 막히면 아르곤 k-sub, 둘 다 막히면 그록 k-sub, 셋 다 막히면 페이블 k-sub');
+  assert.equal(api.대체안내(['GPT', '아르곤', 'Fable'], 'x'), '한도·로그인으로 막히면 아르곤 x, 둘 다 막히면 페이블 x', '판 5의 옛 안내 글 그대로');
+  assert.match(api.검수자들.GPT.막힘말(a.목록), /아르곤도 막히면 그록 k-sub, 그록도 막히면 Fable\(페이블 k-sub\)/);
+  assert.match(api.검수자들.아르곤.막힘말(a.목록), /백엔드\(GPT가 막혀 대신한 검수\)는 그록으로 대신하고\(그록 k-sub, 그록도 막히면 Fable\(페이블 k-sub\)\)/);
+  assert.match(api.검수자들.그록.막힘말(a.목록), /GPT·아르곤도 막혀 대신하던 검수면 Fable\(페이블 k-sub\)로 대신/);
+  await GPT아르곤막기(api, a);
+  let v = 그록판정(api, a);
+  assert.equal(v.사유, '필수 그록 검수 미완료(미전송은 한도 예외가 아니다) — GPT·아르곤 검수가 한도·로그인으로 막혀 대신하는 검수', '그록 차례를 건너뛰어 Fable을 부르지 않는다');
+  assert.ok(v.집계.조건.some(x => /^GPT·아르곤 검수가 막혀 그록 검수로 대신해야 한다/.test(x)), v.집계.조건.join(' / '));
+  // 그록이 끝까지 읽으면 Fable 없이 배포 조건이 찬다
+  await api.그록보내기(a.폴더, a.목록, { call: 답하기() });
+  v = 그록판정(api, a);
+  assert.equal(v.사유, ''); assert.equal(v.집계.배포조건충족, true, v.집계.조건.join(' / ')); assert.equal(v.집계.그록대신, true);
+  assert.equal(v.집계.한줄, '아르곤 막힘(한도·로그인) · GPT 막힘(한도·로그인) · 그록 0건(반영 0)');
+  execFileSync(process.execPath, [path.join(root, 'tools/검수묶음.mjs'), '집계', a.폴더], { encoding: 'utf8' });
+  assert.match(fs.readFileSync(path.join(a.폴더, '보고.md'), 'utf8'), /필수 검수: GPT\(한도·로그인으로 막히면 아르곤 → 그록 → Fable/);
+  // ② 그록도 막히면 Fable이 대신한다(Fable 증명이 최종)
+  const c = await 준비('k-all');
+  await GPT아르곤막기(api, c);
+  await api.그록보내기(c.폴더, c.목록, { call: 한도로('그록') });
+  assert.equal(api.결과들읽기(c.폴더, c.목록, '그록')[0].차단증거.도구, 'grok');
+  v = 그록판정(api, c);
+  assert.match(v.사유, /필수 검수\(GPT·아르곤·그록\)가 한도·로그인으로 막혀 Fable 대체 검수 필요/);
+  assert.ok(v.집계.조건.some(x => /^GPT·아르곤·그록 검수가 막혀 Fable 검수로 대신해야 한다/.test(x)), v.집계.조건.join(' / '));
+  await api.페이블하기(c.폴더, { 시험: false, 캡처: false });
+  assert.match(fs.readFileSync(path.join(c.폴더, 'fable.md'), 'utf8'), /GPT·아르곤·그록\(다른 회사 모델\)이 한도·로그인으로 막혀 그 대신/);
+  api.페이블받기(c.폴더, final답(JSON.parse(fs.readFileSync(path.join(c.폴더, '페이블자료.json'))).증명));
+  assert.deepEqual(api.검수확인(c.폴더).사유, []);
+  // ③ 아르곤만 막히고 GPT는 미실행 — 그록이 읽어도 그록 차례가 아니다(GPT가 막힌 증거가 없다). 일반 실패도 막힘 증거가 아니다
+  const d = await 준비('k-no-turn');
+  await api.아르곤보내기(d.폴더, d.목록, { call: 한도로('아르곤'), 몫: 몫충분 });
+  await api.그록보내기(d.폴더, d.목록, { call: 답하기() });
+  v = 그록판정(api, d);
+  assert.equal(v.사유, '필수 GPT 검수 미완료(미전송은 한도 예외가 아니다)');
+  assert.equal(v.집계.배포조건충족, false); assert.equal(v.집계.그록대신, false);
+  await api.GPT보내기(d.폴더, d.목록, { call: async () => { throw new Error('socket hang up'); }, 몫: 몫충분 });
+  assert.match(그록판정(api, d).사유, /필수 GPT 검수 미완료/, '일반 실패로는 그록 차례가 오지 않는다');
+  // ④ GPT만 막히고 아르곤은 미실행 — 그록이 아니라 아르곤 차례다
+  const e = await 준비('k-argon-missing');
+  await api.GPT보내기(e.폴더, e.목록, { call: 한도로('GPT'), 몫: 몫충분 });
+  await api.그록보내기(e.폴더, e.목록, { call: 답하기() });
+  assert.equal(그록판정(api, e).사유, '필수 아르곤 검수 미완료(미전송은 한도 예외가 아니다) — GPT 검수가 한도·로그인으로 막혀 대신하는 검수');
+});
+
+test('그록이 대신 본 사슬의 P2(판 6 · 11-08): 처리 미정이면 막고 처리하면 풀린다 — P3는 막지 않고, 막힌 증거 없이 더 본 그록 P2도 막지 않으며, 다시 사슬도 같다', async t => {
+  const api = await tool(), r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
+  const 준비 = 이름 => api.준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
+  // ① GPT·아르곤이 막혀 그록이 대신 — 그록 P2 미정은 막고 P3는 막지 않는다
+  const b = await 준비('k-p2');
+  await GPT아르곤막기(api, b);
+  await api.그록보내기(b.폴더, b.목록, { call: 답하기([지적하나('a.js:1', 'P2'), { ...지적하나('a.js:1', 'P3'), problem: '이름이 모호하다' }]) });
+  assert.deepEqual(api.지적표읽기(b.폴더).지적.map(x => `${x.번호}:${x.등급}`), ['KA1:P2', 'KA2:P3']);
+  let v = 그록판정(api, b);
+  assert.equal(v.사유, 'KA1 P2 처리 미정 — 그록이 대신 본 사슬이라 그록 P2도 처리를 적는다: node tools/검수묶음.mjs 처리 k-p2 KA1=<반영|일부|안함|재현안됨|후속>[:<이유>]', 'P3(KA2)는 막지 않는다');
+  assert.deepEqual(v.집계.조건, ['KA1 P2 처리 미정 — 그록이 대신 본 검수라 그록 P2도 처리를 적는다']);
+  // 지적표의 등급만 P3로 고쳐도 원문 답의 P2로 잡는다
+  const 표파일 = path.join(b.폴더, '지적표.json'), 원표 = fs.readFileSync(표파일, 'utf8'), 표 = JSON.parse(원표);
+  fs.writeFileSync(표파일, JSON.stringify({ ...표, 지적: 표.지적.map(x => (x.번호 === 'KA1' ? { ...x, 등급: 'P3' } : x)) }));
+  assert.match(그록판정(api, b).사유, /KA1 P2 처리 미정/);
+  fs.writeFileSync(표파일, 원표);
+  // 처리(반영·일부·안함·재현안됨·후속 아무거나)를 적으면 풀린다
+  api.지적표고치기(b.폴더, 표 => api.처리하기(표, ['그록:KA1=후속:다음 판에서 이름을 정리한다']));
+  v = 그록판정(api, b);
+  assert.equal(v.사유, ''); assert.equal(v.집계.배포조건충족, true, v.집계.조건.join(' / '));
+  assert.ok(fs.existsSync(path.join(b.폴더, '그록지적표.md')), 'fable.md 2단계가 가리킬 그록 지적표');
+  // ② GPT가 읽은 묶음에 더 본 그록 — P1은 처리해야 닫히고, P2는 막지 않는다
+  const e = await 준비('k-extra');
+  await api.GPT보내기(e.폴더, e.목록, { call: 답하기(), 몫: 몫충분 });
+  await api.그록보내기(e.폴더, e.목록, { call: 답하기([지적하나('a.js:1', 'P2'), { ...지적하나('a.js:1'), problem: '경계 값에서 틀린다' }]) });
+  v = 그록판정(api, e);
+  assert.match(v.사유, /KA2 P1 미해결/); assert.doesNotMatch(v.사유, /KA1/, '대신 보지 않은 그록 P2는 막지 않는다');
+  api.지적표고치기(e.폴더, 표 => api.처리하기(표, ['그록:KA2=재현안됨:경계 값을 부르는 곳이 없다']));
+  v = 그록판정(api, e);
+  assert.equal(v.사유, ''); assert.equal(v.집계.그록대신, false); assert.equal(v.집계.배포조건충족, true, v.집계.조건.join(' / '));
+  // ③ 다시 사슬: 그록이 낸 P1을 고친 판은 첫 다시 검수자 GPT가 보고, GPT·아르곤이 막히면 그록이 대신한다 — 사슬의 그록 P2도 처리해야 닫힌다
+  const r2 = 임시저장소(t, { 'a.js': 'a=1\n' }); r2.쓰기('a.js', 'a=2\n');
+  const x = await api.준비하기({ 이름: 'k-chain', 폴더: path.join(r2.뿌리, 'k-chain'), 저장소: r2.저장소, 종류: '백엔드', 바탕: r2.바탕 });
+  await GPT아르곤막기(api, x);
+  await api.그록보내기(x.폴더, x.목록, { call: 답하기([{ ...지적하나('a.js:1'), quote: 'a=2' }, { ...지적하나('a.js:1', 'P2'), quote: 'a=2', problem: '이름이 모호하다' }]) });
+  await assert.rejects(api.다시하기({ 이름: 'k-early', 폴더: path.join(r2.뿌리, 'k-early'), 앞: x.폴더 }), /아직 끝나지 않았다.*KA1 P1 미해결.*KA2 P2 처리 미정/);
+  api.지적표고치기(x.폴더, 표 => api.처리하기(표, ['그록:KA1=반영']));
+  r2.쓰기('a.js', 'a=3\n');
+  await assert.rejects(api.다시하기({ 이름: 'k-early', 폴더: path.join(r2.뿌리, 'k-early'), 앞: x.폴더 }), /KA2 P2 처리 미정/, '앞 사슬의 그록 P2가 미정이면 다시를 만들지 않는다');
+  api.지적표고치기(x.폴더, 표 => api.처리하기(표, ['그록:KA2=후속:이름은 다음 판에서']));
+  const y = await api.다시하기({ 이름: 'k-chain-2', 폴더: path.join(r2.뿌리, 'k-chain-2'), 앞: x.폴더 });
+  assert.deepEqual(y.목록.검수자들, ['GPT'], '그록이 낸 지적도 그록에게 바로 묻지 않고 첫 검수자가 본다');
+  assert.deepEqual(y.목록.대상.map(q => `${q.아이디}=${q.출처}:${q.번호}`), ['Q1=그록:KA1']);
+  await GPT아르곤막기(api, y);
+  v = 그록판정(api, y);
+  assert.match(v.사유, /k-chain-2: 다시 검수 그록 미완료\(미전송은 한도 예외가 아니다\) — GPT·아르곤 검수가 한도·로그인으로 막혀 대신하는 검수/);
+  assert.match(v.사유, /k-chain: KA1 P1 미해결 — 다음 다시 검수 k-chain-2가 이 지적을 다시 보지 않았다/);
+  assert.doesNotMatch(v.사유, /Fable/, '그록 차례를 건너뛰어 Fable을 부르지 않는다');
+  assert.ok(v.집계.조건.some(q => /^GPT·아르곤 검수가 막혀 그록 검수로 대신해야 한다/.test(q)), v.집계.조건.join(' / '));
+  await api.그록보내기(y.폴더, y.목록, { call: 다시답하기([{ ...지적하나('a.js:1', 'P2'), quote: 'a=3' }]) });
+  v = 그록판정(api, y);
+  assert.equal(v.사유, 'k-chain-2: KA1 P2 처리 미정 — 그록이 대신 본 사슬이라 그록 P2도 처리를 적는다: node tools/검수묶음.mjs 처리 k-chain-2 KA1=<반영|일부|안함|재현안됨|후속>[:<이유>]');
+  assert.ok(v.집계.조건.some(q => /^KA1 P2 처리 미정/.test(q)), v.집계.조건.join(' / '));
+  api.지적표고치기(y.폴더, 표 => api.처리하기(표, ['그록:KA1=안함:값 이름은 그대로 둔다']));
+  const ok = api.검수확인(y.폴더);
+  assert.deepEqual(ok.사유, []); assert.deepEqual(ok.증명.사슬, ['k-chain', 'k-chain-2']);
+  assert.equal(ok.다시[0].대상[0].풀림, true); assert.equal(ok.다시[0].대상[0].누구, '그록', '막힌 GPT·아르곤 대신 그록의 답으로 그록 지적을 판정한다');
+  // ④ 다시 사슬: 아르곤이 낸 지적을 다시 볼 때 아르곤이 막히면 그록이 아니라 GPT가 먼저다 — GPT도 막혀야 그록 차례
+  const r3 = 임시저장소(t, { 'a.js': 'a=1\n' }); r3.쓰기('a.js', 'a=2\n');
+  const p = await api.준비하기({ 이름: 'k-argon', 폴더: path.join(r3.뿌리, 'k-argon'), 저장소: r3.저장소, 종류: '백엔드', 바탕: r3.바탕 });
+  await api.GPT보내기(p.폴더, p.목록, { call: 한도로('GPT'), 몫: 몫충분 });
+  await api.아르곤보내기(p.폴더, p.목록, { call: 답하기([{ ...지적하나('a.js:1'), quote: 'a=2' }]), 몫: 몫충분 });
+  api.지적표고치기(p.폴더, 표 => api.처리하기(표, ['A1=반영']));
+  r3.쓰기('a.js', 'a=3\n');
+  const q = await api.다시하기({ 이름: 'k-argon-2', 폴더: path.join(r3.뿌리, 'k-argon-2'), 앞: p.폴더 });
+  assert.deepEqual(q.목록.검수자들, ['아르곤']);
+  assert.match(api.검수자들.아르곤.막힘말(q.목록), /GPT가 이 다시 검수를 아직 안 봤으면 GPT k-argon-2로, GPT도 막혔으면 그록 k-argon-2로/);
+  await api.아르곤보내기(q.폴더, q.목록, { call: 한도로('아르곤'), 몫: 몫충분 });
+  await api.그록보내기(q.폴더, q.목록, { call: 다시답하기() });
+  v = 그록판정(api, q);
+  assert.match(v.사유, /k-argon-2: 다시 검수 GPT 미완료\(미전송은 한도 예외가 아니다\) — 아르곤 검수가 한도·로그인으로 막혀 대신하는 검수/, 'GPT가 막힌 증거 없이는 그록이 대신하지 않는다');
+  assert.ok(v.집계.조건.some(c => /^아르곤 검수가 막혀 GPT 검수로 대신해야 한다/.test(c)), v.집계.조건.join(' / '));
+  await api.GPT보내기(q.폴더, q.목록, { call: 한도로('GPT'), 몫: 몫충분 });
+  const ok2 = api.검수확인(q.폴더);
+  assert.deepEqual(ok2.사유, []); assert.equal(ok2.다시[0].대상[0].누구, '그록', 'GPT·아르곤이 둘 다 막힌 뒤에만 그록의 답으로 판정한다');
+});
+
+test('그록 대체는 화면·GPT 작성·옛 판에 들지 않는다(11-08): 화면은 아르곤 → Fable, 판 5로 봉인한 묶음은 GPT → 아르곤 → Fable과 그 정책 꼴 그대로', async t => {
+  const api = await tool(), 증명 = await import(pathToFileURL(path.join(root, 'tools/lib/검수증명.mjs')));
+  const r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
+  const 준비 = (이름, 덧 = {}) => api.준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 바탕: r.바탕, ...덧 });
+  // 화면: 판 6이어도 대체 순서가 없다 — 아르곤이 막히면 그록이 읽어도 Fable이 대신하고, 그록 P2는 막지 않는다
+  const s = await 준비('k-screen', { 종류: '화면' });
+  assert.equal(s.목록.정책.판, 6); assert.equal(증명.대체순서(s.목록.정책), null); assert.equal(증명.그록대체정책(s.목록.정책), false);
+  assert.deepEqual(증명.대신할검수자(s.목록.정책, '아르곤'), ['아르곤', 'Fable']);
+  assert.match(api.검수자들.아르곤.막힘말(s.목록), /화면은 Fable 최종 검수로 가고/);
+  assert.match(api.검수자들.그록.막힘말(s.목록), /이 묶음에서 그록은 대체 순서 밖이니 그 차례\(아르곤 · Fable\)대로 간다/);
+  await api.아르곤보내기(s.폴더, s.목록, { call: 한도로('아르곤'), 몫: 몫충분 });
+  await api.그록보내기(s.폴더, s.목록, { call: 답하기([지적하나('a.js:1', 'P2')]) });
+  let 사유 = api.검수확인(s.폴더).사유.join(' / ');
+  assert.equal(사유, 'Fable 최종 검수 미완료');
+  // 화면 Fable 생략 묶음도 아르곤이 막히면 그록이 아니라 Fable이 대신한다
+  const s2 = await 준비('k-screen-skip', { 종류: '화면', 페이블생략: '글만 바꿈' });
+  await api.아르곤보내기(s2.폴더, s2.목록, { call: 한도로('아르곤'), 몫: 몫충분 });
+  await api.그록보내기(s2.폴더, s2.목록, { call: 답하기() });
+  assert.equal(api.검수확인(s2.폴더).사유.join(' / '), 'Fable 생략 묶음이지만 아르곤이 한도·로그인으로 막혀 Fable 검수로 대신해야 한다');
+  // GPT 작성(대체 없음)은 판 6에서도 그록이 들지 않는다
+  const g = 증명.정책만들기({ 종류: '백엔드', 작성자: 'GPT' }, []);
+  assert.equal(g.판, 6); assert.equal(증명.대체순서(g), null); assert.deepEqual(증명.대신할검수자(g, 'GPT'), ['GPT']); assert.equal(증명.끝판정책(g), true, '판 6도 판 5의 끝 판 규칙을 잇는다');
+  // 판 5로 봉인한 묶음: 정책 꼴(봉인 해시)이 11-08 전 그대로이고, GPT·아르곤이 막히면 그록이 읽어도 Fable이 대신한다
+  const o = await 준비('k-old', { 종류: '백엔드', 정책판: 5 });
+  assert.deepEqual(o.목록.정책, { 판: 5, 작성자: 'Claude', 종류: '백엔드', GPT구독: '유지', 필수: ['GPT'], 예외: null });
+  assert.deepEqual(증명.대체순서(o.목록.정책), ['GPT', '아르곤', 'Fable']); assert.deepEqual(증명.대신할검수자(o.목록.정책, 'GPT'), ['GPT', '아르곤', 'Fable']);
+  assert.equal(증명.필수글(o.목록.정책), 'GPT(한도·로그인으로 막히면 아르곤 → Fable)');
+  assert.match(api.검수자들.GPT.막힘말(o.목록), /아르곤도 막히면 Fable\), 끝 보고에/);
+  await GPT아르곤막기(api, o);
+  await api.그록보내기(o.폴더, o.목록, { call: 답하기([지적하나('a.js:1', 'P2')]) });
+  사유 = api.검수확인(o.폴더).사유.join(' / ');
+  assert.equal(사유, '필수 검수(GPT·아르곤)가 한도·로그인으로 막혀 Fable 대체 검수 필요', '판 5 묶음에서는 그록이 대신하지 않고 그 P2도 막지 않는다');
+  const 옛집계 = 그록판정(api, o).집계;
+  assert.ok(옛집계.조건.some(x => /^GPT·아르곤 검수가 막혀 Fable 검수로 대신해야 한다/.test(x)), 옛집계.조건.join(' / ')); assert.equal(옛집계.그록대신, false);
+  await api.페이블하기(o.폴더, { 시험: false, 캡처: false });
+  api.페이블받기(o.폴더, final답(JSON.parse(fs.readFileSync(path.join(o.폴더, '페이블자료.json'))).증명));
+  assert.deepEqual(api.검수확인(o.폴더).사유, []);
+  // GPT 구독 종료: 판 5는 아르곤 → Fable, 판 6은 아르곤 → 그록 → Fable. 그록이 낸 지적만 다시 볼 때 다시 검수자는 정책의 첫 검수자다
+  const 종료 = { 종류: '백엔드', GPT구독: '종료', 사유: '시험' };
+  assert.deepEqual(증명.대체순서(증명.정책만들기(종료, [], { 판: 5 })), ['아르곤', 'Fable']);
+  assert.deepEqual(증명.대체순서(증명.정책만들기(종료, [])), ['아르곤', '그록', 'Fable']);
+  assert.deepEqual(증명.다시검수자들(o.목록.정책, [{ 출처: '그록' }]), ['GPT']);
+  assert.deepEqual(증명.다시검수자들(증명.정책만들기({ 종류: '백엔드' }, []), [{ 출처: '그록' }]), ['GPT']);
+  assert.throws(() => 증명.정책만들기({ 종류: '백엔드' }, [], { 판: 7 }), /정책 판/);
 });

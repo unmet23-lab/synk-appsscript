@@ -16,6 +16,10 @@
  *
  * 쓰는 법: node tools/접근성검사.js <html...> [--전부]
  *          --전부 = 가벼운 것(minor)까지 낸다. 기본은 무거운 것부터 셋(critical·serious·moderate).
+ *
+ * ■ 재는 엔진은 재기(보냄) 하나다(2026-11-08) — 이미 열린 지면의 조종 통로에 «훑기 → axe 붓기 → 묻기»를 한다.
+ *   이 명령(한장: 파일을 크롬으로 연다)과 synk.im 공개 전 점검(tools/lib/공개전점검.js: 공개 후보를 로컬 서버로 띄운 쪽)이
+ *   같은 엔진을 쓴다 — 두 곳이 axe를 따로 부으면 «무엇을 위반으로 세나»가 갈린다.
  */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -52,11 +56,14 @@ const 우리말 = {
   'duplicate-id': '같은 이름표를 둘이 나눠 갖고 있다',
 };
 
+let 부을글 = null;
 const 부을것 = () => {
+  if (부을글) return 부을글;
   if (!fs.existsSync(AXE)) {
     throw new Error(`axe-core 가 없다: ${path.relative(뿌리, AXE)}\n   (tools/vendor/출처.md 가 어디서 왔는지 적고 있다)`);
   }
-  return fs.readFileSync(AXE, 'utf8');
+  부을글 = fs.readFileSync(AXE, 'utf8');
+  return 부을글;
 };
 
 /* 🔴 axe 가 «못 보는» 자리 하나 — Loom 번호 원판.
@@ -88,44 +95,57 @@ const 물음 = `(async () => {
                글자색: w.fgColor, 바탕색: w.bgColor, 잰곳: 잰것.length };
     })(),
     말: v.nodes[0] ? String(v.nodes[0].failureSummary || '').split(String.fromCharCode(10)).filter(Boolean).slice(1, 2).join(' ') : '',
+    /* 자리마다 선택자와 HTML 조각 — 공개 전 점검이 «앞 공개본에도 있던 위반»(같은 규칙 · 같은 선택자)을 가린다(11-08).
+       iframe · shadow 안이면 target 이 여러 칸이라 >>> 로 잇는다. 한 규칙에 100곳까지만 싣는다. */
+    곳: v.nodes.slice(0, 100).map((x) => ({
+      대상: (x.target || []).map((t) => String(t)).join(' >>> ').slice(0, 300),
+      html: String(x.html || '').slice(0, 300),
+    })),
   })) };
 })()`;
+
+/**
+ * 열린 지면 하나를 잰다 — 보냄(method, params) 은 그 지면의 조종 통로(DevTools 규약)다.
+ * 나타남ms 는 훑은 뒤 «나타나기»를 기다리는 시간(기본 2200 — 아래 🔴). 시험만 줄인다.
+ * 반환 { 원판못잼, 어긴것: [{ id, impact, help, n, 자리, 대비, 말, 곳: [{ 대상, html }] }] }
+ */
+async function 재기(보냄, { 나타남ms = 2200 } = {}) {
+  /* 🔴 재기 «전에» 지면을 끝까지 훑는다 — 09-03 실측: 홈페이지가 대비 29곳 적색으로 나왔는데
+     그건 화면에 «나타나기 전»(opacity 0) 상태를 잰 것이었다. 자가 틀린 적색이다.
+     스크롤로 나타나는 지면이 흔하므로 이 훑기는 특정 지면용 손질이 아니라 자의 일부다. */
+  await 보냄('Runtime.evaluate', {
+    expression: `(async () => {
+      const 끝 = document.body.scrollHeight;
+      for (let y = 0; y <= 끝; y += Math.max(200, window.innerHeight * 0.8)) {
+        window.scrollTo(0, y);
+        await new Promise((r) => setTimeout(r, 60));
+      }
+      window.scrollTo(0, 0);
+      /* 🔴 나타나는 «동안»에 재면 반쯤 투명한 색이 잡힌다 — 09-03 실측: 카드 글자가
+         #8C8C8C(4.50대1)인데 #8B8B8B(4.44대1)로 읽혀 적색이 났다. 나타나기(0.85초)가
+         끝나고도 남게 넉넉히 기다린다. 여기서 아끼면 그 아낌이 «가짜 적색»으로 돌아온다. */
+      await new Promise((r) => setTimeout(r, ${Math.max(0, Number(나타남ms) || 0)}));
+      return true;
+    })()`,
+    awaitPromise: true, returnByValue: true,
+  });
+  const 부음 = await 보냄('Runtime.evaluate', { expression: 부을것(), returnByValue: false });
+  if (부음.exceptionDetails) throw new Error(`axe 를 못 부었다: ${부음.exceptionDetails.text}`);
+  const r = await 보냄('Runtime.evaluate', { expression: 물음, awaitPromise: true, returnByValue: true });
+  /* 오류는 «설명»까지 낸다 — 「Uncaught」만 오면 어디가 틀렸는지 알 길이 없다(09-03 실측). */
+  if (r.exceptionDetails) {
+    const d = r.exceptionDetails;
+    throw new Error(`axe 가 못 돌았다: ${(d.exception && d.exception.description) || d.text}`);
+  }
+  return r.result.value || { 원판못잼: 0, 어긴것: [] };
+}
 
 async function 한장(html) {
   /* 쪽번호판은 Paged.js 가 지면을 «다시 짜므로» 다 짜기 전에 재면 옛 지면을 재게 된다.
      폴리필이 실린 판에서만 그 신호까지 기다린다 — 안 실린 판은 그대로 지나간다. */
   const 기다림 = 'document.readyState==="complete" && (!window.PagedPolyfill || window.__SYNK_PAGED_DONE===true)';
   const { c, 닫기 } = await 지면열기(html, { 기다림, 최대초: 90 });
-  try {
-    /* 🔴 재기 «전에» 지면을 끝까지 훑는다 — 09-03 실측: 홈페이지가 대비 29곳 적색으로 나왔는데
-       그건 화면에 «나타나기 전»(opacity 0) 상태를 잰 것이었다. 자가 틀린 적색이다.
-       스크롤로 나타나는 지면이 흔하므로 이 훑기는 특정 지면용 손질이 아니라 자의 일부다. */
-    await c.보냄('Runtime.evaluate', {
-      expression: `(async () => {
-        const 끝 = document.body.scrollHeight;
-        for (let y = 0; y <= 끝; y += Math.max(200, window.innerHeight * 0.8)) {
-          window.scrollTo(0, y);
-          await new Promise((r) => setTimeout(r, 60));
-        }
-        window.scrollTo(0, 0);
-        /* 🔴 나타나는 «동안»에 재면 반쯤 투명한 색이 잡힌다 — 09-03 실측: 카드 글자가
-           #8C8C8C(4.50대1)인데 #8B8B8B(4.44대1)로 읽혀 적색이 났다. 나타나기(0.85초)가
-           끝나고도 남게 넉넉히 기다린다. 여기서 아끼면 그 아낌이 «가짜 적색»으로 돌아온다. */
-        await new Promise((r) => setTimeout(r, 2200));
-        return true;
-      })()`,
-      awaitPromise: true, returnByValue: true,
-    });
-    const 부음 = await c.보냄('Runtime.evaluate', { expression: 부을것(), returnByValue: false });
-    if (부음.exceptionDetails) throw new Error(`axe 를 못 부었다: ${부음.exceptionDetails.text}`);
-    const r = await c.보냄('Runtime.evaluate', { expression: 물음, awaitPromise: true, returnByValue: true });
-    /* 오류는 «설명»까지 낸다 — 「Uncaught」만 오면 어디가 틀렸는지 알 길이 없다(09-03 실측). */
-    if (r.exceptionDetails) {
-      const d = r.exceptionDetails;
-      throw new Error(`axe 가 못 돌았다: ${(d.exception && d.exception.description) || d.text}`);
-    }
-    return r.result.value || { 원판못잼: 0, 어긴것: [] };
-  } finally { 닫기(); }
+  try { return await 재기((method, params) => c.보냄(method, params)); } finally { 닫기(); }
 }
 
 async function 본다(argv) {
@@ -178,4 +198,4 @@ if (require.main === module) {
     console.error(`🔴 ${e.message}`); process.exit(1);
   });
 }
-module.exports = { 한장, 우리말 };
+module.exports = { 한장, 재기, 우리말, 무게순, 무게말 };

@@ -14,7 +14,7 @@
  *       [--밖 <폴더>] [--컷 <초,초,…>] [--지난 자동|없음|<편 폴더 또는 영상>,<…>]
  *
  * 만드는 것: <밖>/정지컷_01.jpg …(한 장에 휴대폰 크기 칸 넷) · <밖>/지난1_<편>.jpg · 지난2_<편>.jpg(같은 계정의 지난 두 편, 작게) ·
- * <밖>/말.txt · <밖>/질문.md(이해 시험관 셋 — sonnet · haiku · GPT(`node tools/GPT시험관.mjs <밖>`) — 에게 그대로 줄 글) ·
+ * <밖>/말.txt · <밖>/질문.md(이해 시험관 넷 — sonnet · haiku · GPT(`node tools/GPT시험관.mjs <밖>`) · 그록(`node tools/그록시험관.mjs <밖>`, 11-08) — 에게 그대로 줄 글) ·
  * <밖>/볼이유_질문.md(「볼 이유」 심사관 opus에게 줄 글, 10-29).
  * 장면은 0~3초를 0.5초마다, 그 뒤는 2초마다, 그리고 끝 장면 하나. 2초보다 짧은 컷이 많은 영상은 --컷에 컷이 시작하는 초를 주면
  * 컷마다 한 장(그 컷 가운데 장면)으로 찍는다. --지난 자동(기본)은 그 브랜드의 본 계정 판이 있는 편 가운데 이 편 말고 슬롯이 가장
@@ -279,7 +279,7 @@ function main(argv) {
   fs.writeFileSync(path.join(out, '볼이유_질문.md'), buildWorthPrompt({ brand: args['브랜드'], sheets, speech, cuts }));
   console.log(`재료: ${out} · 장면 ${shots.length}칸 / 그림 ${sheets.length}장 · 지난 편 ${previous.length ? previous.map((p) => p.name).join(' · ') : '없음'}`);
   if (want === '자동' && who.계정 && previous.length < 2) console.log(`  지난 편을 ${previous.length}편만 찾았다(${who.계정} 판에 영상이 있는 편) — 9번은 그만큼만 본다`);
-  console.log('다음: 질문.md를 이 대화 맥락이 없는 새 시험관 셋(Agent model sonnet · model haiku, 그리고 `node tools/GPT시험관.mjs <이 폴더>`, 서로 따로)에게 그대로 주고, 볼이유_질문.md는 새 심사관(Agent model opus)에게 준다 — 답을 한 장 기획의 「한 문장」 · 「무엇으로 이기나」와 견준다(제작절차 「시험」).');
+  console.log('다음: 질문.md를 이 대화 맥락이 없는 새 시험관 넷(Agent model sonnet · model haiku, 그리고 `node tools/GPT시험관.mjs <이 폴더>` · `node tools/그록시험관.mjs <이 폴더>`, 서로 따로)에게 그대로 주고, 볼이유_질문.md는 새 심사관(Agent model opus)에게 준다 — 답을 한 장 기획의 「한 문장」 · 「무엇으로 이기나」와 견준다(제작절차 「시험」).');
   return 0;
 }
 

@@ -1,7 +1,9 @@
 // 아르곤 웹 — Gemini 웹 「4 Argon」 · 사고 수준 「높음」 새 대화에 파일(사진 · 글 · 영상)을 올리고 지시문을 보내 답을 파일로 받는 ego 페이지 스크립트.
-// 부르는 쪽이 globalThis.JOB을 앞에 붙여 `ego-browser nodejs` 표준 입력으로 돌린다(한글 경로는 -e import가 안 된다):
+// 부르는 쪽이 tools/아르곤웹.js 페이지글()로 globalThis.JOB과 판단 함수(글정규화 · 대화견주기 · 표시풀까 …, 시험은 그쪽)를 앞에 붙여
+// `ego-browser nodejs` 표준 입력으로 돌린다(한글 경로는 -e import가 안 된다):
 //   tools/아르곤웹.js(사진 · 지시문 검수 — 공용 차례를 잡고 부른다) · tools/오마주.js 아르곤(원본 영상 첫 분석).
-//   JOB = { mode: "보내기" | "읽기" | "확인", files, prompt, out, shots, u, account, space, profile, head, mark, failShot, sentWaitSec, answerMin }
+//   JOB = { mode: "보내기" | "읽기" | "확인", files, prompt, out, shots, u, account, space, profile, head, mark, unsentMark, claimed, twins,
+//           releaseAfterMs, failShot, sentWaitSec, answerMin }
 // 11-07: ego 기본 프로필이 `Profile 2`(「유호 (Chrome)」)로 바뀌고 구글 로그인이 그 프로필에만 남아 공간을 그 프로필로 만들고, 차례가 준 계정(account)과
 //   화면의 「Google 계정 … @」 표시가 다르면 아무것도 올리지 않고 멈춘다. 「확인」은 그 계정 확인까지만 하고 탭을 닫는다(보내기 없음).
 // 10-28 오마주 영상용 실행기를 10-31 사진 · 지시문 검수 시험판과 합쳐 넓혔다. 읽기 · 보내기만 한다 — 영상 권리 동의 창 · 한도 · 로봇 확인이
@@ -10,8 +12,14 @@
 // - 보내기를 누르기 직전에 표시 파일(mark)을 쓴다 — 표시가 남은 작업은 부르는 쪽이 다시 보내지 않고 「읽기」로 받는다(10-29 두 번 보냄).
 // - 보냈는지는 대화 주소만으로 보지 않는다 — 보낸 글(user-query)의 지시문 앞머리 · 멈춤 단추로도 본다(10-26~10-31 주소가 늦게 붙음).
 // - 글 파일(.txt) 칩에는 「첨부파일 닫기」 단추가 안 잡힌다 — 사진 · 영상만 그 단추로 세고, 글 파일은 칩의 이름(확장자 뺀)으로 본다(10-31).
+// - 답을 기다리다 보낸 글이 화면에서 사라지고 새 채팅으로 돌아가면 대화가 안 남은 것으로 보고 일찍 끝낸다(11-07 그림 8장 — 12분을 헛기다림).
+// - 읽기(11-08): ① 같은 공간의 탭을 화면만 읽어 찾는다 — 지시문 앞머리만이 아니라 전체 · 그림 수로(같은 틀의 다른 지시문과 섞이지 않게).
+//   ② 탭에 없고 보냄 표시가 있으면 빈 탭 하나로 같은 계정 첫 화면의 사이드바 최근 대화(보낸 지 20분 안 8개 · 지나면 15개)를 차례로 열어 찾고,
+//   찾으면 그 답을 읽고 표시에 주소를 남긴다. ③ 어디에도 없고 보낸 지 20분이 지났으면 표시를 unsentMark(<답>.안보내짐.json)로 옮긴다 —
+//   다음 보내기가 다시 보낸다. 지시문이 같은데 첨부가 다르거나 같은 대화가 여럿이면 「헷갈림」으로 멈춘다(표시는 그대로, 손으로).
 const fs = await import("node:fs/promises");
 const J = globalThis.JOB;
+if (typeof 대화견주기 !== "function" || typeof 표시풀까 !== "function") throw new Error("판단 함수가 없다 — tools/아르곤웹.js 페이지글()로 붙여 부른다");
 const mode = J.mode || "보내기";
 const files = J.files || (J.video ? [J.video] : []);
 const { prompt, out, u } = J;
@@ -21,23 +29,31 @@ const profile = J.profile || "Profile 2"; // 공간을 처음 만들 때만 넘�
 const account = J.account || "";
 const head = J.head || "아르곤 답";
 const mark = J.mark || `${out}.보냄.json`;
+const unsentMark = J.unsentMark || mark.replace(/\.보냄\.json$/, ".안보내짐.json");
 const failShot = J.failShot || `${shots}/${out.split(/[\\/]/).pop().replace(/\.[^.]+$/, "")}_실패.png`;
 const sentWait = (J.sentWaitSec || 180) * 1000;
 const answerMs = (J.answerMin || 12) * 60_000;
+const releaseAfter = J.releaseAfterMs || 20 * 60_000;
 const base = (f) => f.split(/[\\/]/).pop();
 const kind = (f) => (/\.(jpe?g|png|webp|gif|heic)$/i.test(f) ? "사진" : /\.(mp4|mov|webm|mkv|m4v|avi)$/i.test(f) ? "영상" : "글");
 const chipN = files.filter((f) => kind(f) !== "글").length;
 const docNames = files.filter((f) => kind(f) === "글").map((f) => base(f).replace(/\.[^.]+$/, ""));
-const norm = (t) => String(t || "").replace(/\d+\.(?=\s)/g, "").replace(/[\s#*_`>|-]+/g, ""); // 보낸 글은 목록 번호 · 마크다운 기호가 빠져 그려진다
+// 보낸 대화가 이 작업인지 견줄 기대 — 지시문 전체 · 사진 수(영상이 있으면 안 셈) · 글 파일 수(칩 아이콘이 그림으로 잡힐 여유)
+const 기대 = { 지시문: prompt, 그림: files.some((f) => kind(f) === "영상") ? null : files.filter((f) => kind(f) === "사진").length, 글: docNames.length };
+const norm = 글정규화; // 보낸 글은 목록 번호 · 마크다운 기호가 빠져 그려진다(tools/아르곤웹.js와 같은 함수)
 const promptHead = norm(prompt).slice(0, 40);
 const promptLen = String(prompt || "").replace(/\s+/g, "").length;
 const log = (o) => console.log(JSON.stringify(o));
 const now = () => new Date().toLocaleString("sv-SE", { timeZone: "Asia/Seoul" });
+const 경로 = (x) => { try { return new URL(x).pathname; } catch { return ""; } };
 let page = null;
-const fail = async (why, kind_ = "실패") => {
-  if (page) await page.screenshot({ path: failShot }).catch(() => {});
-  log({ step: "fail", kind: kind_, why });
-  throw new Error(why);
+let shot = failShot;
+const fail = async (why, kind_ = "실패", more = {}) => {
+  if (page) await page.screenshot({ path: shot }).catch(() => {});
+  log({ step: "fail", kind: kind_, why, ...more });
+  const e = new Error(why);
+  e.kind = kind_;
+  throw e;
 };
 const state = () => page.evaluate(() => {
   const labs = [...document.querySelectorAll("button")].map((b) => b.getAttribute("aria-label") || "");
@@ -60,26 +76,49 @@ const answerNow = (p) => p.evaluate(() => {
   const resp = [...document.querySelectorAll("model-response")];
   const el = resp[resp.length - 1];
   const busy = [...document.querySelectorAll("button")].some((b) => /대답 생성 중지|생성 중지|Stop/.test(b.getAttribute("aria-label") || ""));
-  return { text: el ? el.innerText : "", busy };
+  return { text: el ? el.innerText : "", busy, uqN: document.querySelectorAll("user-query").length, path: location.pathname };
 });
-const writeMark = (url) => fs.writeFile(mark, JSON.stringify({ 시각: now(), 공간: space, 계정: u, 대화: url || null, 지시문앞: promptHead, 답: out }, null, 1) + "\n", "utf8").catch(() => {});
+// 보낸 글마다 글 전체와 보이는 그림 수(썸네일 크기만 — 작은 아이콘은 뺀다)
+const 보낸글읽기 = (p) => p.evaluate(() => [...document.querySelectorAll("user-query")].map((q) => ({
+  글: q.innerText || "",
+  그림: [...q.querySelectorAll("img")].filter((im) => { const r = im.getBoundingClientRect(); return (r.width >= 40 && r.height >= 40) || im.naturalWidth >= 80; }).length,
+})));
+// 읽기: 남은 보냄 표시(보낸 때 · 공간 · 계정 · 대화). 깨졌으면 파일 시각만
+let 표시 = null;
+const 표시읽기 = async () => {
+  let st;
+  try { st = await fs.stat(mark); } catch { return null; }
+  let j = {};
+  try { const x = JSON.parse(await fs.readFile(mark, "utf8")); if (x && typeof x === "object") j = x; } catch { /* 깨진 표시 */ }
+  return { ...j, 파일시각: st.mtimeMs };
+};
+// 표시의 「시각」은 처음 쓴 때(보낸 때) 그대로 둔다 — 읽기가 사이드바로 찾은 주소를 적을 때도
+let markAt = null;
+const writeMark = (url, more = {}) => {
+  markAt = markAt || now();
+  return fs.writeFile(mark, JSON.stringify({ 시각: markAt, 공간: space, 계정: u, 계정이름: account || null, 대화: url || null, 지시문앞: promptHead, 답: out, ...more }, null, 1) + "\n", "utf8").catch(() => {});
+};
 
 // 답 기다리기 — 글이 30초 동안 안 늘고 멈춤 단추가 없으면 끝(200자 아래 짧은 답은 60초). 대화 주소가 늦게 붙으면 붙는 대로 표시에 적는다.
-const waitAnswer = async (url) => {
-  let last = "", same = 0, text = "", busy = true;
+// 보낸 글이 사라지고 새 채팅 주소(대화 번호 없음)로 15초 넘게 있으면 대화가 안 남은 것이다. 빈답마감을 주면 그동안 답 글이 없을 때 끝낸다(사이드바로 연 대화).
+const waitAnswer = async (url, 빈답마감 = 0) => {
+  let last = "", same = 0, text = "", busy = true, 사라짐 = 0;
   const t0 = Date.now();
   while (Date.now() - t0 < answerMs) {
     await page.waitForTimeout(5000);
-    const r = await answerNow(page).catch(() => ({ text: "", busy: true }));
+    const r = await answerNow(page).catch(() => ({ text: "", busy: true, uqN: -1, path: "" }));
     text = r.text;
     busy = r.busy;
     same = text && text === last && !busy ? same + 1 : 0;
     last = text;
+    사라짐 = r.uqN === 0 && !busy && !text && /^\/u\/\d+\/app\/?$/.test(r.path) ? 사라짐 + 1 : 0;
+    if (사라짐 >= 3) await fail("보낸 글이 화면에서 사라지고 새 채팅으로 돌아갔다 — 대화가 안 남았을 수 있다. 다시 보내지 말고 보낸 지 20분 뒤 「읽기」(사이드바를 보고 없으면 표시를 푼다)", "사라짐");
     if (!/\/app\/[0-9a-f]+/.test(url)) {
       const nu = await page.url().catch(() => url);
       if (/\/app\/[0-9a-f]+/.test(nu)) { url = nu; await writeMark(url); log({ step: "url", url }); }
     }
     if ((same >= 6 && text.length > 200) || same >= 12) return { text, url };
+    if (빈답마감 && !text && !busy && Date.now() - t0 > 빈답마감) await fail(`대화는 있는데 답 글이 ${Math.round(빈답마감 / 1000)}초 동안 안 뜬다 — 다시 보내지 말고 손으로 본다: ${url}`, "없음");
   }
   if (busy || text.length > 200) await fail(`답이 ${J.answerMin || 12}분 안에 안 끝남(${text.length}자) — 다시 보내지 말고 나중에 「읽기」`, "늦음");
   return await fail("답이 안 나옴: " + text.slice(0, 200));
@@ -98,23 +137,14 @@ const oldSpace = (await listTaskSpaces()).find((s) => s.name === space);
 if (oldSpace && oldSpace.profileId && oldSpace.profileId !== profile) await fail(`공간 「${space}」이 ${oldSpace.profileId}에 있다(${profile} 아님) — 다른 이름으로 새로 만든다`, "멈춤");
 const task = oldSpace ? await taskSpace(space) : await taskSpace(space, { profileId: profile });
 
-if (mode === "읽기") {
-  // 보낸 대화가 남은 탭을 지시문 앞머리로 찾아 읽기만 한다 — 주소를 옮기거나 새로 고치지 않는다(10-27 대화가 사라짐).
-  const pages = await task.pages();
-  for (const p of pages.slice().reverse()) {
-    const qs = await p.evaluate(() => [...document.querySelectorAll("user-query")].map((e) => e.innerText.slice(0, 3000))).catch(() => []);
-    if (qs.some((t) => norm(t).includes(promptHead))) { page = p; break; }
-  }
-  if (!page) await fail(`작업 공간 「${space}」의 탭 ${pages.length}개 가운데 이 지시문을 보낸 대화가 없다 — 다시 보내기 전에 사이드바에서 찾는다`, "없음");
-  await page.info();
-  const url = await page.url();
-  log({ step: "tab", url });
-  const r = await waitAnswer(url);
-  await finish(r.text, r.url);
-} else {
-  // 빈 탭만 다시 쓴다 — 대화가 열린 탭은 답이 아직 생기는 중일 수 있어 건드리지 않고 새 탭을 연다
-  for (const p of await task.pages()) { const pu = await p.url().catch(() => "x"); if (!pu || pu === "about:blank" || /^chrome:\/\/new-?tab/.test(pu)) { page = p; break; } }
-  if (!page) page = await task.newPage();
+// 빈 탭만 다시 쓴다 — 대화가 열린 탭은 답이 아직 생기는 중일 수 있어 건드리지 않고 새 탭을 연다(보내기 · 확인 · 사이드바 찾기)
+const 빈탭 = async () => {
+  for (const p of await task.pages()) { const pu = await p.url().catch(() => "x"); if (!pu || pu === "about:blank" || /^chrome:\/\/new-?tab/.test(pu)) return p; }
+  return await task.newPage();
+};
+
+// 같은 계정 첫 화면을 열고 sorry · 한도 · 계정을 본다(보내기 · 확인 · 사이드바 찾기). 한도 문구는 보낼 때만 멈춘다 — 읽기는 모델 몫이 없어도 된다.
+const 첫화면 = async () => {
   await page.info();
   const win = await page.cdp("Browser.getWindowForTarget", {});
   if (win.bounds.windowState === "minimized") { await page.cdp("Browser.setWindowBounds", { windowId: win.windowId, bounds: { windowState: "normal" } }); await page.waitForTimeout(1500); }
@@ -129,13 +159,192 @@ if (mode === "읽기") {
   // sorry 화면에서는 입력창이 영영 안 뜬다 — 바퀴마다 주소부터 본다(11-07 확인 차례가 sorry 화면에서 이 고리를 다 돌며 a 줄을 26분 쥠)
   for (let i = 0; i < 45; i++) { await page.waitForTimeout(2000); if (/sorry/.test(await page.url().catch(() => ""))) break; s = await state().catch(() => ({ mode: "", len: -1, limit: false })); if (s.mode || s.len >= 0) break; }
   if (/sorry/.test(await page.url())) await fail("로봇 확인 화면(sorry) — 멈춤, 유호님 손", "멈춤");
-  if (s.limit) await fail("사용량 한도 문구가 보임", "멈춤");
+  if (s.limit && mode !== "읽기") await fail("사용량 한도 문구가 보임", "멈춤");
   // 계정 확인 — 로그인이 바뀌면 /u/ 순번도 바뀐다(11-07 ego 프로필 교체). 계정 표시는 입력창보다 늦게 뜰 수 있어 10초까지 본다.
   const whoNow = () => page.evaluate(() => [...document.querySelectorAll("[aria-label]")].map((e) => e.getAttribute("aria-label")).filter((t) => /@/.test(t)).join(" | ")).catch(() => "");
   let who = await whoNow();
   for (let i = 0; i < 5 && !/@/.test(who); i++) { await page.waitForTimeout(2000); who = await whoNow(); }
   log({ step: "account", u, account: account || null, profile, who: who.replace(/\s+/g, " ").slice(0, 120) });
   if (account && !who.includes(`${account}@`)) await fail(`계정이 ${account}가 아님(/u/${u} · 공간 ${space}): ${who.replace(/\s+/g, " ").slice(0, 120) || "계정 표시 없음 — 로그아웃 화면일 수 있다"}`, "멈춤");
+  return s;
+};
+
+// 사이드바의 대화 링크 — 호스트가 gemini.google.com이고 경로가 정확히 /u/<u>/app/<번호>인 것만, 위(최근)부터 깊이까지.
+// 글자에 대화 번호가 들어 있기만 보면 계정 메뉴의 「로그아웃 옵션」 링크(continue에 지금 주소)를 집는다(10-25). 덜 떴으면 목록을 내려 더 불러온다.
+const 사이드바링크 = async (깊이) => {
+  const 읽어 = () => page.evaluate((n) => {
+    const re = new RegExp(`^/u/${n}/app/([0-9a-f]+)$`);
+    const 본 = new Set(), 목록 = [];
+    for (const a of document.querySelectorAll("a[href]")) {
+      let t;
+      try { t = new URL(a.getAttribute("href"), location.href); } catch { continue; }
+      const m = t.host === "gemini.google.com" ? re.exec(t.pathname) : null;
+      if (!m || 본.has(m[1])) continue;
+      본.add(m[1]);
+      목록.push({ id: m[1], path: t.pathname, title: (a.innerText || a.getAttribute("aria-label") || "").replace(/\s+/g, " ").trim().slice(0, 60) });
+    }
+    return 목록;
+  }, u).catch(() => []);
+  let links = [];
+  for (let i = 0; i < 20; i++) { links = await 읽어(); if (links.length >= 깊이 || (links.length && i >= 3)) break; await page.waitForTimeout(1500); }
+  for (let k = 0; k < 3 && links.length && links.length < 깊이; k++) {
+    const 내림 = await page.evaluate(() => {
+      const a = [...document.querySelectorAll('a[href*="/app/"]')].pop();
+      let el = a ? a.parentElement : null;
+      while (el && !(el.scrollHeight > el.clientHeight + 10 && /(auto|scroll)/.test(getComputedStyle(el).overflowY))) el = el.parentElement;
+      if (!el) return false;
+      el.scrollTop += 1500;
+      return true;
+    }).catch(() => false);
+    if (!내림) break;
+    await page.waitForTimeout(1800);
+    links = await 읽어();
+  }
+  return links.slice(0, 깊이);
+};
+
+// 대화 하나 열기 — 사이드바 링크를 실제로 누르고(SPA 이동 — 주소로 바로 열면 빈 화면일 때가 있다, 10-19), 안 가면 주소로 연다.
+// 앞 대화의 글이 잠깐 남을 수 있어 주소가 바뀐 뒤 글이 바뀌기를(같으면 6초까지) 기다리고, 1.5초 사이 두 번 읽어 같을 때 쓴다.
+let 앞글 = "";
+const 글표 = (qs) => `${norm((qs[0] && qs[0].글) || "").slice(0, 300)}#${qs.length}#${qs.map((q) => q.그림).join(",")}`;
+const 대화열기 = async (c) => {
+  const 표 = await page.evaluate((p) => {
+    document.querySelectorAll('[data-synk="convo"]').forEach((e) => e.removeAttribute("data-synk"));
+    const a = [...document.querySelectorAll("a[href]")].find((x) => {
+      try { const t = new URL(x.getAttribute("href"), location.href); const r = x.getBoundingClientRect(); return t.host === "gemini.google.com" && t.pathname === p && r.width > 0 && r.height > 0; } catch { return false; }
+    });
+    if (a) a.setAttribute("data-synk", "convo");
+    return !!a;
+  }, c.path).catch(() => false);
+  let 갔음 = false;
+  if (표) {
+    await page.click('loc=css:[data-synk="convo"]', { timeout: 15000, label: "open sidebar conversation" }).catch(() => {});
+    for (let k = 0; k < 7 && !갔음; k++) {
+      await page.waitForTimeout(1500);
+      const pu = await page.url().catch(() => "");
+      if (/sorry/.test(pu)) return { sorry: true, url: pu }; // 로봇 확인이면 주소로 다시 열지 않는다
+      갔음 = 경로(pu) === c.path;
+    }
+  }
+  if (!갔음) await page.goto(`https://gemini.google.com${c.path}`, { timeout: 60000, waitUntil: "domcontentloaded" }).catch((e) => { if (!/navigation committed|timed? ?out|ERR_ABORTED/i.test(e.message)) throw e; });
+  const t0 = Date.now();
+  let 지난 = null;
+  while (Date.now() - t0 < 25000) {
+    await page.waitForTimeout(1500);
+    const pu = await page.url().catch(() => "");
+    if (/sorry/.test(pu)) return { sorry: true, url: pu };
+    const p = 경로(pu);
+    if (p !== c.path) { if (Date.now() - t0 > 6000 && /^\/u\/\d+\/app\/?$/.test(p)) return { gone: true, url: pu }; continue; }
+    const qs = await 보낸글읽기(page).catch(() => []);
+    if (!qs.length) continue;
+    const 지금표 = 글표(qs);
+    if (지금표 === 앞글 && Date.now() - t0 < 6000) continue; // 앞 대화 글이 아직 남았을 수 있다
+    if (지금표 === 지난) { 앞글 = 지금표; return { url: pu, qs }; }
+    지난 = 지금표;
+  }
+  return { blank: true, url: await page.url().catch(() => "") };
+};
+
+// 탭에서 못 찾은 보냄 표시 — 빈 탭 하나로 같은 계정 첫 화면의 사이드바 최근 대화를 차례로 열어 지시문 전체 · 그림 수가 맞는 대화를 찾는다.
+// 이미 열린 탭은 건드리지 않는다(답이 생기는 중인 탭을 옮기면 대화가 사라진다, 10-27). 표시에 적힌 대화가 있으면 그것부터 연다.
+const 사이드바에서읽기 = async (markId, claimed) => {
+  if (!표시) await fail(`작업 공간 「${space}」의 탭에 이 지시문 대화가 없고 보냄 표시도 없다 — 보낸 적이 없으면 보내기로(사이드바는 보냄 표시가 있을 때만 본다)`, "없음");
+  if (표시.공간 && 표시.공간 !== space) await fail(`보낸 공간은 「${표시.공간}」(지금 「${space}」) — 그 공간으로 읽는다(사이드바 찾기 · 표시 풀기는 보낸 공간에서만)`, "없음");
+  const 같은 = 표시계정(표시, u, account);
+  if (!같은.같음) await fail(`${같은.까닭} — 그 계정 줄로 읽는다(사이드바 찾기 · 표시 풀기 안 함)`, "없음");
+  // 20분 안 대화는 위쪽에 있다 — 그때는 덜 연다(연달아 열면 로봇 확인이 뜬다, 10-19 · 10-24). 사용자 지정 상한 15
+  const 깊이 = Date.now() - 보낸때(표시) >= releaseAfter ? 15 : 8;
+  shot = failShot.replace(/(\.png)?$/i, "_읽기.png"); // 보낼 때 찍은 실패 그림은 남긴다
+  page = await 빈탭();
+  try {
+    await 첫화면();
+    const links = await 사이드바링크(깊이);
+    const 목록에 = new Set(links.map((l) => l.id));
+    const 후보 = [];
+    if (markId) 후보.push({ id: markId, path: `/u/${u}/app/${markId}`, title: "(표시에 적힌 대화)" });
+    for (const l of links) if (!후보.some((c) => c.id === l.id) && !claimed.has(l.id)) 후보.push(l);
+    log({ step: "sidebar-list", links: links.length, 볼것: Math.min(후보.length, 깊이), 표시주소: markId || null });
+    const 본 = { 계정확인: !!account, 사이드바: links.length, 열어봄: 0, 빈화면: 0, 헷갈림: 0 };
+    let 찾음 = null;
+    const 같음 = [], 비슷함 = [];
+    for (let i = 0; i < 후보.length && i < 깊이; i++) {
+      if (찾음 && (찾음.표시 || i > 찾음.i + 2)) break; // 찾은 뒤 둘 더 본다 — 같은 지시문을 따로 보낸 대화가 붙어 있는지(표시에 적힌 대화면 그대로)
+      const c = 후보[i];
+      if (i) await page.waitForTimeout(2000);
+      const 열림 = await 대화열기(c);
+      본.열어봄 += 1;
+      if (열림.sorry) await fail("로봇 확인 화면(sorry) — 멈춤, 유호님 손", "멈춤");
+      const 판정 = 열림.gone ? "없는 대화" : 열림.blank ? "빈 화면" : 대화견주기(열림.qs, 기대);
+      log({ step: "sidebar", i: i + 1, url: 열림.url, title: c.title, 판정 });
+      if (열림.blank || (열림.gone && 목록에.has(c.id))) 본.빈화면 += 1; // 목록에 있는데 안 열린 대화는 이 작업일 수 있다 — 표시를 풀지 않는다
+      if (판정 === "맞음") { if (!찾음) 찾음 = { i, c, url: 열림.url, 표시: c.id === markId }; else 같음.push(열림.url); }
+      else if (판정 === "첨부다름" || 판정 === "잘림") 비슷함.push(`${열림.url}(${판정})`);
+    }
+    if (찾음) {
+      if (같음.length) await fail(`이 지시문 · 첨부와 같은 대화가 ${같음.length + 1}개 — 어느 것이 이 작업인지 못 가린다: ${[찾음.url, ...같음].join(" · ")}`, "헷갈림", { urls: [찾음.url, ...같음] });
+      if (J.twins && !찾음.표시) await fail(`지시문 · 그림 수가 같은 작업이 이 묶음에 ${J.twins}개 더 있어 사이드바로는 가리지 못한다: ${찾음.url}`, "헷갈림", { urls: [찾음.url] });
+      if (경로(await page.url().catch(() => "")) !== 찾음.c.path) {
+        const 다시 = await 대화열기(찾음.c);
+        if (다시.sorry) await fail("로봇 확인 화면(sorry) — 멈춤, 유호님 손", "멈춤");
+        if (!다시.qs || 대화견주기(다시.qs, 기대) !== "맞음") await fail(`찾은 대화를 다시 열어 보니 맞지 않는다 — 손으로 본다: ${찾음.url}`, "헷갈림", { urls: [찾음.url] });
+      }
+      const via = 찾음.표시 ? "표시 주소" : "사이드바";
+      await writeMark(찾음.url, { 찾음: via });
+      log({ step: "found", via, url: 찾음.url, 차례: 찾음.i + 1 });
+      const r = await waitAnswer(찾음.url, 120_000);
+      await finish(r.text, r.url);
+      return;
+    }
+    본.헷갈림 = 비슷함.length;
+    if (비슷함.length) await fail(`지시문은 같은데 첨부가 다르거나 글이 덜 보이는 대화 ${비슷함.length}개 — 다시 보내지 말고 손으로 본다: ${비슷함.join(" · ")}`, "헷갈림", { urls: 비슷함 });
+    const 판단 = 표시풀까(표시, Date.now(), 본, releaseAfter);
+    if (!판단.풀기) await fail(`탭 · 사이드바 최근 대화 ${본.열어봄}개에 이 지시문 대화가 없다 · ${판단.까닭} — 표시는 둔다`, "없음");
+    // 「안 보내짐」 — 표시를 지우지 않고 옆 기록 파일에 덧붙여 옮긴다(기록을 먼저 쓰고 표시를 지운다)
+    try {
+      let 앞 = [];
+      try { const t = JSON.parse(await fs.readFile(unsentMark, "utf8")); 앞 = Array.isArray(t) ? t : [t]; } catch { /* 처음 푼다 */ }
+      await fs.writeFile(unsentMark, JSON.stringify([...앞, 풀린기록(표시, 본, 판단.까닭, now())], null, 1) + "\n", "utf8");
+      await fs.unlink(mark);
+    } catch (e) { await fail(`표시를 못 옮김(${e.message}) — 표시는 그대로`, "없음"); }
+    log({ step: "unsent", record: unsentMark });
+    await fail(`${판단.까닭} — 안 보내진 것으로 본다. 표시를 ${unsentMark}로 옮겼다(다음 보내기가 다시 보낸다)`, "안보내짐", { record: unsentMark });
+  } catch (e) {
+    if (e.kind !== "멈춤") await page.close().catch(() => {}); // 로봇 확인 화면은 유호님이 누르시게 둔다
+    throw e;
+  }
+};
+
+if (mode === "읽기") {
+  // ① 보낸 대화가 남은 탭을 찾아 화면만 읽는다 — 주소를 옮기거나 새로 고치지 않는다(10-27 대화가 사라짐).
+  // 지시문 전체 · 그림 수가 맞는 탭만, 이 묶음의 다른 작업이 쓴 대화(claimed)는 빼고. 같은 지시문 탭이 여럿이면 표시의 대화 주소로 고르고, 못 고르면 헷갈림.
+  표시 = await 표시읽기();
+  if (표시 && 표시.시각) markAt = 표시.시각;
+  const markId = 대화아이디(표시 && 표시.대화);
+  const claimed = new Set(J.claimed || []);
+  const 탭들 = [];
+  for (const p of (await task.pages()).slice().reverse()) {
+    const qs = await 보낸글읽기(p).catch(() => []);
+    if (!qs.length) continue;
+    const pu = await p.url().catch(() => "");
+    탭들.push({ p, url: pu, id: 대화아이디(pu), 판정: 대화견주기(qs, 기대) });
+  }
+  const 맞는탭 = 탭들.filter((t) => t.판정 === "맞음" && !(t.id && claimed.has(t.id)));
+  const 고른탭 = 맞는탭.find((t) => markId && t.id === markId) || (맞는탭.length === 1 && !J.twins ? 맞는탭[0] : null);
+  if (!고른탭 && 맞는탭.length) await fail(`작업 공간 「${space}」에 이 지시문 · 첨부와 같은 대화 탭이 ${맞는탭.length}개${J.twins ? ` · 같은 지시문 작업이 ${J.twins}개 더 있다` : ""} — 어느 것이 이 작업인지 못 가린다: ${맞는탭.map((t) => t.url).join(" · ")}`, "헷갈림", { urls: 맞는탭.map((t) => t.url) });
+  if (고른탭) {
+    page = 고른탭.p;
+    await page.info();
+    const url = await page.url();
+    log({ step: "tab", url });
+    const r = await waitAnswer(url);
+    await finish(r.text, r.url);
+  } else {
+    // ② 탭에 없으면 사이드바에서(보냄 표시가 있을 때만) — 찾으면 읽고, 없고 20분 지났으면 표시를 「안 보내짐」으로
+    await 사이드바에서읽기(markId, claimed);
+  }
+} else {
+  page = await 빈탭();
+  let s = await 첫화면();
   if (mode === "확인") {
     log({ step: "done", url: await page.url().catch(() => ""), chars: 0, out: null });
     await page.close().catch(() => {});

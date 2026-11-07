@@ -11,16 +11,22 @@
  *        공용 차례(gemini)를 잡고 → 작업마다 새 대화(새 탭)에 올려 보내고 → 답을 파일로 받고 → 내려놓는다.
  *        한 차례(보내기 · 읽기 6번 · 20분)를 넘길 것 같으면 내려놓고 다시 줄을 선다. 답 파일이 이미 있는 작업은 건너뛴다.
  *   node tools/아르곤웹.js 읽기 <작업.json…> [같은 선택]
- *        보낸 대화를 같은 작업 공간의 탭에서 읽기만 한다(주소를 옮기거나 다시 보내지 않는다).
+ *        보낸 대화를 같은 작업 공간의 탭에서 읽는다(열린 탭은 옮기거나 새로 고치지 않는다). 탭에 없고 보냄 표시가 있으면 빈 탭 하나로
+ *        같은 계정 첫 화면의 사이드바 최근 대화(보낸 지 20분 안이면 8개, 지나면 15개)를 차례로 열어 지시문 전체 · 그림 수가 맞는 대화를 찾아
+ *        답을 읽고, 표시 · 결과에 그 주소를 남긴다(11-08). 어디에도 없고 보낸 지 20분이 지났으면 표시를 <답>.안보내짐.json으로 옮긴다 —
+ *        다음 보내기가 다시 보낸다. 지시문이 같은데 첨부가 다르거나 같은 대화가 여럿이면 「헷갈림」으로 멈추고 손에 넘긴다(표시는 그대로).
  *   node tools/아르곤웹.js 확인 [--이름 <줄 이름>] [--두줄] [--차례없이 --u <번호> --계정 <이름>] [--공간 <작업 공간>]
  *        차례를 잡고 그 줄 계정의 새 대화 화면만 열어 「Google 계정 … @」 표시가 차례의 계정과 같은지 본다 — 올리기 · 보내기 없음(11-07).
  *
  * 작업 파일: { "files": [...], "prompt": "<지시문>" | "promptFile": "<파일>", "out": "<답.md>", "shots"?, "head"?, "space"?, "answerMin"? }
  *   경로는 작업 파일 폴더 기준으로도 쓴다. 첨부는 한 번에 10개까지, 지시문은 4,300자 안(긴 자료는 글 파일로 붙인다).
+ *   그림이 4장을 넘으면 보내기 전에 경고한다 — 11-07 그림 8장 한 대화는 두 번 다 대화가 남지 않았다(4장씩은 받음). 멈추지는 않는다:
+ *   experiences/drama/qa/제2의나-20261102/조각/실존대조.mjs 모델이 얼굴 조각 5~10장 묶음을 11-04~06에 그대로 받았다.
  *   글 파일은 칩에 보이는 이름(확장자 뺀)으로 확인하니 이름이 서로 달라야 한다.
  *
  * 다시 보내지 않기: 페이지 스크립트(tools/아르곤웹.mjs)가 보내기를 누르기 직전에 `<답>.보냄.json` 표시를 쓰고, 답을 받으면 지운다.
- *   표시가 남은 작업은 보내기를 불러도 「읽기」로 간다 — 그래도 다시 보내야 하면 표시 파일을 지운 뒤 부른다.
+ *   표시가 남은 작업은 보내기를 불러도 「읽기」로 간다. 표시는 손으로 지우지 않는다 — 읽기가 탭 · 사이드바까지 보고 없으면(보낸 지 20분 뒤)
+ *   <답>.안보내짐.json으로 옮겨(기록은 남김) 다음 보내기가 다시 보낸다. 사이드바를 거치지 않고 표시를 푸는 길은 없다(같은 질문을 두 번 보내지 않게).
  * 한 ego 브라우저에서 파일을 올리는 실행기는 하나만 돈다(10-31 a · b 두 줄 동시 올리기에서 첨부 0장) — 이 도구끼리는 임시 폴더의
  *   잠금으로 차례를 지키고, 「--두줄」은 다른 올리기 실행기가 안 도는 것을 알 때만 붙인다.
  * 차례: 사용자 폴더의 synk-vendor/_공용차례/차례.py(README). 막힘 · 한도 · 동의 창은 누르지 않고 멈춘다 — sorry면 두 줄 다 끈다(off 파일).
@@ -42,11 +48,15 @@ const 첨부한도 = 10;
 const 지시문한도 = 4300;
 const 한차례 = { 건: 6, 새건마감: 12 * 60_000, 다시읽기마감: 15 * 60_000 }; // 한 건 3~8분 — 12분 뒤에는 새 건을 시작하지 않는다(20분 안)
 const 보내기전실패쉼 = 20_000;
+const 그림한도 = 4; // 한 대화 그림 — 11-07 그림 8장 묶음은 두 번 다 대화가 남지 않았다(4장씩은 받음). 경고만 한다(실존대조 얼굴 조각 5~10장은 받았다)
+const 풀기기다림 = 20 * 60_000; // 보낸 지 이만큼 지나고 탭 · 사이드바에도 없으면 표시를 「안 보내짐」으로 옮긴다(사이드바 목록이 늦게 바뀐다, 10-19)
 
 const 슬래시 = (p) => String(p).replace(/\\/g, '/');
 const 종류 = (f) => (/\.(jpe?g|png|webp|gif|heic)$/i.test(f) ? '사진' : /\.(mp4|mov|webm|mkv|m4v|avi)$/i.test(f) ? '영상' : '글');
 const 칩이름 = (f) => path.basename(f).replace(/\.[^.]+$/, '');
+const 그림셈 = (files) => (files || []).filter((f) => 종류(f) === '사진').length;
 const 표시경로 = (out) => `${out}.보냄.json`;
+const 풀린표시경로 = (out) => `${out}.안보내짐.json`;
 const 쉬기 = (ms) => new Promise((r) => setTimeout(r, ms));
 const 시각 = () => new Date().toLocaleTimeString('sv-SE', { timeZone: 'Asia/Seoul' });
 const 차례경로 = () => process.env.SYNK_CHARYE_PY || path.join(os.homedir(), 'Documents', 'synk-vendor', '_공용차례', '차례.py');
@@ -125,6 +135,13 @@ function 작업문제(job) {
   return 문제;
 }
 
+// 보내기 전 경고(멈추지 않음) — 그림이 4장을 넘는 작업. 멈추게 하지 않는 까닭: 실존대조.mjs 모델이 얼굴 조각 5~10장 묶음을 11-04~06에 받았다.
+function 작업경고(job) {
+  const n = 그림셈(job.files);
+  if (n <= 그림한도) return [];
+  return [`그림 ${n}장 — 한 대화 그림 ${그림한도}장까지(11-07 8장 묶음 실패) — 나눠 보낸다. 이번에는 경고만 하고 보낸다(작은 얼굴 조각 5~10장 묶음은 11-04~06에 받았다) — 「보냄」으로 끝나면 ${그림한도}장씩 나눈다`];
+}
+
 // 할 일 고르기 — 답이 있으면 건너뜀, 보냄 표시가 있으면 다시 보내지 않고 읽기
 function 할일정하기(job, 처음, o = {}) {
   if (job.out && fs.existsSync(job.out) && !o.덮어쓰기) return '건너뜀';
@@ -138,30 +155,40 @@ function 줄이름(jobs, o = {}) {
   return `argonweb-${crypto.createHash('sha1').update(seed).digest('hex').slice(0, 6)}`;
 }
 
+// 첫 줄은 JOB, 다음 줄들은 판단 함수 소스(페이지 스크립트가 같은 함수로 대화를 알아보고 표시 풀기를 정한다), 그 뒤가 페이지 스크립트
+function 판단머리() {
+  return 판단함수.map((f) => `const ${f.name} = ${f.toString()};`).join('\n');
+}
+
 function 페이지글(job, u, mode, 계정 = '') {
   const JOB = {
     mode, files: job.files.map(슬래시), prompt: job.prompt, out: 슬래시(job.out), shots: 슬래시(job.shots), u: Number(u),
     account: 계정 || job.account || '', space: job.space || 기본공간, profile: job.profile || 기본프로필,
-    head: job.head || '아르곤 답', mark: 슬래시(표시경로(job.out)),
+    head: job.head || '아르곤 답', mark: 슬래시(표시경로(job.out)), unsentMark: 슬래시(풀린표시경로(job.out)),
+    claimed: Array.isArray(job.claimed) ? job.claimed : [], twins: Number(job.twins) || 0, releaseAfterMs: 풀기기다림,
     ...(job.failShot ? { failShot: 슬래시(job.failShot) } : {}),
     ...(job.answerMin ? { answerMin: job.answerMin } : {}), ...(job.sentWaitSec ? { sentWaitSec: job.sentWaitSec } : {}),
   };
-  return `globalThis.JOB = ${JSON.stringify(JOB)};\n${fs.readFileSync(페이지, 'utf8')}`;
+  return `globalThis.JOB = ${JSON.stringify(JOB)};\n${판단머리()}\n${fs.readFileSync(페이지, 'utf8')}`;
 }
 
 // ego 출력 → 결과. ego는 스크립트의 console 출력을 표준 오류로 낸다(10-31 첫 실행 — 표준 출력만 읽어 「받음」을 못 보고 다시 보내려 했다).
 // 그래서 두 흐름을 합쳐 읽고, 받았는지는 출력과 따로 이번 실행에 새로 써진 답 파일(받은답)로도 본다.
 // 표시 파일이 남았으면 보냈을 수 있다 — 보내기 전 실패만 「실패」(다시 돌려도 된다).
+// 읽기가 사이드바까지 보고 표시를 옮겼으면 「안 보내짐」(다음 보내기가 다시 보낸다), 거의 같은 대화가 여럿이면 「헷갈림」(표시는 그대로 — 손으로).
 function 결과가르기(출력, 표시있음, 받은답 = null) {
   const steps = String(출력 || '').split(/\r?\n/).map((l) => { try { return JSON.parse(l.trim()); } catch { return null; } }).filter((x) => x && x.step);
   const done = steps.find((x) => x.step === 'done');
-  const url = (steps.filter((x) => (x.step === 'sent' || x.step === 'url' || x.step === 'done') && x.url).pop() || {}).url || '';
-  if (done || 받은답) return { 결과: '받음', url, 글자: done ? done.chars : 받은답.글자 };
+  const url = (steps.filter((x) => ['sent', 'url', 'tab', 'found', 'done'].includes(x.step) && x.url).pop() || {}).url || '';
+  const 찾은 = steps.find((x) => x.step === 'found');
+  if (done || 받은답) return { 결과: '받음', url, 글자: done ? done.chars : 받은답.글자, ...(찾은 ? { 찾음: 찾은.via || '사이드바' } : {}) };
   const f = steps.find((x) => x.step === 'fail');
   const 꼬리 = String(출력 || '').trim().split(/\r?\n/).filter((l) => l.trim() && !l.trim().startsWith('{"step"')).slice(-2).join(' / ');
   const 까닭 = f ? f.why : (꼬리 || '출력 없이 끝남');
   if (f && f.kind === '멈춤') return { 결과: '멈춤', 까닭, 보냄: 표시있음, url };
-  if (표시있음) return { 결과: '보냄', 까닭, url, 늦음: !!(f && f.kind === '늦음') };
+  if (f && f.kind === '안보내짐' && !표시있음) return { 결과: '안 보내짐', 까닭, 기록: f.record || '' };
+  if (f && f.kind === '헷갈림') return { 결과: '헷갈림', 까닭, url, 후보: Array.isArray(f.urls) ? f.urls : [], 보냄: 표시있음 };
+  if (표시있음) return { 결과: '보냄', 까닭, url, 늦음: !!(f && f.kind === '늦음'), 사라짐: !!(f && f.kind === '사라짐') };
   if (f && f.kind === '없음') return { 결과: '없음', 까닭 };
   return { 결과: '실패', 까닭 };
 }
@@ -190,6 +217,139 @@ function 계정번호(글) {
 function 계정이름(글) {
   const m = /^gemini-[a-z]+\s+(\S+)\s+https:\/\/gemini\.google\.com\/u\/\d+\//m.exec(String(글 || ''));
   return m ? m[1] : '';
+}
+
+// ── 보낸 대화 알아보기 · 표시 풀기 판단 ──
+// 아래 일곱 함수는 페이지글()이 소스째 페이지 스크립트 앞에 붙인다(아르곤웹.mjs가 같은 함수로 판단 — 시험은 여기서). 그래서 이 파일의 다른 이름
+// (fs · path · 상수)을 쓰지 않고 서로만 부른다.
+
+// 보낸 글(user-query)은 목록 번호 · 마크다운 기호가 빠지고 줄바꿈이 달라져 그려진다 — 그것만 걷고 견준다(10-31 앞머리 견주기와 같은 셈).
+function 글정규화(t) {
+  return String(t || '').replace(/\d+\.(?=\s)/g, '').replace(/[\s#*_`>|-]+/g, '');
+}
+
+function 대화아이디(글) {
+  const m = /\/app\/([0-9a-f]{8,})/.exec(String(글 || ''));
+  return m ? m[1] : '';
+}
+
+// 한 대화의 보낸 글들(user-query마다 { 글: innerText, 그림: 보이는 그림 수 })이 이 작업과 맞는지.
+//   기대 = { 지시문, 그림: 사진 수(영상이 있으면 null — 안 셈), 글: 글 파일 수(칩 아이콘이 그림으로 잡힐 여유) }
+//   먼저 표시의 「지시문앞」과 같은 기준(글정규화 앞 40자 — 보내기 확인이 실제로 쓰는 셈)이 맞아야 하고, 그 뒤 전체는 글자 · 숫자만 견준다
+//   (11-02 실측으로 전체 글이 정규화째 같게 그려지는 것은 봤지만 곧은 따옴표 같은 기호는 못 봤다 — 기호 하나로 내 대화를 남의 것으로 보면 두 번 보낸다)
+//   맞음: 지시문 전체가 들어 있고 그림 수가 맞거나 셀 수 없다(0)
+//   첨부다름: 지시문 전체는 같은데 보이는 그림 수가 다르다 — 같은 지시문을 다른 그림으로 보낸 작업(11-07 8장 → 4장씩 나눔)
+//   잘림: 앞머리 40자(표시의 「지시문앞」과 같은 기준)부터 같다가 보낸 글이 거기서 끝난다(남은 글 60자 안 — 단추 글자 정도) —
+//         화면이 글을 줄여 그렸을 수 있어 「없음」으로 치지 않는다
+//   앞머리: 앞머리부터 같다가 갈라진 뒤에도 남의 글이 길게 이어진다 — 같은 틀의 다른 지시문(미학맹검 묶음끼리는 화면 목록만 다르다)
+//   다름: 앞머리부터 다르다
+function 대화견주기(보낸글들, 기대) {
+  const 온 = 글정규화(기대 && 기대.지시문);
+  if (!온) return '다름';
+  const 앞 = 온.slice(0, 40);
+  const 그림 = 기대.그림 == null ? null : Number(기대.그림);
+  const 여유 = Number(기대.글 || 0);
+  const 무게 = { 다름: 0, 앞머리: 1, 잘림: 2, 첨부다름: 3 };
+  const 글자 = (s) => 글정규화(s).replace(/[^\p{L}\p{N}]+/gu, '');
+  const 온글자 = 글자(온);
+  const 앞글자 = 글자(앞);
+  // 앞머리가 나오는 자리마다 이 지시문과 같은 만큼 재고, 가장 길게 같은 자리에서 갈라진 뒤 보낸 글이 몇 자 남는지(글자 · 숫자만)
+  const 갈라진뒤 = (t) => {
+    if (!앞글자) return 0; // 앞머리에 글자가 없으면 못 가린다 — 막는 쪽(잘림)으로
+    let 길이 = -1, 남음 = t.length;
+    for (let i = t.indexOf(앞글자); i >= 0; i = t.indexOf(앞글자, i + 1)) {
+      let k = 앞글자.length;
+      while (k < 온글자.length && i + k < t.length && t[i + k] === 온글자[k]) k += 1;
+      if (k > 길이) { 길이 = k; 남음 = t.length - (i + k); }
+    }
+    return 남음;
+  };
+  let 결과 = '다름';
+  for (const q of 보낸글들 || []) {
+    if (!글정규화(q && q.글).includes(앞)) continue;
+    const t = 글자(q && q.글);
+    let 이번 = '';
+    if (t.includes(온글자)) {
+      const n = Number((q && q.그림) || 0);
+      이번 = 그림 === null || n === 0 || (n >= 그림 && n <= 그림 + 여유) ? '맞음' : '첨부다름';
+    } else 이번 = 갈라진뒤(t) <= 60 ? '잘림' : '앞머리';
+    if (이번 === '맞음') return '맞음';
+    if (무게[이번] > 무게[결과]) 결과 = 이번;
+  }
+  return 결과;
+}
+
+// 표시 파일의 보낸 때(ms). 「시각」은 서울 시각 글(sv-SE · 「2026-11-08 03:10:00」), 못 읽으면 파일 시각(파일시각)
+function 보낸때(표시) {
+  if (!표시) return NaN;
+  const m = /^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}:\d{2})$/.exec(String(표시.시각 || '').trim());
+  const t = m ? Date.parse(`${m[1]}T${m[2]}+09:00`) : NaN;
+  if (Number.isFinite(t)) return t;
+  return Number.isFinite(표시.파일시각) ? 표시.파일시각 : NaN;
+}
+
+// 표시가 지금 잡은 계정에서 보낸 것인지 — 계정 이름이 적혀 있으면 이름으로(로그인이 바뀌면 순번이 바뀐다, 11-07), 없으면 /u/ 번호로
+function 표시계정(표시, u, 계정) {
+  if (!표시) return { 같음: false, 까닭: '보냄 표시가 없다' };
+  if (표시.계정이름 && 계정) return 표시.계정이름 === 계정 ? { 같음: true } : { 같음: false, 까닭: `보낸 계정은 ${표시.계정이름}(지금 ${계정})` };
+  if (표시.계정 != null && 표시.계정 !== '' && Number(표시.계정) !== Number(u)) return { 같음: false, 까닭: `보낸 계정은 /u/${표시.계정}(지금 /u/${u})` };
+  return { 같음: true };
+}
+
+// 탭 · 사이드바 어디에도 맞는 대화가 없을 때 표시를 풀지(「안 보내짐」). 본 = { 계정확인, 사이드바: 뜬 대화 링크 수, 열어봄, 빈화면, 헷갈림 }
+// 화면 계정을 대조했고 · 사이드바가 떴고 · 글이 안 뜬 대화 · 거의 같은 대화가 없고 · 보낸 지 기다림(20분)이 지났을 때만 푼다.
+function 표시풀까(표시, 지금, 본, 기다림) {
+  if (!표시) return { 풀기: false, 까닭: '보냄 표시가 없다' };
+  if (!본 || !본.계정확인) return { 풀기: false, 까닭: '화면 계정을 대조하지 못했다(계정 이름 없이 불렀다)' };
+  if (!본.사이드바) return { 풀기: false, 까닭: '사이드바에 대화 목록이 안 떴다' };
+  if (본.빈화면) return { 풀기: false, 까닭: `열어도 글이 안 뜬 대화가 ${본.빈화면}개 있다` };
+  if (본.헷갈림) return { 풀기: false, 까닭: `지시문이 거의 같은 대화가 ${본.헷갈림}개 있다` };
+  const t = 보낸때(표시);
+  if (!Number.isFinite(t)) return { 풀기: false, 까닭: '표시에서 보낸 때를 못 읽었다' };
+  const 분 = Math.floor((지금 - t) / 60_000);
+  if (지금 - t < 기다림) return { 풀기: false, 까닭: `보낸 지 ${분}분 — ${Math.round(기다림 / 60_000)}분이 지나야 푼다(사이드바 목록이 늦게 바뀐다)` };
+  return { 풀기: true, 까닭: `사이드바 최근 대화 ${본.열어봄}개에 없다 · 보낸 지 ${분}분` };
+}
+
+// 「안 보내짐」 기록 한 줄 — 표시 내용에 언제 · 왜 · 몇 개를 보고 풀었는지 붙인다(파일시각은 뺀다)
+function 풀린기록(표시, 본, 까닭, 지금글) {
+  const 기록 = { ...(표시 || {}), 풀린때: 지금글, 까닭, 열어본대화: 본 ? 본.열어봄 : 0, 사이드바대화: 본 ? 본.사이드바 : 0 };
+  delete 기록.파일시각;
+  return 기록;
+}
+
+const 판단함수 = [글정규화, 대화아이디, 대화견주기, 보낸때, 표시계정, 표시풀까, 풀린기록];
+
+// ── 사이드바에서 찾을 때 이 묶음에서 넘길 것 ──
+
+// 답 파일 머리의 「대화: <주소>」에서 대화 번호
+function 답대화(out) {
+  try {
+    const m = /^대화: (\S+)/m.exec(fs.readFileSync(out, 'utf8').slice(0, 3000));
+    return m ? 대화아이디(m[1]) : '';
+  } catch { return ''; }
+}
+
+// 보냄 표시 — 없으면 null, 깨졌으면 {}에 파일 시각만
+function 표시읽기(out) {
+  const f = 표시경로(out);
+  let st;
+  try { st = fs.statSync(f); } catch { return null; }
+  let j = {};
+  try { const x = JSON.parse(fs.readFileSync(f, 'utf8')); if (x && typeof x === 'object') j = x; } catch { /* 깨진 표시 — 파일 시각으로 */ }
+  return { ...j, 파일시각: st.mtimeMs };
+}
+
+// 이 묶음의 다른 작업이 쓴 대화(답 · 표시에 적힌 주소)는 후보에서 빼고(claimed), 지시문 · 그림 수가 똑같은데 대화를 모르는 작업이
+// 또 있으면(보냄 표시가 있거나 주소 없는 답) 사이드바로는 가리지 못한다(twins) — 11-07처럼 같은 지시문을 4장씩 나눠 보낸 묶음
+function 찾기정보(jobs, job) {
+  const 나 = path.resolve(job.out);
+  const 남 = jobs.filter((k) => k.out && path.resolve(k.out) !== 나);
+  const 아이디 = (k) => 답대화(k.out) || 대화아이디((표시읽기(k.out) || {}).대화);
+  const 열쇠 = (k) => `${글정규화(k.prompt)}#${그림셈(k.files)}`;
+  const claimed = [...new Set(남.map(아이디).filter(Boolean))];
+  const twins = 남.filter((k) => 열쇠(k) === 열쇠(job) && !아이디(k) && (fs.existsSync(표시경로(k.out)) || fs.existsSync(k.out))).length;
+  return { claimed, twins };
 }
 
 // ── 차례 · 잠금 ──
@@ -260,10 +420,11 @@ function 페이지돌리기(job, u, mode, 계정) {
   });
 }
 
-async function 한건(job, u, mode, 계정) {
+// 전체 = 이 묶음의 작업들 — 읽기가 사이드바에서 찾을 때 다른 작업이 쓴 대화 · 같은 지시문 작업을 가린다(찾기정보, 부를 때마다 새로 본다)
+async function 한건(job, u, mode, 계정, 전체 = [job]) {
   console.log(`  ${시각()} ${mode} ${job.이름} — 첨부 ${job.files.length}개 · 지시문 ${job.prompt.length}자 · 계정 /u/${u}${계정 ? ` ${계정}` : ''}`);
   const 시작 = Date.now();
-  const run = await 페이지돌리기(job, u, mode, 계정);
+  const run = await 페이지돌리기({ ...job, ...찾기정보(전체, job) }, u, mode, 계정);
   const r = 결과가르기(run.출력, fs.existsSync(표시경로(job.out)), 새답(job.out, 시작));
   if (r.결과 === '받음') fs.rmSync(표시경로(job.out), { force: true }); // 답을 썼는데 표시가 남은 판 — 다음 부름이 읽기로 가지 않게
   return r;
@@ -284,6 +445,7 @@ async function 돌리기(jobs, o, 처음) {
   }
   const 이름 = 줄이름(jobs, o);
   if (/[_\s]/.test(이름)) { console.error('--이름에는 밑줄 · 띄어쓰기를 쓰지 않는다(예: idol-gg-argon)'); return 2; }
+  for (const j of 남은) if (j.할일 === '보내기') for (const w of 작업경고(j)) console.log(`  ⚠ ${j.이름}: ${w}`);
   const 할일글 = `아르곤웹 ${남은.length}건 — ${남은.slice(0, 3).map((j) => j.이름).join(' · ')}${남은.length > 3 ? ' …' : ''}`;
   let 멈춤 = '';
   const 풀기 = 남은.length ? await 올리기잠금(이름) : () => {};
@@ -305,13 +467,14 @@ async function 돌리기(jobs, o, 처음) {
         while (남은.length && !멈춤 && !잃음 && 건 < 한차례.건 && Date.now() - 시작 < 한차례.새건마감) {
           const j = 남은.shift();
           건 += 1;
-          let r = await 한건(j, u, j.할일, 계정);
+          let r = await 한건(j, u, j.할일, 계정, jobs);
           if (!o.차례없이 && 차례(['살아있음', 이름]).code !== 0) 잃음 = true;
-          if (r.결과 === '보냄' && !r.늦음 && !잃음 && 건 < 한차례.건 && Date.now() - 시작 < 한차례.다시읽기마감) {
-            await 쉬기(60_000); // 보낸 뒤 끊긴 판 — 다시 보내지 않고 같은 탭을 읽는다
+          // 보낸 뒤 끊긴 판 — 다시 보내지 않고 같은 탭을 읽는다. 보낸 글이 화면에서 사라진 판(사라짐)은 1분 뒤 읽어도 없다 — 20분 뒤 읽기로
+          if (r.결과 === '보냄' && !r.늦음 && !r.사라짐 && !잃음 && 건 < 한차례.건 && Date.now() - 시작 < 한차례.다시읽기마감) {
+            await 쉬기(60_000);
             건 += 1;
-            const r2 = await 한건(j, u, '읽기', 계정);
-            if (r2.결과 === '받음') r = r2;
+            const r2 = await 한건(j, u, '읽기', 계정, jobs);
+            if (['받음', '헷갈림', '멈춤', '안 보내짐'].includes(r2.결과)) r = r2;
           }
           if (r.결과 === '실패') {
             이어실패 += 1;
@@ -369,11 +532,15 @@ async function 확인(o) {
 
 function 보고(결과, 멈춤) {
   const 셈 = (k) => 결과.filter((x) => x.결과 === k).length;
-  console.log(`\n아르곤웹 · ${결과.length}건 — 받음 ${셈('받음')} · 보냄(답 기다림) ${셈('보냄')} · 실패 ${셈('실패') + 셈('없음') + 셈('멈춤')} · 건너뜀 ${셈('건너뜀')} · 안 함 ${셈('안 함')}`);
+  const 더셈 = [['안 보내짐', '안 보내짐'], ['헷갈림', '헷갈림']].filter(([k]) => 셈(k)).map(([k, 말]) => ` · ${말} ${셈(k)}`).join('');
+  console.log(`\n아르곤웹 · ${결과.length}건 — 받음 ${셈('받음')} · 보냄(답 기다림) ${셈('보냄')}${더셈} · 실패 ${셈('실패') + 셈('없음') + 셈('멈춤')} · 건너뜀 ${셈('건너뜀')} · 안 함 ${셈('안 함')}`);
   for (const x of 결과) {
     const j = x.작업;
-    if (x.결과 === '받음') console.log(`  받음  ${j.이름} → ${j.out} (${x.글자}자${x.글자 < 200 ? ' — 짧다, 오류 문구인지 본다' : ''}) ${x.url || ''}`);
-    else if (x.결과 === '보냄') console.log(`  보냄  ${j.이름} — ${x.까닭}\n        다시 보내지 말고 나중에: node tools/아르곤웹.js 읽기 <작업 파일>${x.url ? ` · 대화 ${x.url}` : ''}`);
+    const 나눔 = j.files && 그림셈(j.files) > 그림한도 ? ` — 그림 ${그림셈(j.files)}장, ${그림한도}장씩 나눠 보낸다(11-07 8장 묶음 실패)` : '';
+    if (x.결과 === '받음') console.log(`  받음  ${j.이름} → ${j.out} (${x.글자}자${x.글자 < 200 ? ' — 짧다, 오류 문구인지 본다' : ''}) ${x.url || ''}${x.찾음 ? ` · ${x.찾음}에서 찾음` : ''}`);
+    else if (x.결과 === '보냄') console.log(`  보냄  ${j.이름} — ${x.까닭}\n        다시 보내지 말고 나중에: node tools/아르곤웹.js 읽기 <작업 파일>${x.url ? ` · 대화 ${x.url}` : ''}${x.사라짐 ? ` — 보낸 지 20분 뒤 읽기가 사이드바를 보고 없으면 표시를 푼다${나눔}` : ''}`);
+    else if (x.결과 === '안 보내짐') console.log(`  안 보내짐  ${j.이름} — ${x.까닭}\n        표시는 ${x.기록 || 풀린표시경로(j.out)}에 남겼다 — 다음 보내기가 다시 보낸다${나눔}`);
+    else if (x.결과 === '헷갈림') console.log(`  헷갈림  ${j.이름} — ${x.까닭}\n        다시 보내지 말고 그 대화를 열어 「말씀하신 내용」 · 첨부로 이 작업 대화를 고른다(보냄 표시는 그대로)`);
     else console.log(`  ${x.결과}  ${j.이름} — ${x.까닭}${x.보냄 ? ' · 보냄 표시가 있다(다시 보내지 않는다)' : ''}`);
   }
   if (멈춤) console.log(`멈춤: ${멈춤}`);
@@ -528,6 +695,7 @@ if (require.main === module) {
 }
 
 module.exports = {
-  parseArgs, 작업만들기, 작업읽기, 작업문제, 할일정하기, 줄이름, 페이지글, 결과가르기, 계정번호, 계정이름, 표시경로, 종류, 칩이름,
-  지시문읽기, 점검한편, 점검, 모호한좌우, 충돌표, 첨부한도, 지시문한도, 기본공간, 기본프로필, 페이지, 새답, 다시할일,
+  parseArgs, 작업만들기, 작업읽기, 작업문제, 작업경고, 할일정하기, 줄이름, 페이지글, 판단머리, 결과가르기, 계정번호, 계정이름, 표시경로, 풀린표시경로, 종류, 칩이름, 그림셈,
+  지시문읽기, 점검한편, 점검, 모호한좌우, 충돌표, 첨부한도, 지시문한도, 그림한도, 풀기기다림, 기본공간, 기본프로필, 페이지, 새답, 다시할일,
+  글정규화, 대화아이디, 대화견주기, 보낸때, 표시계정, 표시풀까, 풀린기록, 답대화, 표시읽기, 찾기정보,
 };

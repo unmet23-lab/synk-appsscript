@@ -51,10 +51,19 @@ function 점검() {
   return { ok: true, bin, 판 };
 }
 
-function 인자목록({ 프롬프트파일, 작업폴더, 웹, 모델, 노력, 턴, 스키마 = null }) {
+// 그림을 봐야 할 때(11-08): `--sandbox strict`로는 읽기가 안 막혀(설정 파일을 읽었다) 그림은 사용자 폴더 밖 빈 폴더에 두고
+// 읽기 · 찾기를 사용자 폴더와 D:에서만 막는다 — 실측: 그림은 읽고 C:/Users · D: 파일은 「못 읽음」(docs/현장노트/AI_CLI.md 「그록」).
+const 그림읽기도구 = Object.freeze(['Read', 'Grep', 'Glob']);
+const 막을자리 = Object.freeze(['C:/Users/**', 'D:/**']);
+const 그림자리 = () => process.env.GROK_IMAGE_ROOT || 'C:/grok-눈가림';
+
+function 인자목록({ 프롬프트파일, 작업폴더, 웹, 모델, 노력, 턴, 스키마 = null, 그림읽기 = false }) {
   const a = ['--no-auto-update', '--prompt-file', 프롬프트파일, '--output-format', 'json', '--cwd', 작업폴더,
     '--permission-mode', 'dontAsk', '--max-turns', String(턴), '--no-subagents'];
-  for (const t of 막을도구) a.push('--deny', t);
+  for (const t of 막을도구) {
+    if (그림읽기 && 그림읽기도구.includes(t)) { for (const 자리 of 막을자리) a.push('--deny', `${t}(${자리})`); continue; }
+    a.push('--deny', t);
+  }
   if (!웹) a.push('--deny', 'WebSearch', '--disable-web-search');
   // 답 꼴(11-07 실측 grok 1.0.77): --json-schema를 주면 답이 structuredOutput 칸에 꼴 그대로 온다
   if (스키마) a.push('--json-schema', typeof 스키마 === 'string' ? 스키마 : JSON.stringify(스키마));
@@ -98,11 +107,15 @@ function 마지막JSON(글) {
   return null;
 }
 
-async function 부르기({ 프롬프트, 웹 = false, 모델 = null, 노력 = null, 턴 = 8, 시간초 = 600, 스키마 = null } = {}) {
+async function 부르기({ 프롬프트, 웹 = false, 모델 = null, 노력 = null, 턴 = 8, 시간초 = 600, 스키마 = null, 그림들 = [] } = {}) {
   if (typeof 프롬프트 !== 'string' || !프롬프트.trim()) throw 막힘('EMPTY_PROMPT', '프롬프트가 비었다');
+  const 그림읽기 = Array.isArray(그림들) && 그림들.length > 0;
+  if (그림읽기 && process.platform !== 'win32' && !process.env.GROK_IMAGE_ROOT) throw 막힘('UNSUPPORTED', '그림 읽기 막는 자리는 Windows 경로로만 정해 두었다');
   const 상태 = 점검();
   if (!상태.ok) throw 막힘(상태.code, 상태.code === 'NOT_INSTALLED' ? `그록 CLI가 없다 — ${상태.안내}` : `그록 로그인이 필요하다 — ${상태.안내}`);
-  const 작업폴더 = fs.mkdtempSync(path.join(os.tmpdir(), 'grok-call-'));
+  if (그림읽기) fs.mkdirSync(그림자리(), { recursive: true });
+  const 작업폴더 = fs.mkdtempSync(path.join(그림읽기 ? 그림자리() : os.tmpdir(), 'grok-call-'));
+  for (const g of 그림읽기 ? 그림들 : []) fs.copyFileSync(g, path.join(작업폴더, path.basename(g)));
   const 프롬프트파일 = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'grok-prompt-')), 'prompt.md');
   fs.writeFileSync(프롬프트파일, 프롬프트, 'utf8');
   const env = { ...process.env };
@@ -110,7 +123,7 @@ async function 부르기({ 프롬프트, 웹 = false, 모델 = null, 노력 = nu
   const 시작 = Date.now();
   try {
     const { code, out, err, 끊김 } = await new Promise(resolve => {
-      const p = spawn(상태.bin, 인자목록({ 프롬프트파일, 작업폴더, 웹, 모델, 노력, 턴, 스키마 }), { cwd: 작업폴더, env, windowsHide: true });
+      const p = spawn(상태.bin, 인자목록({ 프롬프트파일, 작업폴더, 웹, 모델, 노력, 턴, 스키마, 그림읽기 }), { cwd: 작업폴더, env, windowsHide: true });
       let out = '', err = '', 끊김 = false;
       const t = setTimeout(() => { 끊김 = true; p.kill(); }, 시간초 * 1000);
       p.stdout.on('data', d => { out += d; });

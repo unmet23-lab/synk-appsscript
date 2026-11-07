@@ -119,7 +119,8 @@ test('GPT 작성(정책 판 5): 다시는 GPT만, Claude는 첫 판·끝 판·�
   const api = await tool(), r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
   const 준비 = (이름, 덧 = {}) => api.준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 종류: '백엔드', 작성자: 'GPT', 바탕: r.바탕, ...덧 });
   const 클로드 = async (목록, 폴더, 답) => { for (const b of 목록.묶음) api.검수받기(폴더, 'Claude', b.이름, (await 답({ prompt: fs.readFileSync(path.join(폴더, b.파일), 'utf8') })).text); };
-  const x = await 준비('g1'); assert.equal(x.목록.정책.판, 5); assert.deepEqual(x.목록.정책.필수, ['GPT', 'Claude']);
+  // 새 묶음은 판 6(2026-11-08 — Claude 백엔드 대체 순서에 그록)이고, GPT 작성은 판 5와 같다
+  const x = await 준비('g1'); assert.equal(x.목록.정책.판, 6); assert.deepEqual(x.목록.정책.필수, ['GPT', 'Claude']);
   await api.GPT보내기(x.폴더, x.목록, { call: 답하기([지적하나('a.js:1')]), 몫: 몫충분 });
   await 클로드(x.목록, x.폴더, 답하기());
   api.지적표고치기(x.폴더, 표 => api.처리하기(표, ['GA1=반영']));

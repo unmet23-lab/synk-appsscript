@@ -400,3 +400,27 @@ test('⑰ 소리 빈자리 — 합계 · 최장이 다 넘으면 고칠 것, 하
   assert.equal(검사.gapFinding(판정([[1.16, 1.92], [7.48, 7.84], [13.86, 14.74], [15.39, 16.3]], 19.9)), null, '내 말투로 2.9 · 0.91은 넘긴다');
   assert.equal(검사.gapFinding(판정([], 20)), null);
 });
+
+test('⑱ 미학 맹검(11-08): 11-09부터 만든 편은 결과가 있어야 하고, 기각 · 빠짐 · 맹검 뒤 바뀐 영상은 고칠 것, 판단 · 못함은 확인할 것', (t) => {
+  const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'aesthetic-'));
+  t.after(() => fs.rmSync(뿌리, { recursive: true, force: true }));
+  const 편 = (name, prep = {}) => { const dir = path.join(뿌리, name); fs.mkdirSync(path.join(dir, '게시'), { recursive: true }); return { name, dir, prep }; };
+  const 결과쓰기 = (b, body) => fs.writeFileSync(path.join(b.dir, '게시', '미학맹검.json'), JSON.stringify(body));
+  const 레벨 = (list) => list.map((f) => `${f.level}:${f.code}`);
+
+  assert.deepEqual(레벨(검사.aestheticFindings(편('synkbrief_옛편_20261108'), [])), [], '11-08까지 만든 편은 묻지 않는다');
+  assert.deepEqual(레벨(검사.aestheticFindings(편('synkbrief_새편_20261109'), [])), ['고칠 것:aesthetic-missing']);
+  assert.deepEqual(레벨(검사.aestheticFindings(편('synkbrief_막힘_20261109', { 맹검못함: '아르곤 한도' }), [])), ['확인할 것:aesthetic-skipped']);
+
+  const 기각편 = 편('synkbrief_기각_20261110');
+  결과쓰기(기각편, { 만든때: new Date(Date.now() + 60_000).toISOString(), 낱장: [{ 번호: '01', 판정: '기각', 점수: 3, 약점: ['[K7] 글자'] }, { 번호: '02', 판정: '고쳐서 냄', 점수: 6, 약점: ['끝'] }], 빠짐: ['03'] });
+  assert.deepEqual(레벨(검사.aestheticFindings(기각편, [])), ['고칠 것:aesthetic-incomplete', '고칠 것:aesthetic-reject', '확인할 것:aesthetic-fix']);
+  기각편.prep.맹검판단 = '빈 날 없음 — 가장 나은 판';
+  assert.deepEqual(레벨(검사.aestheticFindings(기각편, [])), ['확인할 것:aesthetic-incomplete', '확인할 것:aesthetic-reject', '확인할 것:aesthetic-fix']);
+
+  const 늦은편 = 편('synkbrief_늦음_20261110');
+  결과쓰기(늦은편, { 만든때: new Date(Date.now() - 3_600_000).toISOString(), 낱장: [{ 번호: '01', 판정: '그대로 냄', 점수: 8 }], 빠짐: [] });
+  const 영상 = path.join(늦은편.dir, '최종.mp4'); fs.writeFileSync(영상, 'x');
+  assert.deepEqual(레벨(검사.aestheticFindings(늦은편, [영상])), ['고칠 것:aesthetic-stale'], '맹검 뒤 다시 렌더한 영상');
+  assert.deepEqual(레벨(검사.aestheticFindings(늦은편, [])), [], '그대로 냄뿐이면 조용하다');
+});
