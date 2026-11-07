@@ -759,3 +759,113 @@ html.is-staff{color-scheme:light}
   .sx-ln>span,.sx-home [data-in]{transform:none!important;opacity:1!important}
   .on-maker .sx-layer-reel{transform:none}
 }
+/* ── 방향과 모델(영상 전 확인 1/3, 11-07) — 시안 docs/마케팅/PULSE_방향제안_20261106/시안 짜임 그대로. 넓은 화면은 그림 둘이 양쪽 끝까지 · 가운데 설명 한 장, 고른 쪽만 색 ── */
+.sx-dp{--frame:min(37vw,calc(100dvh*9/16),calc((100vw - 400px)/2));display:grid;grid-template-columns:var(--frame) minmax(0,1fr) var(--frame);grid-template-areas:"a sheet b";height:100vh;height:100dvh;overflow:hidden}
+.sx-dp[data-count="3"]{--frame:min(25vw,calc(100dvh*9/16),calc((100vw - 420px)/3));grid-template-columns:var(--frame) var(--frame) minmax(0,1fr) var(--frame);grid-template-areas:"a b sheet c"}
+.sx-dp-reel{display:contents}
+.sx-dp-frame{position:relative;display:block;overflow:hidden;height:100vh;height:100dvh;background:#000;cursor:pointer}
+.sx-dp-frame[data-at="0"]{grid-area:a}.sx-dp-frame[data-at="1"]{grid-area:b}.sx-dp-frame[data-at="2"]{grid-area:c}
+.sx-dp-frame img{display:block;width:100%;height:100%;object-fit:cover;filter:grayscale(1) brightness(.5);transform:scale(1.01);transition:filter .9s var(--sx-out),transform 1.4s var(--sx-out)}
+.sx-dp-frame[aria-pressed="true"] img{filter:none;transform:none}
+@media (hover:hover){.sx-dp-frame[aria-pressed="false"]:hover img{filter:grayscale(.4) brightness(.78)}}
+.sx-dp-frame::after{content:'';position:absolute;left:0;right:0;top:0;height:120px;background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,0));pointer-events:none}
+.sx-dp-frame-no{position:absolute;z-index:1;left:14px;bottom:12px;color:#fff;text-align:left;text-shadow:0 0 12px rgba(0,0,0,.8),0 0 2px rgba(0,0,0,.5)}
+.sx-dp-frame-no .sx-no{color:inherit;margin-right:4px}
+.sx-dp-film{position:absolute;inset:0;z-index:2;width:100%;height:100%;object-fit:contain;background:#000}
+.sx-dp-film.is-taste{object-fit:cover}
+.sx-dp-film-cap{position:absolute;z-index:3;left:14px;right:14px;bottom:12px;color:#fff;text-align:left;text-shadow:0 0 10px rgba(0,0,0,.8)}
+.sx-dp-frame:has(.sx-dp-film) .sx-dp-frame-no{display:none}
+.sx-dp[data-view="neither"] .sx-dp-frame img{filter:grayscale(1) brightness(.34);transform:scale(1.01)}
+.sx-dp-sheet{grid-area:sheet;display:flex;flex-direction:column;gap:clamp(12px,2.2vh,24px);min-height:0;overflow-y:auto;padding:calc(var(--sx-m) + 26px) var(--sx-m) clamp(14px,2.4vh,28px);scrollbar-width:none}
+.sx-dp-sheet::-webkit-scrollbar{display:none}
+.sx-dp-step{display:inline;margin-left:10px;color:var(--sx-faint)}.sx-dp-step b{color:var(--sx-ink)}
+.sx-dp-lead{margin-top:clamp(8px,1.4vh,14px)}
+.sx-dp-choose,.sx-dp-neither{display:flex;flex-direction:column;flex:1;min-height:0}
+.sx-dp-tabs{display:flex;gap:18px;border-top:1px solid var(--sx-rule);padding-top:clamp(10px,1.6vh,16px)}
+.sx-dp-tab{color:var(--sx-faint);padding:2px 0;border-bottom:1px solid transparent;transition:color .25s}
+.sx-dp-tab .sx-no{color:inherit}
+.sx-dp-tab.is-on{color:var(--sx-ink);border-bottom-color:var(--sx-ink)}
+@media (hover:hover){.sx-dp-tab:hover{color:var(--sx-ink)}}
+.sx-dp-detail{margin-top:clamp(10px,1.8vh,20px)}
+.sx-dp-choose:has([data-dp-casts]:not([hidden])) :is(.sx-dp-why,.sx-dp-lead){display:none}
+.sx-dp-sheet:has([data-dp-casts]:not([hidden])) .sx-dp-lead{display:none}
+.sx-dp-title{font-size:var(--sx-t1);line-height:1.14;outline:none}
+.sx-dp-sentence{font-size:var(--sx-t2);line-height:1.34;margin-top:clamp(6px,1vh,10px);color:var(--sx-ink)}
+.sx-dp-flow{margin:clamp(10px,1.8vh,18px) 0 0;padding:0;list-style:none;border-top:1px solid var(--sx-rule)}
+.sx-dp-flow li{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px;padding:clamp(5px,.9vh,9px) 0;border-bottom:1px solid var(--sx-rule)}
+.sx-dp-flow .sx-no{padding-top:2px}
+.sx-dp-why{margin-top:clamp(8px,1.4vh,14px)}
+.sx-dp-taste{display:flex;align-items:center;gap:14px;width:100%;margin-top:clamp(6px,1vh,12px);padding:clamp(6px,1vh,10px) 0;border-top:1px solid var(--sx-rule);border-bottom:1px solid var(--sx-rule);text-align:left}
+.sx-dp-taste>span:last-child{display:flex;flex-direction:column}
+.sx-dp-taste b{font-size:15px;font-weight:600;color:var(--sx-ink)}
+.sx-dp-taste-mark{flex:none;display:grid;place-items:center;width:34px;height:34px;border:1px solid var(--sx-ink);transition:background .25s,color .25s}
+.sx-dp-taste-mark svg{width:10px;height:10px;fill:currentColor}
+.sx-dp-taste[aria-pressed="true"] .sx-dp-taste-mark{background:var(--sx-ink);color:#0a0a0a}
+@media (hover:hover){.sx-dp-taste:hover .sx-dp-taste-mark{background:var(--sx-ink);color:#0a0a0a}}
+.sx-dp-model{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 14px;margin-top:clamp(8px,1.4vh,14px)}
+.sx-dp-model p{margin:0}
+.sx-dp-label{color:var(--sx-faint);margin-right:10px}
+.sx-dp-model b{color:var(--sx-ink);font-weight:600}
+.sx-dp-model-open{margin-left:12px}
+.sx-dp-casts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:10px}
+.sx-dp-cast{display:block;text-align:left}
+.sx-dp-cast img{display:block;width:100%;height:auto;aspect-ratio:3/4;object-fit:cover;object-position:50% 22%;filter:grayscale(1);transition:filter .5s var(--sx-out)}
+.sx-dp-cast.is-on img{filter:none}
+.sx-dp-cast.is-on .sx-small{color:var(--sx-ink);font-weight:600}
+@media (hover:hover){.sx-dp-cast:hover img{filter:none}}
+.sx-dp-cast-note{grid-column:1/-1;margin-top:2px}
+.sx-dp-terms{margin-top:auto;padding-top:clamp(12px,2vh,20px)}
+.sx-dp-kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:0;border-top:1px solid var(--sx-rule);padding-top:clamp(8px,1.4vh,14px)}
+.sx-dp-kv div{min-width:0}
+.sx-dp-kv dt{color:var(--sx-faint)}
+.sx-dp-kv dd{margin:1px 0 0;font-size:clamp(18px,1.55vw,24px);line-height:1.25;white-space:nowrap}
+.sx-dp-incl{margin-top:clamp(6px,1vh,10px)}
+.sx-dp-incl .sx-link{margin-left:2px}
+.sx-dp-more{margin:10px 0 0;border-top:1px solid var(--sx-rule)}
+.sx-dp-more>div{display:grid;grid-template-columns:78px minmax(0,1fr);gap:8px;padding:7px 0;border-bottom:1px solid var(--sx-rule)}
+.sx-dp-more dt{color:var(--sx-faint)}
+.sx-dp-more dd{margin:0}
+.sx-dp-sheet:has(.sx-dp-more:not([hidden])) :is(.sx-dp-lead,.sx-dp-why){display:none}
+.sx-dp-note{display:block;margin-top:10px}
+.sx-dp-note input{width:100%;background:none;border:0;border-bottom:1px solid var(--sx-rule);color:var(--sx-ink);font:inherit;padding:6px 0}
+.sx-dp-note input:focus{outline:none;border-bottom-color:var(--sx-ink)}
+.sx-dp-note input::placeholder{color:var(--sx-faint)}
+.sx-dp-go{display:flex;width:100%;margin-top:clamp(10px,1.6vh,16px)}
+.sx-dp-foot{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 16px;margin-top:clamp(8px,1.4vh,14px)}
+.sx-dp-rail{padding:18px var(--sx-m) 22px;border-top:1px solid var(--sx-rule)}
+.sx-dp-neither{justify-content:center}
+.sx-dp-say{margin-top:clamp(16px,3vh,28px)}
+/* 고른 뒤 고객 방 왼쪽의 「고르신 방향」 */
+.sx-dp-chosen{display:grid;gap:6px;padding-top:14px;border-top:1px solid var(--sx-rule);max-width:34em}
+.sx-dp-chosen h2{font-size:var(--sx-t2);line-height:1.25}
+.sx-dp-chosen>.sx-body{color:var(--sx-ink)}
+.sx-dp-chosen .sx-dp-kv{margin-top:6px}
+.sx-dp-chosen>.sx-link{justify-self:start}
+.sx-dp-road{display:flex;flex-wrap:wrap;gap:6px 18px;margin:8px 0 0;padding:10px 0 0;list-style:none;border-top:1px solid var(--sx-rule);color:var(--sx-faint)}
+.sx-dp-road .is-done{color:var(--sx-dim)}
+.sx-dp-road .is-now{color:var(--sx-ink);font-weight:600}
+/* 낮은 노트북: 설명을 한 칸씩 줄인다(시안과 같은 기준). */
+@media (max-height:960px) and (min-width:821px) and (min-aspect-ratio:10001/10000){
+  .sx-dp-lead,.sx-dp-why{display:none}
+  .sx-dp-flow li{padding:clamp(3px,.6vh,7px) 0}
+}
+@media (max-height:760px) and (min-width:821px) and (min-aspect-ratio:10001/10000){
+  .sx-dp-why{display:none!important}
+  .sx-dp-step{display:inline;margin:0 0 0 10px}
+  .sx-dp-title{font-size:clamp(32px,3vw,42px)}
+  .sx-dp-taste{padding:4px 0}
+  .sx-dp-sheet{gap:10px}
+}
+/* 휴대폰 · 세로 화면: 안내 → 그림 나란히 → 설명. 두 안을 넘기지 않고 한눈에 견주고, 고정 띠는 두지 않는다. */
+@media (max-width:820px),(max-aspect-ratio:1/1){
+  .sx-dp{display:flex;flex-direction:column;height:auto;overflow:visible}
+  .sx-dp-sheet{display:contents}
+  .sx-dp-top{order:1;padding:calc(var(--sx-m) + 44px) var(--sx-m) 14px}
+  .sx-dp-reel{order:2;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:0 var(--sx-m)}
+  .sx-dp[data-count="3"] .sx-dp-reel{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .sx-dp-frame{grid-area:auto!important;height:auto;width:100%;aspect-ratio:9/16}
+  .sx-dp-frame::after{display:none}
+  .sx-dp-frame img{filter:grayscale(1) brightness(.6)}
+  .sx-dp-frame-no,.sx-dp-film-cap{left:10px;right:auto;bottom:8px}
+  .sx-dp-choose,.sx-dp-neither{order:3;padding:16px var(--sx-m) 28px}
+}

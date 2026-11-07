@@ -345,9 +345,10 @@ export async function streamDraftFile(res,{paths,file},req){
 const FIELDS={
   request_note:['note'],request_ask:['items'],request_confirm:[],propose_model:['modelId','note'],send_draft:['oneLine','note'],
   request_answer:['askId','text','fileId'],answer_model:['accept','modelId','note'],request_save:['answers'],request_submit:['answers'],submit_draft_review:['round','items'],approve_draft:['round'],
+  propose_direction:['lead','options','modelId','price','dueDate','revisions'],settle_direction:['optionId','note'],answer_direction:['optionId','modelId','note','neither'],
 };
 export const requestActions=action=>Object.hasOwn(FIELDS,action)?FIELDS[action]:undefined;
-const STAFF_ONLY=['request_note','request_ask','request_confirm','propose_model','send_draft'],CUSTOMER_ONLY=['request_answer','answer_model','request_save','request_submit','submit_draft_review','approve_draft'];
+const STAFF_ONLY=['request_note','request_ask','request_confirm','propose_model','send_draft','propose_direction','settle_direction'],CUSTOMER_ONLY=['request_answer','answer_model','request_save','request_submit','submit_draft_review','approve_draft','answer_direction'];
 export function applyRequestAction({studio,row,input,staff,stamp}){
   const action=input.action,now=stamp.at;
   if(STAFF_ONLY.includes(action)&&!staff)throw fail('담당자 화면에서만 할 수 있어요.',403);
@@ -405,9 +406,57 @@ export function applyRequestAction({studio,row,input,staff,stamp}){
     if(modelId&&request.confirmedAt)studio.strategy=strategyWith(studio.strategy,{...studio.strategy.data,castingSelection:{...studio.strategy.data?.castingSelection,modelId}},stamp);
     return;
   }
+  // 영상 전 세 번 확인의 첫 번째(11-07 판): 방향 두세 안과 모델을 함께 내밀고 손님이 고른다. 설계 docs/마케팅/PULSE_의뢰흐름_20261104/판1_설계.md 1b.
+  if(action==='propose_direction'){
+    if(request.status!=='confirmed')throw fail('의뢰서 확인을 먼저 끝내 주세요.',409);
+    if(request.rounds.length)throw fail('글 콘티를 보낸 뒤에는 방향을 다시 제안할 수 없어요.',409);
+    if(request.answers?.package==='photo')throw fail('사진 상품은 첫 장으로 방향을 맞춰요.',409);
+    const prev=request.directionProposal;
+    if(prev&&['chosen','settled'].includes(prev.status))throw fail('고객이 이미 방향을 정했어요.',409);
+    if(prev?.status==='declined'&&prev.round>=2)throw fail('다시 제안은 한 번이에요. 고객과 직접 이야기해 정한 안으로 정리해 주세요.',409);
+    const modelId=one(input.modelId||'',MODEL_IDS);
+    if(!modelId&&request.answers?.modelChoice!=='none')throw fail('함께 보낼 모델을 골라 주세요.');
+    const price=input.price,revisions=input.revisions;
+    if(!Number.isSafeInteger(price)||price<10000||price>100000000)throw fail('값은 원 단위로 1만 원에서 1억 원 사이로 적어 주세요.');
+    if(!Number.isSafeInteger(revisions)||revisions<0||revisions>9)throw fail('수정 횟수를 확인해 주세요.');
+    const dueDate=kstDay(input.dueDate,now);
+    const declined=prev?.status==='declined';
+    const proposal={round:declined?prev.round+1:prev?.round||1,status:'open',at:now,by:stamp.authorName,lead:text(input.lead,200),options:directionOptions(input.options,studio),...(modelId?{modelId}:{}),price,dueDate,revisions,...(declined?{prior:{round:prev.round,names:prev.options.map(option=>option.name),answer:prev.answer||''}}:prev?.prior?{prior:prev.prior}:{})};
+    // 둘 다 열려 직원 화면이 「답을 기다려요」를 계속 띄우지 않게 열린 모델 제안은 닫는다.
+    const model=request.modelProposal?.status==='open'?{...request.modelProposal,status:'replaced',answeredAt:now}:request.modelProposal;
+    studio.request={...request,directionProposal:proposal,...(model?{modelProposal:model}:{})};
+    return;
+  }
+  if(action==='answer_direction'){
+    const proposal=request.directionProposal;
+    if(!proposal||!['open','chosen'].includes(proposal.status))throw fail('방향 제안이 바뀌었어요. 최신 내용을 불러와 주세요.',409);
+    if(request.rounds.length)throw fail('글 콘티가 이미 도착했어요. 바꿀 점은 글 콘티에서 알려 주세요.',409);
+    if(input.neither===true){
+      const note=text(input.note,300);if(!note)throw fail('어떤 점이 아쉬웠는지 한 줄 적어 주세요.');
+      const {chosenId,...rest}=proposal;
+      studio.request={...request,directionProposal:{...rest,status:'declined',answer:note,answeredAt:now}};
+      return;
+    }
+    const option=proposal.options.find(item=>item.id===input.optionId);if(!option)throw fail('방향 제안이 바뀌었어요. 최신 내용을 불러와 주세요.',409);
+    const modelId=input.modelId?one(input.modelId,MODEL_IDS):proposal.modelId||'';
+    chooseDirection(studio,request,proposal,{option,modelId,note:text(input.note,200),status:'chosen',now,stamp});
+    return;
+  }
+  // 회차 2도 거절되면 더 제안하지 않고, 담당자가 손님과 이야기해 정한 안을 적어 앞으로 간다(설계 검토 1).
+  if(action==='settle_direction'){
+    const proposal=request.directionProposal;
+    if(!proposal||proposal.status!=='declined'||proposal.round<2)throw fail('두 번째 제안도 거절된 뒤에만 정리할 수 있어요.',409);
+    if(request.rounds.length)throw fail('글 콘티를 보낸 뒤에는 방향을 바꿀 수 없어요.',409);
+    const option=proposal.options.find(item=>item.id===input.optionId);if(!option)throw fail('정한 안을 골라 주세요.');
+    const note=text(input.note,300);if(!note)throw fail('고객과 정한 내용을 한 줄 적어 주세요.');
+    chooseDirection(studio,request,proposal,{option,modelId:proposal.modelId||'',note,status:'settled',now,stamp,extra:{settledBy:stamp.authorName}});
+    return;
+  }
   if(action==='send_draft'){
     if(request.status!=='confirmed')throw fail('의뢰서 확인을 먼저 끝내 주세요.',409);
-    const answers=request.answers||{},modelReady=answers.models?.length||answers.modelChoice==='none'||request.modelProposal?.status==='accepted';
+    const answers=request.answers||{},direction=request.directionProposal;
+    if(direction&&!['chosen','settled'].includes(direction.status))throw fail('방향을 먼저 정해 주세요.',409);
+    const modelReady=direction||answers.models?.length||answers.modelChoice==='none'||request.modelProposal?.status==='accepted';
     if(!modelReady)throw fail('모델을 먼저 제안해 확인받아 주세요.',409);
     const scenes=studio.scenes.filter(scene=>scene.visibility==='customer');
     if(!scenes.length)throw fail('고객에게 보이는 장면을 먼저 준비해 주세요.',409);
@@ -444,6 +493,37 @@ export function applyRequestAction({studio,row,input,staff,stamp}){
     return;
   }
   throw fail('의뢰서 요청을 확인해 주세요.');
+}
+// 방향 안: 두세 안, 추천은 하나까지, 그림은 이 프로젝트의 이미지 자산, 견본은 영상 자산. 안 id는 보낼 때마다 새로 만든다(밀린 화면이 옛 id로 다른 안을 고르지 못하게).
+function directionOptions(list,studio){
+  if(!Array.isArray(list)||list.length<2||list.length>3)throw fail('방향은 두 안이나 세 안으로 보내 주세요.');
+  const asset=(id,kind)=>{const found=typeof id==='string'?studio.assets.find(item=>item.id===id):null;return found?.mimeType?.startsWith(kind+'/')?found:null;};
+  const options=list.map(item=>{
+    if(!object(item))throw fail('방향 안을 확인해 주세요.');
+    const name=text(item.name,40),sentence=text(item.sentence,160);if(!name||!sentence)throw fail('안마다 이름과 한 문장을 적어 주세요.');
+    if(!Array.isArray(item.flow)||!item.flow.length||item.flow.length>4)throw fail('흐름은 안마다 한 줄에서 네 줄까지 적어 주세요.');
+    const flow=item.flow.map(line=>{const at=object(line)?text(line.at,8):'',body=object(line)?text(line.text,200):'';if(!/^\d{1,2}:\d{2}$/.test(at)||!body)throw fail('흐름 줄은 「0:00 내용」 꼴로 적어 주세요.');return {at,text:body};});
+    const image=asset(item.assetId,'image');if(!image)throw fail('안마다 이 프로젝트에 올린 그림을 골라 주세요.');
+    const film=item.filmAssetId?asset(item.filmAssetId,'video'):null;if(item.filmAssetId&&!film)throw fail('움직임 견본은 이 프로젝트에 올린 영상이어야 해요.');
+    const workId=item.workId?text(item.workId,40):'';if(workId&&!/^[a-z0-9-]+$/.test(workId))throw fail('작품 이름을 확인해 주세요.');
+    return {id:randomUUID(),name,sentence,flow,why:text(item.why,300),assetId:image.id,...(film?{filmAssetId:film.id,filmNote:text(item.filmNote,80)}:{}),...(workId?{workId}:{}),recommended:item.recommended===true};
+  });
+  if(options.filter(item=>item.recommended).length>1)throw fail('추천은 한 안에만 표시해 주세요.');
+  if(new Set(options.map(item=>item.name)).size!==options.length)throw fail('안 이름이 겹쳐요.');
+  return options;
+}
+// 받으실 날은 KST 날짜로만 견준다(서버 시계는 UTC). 오늘부터 120일 안.
+function kstDay(value,now){
+  const day=typeof value==='string'?value:'',at=Date.parse(day+'T00:00:00Z');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(day)||Number.isNaN(at)||new Date(at).toISOString().slice(0,10)!==day)throw fail('받으실 날을 확인해 주세요.');
+  const today=new Date(Date.parse(now)+9*3600000).toISOString().slice(0,10),days=(at-Date.parse(today+'T00:00:00Z'))/86400000;
+  if(days<0||days>120)throw fail('받으실 날은 오늘부터 120일 안으로 정해 주세요.');
+  return day;
+}
+// 고르거나(손님) 정리하면(직원) 모델을 의뢰서 답과 제작 설계에 옮긴다. 모델 없는 의뢰(사람 없이 제품만)는 그대로 둔다.
+function chooseDirection(studio,request,proposal,{option,modelId,note,status,now,stamp,extra={}}){
+  studio.request={...request,answers:{...request.answers,...(modelId?{models:[modelId],modelChoice:''}:{})},directionProposal:{...proposal,status,chosenId:option.id,...(modelId?{modelId}:{}),answer:note,answeredAt:now,...extra}};
+  if(modelId&&request.confirmedAt)studio.strategy=strategyWith(studio.strategy,{...studio.strategy.data,castingSelection:{...studio.strategy.data?.castingSelection,modelId}},stamp);
 }
 // 확인이 끝나면 답을 제작 설계 칸으로 옮겨 담는다(직원 도구가 그대로 쓰게). 이미 저장한 칸은 덮지 않는다.
 // 제작 설계에 칸이 없는 것(무엇으로 이길지 · 참고 광고 · 드라이브 · 쓰는 법 등)은 메모 칸에 줄로 남겨 옮겨 적는 일이 없게 한다.

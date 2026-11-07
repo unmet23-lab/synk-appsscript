@@ -10,10 +10,12 @@ import {header,headerCrumb,welcome,login,picker,projectView,dialogContent,liveVi
 import {createLiveConnection,projectRevision} from './live.mjs';
 import {publicBackend,projectBackend} from './request-backend.mjs';
 import {mountRequestFlow} from './request-flow.mjs';
-import {mountEntry,mountRoom,mountDraft} from './film-views.mjs';
+import {mountEntry,mountRoom,mountDraft,mountDirection} from './film-views.mjs';
 import {mountFilmList} from './film-home.mjs';
 import {mountReview,mountFinal} from './film-review.mjs';
-import {draftModel,deskModel,roomState} from './room-view.mjs';
+import {draftModel,deskModel,roomState,directionModel} from './room-view.mjs';
+import {PACKAGES,MODEL_LINES} from './request-data.mjs';
+import {CASTING_MODELS} from './casting-catalog.mjs';
 import {withDeviceDeadline,deviceAvailability,deviceConnectionNote,deviceKey,canMigrateDevice,foregroundProjectOptions,rejectedDeviceRegistration} from './push.mjs';
 import {installationEnvironment,installationGuide,devicePermissionTimeout} from './install.mjs';
 
@@ -87,9 +89,9 @@ function setBusy(value){busy=value;document.documentElement.classList.toggle('is
 let shownEntryError=null;
 function render({remote=false}={}){if((s.mode==='staff'||s.project)&&!legacyCssReady){void ensureLegacyCss().then(()=>render({remote}));return;}loadDesk();s.feedbackDraftVersion=drafts.get([identity(),'feedback',''].join(':'))?.versionId||'';s.feedbackDraftAction=drafts.get([identity(),'feedback',''].join(':'))?.values.action||'';if(demo){s.demoGuide=demo.guide();s.demoPersistent=demo.snapshot().demo.persistent;}const files=remote?Array.from(main.querySelectorAll('input[type=file]')).filter(node=>node.files?.length).map(node=>({node,key:draftKey(node.form),name:node.name})):[];const previousFocus=remote&&main.contains(document.activeElement)?document.activeElement:null,focusKey=previousFocus?{action:previousFocus.dataset.action,id:previousFocus.dataset.id,tab:previousFocus.dataset.tab,href:previousFocus.getAttribute('href'),room:previousFocus.dataset.roomGo||previousFocus.dataset.roomDo||previousFocus.dataset.draftDo||''}:null;const media=remote||main.querySelector('#review-video')?Array.from(main.querySelectorAll('video,audio')).map(node=>({node,playing:!node.paused,time:node.currentTime})):[],pillarTop=main.querySelector('.sx-dr-right')?.scrollTop||0,details=remote?Array.from(main.querySelectorAll('details')).map((node,index)=>node.open?index:-1):[],scroll=remote?{x:scrollX,y:scrollY}:null;document.querySelector('#header-actions').innerHTML=header(s);const crumb=document.querySelector('#header-crumb');if(crumb)crumb.innerHTML=headerCrumb(s);const keepEntry=!!entryHandle&&!s.project&&s.mode!=='staff';if(keepEntry)entryHandle.update({resume:!!s.requestResume,entryError:s.entryError||null,busy:booting});else{entryHandle?.unmount();entryHandle=null;main.innerHTML=s.project?projectView(s):booting?LOADING_VIEW:s.mode==='staff'?(s.user?picker(s):login()):welcome(s);}if(s.project||!s.entryError)shownEntryError=null;else if(s.entryError!==shownEntryError){shownEntryError=s.entryError;main.querySelector('.sx-invite-alert')?.scrollIntoView?.({block:'nearest'});}for(const fresh of media.length?main.querySelectorAll('video,audio'):[]){const index=media.findIndex(old=>old.node.dataset.version===fresh.dataset.version&&old.node.getAttribute('src')===fresh.getAttribute('src')&&old.node.id===fresh.id);if(index!==-1){const old=media.splice(index,1)[0];fresh.replaceWith(old.node);if(old.playing&&old.node.paused)old.node.play().catch(()=>{});}}const pillar=main.querySelector('.sx-dr-right');if(pillar&&pillarTop)pillar.scrollTop=pillarTop;restore(main);mountScreens();placeTimeline();wireCompare();const strategyForm=main.querySelector('[data-form=strategy]');if(strategyForm)syncCastingChoices(strategyForm,drafts.get(draftKey(strategyForm))?.values);refreshCasting(strategyForm);if(remote){for(const old of files){const form=Array.from(main.querySelectorAll('form[data-form]')).find(node=>draftKey(node)===old.key);const input=form&&Array.from(form.elements).find(node=>node.type==='file'&&node.name===old.name);if(input)input.replaceWith(old.node);}for(const [index,node] of Array.from(main.querySelectorAll('details')).entries())if(details.includes(index))node.open=true;if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});else if(focusKey){const replacement=Array.from(main.querySelectorAll('button,a')).find(node=>node.offsetParent!==null&&(focusKey.room?[node.dataset.roomGo,node.dataset.roomDo,node.dataset.draftDo].includes(focusKey.room):focusKey.action?node.dataset.action===focusKey.action&&node.dataset.id===focusKey.id&&node.dataset.tab===focusKey.tab:focusKey.href&&node.getAttribute('href')===focusKey.href));replacement?.focus({preventScroll:true});}if(scroll)window.scrollTo(scroll.x,scroll.y);}const inviteField=document.querySelector('[name="invite-url"]');if(inviteField)inviteField.readOnly=true;wireMedia();production.render();if(busy)setBusy(true);syncLive();renderLive();focusInitialStaffScene();focusInitialStaffHistory();}
 // 슬레이트 판 화면(첫 화면 · 고객 방 · 1차안): 움직임과 듣개는 새로 그린 칸에 붙인다. 같은 화면을 다시 그릴 때는 다시 움직이지 않는다.
-let screenKey='',draftHandle=null,entryHandle=null,reviewHandle=null,finalHandle=null,resumeChecked=false;
+let screenKey='',draftHandle=null,entryHandle=null,reviewHandle=null,finalHandle=null,directionHandle=null,resumeChecked=false;
 function mountScreens(){
-  draftHandle?.unmount();draftHandle=null;reviewHandle?.unmount();reviewHandle=null;finalHandle?.unmount();finalHandle=null;
+  draftHandle?.unmount();draftHandle=null;reviewHandle?.unmount();reviewHandle=null;finalHandle?.unmount();finalHandle=null;directionHandle?.unmount();directionHandle=null;
   const entry=main.querySelector('.sx-home'),draft=main.querySelector('.sx-draft'),review=main.querySelector('.sx-review'),room=main.querySelector('.sx-room,.sx-shell');
   const classes=document.documentElement.classList;classes.toggle('view-dr',!!(draft||review));
   const model=draft?draftModel(s.project):null,key=entry?'entry':model?`draft:${model.round}`:room?`room:${s.tab}:${roomState(s.project)}`:'',animate=key!==screenKey;screenKey=key;
@@ -100,6 +102,8 @@ function mountScreens(){
   if(review){const previews=(s.project.versions||[]).filter(v=>v.kind==='preview'),at=previews.findIndex(v=>v.id===(s.versionId||previews.at(-1)?.id)),prior=at>0?previews[at-1]:null;reviewHandle=mountReview(main,{previous:prior?.media?.url?{id:prior.id,src:prior.media.url}:null,onError:()=>{const box=document.querySelector('#video-error');if(box)box.hidden=false;}});}
   if(main.querySelector('[data-final]'))finalHandle=mountFinal(main);
   mountFilmList(main);
+  // 방향 제안: 비교 중인 안 · 모델 · 펼친 칸은 s.directionUi에 두어 실시간 다시 그리기에도 남긴다(제안이 바뀌면 새로).
+  if(main.querySelector('[data-dp]')){const info=directionModel(s.project);if(info){const key=info.options.map(o=>o.id).join(',');if(s.directionUi?.key!==key)s.directionUi={key};directionHandle=mountDirection(main,info,{ui:s.directionUi,animate});}}
   if(room)mountRoom(main,{animate,onGo:goRoom,onEdit:()=>openProjectRequest('review'),onContact:()=>goRoom('contact'),onModel:answerModel,onFiles:sendMoreFiles});
 }
 // 쓰던 의뢰서가 있으면 첫 화면 단추가 「이어 쓰기」로 바뀐다. 한 번만 물어본다.
@@ -107,7 +111,7 @@ async function checkResume(){if(resumeChecked||s.mode!=='customer'||demo||filmDe
 function goRoom(stage){
   if(stage==='write'){openProjectRequest();return;}
   if(stage==='contact'){s.tab='review';s.reviewPanel='ask';s.error='';render();const target=main.querySelector('.review-form');target?.scrollIntoView({block:'start',behavior:'auto'});target?.querySelector('textarea')?.focus({preventScroll:true});return;}
-  s.tab=['draft','review','history','films'].includes(stage)?stage:'overview';s.error='';render();
+  s.tab=['draft','review','history','films','pick'].includes(stage)?stage:'overview';s.error='';render();
   if(stage==='request')main.querySelector('[data-room-brief]')?.scrollIntoView({block:'start',behavior:'auto'});else if(typeof window.scrollTo==='function')window.scrollTo(0,0);
 }
 function mountDraftScreen(model,animate){
@@ -123,6 +127,21 @@ function mountDraftScreen(model,animate){
       const rest=(state||[]).filter(item=>!item.react).length;
       confirmAction=send;openDialog('confirm',{title:'이대로 제작을 시작할까요?',text:`${rest?`아직 확인하지 않은 컷 ${rest}개도 이대로 만들어요. `:''}이 장면 이미지로 소리와 영상을 만들어요. 장면 이미지는 그 컷의 첫 화면이라, 움직이는 동안 작은 부분은 달라질 수 있어요.`,button:'제작 시작'});
     }});
+}
+// 방향 제안 대화상자의 값을 서버 꼴로. 새 파일은 프로젝트 자료로 먼저 올리고 그 id를 쓴다.
+async function uploadStaffMedia(file){const stamp=projectStamp(),result=await request(staffPath('/studio/media'),{...options(),file,headers:{'Content-Type':file.type,'X-File-Name':encodeURIComponent(file.name),'X-Project-Revision':String(s.project.revision)}});if(!current(stamp))throw new PulseError('프로젝트가 바뀌었어요.');accept(result);return result.asset.id;}
+async function directionBody(form,values){
+  const data=new FormData(form),options=[];
+  for(const i of [0,1,2]){
+    const name=String(values['name'+i]||'').trim();if(!name)continue;
+    const flow=String(values['flow'+i]||'').split(/\r?\n/).map(line=>line.trim()).filter(Boolean).map(line=>{const [at,...rest]=line.split(/\s+/);return {at,text:rest.join(' ')};});
+    const image=data.get('image'+i),film=data.get('film'+i);
+    let assetId=values['asset'+i]||'',filmAssetId=values['filmAsset'+i]||'';
+    if(image?.size){validateFile(image,{imageOnly:true});assetId=await uploadStaffMedia(image);}
+    if(film?.size){validateFile(film);if(!film.type.startsWith('video/'))throw new PulseError('움직임 견본은 MP4 · WebM 영상으로 골라 주세요.');filmAssetId=await uploadStaffMedia(film);}
+    options.push({name,sentence:String(values['sentence'+i]||'').trim(),flow,why:String(values['why'+i]||'').trim(),assetId,...(filmAssetId?{filmAssetId,filmNote:String(values['filmNote'+i]||'').trim()}:{}),...(values['workId'+i]?{workId:String(values['workId'+i]).trim()}:{}),recommended:values.recommended===String(i)});
+  }
+  return {lead:String(values.lead||'').trim(),options,...(values.modelId?{modelId:values.modelId}:{}),price:Number(values.price),dueDate:values.dueDate,revisions:Number(values.revisions)};
 }
 const requestFileUpload=(file,slot)=>request('/pulse/api/studio/request-file',{...options(),file,headers:{'Content-Type':file.type||'application/octet-stream','X-File-Name':encodeURIComponent(file.name),'X-Request-Slot':slot}});
 function answerModel(values){return mutate(()=>studioAction('answer_model',values),{message:values.accept||values.modelId?'모델을 정했어요. 글 콘티를 준비해 보내 드릴게요.':'담당자에게 전했어요. 다시 제안해 드릴게요.'});}
@@ -341,6 +360,10 @@ document.addEventListener('submit',async event=>{
   if(type==='recast'){if(!values.modelId&&!values.note?.trim()){notice('모델을 고르거나 바라는 점을 적어 주세요.');return;}await mutate(()=>studioAction('answer_model',values.modelId?{modelId:values.modelId,note:values.note||''}:{note:values.note}),{form,message:'담당자에게 전했어요. 반영해서 다시 보내 드릴게요.',after:closeDialog});return;}
   if(type==='desk-ask'){const items=String(values.items||'').split(/\r?\n/).map(line=>line.trim()).filter(Boolean).map(line=>{const [label,...why]=line.split(' — ');return {label:label.trim().slice(0,120),why:why.join(' — ').trim().slice(0,300)};});if(!items.length||items.length>8){notice('물어볼 것을 한 줄에 하나씩, 8개까지 적어 주세요.');return;}await mutate(()=>studioAction('request_ask',{items}),{form,message:'고객에게 물어봤어요.',after:closeDialog});return;}
   if(type==='desk-propose'){await mutate(()=>studioAction('propose_model',{modelId:values.modelId,note:values.note||''}),{form,message:'고객에게 모델을 제안했어요.',after:closeDialog});return;}
+  if(type==='desk-direction'){await mutate(async()=>{const body=await directionBody(form,values);return studioAction('propose_direction',body);},{form,message:'고객에게 방향을 보냈어요.',after:closeDialog});return;}
+  if(type==='desk-settle'){await mutate(()=>studioAction('settle_direction',{optionId:values.optionId,note:values.note||''}),{form,message:'정한 안으로 정리했어요. 글 콘티를 보낼 수 있어요.',after:closeDialog});return;}
+  if(type==='direction-pick'){const d=s.project.studio?.request?.directionProposal;await mutate(()=>studioAction('answer_direction',{optionId:values.optionId,...(values.modelId?{modelId:values.modelId}:{}),note:String(values.note||'').trim()}),{form,message:'방향을 정했어요. 글 콘티를 만들어 보내 드릴게요.',after:()=>{s.directionUi={};s.tab='overview';if(typeof window.scrollTo==='function')window.scrollTo(0,0);}});void d;return;}
+  if(type==='direction-neither'){const note=String(values.note||'').trim();if(!note){form.elements.note.focus();return;}const last=(s.project.studio?.request?.directionProposal?.round||1)>=2;await mutate(()=>studioAction('answer_direction',{neither:true,note}),{form,message:last?'말씀 고맙습니다. 담당자가 직접 연락드릴게요.':'말씀 고맙습니다. 새 방향을 다시 보내 드릴게요.',after:()=>{s.directionUi={};s.tab='overview';}});return;}
   if(type==='desk-send'){await mutate(()=>studioAction('send_draft',{oneLine:values.oneLine,note:values.note||''}),{form,message:'고객에게 보냈어요.',after:closeDialog});return;}
   if(type==='preferences')await mutate(()=>studioAction('save_preferences',{preferences:values}),{form});
   if(type==='reference')await mutate(async()=>{await attachImage(values);delete values.imageUrl;return studioAction('save_reference',values);},{form,message:'참고자료를 올렸어요.'});
@@ -416,6 +439,8 @@ document.addEventListener('click',async event=>{
   if(!s.project)return;
   if(action==='desk-confirm'){confirmAction=()=>mutate(()=>studioAction('request_confirm'),{message:'확인을 마쳤어요. 답을 제작 설계로 옮겼어요.',after:closeDialog});openDialog('confirm',{title:'의뢰서 확인을 끝낼까요?',text:'답을 제작 설계로 옮기고, 고객 화면은 「1차안을 만들고 있어요」로 바뀌어요.',button:'확인 끝'});return;}
   if(action==='desk-ask'){const model=deskModel(s.project);openDialog('desk-ask',{suggested:(model?.checks||[]).filter(item=>!item.ok&&/없어요$/.test(item.label)).map(item=>item.label.replace(/[이가]? ?없어요$/,'').trim()).join('\n')});return;}
+  if(action==='desk-direction'){const r=s.project.studio?.request||{},d=r.directionProposal,a=r.answers||{},pkg=PACKAGES.find(item=>item.id===a.package),today=new Date(Date.now()+9*3600000);today.setUTCDate(today.getUTCDate()+(pkg?.days||14));const models=[...CASTING_MODELS].sort((x,y)=>Number(MODEL_LINES[y.id]?.fits?.includes(a.kind)||0)-Number(MODEL_LINES[x.id]?.fits?.includes(a.kind)||0));openDialog('desk-direction',{...(d?.status==='open'?{lead:d.lead,options:d.options,modelId:d.modelId,price:d.price,dueDate:d.dueDate,revisions:d.revisions,round:d.round}:{round:d?.status==='declined'?d.round+1:1,prior:d?.status==='declined'?{names:d.options.map(o=>o.name),answer:d.answer}:null,modelId:a.models?.[0]||r.modelProposal?.modelId||'',price:(pkg?.price||0)*10000||'',dueDate:today.toISOString().slice(0,10),revisions:pkg?.revisions??3}),noModel:a.modelChoice==='none',models,assets:s.project.studio?.assets||[]});return;}
+  if(action==='desk-settle'){const d=s.project.studio?.request?.directionProposal;openDialog('desk-settle',{options:d?.options||[]});return;}
   if(action==='desk-propose'){openDialog('desk-propose',{kind:s.project.studio?.request?.answers?.kind||'',modelId:s.project.studio?.request?.modelProposal?.modelId||''});return;}
   if(action==='desk-send'){const st=s.project.studio||{},scenes=(st.scenes||[]).filter(scene=>scene.visibility==='customer'),round=st.request?.rounds?.at(-1);openDialog('desk-send',{count:scenes.length,kind:scenes.length&&scenes.every(scene=>scene.assetId||scene.imageUrl)?'images':'script',oneLine:round?.oneLine||st.strategy?.data?.primaryPromise||deskModel(s.project)?.note?.lines?.[0]||''});return;}
   if(action==='open-round-submit'){const box=main.querySelector('.round-submit');if(box){box.open=true;box.scrollIntoView({block:'center'});box.querySelector('[name=representativeName]')?.focus({preventScroll:true});}return;}

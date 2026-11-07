@@ -35,6 +35,8 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
     const ids=new Set(studio.assets.filter(asset=>asset.author==='customer').map(asset=>asset.id));
     for(const value of [...studio.references,...studio.concepts.filter(card=>card.visibility==='customer'),...studio.scenes.filter(card=>card.visibility==='customer'),...studio.history.filter(card=>card.visibility==='customer')])if(value.assetId)ids.add(value.assetId);
     for(const value of visiblePreviewAssetIds(studio))ids.add(value);
+    // 보낸 방향 제안(지금 회차)의 그림 · 움직임 견본. 갈아 끼운 옛 안의 자산은 다시 숨는다.
+    for(const option of studio.request?.directionProposal?.options||[]){ids.add(option.assetId);if(option.filmAssetId)ids.add(option.filmAssetId);}
     return ids;
   }
   function media(row,asset,staff){return {id:asset.id,fileName:asset.fileName,mimeType:asset.mimeType,byteSize:asset.byteSize,url:staff?`/api/client-projects/${row.id}/studio/media/${asset.id}`:`/pulse/api/studio/media/${asset.id}`};}
