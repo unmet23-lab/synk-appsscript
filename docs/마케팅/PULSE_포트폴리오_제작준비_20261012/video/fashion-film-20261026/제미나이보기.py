@@ -33,6 +33,9 @@ def main():
         i = a.index("--모델"); models = a[i + 1].split(","); del a[i:i + 2]
     if "-o" in a:
         i = a.index("-o"); out = a[i + 1]; del a[i:i + 2]
+    fps = None   # 기본은 Gemini가 영상을 1초에 한 장쯤 본다 — 눈 깜빡임 · 숨 같은 작은 움직임을 보려면 --fps 8(11-07 「살아 움직이나」 심사)
+    if "--fps" in a:
+        i = a.index("--fps"); fps = float(a[i + 1]); del a[i:i + 2]
     q, files = open(a[0], encoding="utf-8").read(), a[1:]
     key = open(os.path.expanduser("~/SYNK_보안/제미나이_무료.txt"), encoding="utf-8").read().strip().split()[-1]
     parts = [{"text": q}]
@@ -42,7 +45,10 @@ def main():
             if len(data) > 19 * 1024 * 1024:
                 raise SystemExit(f"{f}: {len(data) / 1e6:.1f}MB — 20MB 아래 판(폰 판)을 쓴다")
             parts.append({"text": f"[영상 {k}]"})
-            parts.append({"inlineData": {"mimeType": "video/mp4", "data": base64.b64encode(data).decode()}})
+            part = {"inlineData": {"mimeType": "video/mp4", "data": base64.b64encode(data).decode()}}
+            if fps:
+                part["videoMetadata"] = {"fps": fps}
+            parts.append(part)
         else:
             parts.append({"text": f"[소리 {k}]"})
             parts.append({"inlineData": {"mimeType": "audio/mp3", "data": base64.b64encode(mp3(f)).decode()}})

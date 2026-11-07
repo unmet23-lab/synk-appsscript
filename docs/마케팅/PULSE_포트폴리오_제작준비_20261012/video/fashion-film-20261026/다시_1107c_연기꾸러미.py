@@ -66,6 +66,32 @@ P34B = (HEADB + YUNA + OUTFIT +
         "CAMERA: almost no shake — a slow, even drift about 1% to the right over the first second, then a very slow push in of about 1% to the end.\n" + LOOK + SILENT)
 
 
+# 11-08 유호님 「드리미나 세 컷 굽기」 — 아직 굳은 얼굴(A2) · 창가 실루엣(C2) · 옆얼굴(D1)을 34b처럼 「시작 자세」 첫 줄 + 0.2초부터 큰 박자로.
+#   옆얼굴은 33a 둘째 판이 코드 20115라 입술 · 숨 내쉬기 · 가슴 낱말을 빼고 「shoulders up」으로
+P23C = (HEADB + YUNA + OUTFIT +
+        "ACTION: In the studio, a tight close shot as in the first frame — the top of the frame cuts across her forehead — under one warm peach-amber key light from the left, "
+        "the right half of her face in deep shadow, one hand resting on the side of her neck at the ivory trench collar. She is clearly alive the whole time: right from the start "
+        "her shoulders rise and fall slowly with her breathing. At about 0.2 s her eyes lift from under her brows and settle on the lens. At about 0.8 s she blinks. "
+        "From about 1.0 s to 1.8 s she tilts her head a little to the other side and her fingers slide slowly along the collar. At about 2.2 s a loose strand of hair falls across her cheek, "
+        "and at about 2.8 s her gaze softens.\n"
+        "CAMERA: close shot, no shake — the camera creeps in about 1% at an even speed over the whole clip.\n" + LOOK + SILENT)
+
+P22A = (HEADB + YUNA + OUTFIT +
+        "ACTION: Inside the abandoned clay-walled house, Yuna stands in front of a large bright empty window, her body blocking the middle of it; the low sun pours through the window behind her "
+        "so she is nearly a dark silhouette with a golden rim on her hair and coat edges, and warm dust drifts in the light. She is alive the whole time: right from the start a warm breeze "
+        "through the window lifts the loose strands of her hair and sways the trench hem. At about 0.4 s she shifts her weight onto one leg and her shoulders settle. From about 0.9 s to 1.8 s "
+        "she turns her head toward the window and looks out at the golden field, her profile catching the rim light. At about 2.2 s she draws one hand out of her coat pocket and rests it "
+        "on the window frame, and at about 3.0 s she turns her head back a little toward the room.\n"
+        "CAMERA: full shot, smooth, no shake — the camera pulls back slowly, about 3% over the whole clip, drifting gently to the left.\n" + LOOK + SILENT)
+
+P33B = (HEADB + YUNA + OUTFIT +
+        "ACTION: Night, in red darkness — Yuna's bowed profile framed from the shoulders up as in the first frame: a warm light from the front-left catches her profile and the edges of her hair, "
+        "while her clothes and the background fall to black. She is alive the whole time: right from the start her shoulders rise and fall slowly. From about 0.3 s to 1.2 s she slowly lifts "
+        "her bowed head and turns her face a few degrees toward the warm light. At about 1.4 s a loose strand of hair slides forward across her cheek. At about 2.0 s she blinks and her eyes "
+        "move toward the camera, and at about 2.8 s she lowers her gaze again.\n"
+        "CAMERA: shoulders-up, no shake — a very slow, even drift in of about 1.5% over the whole clip.\n" + LOOK + SILENT)
+
+
 def frame_of(pid, n, out):
     """받은 판의 n번째 장을 그림으로(ffmpeg passthrough — 드리미나 파일 머리 60fps와 상관없이 실제 장 순서)"""
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", os.path.join(GOT, pid + ".mp4"), "-fps_mode", "passthrough", "-vf", f"select=eq(n\\,{n})",
@@ -78,6 +104,9 @@ BOARDS = [
     ("p4-33a", {M2V: ("그림", os.path.join(SRC, "109_p4-33-34", "1_샷1.jpg"))}, P33A),
     ("p4-34a", {M2V: ("그림", os.path.join(SRC, "109_p4-33-34", "2_샷2.jpg"))}, P34A),
     ("p4-34b", {M2V: ("그림", os.path.join(SRC, "109_p4-33-34", "2_샷2.jpg"))}, P34B),
+    ("p4-23c", {M2V: ("그림", "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p4/다시_1107/고름/C23_c.png")}, P23C),
+    ("p4-22a", {M2V: ("그림", os.path.join(SRC, "100_p4-22", "1_시작.jpg"))}, P22A),
+    ("p4-33b", {M2V: ("그림", os.path.join(SRC, "109_p4-33-34", "1_샷1.jpg"))}, P33B),
 ]
 
 
