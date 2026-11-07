@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f1",
+ "text": "한 입 먹을래?",
+ "dur": 0.879,
+ "words": [
+  {
+   "text": "한",
+   "start": 0.02,
+   "end": 0.184
+  },
+  {
+   "text": "입",
+   "start": 0.245,
+   "end": 0.286
+  },
+  {
+   "text": "먹을래?",
+   "start": 0.347,
+   "end": 0.879
+  }
+ ],
+ "source": {
+  "key": "1d7bc8b8ef5e370a32dada017ace8064",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1108,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 168
+ }
+}

@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m3",
+ "text": "네, 좋아요!",
+ "dur": 1.047,
+ "words": [
+  {
+   "text": "네,",
+   "start": 0.03,
+   "end": 0.132
+  },
+  {
+   "text": "좋아요!",
+   "start": 0.375,
+   "end": 1.047
+  }
+ ],
+ "source": {
+  "key": "06780067398b043dc7167e4b53843f42",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "toneup",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1108,
+   "lufs": -17,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 225
+ }
+}

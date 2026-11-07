@@ -1,0 +1,111 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "happy",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1108,
+  "lufs": -17
+ },
+ "made": "2026-11-07T22:52:41.369Z",
+ "lines": [
+  {
+   "id": "f1",
+   "text": "한 입 먹을래?",
+   "dur": 0.879,
+   "syllablesPerSec": 5.69,
+   "src": "f1.wav",
+   "key": "1d7bc8b8ef5e370a32dada017ace8064",
+   "words": 3
+  },
+  {
+   "id": "m1",
+   "text": "괜찮아요!",
+   "dur": 0.829,
+   "syllablesPerSec": 4.83,
+   "src": "m1.wav",
+   "key": "00f10031abbe7f37d1a8c013150e40f1",
+   "words": 1
+  },
+  {
+   "id": "f2",
+   "text": "아, 괜찮아? 알았어!",
+   "dur": 1.583,
+   "syllablesPerSec": 4.42,
+   "src": "f2.wav",
+   "key": "abaa4e5db55f2ef6356332032d917a90",
+   "words": 3
+  },
+  {
+   "id": "m2",
+   "text": "어? 어어?",
+   "dur": 1.009,
+   "syllablesPerSec": 2.97,
+   "src": "m2.wav",
+   "key": "8da7acad007225f49ef58fdf96c14cb6",
+   "words": 2
+  },
+  {
+   "id": "s1",
+   "text": "괜찮아요.",
+   "dur": 0.873,
+   "syllablesPerSec": 4.58,
+   "src": "s1.wav",
+   "key": "eea74e528cce724d79f87e79c9c91733",
+   "words": 1
+  },
+  {
+   "id": "s2",
+   "text": "네, 좋아요.",
+   "dur": 1.053,
+   "syllablesPerSec": 3.8,
+   "src": "s2.wav",
+   "key": "ca9858247ddb49d4bcfedd70832099fe",
+   "words": 2
+  },
+  {
+   "id": "m3",
+   "text": "네, 좋아요!",
+   "dur": 1.047,
+   "syllablesPerSec": 3.82,
+   "src": "m3.wav",
+   "key": "06780067398b043dc7167e4b53843f42",
+   "words": 2
+  },
+  {
+   "id": "m3b",
+   "text": "네, 좋아요!",
+   "dur": 1.082,
+   "syllablesPerSec": 3.7,
+   "src": "m3b.wav",
+   "key": "8b815e41d9d56b9c7038eed7a961e139",
+   "words": 2
+  },
+  {
+   "id": "m4",
+   "text": "네, 좋아요… 네, 좋아요…",
+   "dur": 2.2,
+   "syllablesPerSec": 3.64,
+   "src": "m4.wav",
+   "key": "8f6de7b4ea240f822be20fe18963308d",
+   "words": 4
+  },
+  {
+   "id": "f4",
+   "text": "나도 한 입만…",
+   "dur": 0.998,
+   "syllablesPerSec": 5.01,
+   "src": "f4.wav",
+   "key": "165b0550dccac3e1fc12388632a6b1b9",
+   "words": 3
+  }
+ ]
+}

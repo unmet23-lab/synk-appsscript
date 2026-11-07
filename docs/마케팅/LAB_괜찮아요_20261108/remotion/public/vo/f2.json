@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f2",
+ "text": "아, 괜찮아? 알았어!",
+ "dur": 1.583,
+ "words": [
+  {
+   "text": "아,",
+   "start": 0.02,
+   "end": 0.04
+  },
+  {
+   "text": "괜찮아?",
+   "start": 0.344,
+   "end": 0.769
+  },
+  {
+   "text": "알았어!",
+   "start": 0.991,
+   "end": 1.583
+  }
+ ],
+ "source": {
+  "key": "abaa4e5db55f2ef6356332032d917a90",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1108,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": null
+ }
+}

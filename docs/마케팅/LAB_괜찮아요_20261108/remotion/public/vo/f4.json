@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f4",
+ "text": "나도 한 입만…",
+ "dur": 0.998,
+ "words": [
+  {
+   "text": "나도",
+   "start": 0.03,
+   "end": 0.274
+  },
+  {
+   "text": "한",
+   "start": 0.335,
+   "end": 0.458
+  },
+  {
+   "text": "입만…",
+   "start": 0.539,
+   "end": 0.998
+  }
+ ],
+ "source": {
+  "key": "165b0550dccac3e1fc12388632a6b1b9",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "sad",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1108,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 144
+ }
+}
