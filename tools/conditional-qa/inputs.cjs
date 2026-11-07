@@ -92,7 +92,14 @@ function materialize(state, rows, target, { tracked = new Set() } = {}) {
     if (!within(target, destination)) throw Error('Input escapes target');
     // Current tracked source always wins over a historical compatibility fixture.
     if (tracked.has(row.file)) continue;
-    if (fs.existsSync(destination)) { if (hashFile(destination) !== row.sha256) throw Error(`Existing fixture changed: ${row.file}`); }
+    if (fs.existsSync(destination)) {
+      const found = hashFile(destination);
+      // A re-registered input (reregister.cjs) replaces only bytes this worker itself registered earlier for that file; anything else is still a changed fixture.
+      if (found !== row.sha256) {
+        if (!(row.replaced || []).some(old => old.sha256 === found)) throw Error(`Existing fixture changed: ${row.file}`);
+        fs.copyFileSync(source, destination + '.cqa-new'); replaceFile(destination + '.cqa-new', destination);
+      }
+    }
     else { fs.mkdirSync(path.dirname(destination), { recursive: true }); fs.copyFileSync(source, destination, fs.constants.COPYFILE_EXCL); }
     copied.push({ file: destination, sha256: row.sha256 });
   }
@@ -261,7 +268,8 @@ function pinnedHashes(state, context) {
   const rows = new Map(), add = (rel, sha) => { const key = rel.toLowerCase(); rows.set(key, new Set([...(rows.get(key) || []), sha])); };
   for (const row of context.pinned || []) add(path.relative(state, row.file).split(path.sep).join('/'), row.sha256);
   const areas = { app: 'workspace/SYNK-appsscript', talk: 'workspace/SYNK-talk', homework: 'homework/SYNK-talk', tools: 'tools' };
-  try { for (const row of read(path.join(state, 'inputs.json')).files) if (areas[row.area]) add(`${areas[row.area]}/${row.file}`, row.sha256); } catch {}
+  // A replaced version's blob stays, so a checkout still holding it is as rebuildable as the current one.
+  try { for (const row of read(path.join(state, 'inputs.json')).files) if (areas[row.area]) for (const sha of [row.sha256, ...(row.replaced || []).map(old => old.sha256)]) add(`${areas[row.area]}/${row.file}`, sha); } catch {}
   return rows;
 }
 function unexpectedFiles(state, context, moved, tops) {

@@ -35,6 +35,21 @@ Windows 작업 `SYNK 조건부 시험`은 현재 사용자의 일반 권한·대
 
 과거 `failed` 항목은 저절로 성공 처리하거나 계속 재시도하지 않는다. 원인을 고친 뒤 같은 커밋을 다시 검사하려면 `node tools/conditional-qa/retry.cjs --state <비공개 폴더> --reason "확인한 원인과 재검사 이유" <커밋 SHA...>`로 미리 보고 `--apply`로 재등록한다(11-02 유호님 과거 대기·오류 전체 확인 요청). 실행 중인 일꾼이 있으면 재등록도 거절하므로 회차가 끝난 뒤 실행한다. 원래 실패 결과는 그대로 두고 `queue.json`의 `history`와 `retry-history/`에 원래 항목·결과 해시·이유를 남긴다. 대기열은 `retry`로 바뀔 뿐이며 GitHub 성공은 같은 커밋의 새 78건 영수증이 완전할 때에만 기존 일꾼이 올린다. 로컬 통과와 GitHub 전체 job의 복구도 각각 확인한다.
 
+<a id="reregister-inputs"></a>
+
+### git 밖 입력이 공용 작업본에서 바뀌었을 때
+
+`inputs.json`의 앱 입력은 11-01 감사 때의 바이트로 묶여 있다. 그중 .gitignore에 걸린 파일(PATH 면접 영상 `*.mp4` 같은 것)을 공용 작업본에서 다시 만들고, 그 해시를 적은 추적 파일(`strict-manifest.json`)이 따라 바뀌면, 그 뒤 커밋은 모두 옛 바이트와 새 목록을 견주다 실패한다. 일꾼은 체크아웃마다 등록 해시와 다른 파일을 「Existing fixture changed」로 거절하므로 손으로 파일을 바꿔 넣을 수 없다.
+
+이때는 운영 사본이 아닌 자기 작업본에서 `node tools/conditional-qa/reregister.cjs --state <비공개 폴더> --reason "바뀐 커밋과 이유" <저장소 상대 경로...>`로 미리 보고(옛 해시 → 새 해시 · 바이트), 같은 명령에 `--apply`를 붙인다. 공용 작업본(`config.json`의 `sourceRepo`)의 지금 바이트를 새 blob으로 넣고 그 줄의 해시를 바꾼다. 옛 판은 그 줄의 `replaced`에 남고 blob도 지우지 않는다. 다음 검증의 `materialize`는 체크아웃 파일이 그 줄의 `replaced`에 있는 해시일 때만 새 바이트로 덮고, 그 밖의 바이트는 여전히 거절한다. 작업본 둘·셋(`slots/`)은 회차 시작 때 `inputs.json`을 받아 같은 길로 바뀐다.
+
+- 이미 등록된 앱 입력만 바꾼다. 추적 중인 파일 · 새 파일 · 저장소 밖 경로는 거절한다. 일꾼이 돌고 있으면 `retry.cjs`처럼 거절하므로 회차가 끝난 뒤 다시 친다.
+- 바꾼 기록은 `input-history/<id>.json`(이유 · 전후 `inputs.json` 해시)에 남는다. 입력이 바뀌면 `inputDigest`도 바뀌어, 그 뒤 영수증이 어느 입력으로 쟀는지 구분된다.
+- 바뀌기 전 커밋은 옛 바이트를 기대하므로, 그런 커밋을 `retry.cjs`로 다시 재면 이번에는 새 바이트로 실패한다. 대기열의 커밋이 모두 바뀐 커밋 뒤인지 먼저 본다(`git merge-base --is-ancestor <바뀐 커밋> <대기 커밋>`).
+- 이 실패는 환경 탓이라 [원인을 밝힌 구간 장부](#diagnosed-failures)에 적지 않는다. 입력을 바꾼 뒤 그 구간의 실패 커밋을 `retry.cjs`로 다시 잰다.
+
+11-06 `6051236295`가 PATH 면접 720p 영상 넷(`strict-question` · `strict-listening` · `strict-followup-plan` · `strict-followup-experience`)을 다시 싸고 `strict-manifest.json`의 해시를 바꿨다. 등록된 앱 입력 2,610개를 공용 작업본과 견주니 다른 것은 이 넷뿐이었다(같음 150 · `.tmp` 고정 입력이라 공용 작업본에 없는 것 2,456). 11-06 04:12 회차부터 S063 · S064 · S065 · S067이 「Video hash does not match its file」로 실패했고, S067의 「Pages source checksum mismatch」는 앞 시험이 공개 판을 못 만들어 옛 커밋의 `.tmp/path-interview-pages`가 남은 것이다. 자세한 경과는 [현장 노트](../../docs/현장노트/시험_화면확인.md#conditional-qa-local이-11-06부터-연속-빨갛다--path-면접-영상을-다시-싼-뒤-일꾼이-11-01-바이트를-그대로-깐다-2026-11-08-claude)에 있다.
+
 <a id="registered-verification"></a>
 
 ### 등록된 커밋 한 건을 먼저 확인할 때
