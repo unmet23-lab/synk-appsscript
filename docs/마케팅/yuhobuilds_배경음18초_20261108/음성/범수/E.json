@@ -1,0 +1,100 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "E",
+ "text": "그래서 곡을 영상 길이만큼 다시 깔고, 무음 구간을 재는 검사를 하나 더 붙였어요.",
+ "dur": 4.554,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.232
+  },
+  {
+   "text": "곡을",
+   "start": 0.288,
+   "end": 0.499
+  },
+  {
+   "text": "영상",
+   "start": 0.541,
+   "end": 0.809
+  },
+  {
+   "text": "길이만큼",
+   "start": 0.851,
+   "end": 1.287
+  },
+  {
+   "text": "다시",
+   "start": 1.33,
+   "end": 1.541
+  },
+  {
+   "text": "깔고,",
+   "start": 1.583,
+   "end": 1.864
+  },
+  {
+   "text": "무음",
+   "start": 2.582,
+   "end": 2.751
+  },
+  {
+   "text": "구간을",
+   "start": 2.808,
+   "end": 3.061
+  },
+  {
+   "text": "재는",
+   "start": 3.103,
+   "end": 3.3
+  },
+  {
+   "text": "검사를",
+   "start": 3.357,
+   "end": 3.652
+  },
+  {
+   "text": "하나",
+   "start": 3.694,
+   "end": 3.807
+  },
+  {
+   "text": "더",
+   "start": 3.849,
+   "end": 3.92
+  },
+  {
+   "text": "붙였어요.",
+   "start": 3.976,
+   "end": 4.554
+  }
+ ],
+ "source": {
+  "key": "3f581d2ffb7a7bf183f116192273644f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1108,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 152
+ }
+}

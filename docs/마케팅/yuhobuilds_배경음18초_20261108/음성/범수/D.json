@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "D",
+ "text": "음량도 깨짐도, 있는 소리만 재요. 빈 곳은 아무도 안 쟀죠.",
+ "dur": 3.906,
+ "words": [
+  {
+   "text": "음량도",
+   "start": 0.02,
+   "end": 0.403
+  },
+  {
+   "text": "깨짐도,",
+   "start": 0.463,
+   "end": 0.905
+  },
+  {
+   "text": "있는",
+   "start": 1.328,
+   "end": 1.549
+  },
+  {
+   "text": "소리만",
+   "start": 1.609,
+   "end": 1.871
+  },
+  {
+   "text": "재요.",
+   "start": 1.931,
+   "end": 2.112
+  },
+  {
+   "text": "빈",
+   "start": 2.595,
+   "end": 2.715
+  },
+  {
+   "text": "곳은",
+   "start": 2.776,
+   "end": 2.977
+  },
+  {
+   "text": "아무도",
+   "start": 3.037,
+   "end": 3.238
+  },
+  {
+   "text": "안",
+   "start": 3.299,
+   "end": 3.359
+  },
+  {
+   "text": "쟀죠.",
+   "start": 3.419,
+   "end": 3.906
+  }
+ ],
+ "source": {
+  "key": "b8adee43bfe7c0af0a081c55dd22774b",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1108,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 158
+ }
+}

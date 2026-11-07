@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "A",
+ "text": "18초부터 배경음이 뚝 끊겼어요.",
+ "dur": 1.898,
+ "words": [
+  {
+   "text": "18초부터",
+   "start": 0.02,
+   "end": 0.56
+  },
+  {
+   "text": "배경음이",
+   "start": 0.626,
+   "end": 1.02
+  },
+  {
+   "text": "뚝",
+   "start": 1.06,
+   "end": 1.178
+  },
+  {
+   "text": "끊겼어요.",
+   "start": 1.218,
+   "end": 1.898
+  }
+ ],
+ "source": {
+  "key": "99b7f75e63c88c3918e9854923267357",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1108,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 163
+ }
+}

@@ -1,0 +1,13 @@
+{
+ "id": "04-yuhobuilds-x",
+ "brand": "yuhobuilds",
+ "language": "ko",
+ "audioLanguage": "ko",
+ "alteredContent": true,
+ "madeForKids": false,
+ "_비고": "올라가는 글의 정본. 사람이 읽는 판은 ../게시글.md. 키워드 DM · 첫 댓글 약속 없음. 영상은 판 모두 최종.mp4 하나.",
+ "platform": "x",
+ "account": "@yuhobuilds",
+ "format": "video-post",
+ "caption": "만든 쇼츠가 18초부터 배경음이 뚝 끊겼는데, 음량 · 깨짐 검사는 다 통과해 예약까지 갔어요.\n배경음 파일이 18초짜리 조각이었어요.\n배경음은 영상 끝까지, 듣기도 끝까지."
+}

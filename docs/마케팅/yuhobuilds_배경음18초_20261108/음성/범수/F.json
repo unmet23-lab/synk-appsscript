@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "F",
+ "text": "배경음은 영상 끝까지 깔고, 듣는 것도 소리 켜고 끝까지 해 보세요.",
+ "dur": 3.52,
+ "words": [
+  {
+   "text": "배경음은",
+   "start": 0.02,
+   "end": 0.462
+  },
+  {
+   "text": "영상",
+   "start": 0.498,
+   "end": 0.78
+  },
+  {
+   "text": "끝까지",
+   "start": 0.817,
+   "end": 1.136
+  },
+  {
+   "text": "깔고,",
+   "start": 1.172,
+   "end": 1.454
+  },
+  {
+   "text": "듣는",
+   "start": 1.785,
+   "end": 2.006
+  },
+  {
+   "text": "것도",
+   "start": 2.043,
+   "end": 2.214
+  },
+  {
+   "text": "소리",
+   "start": 2.251,
+   "end": 2.411
+  },
+  {
+   "text": "켜고",
+   "start": 2.46,
+   "end": 2.643
+  },
+  {
+   "text": "끝까지",
+   "start": 2.68,
+   "end": 2.987
+  },
+  {
+   "text": "해",
+   "start": 3.023,
+   "end": 3.06
+  },
+  {
+   "text": "보세요.",
+   "start": 3.097,
+   "end": 3.52
+  }
+ ],
+ "source": {
+  "key": "35fae919aeb0227d4bc2c70869e64329",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1108,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 154
+ }
+}

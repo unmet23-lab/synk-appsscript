@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "C",
+ "text": "영상은 27초인데, 배경음 파일이 18초짜리였거든요.",
+ "dur": 3.29,
+ "words": [
+  {
+   "text": "영상은",
+   "start": 0.02,
+   "end": 0.356
+  },
+  {
+   "text": "27초인데,",
+   "start": 0.414,
+   "end": 1.014
+  },
+  {
+   "text": "배경음",
+   "start": 1.438,
+   "end": 1.775
+  },
+  {
+   "text": "파일이",
+   "start": 1.819,
+   "end": 2.082
+  },
+  {
+   "text": "18초짜리였거든요.",
+   "start": 2.126,
+   "end": 3.29
+  }
+ ],
+ "source": {
+  "key": "ec8d69ba7b1de1f04fa0bb406c1e696c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1108,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 171
+ }
+}
