@@ -47,7 +47,8 @@ function dpDetail(o,on){
   return `<div class="sx-dp-detail" data-dp-detail="${esc(o.id)}" ${on?'':'hidden'}><h1 class="sx-serif sx-dp-title" tabindex="-1">${esc(o.name)}</h1><p class="sx-serif sx-dp-sentence">${esc(o.sentence)}</p><ol class="sx-dp-flow">${o.flow.map(line=>`<li><span class="sx-no">${esc(line.at)}</span><span class="sx-body">${esc(line.text)}</span></li>`).join('')}</ol>${o.why?`<p class="sx-small sx-dp-why">${esc(o.why)}</p>`:''}${o.film?`<button type="button" class="sx-dp-taste" data-dp-film="taste" aria-pressed="false"><span class="sx-dp-taste-mark">${PLAY_MARK}</span><span><b data-dp-taste-label>미리 움직여 보기</b><span class="sx-small">${esc(o.filmNote||'이 방향의 첫 판')} · 소리 있음</span></span></button>`:''}</div>`;
 }
 function dpModel(d,ui){
-  if(d.noModel)return '';
+  // 모델 없는 의뢰(제품만)도 「비슷한 작품 보기」 자리는 둔다(11-07 검수).
+  if(d.noModel)return '<div class="sx-dp-model sx-small"><span data-dp-work-slot></span></div>';
   const picks=[...new Set([d.model?.id,...(MODEL_PICKS[d.kind]||[])].filter(Boolean))].slice(0,4).map(id=>modelCard(id)).filter(Boolean);
   const now=modelCard(ui.modelId)||d.model;
   return `<div class="sx-dp-model sx-small"><p><span class="sx-dp-label">AI 모델</span><b data-dp-model-name>${esc(now?.name||'')}</b><button type="button" class="sx-link sx-dp-model-open" data-dp-do="casting" aria-expanded="${ui.casting?'true':'false'}">${ui.casting?'닫기':'다른 모델로'}</button></p><span data-dp-work-slot></span></div><div class="sx-dp-casts" role="group" aria-label="다른 모델 고르기" data-dp-casts ${ui.casting?'':'hidden'}>${picks.map(m=>`<button type="button" class="sx-dp-cast ${m.id===now?.id?'is-on':''}" aria-pressed="${m.id===now?.id?'true':'false'}" data-dp-model="${esc(m.id)}"><img src="${esc(modelScene(m.id))}" alt="" width="538" height="720" loading="lazy" decoding="async"><span class="sx-small">${esc(m.name)}</span></button>`).join('')}<p class="sx-small sx-dp-cast-note" data-dp-cast-note ${now?.id&&now.id!==d.model?.id?'':'hidden'}>이 모델로 바꿔 장면 이미지에서 보여 드려요.</p></div>`;
@@ -117,7 +118,8 @@ export function mountDirection(root,d,{ui={},animate=true}={}){
     stopFilm();ui.view=view;host.dataset.view=view;$('.sx-dp-choose').hidden=view!=='choose';$('[data-form="direction-neither"]').hidden=view!=='neither';
     const target=view==='neither'?$('[data-form="direction-neither"] textarea'):host.querySelector(`[data-dp-detail="${CSS.escape(ui.focus)}"] .sx-dp-title`);
     target?.focus({preventScroll:true});
-    if(matchMedia?.('(max-width: 860px)').matches)$('.sx-dp-sheet')?.scrollIntoView?.({behavior:reduced()?'auto':'smooth',block:'start'});
+    // 휴대폰 · 세로 화면은 .sx-dp-sheet가 display:contents라 상자가 없다 — 지금 보이는 쪽(고르기 · 둘 다 아니에요)으로 간다(11-07 검수, film.css와 같은 조건).
+    if(matchMedia?.('(max-width: 820px), (max-aspect-ratio: 1/1)').matches)(view==='neither'?$('[data-form="direction-neither"]'):$('.sx-dp-choose'))?.scrollIntoView?.({behavior:reduced()?'auto':'smooth',block:'start'});
   }
   const toggle=(key,box,button,[on,off])=>{ui[key]=!ui[key];box.hidden=!ui[key];button.setAttribute('aria-expanded',ui[key]?'true':'false');if(on)button.textContent=ui[key]?on:off;};
   host.addEventListener('click',event=>{

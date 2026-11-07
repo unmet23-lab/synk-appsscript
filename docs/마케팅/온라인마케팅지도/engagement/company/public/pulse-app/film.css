@@ -855,14 +855,18 @@ html.is-staff{color-scheme:light}
 @media (max-height:960px) and (min-width:821px) and (min-aspect-ratio:10001/10000){
   .sx-dp-lead{display:none}
   .sx-dp-flow li{padding:clamp(3px,.6vh,7px) 0}
+  /* 「왜」가 세 줄인 안도 아래 줄(한마디 · 둘 다 아니에요)까지 첫 화면에 들게 위아래 간격을 줄인다. */
+  .sx-dp-sheet{padding-top:calc(var(--sx-m) + 10px)}
+  .sx-dp-detail,.sx-dp-flow{margin-top:8px}
+  .sx-dp-terms{padding-top:10px}
 }
 @media (max-height:859px) and (min-width:821px) and (min-aspect-ratio:10001/10000){.sx-dp-why{display:none}}
-@media (max-height:760px) and (min-width:821px) and (min-aspect-ratio:10001/10000){
+@media (max-height:800px) and (min-width:821px) and (min-aspect-ratio:10001/10000){
   .sx-dp-why{display:none!important}
   .sx-dp-step{display:inline;margin:0 0 0 10px}
   .sx-dp-title{font-size:clamp(32px,3vw,42px)}
   .sx-dp-taste{padding:4px 0}
-  .sx-dp-sheet{gap:10px}
+  .sx-dp-sheet{gap:10px;padding-top:calc(var(--sx-m) + 2px)}
 }
 /* 휴대폰 · 세로 화면: 안내 → 그림 나란히 → 설명. 두 안을 넘기지 않고 한눈에 견주고, 고정 띠는 두지 않는다. */
 @media (max-width:820px),(max-aspect-ratio:1/1){

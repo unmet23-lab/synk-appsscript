@@ -90,3 +90,12 @@ test('the home page and the request words name the first check as direction and 
   const flow=read('request-flow.mjs');assert.match(flow,/방향 두 안과 값 · 받으실 날을 보내 드려요/);assert.match(flow,/<li><b>방향 두 안을 보내 드려요<\/b>/);
   const css=read('film.css');assert.match(css,/\.sx-dp\{--frame:min\(37vw,calc\(100dvh\*9\/16\),calc\(\(100vw - 400px\)\/2\)\)/);assert.match(css,/\.sx-dp-kv dd\{[^}]*white-space:nowrap/);
 });
+test('a product-only proposal keeps the similar-work slot; a changed proposal drops the old screen state; the phone scroll follows the CSS layout',()=>{
+  const p=roomModel(project({direction:open({modelId:undefined})})),html=directionView(p);
+  assert.equal(p.direction.noModel,true);
+  assert.match(html,/<div class="sx-dp-model sx-small"><span data-dp-work-slot><\/span><\/div>/,'no model, but the similar-work button still has a place');
+  assert.doesNotMatch(html,/data-dp-casts/);
+  assert.match(read('views.mjs'),/ui:s\.directionUi\?\.key===key\?s\.directionUi:\{\}/,'old model, open panels and the neither view are dropped before a new proposal is drawn');
+  assert.match(read('film-views.mjs'),/matchMedia\?\.\('\(max-width: 820px\), \(max-aspect-ratio: 1\/1\)'\)/,'the phone scroll uses the same switch as film.css');
+  assert.doesNotMatch(read('film-views.mjs'),/\$\('\.sx-dp-sheet'\)\?\.scrollIntoView/,'the sheet has no box on phones');
+});

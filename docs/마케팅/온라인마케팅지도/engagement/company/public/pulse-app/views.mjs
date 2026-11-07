@@ -221,7 +221,8 @@ function customerRoom(s){
   const p=s.project;
   if(s.tab==='draft'){const d=draftModel(p);if(d)return draftView(d,{top:alertBox(s)});}
   // 방향과 모델: 열린 제안이면 늘, 고른 뒤에는 「다시 고르기」(판이 오기 전까지)로 연다.
-  const info=roomInfo(s);if(info.direction&&(info.state==='direction'||s.tab==='pick'&&info.direction.canPick))return directionScreen(info,{top:alertBox(s),ui:s.directionUi||{}});
+  // 제안이 바뀌었으면(안 id가 다르면) 옛 화면 상태(모델 · 펼침 · 둘 다 아니에요)를 그리기 전에 버린다(11-07 검수).
+  const info=roomInfo(s);if(info.direction&&(info.state==='direction'||s.tab==='pick'&&info.direction.canPick)){const key=info.direction.options.map(o=>o.id).join(',');return directionScreen(info,{top:alertBox(s),ui:s.directionUi?.key===key?s.directionUi:{}});}
   const note=String(p.nextStep||'').trim(),extras=roomExtras(p);
   const after=`${note?`<p class="sx-note"><span>담당자 안내</span>${esc(note)}</p>`:''}${extras.map(item=>`<section class="sx-extra" data-room-in><div><h2>${esc(item.title)}</h2><p class="sx-small">${esc(item.text)}</p></div><button type="button" class="sx-go" data-action="tab" data-tab="${esc(item.tab)}"${item.scroll?` data-scroll="${esc(item.scroll)}"`:' data-scroll="content"'}><span>${esc(item.button)}</span>${arrow}</button></section>`).join('')}`;
   // 기기 기억 안내는 왼쪽 단(지금 할 일) 한가운데가 아니라 그림 아래 띠로 — 맹검 11-07 「시스템 안내가 내용 자리에 들어옴」.
