@@ -58,9 +58,11 @@ def body_mask(im, box):
     return m
 
 
-def transforms(frames, ref, mask, fixed=False):
+def transforms(frames, ref, mask, fixed=False, track=False):
     """장마다 시작 그림 → 장의 닮음 변환(2×3). 몸통 둘레(넓힌 마스크)의 특징점으로 맞추고 시간축으로 고르게 편다.
-    fixed: 캔이 멈춘 컷 — 장마다 잰 값의 중앙값 한 자리로 고정한다(영상 모델이 라벨을 다시 그린 탓에 특징점이 ±4px 흔들려, 펴도 라벨이 떤다)."""
+    fixed: 캔이 멈춘 컷 — 장마다 잰 값의 중앙값 한 자리로 고정한다(영상 모델이 라벨을 다시 그린 탓에 특징점이 ±4px 흔들려, 펴도 라벨이 떤다).
+    track: 캔이 오가는 컷(손에 든 캔이 물러났다 돌아옴 · 볼에 닿음) — 이차식이 움직임을 못 따라가(11-07 사람판 건배 캔 83px) 장마다 잰 값을
+    5장 중앙값 → 5장 평균으로만 편다."""
     grow = cv2.dilate(mask, np.ones((25, 25), np.uint8))
     k0, d0 = SIFT.detectAndCompute(cv2.cvtColor(ref, cv2.COLOR_BGR2GRAY), grow)
     raw = []
@@ -86,6 +88,12 @@ def transforms(frames, ref, mask, fixed=False):
     t = np.arange(len(a))
     if fixed:
         sm = np.repeat(np.median(a[:, :4], axis=0)[None], len(a), 0)
+    elif track:
+        from scipy.ndimage import median_filter, uniform_filter1d
+        sm = np.stack([uniform_filter1d(median_filter(a[:, j], size=5, mode="nearest"), size=5, mode="nearest") for j in range(4)], 1)
+        # 볼에 닿거나 캔끼리 부딪는 장은 한 장에 19px까지 튀어 고른 값이 12px 늦는다 — 2.5px 넘게 벌어진 장은 잰 값 그대로
+        jump = np.hypot(a[:, 2] - sm[:, 2], a[:, 3] - sm[:, 3]) > 2.5
+        sm[jump] = a[jump, :4]
     else:
         sm = np.stack([np.polyval(np.polyfit(t, a[:, j], 2), t) if len(a) > 3 else a[:, j] for j in range(4)], 1)
     out = []
@@ -95,7 +103,7 @@ def transforms(frames, ref, mask, fixed=False):
     return out, a, err
 
 
-def overlay(src_mp4, ref_png, box, a, k, out_mp4, w=720, h=1280, erode=2, feather=1.6, fixed=False, log=print):
+def overlay(src_mp4, ref_png, box, a, k, out_mp4, w=720, h=1280, erode=2, feather=1.6, fixed=False, log=print, track=False):
     frames = read_frames(src_mp4, w, h)[a:a + k]
     if len(frames) != k:
         raise SystemExit(f"{src_mp4}: {a}장부터 {k}장이 필요한데 {len(frames)}장")
@@ -106,7 +114,7 @@ def overlay(src_mp4, ref_png, box, a, k, out_mp4, w=720, h=1280, erode=2, feathe
     if erode:
         mask = cv2.erode(mask, np.ones((2 * erode + 1, 2 * erode + 1), np.uint8))
     soft = cv2.GaussianBlur(mask.astype(np.float32) / 255, (0, 0), feather)
-    Ms, raw, err = transforms(frames, ref, mask, fixed=fixed)
+    Ms, raw, err = transforms(frames, ref, mask, fixed=fixed, track=track)
     pieces, gains = [], []
     for f, M in zip(frames, Ms):
         warped = cv2.warpAffine(ref, M, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
