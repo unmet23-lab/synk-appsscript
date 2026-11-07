@@ -87,7 +87,8 @@ def picture():
                 cur, start = L.passthrough(src, a, k, os.path.join(d, f"{n:02d}_색길720.mp4")), 0
             for j, (ref, box, fixed, *more) in enumerate(lab):   # 캔이 둘이면 차례로 — 둘째는 첫째를 얹은 판 위에
                 tmp = os.path.join(d, f"{n:02d}_라벨720_{j}.mp4")
-                L.overlay(cur, ref, box, start, k, tmp, fixed=fixed, track=not fixed, **(more[0] if more else {}))   # 캔이 오가는 컷이라 이차식 대신 장마다 따라감
+                # 캔이 오가는 컷이라 이차식 대신 장마다 따라가되(track), 장 사이 움직임은 캔 둘레의 실제 움직임에 묶는다(lock — 11-08 유호님 「캔이 … 지진일어난것처럼」)
+                L.overlay(cur, ref, box, start, k, tmp, fixed=fixed, track=not fixed, lock=not fixed, **(more[0] if more else {}))
 
                 cur, start = tmp, 0
             C.cut_video(cur, 0, k, W, H, FPS, out)

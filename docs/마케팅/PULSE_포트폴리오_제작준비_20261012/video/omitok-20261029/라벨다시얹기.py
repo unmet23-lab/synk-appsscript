@@ -101,6 +101,62 @@ def transforms(frames, ref, mask, fixed=False, track=False):
     return out, a, err, sm
 
 
+def to_params(M):
+    s = float(np.hypot(M[0, 0], M[1, 0]))
+    return np.array([s, float(np.arctan2(M[1, 0], M[0, 0])), float(M[0, 2]), float(M[1, 2])])
+
+
+def rigid(frames, ref, mask, sm, sigma=8.0, log=print):
+    """캔이 실제로 움직인 만큼만 라벨을 옮긴다(11-08 유호님 「이 캔이 계속 자기 혼자 지진일어난것처럼 움직이거든?」).
+    SIFT는 시작 그림의 라벨과 장의 라벨을 맞추는데, 영상 모델이 작은 글자를 장마다 조금씩 다시 그려 맞춤 점이 장마다 1~4px 흔들린다 —
+    라벨만 손 · 뚜껑에서 미끄러져 캔이 혼자 떠는 것처럼 보였다(다섯 맛 컷 라벨−손 장 사이 차 원래 판 0.17 → 얹은 판 0.61px, 540폭).
+    그래서 장 사이 움직임은 캔 둘레(뚜껑 · 윤곽 · 쥔 손가락 — 다시 그려지지 않는 것)의 특징점을 KLT로 따라가 잇고(앞뒤 대조 1px),
+    SIFT는 그 사슬이 천천히 어긋나는 것만 바로잡는 데 쓴다(사슬로 되돌린 SIFT 값을 시간축 가우스 σ장으로 편 보정)."""
+    from scipy.ndimage import gaussian_filter1d
+    n = len(frames)
+    gray = [cv2.cvtColor(f, cv2.COLOR_BGR2GRAY) for f in frames]
+    h, w = gray[0].shape
+    lk = dict(winSize=(21, 21), maxLevel=3, criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 30, 0.01))
+    chain = [np.eye(3)]
+    fallback = 0
+    for i in range(n - 1):
+        Mi = similarity(*sm[i])
+        body = cv2.warpAffine(mask, Mi, (w, h), flags=cv2.INTER_NEAREST)
+        ring = cv2.dilate(body, np.ones((41, 41), np.uint8))              # 뚜껑 · 윤곽 · 손가락까지
+        p = cv2.goodFeaturesToTrack(gray[i], 300, 0.01, 5, mask=ring)
+        step = None
+        if p is not None and len(p) >= 12:
+            q, st, _ = cv2.calcOpticalFlowPyrLK(gray[i], gray[i + 1], p, None, **lk)
+            pb, st2, _ = cv2.calcOpticalFlowPyrLK(gray[i + 1], gray[i], q, None, **lk)
+            good = (st[:, 0] == 1) & (st2[:, 0] == 1) & (np.hypot(*(pb - p).reshape(-1, 2).T) < 1.0)
+            if good.sum() >= 10:
+                M, inl = cv2.estimateAffinePartial2D(p[good], q[good], ransacReprojThreshold=1.0)
+                if M is not None and inl is not None and inl.sum() >= 8:
+                    step = np.vstack([M, [0, 0, 1]])
+        if step is None:   # 흐림으로 점이 모자라면 편 SIFT 값의 장 사이 변화로
+            fallback += 1
+            step = np.vstack([similarity(*sm[i + 1]), [0, 0, 1]]) @ np.linalg.inv(np.vstack([Mi, [0, 0, 1]]))
+        chain.append(step @ chain[-1])
+    # 시작 그림 → 첫 장 변환을 장마다 SIFT로 되짚은 값(사슬을 되돌림) — 이것을 천천히만 바뀌게 편다.
+    # 배율 · 회전 · 「캔 가운데가 가는 자리」로 나눠 편다(원점 이동으로 펴면 작은 회전이 캔에서 먼 원점에서 크게 부풀어 얽힌다)
+    ys, xs = np.nonzero(mask)
+    c = np.array([(xs.min() + xs.max()) / 2, (ys.min() + ys.max()) / 2, 1.0])
+    B = [np.linalg.inv(chain[i]) @ np.vstack([similarity(*sm[i]), [0, 0, 1]]) for i in range(n)]
+    sr = np.array([to_params(b)[:2] for b in B])
+    cen = np.array([(b @ c)[:2] for b in B])
+    sr_s = np.stack([gaussian_filter1d(sr[:, j], sigma, mode="nearest") for j in range(2)], 1)
+    cen_s = np.stack([gaussian_filter1d(cen[:, j], sigma, mode="nearest") for j in range(2)], 1)
+    out = []
+    for i in range(n):
+        Mb = similarity(sr_s[i, 0], sr_s[i, 1], 0.0, 0.0)
+        t = cen_s[i] - Mb[:, :2] @ c[:2]
+        Bs = np.vstack([np.hstack([Mb[:, :2], t[:, None]]), [0, 0, 1]])
+        out.append((chain[i] @ Bs)[:2].astype(np.float32))
+    drift = float(np.max(np.hypot(*(cen - cen_s).T)))
+    log(f"  캔 둘레 KLT로 장 사이 움직임을 이음 · 점이 모자라 SIFT로 넘긴 장 {fallback}/{n - 1} · 캔 가운데에서 SIFT 보정이 흔들린 폭 최대 {drift:.1f}px(편 값으로 걸러짐)")
+    return out
+
+
 def similarity(s, r, tx, ty):
     return np.float32([[s * np.cos(r), -s * np.sin(r), tx], [s * np.sin(r), s * np.cos(r), ty]])
 
@@ -130,7 +186,7 @@ def passthrough(src_mp4, a, k, out_mp4, w=720, h=1280):
 
 
 def overlay(src_mp4, ref_png, box, a, k, out_mp4, w=720, h=1280, erode=2, feather=1.6, fixed=False, log=print, track=False,
-            shutter=0.0, fade_in=0, fade_out=0):
+            shutter=0.0, fade_in=0, fade_out=0, lock=False):
     """shutter: 셔터가 열린 동안(장 사이 간격의 몇 배) 캔이 움직인 길을 따라 얹는 라벨도 번지게 한다 — 판의 캔은 빨리 움직이면 흐린데
     얹은 라벨만 또렷하면 오려 붙인 티가 난다(11-08 사람판 끝 판, 캔을 렌즈 쪽으로 뻗는 0.3~0.7초 · 돌아오는 4.0~4.6초). 0이면 번짐 없음(앞 컷들 그대로).
     fade_in · fade_out: 처음 · 끝 몇 장에 걸쳐 얹은 라벨을 0 → 1 · 1 → 0으로 — 캔이 화면 밖으로 나가 못 따라가는 자리 앞뒤에서 판 그대로로 넘어간다."""
@@ -145,6 +201,9 @@ def overlay(src_mp4, ref_png, box, a, k, out_mp4, w=720, h=1280, erode=2, feathe
         mask = cv2.erode(mask, np.ones((2 * erode + 1, 2 * erode + 1), np.uint8))
     soft = cv2.GaussianBlur(mask.astype(np.float32) / 255, (0, 0), feather)
     Ms, raw, err, sm = transforms(frames, ref, mask, fixed=fixed, track=track)
+    if lock:   # 라벨을 캔 둘레의 실제 움직임에 묶는다 — 셔터 번짐도 이 값으로
+        Ms = rigid(frames, ref, mask, sm, log=log)
+        sm = np.array([to_params(M) for M in Ms])
     ys, xs = np.nonzero(mask)
     corners = np.float32([[xs.min(), ys.min(), 1], [xs.max(), ys.min(), 1], [xs.min(), ys.max(), 1], [xs.max(), ys.max(), 1]]).T
     pieces, gains, smear = [], [], []
