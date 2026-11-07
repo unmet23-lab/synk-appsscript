@@ -146,6 +146,12 @@
 - 고침: 문항에는 `[slowly and clearly, <감정>]` 한 묶음만. Julian에서 초당 약 4.2음절(몽글 5.1)로 내려왔다. 묶음으로 구워 낱말 시각으로 자르면 값이 줄지만, 자른 줄에 앞 줄 꼬리가 남으니 `말구간`처럼 소리 덩이로 다시 잰다(`목소리나누기.py`).
 - 다시 확인: 받아쓰기 대조에서 글자가 어긋난 줄만 다시 구웠다.
 
+### `generate wait --json`에서 첫 https 주소를 집으면 구운 소리가 아니라 그 목소리의 맛보기 소리를 받는다 — `result_url` 칸을 읽는다 (2026-11-07 Claude · 6번 연말 Luna 내레이션)
+- 증상: Luna로 끝 문구를 세 번 구웠는데 받은 세 파일이 모두 12.8초짜리 같은 영어 소개(「Follow the moonlight into the unknown. I am Luna …」)였다.
+- 원인: 응답 JSON에서 `params.voices[0].source`(프리셋 맛보기 mp3)가 `result_url`보다 앞에 나온다. 스크립트가 `https://…\.(mp3|wav)` 첫 줄을 집었다. `talk-rally/…/목소리내기.sh`의 둘째 길(`grep -oE 'https://[^" ]+\.(mp3|wav)'`)도 `result_url`을 못 읽으면 같은 꼴이 된다.
+- 고침: JSON을 파싱해 `result_url`만 읽는다(`python -c "import sys,json;print(json.loads(sys.stdin.read())['result_url'])"`). 같은 접수 번호로 다시 읽어 받으면 크레딧이 더 나가지 않는다.
+- 다시 확인: 받은 파일 길이가 원고 길이(초당 4~5음절)와 맞고 받아쓰기가 원고와 같은지.
+
 
 ## Nano Banana Pro 정지컷
 
