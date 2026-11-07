@@ -874,6 +874,7 @@ html.is-staff{color-scheme:light}
   .sx-dp-sheet{display:contents}
   .sx-dp-sheet>.sx-alert{order:1;margin:calc(var(--sx-m) + 44px) var(--sx-m) 0}
   .sx-dp-top{order:1;padding:calc(var(--sx-m) + 44px) var(--sx-m) 14px}
+  .sx-dp-sheet>.sx-alert+.sx-dp-top{padding-top:14px}
   .sx-dp-reel{order:2;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:0 var(--sx-m)}
   .sx-dp[data-count="3"] .sx-dp-reel{grid-template-columns:repeat(3,minmax(0,1fr))}
   .sx-dp-frame{grid-area:auto!important;height:auto;width:100%;aspect-ratio:9/16}

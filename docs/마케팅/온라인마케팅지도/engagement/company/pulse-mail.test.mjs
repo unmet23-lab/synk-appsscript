@@ -238,3 +238,42 @@ test('48시간 지난 줄은 expired, 끊긴 연결은 10분 뒤 스스로 다�
   const closed=f.outbox().find(item=>item.projectId===three.id);assert.deepEqual([closed.state,closed.reason],['sent','confirmed_later']);
   f.advance(20);await f.service.tick();assert.equal(f.relay.sent.filter(m=>m.subject.includes('최종 파일')).length,2,'되묻기는 보내지 않음');
 });
+
+test('GPT GA1: 담당자가 B로 고친 뒤 손님이 C로 바꾸면, 메일 끄기만 바꿔도 B가 되살아나지 않는다 · 의뢰서 주소 그대로면 고친 주소가 아니다',async()=>{
+  const {applyRequestAction}=await import('./pulse-requests.mjs');
+  const studio={request:{status:'submitted',answers:{contactName:'김',email:'a@example.com',phone:''},files:[],asks:[],notes:[],rounds:[]}},row={contact:''},stamp={at:'2026-11-08T00:00:00.000Z',authorName:'담당'};
+  const act=input=>applyRequestAction({studio,row,input:{action:'request_contact',...input},staff:true,stamp});
+  act({email:'b@example.com'});assert.equal(pulseMailRecipient({studio}).email,'b@example.com');assert.match(row.contact,/b@example\.com/);
+  studio.request={...studio.request,answers:{...studio.request.answers,email:'c@example.com'}};
+  assert.equal(pulseMailRecipient({studio}).email,'c@example.com');
+  act({mailOff:false});
+  assert.equal(pulseMailRecipient({studio}).email,'c@example.com','옛 보정 주소가 되살아나지 않는다');assert.equal(studio.request.contact.email,'');
+  act({email:'C@example.com',mailOff:true});assert.equal(studio.request.contact.email,'','의뢰서 주소와 같으면 고친 주소로 치지 않는다');assert.equal(pulseMailRecipient({studio}).reason,'mail_off');
+  assert.throws(()=>act({email:'not-mail'}),/이메일/);
+  assert.throws(()=>applyRequestAction({studio,row,input:{action:'request_contact',mailOff:true},staff:false,stamp}),error=>error.status===403);
+});
+
+test('GPT GA2 · GA3 · GA4: 옛 주소 ping 답은 새 주소를 통과시키지 않고, 다시 켜면 그 전 줄은 안 보내고, 묶기 상한 뒤 사건은 새 줄',async t=>{
+  const f=await fixture(t);
+  // GA2
+  f.service.configure(f.admin,{relayUrl:RELAY});f.relay.props.set('SERVER_KEY_N',f.store.secret(PULSE_MAIL_SECRET).n);
+  let release;const gate=new Promise(r=>{release=r;});
+  f.override=(url,init)=>init.method==='POST'?gate.then(()=>f.relay.fetch(url,init)):null;
+  const pending=f.service.ping(f.admin);
+  f.service.configure(f.admin,{relayUrl:RELAY.replace('TEST','OTHER')});
+  release();await pending;
+  assert.equal(f.service.settings(f.admin).connection.state,'unknown');
+  assert.throws(()=>f.service.configure(f.admin,{enabled:true}),error=>error.status===409);
+  f.override=null;f.service.configure(f.admin,{relayUrl:RELAY});await f.connect();f.advance(1);
+  // GA3
+  const row=f.project();f.event(row,'final_ready');await f.service.fill(f.now);
+  f.service.configure(f.admin,{enabled:false});f.advance(60);f.service.configure(f.admin,{enabled:true});f.advance(1);
+  await f.service.tick();
+  assert.deepEqual([f.outbox()[0].state,f.outbox()[0].reason],['skipped','before_on']);assert.equal(f.relay.sent.length,0);
+  f.event(row,'final_ready');f.advance(3);await f.service.tick();assert.equal(f.relay.sent.length,1,'다시 켠 뒤 사건은 보낸다');
+  // GA4
+  const late=f.project();f.event(late,'preview_ready');await f.service.fill(f.now);
+  f.advance(49*60);f.event(late,'preview_ready');f.advance(3);await f.service.tick();
+  const rows=f.outbox().filter(item=>item.projectId===late.id);
+  assert.equal(rows.length,2);assert.deepEqual(rows.map(item=>[item.state,item.reason]),[['skipped','expired'],['sent',null]]);
+});

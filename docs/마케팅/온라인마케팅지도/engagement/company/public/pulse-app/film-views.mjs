@@ -70,7 +70,7 @@ export function directionView(p,{top='',ui={}}={}){
             <p class="sx-small sx-dp-incl">어느 방향이든 값은 같고, 모델 · 목소리 · 음악 · 자막이 모두 들어 있어요. 결제는 글 콘티를 보신 뒤에 해요. <button type="button" class="sx-link" data-dp-do="more" aria-expanded="${ui.more?'true':'false'}">${ui.more?'접기':'자세히'}</button></p>
             <dl class="sx-dp-more sx-small" data-dp-more ${ui.more?'':'hidden'}><div><dt>만드는 법</dt><dd>사람과 목소리는 모두 AI로 만들어요. 제품 · 로고 · 글자는 보내 주신 파일을 그대로 얹어요. 지금 그림은 방향을 보여 드리는 첫 그림이에요</dd></div>${d.gets?`<div><dt>받으시는 것</dt><dd>${esc(d.gets)}</dd></div>`:''}<div><dt>쓸 수 있는 곳</dt><dd>온라인 광고 · SNS · 자사몰 · 상세페이지(음악 · 목소리 포함). TV · 옥외 · 극장 · 인쇄는 따로 여쭤 주세요</dd></div><div><dt>받으실 날</dt><dd>사진 · 로고 · 꼭 넣을 말이 다 모였을 때 기준이에요. 주말과 공휴일을 포함한 날이고, 확인이 늦어지면 그만큼 함께 미뤄요</dd></div><div><dt>수정</dt><dd>${d.photo?'사진':'영상'}이 나온 뒤 ${esc(d.revisions)}번. 글 콘티와 장면 이미지의 의견은 횟수에 세지 않아요</dd></div><div><dt>결제</dt><dd>글 콘티를 보신 뒤, 장면 이미지 전에 해요. 글 콘티까지는 값을 받지 않아요. 결제 방법은 그때 담당자가 안내해 드려요</dd></div>${p.mail?`<div><dt>알림</dt><dd>글 콘티가 오면 메일(${esc(p.mail)})로도 알려 드려요</dd></div>`:''}</dl>
             <form class="sx-dp-answer" data-form="direction-pick"><input type="hidden" name="optionId" value="${esc(focus)}"><input type="hidden" name="modelId" value="${esc(ui.modelId||'')}"><label class="sx-dp-note" data-dp-note ${noteOpen?'':'hidden'}><span class="sr">덧붙일 말</span><input type="text" name="note" maxlength="200" placeholder="예) 「쌉쌀」은 빼 주세요" value="${esc(keep)}"></label><button type="submit" class="sx-go is-solid sx-dp-go" data-mutate><span data-dp-go>「${esc(item.name)}」${withRo(item.name)} 정하고 글 콘티 받기</span>${arrow}</button></form>
-            <p class="sx-small sx-dp-foot"><button type="button" class="sx-link" data-dp-do="note" aria-expanded="${noteOpen?'true':'false'}">한마디 덧붙이기</button><button type="button" class="sx-link" data-dp-do="neither">${d.options.length>2?'모두 아니에요':'둘 다 아니에요'}</button></p>
+            ${keep&&!noteOpen?`<p class="sx-small sx-dp-kept">덧붙이신 말 · ${esc(keep)}</p>`:''}<p class="sx-small sx-dp-foot"><button type="button" class="sx-link" data-dp-do="note" aria-expanded="${noteOpen?'true':'false'}">${keep?'덧붙인 말 고치기':'한마디 덧붙이기'}</button><button type="button" class="sx-link" data-dp-do="neither">${d.options.length>2?'모두 아니에요':'둘 다 아니에요'}</button></p>
           </div>
         </div>
         <form class="sx-dp-neither" data-form="direction-neither" ${view==='neither'?'':'hidden'}><h1 class="sx-serif sx-dp-title" tabindex="-1">어떤 점이 아쉬웠나요?</h1><label class="sx-field sx-dp-say"><span class="sx-small">${d.last?'한 줄이면 돼요. 담당자가 직접 연락드려 함께 정해요.':'한 줄이면 돼요. 같은 값으로 한 번 더 제안해 드려요.'}</span><textarea name="note" rows="3" maxlength="300" required placeholder="예) 더 고급스러웠으면 좋겠어요"></textarea></label><button type="submit" class="sx-go is-solid sx-dp-go" data-mutate><span>${d.last?'담당자와 이야기하기':'다시 제안받기'}</span>${arrow}</button><p class="sx-small sx-dp-foot"><button type="button" class="sx-link" data-dp-do="back">${d.options.length>2?'안 다시 보기':'두 방향 다시 보기'}</button></p></form>
@@ -172,8 +172,18 @@ function roomPaper(p){
     </section>`;
 }
 // 그 상태의 왼쪽 글. 방향을 고른 뒤 · 두 번째 제안도 거절한 뒤는 글이 다르다.
-// 저희 차례인 글에는, 메일이 켜져 있으면 차례가 오면 메일로도 알린다는 한 줄을 붙인다.
-function copyOf(p){const base=copyBase(p);return p.mail&&base.turn==='us'?{...base,text:`${base.text} 차례가 오면 메일(${p.mail})로도 알려 드려요.`}:base;}
+// 저희 차례인 글에는, 다음 손님 차례가 실제로 메일이 나가는 순간일 때만 그 이름과 함께 한 줄을 붙인다
+// (장면 이미지 둘째 판부터 · 되묻기는 메일이 없다 — 서버 pulseMailMoment와 같은 약속).
+const josa=word=>{const c=word.charCodeAt(word.length-1)-0xac00;return c>=0&&c<=11171&&c%28?'이':'가';};
+function mailNext(p){
+  if(p.state==='check')return p.photo?'첫 장':'방향 제안';
+  if(p.state==='redirect')return p.direction?.last?'글 콘티':'새 방향';
+  if(p.state==='prepare')return p.photo?'첫 장':'글 콘티';
+  if(p.state==='revise')return p.lastKind==='script'?'고친 글 콘티':'';
+  if(p.state==='make')return p.photo?'사진':'영상';
+  return '';
+}
+function copyOf(p){const base=copyBase(p),next=p.mail&&base.turn==='us'?mailNext(p):'';return next?{...base,text:`${base.text} ${next}${josa(next)} 오면 메일(${p.mail})로도 알려 드려요.`}:base;}
 function copyBase(p){
   if(p.state==='prepare'&&p.direction?.chosen)return {turn:'us',title:'이 방향으로 정했어요',text:'광고가 남길 한 문장과 글 콘티를 만들어 보내 드려요. 보시고 마음에 드시면 그때 결제를 안내해 드려요.'};
   if(p.state==='redirect'&&p.direction?.last)return {turn:'us',title:'담당자가 직접 연락드려요',text:'주신 말씀을 들고 담당자가 연락드려 함께 정해요. 정해지면 글 콘티를 보내 드려요.'};

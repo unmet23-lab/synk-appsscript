@@ -19,7 +19,7 @@ function mailBlock(m){
   if(!m)return '';
   const head={not_connected:'연결 전',broken:'연결 끊김 · 관리자 설정에서 다시 연결',off:'꺼 둠',stopped:'비상 정지',on:m.recipient==='mail_off'?'이 의뢰는 껐어요':m.recipient==='no_email'?'주소 없음 · 휴대폰으로 직접 연락':m.override?'담당자가 고친 주소로 보내요':'의뢰서 주소로 보내요'}[m.connection]||'';
   const moments=Object.entries(m.moments||{}).map(([key,item])=>`<li>${esc(MAIL_MOMENT[key]||key)} · ${esc(mailMoment(item))}</li>`).join('');
-  return `<div class="desk-mail"><p class="desk-mail-head">메일 알림 · ${esc(head)}${m.customerChanged?' · 손님이 의뢰서 주소를 고쳐서 그 주소로 보내요':''}</p>${moments?`<ul class="desk-mail-list">${moments}</ul>`:''}
+  return `<div class="desk-mail"><p class="desk-mail-head">메일 알림 · ${esc(head)}${m.customerChanged&&m.connection==='on'&&m.recipient==='set'?' · 손님이 의뢰서 주소를 고쳐서 그 주소로 보내요':''}</p>${moments?`<ul class="desk-mail-list">${moments}</ul>`:''}
     <details class="desk-mail-edit"><summary>주소 고치기 · 메일 끄기</summary><form data-form="desk-contact"><label><span>알림 메일 주소</span><input type="email" name="email" value="${esc(m.email||'')}" maxlength="254" autocomplete="off"></label><label class="desk-mail-off"><input type="checkbox" name="mailOff" ${m.mailOff?'checked':''}> 이 의뢰는 메일 끄기</label><button type="submit" class="btn-line">저장</button></form></details></div>`;
 }
 const ROUND_STATE=round=>round.approvedAt?'확인 끝':round.feedbackAt?`의견 ${round.changes||0}개`:'고객이 보는 중';

@@ -368,10 +368,13 @@ export function applyRequestAction({studio,row,input,staff,stamp}){
   if(action==='request_contact'){
     const answers=request.answers||{},prev=request.contact||{};
     if(input.email===undefined&&input.mailOff===undefined)throw fail('고칠 내용을 골라 주세요.');
-    const email=input.email===undefined?(prev.email||''):text(input.email,254);
-    if(email&&!validPulseMailAddress(email))throw fail('이메일 주소를 확인해 주세요.');
+    const answered=String(answers.email||'').trim(),stale=!!prev.email&&prev.basedOn!==undefined&&prev.basedOn!==answered;
+    const typed=input.email===undefined?(stale?'':(prev.email||'')):text(input.email,254);
+    if(typed&&!validPulseMailAddress(typed))throw fail('이메일 주소를 확인해 주세요.');
+    // 의뢰서 주소를 그대로 저장하면(메일 끄기만 바꿀 때 등) 고친 주소로 치지 않는다.
+    const email=typed&&typed.toLowerCase()!==answered.toLowerCase()?typed:'';
     if(input.mailOff!==undefined&&typeof input.mailOff!=='boolean')throw fail('메일 끄기를 다시 골라 주세요.');
-    const contact={email,mailOff:input.mailOff===undefined?prev.mailOff===true:input.mailOff,basedOn:String(answers.email||'').trim(),at:now,by:stamp.authorName};
+    const contact={email,mailOff:input.mailOff===undefined?prev.mailOff===true:input.mailOff,basedOn:answered,at:now,by:stamp.authorName};
     studio.request={...request,contact};
     row.contact=[answers.contactName,email||answers.email,answers.phone].filter(Boolean).join(' · ').slice(0,300);
     return;

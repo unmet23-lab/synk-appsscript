@@ -126,12 +126,12 @@ export function createPulseMailService({store,notificationsFor,clock=()=>new Dat
     if(http===429||http>=500)return {kind:'retry',code:`http_${http}`};
     return {kind:'broken',code:result.code||(http===200?'not_json':`http_${http}`)};
   }
-  function setConnection(state,code,at,version=null){const c=config();saveConfig({...c,connection:{state,checkedAt:at,code,version}},at);}
+  function setConnection(state,code,at,version=null,url=null){const c=config();if(url!==null&&c.relayUrl!==url)return false;saveConfig({...c,connection:{state,checkedAt:at,code,version}},at);return true;}
 
   function fill(at){
     const c=config();if(!active(c))return 0;
     const outbox=store.all(PULSE_MAIL_OUTBOX),known=new Set(outbox.flatMap(item=>item.eventIds||[]));
-    const open=new Map(outbox.filter(item=>item.state==='pending'&&!item.attempts).map(item=>[`${item.projectId}|${item.moment}`,item]));
+    const open=new Map(outbox.filter(item=>item.state==='pending'&&!item.attempts&&item.lastEventAt>c.enabledAt).map(item=>[`${item.projectId}|${item.moment}`,item]));
     let added=0;
     for(const row of store.all('clientProjects')){
       if(pulseMailEligibility(row)||!pulseMailRecipient(row).email)continue;
@@ -139,7 +139,7 @@ export function createPulseMailService({store,notificationsFor,clock=()=>new Dat
       for(const item of items){
         const moment=pulseMailMoment(row,item);if(!moment)continue;
         known.add(item.id);
-        const slot=`${row.id}|${moment}`,current=open.get(slot),eventAt=Date.parse(item.createdAt);
+        const slot=`${row.id}|${moment}`,eventAt=Date.parse(item.createdAt),held=open.get(slot),current=held&&eventAt<=Date.parse(held.firstEventAt)+MERGE_CAP_MS?held:null;
         if(current){
           const dueAt=iso(Math.min(eventAt+MERGE_MS,Date.parse(current.firstEventAt)+MERGE_CAP_MS));
           const next={...current,eventIds:[...current.eventIds,item.id],lastEventAt:item.createdAt,dueAt,nextAttemptAt:dueAt,updatedAt:at};
@@ -159,7 +159,8 @@ export function createPulseMailService({store,notificationsFor,clock=()=>new Dat
     const row=store.get('clientProjects',item.projectId),why=pulseMailEligibility(row);
     if(why)return put({state:'skipped',reason:why});
     const {email,reason}=pulseMailRecipient(row);if(!email)return put({state:'skipped',reason});
-    if(Date.parse(at)-Date.parse(item.firstEventAt)>EXPIRE_MS)return put({state:'skipped',reason:'expired'});
+    if(item.lastEventAt<=c.enabledAt)return put({state:'skipped',reason:'before_on'});
+    if(Date.parse(at)-Date.parse(item.lastEventAt)>EXPIRE_MS)return put({state:'skipped',reason:'expired'});
     const latest=notificationsFor(row).find(entry=>entry.id===item.eventIds.at(-1));
     if(!latest)return put({state:'skipped',reason:'stale'});
     if(latest.readAt)return put({state:'skipped',reason:'read'});
@@ -172,7 +173,7 @@ export function createPulseMailService({store,notificationsFor,clock=()=>new Dat
     if(verdict.kind==='sent')return put({state:'sent',sentAt:done.iso,sendingAt:null,reason:null},done.iso);
     if(verdict.kind==='unknown')return put({state:'unknown',reason:verdict.code,sendingAt:null},done.iso);
     if(verdict.kind==='failed')return put({state:'failed',reason:verdict.code,sendingAt:null},done.iso);
-    if(verdict.kind==='broken'){setConnection('broken',verdict.code,done.iso);return put({state:'pending',reason:verdict.code,sendingAt:null,attempts:item.attempts-1,nextAttemptAt:done.iso},done.iso);}
+    if(verdict.kind==='broken'){setConnection('broken',verdict.code,done.iso,null,c.relayUrl);return put({state:'pending',reason:verdict.code,sendingAt:null,attempts:item.attempts-1,nextAttemptAt:done.iso},done.iso);}
     if(verdict.kind==='cap')return put({state:'pending',reason:'cap',sendingAt:null,attempts:item.attempts-1,nextAttemptAt:iso(done.ms+CAP_RETRY_MS)},done.iso);
     if(item.attempts>=MAX_ATTEMPTS)return put({state:'failed',reason:verdict.code,sendingAt:null},done.iso);
     return put({state:'pending',reason:verdict.code,sendingAt:null,nextAttemptAt:iso(done.ms+RETRY_MS[Math.min(item.attempts-1,RETRY_MS.length-1)])},done.iso);
@@ -220,10 +221,10 @@ export function createPulseMailService({store,notificationsFor,clock=()=>new Dat
     return {enabled:active(c),requested:c.enabled===true,enabledAt:c.enabledAt||null,relayUrl:c.relayUrl||'',connection:c.connection,emergencyStop:emergencyStop(),relayVersion:PULSE_MAIL_RELAY_VERSION,publicKeyN:key.n,publicKeyFingerprint:createHash('sha256').update(key.n).digest('hex').slice(0,16),candidates:{projects:candidates.length,domains},outbox:counts};
   }
   async function checkConnection(){
-    const at=now(),c=config();
-    let result=null;try{result=await relayCall(c.relayUrl,signedRequest({op:'ping',ts:at.ms},keys(at.iso)));}catch{result=null;}
+    const at=now(),c=config(),url=c.relayUrl;
+    let result=null;try{result=await relayCall(url,signedRequest({op:'ping',ts:at.ms},keys(at.iso)));}catch{result=null;}
     const verdict=judge(result),done=now().iso;
-    setConnection(verdict.kind==='sent'?'ok':'broken',verdict.kind==='sent'?null:verdict.code,done,result?.json?.version??null);
+    setConnection(verdict.kind==='sent'?'ok':'broken',verdict.kind==='sent'?null:verdict.code,done,result?.json?.version??null,url);
     return result;
   }
   async function ping(user){
