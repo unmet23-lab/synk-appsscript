@@ -5,6 +5,9 @@
 #   카메라 — 이웃 장(3장 간격) SIFT 맞춤(estimateAffinePartial2D · RANSAC 2px)을 쌓은 배율 · 옆 · 위아래(화면 %) — 재기.py와 같은 길
 #   움직임 — 0.25초 사이 작은 회색 장의 평균 차이(0~255). 0.6 아래가 이어지면 「멈춤」으로 본다
 #   얼굴 — 가장 큰 얼굴(YuNet)의 가운데 x · 높이(화면 몫) · 얼굴 왼쪽 반과 오른쪽 반 밝기 차(평평한 빛이면 작다, 로맨스 11-05 잣대 0.131 ↔ 0.289)
+#   사람 — 카메라 움직임을 걷어 낸 사람 자리의 움직임(장당 px, 480폭 — 사람움직임.py). 판 전체 값과 1초 창(0.5초씩)마다 값, 0.12 아래는 「!」 —
+#          「움직임」만 보면 카메라가 움직이는 판의 굳은 사람이 통과한다(11-07 유호님 「카메라 구도는 괜찮은데 왜 모델이 그냥 굳어있는것같지?」).
+#          고를 때 무늬를 숨기려고 사람이 덜 움직이는 구간을 고르지 않는다 — 굳은 판은 연기 박자를 고친 지시문으로 다시 낸다
 # 고치지 않는다 — 숫자와 띠를 보고 편집 시작점 · 다시 뽑을 판을 정한다.
 import json
 import math
@@ -14,6 +17,9 @@ import sys
 
 import cv2
 import numpy as np
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import 사람움직임
 
 GOT = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028/받음"
 OUT = os.path.join(GOT, "_편집전점검")
@@ -122,9 +128,15 @@ def main():
         strips.append(np.vstack([lab, s]))
         fz = [r["t"] for r in rows[1:] if r["움직임"] < 0.6]
         fc = [r["얼굴"] for r in rows if r["얼굴"]]
+        # 사람 움직임(사람움직임.py — 카메라를 걷어 낸 나머지). 「움직임」은 카메라가 움직이면 굳은 사람도 크게 나와 못 잡는다(11-07 유호님 「모델이 굳어 있다」)
+        ps = 사람움직임.pairs(os.path.join(GOT, pid + ".mp4"))
+        whole = 사람움직임.summary(ps)
+        allrows[pid] = {"0.25초": rows, "사람": whole, "사람 창": 사람움직임.windows(ps)}
         print(f"{pid}: {len(f)}장 · 끝 배율 {rows[-1]['배율']} 옆 {rows[-1]['옆']} 위아래 {rows[-1]['위아래']} · 움직임 중앙 {np.median([r['움직임'] for r in rows[1:]]):.2f}"
-              + (f" · 멈춤 {fz}" if fz else "") + (f" · 얼굴 x {np.median([c['x'] for c in fc]):.2f} 높이 {np.median([c['h'] for c in fc]):.2f} 좌우빛 {np.median([c['lr'] for c in fc]):.2f}" if fc else ""))
+              + (f" · 멈춤 {fz}" if fz else "") + (f" · 얼굴 x {np.median([c['x'] for c in fc]):.2f} 높이 {np.median([c['h'] for c in fc]):.2f} 좌우빛 {np.median([c['lr'] for c in fc]):.2f}" if fc else "")
+              + (f" · 사람 {whole['사람']:.2f}(카메라 {whole['카메라']:.2f}){' · ' + whole['판정'] if whole['판정'] != '-' else ''}" if whole else ""))
         print("   " + " ".join(f"{r['t']:.2f}:{r['배율']:.3f}/{r['옆']:+.1f}/{r['위아래']:+.1f}/{r['움직임']:.1f}" for r in rows))
+        print("   사람 1초 창: " + " ".join(f"{t:.1f}:{p:.2f}{'!' if v != '-' else ''}" for t, c, p, v in allrows[pid]["사람 창"]))
     json.dump(allrows, open(os.path.join(OUT, name + ".json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     wmax = max(s.shape[1] for s in strips)
     strips = [np.hstack([s, np.zeros((s.shape[0], wmax - s.shape[1], 3), np.uint8)]) if s.shape[1] < wmax else s for s in strips]

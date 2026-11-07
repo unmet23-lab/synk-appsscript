@@ -27,6 +27,29 @@ def ratio(s):
     return a / b
 
 
+# 사람 연기(11-07) — 사람에게 정지를 시키는 낱말 · 사람이 나오는지 · 시간 박자
+STILL = re.compile(r"\b(?:completely still|perfectly still|almost (?:perfectly )?still|stays? still|stands? still|sits? still|holds? still|"
+                   r"holds? (?:the|her|his|their|this|that) (?:pose|position)|motionless|does not move|doesn't move|never moves|frozen|without moving|"
+                   r"unmoving|statue-?like|like a statue|expressionless)\b", re.I)
+PERSON = re.compile(r"\b(?:she|he|her|his|they|them|woman|man|girl|boy|person|people|model|actor|actress)\b", re.I)
+BEAT = re.compile(r"\b\d+(?:\.\d+)? ?s\b|\bat about \d|\bfrom \d+(?:\.\d+)?")
+LABELS = ("ACTION", "CAMERA", "LOOK", "SOUND", "VOICE", "OUTFIT", "SHOT", "SETTING", "PRODUCT", "TEXT", "LIGHT")
+
+
+def action_text(t):
+    """ACTION 칸(여러 샷이면 SHOT 줄 안의 ACTION까지) 글"""
+    return " ".join(m.group(1) for m in re.finditer(r"ACTION:(.*?)(?=\n[A-Z][A-Z ]+(?:\(|:)|\Z)", t, re.S))
+
+
+def people_text(t):
+    """(이름, 글) — ACTION 칸과 사람 이름 줄(「YUNA: the same young Korean woman …」)"""
+    out = [("ACTION", action_text(t))]
+    for m in re.finditer(r"^([A-Z][A-Z'-]{1,20}(?: [A-Z][A-Z'-]{1,20})?): (.*)$", t, re.M):
+        if m.group(1).split()[0] not in LABELS and PERSON.search(m.group(2)):
+            out.append((m.group(1), m.group(2)))
+    return out
+
+
 def check(name):
     out = os.path.join(BASE, name)
     items = json.load(open(os.path.join(out, "_순서.json"), encoding="utf-8"))
@@ -123,6 +146,17 @@ def check(name):
             no("견본 없는 소리 켬 판인데 견본 · 무음 줄")
         if not re.search(r"CAMERA|Camera|camera", t):
             no("카메라 줄 없음")
+        # 사람 연기(11-07 유호님 「카메라 구도는 괜찮은데 왜 모델이 그냥 굳어있는것같지? 모든 영상이 그래」) — 사람이 나오는 판은 ACTION에
+        #   시간 박자(몇 초에 · 무엇을 · 얼마나)가 있는 연기를 쓰고, 사람에게 정지를 시키는 낱말을 쓰지 않는다(그 낱말 · 박자 없는 ACTION이 굳은 사람을 낳았다 —
+        #   PULSE 412판 중 ACTION 90판이 「still · holds the pose」, 32판이 「expressionless」). 카메라를 멈추는 말은 CAMERA 줄이라 보지 않는다.
+        #   프리비즈 판(움직임을 참고 영상에서 받음)은 뺀다
+        if not pv:
+            for who, part in people_text(t):
+                for w in sorted({m.group(0).lower() for m in STILL.finditer(part)}):
+                    no(f"사람 정지 낱말 「{w}」({who}) — 숨 · 눈 · 무게 · 손 · 머리칼의 연기 박자로 바꾼다")
+            act = action_text(t)
+            if act and PERSON.search(act) and not BEAT.search(act):
+                no("사람 연기에 시간 박자 없음 — ACTION에 「at about 0.6 s she …」처럼 몇 초에 무엇을 하는지")
         if not 4 <= x["길이"] <= LIMIT:
             no(f"길이 {x['길이']}초")
         for w in OLD:
