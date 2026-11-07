@@ -78,7 +78,7 @@ export function pulseMailCompose(row,moment){
 
 export function createPulseMailService({store,notificationsFor,clock=()=>new Date().toISOString(),fetchImpl=globalThis.fetch,emergencyStop=()=>process.env.SYNK_PULSE_MAIL_STOP==='1',log=()=>{}}={}){
   if(!store||typeof notificationsFor!=='function')throw new TypeError('메일 알림 설정이 이상해요.');
-  let running=null,stopped=false;
+  let running=null,stopped=false,checkSeq=0;
   const now=()=>{const at=clock(),ms=Date.parse(at);if(!Number.isFinite(ms))throw fail('서버 시계를 읽지 못했어요.',500);return {iso:iso(ms),ms};};
   const config=()=>({enabled:false,enabledAt:null,relayUrl:'',connection:{state:'unknown',checkedAt:null,code:null,version:null},...(store.get(PULSE_MAIL_SETTINGS,'main')||{})});
   const saveConfig=(next,at)=>store.put(PULSE_MAIL_SETTINGS,'main',{...next,updatedAt:at});
@@ -126,7 +126,7 @@ export function createPulseMailService({store,notificationsFor,clock=()=>new Dat
     if(http===429||http>=500)return {kind:'retry',code:`http_${http}`};
     return {kind:'broken',code:result.code||(http===200?'not_json':`http_${http}`)};
   }
-  function setConnection(state,code,at,version=null,url=null){const c=config();if(url!==null&&c.relayUrl!==url)return false;saveConfig({...c,connection:{state,checkedAt:at,code,version}},at);return true;}
+  function setConnection(state,code,at,version=null,gen=null){const c=config();if(gen!==null&&(c.relayGen||0)!==gen)return false;saveConfig({...c,connection:{state,checkedAt:at,code,version}},at);return true;}
 
   function fill(at){
     const c=config();if(!active(c))return 0;
@@ -173,7 +173,7 @@ export function createPulseMailService({store,notificationsFor,clock=()=>new Dat
     if(verdict.kind==='sent')return put({state:'sent',sentAt:done.iso,sendingAt:null,reason:null},done.iso);
     if(verdict.kind==='unknown')return put({state:'unknown',reason:verdict.code,sendingAt:null},done.iso);
     if(verdict.kind==='failed')return put({state:'failed',reason:verdict.code,sendingAt:null},done.iso);
-    if(verdict.kind==='broken'){setConnection('broken',verdict.code,done.iso,null,c.relayUrl);return put({state:'pending',reason:verdict.code,sendingAt:null,attempts:item.attempts-1,nextAttemptAt:done.iso},done.iso);}
+    if(verdict.kind==='broken'){setConnection('broken',verdict.code,done.iso,null,c.relayGen||0);return put({state:'pending',reason:verdict.code,sendingAt:null,attempts:item.attempts-1,nextAttemptAt:done.iso},done.iso);}
     if(verdict.kind==='cap')return put({state:'pending',reason:'cap',sendingAt:null,attempts:item.attempts-1,nextAttemptAt:iso(done.ms+CAP_RETRY_MS)},done.iso);
     if(item.attempts>=MAX_ATTEMPTS)return put({state:'failed',reason:verdict.code,sendingAt:null},done.iso);
     return put({state:'pending',reason:verdict.code,sendingAt:null,nextAttemptAt:iso(done.ms+RETRY_MS[Math.min(item.attempts-1,RETRY_MS.length-1)])},done.iso);
@@ -221,10 +221,11 @@ export function createPulseMailService({store,notificationsFor,clock=()=>new Dat
     return {enabled:active(c),requested:c.enabled===true,enabledAt:c.enabledAt||null,relayUrl:c.relayUrl||'',connection:c.connection,emergencyStop:emergencyStop(),relayVersion:PULSE_MAIL_RELAY_VERSION,publicKeyN:key.n,publicKeyFingerprint:createHash('sha256').update(key.n).digest('hex').slice(0,16),candidates:{projects:candidates.length,domains},outbox:counts};
   }
   async function checkConnection(){
-    const at=now(),c=config(),url=c.relayUrl;
+    const at=now(),c=config(),url=c.relayUrl,gen=c.relayGen||0,seq=++checkSeq;
     let result=null;try{result=await relayCall(url,signedRequest({op:'ping',ts:at.ms},keys(at.iso)));}catch{result=null;}
     const verdict=judge(result),done=now().iso;
-    setConnection(verdict.kind==='sent'?'ok':'broken',verdict.kind==='sent'?null:verdict.code,done,result?.json?.version??null,url);
+    // 그사이 다른 확인이 시작됐으면(같은 세대라도) 마지막으로 시작한 확인만 적는다.
+    if(seq===checkSeq)setConnection(verdict.kind==='sent'?'ok':'broken',verdict.kind==='sent'?null:verdict.code,done,result?.json?.version??null,gen);
     return result;
   }
   async function ping(user){
@@ -238,7 +239,7 @@ export function createPulseMailService({store,notificationsFor,clock=()=>new Dat
     if(input.relayUrl!==undefined){
       const url=typeof input.relayUrl==='string'?input.relayUrl.trim():'';
       if(url&&!RELAY_URL.test(url))throw fail('Apps Script 웹 앱 주소(https://script.google.com/…/exec)를 그대로 붙여 넣어 주세요.');
-      if(url!==current.relayUrl){next.relayUrl=url;next.connection={state:'unknown',checkedAt:null,code:null,version:null};next.enabled=false;}
+      if(url!==current.relayUrl){next.relayUrl=url;next.relayGen=(current.relayGen||0)+1;next.connection={state:'unknown',checkedAt:null,code:null,version:null};next.enabled=false;}
     }
     if(input.enabled!==undefined){
       if(typeof input.enabled!=='boolean')throw fail('켜기 · 끄기를 다시 골라 주세요.');

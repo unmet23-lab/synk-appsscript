@@ -264,6 +264,24 @@ test('GPT GA2 · GA3 · GA4: 옛 주소 ping 답은 새 주소를 통과시키�
   release();await pending;
   assert.equal(f.service.settings(f.admin).connection.state,'unknown');
   assert.throws(()=>f.service.configure(f.admin,{enabled:true}),error=>error.status===409);
+  // A → B → A로 돌아와도 옛 확인의 늦은 성공은 버리고, 같은 세대의 앞선 확인도 마지막 확인을 덮지 않는다(GPT 다시 검수)
+  let releaseOld;const oldGate=new Promise(r=>{releaseOld=r;});
+  f.service.configure(f.admin,{relayUrl:RELAY});
+  f.override=(url,init)=>init.method==='POST'?oldGate.then(()=>answer({ok:true,status:'ok',version:1})):null;
+  const old=f.service.ping(f.admin);
+  f.service.configure(f.admin,{relayUrl:RELAY.replace('TEST','OTHER')});f.service.configure(f.admin,{relayUrl:RELAY});
+  f.override=()=>answer({ok:false,status:'rejected',code:'no_key',version:1});
+  assert.equal((await f.service.ping(f.admin)).connection.code,'no_key');
+  releaseOld();await old;
+  assert.equal(f.service.settings(f.admin).connection.state,'broken');
+  assert.throws(()=>f.service.configure(f.admin,{enabled:true}),error=>error.status===409);
+  let releaseFirst;const firstGate=new Promise(r=>{releaseFirst=r;});
+  f.override=(url,init)=>init.method==='POST'?firstGate.then(()=>answer({ok:true,status:'ok',version:1})):null;
+  const first=f.service.ping(f.admin);
+  f.override=()=>answer({ok:false,status:'rejected',code:'signature',version:1});
+  assert.equal((await f.service.ping(f.admin)).connection.code,'signature');
+  releaseFirst();await first;
+  assert.equal(f.service.settings(f.admin).connection.code,'signature','먼저 시작한 확인의 늦은 성공이 마지막 확인을 덮지 않는다');
   f.override=null;f.service.configure(f.admin,{relayUrl:RELAY});await f.connect();f.advance(1);
   // GA3
   const row=f.project();f.event(row,'final_ready');await f.service.fill(f.now);
