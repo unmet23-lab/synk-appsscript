@@ -164,6 +164,122 @@ test('_정리제외.txt의 「#! 실측 계보」 절은 남기기만 하고 그
   } finally { fs.rmSync(방, { recursive: true, force: true }); }
 });
 
+test('모음 폴더 .tmp/검수는 통째로 남기고 묶음마다 잰다 — 최근 묶음 · _보존 묶음 · 그 다시 검수 사슬의 앞 고리만 언급을 따라간다(11-07)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-tmp-review-'));
+  try {
+    const 임시 = path.join(방, '.tmp'), 대기 = path.join(방, '정리대기'), 검수 = path.join(임시, '검수');
+    const 쓰기 = (상대, 글) => { const p = path.join(임시, 상대); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, typeof 글 === 'string' ? 글 : JSON.stringify(글)); };
+    const 후보 = (이름) => `C:\\Users\\me\\SYNK\\.tmp\\${이름}\\후보.json`;
+    // 오늘 만든 묶음 — 배포 관문 --검수가 곧 다시 연다
+    쓰기('검수/fresh-20261107/묶음.json', { 판: 2, 이름: 'fresh-20261107', 설정: { 배포후보: 후보('fresh-candidate-20261101') } });
+    // 오늘 이은 다시 검수(끝) → 옛 가운데 고리(적힌 폴더) → 옛 처음 고리(폴더가 없어 이름으로) — 검수확인이 고리마다 배포후보 · 사용자지정을 다시 읽는다
+    쓰기('검수/chain-end-20261107/묶음.json', { 판: 2, 갈래: '델타', 앞: { 이름: 'chain-mid-20261020', 폴더: path.join(검수, 'chain-mid-20261020') } });
+    쓰기('검수/chain-mid-20261020/묶음.json', { 판: 2, 갈래: '델타', 앞: { 이름: 'chain-start-20261018', 폴더: path.join(방, '보관된-워크트리', '.tmp', '검수', 'chain-start-20261018') },
+      설정: { 배포후보: 후보('mid-candidate-20261020') } });
+    쓰기('검수/chain-start-20261018/묶음.json', { 판: 2, 설정: { 배포후보: 후보('start-candidate-20261018'), 사용자지정: 'C:\\Users\\me\\SYNK\\.tmp\\authority-20261018\\지정.json' } });
+    // 모음 밖 고리(GPT GA1) — 오늘 끝 고리 → 다른 작업본 .tmp의 가운데 고리(적힌 폴더가 있으면 그쪽을 연다) → 이 .tmp 옛 보관 폴더 안의 처음 고리
+    const 밖가운데 = path.join(방, '다른작업본', '.tmp', '검수', 'chain2-mid-20261020');
+    쓰기('검수/chain2-end-20261107/묶음.json', { 판: 2, 갈래: '델타', 앞: { 이름: 'chain2-mid-20261020', 폴더: 밖가운데 } });
+    fs.mkdirSync(밖가운데, { recursive: true });
+    fs.writeFileSync(path.join(밖가운데, '묶음.json'), JSON.stringify({ 판: 2, 갈래: '델타', 앞: { 이름: 'chain2-start-20261016', 폴더: path.join(임시, 'review-archive-20261015', 'chain2-start-20261016') } }));
+    쓰기('review-archive-20261015/chain2-start-20261016/묶음.json', { 판: 2, 설정: { 배포후보: 후보('chain2-start-candidate-20261016') } });
+    // 옛 묶음 — 검수 자료 · 내용 사본에 적힌 옛 경로는 남길 이유가 아니다
+    쓰기('검수/old-20261027/묶음.json', { 판: 2, 설정: { 배포후보: 후보('old-only-candidate-20261027') } });
+    쓰기('검수/old-20261027/내용/tools/run.cjs', "require('../../old-only-tool-20261010/a.cjs')");
+    쓰기('검수/old-20261027/페이블자료.json', { diff: '.tmp/old-only-sns-20261012/plan.json', 겹침: '.tmp/fresh-candidate-20261101/후보.json' });
+    // 옛 묶음이지만 _보존.txt가 있으면 따라간다
+    쓰기('검수/kept-20261015/묶음.json', { 설정: { 배포후보: 후보('kept-candidate-20261015') } });
+    쓰기('검수/kept-20261015/_보존.txt', '남김');
+    쓰기('검수/_맨위메모.json', { x: '.tmp/loose-ref-20261009/a.json' });
+    const 옛폴더 = ['fresh-candidate-20261101', 'mid-candidate-20261020', 'start-candidate-20261018', 'authority-20261018', 'old-only-candidate-20261027', 'old-only-tool-20261010',
+      'old-only-sns-20261012', 'kept-candidate-20261015', 'loose-ref-20261009', 'plain-old-20261001', 'chain2-start-candidate-20261016', 'review-archive-20261015'];
+    for (const 이름 of 옛폴더) { 쓰기(`${이름}/a.json`, '{}'); 옛날로(path.join(임시, 이름), 30); }
+    for (const 이름 of ['chain-mid-20261020', 'chain-start-20261018', 'old-20261027', 'kept-20261015']) 옛날로(path.join(검수, 이름), 20);
+    옛날로(path.join(검수, '_맨위메모.json'), 20);
+
+    const 목록 = 정리.목록만들기({ 임시, 대기, 일수: 3 });
+    assert.deepEqual(목록.참조로남김.map((x) => [x.이름, x.가리킨]), [
+      ['authority-20261018', ['검수/chain-start-20261018']],
+      ['chain2-start-candidate-20261016', ['review-archive-20261015/chain2-start-20261016']],
+      ['fresh-candidate-20261101', ['검수/fresh-20261107']],
+      ['kept-candidate-20261015', ['검수/kept-20261015']],
+      ['mid-candidate-20261020', ['검수/chain-mid-20261020']],
+      ['review-archive-20261015', ['../다른작업본/.tmp/검수/chain2-mid-20261020']],
+      ['start-candidate-20261018', ['검수/chain-start-20261018']],
+    ], '옛 묶음(old-20261027)이 함께 가리켜도 가리킨 쪽에는 최근 · 사슬 · _보존 묶음만 적히고, 모음 밖 고리를 거쳐도 사슬이 이어진다');
+    assert.deepEqual(목록.후보.map((c) => c.이름).sort(), ['loose-ref-20261009', 'old-only-candidate-20261027', 'old-only-sns-20261012', 'old-only-tool-20261010', 'plain-old-20261001'],
+      '옛 묶음만 가리키는 폴더 · 모음 폴더 맨 위 낱 파일의 언급은 후보로 보인다');
+    assert.ok(!목록.후보.some((c) => c.이름 === '검수'), '모음 폴더 자신은 후보가 아니다');
+    assert.deepEqual(목록.모음, [{ 이름: '검수', 묶음: 7, 뿌리: 8, 최근: 3, 보존: 1, 앞고리: 4 }]);
+    assert.match(정리.글로(목록), /검수 폴더는 통째로 남기고 묶음 7개 가운데 3일 안 묶음 3개 · _보존 묶음 1개와 그 다시 검수 사슬의 앞 묶음 4개가 가리킨 폴더만 남겼어요/,
+      '오래된 _보존 묶음은 「3일 안」에 세지 않는다(GPT GA2)');
+    assert.deepEqual(정리.옮기기(['검수', 'mid-candidate-20261020'], { 임시, 대기, 일수: 3 }).옮김, [], '모음 폴더와 사슬 고리가 가리키는 폴더는 승인 목록에 있어도 옮기지 않는다');
+
+    // 모든 묶음이 옛것이 되어도 검수 폴더는 후보가 아니고, 묶음의 언급은 남길 이유가 되지 않는다
+    const 나중 = 정리.목록만들기({ 임시, 대기, 일수: 3, 지금: Date.now() + 10 * 하루 });
+    assert.ok(!나중.후보.some((c) => c.이름 === '검수'));
+    assert.deepEqual(나중.참조로남김.map((x) => x.이름), ['kept-candidate-20261015'], '_보존.txt 묶음만 남는다');
+    assert.deepEqual(나중.모음, [{ 이름: '검수', 묶음: 7, 뿌리: 1, 최근: 0, 보존: 1, 앞고리: 0 }]);
+    assert.ok(나중.후보.some((c) => c.이름 === 'review-archive-20261015'), '사슬이 다 옛것이면 모음 밖 고리를 담은 폴더도 후보다');
+
+    // _정리제외.txt에 검수를 적으면 예전처럼 통째로 따라가고, 모음 밖 사슬 고리도 잇는다
+    fs.writeFileSync(path.join(임시, '_정리제외.txt'), '검수  # 통째로 따라감\n');
+    const 통째 = 정리.목록만들기({ 임시, 대기, 일수: 3, 지금: Date.now() + 10 * 하루 });
+    assert.deepEqual(통째.후보.map((c) => c.이름), ['plain-old-20261001']);
+    assert.deepEqual(통째.모음, [{ 이름: '검수', 통째: true, 묶음: 7, 밖고리: 2 }]);
+    assert.match(정리.글로(통째), /검수 폴더는 _정리제외.txt · _보존.txt에 적혀 묶음 7개를 모두 따라갔어요/);
+    // 실측 계보 절(닫힘)에 적으면 남기기만 하고 아무것도 따라가지 않는다
+    fs.writeFileSync(path.join(임시, '_정리제외.txt'), '#! 실측 계보 시작\n검수\n#! 실측 계보 끝\n');
+    const 닫힘 = 정리.목록만들기({ 임시, 대기, 일수: 3 });
+    assert.ok(닫힘.후보.some((c) => c.이름 === 'fresh-candidate-20261101') && !닫힘.후보.some((c) => c.이름 === '검수'));
+    assert.deepEqual(닫힘.모음, []);
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
+test('저장소의 추적 코드가 .tmp/<이름>으로 쓰는 폴더는 남기고 그 언급도 따라간다 — 문서 · 추적 안 된 파일 · 생성물 폴더는 아니다(11-07)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-tmp-repo-'));
+  try {
+    const 임시 = path.join(방, '.tmp'), 대기 = path.join(방, '정리대기');
+    const 쓰기 = (상대, 글) => { const p = path.join(방, 상대); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, 글); };
+    쓰기('tools/오마주.js', "const 캐시 = path.join(뿌리, '.tmp', 'tool-cache');\nconst 날 = path.join(REPO, '.tmp', DAILY ? 'daily-scan' : 'weekly-scan', `${오늘}`);\n"
+      + "const 색인 = path.join(뿌리, '.tmp', 'nested-ref/index.json');");
+    쓰기('tests/지면.test.js', "const 판 = '.tmp/test-fixture-20261030/a.png';");
+    쓰기('experiences/x/qa/공개후보.cjs', "require(String.raw`C:\\SYNK\\.tmp\\qa-bake-20261104\\run.cjs`)");
+    쓰기('docs/기록.md', '`.tmp/doc-only-20261001/` 문서에만 적힘');
+    쓰기('tools/dist/묶음.js', "'.tmp/generated-only-20261002'");
+    쓰기('tools/추적안함.js', "'.tmp/untracked-only-20261003'");
+    for (const 이름 of ['tool-cache', 'test-fixture-20261030', 'qa-bake-20261104', 'doc-only-20261001', 'generated-only-20261002', 'untracked-only-20261003', 'chained-20261001',
+      'daily-scan', 'weekly-scan', 'nested-ref']) 쓰기(`.tmp/${이름}/a.json`, '{}');
+    쓰기('.tmp/tool-cache/색인.json', JSON.stringify({ 원본: '.tmp/chained-20261001/a.json' }));
+    for (const 이름 of fs.readdirSync(임시)) 옛날로(path.join(임시, 이름), 30);
+    const git = (...a) => { const r = spawnSync('git', ['-C', 방, ...a], { encoding: 'utf8' }); assert.equal(r.status, 0, r.stderr); };
+    git('init', '-q');
+    git('add', 'tools/오마주.js', 'tests/지면.test.js', 'experiences', 'docs', 'tools/dist');
+
+    const 목록 = 정리.목록만들기({ 임시, 대기 });
+    assert.deepEqual(목록.후보.map((c) => c.이름).sort(), ['doc-only-20261001', 'generated-only-20261002', 'untracked-only-20261003']);
+    assert.deepEqual(목록.참조로남김.map((x) => [x.이름, x.가리킨]), [
+      ['chained-20261001', ['tool-cache']],
+      ['daily-scan', ['저장소:tools/오마주.js']],
+      ['nested-ref', ['저장소:tools/오마주.js']],
+      ['qa-bake-20261104', ['저장소:experiences/x/qa/공개후보.cjs']],
+      ['test-fixture-20261030', ['저장소:tests/지면.test.js']],
+      ['tool-cache', ['저장소:tools/오마주.js']],
+      ['weekly-scan', ['저장소:tools/오마주.js']],
+    ], '조건식으로 고르는 이름(DAILY ? … : …) · 한 따옴표 안의 하위 경로(nested-ref/index.json)도 같은 호출 안 따옴표 낱말로 잡는다');
+    assert.equal(목록.저장소로남김, 6);
+    assert.equal(목록.저장소코드, 3, 'git ls-files의 코드 파일만 — 문서 · 생성물 폴더 · 추적 안 된 파일은 뺀다');
+    assert.match(정리.글로(목록), /저장소 코드가 \.tmp\/<이름>으로 쓰는 폴더 6개\(저장소 코드 3개 파일을 봤어요\)/);
+    assert.deepEqual(정리.옮기기(['tool-cache', 'doc-only-20261001'], { 임시, 대기 }).옮김, ['doc-only-20261001']);
+
+    // 저장소가 아닌 곳(.git 없음)은 저장소 코드를 보지 않는다 — 앞의 시험들이 그 꼴이다
+    fs.rmSync(path.join(방, '.git'), { recursive: true, force: true });
+    const 밖 = 정리.목록만들기({ 임시, 대기 });
+    assert.equal(밖.저장소코드, null);
+    assert.ok(밖.후보.some((c) => c.이름 === 'tool-cache'));
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
 test('릴리스·후보 사본은 갈래마다 새 판 둘만 남기고 옛 판은 날짜와 상관없이 후보 — 남는 판이 끌어 쓰는 옛 판·_보존은 뺀다', () => {
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-tmp-release-'));
   try {
