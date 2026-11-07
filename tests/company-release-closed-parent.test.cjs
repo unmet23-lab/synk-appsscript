@@ -97,6 +97,37 @@ test('composition preserves parent bytes, images and selected tests and requires
   a.throws(() => compose(config), /CARRY_PARENT_CHANGED/); a.equal(fs.existsSync(config.output), false);
 });
 
+test('a selected test can be retired only explicitly, with its parent bytes kept in the source and image', t => {
+  const f = fixture(t), saved = f.preserve(), carry = path.join(f.temp, 'carry'); fs.mkdirSync(path.join(carry, 'files'), { recursive: true });
+  const raw = Buffer.from("import test from 'node:test'; import assert from 'node:assert/strict'; test('new list',()=>assert.ok(true));\n");
+  fs.writeFileSync(path.join(carry, 'files/new.test.mjs'), raw);
+  const oldSha = R.sha(R.read(path.join(f.root, 'candidate/app.test.mjs'))), appSha = R.sha(R.read(path.join(f.root, 'candidate/app.mjs')));
+  const reason = 'its subject was deleted in git and it fails on the new code';
+  let n = 0;
+  const run = (body, files = [{ ...R.record('new.test.mjs', raw), beforeSha256: null }]) => {
+    const bytes = R.encode({ parentManifestSha256: saved.manifest, files, ...body }), file = path.join(carry, 'carry-' + n + '.json'); fs.writeFileSync(file, bytes);
+    return compose({ parent: saved.output, sealSha256: saved.sealSha256, carryFile: file, carrySha256: R.sha(bytes), output: path.join(f.temp, 'cand-' + (n++)) });
+  };
+  const result = run({ retiredTests: [{ path: 'app.test.mjs', sha256: oldSha, reason }] });
+  const composition = JSON.parse(R.read(path.join(result.output, 'composition.json')));
+  a.deepEqual(composition.tests, ['new.test.mjs']); a.deepEqual(composition.droppedSelectedTests, ['app.test.mjs']);
+  a.deepEqual(composition.retiredTests, [{ path: 'app.test.mjs', sha256: oldSha, reason }]); a.equal(composition.parentFilesRemoved, 0);
+  a.equal(R.sha(R.read(path.join(result.output, 'candidate/app.test.mjs'))), oldSha); a.equal(result.sourceFiles, 3);
+  a.ok(JSON.parse(R.read(path.join(result.output, 'image-payload.json'))).some(row => row.path === 'app.test.mjs'));
+  a.deepEqual(JSON.parse(R.read(path.join(run({}).output, 'composition.json'))).droppedSelectedTests, []);
+  const before = n;
+  a.throws(() => run({ retiredTests: [{ path: 'app.mjs', sha256: appSha, reason }] }), /RETIRED_TEST_NOT_SELECTED/);
+  a.throws(() => run({ retiredTests: [{ path: 'app.test.mjs', sha256: 'f'.repeat(64), reason }] }), /RETIRED_TEST_BYTES_CHANGED/);
+  a.throws(() => run({ retiredTests: [{ path: 'app.test.mjs', sha256: oldSha, reason: 'gone' }] }), /RETIRED_TEST_REASON_REQUIRED/);
+  a.throws(() => run({ retiredTests: [{ path: 'app.test.mjs', sha256: oldSha, reason }, { path: 'app.test.mjs', sha256: oldSha, reason }] }), /DUPLICATE_RETIRED_TEST/);
+  a.throws(() => run({ retiredTests: { path: 'app.test.mjs' } }), /RETIRED_TESTS_LIST_REQUIRED/);
+  const changed = Buffer.from('changed test\n'); fs.writeFileSync(path.join(carry, 'files/app.test.mjs'), changed);
+  a.throws(() => run({ retiredTests: [{ path: 'app.test.mjs', sha256: oldSha, reason }] }, [{ ...R.record('app.test.mjs', changed), beforeSha256: oldSha }]), /RETIRED_TEST_ALSO_CARRIED/);
+  const app3 = Buffer.from('export const value = 3;\n'); fs.writeFileSync(path.join(carry, 'files/app.mjs'), app3);
+  a.throws(() => run({ retiredTests: [{ path: 'app.test.mjs', sha256: oldSha, reason }] }, [{ ...R.record('app.mjs', app3), beforeSha256: appSha }]), /SELECTED_TESTS_REQUIRED/);
+  for (let i = before; i < n; i++) a.equal(fs.existsSync(path.join(f.temp, 'cand-' + i)), false);
+});
+
 test('an atomic preparation is invisible until validation finishes and preserves an existing destination', t => {
   const f = fixture(t), output = path.join(f.temp, 'atomic');
   const files = new Map([['nested/a.txt', Buffer.from('a')], ['b.txt', Buffer.from('b')]]);

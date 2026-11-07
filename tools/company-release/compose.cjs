@@ -12,9 +12,20 @@ function compose({ parent, sealSha256, carryFile, carrySha256, output }) {
   a.equal(carry.parentManifestSha256, base.manifestSha256, 'CARRY_PARENT_CHANGED');
   a.ok(Array.isArray(carry.files) && carry.files.length > 0, 'CARRY_FILES_REQUIRED');
   const files = new Map(), graph = new Map(base.source), changes = [], seen = new Set();
+  // A selected test whose subject left the source (its file was deleted in git) is retired explicitly: the parent file stays byte for
+  // byte in the source and the image (this tool never removes a parent file) and only leaves the selection, with a written reason.
+  const retired = new Set();
+  a.ok(carry.retiredTests === undefined || Array.isArray(carry.retiredTests), 'RETIRED_TESTS_LIST_REQUIRED');
+  for (const row of carry.retiredTests || []) {
+    R.name(row.path); a.equal(retired.has(row.path), false, 'DUPLICATE_RETIRED_TEST'); retired.add(row.path);
+    a.ok(base.tests.includes(row.path), 'RETIRED_TEST_NOT_SELECTED ' + row.path);
+    a.equal(base.source.get(row.path)?.sha256, row.sha256, 'RETIRED_TEST_BYTES_CHANGED ' + row.path);
+    a.ok(typeof row.reason === 'string' && row.reason.trim().length >= 10, 'RETIRED_TEST_REASON_REQUIRED ' + row.path);
+  }
   for (const row of base.source.values()) files.set('candidate/' + row.path, R.read(path.join(parent, 'candidate', row.path), row));
   for (const row of carry.files) {
     R.name(row.path); a.equal(seen.has(row.path), false, 'DUPLICATE_CARRY_PATH'); seen.add(row.path);
+    a.equal(retired.has(row.path), false, 'RETIRED_TEST_ALSO_CARRIED ' + row.path);
     const before = base.source.get(row.path);
     a.equal(row.beforeSha256, before?.sha256 ?? null, 'CARRY_BEFORE_CHANGED ' + row.path);
     if (before && /\.test\.[cm]?js$/.test(row.path)) a.ok(base.tests.includes(row.path), 'EXPLICIT_RETIRED_TEST_DECISION_REQUIRED');
@@ -29,7 +40,8 @@ function compose({ parent, sealSha256, carryFile, carrySha256, output }) {
   const manifestRaw = R.encode(manifest), manifestSha256 = R.sha(manifestRaw);
   const imageNames = new Set([...base.image.keys(), ...changes.map(row => row.path)]);
   const images = sourceRows.filter(row => imageNames.has(row.path));
-  const tests = [...new Set([...base.tests, ...changes.filter(row => /\.test\.[cm]?js$/.test(row.path)).map(row => row.path)])].sort();
+  const tests = [...new Set([...base.tests.filter(test => !retired.has(test)), ...changes.filter(row => /\.test\.[cm]?js$/.test(row.path)).map(row => row.path)])].sort();
+  a.ok(tests.length > 0, 'SELECTED_TESTS_REQUIRED');
   const delta = sourceRows.filter(row => seen.has(row.path));
   const runtimeDeltaPaths = delta.filter(row => !row.path.endsWith('.md') && !/\.test\.[cm]?js$/.test(row.path) && !row.path.includes('/qa/')).map(row => row.path).sort();
   const composition = {
@@ -41,7 +53,8 @@ function compose({ parent, sealSha256, carryFile, carrySha256, output }) {
     baseSourceFiles: base.source.size, baseSourceFilesUnchanged: base.source.size - changes.filter(row => row.beforeSha256 !== null).length,
     parentFilesRemoved: 0, parentImageFilesRemoved: 0, parentTestsRemoved: 0,
     tests, addedSelectedTests: tests.filter(test => !base.tests.includes(test)),
-    droppedSelectedTests: [], plannedEnv: { additions: {} },
+    droppedSelectedTests: [...retired].sort(), retiredTests: (carry.retiredTests || []).map(row => ({ path: row.path, sha256: row.sha256, reason: row.reason })).sort((x, y) => x.path.localeCompare(y.path, 'en')),
+    plannedEnv: { additions: {} },
     actualLocalQa: false, actualLinuxQa: false, productReviewAccepted: false, finalDeploymentApproval: false,
     currentLiveStateVerified: false, remoteCalls: 0, productionMutations: 0
   };
