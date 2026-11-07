@@ -15,7 +15,8 @@
  *   node tools/lib/그록호출.js [--웹] [--모델 <이름>] [--노력 high] [--턴 8] [--시간 600] -o <출력> < 프롬프트
  *   node tools/lib/그록호출.js --점검        # 설치 · 로그인 · 판만 본다(모델을 부르지 않는다)
  *   const { 부르기 } = require('./그록호출.js');  → await 부르기({ 프롬프트, 웹, 모델, 노력, 턴, 시간초 })
- *     → { 글, 멈춘까닭, 세션, 쓴양, 비용USD, 걸린ms }
+ *     → { 글, 구조답(스키마를 줬을 때), 멈춘까닭, 세션, 쓴양, 비용USD, 걸린ms }
+ *   스키마: JSON 스키마(객체·글) — --json-schema로 넘겨 답 꼴을 강제한다. 하위 에이전트는 늘 끄고, 웹을 안 쓸 땐 웹 검색 도구 자체를 끈다.
  */
 
 const fs = require('fs');
@@ -50,11 +51,13 @@ function 점검() {
   return { ok: true, bin, 판 };
 }
 
-function 인자목록({ 프롬프트파일, 작업폴더, 웹, 모델, 노력, 턴 }) {
+function 인자목록({ 프롬프트파일, 작업폴더, 웹, 모델, 노력, 턴, 스키마 = null }) {
   const a = ['--no-auto-update', '--prompt-file', 프롬프트파일, '--output-format', 'json', '--cwd', 작업폴더,
-    '--permission-mode', 'dontAsk', '--max-turns', String(턴)];
+    '--permission-mode', 'dontAsk', '--max-turns', String(턴), '--no-subagents'];
   for (const t of 막을도구) a.push('--deny', t);
-  if (!웹) a.push('--deny', 'WebSearch');
+  if (!웹) a.push('--deny', 'WebSearch', '--disable-web-search');
+  // 답 꼴(11-07 실측 grok 1.0.77): --json-schema를 주면 답이 structuredOutput 칸에 꼴 그대로 온다
+  if (스키마) a.push('--json-schema', typeof 스키마 === 'string' ? 스키마 : JSON.stringify(스키마));
   if (모델) a.push('--model', 모델);
   if (노력) a.push('--reasoning-effort', 노력);
   return a;
@@ -68,10 +71,34 @@ function 답읽기(out) {
   let o = null;
   try { o = JSON.parse(s.slice(i, j + 1)); } catch { return null; }
   if (!o || typeof o !== 'object' || typeof o.text !== 'string') return null;
-  return { 글: o.text, 멈춘까닭: o.stopReason ?? null, 세션: o.sessionId ?? null, 쓴양: o.usage ?? null, 비용USD: typeof o.total_cost_usd === 'number' ? o.total_cost_usd : null, 턴수: o.num_turns ?? null };
+  return { 글: o.text, 구조답: o.structuredOutput ?? null, 멈춘까닭: o.stopReason ?? null, 세션: o.sessionId ?? null, 쓴양: o.usage ?? null, 비용USD: typeof o.total_cost_usd === 'number' ? o.total_cost_usd : null, 턴수: o.num_turns ?? null };
 }
 
-async function 부르기({ 프롬프트, 웹 = false, 모델 = null, 노력 = null, 턴 = 8, 시간초 = 600 } = {}) {
+/** 글에서 맨 바깥 { … } 덩이들을 차례로 꺼낸다(글자열 · 이스케이프 안의 괄호는 세지 않는다). */
+function JSON덩이들(글) {
+  const s = String(글 ?? ''), 덩이 = [];
+  let 깊이 = 0, 시작 = -1, 글자열 = false, 탈출 = false;
+  for (let i = 0; i < s.length; i += 1) {
+    const c = s[i];
+    if (글자열) { if (탈출) 탈출 = false; else if (c === '\\') 탈출 = true; else if (c === '"') 글자열 = false; continue; }
+    if (c === '"') { if (깊이 > 0) 글자열 = true; continue; }
+    if (c === '{') { if (깊이 === 0) 시작 = i; 깊이 += 1; }
+    else if (c === '}' && 깊이 > 0) { 깊이 -= 1; if (깊이 === 0) { 덩이.push(s.slice(시작, i + 1)); 시작 = -1; } }
+  }
+  return 덩이;
+}
+
+/** 그록 답 글에서 읽히는 JSON 덩이 가운데 마지막 것(울타리 안을 먼저). 꼴 칸이 빌 때 답이 두 번 이어 붙어 오기도 한다(11-07 실측). 없으면 null. */
+function 마지막JSON(글) {
+  const s = String(글 ?? '');
+  const 울 = /```(?:json)?\s*([\s\S]*?)```/i.exec(s);
+  for (const 몸 of 울 ? [울[1], s] : [s]) {
+    for (const d of JSON덩이들(몸).reverse()) { try { return JSON.parse(d); } catch { /* 다음 덩이 */ } }
+  }
+  return null;
+}
+
+async function 부르기({ 프롬프트, 웹 = false, 모델 = null, 노력 = null, 턴 = 8, 시간초 = 600, 스키마 = null } = {}) {
   if (typeof 프롬프트 !== 'string' || !프롬프트.trim()) throw 막힘('EMPTY_PROMPT', '프롬프트가 비었다');
   const 상태 = 점검();
   if (!상태.ok) throw 막힘(상태.code, 상태.code === 'NOT_INSTALLED' ? `그록 CLI가 없다 — ${상태.안내}` : `그록 로그인이 필요하다 — ${상태.안내}`);
@@ -83,7 +110,7 @@ async function 부르기({ 프롬프트, 웹 = false, 모델 = null, 노력 = nu
   const 시작 = Date.now();
   try {
     const { code, out, err, 끊김 } = await new Promise(resolve => {
-      const p = spawn(상태.bin, 인자목록({ 프롬프트파일, 작업폴더, 웹, 모델, 노력, 턴 }), { cwd: 작업폴더, env, windowsHide: true });
+      const p = spawn(상태.bin, 인자목록({ 프롬프트파일, 작업폴더, 웹, 모델, 노력, 턴, 스키마 }), { cwd: 작업폴더, env, windowsHide: true });
       let out = '', err = '', 끊김 = false;
       const t = setTimeout(() => { 끊김 = true; p.kill(); }, 시간초 * 1000);
       p.stdout.on('data', d => { out += d; });
@@ -100,7 +127,7 @@ async function 부르기({ 프롬프트, 웹 = false, 모델 = null, 노력 = nu
       if (/rate.?limit|429|quota|usage limit/i.test(글)) throw 막힘('RATE_LIMIT', `그록 사용량 한도 — ${글.trim().split('\n').pop()}`);
       throw 막힘('BAD_RESPONSE', `그록 답을 읽지 못했다(끝 코드 ${code}) — ${글.trim().slice(-300)}`);
     }
-    if (!답.글.trim()) throw 막힘('EMPTY_ANSWER', '그록이 빈 답을 냈다');
+    if (!답.글.trim() && !답.구조답) throw 막힘('EMPTY_ANSWER', '그록이 빈 답을 냈다');
     return { ...답, 걸린ms };
   } finally {
     for (const d of [작업폴더, path.dirname(프롬프트파일)]) { try { fs.rmSync(d, { recursive: true, force: true }); } catch { /* 남아도 임시 폴더 */ } }
@@ -133,4 +160,4 @@ async function main(argv) {
 
 if (require.main === module) main(process.argv.slice(2)).then(c => { process.exitCode = c; });
 
-module.exports = { 부르기, 점검, 답읽기, 인자목록, 그록경로 };
+module.exports = { 부르기, 점검, 답읽기, 인자목록, 그록경로, JSON덩이들, 마지막JSON };

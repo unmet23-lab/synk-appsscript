@@ -78,14 +78,8 @@ function 프롬프트(브랜드, s, o, 날짜) {
   ].join('\n');
 }
 
-function JSON꺼내기(글) {
-  const s = String(글 || '');
-  const 울타리 = /```(?:json)?\s*([\s\S]*?)```/i.exec(s);
-  const 몸 = 울타리 ? 울타리[1] : s;
-  const i = 몸.indexOf('{'), j = 몸.lastIndexOf('}');
-  if (i < 0 || j < i) return null;
-  try { return JSON.parse(몸.slice(i, j + 1)); } catch { return null; }
-}
+/** 그록 답 글에서 읽히는 JSON 덩이 가운데 마지막 것(답이 두 번 이어 붙어 와도). */
+const JSON꺼내기 = 글 => 그록.마지막JSON(글);
 
 /** X 글 번호에 박힌 올린 시각(ms). 번호 꼴이 아니면 null. */
 function 번호시각(번호) {

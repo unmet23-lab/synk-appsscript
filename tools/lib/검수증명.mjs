@@ -470,11 +470,15 @@ export function 응답검사(answer, expected, { final = false } = {}) {
 }
 // 일반 오류·응답 속 단어는 막힘으로 간주하지 않는다. 실행기가 받은 실패 원문을 보존한다.
 export function 막힘증거(누구, raw, usage = null) {
-  if (usage?.주간 === 0) return { 종류: '한도', 도구: 누구 === 'GPT' ? 'codex' : 'agy', 원문: JSON.stringify(usage) };
+  const 도구 = 누구 === 'GPT' ? 'codex' : 누구 === '그록' ? 'grok' : 'agy';
+  if (usage?.주간 === 0) return { 종류: '한도', 도구, 원문: JSON.stringify(usage) };
   const text = String(raw || '');
-  const quota = 누구 === 'GPT' ? /(?:hit your usage limit|usage limit.*(?:reached|exceeded)|no Pro account.*(?:available|remaining)|Pro 계정.*(?:없|한도)|주간.*한계)/i : /(?:RESOURCE_EXHAUSTED|QUOTA_EXHAUSTED|quota.*(?:exceeded|exhausted)|limit remaining 0|429.*(?:quota|rate))/i;
+  // 그록(11-07): tools/lib/그록호출.js가 한도는 「그록 사용량 한도 — …」, 로그인은 「그록 로그인이 필요하다 — grok login …」으로 던진다
+  const quota = 누구 === 'GPT' ? /(?:hit your usage limit|usage limit.*(?:reached|exceeded)|no Pro account.*(?:available|remaining)|Pro 계정.*(?:없|한도)|주간.*한계)/i
+    : 누구 === '그록' ? /(?:그록 사용량 한도|usage limit|rate.?limit|429|quota.*(?:exceeded|exhausted))/i
+    : /(?:RESOURCE_EXHAUSTED|QUOTA_EXHAUSTED|quota.*(?:exceeded|exhausted)|limit remaining 0|429.*(?:quota|rate))/i;
   const login = /(?:not logged in|login required|authentication (?:failed|required)|unauthenticated|invalid credential|로그인이 필요)/i;
-  return quota.test(text) || login.test(text) ? { 종류: quota.test(text) ? '한도' : '로그인', 도구: 누구 === 'GPT' ? 'codex' : 'agy', 원문: text } : null;
+  return quota.test(text) || login.test(text) ? { 종류: quota.test(text) ? '한도' : '로그인', 도구, 원문: text } : null;
 }
 /** 다시 검수(고친 diff만) 증명 — 앞 고리 후보 해시·지금 후보 해시·diff 해시·대상 지적·묶음 입력 SHA를 한 해시에 묶는다. */
 export function 다시증명(body) {

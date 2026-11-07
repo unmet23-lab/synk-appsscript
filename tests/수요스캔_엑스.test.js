@@ -73,15 +73,19 @@ test('그록 통로: 파일 · 셸 · 고치기 · MCP 도구는 늘 막고, 웹
   const 기본 = 그록.인자목록({ 프롬프트파일: 'p.md', 작업폴더: 'w', 웹: false, 턴: 8 });
   for (const t of ['Bash', 'Read', 'Edit', 'Write', 'Grep', 'Glob', 'MCPTool', 'WebFetch', 'WebSearch']) assert.ok(막은(기본).includes(t), t);
   assert.ok(기본.includes('--no-auto-update'));
+  assert.ok(기본.includes('--no-subagents') && 기본.includes('--disable-web-search'), '하위 에이전트는 늘, 웹은 안 쓸 때 끈다');
+  const 꼴 = 그록.인자목록({ 프롬프트파일: 'p.md', 작업폴더: 'w', 웹: false, 턴: 4, 스키마: { type: 'object' } });
+  assert.equal(꼴[꼴.indexOf('--json-schema') + 1], '{"type":"object"}');
   assert.equal(기본[기본.indexOf('--permission-mode') + 1], 'dontAsk');
   const 웹 = 그록.인자목록({ 프롬프트파일: 'p.md', 작업폴더: 'w', 웹: true, 턴: 8, 모델: 'm', 노력: 'high' });
-  assert.ok(!막은(웹).includes('WebSearch'));
+  assert.ok(!막은(웹).includes('WebSearch') && !웹.includes('--disable-web-search'));
   assert.ok(막은(웹).includes('Read'));
   assert.equal(웹[웹.indexOf('--model') + 1], 'm');
 });
 
 test('그록 통로: 답읽기는 text가 있는 JSON만', () => {
-  assert.deepEqual(그록.답읽기('로그\n{"text":"답","stopReason":"end","sessionId":"s","total_cost_usd":0.12,"num_turns":3}'), { 글: '답', 멈춘까닭: 'end', 세션: 's', 쓴양: null, 비용USD: 0.12, 턴수: 3 });
+  assert.deepEqual(그록.답읽기('로그\n{"text":"답","stopReason":"end","sessionId":"s","total_cost_usd":0.12,"num_turns":3}'), { 글: '답', 구조답: null, 멈춘까닭: 'end', 세션: 's', 쓴양: null, 비용USD: 0.12, 턴수: 3 });
+  assert.deepEqual(그록.답읽기('{"text":"{}","structuredOutput":{"findings":[]}}').구조답, { findings: [] }, '꼴을 강제하면 structuredOutput을 받는다');
   assert.equal(그록.답읽기('{"result":"x"}'), null);
   assert.equal(그록.답읽기(''), null);
 });

@@ -1156,3 +1156,48 @@ test('다시: 내용 보관 전 옛 묶음은 git에서 앞 판을 찾고, 못 �
   const y = await api.다시하기({ 이름: 'found', 폴더: path.join(r.뿌리, 'found'), 앞: x.폴더 });
   assert.match(fs.readFileSync(path.join(y.폴더, '묶음-A.txt'), 'utf8'), /-a=2\n\+a=3/);
 });
+
+test('그록(11-07): 같은 묶음 · 같은 대조로 보내고 지적은 KA1…, 그록 막힘은 grok 도구로 적고, 집계에 서도 필수는 아니며 낸 P1은 처리해야 닫힌다', async t => {
+  const { 준비하기, 그록보내기, 지적표읽기, 처리하기, 집계하기, 그록답JSON } = await tool();
+  const { 막힘증거 } = await import(pathToFileURL(path.join(root, 'tools/lib/검수증명.mjs')));
+  const r = 임시저장소(t, { 'src/app.js': 'export const a = 1;\n' });
+  r.쓰기('src/app.js', 'export const a = 2;\n');
+  r.g('add', 'src/app.js'); r.g('commit', '-q', '-m', '고침: a를 2로');
+  const { 폴더, 목록 } = await 준비하기({ 이름: '그록시험', 폴더: r.출력, 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
+  const 받은 = [];
+  const 잘읽음 = async ({ prompt, model, thinking, schema }) => {
+    받은.push({ model, thinking });
+    assert.ok(schema.required.includes('endMarker'));
+    const 표식 = /자료 끝 표식: (\S+)\s*$/.exec(prompt)[1];
+    const seen = [...prompt.matchAll(/^### \[([^\]]+)\]/gm)].map(m => m[1]);
+    // 그록은 울타리 · 앞말을 붙여 답할 수 있다 — 그록부르기는 그록답JSON으로 벗긴 글을 돌려준다
+    const 답 = { findings: [{ grade: 'P1', location: 'src/app.js:1', quote: 'a = 2', problem: '부르는 곳이 1을 기대한다', fix: '부르는 곳도 고친다' }], seen, coverage: { reviewed: '전부', limitations: '', complete: true, missing: [] }, endMarker: 표식 };
+    return { text: 그록답JSON('검수 결과입니다\n```json\n' + JSON.stringify(답) + '\n```'), selectedModel: 'grok' };
+  };
+  const 결과 = await 그록보내기(폴더, 목록, { call: 잘읽음 });
+  assert.deepEqual(결과.map(x => x.상태), 목록.묶음.map(() => '읽음'));
+  assert.equal(받은[0].thinking, 'high', '그록 기본 노력은 high');
+  assert.ok(fs.existsSync(path.join(폴더, '그록-A.json')));
+  const 표 = 지적표읽기(폴더);
+  assert.deepEqual(표.지적.map(x => `${x.출처}:${x.번호}`), ['그록:KA1']);
+  const 셈 = 집계하기(목록, [], 표, [], [], [], 결과);
+  assert.deepEqual(셈.열린.map(x => x.번호), ['KA1'], '처리 안 한 그록 P1은 열린 지적이다');
+  const 그록줄 = 셈.검수자별.find(x => x.이름 === '그록');
+  assert.ok(그록줄 && 그록줄.필수 === false && 그록줄.셈.건 === 1, '집계에 그록 줄이 서지만 필수가 아니다');
+  assert.ok(!셈.검수자별.some(x => x.이름 === '그록' && x.필수), '그록 때문에 필수가 늘지 않는다');
+  처리하기(표, ['그록:KA1=재현안됨:부르는 곳이 없다']);
+  assert.equal(표.지적[0].처리, '재현 안 됨');
+  // 막힘: 그록 통로의 한도 · 로그인 말을 막힘 증거로 읽고 도구는 grok, 일반 실패와 다른 검수자 판정은 그대로
+  assert.equal(막힘증거('그록', '그록 사용량 한도 — rate limited')?.종류, '한도');
+  assert.equal(막힘증거('그록', '그록 사용량 한도 — x')?.도구, 'grok');
+  assert.equal(막힘증거('그록', '그록 로그인이 필요하다 — grok login')?.종류, '로그인');
+  assert.equal(막힘증거('그록', '그록 답을 읽지 못했다(끝 코드 1)'), null);
+  assert.equal(막힘증거('아르곤', '그록 사용량 한도'), null);
+  assert.equal(막힘증거('아르곤', 'RESOURCE_EXHAUSTED')?.도구, 'agy');
+  const 막힘 = await 그록보내기(폴더, 목록, { call: async () => { throw new Error('그록 사용량 한도 — 429'); }, 다시: true });
+  assert.equal(막힘[0].실패들.at(-1).상태, '막힘', '앞의 읽은 답은 두고 막힌 시도만 적는다');
+  assert.equal(그록답JSON('앞 {"a":1} 뒤'), '{"a":1}');
+  assert.equal(그록답JSON('{"a":'), '{"a":');
+  assert.equal(그록답JSON('{"findings":[1]}{"findings":[2],"q":"}{"}'), '{"findings":[2],"q":"}{"}', '답이 두 번 이어 붙으면 마지막 덩이(글자열 속 괄호는 안 셈)');
+  assert.equal(그록답JSON('앞말 {"a":1} 가운데 {"b":'), '{"a":1}', '깨진 뒤 덩이는 빼고 읽히는 것만');
+});

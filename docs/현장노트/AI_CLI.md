@@ -10,6 +10,7 @@
 
 > 도구를 쓰기 전에 여기와 목차만 읽고, 걸리는 절은 `rg -n "^###" docs/현장노트/AI_CLI.md`로 제목을 찾아 그 항목만 읽는다.
 
+- 그록(Grok Build)은 빈 폴더에서도 ~/.claude 훅 · 스킬을 읽고 `--sandbox strict`로는 파일 읽기가 안 막힌다 → `tools/lib/그록호출.js`로만 부르고(파일 · 셸 도구 막음), 설정은 compat 끄기 + 관리 훅만 허용 ([자세히](#그록grok-build))
 - PC를 다시 켜면 agy 로그인이 사라져 모든 세션의 아르곤 호출이 60초 뒤 「auth timed out」으로 끝난다 → 앱 터미널 탭에 인자 없는 `agy`를 **하나만** 띄워 유호님이 승인 · 코드 넣기(창 둘이면 코드가 섞인다). 대화형 기본 모델은 settings.json `"model": "Gemini 4 Argon (High)"`로 둔다 ([로그인](#pc를-다시-켜면-agy-로그인이-사라져-모든-세션의-아르곤-호출이-60초씩-기다리다-auth-timed-out으로-끝난다--로그인-창을-두-개-띄우면-코드가-섞여-token-exchange-failed-2026-11-07-claude), [기본 모델](#대화형-agy-창의-기본-모델이-argon-medium으로-뜬다--settingsjson에-model-키가-없으면-목록-첫-줄을-쓴다-2026-11-07-claude))
 - 무인 키가 소진되면 팁 적용안은 `~/.claude`의 터미널 로그인으로 넘어가는데, 앱 세션이 멀쩡해도 이 로그인은 따로 끊길 수 있다 → `claude auth status`로 본다 ([자세히](#팁-적용안이-oauth-session-expired로-실패하고-재부팅에-죽은-실행의-잠금이-3시간-동안-다음-회차를-막는다-2026-11-04-claude))
 - hermes-synk 감시는 10-22부터 운영 사본(origin 판)의 계약 파일을 고정한다 — 공용 작업본 저장으로는 안 멈추고, push 뒤 운영 사본 갱신이 다시 잡는다. 감시 검사기 `automation.py`·플러그인을 바꾼 push만 그 세션이 `install-automation.cjs --apply` ([자세히](#감시-계약-파일을-공용-작업본에서-저장하면-그-즉시-라이브-감시가-멈추고-유호님께-알림이-간다-2026-10-20-claude))
@@ -44,7 +45,41 @@
 
 ## 목차
 
-[Gemini·agy](#geminiagy) · [Claude API](#claude-api) · [Claude Code 자동 모드](#claude-code-자동-모드) · [Claude 앱 세션](#claude-앱-세션) · [Claude 서브에이전트](#claude-서브에이전트) · [Hermes(텔레그램 팁 봇)](#hermes텔레그램-팁-봇) · [Codex 예약](#codex-예약) · [Codex 세션 기록](#codex-세션-기록) · [Codex 데스크톱 앱](#codex-데스크톱-앱) · [Claude Code·공식 CLI 읽기(계정판)](#claude-code공식-cli-읽기계정판) · [OpenAI 실시간 음성(GPT-Live · Realtime)](#openai-실시간-음성gpt-live--realtime) · [지난 기록](지난기록/AI_CLI.md)
+[그록(Grok Build)](#그록grok-build) · [Gemini·agy](#geminiagy) · [Claude API](#claude-api) · [Claude Code 자동 모드](#claude-code-자동-모드) · [Claude 앱 세션](#claude-앱-세션) · [Claude 서브에이전트](#claude-서브에이전트) · [Hermes(텔레그램 팁 봇)](#hermes텔레그램-팁-봇) · [Codex 예약](#codex-예약) · [Codex 세션 기록](#codex-세션-기록) · [Codex 데스크톱 앱](#codex-데스크톱-앱) · [Claude Code·공식 CLI 읽기(계정판)](#claude-code공식-cli-읽기계정판) · [OpenAI 실시간 음성(GPT-Live · Realtime)](#openai-실시간-음성gpt-live--realtime) · [지난 기록](지난기록/AI_CLI.md)
+
+## 그록(Grok Build)
+
+> 판: grok 1.0.77(Windows, `~/.grok/bin`, 11-07 설치) · 계정 unmet23(구글 로그인, Ultra) · 통로 `tools/lib/그록호출.js` · 쓰는 곳 [계정과 크레딧 「그록」](../AI_계정과_크레딧.md#그록).
+
+### 자동 모드 판정기가 x.ai 설치 스크립트 실행을 막는다 — 유호님이 부탁해도 같다 (2026-11-07 Claude)
+- 증상: `irm https://x.ai/cli/install.ps1 | iex`(받아 둔 같은 파일을 `Invoke-Expression`으로 돌려도)가 「Code from External」로 두 번 거절됐다.
+- 원인: 판정기가 인터넷에서 받은 스크립트를 바로 실행하는 것 자체를 막는다. 사용자 말로는 안 풀리고 권한 허용 줄이 있어야 한다.
+- 고침: 스크립트를 받아 끝까지 읽고(받는 곳 x.ai · GCS, `~/.grok/bin` · 사용자 PATH · 같이 받는 git의 sha256 대조), 명령 한 줄을 `Set-Clipboard`로 올린 뒤 앱 터미널 탭을 열어 유호님이 붙여 넣고 엔터 → 브라우저에서 unmet23 로그인. 다른 실행 길로 돌아가지 않는다.
+- 다시 확인: `node tools/lib/그록호출.js --점검` → `ok: true` · 판 줄.
+
+### 빈 폴더에서 불러도 ~/.claude 지침 · 스킬 · 훅과 codex 플러그인 훅을 읽는다 (2026-11-07 Claude)
+- 증상: 빈 임시 폴더의 `grok inspect`에 `~/.claude/Claude.md`(지침) · 스킬 34개 · 훅(아티팩트 계정 훅 · stop · session_end · codex 플러그인)이 잡혔다 — 헤드리스 검수 중에 이 PC의 훅 명령이 돌 수 있다.
+- 원인: Grok Build는 Claude · Cursor · Codex 설정을 기본으로 함께 읽는다(Harness Compatibility 기본 켬).
+- 고침: `~/.grok/config.toml`에 `[compat.claude]` · `[compat.codex]` · `[compat.cursor]`의 skills · rules · mcps · hooks · agents = false, `[memory]` · `[memory_v2]` enabled = false, `~/.grok/requirements.toml`에 `allow_managed_hooks_only = true`(문서상 플러그인 훅까지 디스패치에서 막힘). `[plugins] disabled`에 이름을 넣어도 codex 플러그인은 목록에 「enabled」로 남는다 — 훅은 위 요구로 막히고 도구는 통로가 막는다.
+- 다시 확인: 빈 폴더에서 `grok inspect` → 「Hooks outside managed policy disabled」, compat 줄이 모두 OFF(config), Config Warnings 없음.
+
+### `--sandbox strict`는 파일 읽기를 막지 않는다 — 그림을 보게 할 땐 사용자 폴더 밖에 두고 읽기 규칙으로 막는다 (2026-11-07 Claude)
+- 증상: 작업 폴더만 쓰라고 `--sandbox strict`를 주고 Read를 열었더니 `C:/Users/q1212/.grok/config.toml` 첫 줄을 읽었다.
+- 원인: 읽기 전용 도구(read_file · grep)는 `dontAsk`에서도 묻지 않고 돈다. sandbox는 읽기를 작업 폴더로 묶지 않았다.
+- 고침: 글만 볼 땐 통로가 Read · Grep · Glob을 통째로 막는다(기본). 그림을 봐야 하면 그림을 `C:/grok-눈가림/`처럼 사용자 폴더 밖 빈 폴더에 두고 `--deny "Read(C:/Users/**)" --deny "Read(D:/**)"`(Grep도 같이)로 막는다 — 실측: 그림은 읽고 두 곳은 「못 읽음」.
+- 다시 확인: 같은 지시문(그림 한 장 + 사용자 폴더 · D: 파일 읽기)을 보내 「못 읽음」 두 줄이 나오는지.
+
+### 헤드리스 답 글에 여러 턴의 말이 이어 붙는다 — 꼴이 있는 답은 `--json-schema`로 받는다 (2026-11-07 Claude)
+- 증상: `--output-format json`의 `text`가 「…확인한 뒤 답하겠습니다.읽기가 막혀서…5」처럼 중간 말과 답이 붙어 왔다.
+- 원인: text가 턴마다의 어시스턴트 글을 잇는다.
+- 고침: `--json-schema <스키마 JSON>`을 주면 답이 `structuredOutput` 칸에 꼴 그대로 온다(통로의 `스키마` · 반환 `구조답`). 검수 묶음은 `검수묶음.mjs 그록`이 답꼴을 넘긴다. `grok usage`는 헤드리스에서 「/usage inside grok」로 안 되고, 남은 몫을 읽는 길은 아직 없다.
+- 다시 확인: 작은 버그 코드에 꼴을 주고 `structuredOutput.findings`가 오는지.
+
+### 통로 없이 grok을 불러 그림 70컷 검수를 시켰다 — 읽은 파일은 세션 기록으로 확인하고, 다음부터는 사용자 폴더 밖 + 읽기 규칙으로 (2026-11-07 Claude)
+- 증상: 로맨스 전수 검수에서 `grok.exe -p … --permission-mode dontAsk --deny Bash/Edit/Write/MCPTool/WebFetch/Grep/Glob --disable-web-search`로 그림 21장을 보게 했는데, 작업 폴더가 `mktemp -d`(= 사용자 폴더 안 %TEMP%)였고 `--deny "Read(C:/Users/**)"`를 안 줬다. 답($0.50 · 8턴)은 회상 4:3 띠를 「앞쪽에만 있다」, 김 서린 유리 손글씨를 「얼굴이 하얗게 날아감」으로 잘못 읽었다.
+- 원인: 위 「`--sandbox strict`는 파일 읽기를 막지 않는다」 항목을 안 보고 불렀다. 그림 검수에는 Read가 필요해 통로(`그록호출.js`)가 Read를 통째로 막는 기본으로는 못 돌린다.
+- 고침: 세션 기록 `~/.grok/sessions/<작업 폴더>/<세션>/events.jsonl` · `updates.jsonl`에서 read_file 경로를 뽑아 보니 넘긴 지시문 · 그림 21장뿐이었고, 그림 크기를 재려던 터미널 명령 두 번은 「Denied by permission policy」로 안 돌았다. 다음부터는 그림을 `C:/grok-눈가림/` 같은 사용자 폴더 밖에 두고 `--deny "Read(C:/Users/**)" --deny "Read(D:/**)"`(Grep도)를 더한다. 그록 답은 한 목소리로만 세고, 띠 · 글자를 잘못 읽은 곳은 Claude가 프레임으로 걸러 낸다.
+- 다시 확인: 같은 세션 기록에서 read_file 경로가 작업 폴더 밖으로 나간 줄이 없는지.
 
 ## Gemini·agy
 
