@@ -129,7 +129,7 @@ test('the view says the new introduction and none of what it must not say',async
   assert.match(portfolio,/가상 브랜드로 만든 자체 광고와 공모전 출품작이에요/);
   assert.match(portfolio,/카메라 앞에 서 본 사람이 AI 모델의 연기를 연출해요/);
   assert.match(portfolio,/SYNK PULSE는 엔터테인먼트·광고 업계에서 10년 일한 대표 유호가 연출해요/);
-  assert.match(portfolio,/넷플릭스 공개 「보라! 데보라」 1화 오프닝 시퀀스 출연 · tvN 「코미디빅리그」 코너 출연 · 부활 「너의 모습」 뮤직비디오 주연/);
+  assert.match(portfolio,/넷플릭스 공개 「보라! 데보라」 1화 오프닝 시퀀스 출연 · tvN 「코미디빅리그」 코너 출연 · 웹드라마 「알바왕 98과 99사이」 주연\(페이스북 조회수 1,000만 회\) · 부활 「너의 모습」 뮤직비디오 주연/);
   assert.match(brief,/모델 고르기, 광고가 남길 한 문장과 글 콘티, 컷마다 장면 이미지/);
   assert.match(brief,/15초 광고 39만원부터 · 30초 광고와 편집본 89만원부터 · 기업 캠페인 250만원부터/);
   for(const old of ['CLIENT STUDIO','광고 모델을 고르고','맡길 작업을','뮤직비디오와 기업 영상은','6명','참고 작업','모든 컷을 먼저 보여 드리는','배우로 활동한'])assert.ok(!all.includes(old),old);
