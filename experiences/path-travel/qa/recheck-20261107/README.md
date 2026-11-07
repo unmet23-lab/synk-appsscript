@@ -53,7 +53,7 @@ synk-policy `e7edd3c`(11-07 17:28 KST) — 자료 세 파일과 그 자료를 �
 3. `qa/recheck-<YYYYMMDD>/`를 새로 만들고 이 폴더의 `apply-recheck.mjs`·`gen-ledger.mjs`를 본떠 반영기·대장을 둔다. `tests/path-travel-live-catalog.test.mjs`는 확인일로 그 폴더를 찾는다.
 4. `node --test tests/path-travel-*.test.mjs` → 공개(아래)와 같은 길.
 
-공개: 공개본의 세 자료 파일은 원본 바이트 그대로라 `node tools/공개.js 올리기 try/travel/places-v2.mjs=experiences/path-travel/places-v2.mjs try/travel/real-places.mjs=… try/travel/real-course-data.mjs=… --후보폴더 <폴더>`로 후보를 만들고(공개 도구가 부르는 쪽 `?v=`만 바꾼다), `검수묶음.mjs 준비 … --종류 화면 --페이블생략 "<까닭>"` → 아르곤 → `--실행`. SYNK-website `sync-travel-experience.mjs`는 목록의 `conversation-rehearsal/domain.mjs`·`family-album/model.mjs`가 master에서 지워져 지금 그대로는 돌지 않는다(자료만 바꿀 때는 필요 없다).
+공개: 공개본의 세 자료 파일은 원본 바이트 그대로라 `node tools/공개.js 올리기 try/travel/places-v2.mjs=experiences/path-travel/places-v2.mjs try/travel/real-places.mjs=… try/travel/real-course-data.mjs=… --후보폴더 <폴더>`로 후보를 만들고(공개 도구가 부르는 쪽 `?v=`만 바꾼다), `검수묶음.mjs 준비 … --종류 화면 --페이블생략 "<까닭>"` → 아르곤 → `--실행`. 화면 코드까지 다시 실을 때는 SYNK-website **origin 판**(`codex/company-conversations`)의 `sync-travel-experience.mjs`를 워크트리로 받아 돌린다 — 공용 `Documents/SYNK-website` 작업본은 origin보다 37커밋 뒤(11-07)라 옛 목록이 지워진 파일을 찾다 멈춘다. origin 판은 origin/master 사본으로 92개 파일을 내고 자료 세 파일이 공개본과 같았다(11-07 확인).
 
 ## 정기 재확인 예약
 
