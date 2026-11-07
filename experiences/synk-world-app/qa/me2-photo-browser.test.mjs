@@ -29,7 +29,11 @@ const pickFile=(prefix)=>{if(!facesDir)return null;const name=fs.readdirSync(fac
 
 test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누가 나예요? → 현상 → 이게 나? → 학생증 · 옷장 · 추억 사진 → 다른 사진 → 지우기 (390 · 1440)',{timeout:600000,skip:!talkRoot&&'me2-photo 시험대가 있는 talk 작업본이 없다(SYNK_TALK_ROOT로 지정)'},async t=>{
  const {setup,uuid}=require(path.join(talkRoot,'tests/lib/me2-photo-fixture.js'));
- const fx=await setup(t);
+ // 사진 몫 주기는 매달 기준일(talk 기본 8일 0시 KST)에 바뀌고, 끝나기 26시간 전부터 새 현상을 받지 않는다(「사진관이 붐벼요」).
+ // 실제 날짜가 그 창에 들면 동의 뒤 올리는 칸이 안 나와 시험이 갈린다(2026-11-07 CI 빨강) — 오늘(KST)을 기준일로 잡아 주기가 막 시작된 자리에서 돈다.
+ // 붐빈 화면은 아래 「사진관이 붐빌 때」가 tamper로 따로 본다.
+ const anchorDay=Math.min(28,Number(new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',day:'numeric'}).format(new Date())));
+ const fx=await setup(t,{ME2_PHOTO_CYCLE_ANCHOR_DAY:String(anchorDay)});
  const A=uuid(1),C='22222222-2222-4222-8222-222222222222';
  await fx.newStudent(1,{invite:false});
  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'synk-world-me2-'));fs.writeFileSync(path.join(directory,'config.json'),JSON.stringify(config));

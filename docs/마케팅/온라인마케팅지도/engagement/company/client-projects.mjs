@@ -10,6 +10,9 @@ import {buildCustomerPreviewApproval} from './client-preview-approval.mjs';
 
 // 초대 링크는 만든 때부터 30일 동안 새 연결을 받는다(2026-10-19: 2~4주 제작 동안 고객이 새 링크 없이 돌아오게). 새 초대·접근 종료는 그대로 이전 연결을 끝낸다.
 export const INVITE_DAYS=30;
+// 초대 링크로 연 고객 세션은 12시간. 저장소 토큰 기한은 실제 시각으로 잡히고(다시 열 때 실제 시각으로 정리), 이 서비스는 주입된
+// clock으로도 연 때부터 12시간을 따로 잰다 — 시계를 넣은 시험이 실제 날짜에 따라 갈리지 않게(2026-11-07 CI 빨강). 운영에서는 둘이 같다.
+const SESSION_MINUTES=720;
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const digest=value=>createHash('sha256').update(value).digest('hex');
 const stages=['received','planning','producing','review','delivered','archived'];
@@ -188,12 +191,14 @@ export function createClientProjectsService({store,clock=()=>new Date().toISOStr
   }
   function invite(user,id,input){const row=project(user,id,true);revision(row,input);const raw=randomBytes(32).toString('base64url'),updated=append(row,'초대 링크 새로 만듦',user.id);updated.inviteHash=digest(raw);updated.inviteRevision++;updated.inviteExpiresAt=new Date(Date.parse(clock())+INVITE_DAYS*86400000).toISOString();return {...storeRow(updated),invite:raw,expiresAt:updated.inviteExpiresAt};}
   function revoke(user,id,input){const row=project(user,id,true);revision(row,input);return storeRow({...append(row,'초대 링크 닫음',user.id),inviteHash:null,inviteRevision:row.inviteRevision+1,inviteExpiresAt:null});}
-  function open(raw){if(typeof raw!=='string'||!/^[A-Za-z0-9_-]{43}$/.test(raw))throw fail('초대 링크가 없거나 끝났어요.',401);const hashed=digest(raw),row=store.all('clientProjects').find(p=>p.inviteHash===hashed);if(!row||row.stage==='archived'||Date.parse(row.inviteExpiresAt)<=Date.parse(clock()))throw fail('초대 링크가 없거나 끝났어요.',401);const csrf=randomBytes(24).toString('base64url');const session=store.mint('pulse-session',null,{projectId:row.id,inviteRevision:row.inviteRevision,csrf},720);return {session,csrf,project:customerView(row)};}
+  function open(raw){if(typeof raw!=='string'||!/^[A-Za-z0-9_-]{43}$/.test(raw))throw fail('초대 링크가 없거나 끝났어요.',401);const hashed=digest(raw),row=store.all('clientProjects').find(p=>p.inviteHash===hashed);if(!row||row.stage==='archived'||Date.parse(row.inviteExpiresAt)<=Date.parse(clock()))throw fail('초대 링크가 없거나 끝났어요.',401);const csrf=randomBytes(24).toString('base64url');const session=store.mint('pulse-session',null,{projectId:row.id,inviteRevision:row.inviteRevision,csrf,openedAt:clock()},SESSION_MINUTES);return {session,csrf,project:customerView(row)};}
   function session(raw){
     const auth=store.readToken(raw,'pulse-session'),row=auth&&store.get('clientProjects',auth.body.projectId);
     const device=auth?.body.deviceHash?devices.current(auth.body.deviceHash):null;
     const activeAccess=auth?.body.deviceHash?device&&device.row.id===row?.id:auth?.body.acceptedInvite===true||Date.parse(row?.inviteExpiresAt)>Date.parse(clock());
-    if(!row||row.stage==='archived'||!row.inviteHash||Date.parse(auth.expiresAt)<=Date.parse(clock())||auth.body.inviteRevision!==row.inviteRevision||!activeAccess)throw fail('초대 링크가 없거나 끝났어요.',401);
+    // openedAt이 없는 토큰(이 줄 전에 연 세션 · 기억한 기기로 이어 연 세션)은 저장소 기한만 본다.
+    const lapsed=Date.parse(auth?.body.openedAt)+SESSION_MINUTES*60000<=Date.parse(clock());
+    if(!row||row.stage==='archived'||!row.inviteHash||Date.parse(auth.expiresAt)<=Date.parse(clock())||lapsed||auth.body.inviteRevision!==row.inviteRevision||!activeAccess)throw fail('초대 링크가 없거나 끝났어요.',401);
     return {auth,row};
   }
   function read(raw){const {auth,row}=session(raw);return {project:customerView(row),csrf:auth.body.csrf};}
