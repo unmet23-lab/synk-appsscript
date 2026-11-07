@@ -165,3 +165,12 @@ test('old projects with an open model proposal keep the old path',async t=>{
   assert.equal(h.row.studio.request.rounds.length,1);
   assert.equal(h.row.studio.request.directionProposal,undefined);
 });
+test('sending a direction tells the customer, and the customer answer tells the desk',async t=>{
+  const h=await confirmed(t);await send(h,await proposal(h));
+  const events=()=>h.f.app.store.get('clientProjects',h.id).notificationEvents.map(event=>[event.type,event.audiences.join(),event.tab||'']);
+  assert.deepEqual(events().filter(([type])=>type==='direction_proposed'),[['direction_proposed','customer','overview']]);
+  const live=(await h.f.call('/pulse/api/live')).data;const note=live?.notifications?.find(item=>item.type==='direction_proposed');
+  assert.ok(note,'the customer sees the alert '+JSON.stringify(live).slice(0,200));assert.equal(note.title,'두 방향 중 하나를 골라 주세요');assert.match(note.body,/두 방향/);assert.equal(live.unreadCount>=1,true);
+  const d=h.row.studio.request.directionProposal;await h.cact({action:'answer_direction',optionId:d.options[0].id});
+  assert.ok(events().some(([type,audiences,tab])=>type==='customer_direction_answer'&&audiences==='owner,reviewer'&&tab==='desk'),JSON.stringify(events()));
+});
