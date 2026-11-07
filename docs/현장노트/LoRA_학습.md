@@ -111,6 +111,12 @@
 - F09는 v5 · v6 · v7 모두 통과선을 못 넘어 v5 마지막 판에 장면 금지 조건을 달아 닫았다. 다음에 고칠 것은 [v7 판정 「v8에서 고칠 것」](../마케팅/PULSE_AI모델_캐스팅_20260930/fable/아이돌_LoRA검증_F09_스타일v7_판정_20261106.md).
 - 다시 확인: 한 장 표의 「얼굴 좌우」 값과 시드 103 · 109(+) · 102(−), 돌아간 시드의 두피선 조각.
 
+### AI-Toolkit을 두 세션이 각각 띄우면 두 번째 화면 서버는 8675를 못 잡고 1초마다 다시 켜지고, 작업 일꾼은 둘 다 살아 같은 큐를 본다 (2026-11-07 Claude)
+- 증상: 11-07 18:42부터 유호님 화면의 「next-server (v15.5.21)」 창이 `Error: bind EADDRINUSE null:8675` · `File server worker 763 died, restarting`을 끝없이 찍었다. 18:34에 한 세션이 `cd /d D:\SYNK-LoRA\tools\ai-toolkit\ui && npm run start`로, 18:42에 다른 세션이 `AI-Toolkit_실행.cmd`로 같은 화면을 또 띄운 것이었다.
+- 원인: 시작 스크립트가 `concurrently --restart-tries -1`이라, 두 번째 파일 서버가 포트를 못 잡아도 끝없이 다시 띄운다. 같은 묶음의 `dist/cron/worker.js`(작업 큐 일꾼)는 포트를 쓰지 않아 둘 다 살아서 같은 DB 큐를 본다. 학습을 하나 걸면 둘이 같이 집을 수 있다.
+- 고침: 8675를 쥔 첫 번째(`/api/queue` 200)를 남기고 두 번째 창만 닫는다. 유호님이 X를 눌러 닫았다. Claude가 다른 세션이 띄운 프로세스를 끄는 것은 자동 모드 판정기가 「Interfere With Workloads」로 막는다. 띄우기 전에 `Get-NetTCPConnection -LocalPort 8675 -State Listen`이나 `curl http://localhost:8675/api/queue`로 이미 떠 있는지 먼저 본다.
+- 다시 확인: `Get-CimInstance Win32_Process | ? { $_.Name -eq 'node.exe' -and $_.CommandLine -match 'cron[\\/]worker\.js' }`가 하나만 나오는지 본다.
+
 ## 생성
 
 ### 전신·먼 컷은 LoRA가 얼굴을 못 그린다 — 얼굴 다시 그리기
