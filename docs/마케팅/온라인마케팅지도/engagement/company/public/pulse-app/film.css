@@ -900,7 +900,7 @@ html.sx.has-room-head:not(.is-staff) .header-crumb .crumb-no,.sx-room-bar.is-hea
 .sx-room-bar.is-head{right:var(--sx-m);width:auto;gap:14px;font-size:13px}
 .sx-room-bar.is-head .header-actions{margin-left:auto;display:flex;gap:18px;align-items:center}
 @media (max-width:1180px){html.sx.has-room-head:not(.is-staff) .header-crumb .crumb-no,.sx-room-bar.is-head .crumb-no{display:none}}
-@media (min-width:821px) and (max-width:1000px) and (min-aspect-ratio:10001/10000){.sx-head-steps .sx-steps-foot{display:none}}
+@media (min-width:821px) and (max-width:1000px) and (min-aspect-ratio:10001/10000){.sx-head-steps .sx-steps-foot{display:none}.sx-room>.sx-room-films{display:block}}
 /* 모델 얼굴 줄(방향 화면): 후보 넷을 작은 얼굴로, 큰 사진은 「크게 보기」로 접어 둔다. */
 .sx-dp-faces{display:flex;align-items:center;gap:6px}
 .sx-dp-face{flex:none;width:40px;height:40px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 1px var(--sx-rule)}

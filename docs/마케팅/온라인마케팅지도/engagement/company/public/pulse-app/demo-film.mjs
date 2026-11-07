@@ -1,6 +1,6 @@
 import {mountRequestFlow} from './request-flow.mjs';
 import {emptyAnswers} from './request-data.mjs';
-import {roomView,mountRoom,draftView,mountDraft} from './film-views.mjs';
+import {roomView,mountRoom,draftView,mountDraft,exampleHead} from './film-views.mjs';
 import {modelCard} from './room-view.mjs';
 import {projectView} from './views.mjs';
 import {mountReview} from './film-review.mjs';
@@ -123,8 +123,10 @@ export function mountFilmDemo(host,{internal=false,start='',onLeave,extra=[]}={}
       root.addEventListener('submit',event=>event.stopPropagation());
       mountRoom(root,{onGo:to=>{if(to==='request')go('request');else if(to==='check'||to==='room')go('room');else if(to==='draft')go('script');},onModel:()=>go('script'),onEdit:()=>go('request'),onForm:()=>go('room'),onContact:()=>say(NOT_REAL),onFiles:()=>say('예시라 올리지 않아요. 실제 의뢰에서는 여기서 자료를 더 보내실 수 있어요.')});return;
     }
-    if(id==='script'){root.innerHTML=draftView(SCRIPT);document.documentElement.classList.add('view-dr');handle=mountDraft(root,SCRIPT,{onBack:()=>go('room'),onApprove:()=>go('draft'),onSend:()=>go('room'),onRecast:()=>go('model')});return;}
-    if(id==='draft'){root.innerHTML=draftView(DRAFT);document.documentElement.classList.add('view-dr');handle=mountDraft(root,DRAFT,{onBack:()=>go('room'),onApprove:()=>go('review'),onSend:()=>go('room')});return;}
+    // 글 콘티 · 장면 이미지도 다른 장면과 같은 머리(이름 · 단계 · 묻기)를 단다 — 손님 앱의 「← 현황」은 머리가 대신한다.
+    const draftHead=exampleHead({...ROOM,stage:'draft',hasRound:true},{tab:'draft'}),headGo=to=>{if(to==='request')go('request');else if(to==='check'||to==='room')go('room');};
+    if(id==='script'){root.innerHTML=draftView(SCRIPT,{head:draftHead});mountRoom(root,{animate:false,onGo:headGo,onContact:()=>say(NOT_REAL)});document.documentElement.classList.add('view-dr');handle=mountDraft(root,SCRIPT,{onBack:()=>go('room'),onApprove:()=>go('draft'),onSend:()=>go('room'),onRecast:()=>go('model')});return;}
+    if(id==='draft'){root.innerHTML=draftView(DRAFT,{head:draftHead});mountRoom(root,{animate:false,onGo:headGo,onContact:()=>say(NOT_REAL)});document.documentElement.classList.add('view-dr');handle=mountDraft(root,DRAFT,{onBack:()=>go('room'),onApprove:()=>go('review'),onSend:()=>go('room')});return;}
     if(id==='review'){state=exampleState();if(nextPanel){state.reviewPanel=nextPanel;nextPanel='';}bindProject(root);drawProject(root,'review');return;}
     if(id==='history'){state=asFinal(exampleState());bindProject(root);drawProject(root,'history');}
   }

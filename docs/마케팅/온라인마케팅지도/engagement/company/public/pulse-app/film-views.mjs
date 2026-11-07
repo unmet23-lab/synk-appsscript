@@ -213,7 +213,7 @@ function proposeCard(m){
 }
 // 고객 방과, 영상 확인 · 납품의 단계 낱말 줄에 같이 쓴다.
 export function mountRoom(root,{animate=true,onGo,onEdit,onContact,onModel,onFiles,onForm,onPaper}={}){
-  const host=root.querySelector('.sx-room,.sx-shell');if(!host)return {unmount(){}};
+  const host=root.querySelector('.sx-room,.sx-shell,.sx-draft');if(!host)return {unmount(){}};
   // 휴대폰 단계 띠: 지금 단계가 화면 안에 오게 띠만 민다.
   const steps=host.querySelector('.sx-steps-run'),current=steps?.querySelector('.is-now');
   if(current&&steps.scrollWidth>steps.clientWidth)steps.scrollLeft=current.offsetLeft-(steps.clientWidth-current.offsetWidth)/2;
@@ -255,9 +255,10 @@ function scriptSheet(d,total){
   const rows=d.cuts.map((cut,i)=>{const at=from;from+=cut.seconds;return `<button type="button" class="sx-strip-cut sx-sheet-row ${i===0?'is-on':''}" role="option" aria-selected="${i===0?'true':'false'}" aria-label="${esc(cutName(i,cut))}" data-cut="${i}" data-w="${cut.seconds}"><span class="sx-no sx-sheet-at"><b>${pad(i+1)}</b>${moment(at)}</span><span class="sx-sheet-what"><span class="sx-serif">${esc(cut.what)}</span>${cut.say?`<span class="sx-sheet-line"><b>말</b> ${esc(cut.say)}</span>`:''}${cut.text?`<span class="sx-sheet-line"><b>화면 글자</b> ${esc(cut.text)}</span>`:''}</span><i class="sx-strip-state" aria-hidden="true"></i></button>`;}).join('');
   return `<figure class="sx-dr-films sx-sheet-room"><div class="sx-sheet"><header class="sx-sheet-head"><span class="sx-small">글 콘티 ${esc(d.round)}판</span><span class="sx-small"><span class="sx-no">${d.cuts.length}</span>컷 · <span class="sx-no">${total.toFixed(1)}</span>초 · <span class="sx-no">${esc(d.ratio||'9:16')}</span></span></header><div class="sx-sheet-rows" data-strip role="listbox" aria-label="컷 목록">${rows}<i class="sx-strip-head" data-head hidden></i></div><footer class="sx-sheet-foot"><p class="sx-no sx-strip-tc"><span data-tc>00:00.00</span> <span class="sx-small" data-tc-no>컷 01</span></p></footer></div></figure>`;
 }
-export function draftView(d,{top=''}={}){
+export function draftView(d,{top='',head=''}={}){
   const total=d.cuts.reduce((sum,cut)=>sum+cut.seconds,0),script=d.cuts.every(cut=>!cut.src),locked=d.approved?'이 판은 확인을 마쳤어요.':d.feedbackAt?'보내 주신 의견을 반영하고 있어요. 새 판이 오면 알려 드려요.':'';
   return `<div class="sx-draft sx-dr ${script?'is-script':''}" data-draft data-ratio="${esc(d.ratio||'9:16')}">
+    ${head}
     ${script?scriptSheet(d,total):`<figure class="sx-dr-films"><div class="sx-dr-box" data-frame-box><img data-frame ${d.cuts[0].src?`src="${esc(d.cuts[0].src)}"`:'hidden'} alt=""><button type="button" class="sx-dr-play" data-draft-do="play" aria-label="이어서 보기"><i aria-hidden="true"></i><span>이어서 보기</span></button></div></figure>`}
     <header class="sx-dr-left">
       ${top}

@@ -535,10 +535,11 @@ p.sx-receipt{display:block}
 .sx-review-deliver .sx-receipt .sx-go.is-solid{padding:16px 18px}
 .sx-review-deliver .sx-receipt p{color:var(--sx-dim)}
 .sx-deliver-foot{color:var(--sx-dim)}
-.sx-deliver-foot .sx-link{color:var(--sx-ink)}
+.sx-deliver-links{display:flex;gap:16px}
+.sx-deliver-links .sx-link{color:var(--sx-ink)}
 .sx-review-full{order:2;margin-left:auto;padding:2px 0;color:var(--sx-ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
 @media (max-width:820px),(max-aspect-ratio:1/1){
-  html.has-room-head .sx-dr-left{padding-top:12px}
+  html.has-room-head .sx-dr-left,.sx-dr:has(>.sx-room-bar.is-head) .sx-dr-left{padding-top:12px}
   html.has-room-head .sx-review .sx-dr-credit>h1,.sx-review:has(>.sx-room-bar.is-head) .sx-dr-credit>h1{padding-top:12px}
   html.has-room-head .sx-review:has(.sx-review-decide),.sx-review:has(>.sx-room-bar.is-head):has(.sx-review-decide){padding-bottom:calc(env(safe-area-inset-bottom) + 150px)}
   html.has-room-head .sx-ask-thread{padding-top:20px}

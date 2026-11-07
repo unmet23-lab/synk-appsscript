@@ -93,7 +93,7 @@ test('one head: the name leads back to the room, the number and five steps sit i
   assert.match(app,/document\.querySelector\('\.app-header'\)\?\.addEventListener\('click',event=>\{if\(!roomCustomer\(\)\)return;/,'the head sits outside main, so it has its own listener');
   assert.match(app,/previousFocus=remote&&\(main\.contains\(document\.activeElement\)\|\|headBox\?\.contains\(document\.activeElement\)\)/,'live refresh keeps keyboard focus in the head (Fable N2)');
   const legacyCss=read('film-legacy.css'),css=read('film.css');
-  assert.match(legacyCss,/html\.view-dr:not\(\.has-room-head\) \.app-header>\.header-crumb/,'the example head inside the screen keeps its name and steps');assert.match(legacyCss,/html\.has-room-head \.sx-dr-left\{padding-top:12px\}/,'no 56px gap under the in-flow phone head (Fable N4)');
+  assert.match(legacyCss,/html\.view-dr:not\(\.has-room-head\) \.app-header>\.header-crumb/,'the example head inside the screen keeps its name and steps');assert.match(legacyCss,/html\.has-room-head \.sx-dr-left,\.sx-dr:has\(>\.sx-room-bar\.is-head\) \.sx-dr-left\{padding-top:12px\}/,'no 56px gap under the in-flow phone head (Fable N4), in the example too');
   assert.match(css,/\.sx-head-steps\{flex:none;flex-wrap:nowrap/,'the wide head stays one line so it never covers the version picker (Fable N3)');
 });
 
@@ -187,4 +187,16 @@ test('photo orders say photo words while we prepare and make (판 2 Fable FA2)',
   const photo=r=>roomModel(roomProject({status:'confirmed',answers:{...emptyAnswers(),name:'오미톡',kind:'food',channels:['shorts'],package:'photo'},...r}));
   const prepare=roomView(photo({}));assert.match(prepare,/첫 장을 만들고 있어요/);assert.doesNotMatch(prepare,/글 콘티/);
   const make=roomView(photo({approvedAt:at}));assert.match(make,/확인하신 첫 장대로 만들고 있어요/);assert.doesNotMatch(make,/목소리와 음악/);
+});
+
+test('argon 3a: the example draft scenes keep the head, the ask hint only while a preview is open, the wide-tablet films road, the delivery words',()=>{
+  const demo=read('demo-film.mjs');
+  assert.match(demo,/root\.innerHTML=draftView\(SCRIPT,\{head:draftHead\}\);mountRoom\(root,/);assert.match(demo,/root\.innerHTML=draftView\(DRAFT,\{head:draftHead\}\);mountRoom\(root,/);
+  assert.match(read('film-views.mjs'),/const host=root\.querySelector\('\.sx-room,\.sx-shell,\.sx-draft'\)/);
+  const open=projectView(state(roomProject({status:'confirmed',rounds:[round('images')]},{stage:'review',versions:[preview]}),{tab:'contact'}));
+  assert.match(open,/영상에서 고칠 곳은 「영상 · 납품」에서/);
+  for(const p of [roomProject({status:'confirmed',approvedAt:at,rounds:[round('images')]},{stage:'review',versions:[approved]}),delivered()])assert.doesNotMatch(projectView(state(p,{tab:'contact'})),/영상에서 고칠 곳은/,'no notes can be left after approval');
+  assert.match(read('film.css'),/\(min-width:821px\) and \(max-width:1000px\) and \(min-aspect-ratio:10001\/10000\)\{\.sx-head-steps \.sx-steps-foot\{display:none\}\.sx-room>\.sx-room-films\{display:block\}\}/);
+  const done=projectView(state(delivered(),{tab:'history'}));
+  assert.match(done,/다른 형식이나 길이가 필요하면 담당자에게 알려 주세요\.<\/p>/);assert.match(done,/<p class="sx-small sx-deliver-links"><button type="button" class="sx-link" data-room-do="contact">담당자에게 묻기<\/button><\/p>/);
 });

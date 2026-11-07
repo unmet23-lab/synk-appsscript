@@ -362,12 +362,13 @@ function deliverBlock(s,finals){
   return `<section class="sx-review-deliver" id="review-delivery" tabindex="-1" aria-label="납품">
         <ul class="sx-deliver-files">${finals.map(row).join('')}</ul>
         ${receipt}
-        <p class="sx-small sx-deliver-foot">파일은 여기서 언제든 다시 받으실 수 있어요. 다른 형식 · 길이가 필요하면 <button type="button" class="sx-link" data-room-do="contact">담당자에게 묻기</button>${specs?' · <button type="button" class="sx-link" data-room-do="paper" data-paper="deliverables">납품 규격 보기</button>':''}</p>
+        <p class="sx-small sx-deliver-foot">파일은 여기서 언제든 다시 받으실 수 있어요. 다른 형식이나 길이가 필요하면 담당자에게 알려 주세요.</p>
+        <p class="sx-small sx-deliver-links"><button type="button" class="sx-link" data-room-do="contact">담당자에게 묻기</button>${specs?'<button type="button" class="sx-link" data-room-do="paper" data-paper="deliverables">납품 규격 보기</button>':''}</p>
       </section>`;
 }
 // 담당자에게 묻기(의뢰 흐름, 판 3): 묻는 자리는 이 화면 하나 — 영상이 있어도 없어도 같다. 폼은 support로 따로 둬 영상 의견 초안과 섞이지 않게 한다.
 function contactRoom(s){
-  const p=s.project,messages=(p.messages||[]).filter(m=>m.action==='support'||m.author==='staff'),replies=(p.studio?.comments||[]).some(m=>m.targetType==='project');
+  const p=s.project,messages=(p.messages||[]).filter(m=>m.action==='support'||m.author==='staff'),replies=(p.studio?.comments||[]).some(m=>m.targetType==='project'),open=(p.versions||[]).filter(v=>v.kind==='preview').at(-1);
   return `<div class="sx-shell sx-room" data-mode="customer" data-tab="contact" data-state="contact">
     <section class="sx-room-hero">
       <div class="sx-room-left">
@@ -375,7 +376,7 @@ function contactRoom(s){
         <p class="sx-kicker">담당자에게 묻기</p>
         <h1 class="sx-display" data-room-title>궁금한 점을 남겨 주세요</h1>
         <p class="sx-body sx-room-lead" data-room-in>일정 · 파일 · 진행에 대해 물어보시면 담당자가 평일 10~19시에 여기로 답해 드려요. 답이 오면 알림으로도 알려 드려요.</p>
-        <form class="sx-say is-open sx-ask-form" data-form="support" data-room-in><textarea name="text" rows="3" required maxlength="3000" placeholder="궁금한 점을 적어 주세요." aria-label="궁금한 점"></textarea><div class="sx-say-tools"><button type="submit" class="sx-go is-solid" data-mutate><span>문의 보내기</span>${arrow}</button></div>${(p.versions||[]).some(v=>v.kind==='preview')?'<p class="sx-small">영상에서 고칠 곳은 영상 화면에서 그 장면에 남겨 주시면 더 정확해요.</p>':''}</form>
+        <form class="sx-say is-open sx-ask-form" data-form="support" data-room-in><textarea name="text" rows="3" required maxlength="3000" placeholder="궁금한 점을 적어 주세요." aria-label="궁금한 점"></textarea><div class="sx-say-tools"><button type="submit" class="sx-go is-solid" data-mutate><span>문의 보내기</span>${arrow}</button></div>${open&&!open.approvedAt?'<p class="sx-small">영상에서 고칠 곳은 「영상 · 납품」에서 그 장면에 남겨 주시면 더 정확해요.</p>':''}</form>
       </div>
       ${messages.length||replies?`<div class="sx-room-screen sx-ask-thread"><h2 class="sx-serif">문의와 답변</h2><div class="sx-thread">${messages.slice().reverse().map(threadRow).join('')}</div>${comments(p.studio?.comments||[],'project',null,s.notificationCommentId)}</div>`:`<div class="sx-room-screen"><img class="sx-q-fill" src="./assets/request/w-gift.webp" alt="" decoding="async"><p class="sx-small sx-room-cap">「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품</p></div>`}
     </section>
