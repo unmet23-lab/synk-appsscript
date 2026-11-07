@@ -204,6 +204,6 @@ test('argon 3a: the example draft scenes keep the head, the ask hint only while 
   assert.match(got,/<\/time> · 파일은 여기서 언제든 다시 받으실 수 있어요\.<\/p>/);assert.match(got,/<p class="sx-small sx-deliver-foot">다른 형식이나 길이가/);
   // Fable 최종 P3: 지운 예시 머리 상수를 옛 납품 화면이 부르지 않는다(예시가 옛 길로 가면 화면이 비던 지뢰).
   assert.doesNotMatch(read('views.mjs'),/EXAMPLE_LOGO/);
-  assert.match(read('film.css'),/\.sx-room-bar\.is-head\{padding-bottom:8px;background:linear-gradient/);
-  assert.match(read('film-legacy.css'),/html\.has-room-head \.sx-draft \.sx-dr-films,\.sx-draft:has\(>\.sx-room-bar\.is-head\) \.sx-dr-films\{height:calc\(40vh - 50px\)/);
+  assert.match(read('film.css'),/\.sx-room-bar\.is-head::before\{content:'';position:absolute;z-index:-1;left:calc\(-1\*var\(--sx-m\)\)/,'the example head shade starts at the screen edge, not as a box (Fable -c FA2)');
+  assert.match(read('film-legacy.css'),/html\.has-room-head \.sx-draft:not\(\[data-ratio="16:9"\]\) \.sx-dr-films,\.sx-draft:not\(\[data-ratio="16:9"\]\):has\(>\.sx-room-bar\.is-head\) \.sx-dr-films\{height:calc\(40vh - 50px\)/,'16:9 orders keep the picture height (Fable -c FA1)');
 });

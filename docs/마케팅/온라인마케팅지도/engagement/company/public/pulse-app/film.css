@@ -942,7 +942,7 @@ html.sx.has-room-head:not(.is-staff) .notice{top:calc(var(--sx-m) + 40px)}
 .sx-ask-form{margin-top:clamp(8px,2vh,18px)}
 .sx-ask-form .sx-say-tools .sx-go.is-solid{padding:14px 18px}
 /* 예시 화면 안 머리: 넓은 화면에서 밝은 그림 위로 뻗어도 글이 읽히게 앱 머리와 같은 위→아래 그늘. */
-@media (min-width:821px) and (min-aspect-ratio:10001/10000){.sx-room-bar.is-head{padding-bottom:8px;background:linear-gradient(180deg,rgba(0,0,0,.72),rgba(0,0,0,0))}}
+@media (min-width:821px) and (min-aspect-ratio:10001/10000){.sx-room-bar.is-head::before{content:'';position:absolute;z-index:-1;left:calc(-1*var(--sx-m));right:calc(-1*var(--sx-m));top:calc(6px - var(--sx-m));bottom:-14px;background:linear-gradient(180deg,rgba(0,0,0,.72),rgba(0,0,0,0));pointer-events:none}}
 /* 휴대폰 알림 토스트: 머리가 흐름 안 두 줄이라 둘째 줄(단계 · 묻기) 아래에. */
 @media (max-width:820px),(max-aspect-ratio:1/1){html.sx.has-room-head:not(.is-staff) .notice{top:calc(var(--sx-m) + 84px)}}
 /* 손님 머리의 「앱 설치」는 글자 단추라, 옛 화면(app.css)의 휴대폰 아이콘 조각이 글 앞에 점으로 남지 않게. */
