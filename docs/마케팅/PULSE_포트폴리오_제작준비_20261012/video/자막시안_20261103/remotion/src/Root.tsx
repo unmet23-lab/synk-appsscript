@@ -10,6 +10,7 @@ import { P11B, P11B_FRAMES } from './p11/B';
 import { P12, P12_FRAMES } from './p12/P12';
 import { HS16, HS9, HS_FRAMES } from './hs/HS';
 import { P6, P6_FRAMES } from './p6/P6';
+import { S1, S1_FRAMES } from './s1/S1';
 
 export const RemotionRoot: React.FC = () => (
   <>
@@ -32,5 +33,7 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="hs16-probe" component={HS16} defaultProps={{ probe: true }} durationInFrames={HS_FRAMES} fps={24} width={1920} height={1080} />
     {/* 6번 연말 빈방(11-07) — 16:9 60초, 말자막 · 글판 · 끝 문구 · 그린 로고 「솜채」 */}
     <Composition id="p6" component={P6} durationInFrames={P6_FRAMES} fps={24} width={1920} height={1080} />
+    {/* 시즌 1 옆집의 크리스마스(11-07) — 16:9 60.04초, 말자막 · 켜지는 끝 문구 · 그린 워드마크 「늘켬」 */}
+    <Composition id="s1" component={S1} durationInFrames={S1_FRAMES} fps={24} width={1920} height={1080} />
   </>
 );
