@@ -10,7 +10,7 @@
         ['0:05', '텅 빈 코트, 계단 위 새 캔이 톡. 다섯 가지 맛, 톡. 11월, 편의점에서.'],
       ],
       why: '처음 나오는 제품은 이름부터 남아야 해요. 처음과 끝의 같은 「톡」이 소리로 이름을 남겨요.',
-      work: '유리결', film: './assets/film-gift.mp4',
+      work: '霜の肌理', film: './assets/film-gift.mp4',
       taste: './assets/taste-tok.mp4', tasteCap: '멈춘 코트에서 도망치기까지 · 8초',
     },
     wait: {
@@ -23,7 +23,7 @@
       ],
       why: '「다섯 가지 맛」이 대사로 풀려요. 친구 폰으로 찍은 결이라, 요청하신 「너무 광고 같지 않게」에 맞아요.',
       work: '매진 임박', film: './assets/film-maejin.mp4',
-      taste: './assets/taste-wait.mp4', tasteCap: '말을 바꾸다 캔을 뺏기기까지 · 8초',
+      taste: './assets/taste-wait.mp4', tasteCap: '말을 바꾸다 캔을 뺏기기까지 · 12초',
     },
   };
   const MODELS = [
