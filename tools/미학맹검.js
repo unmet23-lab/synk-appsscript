@@ -118,6 +118,16 @@ function 인자(argv) {
 }
 
 /** 그림을 한 대화 4장 안으로 나눈다. 쌍의 두 그림은 같은 대화에 둔다. */
+/** 공개 저장소에 남길 경로 — 이 작업본 · 공용 작업본 안이면 그 안의 상대 경로, 밖(스크래치 · 임시 폴더)이면 파일 이름만. 이 PC 사용자 폴더 경로를 올리지 않는다(11-08). */
+function 저장소경로(p, 바탕들 = [뿌리, 공용작업본(뿌리)]) {
+  const 절대 = path.resolve(String(p || ''));
+  for (const 바탕 of 바탕들) {
+    const r = path.relative(path.resolve(바탕), 절대);
+    if (r && !r.startsWith('..') && !path.isAbsolute(r)) return r.split(path.sep).join('/');
+  }
+  return path.basename(절대);
+}
+
 function 묶음나누기(번호들, 쌍들, 크기 = 한대화) {
   const 남음 = [...번호들], 묶음 = [];
   const 넣기 = 덩이 => {
@@ -218,9 +228,9 @@ function main(argv) {
   const 모음 = 답모으기(답들, 화면들.map(h => h.번호));
   fs.writeFileSync(path.join(폴더, '결과.json'), JSON.stringify({ 이름, 화면: 화면들.map(({ 번호, 파일, 설명 }) => ({ 번호, 파일, 설명 })), ...모음 }, null, 1));
   fs.writeFileSync(path.join(폴더, '결과.md'), 결과글(이름, 화면들, 모음));
-  if (o.편) { // 올리기 전 검사 ⑱이 본다 — 편 폴더 게시/미학맹검.json
+  if (o.편) { // 올리기 전 검사 ⑱이 본다 — 편 폴더 게시/미학맹검.json(공개 저장소에 올라가니 이 PC 경로는 저장소 안 상대 경로 · 파일 이름만)
     const 게시 = path.join(path.resolve(o.편), '게시'); fs.mkdirSync(게시, { recursive: true });
-    fs.writeFileSync(path.join(게시, '미학맹검.json'), JSON.stringify({ 만든때: new Date().toISOString(), 이름, 결과: path.join(폴더, '결과.md'), 화면: 화면들.map(({ 번호, 파일, 설명 }) => ({ 번호, 파일, 설명 })), ...모음 }, null, 1));
+    fs.writeFileSync(path.join(게시, '미학맹검.json'), JSON.stringify({ 만든때: new Date().toISOString(), 이름, 결과: 저장소경로(path.join(폴더, '결과.md')), 화면: 화면들.map(({ 번호, 파일, 설명 }) => ({ 번호, 파일: 저장소경로(파일), 설명 })), ...모음 }, null, 1));
   }
   const 셈 = 판정들.map(p => `${p} ${모음.낱장.filter(x => x.판정 === p).length}`).join(' · ');
   console.log(`결과: ${셈}${모음.빠짐.length ? ` · 답 없음 ${모음.빠짐.length}` : ''} → ${path.join(폴더, '결과.md')}`);
@@ -229,4 +239,4 @@ function main(argv) {
 
 if (require.main === module) { try { process.exitCode = main(process.argv.slice(2)); } catch (e) { console.error(e.message); process.exitCode = 2; } }
 
-module.exports = { 기준읽기, 통과읽기, 모음읽기, 매체가르기, 기준글, 인자, 묶음나누기, 지시문, 답모으기, 끝코드, 결과글, 한대화 };
+module.exports = { 기준읽기, 통과읽기, 모음읽기, 매체가르기, 기준글, 인자, 묶음나누기, 지시문, 답모으기, 끝코드, 결과글, 한대화, 저장소경로 };

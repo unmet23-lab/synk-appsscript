@@ -116,6 +116,13 @@ test('인자 --매체: 기본은 소리를 뺀 넷, 쉼표로 여럿, 모르는 
   assert.throws(() => 맹검.인자(['a.png', '--매체']), /--매체는/);
 });
 
+test('저장소경로: 편 폴더 기록에는 저장소 안 상대 경로 · 밖이면 파일 이름만(이 PC 사용자 폴더 경로를 올리지 않는다)', () => {
+  const 바탕 = path.resolve(__dirname, '..');
+  assert.equal(맹검.저장소경로(path.join(바탕, '.tmp', '미학맹검', '가', '결과.md'), [바탕]), '.tmp/미학맹검/가/결과.md');
+  assert.equal(맹검.저장소경로(path.join(require('node:os').tmpdir(), 'scratch', '첫장.jpg'), [바탕]), '첫장.jpg');
+  assert.ok(!/[A-Za-z]:[\\/]|Users[\\/]/.test(맹검.저장소경로('C:/Users/someone/AppData/Local/Temp/x/끝.jpg', [바탕])));
+});
+
 test('인자: 그림::설명 · --쌍 · 모르는 인자', () => {
   const o = 맹검.인자(['a.png::끝 화면', 'b.png', '--무엇', '썸네일', '--쌍', 'a.png,b.png']);
   assert.deepEqual(o.그림, [{ 파일: 'a.png', 설명: '끝 화면' }, { 파일: 'b.png', 설명: '' }]);
