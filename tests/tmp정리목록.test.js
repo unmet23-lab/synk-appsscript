@@ -244,17 +244,18 @@ test('저장소의 추적 코드가 .tmp/<이름>으로 쓰는 폴더는 남기�
     쓰기('tools/오마주.js', "const 캐시 = path.join(뿌리, '.tmp', 'tool-cache');\nconst 날 = path.join(REPO, '.tmp', DAILY ? 'daily-scan' : 'weekly-scan', `${오늘}`);\n"
       + "const 색인 = path.join(뿌리, '.tmp', 'nested-ref/index.json');");
     쓰기('tests/지면.test.js', "const 판 = '.tmp/test-fixture-20261030/a.png';");
+    쓰기('tools/받기.py', "받을곳 = Path.cwd() / '.tmp' / 'py-cache' / 오늘\n옛곳 = Path(\".tmp\") / \"py-paren\"\n");
     쓰기('experiences/x/qa/공개후보.cjs', "require(String.raw`C:\\SYNK\\.tmp\\qa-bake-20261104\\run.cjs`)");
     쓰기('docs/기록.md', '`.tmp/doc-only-20261001/` 문서에만 적힘');
     쓰기('tools/dist/묶음.js', "'.tmp/generated-only-20261002'");
     쓰기('tools/추적안함.js', "'.tmp/untracked-only-20261003'");
     for (const 이름 of ['tool-cache', 'test-fixture-20261030', 'qa-bake-20261104', 'doc-only-20261001', 'generated-only-20261002', 'untracked-only-20261003', 'chained-20261001',
-      'daily-scan', 'weekly-scan', 'nested-ref']) 쓰기(`.tmp/${이름}/a.json`, '{}');
+      'daily-scan', 'weekly-scan', 'nested-ref', 'py-cache', 'py-paren']) 쓰기(`.tmp/${이름}/a.json`, '{}');
     쓰기('.tmp/tool-cache/색인.json', JSON.stringify({ 원본: '.tmp/chained-20261001/a.json' }));
     for (const 이름 of fs.readdirSync(임시)) 옛날로(path.join(임시, 이름), 30);
     const git = (...a) => { const r = spawnSync('git', ['-C', 방, ...a], { encoding: 'utf8' }); assert.equal(r.status, 0, r.stderr); };
     git('init', '-q');
-    git('add', 'tools/오마주.js', 'tests/지면.test.js', 'experiences', 'docs', 'tools/dist');
+    git('add', 'tools/오마주.js', 'tools/받기.py', 'tests/지면.test.js', 'experiences', 'docs', 'tools/dist');
 
     const 목록 = 정리.목록만들기({ 임시, 대기 });
     assert.deepEqual(목록.후보.map((c) => c.이름).sort(), ['doc-only-20261001', 'generated-only-20261002', 'untracked-only-20261003']);
@@ -262,14 +263,16 @@ test('저장소의 추적 코드가 .tmp/<이름>으로 쓰는 폴더는 남기�
       ['chained-20261001', ['tool-cache']],
       ['daily-scan', ['저장소:tools/오마주.js']],
       ['nested-ref', ['저장소:tools/오마주.js']],
+      ['py-cache', ['저장소:tools/받기.py']],
+      ['py-paren', ['저장소:tools/받기.py']],
       ['qa-bake-20261104', ['저장소:experiences/x/qa/공개후보.cjs']],
       ['test-fixture-20261030', ['저장소:tests/지면.test.js']],
       ['tool-cache', ['저장소:tools/오마주.js']],
       ['weekly-scan', ['저장소:tools/오마주.js']],
-    ], '조건식으로 고르는 이름(DAILY ? … : …) · 한 따옴표 안의 하위 경로(nested-ref/index.json)도 같은 호출 안 따옴표 낱말로 잡는다');
-    assert.equal(목록.저장소로남김, 6);
-    assert.equal(목록.저장소코드, 3, 'git ls-files의 코드 파일만 — 문서 · 생성물 폴더 · 추적 안 된 파일은 뺀다');
-    assert.match(정리.글로(목록), /저장소 코드가 \.tmp\/<이름>으로 쓰는 폴더 6개\(저장소 코드 3개 파일을 봤어요\)/);
+    ], '조건식으로 고르는 이름(DAILY ? … : …) · 한 따옴표 안의 하위 경로(nested-ref/index.json) · 파이썬 pathlib의 / 꼴도 잡는다');
+    assert.equal(목록.저장소로남김, 8);
+    assert.equal(목록.저장소코드, 4, 'git ls-files의 코드 파일만 — 문서 · 생성물 폴더 · 추적 안 된 파일은 뺀다');
+    assert.match(정리.글로(목록), /저장소 코드가 \.tmp\/<이름>으로 쓰는 폴더 8개\(저장소 코드 4개 파일을 봤어요\)/);
     assert.deepEqual(정리.옮기기(['tool-cache', 'doc-only-20261001'], { 임시, 대기 }).옮김, ['doc-only-20261001']);
 
     // 저장소가 아닌 곳(.git 없음)은 저장소 코드를 보지 않는다 — 앞의 시험들이 그 꼴이다
