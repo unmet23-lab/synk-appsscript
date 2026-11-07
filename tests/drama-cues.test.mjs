@@ -62,7 +62,10 @@ test('시범판은 나눈 화면을 소리 시각으로 따라가고, 소리가 
  assert.match(pilot,/unguard = endGuard\(m, s,/,'소리 재생에 끝 소식이 안 와도 잇는 안전 시계');
  assert.match(pilot,/unguard = endGuard\(v, s,/,'영상 재생에 끝 소식이 안 와도 잇는 안전 시계');
  assert.match(pilot,/if \(go\) v\.removeEventListener\('loadedmetadata', go\)/,'접은 영상의 정보 받음 듣기를 뗀다');
- assert.match(pilot,/go = \(\) => \{ if \(settled \|\| gen !== playGen \|\| S\.rec \|\| !live\(s\)\) return;/,'늦게 온 정보 받음이 접힌 영상 · 녹음 중에 영상을 틀지 않는다');
+ assert.match(pilot,/if \(settled \|\| gen !== playGen\) return;\r?\n   if \(S\.rec \|\| !live\(s\)\) \{ done\(false\); return; \}/,'늦게 온 정보 받음이 접힌 영상을 틀지 않고, 녹음 중 · 단계가 끝났으면 바로 접는다');
+ assert.match(pilot,/const c = current; current = null; if \(c\) c\(\);/,'멈추면 살아 있던 재생을 바로 접는다(듣기를 떼고 약속을 푼다)');
+ assert.equal((pilot.match(/if \(current === cancel\) current = null;/g)||[]).length,2,'두 재생 모두 자기가 살아 있는 재생일 때만 비운다');
+ assert.equal((pilot.match(/if \(gen === playGen\) (?:setPlaying\(false\)|\{ try \{ v\.pause\(\); \} catch \{\} setPlaying\(false\); \})/g)||[]).length,2,'접힌 재생의 늦은 소식은 지금 소리를 멈추거나 재생 중을 풀지 않는다');
  assert.match(pilot,/function stopSound\(\) \{\r?\n playGen\+\+;/,'멈추면 앞 재생의 안전 시계를 끈다');
  assert.equal((pilot.match(/\(\) => settled \|\| gen !== playGen, done\)/g)||[]).length,2,'두 재생 모두 자기 번호일 때만 안전 시계가 멈춘다');
  assert.match(pilot,/delay: motion === 'pop' \|\| motion === 'cue' \? 150 :/,'넘어가는 화면은 뜻 줄을 첫 어절과 함께 띄운다(읽는 시간을 줄이지 않게)');

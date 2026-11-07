@@ -17,7 +17,7 @@ const MAIN=path.join(os.homedir(),'Documents','SYNK-appsscript');
 const require=createRequire(path.join(fs.existsSync(path.join(ROOT,'node_modules'))?ROOT:MAIN,'x.js'));
 const {chromium}=require('playwright');
 const args=process.argv.slice(2),opt=(n,d=null)=>{const i=args.indexOf(n);return i<0?d:args[i+1];},has=n=>args.includes(n);
-const [W,H]=opt('--폭','390x780').split('x').map(Number),LANG=opt('--언어','en'),SHOTS=has('--찍기'),RECORD=has('--녹화'),NO_END=has('--끝소식없음');
+const [W,H]=opt('--폭','390x780').split('x').map(Number),LANG=opt('--언어','en'),SHOTS=has('--찍기'),RECORD=has('--녹화'),NO_END=has('--끝소식없음'),REPLAY=has('--다시듣기');
 const CAND=opt('--후보');
 const OUT=path.resolve(opt('--출력',path.join(ROOT,'.tmp','drama-cues',`${W}-${LANG}`)));fs.mkdirSync(OUT,{recursive:true});
 const PILOT=path.join(ROOT,'experiences/drama/pilot'),MEDIA=path.join(MAIN,'experiences/drama/pilot');
@@ -99,15 +99,18 @@ if(SHOTS)await page.screenshot({path:path.join(OUT,'00-처음.png')});
 const start=Date.now();let n=0,lastSt='';
 for(;;){
  if(Date.now()-start>240000){check(false,'장면 끝까지','시간 초과');console.log(await frame.evaluate(()=>document.body.innerText.slice(0,400)));break;}
- const st=await frame.evaluate(()=>{
+ // --다시듣기: 학생 차례마다 녹음 전에 「다시 듣기」를 빠르게 두 번 눌러, 뒤 재생이 앞 재생을 끊는 길을 지난다(앞 재생의 늦은 소식이 지금 소리 · 녹음 단추를 건드리면 여기서 멈춘다)
+ const st=await frame.evaluate((REPLAY)=>{
   const vis=el=>!!el&&el.getClientRects().length>0&&!el.disabled;
   if(document.querySelector('.wrap .log'))return 'wrap';
   const dlg=document.querySelector('dialog[open]');if(dlg){const b=[...dlg.querySelectorAll('button')].filter(vis).pop();if(b){b.click();return 'dialog:'+b.textContent.slice(0,20);}}
   const end=[...document.querySelectorAll('button')].filter(vis).find(b=>/^(마치기|Finish|Дуусгах)/.test(b.textContent.trim()));if(end){end.click();return 'finish';}
-  const orb=document.querySelector('#orbBtn');if(vis(orb)&&!document.querySelector('#mic')?.hidden){orb.click();return 'orb';}
+  const orb=document.querySelector('#orbBtn');
+  if(REPLAY&&vis(orb)&&!document.querySelector('#mic')?.hidden){const key=document.querySelector('#panel')?.innerText.slice(0,80)||'';const snd=[...document.querySelectorAll('[data-sound]')].filter(vis)[0];if(snd&&window.__rpKey!==key){window.__rpKey=key;window.__rpN=(window.__rpN||0)+1;snd.click();setTimeout(()=>snd.click(),300);return 'replay';}}
+  if(vis(orb)&&!document.querySelector('#mic')?.hidden){orb.click();return 'orb';}
   const pill=[...document.querySelectorAll('button.pill,button.big')].filter(vis)[0];if(pill){pill.click();return 'pill:'+pill.textContent.slice(0,24);}
   return 'wait';
- }).catch(()=>null);
+ },REPLAY).catch(()=>null);
  if(st==='wrap')break;
  if(st&&st!==lastSt){
   console.log('  ',Math.round((Date.now()-start)/1000)+'초',st);lastSt=st;
@@ -150,6 +153,7 @@ if(!RECORD){
  const coach=log.cues.filter(c=>c.who==='Coach'&&!c.crowded);
  check(coach.every(c=>c.top>=c.chin),'코치 자막도 얼굴을 덮지 않음',coach[0]?`가장 높은 글 ${Math.min(...coach.map(c=>c.top))} · 턱 선 ${coach[0].chin}`:'숨김');
 }
+if(REPLAY){const n=await frame.evaluate(()=>window.__rpN||0).catch(()=>0);check(n>0,'다시 듣기를 겹쳐 누른 학생 차례가 있다',`${n}번`);}
 check(!errors.length,'콘솔 · 페이지 오류 없음',errors.slice(0,3).join(' / '));
 
 if(cdp)await cdp.send('Page.stopScreencast').catch(()=>{});
