@@ -20,6 +20,8 @@
 - Z-Image Turbo 8스텝에서 밑그림(img2img) denoise를 0.89 이상으로 주면 밑그림을 통째로 버린다 → 밑그림을 살리려면 0.85(9단계 중 뒤 8) · 0.8(10단계 중 뒤 8) 같은 값을 쓴다 ([자세히](#z-image-turbo-8스텝에서-denoise-089-이상은-밑그림을-버린다--ksampler가-int8denoise-단계-중-뒤-8단계만-돈다-2026-10-24-claude))
 - 참고 릴스를 따라 만드는 키프레임은 원본 프레임의 구도 · 앵글대로 — 원본에서 사람 뼈대를 뜨고, 사람을 지운 흐린 원본 + 우리 옷 마네킹을 밑그림(0.85)으로, 풍경은 우리 장소 색으로 바꾸고 모르는 명소는 지금 판 모양을 붙인다 ([자세히](#참고-릴스의-구도--앵글을-키프레임에-옮기기--원본-프레임-뼈대--사람을-지운-흐린-원본--마네킹-밑그림-085-2026-10-24-claude))
 
+- 11-07 재설치 뒤 AI-Toolkit 화면이 모든 요청에 500 → `C:\SYNK-LoRA` 정션이 아니라 실제 경로 `D:\SYNK-LoRA\tools\ai-toolkit\ui`에서 띄운다(실행 파일 고침) ([자세히](#pc-재설치-뒤-ai-toolkit-화면이-모든-요청에-500을-낸다--정션-경로csynk-lora로-띄우면-nextjs가-c--d-경로를-섞는다-실제-경로d에서-띄운다-2026-11-07-claude))
+
 ## 목차
 
 [설치·받기](#설치받기) · [학습](#학습) · [생성](#생성) · [지난 기록](지난기록/LoRA_학습.md)
@@ -31,6 +33,12 @@
 - 원인: 허깅페이스 받기 도구가 끊긴 조각을 이어 쓰지 않는다.
 - 고침: `C:\SYNK-LoRA\tools\download_resumable.py`(curl `-C -` 이어받기 + sha256 확인)로 받는다. 텍스트 인코더는 ComfyUI 쪽 파일을 하드링크로 같이 쓰니 공식 조각 목록(index.json)을 다시 받지 않는다.
 - 다시 확인: 받는 중 망을 끊었다 이어도 이어서 받는지.
+
+### PC 재설치 뒤 AI-Toolkit 화면이 모든 요청에 500을 낸다 — 정션 경로(C:\SYNK-LoRA)로 띄우면 Next.js가 C: · D: 경로를 섞는다, 실제 경로(D:)에서 띄운다 (2026-11-07 Claude)
+- 증상: 11-07 재설치(`C:\SYNK-LoRA` → `D:\SYNK-LoRA` 정션) 뒤 `AI-Toolkit_실행.cmd`로 띄운 화면이 `/` · `/api/jobs` · `/api/queue` 모두 `Internal Server Error`(35초 넘게 그대로). 프로세스 목록에서 파일 서버는 `C:\SYNK-LoRA\…\fileServer.js`, 그 아래 Next는 `D:\SYNK-LoRA\…\next start`로 떠 있었다.
+- 원인(추정, 띄우는 경로만 바꿔 갈림): 실행 파일이 `cd /d C:\SYNK-LoRA\tools\ai-toolkit\ui`로 정션 경로에서 시작하고 Next는 실제 경로(D:)로 풀려, 같은 모듈을 두 경로로 읽는다. DB(`aitk_db.db`)는 그대로였다.
+- 고침: 서버 트리를 끄고(학습이 없을 때만) `D:\SYNK-LoRA\tools\ai-toolkit\ui`에서 `npm run start` — 바로 200. `AI-Toolkit_실행.cmd`도 `cd /d D:\…`로 고쳤다(원본 `.bak_1107`). ComfyUI는 정션 경로로 띄워도 정상이었다.
+- 다시 확인: `curl http://localhost:8675/api/jobs`가 작업 목록 JSON을 내는지.
 
 ## 학습
 
