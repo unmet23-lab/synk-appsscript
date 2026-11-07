@@ -96,14 +96,44 @@ def transforms(frames, ref, mask, fixed=False, track=False):
         sm[jump] = a[jump, :4]
     else:
         sm = np.stack([np.polyval(np.polyfit(t, a[:, j], 2), t) if len(a) > 3 else a[:, j] for j in range(4)], 1)
-    out = []
-    for s, r, tx, ty in sm:
-        out.append(np.float32([[s * np.cos(r), -s * np.sin(r), tx], [s * np.sin(r), s * np.cos(r), ty]]))
+    out = [similarity(*p) for p in sm]
     err = float(np.max(np.abs(a[:, 2:4] - sm[:, 2:4])))
-    return out, a, err
+    return out, a, err, sm
 
 
-def overlay(src_mp4, ref_png, box, a, k, out_mp4, w=720, h=1280, erode=2, feather=1.6, fixed=False, log=print, track=False):
+def similarity(s, r, tx, ty):
+    return np.float32([[s * np.cos(r), -s * np.sin(r), tx], [s * np.sin(r), s * np.cos(r), ty]])
+
+
+def params_at(sm, t):
+    """펴 둔 장별 값(배율 · 회전 · 이동)을 장 사이 t(소수)에서 — 처음 · 끝 밖은 맨 끝 두 장의 기울기로 늘인다."""
+    n = len(sm)
+    if n == 1:
+        return sm[0]
+    if t <= 0:
+        return sm[0] + (sm[1] - sm[0]) * t
+    if t >= n - 1:
+        return sm[-1] + (sm[-1] - sm[-2]) * (t - (n - 1))
+    i = int(np.floor(t))
+    u = t - i
+    return sm[i] * (1 - u) + sm[i + 1] * u
+
+
+def passthrough(src_mp4, a, k, out_mp4, w=720, h=1280):
+    """라벨 없이 같은 색 길(zscale 왕복)만 지난다 — 한 판을 토막 내 일부만 라벨을 얹을 때, 얹지 않는 토막도 이 길로 보내야 이음매에서 색이 안 튄다
+    (11-08 사람판 끝 판: 편집공통 cut_video는 꼬리표 없는 판을 601로 읽어 709로 바꾸고 이 길은 709 그대로라, 바로 자르면 파랑 · 초록이 2단계 튀었다)."""
+    frames = read_frames(src_mp4, w, h)[a:a + k]
+    if len(frames) != k:
+        raise SystemExit(f"{src_mp4}: {a}장부터 {k}장이 필요한데 {len(frames)}장")
+    write_frames(frames, out_mp4)
+    return out_mp4
+
+
+def overlay(src_mp4, ref_png, box, a, k, out_mp4, w=720, h=1280, erode=2, feather=1.6, fixed=False, log=print, track=False,
+            shutter=0.0, fade_in=0, fade_out=0):
+    """shutter: 셔터가 열린 동안(장 사이 간격의 몇 배) 캔이 움직인 길을 따라 얹는 라벨도 번지게 한다 — 판의 캔은 빨리 움직이면 흐린데
+    얹은 라벨만 또렷하면 오려 붙인 티가 난다(11-08 사람판 끝 판, 캔을 렌즈 쪽으로 뻗는 0.3~0.7초 · 돌아오는 4.0~4.6초). 0이면 번짐 없음(앞 컷들 그대로).
+    fade_in · fade_out: 처음 · 끝 몇 장에 걸쳐 얹은 라벨을 0 → 1 · 1 → 0으로 — 캔이 화면 밖으로 나가 못 따라가는 자리 앞뒤에서 판 그대로로 넘어간다."""
     frames = read_frames(src_mp4, w, h)[a:a + k]
     if len(frames) != k:
         raise SystemExit(f"{src_mp4}: {a}장부터 {k}장이 필요한데 {len(frames)}장")
@@ -114,22 +144,47 @@ def overlay(src_mp4, ref_png, box, a, k, out_mp4, w=720, h=1280, erode=2, feathe
     if erode:
         mask = cv2.erode(mask, np.ones((2 * erode + 1, 2 * erode + 1), np.uint8))
     soft = cv2.GaussianBlur(mask.astype(np.float32) / 255, (0, 0), feather)
-    Ms, raw, err = transforms(frames, ref, mask, fixed=fixed, track=track)
-    pieces, gains = [], []
-    for f, M in zip(frames, Ms):
+    Ms, raw, err, sm = transforms(frames, ref, mask, fixed=fixed, track=track)
+    ys, xs = np.nonzero(mask)
+    corners = np.float32([[xs.min(), ys.min(), 1], [xs.max(), ys.min(), 1], [xs.min(), ys.max(), 1], [xs.max(), ys.max(), 1]]).T
+    pieces, gains, smear = [], [], []
+    for i, (f, M) in enumerate(zip(frames, Ms)):
         warped = cv2.warpAffine(ref, M, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
         alpha = cv2.warpAffine(soft, M, (w, h), flags=cv2.INTER_LINEAR)[..., None]
         sel = (alpha[..., 0] > 0.95) & (warped.max(axis=2) < 235)   # 빛 반사(하이라이트)는 빼고 잰다
-        gains.append(f[sel].astype(np.float32).mean(0) / (warped[sel].astype(np.float32).mean(0) + 1e-3))
-        pieces.append((warped, alpha))
+        gains.append(f[sel].astype(np.float32).mean(0) / (warped[sel].astype(np.float32).mean(0) + 1e-3) if sel.any() else np.ones(3, np.float32))
+        if shutter > 0:
+            # 셔터가 열린 동안의 길을 1px 남짓 간격으로 나눠 그 자리마다 얹을 조각을 옮겨 그리고 평균한다(곱해 둔 알파로 — 가장자리도 판처럼 번진다)
+            m0 = similarity(*params_at(sm, i - shutter / 2)) @ corners
+            m1 = similarity(*params_at(sm, i + shutter / 2)) @ corners
+            span = float(np.max(np.hypot(*(m1 - m0))))
+            n = int(np.clip(np.ceil(span), 1, 48))
+            acc, acc_a = np.zeros((h, w, 3), np.float32), np.zeros((h, w, 1), np.float32)
+            for t in (np.linspace(i - shutter / 2, i + shutter / 2, n) if n > 1 else [i]):
+                Mt = similarity(*params_at(sm, t))
+                at = cv2.warpAffine(soft, Mt, (w, h), flags=cv2.INTER_LINEAR)[..., None]
+                acc += cv2.warpAffine(ref, Mt, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE).astype(np.float32) * at
+                acc_a += at
+            smear.append(span)
+            pieces.append((acc / n, acc_a / n))
+        else:
+            pieces.append((warped.astype(np.float32) * alpha, alpha))
     # 밝기 맞춤도 장마다 튀지 않게 9장 이동 평균 — 판 전체 빛이 변하지 않는 컷이라 거의 한 값이다
     gains = np.clip(np.array(gains), 0.92, 1.08)
     ker = np.ones(9) / 9
     gains = np.stack([np.convolve(np.pad(gains[:, c], 4, mode="edge"), ker, mode="valid") for c in range(3)], 1)
+    fade = np.ones(k, np.float32)
+    if fade_in:
+        fade[:fade_in] = np.linspace(0, 1, fade_in + 1, dtype=np.float32)[:-1]
+    if fade_out:
+        fade[k - fade_out:] = np.minimum(fade[k - fade_out:], np.linspace(1, 0, fade_out + 1, dtype=np.float32)[1:])
     out = []
-    for f, (warped, alpha), g in zip(frames, pieces, gains):
-        piece = np.clip(warped.astype(np.float32) * g.astype(np.float32), 0, 255)
-        out.append((f.astype(np.float32) * (1 - alpha) + piece * alpha).astype(np.uint8))
+    for f, (pre, alpha), g, fd in zip(frames, pieces, gains, fade):
+        piece = np.minimum(pre * g.astype(np.float32), 255 * alpha)   # 곱해 둔 알파 그대로 — 밝기를 맞춘 화소가 255를 넘지 않게(앞 컷들과 같은 셈)
+        out.append(np.clip(f.astype(np.float32) * (1 - alpha * fd) + piece * fd, 0, 255).astype(np.uint8))
     write_frames(out, out_mp4)
-    log(f"  라벨 다시 얹음 {k}장 · 배율 {raw[0, 0]:.3f} → {raw[-1, 0]:.3f} · 맞춤 점 최소 {int(raw[:, 4].min())} · 편 곡선과 잰 값 차이 최대 {err:.2f}px · 밝기 맞춤 {gains.min():.3f}~{gains.max():.3f}")
+    extra = f" · 번짐 셔터 {shutter:g}장(최대 {max(smear):.0f}px)" if smear else ""
+    extra += f" · 들어옴 {fade_in}장" if fade_in else ""
+    extra += f" · 빠짐 {fade_out}장" if fade_out else ""
+    log(f"  라벨 다시 얹음 {k}장 · 배율 {raw[0, 0]:.3f} → {raw[-1, 0]:.3f} · 맞춤 점 최소 {int(raw[:, 4].min())} · 편 곡선과 잰 값 차이 최대 {err:.2f}px · 밝기 맞춤 {gains.min():.3f}~{gains.max():.3f}{extra}")
     return out_mp4

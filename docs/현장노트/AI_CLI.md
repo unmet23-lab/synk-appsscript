@@ -81,6 +81,12 @@
 - 고침: 세션 기록 `~/.grok/sessions/<작업 폴더>/<세션>/events.jsonl` · `updates.jsonl`에서 read_file 경로를 뽑아 보니 넘긴 지시문 · 그림 21장뿐이었고, 그림 크기를 재려던 터미널 명령 두 번은 「Denied by permission policy」로 안 돌았다. 다음부터는 그림을 `C:/grok-눈가림/` 같은 사용자 폴더 밖에 두고 `--deny "Read(C:/Users/**)" --deny "Read(D:/**)"`(Grep도)를 더한다. 그록 답은 한 목소리로만 세고, 띠 · 글자를 잘못 읽은 곳은 Claude가 프레임으로 걸러 낸다.
 - 다시 확인: 같은 세션 기록에서 read_file 경로가 작업 폴더 밖으로 나간 줄이 없는지.
 
+### 그림 셋 눈가림 검수가 10분 넘게 생각만 하다 `timeout 600`에 잘려 답 파일이 비었다 — 15분을 주고, 진행은 세션 기록으로 본다 (2026-11-08 Claude · 오미톡 끝 판)
+- 증상: `C:/grok-눈가림/om2_1108`에 그림 셋(0.3~1.0MB)을 두고 `timeout 600 grok.exe -p "<지시>" … --output-format json`으로 불렀더니 답 · 오류 파일이 모두 0바이트로 끝났다(종료 124).
+- 원인: 멈춘 게 아니라 생각이 길었다 — 세션 기록 `~/.grok/sessions/<작업 폴더>/<세션>/events.jsonl`이 turn_started(16:43:37)부터 잘린 16:53:34까지 그림 읽기 넷 뒤 내내 `streaming_reasoning`이었다. `--output-format json`은 끝나야 한 번에 쓰니 잘리면 아무것도 안 남는다.
+- 고침: 통로(`tools/lib/그록호출.js`)와 같은 인자(`--no-auto-update --prompt-file <파일> --no-subagents`)에 읽기를 막는 `--deny "Read(C:/Users/**)" --deny "Read(D:/**)"`를 더하고 `timeout 900`으로 다시 불러 5분(4턴 · $0.23)에 답을 받았다. 기다리는 동안은 events.jsonl 마지막 줄의 시각 · `turn_ended`로 진행을 본다.
+- 다시 확인: 답 json의 `stopReason` end_turn · `num_turns`, events.jsonl 마지막 줄이 `turn_ended` completed.
+
 ## Gemini·agy
 
 ### 몽골어 검문이 Gemini 무료 API의 429로 막힌다
