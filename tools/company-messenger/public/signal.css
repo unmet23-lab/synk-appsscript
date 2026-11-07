@@ -697,13 +697,6 @@ body:not(.integrated-module) .shell{height:calc(100dvh - 16px);margin:0;border-r
 .intro-notes{gap:6px;margin-top:25px;color:var(--ink2);font-size:13px;line-height:1.6;display:none}
 .intro-notes>span{display:flex;align-items:center;gap:6px}
 .intro-notes svg{width:13px;height:13px;color:var(--ink2)}
-.intro-collage{width:200px;height:256px;position:relative;justify-self:end;isolation:isolate;display:none}
-.collage-arch{position:absolute;inset:12px 6px 14px;border-radius:999px 999px 12px 12px;background:var(--surface);border:1px solid var(--line2);overflow:hidden}
-.collage-mascot{position:absolute;width:157px;height:229px;object-fit:contain;bottom:-9px;left:15px;filter:drop-shadow(0 7px 4px #24448c10)}
-.collage-tape{position:absolute;z-index:2;top:0;left:70px;width:66px;height:20px;background:#ffebb0b8;transform:rotate(-9deg);border:1px solid #f5c44540}
-.collage-sticker{position:absolute;z-index:3;right:-3px;bottom:0;width:83px;height:60px;object-fit:contain;transform:rotate(12deg);filter:drop-shadow(0 3px 2px #00000012)}
-.collage-mark{position:absolute;z-index:2;top:52px;left:-6px;color:#ae322a;transform:rotate(-10deg)}
-.collage-mark svg{width:29px;height:29px;stroke-width:2}
 .channel-intro.is-history{border-bottom:0;display:block;padding:4px 0 22px;margin:0;min-height:0;background:transparent;border:0;box-shadow:none}
 .is-history .intro-copy{display:flex;align-items:center;gap:10px;min-width:0}
 .auth-brand .platform-entry{margin-left:auto}
@@ -846,12 +839,6 @@ body:not(.integrated-module) .shell{height:calc(100dvh - 16px);margin:0;border-r
 .workday-item>small{font-size:13px;line-height:1.75;color:var(--ink2)}
 .workday-section:first-of-type{margin-top:12px}
 .workday-item p{margin:4px 0;font-size:14px;line-height:1.75;color:var(--ink2)}
-.channel-intro.is-empty .intro-collage{width:128px;height:164px;justify-self:end;pointer-events:none;display:none}
-.is-empty .collage-arch{display:none}
-.is-empty .collage-tape{display:none}
-.is-empty .collage-mark{display:none}
-.is-empty .collage-sticker{display:none}
-.is-empty .collage-mascot{width:108px;height:158px;left:10px;bottom:0;filter:drop-shadow(0 4px 3px #43372a0a)}
 .channel-intro.is-history h2{font-size:15px;line-height:1.5}
 .intro-highlight{background:none}
 .intro-actions .button{min-height:44px;padding:10px 16px;border:1px solid var(--line2);border-radius:12px;background:var(--paper);color:var(--ink);font-size:14px;line-height:1.5;box-shadow:none}
@@ -1162,14 +1149,6 @@ body:not(.integrated-module) .shell{height:calc(100dvh - 16px);margin:0;border-r
 .channel-intro.is-empty{padding-top:23px;padding-bottom:23px}
 .is-empty .intro-description{margin-top:10px}
 .intro-notes{margin-top:17px;gap:4px}
-.intro-collage{height:230px}
-.collage-mascot{height:212px;width:145px;left:14px}
-}
-@media(max-width:1200px){
-.intro-collage{width:158px;height:222px}
-.collage-mascot{width:136px;height:199px;left:5px}
-.collage-tape{left:53px}
-.collage-sticker{width:70px}
 }
 @media(max-width:700px){
 .channel-intro.is-empty{padding-bottom:18px;grid-template-columns:minmax(0,1fr);gap:12px;padding:8px 0 20px}
@@ -1196,8 +1175,6 @@ body:not(.integrated-module) .shell{height:calc(100dvh - 16px);margin:0;border-r
 .workspace-link-card{padding:14px;gap:10px;border-radius:12px}
 .workspace-link-card strong{font-size:14px}
 .workspace-link-card small{font-size:13px}
-.channel-intro.is-empty .intro-collage{width:76px;height:104px;justify-self:start;grid-row:1}
-.is-empty .collage-mascot{width:71px;height:104px;left:0}
 .channel-intro.is-empty h2{font-size:18px;line-height:1.45}
 .is-empty .intro-description{font-size:14px;line-height:1.75}
 .intro-description{font-size:14px;line-height:1.75}
@@ -1334,6 +1311,11 @@ body:not(.integrated-module) .shell{height:calc(100dvh - 16px);margin:0;border-r
 /* 아르곤 B3: 확인한 공지 단추는 올려도 확인한 색 그대로 */
 .ack-button:hover:not(:disabled){background:var(--paper2)}
 .ack-button.checked,.ack-button.checked:hover{background:#E9F5EE;color:#1F7A50}
+/* 빈 방 소개 — 메시지 줄과 같은 왼쪽 선, 제목과 설명은 한 묶음(옮긴 옛 규칙보다 세게) */
+.channel-intro.is-empty{display:block;max-width:none;margin:0;padding:24px 22px 20px}
+.channel-intro.is-empty h2{margin:0;font-size:18px;font-weight:600;line-height:1.4;letter-spacing:-.01em;color:var(--ink)}
+.channel-intro.is-empty .intro-description{margin:6px 0 0;max-width:440px;font-size:14px;line-height:1.6;color:var(--ink2)}
+@media(max-width:680px){.channel-intro.is-empty{padding:20px 14px 16px}}
 /* 움직임 줄이기 · 높은 대비 */
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 @media(forced-colors:active){.nav-item.active,.conversation-filters button[aria-pressed="true"],.drawer-tabs button[aria-selected="true"]{outline:2px solid CanvasText}.message-tools,.pop-menu,.message-sheet .sheet-pan{border:1px solid CanvasText}}

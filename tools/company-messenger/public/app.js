@@ -431,7 +431,7 @@ function introHtml(){
   const channel=currentChannel();if(!channel||state.messages.length)return '';
   const self=channel.kind==='self',title=self?'기록을 시작해 보세요':'아직 메시지가 없어요';
   const description=canPostToChannel(channel)?'메시지와 파일을 아래에 남겨 보세요.':'새 메시지가 오면 여기에 보여요.';
-  return `<section class="channel-intro is-empty"><div class="intro-copy"><h2>${title}</h2><p class="intro-description">${description}</p></div><div class="intro-collage" aria-hidden="true"><div class="collage-arch"><img class="collage-mascot" src="assets/marin-smile.webp" alt="" width="960" height="1400"></div><img class="collage-sticker" src="assets/${self?'sticker-book.webp':'sticker-envelope.webp'}" alt="" width="192" height="133"><span class="collage-mark">${icon('spark')}</span></div></section>`;
+  return `<section class="channel-intro is-empty"><div class="intro-copy"><h2>${title}</h2><p class="intro-description">${description}</p></div></section>`;
 }
 function mentionsMe(message){return Boolean(state.user&&message.user?.id!==state.user.id&&message.mentions?.some(person=>person?.id===state.user.id));}
 function messageMarksHtml(message){return `${message.editedAt?'<span class="edited">수정됨</span>':''}${message.pinned?`<span class="message-pinned" title="고정 메시지">${icon('pin')}고정됨</span>`:''}${message.saved?`<button type="button" class="message-saved" data-action="save" aria-label="나중에 보기에서 빼기">${icon('bookmark')}저장함</button>`:''}`;}
@@ -706,23 +706,23 @@ function handleMessageSheet(event){
   runMessageAction(action,message,null);
 }
 function sheetKeyboard(event){
-  if(event.key==='Escape'){event.preventDefault();closeMessageSheet();return;}
+  if(event.key==='Escape'){event.preventDefault();event.stopPropagation();closeMessageSheet();return;}
   if(event.key!=='Tab')return;const items=[...event.currentTarget.querySelectorAll('.sheet-pan button')].filter(element=>element.getClientRects().length);if(!items.length)return;
   const first=items[0],last=items.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
 }
 // 길게 누름: 손가락 · 펜으로 0.45초 누르고 거의 움직이지 않으면 시트를 연다. 단추 · 링크 · 파일 위에서는 그 단추가 먼저다.
 // 누른 상태는 하나만 둔다(목록이 다시 그려져도 같은 상태). 손을 떼는 사건은 시트 위에서 날 수 있어 문서에서 듣는다.
-const messagePress={timer:null,origin:null,pointer:null,fired:false,suppressUntil:0,suppressAt:null,documentBound:false};
+const messagePress={timer:null,origin:null,pointer:null,fired:false,moved:false,suppressUntil:0,suppressAt:null,documentBound:false};
 function cancelMessagePress(){clearTimeout(messagePress.timer);messagePress.timer=null;messagePress.origin=null;}
 function finishMessagePress(event){if(event.pointerId!==messagePress.pointer)return;messagePress.pointer=null;cancelMessagePress();if(messagePress.fired){messagePress.fired=false;messagePress.suppressUntil=Date.now()+700;messagePress.suppressAt={x:event.clientX,y:event.clientY};}}
 function wireMessagePress(root){
   if(!root)return;
   const open=messageId=>{const message=findMessage(messageId);if(!message)return;messagePress.fired=messagePress.pointer!=null;openMessageSheet(message,null);};
-  root.addEventListener('pointerdown',event=>{if(event.pointerType==='mouse'||!mobileLayout.matches)return;const article=event.target.closest('.message[data-message-id]');if(!article||event.target.closest('button,a,input,textarea,select'))return;messagePress.fired=false;messagePress.pointer=event.pointerId;messagePress.origin={x:event.clientX,y:event.clientY,id:article.dataset.messageId};clearTimeout(messagePress.timer);messagePress.timer=setTimeout(()=>{const messageId=messagePress.origin?.id;cancelMessagePress();if(messageId)open(messageId);},450);});
+  root.addEventListener('pointerdown',event=>{if(event.pointerType==='mouse'||!mobileLayout.matches)return;const article=event.target.closest('.message[data-message-id]');if(!article||event.target.closest('button,a,input,textarea,select'))return;messagePress.fired=false;messagePress.moved=false;messagePress.pointer=event.pointerId;messagePress.origin={x:event.clientX,y:event.clientY,id:article.dataset.messageId};clearTimeout(messagePress.timer);messagePress.timer=setTimeout(()=>{const messageId=messagePress.origin?.id;cancelMessagePress();if(messageId)open(messageId);},450);});
   // 누른 그 손가락 · 펜의 사건만 본다 — 붙잡는 동안 다른 포인터(마우스 흉내)의 pointerleave가 타이머를 지우던 것(11-07 터치 시험).
-  root.addEventListener('pointermove',event=>{const origin=messagePress.origin;if(origin&&event.pointerId===messagePress.pointer&&Math.hypot(event.clientX-origin.x,event.clientY-origin.y)>10)cancelMessagePress();});
+  root.addEventListener('pointermove',event=>{const origin=messagePress.origin;if(!origin||event.pointerId!==messagePress.pointer)return;const distance=Math.hypot(event.clientX-origin.x,event.clientY-origin.y);if(distance>2)messagePress.moved=true;if(distance>10)cancelMessagePress();});
   root.addEventListener('pointerleave',event=>{if(event.pointerId===messagePress.pointer&&!messagePress.fired)cancelMessagePress();});
-  root.addEventListener('scroll',cancelMessagePress,{passive:true,capture:true});
+  root.addEventListener('scroll',()=>{if(messagePress.moved)cancelMessagePress();},{passive:true,capture:true});
   root.addEventListener('contextmenu',event=>{if(!mobileLayout.matches)return;const article=event.target.closest('.message[data-message-id]');if(!article||event.target.closest('button,a,input,textarea,select,[contenteditable]')||!findMessage(article.dataset.messageId))return;event.preventDefault();if(!messagePress.fired&&$('#message-sheet')?.classList.contains('hidden')){cancelMessagePress();open(article.dataset.messageId);}});
   if(messagePress.documentBound)return;messagePress.documentBound=true;
   // 시트를 연 누름에서 손을 떼면 그 자리(이제 시트 가림막)에 클릭 한 번이 떨어진다 — 그 한 번은 버린다(손을 떼자마자 시트가 닫히던 것, 11-07 터치 시험).
