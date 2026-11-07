@@ -200,10 +200,25 @@ def sound():
     print(f"곡 c {t_in:.2f}초에 깔려 「톡」(캔이 볼에 닿음) {TOK:.2f}초에 맺음 · 끝말 {', '.join(f'{t:.2f}' for t in ends)}초")
 
 
+TEXT = os.environ.get("OM2_TEXT", "A")   # 끝 글자 — 11-08 유호님 「A로 넣어」(끝글자시안.py: 그린 「톡」 한 방 + 끝 한글 「오미톡」). 빈 값이면 글자 없이
+
+
 def render():
     pic = os.path.join(OUT, "화면_사람판.mp4")
     wav = os.path.join(OUT, "소리_사람판.wav")
     tmp = os.path.join(OUT, "_소리붙임_사람판.mp4")
+    if TEXT:
+        import 끝글자시안 as G
+        ends = end_times()   # 글자 시각은 끝말 낱말 머리에 맞춰 둔 값 — 끝말 자리를 옮기면 여기서 멈춘다
+        if abs(G.HIT - (ends[1] + 0.10)) > 0.02 or abs(G.END_AT - (ends[2] + 0.37)) > 0.02:
+            raise SystemExit(f"끝글자시안.py 시각(톡 {G.HIT} · 오미톡 {G.END_AT})이 끝말 자리({ends[1]:.2f} · {ends[2]:.2f})와 어긋났다 — 그 파일 값을 고친다")
+        seq = G.frames(TEXT)
+        lettered = os.path.join(OUT, "화면_사람판_글자.mp4")
+        C.run("ffmpeg", "-y", "-v", "error", "-i", pic, "-framerate", str(FPS), "-i", os.path.join(seq, "%04d.png"),
+              "-filter_complex", "[1:v]format=rgba[k];[0:v][k]overlay=0:0:shortest=1,scale=out_color_matrix=bt709,format=yuv420p[v]",
+              "-map", "[v]", "-frames:v", str(F[-1]), "-c:v", "libx264", "-crf", "12", "-preset", "medium", "-r", str(FPS),
+              "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", lettered)
+        pic = lettered
     C.run("ffmpeg", "-y", "-v", "error", "-i", pic, "-i", wav, "-map", "0:v", "-map", "1:a", "-c:v", "libx264", "-crf", "14", "-preset", "medium",
           "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", "-c:a", "aac", "-b:a", "320k", "-shortest", tmp)
     old = os.path.join(OUT, NAME + ".mp4")
