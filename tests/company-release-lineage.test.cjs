@@ -247,6 +247,20 @@ test('①′ 앞 판 정적 입력(PARENT_STATIC): prepare-arm 첫 단계가 읽
   a.deepEqual(빠짐.missing, ['dr-old-20261022'], '그 묶음이 정리되면 실패로 알린다(prepare-arm이 parentDrBundle에서 멈출 자리)');
 });
 
+test('①′ 앞 판 정적 입력 JSON 글자 꼴(4x~55 판): 절대 경로 JSON도 따라가고, 모르는 꼴이면 멈춘다', (t) => {
+  const f = fixture(t);
+  const 해시 = (p) => crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+  const 묶음 = f.쓰기('dr-json-20261105/rearm/dr/restore-v1.json', '{"schema":"synk-ha-final-dr-root-gate/v2"}');
+  const 정적 = f.쓰기('p-38-release-20261029/rearm/fresh-static-inputs-normal-v3.json', JSON.stringify({ schema: 'static', drProof: { path: 묶음, sha256: 해시(묶음) } }));
+  // 11-07 Fable: 55 rearm-operations.cjs 8행 꼴 — 옛 정규식이 못 읽어 조용히 건너뛰었다.
+  f.쓰기('r-39-release-20261030/rearm-ops/rearm-operations.cjs',
+    `const PARENT_STATIC=Object.freeze(${JSON.stringify({ path: 정적, sha256: 해시(정적), bytes: fs.statSync(정적).size })});`);
+  const 결과 = L.재기(f.판);
+  a.ok(결과.inputGraph.folders['dr-json-20261105'] === 1 && 결과.folders.includes('dr-json-20261105'), 'JSON 꼴 정적 입력이 가리키는 DR 묶음 폴더');
+  f.쓰기('r-39-release-20261030/rearm-ops/rearm-operations.cjs', "const PARENT_STATIC=Object.freeze(require('./parent-static.json'));");
+  a.throws(() => L.재기(f.판), /PARENT_STATIC_FORM_UNKNOWN/);
+});
+
 // 재무장 Linux QA 원천 함수가 있는 판(38 rearm/linux-qa.cjs sources()의 꼴을 줄임): 판 안 고정 파일 · 글자로 적은 QA 도구와 그 상대 require ·
 // 자료 json(qa-roots.json)에서 읽은 원천. 배포 때 생기는 deployment/rearm-stage-plan-pin.json은 아직 없다. 앞줄은 sources() 맨 앞에 넣는 줄.
 function QA원천판(f, 앞줄 = '') {

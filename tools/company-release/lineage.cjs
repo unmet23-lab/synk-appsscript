@@ -256,10 +256,16 @@ function 입력그래프({ 임시, 판, 부모핀 = [], inputPins = {}, 역사 =
   if (fs.existsSync(요약)) 걷기(파일핀(요약));
   // prepare-arm 첫 단계 parentDrBundle: 판 rearm-operations.cjs가 고정한 앞 판 정적 입력(PARENT_STATIC)과 그 DR 묶음·승인 입력을 읽는다.
   // 연습 묶음이 앞 판 것보다 새롭지 않으면 그 경로를 그대로 물려받아 여러 판 앞 폴더일 수 있다(10-30 Fable P1-1 — 37 · 36의 묶음은 teacher-copy-23).
+  // 두 꼴이 있다 — 옛 판은 `{path:path.resolve(__dirname,'../../…'),sha256:'…'}`, 4x~55 판은 JSON 글자 `{"path":"C:\\…","sha256":"…","bytes":…}`.
+  // 11-07 Fable: 뒤 꼴을 못 읽어 55의 앞 판 정적 입력을 조용히 건너뛰었다(54 폴더는 ② 글자로 남아 계보는 같았다). 글에 PARENT_STATIC가 있는데 두 꼴 어느 것도 아니면 멈춘다.
   const 운영 = path.join(판, 'rearm-ops', 'rearm-operations.cjs');
   if (fs.existsSync(운영)) {
-    const m = /\bPARENT_STATIC\s*=\s*Object\.freeze\(\{\s*path\s*:\s*path\.resolve\(\s*__dirname\s*,\s*(['"])([^'"]+)\1\s*\)\s*,\s*sha256\s*:\s*(['"])([a-f0-9]{64})\3/.exec(fs.readFileSync(운영, 'utf8'));
+    const 글 = fs.readFileSync(운영, 'utf8');
+    const m = /\bPARENT_STATIC\s*=\s*Object\.freeze\(\{\s*path\s*:\s*path\.resolve\(\s*__dirname\s*,\s*(['"])([^'"]+)\1\s*\)\s*,\s*sha256\s*:\s*(['"])([a-f0-9]{64})\3/.exec(글);
+    const j = /\bPARENT_STATIC\s*=\s*Object\.freeze\((\{"path":"(?:[^"\\]|\\.)*","sha256":"[a-f0-9]{64}"(?:,"bytes":\d+)?\})\)/.exec(글);
     if (m) 정적입력({ path: path.resolve(path.dirname(운영), m[2]), sha256: m[4] });
+    else if (j) { const v = JSON.parse(j[1]); 정적입력({ path: path.resolve(v.path), sha256: v.sha256 }); }
+    else if (/\bPARENT_STATIC\s*=/.test(글)) throw new Error('PARENT_STATIC_FORM_UNKNOWN ' + 운영);
   }
   const 재무장 = path.join(판, 'rearm');
   if (fs.existsSync(재무장)) {
