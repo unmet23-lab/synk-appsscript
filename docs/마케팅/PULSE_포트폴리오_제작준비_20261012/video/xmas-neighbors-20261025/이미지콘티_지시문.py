@@ -477,6 +477,200 @@ def jobs():
         "double eyelids with slightly drooping outer corners, warm-toned skin with a faint beard shadow, short black hair with messy "
         "straight bangs). Images 2 to 5 " + IDREF, FINISH)
 
+    # ── 11-07 얼굴 시험(4 · 30): 최종본 볼 이유 심사가 두 번 3점 — 원본은 4 · 9 · 11 · 19 · 27 · 30에서 얼굴로 감정을 싣는데 우리는 그 자리를
+    # 실루엣으로 바꿨다(정한 것 ①). 유호님 「울림이 있는 컨셉인데 3점이었던 걸 왜 그냥 지나친 거야」 — 원본처럼 얼굴을 두는 두 컷을 먼저 굽는다.
+    #   4: 원본이 처음 얼굴을 보이는 자리(노부인 미디엄 클로즈업) — 502 할머니의 인사에 작게 목례하는 민재, 지친 눈이 읽히게
+    #   30: 원본 30(노부인이 고쳐진 대문을 보며 눈가가 젖는 얼굴) — 옅은 미소 하나였던 반응을 「알아챈 순간」으로
+    VAR04F = {"C04f1": "a small, polite nod with a tired, faint closed-mouth smile — his eyes are tired and a little lonely",
+              "C04f2": "a polite little smile for the old neighbor that fades as he lowers his eyes — tired, quietly lonely"}
+    for k, v in VAR04F.items():
+        J_[k] = J([lay("S04")] + M_REFS_FACE, STILL_AUTUMN, LAYOUT_SIL.format(who="the man"),
+            "MEDIUM CLOSE-UP, exactly the size and place of the black silhouette: THE MAN in the open-air outdoor corridor on the 5th floor of "
+            "his old apartment block on a damp late-autumn night around 11 pm, in three-quarter view facing toward the LEFT edge of the frame — "
+            "toward the far end of the corridor, where an old neighbor woman (out of frame) has just greeted him. "
+            f"Expression: {v}. Lips closed. His face is clearly visible and readable: soft warm light from a neighbor's lit ceiling lamp further "
+            "down the corridor falls on the side of his face toward the left, and the faint cool glow of the phone in his hand lights his chin "
+            "from below; the other side of his face falls into soft shadow. Behind him, out of focus: the concrete parapet and the dark blue night "
+            f"sky over the old neighborhood's scattered window lights. He wears {M_AUTUMN}.",
+            "THE MAN: the Korean man of Images 2 to 5 — keep his face exactly the same person (a round soft face, a rounded nose tip, small "
+            "double eyelids with slightly drooping outer corners, warm-toned skin with a faint beard shadow, short black hair with messy "
+            "straight bangs). Images 2 to 5 " + IDREF, FINISH)
+    # 4 다시(C04g, 11-07): C04f 둘은 얼굴은 서지만 활짝 웃는 밝은 얼굴 · 헐거운 미디엄 · 높은 빌딩 야경이라 「지치고 외로운」 결이 아니었다 — 크기 · 눈높이를
+    # 숫자로 못 박고 웃음을 막고, 바탕을 다른 컷의 낮은 옛 동네로.
+    VAR04G = {"C04g1": "only the faintest courtesy smile at the corners of his closed mouth that does not reach his eyes — his eyes are heavy and "
+                       "tired after a long day, a little lonely",
+              "C04g2": "no smile at all — a tired, polite little nod, his heavy eyes half lowered, worn out and quietly lonely"}
+    for k, v in VAR04G.items():
+        J_[k] = J([lay("S04")] + M_REFS_FACE, STILL_AUTUMN, LAYOUT_SIL.format(who="the man"),
+            "MEDIUM CLOSE-UP of his head and shoulders, exactly the size and place of the black silhouette: his head and shoulders fill the "
+            "right half of the frame, his eyes at about 40% of the frame height from the top, the top of his hair near the top edge. THE MAN "
+            "in three-quarter view facing toward the LEFT edge of the frame, in the open-air outdoor corridor on the 5th floor of his old "
+            "apartment block on a damp late-autumn night around 11 pm; the old neighbor woman at the far end of the corridor (out of frame) has "
+            f"just greeted him and he answers with a small, polite nod. Expression: {v}. He is not cheerful, not grinning. Lips closed. His face "
+            "is clearly readable: soft warm light from a neighbor's ceiling lamp further down the corridor falls on the side of his face toward "
+            "the left, and the faint cool glow of the phone in his hand lights his chin from below; the other side of his face falls into soft "
+            "shadow. Behind him, out of focus: the concrete parapet and, beyond it, the dark night over an old low-rise neighborhood of tiled "
+            f"roofs, power lines and a few scattered window lights — no high-rise skyline. He wears {M_AUTUMN}.",
+            "THE MAN: the Korean man of Images 2 to 5 — keep his face exactly the same person (a round soft face, a rounded nose tip, small "
+            "double eyelids with slightly drooping outer corners, warm-toned skin with a faint beard shadow, short black hair with messy "
+            "straight bangs). Images 2 to 5 " + IDREF, FINISH)
+    # ── 11-08 얼굴 시험 둘째(15 · 30 · 34): 얼굴 판도 opus 볼 이유 3 · Fable 3.5 — 짚은 셋을 고친다.
+    #   15: 원본 15는 「소년이 옆집 남자에게 무언가 묻는」 모호한 복선인데 우리는 전구 상자를 들어 보여 결말을 20초 먼저 알렸다(opus) → 빈손으로 묻기만
+    #   30: 첫 장부터 감동한 얼굴이라 「알아채는 박자」가 없다(Fable) · 「눈 맞으며 글썽이는 흔한 AI 감성 얼굴」(opus) → 멈칫한 얼굴로 시작, 영상에서 풀림
+    #   34: 관객만 아는 비밀을 나누는 순간인데 무표정(Fable, 원본 소년은 씩 웃음) → 혼자 짓는 작은 미소
+    VAR15N = {"C15n1": "she leans a little toward the young male clerk behind the counter (at the right edge) and asks him something, one hand "
+                       "resting on the counter, the other loosely pointing back toward the shelves",
+              "C15n2": "she asks the young male clerk behind the counter (at the right edge) something with a small shrug, both hands resting "
+                       "on the counter; he is about to answer"}
+    for k, v in VAR15N.items():
+        J_[k] = J([lay("S15")] + W_REFS_BACK, STILL, LAYOUT_SIL.format(who="the woman"),
+            "A long-lens view from a dark room across the street, through its window (a blurred dark window frame and curtain along the left and "
+            "right edges of the frame), into the brightly lit convenience store: inside at the counter, THE WOMAN — large in the frame, exactly the "
+            "place and size of the black silhouette, from the top of her head to below her knees — seen from behind three-quarters, the crimson "
+            f"velvet ribbon bow in her half-up hair and her cream cable-knit cardigan clearly visible; {v}. Her hands hold nothing — no box, no "
+            "product, no bag in her hands or on the counter in front of her; we cannot tell what she is asking about. Shelves, warm store light. "
+            "Night; the store is the only bright thing.",
+            WOMAN.format(a=2, b=4), "Her face is not visible.", FINISH)
+    VAR30G = {"C30g1": "he has just noticed that the lamp above his front door is on — he is stunned and completely still, his brows lifted a "
+                       "little, his lips slightly parted in surprise, his eyes wide and caught by the light; no smile yet, dry eyes, no tears",
+              "C30g2": "a beat of disbelief — he stares up at the lit lamp, his brows slightly raised, his mouth softly open, perfectly still; "
+                       "no smile yet, dry eyes, no tears"}
+    for k, v in VAR30G.items():
+        J_[k] = J([lay("S30")] + M_REFS_FACE, STILL, LAYOUT_SIL.format(who="the man's head"),
+            "TIGHT CLOSE-UP, exactly the size and place of the black silhouette: his head is very large in the frame — the top of his hair is "
+            "cut off by the top edge, his chin sits at about 78% of the frame height and his face spans roughly from 40% to 72% of the frame "
+            "width. THE MAN's face in three-quarter view turned toward the LEFT edge of the frame (we see more of his right cheek), tilted up "
+            "toward the small sensor lamp above his front door (just out of frame at the top left), which bathes his face in soft warm light "
+            "from above. He stands in the open-air outdoor corridor on the 5th floor of his old apartment block, so behind him, out of focus, "
+            "is the corridor's concrete parapet with a line of fresh snow on its edge low in the frame, and beyond it, five floors up, the blue "
+            "dusk sky over the snowy rooftops of the old neighborhood, warm window lights and the round bokeh of a string of fairy lights on a "
+            "neighbor's door — not a street, not an alley. A few snowflakes in his hair and on the collar of his navy padded jacket and his "
+            f"grey knitted scarf. Expression: {v}. Natural skin with real texture — not glossy, not airbrushed.",
+            "THE MAN: the Korean man of Images 2 to 5 — keep his face exactly the same person (a round soft face, a rounded nose tip, small "
+            "double eyelids with slightly drooping outer corners, warm-toned skin with a faint beard shadow, short black hair with messy "
+            "straight bangs). Images 2 to 5 " + IDREF, FINISH)
+    VAR34S = {"C34s1": "a small, private, secret smile — the corners of her closed lips lifting, her eyes lowered toward the lower left as if "
+                       "thinking of someone next door",
+              "C34s2": "a shy, warm little smile she is trying to hold back — one corner of her closed mouth lifting, her eyes lowered toward "
+                       "the lower left"}
+    for k, v in VAR34S.items():
+        J_[k] = J([lay("S34")] + W_REFS_FACE, STILL, LAYOUT_SIL.format(who="the woman's head"),
+            "EXTREME CLOSE-UP, exactly the place and size of the black silhouette: her head is very large in the frame — the top of her hair "
+            "is cut off by the top edge, her chin is at about 85% of the frame height, and her face spans roughly from 36% to 66% of the frame "
+            "width, centered. She sits upright at her desk at night, her face almost frontal, turned only slightly toward the LEFT edge of the "
+            "frame, her head bowed a little. Cold blue-white light from the night window at the frame's left lights the left side of her face; "
+            "the small desk lamp she has just switched on, low at the frame's right and just out of frame, adds a soft warm glow to the right "
+            "side of her face and her hair. Out of focus behind her: at the left, the window with round warm bokeh of the fairy lights in the "
+            "corridor outside; at the right, the dark wall of her room. Behind her head on the right, the crimson velvet ribbon bow of her "
+            f"half-up hair clearly peeks out. Expression: {v}. Lips closed. No hand near her face. Natural skin with real texture.",
+            "THE WOMAN: the Korean woman of Images 2 to 5 — keep her face exactly the same person (a round soft face with a small chin, a "
+            "rounded nose tip, double eyelids with soft aegyo-sal, dark brown eyes, bright warm-toned skin, natural coral lips, light-brown "
+            "hair with see-through bangs). Images 2 to 5 " + IDREF, f"She wears {W_HOME}.", FINISH)
+    VAR30F = {"C30f1": "he has just realized the lamp above his door is finally on — his eyes glisten with tears he holds back, and a small, "
+                       "trembling smile breaks across his face; deeply touched, almost laughing at himself",
+              "C30f2": "his breath catches — his eyes are wet and shining in the warm light, his brows lift a little, and a soft, moved smile "
+                       "spreads slowly across his face"}
+    for k, v in VAR30F.items():
+        J_[k] = J([lay("S30")] + M_REFS_FACE, STILL, LAYOUT_SIL.format(who="the man's head"),
+            "TIGHT CLOSE-UP, exactly the size and place of the black silhouette: his head is very large in the frame — the top of his hair is "
+            "cut off by the top edge, his chin sits at about 78% of the frame height and his face spans roughly from 40% to 72% of the frame "
+            "width. THE MAN's face in three-quarter view turned toward the LEFT edge of the frame (we see more of his right cheek), tilted up "
+            "toward the small sensor lamp above his front door (just out of frame at the top left), which bathes his face in soft warm light "
+            "from above and catches the wet shine in his eyes. He stands in the open-air outdoor corridor on the 5th floor of his old apartment "
+            "block, so behind him, out of focus, is the corridor's concrete parapet with a line of fresh snow on its edge low in the frame, and "
+            "beyond it, five floors up, the blue dusk sky over the snowy rooftops of the old neighborhood, warm window lights and the round "
+            "bokeh of a string of fairy lights on a neighbor's door — not a street, not an alley. A few snowflakes in his hair and on the collar "
+            f"of his navy padded jacket and his grey knitted scarf. Expression: {v}. Lips closed.",
+            "THE MAN: the Korean man of Images 2 to 5 — keep his face exactly the same person (a round soft face, a rounded nose tip, small "
+            "double eyelids with slightly drooping outer corners, warm-toned skin with a faint beard shadow, short black hair with messy "
+            "straight bangs). Images 2 to 5 " + IDREF, FINISH)
+
+    # ── 11-08 짜임 사진 시험(크레딧 0 — 사진으로 심사부터): 얼굴 2차 판도 opus 볼 이유 3 · Fable 3.5. 둘이 같이 짚은 것은 짜임이다.
+    #   25: 원본 25는 「성에 낀 창 너머 옆집 남자 얼굴」 — 3 · 15 · 25에 나오는 그가 「고친 사람」으로 보이게 하는 미끼인데, 우리는 그 자리에
+    #       하린을 둬서 등이 켜지는 순간 답이 나온다(opus 「옆집 여자가 한 일인 게 뻔하다」). 3에서 목례한 502 할머니를 원본 구도 그대로 창 너머에.
+    #   27: 원본 27은 노부인의 지친 얼굴 — 11 · 19 · 27 얼굴로 쓸쓸함을 쌓는데 우리 27은 뒷모습이라 30의 미소가 「좋네」에서 끝남(Fable).
+    VAR25H = {"C25h1": "a calm, kind, quietly watchful look, the faintest knowing smile at the corners of her closed mouth — as if she has "
+                       "been waiting for someone to come home",
+              "C25h2": "a calm, quietly watchful look with no smile, her eyes following someone coming along the corridor"}
+    for k, v in VAR25H.items():
+        J_[k] = J([lay("S25")], STILL, LAYOUT_GREY,
+            "Christmas Eve, blue dusk, gentle snow. In the open-air outdoor corridor on the 5th floor of an old Korean apartment block, we "
+            "look from the corridor INTO the small corridor-side kitchen window of the neighbor at the far end of the corridor (the elderly "
+            "woman who hangs wreaths on her door): an old white-framed window — its frame at the left and right of the picture, its sill low "
+            "in the frame — its glass frosted with ice crystals around the edges and slightly misted, a strand of silver tinsel and a tiny "
+            "wreath on the sill. Behind the glass, in her warm yellow-lit kitchen, an elderly Korean woman in her seventies — short permed "
+            "grey hair, a soft lined face, a quilted brown vest over a knitted cardigan — stands at the window and looks out along the "
+            "corridor toward the RIGHT edge of the frame. Her face, in the upper middle of the picture a little right of center, is clearly "
+            f"seen through the clear middle of the glass, softly lit by the warm kitchen light: {v}. Lips closed. The cold blue dusk and a "
+            "few drifting snowflakes are reflected faintly on the glass in front of her. The camera, outside in the corridor, slowly pushes "
+            "in. Natural skin with real texture.", FINISH)
+    VAR27F = {"C27f1": "worn out and quietly lonely after a long day — his heavy eyes lowered to the phone in his hand as he switches on its "
+                       "flashlight out of habit; no smile",
+              "C27f2": "worn out — he lifts his tired eyes from the phone toward his dark door ahead and lets out a small weary breath; no "
+                       "smile"}
+    for k, v in VAR27F.items():
+        J_[k] = J([lay("S27")] + M_REFS_FACE, STILL, LAYOUT_SIL.format(who="the man"),
+            "CLOSE-UP of his head and shoulders, exactly the size and place of the black silhouette (the right part of the frame): THE MAN "
+            "walking along the open-air outdoor corridor on the 5th floor of his old apartment block at blue dusk on Christmas Eve, in "
+            "three-quarter view facing toward the LEFT edge of the frame so his face is readable — soft cool dusk light on his face and a "
+            f"faint cold glow from the phone in his hand below. Expression: {v}. Lips closed. A few snowflakes in his hair and on the collar "
+            "of his navy padded jacket and his grey knitted scarf. Behind him, out of focus: the corridor's other doors decorated with fairy "
+            "lights and wreaths (small soft warm points of light), snow on the parapet, the blue dusk. Natural skin with real texture — not "
+            "glossy, not airbrushed.",
+            "THE MAN: the Korean man of Images 2 to 5 — keep his face exactly the same person (a round soft face, a rounded nose tip, small "
+            "double eyelids with slightly drooping outer corners, warm-toned skin with a faint beard shadow, short black hair with messy "
+            "straight bangs). Images 2 to 5 " + IDREF, FINISH)
+    # 9 알아챔(C09n): 위 25 · 27 사진 시험은 opus 3 · 3 · 3, Fable 견주기는 오히려 지금 판(4)이 앞섰다(창가 할머니는 「누구인지 모름」).
+    #   opus 네 번이 같은 처방 — 「옆집 여자가 그의 어두운 문 앞 폰 불빛을 보는 컷 하나를 심으면 47.6초가 『그때 봤구나』로 터진다」.
+    #   원본 9는 끝에 정체가 될 소년의 얼굴 자리라, 그 자리의 하린이 웃다가 옆 문간 어둠 속 폰 불빛을 알아채는 얼굴로.
+    VAR09N = {"C09n1": "her laugh has just faded — she looks along the dark corridor toward the next door with a quiet, curious, slightly "
+                       "concerned look, her lips closed",
+              "C09n2": "still half-smiling from the laugh, she glances toward the next door and her smile slowly fades into a soft, "
+                       "thoughtful look"}
+    for k, v in VAR09N.items():
+        J_[k] = J([lay("S09")] + W_REFS_FACE, STILL_AUTUMN, LAYOUT_SIL.format(who="the woman"),
+            "CLOSE-UP, the size and place of the black silhouette (the right half of the frame): THE WOMAN stands at the edge of her open "
+            "front doorway in the outdoor corridor of an old Korean apartment block on a late-autumn night, a canned drink in her hand at the "
+            "bottom edge; the party is behind her, off the right side of the frame, and its warm golden light falls on the right side of her "
+            "face, her hair and the crimson velvet ribbon bow of her half-up hair. Her face is in three-quarter view turned toward the LEFT "
+            f"edge of the frame, softly readable in that warm side light: {v}. She is looking at what we see in the left part of the frame, "
+            "softly out of focus but clearly readable: a little way down the dark corridor, the next door's alcove under its dead lamp, pitch "
+            "dark except for the small cold white circle of a phone flashlight trembling at a keyhole, and the dark hunched outline of a young "
+            "man in a thin jacket bent over the lock — about a fifth of the frame height. No other light in the corridor.",
+            "THE WOMAN: the Korean woman of Images 2 to 5 — keep her face exactly the same person (a round soft face with a small chin, a "
+            "rounded nose tip, double eyelids with soft aegyo-sal, dark brown eyes, bright warm-toned skin, natural coral lips, light-brown "
+            "hair with see-through bangs). Images 2 to 5 " + IDREF, f"She wears {W_HOME}. Natural skin with real texture.", FINISH)
+    # 9 시작 장(C09s): 종이 판 C는 Fable 견주기 4(이번 판 3) — 다만 「길고 동정 어린 눈빛이면 신파, 힐끗이어야」. 영상은 파티 쪽으로 웃던 얼굴에서
+    #   시작해 고개가 어두운 복도 끝으로 돌아가 폰 불빛에 멎게 굽는다 → 고른 C09n1을 「한 박자 앞」으로 고친 첫 장(얼굴 고치기는 한 번까지).
+    VAR09S = {"C09s1": "she is still laughing with her friends at the party just off the right side of the frame — her face turned "
+                       "three-quarters toward the RIGHT edge of the frame, her eyes crinkled with laughter, her lips parted in a natural laugh",
+              "C09s2": "she is smiling widely at a friend's joke at the party just off the right side of the frame — her face turned toward "
+                       "the RIGHT edge of the frame, her head tipped back a little, the can raised a little"}
+    for k, v in VAR09S.items():
+        J_[k] = J([ref("C09n1.jpg"), ref("H3.jpg"), ref("F02_hero.jpg")],
+            f"Edit this photograph (Image 1). Make it the moment about one second EARLIER in the same shot: {v}. Keep everything else in "
+            "Image 1 exactly: the same camera and framing, the same warm golden light from the right, her same face, hair, crimson velvet "
+            "ribbon bow, cream cable-knit cardigan and canned drink, and the same dark corridor in the left part of the frame where the young "
+            "man is hunched at the next door with his small cold phone light. Images 2 and 3 are her identity references — do not change her "
+            "face.", FINISH)
+    # 4 얼굴 맞추기(C04h): 얼굴 2차 판 심사 — opus 두 번 「5.9초와 44초 남자가 볼살 · 턱선이 달라 다른 사람처럼」, Fable 「4는 앞머리가 눈썹을
+    #   덮고 턱이 좁아 REF · 30보다 갸름(70%)」. 30(REF와 같은 사람)의 얼굴 장을 Image 6으로 넣어 4를 30에 맞춘다.
+    for k, v in VAR04G.items():
+        J_[k.replace("C04g", "C04h")] = J([lay("S04")] + M_REFS_FACE + [ref("Z30_얼굴.jpg")], STILL_AUTUMN, LAYOUT_SIL.format(who="the man"),
+            "MEDIUM CLOSE-UP of his head and shoulders, exactly the size and place of the black silhouette: his head and shoulders fill the "
+            "right half of the frame, his eyes at about 40% of the frame height from the top, the top of his hair near the top edge. THE MAN "
+            "in three-quarter view facing toward the LEFT edge of the frame, in the open-air outdoor corridor on the 5th floor of his old "
+            "apartment block on a damp late-autumn night around 11 pm; the old neighbor woman at the far end of the corridor (out of frame) has "
+            f"just greeted him and he answers with a small, polite nod. Expression: {v}. He is not cheerful, not grinning. Lips closed. His face "
+            "is clearly readable: soft warm light from a neighbor's ceiling lamp further down the corridor falls on the side of his face toward "
+            "the left, and the faint cool glow of the phone in his hand lights his chin from below; the other side of his face falls into soft "
+            "shadow. Behind him, out of focus: the concrete parapet and, beyond it, the dark night over an old low-rise neighborhood of tiled "
+            f"roofs, power lines and a few scattered window lights — no high-rise skyline. He wears {M_AUTUMN}.",
+            "THE MAN: the Korean man of Images 2 to 6 — keep his face exactly the same person as in Image 6, which is this same man later in "
+            "this film: a round soft face with full cheeks and a soft rounded jaw (not a slim face, not a sharp jawline), a rounded nose tip, "
+            "small double eyelids with slightly drooping outer corners, warm-toned skin with a faint beard shadow, short black hair with messy "
+            "straight bangs that end ABOVE his eyebrows so his eyebrows and forehead show. Images 2 to 6 " + IDREF, FINISH)
+
     # 끝 그림 둘(19 · 30): 사람을 따라 손으로 크게 도는 컷이라 받은 판을 잘라서는 끝을 못 만든다(사람은 그 자리, 바탕만 흐름) — 고른 시작 그림을
     # Image 1로 「같은 사람 · 같은 자리 · 같은 표정, 바탕만 흘러간 마지막 프레임」 편집으로 굽는다(얼굴 컷 고치기는 한 번까지 — 현장노트 gemini).
     J_["C30e"] = J([ref("C30.jpg")] + M_REFS_FACE[:2],
