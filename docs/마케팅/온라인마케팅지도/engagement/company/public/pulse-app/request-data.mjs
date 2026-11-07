@@ -32,7 +32,7 @@ export const PACKAGES=Object.freeze([
 export const termsOf=pkg=>pkg?.days?`${pkg.days}일 · 수정 ${pkg.revisions}회`:pkg?'기간 · 수정 협의':'';
 // 받으실 날: 기준일(보내기 전 오늘, 보낸 뒤 접수일)에서 달력으로 days일 뒤. 「11월 17일」.
 export function dueDay(pkg,from=new Date()){if(!pkg?.days)return '';const at=new Date(from);if(Number.isNaN(at.getTime()))return '';at.setDate(at.getDate()+pkg.days);return `${at.getMonth()+1}월 ${at.getDate()}일`;}
-export const revisionNote=pkg=>pkg?.days?`${pkg.photo?'사진':'영상'}이 나온 뒤 ${pkg.revisions}번. 글 콘티 · 장면 이미지 의견은 세지 않아요`:'';
+export const revisionNote=pkg=>!pkg?.days?'':pkg.photo?`사진이 나온 뒤 ${pkg.revisions}번. 첫 장으로 방향을 맞춘 뒤 나머지를 만들어요`:`영상이 나온 뒤 ${pkg.revisions}번. 글 콘티 · 장면 이미지 의견은 세지 않아요`;
 // 준비물: 「꼭」은 없으면 그 자리를 비워 두고 1차안을 만들어야 하는 것, 「있으면」은 있으면 수정이 줄어드는 것이다. 어느 쪽도 보내기를 막지 않는다.
 const LOGO={id:'logo',label:'로고 파일',need:true,accept:'image/*,.svg,.ai,.eps,.pdf',why:'끝 화면과 자막에 그대로 얹어요. AI · SVG가 가장 좋고, 배경이 없는 PNG도 괜찮아요.',kind:'logo'};
 const USE={id:'use',label:'쓰는 모습',accept:'image/*,video/*',why:'여는 법, 쓰는 법이 틀리면 장면을 다시 만들어야 해요. 찍어 둔 게 없으면 한 줄로 적어 주세요.',note:'예) 뚜껑을 돌려 열고 손등에 펴 발라요'};

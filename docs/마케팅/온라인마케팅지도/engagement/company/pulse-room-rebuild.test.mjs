@@ -17,7 +17,7 @@ test('every package shows the same days and revisions as the price table and the
   assert.equal(termsOf(of('s15')),'10일 · 수정 2회','the count never breaks from its word');
   assert.equal(termsOf(of('corp')),'기간 · 수정 협의');assert.equal(termsOf(null),'');
   assert.match(revisionNote(of('s15')),/^영상이 나온 뒤 2번\. 글 콘티 · 장면 이미지 의견은 세지 않아요$/);
-  assert.match(revisionNote(of('photo')),/^사진이 나온 뒤 2번/);
+  assert.equal(revisionNote(of('photo')),'사진이 나온 뒤 2번. 첫 장으로 방향을 맞춘 뒤 나머지를 만들어요','photo orders have no script or scene stage (fable F2)');
   for(const item of PACKAGES)assert.ok(item.gets,`${item.id} says what the customer receives`);
 });
 test('the receiving day counts calendar days and rolls over months and years',()=>{
@@ -76,5 +76,7 @@ test('pictures carry their words on a shade, not in a black box',()=>{
   assert.match(css,/\.sx-row\.is-on \.sx-row-meta \.sx-row-terms\{color:var\(--sx-dim\)\}/,'wins over the generic on-row colour (argon A3)');
   assert.match(css,/\.sx-room-screen::after\{content:'';[^}]*linear-gradient/);
   assert.match(css,/\.sx-q-progress,\.sx-q-parts\{display:none!important\}/,'one progress mark per screen');
+  assert.match(css,/\.sx-rows\.is-tight\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\);column-gap:18px\}/,'all six lengths sit above the next button on a low laptop (fable F1)');
+  assert.match(css,/@media \(max-width:860px\)\{\.sx-q-screen::after\{content:'';[^}]*linear-gradient\(0deg/,'the phone credit under the picture gets its own shade (fable F3)');
   assert.match(css,/@media \(min-width:861px\) and \(max-height:760px\)\{\.sx-rows\.is-kinds\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
 });
