@@ -64,6 +64,35 @@ ACT_23Q = ("Midday: a wide view of the huge concrete test building's open entran
            "to look up along the turbine, at about 0.8 s he lifts his right hand to the brim of his hard hat as he looks up, and at about 1.4 s he lowers the "
            "hand, shifts his weight and turns toward the doorway. The strip of grass in front sways gently in a light breeze.")
 
+# 11-08 유호님 「이 사람은 뭐하고있는거야? … 아예 굳어있잖아」(0:16, 12 벤치 앞 사람) — 1차 교차 검수에서 둘이 짚은 「약한 동작」 다섯을 같은 짜임으로 다시.
+#   12는 벤치 앞 사람에게 시킨 일이 아예 없었고, 7 · 13 · 29 · 35는 「stays there · stand still」이거나 연기가 적었다. 얼굴이 드러나는 고개 돌림은 피한다.
+ACT_07 = ("Inside the turbine's tangle of steel pipes, a gloved hand works a wrench on a pipe fitting: from the very first frame the wrist turns the wrench firmly "
+          "through a quarter-turn, lets go, re-grips and turns it again at about 0.9 s, and a third time at about 1.8 s — the wrench clearly swinging each time. The "
+          "camera leaves the hand and finds the assembler's dark shoulder and the back of his head under a dark work cap: his shoulder rocks with every turn and at "
+          "about 2.6 s he leans his head in closer to the fitting; his face is turned away into the machine and is never seen. No one appears except the assembler "
+          "whose hand and shoulder are in the first frame.")
+ACT_12 = ("In a dim workshop full of workbenches under warm work lamps, a worker stands at his bench, seen from behind, working: from the very first frame his arms "
+          "move back and forth as he files a small metal part on the bench in short, steady strokes, his shoulders and the back of his head moving with each stroke; "
+          "at about 1.4 s he puts the file down and reaches across the bench for another tool; his face is never seen. Then a second worker, who has been waiting "
+          "just outside the right edge of the frame, walks past close in front of the camera, seen only from the chest down, carrying in both gloved hands a single "
+          "fan blade for the turbine: a broad, gently twisted airfoil as long as his arm and as wide as two hands, dark grey with a polished metal leading edge and a "
+          "thick square root block at its lower end — clearly a heavy machine part, never a thin, sword-like strip of metal. From about 1.2 s the blade sweeps into "
+          "the lower half of the frame and fills the middle of the frame by the end, his gloved hands on it. No one appears except the two workers written in ACTION.")
+ACT_13 = ("In the bright assembly hall, a worker in a grey work jacket and a white hard hat, seen from behind, holds a heavy dark casing cover up against the turbine "
+          "with both arms raised and works it into place: from the very first frame he heaves it up a little and pushes it toward the turbine — his shoulders bunch, "
+          "his elbows brace and his weight leans in — at about 0.8 s he moves his left hand along the rim to a new grip, and at about 1.3 s he gives a second, "
+          "smaller push so it seats; another worker in the background on the right bends to pick up a tool from a cart. Their faces are never seen.")
+ACT_29 = ("Side view in the bright assembly hall, only his hand and arm in the frame: Junho's hand, in the navy work-jacket sleeve, lies on the smooth cream-white "
+          "casing beside a row of bolts — a quiet goodbye: from the very first frame the palm slides slowly along the casing about a hand's width toward the bolts, "
+          "the fingers spreading and the sleeve shifting with the arm, then at about 1.1 s it comes to rest flat and the fingers press against the metal once. This is "
+          "the rear, exhaust end of the turbine, where he stands in the next shot: left of his hand the casing runs on past a ring of round bolts and curves away — "
+          "no blades or cone in this shot.")
+ACT_35 = ("Three men seen from behind — Junho in the middle in his navy jacket, a co-worker on each side — stand side by side looking out at the power plant at "
+          "dusk: tall chimneys with white steam rising, transmission towers and plant lights under an orange-pink sky. They are alive and at ease: from the very "
+          "first frame the evening wind stirs their hair and jacket collars; at about 0.3 s the co-worker on the left turns his head a little toward Junho, at about "
+          "0.6 s Junho draws a deep breath and his shoulders rise and settle, and the co-worker on the right shifts his weight and slips one hand into his pocket. "
+          "Their faces are never seen.")
+
 JOBS = [  # (id, 꾸러미 폴더, 원래 판 폴더(DAY 아래), 새 ACTION, 쓰는초, 컷, 시작 그림 파일 이름(원래 판 폴더 안 = 꾸러미 안), 소리)
     ("p10-10n", "001_p10-10n", "웹올리기_여섯편/133_p10-10", ACT_10, 2.2, ["10"], "1_시작.jpg", "끔"),
     ("p10-08n", "002_p10-08n", "웹올리기_여섯편/131_p10-08", ACT_08, 1.9, ["8"], "1_시작.jpg", "끔"),
@@ -74,6 +103,11 @@ JOBS = [  # (id, 꾸러미 폴더, 원래 판 폴더(DAY 아래), 새 ACTION, �
     ("p10-17n", "007_p10-17n", "웹올리기_p10발전_1107/002_p10-17e", ACT_17, 1.7, ["17"], "1_시작.jpg", "끔"),
     ("p10-08q", "008_p10-08q", "웹올리기_여섯편/131_p10-08", ACT_08, 1.9, ["8"], "2_참고1_시작.jpg", "끔"),   # 4장 멈칫 → m2v(현장노트 드리미나 「일곱에 하나꼴 …」)
     ("p10-23q", "009_p10-23q", "웹올리기_p10발전_1107/014_p10-23g", ACT_23Q, 1.6, ["23"], "1_시작.jpg", "끔"),
+    ("p10-07n", "010_p10-07n", "웹올리기_여섯편/089_p10-07", ACT_07, 2.6, ["7"], "1_시작.jpg", "끔"),
+    ("p10-12n", "011_p10-12n", "웹올리기_p10다시_1107/004_p10-12b", ACT_12, 2.0, ["12"], "1_시작.jpg", "끔"),
+    ("p10-13n", "012_p10-13n", "웹올리기_여섯편/135_p10-13", ACT_13, 1.1, ["13"], "1_시작.jpg", "끔"),
+    ("p10-29n", "013_p10-29n", "웹올리기_여섯편/107_p10-29", ACT_29, 1.3, ["29"], "1_시작.jpg", "끔"),
+    ("p10-35n", "014_p10-35n", "웹올리기_여섯편/113_p10-35", ACT_35, 1.2, ["35"], "1_시작.jpg", "끔"),
 ]
 
 
