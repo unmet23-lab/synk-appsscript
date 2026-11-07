@@ -3,7 +3,8 @@
 #   python -X utf8 폰입히기.py 녹화 [컷…]   → node 녹화_따라.cjs로 지금 캐스팅북을 그 계획대로 다시 찍음(최종/p8/폰/녹화/<R>/raw)
 #   python -X utf8 폰입히기.py 입히기 [컷…] → 최종/p8/_컷/<컷>.mp4(1920×1080 · 24fps — 판 그대로 키우고 초록 자리에만 녹화를 붙임) · 폰/<컷>_입힘.jpg(확인판)
 # 스크롤은 받은 판의 손끝과 1:1(끌기), 뗀 뒤는 뗀 빠르기에서 지수로 줄어 멈춤(넘기기). 누름 · 크게 보기는 손가락이 화면을 덮은 동안 바뀐다.
-# 보드가 10-25 녹화 뒤에 바뀌어(모델 21 · 그룹 두 팀 칸) 3 · 12번은 한 번 넘겨 그룹 칸을 지나 하린 줄에 닿는다(손가락 판이 한 번 튕긴다).
+# 보드가 10-25 녹화 뒤에 바뀌어(모델 21 · 그룹 두 팀 칸) 3번은 한 번 넘겨 그룹 칸을 지나 하린 줄에 닿는다(손가락 판이 한 번 튕긴다).
+# 12번은 질문을 넣은 보드다 — 11-07 저녁부터 질문이 있으면 그룹 칸이 모델 목록 뒤로 가서(캐스팅북 app.js placeTeams) 질문 칸에서 하린 줄로 바로 넘어간다.
 # 색 · 밝기 후보정 없음(결정 10-24) — 받은 판은 키우기만 하고, 녹화 화면은 스스로 빛나는 면이라 0.93배 · 0.6px 흐림만(이미지콘티_합성.py와 같은 값).
 import functools
 import json
@@ -48,12 +49,16 @@ CUTS = {
     # 10번 15.0초 엄지 아래 초록 번짐(둘레 누름 15px 밖). 칸 안 초록은 모두 덮고, 화면 가장자리에 닿는 칸 귀퉁이는 밖으로 밀고, 둘레 누름은 40px.
     6: {"pid": "p8-06", "a": 10, "k": 32, "rec": "R6", "route": "#m-F02", "ask": "", "mode": "follow", "y0": 345, "edge_fix": True},
     10: {"pid": "p8-10", "a": 34, "k": 24, "rec": "R10", "route": "#m-F02-scene", "ask": "", "mode": "follow", "y0": 480, "edge_fix": True},
-    # 12번(v4): 손끝은 117pt를 끌고 836pt/s로 뗀다 — 휴대폰 감속 그대로면 모두 350pt인데 v1~v3은 질문 칸(150) → 01 하린(1484) 1,334pt를 맞추려
-    # 3.8배로 날려 그룹 칸이 번지며 「깨진 화면 · 파형」으로 읽혔다(v3 시험관 셋 · opus). 닿을 자리만 두고 처음 자리를 거꾸로 센다(질문 칸은 이 컷에서 빠진다).
-    12: {"pid": "p8-12", "a": 22, "k": 20, "rec": "R12", "route": "#board", "ask": "딸기 라떼 신메뉴", "mode": "flick", "drag": (24, 30), "target": 1484},
+    # 12번(v5, 11-07 저녁): 손끝은 117pt를 끌고 836pt/s로 뗀다 — 휴대폰 감속 그대로면 모두 350pt. v1~v3은 질문 칸(150) → 01 하린(1484) 1,334pt를 맞추려
+    # 3.8배로 날려 그룹 칸이 번지며 「깨진 화면 · 파형」으로 읽혔고(v3 시험관 셋 · opus), v4는 닿을 자리만 두어 질문 칸이 컷에서 빠졌다(Fable 3차 「딸기 라떼 입력 고리가 안 읽힘」).
+    # 보드가 질문이 있으면 그룹 칸을 목록 뒤로 보내 같은 두 자리가 150 → 471(01 하린 타일 571, 위에 「모델 21명」 줄)로 321pt — 뗀 빠르기를 731pt/s(손끝의 0.87배)로 맞추면 한 컷에 질문 → 하린.
+    12: {"pid": "p8-12", "a": 22, "k": 20, "rec": "R12", "route": "#board", "ask": "딸기 라떼 신메뉴", "mode": "flick", "drag": (24, 30), "y0": 150, "target": 471},
     15: {"pid": "p8-15", "a": 25, "k": 27, "rec": "R15", "route": "#m-F02", "ask": "", "mode": "open", "y0": 150, "strip": 5, "open_at": 1.55},
     17: {"pid": "p8-17__2", "a": 18, "k": 33, "rec": "R17", "route": "#board", "ask": "딸기 라떼 신메뉴", "mode": "press", "press_at": 1.62,
-         "zoom": {"tileCode": "F02"}, "crop_w": 380, "hide_toast": True},   # v4: 누름 알림 상자(#toast)가 02 얼굴을 덮어 「개발 UI 알림」(Fable v1 · v3) — 칩이 「패키지에 담김」으로 바뀌는 것만
+         "zoom": {"tileCode": "F02"}, "crop_w": 380, "hide_toast": True,   # v4: 누름 알림 상자(#toast)가 02 얼굴을 덮어 「개발 UI 알림」(Fable v1 · v3) — 칩이 「패키지에 담김」으로 바뀌는 것만
+         # 11-07 저녁 보드 고침(질문이 있으면 그룹 칸이 모델 목록 뒤로) 전 판에서 찍은 v4 녹화(R17 zoom, 타일 1584 · scrollY 928)를 그대로 쓴다. 고친 보드에서는 타일이 571이라
+         # 엄지 자리(화면 681pt)에 단추를 두려면 scrollY가 −85가 되어 못 찍는다. 극접사 칸 안 짜임(거르기 줄 · 「모델 21명」 · 01 · 02)은 두 판이 같다(1pt 차).
+         "frozen": "보드 고침 전 판에서 찍은 v4 녹화를 쓴다(고친 보드에서는 엄지 자리에 단추를 둘 수 없다) — 입히기만 한다"},
 }
 
 
@@ -71,6 +76,9 @@ def tip_y(rec):
 
 def plan(cut):
     c = CUTS[cut]
+    if c.get("frozen"):
+        print(f"#{cut} 계획 건너뜀 — {c['frozen']}")
+        return None
     rec = tracked(cut)
     ty = tip_y(rec)
     a, k = c["a"], c["k"]
@@ -160,7 +168,7 @@ def press_scroll(cut):
     tips = [t for t in rec["손끝"][c["a"]:c["a"] + c["k"]] if t]
     tx, ty = np.median([t[0] for t in tips[-10:]]), np.median([t[1] for t in tips[-10:]])
     px, py = to_new(rec, sp, (tx, ty))
-    tile_top = 1584   # 「딸기 라떼 신메뉴」 보드의 01 하린 타일(11-07 공개 판에서 잼 — 녹화 뒤 clip.json의 box로 다시 확인)
+    tile_top = 1584   # 「딸기 라떼 신메뉴」 보드의 01 하린 타일(11-07 공개 판에서 잼 — 녹화 뒤 clip.json의 box로 다시 확인). 보드 고침 뒤는 571 — CUTS[17] frozen
     want_btn_y = py - 47 - 8        # 화면 pt → 페이지 화면(위 상태 표시줄 47pt). 엄지 끝보다 조금 위에 단추 가운데
     scroll = tile_top + ADD["dy"] + ADD["h"] / 2 - want_btn_y
     print(f"#{cut} 칸 {sp[0].tolist()}~{sp[2].tolist()} · 엄지 끝 화면 ({px:.0f}, {py:.0f})pt — 단추 가로 {20 + ADD['dx']:.0f}~{20 + ADD['dx'] + ADD['w']:.0f} · 스크롤 {scroll:.1f}")
@@ -169,6 +177,9 @@ def press_scroll(cut):
 
 def record(cut):
     c = CUTS[cut]
+    if c.get("frozen"):
+        print(f"#{cut} 녹화 건너뜀 — {c['frozen']}")
+        return
     subprocess.run(["node", os.path.join(HERE, "녹화_따라.cjs"), os.path.join(REC, c["rec"] + ".json")], check=True)
 
 

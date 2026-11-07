@@ -81,16 +81,16 @@ test('PULSE: 공유·문의·스와이프 실제 Chrome 회귀', { timeout: 120_
   browser = await chromium.launch({ channel: 'chrome', headless: true });
   run.update({ target: { url }, runtime: { browser: browser.version() } });
 
-  async function withPage(pkg, fn, options = {}) {
+  async function withPage(pkg, fn, options = {}, ask = '') {
     const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: 'no-preference', ...options });
     const page = await context.newPage(), errors = [];
     page.setDefaultTimeout(5000);
     page.on('pageerror', error => errors.push(error.message));
     await context.route('**/*', route => route.request().url().startsWith(url) || route.request().url().startsWith('data:') ? route.continue() : route.abort());
-    await page.addInitScript(pkg => {
-      localStorage.setItem('pulse-casting-v3', JSON.stringify({ pkg, sel: { M01: { hair: 2 } }, ask: '' }));
+    await page.addInitScript(({ pkg, ask }) => {
+      localStorage.setItem('pulse-casting-v3', JSON.stringify({ pkg, sel: { M01: { hair: 2 } }, ask }));
       Object.defineProperty(navigator, 'clipboard', { value: { writeText: async text => { window.__copied = text; } } });
-    }, pkg);
+    }, { pkg, ask });
     try { await fn(page); assert.deepEqual(errors, [], '브라우저 실행 오류가 없어야 한다'); }
     finally { await context.close(); }
   }
@@ -189,6 +189,57 @@ test('PULSE: 공유·문의·스와이프 실제 Chrome 회귀', { timeout: 120_
     await page.mouse.move(x, y); await page.mouse.down();
     await page.mouse.move(x + 150, y, { steps: 5 }); await page.mouse.up();
   };
+
+  // 11-07: 그룹 두 팀 칸이 휴대폰에서 약 1,000pt라 질문을 넣어도 앞에 세운 모델이 그 아래에 묻혔다 — 질문이 있으면 그룹 칸은 모델 목록 뒤로 간다
+  const boardOrder = page => page.evaluate(() => {
+    const teams = document.querySelector('.teams'), first = document.querySelector('.board .tile'), q = document.querySelector('#q');
+    const top = el => Math.round(el.getBoundingClientRect().top + scrollY);
+    return { atTop: teams.nextElementSibling?.matches('.filters') === true, atEnd: teams.previousElementSibling?.id === 'board-body', late: teams.classList.contains('late'),
+      rank: first.querySelector('.rank')?.textContent || '', teamsFirst: top(teams) < top(first), gap: top(first) - Math.round(q.getBoundingClientRect().bottom + scrollY) };
+  });
+  await check('휴대폰 폭에서 광고 내용을 적으면 그룹 칸이 모델 목록 뒤로 가고, 지우면 거르기 줄 위로 돌아온다', async () => {
+    await withPage([], async page => {
+      await page.goto(url + '#board');
+      await page.locator('.teams .team').first().waitFor();
+      let o = await boardOrder(page);
+      assert.ok(o.atTop && !o.late && o.teamsFirst && !o.rank, '질문이 없으면 보드는 그대로(머리 → 그룹 칸 → 거르기 → 모델) ' + JSON.stringify(o));
+      await page.fill('#q', '딸기 라떼 신메뉴');
+      await page.locator('#heard', { hasText: '앞에 세웠어요' }).waitFor();
+      o = await boardOrder(page);
+      assert.ok(o.atEnd && o.late && !o.teamsFirst && o.rank === '01', '앞에 세운 01번이 그룹 칸보다 앞 ' + JSON.stringify(o));
+      assert.ok(o.gap < 500, '질문 칸에서 01번까지 한 화면 안(지금 ' + o.gap + 'px)');
+      await page.screenshot({ path: path.join(run.out, 'board-ask-mobile.png') });
+      await page.locator('[data-act="ask-clear"]').click();
+      o = await boardOrder(page);
+      assert.ok(o.atTop && !o.late && o.teamsFirst, '지우면 제자리 ' + JSON.stringify(o));
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'q');
+      await page.locator('[data-act="eg"]').first().click();
+      assert.ok((await boardOrder(page)).atEnd, '예시 낱말을 눌러도 목록 뒤');
+      // 그룹을 찾는 글이면 그룹 칸이 찾는 답이라 제자리(추천 낱말표에 없어 0명이어도 입구가 남게 — 11-07 Fable P2)
+      for (const ask of ['걸그룹', '보이그룹 광고', 'K-pop', 'OUTBLUE', '오팔린 같은 느낌', '아이돌 화장품']) {
+        await page.fill('#q', ask);
+        // 160ms 늦춘 뒤 save() → drawBoard()가 한 번에 돈다 — 저장된 글이 바뀌면 그리기도 끝난 것이다
+        await page.waitForFunction(ask => JSON.parse(localStorage.getItem('pulse-casting-v3')).ask === ask, ask);
+        o = await boardOrder(page);
+        assert.ok(o.atTop && !o.late && o.teamsFirst, '「' + ask + '」은 그룹 칸 제자리 ' + JSON.stringify(o));
+      }
+      await page.fill('#q', '딸기 라떼 신메뉴');
+      await page.waitForFunction(() => JSON.parse(localStorage.getItem('pulse-casting-v3')).ask === '딸기 라떼 신메뉴');
+      assert.ok((await boardOrder(page)).atEnd, '그룹 말을 지우고 다른 광고 내용이면 다시 목록 뒤');
+    }, phone);
+    await withPage([], async page => {
+      await page.goto(url + '#board');
+      await page.locator('.teams .team').first().waitFor();
+      const o = await boardOrder(page);
+      assert.ok(o.atEnd && o.late && o.rank === '01', '저장된 광고 내용으로 다시 열어도 그룹 칸은 목록 뒤 ' + JSON.stringify(o));
+      // 모델 북에 갔다 돌아와도 같은 짜임(돌아온 자리 boardY가 맞게)
+      await page.locator('.board .tile .tile-open').first().click();
+      await page.locator('.book-head').waitFor();
+      await page.goBack();
+      await page.locator('#q').waitFor();
+      assert.ok((await boardOrder(page)).atEnd);
+    }, phone, '딸기 라떼 신메뉴');
+  });
 
   await check('휴대폰 폭에서 오른쪽으로 끌면 한 명을 담고 다음 모델로 간다', async () => {
     await withPage([], async page => {

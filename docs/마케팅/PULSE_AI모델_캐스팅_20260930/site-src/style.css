@@ -120,6 +120,7 @@ b,strong{font-weight:600}
 
 /* 그룹 띠(보드 머리 아래): 팀마다 다른 바탕 — 오팔린은 멤버 색이 은은하게 도는 흰 빛, 아웃블루는 청람 바탕에 황동 리벳 격자 */
 .teams{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;padding-bottom:30px}
+.teams.late{padding-bottom:72px} /* 광고 내용을 적어 모델 목록 뒤로 갔을 때 — 아래 안내와 보드 끝처럼 띄운다 */
 .team{position:relative;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);min-height:248px;overflow:hidden;isolation:isolate}
 .team::after{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.42) 50%,transparent 62%);transform:translateX(-110%);transition:transform 1.1s var(--ease)}
 .team:hover::after{transform:translateX(110%)}

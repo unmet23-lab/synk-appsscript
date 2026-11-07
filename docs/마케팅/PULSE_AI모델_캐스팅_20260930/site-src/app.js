@@ -226,7 +226,8 @@
       ${pkgBtn(m, 'add', '패키지에 담김', '+ 패키지')}
     </article>`;
   }
-  // 보드 머리 아래 그룹 띠: 팀마다 카드 한 장(단체 컷 또는 멤버 대표 이어 붙임 · 이름 · 한 줄 · 멤버 색)
+  // 보드 머리 아래 그룹 띠: 팀마다 카드 한 장(단체 컷 또는 멤버 대표 이어 붙임 · 이름 · 한 줄 · 멤버 색).
+  // 광고 내용을 적으면 모델 목록 뒤로 간다(placeTeams) — 휴대폰에서 두 장이 약 1,000pt라 앞에 세운 모델이 그 아래에 묻혔다(11-07).
   function teamCardHTML(g) {
     const ms = teamMembers(g), cut = cutsOf(g)[0];
     const ph = cut
@@ -283,8 +284,24 @@
     for (const s of $$('.filters select')) s.addEventListener('change', () => { filters[s.dataset.f] = s.value; drawBoard(mode); });
     if (anchor) requestAnimationFrame(() => document.getElementById(anchor)?.scrollIntoView({ block: 'start', behavior: 'instant' }));
   }
+  // 광고 내용이 있으면 그룹 칸을 모델 목록 뒤로, 지우면 거르기 줄 위 제자리로 — 「맞는 모델이 앞으로 와요」가 질문 칸 바로 아래에서 보이게.
+  // 적는 동안 맞는 모델이 생겼다 없어졌다 해도 칸이 오가지 않게 추천 여부가 아니라 글이 있는지로 정한다. 다시 그리지 않고 옮겨 사진을 다시 받지 않는다.
+  // 그룹을 찾는 글(걸그룹 · 보이그룹 · 아이돌 · 케이팝 · 팀 이름)이면 그 칸이 찾는 답이라 제자리에 둔다 — 추천 낱말표에 없어 0명일 때 입구가 사라졌다(11-07 화면 검수).
+  const GROUP_WORDS = ['그룹', '아이돌', '케이팝', 'k팝', 'kpop', 'k-pop', '4인조'];
+  const asksGroup = (q) => {
+    const s = q.toLowerCase().replace(/\s+/g, '');
+    return GROUP_WORDS.some((w) => s.includes(w)) || GROUPS.some((g) => [g.id, g.name, g.nameKo].some((n) => n && s.includes(String(n).toLowerCase().replace(/\s+/g, ''))));
+  };
+  function placeTeams() {
+    const teams = $('.teams', view); if (!teams) return;
+    const q = state.ask.trim(), late = !!q && !asksGroup(q);
+    teams.classList.toggle('late', late);
+    if (late) { const body = $('#board-body'); if (body.nextElementSibling !== teams) body.after(teams); }
+    else { const f = $('.filters', view); if (f.previousElementSibling !== teams) f.before(teams); }
+  }
   function drawBoard(mode) {
     const { list, recs, order, brief } = ranked();
+    placeTeams();
     $('#heard').innerHTML = heardHTML(recs, brief);
     const any = Object.values(filters).some(Boolean);
     $('#result').innerHTML = `${any ? `조건에 맞는 모델 <b class="num">${list.length}</b>명` : `모델 <b class="num">${list.length}</b>명`}${any ? '<button type="button" class="link muted" data-act="filters-clear">조건 지우기</button>' : ''}`;
