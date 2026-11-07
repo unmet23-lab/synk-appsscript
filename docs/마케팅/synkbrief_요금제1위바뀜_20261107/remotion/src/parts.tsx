@@ -20,14 +20,14 @@ export const Crop: React.FC<{ src: string; x: number; y: number; w: number; h: n
 
 // 실제 화면 위 작은 회색 출처 한 줄
 export const Note: React.FC<{ text: string; style?: React.CSSProperties }> = ({ text, style }) => (
-  <div style={{ fontFamily: KO, fontWeight: 600, fontSize: 30, color: GREY, letterSpacing: -0.4, ...style }}>{text}</div>
+  <div style={{ fontFamily: KO, fontWeight: 600, fontSize: 34, color: '#B8B8B8', letterSpacing: -0.4, ...style }}>{text}</div>
 );
 
 // 들어올 때 1.035배에서 내려앉고 아주 천천히 다가간다
-export const Settle: React.FC<{ from: number; children: React.ReactNode; origin?: string; drift?: number }> = ({ from, children, origin = '50% 40%', drift = 0.00018 }) => {
+export const Settle: React.FC<{ from: number; children: React.ReactNode; origin?: string; drift?: number; pan?: number }> = ({ from, children, origin = '50% 40%', drift = 0.00018, pan = 0 }) => {
   const f = useCurrentFrame() - sec(from);
   const z = interpolate(f, [0, 8], [1.035, 1], { ...clamp, easing: EASE_OUT }) + Math.max(0, f) * drift;
-  return <div style={{ position: 'absolute', inset: 0, transform: `scale(${z})`, transformOrigin: origin }}>{children}</div>;
+  return <div style={{ position: 'absolute', inset: 0, transform: `translateY(${-Math.max(0, f) * pan}px) scale(${z})`, transformOrigin: origin }}>{children}</div>;
 };
 
 // 누른 자리 — 흰 동그라미가 퍼지며 사라진다(손가락 자리 표시)

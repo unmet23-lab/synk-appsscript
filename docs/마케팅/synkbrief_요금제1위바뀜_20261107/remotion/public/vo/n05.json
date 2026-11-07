@@ -1,38 +1,43 @@
 {
  "tool": "tools/나레이션굽기.mjs",
  "id": "n05",
- "text": "누르는 칸마다, 1위가 바뀌는 거죠.",
- "show": "누르는 칸마다 1위가 바뀐다",
- "dur": 2.206,
+ "text": "누르는 칸마다, 더 싼 쪽이 바뀌어요.",
+ "show": "누르는 칸마다 더 싼 쪽이 바뀐다",
+ "dur": 2.17,
  "words": [
   {
    "text": "누르는",
    "start": 0.02,
-   "end": 0.302
+   "end": 0.282
   },
   {
    "text": "칸마다,",
-   "start": 0.362,
-   "end": 0.724
+   "start": 0.343,
+   "end": 0.686
   },
   {
-   "text": "1위가",
-   "start": 1.187,
-   "end": 1.409
+   "text": "더",
+   "start": 1.029,
+   "end": 1.11
   },
   {
-   "text": "바뀌는",
-   "start": 1.469,
-   "end": 1.771
+   "text": "싼",
+   "start": 1.171,
+   "end": 1.292
   },
   {
-   "text": "거죠.",
-   "start": 1.831,
-   "end": 2.206
+   "text": "쪽이",
+   "start": 1.352,
+   "end": 1.514
+  },
+  {
+   "text": "바뀌어요.",
+   "start": 1.574,
+   "end": 2.17
   }
  ],
  "source": {
-  "key": "65415a482d9033c0d7b7d3b1f0e72536",
+  "key": "db3e2489a3e5c6a0ffa96500f73b355c",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -56,6 +61,6 @@
   "limit": 0.89,
   "clippedSource": 0,
   "clippedOut": 0,
-  "topPitchHz": 131
+  "topPitchHz": 145
  }
 }

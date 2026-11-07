@@ -1,0 +1,71 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n09",
+ "text": "AI가 말한 값은, 공식 요금 화면에 없었어요.",
+ "show": "AI가 말한 값은 공식 요금 화면에 없다",
+ "dur": 2.598,
+ "words": [
+  {
+   "text": "AI가",
+   "start": 0.02,
+   "end": 0.382
+  },
+  {
+   "text": "말한",
+   "start": 0.426,
+   "end": 0.628
+  },
+  {
+   "text": "값은,",
+   "start": 0.672,
+   "end": 0.99
+  },
+  {
+   "text": "공식",
+   "start": 1.164,
+   "end": 1.439
+  },
+  {
+   "text": "요금",
+   "start": 1.483,
+   "end": 1.657
+  },
+  {
+   "text": "화면에",
+   "start": 1.7,
+   "end": 1.917
+  },
+  {
+   "text": "없었어요.",
+   "start": 1.961,
+   "end": 2.598
+  }
+ ],
+ "source": {
+  "key": "35c111b94f44136cc56e93a2a3fecfaf",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1107,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 149
+ }
+}

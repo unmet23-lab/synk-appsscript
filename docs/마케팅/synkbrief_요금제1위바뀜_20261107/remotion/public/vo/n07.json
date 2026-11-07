@@ -1,38 +1,38 @@
 {
  "tool": "tools/나레이션굽기.mjs",
  "id": "n07",
- "text": "이번엔 딱 맞게 갈라 줬어요.",
- "show": "이번엔 딱 맞게",
- "dur": 1.44,
+ "text": "그럼 딱 맞게 갈라 줘요.",
+ "show": "그럼 딱 맞게 갈라 줘요",
+ "dur": 1.121,
  "words": [
   {
-   "text": "이번엔",
+   "text": "그럼",
    "start": 0.02,
-   "end": 0.273
+   "end": 0.19
   },
   {
    "text": "딱",
-   "start": 0.316,
-   "end": 0.414
+   "start": 0.229,
+   "end": 0.347
   },
   {
    "text": "맞게",
-   "start": 0.499,
-   "end": 0.626
+   "start": 0.399,
+   "end": 0.556
   },
   {
    "text": "갈라",
-   "start": 0.668,
-   "end": 0.851
+   "start": 0.596,
+   "end": 0.792
   },
   {
-   "text": "줬어요.",
-   "start": 0.894,
-   "end": 1.44
+   "text": "줘요.",
+   "start": 0.831,
+   "end": 1.121
   }
  ],
  "source": {
-  "key": "a1225af9ae90a7c136e22ef2b734b0f9",
+  "key": "91ece92a74b5f872d7134f58f76907af",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -56,6 +56,6 @@
   "limit": 0.89,
   "clippedSource": 0,
   "clippedOut": 0,
-  "topPitchHz": 189
+  "topPitchHz": 163
  }
 }

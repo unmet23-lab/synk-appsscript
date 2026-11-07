@@ -1,48 +1,48 @@
 {
  "tool": "tools/나레이션굽기.mjs",
  "id": "n01",
- "text": "AI가 한 달에 천칠백 원 싸다던 요금제,",
- "show": "AI가 1,700원 싸다던 요금제",
- "dur": 2.399,
+ "text": "미리캔버스보다 한 달에 천칠백 원 싸다던 어도비,",
+ "show": "미리캔버스보다 1,700원 싸다던 어도비",
+ "dur": 2.34,
  "words": [
   {
-   "text": "AI가",
+   "text": "미리캔버스보다",
    "start": 0.02,
-   "end": 0.427
+   "end": 0.719
   },
   {
    "text": "한",
-   "start": 0.472,
-   "end": 0.578
+   "start": 0.771,
+   "end": 0.877
   },
   {
    "text": "달에",
-   "start": 0.623,
-   "end": 0.803
+   "start": 0.916,
+   "end": 1.048
   },
   {
    "text": "천칠백",
-   "start": 0.939,
-   "end": 1.376
+   "start": 1.088,
+   "end": 1.47
   },
   {
    "text": "원",
-   "start": 1.421,
-   "end": 1.481
+   "start": 1.51,
+   "end": 1.576
   },
   {
    "text": "싸다던",
-   "start": 1.526,
-   "end": 1.843
+   "start": 1.615,
+   "end": 1.905
   },
   {
-   "text": "요금제,",
-   "start": 1.888,
-   "end": 2.399
+   "text": "어도비,",
+   "start": 1.945,
+   "end": 2.34
   }
  ],
  "source": {
-  "key": "71810e455f41150ac526f9247b84283e",
+  "key": "b2881ec308b7aabad47fdd59ba44b1d1",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -66,6 +66,6 @@
   "limit": 0.89,
   "clippedSource": 0,
   "clippedOut": 0,
-  "topPitchHz": 149
+  "topPitchHz": 156
  }
 }

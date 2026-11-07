@@ -666,6 +666,12 @@
 - 고침: 그 소리에만 `th * tanh(x / th)`(th = RMS × 3.5, 약 11 dB)로 봉우리를 누르고 `boost_db`를 −14 LUFS에 다시 맞췄다. 8 kHz 위도 깎아 화이트 노이즈처럼 들리지 않게 했다.
 - 다시 확인: 합 −14.0 LUFS · 참 봉우리 −1.0 dBFS, 마감 `+0dB` 통과. 합을 표본째 4배로 올려 0.05초 칸 봉우리를 재면 어느 소리인지 바로 나온다.
 
+### 실제 화면 캡처만인 Remotion 편은 설정이 12Mbps여도 5~7Mbps로 나와 올리기 전 검사 「비트레이트 8Mbps 아래」에 걸린다 — 마감 전에 고정 12Mbps로 다시 담는다 (2026-11-07 Claude)
+- 증상: synkbrief B31(검정 바탕 + 실제 화면 캡처, 24.6초) 렌더가 5.7 · 7.6Mbps였다(remotion.config `setVideoBitrate("12M")`). CRF 9로 다시 담아도 3.3Mbps. 같은 편이 「거의 멈춘 시간 46%」에도 걸렸다.
+- 원인: 화면이 단순해 x264가 목표만큼 비트를 쓰지 않는다(평균 비트레이트 모드는 넘치지 않게만 맞춤). 멈춤은 캡처 칸이 거의 안 움직여서다.
+- 고침: `ffmpeg -i 렌더.mp4 -c:v libx264 -preset slow -b:v 12M -minrate 12M -maxrate 12M -bufsize 12M -x264-params nal-hrd=cbr -pix_fmt yuv420p -colorspace bt709 -color_primaries bt709 -color_trc bt709 -c:a copy` → `tools/음량마감.mjs … --덮어쓰기`(마감은 영상을 그대로 복사). min · max가 다르면(10~14M) 6.4Mbps로 남았다. 멈춤은 판마다 아주 천천히 다가가며(프레임당 0.0008배) 살짝 올리니(0.3px) 0%. 다가가는 축을 왼쪽 끝(`74px …`)에 두어야 글이 왼쪽 안전선 밖으로 밀리지 않는다.
+- 다시 확인: `ffprobe -select_streams v:0 -show_entries stream=bit_rate`가 11.9M 안팎이고 `node tools/올리기전검사.js <편>`이 「평균 12.4Mbps · 정지 0%」.
+
 ## 목소리·받아쓰기
 
 ### Gemini TTS가 영어 지시문을 소리로 읽거나 없는 말을 지어낸다
