@@ -4,6 +4,7 @@
 #   python -X utf8 ../../시댄스무제한/드리미나내기.py <꾸러미> om2-끝말b om2-끝말b --받을곳 <받음> --계정 ultra [--실행]   (목소리 판 — 아래)
 #   python -X utf8 ../../시댄스무제한/드리미나내기.py <꾸러미> om2-3c om2-3c --받을곳 <받음> --계정 ultra [--실행]   (편집본 심사 뒤 — 아래)
 #   python -X utf8 ../../시댄스무제한/드리미나내기.py <꾸러미> om2-7c om2-6c --받을곳 <받음> --계정 ultra [--실행] 를 두 번(같은 판 두 벌은 차례로)   (Fable 맹검 뒤 — 아래)
+#   python -X utf8 ../../시댄스무제한/드리미나내기.py <꾸러미> om2-5e om2-5e --받을곳 <받음> --계정 ultra [--실행]   (유호님 「다시 내기」 — 아래)
 #   (같은 id를 두 번 주면 두 벌 — 둘째는 <판>__2.mp4)
 # 받은 판 점검(01_새판_기획 10절)에서 걸린 것만 다시 낸다 — 이 편의 무기인 「뜨거운 주황 → 차가운 남색」 대비가 두 컷에서 흐려졌다:
 # om2-3b: 받은 om2-3(친구 손이 캔을 놓음)은 대낮(파란 하늘 · 초록 나무, b* +3.9)이라 앞뒤 노을 컷(b* +15~+31) 사이에서 시간이 낮으로 되돌아간다.
@@ -77,6 +78,25 @@ P7C = ("@이미지 1 is the exact first frame of this video: start from it uncha
        "LOOK: keep the first frame's light, colors, brightness and white balance to the very end; natural motion blur and real texture, no beauty filter; "
        "no new text, letters or logos appear anywhere — nothing beyond what the first frame already shows; no people.\n"
        "SOUND: silent clip — no dialogue, no narration, no music.\n")
+# om2-5e: 편집본 Fable 2차 「멈춘 왕관 — 덜 풀림 … 테가 화면 끝에 닿을 때 풀려 떨어지게」 · 유호님 「다시 내기」(11-07, 약 180크레딧) →
+#   받은 om2-5의 시작 그림 그대로, 식는 고리가 화면 끝에 닿는 순간 시간이 다시 흘러 왕관이 슬로로 무너져 떨어지고 물결만 남게.
+#   끝 그림(왕관을 지운 판)을 GPT로 구워 첫 · 끝 프레임으로 내려 했으나 틀이 밀리고(맞춤 점 23) 패치 밖 방울이 남아 접고 글로만 시킨다.
+P5E = ("@이미지 1 is the exact first frame of this video: start from it unchanged — same framing, same place, same light, colors and white balance.\n"
+       "ONE SINGLE CONTINUOUS SHOT of a live-action Korean sparkling-drink commercial on an outdoor public basketball court in Seoul, vertical 9:16 — "
+       "no cuts, no camera switch, in smooth slow motion for the whole shot, no speed ramp, no end card.\n"
+       "DRINK: the drink is a clear, sparkling, translucent ruby-pink liquid with fine bubbles, glowing when lit from behind; it soaks straight into the asphalt "
+       "and never forms a pool, a stain or a dark mark.\n"
+       "STEAM: any steam is thin, translucent white water vapour — never smoke, never fire, never flames.\n"
+       "ACTION: At first the ruby crown of the drop hangs frozen in mid-splash, as if time had stopped, while the court around it cools: for the first 0.6 s thin white steam "
+       "keeps hissing up from it over the hot, dry, sun-baked asphalt; by 1.2 s the steam is gone; from 1.2 s to 2.6 s a wave of coolness sweeps outward from the exact spot "
+       "of the crown across the whole court in one widening circle — its moving edge clearly visible: inside the circle the asphalt turns dark, damp and cool, and the orange "
+       "sunset light gives way to blue dusk; the heat shimmer vanishes as the circle passes; the court floodlights on their poles come on far behind as the edge reaches them. "
+       "At 2.6 s, the instant the circle reaches the edges of the frame, time starts again: the frozen crown is released and falls — it collapses back into the cool ground "
+       "in slow motion with a soft splash, the tiny droplets in the air drop down one after another, and by 3.6 s only a small, fading ripple remains on the wet, glistening "
+       "asphalt — no stain, no pool. From 3.6 s to the end the whole frame is calm blue dusk under the floodlights and nothing else moves.\n"
+       "CAMERA: locked off at ground level — the frame stays exactly where it is from the first frame to the last: no push-in, no zoom, no pan, no shake.\n"
+       "LOOK: natural motion blur and real texture, no beauty filter; no new text, letters or logos appear anywhere; no people.\n"
+       "SOUND: silent clip — no dialogue, no narration, no music.\n")
 
 # (id, 꾸러미 폴더, [(가져올 곳, 넣을 이름)], 지시문, 길이, 소리, 쓰는초, 컷)
 JOBS = [
@@ -86,6 +106,7 @@ JOBS = [
     ("om2-3c", "004_om2-3c", [(os.path.join(NEW, "om2-3c_라벨.png"), "1_시작.jpg")], P3C, 4, None, 1.5, ["3"]),   # 시작 그림: 라벨 합성의 깨끗한 판이 캔 뚜껑 위에 남긴 주황 번짐을 GPT 편집으로 고친 자리만 바꾼 판(지시문/시작그림_om2-3c_번짐고침_GPT.txt)
     ("om2-6c", "005_om2-6c", [(os.path.join(NEW, "om2-6c_916.png"), "1_시작.jpg")], P6C, 4, None, 1.75, ["6"]),
     ("om2-7c", "006_om2-7c", [(os.path.join(NEW, "om2-7c_라벨.png"), "1_시작.jpg")], P7C, 6, None, 4.9, ["7"]),
+    ("om2-5e", "007_om2-5e", [(os.path.join(SRC, "143_om2-5", "1_시작.jpg"), "1_시작.jpg")], P5E, 5, None, 3.2, ["5"]),
 ]
 
 

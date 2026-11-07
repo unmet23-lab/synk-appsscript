@@ -43,13 +43,15 @@ CUTS = [
     (4, "om2-4", 0, 20, None),
     # 5 한 방울에 코트가 식어 번짐 — 김이 1.95초까지, 식는 고리가 2.17~3.83초에 번지고 4.3초에 푸른 저녁 · 코트 조명(바우처 첫 프레임 판).
     #   Fable 맹검 「멈춘 왕관 3.25초(편의 22%) … 1.5~2초로」 — 1.0초 → 1.5초부터 써서 멈춘 왕관이 보이는 시간을 2.83초로(판은 왕관이 끝까지 멈춰 있어 더는 못 줄임)
-    (5, "om2-5", 36, 68, None),
+    #   → Fable 2차 「덜 풀림」 · 유호님 「다시 내기」로 고리가 화면 끝에 닿으면 왕관이 풀려 떨어지는 om2-5e(OM2_5 · OM2_5_FROM, 시각은 아래 C5_TIMES)
+    #   om2-5e 두 벌 중 __2: 김 ~1.9초 · 고리 1.25~2.9초 · 조명 ~2.2초 · 3.25초에 왕관이 풀려 4.0초에 물결(첫 벌은 끝이 물거울처럼 매끈해짐). 1.0~4.08초
+    (5, os.environ.get("OM2_5", "om2-5e__2"), int(os.environ.get("OM2_5_FROM", "24")), 74, None),
     # 6 식은 코트에 누움 — 받은 om2-6은 밝은 중간 톤(L 37 · b* +4.2) → 빛만 푸른 저녁으로 고친 om2-6b → 그 판의 가슴 위 무지 캔이 「다른 제품으로 읽힌다」(Fable 맹검)
     #   → 캔을 뺀 om2-6c(손이 가슴에). 쓰는 구간은 「하아」 숨이 컷 앞쪽에 오게 고른다(OM2_6 · OM2_6_FROM)
     (6, os.environ.get("OM2_6", "om2-6c"), int(os.environ.get("OM2_6_FROM", "36")), 42, None),
     # 7 끝 — Fable 맹검 「끝 3초가 편에서 가장 조용한 그림 · 레퍼런스 셋은 마지막 칸이 브랜드가 제일 큰 칸 · 검붉은 웅덩이」 → 캔을 화면 가운데에 크게 다시 짠 시작 그림
     #   (리허설 렌더 라벨) · 왕관은 왼쪽 앞에서 스며 자국 없이 사라지고 카메라가 캔으로 다가가는 om2-7c. 옛 판 om2-7__2(캔이 오른쪽 끝, 6초에 13.5% 다가감, 검붉은 자국)는 안 씀
-    (7, os.environ.get("OM2_7", "om2-7c"), 0, 118, (REH + "/본판_1107/om2-7c_라벨.png", (250, 300, 950, 1400))),
+    (7, os.environ.get("OM2_7", "om2-7c"), 0, 112, (REH + "/본판_1107/om2-7c_라벨.png", (250, 300, 950, 1400))),   # 5번이 6장 늘어 118 → 112(15.00초 지킴)
 ]
 F = [0]
 for c in CUTS:
@@ -87,14 +89,21 @@ def picture():
 # 꺼지고 풀벌레 · 저녁 공기가 들어오며, 코트 조명이 켜지는 자리에서 곡이 들어와 끝 「톡」에서 맺는다. 효과음은 상업 이용이 되는 녹음 모음(Fairlight · Sonniss GDC)과
 # 여기서 짠 소리, 곡 · 매미 · 풀벌레 · 꿀꺽은 허깅페이스 stable-audio-3(곡후보.py, Stability AI Community 라이선스).
 C5_AT = CUTS[4][2] / FPS                  # 5번 컷이 판의 몇 초부터인가
-STEAM_END = T[4] + 1.95 - C5_AT           # 5번 컷 방울의 김이 멎는 때(판 1.95초)
-WAVE = (T[4] + 2.17 - C5_AT, T[4] + 3.83 - C5_AT)   # 식는 고리가 번지는 때(판 2.17~3.83초)
-LIGHTS = T[4] + 3.6 - C5_AT               # 코트 조명이 켜지는 때(판 3.6초)
+# 판마다 잰 시각(판 안 초): 김이 멎음 · 식는 고리 시작 · 끝 · 코트 조명 · 왕관이 풀려 떨어짐(없으면 None)
+C5_TIMES = {
+    "om2-5": dict(steam=1.95, wave=(2.17, 3.83), lights=3.6, release=None),
+    "om2-5e__2": dict(steam=1.9, wave=(1.25, 2.9), lights=2.2, release=3.25),   # b* +30(0.9초) → 0(2.1초) → −21(3.5초), 왕관 칸 움직임 3.25~3.4초 봉우리
+}
+_c5 = C5_TIMES[CUTS[4][1].split("__")[0] if CUTS[4][1] not in C5_TIMES else CUTS[4][1]]
+STEAM_END = T[4] + _c5["steam"] - C5_AT           # 5번 컷 방울의 김이 멎는 때
+WAVE = (T[4] + _c5["wave"][0] - C5_AT, T[4] + _c5["wave"][1] - C5_AT)   # 식는 고리가 번지는 때
+LIGHTS = T[4] + _c5["lights"] - C5_AT             # 코트 조명이 켜지는 때
+RELEASE = T[4] + _c5["release"] - C5_AT if _c5["release"] is not None else None   # 왕관이 풀려 떨어지는 때
 # 끝 — 마지막 방울 「톡」은 7번 컷 첫 장(왕관이 이미 튄 장). 끝말은 Mr. K(끝말_일레븐.py) 한 번에 구운 판을 셋으로 잘라 놓는다 — 시댄스 견본 판 셋은
 # Gemini 소리 맹검 5.5~7.5, Mr. K 9.5(11-07 · 01_새판_기획 10절). Mr. K는 1번 오미톡의 브랜드 목소리(결정 11-06)라 두 편의 끝 목소리가 같아진다.
 END_VO = SND + "/끝말_일레븐/MrK.mp3"
 END_CUTS = [(0.00, 1.10), (1.60, 2.05), (2.54, 3.38)]   # 「다섯 가지 맛,」 · 「톡.」 · 「오미톡.」(파일 안 초 — 말 대역 크기 · 스펙트럼으로 잼, 끝 숨 · 꼬리까지)
-END_AT0 = T[6] + float(os.environ.get("OM2_END_AT", "0.9"))   # 첫 줄 자리 — 마지막 왕관이 무너지는 1.2초는 맑은 「톡」만 들리게 비운다.
+END_AT0 = T[6] + float(os.environ.get("OM2_END_AT", "0.8"))   # 첫 줄 자리 — 마지막 왕관이 무너지는 1.2초는 맑은 「톡」만 들리게 비운다.
 #   말과 말 사이는 「맛,」 → 「톡」 0.30초 · 「톡」 → 「오미톡」 0.58초(판의 0.65 · 0.72초를 조금 당김)
 END_GAPS = (0.15, 0.35)             # 자른 조각 끝 → 다음 조각 머리(조각 꼬리 몫을 뺀 값)
 MUSIC = {   # 곡 후보 — (파일, 곡 안 맺는 박(크게 도는 끝), 박 길이)
@@ -191,10 +200,13 @@ def chiik(bright=1.0, crackle=70, dur=0.9):
 
 
 def music_bed(total):
-    """곡의 맺는 박이 「톡」에 오도록 놓는다 — 들어오는 자리는 코트 조명이 켜지는 때에 가장 가까운 박, 0.25초에 걸쳐 들어온다."""
+    """곡의 맺는 박이 「톡」에 오도록 놓는다 — 들어오는 자리는 코트 조명이 켜지기 조금(0.15초 넘게) 앞의 박이고, 두 박에 걸쳐 차올라
+    조명 「탁」이 곡이 깔리는 중에 온다(om2-5 판이 그랬다 — 곡 7.36초 · 조명 7.6초, 그때 맹검은 곡 진입을 짚지 않음).
+    11-07 om2-5e 판에서 「가장 가까운 박」을 쓰자 곡이 조명 뒤 0.28초에 따로 들어왔고, 완성 맹검 Lite 둘이 두 판 연속(0.25초 · 한 박 페이드)
+    「7초 곡이 갑작스럽다 · 작위적」이라 바꿈."""
     path, hit, beat = MUSIC[SONG]
     s = C.load_stereo(path)
-    n_beats = max(4, round((TOK - LIGHTS) / beat))
+    n_beats = max(4, int(np.ceil((TOK - LIGHTS + 0.15) / beat)))
     t_in = TOK - n_beats * beat           # 화면에서 곡이 들어오는 때
     song_in = hit - n_beats * beat        # 그때의 곡 안 자리
     a = s[int(song_in * RATE):]
@@ -204,8 +216,8 @@ def music_bed(total):
     bed[i:i + m] = a[:m]
     g = np.ones(len(bed), np.float32)
     g[:i] = 0
-    r = int(0.25 * RATE)
-    g[i:i + r] = np.linspace(0, 1, r) ** 2
+    r = int(2 * beat * RATE)
+    g[i:i + r] = np.linspace(0, 1, r) ** 1.5
     return bed, g, t_in
 
 
@@ -220,6 +232,12 @@ def sound():
     k0, k1 = int(WAVE[0] * RATE), int(heat_end * RATE)
     fade[k0:k1] = np.linspace(1, 0, k1 - k0) ** 1.5
     fade[k1:] = 0
+    # 「아… 목 타 죽겠다」 컷(2번) 동안 매미 · 열기를 4 dB 숙인다 — 11-07 완성 맹검 두 Lite가 판을 바꿔 네 번 「대사가 매미에 묻힌다」
+    j0, j1, rr = int(T[1] * RATE), int(T[2] * RATE), int(0.15 * RATE)
+    dk = 10 ** (-4 / 20)
+    fade[j0:j1] *= dk
+    fade[j0 - rr:j0] *= np.linspace(1, dk, rr)
+    fade[j1:j1 + rr] *= np.linspace(dk, 1, rr)
     m.put(0, cic * fade[:, None], fade=0.3)
     h = to_rms(hum(heat_end + 0.1), -34)
     m.put(0, h * fade[:len(h)], fade=0.3)
@@ -240,7 +258,11 @@ def sound():
         for j, (ga, gb) in enumerate(gulp[1]):
             m.put(T[3] + 0.42 + j * 0.36, to_peak(seg(gulp[0], ga, gb), -15), fade=0.01, fade_out=0.08)
     # 5 첫 방울 — 가장 큰 「치익」, 김이 멎는 자리에서 끝나고 → 식는 고리(얼음이 얇게 갈라지는 소리 + 낮게 내려앉는 소리) → 풀벌레 · 저녁 공기 → 조명 「탁」
-    big = chiik(1.2, 110, STEAM_END - T[4] + 0.15)
+    # 길이는 김이 멎는 때까지, 다만 식는 고리가 오면 0.35초 안에 끝낸다 — om2-5e는 김이 0.9초 가고 고리가 방울 0.25초 뒤에 와서, 김에 맞춘
+    #   1.05초 지글거림 꼬리가 얼음 소리 고역과 겹쳤다(11-07 맹검 두 Lite가 판마다 「치익이 날카롭게 튄다 · 겹칠 때 깨지듯」). 옛 om2-5 판과 같은 0.6초가 된다.
+    big = chiik(1.2, 110, min(STEAM_END - T[4] + 0.15, WAVE[0] - T[4] + 0.35))
+    #   짧게 한 뒤에도 두 Lite 모두 「치익 머리 고역이 귀를 찌른다」 — 크기는 지키고 7kHz 위만 4 dB 깎는다
+    big = big - SG.sosfiltfilt(SG.butter(2, 7000, "high", fs=RATE, output="sos"), big).astype(np.float32) * (1 - 10 ** (-4 / 20))
     m.put(T[4], tame(to_peak(big, -5.5), 7), fade=0.004, fade_out=0.35)   # 3.1 Lite 「깜짝 놀랄 수준」 — 가장 큰 치익은 지키되 1.5 dB 내림
     # 붉은 방울이 마신 음료라는 걸 귀로 잇는다 — 이해 시험관 셋 중 둘이 「음료인지 땀인지」 헷갈림. 지글거림 머리에 액체가 떨어지는 「똑」
     drip0 = C.load(FAIR + "Water Drips Drops.M.wav")
@@ -248,17 +270,24 @@ def sound():
     m.put(T[4] - 0.01, to_peak(drip0[max(0, p0 - int(0.02 * RATE)): p0 + int(0.25 * RATE)], -13), fade=0.002, fade_out=0.1)
     ice = to_peak(bp(seg(SON + "Alexander Kopeikin - 100 kHz Designed Ice/ice, surface cracking, fissure, fast, hard-003.wav", 0.25, 2.25), 900, 9000), -20)
     m.put(WAVE[0] - 0.05, ice, db=-6, fade=0.04, fade_out=0.8)   # 맹검 두 모델 「6.2초 효과음이 튐」 → −4 dB · 머리 40ms, 확인 듣기 3.5 Lite 「날카로운 잔향」 → 9kHz 위 자르고 −6 dB
+    if RELEASE is not None:
+        # 멈췄던 왕관이 풀려 떨어지는 소리 — 슬로라 낮고 부드러운 찰랑 한 번(마지막 맑은 「톡」보다 작게, 그 「톡」이 판에서 가장 또렷하게 남도록)
+        m.put(RELEASE - 0.02, to_peak(bp(seg(FAIR + "Water Light Splashing.M.wav", 0.10, 0.75), 120, 7000), -17), fade=0.01, fade_out=0.3)
     down = seg(SON + "344 Audio - Bass Drops & Downers Vol. 1/DSGNBass_Bass Drop & Downer Slow 10_344 Audio_Bass Drops & Downers.wav", 0.0, 1.6, stereo=True)
     m.put(WAVE[0], to_peak(down, -20), fade=0.3, fade_out=0.5)
-    crk = to_rms(C.load_stereo(SND + "/곡_스테이블/풀벌레_a.wav"), -36)
+    # 풀벌레 층은 1.148초에 봉우리/RMS 17.5 dB 튐이 있어(판 7.40초 — 곡이 차오르는 한가운데) 봉우리를 누른다(11-07)
+    crk = tame(to_rms(C.load_stereo(SND + "/곡_스테이블/풀벌레_a.wav"), -36), 8)
     t_crk = WAVE[0] + 0.5
     m.put(t_crk, crk[:int((total - t_crk) * RATE)], fade=0.9, fade_out=0.6)
     air = bp(seg(FAIR + "Ext City Ambience, Car Drive-Bys, Pedestrian, Air.wav", 60.0, 60.0 + total - WAVE[0], stereo=True), 60, 6000)
     m.put(WAVE[0] + 0.3, to_rms(air, -40), fade=0.8, fade_out=0.6)
-    m.put(LIGHTS - 0.02, to_peak(seg(FAIR + "Closet Light Switch On String.wav", 0.17, 0.5), -16), fade=0.002, fade_out=0.1)
+    # 조명 「탁」 — 봉우리/RMS 25 dB · 에너지 절반이 ±2ms에 몰린 딸깍이라 곡이 차오르는 첫머리에서 −3 dBFS로 튀었다(주변 −10~−14). 11-07 완성 맹검
+    #   두 Lite가 판마다 「곡이 시작되는 지점의 공격음 · 피크」라 들은 자리 — 8 dB 낮추고 6kHz 위를 깎아 부드러운 「탁」으로.
+    m.put(LIGHTS - 0.02, to_peak(bp(seg(FAIR + "Closet Light Switch On String.wav", 0.17, 0.5), 80, 6000), -24), fade=0.002, fade_out=0.1)
     buzz = seg(SON + "344 Audio - East Coast America Vol. 1/AMBSubn_Electricity Hum, Lightbulb,  Coil Pickup 01_344 Audio_East Coast America.wav", 4.0, 4.0 + total - LIGHTS, stereo=True)
     m.put(LIGHTS, to_rms(buzz, -48), fade=0.4, fade_out=0.8)   # 확인 듣기 「11.7~13초 치~ 잡음」 — 고역 조각 재기에서 셋째(29 dB)라 −4 dB
-    # 6 식은 코트 — 판이 낸 「하아」(판 2.04~3.08초)
+    # 6 식은 코트 — 판이 낸 「하아」(판 2.04~3.08초). 그림은 om2-6c지만 소리는 om2-6b 판 그대로 쓴다 — 두 판 모두 숨이 2.15~2.4초
+    #   (6c 입 모양 2.2~2.6초, 시작 차 50ms)이고 6b 숨이 바닥보다 4 dB 또렷하다(11-07 잼).
     v6 = seg(C.clip("om2-6b"), CUTS[5][2] / FPS, (CUTS[5][2] + CUTS[5][3]) / FPS, stereo=True)
     m.put(T[5], tame(to_rms(v6, -27), 8), fade=0.02, fade_out=0.1)
     # 7 마지막 방울 — 김 없는 맑은 「톡」(가장 또렷한 봉우리) · 끝말 · 「톡」 마크 자리에 캔 「톡」
@@ -275,25 +304,34 @@ def sound():
     for (a, b), at, gdb in zip(END_CUTS, ends, (0.0, 0.0, -3.0)):
         m.put(at, tame(vo[int(a * RATE):int(b * RATE)], 8), db=gdb, fade=0.01, fade_out=0.05)
     m.put(TOK - 0.005, to_peak(pop, -14), fade=0.002, fade_out=0.08)
-    # 곡 — 말 아래에서 5 dB 숙인다(앞뒤 40ms)
+    # 곡 — 크기(RMS −27)는 들어오기 차오름만 건 곡으로 맞추고 숙임은 그 뒤에 건다(11-07: 전에는 숙임 뒤에 맞춰 숙임을 넓히면 곡 바탕이 따라 커졌다)
     bed, g, t_in = music_bed(total)
-    duck = 10 ** (-5 / 20)
-    r = int(0.04 * RATE)
-    for (a, b), at in zip(END_CUTS, ends):
-        j0, j1 = int((at - 0.05) * RATE), int((at + (b - a) + 0.05) * RATE)
-        g[j0:j1] = np.minimum(g[j0:j1], duck)
-        g[j0 - r:j0] = np.minimum(g[j0 - r:j0], np.linspace(1, duck, r))
-        g[j1:j1 + r] = np.minimum(g[j1:j1 + r], np.linspace(duck, 1, r))
-    # 마지막 방울 「톡」(7번 컷 첫 장) 아래에서도 곡을 숙인다 — 3.1 Lite 「10초 물방울 소리가 곡에 묻힘」
-    j0, j1 = int((T[6] - 0.03) * RATE), int((T[6] + 0.35) * RATE)
-    g[j0:j1] = np.minimum(g[j0:j1], 10 ** (-10 / 20))
-    g[j1:j1 + int(0.15 * RATE)] = np.minimum(g[j1:j1 + int(0.15 * RATE)], np.linspace(10 ** (-10 / 20), 1, int(0.15 * RATE)))
+    i_in = int(t_in * RATE)
     bed = bed * g[:, None]
     # 확인 듣기 두 모델 「11.7초 · 12~13초 치~ 하는 고역 잡음」 — 고역(7~16kHz) 조각 재기에서 곡 c의 타악기가 가장 컸다(40 dB · 끝말 34 · 조명 웅 29) → 8kHz 위 −4 dB
     hi = SG.sosfiltfilt(SG.butter(2, 8000, "high", fs=RATE, output="sos"), bed, axis=0).astype(np.float32)
     bed = bed - hi * (1 - 10 ** (-4 / 20))
-    bed = tame(to_rms(bed[int(t_in * RATE):], -27), 11)
-    m.put(t_in, bed[:int((total - t_in) * RATE)], fade=0.0, fade_out=0.35)
+    bed[i_in:] = tame(to_rms(bed[i_in:], -27), 11)
+    g = np.ones(len(bed), np.float32)
+    # 「하아」(판 2.04~3.08초) 아래에서 곡을 4 dB 숙인다 — 3.1 Lite가 두 판 연속 「곡이 남자의 후— 숨을 덮는다」(11-07)
+    h0, h1 = (T[5] + (x - CUTS[5][2] / FPS) for x in (2.04, 3.08))
+    dk, rr = 10 ** (-4 / 20), int(0.1 * RATE)
+    j0, j1 = int((h0 - 0.05) * RATE), int(h1 * RATE)
+    g[j0:j1] = np.minimum(g[j0:j1], dk)
+    g[j0 - rr:j0] = np.minimum(g[j0 - rr:j0], np.linspace(1, dk, rr))
+    g[j1:j1 + rr] = np.minimum(g[j1:j1 + rr], np.linspace(dk, 1, rr))
+    # 마지막 방울 「톡」(7번 컷 첫 장)에서 10 dB 숙이고(3.1 Lite 「10초 물방울 소리가 곡에 묻힘」), 0.3초에 걸쳐 5 dB 아래로만 올려 끝까지 둔다 —
+    #   끝말이 그 위에 온다. 11-07 시각을 뺀 맹검에서 3.1 Lite 「10초 곡이 과하게 커져 툭」 — 재 보니 −10 dB를 0.15초 만에 풀어 10.65 → 10.95초
+    #   −22 → −11 dB로 뛰었고, 끝말 조각마다 5 dB 숙였다 풀어 말 사이에서도 곡이 오르내렸다.
+    #   끝말 아래는 −7 dB — −5 dB 판에서도 3.1 Lite가 두 번 「내레이션이 곡에 묻힌다」(3.5 Lite 한 번)
+    duck_drop, duck = 10 ** (-10 / 20), 10 ** (-7 / 20)
+    j0, j1, k = int((T[6] - 0.03) * RATE), int((T[6] + 0.35) * RATE), int(0.3 * RATE)
+    g[j0:j1] = np.minimum(g[j0:j1], duck_drop)
+    g[j1:j1 + k] = np.minimum(g[j1:j1 + k], np.linspace(duck_drop, duck, k))
+    g[j1 + k:] = np.minimum(g[j1 + k:], duck)
+    assert ends[0] - 0.05 > (j1 + k) / RATE, "끝말이 곡을 다 숙이기 전에 온다"
+    bed = bed * g[:, None]
+    m.put(t_in, bed[i_in:i_in + int((total - t_in) * RATE)], fade=0.0, fade_out=0.35)
     m.finish(os.path.join(OUT, os.environ.get("OM2_SOUND", "소리.wav")), boost_db=0)
     print(f"곡 {SONG} {t_in:.2f}초에 들어와 「톡」 {TOK:.2f}초에 맺음 · 끝말 {', '.join(f'{t:.2f}' for t in ends)}초")
 
