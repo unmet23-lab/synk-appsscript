@@ -24,6 +24,19 @@ JOBS = [
              f"triumphant synth lead, steadily building and getting more epic all the way, serious and heroic, slightly cheesy, {S4}", 32, 2401),
     ("s4_b", f"Epic synthwave training montage, 120 BPM, pounding drums, pulsing synth bass, heroic analog brass and lead synth, military snare, rising tension that keeps building to a triumphant peak, "
              f"retro 80s sports movie energy, {S4}", 32, 2402),
+    # 11-07 오전 부모 세션 「블프 판매 영상은 곡 결이 중요하니 후보를 여럿 굽고 맹검으로 고른다」 — 결을 달리한 셋씩 더
+    ("s3_c", f"Glossy K-pop dance-pop instrumental for a sportswear brand sale reel, 128 BPM, punchy kick and snappy claps, funky slap bass, shiny synth brass hits, catchy synth hook "
+             f"that repeats every bar, confident and fashionable, full energy from the first beat, no intro, no breakdown, {S3}", 20, 1303),
+    ("s3_d", f"Upbeat disco-house shopping anthem, 126 BPM, four-on-the-floor kick, funky muted guitar, filtered disco strings, groovy bass, hand claps, feel-good Friday night sale energy, "
+             f"steady from start to end, no intro, no breakdown, {S3}", 20, 1304),
+    ("s3_e", f"High-energy spin-class cardio track, 130 BPM, hard-hitting kick, rolling sidechained bass, rising synth riff, whoosh risers every four bars, motivating gym energy for a "
+             f"limited-time sale, constant intensity, no intro, no breakdown, {S3}", 20, 1305),
+    ("s4_c", f"Classic 1980s boxing-movie training montage instrumental, 116 BPM, rock drums with gated reverb, chugging power-chord electric guitar, analog synth brass fanfare, "
+             f"determined and heroic, keeps building to a triumphant final climax, {S4}", 32, 2403),
+    ("s4_d", f"Retro 80s spy-mission preparation montage, 118 BPM, pulsing analog synth bass arpeggio, tight snare, ticking hi-hats, suspenseful minor-key synth lead that turns heroic, "
+             f"tension rising steadily to a big peak, serious tone, {S4}", 32, 2404),
+    ("s4_e", f"Cheesy over-the-top 80s sports movie montage, 120 BPM, driving synth-rock groove, big tom fills, soaring saxophone-like synth lead, motivational and triumphant, "
+             f"keeps getting bigger, {S4}", 32, 2405),
 ]
 
 
