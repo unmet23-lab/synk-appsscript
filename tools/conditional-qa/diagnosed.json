@@ -22,6 +22,14 @@
       "fixedBy": "2ea80a882c424d2019b278cfa7f1d79344aeb0ec",
       "cause": "WORLD 내 정보 화면이 사진 시범 상태를 조회했지만 계정·과제·수업·알림 시험의 합성 서버 네 곳에 꺼진 시범의 응답이 없었다",
       "evidence": "tools/conditional-qa/README.md#world-photo-status-fixture"
+    },
+    {
+      "cases": ["S063", "S064", "S065", "S067"],
+      "exactCases": true,
+      "from": "6051236295449478374ab7d87a7c6acfcb904f64",
+      "fixedBy": "de66ce8582a2526dd3ad4eabc513d805fa47c819",
+      "cause": "이 커밋이 PATH 면접 720p 영상 넷을 다시 싸고 strict-manifest.json 해시를 바꿨는데, 일꾼은 11-01에 등록한 옛 영상 바이트를 깔았다(11-08 04:34 reregister.cjs로 다시 등록, fixedBy는 그 뒤 첫 master 커밋)",
+      "evidence": "tools/conditional-qa/README.md#reregister-inputs"
     }
   ]
 }
