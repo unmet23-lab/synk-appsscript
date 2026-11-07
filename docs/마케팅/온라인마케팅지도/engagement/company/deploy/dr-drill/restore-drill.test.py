@@ -614,5 +614,27 @@ class ManualEntries(unittest.TestCase):
         self.assertEqual(attempt.call_args[0][0], self.cfg)
 
 
+class Isolation(unittest.TestCase):
+    def test_rehearsal_container_limits(self):
+        # The proof boots server.mjs in the container's one process; 512m was OOM-killed (exit 137) from chain 55 on,
+        # so the limit is 1g like the release-time rehearsal. Every other isolation argument stays as it was.
+        import ast
+        tree = ast.parse(pathlib.Path(drill.__file__).read_text(encoding='utf-8'))
+        restore = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == 'restore')
+        lists = [n for n in ast.walk(restore) if isinstance(n, ast.List) and n.elts and isinstance(n.elts[0], ast.Constant)
+                 and n.elts[0].value == 'docker' and isinstance(n.elts[1], ast.Constant) and n.elts[1].value == 'run']
+        self.assertEqual(len(lists), 1)
+        words = [e.value if isinstance(e, ast.Constant) else None for e in lists[0].elts]
+        pairs = {words[i]: words[i + 1] for i in range(len(words) - 1) if isinstance(words[i], str) and words[i].startswith('--')}
+        self.assertEqual({k: pairs.get(k) for k in ('--memory', '--cpus', '--pids-limit', '--network', '--user', '--cap-drop',
+                                                    '--security-opt', '--pull', '--tmpfs')},
+                         {'--memory': '1g', '--cpus': '0.5', '--pids-limit': '128', '--network': 'none', '--user': '1000:1000',
+                          '--cap-drop': 'ALL', '--security-opt': 'no-new-privileges', '--pull': 'never',
+                          '--tmpfs': '/tmp:rw,noexec,nosuid,size=64m'})
+        self.assertIn('--read-only', words)
+        self.assertNotIn('-p', words)
+        self.assertNotIn('--publish', words)
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -874,9 +874,11 @@ def restore(cfg, run_dir, before, report, archive_item, sidecar_item):
     image = images[0]['imageId']
     name = CONTAINER_PREFIX + run_dir.name
     need(name not in container_names(), 'NEW_QA_CONTAINER_REQUIRED')
+    # 1g, as the release-time isolated rehearsal since chain 55 (11-07): the proof boots server.mjs in this one
+    # process, and the 512m limit started killing it (OOM, exit 137) once the app and proof grew past ~510MB.
     command = ['docker', 'run', '--pull', 'never', '--name', name, '--label', CONTAINER_LABEL + '=' + run_dir.name,
                '--network', 'none', '--read-only', '--user', '1000:1000', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges',
-               '--pids-limit', '128', '--memory', '512m', '--cpus', '0.5', '--tmpfs', '/tmp:rw,noexec,nosuid,size=64m']
+               '--pids-limit', '128', '--memory', '1g', '--cpus', '0.5', '--tmpfs', '/tmp:rw,noexec,nosuid,size=64m']
     for source, guest, mode in ((snapshot, '/snapshot', 'ro'), (data, '/data', 'rw'), (data_archived, '/data-archived', 'rw'),
                                 (public, '/qa/identity-public.json', 'ro'), (pin_file, '/qa/source-pins.json', 'ro'),
                                 (rehearsal_file, '/qa/disaster-rehearsal.mjs', 'ro'), (session_file, '/qa/regional-dr-session-proof.mjs', 'ro')):
