@@ -6,13 +6,8 @@
  * 결정의 정본은 docs/_ops/결정.md 「작업 방식 확정 · .tmp 운영」(10-17). 영구 삭제는 어떤 경우에도 하지 않는다.
  *
  * 10-21부터 앱 예약 작업이 이 도구로 목록을 만들고 옮긴다 — 예약은 보여 드리고 승인받는 대화만 맡는다.
- *
- *   node tools/tmp정리목록.js                    목록을 만들어 텔레그램으로 보내고 output/크레딧작업/tmp정리목록/ 에 남긴다
- *   node tools/tmp정리목록.js --보내지않기        화면에만 보여 준다(후보가 30개 넘으면 묶어서, --자세히면 하나씩)
- *   node tools/tmp정리목록.js --json             목록을 JSON으로(예약 작업이 읽는다)
- *   node tools/tmp정리목록.js --옮기기 a,b,c     유호님이 승인한 폴더만 C:\Users\q1212\SYNK_정리대기\<오늘>\ 로 옮긴다
- *   node tools/tmp정리목록.js --옮기기 --묶음 릴리스옛판|이사복사|14일|전부   승인한 묶음을 통째로 옮긴다
- *   --일수 N                                      위 셋에 붙여 「N일 넘게 손대지 않은」 기준으로 본다(기본 14 — 공간 정리 때 3)
+ * 쓰는 법은 바로 아래 「쓰는법」이다(`--help`·`-h`로 찍힌다). 모르는 인자는 훑기 전에 쓰는 법을 찍고 2로 끝난다 —
+ * 10-30 `--help`가 매달 예약과 같은 기본 길(기록 파일 → 텔레그램 보내기)로 흘러 전체 훑기가 시작된 뒤로(11-07).
  *
  * 후보: ① 14일 넘게 손대지 않은 폴더 ② 릴리스·후보 사본(이름에 -release·-candidate)은 갈래마다 새 판 둘만 남기고 옛 판은
  * 날짜와 상관없이(10-21 유호님 확정). 둘 다 최근·남는 폴더가 경로로 끌어 쓰면 빼고, 이름이 보존으로 시작하거나 _보존.txt가 있거나 .tmp 맨 위
@@ -28,6 +23,19 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
+
+const 쓰는법 = [
+  '쓰는 법 — node tools/tmp정리목록.js [선택지]',
+  '  (선택지 없음)                 목록을 만들어 output/크레딧작업/tmp정리목록/<날짜>.md 에 남기고 텔레그램으로 보낸다',
+  '  --보내지않기                  보내지 않고 화면에 보인다(기록 파일은 남긴다). 후보가 30개 넘으면 묶어서',
+  '  --보내지않기 --자세히         묶지 않고 하나씩',
+  '  --json                        목록을 JSON으로 찍기만 한다(예약 작업이 읽는다)',
+  '  --옮기기 a,b,c                유호님이 승인한 폴더만 C:\\Users\\q1212\\SYNK_정리대기\\<오늘>\\ 로 옮긴다',
+  '  --옮기기 --묶음 릴리스옛판|이사복사|14일|전부   승인한 묶음을 통째로 옮긴다(여럿이면 쉼표)',
+  '  --일수 N                      위에 붙여 「N일 넘게 손대지 않은」 기준으로 본다(기본 14 — 공간 정리 때 3)',
+  '  --help, -h                    이 쓰는 법만 찍는다',
+  '영구 삭제는 하지 않는다. 모르는 인자를 주면 아무것도 하지 않고 이 쓰는 법을 찍고 2로 끝난다.',
+].join('\n');
 
 const 저장소 = path.resolve(__dirname, '..');
 const 기본 = {
@@ -242,10 +250,11 @@ function 목록만들기(옵션 = {}) {
     참조잘림, 큰파일: [...new Set(큰파일)].map((p) => path.relative(임시, p).split(path.sep).join('/')).sort() };
 }
 
-/** 고르기 묶음 셋 — 릴리스 옛 판 · 이사 복사 시각 · 14일. 이름 목록을 돌려준다. */
+/** 고르기 묶음 셋 — 릴리스 옛 판 · 이사 복사 시각 · 14일(과 전부). 이름 목록을 돌려준다. */
+const 묶음고르기 = { 릴리스옛판: (c) => c.까닭.includes('릴리스옛판'), 이사복사: (c) => c.이사복사 && !c.릴리스, '14일': (c) => c.까닭.includes('14일'), 전부: () => true };
 function 묶음(목록, 이름) {
-  const 고르기 = { 릴리스옛판: (c) => c.까닭.includes('릴리스옛판'), 이사복사: (c) => c.이사복사 && !c.릴리스, '14일': (c) => c.까닭.includes('14일'), 전부: () => true }[이름];
-  if (!고르기) throw new Error(`모르는 묶음: ${이름} (릴리스옛판·이사복사·14일·전부)`);
+  const 고르기 = Object.hasOwn(묶음고르기, 이름) ? 묶음고르기[이름] : null;
+  if (!고르기) throw new Error(`모르는 묶음: ${이름} (${Object.keys(묶음고르기).join('·')})`);
   return 목록.후보.filter(고르기).map((c) => c.이름);
 }
 
@@ -331,42 +340,74 @@ function 옮기기(이름들, 옵션 = {}) {
   return { ...결과, 위치: 목적 };
 }
 
-module.exports = { 목록만들기, 글로, 옮기기, 묶음, 훑기, 참조모으기, 갈래 };
-
-if (require.main === module) {
-  const argv = process.argv.slice(2);
-  const 모델 = 기기모델();
-  const 일수자리 = argv.indexOf('--일수');
-  const 옵션 = 일수자리 >= 0 ? { 일수: Number(argv[일수자리 + 1]) } : {};
-  if (일수자리 >= 0) argv.splice(일수자리, 2);
-  if (모델 !== 기본.기기) {
-    console.error(`이 PC(${모델 || '모름'})는 새 노트북(${기본.기기})이 아니라서 아무것도 하지 않았다.`);
-    process.exitCode = 2;
-  } else if ('일수' in 옵션 && !(Number.isInteger(옵션.일수) && 옵션.일수 >= 1)) {
-    console.error('--일수 뒤에는 1 이상의 정수를 적는다 — 아무것도 하지 않았다.');
-    process.exitCode = 1;
-  } else if (argv[0] !== '--옮기기' && argv.some((a) => !['--json', '--보내지않기', '--자세히'].includes(a))) {
-    // 모르는 옵션(--help 같은)을 기본 동작(텔레그램 보내기)으로 흘려보내지 않는다(10-30 · 11-06 두 번 띄움)
-    console.error(`모르는 옵션 ${argv.filter((a) => !['--json', '--보내지않기', '--자세히'].includes(a)).join(' ')} — 아무것도 하지 않았다. 쓰는 법은 파일 맨 위 설명.`);
-    process.exitCode = 1;
-  } else if (argv[0] === '--옮기기') {
-    const 묶음자리 = argv.indexOf('--묶음');
-    let 이름들;
-    try {
-      이름들 = 묶음자리 >= 0
-        ? String(argv[묶음자리 + 1] || '').split(',').flatMap((m) => 묶음(목록만들기(옵션), m.trim()))
-        : String(argv[1] || '').split(',').map((s) => s.trim()).filter(Boolean);
-    } catch (e) { console.error(`${e.message} — 아무것도 옮기지 않았다.`); process.exit(1); }
-    const r = 옮기기([...new Set(이름들)], 옵션);
-    console.log(`옮긴 폴더 ${r.옮김.length}개 → ${r.위치}${r.남김.length ? `\n남긴 것: ${r.남김.map((x) => `${x.이름}(${x.이유})`).join(', ')}` : ''}`);
-  } else if (argv.includes('--json')) {
-    console.log(JSON.stringify(목록만들기(옵션), null, 1));
-  } else {
-    const 글 = 글로(목록만들기(옵션), { 자세히: argv.includes('--자세히') });
-    console.log(글);
-    const 방 = path.join(저장소, 'output', '크레딧작업', 'tmp정리목록');
-    fs.mkdirSync(방, { recursive: true });
-    fs.writeFileSync(path.join(방, `${new Date().toISOString().slice(0, 10)}.md`), 글 + '\n');
-    if (!argv.includes('--보내지않기')) require('./크레딧실행.js').텔레그램보내기(글);
+/**
+ * 인자를 읽는다 — { 도움 } · { 오류 } · { 일수, 옮기기(이름 배열|null), 묶음(이름 배열|null), json, 보내지않기, 자세히 }.
+ * 아는 것만 받고 자리는 가리지 않는다. 모르는 인자·값 없는 선택지·남는 낱말은 오류다 — 기본 길(기록 파일 → 텔레그램 보내기)이나
+ * 옮기기로 흘리지 않는다(10-30 · 11-06 `--help`가 전체 훑기로 흘렀고, 11-07 첫 고침은 `--옮기기` 뒤의 모르는 인자를 보지 않았다).
+ */
+function 인자읽기(argv) {
+  if (argv.some((a) => a === '--help' || a === '-h')) return { 도움: true };
+  const 읽음 = { 일수: null, 옮기기: null, 묶음: null, json: false, 보내지않기: false, 자세히: false };
+  const 값 = (i) => (i + 1 < argv.length && !String(argv[i + 1]).startsWith('--') ? String(argv[i + 1]) : null);
+  const 쉼표 = (글) => 글.split(',').map((s) => s.trim()).filter(Boolean);
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === '--json') 읽음.json = true;
+    else if (a === '--보내지않기') 읽음.보내지않기 = true;
+    else if (a === '--자세히') 읽음.자세히 = true;
+    else if (a === '--일수') {
+      const v = 값(i), n = Number(v);
+      if (v === null || !v.trim() || !(Number.isInteger(n) && n >= 1)) return { 오류: '--일수 뒤에는 1 이상의 정수를 적는다' };
+      읽음.일수 = n; i++;
+    } else if (a === '--옮기기') {
+      const v = 값(i);
+      읽음.옮기기 = v === null ? [] : 쉼표(v);
+      if (v !== null) i++;
+    } else if (a === '--묶음') {
+      const v = 값(i);
+      const 이름들 = v === null ? [] : 쉼표(v);
+      if (!이름들.length) return { 오류: '--묶음 뒤에는 묶음 이름을 적는다' };
+      const 모름 = 이름들.filter((m) => !Object.hasOwn(묶음고르기, m));
+      if (모름.length) return { 오류: `모르는 묶음: ${모름.join(', ')} (${Object.keys(묶음고르기).join('·')})` };
+      읽음.묶음 = 이름들; i++;
+    } else return { 오류: `모르는 인자 ${a}` };
   }
+  if (읽음.묶음 && !읽음.옮기기) return { 오류: '--묶음은 --옮기기와 같이 쓴다' };
+  if (읽음.묶음 && 읽음.옮기기.length) return { 오류: '--옮기기에는 폴더 이름과 --묶음 가운데 하나만 적는다' };
+  if (읽음.옮기기 && !읽음.옮기기.length && !읽음.묶음) return { 오류: '--옮기기 뒤에는 폴더 이름(쉼표로)이나 --묶음을 적는다' };
+  return 읽음;
 }
+
+/**
+ * 명령 본체 — 끝 코드를 돌려준다(0 됨 · 2 쓰는 법이 틀렸거나 새 노트북이 아님). 인자를 다 읽은 뒤에만 기기를 보고 훑는다.
+ * 주입은 시험용이다: 찍기·알리기(화면), 기기모델, 옵션(임시·대기 등 목록만들기에 넘길 것), 기록방, 보내기(텔레그램).
+ */
+function 실행(argv, 주입 = {}) {
+  const 찍기 = 주입.찍기 || ((글) => console.log(글));
+  const 알리기 = 주입.알리기 || ((글) => console.error(글));
+  const 인자 = 인자읽기(argv);
+  if (인자.도움) { 찍기(쓰는법); return 0; }
+  if (인자.오류) { 알리기(`${인자.오류} — 아무것도 하지 않았다.\n\n${쓰는법}`); return 2; }
+  const 모델 = (주입.기기모델 || 기기모델)();
+  if (모델 !== 기본.기기) { 알리기(`이 PC(${모델 || '모름'})는 새 노트북(${기본.기기})이 아니라서 아무것도 하지 않았다.`); return 2; }
+  const 옵션 = { ...주입.옵션, ...(인자.일수 ? { 일수: 인자.일수 } : {}) };
+  if (인자.옮기기) {
+    let 이름들 = 인자.옮기기;
+    if (인자.묶음) { const 목록 = 목록만들기(옵션); 이름들 = 인자.묶음.flatMap((m) => 묶음(목록, m)); }
+    const r = 옮기기([...new Set(이름들)], 옵션);
+    찍기(`옮긴 폴더 ${r.옮김.length}개 → ${r.위치}${r.남김.length ? `\n남긴 것: ${r.남김.map((x) => `${x.이름}(${x.이유})`).join(', ')}` : ''}`);
+    return 0;
+  }
+  if (인자.json) { 찍기(JSON.stringify(목록만들기(옵션), null, 1)); return 0; }
+  const 글 = 글로(목록만들기(옵션), { 자세히: 인자.자세히 });
+  찍기(글);
+  const 방 = 주입.기록방 || path.join(저장소, 'output', '크레딧작업', 'tmp정리목록');
+  fs.mkdirSync(방, { recursive: true });
+  fs.writeFileSync(path.join(방, `${new Date().toISOString().slice(0, 10)}.md`), 글 + '\n');
+  if (!인자.보내지않기) (주입.보내기 || ((본문) => require('./크레딧실행.js').텔레그램보내기(본문)))(글);
+  return 0;
+}
+
+module.exports = { 목록만들기, 글로, 옮기기, 묶음, 훑기, 참조모으기, 갈래, 인자읽기, 실행, 쓰는법 };
+
+if (require.main === module) process.exitCode = 실행(process.argv.slice(2));

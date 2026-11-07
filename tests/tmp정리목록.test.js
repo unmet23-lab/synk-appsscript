@@ -6,8 +6,10 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { spawnSync } = require('node:child_process');
 
 const 정리 = require('../tools/tmp정리목록.js');
+const 도구 = path.join(__dirname, '..', 'tools', 'tmp정리목록.js');
 
 const 하루 = 24 * 60 * 60 * 1000;
 function 옛날로(p, 일) {
@@ -220,5 +222,150 @@ test('후보가 서른 개를 넘으면 이름 앞말로 묶어 보이고, 이�
     assert.match(정리.글로(목록, { 자세히: true }), /^- alpha-0-20260901 · .* · 이사 복사 시각\(이름 날짜 2026-09-01\)/m);
     assert.equal(정리.묶음(목록, '이사복사').length, 31);
     assert.deepEqual(정리.묶음(목록, '14일').length, 32);
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
+/** 명령 본체에 넣을 가짜 — 화면·기기 확인·텔레그램 보내기를 세기만 한다. 실제 .tmp·output·텔레그램은 건드리지 않는다. */
+function 가짜주입(더 = {}) {
+  const 셈 = { 기기: 0, 보낸: [], 찍은: [], 알린: [] };
+  const 주입 = {
+    찍기: (글) => 셈.찍은.push(글), 알리기: (글) => 셈.알린.push(글),
+    기기모델: () => { 셈.기기++; return '83F5'; }, 보내기: (글) => 셈.보낸.push(글), ...더,
+  };
+  return { 셈, 주입 };
+}
+
+test('--help · -h는 쓰는 법만 찍고 0으로 끝난다 — 기기 확인 · 훑기 · 기록 파일 · 보내기 없음(10-30 · 11-06 --help가 기본 길로 흘렀다)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-tmp-help-'));
+  try {
+    const 임시 = path.join(방, '.tmp'), 대기 = path.join(방, '정리대기'), 기록방 = path.join(방, '기록');
+    for (const argv of [['--help'], ['-h'], ['--보내지않기', '--help'], ['--옮기기', '옛것', '-h'], ['--모름', '--help']]) {
+      const { 셈, 주입 } = 가짜주입({ 옵션: { 임시, 대기 }, 기록방 });
+      assert.equal(정리.실행(argv, 주입), 0, argv.join(' '));
+      assert.deepEqual(셈.찍은, [정리.쓰는법]);
+      assert.equal(셈.기기, 0);
+      assert.deepEqual(셈.보낸, []);
+      assert.deepEqual(셈.알린, []);
+    }
+    assert.ok(!fs.existsSync(기록방));
+    for (const 말 of ['--보내지않기', '--자세히', '--json', '--옮기기', '--묶음 릴리스옛판|이사복사|14일|전부', '--일수 N', '--help, -h']) assert.ok(정리.쓰는법.includes(말), 말);
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
+test('모르는 인자 · 값 없는 선택지는 훑기 전에 쓰는 법을 찍고 2 — 기록 파일 없음 · 텔레그램 안 부름 · 옮기지 않음', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-tmp-unknown-'));
+  try {
+    const 임시 = path.join(방, '.tmp'), 대기 = path.join(방, '정리대기'), 기록방 = path.join(방, '기록');
+    fs.mkdirSync(path.join(임시, '옛것'), { recursive: true });
+    fs.writeFileSync(path.join(임시, '옛것', 'a.txt'), 'x');
+    옛날로(path.join(임시, '옛것'), 30);
+    const 틀린것 = [
+      ['--모름'], ['--dry-run'], ['--보내지않기', '--모름'], ['--json', '남는낱말'], ['남는낱말'], ['--일수=3'],
+      // 11-07 첫 고침은 --옮기기가 맨 앞이면 뒤를 보지 않아 이 꼴이 그대로 옮겼다
+      ['--옮기기', '옛것', '--시험'], ['--옮기기', '--묶음', '14일', '--모름'],
+      ['--옮기기'], ['--옮기기', '--일수', '3'], ['--옮기기', '--묶음'], ['--옮기기', '--묶음', '없는묶음'], ['--옮기기', '--묶음', '__proto__'],
+      ['--옮기기', '옛것', '--묶음', '14일'], ['--묶음', '14일'],
+      ['--일수'], ['--일수', '0'], ['--일수', '2.5'], ['--일수', '--json'],
+    ];
+    for (const argv of 틀린것) {
+      const { 셈, 주입 } = 가짜주입({ 옵션: { 임시, 대기 }, 기록방 });
+      assert.equal(정리.실행(argv, 주입), 2, argv.join(' '));
+      const 알린글 = 셈.알린.join('\n');
+      assert.match(알린글, /아무것도 하지 않았다/, argv.join(' '));
+      assert.ok(알린글.includes(정리.쓰는법), `${argv.join(' ')}: 쓰는 법을 같이 찍는다`);
+      assert.equal(셈.기기, 0, `${argv.join(' ')}: 기기 확인(과 그 뒤의 훑기) 전에 끝난다`);
+      assert.deepEqual(셈.보낸, [], argv.join(' '));
+      assert.deepEqual(셈.찍은, [], argv.join(' '));
+    }
+    assert.ok(!fs.existsSync(기록방), '기록 파일을 쓰지 않는다');
+    assert.ok(!fs.existsSync(대기), '아무것도 옮기지 않는다');
+    assert.ok(fs.existsSync(path.join(임시, '옛것', 'a.txt')));
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
+test('부르는 쪽이 쓰는 꼴은 그대로 받는다 — 매달 기본 · 앱 예약 synk-tmp-monthly-list · 공간 정리(--일수 3)', () => {
+  const 빈것 = { 일수: null, 옮기기: null, 묶음: null, json: false, 보내지않기: false, 자세히: false };
+  const 꼴 = [
+    [[], {}],
+    [['--보내지않기'], { 보내지않기: true }],
+    [['--보내지않기', '--자세히'], { 보내지않기: true, 자세히: true }],
+    [['--json'], { json: true }],
+    [['--json', '--일수', '3'], { json: true, 일수: 3 }],
+    [['--일수', '3', '--보내지않기'], { 일수: 3, 보내지않기: true }],
+    [['--옮기기', '이름1,이름2'], { 옮기기: ['이름1', '이름2'] }],
+    [['--옮기기', ' 이름1 , 이름2 ,'], { 옮기기: ['이름1', '이름2'] }],
+    [['--옮기기', '--묶음', '릴리스옛판'], { 옮기기: [], 묶음: ['릴리스옛판'] }],
+    [['--옮기기', '--묶음', '릴리스옛판,이사복사'], { 옮기기: [], 묶음: ['릴리스옛판', '이사복사'] }],
+    [['--옮기기', '--묶음', '14일', '--일수', '3'], { 옮기기: [], 묶음: ['14일'], 일수: 3 }],
+    [['--일수', '3', '--옮기기', '--묶음', '전부'], { 옮기기: [], 묶음: ['전부'], 일수: 3 }],
+  ];
+  for (const [argv, 기대] of 꼴) assert.deepEqual(정리.인자읽기(argv), { ...빈것, ...기대 }, argv.join(' '));
+});
+
+test('받는 꼴은 끝까지 돈다 — 기본은 기록 파일을 쓰고 보내고, --보내지않기는 쓰기만, --json은 찍기만, --옮기기는 옮긴다(가짜 보내기)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-tmp-cli-'));
+  try {
+    const 임시 = path.join(방, '.tmp'), 대기 = path.join(방, '정리대기'), 기록방 = path.join(방, '기록');
+    for (const 이름 of ['옛것', '옛둘', '새것']) { fs.mkdirSync(path.join(임시, 이름), { recursive: true }); fs.writeFileSync(path.join(임시, 이름, 'a.txt'), 'x'); }
+    옛날로(path.join(임시, '옛것'), 30); 옛날로(path.join(임시, '옛둘'), 30);
+    const 기록파일 = path.join(기록방, `${new Date().toISOString().slice(0, 10)}.md`);
+    const 새로 = () => 가짜주입({ 옵션: { 임시, 대기 }, 기록방 });
+
+    let { 셈, 주입 } = 새로();
+    assert.equal(정리.실행(['--json'], 주입), 0);
+    assert.deepEqual(JSON.parse(셈.찍은[0]).후보.map((c) => c.이름).sort(), ['옛둘', '옛것'].sort());
+    assert.equal(셈.기기, 1);
+    assert.deepEqual(셈.보낸, []);
+    assert.ok(!fs.existsSync(기록방), '--json은 기록 파일을 쓰지 않는다');
+
+    ({ 셈, 주입 } = 새로());
+    assert.equal(정리.실행(['--보내지않기', '--일수', '3'], 주입), 0);
+    assert.match(셈.찍은[0], /3일 넘게 손대지 않은 폴더 2개/);
+    assert.equal(fs.readFileSync(기록파일, 'utf8'), 셈.찍은[0] + '\n');
+    assert.deepEqual(셈.보낸, []);
+    fs.rmSync(기록방, { recursive: true, force: true });
+
+    ({ 셈, 주입 } = 새로());
+    assert.equal(정리.실행([], 주입), 0);
+    assert.deepEqual(셈.보낸, [셈.찍은[0]], '기본 길만 보낸다');
+    assert.ok(fs.existsSync(기록파일));
+
+    ({ 셈, 주입 } = 새로());
+    assert.equal(정리.실행(['--옮기기', '옛것,새것'], 주입), 0);
+    assert.match(셈.찍은[0], /^옮긴 폴더 1개 → /);
+    assert.match(셈.찍은[0], /남긴 것: 새것\(지금 후보가 아님\)/);
+    ({ 셈, 주입 } = 새로());
+    assert.equal(정리.실행(['--옮기기', '--묶음', '14일'], 주입), 0);
+    assert.match(셈.찍은[0], /^옮긴 폴더 1개 → /);
+    assert.deepEqual(셈.보낸, []);
+    assert.deepEqual(fs.readdirSync(임시).sort(), ['새것']);
+
+    const 다른 = 가짜주입({ 기기모델: () => 'X1', 옵션: { 임시, 대기 }, 기록방 });
+    assert.equal(정리.실행(['--보내지않기'], 다른.주입), 2);
+    assert.match(다른.셈.알린[0], /새 노트북\(83F5\)이 아니라서 아무것도 하지 않았다/);
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
+test('명령으로 불러도 같다 — --help는 0 · 쓰는 법, 모르는 인자는 2 · 쓰는 법(기기 확인에 닿으면 멈추는 가드로 실제 훑기 · 보내기를 막고 본다)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-tmp-spawn-'));
+  try {
+    // 인자를 읽은 다음 맨 먼저 기기 모델을 powershell로 묻는다 — 거기 닿으면 99로 끝내 그 뒤(훑기 · 기록 · 보내기)를 막는다.
+    const 가드 = path.join(방, '가드.cjs');
+    fs.writeFileSync(가드, [
+      "const cp = require('child_process'); const 원래 = cp.spawnSync;",
+      "cp.spawnSync = (명령, ...나머지) => { if (/powershell/i.test(String(명령))) { process.stderr.write('가드: 기기 확인까지 갔다\\n'); process.exit(99); } return 원래(명령, ...나머지); };",
+    ].join('\n'));
+    const 돌기 = (...argv) => spawnSync(process.execPath, ['-r', 가드, 도구, ...argv],
+      { encoding: 'utf8', env: { ...process.env, SYNK_CREDIT_NO_TELEGRAM: '1' }, timeout: 60000, windowsHide: true });
+    const 도움 = 돌기('--help');
+    assert.equal(도움.status, 0, 도움.stderr);
+    assert.equal(도움.stdout.trim(), 정리.쓰는법);
+    assert.equal(도움.stderr, '');
+    const 모름 = 돌기('--모름');
+    assert.equal(모름.status, 2, 모름.stderr);
+    assert.match(모름.stderr, /모르는 인자 --모름 — 아무것도 하지 않았다/);
+    assert.ok(모름.stderr.includes(정리.쓰는법));
+    assert.equal(모름.stdout, '');
+    assert.equal(돌기('--json').status, 99, '가드가 제 몫을 한다 — 받는 꼴은 기기 확인에 닿는다');
   } finally { fs.rmSync(방, { recursive: true, force: true }); }
 });
