@@ -590,6 +590,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
   4. 공용 작업본에서 `node tools/바로올리기.js '<파일…>' --저장소 <wt> -m "…"`로 미리 보기를 보고 `--실행`한다. 워크트리 모드라 통째로 올라가고, 그새 origin이 고친 파일은 3방향이다.
   5. `git worktree remove <wt>`로 지운다. junction을 만들지 않았으니 `--force`가 필요 없다.
   11-05 밤 덧붙임(Claude, Git Bash): `MSYS_NO_PATHCONV=1`을 쓰면 `git -C /c/…`가 안 먹으니 작업본 경로는 `C:/…`로 쓰고, `sparse-checkout set --no-cone '/docs/_ops/트랙.md'`는 이 변수 없이 치면 `C:/Program Files/Git/docs/…`로 바뀌어 파일이 하나도 안 받아진다. `--저장소` 때 `-F <메시지 파일>`은 그 작업본 기준으로 읽으니 절대 경로로 준다. 시험 파일이 없는 작업본이라 `--시험건너뜀` · `--짝검사건너뜀`에 까닭을 적는다.
+  11-08 덧붙임(Claude, Git Bash): `MSYS_NO_PATHCONV=1 git -C /c/…/rec-wt sparse-checkout set …`이 「cannot change to」로 실패했는데, `;`로 이어 둔 `git -C /c/… checkout`(변수가 없어 경로는 바뀌어 먹힘)이 sparse 없이 저장소 전체를 풀기 시작해 2분 넘게 돌았다(멈추고 폴더째 지운 뒤 `git worktree prune`). 세 단계는 `&&`로 잇고, checkout 앞에 `git -C <wt> sparse-checkout list`로 패턴을 본다.
   공용 작업본은 「건너뜀」으로 남고 남의 미커밋도 그대로다. 10-22 예약 작업 `company-sns-auto-track-24h-check`도 같은 순서로 트랙 한 줄을 올린다.
 - 다시 확인: `9fe30892b`(결정·트랙·WORKSPACE 세 파일 +5 −3, 결정은 3방향)가 올라간 뒤 `git show origin/master:<파일>`에 내 줄이 있었고, `git worktree list`에 임시 작업본이 남지 않았다. 임시 작업본은 파일 세 개만 받아 바로 끝났다.
 - 다시 겪음(10-22 Claude): 내가 1시간 전에 올린 커밋(`6bdf242c6`)의 줄을 다시 고친 PATH 문서 셋·트랙 한 줄이 「✗ … 내가 고친 줄이 원격 판에 그대로 없다」로 멈췄다(공용 작업본은 남의 비추적 파일과 origin 새 파일이 겹쳐 따라가기 멈춤). 이 항목을 늦게 찾아 임시 index(`GIT_INDEX_FILE`)로 origin 판 위에 내 줄만 얹은 커밋을 만들고 `tools/공개검사.js --바탕 --머리`·`git-storage-check.cjs --base --head`·`tests/결정정본.test.js`를 직접 돌린 뒤 push했다(`db0369d47`, 한 번은 그사이 남이 올려 거절 → 다시 만들어 통과). 그 길은 바로올리기의 관련 시험을 건너뛰므로 위 임시 작업본 길이 먼저다.

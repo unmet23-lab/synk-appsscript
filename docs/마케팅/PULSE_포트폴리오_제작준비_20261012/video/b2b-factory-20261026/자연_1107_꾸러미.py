@@ -71,6 +71,29 @@ ACT_07 = ("Inside the turbine's tangle of steel pipes, a gloved hand works a wre
           "camera leaves the hand and finds the assembler's dark shoulder and the back of his head under a dark work cap: his shoulder rocks with every turn and at "
           "about 2.6 s he leans his head in closer to the fitting; his face is turned away into the machine and is never seen. No one appears except the assembler "
           "whose hand and shoulder are in the first frame.")
+# 11-08 20(운전석) — 아르곤 2차 검수가 「핸들 림이 기형적으로 일그러짐」을 찾았다(옛 p10-20, 32.2초 뒤 림이 고리처럼 휨). 시작 그림에는 운전대 윗부분만 보여
+#   카메라가 휙 올라가며 나머지를 지어낼 때 휘었다 → 운전대 생김새를 못 박고, 손도 박자대로 산다(유호님 「다시 구워」, 76크레딧).
+ACT_20 = ("Inside the truck cab: from the very first frame the driver's right hand, in the sleeve of a light-grey work jacket, grips the gear lever and pushes it "
+          "firmly into gear at about 0.2 s; then his right hand leaves the lever and moves up to the steering wheel by about 1.1 s, where his left hand already "
+          "holds it; at about 1.7 s both hands ease the wheel a little to the left as the truck starts to roll. The steering wheel is a large truck steering "
+          "wheel: one smooth, perfectly round, rigid black rim joined to a flat centre hub by straight spokes — it keeps exactly this round shape and its spokes "
+          "the whole time, seen from every angle as the camera moves, and never bends, twists, loops or melts. Only his hands, arms and shoulder are ever seen — "
+          "his head always stays above the top edge of the frame, and nobody turns toward the camera. Outside the window, the bright concrete yard exactly as "
+          "in the first frame. No one appears except the driver whose arm is in the first frame.")
+# 받은 20n(11-08 05:51)은 0~40장(기어를 밀고 손이 운전대로 올라감)은 운전대가 둥글었는데, 카메라가 옆 창 쪽으로 돈 45장부터 운전대를 거의 옆에서 보게 돼
+#   옛 판처럼 세로 고리로 휘었다 — 끝 자리를 「어깨 너머로 운전대를 정면에서 보는」 곳으로 바꾼 판(CAMERA도 갈아 끼움). 같은 지시문 두 벌(20o · 20p)로 내 나은 쪽을 고른다.
+ACT_20O = ("Inside the truck cab: from the very first frame the driver's right hand, in the sleeve of a light-grey work jacket, grips the gear lever and pushes it "
+           "firmly into gear at about 0.2 s; then his right hand leaves the lever and moves up onto the steering wheel by about 1.1 s, where his left hand already "
+           "holds it; at about 1.7 s both hands ease the wheel a little to the left as the truck starts to roll. The steering wheel is a large truck steering "
+           "wheel: one smooth, perfectly round, rigid black rim around a flat centre hub, joined by straight spokes — in the final over-the-shoulder view it is seen "
+           "face-on as a full round ring in front of him, and it keeps exactly this round shape the whole time, never bending, twisting, looping or melting. Only "
+           "his hands, arms and right shoulder are ever seen — his head always stays above the top edge of the frame, and nobody turns toward the camera. Through "
+           "the windshield, the bright concrete yard exactly as outside the window in the first frame. No one appears except the driver whose arm is in the first frame.")
+CAM_20O = ("handheld, a quick swing from the very first frame: the camera rises and pulls back up over the driver's right shoulder — off the gear hand, up past his "
+           "hands, to an over-the-shoulder view looking forward through the windshield by about 1.5 s, the full round steering wheel face-on in front of him with "
+           "both his hands on it; fastest between 0.5 s and 1.3 s, then it slows and is almost still from 2.0 s; the picture shrinks by about a quarter as it pulls "
+           "back; natural handheld shake; his head stays above the top edge of the frame.")
+CAMERAS = {"p10-20o": CAM_20O, "p10-20p": CAM_20O}
 ACT_12 = ("In a dim workshop full of workbenches under warm work lamps, a worker stands at his bench, seen from behind, working: from the very first frame his arms "
           "move back and forth as he files a small metal part on the bench in short, steady strokes, his shoulders and the back of his head moving with each stroke; "
           "at about 1.4 s he puts the file down and reaches across the bench for another tool; his face is never seen. Then a second worker, who has been waiting "
@@ -108,6 +131,9 @@ JOBS = [  # (id, 꾸러미 폴더, 원래 판 폴더(DAY 아래), 새 ACTION, �
     ("p10-13n", "012_p10-13n", "웹올리기_여섯편/135_p10-13", ACT_13, 1.1, ["13"], "1_시작.jpg", "끔"),
     ("p10-29n", "013_p10-29n", "웹올리기_여섯편/107_p10-29", ACT_29, 1.3, ["29"], "1_시작.jpg", "끔"),
     ("p10-35n", "014_p10-35n", "웹올리기_여섯편/113_p10-35", ACT_35, 1.2, ["35"], "1_시작.jpg", "끔"),
+    ("p10-20n", "015_p10-20n", "웹올리기_여섯편/098_p10-20", ACT_20, 2.9, ["20"], "1_시작.jpg", "끔"),
+    ("p10-20o", "016_p10-20o", "웹올리기_여섯편/098_p10-20", ACT_20O, 2.9, ["20"], "1_시작.jpg", "끔"),
+    ("p10-20p", "017_p10-20p", "웹올리기_여섯편/098_p10-20", ACT_20O, 2.9, ["20"], "1_시작.jpg", "끔"),
 ]
 
 
@@ -122,6 +148,9 @@ def main():
             prompt = open(os.path.join(DAY, src, "지시문.txt"), encoding="utf-8").read()
             new, n = re.subn(r"^ACTION:.*$", "ACTION: " + act, prompt, count=1, flags=re.M)
             assert n == 1, pid
+            if pid in CAMERAS:   # 카메라 끝 자리까지 바꾸는 판(20o · 20p)
+                new, n = re.subn(r"^CAMERA:.*$", "CAMERA: " + CAMERAS[pid], new, count=1, flags=re.M)
+                assert n == 1, pid
             if img.startswith("2_참고"):   # m2v(시작 그림을 참고로) — 첫 줄은 「시작 자세」(굽기 시트 지시문 틀, 4번 세션 11-07: 「start from it unchanged」는 그림을 멈춰 두라는 말로 읽힘)
                 new, n = re.subn(r"^@이미지 1 is the exact first frame of this video: start from it unchanged — .*$",
                                  "@이미지 1 shows the worker's starting pose, framing and light for this shot — from there he moves naturally and the picture "
