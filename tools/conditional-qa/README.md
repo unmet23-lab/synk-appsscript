@@ -223,3 +223,11 @@ WORLD 계정 브라우저 시험은 부모 화면의 애니메이션 프레임�
 | S070 | `b5bd21079` ~ `76586f0f0` 앞 | `experiences/brand-opening/play-unlocks.mjs`의 `playOrder`가 레슨 하나를 마치면 `runner`를 목록에서 빼고 `subway`를 넣는다. 그 구간 `qa/account-browser.test.mjs:256`은 레슨을 마친 뒤 `button[data-game="runner"]`를 20초 기다린다 | `playOrder`를 커밋별로 불러 레슨 1개에서 `subway,rhythm`이 나오는 것, `b81eef130`·`5425edd70` 영수증의 같은 시간 초과, [GitHub의 같은 실패](https://github.com/unmet23-lab/synk-appsscript/actions/runs/41795766747) |
 | S072 | `a745a1f70` ~ `f577e04d1` 앞 | `experiences/synk-town/day-app.mjs`가 시간 초과된 GET을 모두 한 번 더 물어 과제 화면의 12초 오류가 24초로 늦어졌다. `qa/classroom-homework-browser.test.mjs:178`의 대기는 25초다 | `64c7ad63d` 영수증의 시간 초과, `f577e04d1`의 범위 축소 뒤 같은 시험 통과 |
 
+<a id="hosted-windows-one-red"></a>
+
+### 호스트 Windows의 한 번 빨강과 연속 빨강을 섞어 읽지 않는다
+
+- **증상:** 11-08 `ci빨간불`이 「conditional-qa 적어도 14회 연속 빨강 — 첫 빨강 11-07 23:51 `d8301bc23`」 아래에 `hosted (windows-latest, windows)`의 `verify exact registered cases, with no skips`(`default: 27/28`)를 깨진 단계로 보였다.
+- **원인:** 연속 횟수는 run 전체 결론을 세고, 깨진 단계는 가장 최근 빨강 run 하나에서만 읽는다. 그 빨강 14개 가운데 13개는 `local-coverage`(`FAIL 75/79: S063 S064 S065 S067` — [일꾼이 깐 옛 영상 바이트](#reregister-inputs))였고, Windows 작업은 `49ebe5697a`(run 42400361173) 한 번만 깨졌다. 깨진 시험은 로그가 아니라 산출물 `conditional-windows`의 `default/tests.tap`에 있다 — S024, 자식을 띄우기 전 첫 확인부터 바쁨으로 읽혔다. `recover-gateway.ps1`의 `Test-GatewayIdle`이 `ParentProcessId`만으로 자식을 세서, 끝난 부모의 PID를 다시 받은 PowerShell에 남의 고아가 자식으로 잡혔다(Windows는 부모가 끝나도 자식의 부모 PID를 그대로 둔다).
+- **고침:** 게이트웨이가 살아 있고 그보다 뒤에 생긴 프로세스만 자식으로 센다. S024 안에 고정 프로세스 표 넷을 더했다(이름 · 등록 그대로). 운영 복구 작업의 같은 거짓 「바쁨」(재시작 미룸 · 30분 뒤 코드 6)도 함께 고쳐졌다.
+- **다시 확인:** `node --test tests/hermes-synk-recovery.test.cjs` 10/10이고, 옛 스크립트로는 S024가 「orphan older than the gateway」로 떨어진다. 호스트 작업이 깨졌는지는 run마다 `gh api repos/<저장소>/actions/runs/<id>/jobs`로 그 작업의 결론을 보고, 깨진 시험은 그 run의 산출물 TAP에서 찾는다([현장 노트](../../docs/현장노트/시험_화면확인.md#호스트-windows-conditional-qa가-적어도-14회-연속-빨갛게-보였는데-windows-작업은-한-번만-s024로-깨졌다--옛-부모-pid를-다시-받은-powershell에-남의-고아가-자식으로-잡힌다-2026-11-08-claude)).

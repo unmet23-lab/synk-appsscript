@@ -52,8 +52,13 @@ function Test-GatewayIdle {
     }
     if ([int]$state.pid -ne $GatewayPid -or $state.gateway_state -notin @('running', 'degraded')) { return $false }
     if ([int]$state.active_agents -ne 0 -or $background -ne '[]') { return $false }
-    $children = @(Get-CimInstance Win32_Process -Filter ('ParentProcessId={0}' -f $GatewayPid) |
-        Where-Object { $_.Name -ne 'conhost.exe' })
+    # Windows keeps ParentProcessId after the parent exits and soon reuses the PID, so a process left
+    # by an earlier owner of this PID is not a child: count only processes created after the gateway.
+    $gateway = Get-CimInstance Win32_Process -Filter ('ProcessId={0}' -f $GatewayPid)
+    $children = @(if ($gateway) {
+        Get-CimInstance Win32_Process -Filter ('ParentProcessId={0}' -f $GatewayPid) |
+            Where-Object { $_.Name -ne 'conhost.exe' -and (!$_.CreationDate -or $_.CreationDate -ge $gateway.CreationDate) }
+    })
     return $children.Count -eq 0
 }
 

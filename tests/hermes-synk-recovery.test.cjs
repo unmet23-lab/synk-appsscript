@@ -101,6 +101,21 @@ test('a running tool child process counts as busy', { skip }, (t) => {
   // The harness becomes the "gateway": it writes its own PID, then starts one hidden child.
   const out = run(`. '${script}'; @{ pid = $PID; gateway_state = 'running'; active_agents = 0 } | ConvertTo-Json | Set-Content -LiteralPath '${path.join(hermes, 'gateway_state.json')}'; Test-GatewayIdle -GatewayPid $PID -HermesHome '${hermes}'; $c = Start-Process -FilePath cmd.exe -ArgumentList '/c','ping -n 6 127.0.0.1 >nul' -WindowStyle Hidden -PassThru; Test-GatewayIdle -GatewayPid $PID -HermesHome '${hermes}'; $c | Stop-Process -Force`).out;
   assert.deepEqual(out.split(/\r?\n/), ['True', 'False']);
+
+  // Windows keeps an exited parent's PID in its children and hands that PID out again, so a process left
+  // by an earlier owner of the gateway PID names the gateway as parent (hosted CI run 42400361173 read
+  // 'False' before any child was started). A stand-in Get-CimInstance gives a fixed process table.
+  fs.writeFileSync(path.join(hermes, 'gateway_state.json'), JSON.stringify({ pid: GATEWAY, gateway_state: 'running', active_agents: 0 }));
+  const proc = (name, created) => `[pscustomobject]@{ Name = '${name}'; CreationDate = ${created ? `[datetime]'${created}'` : '$null'} }`;
+  const listed = (gatewayStart, children) => run(`. '${script}'; function Get-CimInstance { param($ClassName, $Filter) ` +
+    `if ($Filter -eq 'ProcessId=${GATEWAY}') { ${gatewayStart ? proc('python.exe', gatewayStart) : '$null'} } ` +
+    `elseif ($Filter -eq 'ParentProcessId=${GATEWAY}') { @(${children.map(([name, created]) => proc(name, created)).join(', ')}) } }; ` +
+    `Test-GatewayIdle -GatewayPid ${GATEWAY} -HermesHome '${hermes}'`).out;
+  const started = '2026-11-07T18:16:00';
+  assert.equal(listed(started, [['cmd.exe', '2026-11-07T18:10:00'], ['conhost.exe', '2026-11-07T18:16:01']]), 'True', 'orphan older than the gateway');
+  assert.equal(listed(started, [['cmd.exe', '2026-11-07T18:10:00'], ['ping.exe', '2026-11-07T18:17:00']]), 'False', 'child started after the gateway');
+  assert.equal(listed(started, [['ping.exe', '']]), 'False', 'a child with no start time still counts');
+  assert.equal(listed('', [['cmd.exe', '2026-11-07T18:10:00']]), 'True', 'no process holds the gateway PID');
 });
 
 // Each call is a fresh Windows PowerShell, like one scheduled run; the stand-in restart appends a line.
