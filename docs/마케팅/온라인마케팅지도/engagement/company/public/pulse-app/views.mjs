@@ -358,12 +358,11 @@ function reviewRoom(s){
 function deliverBlock(s,finals){
   const p=s.project,c=p.closeout,received=!!c?.receipt,specs=!!studio(p).deliverables?.revision;
   const row=v=>{const media=safeUrl(v.media?.url,{media:true}),link=!media&&safeUrl(v.url);return `<li><div class="sx-deliver-row"><span class="sx-body">${esc(v.label)}</span>${media?`<a class="sx-go" href="${esc(media)}" download="${esc(downloadName(p,v))}"><span>파일 받기</span>${arrow}</a>`:link?`<a class="sx-go" href="${esc(link)}" target="_blank" rel="noopener noreferrer"><span>자료 열기</span>${arrow}</a>`:''}</div>${v.guide?`<p class="sx-small sx-deliver-guide">${esc(v.guide)}</p>`:''}</li>`;};
-  const receipt=!c?.deliveryKey?'':received?`<p class="sx-small sx-receipt" aria-label="납품 수령 확인"><b>수령 확인 완료</b> · <time datetime="${esc(c.receipt.confirmedAt)}">${esc(stamp(c.receipt.confirmedAt))}</time></p>`:s.mode==='customer'&&c.canConfirm?`<div class="sx-receipt">${go('파일과 안내 확인했어요','confirm-delivery')}<p class="sx-small">받아 보신 뒤 눌러 주세요. 확인한 시각이 담당자에게 가요.</p></div>`:'';
+  const receipt=!c?.deliveryKey?'':received?`<p class="sx-small sx-receipt" aria-label="납품 수령 확인"><b>수령 확인 완료</b> · <time datetime="${esc(c.receipt.confirmedAt)}">${esc(stamp(c.receipt.confirmedAt))}</time> · 파일은 여기서 언제든 다시 받으실 수 있어요.</p>`:s.mode==='customer'&&c.canConfirm?`<div class="sx-receipt">${go('파일과 안내 확인했어요','confirm-delivery')}<p class="sx-small">받아 보신 뒤 눌러 주세요. 확인한 시각이 담당자에게 가요.</p></div>`:'';
   return `<section class="sx-review-deliver" id="review-delivery" tabindex="-1" aria-label="납품">
         <ul class="sx-deliver-files">${finals.map(row).join('')}</ul>
         ${receipt}
-        <p class="sx-small sx-deliver-foot">파일은 여기서 언제든 다시 받으실 수 있어요. 다른 형식이나 길이가 필요하면 담당자에게 알려 주세요.</p>
-        <p class="sx-small sx-deliver-links"><button type="button" class="sx-link" data-room-do="contact">담당자에게 묻기</button>${specs?'<button type="button" class="sx-link" data-room-do="paper" data-paper="deliverables">납품 규격 보기</button>':''}</p>
+        <p class="sx-small sx-deliver-foot">${received?'':'파일은 여기서 언제든 다시 받으실 수 있어요. '}다른 형식이나 길이가 필요하면 담당자에게 알려 주세요. <span class="sx-deliver-links"><button type="button" class="sx-link" data-room-do="contact">담당자에게 묻기</button>${specs?'<button type="button" class="sx-link" data-room-do="paper" data-paper="deliverables">납품 규격 보기</button>':''}</span></p>
       </section>`;
 }
 // 담당자에게 묻기(의뢰 흐름, 판 3): 묻는 자리는 이 화면 하나 — 영상이 있어도 없어도 같다. 폼은 support로 따로 둬 영상 의견 초안과 섞이지 않게 한다.
@@ -411,7 +410,6 @@ function deliveryRoom(s){
   const p=s.project,st=studio(p),finals=(p.versions||[]).filter(v=>v.kind==='final'),film=finals.slice().reverse().find(v=>v.media?.mimeType?.startsWith('video/')&&safeUrl(v.media.url,{media:true})),c=p.closeout,received=!!c?.receipt,next=isCustomerRoom(s)?null:nextOf(s);
   const events=historyEvents(p);
   return `<div class="sx-shell sx-room sx-delivery${s.demo?' is-demo':''}" data-mode="${esc(s.mode)}" data-tab="history" data-state="deliver">
-    ${s.example?EXAMPLE_LOGO:''}
     <section class="sx-room-hero">
       <div class="sx-room-left">
         ${alertBox(s)}

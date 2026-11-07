@@ -198,5 +198,12 @@ test('argon 3a: the example draft scenes keep the head, the ask hint only while 
   for(const p of [roomProject({status:'confirmed',approvedAt:at,rounds:[round('images')]},{stage:'review',versions:[approved]}),delivered()])assert.doesNotMatch(projectView(state(p,{tab:'contact'})),/영상에서 고칠 곳은/,'no notes can be left after approval');
   assert.match(read('film.css'),/\(min-width:821px\) and \(max-width:1000px\) and \(min-aspect-ratio:10001\/10000\)\{\.sx-head-steps \.sx-steps-foot\{display:none\}\.sx-room>\.sx-room-films\{display:block\}\}/);
   const done=projectView(state(delivered(),{tab:'history'}));
-  assert.match(done,/다른 형식이나 길이가 필요하면 담당자에게 알려 주세요\.<\/p>/);assert.match(done,/<p class="sx-small sx-deliver-links"><button type="button" class="sx-link" data-room-do="contact">담당자에게 묻기<\/button><\/p>/);
+  // Fable 최종(11-08) P2: 1366×650 기둥에 들게 단추는 문장 뒤 같은 줄, 수령 확인 뒤에는 「언제든 다시」를 확인 줄에 합친다.
+  assert.match(done,/파일은 여기서 언제든 다시 받으실 수 있어요\. 다른 형식이나 길이가 필요하면 담당자에게 알려 주세요\. <span class="sx-deliver-links"><button type="button" class="sx-link" data-room-do="contact">담당자에게 묻기<\/button><\/span><\/p>/);
+  const got=projectView(state(delivered({closeout:{deliveryKey:'k1',approvedPreviewId:'v1',canConfirm:false,receipt:{confirmedAt:at},files:[]}}),{tab:'history'}));
+  assert.match(got,/<\/time> · 파일은 여기서 언제든 다시 받으실 수 있어요\.<\/p>/);assert.match(got,/<p class="sx-small sx-deliver-foot">다른 형식이나 길이가/);
+  // Fable 최종 P3: 지운 예시 머리 상수를 옛 납품 화면이 부르지 않는다(예시가 옛 길로 가면 화면이 비던 지뢰).
+  assert.doesNotMatch(read('views.mjs'),/EXAMPLE_LOGO/);
+  assert.match(read('film.css'),/\.sx-room-bar\.is-head\{padding-bottom:8px;background:linear-gradient/);
+  assert.match(read('film-legacy.css'),/html\.has-room-head \.sx-draft \.sx-dr-films,\.sx-draft:has\(>\.sx-room-bar\.is-head\) \.sx-dr-films\{height:calc\(40vh - 50px\)/);
 });

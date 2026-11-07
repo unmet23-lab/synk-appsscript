@@ -535,7 +535,7 @@ p.sx-receipt{display:block}
 .sx-review-deliver .sx-receipt .sx-go.is-solid{padding:16px 18px}
 .sx-review-deliver .sx-receipt p{color:var(--sx-dim)}
 .sx-deliver-foot{color:var(--sx-dim)}
-.sx-deliver-links{display:flex;gap:16px}
+.sx-deliver-links{display:inline-flex;flex-wrap:wrap;gap:4px 14px;margin-left:4px}
 .sx-deliver-links .sx-link{color:var(--sx-ink)}
 .sx-review-full{order:2;margin-left:auto;padding:2px 0;color:var(--sx-ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
 @media (max-width:820px),(max-aspect-ratio:1/1){
@@ -543,6 +543,8 @@ p.sx-receipt{display:block}
   html.has-room-head .sx-review .sx-dr-credit>h1,.sx-review:has(>.sx-room-bar.is-head) .sx-dr-credit>h1{padding-top:12px}
   html.has-room-head .sx-review:has(.sx-review-decide),.sx-review:has(>.sx-room-bar.is-head):has(.sx-review-decide){padding-bottom:calc(env(safe-area-inset-bottom) + 150px)}
   html.has-room-head .sx-ask-thread{padding-top:20px}
+  /* 휴대폰 1차안: 흐름 안 두 줄 머리만큼 그림 칸을 줄여 첫 화면의 컷 이름이 아래 고정 결정 띠에 덮이지 않게. */
+  html.has-room-head .sx-draft .sx-dr-films,.sx-draft:has(>.sx-room-bar.is-head) .sx-dr-films{height:calc(40vh - 50px);height:calc(40dvh - 50px)}
   /* 최종본을 볼 때(휴대폰): 영상을 조금 줄이고 납품 칸을 띠 위로 — 첫 화면에 영상 · 「완성본을 받으세요」 · 첫 파일. */
   .sx-review:has(#review-delivery) .sx-dr-films{height:44vh;height:44dvh}
   .sx-review:has(#review-delivery) .sx-dr-right{order:2}
@@ -550,3 +552,5 @@ p.sx-receipt{display:block}
 }
 /* 넓은 화면의 어두운 방(1차안 · 영상): 머리 한 줄이 가운데 틀(영상 · 밝은 대본 판) 위에 겹치지 않게, 틀도 양옆 기둥과 같은 높이에서 시작한다. */
 @media (min-width:821px) and (min-aspect-ratio:10001/10000){html.has-room-head .sx-dr-films,.sx-dr:has(>.sx-room-bar.is-head) .sx-dr-films{top:var(--top)}}
+/* 낮은 노트북(높이 700 아래): 최종본 셋 · 수령 확인 뒤에도 납품 칸 끝 줄(담당자에게 묻기)까지 기둥 안에 들게 조금 좁힌다. */
+@media (min-width:821px) and (min-aspect-ratio:10001/10000) and (max-height:700px){.sx-review:has(#review-delivery) .sx-review-line{font-size:21px;margin-top:2px}.sx-review-deliver{gap:6px;padding-top:8px}.sx-deliver-files li{padding:7px 0}}
