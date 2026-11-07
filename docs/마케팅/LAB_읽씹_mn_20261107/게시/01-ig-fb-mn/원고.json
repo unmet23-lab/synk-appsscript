@@ -1,0 +1,16 @@
+{
+  "id": "01-ig-fb-mn",
+  "brand": "LAB",
+  "platform": "instagram+facebook",
+  "account": "@synk.mn · SYNK(synkworld)",
+  "format": "reels",
+  "language": "mn",
+  "audioLanguage": "none",
+  "caption": "Солонгос чат апп дээр «1» алга болсон ч хариу ирэхгүй байвал? Солонгосоор үүнийг «읽씹» гэдэг.\n\n«1» = хараахан уншаагүй\n«1» алга болсон = уншсан\nУншсан ч хариу бичээгүй = 읽씹 (икссип) — 읽다 (унших) + 씹다 («зажлах»; ярианд «тоохгүй байх» гэсэн утгаар бас хэрэглэдэг)\nㅇㅇ (= 응응, ын ын) = «за», «тийм» гэсэн маш богино, жаахан хүйтэн хариулт.\n\nТаныг хэн нэгэн «읽씹» хийж байсан уу? Сэтгэгдэл дээр бичээрэй 👇\n\nБид SYNK LAB — монгол сурагч, оюутнуудад солонгос хэл заадаг баг.\n#солонгосхэл #한국어 #learnkorean #mongolia",
+  "firstComment": "🎮 Солонгос хэлний сонсгол, уншлагын тоглоом (англи, солонгос хэлээр): synk.im/try/learning-hub/",
+  "alt": [
+    "A chat screen with a Korean friend named 지우: two coral messages sent at 23:52, 안녕! 나 몽글이야 😊 and 우리 친구 할래?, each with a small yellow 1 (unread). Below, a needle-felted room at night: a coral felt mascot beside a glowing felt phone, a steaming teacup, a moon in the window and a wall clock. The 1s vanish and the mascot floats up with sparkles. The clock jumps to 01:30, 03:10 and 05:02; the window turns to dawn, the tea goes cold and the mascot sags with tired eyes. Cards explain 읽씹 (read and no reply). At 08:03 the phone buzzes and the only reply is ㅇㅇ (= 응응). The mascot flattens into a felt pancake on the desk: 8 цаг хүлээгээд… «ㅇㅇ» 🫠"
+  ],
+  "_비고": "video.mp4 = ilssip v4f(시험 받은 v4에서 「ㅇㅇ」 풀이 시각 · 시계 ⏩ · 장면이 늘 다가감 · 첫 2초 카메라 · 위 띠 높이만 — 18.6초 · 관문 못 넘음 — 기획.md 「판정」) → 음량마감 −14.5 LUFS. 10MB 올림판 upload_10MB.mp4(8.43MB). 표지 cover.png = 2.1초(「1」이 사라진 뒤 반짝 떠오른 몽글 · 대화). 합성 표시: 필수 아님 — 펠트 몽글 그림은 우리 마스코트를 GPT 이미지 2.5로 구운 그림(지난 몽골 편과 같은 판단), 목소리 없음.",
+  "version": "m26-mn"
+}

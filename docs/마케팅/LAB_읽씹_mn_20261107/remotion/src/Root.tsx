@@ -6,9 +6,8 @@ import { FPS, TOTAL_FRAMES } from './chat/timeline';
 
 export const RemotionRoot: React.FC = () => (
   <>
-    <Composition id="prof-mn" component={Film} durationInFrames={TOTAL_FRAMES} fps={FPS} width={1080} height={1920} />
-    {/* 10-28 두 채널 판(기획장부/LAB.md 머리말 「두 채널 판」 2번) — 샤오훙수 간체 · 틱톡 버마어(@synklab.mm). 판별 글은 data.ts LOCS */}
-    <Composition id="prof-zhs" component={Film} defaultProps={{ loc: 'zhs' as const }} durationInFrames={TOTAL_FRAMES} fps={FPS} width={1080} height={1920} />
-    <Composition id="prof-mm" component={Film} defaultProps={{ loc: 'mm' as const }} durationInFrames={TOTAL_FRAMES} fps={FPS} width={1080} height={1920} />
+    <Composition id="ilssip-mn" component={Film} durationInFrames={TOTAL_FRAMES} fps={FPS} width={1080} height={1920} />
+    {/* 한 장면 먼저(제작 절차 「오마주」 2) — 위 띠 글 · 꼬리표 · 카드 없이 장면만. --frames로 그 구간을 굽는다 */}
+    <Composition id="ilssip-scene" component={Film} defaultProps={{ plain: true }} durationInFrames={TOTAL_FRAMES} fps={FPS} width={1080} height={1920} />
   </>
 );

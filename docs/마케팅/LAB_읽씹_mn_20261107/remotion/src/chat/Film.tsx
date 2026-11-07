@@ -1,22 +1,23 @@
-// LAB 몽골 M17 「교수님께 첫 문자」 — 채팅 화면(✗ 반말 문자 → ✓ 다시 쓰기 → 교수님 답장) + 풀이 카드(한국어 · 키릴 읽기 · 몽골 뜻). 소리는 배경음과 알림 소리뿐.
-// M15 「그래 = за」 Film.tsx를 옮겼다(채팅 · 카드 · 몽글 흔들림은 그대로, ✗ 도장 · 지우기 · 답장 카드를 이 편에 더함).
+// LAB 몽골 M26 「읽씹」 — 채팅 화면 글 틀(M15 「그래 = за」 · M17 「교수님 첫 문자」): 위 띠 · 대화 · 아래 장면.
+// 첫 메시지 옆 「1」이 사라짐(읽음!) → 답 없이 새벽 → 「읽씹」 풀이 카드 → 아침에 온 답 「ㅇㅇ」 → 납작 몽글(끝 장치).
+// 장면은 GPT 이미지 2.5로 구운 같은 방 네 칸(판/몽글읽씹_081517.png → public/img/room_*.jpg). 소리는 배경음과 효과음뿐.
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { EN, KO } from '../lib/fonts';
-import { ITEMS, LOCS, Loc, LocText, MN, Msg } from './data';
-import { CARD, fr, MSGS, T } from './timeline';
+import { MN } from './data';
+import { fr, T } from './timeline';
 
 const C = {
   coral: '#F96859',
-  bake: '#FA6955', // 구운 몽글 판의 바탕
   coralShade: '#AE322A',
   red: '#D7261E',
   brown: '#2B1A14',
   paper: '#FBF6EF',
   line: '#EADFD3',
-  mint: '#D5EFE2',
   mintInk: '#1F5C45',
-  gray: '#B9AEA6',
+  gray: '#8F8580',
+  one: '#E8A800',
+  night: '#1E2A44',
 };
 const MASTER = 0.8;
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
@@ -29,106 +30,106 @@ const useSpringAt = (t: number, cfg: { damping?: number; stiffness?: number; mas
   return spring({ frame: f - fr(t), fps, config: { damping: 15, stiffness: 180, mass: 0.7, ...cfg } });
 };
 
-// 판별 글(10-28 두 채널 판) — 몽골판은 LOCS.mn = MN · ITEMS 그대로
-const LocCtx = React.createContext<LocText>(LOCS.mn);
-const useL = () => React.useContext(LocCtx);
+// ── 자리 ──────────────────────────────────────────────────────────
+const BAND_H = 380; // 올리기 전 검사: 띠 글이 위 머리 자리(269) 위 → 띠를 50px 키워 글을 아래로
+const HEAD = { y: 380, h: 96 };
+const CHAT = { y: 476, h: 330 };
+const SCENE = { x: 150, y: 826, s: 780 }; // 장면 심사 v1 「그림이 작다」 → 670 → 780 // 같은 방 한 칸을 통째로(창 · 시계 · 책상이 다 보이게)
 
-// ── 위 띠 · 대화 머리 ───────────────────────────────────────────────
-/** 위 띠: 처음엔 「교수님께 처음 문자를 쓸 때」, 다시 쓰기부터 그 아래 규칙 한 줄을 크게 남긴다. */
+// ── 위 띠 ─────────────────────────────────────────────────────────
 const Band: React.FC = () => {
+  const f = useCurrentFrame();
   const s = useSpringAt(T.rule, { damping: 14, stiffness: 190 });
-  const on = useCurrentFrame() >= fr(T.rule);
-  const L = useL();
+  const on = f >= fr(T.rule);
   return (
-    <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 430, background: C.coral }}>
-      <div style={{ position: 'absolute', left: 70, width: 830, top: on ? 274 : 284, textAlign: 'center', fontFamily: EN, fontWeight: 800, fontSize: on ? 34 : L.size.band, lineHeight: 1.12 * L.lh, color: C.brown, opacity: on ? 0.75 : 1 }}>
-        {L.band}
+    <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: BAND_H, background: C.coral }}>
+      <div style={{ position: 'absolute', left: 70, width: 850, top: on ? 274 : 296, textAlign: 'center', fontFamily: EN, fontWeight: 800, fontSize: on ? 36 : 46, lineHeight: 1.12, whiteSpace: 'nowrap', color: C.brown, opacity: on ? 0.78 : 1 }}>
+        {MN.band}
       </div>
-      {on ? (
-        <div style={{ position: 'absolute', left: 70, width: 840, top: 326, textAlign: 'center', fontFamily: EN, fontWeight: 800, fontSize: L.size.rule, lineHeight: 1.06 * L.lh, whiteSpace: 'nowrap', color: '#FFFFFF', opacity: interpolate(s, [0, 0.5], [0, 1], clamp), transform: `scale(${0.85 + 0.15 * s})` }}>
-          {L.rule}
-        </div>
-      ) : null}
+      <div style={{ position: 'absolute', left: 60, width: 860, top: 318, textAlign: 'center', fontFamily: EN, fontWeight: 800, fontSize: 44, lineHeight: 1.1, whiteSpace: 'nowrap', color: '#FFFFFF', opacity: on ? interpolate(s, [0, 0.5], [0, 1], clamp) : 0, transform: `scale(${0.85 + 0.15 * s})` }}>
+        {MN.rule2}
+      </div>
     </div>
   );
 };
 
-const Header: React.FC = () => (
-  <div style={{ position: 'absolute', left: 0, top: 430, width: 1080, height: 110, background: '#FFFFFF', borderBottom: `2px solid ${C.line}`, display: 'flex', alignItems: 'center', gap: 22, paddingLeft: 40 }}>
-    <div style={{ fontFamily: EN, fontSize: 64, color: C.brown, opacity: 0.6, marginTop: -8 }}>‹</div>
-    <div style={{ width: 70, height: 70, borderRadius: 35, background: C.mintInk, color: '#FFFFFF', fontFamily: KO, fontWeight: 800, fontSize: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>교</div>
-    <div style={{ fontFamily: KO, fontWeight: 700, fontSize: 40, color: C.brown }}>{MN.prof}</div>
-  </div>
-);
-
-// ── 채팅 ──────────────────────────────────────────────────────────
-const SLOT = 128; // 말풍선 한 칸 높이(간격 포함)
-const BOTTOM = 1000; // 마지막 말풍선 아래 끝(풀이 카드가 인스타 아래 글자 자리 1428px 위에 들게)
-const CHAT_TOP = 540;
-
-/** 지금 화면에 보이는 풀이 카드 번호(-1 = 첫 ✗ 카드, 9 = 답장 카드, 3 = 끝 카드). */
-const cardAt = (t: number) => {
-  if (t >= T.end) return 3;
-  if (t >= T.reply && t < T.cards[2]) return 9;
-  let k = -1;
-  T.cards.forEach((c, i) => {
-    if (t >= c) k = i;
-  });
-  return k;
+// ── 대화 머리(이름 · 시각) ───────────────────────────────────────────
+const clockText = (t: number) => {
+  if (t >= T.morning) return '08:03';
+  if (t >= T.dawn) return '05:02';
+  if (t >= T.clock[2]) return '03:10';
+  if (t >= T.clock[1]) return '01:30';
+  if (t >= T.clock[0]) return '23:58';
+  return '23:52';
 };
-
-const Typing: React.FC<{ t: number }> = ({ t }) => (
-  <div style={{ display: 'flex', gap: 12, padding: '0 6px' }}>
-    {[0, 1, 2].map((i) => (
-      <div key={i} style={{ width: 18, height: 18, borderRadius: 9, background: C.brown, opacity: 0.35 + 0.45 * Math.max(0, Math.sin(t * 9 - i * 0.9)), transform: `translateY(${-6 * Math.max(0, Math.sin(t * 9 - i * 0.9))}px)` }} />
-    ))}
-  </div>
-);
-
-/** 반말 문자 위의 빨간 ✗ 도장 — 쾅 찍히듯 커졌다 자리 잡는다. */
-const Stamp: React.FC = () => {
-  const s = useSpringAt(T.stamp, { damping: 9, stiffness: 260, mass: 0.6 });
+const Header: React.FC = () => {
+  const f = useCurrentFrame();
+  const t = f / 30;
+  const changes = [T.clock[0], T.clock[1], T.clock[2], T.dawn, T.morning];
+  const last = changes.filter((c) => t >= c).pop();
+  const pop = last === undefined ? 0 : interpolate(t, [last, last + 0.25], [1, 0], clamp);
   return (
-    <div style={{ position: 'absolute', right: -26, top: -30, width: 84, height: 84, borderRadius: 42, background: C.red, color: '#FFFFFF', fontFamily: EN, fontWeight: 800, fontSize: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 14px rgba(120,20,10,0.3)', opacity: interpolate(s, [0, 0.3], [0, 1], clamp), transform: `scale(${1.8 - 0.8 * s}) rotate(${(1 - s) * -20}deg)` }}>
-      ✕
+    <div style={{ position: 'absolute', left: 0, top: HEAD.y, width: 1080, height: HEAD.h, background: '#FFFFFF', borderBottom: `2px solid ${C.line}`, display: 'flex', alignItems: 'center', gap: 22, paddingLeft: 40 }}>
+      <div style={{ fontFamily: EN, fontSize: 60, color: C.brown, opacity: 0.6, marginTop: -8 }}>‹</div>
+      <div style={{ width: 64, height: 64, borderRadius: 32, background: C.mintInk, color: '#FFFFFF', fontFamily: KO, fontWeight: 800, fontSize: 34, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>지</div>
+      <div style={{ fontFamily: KO, fontWeight: 700, fontSize: 40, color: C.brown }}>{MN.friend}</div>
+      {/* 시각 — 오른쪽 단추 자리(920) 안쪽 */}
+      <div style={{ position: 'absolute', left: 640, top: 18, width: 250, height: 60, borderRadius: 30, background: t >= T.morning ? '#FFF3C9' : C.night, color: t >= T.morning ? C.brown : '#FFFFFF', fontFamily: `'Inter Tight', ${EMOJI}`, fontWeight: 800, fontSize: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, transform: `scale(${1 + 0.18 * pop})` }}>
+        <span style={{ fontFamily: EMOJI, fontSize: 32 }}>{t >= T.morning ? '☀️' : '🌙'}</span>
+        {clockText(t)}
+      </div>
     </div>
   );
 };
 
-const Bubble: React.FC<{ m: Msg; t: number; active: boolean }> = ({ m, t, active }) => {
-  const me = m.from === 'me';
-  const typingNow = m.typing !== undefined && t < m.at;
-  const stamped = m.wrong && t >= T.stamp;
-  const dim = stamped ? interpolate(t, [T.stamp, T.stamp + 0.3], [0, 1], clamp) : 0;
+// ── 대화 ──────────────────────────────────────────────────────────
+const Bubble: React.FC<{ text: string; me: boolean; one?: number; time?: string; scale?: number; big?: boolean }> = ({ text, me, one = 0, time, scale = 1, big = false }) => (
+  <div style={{ display: 'flex', justifyContent: me ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: 14, padding: '0 150px 0 70px' }}>
+    {me && (one > 0 || time) ? (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginBottom: 6 }}>
+        {one > 0 ? <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 60, color: C.one, textShadow: '0 0 0 #000, 0 2px 0 rgba(80,40,0,0.35)', opacity: one, transform: `scale(${0.6 + 0.4 * one})`, lineHeight: 1 }}>1</div> : null}
+        {time ? <div style={{ fontFamily: EN, fontWeight: 600, fontSize: 24, color: C.gray, marginTop: 4 }}>{time}</div> : null}
+      </div>
+    ) : null}
+    <div
+      style={{
+        height: 100,
+        padding: '0 32px',
+        borderRadius: 32,
+        borderBottomLeftRadius: me ? 32 : 10,
+        borderBottomRightRadius: me ? 10 : 32,
+        background: me ? C.coral : '#FFFFFF',
+        boxShadow: '0 4px 10px rgba(80,30,20,0.10)',
+        display: 'flex',
+        alignItems: 'center',
+        fontFamily: `${KO.replace(', sans-serif', '')}, ${EMOJI}`,
+        fontWeight: 800,
+        fontSize: big ? 76 : 52,
+        letterSpacing: big ? 8 : 0,
+        color: me ? '#FFFFFF' : C.brown,
+        whiteSpace: 'nowrap',
+        transform: `scale(${scale})`,
+        transformOrigin: me ? 'right center' : 'left center',
+      }}
+    >
+      {text}
+    </div>
+  </div>
+);
+
+/** 「1」 옆 꼬리표 — 처음 «уншаагүй», 사라지면 «уншлаа!» */
+const OneTag: React.FC = () => {
+  const f = useCurrentFrame();
+  const t = f / 30;
+  const s = useSpringAt(T.tagIn, { damping: 13, stiffness: 200 });
+  const s2 = useSpringAt(T.vanish, { damping: 10, stiffness: 240, mass: 0.6 });
+  const gone = interpolate(t, [T.wait - 0.2, T.wait + 0.1], [1, 0], clamp);
+  if (t < T.tagIn || gone <= 0) return null;
+  const read = t >= T.vanish;
   return (
-    // 올리기 전 검사: 내 말풍선 글 오른쪽 끝 973px이 인스타 오른쪽 단추 자리(안전선 920)에 닿음 → 오른쪽 여백 70 → 140
-    <div style={{ display: 'flex', justifyContent: me ? 'flex-end' : 'flex-start', padding: '0 140px 0 70px' }}>
-      <div
-        style={{
-          position: 'relative',
-          minWidth: 120,
-          height: 108,
-          padding: '0 34px',
-          borderRadius: 34,
-          borderBottomLeftRadius: me ? 34 : 10,
-          borderBottomRightRadius: me ? 10 : 34,
-          background: me ? (dim > 0 ? C.gray : C.coral) : '#FFFFFF',
-          boxShadow: active ? `0 0 0 6px ${me ? C.coral : C.mintInk}, 0 8px 18px rgba(80,30,20,0.16)` : stamped ? `0 0 0 5px ${C.red}` : '0 4px 10px rgba(80,30,20,0.10)',
-          transform: `scale(${active ? 1.06 : 1})`,
-          transformOrigin: me ? 'right center' : 'left center',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontFamily: `${KO.replace(', sans-serif', '')}, ${EMOJI}`,
-          fontWeight: 800,
-          fontSize: 58,
-          letterSpacing: 1,
-          color: me ? '#FFFFFF' : C.brown,
-          whiteSpace: 'nowrap',
-        }}
-      >
-        {typingNow ? <Typing t={t} /> : m.text}
-        {stamped ? <Stamp /> : null}
+    <div style={{ position: 'absolute', left: 330, top: CHAT.y + 258, opacity: interpolate(s, [0, 0.4], [0, 1], clamp) * gone, transform: `rotate(-4deg) scale(${(0.7 + 0.3 * s) * (read ? 0.9 + 0.1 * s2 : 1)})`, transformOrigin: 'left center' }}>
+      <div style={{ background: read ? C.red : '#FFFFFF', color: read ? '#FFFFFF' : C.brown, border: `4px solid ${read ? C.red : C.one}`, borderRadius: 18, padding: '10px 20px 12px', fontFamily: EN, fontWeight: 800, fontSize: 44, lineHeight: 1, boxShadow: '0 6px 14px rgba(80,30,20,0.18)' }}>
+        {read ? <>«1» → <span style={{ opacity: 0.85 }}>∅</span>  {MN.tagRead}</> : <><span style={{ color: C.one }}>«1»</span> = {MN.tagUnread}</>}
       </div>
     </div>
   );
@@ -136,256 +137,220 @@ const Bubble: React.FC<{ m: Msg; t: number; active: boolean }> = ({ m, t, active
 
 const Chat: React.FC = () => {
   const f = useCurrentFrame();
+  const t = f / 30;
   const { fps } = useVideoConfig();
-  const t = f / 30;
-  const shown = MSGS.map((m) => {
-    const start = m.typing ?? m.at;
-    const s = start < 0 ? 1 : spring({ frame: f - fr(start), fps, config: { damping: 17, stiffness: 190, mass: 0.7 } });
-    // ✗ 문자는 다시 쓰기에서 지운다(옆으로 밀려 사라짐)
-    const gone = m.wrong ? interpolate(t, [T.clear, T.clear + 0.3], [0, 1], { ...clamp, easing: EASE }) : 0;
-    return { m, s, gone, live: (start < 0 || t >= start) && gone < 1 };
-  }).filter((x) => x.live);
-  const card = cardAt(t);
-  // 아래에서 위로 쌓는다: 새 말풍선이 들어오는 만큼 앞의 것들이 위로 밀린다(지운 문자는 자리도 줄어든다)
-  let push = 0;
-  const placed = [...shown].reverse().map((x) => {
-    const h = SLOT * x.s * (1 - x.gone);
-    const y = BOTTOM - h - push;
-    push += h;
-    return { ...x, y };
-  });
+  // 「1」: 두근 → 쏙 사라짐
+  const pulse = 1; // 검사: 두근거림이 첫 2초 박자(0.6초)로 잡혀 원본(1개 ± 1)을 넘음 → 뺌
+  const one = t < T.vanish ? pulse : interpolate(t, [T.vanish, T.vanish + 0.18], [1, 0], clamp);
+  const replyS = spring({ frame: f - fr(T.reply), fps, config: { damping: 14, stiffness: 200, mass: 0.7 } });
+  const lift = t >= T.reply ? interpolate(replyS, [0, 1], [0, 1], clamp) : 0;
+  // 아침 진동 — 대화 화면이 흔들린다
+  const buzz = t >= T.morning && t < T.reply ? Math.sin((t - T.morning) * 70) * 7 : 0;
+  // 카드가 떠 있는 동안 대화는 흐리게
+  const dim = t >= T.cardA - 0.1 && t < T.morning ? 0.25 : 1;
   return (
-    <div style={{ position: 'absolute', left: 0, top: CHAT_TOP, width: 1080, height: BOTTOM - CHAT_TOP + 20, overflow: 'hidden', WebkitMaskImage: 'linear-gradient(180deg, transparent 0px, black 90px)' }}>
-      {placed.map(({ m, s, y, gone }, i) => (
-        <div key={i} style={{ position: 'absolute', left: 0, width: 1080, top: y - CHAT_TOP + (1 - s) * 30, opacity: interpolate(s, [0, 0.5], [0, 1], clamp) * (1 - gone), transform: `translateX(${gone * 300}px)` }}>
-          <Bubble m={m} t={t} active={t >= m.at && ((m.item !== undefined && m.item === card) || (m.from === 'prof' && card === 9))} />
-        </div>
-      ))}
-    </div>
-  );
-};
-
-// 채팅 바탕: 옅은 높임 끝말(요 · 님 · 다) 무늬가 천천히 올라간다(정지 화면이 길어지지 않게)
-const Wallpaper: React.FC = () => {
-  const f = useCurrentFrame();
-  const glyphs = ['요', '님', '다'];
-  const rows = 9;
-  const shift = (f * 2.4) % 140;
-  return (
-    <div style={{ position: 'absolute', left: 0, top: 540, width: 1080, height: 1380, background: C.paper, overflow: 'hidden' }}>
-      {Array.from({ length: rows * 7 }).map((_, k) => {
-        const r = Math.floor(k / 7), c = k % 7;
-        return (
-          <div key={k} style={{ position: 'absolute', left: c * 160 + (r % 2) * 80 - 20, top: r * 140 - shift, fontFamily: KO, fontWeight: 800, fontSize: 60, color: C.coral, opacity: 0.13 }}>
-            {glyphs[(r + c) % 3]}
+    <div style={{ position: 'absolute', left: 0, top: CHAT.y, width: 1080, height: CHAT.h, background: C.paper, overflow: 'hidden', transform: `translateX(${buzz}px)` }}>
+      <div style={{ position: 'absolute', left: 0, width: 1080, top: 30 - 120 * lift, opacity: dim, transition: 'none' }}>
+        <Bubble text="안녕! 나 몽글이야 😊" me one={one} time="23:52" />
+        <div style={{ height: 14 }} />
+        <Bubble text="우리 친구 할래?" me one={one} time="23:52" />
+        {/* v4: 둘째 말풍선 뜻(GPT v2 · v3 「처음 보낸 말 뜻을 모름」) */}
+        <div style={{ textAlign: 'right', paddingRight: 160, marginTop: 6, fontFamily: EN, fontWeight: 700, fontSize: 34, color: C.gray }}>= {MN.gloss2}</div>
+        <div style={{ height: 24 }} />
+        {t >= T.reply ? (
+          <div style={{ opacity: interpolate(replyS, [0, 0.4], [0, 1], clamp), transform: `translateY(${(1 - replyS) * 30}px)` }}>
+            <Bubble text="ㅇㅇ" big me={false} scale={1 + 0.15 * Math.max(0, 1 - Math.abs(replyS - 1) * 4)} />
           </div>
-        );
-      })}
+        ) : null}
+      </div>
     </div>
   );
 };
 
-// ── 풀이 카드 ────────────────────────────────────────────────────
-const CARD_BOX = { x: 60, y: 1022, w: 840, h: 400 };
-
-const CardShell: React.FC<{ from: number; to: number | null; bg: string; children: React.ReactNode; instant?: boolean }> = ({ from, to, bg, children, instant }) => {
+// ── 풀이 카드(대화 위에 뜬다) ────────────────────────────────────────
+const Card: React.FC<{ from: number; to: number; children: React.ReactNode }> = ({ from, to, children }) => {
   const f = useCurrentFrame();
   const t = f / 30;
-  const inS = useSpringAt(from, { damping: 16, stiffness: 170 });
-  const s = instant ? 1 : inS;
-  if (t < from && !instant) return null;
-  const out = to === null ? 0 : interpolate(t, [to, to + 0.28], [0, 1], { ...clamp, easing: EASE });
-  if (out >= 1) return null;
+  const s = useSpringAt(from, { damping: 16, stiffness: 170 });
+  if (t < from || t > to + 0.3) return null;
+  const out = interpolate(t, [to, to + 0.25], [0, 1], { ...clamp, easing: EASE });
   return (
-    <div
-      style={{
-        position: 'absolute',
-        left: CARD_BOX.x,
-        top: CARD_BOX.y,
-        width: CARD_BOX.w,
-        height: CARD_BOX.h,
-        borderRadius: 40,
-        background: bg,
-        boxShadow: '0 14px 34px rgba(80,30,20,0.16)',
-        overflow: 'hidden',
-        transform: `translateY(${(1 - s) * 80 - out * 60}px) scale(${0.96 + 0.04 * s})`,
-        opacity: Math.min(interpolate(s, [0, 0.5], [0, 1], clamp), 1 - out),
-      }}
-    >
+    <div style={{ position: 'absolute', left: 70, width: 860, top: CHAT.y + 18, height: CHAT.h - 36, background: '#FFFFFF', borderRadius: 34, boxShadow: '0 14px 34px rgba(80,30,20,0.22)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', opacity: interpolate(s, [0, 0.4], [0, 1], clamp) * (1 - out), transform: `translateY(${(1 - s) * 40 - out * 30}px) scale(${0.92 + 0.08 * s})` }}>
       {children}
     </div>
   );
 };
 
-/** 구운 몽글 장면. 살짝 흔들려 카드가 서 있는 동안에도 화면이 멈추지 않는다(털 질감이 커서 작은 움직임도 잡힌다). */
-const Mongle: React.FC<{ src: string; size: number; phase?: number; hop?: boolean }> = ({ src, size, phase = 0, hop }) => {
+const Cards: React.FC = () => {
   const f = useCurrentFrame();
-  const t = f / 30 + phase;
+  const t = f / 30;
+  const sub = (a: number) => ({ opacity: interpolate(t, [a, a + 0.2], [0, 1], clamp), transform: `translateY(${interpolate(t, [a, a + 0.25], [16, 0], { ...clamp, easing: EASE })}px)` });
   return (
-    <Img
-      src={staticFile(src)}
-      style={{
-        width: size,
-        height: size,
-        objectFit: 'cover',
-        objectPosition: '50% 55%',
-        WebkitMaskImage: 'radial-gradient(circle at 50% 52%, black 56%, transparent 72%)',
-        transform: hop ? `translateY(${-Math.abs(Math.sin(t * 5.2)) * 16}px) rotate(${Math.sin(t * 2.6) * 4}deg)` : `translateY(${Math.sin(t * 5.6) * 11}px) rotate(${Math.sin(t * 3.6) * 5}deg)`,
-      }}
-    />
-  );
-};
-
-/** 풀이 카드 오른쪽 위의 몽글 딱지. */
-const MongleBadge: React.FC<{ src: string; phase: number; hop?: boolean }> = ({ src, phase, hop }) => (
-  <div style={{ position: 'absolute', right: 16, top: 16, width: 196, height: 196, borderRadius: 98, background: C.bake, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-    <Mongle src={src} size={244} phase={phase} hop={hop} />
-  </div>
-);
-
-/** 첫 카드 — 땀 흘리는 몽글 + 「교수님께 이렇게 쓰면 안 돼요!」(몽골어) + 왜(친구에게만 쓰는 말투) + 반말 문자의 뜻.
- *  v1 이해 시험 3점: 0~2초에 「X와 빨간 카드가 정신없이 겹쳐」 넘김 · 「왜 틀렸는지 설명이 없다」 · 인용문이 작다
- *  → 흰 카드로 위 띠 · 말풍선의 코랄과 떼고, 까닭 한 줄을 더하고, 글을 키운다. */
-const HookCard: React.FC = () => {
-  const s = useSpringAt(T.stamp, { damping: 12, stiffness: 220, mass: 0.6 });
-  const L = useL();
-  return (
-    <CardShell from={0} to={T.cards[0]} bg="#FFFFFF" instant>
-      <div style={{ position: 'absolute', left: 14, top: 100, width: 220, height: 220, borderRadius: 110, background: C.bake, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Mongle src="img/mongle_oops.jpg" size={276} />
-      </div>
-      <div style={{ position: 'absolute', left: 256, right: 30, top: 0, bottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 12 }}>
-        {/* 올릴 파일 시험: 「0~2초 몽골어가 작다」 — 반말 문자의 뜻 줄(36px)은 빼고(캡션에 있음) 제목 · 까닭을 키운다 */}
-        <div style={{ fontFamily: EN, fontWeight: 800, fontSize: L.size.hookNo, lineHeight: 1.03 * L.lh, color: C.red, whiteSpace: 'pre-line' }}>
-          <span style={{ display: 'inline-block', marginRight: 12, transform: `scale(${0.6 + 0.4 * s})`, opacity: interpolate(s, [0, 0.3], [0, 1], clamp) }}>✕</span>
-          {L.hookNo}
+    <>
+      <Card from={T.cardA} to={T.cardB - 0.15}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 22 }}>
+          <span style={{ fontFamily: KO, fontWeight: 800, fontSize: 120, color: C.red, lineHeight: 1 }}>{MN.word.ko}</span>
+          <span style={{ fontFamily: EN, fontWeight: 700, fontSize: 40, color: C.gray, ...sub(T.cardA + 0.3) }}>[{MN.word.read}]</span>
         </div>
-        <div style={{ fontFamily: `${EN.replace(', sans-serif', '')}, ${EMOJI}`, fontWeight: 800, fontSize: L.size.hookWhy, lineHeight: 1.06 * L.lh, color: C.brown }}>{L.hookWhy}</div>
-        {/* 두 채널 판 v2 시험: 「✕ 두 문장에 번역이 없다」(작은 코랄 줄을 번역으로 못 봄) — 「=」를 붙이고 까닭 줄 가까이 크게 */}
-        {L.hookGloss ? (
-          <div style={{ fontFamily: EN, fontWeight: 800, fontSize: Math.round(L.size.hookWhy * 0.92), lineHeight: 1.1 * L.lh, color: C.brown, whiteSpace: 'pre-line' }}>
-            <span style={{ opacity: 0.45 }}>= </span>
-            {L.hookGloss}
-          </div>
-        ) : null}
-      </div>
-    </CardShell>
+        <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 46, color: C.brown, marginTop: 18, lineHeight: 1.15, ...sub(T.cardA + 0.6) }}>= {MN.word.mn}</div>
+      </Card>
+      <Card from={T.cardB} to={T.cardC - 0.15}>
+        {/* v4: 「읽다 + 씹다」 풀이 대신 그림 공식(이해 시험 v2 · v3 셋이 「씹다가 왜 무시인지」 — 낱말 풀이는 캡션으로) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 28, fontFamily: `'Inter Tight', ${EMOJI}`, fontWeight: 800, fontSize: 62, color: C.brown }}>
+          <span>👀 {MN.readNoReply.read} <span style={{ color: '#1F8A4C' }}>✓</span></span>
+          <span style={{ color: C.gray, ...sub(T.cardB + 0.35) }}>→</span>
+          <span style={sub(T.cardB + 0.6)}>💬 {MN.readNoReply.reply} <span style={{ color: C.red }}>✗</span></span>
+        </div>
+        <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 96, color: C.red, marginTop: 14, lineHeight: 1, ...sub(T.cardB + 1.0) }}>= {MN.word.ko}</div>
+      </Card>
+      <Card from={T.cardC} to={T.morning - 0.1}>
+        <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 52, color: C.brown, lineHeight: 1.2 }}>
+          <div style={sub(T.cardC)}>{MN.formula.a}</div>
+          <div style={sub(T.cardC + 0.1)}>+ {MN.formula.b}</div>
+        </div>
+        <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 100, color: C.red, marginTop: 8, lineHeight: 1, ...sub(T.cardC + 0.2) }}>= {MN.formula.ko}</div>
+      </Card>
+    </>
   );
 };
 
-const ItemCard: React.FC<{ i: number }> = ({ i }) => {
-  const c = T.cards[i];
-  const next = i === 1 ? T.reply : i < T.cards.length - 1 ? T.cards[i + 1] : T.end;
-  const L = useL();
-  const it = L.items[i];
-  const CA = L.cardAt ?? CARD;
-  const koS = useSpringAt(c + CA.ko, { damping: 11, stiffness: 210, mass: 0.6 });
-  const readS = useSpringAt(c + CA.read);
-  const mnS = useSpringAt(c + CA.mn, { damping: 11, stiffness: 210, mass: 0.6 });
-  const noteS = useSpringAt(c + CA.note);
+// ── 아래 장면(같은 방) ────────────────────────────────────────────
+const ROOMS: { at: number; src: string }[] = [
+  { at: -1, src: 'img/room_night.jpg' },
+  { at: T.vanish + 0.05, src: 'img/room_read.jpg' },
+  { at: T.wait, src: 'img/room_night.jpg' },
+  { at: T.dawn, src: 'img/room_dawn.jpg' },
+  { at: T.flat, src: 'img/room_flat.jpg' },
+];
+const Scene: React.FC = () => {
+  const f = useCurrentFrame();
+  const t = f / 30;
+  const { fps } = useVideoConfig();
+  const k = ROOMS.reduce((acc, r, i) => (t >= r.at ? i : acc), 0);
+  const cur = ROOMS[k];
+  const prev = k > 0 ? ROOMS[k - 1] : null;
+  const fade = k > 0 ? interpolate(t, [cur.at, cur.at + 0.06], [0, 1], clamp) : 1; // 장면 심사 v1 「겹쳐 바뀔 때 몽글이 반투명해 깨진 듯」 → 거의 끊어 바꾼다
+  // 장면마다 천천히 다가간다(같은 그림이 멈춰 있지 않게), 읽음 · 납작은 한 번 튄다
+  const since = t - Math.max(0, cur.at);
+  // 볼 이유 v2 「6~14초 같은 그림이 8초」 → 「읽다 + 씹다」 동안 처진 몽글 얼굴로 다가가고, 끝 납작 몽글은 크게(「끝 장면이 작다」)
+  const io = { ...clamp, easing: Easing.bezier(0.65, 0, 0.35, 1) };
+  const toFace = cur.src.includes('dawn') ? interpolate(t, [T.cardB, T.cardB + 0.35, T.morning - 0.2, T.morning + 0.15], [0, 1, 1, 0], io) : 0; // 검사: 칸 수 14(원본 10) → 얼굴 확대를 아침까지 이어 칸 하나 줄임
+  const faceGo = interpolate(t, [T.cardB, T.morning], [0, 1], clamp); // 검사: 얼굴 안에서 멈춘 2.5초 → 계속 다가간다
+  const toFlat = cur.src.includes('flat') ? interpolate(t, [T.flat + 0.3, T.flat + 0.9], [0, 1], io) : 0;
+  // 올리기 전 검사: 정지 18% · 5~12.5초 한 구성 7.5초 → 장면은 늘 천천히 다가가고(멈추지 않게), 「읽씹」 두 카드 사이에 처진 얼굴로 크게 들어갔다 나온다
+  const zoom = (1 + 0.03 * since) * (1 + (0.55 + 0.35 * faceGo) * toFace) * (1 + 0.3 * toFlat + 0.06 * Math.max(0, t - T.flat - 0.9)); // 검사: 정지 24%(끝 납작 장면 3.4초) → 늘 다가간다
+  const pop = (cur.src.includes('read') || cur.src.includes('flat')) ? spring({ frame: f - fr(cur.at), fps, config: { damping: 9, stiffness: 220, mass: 0.6 } }) : 1;
+  const popSc = 1 + 0.05 * Math.sin(Math.min(1, pop) * Math.PI);
   return (
-    <CardShell from={c} to={next} bg="#FFFFFF">
-      <MongleBadge src={it.mongle} phase={i * 0.7} hop={i === 2} />
-      <div style={{ position: 'absolute', left: 52, top: 44, right: 230 }}>
-        {/* 한국어 한 줄 — 채팅에 보낸 그대로 */}
-        <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 66, lineHeight: 1.08, color: C.coral, whiteSpace: 'nowrap', transformOrigin: 'left center', opacity: interpolate(koS, [0, 0.4], [0, 1], clamp), transform: `scale(${0.8 + 0.2 * koS})` }}>{it.ko}</div>
-        {/* 키릴 읽기 */}
-        <div style={{ fontFamily: EN, fontWeight: 600, fontSize: 38, marginTop: 10, color: C.coralShade, opacity: interpolate(readS, [0, 0.5], [0, 1], clamp) }}>[{it.read}]</div>
+    <div style={{ position: 'absolute', left: SCENE.x, top: SCENE.y, width: SCENE.s, height: SCENE.s, borderRadius: 40, overflow: 'hidden', boxShadow: '0 16px 36px rgba(60,30,20,0.28)', background: '#3A2A22' }}>
+      {prev && fade < 1 ? <Img src={staticFile(prev.src)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
+      <Img src={staticFile(cur.src)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: fade, transform: `scale(${zoom * popSc})`, transformOrigin: toFlat > 0 ? '46% 86%' : toFace > 0 ? '40% 72%' : '45% 70%' }} />
+      {/* 장면 심사 v1 「시간이 흐른 것이 작은 알약에서만 보인다」 → 그림 위에 크게 */}
+      <div style={{ position: 'absolute', left: 24, top: 24, padding: '8px 22px 10px', borderRadius: 30, background: t >= T.morning ? 'rgba(255,243,201,0.92)' : 'rgba(18,22,40,0.74)', color: t >= T.morning ? C.brown : '#FFFFFF', fontFamily: `'Inter Tight', ${EMOJI}`, fontWeight: 800, fontSize: 52, display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span style={{ fontFamily: EMOJI, fontSize: 42 }}>{t >= T.morning ? '☀️' : '🌙'}</span>
+        {clockText(t)}
+        {/* v4 시험: 둘이 「시계가 왜 넘어가는지」 → 시간이 넘어가는 동안 빨리 감기 표시 */}
+        {(t >= T.wait && t < T.dawn + 0.4) || (t >= T.morning - 0.3 && t < T.morning + 0.4) ? <span style={{ fontFamily: EMOJI, fontSize: 40, opacity: 0.6 + 0.4 * Math.abs(Math.sin(t * 9)) }}>⏩</span> : null}
       </div>
-      {/* = 몽골 뜻 */}
-      <div style={{ position: 'absolute', left: 52, right: 30, top: 232, fontFamily: EN, fontWeight: 800, fontSize: L.size.mean, lineHeight: 1.06 * L.lh, color: C.brown, opacity: interpolate(mnS, [0, 0.4], [0, 1], clamp), transform: `translateY(${(1 - mnS) * 30}px)` }}>
-        <span style={{ opacity: 0.45 }}>= </span>
-        {it.mn}
+    </div>
+  );
+};
+
+// ── 끝(납작 몽글 위) ───────────────────────────────────────────────
+const EndCard: React.FC = () => {
+  const f = useCurrentFrame();
+  const t = f / 30;
+  const s = useSpringAt(T.flat, { damping: 14, stiffness: 180 });
+  const g = useSpringAt(T.reply, { damping: 13, stiffness: 200 }); // v4 시험: 둘이 「ㅇㅇ 풀이가 늦다」 → 답과 같은 순간
+  if (t < T.reply) return null;
+  return (
+    <>
+      {/* 「ㅇㅇ」 풀이 — 답이 오는 순간 크게(이해 시험 v2 셋이 「ㅇㅇ이 눈 모양 · 풀이가 2초 늦다」, ③ Fable 「응응을 같이」) */}
+      <div style={{ position: 'absolute', left: 290, top: CHAT.y + 30 + 268 - 120 + 46, opacity: interpolate(g, [0, 0.4], [0, 1], clamp), transform: `scale(${0.8 + 0.2 * g})`, transformOrigin: 'left center', display: 'flex', alignItems: 'baseline', gap: 14, background: '#FFFFFF', borderRadius: 24, padding: '10px 22px', boxShadow: '0 6px 16px rgba(80,30,20,0.16)', border: `4px solid ${C.red}` }}>
+        <span style={{ fontFamily: KO, fontWeight: 800, fontSize: 54, color: C.red, letterSpacing: 4 }}>{MN.reply.ko}</span>
+        <span style={{ fontFamily: KO, fontWeight: 800, fontSize: 46, color: C.brown }}>= {MN.reply.full}</span>
+        <span style={{ fontFamily: EN, fontWeight: 700, fontSize: 32, color: C.gray }}>[{MN.reply.read}]</span>
+        <span style={{ fontFamily: EN, fontWeight: 800, fontSize: 46, color: C.brown }}>= {MN.reply.mn}</span>
       </div>
-      {it.note ? (
-        <div style={{ position: 'absolute', left: 40, top: 300, whiteSpace: 'nowrap', fontFamily: `${L.font ? L.font.replace(', sans-serif', '') + ', SUIT' : KO.replace(', sans-serif', '')}, ${EMOJI}`, fontWeight: 800, fontSize: L.size.note, lineHeight: 1.2 * L.lh, color: C.mintInk, background: C.mint, borderRadius: 14, padding: '4px 16px 6px', opacity: interpolate(noteS, [0, 0.5], [0, 1], clamp) }}>
-          {it.note}
+      {/* 끝: 위 띠 자리를 끝 글 한 줄로(이해 시험 v2 haiku 9번 「끝 질문이 지난 편과 같다」 → 댓글 질문은 캡션 · 첫 댓글로) */}
+      {t >= T.flat ? (
+        <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: BAND_H, background: C.coral, opacity: interpolate(s, [0, 0.3], [0, 1], clamp), display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 34 }}>
+          <div style={{ fontFamily: `'Inter Tight', 'SUIT', ${EMOJI}`, fontWeight: 800, fontSize: 64, color: '#FFFFFF', transform: `translateY(${(1 - s) * 20}px)` }}>{MN.endBig}</div>
         </div>
       ) : null}
-    </CardShell>
-  );
-};
-
-/** 답장 카드 — 예의 바르게 쓰니 교수님이 바로 답했다(결과). 몽골어만. */
-const ReplyCard: React.FC = () => {
-  const s2 = useSpringAt(T.reply + useL().replyGlossAt);
-  const L = useL();
-  return (
-    <CardShell from={T.reply} to={T.cards[2]} bg={C.mint}>
-      <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
-        <div style={{ width: 320, height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Mongle src="img/mongle_happy.jpg" size={370} hop />
-        </div>
-        <div style={{ flex: 1, paddingRight: 30, display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div style={{ fontFamily: EN, fontWeight: 800, fontSize: L.size.replyTitle, lineHeight: 1.04 * L.lh, color: C.mintInk, whiteSpace: 'pre-line' }}>
-            {L.replyTitle} <span style={{ fontFamily: EMOJI, fontWeight: 400 }}>🎉</span>
-          </div>
-          <div style={{ fontFamily: EN, fontWeight: 800, fontSize: L.size.replyGloss, lineHeight: 1.1 * L.lh, color: C.brown, whiteSpace: 'pre-line', opacity: interpolate(s2, [0, 0.5], [0, 1], clamp) }}>{L.replyGloss}</div>
-        </div>
-      </div>
-    </CardShell>
-  );
-};
-
-const EndCard: React.FC = () => {
-  const s2 = useSpringAt(T.end + 0.5);
-  const L = useL();
-  return (
-    <CardShell from={T.end} to={null} bg={C.bake}>
-      <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
-        <div style={{ width: 300, height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Mongle src="img/mongle_happy.jpg" size={350} hop />
-        </div>
-        <div style={{ flex: 1, minWidth: 0, paddingRight: 30, display: 'flex', flexDirection: 'column', gap: 18 }}>
-          <div style={{ fontFamily: EN, fontWeight: 800, fontSize: L.size.endQ, lineHeight: 1.04 * L.lh, color: C.brown, whiteSpace: 'pre-line' }}>{L.endQ}</div>
-          {/* v1 이해 시험: 끝 카드 아래 글씨가 작고 짧게 지나감 — 키우고 끝 카드를 3.8초로 · 올릴 파일 시험: 셋째 줄(친구에게 보내기)은 캡션으로만 */}
-          <div style={{ alignSelf: 'flex-start', whiteSpace: 'nowrap', background: '#FFFFFF', borderRadius: 18, padding: '8px 16px 10px', fontFamily: EN, fontWeight: 800, fontSize: L.size.endC, lineHeight: 1.2 * L.lh, color: C.coralShade, opacity: interpolate(s2, [0, 0.5], [0, 1], clamp), transform: `scale(${0.8 + 0.2 * s2})`, transformOrigin: 'left center' }}>
-            {L.endC} <span style={{ fontFamily: EMOJI, fontWeight: 400 }}>👇</span>
-          </div>
-        </div>
-      </div>
-    </CardShell>
+    </>
   );
 };
 
 // ── 소리 ─────────────────────────────────────────────────────────
-const Sfx: React.FC<{ file: string; at: number; vol: number }> = ({ file, at: t, vol }) =>
-  t < 0 ? null : (
-    <Sequence from={fr(t)} layout="none">
-      <Audio src={staticFile(`sfx/${file}`)} volume={vol * MASTER} />
-    </Sequence>
-  );
-
+const Sfx: React.FC<{ file: string; at: number; vol: number }> = ({ file, at: t, vol }) => (
+  <Sequence from={fr(t)} layout="none">
+    <Audio src={staticFile(`sfx/${file}`)} volume={vol * MASTER} />
+  </Sequence>
+);
 const Sound: React.FC = () => (
   <>
-    <Audio src={staticFile('bgm.wav')} volume={(i) => 0.42 * MASTER * interpolate(i, [fr(T.total) - 40, fr(T.total)], [1, 0], clamp)} />
-    {MSGS.map((m, i) => (
-      <Sfx key={i} file={m.from === 'me' ? 'tok.wav' : 'pop.wav'} at={m.at} vol={m.from === 'me' ? 0.45 : 0.5} />
-    ))}
-    <Sfx file="boing.wav" at={T.stamp} vol={0.35} />
-    {T.cards.map((c, i) => (
-      <Sfx key={`c${i}`} file="tick.wav" at={c + CARD.mn} vol={0.35} />
-    ))}
-    <Sfx file="sparkle.wav" at={T.rule} vol={0.3} />
-    <Sfx file="ding1.wav" at={T.reply} vol={0.38} />
-    <Sfx file="ding1.wav" at={T.end} vol={0.3} />
+    <Audio src={staticFile('bgm.wav')} volume={(i) => 0.42 * MASTER * interpolate(i, [fr(T.total) - 30, fr(T.total)], [1, 0], clamp)} />
+    <Sfx file="tick.wav" at={T.pulse} vol={0.35} />
+    <Sfx file="tick.wav" at={T.pulse + 0.25} vol={0.35} />
+    <Sfx file="pop.wav" at={T.vanish} vol={0.45} />
+    <Sfx file="sparkle.wav" at={T.vanish + 0.08} vol={0.4} />
+    {[0, 0.5, 1.0, 1.5].map((d, i) => <Sfx key={i} file="tick.wav" at={T.wait + d} vol={0.28} />)}
+    <Sfx file="tok.wav" at={T.dawn} vol={0.3} />
+    <Sfx file="tok.wav" at={T.cardA} vol={0.35} />
+    <Sfx file="tok.wav" at={T.cardB} vol={0.35} />
+    <Sfx file="tok.wav" at={T.cardC} vol={0.35} />
+    {[0, 0.12, 0.24, 0.36].map((d, i) => <Sfx key={`b${i}`} file="tick.wav" at={T.morning + d} vol={0.45} />)}
+    <Sfx file="ding1.wav" at={T.reply} vol={0.5} />
+    <Sfx file="boing.wav" at={T.flat} vol={0.45} />
   </>
 );
 
-export const Film: React.FC<{ loc?: Loc }> = ({ loc = 'mn' }) => (
-  <LocCtx.Provider value={LOCS[loc]}>
-    <AbsoluteFill style={{ backgroundColor: C.paper, ...(LOCS[loc].font ? ({ '--kids-font': LOCS[loc].font } as React.CSSProperties) : {}) }}>
-      <Wallpaper />
-      <Chat />
-      <Header />
-      <Band />
-      <HookCard />
-      {ITEMS.map((_, i) => (
-        <ItemCard key={i} i={i} />
-      ))}
-      <ReplyCard />
-      <EndCard />
+// 카메라 — 처음엔 대화의 「1」에 크게 다가가 있다가(조금씩 더 다가감), 「1」이 사라지면 물러나며 방을 보인다(장면 심사 v1 「1이 작아 사라지는 순간이 안 보임」)
+const useCam = () => {
+  const f = useCurrentFrame();
+  const t = f / 30;
+  // 장면 심사 v2: 「2초에 펠트 그림을 작은 카드로 줄이지 말고 꽉 차게」 → 「1」에서 물러난 뒤 방 그림 쪽으로 크게, 첫 카드(5.1) 앞에서 제자리
+  const io = { ...clamp, easing: Easing.bezier(0.65, 0, 0.35, 1) };
+  const keys: [number, number, number, number][] = [
+    [0, 1.36, 950, 690], // 검사: 1.3 → 1.36 가속 다가감이 0.6초 박자로 잡힘 → 처음 1.3초는 같은 배율 // 올리기 전 검사: 확대된 말풍선이 오른쪽 단추 자리(920)에 닿음 → 중심을 오른쪽으로
+    [T.vanish, 1.36, 950, 690],
+    [T.zoomOut[0], 1.36, 950, 690],
+    [T.zoomOut[1], 1.22, 540, 1216],
+    [T.cardA - 0.3, 1.25, 540, 1216],
+    [T.cardA, 1, 540, 960],
+    // 원본 박자 7.1 · 12.5에 화면이 한 번에 바뀌게(나란히 v1 박자 56%) — 카드 쪽으로 톡 다가갔다가 다음 카드에서 제자리
+    [7.08, 1, 540, 960],
+    [7.22, 1.05, 540, 820],
+    [T.cardB - 0.02, 1.05, 540, 820],
+    [T.cardB + 0.15, 1, 540, 960],
+    [12.48, 1, 540, 960],
+    [12.62, 1.06, 540, 700],
+    [T.morning - 0.02, 1.06, 540, 700],
+    [T.morning + 0.2, 1, 540, 960],
+  ];
+  const k = keys.findIndex((_, i) => i === keys.length - 1 || t < keys[i + 1][0]);
+  const a = keys[k], b = keys[Math.min(k + 1, keys.length - 1)];
+  const p = b[0] === a[0] ? 1 : interpolate(t, [a[0], b[0]], [0, 1], io);
+  const [s, cx, cy] = [1, 2, 3].map((j) => a[j] + (b[j] - a[j]) * p);
+  return s === 1 ? undefined : `translate(${(1 - s) * cx}px, ${(1 - s) * cy}px) scale(${s})`;
+};
+
+export const Film: React.FC<{ plain?: boolean }> = ({ plain = false }) => {
+  const cam = useCam();
+  return (
+    <AbsoluteFill style={{ backgroundColor: C.paper }}>
+      <AbsoluteFill style={{ transformOrigin: '0 0', transform: cam }}>
+        <Scene />
+        <Chat />
+        {plain ? null : <OneTag />}
+        {plain ? null : <Cards />}
+        <Header />
+      </AbsoluteFill>
+      {/* 위 띠는 카메라 밖에 고정(확대 때 글이 잘리지 않게) */}
+      {plain ? <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: BAND_H, background: C.coral }} /> : <Band />}
+      {plain ? null : <EndCard />}
       <Sound />
     </AbsoluteFill>
-  </LocCtx.Provider>
-);
+  );
+};
