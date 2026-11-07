@@ -231,18 +231,20 @@ def build(out_wav, TF):
     # 2 도면 — 종이 스침
     paper = seg(os.path.join(FAIR, "Paper Handle Airline Tickets.M.wav"), 0.6, 1.4)
     m.put(TF[1] + 0.10, to_rms(lp(paper, 7000), -41), 0, fade=0.01, fade_out=0.25)
-    # 3 바닥 불꽃 — 튀는 소리(컷 0.1초 앞에서)
+    # 3 바닥 불꽃 — 튀는 소리(컷 0.1초 앞에서). 11-07 밤: 5 kHz 위 비율이 앞뒤보다 15 dB 많아 지지직이 튀었다 → 6.5 kHz 위를 깎고 2 dB 내림
     spark = seg(os.path.join(FAIR, "Sparklers Whoosh Popping.M.wav"), 6.0, 6.8)
-    m.put(TF[2] - 0.10, to_rms(tame(hp(spark, 900), 9.0), -34), 0, fade=0.03, fade_out=0.15)
-    # 4 용접 아크가 켜짐(판 19장 = 컷 4장 → 화면 TF[3] + 4/24)
-    arc = seg(os.path.join(SON, "InMotionAudio - Arc", "ELECArc_ArcDesign15_InMotionAudio_Arc.wav"), 0.0, 1.04)
+    m.put(TF[2] - 0.10, to_rms(tame(lp(hp(spark, 900), 6500), 9.0), -36), 0, fade=0.03, fade_out=0.15)
+    # 4~6 용접 — 아크가 켜지는 장(판 19장 = 컷 4장 → 화면 TF[3] + 4/24)부터 컷 7 앞까지 실제 녹음 한 줄기(불꽃 지글거림 + 낮은 전기 웅).
+    #   11-07 밤 유호님 「소리가 너무 튀는데 잘못 효과음을 입혔던지 지지직이 너무 심한데」 — 전기 스파크용 디자인 소리(ArcDesign15, −29)가
+    #   고음 비율 −10 dB · 이 편 가장 높은 봉우리 −2.0 dBFS로 튀었다. 그 소리를 빼고, 켜질 때 0.35초만 3 dB 올린다.
     t_arc = TF[3] + 4 / 24
-    m.put(t_arc - 0.02, to_rms(tame(arc, 10.0), -29), 0, fade=0.003, fade_out=0.3)
-    # 5~6 용접 — 지지는 소리(낮게, 컷 7 앞에서 풀림)
-    buzz = bp(seg(os.path.join(SON, "InMotionAudio - Arc", "ELECBuzz_Buzz27_InMotionAudio_Arc.wav"), 1.0, 4.0), 300, 6000)
-    sizzle = hp(seg(os.path.join(FAIR, "Sparklers Sizzle Stamp.M.wav"), 3.0, 6.0), 1500)
-    weld = (to_rms(buzz, -40) + to_rms(sizzle, -38)).astype(np.float32)
-    m.put(TF[4], fades(weld[:int((TF[6] - TF[4] + 0.05) * RATE)], 0.05, 0.3), 0, fade=0.0)
+    span = TF[6] - t_arc + 0.05
+    nw = int(span * RATE)
+    buzz = lp(bp(seg(os.path.join(SON, "InMotionAudio - Arc", "ELECBuzz_Buzz27_InMotionAudio_Arc.wav"), 1.0, 1.1 + span), 120, 6000), 3500)
+    sizzle = lp(bp(seg(os.path.join(FAIR, "Sparklers Sizzle Stamp.M.wav"), 3.0, 3.1 + span), 500, 9000), 6500)
+    weld = (to_rms(loop_to(buzz, span), -42) + to_rms(loop_to(sizzle, span), -38))[:nw]
+    weld = tame((weld * envelope(np.arange(nw) / RATE, [(0.0, 3.0), (0.35, 3.0), (0.7, 0.0), (span, 0.0)])).astype(np.float32), 8.0)
+    m.put(t_arc - 0.01, fades(weld, 0.04, 0.3), 0, fade=0.0)
     # 7 렌치 — 작게 두 번
     bolt = seg(os.path.join(FAIR, "Metal Bolts.M.wav"), 0.0, 1.2)
     m.put(TF[6] + 0.55, to_rms(bolt[:int(0.45 * RATE)], -37), 0, fade=0.003, fade_out=0.1)
