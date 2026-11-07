@@ -39,21 +39,50 @@ function updateSiteText(source,manifest){
   result=result.replace(/Preview \d+\.\d+\.\d+/g,'Preview '+manifest.version);
   return result;
 }
-function stageSite({publicDir,manifest,clientFile}){
-  const changed=[];
+// 판을 낸 날(서울, publishedAt 기준). 홈 소식 줄의 PC 앱 줄과 바닥 기준일이 이 날을 따른다 —
+// SYNK-website site-v10/platform-release.mjs의 platformReleaseDay와 같은 셈이라 원고를 다시 빌드해도 같은 날이 나온다.
+function releaseDay(manifest){const t=Date.parse(manifest.publishedAt);assert(Number.isFinite(t),'Release publishedAt is missing');return new Date(t+9*36e5).toISOString().slice(0,10);}
+const dayLabel=day=>day.replace(/-/g,'.');
+// 홈 소식 줄(#now): PC 앱 줄(#platform-get)의 날짜를 판을 낸 날로 바꾸고, 그날보다 늦지 않은 첫 줄 앞(보통 맨 앞)으로 옮긴다.
+// 펼친 줄 수와 「지난 소식 N」의 N은 그대로 둔다 — 빌드(site-v10/build.mjs)가 최신순으로 셋을 펼치고 나머지를 접는 모양을 지킨다.
+// 소식 구역이 없거나(90일 · 3개 규칙으로 숨음) PC 앱 줄이 없으면 그대로 두고, 구역 모양이 빌드와 다르면 멈춘다.
+function updateHomeNews(source,manifest){
+  const day=releaseDay(manifest),start=source.indexOf('id="now"');if(start<0)return source;
+  const end=source.indexOf('</section>',start);assert(end>start,'Home news section is not closed');
+  const section=source.slice(start,end),lists=[...section.matchAll(/<ol class="news">([\s\S]*?)<\/ol>/g)];
+  const groups=lists.map(m=>m[1].match(/<li>[\s\S]*?<\/li>/g)||[]);
+  lists.forEach((m,i)=>assert(groups[i].join('')===m[1],'Unexpected home news markup'));
+  const items=groups.flat(),dated=li=>li.match(/<time datetime="(\d{4}-\d{2}-\d{2})">/)?.[1]||'';
+  const index=items.findIndex(li=>li.startsWith('<li><a href="#platform-get"'));if(index<0)return source;
+  assert(dated(items[index]),'Platform news item has no date');
+  const platform=items[index].replace(/<time datetime="\d{4}-\d{2}-\d{2}">[^<]*<\/time>/,`<time datetime="${day}">${dayLabel(day)}</time>`);
+  const order=items.filter((_,i)=>i!==index);let at=order.findIndex(li=>dated(li)<=day);if(at<0)at=order.length;order.splice(at,0,platform);
+  let offset=0,k=0;const next=groups.map(g=>order.slice(offset,offset+=g.length));
+  return source.slice(0,start)+section.replace(/<ol class="news">[\s\S]*?<\/ol>/g,()=>'<ol class="news">'+next[k++].join('')+'</ol>')+source.slice(end);
+}
+// 바닥 「회사·사업 안내 기준일」은 홈 소식 줄의 가장 최근 날짜보다 앞설 수 없다(SYNK-website qa/news.test.mjs) — 판을 낸 날보다 앞서면 그날로 올리고, 뒤로는 돌리지 않는다.
+function updateFooterDate(source,manifest){
+  const day=releaseDay(manifest);
+  return source.replace(/(<div class="foot-bottom">(?:(?!<\/div>)[\s\S])*?<time class="mono" datetime=")(\d{4}-\d{2}-\d{2})(">)[^<]*(<\/time>)/,(all,a,iso,b,c)=>iso<day?a+day+b+dayLabel(day)+c:all);
+}
+// 공개본에 쓸 파일을 쓰지 않고 만든다. 공개(release를 공개로 돌림) 전에 한 번 돌려 쪽 모양이 안 맞으면 release를 만들기 전에 멈춘다.
+function planSite({publicDir,manifest,clientFile}){
+  const writes=[];
   const read=relative=>{const file=path.join(publicDir,relative);if(fs.existsSync(file))return fs.readFileSync(file,'utf8');if(!fs.existsSync(path.join(publicDir,'.git')))return null;try{return run('git',['show','HEAD:'+relative],publicDir)+'\n';}catch{return null;}};
-  const put=(relative,value)=>{const file=path.join(publicDir,relative);if(fs.existsSync(file)&&fs.readFileSync(file,'utf8')===value)return;fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,value);changed.push(relative);};
+  const put=(relative,value)=>writes.push({relative,value});
   put(FEED,JSON.stringify(manifest,null,2)+'\n');
   const client=fs.readFileSync(clientFile,'utf8'),hash=crypto.createHash('sha256').update(client).digest('hex').slice(0,12);
   put('desktop/releases/client.js',client);
   const knowledgeHashes={};
   for(const relative of ['knowledge.json','en/knowledge.json']){const before=read(relative);if(before===null)continue;const value=updateSiteText(before,manifest);knowledgeHashes[relative]=crypto.createHash('sha256').update(value).digest('hex').slice(0,12);put(relative,value);}
-  const pages=['index.html','en/index.html',...['lab','shift','pulse','path','atlas','founder'].flatMap(name=>[name+'/index.html','en/'+name+'/index.html'])];
+  const pages=['index.html','en/index.html',...['lab','shift','pulse','path','atlas','founder'].flatMap(name=>[name+'/index.html','en/'+name+'/index.html']),'mn/index.html'];
   for(const relative of [...pages,'llms.txt','en/llms.txt','docs/platform.md','en/docs/platform.md']){
     const before=read(relative);if(before===null)continue;
     let value=updateSiteText(before,manifest);
     value=value.replace(/(data-knowledge="\/)((?:en\/)?knowledge\.json)\?v=[a-f0-9]+/g,(all,start,file)=>knowledgeHashes[file]?start+file+'?v='+knowledgeHashes[file]:all);
+    if(pages.includes(relative))value=updateFooterDate(value,manifest);
     if(relative==='index.html'||relative==='en/index.html'){
+      value=updateHomeNews(value,manifest);
       value=value.replace(/(<section[^>]*\bid="platform")(?:\s+data-platform-version="[^"]*")?/,`$1 data-platform-version="${manifest.version}"`);
       value=value.replace(/<script[^>]*src="\/desktop\/releases\/client\.js[^"\s]*"[^>]*><\/script>\s*/g,'');
       assert(value.includes('</body>'),'Homepage body missing');
@@ -62,6 +91,11 @@ function stageSite({publicDir,manifest,clientFile}){
     }
     put(relative,value);
   }
+  return writes;
+}
+function stageSite({publicDir,manifest,clientFile}){
+  const changed=[];
+  for(const {relative,value} of planSite({publicDir,manifest,clientFile})){const file=path.join(publicDir,relative);if(fs.existsSync(file)&&fs.readFileSync(file,'utf8')===value)continue;fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,value);changed.push(relative);}
   return changed;
 }
 async function verifyLocalFiles(manifest,directory,{remoteArtifacts=[]}={}){
@@ -87,6 +121,8 @@ async function main(){
   }
   assert(head===remote,'Refresh the public checkout before publishing');
   const report={ok:true,releaseId:manifest.releaseId,sourceCommit:head,artifacts:names,published:false};
+  // 홈 · 소식 줄 · 바닥 기준일을 바꿀 수 있는지 release를 공개하기 전에 미리 만들어 본다(못 바꾸면 여기서 멈춘다).
+  report.siteFiles=planSite({publicDir,manifest,clientFile:path.resolve(get('client'))}).length;
   if(!process.argv.includes('--apply')){console.log(JSON.stringify(report));return;}
   let release;try{release=JSON.parse(run('gh',['release','view',manifest.releaseId,'--repo',REPO,'--json','isDraft,assets,targetCommitish'],publicDir));}catch{
     run('gh',['release','create',manifest.releaseId,'--repo',REPO,'--target',head,'--draft','--prerelease','--title','SYNK Platform Preview '+manifest.version,'--notes','공통 배포: 홈페이지 다운로드와 PC 업데이트가 같은 설치 파일을 사용합니다. Preview는 정식 서명·공증 전입니다.'],publicDir);
@@ -108,4 +144,4 @@ async function main(){
   json(path.join(artifactDir,'publication.json'),report);console.log(JSON.stringify(report));
 }
 if(require.main===module)main().catch(error=>{console.error(error.message);process.exitCode=1;});
-module.exports={validateRelease,updateSiteText,stageSite,verifyLocalFiles,verifyPublicArtifact};
+module.exports={validateRelease,updateSiteText,releaseDay,updateHomeNews,updateFooterDate,planSite,stageSite,verifyLocalFiles,verifyPublicArtifact};

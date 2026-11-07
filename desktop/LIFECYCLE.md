@@ -116,7 +116,7 @@ Mac은 ad-hoc 서명·CPU·읽기 전용 DMG의 ASAR·Applications 링크와 네
 node desktop/tools/assemble-platform-release.cjs "--release=$releaseWork/frozen" "--report=$releaseWork/win32-x64/build-report.json" "--report=$releaseWork/darwin-arm64/build-report.json" "--report=$releaseWork/darwin-x64/build-report.json" "--artifact-root=$releaseWork/installers" "--out=$releaseWork/preview.json"
 ```
 
-4. **공통 게시.** `publish-platform-release.cjs`만으로 release와 홈페이지·feed를 전진시킨다. 별도 깨끗한 공개 checkout이 `origin/main`과 일치해야 한다. `--apply`가 없으면 사전 검증만 한다. 검증된 설치파일을 draft에 이미 올렸고 로컬에 두지 않은 경우 `--remote-artifacts`를 함께 쓴다. 세 대상 모두 이 방식을 쓸 수 있으며 실제 공개 다운로드의 전체 바이트와 SHA도 확인한다. `--website`는 게시 후 홈페이지 원문 저장소의 `desktop/releases/preview.json`도 동기화한다. `site-v10` 빌드는 이 파일과 같은 `desktop-release.js`를 사용한다.
+4. **공통 게시.** `publish-platform-release.cjs`만으로 release와 홈페이지·feed를 전진시킨다. 별도 깨끗한 공개 checkout이 `origin/main`과 일치해야 한다. `--apply`가 없으면 사전 검증만 한다. 검증된 설치파일을 draft에 이미 올렸고 로컬에 두지 않은 경우 `--remote-artifacts`를 함께 쓴다. 세 대상 모두 이 방식을 쓸 수 있으며 실제 공개 다운로드의 전체 바이트와 SHA도 확인한다. `--website`는 게시 후 홈페이지 원문 저장소의 `desktop/releases/preview.json`도 동기화한다. `site-v10` 빌드는 이 파일과 같은 `desktop-release.js`를 사용한다. 홈 소식 줄(#now)의 PC 앱 줄은 판 번호와 함께 날짜를 판을 낸 날(`publishedAt`의 서울 날짜)로 바꾸고 맨 앞(그날보다 늦은 소식이 있으면 그 뒤)으로 옮기며, 펼친 셋 · 「지난 소식 N」 모양은 그대로 둔다. 바닥 기준일(site-v10 15쪽)이 그날보다 앞서면 그날로 올린다. 원고도 같은 날을 따른다(`site-v10/platform-release.mjs`의 `platformReleaseDay` · `footerDate`, 2026-11-08). 이 쪽 고침은 release를 공개로 돌리기 전에 미리 만들어 보아, 쪽 모양이 안 맞으면 그 자리에서 멈춘다.
 
 ```powershell
 $publicCheckout = '<공개 저장소 checkout>'
