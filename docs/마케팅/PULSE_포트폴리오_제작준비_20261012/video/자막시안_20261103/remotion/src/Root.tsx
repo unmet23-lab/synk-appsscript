@@ -14,7 +14,7 @@ import { S4, S4_FRAMES } from './s4/S4';
 import { P6, P6_FRAMES } from './p6/P6';
 import { S1, S1_FRAMES } from './s1/S1';
 import { RS, RS_FRAMES } from './rs/RS';
-import { RS60, RS60_FRAMES } from './rs/RS60';
+import { RS60, RS60_FRAMES, RS30, RS30_FRAMES } from './rs/RS60';
 import { P8, P8_FRAMES } from './p8/P8';
 
 export const RemotionRoot: React.FC = () => (
@@ -52,6 +52,8 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="rs" component={RS} durationInFrames={RS_FRAMES} fps={24} width={1920} height={1080} />
     {/* 로맨스 「다 비침」 짧은 판 약 45초(11-08) — 받아 둔 판만(크레딧 0), romance-short-20261030/짧은판.py가 굽는다 */}
     <Composition id="rs60" component={RS60} durationInFrames={RS60_FRAMES} fps={24} width={1920} height={1080} />
+    {/* 로맨스 「다 비침」 30초 판(11-08 유호님 「30초 내외로」) — 같은 틀, romance-short-20261030/짧은판30.py가 굽는다 */}
+    <Composition id="rs30" component={RS30} durationInFrames={RS30_FRAMES} fps={24} width={1920} height={1080} />
     {/* 8번 앱 소개 30초 캐스팅북(11-07 v4) — 16:9 30초, 글자 1 · 2 · 그린 제목 · 장면 안 끝(기본). 견줄 판: -card(10-26 흰 끝 화면) · -type(친 글자 제목) */}
     <Composition id="p8" component={P8} durationInFrames={P8_FRAMES} fps={24} width={1920} height={1080} />
     <Composition id="p8-card" component={P8} defaultProps={{ end: 'card' as const }} durationInFrames={P8_FRAMES} fps={24} width={1920} height={1080} />
