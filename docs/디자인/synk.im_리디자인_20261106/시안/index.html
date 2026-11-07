@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>synk.im 시안 비교 — PULSE · SHIFT</title>
+<title>synk.im 시안 비교 — PATH · 홈 (2회차)</title>
 <style>
 @font-face{font-family:SUIT;src:url(/pa/SUIT.woff2) format('woff2');font-weight:100 900}
 :root{--bg:#e9e7e2;--ink:#111;--ink-2:#5a5a5e;--line:rgba(0,0,0,.14)}
@@ -34,11 +34,41 @@ main{max-width:1500px;margin:0 auto;padding:24px 40px 80px}
 <body>
 <header>
   <h1>synk.im 시안 — 지금 공개본과 나란히</h1>
-  <p>왼쪽은 지금 라이브(synk.im), 오른쪽은 시안입니다. 둘 다 실제로 눌러 볼 수 있고, 「크게 열기」로 한 화면에서 볼 수 있습니다. 시안의 글은 지금 공개 원고를 그대로 썼습니다.</p>
-  <div class="tabs" role="tablist"><button role="tab" aria-selected="true" data-tab="pulse">PULSE — 시사실</button><button role="tab" aria-selected="false" data-tab="shift">SHIFT — 운행표</button></div>
+  <p>왼쪽은 지금 라이브(synk.im), 오른쪽은 시안입니다. 둘 다 실제로 눌러 볼 수 있고, 「크게 열기」로 한 화면에서 볼 수 있습니다. 시안의 글은 지금 공개 원고를 그대로 썼습니다. 2회차(11-07)는 PATH와 홈 아래쪽, 1회차 PULSE · SHIFT는 11-06에 공개한 판입니다.</p>
+  <div class="tabs" role="tablist"><button role="tab" aria-selected="true" data-tab="path">PATH — 하루 지도</button><button role="tab" aria-selected="false" data-tab="home">홈 — 네 무대</button><button role="tab" aria-selected="false" data-tab="pulse">PULSE — 시사실 (11-06 공개)</button><button role="tab" aria-selected="false" data-tab="shift">SHIFT — 운행표 (11-06 공개)</button></div>
 </header>
 <main>
-  <div data-panel="pulse">
+  <div data-panel="path">
+    <div class="pair">
+      <div class="pane"><h2>지금 synk.im/path <a href="https://synk.im/path/" target="_blank">크게 열기 ↗</a></h2><div class="frame"><iframe src="https://synk.im/path/" loading="lazy" title="지금 PATH"></iframe></div></div>
+      <div class="pane"><h2>시안 「하루 지도」 <a href="/path.html" target="_blank">크게 열기 ↗</a></h2><div class="frame"><iframe src="/path.html" loading="lazy" title="PATH 시안"></iframe></div></div>
+    </div>
+    <div class="phones">
+      <div class="phone pane"><h2>지금 · 휴대폰</h2><div class="frame"><iframe src="https://synk.im/path/" loading="lazy" title="지금 PATH 휴대폰"></iframe></div></div>
+      <div class="phone pane"><h2>시안 · 휴대폰</h2><div class="frame"><iframe src="/path.html" loading="lazy" title="PATH 시안 휴대폰"></iframe></div></div>
+      <div class="why" style="flex:1;margin-top:0;grid-template-columns:1fr">
+        <div><b>무엇으로 이기나</b><p>해 보게 합니다. 첫 화면 전부가 종로 · 북촌 · 서촌의 실제 걷는 길 지도이고, 펠트 물건(맛집 · 차 · 전시 · 궁궐 · 골목 · 시장)과 시간을 고르면 지금 공개된 서울 하루 엔진이 그 자리에서 하루를 짜서 길 위에 동선을 그립니다 — 가입 없이, 쪽을 떠나지 않고. 고른 것이 그 시간에 안 들어가면 말없이 빼지 않고 「몇 시간부터 넉넉해요」를 알립니다.</p></div>
+        <div><b>둘째 무대 — 면접 방</b><p>VR 면접 연습의 실제 면접관 영상이 소리 없이 듣고 있고, 「질문 먼저 들어 보기」를 누르면 채용 담당자가 첫 질문을 실제 목소리로 묻습니다(「요양보호사로 지원한 이유를 말씀해 주세요.」). 답은 60~90초 면접 연습에서 합니다. 10-24 말씀대로 쪽을 열자마자 면접관 얼굴이 나오지는 않습니다.</p></div>
+        <div><b>뺀 것</b><p>준비 중인 넷의 카드와 앱 시안 그림 세 장, 첫 화면 목차 여섯 칸, 방어 문장(질문창 답에 이미 있음). 넷은 아래 길 지도 한 줄의 역이 되고, 지금 쪽 글은 역마다 「무엇을 하나요」에 접어 둡니다(옛 주소 그대로). 쪽 길이는 1440폭 6,800px → 3,250px.</p></div>
+      </div>
+    </div>
+  </div>
+  <div data-panel="home" hidden>
+    <div class="pair">
+      <div class="pane"><h2>지금 synk.im 홈 · 네 가지 사업 <a href="https://synk.im/#business" target="_blank">크게 열기 ↗</a></h2><div class="frame"><iframe src="https://synk.im/#business" loading="lazy" title="지금 홈 네 가지 사업"></iframe></div></div>
+      <div class="pane"><h2>시안 「네 무대」 <a href="/home.html" target="_blank">크게 열기 ↗</a></h2><div class="frame"><iframe src="/home.html" loading="lazy" title="홈 시안"></iframe></div></div>
+    </div>
+    <div class="phones">
+      <div class="phone pane"><h2>지금 · 휴대폰</h2><div class="frame"><iframe src="https://synk.im/#business" loading="lazy" title="지금 홈 휴대폰"></iframe></div></div>
+      <div class="phone pane"><h2>시안 · 휴대폰</h2><div class="frame"><iframe src="/home.html" loading="lazy" title="홈 시안 휴대폰"></iframe></div></div>
+      <div class="why" style="flex:1;margin-top:0;grid-template-columns:1fr">
+        <div><b>무엇으로 이기나</b><p>사업마다 대표작이 움직입니다 — LAB은 K드라마 상황극 1화 실제 장면, SHIFT는 SYNK가 자기 회사에 돌리는 예약표(서울 시각으로 다음 일이 켜짐), PULSE는 쇼릴 세로판, PATH는 서울 하루 예시 동선이 실제 길 위에 그려지는 것. 네 칸이 한꺼번에 움직이면 어지러워 한 칸씩 차례로 상영하고(칸 아래 선이 참), 손을 올리면 그 칸부터 봅니다.</p></div>
+        <div><b>글</b><p>제목 · 상태 목록(지금 이용 / 준비 중 / 문의 받는 중) · 단추 · PATH 부정 고지는 지금 원고 그대로입니다. 칸마다의 긴 소개 두 문장은 무대가 대신하고, 각 사업 쪽에 그대로 있습니다. 1440폭 1,521px → 약 880px.</p></div>
+        <div><b>휴대폰</b><p>네 칸을 옆으로 넘기는 한 줄로 두고, 가운데 온 칸이 상영합니다. 위의 처마 입구 · 회사 머리 · 상황극 띠와 아래 아틀라스 · 창업자 · 소식은 그대로입니다.</p></div>
+      </div>
+    </div>
+  </div>
+  <div data-panel="pulse" hidden>
     <div class="pair">
       <div class="pane"><h2>지금 synk.im/pulse <a href="https://synk.im/pulse/" target="_blank">크게 열기 ↗</a></h2><div class="frame"><iframe src="https://synk.im/pulse/" loading="lazy" title="지금 PULSE"></iframe></div></div>
       <div class="pane"><h2>시안 A 「시사실」 <a href="/pulse.html" target="_blank">크게 열기 ↗</a></h2><div class="frame"><iframe src="/pulse.html" loading="lazy" title="PULSE 시안"></iframe></div></div>

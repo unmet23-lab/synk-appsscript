@@ -3,6 +3,8 @@
 //   /           이 폴더(index.html 비교 · pulse.html · shift.html)
 //   /pa/        공개 PULSE 고객 앱 재료(작품 영상 · 글꼴) — 저장소 docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets
 //   /media/     쇼릴(git 밖) — synk-vendor/pulse-rebuild-20261104/media/works
+//   /path/ · /world/  공개 synk.im으로 넘긴다(면접 · 상황극 영상)
+//   /path/ · /world/  공개 synk.im으로 넘긴다(면접 · 상황극 영상, 2회차)
 //   /assets/    synk.im 회사 쪽 그림(모델 사진 등) — 원고 빌드 dist/assets(환경 SYNK_SITE_DIST, 없으면 공개 synk.im으로 넘긴다)
 // 쓰기: node docs/디자인/synk.im_리디자인_20261106/시안/serve.cjs [포트=4796]
 const http = require('node:http'), fs = require('node:fs'), path = require('node:path');
@@ -13,6 +15,10 @@ const roots = {
   '/pa/': path.join(repo, 'docs', '마케팅', '온라인마케팅지도', 'engagement', 'company', 'public', 'pulse-app', 'assets'),
   '/media/': path.join(docs, 'synk-vendor', 'pulse-rebuild-20261104', 'media', 'works'),
   '/assets/': process.env.SYNK_SITE_DIST ? path.join(process.env.SYNK_SITE_DIST, 'assets') : null,
+  // 2회차(11-07): PATH 면접 영상 · WORLD 상황극 영상은 공개 synk.im으로 넘긴다(video는 CORS가 필요 없다).
+  // 서울 하루 엔진(/try/travel/)은 쪽 스크립트가 synk.im에서 바로 부른다(그쪽이 Access-Control-Allow-Origin: *).
+  '/path/': null,
+  '/world/': null,
 };
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.mp4': 'video/mp4', '.mp3': 'audio/mpeg' };
 function send(res, f, req) {

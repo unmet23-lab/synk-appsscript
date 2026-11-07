@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SYNK PATH — 시안 「하루 지도」</title>
+<!-- synk.im/path 리디자인 시안(2026-11-07, 2회차). 지금 쪽은 같은 틀(왼쪽 제목 · 오른쪽 작은 펠트 그림 · 목차 여섯 칸)에 「준비 중」이 아홉 곳이고,
+     지금 되는 것 둘(서울 하루 · VR 면접 연습)이 준비 중인 넷과 같은 크기로 섞여 있다.
+     무엇으로 이기나: 해 보게 한다. 첫 화면 전부가 종로 · 북촌 · 서촌의 실제 걷는 길 지도이고, 펠트 물건을 고르면 공개 서울 하루 엔진
+     (/try/travel/의 planner-chooser · planner · places-v2 · walking-router 그대로)이 그 자리에서 하루를 짜서 지도 위에 동선을 그린다.
+     둘째 무대는 VR 면접 방 — 면접관이 실제로 첫 질문을 묻는다(공개 면접 연습의 strict-question 영상, 대사 「요양보호사로 지원한 이유를 말씀해 주세요.」).
+     준비 중인 넷은 길 지도 한 줄(역 여섯 — 지금 되는 둘은 채운 점)로 줄이고, 자세한 글은 역마다 접어 둔다(공개본 글 그대로 · 옛 주소 그대로).
+     바닥: 11-04 크롤링 평균 · 11-06 참고 장부 평균 — 작품이 화면 87~100% · 글자 3~4단 · 둥글림 없음 · 작은 글은 귀퉁이 · 전환 0.7~1.2초 · 한글 제목 자간 0 · 본문 17px.
+     마스코트 없음, 도구 이름 없음, 방어 문장은 질문창 답이 맡고 쪽에는 부정 고지 한 줄과 방문 전 확인 한 줄만. -->
+<style>
+@font-face{font-family:SUIT;src:url(https://synk.im/assets/v10/suit-v10.woff2) format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'DM Mono';src:url(/pa/DMMono.ttf) format('truetype');font-weight:400;font-display:swap}
+:root{
+  --paper:#f1efe9;--paper-2:#e9e6de;--ink:#111214;--ink-2:#55575c;--ink-3:#6b6c70;--line:rgba(17,18,20,.14);
+  --path:#526956;--path-ink:#3b503e;--path-hi:#2f6b3e;--room:#0d0f0e;--room-ink:#eceae4;--room-2:rgba(236,234,228,.66);
+  --pad:clamp(20px,3vw,40px);--ease:cubic-bezier(.19,1,.22,1);
+}
+*{box-sizing:border-box}
+html{background:var(--paper)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:SUIT,system-ui,sans-serif;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:anywhere}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit}
+.small{font-size:13px}
+.mono{font-family:'DM Mono',ui-monospace,monospace;letter-spacing:.02em}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--path);vertical-align:middle;margin-right:8px}
+.live{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--path-ink)}
+.live::before{content:'';width:7px;height:7px;border-radius:50%;background:#2e9a52}
+.soon{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--ink-3)}
+.soon::before{content:'';width:7px;height:7px;border-radius:50%;border:1px solid currentColor}
+
+/* 머리 — 로고 하나와 네 낱말 */
+.top{position:fixed;inset:0 0 auto 0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:20px var(--pad);transition:background .6s var(--ease)}
+.top.solid{background:rgba(241,239,233,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.top.dark{background:rgba(13,15,14,.86);color:var(--room-ink)}
+.brand{display:flex;align-items:center;gap:9px}
+.brand svg{width:54px;height:auto;display:block}
+.brand b{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--path)}
+.top.dark .brand b{color:#9fbaa4}
+.top nav{display:flex;gap:26px}
+.top nav a{font-size:13px;color:var(--ink-2);transition:color .25s}
+.top.dark nav a{color:var(--room-2)}
+.top nav a:hover{color:inherit}
+.top nav a.ask{color:inherit;font-weight:650}
+
+/* ① 첫 화면 = 하루 지도 */
+.day{position:relative;min-height:max(100svh,720px);overflow:hidden;background:var(--paper)}
+.map{position:absolute;inset:0;overflow:hidden}
+.map svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.map .w-foot{stroke:rgba(17,18,20,.13);stroke-width:.7;fill:none}
+.map .w-minor{stroke:rgba(17,18,20,.2);stroke-width:1;fill:none}
+.map .w-major{stroke:rgba(17,18,20,.3);stroke-width:2.2;fill:none}
+.map .w-park{fill:rgba(82,105,86,.09);stroke:none}
+.map path{vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round}
+.map .r-case{stroke:var(--paper);stroke-width:9;fill:none}
+.map .r-line{stroke:var(--path-hi);stroke-width:4;fill:none}
+.map .p-dot{fill:rgba(17,18,20,.3)}
+.map::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,var(--paper) 0,rgba(241,239,233,.94) 30%,rgba(241,239,233,0) 46%),linear-gradient(0deg,rgba(241,239,233,.9),rgba(241,239,233,0) 22%),linear-gradient(180deg,rgba(241,239,233,.8),rgba(241,239,233,0) 14%)}
+.pins{position:absolute;inset:0;pointer-events:none;z-index:1}
+/* 핀: 펠트 물건의 밑동이 그 장소 자리, 이름표는 오른쪽 옆 */
+.pin{position:absolute;transform:translate(-50%,-100%);transition:opacity .6s var(--ease);will-change:left,top}
+.pin > .ic{position:relative;display:block}
+.pin img{display:block;width:52px;height:52px;object-fit:contain;filter:drop-shadow(0 6px 6px rgba(17,18,20,.22));animation:drop .7s var(--ease) both}
+.pin .n{position:absolute;top:-4px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--paper);font:600 11px/20px 'DM Mono',monospace;text-align:center}
+.pin .tag{position:absolute;left:calc(100% + 2px);bottom:6px;padding:3px 8px;background:var(--paper);box-shadow:0 0 0 1px var(--line);font-size:13px;line-height:1.35;white-space:nowrap;text-align:center}
+.pin .tag b{display:block;font-weight:650}
+.pin .tag span{color:var(--ink-2);font-variant-numeric:tabular-nums}
+.pin.plain,.pin.origin{transform:translate(-50%,-50%)}
+.pin.plain .tag,.pin.origin .tag{bottom:auto;top:50%;transform:translateY(-50%);left:calc(100% + 6px)}
+.pin.plain .mark{display:block;width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--paper);font:600 11px/22px 'DM Mono',monospace;text-align:center;animation:drop .7s var(--ease) both}
+.pin.origin .mark{display:block;width:14px;height:14px;border-radius:50%;background:var(--paper);box-shadow:0 0 0 3px var(--ink)}
+.pin.origin .tag{background:none;box-shadow:none;padding:2px 0;color:var(--ink-2);left:auto;right:calc(100% + 8px)}
+.pin .tag.flip{left:auto;right:calc(100% + 4px)}
+.pin .tag.down{left:50%;right:auto;top:calc(100% + 4px);bottom:auto;transform:translateX(-50%)}
+.pin .tag.up{left:50%;right:auto;bottom:calc(100% + 4px);top:auto;transform:translateX(-50%)}
+@keyframes drop{from{opacity:0;transform:translateY(-14px)}}
+.map-state{position:absolute;right:var(--pad);top:96px;z-index:2;font-size:13px;color:var(--ink-3)}
+
+/* 글자 단은 넷(작은 글 13 · 본문 15/17 · 소제목 32 · 제목 48) — 11-04 크롤링 평균 「3~4단」, Fable 검수 11-07 */
+.day-in{position:relative;z-index:2;min-height:max(100svh,720px);display:grid;grid-template-columns:minmax(0,600px) 1fr;align-items:start;padding:104px var(--pad) 72px}
+.day-copy{display:flex;flex-direction:column;min-height:0}
+.label{font-size:13px;color:var(--ink-2)}
+.label .en{font-weight:650;color:var(--ink);letter-spacing:.06em;margin-right:8px}
+.day h1{margin:12px 0 0;font-size:clamp(32px,3.3vw,48px);line-height:1.14;letter-spacing:0;font-weight:700}
+.day h1 span{display:block}
+.day .lead{margin:16px 0 0;font-size:17px;line-height:1.6;color:var(--ink-2);max-width:33em}
+.plan{margin-top:34px;padding-top:18px;border-top:1px solid var(--ink)}
+.plan-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.plan h2{margin:10px 0 0;font-size:clamp(26px,2.2vw,32px);line-height:1.2;font-weight:700;letter-spacing:0}
+.plan h2 em{font-style:normal;color:var(--path-hi);transition:color .3s}
+.ask-q{margin:12px 0 6px;display:flex;justify-content:space-between;font-size:13px;color:var(--ink-2)}
+.ask-q b{color:var(--ink);font-weight:650}
+.felts{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:0;padding:0;border:0}
+.felt{all:unset;cursor:pointer;display:grid;justify-items:center;gap:2px;padding:6px 0 7px;position:relative;transition:background .25s}
+.felt img{width:52px;height:52px;object-fit:contain;transition:transform .3s var(--ease),filter .3s;filter:saturate(.55) opacity(.72)}
+.felt span{font-size:13px;color:var(--ink-2)}
+.felt[aria-pressed=true]{background:rgba(82,105,86,.1)}
+.felt[aria-pressed=true] img{filter:none;transform:translateY(-3px) rotate(-3deg)}
+.felt[aria-pressed=true] span{color:var(--ink);font-weight:650}
+.felt[aria-pressed=true]::after{content:'';position:absolute;left:18%;right:18%;bottom:0;height:2px;background:var(--path-hi)}
+.felt:hover img{transform:translateY(-2px)}
+.felt:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.felt.pop img{animation:pop .32s var(--ease)}
+@keyframes pop{40%{transform:translateY(-6px) scale(1.08) rotate(-4deg)}}
+.hours{display:flex;gap:0;margin:0;padding:0;border:0;border-bottom:1px solid var(--line)}
+.hours button{all:unset;cursor:pointer;flex:1;text-align:center;padding:9px 0 10px;font-size:15px;color:var(--ink-2);position:relative;transition:color .2s}
+.hours button[aria-checked=true]{color:var(--ink);font-weight:650}
+.hours button[aria-checked=true]::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--ink)}
+.hours button:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+.sum{margin:12px 0 0;min-height:24px;font-size:15px;font-variant-numeric:tabular-nums}
+.sum b{font-weight:650}
+.sum .busy{color:var(--ink-3)}
+.sum .miss{display:block;margin-top:2px;color:var(--ink-2);font-size:13px}
+.plan-go{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:12px}
+.link{display:inline-flex;gap:12px;align-items:center;font-size:15px;font-weight:650;border-bottom:1px solid var(--ink);padding-bottom:3px}
+.link i{display:inline-block;width:24px;height:1px;background:currentColor;position:relative}
+.link i::after{content:'';position:absolute;right:0;top:-4px;width:8px;height:8px;border-top:1px solid currentColor;border-right:1px solid currentColor;transform:rotate(45deg)}
+
+/* 지도 위 오른쪽 아래: 들를 곳 — 인쇄한 일정표 조각처럼 글만(번호 · 시각 · 이름 · 무엇 · 걷기 · 머무름 · 운영 확인).
+   장소 사진은 25곳 중 12곳만 있어 섞이면 빈 자리처럼 보이고(Fable 11-07), 지도 위 펠트 핀이 그림을 맡는다. */
+.stops{position:absolute;right:var(--pad);left:calc(var(--pad) + 660px);bottom:48px;z-index:2;display:flex;justify-content:flex-end;gap:8px;margin:0;padding:0;list-style:none}
+.stops li{flex:1 1 0;min-width:0;max-width:200px;padding:12px 14px 13px;background:var(--paper);box-shadow:0 0 0 1px var(--line),0 18px 30px -22px rgba(17,18,20,.4);border-top:3px solid var(--ink);animation:rise .7s var(--ease) both}
+.stops li:nth-child(2){animation-delay:.08s}.stops li:nth-child(3){animation-delay:.16s}.stops li:nth-child(4){animation-delay:.24s}.stops li:nth-child(5){animation-delay:.32s}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}}
+.stops .s-t{display:block;font:13px/1.3 'DM Mono',monospace;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.stops .s-t b{font-weight:400;color:var(--ink)}
+.stops .s-n{display:block;margin-top:6px;font-size:15px;line-height:1.35;font-weight:650}
+.stops .s-m{display:block;margin-top:4px;font-size:13px;line-height:1.5;color:var(--ink-2)}
+.stops .s-m > span{display:block;white-space:nowrap}
+.stops .s-c{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:13px;color:#8a5a12}
+.stops .s-c::before{content:'';width:6px;height:6px;border-radius:50%;background:#d89b1d}
+.corner{position:absolute;right:var(--pad);bottom:14px;z-index:2;max-width:calc(100% - 700px);text-align:right;font-size:13px;line-height:1.5;color:var(--ink-3);margin:0}
+.corner a{border-bottom:1px solid currentColor}
+
+/* ② VR 면접 방 */
+.room{background:var(--room);color:var(--room-ink);padding:clamp(80px,9vw,128px) var(--pad) clamp(72px,8vw,112px)}
+.room-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,30em);gap:40px;align-items:end;margin-bottom:clamp(32px,4vw,52px)}
+.room .label{color:var(--room-2)}.room .label .en{color:var(--room-ink)}
+.room .live{color:#a9c7af}
+.room h2{margin:14px 0 0;font-size:clamp(34px,4.4vw,64px);line-height:1.1;font-weight:700;letter-spacing:0}
+.room h2 span{display:block}
+.room .lead{margin:0;font-size:17px;color:var(--room-2)}
+.stage{position:relative;aspect-ratio:2.2/1;background:#000;overflow:hidden}
+.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .5s}
+.stage .vignette{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 120px rgba(0,0,0,.45)}
+.line{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:24px;align-items:center;padding:20px 0;border-bottom:1px solid rgba(236,234,228,.16)}
+.line .who{font-size:13px;color:var(--room-2);white-space:nowrap}
+.line p{margin:0;font-size:clamp(18px,1.7vw,24px);line-height:1.4;min-height:1.4em;transition:opacity .5s}
+.line p.wait{color:var(--room-2)}
+.room-acts{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:14px;padding:14px 20px;font-weight:650;font-size:15px;transition:gap .25s var(--ease),background .25s}
+.btn-ghost{box-shadow:inset 0 0 0 1px rgba(236,234,228,.4)}
+.btn-ghost:hover{background:rgba(236,234,228,.08)}
+.btn-ink{background:var(--room-ink);color:var(--room)}
+.btn-ink:hover{gap:22px}
+.btn:focus-visible{outline:2px solid var(--room-ink);outline-offset:3px}
+.btn .tri{width:0;height:0;border-left:9px solid currentColor;border-top:6px solid transparent;border-bottom:6px solid transparent}
+.room-foot{display:flex;justify-content:space-between;gap:24px;margin-top:18px;font-size:13px;color:var(--room-2)}
+
+/* ③ 길 지도 한 줄 */
+.road{padding:clamp(80px,9vw,128px) var(--pad) clamp(64px,7vw,96px)}
+.road-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,30em);gap:40px;align-items:end;margin-bottom:clamp(40px,5vw,64px)}
+.road h2{margin:14px 0 0;font-size:clamp(32px,3.8vw,54px);line-height:1.12;font-weight:700;letter-spacing:0}
+.road h2 span{display:block}
+.road .lead{margin:0;font-size:17px;color:var(--ink-2)}
+.stations{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));position:relative}
+.stations::before{content:'';position:absolute;left:0;right:0;top:11px;height:2px;background:var(--ink)}
+.st{position:relative;padding:38px 18px 0 0}
+.st::before{content:'';position:absolute;left:0;top:3px;width:18px;height:18px;border-radius:50%;background:var(--paper);box-shadow:inset 0 0 0 2px var(--ink)}
+.st.on::before{background:var(--path-hi);box-shadow:inset 0 0 0 2px var(--path-hi),0 0 0 5px rgba(47,107,62,.16)}
+.st .no{font:13px 'DM Mono',monospace;color:var(--ink-3)}
+.st h3{margin:6px 0 0;font-size:17px;line-height:1.35;font-weight:700}
+.st .one{margin:8px 0 0;font-size:15px;line-height:1.55;color:var(--ink-2)}
+.st .state{margin-top:10px}
+.st a.go{display:inline-flex;margin-top:12px;font-size:15px;font-weight:650;border-bottom:1px solid var(--ink);padding-bottom:2px}
+.st details{margin-top:12px}
+.st summary{cursor:pointer;list-style:none;display:inline-flex;gap:8px;align-items:center;font-size:15px;font-weight:650;border-bottom:1px solid var(--line);padding-bottom:2px}
+.st summary::-webkit-details-marker{display:none}
+.st summary::after{content:'+';font-weight:400;transition:transform .3s var(--ease)}
+.st details[open] summary::after{transform:rotate(45deg)}
+.st summary:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.st .more{margin-top:12px;display:grid;gap:12px;font-size:15px;line-height:1.55;color:var(--ink-2)}
+.st .more b{display:block;color:var(--ink);font-weight:650}
+.st .more p{margin:0}
+.road-foot{margin-top:clamp(48px,6vw,72px);padding-top:16px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:24px;font-size:13px;color:var(--ink-3)}
+
+.contact{background:var(--ink);color:var(--paper);padding:clamp(64px,7vw,96px) var(--pad)}
+.contact h2{margin:0;font-size:clamp(28px,3vw,42px);font-weight:700;letter-spacing:0}
+.contact p{margin:12px 0 0;color:rgba(241,239,233,.66)}
+
+/* 태블릿 · 휴대폰 */
+/* 1100px 아래(태블릿 가로 · 세로 · 휴대폰): 제목 → 소개 → 지도 → 고르기 → 들를 곳. 지도가 고르기 바로 위라 누르면 같은 화면에서 바뀐다(Fable 11-07). */
+@media (max-width:1100px){
+  .day{min-height:0;display:flex;flex-direction:column;padding:92px var(--pad) 0}
+  .day-in,.day-copy{display:contents}
+  .day-copy > .label{order:1}.day h1{order:2}.day .lead{order:3}
+  .map{order:4;position:relative;inset:auto;height:min(66vw,460px);margin:20px calc(var(--pad) * -1) 0}
+  .plan{order:5;margin-top:0}.stops{order:6}.corner{order:7}
+  .map::after{background:linear-gradient(0deg,var(--paper),rgba(241,239,233,0) 16%),linear-gradient(180deg,var(--paper),rgba(241,239,233,0) 14%)}
+  .stops{position:static;left:auto;display:grid;grid-template-columns:1fr;gap:0;margin:4px 0 0;box-shadow:0 1px 0 var(--line)}
+  .stops li{max-width:none;display:grid;grid-template-columns:max-content minmax(0,1fr);column-gap:16px;padding:12px 0;box-shadow:none;border-top:1px solid var(--line);background:none}
+  .stops .s-t{grid-row:span 3;white-space:nowrap}
+  .stops .s-m,.stops .s-c{grid-column:2}
+  .stops .s-n{margin-top:0}
+  .corner{position:static;text-align:left;max-width:none;padding:12px 0 36px}
+}
+@media (max-width:900px){
+  .top nav{gap:16px}.top nav a:not(.ask){display:none}
+  .room-head,.road-head{grid-template-columns:1fr;gap:18px}
+  .stage{aspect-ratio:16/10}
+  .line{grid-template-columns:1fr;gap:6px}
+  .stations{grid-template-columns:1fr}
+  .stations::before{left:8px;right:auto;top:0;bottom:0;width:2px;height:auto}
+  .st{padding:0 0 30px 40px}
+  .st::before{top:2px}
+  .road-foot,.room-foot{flex-direction:column;gap:6px}
+}
+@media (max-width:420px){
+  .felts{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:4px}
+  .felt img{width:46px;height:46px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<header class="top" id="bar">
+  <a class="brand" href="#" aria-label="SYNK PATH"><svg viewBox="0 32 156 70" fill="currentColor" aria-hidden="true"><path d="M35.8 57.9 25.9 58.5Q25.5 56.6 23.8 55.3Q22.1 53.9 19.3 53.9Q16.7 53.9 15.0 55.0Q13.3 56.0 13.3 57.8Q13.3 59.2 14.4 60.2Q15.5 61.2 18.2 61.8L25.4 63.2Q31.1 64.3 33.9 66.9Q36.7 69.5 36.7 73.8Q36.7 77.7 34.5 80.6Q32.2 83.5 28.3 85.1Q24.4 86.8 19.3 86.8Q11.5 86.8 6.8 83.5Q2.2 80.2 1.4 74.6L12.1 74.1Q12.6 76.5 14.5 77.7Q16.3 78.9 19.3 78.9Q22.1 78.9 23.9 77.8Q25.7 76.7 25.7 75.0Q25.7 72.0 20.6 71.0L13.8 69.6Q8.1 68.5 5.3 65.6Q2.5 62.8 2.5 58.4Q2.5 54.6 4.5 51.9Q6.6 49.2 10.4 47.7Q14.1 46.2 19.1 46.2Q26.6 46.2 30.8 49.3Q35.1 52.5 35.8 57.9Z M44.0 100.7Q41.9 100.7 40.1 100.4Q38.3 100.1 37.1 99.6L39.6 91.5L39.9 91.6Q42.7 92.4 44.6 91.9Q46.6 91.5 47.6 88.8L48.2 87.1L34.1 46.7H45.6L53.7 75.6H54.1L62.3 46.7H73.8L58.6 90.3Q57.5 93.4 55.6 95.8Q53.7 98.1 50.9 99.4Q48.0 100.7 44.0 100.7Z M84.0 63.3V86.0H73.1V46.7H83.8V53.7H84.2Q85.5 50.2 88.4 48.2Q91.4 46.2 95.7 46.2Q99.8 46.2 102.9 48.0Q105.9 49.8 107.6 53.1Q109.3 56.4 109.3 61.0V86.0H98.4V62.9Q98.4 59.4 96.6 57.3Q94.7 55.2 91.4 55.2Q89.2 55.2 87.6 56.2Q85.9 57.2 84.9 59.0Q84.0 60.8 84.0 63.3Z"/><path d="M117.3 86.0V33.6H126.6V62.5H127.2L141.3 46.7H152.1L136.9 63.7L153.0 86.0H141.9L129.9 69.2L126.6 72.8V86.0Z"/></svg><b>PATH</b></a>
+  <nav aria-label="PATH 차례"><a href="#top">서울 하루</a><a href="#vr">VR 면접</a><a href="#road">준비 중인 길</a><a class="ask" href="#contact">문의하기</a></nav>
+</header>
+
+<main>
+<!-- ① 하루 지도 -->
+<section class="day" id="top" aria-labelledby="p-title">
+  <span id="travel" class="sr-only"></span><span id="path-visit" class="sr-only"></span>
+  <div class="map" id="map" aria-hidden="true"><svg id="map-svg" preserveAspectRatio="none"></svg><div class="pins" id="pins"></div></div>
+  <div class="day-in">
+    <div class="day-copy">
+      <p class="label"><span class="dot" aria-hidden="true"></span><span class="en">SYNK PATH</span>유학 · 취업 · 정착</p>
+      <h1 id="p-title"><span>한국에서 공부하고 일하며</span> <span>사는 길을, 함께 준비합니다</span></h1>
+      <p class="lead">처음 짐을 꾸릴 때부터 한국 생활에 자리 잡을 때까지, 필요한 한국어와 조건, 면접과 생활을 순서대로 함께 짚어 가는 일을 준비하고 있습니다. 한국어는 SYNK LAB이 맡습니다 — 지금은 SYNK WORLD의 TOPIK 연습을 쓸 수 있고, 정규 과정은 개원을 준비하고 있습니다.</p>
+      <form class="plan" id="plan" aria-labelledby="plan-title" onsubmit="return false">
+        <div class="plan-head"><p class="label" style="margin:0"><span class="en">01 · Seoul</span>서울 하루</p><span class="live">지금 이용 · 무료</span></div>
+        <h2 id="plan-title">서울에서 <em data-span>세 시간</em>, 뭐 하지?</h2>
+        <p class="ask-q" id="q-what"><b>오늘, 뭐 하고 싶어요?</b><span>세 개까지</span></p>
+        <fieldset class="felts" aria-labelledby="q-what" id="felts"></fieldset>
+        <p class="ask-q" id="q-hours"><b>몇 시간 있어요?</b></p>
+        <fieldset class="hours" role="radiogroup" aria-labelledby="q-hours" id="hours"></fieldset>
+        <p class="sum" id="sum" aria-live="polite"><span class="busy">하루를 짜는 중…</span></p>
+        <div class="plan-go"><a class="link" href="https://synk.im/try/travel/" target="_blank" rel="noopener">출발지 · 날짜까지 정하기 <i aria-hidden="true"></i></a></div>
+      </form>
+    </div>
+  </div>
+  <ol class="stops" id="stops" aria-label="들를 곳"></ol>
+  <p class="corner">운영 시간과 요금은 방문 전에 다시 확인해 주세요 · 지도 ©<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> 기여자</p>
+</section>
+
+<!-- ② VR 면접 방 -->
+<section class="room" id="vr" aria-labelledby="vr-title">
+  <span id="path-journey" class="sr-only"></span>
+  <div class="room-head">
+    <div><p class="label"><span class="en">04 · VR</span>VR 면접 연습 <span class="live" style="margin-left:10px">지금 이용</span></p>
+    <h2 id="vr-title"><span>처음 마주할 면접을</span> <span>미리 해 봅니다</span></h2></div>
+    <p class="lead">요양보호사 면접에서 세 면접관의 질문을 듣고 한국어로 답하는 60~90초 연습입니다. PC에서 먼저 둘러보고, 지원되는 Quest 브라우저에서는 음성 답변과 VR 모드를 쓸 수 있습니다.</p>
+  </div>
+  <div class="stage" id="stage">
+    <video id="v-listen" muted playsinline preload="none" poster="/path/assets/interview/film/room-poster-1280.jpg" data-src="/path/assets/interview/film/strict-listening-720p.mp4" aria-hidden="true"></video>
+    <video id="v-ask" playsinline preload="none" data-src="/path/assets/interview/film/strict-question-720p.mp4" aria-hidden="true" style="opacity:0"></video>
+    <div class="vignette"></div>
+  </div>
+  <div class="line"><span class="who">채용 담당자</span><p id="line" class="wait">면접관 세 명이 기다리고 있습니다.</p>
+    <div class="room-acts"><button class="btn btn-ghost" type="button" id="hear"><span class="tri" aria-hidden="true"></span>질문 먼저 들어 보기</button><a class="btn btn-ink" href="https://synk.im/path/interview/film/rehearsal.html" target="_blank" rel="noopener">60~90초 면접 시작 <span aria-hidden="true">↗</span></a></div></div>
+  <p class="room-foot"><span>소리가 나옵니다 — 첫 질문 하나를 들려 드리고, 답은 면접 연습에서 합니다.</span><span>VR에는 지원 장비 · 브라우저와 마이크 권한이 필요합니다.</span></p>
+</section>
+
+<!-- ③ 길 지도 한 줄 -->
+<section class="road" id="road" aria-labelledby="road-title">
+  <div class="road-head">
+    <div><p class="label"><span class="en">PATH</span>길 지도</p><h2 id="road-title"><span>짐을 꾸릴 때부터</span> <span>자리 잡을 때까지</span></h2></div>
+    <p class="lead">지금 쓸 수 있는 것은 서울 하루와 VR 면접 연습, 둘입니다. 나머지 넷은 이 순서대로 준비하고 있습니다.</p>
+  </div>
+  <ol class="stations">
+    <li class="st on"><span class="no">01</span><h3>서울 하루</h3><p class="one">하고 싶은 것과 시간만 고르면 가입 없이 하루가 나옵니다.</p><p class="state"><span class="live">지금 이용 · 무료</span></p><a class="go" href="#top">위에서 해 보기 ↑</a></li>
+    <li class="st" id="study"><span id="path-personal" class="sr-only"></span><span id="path-purpose" class="sr-only"></span><span id="portfolio" class="sr-only"></span><span id="path-why" class="sr-only"></span>
+      <span class="no">02</span><h3>유학 준비</h3><p class="one">전공과 진로에 맞춰 유학을 준비합니다.</p><p class="state"><span class="soon">준비 중</span></p>
+      <details><summary>무엇을 하나요</summary><div class="more"><p><b>유학 계획</b>목표와 예산, 한국어 수준과 지원 시기를 정리해 학교 후보를 비교하고 일정을 짭니다.</p><p><b>지원 서류와 면접</b>본인이 쓴 지원 서류를 함께 다듬고 면접을 연습합니다. 제출 일정과 출국 전 할 일도 확인합니다.</p><p><b>포트폴리오</b>배운 것과 해 본 일을 학업 계획과 결과물로 보여 줍니다. 본인이 확인하고 동의한 자료만 공유합니다.</p><p><a class="go" href="/lab/#course" style="margin:0">LAB의 한국어 과정 →</a></p></div></details></li>
+    <li class="st" id="work"><span class="no">03</span><h3>일자리 조건</h3><p class="one">일하고 싶은 자리에 필요한 조건부터 순서대로.</p><p class="state"><span class="soon">준비 중</span></p>
+      <details><summary>무엇을 하나요</summary><div class="more"><p>한국에서 일하려면 분야마다 필요한 비자와 자격증, 한국어 수준이 다릅니다. 예를 들어 돌봄·제조처럼 자격이 필요한 분야라면 무엇을 언제까지 갖춰야 하는지 본인 입장에서 순서대로 정리하는 일을 준비하고 있습니다.</p><p><b>분야별 비자·자격증·한국어 조건 정리</b></p><p><b>자격증 교육과 시험은 공인 기관의 안내로</b></p><p><b>시험·서류 기한 알림과 면접 연습</b></p></div></details></li>
+    <li class="st on"><span class="no">04</span><h3>VR 면접 연습</h3><p class="one">요양보호사 면접을 60~90초로 미리 해 봅니다.</p><p class="state"><span class="live">지금 이용</span></p><a class="go" href="#vr">위에서 들어 보기 ↑</a></li>
+    <li class="st" id="settle"><span id="path-settle" class="sr-only"></span><span class="no">05</span><h3>주거</h3><p class="one">한국에서 지낼 집을 함께 알아봅니다.</p><p class="state"><span class="soon">준비 중</span></p>
+      <details><summary>무엇을 하나요</summary><div class="more"><p><b>조건 정리와 비교</b>머무는 기간과 예산, 학교·직장까지의 거리를 정리해 고를 수 있는 집을 비교합니다.</p><p><b>입주 준비</b>입주 날짜와 준비물, 시설 쓰는 법처럼 처음에 필요한 것을 알려 드립니다.</p><p><b>문제가 생겼을 때</b>시설이나 생활에 문제가 생기면 운영사에 알리는 일을 돕습니다.</p></div></details></li>
+    <li class="st" id="companion"><span class="no">06</span><h3>정착 동행</h3><p class="one">첫 30일 할 일을 끝까지 함께 챙깁니다.</p><p class="state"><span class="soon">준비 중 · 2027년 상반기 시범</span></p>
+      <details><summary>무엇을 하나요</summary><div class="more"><p>외국인등록·계좌 개설·건강보험처럼 첫 30일에 꼭 할 일을 알려 주는 데서 그치지 않고, 끝났는지 한 사람씩 확인합니다.</p><p><b>첫 30일, 오늘 할 일</b>해야 할 일과 기한을 앱으로 알립니다. 끝나면 본인이 표시하고, 한국어가 아직 어려우면 매니저가 같이 갑니다.</p><p><b>AI가 먼저, 매니저가 이어서</b>질문하면 AI가 여러 언어로 먼저 답하고, 사람이 확인할 일은 쉬운 한국어로 상담하는 매니저가 이어받습니다.</p><p><b>한국인과 한 팀으로</b>유학생과 한국인 학생·주민이 한 팀으로 섞여 격주로 시즌 리그를 뛰고, 요리·언어 교환 모임도 엽니다.</p><p><b>2027년 상반기 시범</b>2027년 3~8월, 전담 매니저와 선배 유학생이 30~50명을 곁에서 챙기는 시범을 준비하고 있습니다.</p></div></details></li>
+  </ol>
+  <p class="road-foot"><span>PATH는 조건을 알아보는 일을 돕고, 비자·취업 결과를 보장하지 않습니다.</span><span>자세한 범위 · 일정 · 비용은 문의하시면 안내해 드립니다.</span></p>
+</section>
+
+<section class="contact" id="contact"><h2>문의</h2><p>(시안 — 실제 쪽에서는 공용 문의 띠가 붙습니다)</p></section>
+</main>
+
+<script type="module">
+// 공개 서울 하루 엔진을 그대로 부른다(시안은 synk.im에서, 실제 쪽은 같은 주소 /try/travel/에서). 화면은 고른 것 · 시간을 넘기고 돌아온 하루를 그리기만 한다.
+const BASE = location.hostname === 'synk.im' ? '/try/travel/' : 'https://synk.im/try/travel/';
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = s => document.querySelector(s);
+const svgNS = 'http://www.w3.org/2000/svg';
+const KO_SPAN = { 1: '한 시간', 2: '두 시간', 3: '세 시간', 5: '반나절', 8: '하루' };
+const FELT = { food: '맛집', tea: '차', art: '전시', palace: '궁궐', alley: '골목', market: '시장' };
+const state = { picks: ['tea', 'palace'], hours: 3 };
+
+// 고르기 칸(스크립트 전에도 마크업이 있도록 실제 쪽에서는 빌드가 찍는다)
+$('#felts').innerHTML = Object.entries(FELT).map(([id, t]) => `<button type="button" class="felt" data-pick="${id}" aria-pressed="${state.picks.includes(id)}"><img src="${BASE}assets/felt/intent-${id}.webp" alt="" width="52" height="52" decoding="async"><span>${t}</span></button>`).join('');
+$('#hours').innerHTML = Object.entries(KO_SPAN).map(([h, t]) => `<button type="button" role="radio" data-hours="${h}" aria-checked="${+h === state.hours}">${{1: '1시간', 2: '2시간', 3: '3시간', 5: '반나절', 8: '하루'}[h]}</button>`).join('');
+
+// 지도: 보행 길망(OSM) 한 벌을 받아 길 종류마다 path 하나로 그린다. 좌표는 미터(위도 37.577 기준).
+const LAT0 = 37.577, LON0 = 126.9815, K = 111320, COS = Math.cos(LAT0 * Math.PI / 180);
+const P = (lon, lat) => [(lon - LON0) * K * COS, (LAT0 - lat) * K];
+let mod, net, routeLeg, view = null, viewAnim = null, lastPlan = null;
+const map = $('#map'), svg = $('#map-svg'), pins = $('#pins');
+const g = name => { const el = document.createElementNS(svgNS, 'g'); el.setAttribute('class', name); svg.appendChild(el); return el; };
+function drawBase() {
+  const groups = { park: [], foot: [], minor: [], major: [] };
+  const cls = k => k === 'park' ? 'park' : ['primary', 'secondary', 'tertiary'].includes(k) ? 'major' : ['footway', 'path', 'steps'].includes(k) ? 'foot' : 'minor';
+  for (const w of net.ways) {
+    const pts = w.n.map(i => P(net.nodes[i][0], net.nodes[i][1]));
+    groups[cls(w.kind)].push('M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('L') + (w.kind === 'park' ? 'Z' : ''));
+  }
+  for (const k of ['park', 'foot', 'minor', 'major']) { const p = document.createElementNS(svgNS, 'path'); p.setAttribute('class', 'w-' + k); p.setAttribute('d', groups[k].join('')); svg.appendChild(p); }
+  const dots = g('places');
+  for (const pl of mod.places.TRAVEL_PLACES) { if (!pl.coordinates || pl.dayPlannerEligible === false) continue; const [x, y] = P(pl.coordinates.lon, pl.coordinates.lat); const c = document.createElementNS(svgNS, 'circle'); c.setAttribute('class', 'p-dot'); c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', 7); dots.appendChild(c); }
+  route = g('route');
+}
+let route;
+
+// 보이는 칸(데스크톱은 오른쪽 넓은 쪽, 휴대폰은 지도 상자 전체) 안에 동선이 들어오게 viewBox를 맞춘다.
+function focusRect() {
+  const W = map.clientWidth, H = map.clientHeight, narrow = innerWidth <= 1100;
+  return narrow ? { W, H, x: W * .1, y: H * .18, w: W * .8, h: H * .66 } : { W, H, x: W * .47, y: H * .16, w: W * .44, h: H * .5 };
+}
+function fit(points) {
+  const xs = points.map(p => p[0]), ys = points.map(p => p[1]);
+  let [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  const minSpan = 650, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+  const w = Math.max(x1 - x0, minSpan), h = Math.max(y1 - y0, minSpan * .7);
+  const F = focusRect(), s = Math.min(F.w / w, F.h / h);
+  return { s, x: cx - (F.x + F.w / 2) / s, y: cy - (F.y + F.h / 2) / s, W: F.W, H: F.H };
+}
+function apply(v) {
+  view = v; svg.setAttribute('viewBox', `${v.x} ${v.y} ${v.W / v.s} ${v.H / v.s}`);
+  for (const el of pins.children) { const [x, y] = el._xy; el.style.left = ((x - v.x) * v.s) + 'px'; el.style.top = ((y - v.y) * v.s) + 'px'; }
+}
+function animateTo(target) {
+  cancelAnimationFrame(viewAnim);
+  if (!view || reduce) { apply(target); return untangle(); }
+  const from = { ...view }, t0 = performance.now(), D = 1000, ease = t => 1 - Math.pow(2, -10 * t);
+  const step = now => { const t = Math.min(1, (now - t0) / D), e = t === 1 ? 1 : ease(t);
+    apply({ s: from.s * Math.pow(target.s / from.s, e), x: from.x + (target.x - from.x) * e, y: from.y + (target.y - from.y) * e, W: target.W, H: target.H });
+    if (t < 1) viewAnim = requestAnimationFrame(step); else untangle(); };
+  viewAnim = requestAnimationFrame(step);
+}
+
+// 하루 짜기 — planner-ui.mjs가 첫 화면에서 하는 것과 같은 순서(고르기 경계 → 여행 조건 → 엔진).
+function plan() {
+  const C = mod.chooser, now = new Date().toISOString();
+  const raw = mod.storage.createTravelMemory().query;
+  const request = { now, query: { origin: raw.origin, date: null, startTime: null }, picks: state.picks, hours: state.hours, places: mod.places.TRAVEL_PLACES, routeLeg };
+  const chosen = C.planChooser(request);
+  const { input } = C.chooserTripInput(raw, request, { plan: chosen });
+  const result = mod.planner.planTravel(input, { now, feedback: [], routeLeg, intents: C.dayIntentRules(input), ask: false });
+  return { chosen, input, result, request };
+}
+const C = () => mod.chooser;
+// 받침에 따라 은/는 · 을/를(공개 앱 planner-ui의 withEun · josa와 같은 규칙)
+const final = w => { const c = w.charCodeAt(w.length - 1) - 0xac00; return c >= 0 && c <= 11171 && c % 28 !== 0; };
+const eun = w => w + (final(w) ? '은' : '는'), eul = w => w + (final(w) ? '을' : '를');
+const names = ids => ids.map(id => FELT[id]).join('·');
+const KIND = { food: '식사', tea: '차', culture: '구경' };
+let dropped = '';
+function render() {
+  let out;
+  try { out = plan(); } catch (e) { $('#sum').textContent = e.message; return; }
+  const { chosen, input, result } = out, p = result.primary;
+  $('[data-span]').textContent = KO_SPAN[state.hours];
+  if (!p) { $('#sum').innerHTML = '이 조건으로는 하루가 나오지 않았어요. 시간을 늘리거나 고른 것을 바꿔 보세요.'; $('#stops').innerHTML = ''; pins.innerHTML = ''; route.innerHTML = ''; return; }
+  const when = chosen.span.when, walk = p.walking ? `${p.walking.minMinutes}~${p.walking.maxMinutes}분` : '';
+  // 고르기 안내 — 공개 앱 시간 화면(planner-ui syncTime)과 같은 경우 · 같은 말: 세 개 넘음, 한 곳으로 꽉 참, 이번에는 뺌, 잇기 어려움,
+  // 그리고 이 시간에 안 들어가는 것(chooserLaterHours로 「몇 시간부터 넉넉해요」). 말없이 빼는 길은 두지 않는다.
+  const H = C().CHOOSER_HOURS, notes = [];
+  if (dropped) notes.push(dropped);
+  if (chosen.misses.length) { const later = chosen.misses.map(id => C().chooserLaterHours(id, out.request).sameDay).filter(Boolean); notes.push(`${eun(names(chosen.misses))} ${KO_SPAN[state.hours]}에 들어가지 않아 빼고 짰어요${later.length ? ` — ${H[Math.max(...later)].label}부터 넉넉해요` : ''}`); }
+  if (chosen.long) notes.push(`${eun(FELT[chosen.long])} 한 곳으로 시간이 꽉 차요`);
+  if (chosen.left?.length) notes.push(`${eun(names(chosen.left))} ${chosen.together ? H[chosen.together].label + '부터 같이 들어가요' : '이번에는 빼요'}`);
+  if (chosen.apart) notes.push(`${eun(names(chosen.apart))} 이 시간에 한 일정으로 잇기 어려워 들어가는 쪽을 넣어요`);
+  dropped = '';
+  $('#sum').innerHTML = `<b>${when} ${p.startTime}</b> ${esc(input.origin.name)} 출발 → <b>${p.endTime}</b> · ${p.stops.length}곳 · 걷기 ${walk}${notes.length ? `<span class="miss">${esc(notes.join(' · '))}.</span>` : ''}`;
+  // 들를 곳 — 엔진이 그 시각 운영을 확인하지 못한 곳(schedule.status ≠ matched — 공식 안내 확인일이 30일을 넘은 곳 등)은 「운영 확인 필요」를 단다.
+  $('#stops').innerHTML = p.stops.map((s, i) => {
+    const pl = s.place, picked = state.picks.find(id => mod.chooser.servesDayIntent(pl, id));
+    const what = picked ? FELT[picked] : (KIND[pl.category] || '');
+    const check = s.schedule?.status !== 'matched' ? `<span class="s-c" title="${esc(s.schedule?.reason || '')}">운영 확인 필요</span>` : '';
+    return `<li><span class="s-t">${i + 1} · <b>${s.arrivalTime}</b>–${s.departureTime}</span><span class="s-n">${esc(pl.name)}</span><span class="s-m"><span>${what ? esc(what) + ' · ' : ''}머무름 ${s.stayMinutes}분</span>${p.legs[i] ? ` <span>걸어서 ${p.legs[i].minMinutes}~${p.legs[i].maxMinutes}분</span>` : ''}</span>${check}</li>`;
+  }).join('');
+  // 지도: 동선 · 핀
+  route.innerHTML = '';
+  const line = p.legs.flatMap(l => (l.coordinates || []).map(c => P(c[0], c[1])));
+  if (line.length) {
+    const d = 'M' + line.map(q => q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join('L');
+    for (const c of ['r-case', 'r-line']) { const el = document.createElementNS(svgNS, 'path'); el.setAttribute('class', c); el.setAttribute('d', d); route.appendChild(el); }
+    if (!reduce) { const el = route.lastChild, len = el.getTotalLength(); for (const x of route.children) { x.style.strokeDasharray = len; x.style.strokeDashoffset = len; x.getBoundingClientRect(); x.style.transition = 'stroke-dashoffset 1.6s cubic-bezier(.19,1,.22,1) .25s'; x.style.strokeDashoffset = 0; } }
+  }
+  pins.innerHTML = '';
+  const origin = P(input.origin.lon, input.origin.lat);
+  const add = (xy, html, cls) => { const el = document.createElement('div'); el.className = 'pin ' + cls; el.innerHTML = html; el._xy = xy; pins.appendChild(el); };
+  add(origin, `<span class="mark"></span><span class="tag">${esc(input.origin.name)} ${p.startTime}</span>`, 'origin');
+  // 고른 것을 채우는 곳만 펠트 물건, 나머지는 번호 점. 펠트끼리 너무 가까우면(맞춘 축척에서 55m 안) 뒤엣것은 번호 점으로.
+  const felted = [];
+  p.stops.forEach((s, i) => {
+    const pl = s.place, xy = P(pl.coordinates.lon, pl.coordinates.lat);
+    let picked = state.picks.find(id => mod.chooser.servesDayIntent(pl, id));
+    if (picked && felted.some(q => Math.hypot(q[0] - xy[0], q[1] - xy[1]) < 55)) picked = null;
+    if (picked) felted.push(xy);
+    add(xy, picked ? `<span class="ic"><img src="${BASE}assets/felt/intent-${picked}.webp" alt="" style="animation-delay:${.2 + i * .12}s"><span class="n">${i + 1}</span></span><span class="tag"><b>${esc(pl.name)}</b><span>${s.arrivalTime}</span></span>` : `<span class="mark" style="animation-delay:${.2 + i * .12}s">${i + 1}</span><span class="tag"><b>${esc(pl.name)}</b><span>${s.arrivalTime}</span></span>`, picked ? 'felted' : 'plain');
+  });
+  lastPlan = [origin, ...line, ...p.stops.map(s => P(s.place.coordinates.lon, s.place.coordinates.lat))];
+  animateTo(fit(lastPlan));
+}
+// 핀 이름표가 앞 이름표 · 펠트와 겹치면 왼쪽으로, 그래도 겹치면 아래로 돌린다(맞춤이 끝난 자리에서 한 번).
+function untangle() {
+  // 핀 아이콘은 모두 먼저 장애물로 둔다 — 이름표가 다른 곳의 펠트를 덮지 않게. 자리는 오른쪽 · 왼쪽 · 아래 · 위 가운데 처음으로 안 겹치는 곳, 다 겹치면 가장 덜 겹치는 곳.
+  const icons = [...pins.children].map(el => el.querySelector('.ic, .mark')).filter(Boolean).map(x => x.getBoundingClientRect()), tags = [];
+  const area = (r, b) => Math.max(0, Math.min(r.right, b.right) - Math.max(r.left, b.left)) * Math.max(0, Math.min(r.bottom, b.bottom) - Math.max(r.top, b.top));
+  for (const el of pins.children) {
+    const tag = el.querySelector('.tag'); if (!tag) continue;
+    const own = el.querySelector('.ic, .mark')?.getBoundingClientRect();
+    let best = null;
+    for (const side of ['', 'flip', 'down', 'up']) {
+      tag.classList.remove('flip', 'down', 'up'); if (side) tag.classList.add(side);
+      const r = tag.getBoundingClientRect(), m = map.getBoundingClientRect();
+      const out = (r.left < m.left || r.right > m.right || r.top < m.top + 8 || r.bottom > m.bottom - 8) ? 1e6 : 0;
+      const cost = out + [...tags, ...icons.filter(b => b !== own && !(own && b.left === own.left && b.top === own.top))].reduce((s, b) => s + area(r, b), 0);
+      if (!best || cost < best.cost) best = { side, cost };
+      if (cost === 0) break;
+    }
+    tag.classList.remove('flip', 'down', 'up'); if (best.side) tag.classList.add(best.side);
+    tags.push(tag.getBoundingClientRect());
+  }
+}
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+let timer;
+const replan = () => { $('#sum').innerHTML = '<span class="busy">하루를 짜는 중…</span>'; clearTimeout(timer); timer = setTimeout(() => requestAnimationFrame(render), 60); };
+$('#felts').addEventListener('click', e => {
+  const b = e.target.closest('[data-pick]'); if (!b) return;
+  const id = b.dataset.pick, on = state.picks.includes(id);
+  // 세 개까지 — 넘치면 먼저 고른 것부터 빼고 그렇게 말한다(공개 앱과 같은 말)
+  if (!on && state.picks.length >= 3) { const out = state.picks.shift(); dropped = `세 개까지 고를 수 있어요. ${eul(FELT[out])} 뺐어요`; }
+  state.picks = on ? state.picks.filter(x => x !== id) : [...state.picks, id];
+  for (const x of document.querySelectorAll('[data-pick]')) x.setAttribute('aria-pressed', state.picks.includes(x.dataset.pick));
+  b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+  replan();
+});
+$('#hours').addEventListener('click', e => { const b = e.target.closest('[data-hours]'); if (!b) return; state.hours = +b.dataset.hours; for (const x of document.querySelectorAll('[data-hours]')) x.setAttribute('aria-checked', x === b); replan(); });
+$('#hours').addEventListener('keydown', e => {
+  if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return; const bs = [...document.querySelectorAll('[data-hours]')], i = bs.findIndex(b => b.getAttribute('aria-checked') === 'true');
+  const n = bs[(i + (e.key === 'ArrowRight' ? 1 : bs.length - 1)) % bs.length]; n.focus(); n.click(); e.preventDefault();
+});
+addEventListener('resize', () => { if (lastPlan) { apply(fit(lastPlan)); untangle(); } });
+
+(async () => {
+  const [places, planner, chooser, storage, router] = await Promise.all(['places-v2.mjs', 'planner.mjs', 'planner-chooser.mjs', 'planner-storage.mjs', 'walking-router.mjs'].map(f => import(BASE + f)));
+  mod = { places, planner, chooser, storage };
+  net = await fetch(BASE + 'assets/jongno-walking.json').then(r => r.json());
+  routeLeg = router.createWalkingRouter(net);
+  drawBase();
+  render();
+})().catch(e => { $('#sum').textContent = '지도를 불러오지 못했어요 — 서울 하루 앱에서 바로 짜 볼 수 있습니다.'; console.error(e); });
+
+// 머리 막대: 지도 위에서는 투명, 내려가면 종이 유리, 면접 방 위에서는 어두운 유리
+const bar = $('#bar'), room = $('#vr');
+const onScroll = () => { const r = room.getBoundingClientRect(); bar.classList.toggle('dark', r.top < 60 && r.bottom > 60); bar.classList.toggle('solid', scrollY > 40 && !(r.top < 60 && r.bottom > 60)); };
+addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+// ② 면접 방: 보이면 듣는 모습을 소리 없이 돌리고, 「질문 먼저 들어 보기」는 첫 질문을 소리와 함께 한 번 들려준다.
+const listen = $('#v-listen'), ask = $('#v-ask'), lineEl = $('#line');
+const load = v => { if (!v.src) v.src = v.dataset.src; };
+// 듣는 영상은 manifest가 loop:false다 — 끝(10.08초)에서 처음으로 바로 넘기면 이음새가 보여, 안전 구간(9~9.98초)에 들면 0.1초로 되돌린다.
+listen.addEventListener('timeupdate', () => { if (listen.currentTime > 9.3) listen.currentTime = 0.1; });
+listen.addEventListener('ended', () => { listen.currentTime = 0.1; listen.play().catch(() => {}); });
+if (!reduce) new IntersectionObserver(es => { for (const e of es) { if (e.isIntersecting) { load(listen); listen.play().catch(() => {}); } else { listen.pause(); ask.pause(); } } }, { threshold: .35 }).observe($('#stage'));
+$('#hear').addEventListener('click', async () => {
+  load(ask); ask.currentTime = 0; ask.muted = false; ask.style.opacity = 1;
+  lineEl.classList.remove('wait'); lineEl.textContent = '요양보호사로 지원한 이유를 말씀해 주세요.';
+  try { await ask.play(); } catch { ask.style.opacity = 0; return; }
+});
+ask.addEventListener('timeupdate', () => { if (ask.currentTime > 3.6 && ask.style.opacity === '1') { ask.style.opacity = 0; ask.pause(); load(listen); if (!reduce) listen.play().catch(() => {}); lineEl.classList.add('wait'); lineEl.textContent = '이제 답할 차례입니다 — 면접 연습에서 한국어로 답해 보세요.'; } });
+
+// 옛 주소(#study · #portfolio …)로 들어오면 그 역의 「무엇을 하나요」를 연다
+const openStation = () => { const t = location.hash && document.getElementById(location.hash.slice(1)); const st = t && t.closest('.st'); const d = st && st.querySelector('details'); if (d) d.open = true; };
+addEventListener('hashchange', openStation); openStation();
+</script>
+</body>
+</html>
