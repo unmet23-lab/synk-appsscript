@@ -252,8 +252,9 @@ def build(out_wav, TF):
     # 10 조립동 와이드 — 천장 크레인 모터(멀리)
     crane = lp(seg(os.path.join(SON, "Victor Ermakov - Industrial Ambiences - Ship Repair Factory", "MACHInd_Crane Onboard Ride Squeaks Motors_CW.wav"), 20, 23, True), 1500)
     bed(TF[9], TF[10], crane, -38, pre=0.1)
-    # 11 라쳇 — 판이 낸 딸깍(11m)
-    rat = C.load_stereo(C.clip("p10-11m"))[:int((TF[11] - TF[10] + 0.05) * RATE)]
+    # 11 라쳇 — 판이 낸 딸깍(11n — 11-08 다시 뽑은 판, 옛 11m)
+    a11 = 30 / 24   # 최종편집.py CUTS 11의 시작 장(p10-11n 30장)과 같게 — 판 소리가 화면의 라쳇 동작과 맞는다(11-08)
+    rat = C.load_stereo(C.clip("p10-11n"))[int(a11 * RATE):int((a11 + TF[11] - TF[10] + 0.05) * RATE)]
     m.put(TF[10], to_rms(fades(hp(rat, 400), 0.02, 0.08), -35), 0, fade=0.0)
     # 12 날개 든 작업자 — 판이 낸 발소리(12b)
     steps = C.load_stereo(C.clip("p10-12b"))[:int((TF[12] - TF[11] + 0.05) * RATE)]
