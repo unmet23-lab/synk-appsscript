@@ -16,6 +16,7 @@ from PIL import Image
 
 BASE = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028"
 HEAD = "@이미지 1 is the exact first frame of this video"
+HEAD_M2V = "@이미지 1 shows "   # m2v 판의 「시작 자세」 첫 줄(11-07)
 OLD = ["Typecast", "타입캐스트", "후보판", "in sync with the reference audio"]
 LIMIT = 8   # 하루권 한 판 길이 상한(카드에서 7초 이상인지 본다 — 가장 긴 판 7초)
 KEEP = {"_순서.json", "순서표.html"}
@@ -114,8 +115,8 @@ def check(name):
         elif pv:
             if HEAD in t:
                 no("프리비즈 판인데 시작 그림 줄")
-        elif not t.startswith(HEAD):
-            no("첫 줄이 시작 그림 꼴이 아님")
+        elif not t.startswith(HEAD) and not (any(f.startswith("2_참고1") for f in x["파일"]) and t.startswith(HEAD_M2V)):
+            no("첫 줄이 시작 그림 꼴이 아님")   # m2v 판은 「시작 자세」 첫 줄도 받는다(11-07 — 「start from it unchanged」가 사람을 붙들었다, 굽기 시트 「지시문 틀」)
         n_vid = max([int(n) for n in re.findall(r"@영상 (\d+)", t)] or [0])
         if n_vid != len(vids):
             no(f"올리는 영상 {len(vids)} · 지시문이 부르는 @영상 {n_vid}")
