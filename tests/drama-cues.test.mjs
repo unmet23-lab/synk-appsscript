@@ -58,6 +58,9 @@ test('시범판은 나눈 화면을 소리 시각으로 따라가고, 소리가 
  assert.match(pilot,/const CUE_MIN_MS = 1500/);
  assert.match(pilot,/requestAnimationFrame\(tick\)/,'자막 넘김은 그림마다 읽는다(timeupdate는 0.25초 늦을 수 있다)');
  assert.match(pilot,/media\.addEventListener\('timeupdate', onTime\); media\.addEventListener\('ended', onTime\)/,'탭을 옮겨 그림 틱이 멈춰도 소리 시각 · 끝 소식으로 넘긴다');
+ assert.match(pilot,/const onTime = \(\) => \{ if \(!media\.paused \|\| media\.ended\) show/,'재생 위치가 0으로 돌아가는 불러오기 때의 timeupdate로 첫 화면을 그리지 않는다');
+ assert.match(pilot,/unguard = endGuard\(m, s,/,'소리 재생에 끝 소식이 안 와도 잇는 안전 시계');
+ assert.match(pilot,/unguard = endGuard\(v, s,/,'영상 재생에 끝 소식이 안 와도 잇는 안전 시계');
  assert.match(pilot,/delay: motion === 'pop' \|\| motion === 'cue' \? 150 :/,'넘어가는 화면은 뜻 줄을 첫 어절과 함께 띄운다(읽는 시간을 줄이지 않게)');
  assert.match(fs.readFileSync(new URL('../experiences/drama/pilot/pilot.css',import.meta.url),'utf8'),/@media \(max-width: 340px\) \{[^\n]*\.loop \{ object-position: 50% 22%; \}/,'좁은 폰의 얼굴 자리는 학생 차례 층에만(모드에 걸면 전환 때 사라지는 층이 튄다)');
  assert.match(pilot,/if \(cues\) subs\(item\.text, meaningOf\(item\), 'Taeo', null, meaningLang\(item\)\)/);

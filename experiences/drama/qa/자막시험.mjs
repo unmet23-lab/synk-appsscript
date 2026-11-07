@@ -17,7 +17,7 @@ const MAIN=path.join(os.homedir(),'Documents','SYNK-appsscript');
 const require=createRequire(path.join(fs.existsSync(path.join(ROOT,'node_modules'))?ROOT:MAIN,'x.js'));
 const {chromium}=require('playwright');
 const args=process.argv.slice(2),opt=(n,d=null)=>{const i=args.indexOf(n);return i<0?d:args[i+1];},has=n=>args.includes(n);
-const [W,H]=opt('--폭','390x780').split('x').map(Number),LANG=opt('--언어','en'),SHOTS=has('--찍기'),RECORD=has('--녹화');
+const [W,H]=opt('--폭','390x780').split('x').map(Number),LANG=opt('--언어','en'),SHOTS=has('--찍기'),RECORD=has('--녹화'),NO_END=has('--끝소식없음');
 const CAND=opt('--후보');
 const OUT=path.resolve(opt('--출력',path.join(ROOT,'.tmp','drama-cues',`${W}-${LANG}`)));fs.mkdirSync(OUT,{recursive:true});
 const PILOT=path.join(ROOT,'experiences/drama/pilot'),MEDIA=path.join(MAIN,'experiences/drama/pilot');
@@ -46,6 +46,8 @@ page.on('pageerror',e=>errors.push('페이지 '+String(e).slice(0,300)));
 page.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource/.test(m.text()))errors.push('콘솔 '+m.text().slice(0,300));});
 await page.exposeFunction('__fakeTake',fakeTake);
 // 어느 소리가 언제 재생됐는지(녹화에 입힌다), 자막이 언제 바뀌었는지 적는다.
+// --끝소식없음: 헤드리스 · 블루투스 전환처럼 재생 끝(ended) 소식이 끝내 안 오는 기기를 흉내 낸다 — 시범판의 안전 시계만으로 이어 가야 한다
+if(NO_END)await page.addInitScript(()=>{if(window===window.top)return;const add=EventTarget.prototype.addEventListener;HTMLMediaElement.prototype.addEventListener=function(t,f,o){if(t==='ended')return;return add.call(this,t,f,o);};});
 await page.addInitScript(({linesVersion})=>{
  if(window===window.top){window.__media=[];window.__cues=[];window.SYNKDramaHost=Object.freeze({status:async()=>({ok:true,dramaEnabled:true,dramaLimit:30,dramaRemaining:30,linesVersion}),take:p=>window.__fakeTake(p)});return;}
  const play=HTMLMediaElement.prototype.play;
