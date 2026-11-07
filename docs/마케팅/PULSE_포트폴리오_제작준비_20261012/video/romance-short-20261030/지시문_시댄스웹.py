@@ -104,7 +104,9 @@ cut("C05", [TN],
     "Close on Taejun: flustered, his lips part as if to answer but no sound comes; at about 1.5 s his eyes flick up to her once more, then drop "
     "again; a short breath out through the nose. Silent.",
     "slow truck to the camera's right: from about 0.3 s the camera physically slides sideways to its right by about 15% of the frame width, easing out "
-    "and settling by about 2.9 s, with small handheld jitters (about 0.2% of the frame width); the pink neon band behind him drifts left across the frame.",
+    "and settling by about 2.9 s, with small handheld jitters (about 0.2% of the frame width); the soft out-of-focus pink glow behind him drifts left "
+    "across the frame. Behind him there is only a smooth, featureless pink glow and dark blur — the slide reveals no sign, no neon tubes, no letters "
+    "and no shapes anywhere.",   # 11-07 시작 그림 오른쪽 끝의 흐린 네온 글자 조각이 밀려 들어와 두 판 모두 영문 글자(AHC · CA)가 또렷이 나옴
     closed=[TN])
 # ② 제목 카드
 cut("C06", [CU],
@@ -138,8 +140,9 @@ cut("C12", [TT, YC],
     "gives a small, stiff nod back and looks ahead again.",
     still(), [(YC, "고맙습니다.", 0.1, "입")])
 cut("C13", [TT],
-    "Close profile of Taejun facing left: tense, he keeps his head still and slides his eyes sideways to the right, toward Yuna (off screen), then "
-    "quickly back; his Adam's apple moves once; one slow blink. Lips closed.",
+    # 11-07 새 시작 그림(Gemini) — 왼쪽에서 오른쪽을 보는 4분의 3 옆얼굴이라 「facing left」를 바꿈
+    "Close three-quarter profile of Taejun facing the right of frame: tense, he keeps his head still, then slides his eyes a little further to the "
+    "right, toward Yuna (off screen), and quickly back; his Adam's apple moves once; one slow blink. Lips closed.",
     still())
 # ⑤ 회식
 cut("C14", [TN, MB, CU],
@@ -374,8 +377,9 @@ cut("C62", [TJ, YB, BU, CU, BK],
     "her back to him; Taejun, under the awning with his folded clear umbrella, turns and watches her go. Neither speaks.",
     still(), closed=[TJ, YB], post="오른쪽 아래 노래 표기 「♪ 태준」")
 cut("C63", [TJ],
-    "Close on Taejun under the awning: his eyes track her slowly to the right as she walks away; at about 2 s he swallows; at about 3.5 s his gaze "
-    "drops to the folded clear umbrella in his hand and he exhales. No other movement.",
+    # 11-07 새 시작 그림(Gemini) — 얼굴만 꽉 찬 클로즈업에 처마 · 우산이 없어 그 말을 뺌(넣으면 없는 소품을 새로 그릴 수 있다)
+    "Close on Taejun, his eyes wet: his eyes track her slowly to the right as she walks away; at about 2 s he swallows; at about 3.5 s his gaze "
+    "drops and he exhales. No other movement.",
     jit("C63"), closed=[TJ])
 # ⑩ 제품 · 비 그침 · 끝
 cut("C64", [CU, BU],
