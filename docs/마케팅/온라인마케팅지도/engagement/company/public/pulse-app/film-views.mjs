@@ -27,7 +27,7 @@ export function roomRail(p,{tab='overview'}={}){
 }
 // 오른쪽 스크린: 그 상태에 가장 알맞은 실제 자료. 손님 자료가 없을 때만 예시를 놓고 예시라고 쓴다.
 function roomScreen(p){
-  if(p.state==='prepare'&&p.direction?.chosen?.src)return `<img class="sx-q-fill" src="${esc(p.direction.chosen.src)}" alt="" decoding="async"><p class="sx-small sx-room-cap">고르신 방향 <b>${esc(p.direction.chosen.name)}</b> · 방향을 보여 드리는 첫 그림이에요</p>`;
+  if(p.state==='prepare'&&p.direction?.chosen?.src)return `<img class="sx-q-fill" src="${esc(p.direction.chosen.src)}" alt="" decoding="async"><p class="sx-small sx-room-cap">고르신 방향 <b>${esc(p.direction.chosen.name)}</b></p>`;
   if(p.state==='model'&&p.proposal)return `<img class="sx-q-fill" src="${esc(modelScene(p.proposal.id))}" alt=""><p class="sx-small sx-room-cap"><b>${esc(p.proposal.name)}</b> ${esc(p.proposal.line)}</p><div class="sx-room-others" data-model-others hidden>${otherModels(p.proposal)}</div>`;
   if(p.film)return `<video class="sx-q-fill" src="${esc(p.film.src)}" muted loop playsinline preload="metadata" data-room-film aria-label="${esc(p.film.label)}"></video><button type="button" class="sx-room-play" data-room-go="${esc(p.film.go)}"><span class="sr">${esc(p.film.label)} 보기</span></button><p class="sx-small sx-room-cap">${esc(p.film.label)}</p>`;
   const cuts=p.draft?.cuts||[];
@@ -62,7 +62,7 @@ export function directionView(p,{top='',ui={}}={}){
         ${top}
         <div class="sx-dp-top"><p class="sx-small"><b>${esc(d.title)}</b>${d.line?` · ${esc(d.line)}`:''}<span class="sx-dp-step">영상 전 확인 <b class="sx-no">1/3</b>${d.round>1?` · 다시 보내 드린 안`:''}</span></p>${d.lead?`<p class="sx-body sx-dp-lead">${esc(d.lead)}</p>`:''}</div>
         <div class="sx-dp-choose" ${view==='choose'?'':'hidden'}>
-          <div class="sx-dp-tabs" role="group" aria-label="방향 고르기">${d.options.map(o=>`<button type="button" class="sx-dp-tab sx-small ${o.id===focus?'is-on':''}" aria-pressed="${o.id===focus?'true':'false'}" data-dp-pick="${esc(o.id)}"><span class="sx-no">${esc(o.no)}</span> ${o.recommended?'저희 추천':esc(o.name)}</button>`).join('')}</div>
+          <div class="sx-dp-tabs" role="group" aria-label="방향 고르기">${d.options.map(o=>`<button type="button" class="sx-dp-tab sx-small ${o.id===focus?'is-on':''}" aria-pressed="${o.id===focus?'true':'false'}" data-dp-pick="${esc(o.id)}"><span class="sx-no">${esc(o.no)}</span> ${esc(o.name)}${o.recommended?'<span class="sx-dp-rec"> · 추천</span>':''}</button>`).join('')}</div>
           ${d.options.map(o=>dpDetail(o,o.id===focus)).join('')}
           ${dpModel(d,ui)}
           <div class="sx-dp-terms">${terms}
@@ -138,7 +138,7 @@ export function mountDirection(root,d,{ui={},animate=true}={}){
   return {unmount(){stopFilm();}};
 }
 const otherModels=m=>`<div class="sx-wall is-plain">${CASTING_MODELS.filter(item=>item.id!==m.id).map(item=>`<button type="button" class="sx-cast" data-room-model="${item.id}" aria-label="${esc(item.name)} · ${esc(MODEL_LINES[item.id]?.line||item.description)} · 이 모델로 정하기"><img src="${esc(sceneOf(item))}" alt="" loading="lazy" decoding="async" width="538" height="720"><span class="sx-cast-name sx-small">${esc(item.name)}</span></button>`).join('')}</div>`;
-export function roomView(p,{bar=true,top='',after=''}={}){
+export function roomView(p,{bar=true,top='',after='',foot=''}={}){
   const copy=copyOf(p),confirm=CONFIRM_OF[p.state];
   return `<div class="sx-room" data-state="${esc(p.state)}">
     ${bar?`<header class="sx-room-bar"><a class="sx-logo" href="./" aria-label="SYNK PULSE 처음으로"><img src="./assets/request/logo-paper.webp" alt="SYNK PULSE" width="164" height="44"></a><span class="sx-small sx-room-bar-title"><b>${esc(p.title)}</b> <span class="sx-no">${esc(p.number)}</span></span><span class="sx-small sx-room-bar-who">담당 ${esc(p.manager)}</span></header>`:''}
@@ -158,6 +158,7 @@ export function roomView(p,{bar=true,top='',after=''}={}){
       </div>
       <div class="sx-room-screen">${roomScreen(p)}</div>
     </section>
+    ${foot?`<div class="sx-room-foot">${foot}</div>`:''}
     ${roomPaper(p)}
   </div>`;
 }

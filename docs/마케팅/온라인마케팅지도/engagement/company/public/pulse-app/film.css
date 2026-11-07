@@ -555,8 +555,10 @@ html.sx .loading-mark{display:block;width:44px;height:1px;background:var(--sx-in
 .sx-room-left{display:flex;flex-direction:column;justify-content:flex-end;gap:14px;padding:calc(var(--sx-m) + 54px) var(--sx-m) calc(var(--sx-m) - 6px);min-width:0}
 .sx-room-left>.sx-steps{margin-top:clamp(14px,4vh,40px);padding-top:10px;border-top:1px solid var(--sx-rule)}
 .sx-turn{display:flex;gap:9px;align-items:center;margin-bottom:0;flex-wrap:wrap}
-.sx-turn i{width:8px;height:8px;box-shadow:inset 0 0 0 1px var(--sx-ink)}
+.sx-turn i{width:7px;height:7px;border-radius:50%;background:var(--sx-dim)}
 .sx-turn i.is-you{background:var(--sx-ink)}
+@media (prefers-reduced-motion:no-preference){.sx-turn i:not(.is-you){animation:sx-turn-wait 2.4s ease-in-out infinite}}
+@keyframes sx-turn-wait{50%{opacity:.35}}
 .sx-turn span{color:var(--sx-dim);margin-left:6px}
 .sx-turn .sx-no{color:var(--sx-ink)}
 .sx-room-lead{max-width:44ch;color:var(--sx-ink)}
@@ -607,6 +609,9 @@ html.sx .loading-mark{display:block;width:44px;height:1px;background:var(--sx-in
 .sx-extra{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:10px 0;border-top:1px solid var(--sx-rule)}
 .sx-extra h2{font-weight:600;font-size:15px}
 .sx-extra .sx-go{flex:none;padding:8px 0}
+/* 기기 기억 안내 띠: 고객 방 그림 아래 · 인화지 위, 한 줄로 */
+.sx-room-foot{padding:clamp(14px,2.4vh,22px) var(--sx-m);border-top:1px solid var(--sx-rule)}
+html.sx .sx-room-foot .sx-offer{max-width:720px;padding:0;border-top:0}
 html.sx .sx-offer{display:grid;gap:6px;padding:10px 0;border:0;border-top:1px solid var(--sx-rule);background:none;box-shadow:none;border-radius:0;color:var(--sx-ink);margin:0}
 html.sx .sx-offer strong{font-weight:600;font-size:15px;color:var(--sx-ink)}
 .sx-offer-actions{display:flex;gap:16px}
@@ -779,19 +784,20 @@ html.is-staff{color-scheme:light}
 .sx-dp[data-view="neither"] .sx-dp-frame img{filter:grayscale(1) brightness(.34);transform:scale(1.01)}
 .sx-dp-sheet{grid-area:sheet;display:flex;flex-direction:column;gap:clamp(12px,2.2vh,24px);min-height:0;overflow-y:auto;padding:calc(var(--sx-m) + 26px) var(--sx-m) clamp(14px,2.4vh,28px);scrollbar-width:none}
 .sx-dp-sheet::-webkit-scrollbar{display:none}
-.sx-dp-step{display:inline;margin-left:10px;color:var(--sx-faint)}.sx-dp-step b{color:var(--sx-ink)}
+.sx-dp-step{display:block;margin-top:2px;color:var(--sx-faint)}.sx-dp-step b{color:var(--sx-ink)}
 .sx-dp-lead{margin-top:clamp(8px,1.4vh,14px)}
 .sx-dp-choose,.sx-dp-neither{display:flex;flex-direction:column;flex:1;min-height:0}
 .sx-dp-tabs{display:flex;gap:18px;border-top:1px solid var(--sx-rule);padding-top:clamp(10px,1.6vh,16px)}
 .sx-dp-tab{color:var(--sx-faint);padding:2px 0;border-bottom:1px solid transparent;transition:color .25s}
 .sx-dp-tab .sx-no{color:inherit}
+.sx-dp-rec{color:var(--sx-faint)}
 .sx-dp-tab.is-on{color:var(--sx-ink);border-bottom-color:var(--sx-ink)}
 @media (hover:hover){.sx-dp-tab:hover{color:var(--sx-ink)}}
 .sx-dp-detail{margin-top:clamp(10px,1.8vh,20px)}
 .sx-dp-choose:has([data-dp-casts]:not([hidden])) :is(.sx-dp-why,.sx-dp-lead){display:none}
 .sx-dp-sheet:has([data-dp-casts]:not([hidden])) .sx-dp-lead{display:none}
 .sx-dp-title{font-size:var(--sx-t1);line-height:1.14;outline:none}
-.sx-dp-sentence{font-size:var(--sx-t2);line-height:1.34;margin-top:clamp(6px,1vh,10px);color:var(--sx-ink)}
+.sx-dp-sentence{font-size:var(--sx-t2);line-height:1.34;margin-top:clamp(6px,1vh,10px);color:var(--sx-ink);word-break:keep-all;text-wrap:balance}
 .sx-dp-flow{margin:clamp(10px,1.8vh,18px) 0 0;padding:0;list-style:none;border-top:1px solid var(--sx-rule)}
 .sx-dp-flow li{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px;padding:clamp(5px,.9vh,9px) 0;border-bottom:1px solid var(--sx-rule)}
 .sx-dp-flow .sx-no{padding-top:2px}
@@ -845,11 +851,12 @@ html.is-staff{color-scheme:light}
 .sx-dp-road{display:flex;flex-wrap:wrap;gap:6px 18px;margin:8px 0 0;padding:10px 0 0;list-style:none;border-top:1px solid var(--sx-rule);color:var(--sx-faint)}
 .sx-dp-road .is-done{color:var(--sx-dim)}
 .sx-dp-road .is-now{color:var(--sx-ink);font-weight:600}
-/* 낮은 노트북: 설명을 한 칸씩 줄인다(시안과 같은 기준). */
+/* 낮은 노트북: 설명을 한 칸씩 줄인다(시안과 같은 기준). 「왜」 줄은 860 아래에서만 뺀다 — 1440×900에서 빼면 값 위가 빈 칸으로 남는다(맹검 11-07). */
 @media (max-height:960px) and (min-width:821px) and (min-aspect-ratio:10001/10000){
-  .sx-dp-lead,.sx-dp-why{display:none}
+  .sx-dp-lead{display:none}
   .sx-dp-flow li{padding:clamp(3px,.6vh,7px) 0}
 }
+@media (max-height:859px) and (min-width:821px) and (min-aspect-ratio:10001/10000){.sx-dp-why{display:none}}
 @media (max-height:760px) and (min-width:821px) and (min-aspect-ratio:10001/10000){
   .sx-dp-why{display:none!important}
   .sx-dp-step{display:inline;margin:0 0 0 10px}

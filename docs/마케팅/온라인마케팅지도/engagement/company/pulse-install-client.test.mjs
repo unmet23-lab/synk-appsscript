@@ -102,7 +102,7 @@ test('permission timeouts retain actionable instructions on each mobile platform
 test('customer and creator headers expose installation help without a browser install event',()=>{
   for(const state of [{mode:'customer',project:null},{mode:'customer',project:{id:'project'}},{mode:'staff',user:null},{mode:'staff',user:{name:'제작자'}}]){
     const html=header({...state,installPrompt:null});
-    assert.match(html,/<button[^>]+data-action="install"[^>]*>앱 설치 · 알림<\/button>/);
+    assert.match(html,/<button[^>]+data-action="install"[^>]*>앱 설치<\/button>/);
     assert.equal((html.match(/data-action="install"/g)||[]).length,1);
   }
 });

@@ -15,8 +15,8 @@ export function deviceAvailability({secure,serviceWorker,pushManager,notificatio
   // The PC app window refuses every permission and cannot receive web push, so
   // browser settings never help there. Its inbox updates while the window is open.
   if(desktopApp)return 'PC 앱에서는 이 창이 열려 있는 동안 새 소식을 앱 안 알림으로 알려 드려요. 창을 닫아도 받으시려면 받은 초대 링크를 휴대폰이나 Chrome·Edge에서 열고 기기 알림을 켜 주세요.';
-  if(ios&&!standalone)return 'iPhone·iPad는 iOS 16.4 이상에서 홈 화면에 추가한 PULSE를 열어 기기 알림을 켤 수 있어요. ‘앱 설치 · 알림’에서 순서를 확인해 주세요.';
-  if(embedded)return '메신저 안 브라우저에서는 기기 알림을 켜기 어려울 수 있어요. 받은 초대 링크를 Chrome 또는 삼성 인터넷에서 열어 주세요. ‘앱 설치 · 알림’에서 방법을 확인할 수 있어요.';
+  if(ios&&!standalone)return 'iPhone·iPad는 iOS 16.4 이상에서 홈 화면에 추가한 PULSE를 열어 기기 알림을 켤 수 있어요. ‘앱 설치’에서 순서를 확인해 주세요.';
+  if(embedded)return '메신저 안 브라우저에서는 기기 알림을 켜기 어려울 수 있어요. 받은 초대 링크를 Chrome 또는 삼성 인터넷에서 열어 주세요. ‘앱 설치’에서 방법을 확인할 수 있어요.';
   if(!secure||!serviceWorker||!pushManager||!notification){
     if(ios)return '기기 알림을 지원하지 않는 환경이에요. iOS·iPadOS를 16.4 이상으로 업데이트하고 홈 화면의 PULSE 앱에서 다시 확인해 주세요. 앱 안 알림은 계속 받을 수 있어요.';
     if(android)return '이 브라우저는 기기 알림을 지원하지 않아요. 최신 Chrome 또는 삼성 인터넷에서 받은 초대 링크를 열어 주세요. 앱 안 알림은 계속 받을 수 있어요.';

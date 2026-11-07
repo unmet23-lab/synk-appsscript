@@ -40,7 +40,7 @@ test('the direction screen follows the mock: two pictures, the recommendation fi
   const p=roomModel(project({direction:open()})),html=directionView(p);
   assert.match(html,/^<div class="sx-room is-direction" data-state="direction">/);
   assert.equal(html.split('class="sx-dp-frame"').length-1,2);
-  assert.match(html,/data-dp-pick="a"><span class="sx-no">01<\/span> 저희 추천<\/button>/);
+  assert.match(html,/data-dp-pick="a"><span class="sx-no">01<\/span> 아니, 잠깐<span class="sx-dp-rec"> · 추천<\/span><\/button>/);
   assert.match(html,/영상 전 확인 <b class="sx-no">1\/3<\/b>/);
   assert.match(html,/<dd class="sx-serif">39만원<\/dd>[\s\S]*<dd class="sx-serif">11월 17일<\/dd>[\s\S]*<dd class="sx-serif">2회<\/dd>/);
   assert.match(html,/결제는 글 콘티를 보신 뒤에 해요/);assert.match(html,/결제 방법은 그때 담당자가 안내해 드려요/);

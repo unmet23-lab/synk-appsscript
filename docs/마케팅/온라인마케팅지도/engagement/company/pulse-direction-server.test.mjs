@@ -11,6 +11,8 @@ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42
 const answers=(extra={})=>({name:'오미톡 오미자 스파클링',kind:'food',channels:['shorts'],package:'s15',audience:'운동 끝나고 목마른 20대',oneThing:'한 캔에 맛이 다섯 번 바뀐다',action:'buy',screenText:'다섯 가지 맛, 톡.',avoid:[],win:'story',refs:[],models:[],modelChoice:'ask',date:'',dateFree:true,approver:'one',contactName:'김합성',company:'합성 음료',email:'buyer@pulse-synthetic.test',phone:'',consent:true,rights:true,slots:{},...extra});
 const kstToday=()=>new Date(Date.now()+9*3600000).toISOString().slice(0,10);
 const dayAfter=days=>{const at=new Date(kstToday()+'T00:00:00Z');at.setUTCDate(at.getUTCDate()+days);return at.toISOString().slice(0,10);};
+// 120일 안에 있어야 할 「없는 날」(31일이 없는 달의 31일) — 과거 · 범위 밖 이유로 거절되면 날짜 왕복 검사를 지키지 못한다(GPT GA1 11-07).
+const missingDay=()=>{const [y,m]=kstToday().split('-').map(Number);for(let k=0;k<4;k++){const at=new Date(Date.UTC(y,m-1+k,1)),yy=at.getUTCFullYear(),mm=at.getUTCMonth();if(new Date(Date.UTC(yy,mm+1,0)).getUTCDate()<31)return `${yy}-${String(mm+1).padStart(2,'0')}-31`;}throw new Error('없는 날을 못 찾음');};
 async function fixture(t,extra={}){
   const directory=await mkdtemp(join(tmpdir(),'synk-pulse-direction-'));
   const options={dataDir:join(directory,'server'),clientIntakeDir:join(directory,'inbox'),host:'127.0.0.1',port:0,origin:'http://127.0.0.1:0',allowTestHost:true,schedule:false,workNotificationsEnabled:false,webPushEnabled:false,synkIdentityConfig:null,synkCustomerIdentityConfig:null,pulseRequestFreeBytes:async()=>100*1024**3};
@@ -62,7 +64,7 @@ test('a direction proposal goes out only after the request is confirmed, with tw
   await bad({options:[base.options[0],{...base.options[1],flow:[{at:'처음',text:'틀린 시각'}]}]});
   await bad({modelId:'Z99'});await bad({modelId:''});
   await bad({price:5000});await bad({price:'390000'});await bad({revisions:12});
-  await bad({dueDate:dayAfter(-1)});await bad({dueDate:dayAfter(121)});await bad({dueDate:'2026-02-31'});
+  await bad({dueDate:dayAfter(-1)});await bad({dueDate:dayAfter(121)});assert.ok(missingDay()>kstToday()&&missingDay()<dayAfter(121));await bad({dueDate:missingDay()});
   const clip=await h.upload('taste.mp4','video/mp4',fixtureClip());
   await bad({options:[base.options[0],{...base.options[1],filmAssetId:assets[0]}]});
   await send(h,{...base,options:[base.options[0],{...base.options[1],filmAssetId:clip,filmNote:'멈춘 코트에서 도망치기까지 · 8초',workId:'maejin-imbak'}]});

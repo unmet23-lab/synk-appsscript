@@ -25,7 +25,7 @@ export function installationGuide(environment={}, {connected=false,enabled=false
   }
   if(env.embedded){
     guide.summary='메신저 안 브라우저에서는 설치나 알림 허용이 안 될 수 있어요.';
-    guide.steps=[`메신저의 메뉴에서 ‘다른 브라우저로 열기’를 선택해 ${env.ios?'Safari':'Chrome 또는 삼성 인터넷'}에서 열어 주세요. 메뉴가 없으면 담당자에게 받은 원본 초대 링크를 복사해 브라우저 주소창에 붙여 넣으세요.`,'프로젝트가 열린 뒤 ‘앱 설치 · 알림’을 다시 눌러 주세요.'];
+    guide.steps=[`메신저의 메뉴에서 ‘다른 브라우저로 열기’를 선택해 ${env.ios?'Safari':'Chrome 또는 삼성 인터넷'}에서 열어 주세요. 메뉴가 없으면 담당자에게 받은 원본 초대 링크를 복사해 브라우저 주소창에 붙여 넣으세요.`,'프로젝트가 열린 뒤 ‘앱 설치’를 다시 눌러 주세요.'];
     guide.notes=['현재 주소에는 연결용 정보가 지워져 있을 수 있어요. 다른 브라우저로 옮길 때는 받은 원본 초대 링크를 사용해 주세요.'];
     return guide;
   }
