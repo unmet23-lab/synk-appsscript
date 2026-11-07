@@ -279,6 +279,7 @@
 - 원인: 단추가 원본을 페이지 `fetch`로 받아 내려 주는데, ego의 다운로드 이벤트가 이 받기를 잡지 못했다(까닭은 모름). 네트워크에는 `lh3.googleusercontent.com/rd-gg/…`의 `image/jpeg` 약 2.2MB 응답이 찍혔고, `Network.getResponseBody`는 빈 본문을 돌려줬다.
 - 고침: 누르기 전에 `page.cdp("Network.enable", {})` → 누른 뒤 `page.events()`의 `Network.responseReceived` 가운데 `image/*`이고 300KB를 넘는 응답 주소를 잡아 `page.fetch(주소, { saveAs })`로 저장했다. 원본(9:16 1536×2752)이 바로 받아지고, 다운로드 폴더를 거치지 않아 같은 계정 다른 세션의 그림과 섞이지 않는다(위 「다른 세션이 같은 시각에 받은 Gemini 그림을 집는다」가 생기지 않음). 한 장 전체(새 `/images` → 비율 → Argon 높음 → 참조 `setInputFiles` → `keyboard.insertText` → 보내기 실제 클릭 → 결과 → 받기)를 한 라운드로 돈 실행기는 `%USERPROFILE%/Documents/synk-vendor/korea-run-montage-20261021/ego/gem.mjs`, 한 장 80~110초.
 - 다시 확인: 받은 JPEG가 그 비율의 원본 크기인지.
+- 11-07 덧붙임: 이 항목이 가리키는 `synk-vendor/korea-run-montage-20261021/`의 도구 · 그림은 「달리며 건너뛰는 한국」을 기각한 뒤 유호님 말씀으로 지웠다(고정 얼굴 세트 `참조_유호/`만 남김).
 
 ### 「음악 만들기」 곡은 「트랙 다운로드 → MP3」를 눌러도 받기 사건이 안 오고, 페이지 안 fetch는 CORS로 막힌다 — 곡 주소로 새 탭을 이동해 받는다 (2026-10-29 Claude)
 - 증상: 10-29 synkbrief B2 배경음을 Gemini 앱 「+ → 음악 만들기」(칩 길이 · 보컬 · 장르, 표준 · 연주곡 · 클래식)로 만들자 2분 뒤 3분짜리 곡(`the_watchmakers_tea.mp4`)이 떴다. 「트랙 다운로드」는 메뉴(동영상 · 커버 이미지가 포함된 오디오 · 오디오만 MP3 트랙)를 열 뿐이고, 「MP3 트랙」을 눌러도 `waitForEvent("download")`가 90초 동안 안 왔다. 곡의 `<audio>` 주소(`contribution.usercontent.google.com/download?…&authuser=4`)를 페이지 안 `fetch`로 받으면 「Failed to fetch」(CORS), 같은 출처 탭에서도 같았다.
@@ -305,6 +306,7 @@
 - 원인: 화면이 또 바뀌었다. 펼친 입력창의 「+」 메뉴는 「파일 업로드 · Drive에서 파일 추가 · 업로드 더보기 · 이미지/동영상/음악 만들기 · 도구 더보기」이고(처음엔 회색 뼈대로 2~3초 뒤에 글이 찬다), 파일 칸은 「파일 업로드」를 누를 때 만들어진다.
 - 고침: 「+」를 한 번 눌러 펼친 채로 모드를 읽고 고른다(Escape 하지 않음). 참조는 `page.waitForFileChooser()`를 먼저 걸고 메뉴 안 가장 안쪽 글 「파일 업로드」를 실제 클릭 → `chooser.setFiles([…])`(다섯 장 한 번에 됨). 실행기 `synk-vendor/korea-run-montage-20261021/ego/v2/gem_pro.mjs`(나노바나나 프로 = 모드 「3.1 Pro」).
 - 다시 확인: 보내기 전 첨부 미리보기 수 = 참조 수, 모드 aria-label에 「Pro」.
+- 11-07 덧붙임: 이 항목이 가리키는 `synk-vendor/korea-run-montage-20261021/`의 도구 · 그림은 「달리며 건너뛰는 한국」을 기각한 뒤 유호님 말씀으로 지웠다(고정 얼굴 세트 `참조_유호/`만 남김).
 
 ### 지시문 글자 수를 입력창 innerText로 견주면 문단 줄바꿈만큼 어긋난다 (2026-10-22 Claude)
 - 증상: 문단을 빈 줄로 나눈 2,715자 지시문을 넣었더니 입력창 `innerText`가 2,736자라 「지시문 길이가 다름」으로 멈췄다(보내기 전이라 나간 것 없음).
@@ -356,6 +358,7 @@
 - 원인: 위 「로컬 GPU가 100%면」 · 「다른 세션이 같은 Gemini 계정 · ego 브라우저를 같이 쓰면」과 같은 결 — 그리기가 늦어 단추가 화면 밖에 있다고 읽히거나 응답이 끊긴다. 보안 검사는 여러 세션이 그림 · 영상 · 저장소 파일을 한꺼번에 쓸 때 몰린다(끄지 않는다 — 10-22 유호님이 「windows 보안 끌까?」 물었을 때 끄지 말자고 했다).
 - 고침: 큐 앞에 CPU 평균(`Get-Counter '\Processor(_Total)\% Processor Time'` 3번 평균 — `.ps1`은 `-ExecutionPolicy Bypass`로 불러야 값이 나온다)이 70% 밑으로 내려갈 때까지 기다리고, 받기가 끊긴 장은 기록의 마지막 「sent」 대화 주소로 `ego/take.mjs`를 돌려 받는다(이렇게 다섯 번 모두 받았다). 이 순서를 묶은 실행 꼴은 `Documents/synk-vendor/korea-run-montage-20261021/ego/v2/run_k.sh`(waitcpu · winup · bake → 실패 시 회수, CPU 재기는 같은 폴더 `cpu.ps1`).
 - 다시 확인: 장마다 기록에 「done」이 있거나, 없으면 회수 결과 `ok:true`가 남는지.
+- 11-07 덧붙임: 이 항목이 가리키는 `synk-vendor/korea-run-montage-20261021/`의 도구 · 그림은 「달리며 건너뛰는 한국」을 기각한 뒤 유호님 말씀으로 지웠다(고정 얼굴 세트 `참조_유호/`만 남김).
 
 ### 굽기 꾸러미를 옮길 때 gen.mjs의 작업 공간 이름도 바꾼다 — 안 바꾸면 탭을 갈아 끼운 뒤 「page label not found」 · CPU 100%면 굳은 탭을 새 탭으로 (2026-11-05 Claude · 5번 한결 피부)
 - 증상: 꼭고칠것_20261102의 `ego/` 셋을 옮겨 굽는데 18 · 19행 두 장만 다섯 번 빠졌다. `/u/1/images` 열기가 15초 · 90초 모두 넘고(「has not committed」), 올리기 칸 기다림 · 평가도 시간 초과였다. 굳은 탭을 새 탭으로 바꾸자 이번엔 「page label not found: p2」로 끝났다.
@@ -693,6 +696,7 @@
   - 화면 안 위치를 숫자로 쓴다: 「He is large in the picture, exactly as in Image N: the top of his head about one third down from the top edge, his sneakers at the very bottom edge; he stands right of center — the middle of his body at about 60 percent of the picture width from the left … Do not show more floor or more of the platform than Image N」. 이렇게 쓰자 한 번에 맞았다.
   - 구도 참고 그림의 피부 · 옷 색도 따라온다. 하얗게 밝힌 LoRA 판을 넣자 살색 b*가 10으로 낮게 나왔다. 구도 참고의 색은 원하는 색으로 맞춰 둔다.
 - 다시 확인: 원본 · 지난 판 · 새 판을 한 줄로 놓고 얼굴 폭 · 살색을 함께 본다(`ego/v3/견주기.py`).
+- 11-07 덧붙임: 이 항목이 가리키는 `synk-vendor/korea-run-montage-20261021/`의 도구 · 그림은 「달리며 건너뛰는 한국」을 기각한 뒤 유호님 말씀으로 지웠다(고정 얼굴 세트 `참조_유호/`만 남김).
 
 ### 고정 얼굴 세트로 그린 얼굴도 「입 다문 미소」 · 옆얼굴에서 다른 사람이 된다 — 무표정, 실제 옆 사진, 여러 판을 SFace 닮음으로 거른다 (2026-10-25 Claude)
 - 증상: 「달리며 건너뛰는 한국」 얼굴 컷 여섯을 장부 S24 방식으로 그렸다. 유호님은 「셀카랑 출발이랑 진해가 좀 달라」라고 하셨고, 폰 시점 얼굴 · 물러남은 괜찮다고 하셨다.
@@ -706,6 +710,7 @@
   - 컷마다 세 판 이상 뽑아 `ego/v3/고르기.py`(전체 그림 · 얼굴 · 닮음 한 판)로 고른다.
   - 결과: 셀카 0.532 · 출발 0.531. 진해는 여섯 판이 0.35~0.405에 머물렀다 — 작은 옆얼굴은 숫자가 낮게 나오니 눈으로 뮤비 옆얼굴(0.481)과 견줘 고른다.
 - 다시 확인: 같은 자로 좋다고 하신 판을 함께 재 기준선을 둔다. 전신 컷은 머리 둘레를 잘라 잰다 — 전체 그림에서는 YuNet이 벚꽃을 얼굴로 잡았다.
+- 11-07 덧붙임: 이 항목이 가리키는 `synk-vendor/korea-run-montage-20261021/`의 도구 · 그림은 「달리며 건너뛰는 한국」을 기각한 뒤 유호님 말씀으로 지웠다(고정 얼굴 세트 `참조_유호/`만 남김).
 
 
 ### 넓은 고정 컷에서 사람 자리를 실루엣 · 숫자로만 주면 문 가운데로 옮겨 그린다 — 문 · 가구 기준 낱말로 가로를 잡고, 크기는 그 판을 편집으로 키운다 (2026-10-26 Claude)

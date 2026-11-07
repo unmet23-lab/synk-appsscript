@@ -1,9 +1,0 @@
-node_modules
-dist
-.DS_Store
-.env
-
-# 영상 · 소리는 git 밖 synk-vendor/korea-run-montage-20261021/편집/에 원본을 두고 준비.mjs가 public/으로 옮긴다(공개 저장소 · 큰 파일)
-out
-public/clips
-public/audio
