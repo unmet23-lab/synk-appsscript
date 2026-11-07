@@ -224,7 +224,11 @@ function syncPlayable() {
  for (const b of ui.panel.querySelectorAll('[data-sound]')) b.disabled = !!S.rec;
  if (S.orbAction && !S.rec && !S.upload) { ui.orbBtn.disabled = S.playing; ui.orbBtn.classList.toggle('wait', S.playing); }
 }
+// 재생마다 번호 — 멈추거나 다음 재생이 오면 올린다. 앞 재생의 안전 시계 · 정보 받음 듣기는 자기 번호가 아니면 아무것도 안 한다
+// (같은 단계에서 다시 듣기가 앞 소리를 끊어도 앞 시계가 지금 소리를 멈추지 않게, 11-07).
+let playGen = 0;
 function stopSound() {
+ playGen++;
  for (const m of [ui.voice, ui.reply]) { try { m.pause(); } catch {} }
  ui.voice.removeAttribute('src'); try { ui.voice.load(); } catch {}
  if (S.playing) setPlaying(false);
@@ -252,7 +256,8 @@ function playUrl(url, s) {
   const done = (ok) => { if (settled) return; settled = true; unguard(); m.removeEventListener('ended', onEnd); m.removeEventListener('error', onErr); s.signal.removeEventListener('abort', onAbort); setPlaying(false); res(ok); };
   const onEnd = () => done(true); const onErr = () => done(false); const onAbort = () => { try { m.pause(); } catch {} done(false); };
   m.addEventListener('ended', onEnd); m.addEventListener('error', onErr); s.signal.addEventListener('abort', onAbort, { once: true });
-  unguard = endGuard(m, s, () => m.duration - m.currentTime, () => settled, done);
+  const gen = playGen;
+  unguard = endGuard(m, s, () => m.duration - m.currentTime, () => settled || gen !== playGen, done);
   m.src = url; setPlaying(true);
   m.play().catch(() => done(false));
  });
@@ -267,9 +272,10 @@ function playVideo(url, from, to, s) {
   const onEnd = () => done(true); const onErr = () => done(false); const onAbort = () => done(false);
   const onTime = () => { if (to && v.currentTime >= to - 0.04) done(true); };
   v.addEventListener('ended', onEnd); v.addEventListener('error', onErr); v.addEventListener('timeupdate', onTime); s.signal.addEventListener('abort', onAbort, { once: true });
-  unguard = endGuard(v, s, () => (to || v.duration) - v.currentTime, () => settled, done);
+  const gen = playGen;
+  unguard = endGuard(v, s, () => (to || v.duration) - v.currentTime, () => settled || gen !== playGen, done);
   if (!v.src.endsWith(url)) v.src = url;
-  go = () => { if (settled) return; try { v.currentTime = from || 0; } catch {} v.muted = false; setPlaying(true); v.play().catch(() => done(false)); };
+  go = () => { if (settled || gen !== playGen || S.rec || !live(s)) return; try { v.currentTime = from || 0; } catch {} v.muted = false; setPlaying(true); v.play().catch(() => done(false)); };
   if (v.readyState >= 1) go(); else v.addEventListener('loadedmetadata', go, { once: true });
  });
 }
