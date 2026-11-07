@@ -204,8 +204,8 @@
     if (!state.ask.trim()) return `<span>업종이나 제품을 적으면 맞는 모델이 앞으로 와요.</span><span class="eg">${['딸기 라떼 신메뉴', '가계부 앱', '여성 가을 니트', '남성 향수'].map((w) => `<button type="button" data-act="eg" data-v="${E(w)}">${E(w)}</button>`).join('')}</span>`;
     const { inds, moods, gender, genderWord } = L.readBrief(brief, TAX);
     const words = uniq([...inds.values(), ...moods.values()].flatMap((v) => v.words).concat(gender ? [genderWord] : []));
-    if (!recs.length) return `<span>${words.length ? `「${E(words.join('·'))}」에 맞는 모델이 아직 없어요. 같은 방식으로 새로 만들어 드려요.` : '이 설명에서는 업종이나 분위기를 찾지 못했어요. 라떼·크림·앱·니트처럼 제품 종류를 넣어 보세요.'}</span><button type="button" class="link muted" data-act="ask-clear">지우기</button>`;
-    return `<span>「${E(words.join('·'))}」에 맞는 <b class="num">${recs.length}명</b>을 앞에 세웠어요</span><button type="button" class="link muted" data-act="ask-clear">지우기</button>`;
+    if (!recs.length) return `<span>${words.length ? `「${E(words.join('·'))}」에 맞는 모델이 아직 없어요. 같은 방식으로 새로 만들어 드려요.` : '이 설명에서는 업종이나 분위기를 찾지 못했어요. 라떼·크림·앱·니트처럼 제품 종류를 넣어 보세요.'}</span><button type="button" class="link muted" data-act="ask-clear">지우기</button>${groupHintHTML()}`;
+    return `<span>「${E(words.join('·'))}」에 맞는 <b class="num">${recs.length}명</b>을 앞에 세웠어요</span><button type="button" class="link muted" data-act="ask-clear">지우기</button>${groupHintHTML()}`;
   }
   function tileHTML(m, r, rank, dim) {
     const loop = m.loop ? `<video data-loop muted loop playsinline preload="none" poster="${E(m.hero.s)}" src="${E(m.loop.src)}" aria-hidden="true"></video>` : '';
@@ -286,15 +286,21 @@
   }
   // 광고 내용이 있으면 그룹 칸을 모델 목록 뒤로, 지우면 거르기 줄 위 제자리로 — 「맞는 모델이 앞으로 와요」가 질문 칸 바로 아래에서 보이게.
   // 적는 동안 맞는 모델이 생겼다 없어졌다 해도 칸이 오가지 않게 추천 여부가 아니라 글이 있는지로 정한다. 다시 그리지 않고 옮겨 사진을 다시 받지 않는다.
-  // 그룹을 찾는 글(걸그룹 · 보이그룹 · 아이돌 · 케이팝 · 팀 이름)이면 그 칸이 찾는 답이라 제자리에 둔다 — 추천 낱말표에 없어 0명일 때 입구가 사라졌다(11-07 화면 검수).
-  const GROUP_WORDS = ['그룹', '아이돌', '케이팝', 'k팝', 'kpop', 'k-pop', '4인조'];
+  // 그룹을 찾는 뜻이 분명한 글(걸그룹 · 보이그룹 · 아이돌 · 케이팝 · 팀 이름)이면 그 칸이 찾는 답이라 제자리에 둔다 — 추천 낱말표에 없어 0명일 때 입구가 사라졌다(11-07 화면 검수).
+  // 맨 「그룹」은 「타겟 그룹 · 그룹 레슨 · 그룹웨어」와 「그룹 화장품 광고」를 낱말로 가를 수 없어 칸을 옮기는 데 쓰지 않고, 들은 말 줄에 그룹 입구를 한 줄 붙인다(groupHintHTML).
+  // 「아이돌」은 띄어쓰기를 지우지 않은 글에서 찾고 「아이돌봄 · 아이돌보미 · 아이돌잔치」는 뺀다(「아이 돌봄 서비스 앱」이 그룹 글로 잡혔다).
+  const GROUP_WORDS = ['걸그룹', '보이그룹', '남자그룹', '여자그룹', '케이팝', 'k팝', 'kpop', 'k-pop', '4인조'];
+  const squash = (q) => String(q).toLowerCase().replace(/\s+/g, '');
   const asksGroup = (q) => {
-    const s = q.toLowerCase().replace(/\s+/g, '');
-    return GROUP_WORDS.some((w) => s.includes(w)) || GROUPS.some((g) => [g.id, g.name, g.nameKo].some((n) => n && s.includes(String(n).toLowerCase().replace(/\s+/g, ''))));
+    const s = squash(q);
+    return GROUP_WORDS.some((w) => s.includes(w)) || /아이돌(?!봄|보|잔)/.test(String(q)) || GROUPS.some((g) => [g.id, g.name, g.nameKo].some((n) => n && s.includes(squash(n))));
   };
+  const teamsLate = () => { const q = state.ask.trim(); return !!q && !asksGroup(q); };
+  const groupHintHTML = () => (GROUPS.length && teamsLate() && squash(state.ask).includes('그룹')
+    ? `<span class="gh">아이돌 그룹 보기 ${GROUPS.map((g) => `<a href="#g-${E(g.id)}">${E(g.name)}</a>`).join('<span aria-hidden="true">·</span>')}</span>` : '');
   function placeTeams() {
     const teams = $('.teams', view); if (!teams) return;
-    const q = state.ask.trim(), late = !!q && !asksGroup(q);
+    const late = teamsLate();
     teams.classList.toggle('late', late);
     if (late) { const body = $('#board-body'); if (body.nextElementSibling !== teams) body.after(teams); }
     else { const f = $('.filters', view); if (f.previousElementSibling !== teams) f.before(teams); }

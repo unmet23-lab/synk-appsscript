@@ -195,8 +195,15 @@ test('PULSE: 공유·문의·스와이프 실제 Chrome 회귀', { timeout: 120_
     const teams = document.querySelector('.teams'), first = document.querySelector('.board .tile'), q = document.querySelector('#q');
     const top = el => Math.round(el.getBoundingClientRect().top + scrollY);
     return { atTop: teams.nextElementSibling?.matches('.filters') === true, atEnd: teams.previousElementSibling?.id === 'board-body', late: teams.classList.contains('late'),
-      rank: first.querySelector('.rank')?.textContent || '', teamsFirst: top(teams) < top(first), gap: top(first) - Math.round(q.getBoundingClientRect().bottom + scrollY) };
+      rank: first.querySelector('.rank')?.textContent || '', teamsFirst: top(teams) < top(first), gap: top(first) - Math.round(q.getBoundingClientRect().bottom + scrollY),
+      hint: [...document.querySelectorAll('#heard .gh a')].map(a => a.getAttribute('href')).join(' ') };
   });
+  const ask = async (page, text) => {
+    await page.fill('#q', text);
+    // 160ms 늦춘 뒤 save() → drawBoard()가 한 번에 돈다 — 저장된 글이 바뀌면 그리기도 끝난 것이다
+    await page.waitForFunction(text => JSON.parse(localStorage.getItem('pulse-casting-v3')).ask === text, text);
+    return boardOrder(page);
+  };
   await check('휴대폰 폭에서 광고 내용을 적으면 그룹 칸이 모델 목록 뒤로 가고, 지우면 거르기 줄 위로 돌아온다', async () => {
     await withPage([], async page => {
       await page.goto(url + '#board');
@@ -215,17 +222,30 @@ test('PULSE: 공유·문의·스와이프 실제 Chrome 회귀', { timeout: 120_
       assert.equal(await page.evaluate(() => document.activeElement.id), 'q');
       await page.locator('[data-act="eg"]').first().click();
       assert.ok((await boardOrder(page)).atEnd, '예시 낱말을 눌러도 목록 뒤');
-      // 그룹을 찾는 글이면 그룹 칸이 찾는 답이라 제자리(추천 낱말표에 없어 0명이어도 입구가 남게 — 11-07 Fable P2)
-      for (const ask of ['걸그룹', '보이그룹 광고', 'K-pop', 'OUTBLUE', '오팔린 같은 느낌', '아이돌 화장품']) {
-        await page.fill('#q', ask);
-        // 160ms 늦춘 뒤 save() → drawBoard()가 한 번에 돈다 — 저장된 글이 바뀌면 그리기도 끝난 것이다
-        await page.waitForFunction(ask => JSON.parse(localStorage.getItem('pulse-casting-v3')).ask === ask, ask);
-        o = await boardOrder(page);
-        assert.ok(o.atTop && !o.late && o.teamsFirst, '「' + ask + '」은 그룹 칸 제자리 ' + JSON.stringify(o));
+      // 그룹을 찾는 뜻이 분명한 글이면 그룹 칸이 찾는 답이라 제자리(추천 낱말표에 없어 0명이어도 입구가 남게 — 11-07 Fable P2)
+      for (const text of ['걸그룹', '보이그룹 광고', 'K-pop', 'OUTBLUE', '오팔린 같은 느낌', '아이돌 화장품']) {
+        o = await ask(page, text);
+        assert.ok(o.atTop && !o.late && o.teamsFirst && !o.hint, '「' + text + '」은 그룹 칸 제자리 ' + JSON.stringify(o));
       }
-      await page.fill('#q', '딸기 라떼 신메뉴');
-      await page.waitForFunction(() => JSON.parse(localStorage.getItem('pulse-casting-v3')).ask === '딸기 라떼 신메뉴');
-      assert.ok((await boardOrder(page)).atEnd, '그룹 말을 지우고 다른 광고 내용이면 다시 목록 뒤');
+      // 맨 「그룹」은 「타겟 그룹」과 「그룹 화장품」을 낱말로 못 가르니 칸은 목록 뒤로, 들은 말 줄에 그룹 입구 한 줄(11-07 다시 검수 P2 셋)
+      for (const text of ['타겟 그룹 20대 여성 화장품', '그룹 레슨 필라테스', '그룹웨어 협업 앱', '그룹 화장품 광고']) {
+        o = await ask(page, text);
+        assert.ok(o.atEnd && o.late && o.rank === '01' && o.hint === '#g-OPALIN #g-OUTBLUE', '「' + text + '」은 목록 뒤 + 그룹 입구 ' + JSON.stringify(o));
+      }
+      o = await ask(page, '그룹 광고');
+      assert.ok(o.atEnd && o.late && o.hint === '#g-OPALIN #g-OUTBLUE', '「그룹 광고」(추천 0명)도 목록 뒤 + 그룹 입구 ' + JSON.stringify(o));
+      // 띄어 쓴 「아이 돌봄」은 아이돌이 아니다 — 육아 추천이 서고 그룹 칸은 목록 뒤, 입구 줄 없음
+      o = await ask(page, '아이 돌봄 서비스 앱');
+      assert.ok(o.atEnd && o.late && o.rank === '01' && !o.hint, '「아이 돌봄 서비스 앱」은 목록 뒤 ' + JSON.stringify(o));
+      o = await ask(page, '딸기 라떼 신메뉴');
+      assert.ok(o.atEnd && !o.hint, '그룹 말을 지우고 다른 광고 내용이면 다시 목록 뒤 · 입구 줄 없음 ' + JSON.stringify(o));
+      // 한 글자씩 적는 동안 그룹 칸은 한 번만 옮긴다(첫 글자) — 160ms 늦춤보다 느리게 쳐 글자마다 다시 그린다
+      await page.locator('[data-act="ask-clear"]').click();
+      await page.evaluate(() => { window.__teamMoves = 0; new MutationObserver(ms => { for (const m of ms) for (const n of m.addedNodes) if (n.classList?.contains('teams')) window.__teamMoves++; }).observe(document.querySelector('#view'), { childList: true }); });
+      await page.locator('#q').pressSequentially('타겟 그룹 20대 여성 화장품', { delay: 220, timeout: 20_000 });
+      await page.waitForFunction(() => JSON.parse(localStorage.getItem('pulse-casting-v3')).ask === '타겟 그룹 20대 여성 화장품');
+      assert.equal(await page.evaluate(() => window.__teamMoves), 1, '적는 동안 그룹 칸이 오가지 않는다');
+      assert.ok((await boardOrder(page)).atEnd);
     }, phone);
     await withPage([], async page => {
       await page.goto(url + '#board');

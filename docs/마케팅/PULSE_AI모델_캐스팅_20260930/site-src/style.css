@@ -75,6 +75,9 @@ b,strong{font-weight:600}
 .ask .eg{display:flex;flex-wrap:wrap;gap:4px 14px}
 .ask .eg button{font-size:13px;color:var(--ink-2);text-decoration:underline;text-decoration-color:var(--rule-2);text-underline-offset:3px}
 .ask .eg button:hover{color:var(--ink);text-decoration-color:var(--ink)}
+.ask .gh{flex-basis:100%;display:flex;flex-wrap:wrap;gap:4px 8px;color:var(--ink-3)} /* 맨 「그룹」이 든 글 — 그룹 칸이 목록 뒤로 갔을 때의 그룹 입구 한 줄 */
+.ask .gh a{color:var(--ink-2);font-weight:550;text-decoration:underline;text-decoration-color:var(--rule-2);text-underline-offset:3px}
+.ask .gh a:hover{color:var(--ink);text-decoration-color:var(--ink)}
 
 /* 거르기 줄 */
 .filters{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 28px;padding-top:14px;padding-bottom:14px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);font-size:14px}
