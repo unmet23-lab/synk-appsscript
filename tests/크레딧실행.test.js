@@ -424,3 +424,24 @@ test('텔레그램 승인 훅만은 크레딧 전용 설정 폴더로 옮긴다(
       autoMode: { allow: ['$defaults'] }, hooks: { PermissionDenied: [{ hooks: [승인] }], Stop: [{ hooks: [승인] }] } });
   } finally { fs.rmSync(방, { recursive: true, force: true }); }
 });
+
+test('작업이 준 환경 값은 자식에 들어가되 인증 · 설정 폴더 · 무인 표시는 덮지 못한다', async () => {
+  const t = 방만들기([['A', 20, 'sk-ant-test-bbbb']]);
+  try {
+    const 잡은 = path.join(t.방, '환경.json');
+    fs.writeFileSync(path.join(t.방, 'env-claude.js'), `const fs=require('fs');process.stdin.resume();process.stdin.on('end',()=>{
+fs.writeFileSync(${JSON.stringify(잡은)},JSON.stringify({bg:process.env.CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS??null,key:(process.env.ANTHROPIC_API_KEY||'').slice(-4),
+cfg:process.env.CLAUDE_CONFIG_DIR||null,unattended:process.env.SYNK_UNATTENDED||null,num:process.env.SYNK_TEST_NUM??null}));
+console.log(JSON.stringify({type:'result',is_error:false,result:'{}',total_cost_usd:0,num_turns:1}));});`);
+    const { 작업 } = 가짜작업({ 환경: { CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS: '0', ANTHROPIC_API_KEY: 'sk-ant-evil-zzzz', CLAUDE_CONFIG_DIR: 'C:/evil',
+      SYNK_UNATTENDED: 'evil', SYNK_TEST_NUM: 3 } });
+    const r = await 실행기.작업돌리기('환경작업', { ...t.실행옵션, 앞인자: [path.join(t.방, 'env-claude.js')], 작업, 방: path.join(t.방, 'out'), fetch: 확인200, 알림: () => {} });
+    assert.equal(r.경로, '크레딧');
+    const 본 = JSON.parse(fs.readFileSync(잡은, 'utf8'));
+    assert.equal(본.bg, '0');
+    assert.equal(본.key, 'bbbb', '키는 실행기가 고른 것');
+    assert.equal(본.cfg, path.join(t.방, 'cfg'), '설정 폴더는 실행기가 준 것');
+    assert.equal(본.unattended, 'credit-job:환경작업');
+    assert.equal(본.num, null, '글이 아닌 값은 넣지 않는다');
+  } finally { t.지우기(); }
+});
