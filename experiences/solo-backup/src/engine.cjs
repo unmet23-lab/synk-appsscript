@@ -74,15 +74,26 @@ class BackupEngine extends EventEmitter {
   }
   getState() {
     const c = this.config;
-    return { version: '0.2.0', configured: !!c?.repositoryId, mode: c?.mode || 'backup', sources: c?.sources || [], repository: c?.repository || null,
+    return { version: '0.3.0', configured: !!c?.repositoryId, mode: c?.mode || 'backup', sources: c?.sources || [], repository: c?.repository || null,
       providerType: this.providerType, provider: c?.provider || null, initializing: !!c && !c.repositoryId,
       cloudConnection: this.isCloud() && c && !c.repositoryId && this.cloudCredentials ? { endpoint: c.provider.endpoint, bucket: c.provider.bucket } : !c && this.connection ? { endpoint: this.connection.endpoint, bucket: this.connection.bucket } : null,
       credentialRequired: !!c && !this.secret, intervalMinutes: this.intervalMs / 60000, fullCheckDays: this.isCloud() ? 30 : 1, retryAfter: c?.retryAfter || null,
-      recoverySaved: c?.recoverySaved || false, automatic: c?.automatic || false, lastBackup: c?.lastBackup || null,
+      recoverySaved: this.hasRecovery(), manualRecoverySaved: c?.recoverySaved || false, readOnly: !!c?.readOnly, automatic: c?.automatic || false, lastBackup: c?.lastBackup || null,
       lastRestore: c?.lastRestore || null, health: c?.health || null, lastError: c?.lastError || null,
       warning: c?.warning || null, job: this.job ? { ...this.job } : null };
   }
   isCloud() { return this.providerType === 'b2'; }
+  hasRecovery() { return !!(this.config?.recoverySaved || (this.config?.remoteRecovery?.repositoryId === this.config?.repositoryId && this.config?.remoteRecovery?.verifiedAt)); }
+  recoveryKit() {
+    if (!this.isCloud() || !this.config?.repositoryId || !this.secret) throw new Error('클라우드 백업을 연결한 뒤 복구 정보를 보관해 주세요.');
+    return { format: APP, version: 2, type: 'b2', provider: this.config.provider, repository: this.config.repository, repositoryId: this.config.repositoryId, vaultId: this.config.vaultId, password: this.secret };
+  }
+  async validateReadCredential(credentials) {
+    const options = { credentials, readOnly: true, timeoutMs: 60000 };
+    const info = json(await this.run(['cat', 'config'], options));
+    if (info.id !== this.config.repositoryId) throw new Error('복구 전용 키와 저장소가 다릅니다.');
+    await this.run(['snapshots', '--json'], options);
+  }
   forbidden() { return [this.stateDir, ...this.forbiddenPaths, ...(!this.isCloud() && this.config ? [this.config.repository] : [])]; }
   async storeCredential(password, credentials = this.cloudCredentials) {
     const value = this.isCloud() ? JSON.stringify({ version: 2, password, ...b2.credentials(credentials) }) : password;
@@ -139,9 +150,14 @@ class BackupEngine extends EventEmitter {
     } finally { this.transientSecrets = []; this.job = null; this.emitState(); this.emit('idle'); }
   }
   clean(message) { return b2.redact(message, [this.secret, this.cloudCredentials?.keyId, this.cloudCredentials?.applicationKey, this.connection?.credentials.keyId, this.connection?.credentials.applicationKey, ...this.transientSecrets]); }
-  async run(args, { repository = this.config.repository, password = this.secret, provider = this.config?.provider, credentials = this.cloudCredentials, timeoutMs = DAY, consumeStdout = null } = {}) {
+  async run(args, { repository = this.config.repository, password = this.secret, provider = this.config?.provider, credentials = this.cloudCredentials, timeoutMs = DAY, consumeStdout = null, readOnly = !!this.config?.readOnly } = {}) {
     if (this.stopping && !this.job) throw new Error('앱을 종료하고 있습니다. 이전 정상 백업은 유지됩니다.');
     const { env, args: providerArgs } = b2.childOptions(provider, credentials, this.stateDir, process.env, password);
+    if (readOnly) {
+      const permitted = ['snapshots', 'ls', 'dump'].includes(args[0]) || (args[0] === 'cat' && ['config', 'lock'].includes(args[1])) || (args[0] === 'list' && args[1] === 'locks');
+      if (!permitted) throw new Error('복구 전용 연결에서는 백업·전체 점검·삭제를 실행할 수 없습니다.');
+      providerArgs.push('--no-lock');
+    }
     if (this.runner) return this.runner(args, { repository, password, engine: this, consumeStdout, provider, credentials, env, providerArgs });
     return new Promise((resolve, reject) => {
       const child = spawn(this.resticPath, ['--repo', repository, ...providerArgs, '--retry-lock', '10s', ...args], { env, windowsHide: true, shell: false, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -292,7 +308,7 @@ class BackupEngine extends EventEmitter {
       return this.getState();
     });
   }
-  async importRecoveryKit({ text, repository, credentials }) {
+  async importRecoveryKit({ text, repository, credentials, readOnly = false }) {
     return this.operation('import', async () => {
       if (this.config) throw new Error('기존 설정을 덮어쓸 수 없습니다.');
       const kit = parseKit(text);
@@ -300,7 +316,8 @@ class BackupEngine extends EventEmitter {
       if (kit.type !== this.providerType) throw new Error('복구 키와 맞는 로컬·클라우드 탭을 선택해 주세요.');
       const target = this.isCloud() ? kit.repository : await directory(repository);
       if (!this.isCloud() && [this.stateDir, ...this.forbiddenPaths].some(p => overlap(target, p))) throw new Error('앱 폴더와 분리된 백업 저장소를 선택해 주세요.');
-      const options = { repository: target, password: kit.password, provider: kit.provider, credentials: this.isCloud() ? b2.credentials(credentials) : null, timeoutMs: 60000 };
+      if (readOnly && !this.isCloud()) throw new Error('읽기 전용 연결은 클라우드에서 지원합니다.');
+      const options = { repository: target, password: kit.password, provider: kit.provider, credentials: this.isCloud() ? b2.credentials(credentials) : null, timeoutMs: 60000, readOnly };
       const info = json(await this.run(['cat', 'config'], options));
       if (info.id !== kit.repositoryId) throw new Error('복구 키에 기록된 저장소와 선택한 저장소가 다릅니다.');
       // Do not persist a new identity until a usable app snapshot has been found.
@@ -310,19 +327,19 @@ class BackupEngine extends EventEmitter {
       if (!latest) throw new Error('완료된 백업이 없습니다. 원래 PC에서 백업을 완료해 주세요.');
       await this.storeCredential(kit.password, credentials);
       this.secret = kit.password; this.cloudCredentials = this.isCloud() ? b2.credentials(credentials) : null;
-      this.config = { schema: 1, mode: 'restore', ...(this.isCloud() ? { provider: kit.provider } : {}), vaultId: kit.vaultId, repository: target, repositoryId: info.id, sources: [], automatic: false, recoverySaved: true, lastBackup: { id: latest.id, at: latest.time, files: latest.summary?.total_files_processed || 0, bytes: latest.summary?.total_bytes_processed || 0 }, health: null, warning: '복구 전용 연결입니다. 이 저장소의 백업을 지우거나 자동 백업하지 않습니다.' };
+      this.config = { schema: 1, mode: 'restore', readOnly, ...(this.isCloud() ? { provider: kit.provider } : {}), vaultId: kit.vaultId, repository: target, repositoryId: info.id, sources: [], automatic: false, recoverySaved: true, lastBackup: { id: latest.id, at: latest.time, files: latest.summary?.total_files_processed || 0, bytes: latest.summary?.total_bytes_processed || 0 }, health: null, warning: '복구 전용 연결입니다. 이 저장소의 백업을 지우거나 자동 백업하지 않습니다.' };
       await this.save(); return this.getState();
     });
   }
   async setAutomatic(enabled) {
     if (this.job) throw new Error('진행 중인 작업이 끝난 뒤 변경해 주세요.');
     if (typeof enabled !== 'boolean' || this.config?.mode !== 'backup' || !this.config.repositoryId) throw new Error('자동 백업을 설정할 수 없습니다.');
-    if (enabled && !this.config.recoverySaved) throw new Error('복구 키를 먼저 저장해 주세요.');
+    if (enabled && !this.hasRecovery()) throw new Error('복구 키를 먼저 저장해 주세요.');
     this.config.automatic = enabled; await this.save(); return this.getState();
   }
   async backupNow() {
     return this.operation('backup', async () => {
-      if (this.config?.mode !== 'backup' || !this.config.recoverySaved) throw new Error('복구 키를 먼저 저장한 뒤 백업을 시작해 주세요.');
+      if (this.config?.mode !== 'backup' || !this.hasRecovery()) throw new Error('복구 키를 먼저 저장한 뒤 백업을 시작해 주세요.');
       this.lastAttempt = this.now();
       await this.identity();
       await validateSources(this.config.sources, this.forbidden());
@@ -384,6 +401,14 @@ class BackupEngine extends EventEmitter {
   async restoreLatest({ parent }) {
     return this.operation('restore', async () => {
       await this.identity();
+      if (this.config.readOnly) {
+        const ids = (await this.run(['list', 'locks'], { timeoutMs: 60000 })).trim().split(/\s+/).filter(Boolean);
+        if (ids.length > 100 || ids.some(id => !isId(id))) throw new Error('저장소 작업 상태를 확인하지 못했습니다.');
+        for (const id of ids) {
+          const lock = json(await this.run(['cat', 'lock', id], { timeoutMs: 60000 }));
+          if (typeof lock.exclusive !== 'boolean' || lock.exclusive) throw new Error('다른 PC에서 백업 정리가 진행 중입니다. 작업이 끝난 뒤 복구해 주세요.');
+        }
+      }
       const base = await directory(parent);
       if ([...this.forbidden(), ...this.config.sources].some(p => overlap(base, p))) throw new Error('작업 폴더·백업 저장소와 분리된 복구 폴더를 선택해 주세요.');
       const latest = (await this.snapshots([VERIFIED]))[0];

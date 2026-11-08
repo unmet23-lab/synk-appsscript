@@ -9,7 +9,10 @@
   let pollTimer = null;
   const JOBS = { setup: '백업을 준비하는 중', backup: '백업하는 중', restore: '새 폴더로 복구하고 해시를 확인하는 중', check: '전체 데이터를 점검하는 중 (오래 걸릴 수 있습니다)', import: '기존 백업을 불러오는 중', key: '복구 키를 저장하고 확인하는 중', prune: '오래된 기록을 정리하는 중', credential: '인증 정보를 확인하는 중', credentials: '인증 정보를 확인하는 중' };
   let prefilled = false;
+  let recoSearched = false;
+  let candKey = '';
   let initText = null;
+  let connecting = false;
   function normEp(v) { return String(v || '').trim().replace(/^https:\/\//i, '').replace(/\/+$/, ''); }
   function savedConn() { return state && state.profile === 'b2' && !state.configured && state.cloudConnection && typeof state.cloudConnection === 'object' ? state.cloudConnection : null; }
   function connMatch() {
@@ -133,29 +136,92 @@
     setText(sumId, s ? summary(x) : '');
   }
 
+  function renderReco(s, act, cloud, restoreMode) {
+    const r = s.recovery && typeof s.recovery === 'object' ? s.recovery : null;
+    show('recoView', cloud && !!r);
+    if (!cloud || !r) return;
+    const av = !!r.available;
+    const on = av && !!r.connected;
+    const bm = !!s.configured && !restoreMode && !s.credentialRequired;
+    const cands = Array.isArray(r.candidates) ? r.candidates : [];
+    show('recoUnavail', !av);
+    setText('recoConn', !av ? '사용할 수 없음' : r.needsLogin ? '다시 로그인이 필요합니다' : r.connected ? '연결됨' + (r.email ? ' · ' + r.email : '') : '연결 안 됨');
+    const st = { notSaved: '아직 보관 전', pending: '보관 대기 중', working: '처리 중', verified: '보관 확인됨', attention: '확인이 필요합니다' }[r.status] || '아직 보관 전';
+    const okV = r.status === 'verified' && !r.error;
+    const vt = r.verifiedAt ? fmtTime(r.verifiedAt) : '';
+    let stt = st + (vt ? ' · 마지막 확인 ' + vt : '');
+    if (restoreMode && okV) stt = '복구 정보 가져옴 · 복구 준비됨' + (vt ? ' (' + vt + ' 확인)' : '');
+    else if (!r.connected && vt) stt = (okV ? '마지막으로 보관이 확인된 시각 ' + vt : st + ' · 마지막 확인 ' + vt) + ' · 연결되어 있지 않아 지금은 확인하지 않습니다';
+    setText('recoStatus', stt);
+    $('recoStatus').className = okV && (r.connected || restoreMode) ? 'ok' : (r.status === 'attention' || r.error) ? 'attention' : '';
+    const eMsg = r.error ? (r.canImport ? '복구 정보를 확인하지 못했습니다: ' + r.error : '자동 복구 정보 확인이 필요합니다: ' + r.error + ' 이 알림이 백업 파일이 사라졌다는 뜻은 아닙니다.') : r.status === 'attention' ? '복구 정보 보관 상태를 다시 확인해 주세요. Google 연결을 확인한 뒤 다시 확인·보관을 눌러 주세요.' : '';
+    setText('recoError', eMsg);
+    show('recoError', !!eMsg);
+    let note = '';
+    if (av && bm && !r.readKeyReady) note = '복구 전용 연결 준비가 필요합니다. 준비되기 전에는 자동 보관이 완료되지 않습니다.' + (s.manualRecoverySaved ? '' : ' 그동안 복구 키 파일을 직접 보관해 주세요.');
+    else if (av && !s.configured && !r.connected) note = '처음 한 번만 Google 권한을 허용하면 됩니다. 클라우드 연결 준비를 마치고 복구 전용 연결이 준비되어 있으면 복구 정보가 자동으로 보관됩니다. 시험판에서는 소유자가 복구 전용 연결을 준비하며, 아직 직접 준비할 수는 없습니다. 새 PC라면 연결한 뒤 ‘내 백업 찾기’를 누르세요.';
+    else if (on && !s.configured && !r.canImport) note = '이 PC에 끝나지 않은 클라우드 연결 준비가 남아 있어, 그 위에 다른 백업을 가져올 수 없습니다. 원래 연결 준비를 다시 시도해 마치거나, 새 PC에서 백업을 찾아 가져오세요.';
+    else if (s.configured && restoreMode) note = '이 PC는 복구 전용으로 연결되어 파일 복구만 할 수 있습니다. 시험판에서 이 PC의 새 자동 백업은 소유자 설정이 필요합니다.';
+    setText('recoNote', note);
+    show('recoNote', !!note);
+    show('btnRConnect', av && (!r.connected || !!r.needsLogin));
+    setText('btnRConnect', r.needsLogin ? '다시 로그인' : 'Google로 연결');
+    show('btnRSync', on && bm && !!r.readKeyReady);
+    show('btnRFind', on && !!r.canImport);
+    show('btnRDisc', on);
+    show('btnRKit', bm && !!s.recoverySaved);
+    setText('btnRKit', s.manualRecoverySaved ? '복구 키 파일 다시 저장(선택)' : '복구 키 파일도 따로 저장(선택)');
+    const sel = $('recoSel');
+    const key = JSON.stringify(cands.map((c) => (c ? [c.id, c.createdAt, c.bucket, c.repositoryLabel] : null)));
+    if (key !== candKey) {
+      candKey = key;
+      const keep = sel.value;
+      const ph = document.createElement('option');
+      ph.value = '';
+      ph.textContent = '백업을 골라 주세요';
+      const opts = [ph];
+      cands.forEach((c) => {
+        if (!c || c.id == null) return;
+        const o = document.createElement('option');
+        o.value = String(c.id);
+        o.textContent = (fmtTime(c.createdAt) || '날짜 모름') + ' · ' + String(c.bucket || '') + ' · ' + String(c.repositoryLabel || '');
+        opts.push(o);
+      });
+      sel.replaceChildren(...opts);
+      sel.value = opts.some((o) => o.value && o.value === keep) ? keep : '';
+    }
+    show('recoPick', on && !!r.canImport && (recoSearched || cands.length > 0));
+    show('recoNone', recoSearched && !cands.length && !r.busy);
+    show('recoSelLabel', cands.length > 0);
+    show('btnRImport', !!r.canImport && cands.length > 0);
+    sel.disabled = act || !cands.length;
+    $('btnRImport').disabled = act || !r.canImport || !sel.value;
+  }
+
   function render() {
     const s = state;
     const lock = pending || !s;
-    const act = lock || !!(s && s.job);
+    const rb = !!(s && s.recovery && s.recovery.busy);
+    const act = lock || !!(s && s.job) || rb;
     $('app').setAttribute('aria-busy', act ? 'true' : 'false');
     document.querySelectorAll('button, input').forEach((el) => { el.disabled = act; });
     SECRETS.forEach((id) => { $(id).disabled = lock; });
-    renderTab('tabLocal', 'sumLocal', 'local', s, lock);
-    renderTab('tabB2', 'sumB2', 'b2', s, lock);
+    renderTab('tabLocal', 'sumLocal', 'local', s, lock || rb);
+    renderTab('tabB2', 'sumB2', 'b2', s, lock || rb);
     const j = s ? s.job : null;
-    show('jobBox', !!j || pending);
-    show('jobHint', !!j || pending);
-    setText('jobHint', pending ? '요청을 처리하고 있습니다. 잠시 기다려 주세요. 진행 중인 작업은 앱 안에서 취소할 수 없습니다.' : '작업이 실행 중입니다. 진행 중인 작업은 앱 안에서 취소할 수 없습니다. 위의 탭으로 다른 백업 종류는 볼 수 있습니다.');
+    show('jobBox', !!j || pending || rb);
+    show('jobHint', !!j || pending || rb);
+    setText('jobHint', rb && !pending ? '자동 복구 정보를 확인하는 동안 다른 작업은 잠시 기다립니다.' : pending || rb ? '요청을 처리하고 있습니다. 잠시 기다려 주세요. 진행 중인 작업은 앱 안에서 취소할 수 없습니다.' : '작업이 실행 중입니다. 진행 중인 작업은 앱 안에서 취소할 수 없습니다. 위의 탭으로 다른 백업 종류는 볼 수 있습니다.');
     if (j) {
       const pct = typeof j.percent === 'number' ? Math.max(0, Math.min(100, Math.round(j.percent))) : null;
       setText('jobText', (JOBS[j.kind] || '작업 중') + (j.stage ? ' · ' + j.stage : '') + (pct !== null ? ' (' + pct + '%)' : ''));
       if (pct !== null) $('jobBar').value = pct; else $('jobBar').removeAttribute('value');
-    } else if (pending) {
-      setText('jobText', '잠시만 기다려 주세요…');
+    } else if (pending || rb) {
+      setText('jobText', rb && connecting ? 'Google 연결 중입니다. 브라우저 창에서 로그인과 권한 허용을 마쳐 주세요. 연결 대기를 취소하려면 트레이 메뉴에서 \'앱 종료\'를 누르세요. 5분 안에 마치지 않으면 연결 시도가 자동으로 끝납니다.' : rb ? '복구 정보를 확인하는 중입니다…' : '잠시만 기다려 주세요…');
       $('jobBar').removeAttribute('value');
     }
-    if (!s) { ['setupView', 'cloudView', 'credView', 'keyView', 'dashView'].forEach((id) => show(id, false)); return; }
-    setText('version', '버전 ' + (s.version || ''));
+    if (!s) { ['recoView', 'setupView', 'cloudView', 'credView', 'keyView', 'dashView'].forEach((id) => show(id, false)); return; }
+    setText('version', '버전 ' + (s.version || '확인 필요'));
     const cloud = s.profile === 'b2';
     const restoreMode = s.mode === 'restore';
     const cred = !!s.credentialRequired;
@@ -166,8 +232,10 @@
     show('credView', !!s.configured && cred);
     show('keyView', !!s.configured && !restoreMode && !s.recoverySaved && !cred);
     show('keyCloudNote', cloud);
+    show('keyGoogleNote', cloud && !!(s.recovery && s.recovery.available));
     show('dashView', !!s.configured);
     show('credFields', cloud);
+    renderReco(s, act, cloud, restoreMode);
     if (!(cloud && !s.configured)) prefilled = false;
     const sel = s.selection || {};
 
@@ -227,6 +295,7 @@
     setText('backupTitle', lb ? '마지막 성공한 백업' : '아직 백업 전');
     $('btnRestore').disabled = act || !lb || cred;
     $('btnCheck').disabled = act || !lb || cred;
+    show('btnCheck', !s.readOnly);
     $('btnAuto').disabled = act || cred;
     $('btnNow').disabled = act || cred;
     setText('backupTime', lb ? fmtTime(lb.at) : '아직 완료된 백업이 없습니다');
@@ -242,8 +311,8 @@
     const h = s.health;
     $('healthText').className = 'big' + (h ? (h.status === 'ok' ? ' ok' : ' attention') : '');
     setText('healthText', !h ? '아직 점검 전' : h.status === 'ok' ? '마지막 점검에서 문제가 발견되지 않았습니다' : '확인이 필요합니다');
-    setText('healthDetail', h ? fmtTime(h.checkedAt) + ' 점검' + (h.detail ? ' · ' + h.detail : '') + ' (최근 백업 시각과는 별개입니다)' : restoreMode ? '복구 전에 전체 점검을 실행해 볼 수 있습니다. 오래 걸릴 수 있습니다.' : '첫 백업 후 자동으로 진행되고, 이후 ' + every + ' 실행됩니다. 오래 걸릴 수 있습니다.');
-    show('checkNote', cloud);
+    setText('healthDetail', h ? fmtTime(h.checkedAt) + ' 점검' + (h.detail ? ' · ' + h.detail : '') + ' (최근 백업 시각과는 별개입니다)' : restoreMode ? (s.readOnly ? '복구 전용 연결에서는 전체 점검을 할 수 없습니다. 복구할 때 모든 파일의 해시를 확인합니다.' : '복구 전에 전체 점검을 실행해 볼 수 있습니다. 오래 걸릴 수 있습니다.') : '첫 백업 후 자동으로 진행되고, 이후 ' + every + ' 실행됩니다. 오래 걸릴 수 있습니다.');
+    show('checkNote', cloud && !s.readOnly);
     show('restoreNote', cloud);
 
     const lr = s.lastRestore;
@@ -255,7 +324,7 @@
     setText('repoPath', cloud ? (pv ? 'B2 · ' + (pv.endpoint || '') + ' · ' + (pv.bucket || '') + (pv.prefix ? ' / ' + pv.prefix : '') : '') : (s.repository || ''));
     show('lifeNote', cloud);
     show('detCloud', cloud);
-    show('rotCard', cloud);
+    show('rotCard', cloud && !s.readOnly);
     setText('detTiming', '백업할 때마다 구조 점검을 합니다. 전체 데이터 점검은 첫 백업 후 자동으로, 이후 ' + every + ' 진행하며' + (cloud ? ' 데이터를 내려받으므로 다운로드 요금이 생길 수 있습니다.' : ' 데이터가 많으면 오래 걸릴 수 있습니다.') + ' 자동 백업(' + iv + '분마다)은 앱 또는 트레이가 실행 중이고 PC가 깨어 있을 때만 동작합니다.');
     show('settings', !restoreMode);
     $('chkLogin').checked = !!s.launchAtLogin;
@@ -331,6 +400,17 @@
     call('recoverCredential', { keyId: k.keyId, applicationKey: k.applicationKey }, true, true);
   });
   $('btnKey').addEventListener('click', () => call('saveRecoveryKit', undefined, true));
+  $('btnRKit').addEventListener('click', () => call('saveRecoveryKit', undefined, true));
+  $('btnRConnect').addEventListener('click', async () => { if (pending) return; connecting = true; render(); try { await call('connectRecovery', undefined, true); } finally { connecting = false; render(); } });
+  $('btnRSync').addEventListener('click', () => call('syncRecovery', undefined, true));
+  $('btnRDisc').addEventListener('click', async () => { if (await call('disconnectRecovery', undefined, true)) { recoSearched = false; render(); } });
+  $('btnRFind').addEventListener('click', async () => { if (await call('findRecoveryBackups', undefined, true)) { recoSearched = true; render(); } });
+  $('recoSel').addEventListener('change', () => render());
+  $('btnRImport').addEventListener('click', async () => {
+    const id = $('recoSel').value;
+    if (!id || pending || !state || !state.recovery || !state.recovery.canImport) return;
+    if (await call('importAccountRecovery', id, true)) { recoSearched = false; render(); }
+  });
   $('btnAuto').addEventListener('click', (e) => {
     const a = e.currentTarget.dataset.action;
     if (a === 'pause') call('setAutomatic', false, true);
