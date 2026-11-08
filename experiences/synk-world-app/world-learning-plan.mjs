@@ -192,7 +192,8 @@ function resumeCandidates(progress,settings,now){
 
 // 「이번 주 계획」·「내 위치」가 여는 후보: 짧은 연습(route 'practice', world-reading-practice.mjs가 만든다 — 읽기·듣기)과 시험 형식 연습(route 'mock')과
 // 짧은 진단(route 'position', 학습 항목을 겨누지 않는 넓은 확인 — 급한 연습을 앞지르지 않게 targets를 비운다).
-// 쓰기 연습(route 'writing')과 말하기 연습(route 'speaking', 10-21 — 시험 정보에서 말하기를 고른 학생만)은 Core 지도에 항목이 없어 targets를 비운 채 온다.
+// 쓰기 연습(route 'writing')은 근거가 없는 항목이라 targets를 비운 채 오고, 말하기 연습(route 'speaking', 10-21 — 시험 정보에서 말하기를 고른 학생만)은
+// 그 유형이 열 문항의 열쇠 하나만 targets로 온다(Atlas × WORLD E — 「채점 안 함」만 남는 능력이라 Core는 상태 대신 노출 이력만 쓴다).
 // 호출하는 쪽(world-learning-ui.mjs)이 그 사람의 노출 기록으로 새 문항이 남은 것만 넘긴다.
 function extraCandidate(candidate,settings){
  if(!record(candidate)||!['practice','position','writing','mock','speaking'].includes(candidate.route)||typeof candidate.id!=='string')return null;

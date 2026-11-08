@@ -376,10 +376,12 @@ function mountLifeLearning({owner,keep}){
   // 말하기 연습(10-21 공개 판 · 기본 켜짐): 모듈이 문항을 읽은 뒤에만 시험 정보의 「말하기 평가도 준비해요」(이 기기 기록)와 이번 주 계획의 말하기 칸이 생긴다
   // (이 기기에서 끄는 스위치를 켰으면 모듈을 부르지 않아 지금과 같다 — 아래 speakingOn).
   // 이 파일은 모듈을 정적으로 부르지 않으므로 그 모듈의 읽기·쓰기 함수를 감싸 넘긴다. owner는 학습 화면의 주인(계정·손님)이다.
-  speakingPractice:{available:()=>!!speakingModule?.speakingReady(),candidates:()=>speakingModule?.speakingReady()?speakingModule.SPEAKING_CANDIDATES.filter(row=>row.exam==='speaking'):[],
+  // 후보에는 그 유형이 열 문항의 Core target을 단다(Strata 말하기 조회가 있을 때 — Atlas × WORLD E §4-4), 이번 주 셈에는 홈 코치의 사건을 넘겨
+  // 다른 기기에서 한 말하기도 센다(§4-5). 공개 직후 옛 말하기 모듈이 캐시에 남으면 새 함수가 없어 지금처럼 돈다.
+  speakingPractice:{available:()=>!!speakingModule?.speakingReady(),candidates:()=>speakingModule?.speakingReady()?(speakingModule.speakingCandidates?.({measure:worldLearning.speaking?.measure})??speakingModule.SPEAKING_CANDIDATES.filter(row=>row.exam==='speaking')):[],
    chosen:owner=>!!speakingModule&&speakingModule.readSpeakingExam({storage:localStorage,owner}),choose:(owner,on)=>!!speakingModule&&speakingModule.writeSpeakingExam({storage:localStorage,owner,on}),
-   week:(owner,week)=>speakingModule?speakingModule.speakingWeek({storage:localStorage,owner,week}):null,open:route=>openSpeaking({dataset:{speakingRoute:route}})},
-  prepare:async()=>{if(operating&&client.snapshot&&!window.SYNKLearningHost)await account.prepareGame({target:window});},
+   week:(owner,week,events)=>speakingModule?speakingModule.speakingWeek({storage:localStorage,owner,week,events}):null,open:route=>openSpeaking({dataset:{speakingRoute:route}})},
+  prepare:()=>prepareLearningHost(),
   // 싱크타운 「마을 준비 확인」(학습·개인화 다리 §4-2): 판정은 서버(town/check), 판은 진단과 같다. 계정 모드에서만.
   town:operating&&owner!=='guest'?{kit:worldTownCheck,check:body=>client.request('town/check',{method:'POST',body}),open:()=>town(),
    passed:result=>{townEntry=result;},evidence:()=>quietTownCheck()}:null}),value=>{value.dispose();home.connectEducation?.(null);home.connectPlayLevel?.(null);});
@@ -514,16 +516,28 @@ async function addMe2Row(){
  if(client.snapshot?.accountId!==owner||(out.accountId&&out.accountId!==owner))return;
  if(host&&place&&screen==='world-profile'&&!place.querySelector('.me2-row'))place.querySelector('.ws-me-id')?.insertAdjacentHTML('afterend',host.rowHtml(out.me?.chosen_url));
 }
+// 계정 학습 통로(SYNKLearningHost)를 아직 안 열었으면 연다. 열린 게임을 멈추는 prepareGame은 통로가 없을 때만, 동시에 부르면 한 번만 부른다.
+// 홈 「다음 할 일」 · 생활 레슨과 말하기 연습이 같은 함수를 쓴다 — 말하기를 바로 열어도 기록이 계정을 따라가게(Atlas × WORLD E 설계 §4-3).
+let hostPreparing=null;
+function prepareLearningHost(){
+ if(!operating||!client.snapshot||window.SYNKLearningHost)return Promise.resolve();
+ return hostPreparing||=Promise.resolve().then(()=>account.prepareGame({target:window})).finally(()=>{hostPreparing=null;});
+}
 function openSpeaking(button){
  if(!speakingModule)return;
  const owner=writingOwnerId();
+ void prepareLearningHost().catch(()=>{});
  if(!speaking||speakingOwner!==owner){
-  speaking?.dispose();speakingOwner=owner;let coach=null;
+  speaking?.dispose();speakingOwner=owner;let coach=null,coachHost=null;
   const feedback=operating?(client.snapshot&&account?.supportsSpeaking?{status:()=>account.speakingRequest({action:'status'}),request:payload=>account.speakingRequest(payload)}:null)
    :client?.snapshot?{status:()=>client.request('speaking',{method:'POST',body:{action:'status'}}),request:payload=>client.request('speaking',{method:'POST',body:payload})}:null;
-  speaking=speakingModule.createSpeakingPractice({show:(title,html)=>show(title,html,'world-speaking',{eyebrow:'SPEAKING'}),home,getOwner:writingOwnerId,tutor:()=>home.tutor?.()?.tutor||null,feedback,
-   coach:()=>{if(writingOwnerId()!==owner)return null;if(coach)return coach;const source=window.SYNKLearningHost||null;if(!source&&owner!=='guest')return null;
-    coach=source?source.createGame({gameId:'world-speaking'},worldLearning.engine.createGame,worldLearning.createLearningSync):worldLearning.engine.createGame({gameId:'world-speaking',storage:localStorage});return coach;}});
+  // measure: Strata 말하기 층의 측정 조회(계정 묶음의 worldLearning.speaking). 옛 묶음이면 없어 기기 기록만 남는다(E §4-3).
+  speaking=speakingModule.createSpeakingPractice({show:(title,html)=>show(title,html,'world-speaking',{eyebrow:'SPEAKING'}),home,getOwner:writingOwnerId,tutor:()=>home.tutor?.()?.tutor||null,feedback,measure:worldLearning.speaking?.measure,
+   // 계정 통로는 게임을 열 때마다 새로 열리고 옛 통로의 코치는 던진다(prepareGame) — 통로가 바뀌었거나 같은 통로에서 코치가 끝났으면 새로 받는다(붙들면 그 뒤 시도가 계정에 조용히
+   // 안 남는다, 배우기 화면 coachFor와 같은 길). 손님 코치는 재확인을 지키며 접는다(followups — 옵션 없이 접으면 그 기기의 재확인이 사라진다, 계정 길은 통로가 준다).
+   coach:()=>{if(writingOwnerId()!==owner)return null;const source=window.SYNKLearningHost||null;if(coach&&coachHost===source){try{coach.events();return coach;}catch{}}
+    try{coach?.disconnect?.();}catch{}coach=null;coachHost=source;if(!source&&owner!=='guest')return null;
+    coach=source?source.createGame({gameId:'world-speaking'},worldLearning.engine.createGame,worldLearning.createLearningSync):worldLearning.engine.createGame({gameId:'world-speaking',storage:localStorage,followups:true});return coach;}});
  }
  return speaking.open(button?.dataset?.speakingRoute||'speaking');
 }

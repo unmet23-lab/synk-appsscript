@@ -95,6 +95,17 @@ const map3 = { map_ver: `${speaking.json.version}-${crypto.createHash('sha256').
   tag_vocabulary: [], links: { tags: [], goals: [] } };
 validateMap(map3);
 output(path.join(root, 'strata/maps/ko-speaking.json'), JSON.stringify(map3, null, 2) + '\n');
+// WORLD speaking practice (2026-11-08, Atlas × WORLD E): the six TOPIK speaking types as abilities (domain speaking), a layer only
+// WORLD's coach map loads after the life layer. Checked against that whole coach map and the drama map's own speaking ids, which
+// stay apart. Every attempt stays unassessed; the layer only names where a try is recorded.
+const speakingTypes = read('strata/topik-speaking.json');
+const speakingLib = require('../strata/topik-speaking');
+const worldCoachBase = require('../strata/world-life').withLifeLayer(
+  require('../strata/world-map').worldMapData({ base: require('../strata/topik-i').topikMap({ base: map }), second: map2 }), lifeLayer);
+const speakingLayer = speakingLib.buildSpeakingLayer({ base: worldCoachBase, source: speakingTypes.json, file: { path: speakingTypes.rel, sha256: speakingTypes.sha }, drama: speaking.json });
+speakingLayer.layer_ver += `-${speakingTypes.sha.slice(0, 12)}`;
+validateMap(speakingLib.withSpeakingLayer(worldCoachBase, speakingLayer));
+output(path.join(root, 'strata/maps/topik-speaking.json'), JSON.stringify(speakingLayer, null, 2) + '\n');
 const esbuild = require(require.resolve('esbuild', { paths: [root, path.join(root, '영상')] }));
 const bundleOptions = { absWorkingDir: root, bundle: true,
   write: false, platform: 'browser', format: 'iife', globalName: 'SynkLearning', target: ['es2022'], charset: 'utf8',

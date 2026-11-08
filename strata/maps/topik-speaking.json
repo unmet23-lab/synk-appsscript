@@ -1,0 +1,227 @@
+{
+  "layer_ver": "topik-speaking-1-9975e829a61b",
+  "sources": {
+    "speaking-types": {
+      "path": "strata/topik-speaking.json",
+      "sha256": "9975e829a61be7763f728fb393c6f463a08280b98e251427a3cafdf328e66bb2"
+    }
+  },
+  "measure": {
+    "difficulty": 1,
+    "format": "spoken"
+  },
+  "nodes": [
+    {
+      "id": "ko.speaking.answer",
+      "kind": "skill",
+      "label_ko": "질문에 대답하기",
+      "domain": "speaking",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "confidence": "authored",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "speaking-review-r1",
+        "evidence": "experiences/synk-world-app/qa/speaking-pilot-20261021/item-review/README.md",
+        "design": "docs/_ops/qa/atlas-world-engine-20261108/E_말하기.md",
+        "reviewedAt": "2026-11-08",
+        "summary": "여섯 유형은 공식 문항 구성 그대로다. 문항 → 유형은 10-21 AI 2중 검수가 유형 · 수준 적합을 통과시켰고, 역할극 → 역할 수행과 측정 난도 1은 11-08 설계 검토 네 곳에서 고칠 것이 없었다."
+      },
+      "source_refs": [
+        {
+          "source": "speaking-types",
+          "selector": "ko.speaking.answer"
+        }
+      ],
+      "material": {
+        "type": 1,
+        "band": "beginner",
+        "prepSec": 20,
+        "answerSec": 30,
+        "roleplays": []
+      }
+    },
+    {
+      "id": "ko.speaking.roleplay",
+      "kind": "skill",
+      "label_ko": "그림 보고 역할 수행하기",
+      "domain": "speaking",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "confidence": "authored",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "speaking-review-r1",
+        "evidence": "experiences/synk-world-app/qa/speaking-pilot-20261021/item-review/README.md",
+        "design": "docs/_ops/qa/atlas-world-engine-20261108/E_말하기.md",
+        "reviewedAt": "2026-11-08",
+        "summary": "여섯 유형은 공식 문항 구성 그대로다. 문항 → 유형은 10-21 AI 2중 검수가 유형 · 수준 적합을 통과시켰고, 역할극 → 역할 수행과 측정 난도 1은 11-08 설계 검토 네 곳에서 고칠 것이 없었다."
+      },
+      "source_refs": [
+        {
+          "source": "speaking-types",
+          "selector": "ko.speaking.roleplay"
+        }
+      ],
+      "material": {
+        "type": 2,
+        "band": "beginner",
+        "prepSec": 30,
+        "answerSec": 40,
+        "roleplays": [
+          "rp-cafe-tea"
+        ]
+      }
+    },
+    {
+      "id": "ko.speaking.narrate",
+      "kind": "skill",
+      "label_ko": "그림 보고 이야기하기",
+      "domain": "speaking",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "confidence": "authored",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "speaking-review-r1",
+        "evidence": "experiences/synk-world-app/qa/speaking-pilot-20261021/item-review/README.md",
+        "design": "docs/_ops/qa/atlas-world-engine-20261108/E_말하기.md",
+        "reviewedAt": "2026-11-08",
+        "summary": "여섯 유형은 공식 문항 구성 그대로다. 문항 → 유형은 10-21 AI 2중 검수가 유형 · 수준 적합을 통과시켰고, 역할극 → 역할 수행과 측정 난도 1은 11-08 설계 검토 네 곳에서 고칠 것이 없었다."
+      },
+      "source_refs": [
+        {
+          "source": "speaking-types",
+          "selector": "ko.speaking.narrate"
+        }
+      ],
+      "material": {
+        "type": 3,
+        "band": "intermediate",
+        "prepSec": 40,
+        "answerSec": 60,
+        "roleplays": []
+      }
+    },
+    {
+      "id": "ko.speaking.respond",
+      "kind": "skill",
+      "label_ko": "대화 완성하기",
+      "domain": "speaking",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "confidence": "authored",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "speaking-review-r1",
+        "evidence": "experiences/synk-world-app/qa/speaking-pilot-20261021/item-review/README.md",
+        "design": "docs/_ops/qa/atlas-world-engine-20261108/E_말하기.md",
+        "reviewedAt": "2026-11-08",
+        "summary": "여섯 유형은 공식 문항 구성 그대로다. 문항 → 유형은 10-21 AI 2중 검수가 유형 · 수준 적합을 통과시켰고, 역할극 → 역할 수행과 측정 난도 1은 11-08 설계 검토 네 곳에서 고칠 것이 없었다."
+      },
+      "source_refs": [
+        {
+          "source": "speaking-types",
+          "selector": "ko.speaking.respond"
+        }
+      ],
+      "material": {
+        "type": 4,
+        "band": "intermediate",
+        "prepSec": 40,
+        "answerSec": 60,
+        "roleplays": []
+      }
+    },
+    {
+      "id": "ko.speaking.interpret",
+      "kind": "skill",
+      "label_ko": "자료 해석하기",
+      "domain": "speaking",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "confidence": "authored",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "speaking-review-r1",
+        "evidence": "experiences/synk-world-app/qa/speaking-pilot-20261021/item-review/README.md",
+        "design": "docs/_ops/qa/atlas-world-engine-20261108/E_말하기.md",
+        "reviewedAt": "2026-11-08",
+        "summary": "여섯 유형은 공식 문항 구성 그대로다. 문항 → 유형은 10-21 AI 2중 검수가 유형 · 수준 적합을 통과시켰고, 역할극 → 역할 수행과 측정 난도 1은 11-08 설계 검토 네 곳에서 고칠 것이 없었다."
+      },
+      "source_refs": [
+        {
+          "source": "speaking-types",
+          "selector": "ko.speaking.interpret"
+        }
+      ],
+      "material": {
+        "type": 5,
+        "band": "advanced",
+        "prepSec": 70,
+        "answerSec": 80,
+        "roleplays": []
+      }
+    },
+    {
+      "id": "ko.speaking.opinion",
+      "kind": "skill",
+      "label_ko": "의견 제시하기",
+      "domain": "speaking",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "confidence": "authored",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "speaking-review-r1",
+        "evidence": "experiences/synk-world-app/qa/speaking-pilot-20261021/item-review/README.md",
+        "design": "docs/_ops/qa/atlas-world-engine-20261108/E_말하기.md",
+        "reviewedAt": "2026-11-08",
+        "summary": "여섯 유형은 공식 문항 구성 그대로다. 문항 → 유형은 10-21 AI 2중 검수가 유형 · 수준 적합을 통과시켰고, 역할극 → 역할 수행과 측정 난도 1은 11-08 설계 검토 네 곳에서 고칠 것이 없었다."
+      },
+      "source_refs": [
+        {
+          "source": "speaking-types",
+          "selector": "ko.speaking.opinion"
+        }
+      ],
+      "material": {
+        "type": 6,
+        "band": "advanced",
+        "prepSec": 70,
+        "answerSec": 80,
+        "roleplays": []
+      }
+    }
+  ]
+}

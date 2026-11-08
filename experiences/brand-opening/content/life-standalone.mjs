@@ -7575,6 +7575,350 @@ var require_world_life2 = __commonJS({
   }
 });
 
+// strata/maps/topik-speaking.json
+var require_topik_speaking = __commonJS({
+  "strata/maps/topik-speaking.json"(exports, module) {
+    module.exports = {
+      layer_ver: "topik-speaking-1-9975e829a61b",
+      sources: {
+        "speaking-types": {
+          path: "strata/topik-speaking.json",
+          sha256: "9975e829a61be7763f728fb393c6f463a08280b98e251427a3cafdf328e66bb2"
+        }
+      },
+      measure: {
+        difficulty: 1,
+        format: "spoken"
+      },
+      nodes: [
+        {
+          id: "ko.speaking.answer",
+          kind: "skill",
+          label_ko: "\uC9C8\uBB38\uC5D0 \uB300\uB2F5\uD558\uAE30",
+          domain: "speaking",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          confidence: "authored",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "speaking-review-r1",
+            evidence: "experiences/synk-world-app/qa/speaking-pilot-20261021/item-review/README.md",
+            design: "docs/_ops/qa/atlas-world-engine-20261108/E_\uB9D0\uD558\uAE30.md",
+            reviewedAt: "2026-11-08",
+            summary: "\uC5EC\uC12F \uC720\uD615\uC740 \uACF5\uC2DD \uBB38\uD56D \uAD6C\uC131 \uADF8\uB300\uB85C\uB2E4. \uBB38\uD56D \u2192 \uC720\uD615\uC740 10-21 AI 2\uC911 \uAC80\uC218\uAC00 \uC720\uD615 \xB7 \uC218\uC900 \uC801\uD569\uC744 \uD1B5\uACFC\uC2DC\uCF30\uACE0, \uC5ED\uD560\uADF9 \u2192 \uC5ED\uD560 \uC218\uD589\uACFC \uCE21\uC815 \uB09C\uB3C4 1\uC740 11-08 \uC124\uACC4 \uAC80\uD1A0 \uB124 \uACF3\uC5D0\uC11C \uACE0\uCE60 \uAC83\uC774 \uC5C6\uC5C8\uB2E4."
+          },
+          source_refs: [
+            {
+              source: "speaking-types",
+              selector: "ko.speaking.answer"
+            }
+          ],
+          material: {
+            type: 1,
+            band: "beginner",
+            prepSec: 20,
+            answerSec: 30,
+            roleplays: []
+          }
+        },
+        {
+          id: "ko.speaking.roleplay",
+          kind: "skill",
+          label_ko: "\uADF8\uB9BC \uBCF4\uACE0 \uC5ED\uD560 \uC218\uD589\uD558\uAE30",
+          domain: "speaking",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          confidence: "authored",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "speaking-review-r1",
+            evidence: "experiences/synk-world-app/qa/speaking-pilot-20261021/item-review/README.md",
+            design: "docs/_ops/qa/atlas-world-engine-20261108/E_\uB9D0\uD558\uAE30.md",
+            reviewedAt: "2026-11-08",
+            summary: "\uC5EC\uC12F \uC720\uD615\uC740 \uACF5\uC2DD \uBB38\uD56D \uAD6C\uC131 \uADF8\uB300\uB85C\uB2E4. \uBB38\uD56D \u2192 \uC720\uD615\uC740 10-21 AI 2\uC911 \uAC80\uC218\uAC00 \uC720\uD615 \xB7 \uC218\uC900 \uC801\uD569\uC744 \uD1B5\uACFC\uC2DC\uCF30\uACE0, \uC5ED\uD560\uADF9 \u2192 \uC5ED\uD560 \uC218\uD589\uACFC \uCE21\uC815 \uB09C\uB3C4 1\uC740 11-08 \uC124\uACC4 \uAC80\uD1A0 \uB124 \uACF3\uC5D0\uC11C \uACE0\uCE60 \uAC83\uC774 \uC5C6\uC5C8\uB2E4."
+          },
+          source_refs: [
+            {
+              source: "speaking-types",
+              selector: "ko.speaking.roleplay"
+            }
+          ],
+          material: {
+            type: 2,
+            band: "beginner",
+            prepSec: 30,
+            answerSec: 40,
+            roleplays: [
+              "rp-cafe-tea"
+            ]
+          }
+        },
+        {
+          id: "ko.speaking.narrate",
+          kind: "skill",
+          label_ko: "\uADF8\uB9BC \uBCF4\uACE0 \uC774\uC57C\uAE30\uD558\uAE30",
+          domain: "speaking",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          confidence: "authored",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "speaking-review-r1",
+            evidence: "experiences/synk-world-app/qa/speaking-pilot-20261021/item-review/README.md",
+            design: "docs/_ops/qa/atlas-world-engine-20261108/E_\uB9D0\uD558\uAE30.md",
+            reviewedAt: "2026-11-08",
+            summary: "\uC5EC\uC12F \uC720\uD615\uC740 \uACF5\uC2DD \uBB38\uD56D \uAD6C\uC131 \uADF8\uB300\uB85C\uB2E4. \uBB38\uD56D \u2192 \uC720\uD615\uC740 10-21 AI 2\uC911 \uAC80\uC218\uAC00 \uC720\uD615 \xB7 \uC218\uC900 \uC801\uD569\uC744 \uD1B5\uACFC\uC2DC\uCF30\uACE0, \uC5ED\uD560\uADF9 \u2192 \uC5ED\uD560 \uC218\uD589\uACFC \uCE21\uC815 \uB09C\uB3C4 1\uC740 11-08 \uC124\uACC4 \uAC80\uD1A0 \uB124 \uACF3\uC5D0\uC11C \uACE0\uCE60 \uAC83\uC774 \uC5C6\uC5C8\uB2E4."
+          },
+          source_refs: [
+            {
+              source: "speaking-types",
+              selector: "ko.speaking.narrate"
+            }
+          ],
+          material: {
+            type: 3,
+            band: "intermediate",
+            prepSec: 40,
+            answerSec: 60,
+            roleplays: []
+          }
+        },
+        {
+          id: "ko.speaking.respond",
+          kind: "skill",
+          label_ko: "\uB300\uD654 \uC644\uC131\uD558\uAE30",
+          domain: "speaking",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          confidence: "authored",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "speaking-review-r1",
+            evidence: "experiences/synk-world-app/qa/speaking-pilot-20261021/item-review/README.md",
+            design: "docs/_ops/qa/atlas-world-engine-20261108/E_\uB9D0\uD558\uAE30.md",
+            reviewedAt: "2026-11-08",
+            summary: "\uC5EC\uC12F \uC720\uD615\uC740 \uACF5\uC2DD \uBB38\uD56D \uAD6C\uC131 \uADF8\uB300\uB85C\uB2E4. \uBB38\uD56D \u2192 \uC720\uD615\uC740 10-21 AI 2\uC911 \uAC80\uC218\uAC00 \uC720\uD615 \xB7 \uC218\uC900 \uC801\uD569\uC744 \uD1B5\uACFC\uC2DC\uCF30\uACE0, \uC5ED\uD560\uADF9 \u2192 \uC5ED\uD560 \uC218\uD589\uACFC \uCE21\uC815 \uB09C\uB3C4 1\uC740 11-08 \uC124\uACC4 \uAC80\uD1A0 \uB124 \uACF3\uC5D0\uC11C \uACE0\uCE60 \uAC83\uC774 \uC5C6\uC5C8\uB2E4."
+          },
+          source_refs: [
+            {
+              source: "speaking-types",
+              selector: "ko.speaking.respond"
+            }
+          ],
+          material: {
+            type: 4,
+            band: "intermediate",
+            prepSec: 40,
+            answerSec: 60,
+            roleplays: []
+          }
+        },
+        {
+          id: "ko.speaking.interpret",
+          kind: "skill",
+          label_ko: "\uC790\uB8CC \uD574\uC11D\uD558\uAE30",
+          domain: "speaking",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          confidence: "authored",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "speaking-review-r1",
+            evidence: "experiences/synk-world-app/qa/speaking-pilot-20261021/item-review/README.md",
+            design: "docs/_ops/qa/atlas-world-engine-20261108/E_\uB9D0\uD558\uAE30.md",
+            reviewedAt: "2026-11-08",
+            summary: "\uC5EC\uC12F \uC720\uD615\uC740 \uACF5\uC2DD \uBB38\uD56D \uAD6C\uC131 \uADF8\uB300\uB85C\uB2E4. \uBB38\uD56D \u2192 \uC720\uD615\uC740 10-21 AI 2\uC911 \uAC80\uC218\uAC00 \uC720\uD615 \xB7 \uC218\uC900 \uC801\uD569\uC744 \uD1B5\uACFC\uC2DC\uCF30\uACE0, \uC5ED\uD560\uADF9 \u2192 \uC5ED\uD560 \uC218\uD589\uACFC \uCE21\uC815 \uB09C\uB3C4 1\uC740 11-08 \uC124\uACC4 \uAC80\uD1A0 \uB124 \uACF3\uC5D0\uC11C \uACE0\uCE60 \uAC83\uC774 \uC5C6\uC5C8\uB2E4."
+          },
+          source_refs: [
+            {
+              source: "speaking-types",
+              selector: "ko.speaking.interpret"
+            }
+          ],
+          material: {
+            type: 5,
+            band: "advanced",
+            prepSec: 70,
+            answerSec: 80,
+            roleplays: []
+          }
+        },
+        {
+          id: "ko.speaking.opinion",
+          kind: "skill",
+          label_ko: "\uC758\uACAC \uC81C\uC2DC\uD558\uAE30",
+          domain: "speaking",
+          level: null,
+          difficulty: {
+            authored: null,
+            measured: null,
+            n: 0
+          },
+          confidence: "authored",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "speaking-review-r1",
+            evidence: "experiences/synk-world-app/qa/speaking-pilot-20261021/item-review/README.md",
+            design: "docs/_ops/qa/atlas-world-engine-20261108/E_\uB9D0\uD558\uAE30.md",
+            reviewedAt: "2026-11-08",
+            summary: "\uC5EC\uC12F \uC720\uD615\uC740 \uACF5\uC2DD \uBB38\uD56D \uAD6C\uC131 \uADF8\uB300\uB85C\uB2E4. \uBB38\uD56D \u2192 \uC720\uD615\uC740 10-21 AI 2\uC911 \uAC80\uC218\uAC00 \uC720\uD615 \xB7 \uC218\uC900 \uC801\uD569\uC744 \uD1B5\uACFC\uC2DC\uCF30\uACE0, \uC5ED\uD560\uADF9 \u2192 \uC5ED\uD560 \uC218\uD589\uACFC \uCE21\uC815 \uB09C\uB3C4 1\uC740 11-08 \uC124\uACC4 \uAC80\uD1A0 \uB124 \uACF3\uC5D0\uC11C \uACE0\uCE60 \uAC83\uC774 \uC5C6\uC5C8\uB2E4."
+          },
+          source_refs: [
+            {
+              source: "speaking-types",
+              selector: "ko.speaking.opinion"
+            }
+          ],
+          material: {
+            type: 6,
+            band: "advanced",
+            prepSec: 70,
+            answerSec: 80,
+            roleplays: []
+          }
+        }
+      ]
+    };
+  }
+});
+
+// strata/topik-speaking.js
+var require_topik_speaking2 = __commonJS({
+  "strata/topik-speaking.js"(exports, module) {
+    "use strict";
+    var SOURCE = "speaking-types";
+    var ID = /^ko\.speaking\.[a-z]+$/;
+    var ROLEPLAY = /^[a-z][a-z0-9-]{0,79}$/;
+    var BANDS = Object.freeze(["beginner", "intermediate", "advanced"]);
+    var FORMATS = Object.freeze(["binary-choice", "single-choice", "cup-compose", "action", "spoken", "unknown"]);
+    var text2 = (value) => typeof value === "string" && value.trim().length > 0;
+    var seconds = (value) => Number.isInteger(value) && value > 0 && value <= 600;
+    var fail2 = (message) => {
+      throw new TypeError(`Strata speaking: ${message}`);
+    };
+    var clone3 = (value) => JSON.parse(JSON.stringify(value));
+    function buildSpeakingLayer({ base, source, file, drama = null }) {
+      if (!base || !Array.isArray(base.nodes)) fail2("a base map is required");
+      if (!text2(source?.version) || !Array.isArray(source.types) || !Array.isArray(source.roleplays) || !source.measure || ![1, 2, 3].includes(source.measure.difficulty) || !FORMATS.includes(source.measure.format) || source.measure.format === "unknown") fail2("invalid source");
+      if (!text2(source.basis?.source) || !text2(source.basis?.checked)) fail2("a source basis is required");
+      if (!file || !text2(file.path) || !/^[a-f0-9]{64}$/.test(file.sha256)) fail2("invalid source hash");
+      const taken = new Set(base.nodes.map((node) => node.id));
+      for (const row of drama?.skills || []) if (Array.isArray(row) && text2(row[0])) taken.add(row[0]);
+      const types = /* @__PURE__ */ new Set(), ids = /* @__PURE__ */ new Set(), nodes = [];
+      for (const row of source.types) {
+        if (!Array.isArray(row) || row.length !== 6) fail2("a type row is [type, skill, label, band, prepSec, answerSec]");
+        const [type, id, label, band, prepSec, answerSec] = row;
+        if (!Number.isInteger(type) || type < 1 || type > 6 || types.has(type)) fail2(`invalid or duplicate type ${type}`);
+        if (!ID.test(id) || ids.has(id) || taken.has(id)) fail2(`invalid or taken ability id ${id}`);
+        if (!text2(label) || !BANDS.includes(band) || !seconds(prepSec) || !seconds(answerSec)) fail2(`invalid type row ${type}`);
+        types.add(type);
+        ids.add(id);
+        nodes.push({
+          id,
+          kind: "skill",
+          label_ko: label,
+          domain: "speaking",
+          level: null,
+          difficulty: { authored: null, measured: null, n: 0 },
+          confidence: "authored",
+          reviewed: source.review?.status === "passed",
+          ...source.review?.status === "passed" ? { review: clone3(source.review) } : {},
+          source_refs: [{ source: SOURCE, selector: id }],
+          material: { type, band, prepSec, answerSec, roleplays: [] }
+        });
+      }
+      if (types.size !== 6) fail2("the six official types are required");
+      const roleplays = /* @__PURE__ */ new Set();
+      for (const row of source.roleplays) {
+        if (!Array.isArray(row) || row.length !== 2) fail2("a roleplay row is [roleplay, skill]");
+        const [roleplay, skill2] = row, node = nodes.find((n) => n.id === skill2);
+        if (!ROLEPLAY.test(roleplay) || roleplays.has(roleplay) || !node) fail2(`invalid roleplay ${roleplay}`);
+        roleplays.add(roleplay);
+        node.material.roleplays.push(roleplay);
+      }
+      return {
+        layer_ver: source.version,
+        sources: { [SOURCE]: { path: file.path, sha256: file.sha256 } },
+        measure: { difficulty: source.measure.difficulty, format: source.measure.format },
+        nodes
+      };
+    }
+    var LAYER = null;
+    var layer = () => LAYER ??= require_topik_speaking();
+    function speakingMeasure({ type, roleplay } = {}, from = layer()) {
+      const node = Number.isInteger(type) ? from.nodes.find((n) => n.material.type === type) : typeof roleplay === "string" ? from.nodes.find((n) => n.material.roleplays.includes(roleplay)) : null;
+      if (!node) return null;
+      return { skillId: node.id, modality: "speaking", difficulty: from.measure.difficulty, responseFormat: from.measure.format, audioRequired: false };
+    }
+    function withSpeakingLayer(data, from = layer()) {
+      if (!data || !Array.isArray(data.nodes) || !data.sources || !from || !Array.isArray(from.nodes)) fail2("a map and a speaking layer are required");
+      if (Object.keys(from.sources).some((key) => Object.hasOwn(data.sources, key))) fail2("colliding speaking source");
+      const ids = new Set(data.nodes.map((node) => node.id));
+      if (from.nodes.some((node) => ids.has(node.id))) fail2("colliding speaking ability");
+      return { ...data, map_ver: `${data.map_ver}:${from.layer_ver}`, sources: { ...data.sources, ...from.sources }, nodes: [...data.nodes, ...from.nodes] };
+    }
+    var speakingEngine = Object.freeze({ measure: (input) => speakingMeasure(input), version: () => layer().layer_ver });
+    module.exports = { buildSpeakingLayer, withSpeakingLayer, speakingMeasure, speakingEngine, layer, FORMATS, BANDS, SOURCE };
+  }
+});
+
+// strata/world-coach.js
+var require_world_coach = __commonJS({
+  "strata/world-coach.js"(exports, module) {
+    "use strict";
+    var LIMIT = 120;
+    var TAG = /^[a-zA-Z0-9_.:-]+$/;
+    var fnv = (text2) => {
+      let h = 2166136261;
+      for (let i = 0; i < text2.length; i++) {
+        h ^= text2.charCodeAt(i);
+        h = Math.imul(h, 16777619) >>> 0;
+      }
+      return h.toString(16).padStart(8, "0");
+    };
+    var fail2 = (message) => {
+      throw new TypeError(`Strata coach: ${message}`);
+    };
+    function coachMapData(base, layers = []) {
+      if (!base || typeof base.map_ver !== "string" || !TAG.test(base.map_ver)) fail2("a base map is required");
+      if (!Array.isArray(layers) || layers.some((row) => !Array.isArray(row) || typeof row[0] !== "function" || typeof row[1]?.layer_ver !== "string" || !TAG.test(row[1].layer_ver))) fail2("invalid layers");
+      let data = base;
+      for (const [apply, layer] of layers) data = apply(data, layer);
+      const versions = layers.map(([, layer]) => layer.layer_ver);
+      const map_ver = versions.length ? `${base.map_ver}:layers-${fnv(versions.join("|"))}` : base.map_ver;
+      if (map_ver.length > LIMIT) fail2(`map version longer than ${LIMIT}`);
+      return { ...data, map_ver, layers: versions };
+    }
+    module.exports = { coachMapData, fingerprint: fnv, LIMIT };
+  }
+});
+
 // atlas/trail.js
 var require_trail2 = __commonJS({
   "atlas/trail.js"(exports, module) {
@@ -17736,6 +18080,8 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
 var import_strata = __toESM(require_strata(), 1);
 var import_world_map = __toESM(require_world_map(), 1);
 var import_world_life2 = __toESM(require_world_life2(), 1);
+var import_topik_speaking = __toESM(require_topik_speaking2(), 1);
+var import_world_coach = __toESM(require_world_coach(), 1);
 var import_game_browser = __toESM(require_game_browser(), 1);
 var import_game_learning = __toESM(require_game_learning(), 1);
 
@@ -18016,12 +18362,13 @@ var lifeEngine = Object.freeze({ createLifeTrail, lifeItem, lifeItems, lifeAsses
 
 // experiences/synk-world-app/world-learning-map.mjs
 var worldMapData = import_world_map.default.worldMapData;
-var worldMap = import_strata.default.createMap(import_world_life2.default.withLifeLayer(worldMapData()));
+var worldMap = import_strata.default.createMap(import_world_coach.default.coachMapData(worldMapData(), [[import_world_life2.default.withLifeLayer, import_world_life2.default.layer()], [import_topik_speaking.default.withSpeakingLayer, import_topik_speaking.default.layer()]]));
 var worldLearning = Object.freeze({
   ...import_game_browser.default,
   SKILLS: worldMap.allNodes(),
   engine: Object.freeze({ ...import_game_browser.default.engine, createGame: (config) => import_game_learning.default.createGame({ ...config, map: worldMap }) }),
-  life: lifeEngine
+  life: lifeEngine,
+  speaking: import_topik_speaking.default.speakingEngine
 });
 
 // experiences/synk-world-app/life-plan.mjs
@@ -22853,14 +23200,15 @@ function createWorldEducation({
     return hasString2(key) ? `${t2("speaking.title", void 0, "ko")} \xB7 ${t2(key, void 0, "ko")}` : t2("speaking.title", void 0, "ko");
   };
   const speakingChosen = () => speakingCall("chosen", owner) === true;
-  function speakingThisWeek(now) {
-    const list = speakingList(), state = speakingCall("week", owner, position.exam.examWeek(now)) || {};
+  function speakingThisWeek(now, events = null) {
+    const list = speakingList(), state = speakingCall("week", owner, position.exam.examWeek(now), events) || {};
     const tried = new Set(Array.isArray(state.tried) ? state.tried : []), fresh = list.filter((row) => !tried.has(speakingType(row.route)));
+    const targets = (row) => Array.isArray(row.coreTargets) ? row.coreTargets.filter((target2) => target2 && typeof target2.id === "string").map((target2) => ({ ...target2, skillIds: [...target2.skillIds], conceptIds: [...target2.conceptIds || []] })) : [];
     return {
       list,
       times: Array.isArray(state.times) ? state.times : [],
       untried: fresh.length,
-      recommend: (fresh.length ? fresh : list).map((row) => ({ id: row.id, label: speakingLabel(row.route), route: "speaking", routeId: row.route, minutes: row.minutes, minutesEstimated: true, targets: [], goals: ["exam", "prepare", "speaking"], audioRequired: true, modality: "speaking" }))
+      recommend: (fresh.length ? fresh : list).map((row) => ({ id: row.id, label: speakingLabel(row.route), route: "speaking", routeId: row.route, minutes: row.minutes, minutesEstimated: true, targets: targets(row), goals: ["exam", "prepare", "speaking"], audioRequired: true, modality: "speaking" }))
     };
   }
   function classworkRows() {
@@ -22920,7 +23268,13 @@ function createWorldEducation({
     const need = (row) => row.practiceNeed && Date.parse(row.practiceNeed.at) <= now ? { practiceNeed: row.practiceNeed } : {};
     const writing = exam?.type === "topik2" ? writingList().map((row) => ({ id: row.id, label: writingLabel(row.route), route: "writing", routeId: row.route, minutes: row.minutes, minutesEstimated: true, targets: [], goals: ["exam", "prepare", "writing"], audioRequired: false, modality: "writing", ...need(row) })) : [];
     extra.push(...writing);
-    const speaking = exam && ["topik1", "topik2"].includes(exam.type) && speakingChosen() ? speakingThisWeek(now) : null;
+    let events = [];
+    try {
+      events = coachNow?.events?.() || [];
+    } catch {
+      events = [];
+    }
+    const speaking = exam && ["topik1", "topik2"].includes(exam.type) && speakingChosen() ? speakingThisWeek(now, events) : null;
     if (speaking) extra.push(...speaking.recommend);
     const base = createPlan({ summary, progress: progress2.exportSnapshot(), settings: values, now, recommendActivities, extra });
     if (!exam) return base;
@@ -22931,12 +23285,6 @@ function createWorldEducation({
         listening[id] = listening[id] || [];
         if (!listening[id].includes(candidate.id)) listening[id].push(candidate.id);
       }
-    }
-    let events = [];
-    try {
-      events = coachNow?.events?.() || [];
-    } catch {
-      events = [];
     }
     const week = position.exam.examWeek(now);
     const writingAvailable = exam.type === "topik2" ? writingList().map((row) => ({ id: row.id, routeId: row.route, skillIds: (Array.isArray(row.targets) ? row.targets : []).filter((id) => typeof id === "string") })) : [];

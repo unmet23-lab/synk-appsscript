@@ -226,11 +226,15 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  const speakingLabel=route=>{const key=`speaking.type.${speakingType(route)}`;return hasString(key)?`${t('speaking.title',undefined,'ko')} · ${t(key,undefined,'ko')}`:t('speaking.title',undefined,'ko');};
  const speakingChosen=()=>speakingCall('chosen',owner)===true;
  // 이번 주(계획의 주) 말하기: 열 수 있는 유형 후보 · 센 시도 시각 · 아직 안 해 본 유형 수, 그리고 Core에 넘길 추천 후보(아직 안 해 본 유형, 다 해 봤으면 모두).
- function speakingThisWeek(now){
-  const list=speakingList(),state=speakingCall('week',owner,position.exam.examWeek(now))||{};
+ // events(홈 코치 사건): 이 기기 기록에 계정의 Trail 시도를 더해 센다(Atlas × WORLD E §4-5 — 옛 앱 셸은 이 인자를 버려 이 기기만 센다).
+ // 후보의 coreTargets(그 유형이 열 문항의 Core target — 말하기 모듈이 Strata 조회로 만든다)를 그대로 넘긴다: Core는 이 능력을 늘 「모름」으로 읽어
+ // 상태 대신 노출 이력만 쓴다(방금 한 유형은 뒤로 · 덜 만난 유형 먼저, §4-4). 없으면 지금처럼 학습 항목을 겨누지 않는 후보다.
+ function speakingThisWeek(now,events=null){
+  const list=speakingList(),state=speakingCall('week',owner,position.exam.examWeek(now),events)||{};
   const tried=new Set(Array.isArray(state.tried)?state.tried:[]),fresh=list.filter(row=>!tried.has(speakingType(row.route)));
+  const targets=row=>Array.isArray(row.coreTargets)?row.coreTargets.filter(target=>target&&typeof target.id==='string').map(target=>({...target,skillIds:[...target.skillIds],conceptIds:[...(target.conceptIds||[])]})):[];
   return {list,times:Array.isArray(state.times)?state.times:[],untried:fresh.length,
-   recommend:(fresh.length?fresh:list).map(row=>({id:row.id,label:speakingLabel(row.route),route:'speaking',routeId:row.route,minutes:row.minutes,minutesEstimated:true,targets:[],goals:['exam','prepare','speaking'],audioRequired:true,modality:'speaking'}))};
+   recommend:(fresh.length?fresh:list).map(row=>({id:row.id,label:speakingLabel(row.route),route:'speaking',routeId:row.route,minutes:row.minutes,minutesEstimated:true,targets:targets(row),goals:['exam','prepare','speaking'],audioRequired:true,modality:'speaking'}))};
  }
  // 반 과제: 열 때마다 서버에 묻지 않고 10분 동안 같은 답을 쓴다. 못 읽으면 반 과제 없이 계획한다.
  function classworkRows(){
@@ -265,9 +269,11 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const need=row=>row.practiceNeed&&Date.parse(row.practiceNeed.at)<=now?{practiceNeed:row.practiceNeed}:{};
   const writing=exam?.type==='topik2'?writingList().map(row=>({id:row.id,label:writingLabel(row.route),route:'writing',routeId:row.route,minutes:row.minutes,minutesEstimated:true,targets:[],goals:['exam','prepare','writing'],audioRequired:false,modality:'writing',...need(row)})):[];
   extra.push(...writing);
-  // 말하기 연습(10-21): TOPIK I·II를 고르고 시험 정보에서 「말하기 평가도 준비해요」를 켠 학생만(이 기기 기록, 계정·손님마다). 말하기 항목은 Core 지도에
-  // 없어 학습 항목을 겨누지 않는 후보로 넘기고(소리가 필요하다 — 소리를 끈 날은 Core가 뺀다), 계획에는 이번 주 시각과 아직 안 해 본 유형 수를 넘긴다.
-  const speaking=exam&&['topik1','topik2'].includes(exam.type)&&speakingChosen()?speakingThisWeek(now):null;
+  // 말하기 연습(10-21): TOPIK I·II를 고르고 시험 정보에서 「말하기 평가도 준비해요」를 켠 학생만(이 기기 선택, 계정·손님마다). 말하기 시도는 Trail에
+  // 「채점 안 함」으로만 남아 능력 근거가 없다(Atlas × WORLD E) — 후보는 문항 열쇠만 Core에 넘기고(소리가 필요하다 — 소리를 끈 날은 Core가 뺀다),
+  // 계획에는 이번 주 시각(이 기기 기록 + 계정의 Trail 시도)과 아직 안 해 본 유형 수를 넘긴다.
+  let events=[];try{events=coachNow?.events?.()||[];}catch{events=[];}
+  const speaking=exam&&['topik1','topik2'].includes(exam.type)&&speakingChosen()?speakingThisWeek(now,events):null;
   if(speaking)extra.push(...speaking.recommend);
   const base=createPlan({summary,progress:progress.exportSnapshot(),settings:values,now,recommendActivities,extra});
   if(!exam)return base;
@@ -277,7 +283,6 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    if(candidate.route!=='game'||candidate.modality!=='listening'||candidate.available===false)continue;
    for(const target of candidate.targets||[])if(seen({itemKey:target.itemKey||target.id,familyKey:target.familyKeys?.[0]})===false)for(const id of target.skillIds||[]){listening[id]=listening[id]||[];if(!listening[id].includes(candidate.id))listening[id].push(candidate.id);}
   }
-  let events=[];try{events=coachNow?.events?.()||[];}catch{events=[];}
   const week=position.exam.examWeek(now);
   // 쓰기 과제마다 겨누는 항목(숙제는 그 항목을 겨누는 과제만)과, 다음 확인 간격을 잴 지난 다시 확인 시각.
   const writingAvailable=exam.type==='topik2'?writingList().map(row=>({id:row.id,routeId:row.route,skillIds:(Array.isArray(row.targets)?row.targets:[]).filter(id=>typeof id==='string')})):[];

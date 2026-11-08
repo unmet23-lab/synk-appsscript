@@ -11,8 +11,12 @@
 //   말소리가 거의 없는 녹음은 이 기기에서 먼저 걸러 보내지 않는다(빈 녹음에 돈을 쓰지 않는다).
 // · 역할극: 직원 말은 미리 구운 카페 직원 목소리(승인본)를 다시 쓰고, 튜터(마스코트)는 목소리 없이 말풍선으로만 돕는다.
 //   학생이 한 말에서 주문 칸(음료·온도·수량·마실 곳)을 서버가 고르고, 다음 직원 말은 정해진 소리 가운데서 고른다(새 음성 없음).
-// · 학습 기록: 기기 기록(시도·출처 'self'·'ai-reference')만 남긴다. 호스트가 코치를 주고 코치가 말하기 항목을 알면 Trail에
-//   「채점 안 함」 시도(assessable:false)로 남긴다 — 지금 Strata에는 말하기 항목이 없어 코치가 거절하고 기기 기록만 남는다.
+// · 학습 기록: 기기 기록(시도·출처 'self'·'ai-reference')은 그대로 남기고, 호스트가 코치와 측정 조회(worldLearning.speaking.measure —
+//   Strata 말하기 층 strata/topik-speaking.js)를 주면 Trail에도 「채점 안 함」 시도(assessable:false)로 남긴다(Atlas × WORLD E, 2026-11-08 —
+//   docs/_ops/qa/atlas-world-engine-20261108/E_말하기.md §4-3). 문항 · 역할극을 한 번 열어 센 시도(스스로 확인 · 자동 피드백 참고 · 역할극 끝)를 하면
+//   그때 코치에 보이고 그 시도가 남는다 — 열기만 하거나 세지 않는 녹음(말 없음 · 잘 안 들림 · 「제가 한 말과 달라요」)이면 남지 않는다. 자동 피드백 시도는
+//   그 녹음을 떠날 때 남긴다. 이 기기 기록의 시도에 그 사건 id(trail)를 적어 같은 시도를 한 번만 센다. 예시 답 · 자동 피드백 · 글로 보기 · 다시 듣기는
+//   도움이다. 조회가 없으면(옛 계정 묶음) 기기 기록만 남는다.
 // · 한 자리 한 언어: 화면 글은 st()(화면 언어), 문제·대화·자료·예시 답·받아 적은 말·튜터 대사는 lang="ko" 칸.
 import {currentLang,onLang,t,hasString} from '../brand-opening/world-lang.mjs';
 import {tutorPhoto} from '../brand-opening/tutor-photos.mjs';
@@ -29,7 +33,8 @@ export const SPEAKING_FLAG_KEY='synk.world.speaking.preview';
 export function speakingEnabled({storage=globalThis.localStorage}={}){
  try{return storage?.getItem(SPEAKING_FLAG_KEY)!=='0';}catch{return true;}
 }
-// TOPIK 말하기 유형 → 말하기 항목(제안, Strata에 아직 없다 · 설계.md §6).
+// TOPIK 말하기 유형 → 말하기 항목(이름표). 기록의 측정 칸은 이 표가 아니라 Strata 말하기 층의 조회가 정한다(시험이 둘이 같은지 본다 —
+// tests/strata-topik-speaking.test.mjs · qa/world-speaking-trail.test.mjs).
 export const SPEAKING_SKILLS=Object.freeze({1:'ko.speaking.answer',2:'ko.speaking.roleplay',3:'ko.speaking.narrate',4:'ko.speaking.respond',5:'ko.speaking.interpret',6:'ko.speaking.opinion'});
 // 이번 주 계획에 넘길 후보: 유형마다 준비+대답+피드백 읽기 어림 분. 시험 유형 여섯(exam 'speaking')은 시험 정보에서 「말하기 평가도 준비해요」를
 // 고른 학생의 계획(available.speaking)과 추천(route 'speaking')에 들어가고, 카페 역할극(exam null)은 아직 계획에 넣지 않는다(10-21).
@@ -67,12 +72,41 @@ export function readSpeakingSummary({storage=globalThis.localStorage,owner='gues
  for(const e of state.log){if(!e||e.counted===false)continue;if(e.mode==='exam'&&attempts[e.type]!=null){attempts[e.type]++;if(e.source==='ai-reference')feedback[e.type]++;times.push(e.at);typeTimes[e.type].push(e.at);}if(e.mode==='roleplay'&&e.done){roleplays++;times.push(e.at);}if(!lastAt||e.at>lastAt)lastAt=e.at;}
  return {attempts,feedback,roleplays,lastAt,times,typeTimes};
 }
+/** Trail의 말하기 시도(경험 world-speaking). attempts: 남은 시도 [{at, itemId, eventId}] · gone: 뺀 시도의 사건 id(시도 · 판 · 결정 어느 쪽을 뺐든). 계정 기록이라
+ * 다른 기기 · 다른 탭에서 한 말하기도 들어온다(Atlas × WORLD E §4-5). events: 코치의 사건(coach.events()). 문항 열쇠는 speaking.<문항 또는 역할극 id>다. */
+function readSpeakingTrail(events=[]){
+ const list=Array.isArray(events)?events:[],decisions=new Map(),shown=new Map(),excluded=new Set(),attempts=[],gone=new Set();
+ for(const e of list){if(e?.type==='decision.made')decisions.set(e.id,e.experienceId);else if(e?.type==='practice.presented')shown.set(e.id,e);else if(e?.type==='record.excluded'&&e.targetId)excluded.add(e.targetId);}
+ for(const e of list){
+  if(e?.type!=='practice.attempted')continue;
+  const p=shown.get(e.presentationId);
+  if(!p||decisions.get(p.decisionId)!=='world-speaking'||typeof p.itemKey!=='string'||!p.itemKey.startsWith('speaking.'))continue;
+  if(excluded.has(e.id)||excluded.has(p.id)||excluded.has(p.decisionId)){gone.add(e.id);continue;}
+  if(Number.isFinite(Date.parse(e.at)))attempts.push({at:e.at,itemId:p.itemKey.slice(9),eventId:e.id});
+ }
+ return {attempts,gone};
+}
+export const speakingTrailAttempts=events=>readSpeakingTrail(events).attempts;
 /** 이번 주 계획(world-exam-plan.mjs)이 읽는 말하기 한 주. week: 계획의 주({start,end} ms, 한국 시각 월요일 0시부터).
- * times: 센 시도 시각 전부(계획의 weekActivity가 그 주 것만 같은 간격 규칙으로 센다) · tried: 그 주에 한 번이라도 센 시험 유형(1~6). */
-export function speakingWeek({storage=globalThis.localStorage,owner='guest',week}={}){
- const {times,typeTimes}=readSpeakingSummary({storage,owner}),start=Number(week?.start),end=Number(week?.end);
- const inWeek=at=>{const ms=Date.parse(at);return Number.isFinite(ms)&&ms>=start&&ms<end;};
- return {times,tried:Object.keys(typeTimes).map(Number).filter(type=>typeTimes[type].some(inWeek))};
+ * times: 센 시도 시각 전부(계획의 weekActivity가 그 주 것만 같은 간격 규칙으로 센다) · tried: 그 주에 한 번이라도 센 시험 유형(1~6).
+ * events(코치 사건, 있으면): 이 기기 기록에 Trail 시도를 더한다(E §4-5). 같은 시도는 두 기록에 함께 남으므로 이 기기 기록의 사건 id(trail)로 잇는다 — 시각으로 가르면
+ * 다른 기기의 다른 시도를 지운다. 이은 시도는 Trail 시각으로 세고(떠날 때 남은 자동 피드백 시도가 주 경계에 걸려도 기기마다 같은 주), 뺀 시도는 어느 쪽에서도 세지 않는다.
+ * 역할극 시도는 시각에는 들고(이 기기 기록과 같다) 유형으로는 세지 않는다. 은행을 아직 못 읽었으면 Trail 시도의 유형은 모른다(시각만). */
+export function speakingWeek({storage=globalThis.localStorage,owner='guest',week,events=null}={}){
+ const start=Number(week?.start),end=Number(week?.end),inWeek=at=>{const ms=Date.parse(at);return Number.isFinite(ms)&&ms>=start&&ms<end;};
+ const {attempts,gone}=readSpeakingTrail(events),byEvent=new Map(attempts.map(row=>[row.eventId,row])),linked=new Set(),times=[],tried=new Set();
+ for(const e of readStore(storage,owner).log){
+  if(!e||e.counted===false)continue;
+  const exam=e.mode==='exam'&&[1,2,3,4,5,6].includes(e.type);if(!exam&&!(e.mode==='roleplay'&&e.done))continue;
+  let at=e.at;
+  if(typeof e.trail==='string'){linked.add(e.trail);if(gone.has(e.trail))continue;at=byEvent.get(e.trail)?.at??at;}
+  times.push(at);if(exam&&inWeek(at))tried.add(e.type);
+ }
+ for(const row of attempts){
+  if(linked.has(row.eventId))continue;
+  times.push(row.at);const type=bankData?.items?.find(i=>i.id===row.itemId)?.type;if(Number.isInteger(type)&&inWeek(row.at))tried.add(type);
+ }
+ return {times,tried:[...tried].sort((a,b)=>a-b)};
 }
 // 시험 정보의 「말하기 평가도 준비해요」(10-21): Atlas 선택 응답 계약(atlas/personalization.js)을 바꾸지 않고 WORLD 이 기기에만 둔다(계정·손님마다).
 // 값은 {on:true|false, at:ISO}. 학습 목표 창이 저장할 때만 쓰고, 이번 주 계획이 읽는다 — 계정에 동기화되지 않는다(목표 창이 그렇게 밝힌다).
@@ -86,14 +120,26 @@ export function writeSpeakingExam({storage=globalThis.localStorage,owner='guest'
  try{storage.setItem(examChoiceKey(owner),JSON.stringify({on:on===true,at:new Date(now()).toISOString()}));return true;}catch{return false;}
 }
 
-let bankPromise=null,bankReady=false;
+let bankPromise=null,bankReady=false,bankData=null;
 export function loadSpeakingBank(fetcher=(...args)=>globalThis.fetch(...args),url=new URL('./world-speaking-items.json',import.meta.url)){
  bankPromise||=Promise.resolve(fetcher(url,{cache:'no-cache'})).then(r=>{if(!r.ok)throw Error('SPEAKING_BANK');return r.json();}).then(bank=>{
-  if(!bank||!Array.isArray(bank.items)||!bank.types)throw Error('SPEAKING_BANK');bankReady=true;return bank;
+  if(!bank||!Array.isArray(bank.items)||!bank.types)throw Error('SPEAKING_BANK');bankReady=true;bankData=bank;return bank;
  }).catch(error=>{bankPromise=null;throw error;});
  return bankPromise;
 }
 export const speakingReady=()=>bankReady;
+// 측정 조회(호스트가 넘기는 worldLearning.speaking.measure)를 안전하게: 모르거나 던지면 null — 기록을 지어내지 않는다.
+function measureOf(measure,input){if(typeof measure!=='function')return null;try{const m=measure(input);return m&&typeof m.skillId==='string'&&m.modality==='speaking'?m:null;}catch{return null;}}
+/** 홈 추천 · 이번 주 계획에 넘길 시험 유형 후보(카페 역할극은 넣지 않는다 — 10-21). 은행을 읽었고 측정 조회가 있으면 후보마다 그 유형이 열 문항
+ * (open('speaking:N')이 여는 첫 문항)의 Core target 하나를 coreTargets로 단다 — Core는 이 능력을 늘 「모름」으로 읽으므로 상태 대신 노출 이력만 쓴다
+ * (방금 낸 문항은 뒤로, 덜 만난 문항 먼저 — Atlas × WORLD E §4-4). familyKeys는 넘기지 않는다(다시 해도 좋은 연습이라 「다 씀」으로 밀지 않는다). */
+export function speakingCandidates({measure=null}={}){
+ return SPEAKING_CANDIDATES.filter(row=>row.exam==='speaking').map(row=>{
+  const type=Number(row.route.split(':')[1]),it=bankData?.items?.find(i=>i.type===type),m=it?measureOf(measure,{type}):null;
+  return m?Object.freeze({...row,coreTargets:Object.freeze([Object.freeze({id:`speaking-${it.id}`,skillIds:Object.freeze([m.skillId]),difficulty:m.difficulty,modality:m.modality,
+   responseFormat:m.responseFormat,itemKey:`speaking.${it.id}`,familyKey:`speaking.${it.id}`,audioRequired:m.audioRequired,conceptIds:Object.freeze([])})])}):row;
+ });
+}
 /** 배우기 판(life-ui.mjs)의 「내 위치」 아래 한 줄. print는 life-ui의 펠트 인화지 함수다. 은행을 못 읽었으면 줄이 없다. */
 export function speakingRow(print=()=>''){
  if(!bankReady){if(!bankPromise)void loadSpeakingBank().then(()=>globalThis.dispatchEvent?.(new Event('synk-speaking-ready'))).catch(()=>{});return '';}
@@ -109,19 +155,23 @@ function blobToBase64(blob){return new Promise((resolve,reject)=>{const reader=n
  * show(title, html): 호스트가 시트를 연다(type 'world-speaking'). home: attachPanelResource로 시트가 닫힐 때 정리를 맡긴다.
  * getOwner(): 지금 계정 id 또는 'guest'. tutor(): 고른 튜터 id(marin·kkamong·mongle) 또는 null.
  * feedback: 자동 피드백 통로 {status():Promise<{enabled,dailyLimit,remaining}>, request(payload):Promise<result>} 또는 null(없으면 단추가 없다).
- * coach(): 이 활동의 Atlas 코치(없거나 말하기 항목을 모르면 null/예외 — 그때는 기기 기록만 남긴다).
+ * coach(): 이 활동의 Atlas 코치(없으면 null/예외 — 그때는 기기 기록만 남긴다).
+ * measure(input): 말하기 측정 조회(worldLearning.speaking.measure — {type} 또는 {roleplay} → 측정 칸, 모르면 null). 없으면(옛 계정 묶음) 기기 기록만 남긴다.
  */
-export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=>null,storage=globalThis.localStorage,feedback=null,coach=null,now=Date.now,doc=globalThis.document,win=globalThis,lang=currentLang,fetcher,privacyUrl='/privacy/'}={}){
+export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=>null,storage=globalThis.localStorage,feedback=null,coach=null,measure=null,now=Date.now,doc=globalThis.document,win=globalThis,lang=currentLang,fetcher,privacyUrl='/privacy/'}={}){
  let openSeq=0,bank=null,view={kind:'list'},owner=getOwner(),state=readStore(storage,owner),stage=null,offLang=null,status=null,statusAsk=null,turnBlocked=false,stopped=false;
- let run=null,mic=null,player=null,clip=null,ticker=null,pids={},tries={},audioCtx=null,liveTimer=null;
+ // pids · tries · helped · fed: 판(문항 id 또는 rp:<역할극 id>)마다의 코치 제시 · 시도 수 · 남긴 도움 · 「자동 피드백을 본 뒤」(다음 시도가 hint 도움).
+ let run=null,mic=null,player=null,clip=null,ticker=null,pids={},tries={},helped={},fed={},audioCtx=null,liveTimer=null;
  // 오디오 처리기는 하나를 누르는 순간(준비 시작·말하기) 깨워 같이 쓴다. 타이머 안에서 새로 만들면 아이폰 사파리에서 멈춘 채라
  // 소리 크기가 늘 0으로 읽혀 정상 녹음이 「말소리 없음」이 된다(10-21 화면 검수).
  function sharedCtx(){const AC=win.AudioContext||win.webkitAudioContext;if(!AC)return null;try{if(!audioCtx||audioCtx.state==='closed')audioCtx=new AC();if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});}catch{return null;}return audioCtx;}
  const save=()=>writeStore(storage,owner,state);
  const item=id=>bank?.items.find(i=>i.id===id)||null,roleplay=id=>bank?.roleplays?.find(r=>r.id===id)||null;
  const asset=src=>new URL(src,new URL('./world-speaking-items.json',import.meta.url)).href;
- function syncOwner(){const next=getOwner();if(next!==owner){teardown();owner=next;state=readStore(storage,owner);pids={};tries={};status=null;statusAsk=null;turnBlocked=false;view={kind:'list'};}}
+ function syncOwner(){const next=getOwner();if(next!==owner){teardown();owner=next;state=readStore(storage,owner);pids={};tries={};helped={};fed={};status=null;statusAsk=null;turnBlocked=false;view={kind:'list'};}}
  function log(entry){state.log.push({...entry,at:new Date(now()).toISOString()});save();}
+ // trail: 그 시도를 Trail에도 남겼으면 그 사건 id — 이번 주 셈이 같은 시도를 사건 id로 이어 한 번만 센다(E §4-5). 남기지 못했으면 칸이 없다.
+ const linked=trail=>trail?{trail}:{};
  // 서버가 다른 문항 사본을 보고 있으면(판 지문이 다르면) 자동 피드백 없이 스스로 확인만 연다(쓰기 연습과 같은 선).
  const aiAvailable=()=>!!(feedback&&status?.enabled&&status.itemsVersion===bank?.contentHash);
  const remaining=()=>Number.isInteger(status?.remaining)?status.remaining:status?.dailyLimit??0;
@@ -166,23 +216,53 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
   try{const ctx=sharedCtx();if(!ctx)return;const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type='sine';osc.frequency.value=1000;gain.gain.setValueAtTime(.0001,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(.16,ctx.currentTime+.01);gain.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+.32);osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+.34);}catch{}
  }
  function stopPlayback(){try{player?.pause();}catch{}try{clip?.pause();}catch{}clip=null;}
- // 자동 피드백의 코치 기록은 「제가 한 말과 달라요」를 누를 틈을 두고, 이 녹음을 떠날 때 남긴다(잘못 들은 피드백은 세지 않는다 — 10-21 화면 검수).
- function flushRecord(){const pending=run?.pendingRecord;if(!pending||run.misheard)return;run.pendingRecord=null;const it=item(run.itemId);if(it)record(it,pending);}
+ // 자동 피드백 시도는 「제가 한 말과 달라요」를 누를 틈을 두고 이 녹음을 떠날 때 Trail에 남긴다(10-21 화면 검수 · E §4-3) — 잘못 들었으면 Trail에는
+ // 판도 시도도 남지 않는다(Core 이력 · 이번 주 셈이 같은 「한 것」을 센다, E 설계 §4-3). 이 기기 기록의 그 시도에 Trail 사건 id를 적는다.
+ function flushRecord(){
+  const pending=run?.pendingRecord;if(!pending)return;run.pendingRecord=null;if(run.misheard)return;
+  const it=item(run.itemId);if(!it)return;
+  const trail=recordTask(it,{model:pending.model});fed[it.id]=true;
+  if(!trail)return;
+  // 같은 계정의 다른 탭이 그사이 이 기기 기록에 썼을 수 있다 — 저장본을 다시 읽어 이 시도의 칸만 고친다(이 탭의 옛 판 전체로 덮지 않는다).
+  const find=box=>[...box.log].reverse().find(e=>e?.requestId&&e.requestId===pending.requestId),mine=find(state),latest=readStore(storage,owner),stored=find(latest);
+  if(mine)mine.trail=trail;if(stored){stored.trail=trail;writeStore(storage,owner,latest);}
+ }
  function teardown(){clearInterval(ticker);ticker=null;closeMic();stopPlayback();flushRecord();if(run?.url)try{URL.revokeObjectURL(run.url);}catch{}run=null;}
 
- // ── 기록 ──
- function record(it,{assisted}){
-  const c=typeof coach==='function'?(()=>{try{return coach();}catch{return null;}})():null;if(!c)return;
-  try{
-   pids[it.id]??=c.present({id:`speaking-${it.id}`,itemKey:`speaking.${it.id}`,familyKey:`speaking.${it.id}`,skillId:SPEAKING_SKILLS[it.type],modality:'speaking',difficulty:{beginner:1,intermediate:2,advanced:3}[bank.types[it.type]?.band]||2,responseFormat:'unknown',audioRequired:false});
-   if(assisted)c.help(pids[it.id],'hint');
-   tries[it.id]=(tries[it.id]||0)+1;c.answer(pids[it.id],{correct:null,assessable:false,attemptNo:tries[it.id]});
-  }catch{/* 코치 지도에 말하기 항목이 없으면 기기 기록만 남는다 */}
+ // ── 기록(Trail · 「채점 안 함」, Atlas × WORLD E §4-3) ──
+ const coachNow=()=>{if(typeof coach!=='function')return null;try{return coach();}catch{return null;}};
+ // 판 하나 = 문항 · 역할극을 한 번 열어 센 시도를 한 것: 그 판의 첫 센 시도 때 코치에 보인다. 말하기는 채점하지 않아 「보였다」가 근거에 아무 뜻이
+ // 없고 Core 이력만 움직이므로, 열기만 하고 나가면 이력에도 이번 주 셈에도 남지 않는다(둘이 같은 「한 것」을 센다, 쓰기와 같은 길 — E 설계 §4-3).
+ // 다시 열면 새 판이라 한 번 열어 한 것마다 이력이 쌓여 유형이 고르게 돈다. 그 판 안의 다시 하기 · 시간 바꾸기는 같은 판의 다음 시도다.
+ // 측정 조회나 코치가 없으면 건너뛴다. 코치 호출이 던지면 그 사건만 건너뛰고 화면은 그대로 간다.
+ const forget=key=>{delete pids[key];delete tries[key];delete helped[key];delete fed[key];};
+ function shown(key,id,input){
+  if(pids[key])return pids[key];
+  const m=measureOf(measure,input),c=m&&coachNow();if(!c)return null;
+  try{return pids[key]=c.present({id:`speaking-${id}`,itemKey:`speaking.${id}`,familyKey:`speaking.${id}`,...m});}catch{return null;}
  }
+ // 센 시도 하나: 그 판에서 받은 도움(종류마다 한 번)을 먼저 남기고 「채점 안 함」 답을 남긴다. 남긴 시도의 사건 id를 돌려준다.
+ // 판이 코치에서 끝났으면(기기 장부가 접혀 · 다른 탭이 기록을 새로 시작해 — Core는 그 판을 놓는다) 판을 버리고 새 판으로 한 번 더 남긴다(E 설계 §4-3).
+ function attempted(key,id,input,kinds,retry=true){
+  const fresh=!pids[key],pid=shown(key,id,input),c=pid&&coachNow();if(!c)return null;
+  try{
+   const done=helped[key]||(helped[key]=new Set());
+   for(const kind of kinds)if(!done.has(kind)){c.help(pid,kind);done.add(kind);}
+   const attemptNo=(tries[key]||0)+1,result=c.answer(pid,{correct:null,assessable:false,attemptNo});tries[key]=attemptNo;
+   return result?.eventId||null;
+  }catch{forget(key);return retry&&!fresh?attempted(key,id,input,kinds,false):null;}
+ }
+ // 시험 형식: 대답 전에 예시 답을 봤으면 answer 도움, 이 문항의 자동 피드백을 앞 시도에서 받았으면 hint 도움(쓰기와 같다).
+ const recordTask=(it,{model=false}={})=>attempted(it.id,it.id,{type:it.type},[...(model?['answer']:[]),...(fed[it.id]?['hint']:[])]);
+ // 역할극: 글로 보기 · 다시 듣기 · 예시 문장(두 번 놓침 · 따라 말하기 · 고친 말)이 있었으면 그 도움.
+ const recordRoleplay=rp=>attempted(`rp:${rp.id}`,rp.id,{roleplay:rp.id},[...(run?.helped?['text']:[]),...(run?.replayed?['replay']:[]),...(run?.modelShown?['answer']:[])]);
 
  // ── 목록 ──
  function listHtml(){
-  const tried=type=>state.log.some(e=>e.mode==='exam'&&e.type===type&&e.counted!==false);
+  // 「해 봤어요」: 이 기기 기록 또는 코치의 Trail 시도(다른 기기에서 한 것 포함 — E §4-5). 코치가 없으면 이 기기 기록만.
+  const trail=(()=>{const c=coachNow();try{return readSpeakingTrail(c?.events?.()||[]);}catch{return readSpeakingTrail();}})();
+  const trailTypes=new Set(trail.attempts.map(row=>bank.items.find(i=>i.id===row.itemId)?.type).filter(Number.isInteger));
+  const tried=type=>trailTypes.has(type)||state.log.some(e=>e.mode==='exam'&&e.type===type&&e.counted!==false&&!trail.gone.has(e.trail));
   const rows=[1,2,3,4,5,6].map(type=>{const it=bank.items.find(i=>i.type===type);if(!it)return '';const tp=bank.types[type];
    return `<button class="wsp-row" data-wsp-open="${esc(it.id)}"><span class="wsp-num" aria-hidden="true">${type}</span><span class="wsp-row-copy"><strong>${esc(st(`type.${type}`))}</strong><small>${esc(st(`band.${tp.band}`))} · ${esc(st('type.meta',{prep:tp.prepSec,answer:tp.answerSec}))}${tried(type)?` · ${esc(st('state.tried'))}`:''}</small></span><span class="wsp-row-label" lang="ko">${esc(it.label)}</span></button>`;}).join('');
   const rp=(bank.roleplays||[]).map(r=>`<button class="wsp-row" data-wsp-roleplay="${esc(r.id)}"><img class="wsp-num wsp-num-print" src="${esc(asset('../brand-opening/assets/world-felt/cafe.webp'))}" alt="" width="40" height="40" loading="lazy"><span class="wsp-row-copy"><strong>${esc(st('rp.title'))}</strong><small>${esc(st('rp.sub'))}</small></span></button>`).join('');
@@ -325,7 +405,8 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
   noteServer(result?.code||result?.status);
   const counted=run.result.status==='ok',audioFail=AUDIO_FAIL.has(run.result.status);
   log({mode:'exam',itemId:it.id,type:it.type,source:counted?'ai-reference':audioFail?'ai-unclear':'ai-unavailable',status:run.result.status,counted,requestId,seconds:run.seconds,timing:run.timing,helped:!!run.modelSeen,...(counted?{covered:run.result.feedback.covered}:{})});
-  if(counted)run.pendingRecord={assisted:!!run.modelSeen};
+  // Trail에는 이 녹음을 떠날 때 남긴다(위 flushRecord) — 같은 시도의 두 기록은 시각이 아니라 사건 id로 잇는다(E §4-5).
+  if(counted)run.pendingRecord={model:!!run.modelSeen,requestId};
   say(counted?'feedback':audioFail?'retry':'review');paintZone(it);
   stage?.querySelector('[data-wsp-feedback] h3')?.setAttribute('tabindex','-1');stage?.querySelector('[data-wsp-feedback] h3')?.focus({preventScroll:false});
  }
@@ -393,7 +474,7 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
    await Promise.race([statusAsk,new Promise(resolve=>setTimeout(resolve,STATUS_WAIT_MS))]);
    if(stopped||view.kind!=='roleplay'||run!==token)return;
   }
-  if(!turnAvailable()){run.phase='self';run.turns=[...run.turns,{who:'me',note:st('task.review',{s:seconds}),better:step.model}];render();return;}
+  if(!turnAvailable()){run.phase='self';run.modelShown=true;run.turns=[...run.turns,{who:'me',note:st('task.review',{s:seconds}),better:step.model}];render();return;}
   run.phase='thinking';render();
   const expected=owner;let result;
   try{const data=await blobToBase64(blob);result=await feedback.request({action:'turn',request_id:uuid(),consent:'send-once',mode:'roleplay',roleplay_id:rp.id,step_id:step.id,items_version:bank.contentHash,lang:['ko','en','mn'].includes(lang())?lang():'ko',audio:{mime:blob.type||'audio/webm',data},seconds});}
@@ -404,22 +485,24 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
   noteServer(result?.code||result?.status,{turn:true});
   const turn=result?.status==='ok'?result.turn:null,code=turn?turn.status:result?.status||'unavailable';
   if(!turn||turn.status!=='ok'){
-   if(AUDIO_FAIL.has(code)){const note=st(code==='not_korean'?'rp.notKorean':'rp.silent');run.misses=(run.misses||0)+1;run.phase='turn';run.bubble='retry';run.turns=[...run.turns,{who:'me',note}];render('[data-wsp-rp-speak]');announce(note);return;}
+   // 같은 자리에서 두 번 놓치면 예시 문장이 보인다(roleplayHtml) — 역할극 끝 시도의 도움(answer)이다.
+   if(AUDIO_FAIL.has(code)){const note=st(code==='not_korean'?'rp.notKorean':'rp.silent');run.misses=(run.misses||0)+1;if(run.misses>=2)run.modelShown=true;run.phase='turn';run.bubble='retry';run.turns=[...run.turns,{who:'me',note}];render('[data-wsp-rp-speak]');announce(note);return;}
    // 서버 사정(한도·꺼짐·오류)은 학생 탓이 아니다 — 따라 말하기로 넘겨 예시 문장과 「다음 말 듣기」를 연다(10-21 화면 검수).
-   const note=st('rp.selfNow');run.phase='self';run.turns=[...run.turns,{who:'me',note,better:step.model}];render('[data-wsp-rp-next]');announce(note);return;
+   const note=st('rp.selfNow');run.phase='self';run.modelShown=true;run.turns=[...run.turns,{who:'me',note,better:step.model}];render('[data-wsp-rp-next]');announce(note);return;
   }
   const next=turn.next||{step:'done'},hint=next.hint||(turn.polite==='no'?'polite':null);
+  if(hint&&turn.better)run.modelShown=true;
   run.turns=[...run.turns,{who:'me',heard:turn.heard,tip:hint||turn.polite==='no'?turn.tip:'',better:hint?turn.better:''}];announce(`${st('rp.heard')}: ${turn.heard}`);
-  if(next.step===run.step){run.misses=(run.misses||0)+1;run.phase='turn';run.bubble=hint||'retry';render();return;}
+  if(next.step===run.step){run.misses=(run.misses||0)+1;if(run.misses>=2)run.modelShown=true;run.phase='turn';run.bubble=hint||'retry';render();return;}
   run.misses=0;run.bubble=hint==='polite'?'polite':'turnOk';
-  if(next.step==='done'){run.phase='done';announce(st('rp.done'));log({mode:'roleplay',itemId:rp.id,done:true,counted:true,source:'ai-reference',helped:!!run.helped,turns:run.turns.filter(t=>t.who==='me').length});render();return;}
+  if(next.step==='done'){run.phase='done';announce(st('rp.done'));const trail=recordRoleplay(rp);log({mode:'roleplay',itemId:rp.id,done:true,counted:true,source:'ai-reference',helped:!!run.helped,turns:run.turns.filter(t=>t.who==='me').length,...linked(trail)});render();return;}
   playStaff(rp,next.step);
  }
  function rpSelfNext(rp){
   // 자동 대답이 꺼져 있을 때: 정해진 길(주문 → 확인 → 마실 곳)대로 다음 직원 말로 간다. 스스로 연습으로만 남긴다.
   // 수량 되묻기·품절처럼 정해진 길 밖의 차례에서 넘어오면 「확인」으로 간다.
   const order=['order','confirm','place'],at=Math.max(0,order.indexOf(run.step));
-  if(at<0||at===order.length-1){run.phase='done';log({mode:'roleplay',itemId:rp.id,done:true,counted:true,source:'self',helped:!!run.helped});render();return;}
+  if(at<0||at===order.length-1){run.phase='done';const trail=recordRoleplay(rp);log({mode:'roleplay',itemId:rp.id,done:true,counted:true,source:'self',helped:!!run.helped,...linked(trail)});render();return;}
   playStaff(rp,order[at+1]);
  }
 
@@ -442,8 +525,9 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
   if(top){const sheet=root.closest('dialog,.world-panel');if(sheet)sheet.scrollTop=0;}
   (focus?stage.querySelector(focus):null)?.focus({preventScroll:top});
  }
- function openTask(id){teardown();view={kind:'task',id};run={itemId:id,phase:'idle',timing:'exam'};render('[data-wsp-start]',{top:true});}
- function openRoleplay(id){teardown();view={kind:'roleplay',id};run={phase:'intro',turns:[],bubble:'mission'};render('[data-wsp-rp-start]',{top:true});}
+ // 열 때마다 새 판(그 판의 첫 센 시도 때 코치에 보인다 — 위 「기록」).
+ function openTask(id){teardown();view={kind:'task',id};run={itemId:id,phase:'idle',timing:'exam'};forget(id);render('[data-wsp-start]',{top:true});}
+ function openRoleplay(id){teardown();view={kind:'roleplay',id};run={phase:'intro',turns:[],bubble:'mission'};forget(`rp:${id}`);render('[data-wsp-rp-start]',{top:true});}
 
  // 상태가 늦게 와도 하던 것을 지우지 않는다(10-21 화면 검수): 문항은 단추 자리만 다시 그리되 스스로 확인 칸을 고르던 중이면 그대로 두고,
  // 역할극은 녹음·생각 중이 아닐 때만 다시 그린다(포커스가 시트 안에 있었으면 다음 단추로).
@@ -477,12 +561,12 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
     const end=()=>{if(run){run.playing=false;paintZone(it);}};player.addEventListener('ended',end,{once:true});player.addEventListener('pause',end,{once:true});player.play().catch(end);
    }
    else if(button.hasAttribute('data-wsp-misheard')){
-    // 잘못 들은 피드백은 세지 않는다: 이 녹음의 기록을 「세지 않음」으로 바꾸고 코치 기록도 남기지 않는다(10-21 화면 검수).
+    // 잘못 들은 피드백은 세지 않는다: 이 녹음의 기록을 「세지 않음」으로 바꾸고 Trail에도 남기지 않는다(10-21 화면 검수 · E §4-3).
     if(!run?.result||run.misheard)return;run.misheard=true;run.pendingRecord=null;
     const entry=[...state.log].reverse().find(e=>e?.requestId&&e.requestId===run.requestId);
     if(entry){entry.counted=false;entry.status='misheard';save();}else log({mode:'exam',itemId:it.id,type:it.type,source:'misheard',counted:false,status:'misheard'});
     say('retry');paintZone(it);}
-   else if(button.hasAttribute('data-wsp-self-save')){if(run?.selfSaved)return;if(run)run.selfSaved=true;button.disabled=true;const picked=[...stage.querySelectorAll('[data-wsp-self]:checked')].map(b=>Number(b.dataset.wspSelf));if(run)run.selfPicked=picked;log({mode:'exam',itemId:it.id,type:it.type,source:'self',status:'self',counted:run?.voiced!==false,seconds:run?.seconds,timing:run?.timing,covered:picked,helped:!!run?.modelSeen});if(run?.voiced!==false)record(it,{assisted:!!run?.modelSeen});announce(st('task.selfSaved'));home?.toast?.(st('task.selfSaved'));}
+   else if(button.hasAttribute('data-wsp-self-save')){if(run?.selfSaved)return;if(run)run.selfSaved=true;button.disabled=true;const picked=[...stage.querySelectorAll('[data-wsp-self]:checked')].map(b=>Number(b.dataset.wspSelf));if(run)run.selfPicked=picked;const trail=run?.voiced!==false?recordTask(it,{model:!!run?.modelSeen}):null;log({mode:'exam',itemId:it.id,type:it.type,source:'self',status:'self',counted:run?.voiced!==false,seconds:run?.seconds,timing:run?.timing,covered:picked,helped:!!run?.modelSeen,...linked(trail)});announce(st('task.selfSaved'));home?.toast?.(st('task.selfSaved'));}
    else if(button.hasAttribute('data-wsp-partner')){stopPlayback();clip=new win.Audio(asset(it.partner.clip));clip.play().catch(()=>{});}
    else if(button.hasAttribute('data-wsp-model')){
     // run을 새 객체로 바꾸지 않는다 — 권한 창을 기다리는 begin()이 run이 그대로인지(token)로 이어 갈지 정한다(10-21 화면 검수 재확인).
@@ -493,7 +577,7 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
    if(button.hasAttribute('data-wsp-rp-start'))playStaff(rp,'order');
    else if(button.hasAttribute('data-wsp-rp-speak'))void rpSpeak(rp);
    else if(button.hasAttribute('data-wsp-rp-stop'))void rpStop(rp);
-   else if(button.hasAttribute('data-wsp-rp-listen')){if(run?.phase==='turn')playStaff(rp,run.step,{again:true});}
+   else if(button.hasAttribute('data-wsp-rp-listen')){if(run?.phase==='turn'){run.replayed=true;playStaff(rp,run.step,{again:true});}}
    else if(button.hasAttribute('data-wsp-rp-text')){run.textShown=!run.textShown;run.helped=run.helped||run.textShown;const last=[...(run.turns||[])].reverse().find(t=>t.who==='staff');if(last)last.shown=run.textShown||last.shown;render('[data-wsp-rp-text]');announce(st('rp.textHelp'));}
    else if(button.hasAttribute('data-wsp-rp-next'))rpSelfNext(rp);
    else if(button.hasAttribute('data-wsp-rp-again')){run.phase='turn';render('[data-wsp-rp-speak]');}

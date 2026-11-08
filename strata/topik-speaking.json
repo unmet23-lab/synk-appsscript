@@ -1,0 +1,33 @@
+{
+  "version": "topik-speaking-1",
+  "note": "TOPIK 말하기 평가의 여섯 유형을 WORLD 말하기 연습의 능력 마디로 잇는 원천(Atlas × WORLD 2단계 E, 2026-11-08 — docs/_ops/qa/atlas-world-engine-20261108/E_말하기.md). 줄마다 [유형, 능력 id, 이름, 공식 수준, 준비 초, 대답 초] — 유형은 공식 문항 구성 그대로이고, 은행(experiences/synk-world-app/world-speaking-items.json)의 문항은 자기 유형이 곧 능력이다. 공식 수준(초급 · 중급 · 고급)은 마디 자료 칸에만 두고 측정 난도로 쓰지 않는다: Core 난도는 같은 능력 안의 말 복잡도 칸이고(TOPIK 수준이 아니다), 유형마다 단계가 하나뿐이며 채점하지 않으니 「아래 단계를 혼자 해냄」이 영원히 없어 난도 2 · 3이면 그 유형이 늘 감점된다 — 그래서 측정은 모두 난도 1 · 응답 꼴 spoken이다. roleplays는 시험 유형이 아닌 말하기 판이 기록할 능력이다. 말하기 시도는 처음부터 끝까지 채점하지 않는다(Trail assessable:false) — 이 표는 기록의 자리를 정할 뿐 숙달 · 급수 판정이 아니다. 이름은 드라마 말하기 지도(strata/ko-speaking.json)의 ko.speaking.* 일곱과 겹치지 않는다(빌드가 확인). WORLD 코치 지도만 이 층을 싣는다(strata/topik-speaking.js withSpeakingLayer).",
+  "basis": {
+    "source": "topik.go.kr 토픽 말하기 평가 — 시험 소개·문항 구성(HMENU00048), 문항유형 및 학습방법(HMENU00023)",
+    "checked": "2026-10-21"
+  },
+  "bank": "experiences/synk-world-app/world-speaking-items.json",
+  "fields": {
+    "types": ["type", "skill", "label_ko", "band", "prepSec", "answerSec"],
+    "roleplays": ["roleplay", "skill"]
+  },
+  "measure": { "difficulty": 1, "format": "spoken" },
+  "types": [
+    [1, "ko.speaking.answer", "질문에 대답하기", "beginner", 20, 30],
+    [2, "ko.speaking.roleplay", "그림 보고 역할 수행하기", "beginner", 30, 40],
+    [3, "ko.speaking.narrate", "그림 보고 이야기하기", "intermediate", 40, 60],
+    [4, "ko.speaking.respond", "대화 완성하기", "intermediate", 40, 60],
+    [5, "ko.speaking.interpret", "자료 해석하기", "advanced", 70, 80],
+    [6, "ko.speaking.opinion", "의견 제시하기", "advanced", 70, 80]
+  ],
+  "roleplays": [
+    ["rp-cafe-tea", "ko.speaking.roleplay"]
+  ],
+  "review": {
+    "status": "passed",
+    "rubric": "speaking-review-r1",
+    "evidence": "experiences/synk-world-app/qa/speaking-pilot-20261021/item-review/README.md",
+    "design": "docs/_ops/qa/atlas-world-engine-20261108/E_말하기.md",
+    "reviewedAt": "2026-11-08",
+    "summary": "여섯 유형은 공식 문항 구성 그대로다. 문항 → 유형은 10-21 AI 2중 검수가 유형 · 수준 적합을 통과시켰고, 역할극 → 역할 수행과 측정 난도 1은 11-08 설계 검토 네 곳에서 고칠 것이 없었다."
+  }
+}
