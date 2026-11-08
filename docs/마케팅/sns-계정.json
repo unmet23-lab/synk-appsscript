@@ -824,7 +824,7 @@
       "websiteStatus": "user-added-mobile-external-link-2026-09-14; public-link-synk-im-verified; stored-http-target-redirected-to-https-synk-im-on-actual-click; website-content-refresh-is-separate; link-set-to-mongolian-page-via-business-suite-profile-edit-2026-10-31-after-user-approved-meta-consent; logged-out-public-profile-confirmed; bio-unchanged",
       "dailyLine": "LAB 몽골",
       "dailyTimes": [
-        "12:00",
+        "13:00",
         "21:00"
       ],
       "dailyTimesFrom": "2026-11-13"
@@ -841,7 +841,7 @@
       "profileStatus": "google77-owner-login-confirmed-and-new-bio-79-saved-then-public-profile-reloaded-heading-exact-match-confirmed-2026-09-14; approved-LAB-instagram-copy-with-only-dot-synk-im-suffix-removed-for-80-char-limit; name-handle-photo-existing-videos-unchanged; no-new-posts; native-language-review-incomplete",
       "dailyLine": "LAB 몽골",
       "dailyTimes": [
-        "12:00",
+        "13:00",
         "21:00"
       ],
       "dailyTimesFrom": "2026-11-13"
@@ -934,7 +934,7 @@
       "profileStatus": "bio-196-saved-and-full-MN-KR-public-visibility-rechecked-2026-09-14; cover-saved-directly-by-user-and-public-page-reloaded-top-PNG-full-logo-two-MN-lines-one-KR-vision-line-no-clipping-confirmed-2026-09-14; user-authorized-public-system-cover-update-one-observed-separate-from-zero-new-content-posts; native-language-review-incomplete",
       "dailyLine": "LAB 몽골",
       "dailyTimes": [
-        "12:00",
+        "13:00",
         "21:00"
       ],
       "dailyTimesFrom": "2026-11-13"
@@ -1029,12 +1029,7 @@
       "publisher": "direct-after-connection",
       "connection": "needs-bot-admin",
       "profileStatus": "bio-218-of-255-saved-and-full-four-line-new-public-page-rechecked-2026-09-14; channel-photo-name-personal-info-visibility-bot-permissions-links-unchanged; existing-copy-reused; native-language-review-incomplete; no-posts-sent",
-      "dailyLine": "LAB 몽골",
-      "dailyTimes": [
-        "12:00",
-        "21:00"
-      ],
-      "dailyTimesFrom": "2026-11-13"
+      "dailyLine": "LAB 몽골"
     },
     "yuhobuilds-telegram": {
       "brand": "SHIFT",
