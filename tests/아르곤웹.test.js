@@ -1,11 +1,13 @@
 'use strict';
 // 아르곤웹(tools/아르곤웹.js · tools/아르곤웹.mjs) — 브라우저 · 차례 · 네트워크 없이 인자 · 작업 · 결과 가르기 · 지시문 점검과
 // 페이지 스크립트의 지킬 것(읽기는 주소를 옮기지 않는다 · 보내기 직전 표시 · 글 파일은 이름으로)을 본다.
+// 올리기 잠금(11-08)은 임시 폴더 · 가짜 ego(node 스크립트) · 살아 있는 남의 프로세스로 실제로 잡고 · 넘겨받고 · 푸는 것까지 본다.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { spawn, spawnSync } = require('node:child_process');
 const 웹 = require('../tools/아르곤웹.js');
 const 오마주 = require('../tools/오마주.js');
 
@@ -481,4 +483,480 @@ test('지시문 읽기 — 작업 JSON 배열 · 이름 붙은 객체 · 「## �
   const r = 웹.점검([배열, md]);
   assert.equal(r.편, 4);
   assert.equal(r.막힘, 1, '나이가 빠진 F08_skin 하나');
+});
+
+// ── 올리기 잠금(11-08) ──
+// 07:13에 잠금을 쥔 주인(다른 세션의 공모전 영상 검수)이 gemini a · b 줄이 꺼진 07:41~14:22 내내 차례만 기다려, 이 PC의 아르곤 아홉 건이
+// 「다른 아르곤웹이 파일을 올리는 중」만 찍었다(10번 전체 검수는 55분 뒤 timeout). 고친 뒤 — 잠금은 차례 뒤 올리기 한 건에만,
+// 상한을 넘기면 주인 쪽이 그만두고 풀고(올리기 시간 넘김), 살아 있어도 상한 + 3분을 넘긴 주인은 기다리는 쪽이 치우고 넘겨받는다.
+
+const 지금글 = () => { const d = new Date(); const p = (n) => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`; };
+const 주인쓰기 = (폴더, 주인) => { fs.mkdirSync(폴더, { recursive: true }); fs.writeFileSync(path.join(폴더, 'owner.json'), JSON.stringify(주인)); };
+// 새 판 잠금 — 실제 올리기잠금처럼 <열쇠>.key를 먼저 쓰고 owner.json(판 2)
+const 새주인쓰기 = (폴더, 주인) => { fs.mkdirSync(폴더, { recursive: true }); fs.writeFileSync(path.join(폴더, `${주인.열쇠}.key`), ''); fs.writeFileSync(path.join(폴더, 'owner.json'), JSON.stringify({ 판: 2, ...주인 })); };
+const 묵히기 = (폴더, 분 = 5) => { const t = new Date(Date.now() - 분 * 60_000); fs.utimesSync(폴더, t, t); };
+const 주인읽기 = (폴더) => JSON.parse(fs.readFileSync(path.join(폴더, 'owner.json'), 'utf8'));
+const 잠시 = (ms) => new Promise((r) => setTimeout(r, ms));
+// 살아 있는데 아무것도 안 하는 주인 — 11-08 pid 25504처럼 잠금만 쥐고 있다
+const 산주인 = () => spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' });
+// 잠금 폴더 · 차례 폴더(막힘 기록 README.md · 줄 주인 owner.txt)를 임시로 두고, 출력은 모아 넘긴다 — 끝나면 설정 · 환경을 되돌린다
+const 잠금시험 = async (fn) => {
+  const dir = 임시();
+  const 앞설정 = { ...웹.설정 };
+  const 앞차례 = process.env.SYNK_CHARYE_PY;
+  const 원래로그 = console.log;
+  const 찍힘 = [];
+  process.env.SYNK_CHARYE_PY = path.join(dir, '차례.py');
+  Object.assign(웹.설정, { 폴더: path.join(dir, 'upload.lock'), 쉼: 25, 살핌: 25 });
+  console.log = (...a) => { 찍힘.push(a.join(' ')); };
+  try { return await fn(dir, 찍힘); } finally {
+    console.log = 원래로그;
+    Object.assign(웹.설정, 앞설정);
+    if (앞차례 === undefined) delete process.env.SYNK_CHARYE_PY; else process.env.SYNK_CHARYE_PY = 앞차례;
+  }
+};
+// 가짜 ego — 표준 입력 첫 줄의 JOB을 읽고 지시문대로: 「멈춤」은 잠금을 쥔 채 멈추고(11-08 올리기 멈춤), 「누름」은 실제 페이지 스크립트처럼
+// 표시를 쓰고 clicking 뒤 잠금을 풀고(열쇠가 같을 때만) 답을 쓴다
+const 가짜에고 = (dir) => {
+  const f = path.join(dir, 'fake-ego.js');
+  fs.writeFileSync(f, [
+    "const fs = require('fs');",
+    "let s = '';",
+    "process.stdin.on('data', (d) => { s += d; });",
+    "process.stdin.on('end', () => {",
+    "  const J = JSON.parse(s.split('\\n')[0].replace(/^globalThis\\.JOB = /, '').replace(/;$/, ''));",
+    "  if (!J.upload) { console.error(JSON.stringify({ step: 'fail', kind: '없음', why: '가짜 ego — 잠금 없이 불림' })); return; }",
+    "  if (J.prompt === '멈춤') { setInterval(() => {}, 1000); return; }",
+    "  const 풀기 = () => { try { fs.unlinkSync(J.upload.lock + '/' + J.upload.key + '.key'); } catch { return; } fs.rmSync(J.upload.lock, { recursive: true, force: true }); };",
+    "  if (J.prompt === '감시' || J.prompt === '늦은실패') {",
+    "    setTimeout(() => {",
+    "      console.error(JSON.stringify(J.prompt === '감시' ? { step: 'fail', kind: '올리기넘김', why: '마감까지 보내기 앞에 못 닿음' } : { step: 'fail', kind: '실패', why: '모드 단추가 없음(도구 판을 열어도)' }));",
+    "      풀기();",
+    "      process.exit(1);",
+    "    }, Math.max(0, J.upload.deadline - Date.now()) + (J.prompt === '감시' ? 0 : 50));",
+    "    return;",
+    "  }",
+    "  fs.writeFileSync(J.mark, '{}');",
+    "  console.error(JSON.stringify({ step: 'clicking' }));",
+    "  풀기();",
+    "  setTimeout(() => {",
+    "    fs.writeFileSync(J.out, '# 답\\n\\n대화: https://gemini.google.com/u/1/app/ab12cd34ef56\\n\\n' + '답'.repeat(300));",
+    "    fs.rmSync(J.mark, { force: true });",
+    "    console.error(JSON.stringify({ step: 'done', url: 'https://gemini.google.com/u/1/app/ab12cd34ef56', chars: 300 }));",
+    "  }, 200);",
+    "});",
+  ].join('\n'));
+  return `"${process.execPath}" "${f}"`;
+};
+
+test('올리기 잠금 — 멈춘 주인 판단: 죽은 pid · 살아 있어도 상한 + 3분 넘김 · 줄 없이 쥔 옛 판은 치우고, 상한 안 · 줄을 쥔 옛 판 · 못 읽음은 기다린다', () => {
+  const 지금 = Date.parse('2026-11-08T14:30:00+09:00');
+  const 분 = 60_000;
+  const 새 = (상한분) => ({ pid: 1, 이름: 'argonweb-aaa', 시각: new Date(지금 - 20 * 분).toISOString(), 상한: new Date(지금 + 상한분 * 분).toISOString(), 열쇠: 'k', 판: 2 });
+  assert.deepEqual(웹.멈춘주인(새(5), 지금, { 살아있음: false }), { 치움: true, 멈춤: false, 까닭: '주인 pid 1가 없다' }, '주인 pid가 없으면 상한 안이어도 바로');
+  assert.equal(웹.멈춘주인(새(5), 지금, { 살아있음: true }).치움, false, '상한 안 — 올리는 중');
+  assert.equal(웹.멈춘주인(새(-2), 지금, { 살아있음: true }).치움, false, '상한을 넘긴 지 2분 — 주인이 스스로 그만두고 푸는 틈(끄기여유 1분 + 남는 틈)');
+  const 멈춤 = 웹.멈춘주인(새(-4), 지금, { 살아있음: true });
+  assert.deepEqual([멈춤.치움, 멈춤.멈춤], [true, true], '살아 있는데 상한 + 3분을 넘김 — 멈춘 주인');
+  assert.match(멈춤.까닭, /살아 있지만 올리기 상한\(14:26\)을 4분 넘김/);
+  // 11-08 앞 판(상한 · 열쇠 없음 — 차례를 기다리는 동안에도 쥔다): 올리기는 gemini 줄을 쥐었을 때만 하니 번호표로 기다리는 중이면 올리는 중일 수 없다
+  const 옛 = { pid: 25504, 이름: 'argonweb-779816', 시각: '2026-11-07T22:13:56.003Z' };
+  const 줄섬 = 웹.멈춘주인(옛, 지금, { 살아있음: true, 줄: '줄섬' });
+  assert.deepEqual([줄섬.치움, 줄섬.멈춤], [true, true]);
+  assert.match(줄섬.까닭, /번호표로 차례를 기다리는 중/);
+  assert.equal(웹.멈춘주인(옛, 지금, { 살아있음: true, 줄: { 줄: 'gemini-a', 시각: 지금 - 5 * 분 } }).치움, false, '줄을 쥔 옛 판 — 올리는 중일 수 있다');
+  assert.equal(웹.멈춘주인(옛, 지금, { 살아있음: true, 줄: { 줄: 'gemini-a', 시각: 지금 - 80 * 분 } }).치움, true, '줄을 75분 넘게 쥔 옛 판은 멈춘 것');
+  assert.equal(웹.멈춘주인(옛, 지금, { 살아있음: true, 줄: '모름' }).치움, false, '줄 주인 · 번호표를 못 읽으면 치우지 않는다');
+  // 줄도 번호표도 없는 옛 판 — --차례없이(부르는 쪽이 다른 이름으로 차례를 쥠)로 올리는 중일 수 있어 잠금을 잡은 지 60분이 넘어야(11-08 GPT 검수 GA4)
+  const 갓잡은 = { ...옛, 시각: new Date(지금 - 20 * 분).toISOString() };
+  assert.equal(웹.멈춘주인(갓잡은, 지금, { 살아있음: true, 줄: null }).치움, false, '줄 · 번호표 없이 20분 — --차례없이로 올리는 중일 수 있다');
+  const 오래 = 웹.멈춘주인({ ...옛, 시각: new Date(지금 - 61 * 분).toISOString() }, 지금, { 살아있음: true, 줄: null });
+  assert.deepEqual([오래.치움, 오래.멈춤], [true, true]);
+  assert.match(오래.까닭, /줄 · 번호표 없이 잠금을 61분째/);
+  // 새 판인데 열쇠 파일이 없다 — 열쇠를 먼저 쓰니 푸는 중이거나 열쇠만 지우고 끊긴 잠금(2분 묵으면 치움)
+  assert.equal(웹.멈춘주인(새(5), 지금, { 살아있음: true, 열쇠없음: true, 폴더나이: 30_000 }).치움, false, '막 푸는 중');
+  assert.deepEqual(웹.멈춘주인(새(5), 지금, { 살아있음: true, 열쇠없음: true, 폴더나이: 3 * 분 }), { 치움: true, 멈춤: false, 까닭: '열쇠 없이 3분 남은 잠금(풀다 끊김)' });
+  const { 판, ...판없음 } = 새(7);
+  assert.equal(판, 2);
+  assert.equal(웹.멈춘주인(판없음, 지금, { 살아있음: true, 열쇠없음: true, 폴더나이: 3 * 분 }).치움, false, '열쇠 파일을 안 쓰는 판(판 표시 없음)은 열쇠 파일이 없어도 멀쩡히 쥔 것 — 상한으로만 본다(GPT 다시 검수 GA1)');
+  assert.equal(웹.멈춘주인({ 모름: true }, 지금, { 폴더나이: 60 * 분 }).치움, false, 'owner.json을 읽다 막히면 치우지 않는다');
+  assert.equal(웹.멈춘주인(null, 지금, { 폴더나이: 30_000 }).치움, false, '주인 표시를 쓰는 중');
+  assert.equal(웹.멈춘주인(null, 지금, { 폴더나이: 3 * 분 }).치움, true, '주인 표시 없이 묵은 폴더(쓰다 끊김)');
+});
+
+test('올리기 상한 — 10분 + 25MB마다 1분(올림), 15분까지 · 첨부 크기를 더한다', () => {
+  const MB = 1024 * 1024;
+  assert.equal(웹.올리기상한(0), 10 * 60_000);
+  assert.equal(웹.올리기상한(1000), 11 * 60_000);
+  assert.equal(웹.올리기상한(43_119_519), 12 * 60_000, '11-08 다녀왔어.mp4(43MB)');
+  assert.equal(웹.올리기상한(101 * MB), 15 * 60_000);
+  assert.equal(웹.올리기상한(2000 * MB), 15 * 60_000, '15분까지');
+  const dir = 임시();
+  const 둘 = [쓰기(dir, 'a.jpg', Buffer.alloc(3000)), 쓰기(dir, 'b.txt', 'xyz')];
+  assert.equal(웹.올리기상한계산([...둘, path.join(dir, '없음.png')]), 11 * 60_000, '있는 파일 크기만 더한다');
+  assert.equal(웹.올리기상한계산([]), 10 * 60_000);
+});
+
+test('올리기 잠금 — 살아 있는데 멈춘 주인(상한 + 3분 넘김)은 치우고 넘겨받는다 · 막힘 기록에 남기고 · 그 프로세스는 끄지 않는다', async () => {
+  await 잠금시험(async (dir, 찍힘) => {
+    const 주인 = 산주인();
+    try {
+      const 폴더 = 웹.설정.폴더;
+      새주인쓰기(폴더, { pid: 주인.pid, 이름: 'argonweb-779816', 시각: new Date(Date.now() - 30 * 60_000).toISOString(), 상한: new Date(Date.now() - 10 * 60_000).toISOString(), 열쇠: 'old' });
+      fs.writeFileSync(path.join(dir, 'README.md'), '## 막힘 기록\n- 11-08 14:25 argonweb-779816(gemini 차례): 줄 밖 ego 실행기가 3분 넘게 안 비어 그대로 잡음'); // 끝 줄바꿈 없는 README
+      const 잠금 = await 웹.올리기잠금('argonweb-next', 60_000, { 할일: '보내기 시험' });
+      const 지금주인 = 주인읽기(폴더);
+      assert.deepEqual([지금주인.이름, 지금주인.pid, 지금주인.열쇠, 지금주인.할일], ['argonweb-next', process.pid, 잠금.열쇠, '보내기 시험']);
+      assert.deepEqual(fs.readdirSync(폴더).sort(), [`${잠금.열쇠}.key`, 'owner.json'].sort(), '옛 주인의 열쇠 파일은 지워지고 내 열쇠 파일만 있다');
+      assert.equal(Date.parse(지금주인.상한) - Date.parse(지금주인.시각), 60_000, '상한을 owner.json에 적는다 — 기다리는 쪽이 이것으로 멈춘 주인을 가린다');
+      const 기록 = fs.readFileSync(path.join(dir, 'README.md'), 'utf8').split('\n');
+      assert.equal(기록.length, 4, '앞 줄에 붙지 않고 새 줄로');
+      assert.match(기록[2], /^- \d\d-\d\d \d\d:\d\d argonweb-next\(아르곤웹 올리기 잠금\): argonweb-779816\(pid \d+, .*\) 잠금을 치우고 넘겨받음 — 살아 있지만 올리기 상한\(\d\d:\d\d\)을 10분 넘김\. 그 프로세스는 끄지 않았다$/);
+      assert.ok(찍힘.some((l) => /올리기 잠금 치움 — argonweb-779816/.test(l)), 찍힘.join('\n'));
+      assert.equal(웹.살아있나(주인.pid), true, '남의 프로세스는 끄지 않는다');
+      assert.equal(잠금.풀기(), true);
+      assert.equal(fs.existsSync(폴더), false);
+      assert.deepEqual(fs.readdirSync(dir).filter((n) => n.startsWith('upload.lock')), [], '옮겨 치운 잠금도 남기지 않는다');
+    } finally { 주인.kill(); }
+  });
+});
+
+test('올리기 잠금 — 상한 안의 산 주인 · gemini 줄을 쥔 옛 판 · 줄도 번호표도 없는 옛 판은 기다리고(차례를 잃으면 그만), 번호표로 기다리는 옛 판 주인은 넘겨받는다', async () => {
+  await 잠금시험(async (dir, 찍힘) => {
+    const 주인 = 산주인();
+    try {
+      const 폴더 = 웹.설정.폴더;
+      const 기다려 = (n) => { let k = 0; return 웹.올리기잠금('argonweb-next', 60_000, { 그만: () => (k += 1) > n }); };
+      새주인쓰기(폴더, { pid: 주인.pid, 이름: 'argonweb-up', 시각: new Date().toISOString(), 상한: new Date(Date.now() + 10 * 60_000).toISOString(), 열쇠: 'up' });
+      assert.equal(await 기다려(4), null, '상한 안 — 올리는 중이라 기다리다 차례를 잃으면 그만');
+      assert.equal(주인읽기(폴더).열쇠, 'up', '남의 잠금은 그대로');
+      assert.ok(찍힘.some((l) => /올리기 잠금 기다림 — argonweb-up\(pid \d+, .* · 상한 .*\) · 올리는 중/.test(l)), 찍힘.join('\n'));
+      // 옛 판(상한 · 열쇠 없음) — 차례 a 줄을 쥐고 있으면 올리는 중일 수 있다
+      fs.rmSync(폴더, { recursive: true });
+      주인쓰기(폴더, { pid: 주인.pid, 이름: 'argonweb-old', 시각: new Date(Date.now() - 20 * 60_000).toISOString() });
+      const 줄 = path.join(dir, 'gemini.lock');
+      fs.mkdirSync(줄);
+      fs.writeFileSync(path.join(줄, 'owner.txt'), `argonweb-old ${지금글()} 아르곤웹 1건 — 아르곤답 [77yuhbs]\n`);
+      assert.equal(웹.줄주인('argonweb-old').줄, 'gemini-a');
+      assert.equal(await 기다려(4), null, '줄을 쥔 옛 판 — 기다린다');
+      // 줄도 번호표도 없다 — --차례없이로 올리는 중일 수 있다(20분째라 기다린다, GA4)
+      fs.rmSync(줄, { recursive: true });
+      assert.equal(웹.줄주인('argonweb-old'), null);
+      assert.equal(await 기다려(4), null, '줄 · 번호표 없이 20분 — 기다린다');
+      // 줄을 내려놓고 번호표로 다시 줄을 섰다 — 올리는 중일 수 없다(11-08 07:13~14:25의 꼴)
+      const 대기열 = path.join(dir, 'gemini.queue');
+      fs.mkdirSync(대기열);
+      fs.writeFileSync(path.join(대기열, '1794116815_argonweb-other'), '');
+      assert.equal(웹.줄주인('argonweb-old'), null, '남의 번호표는 안 센다');
+      fs.writeFileSync(path.join(대기열, '1794116816_argonweb-old'), '');
+      assert.equal(웹.줄주인('argonweb-old'), '줄섬');
+      const 잠금 = await 기다려(200);
+      assert.ok(잠금, '번호표로 기다리는 옛 판 주인은 넘겨받는다');
+      assert.match(fs.readFileSync(path.join(dir, 'README.md'), 'utf8'), /argonweb-next\(아르곤웹 올리기 잠금\): argonweb-old\(pid \d+, .* · 옛 판\) 잠금을 치우고 넘겨받음 — 옛 판 주인이 gemini 줄 없이 번호표로 차례를 기다리는 중/);
+      assert.equal(웹.살아있나(주인.pid), true);
+      잠금.풀기();
+      // 줄도 번호표도 없이 60분 넘게 쥔 옛 판은 넘겨받는다
+      fs.rmSync(대기열, { recursive: true });
+      주인쓰기(폴더, { pid: 주인.pid, 이름: 'argonweb-old', 시각: new Date(Date.now() - 61 * 60_000).toISOString() });
+      const 잠금2 = await 기다려(200);
+      assert.ok(잠금2, '줄 · 번호표 없이 61분');
+      잠금2.풀기();
+    } finally { 주인.kill(); }
+  });
+});
+
+test('올리기 잠금 — 죽은 주인 · 주인 표시 없이 묵은 폴더는 치우고, 판단 뒤 새 주인이 잡은 잠금은 되돌려 둔다 · 푸는 것은 열쇠가 같을 때만', async () => {
+  await 잠금시험(async (dir) => {
+    const 폴더 = 웹.설정.폴더;
+    const 죽은 = Number(spawnSync(process.execPath, ['-e', 'process.stdout.write(String(process.pid))'], { encoding: 'utf8' }).stdout);
+    새주인쓰기(폴더, { pid: 죽은, 이름: 'argonweb-dead', 시각: new Date().toISOString(), 상한: new Date(Date.now() + 600_000).toISOString(), 열쇠: 'd' });
+    let k = 0;
+    const a = await 웹.올리기잠금('me', 60_000, { 그만: () => (k += 1) > 200 });
+    assert.ok(a && 웹.잠금주인읽기(폴더).열쇠 === a.열쇠, '주인 pid가 없으면 상한 안이어도 바로 넘겨받는다');
+    assert.equal(fs.existsSync(path.join(dir, 'README.md')), false, '죽은 주인 치우기는 막힘 기록에 안 남긴다(멈춘 주인만)');
+    assert.equal(웹.잠금풀기(폴더, 'other'), false, '열쇠가 다르면 손대지 않는다');
+    assert.equal(fs.existsSync(폴더), true);
+    assert.equal(a.풀기(), true);
+    assert.equal(a.풀기(), false, '두 번 풀어도 된다');
+    // 주인 표시(owner.json) 없는 폴더 — 쓰다 끊긴 것: 2분 넘게 묵으면 치운다
+    fs.mkdirSync(폴더);
+    const 옛때 = new Date(Date.now() - 5 * 60_000);
+    fs.utimesSync(폴더, 옛때, 옛때);
+    const b = await 웹.올리기잠금('me', 60_000, { 그만: () => (k += 1) > 400 });
+    assert.ok(b, '주인 표시 없이 묵은 폴더');
+    b.풀기();
+    // 판단한 주인(stale)과 지금 주인(fresh)이 다르면 — 그새 풀리고 새 주인이 잡음 — stale의 열쇠 파일이 없어 옮기지도 지우지도 않는다(GA3)
+    새주인쓰기(폴더, { pid: process.pid, 이름: 'fresh', 시각: new Date().toISOString(), 상한: new Date(Date.now() + 600_000).toISOString(), 열쇠: 'fresh' });
+    const 옮김자국 = () => fs.readdirSync(dir).filter((n) => n.startsWith('upload.lock.'));
+    assert.equal(웹.잠금치우기(폴더, { pid: 1, 이름: 'stale', 시각: 'x', 열쇠: 'stale' }, { 치움: true, 멈춤: true, 까닭: '시험' }, 'me'), true);
+    assert.equal(웹.잠금주인읽기(폴더).열쇠, 'fresh', '새 주인의 잠금은 제자리에 그대로');
+    assert.ok(fs.existsSync(path.join(폴더, 'fresh.key')));
+    assert.deepEqual(옮김자국(), [], '옮기지도 않았다');
+    // 옛 판으로 판단했는데 그새 새 주인(열쇠 파일)이 잡았다 — 옮겨 보고 열쇠 파일이 있으면 제자리로
+    assert.equal(웹.잠금치우기(폴더, { pid: 1, 이름: 'old', 시각: 'x' }, { 치움: true, 멈춤: true, 까닭: '시험' }, 'me'), true);
+    assert.equal(웹.잠금주인읽기(폴더).열쇠, 'fresh');
+    assert.deepEqual(옮김자국(), []);
+    // 주인 표시 없는 폴더로 판단했는데 그새 새 주인이 열쇠만 써 둔 참이다 — 열쇠 파일이 있으면 되돌린다
+    fs.rmSync(path.join(폴더, 'owner.json'));
+    assert.equal(웹.잠금치우기(폴더, null, { 치움: true, 멈춤: false, 까닭: '시험' }, 'me'), true);
+    assert.ok(fs.existsSync(path.join(폴더, 'fresh.key')), '열쇠만 써 둔 새 주인의 폴더는 그대로');
+    assert.equal(fs.existsSync(path.join(dir, 'README.md')), false, '되돌린 것은 기록하지 않는다');
+    fs.rmSync(폴더, { recursive: true });
+    // 열쇠만 지우고 폴더를 못 지운 채 끝난 잠금(같은 주인 표시 · 열쇠 파일 없음) — 막 지운 것은 남이 푸는 중이라 기다리고, 2분 묵었으면 옮겨 치운다
+    const 반쯤 = { pid: 1, 이름: 'half', 시각: 'x', 상한: new Date().toISOString(), 열쇠: 'half', 판: 2 };
+    주인쓰기(폴더, 반쯤);
+    assert.equal(웹.잠금치우기(폴더, 반쯤, { 치움: true, 멈춤: false, 까닭: '시험' }, 'me'), false, '열쇠가 막 지워졌다 — 한 바퀴 기다린다');
+    assert.equal(fs.existsSync(폴더), true);
+    묵히기(폴더);
+    assert.equal(웹.잠금치우기(폴더, 반쯤, { 치움: true, 멈춤: false, 까닭: '시험' }, 'me'), true);
+    assert.equal(fs.existsSync(폴더), false);
+    assert.deepEqual(옮김자국(), []);
+  });
+});
+
+test('올리기 잠금 — 같은 죽은 주인을 둘이 넘겨받아도 막 열쇠를 지운 쪽의 폴더를 다른 쪽이 치우지 않는다 · 쓰다 끊겨 열쇠만 남은 폴더도 치운다(GPT 다시 검수 GA2 · GA3)', async () => {
+  await 잠금시험(async (dir) => {
+    const 폴더 = 웹.설정.폴더;
+    const 죽은 = Number(spawnSync(process.execPath, ['-e', 'process.stdout.write(String(process.pid))'], { encoding: 'utf8' }).stdout);
+    const X = { pid: 죽은, 이름: 'argonweb-dead', 시각: new Date().toISOString(), 상한: new Date(Date.now() + 600_000).toISOString(), 열쇠: 'x', 판: 2 };
+    새주인쓰기(폴더, X);
+    const 판단 = 웹.멈춘주인(웹.잠금주인읽기(폴더), Date.now(), { 살아있음: false });
+    assert.equal(판단.치움, true);
+    // A가 X의 열쇠를 막 지웠고(폴더는 아직 그 자리) — B가 같은 판단으로 들어온다
+    fs.unlinkSync(path.join(폴더, 'x.key'));
+    assert.equal(웹.잠금치우기(폴더, X, 판단, 'B', ['x.key']), false, 'B는 이번 바퀴를 쉰다(남이 푸는 중)');
+    assert.equal(웹.잠금주인읽기(폴더).열쇠, 'x', 'A가 치울 폴더를 B가 건드리지 않았다');
+    // A가 마저 치우고 B가 다음 바퀴에 잡는다
+    fs.rmSync(폴더, { recursive: true });
+    let k = 0;
+    const b = await 웹.올리기잠금('B', 60_000, { 그만: () => (k += 1) > 100 });
+    assert.ok(b);
+    assert.equal(웹.잠금주인읽기(폴더).판, 2, '새 판은 owner.json에 판 2를 적는다');
+    b.풀기();
+    // 열쇠만 쓰고 owner.json 전에 끊긴 폴더 — 2분 안은 쓰는 중으로 기다리고, 묵었으면 치운다(영원히 되돌리며 돌지 않는다)
+    fs.mkdirSync(폴더);
+    fs.writeFileSync(path.join(폴더, 'lost.key'), '');
+    assert.equal(await 웹.올리기잠금('C', 60_000, { 그만: () => (k += 1) > 104 }), null, '막 쓰는 중 — 기다린다');
+    assert.ok(fs.existsSync(path.join(폴더, 'lost.key')));
+    묵히기(폴더);
+    const c = await 웹.올리기잠금('C', 60_000, { 그만: () => (k += 1) > 300 });
+    assert.ok(c, '열쇠만 남고 2분 묵은 폴더는 치우고 잡는다');
+    assert.deepEqual(fs.readdirSync(폴더).sort(), [`${c.열쇠}.key`, 'owner.json'].sort());
+    assert.deepEqual(fs.readdirSync(dir).filter((n) => n.startsWith('upload.lock.')), [], '옮긴 자국을 남기지 않는다');
+    c.풀기();
+  });
+});
+
+test('올리기 잠금 — 판단한 폴더와 옮긴 폴더의 정체가 다르면 안 지운다 · 쓰다 폴더를 잃은 쪽은 제 열쇠만 풀고 다시 잡는다(세 번째 검수)', async () => {
+  await 잠금시험(async (dir) => {
+    const 폴더 = 웹.설정.폴더;
+    // A가 묵은 빈 폴더를 보고 「주인 표시 없음」으로 판단한 뒤 — B가 그것을 치우고 같은 경로에 새로 잡아 열쇠까지만 썼다
+    fs.mkdirSync(폴더);
+    묵히기(폴더);
+    const 본표 = 웹.폴더표(폴더);
+    assert.ok(본표);
+    fs.rmSync(폴더, { recursive: true });
+    fs.mkdirSync(폴더);
+    fs.writeFileSync(path.join(폴더, 'b.key'), '');
+    // 윈도(NTFS)는 파일 번호, 리눅스 ext4는 만든 때로 가린다 — 둘 다 못 가리는 파일 시스템(만든 때 없음 · 번호 바로 다시 씀)이면 이 갈래만 건너뛴다
+    if (웹.폴더표(폴더) !== 본표) {
+      assert.equal(웹.잠금치우기(폴더, null, { 치움: true, 멈춤: false, 까닭: '시험' }, 'A', ['b.key'], 본표), true);
+      assert.ok(fs.existsSync(path.join(폴더, 'b.key')), '주인 표시 · 열쇠 목록이 맞아 떨어져도 정체가 다르면 B의 잠금은 그대로');
+      assert.deepEqual(fs.readdirSync(dir).filter((n) => n.startsWith('upload.lock.')), []);
+    } else assert.notEqual(process.platform, 'win32', '윈도에서는 같은 경로 새 폴더를 가려야 한다');
+    fs.rmSync(폴더, { recursive: true });
+    // 주인 표시를 쓰는 사이 폴더를 잃었다(ENOENT) — 경로째 지우지 않고 제 열쇠만 풀고 처음부터 다시 잡는다
+    const 원래쓰기 = fs.writeFileSync;
+    let 한번 = true;
+    fs.writeFileSync = function (f, ...rest) {
+      if (한번 && String(f).endsWith('owner.json') && String(f).startsWith(폴더)) { 한번 = false; const e = new Error('ENOENT: 시험'); e.code = 'ENOENT'; throw e; }
+      return 원래쓰기.call(this, f, ...rest);
+    };
+    let a;
+    try { a = await 웹.올리기잠금('a', 60_000); } finally { fs.writeFileSync = 원래쓰기; }
+    assert.equal(한번, false);
+    assert.deepEqual(fs.readdirSync(폴더).sort(), [`${a.열쇠}.key`, 'owner.json'].sort(), '두 번째로 잡았다 — 첫 열쇠는 남지 않는다');
+    a.풀기();
+    // 쓰는 사이 남이 내 폴더를 옮겼다가 되돌렸다 — 내 열쇠가 든 폴더는 내 것이니 주인 표시를 마저 쓰고 잡는다(제 잠금을 2분 기다리지 않는다)
+    const 원래만들기 = fs.mkdirSync;
+    const 옮김 = `${폴더}.남이옮김`;
+    let 단계 = 0;
+    fs.writeFileSync = function (f, ...rest) {
+      if (단계 === 0 && String(f).endsWith('owner.json') && String(f).startsWith(폴더)) { 단계 = 1; fs.renameSync(폴더, 옮김); }
+      return 원래쓰기.call(this, f, ...rest);
+    };
+    fs.mkdirSync = function (p, ...rest) {
+      if (단계 === 1 && String(p) === 폴더) { 단계 = 2; fs.renameSync(옮김, 폴더); }
+      return 원래만들기.call(this, p, ...rest);
+    };
+    let b;
+    try { b = await 웹.올리기잠금('b', 60_000); } finally { fs.writeFileSync = 원래쓰기; fs.mkdirSync = 원래만들기; }
+    assert.equal(단계, 2);
+    assert.equal(웹.잠금주인읽기(폴더).열쇠, b.열쇠, '되돌아온 제 폴더에 주인 표시를 마저 썼다');
+    assert.deepEqual(fs.readdirSync(폴더).sort(), [`${b.열쇠}.key`, 'owner.json'].sort());
+    b.풀기();
+    assert.equal(fs.existsSync(폴더), false);
+  });
+});
+
+test('올리기 잠금 — 같은 잠금을 두 쪽이 풀어도(감시 · finally · 부르는 쪽) 그새 잡은 새 주인 것은 안 지운다 · 남의 프로세스가 쥔 판에도 내 열쇠로만 푼다(GA2)', async () => {
+  await 잠금시험(async () => {
+    const 폴더 = 웹.설정.폴더;
+    const a = await 웹.올리기잠금('a', 60_000);
+    assert.equal(웹.잠금풀기(폴더, a.열쇠), true, '첫 풀기');
+    const b = await 웹.올리기잠금('b', 60_000);
+    assert.equal(a.풀기(), false, 'a를 두 번째로 푸는 쪽 — 지금은 b의 잠금이라 내 열쇠 파일이 없다');
+    assert.equal(웹.잠금주인읽기(폴더).열쇠, b.열쇠, 'b의 잠금은 그대로');
+    assert.ok(fs.existsSync(path.join(폴더, `${b.열쇠}.key`)));
+    assert.equal(b.풀기(), true);
+    assert.equal(fs.existsSync(폴더), false);
+  });
+});
+
+test('올리기 상한(주인 쪽) — 보내기 앞에 못 닿으면 실행기를 나무째 끄고 잠금을 풀어 「올리기 시간 넘김」(표시 없음 · 다시 보내도 된다), 누르기 직전에 풀면 그대로 답을 받는다', async () => {
+  await 잠금시험(async (dir, 찍힘) => {
+    Object.assign(웹.설정, { 에고: 가짜에고(dir), 상한: 600, 끄기여유: 300 });
+    const 사진 = 쓰기(dir, '컷.jpg');
+    const 작업 = (prompt, 이름) => 웹.작업만들기({ files: [사진], prompt, out: `${이름}.md` }, dir, 이름);
+    const 멈춤 = 작업('멈춤', '멈춤답');
+    const t0 = Date.now();
+    const r = await 웹.한건(멈춤, 1, '보내기', 'acct', [멈춤], { 이름: 'argonweb-t' });
+    assert.equal(r.결과, '올리기 시간 넘김', JSON.stringify(r));
+    assert.match(r.까닭, /상한 \d+분 안에 보내기 앞까지 못 갔다 — 실행기를 끄고 잠금을 풀었다\(보내지 않음/);
+    assert.ok(Date.now() - t0 < 20_000, `상한 + 여유 뒤 바로 끝난다(${Date.now() - t0}ms)`);
+    assert.equal(fs.existsSync(웹.설정.폴더), false, '잠금을 풀었다');
+    assert.equal(fs.existsSync(웹.표시경로(멈춤.out)), false, '보냄 표시가 없다 — 다시 보내도 된다');
+    assert.ok(찍힘.some((l) => /올리기 시간 넘김 — 상한 \d\d:\d\d까지 보내기 앞에 못 가 실행기를 끄고/.test(l)), 찍힘.join('\n'));
+    const 누름 = 작업('누름', '누름답');
+    const r2 = await 웹.한건(누름, 1, '보내기', 'acct', [누름], { 이름: 'argonweb-t' });
+    assert.equal(r2.결과, '받음', JSON.stringify(r2));
+    assert.equal(fs.existsSync(웹.설정.폴더), false, '스크립트가 누르기 직전에 풀었다');
+    assert.equal(fs.existsSync(웹.표시경로(누름.out)), false);
+    // 읽기 · 파일 없는 보내기는 잠금을 쥐지 않는다(올리기가 없다)
+    새주인쓰기(웹.설정.폴더, { pid: process.pid, 이름: 'other', 시각: new Date().toISOString(), 상한: new Date(Date.now() + 600_000).toISOString(), 열쇠: 'other' });
+    const 글만 = 웹.작업만들기({ files: [], prompt: '누름', out: '글만.md' }, dir, '글만');
+    fs.writeFileSync(웹.표시경로(글만.out), '{}');
+    const r3 = await 웹.한건(글만, 1, '읽기', 'acct', [글만], { 이름: 'argonweb-t' });
+    assert.equal(r3.결과, '보냄', `잠금 없이 바로 불렸다(가짜 ego가 「잠금 없이 불림」) — 표시가 있어 다시 보내지 않는다: ${JSON.stringify(r3)}`);
+    assert.equal(주인읽기(웹.설정.폴더).열쇠, 'other', '남이 쥔 올리기 잠금을 기다리지 않고 그대로 둔다');
+    const r4 = await 웹.한건({ ...글만, out: path.join(dir, '글만2.md') }, 1, '보내기', 'acct', [글만], { 이름: 'argonweb-t' });
+    assert.equal(r4.결과, '없음', `파일 없는 보내기도 잠금 없이: ${JSON.stringify(r4)}`);
+  });
+});
+
+test('올리기 상한(주인 쪽) — 스크립트가 마감에 스스로 그만두면 끄지 않고 「올리기 시간 넘김」, 마감 즈음 제 까닭으로 실패한 건은 「실패」 그대로(한 번 다시 한다)', async () => {
+  await 잠금시험(async (dir, 찍힘) => {
+    Object.assign(웹.설정, { 에고: 가짜에고(dir), 상한: 500, 끄기여유: 2000 });
+    const 사진 = 쓰기(dir, '컷.jpg');
+    const 작업 = (prompt) => 웹.작업만들기({ files: [사진], prompt, out: `${prompt}답.md` }, dir, prompt);
+    const t0 = Date.now();
+    const 감시 = await 웹.한건(작업('감시'), 1, '보내기', 'acct', [], { 이름: 'argonweb-t' });
+    assert.equal(감시.결과, '올리기 시간 넘김', JSON.stringify(감시));
+    assert.match(감시.까닭, /마감까지 보내기 앞에 못 닿음/, '스크립트가 찍은 까닭 그대로');
+    assert.ok(Date.now() - t0 < 1800, `끄기여유(2초)를 기다리지 않았다 — 스크립트가 풀자 바로(${Date.now() - t0}ms)`);
+    assert.ok(!찍힘.some((l) => /실행기를 끄고 올리기 잠금을 푼다/.test(l)), '실행기를 끄지 않았다');
+    const 늦은실패 = await 웹.한건(작업('늦은실패'), 1, '보내기', 'acct', [], { 이름: 'argonweb-t' });
+    assert.equal(늦은실패.결과, '실패', `마감 뒤에 풀렸어도 제 까닭(모드 단추)이 있으면 실패 — ${JSON.stringify(늦은실패)}`);
+    assert.equal(fs.existsSync(웹.설정.폴더), false);
+  });
+});
+
+test('올리기 시간 넘김 — 묶음을 멈추고(남은 건은 「안 함」) 보고에 남긴다, 종료 1', async () => {
+  await 잠금시험(async (dir, 찍힘) => {
+    Object.assign(웹.설정, { 에고: 가짜에고(dir), 상한: 400, 끄기여유: 200 });
+    const 사진 = 쓰기(dir, '컷.jpg');
+    const jobs = ['멈춤', '누름'].map((p, i) => 웹.작업만들기({ files: [사진], prompt: p, out: `답${i}.md` }, dir, `작업${i}`));
+    const code = await 웹.돌리기(jobs, { _: [], 파일: [], 차례없이: true, u: '1', 계정: 'acct' }, '보내기');
+    assert.equal(code, 1);
+    const 글 = 찍힘.join('\n');
+    assert.match(글, /아르곤웹 · 2건 — 받음 0 · 보냄\(답 기다림\) 0 · 올리기 시간 넘김 1 · 실패 0 · 건너뜀 0 · 안 함 1/);
+    assert.match(글, /올리기 시간 넘김 {2}작업0 — 올리기가 상한/);
+    assert.match(글, /안 함 {2}작업1 — 올리기가 상한/);
+    assert.match(글, /멈춤: 올리기가 상한/);
+    assert.equal(fs.existsSync(jobs[1].out), false, '뒤 작업은 보내지 않았다');
+    assert.equal(fs.existsSync(웹.설정.폴더), false);
+  });
+});
+
+// 페이지 스크립트를 가짜 ego 전역(listTaskSpaces · taskSpace)으로 돌린다 — 늦음 = { 공간 ms, 탭 ms }만큼 그 호출이 늦게 돌아오고, 첫 화면 이동은 영영 안 끝난다.
+// 잠금 폴더는 잠금열쇠로 쥐어 두고 스크립트에는 열쇠를 준다. 돌아온 뒤 { 실패 줄, 닫은 탭 수, 탭 목록 · 이동 · 파일 넣기 부른 수, 보냄 표시 }
+const 페이지돌려 = async ({ 열쇠, 잠금열쇠, 마감뒤 = 250, 늦음 = {}, 기다림 = 1500 }) => {
+  const AsyncFunction = (async () => {}).constructor;
+  const 앞 = { listTaskSpaces: globalThis.listTaskSpaces, taskSpace: globalThis.taskSpace, log: console.log };
+  const dir = 임시();
+  const lock = path.join(dir, 'upload.lock');
+  const 마감 = Date.now() + 마감뒤;
+  새주인쓰기(lock, { pid: process.pid, 이름: 't', 시각: new Date().toISOString(), 상한: new Date(마감).toISOString(), 열쇠: 잠금열쇠 });
+  const job = { ...웹.작업만들기({ files: [쓰기(dir, '컷.jpg')], prompt: '질문', out: '답.md' }, dir, 't'), upload: { lock: lock.replace(/\\/g, '/'), key: 열쇠, deadline: 마감 } };
+  const 찍힘 = [];
+  const 셈 = { 닫음: 0, 탭목록: 0, 이동: 0, 파일넣기: 0 };
+  const 쪽 = {
+    url: async () => 'about:blank', info: async () => ({}), cdp: async () => ({ windowId: 1, bounds: { windowState: 'normal' } }),
+    goto: () => { 셈.이동 += 1; return new Promise(() => {}); }, close: async () => { 셈.닫음 += 1; }, screenshot: async () => {},
+    waitForFileChooser: async () => ({ setFiles: async () => { 셈.파일넣기 += 1; } }),
+  };
+  globalThis.listTaskSpaces = async () => [{ name: 웹.기본공간, profileId: 'Profile 2' }];
+  globalThis.taskSpace = async () => { await 잠시(늦음.공간 || 0); return { pages: async () => { 셈.탭목록 += 1; await 잠시(늦음.탭 || 0); return [쪽]; }, newPage: async () => 쪽 }; };
+  console.log = (x) => { 찍힘.push(String(x)); };
+  let 끝 = false;
+  try {
+    new AsyncFunction(웹.페이지글(job, 1, '보내기', 'acct'))().catch(() => {}).finally(() => { 끝 = true; });
+    for (let t = 0; t < 기다림 && !끝 && !(셈.닫음 && 찍힘.length); t += 20) await 잠시(20);
+    await 잠시(60);
+  } finally { globalThis.listTaskSpaces = 앞.listTaskSpaces; globalThis.taskSpace = 앞.taskSpace; console.log = 앞.log; delete globalThis.JOB; }
+  const 실패 = 찍힘.map((l) => { try { return JSON.parse(l); } catch { return null; } }).find((x) => x && x.step === 'fail');
+  return { lock, 실패, ...셈, 표시: fs.existsSync(웹.표시경로(job.out)) };
+};
+
+test('페이지 스크립트(올리기 마감) — 보내기 앞에 못 닿은 채 마감이 오면 「올리기넘김」을 찍고 잠금을 풀고 제 탭을 닫는다 · 남이 넘겨받은 잠금은 그대로', async () => {
+  const 내것 = await 페이지돌려({ 열쇠: 'k1', 잠금열쇠: 'k1' });
+  assert.ok(내것.닫음 >= 1, '마감에 제 탭을 닫아 하던 조작을 끊는다');
+  assert.equal(내것.실패 && 내것.실패.kind, '올리기넘김');
+  assert.equal(fs.existsSync(내것.lock), false, '내 열쇠 파일을 지우고 잠금을 푼다');
+  assert.equal(내것.표시, false, '보냄 표시를 안 썼다');
+  const 남의것 = await 페이지돌려({ 열쇠: 'k2', 잠금열쇠: 'taken' });
+  assert.ok(남의것.닫음 >= 1);
+  assert.ok(fs.existsSync(path.join(남의것.lock, 'taken.key')), '남이 넘겨받은 잠금(내 열쇠 파일이 없음)은 손대지 않는다');
+});
+
+test('페이지 스크립트(올리기 마감) — 공간 열기 · 탭 목록이 마감 뒤에 늦게 돌아와도 그 뒤로는 탭을 옮기거나 파일을 넣지 않는다(GA1)', async () => {
+  const 공간늦음 = await 페이지돌려({ 열쇠: 'k1', 잠금열쇠: 'k1', 마감뒤: 150, 늦음: { 공간: 450 } });
+  assert.equal(공간늦음.실패 && 공간늦음.실패.kind, '올리기넘김');
+  assert.deepEqual([공간늦음.탭목록, 공간늦음.이동, 공간늦음.파일넣기], [0, 0, 0], '공간이 늦게 열려도 빈 탭을 고르지 않는다');
+  assert.equal(fs.existsSync(공간늦음.lock), false);
+  const 탭늦음 = await 페이지돌려({ 열쇠: 'k1', 잠금열쇠: 'k1', 마감뒤: 150, 늦음: { 탭: 450 } });
+  assert.equal(탭늦음.실패 && 탭늦음.실패.kind, '올리기넘김');
+  assert.deepEqual([탭늦음.이동, 탭늦음.파일넣기], [0, 0], '빈 탭이 늦게 와도 첫 화면으로 옮기지 않는다');
+  assert.ok(탭늦음.닫음 >= 1, '늦게 받은 탭은 맨 끝 finally가 닫는다');
+  assert.equal(탭늦음.표시, false);
+});
+
+test('페이지 스크립트(올리기 잠금) — 마감 검사 → 누름 → 보냄 표시 → clicking → 잠금 풀기 → 보내기 누르기, 맨 끝 finally가 감시를 끄고 푼다', () => {
+  const s = 페이지();
+  const { 보내기 } = 갈래(s);
+  const 자리 = (t) => { const i = 보내기.indexOf(t); assert.ok(i > 0, `보내기 갈래에서 「${t}」를 찾음`); return i; };
+  const 검사 = 자리('"올리기넘김");');
+  const 누름 = 자리('누름 = true;');
+  const 표시 = 자리('await writeMark(null)');
+  const 찍음 = 자리('log({ step: "clicking"');
+  const 풀기 = 자리('await 올리기풀기();');
+  const 보냄 = 자리('aria-label="메시지 보내기"');
+  assert.ok(검사 < 누름 && 누름 < 표시 && 표시 < 찍음 && 찍음 < 풀기 && 풀기 < 보냄, '마감을 넘겼으면 표시를 쓰지 않고, 누르기 직전에 잠금을 넘긴다');
+  assert.doesNotMatch(보내기.slice(검사, 누름), /await /, '마감 검사와 「누름」 사이에 await가 없다 — 감시가 끼어들지 못한다');
+  const 푸는곳 = 덩이(s, 'const 올리기풀기 = async () => {');
+  assert.match(푸는곳, /await fs\.unlink\(`\$\{up\.lock\}\/\$\{up\.key\}\.key`\); break;/, '내 열쇠 파일 지우기가 확인이다(한 사람만 지운다)');
+  assert.ok(푸는곳.indexOf('fs.unlink(') < 푸는곳.indexOf('await fs.rename(up.lock, 무덤)') && 푸는곳.indexOf('await fs.rename(up.lock, 무덤)') < 푸는곳.indexOf('await fs.rm(무덤'), '열쇠 파일을 지운 뒤에만 폴더를 옮겨 지운다(경로째 지우지 않는다)');
+  assert.match(푸는곳, /e\.code === "ENOENT"[^\n]*\) return;/, '내 열쇠 파일이 없으면(남이 넘겨받음) 손대지 않는다');
+  assert.match(덩이(s, '감시 = setTimeout(() => {'), /^감시 = setTimeout\(\(\) => \{\r?\n\s*if \(누름\) return;/, '감시는 누른 뒤에는 아무것도 안 한다');
+  assert.match(s, /\n\} finally \{\r?\n {2}if \(감시\) clearTimeout\(감시\);\r?\n {2}await 올리기풀기\(\);\r?\n {2}if \(넘김 && page\) await page\.close\(\)[^\n]*\r?\n\}\s*$/, '맨 끝 finally — 어느 길로 끝나든 감시를 끄고 잠금을 풀고, 마감으로 그만뒀으면 제 탭을 닫는다');
+  // 마감확인 — 공간 열기 뒤 · 빈 탭 뒤 · 첫 화면 뒤 · 올리기 앞 · 파일 넣기 앞(GA1)
+  const 확인자리 = [...s.matchAll(/await 마감확인\(\);/g)].map((m) => m.index);
+  const 앞에 = (t) => { const i = s.indexOf(t); assert.ok(i > 0, t); return 확인자리.some((k) => k < i && s.slice(k, i).split('\n').length <= 3); };
+  for (const t of ['let s = await 첫화면();', 'const menuText = () =>', 'await chooser.setFiles(files);']) assert.ok(앞에(t), `「${t}」 바로 앞에 마감확인`);
+  assert.ok(확인자리.some((k) => k > s.indexOf('await taskSpace(space)') && k < s.indexOf('const 빈탭 = async')), '공간 열기 바로 뒤에 마감확인');
+  assert.match(s, /\ntry \{\r?\n\/\/ profileId는/, '본문 첫 줄(공간 열기)부터 try 안');
+  const j = 웹.작업만들기({ files: ['C:\\a\\컷.jpg'], prompt: 'p', out: 'C:\\a\\답.md' }, 'C:\\a', 't');
+  const JOB = (x) => JSON.parse(웹.페이지글(x, 1, '보내기', 'acct').split('\n')[0].replace(/^globalThis\.JOB = /, '').replace(/;$/, ''));
+  assert.deepEqual(JOB({ ...j, upload: { lock: 'C:/t/upload.lock', key: 'k', deadline: 1 } }).upload, { lock: 'C:/t/upload.lock', key: 'k', deadline: 1 });
+  assert.equal(JOB(j).upload, undefined, '잠금을 쥐지 않은 부름(읽기 · 오마주)에는 없다');
 });

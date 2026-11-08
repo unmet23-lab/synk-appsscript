@@ -3,7 +3,9 @@
 // `ego-browser nodejs` 표준 입력으로 돌린다(한글 경로는 -e import가 안 된다):
 //   tools/아르곤웹.js(사진 · 지시문 검수 — 공용 차례를 잡고 부른다) · tools/오마주.js 아르곤(원본 영상 첫 분석).
 //   JOB = { mode: "보내기" | "읽기" | "확인", files, prompt, out, shots, u, account, space, profile, head, mark, unsentMark, claimed, twins,
-//           releaseAfterMs, failShot, sentWaitSec, answerMin }
+//           releaseAfterMs, failShot, sentWaitSec, answerMin, upload? }
+// 11-08 올리기 잠금: 파일을 올리는 보내기면 부르는 쪽이 잠금을 쥐고 upload = { lock, key, deadline }을 준다 — 보내기 누르기 직전에 여기서 풀고,
+//   마감까지 거기 못 닿으면 올리기를 그만두고(제 탭을 닫음) 「올리기넘김」으로 끝낸다. 본문은 맨 끝 finally까지 한 덩이다(아래 「본문」).
 // 11-07: ego 기본 프로필이 `Profile 2`(「유호 (Chrome)」)로 바뀌고 구글 로그인이 그 프로필에만 남아 공간을 그 프로필로 만들고, 차례가 준 계정(account)과
 //   화면의 「Google 계정 … @」 표시가 다르면 아무것도 올리지 않고 멈춘다. 「확인」은 그 계정 확인까지만 하고 탭을 닫는다(보내기 없음).
 // 10-28 오마주 영상용 실행기를 10-31 사진 · 지시문 검수 시험판과 합쳐 넓혔다. 읽기 · 보내기만 한다 — 영상 권리 동의 창 · 한도 · 로봇 확인이
@@ -131,11 +133,58 @@ const finish = async (text, url) => {
   await page.close().catch(() => {});
 };
 
+// 올리기 잠금(11-08) — 잠금은 부르는 쪽(tools/아르곤웹.js)이 쥐고, 푸는 것은 여기서 한다: 보내기 누르기 직전(표시를 쓴 뒤) · 그 앞에서 끝날 때
+// (맨 끝 finally) · 마감. 잠금 폴더의 내 열쇠 파일(<key>.key)을 지운 때만 폴더를 지운다 — 지우기는 한 사람만 되고, 남이 넘겨받은 잠금에는 내 열쇠
+// 파일이 없다. 실행기(ego-browser nodejs)를 꺼도 ego 안 스크립트는 살아 있어(현장노트 gemini_사진) 마감은 여기서 지킨다 — 마감이 오면 「올리기넘김」을
+// 찍고 풀고 제 탭을 닫아 하던 조작을 끊고, 늦게 돌아온 ego 호출도 올리기 · 파일 고르기 · 누르기 앞의 마감확인에서 멈춘다(11-08 GPT 검수 — 공간 열기가
+// 마감 뒤에 돌아오자 남이 쥔 잠금 아래서 파일을 올렸다). 마감 뒤에는 표시를 쓰지도 누르지도 않는다(같은 질문을 두 번 보내지 않는 표시 규칙과 그대로
+// 맞물린다 — 표시가 없으면 다시 보내도 된다).
+const up = J.upload && J.upload.lock && J.upload.key ? J.upload : null;
+const upDeadline = up ? Number(up.deadline) || 0 : 0;
+let 누름 = false, 넘김 = false, 감시 = null;
+const 올리기풀기 = async () => {
+  if (!up) return;
+  for (let i = 0; ; i += 1) {
+    try { await fs.unlink(`${up.lock}/${up.key}.key`); break; } catch (e) {
+      if (e.code === "ENOENT" || i >= 3 || !["EPERM", "EBUSY", "EACCES"].includes(e.code)) return; // 내 열쇠 파일이 없다 — 이미 풀렸거나 남이 넘겨받은 잠금
+      await new Promise((r) => setTimeout(r, 100));
+    }
+  }
+  // 내 열쇠를 지운 폴더는 아무도 못 잡는다 — 경로째 지우지 않고 고유한 이름으로 옮긴 뒤 지운다(지우는 사이 같은 경로에 새로 잡힌 잠금을 안 건드리게).
+  // 못 옮기면 그대로 둔다 — 열쇠 없이 2분 묵은 폴더는 기다리는 쪽이 치운다
+  const 무덤 = `${up.lock}.풀림-${up.key}-${Date.now()}`;
+  for (let i = 0; ; i += 1) {
+    try { await fs.rename(up.lock, 무덤); break; } catch (e) {
+      if (e.code === "ENOENT" || i >= 4 || !["EPERM", "EBUSY", "EACCES"].includes(e.code)) return;
+      await new Promise((r) => setTimeout(r, 100));
+    }
+  }
+  await fs.rm(무덤, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }).catch(() => {});
+};
+// 마감을 넘겼으면(감시가 울렸거나) 잠금을 풀고 표시 없이 그만둔다 — 제 탭은 맨 끝 finally가 닫는다
+const 마감확인 = async () => {
+  if (!upDeadline || (!넘김 && Date.now() <= upDeadline)) return;
+  넘김 = true;
+  await 올리기풀기();
+  await fail("올리기 마감을 넘겨 그만둔다(표시 안 씀) — 다시 돌려도 된다", "올리기넘김");
+};
+if (upDeadline) {
+  감시 = setTimeout(() => {
+    if (누름) return;
+    넘김 = true;
+    log({ step: "fail", kind: "올리기넘김", why: `올리기가 마감(${new Date(upDeadline).toLocaleTimeString("sv-SE", { timeZone: "Asia/Seoul" })})까지 보내기 앞에 못 닿음 — 그만두고 잠금을 푼다(보내지 않음 · 다시 돌려도 된다)` });
+    올리기풀기().finally(() => { if (page) page.close().catch(() => {}); });
+  }, Math.max(0, upDeadline - Date.now()));
+}
+
+// 본문 — 어느 길로 끝나든(받음 · 실패 · 예외) 맨 끝 finally가 마감 감시를 끄고 올리기 잠금을 푼다. 기존 줄을 그대로 두려고 들여 쓰지 않았다.
+try {
 // profileId는 공간을 처음 만들 때만 받는다 — 이미 있는 이름에 넘기면 ego가 「profileId only applies when creating」으로 막는다(11-07, 두 번째 실행부터 전부 실패).
 // 있으면 그 공간의 프로필이 맞는지만 보고 이름으로 다시 연다.
 const oldSpace = (await listTaskSpaces()).find((s) => s.name === space);
 if (oldSpace && oldSpace.profileId && oldSpace.profileId !== profile) await fail(`공간 「${space}」이 ${oldSpace.profileId}에 있다(${profile} 아님) — 다른 이름으로 새로 만든다`, "멈춤");
 const task = oldSpace ? await taskSpace(space) : await taskSpace(space, { profileId: profile });
+await 마감확인(); // 공간 열기가 마감 뒤에 돌아왔으면 여기서 멈춘다(잠금 없는 읽기 · 확인은 그냥 지나간다)
 
 // 빈 탭만 다시 쓴다 — 대화가 열린 탭은 답이 아직 생기는 중일 수 있어 건드리지 않고 새 탭을 연다(보내기 · 확인 · 사이드바 찾기)
 const 빈탭 = async () => {
@@ -344,7 +393,9 @@ if (mode === "읽기") {
   }
 } else {
   page = await 빈탭();
+  await 마감확인();
   let s = await 첫화면();
+  await 마감확인();
   if (mode === "확인") {
     log({ step: "done", url: await page.url().catch(() => ""), chars: 0, out: null });
     await page.close().catch(() => {});
@@ -404,6 +455,7 @@ if (mode === "읽기") {
 
     // 파일 올리기 — 숨은 파일 칸이 없어 「파일 업로드」를 파일 선택 대기와 함께 실제로 누른다(10-22)
     if (files.length) {
+      await 마감확인(); // 올리기 앞 — 마감 뒤에는 파일 고르기 창을 열지 않는다
       const menuText = () => page.evaluate(() => { const m = document.querySelector("[role=menu]"); return m ? m.innerText : ""; });
       let mt = await menuText();
       for (let i = 0; i < 3 && !/파일 업로드/.test(mt); i++) {
@@ -421,6 +473,7 @@ if (mode === "읽기") {
       const chooserP = page.waitForFileChooser({ timeout: 15000 });
       await page.click('loc=css:[data-synk="upl"]', { timeout: 15000, label: "choose file upload" }).catch((e) => fail("파일 업로드 누르기 실패: " + e.message));
       const chooser = await chooserP.catch((e) => fail("파일 선택 창이 안 뜸(동의 창일 수 있다 — 누르지 않는다): " + e.message, "멈춤"));
+      await 마감확인(); // 파일 넣기 바로 앞 — 고르기 창을 기다리는 사이 마감이 왔으면 넣지 않는다
       await chooser.setFiles(files);
       for (let i = 0; i < 40; i++) { await page.waitForTimeout(1500); s = await state(); if (s.closes >= chipN || s.failed || s.consent) break; }
       if (s.consent) await fail("영상 권리 동의 창이 떴다 — 누르지 않고 멈춤(유호님 손)", "멈춤");
@@ -453,8 +506,13 @@ if (mode === "읽기") {
     s = await state();
     if (Math.abs(s.len - promptLen) > 3) await fail(`지시문 길이가 다름 ${s.len}/${promptLen}`);
     if (s.mode && !OK(s.mode)) { await chooseArgon(); s = await state(); if (!OK(s.mode)) await fail("보내기 직전 모드가 바뀜: " + s.mode); }
+    // 올리기 마감을 넘겼으면 표시를 쓰지 않고 그만둔다(감시가 이미 탭을 닫았을 수 있다). 이 검사와 「누름」 사이에는 await가 없어 감시가 끼어들지 못한다
+    if (넘김 || (upDeadline && Date.now() > upDeadline)) await fail("올리기 마감을 넘겨 보내지 않는다(표시 안 씀) — 다시 돌려도 된다", "올리기넘김");
+    누름 = true;
+    if (감시) clearTimeout(감시);
     await writeMark(null); // 이 뒤로 끝나면 부르는 쪽은 다시 보내지 않는다
     log({ step: "clicking", 첨부단추: s.closes, 모드: s.mode });
+    await 올리기풀기(); // 올리기 · 썸네일 뒤 기다림 · 지시문 넣기가 끝났다 — 누르기 전에 다음 올리기에 넘긴다(답을 기다리는 동안 쥐지 않는다)
     let clickErr = "";
     await page.click('loc=css:[aria-label="메시지 보내기"]', { timeout: 15000, label: "send prompt" }).catch((e) => { clickErr = e.message; });
     // 보냈는지 — 대화 주소, 보낸 글의 지시문 앞머리, 멈춤 단추 가운데 하나. 60초가 지나도 보낸 글이 없고 입력창에 지시문이 그대로면 안 간 것.
@@ -476,4 +534,9 @@ if (mode === "읽기") {
     const r = await waitAnswer(url);
     await finish(r.text, r.url);
   }
+}
+} finally {
+  if (감시) clearTimeout(감시);
+  await 올리기풀기();
+  if (넘김 && page) await page.close().catch(() => {}); // 마감으로 그만둔 판 — 제 탭을 닫는다(실패 그림은 fail이 먼저 찍었다)
 }

@@ -27,8 +27,11 @@
  * 다시 보내지 않기: 페이지 스크립트(tools/아르곤웹.mjs)가 보내기를 누르기 직전에 `<답>.보냄.json` 표시를 쓰고, 답을 받으면 지운다.
  *   표시가 남은 작업은 보내기를 불러도 「읽기」로 간다. 표시는 손으로 지우지 않는다 — 읽기가 탭 · 사이드바까지 보고 없으면(보낸 지 20분 뒤)
  *   <답>.안보내짐.json으로 옮겨(기록은 남김) 다음 보내기가 다시 보낸다. 사이드바를 거치지 않고 표시를 푸는 길은 없다(같은 질문을 두 번 보내지 않게).
- * 한 ego 브라우저에서 파일을 올리는 실행기는 하나만 돈다(10-31 a · b 두 줄 동시 올리기에서 첨부 0장) — 이 도구끼리는 임시 폴더의
- *   잠금으로 차례를 지키고, 「--두줄」은 다른 올리기 실행기가 안 도는 것을 알 때만 붙인다.
+ * 올리기 잠금: 한 ego 브라우저에서 파일 올리기는 한 번에 하나(10-31 a · b 두 줄 동시 올리기에서 첨부 0장) — 이 도구끼리는 임시 폴더 잠금
+ *   (%TEMP%/synk-argonweb-upload.lock)으로 지킨다. 11-08부터 gemini 차례를 잡은 뒤, 파일이 있는 보내기 한 건의 「올리기 ~ 보내기 누르기 직전」에만
+ *   쥔다(차례를 기다리며 쥐던 앞 판은 줄이 꺼진 7시간 동안 이 PC의 아르곤을 모두 묶었다). 상한(10분 + 25MB마다 1분, 15분까지)을 넘기면 올리기를
+ *   그만두고 잠금을 풀어 「올리기 시간 넘김」으로 묶음을 멈춘다(보내지 않았으니 다시 불러도 된다). 상한 + 3분을 넘겨 살아 쥔 주인은 기다리는 쪽이
+ *   「멈춘 주인」으로 치우고 공용차례 README 막힘 기록에 남긴다. 「--두줄」은 다른 올리기 실행기가 안 도는 것을 알 때만 붙인다.
  * 차례: 사용자 폴더의 synk-vendor/_공용차례/차례.py(README). 막힘 · 한도 · 동의 창은 누르지 않고 멈춘다 — sorry면 두 줄 다 끈다(off 파일).
  * 계정: 차례의 `계정` 출력(「gemini-a 77yuhbs https://gemini.google.com/u/1/」)에서 번호와 계정 이름을 함께 받아, 페이지 스크립트가 화면의 계정
  *   표시와 대조한다 — 다르면 올리기 전에 멈춘다. 11-07 ego 기본 프로필이 `Profile 2`(「유호 (Chrome)」)로 바뀌어 구글 로그인이 그 프로필에만 있고
@@ -168,6 +171,7 @@ function 페이지글(job, u, mode, 계정 = '') {
     claimed: Array.isArray(job.claimed) ? job.claimed : [], twins: Number(job.twins) || 0, releaseAfterMs: 풀기기다림,
     ...(job.failShot ? { failShot: 슬래시(job.failShot) } : {}),
     ...(job.answerMin ? { answerMin: job.answerMin } : {}), ...(job.sentWaitSec ? { sentWaitSec: job.sentWaitSec } : {}),
+    ...(job.upload ? { upload: job.upload } : {}), // 올리기 잠금 { lock, key, deadline } — 파일을 올리는 보내기만(페이지돌리기가 쥔 뒤)
   };
   return `globalThis.JOB = ${JSON.stringify(JOB)};\n${판단머리()}\n${fs.readFileSync(페이지, 'utf8')}`;
 }
@@ -188,6 +192,7 @@ function 결과가르기(출력, 표시있음, 받은답 = null) {
   if (f && f.kind === '멈춤') return { 결과: '멈춤', 까닭, 보냄: 표시있음, url };
   if (f && f.kind === '안보내짐' && !표시있음) return { 결과: '안 보내짐', 까닭, 기록: f.record || '' };
   if (f && f.kind === '헷갈림') return { 결과: '헷갈림', 까닭, url, 후보: Array.isArray(f.urls) ? f.urls : [], 보냄: 표시있음 };
+  if (f && f.kind === '올리기넘김' && !표시있음) return { 결과: '올리기 시간 넘김', 까닭 }; // 표시를 쓰기 전에 그만뒀다 — 다시 보내도 된다
   if (표시있음) return { 결과: '보냄', 까닭, url, 늦음: !!(f && f.kind === '늦음'), 사라짐: !!(f && f.kind === '사라짐') };
   if (f && f.kind === '없음') return { 결과: '없음', 까닭 };
   return { 결과: '실패', 까닭 };
@@ -379,53 +384,334 @@ function 줄끄기(까닭) {
 }
 
 const 살아있나 = (pid) => { try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; } };
-async function 올리기잠금(이름) {
-  const dir = path.join(os.tmpdir(), 'synk-argonweb-upload.lock');
-  const owner = path.join(dir, 'owner.json');
-  let 알림 = 0;
-  for (;;) {
-    try {
-      fs.mkdirSync(dir);
-      fs.writeFileSync(owner, JSON.stringify({ pid: process.pid, 이름, 시각: new Date().toISOString() }));
-      return () => { try { fs.rmSync(dir, { recursive: true, force: true }); } catch { /* 이미 없음 */ } };
-    } catch (e) {
-      if (e.code !== 'EEXIST') throw e;
-      let 주인 = null;
-      try { 주인 = JSON.parse(fs.readFileSync(owner, 'utf8')); } catch { /* 쓰는 중 */ }
-      if (주인 && !살아있나(주인.pid)) { fs.rmSync(dir, { recursive: true, force: true }); continue; }
-      if (Date.now() - 알림 > 60_000) { console.log(`  ${시각()} 다른 아르곤웹(${주인 ? 주인.이름 : '?'})이 파일을 올리는 중 — 끝나기를 기다린다`); 알림 = Date.now(); }
-      await 쉬기(10_000);
+
+// ── 올리기 잠금 ──
+// 한 ego 브라우저에서 파일 올리기는 한 번에 하나(10-31 a · b 두 줄 동시 올리기에서 첨부 0장). 11-08부터 gemini 차례를 잡은 뒤, 파일이 있는 보내기
+// 한 건의 「올리기 ~ 보내기 누르기 직전」에만 쥔다 — 앞 판은 차례를 기다리는 동안에도 쥐어, a · b 줄이 꺼진 07:41~14:22 내내 차례만 기다리던
+// 주인(07:13부터) 하나가 이 PC의 아르곤 아홉 건을 묶었다(현장노트 gemini_사진 「올리기 잠금」).
+// 잠금 폴더 = <열쇠>.key(먼저 씀) + owner.json { pid, 이름, 시각, 상한, 열쇠, 판: 2(열쇠 파일을 쓰는 판), 할일 }. 푸는 것 · 넘겨받는 것은 모두 그 열쇠 파일 지우기로 확인한다 —
+// 지우기는 한 사람만 되고, 그새 풀리고 새 주인이 잡은 폴더에는 그 열쇠 파일이 없다(11-08 GPT 검수 — 「읽고 지우기」 · 「옮겼다 되돌리기」는 그 틈에
+// 새 주인 것을 지울 수 있었다). 페이지 스크립트가 누르기 직전 · 그 앞에서 끝날 때 · 상한에 스스로 풀고, 부르는 쪽은 상한 + 끄기여유에도 쥐고 있으면
+// 실행기를 나무째 끄고 푼다. 기다리는 쪽은 주인 pid가 없거나, 살아 있어도 상한 + 넘김여유를 넘겼으면 「멈춘 주인」으로 치우고 넘겨받는다
+// (그 프로세스는 끄지 않는다). 보냄 표시(<답>.보냄.json)는 잠금과 따로라 치울 때도 건드리지 않는다.
+const 설정 = {
+  폴더: path.join(os.tmpdir(), 'synk-argonweb-upload.lock'),
+  에고: 'ego-browser nodejs', // 페이지 스크립트를 표준 입력으로 받는 실행기(시험은 가짜로 바꾼다)
+  쉼: 10_000, // 기다리는 쪽이 다시 보는 간격
+  살핌: 2_000, // 쥔 쪽이 스크립트가 잠금을 풀었는지 보는 간격
+  끄기여유: 60_000, // 상한 뒤 페이지 스크립트가 스스로 그만두고 풀 틈 — 그래도 쥐고 있으면 실행기를 끈다
+  넘김여유: 3 * 60_000, // 상한 뒤 이만큼 지나도 살아 쥐고 있으면 멈춘 주인
+  빈잠금: 2 * 60_000, // 주인 표시(owner.json) 없는 잠금 폴더가 이만큼 묵으면 쓰다 끊긴 것
+  옛판줄: 75 * 60_000, // 상한 없는 옛 판 주인이 gemini 줄을 이만큼 넘게 쥐면 멈춘 것(한 차례 최대 — 새 건 12분 + 한 건 30분 + 1분 + 다시 읽기 30분)
+  옛판잠금: 60 * 60_000, // 상한 없는 옛 판 주인이 줄도 번호표도 없이 이만큼 넘게 쥐면 멈춘 것(--차례없이 한 차례 — 새 건 12분 + 한 건 30분 + 1분 남짓)
+  상한: 0, // 시험용 — 0이 아니면 올리기 상한(ms)을 이것으로
+};
+const 때 = (ms) => new Date(ms).toLocaleTimeString('sv-SE', { timeZone: 'Asia/Seoul' }).slice(0, 5);
+const 분수 = (ms) => Math.max(0, Math.round(ms / 60_000));
+
+// 올리기 상한 — 10분 + 25MB마다 1분(올림), 15분까지. 첫 화면 · 모드 고르기 · 올리기 · 썸네일 뒤 기다림 · 지시문 넣기까지(보통 1~4분)
+function 올리기상한(바이트) {
+  return 설정.상한 || Math.min(15 * 60_000, 10 * 60_000 + Math.ceil(Math.max(0, Number(바이트) || 0) / (25 * 1024 * 1024)) * 60_000);
+}
+function 올리기상한계산(files) {
+  return 올리기상한((files || []).reduce((n, f) => { try { return n + fs.statSync(f).size; } catch { return n; } }, 0));
+}
+
+// owner.json — 없거나 덜 써졌으면 null, 읽다 막히면 { 모름: true }(멀쩡한 잠금을 「주인 표시 없음」으로 치우지 않게)
+function 잠금주인읽기(dir) {
+  let 글;
+  try { 글 = fs.readFileSync(path.join(dir, 'owner.json'), 'utf8'); } catch (e) { return e.code === 'ENOENT' ? null : { 모름: true }; }
+  try { const j = JSON.parse(글); return j && typeof j === 'object' ? j : null; } catch { return null; }
+}
+
+const 열쇠파일 = (dir, 열쇠) => path.join(dir, `${열쇠}.key`);
+const 열쇠파일들 = (dir) => { try { return fs.readdirSync(dir).filter((f) => f.endsWith('.key')); } catch { return []; } };
+// 폴더 하나의 정체 — 같은 경로에 새로 만든 잠금 폴더와 가린다(윈도는 파일 번호, 리눅스는 번호가 다시 쓰여도 만든 때로). 못 읽으면 ''
+const 폴더표 = (dir) => { try { const s = fs.statSync(dir, { bigint: true }); return `${s.ino}:${s.birthtimeNs}`; } catch { return ''; } };
+const 잠깐 = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+
+// 파일 하나를 지운다 — 지웠으면 true, 없으면 false. 윈도에서 남이 잠깐 연 핸들(EPERM · EBUSY · EACCES)이면 쉬고 세 번까지
+function 지우기(f) {
+  for (let i = 0; ; i += 1) {
+    try { fs.unlinkSync(f); return true; } catch (e) {
+      if (e.code === 'ENOENT') return false;
+      if (i >= 3 || !['EPERM', 'EBUSY', 'EACCES'].includes(e.code)) throw e;
+      잠깐(50);
     }
   }
 }
 
+// 내 열쇠 파일이 아직 있나 — 읽다 막히면 있는 것으로 본다(멀쩡히 쥔 잠금을 풀린 것으로 보지 않게)
+function 열쇠있음(dir, 열쇠) {
+  try { fs.statSync(열쇠파일(dir, 열쇠)); return true; } catch (e) { return e.code !== 'ENOENT'; }
+}
+
+// 열쇠를 지운(끝난) 잠금 폴더를 치운다 — 경로째 지우지 않고 고유한 이름으로 옮긴 뒤 지운다(지우는 사이 남이 같은 경로에 새로 잡은 잠금을 안 건드리게).
+// 못 옮기면(열린 핸들) 그대로 둔다 — 열쇠 없이 2분 묵은 폴더는 기다리는 쪽이 치운다
+function 폴더치우기(dir) {
+  const 무덤 = `${dir}.풀림-${process.pid}-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`;
+  for (let i = 0; ; i += 1) {
+    try { fs.renameSync(dir, 무덤); break; } catch (e) {
+      if (e.code === 'ENOENT' || i >= 4 || !['EPERM', 'EBUSY', 'EACCES'].includes(e.code)) return;
+      잠깐(50);
+    }
+  }
+  try { fs.rmSync(무덤, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); } catch { /* 옮긴 이름은 잠금이 아니다 */ }
+}
+
+// 내 열쇠 파일을 지운 사람만 푼다 — 지운 뒤 그 폴더는 아무도 못 잡는다(mkdir가 막힘). 남이 넘겨받은 잠금에는 내 열쇠 파일이 없다
+function 잠금풀기(dir, 열쇠) {
+  try { if (!지우기(열쇠파일(dir, 열쇠))) return false; } catch { return false; }
+  폴더치우기(dir);
+  return true;
+}
+
+// 이 이름의 차례 — 차례.py는 줄을 쥐면 `<줄>.lock/owner.txt` 첫 줄에 「이름 날짜 시각 …」(이 PC 시각)을 쓰고, 기다리는 동안은 `gemini.queue/<번호>_<이름>`
+// 번호표를 둔다. 쥔 줄 { 줄, 시각 } · 번호표로 기다림 '줄섬' · 둘 다 없음 null · 읽다 막히면 '모름'
+function 줄주인(이름) {
+  const dir = path.dirname(차례경로());
+  let 모름 = false;
+  for (const [줄, 폴더] of [['gemini-a', 'gemini.lock'], ['gemini-b', 'gemini-b.lock']]) {
+    let 첫 = '';
+    try { 첫 = fs.readFileSync(path.join(dir, 폴더, 'owner.txt'), 'utf8').split(/\r?\n/)[0]; } catch (e) { if (e.code !== 'ENOENT') 모름 = true; continue; }
+    const [누구, 날, 때글] = 첫.trim().split(/\s+/);
+    if (누구 === 이름) return { 줄, 시각: Date.parse(`${날}T${때글}`) };
+  }
+  if (모름) return '모름';
+  try {
+    if (fs.readdirSync(path.join(dir, 'gemini.queue')).some((f) => /^\d+_/.test(f) && f.slice(f.indexOf('_') + 1) === 이름)) return '줄섬';
+  } catch (e) { if (e.code !== 'ENOENT') return '모름'; }
+  return null;
+}
+
+// 올리기 잠금 주인을 치울지 — 주인 = owner.json, 본 = { 살아있음, 폴더나이(ms), 열쇠없음(새 판 열쇠 파일이 없음), 줄: 줄주인() }.
+// { 치움, 멈춤(살아 있는데 멈춘 주인 — 막힘 기록에 남김), 까닭 }
+function 멈춘주인(주인, 지금, 본 = {}, 값 = 설정) {
+  const 치움 = (까닭, 멈춤 = true) => ({ 치움: true, 멈춤, 까닭 });
+  const 둠 = (까닭) => ({ 치움: false, 멈춤: false, 까닭 });
+  if (주인 && 주인.모름) return 둠('주인 표시를 못 읽음 — 다음 바퀴에 다시 본다');
+  const 나이 = Number(본.폴더나이);
+  if (!주인) return Number.isFinite(나이) && 나이 > 값.빈잠금 ? 치움(`주인 표시 없는 잠금이 ${분수(나이)}분 묵음(쓰다 끊김)`, false) : 둠('주인 표시를 쓰는 중');
+  if (!본.살아있음) return 치움(`주인 pid ${주인.pid}가 없다`, false);
+  // 열쇠 파일을 쓰는 판(판 2)은 열쇠를 먼저 쓰니, 열쇠 파일 없는 주인 표시는 푸는 중이거나 열쇠만 지우고 폴더를 못 지운 채 끝난 잠금이다
+  // (열쇠를 지우면 폴더 시각이 새로 찍혀 막 푼 것은 2분 안 — 11-08 윈도에서 잼)
+  if (주인.열쇠 && Number(주인.판) >= 2 && 본.열쇠없음 && Number.isFinite(나이) && 나이 > 값.빈잠금) return 치움(`열쇠 없이 ${분수(나이)}분 남은 잠금(풀다 끊김)`, false);
+  const 끝 = Date.parse(주인.상한);
+  if (Number.isFinite(끝)) {
+    if (지금 > 끝 + 값.넘김여유) return 치움(`살아 있지만 올리기 상한(${때(끝)})을 ${분수(지금 - 끝)}분 넘김`);
+    return 둠(`올리는 중 — 상한 ${때(끝)}${지금 > 끝 ? ' 넘김(주인이 끄고 풀기를 기다림)' : ''}`);
+  }
+  // 11-08 앞 판 — 상한이 없고 차례를 기다리는 동안에도 쥔다. 올리기는 gemini 줄을 쥐었을 때만 한다
+  if (본.줄 === '모름') return 둠('옛 판 주인 — 차례 줄 · 번호표를 못 읽음');
+  if (본.줄 === '줄섬') return 치움('옛 판 주인이 gemini 줄 없이 번호표로 차례를 기다리는 중(올리는 중일 수 없다)');
+  if (본.줄) {
+    const 쥔 = 지금 - 본.줄.시각;
+    if (Number.isFinite(쥔) && 쥔 > 값.옛판줄) return 치움(`옛 판 주인이 ${본.줄.줄} 줄을 ${분수(쥔)}분째 쥐고 있다`);
+    return 둠(`옛 판 주인이 ${본.줄.줄} 줄을 쥐고 있다 — 올리는 중일 수 있다`);
+  }
+  // 줄도 번호표도 없다 — 차례 사이 잠깐이거나, --차례없이(부르는 쪽이 다른 이름으로 차례를 쥠)로 올리는 중일 수 있다(11-08 GPT 검수)
+  const 쥔지 = 지금 - Date.parse(주인.시각);
+  if (Number.isFinite(쥔지) && 쥔지 > 값.옛판잠금) return 치움(`옛 판 주인이 줄 · 번호표 없이 잠금을 ${분수(쥔지)}분째 쥐고 있다`);
+  return 둠('옛 판 주인 — 줄 · 번호표가 안 보인다(차례 사이 · --차례없이일 수 있다)');
+}
+
+const 같은주인 = (a, b) => (!a && !b) || (!!a && !!b && (a.열쇠 || b.열쇠 ? a.열쇠 === b.열쇠 : a.pid === b.pid && a.이름 === b.이름 && a.시각 === b.시각));
+const 주인글 = (주인) => (주인 ? `${주인.이름 || '?'}(pid ${주인.pid}${주인.시각 ? `, ${때(Date.parse(주인.시각))}부터` : ''}${주인.상한 ? ` · 상한 ${때(Date.parse(주인.상한))}` : ' · 옛 판'})` : '주인 표시 없음');
+
+// 공용차례 README 「막힘 기록」에 한 줄(차례.py와 같은 꼴) — 기록을 못 써도 잠금은 넘긴다
+function 막힘기록(글) {
+  const f = path.join(path.dirname(차례경로()), 'README.md');
+  try {
+    if (!fs.existsSync(path.dirname(f))) return;
+    const 앞 = fs.existsSync(f) ? fs.readFileSync(f, 'utf8') : '';
+    const 때글 = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Seoul' }).slice(5, 16);
+    fs.appendFileSync(f, `${앞 && !앞.endsWith('\n') ? '\n' : ''}- ${때글} ${글}\n`);
+  } catch { /* 기록 못 함 */ }
+}
+
+// 판단한 주인의 잠금을 치운다(본열쇠 = 판단할 때 그 폴더에 있던 열쇠 파일 이름들). 새 판(열쇠가 있는 주인)은 그 열쇠 파일 지우기로 확인한다 — 한 사람만
+// 지우고, 그새 풀리고 새 주인이 잡은 폴더에는 이 파일이 없어 손대지 않는다. 열쇠 파일이 이미 없는 같은 주인 표시는 남이 막 푸는 중일 수 있어(열쇠를
+// 지우면 폴더 시각이 새로 찍힌다) 2분 묵었을 때만 치운다 — 막 지운 것을 남이 치우고 새로 잡은 뒤 푸는 쪽이 그 새 잠금을 지우던 틈(11-08 GPT 다시 검수 GA2).
+// 열쇠로 확인 못 하는 잠금(옛 판 · 주인 표시 없음 · 열쇠만 지우고 끊긴 것)은 다른 이름으로 옮긴 뒤 주인 표시와 열쇠 파일들이 판단할 때와 같으면 지우고,
+// 다르면(그새 새 주인) 제자리로 돌린다 — 쓰다 끊겨 열쇠만 남은 폴더도 판단 때와 같으니 치운다(GA3). 본표(판단한 폴더의 정체)를 주면 옮긴 폴더가
+// 그 폴더일 때만 지운다 — 판단하는 사이 남이 치우고 같은 경로에 새로 잡은 폴더가 빈 주인 표시 · 같은 열쇠 목록으로 맞아 떨어져도 안 지운다(세 번째 검수).
+// 다시 잡아 볼 만하면 true, 이번 바퀴는 기다릴 것이면 false(남이 푸는 중 · 열린 파일로 못 옮김)
+function 잠금치우기(dir, 주인, 판단, 나, 본열쇠 = [], 본표 = '') {
+  let 기대열쇠 = 본열쇠;
+  if (주인 && 주인.열쇠) {
+    let 지움;
+    try { 지움 = 지우기(열쇠파일(dir, 주인.열쇠)); } catch { return false; }
+    if (지움) { 폴더치우기(dir); return 치운뒤(주인, 판단, 나); }
+    const 지금 = 잠금주인읽기(dir);
+    if (!지금 || 지금.열쇠 !== 주인.열쇠) return true; // 그새 풀렸거나 새 주인이다 — 다시 잡아 본다
+    let 나이 = 0;
+    try { 나이 = Date.now() - fs.statSync(dir).mtimeMs; } catch { return true; }
+    if (나이 <= 설정.빈잠금) return false; // 열쇠가 막 지워졌다 — 남이 푸는 중이니 한 바퀴 기다린다
+    기대열쇠 = []; // 열쇠만 지우고 끊긴 잠금 — 열쇠 파일 없는 그 주인 표시로 옮겨 치운다
+  }
+  const 옮김 = `${dir}.치움-${process.pid}-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`;
+  try { fs.renameSync(dir, 옮김); } catch (e) { return e.code === 'ENOENT'; }
+  const 같은열쇠 = (a, b) => a.length === b.length && [...a].sort().every((x, i) => x === [...b].sort()[i]);
+  if ((본표 && 폴더표(옮김) !== 본표) || !같은주인(잠금주인읽기(옮김), 주인) || !같은열쇠(열쇠파일들(옮김), 기대열쇠)) {
+    try { fs.renameSync(옮김, dir); } catch { fs.rmSync(옮김, { recursive: true, force: true }); console.log(`  ${시각()} 올리기 잠금을 치우다 새 주인 것을 옮겼는데 제자리가 이미 찼다 — 옮긴 것은 지웠다(드묾)`); }
+    return true;
+  }
+  try { fs.rmSync(옮김, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); } catch { /* 옮긴 이름으로 남아도 잠금은 아니다 */ }
+  return 치운뒤(주인, 판단, 나);
+}
+
+function 치운뒤(주인, 판단, 나) {
+  console.log(`  ${시각()} 올리기 잠금 치움 — ${주인글(주인)} · ${판단.까닭}${판단.멈춤 ? ' — 그 프로세스는 끄지 않고 차례를 넘겨받는다' : ''}`);
+  if (판단.멈춤) 막힘기록(`${나}(아르곤웹 올리기 잠금): ${주인글(주인)} 잠금을 치우고 넘겨받음 — ${판단.까닭}. 그 프로세스는 끄지 않았다`);
+  return true;
+}
+
+// 올리기 잠금을 잡는다 — { 폴더, 열쇠, 잡은때, 상한(ms), 풀기() }. 선택.그만()이 참이 되면(차례를 잃음) 기다리기를 그만두고 null
+async function 올리기잠금(이름, 상한ms, 선택 = {}) {
+  const dir = 설정.폴더;
+  const 열쇠 = crypto.randomBytes(8).toString('hex');
+  let 알림 = 0, 막힘 = 0;
+  for (;;) {
+    if (선택.그만 && 선택.그만()) return null;
+    try { fs.mkdirSync(dir); } catch (e) {
+      // 윈도는 지우는 중인 폴더(남이 막 푼 잠금)에 mkdir하면 EPERM · EACCES를 낸다 — 잠깐 쉬고 다시(1분 넘게 이어지면 진짜 막힘)
+      if (['EPERM', 'EACCES', 'EBUSY'].includes(e.code) && (막힘 += 1) <= 120) { await 쉬기(500); continue; }
+      if (e.code !== 'EEXIST') throw e;
+      막힘 = 0;
+      // 한 폴더에서 읽었을 때만 판단한다 — 읽는 사이 남이 치우고 같은 경로에 새로 잡으면 서로 다른 잠금의 주인 표시 · 시각 · 열쇠 목록이 섞인다(세 번째 검수)
+      const 표 = 폴더표(dir);
+      const 주인 = 잠금주인읽기(dir);
+      const 본열쇠 = 열쇠파일들(dir); // 판단할 때 그 폴더의 열쇠 파일들 — 옮겨 치울 때 이것과 같아야 지운다
+      let 폴더나이 = 0;
+      try { 폴더나이 = Date.now() - fs.statSync(dir).mtimeMs; } catch { continue; } // 그새 풀렸다
+      if (!표 || 폴더표(dir) !== 표) { await 쉬기(Math.min(설정.쉼, 1000)); continue; } // 그새 바뀌었다 — 다시 본다
+      // 내 열쇠가 든 폴더 — 내가 만들고 쓰다 잃었던(남이 옮겼다 되돌린) 잠금이다. 주인 표시를 마저 쓰고 잡는다
+      if (본열쇠.includes(`${열쇠}.key`) && !주인) {
+        const 잡음 = 잠금마저쓰기(dir, 이름, 열쇠, 상한ms, 선택);
+        if (잡음) return 잡음;
+        continue;
+      }
+      const 읽음 = 주인 && !주인.모름;
+      const 판단 = 멈춘주인(주인, Date.now(), {
+        살아있음: !!읽음 && 살아있나(주인.pid), 폴더나이,
+        열쇠없음: !!읽음 && !!주인.열쇠 && !열쇠있음(dir, 주인.열쇠),
+        줄: 읽음 && !주인.상한 ? 줄주인(주인.이름) : null,
+      });
+      if (판단.치움 && 잠금치우기(dir, 읽음 ? 주인 : null, 판단, 이름, 본열쇠, 표)) continue;
+      if (Date.now() - 알림 > 60_000) { console.log(`  ${시각()} 올리기 잠금 기다림 — ${주인글(읽음 ? 주인 : null)} · ${판단.까닭}`); 알림 = Date.now(); }
+      await 쉬기(설정.쉼);
+      continue;
+    }
+    try { fs.writeFileSync(열쇠파일(dir, 열쇠), ''); } catch (e) { // 열쇠가 먼저 — 열쇠 파일 없는 새 판 주인 표시는 푸는 중이거나 끝난 잠금으로 본다
+      if (e.code === 'ENOENT') continue; // 잡은 폴더가 그새 없어졌다(남이 옮겨 치우는 틈 — 드묾) — 처음부터 다시
+      throw e;
+    }
+    const 잡음 = 잠금마저쓰기(dir, 이름, 열쇠, 상한ms, 선택);
+    if (잡음) return 잡음;
+  }
+}
+
+// 열쇠를 쓴 잠금 폴더에 주인 표시를 쓴다 — { 폴더, 열쇠, 잡은때, 상한, 풀기() }. 쓰는 사이 폴더를 잃었으면(ENOENT) 내 열쇠만 풀고 null(처음부터 다시).
+// 실패해도 경로째 지우지 않는다 — 그 경로는 남의 새 잠금일 수 있다
+function 잠금마저쓰기(dir, 이름, 열쇠, 상한ms, 선택) {
+  const 잡은때 = Date.now();
+  const 상한 = 잡은때 + 상한ms;
+  try {
+    fs.writeFileSync(path.join(dir, 'owner.json'), JSON.stringify({ pid: process.pid, 이름, 시각: new Date(잡은때).toISOString(), 상한: new Date(상한).toISOString(), 열쇠, 판: 2, 할일: 선택.할일 || '' }));
+  } catch (e) {
+    잠금풀기(dir, 열쇠);
+    if (e.code === 'ENOENT') return null;
+    throw e;
+  }
+  return { 폴더: dir, 열쇠, 잡은때, 상한, 풀기: () => 잠금풀기(dir, 열쇠) };
+}
+
+// 실행기를 나무째 끈다 — 윈도는 shell(cmd.exe)만 끄면 손주 ego-browser.exe가 남아 출력 관이 안 닫힌다(close가 안 온다).
+// ego 안 스크립트는 이것으로 안 멈춘다(현장노트 gemini_사진 「실행기를 꺼도 ego 안 스크립트는 산다」) — 올리기 마감은 페이지 스크립트가 스스로 지킨다
+function 나무끄기(child) {
+  if (!child || !child.pid || child.exitCode !== null || child.signalCode) return;
+  if (process.platform === 'win32') spawnSync('taskkill', ['/pid', String(child.pid), '/T', '/F'], { windowsHide: true, timeout: 30_000 });
+  else { try { process.kill(-child.pid, 'SIGKILL'); } catch { try { child.kill('SIGKILL'); } catch { /* 이미 끝남 */ } } }
+}
+
 // ── 한 건 ──
 
-function 페이지돌리기(job, u, mode, 계정) {
-  const script = 페이지글(job, u, mode, 계정);
+const 출력글 = (조각) => Buffer.concat(조각.map((x) => Buffer.from(x))).toString('utf8');
+
+// 페이지 스크립트 한 번. 파일을 올리는 보내기는 올리기 잠금을 쥐고 띄워, 스크립트가 스스로 풀 때까지(누르기 직전 · 그 앞에서 끝남 · 마감) 본다.
+// 실행기 출력은 끝에 한꺼번에 올 때가 있어(현장노트 gemini_사진) 잠금이 풀렸는지는 owner.json으로 본다. 선택 = { 이름(줄 이름), 그만() }
+async function 페이지돌리기(job, u, mode, 계정, 선택 = {}) {
+  let 잠금 = null;
+  if (mode === '보내기' && (job.files || []).length) {
+    잠금 = await 올리기잠금(선택.이름 || 'argonweb', 올리기상한계산(job.files), { 그만: 선택.그만, 할일: `보내기 ${job.이름 || ''} · 첨부 ${job.files.length}개` });
+    if (!잠금) return { code: null, 출력: '', 그만: true };
+  }
+  const script = 페이지글(잠금 ? { ...job, upload: { lock: 슬래시(잠금.폴더), key: 잠금.열쇠, deadline: 잠금.상한 } } : job, u, mode, 계정);
   const 상한 = (mode === '확인' ? 5 : (job.answerMin || 12) + 18) * 60_000; // 페이지 스크립트 자체 상한(올리기 · 보냄 확인 · 답) 뒤의 마지막 그물 — 확인은 화면 하나라 5분
-  return new Promise((resolve) => {
-    const child = spawn('ego-browser nodejs', { shell: true, windowsHide: true });
-    const 조각 = [];
-    const 받기 = (d) => {
-      조각.push(d);
-      for (const l of String(d).split(/\r?\n/)) if (l.trim().startsWith('{"step"')) console.log(`    ${l.trim()}`);
-    };
-    child.stdout.on('data', 받기);
-    child.stderr.on('data', 받기);
-    const timer = setTimeout(() => child.kill(), 상한);
-    child.on('error', (e) => { 조각.push(Buffer.from(String(e.message))); });
-    child.on('close', (code) => { clearTimeout(timer); resolve({ code, 출력: Buffer.concat(조각.map((x) => Buffer.from(x))).toString('utf8') }); });
-    child.stdin.end(script);
+  const child = spawn(설정.에고, { shell: true, windowsHide: true, detached: process.platform !== 'win32' }); // 리눅스는 나무째 끄려고 따로 무리를 만든다
+  const 조각 = [];
+  const 받기 = (d) => {
+    조각.push(d);
+    for (const l of String(d).split(/\r?\n/)) if (l.trim().startsWith('{"step"')) console.log(`    ${l.trim()}`);
+  };
+  child.stdout.on('data', 받기);
+  child.stderr.on('data', 받기);
+  child.stdin.on('error', () => {}); // 실행기가 먼저 끝나면 EPIPE — 출력으로 가른다
+  let 끝남 = false, 종료;
+  const 닫힘 = new Promise((resolve) => {
+    const 끝 = (code) => { if (!끝남) { 끝남 = true; resolve(code); } };
+    child.on('close', 끝);
+    child.on('error', (e) => { 조각.push(Buffer.from(String(e.message))); 끝(null); });
+    // 끈 뒤에도 손주가 출력 관을 쥐면 close가 안 온다 — exit 15초 뒤에는 그대로 끝낸다
+    child.on('exit', (code) => { 종료 = code; setTimeout(() => { child.stdout.destroy(); child.stderr.destroy(); 끝(code); }, 15_000).unref(); });
   });
+  const 전체 = setTimeout(() => 나무끄기(child), 상한);
+  let 넘김 = '', 짧게 = null, 죽임 = false;
+  child.stdin.end(script);
+  if (잠금) {
+    const 여유 = 설정.끄기여유;
+    for (;;) {
+      if (!열쇠있음(잠금.폴더, 잠금.열쇠)) { // 내 열쇠 파일이 없어졌다 — 스크립트가 풀었다(읽다 막힌 바퀴는 그대로 쥔 것으로 본다)
+        // 스크립트가 풀었다 — 누르기 직전(보냄 표시를 쓴 뒤)이면 그대로 답을 기다린다. 마감 뒤에 표시 없이 풀었으면 마감 감시가 그만둔 것이라
+        // (그 뒤로는 누르지 않는다) 2분 안에 안 끝나면 실행기를 끈다. 마감 전에 표시 없이 풀었으면 실패로 끝나는 중 — 끄지 않고 끝나기를 기다린다
+        if (!fs.existsSync(표시경로(job.out)) && Date.now() >= 잠금.상한 - 1000) {
+          넘김 = '올리기';
+          짧게 = setTimeout(() => 나무끄기(child), 2 * 여유);
+        }
+        break;
+      }
+      // 실행기가 끝났는데 잠금이 그대로 — 실패 · 오류로 끝났으면 바로 푼다. 0으로 끝나고 실패 줄도 없으면 ego 안 스크립트가 아직 돌 수 있다
+      // (현장노트 gemini_사진 「3분 반 만에 돌아왔는데 … 스크립트는 계속」) — 스스로 풀거나 마감이 오기를 기다린다
+      if (끝남 && (종료 !== 0 || /"step":"(fail|done)"/.test(출력글(조각)))) { 잠금.풀기(); break; }
+      if (Date.now() > 잠금.상한 + 여유) {
+        if (fs.existsSync(표시경로(job.out))) { 잠금.풀기(); break; } // 누르기 직전까지 갔다(풀기만 못 함) — 끄지 않는다
+        넘김 = '올리기';
+        죽임 = true;
+        console.log(`  ${시각()} 올리기 시간 넘김 — 상한 ${때(잠금.상한)}까지 보내기 앞에 못 가 실행기를 끄고 올리기 잠금을 푼다(보내지 않음)`);
+        나무끄기(child);
+        잠금.풀기();
+        break;
+      }
+      await (끝남 ? 쉬기(설정.살핌) : Promise.race([닫힘, 쉬기(설정.살핌)]));
+    }
+  }
+  const code = await 닫힘;
+  clearTimeout(전체);
+  if (짧게) clearTimeout(짧게);
+  if (잠금) 잠금.풀기(); // 남았으면(열쇠가 같을 때만)
+  return { code, 출력: 출력글(조각), 넘김, 죽임, ...(잠금 ? { 상한분: 분수(잠금.상한 - 잠금.잡은때) } : {}) };
 }
 
 // 전체 = 이 묶음의 작업들 — 읽기가 사이드바에서 찾을 때 다른 작업이 쓴 대화 · 같은 지시문 작업을 가린다(찾기정보, 부를 때마다 새로 본다)
-async function 한건(job, u, mode, 계정, 전체 = [job]) {
+// 선택 = { 이름, 그만() } — 올리기 잠금 주인 이름 · 차례를 잃었는지(잠금을 기다리다 잃으면 그만둔다)
+async function 한건(job, u, mode, 계정, 전체 = [job], 선택 = {}) {
   console.log(`  ${시각()} ${mode} ${job.이름} — 첨부 ${job.files.length}개 · 지시문 ${job.prompt.length}자 · 계정 /u/${u}${계정 ? ` ${계정}` : ''}`);
   const 시작 = Date.now();
-  const run = await 페이지돌리기({ ...job, ...찾기정보(전체, job) }, u, mode, 계정);
-  const r = 결과가르기(run.출력, fs.existsSync(표시경로(job.out)), 새답(job.out, 시작));
+  const run = await 페이지돌리기({ ...job, ...찾기정보(전체, job) }, u, mode, 계정, 선택);
+  if (run.그만) return { 결과: '실패', 까닭: '차례를 잃어 올리기 잠금 기다리기를 그만뒀다(보내지 않음)' };
+  let r = 결과가르기(run.출력, fs.existsSync(표시경로(job.out)), 새답(job.out, 시작));
+  // 마감 뒤 풀림 · 끔인데 결과가 「실패」 — 실행기를 껐거나 실패 줄이 없으면 올리기 시간 넘김. 마감 즈음 제 까닭으로 실패한 건(실패 줄이 있음)은 실패 그대로(한 번 다시 한다)
+  if (run.넘김 === '올리기' && r.결과 === '실패' && (run.죽임 || !/"step":"fail"/.test(run.출력))) r = { 결과: '올리기 시간 넘김', 까닭: `올리기가 상한 ${run.상한분}분 안에 보내기 앞까지 못 갔다 — 실행기를 끄고 잠금을 풀었다(보내지 않음 · 다시 부르면 다시 보낸다)` };
   if (r.결과 === '받음') fs.rmSync(표시경로(job.out), { force: true }); // 답을 썼는데 표시가 남은 판 — 다음 부름이 읽기로 가지 않게
   return r;
 }
@@ -448,55 +734,56 @@ async function 돌리기(jobs, o, 처음) {
   for (const j of 남은) if (j.할일 === '보내기') for (const w of 작업경고(j)) console.log(`  ⚠ ${j.이름}: ${w}`);
   const 할일글 = `아르곤웹 ${남은.length}건 — ${남은.slice(0, 3).map((j) => j.이름).join(' · ')}${남은.length > 3 ? ' …' : ''}`;
   let 멈춤 = '';
-  const 풀기 = 남은.length ? await 올리기잠금(이름) : () => {};
-  try {
-    let 이어실패 = 0;
-    while (남은.length && !멈춤) {
-      let u = Number(o.u), 계정 = o.계정 || '';
-      if (!o.차례없이) {
-        await 차례기다리기(이름, 할일글, o.두줄);
-        const 줄 = 차례(['계정', 이름]).out;
-        u = 계정번호(줄);
-        계정 = 계정이름(줄);
-        if (u === null || !계정) { 차례(['내려놓기', 이름]); throw new Error(`잡은 줄의 계정 주소 · 이름을 못 읽음: ${줄}`); }
-      }
-      const 시작 = Date.now();
-      let 건 = 0, 잃음 = false;
-      const 살 = o.차례없이 ? null : setInterval(() => { if (차례(['살아있음', 이름]).code !== 0) 잃음 = true; }, 150_000);
-      try {
-        while (남은.length && !멈춤 && !잃음 && 건 < 한차례.건 && Date.now() - 시작 < 한차례.새건마감) {
-          const j = 남은.shift();
-          건 += 1;
-          let r = await 한건(j, u, j.할일, 계정, jobs);
-          if (!o.차례없이 && 차례(['살아있음', 이름]).code !== 0) 잃음 = true;
-          // 보낸 뒤 끊긴 판 — 다시 보내지 않고 같은 탭을 읽는다. 보낸 글이 화면에서 사라진 판(사라짐)은 1분 뒤 읽어도 없다 — 20분 뒤 읽기로
-          if (r.결과 === '보냄' && !r.늦음 && !r.사라짐 && !잃음 && 건 < 한차례.건 && Date.now() - 시작 < 한차례.다시읽기마감) {
-            await 쉬기(60_000);
-            건 += 1;
-            const r2 = await 한건(j, u, '읽기', 계정, jobs);
-            if (['받음', '헷갈림', '멈춤', '안 보내짐'].includes(r2.결과)) r = r2;
-          }
-          if (r.결과 === '실패') {
-            이어실패 += 1;
-            // 다시 하기 전에 답 파일 · 보냄 표시를 다시 본다 — 답이 생겼거나 보냄 표시가 있으면 다시 보내지 않는다
-            const 다음 = 다시할일(j);
-            if (이어실패 >= 2) 멈춤 = `보내기 전 실패가 두 번 이어짐 — ${r.까닭}`;
-            else if (!j.다시 && 다음 !== '그만') { 남은.unshift({ ...j, 할일: 다음, 다시: true }); await 쉬기(보내기전실패쉼); continue; }
-            if (다음 === '그만') r = { ...r, 까닭: `${r.까닭} · 답 파일이 생겼다 — 열어 보고 판단한다(다시 보내지 않음)` };
-          } else if (r.결과 !== '없음') 이어실패 = 0;
-          if (r.결과 === '멈춤') {
-            멈춤 = r.까닭;
-            if (/sorry|로봇/.test(r.까닭) && !o.차례없이) 줄끄기(`로봇 확인(sorry) · ${이름}`);
-          }
-          결과.push({ 작업: j, ...r });
-        }
-      } finally {
-        if (살) clearInterval(살);
-        if (!o.차례없이) console.log(`  차례 · ${차례(['내려놓기', 이름]).out.split(/\r?\n/).pop()}`);
-      }
-      if (o.차례없이 && 남은.length && !멈춤) { 멈춤 = `한 차례(${한차례.건}건 · 20분)를 다 써서 남은 ${남은.length}건은 다시 부른다(--차례없이)`; }
+  let 이어실패 = 0;
+  // 올리기 잠금은 여기서 쥐지 않는다 — 차례를 잡은 뒤 파일을 올리는 보내기 한 건마다 페이지돌리기가 쥐고 푼다(11-08, 위 「올리기 잠금」)
+  while (남은.length && !멈춤) {
+    let u = Number(o.u), 계정 = o.계정 || '';
+    if (!o.차례없이) {
+      await 차례기다리기(이름, 할일글, o.두줄);
+      const 줄 = 차례(['계정', 이름]).out;
+      u = 계정번호(줄);
+      계정 = 계정이름(줄);
+      if (u === null || !계정) { 차례(['내려놓기', 이름]); throw new Error(`잡은 줄의 계정 주소 · 이름을 못 읽음: ${줄}`); }
     }
-  } finally { 풀기(); }
+    const 시작 = Date.now();
+    let 건 = 0, 잃음 = false;
+    const 선택 = { 이름, 그만: () => 잃음 };
+    const 살 = o.차례없이 ? null : setInterval(() => { if (차례(['살아있음', 이름]).code !== 0) 잃음 = true; }, 150_000);
+    try {
+      while (남은.length && !멈춤 && !잃음 && 건 < 한차례.건 && Date.now() - 시작 < 한차례.새건마감) {
+        const j = 남은.shift();
+        건 += 1;
+        let r = await 한건(j, u, j.할일, 계정, jobs, 선택);
+        if (!o.차례없이 && 차례(['살아있음', 이름]).code !== 0) 잃음 = true;
+        // 보낸 뒤 끊긴 판 — 다시 보내지 않고 같은 탭을 읽는다. 보낸 글이 화면에서 사라진 판(사라짐)은 1분 뒤 읽어도 없다 — 20분 뒤 읽기로
+        if (r.결과 === '보냄' && !r.늦음 && !r.사라짐 && !잃음 && 건 < 한차례.건 && Date.now() - 시작 < 한차례.다시읽기마감) {
+          await 쉬기(60_000);
+          건 += 1;
+          const r2 = await 한건(j, u, '읽기', 계정, jobs, 선택);
+          if (['받음', '헷갈림', '멈춤', '안 보내짐'].includes(r2.결과)) r = r2;
+        }
+        if (r.결과 === '실패') {
+          이어실패 += 1;
+          // 다시 하기 전에 답 파일 · 보냄 표시를 다시 본다 — 답이 생겼거나 보냄 표시가 있으면 다시 보내지 않는다
+          const 다음 = 다시할일(j);
+          if (이어실패 >= 2) 멈춤 = `보내기 전 실패가 두 번 이어짐 — ${r.까닭}`;
+          else if (!j.다시 && 다음 !== '그만') { 남은.unshift({ ...j, 할일: 다음, 다시: true }); await 쉬기(보내기전실패쉼); continue; }
+          if (다음 === '그만') r = { ...r, 까닭: `${r.까닭} · 답 파일이 생겼다 — 열어 보고 판단한다(다시 보내지 않음)` };
+        } else if (r.결과 !== '없음') 이어실패 = 0;
+        if (r.결과 === '멈춤') {
+          멈춤 = r.까닭;
+          if (/sorry|로봇/.test(r.까닭) && !o.차례없이) 줄끄기(`로봇 확인(sorry) · ${이름}`);
+        }
+        // 올리기가 상한 안에 안 끝난 날(11-08 07시 계정 단위 첨부 「!」 같은)은 이어 올려도 같다 — 묶음을 멈추고 알린다(보내지 않았으니 다시 불러도 된다)
+        if (r.결과 === '올리기 시간 넘김') 멈춤 = r.까닭;
+        결과.push({ 작업: j, ...r });
+      }
+    } finally {
+      if (살) clearInterval(살);
+      if (!o.차례없이) console.log(`  차례 · ${차례(['내려놓기', 이름]).out.split(/\r?\n/).pop()}`);
+    }
+    if (o.차례없이 && 남은.length && !멈춤) { 멈춤 = `한 차례(${한차례.건}건 · 20분)를 다 써서 남은 ${남은.length}건은 다시 부른다(--차례없이)`; }
+  }
   for (const j of 남은) 결과.push({ 작업: j, 결과: '안 함', 까닭: 멈춤 || '' });
   return 보고(결과, 멈춤);
 }
@@ -532,7 +819,7 @@ async function 확인(o) {
 
 function 보고(결과, 멈춤) {
   const 셈 = (k) => 결과.filter((x) => x.결과 === k).length;
-  const 더셈 = [['안 보내짐', '안 보내짐'], ['헷갈림', '헷갈림']].filter(([k]) => 셈(k)).map(([k, 말]) => ` · ${말} ${셈(k)}`).join('');
+  const 더셈 = [['안 보내짐', '안 보내짐'], ['헷갈림', '헷갈림'], ['올리기 시간 넘김', '올리기 시간 넘김']].filter(([k]) => 셈(k)).map(([k, 말]) => ` · ${말} ${셈(k)}`).join('');
   console.log(`\n아르곤웹 · ${결과.length}건 — 받음 ${셈('받음')} · 보냄(답 기다림) ${셈('보냄')}${더셈} · 실패 ${셈('실패') + 셈('없음') + 셈('멈춤')} · 건너뜀 ${셈('건너뜀')} · 안 함 ${셈('안 함')}`);
   for (const x of 결과) {
     const j = x.작업;
@@ -541,6 +828,7 @@ function 보고(결과, 멈춤) {
     else if (x.결과 === '보냄') console.log(`  보냄  ${j.이름} — ${x.까닭}\n        다시 보내지 말고 나중에: node tools/아르곤웹.js 읽기 <작업 파일>${x.url ? ` · 대화 ${x.url}` : ''}${x.사라짐 ? ` — 보낸 지 20분 뒤 읽기가 사이드바를 보고 없으면 표시를 푼다${나눔}` : ''}`);
     else if (x.결과 === '안 보내짐') console.log(`  안 보내짐  ${j.이름} — ${x.까닭}\n        표시는 ${x.기록 || 풀린표시경로(j.out)}에 남겼다 — 다음 보내기가 다시 보낸다${나눔}`);
     else if (x.결과 === '헷갈림') console.log(`  헷갈림  ${j.이름} — ${x.까닭}\n        다시 보내지 말고 그 대화를 열어 「말씀하신 내용」 · 첨부로 이 작업 대화를 고른다(보냄 표시는 그대로)`);
+    else if (x.결과 === '올리기 시간 넘김') console.log(`  올리기 시간 넘김  ${j.이름} — ${x.까닭}\n        보냄 표시가 없다 — 첨부 · 회선 · 계정 올리기(빨간 「!」)를 본 뒤 같은 명령으로 다시 부른다`);
     else console.log(`  ${x.결과}  ${j.이름} — ${x.까닭}${x.보냄 ? ' · 보냄 표시가 있다(다시 보내지 않는다)' : ''}`);
   }
   if (멈춤) console.log(`멈춤: ${멈춤}`);
@@ -698,4 +986,5 @@ module.exports = {
   parseArgs, 작업만들기, 작업읽기, 작업문제, 작업경고, 할일정하기, 줄이름, 페이지글, 판단머리, 결과가르기, 계정번호, 계정이름, 표시경로, 풀린표시경로, 종류, 칩이름, 그림셈,
   지시문읽기, 점검한편, 점검, 모호한좌우, 충돌표, 첨부한도, 지시문한도, 그림한도, 풀기기다림, 기본공간, 기본프로필, 페이지, 새답, 다시할일,
   글정규화, 대화아이디, 대화견주기, 보낸때, 표시계정, 표시풀까, 풀린기록, 답대화, 표시읽기, 찾기정보,
+  설정, 살아있나, 올리기상한, 올리기상한계산, 잠금주인읽기, 잠금풀기, 줄주인, 멈춘주인, 잠금치우기, 올리기잠금, 폴더표, 페이지돌리기, 한건, 돌리기,
 };
