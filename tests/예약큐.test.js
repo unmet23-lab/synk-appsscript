@@ -519,3 +519,39 @@ test('⑱ 미학 맹검 — 옛 검사 기록이 「확인할 것」이어도 �
   assert.match(글, /없음 · 검사 고칠 것\(미학 맹검 없음\)/, '편 줄에 까닭이 보여 14시 회차가 옛 기록만 믿고 걸지 않는다');
   assert.match(글, /판단 · 검사 확인할 것/);
 });
+
+test('하루 두 칸 계정(LAB 몽골 12:00 · 21:00, 11-09 유호님 「두 편으로」) — 칸마다 따로 세고, 열리기 전 날은 앞 칸이 쉼, 같은 칸 두 편만 경고', () => {
+  const base = path.join(매일, '두칸');
+  fs.mkdirSync(base, { recursive: true });
+  const 두칸 = { dailyTimes: ['12:00', '21:00'], dailyTimesFrom: '2026-11-12' };
+  fs.writeFileSync(path.join(base, 'sns-계정.json'), JSON.stringify({ accounts: {
+    'lab-instagram': { brand: 'LAB', platform: 'instagram', dailyLine: 'LAB 몽골', ...두칸 },
+    'lab-tiktok': { brand: 'LAB', platform: 'tiktok', dailyLine: 'LAB 몽골', ...두칸 } } }));
+  const 판 = (slot, 시각, 계정들) => ({ 브랜드: 'LAB', 슬롯: slot, 성격: '상시', 제목: `몽골 ${slot} ${시각}`, 판: 계정들.map((계정) => ({ 계정, 시각: `${slot}T${시각}+09:00` })) });
+  const 둘다 = (상태) => 결과([['lab-instagram', 상태], ['lab-tiktok', 상태]]);
+  const 계정 = ['lab-instagram', 'lab-tiktok'];
+  편('mn-11-밤', 판('2026-11-11', '21:00', 계정), 둘다('예약됨'), base);
+  편('mn-12-밤', 판('2026-11-12', '21:00', 계정), 둘다('예약됨'), base);
+  편('mn-13-낮', 판('2026-11-13', '12:00', 계정), 둘다('예약됨'), base);
+  편('mn-13-밤', 판('2026-11-13', '21:00', 계정), 둘다('예약됨'), base);
+  편('mn-14-가', 판('2026-11-14', '21:00', ['lab-instagram']), 결과([['lab-instagram', '예약됨']]), base);
+  편('mn-14-나', 판('2026-11-14', '21:00', ['lab-instagram']), 결과([['lab-instagram', '예약됨']]), base);
+  const r = 매일큐(base, ['--오늘', '2026-11-11']);
+  const mn = r.lines.find((l) => l.line === 'LAB 몽골');
+  assert.deepEqual(Object.keys(mn.byDay['2026-11-12'].cells), ['lab-instagram 12시', 'lab-instagram', 'lab-tiktok 12시', 'lab-tiktok']);
+  assert.equal(mn.byDay['2026-11-11'].mark, '●', '열리기 전 날은 12시 칸이 쉼이라 밤 칸만 채우면 채움');
+  assert.equal(mn.byDay['2026-11-11'].cells['lab-instagram 12시'], '쉼');
+  assert.deepEqual([mn.byDay['2026-11-12'].mark, mn.byDay['2026-11-12'].cells['lab-instagram 12시'], mn.byDay['2026-11-12'].cells['lab-instagram']], ['◐', '빔', '채움']);
+  assert.equal(mn.byDay['2026-11-13'].mark, '●', '12:00 판과 21:00 판이 제 칸에 든다');
+  assert.equal(mn.reserve, 0, "내일(11-12) 12시 칸이 비어 비축 0");
+  const noon = r.accounts.find((x) => x.account === 'lab-instagram 12시');
+  assert.deepEqual([noon.base, noon.slot], ['lab-instagram', '12:00']);
+  assert.ok(noon.off.includes('2026-11-11') && !noon.off.includes('2026-11-12'));
+  assert.ok(r.warnings.includes('같은 칸(21:00) 두 편: lab-instagram · 2026-11-14 · mn-14-가, mn-14-나'));
+  assert.equal(r.warnings.some((w) => w.includes('2026-11-13')), false, '12:00 · 21:00 두 편은 경고가 아니다');
+  const out = spawnSync(process.execPath, [tool, '--폴더', base, '--오늘', '2026-11-11'], { encoding: 'utf8' }).stdout;
+  assert.match(out, /LAB 몽골 빈 칸: 11-12 lab-instagram 12시 만든 편 없음, lab-tiktok 12시 만든 편 없음 · /);
+  assert.match(out, / · 11-15 만든 편 없음\(12:00 · 21:00 칸마다 한 편\)$/m, '통째로 빈 날은 칸마다 한 편이 든다고 적는다');
+  const table = spawnSync(process.execPath, [tool, '--폴더', base, '--계정표'], { encoding: 'utf8' }).stdout;
+  assert.match(table, /\| lab-instagram \| [^|]*\| LAB 몽골 편 하루 2편\(12:00 · 21:00 · 11-12부터\) \|/);
+});

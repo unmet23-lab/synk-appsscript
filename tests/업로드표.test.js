@@ -64,3 +64,18 @@ test('tools/업로드표.js — 가짜 편 폴더로 파일을 쓰고, 예약큐
     assert.match(page, /10\/23\(금\) ~ 11\/6\(금\)/);
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });
+
+test('하루 두 칸 계정 — 예약큐가 떼어 낸 「<계정> 12시」 줄은 원래 계정 이름에 칸 시각을 붙여 보인다(11-09)', () => {
+  const range = ['2026-11-12', '2026-11-13'];
+  const report = {
+    range, server: null, blocked: [],
+    accounts: [
+      { account: 'lab-instagram 12시', base: 'lab-instagram', slot: '12:00', line: 'LAB 몽골', brand: 'LAB', off: [], byDay: { '2026-11-12': [], '2026-11-13': [{ state: '예약됨', time: '2026-11-13T12:00+09:00' }] } },
+      { account: 'lab-instagram', base: 'lab-instagram', slot: '21:00', line: 'LAB 몽골', brand: 'LAB', off: [], byDay: { '2026-11-12': [{ state: '예약됨', time: '2026-11-12T21:00+09:00' }], '2026-11-13': [] } },
+    ],
+  };
+  const out = html(report, { accounts: { 'lab-instagram': { platform: 'instagram', handle: '@synk.mn' } }, now: Date.parse('2026-11-12T09:00:00+09:00'), today: '2026-11-12' });
+  assert.match(out, /@synk\.mn · 12:00/);
+  assert.match(out, /@synk\.mn · 21:00/);
+  assert.doesNotMatch(out, /lab-instagram 12시/, '떼어 낸 줄 이름을 그대로 내보이지 않는다');
+});

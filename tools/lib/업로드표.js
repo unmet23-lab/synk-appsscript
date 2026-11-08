@@ -31,6 +31,12 @@ function 이름(key, accounts) {
   return { 플랫폼: PLATFORM[a.platform] || a.platform || key, 핸들: handle };
 }
 
+// 하루 두 칸 계정(예약큐 accountRows가 「<계정> 12시」 줄로 떼어 냄)은 원래 계정 이름에 칸 시각을 붙인다(11-09)
+function 줄이름(r, accounts) {
+  const n = 이름(r.base || r.account, accounts);
+  return r.slot ? { ...n, 핸들: `${n.핸들} · ${r.slot}`.trim() } : n;
+}
+
 /** 한 계정 · 한 날 칸 — {표, 결, 말, 풀이, 주소, 편수} */
 function 칸(list, day, today, now, off) {
   const live = list.filter((p) => p.state !== '보류');
@@ -66,7 +72,7 @@ function 줄들(report, accounts) {
     if (have.has(b.account)) continue;
     rows.push({ account: b.account, line: b.line, brand: b.line, byDay: Object.fromEntries(report.range.map((d) => [d, []])), off: [], blocked: b.reason });
   }
-  for (const r of rows) if (!r.blocked && accounts[r.account]?.dailyBlocked) r.blocked = accounts[r.account].dailyBlocked;
+  for (const r of rows) if (!r.blocked && accounts[r.base || r.account]?.dailyBlocked) r.blocked = accounts[r.base || r.account].dailyBlocked;
   const group = (r) => r.line || r.brand || '그 밖';
   const rank = (g) => (LINE_ORDER.includes(g) ? LINE_ORDER.indexOf(g) : LINE_ORDER.length);
   rows.sort((a, b) => rank(group(a)) - rank(group(b)) || group(a).localeCompare(group(b)) || a.account.localeCompare(b.account));
@@ -103,7 +109,7 @@ function html(report, { accounts = {}, now = Date.now(), today } = {}) {
   let last = null;
   rows.forEach((r, i) => {
     if (r.group !== last) { body += `<tr class="grp"><th colspan="${range.length + 1}"><span>${esc(r.group)}</span></th></tr>`; last = r.group; }
-    const n = 이름(r.account, accounts);
+    const n = 줄이름(r, accounts);
     const tds = range.map((d, j) => {
       const c = cells[i][j];
       if (r.blocked) return `<td class="c blocked${d === today ? ' today' : ''}"></td>`;
@@ -117,7 +123,7 @@ function html(report, { accounts = {}, now = Date.now(), today } = {}) {
 
   let 폰트 = '';
   try { 폰트 = require('./브랜드폰트.js').블록(); } catch { /* 글꼴 파일이 없으면 시스템 글꼴로 — 표는 그대로 */ }
-  const 빈글 = 오늘빈.length ? 오늘빈.map((r) => { const n = 이름(r.account, accounts); return `${n.플랫폼} ${n.핸들}`.trim(); }).join(' · ') : '없음 — 오늘 칸이 다 찼어요';
+  const 빈글 = 오늘빈.length ? 오늘빈.map((r) => { const n = 줄이름(r, accounts); return `${n.플랫폼} ${n.핸들}`.trim(); }).join(' · ') : '없음 — 오늘 칸이 다 찼어요';
   return `<!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="refresh" content="600">
@@ -173,7 +179,7 @@ tfoot td.full{color:var(--green)}tfoot td.today{background:var(--lapis);color:#f
 <body><main class="paper">
 <div class="eyebrow">Upload schedule</div>
 <h1>업로드 일정표</h1>
-<p class="desc">${md(range[0])}(${dayName(range[0])}) ~ ${md(range[range.length - 1])}(${dayName(range[range.length - 1])}) · 계정마다 하루 한 편 · 칸을 누르면 올라간 글이 열려요</p>
+<p class="desc">${md(range[0])}(${dayName(range[0])}) ~ ${md(range[range.length - 1])}(${dayName(range[range.length - 1])}) · 계정마다 하루 한 편(LAB 몽골처럼 하루 두 칸인 계정은 칸마다 한 줄) · 칸을 누르면 올라간 글이 열려요</p>
 <div class="gauge">
 <div class="hot"><div class="k">오늘 ${md(today)} 올라감·예약</div><div class="v">${오늘.o}<small> / ${오늘.n}</small></div></div>
 <div><div class="k">지난 7일 올라감</div><div class="v">${지난.o}<small> / ${지난.n}</small></div></div>
