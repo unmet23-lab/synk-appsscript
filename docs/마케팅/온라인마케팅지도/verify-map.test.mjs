@@ -38,14 +38,14 @@ function uniqueIds(items, label, key = 'id') {
   assert.equal(new Set(items.map(row => row[key])).size, items.length, `${label}: duplicate ${key}`);
 }
 
-test('existing operating accounts remain 23, including 22 public destinations and one personal contact', () => {
-  assert.equal(operating.length, 23);
-  assert.equal(operating.filter(row => row.publishable === true).length, 22);
+test('existing operating accounts include PULSE, with 23 public destinations and one personal contact', () => {
+  assert.equal(operating.length, 24);
+  assert.equal(operating.filter(row => row.publishable === true).length, 23);
   assert.equal(operating.filter(row => row.accountStatus === 'operating-contact').length, 1);
-  assert.equal(inventory.accounts.length, 32);
-  assert.equal(sourceChannels.length, 26);
+  assert.equal(inventory.accounts.length, 33);
+  assert.equal(sourceChannels.length, 27);
   assert.equal(inventory.metadata.counts.operatingAccountsAndChannels, operating.length);
-  assert.equal(inventory.metadata.counts.publicPublishingTargets, 22);
+  assert.equal(inventory.metadata.counts.publicPublishingTargets, 23);
   assert.equal(inventory.metadata.counts.totalRows, inventory.accounts.length);
   assert.deepEqual(sorted(channels.filter(row => row.channelScope === '기존 운영').map(row => row.id)), sorted(operating.map(row => row.id)));
 });
@@ -123,8 +123,8 @@ test('the two reused Mongolia priority slots point to existing accounts, not new
   }
 });
 
-test('74 channel rows mean 26 prior entries plus 48 expansion slots', () => {
-  assert.equal(channels.length, 74);
+test('75 channel rows mean 27 prior entries plus 48 expansion slots', () => {
+  assert.equal(channels.length, 75);
   assert.equal(channels.length, sourceChannels.length + proposal.channels.length);
   assert.equal(channels.filter(row => row.brand === 'LAB').length, 53);
   assert.equal(channels.filter(row => row.channelScope === '확장 확보').length, 32);
@@ -153,13 +153,15 @@ test('shared YouTube and Substack stay single accounts and do not inflate owned 
   for (const id of ['lab-youtube', 'synklab-substack']) assert.equal(channels.filter(row => row.id === id).length, 1);
   assert.deepEqual(channels.find(row => row.id === 'lab-youtube').sharedBrands, ['PULSE']);
   assert.deepEqual(channels.find(row => row.id === 'synklab-substack').sharedBrands, ['LAB', 'SHIFT']);
-  assert.equal(rows('brands').reduce((sum, row) => sum + row.ownedCount, 0), 23);
+  assert.equal(rows('brands').reduce((sum, row) => sum + row.ownedCount, 0), 24);
   const expectedShared = {SYNK: 0, LAB: 1, SHIFT: 1, YUHO: 0, PULSE: 1, PATH: 0};
   for (const brand of rows('brands')) {
     assert.equal(brand.ownedCount, channels.filter(row => row.brand === brand.id && row.channelScope === '기존 운영').length, brand.id);
     assert.equal(brand.sharedCount, expectedShared[brand.id], brand.id);
   }
-  assert.equal(rows('brands').find(row => row.id === 'PULSE').ownedCount, 0);
+  assert.equal(rows('brands').find(row => row.id === 'PULSE').ownedCount, 1);
+  assert.equal(channels.find(row => row.id === 'pulse-youtube').handle, '@synkpulse');
+  assert.equal(registry.accounts['pulse-youtube'].expectedChannelId, 'UCvCOJtdC-JgotRgAsbdNFBg');
 });
 
 test('14 older concepts remain intact and two newer video review copies are tracked before publishing', () => {
@@ -210,7 +212,7 @@ test('every input collection and dashboard query has unique nonempty identifiers
 });
 
 test('summary cards reconcile to separate units, and web/product destinations are not SNS rows', () => {
-  const expected = {existing: [23, '채널'], 'lab-secured': [32, '곳'], 'lab-pending': [16, '곳'], 'lab-world': [25, '개국']};
+  const expected = {existing: [24, '채널'], 'lab-secured': [32, '곳'], 'lab-pending': [16, '곳'], 'lab-world': [25, '개국']};
   assert.deepEqual(sorted(rows('summary').map(row => row.id)), sorted(Object.keys(expected)));
   for (const row of rows('summary')) assert.deepEqual([row.value, row.unit], expected[row.id], row.id);
   const websites = inventory.accounts.filter(row => row.accountStatus === 'web-destination');

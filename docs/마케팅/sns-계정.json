@@ -1237,6 +1237,21 @@
       "publicBio": "Belajar bahasa Korea, langsung coba pakai! 🎮 synk.im/lab/",
       "publicBioVerifiedAt": "2026-10-19T00:13:22.668Z",
       "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+    },
+    "pulse-youtube": {
+      "brand": "PULSE",
+      "platform": "youtube",
+      "handle": "@synkpulse",
+      "publicUrl": "https://www.youtube.com/@synkpulse",
+      "expectedHandle": "@synkpulse",
+      "expectedChannelId": "UCvCOJtdC-JgotRgAsbdNFBg",
+      "expectedChannelTitle": "SYNK PULSE",
+      "publisher": "direct-after-connection",
+      "connection": "needs-oauth-verification",
+      "loginVerifiedAt": "2026-11-08",
+      "dailyOff": "PULSE 기존 채널 소유자 확인만 완료. 프로필·게시 연결 미검증, 이번 로그인·가입 작업은 게시 금지",
+      "profileStatus": "existing-channel-owner-switch-and-customization-controls-verified-2026-11-08; basic-profile-and-publishing-connection-pending",
+      "profileEvidence": "프로필설정_20261108/README.md"
     }
   }
 }

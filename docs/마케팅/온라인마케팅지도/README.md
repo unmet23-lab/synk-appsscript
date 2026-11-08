@@ -125,3 +125,5 @@ PowerShell에서 이 저장소 루트를 기준으로 실행한다.
 ```powershell
 & 'C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe' --test 'docs/마케팅/온라인마케팅지도/verify-map.test.mjs'
 ```
+
+**11-08 Workspace·PULSE 후속:** 무료 국가별 이메일 별칭 6개 저장 완료(실제 주소는 비공개 운영 기록). 기존 PULSE YouTube @synkpulse 관리 접근을 확인해 원장과 지도 입력에 추가했다. 기존 운영 대상은 24곳(공개 발행 대상 23 + 개인 연락 1), LAB 해외 확장은 그대로 32 확보·16 미확보다. PULSE Instagram·Facebook은 점검한 회사 Meta 계정 범위에서 미확인으로 추가 대상 2곳을 [가입 현황](../계정_가입현황.md)에 별도 기록했다. 지도 생성 데이터만 갱신하며 위 공식 Data 런타임 오류로 dist 화면은 아직 갱신하지 못했다.

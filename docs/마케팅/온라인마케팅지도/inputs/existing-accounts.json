@@ -5,17 +5,17 @@
     "sourceEvidenceThrough": "2026-09-19T22:07:00+09:00",
     "evidenceMode": "local-source-reconciliation",
     "liveLoginVerified": false,
-    "scope": "지정된 로컬 계정 정본·목록·반영 원장과 현재 사용자 범위 결정을 정규화한 입력 데이터다. 이번 작업에서 실시간 로그인·API·공개 화면·발행 성과를 확인하지 않았다.",
+    "scope": "지정된 로컬 계정 정본·목록·반영 원장과 현재 사용자 범위 결정을 정규화한 입력 데이터다. 이번 작업에서 실시간 로그인·API·공개 화면·발행 성과를 확인하지 않았다. 2026-11-08 PULSE YouTube 한 행만 실제 소유자 화면 검증으로 추가했으며 다른 행의 과거 검증 범위는 그대로다.",
     "grain": "accounts의 한 행은 실제 관리 계정/채널, 소유 미확인 준비 자리, 운영 제외 계정 또는 별도 웹 도착지 하나다. 공유·재사용 관계는 같은 id에 연결하며 새 계정 행으로 복제하지 않는다.",
     "counts": {
-      "registeredAccountEntries": 26,
-      "operatingAccountsAndChannels": 23,
-      "publicPublishingTargets": 22,
+      "registeredAccountEntries": 27,
+      "operatingAccountsAndChannels": 24,
+      "publicPublishingTargets": 23,
       "personalContactProfiles": 1,
       "plannedOrDeferredAccountEntries": 2,
       "excludedExistingAccounts": 1,
       "webDestinations": 6,
-      "totalRows": 32,
+      "totalRows": 33,
       "latestProfileSaved": 22,
       "latestProfileTarget": 23,
       "latestProfileDeferred": 1,
@@ -78,6 +78,11 @@
         "olderClaim": "대부분 brand=SHIFT",
         "currentClaim": "SYNK를 만드는 유호의 별도 YUHO 트랙. 현재 SHIFT 중심 작업도 LAB·PULSE·PATH 제작 경험을 다룰 수 있다.",
         "treatment": "원문에 적힌 유호의 회사 제작 역할을 지도에서 찾기 쉽게 brand=SYNK와 operatingScope=YUHO로 정규화했다. 이 탐색 분류 자체가 사용자의 별도 조직 개편 승인을 뜻하지 않으며 실제 채널명·핸들·소유권은 바꾸지 않았다."
+      },
+      {
+        "topic": "PULSE 독립 YouTube 확인",
+        "currentClaim": "2026-11-08 @synkpulse 전환 및 채널 맞춤설정·동영상 관리 링크 확인",
+        "treatment": "기존 LAB 공유 관계와 별개인 실제 PULSE 소유 채널 한 행을 추가. LAB 해외 신규 자리 수에 합치지 않음."
       }
     ],
     "sharedChannels": [
@@ -953,6 +958,28 @@
       "sharedBrands": [
         "LAB"
       ]
+    },
+    {
+      "id": "pulse-youtube",
+      "brand": "PULSE",
+      "platform": "youtube",
+      "handle": "@synkpulse",
+      "publicUrl": "https://www.youtube.com/@synkpulse",
+      "loginAlias": null,
+      "accountStatus": "operating",
+      "profileStatus": "owner-verified-basic-profile-pending",
+      "coverStatus": "not-in-cover-refresh-scope",
+      "lastEvidenceAt": "2026-11-08",
+      "nextAction": "기존 채널을 재사용하고 소개·사진·커버·게시 연결을 별도로 확인한다. 게시 승인은 포함하지 않는다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/프로필설정_20261108/README.md"
+      ],
+      "country": null,
+      "channelRole": "PULSE 작품·영상 채널. 소유자 관리 화면 확인, 게시·자동화 미검증",
+      "operatingScope": "PULSE",
+      "publishable": true,
+      "sharedBrands": []
     }
   ]
 }

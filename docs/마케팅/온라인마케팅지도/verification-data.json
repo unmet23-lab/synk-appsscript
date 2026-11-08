@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-11-08T11:40:55.509Z",
+  "generatedAt": "2026-11-08T12:22:24.820Z",
   "sourceAsOf": {
     "registry": "2026-11-08",
     "social": "2026-09-21",
     "latestContent": "2026-09-27"
   },
   "counts": {
-    "operating": 23,
+    "operating": 24,
     "mongolia": 5,
     "plannedCountries": 25,
     "prioritySlots": 50,
     "newSlots": 48,
     "expansionConfirmed": 32,
     "expansionUnconfirmed": 16,
-    "channelRows": 74,
+    "channelRows": 75,
     "contents": 25,
     "identities": 6
   },
@@ -24,7 +24,7 @@
     },
     {
       "file": "inputs/existing-accounts.json",
-      "sha256": "c11876ba9b5a20a174e35bfa10a85eecfa51f3df6cae551493fcc9fc0837bf01"
+      "sha256": "c882193de5e33ea30c062895480dece25d954547903c98c386c4e053b60f0ee7"
     },
     {
       "file": "inputs/content-status.json",
@@ -44,7 +44,7 @@
     },
     {
       "file": "../sns-계정.json",
-      "sha256": "a82482ff1da8d1a945ef77e5fe18ca650f3c1c07bca23a179474aec3b5f927c8"
+      "sha256": "aa9bbc269727150c78ff22bdbe5598ea068db431931a5918fefedaaeb9f2024e"
     },
     {
       "file": "../SNS_계정_전체목록_20260919.md",
