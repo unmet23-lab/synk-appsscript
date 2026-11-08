@@ -53,6 +53,21 @@ test('real Windows restic: backup, changed files, new-PC recovery, failure prese
   const initial = engine.config.lastBackup.id;
   assert.equal(engine.config.health.status, 'ok');
   assert.equal(engine.config.lastBackup.files, 3);
+  await t.test('sample check decrypts a real saved file with no plaintext temporary file or persisted content hash', async () => {
+    const { selectSample, consumeSample } = require('../src/probe.cjs');
+    assert.equal(engine.config.lastProbe.result, 'passed');
+    assert.equal(engine.config.lastProbe.snapshotId, initial);
+    const before = await fs.readdir(path.join(engine.stateDir, 'temp'));
+    await engine.probeRestore();
+    assert.equal(engine.config.lastProbe.files, 1);
+    assert.deepEqual(await fs.readdir(path.join(engine.stateDir, 'temp')), before);
+    assert.ok(!JSON.stringify(engine.config.lastProbe).includes('sha256'));
+    let sample, observed;
+    await engine.run(['ls', '--json', '--recursive', initial], { consumeStdout: async input => { sample = await selectSample(input, initial); } });
+    await engine.run(['dump', initial, sample.path], { consumeStdout: async input => { observed = await consumeSample(input, sample.size); } });
+    assert.equal(observed.sha256, digest(content[path.posix.basename(sample.path)]));
+    assert.equal(observed.bytes, sample.size);
+  });
   await t.test('restore never overwrites originals and exact byte hashes match', async () => {
     await assert.rejects(engine.restoreLatest({ parent: source }), /분리/);
     await engine.restoreLatest({ parent: restore });
@@ -70,6 +85,7 @@ test('real Windows restic: backup, changed files, new-PC recovery, failure prese
     await engine.backupNow();
     assert.notEqual(engine.config.lastBackup.id, initial);
     assert.equal((await engine.snapshots([VERIFIED])).length, 2);
+    await engine.probeRestore(); assert.equal(engine.config.lastProbe.snapshotId, engine.config.lastBackup.id);
     await engine.restoreLatest({ parent: restore });
     const restored = await files(engine.config.lastRestore.path);
     assert.ok(!restored.some(f => path.basename(f) === 'empty.txt'));
@@ -145,10 +161,12 @@ test('real Windows restic: backup, changed files, new-PC recovery, failure prese
   await t.test('a failing streaming consumer settles the child and allows a subsequent repository check', async () => {
     const latest = (await engine.snapshots([VERIFIED]))[0];
     const subtree = '/' + latest.paths[0].replace(/^([A-Za-z]):/, '$1').replaceAll('\\', '/');
-    await assert.rejects(engine.run(['dump', `${latest.id}:${subtree}`, '/', '--archive', 'tar'], { timeoutMs: 15000, consumeStdout: async stream => {
-      for await (const _ of stream) throw new Error('simulated destination write failure');
-    } }), /destination write failure/);
-    assert.equal(engine.child, null); await engine.checkRepository();
+    for (const code of ['PROBE_LIMIT', 'PROBE_SIZE']) {
+      await assert.rejects(engine.run(['dump', `${latest.id}:${subtree}`, '/', '--archive', 'tar'], { timeoutMs: 15000, consumeStdout: async stream => {
+        for await (const _ of stream) throw Object.assign(new Error('simulated destination write failure'), { code });
+      } }), e => e.code === code && /destination write failure/.test(e.message));
+      assert.equal(engine.child, null); await engine.checkRepository();
+    }
   });
   await t.test('protected source ACL and foreign SID are not imposed on recovered files', { skip: process.platform !== 'win32' }, async () => {
     const { execFileSync } = require('node:child_process');

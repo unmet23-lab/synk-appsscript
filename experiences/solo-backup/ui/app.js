@@ -7,12 +7,17 @@
   let unsub = null;
   let subscribing = false;
   let pollTimer = null;
-  const JOBS = { setup: '백업을 준비하는 중', backup: '백업하는 중', restore: '새 폴더로 복구하고 해시를 확인하는 중', check: '전체 데이터를 점검하는 중 (오래 걸릴 수 있습니다)', import: '기존 백업을 불러오는 중', key: '복구 키를 저장하고 확인하는 중', prune: '오래된 기록을 정리하는 중', credential: '인증 정보를 확인하는 중', credentials: '인증 정보를 확인하는 중' };
+  const JOBS = { setup: '백업을 준비하는 중', backup: '백업하는 중', protect: '보호를 시작하는 중', probe: '작은 파일 1개로 복구를 시험하는 중', restore: '새 폴더로 복구하고 해시를 확인하는 중', check: '전체 데이터를 점검하는 중 (오래 걸릴 수 있습니다)', import: '기존 백업을 불러오는 중', key: '복구 키를 저장하고 확인하는 중', prune: '오래된 기록을 정리하는 중', credential: '인증 정보를 확인하는 중', credentials: '인증 정보를 확인하는 중' };
+  const PHASE = { startup: 'Windows 시작 등록 확인', enable: '자동 백업 켜기', backup: '백업 실행', done: '완료', failed: '실패' };
+  const LEVELS = ['running', 'restoreOnly', 'setup', 'attention', 'paused', 'off', 'partial', 'active'];
   let prefilled = false;
   let recoSearched = false;
   let candKey = '';
   let initText = null;
   let connecting = false;
+  let recoNeedPrev = null;
+  let recoForce = false;
+  let heroAction = 'none';
   function normEp(v) { return String(v || '').trim().replace(/^https:\/\//i, '').replace(/\/+$/, ''); }
   function savedConn() { return state && state.profile === 'b2' && !state.configured && state.cloudConnection && typeof state.cloudConnection === 'object' ? state.cloudConnection : null; }
   function connMatch() {
@@ -29,7 +34,7 @@
     const fixed = state && Array.isArray(state.sources) && state.sources.length ? state.sources : sel.sources;
     const list = init ? fixed : sel.sources;
     const n = Array.isArray(list) ? list.length : 0;
-    setText('readyNote', init ? '저장된 연결 정보가 준비되어 있습니다. 키 칸을 비워 둔 채 \'연결 다시 시도\'를 눌러 주세요.' : n ? '클라우드 연결 정보가 준비되어 있습니다. \'클라우드 연결 준비\'를 눌러 주세요.' : '클라우드 연결 정보가 준비되어 있습니다. 작업 폴더를 선택해 주세요.');
+    setText('readyNote', init ? '저장된 연결 정보가 준비되어 있습니다. 키 칸을 비워 둔 채 ‘연결 다시 시도’를 눌러 주세요.' : n ? '클라우드 연결 정보가 준비되어 있습니다. ‘클라우드 연결 준비’를 눌러 주세요.' : '클라우드 연결 정보가 준비되어 있습니다. 작업 폴더를 선택해 주세요.');
     show('readyNote', !!cc && m && !$('cKeyId').value && !$('cAppKey').value);
   }
   const SECRETS = ['cKeyId', 'cAppKey', 'iKeyId', 'iAppKey', 'xKeyId', 'xAppKey', 'rKeyId', 'rAppKey'];
@@ -40,6 +45,7 @@
     const d = new Date(iso);
     return isNaN(d.getTime()) ? String(iso) : d.toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' });
   }
+  function ts(iso) { const t = Date.parse(iso || ''); return isNaN(t) ? 0 : t; }
   function fmtBytes(n) {
     n = Number(n) || 0;
     const u = ['바이트', 'KB', 'MB', 'GB', 'TB'];
@@ -78,9 +84,17 @@
   function accept(s) {
     s = normalize(s);
     if (!s || typeof s !== 'object') return;
-    if (state && s.profile !== state.profile) clearSecrets();
+    if (state && s.profile !== state.profile) { clearSecrets(); recoNeedPrev = null; }
     state = s;
     render();
+  }
+  function goTo(id) {
+    const el = $(id);
+    if (!el) return;
+    let d = el.closest('details');
+    while (d) { d.open = true; d = d.parentElement ? d.parentElement.closest('details') : null; }
+    try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) { /* ignore */ }
+    if (!el.disabled && !el.hidden) el.focus();
   }
 
   async function call(name, arg, stateResult, secret) {
@@ -114,16 +128,23 @@
     }
   }
 
+  function pausedFuture(x) { return !!(x && x.pausedUntil && ts(x.pausedUntil) > Date.now()); }
+
   function summary(x) {
     if (!x || typeof x !== 'object') return '상태를 아직 모릅니다';
     const p = [];
     if (!x.configured) p.push('설정 전');
     else {
-      p.push(x.lastBackup ? '최근 성공 ' + fmtTime(x.lastBackup.at) : '아직 백업한 적 없음');
-      p.push(x.automatic ? '자동 켜짐' : '자동 꺼짐');
+      p.push(x.lastBackup ? '최근 완료 ' + fmtTime(x.lastBackup.at) : '아직 완료된 백업 없음');
+      if (x.mode === 'restore') p.push('복구 전용');
+      else if (!x.automatic) p.push('자동 꺼짐');
+      else if (pausedFuture(x)) p.push('일시정지 ~' + fmtTime(x.pausedUntil));
+      else p.push('자동 켜짐');
     }
     if (x.job) p.push((JOBS[x.job.kind] || '작업 중'));
     if (x.credentialRequired) p.push('인증 복구 필요');
+    if (x.clockHold) p.push('PC 시계 확인 필요');
+    if (x.lastProbe && x.lastProbe.result === 'failed') p.push('복구 시험 문제');
     if (x.lastError) p.push('문제: ' + x.lastError);
     return p.join(' · ');
   }
@@ -132,8 +153,94 @@
     const t = $(id);
     t.disabled = lock;
     t.setAttribute('aria-pressed', s && s.profile === name ? 'true' : 'false');
-    t.classList.toggle('bad', !!(x && (x.lastError || x.credentialRequired)));
+    t.classList.toggle('bad', !!(x && (x.lastError || x.credentialRequired || (x.lastProbe && x.lastProbe.result === 'failed'))));
     setText(sumId, s ? summary(x) : '');
+  }
+
+  function protOf(s) {
+    const p = s.protection;
+    if (p && typeof p === 'object' && LEVELS.indexOf(p.level) >= 0) return p;
+    const MIN = 60000;
+    const now = Date.now();
+    const lb = s.lastBackup;
+    const lbt = ts(lb && lb.at);
+    const probeCurrent = !!s.lastProbe && s.lastProbe.result === 'passed' && s.lastProbe.snapshotId === (lb ? lb.id : undefined);
+    const interrupted = !!s.protectRun && ['done', 'failed'].indexOf(s.protectRun.phase) < 0 && !s.job;
+    const res = (level, reason, nextAction) => ({ level: level, reason: reason, nextAction: nextAction, nextBackupAt: s.nextBackupAt || null, probeCurrent: probeCurrent, interrupted: interrupted });
+    if (s.job) return res('running', 'job', 'none');
+    if (s.credentialRequired) return res('attention', 'credential', 'credentials');
+    if (!s.configured) return res('setup', 'setup', 'setup');
+    if (s.mode === 'restore' || s.readOnly) return res('restoreOnly', 'restoreOnly', 'restore');
+    if (!s.recoverySaved) return res('attention', 'recovery', 'recovery');
+    if (s.clockHold || lbt > now + 5 * MIN) return res('attention', 'clock', 'backup');
+    if (s.probeHold) return res('attention', 'probe', 'probe');
+    if (s.health && s.health.status === 'attention') return res('attention', 'health', 'check');
+    if (s.lastError || interrupted) return res('attention', 'error', 'protect');
+    if (ts(s.pausedUntil) > now) return res('paused', 'paused', 'resume');
+    if (!s.automatic) return res('off', 'off', 'protect');
+    if (!lbt) return res('attention', 'empty', 'protect');
+    if (now - lbt > (2 * s.intervalMinutes + 15) * MIN) return res('attention', 'overdue', 'protect');
+    if (!s.launchAtLogin) return res('partial', 'startup', 'protect');
+    return res('active', 'active', 'backup');
+  }
+
+  function heroCopy(p, s) {
+    const lb = s.lastBackup;
+    const r = p.reason;
+    switch (p.level) {
+      case 'running': return ['작업 중', '작업이 진행 중입니다', '끝나면 결과가 여기에 표시됩니다. 완료되기 전에는 완료된 백업으로 표시하지 않습니다.', 'run'];
+      case 'restoreOnly': return ['복구 전용', '이 PC는 복구 전용으로 연결되어 있습니다', '완료된 백업을 새 폴더로 복구할 수 있습니다. 이 PC에서는 새 백업을 만들지 않습니다.', 'neutral'];
+      case 'setup': return ['준비 중', r === 'recovery' ? '복구 정보를 먼저 보관해 주세요' : '설정을 마쳐 주세요', r === 'recovery' ? '복구 정보를 보관한 뒤에 보호를 시작할 수 있습니다. 아직 업무 파일을 백업하지 않았습니다.' : '아직 보호가 시작되지 않았습니다.', 'warn'];
+      case 'attention': {
+        const m = { credential: ['인증 정보를 다시 연결해야 합니다', '해결될 때까지 이 백업의 백업과 복구가 멈춥니다.'], recovery: s.profile === 'b2' && s.recovery && s.recovery.available ? ['복구 정보를 먼저 보관해 주세요', (lb ? '아래 Google 자동 복구로 보관이 확인되거나 복구 키 파일을 저장하면 보호를 다시 시작할 수 있습니다. 마지막으로 완료된 백업은 아래 표시된 시각 그대로 남아 있습니다.' : '아래 Google 자동 복구로 보관이 확인되거나 복구 키 파일을 저장하면 보호를 시작할 수 있습니다. 아직 업무 파일을 백업하지 않았습니다.')] : ['복구 키 파일을 먼저 보관해 주세요', (lb ? '복구 키 파일을 저장하면 보호를 다시 시작할 수 있습니다. 마지막으로 완료된 백업은 아래 표시된 시각 그대로 남아 있습니다.' : '복구 키 파일을 저장하면 보호를 시작할 수 있습니다. 아직 업무 파일을 백업하지 않았습니다.')], empty: ['아직 완료된 백업이 없습니다', '자동 백업은 켜져 있지만 완료된 백업이 아직 없습니다. ‘보호 시작’을 누르면 Windows 로그인 시 시작을 켜고 바로 백업합니다.'], overdue: ['백업이 예정보다 늦어지고 있습니다', '마지막 완료 이후 시간이 꽤 지났습니다. ‘보호 다시 시작’을 누르면 Windows 로그인 시 시작을 켜고 바로 백업합니다.'], error: ['최근 백업 시도에 문제가 있었습니다', '마지막으로 완료된 백업은 아래와 같습니다. 다시 시도해 주세요.'], health: ['전체 점검에서 확인이 필요합니다', '점검 기록에서 내용을 확인해 주세요.'], probe: ['복구 시험에서 문제가 발견되었습니다', '오래된 기록 정리를 멈추고 기존 기록을 보관하고 있습니다. 복구 시험을 다시 하거나 전체 점검을 해 주세요.'], clock: ['PC 시계를 확인해 주세요', '저장된 백업 시각이 PC의 현재 시각보다 뒤로 되어 있습니다. Windows 날짜·시각이 맞는지 확인한 뒤 ‘지금 백업’을 눌러 다시 시도해 주세요. 기록 순서는 저장된 백업 시각을 기준으로 판단합니다.'] }[r] || ['확인이 필요합니다', '아래 내용을 확인해 주세요.'];
+        return ['확인 필요', m[0], m[1], 'warn'];
+      }
+      case 'paused': return ['일시정지', '자동 백업이 잠시 멈춰 있습니다', pausedFuture(s) ? fmtTime(s.pausedUntil) + '까지 새 자동 백업이 없습니다.' : '일시정지가 곧 끝납니다.', 'warn'];
+      case 'off': return ['보호 꺼짐', r === 'empty' || !lb ? '아직 보호를 시작하지 않았습니다' : '자동 백업이 꺼져 있습니다', '‘' + (lb ? '보호 다시 시작' : '보호 시작') + '’을 누르면 Windows 로그인 시 시작을 켜고 바로 백업합니다.', 'warn'];
+      case 'partial': {
+        if (r === 'startup') return ['일부 꺼짐', 'Windows 로그인 시 시작이 꺼져 있습니다', 'PC를 다시 켠 뒤 앱을 직접 열기 전까지 자동 백업이 동작하지 않습니다.', 'warn'];
+        if (r === 'overdue') return ['늦어짐', '백업이 예정보다 늦어지고 있습니다', '마지막 완료 이후 시간이 꽤 지났습니다. 지금 백업하거나 보호를 다시 시작해 주세요.', 'warn'];
+        return ['확인 필요', '일부 상태를 확인해 주세요', '아래 내용을 확인해 주세요.', 'warn'];
+      }
+      case 'active': return ['보호 중', '자동 백업이 동작하고 있습니다', '선택한 폴더를 정해진 간격으로 백업합니다.', 'good'];
+      default: return ['상태', '상태를 확인하는 중', '', 'neutral'];
+    }
+  }
+
+  function actionLabel(a, s) {
+    return { protect: s.lastBackup ? '보호 다시 시작' : '보호 시작', backup: '지금 백업', resume: '자동 백업 다시 시작', probe: '복구 시험 실행', check: '점검 기록 보기', credentials: '인증 다시 연결', recovery: '복구 정보 보관하기', setup: '설정 계속하기', restore: '새 폴더로 복구' }[a] || '';
+  }
+
+  function runHero() {
+    const s = state;
+    if (!s) return;
+    switch (heroAction) {
+      case 'protect': call('protectNow', undefined, true); break;
+      case 'backup': call('backupNow', undefined, true); break;
+      case 'resume': call('resumeAutomatic', undefined, true); break;
+      case 'probe': call('probeRestore', undefined, true); break;
+      case 'restore': call('restoreLatest', undefined, true); break;
+      case 'check': goTo('btnCheck'); break;
+      case 'credentials':
+        if (s.credentialRequired) goTo(s.profile === 'b2' ? 'xKeyId' : 'btnRecover');
+        else { recoForce = true; render(); goTo('btnRConnect'); }
+        break;
+      case 'recovery':
+        if (!s.recoverySaved) goTo(s.profile === 'b2' && s.recovery && s.recovery.available ? 'recoBox' : 'btnKey');
+        else { recoForce = true; render(); goTo('recoBox'); }
+        break;
+      default: break;
+    }
+  }
+
+  function recoNeeds(s, r, restoreMode) {
+    if (recoForce || recoSearched) return true;
+    if (!s.configured) return true;
+    if (r.error || r.needsLogin || r.status === 'attention') return true;
+    if (restoreMode) return false;
+    if (!s.recoverySaved) return true;
+    if (s.credentialRequired) return false;
+    return !!(r.available && r.connected && !r.readKeyReady);
   }
 
   function renderReco(s, act, cloud, restoreMode) {
@@ -157,6 +264,15 @@
     const eMsg = r.error ? (r.canImport ? '복구 정보를 확인하지 못했습니다: ' + r.error : '자동 복구 정보 확인이 필요합니다: ' + r.error + ' 이 알림이 백업 파일이 사라졌다는 뜻은 아닙니다.') : r.status === 'attention' ? '복구 정보 보관 상태를 다시 확인해 주세요. Google 연결을 확인한 뒤 다시 확인·보관을 눌러 주세요.' : '';
     setText('recoError', eMsg);
     show('recoError', !!eMsg);
+    let sum = '';
+    let sumWarn = false;
+    if (!av) sum = '이 빌드에서는 쓸 수 없음';
+    else if (r.needsLogin) { sum = '다시 로그인이 필요합니다' + (vt ? ' · 마지막 확인 ' + vt : ''); sumWarn = true; }
+    else if (r.error || r.status === 'attention') { sum = '확인이 필요합니다' + (vt ? ' · 마지막 확인 ' + vt : '') + ' (백업 파일과는 별개)'; sumWarn = true; }
+    else if (okV) sum = (restoreMode ? '복구 정보 가져옴' : '보관 확인됨') + (vt ? ' · ' + vt : '');
+    else sum = r.connected ? '연결됨 · ' + st : '연결 안 됨';
+    setText('recoSum', sum);
+    $('recoSum').className = 'sumNote' + (sumWarn ? ' attention' : '');
     let note = '';
     if (av && bm && !r.readKeyReady) note = '복구 전용 연결 준비가 필요합니다. 준비되기 전에는 자동 보관이 완료되지 않습니다.' + (s.manualRecoverySaved ? '' : ' 그동안 복구 키 파일을 직접 보관해 주세요.');
     else if (av && !s.configured && !r.connected) note = '처음 한 번만 Google 권한을 허용하면 됩니다. 클라우드 연결 준비를 마치고 복구 전용 연결이 준비되어 있으면 복구 정보가 자동으로 보관됩니다. 시험판에서는 소유자가 복구 전용 연결을 준비하며, 아직 직접 준비할 수는 없습니다. 새 PC라면 연결한 뒤 ‘내 백업 찾기’를 누르세요.';
@@ -196,6 +312,33 @@
     show('btnRImport', !!r.canImport && cands.length > 0);
     sel.disabled = act || !cands.length;
     $('btnRImport').disabled = act || !r.canImport || !sel.value;
+    const need = recoNeeds(s, r, restoreMode);
+    if (need !== recoNeedPrev) { recoNeedPrev = need; if (need) $('recoBox').open = true; else if (!recoForce) $('recoBox').open = false; }
+  }
+
+  function renderProbe(s, p, restoreMode) {
+    const lp = s.lastProbe;
+    const lb = s.lastBackup;
+    const pt = $('probeText');
+    let t = '아직 확인하지 않음';
+    let cls = 'big';
+    let d = '';
+    if (lp && typeof lp === 'object') {
+      const earlier = !!(lb && lp.snapshotId && lp.snapshotId !== lb.id) || p.probeCurrent === false && !!lb && lp.snapshotId !== lb.id;
+      const when = fmtTime(lp.at);
+      if (lp.result === 'passed') { t = '작은 파일 1개를 내려받아 복호화했습니다'; cls += ' ok'; d = when + ' 시험 · ' + fmtBytes(lp.bytes) + (earlier ? ' · 이전 스냅숏 기준(최신 백업은 아직 시험하지 않음)' : ' · 최신 완료 백업 기준') + '. 파일 1개만 확인한 것이며 전체 복구나 저장소 전체를 확인한 것은 아닙니다.'; }
+      else if (lp.result === 'failed') { t = '복구 시험에서 문제가 발견되었습니다'; cls += ' attention'; d = when + ' · 내려받은 파일 크기가 예상과 달랐습니다' + '. 전체 점검을 권합니다.'; }
+      else if (lp.result === 'incomplete') { t = '복구 시험을 끝내지 못했습니다'; cls += ' attention'; d = when + ' · 연결이나 처리 문제로 중단되었습니다' + '. 데이터 손상을 뜻하지는 않습니다. 확인되지 않은 상태입니다.'; }
+      else if (lp.result === 'skipped') { t = '복구 시험을 건너뛰었습니다'; d = when + ' · 알맞은 작은 파일이 없거나 목록이 너무 커서 시험하지 않았습니다' + '. 확인되지 않은 상태입니다.'; }
+      if (lp.detail) d += ' ' + lp.detail;
+    }
+    if (s.probeHold) d += ' 복구 시험 문제로 ' + fmtTime(s.probeHold.since) + '부터 오래된 기록 정리를 멈추고 보관 중입니다.';
+    pt.className = cls;
+    setText('probeText', t);
+    setText('probeDetail', d.trim());
+    const can = !!s.configured && !restoreMode && !s.readOnly;
+    show('btnProbe', can);
+    return t;
   }
 
   function render() {
@@ -214,10 +357,12 @@
     setText('jobHint', rb && !pending ? '자동 복구 정보를 확인하는 동안 다른 작업은 잠시 기다립니다.' : pending || rb ? '요청을 처리하고 있습니다. 잠시 기다려 주세요. 진행 중인 작업은 앱 안에서 취소할 수 없습니다.' : '작업이 실행 중입니다. 진행 중인 작업은 앱 안에서 취소할 수 없습니다. 위의 탭으로 다른 백업 종류는 볼 수 있습니다.');
     if (j) {
       const pct = typeof j.percent === 'number' ? Math.max(0, Math.min(100, Math.round(j.percent))) : null;
-      setText('jobText', (JOBS[j.kind] || '작업 중') + (j.stage ? ' · ' + j.stage : '') + (pct !== null ? ' (' + pct + '%)' : ''));
+      const pr = s.protectRun;
+      const ph = j.kind === 'protect' && pr && PHASE[pr.phase] ? ' · ' + PHASE[pr.phase] : '';
+      setText('jobText', (JOBS[j.kind] || '작업 중') + ph + (j.stage ? ' · ' + j.stage : '') + (pct !== null ? ' (' + pct + '%)' : ''));
       if (pct !== null) $('jobBar').value = pct; else $('jobBar').removeAttribute('value');
     } else if (pending || rb) {
-      setText('jobText', rb && connecting ? 'Google 연결 중입니다. 브라우저 창에서 로그인과 권한 허용을 마쳐 주세요. 연결 대기를 취소하려면 트레이 메뉴에서 \'앱 종료\'를 누르세요. 5분 안에 마치지 않으면 연결 시도가 자동으로 끝납니다.' : rb ? '복구 정보를 확인하는 중입니다…' : '잠시만 기다려 주세요…');
+      setText('jobText', rb && connecting ? 'Google 연결 중입니다. 브라우저 창에서 로그인과 권한 허용을 마쳐 주세요. 연결 대기를 취소하려면 트레이 메뉴에서 ‘앱 종료’를 누르세요. 5분 안에 마치지 않으면 연결 시도가 자동으로 끝납니다.' : rb ? '복구 정보를 확인하는 중입니다…' : '잠시만 기다려 주세요…');
       $('jobBar').removeAttribute('value');
     }
     if (!s) { ['recoView', 'setupView', 'cloudView', 'credView', 'keyView', 'dashView'].forEach((id) => show(id, false)); return; }
@@ -226,11 +371,11 @@
     const restoreMode = s.mode === 'restore';
     const cred = !!s.credentialRequired;
     const kind = cloud ? '클라우드' : '외장·로컬';
-    setText('modeLabel', kind + ' · ' + (!s.configured ? (s.initializing ? '연결 준비 중단됨' : '처음 설정') : restoreMode ? '복구 전용 모드' : '백업 모드'));
+    setText('modeLabel', kind + ' · ' + (!s.configured ? (s.initializing ? '연결 준비 중단됨' : '처음 설정') : restoreMode || s.readOnly ? '복구 전용 모드' : '백업 모드'));
     show('setupView', !cloud && !s.configured);
     show('cloudView', cloud && !s.configured);
     show('credView', !!s.configured && cred);
-    show('keyView', !!s.configured && !restoreMode && !s.recoverySaved && !cred);
+    show('keyView', !!s.configured && !restoreMode && !s.readOnly && !s.recoverySaved && !cred);
     show('keyCloudNote', cloud);
     show('keyGoogleNote', cloud && !!(s.recovery && s.recovery.available));
     show('dashView', !!s.configured);
@@ -246,6 +391,8 @@
       setText('btnSources', srcs.length ? '폴더 다시 고르기' : '폴더 고르기');
       setText('btnTarget', sel.target ? '저장 위치 다시 고르기' : '저장 위치 고르기');
       $('btnSetup').disabled = act || !srcs.length || !sel.target;
+      $('btnFindOtherL').disabled = act || !(s.recovery && s.recovery.available);
+      setText('setupNext', '다음 단계: ' + (!srcs.length ? '백업할 업무 폴더를 고르세요.' : !sel.target ? '백업을 저장할 위치를 고르세요.' : '‘백업 준비’를 누르세요. 아직 백업은 시작되지 않습니다.'));
       return;
     }
     if (!s.configured && cloud) {
@@ -278,6 +425,8 @@
       setText('btnCloudSetup', init ? '연결 다시 시도' : '클라우드 연결 준비');
       $('btnCloudSetup').disabled = act || !srcs.length;
       $('btnCImport').disabled = act || init;
+      $('btnFindOther').disabled = act || !(s.recovery && s.recovery.available);
+      setText('cloudNext', '다음 단계: ' + (init ? '연결 준비를 다시 시도하세요.' : !srcs.length ? '백업할 업무 폴더를 고르세요.' : 'B2 연결 정보를 입력하고 ‘클라우드 연결 준비’를 누르세요. 아직 업로드하지 않습니다.'));
       return;
     }
 
@@ -288,46 +437,112 @@
     setText('retryNote', s.retryAfter ? '사용 한도에 도달해 잠시 멈췄습니다. ' + fmtTime(s.retryAfter) + ' 이후 다시 시도합니다.' : '');
     show('retryNote', !!s.retryAfter);
 
+    const p = protOf(s);
     const iv = Number(s.intervalMinutes) || (cloud ? 60 : 15);
     const days = Number(s.fullCheckDays) || (cloud ? 30 : 1);
     const every = days === 1 ? '하루에 한 번' : days + '일마다';
     const lb = s.lastBackup;
-    setText('backupTitle', lb ? '마지막 성공한 백업' : '아직 백업 전');
+    const paused = pausedFuture(s);
+    const ro = !!s.readOnly || restoreMode;
+
+    const hc = heroCopy(p, s);
+    setText('heroKicker', hc[0]);
+    setText('backupTitle', hc[1]);
+    setText('heroState', hc[2]);
+    $('heroDot').className = 'dot ' + hc[3];
+    $('hero').className = 'card heroCard lv-' + hc[3];
+    setText('backupTime', lb ? fmtTime(lb.at) : '아직 완료된 백업이 없습니다');
+    let stats = lb ? '파일 ' + (Number(lb.files) || 0).toLocaleString('ko-KR') + '개 · ' + fmtBytes(lb.bytes) : (ro ? '' : '첫 백업이 끝나면 여기에 표시됩니다.');
+    if (s.lastAttemptAt && (!lb || ts(s.lastAttemptAt) > ts(lb.at))) stats += (stats ? ' · ' : '') + '마지막 시도 ' + fmtTime(s.lastAttemptAt) + (s.lastError ? ' (완료되지 않음)' : '');
+    setText('backupStats', stats);
+    const nb = p.nextBackupAt || s.nextBackupAt;
+    let nxt = '';
+    let nh = '';
+    if (ro) nxt = '복구 전용에서는 백업하지 않음';
+    else if (cred) nxt = '인증 복구 전까지 멈춤';
+    else if (s.clockHold) { nxt = 'PC 시계 확인 필요'; nh = 'Windows 날짜·시각을 확인한 뒤 ‘지금 백업’을 눌러 다시 시도해 주세요.'; }
+    else if (!s.recoverySaved) nxt = '복구 정보 보관 후 시작 가능';
+    else if (!s.automatic) nxt = '자동 백업 꺼짐';
+    else if (paused) { nxt = '일시정지 · ' + fmtTime(s.pausedUntil) + '까지'; nh = '일시정지가 끝나면 다시 예약됩니다.'; }
+    else { nxt = nb ? fmtTime(nb) + ' 예정' : iv + '분마다'; nh = '앱 또는 트레이가 실행 중이고 PC가 깨어 있을 때 동작합니다.'; }
+    if (!ro && s.automatic && !s.launchAtLogin) nh = (nh ? nh + ' ' : '') + 'Windows 로그인 시 시작이 꺼져 있습니다.';
+    setText('autoState', nxt);
+    setText('nextHint', nh);
+
+    const warns = [];
+    if (s.startupWarning) warns.push('백업은 진행했지만 Windows 로그인 시 시작 등록을 확인하지 못했습니다: ' + s.startupWarning);
+    if (s.protectRun && s.protectRun.phase === 'failed') warns.push('보호 시작 과정이 끝나지 못했습니다' + (s.protectRun.finishedAt ? ' (' + fmtTime(s.protectRun.finishedAt) + ')' : '') + '. 완료된 백업으로 표시하지 않았습니다.');
+    if (p.interrupted) warns.push('지난 작업이 중간에 끊겼습니다. 끊긴 백업은 완료된 백업으로 치지 않습니다.');
+    const r = s.recovery;
+    if (cloud && r && (r.error || r.needsLogin)) warns.push('Google 자동 복구 확인이 필요합니다' + (r.verifiedAt ? ' (마지막 확인 ' + fmtTime(r.verifiedAt) + ')' : '') + '. 백업 파일과는 별개이며, 아래 Google 자동 복구에서 확인할 수 있습니다.');
+    setText('heroWarn', warns.join(' '));
+    show('heroWarn', warns.length > 0);
+
+    heroAction = p.nextAction || 'none';
+    if (heroAction === 'clock' || heroAction === 'setup' && s.configured && s.recoverySaved) heroAction = 'none';
+    if (ro && ['protect', 'backup', 'resume', 'probe', 'check'].indexOf(heroAction) >= 0) heroAction = lb ? 'restore' : 'none';
+    if (heroAction === 'restore' && (!lb || cred)) heroAction = 'none';
+    if (heroAction === 'check' && s.readOnly) heroAction = 'none';
+    const hb = $('btnHero');
+    setText('btnHero', actionLabel(heroAction, s));
+    show('btnHero', heroAction !== 'none' && !!actionLabel(heroAction, s));
+    const needsJob = ['protect', 'backup', 'resume', 'probe', 'restore'].indexOf(heroAction) >= 0;
+    hb.disabled = act || (needsJob && cred);
+    const backupMode = !!s.configured && !ro && !!s.recoverySaved && !cred;
+    show('btnNow', backupMode && heroAction !== 'backup' && heroAction !== 'protect' && !!lb);
+    setText('btnNow', '지금 한 번 백업');
+    $('btnNow').disabled = act || cred;
+    show('btnHeroRestore', !!lb && heroAction !== 'restore' && !cred);
+    $('btnHeroRestore').disabled = act || cred;
+    show('backupActions', !$('btnHero').hidden || !$('btnNow').hidden || !$('btnHeroRestore').hidden);
+
+    const canPause = backupMode && !s.readOnly && !!s.automatic;
+    show('pauseBox', canPause);
+    show('pauseBtns', canPause && !paused);
+    show('btnResume', canPause && paused);
+    setText('pauseText', paused ? '자동 백업 일시정지 중 · ' + fmtTime(s.pausedUntil) + '에 자동으로 다시 시작합니다.' : '잠깐 PC를 무겁게 쓰거나 이동 중이라면 자동 백업을 잠시 멈출 수 있습니다. 진행 중인 작업은 멈추지 않습니다.');
+    ['btnP60', 'btnP240', 'btnP720'].forEach((id) => { $(id).disabled = act || !!j; });
+    $('btnResume').disabled = act || !!j;
+
     $('btnRestore').disabled = act || !lb || cred;
     $('btnCheck').disabled = act || !lb || cred;
     show('btnCheck', !s.readOnly);
-    $('btnAuto').disabled = act || cred;
-    $('btnNow').disabled = act || cred;
-    setText('backupTime', lb ? fmtTime(lb.at) : '아직 완료된 백업이 없습니다');
-    setText('backupStats', lb ? '파일 ' + (Number(lb.files) || 0).toLocaleString('ko-KR') + '개 · ' + fmtBytes(lb.bytes) : (restoreMode ? '' : '첫 백업이 끝나면 여기에 표시됩니다.'));
-    show('backupActions', !restoreMode && !!s.recoverySaved);
-    show('autoState', !restoreMode);
-    setText('autoState', cred ? '인증 복구 전까지 자동 백업이 멈춰 있습니다.' : s.automatic ? '자동 백업 켜짐 · ' + iv + '분마다 실행' : s.recoverySaved ? '자동 백업 꺼짐' : '복구 키를 보관하면 백업을 시작할 수 있습니다.');
-    const auto = $('btnAuto');
-    auto.dataset.action = s.automatic ? 'pause' : lb ? 'resume' : 'start';
-    setText('btnAuto', s.automatic ? '자동 백업 일시 중지' : lb ? '자동 백업 다시 시작' : '자동 백업 시작');
-    auto.className = s.automatic ? 'btn' : 'btn primary';
+    $('btnProbe').disabled = act || !lb || cred;
+    const probeT = renderProbe(s, p, restoreMode);
 
     const h = s.health;
     $('healthText').className = 'big' + (h ? (h.status === 'ok' ? ' ok' : ' attention') : '');
-    setText('healthText', !h ? '아직 점검 전' : h.status === 'ok' ? '마지막 점검에서 문제가 발견되지 않았습니다' : '확인이 필요합니다');
-    setText('healthDetail', h ? fmtTime(h.checkedAt) + ' 점검' + (h.detail ? ' · ' + h.detail : '') + ' (최근 백업 시각과는 별개입니다)' : restoreMode ? (s.readOnly ? '복구 전용 연결에서는 전체 점검을 할 수 없습니다. 복구할 때 모든 파일의 해시를 확인합니다.' : '복구 전에 전체 점검을 실행해 볼 수 있습니다. 오래 걸릴 수 있습니다.') : '첫 백업 후 자동으로 진행되고, 이후 ' + every + ' 실행됩니다. 오래 걸릴 수 있습니다.');
+    setText('healthText', !h ? '아직 점검 전' : h.status === 'ok' ? '그 시점에 문제가 발견되지 않았습니다' : '확인이 필요합니다');
+    const older = !!(h && lb && ts(h.checkedAt) < ts(lb.at));
+    setText('healthDetail', h ? fmtTime(h.checkedAt) + ' 점검' + (h.detail ? ' · ' + h.detail : '') + (older ? ' · 그 뒤에 만든 백업은 이 점검에 포함되지 않았습니다.' : ' · 점검 시점의 저장소 기준입니다.') : ro ? (s.readOnly ? '복구 전용 연결에서는 전체 점검을 할 수 없습니다. 복구할 때 모든 파일의 해시를 확인합니다.' : '복구 전에 전체 점검을 실행해 볼 수 있습니다. 오래 걸릴 수 있습니다.') : '첫 백업 후 자동으로 진행되고, 이후 ' + every + ' 실행됩니다. 오래 걸릴 수 있습니다.');
     show('checkNote', cloud && !s.readOnly);
     show('restoreNote', cloud);
+    const hs = !h ? '전체 점검 전' : h.status === 'ok' ? '전체 점검 ' + fmtTime(h.checkedAt) : '전체 점검 확인 필요';
+    const pw = s.lastProbe && (s.lastProbe.result === 'failed' || s.lastProbe.result === 'incomplete') || (h && h.status !== 'ok');
+    setText('advSum', (ro ? '' : '복구 시험: ' + probeT + ' · ') + hs);
+    $('advSum').className = 'sumNote' + (pw ? ' attention' : '');
 
     const lr = s.lastRestore;
     show('restoreResult', !!lr);
     if (lr) { setText('restoreTime', fmtTime(lr.at)); setText('restorePath', lr.path); }
-    fillList('srcList', s.sources);
+    const srcs = Array.isArray(s.sources) ? s.sources : [];
+    fillList('srcList', srcs);
+    setText('srcCount', srcs.length ? '(' + srcs.length + '개)' : '');
     setText('repoLabel', cloud ? '클라우드 저장소' : '백업 위치');
     const pv = s.provider;
     setText('repoPath', cloud ? (pv ? 'B2 · ' + (pv.endpoint || '') + ' · ' + (pv.bucket || '') + (pv.prefix ? ' / ' + pv.prefix : '') : '') : (s.repository || ''));
     show('lifeNote', cloud);
     show('detCloud', cloud);
     show('rotCard', cloud && !s.readOnly);
-    setText('detTiming', '백업할 때마다 구조 점검을 합니다. 전체 데이터 점검은 첫 백업 후 자동으로, 이후 ' + every + ' 진행하며' + (cloud ? ' 데이터를 내려받으므로 다운로드 요금이 생길 수 있습니다.' : ' 데이터가 많으면 오래 걸릴 수 있습니다.') + ' 자동 백업(' + iv + '분마다)은 앱 또는 트레이가 실행 중이고 PC가 깨어 있을 때만 동작합니다.');
-    show('settings', !restoreMode);
+    setText('detTiming', '백업할 때마다 구조 점검을 합니다. 전체 데이터 점검은 첫 백업 후 자동으로, 이후 ' + every + ' 진행하며' + (cloud ? ' 전체 데이터를 내려받으므로 다운로드 요금이 생길 수 있습니다.' : ' 데이터가 많으면 오래 걸릴 수 있습니다.') + ' 자동 백업(' + iv + '분마다)은 앱 또는 트레이가 실행 중이고 PC가 깨어 있을 때만 동작합니다.');
+    show('settings', !ro);
     $('chkLogin').checked = !!s.launchAtLogin;
+    show('btnAuto', backupMode && !!s.automatic);
+    show('autoHint', backupMode && !!s.automatic);
+    setText('btnAuto', '자동 백업 끄기');
+    $('btnAuto').dataset.action = 'pause';
+    $('btnAuto').className = 'btn';
+    $('btnAuto').disabled = act || cred;
   }
 
   function startPoll() { if (!pollTimer) pollTimer = setInterval(refresh, 3000); }
@@ -346,12 +561,19 @@
   }
 
   function pickTab(p) {
-    if (pending || !state || state.profile === p) return;
+    if (pending || !state || state.profile === p) return Promise.resolve(null);
     clearSecrets();
     showError('');
-    call('selectProfile', p, true);
+    return call('selectProfile', p, true);
   }
   function needKeys() { showError('키 ID와 애플리케이션 키를 모두 입력해 주세요.' + RETYPE); }
+  function revealFind() {
+    recoForce = true;
+    render();
+    $('recoBox').open = true;
+    const r = state && state.recovery;
+    goTo(r && r.connected && !r.needsLogin ? 'btnRFind' : 'btnRConnect');
+  }
 
   $('tabLocal').addEventListener('click', () => pickTab('local'));
   $('tabB2').addEventListener('click', () => pickTab('b2'));
@@ -359,6 +581,8 @@
   $('btnTarget').addEventListener('click', async () => { await call('chooseTarget'); await refresh(); });
   $('setupForm').addEventListener('submit', (e) => { e.preventDefault(); call('setup', undefined, true); });
   $('btnImport').addEventListener('click', () => call('importRecoveryKit', undefined, true));
+  $('btnFindOther').addEventListener('click', revealFind);
+  $('btnFindOtherL').addEventListener('click', async () => { await pickTab('b2'); if (state && state.profile === 'b2') revealFind(); });
   $('btnCSources').addEventListener('click', async () => { await call('chooseSources'); await refresh(); });
   $('btnReuse').addEventListener('click', () => call('reuseLocalSources', undefined, true));
   $('cloudForm').addEventListener('submit', (e) => {
@@ -406,18 +630,19 @@
   $('btnRDisc').addEventListener('click', async () => { if (await call('disconnectRecovery', undefined, true)) { recoSearched = false; render(); } });
   $('btnRFind').addEventListener('click', async () => { if (await call('findRecoveryBackups', undefined, true)) { recoSearched = true; render(); } });
   $('recoSel').addEventListener('change', () => render());
+  $('recoBox').addEventListener('toggle', () => { if (!$('recoBox').open) recoForce = false; });
   $('btnRImport').addEventListener('click', async () => {
     const id = $('recoSel').value;
     if (!id || pending || !state || !state.recovery || !state.recovery.canImport) return;
-    if (await call('importAccountRecovery', id, true)) { recoSearched = false; render(); }
+    if (await call('importAccountRecovery', id, true)) { recoSearched = false; recoForce = false; render(); }
   });
-  $('btnAuto').addEventListener('click', (e) => {
-    const a = e.currentTarget.dataset.action;
-    if (a === 'pause') call('setAutomatic', false, true);
-    else if (a === 'resume') call('setAutomatic', true, true);
-    else call('startAutomatic', undefined, true);
-  });
+  $('btnHero').addEventListener('click', runHero);
+  $('btnHeroRestore').addEventListener('click', () => call('restoreLatest', undefined, true));
+  $('btnAuto').addEventListener('click', () => call('setAutomatic', false, true));
+  ['btnP60', 'btnP240', 'btnP720'].forEach((id) => { $(id).addEventListener('click', (e) => { const m = Number(e.currentTarget.dataset.min); if (m === 60 || m === 240 || m === 720) call('pauseAutomatic', m, true); }); });
+  $('btnResume').addEventListener('click', () => call('resumeAutomatic', undefined, true));
   $('btnNow').addEventListener('click', () => call('backupNow', undefined, true));
+  $('btnProbe').addEventListener('click', () => call('probeRestore', undefined, true));
   $('btnCheck').addEventListener('click', () => call('checkRepository', undefined, true));
   $('btnRestore').addEventListener('click', () => call('restoreLatest', undefined, true));
   $('btnOpen').addEventListener('click', () => call('openRestoreFolder'));

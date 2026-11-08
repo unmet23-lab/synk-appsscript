@@ -9,6 +9,8 @@ const { ProcessOutput } = require('./process-output.cjs');
 const { extractVerified, readManifest } = require('./restore-tar.cjs');
 const { directory, overlap, atomic, validateSources } = require('./paths.cjs');
 const b2 = require('./b2.cjs');
+const { normalizeProtection, schedule, time } = require('./protection.cjs');
+const { selectSample, consumeSample, issue: probeIssue } = require('./probe.cjs');
 
 const APP = 'solo-work-backup-v1';
 const VERIFIED = 'complete-structure-checked';
@@ -48,6 +50,7 @@ class BackupEngine extends EventEmitter {
     if (this.config) {
       const c = this.config;
       if (c.schema !== 1 || !['backup', 'restore'].includes(c.mode) || !/^[a-f0-9-]{36}$/.test(c.vaultId) || !Array.isArray(c.sources) || (c.repositoryId !== null && !isId(c.repositoryId))) throw new Error('설정 형식이 올바르지 않습니다.');
+      normalizeProtection(c);
       if ((c.provider?.type || 'local') !== this.providerType) throw new Error('백업 프로필과 저장소 종류가 다릅니다.');
       if (this.isCloud()) {
         c.provider = b2.provider(c.provider, c.vaultId);
@@ -74,12 +77,15 @@ class BackupEngine extends EventEmitter {
   }
   getState() {
     const c = this.config;
-    return { version: '0.3.1', configured: !!c?.repositoryId, mode: c?.mode || 'backup', sources: c?.sources || [], repository: c?.repository || null,
+    const timing = schedule(c, this.intervalMs, this.now(), this.lastAttempt);
+    return { version: require('../package.json').version, configured: !!c?.repositoryId, mode: c?.mode || 'backup', sources: c?.sources || [], repository: c?.repository || null,
       providerType: this.providerType, provider: c?.provider || null, initializing: !!c && !c.repositoryId,
       cloudConnection: this.isCloud() && c && !c.repositoryId && this.cloudCredentials ? { endpoint: c.provider.endpoint, bucket: c.provider.bucket } : !c && this.connection ? { endpoint: this.connection.endpoint, bucket: this.connection.bucket } : null,
       credentialRequired: !!c && !this.secret, intervalMinutes: this.intervalMs / 60000, fullCheckDays: this.isCloud() ? 30 : 1, retryAfter: c?.retryAfter || null,
       recoverySaved: this.hasRecovery(), manualRecoverySaved: c?.recoverySaved || false, readOnly: !!c?.readOnly, automatic: c?.automatic || false, lastBackup: c?.lastBackup || null,
       lastRestore: c?.lastRestore || null, health: c?.health || null, lastError: c?.lastError || null,
+      pausedUntil: c?.pausedUntil || null, lastAttemptAt: c?.lastAttemptAt || null, nextBackupAt: timing.nextBackupAt, clockHold: timing.clockHold,
+      lastProbe: c?.lastProbe || null, probeHold: c?.probeHold || null, protectRun: c?.protectRun || null, startupWarning: c?.startupWarning || null,
       warning: c?.warning || null, job: this.job ? { ...this.job } : null };
   }
   isCloud() { return this.providerType === 'b2'; }
@@ -139,10 +145,11 @@ class BackupEngine extends EventEmitter {
   }
   async operation(kind, fn) {
     if (this.job || this.stopping) throw new Error('진행 중인 작업이 끝난 뒤 다시 눌러 주세요.');
+    if (this.config && !['protect', 'probe'].includes(kind)) this.config.protectRun = null;
     this.job = { kind, stage: '준비 중', percent: null }; this.emitState();
     try {
       const value = await fn();
-      if (this.config) { this.config.lastError = null; await this.save(); }
+      if (this.config) { if (kind !== 'probe') this.config.lastError = null; await this.save(); }
       return value;
     } catch (e) {
       if (this.config) { this.config.lastError = this.clean(e.message); await this.save().catch(() => {}); }
@@ -335,12 +342,61 @@ class BackupEngine extends EventEmitter {
     if (this.job) throw new Error('진행 중인 작업이 끝난 뒤 변경해 주세요.');
     if (typeof enabled !== 'boolean' || this.config?.mode !== 'backup' || !this.config.repositoryId) throw new Error('자동 백업을 설정할 수 없습니다.');
     if (enabled && !this.hasRecovery()) throw new Error('복구 키를 먼저 저장해 주세요.');
-    this.config.automatic = enabled; await this.save(); return this.getState();
+    this.config.automatic = enabled;
+    if (!enabled) this.config.pausedUntil = null;
+    await this.save(); return this.getState();
+  }
+  assertBackupReady() {
+    if (this.config?.mode !== 'backup' || this.config.readOnly || !this.config.repositoryId) throw new Error('백업용 연결을 먼저 준비해 주세요. 복구 전용 연결에서는 실행할 수 없습니다.');
+    if (!this.secret) throw new Error('저장된 인증 정보를 다시 연결해 주세요.');
+    if (!this.hasRecovery()) throw new Error('복구 키를 먼저 저장한 뒤 백업을 시작해 주세요.');
+  }
+  async pauseAutomatic(minutes) {
+    if (this.job || this.stopping) throw new Error('진행 중인 작업이 끝난 뒤 변경해 주세요.');
+    this.assertBackupReady();
+    if (![60, 240, 720].includes(minutes) || !this.config.automatic) throw new Error('자동 백업을 켠 뒤 1시간·4시간·12시간 중에서 선택해 주세요.');
+    this.config.pausedUntil = new Date(this.now() + minutes * 60000).toISOString();
+    await this.save(); return this.getState();
+  }
+  async resumeAutomatic() {
+    if (this.job || this.stopping) throw new Error('진행 중인 작업이 끝난 뒤 변경해 주세요.');
+    this.assertBackupReady();
+    if (!this.config.automatic) throw new Error('보호 시작으로 자동 백업을 먼저 켜 주세요.');
+    this.config.pausedUntil = null; await this.save(); return this.getState();
+  }
+  async protectNow({ registerStartup } = {}) {
+    this.assertBackupReady();
+    return this.operation('protect', async () => {
+      this.stage('보호 시작 전 연결과 작업 폴더 확인 중');
+      await this.identity();
+      await validateSources(this.config.sources, this.forbidden());
+      this.config.protectRun = { phase: 'startup', startedAt: new Date(this.now()).toISOString() };
+      await this.save();
+      try {
+        this.stage('Windows 자동 실행 확인 중');
+        try {
+          if (typeof registerStartup !== 'function' || await registerStartup() !== true) throw new Error('Windows 시작 등록을 확인하지 못했습니다.');
+          this.config.startupWarning = null;
+        } catch (e) { this.config.startupWarning = this.clean(e.message); }
+        this.config.protectRun.phase = 'enable';
+        this.config.automatic = true; this.config.pausedUntil = null; await this.save();
+        this.config.protectRun.phase = 'backup'; await this.save();
+        await this.backupBody();
+        this.config.protectRun.phase = 'done'; this.config.protectRun.finishedAt = new Date(this.now()).toISOString();
+        await this.save(); return this.getState();
+      } catch (e) {
+        this.config.protectRun.phase = 'failed'; this.config.protectRun.finishedAt = new Date(this.now()).toISOString();
+        await this.save().catch(() => {}); throw e;
+      }
+    });
   }
   async backupNow() {
-    return this.operation('backup', async () => {
-      if (this.config?.mode !== 'backup' || !this.hasRecovery()) throw new Error('복구 키를 먼저 저장한 뒤 백업을 시작해 주세요.');
+    return this.operation('backup', () => this.backupBody());
+  }
+  async backupBody() {
+      this.assertBackupReady();
       this.lastAttempt = this.now();
+      this.config.lastAttemptAt = new Date(this.lastAttempt).toISOString(); await this.save();
       await this.identity();
       await validateSources(this.config.sources, this.forbidden());
       const runTag = `run:${crypto.randomUUID()}`;
@@ -362,11 +418,12 @@ class BackupEngine extends EventEmitter {
         try { await this.fullCheck(); }
         catch { this.config.warning = '백업은 저장했지만 전체 데이터 점검을 완료하지 못했습니다. 백업 위치와 연결을 확인한 뒤 다시 점검해 주세요.'; }
       }
-      if (this.config.health?.status === 'ok') {
+      const probeInterval = this.config.lastProbe?.reason === 'limit' ? 30 * DAY : 7 * DAY;
+      if (!this.config.lastProbe || this.now() - time(this.config.lastProbe.at) >= probeInterval) await this.probeBody();
+      if (this.config.health?.status === 'ok' && !this.config.probeHold) {
         try { await this.retain(); } catch (e) { this.config.warning = `백업은 저장했습니다. 오래된 백업 정리는 보류합니다: ${this.clean(e.message)}`; }
       }
       await this.save(); return this.getState();
-    });
   }
   async fullCheck() {
     this.stage('전체 데이터 점검 중 — 큰 백업은 오래 걸릴 수 있습니다');
@@ -378,9 +435,48 @@ class BackupEngine extends EventEmitter {
       throw e;
     } finally { await this.save(); }
   }
-  async checkRepository() { return this.operation('check', async () => { await this.identity(); await this.fullCheck(); return this.getState(); }); }
+  async checkRepository() { return this.operation('check', async () => { await this.identity(); await this.fullCheck(); this.config.probeHold = null; await this.save(); return this.getState(); }); }
+  async probeRestore() {
+    this.assertBackupReady();
+    return this.operation('probe', async () => { await this.identity(); await this.probeBody(); return this.getState(); });
+  }
+  async probeBody() {
+    this.assertBackupReady();
+    let snapshotId = null;
+    const result = (value) => ({ at: new Date(this.now()).toISOString(), snapshotId, files: 0, bytes: 0, ...value });
+    try {
+      this.stage('작은 파일 복구 확인용 목록 읽는 중');
+      const snapshots = await this.snapshots([VERIFIED]);
+      // A failed sample is deterministic for this immutable snapshot. Recheck
+      // that same sample; a different healthy file cannot clear its hold.
+      const held = this.config.probeHold;
+      const latest = held ? snapshots.find(s => s.id === held.snapshotId) : snapshots[0];
+      if (!latest) this.config.lastProbe = result({ result: 'skipped', reason: 'no-snapshot' });
+      else {
+        snapshotId = latest.id;
+        let sample;
+        await this.run(['ls', '--json', '--recursive', snapshotId], { timeoutMs: 120000, consumeStdout: async input => { sample = await selectSample(input, snapshotId); } });
+        if (!sample) this.config.lastProbe = result({ result: 'skipped', reason: 'no-small-file' });
+        else {
+          this.stage('작은 파일 1개 내려받아 해독 확인 중');
+          let observed;
+          await this.run(['dump', snapshotId, sample.path], { timeoutMs: 120000, consumeStdout: async input => { observed = await consumeSample(input, sample.size); } });
+          if (!observed || observed.bytes !== sample.size) throw probeIssue('PROBE_SIZE', '표본 파일 내용의 크기가 백업 목록과 일치하지 않습니다.');
+          this.config.lastProbe = result({ result: 'passed', reason: 'sample-decrypted', files: 1, bytes: observed.bytes });
+          this.config.probeHold = null;
+        }
+      }
+    } catch (e) {
+      const mismatch = e.code === 'PROBE_SIZE';
+      this.config.lastProbe = result({ result: mismatch ? 'failed' : e.code === 'PROBE_LIMIT' ? 'skipped' : 'incomplete', reason: mismatch ? 'size-mismatch' : e.code === 'PROBE_LIMIT' ? 'limit' : 'unconfirmed', detail: this.clean(e.message).slice(0, 1500) });
+      if (mismatch) this.config.probeHold = { since: new Date(this.now()).toISOString(), snapshotId, cause: 'size-mismatch' };
+      // Transport/engine errors don't prove corruption and don't trigger a new
+      // automatic full download. Incomplete/skipped also cannot clear a hold.
+    }
+    await this.save(); return this.config.lastProbe;
+  }
   async retain() {
-    if (this.config.mode !== 'backup' || this.config.health?.status !== 'ok') throw new Error('이 저장소는 정리할 수 없습니다.');
+    if (this.config.mode !== 'backup' || this.config.health?.status !== 'ok' || this.config.probeHold) throw new Error('이 저장소는 정리할 수 없습니다.');
     await this.identity();
     let now = this.now();
     if (this.isCloud()) {
@@ -454,9 +550,12 @@ class BackupEngine extends EventEmitter {
     });
   }
   async tick() {
-    if (this.stopping || this.job || !this.secret || !this.config?.automatic || this.config.mode !== 'backup' || Date.parse(this.config.retryAfter || '') > this.now()) return;
-    const last = Math.max(this.lastAttempt, Date.parse(this.config.lastBackup?.at || '') || 0);
-    if (this.now() - last < this.intervalMs) return;
+    if (this.stopping || this.job || !this.secret || !this.config?.automatic || this.config.mode !== 'backup' || this.config.readOnly) return;
+    const timing = schedule(this.config, this.intervalMs, this.now(), this.lastAttempt);
+    if (timing.clockHold || timing.paused || timing.dueAt > this.now()) return;
+    // No await before backupNow obtains the operation lock: simultaneous resume
+    // and timer events can never start a second backup.
+    if (this.config.pausedUntil) this.config.pausedUntil = null;
     try { await this.backupNow(); } catch { /* Error is persisted and surfaced in state; retry on the next interval. */ }
   }
   startScheduler(pollMs = 30000) { this.stopScheduler(); this.timer = setInterval(() => { void this.tick(); }, pollMs); this.timer.unref?.(); }

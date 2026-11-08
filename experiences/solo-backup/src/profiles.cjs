@@ -25,6 +25,7 @@ class Profiles extends EventEmitter {
       try { await engine.open(); } catch (e) { if (e.code !== 'RECOVERY_REQUIRED') throw e; }
       if (engine.config && !engine.config.repositoryId) this.selections[name] = { sources: [...engine.config.sources], target: name === 'local' ? path.dirname(engine.config.repository) : null };
     }
+    if (!this.engines.local.config?.repositoryId && this.engines.b2.config?.repositoryId) this.profile = 'b2';
     this.boundaries();
   }
   select(profile) {
@@ -34,7 +35,7 @@ class Profiles extends EventEmitter {
   getState() {
     const profiles = {};
     for (const [name, e] of Object.entries(this.engines)) {
-      const s = e.getState(); profiles[name] = { configured: s.configured, automatic: s.automatic, lastBackup: s.lastBackup, lastError: s.lastError, credentialRequired: s.credentialRequired, job: s.job };
+      const s = e.getState(); profiles[name] = { configured: s.configured, automatic: s.automatic, lastBackup: s.lastBackup, lastError: s.lastError, credentialRequired: s.credentialRequired, job: s.job, pausedUntil: s.pausedUntil, nextBackupAt: s.nextBackupAt, clockHold: s.clockHold, lastProbe: s.lastProbe };
     }
     return { ...this.current.getState(), profile: this.profile, selection: { sources: [...this.selection.sources], target: this.selection.target }, profiles };
   }
@@ -52,6 +53,7 @@ class Profiles extends EventEmitter {
     // Independent repositories/caches: a slow cloud job must not starve local
     // backups. Each engine itself serializes its own jobs and retention.
     for (const engine of Object.values(this.engines)) void engine.tick();
+    this.emit('state', this.getState());
   }
   start() { this.timer = setInterval(() => this.tick(), 30000); this.timer.unref?.(); this.tick(); }
   async stop() { this.closing = true; clearInterval(this.timer); await Promise.all(Object.values(this.engines).map(e => e.stop())); }

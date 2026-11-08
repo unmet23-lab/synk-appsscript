@@ -7,6 +7,8 @@ const { Profiles } = require('./profiles.cjs');
 const { parseKit } = require('./engine.cjs');
 const { RecoveryService } = require('./recovery-service.cjs');
 const { clientConfig } = require('./recovery-auth.cjs');
+const { protection } = require('./protection.cjs');
+const { startupControl } = require('./startup.cjs');
 
 const testMode = process.argv.includes('--test-mode');
 const testState = testMode && process.env.SOLO_BACKUP_TEST_STATE;
@@ -18,8 +20,10 @@ const page = path.join(__dirname, '..', 'ui', 'index.html');
 const pageUrl = pathToFileURL(page).href;
 let window, tray, profiles, recovery, quitting = false, closing = false, dialogBusy = false;
 
+const { startupRegistered, setStartup } = startupControl(app, { testMode });
 function state() {
-  return { ...profiles.getState(), recovery: recovery?.getState(), launchAtLogin: testMode ? false : app.getLoginItemSettings({ path: process.execPath, args: ['--background'] }).openAtLogin };
+  const value = { ...profiles.getState(), recovery: recovery?.getState(), launchAtLogin: startupRegistered() };
+  return { ...value, protection: protection(value, { startupRegistered: value.launchAtLogin }) };
 }
 function push() { if (window && !window.isDestroyed()) window.webContents.send('backup:state', state()); }
 function show() { if (window?.isMinimized()) window.restore(); window?.show(); window?.focus(); }
@@ -109,6 +113,10 @@ else {
     handle('startAutomatic', async ({ engine }) => { await engine.setAutomatic(true); setImmediate(() => profiles.tick()); return state(); });
     handle('setAutomatic', async ({ engine }, enabled) => { await engine.setAutomatic(enabled); if (enabled) setImmediate(() => profiles.tick()); return state(); });
     handle('backupNow', ({ engine }) => launchJob(engine, () => engine.backupNow()));
+    handle('protectNow', ({ engine }) => { engine.assertBackupReady(); return launchJob(engine, () => engine.protectNow({ registerStartup: async () => setStartup(true) })); });
+    handle('pauseAutomatic', async ({ engine }, minutes) => { await engine.pauseAutomatic(minutes); return state(); });
+    handle('resumeAutomatic', async ({ engine }) => { await engine.resumeAutomatic(); setImmediate(() => profiles.tick()); return state(); });
+    handle('probeRestore', ({ engine }) => { engine.assertBackupReady(); return launchJob(engine, () => engine.probeRestore()); });
     handle('checkRepository', async ({ engine }) => { if (engine.isCloud()) { const answer = await dialog.showMessageBox(window, { type: 'question', message: '클라우드의 전체 데이터를 내려받아 점검합니다.', detail: 'B2 다운로드 사용량이 늘어나며 무료 한도를 넘으면 요금이 발생할 수 있습니다.', buttons: ['취소', '전체 점검'], defaultId: 0, cancelId: 0 }); if (answer.response !== 1) throw new Error('전체 점검을 취소했습니다.'); } return launchJob(engine, () => engine.checkRepository()); });
     handle('restoreLatest', async ({ engine }) => {
       if (engine.config?.health?.status === 'attention') {
@@ -134,10 +142,7 @@ else {
     });
     handle('recoverCredential', async ({ engine }, credentials) => { await engine.recoverCredential(await readKit(), credentials); return state(); });
     handle('setLaunchAtLogin', async (_context, enabled) => {
-      if (typeof enabled !== 'boolean') throw new Error('시작 설정을 확인해 주세요.');
-      if (testMode || !app.isPackaged) throw new Error('시험 실행에서는 Windows 시작 등록을 변경하지 않습니다.');
-      app.setLoginItemSettings({ openAtLogin: enabled, path: process.execPath, args: ['--background'], name: 'SoloWorkBackup' });
-      if (app.getLoginItemSettings({ path: process.execPath, args: ['--background'] }).openAtLogin !== enabled) throw new Error('Windows 시작 등록을 확인하지 못했습니다.');
+      setStartup(enabled);
       return state();
     });
     handle('openRestoreFolder', async ({ engine }) => { const target = engine.config?.lastRestore?.path; if (!target) throw new Error('완료된 복구 폴더가 없습니다.'); const error = await shell.openPath(target); if (error) throw new Error(error); return null; });
