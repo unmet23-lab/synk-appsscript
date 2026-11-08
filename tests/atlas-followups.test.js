@@ -1,7 +1,6 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict');
 const Game = require('../atlas/game-learning'), Temper = require('../atlas/temper');
-const Ledger = require('../atlas/learning-ledger');
 const { createMap } = require('../strata');
 const map = createMap(require('../strata/maps/topik-i.json'));
 const DAY = 86400000, ORIGIN = Date.parse('2026-10-01T00:00:00Z');
@@ -121,33 +120,68 @@ test('time is occurrence time; future receipts and reverse clocks cannot create 
   assert.equal(row(f, 'd7').status, 'due'); f.at(9); assert.equal(row(f, 'd7').status, 'observed');
 });
 
-test('incomplete history and bounded anchor coverage are explicit', () => {
+test('incomplete history and a game over its anchor share are explicit, and another game keeps its own', () => {
   const f = fixture(); f.play('source'); f.at(1); f.game.syncPort.markComplete(false);
   assert.equal(f.game.mapVersion, map.map_ver);
   assert.equal(f.game.followups().evidenceComplete, false); assert.equal(row(f, 'd1').status, 'unavailable');
-  const g = fixture();
-  for (let n = 0; n < 27; n++) {
-    const coach = Game.createGame({ ...g.options, gameId: `game-${n}` });
-    const pid = coach.present({ id: `item-${n}`, itemKey: `item-${n}`, skillId: 'ko.reading.detail', difficulty: 1,
-      modality: 'reading', responseFormat: 'single-choice', audioRequired: false }); coach.answer(pid, { correct: false, assessable: true });
-  }
-  const report = g.game.followups();
-  assert.equal(report.items.length, 72); assert.equal(report.coverage.limited, true); assert.equal(report.coverage.excludedAnchors, 3);
+  assert.equal(f.game.followups().coverage.reason, 'incomplete-history');
+  const g = fixture(), skills = map.allNodes().filter(n => n.kind === 'skill').map(n => n), formats = ['single-choice', 'binary-choice', 'cup-compose', 'action', 'spoken'];
+  const cells = [];
+  for (const node of skills) for (const difficulty of [1, 2, 3]) for (const responseFormat of formats) cells.push({ skillId: node.id, modality: node.domain, difficulty, responseFormat });
+  assert.ok(cells.length > Temper.FOLLOWUP.maxAnchorsPerGame + 3, 'the map has more cells than one game may anchor');
+  const answer = (coach, n, cell) => { const pid = coach.present({ id: `item-${n}`, itemKey: `item-${n}`, audioRequired: false, ...cell }); coach.answer(pid, { correct: false, assessable: true }); };
+  const greedy = g.game;
+  cells.slice(0, Temper.FOLLOWUP.maxAnchorsPerGame + 3).forEach((cell, n) => answer(greedy, n, cell));
+  // A game started afterwards still anchors: the first game cannot use up its share.
+  const late = Game.createGame({ ...g.options, gameId: 'later-game' });
+  answer(late, 'late', cells[0]);
+  const report = g.game.followups(), by = id => report.items.filter(r => r.gameId === id).length / Temper.FOLLOWUP.windows.length;
+  assert.equal(by('world-practice'), Temper.FOLLOWUP.maxAnchorsPerGame); assert.equal(by('later-game'), 1);
+  assert.equal(report.coverage.limited, true); assert.equal(report.coverage.excludedAnchors, 3);
+  assert.equal(report.evidenceComplete, true, 'the share leaves cells out; it does not make the others untrue');
 });
 
-test('a legacy or non-opted-in writer cannot silently replace folded original anchors', () => {
+test('a writer without the option folds and the follow-up rows stay', () => {
   const f = fixture({ followups: false, fold: { max: 40, keep: 20, ageMs: 1 } });
-  f.play('source'); f.at(1);
-  for (let n = 0; n < 30; n++) f.play(`next-${n}`, { correct: true });
+  const source = f.play('source'); f.at(1);
+  const target = f.play('next-0', { correct: true });
+  for (let n = 1; n < 30; n++) f.play(`next-${n}`, { correct: true });
   f.at(2); f.play('flush-trigger', { correct: true });
   f.options.followups = true; f.reopen();
   const report = f.game.followups();
-  assert.ok(report.coverage.folded > 0); assert.equal(report.coverage.limited, true);
-  assert.equal(report.coverage.reason, 'older-source-unavailable');
-  assert.equal(report.evidenceComplete, false); assert.deepEqual(report.items, []);
+  assert.ok(report.coverage.folded > 0); assert.equal(report.evidenceComplete, true); assert.equal(report.coverage.reason, null);
+  assert.equal(f.game.events().some(e => e.id === source.answer.eventId), false, 'the anchor itself folded');
+  assert.equal(row(f, 'd1').sourceAttemptId, source.answer.eventId);
+  assert.deepEqual([row(f, 'd1').status, row(f, 'd1').targetAttemptId], ['observed', target.answer.eventId]);
 });
 
-test('folding keeps complete source/target proof through d30, and releases it after 45 days', () => {
+// 옛 판 작성자가 표 없이 접은 장부: 무엇을 잃었는지 모르므로 그 시각까지의 답은 앵커가 되지 않고, 그 뒤 답은 바로 앵커가 된다.
+test('a ledger an older writer folded has a floor: nothing before it anchors, the next answer does', () => {
+  for (const legacy of [{ followupsPreserved: false }, { followupsPreserved: true, followupsLost: { anchors: 3, at: ORIGIN } }]) {
+    const f = fixture({ fold: { max: 40, keep: 20, ageMs: 1 } });
+    f.play('early'); f.at(1);
+    for (let n = 0; n < 30; n++) f.play(`next-${n}`, { correct: true });
+    f.at(2); f.play('flush-trigger', { correct: true });
+    const key = `${Game.KEY}.device`, raw = JSON.parse(f.storage.getItem(key));
+    assert.ok(raw.ledger.folded > 0);
+    delete raw.ledger.followups; Object.assign(raw.ledger, legacy);
+    const cutoff = raw.ledger.cutoff;
+    f.storage.setItem(key, JSON.stringify(raw)); f.reopen();
+    let report = f.game.followups();
+    assert.equal(report.evidenceComplete, true); assert.equal(report.coverage.reason, 'older-source-unavailable');
+    assert.equal(Date.parse(report.coverage.floor), cutoff);
+    assert.ok(report.items.every(r => Date.parse(r.sourceAt) > cutoff), 'no answer up to the floor anchors');
+    f.at(3); const fresh = f.play('after-floor', { metadata: { difficulty: 2 } });
+    report = f.game.followups();
+    assert.ok(report.items.some(r => r.sourceAttemptId === fresh.answer.eventId), 'the next answer anchors at once');
+    // 다음 접기가 바닥을 표에 굳히고 다시 어긋나지 않는다.
+    f.at(4); for (let n = 30; n < 80; n++) f.play(`next-${n}`, { correct: true });
+    const later = JSON.parse(f.storage.getItem(key));
+    assert.equal(later.ledger.followups.floor, cutoff); assert.equal(later.ledger.followups.folded, later.ledger.folded);
+  }
+});
+
+test('folding keeps complete source/target proof through d30 without keeping their entries, and a cycle ends after 45 days', () => {
   const f = fixture({ fold: { max: 40, keep: 20, ageMs: 1 } });
   const source = f.play('source', { after: 'explanation' });
   for (const day of [1, 7, 30]) { f.at(day); f.play(`target-${day}`, { correct: true, after: 'answer' }); }
@@ -158,13 +192,15 @@ test('folding keeps complete source/target proof through d30, and releases it af
   const report = f.reopen().followups();
   assert.ok(report.coverage.folded > 0); assert.equal(report.items.length, 3);
   assert.deepEqual(report.items.map(r => [r.targetAttemptId, r.outcome, r.correctionEventIds]), expected.items.map(r => [r.targetAttemptId, r.outcome, r.correctionEventIds]));
-  assert.ok(f.game.events().some(e => e.id === source.answer.eventId));
+  assert.equal(f.game.events().some(e => e.id === source.answer.eventId), false, 'no entry is held back for the rows');
   assert.ok(Buffer.byteLength([...f.values.values()].join('')) < 2 * 1024 * 1024);
-  f.at(46); for (let n = 80; n < 100; n++) f.play(`filler-${n}`);
-  assert.equal(f.game.events().some(e => e.id === source.answer.eventId), false);
+  f.at(46);
+  assert.deepEqual(f.game.followups().items, [], 'the cycle ended and nothing newer is more than 45 days after it');
+  const next = f.play('next-cycle');
+  assert.deepEqual(f.game.followups().items.map(r => r.sourceAttemptId), [next.answer.eventId, next.answer.eventId, next.answer.eventId]);
 });
 
-test('retention keeps transitive item/family encounters and their withdrawals without changing provenance', () => {
+test('later encounters with an item or family fold without turning the frozen rows', () => {
   const f = fixture({ fold: { max: 40, keep: 20, ageMs: 1 } });
   const source = f.play('source', { correct: true, after: 'explanation' });
   f.at(1); const target = f.play('target', { correct: true });
@@ -173,54 +209,23 @@ test('retention keeps transitive item/family encounters and their withdrawals wi
   f.play('source-repeat', { metadata: { familyKey: 'linked-family' } });
   f.play('linked-next', { help: 'explanation', metadata: { familyKey: 'linked-family' } });
   f.play('target-repeat', { help: 'explanation', metadata: { familyKey: 'target' } });
+  const before = f.game.followups();
   f.at(3);
   for (let n = 0; n < 30; n++) f.play(`filler-${n}`);
   f.at(4); f.play('fold-trigger'); f.reopen();
   assert.ok(f.game.followups().coverage.folded > 0);
+  assert.equal(f.game.events().some(e => e.itemKey === 'target-repeat'), false, 'the encounters folded');
   assert.equal(row(f, 'd1').sourceAttemptId, source.answer.eventId);
   assert.equal(row(f, 'd1').targetAttemptId, target.answer.eventId);
   assert.equal(row(f, 'd1').outcome, 'independent-correct');
-  assert.ok(f.game.events().some(e => e.type === 'practice.presented' && e.itemKey === 'linked-next'));
-  f.game.exclude(target.answer.eventId);
-  assert.equal(row(f, 'd1').status, 'invalidated');
-  assert.equal(row(f, 'd1').outcome, null);
+  assert.equal(row(f, 'd1').kind, 'retention');
+  const pick = report => report.items.map(r => [r.id, r.kind, r.outcome, r.targetAttemptId, r.correctionEventIds]);
+  assert.deepEqual(pick(f.game.followups()), pick(before));
 });
 
-test('a late appended family encounter stays with the anchor even when its occurrence clock is older', () => {
-  const f = fixture(); f.play('source'); f.at(1); f.play('repeat', { metadata: { familyKey: 'source' } });
-  const events = f.game.events(), decisions = events.filter(e => e.type === 'decision.made').map(e => e.id);
-  for (const e of events.slice(4)) e.at = e.recordedAt = new Date(ORIGIN - DAY).toISOString();
-  const retained = Ledger.retention(events, [decisions[0]]);
-  assert.deepEqual(retained.decisions, decisions);
-});
-
-test('storage limits refuse the whole observation set and lost anchors never become later successes', () => {
-  const f = fixture(); f.play('source');
-  const sourceEvents = f.game.events(), decision = sourceEvents[0].id;
-  const small = Ledger.retention(sourceEvents, [decision], { maxEvents: 2 });
-  assert.equal(small.limited, true); assert.deepEqual(small.decisions, []);
-  const bytes = Ledger.retention(sourceEvents, [decision], { maxBytes: 20 });
-  assert.equal(bytes.limited, true); assert.deepEqual(bytes.decisions, []);
-  const raw = JSON.parse(f.storage.getItem(`${Game.KEY}.device`));
-  for (let n = 1; n <= 610; n++) {
-    const ids = new Map(sourceEvents.map(e => [e.id, `repeat-${n}-${e.id}`]));
-    for (const e of sourceEvents) {
-      const cloned = JSON.parse(JSON.stringify(e));
-      for (const key of ['id', 'decisionId', 'presentationId']) if (ids.has(cloned[key])) cloned[key] = ids.get(cloned[key]);
-      cloned.at = cloned.recordedAt = new Date(ORIGIN + DAY).toISOString();
-      raw.events.push(cloned);
-    }
-  }
-  f.storage.setItem(`${Game.KEY}.device`, JSON.stringify(raw)); f.at(2); f.reopen();
-  const limited = f.game.followups();
-  assert.equal(limited.coverage.retentionLimited, true);
-  assert.equal(limited.coverage.unretainedAnchors, 1);
-  assert.ok(limited.items.every(r => r.status === 'unavailable' && r.outcome === null));
-  f.options.fold = { max: 40, keep: 20, ageMs: 1 }; f.reopen(); f.play('later-success', { correct: true });
-  assert.equal(f.game.followups().evidenceComplete, false);
-  assert.deepEqual(f.game.followups().items, []);
-  f.at(7); f.reopen(); f.play('another-success', { correct: true });
-  assert.equal(f.game.followups().coverage.reason, 'retention-capacity');
-  assert.deepEqual(f.game.followups().items, []);
-  assert.ok(Buffer.byteLength([...f.values.values()].join('')) < 2 * 1024 * 1024);
+test('an attempt and its completion reach the store in one call', () => {
+  const f = fixture(), { answer } = f.play('source');
+  const events = JSON.parse(f.storage.getItem(`${Game.KEY}.device`)).events, attempt = events.find(e => e.id === answer.eventId);
+  const decision = events.find(e => e.id === attempt.presentationId).decisionId;
+  assert.ok(events.some(e => e.type === 'experience.completed' && e.decisionId === decision), 'an unfinished earlier attempt never waits in the log');
 });

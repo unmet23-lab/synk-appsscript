@@ -8097,19 +8097,34 @@ var SynkLearning = (() => {
           };
         }
         const FOLLOWUP = Object.freeze({
-          version: "temper-followup-2",
-          maxAnchors: 24,
+          version: "temper-followup-3",
+          maxAnchorsPerGame: 96,
           keepDays: 45,
+          table: 1,
           windows: Object.freeze([["d1", 1, 3], ["d7", 7, 10], ["d30", 30, 37]].map(Object.freeze))
         });
+        const cellOf = (row) => JSON.stringify([row.g, row.s, row.d, row.f, row.m, row.a]);
+        const validRow = (r) => !!r && typeof r === "object" && typeof r.id === "string" && typeof r.g === "string" && typeof r.s === "string" && Number.isFinite(r.at) && (r.ps === void 0 || Number.isFinite(r.ps)) && (!r.p || Number.isFinite(r.ra) && Array.isArray(r.pf) && Array.isArray(r.fx) && r.fx.every(Array.isArray) && !!r.t && typeof r.t === "object" && Object.values(r.t).every((pair) => !!pair && Number.isFinite(pair.at)));
+        const sights = (s) => s === void 0 || !!s && typeof s === "object" && !Array.isArray(s) && Object.values(s).every(Number.isFinite);
+        const tableOf = (prior) => {
+          const t = prior?.followups;
+          return t && t.v === FOLLOWUP.table && Array.isArray(t.rows) && t.rows.every(validRow) && sights(t.fs) ? t : null;
+        };
+        function floorOf(prior, table) {
+          if (!prior) return -Infinity;
+          const clean = table ? table.folded === prior.folded : !prior.folded || prior.followupsPreserved === true && !prior.followupsLost;
+          const floor = Number.isFinite(table?.floor) ? table.floor : -Infinity;
+          return clean ? floor : Math.max(floor, Number.isFinite(prior.cutoff) ? prior.cutoff : -Infinity);
+        }
         function followups({ events, summary, original = summary, prior = null, complete = true, asOf = summary?.asOf } = {}) {
           summaries(summary);
           summaries(original);
-          const now = Date.parse(asOf), day = 864e5, own = scopeKey(summary.scope);
+          const now = Date.parse(asOf), day = 864e5, keep = FOLLOWUP.keepDays * day, own = scopeKey(summary.scope);
           if (!Array.isArray(events) || !Number.isFinite(now) || scopeKey(original.scope) !== own) throw new TypeError("Temper: invalid follow-up evidence");
           const visible = events.filter((e) => scopeKey(e.scope) === own && Date.parse(e.at) <= now && Date.parse(e.recordedAt) <= now);
           const byId = new Map(visible.map((e) => [e.id, e])), position = new Map(visible.map((e, i) => [e.id, i]));
-          const excluded = new Set(visible.filter((e) => e.type === "record.excluded").map((e) => e.targetId));
+          const withdrawn = new Set(prior?.withdrawn || []), excluded = new Set(visible.filter((e) => e.type === "record.excluded").map((e) => e.targetId));
+          const gone = (id) => excluded.has(id) || withdrawn.has(id);
           const completion = new Map(visible.filter((e) => e.type === "experience.completed").map((e) => [e.decisionId, e]));
           const current = new Map(summary.attempts.map((a) => [a.eventId, a]));
           const stamp = (a) => Date.parse(a.at), before = (a, b) => position.get(a.eventId ?? a.id) < position.get(b.eventId ?? b.id) && stamp(a) <= stamp(b) && Date.parse(a.recordedAt) <= Date.parse(b.recordedAt);
@@ -8127,90 +8142,248 @@ var SynkLearning = (() => {
             return p?.type === "practice.presented" && d?.type === "decision.made" && done && before(d, p) && before(p, a) && before(a, done);
           };
           const qualified = (a) => a?.attemptNo === 1 && a.measure && a.measure.responseFormat !== "unknown" && !a.exclusionReason && [true, false].includes(a.assisted) && ["correct", "incorrect"].includes(a.verdict) && framed(a);
-          const invalidated = (a) => [a.eventId, a.presentationId, a.decisionId, completion.get(a.decisionId)?.id].some((id) => excluded.has(id)) || visible.some((e) => excluded.has(e.id) && ["practice.helped", "practice.delivery"].includes(e.type) && e.presentationId === a.presentationId && before(e, a));
-          const shown = /* @__PURE__ */ new Map(), foldedShown = /* @__PURE__ */ new Set();
+          const aside = /* @__PURE__ */ new Map();
+          for (const e of visible) if (["practice.helped", "practice.delivery"].includes(e.type)) {
+            if (!aside.has(e.presentationId)) aside.set(e.presentationId, []);
+            aside.get(e.presentationId).push(e);
+          }
+          const proofs = (a) => (aside.get(a.presentationId) || []).filter((e) => before(e, a)).map((e) => e.id);
+          const invalidated = (a) => [a.eventId, a.presentationId, a.decisionId, completion.get(a.decisionId)?.id, ...proofs(a)].some(gone);
+          const shown = /* @__PURE__ */ new Map(), firstShown = /* @__PURE__ */ new Map(), foldedShown = /* @__PURE__ */ new Set();
           const trace = (p) => [`item:${p.itemKey}`, `family:${p.measure?.familyKey || p.itemKey}`];
           for (const p of visible.filter((e) => e.type === "practice.presented")) for (const key of trace(p)) {
-            if (!shown.has(key) || before(p, shown.get(key))) shown.set(key, p);
+            const first = shown.get(key);
+            if (!first || stamp(p) < stamp(first) || stamp(p) === stamp(first) && before(p, first)) shown.set(key, p);
+            firstShown.set(key, Math.min(firstShown.get(key) ?? Infinity, stamp(p)));
           }
           for (const [, item, family] of prior?.presented || []) {
             foldedShown.add(`item:${item}`);
             foldedShown.add(`family:${family}`);
           }
           const fresh = (a) => trace(byId.get(a.presentationId)).every((key) => !foldedShown.has(key) && shown.get(key)?.id === a.presentationId);
+          const helpedAt = /* @__PURE__ */ new Map();
+          for (const h of visible) if (h.type === "practice.helped" && byId.get(h.presentationId)?.type === "practice.presented")
+            for (const key of trace(byId.get(h.presentationId))) {
+              if (!helpedAt.has(key)) helpedAt.set(key, []);
+              helpedAt.get(key).push(h);
+            }
           const ordered = [...original.attempts].sort((a, b) => stamp(a) - stamp(b) || position.get(a.eventId) - position.get(b.eventId));
-          const anchors = /* @__PURE__ */ new Map();
-          for (const a of ordered) if (qualified(a) && now - stamp(a) <= FOLLOWUP.keepDays * day && !anchors.has(tuple(a))) anchors.set(tuple(a), a);
-          const all = [...anchors.values()], selected = all.slice(0, FOLLOWUP.maxAnchors), retain = /* @__PURE__ */ new Set(), items = [];
-          const adjusted = prior?.adjusted || 0, usable = complete === true && !adjusted;
-          for (const source of selected) {
-            retain.add(source.decisionId);
-            const measure2 = { ...source.measure, taskVersion: source.taskVersion };
-            delete measure2.familyKey;
-            delete measure2.confounded;
-            const targets = ordered.filter((a) => a.eventId !== source.eventId && a.attemptNo === 1 && tuple(a) === tuple(source) && framed(a) && before(source, byId.get(a.presentationId)) && a.measure.familyKey !== source.measure.familyKey && a.itemKey !== source.itemKey && fresh(a));
+          const inCell = /* @__PURE__ */ new Map();
+          for (const a of ordered) {
+            const cell = tuple(a);
+            if (!inCell.has(cell)) inCell.set(cell, []);
+            inCell.get(cell).push(a);
+          }
+          const table = tableOf(prior), floor = floorOf(prior, table), usable = complete === true, iso = (ms) => new Date(ms).toISOString();
+          const frozenSight = table?.fs || {};
+          const timely = (a) => {
+            const p = byId.get(a.presentationId), keys = trace(p), sight = frozenSight[keys[1]];
+            return keys.every((key) => shown.get(key)?.id === p.id) && (Number.isFinite(sight) ? sight >= stamp(p) : keys.every((key) => !foldedShown.has(key)));
+          };
+          const frozen = (a) => typeof a.at === "number", when = (a) => frozen(a) ? a.at : stamp(a);
+          const chain = /* @__PURE__ */ new Map(), cycles = /* @__PURE__ */ new Map(), overtaken = /* @__PURE__ */ new Set(), begin = (cell, a) => {
+            chain.set(cell, a);
+            if (!cycles.has(cell)) cycles.set(cell, []);
+            cycles.get(cell).push(a);
+          };
+          const bounds = /* @__PURE__ */ new Map();
+          for (const row of [...table?.rows || []].sort((x, y) => x.at - y.at)) {
+            const cell = cellOf(row), running = chain.get(cell);
+            if (row.at > now) {
+              if (Number.isFinite(row.ps)) bounds.set(cell, [...bounds.get(cell) || [], row.ps]);
+            } else if (!running || row.at > when(running) + keep) begin(cell, row);
+          }
+          const inside = (cell, at) => (bounds.get(cell) || []).some((ps) => at >= ps && at <= ps + keep);
+          for (const a of ordered) {
+            if (!qualified(a)) continue;
+            const cell = tuple(a), running = chain.get(cell);
+            if (running && frozen(running) && stamp(a) < running.at) {
+              if (!(Number.isFinite(running.ps) && stamp(a) >= running.ps && stamp(a) <= running.ps + keep)) overtaken.add(running.id);
+            } else if (stamp(a) > floor && (!running || stamp(a) > when(running) + keep) && !inside(cell, stamp(a))) begin(cell, a);
+          }
+          const prevStart = /* @__PURE__ */ new Map();
+          for (const list of cycles.values()) list.forEach((a, i) => {
+            const ps = i ? when(list[i - 1]) : frozen(a) ? a.ps : void 0;
+            if (Number.isFinite(ps)) prevStart.set(a, ps);
+          });
+          const withPs = (a) => prevStart.has(a) ? { ps: prevStart.get(a) } : {};
+          const toRow = (a) => {
+            const actual = current.get(a.eventId), m = a.measure;
+            return {
+              g: game(a),
+              s: m.skillId,
+              d: m.difficulty,
+              f: m.responseFormat,
+              m: m.modality,
+              a: m.audioRequired,
+              tv: a.taskVersion,
+              id: a.eventId,
+              at: stamp(a),
+              ra: Date.parse(a.recordedAt),
+              i: a.itemKey,
+              fa: m.familyKey,
+              p: a.presentationId,
+              dc: a.decisionId,
+              cp: completion.get(a.decisionId).id,
+              k: counted(a) && a.verdict === "correct" ? "retention" : "recovery",
+              x: invalidated(a) || !actual || !qualified(actual) ? 1 : 0,
+              pf: proofs(a),
+              fx: [],
+              t: {},
+              ...withPs(a)
+            };
+          };
+          const pairOf = (a) => {
+            const actual = current.get(a.eventId), p = byId.get(a.presentationId);
+            const pair = { id: a.eventId, at: stamp(a), pa: stamp(p), i: a.itemKey, fa: a.measure.familyKey, p: a.presentationId, dc: a.decisionId, cp: completion.get(a.decisionId).id, pf: proofs(a), x: 0, s: null, o: null, r: null };
+            if (invalidated(a) || !actual) pair.x = 1;
+            else if (!qualified(actual) || actual.exposure !== "new" || actual.assisted === false && !counted(actual)) {
+              pair.s = "unavailable";
+              pair.r = actual.exclusionReason || "unassessable-target";
+            } else {
+              pair.s = "observed";
+              pair.o = `${actual.assisted ? "assisted" : "independent"}-${actual.verdict}`;
+            }
+            return pair;
+          };
+          const live = [...chain.values()].filter((a) => now - when(a) <= keep && (!frozen(a) || a.p)).sort((x, y) => when(x) - when(y));
+          const used = /* @__PURE__ */ new Map(), selected = /* @__PURE__ */ new Set();
+          for (const a of live) {
+            const g = frozen(a) ? a.g : game(a), n = used.get(g) || 0;
+            used.set(g, n + 1);
+            if (n < FOLLOWUP.maxAnchorsPerGame) selected.add(a);
+          }
+          const items = [], rows = [];
+          for (const anchor of live) {
+            const row = frozen(anchor) ? { ...anchor, fx: [...anchor.fx || []], t: { ...anchor.t }, pf: anchor.pf || [] } : toRow(anchor), cell = cellOf(row);
+            if ([row.id, row.p, row.dc, row.cp, ...row.pf].some(gone)) row.x = 1;
+            if (overtaken.has(row.id)) row.l = 1;
+            const logged = position.has(row.id) ? { eventId: row.id, at: iso(row.at), recordedAt: iso(row.ra) } : null;
+            const follows = (e) => logged ? before(logged, e) : row.at <= stamp(e) && row.ra <= Date.parse(e.recordedAt);
+            for (const h of summary.help) if (h.presentationId === row.p && ["answer", "explanation"].includes(h.level) && follows(h) && !row.fx.some(([id]) => id === h.eventId)) row.fx.push([h.eventId, stamp(h)]);
+            row.fx = row.fx.filter(([id]) => !gone(id));
+            const candidates = (inCell.get(cell) || []).filter((a) => a.eventId !== row.id && a.attemptNo === 1 && framed(a) && follows(byId.get(a.presentationId)) && a.measure.familyKey !== row.fa && a.itemKey !== row.i);
+            const targets = candidates.filter(fresh), early = candidates.filter(timely);
+            const measure2 = { skillId: row.s, modality: row.m, difficulty: row.d, audioRequired: row.a, responseFormat: row.f, taskVersion: row.tv };
             for (const [window2, start, end] of FOLLOWUP.windows) {
-              const due = stamp(source) + start * day, expires = stamp(source) + end * day;
-              const target = targets.find((a) => stamp(a) >= due && stamp(a) < expires);
-              if (target) retain.add(target.decisionId);
-              const actualSource = current.get(source.eventId), actualTarget = target && current.get(target.eventId);
+              const due = row.at + start * day, expires = row.at + end * day, within = (a) => stamp(a) >= due && stamp(a) < expires;
+              const first = early.find(within), found = due <= floor ? null : targets.find(within);
+              const stored = row.t[window2] || null, ahead = !!stored && stored.at > now, kept = ahead ? null : stored;
+              const reread = !ahead && !!found && (!kept || found.eventId === kept.id), pair = reread ? pairOf(found) : stored && { ...stored };
+              if (pair) row.t[window2] = pair;
+              if (pair && [pair.id, pair.p, pair.dc, pair.cp, ...pair.pf || []].some(gone)) pair.x = 1;
+              const late = (key) => firstShown.get(key) < pair.pa || /^independent/.test(pair.o) && (helpedAt.get(key) || []).some((h) => stamp(h) < pair.at && !(pair.pf || []).includes(h.id));
+              if (pair && (stored?.l || stored && first && stamp(first) < stored.at || [`item:${pair.i}`, `family:${pair.fa}`].some(late))) pair.l = 1;
+              const shown2 = ahead ? null : pair;
               let status = now < due ? "not_due" : now < expires ? "due" : "missed", outcome = null, reason = null;
               if (!usable) {
                 status = "unavailable";
-                reason = adjusted ? "adjusted-history" : "incomplete-history";
-              } else if (invalidated(source) || !actualSource || !qualified(actualSource)) {
+                reason = "incomplete-history";
+              } else if (row.x) {
                 status = "invalidated";
                 reason = "source-withdrawn";
-              } else if (target && (invalidated(target) || !actualTarget)) {
+              } else if (row.l) {
+                status = "unavailable";
+                reason = "adjusted-history";
+              } else if (shown2?.x) {
                 status = "invalidated";
                 reason = "target-withdrawn";
-              } else if (target) {
-                if (!qualified(actualTarget) || actualTarget.exposure !== "new" || actualTarget.assisted === false && !counted(actualTarget)) {
-                  status = "unavailable";
-                  reason = actualTarget.exclusionReason || "unassessable-target";
-                } else {
-                  status = "observed";
-                  outcome = `${actualTarget.assisted ? "assisted" : "independent"}-${actualTarget.verdict}`;
-                }
+              } else if (shown2?.l) {
+                status = "unavailable";
+                reason = "adjusted-history";
+              } else if (shown2) {
+                status = shown2.s;
+                outcome = shown2.o;
+                reason = shown2.r;
+              } else if (due <= floor) {
+                status = "unavailable";
+                reason = "older-source-unavailable";
               }
-              const correctionEventIds = summary.help.filter((h) => h.presentationId === source.presentationId && ["answer", "explanation"].includes(h.level) && before(source, h) && (!target || before(h, byId.get(target.presentationId)))).map((h) => h.eventId);
-              items.push({
-                id: `${source.eventId}:${window2}`,
-                sourceAttemptId: source.eventId,
-                sourceAt: source.at,
-                gameId: game(source),
+              if (selected.has(anchor)) items.push({
+                id: `${row.id}:${window2}`,
+                sourceAttemptId: row.id,
+                sourceAt: iso(row.at),
+                gameId: row.g,
                 measure: measure2,
-                kind: counted(source) && source.verdict === "correct" ? "retention" : "recovery",
+                kind: row.k,
                 window: window2,
-                dueAt: new Date(due).toISOString(),
-                expiresAt: new Date(expires).toISOString(),
+                dueAt: iso(due),
+                expiresAt: iso(expires),
                 status,
                 reason,
-                targetAttemptId: target?.eventId || null,
-                targetAt: target?.at || null,
+                targetAttemptId: shown2?.id || null,
+                targetAt: shown2 ? iso(shown2.at) : null,
                 outcome,
-                correctionEventIds
+                correctionEventIds: row.fx.filter(([, at]) => !shown2 || at <= shown2.pa).map(([id]) => id)
               });
             }
+            rows.push(row);
           }
-          return {
+          const starts = [...cycles.values()].map((list) => list.map((a) => frozen(a) ? { g: a.g, s: a.s, d: a.d, f: a.f, m: a.m, a: a.a, id: a.id, at: a.at, ...withPs(a) } : { g: game(a), s: a.measure.skillId, d: a.measure.difficulty, f: a.measure.responseFormat, m: a.measure.modality, a: a.measure.audioRequired, id: a.eventId, at: stamp(a), ...withPs(a) }));
+          const report = {
             policy: FOLLOWUP.version,
             asOf,
             observationOpportunities: true,
             evidenceComplete: usable,
             coverage: {
               folded: prior?.folded || 0,
-              adjusted,
-              limited: all.length > selected.length,
-              excludedAnchors: all.length - selected.length,
-              reason: !usable ? adjusted ? "adjusted-history" : "incomplete-history" : prior?.folded ? "older-source-unavailable" : null
+              adjusted: prior?.adjusted || 0,
+              limited: live.length > selected.size,
+              excludedAnchors: live.length - selected.size,
+              floor: Number.isFinite(floor) ? iso(floor) : null,
+              reason: !usable ? "incomplete-history" : floor > now - keep ? "older-source-unavailable" : null
             },
             items,
-            retainDecisionIds: [...retain],
             learningEffectClaim: false,
             causalClaim: false,
             policyPromotion: false
           };
+          Object.defineProperty(report, "sealing", { enumerable: false, value: {
+            rows,
+            starts,
+            floor,
+            now,
+            later: (table?.rows || []).filter((row) => row.at > now),
+            // A family folded before without a frozen time was seen before anything left in the log: a later sight never stands in for it.
+            sights: [...Object.entries(frozenSight), ...[...firstShown].filter(([key]) => Number.isFinite(frozenSight[key]) || !foldedShown.has(key))]
+          } });
+          return report;
+        }
+        function sealFollowups(report, { cutoff, folded, presented = [] }) {
+          const { rows, starts, floor, now, later, sights: seen = [] } = report.sealing, full = new Map(rows.map((row) => [row.id, row])), out = [];
+          const fs = {}, oldest = now - FOLLOWUP.keepDays * 864e5;
+          const first = /* @__PURE__ */ new Map();
+          for (const [key, at] of seen) if (key.startsWith("family:") && !(first.get(key) <= at)) first.set(key, at);
+          for (const [key, at] of first) if (at <= cutoff && at >= oldest) fs[key] = at;
+          const met = new Set(presented.flatMap(([, item, family]) => [`item:${item}`, `family:${family}`]));
+          const held = (pair) => pair.at <= cutoff || pair.at > now || met.has(`item:${pair.i}`) || met.has(`family:${pair.fa}`);
+          for (const cycle of starts) {
+            const start = cycle.filter((a) => a.at <= cutoff).at(-1), row = start && full.get(start.id);
+            if (row) out.push({ ...row, t: Object.fromEntries(Object.entries(row.t).filter(([, pair]) => held(pair))) });
+            else if (start) out.push(start);
+          }
+          return { v: FOLLOWUP.table, folded, ...Number.isFinite(floor) ? { floor } : {}, ...Object.keys(fs).length ? { fs } : {}, rows: [...out, ...later] };
+        }
+        function lateHelp(table, helps) {
+          const hit = (pair) => /^independent/.test(pair.o) && helps.some((h) => h.type === "practice.helped" && h.presentationId === pair.p && Date.parse(h.at) < pair.at);
+          if (!tableOf({ followups: table }) || !table.rows.some((row) => row.t && Object.values(row.t).some(hit))) return table;
+          return { ...table, rows: table.rows.map((row) => row.t && Object.values(row.t).some(hit) ? { ...row, t: Object.fromEntries(Object.entries(row.t).map(([w, pair]) => [w, hit(pair) ? { ...pair, l: 1 } : pair])) } : row) };
+        }
+        function carryMarks(table, others) {
+          if (!tableOf({ followups: table })) return table;
+          const marks = /* @__PURE__ */ new Set();
+          for (const other of others) if (other && other !== table && tableOf({ followups: other })) for (const row of other.rows) {
+            if (row.l) marks.add(row.id);
+            for (const [window2, pair] of Object.entries(row.t || {})) if (pair.l) marks.add(`${row.id}:${window2}:${pair.id}`);
+          }
+          let changed = false;
+          const rows = !marks.size ? table.rows : table.rows.map((row) => {
+            const lost = Object.entries(row.t || {}).filter(([window2, pair]) => !pair.l && marks.has(`${row.id}:${window2}:${pair.id}`)).map(([window2]) => window2);
+            if (!lost.length && (row.l || !marks.has(row.id))) return row;
+            changed = true;
+            return { ...row, ...marks.has(row.id) ? { l: 1 } : {}, ...lost.length ? { t: { ...row.t, ...Object.fromEntries(lost.map((window2) => [window2, { ...row.t[window2], l: 1 }])) } } : {} };
+          });
+          return changed ? { ...table, rows } : table;
         }
         const FLIP_WINDOW = 2;
         const COOL_DOWN = 2;
@@ -8231,7 +8404,7 @@ var SynkLearning = (() => {
           }
           return { ok: true, rail: null };
         }
-        return Object.freeze({ VERSION, MINIMUM_PER_CELL, measure, combine, compare, groups, FOLLOWUP, followups, FLIP_WINDOW, COOL_DOWN, check });
+        return Object.freeze({ VERSION, MINIMUM_PER_CELL, measure, combine, compare, groups, FOLLOWUP, followups, sealFollowups, lateHelp, carryMarks, FLIP_WINDOW, COOL_DOWN, check });
       });
     }
   });
@@ -8394,40 +8567,6 @@ var SynkLearning = (() => {
       }
       var folded = (ledger, event) => !!ledger && ledger.cutoff !== null && FOLDABLE.includes(event.type) && Date.parse(event.at) <= ledger.cutoff;
       var reference = (e) => e?.type === "decision.made" ? void 0 : e?.decisionId ?? e?.presentationId ?? e?.targetId ?? e?.completionId;
-      function retention(events, decisions, { maxEvents = 2400, maxBytes = 1024 * 1024 } = {}) {
-        const groups = /* @__PURE__ */ new Map(), parent = /* @__PURE__ */ new Map();
-        for (const e of events) {
-          const group = e.type === "decision.made" ? e.id : parent.get(reference(e));
-          if (!group) continue;
-          parent.set(e.id, group);
-          if (!groups.has(group)) groups.set(group, []);
-          groups.get(group).push(e);
-        }
-        const selected = new Set(decisions.filter((id) => groups.has(id)));
-        const position = new Map(events.map((e, index) => [e.id, index]));
-        const first = Math.min(...[...selected].map((id) => Math.min(...groups.get(id).map((e) => position.get(e.id)))));
-        const presentations = events.filter((e) => e.type === "practice.presented"), keys = /* @__PURE__ */ new Set();
-        let changed = true;
-        while (changed) {
-          changed = false;
-          for (const p of presentations) {
-            const group = parent.get(p.id), traces = Trail.traceKeys(p);
-            if (!selected.has(group) && traces.some((key) => keys.has(key)) && groups.get(group).some((e) => position.get(e.id) >= first)) {
-              selected.add(group);
-              changed = true;
-            }
-            if (selected.has(group)) {
-              for (const key of traces) if (!keys.has(key)) {
-                keys.add(key);
-                changed = true;
-              }
-            }
-          }
-        }
-        const kept = events.filter((e) => selected.has(parent.get(e.id))), bytes = new TextEncoder().encode(JSON.stringify(kept)).length;
-        const limited = kept.length > maxEvents || bytes > maxBytes;
-        return { decisions: limited ? [] : [...selected], events: kept.length, bytes, limited, maxEvents, maxBytes };
-      }
       var stray = (event, known) => {
         const ref = reference(event);
         return typeof ref === "string" && !known.has(ref);
@@ -8490,7 +8629,7 @@ var SynkLearning = (() => {
         if (retired.size) next.withdrawn = [...retired].sort();
         return trimParents(next);
       }
-      module.exports = { VERSION, BITS, FOLDABLE, empty, validate, before, rows, cellOf, contentOf, fold, plan, folded, stray, compare, reconcile, demote, reference, retention };
+      module.exports = { VERSION, BITS, FOLDABLE, empty, validate, before, rows, cellOf, contentOf, fold, plan, folded, stray, compare, reconcile, demote, reference };
     }
   });
 
@@ -10640,9 +10779,9 @@ var SynkLearning = (() => {
         if (typeof globalThis.document === "object" && leaseScope() === globalThis && typeof globalThis[LEASE_OWNER] !== "function") globalThis[LEASE_OWNER] = ownHistoryLease;
       } catch {
       }
-      function readFollowups(events, { scope, asOf, prior = null, complete = true, retain = false }) {
+      function readFollowups(events, { scope, asOf, prior = null, complete = true }) {
         const options = { scope, asOf, prior };
-        const report = Temper.followups({
+        return Temper.followups({
           events,
           summary: Trail.summarize(events, options),
           original: Trail.summarize(events.filter((e) => e.type !== "record.excluded"), options),
@@ -10650,51 +10789,9 @@ var SynkLearning = (() => {
           complete,
           asOf
         });
-        if (prior?.followupsLost) {
-          report.items = [];
-          report.retainDecisionIds = [];
-          report.evidenceComplete = false;
-          Object.assign(report.coverage, {
-            limited: true,
-            reason: "retention-capacity",
-            retentionEnabled: retain,
-            retentionLimited: true,
-            unretainedAnchors: prior.followupsLost.anchors,
-            lostAt: new Date(prior.followupsLost.at).toISOString()
-          });
-          return report;
-        }
-        if (prior?.folded && prior.followupsPreserved !== true) {
-          report.items = [];
-          report.retainDecisionIds = [];
-          report.evidenceComplete = false;
-          Object.assign(report.coverage, { limited: true, reason: "older-source-unavailable", retentionEnabled: retain });
-          return report;
-        }
-        const retention = retain ? Ledger.retention(events, report.retainDecisionIds) : null;
-        report.coverage.retentionEnabled = retain;
-        if (retention) {
-          Object.assign(report.coverage, {
-            retentionLimited: retention.limited,
-            retainedEvents: retention.limited ? 0 : retention.events,
-            retainedBytes: retention.limited ? 0 : retention.bytes
-          });
-          report.retainDecisionIds = retention.decisions;
-          if (retention.limited) {
-            report.coverage.limited = true;
-            report.coverage.reason = "retention-capacity";
-            report.coverage.unretainedAnchors = report.items.length / Temper.FOLLOWUP.windows.length;
-            for (const item of report.items) {
-              item.status = "unavailable";
-              item.reason = "retention-capacity";
-              item.outcome = null;
-            }
-          }
-        }
-        return report;
       }
       var AHEAD_MS = 5 * 6e4;
-      function openHistory({ storage, key, scope, storageScope, accountKey, historyComplete, fold, followups, clock, held, release }) {
+      function openHistory({ storage, key, scope, storageScope, accountKey, historyComplete, fold, clock, held, release }) {
         const lease = storage ? browserHistoryLease(JSON.stringify([key, storageScope, accountKey])) : null;
         let leased = !lease, waitingWrite = false, closed = false, closing = false, closedFlush = false, detachLease = () => {
         };
@@ -10829,7 +10926,12 @@ var SynkLearning = (() => {
               kept.add(e.id);
             }
           }
-          ledger = Ledger.reconcile(ledger, theirs) || (order < 0 ? theirs : ledger);
+          const ours = ledger;
+          ledger = Ledger.reconcile(ours, theirs) || (order < 0 ? theirs : ours);
+          if (ledger?.followups) {
+            const table = Temper.carryMarks(ledger.followups, [ours?.followups, theirs?.followups]);
+            if (table !== ledger.followups) ledger = { ...ledger, followups: table };
+          }
           const types = new Map([...mine, ...stored.events].map((e) => [e.id, e.type]));
           for (const e of combined) if (e.type === "feedback.given" && !known.has(e.completionId) || e.type === "record.excluded" && !known.has(e.targetId) && types.get(e.targetId) === "feedback.given") known.delete(e.id);
           settle([...settled, ...stored.settled || []], known);
@@ -10867,8 +10969,6 @@ var SynkLearning = (() => {
           if (events.length <= folding.max) return;
           if (retryFold && retryFold.settled === settledVersion && now < retryFold.at) return;
           const open = held(now);
-          const retained = followups ? readFollowups(events, { scope, asOf: new Date(now).toISOString(), prior: ledger, retain: true }) : null;
-          if (retained) open.push(...retained.retainDecisionIds);
           if (folding.remote) {
             for (const e of events) if (!settled.has(e.id)) open.push(e.id);
           }
@@ -10885,12 +10985,15 @@ var SynkLearning = (() => {
             return;
           }
           retryFold = null;
-          const preserved = followups && (!ledger?.folded || ledger.followupsPreserved === true);
-          ledger = Ledger.fold(ledger, planned.folded, { scope, log: events, local: !folding.remote });
-          ledger.followupsPreserved = preserved;
-          if (retained?.coverage.retentionLimited && !ledger.followupsLost) {
-            ledger.followupsLost = { anchors: retained.coverage.unretainedAnchors, at: now };
+          let read = null;
+          try {
+            read = readFollowups(events, { scope, asOf: new Date(now).toISOString(), prior: ledger });
+          } catch {
+            read = null;
           }
+          ledger = Ledger.fold(ledger, planned.folded, { scope, log: events, local: !folding.remote });
+          ledger.followups = read ? Temper.sealFollowups(read, { cutoff: ledger.cutoff, folded: ledger.folded, presented: ledger.presented }) : { v: Temper.FOLLOWUP.table, folded: ledger.folded, floor: ledger.cutoff, rows: Array.isArray(ledger.followups?.rows) ? ledger.followups.rows : [] };
+          ledger.followupsPreserved = false;
           session = newSession(planned.kept);
           for (const e of planned.folded) settled.delete(e.id);
           settledVersion += 1;
@@ -11021,7 +11124,7 @@ var SynkLearning = (() => {
             if (!readable) throw Object.assign(new Error("Atlas: local history is unreadable"), { code: "STORAGE_ERROR" });
             if (ledger?.local) throw Object.assign(new Error("Atlas: a folded history is kept on this device only"), { code: "HISTORY_FOLDED" });
             if (!Array.isArray(incoming)) throw new TypeError("Atlas: imported events must be an array");
-            const combined = log().slice(), previousLength = combined.length, known = new Map(combined.map((event) => [event.id, event])), late = [], gone = [], skipped = [];
+            const combined = log().slice(), previousLength = combined.length, known = new Map(combined.map((event) => [event.id, event])), late = [], gone = [], skipped = [], lent = [];
             for (const event of incoming) {
               if (known.has(event?.id)) {
                 if (!sameEvent(known.get(event.id), event)) throw Object.assign(new Error("Atlas: conflicting imported event"), { code: "EVENT_CONFLICT" });
@@ -11030,6 +11133,7 @@ var SynkLearning = (() => {
                 if (["domain", "workspace", "subject"].some((field) => event.scope[field] !== scope[field])) throw new Error("Atlas: scope mismatch");
                 skipped.push(event.id);
                 if (event.type === "record.excluded") gone.push(event.targetId);
+                if (event.type === "practice.helped") lent.push(event);
                 continue;
               } else {
                 known.set(event?.id, event);
@@ -11041,6 +11145,7 @@ var SynkLearning = (() => {
             const imported = newSession(combined);
             session = imported;
             if (late.length || skipped.length) ledger = Ledger.demote(ledger, { late, excluded: gone, strays: skipped.length }, (id) => known.get(id));
+            if (lent.length && ledger?.followups) ledger = { ...ledger, followups: Temper.lateHelp(ledger.followups, lent) };
             if (!persist("import")) throw Object.assign(new Error("Atlas: imported history could not be saved"), { code: "STORAGE_ERROR" });
             return { added: combined.length - previousLength, skipped };
           }
@@ -11191,7 +11296,6 @@ var SynkLearning = (() => {
           accountKey,
           historyComplete,
           fold,
-          followups,
           clock,
           held: (now) => {
             const open = [...active].filter(([, item]) => !item.results.length).map(([pid]) => pid);
@@ -11283,7 +11387,7 @@ var SynkLearning = (() => {
           syncPort: history.port,
           summary: () => report(current()),
           followups() {
-            const saved = current(), report2 = readFollowups(saved.log, { scope, asOf: monotonicClock(), prior: saved.ledger, complete: saved.durable, retain: followups });
+            const saved = current(), report2 = readFollowups(saved.log, { scope, asOf: monotonicClock(), prior: saved.ledger, complete: saved.durable });
             for (const row of report2.items) {
               const node = map.getNode(row.measure.skillId);
               row.current = node?.kind === "skill" && node.domain === row.measure.modality;

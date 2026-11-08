@@ -9,7 +9,8 @@
 export function lifeFollowupRows({projection,seen,snapshot=null,now=Date.now(),life=null,assessable=life?.lifeAssessable,taskVersion}={}){
  const items=typeof life?.lifeItems==='function'?life.lifeItems():null,productMet=life?.productMet;
  if(!projection||!Array.isArray(projection.items)||typeof seen!=='function'||!Array.isArray(items)||typeof productMet!=='function'||typeof assessable!=='function')return {available:false,limited:true,rows:[]};
- const limited=projection.evidenceComplete!==true||projection.coverage?.limited===true||projection.coverage?.retentionLimited===true;
+ // 칸 상한은 줄 없는 칸을 남길 뿐 다른 칸을 거짓으로 만들지 않는다(temper-followup-3).
+ const limited=projection.evidenceComplete!==true||projection.coverage?.retentionLimited===true;
  const progress=snapshot&&typeof snapshot==='object'?snapshot:{};
  const lessons=progress.lessons||{},reviews=progress.reviews||{};
  const fresh=item=>{try{return seen({itemKey:item.itemKey,familyKey:item.familyKey})===false&&productMet(item,progress)===false;}catch{return false;}};
@@ -33,5 +34,7 @@ export function lifeFollowupRows({projection,seen,snapshot=null,now=Date.now(),l
   supply.sort((a,b)=>Number(b.route.route==='review')-Number(a.route.route==='review'));
   return {...row,item:supply[0]?.item||null,route:supply[0]?.route||null,available:supply.length>0};
  });
- return {available:true,limited,rows:rows.sort((a,b)=>Number(b.status==='due')-Number(a.status==='due')||Date.parse(a.dueAt)-Date.parse(b.dueAt)).slice(0,12)};
+ // 지금 열 수 있는 줄을 먼저 — 문항 없는 줄이 12줄을 채워 열 수 있는 줄이 밀려나지 않게.
+ const rank=row=>row.status==='due'?row.available?2:1:0;
+ return {available:true,limited,rows:rows.sort((a,b)=>rank(b)-rank(a)||Date.parse(a.dueAt)-Date.parse(b.dueAt)).slice(0,12)};
 }

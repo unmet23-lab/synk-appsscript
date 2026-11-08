@@ -86,8 +86,8 @@ test('a version that differs in difficulty or game id splits the cell and breaks
   assert.deepEqual(changeDream({}, `${GAME}-actor`), { cells: 2, d7: ['due', null] });
 });
 
-// 칸 상한 고침(README §8 결함 ①) 뒤에 통과해야 한다 — 지금 엔진은 다른 게임이 24칸을 채우면 드라마 줄을 못 만든다.
-test('drama follow-ups survive a ledger whose other games already hold the anchor cap', { todo: '칸 상한 고침 뒤 todo를 뗀다 — atlas-world-engine-20261108 README §8 결함 ①' }, () => {
+// 칸 몫은 게임마다다(temper-followup-3, atlas-world-engine-20261108 README §8 결함 ① · §11) — 다른 게임이 칸을 채워도 드라마 줄이 산다.
+test('drama follow-ups survive a ledger whose other games already hold the anchor cap', () => {
   const b = bench(), other = b.game('other-game');
   // 드라마 말고 소리 칸이 없는 능력(읽기 7 + 쓰기 3) × 난도 셋에서 앵커 칸 24개를 채운다.
   const cells = map.allNodes().filter(n => n.kind === 'skill' && ['reading', 'writing'].includes(n.domain)).flatMap(n => [1, 2, 3].map(difficulty => [n, difficulty]));

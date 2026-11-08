@@ -22,7 +22,8 @@ const ROOT = path.join(__dirname, '..');
 // A disposed waiting game drains only its existing history, then releases ownership (+19 lines).
 // 2026-11-02: same-origin game frames share their page's history writer (the top window's Atlas copy hands out the tab's leases; +23 lines).
 // 2026-11-08: follow-ups pair by ability cell, not map edition (temper-followup-2) and Core marks rows still offerable (`current`) — rhythm · order rush · WORLD · drama (+4 lines).
-const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 7419, capabilityDocLines: 150 });
+// 2026-11-08: follow-ups frozen in the ledger as the log folds (temper-followup-3) instead of holding raw entries — every game's fold (+92 lines).
+const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 7511, capabilityDocLines: 150 });
 const lineCount = text => (text.length === 0 ? 0 : text.split('\n').length - (text.endsWith('\n') ? 1 : 0));
 
 test('atlas/ stays within the agreed file and line budget', () => {

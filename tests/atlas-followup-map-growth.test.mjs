@@ -1,4 +1,4 @@
-// 지도가 자라도 재확인이 이어진다(Temper temper-followup-2 · 2026-11-08, docs/_ops/qa/atlas-world-engine-20261108/설계.md §3 A).
+// 지도가 자라도 재확인이 이어진다(Temper temper-followup-2부터 · 2026-11-08, docs/_ops/qa/atlas-world-engine-20261108/설계.md §3 A).
 // 무관한 Strata 마디를 더해 지도판이 바뀌면 그 전에 잡힌 1·7·30일 재확인이 소비에서 사라지고 짝도 못 맺던 결함의 회귀다.
 // 짝 열쇠는 게임 · 능력 · 난도 · 응답 꼴 · 영역 · 소리이고, 지도판은 재현용으로 기록에만 남는다.
 import test from 'node:test';
@@ -32,7 +32,7 @@ function bench(gameId) {
 }
 
 test('Temper names the changed pairing contract', () => {
-  assert.equal(Temper.FOLLOWUP.version, 'temper-followup-2');
+  assert.equal(Temper.FOLLOWUP.version, 'temper-followup-3');
 });
 
 test('rhythm: a grown map keeps the due follow-up offered and pairs the new item', () => {

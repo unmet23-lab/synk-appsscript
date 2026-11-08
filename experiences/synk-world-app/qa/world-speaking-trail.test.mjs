@@ -220,7 +220,7 @@ test('앱 셸의 말하기 코치 함수: 통로가 바뀌었거나 코치가 �
  assert.deepEqual([device.label,device.options.gameId,device.options.storage.marker,device.options.followups],['device','world-speaking',true,true],'손님: 기기 코치 · 재확인을 지키며 접는다');
 });
 
-test('손님 코치의 옵션이 지키는 것: 말하기 코치가 기기 장부를 접어도 재확인이 남는다 — 옵션 없이 접으면 그 기기의 재확인이 통째로 사라진다(E 전에는 이 코치가 쓴 적이 없다)',()=>{
+test('말하기 코치가 기기 장부를 접어도 재확인이 남는다 — 옵션이 있든 없든(temper-followup-3부터 모든 작성자가 접을 때 얼린다)',()=>{
  const run=followups=>{
   let t=Date.parse('2026-11-09T03:00:00Z'),last=null;const storage=memory(),clock=()=>new Date(t+=1000).toISOString(),hold=g=>{last?.flush?.();return last=g;};
   const practice=()=>hold(worldLearning.engine.createGame({gameId:'world-practice',storage,clock,followups:true}));
@@ -232,10 +232,11 @@ test('손님 코치의 옵션이 지키는 것: 말하기 코치가 기기 장�
   const stored=JSON.parse(storage.getItem('synk.atlas.learning.v1.device')),read=practice().followups();
   return {folded:stored.ledger?.folded||0,preserved:stored.ledger?.followupsPreserved,rows:read.items.filter(r=>r.gameId==='world-practice'&&r.measure?.skillId==='ko.reading.detail').length,reason:read.coverage?.reason||null};
  };
- const kept=run(true),lost=run(false);
- assert.ok(kept.folded>0&&lost.folded>0,'접기가 실제로 일어났다');
- assert.deepEqual([kept.preserved,kept.rows>0],[true,true],'옵션을 주면 앵커가 남는다');
- assert.deepEqual([lost.preserved,lost.rows,lost.reason],[false,0,'older-source-unavailable'],'옵션 없이 접으면 사라진다(대조)');
+ const kept=run(true),plain=run(false);
+ assert.ok(kept.folded>0&&plain.folded>0,'접기가 실제로 일어났다');
+ assert.ok(kept.rows>0,'앵커가 남는다');
+ assert.deepEqual([kept.preserved,kept.reason],[false,null],'옛 판 읽기가 거절하게 false로 쓰고 줄은 낸다');
+ assert.deepEqual([plain.preserved,plain.rows,plain.reason],[false,kept.rows,null],'옵션이 없어도 같다');
 });
 
 test('떠날 때 기록은 다른 탭이 그사이 저장한 기기 기록 · 동의를 덮지 않는다 · 자동 피드백 표시는 그 판까지다(끝 판 검수)',async()=>{

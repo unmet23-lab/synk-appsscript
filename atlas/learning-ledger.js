@@ -23,6 +23,9 @@
  * cannot be corrected for them here (a late reveal can turn any later repeat into a helped
  * one), so they are approximate once `adjusted` is above zero; measurement reads the
  * server's whole log.
+ *
+ * `followups` is Temper's table of follow-up anchors and pairs read before their entries fold
+ * (temper.js sealFollowups). It is only ever read back by Temper, which treats a table it cannot read as none.
  */
 const Trail = require('./trail');
 const Temper = require('./temper');
@@ -210,37 +213,6 @@ const folded = (ledger, event) => !!ledger && ledger.cutoff !== null && FOLDABLE
 // The decision, presentation, entry or completion an entry belongs to (none for a decision). A
 // response names its set's decision as well; an older one without it belongs to its completion.
 const reference = e => (e?.type === 'decision.made' ? undefined : e?.decisionId ?? e?.presentationId ?? e?.targetId ?? e?.completionId);
-// A retained old answer must not read a later folded encounter as earlier exposure.
-// Keep the item/family closure with it, including every help/delivery/exclusion in
-// those decisions. If it no longer fits, refuse the whole retention request; never
-// pick favourable answers to meet a storage limit.
-function retention(events, decisions, { maxEvents = 2400, maxBytes = 1024 * 1024 } = {}) {
-  const groups = new Map(), parent = new Map();
-  for (const e of events) {
-    const group = e.type === 'decision.made' ? e.id : parent.get(reference(e));
-    if (!group) continue;
-    parent.set(e.id, group);
-    if (!groups.has(group)) groups.set(group, []);
-    groups.get(group).push(e);
-  }
-  const selected = new Set(decisions.filter(id => groups.has(id)));
-  const position = new Map(events.map((e, index) => [e.id, index]));
-  const first = Math.min(...[...selected].map(id => Math.min(...groups.get(id).map(e => position.get(e.id)))));
-  const presentations = events.filter(e => e.type === 'practice.presented'), keys = new Set();
-  let changed = true;
-  while (changed) {
-    changed = false;
-    for (const p of presentations) {
-      const group = parent.get(p.id), traces = Trail.traceKeys(p);
-      if (!selected.has(group) && traces.some(key => keys.has(key))
-        && groups.get(group).some(e => position.get(e.id) >= first)) { selected.add(group); changed = true; }
-      if (selected.has(group)) for (const key of traces) if (!keys.has(key)) { keys.add(key); changed = true; }
-    }
-  }
-  const kept = events.filter(e => selected.has(parent.get(e.id))), bytes = new TextEncoder().encode(JSON.stringify(kept)).length;
-  const limited = kept.length > maxEvents || bytes > maxBytes;
-  return { decisions: limited ? [] : [...selected], events: kept.length, bytes, limited, maxEvents, maxBytes };
-}
 // A synchronised entry whose decision, presentation or target was folded here.
 const stray = (event, known) => { const ref = reference(event); return typeof ref === 'string' && !known.has(ref); };
 // Which of two ledgers folded later: 1 (a), -1 (b) or 0 (the same fold).
@@ -298,4 +270,4 @@ function demote(ledger, { late = [], excluded = [], strays = 0, linkedOnly = fal
   return trimParents(next);
 }
 
-module.exports = { VERSION, BITS, FOLDABLE, empty, validate, before, rows, cellOf, contentOf, fold, plan, folded, stray, compare, reconcile, demote, reference, retention };
+module.exports = { VERSION, BITS, FOLDABLE, empty, validate, before, rows, cellOf, contentOf, fold, plan, folded, stray, compare, reconcile, demote, reference };

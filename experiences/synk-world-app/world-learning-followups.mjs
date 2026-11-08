@@ -3,7 +3,8 @@ const seenFalse=(seen,item)=>{try{return seen(item)===false&&(item.exposurePeers
 const hash=value=>{let h=2166136261;for(const c of String(value))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;return h;};
 export function followupRows({projection,pool=[],seen,taskVersion,audioAvailable=true}={}){
  if(!projection||!Array.isArray(projection.items)||typeof seen!=='function')return {available:false,limited:true,rows:[]};
- const limited=projection.evidenceComplete!==true||projection.coverage?.limited===true||projection.coverage?.retentionLimited===true;
+ // The anchor cap only leaves some cells without rows; it never makes the others untrue (temper-followup-3).
+ const limited=projection.evidenceComplete!==true||projection.coverage?.retentionLimited===true;
  const rows=projection.items.filter(row=>row.gameId==='world-practice').map(row=>{
   const m=row.measure||{};
   const candidates=!limited&&row.status==='due'&&(row.current??m.taskVersion===taskVersion)&&(!m.audioRequired||audioAvailable)?pool.filter(item=>
@@ -14,7 +15,9 @@ export function followupRows({projection,pool=[],seen,taskVersion,audioAvailable
   candidates.sort((a,b)=>Number(b.supplyRole==='delayed')-Number(a.supplyRole==='delayed')||hash(row.id+a.itemKey)-hash(row.id+b.itemKey));
   return {...row,item:candidates[0]||null,available:candidates.length>0};
  });
- return {available:true,limited,rows:rows.sort((a,b)=>Number(b.status==='due')-Number(a.status==='due')||Date.parse(a.dueAt)-Date.parse(b.dueAt)).slice(0,12)};
+ // What can be opened now comes first, so rows without an item never push it off the list.
+ const rank=row=>row.status==='due'?row.available?2:1:0;
+ return {available:true,limited,rows:rows.sort((a,b)=>rank(b)-rank(a)||Date.parse(a.dueAt)-Date.parse(b.dueAt)).slice(0,12)};
 }
 export function advisoryRows({targets=[],summary,lookup,supply={}}={}){
  if(summary?.evidenceComplete!==true||typeof lookup!=='function')return [];

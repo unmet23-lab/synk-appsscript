@@ -83,39 +83,11 @@ function ownHistoryLease(name) {
 // The first copy loaded in a top window owns the tab's leases (later copies and frames call it).
 try { if (typeof globalThis.document === 'object' && leaseScope() === globalThis && typeof globalThis[LEASE_OWNER] !== 'function') globalThis[LEASE_OWNER] = ownHistoryLease; } catch { /* A sealed global keeps per-copy leases. */ }
 // Both readings use Trail: an exclusion withdraws a result without replacing its
-// original anchor. Retain the full decision bundles until the observation window ends.
-function readFollowups(events, { scope, asOf, prior = null, complete = true, retain = false }) {
+// original anchor. What a fold would lose is frozen in the ledger (Temper.sealFollowups).
+function readFollowups(events, { scope, asOf, prior = null, complete = true }) {
   const options = { scope, asOf, prior };
-  const report = Temper.followups({ events, summary: Trail.summarize(events, options),
+  return Temper.followups({ events, summary: Trail.summarize(events, options),
     original: Trail.summarize(events.filter(e => e.type !== 'record.excluded'), options), prior, complete, asOf });
-  // Once selected originals were lost to the storage bound, later raw successes
-  // cannot become replacement anchors. Only a complete raw history can recover it.
-  if (prior?.followupsLost) {
-    report.items = []; report.retainDecisionIds = []; report.evidenceComplete = false;
-    Object.assign(report.coverage, { limited: true, reason: 'retention-capacity', retentionEnabled: retain,
-      retentionLimited: true, unretainedAnchors: prior.followupsLost.anchors, lostAt: new Date(prior.followupsLost.at).toISOString() });
-    return report;
-  }
-  // Older consumers may have folded the original source without a retention
-  // contract. The remaining raw log cannot establish which anchor was first.
-  if (prior?.folded && prior.followupsPreserved !== true) {
-    report.items = []; report.retainDecisionIds = []; report.evidenceComplete = false;
-    Object.assign(report.coverage, { limited: true, reason: 'older-source-unavailable', retentionEnabled: retain });
-    return report;
-  }
-  const retention = retain ? Ledger.retention(events, report.retainDecisionIds) : null;
-  report.coverage.retentionEnabled = retain;
-  if (retention) {
-    Object.assign(report.coverage, { retentionLimited: retention.limited, retainedEvents: retention.limited ? 0 : retention.events,
-      retainedBytes: retention.limited ? 0 : retention.bytes });
-    report.retainDecisionIds = retention.decisions;
-    if (retention.limited) {
-      report.coverage.limited = true; report.coverage.reason = 'retention-capacity';
-      report.coverage.unretainedAnchors = report.items.length / Temper.FOLLOWUP.windows.length;
-      for (const item of report.items) { item.status = 'unavailable'; item.reason = 'retention-capacity'; item.outcome = null; }
-    }
-  }
-  return report;
 }
 // Earlier entries keep new ones in time order, but another device's clock running ahead
 // must not pin this one: a time beyond this device's own clock (plus a margin) is not adopted.
@@ -134,7 +106,7 @@ const AHEAD_MS = 5 * 60000;
  * `held(now)` names the entries the game still holds open: they never fold. `release(gone)` tells the
  * game, as it happens, what it may no longer hold: everything (gone = null) at a new epoch, or the
  * entries `gone(id)` names that a merge or a fold took out of the kept log. */
-function openHistory({ storage, key, scope, storageScope, accountKey, historyComplete, fold, followups, clock, held, release }) {
+function openHistory({ storage, key, scope, storageScope, accountKey, historyComplete, fold, clock, held, release }) {
   const lease = storage ? browserHistoryLease(JSON.stringify([key, storageScope, accountKey])) : null;
   let leased = !lease, waitingWrite = false, closed = false, closing = false, closedFlush = false, detachLease = () => {};
   const FINAL_FLUSH = Symbol('final-history-flush');
@@ -236,7 +208,10 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
       } }
       else { known.set(e.id, e); combined.push(e); kept.add(e.id); }
     }
-    ledger = Ledger.reconcile(ledger, theirs) || (order < 0 ? theirs : ledger);
+    const ours = ledger;
+    ledger = Ledger.reconcile(ours, theirs) || (order < 0 ? theirs : ours);
+    // A follow-up mark survives whichever table is kept (temper.js carryMarks): one a late help made cannot be read again.
+    if (ledger?.followups) { const table = Temper.carryMarks(ledger.followups, [ours?.followups, theirs?.followups]); if (table !== ledger.followups) ledger = { ...ledger, followups: table }; }
     // A response whose set the other side folded leaves here with any exclusion of it (it stays there and on the server).
     const types = new Map([...mine, ...stored.events].map(e => [e.id, e.type]));
     for (const e of combined) if (e.type === 'feedback.given' && !known.has(e.completionId) || e.type === 'record.excluded' && !known.has(e.targetId) && types.get(e.targetId) === 'feedback.given') known.delete(e.id);
@@ -278,8 +253,6 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
     // What the game holds open stays. A synchronised store also keeps every item the server has
     // not sent back yet, and unanswered items for 30 days: their answer may still come from another device.
     const open = held(now);
-    const retained = followups ? readFollowups(events, { scope, asOf: new Date(now).toISOString(), prior: ledger, retain: true }) : null;
-    if (retained) open.push(...retained.retainDecisionIds);
     if (folding.remote) for (const e of events) if (!settled.has(e.id)) open.push(e.id);
     const planned = Ledger.plan(events, { keep: folding.keep, olderThan: now - folding.ageMs, open,
       unfinishedBefore: folding.remote ? now - 30 * 86400000 : now - folding.ageMs, respondedBefore: now - RESPONSE_MS - SET_OPEN_MS });
@@ -287,12 +260,14 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
     const batch = Math.max(1, Math.floor((folding.max - folding.keep) / 2));
     if (!planned || planned.folded.length < batch && events.length < 2 * folding.max) { retryFold = { settled: settledVersion, at: now + 60000 }; return; }
     retryFold = null;
-    const preserved = followups && (!ledger?.folded || ledger.followupsPreserved === true);
+    // Read before folding: the fold takes entries this reading still needs. A reading that fails must not stop the write.
+    let read = null;
+    try { read = readFollowups(events, { scope, asOf: new Date(now).toISOString(), prior: ledger }); } catch { read = null; }
     ledger = Ledger.fold(ledger, planned.folded, { scope, log: events, local: !folding.remote });
-    ledger.followupsPreserved = preserved;
-    if (retained?.coverage.retentionLimited && !ledger.followupsLost) {
-      ledger.followupsLost = { anchors: retained.coverage.unretainedAnchors, at: now };
-    }
+    ledger.followups = read ? Temper.sealFollowups(read, { cutoff: ledger.cutoff, folded: ledger.folded, presented: ledger.presented })
+      : { v: Temper.FOLLOWUP.table, folded: ledger.folded, floor: ledger.cutoff, rows: Array.isArray(ledger.followups?.rows) ? ledger.followups.rows : [] };
+    // An older reading of this log cannot see the table: it offers nothing rather than rows from what is left.
+    ledger.followupsPreserved = false;
     session = newSession(planned.kept);
     for (const e of planned.folded) settled.delete(e.id);
     settledVersion += 1; release(id => planned.folded.some(e => e.id === id));
@@ -359,7 +334,7 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
       if (!readable) throw Object.assign(new Error('Atlas: local history is unreadable'), { code: 'STORAGE_ERROR' });
       if (ledger?.local) throw Object.assign(new Error('Atlas: a folded history is kept on this device only'), { code: 'HISTORY_FOLDED' });
       if (!Array.isArray(incoming)) throw new TypeError('Atlas: imported events must be an array');
-      const combined = log().slice(), previousLength = combined.length, known = new Map(combined.map(event => [event.id, event])), late = [], gone = [], skipped = [];
+      const combined = log().slice(), previousLength = combined.length, known = new Map(combined.map(event => [event.id, event])), late = [], gone = [], skipped = [], lent = [];
       for (const event of incoming) {
         if (known.has(event?.id)) {
           if (!sameEvent(known.get(event.id), event)) throw Object.assign(new Error('Atlas: conflicting imported event'), { code: 'EVENT_CONFLICT' });
@@ -369,7 +344,7 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
           // has to be well formed and belong to this log before it can adjust folded evidence.
           Atlas.validate(event);
           if (['domain', 'workspace', 'subject'].some(field => event.scope[field] !== scope[field])) throw new Error('Atlas: scope mismatch');
-          skipped.push(event.id); if (event.type === 'record.excluded') gone.push(event.targetId); continue;
+          skipped.push(event.id); if (event.type === 'record.excluded') gone.push(event.targetId); if (event.type === 'practice.helped') lent.push(event); continue;
         }
         else { known.set(event?.id, event); combined.push(event); if (Ledger.folded(ledger, event)) late.push(event); }
       }
@@ -380,6 +355,8 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
       // reject the entire incoming batch without changing the local log.
       const imported = newSession(combined); session = imported;
       if (late.length || skipped.length) ledger = Ledger.demote(ledger, { late, excluded: gone, strays: skipped.length }, id => known.get(id));
+      // A help left on the server still marks the frozen follow-up pair it came before (temper.js lateHelp).
+      if (lent.length && ledger?.followups) ledger = { ...ledger, followups: Temper.lateHelp(ledger.followups, lent) };
       if (!persist('import')) throw Object.assign(new Error('Atlas: imported history could not be saved'), { code: 'STORAGE_ERROR' });
       return { added: combined.length - previousLength, skipped };
     },
@@ -437,6 +414,7 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
 function createGame({ gameId, map, storage = null, learnerKey = 'device', clock = () => new Date().toISOString(), historyComplete = true,
   storageScope = 'device', accountKey = null, fold = null, followups = false, memoryOwner = null } = {}) {
   if (!identifier(gameId) || !identifier(learnerKey) || typeof map?.allNodes !== 'function') throw new TypeError('Atlas: game, local scope and Strata map required');
+  // Every writer freezes follow-ups as it folds (temper-followup-3). The option changes nothing now; older call sites still pass it.
   if (typeof followups !== 'boolean') throw new TypeError('Atlas: follow-up retention must be explicit');
   if (!['device', 'account'].includes(storageScope) || storageScope === 'account' && (!identifier(accountKey) || learnerKey !== 'device')) throw new TypeError('Atlas: account identity and isolated host storage required');
   // An authenticated host may keep personal memory apart from a class's evidence log. The
@@ -450,7 +428,7 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   const active = new Map(), sets = new Map(); // sets: finished here in the last day (decision → time), still open to a response
   // Held open here, so never folded: an item not answered in this tab, a set still taking a response.
   // An epoch change (a reset here or in another tab) ends all of them, a fold or a merge what it took.
-  const history = openHistory({ storage, key, scope, storageScope, accountKey, historyComplete, fold, followups, clock,
+  const history = openHistory({ storage, key, scope, storageScope, accountKey, historyComplete, fold, clock,
     held: now => { const open = [...active].filter(([, item]) => !item.results.length).map(([pid]) => pid); for (const [id, at] of sets) if (now - at < SET_OPEN_MS) open.push(id); else sets.delete(id); return open; },
     release: gone => { if (!gone) { active.clear(); sets.clear(); } else for (const pid of active.keys()) if (gone(pid)) active.delete(pid); } });
   const monotonicClock = history.clock;
@@ -523,7 +501,7 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     syncPort: history.port,
     summary: () => report(current()),
     followups() {
-      const saved = current(), report = readFollowups(saved.log, { scope, asOf: monotonicClock(), prior: saved.ledger, complete: saved.durable, retain: followups });
+      const saved = current(), report = readFollowups(saved.log, { scope, asOf: monotonicClock(), prior: saved.ledger, complete: saved.durable });
       // A row can still be offered while its ability is a skill of the same modality in this map (rows from older map editions included).
       for (const row of report.items) { const node = map.getNode(row.measure.skillId); row.current = node?.kind === 'skill' && node.domain === row.measure.modality; }
       return report;
