@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 116,
+  "expectedCount": 119,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -932,6 +932,30 @@
       "name": "real Windows restic: backup, changed files, new-PC recovery, failure preservation and exact retention",
       "group": "업무 백업 실제 restic",
       "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S117",
+      "file": "tests/컷연속성검사.test.js",
+      "name": "지도 대조(정지 그림) — 자리 그대로면 통과, 1.5변 밀리면 걸림, 아직 없어야 할 자리에 붙은 쪽지는 걸림, 붙은 두 자리는 한 쌍씩 맞춘다",
+      "group": "컷 연속성 검사의 파이썬 그림 라이브러리 · ffmpeg",
+      "route": "linux",
+      "profile": "default"
+    },
+    {
+      "id": "S118",
+      "file": "tests/컷연속성검사.test.js",
+      "name": "점 시트 — 실내 그림에 점 후보가 있으면 사람이 볼 「확인」(코드 2)으로 남는다",
+      "group": "컷 연속성 검사의 파이썬 그림 라이브러리 · ffmpeg",
+      "route": "linux",
+      "profile": "default"
+    },
+    {
+      "id": "S119",
+      "file": "tests/컷연속성검사.test.js",
+      "name": "고요(가짜 영상) — 떨리는 쪽지는 걸림, 가만한 쪽지는 통과, 밀리는 큰 판 · 천천히 미는 판(고정 영역)은 걸림, 소리 봉우리와 실제 시작 시각",
+      "group": "컷 연속성 검사의 파이썬 그림 라이브러리 · ffmpeg",
+      "route": "linux",
       "profile": "default"
     }
   ]

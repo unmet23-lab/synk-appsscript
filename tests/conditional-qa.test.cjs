@@ -17,8 +17,24 @@ const good = () => ({ version: 1, commit, manifestDigest: manifest.digest, expec
 function scratch(t) { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'conditional-qa-test-')); t.after(() => { if (!c.within(os.tmpdir(), dir) || fs.lstatSync(dir).isSymbolicLink()) throw Error('Unsafe test cleanup'); fs.rmSync(dir, { recursive: true, force: true }); }); return dir; }
 
 test('all 113 original cases have one concrete route and a live source file', () => {
-  assert.equal(check(root), 116);
-  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 29, linux: 8, local: 79 });
+  assert.equal(check(root), 119);
+  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 29, linux: 11, local: 79 });
+});
+test('S117–S119 run on the Linux host with the hash-pinned image libraries, never by skipping', () => {
+  const rows = ['S117', 'S118', 'S119'].map(id => manifest.cases.find(item => item.id === id));
+  const workflow = fs.readFileSync(path.join(root, '.github/workflows/conditional-qa.yml'), 'utf8').replace(/\r\n/g, '\n');
+  assert.match(workflow, /uses: actions\/setup-python@v\d+\n\s+with:\n\s+python-version: '3\.\d+'/);
+  for (const library of ['numpy', 'pillow', 'opencv-python-headless', 'scipy']) assert.match(workflow, new RegExp(`\\n\\s+${library}==[\\d.]+ --hash=sha256:[0-9a-f]{64}`));
+  assert.match(workflow, /pip install [^\n]*--only-binary=:all: --require-hashes -r /);
+  assert.match(workflow, /sudo apt-get install -y ffmpeg/);
+  const source = fs.readFileSync(path.join(root, 'tests/컷연속성검사.test.js'), 'utf8');
+  for (const row of rows) {
+    assert.deepEqual([row.route, row.file], ['linux', 'tests/컷연속성검사.test.js']);
+    assert.ok(source.includes(`test('${row.name}'`), 'the registered name must stay the test name');
+  }
+  // The PC has the libraries, so a new image test passes before push and only skips in syntax-check — register it here first.
+  const skipping = [...source.matchAll(/^test\('([^']+)', \{ skip: ![^\n]*그림라이브러리/gm)].map(match => match[1]);
+  assert.deepEqual(skipping.sort(), rows.map(row => row.name).sort(), 'every image or video test of the cut continuity checker is registered');
 });
 test('S116 runs on the Windows host with the pinned restic release, never by skipping', () => {
   const row = manifest.cases.find(item => item.id === 'S116');

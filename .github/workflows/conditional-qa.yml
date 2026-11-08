@@ -85,6 +85,25 @@ jobs:
           sudo apt-get install -y ffmpeg
           rustup target add wasm32-unknown-unknown
           cargo build --locked --release --target wasm32-unknown-unknown --manifest-path tools/text-compare-bench/rust/Cargo.toml
+      # S117–S119 — tools/컷연속성검사.py needs NumPy · Pillow · OpenCV · SciPy (and ffmpeg above). The versions are the ones
+      # verified on the PC, and every wheel is pinned by SHA-256, so a changed or missing file is red instead of a skip.
+      - name: set up Python for the cut continuity image tests
+        if: runner.os == 'Linux'
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+      - name: install the pinned image libraries for the cut continuity tests
+        if: runner.os == 'Linux'
+        run: |
+          requirements="$RUNNER_TEMP/cut-continuity-requirements.txt"
+          cat > "$requirements" <<'EOF'
+          numpy==2.5.2 --hash=sha256:318b9a4c845dbea06708a29c84ee429cc3065048db34cdb799047643492050ee
+          pillow==12.3.0 --hash=sha256:251bf95b67017e27b13d82f5b326234ca62d70f9cf4c2b9032de2358a3b12c7b
+          opencv-python-headless==5.0.0.93 --hash=sha256:ed709fdf9aa0bd1f2ed8549e71d19449b03a675bb581eb292285f6861953be37 --hash=sha256:09a872a157c1376ab922a69bbf22f9a95bcc7b658a9d8b436a60212b02b2eeb4
+          scipy==1.18.1 --hash=sha256:ac0333bdf38309aa3dcbe7e3fa7ea29e7a2c37c6ea306a757b700ded8e4596ad
+          EOF
+          python -m pip install --disable-pip-version-check --no-input --only-binary=:all: --require-hashes -r "$requirements"
+          python -I -X utf8 -c "import numpy, PIL, cv2, scipy; print('cut continuity libraries', numpy.__version__, PIL.__version__, cv2.__version__, scipy.__version__)"
       - name: checkout the released WORLD account bundle for the drama sync test
         if: runner.os == 'Linux'
         uses: actions/checkout@v5

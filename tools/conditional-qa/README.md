@@ -5,9 +5,9 @@
 | 실행 위치 | 등록 항목 | 실행 조건 |
 |---|---:|---|
 | GitHub Windows | 29 | Hermes Windows 경로·복구, OneDrive, ASAR, 대소문자, 가짜 자격 증명, 업무 백업의 실제 restic |
-| GitHub Linux | 8 | 현재 Rust 원천을 WASM으로 빌드, ffmpeg 실제 실행, 공개된 WORLD 계정 묶음의 드라마 동기화 |
+| GitHub Linux | 11 | 현재 Rust 원천을 WASM으로 빌드, ffmpeg 실제 실행, 공개된 WORLD 계정 묶음의 드라마 동기화, 컷 연속성 검사의 그림 · 영상(파이썬 그림 라이브러리) |
 | Windows 로컬 | 79 | 암호·Caddy·비공개/보관 자산·브라우저·Talk/WORLD·문서 SHA |
-| 합계 | 116 | `cases.json`의 S001~S113을 삭제할 수 없다. S114는 11-03에 더한 암호화 모듈 시험이다 S115는 11-04에 더한 드라마 공개본 검사다 S116은 11-09에 더한 [업무 백업 실제 restic](#solo-backup-restic) 시험이다 |
+| 합계 | 119 | `cases.json`의 S001~S113을 삭제할 수 없다. S114는 11-03에 더한 암호화 모듈 시험이다 S115는 11-04에 더한 드라마 공개본 검사다 S116은 11-09에 더한 [업무 백업 실제 restic](#solo-backup-restic) 시험이다. S117~S119는 같은 날 더한 [컷 연속성 검사의 그림 · 영상](#cut-continuity-images) 시험이다 |
 
 `conditional-qa.yml`은 master의 각 push에 세 관문을 건다. 파일과 시험 이름이 일치하는 실제 Node 시험 이벤트가 정확히 한 번 통과해야 한다. skip/todo, 이름 변경, 누락, 중복, 프로세스 실패·시간 초과는 실패다. 기존 syntax/wide CI에 처음 생긴 조건부 제외도 등록되지 않았으면 실패한다. 새 제외를 추가할 때에는 재현 입력과 자동 실행 경로를 함께 등록한다. 등록된 이름을 바꿀 때에는 같은 ID의 이름과 시험을 함께 바꾼다.
 
@@ -112,6 +112,10 @@ S116은 GitHub Windows에서 공식 restic 0.19.1 ZIP을 받아 SHA-256을 대�
 
 S115는 Linux에서 공개 저장소 `unmet23-lab/synk-policy`의 `30492147d467337c46ef61a1b8ec5c3c58a1356c` 판을 받는다. `world/world-account.bundle.mjs`와 `world/life-content.mjs`의 SHA-256은 11-04에 synk.im에서 받은 두 파일과 각각 일치했다. `DRAMA_LIVE_WORLD_BUNDLE`에 첫 파일을 지정해 합성 사건이 모두 올라가고 동기화가 완료되는지 확인한다. 파일이 빠지거나 건너뛰면 해당 커밋의 조건부 검사가 실패한다.
 
+<a id="cut-continuity-images"></a>
+
+S117~S119는 GitHub Linux에서 `tests/컷연속성검사.test.js`의 그림 · 영상 시험 셋(지도 대조 · 점 시트 · 가짜 영상 고요)을 돌린다. `tools/컷연속성검사.py`가 NumPy · Pillow · OpenCV · SciPy와 ffmpeg를 써서, 그 라이브러리가 없는 syntax-check에서는 건너뛰고 여기서 실제로 돈다. 워크플로는 Python 3.14와 PC에서 확인한 판(numpy 2.5.2 · pillow 12.3.0 · opencv-python-headless 5.0.0.93 · scipy 1.18.1)을 휠 SHA-256으로 고정해 깐다 — 휠이 바뀌거나 없으면 설치 단계가 빨강이고 건너뛰지 않는다. 판을 올리면 `conditional-qa.yml`의 판과 해시를 함께 바꾼다. 이 PC에는 라이브러리가 있어 같은 파일에 그림 시험을 더해도 push 전 시험은 초록이고 CI에서만 건너뛴다. 그래서 `tests/conditional-qa.test.cjs`가 그 파일에서 그림 라이브러리로 건너뛰는 시험이 모두 등록됐는지 본다(11-09 `fde3d6cef`가 등록 없이 셋을 더해 syntax-check가 20회 넘게 빨갰다). 등록 전에 리눅스 러너에서 같은 설치 · 이름 패턴 · 판정으로 3/3 · 4.3초를 확인했다.
+
 <a id="local-profile-timeout"></a>
 
 ### 로컬 시험 묶음의 시간 제한
@@ -194,7 +198,7 @@ WORLD 계정 브라우저 시험은 부모 화면의 애니메이션 프레임�
 - **매 회차가 다시 증명한다.** 실제 검증의 모든 Node 프로세스에 [`read-trace.cjs`](read-trace.cjs)가 붙어, 뺀 경로를 열거나 재거나 있는지 묻거나 `docs` · 남긴 곳의 상위 폴더를 나열하면 그 자리에서 적는다. 적힌 것이 있으면 79건이 다 통과해도 그 회차는 실패다(`result.json`의 `touchedOutside`). 없는 파일은 시험을 깨뜨리고, 없는지 묻기만 해 조용히 덜 보는 시험은 이 기록이 잡는다. Node 밖에서 읽는 Chromium · Caddy · ffmpeg는 파일이 없어 깨지는 쪽으로 드러난다. 새 시험이 문서를 읽게 되면 그 경로를 목록에 더한다.
 - **잇기.** 첫 부모에서 뺀 경로만 바뀐 커밋은 부모의 완전한 통과를 잇는다. 부모의 저장된 영수증을 다시 대조한 뒤 `runs/<커밋>-<시각>/result.json`을 쓰고(`carriedFrom`에 실제로 잰 커밋과 부모), 상태 줄은 `PASS n/n manifest=` 그대로 올린다. 옛 커밋의 얼어 있는 `wait-local.cjs`가 그 글자를 그대로 비교하기 때문이고, 상태의 링크는 실제로 잰 커밋으로 간다. 작업본도 부하 대기도 쓰지 않는다. 호스트 실행을 깨우는 수를 맞추려고 한 회차에 60건까지만 잇고, 나머지는 다음 회차로 넘긴다. 통과를 올리는 GitHub 호출이 실패하면 실패 상태를 올리지 않고 다음 회차에 다시 올린다(직접 잰 커밋도 같다).
 - **통과만 잇는다.** 부모가 실패면 그 커밋은 직접 잰다. 부모 영수증을 못 읽어도 직접 잰다. `retry.cjs`로 부탁한 재검사와 [지정한 한 건](#registered-verification)도 직접 잰다. 부모가 아직이면 차례를 쓰지 않고 기다려(`awaitsParent`), 최신 차례는 직접 잴 필요가 있는 가장 새 커밋으로 간다. `last-run.json`의 `carried` · `awaitingParent`로 본다.
-- **그대로인 것.** 호스트 36건과 `wide-tests`는 문서만 바꾼 커밋에서도 돈다. 79건 목록 · 통과 기준 · 시험 한도 · 부하 조건은 그대로다. 코드가 바뀐 커밋은 모두 직접 잰다.
+- **그대로인 것.** 호스트 40건과 `wide-tests`는 문서만 바꾼 커밋에서도 돈다. 79건 목록 · 통과 기준 · 시험 한도 · 부하 조건은 그대로다. 코드가 바뀐 커밋은 모두 직접 잰다.
 
 잇는 커밋은 Talk 입력과 시각도 부모 회차의 것을 쓴다. 지금도 대기 탓에 커밋과 검증 사이에 며칠이 뜨므로 그 커밋이 그 시각의 Talk를 본다는 보장은 원래 없다.
 
@@ -204,9 +208,9 @@ WORLD 계정 브라우저 시험은 부모 화면의 애니메이션 프레임�
 
 `local-coverage`는 11-04부터 기다리지 않고 자기 run을 취소한다. 취소는 빨강이 아니어서, 옛날처럼 155분 뒤 빨개지는 신호가 없어졌다. PC가 멈춰도 알림이 없고, 일꾼 차례가 뒤섞여 오래된 커밋의 실패 run은 더 새 초록 run에 가려진다. `conditional-qa-local`(`local-status.cjs`)이 이 빈자리를 맡는다. `conditional-qa` run이 끝날 때마다 돈다. 이 저장소의 예약 실행은 몇 시간씩 늦어(11-03 실측 5~10시간, 15분 예약은 4시간 동안 0회) 30분 예약은 뒷받침일 뿐이다. first-parent를 활성화 커밋까지, 또는 경보가 날 수 있는 범위 너머까지 읽고, 각 커밋 판 목록의 정확한 `PASS n/n manifest=`만 통과로 센다. 경보는 커밋된 지 72시간 안의 대기나 올라온 지 24시간 안의 실패에서만 나므로, 가장 오래 읽은 커밋 50개(한 쪽)가 모두 커밋된 지 96시간이 넘었고 끝난 상태(통과, 또는 24시간 지난 실패)면 거기서 멈춘다. 그 50개 안에 아직 대기하거나 새로 실패한 커밋이 있으면 더 읽는다 — 일꾼은 한 차례 걸러 가장 오래된 준비 커밋을 잡으므로 그런 줄 뒤에 대기가 숨어 있지 않다(11-08, 1,000커밋 창이 11-06 00:28에 차서 그 뒤 run이 고장 없이 모두 빨갰다). 상한은 3,000커밋이고, 11-08에는 900커밋 · 26초에 끝났다. 96시간보다 오래된 커밋을 `retry.cjs`로 다시 재 또 실패하면 그 커밋이 끝난 줄 뒤에 있을 때는 못 볼 수 있어, 재검사를 건 세션이 영수증으로 본다.
 
-빨강은 다음 다섯 가지다. 새 실패(올라온 지 24시간 안, 커밋마다 이름이 달라 새 실패만 새로 알린다), 판 불일치, 대기가 있는데 일꾼이 155분 동안 아무 상태도 안 올린 때(`WAIT` 표시는 일꾼 활동이 아니고, [기다린다는 알림](#local-parallel)은 일꾼 활동이다), 커밋된 지 72시간 넘은 대기, 읽기가 활성화 커밋에도 96시간 지난 끝난 줄에도 닿지 못할 때. 24시간이 지난 실패는 빨강에서 빠질 뿐 커밋 상태와 로그의 「kept until a retry passes」 줄에 남고, `retry.cjs`로 다시 재기 전에는 통과가 되지 않는다. 호스트 36건은 커밋마다 돌고, 로컬 79건은 시험이 보는 바이트가 달라진 커밋마다 돈다([기준](#tested-tree)). 이어받은 통과도 같은 줄이라 여기서는 통과로 센다.
+빨강은 다음 다섯 가지다. 새 실패(올라온 지 24시간 안, 커밋마다 이름이 달라 새 실패만 새로 알린다), 판 불일치, 대기가 있는데 일꾼이 155분 동안 아무 상태도 안 올린 때(`WAIT` 표시는 일꾼 활동이 아니고, [기다린다는 알림](#local-parallel)은 일꾼 활동이다), 커밋된 지 72시간 넘은 대기, 읽기가 활성화 커밋에도 96시간 지난 끝난 줄에도 닿지 못할 때. 24시간이 지난 실패는 빨강에서 빠질 뿐 커밋 상태와 로그의 「kept until a retry passes」 줄에 남고, `retry.cjs`로 다시 재기 전에는 통과가 되지 않는다. 호스트 40건은 커밋마다 돌고, 로컬 79건은 시험이 보는 바이트가 달라진 커밋마다 돈다([기준](#tested-tree)). 이어받은 통과도 같은 줄이라 여기서는 통과로 센다.
 
-회귀는 `node --test tests/conditional-qa.test.cjs tests/conditional-qa-tested-tree.test.cjs tests/conditional-qa-retry.test.cjs tests/conditional-qa-diagnosed.test.cjs tests/conditional-qa-reregister.test.cjs tests/ci넓은시험.test.js`다. 이 자동화는 등록된 116건의 지속 검증이며, 새 보안 감사나 운영 접근 권한 전체의 재점검을 대신하지 않는다. 최초 실제 실행과 원격 CI 결과는 비공개 설치·실행 영수증과 해당 커밋의 GitHub Checks에서 확인한다.
+회귀는 `node --test tests/conditional-qa.test.cjs tests/conditional-qa-tested-tree.test.cjs tests/conditional-qa-retry.test.cjs tests/conditional-qa-diagnosed.test.cjs tests/conditional-qa-reregister.test.cjs tests/ci넓은시험.test.js`다. 이 자동화는 등록된 119건의 지속 검증이며, 새 보안 감사나 운영 접근 권한 전체의 재점검을 대신하지 않는다. 최초 실제 실행과 원격 CI 결과는 비공개 설치·실행 영수증과 해당 커밋의 GitHub Checks에서 확인한다.
 
 <a id="diagnosed-failures"></a>
 
