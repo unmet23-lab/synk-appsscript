@@ -11095,6 +11095,132 @@
    "grammar": "정상",
    "spelling": [],
    "status": "세 겹 깨끗 · 칸 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "position.uncounted.title",
+   "mnHash": "9c3d7c84cb",
+   "batch": "mn-check-20261108-front2/uncounted-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "position.uncounted.tag",
+   "mnHash": "16084b680d",
+   "batch": "mn-check-20261108-front2/uncounted-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "position.uncounted.noAnswer",
+   "mnHash": "1ed05e1b96",
+   "batch": "mn-check-20261108-front2/uncounted-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "position.uncounted.more",
+   "mnHash": "476162e58c",
+   "batch": "mn-check-20261108-front2/uncounted-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "position.uncounted.why.draft",
+   "mnHash": "d684b783d5",
+   "batch": "mn-check-20261108-front2/uncounted-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "position.uncounted.why.met",
+   "mnHash": "a77b6069dd",
+   "batch": "mn-check-20261108-front2/uncounted-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "position.uncounted.why.visual",
+   "mnHash": "6d48c70c36",
+   "batch": "mn-check-20261108-front2/uncounted-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "position.uncounted.why.audio",
+   "mnHash": "9b79eb61a3",
+   "batch": "mn-check-20261108-front2/uncounted-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "position.uncounted.why.unanswered",
+   "mnHash": "d29da46671",
+   "batch": "mn-check-20261108-front2/uncounted-03-r2.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "position.uncounted.why.motor",
+   "mnHash": "e28d46a6e0",
+   "batch": "mn-check-20261108-front2/uncounted-03-r2.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "position.uncounted.why.storage",
+   "mnHash": "6bfaa69861",
+   "batch": "mn-check-20261108-front2/uncounted-03-r2.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "position.uncounted.why.other",
+   "mnHash": "196095a636",
+   "batch": "mn-check-20261108-front2/uncounted-03-r2.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "life.reviewScenes",
+   "mnHash": "023cd7d473",
+   "batch": "mn-check-20261108-front2/scenes-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "plan.week.rest",
+   "mnHash": "5486746e0c",
+   "batch": "mn-check-20261108-front2/plan-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
   }
  ]
 }

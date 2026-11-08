@@ -14,6 +14,9 @@ const LINES={
   break:'휴식 기록. 우리 자리까지 왔다. …컵은 천천히 내려놓아라.',
   complete:'임무 완료. 오늘 만난 표현은 복습 일정에 남았다. …잘 다녀왔다.',
   review:'복습 수칙. 전에 만난 표현을 다른 상황에서 고른다. 서두르지 마라.',
+  reviewDue:'복귀 확인. 돌아온 표현을 아래에 모아 뒀다. …장면은 새것이다.',
+  reviewNext:'복습 일정 기록. 돌아올 표현을 적어 뒀다. …그동안 다음으로 가도 된다.',
+  reviewEmpty:'복습 기록 없음. 레슨을 마치면 여기에 남는다. …먼저 다녀온다.',
   help:'도움 기록. 헷갈린 표현을 골라 다른 장면에서 다시 연습한다.',
   practice:'연습 수칙. 새 상황을 읽고 알맞은 말을 고른다. …같은 자리로 돌아갈 수 있다.',
   practiceSuccess:'연습 확인. 새 상황에 맞는 말을 찾았다. …차근차근 해냈다.',
@@ -34,6 +37,9 @@ const LINES={
   break:'이 몸 자리도 챙겨 줬군. …여기 잠깐 앉을게.',
   complete:'이 몸과 한 바퀴 잘 다녀왔군. 헷갈린 말은 또 만나면 돼. …오늘 꽤 잘했어.',
   review:'이 몸이 본 말인데 장면이 달라졌네. 이번 상황부터 읽어. …나도 다시 볼게.',
+  reviewDue:'돌아온 말들은 이 몸이 모아 뒀지. 장면은 새로 바뀌었어. …나도 같이 볼게.',
+  reviewNext:'아직 안 열렸어. 돌아올 말은 이 몸이 적어 뒀지. …그동안 다음 레슨이나 가자.',
+  reviewEmpty:'아직 돌아올 말이 없군. 이 몸이랑 레슨부터 한 바퀴 돌자. …금방 쌓여.',
   help:'이 몸이 헷갈린 표현부터 골라 줄게. …아니, 네가 고르면 내가 같이 봐 주지.',
   practice:'이 몸의 특별 연습. 다른 상황에서 같은 표현을 써 봐. 끝나면 하던 자리로 돌아가자.',
   practiceSuccess:'역시 내… 아니, 네가 찾아낸 말이지. 이제 하던 자리로 가자.',
@@ -54,6 +60,9 @@ const LINES={
   break:'우와, 우리 자리야! 같이 한 모금 쉬어 가자!',
   complete:'우와! 오늘도 같이 다녀왔어! 헷갈린 말은 다음에 같이 또 만나자!',
   review:'어? 전에 만난 말인데 장면이 달라! 이번에는 어떻게 말할지 같이 찾아보자!',
+  reviewDue:'우와, 전에 만난 말들이 돌아왔어! 이번엔 어떤 장면일까? 같이 보자!',
+  reviewNext:'어? 아직 안 돌아왔어! 곧 다시 만날 말들이야! 그동안 다음 레슨 같이 할까?',
+  reviewEmpty:'어? 아직 돌아올 말이 없어! 레슨부터 같이 만나 볼까?',
   help:'어떤 표현이 헷갈렸어? 새 장면에서 같이 다시 만나 보자!',
   practice:'오! 다른 장면에서도 이 말을 쓸 수 있을까? 같이 읽고 골라 보자!',
   practiceSuccess:'우와! 새로운 장면에서도 찾았어! 하던 자리로 같이 돌아가자!',
@@ -70,7 +79,7 @@ export function lifeTutorKind(state={}){
  if(state.phase==='response')return state.helped?'assisted':'success';
  if(state.phase==='choose')return state.compose?'compose':state.requiresHearing?'listen':'question';
  if(state.phase==='welcome')return 'cafe';
- if(['intro','story','break','complete','review'].includes(state.phase))return state.phase;
+ if(['intro','story','break','complete','review','reviewDue','reviewNext','reviewEmpty'].includes(state.phase))return state.phase;
  if(state.phase==='questions')return 'question';
  return state.scope==='cafe'?'cafe':'library';
 }

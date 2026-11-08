@@ -44,8 +44,9 @@ const icon=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 const DOOR=icon('<path d="M4 10.4 12 4l8 6.4V19a1.5 1.5 0 0 1-1.5 1.5h-4V15h-5v5.5h-4A1.5 1.5 0 0 1 4 19z"/>');
 const CHECK=icon('<path d="m5 12.5 4.2 4.2L19 7"/>');
 
-/** 장소 단추와 진도 표시만 맡는다. 무엇을 열지는 onPlace가 정한다. obstacle은 세로 화면에서 그림이 가리면 안 되는 아래 카드다. */
-export function createHomeTown({container,asset,onPlace=()=>{},obstacle=null}){
+/** 장소 단추와 진도 표시만 맡는다. 무엇을 열지는 onPlace가 정한다. obstacle은 세로 화면에서 그림이 가리면 안 되는 아래 카드다.
+ * heading은 넓은 화면의 장소 제목 — 그 카드가 커져 닿으면 아랫줄부터 물러난다. */
+export function createHomeTown({container,asset,onPlace=()=>{},obstacle=null,heading=null}){
  // 그림은 자르지 않고 화면 안에 다 넣는다. 사진이 닿지 않는 자리는 사진 가장자리에서 읽은 배경지 색으로 이어 칠한다(edges).
  const frame=document.createElement('div');frame.className='town-frame';
  const img=document.createElement('img');img.className='town-photo';img.alt='';img.decoding='async';img.draggable=false;
@@ -110,6 +111,18 @@ export function createHomeTown({container,asset,onPlace=()=>{},obstacle=null}){
    :`linear-gradient(90deg,${edges.top}) left top/100% ${lid}px no-repeat,linear-gradient(180deg,${edges.left}) left ${Math.floor(box.top)}px/${side}px ${tall}px no-repeat,linear-gradient(180deg,${edges.right}) right ${Math.floor(box.top)}px/${side}px ${tall}px no-repeat,${under}`;
  }
  img.addEventListener('load',readEdges);
+ // 넓은 화면의 제목과 카드는 왼쪽 한 줄에 함께 산다. 카드는 말이 길면(영어 · 몽골어) 위로 커지니, 닿는 줄만 물러난다 — 아랫줄(진도) 먼저(title),
+ // 그래도 닿으면 머리말까지 빼고 제목만 머리말 자리로 올린다(compact), 그 자리도 닿을 때만 다 뺀다(none). 진도는 카드 안에도 있고 글은 화면 읽기에 그대로 남는다(opacity · transform만).
+ // 단계는 레이아웃 값(offsetTop · offsetHeight)으로 재 — 올린 제목이 다음 잼을 바꾸지 않는다. 처음 넓은 화면 카드가 제목 아랫줄을 가렸고, 다 빼던 첫 판은 몽골어 1440에서 제목까지 지웠다(11-09 검수).
+ function fitHeading(){
+  if(!heading)return;
+  const edge=layout==='landscape'?obstacle?.getBoundingClientRect():null;
+  if(!edge?.height){delete heading.dataset.fit;return;}
+  const top=heading.getBoundingClientRect().top,room=edge.top-8,title=heading.querySelector('h1'),line=heading.querySelector('p:last-child');
+  const bottom=node=>node?top+node.offsetTop+node.offsetHeight:top;
+  heading.style.setProperty('--title-lift',`${title?.offsetTop||0}px`);
+  heading.dataset.fit=bottom(line)<=room?'full':bottom(title)<=room?'title':title&&top+title.offsetHeight<=room?'compact':'none';
+ }
  // 가로: 오른쪽 아래에 붙인다(그림 왼쪽의 빈 하늘이 제목·카드 자리). 세로: 위에 붙이고, 아래 카드에 동네가 가리면 그만큼만 줄인다.
  function fit(){
   const rect=container.getBoundingClientRect(),cw=rect.width,ch=rect.height;if(!cw||!ch)return;
@@ -129,6 +142,7 @@ export function createHomeTown({container,asset,onPlace=()=>{},obstacle=null}){
   frame.dataset.fit=mode;container.style.setProperty('--town-fh',`${fh}px`);container.style.setProperty('--town-top',`${top}px`);box={left,top,width:fw,height:fh};fill();
   // 세로 안내 한 줄은 동네 바로 아래 빈 하늘에 들어갈 자리가 있을 때만 보인다.
   hint.dataset.fits=String(layout==='landscape'||top+fh*.615+(hint.offsetHeight||44)+8<=free);
+  fitHeading();
  }
  function place(id){
   const base=TOWN_SCENES[layout].places[id],spot=compact&&base.alt?base.alt:base,button=buttons.get(id),zone=zones.get(id);

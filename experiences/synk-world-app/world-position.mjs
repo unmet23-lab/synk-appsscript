@@ -67,6 +67,29 @@ function posHelpedTries(events,{asOf,days=30}={}){
  for(const tries of rows.values())tries.sort((a,b)=>Date.parse(b.at)-Date.parse(a.at)||a.eventId.localeCompare(b.eventId));
  return rows;
 }
+// 칸에 세지 않은 답(11-08 프론트 검수 F1): Core는 평가할 수 없는 답(unassessed · skipped)을 수로만 센다(atlas/learning.js formatEvidence).
+// 판에서는 그 답이 무기록처럼 사라지지 않게 문항 · 날짜 · 까닭을 Trail 로그에서 읽어 한 줄씩 보인다(도움과 함께 낸 답과 같은 길 — 칸 · 판정은 바꾸지 않는다).
+// reason: Trail이 적은 까닭(motor · audio · unanswered · demo · visual · storage), 없으면 null — 호스트가 판정 자격 없는 문항으로 낸 답이다(어느 쪽인지는 화면이 가른다).
+// answer: 고른 보기가 기록에 있을 때만 'correct'|'incorrect', 없으면 null. 첫 답만, 빼기(record.excluded)로 지운 시도는 넣지 않는다.
+function posUncountedTries(events){
+ const shown=new Map(),excluded=new Set(),rows=new Map(),decisions=new Map();
+ const list=Array.isArray(events)?events:[];
+ for(const event of list){if(event?.type==='record.excluded'&&event.targetId)excluded.add(event.targetId);else if(event?.type==='decision.made')decisions.set(event.id,event.experienceId);else if(event?.type==='practice.presented')shown.set(event.id,event);}
+ for(const event of list){
+  if(event?.type!=='practice.attempted'||event.attemptNo!==1||excluded.has(event.id)||!['unassessed','skipped'].includes(event.verdict)||!posTime(event.at))continue;
+  const presentation=shown.get(event.presentationId),skillId=presentation?.measure?.skillId;if(!skillId)continue;
+  if(!rows.has(skillId))rows.set(skillId,[]);
+  rows.get(skillId).push({eventId:event.id,at:event.at,verdict:event.verdict,reason:event.reason??null,answer:event.choice?(event.choice.selectedId===event.choice.correctId?'correct':'incorrect'):null,itemKey:presentation.itemKey,experienceId:decisions.get(presentation.decisionId)??null,difficulty:presentation.measure?.difficulty??null});
+ }
+ for(const tries of rows.values())tries.sort((a,b)=>Date.parse(b.at)-Date.parse(a.at)||a.eventId.localeCompare(b.eventId));
+ return rows;
+}
+// 세지 않은 답의 전체 수: Core 요약의 대표 칸(skill.unassessed)은 한 난도 · 꼴만 세므로 칸마다 더한다(접힌 옛 기록 포함). 칸이 없는 옛 요약이면 대표 칸의 수.
+function posUnassessedTotal(skill){
+ let total=0;
+ for(const level of Object.values(posRecord(skill.levels)?skill.levels:{}))for(const cell of Object.values(posRecord(level?.formats)?level.formats:{}))total+=cell?.unassessed||0;
+ return total||skill.unassessed||0;
+}
 // Core 판정 문턱(atlas/learning.js POLICY의 sample·stableRatio). 판이 「다시 확인할 때 · ○월 ○일 혼자 해냄」처럼 지난 성취를
 // 말해도 되는지만 이 수로 읽는다 — 칸·순위는 Core 상태 그대로다. 시험이 Core의 값과 같은지 대조한다.
 export const POSITION_CORE_POLICY=Object.freeze({sample:4,stableRatio:.8});
@@ -108,7 +131,7 @@ function posAttention(skills,prefer=null){
 export function buildPositionMap({summary,events=[],policy=POSITION_CORE_POLICY,prefer=null,exam='topik1'}={}){
  const profile=posProfile(summary),find=posAttemptIndex(events),counts={independent:0,practicing:0,notyet:0};
  const rules={sample:Number.isInteger(policy?.sample)?policy.sample:POSITION_CORE_POLICY.sample,stableRatio:Number.isFinite(policy?.stableRatio)?policy.stableRatio:POSITION_CORE_POLICY.stableRatio};
- const helped=posHelpedTries(events,{asOf:profile.asOf});
+ const helped=posHelpedTries(events,{asOf:profile.asOf}),uncounted=posUncountedTries(events);
  const skills=posTopikSkills(profile,exam).map(skill=>{
   const cell=positionCell(skill.status),ids=Array.isArray(skill.reasonEvidence)?skill.reasonEvidence:Array.isArray(skill.evidence)?skill.evidence:[];
   const assisted=skill.status==='supported',found=[],folded=[];
@@ -120,8 +143,8 @@ export function buildPositionMap({summary,events=[],policy=POSITION_CORE_POLICY,
    .map(level=>({difficulty:level.difficulty,status:level.status,n:level.n||0,correct:level.correct||0,incorrect:level.incorrect||0,lastAt:posTime(level.lastAt)?level.lastAt:null,responseFormat:level.responseFormat||'unknown'}));
   const tries=helped.get(skill.id)||[];
   const row={id:skill.id,label:skill.label,domain:skill.domain,cell,status:skill.status,priority:Number.isFinite(skill.priority)?skill.priority:null,lastAt:posTime(skill.lastAt)?skill.lastAt:null,
-   n:skill.n||0,correct:skill.correct||0,incorrect:skill.incorrect||0,assisted:skill.assisted||0,unassessed:skill.unassessed||0,
-   difficulty:skill.difficulty??null,responseFormat:skill.responseFormat||'unknown',evidence:found,folded:folded.length,levels,helped:tries};
+   n:skill.n||0,correct:skill.correct||0,incorrect:skill.incorrect||0,assisted:skill.assisted||0,unassessed:posUnassessedTotal(skill),
+   difficulty:skill.difficulty??null,responseFormat:skill.responseFormat||'unknown',evidence:found,folded:folded.length,levels,helped:tries,uncounted:uncounted.get(skill.id)||[]};
   row.note=posNote(row,{found,tries,levels,policy:rules});
   return row;
  });

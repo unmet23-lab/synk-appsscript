@@ -1,6 +1,8 @@
 import {lifeTutorExpression} from './life-tutor-lines.mjs';
 import {homeDayKey,homeTutorDays,homeTutorMemoryLine} from './home-tutor-days.mjs';
 
+// 「방금」의 창: 레슨 · 복습을 막 마치고 홈에 돌아온 사람으로 읽는 30분. 인사(homeTutorLine)와 돌아온 복습의 「방금 만난 말」(fresh)이 같은 창을 쓴다.
+const JUST_NOW=30*60000;
 // Recommendations read the existing owner-scoped progress; they never grade it.
 export function homeTutorRecommendation({owner,summary,snapshot,lessons=[],practised=new Map(),now=Date.now()}={}){
  if(!summary||summary.owner!==owner||snapshot?.owner!==owner||summary.status?.phase==='loading')return {kind:'loading'};
@@ -28,9 +30,11 @@ export function homeTutorRecommendation({owner,summary,snapshot,lessons=[],pract
  const difficult=known.filter(r=>r.lapses>0&&r.streak===0&&practised.get(r.questionId)!==r.lastAt&&!practisedToday(r))
   .sort((a,b)=>Number(b.dueAt<=now)-Number(a.dueAt<=now)||b.lastAt-a.lastAt||a.id.localeCompare(b.id))[0];
  if(difficult)return {kind:'difficult',id:difficult.questionId,title:difficult.title,lessonTitle:difficult.lessonTitle,lastAt:difficult.lastAt,command:'practice',label:'이 표현 같이 연습',...(memory&&!days.today.count&&memory.id===difficult.questionId?{memory}:{})};
- // fresh: 돌아온 복습 가운데 오늘 답한 문제가 있다(레슨에서 틀린 말이 1분 뒤 돌아온 때) — 튜터가 「방금 만난 말」이라고 해도 되는 때만(끝 판 F2).
+ // fresh: 돌아온 복습 가운데 30분 안에 답한 문제가 있다(레슨에서 틀린 말이 1분 뒤 돌아온 때) — 튜터가 「방금 만난 말」이라고 해도 되는 때만(끝 판 F2).
+ // 오늘 기록만 보면 아침에 맞혀 둔 복습 문항이 저녁 레슨 직후 「방금」으로 읽힌다(끝 판 FA1).
  const back=known.filter(r=>r.dueAt<=now&&!practisedToday(r));
- if(summary.dueCount&&back.length)return {kind:'review',command:'review',label:'오늘의 복습 열기',...(back.some(r=>todayItems[r.questionId]?.lessonId===r.lessonId)?{fresh:true}:{}),...(memory&&!days.today.count?{memory}:{})};
+ const metJustNow=r=>{const item=todayItems[r.questionId];return item?.lessonId===r.lessonId&&now-Math.max(item.observedAt||0,item.guidedAt||0)<JUST_NOW;};
+ if(summary.dueCount&&back.length)return {kind:'review',command:'review',label:'오늘의 복습 열기',...(back.some(metJustNow)?{fresh:true}:{}),...(memory&&!days.today.count?{memory}:{})};
  if(summary.nextLesson)return {kind:summary.resume?'resume':'start',title:summary.nextLesson.title,command:'learn',label:summary.resume?'하던 학습 이어 하기':'오늘의 학습 시작',...(memory&&!days.today.count?{memory}:{})};
  return {kind:'complete',command:'packs',label:'생활 팩 둘러보기',...(memory&&!days.today.count?{memory}:{})};
 }
@@ -72,7 +76,7 @@ export function homeTutorLine(id,recommendation,{completed='',day=null}={}){
  if(r.memory)return homeTutorMemoryLine(id,r.memory);
  // 방금(30분 안) 레슨 · 복습을 하고 홈에 돌아온 사람에게 「왔구나」는 처음 온 사람 인사로 읽힌다(11-08 프론트 검수 A3 · B4) — 이어 가는 말로.
  // 돌아온 복습이 오늘 답한 말일 때만(r.fresh) 「방금 만난 말」, 지난 복습이 밀려 있으면 「전에 만난 말」로 잇는다(끝 판 F2).
- const justNow=Number.isFinite(day?.latestAt)&&day.latestAt>0&&Date.now()-day.latestAt<30*60000;
+ const justNow=Number.isFinite(day?.latestAt)&&day.latestAt>0&&Date.now()-day.latestAt<JUST_NOW;
  if(justNow){
   const next={
    marin:{difficult:`방금 기록 확인. ${expression}, 다시 살필 표현이다. …이어서 함께한다.`,review:'복습 확인. 방금 만난 표현이 다른 장면으로 돌아왔다. …하나씩 확인한다.',reviewEarlier:'복습 확인. 전에 만난 표현도 돌아와 있다. …하나씩 확인한다.',start:`계속 확인. 다음은 ${expression}부터다. …옆에 있겠다.`},

@@ -1,6 +1,8 @@
 import {t,tMessage,hasString,formatDate,currentLang} from '../brand-opening/world-lang.mjs';
 import {followupRows,advisoryRows} from './world-learning-followups.mjs';
 import {lifeFollowupRows} from './life-followups.mjs';
+import {lessonById} from './life-content.mjs';
+import {lifeTutorExpression} from '../brand-opening/life-tutor-lines.mjs';
 
 // 「시간을 두고 다시 확인」 카드(11-08 프론트 검수 A2 · B6): Temper 재확인 줄(TOPIK 연습 · 생활 한국어)을 기준 답(sourceAttemptId)마다 카드 하나로
 // 묶고 창은 1 · 7 · 30일 차례로 둔다. 지금 확인할 칸이 있는 카드가 먼저, 그다음 아직 안 온 가장 가까운 날짜 차례(다 지난 카드는 뒤).
@@ -502,6 +504,21 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const bridged=exam==='topik2'?['listening','reading'].filter(domain=>!two[domain]):[];
   return {map,plan,gate,mock,exam,writing,exams,bridged,summary};
  }
+ // 근거 줄의 생활 문항: 문항 첫머리(그 문항의 표현)와 판정 자격 — 문항 묶음(position.label)에 없는 문항이다. 생활 부품이 없는 옛 묶음이면 둘 다 없다.
+ let lifeItemIndex=null;
+ function lifeItemOf(itemKey){
+  if(!lifeItemIndex){lifeItemIndex=new Map();try{for(const item of engine.life?.lifeItems?.()||[])lifeItemIndex.set(item.itemKey,item);}catch{}}
+  return lifeItemIndex.get(itemKey)||null;
+ }
+ function itemExcerpt(itemKey){
+  const known=position.label(itemKey);if(known)return known;
+  const item=lifeItemOf(itemKey),lesson=item&&lessonById(item.lessonId);
+  return lesson?lifeTutorExpression(lesson,lesson.questions.find(q=>q.id===item.questionId)):'';
+ }
+ function itemAssessable(itemKey){
+  const item=lifeItemOf(itemKey);if(!item)return null;
+  try{return engine.life.lifeAssessable(item)===true;}catch{return null;}
+ }
  function showBoard(coachNow,{keepScroll=false}={}){
   check();
   // 듣기 항목의 「이 항목 연습하기」는 지금 추천 후보에서 찾으므로 판을 그리기 전에 추천을 새로 세운다(10-21 검수).
@@ -509,7 +526,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const scroller=keepScroll?panelNode('[data-position-board]')?.closest?.('#panel-content'):null,scrollTop=scroller?.scrollTop||0;
   const routes=practiceRoutes(coachNow),{map,plan,gate,mock,exam,writing,exams,bridged,summary}=positionData(coachNow,id=>routes.has(id));
   let scope=null;try{scope=getProgress().status().scoped?'account':'device';}catch{}
-  home.showPanel(t('position.title'),view.renderPositionBoard({map,plan,gate,mock,exams,writing,bridged,catalog:position.label,diagnosed,scope,practice:id=>routes.get(id)||null}),PANEL);
+  home.showPanel(t('position.title'),view.renderPositionBoard({map,plan,gate,mock,exams,writing,bridged,catalog:itemExcerpt,assessable:itemAssessable,diagnosed,scope,practice:id=>routes.get(id)||null}),PANEL);
   const root=panelNode('[data-position-board]');
   if(root&&position.followups){
    void loadFollowupBank();const delayed=delayedRows(),life=lifeDelayedRows();

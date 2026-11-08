@@ -113,7 +113,7 @@ test('완료 ③: 도움·다시 듣기·소리 실패는 「혼자 해냄」으
  assert.equal(row.note.kind,'helped');assert.match(view.noteText(row.note),/^도움과 함께 시도 · /);
  assert.ok(row.unassessed>=1,'소리가 나지 않은 답은 세지 않은 답으로 남는다');
  const board=view.renderPositionBoard({map});
- assert.match(board,/도움과 함께 한 시도[\s\S]*틀림 · 도움 받음/);assert.match(board,/답 \d+개는 칸을 정하는 데 쓰지 않았어요/,'세지 않은 답은 학습자가 안 한 일(소리 · 건너뜀)을 늘어놓지 않고 짧게(11-08 프론트 검수 — 생활 답에도 뜬다)');
+ assert.match(board,/도움과 함께 한 시도[\s\S]*틀림 · 도움 받음/);assert.match(board,/data-uncounted[\s\S]*data-why="audio"[\s\S]*소리를 끝까지 듣기 전이라 세지 않았어요/,'세지 않은 답은 그 답의 실제 까닭 하나로(11-08 프론트 검수 F1 — 학습자가 안 한 일을 늘어놓지 않는다)');
  assert.doesNotMatch(board,/소리가 안 났거나 건너뛴|연습용 문제/);
  assert.equal(row.helped[0].experienceId,'world-home');assert.match(board,/data-helped>[\s\S]*짧은 진단/,'도움과 함께 낸 진단 답의 출처는 짧은 진단(10-21 검수)');
  // 읽기 짧은 연습: 답한 뒤 정답·해설을 보는 것은 첫 답 뒤라 그 답은 혼자 낸 첫 시도 그대로다.
@@ -254,7 +254,7 @@ test('시험 계획: 쉬거나 빠진 주는 빚으로 쌓지 않고, 날짜·�
  assert.ok(week2.areas.every(row=>row.done===0));
  const html=view.renderExamPlan({plan:week2});
  assert.doesNotMatch(html,/D-\d|남은 날|며칠 남|밀린|놓쳤|못 했어요|연속/,'D-n·밀린 연습·연속 기록 말이 없다');
- assert.match(html,/쉬는 날이 있어도 괜찮아요/);assert.doesNotMatch(html,/[1-6]급(?! 목표)|합격(?! 가능성은 판단하지 않아요)/,'목표 급 말고 급수·합격 판정이 없다(판단하지 않는다는 안내만)');
+ assert.match(html,/못 한 것은 쌓지 않고, 월요일에 새로 짜요/);assert.doesNotMatch(html,/[1-6]급(?! 목표)|합격(?! 가능성은 판단하지 않아요)/,'목표 급 말고 급수·합격 판정이 없다(판단하지 않는다는 안내만)');
 });
 test('시험 계획: 기록이 없으면 짧은 진단부터, 시험일이 지나면 다음 목표를 묻고, 반 과제는 그 주의 연습으로 먼저 센다',()=>{
  const fresh=student({start:KST_MONDAY+DAY}),info=exam.examInfo({...EXAM,examType:'topik2',targetGrade:4,examDate:'2026-12'});

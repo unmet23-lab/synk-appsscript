@@ -56,14 +56,34 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
    return `<li class="wpos-evidence" data-verdict="${posEscape(row.verdict)}" data-assisted="true">${posLed(ok?'ok':'alert')}<span class="wpos-evidence-main"><strong>${posEscape(t(ok?'position.evidence.correct':'position.evidence.incorrect'))} · ${posEscape(t('position.evidence.assisted'))}</strong><small>${posEscape(itemSource(row.itemKey,row.experienceId))}${excerpt?` · <span lang="ko">${posEscape(excerpt)}</span>`:''}${row.difficulty?` · ${posEscape(t('position.evidence.level',{n:row.difficulty}))}`:''}</small></span><time datetime="${posEscape(row.at)}">${posEscape(day(row.at))}</time></li>`;}).join('');
   return `<p class="wpos-evidence-title">${posEscape(t('position.helped.title'))}</p><ul class="wpos-evidence-list" data-helped>${rows}</ul><p class="wpos-note">${posEscape(t('position.helped.note'))}</p>`;
  }
+ // 칸에 세지 않은 답(world-position.mjs posUncountedTries): 까닭 하나씩 한 줄 — 학습자가 기억하는 답이 판에서 사라지지 않게(11-08 프론트 검수 F1).
+ // 줄로 못 보이는 답(접힌 옛 기록 · 둘째 시도 · 여섯 줄을 넘은 것)은 수로. assessable(itemKey): 호스트가 아는 문항의 판정 자격(true|false, 모르는 문항은 null) —
+ // 까닭 없는 답이 「자격 있는 문항」이면 제품에서 이미 만난 문항을 다시 낸 것이고(life-trail.mjs), 자격이 없으면 아직 칸을 정하는 데 쓰지 않는 문항이다.
+ const UNCOUNTED_REASONS=new Set(['audio','unanswered','motor','visual','storage']);
+ function uncountedWhy(row,assessable){
+  if(UNCOUNTED_REASONS.has(row.reason))return row.reason;
+  if(row.verdict==='skipped')return 'unanswered';
+  const listed=assessable?.(row.itemKey);
+  return listed===true?'met':listed===false?'draft':'other';
+ }
+ function uncountedRows(skill,catalog,assessable){
+  const rows=(skill.uncounted||[]).slice(0,6),more=Math.max(0,(skill.unassessed||0)-rows.length);
+  if(!rows.length)return more?`<p class="wpos-note">${posEscape(t('position.evidence.unassessed',{n:more}))}</p>`:'';
+  const list=rows.map(row=>{
+   const excerpt=catalog?.(row.itemKey)||'',why=uncountedWhy(row,assessable);
+   const answer=row.answer?t(row.answer==='correct'?'position.evidence.correct':'position.evidence.incorrect'):why==='unanswered'?t('position.uncounted.noAnswer'):'';
+   return `<li class="wpos-evidence" data-verdict="${posEscape(row.verdict)}" data-why="${posEscape(why)}">${posLed('')}<span class="wpos-evidence-main"><strong>${posEscape([answer,t('position.uncounted.tag')].filter(Boolean).join(' · '))}</strong><small>${posEscape(itemSource(row.itemKey,row.experienceId))}${excerpt?` · <span lang="ko">${posEscape(excerpt)}</span>`:''}${row.difficulty?` · ${posEscape(t('position.evidence.level',{n:row.difficulty}))}`:''}</small><small>${posEscape(t(`position.uncounted.why.${why}`))}</small></span><time datetime="${posEscape(row.at)}">${posEscape(day(row.at))}</time></li>`;
+  }).join('');
+  return `<p class="wpos-evidence-title">${posEscape(t('position.uncounted.title'))}</p><ul class="wpos-evidence-list" data-uncounted>${list}</ul>${more?`<p class="wpos-note">${posEscape(t('position.uncounted.more',{n:more}))}</p>`:''}`;
+ }
  // practice(skillId): 그 항목에 지금 낼 새 문항이 있는 연습 — {route:'practice'}(읽기 짧은 연습, 그 항목의 새 문항) 또는 {route:'game',gameId}(듣기 게임).
  // 읽기는 「이 항목 연습하기」, 게임은 그 항목 문항이 먼저 나온다고 약속할 수 없어 계획 판처럼 게임 이름으로 단다(10-21 검수). 참만 오면 읽기와 같다.
  const practiceButton=(skillId,practice)=>{const route=practice?.(skillId);if(!route)return '';
   const label=route.route==='game'&&route.gameId&&has(`plan.game.${route.gameId}`)?t(`plan.game.${route.gameId}`):t('position.practice.start');
   return `<button class="quiet-button wpos-practice" type="button" data-position-practice="${posEscape(skillId)}">${posEscape(label)} <span aria-hidden="true">→</span></button>`;};
- function skillRow(skill,catalog,practice){
+ function skillRow(skill,catalog,practice,assessable){
   const note=noteText(skill.note);
-  return `<details class="wpos-skill" data-skill="${posEscape(skill.id)}" data-cell="${posEscape(skill.cell)}" data-status="${posEscape(skill.status)}"><summary><span class="wpos-skill-name">${posEscape(skillName(skill))}${note?`<small class="wpos-skill-note" data-note="${posEscape(skill.note.kind)}">${posEscape(note)}</small>`:''}</span><span class="wpos-chip" data-tone="${POS_LED[skill.cell]||'idle'}">${posLed(POS_LED[skill.cell])}${posEscape(t(`position.cell.${skill.cell}`))}</span></summary><div class="wpos-skill-body"><p class="wpos-status">${posEscape(t(`position.status.${skill.status}`))}</p><p class="wpos-evidence-title">${posEscape(t('position.evidence.title'))}</p>${evidenceRows(skill,catalog)}${skill.unassessed?`<p class="wpos-note">${posEscape(t('position.evidence.unassessed',{n:skill.unassessed}))}</p>`:''}${helpedRows(skill,catalog)}${practiceButton(skill.id,practice)}</div></details>`;
+  return `<details class="wpos-skill" data-skill="${posEscape(skill.id)}" data-cell="${posEscape(skill.cell)}" data-status="${posEscape(skill.status)}"><summary><span class="wpos-skill-name">${posEscape(skillName(skill))}${note?`<small class="wpos-skill-note" data-note="${posEscape(skill.note.kind)}">${posEscape(note)}</small>`:''}</span><span class="wpos-chip" data-tone="${POS_LED[skill.cell]||'idle'}">${posLed(POS_LED[skill.cell])}${posEscape(t(`position.cell.${skill.cell}`))}</span></summary><div class="wpos-skill-body"><p class="wpos-status">${posEscape(t(`position.status.${skill.status}`))}</p><p class="wpos-evidence-title">${posEscape(t('position.evidence.title'))}</p>${evidenceRows(skill,catalog)}${uncountedRows(skill,catalog,assessable)}${helpedRows(skill,catalog)}${practiceButton(skill.id,practice)}</div></details>`;
  }
  // 「먼저 볼 항목」(최대 3, world-position.mjs posAttention): 틀린 답이 있거나 다시 볼 때가 된 항목. 약점 낙인이 아니다.
  function attentionBlock(map,practice){
@@ -125,15 +145,16 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
  // catalog(itemKey): 문항 첫머리(없으면 연습 이름만) · scope: 'account'|'device'(어디 기록인지 한 줄)
  // practice(skillId): 「이 항목 연습하기」를 달 수 있는 항목인지(world-learning-ui.mjs가 넘긴다, 없으면 단추 없음).
  // exams: 판에서 고를 수 있는 시험(['topik1','topik2'] — 둘 이상일 때 위에 고르기) · mock: selectMock 결과 · writing: TOPIK II 판의 쓰기 연습 줄을 둘지.
+ // assessable(itemKey): 세지 않은 답의 까닭을 가를 문항 판정 자격(uncountedRows).
  // bridged: TOPIK II 문항이 아직 없어 이번 주 계획이 TOPIK I 항목으로 세는 영역(world-exam-plan progress[영역].basis와 같은 판단) — TOPIK II 판에서
  // 그 영역에 한 줄로 알려, 판(TOPIK II 항목)과 계획(TOPIK I 항목)의 수가 왜 다른지 보이게 한다.
- function renderPositionBoard({map,plan=null,gate=null,mock=null,catalog=null,diagnosed=false,scope=null,practice=null,exams=null,writing=false,bridged=[]}={}){
+ function renderPositionBoard({map,plan=null,gate=null,mock=null,catalog=null,diagnosed=false,scope=null,practice=null,exams=null,writing=false,bridged=[],assessable=null}={}){
   const exam=map.exam==='topik2'?'topik2':'topik1';
   const summary=t(exam==='topik2'?'position.summary.topik2':'position.summary',{...map.counts,total:map.total});
   const groups=['listening','reading'].map(domain=>{
    const skills=map.skills.filter(skill=>skill.domain===domain);
    const bridge=exam==='topik2'&&Array.isArray(bridged)&&bridged.includes(domain)?`<p class="wpos-note" data-position-bridge="${domain}">${posEscape(t(domain==='listening'?'position.bridge.listening':'position.bridge.reading'))}</p>`:'';
-   return `<section class="wpos-group" data-domain="${domain}"><h3>${posEscape(t(`position.domain.${domain}`))} <span>${skills.length}</span></h3>${progressLine(map.domains?.[domain])}${bridge}<div class="wpos-skills">${skills.map(skill=>skillRow(skill,catalog,practice)).join('')}</div></section>`;
+   return `<section class="wpos-group" data-domain="${domain}"><h3>${posEscape(t(`position.domain.${domain}`))} <span>${skills.length}</span></h3>${progressLine(map.domains?.[domain])}${bridge}<div class="wpos-skills">${skills.map(skill=>skillRow(skill,catalog,practice,assessable)).join('')}</div></section>`;
   }).join('');
   // TOPIK II 쓰기: 자동으로 맞음·틀림을 매기지 않아 항목 칸에 넣지 않고, 쓰기 연습(③)으로 가는 줄만 둔다.
   const writingBlock=exam==='topik2'?`<section class="wpos-group" data-domain="writing"><h3>${posEscape(t('plan.area.writing'))}</h3><p class="wpos-note">${posEscape(t('position.writing.note'))}</p>${writing?`<button class="quiet-button wpos-practice" type="button" data-position-writing>${posEscape(t('writing.title'))} <span aria-hidden="true">→</span></button>`:''}</section>`:'';
@@ -369,7 +390,7 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
   // 쓰기 칸(10-22): TOPIK II 쓰기 연습(51~54) 목록을 그 칸에서 바로 연다 — 쓰기는 숙제·다시 확인으로 이어지지 않아(자동 판정이 없다) 여기 말고는 여는 곳이 없다.
   // 쓰기 연습이 열려 있을 때만(문항을 못 읽어 닫힌 주에는 「한 것」만 남은 칸일 수 있다).
   const writingOpen=exam.type==='topik2'&&!notes.has('writing-unavailable');
-  const area=row=>`<li data-area="${posEscape(row.area)}"><span class="wplan-area-name">${posEscape(t(`plan.area.${row.area}`))}</span>${dots(row.planned,row.done)}<span class="wplan-area-count">${posEscape(row.planned>0?t('plan.area.count',{done:row.done,planned:row.planned}):t(row.area==='life'?'plan.area.extraDays':'plan.area.extra',{done:row.done}))}</span>${row.classwork?.length?`<small class="wplan-classwork">${row.classwork.map(task=>posEscape(t(task.done?'plan.classwork.done':'plan.classwork.todo',{kind:t(`plan.area.${task.kind}`)}))).join(' · ')}</small>`:''}${row.area==='writing'&&writingOpen?`<button class="quiet-button wplan-area-open" type="button" data-plan-writing="writing">${posEscape(t('writing.row.title'))} <span aria-hidden="true">→</span></button>`:''}</li>`;
+  const area=row=>`<li data-area="${posEscape(row.area)}"><span class="wplan-area-name">${posEscape(t(`plan.area.${row.area}`))}</span>${dots(row.planned,row.done)}<span class="wplan-area-count">${posEscape(row.planned>0?t('plan.area.count',{done:row.done,planned:row.planned}):t(row.area==='life'?'plan.area.extraDays':'plan.area.extra',{done:row.done,n:row.done}))}</span>${row.classwork?.length?`<small class="wplan-classwork">${row.classwork.map(task=>posEscape(t(task.done?'plan.classwork.done':'plan.classwork.todo',{kind:t(`plan.area.${task.kind}`)}))).join(' · ')}</small>`:''}${row.area==='writing'&&writingOpen?`<button class="quiet-button wplan-area-open" type="button" data-plan-writing="writing">${posEscape(t('writing.row.title'))} <span aria-hidden="true">→</span></button>`:''}</li>`;
   // NOW 제목: 홈(home.mjs planLabel)과 같은 이름. 화면 언어로 바꿀 수 있는 것은 바꾸고, 레슨 제목처럼 한국어 학습 내용은 lang="ko" 칸에 둔다.
   const nextTitle=next?planTitle(next):'';
   const gameOf=id=>String(id||'').split('.').pop();
@@ -391,7 +412,7 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
   const bridged=exam.type!=='topik2'?[]:plan.progress?['listening','reading'].filter(area=>plan.progress[area]?.basis==='topik1'):reach.basis==='topik1'?['listening','reading']:[];
   return `<div class="wpos wplan life-heading" data-plan-board tabindex="-1">${poster(t('plan.week.title'),head,{print:'plan',label:'MY PLAN'})}`
    +(notes.has('past')?`<section class="wpos-diagnostic" data-plan-past><p class="wpos-intro">${posEscape(t('goal.exam.past'))}</p><button class="quiet-button" type="button" data-view="study">${posEscape(t('plan.week.setGoal'))}</button></section>`:'')
-   +`<section class="wplan-week"><p class="life-section-label">THIS WEEK</p><h3>${posEscape(t('plan.week.sessions',{n:plan.sessions?.total||0,minutes:plan.sessions?.minutes||0}))}</h3><ul class="wplan-areas">${(plan.areas||[]).map(area).join('')}</ul><p class="wpos-note">${posEscape(t('plan.week.rest'))}</p>${notes.has('audio-off')?`<p class="wpos-note">${posEscape(t('plan.week.audioOff'))}</p>`:''}${notes.has('reading-unavailable')?`<p class="wpos-note" data-plan-reading-later>${posEscape(t('plan.week.readingLater'))}</p>`:''}${notes.has('writing-unavailable')?`<p class="wpos-note">${posEscape(t('plan.week.writingLater'))}</p>`:''}${notes.has('speaking-audio-off')?`<p class="wpos-note" data-plan-speaking-later>${posEscape(t('plan.week.speakingAudioOff'))}</p>`:''}${notes.has('speaking-unavailable')?`<p class="wpos-note" data-plan-speaking-later>${posEscape(t('plan.week.speakingLater'))}</p>`:''}${notes.has('no-date')?`<p class="wpos-note">${posEscape(t('plan.week.noDate'))}</p>`:''}</section>`
+   +`<section class="wplan-week"><p class="life-section-label">THIS WEEK</p><h3>${posEscape(t('plan.week.sessions',{n:plan.sessions?.total||0,minutes:plan.sessions?.minutes||0}))}</h3><ul class="wplan-areas">${(plan.areas||[]).map(area).join('')}</ul><p class="wpos-note">${posEscape(t('plan.week.rest'))}</p>${notes.has('audio-off')?`<p class="wpos-note">${posEscape(t('plan.week.audioOff'))}</p>`:''}${notes.has('reading-unavailable')?`<p class="wpos-note" data-plan-reading-later>${posEscape(t('plan.week.readingLater'))}</p>`:''}${notes.has('writing-unavailable')?`<p class="wpos-note">${posEscape(t('plan.week.writingLater'))}</p>`:''}${notes.has('speaking-audio-off')?`<p class="wpos-note" data-plan-speaking-later>${posEscape(t('plan.week.speakingAudioOff'))}</p>`:''}${notes.has('speaking-unavailable')?`<p class="wpos-note" data-plan-speaking-later>${posEscape(t('plan.week.speakingLater'))}</p>`:''}</section>`
    +(next?`<section class="wplan-next"><p class="life-section-label">NOW</p><h3>${nextTitle}</h3>${reason?`<p class="wpos-note">${posEscape(reason)}</p>`:''}<button class="felt-button" type="button" data-plan-next>${posEscape(t('plan.week.start'))} <span aria-hidden="true">→</span></button></section>`:'')
    +(homework?`<section class="wpos-attention wplan-homework"><p class="life-section-label">HOMEWORK</p><h3>${posEscape(t('plan.homework.title'))}</h3><p class="wpos-note">${posEscape(t('plan.homework.note'))}</p><ul>${homework}</ul></section>`:'')
    +(checks?`<section class="wplan-checks"><p class="life-section-label">CHECK</p><h3>${posEscape(t('plan.checks.title'))}</h3><ul>${checks}</ul><p class="wpos-note">${posEscape(t('plan.checks.note'))}</p>${thisWeek&&!thisWeek.done&&next?.route!=='position'?`<button class="quiet-button" type="button" data-plan-recheck>${posEscape(t('position.diagnostic.start'))} <span aria-hidden="true">→</span></button>`:''}</section>`:'')
@@ -401,7 +422,8 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
    +(plan.mock?.status==='ready'?`<section class="wplan-next" data-plan-mock-section><p class="life-section-label">EXAM FORM</p><h3>${posEscape(t('mock.title'))}</h3><p class="wpos-note">${posEscape(t('mock.planNote',{minutes:plan.mock.minutes,n:plan.mock.total}))}</p><button class="quiet-button" type="button" data-plan-mock>${posEscape(t('mock.open',{minutes:plan.mock.minutes}))} <span aria-hidden="true">→</span></button></section>`:'')
    // 영역별 진행: 「확인한 학습 항목 수」만(점수·합격 준비도가 아니다).
    +`<section class="wplan-reach"><p class="life-section-label">SO FAR</p>${['listening','reading'].filter(area=>plan.progress?.[area]).map(area=>`<p class="wpos-progress" data-plan-progress="${area}"><span>${posEscape(t(`plan.area.${area}`))}${bridged.includes(area)?` · ${posEscape(t('goal.exam.type.topik1'))}`:''} · ${posEscape(t('position.progress',{checked:plan.progress[area].checked,total:plan.progress[area].total}))}</span><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(plan.progress[area].checked,plan.progress[area].total)}%"></i></span></p>`).join('')}<p class="wpos-intro">${posEscape(t('plan.reach.line',{confirmed:reach.confirmed,total:reach.total,evidence:reach.evidence}))}</p><p class="wpos-note">${posEscape(t('plan.reach.note'))}</p>${bridged.length?`<p class="wpos-note" data-plan-reach-basis>${posEscape(t(bridged.length>1?'plan.reach.topik1Basis':bridged[0]==='listening'?'plan.reach.topik1Basis.listening':'plan.reach.topik1Basis.reading'))}</p>`:''}</section>`
-   +`<button class="quiet-button" type="button" data-view="study">${posEscape(t('plan.week.change'))}</button></div>`;
+   // 시험일 안내는 그 일을 하는 단추 바로 위에 둔다 — THIS WEEK 칸에 안내 두 문단이 빽빽했다(11-08 미학 맹검).
+   +`${notes.has('no-date')?`<p class="wpos-note wplan-date-note">${posEscape(t('plan.week.noDate'))}</p>`:''}<button class="quiet-button" type="button" data-view="study">${posEscape(t('plan.week.change'))}</button></div>`;
  }
  return Object.freeze({skillName,itemSource,noteText,explainText,renderPositionBoard,renderHangulBoard,renderDiagnosticItem,renderDiagnosticDone,renderTownCheckWait,renderTownCheckDone,renderPracticeItem,renderPracticeDone,renderSetResponse,setResponseText,
   renderMockIntro,renderMockItem,renderMockBetween,renderMockDone,mockClock,renderExamPlan});

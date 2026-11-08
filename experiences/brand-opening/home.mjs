@@ -55,7 +55,7 @@ let tutorUI,homeTutor,firstRun,lastAccount=null;
 // trip: 지금 도는 문 열림 전환(go). 한 번에 하나만 돈다.
 let place='town',trip=null;
 const living=createHomeScene({container:scene,onAction:sceneAction,onStatus:status=>{scene.dataset.status=status;}});
-const town=createHomeTown({container:$('.town-scene'),asset,onPlace:openPlace,obstacle:$('.lobby-action')});
+const town=createHomeTown({container:$('.town-scene'),asset,onPlace:openPlace,obstacle:$('.lobby-action'),heading:$('.place-heading')});
 const memory=createHomeMemory({onChange:data=>living.setMemory(data)});
 try{manualReduced=localStorage.getItem('synk.world.maru.reduced')==='true';}catch{}
 try{const saved=localStorage.getItem('synk.world.maru.orientation');if(['auto','portrait','landscape'].includes(saved))displayPreference=saved;}catch{}
@@ -481,7 +481,8 @@ bindTaps(document);
 bindPress(document,':is(.felt-button,.quiet-button,.world-nav button,.life-choice,.game-tutor-help,.life-tutor-help,.home-tutor-action,.home-tutor-choose,.home-tutor-practice,.play-list>button,.life-row,.close-button):not(#world-panel.tutor-panel *)');
 export default home;
 // 고정 글과, 진도를 받기 전까지 보이는 자리 글을 지금 화면 언어로(한국어면 원문 그대로).
-translateTree(document);
+// 장소 제목은 JS가 쓰는 자리라 여기서 함께 쓴다 — 언어를 고른 뒤 다시 열면 제목만 한국어로 남았다(11-08 프론트 검수).
+translateTree(document);setTitle(place);
 if(!learningData.summary){
  $('#life-next-kicker').textContent=t('home.next.kicker');$('#life-next-title').textContent=t('home.next.title');$('#life-progress-caption').textContent=t('home.caption.default');
  $('#life-review-count').textContent=t('home.short.schedule');$('#life-next-button').setAttribute('aria-label',t('home.next.label'));

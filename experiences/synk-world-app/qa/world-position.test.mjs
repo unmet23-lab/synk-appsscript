@@ -287,3 +287,38 @@ test('한글 판은 「아직 못 읽어요」를 고르고 아직 졸업하지 
  assert.equal(showsHangulBoard({reading:{answer:'new'},stage:{skipped:true}}),false,'한글을 이미 읽는다고 건너뛰면 항목 지도');
  assert.equal(showsHangulBoard({reading:{answer:'new'}}),true,'한글 진도를 못 읽어도 고른 답을 따른다');
 });
+
+// 11-08 프론트 검수 F1: 세지 않은 답을 수만 세지 않고 문항 · 날짜 · 까닭으로 — 칸은 바꾸지 않는다.
+test('세지 않은 답은 까닭과 함께 줄로 남고 칸은 그대로다',()=>{
+ let now=START,index=0;const coach=worldLearning.engine.createGame({gameId:'world-home',storage:memory(),clock:()=>new Date(now).toISOString()});
+ const R2='ko.reading.detail';
+ const show=(skillId,measure={})=>{now+=60000;const id=`qa.uncounted.${++index}`;return [id,coach.present({id,itemKey:id,familyKey:id,skillId,modality:skillId.split('.')[1],difficulty:1,responseFormat:'single-choice',...measure})];};
+ const choice=(selectedId,correctId)=>({choice:{selectedId,correctId}});
+ const [wrongKey,wrong]=show(R2);coach.answer(wrong,{correct:false,assessable:false,...choice('a','b')});
+ const [rightKey,right]=show(R2);coach.answer(right,{correct:true,assessable:false,...choice('b','b')});
+ const [,skipped]=show(R2);coach.answer(skipped,{correct:null,assessable:false,reason:'unanswered'});
+ const [sceneKey,scene]=show(R2,{confounded:true});coach.answer(scene,{correct:true,assessable:true});
+ const [,unheard]=show(L);coach.answer(unheard,{correct:true,assessable:true});
+ const map=buildPositionMap({summary:coach.summary(),events:coach.events()}),rows=skillOf(map,R2);
+ assert.equal(rows.cell,'notyet','세지 않은 답은 칸을 정하지 않는다');assert.equal(rows.n,0);
+ assert.equal(rows.note.kind,'unassessed');
+ assert.equal(rows.unassessed,4);assert.equal(rows.uncounted.length,4,'첫 답마다 한 줄');
+ assert.deepEqual(rows.uncounted.map(row=>row.answer),[null,null,'correct','incorrect'],'최근 답 먼저, 고른 보기가 있으면 정오');
+ const byKey=Object.fromEntries(rows.uncounted.map(row=>[row.itemKey,row]));
+ assert.equal(byKey[wrongKey].reason,null);assert.equal(byKey[wrongKey].verdict,'unassessed');assert.equal(byKey[wrongKey].experienceId,'world-home');assert.equal(byKey[wrongKey].difficulty,1);
+ assert.equal(byKey[rightKey].answer,'correct');
+ assert.equal(rows.uncounted.find(row=>row.reason==='unanswered')?.answer,null,'답하지 않은 문항');
+ assert.equal(byKey[sceneKey].reason,'visual','장면 문항은 Trail의 까닭 그대로');
+ assert.equal(skillOf(map,L).uncounted[0].reason,'audio','소리를 끝까지 못 들은 답');
+});
+
+test('빼기로 지운 시도는 세지 않은 답 줄에 없고, 칸마다 흩어진 세지 않은 답을 모두 센다',()=>{
+ let now=START,index=0;const coach=worldLearning.engine.createGame({gameId:'world-home',storage:memory(),clock:()=>new Date(now).toISOString()});
+ const R2='ko.reading.detail',ask=(difficulty,responseFormat='single-choice')=>{now+=60000;const id=`qa.levels.${++index}`;const pid=coach.present({id,itemKey:id,familyKey:id,skillId:R2,modality:'reading',difficulty,responseFormat});return coach.answer(pid,{correct:true,assessable:false});};
+ ask(1);ask(2);ask(3,'binary-choice');
+ const before=skillOf(buildPositionMap({summary:coach.summary(),events:coach.events()}),R2);
+ assert.equal(before.unassessed,3,'대표 칸 하나가 아니라 난도 · 꼴마다 더한다');assert.equal(before.uncounted.length,3);
+ const removed=ask(1);coach.exclude(removed.eventId);
+ const after=skillOf(buildPositionMap({summary:coach.summary(),events:coach.events()}),R2);
+ assert.ok(!after.uncounted.some(row=>row.eventId===removed.eventId),'빼기로 지운 시도는 줄에 없다');
+});

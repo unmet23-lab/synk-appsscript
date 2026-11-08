@@ -65,6 +65,9 @@ svg{width:24px;height:24px;flex-shrink:0}
 .study-home-note{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;column-gap:14px;margin-left:auto}
 .study-home-note p{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .study-home-note [hidden]{display:none}
+/* 몽골어는 바로가기 글이 길어 한 줄에 하나씩 쌓이면 카드가 제목까지 올라간다 — 간격만 줄여 둘이 한 줄에 앉게 한다. */
+html[lang=mn] .study-home-note{column-gap:8px}
+html[lang=mn] .study-home-note .quiet-button{padding:0 4px}
 .quiet-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 6px;font-size:13.5px;font-weight:var(--wt-strong);color:var(--w-ink-2);text-decoration:underline;text-decoration-color:var(--w-ink-4);text-underline-offset:5px}
 .quiet-button:hover{color:var(--w-ink)}
 .life-home-shortcuts{flex-basis:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}

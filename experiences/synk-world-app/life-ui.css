@@ -731,6 +731,7 @@ h3.life-poster-sub{margin-bottom:0}
 .wplan-areas{display:grid;margin:0;padding:0;list-style:none}
 .wplan-areas li{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:4px 12px;min-height:48px;padding:6px 0;border-top:1px solid var(--w-line)}
 .wplan-area-name{font-size:15px;line-height:1.4;font-weight:var(--wt-strong)}
+.wplan-date-note{margin-bottom:-12px;text-align:center}
 .wplan-area-count{font-family:var(--w-mono);font-size:12px;letter-spacing:.04em;color:var(--w-ink-3)}
 .wplan-classwork{grid-column:1 / -1;font-size:13px;line-height:1.45;color:var(--w-ink-3)}
 /* 쓰기 칸의 「TOPIK II 쓰기 연습 →」: 칸 이름 아래 한 줄(다른 칸의 연습은 지금 할 것·숙제·다시 확인에서 연다). */

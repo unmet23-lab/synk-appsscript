@@ -121,3 +121,25 @@ test('brief and detailed keep the same instructions and hint facts with differen
  }
  assert.equal(texts[0],texts[1]);
 });
+
+// 11-08 프론트 검수 B5: 한 화면에 「함께하는 AI 튜터」(홈 카드)와 「함께하는 튜터」(게임 칩)가 함께 보였다 — 칩도 tutorTag.role, 이름 · 역할은 화면 언어를 따른다.
+test('the game tutor name tag uses the same role name as the home card, in the screen language',async()=>{
+ const env=environment();let tutor;
+ const {setLang,t}=await import('../world-lang.mjs');
+ try{
+  for(const [lang,name] of [['ko','마린'],['en','Marin'],['mn','Марин']]){
+   setLang(lang,{save:false});
+   tutor=mount(env,{presentation:{support:'independent',explanation:'brief'}});
+   assert.equal(tutor.element.querySelector('.game-tutor-label').textContent,t('tutorTag.role'),lang);
+   assert.notEqual(tutor.element.querySelector('.game-tutor-label').textContent,'함께하는 튜터');
+   assert.equal(tutor.element.querySelector('.w-name').textContent,name,lang);
+   tutor.dispose();tutor=null;
+  }
+  setLang('ko',{save:false});
+  tutor=mount(env,{presentation:{support:'independent',explanation:'brief'}});
+  const tag=tutor.element.querySelector('.game-tutor-label');
+  setLang('en',{save:false});
+  assert.equal(tag.textContent,'Your AI tutor','이름표는 언어를 바꾸면 그 자리에서 다시 쓴다');
+  assert.equal(tutor.element.querySelector('.w-name').textContent,'Marin');
+ }finally{setLang('ko',{save:false});tutor?.dispose();env.restore();}
+});

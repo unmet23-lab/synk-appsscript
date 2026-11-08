@@ -17,14 +17,14 @@ const root=path.resolve(fileURLToPath(new URL('../../../',import.meta.url)));
 const types={'.css':'text/css; charset=utf-8','.webp':'image/webp','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8'};
 let server,browser,base;
 const fixture=`<!doctype html><html><head><meta charset="utf-8"><link rel="icon" href="data:,"><link rel="stylesheet" href="/experiences/brand-opening/home-town.css">
-<style>:root{--w-sans:system-ui,sans-serif;--wt-strong:650;--wt-label:550;--w-blur:blur(12px);--w-ease:ease;--w-face:#FF6B5B;--w-on-face:#1E0E0A;--w-led-check:#F5C445;--w-led-ok:#7DB45A;--safe-top:0px;--safe-bottom:0px}html,body{margin:0;height:100%}main{position:relative;width:100vw;height:100vh;overflow:hidden}.lobby-action{position:absolute;left:12px;right:12px;bottom:88px;height:var(--card,200px);background:#111}[data-layout=landscape] .lobby-action{right:auto;width:44vw}</style></head>
-<body><div class="world-shell" data-place="town"><main><section class="town-scene"></section><div class="lobby-action"></div></main></div><script type="module">
+<style>:root{--w-sans:system-ui,sans-serif;--wt-strong:650;--wt-label:550;--w-blur:blur(12px);--w-ease:ease;--w-face:#FF6B5B;--w-on-face:#1E0E0A;--w-led-check:#F5C445;--w-led-ok:#7DB45A;--safe-top:0px;--safe-bottom:0px}html,body{margin:0;height:100%}main{position:relative;width:100vw;height:100vh;overflow:hidden}.lobby-action{position:absolute;left:12px;right:12px;bottom:88px;height:var(--card,200px);background:#111}[data-layout=landscape] .lobby-action{right:auto;width:44vw}.place-heading{position:absolute;top:92px;left:30px}.place-heading h1{margin:8px 0 0;font-size:34px;line-height:1.15}.place-heading p{margin:6px 0 0;font-size:14px;line-height:1.5}</style></head>
+<body><div class="world-shell" data-place="town"><main><section class="town-scene"></section><div class="place-heading"><p>OUR TOWN</p><h1>우리 동네</h1><p>진도</p></div><div class="lobby-action"></div></main></div><script type="module">
 import {createHomeTown,TOWN_PLACES} from '/experiences/brand-opening/home-town.mjs';
 window.errors=[];window.addEventListener('error',e=>window.errors.push(e.message));
 window.setup=({layout='portrait',card=200,progress=null}={})=>{
  document.documentElement.dataset.layout=layout;document.documentElement.style.setProperty('--card',card+'px');
  window.opened=[];
- window.town=createHomeTown({container:document.querySelector('.town-scene'),asset:p=>'/experiences/brand-opening/'+p,onPlace:place=>window.opened.push(place.id),obstacle:document.querySelector('.lobby-action')});
+ window.town=createHomeTown({container:document.querySelector('.town-scene'),asset:p=>'/experiences/brand-opening/'+p,onPlace:place=>window.opened.push(place.id),obstacle:document.querySelector('.lobby-action'),heading:document.querySelector('.place-heading')});
  window.town.setLayout(layout);if(progress)window.town.setProgress(progress);
  return TOWN_PLACES.length;
 };window.ready=true;
@@ -137,4 +137,33 @@ test('tapping a place or its building opens it once, closes the first-visit hint
  assert.equal(await page.evaluate(()=>document.querySelector('.town-scene').inert),true);
  await page.locator('[data-town-place=bus]').dispatchEvent('click');
  assert.deepEqual(await page.evaluate(()=>window.opened),['cafe','store']);
+});
+
+// 11-08 프론트 검수: 영어 · 몽골어 넓은 화면에서 튜터 카드가 말이 길어 커지면서 장소 안내 띠와 제목 아랫줄을 가렸다.
+test('on a wide screen the first-visit hint never meets the card, however tall the card grows',async t=>{
+ for(const card of [200,330,430,490]){
+  const page=await townPage(t,{width:1280,height:720,layout:'landscape',card});
+  const box=await page.evaluate(()=>{const rect=e=>{const r=e.getBoundingClientRect();return {left:r.left,top:r.top,right:r.right,bottom:r.bottom};};const hint=document.querySelector('.town-hint');return {hint:rect(hint),visible:getComputedStyle(hint).visibility==='visible',card:rect(document.querySelector('.lobby-action'))};});
+  assert.ok(box.visible,`card ${card}: 안내는 보인다`);
+  const clear=box.hint.left>=box.card.right||box.hint.bottom<=box.card.top;
+  assert.ok(clear,`card ${card}: 안내 띠(${JSON.stringify(box.hint)})가 카드(${JSON.stringify(box.card)})와 닿지 않는다`);
+  assert.ok(box.hint.right<=1280,'화면 안');
+ }
+});
+
+test('on a wide screen the heading gives way line by line when the card reaches it, and comes back when the card shrinks',async t=>{
+ const page=await townPage(t,{width:1280,height:720,layout:'landscape',card:200});
+ const heading=()=>page.locator('.place-heading').evaluate(e=>e.dataset.fit);
+ const card=px=>page.evaluate(px=>document.documentElement.style.setProperty('--card',px+'px'),px);
+ const until=want=>page.waitForFunction(want=>document.querySelector('.place-heading').dataset.fit===want,want);
+ assert.equal(await heading(),'full','여유가 있으면 제목 줄이 다 보인다');
+ // 화면 720 · 카드 바닥 632: 진도 줄 바닥 약 185 · 제목 바닥 약 150.
+ await card(450);await until('title');
+ await card(480);await until('compact');
+ const lifted=await page.locator('.place-heading h1').evaluate(e=>{const r=e.getBoundingClientRect(),c=document.querySelector('.lobby-action').getBoundingClientRect();return {clear:r.bottom<=c.top,visible:getComputedStyle(e).opacity!=='0'};});
+ assert.ok(lifted.clear&&lifted.visible,'카드가 제목에 닿으면 머리말 자리로 올린 제목은 남는다');
+ await card(520);await until('none');
+ await card(200);await until('full');
+ const portrait=await townPage(t,{width:390,height:844,layout:'portrait',card:200});
+ assert.equal(await portrait.locator('.place-heading').evaluate(e=>e.dataset.fit),undefined,'세로 화면은 제목을 읽기 전용으로 숨겨 두므로 재지 않는다');
 });

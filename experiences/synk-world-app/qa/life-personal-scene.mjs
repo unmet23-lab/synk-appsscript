@@ -5,10 +5,10 @@
 //   → ④ 둘째 레슨(이야기)은 다 맞힌다 → ⑤ 홈(튜터 카드가 고른 다음 할 일과 이유) → ⑥ 배우기(위 · 아래 줄) · 복습 요약
 //   → ⑦ 내 위치: 판 위 · 근거 줄을 펼친 항목 · 「시간을 두고 다시 확인」 → ⑧ 홈 「맞춤 연습 시작」을 누른 첫 화면(처음이면 학습 목표 창)
 //   → ⑨ 시험 준비 · TOPIK I로 저장하고 시작한 첫 화면 → 배우기의 「이번 주 계획」 → ⑩ 브라우저 시계만 하루 반 뒤로: 홈 · 「시간을 두고 다시 확인」
-//   → ⑪ 그 카드의 단추로 1일 확인을 마친 뒤의 카드(확인한 칸).
+//   → ⑪ 그 카드의 단추로 1일 확인을 마친 뒤의 카드(확인한 칸) → ⑫ 돌아온 복습이 있는 복습 요약 → 그 복습을 끝까지 푼 결과.
 //   찍는 이름: home-new · packs-new · lesson-wrong · lesson-result · home-after · packs-after · packs-rows · review-summary
 //   · position-top · position-evidence · position-followups · tutor-practice · goal-exam · goal-start · plan-week · plan-week-more · home-day2 · position-followups-day2
-//   · position-followups-checked
+//   · position-followups-checked · review-due · review-result
 //   (줄이 없는 판은 그 이름을 건너뛴다)
 // 리허설 모드(합성 손님, 운영 접근 없음)로 돈다. 주소의 /health가 리허설 서버면 그대로 쓰고, 없으면 그 포트에 임시 데이터 폴더로 띄웠다가 끝나면 끈다.
 // 그림마다 곁에 <이름>.측정.json — 문서 가로 넘침, 보이는 한글 중 13px 밑 글자, 44px 밑 누름 자리(보이는 단추 · 링크).
@@ -94,7 +94,16 @@ async function 재기(page){
    if(own&&/[가-힣]/.test(own)){const px=parseFloat(getComputedStyle(e).fontSize);if(px<13)작은글.push(`${px}px ${own.slice(0,24)}`);}
    if(e.matches('button,a[href],[role="button"],summary')){const r=e.getBoundingClientRect();if(r.height<44&&!e.disabled)작은단추.push(`${Math.round(r.width)}×${Math.round(r.height)} ${(e.textContent||e.getAttribute('aria-label')||'').trim().slice(0,24)}`);}
   }
-  return {가로넘침:d.scrollWidth>d.clientWidth+1?`${d.scrollWidth}/${d.clientWidth}`:null,작은글:[...new Set(작은글)].slice(0,20),작은단추:[...new Set(작은단추)].slice(0,20)};
+  // 홈 겹침(1440): 왼쪽 카드가 장소 안내 띠 · 보이는 제목 줄을 가리는지. 패널이 열려 있으면 재지 않는다(11-08 영어 · 몽골어 카드가 띠와 제목 아랫줄을 가렸다).
+  const 겹침=[];
+  if(!document.querySelector('dialog:modal')){
+   const 판=document.querySelector('.lobby-action')?.getBoundingClientRect();
+   const 맞닿음=(e,이름)=>{if(!e||!판)return;const s=getComputedStyle(e);if(s.visibility==='hidden'||s.display==='none'||+s.opacity===0)return;const r=e.getBoundingClientRect();if(r.width&&r.height&&r.bottom>판.top&&r.top<판.bottom&&r.right>판.left&&r.left<판.right)겹침.push(`${이름} ${Math.round(r.bottom-판.top)}px`);};
+   맞닿음(document.querySelector('.town-hint:not([hidden])'),'안내 띠');
+   const 제목=document.querySelector('.place-heading');
+   if(document.documentElement.dataset.layout==='landscape'&&제목&&+getComputedStyle(제목).opacity!==0)for(const e of 제목.children)맞닿음(e,e.tagName);
+  }
+  return {가로넘침:d.scrollWidth>d.clientWidth+1?`${d.scrollWidth}/${d.clientWidth}`:null,겹침,작은글:[...new Set(작은글)].slice(0,20),작은단추:[...new Set(작은단추)].slice(0,20)};
  });
 }
 
@@ -237,5 +246,21 @@ export default async function 장면({page,찍기,판,기기,주소들={}}){
    await page.locator('[data-position-board]').waitFor();await page.waitForTimeout(500);
    if(await page.locator('.wpos-followups').count()){await 칸보이기(page,'.wpos-followups');await 측정('position-followups-checked');}
   }else 말('하루 반 뒤에 생활 다시 확인 단추가 없다');
+  // ⑫ 돌아온 복습이 있는 복습 요약(튜터 대사가 그 화면 이야기) → 복습을 끝까지 풀어 결과(마친 말). 맞고 틀림은 이 칸에서 보지 않으니 첫 보기를 고른다.
+  if(await page.locator('#world-panel[open]').count())await 패널닫기(page);
+  await 배우기열기(page);
+  if(await page.locator(`${P}[data-life-review]`).count()){
+   await page.locator(`${P}[data-life-review]`).first().click();await page.locator(`${P}.life-review-summary`).waitFor();
+   await 측정('review-due');
+   if(await page.locator(`${P}[data-life-review-start]`).count()){
+    await page.locator(`${P}[data-life-review-start]`).click();
+    for(let k=0;k<30&&!await page.locator('.life-complete').count();k++){
+     await page.waitForFunction(()=>document.querySelector('.life-complete')||document.querySelector('[data-life-choice]:not([disabled])')||document.querySelector('[data-life-question-next]:not([disabled])'));
+     if(await page.locator('[data-life-question-next]:not([disabled])').count()){await page.locator('[data-life-question-next]:not([disabled])').click();await page.waitForTimeout(120);continue;}
+     if(await page.locator('[data-life-choice]:not([disabled])').count()){await page.locator('[data-life-choice]:not([disabled])').first().click();await page.waitForTimeout(120);}
+    }
+    await page.locator('.life-complete').waitFor();await 측정('review-result');
+   }else 말('돌아온 복습이 없다');
+  }else 말('복습 줄이 없다');
  }finally{await 서버.닫기();}
 }

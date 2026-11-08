@@ -59,6 +59,8 @@
  .life-tutor .game-tutor-line{font-size:14px}
  .life-expression-practice .life-expression-options button{padding:12px 14px}
 }
+/* 영어 · 몽골어 역할 이름은 휴대폰 폭에서 「표현 도움」 단추와 한 줄에 다 안 들어가 잘린다 — 잘린 글 대신 이름만(11-09 검수). */
+@media(max-width:479px){html:is([lang=en],[lang=mn]) .life-tutor .life-tutor-role{display:none}}
 @media(max-height:500px){
  .life-tutor .game-tutor-message{display:block}
  .life-tutor .life-tutor-role{display:none}

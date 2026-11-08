@@ -265,3 +265,23 @@ test('daily recommendation and copy are read-only consumers of actual progress',
  }
  assert.deepEqual(f.progress.exportSnapshot(),before);assert.deepEqual(f.stored(),stored);assert.equal(f.writes(),writes);
 });
+
+// 끝 판 FA1: 「방금 만난 말」은 그 기록 시각이 30분 창 안일 때만이다 — 오늘 기록이어도 아침에 답한 말이면 저녁에 다른 레슨을 마친 뒤 「방금」이 아니다.
+test('a returned review counts as just met only while its own answer is inside the 30-minute window',()=>{
+ const f=fixture(),q=answer(f,greeting,0,{correct:false});f.advance(2*MINUTE);
+ const lastAt=Object.values(f.progress.exportSnapshot().reviews).find(r=>r.questionId===q.id).lastAt,practised=new Map([[q.id,lastAt]]);
+ assert.equal(f.recommend({practised}).fresh,true,'2분 전에 틀린 말이 돌아왔다');
+ f.advance(27*MINUTE);
+ assert.equal(f.recommend({practised}).fresh,true,'29분 — 아직 창 안');
+ f.advance(2*MINUTE);
+ const later=f.recommend({practised});
+ assert.equal(later.kind,'review');assert.equal(later.fresh,undefined,'31분 — 오늘 기록이어도 창 밖');
+ assert.equal(homeDayKey(f.now()),homeDayKey(START),'같은 날 안에서 잰다');
+ // 저녁: 같은 날 다른 레슨을 막 마친 직후라도, 돌아온 복습이 아침에 답한 말이면 「전에 만난 말」이다.
+ f.setTime(START+8*60*MINUTE);
+ answer(f,story,0,{correct:true});f.advance(MINUTE);
+ const evening=f.recommend({practised});
+ assert.equal(evening.kind,'review');assert.equal(evening.fresh,undefined,'아침에 답한 복습 문항은 저녁 레슨 직후에도 방금이 아니다');
+ const day={latestAt:Date.now()-MINUTE,count:2,items:[]};
+ for(const id of tutors)assert.doesNotMatch(homeTutorLine(id,evening,{day}),/방금/,`${id}: 지난 말을 방금이라 하지 않는다`);
+});

@@ -17143,6 +17143,18 @@ var NO_TRAIL = Object.freeze({ shown: () => null, help() {
 }, metrics: () => ({ slots: 0, presented: 0, answered: 0 }), dispose() {
 } });
 var escape2 = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+function reviewRowsByExpression(rows2) {
+  const out = /* @__PURE__ */ new Map();
+  for (const row of rows2) {
+    if (!row.korean) continue;
+    const kept = out.get(row.korean);
+    if (kept) {
+      kept.scenes += 1;
+      kept.soon = kept.soon === true || row.soon === true;
+    } else out.set(row.korean, { ...row, scenes: 1 });
+  }
+  return [...out.values()];
+}
 var friends = { mongle: { name: "\uBABD\uAE00", file: "friend-mongle.webp", cut: "mongle" }, kkamong: { name: "\uAE4C\uBABD", file: "friend-kkamong.webp", cut: "kkamong" }, marine: { name: "\uB9C8\uB9B0", file: "friend-marine.webp", cut: "marin" } };
 var phaseName = (type) => t(`life.phase.${type}`);
 var phaseLabels = { expressions: "EXPRESSIONS", story: "STORY", apply: "PRACTICE", visit: "CAFE VISIT", compose: "MY ORDER" };
@@ -17185,7 +17197,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   for (const [variable, file] of Object.entries({ "--cafe-room": "home/cafe-room-v1.webp", "--cafe-drinks": "home/cafe-drinks-v2.png", "--cafe-ice": "home/cafe-ice.webp", "--life-print-goals": "world-felt/goals.webp", "--life-print-position": "world-felt/complete.webp", "--life-print-hangul": "world-felt/hangul.webp" })) panel.style.setProperty(variable, `url("${asset(file)}")`);
   for (const kind of ["counter", "window", "garden"]) if (hasCafePhoto(kind)) panel.style.setProperty("--cafe-" + kind, `url("${asset(cafePhotoFile(kind))}")`);
   const print = (name, className = "") => `<span class="w-print ${className}" aria-hidden="true"><img src="${asset("world-felt/" + name + ".webp")}" alt="" width="640" height="640" decoding="async"></span>`;
-  let context = null, shown = false, rendering = false, ended = false, reviewRun = null, lastFeedback = null, helped = false, helpBy = null, generation = 0, timer, cafeRun = null, cafeView = "", companion = null, place = "life", signClip = null;
+  let context = null, shown = false, rendering = false, ended = false, reviewRun = null, lastFeedback = null, helped = false, helpBy = null, generation = 0, timer, cafeRun = null, cafeView = "", companion = null, place = "life", signClip = null, viewPhase = null;
   const practised = /* @__PURE__ */ new Set();
   const exposedTransfers = /* @__PURE__ */ new Set();
   const life = learning2?.life && typeof learning2.life.createLifeTrail === "function" ? learning2.life : null;
@@ -17324,11 +17336,11 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const l = lessonById(context?.lessonId), cafe = context?.phase === "cafe";
     const original = context?.phase === "review" ? l?.questions.find((q3) => q3.review.id === context.reviewQuestion?.id) : l?.questions[context?.questionIndex];
     const q2 = context?.phase === "review" ? context.reviewQuestion : original;
-    const current = cafe ? ["choose", "repair", "response"].includes(cafeRun.phase) : ["questions", "review"].includes(context?.phase);
+    const current = !viewPhase && (cafe ? ["choose", "repair", "response"].includes(cafeRun.phase) : ["questions", "review"].includes(context?.phase));
     const requiresHearing = cafe && current && cafeRun.listen?.mode === "listen" && !cafeRun.listen.heard && !cafeRun.listen.textShown;
     return {
       scope: place,
-      phase: cafe ? cafeRun.phase : context?.phase,
+      phase: viewPhase || (cafe ? cafeRun.phase : context?.phase),
       question: current ? q2 : null,
       questionId: original?.id,
       answered: cafe ? !!cafeRun.choiceId : !!lastFeedback,
@@ -17378,7 +17390,8 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     if (context.phase !== "review") guideTransfer(id);
   }
   const retryButton = (q2) => home.mountLifeTutor && home.tutor?.().tutor ? `<button class="life-tutor-retry" data-life-tutor-retry="${escape2(q2.id)}">${t("life.tutorRetry")}</button>` : "";
-  function paint(title, html, { type = "life-library", focus = ".life-heading", eyebrow = "LIFE IN KOREA", keepScroll = false, tutorSlot = null } = {}) {
+  function paint(title, html, { type = "life-library", focus = ".life-heading", eyebrow = "LIFE IN KOREA", keepScroll = false, tutorSlot = null, tutorPhase = null } = {}) {
+    viewPhase = tutorPhase;
     const scroll = keepScroll && shown ? content.scrollTop : 0;
     story.stop();
     generation++;
@@ -17844,10 +17857,10 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     helpBy = null;
     reviewRun = null;
     const s = summary(), future = Number.isFinite(s.nextReviewAt) ? dayLabel(s.nextReviewAt) : "", snapshot = getProgress().exportSnapshot();
-    const items = s.dueReviews.map((r) => {
+    const items = reviewRowsByExpression(s.dueReviews.map((r) => {
       const l = lessonById(r.lessonId), q2 = l?.questions.find((x) => x.id === r.questionId);
       return { korean: expressionOf(l, q2).korean, origin: reviewOrigin(r, snapshot) };
-    }).filter((i) => i.korean);
+    }));
     const upcoming = [];
     if (!s.dueCount) {
       const metKorean = /* @__PURE__ */ new Set();
@@ -17859,7 +17872,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
         if (upcoming.length >= 6) break;
       }
     }
-    paint(t("life.reviewTitle"), `<div class="life-review-summary life-heading" tabindex="-1"><section class="life-poster life-review-poster">${print("review")}<small class="life-poster-label">REVIEW${s.dueCount ? ` \xB7 ${pad(s.dueCount)}` : ""}</small><h3 class="life-poster-word">${s.dueCount ? t("life.reviewWordCount", { n: s.dueCount }) : t(future ? "life.reviewWordNext" : "life.reviewWordNone")}</h3><p class="life-poster-sub">${s.dueCount ? t("life.reviewSubDue") : future ? t("life.reviewSubOpens", { date: escape2(future) }) : t("life.reviewSubNone")}</p></section>${items.length ? `<section class="life-review-list" aria-label="${t("life.backWord")}"><p class="life-section-label">BACK AGAIN</p><ul>${items.map((i) => `<li><strong lang="ko">${escape2(i.korean)}</strong><small>${escape2(i.origin)}</small></li>`).join("")}</ul></section>` : ""}${upcoming.length ? `<section class="life-review-list" data-upcoming aria-label="${t("life.comingBack")}"><p class="life-section-label">COMING BACK</p><ul>${upcoming.map((i) => `<li><strong lang="ko">${escape2(i.korean)}</strong><small>${escape2(i.when)}</small></li>`).join("")}</ul></section>` : ""}${restLine("review")}</div><div class="life-actions">${s.dueCount ? `<button class="felt-button" data-life-review-start>${t("life.reviewStart")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-next>${t("life.doNextLesson")}</button>` : `<button class="felt-button" data-life-next>${t("life.doNextLesson")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-home>${t("life.toTown")}</button>`}</div>`, { type: "life-review" });
+    paint(t("life.reviewTitle"), `<div class="life-review-summary life-heading" tabindex="-1"><section class="life-poster life-review-poster">${print("review")}<small class="life-poster-label">REVIEW${s.dueCount ? ` \xB7 ${pad(s.dueCount)}` : ""}</small><h3 class="life-poster-word">${s.dueCount ? t("life.reviewWordCount", { n: s.dueCount }) : t(future ? "life.reviewWordNext" : "life.reviewWordNone")}</h3><p class="life-poster-sub">${s.dueCount ? t("life.reviewSubDue") : future ? t("life.reviewSubOpens", { date: escape2(future) }) : t("life.reviewSubNone")}</p></section>${items.length ? `<section class="life-review-list" aria-label="${t("life.backWord")}"><p class="life-section-label">BACK AGAIN</p><ul>${items.map((i) => `<li><strong lang="ko">${escape2(i.korean)}</strong><small>${escape2(i.origin)}${i.scenes > 1 ? ` \xB7 ${t("life.reviewScenes", { n: i.scenes })}` : ""}</small></li>`).join("")}</ul></section>` : ""}${upcoming.length ? `<section class="life-review-list" data-upcoming aria-label="${t("life.comingBack")}"><p class="life-section-label">COMING BACK</p><ul>${upcoming.map((i) => `<li><strong lang="ko">${escape2(i.korean)}</strong><small>${escape2(i.when)}</small></li>`).join("")}</ul></section>` : ""}${restLine("review")}</div><div class="life-actions">${s.dueCount ? `<button class="felt-button" data-life-review-start>${t("life.reviewStart")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-next>${t("life.doNextLesson")}</button>` : `<button class="felt-button" data-life-next>${t("life.doNextLesson")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-home>${t("life.toTown")}</button>`}</div>`, { type: "life-review", tutorPhase: s.dueCount ? "reviewDue" : future ? "reviewNext" : "reviewEmpty" });
   }
   function reviewStart(lessonId = null, requestedIds = null, { soon = false } = {}) {
     prepareLearning();
@@ -17879,11 +17892,11 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const index = run.ids.findIndex((id2) => !run.answers[id2]);
     if (index < 0) {
       summary();
-      const snapshot = getProgress().exportSnapshot(), items = run.ids.map((id2) => {
+      const snapshot = getProgress().exportSnapshot(), items = reviewRowsByExpression(run.ids.map((id2) => {
         const r = snapshot.reviews[id2], l2 = lessonById(r?.lessonId), q3 = l2?.questions.find((x) => x.id === r.questionId), a = run.answers[id2];
-        return { korean: expressionOf(l2, q3).korean, note: t(a && a.correct && !a.helped ? "life.reviewRemembered" : "life.reviewSoon") };
-      }).filter((i) => i.korean);
-      paint(t("life.reviewResultTitle"), `<div class="life-complete life-result life-heading" tabindex="-1"><section class="life-poster life-complete-poster">${print("review")}<small class="life-poster-label">RESULT \xB7 REVIEW</small><strong class="life-poster-word">${t("life.reviewDoneWord")}</strong><h3 class="life-poster-sub">${t("life.reviewMet", { n: run.ids.length })}</h3></section>${learnedList(items, "BACK AGAIN")}</div><div class="life-actions"><button class="felt-button" data-life-home>${t("life.toTown")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-next>${t("life.nextLesson")}</button></div>`, { type: "life-review-complete" });
+        return { korean: expressionOf(l2, q3).korean, soon: !(a && a.correct && !a.helped) };
+      })).map((i) => ({ korean: i.korean, note: `${i.scenes > 1 ? `${t("life.reviewScenes", { n: i.scenes })} \xB7 ` : ""}${t(i.soon ? "life.reviewSoon" : "life.reviewRemembered")}` }));
+      paint(t("life.reviewResultTitle"), `<div class="life-complete life-result life-heading" tabindex="-1"><section class="life-poster life-complete-poster">${print("review")}<small class="life-poster-label">RESULT \xB7 REVIEW</small><strong class="life-poster-word">${t("life.reviewDoneWord")}</strong><h3 class="life-poster-sub">${t("life.reviewMet", { n: run.ids.length })}</h3></section>${learnedList(items, "BACK AGAIN")}</div><div class="life-actions"><button class="felt-button" data-life-home>${t("life.toTown")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-next>${t("life.nextLesson")}</button></div>`, { type: "life-review-complete", tutorPhase: "complete" });
       celebrate();
       return;
     }
@@ -22866,6 +22879,11 @@ function lifeFollowupRows({ projection, seen, snapshot = null, now = Date.now(),
   return { available: true, limited, rows: rows2.sort((a, b) => Number(b.status === "due") - Number(a.status === "due") || Date.parse(a.dueAt) - Date.parse(b.dueAt)).slice(0, 12) };
 }
 
+// experiences/brand-opening/life-tutor-lines.mjs
+function lifeTutorExpression(lesson2, question2) {
+  return lesson2?.expressions.find((e) => e.id === question2?.expressionId)?.korean || lesson2?.title || "\uC0DD\uD65C \uD45C\uD604";
+}
+
 // experiences/synk-world-app/world-learning-ui.mjs
 var FOLLOWUP_WINDOWS = ["d1", "d7", "d30"];
 function followupCards(delayed = [], life = []) {
@@ -23703,6 +23721,32 @@ function createWorldEducation({
     const bridged = exam === "topik2" ? ["listening", "reading"].filter((domain) => !two2[domain]) : [];
     return { map, plan, gate, mock, exam, writing, exams, bridged, summary };
   }
+  let lifeItemIndex = null;
+  function lifeItemOf(itemKey) {
+    if (!lifeItemIndex) {
+      lifeItemIndex = /* @__PURE__ */ new Map();
+      try {
+        for (const item of engine.life?.lifeItems?.() || []) lifeItemIndex.set(item.itemKey, item);
+      } catch {
+      }
+    }
+    return lifeItemIndex.get(itemKey) || null;
+  }
+  function itemExcerpt(itemKey) {
+    const known = position.label(itemKey);
+    if (known) return known;
+    const item = lifeItemOf(itemKey), lesson2 = item && lessonById(item.lessonId);
+    return lesson2 ? lifeTutorExpression(lesson2, lesson2.questions.find((q2) => q2.id === item.questionId)) : "";
+  }
+  function itemAssessable(itemKey) {
+    const item = lifeItemOf(itemKey);
+    if (!item) return null;
+    try {
+      return engine.life.lifeAssessable(item) === true;
+    } catch {
+      return null;
+    }
+  }
   function showBoard(coachNow, { keepScroll = false } = {}) {
     check3();
     refresh();
@@ -23713,7 +23757,7 @@ function createWorldEducation({
       scope = getProgress().status().scoped ? "account" : "device";
     } catch {
     }
-    home.showPanel(t2("position.title"), view.renderPositionBoard({ map, plan, gate, mock, exams, writing, bridged, catalog: position.label, diagnosed, scope, practice: (id) => routes.get(id) || null }), PANEL);
+    home.showPanel(t2("position.title"), view.renderPositionBoard({ map, plan, gate, mock, exams, writing, bridged, catalog: itemExcerpt, assessable: itemAssessable, diagnosed, scope, practice: (id) => routes.get(id) || null }), PANEL);
     const root = panelNode("[data-position-board]");
     if (root && position.followups) {
       void loadFollowupBank();
@@ -25260,6 +25304,29 @@ function posHelpedTries(events, { asOf, days = 30 } = {}) {
   for (const tries of rows2.values()) tries.sort((a, b) => Date.parse(b.at) - Date.parse(a.at) || a.eventId.localeCompare(b.eventId));
   return rows2;
 }
+function posUncountedTries(events) {
+  const shown = /* @__PURE__ */ new Map(), excluded = /* @__PURE__ */ new Set(), rows2 = /* @__PURE__ */ new Map(), decisions = /* @__PURE__ */ new Map();
+  const list = Array.isArray(events) ? events : [];
+  for (const event of list) {
+    if (event?.type === "record.excluded" && event.targetId) excluded.add(event.targetId);
+    else if (event?.type === "decision.made") decisions.set(event.id, event.experienceId);
+    else if (event?.type === "practice.presented") shown.set(event.id, event);
+  }
+  for (const event of list) {
+    if (event?.type !== "practice.attempted" || event.attemptNo !== 1 || excluded.has(event.id) || !["unassessed", "skipped"].includes(event.verdict) || !posTime(event.at)) continue;
+    const presentation = shown.get(event.presentationId), skillId = presentation?.measure?.skillId;
+    if (!skillId) continue;
+    if (!rows2.has(skillId)) rows2.set(skillId, []);
+    rows2.get(skillId).push({ eventId: event.id, at: event.at, verdict: event.verdict, reason: event.reason ?? null, answer: event.choice ? event.choice.selectedId === event.choice.correctId ? "correct" : "incorrect" : null, itemKey: presentation.itemKey, experienceId: decisions.get(presentation.decisionId) ?? null, difficulty: presentation.measure?.difficulty ?? null });
+  }
+  for (const tries of rows2.values()) tries.sort((a, b) => Date.parse(b.at) - Date.parse(a.at) || a.eventId.localeCompare(b.eventId));
+  return rows2;
+}
+function posUnassessedTotal(skill2) {
+  let total = 0;
+  for (const level of Object.values(posRecord(skill2.levels) ? skill2.levels : {})) for (const cell of Object.values(posRecord(level?.formats) ? level.formats : {})) total += cell?.unassessed || 0;
+  return total || skill2.unassessed || 0;
+}
 var POSITION_CORE_POLICY = Object.freeze({ sample: 4, stableRatio: 0.8 });
 function posNote(skill2, { found, tries, levels, policy }) {
   const n = skill2.n || 0, correct = skill2.correct || 0, incorrect = skill2.incorrect || 0;
@@ -25291,7 +25358,7 @@ function posAttention(skills, prefer = null) {
 function buildPositionMap({ summary, events = [], policy = POSITION_CORE_POLICY, prefer = null, exam = "topik1" } = {}) {
   const profile = posProfile(summary), find = posAttemptIndex(events), counts = { independent: 0, practicing: 0, notyet: 0 };
   const rules = { sample: Number.isInteger(policy?.sample) ? policy.sample : POSITION_CORE_POLICY.sample, stableRatio: Number.isFinite(policy?.stableRatio) ? policy.stableRatio : POSITION_CORE_POLICY.stableRatio };
-  const helped = posHelpedTries(events, { asOf: profile.asOf });
+  const helped = posHelpedTries(events, { asOf: profile.asOf }), uncounted = posUncountedTries(events);
   const skills = posTopikSkills(profile, exam).map((skill2) => {
     const cell = positionCell(skill2.status), ids = Array.isArray(skill2.reasonEvidence) ? skill2.reasonEvidence : Array.isArray(skill2.evidence) ? skill2.evidence : [];
     const assisted = skill2.status === "supported", found = [], folded = [];
@@ -25316,13 +25383,14 @@ function buildPositionMap({ summary, events = [], policy = POSITION_CORE_POLICY,
       correct: skill2.correct || 0,
       incorrect: skill2.incorrect || 0,
       assisted: skill2.assisted || 0,
-      unassessed: skill2.unassessed || 0,
+      unassessed: posUnassessedTotal(skill2),
       difficulty: skill2.difficulty ?? null,
       responseFormat: skill2.responseFormat || "unknown",
       evidence: found,
       folded: folded.length,
       levels,
-      helped: tries
+      helped: tries,
+      uncounted: uncounted.get(skill2.id) || []
     };
     row.note = posNote(row, { found, tries, levels, policy: rules });
     return row;
@@ -27316,15 +27384,32 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     }).join("");
     return `<p class="wpos-evidence-title">${posEscape(t3("position.helped.title"))}</p><ul class="wpos-evidence-list" data-helped>${rows2}</ul><p class="wpos-note">${posEscape(t3("position.helped.note"))}</p>`;
   }
+  const UNCOUNTED_REASONS = /* @__PURE__ */ new Set(["audio", "unanswered", "motor", "visual", "storage"]);
+  function uncountedWhy(row, assessable) {
+    if (UNCOUNTED_REASONS.has(row.reason)) return row.reason;
+    if (row.verdict === "skipped") return "unanswered";
+    const listed = assessable?.(row.itemKey);
+    return listed === true ? "met" : listed === false ? "draft" : "other";
+  }
+  function uncountedRows(skill2, catalog, assessable) {
+    const rows2 = (skill2.uncounted || []).slice(0, 6), more = Math.max(0, (skill2.unassessed || 0) - rows2.length);
+    if (!rows2.length) return more ? `<p class="wpos-note">${posEscape(t3("position.evidence.unassessed", { n: more }))}</p>` : "";
+    const list = rows2.map((row) => {
+      const excerpt = catalog?.(row.itemKey) || "", why = uncountedWhy(row, assessable);
+      const answer = row.answer ? t3(row.answer === "correct" ? "position.evidence.correct" : "position.evidence.incorrect") : why === "unanswered" ? t3("position.uncounted.noAnswer") : "";
+      return `<li class="wpos-evidence" data-verdict="${posEscape(row.verdict)}" data-why="${posEscape(why)}">${posLed("")}<span class="wpos-evidence-main"><strong>${posEscape([answer, t3("position.uncounted.tag")].filter(Boolean).join(" \xB7 "))}</strong><small>${posEscape(itemSource(row.itemKey, row.experienceId))}${excerpt ? ` \xB7 <span lang="ko">${posEscape(excerpt)}</span>` : ""}${row.difficulty ? ` \xB7 ${posEscape(t3("position.evidence.level", { n: row.difficulty }))}` : ""}</small><small>${posEscape(t3(`position.uncounted.why.${why}`))}</small></span><time datetime="${posEscape(row.at)}">${posEscape(day(row.at))}</time></li>`;
+    }).join("");
+    return `<p class="wpos-evidence-title">${posEscape(t3("position.uncounted.title"))}</p><ul class="wpos-evidence-list" data-uncounted>${list}</ul>${more ? `<p class="wpos-note">${posEscape(t3("position.uncounted.more", { n: more }))}</p>` : ""}`;
+  }
   const practiceButton = (skillId, practice) => {
     const route = practice?.(skillId);
     if (!route) return "";
     const label = route.route === "game" && route.gameId && has(`plan.game.${route.gameId}`) ? t3(`plan.game.${route.gameId}`) : t3("position.practice.start");
     return `<button class="quiet-button wpos-practice" type="button" data-position-practice="${posEscape(skillId)}">${posEscape(label)} <span aria-hidden="true">\u2192</span></button>`;
   };
-  function skillRow(skill2, catalog, practice) {
+  function skillRow(skill2, catalog, practice, assessable) {
     const note = noteText(skill2.note);
-    return `<details class="wpos-skill" data-skill="${posEscape(skill2.id)}" data-cell="${posEscape(skill2.cell)}" data-status="${posEscape(skill2.status)}"><summary><span class="wpos-skill-name">${posEscape(skillName(skill2))}${note ? `<small class="wpos-skill-note" data-note="${posEscape(skill2.note.kind)}">${posEscape(note)}</small>` : ""}</span><span class="wpos-chip" data-tone="${POS_LED[skill2.cell] || "idle"}">${posLed(POS_LED[skill2.cell])}${posEscape(t3(`position.cell.${skill2.cell}`))}</span></summary><div class="wpos-skill-body"><p class="wpos-status">${posEscape(t3(`position.status.${skill2.status}`))}</p><p class="wpos-evidence-title">${posEscape(t3("position.evidence.title"))}</p>${evidenceRows(skill2, catalog)}${skill2.unassessed ? `<p class="wpos-note">${posEscape(t3("position.evidence.unassessed", { n: skill2.unassessed }))}</p>` : ""}${helpedRows(skill2, catalog)}${practiceButton(skill2.id, practice)}</div></details>`;
+    return `<details class="wpos-skill" data-skill="${posEscape(skill2.id)}" data-cell="${posEscape(skill2.cell)}" data-status="${posEscape(skill2.status)}"><summary><span class="wpos-skill-name">${posEscape(skillName(skill2))}${note ? `<small class="wpos-skill-note" data-note="${posEscape(skill2.note.kind)}">${posEscape(note)}</small>` : ""}</span><span class="wpos-chip" data-tone="${POS_LED[skill2.cell] || "idle"}">${posLed(POS_LED[skill2.cell])}${posEscape(t3(`position.cell.${skill2.cell}`))}</span></summary><div class="wpos-skill-body"><p class="wpos-status">${posEscape(t3(`position.status.${skill2.status}`))}</p><p class="wpos-evidence-title">${posEscape(t3("position.evidence.title"))}</p>${evidenceRows(skill2, catalog)}${uncountedRows(skill2, catalog, assessable)}${helpedRows(skill2, catalog)}${practiceButton(skill2.id, practice)}</div></details>`;
   }
   function attentionBlock(map, practice) {
     const rows2 = (map.attention || []).map((id) => map.skills.find((skill2) => skill2.id === id)).filter(Boolean);
@@ -27368,13 +27453,13 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     return `<section class="wpos-response" data-set-response-box data-kind="${posEscape(response.kind)}"><p class="wpos-response-ask" id="wpos-response-ask" role="status">${posEscape(ask)}</p><div class="wpos-response-choices" role="group" aria-labelledby="wpos-response-ask">${pills}</div><p class="wpos-note" data-set-response-status role="status">${posEscape(status)}</p></section>`;
   }
   const poster = (word, sub, { print = "position", label = "MY POSITION" } = {}) => `<div class="life-poster wpos-poster"><span class="w-print wpos-print" data-print="${print}" aria-hidden="true"><i></i></span><small class="life-poster-label">${label}</small><strong class="life-poster-word">${posEscape(word)}</strong><p class="life-poster-sub">${posEscape(sub)}</p></div>`;
-  function renderPositionBoard({ map, plan = null, gate = null, mock = null, catalog = null, diagnosed = false, scope = null, practice = null, exams = null, writing = false, bridged = [] } = {}) {
+  function renderPositionBoard({ map, plan = null, gate = null, mock = null, catalog = null, diagnosed = false, scope = null, practice = null, exams = null, writing = false, bridged = [], assessable = null } = {}) {
     const exam = map.exam === "topik2" ? "topik2" : "topik1";
     const summary = t3(exam === "topik2" ? "position.summary.topik2" : "position.summary", { ...map.counts, total: map.total });
     const groups = ["listening", "reading"].map((domain) => {
       const skills = map.skills.filter((skill2) => skill2.domain === domain);
       const bridge = exam === "topik2" && Array.isArray(bridged) && bridged.includes(domain) ? `<p class="wpos-note" data-position-bridge="${domain}">${posEscape(t3(domain === "listening" ? "position.bridge.listening" : "position.bridge.reading"))}</p>` : "";
-      return `<section class="wpos-group" data-domain="${domain}"><h3>${posEscape(t3(`position.domain.${domain}`))} <span>${skills.length}</span></h3>${progressLine2(map.domains?.[domain])}${bridge}<div class="wpos-skills">${skills.map((skill2) => skillRow(skill2, catalog, practice)).join("")}</div></section>`;
+      return `<section class="wpos-group" data-domain="${domain}"><h3>${posEscape(t3(`position.domain.${domain}`))} <span>${skills.length}</span></h3>${progressLine2(map.domains?.[domain])}${bridge}<div class="wpos-skills">${skills.map((skill2) => skillRow(skill2, catalog, practice, assessable)).join("")}</div></section>`;
     }).join("");
     const writingBlock = exam === "topik2" ? `<section class="wpos-group" data-domain="writing"><h3>${posEscape(t3("plan.area.writing"))}</h3><p class="wpos-note">${posEscape(t3("position.writing.note"))}</p>${writing ? `<button class="quiet-button wpos-practice" type="button" data-position-writing>${posEscape(t3("writing.title"))} <span aria-hidden="true">\u2192</span></button>` : ""}</section>` : "";
     const counts = POS_CELLS.map((cell) => `<li data-cell="${cell}">${posLed(POS_LED[cell])}<strong>${map.counts[cell]}</strong><span>${posEscape(t3(`position.cell.${cell}`))}</span></li>`).join("");
@@ -27567,7 +27652,7 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     const head = parts.length ? parts.join(" \xB7 ") : t3("plan.week.noExam");
     const notes = new Set(plan.notes || []);
     const writingOpen = exam.type === "topik2" && !notes.has("writing-unavailable");
-    const area = (row) => `<li data-area="${posEscape(row.area)}"><span class="wplan-area-name">${posEscape(t3(`plan.area.${row.area}`))}</span>${dots(row.planned, row.done)}<span class="wplan-area-count">${posEscape(row.planned > 0 ? t3("plan.area.count", { done: row.done, planned: row.planned }) : t3(row.area === "life" ? "plan.area.extraDays" : "plan.area.extra", { done: row.done }))}</span>${row.classwork?.length ? `<small class="wplan-classwork">${row.classwork.map((task) => posEscape(t3(task.done ? "plan.classwork.done" : "plan.classwork.todo", { kind: t3(`plan.area.${task.kind}`) }))).join(" \xB7 ")}</small>` : ""}${row.area === "writing" && writingOpen ? `<button class="quiet-button wplan-area-open" type="button" data-plan-writing="writing">${posEscape(t3("writing.row.title"))} <span aria-hidden="true">\u2192</span></button>` : ""}</li>`;
+    const area = (row) => `<li data-area="${posEscape(row.area)}"><span class="wplan-area-name">${posEscape(t3(`plan.area.${row.area}`))}</span>${dots(row.planned, row.done)}<span class="wplan-area-count">${posEscape(row.planned > 0 ? t3("plan.area.count", { done: row.done, planned: row.planned }) : t3(row.area === "life" ? "plan.area.extraDays" : "plan.area.extra", { done: row.done, n: row.done }))}</span>${row.classwork?.length ? `<small class="wplan-classwork">${row.classwork.map((task) => posEscape(t3(task.done ? "plan.classwork.done" : "plan.classwork.todo", { kind: t3(`plan.area.${task.kind}`) }))).join(" \xB7 ")}</small>` : ""}${row.area === "writing" && writingOpen ? `<button class="quiet-button wplan-area-open" type="button" data-plan-writing="writing">${posEscape(t3("writing.row.title"))} <span aria-hidden="true">\u2192</span></button>` : ""}</li>`;
     const nextTitle = next ? planTitle(next) : "";
     const gameOf = (id) => String(id || "").split(".").pop();
     const bridgeName = (id) => exam.type === "topik2" && /^ko\.(listening|reading)\./.test(String(id || "")) ? `${t3("goal.exam.type.topik1")} \xB7 ` : "";
@@ -27580,7 +27665,7 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     const checks = (plan.checks || []).map((row) => `<li${row.done ? " data-done" : ""}><span>${posEscape(row.weekStart === plan.week?.start ? t3("plan.checks.thisWeek") : t3("plan.checks.week", { date: day(new Date(row.weekStart).toISOString()) }))}</span>${row.done ? `<small>${posEscape(t3("plan.checks.done"))}</small>` : ""}</li>`).join("");
     const reach = plan.reach || { confirmed: 0, total: 0, evidence: 0 };
     const bridged = exam.type !== "topik2" ? [] : plan.progress ? ["listening", "reading"].filter((area2) => plan.progress[area2]?.basis === "topik1") : reach.basis === "topik1" ? ["listening", "reading"] : [];
-    return `<div class="wpos wplan life-heading" data-plan-board tabindex="-1">${poster(t3("plan.week.title"), head, { print: "plan", label: "MY PLAN" })}` + (notes.has("past") ? `<section class="wpos-diagnostic" data-plan-past><p class="wpos-intro">${posEscape(t3("goal.exam.past"))}</p><button class="quiet-button" type="button" data-view="study">${posEscape(t3("plan.week.setGoal"))}</button></section>` : "") + `<section class="wplan-week"><p class="life-section-label">THIS WEEK</p><h3>${posEscape(t3("plan.week.sessions", { n: plan.sessions?.total || 0, minutes: plan.sessions?.minutes || 0 }))}</h3><ul class="wplan-areas">${(plan.areas || []).map(area).join("")}</ul><p class="wpos-note">${posEscape(t3("plan.week.rest"))}</p>${notes.has("audio-off") ? `<p class="wpos-note">${posEscape(t3("plan.week.audioOff"))}</p>` : ""}${notes.has("reading-unavailable") ? `<p class="wpos-note" data-plan-reading-later>${posEscape(t3("plan.week.readingLater"))}</p>` : ""}${notes.has("writing-unavailable") ? `<p class="wpos-note">${posEscape(t3("plan.week.writingLater"))}</p>` : ""}${notes.has("speaking-audio-off") ? `<p class="wpos-note" data-plan-speaking-later>${posEscape(t3("plan.week.speakingAudioOff"))}</p>` : ""}${notes.has("speaking-unavailable") ? `<p class="wpos-note" data-plan-speaking-later>${posEscape(t3("plan.week.speakingLater"))}</p>` : ""}${notes.has("no-date") ? `<p class="wpos-note">${posEscape(t3("plan.week.noDate"))}</p>` : ""}</section>` + (next ? `<section class="wplan-next"><p class="life-section-label">NOW</p><h3>${nextTitle}</h3>${reason ? `<p class="wpos-note">${posEscape(reason)}</p>` : ""}<button class="felt-button" type="button" data-plan-next>${posEscape(t3("plan.week.start"))} <span aria-hidden="true">\u2192</span></button></section>` : "") + (homework ? `<section class="wpos-attention wplan-homework"><p class="life-section-label">HOMEWORK</p><h3>${posEscape(t3("plan.homework.title"))}</h3><p class="wpos-note">${posEscape(t3("plan.homework.note"))}</p><ul>${homework}</ul></section>` : "") + (checks ? `<section class="wplan-checks"><p class="life-section-label">CHECK</p><h3>${posEscape(t3("plan.checks.title"))}</h3><ul>${checks}</ul><p class="wpos-note">${posEscape(t3("plan.checks.note"))}</p>${thisWeek && !thisWeek.done && next?.route !== "position" ? `<button class="quiet-button" type="button" data-plan-recheck>${posEscape(t3("position.diagnostic.start"))} <span aria-hidden="true">\u2192</span></button>` : ""}</section>` : "") + (plan.speaking ? `<section class="wplan-next" data-plan-speaking-section><p class="life-section-label">SPEAKING</p><h3>${posEscape(t3("speaking.title"))}</h3><p class="wpos-note">${posEscape(plan.speaking.untried > 0 ? t3("plan.speaking.note", { n: plan.speaking.untried }) : t3("plan.speaking.noteAll"))}</p><button class="quiet-button" type="button" data-plan-speaking>${posEscape(t3("plan.speaking.open"))} <span aria-hidden="true">\u2192</span></button></section>` : "") + (plan.mock?.status === "ready" ? `<section class="wplan-next" data-plan-mock-section><p class="life-section-label">EXAM FORM</p><h3>${posEscape(t3("mock.title"))}</h3><p class="wpos-note">${posEscape(t3("mock.planNote", { minutes: plan.mock.minutes, n: plan.mock.total }))}</p><button class="quiet-button" type="button" data-plan-mock>${posEscape(t3("mock.open", { minutes: plan.mock.minutes }))} <span aria-hidden="true">\u2192</span></button></section>` : "") + `<section class="wplan-reach"><p class="life-section-label">SO FAR</p>${["listening", "reading"].filter((area2) => plan.progress?.[area2]).map((area2) => `<p class="wpos-progress" data-plan-progress="${area2}"><span>${posEscape(t3(`plan.area.${area2}`))}${bridged.includes(area2) ? ` \xB7 ${posEscape(t3("goal.exam.type.topik1"))}` : ""} \xB7 ${posEscape(t3("position.progress", { checked: plan.progress[area2].checked, total: plan.progress[area2].total }))}</span><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(plan.progress[area2].checked, plan.progress[area2].total)}%"></i></span></p>`).join("")}<p class="wpos-intro">${posEscape(t3("plan.reach.line", { confirmed: reach.confirmed, total: reach.total, evidence: reach.evidence }))}</p><p class="wpos-note">${posEscape(t3("plan.reach.note"))}</p>${bridged.length ? `<p class="wpos-note" data-plan-reach-basis>${posEscape(t3(bridged.length > 1 ? "plan.reach.topik1Basis" : bridged[0] === "listening" ? "plan.reach.topik1Basis.listening" : "plan.reach.topik1Basis.reading"))}</p>` : ""}</section><button class="quiet-button" type="button" data-view="study">${posEscape(t3("plan.week.change"))}</button></div>`;
+    return `<div class="wpos wplan life-heading" data-plan-board tabindex="-1">${poster(t3("plan.week.title"), head, { print: "plan", label: "MY PLAN" })}` + (notes.has("past") ? `<section class="wpos-diagnostic" data-plan-past><p class="wpos-intro">${posEscape(t3("goal.exam.past"))}</p><button class="quiet-button" type="button" data-view="study">${posEscape(t3("plan.week.setGoal"))}</button></section>` : "") + `<section class="wplan-week"><p class="life-section-label">THIS WEEK</p><h3>${posEscape(t3("plan.week.sessions", { n: plan.sessions?.total || 0, minutes: plan.sessions?.minutes || 0 }))}</h3><ul class="wplan-areas">${(plan.areas || []).map(area).join("")}</ul><p class="wpos-note">${posEscape(t3("plan.week.rest"))}</p>${notes.has("audio-off") ? `<p class="wpos-note">${posEscape(t3("plan.week.audioOff"))}</p>` : ""}${notes.has("reading-unavailable") ? `<p class="wpos-note" data-plan-reading-later>${posEscape(t3("plan.week.readingLater"))}</p>` : ""}${notes.has("writing-unavailable") ? `<p class="wpos-note">${posEscape(t3("plan.week.writingLater"))}</p>` : ""}${notes.has("speaking-audio-off") ? `<p class="wpos-note" data-plan-speaking-later>${posEscape(t3("plan.week.speakingAudioOff"))}</p>` : ""}${notes.has("speaking-unavailable") ? `<p class="wpos-note" data-plan-speaking-later>${posEscape(t3("plan.week.speakingLater"))}</p>` : ""}</section>` + (next ? `<section class="wplan-next"><p class="life-section-label">NOW</p><h3>${nextTitle}</h3>${reason ? `<p class="wpos-note">${posEscape(reason)}</p>` : ""}<button class="felt-button" type="button" data-plan-next>${posEscape(t3("plan.week.start"))} <span aria-hidden="true">\u2192</span></button></section>` : "") + (homework ? `<section class="wpos-attention wplan-homework"><p class="life-section-label">HOMEWORK</p><h3>${posEscape(t3("plan.homework.title"))}</h3><p class="wpos-note">${posEscape(t3("plan.homework.note"))}</p><ul>${homework}</ul></section>` : "") + (checks ? `<section class="wplan-checks"><p class="life-section-label">CHECK</p><h3>${posEscape(t3("plan.checks.title"))}</h3><ul>${checks}</ul><p class="wpos-note">${posEscape(t3("plan.checks.note"))}</p>${thisWeek && !thisWeek.done && next?.route !== "position" ? `<button class="quiet-button" type="button" data-plan-recheck>${posEscape(t3("position.diagnostic.start"))} <span aria-hidden="true">\u2192</span></button>` : ""}</section>` : "") + (plan.speaking ? `<section class="wplan-next" data-plan-speaking-section><p class="life-section-label">SPEAKING</p><h3>${posEscape(t3("speaking.title"))}</h3><p class="wpos-note">${posEscape(plan.speaking.untried > 0 ? t3("plan.speaking.note", { n: plan.speaking.untried }) : t3("plan.speaking.noteAll"))}</p><button class="quiet-button" type="button" data-plan-speaking>${posEscape(t3("plan.speaking.open"))} <span aria-hidden="true">\u2192</span></button></section>` : "") + (plan.mock?.status === "ready" ? `<section class="wplan-next" data-plan-mock-section><p class="life-section-label">EXAM FORM</p><h3>${posEscape(t3("mock.title"))}</h3><p class="wpos-note">${posEscape(t3("mock.planNote", { minutes: plan.mock.minutes, n: plan.mock.total }))}</p><button class="quiet-button" type="button" data-plan-mock>${posEscape(t3("mock.open", { minutes: plan.mock.minutes }))} <span aria-hidden="true">\u2192</span></button></section>` : "") + `<section class="wplan-reach"><p class="life-section-label">SO FAR</p>${["listening", "reading"].filter((area2) => plan.progress?.[area2]).map((area2) => `<p class="wpos-progress" data-plan-progress="${area2}"><span>${posEscape(t3(`plan.area.${area2}`))}${bridged.includes(area2) ? ` \xB7 ${posEscape(t3("goal.exam.type.topik1"))}` : ""} \xB7 ${posEscape(t3("position.progress", { checked: plan.progress[area2].checked, total: plan.progress[area2].total }))}</span><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(plan.progress[area2].checked, plan.progress[area2].total)}%"></i></span></p>`).join("")}<p class="wpos-intro">${posEscape(t3("plan.reach.line", { confirmed: reach.confirmed, total: reach.total, evidence: reach.evidence }))}</p><p class="wpos-note">${posEscape(t3("plan.reach.note"))}</p>${bridged.length ? `<p class="wpos-note" data-plan-reach-basis>${posEscape(t3(bridged.length > 1 ? "plan.reach.topik1Basis" : bridged[0] === "listening" ? "plan.reach.topik1Basis.listening" : "plan.reach.topik1Basis.reading"))}</p>` : ""}</section>${notes.has("no-date") ? `<p class="wpos-note wplan-date-note">${posEscape(t3("plan.week.noDate"))}</p>` : ""}<button class="quiet-button" type="button" data-view="study">${posEscape(t3("plan.week.change"))}</button></div>`;
   }
   return Object.freeze({
     skillName,
