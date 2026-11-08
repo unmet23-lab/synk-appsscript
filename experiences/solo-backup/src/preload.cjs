@@ -10,6 +10,8 @@ contextBridge.exposeInMainWorld('backup', Object.freeze({
   saveRecoveryKit: call('saveRecoveryKit'), startAutomatic: call('startAutomatic'), setAutomatic: call('setAutomatic'),
   backupNow: call('backupNow'), restoreLatest: call('restoreLatest'), checkRepository: call('checkRepository'),
   protectNow: call('protectNow'), pauseAutomatic: call('pauseAutomatic'), resumeAutomatic: call('resumeAutomatic'), probeRestore: call('probeRestore'),
+  openFileCatalog: call('openFileCatalog'), queryFileCatalog: call('queryFileCatalog'), setFileSelection: call('setFileSelection'),
+  closeFileCatalog: call('closeFileCatalog'), restoreSelected: call('restoreSelected'), openSelectedRestoreFolder: call('openSelectedRestoreFolder'),
   importRecoveryKit: call('importRecoveryKit'), setLaunchAtLogin: call('setLaunchAtLogin'), openRestoreFolder: call('openRestoreFolder'),
   onState: callback => { const listener = (_event, value) => callback(value); ipcRenderer.on('backup:state', listener); return () => ipcRenderer.removeListener('backup:state', listener); }
 }));

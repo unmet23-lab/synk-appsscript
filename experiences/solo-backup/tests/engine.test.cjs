@@ -78,6 +78,10 @@ test('real Windows restic: backup, changed files, new-PC recovery, failure prese
       assert.equal(digest(await fs.readFile(path.join(source, name))), digest(data));
     }
   });
+  const pinnedCatalog = await engine.openFileCatalog();
+  const pinnedFile = engine.queryFileCatalog({ token: pinnedCatalog.token, query: '한글 문서', offset: 0 }).rows[0];
+  engine.setFileSelection({ token: pinnedCatalog.token, revision: 0, action: 'add', ids: [pinnedFile.id] });
+  const pinnedContents = Buffer.from(content['한글 문서.txt']);
   await t.test('changed and deleted source files produce a new latest backup; grace copy remains', async () => {
     content['한글 문서.txt'] = Buffer.from('수정한 두 번째 판 · 더욱 긴 내용');
     await fs.writeFile(path.join(source, '한글 문서.txt'), content['한글 문서.txt']);
@@ -85,6 +89,31 @@ test('real Windows restic: backup, changed files, new-PC recovery, failure prese
     await engine.backupNow();
     assert.notEqual(engine.config.lastBackup.id, initial);
     assert.equal((await engine.snapshots([VERIFIED])).length, 2);
+    await engine.restoreSelected({ token: pinnedCatalog.token, revision: 1, parent: restore });
+    const picked = await files(engine.config.lastSelectedRestore.path);
+    assert.equal(engine.config.lastSelectedRestore.files, 1);
+    assert.equal(digest(await fs.readFile(picked.find(f => path.basename(f) === '한글 문서.txt'))), digest(pinnedContents));
+    assert.ok(!picked.some(f => path.basename(f) === 'binary.dat'));
+    assert.equal(digest(await fs.readFile(path.join(source, '한글 문서.txt'))), digest(content['한글 문서.txt']));
+    // Exercise the real spawned restic exit/consumer ordering, not only a
+    // runner stub: a missing literal path exits nonzero; a truncated consumer
+    // still lets restic exit zero and must fail the post-exit size check.
+    const run = engine.run, priorSelected = { ...engine.config.lastSelectedRestore };
+    engine.run = function(args, options) { return run.call(this, args[0] === 'dump' ? [args[0], args[1], '/__not_in_snapshot__'] : args, options); };
+    try { await assert.rejects(engine.restoreSelected({ token: pinnedCatalog.token, revision: 1, parent: restore }), e => e.code === 'RESTORE_INCOMPLETE'); }
+    finally { engine.run = run; }
+    assert.equal(engine.config.health.status, 'ok'); assert.deepEqual(engine.config.lastSelectedRestore, priorSelected);
+    engine.run = function(args, options) {
+      if (args[0] !== 'dump') return run.call(this, args, options);
+      const { Transform } = require('node:stream'), { pipeline } = require('node:stream/promises');
+      let tail = Buffer.alloc(0);
+      const truncate = new Transform({ transform(chunk, _encoding, done) { const data = Buffer.concat([tail, chunk]); tail = data.subarray(-1); done(null, data.subarray(0, -1)); }, flush(done) { done(); } });
+      return run.call(this, args, { ...options, consumeStdout: input => pipeline(input, truncate, async stream => options.consumeStdout(stream)) });
+    };
+    try { await assert.rejects(engine.restoreSelected({ token: pinnedCatalog.token, revision: 1, parent: restore }), e => e.code === 'INTEGRITY_FAILED'); }
+    finally { engine.run = run; }
+    assert.equal(engine.config.health.status, 'attention'); assert.deepEqual(engine.config.lastSelectedRestore, priorSelected);
+    await engine.checkRepository();
     await engine.probeRestore(); assert.equal(engine.config.lastProbe.snapshotId, engine.config.lastBackup.id);
     await engine.restoreLatest({ parent: restore });
     const restored = await files(engine.config.lastRestore.path);
@@ -121,6 +150,11 @@ test('real Windows restic: backup, changed files, new-PC recovery, failure prese
     await assert.rejects(other.retain(), /정리할 수 없습니다/);
     await other.restoreLatest({ parent: path.join(root, '복구 결과') });
     assert.ok((await files(other.config.lastRestore.path)).some(f => path.basename(f) === 'binary.dat'));
+    const catalog = await other.openFileCatalog();
+    other.setFileSelection({ token: catalog.token, revision: 0, action: 'all', query: 'binary.dat' });
+    await other.restoreSelected({ token: catalog.token, revision: 1, parent: restore });
+    assert.equal(other.config.lastSelectedRestore.files, 1);
+    assert.equal(digest(await fs.readFile((await files(other.config.lastSelectedRestore.path)).find(f => path.basename(f) === 'binary.dat'))), digest(content['binary.dat']));
   });
   await t.test('failed restore immediately revokes health and prevents retention', async () => {
     const run = engine.run;

@@ -11,6 +11,7 @@ const { directory, overlap, atomic, validateSources } = require('./paths.cjs');
 const b2 = require('./b2.cjs');
 const { normalizeProtection, schedule, time } = require('./protection.cjs');
 const { selectSample, consumeSample, issue: probeIssue } = require('./probe.cjs');
+const selection = require('./restore-select.cjs');
 
 const APP = 'solo-work-backup-v1';
 const VERIFIED = 'complete-structure-checked';
@@ -35,6 +36,7 @@ class BackupEngine extends EventEmitter {
     this.runner = runner; this.now = now; this.intervalMs = intervalMs;
     this.providerType = providerType; this.cloudCredentials = null; this.connection = null; this.transientSecrets = []; this.probe = probe; this.forbiddenPaths = forbiddenPaths;
     this.config = null; this.secret = null; this.job = null; this.child = null; this.stopping = false; this.lastAttempt = 0;
+    this.fileCatalog = null;
   }
   async open() {
     await fs.mkdir(this.stateDir, { recursive: true });
@@ -84,6 +86,7 @@ class BackupEngine extends EventEmitter {
       credentialRequired: !!c && !this.secret, intervalMinutes: this.intervalMs / 60000, fullCheckDays: this.isCloud() ? 30 : 1, retryAfter: c?.retryAfter || null,
       recoverySaved: this.hasRecovery(), manualRecoverySaved: c?.recoverySaved || false, readOnly: !!c?.readOnly, automatic: c?.automatic || false, lastBackup: c?.lastBackup || null,
       lastRestore: c?.lastRestore || null, health: c?.health || null, lastError: c?.lastError || null,
+      lastSelectedRestore: c?.lastSelectedRestore || null, lastSelectedRestoreError: c?.lastSelectedRestoreError || null,
       pausedUntil: c?.pausedUntil || null, lastAttemptAt: c?.lastAttemptAt || null, nextBackupAt: timing.nextBackupAt, clockHold: timing.clockHold,
       lastProbe: c?.lastProbe || null, probeHold: c?.probeHold || null, protectRun: c?.protectRun || null, startupWarning: c?.startupWarning || null,
       warning: c?.warning || null, job: this.job ? { ...this.job } : null };
@@ -102,6 +105,7 @@ class BackupEngine extends EventEmitter {
   }
   forbidden() { return [this.stateDir, ...this.forbiddenPaths, ...(!this.isCloud() && this.config ? [this.config.repository] : [])]; }
   async storeCredential(password, credentials = this.cloudCredentials) {
+    this.discardCatalog();
     const value = this.isCloud() ? JSON.stringify({ version: 2, password, ...b2.credentials(credentials) }) : password;
     await atomic(path.join(this.stateDir, 'credential.bin'), await this.secretStore.encrypt(value));
   }
@@ -549,6 +553,138 @@ class BackupEngine extends EventEmitter {
       return this.getState();
     });
   }
+  discardCatalog() { clearTimeout(this.catalogTimer); this.fileCatalog = null; }
+  assertCatalogReady() {
+    if (!this.config?.repositoryId) throw selection.issue('NOT_CONFIGURED');
+    if (!this.secret) throw selection.issue('CREDENTIAL_REQUIRED');
+    if (this.stopping) throw selection.issue('JOB_BUSY');
+  }
+  catalogFor(token) {
+    this.assertCatalogReady();
+    if (!this.fileCatalog) throw selection.issue('CATALOG_EXPIRED');
+    try { this.fileCatalog.assert(token, this.config, this.now()); }
+    catch (e) { this.discardCatalog(); throw e; }
+    return this.fileCatalog;
+  }
+  async hold(kind, fn) {
+    // The new read/selected-restore flow must never clear a backup's error or
+    // interrupted protection journal. operation() remains unchanged for it.
+    if (this.job || this.stopping) throw selection.issue('JOB_BUSY');
+    this.job = { kind, stage: '파일 목록 확인 중', percent: null }; this.emitState();
+    try { return await fn(); }
+    finally { this.transientSecrets = []; this.job = null; this.emitState(); this.emit('idle'); }
+  }
+  async assertNoRemoteMaintenance() {
+    if (!this.config.readOnly) return;
+    const ids = (await this.run(['list', 'locks'], { timeoutMs: 60000 })).trim().split(/\s+/).filter(Boolean);
+    if (ids.length > 100 || ids.some(id => !isId(id))) throw selection.issue('OPERATION_FAILED');
+    for (const id of ids) {
+      const lock = json(await this.run(['cat', 'lock', id], { timeoutMs: 60000 }));
+      if (typeof lock.exclusive !== 'boolean' || lock.exclusive) throw selection.issue('REMOTE_MAINTENANCE');
+    }
+  }
+  async readFileManifest(plan, snapshotId, meter) {
+    let manifest;
+    await this.run(['ls', '--json', '--recursive', plan.selector], { timeoutMs: 300000, consumeStdout: async input => {
+      manifest = await selection.parseCatalog(input, { root: path.resolve(this.stateDir, 'catalog-root'), snapshotId, budget: meter });
+    } });
+    if (!manifest) throw selection.issue('OPERATION_FAILED');
+    return manifest;
+  }
+  async openFileCatalog() {
+    this.assertCatalogReady();
+    return this.hold('browse', async () => {
+      this.discardCatalog();
+      try {
+        await this.assertNoRemoteMaintenance(); await this.identity();
+        const snapshot = (await this.snapshots([VERIFIED]))[0];
+        if (!snapshot) throw selection.issue('NO_SNAPSHOT');
+        const plans = selection.sourcePlans(snapshot), manifests = [], meter = selection.budget();
+        for (const plan of plans) manifests.push(await this.readFileManifest(plan, snapshot.id, meter));
+        this.fileCatalog = new selection.FileCatalog({ snapshot, plans, manifests, repositoryId: this.config.repositoryId, vaultId: this.config.vaultId, profile: this.providerType, now: this.now() });
+        this.catalogTimer = setTimeout(() => this.discardCatalog(), selection.LIMITS.ttl); this.catalogTimer.unref?.();
+        return this.fileCatalog.meta();
+      } catch (e) { throw selection.safeError(e); }
+    });
+  }
+  queryFileCatalog({ token, query, offset }) { return this.catalogFor(token).query(query, offset); }
+  setFileSelection(input) {
+    if (this.job?.kind === 'restore-selected') throw selection.issue('JOB_BUSY');
+    return this.catalogFor(input.token).select(input);
+  }
+  closeFileCatalog({ token }) {
+    if (this.job?.kind === 'restore-selected') throw selection.issue('JOB_BUSY');
+    this.catalogFor(token); this.discardCatalog(); return { profile: this.providerType, token, closed: true };
+  }
+  prepareSelectedRestore({ token, revision }) {
+    if (this.job || this.stopping) throw selection.issue('JOB_BUSY');
+    return this.catalogFor(token).capture(revision);
+  }
+  restoreSelected({ token, revision, parent }) {
+    // Synchronous preflight runs again after main's native destination picker.
+    // Once captured, profile switches/TTL/credential invalidation cannot change
+    // the selected paths or silently replace the pinned immutable snapshot.
+    const capture = this.prepareSelectedRestore({ token, revision });
+    return this.hold('restore-selected', async () => {
+      let target, marker; const previous = this.config.lastSelectedRestore;
+      try {
+        this.config.lastSelectedRestoreError = null; await this.save();
+        let base;
+        try { base = await directory(parent); }
+        catch { throw selection.issue('OUTPUT_UNSAFE'); }
+        if ([...this.forbidden(), ...this.config.sources, ...capture.plans.map(p => p.original)].some(p => overlap(base, p))) throw selection.issue('OUTPUT_UNSAFE');
+        if (this.config.repositoryId !== capture.repositoryId || this.config.vaultId !== capture.vaultId) throw selection.issue('REPOSITORY_CHANGED');
+        await this.assertNoRemoteMaintenance(); await this.identity();
+        const snapshot = (await this.snapshots([VERIFIED])).find(s => s.id === capture.snapshotId);
+        if (!snapshot) throw selection.issue('SNAPSHOT_GONE');
+        const plans = selection.sourcePlans(snapshot);
+        if (JSON.stringify(plans) !== JSON.stringify(capture.plans)) throw selection.issue('INTEGRITY_FAILED');
+        const meter = selection.budget();
+        for (const index of new Set(capture.files.map(f => f.sourceIndex))) {
+          const manifest = await this.readFileManifest(plans[index], snapshot.id, meter);
+          for (const file of capture.files.filter(f => f.sourceIndex === index)) {
+            const fresh = manifest.nodes.get(file.path.toLowerCase());
+            if (!fresh || fresh.type !== 'file' || fresh.path !== file.path || fresh.size !== file.size || fresh.mtime !== file.mtime) throw selection.issue('INTEGRITY_FAILED');
+          }
+        }
+        await selection.spaceRequired(base, capture.files, plans);
+        await directory(base);
+        target = path.join(base, `선택복구-${new Date(this.now()).toISOString().replace(/[:.]/g, '-')}-${crypto.randomBytes(6).toString('hex')}`);
+        await fs.mkdir(target);
+        marker = path.join(target, '_복구중_미완료.txt');
+        await fs.writeFile(marker, '복구가 완료되지 않았습니다. 이 폴더를 완료된 복구본으로 사용하지 마세요.\n', { flag: 'wx' });
+        let count = 0, bytes = 0;
+        for (const file of capture.files) {
+          this.stage(`선택한 파일 복구 및 확인 중 (${count}/${capture.files.length})`, Math.floor(count / capture.files.length * 100));
+          const destination = require('./restore-tar.cjs').entryPath(target, `${plans[file.sourceIndex].label}/${file.path}`);
+          await directory(target); await fs.mkdir(path.dirname(destination), { recursive: true }); await directory(path.dirname(destination));
+          let written;
+          await this.run(['dump', plans[file.sourceIndex].selector, '/' + file.path], { timeoutMs: 6 * 3600000, consumeStdout: async input => {
+            written = await selection.writeFileStream(input, destination, file.size, target);
+          } });
+          if (!written || written.bytes !== file.size) throw selection.issue('INTEGRITY_FAILED');
+          if (file.mtime) await fs.utimes(destination, new Date(file.mtime), new Date(file.mtime));
+          count++; bytes += written.bytes;
+        }
+        const mapping = capture.files.map(f => ({ source: plans[f.sourceIndex].label, path: f.path, bytes: f.size }));
+        await fs.writeFile(path.join(target, '복구경로.json'), JSON.stringify({ snapshotAt: snapshot.time, files: mapping }, null, 2), { flag: 'wx' });
+        await fs.unlink(marker);
+        this.config.lastSelectedRestore = { path: target, at: new Date(this.now()).toISOString(), files: count, bytes };
+        // Persist before emitting success. If finalization fails, restore the old
+        // result and recreate the incomplete marker below.
+        await atomic(path.join(this.stateDir, 'settings.json'), JSON.stringify(this.config, null, 2));
+        this.stage(`선택한 파일 ${count}개 복구 확인 완료`, 100);
+        return this.getState();
+      } catch (e) {
+        const error = selection.safeError(e, 'RESTORE_INCOMPLETE');
+        this.config.lastSelectedRestore = previous;
+        if (marker) await fs.writeFile(marker, '복구가 완료되지 않았습니다. 이전 완료 결과는 유지됩니다.\n', { flag: 'wx' }).catch(() => {});
+        this.config.lastSelectedRestoreError = { code: error.code, message: error.message, at: new Date(this.now()).toISOString(), ...(target ? { path: target } : {}) };
+        if (error.code === 'INTEGRITY_FAILED') this.config.health = { status: 'attention', checkedAt: new Date(this.now()).toISOString(), detail: error.message };
+        await this.save().catch(() => {}); throw error;
+      }
+    });
+  }
   async tick() {
     if (this.stopping || this.job || !this.secret || !this.config?.automatic || this.config.mode !== 'backup' || this.config.readOnly) return;
     const timing = schedule(this.config, this.intervalMs, this.now(), this.lastAttempt);
@@ -561,6 +697,7 @@ class BackupEngine extends EventEmitter {
   startScheduler(pollMs = 30000) { this.stopScheduler(); this.timer = setInterval(() => { void this.tick(); }, pollMs); this.timer.unref?.(); }
   stopScheduler() { clearInterval(this.timer); }
   stop() {
+    this.discardCatalog();
     this.stopping = true; this.stopScheduler();
     // Windows termination is forcible and can strand repository locks. Let the
     // active operation finish; operation() prevents accepting another job.

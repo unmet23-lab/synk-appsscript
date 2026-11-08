@@ -1,6 +1,6 @@
 {
   "name": "solo-work-backup",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "description": "Windows encrypted local and B2 cloud backup with verified restore",
   "main": "src/main.cjs",

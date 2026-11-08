@@ -9,6 +9,7 @@ const { RecoveryService } = require('./recovery-service.cjs');
 const { clientConfig } = require('./recovery-auth.cjs');
 const { protection } = require('./protection.cjs');
 const { startupControl } = require('./startup.cjs');
+const fileSelection = require('./restore-select.cjs');
 
 const testMode = process.argv.includes('--test-mode');
 const testState = testMode && process.env.SOLO_BACKUP_TEST_STATE;
@@ -38,13 +39,13 @@ function launchJob(engine, action) {
   return state();
 }
 function trusted(event) { return event.sender === window?.webContents && event.senderFrame === event.sender.mainFrame && event.senderFrame.url === pageUrl; }
-function handle(name, action, { read = false, switching = false } = {}) {
+function handle(name, action, { read = false, switching = false, safeErrors = false } = {}) {
   ipcMain.handle(`backup:${name}`, async (event, ...args) => {
     if (!trusted(event)) return { ok: false, error: '이 화면에서는 실행할 수 없습니다.' };
     if (!read && (closing || dialogBusy || recovery?.busy || (!switching && profiles.current.job))) return { ok: false, error: '진행 중인 작업이 끝난 뒤 다시 눌러 주세요.' };
     const context = { engine: profiles.current, selection: profiles.selection };
     try { if (!read) dialogBusy = true; profiles.boundaries(); const result = await action(context, ...args); push(); return { ok: true, value: result }; }
-    catch (e) { return { ok: false, error: context.engine.clean(e.message) }; }
+    catch (e) { if (safeErrors) { const clean = fileSelection.safeError(e); return { ok: false, error: clean.message, code: clean.code }; } return { ok: false, error: context.engine.clean(e.message) }; }
     finally { if (!read) dialogBusy = false; }
   });
 }
@@ -57,6 +58,7 @@ function createWindow() {
     webPreferences: { preload: path.join(__dirname, 'preload.cjs'), nodeIntegration: false, contextIsolation: true, sandbox: true, webSecurity: true, webviewTag: false, offscreen: testMode, backgroundThrottling: !testMode } });
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   window.webContents.on('will-navigate', e => e.preventDefault());
+  window.webContents.on('did-start-navigation', (_event, _url, _inPlace, mainFrame) => { if (mainFrame) for (const engine of Object.values(profiles.engines)) engine.discardCatalog(); });
   window.webContents.session.setPermissionRequestHandler((_wc, _permission, callback) => callback(false));
   window.webContents.session.webRequest.onBeforeRequest((details, callback) => callback({ cancel: !details.url.startsWith(pathToFileURL(path.join(__dirname, '..', 'ui')).href + '/') }));
   window.on('close', e => { if (!quitting && profiles.active()) { e.preventDefault(); window.hide(); } });
@@ -99,7 +101,7 @@ else {
     handle('setup', async ({ engine, selection }) => { profiles.assertLocalTarget(selection.target); await engine.setup({ sources: selection.sources, parent: selection.target }); return state(); });
     handle('setupCloud', async ({ engine, selection }, input) => { if (!input || typeof input !== 'object') throw new Error('B2 연결 정보를 입력해 주세요.'); const { endpoint, bucket, keyId, applicationKey } = input; await engine.setupCloud({ sources: selection.sources, endpoint, bucket, credentials: { keyId, applicationKey } }); if (recovery.getState().connected && recovery.getState().readKeyReady) await recovery.sync().catch(() => {}); return state(); });
     handle('connectRecovery', async () => { await recovery.connect(); return state(); });
-    handle('disconnectRecovery', async () => { await recovery.disconnect(); return state(); });
+    handle('disconnectRecovery', async () => { await recovery.disconnect(); profiles.engines.b2.discardCatalog(); return state(); });
     handle('syncRecovery', async () => { await recovery.sync(); return state(); });
     handle('findRecoveryBackups', async () => { await recovery.discover(); return state(); });
     handle('importAccountRecovery', async (_context, id) => { if (typeof id !== 'string') throw new Error('복구할 백업을 선택해 주세요.'); await recovery.import(id); profiles.select('b2'); return state(); });
@@ -127,6 +129,46 @@ else {
       profiles.assertOutput(picked[0]);
       return launchJob(engine, () => engine.restoreLatest({ parent: picked[0] }));
     });
+    function catalogInput({ engine }, input, keys, required = keys) {
+      fileSelection.request(input, keys, required);
+      if (!['local', 'b2'].includes(input.profile) || input.profile !== profiles.profile || engine !== profiles.engines[input.profile]) throw fileSelection.issue('CATALOG_EXPIRED');
+      return input;
+    }
+    handle('openFileCatalog', async (context, input) => {
+      catalogInput(context, input, ['profile']); return context.engine.openFileCatalog();
+    }, { safeErrors: true });
+    handle('queryFileCatalog', (context, input) => {
+      catalogInput(context, input, ['profile', 'token', 'query', 'offset']); return context.engine.queryFileCatalog(input);
+    }, { read: true, safeErrors: true });
+    handle('setFileSelection', (context, input) => {
+      catalogInput(context, input, ['profile', 'token', 'revision', 'action', 'ids', 'query'], ['profile', 'token', 'revision', 'action']);
+      if (dialogBusy || closing || recovery?.busy) throw fileSelection.issue('JOB_BUSY');
+      return context.engine.setFileSelection(input);
+    }, { read: true, safeErrors: true });
+    handle('closeFileCatalog', (context, input) => {
+      catalogInput(context, input, ['profile', 'token']);
+      if (dialogBusy || closing) throw fileSelection.issue('JOB_BUSY');
+      return context.engine.closeFileCatalog(input);
+    }, { read: true, safeErrors: true });
+    handle('restoreSelected', async (context, input) => {
+      catalogInput(context, input, ['profile', 'token', 'revision']);
+      context.engine.prepareSelectedRestore(input);
+      const picked = await folder('선택한 파일을 복구할 별도 폴더 선택');
+      if (!picked) return { profile: input.profile, token: input.token, canceled: true };
+      catalogInput(context, input, ['profile', 'token', 'revision']);
+      try { profiles.assertOutput(picked[0]); } catch { throw fileSelection.issue('OUTPUT_UNSAFE'); }
+      context.engine.prepareSelectedRestore(input);
+      const started = launchJob(context.engine, () => context.engine.restoreSelected({ token: input.token, revision: input.revision, parent: picked[0] }));
+      return { profile: input.profile, token: input.token, started: true, state: started };
+    }, { safeErrors: true });
+    handle('openSelectedRestoreFolder', async (context, input) => {
+      catalogInput(context, input, ['profile']);
+      const target = context.engine.config?.lastSelectedRestore?.path;
+      if (!target) throw fileSelection.issue('INVALID_REQUEST');
+      try { await require('./paths.cjs').directory(target); } catch { throw fileSelection.issue('OUTPUT_UNSAFE'); }
+      if (await shell.openPath(target)) throw fileSelection.issue('OPERATION_FAILED');
+      return { profile: input.profile, opened: true };
+    }, { safeErrors: true });
     async function readKit() {
       const picked = await dialog.showOpenDialog(window, { title: '복구 키 파일 선택', properties: ['openFile'], filters: [{ name: '복구 키', extensions: ['json'] }] });
       if (picked.canceled) throw new Error('연결을 취소했습니다.');

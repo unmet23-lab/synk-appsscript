@@ -18,6 +18,29 @@
   let recoNeedPrev = null;
   let recoForce = false;
   let heroAction = 'none';
+  Object.assign(JOBS, { restoreSelected: '골라 둔 파일을 새 폴더로 복구하고 해시를 확인하는 중', selectedRestore: '골라 둔 파일을 새 폴더로 복구하고 해시를 확인하는 중', catalog: '파일 목록을 불러오는 중' });
+  const PK_PAGE = 100;
+  const pk = { open: false, profile: null, token: null, meta: null, page: null, seq: 0, msg: '', note: '', offer: '', started: false, watchAt: null, watchErr: null, dirty: false };
+  const PK_MSG = {
+    CATALOG_EXPIRED: '파일 목록이 만료되었거나 닫혔습니다(목록은 연 뒤 30분 동안만 쓸 수 있습니다). 골라 둔 선택은 비워졌습니다. ‘다시 불러오기’를 눌러 주세요.',
+    SELECTION_LIMIT: '한 번에 최대 1,000개까지 고를 수 있습니다. 선택은 바뀌지 않았습니다. 검색어를 좁히거나 나눠서 복구해 주세요.',
+    CATALOG_TOO_LARGE: '백업에 파일이 너무 많아 목록을 만들 수 없습니다. ‘전체 복구로 진행’으로 모든 파일을 새 폴더에 복구해 주세요.',
+    UNSAFE_MANIFEST: '백업 안에 Windows에서 그대로 만들 수 없는 이름이나 경로(대소문자만 다른 이름 등)가 있어 안전하게 복구할 수 없습니다. 선택한 항목은 복구하지 않았습니다.',
+    SNAPSHOT_GONE: '목록을 연 뒤 이 백업본이 정리되어 더 이상 없습니다. 다른 백업으로 바꾸지 않았습니다. 선택은 비워졌으니 ‘다시 불러오기’를 눌러 주세요.',
+    REPOSITORY_CHANGED: '백업 저장소가 목록을 열 때와 달라졌습니다. 선택은 비워졌으니 ‘다시 불러오기’를 눌러 주세요.',
+    CREDENTIAL_REQUIRED: '인증 정보를 다시 연결해야 합니다. 인증을 복구한 뒤 다시 시도해 주세요.',
+    NO_SNAPSHOT: '아직 완료된 백업이 없어 고를 파일이 없습니다.',
+    NOT_CONFIGURED: '백업 설정이 끝나지 않았습니다.',
+    JOB_BUSY: '다른 작업이 진행 중입니다. 끝난 뒤 다시 시도해 주세요.',
+    DIALOG_BUSY: '다른 창이 열려 있습니다. 그 창을 닫은 뒤 다시 시도해 주세요.',
+    QUERY_INVALID: '검색어가 200자를 넘거나 쓸 수 없는 문자가 들어 있습니다.',
+    SELECTION_STALE: '선택 상태가 바뀌어 목록을 다시 불러왔습니다. 확인한 뒤 다시 눌러 주세요.',
+    SELECTION_EMPTY: '복구할 파일을 먼저 골라 주세요.',
+    REMOTE_MAINTENANCE: '저장소를 정리하는 중이라 지금은 복구할 수 없습니다. 잠시 뒤 다시 시도해 주세요.',
+    OUTPUT_UNSAFE: '그 위치에는 복구할 수 없습니다. 보호 중인 폴더나 백업 저장소와 겹치지 않는 다른 위치를 골라 주세요.',
+    NO_SPACE: '고른 위치에 공간이 부족합니다. 폴더는 만들지 않았습니다. 다른 위치를 골라 주세요.',
+    INTEGRITY_FAILED: '백업의 파일 정보가 목록과 맞지 않아 복구를 멈췄습니다. 점검 기록에서 전체 점검을 권합니다.'
+  };
   function normEp(v) { return String(v || '').trim().replace(/^https:\/\//i, '').replace(/\/+$/, ''); }
   function savedConn() { return state && state.profile === 'b2' && !state.configured && state.cloudConnection && typeof state.cloudConnection === 'object' ? state.cloudConnection : null; }
   function connMatch() {
@@ -84,7 +107,7 @@
   function accept(s) {
     s = normalize(s);
     if (!s || typeof s !== 'object') return;
-    if (state && s.profile !== state.profile) { clearSecrets(); recoNeedPrev = null; }
+    if (state && s.profile !== state.profile) { clearSecrets(); recoNeedPrev = null; pkReset(true); }
     state = s;
     render();
   }
@@ -95,6 +118,230 @@
     while (d) { d.open = true; d = d.parentElement ? d.parentElement.closest('details') : null; }
     try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) { /* ignore */ }
     if (!el.disabled && !el.hidden) el.focus();
+  }
+
+  function pkNum(x) { return (Number(x) || 0).toLocaleString('ko-KR'); }
+  function pkReset(close) {
+    pk.seq++; pk.token = null; pk.meta = null; pk.page = null; pk.dirty = true;
+    if (close) { pk.open = false; pk.profile = null; pk.msg = ''; pk.note = ''; pk.offer = ''; pk.started = false; }
+  }
+  function pkRev() { const x = pk.meta && pk.meta.selection; return x && Number.isInteger(x.revision) ? x.revision : 0; }
+  function pkOkMeta(v) { return !!(v && typeof v === 'object' && typeof v.token === 'string' && v.selection && typeof v.selection === 'object'); }
+  function pkLive() {
+    if (!pk.token || !pk.meta) return false;
+    const e = ts(pk.meta.expiresAt);
+    if (e && Date.now() >= e) { pkReset(false); pk.offer = 'refresh'; pk.msg = PK_MSG.CATALOG_EXPIRED; return false; }
+    return true;
+  }
+  function pkFail(res) {
+    const c = res && typeof res.code === 'string' ? res.code : '';
+    if (['CATALOG_EXPIRED', 'SNAPSHOT_GONE', 'REPOSITORY_CHANGED'].indexOf(c) >= 0) { pkReset(false); pk.offer = 'refresh'; }
+    else if (c === 'CATALOG_TOO_LARGE') { pkReset(false); pk.offer = 'full'; }
+    else if (c === 'UNSAFE_MANIFEST') { pkReset(false); }
+    if (c === 'RESTORE_INCOMPLETE') pk.msg = errText(res.msg) + ' 만들어진 폴더는 그대로 남아 있고, 자동으로 다시 시도하거나 이어받지 않습니다.';
+    else pk.msg = Object.prototype.hasOwnProperty.call(PK_MSG, c) ? PK_MSG[c] : errText(res && res.msg);
+  }
+  async function pkReq(name, arg) {
+    if (!api || typeof api[name] !== 'function') return { code: '', msg: '앱 기능에 연결할 수 없습니다. 앱을 다시 시작해 주세요.' };
+    const my = ++pk.seq;
+    const prof = arg.profile;
+    const tok = 'token' in arg ? arg.token : undefined;
+    let r = null;
+    try { r = await api[name](arg); } catch (e) { r = null; }
+    if (my !== pk.seq || !pk.open || pk.profile !== prof || !state || state.profile !== prof || (tok !== undefined && pk.token !== tok)) return { stale: true };
+    if (!r || r.ok !== true) return { code: r && typeof r.code === 'string' ? r.code : '', msg: r && r.error };
+    const v = r.value;
+    if (!v || typeof v !== 'object' || v.profile !== prof || (tok !== undefined && v.token !== tok)) return { stale: true };
+    return { v: v };
+  }
+  async function pkRun(fn) {
+    if (pending || !state || !pk.open || state.job || (state.recovery && state.recovery.busy) || state.profile !== pk.profile) return false;
+    pending = true; pk.msg = ''; pk.note = ''; pk.offer = ''; showError(''); render();
+    try { await fn(); } catch (e) { pk.msg = '요청을 처리하지 못했습니다. 다시 시도해 주세요.'; } finally { pending = false; render(); }
+    return true;
+  }
+  async function pkQuery(q, off) {
+    const res = await pkReq('queryFileCatalog', { profile: pk.profile, token: pk.token, query: q, offset: off });
+    if (res.stale) return false;
+    if (!pkOkMeta(res.v) || !Array.isArray(res.v.rows)) { pkFail(res.v ? {} : res); return false; }
+    pk.meta = res.v; pk.page = res.v; pk.dirty = true;
+    return true;
+  }
+  async function pkErr(res) {
+    pkFail(res);
+    pk.dirty = true;
+    if (res.code === 'SELECTION_STALE' && pk.token && pk.page) await pkQuery(String(pk.page.query || ''), Number(pk.page.offset) || 0);
+  }
+  async function pkOpen() {
+    pkReset(false);
+    const res = await pkReq('openFileCatalog', { profile: pk.profile });
+    if (res.stale) return;
+    if (!pkOkMeta(res.v)) { pkFail(res.v ? {} : res); return; }
+    pk.token = res.v.token; pk.meta = res.v;
+    $('pickQuery').value = '';
+    await pkQuery('', 0);
+  }
+  function pkStart() {
+    if (pending || !state || state.job || (state.recovery && state.recovery.busy)) return;
+    if (pk.open && pk.token) { goTo('pickQuery'); return; }
+    pk.open = true; pk.profile = state.profile;
+    pkRun(pkOpen).then(() => { goTo(pk.open && pk.token ? 'pickQuery' : 'pickCard'); });
+  }
+  function pkClose() {
+    if (pending) return;
+    if (!pk.token) { pkReset(true); render(); return; }
+    pkRun(async () => {
+      const res = await pkReq('closeFileCatalog', { profile: pk.profile, token: pk.token });
+      if (res.stale) return;
+      if (!res.v && (res.code === 'JOB_BUSY' || res.code === 'DIALOG_BUSY')) { pkFail(res); return; }
+      pkReset(true);
+    });
+  }
+  function pkToggle(row, cb) {
+    const want = cb.checked;
+    if (pending || !state || state.job) { cb.checked = !!row.selected; return; }
+    pkRun(async () => {
+      if (!pkLive()) return;
+      const res = await pkReq('setFileSelection', { profile: pk.profile, token: pk.token, revision: pkRev(), action: want ? 'add' : 'remove', ids: [row.id] });
+      if (res.stale) return;
+      if (!pkOkMeta(res.v)) { cb.checked = !!row.selected; await pkErr(res.v ? {} : res); return; }
+      pk.meta = res.v; row.selected = want;
+    }).then((ran) => { if (!ran) cb.checked = !!row.selected; });
+  }
+  function pkSet(action) {
+    pkRun(async () => {
+      if (!pkLive() || !pk.page) return;
+      const q = String(pk.page.query || '');
+      const arg = { profile: pk.profile, token: pk.token, revision: pkRev(), action: action };
+      if (action === 'all') arg.query = q;
+      const res = await pkReq('setFileSelection', arg);
+      if (res.stale) return;
+      if (!pkOkMeta(res.v)) { await pkErr(res.v ? {} : res); return; }
+      pk.meta = res.v;
+      await pkQuery(q, Number(pk.page.offset) || 0);
+    });
+  }
+  function pkGo(d) {
+    pkRun(async () => {
+      if (!pkLive() || !pk.page) return;
+      const size = Number(pk.page.pageSize) || PK_PAGE;
+      await pkQuery(String(pk.page.query || ''), Math.max(0, (Number(pk.page.offset) || 0) + d * size));
+    });
+  }
+  function pkRestore() {
+    pkRun(async () => {
+      if (!pkLive()) return;
+      const cnt = Number(pk.meta.selection.count) || 0;
+      if (!cnt) { pk.msg = PK_MSG.SELECTION_EMPTY; return; }
+      const l0 = state.lastSelectedRestore;
+      const e0 = state.lastSelectedRestoreError;
+      const res = await pkReq('restoreSelected', { profile: pk.profile, token: pk.token, revision: pkRev() });
+      if (res.stale) return;
+      if (!res.v) { await pkErr(res); return; }
+      const v = res.v;
+      if (v.canceled === true) { pk.note = '복구할 위치 선택을 취소했습니다. 고른 파일은 그대로 남아 있습니다.'; return; }
+      if (v.started === true) {
+        pk.started = true; pk.watchAt = l0 ? l0.at : null; pk.watchErr = e0 ? e0.at : null;
+        pk.note = '선택한 파일 ' + pkNum(cnt) + '개 복구를 시작했습니다. 끝날 때까지 기다려 주세요. 결과는 여기와 복구 카드에 표시됩니다.';
+      } else if (v.path) pk.note = '선택한 파일 ' + pkNum(v.files) + '개를 새 폴더로 복구했습니다. 복구 카드에서 폴더를 열 수 있습니다.';
+      else pk.msg = '복구 결과를 확인하지 못했습니다. 복구 카드의 최근 결과를 확인해 주세요.';
+      if (v.state && typeof v.state === 'object') accept(v.state);
+    });
+  }
+  function pkList(pg, q) {
+    const ul = $('pickList');
+    const rows = pg && Array.isArray(pg.rows) ? pg.rows : [];
+    const items = [];
+    rows.forEach((row) => {
+      if (!row || typeof row.id !== 'string') return;
+      const li = document.createElement('li');
+      const lab = document.createElement('label');
+      lab.className = 'pickRow';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = !!row.selected;
+      cb.addEventListener('change', () => pkToggle(row, cb));
+      const tx = document.createElement('span');
+      tx.className = 'pickTxt';
+      const nm = document.createElement('span');
+      nm.className = 'pickName';
+      nm.textContent = String(row.name == null ? '' : row.name);
+      const ph = document.createElement('span');
+      ph.className = 'pickPath';
+      ph.textContent = String(row.source == null ? '' : row.source) + ' / ' + String(row.path == null ? '' : row.path);
+      const sz = document.createElement('span');
+      sz.className = 'pickSize';
+      sz.textContent = fmtBytes(row.size) + (row.mtime ? ' · 수정 ' + fmtTime(row.mtime) : '');
+      tx.append(nm, ph, sz);
+      lab.append(cb, tx);
+      li.appendChild(lab);
+      items.push(li);
+    });
+    if (!items.length) {
+      const li = document.createElement('li');
+      li.className = 'empty';
+      li.textContent = !pg ? '목록을 불러오지 못했습니다. ‘새로 불러오기’를 눌러 주세요.' : q ? '검색 결과가 없습니다. 다른 검색어를 넣어 보세요.' : '이 백업에는 고를 수 있는 파일이 없습니다.';
+      items.push(li);
+    }
+    ul.replaceChildren(...items);
+  }
+  function pkRender(s, act, canPick) {
+    const lsr = s.lastSelectedRestore && typeof s.lastSelectedRestore === 'object' ? s.lastSelectedRestore : null;
+    const le = s.lastSelectedRestoreError && typeof s.lastSelectedRestoreError === 'object' ? s.lastSelectedRestoreError : null;
+    if (pk.started && !s.job) {
+      if (lsr && lsr.at !== pk.watchAt) { pk.started = false; pk.note = '골라 둔 파일 ' + pkNum(lsr.files) + '개를 복구했습니다. 복구 카드의 ‘골라 복구한 폴더 열기’로 확인하세요.'; }
+      else if (le && le.at !== pk.watchErr) { pk.started = false; pk.note = ''; pk.msg = '파일 골라 복구가 끝나지 못했습니다. 복구 카드의 안내를 확인해 주세요.'; }
+    }
+    show('pickEntry', canPick);
+    $('btnPick').disabled = act;
+    show('pickResult', !!lsr);
+    if (lsr) { setText('pickResTime', fmtTime(lsr.at) + ' · 파일 ' + pkNum(lsr.files) + '개 · ' + fmtBytes(lsr.bytes)); setText('pickResPath', lsr.path || ''); }
+    $('btnPickOpen').disabled = act;
+    setText('pickErr', le ? '최근 파일 골라 복구가 끝나지 못했습니다' + (le.at ? ' (' + fmtTime(le.at) + ')' : '') + ': ' + errText(le.message) + (le.path ? ' 남아 있는 미완료 폴더: ' + le.path : '') + ' 자동으로 이어받지 않으니 다시 골라 복구하거나 전체 복구를 써 주세요.' : '');
+    show('pickErr', !!le);
+    show('pickCard', pk.open);
+    if (!pk.open) return;
+    if (pk.token && !pending && !s.job) pkLive();
+    const m = pk.token ? pk.meta : null;
+    setText('pickMeta', m ? '최신 완료 백업 ' + (fmtTime(m.snapshotAt) || '시각 확인 필요') + ' 기준 · 파일 ' + pkNum(m.fileCount) + '개 · ' + fmtBytes(m.totalBytes) : pending ? '최신 완료 백업의 파일 목록을 불러오는 중입니다…' : '파일 목록이 열려 있지 않습니다.');
+    setText('pickExpire', m ? '목록을 연 뒤 30분 동안(' + fmtTime(m.expiresAt) + '까지) 쓸 수 있습니다. 그 사이 새 백업이 끝나도 이 목록의 백업본은 바뀌지 않습니다.' : '');
+    const un = m ? Number(m.unavailableCount) || 0 : 0;
+    setText('pickUnavail', un ? '바로가기(심볼릭 링크) 같은 특수 항목 ' + pkNum(un) + '개는 목록에 나오지 않으며, 이 베타에서는 골라서 복구하든 전체 복구하든 복구할 수 없습니다. 일반 파일은 그대로 골라서 복구할 수 있습니다.' : '');
+    show('pickUnavail', !!un);
+    show('pickCloud', s.profile === 'b2');
+    setText('pickMsg', pk.msg);
+    show('pickMsg', !!pk.msg);
+    setText('pickNote', pk.note);
+    show('pickNote', !!pk.note);
+    show('btnPickFull', pk.offer === 'full' && canPick);
+    $('btnPickFull').disabled = act;
+    setText('btnPickRefresh', m ? '새로 불러오기(선택 비움)' : '다시 불러오기');
+    $('btnPickRefresh').className = 'btn' + (pk.offer === 'refresh' ? ' primary' : '');
+    $('btnPickRefresh').disabled = act || !canPick;
+    $('btnPickClose').disabled = act;
+    show('pickTools', !!m);
+    if (!m) return;
+    const pg = pk.page;
+    const sel = m.selection || {};
+    const cnt = Number(sel.count) || 0;
+    const total = pg ? Number(pg.total) || 0 : 0;
+    const off = pg ? Number(pg.offset) || 0 : 0;
+    const size = pg ? Number(pg.pageSize) || PK_PAGE : PK_PAGE;
+    const q = pg ? String(pg.query || '') : '';
+    setText('pickCount', '선택 ' + pkNum(cnt) + '개 · ' + fmtBytes(sel.bytes) + ' (모든 검색·페이지 합계, 최대 1,000개)');
+    setText('btnPickAll', (q ? '검색 결과 전체 선택 (' : '모든 파일 선택 (') + pkNum(total) + '개)');
+    $('btnPickAll').disabled = act || !canPick || !total || total > 1000;
+    setText('pickAllHint', !pg || !total ? '' : total > 1000 ? '결과가 1,000개를 넘어 한 번에 모두 고를 수 없습니다. 검색어를 좁혀 주세요.' : '이 페이지만이 아니라 ' + (q ? '검색 결과' : '백업') + '의 모든 페이지 ' + pkNum(total) + '개를 선택에 더합니다. 이미 고른 파일은 그대로 둡니다.');
+    $('btnPickClear').disabled = act || !cnt;
+    setText('pickPage', total ? pkNum(off + 1) + '–' + pkNum(Math.min(off + size, total)) + ' / 총 ' + pkNum(total) + '개' + (q ? ' (검색 결과)' : '') : '');
+    show('btnPickPrev', total > size);
+    show('btnPickNext', total > size);
+    $('btnPickPrev').disabled = act || !pg || off <= 0;
+    $('btnPickNext').disabled = act || !pg || off + size >= total;
+    setText('btnPickRestore', cnt ? '선택한 ' + pkNum(cnt) + '개 복구' : '선택한 파일 복구');
+    $('btnPickRestore').disabled = act || !canPick || !cnt;
+    if (pk.dirty) { pk.dirty = false; pkList(pg, q); }
+    $('pickList').querySelectorAll('input').forEach((el) => { el.disabled = act || !canPick; });
   }
 
   async function call(name, arg, stateResult, secret) {
@@ -366,6 +613,7 @@
       $('jobBar').removeAttribute('value');
     }
     if (!s) { ['recoView', 'setupView', 'cloudView', 'credView', 'keyView', 'dashView'].forEach((id) => show(id, false)); return; }
+    if (pk.open && !s.configured) pkReset(true);
     setText('version', '버전 ' + (s.version || '확인 필요'));
     const cloud = s.profile === 'b2';
     const restoreMode = s.mode === 'restore';
@@ -494,7 +742,9 @@
     $('btnNow').disabled = act || cred;
     show('btnHeroRestore', !!lb && heroAction !== 'restore' && !cred);
     $('btnHeroRestore').disabled = act || cred;
-    show('backupActions', !$('btnHero').hidden || !$('btnNow').hidden || !$('btnHeroRestore').hidden);
+    show('btnHeroPick', !!lb && !cred);
+    $('btnHeroPick').disabled = act;
+    show('backupActions', !$('btnHero').hidden || !$('btnNow').hidden || !$('btnHeroRestore').hidden || !$('btnHeroPick').hidden);
 
     const canPause = backupMode && !s.readOnly && !!s.automatic;
     show('pauseBox', canPause);
@@ -525,6 +775,7 @@
     const lr = s.lastRestore;
     show('restoreResult', !!lr);
     if (lr) { setText('restoreTime', fmtTime(lr.at)); setText('restorePath', lr.path); }
+    pkRender(s, act, !!lb && !cred);
     const srcs = Array.isArray(s.sources) ? s.sources : [];
     fillList('srcList', srcs);
     setText('srcCount', srcs.length ? '(' + srcs.length + '개)' : '');
@@ -646,6 +897,24 @@
   $('btnCheck').addEventListener('click', () => call('checkRepository', undefined, true));
   $('btnRestore').addEventListener('click', () => call('restoreLatest', undefined, true));
   $('btnOpen').addEventListener('click', () => call('openRestoreFolder'));
+  $('btnPick').addEventListener('click', pkStart);
+  $('btnHeroPick').addEventListener('click', pkStart);
+  $('btnPickClose').addEventListener('click', pkClose);
+  $('btnPickRefresh').addEventListener('click', () => { pkRun(pkOpen); });
+  $('btnPickFull').addEventListener('click', () => call('restoreLatest', undefined, true));
+  $('btnPickOpen').addEventListener('click', () => { if (state) call('openSelectedRestoreFolder', { profile: state.profile }); });
+  $('pickForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const q = String($('pickQuery').value || '').trim();
+    if (q.length > 200) { pk.msg = PK_MSG.QUERY_INVALID; render(); return; }
+    pkRun(async () => { if (!pkLive()) return; await pkQuery(q, 0); });
+  });
+  $('btnPickAll').addEventListener('click', () => pkSet('all'));
+  $('btnPickClear').addEventListener('click', () => pkSet('clear'));
+  $('btnPickPrev').addEventListener('click', () => pkGo(-1));
+  $('btnPickNext').addEventListener('click', () => pkGo(1));
+  $('btnPickRestore').addEventListener('click', pkRestore);
+  setInterval(() => { if (pk.open && pk.token && !pending) render(); }, 30000);
   $('chkLogin').addEventListener('change', (e) => { call('setLaunchAtLogin', !!e.target.checked, true); });
   window.addEventListener('beforeunload', () => {
     clearSecrets();
