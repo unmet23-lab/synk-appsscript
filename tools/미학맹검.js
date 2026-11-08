@@ -120,7 +120,10 @@ function 인자(argv) {
 /** 그림을 한 대화 4장 안으로 나눈다. 쌍의 두 그림은 같은 대화에 둔다. */
 /** 공개 저장소에 남길 경로 — 이 작업본 · 공용 작업본 안이면 그 안의 상대 경로, 밖(스크래치 · 임시 폴더)이면 파일 이름만. 이 PC 사용자 폴더 경로를 올리지 않는다(11-08). */
 function 저장소경로(p, 바탕들 = [뿌리, 공용작업본(뿌리)]) {
-  const 절대 = path.resolve(String(p || ''));
+  const 글 = String(p || '');
+  // 윈도 드라이브 경로는 어느 OS에서든 절대 경로다 — 리눅스 CI의 path.resolve는 상대로 풀어 저장소 안으로 본다(11-08 master syntax-check 빨강)
+  if (path.sep === '/' && /^[A-Za-z]:[\\/]/.test(글)) return 글.split(/[\\/]/).pop();
+  const 절대 = path.resolve(글);
   for (const 바탕 of 바탕들) {
     const r = path.relative(path.resolve(바탕), 절대);
     if (r && !r.startsWith('..') && !path.isAbsolute(r)) return r.split(path.sep).join('/');

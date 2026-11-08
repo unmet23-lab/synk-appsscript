@@ -54,7 +54,7 @@ async function fixture(t, { options = ALL_OPTIONS } = {}) {
   const day = new Date(slot.getTime() + 9 * 3600000).toISOString().slice(0, 10);
   const stat = fs.statSync(video);
   const rel = path.relative(root, video).split(path.sep).join('/');
-  fs.writeFileSync(path.join(dir, '게시', '준비.json'), JSON.stringify({ 브랜드: 'yuhobuilds', 슬롯: day, 상태: '올릴 준비', 제목: '멈춘 시간 재기', 역할: '권위',
+  fs.writeFileSync(path.join(dir, '게시', '준비.json'), JSON.stringify({ 브랜드: 'yuhobuilds', 슬롯: day, 상태: '올릴 준비', 제목: '멈춘 시간 재기', 역할: '권위', 맹검못함: '시험 편 — 실제 화면이 아니다',
     판: [
       { 계정: 'yuhobuilds-instagram', 파일: rel, 원고: '게시/01-ig/원고.json', 시각: `${day}T21:00:00+09:00` },
       { 계정: 'yuhobuilds-youtube', 파일: rel, 원고: '게시/02-yt/원고.json', 시각: `${day}T21:00:00+09:00` },
