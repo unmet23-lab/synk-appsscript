@@ -41,6 +41,10 @@
  *      1초를 넘으면 고칠 것, 하나만 넘으면 확인할 것 — 18초 배경음이 끝나 말 사이가 빈 M19 · E17이 ④ 음량을 넘겨 예약까지 갔다
  *   ⑱ 미학 맹검(11-08) — 편 폴더 게시/미학맹검.json(node tools/미학맹검.js <대표 프레임 · 카드…> --편 <편 폴더>)이 없거나(11-08부터 검사하는 모든 편 — 만든 날 상관없이),
  *      맹검 뒤 영상이 바뀌었거나, 답이 빠졌거나, 「기각」이 있으면 고칠 것. 그래도 낼 까닭은 준비.json 「맹검판단」, 아르곤이 막혔으면 「맹검못함」(확인할 것)
+ *   ⑲ 배경음 층(11-08, tools/음악층.js · 판정 tools/lib/음악층관문.js) — Remotion 음악(bgm.*)을 쓰는 편은 음악만 렌더해 잰 게시/음악층.json으로
+ *      음악이 꺼지는 자리(가운데보다 6dB 넘게 낮은 채 0.75초 넘게 · 그 안에 10dB 넘게 꺼진 칸)가 있으면 고칠 것(「음악꺼짐판단」에 까닭이 있으면 확인할 것),
+ *      얇아짐 · 음악 바닥이 전체보다 12dB 넘게 작음은 확인할 것. 11-09부터 만든 편은 잰 기록이 없으면 고칠 것(못 재면 「음악층못함」) —
+ *      11-08 유호님 「백그라운드 뮤직 … 중간중간 좀 빠져있는데」: 보유곡 밝은_052를 16초부터 자른 편마다 13~14초에 곡 안 빈 마디가 들어갔다
  *
  * 「고칠 것」은 올리기 전에 꼭 고칠 것(서버·API가 거절하거나 기준을 어김), 「확인할 것」은 기계가 확신하지 못해 눈으로 볼 것이다.
  * 결과는 그 편 게시/준비.json의 「검사」 칸에 남긴다(--저장안함이면 안 남김). 영상마다 크기·수정 시각·SHA-256을 같이 적어 두어,
@@ -60,6 +64,7 @@ const 타입캐스트 = require('./lib/타입캐스트.cjs');
 const 오마주 = require('./오마주.js');
 const 반복 = require('./무대반복.js');
 const { aestheticFindings, AESTHETIC_FROM } = require('./lib/미학관문.js');
+const { musicLayerFindings } = require('./lib/음악층관문.js');
 
 const { FIX, LOOK } = 규칙;
 const SAFE = { left: 65, right: 920, top: 269, bottom: 1428 };
@@ -794,6 +799,7 @@ async function run(dir, opts = {}) {
   const homage = homageFindings(bundle, [...videos.keys()]);
   findings.push(...homage.findings);
   findings.push(...aestheticFindings(bundle, [...videos.keys()]));
+  findings.push(...musicLayerFindings(bundle, [...videos.keys()]));
   let repeat = { findings: [], summary: null };
   try { repeat = 반복.repeatFindings(bundle, plates, { skipOcr: opts.skipOcr, work: out }); } catch (error) {
     add(LOOK, 'repeat-failed', '지난 편', `지난 편 되풀이를 못 봤다(${error.message}) — 첫 · 끝 장면과 끝 줄을 지난 두 편과 눈으로 견준다`);
