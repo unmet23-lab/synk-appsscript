@@ -41,6 +41,10 @@ NARR_AT = [
     (56.08, -4.0, -2.0, [("어디서든 잘 돌아갑니다", "돌아갑니다")]),                                                # 37 — 송전탑 · 도시 불, 끝 음절 뒤 마지막 화음(57.97)
 ]
 FINAL_CHORD = 57.97   # 곡 572b8b0b의 마지막 화음 — 그 앞에서 내림을 다 풀고, 로고(58.25)와 함께 조금 올린다(슬롭 점검표 2번 「마지막 한 방을 브랜드에」)
+LIFT = {}             # 줄마다 목소리를 올릴 dB(자막 첫 글 → dB) — 곡이 큰 자리의 줄은 곡을 깊이 누르지 않고 목소리를 올려 세운다
+FINISH_BOOST = 0.0    # 섞음 마감 리미터 앞 이득(dB) — 봉우리를 1로 맞춘 합을 이만큼 더 밀어 넣는다(Mix.finish의 boost_db)
+DUCK_IN, DUCK_OUT = 0.30, 0.65   # 곡을 내리기 시작하는 때(첫 낱말 앞 초) · 다 푸는 때(끝 낱말 뒤 초)
+BREATH_MIN, BREATH_KEEP = 99.0, 1.0   # 한 줄 안 낱말 사이 쉼이 BREATH_MIN초 넘으면 그 쉼에서는 내림을 BREATH_KEEP 몫만 둔다(쉼에서 곡이 꺼진 듯 들리지 않게)
 PIECE_ENDS = ["않았습니다", "오늘은", "보냅니다"]   # 토막을 끊는 낱말(그 낱말 뒤 무음에서 자름)
 # 「오늘은」 뒤 쉼이 없는 판(11-08 「밝게」 · 「힘있게」 — 0.06~0.08초)은 그 사이를 자르지 않고 「오늘은 이 아이를 보냅니다」를 한 덩이로 두고,
 #   덩이 안 「이」가 33번 컷(50.42초) 바로 뒤에 오게 놓는다(다섯째 칸 = 놓는 기준 낱말). P10_LAYOUT=이어 또는 그 판을 고르면 이 짜임.
@@ -50,22 +54,33 @@ if LAYOUT == "이어":
     PIECE_ENDS = ["않았습니다", "보냅니다"]
 # 초반 원고(「_초반」 판) — 기 · 승 · 전 · 결로 아홉 자리. 「아이」라는 말은 50.5초까지 아끼고 25.5초 아기 표지 → 28.9초 「다 컸습니다」가 「이게 다 크면」을 받는다.
 #   40초 줄(「한 대를 만드는 데 삼 년 · 볼트 …」)은 뺐다 — 40.1~45.5초에 말이 44.04초 첫 시동 소리를 덮었다(Fable · Opus 원고 맹검 둘 다).
-#   곡 내림은 그 자리 곡 크기에 맞췄다(0~5초 피아노만은 얕게, 16~30초 현이 찬 자리는 깊게).
+#   곡 내림은 그 자리 곡 크기에 맞췄다(0~5초 피아노만은 얕게). 07:11 판까지 16~30초 현이 찬 자리를 깊게 누른 것은 아래 11-08 고침으로 바꿨다.
 if "_초반" in NARR:
     NARR_AT = [
-        (1.70, -4.5, -4.0, [("이게 다 크면 300톤 나갑니다", "나갑니다")]),         # 기 — 2 도면(1.63)에 「이게」, 5.5초 곡 큰 소리 앞에서 끝남
-        (9.60, -5.0, -3.0, [("날개는 한 장씩 손으로 달아 줬습니다", "달아줬습니다")]),  # 승 — 8 날개 원
-        (16.60, -4.5, -3.0, [("볼트 하나도 그냥 넘긴 적 없습니다", "없습니다")]),       # 승 — 12 작업대 → 13 덮개(14 이음매 볼트 딸깍 19.81초)
-        (21.80, -6.0, -4.0, [("3년을 매일 들여다봤습니다", "들여다봤습니다")]),           # 승 — 16 터빈을 들여다보는 준호
-        (28.90, -8.0, -6.0, [("다 컸습니다", "컸습니다")]),                              # 전 — 19 크레인이 물러나 트레일러 위 터빈 전체(28초 곡 부풂 뒤)
-        (35.80, -7.5, -5.5, [("이제 처음으로 깨워 봅니다", "깨워봅니다")]),              # 전 — 23 시험동 입구 → 24, 39초 곡 꼭대기 앞에서 끝남
-        #   내림 값은 목소리 띠(250~4000 Hz)에서 목소리가 곡보다 +10~12 dB 위에 서게 맞췄다(첫 값 −2.5 · −6 · −5는 +6.2 · +7.5 · +7.1로 묻혔다 — 40초 뒤 옛 줄은 +11~12)
+        (1.70, -4.5, -3.5, [("이게 다 크면 300톤 나갑니다", "나갑니다")]),         # 기 — 2 도면(1.63)에 「이게」, 5.5초 곡 큰 소리 앞에서 끝남
+        (9.60, -4.5, -3.0, [("날개는 한 장씩 손으로 달아 줬습니다", "달아줬습니다")]),  # 승 — 8 날개 원
+        (16.60, -3.5, -2.5, [("볼트 하나도 그냥 넘긴 적 없습니다", "없습니다")]),       # 승 — 12 작업대 → 13 덮개(14 이음매 볼트 딸깍 19.81초)
+        (21.80, -4.5, -3.5, [("3년을 매일 들여다봤습니다", "들여다봤습니다")]),           # 승 — 16 터빈을 들여다보는 준호
+        (28.90, -4.5, -3.5, [("다 컸습니다", "컸습니다")]),                              # 전 — 19 크레인이 물러나 트레일러 위 터빈 전체(28초 곡 부풂 뒤)
+        (35.80, -4.5, -3.5, [("이제 처음으로 깨워 봅니다", "깨워봅니다")]),              # 전 — 23 시험동 입구 → 24, 39초 곡 꼭대기 앞에서 끝남
+        #   내림 값은 목소리 띠(250~4000 Hz)에서 목소리가 곡보다 +10 dB 안팎 위에 서게 맞췄다(첫 값 −2.5 · −6 · −5는 +6.2 · +7.5 · +7.1로 묻혔다 — 40초 뒤 옛 줄은 +11~12)
         (49.20, -2.5, -1.5, [("오늘은", "오늘은")]),                                   # 결 — 31
         (50.50, -2.5, -1.5, [("이 아이를 보냅니다", "보냅니다")]),                       # 결 — 33 노을 발전소
         (56.08, -4.0, -2.0, [("어디서든 잘 돌아갑니다", "돌아갑니다")]),                # 결 — 37
     ]
     PIECE_ENDS = ["나갑니다", "달아줬습니다", "없습니다", "들여다봤습니다", "컸습니다", "깨워봅니다", "오늘은", "보냅니다"]
     LAYOUT = "초반"
+    # 11-08 유호님 「백그라운드뮤직도 갑자기 끊겼다 다시 시작되는 느낌」(02_콘티 22절) — 07:11 판은 곡이 큰 자리의 줄을 깊게 눌렀다
+    #   (「다 컸습니다」 −8 · 띠 −6, 「이제, 처음으로 깨워 봅니다」 −7.5 · 띠 −5.5 → 0.28초 만에 내려가 「이제,」 뒤 0.6초 쉼에서 섞음이 10.9 dB 꺼지고
+    #   줄 끝에서 곡이 다시 솟았다). 목소리는 줄마다 −21~−23 dB로 고르니 작게 읽어서가 아니라 그 자리 곡이 커서 깊게 눌렀던 것이다.
+    #   그래서 내림은 −4.5 · 띠 −3.5까지만 두고, 곡이 큰 두 줄은 목소리를 올리며, 0.55초 넘는 말 사이 쉼에서는 곡을 되살린다(내림 3분의 1만 둠).
+    #   내리고 푸는 것도 느리게 했다(0.30 → 0.35초 앞에서 내리기 시작, 0.65 → 0.80초 뒤에 다 풂).
+    LIFT = {"다 컸습니다": 4.0, "이제 처음으로 깨워 봅니다": 3.0}
+    DUCK_IN, DUCK_OUT = 0.35, 0.80
+    BREATH_MIN, BREATH_KEEP = 0.55, 1 / 3
+    #   두 줄을 올리고 곡을 덜 누르니 목소리 · 곡이 겹친 자리 봉우리가 섞음 최고점이 되어, 마감(−14 LUFS)에서 봉우리가 −0.8 dBFS(문턱 −1.2)로 넘었다
+    #   → 리미터 앞 이득을 FINISH_BOOST만큼 준다(봉우리 위 1 dB 남짓만 눌림).
+    FINISH_BOOST = 1.0
 
 
 # ---------- 거르개 · 크기(6번 최종소리.py와 같은 꼴)
@@ -173,7 +188,8 @@ def turbine_spool(seconds):
 
 # ---------- 내레이션
 def narration(name=NARR):
-    """한 번에 구운 판을 토막 넷으로 — [(판 a초, 판 b초, 첫 소리 판 초, 놓을 화면 초, 곡 dB, 띠 dB, [(자막 글, 판 시작초, 판 끝초)…])]"""
+    """한 번에 구운 판을 토막으로 — [(판 a초, 판 b초, 첫 소리 판 초, 놓을 화면 초, 곡 dB, 띠 dB, 첫 낱말 판 초, [(쉼 판 시작초, 끝초)…], [(자막 글, 판 시작초, 판 끝초)…])]
+    쉼은 토막 안 낱말 사이가 BREATH_MIN초 넘는 곳"""
     x = C.load(os.path.join(NARR_DIR, name + ".mp3"))
     words = [w for w in json.load(open(os.path.join(NARR_DIR, name + "_받아쓰기.json"), encoding="utf-8"))["words"] if w.get("type") == "word"]
     n20 = int(0.02 * RATE)
@@ -203,12 +219,13 @@ def narration(name=NARR):
         a, b = cuts[p], cuts[p + 1]
         first = words[k0]["start"]
         on = words[word_idx(entry[4], k0)]["start"] if len(entry) > 4 else first
-        lines = []
+        lines, k1 = [], k0
         for text, last in subs:
             kk = word_idx(last, k0)
             lines.append((text, words[k0]["start"], words[kk]["end"]))
             k0 = kk + 1
-        out.append((a, b, on, at, duck, mid, first, lines))
+        gaps = [(words[i]["end"], words[i + 1]["start"]) for i in range(k1, k0 - 1) if words[i + 1]["start"] - words[i]["end"] > BREATH_MIN]
+        out.append((a, b, on, at, duck, mid, first, gaps, lines))
     return x, out
 
 
@@ -261,11 +278,12 @@ def build(out_wav, TF, timing_path=TIMING):
     vx, pieces = narration()
     vx = tame(hp(to_rms(vx, -17.0), 70), 7.0)
     spans = []
-    for a, b, on, at, duck, mid, first, lines in pieces:
-        piece = fades(vx[int(a * RATE):int(b * RATE)], 0.01, 0.06)
+    for a, b, on, at, duck, mid, first, gaps, lines in pieces:
+        # 올리는 줄은 봉우리 누르기(tame) 뒤에 올린다 — 앞에서 올리면 tame이 거의 다 도로 눌러 「이제, …」는 +3 dB가 +0.6 dB만 남았다
+        piece = fades(vx[int(a * RATE):int(b * RATE)], 0.01, 0.06) * np.float32(10 ** (LIFT.get(lines[0][0], 0.0) / 20))
         t0 = at - (on - a)
         m.put(t0, piece, 0, fade=0.0)
-        spans.append((at - (on - first), at + (lines[-1][2] - on), duck, mid))
+        spans.append((at - (on - first), at + (lines[-1][2] - on), duck, mid, [(at - on + g0, at - on + g1) for g0, g1 in gaps]))
         print(f"내레이션 {NARR}({LAYOUT}) 판 {a:.2f}–{b:.2f}초 → 화면 {t0:.2f}초(첫 낱말 {at - (on - first):.2f}) · " + " / ".join(f"{s} {e:.2f}" for s, _a, e in lines))
     if timing_path:
         subs = subtitle_timing(pieces, TF)
@@ -279,24 +297,29 @@ def build(out_wav, TF, timing_path=TIMING):
         json.dump({"narr": NARR, "lines": lines}, open(timing_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         print("자막", " · ".join(f"{a:.2f}–{b:.2f} {s}" + (f" (뒷부분 {parts[1][1]:.2f})" if parts else "") for a, b, s, parts in subs))
 
-    # ===== 곡 — 수노 572b8b0b 한 곡을 0초부터(곡 시각 = 화면 시각). 내레이션 아래만 내리고(앞 0.3초 · 뒤 0.55초에 걸쳐), 목소리 띠는 조금 더 비운다
+    # ===== 곡 — 수노 572b8b0b 한 곡을 0초부터(곡 시각 = 화면 시각). 내레이션 아래만 내리고(첫 낱말 DUCK_IN초 앞부터 · 끝 낱말 DUCK_OUT초 뒤까지), 목소리 띠는 조금 더 비운다
     song = C.load_stereo(SONG)[:int(total * RATE)]
     t = np.arange(len(song)) / RATE
     g_all = np.ones(len(song), np.float32)
     g_mid = np.ones(len(song), np.float32)
     duck_spans = []   # 1.2초보다 가까운 내레이션은 한 번에 내린다(「오늘은,」 · 「이 아이를 보냅니다」 사이 0.9초에 곡이 올랐다 내려 출렁이지 않게)
-    for s, e, duck, mid in spans:
+    for s, e, duck, mid, gaps in spans:
         if duck_spans and s - duck_spans[-1][1] < 1.2:
-            ps, pe, pd, pm = duck_spans[-1]
-            duck_spans[-1] = (ps, e, min(pd, duck), min(pm, mid))
+            ps, pe, pd, pm, pg = duck_spans[-1]
+            duck_spans[-1] = (ps, e, min(pd, duck), min(pm, mid), pg + gaps)
         else:
-            duck_spans.append((s, e, duck, mid))
-    for s, e, duck, mid in duck_spans:
+            duck_spans.append((s, e, duck, mid, gaps))
+    for s, e, duck, mid, gaps in duck_spans:
         for g, d in ((g_all, duck), (g_mid, mid)):
-            if s < FINAL_CHORD < e + 0.65:   # 마지막 줄 — 화음 앞에서 다 푼다(첫 판은 57.86~58.41초에 풀려 화음 어택이 눌렸다)
-                pts = [(0.0, 0.0), (s - 0.30, 0.0), (s - 0.02, d), (e + 0.04, d), (FINAL_CHORD - 0.03, 0.0), (total + 1, 0.0)]
+            body = [(s - 0.02, d)]
+            for g0, g1 in gaps:   # 말 사이 긴 쉼 — 낱말이 끝나고 0.08초 뒤부터 0.15초에 걸쳐 내림을 BREATH_KEEP 몫으로, 다음 낱말 0.08초 앞에 다시 다 내림
+                r = min(0.15, (g1 - g0 - 0.16) / 2)
+                if r >= 0.08:
+                    body += [(g0 + 0.08, d), (g0 + 0.08 + r, d * BREATH_KEEP), (g1 - 0.08 - r, d * BREATH_KEEP), (g1 - 0.08, d)]
+            if s < FINAL_CHORD < e + DUCK_OUT:   # 마지막 줄 — 화음 앞에서 다 푼다(첫 판은 57.86~58.41초에 풀려 화음 어택이 눌렸다)
+                pts = [(0.0, 0.0), (s - DUCK_IN, 0.0)] + body + [(e + 0.04, d), (FINAL_CHORD - 0.03, 0.0), (total + 1, 0.0)]
             else:
-                pts = [(0.0, 0.0), (s - 0.30, 0.0), (s - 0.02, d), (e + 0.10, d), (e + 0.65, 0.0), (total + 1, 0.0)]
+                pts = [(0.0, 0.0), (s - DUCK_IN, 0.0)] + body + [(e + 0.10, d), (e + DUCK_OUT, 0.0), (total + 1, 0.0)]
             g *= envelope(t, pts).astype(np.float32)
     # 마지막 화음 +4 dB(로고와 함께) — +2.5 dB에서는 화음 · 로고 구간(57.97~59.0초)이 앞 내레이션 구간보다 2.4 dB 작았다(슬롭 점검표 2번 「끝 소리를 앞 소리와 RMS로 대고」)
     g_all *= envelope(t, [(0.0, 0.0), (FINAL_CHORD - 0.05, 0.0), (FINAL_CHORD + 0.05, 4.0), (59.10, 4.0), (59.50, 0.0), (total + 1, 0.0)]).astype(np.float32)
@@ -324,7 +347,7 @@ def build(out_wav, TF, timing_path=TIMING):
     # 실내(0~25.5초) — 공장 안 공기, 아주 낮게
     bed(0.0, TF[18], room(TF[18] + 0.2, 1, 900), -50)
     # 19 바깥 마당 — 판이 낸 공회전 · 4.75초 에어브레이크(화면과 같은 판). 60 Hz 아래를 깎는다(11-08 아르곤 「저음이 먹먹하게 뭉개짐」 — 곡 저음과 겹침)
-    #   20 운전석으로 넘어갈 때 엔진은 끊지 않고 0.5초 동안 먹먹하게(900 Hz 아래) 이어 빠진다 — 같은 트럭 안으로 들어가는 소리(첫 판은 컷에서 0.08초에 꺼져 「푹 꺼지며 튄다」)
+    #   20 운전석으로 넘어갈 때 엔진은 끊지 않고 0.5초 동안 이어 빠지며 0.35초에 걸쳐 먹먹해진다(900 Hz 아래) — 같은 트럭 안으로 들어가는 소리(첫 판은 컷에서 0.08초에 꺼져 「푹 꺼지며 튄다」)
     eng_all = hp(C.load_stereo(C.clip("p10-19d")), 60)
     nmain = int((TF[19] - TF[18]) * RATE)
     eng = eng_all[:nmain + int(0.05 * RATE)]
@@ -332,7 +355,11 @@ def build(out_wav, TF, timing_path=TIMING):
     m.put(TF[18], (tame(fades(lp(eng, 7000), 0.25, 0.08), 10.0) * eng_lvl).astype(np.float32), 0, fade=0.0)
     eng_tail = eng_all[nmain:nmain + int(0.5 * RATE)]
     if len(eng_tail) > int(0.1 * RATE):
-        m.put(TF[19], (fades(lp(eng_tail, 900), 0.06, len(eng_tail) / RATE * 0.9) * eng_lvl * 0.7).astype(np.float32), 0, fade=0.0)
+        # 꼬리는 바깥 소리(7 kHz 아래)에서 0.35초에 걸쳐 운전석 안 먹먹한 소리(900 Hz 아래)로 넘긴다 — 19 판 에어브레이크 치익(30.29초에 솟아
+        #   컷 뒤 0.5초에 걸쳐 잦아듦)을 컷에서 900 Hz로 바로 자르니 고음(2~8 kHz)이 컷에서 50ms 만에 −34 → −42 dB로 꺼졌다(11-08 「갑자기 끊겼다 다시 시작」 · 22절)
+        k = np.clip(np.arange(len(eng_tail)) / (0.35 * RATE), 0, 1).astype(np.float32)[:, None]
+        tail = lp(eng_tail, 7000) * (1 - k) + lp(eng_tail, 900) * k
+        m.put(TF[19], (fades(tail, 0.06, len(eng_tail) / RATE * 0.9) * eng_lvl * 0.7).astype(np.float32), 0, fade=0.0)
     # 20 운전석 — 차 안 웅(길 소음 낮춤), 0.3초에 걸쳐 들어온다
     cab = lp(seg(os.path.join(SON, "InMotionAudio - Car Interior Driving Ambience", "VEHCar_TownDrivingAmbience06_InMotionAudio_CarInteriorDrivingAmbience.wav"), 8, 12, True), 900)
     bed(TF[19], TF[20], tame(cab, 8.0), -33, pre=0.3)
@@ -414,5 +441,5 @@ def build(out_wav, TF, timing_path=TIMING):
     fs = seg(os.path.join(FAIR, "BG Footsteps Concrete.wav"), 10.0, 11.6)
     m.put(TF[33] + 0.05, to_rms(lp(fs, 6000), -42), 0, fade=0.05, fade_out=0.2)
 
-    m.finish(out_wav, boost_db=0.0)
+    m.finish(out_wav, boost_db=FINISH_BOOST)
     print("소리", out_wav)
