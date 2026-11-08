@@ -1,0 +1,9 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE square image, 1:1, sharp and detailed.
+
+Subject: exactly ONE small needle-felted takeaway coffee cup standing upright in the center: cream felt cup body, brown felt sleeve around the middle, cream felt lid with a tiny sip hole bump. It looks like real handmade wool craft with visible fibers, the same style as a cozy needle-felt cafe. The cup fills about 55% of the image height.
+
+Background: plain pure white (#FFFFFF), perfectly even, no floor line, no shadow, no gradient — the cup will be cut out later.
+
+Style: macro photo of real handmade needle felt, soft even studio light. Absolutely no text, letters, numbers or logos.

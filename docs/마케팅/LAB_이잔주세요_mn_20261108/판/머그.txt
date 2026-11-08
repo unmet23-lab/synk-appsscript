@@ -1,0 +1,10 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed — the same size and framing as Image 1.
+
+Edit Image 1: keep exactly the same felt cafe, same camera, same framing, same warm light, same window, lamp, plant, small cups shelf and espresso machine, the same Mongle in the same place at the same size, and the same barista doll (same face, curly hair, cream shirt, green apron). CHANGE ONLY these three things:
+1) The barista now lifts the giant mint-green mug with the cream flower high above his head with both felt hands, arms stretched up, a proud beaming smile with raised eyebrows, presenting it toward Mongle as if asking "this one?". It is the same giant mug (same color, same flower, same huge size). The upper wall shelf where it stood is now empty.
+2) REMOVE the two floating takeaway paper cups completely — the air beside Mongle is empty (they will be added later).
+3) Mongle's eyes become two round glossy black beads opened wide in surprise (no longer happy curves), its body leaning back a little. Mongle still has NO mouth, NO arms, NO legs.
+
+Keep the TOP 22% of the image calm (plain warm wall). Real handmade needle-felt craft, macro photo. Absolutely no text, letters, numbers, logos or symbols anywhere.

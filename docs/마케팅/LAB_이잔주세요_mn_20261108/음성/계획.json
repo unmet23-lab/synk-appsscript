@@ -1,0 +1,71 @@
+{
+  "note": "LAB 몽골 M33 「이 잔 주세요」 — 화면 글 편(몽골어 목소리 없음, 제작 방식 §4-3)에 한국어 문장만 소리로. 몽글 = 도윤, 바리스타 = 범수, 해설(메뉴판 읽기) = 소진(장부 머리말). 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_이잔주세요_mn_20261108/음성/계획.json --굽기 · 11-08 몽글 세 줄(m1~m3)은 감정 보통 — 들뜬 판이 올리기 전 검사 「목소리 엉킴」(도윤 35%)에 걸려 견준 후보(음성/후보.json) 가운데 엉킴이 절반인 판.",
+  "voice": {
+    "id": "tc_6a3350f8e5a50a4abe948fa8",
+    "name": "도윤"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "ko",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1112,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "m1",
+      "text": "아메리카노 이 잔 주세요!",
+      "emotion": "normal"
+    },
+    {
+      "id": "r1",
+      "text": "이 잔이요?",
+      "voice": {
+        "id": "tc_5c3c52cb5827e00008dd7f3b",
+        "name": "범수"
+      },
+      "emotion": "happy"
+    },
+    {
+      "id": "n1",
+      "text": "한 잔, 두 잔, 세 잔.",
+      "voice": {
+        "id": "tc_666a9871abcf27a5169850d0",
+        "name": "소진"
+      },
+      "emotion": "normal"
+    },
+    {
+      "id": "m2",
+      "text": "아메리카노 두 잔 주세요!",
+      "emotion": "normal"
+    },
+    {
+      "id": "r2",
+      "text": "네, 두 잔이요!",
+      "voice": {
+        "id": "tc_5c3c52cb5827e00008dd7f3b",
+        "name": "범수"
+      },
+      "emotion": "happy"
+    },
+    {
+      "id": "m3",
+      "text": "이 잔도 주세요!",
+      "emotion": "normal"
+    },
+    {
+      "id": "r3",
+      "text": "네, 이 잔도요!",
+      "voice": {
+        "id": "tc_5c3c52cb5827e00008dd7f3b",
+        "name": "범수"
+      },
+      "emotion": "happy"
+    }
+  ]
+}

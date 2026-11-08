@@ -1,0 +1,15 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Subject: a close-up of a handmade cafe menu board made of dark charcoal felt in a light natural wood frame, hanging on a warm cream felt wall of a cozy needle-felt cafe (late-autumn afternoon light from the left). The board fills most of the image from about 22% to 92% of the height, framed straight-on.
+
+On the board, three evenly spaced horizontal rows, each row at the LEFT 35% of the board only:
+- row 1: ONE small cream felt takeaway paper cup with a brown felt sleeve and lid,
+- row 2: TWO of the same cups side by side,
+- row 3: THREE of the same cups side by side.
+The RIGHT 65% of every row is empty smooth charcoal felt — text will be added there later. A thin cream running stitch separates the rows.
+
+A tiny sprig of felt leaves at the top corner of the frame, a hanging felt lamp glow above. Keep the TOP 20% of the image calm (plain warm wall, softly out of focus).
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, warm natural light, gentle depth of field. Absolutely no text, letters, numbers, logos or symbols anywhere — the board is blank except for the felt cups and stitches.

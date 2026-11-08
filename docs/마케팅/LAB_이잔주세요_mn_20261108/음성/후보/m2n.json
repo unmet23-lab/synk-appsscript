@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m2n",
+ "text": "아메리카노 두 잔 주세요!",
+ "dur": 1.468,
+ "words": [
+  {
+   "text": "아메리카노",
+   "start": 0.02,
+   "end": 0.543
+  },
+  {
+   "text": "두",
+   "start": 0.604,
+   "end": 0.704
+  },
+  {
+   "text": "잔",
+   "start": 0.785,
+   "end": 0.865
+  },
+  {
+   "text": "주세요!",
+   "start": 0.925,
+   "end": 1.468
+  }
+ ],
+ "source": {
+  "key": "a5bed83d345efecfb139fa45d9440c39",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 206
+ }
+}

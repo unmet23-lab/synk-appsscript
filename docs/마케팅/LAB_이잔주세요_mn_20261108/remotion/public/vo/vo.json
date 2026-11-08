@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_6a3350f8e5a50a4abe948fa8",
+  "name": "도윤"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1112,
+  "lufs": -17
+ },
+ "made": "2026-11-08T07:02:17.130Z",
+ "lines": [
+  {
+   "id": "m1",
+   "text": "아메리카노 이 잔 주세요!",
+   "dur": 1.388,
+   "syllablesPerSec": 7.2,
+   "src": "m1.wav",
+   "key": "8cf492e00dba46b87b1b200f2bfa45d7",
+   "words": 4
+  },
+  {
+   "id": "r1",
+   "text": "이 잔이요?",
+   "dur": 0.704,
+   "syllablesPerSec": 5.68,
+   "src": "r1.wav",
+   "key": "db537f87be317c4e0e5cb8938abe16a3",
+   "words": 2
+  },
+  {
+   "id": "n1",
+   "text": "한 잔, 두 잔, 세 잔.",
+   "dur": 1.35,
+   "syllablesPerSec": 4.44,
+   "src": "n1.wav",
+   "key": "cc544ad1d62c7920803b44e78721b7d8",
+   "words": 6
+  },
+  {
+   "id": "m2",
+   "text": "아메리카노 두 잔 주세요!",
+   "dur": 1.468,
+   "syllablesPerSec": 6.81,
+   "src": "m2.wav",
+   "key": "a5bed83d345efecfb139fa45d9440c39",
+   "words": 4
+  },
+  {
+   "id": "r2",
+   "text": "네, 두 잔이요!",
+   "dur": 1.329,
+   "syllablesPerSec": 3.76,
+   "src": "r2.wav",
+   "key": "761b3a6c2453ffe34cd3c1239b7caf1b",
+   "words": 3
+  },
+  {
+   "id": "m3",
+   "text": "이 잔도 주세요!",
+   "dur": 1.324,
+   "syllablesPerSec": 4.53,
+   "src": "m3.wav",
+   "key": "411dc98b5d713e35b2ef5e6291b52737",
+   "words": 3
+  },
+  {
+   "id": "r3",
+   "text": "네, 이 잔도요!",
+   "dur": 1.228,
+   "syllablesPerSec": 4.07,
+   "src": "r3.wav",
+   "key": "d8af66a144fa401488d745b3bf60bfd0",
+   "words": 3
+  }
+ ]
+}

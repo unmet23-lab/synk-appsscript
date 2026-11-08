@@ -1,0 +1,25 @@
+{
+  "note": "M33 몽글(도윤) 주문 줄 후보 — 올리기 전 검사 「목소리 엉킴」(들뜬 감정이라 중앙 기본음 170Hz · 엉킴 35%)을 고치려 감정 · seed를 바꿔 견준다. 고른 줄만 계획.json으로 옮긴다.",
+  "voice": {
+    "id": "tc_6a3350f8e5a50a4abe948fa8",
+    "name": "도윤"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "ko",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1112,
+    "lufs": -17
+  },
+  "out": "후보",
+  "trim": "both",
+  "lines": [
+    { "id": "m1n", "text": "아메리카노 이 잔 주세요!", "emotion": "normal" },
+    { "id": "m1s", "text": "아메리카노 이 잔 주세요!", "emotion": "happy", "seed": 1121 },
+    { "id": "m2n", "text": "아메리카노 두 잔 주세요!", "emotion": "normal" },
+    { "id": "m2s", "text": "아메리카노 두 잔 주세요!", "emotion": "happy", "seed": 1121 },
+    { "id": "m3n", "text": "이 잔도 주세요!", "emotion": "normal" }
+  ]
+}
