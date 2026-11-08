@@ -186,9 +186,25 @@ if (oldSpace && oldSpace.profileId && oldSpace.profileId !== profile) await fail
 const task = oldSpace ? await taskSpace(space) : await taskSpace(space, { profileId: profile });
 await 마감확인(); // 공간 열기가 마감 뒤에 돌아왔으면 여기서 멈춘다(잠금 없는 읽기 · 확인은 그냥 지나간다)
 
-// 빈 탭만 다시 쓴다 — 대화가 열린 탭은 답이 아직 생기는 중일 수 있어 건드리지 않고 새 탭을 연다(보내기 · 확인 · 사이드바 찾기)
+// 빈 탭만 다시 쓴다 — 실패 뒤 Gemini 새 채팅 탭도 남는다. about:blank만 찾으면 8개 한도에 걸려 읽기조차 못 한다.
+// 같은 계정의 새 채팅에서 대화 · 초안 · 첨부 · 보내기/중지 단추 · 보이는 진행 표시가 모두 없을 때만 재사용한다.
+// task.pages()는 이 공간의 관리 탭만 돌려준다. 대화나 진행 중 업로드가 남은 탭은 그대로 둔다.
 const 빈탭 = async () => {
-  for (const p of await task.pages()) { const pu = await p.url().catch(() => "x"); if (!pu || pu === "about:blank" || /^chrome:\/\/new-?tab/.test(pu)) return p; }
+  for (const p of await task.pages()) {
+    const pu = await p.url().catch(() => "x");
+    if (pu === "about:blank" || /^chrome:\/\/new-?tab/.test(pu)) return p;
+    if (pu !== `https://gemini.google.com/u/${u}/app` && pu !== `https://gemini.google.com/u/${u}/app/`) continue;
+    const 비었음 = await p.evaluate(() => {
+      const ed = document.querySelector('[aria-label="Gemini 프롬프트 입력"]');
+      if (!ed || document.querySelectorAll('user-query, model-response').length) return false;
+      if ([...document.querySelectorAll('[contenteditable="true"], textarea')].some(e => String(e.innerText || e.value || '').trim())) return false;
+      if ([...document.querySelectorAll('button')].some(b => /첨부파일 닫기|메시지 보내기|대답 생성 중지|생성 중지|Stop|Send message/i.test(b.getAttribute('aria-label') || ''))) return false;
+      return ![...document.querySelectorAll('[role="progressbar"], mat-spinner, mat-progress-spinner')].some(e => {
+        const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0;
+      });
+    }).catch(() => false);
+    if (비었음) { log({ step: "reuse-empty", url: pu, label: p.label }); return p; }
+  }
   return await task.newPage();
 };
 

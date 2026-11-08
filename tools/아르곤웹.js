@@ -37,11 +37,14 @@
  *   표시와 대조한다 — 다르면 올리기 전에 멈춘다. 11-07 ego 기본 프로필이 `Profile 2`(「유호 (Chrome)」)로 바뀌어 구글 로그인이 그 프로필에만 있고
  *   순번도 달라졌다(a 77yuhbs /u/1 · b unmet25 /u/5). 공간은 그 프로필에 새 이름(`-p2`)으로 만든다 — 이름이 같은 옛 공간은 「유호」 프로필 그대로 열린다.
  * 함정: docs/현장노트/gemini_사진.md 「영상 올려 분석시키기」. 시험: node --test tests/아르곤웹.test.js
+ * 실행기 원문: 실행마다 .tmp/아르곤웹/<시각-pid-고유값>/stdout.log · stderr.log에 받은 바이트 전체를 남긴다(재시도도 새 폴더).
+ *   실행.json에는 작업 · 종료 코드 · 신호 · 바이트 수 · 실행한 스크립트 SHA-256을 남긴다. 원문에는 계정 · 답이 섞일 수 있어 공개하지 않는다.
  */
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const { StringDecoder } = require('node:string_decoder');
 const { spawn, spawnSync } = require('node:child_process');
 
 const 페이지 = path.join(__dirname, '아르곤웹.mjs');
@@ -188,7 +191,8 @@ function 결과가르기(출력, 표시있음, 받은답 = null) {
   if (done || 받은답) return { 결과: '받음', url, 글자: done ? done.chars : 받은답.글자, ...(찾은 ? { 찾음: 찾은.via || '사이드바' } : {}) };
   const f = steps.find((x) => x.step === 'fail');
   const 꼬리 = String(출력 || '').trim().split(/\r?\n/).filter((l) => l.trim() && !l.trim().startsWith('{"step"')).slice(-2).join(' / ');
-  const 까닭 = f ? f.why : (꼬리 || '출력 없이 끝남');
+  const 오류머리 = String(출력 || '').split(/\r?\n/).find((l) => /(?:^|\]\s*)\s*\w*Error(?:\s*\[[^\]]+\])?:/.test(l));
+  const 까닭 = f ? f.why : (오류머리 || 꼬리 || '출력 없이 끝남');
   if (f && f.kind === '멈춤') return { 결과: '멈춤', 까닭, 보냄: 표시있음, url };
   if (f && f.kind === '안보내짐' && !표시있음) return { 결과: '안 보내짐', 까닭, 기록: f.record || '' };
   if (f && f.kind === '헷갈림') return { 결과: '헷갈림', 까닭, url, 후보: Array.isArray(f.urls) ? f.urls : [], 보냄: 표시있음 };
@@ -410,6 +414,7 @@ const 살아있나 = (pid) => { try { process.kill(pid, 0); return true; } catch
 // (그 프로세스는 끄지 않는다). 보냄 표시(<답>.보냄.json)는 잠금과 따로라 치울 때도 건드리지 않는다.
 const 설정 = {
   폴더: path.join(os.tmpdir(), 'synk-argonweb-upload.lock'),
+  기록폴더: path.join(__dirname, '..', '.tmp', '아르곤웹'), // 원문은 공개 저장소 밖에, 실행마다 새 폴더(재시도도 덮지 않음)
   에고: 'ego-browser nodejs', // 페이지 스크립트를 표준 입력으로 받는 실행기(시험은 가짜로 바꾼다)
   쉼: 10_000, // 기다리는 쪽이 다시 보는 간격
   살핌: 2_000, // 쥔 쪽이 스크립트가 잠금을 풀었는지 보는 간격
@@ -650,34 +655,60 @@ function 나무끄기(child) {
 
 // ── 한 건 ──
 
-const 출력글 = (조각) => Buffer.concat(조각.map((x) => Buffer.from(x))).toString('utf8');
+// console 단계 요약과 별개로 두 관의 실제 바이트를 받는 즉시 보존한다. ego의 오류 머리 · 스택은 마지막 두 줄보다 앞에 있다(11-08 묶음 읽기).
+// 줄 파싱은 관마다 따로 한다 — UTF-8/JSON 한 줄이 여러 data 사건에 나뉘거나 두 관이 번갈아 와도 깨뜨리지 않는다.
+function 실행기기록(job, u, mode) {
+  fs.mkdirSync(설정.기록폴더, { recursive: true });
+  const dir = fs.mkdtempSync(path.join(설정.기록폴더, `${new Date().toISOString().replace(/[:.]/g, '-')}-${process.pid}-`));
+  const 기록 = { 폴더: dir, stdout: path.join(dir, 'stdout.log'), stderr: path.join(dir, 'stderr.log'), 실행: path.join(dir, '실행.json') };
+  const 정보 = { 시작: new Date().toISOString(), 작업: job.이름, mode, u, out: job.out };
+  fs.writeFileSync(기록.실행, JSON.stringify(정보, null, 2) + '\n');
+  const 관 = {}, 판정줄 = [];
+  const 줄찍기 = (s) => { for (const l of s) { 판정줄.push(l); if (l.trim().startsWith('{"step"')) console.log(`    ${l.trim()}`); } };
+  for (const name of ['stdout', 'stderr']) {
+    fs.writeFileSync(기록[name], Buffer.alloc(0));
+    관[name] = { 바이트: 0, decoder: new StringDecoder('utf8'), 남음: '' };
+  }
+  return {
+    기록,
+    받기(name, d) {
+      const p = 관[name];
+      fs.appendFileSync(기록[name], d);
+      p.바이트 += d.length;
+      const lines = (p.남음 + p.decoder.write(d)).split(/\r?\n/);
+      p.남음 = lines.pop();
+      줄찍기(lines);
+    },
+    출력: () => [...판정줄, ...Object.values(관).map((p) => p.남음)].join('\n'),
+    끝(정보더) {
+      for (const p of Object.values(관)) { 줄찍기([p.남음 + p.decoder.end()]); p.남음 = ''; }
+      fs.writeFileSync(기록.실행, JSON.stringify({ ...정보, ...정보더, 끝: new Date().toISOString(), 바이트: Object.fromEntries(Object.entries(관).map(([n, p]) => [n, p.바이트])) }, null, 2) + '\n');
+    },
+  };
+}
 
 // 페이지 스크립트 한 번. 파일을 올리는 보내기는 올리기 잠금을 쥐고 띄워, 스크립트가 스스로 풀 때까지(누르기 직전 · 그 앞에서 끝남 · 마감) 본다.
 // 실행기 출력은 끝에 한꺼번에 올 때가 있어(현장노트 gemini_사진) 잠금이 풀렸는지는 owner.json으로 본다. 선택 = { 이름(줄 이름), 그만() }
 async function 페이지돌리기(job, u, mode, 계정, 선택 = {}) {
+  const 기록 = 실행기기록(job, u, mode); // 파일을 못 쓰면 잠금 · 브라우저를 잡기 전에 멈춘다
   let 잠금 = null;
   if (mode === '보내기' && (job.files || []).length) {
     잠금 = await 올리기잠금(선택.이름 || 'argonweb', 올리기상한계산(job.files), { 그만: 선택.그만, 할일: `보내기 ${job.이름 || ''} · 첨부 ${job.files.length}개` });
-    if (!잠금) return { code: null, 출력: '', 그만: true };
+    if (!잠금) { 기록.끝({ code: null, 그만: true }); return { code: null, 출력: '', 기록: 기록.기록, 그만: true }; }
   }
   const script = 페이지글(잠금 ? { ...job, upload: { lock: 슬래시(잠금.폴더), key: 잠금.열쇠, deadline: 잠금.상한 } } : job, u, mode, 계정);
   const 상한 = (mode === '확인' ? 5 : (job.answerMin || 12) + 18) * 60_000; // 페이지 스크립트 자체 상한(올리기 · 보냄 확인 · 답) 뒤의 마지막 그물 — 확인은 화면 하나라 5분
   const child = spawn(설정.에고, { shell: true, windowsHide: true, detached: process.platform !== 'win32' }); // 리눅스는 나무째 끄려고 따로 무리를 만든다
-  const 조각 = [];
-  const 받기 = (d) => {
-    조각.push(d);
-    for (const l of String(d).split(/\r?\n/)) if (l.trim().startsWith('{"step"')) console.log(`    ${l.trim()}`);
-  };
-  child.stdout.on('data', 받기);
-  child.stderr.on('data', 받기);
+  child.stdout.on('data', (d) => 기록.받기('stdout', d));
+  child.stderr.on('data', (d) => 기록.받기('stderr', d));
   child.stdin.on('error', () => {}); // 실행기가 먼저 끝나면 EPIPE — 출력으로 가른다
-  let 끝남 = false, 종료;
+  let 끝남 = false, 종료, 실행오류 = '', 관닫음 = false;
   const 닫힘 = new Promise((resolve) => {
     const 끝 = (code) => { if (!끝남) { 끝남 = true; resolve(code); } };
     child.on('close', 끝);
-    child.on('error', (e) => { 조각.push(Buffer.from(String(e.message))); 끝(null); });
+    child.on('error', (e) => { 실행오류 = e.stack || e.message; 끝(null); });
     // 끈 뒤에도 손주가 출력 관을 쥐면 close가 안 온다 — exit 15초 뒤에는 그대로 끝낸다
-    child.on('exit', (code) => { 종료 = code; setTimeout(() => { child.stdout.destroy(); child.stderr.destroy(); 끝(code); }, 15_000).unref(); });
+    child.on('exit', (code) => { 종료 = code; setTimeout(() => { if (끝남) return; 관닫음 = true; child.stdout.destroy(); child.stderr.destroy(); 끝(code); }, 15_000).unref(); });
   });
   const 전체 = setTimeout(() => 나무끄기(child), 상한);
   let 넘김 = '', 짧게 = null, 죽임 = false;
@@ -696,7 +727,7 @@ async function 페이지돌리기(job, u, mode, 계정, 선택 = {}) {
       }
       // 실행기가 끝났는데 잠금이 그대로 — 실패 · 오류로 끝났으면 바로 푼다. 0으로 끝나고 실패 줄도 없으면 ego 안 스크립트가 아직 돌 수 있다
       // (현장노트 gemini_사진 「3분 반 만에 돌아왔는데 … 스크립트는 계속」) — 스스로 풀거나 마감이 오기를 기다린다
-      if (끝남 && (종료 !== 0 || /"step":"(fail|done)"/.test(출력글(조각)))) { 잠금.풀기(); break; }
+      if (끝남 && (종료 !== 0 || /"step":"(fail|done)"/.test(기록.출력()))) { 잠금.풀기(); break; }
       if (Date.now() > 잠금.상한 + 여유) {
         if (fs.existsSync(표시경로(job.out))) { 잠금.풀기(); break; } // 누르기 직전까지 갔다(풀기만 못 함) — 끄지 않는다
         넘김 = '올리기';
@@ -713,7 +744,9 @@ async function 페이지돌리기(job, u, mode, 계정, 선택 = {}) {
   clearTimeout(전체);
   if (짧게) clearTimeout(짧게);
   if (잠금) 잠금.풀기(); // 남았으면(열쇠가 같을 때만)
-  return { code, 출력: 출력글(조각), 넘김, 죽임, ...(잠금 ? { 상한분: 분수(잠금.상한 - 잠금.잡은때) } : {}) };
+  기록.끝({ code, signal: child.signalCode || null, 넘김, 죽임, 관닫음, 실행오류, scriptSha256: crypto.createHash('sha256').update(script).digest('hex') });
+  console.log(`    실행기 원문 · ${기록.기록.폴더}`);
+  return { code, 출력: 기록.출력() + (실행오류 ? `\n${실행오류}` : ''), 기록: 기록.기록, 넘김, 죽임, ...(잠금 ? { 상한분: 분수(잠금.상한 - 잠금.잡은때) } : {}) };
 }
 
 // 전체 = 이 묶음의 작업들 — 읽기가 사이드바에서 찾을 때 다른 작업이 쓴 대화 · 같은 지시문 작업을 가린다(찾기정보, 부를 때마다 새로 본다)
@@ -727,7 +760,7 @@ async function 한건(job, u, mode, 계정, 전체 = [job], 선택 = {}) {
   // 마감 뒤 풀림 · 끔인데 결과가 「실패」 — 실행기를 껐거나 실패 줄이 없으면 올리기 시간 넘김. 마감 즈음 제 까닭으로 실패한 건(실패 줄이 있음)은 실패 그대로(한 번 다시 한다)
   if (run.넘김 === '올리기' && r.결과 === '실패' && (run.죽임 || !/"step":"fail"/.test(run.출력))) r = { 결과: '올리기 시간 넘김', 까닭: `올리기가 상한 ${run.상한분}분 안에 보내기 앞까지 못 갔다 — 실행기를 끄고 잠금을 풀었다(보내지 않음 · 다시 부르면 다시 보낸다)` };
   if (r.결과 === '받음') fs.rmSync(표시경로(job.out), { force: true }); // 답을 썼는데 표시가 남은 판 — 다음 부름이 읽기로 가지 않게
-  return r;
+  return { ...r, 실행기기록: run.기록, 종료코드: run.code };
 }
 
 // ── 보내기 · 읽기 ──
@@ -844,6 +877,7 @@ function 보고(결과, 멈춤) {
     else if (x.결과 === '헷갈림') console.log(`  헷갈림  ${j.이름} — ${x.까닭}\n        다시 보내지 말고 그 대화를 열어 「말씀하신 내용」 · 첨부로 이 작업 대화를 고른다(보냄 표시는 그대로)`);
     else if (x.결과 === '올리기 시간 넘김') console.log(`  올리기 시간 넘김  ${j.이름} — ${x.까닭}\n        보냄 표시가 없다 — 첨부 · 회선 · 계정 올리기(빨간 「!」)를 본 뒤 같은 명령으로 다시 부른다`);
     else console.log(`  ${x.결과}  ${j.이름} — ${x.까닭}${x.보냄 ? ' · 보냄 표시가 있다(다시 보내지 않는다)' : ''}`);
+    if (x.실행기기록) console.log(`        실행기 원문 · ${x.실행기기록.폴더} (종료 ${x.종료코드})`);
   }
   if (멈춤) console.log(`멈춤: ${멈춤}`);
   return 결과.every((x) => x.결과 === '받음' || x.결과 === '건너뜀') ? 0 : 1;

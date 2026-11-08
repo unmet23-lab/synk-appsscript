@@ -226,10 +226,10 @@ test('페이지 스크립트 — 읽기는 열린 탭을 옮기거나 누르지 
   assert.ok(사이드바.indexOf('표시.공간 !== space') < 빈탭자리 && 사이드바.indexOf('표시계정(표시, u, account)') < 빈탭자리, '보낸 공간 · 계정이 다르면 열지 않는다');
   // 빈 탭만 다시 쓴다(보내기 · 확인 · 사이드바 찾기)
   const 빈탭 = 덩이(s, 'const 빈탭 = async () => {');
-  const 재사용 = 빈탭.split('\n').find((l) => l.includes('await task.pages()')) || '';
+  const 재사용 = 빈탭.split('\n').find((l) => l.includes('about:blank')) || '';
   assert.match(재사용, /about:blank/, '다시 쓰는 탭은 빈 탭뿐');
   assert.match(재사용, /new-\?tab/, 'ego의 빈 탭은 chrome://new-tab-page/로 보인다(10-31)');
-  assert.doesNotMatch(재사용, /gemini|\/app/, '대화가 열린 탭은 다시 쓰지 않는다');
+  assert.doesNotMatch(재사용, /gemini|\/app/, '일반 빈 탭은 바로 재사용, Gemini 첫 화면은 별도로 검사');
   assert.match(빈탭, /return await task\.newPage\(\)/, '빈 탭이 없으면 새 탭');
   // 보내기 — 빈 탭에서 첫 화면(계정 대조) → 누르기 직전 표시 → 보내기
   assert.match(보내기, /^\n\} else \{\r?\n\s*page = await 빈탭\(\);/, '보내기 · 확인은 빈 탭 — 답이 생기는 중인 탭을 옮기지 않는다');
@@ -507,7 +507,7 @@ const 잠금시험 = async (fn) => {
   const 원래로그 = console.log;
   const 찍힘 = [];
   process.env.SYNK_CHARYE_PY = path.join(dir, '차례.py');
-  Object.assign(웹.설정, { 폴더: path.join(dir, 'upload.lock'), 쉼: 25, 살핌: 25 });
+  Object.assign(웹.설정, { 폴더: path.join(dir, 'upload.lock'), 기록폴더: path.join(dir, 'logs'), 쉼: 25, 살핌: 25 });
   console.log = (...a) => { 찍힘.push(a.join(' ')); };
   try { return await fn(dir, 찍힘); } finally {
     console.log = 원래로그;
@@ -548,6 +548,192 @@ const 가짜에고 = (dir) => {
   ].join('\n'));
   return `"${process.execPath}" "${f}"`;
 };
+
+test('실행기 원문 — exit 1의 긴 stdout · stderr 바이트와 오류 머리 보존, 재시도는 새 폴더, 보냄 표시는 그대로', async () => {
+  await 잠금시험(async (dir) => {
+    const out = Buffer.from('표준 출력 처음\r\n' + '가나다'.repeat(30000) + '\n출력 끝\n');
+    const err = Buffer.from('TypeError: 읽기 원인\n' + '    at somewhere (read.mjs:20:3)\n'.repeat(10000) + "ego's nodejs process exited with code 1.\n");
+    fs.writeFileSync(path.join(dir, 'expected-out'), out);
+    fs.writeFileSync(path.join(dir, 'expected-err'), err);
+    const fake = 쓰기(dir, 'failure.cjs', `const fs = require('fs'); const path = require('path');
+      process.stdin.resume(); process.stdin.on('end', () => {
+        const out = fs.readFileSync(path.join(__dirname, 'expected-out'));
+        const err = fs.readFileSync(path.join(__dirname, 'expected-err'));
+        process.stdout.write(out.subarray(0, 1));
+        process.stderr.write(err);
+        process.stdout.write(out.subarray(1));
+        process.exitCode = 1;
+      });`);
+    웹.설정.에고 = `"${process.execPath}" "${fake}"`;
+    const j = 웹.작업만들기({ files: [쓰기(dir, '첫영상.mp4')], prompt: '같은 지시문', out: '답.md' }, dir, 'first');
+    const mark = 쓰기(dir, '답.md.보냄.json', '{"대화":"https://gemini.google.com/u/1/app/aaaabbbbccccdddd"}');
+    const 원표시 = fs.readFileSync(mark);
+    const a = await 웹.한건(j, 1, '읽기', 'acct');
+    assert.equal(a.결과, '보냄');
+    assert.equal(a.까닭, 'TypeError: 읽기 원인', '마지막 실행기 종료 줄 대신 원래 오류 머리를 보인다');
+    assert.equal(a.종료코드, 1);
+    assert.deepEqual(fs.readFileSync(a.실행기기록.stdout), out);
+    assert.deepEqual(fs.readFileSync(a.실행기기록.stderr), err);
+    const meta = JSON.parse(fs.readFileSync(a.실행기기록.실행));
+    assert.deepEqual(meta.바이트, { stdout: out.length, stderr: err.length });
+    assert.equal(meta.code, 1);
+    assert.equal(meta.관닫음, false);
+    const b = await 웹.한건(j, 1, '읽기', 'acct');
+    assert.notEqual(a.실행기기록.폴더, b.실행기기록.폴더, '재시도는 원본을 덮지 않는다');
+    assert.deepEqual(fs.readFileSync(a.실행기기록.stderr), err);
+    assert.deepEqual(fs.readFileSync(mark), 원표시, '실패해도 보냄 표시를 안 지운다');
+    assert.equal(fs.existsSync(웹.설정.폴더), false, '읽기는 올리기 잠금을 쥐지 않는다');
+  });
+});
+
+test('실행기 단계 — UTF-8 · JSON이 잘린 채 두 관에서 번갈아 와도 성공 줄을 한 번 읽는다', async () => {
+  await 잠금시험(async (dir, 찍힘) => {
+    const done = Buffer.from(JSON.stringify({ step: 'done', chars: 321, url: 'https://gemini.google.com/u/1/app/aaaabbbbccccdddd', note: '한글' }) + '\n');
+    fs.writeFileSync(path.join(dir, 'done'), done);
+    const fake = 쓰기(dir, 'chunks.cjs', `const fs = require('fs'); const path = require('path');
+      process.stdin.resume(); process.stdin.on('end', () => {
+        const b = fs.readFileSync(path.join(__dirname, 'done')); const cut = b.indexOf(Buffer.from('한')) + 1;
+        process.stderr.write(b.subarray(0, cut));
+        process.stdout.write('별도 출력\\n');
+        setTimeout(() => process.stderr.write(b.subarray(cut)), 30);
+      });`);
+    웹.설정.에고 = `"${process.execPath}" "${fake}"`;
+    const j = 웹.작업만들기({ files: [], prompt: '읽기', out: '답.md' }, dir, 'read');
+    const run = await 웹.페이지돌리기(j, 1, '읽기', 'acct');
+    assert.equal(웹.결과가르기(run.출력, false).글자, 321);
+    assert.deepEqual(fs.readFileSync(run.기록.stderr), done);
+    assert.equal(찍힘.filter(l => l.includes('"step":"done"')).length, 1);
+    assert.ok(찍힘.some(l => l.includes('한글')));
+  });
+});
+
+test('같은 지시문 두 영상 읽기 — A 표시 주소로 고르고 B는 A 대화를 제외, 열린 탭 이동 · 업로드 없이 각 답을 받는다', async () => {
+  const dir = 임시();
+  const prompt = '두 영상에 똑같이 쓴 지시문. 실제로 들은 소리와 빠르기를 적어 달라.';
+  const jobs = ['A', 'B'].map(n => 웹.작업만들기({ files: [쓰기(dir, `${n}.mp4`)], prompt, out: `${n}.md` }, dir, n));
+  const urls = ['https://gemini.google.com/u/1/app/aaaabbbbccccdddd', 'https://gemini.google.com/u/1/app/eeeeffff00001111'];
+  jobs.forEach((j, i) => 쓰기(dir, `${j.이름}.md.보냄.json`, JSON.stringify({ 시각: '2026-11-08 15:31:37', 공간: j.space, 계정: 1, 대화: i ? null : urls[0] })));
+  const old = { taskSpace: globalThis.taskSpace, listTaskSpaces: globalThis.listTaskSpaces, JOB: globalThis.JOB, log: console.log };
+  const closed = [];
+  const pages = jobs.map((j, i) => ({
+    url: async () => urls[i], info: async () => ({}), waitForTimeout: async () => {},
+    close: async () => { closed.push(i); },
+    goto: async () => assert.fail('열린 대화는 이동하면 안 된다'),
+    click: async () => assert.fail('읽기는 누르면 안 된다'),
+    evaluate: async fn => fn.toString().includes('model-response')
+      ? { text: `${j.이름} 영상의 소리. `.repeat(30), busy: false, uqN: 1, path: new URL(urls[i]).pathname }
+      : [{ 글: prompt, 그림: 1 }],
+  }));
+  globalThis.listTaskSpaces = async () => [{ name: jobs[0].space, profileId: 'Profile 2' }];
+  // A의 같은 대화가 두 탭에 열린 경우: 하나를 닫아도 다른 A 탭이 남는다. B에서 claimed를 빼면 A · B 둘이 맞아 실패한다.
+  const aCopy = { ...pages[0], close: async () => { closed.push('A-copy'); } };
+  globalThis.taskSpace = async () => ({ pages: async () => [...pages.filter((p, i) => !closed.includes(i)), ...(!closed.includes('A-copy') ? [aCopy] : [])], newPage: async () => assert.fail('열린 답이 있는데 새 탭을 열면 안 된다') });
+  console.log = () => {};
+  try {
+    const run = (async () => {}).constructor;
+    assert.equal(웹.찾기정보(jobs, jobs[0]).twins, 1, '주소 없는 B를 같은 지시문 작업으로 센다');
+    for (const j of jobs) await new run(웹.페이지글({ ...j, ...웹.찾기정보(jobs, j) }, 1, '읽기', 'acct'))();
+    assert.match(fs.readFileSync(jobs[0].out, 'utf8'), /A 영상의 소리/);
+    assert.doesNotMatch(fs.readFileSync(jobs[0].out, 'utf8'), /B 영상의 소리/);
+    assert.match(fs.readFileSync(jobs[1].out, 'utf8'), /B 영상의 소리/);
+    assert.doesNotMatch(fs.readFileSync(jobs[1].out, 'utf8'), /A 영상의 소리/);
+    assert.deepEqual(closed, ['A-copy', 1]);
+    for (const j of jobs) assert.equal(fs.existsSync(웹.표시경로(j.out)), false);
+  } finally {
+    globalThis.taskSpace = old.taskSpace; globalThis.listTaskSpaces = old.listTaskSpaces; globalThis.JOB = old.JOB; console.log = old.log;
+  }
+});
+
+test('같은 지시문 두 영상의 사이드바 읽기 — 8개 탭 한도에서 빈 Gemini를 재사용해 A 답을 받고, 사라진 B에 A 답을 복사하지 않는다', async () => {
+  const dir = 임시();
+  const prompt = '첨부한 영상을 실제로 듣고 소리의 장르와 특징을 적어 달라. 두 작업의 지시문은 같다.';
+  const jobs = ['A', 'B'].map(n => 웹.작업만들기({ files: [쓰기(dir, `${n}.mp4`)], prompt, out: `${n}.md` }, dir, n));
+  const url = 'https://gemini.google.com/u/1/app/aaaabbbbccccdddd';
+  const sent = new Date(Date.now() - 60 * 60_000).toISOString();
+  // 보낸때는 서울 글 또는 파일 시각을 쓴다. 여기서는 파일 시각을 한 시간 전으로 두어 표시 풀기 조건을 실제로 지난다.
+  for (const [i, j] of jobs.entries()) {
+    const mark = 쓰기(dir, `${j.이름}.md.보냄.json`, JSON.stringify({ 공간: j.space, 계정: 1, 계정이름: 'acct', 대화: i ? null : url }));
+    fs.utimesSync(mark, new Date(sent), new Date(sent));
+  }
+  let current = 'https://gemini.google.com/u/1/app';
+  const visited = [], closed = [], steps = [];
+  const old = { taskSpace: globalThis.taskSpace, listTaskSpaces: globalThis.listTaskSpaces, JOB: globalThis.JOB, log: console.log };
+  const link = { innerText: 'A 영상 대화', getAttribute: n => n === 'href' ? url : null, getBoundingClientRect: () => ({ width: 100, height: 20 }), setAttribute: () => {}, parentElement: null };
+  const q = { innerText: prompt, querySelectorAll: () => [] };
+  const doc = {
+    body: { innerText: '' },
+    querySelector: s => s.includes('Gemini 프롬프트 입력') ? { innerText: '' } : null,
+    querySelectorAll(s) {
+      if (s === 'button') return [{ getAttribute: () => '모드 선택 도구 열기, 현재 Argon 높음 모드 사용 중' }];
+      if (s === '[aria-label]') return [{ getAttribute: () => 'Google 계정: acct@example.test' }];
+      if (s === 'user-query') return current === url ? [q] : [];
+      if (s === 'model-response') return current === url ? [{ innerText: 'A 영상 답. '.repeat(40) }] : [];
+      if (s === 'a[href]' || s === 'a[href*="/app/"]') return [link];
+      return [];
+    },
+  };
+  const page = {
+    url: async () => current, info: async () => ({}), cdp: async () => ({ windowId: 1, bounds: { windowState: 'normal' } }),
+    goto: async target => { current = target; visited.push(target); },
+    click: async () => { current = url; visited.push(url); },
+    waitForTimeout: async () => {}, close: async () => closed.push(current), screenshot: async () => {},
+    evaluate: async (fn, arg) => new Function('document', 'location', 'arg', `return (${fn.toString()})(arg);`)(doc, { href: current, pathname: new URL(current).pathname }, arg),
+  };
+  globalThis.listTaskSpaces = async () => [{ name: jobs[0].space, profileId: 'Profile 2' }];
+  const 남의탭 = Array.from({ length: 7 }, () => ({ url: async () => 'https://gemini.google.com/u/1/app', evaluate: async () => [], close: async () => assert.fail('다른 작업 탭을 닫음'), goto: async () => assert.fail('다른 작업 탭을 옮김') }));
+  // 일곱 탭은 초안이 있어 재사용 불가. 여덟째만 빈 시작 화면이며, 닫고 나면 다음 읽기의 새 탭 한 자리가 난다.
+  for (const p of 남의탭) p.evaluate = async fn => fn.toString().includes('const ed =') ? false : [];
+  globalThis.taskSpace = async () => ({
+    pages: async () => closed.length ? 남의탭 : [...남의탭, page],
+    newPage: async () => { if (!closed.length) throw new Error('PageBudgetError: Page budget reached (8/8)'); current = 'about:blank'; return page; },
+  });
+  console.log = s => steps.push(JSON.parse(s));
+  try {
+    const AsyncFunction = (async () => {}).constructor;
+    await new AsyncFunction(웹.페이지글({ ...jobs[0], ...웹.찾기정보(jobs, jobs[0]) }, 1, '읽기', 'acct'))();
+    assert.match(fs.readFileSync(jobs[0].out, 'utf8'), /A 영상 답/);
+    assert.ok(steps.some(s => s.step === 'found' && s.via === '표시 주소'));
+    assert.ok(steps.some(s => s.step === 'reuse-empty'), '한도 8/8에서도 새 탭을 만들지 않고 A를 읽었다');
+    const visitsBeforeB = visited.filter(v => v === url).length;
+    await assert.rejects(new AsyncFunction(웹.페이지글({ ...jobs[1], ...웹.찾기정보(jobs, jobs[1]) }, 1, '읽기', 'acct'))(), e => e.kind === '안보내짐');
+    assert.equal(visited.filter(v => v === url).length, visitsBeforeB, 'B 읽기는 A의 사이드바 대화를 열지 않는다');
+    assert.equal(fs.existsSync(jobs[1].out), false, 'B 답이 없으면 A 답으로 채우지 않는다');
+    assert.equal(fs.existsSync(웹.풀린표시경로(jobs[1].out)), true, 'B 표시를 풀더라도 원래 기록은 남는다');
+    assert.equal(closed.length, 2);
+  } finally {
+    globalThis.taskSpace = old.taskSpace; globalThis.listTaskSpaces = old.listTaskSpaces; globalThis.JOB = old.JOB; console.log = old.log;
+  }
+});
+
+test('빈 Gemini 재사용 — 초안 · 첨부 · 대화 · 진행 중 · 다른 계정 · 화면 읽기 실패는 그대로 두고, 안전한 빈 탭이 없으면 한도를 보존한다', async () => {
+  const AsyncFunction = (async () => {}).constructor;
+  const run = new AsyncFunction('task', 'u', 'log', `${덩이(페이지(), 'const 빈탭 = async () => {')}\nreturn await 빈탭();`);
+  const make = (state = {}) => ({
+    url: async () => state.url ?? 'https://gemini.google.com/u/1/app',
+    evaluate: async fn => {
+      if (state.error) throw new Error('화면 읽기 실패');
+      const doc = {
+        querySelector: () => state.noEditor ? null : { innerText: state.draft || '' },
+        querySelectorAll: s => s === 'user-query, model-response' ? (state.conversation ? [{}] : [])
+          : s.includes('contenteditable') ? [{ innerText: state.draft || '' }]
+          : s === 'button' ? (state.buttons || []).map(label => ({ getAttribute: () => label }))
+          : s.includes('progressbar') ? [{ getBoundingClientRect: () => ({ width: state.busy ? 20 : 0, height: state.busy ? 20 : 0 }) }] : [],
+      };
+      return new Function('document', `return (${fn.toString()})();`)(doc);
+    },
+    close: async () => assert.fail('기존 탭을 닫음'), goto: async () => assert.fail('기존 탭을 옮김'),
+  });
+  const blocked = [{ draft: '.' }, { buttons: ['첨부파일 닫기'] }, { buttons: ['메시지 보내기'] },
+    { buttons: ['대답 생성 중지'] }, { conversation: true }, { busy: true }, { noEditor: true }, { error: true },
+    { url: 'https://gemini.google.com/u/5/app' }, { url: 'https://gemini.google.com/u/1/app/abcdef' }, { url: '' }].map(make);
+  const budget = new Error('PageBudgetError: Page budget reached (8/8)');
+  const task = { pages: async () => blocked, newPage: async () => { throw budget; } };
+  await assert.rejects(run(task, 1, () => {}), e => e === budget, '빈 탭이 없을 때 남의 탭을 덮지 않는다');
+  const safe = make();
+  assert.equal(await run({ ...task, pages: async () => [...blocked, safe] }, 1, () => {}), safe, '숨은 사이드바 spinner만 있는 빈 Gemini는 재사용');
+  const blank = make({ url: 'about:blank', error: true });
+  assert.equal(await run({ ...task, pages: async () => [blank] }, 1, () => {}), blank, '일반 빈 탭은 DOM 검사 없이 사용');
+});
 
 test('올리기 잠금 — 멈춘 주인 판단: 죽은 pid · 살아 있어도 상한 + 3분 넘김 · 줄 없이 쥔 옛 판은 치우고, 상한 안 · 줄을 쥔 옛 판 · 못 읽음은 기다린다', () => {
   const 지금 = Date.parse('2026-11-08T14:30:00+09:00');
