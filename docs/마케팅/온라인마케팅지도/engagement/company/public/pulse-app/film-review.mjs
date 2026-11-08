@@ -3,7 +3,6 @@ import {reduced} from './motion.mjs';
 // 영상 확인의 움직임(2026-11-05 시사실 판): 어두운 방에 영상 한 편, 아래 프레임 띠와 의견 표시, 손을 놓으면 영상만 남는다. 그리기는 views.mjs, 여기는 듣개만.
 // render()가 칸을 다시 쓸 때 같은 영상 노드를 다시 끼우므로(app.mjs), 듣개는 AbortController로 묶어 unmount에서 뗀다.
 const pad=value=>String(value).padStart(2,'0');
-const fmt=value=>`${pad(Math.floor(value/60))}:${pad(Math.floor(value%60))}.${pad(Math.floor(value%1*100))}`;
 const short=value=>`${Math.floor(value/60)}:${pad(Math.floor(value%60))}`;
 const typingNow=()=>{const el=document.activeElement;return !!el&&(/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)||el.isContentEditable);};
 // 대화상자 · 의뢰서가 열렸거나 단추에 초점이 있으면 스페이스 · 화살표는 그쪽 몫이다.
@@ -51,7 +50,7 @@ export const stripCount=duration=>Math.max(6,Math.min(30,Math.ceil(duration)));
 export const canDrawStrip=()=>typeof matchMedia==='function'&&matchMedia('(hover:hover) and (min-width:821px)').matches&&!navigator.connection?.saveData;
 function ensureStrip(version,src,count,onCell){
   let job=STRIP.get(version);
-  if(job){job.listeners.add(onCell);job.frames.forEach((frame,i)=>{if(frame)onCell(i,frame);});return job;}
+  if(job){job.listeners.add(onCell);job.frames.forEach((frame,i)=>{if(frame)onCell(i,frame);});if(job.done||job.failed)onCell(-1,null);return job;}
   job={version,count,frames:Array(count).fill(null),done:false,failed:false,listeners:new Set([onCell])};
   STRIP.set(version,job);
   const video=document.createElement('video');video.muted=true;video.playsInline=true;video.preload='auto';video.src=src;
@@ -133,6 +132,11 @@ export function mountReview(root,{previous=null,onError}={}){
   const clock=$('[data-live-clock]'),seconds=$('form[data-form="round-draft"][data-item-id=""] [name=seconds],form[data-form="feedback"] [name=seconds]');
   const box=$('[data-film-box]'),playButton=$('[data-film-toggle]');
   const poster=video?holdPoster(video,{signal}):null;
+  // 영상이 오기 전에 깐 한 장(views.mjs filmStill)은 그 판의 그림이 실제로 서면 걷는다 — 찾아가는 중(seeking)이면 아직 앞 그림이라 기다린다.
+  const framed=()=>{if(video&&box&&video.readyState>=2&&!video.seeking)box.classList.add('has-frame');};
+  if(video&&box){for(const type of ['loadeddata','seeked','playing','canplay'])video.addEventListener(type,framed,{signal});framed();}
+  // 이 판의 띠를 이미 못 그렸거나 칸을 안 그리는 화면(데이터 절약 등)이면 처음부터 선 하나로 — 칸 자리 띠가 잠깐이라도 비치지 않게.
+  if(cells&&video&&(!canDrawStrip()||STRIP.get(video.dataset.version)?.failed))cells.classList.add('is-off');
   // 나란히 보기: 옆 판은 지금 판과 같은 순간에 선다. 이후 동기화는 app.mjs wireCompare 몫이다.
   const other=$('.is-other video');
   if(video&&other){const sameMoment=()=>{if(video.readyState>=1&&Math.abs(other.currentTime-video.currentTime)>.2)other.currentTime=video.currentTime;};if(other.readyState>=1)sameMoment();else other.addEventListener('loadedmetadata',sameMoment,{once:true,signal});video.addEventListener('seeked',sameMoment,{signal});}
@@ -140,8 +144,9 @@ export function mountReview(root,{previous=null,onError}={}){
   // 시간 글자 · 머리 · 이 순간 시계
   const paintTime=()=>{
     if(!video)return;const t=video.currentTime||0,total=duration();
-    if(head)head.style.setProperty('--p',String(total?t/total:0));
-    if(tc)tc.textContent=fmt(t);
+    // 머리 · 시각 · 이 순간 시계는 보이는 그림의 자리 하나로 읽는다(머리는 띠의 값을 물려받음). 레일 채움만, 멈춰 선 한 장(holdPoster)을 보이는 동안은 비운다 — 재생은 처음부터라 채우면 그만큼 본 것처럼 읽힌다.
+    (line||head)?.style.setProperty('--p',String(total?t/total:0));line?.style.setProperty('--f',String(total&&!video.dataset.holding?t/total:0));
+    if(tc)tc.textContent=total?`${short(t)} / ${short(total)}`:short(t);
     if(slider){slider.setAttribute('aria-valuemax',String(Math.round(total)));slider.setAttribute('aria-valuenow',String(Math.round(t)));slider.setAttribute('aria-valuetext',short(t));}
     if(clock&&seconds&&seconds.value==='')clock.textContent=short(t);
     host.querySelectorAll('[data-note-at]').forEach(node=>node.classList.toggle('is-near',Math.abs(Number(node.dataset.noteAt)-t)<.8));
@@ -159,8 +164,11 @@ export function mountReview(root,{previous=null,onError}={}){
   const placeScenes=()=>{const row=$('[data-scenes]'),total=duration();if(!row||!total)return;const sum=Number(row.dataset.total)||0;row.hidden=Math.abs(sum-total)>1;row.style.setProperty('--cols',[...row.children].map(li=>`${li.dataset.w}fr`).join(' '));};
   const placeMarks=()=>{const total=duration();if(!total)return;host.querySelectorAll('[data-mark-at]').forEach(mark=>mark.style.setProperty('--x',String(Math.min(1,Number(mark.dataset.markAt)/total))));};
   const setShape=()=>{if(!video||!box||!video.videoWidth)return;const ratio=video.videoWidth/video.videoHeight;host.style.setProperty('--r',String(ratio));host.dataset.shape=ratio>1.1?'wide':ratio<.9?'tall':'square';};
-  let stripDrawn=false;
+  // 띠(숨은 영상으로 판마다 칸을 그림)는 본 영상의 첫 그림이 선 뒤(canplay)에 시작한다 — 메타데이터가 오자마자 이 판 · 앞 판을 함께 받으면
+  // 느린 망에서 본 영상이 몇 초 검게 남았다(운영 1440 · 390, 판 3c 실측). 첫 그림이 안 와도 2.5초 뒤에는 시작한다.
+  let stripDrawn=false,stripTimer=0;
   const drawStrip=()=>{
+    clearTimeout(stripTimer);
     if(stripDrawn||!cells||!video||!canDrawStrip())return;
     const total=duration();if(!total)return;stripDrawn=true;
     const count=stripCount(total),version=video.dataset.version;
@@ -170,6 +178,8 @@ export function mountReview(root,{previous=null,onError}={}){
     const onCell=(i,frame)=>{
       if(signal.aborted)return;
       if(i>=0&&list[i]){list[i].width=frame.width;list[i].height=frame.height;list[i].getContext('2d').drawImage(frame,0,0);list[i].classList.add('is-on');}
+      // 한 칸도 못 그리고 끝났으면 칸 자리(회색)를 걷어 선 하나 시간줄로 돌아간다.
+      if(i===-1&&STRIP.get(version)?.failed&&!list.some(cell=>cell.classList.contains('is-on'))){cells.replaceChildren();cells.classList.add('is-off');}
       if(i===-1||i===count-1)compareStrips(version);
     };
     const job=ensureStrip(version,video.currentSrc||video.src,count,onCell);
@@ -196,10 +206,10 @@ export function mountReview(root,{previous=null,onError}={}){
     poster?.moveTo(from*total);
   };
   if(video){
-    for(const [type,fn] of Object.entries({play(){cancelAnimationFrame(raf);raf=requestAnimationFrame(tick);syncPlaying();},pause(){cancelAnimationFrame(raf);paintTime();syncPlaying();},seeked:paintTime,timeupdate(){if(video.paused)paintTime();},loadedmetadata(){setShape();placeMarks();placeScenes();paintTime();drawStrip();},canplay:drawStrip,error(){onError?.();}}))video.addEventListener(type,fn,{signal});
+    for(const [type,fn] of Object.entries({play(){cancelAnimationFrame(raf);raf=requestAnimationFrame(tick);syncPlaying();},pause(){cancelAnimationFrame(raf);paintTime();syncPlaying();},seeked:paintTime,timeupdate(){if(video.paused)paintTime();},loadedmetadata(){setShape();placeMarks();placeScenes();paintTime();stripTimer=setTimeout(drawStrip,2500);},canplay:drawStrip,error(){box?.classList.add('is-failed');onError?.();}}))video.addEventListener(type,fn,{signal});
     // 전체 화면에서는 브라우저 조작 막대가 재생을 맡는다(크게 보기). 같이 뒤집지 않는다.
     video.addEventListener('click',()=>{if(document.fullscreenElement!==video)toggle();},{signal});
-    if(video.readyState>=1){setShape();placeMarks();placeScenes();paintTime();}
+    if(video.readyState>=1){setShape();placeMarks();placeScenes();paintTime();stripTimer=setTimeout(drawStrip,2500);}
     if(video.readyState>=2)drawStrip();
     syncPlaying();if(!video.paused){raf=requestAnimationFrame(tick);}
   }
@@ -229,7 +239,7 @@ export function mountReview(root,{previous=null,onError}={}){
     if(event.key==='ArrowLeft'){event.preventDefault();seek(video.currentTime-1);}
     if(event.key==='ArrowRight'){event.preventDefault();seek(video.currentTime+1);}
   },{signal});
-  host.addEventListener('focusin',event=>{if(event.target.matches?.('textarea,input')&&!event.target.closest?.('[data-journal]'))poster?.release();},{signal});
+  host.addEventListener('focusin',event=>{if(event.target.matches?.('textarea,input')&&!event.target.closest?.('[data-journal]')){poster?.release();paintTime();}},{signal});
   // 의견을 쓰기 시작하면 그 자리에서 멈춘다(체험의 의견 칸도 같다. 초안은 app.mjs가 시간을 넣는다).
   host.addEventListener('focusin',event=>{
     const area=event.target;if(!video||!area?.matches?.('form[data-form="feedback"] textarea[name="text"]'))return;
@@ -244,5 +254,5 @@ export function mountReview(root,{previous=null,onError}={}){
   },{signal});
   addEventListener('keydown',event=>{if(event.key==='Escape'){const sheet=$('.sx-round-sheet[open]');if(sheet){sheet.open=false;}}},{signal});
   paintTime();
-  return {unmount(){cancelAnimationFrame(raf);clearTimeout(idle);controller.abort();document.documentElement.classList.remove('is-dr-idle');}};
+  return {unmount(){cancelAnimationFrame(raf);clearTimeout(idle);clearTimeout(stripTimer);controller.abort();document.documentElement.classList.remove('is-dr-idle');}};
 }

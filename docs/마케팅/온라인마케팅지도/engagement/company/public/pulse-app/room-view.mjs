@@ -146,8 +146,12 @@ export function journalModel(p){
   const d=r?.directionProposal;
   if(d?.at){
     const t=timeOf(d.at),count=d.options?.length||2;
-    // 다시 받은 제안이면 앞 판의 답(시각 없음)을 이 줄 바로 앞에 둔다.
-    if(d.prior)add({id:'d:'+d.prior.round+':no',at:'',t:t===null?null:t-1,who:'me',name:'나',kind:d.prior.answer?'talk':'event',what:`방향 제안 ${d.prior.round}판 · ${(d.prior.names||[]).map(name=>`「${name}」`).join(' ')} ${both((d.prior.names||[]).length)} 아니에요`,text:d.prior.answer||''});
+    // 다시 받은 제안이면 앞 판의 답을 둔다. 서버가 그 판의 시각을 내려 주면(판 3c) 1판을 보낸 줄과 답한 줄을 제자리에, 옛 기록(시각 없음)은 이 줄 바로 앞에.
+    if(d.prior){
+      const sentAt=timeOf(d.prior.at),noAt=timeOf(d.prior.answeredAt);
+      if(sentAt!==null)add({id:'d:'+d.prior.round,at:d.prior.at,who:'staff',name:d.prior.by||owner,kind:'event',what:`방향 제안 ${d.prior.round}판을 보냈어요`});
+      add({id:'d:'+d.prior.round+':no',at:noAt===null?'':d.prior.answeredAt,t:noAt??(t===null?null:t-1),who:'me',name:'나',kind:d.prior.answer?'talk':'event',what:`방향 제안 ${d.prior.round}판 · ${(d.prior.names||[]).map(name=>`「${name}」`).join(' ')} ${both((d.prior.names||[]).length)} 아니에요`,text:d.prior.answer||''});
+    }
     const pickable=['open','chosen'].includes(d.status)&&!lastRound(r);
     add({id:'d:'+d.round,at:d.at,who:'staff',name:d.by||owner,kind:'quote',what:`방향 제안${d.round>1?` ${d.round}판`:''}`,text:d.lead||`${count}가지 방향을 보내 드렸어요`,go:pickable?{tab:'pick'}:null});
     const chosen=d.options?.find(option=>option.id===d.chosenId);
@@ -173,6 +177,8 @@ export function journalModel(p){
   for(const m of p?.messages||[])if(m.action==='support'&&m.author!=='staff'||m.author==='staff')add({id:'m:'+m.id,ref:m.id,at:m.at,who:m.author==='staff'?(m.automated?'auto':'staff'):'me',name:m.author==='staff'?(m.automated?'자동 안내':m.authorName||owner):'나',kind:'talk',what:m.author==='staff'?'':'문의',text:m.text||''});
   for(const c of st.comments||[])if(c.targetType==='project')add({id:'c:'+c.id,ref:c.id,at:c.at,who:c.author==='customer'?'me':'staff',name:c.author==='customer'?'나':c.authorName||owner,kind:'talk',what:'',text:c.text||''});
   const receipt=p?.closeout?.receipt;
+  // 앞선 수령 확인(판 3c — 최종본을 더 올려 묶음이 바뀌어도 남는다). 옛 서버는 이 목록을 안 내려 지금 묶음 확인만 보인다.
+  for(const earlier of p?.closeout?.earlierReceipts||[])if(timeOf(earlier?.confirmedAt)!==null)add({id:'k:at:'+earlier.confirmedAt,at:earlier.confirmedAt,who:'me',name:'나',kind:'event',what:'파일과 안내를 확인했어요'});
   if(receipt?.confirmedAt)add({id:'k:'+(p.closeout.deliveryKey||'now'),at:receipt.confirmedAt,who:'me',name:'나',kind:'event',what:'파일과 안내를 확인했어요'});
   // 새 것이 위. 시각이 같으면 받은 것 → 내 것 차례, 시각을 못 읽는 줄은 맨 아래.
   items.sort((a,b)=>(b.t??-Infinity)-(a.t??-Infinity)||(a.who==='me')-(b.who==='me'));

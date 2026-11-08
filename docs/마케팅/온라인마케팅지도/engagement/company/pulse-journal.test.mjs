@@ -52,6 +52,10 @@ test('journalModel: an earlier direction answer with no time sits right before t
   const again=journalModel(roomProject({status:'confirmed',directionProposal:{...direction,round:2,prior:{round:1,names:['가','나'],answer:'더 고급스럽게'}}}));
   assert.deepEqual(again.items.map(item=>item.id),['d:2','d:1:no','q:sent']);
   assert.deepEqual([again.items[1].at,again.items[1].what,again.items[1].text],['','방향 제안 1판 · 「가」 「나」 둘 다 아니에요','더 고급스럽게']);
+  // 판 3c: 서버가 앞 판의 시각을 내려 주면 1판을 보낸 줄 · 답한 줄이 제자리에 선다(옛 기록은 위처럼 시각 없이).
+  const timed=journalModel(roomProject({status:'confirmed',directionProposal:{...direction,round:2,at:T(9),prior:{round:1,names:['가','나'],answer:'더 고급스럽게',at:T(5),by:'박담당',answeredAt:T(7)}},asks:[{id:'q1',label:'로고',status:'answered',answer:'네',at:T(6),answeredAt:T(8)}]}));
+  assert.deepEqual(timed.items.map(item=>item.id),['d:2','a:q1','d:1:no','d:1','q:sent']);
+  assert.deepEqual([timed.items[2].at,timed.items[3].who,timed.items[3].name,timed.items[3].what],[T(7),'staff','박담당','방향 제안 1판을 보냈어요']);
   // 1b 전(방향 제안 없음 · 열린 모델 제안) · 판 2 전(mail 없음) · closeout 없음 · 빈 프로젝트
   const old=journalModel(roomProject({status:'confirmed',modelProposal:{modelId:'M06',status:'open',note:'',at:T(5)}}));
   assert.deepEqual(old.items.map(item=>item.what),['모델 한결을 제안했어요','의뢰서를 보냈어요']);
@@ -134,9 +138,11 @@ test('notifications: a reply opens the journal line on the screen you are on (E7
 test('the drawer and sheet: one opener, Esc and the scrim close, focus returns, the video keys stay off while open (E6)',()=>{
   const app=read('app.mjs'),review=read('film-review.mjs'),views=read('film-views.mjs');
   assert.match(views,/export const journalOverlay=box=>!!box&&\(box\.dataset\.place==='drawer'\|\|box\.dataset\.place==='side'&&/,'one rule, shared by the app and the example');
-  assert.match(read('demo-film.mjs'),/journalOverlay,journalSetOpen,journalFocus,journalRelease\} from '\.\/film-views\.mjs'/);
+  assert.match(read('demo-film.mjs'),/journalOverlay,journalSetOpen,journalFocus,journalRelease(?:,JOURNAL_SHEET)?\} from '\.\/film-views\.mjs'/);
   assert.match(views,/export const journalFocus=box=>\{const title=box\?\.querySelector\('#room-journal-title'\)/,'opening focuses the title, not the box — no phone keyboard over the lines, no released video still (Fable G3)');
-  assert.match(review,/if\(event\.target\.matches\?\.\('textarea,input'\)&&!event\.target\.closest\?\.\('\[data-journal\]'\)\)poster\?\.release\(\);/);
+  // 판 3c(Fable F2 · FA1): 머리 · 시각 · 이 순간 시계는 보이는 그림의 자리 하나, 레일 채움만 멈춰 선 동안 비운다. 기다림을 풀면 다시 그린다 — 일지 안 초점은 여전히 풀지 않는다.
+  assert.match(review,/const t=video\.currentTime\|\|0,total=duration\(\);/);assert.match(review,/line\?\.style\.setProperty\('--f',String\(total&&!video\.dataset\.holding\?t\/total:0\)\);/);assert.match(review,/if\(clock&&seconds&&seconds\.value===''\)clock\.textContent=short\(t\);/);assert.match(read('film-legacy.css'),/\.sx-line::before\{[^}]*calc\(var\(--f,0\)\*100%\)/);
+  assert.match(review,/if\(event\.target\.matches\?\.\('textarea,input'\)&&!event\.target\.closest\?\.\('\[data-journal\]'\)\)\{poster\?\.release\(\);paintTime\(\);\}/);
   assert.match(app,/if\(animate&&s\.journalOpen\)\{s\.journalOpen=false;journalOpener=null;\}/,'a new screen starts with the drawer closed (Fable G9)');
   assert.match(app,/journalTop=main\.querySelector\('\[data-journal\]'\)\?\.scrollTop\|\|0/,'a live refresh keeps where you read (Fable G8)');
   assert.match(app,/document\.addEventListener\('keydown',event=>\{if\(event\.key!=='Escape'\|\|!s\.journalOpen\|\|document\.querySelector\('\.sx-round-sheet\[open\],dialog\[open\]'\)\)return;closeJournal\(\);\}\);/,'the notes sheet closes first');
@@ -185,8 +191,32 @@ test('the example opens the scene its tail names, then drops the tail so the add
   assert.equal(/^#[a-z]{2,12}$/.test('#invite=abc'),false);
   const demo=read('demo-film.mjs');
   // 꼬리는 첫 장면을 고른 뒤, 그 장면을 열기 전에 지운다(의뢰서 덫 칸이 꼬리 없는 주소로 쌓이게) — 장면을 옮길 때는 기록을 건드리지 않는다.
-  assert.match(demo,/const first=start\|\|location\.hash\.slice\(1\);\r?\n\s*if\(!internal&&!start&&location\.hash&&\/\[\?&\]demo=film\(\?:&\|\$\)\/\.test\(location\.search\)\)history\.replaceState\(history\.state,'',location\.pathname\+location\.search\);\r?\n\s*go\(scenes\.some\(scene=>scene\[0\]===first\)\?first:scenes\[0\]\[0\]\);/);
-  assert.doesNotMatch(demo,/syncTail|history\.back\(\)/);
+  assert.match(demo,/const tailed=!internal&&!start&&\/\[\?&\]demo=film\(\?:&\|\$\)\/\.test\(location\.search\),untail=\(\)=>\{if\(tailed&&location\.hash\)history\.replaceState\(history\.state,'',location\.pathname\+location\.search\);\};/);
+  assert.match(demo,/const first=start\|\|location\.hash\.slice\(1\);\r?\n\s*untail\(\);\r?\n\s*go\(scenes\.some\(item=>item\[0\]===first\)\?first:scenes\[0\]\[0\]\);/);
+  // 판 3c(-g FA2): 주소줄에 직접 친 꼬리도 읽은 뒤 그 장면을 열기 전에 지운다.
+  assert.match(demo,/addEventListener\('hashchange',\(\)=>\{const id=location\.hash\.slice\(1\);if\(!scenes\.some\(item=>item\[0\]===id\)\)return;untail\(\);go\(id\);\}\);/);
+  // 장면을 옮길 때는 기록을 만지지 않는다(-f P1 — 덫과 엉킴). 기록에 손대는 곳은 꼬리 지우기와, 뒤로 가기에 답하는 지나가기 하나뿐이다.
+  const goBody=demo.slice(demo.indexOf('  function go(id){'),demo.indexOf('  nav.addEventListener('));
+  assert.ok(goBody.length>500);assert.doesNotMatch(goBody,/history\./);assert.doesNotMatch(demo,/syncTail|pushState/);
+  assert.equal(demo.match(/history\.back\(\)/g).length,1);
+  assert.match(demo,/if\(!internal\)addEventListener\('popstate',\(\)=>\{if\(scene!=='request'&&!location\.hash\)history\.back\(\);\}\);/);
+});
+
+// 판 3c(-g FA1): 의뢰서 덫은 이미 덫 칸 위면 더 쌓지 않는다 — 예시에서 의뢰서 장면을 거듭 열어도 한 겹.
+test('the request back-trap is one layer: it never stacks on a trap entry it already pushed',()=>{
+  const flow=read('request-flow.mjs');
+  assert.match(flow,/const trap=\(\)=>\{try\{if\(!history\.state\?\.requestFlow\)history\.pushState\(\{requestFlow:true\},''\);\}catch\{\}\};/);
+  assert.equal(flow.match(/pushState/g).length,1);
+  // 작은 기록 흉내: 의뢰서를 두 번 열어도 칸은 하나만 는다.
+  const stack=[{}];const history={get state(){return stack.at(-1);},pushState(state){stack.push(state);}};
+  const trap=new Function('history','return '+flow.match(/const trap=(\(\)=>\{try\{.*?\}catch\{\}\});/)[1])(history);
+  trap();trap();assert.equal(stack.length,2,'a second mount reuses the trap entry');
+});
+// 판 3c: 휴대폰 시트를 연 채 창을 넓히면 앱처럼 연 상태를 푼다(가림막 · 잠금이 남지 않게).
+test('the example closes an open sheet when the window widens past the sheet rule, like the app',()=>{
+  const demo=read('demo-film.mjs');
+  assert.match(demo,/globalThis\.matchMedia\?\.\(JOURNAL_SHEET\)\?\.addEventListener\?\.\('change',\(\)=>\{const box=host\.querySelector\('\[data-journal\]'\);if\(box\?\.classList\.contains\('is-open'\)&&!journalOverlay\(box\)\)\{exampleOpener=null;journalSetOpen\(host,false\);\}\}\);/);
+  assert.match(read('app.mjs'),/matchMedia\?\.\(JOURNAL_SHEET\)\?\.addEventListener\?\.\('change'/);
 });
 
 test('small grey words and underlined links stay counted: outside the journal under the old caps, inside none (E8 · D17 · Fable G10)',()=>{

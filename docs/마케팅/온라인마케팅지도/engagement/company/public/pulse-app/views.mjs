@@ -285,6 +285,15 @@ function legacyStage(s){
 // 영상 확인: 어두운 방. 가운데 영상, 왼쪽 크레딧, 오른쪽 기둥(비교 문장 · 의견 · 승인), 아래 프레임 띠.
 const isFilm=v=>!!(v?.media?.mimeType?.startsWith('video/')&&safeUrl(v.media.url,{media:true}));
 const reviewFilm=v=>{const url=safeUrl(v?.media?.url,{media:true});if(url&&v.media.mimeType?.startsWith('video/'))return `<video id="review-video" playsinline preload="metadata" src="${esc(url)}" data-version="${esc(v.id)}" aria-label="${esc(v.label)}"></video>`;return mediaView(v);};
+// 영상이 오기 전 한 장(판 3c): 첫 프레임이 서기까지 검은 상자 대신 깐다 — film-review가 프레임이 서면 걷는다. 예시는 판에 붙은 poster,
+// 실제 손님은 마지막 장면 이미지 판에서 멈춰 서는 자리(film-review POSTER_AT, 끝 컷 쪽)의 컷 — 영상의 그 순간과 같은 컷의 첫 화면이다. 없으면 비운다.
+const STILL_AT=.84;
+function filmStill(p,v){
+  const own=safeUrl(v?.poster||'',{media:true});if(own)return own;
+  const cuts=draftModel(p)?.cuts||[],total=cuts.reduce((sum,cut)=>sum+cut.seconds,0);if(!total)return '';
+  let end=0;const at=total*STILL_AT,hit=cuts.find(cut=>(end+=cut.seconds)>at);
+  return safeUrl((hit?.src?hit:cuts.findLast(cut=>cut.src))?.src||'',{media:true});
+}
 function reviewMarks(p,current,messages){
   const rounds=p.studio?.feedbackRounds||{},marks=[];
   for(const d of rounds.drafts||[])if(d.current&&d.versionId===current.id)for(const i of d.items||[])if(Number.isFinite(i.seconds))marks.push({t:i.seconds,text:i.text,kind:'draft',label:'초안'});
@@ -314,7 +323,7 @@ function reviewRoom(s){
   const previous=previews.length>1&&isFilm(current)&&isFilm(previews.at(-2))?previews.at(-2):null,comparing=!!(s.compare&&previous&&latestActive);
   const draftCount=s.demo?0:(rounds?.drafts||[]).filter(d=>d.current&&d.versionId===latest?.id).reduce((n,d)=>n+(d.items?.length||0),0);
   const approved=!!latest?.approvedAt,collect=!approved&&draftCount>0,video=isFilm(current),url=safeUrl(current.media?.url,{media:true}),panel=!room&&(s.reviewPanel==='ask'||staleDraft)?'ask':'note';
-  const marks=video?reviewMarks(p,current,messages):[];
+  const marks=video?reviewMarks(p,current,messages):[],still=video?filmStill(p,current):'';
   const scenes=(p.studio?.scenes||[]).filter(scene=>scene.visibility!=='internal'&&Number(scene.duration)>0);
   let from=0;const sceneRows=scenes.map(scene=>{const row={title:scene.title,from,to:from+Number(scene.duration)};from=row.to;return row;});
   const decideHint=!latest?'':approved?'':collect?'보내기 전까지는 저희에게 보이지 않아요.':!approval.canApprove?approval.reason:!latestActive?'최신 시안을 고른 뒤 승인해 주세요.':'이 시안으로 최종본을 만들까요?';
@@ -322,7 +331,7 @@ function reviewRoom(s){
   const decideButton=!latest?'':approved&&room&&lastFinal?`<p class="sx-review-done">최종본이 도착했어요 <span class="sx-small">${esc(lastFinal.label)}</span></p><button type="button" class="sx-go is-solid" data-action="version-pick" data-id="${esc(lastFinal.id)}"><span>최종본 보기</span>${arrow}</button>`:approved?`<p class="sx-review-done">시안 승인을 마쳤어요 <span class="sx-small">${esc(latest.label)} · ${esc(stamp(latest.approvedAt))}</span></p>${room?'<p class="sx-small">최종 파일을 준비하고 있어요. 올라오면 알려 드려요.</p>':''}`:collect?go(`의견 ${draftCount}개 보내기`,'open-round-submit'):`<button type="button" class="sx-go is-solid" data-action="approve" data-id="${esc(latest.id)}" ${!approval.canApprove||!latestActive?'disabled':''}><span>이 시안 최종 승인</span>${arrow}</button>`;
   return `<div class="sx-review sx-dr sx-shell${comparing?' is-compare':''}${s.demo?' is-demo':''}" data-mode="${esc(s.mode)}" data-tab="review" data-shape="tall">
     ${s.example?exampleHead(roomInfo(s),{tab:s.tab}):''}
-    <figure class="sx-dr-films${comparing?' compare-grid':''}"><div class="sx-dr-box" data-film-box>${reviewFilm(current)}${video?`<button type="button" class="sx-dr-play" data-film-toggle><i aria-hidden="true"></i><span>재생</span></button>`:''}${comparing?`<figcaption class="sx-small sx-film-label">${esc(current.label)}</figcaption>`:''}</div>${comparing?`<div class="sx-dr-box is-other"><video playsinline muted preload="metadata" src="${esc(safeUrl(previous.media?.url,{media:true}))}" data-version="${esc(previous.id)}" aria-label="${esc(previous.label)}"></video><figcaption class="sx-small sx-film-label">${esc(previous.label)}</figcaption></div>`:''}</figure>
+    <figure class="sx-dr-films${comparing?' compare-grid':''}"><div class="sx-dr-box" data-film-box>${reviewFilm(current)}${still?`<img class="sx-dr-still" src="${esc(still)}" alt="" decoding="async" data-film-still><span class="sx-small sx-dr-wait" aria-hidden="true">영상을 불러오고 있어요</span>`:''}${video?`<button type="button" class="sx-dr-play" data-film-toggle><i aria-hidden="true"></i><span>재생</span></button>`:''}${comparing?`<figcaption class="sx-small sx-film-label">${esc(current.label)}</figcaption>`:''}</div>${comparing?`<div class="sx-dr-box is-other"><video playsinline muted preload="metadata" src="${esc(safeUrl(previous.media?.url,{media:true}))}" data-version="${esc(previous.id)}" aria-label="${esc(previous.label)}"></video><figcaption class="sx-small sx-film-label">${esc(previous.label)}</figcaption></div>`:''}</figure>
     <header class="sx-dr-left">
       ${s.demo?demoCredit(s):room?`<div class="sx-dr-credit"><h1 class="sx-serif">${esc(current.label)}</h1><p class="sx-small">${finalShown?'최종본':'영상 확인'}${current.createdAt?` · ${esc(stamp(current.createdAt))}`:''}</p>${current.guide?`<p class="sx-body sx-dr-memo"><span class="sx-small">담당 ${esc(p.ownerName||'')}</span>${esc(current.guide)}</p>`:''}</div>${comparing?'':journalOf(s,'side',{tab:'review',versionId:current.id,finals:finalShown},{video:!finalShown&&current.kind==='preview'&&!current.approvedAt})}`:`<div class="sx-dr-credit"><h1 class="sx-serif">${esc(p.title)}</h1><p class="sx-small">${esc(tabs.find(t=>t[0]==='review')[2])} · ${esc(current.label)}</p>${current.guide?`<p class="sx-body sx-dr-memo"><span class="sx-small">담당 ${esc(p.ownerName||'')}</span>${esc(current.guide)}</p>`:''}${next&&next.tab!=='review'?`<p class="sx-next sx-small"><b>${esc(turnLabel(s,turnOf(s,next)))}</b> ${esc(next.title)} <button type="button" class="sx-link" data-action="tab" data-tab="${esc(next.tab)}"${next.scroll?` data-scroll="${esc(next.scroll)}"`:' data-scroll="content"'}>${esc(next.button)}</button></p>`:''}</div>`}
       ${room?'':`<div class="sx-dr-left-foot">${stepsOf(s,next)}</div>`}
@@ -353,7 +362,7 @@ function reviewRoom(s){
         ${marks.map(m=>`<button type="button" class="sx-mark is-${m.kind}" data-action="seek" data-version="${esc(current.id)}" data-seconds="${m.t}" data-mark-at="${m.t}" data-text="${esc(m.label+' · '+String(m.text||'').slice(0,80))}" aria-label="${esc(clock(m.t)+' '+m.label+' 의견 장면 보기')}"></button>`).join('')}
         <figure class="sx-peek" data-peek hidden><canvas></canvas><figcaption class="sx-no"></figcaption></figure>
       </div>
-      <div class="sx-review-under"><span class="sx-no sx-review-tc" data-tc>00:00.00</span>${room?'<button type="button" class="sx-small sx-review-full" data-review-full>크게 보기</button>':''}${sceneRows.length>1?`<ol class="sx-scenes sx-small" data-scenes data-total="${from}" hidden>${sceneRows.map(row=>`<li data-scene-from="${row.from}" data-scene-to="${row.to}" data-w="${row.to-row.from}"><button type="button" data-seek="${row.from}">${esc(row.title)}</button></li>`).join('')}</ol>`:''}</div>
+      <div class="sx-review-under"><span class="sx-small sx-review-tc" data-tc>0:00</span>${room?'<button type="button" class="sx-small sx-review-full" data-review-full>크게 보기</button>':''}${sceneRows.length>1?`<ol class="sx-scenes sx-small" data-scenes data-total="${from}" hidden>${sceneRows.map(row=>`<li data-scene-from="${row.from}" data-scene-to="${row.to}" data-w="${row.to-row.from}"><button type="button" data-seek="${row.from}">${esc(row.title)}</button></li>`).join('')}</ol>`:''}</div>
     </div>`:''}
     ${room&&comparing?journalOf(s,'drawer',{tab:'review',versionId:current.id},{video:true}):''}
   </div>`;

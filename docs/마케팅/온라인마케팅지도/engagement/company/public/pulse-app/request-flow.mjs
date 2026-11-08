@@ -373,7 +373,8 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   });
   host.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing&&!['TEXTAREA','BUTTON','A'].includes(event.target.tagName)&&!['file','checkbox'].includes(event.target.type)&&step().id!=='review'){event.preventDefault();actions.next();}});
   // 휴대폰 뒤로 가기는 앞 질문으로 간다. 기록에는 한 칸만 더 쌓아 두고 누를 때마다 다시 채운다.
-  const trap=()=>{try{history.pushState({requestFlow:true},'');}catch{}};
+  // 이미 그 칸 위면 더 쌓지 않는다 — 의뢰서를 다시 열어도 덫이 두 겹이 되지 않게(예시에서 의뢰서 장면을 거듭 누를 때).
+  const trap=()=>{try{if(!history.state?.requestFlow)history.pushState({requestFlow:true},'');}catch{}};
   const onPop=()=>{
     if(sent){onRoom?.(sent,a);return;}
     if(host.classList.contains('sheet-open')){setSheet(false);trap();return;}

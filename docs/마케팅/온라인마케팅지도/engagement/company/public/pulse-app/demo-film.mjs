@@ -1,6 +1,6 @@
 import {mountRequestFlow} from './request-flow.mjs';
 import {emptyAnswers} from './request-data.mjs';
-import {roomView,mountRoom,draftView,mountDraft,exampleHead,journalView,journalOverlay,journalSetOpen,journalFocus,journalRelease} from './film-views.mjs';
+import {roomView,mountRoom,draftView,mountDraft,exampleHead,journalView,journalOverlay,journalSetOpen,journalFocus,journalRelease,JOURNAL_SHEET} from './film-views.mjs';
 import {modelCard,journalModel} from './room-view.mjs';
 import {projectView} from './views.mjs';
 import {mountReview} from './film-review.mjs';
@@ -69,11 +69,14 @@ function bindExampleJournal(root,say,redraw){
   root.addEventListener('submit',event=>{if(!event.target.closest?.('[data-journal]')||event.target.dataset?.form==='ask')return;event.preventDefault();event.stopPropagation();say(NOT_REAL);event.target.reset?.();},true);
 }
 // 영상 확인 · 납품은 실제 화면을 그대로 그린다. 자료만 가짜이고 서버로 가지 않는다.
+// 판마다 영상이 오기 전에 깔 한 장(poster)은 멈춰 서는 자리(끝 컷 쪽)와 같은 구도의 장면 이미지다 — 실제 손님은 승인한 장면 이미지에서 고른다(views.mjs filmStill).
 const BASE='/pulse-app/demo-assets/';
 const AT='2026-11-04T05:00:00.000Z';
+// 영상 상자의 한 장은 views.mjs가 safeUrl로 원점 기준에 풀므로 영상처럼 절대 경로로 둔다.
+const POSTER=name=>`/pulse-app/assets/request/${name}.webp`;
 function exampleState(){
-  const v1={id:'demo-v1',kind:'preview',label:'1차 시안',guide:'제품이 떠 있는 시간과 끝 장면을 중심으로 봐 주세요.',createdAt:KST(3,'19:00'),media:{url:BASE+'preview-v1.mp4',mimeType:'video/mp4',fileName:'霜の肌理_1차.mp4'}};
-  const v2={id:'demo-v2',kind:'preview',label:'2차 시안',guide:'제품이 떠 있는 시간을 줄이고, 결정이 뚜껑에 피어나는 순간을 접사로 크게 보여 드려요.',createdAt:AT,media:{url:BASE+'preview-v2.mp4',mimeType:'video/mp4',fileName:'霜の肌理_2차.mp4'}};
+  const v1={id:'demo-v1',kind:'preview',label:'1차 시안',guide:'제품이 떠 있는 시간과 끝 장면을 중심으로 봐 주세요.',createdAt:KST(3,'19:00'),poster:POSTER('sheet-gift-12'),media:{url:BASE+'preview-v1.mp4',mimeType:'video/mp4',fileName:'霜の肌理_1차.mp4'}};
+  const v2={id:'demo-v2',kind:'preview',label:'2차 시안',guide:'제품이 떠 있는 시간을 줄이고, 결정이 뚜껑에 피어나는 순간을 접사로 크게 보여 드려요.',createdAt:AT,poster:POSTER('sheet-gift-11'),media:{url:BASE+'preview-v2.mp4',mimeType:'video/mp4',fileName:'霜の肌理_2차.mp4'}};
   const asked={id:'demo-m1',author:'customer',authorName:'예시 고객',action:'feedback',versionId:'demo-v1',seconds:8,text:'떠 있는 시간이 길어요. 뚜껑 위 결정을 더 크게 보여 주세요.',resolved:true,at:AT};
   const scenes=[['결정이 자라요',3],['서리가 구슬을 덮어요',3],['깨지고, 멈춰요',5],['이름을 남겨요',4]].map(([title,duration],i)=>({id:`demo-s${i}`,title,duration,visibility:'customer'}));
   const talk=[{id:'demo-q1',author:'customer',authorName:'예시 고객',action:'support',text:'연말 선물 시즌 전에 받을 수 있을까요?',at:KST(4,'10:02')},{id:'demo-q2',author:'staff',authorName:'김하늘',text:'네, 11월 21일에 맞춰 드려요. 2차 시안은 오늘 오후에 올려요.',at:KST(4,'10:30')}];
@@ -82,7 +85,7 @@ function exampleState(){
     studio:{scenes,assets:[],comments:[],sceneReviews:[],request:exampleRequest('review'),
       feedbackRounds:{latestVersionId:'demo-v2',latestVersionLabel:'2차 시안',canDraft:true,maxItems:30,nextNumber:2,drafts:[],rounds:[{id:'demo-r1',number:1,versionId:'demo-v1',versionLabel:'1차 시안',representativeName:'예시 고객',submittedAt:KST(4,'09:40'),items:[{id:'demo-i1',messageId:'demo-m1',seconds:8,text:asked.text,resolved:true,classification:{label:'합의한 범위 안의 수정',scopeNote:'제품이 떠 있는 시간과 끝 컷',scheduleNote:'2차 시안에 반영'}}]}]}}}};
 }
-const asFinal=state=>{const v2=state.project.versions[1];state.project.stage='delivered';state.project.versions=[...state.project.versions.map(v=>({...v,approvedAt:v.id==='demo-v2'?KST(4,'16:00'):undefined})),{id:'demo-final',kind:'final',label:'15초 광고 최종본',guide:'릴스 · 쇼츠 · 틱톡에 그대로 올릴 수 있는 9:16 파일이에요.',createdAt:KST(4,'18:20'),media:{...v2.media,fileName:'霜の肌理_15초.mp4'}}];return state;};
+const asFinal=state=>{const v2=state.project.versions[1];state.project.stage='delivered';state.project.versions=[...state.project.versions.map(v=>({...v,approvedAt:v.id==='demo-v2'?KST(4,'16:00'):undefined})),{id:'demo-final',kind:'final',label:'15초 광고 최종본',guide:'릴스 · 쇼츠 · 틱톡에 그대로 올릴 수 있는 9:16 파일이에요.',createdAt:KST(4,'18:20'),poster:v2.poster,media:{...v2.media,fileName:'霜の肌理_15초.mp4'}}];return state;};
 
 // 둘러보기. 시안은 extra로 첫 화면 · 내부 확인 같은 장면을 앞에 더한다. 손님 예시에는 내부 화면을 싣지 않는다.
 export function mountFilmDemo(host,{internal=false,start='',onLeave,extra=[]}={}){
@@ -92,7 +95,7 @@ export function mountFilmDemo(host,{internal=false,start='',onLeave,extra=[]}={}
   // 예시라 실제로 보내지 않는 단추는 그 자리에서 그렇게 말한다.
   let noteTimer=0;
   const say=text=>{let box=document.querySelector('.sx-demo-note');if(!box){box=document.createElement('p');box.className='sx-demo-note sx-small';box.setAttribute('role','status');document.body.append(box);}box.textContent=text;box.hidden=false;play(box,[{opacity:0},{opacity:1}],{duration:220});clearTimeout(noteTimer);noteTimer=setTimeout(()=>{box.hidden=true;},3600);};
-  let handle=null,state=exampleState(),nextPanel='';
+  let handle=null,state=exampleState(),nextPanel='',scene='';
   function clear(){handle?.unmount?.();handle=null;const next=host.cloneNode(false);host.replaceWith(next);host=next;document.documentElement.classList.remove('view-dr','has-journal-open');journalRelease();exampleOpener=null;return next;}
   // 실제 화면을 그리고, 앱이 하던 일(시안 고르기 · 의견 넣기 · 나란히 보기)을 여기서 가짜로 한다.
   function drawProject(root,tab){
@@ -150,7 +153,7 @@ export function mountFilmDemo(host,{internal=false,start='',onLeave,extra=[]}={}
     });
   }
   function go(id){
-    const root=clear();window.scrollTo(0,0);if(root.parentElement)root.parentElement.scrollTop=0;
+    scene=id;const root=clear();window.scrollTo(0,0);if(root.parentElement)root.parentElement.scrollTop=0;
     nav.querySelectorAll('[data-scene]').forEach(button=>{const on=button.dataset.scene===id;button.classList.toggle('is-on',on);if(on){button.setAttribute('aria-current','true');if(nav.scrollWidth>nav.clientWidth)nav.scrollLeft=button.offsetLeft-(nav.clientWidth-button.offsetWidth)/2;}else button.removeAttribute('aria-current');});
     const custom=extra.find(item=>item.id===id);if(custom){custom.render(root,go);return;}
     if(id==='request'){handle=mountRequestFlow(root,{backend:demoBackend(),onRoom:()=>go('room'),onExit:()=>go('room')});return;}
@@ -170,9 +173,15 @@ export function mountFilmDemo(host,{internal=false,start='',onLeave,extra=[]}={}
     if(id==='history'){state=asFinal(exampleState());bindProject(root);bindExampleJournal(root,say,()=>{state.journalAll=!state.journalAll;drawProject(root,'history');});drawProject(root,'history');}
   }
   nav.addEventListener('click',event=>{if(event.target.dataset?.protoLeave!==undefined){onLeave?.();return;}const id=event.target.dataset?.scene;if(id)go(id);});
-  addEventListener('hashchange',()=>{const id=location.hash.slice(1);if(scenes.some(scene=>scene[0]===id))go(id);});
-  // 장면 꼬리(#room)로 들어오면 그 장면을 열고, 꼬리는 열기 전에 지운다 — 옮겨 다녀도 주소가 낡은 장면을 가리키지 않고, 의뢰서의 뒤로 가기 덫 칸도 같은 주소로 쌓인다(앞처럼 주소에는 꼬리가 없다).
+  // 장면 꼬리(#room)는 첫 로드든 주소줄에 직접 친 것이든 읽은 뒤 그 장면을 열기 전에 지운다 — 옮겨 다녀도 주소가 낡은 장면을 가리키지 않고, 의뢰서의 뒤로 가기 덫 칸도 꼬리 없는 같은 주소로 쌓인다.
+  const tailed=!internal&&!start&&/[?&]demo=film(?:&|$)/.test(location.search),untail=()=>{if(tailed&&location.hash)history.replaceState(history.state,'',location.pathname+location.search);};
+  addEventListener('hashchange',()=>{const id=location.hash.slice(1);if(!scenes.some(item=>item[0]===id))return;untail();go(id);});
+  // 장면은 기록에 남기지 않으므로 예시 안의 뒤로 가기는 늘 예시 밖으로 간다. 의뢰서 장면이 쌓은 덫 칸 · 친 꼬리 칸처럼 같은 문서 안의 칸에 내려앉으면 한 번 더 물러나 그 칸을 함께 지나간다(첫 뒤로 가기가 헛돌지 않게).
+  // 의뢰서 장면에서는 의뢰서가 뒤로 가기를 맡는다(앞 질문으로). 꼬리가 있는 칸은 방금 친 주소라 지나가지 않는다.
+  if(!internal)addEventListener('popstate',()=>{if(scene!=='request'&&!location.hash)history.back();});
+  // 창 폭이 바뀌어 시트 · 서랍이 흐름 안 자리가 되면 연 상태를 푼다(앱 app.mjs와 같은 규칙 — 가림막 · 잠금이 남지 않게).
+  globalThis.matchMedia?.(JOURNAL_SHEET)?.addEventListener?.('change',()=>{const box=host.querySelector('[data-journal]');if(box?.classList.contains('is-open')&&!journalOverlay(box)){exampleOpener=null;journalSetOpen(host,false);}});
   const first=start||location.hash.slice(1);
-  if(!internal&&!start&&location.hash&&/[?&]demo=film(?:&|$)/.test(location.search))history.replaceState(history.state,'',location.pathname+location.search);
-  go(scenes.some(scene=>scene[0]===first)?first:scenes[0][0]);
+  untail();
+  go(scenes.some(item=>item[0]===first)?first:scenes[0][0]);
 }
