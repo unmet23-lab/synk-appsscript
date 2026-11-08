@@ -15,7 +15,7 @@ export const AI_CHIP = { x: 38, y: 462, w: 590, h: 68 };
 export const AI_ROW_LABEL = { x: 34, y: 870, w: 470, h: 64 };
 export const AI_ROW_NUM = { x: 888, y: 870, w: 164, h: 64 };
 export const AI_SAVE = { x: 56, y: 988, w: 420, h: 64 };
-export const AD_M_KEY = { x: 84, y: 1250, w: 524, h: 148 };
+export const AD_M_KEY = { x: 64, y: 1236, w: 564, h: 176 }; // 11-09 맹검(글자가 칸 위 · 왼쪽 끝에 붙음): 둘레 여백 20
 
 const Rise: React.FC<{ at: number; children: React.ReactNode }> = ({ at, children }) => {
   const f = useCurrentFrame() - sec(at);

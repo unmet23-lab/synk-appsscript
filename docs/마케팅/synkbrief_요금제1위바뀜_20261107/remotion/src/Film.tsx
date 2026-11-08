@@ -82,15 +82,16 @@ const ClashFilm: React.FC = () => (
       <Crop src="ai_final" {...AI_ROW_NUM} scale={1.7} radius={0} style={{ position: 'absolute', left: 920 - AI_ROW_NUM.w * 1.7, top: 1008 }} />
     </Rise>
     <Punch at={S.slam}>
-      <Note text="어도비 결제 화면 · 같은 날" style={{ position: 'absolute', left: X, top: 1172 }} />
-      <Crop src="hi_ad_month" {...AD_M_KEY} scale={1.36} radius={22} style={{ position: 'absolute', left: X, top: 1214 }} />
+      <Note text="어도비 결제 화면 · 같은 날" style={{ position: 'absolute', left: X, top: 1158 }} />
+      <Crop src="hi_ad_month" {...AD_M_KEY} scale={1.36} radius={22} style={{ position: 'absolute', left: X, top: 1200 }} />
     </Punch>
   </Settle>
 );
 
 // 증거 칸(v5 — 되풀이되던 시소 칸 대신): AI 답의 어도비 줄 · 어도비 공식 요금 화면 Premium 칸(₩15,200/월 · 연간 약정 없이 매월 청구)
 const OFF_CARD = { x: 40, y: 920, w: 1000, h: 740 };
-const OFF_PRICE = { x: 70, y: 1340, w: 940, h: 300 };
+// 11-09 맹검(카드가 화면 오른쪽 밖으로 잘림 · 안쪽 오른편이 빔): 값이 있는 왼쪽만 잘라 크게 — 다가오는 효과까지 넣어도 오른쪽 끝 960 안
+const OFF_PRICE = { x: 70, y: 1340, w: 640, h: 300 };
 const AI_ROW = { x: 34, y: 868, w: 1018, h: 68 };
 const Official: React.FC<{ zoom?: boolean }> = ({ zoom }) => (
   <Settle from={0} drift={0.0008} pan={0.3} origin="74px 60%">
@@ -98,7 +99,7 @@ const Official: React.FC<{ zoom?: boolean }> = ({ zoom }) => (
     <Crop src="ai_final" {...AI_ROW} scale={0.9} radius={0} style={{ position: 'absolute', left: X - 14, top: 600 }} />
     <Note text="어도비 공식 요금 화면 · 11월 7일" style={{ position: 'absolute', left: X, top: 700 }} />
     {zoom
-      ? <Crop src="hi_ad_official" {...OFF_PRICE} scale={1.06} radius={26} style={{ position: 'absolute', left: X - 4, top: 780 }} />
+      ? <Crop src="hi_ad_official" {...OFF_PRICE} scale={1.32} radius={26} style={{ position: 'absolute', left: X - 4, top: 780 }} />
       : <Crop src="hi_ad_official" {...OFF_CARD} scale={0.86} radius={26} style={{ position: 'absolute', left: X, top: 760 }} />}
   </Settle>
 );
@@ -139,8 +140,9 @@ const Down: React.FC<{ children: React.ReactNode }> = ({ children }) => <div sty
 
 // ── 시소 판 B: 값 줄만 크게(미리캔버스 가격 줄 · 어도비 고른 칸) · 왼쪽 끝 X
 const MI_PRICE = { x: 50, y: 2150, w: 820, h: 175 };
-const PB = { miS: 1.12, adS: 0.97, miTop: 650, adTop: 1010 };
-const PB_TAP = { x: 420, y: PB.adTop + 140 };
+// 11-09 맹검(끝 화면 어도비 칸이 오른쪽 밖으로 잘림): 두 칸 다 본문 폭(846) 안으로 — 다가오는 효과(최대 1.05배)까지 오른쪽 끝 960 안
+const PB = { miS: 1.03, adS: 0.82, miTop: 650, adTop: 1010 };
+const PB_TAP = { x: 420, y: PB.adTop + 122 };
 const PairB: React.FC<{ year: boolean; from: number; winAt?: number }> = ({ year, from, winAt = 0.3 }) => (
   <Settle from={from} drift={0.0009} pan={0.3} origin="74px 55%">
     <NoteWin text="미리캔버스 요금 화면" win={!year} since={winAt} left={X} top={PB.miTop - 46} />
@@ -212,7 +214,7 @@ export const Film: React.FC = () => {
       <T lines={['요금 비교는', 'AI 기억 말고', '결제 화면 값으로']} from={S.end} to={S.total} size={88} />
 
       {/* 시소의 「더 쌈」 · 누름 */}
-      <Tap at={S.slam + 0.3} x={330} y={1250} />
+      <Tap at={S.slam + 0.3} x={330} y={1236} />
       <Tap at={S.tapY} {...PB_TAP} />
       <Tap at={S.tapE1} x={PA_TAP.y.x} y={PA_TAP.y.y + END_DY} />
       <Tap at={S.tapE2} x={PB_TAP.x} y={PB_TAP.y + END_DY} />
