@@ -1,7 +1,7 @@
 import {mountRequestFlow} from './request-flow.mjs';
 import {emptyAnswers} from './request-data.mjs';
-import {roomView,mountRoom,draftView,mountDraft,exampleHead} from './film-views.mjs';
-import {modelCard} from './room-view.mjs';
+import {roomView,mountRoom,draftView,mountDraft,exampleHead,journalView,journalOverlay,journalSetOpen,journalFocus,journalRelease} from './film-views.mjs';
+import {modelCard,journalModel} from './room-view.mjs';
 import {projectView} from './views.mjs';
 import {mountReview} from './film-review.mjs';
 import {esc} from './api.mjs';
@@ -31,20 +31,58 @@ const demoBackend=()=>({answers:emptyAnswers(),step:'',save:async()=>{},later:()
   submit:async()=>({number:'P-1104-7F3A',at:new Date().toISOString(),link:location.href})});
 const SCENES=[['request','의뢰서 쓰기'],['room','저희 차례일 때'],['ask','더 여쭐 때'],['model','모델 확인'],['script','글 콘티'],['draft','장면 이미지'],['review','영상 확인'],['history','납품']];
 const NOT_REAL='예시라 보내지 않아요. 실제 의뢰에서는 담당자에게 바로 전해져요.';
+// 예시 일지(판 3b): 장면마다 그 시점까지 담당자와 나눈 말 · 한 일. 실제 앱과 같은 journalModel로 만든다.
+const KST=(day,hm)=>`2026-11-0${day}T${hm}:00+09:00`;
+const EXAMPLE_ORDER=['room','ask','model','script','draft','review','history'];
+function exampleRequest(scene){
+  const upto=EXAMPLE_ORDER.indexOf(scene),has=id=>upto>=EXAMPLE_ORDER.indexOf(id);
+  const request={status:'submitted',number:ROOM.number,submittedAt:KST(1,'10:12'),answers:{name:'霜の肌理 홀리데이 세트',kind:'beauty',channels:['shorts'],package:'s15'},files:[],asks:[],rounds:[]};
+  if(scene==='ask')request.asks=ROOM.asks.map(ask=>({...ask,status:'open',at:KST(1,'15:20')}));
+  if(has('model')){
+    request.asks=ROOM.asks.map((ask,i)=>({...ask,status:'answered',at:KST(1,'15:20'),answer:i?'원본이 있어 함께 보내요.':'배경 없는 PNG로 보냈어요.',answeredAt:KST(1,'16:05')}));
+    Object.assign(request,{status:'confirmed',confirmedAt:KST(1,'17:40'),confirmedBy:'김하늘'});
+    request.modelProposal={modelId:ROOM.proposal.id,note:ROOM.proposal.note,at:KST(2,'10:10'),by:'김하늘',status:scene==='model'?'open':'accepted',...(scene==='model'?{}:{answeredAt:KST(2,'11:02')})};
+    if(scene!=='model')request.answers.models=[ROOM.proposal.id];
+  }
+  if(has('script'))request.rounds.push({round:1,kind:'script',oneLine:ONE_LINE,note:'첫 1.5초는 음악 없이, 결정이 자라는 소리만 남겨요.',sentAt:KST(2,'16:30'),by:'김하늘',scenes:[],...(has('draft')?{approvedAt:KST(2,'18:05')}:{})});
+  if(has('draft'))request.rounds.push({round:2,kind:'images',oneLine:ONE_LINE,note:'',sentAt:KST(3,'11:20'),by:'김하늘',scenes:[],...(has('review')?{approvedAt:KST(3,'14:10')}:{})});
+  if(has('review'))request.approvedAt=KST(3,'14:10');
+  return request;
+}
+const exampleJournal=(scene,opts)=>journalView(journalModel({id:'demo-film',title:ROOM.title,ownerName:'김하늘',requestFlow:true,versions:[],messages:[],studio:{request:exampleRequest(scene)}}),{owner:'김하늘',...opts});
+// 예시 일지 열고 닫기: 앱과 같은 규칙(film-views의 journalOverlay · journalSetOpen · journalFocus). 보내기는 예시라 하지 않는다.
+let exampleOpener=null;
+function bindExampleJournal(root,say,redraw){
+  const box=()=>root.querySelector('[data-journal]');
+  const close=()=>{journalSetOpen(root,false);const back=exampleOpener;exampleOpener=null;back?.isConnected&&back.focus({preventScroll:true});};
+  root.addEventListener('click',event=>{
+    const el=box();if(!el)return;
+    const opener=event.target.closest('[data-room-do="journal"]');
+    if(opener){if(journalOverlay(el)){if(el.classList.contains('is-open')){close();return;}exampleOpener=opener;journalSetOpen(root,true);}else el.scrollIntoView?.({block:'start'});journalFocus(el);return;}
+    const act=event.target.closest('[data-journal-do]')?.dataset.journalDo;
+    if(act==='close'){close();return;}
+    // 다시 그리면 새 일지는 닫힌 채라, 연 시트 · 서랍이었으면 그대로 다시 연다(가림막만 남거나 문서가 잠긴 채 남지 않게).
+    if(act==='more'){const wasOpen=el.classList.contains('is-open');redraw?.();if(wasOpen)journalSetOpen(root,true);box()?.querySelector('[data-journal-do="more"]')?.focus({preventScroll:true});return;}
+    if(event.target.closest('[data-journal-go]')){close();say('예시예요. 실제 프로젝트에서는 그 화면으로 옮겨 가요.');}
+  });
+  root.addEventListener('keydown',event=>{if(event.key==='Escape'&&box()?.classList.contains('is-open')&&!document.querySelector('.sx-round-sheet[open],dialog[open]'))close();});
+  root.addEventListener('submit',event=>{if(!event.target.closest?.('[data-journal]')||event.target.dataset?.form==='ask')return;event.preventDefault();event.stopPropagation();say(NOT_REAL);event.target.reset?.();},true);
+}
 // 영상 확인 · 납품은 실제 화면을 그대로 그린다. 자료만 가짜이고 서버로 가지 않는다.
 const BASE='/pulse-app/demo-assets/';
 const AT='2026-11-04T05:00:00.000Z';
 function exampleState(){
-  const v1={id:'demo-v1',kind:'preview',label:'1차 시안',guide:'제품이 떠 있는 시간과 끝 장면을 중심으로 봐 주세요.',createdAt:AT,media:{url:BASE+'preview-v1.mp4',mimeType:'video/mp4',fileName:'霜の肌理_1차.mp4'}};
+  const v1={id:'demo-v1',kind:'preview',label:'1차 시안',guide:'제품이 떠 있는 시간과 끝 장면을 중심으로 봐 주세요.',createdAt:KST(3,'19:00'),media:{url:BASE+'preview-v1.mp4',mimeType:'video/mp4',fileName:'霜の肌理_1차.mp4'}};
   const v2={id:'demo-v2',kind:'preview',label:'2차 시안',guide:'제품이 떠 있는 시간을 줄이고, 결정이 뚜껑에 피어나는 순간을 접사로 크게 보여 드려요.',createdAt:AT,media:{url:BASE+'preview-v2.mp4',mimeType:'video/mp4',fileName:'霜の肌理_2차.mp4'}};
   const asked={id:'demo-m1',author:'customer',authorName:'예시 고객',action:'feedback',versionId:'demo-v1',seconds:8,text:'떠 있는 시간이 길어요. 뚜껑 위 결정을 더 크게 보여 주세요.',resolved:true,at:AT};
   const scenes=[['결정이 자라요',3],['서리가 구슬을 덮어요',3],['깨지고, 멈춰요',5],['이름을 남겨요',4]].map(([title,duration],i)=>({id:`demo-s${i}`,title,duration,visibility:'customer'}));
-  return {mode:'customer',demo:false,example:true,tab:'review',versionId:'',compare:false,reviewPanel:'note',error:'',rememberOffer:false,project:{id:'demo-film',title:ROOM.title,ownerName:'김하늘',stage:'review',revision:1,requestFlow:true,versions:[v1,v2],messages:[asked],
+  const talk=[{id:'demo-q1',author:'customer',authorName:'예시 고객',action:'support',text:'연말 선물 시즌 전에 받을 수 있을까요?',at:KST(4,'10:02')},{id:'demo-q2',author:'staff',authorName:'김하늘',text:'네, 11월 21일에 맞춰 드려요. 2차 시안은 오늘 오후에 올려요.',at:KST(4,'10:30')}];
+  return {mode:'customer',demo:false,example:true,tab:'review',versionId:'',compare:false,reviewPanel:'note',error:'',rememberOffer:false,journalAll:false,project:{id:'demo-film',title:ROOM.title,ownerName:'김하늘',stage:'review',revision:1,requestFlow:true,versions:[v1,v2],messages:[asked,...talk],
     closeout:{deliveryKey:'demo',canConfirm:true,files:[{id:'demo-final',label:'15초 광고 최종본'}]},
-    studio:{scenes,assets:[],comments:[],sceneReviews:[],request:{status:'confirmed',number:ROOM.number,answers:{name:'霜の肌理 홀리데이 세트',kind:'beauty',channels:['shorts'],package:'s15'},files:[],asks:[],rounds:[{round:1,kind:'images',oneLine:ONE_LINE,scenes:[],approvedAt:AT}],approvedAt:AT},
-      feedbackRounds:{latestVersionId:'demo-v2',latestVersionLabel:'2차 시안',canDraft:true,maxItems:30,nextNumber:2,drafts:[],rounds:[{id:'demo-r1',number:1,versionId:'demo-v1',versionLabel:'1차 시안',representativeName:'예시 고객',submittedAt:AT,items:[{id:'demo-i1',messageId:'demo-m1',seconds:8,text:asked.text,resolved:true,classification:{label:'합의한 범위 안의 수정',scopeNote:'제품이 떠 있는 시간과 끝 컷',scheduleNote:'2차 시안에 반영'}}]}]}}}};
+    studio:{scenes,assets:[],comments:[],sceneReviews:[],request:exampleRequest('review'),
+      feedbackRounds:{latestVersionId:'demo-v2',latestVersionLabel:'2차 시안',canDraft:true,maxItems:30,nextNumber:2,drafts:[],rounds:[{id:'demo-r1',number:1,versionId:'demo-v1',versionLabel:'1차 시안',representativeName:'예시 고객',submittedAt:KST(4,'09:40'),items:[{id:'demo-i1',messageId:'demo-m1',seconds:8,text:asked.text,resolved:true,classification:{label:'합의한 범위 안의 수정',scopeNote:'제품이 떠 있는 시간과 끝 컷',scheduleNote:'2차 시안에 반영'}}]}]}}}};
 }
-const asFinal=state=>{const v2=state.project.versions[1];state.project.stage='delivered';state.project.versions=[...state.project.versions.map(v=>({...v,approvedAt:AT})),{id:'demo-final',kind:'final',label:'15초 광고 최종본',guide:'릴스 · 쇼츠 · 틱톡에 그대로 올릴 수 있는 9:16 파일이에요.',createdAt:AT,media:{...v2.media,fileName:'霜の肌理_15초.mp4'}}];return state;};
+const asFinal=state=>{const v2=state.project.versions[1];state.project.stage='delivered';state.project.versions=[...state.project.versions.map(v=>({...v,approvedAt:v.id==='demo-v2'?KST(4,'16:00'):undefined})),{id:'demo-final',kind:'final',label:'15초 광고 최종본',guide:'릴스 · 쇼츠 · 틱톡에 그대로 올릴 수 있는 9:16 파일이에요.',createdAt:KST(4,'18:20'),media:{...v2.media,fileName:'霜の肌理_15초.mp4'}}];return state;};
 
 // 둘러보기. 시안은 extra로 첫 화면 · 내부 확인 같은 장면을 앞에 더한다. 손님 예시에는 내부 화면을 싣지 않는다.
 export function mountFilmDemo(host,{internal=false,start='',onLeave,extra=[]}={}){
@@ -55,7 +93,7 @@ export function mountFilmDemo(host,{internal=false,start='',onLeave,extra=[]}={}
   let noteTimer=0;
   const say=text=>{let box=document.querySelector('.sx-demo-note');if(!box){box=document.createElement('p');box.className='sx-demo-note sx-small';box.setAttribute('role','status');document.body.append(box);}box.textContent=text;box.hidden=false;play(box,[{opacity:0},{opacity:1}],{duration:220});clearTimeout(noteTimer);noteTimer=setTimeout(()=>{box.hidden=true;},3600);};
   let handle=null,state=exampleState(),nextPanel='';
-  function clear(){handle?.unmount?.();handle=null;const next=host.cloneNode(false);host.replaceWith(next);host=next;document.documentElement.classList.remove('view-dr');return next;}
+  function clear(){handle?.unmount?.();handle=null;const next=host.cloneNode(false);host.replaceWith(next);host=next;document.documentElement.classList.remove('view-dr','has-journal-open');journalRelease();exampleOpener=null;return next;}
   // 실제 화면을 그리고, 앱이 하던 일(시안 고르기 · 의견 넣기 · 나란히 보기)을 여기서 가짜로 한다.
   function drawProject(root,tab){
     state.tab=tab;
@@ -118,19 +156,23 @@ export function mountFilmDemo(host,{internal=false,start='',onLeave,extra=[]}={}
     if(id==='request'){handle=mountRequestFlow(root,{backend:demoBackend(),onRoom:()=>go('room'),onExit:()=>go('room')});return;}
     if(['room','ask','model'].includes(id)){
       const stateName={room:'check',ask:'ask',model:'model'}[id],stage=id==='model'?'draft':'check';
-      root.innerHTML=roomView({...ROOM,state:stateName,stage});
-      root.querySelector('.sx-room').classList.add('is-example');
+      let all=false;const draw=()=>{root.innerHTML=roomView({...ROOM,state:stateName,stage},{journal:exampleJournal(id,{place:'column',here:{tab:'overview'},all})});root.querySelector('.sx-room').classList.add('is-example');};draw();
+      bindExampleJournal(root,say,()=>{all=!all;const old=root.querySelector('[data-journal]'),box=document.createElement('div');box.innerHTML=exampleJournal(id,{place:'column',here:{tab:'overview'},all});old?.replaceWith(...box.children);});
       root.addEventListener('submit',event=>event.stopPropagation());
       mountRoom(root,{onGo:to=>{if(to==='request')go('request');else if(to==='check'||to==='room')go('room');else if(to==='draft')go('script');},onModel:()=>go('script'),onEdit:()=>go('request'),onForm:()=>go('room'),onContact:()=>say(NOT_REAL),onFiles:()=>say('예시라 올리지 않아요. 실제 의뢰에서는 여기서 자료를 더 보내실 수 있어요.')});return;
     }
     // 글 콘티 · 장면 이미지도 다른 장면과 같은 머리(이름 · 단계 · 묻기)를 단다 — 손님 앱의 「← 현황」은 머리가 대신한다.
     const draftHead=exampleHead({...ROOM,stage:'draft',hasRound:true},{tab:'draft'}),headGo=to=>{if(to==='request')go('request');else if(to==='check'||to==='room')go('room');};
-    if(id==='script'){root.innerHTML=draftView(SCRIPT,{head:draftHead});mountRoom(root,{animate:false,onGo:headGo,onContact:()=>say(NOT_REAL)});document.documentElement.classList.add('view-dr');handle=mountDraft(root,SCRIPT,{onBack:()=>go('room'),onApprove:()=>go('draft'),onSend:()=>go('room'),onRecast:()=>go('model')});return;}
-    if(id==='draft'){root.innerHTML=draftView(DRAFT,{head:draftHead});mountRoom(root,{animate:false,onGo:headGo,onContact:()=>say(NOT_REAL)});document.documentElement.classList.add('view-dr');handle=mountDraft(root,DRAFT,{onBack:()=>go('room'),onApprove:()=>go('review'),onSend:()=>go('room')});return;}
-    if(id==='review'){state=exampleState();if(nextPanel){state.reviewPanel=nextPanel;nextPanel='';}bindProject(root);drawProject(root,'review');return;}
-    if(id==='history'){state=asFinal(exampleState());bindProject(root);drawProject(root,'history');}
+    const sideJournal=(scene,all=false)=>exampleJournal(scene,{place:'side',here:{tab:'draft'},all}),bindDraftJournal=(root,scene)=>{let all=false;bindExampleJournal(root,say,()=>{all=!all;const old=root.querySelector('[data-journal]'),box=document.createElement('div');box.innerHTML=sideJournal(scene,all);old?.replaceWith(...[...box.children].filter(node=>node.matches('[data-journal]')));});};
+    if(id==='script'){root.innerHTML=draftView(SCRIPT,{head:draftHead,journal:sideJournal('script')});bindDraftJournal(root,'script');mountRoom(root,{animate:false,onGo:headGo,onContact:()=>say(NOT_REAL)});document.documentElement.classList.add('view-dr');handle=mountDraft(root,SCRIPT,{onBack:()=>go('room'),onApprove:()=>go('draft'),onSend:()=>go('room'),onRecast:()=>go('model')});return;}
+    if(id==='draft'){root.innerHTML=draftView(DRAFT,{head:draftHead,journal:sideJournal('draft')});bindDraftJournal(root,'draft');mountRoom(root,{animate:false,onGo:headGo,onContact:()=>say(NOT_REAL)});document.documentElement.classList.add('view-dr');handle=mountDraft(root,DRAFT,{onBack:()=>go('room'),onApprove:()=>go('review'),onSend:()=>go('room')});return;}
+    if(id==='review'){state=exampleState();if(nextPanel){state.reviewPanel=nextPanel;nextPanel='';}bindProject(root);bindExampleJournal(root,say,()=>{state.journalAll=!state.journalAll;drawProject(root,'review');});drawProject(root,'review');return;}
+    if(id==='history'){state=asFinal(exampleState());bindProject(root);bindExampleJournal(root,say,()=>{state.journalAll=!state.journalAll;drawProject(root,'history');});drawProject(root,'history');}
   }
   nav.addEventListener('click',event=>{if(event.target.dataset?.protoLeave!==undefined){onLeave?.();return;}const id=event.target.dataset?.scene;if(id)go(id);});
   addEventListener('hashchange',()=>{const id=location.hash.slice(1);if(scenes.some(scene=>scene[0]===id))go(id);});
-  go(scenes.some(scene=>scene[0]===(start||location.hash.slice(1)))?(start||location.hash.slice(1)):scenes[0][0]);
+  // 장면 꼬리(#room)로 들어오면 그 장면을 열고, 꼬리는 열기 전에 지운다 — 옮겨 다녀도 주소가 낡은 장면을 가리키지 않고, 의뢰서의 뒤로 가기 덫 칸도 같은 주소로 쌓인다(앞처럼 주소에는 꼬리가 없다).
+  const first=start||location.hash.slice(1);
+  if(!internal&&!start&&location.hash&&/[?&]demo=film(?:&|$)/.test(location.search))history.replaceState(history.state,'',location.pathname+location.search);
+  go(scenes.some(scene=>scene[0]===first)?first:scenes[0][0]);
 }

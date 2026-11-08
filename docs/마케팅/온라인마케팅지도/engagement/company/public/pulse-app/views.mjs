@@ -10,8 +10,8 @@ import {sceneRequestsSummary,sceneRequestView} from './scene-requests-view.mjs';
 import {strategyView,strategySummary,strategyHistory,strategyConfirmDialog,strategyNext,sceneStrategyFields,sceneStrategyContext,sceneDurationNote} from './strategy-view.mjs';
 import {FINISHED_FILMS,filmLine,filmNote,filmsView,hasFinishedFilms} from './films-view.mjs';
 import {arrow} from './film-home.mjs';
-import {entryView,roomView,roomHead,exampleHead,draftView,directionView as directionScreen} from './film-views.mjs';
-import {usesRoom,roomModel,roomState,roomStage,roomTab,draftModel,deskModel,deskQueue} from './room-view.mjs';
+import {entryView,roomView,roomHead,exampleHead,draftView,directionView as directionScreen,journalView,journalAsk} from './film-views.mjs';
+import {usesRoom,roomModel,roomState,roomStage,roomTab,draftModel,deskModel,deskQueue,journalModel,journalNew} from './room-view.mjs';
 import {CASTING_MODELS} from './casting-catalog.mjs';
 import {MODEL_LINES,PACKAGES} from './request-data.mjs';
 
@@ -55,7 +55,9 @@ const visibility=value=>`<label class="field">공개 범위<select name="visibil
 export function header(s){if(s.demo)return '<span class="tag berry demo-tag">고객 체험</span>'+btn('처음부터','demo-reset','','quiet')+'<a class="button quiet" href="./">체험 나가기</a>';return `${s.project&&isCustomerRoom(s)?headAsk(s):''}${s.desktopApp?'':btn('앱 설치','install','','install-button')}${s.mode==='staff'?`<span class="user-label small">${esc(s.user?.name||'제작자 공간')}</span>${s.user?btn('프로젝트','projects','','quiet'):''}`:!s.project?`<a class="button quiet creator-link" href="https://workspace.synk.im/pulse-app/?mode=staff" target="_blank" rel="noopener noreferrer">제작자 공간 ↗</a>`:''}${s.project||s.user?btn('알림'+(s.live?.unreadCount?' '+s.live.unreadCount:''),'notifications','aria-controls="pulse-notifications" aria-expanded="'+String(!!s.live?.open)+'"','quiet notify-button')+(s.mode==='staff'?btn('로그아웃','logout','','quiet'):''):''}`;}
 // 머리 막대 가운데: 열린 프로젝트의 이름·지금 단계·전달 예정일(app.mjs가 #header-crumb에 넣는다).
 // 의뢰 흐름 손님(판 3, 11-08): 머리 하나 — 프로젝트 이름(고객 방으로) · 접수 번호 · 단계 다섯. 화면 안에는 단계 줄을 두지 않는다.
-const headAsk=s=>`<button type="button" class="sx-head-ask${roomTab(s.tab)==='contact'?' is-now':''}" data-room-do="contact"${roomTab(s.tab)==='contact'?' aria-current="page"':''}>담당자에게 묻기</button>`;
+// 오른쪽 「나눈 말」(판 3b): 새 말 숫자(이 기기에서 일지를 본 뒤 온 담당자 줄) · 답할 되묻기가 있으면 점. 누르면 그 화면의 일지로.
+export const headJournal=(s,j=journalModel(s.project))=>{const n=journalNew(j,s.journalSeen),ask=j.pinned.asks.length;return `<button type="button" class="sx-head-ask" data-room-do="journal" aria-controls="room-journal" data-journal-count>나눈 말${n?` <b class="sx-no">${n}</b><span class="sr">개 새 말</span>`:''}${ask?'<i class="sx-head-dot" aria-hidden="true"></i><span class="sr">, 답할 것이 있어요</span>':''}</button>`;};
+const headAsk=s=>headJournal(s);
 export function headerCrumb(s){const p=s.project;if(!p)return '';if(isCustomerRoom(s))return roomHead(roomInfo(s),{tab:s.tab});return `<b class="crumb-title">${esc(p.title)}</b>${p.studio?.request?.number?`<span class="crumb-no mono">${esc(p.studio.request.number)}</span>`:''}<span class="crumb-stage stage-${esc(p.stage)}">${esc(stages[p.stage]||p.stage)}</span>${p.dueDate?`<span class="crumb-due">전달 예정 <time datetime="${esc(p.dueDate)}">${esc(day(p.dueDate))}</time></span>`:''}`;}
 export function welcome(s){return entryView({demoHref:'?demo=film',entryError:s.entryError,resume:s.requestResume});}
 export function login(){return `<section class="login-wrap"><div class="login-copy"><span class="eyebrow">PULSE / CREATOR</span><h1>고객 프로젝트를<span>여기서 준비해요.</span></h1><p class="muted">SYNK 제작자 계정으로 로그인해 주세요.</p></div><div class="login-forms"><section class="panel-card"><h3>SYNK ID로 로그인</h3><p>워크스페이스에서 SYNK ID로 로그인한 뒤 돌아와 「로그인 확인」을 눌러 주세요.</p><div class="button-row"><a class="button primary" href="/?tab=workroom&amp;section=clients" target="_blank" rel="noopener noreferrer">SYNK ID 로그인 열기 ↗</a>${btn('로그인 확인','check-login')}</div></section><form class="form-panel" data-form="login">${field('이메일 또는 메신저 아이디','email','','text',{required:true,max:254})}${field('비밀번호','password','','password',{required:true,max:500})}${submit('로그인')}<p class="form-note">아이디 로그인은 이미 받은 제작자 계정만 돼요. 고객 초대 링크는 고객 화면에서 열어 주세요.</p><a class="text-button" href="./">고객 화면으로 돌아가기</a></form></div></section>`;}
@@ -212,6 +214,7 @@ const isYi=word=>{const last=String(word).trim().replace(/[^0-9A-Za-z가-힣]+$/
 const itIs=word=>`${word}${isYi(word)?'이에요':'예요'}`;
 const alertBox=s=>s.error?`<div class="sx-alert" role="alert"><strong>${s.conflict?'처리하지 못했어요.':s.reloadFailed?'화면을 새로 고치지 못했어요.':'저장하지 못했어요.'}</strong><div>${esc(s.error)}</div>${s.conflict?lnk('최신 내용 불러오기','refresh'):''}</div>`:'';
 const roomInfo=s=>({...roomModel(s.project),films:hasFinishedFilms()});
+const journalOf=(s,place,here,extra={})=>journalView(journalModel(s.project),{place,here,open:!!s.journalOpen,all:!!s.journalAll,owner:s.project.ownerName||'담당자',...extra});
 // 옛 흐름(체험 · 담당자가 만든 프로젝트)의 단계 낱말 줄. 단추는 기존 data-action="tab" 계약 그대로.
 function legacySteps(s,next){
   const p=s.project,list=[['overview','현황'],...tabs.map(([key,,label])=>[key,label])],turn=next?turnOf(s,next):'team',note=key=>key==='overview'||!next?'':stageState(s,key,next,turn).label;
@@ -225,14 +228,14 @@ function demoCredit(s){const g=s.demoGuide;return `<section class="sx-guide" dat
 // 고객 방(의뢰 흐름)
 function customerRoom(s){
   const p=s.project;
-  if(roomTab(s.tab)==='draft'){const d=draftModel(p);if(d)return draftView(d,{top:alertBox(s)});}
+  if(roomTab(s.tab)==='draft'){const d=draftModel(p);if(d)return draftView(d,{top:alertBox(s),journal:journalOf(s,'side',{tab:'draft'})});}
   // 방향과 모델: 열린 제안이면 늘, 고른 뒤에는 「다시 고르기」(판이 오기 전까지)로 연다.
   // 제안이 바뀌었으면(안 id가 다르면) 옛 화면 상태(모델 · 펼침 · 둘 다 아니에요)를 그리기 전에 버린다(11-07 검수).
-  const info=roomInfo(s);if(info.direction&&(info.state==='direction'||s.tab==='pick'&&info.direction.canPick)){const key=info.direction.options.map(o=>o.id).join(',');return directionScreen(info,{top:alertBox(s),ui:s.directionUi?.key===key?s.directionUi:{}});}
-  const note=String(p.nextStep||'').trim(),extras=roomExtras(p);
-  const after=`${note?`<p class="sx-note"><span>담당자 안내</span>${esc(note)}</p>`:''}${extras.map(item=>`<section class="sx-extra" data-room-in><div><h2>${esc(item.title)}</h2><p class="sx-small">${esc(item.text)}</p></div><button type="button" class="sx-go" data-room-do="paper" data-paper="${esc(item.paper)}"><span>${esc(item.button)}</span>${arrow}</button></section>`).join('')}`;
+  const info=roomInfo(s);if(info.direction&&(info.state==='direction'||s.tab==='pick'&&info.direction.canPick)){const key=info.direction.options.map(o=>o.id).join(',');return directionScreen(info,{top:alertBox(s),ui:s.directionUi?.key===key?s.directionUi:{},journal:journalOf(s,'drawer',{tab:'pick'})});}
+  const extras=roomExtras(p);
+  const after=`${extras.map(item=>`<section class="sx-extra" data-room-in><div><h2>${esc(item.title)}</h2><p class="sx-small">${esc(item.text)}</p></div><button type="button" class="sx-go" data-room-do="paper" data-paper="${esc(item.paper)}"><span>${esc(item.button)}</span>${arrow}</button></section>`).join('')}`;
   // 기기 기억 안내는 왼쪽 단(지금 할 일) 한가운데가 아니라 그림 아래 띠로 — 맹검 11-07 「시스템 안내가 내용 자리에 들어옴」.
-  return roomView(roomInfo(s),{bar:false,top:alertBox(s),after,foot:s.rememberOffer?rememberOffer(s):'',prep:roomPrep(s)});
+  return roomView(roomInfo(s),{bar:false,top:alertBox(s),after,tail:s.rememberOffer?rememberOffer(s):'',prep:roomPrep(s),journal:journalOf(s,'column',{tab:'overview'})});
 }
 // 옛 흐름의 현황: 고객 방과 같은 짜임. 왼쪽 지금 할 일, 오른쪽 지금 단계의 실제 작업물, 아래 인화지에 고른 것과 소식.
 function overviewScreen(s,next){
@@ -321,7 +324,7 @@ function reviewRoom(s){
     ${s.example?exampleHead(roomInfo(s),{tab:s.tab}):''}
     <figure class="sx-dr-films${comparing?' compare-grid':''}"><div class="sx-dr-box" data-film-box>${reviewFilm(current)}${video?`<button type="button" class="sx-dr-play" data-film-toggle><i aria-hidden="true"></i><span>재생</span></button>`:''}${comparing?`<figcaption class="sx-small sx-film-label">${esc(current.label)}</figcaption>`:''}</div>${comparing?`<div class="sx-dr-box is-other"><video playsinline muted preload="metadata" src="${esc(safeUrl(previous.media?.url,{media:true}))}" data-version="${esc(previous.id)}" aria-label="${esc(previous.label)}"></video><figcaption class="sx-small sx-film-label">${esc(previous.label)}</figcaption></div>`:''}</figure>
     <header class="sx-dr-left">
-      ${s.demo?demoCredit(s):room?`<div class="sx-dr-credit"><h1 class="sx-serif">${esc(current.label)}</h1><p class="sx-small">${finalShown?'최종본':'영상 확인'}${current.createdAt?` · ${esc(stamp(current.createdAt))}`:''}</p>${current.guide?`<p class="sx-body sx-dr-memo"><span class="sx-small">담당 ${esc(p.ownerName||'')}</span>${esc(current.guide)}</p>`:''}</div>`:`<div class="sx-dr-credit"><h1 class="sx-serif">${esc(p.title)}</h1><p class="sx-small">${esc(tabs.find(t=>t[0]==='review')[2])} · ${esc(current.label)}</p>${current.guide?`<p class="sx-body sx-dr-memo"><span class="sx-small">담당 ${esc(p.ownerName||'')}</span>${esc(current.guide)}</p>`:''}${next&&next.tab!=='review'?`<p class="sx-next sx-small"><b>${esc(turnLabel(s,turnOf(s,next)))}</b> ${esc(next.title)} <button type="button" class="sx-link" data-action="tab" data-tab="${esc(next.tab)}"${next.scroll?` data-scroll="${esc(next.scroll)}"`:' data-scroll="content"'}>${esc(next.button)}</button></p>`:''}</div>`}
+      ${s.demo?demoCredit(s):room?`<div class="sx-dr-credit"><h1 class="sx-serif">${esc(current.label)}</h1><p class="sx-small">${finalShown?'최종본':'영상 확인'}${current.createdAt?` · ${esc(stamp(current.createdAt))}`:''}</p>${current.guide?`<p class="sx-body sx-dr-memo"><span class="sx-small">담당 ${esc(p.ownerName||'')}</span>${esc(current.guide)}</p>`:''}</div>${comparing?'':journalOf(s,'side',{tab:'review',versionId:current.id,finals:finalShown},{video:!finalShown&&current.kind==='preview'&&!current.approvedAt})}`:`<div class="sx-dr-credit"><h1 class="sx-serif">${esc(p.title)}</h1><p class="sx-small">${esc(tabs.find(t=>t[0]==='review')[2])} · ${esc(current.label)}</p>${current.guide?`<p class="sx-body sx-dr-memo"><span class="sx-small">담당 ${esc(p.ownerName||'')}</span>${esc(current.guide)}</p>`:''}${next&&next.tab!=='review'?`<p class="sx-next sx-small"><b>${esc(turnLabel(s,turnOf(s,next)))}</b> ${esc(next.title)} <button type="button" class="sx-link" data-action="tab" data-tab="${esc(next.tab)}"${next.scroll?` data-scroll="${esc(next.scroll)}"`:' data-scroll="content"'}>${esc(next.button)}</button></p>`:''}</div>`}
       ${room?'':`<div class="sx-dr-left-foot">${stepsOf(s,next)}</div>`}
     </header>
     <aside class="sx-dr-right">
@@ -338,7 +341,7 @@ function reviewRoom(s){
       ${finalShown?deliverBlock(s,finals):`<section class="sx-review-decide" id="review-approval" tabindex="-1" aria-label="시안 승인">
         ${decideHint?`<p class="sx-small">${esc(decideHint)}</p>`:''}
         ${decideButton}
-        <div class="sx-review-sub sx-small">${url&&!(room&&approved)?`<a class="sx-link" href="${esc(url)}" download="${esc(downloadName(p,current))}">파일 받기</a>`:''}${s.demo?'':room?'<button type="button" class="sx-small sx-link" data-room-do="contact">담당자에게 묻기</button>':panel==='ask'?'':lnk('담당자에게 묻기','review-panel','data-panel="ask"')}</div>
+        <div class="sx-review-sub sx-small">${url&&!(room&&approved)?`<a class="sx-link" href="${esc(url)}" download="${esc(downloadName(p,current))}">파일 받기</a>`:''}${s.demo?'':room?journalAsk():panel==='ask'?'':lnk('담당자에게 묻기','review-panel','data-panel="ask"')}</div>
       </section>`}
     </aside>
     ${video?`<div class="sx-dr-bottom sx-review-bottom">
@@ -352,6 +355,7 @@ function reviewRoom(s){
       </div>
       <div class="sx-review-under"><span class="sx-no sx-review-tc" data-tc>00:00.00</span>${room?'<button type="button" class="sx-small sx-review-full" data-review-full>크게 보기</button>':''}${sceneRows.length>1?`<ol class="sx-scenes sx-small" data-scenes data-total="${from}" hidden>${sceneRows.map(row=>`<li data-scene-from="${row.from}" data-scene-to="${row.to}" data-w="${row.to-row.from}"><button type="button" data-seek="${row.from}">${esc(row.title)}</button></li>`).join('')}</ol>`:''}</div>
     </div>`:''}
+    ${room&&comparing?journalOf(s,'drawer',{tab:'review',versionId:current.id},{video:true}):''}
   </div>`;
 }
 // 영상 화면의 납품 칸(의뢰 흐름, 판 3): 최종본을 볼 때 의견 · 승인 자리에 파일 줄과 수령 확인. 판 고르기와 같은 차례로, 사용 안내는 펼친 채(안내를 읽고 「확인했어요」를 누르게).
@@ -362,24 +366,8 @@ function deliverBlock(s,finals){
   return `<section class="sx-review-deliver" id="review-delivery" tabindex="-1" aria-label="납품">
         <ul class="sx-deliver-files">${finals.map(row).join('')}</ul>
         ${receipt}
-        <p class="sx-small sx-deliver-foot">${received?'':'파일은 여기서 언제든 다시 받으실 수 있어요. '}다른 형식이나 길이가 필요하면 담당자에게 알려 주세요. <span class="sx-deliver-links"><button type="button" class="sx-link" data-room-do="contact">담당자에게 묻기</button>${specs?'<button type="button" class="sx-link" data-room-do="paper" data-paper="deliverables">납품 규격 보기</button>':''}</span></p>
+        <p class="sx-small sx-deliver-foot">${received?'':'파일은 여기서 언제든 다시 받으실 수 있어요. '}다른 형식이나 길이가 필요하면 담당자에게 알려 주세요. <span class="sx-deliver-links">${journalAsk()}${specs?'<button type="button" class="sx-quiet" data-room-do="paper" data-paper="deliverables">납품 규격 보기</button>':''}</span></p>
       </section>`;
-}
-// 담당자에게 묻기(의뢰 흐름, 판 3): 묻는 자리는 이 화면 하나 — 영상이 있어도 없어도 같다. 폼은 support로 따로 둬 영상 의견 초안과 섞이지 않게 한다.
-function contactRoom(s){
-  const p=s.project,messages=(p.messages||[]).filter(m=>m.action==='support'||m.author==='staff'),replies=(p.studio?.comments||[]).some(m=>m.targetType==='project'),open=(p.versions||[]).filter(v=>v.kind==='preview').at(-1);
-  return `<div class="sx-shell sx-room" data-mode="customer" data-tab="contact" data-state="contact">
-    <section class="sx-room-hero">
-      <div class="sx-room-left">
-        ${alertBox(s)}
-        <p class="sx-kicker">담당자에게 묻기</p>
-        <h1 class="sx-display" data-room-title>궁금한 점을 남겨 주세요</h1>
-        <p class="sx-body sx-room-lead" data-room-in>일정 · 파일 · 진행에 대해 물어보시면 담당자가 평일 10~19시에 여기로 답해 드려요. 답이 오면 알림으로도 알려 드려요.</p>
-        <form class="sx-say is-open sx-ask-form" data-form="support" data-room-in><textarea name="text" rows="3" required maxlength="3000" placeholder="궁금한 점을 적어 주세요." aria-label="궁금한 점"></textarea><div class="sx-say-tools"><button type="submit" class="sx-go is-solid" data-mutate><span>문의 보내기</span>${arrow}</button></div>${open&&!open.approvedAt?'<p class="sx-small">영상에서 고칠 곳은 「영상 · 납품」에서 그 장면에 남겨 주시면 더 정확해요.</p>':''}</form>
-      </div>
-      ${messages.length||replies?`<div class="sx-room-screen sx-ask-thread"><h2 class="sx-serif">문의와 답변</h2><div class="sx-thread">${messages.slice().reverse().map(threadRow).join('')}</div>${comments(p.studio?.comments||[],'project',null,s.notificationCommentId)}</div>`:`<div class="sx-room-screen"><img class="sx-q-fill" src="./assets/request/w-gift.webp" alt="" decoding="async"><p class="sx-small sx-room-cap">「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품</p></div>`}
-    </section>
-  </div>`;
 }
 // 체험의 의견 칸: 체험에는 모아 보내기가 없고 한 번에 하나씩 보낸다.
 function demoNotes(s,current,latest,latestActive,messages){
@@ -445,6 +433,7 @@ function filmsRoom(s){
       </div>
       <div class="sx-room-screen"><img class="sx-q-fill" data-film-poster src="${esc(first?.poster||'')}" alt="" decoding="async"></div>
     </section>
+    ${isCustomerRoom(s)?journalOf(s,'drawer',{tab:'films'}):''}
   </div>`;
 }
 // 내부 확인: 직원 화면에서만 불러온 desk-view가 그린다. 내려받는 동안에는 잠깐 기다린다.
@@ -457,7 +446,7 @@ export function projectView(s){
   if(s.mode==='staff'&&s.tab==='desk'&&s.project.studio?.request)return deskScreen(s);
   if(s.mode!=='staff'){
     // 의뢰 흐름 손님(판 3): 방 · 1차안 · 방향 · 영상과 납품 · 묻기 · 완성 광고. 옛 탭 이름은 roomTab이 이 중 하나로 옮긴다.
-    if(isCustomerRoom(s)){const view=roomTab(s.tab);if(view==='contact')return contactRoom(s);if(view==='films')return filmsRoom(s);if(view==='review'&&(s.project.versions||[]).length)return reviewRoom(s);return customerRoom(s);}
+    if(isCustomerRoom(s)){const view=roomTab(s.tab);if(view==='films')return filmsRoom(s);if(view==='review'&&(s.project.versions||[]).length)return reviewRoom(s);return customerRoom(s);}
     if(s.tab==='review')return reviewRoom(s);
     if(s.tab==='history')return deliveryRoom(s);
     if(s.tab==='films')return filmsRoom(s);

@@ -56,17 +56,16 @@ test('the room never sends its customer to the old strategy form, and the desk w
   assert.ok(deskChecks(p).some(item=>item.label==='고객 방에는 제작 설계 확인이 보이지 않아요'));
   assert.equal(deskChecks(roomProject()).some(item=>/제작 설계/.test(item.label)),false);
 });
-test('asking keeps the head on the current stage and marks the question as where you are',()=>{
-  // 판 3: 묻기는 머리 오른쪽 단추 하나와 묻기 화면 하나. 단계 줄은 지금 단계를 켜 두되 「여기」라고 하지 않는다.
+test('asking is the journal: the head opens it where you are and the stage stays the page',()=>{
+  // 판 3b: 묻기는 머리 오른쪽 「나눈 말」 하나와 그 화면의 일지 하나. 옛 contact 탭은 방이라 단계가 그대로 「여기」다.
   const model=roomModel(roomProject()),rail=roomRail(model,{tab:'contact'});
-  assert.match(rail,/class="sx-step is-now"  [^>]*data-room-go="check"/,'the stage stays lit without claiming to be the page');
-  assert.equal(rail.split('aria-current="page"').length-1,0,'the question, not a stage, is the current place (argon A1)');
-  assert.doesNotMatch(rail,/data-room-do="contact"/,'the way to ask is once, in the head actions');
+  assert.match(rail,/class="sx-step is-now" aria-current="page" [^>]*data-room-go="check"/);
+  assert.doesNotMatch(rail,/data-room-do="(contact|journal)"/,'the way to ask is once, in the head actions');
   const views=read('views.mjs');
-  assert.match(views,/class="sx-head-ask\$\{roomTab\(s\.tab\)==='contact'\?' is-now':''\}" data-room-do="contact"\$\{roomTab\(s\.tab\)==='contact'\?' aria-current="page"':''\}>담당자에게 묻기/);
-  const ask=views.slice(views.indexOf('function contactRoom('),views.indexOf('// 체험의 의견 칸'));
-  assert.ok(ask.includes('data-form="support"'));
-  assert.doesNotMatch(ask,/refresh/,'the question screen has no standing refresh link (live updates bring answers)');
+  assert.match(views,/<button type="button" class="sx-head-ask" data-room-do="journal" aria-controls="room-journal" data-journal-count>나눈 말/);
+  assert.doesNotMatch(views,/function contactRoom\(/,'the old ask screen is gone');
+  const journal=read('film-views.mjs');assert.ok(journal.includes('<form class="sx-j-say" data-form="support">'));
+  assert.doesNotMatch(journal.slice(journal.indexOf('export function journalView('),journal.indexOf('export const journalAsk')),/data-action="refresh"/,'the journal has no standing refresh link (live updates bring answers)');
   assert.match(roomView(model),/data-room-brief/);
 });
 test('pictures carry their words on a shade, not in a black box',()=>{

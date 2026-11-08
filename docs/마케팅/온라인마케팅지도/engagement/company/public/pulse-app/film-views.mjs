@@ -1,4 +1,4 @@
-import {esc} from './api.mjs';
+import {esc,stamp} from './api.mjs';
 import {CASTING_MODELS} from './casting-catalog.mjs';
 import {MODEL_LINES,MODEL_PICKS} from './request-data.mjs';
 import {ROOM_STAGES,ROOM_COPY,CONFIRM_OF,modelCard,roomTab} from './room-view.mjs';
@@ -19,7 +19,7 @@ const sceneOf=item=>item.photos?.find(photo=>photo.kind==='scene')?.src||item.im
 // ── 고객 방 ──
 // 단계 낱말 줄(판 3, 11-08): 앱 머리에 하나만 둔다. 지금 단계까지만 열리고, 완성 광고는 줄 끝에.
 export function roomRail(p,{tab='overview'}={}){
-  const at=ROOM_STAGES.findIndex(item=>item.id===p.stage),view=roomTab(tab),now=['draft','review','films'].includes(view)?view:p.stage,away=view==='contact'||view==='films';
+  const at=ROOM_STAGES.findIndex(item=>item.id===p.stage),view=roomTab(tab),now=['draft','review','films'].includes(view)?view:p.stage,away=view==='films';
   // 판이 오기 전의 1차안 칸은 지금 단계여도 열지 않는다(모델을 정하기 전에 글 콘티로 넘어가지 않게).
   const locked=(item,i)=>item.id==='draft'&&!p.hasRound||item.id!==now&&i>at;
   return `<nav class="sx-steps sx-head-steps" aria-label="단계"><div class="sx-steps-run">${ROOM_STAGES.map((item,i)=>`<button type="button" class="sx-step ${item.id===now?'is-now':i<at?'is-done':''}" ${item.id===now&&!away?'aria-current="page"':''} ${locked(item,i)?'disabled':''} data-room-go="${item.id}">${esc(item.name)}</button>`).join('')}</div>${p.films?`<div class="sx-steps-foot sx-small"><button type="button" class="${view==='films'?'is-now':''}" ${view==='films'?'aria-current="page"':''} data-room-go="films">완성 광고</button></div>`:''}</nav>`;
@@ -28,7 +28,56 @@ export function roomRail(p,{tab='overview'}={}){
 export function roomHead(p,{tab='overview'}={}){
   return `<button type="button" class="sx-head-title" data-room-go="room" title="고객 방으로"><b class="crumb-title">${esc(p.title)}</b></button>${p.number?`<span class="crumb-no mono">${esc(p.number)}</span>`:''}<i class="sx-head-break" aria-hidden="true"></i>${roomRail(p,{tab})}`;
 }
-export const exampleHead=(p,{tab='overview'}={})=>`<header class="sx-room-bar is-head"><a class="sx-logo" href="./" aria-label="SYNK PULSE 처음으로"><img src="./assets/request/logo-paper.webp" alt="SYNK PULSE" width="164" height="44"></a><div class="header-crumb">${roomHead(p,{tab})}</div><div class="header-actions"><button type="button" class="sx-head-ask${roomTab(tab)==='contact'?' is-now':''}" data-room-do="contact">담당자에게 묻기</button></div></header>`;
+export const exampleHead=(p,{tab='overview'}={})=>`<header class="sx-room-bar is-head"><a class="sx-logo" href="./" aria-label="SYNK PULSE 처음으로"><img src="./assets/request/logo-paper.webp" alt="SYNK PULSE" width="164" height="44"></a><div class="header-crumb">${roomHead(p,{tab})}</div><div class="header-actions"><button type="button" class="sx-head-ask" data-room-do="journal" aria-controls="room-journal">나눈 말</button></div></header>`;
+// ── 일지(판 3b) ──
+// 한 화면에 하나만 그린다. 자리는 data-place와 CSS가 정한다: column(방 — 늘 흐름 안), side(1차안 · 영상 — 넓은 화면은 왼쪽 단, 휴대폰은 아래 시트),
+// drawer(방향 · 완성 광고 — 넓은 화면은 오른쪽 서랍, 휴대폰은 아래 시트). 열고 닫기 · 「봤다」는 app.mjs가 맡는다.
+export const JOURNAL_SHOWN=5;
+const askForm=ask=>`<form class="sx-ask-reply" data-form="ask" data-id="${esc(ask.id||'')}"><textarea name="text" rows="1" maxlength="1000" placeholder="글로 답하거나 파일을 보내 주세요" aria-label="${esc(ask.label)} 답"></textarea><div class="sx-ask-tools"><label class="sx-quiet"><input type="file" class="sr" name="file" data-ask-file><span data-ask-name>파일 고르기</span></label><button type="submit" class="sx-go" data-mutate><span>보내기</span>${arrow}</button></div></form>`;
+export function journalView(j,{place='column',here=null,video=false,open=false,all=false,owner='담당자'}={}){
+  const overlay=place!=='column',isHere=go=>!!go&&!!here&&go.tab===here.tab&&(!go.versionId||go.versionId===here.versionId||!!go.final&&!!here.finals);
+  const when=at=>at&&stamp(at)?` · <time datetime="${esc(at)}">${esc(stamp(at))}</time>`:'';
+  // 「열기」 · 「이 화면」은 머리 줄 끝에. 지금 화면의 일감을 가리키는 인용은 그 글이 바로 옆에 있으니 머리 줄만 둔다(같은 말이 한 화면에 두 번 서지 않게).
+  // 최종본을 볼 때는 납품 칸이 최종본 모두와 안내를 보이므로 최종본 줄은 모두 「지금 화면」. 서랍은 일감을 덮으므로 인용 글을 그대로 둔다.
+  const row=item=>{
+    const here=isHere(item.go),tail=item.go?(here?'<span class="sx-j-here">지금 화면</span>':`<button type="button" class="sx-quiet" data-journal-go="${esc(item.go.tab)}"${item.go.versionId?` data-version="${esc(item.go.versionId)}"`:''}>열기</button>`):'';
+    const meta=`<p class="sx-j-meta"><b>${esc(item.name)}</b>${item.what?` ${esc(item.what)}`:''}${when(item.at)}</p>`;
+    const body=item.kind==='talk'&&item.text?`<p class="sx-body sx-j-text">${esc(item.text)}</p>`:item.kind==='quote'&&(!here||place==='drawer')?`<p class="sx-j-quote">${esc(item.text)}</p>`:'';
+    return `<li class="sx-j-row is-${esc(item.kind)}${tail?' has-tail':''}" data-who="${esc(item.who)}" data-journal-id="${esc(item.id)}" tabindex="-1">${meta}${tail}${body}</li>`;
+  };
+  const asks=j.pinned.asks.map(ask=>`<section class="sx-j-ask" data-journal-id="a:${esc(ask.id)}" tabindex="-1"><p class="sx-j-meta"><b>${esc(owner)}</b> 물어봐요${when(ask.at)}</p><h3 class="sx-serif">${esc(ask.label)}</h3>${ask.why?`<p class="sx-j-why">${esc(ask.why)}</p>`:''}${askForm(ask)}</section>`).join('');
+  const shown=all?j.items:j.items.slice(0,JOURNAL_SHOWN),rest=j.items.length-JOURNAL_SHOWN;
+  return `${overlay?`<div class="sx-j-scrim" data-journal-do="close" data-place="${esc(place)}"${open?'':' hidden'}></div>`:''}<aside class="sx-journal${open?' is-open':''}" id="room-journal" data-journal data-place="${esc(place)}" aria-labelledby="room-journal-title"${place==='drawer'?' role="dialog"':''}>
+    <header class="sx-j-head"><h2 class="sx-serif" id="room-journal-title">담당자와 나눈 말</h2>${overlay?'<button type="button" class="sx-quiet sx-j-close" data-journal-do="close">닫기</button>':''}</header>
+    ${asks?`<div class="sx-j-pin" aria-label="답해 주실 것">${asks}</div>`:''}
+    ${j.pinned.next?`<p class="sx-j-next"><span>지금 담당자 안내</span>${esc(j.pinned.next)}</p>`:''}
+    <form class="sx-j-say" data-form="support"><textarea name="text" rows="1" maxlength="3000" required placeholder="담당자에게 물어보세요" aria-label="담당자에게 물어보기" data-grow></textarea><button type="submit" class="sx-go" data-mutate><span>보내기</span>${arrow}</button>${video?'<p class="sx-j-hint" data-when="typing">영상에서 고칠 곳은 <span class="is-wide">오른쪽</span><span class="is-phone">영상 아래</span> 의견 칸에, 그 장면에서 남겨 주세요.</p>':''}</form>
+    ${j.items.length?`<ol class="sx-j-list" aria-label="지난 말">${shown.map(row).join('')}</ol>`:''}
+    ${rest>0?`<button type="button" class="sx-quiet sx-j-more" data-journal-do="more" aria-expanded="${all?'true':'false'}">${all?'최근 말만 보기':`이전 말 ${rest}개 더 보기`}</button>`:''}
+  </aside>`;
+}
+// 서랍 · 시트로 뜨는가: 방향 · 완성 광고는 늘, 1차안 · 영상은 휴대폰 · 세로 화면에서만. 방은 늘 흐름 안.
+export const JOURNAL_SHEET='(max-width: 820px), (max-aspect-ratio: 1/1)';
+export const journalOverlay=box=>!!box&&(box.dataset.place==='drawer'||box.dataset.place==='side'&&!!globalThis.matchMedia?.(JOURNAL_SHEET)?.matches);
+// 연 상태를 그린다(가림막 · 문서 잠금 · 여는 단추의 aria-expanded). 열 때 초점은 일지 제목으로 — 묻기 칸에 바로 두면 휴대폰 자판이 줄기를 덮고, 영상 화면에서는 멈춘 그림이 풀린다.
+export function journalSetOpen(root,on){
+  const box=root.querySelector('[data-journal]'),overlay=journalOverlay(box),modal=!!on&&overlay;
+  box?.classList.toggle('is-open',!!on);root.querySelectorAll('.sx-j-scrim').forEach(node=>{node.hidden=!on;});
+  document.documentElement.classList.toggle('has-journal-open',modal);
+  document.querySelectorAll('[data-room-do="journal"][aria-controls]').forEach(button=>{if(overlay)button.setAttribute('aria-expanded',on?'true':'false');else button.removeAttribute('aria-expanded');});
+  // 떠 있는 동안은 대화상자다: 뒤 내용(머리 · 고르기 단추 …)에는 초점 · 화면 읽기가 닿지 않게 inert(의뢰서 덮개와 같은 방식), 닫으면 푼다.
+  // 가림막(누르면 닫힘) · 알림 토스트 · 대화상자(<dialog>는 열릴 때 스스로 뒤를 잠근다)는 남긴다.
+  journalRelease();
+  if(box){
+    if(modal){box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');for(let at=box;at?.parentElement&&at!==document.body;at=at.parentElement)for(const node of at.parentElement.children)if(node!==at&&!node.inert&&!node.matches('.sx-j-scrim,.notice,#notice,dialog,script,style,link')){node.inert=true;node.setAttribute('data-journal-inert','');}}
+    else{box.removeAttribute('aria-modal');if(box.dataset.place!=='drawer')box.removeAttribute('role');}
+  }
+  return box;
+}
+export function journalRelease(){for(const node of document.querySelectorAll('[data-journal-inert]')){node.inert=false;node.removeAttribute('data-journal-inert');}}
+export const journalFocus=box=>{const title=box?.querySelector('#room-journal-title');if(title){title.setAttribute('tabindex','-1');title.focus({preventScroll:true});}};
+// 휴대폰에서만 보이는 「담당자에게 묻기」(넓은 화면은 같은 화면 왼쪽에 일지가 있다). 시트를 연다.
+export const journalAsk=(cls='')=>`<button type="button" class="sx-quiet sx-j-ask-open ${cls}" data-room-do="journal">담당자에게 묻기</button>`;
 // 오른쪽 스크린: 그 상태에 가장 알맞은 실제 자료. 손님 자료가 없을 때만 예시를 놓고 예시라고 쓴다.
 function roomScreen(p){
   if(p.state==='prepare'&&p.direction?.chosen?.src)return `<img class="sx-q-fill" src="${esc(p.direction.chosen.src)}" alt="" decoding="async"><p class="sx-small sx-room-cap">고르신 방향 <b>${esc(p.direction.chosen.name)}</b></p>`;
@@ -57,9 +106,9 @@ function dpModel(d,ui){
   const now=modelCard(ui.modelId)||d.model;
   // 얼굴 줄(판 3): 후보 넷을 작은 얼굴로 늘 보이고, 큰 사진은 「크게 보기」로 접어 둔다. 단추 값은 큰 사진과 같다.
   const face=m=>`<button type="button" class="sx-dp-face ${m.id===now?.id?'is-on':''}" aria-pressed="${m.id===now?.id?'true':'false'}" data-dp-model="${esc(m.id)}" aria-label="${esc(m.name)}"><img src="${esc(m.image)}" alt="" width="44" height="44" loading="lazy" decoding="async"></button>`;
-  return `<div class="sx-dp-model sx-small"><p><span class="sx-dp-label">AI 모델</span><b data-dp-model-name>${esc(now?.name||'')}</b></p>${picks.length>1?`<div class="sx-dp-faces" role="group" aria-label="모델 고르기"><span class="sx-dp-label">다른 모델</span>${picks.map(face).join('')}<button type="button" class="sx-link sx-dp-model-open" data-dp-do="casting" aria-expanded="${ui.casting?'true':'false'}">${ui.casting?'접기':'크게 보기'}</button></div>`:''}<span data-dp-work-slot></span></div><div class="sx-dp-casts" role="group" aria-label="다른 모델 고르기" data-dp-casts ${ui.casting?'':'hidden'}>${picks.map(m=>`<button type="button" class="sx-dp-cast ${m.id===now?.id?'is-on':''}" aria-pressed="${m.id===now?.id?'true':'false'}" data-dp-model="${esc(m.id)}"><img src="${esc(modelScene(m.id))}" alt="" width="538" height="720" loading="lazy" decoding="async"><span class="sx-small">${esc(m.name)}</span></button>`).join('')}<p class="sx-small sx-dp-cast-note" data-dp-cast-note ${now?.id&&now.id!==d.model?.id?'':'hidden'}>이 모델로 바꿔 장면 이미지에서 보여 드려요.</p></div>`;
+  return `<div class="sx-dp-model sx-small"><p><span class="sx-dp-label">AI 모델</span><b data-dp-model-name>${esc(now?.name||'')}</b></p>${picks.length>1?`<div class="sx-dp-faces" role="group" aria-label="모델 고르기"><span class="sx-dp-label">다른 모델</span>${picks.map(face).join('')}<button type="button" class="sx-quiet sx-dp-model-open" data-dp-do="casting" aria-expanded="${ui.casting?'true':'false'}">${ui.casting?'접기':'크게 보기'}</button></div>`:''}<span data-dp-work-slot></span></div><div class="sx-dp-casts" role="group" aria-label="다른 모델 고르기" data-dp-casts ${ui.casting?'':'hidden'}>${picks.map(m=>`<button type="button" class="sx-dp-cast ${m.id===now?.id?'is-on':''}" aria-pressed="${m.id===now?.id?'true':'false'}" data-dp-model="${esc(m.id)}"><img src="${esc(modelScene(m.id))}" alt="" width="538" height="720" loading="lazy" decoding="async"><span class="sx-small">${esc(m.name)}</span></button>`).join('')}<p class="sx-small sx-dp-cast-note" data-dp-cast-note ${now?.id&&now.id!==d.model?.id?'':'hidden'}>이 모델로 바꿔 장면 이미지에서 보여 드려요.</p></div>`;
 }
-export function directionView(p,{top='',ui={}}={}){
+export function directionView(p,{top='',ui={},journal=''}={}){
   const d=p.direction,focus=d.options.some(o=>o.id===ui.focus)?ui.focus:(d.chosen&&d.options.find(o=>o.id===d.chosen.id)||d.options.find(o=>o.recommended)||d.options[0]).id,keep=d.status==='chosen'&&d.note?d.note:'',noteOpen=!!ui.note,view=ui.view==='neither'?'neither':'choose',item=d.options.find(o=>o.id===focus);
   const terms=`<dl class="sx-dp-kv"><div><dt class="sx-small">값</dt><dd class="sx-serif">${esc(d.price)}</dd></div><div><dt class="sx-small">받으실 날</dt><dd class="sx-serif">${esc(d.due)}</dd></div><div><dt class="sx-small">수정</dt><dd class="sx-serif">${esc(d.revisions)}회</dd></div></dl>`;
   return `<div class="sx-room is-direction" data-state="direction">
@@ -76,13 +125,14 @@ export function directionView(p,{top='',ui={}}={}){
             <p class="sx-small sx-dp-incl">어느 방향이든 값은 같고, 모델 · 목소리 · 음악 · 자막이 모두 들어 있어요. 결제는 글 콘티를 보신 뒤에 해요. <button type="button" class="sx-link" data-dp-do="more" aria-expanded="${ui.more?'true':'false'}">${ui.more?'접기':'자세히'}</button></p>
             <dl class="sx-dp-more sx-small" data-dp-more ${ui.more?'':'hidden'}><div><dt>만드는 법</dt><dd>사람과 목소리는 모두 AI로 만들어요. 제품 · 로고 · 글자는 보내 주신 파일을 그대로 얹어요. 지금 그림은 방향을 보여 드리는 첫 그림이에요</dd></div>${d.gets?`<div><dt>받으시는 것</dt><dd>${esc(d.gets)}</dd></div>`:''}<div><dt>쓸 수 있는 곳</dt><dd>온라인 광고 · SNS · 자사몰 · 상세페이지(음악 · 목소리 포함). TV · 옥외 · 극장 · 인쇄는 따로 여쭤 주세요</dd></div><div><dt>받으실 날</dt><dd>사진 · 로고 · 꼭 넣을 말이 다 모였을 때 기준이에요. 주말과 공휴일을 포함한 날이고, 확인이 늦어지면 그만큼 함께 미뤄요</dd></div><div><dt>수정</dt><dd>${d.photo?'사진':'영상'}이 나온 뒤 ${esc(d.revisions)}번. 글 콘티와 장면 이미지의 의견은 횟수에 세지 않아요</dd></div><div><dt>결제</dt><dd>글 콘티를 보신 뒤, 장면 이미지 전에 해요. 글 콘티까지는 값을 받지 않아요. 결제 방법은 그때 담당자가 안내해 드려요</dd></div>${p.mail?`<div><dt>알림</dt><dd>글 콘티가 오면 메일(${esc(p.mail)})로도 알려 드려요</dd></div>`:''}</dl>
             <form class="sx-dp-answer" data-form="direction-pick"><input type="hidden" name="optionId" value="${esc(focus)}"><input type="hidden" name="modelId" value="${esc(ui.modelId||'')}"><label class="sx-dp-note" data-dp-note ${noteOpen?'':'hidden'}><span class="sr">덧붙일 말</span><input type="text" name="note" maxlength="200" placeholder="예) 「쌉쌀」은 빼 주세요" value="${esc(keep)}"></label><button type="submit" class="sx-go is-solid sx-dp-go" data-mutate><span data-dp-go>「${esc(item.name)}」${withRo(item.name)} 정하고 글 콘티 받기</span>${arrow}</button></form>
-            ${keep?`<p class="sx-small sx-dp-kept" ${noteOpen?'hidden':''}>덧붙이신 말 · ${esc(keep)}</p>`:''}<p class="sx-small sx-dp-foot"><button type="button" class="sx-link" data-dp-do="note" aria-expanded="${noteOpen?'true':'false'}">${keep?'덧붙인 말 고치기':'한마디 덧붙이기'}</button><button type="button" class="sx-link" data-dp-do="neither">${d.options.length>2?'모두 아니에요':'둘 다 아니에요'}</button></p>
+            ${keep?`<p class="sx-small sx-dp-kept" ${noteOpen?'hidden':''}>덧붙이신 말 · ${esc(keep)}</p>`:''}<p class="sx-dp-foot"><button type="button" class="sx-quiet" data-dp-do="note" aria-expanded="${noteOpen?'true':'false'}">${keep?'덧붙인 말 고치기':'한마디 덧붙이기'}</button><button type="button" class="sx-quiet" data-dp-do="neither">${d.options.length>2?'모두 아니에요':'둘 다 아니에요'}</button></p>
           </div>
         </div>
-        <form class="sx-dp-neither" data-form="direction-neither" ${view==='neither'?'':'hidden'}><h1 class="sx-serif sx-dp-title" tabindex="-1">어떤 점이 아쉬웠나요?</h1><label class="sx-field sx-dp-say"><span class="sx-small">${d.last?'한 줄이면 돼요. 담당자가 직접 연락드려 함께 정해요.':'한 줄이면 돼요. 같은 값으로 한 번 더 제안해 드려요.'}</span><textarea name="note" rows="3" maxlength="300" required placeholder="예) 더 고급스러웠으면 좋겠어요"></textarea></label><button type="submit" class="sx-go is-solid sx-dp-go" data-mutate><span>${d.last?'담당자와 이야기하기':'다시 제안받기'}</span>${arrow}</button><p class="sx-small sx-dp-foot"><button type="button" class="sx-link" data-dp-do="back">${d.options.length>2?'안 다시 보기':'두 방향 다시 보기'}</button></p></form>
+        <form class="sx-dp-neither" data-form="direction-neither" ${view==='neither'?'':'hidden'}><h1 class="sx-serif sx-dp-title" tabindex="-1">어떤 점이 아쉬웠나요?</h1><label class="sx-field sx-dp-say"><span class="sx-small">${d.last?'한 줄이면 돼요. 담당자가 직접 연락드려 함께 정해요.':'한 줄이면 돼요. 같은 값으로 한 번 더 제안해 드려요.'}</span><textarea name="note" rows="3" maxlength="300" required placeholder="예) 더 고급스러웠으면 좋겠어요"></textarea></label><button type="submit" class="sx-go is-solid sx-dp-go" data-mutate><span>${d.last?'담당자와 이야기하기':'다시 제안받기'}</span>${arrow}</button><p class="sx-dp-foot"><button type="button" class="sx-quiet" data-dp-do="back">${d.options.length>2?'안 다시 보기':'두 방향 다시 보기'}</button></p></form>
       </div>
     </section>
     ${roomPaper(p)}
+    ${journal}
   </div>`;
 }
 export function mountDirection(root,d,{ui={},animate=true}={}){
@@ -108,7 +158,7 @@ export function mountDirection(root,d,{ui={},animate=true}={}){
   function syncFilmButtons(){
     host.querySelectorAll('[data-dp-film]').forEach(button=>{const on=playing?.kind===button.dataset.dpFilm;button.setAttribute('aria-pressed',on?'true':'false');const mark=button.querySelector('.sx-dp-taste-mark');if(mark)mark.innerHTML=on?STOP_MARK:PLAY_MARK;const label=button.querySelector('[data-dp-taste-label]');if(label)label.textContent=on?'그림으로 돌아가기':'미리 움직여 보기';if(button.dataset.dpFilm==='work')button.textContent=on?'그림으로':'비슷한 작품 보기';});
   }
-  function drawWork(){const o=d.options.find(item=>item.id===ui.focus),slot=$('[data-dp-work-slot]');if(slot)slot.innerHTML=workOf(o)?'<button type="button" class="sx-link" data-dp-film="work" aria-pressed="false">비슷한 작품 보기</button>':'';}
+  function drawWork(){const o=d.options.find(item=>item.id===ui.focus),slot=$('[data-dp-work-slot]');if(slot)slot.innerHTML=workOf(o)?'<button type="button" class="sx-quiet" data-dp-film="work" aria-pressed="false">비슷한 작품 보기</button>':'';}
   function setFocus(id,{quiet=false}={}){
     if(!d.options.some(o=>o.id===id))return;
     stopFilm();ui.focus=id;const o=d.options.find(item=>item.id===id);
@@ -146,7 +196,7 @@ export function mountDirection(root,d,{ui={},animate=true}={}){
   return {unmount(){stopFilm();}};
 }
 const otherModels=m=>`<div class="sx-wall is-plain">${CASTING_MODELS.filter(item=>item.id!==m.id).map(item=>`<button type="button" class="sx-cast" data-room-model="${item.id}" aria-label="${esc(item.name)} · ${esc(MODEL_LINES[item.id]?.line||item.description)} · 이 모델로 정하기"><img src="${esc(sceneOf(item))}" alt="" loading="lazy" decoding="async" width="538" height="720"><span class="sx-cast-name sx-small">${esc(item.name)}</span></button>`).join('')}</div>`;
-export function roomView(p,{bar=true,top='',after='',foot='',prep=''}={}){
+export function roomView(p,{bar=true,top='',after='',foot='',prep='',journal='',tail=''}={}){
   const copy=copyOf(p),confirm=CONFIRM_OF[p.state];
   return `<div class="sx-room" data-state="${esc(p.state)}">
     ${bar?exampleHead(p):''}
@@ -159,22 +209,24 @@ export function roomView(p,{bar=true,top='',after='',foot='',prep=''}={}){
         ${copy.action?`<div data-room-in><button type="button" class="sx-go is-solid" data-room-go="${esc(copy.action.go)}"><span>${esc(copy.action.label)}</span>${arrow}</button></div>`:''}
         ${p.state==='model'&&p.proposal?proposeCard(p.proposal):''}
         ${p.state==='prepare'&&p.direction?.chosen?chosenCard(p.direction):''}
-        ${p.state==='ask'?askList(p):''}
+        ${p.state==='ask'&&!journal?askList(p):''}
         ${after}
+        ${journal}
       </div>
       <div class="sx-room-screen">${roomScreen(p)}</div>
     </section>
     ${foot?`<div class="sx-room-foot">${foot}</div>`:''}
     ${roomPaper(p)}
     ${prep}
+    ${tail?`<div class="sx-room-foot is-tail">${tail}</div>`:''}
     ${p.films?'<p class="sx-room-films"><button type="button" class="sx-small sx-link" data-room-go="films">SYNK가 끝까지 만든 완성 광고 보기</button></p>':''}
   </div>`;
 }
 // 아래 인화지 쪽: 보내 주신 의뢰서 · 받은 자료. 고객 방과 방향 화면이 같이 쓴다.
 function roomPaper(p){
   return `<section class="sx-room-paper" data-room-in data-room-brief>
-      <div class="sx-room-doc"><h2 class="sx-serif">보내 주신 의뢰서</h2><dl class="sx-kv">${p.brief.map(([key,value])=>`<div><dt>${esc(key)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>${p.canEdit?'<button type="button" class="sx-small sx-link" data-room-do="edit">고치기</button>':''}</div>
-      <div class="sx-room-doc"><h2 class="sx-serif">받은 자료 <span class="sx-no">${p.files.length+(p.others?.length||0)}</span></h2><div class="sx-contact">${p.files.map(file=>`<figure><img src="${esc(file.src)}" alt="" loading="lazy" decoding="async"><figcaption class="sx-small">${esc(file.label)}</figcaption></figure>`).join('')}</div>${p.others?.length?`<ul class="sx-room-others-list">${p.others.map(name=>`<li class="sx-small">${esc(name)}</li>`).join('')}</ul>`:''}<label class="sx-small sx-link sx-room-more"><input type="file" class="sr" multiple data-room-file>자료 더 보내기</label></div>
+      <div class="sx-room-doc"><h2 class="sx-serif">보내 주신 의뢰서</h2><dl class="sx-kv">${p.brief.map(([key,value])=>`<div><dt>${esc(key)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>${p.canEdit?'<button type="button" class="sx-quiet" data-room-do="edit">고치기</button>':''}</div>
+      <div class="sx-room-doc"><h2 class="sx-serif">받은 자료 <span class="sx-no">${p.files.length+(p.others?.length||0)}</span></h2><div class="sx-contact">${p.files.map(file=>`<figure><img src="${esc(file.src)}" alt="" loading="lazy" decoding="async"><figcaption class="sx-small">${esc(file.label)}</figcaption></figure>`).join('')}</div>${p.others?.length?`<ul class="sx-room-others-list">${p.others.map(name=>`<li class="sx-small">${esc(name)}</li>`).join('')}</ul>`:''}<label class="sx-quiet sx-room-more"><input type="file" class="sr" multiple data-room-file>자료 더 보내기</label></div>
     </section>`;
 }
 // 그 상태의 왼쪽 글. 방향을 고른 뒤 · 두 번째 제안도 거절한 뒤는 글이 다르다.
@@ -202,13 +254,13 @@ function copyBase(p){
 // 고른 방향: 이름 · 한 문장 · 값 · 받으실 날 · 수정 · 다음 길. 판이 오기 전까지 다시 고를 수 있다.
 function chosenCard(d){
   const o=d.chosen;
-  return `<section class="sx-dp-chosen" data-room-in><p class="sx-small">고르신 방향${d.status==='settled'?' · 담당자와 정함':''}</p><h2 class="sx-serif">${esc(o.name)}</h2><p class="sx-body">${esc(o.sentence)}</p>${d.note?`<p class="sx-small">${d.status==='settled'?'담당자와 정한 내용':'덧붙이신 말'}: ${esc(d.note)}</p>`:''}<dl class="sx-dp-kv"><div><dt class="sx-small">값</dt><dd class="sx-serif">${esc(d.price)}</dd></div><div><dt class="sx-small">받으실 날</dt><dd class="sx-serif">${esc(d.due)}</dd></div><div><dt class="sx-small">수정</dt><dd class="sx-serif">${esc(d.revisions)}회</dd></div></dl><ol class="sx-dp-road sx-small"><li class="is-done">방향</li><li class="is-now">글 콘티</li><li>장면 이미지</li><li>영상</li></ol>${d.canPick?'<button type="button" class="sx-small sx-link" data-room-go="pick">다시 고르기</button>':''}</section>`;
+  return `<section class="sx-dp-chosen" data-room-in><p class="sx-small">고르신 방향${d.status==='settled'?' · 담당자와 정함':''}</p><h2 class="sx-serif">${esc(o.name)}</h2><p class="sx-body">${esc(o.sentence)}</p>${d.note?`<p class="sx-small">${d.status==='settled'?'담당자와 정한 내용':'덧붙이신 말'}: ${esc(d.note)}</p>`:''}<dl class="sx-dp-kv"><div><dt class="sx-small">값</dt><dd class="sx-serif">${esc(d.price)}</dd></div><div><dt class="sx-small">받으실 날</dt><dd class="sx-serif">${esc(d.due)}</dd></div><div><dt class="sx-small">수정</dt><dd class="sx-serif">${esc(d.revisions)}회</dd></div></dl><ol class="sx-dp-road sx-small"><li class="is-done">방향</li><li class="is-now">글 콘티</li><li>장면 이미지</li><li>영상</li></ol>${d.canPick?'<button type="button" class="sx-quiet" data-room-go="pick">다시 고르기</button>':''}</section>`;
 }
 // 되묻기: 칸마다 글로 답하거나 파일을 보낸다. 파일만, 글만 보내도 된다.
 function askList(p){return `<ul class="sx-asks" data-room-in>${p.asks.map(item=>`<li><div class="sx-ask-head"><b class="sx-serif">${esc(item.label)}</b>${item.why?`<p class="sx-small">${esc(item.why)}</p>`:''}</div><form class="sx-ask-reply" data-form="ask" data-id="${esc(item.id||'')}"><textarea name="text" rows="1" maxlength="1000" placeholder="글로 답하거나 파일을 보내 주세요" aria-label="${esc(item.label)} 답"></textarea><div class="sx-ask-tools"><label class="sx-small sx-link"><input type="file" class="sr" name="file" data-ask-file><span data-ask-name>파일 고르기</span></label><button type="submit" class="sx-go" data-mutate><span>보내기</span>${arrow}</button></div></form></li>`).join('')}${(p.answered||[]).map(item=>`<li class="is-answered"><div class="sx-ask-head"><b>${esc(item.label)}</b><p class="sx-small">${esc(item.answer||item.fileName||'파일을 보내 주셨어요.')}</p></div><span class="sx-small">보냈어요</span></li>`).join('')}</ul>`;}
 // 영상 전 첫 확인: 모델을 맡긴 손님에게 저희가 고른 모델을 보여 드린다. 다른 모델은 그 자리에서 고르거나 글로 말할 수 있다.
 function proposeCard(m){
-  return `<section class="sx-propose" data-room-in><h2 class="sx-serif">${esc(m.name)}</h2><p class="sx-body sx-propose-line">${esc(m.line)}</p>${m.note?`<p class="sx-small">${esc(m.note)}</p>`:''}<div class="sx-propose-actions"><button type="button" class="sx-go is-solid" data-room-do="model-accept"><span>이 모델로 할게요</span>${arrow}</button><button type="button" class="sx-small sx-link" data-room-do="model-others">다른 모델 보기</button></div>
+  return `<section class="sx-propose" data-room-in><h2 class="sx-serif">${esc(m.name)}</h2><p class="sx-body sx-propose-line">${esc(m.line)}</p>${m.note?`<p class="sx-small">${esc(m.note)}</p>`:''}<div class="sx-propose-actions"><button type="button" class="sx-go is-solid" data-room-do="model-accept"><span>이 모델로 할게요</span>${arrow}</button><button type="button" class="sx-quiet" data-room-do="model-others">다른 모델 보기</button></div>
     <form class="sx-propose-say" data-form="model-say" data-model-say hidden><label class="sx-field"><span class="sx-small">딱 맞는 모델이 없으면 말로 알려 주세요</span><textarea name="note" rows="2" maxlength="300" required placeholder="예) 조금 더 어린 느낌이면 좋겠어요"></textarea></label><button type="submit" class="sx-go" data-mutate><span>이대로 보내기</span>${arrow}</button></form></section>`;
 }
 // 고객 방과, 영상 확인 · 납품의 단계 낱말 줄에 같이 쓴다.
@@ -224,6 +276,7 @@ export function mountRoom(root,{animate=true,onGo,onEdit,onContact,onModel,onFil
   const film=host.querySelector('[data-room-film]');if(film&&!reduced())film.play?.().catch(()=>{});else if(film)holdPoster(film);
   host.querySelectorAll('video[data-hold]').forEach(video=>holdPoster(video));
   host.addEventListener('click',event=>{
+    if(event.target.closest('[data-journal],.sx-j-scrim'))return;
     const go=event.target.closest('[data-room-go]');if(go){if(!go.disabled)onGo?.(go.dataset.roomGo);return;}
     const model=event.target.closest('[data-room-model]')?.dataset.roomModel;if(model){onModel?.({modelId:model});return;}
     const button=event.target.closest('[data-room-do]'),what=button?.dataset.roomDo;if(!what)return;
@@ -255,7 +308,7 @@ function scriptSheet(d,total){
   const rows=d.cuts.map((cut,i)=>{const at=from;from+=cut.seconds;return `<button type="button" class="sx-strip-cut sx-sheet-row ${i===0?'is-on':''}" role="option" aria-selected="${i===0?'true':'false'}" aria-label="${esc(cutName(i,cut))}" data-cut="${i}" data-w="${cut.seconds}"><span class="sx-no sx-sheet-at"><b>${pad(i+1)}</b>${moment(at)}</span><span class="sx-sheet-what"><span class="sx-serif">${esc(cut.what)}</span>${cut.say?`<span class="sx-sheet-line"><b>말</b> ${esc(cut.say)}</span>`:''}${cut.text?`<span class="sx-sheet-line"><b>화면 글자</b> ${esc(cut.text)}</span>`:''}</span><i class="sx-strip-state" aria-hidden="true"></i></button>`;}).join('');
   return `<figure class="sx-dr-films sx-sheet-room"><div class="sx-sheet"><header class="sx-sheet-head"><span class="sx-small">글 콘티 ${esc(d.round)}판</span><span class="sx-small"><span class="sx-no">${d.cuts.length}</span>컷 · <span class="sx-no">${total.toFixed(1)}</span>초 · <span class="sx-no">${esc(d.ratio||'9:16')}</span></span></header><div class="sx-sheet-rows" data-strip role="listbox" aria-label="컷 목록">${rows}<i class="sx-strip-head" data-head hidden></i></div><footer class="sx-sheet-foot"><p class="sx-no sx-strip-tc"><span data-tc>00:00.00</span> <span class="sx-small" data-tc-no>컷 01</span></p></footer></div></figure>`;
 }
-export function draftView(d,{top='',head=''}={}){
+export function draftView(d,{top='',head='',journal=''}={}){
   const total=d.cuts.reduce((sum,cut)=>sum+cut.seconds,0),script=d.cuts.every(cut=>!cut.src),locked=d.approved?'이 판은 확인을 마쳤어요.':d.feedbackAt?'보내 주신 의견을 반영하고 있어요. 새 판이 오면 알려 드려요.':'';
   return `<div class="sx-draft sx-dr ${script?'is-script':''}" data-draft data-ratio="${esc(d.ratio||'9:16')}">
     ${head}
@@ -263,7 +316,8 @@ export function draftView(d,{top='',head=''}={}){
     <header class="sx-dr-left">
       ${top}
       <div class="sx-dr-credit"><p class="sx-small">${script?'글 콘티':'장면 이미지'} · ${esc(d.round)}판 · ${d.cuts.length}컷 · ${total.toFixed(1)}초 · 영상 전 확인 <b class="sx-no">${script?'2':'3'}/3</b></p><p class="sx-small sx-dr-oneline-label">광고가 남길 한 문장</p><h1 class="sx-serif" data-draft-title>${esc(d.oneLine)}</h1>${d.note?`<p class="sx-small sx-draft-note">${esc(d.note)}</p>`:''}</div>
-      ${d.model?`<div class="sx-draft-cast"><img src="${esc(modelScene(d.model.id))}" alt=""><span class="sx-small"><b>${esc(d.model.name)}</b> ${esc(d.model.line)}${script&&!locked?' <button type="button" class="sx-link" data-draft-do="recast">다른 모델로 바꾸기</button>':''}</span></div>`:''}
+      ${journal}
+      ${d.model?`<div class="sx-draft-cast"><img src="${esc(modelScene(d.model.id))}" alt=""><span class="sx-small"><b>${esc(d.model.name)}</b> ${esc(d.model.line)}${script&&!locked?' <button type="button" class="sx-quiet" data-draft-do="recast">다른 모델로 바꾸기</button>':''}</span></div>`:''}
     </header>
     <aside class="sx-dr-right">
       <p class="sx-no sx-draft-cut"><b data-cut-no>01</b> / ${pad(d.cuts.length)} <span class="sx-small" data-cut-sec>${secs(d.cuts[0].seconds)}</span></p>

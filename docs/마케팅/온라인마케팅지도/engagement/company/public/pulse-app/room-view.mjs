@@ -34,13 +34,16 @@ export const ROOM_STAGES=Object.freeze([
 const STAGE_OF={write:'request',check:'check',ask:'check',direction:'draft',redirect:'draft',model:'draft',prepare:'draft','prepare-images':'draft',script:'draft',images:'draft',revise:'draft',make:'make',review:'review',deliver:'review'};
 export const roomStage=state=>STAGE_OF[state]||'check';
 // 단계 id · 옛 탭 이름을 고객 방의 화면 하나로. 머리의 단계 줄 · 방 안 이동 · 알림 이동이 이것만 쓴다.
-export const roomTab=id=>id==='history'||id==='review'?'review':['draft','films','contact','pick'].includes(id)?id:'overview';
-// 알림을 누르면 의뢰 흐름 손님이 갈 화면. 대화(담당자 답 · 자동 안내 · 프로젝트 답변)는 묻기 화면, 최종본은 영상 화면의 그 최종본, 옛 탭 소식은 고객 방.
+// 묻기(contact)는 판 3b부터 화면이 아니라 일지다 — 옛 이름으로 오면 고객 방(app.mjs가 일지를 연다).
+export const roomTab=id=>id==='history'||id==='review'?'review':['draft','films','pick'].includes(id)?id:'overview';
+// 알림을 누르면 의뢰 흐름 손님이 갈 화면. 대화(담당자 답 · 자동 안내 · 프로젝트 답변)는 화면을 옮기지 않고 지금 화면의 일지 그 줄로(tab ''),
+// 최종본은 영상 화면의 그 최종본, 옛 탭 소식은 고객 방.
 export function roomRoute(item,p){
   if(item?.tab==='history')return {tab:'review',versionId:item.versionId||finals(p).at(-1)?.id||'',focus:'delivery'};
   if(item?.tab==='review'){
     if(item.feedbackRoundId||item.target==='approval')return {tab:'review',versionId:item.versionId||''};
-    if(item.messageId||item.commentId)return {tab:'contact',versionId:''};
+    if(item.messageId)return {tab:'',versionId:'',journal:'m:'+item.messageId};
+    if(item.commentId)return {tab:'',versionId:'',journal:'c:'+item.commentId};
     return {tab:'review',versionId:item.versionId||''};
   }
   if(item?.tab==='draft')return {tab:lastRound(requestOf(p))?'draft':'overview',versionId:''};
@@ -120,6 +123,67 @@ export function draftModel(p){
   return {round:round.round,kind:round.kind,oneLine:round.oneLine,note:round.note||'',approved:!!round.approvedAt,feedbackAt:round.feedbackAt||'',model:modelCard(modelId),ratio:ratioOf({channels:r.answers?.channels||[]}),
     cuts:scenes.map(scene=>({id:scene.id,revision:scene.revision,seconds:Number(scene.duration)||3,what:scene.description||scene.title||'',say:scene.narration||'',text:scene.screenText||'',src:round.kind==='images'?scene.media?.url||assetSrc(scene)||scene.imageUrl||'':''}))};
 }
+// ── 일지(판 3b) ──
+// 담당자가 한 말과 손님이 한 일을 한 줄기로. 손님 보기에 이미 오는 필드만 쓴다(서버 읽음 기록 없음). 그리기는 film-views.mjs journalView.
+// 줄 종류: talk(말 — 전문), quote(일감의 말 — 첫 줄만, 정본은 그 일감), event(한 일 — 한 줄). 새 것이 위.
+const timeOf=value=>{const t=Date.parse(value||'');return Number.isFinite(t)?t:null;};
+const both=n=>n>2?'모두':'둘 다';
+const withEul=word=>{const last=String(word).trim().replace(/[^0-9A-Za-z가-힣]+$/,'').slice(-1),code=last.charCodeAt(0);return code>=0xAC00&&code<=0xD7A3&&(code-0xAC00)%28?'을':'를';};
+const roundName=round=>`${round.kind==='script'?'글 콘티':'장면 이미지'} ${round.round}판`;
+export function journalModel(p){
+  const r=requestOf(p),st=p?.studio||{},owner=p?.ownerName||'PULSE 담당자',items=[];
+  const add=item=>{items.push({text:'',go:null,...item,t:item.t??timeOf(item.at)});};
+  if(r?.submittedAt)add({id:'q:sent',at:r.submittedAt,who:'me',name:'나',kind:'event',what:'의뢰서를 보냈어요'});
+  if(r?.confirmedAt)add({id:'q:ok',at:r.confirmedAt,who:'staff',name:r.confirmedBy||owner,kind:'event',what:'의뢰서를 확인했어요'});
+  for(const ask of r?.asks||[])if(ask.status==='answered')add({id:'a:'+ask.id,at:ask.answeredAt||ask.at,who:'me',name:'나',kind:'talk',what:`「${ask.label}」에 답했어요`,text:ask.answer||(ask.fileName?`파일 ${ask.fileName}`:'')});
+  const model=r?.modelProposal,modelName=id=>modelCard(id)?.name||'';
+  if(model?.at&&modelName(model.modelId)){
+    const name=modelName(model.modelId);
+    add(model.note?{id:'o:'+model.at,at:model.at,who:'staff',name:model.by||owner,kind:'quote',what:`모델 제안 · ${name}`,text:model.note,go:model.status==='open'?{tab:'overview'}:null}:{id:'o:'+model.at,at:model.at,who:'staff',name:model.by||owner,kind:'event',what:`모델 ${name}${withEul(name)} 제안했어요`});
+    if(model.answeredAt&&model.status==='accepted'){const chosen=modelName(r.answers?.models?.[0])||name;add({id:'o:'+model.at+':ok',at:model.answeredAt,who:'me',name:'나',kind:model.answer?'talk':'event',what:`모델 ${chosen}${withRoOf(chosen)} 정했어요`,text:model.answer||''});}
+    if(model.answeredAt&&model.status==='declined')add({id:'o:'+model.at+':no',at:model.answeredAt,who:'me',name:'나',kind:'talk',what:'모델을 말로 알려 드렸어요',text:model.answer||''});
+  }
+  const d=r?.directionProposal;
+  if(d?.at){
+    const t=timeOf(d.at),count=d.options?.length||2;
+    // 다시 받은 제안이면 앞 판의 답(시각 없음)을 이 줄 바로 앞에 둔다.
+    if(d.prior)add({id:'d:'+d.prior.round+':no',at:'',t:t===null?null:t-1,who:'me',name:'나',kind:d.prior.answer?'talk':'event',what:`방향 제안 ${d.prior.round}판 · ${(d.prior.names||[]).map(name=>`「${name}」`).join(' ')} ${both((d.prior.names||[]).length)} 아니에요`,text:d.prior.answer||''});
+    const pickable=['open','chosen'].includes(d.status)&&!lastRound(r);
+    add({id:'d:'+d.round,at:d.at,who:'staff',name:d.by||owner,kind:'quote',what:`방향 제안${d.round>1?` ${d.round}판`:''}`,text:d.lead||`${count}가지 방향을 보내 드렸어요`,go:pickable?{tab:'pick'}:null});
+    const chosen=d.options?.find(option=>option.id===d.chosenId);
+    if(d.answeredAt&&d.status==='declined')add({id:'d:'+d.round+':no',at:d.answeredAt,who:'me',name:'나',kind:d.answer?'talk':'event',what:`방향 ${both(count)} 아니에요`,text:d.answer||''});
+    if(d.answeredAt&&chosen&&d.status==='chosen')add({id:'d:'+d.round+':ok',at:d.answeredAt,who:'me',name:'나',kind:d.answer?'talk':'event',what:`「${chosen.name}」${withRoOf(chosen.name)} 정했어요`,text:d.answer?`덧붙인 말 · ${d.answer}`:''});
+    if(d.answeredAt&&chosen&&d.status==='settled')add({id:'d:'+d.round+':ok',at:d.answeredAt,who:'staff',name:d.settledBy||owner,kind:d.answer?'talk':'event',what:`「${chosen.name}」${withRoOf(chosen.name)} 함께 정했어요`,text:d.answer||''});
+  }
+  const rounds=r?.rounds||[],last=rounds.at(-1);
+  for(const round of rounds){
+    const name=roundName(round);
+    add(round.note?{id:'r:'+round.round,at:round.sentAt,who:'staff',name:round.by||owner,kind:'quote',what:name,text:round.note,go:round===last?{tab:'draft'}:null}:{id:'r:'+round.round,at:round.sentAt,who:'staff',name:round.by||owner,kind:'event',what:`${name}${withEul(name)} 보냈어요`,go:round===last?{tab:'draft'}:null});
+    if(round.feedbackAt)add({id:'r:'+round.round+':fix',at:round.feedbackAt,who:'me',name:'나',kind:'event',what:round.changes?`${name}에 고칠 곳 ${round.changes}개를 보냈어요`:`${name} 컷 확인을 보냈어요`});
+    if(round.approvedAt)add({id:'r:'+round.round+':ok',at:round.approvedAt,who:'me',name:'나',kind:'event',what:`${name}${withEul(name)} 확인했어요`});
+  }
+  for(const v of p?.versions||[]){
+    if(!['preview','final'].includes(v.kind))continue;
+    const name=v.kind==='final'?`최종본 ${v.label}`:v.label,go={tab:'review',versionId:v.id,...(v.kind==='final'?{final:true}:{})};
+    add(v.guide?{id:'v:'+v.id,at:v.createdAt,who:'staff',name:owner,kind:'quote',what:name,text:v.guide,go}:{id:'v:'+v.id,at:v.createdAt,who:'staff',name:owner,kind:'event',what:`${name}${josaOf(name)} 도착했어요`,go});
+    if(v.kind==='preview'&&v.approvedAt)add({id:'v:'+v.id+':ok',at:v.approvedAt,who:'me',name:'나',kind:'event',what:`${v.label}${withEul(v.label)} 승인했어요`});
+  }
+  for(const fb of st.feedbackRounds?.rounds||[])if(fb.submittedAt)add({id:'f:'+fb.id,at:fb.submittedAt,who:'me',name:'나',kind:'event',what:`${fb.versionLabel||'영상'}에 의견 ${(fb.items||[]).length}개를 보냈어요`});
+  // 문의와 답: 3a 묻기 화면과 같은 거름(영상 의견 하나하나는 영상 화면에만).
+  for(const m of p?.messages||[])if(m.action==='support'&&m.author!=='staff'||m.author==='staff')add({id:'m:'+m.id,ref:m.id,at:m.at,who:m.author==='staff'?(m.automated?'auto':'staff'):'me',name:m.author==='staff'?(m.automated?'자동 안내':m.authorName||owner):'나',kind:'talk',what:m.author==='staff'?'':'문의',text:m.text||''});
+  for(const c of st.comments||[])if(c.targetType==='project')add({id:'c:'+c.id,ref:c.id,at:c.at,who:c.author==='customer'?'me':'staff',name:c.author==='customer'?'나':c.authorName||owner,kind:'talk',what:'',text:c.text||''});
+  const receipt=p?.closeout?.receipt;
+  if(receipt?.confirmedAt)add({id:'k:'+(p.closeout.deliveryKey||'now'),at:receipt.confirmedAt,who:'me',name:'나',kind:'event',what:'파일과 안내를 확인했어요'});
+  // 새 것이 위. 시각이 같으면 받은 것 → 내 것 차례, 시각을 못 읽는 줄은 맨 아래.
+  items.sort((a,b)=>(b.t??-Infinity)-(a.t??-Infinity)||(a.who==='me')-(b.who==='me'));
+  const asks=(r?.asks||[]).filter(ask=>ask.status==='open').map(ask=>({id:ask.id,label:ask.label,why:ask.why||'',at:ask.at,t:timeOf(ask.at)}));
+  const latestAt=Math.max(0,...items.map(item=>item.t||0),...asks.map(ask=>ask.t||0));
+  return {pinned:{asks,next:String(p?.nextStep||'').trim()},items,latestAt};
+}
+const josaOf=word=>{const last=String(word).trim().replace(/[^0-9A-Za-z가-힣]+$/,'').slice(-1),code=last.charCodeAt(0);if(code>=0xAC00&&code<=0xD7A3)return (code-0xAC00)%28?'이':'가';return /[0-9]/.test(last)?('013678'.includes(last)?'이':'가'):'이';};
+function withRoOf(word){const last=String(word).trim().replace(/[^0-9A-Za-z가-힣]+$/,'').slice(-1),code=last.charCodeAt(0);const batchim=code>=0xAC00&&code<=0xD7A3?(code-0xAC00)%28:/[0-9]/.test(last)?('013678'.includes(last)?1:0):1;return batchim&&batchim!==8?'으로':'로';}
+// 「본 시각」보다 뒤에 온 담당자 · 자동 안내 줄과 열린 되묻기 수. 머리 「나눈 말」 숫자.
+export const journalNew=(j,seen)=>Number.isFinite(seen)?j.items.filter(item=>item.who!=='me'&&item.t>seen).length+j.pinned.asks.filter(ask=>ask.t>seen).length:0;
 // 직원 쪽 말로 옮긴 지금 상태(내부 확인의 새 의뢰 목록).
 const DESK_STATE={write:'의뢰서 쓰는 중',check:'새 의뢰',ask:'답을 기다려요',direction:'방향 답을 기다려요',redirect:'방향을 다시 제안해요',model:'모델 답을 기다려요',prepare:'1차안 준비 중','prepare-images':'장면 이미지 준비 중',script:'글 콘티를 보는 중',images:'장면 이미지를 보는 중',revise:'의견 반영 중',make:'제작 중',review:'영상 확인 중',deliver:'납품'};
 export function deskQueue(projects=[],when=value=>value){

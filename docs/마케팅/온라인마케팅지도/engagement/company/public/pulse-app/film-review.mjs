@@ -7,7 +7,8 @@ const fmt=value=>`${pad(Math.floor(value/60))}:${pad(Math.floor(value%60))}.${pa
 const short=value=>`${Math.floor(value/60)}:${pad(Math.floor(value%60))}`;
 const typingNow=()=>{const el=document.activeElement;return !!el&&(/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)||el.isContentEditable);};
 // 대화상자 · 의뢰서가 열렸거나 단추에 초점이 있으면 스페이스 · 화살표는 그쪽 몫이다.
-const keysAreBusy=()=>typingNow()||!!document.querySelector('dialog[open],.sx-round-sheet[open]')||!!document.querySelector('.sx-q')||/^(BUTTON|A|SUMMARY)$/.test(document.activeElement?.tagName||'');
+// 일지 서랍 · 시트(판 3b)를 연 채면 스페이스 · 화살표가 뒤 영상을 움직이지 않는다.
+const keysAreBusy=()=>typingNow()||!!document.querySelector('dialog[open],.sx-round-sheet[open],[data-journal].is-open')||!!document.querySelector('.sx-q')||/^(BUTTON|A|SUMMARY)$/.test(document.activeElement?.tagName||'');
 const withModifier=event=>event.altKey||event.ctrlKey||event.metaKey;
 
 // 멈춰 있을 때 보일 한 장: 영상 첫 프레임은 대개 아직 아무 일도 일어나지 않은 그림이다. 끝 컷 쪽(길이의 84%)을 보여 주고, 재생은 처음부터 한다.
@@ -150,7 +151,7 @@ export function mountReview(root,{previous=null,onError}={}){
   const tick=()=>{paintTime();if(video&&!video.paused)raf=requestAnimationFrame(tick);};
   // 손을 놓으면 글자가 물러난다.
   let idle=0;
-  const wake=()=>{document.documentElement.classList.remove('is-dr-idle');clearTimeout(idle);if(video&&!video.paused&&!reduced())idle=setTimeout(()=>{if(!typingNow()&&!document.querySelector('dialog[open]'))document.documentElement.classList.add('is-dr-idle');},2200);};
+  const wake=()=>{document.documentElement.classList.remove('is-dr-idle');clearTimeout(idle);if(video&&!video.paused&&!reduced())idle=setTimeout(()=>{if(!typingNow()&&!document.querySelector('dialog[open],[data-journal].is-open')&&!document.activeElement?.closest?.('[data-journal]')&&!document.querySelector('[data-journal]:hover'))document.documentElement.classList.add('is-dr-idle');},2200);};
   addEventListener('pointermove',wake,{signal});addEventListener('pointerdown',wake,{signal});addEventListener('keydown',wake,{signal});
   const syncPlaying=()=>{const on=!!video&&!video.paused;host.classList.toggle('is-playing',on);playButton?.classList.toggle('is-playing',on);wake();};
   const toggle=()=>{if(!video)return;if(video.paused){if(video.ended)video.currentTime=0;video.play().catch(()=>{video.muted=true;video.play().catch(()=>{});});}else video.pause();};
@@ -228,7 +229,7 @@ export function mountReview(root,{previous=null,onError}={}){
     if(event.key==='ArrowLeft'){event.preventDefault();seek(video.currentTime-1);}
     if(event.key==='ArrowRight'){event.preventDefault();seek(video.currentTime+1);}
   },{signal});
-  host.addEventListener('focusin',event=>{if(event.target.matches?.('textarea,input'))poster?.release();},{signal});
+  host.addEventListener('focusin',event=>{if(event.target.matches?.('textarea,input')&&!event.target.closest?.('[data-journal]'))poster?.release();},{signal});
   // 의견을 쓰기 시작하면 그 자리에서 멈춘다(체험의 의견 칸도 같다. 초안은 app.mjs가 시간을 넣는다).
   host.addEventListener('focusin',event=>{
     const area=event.target;if(!video||!area?.matches?.('form[data-form="feedback"] textarea[name="text"]'))return;

@@ -26,7 +26,8 @@ const delivered=(extra={})=>roomProject({status:'confirmed',approvedAt:at,rounds
 test('roomTab folds stage ids and old tab names into one room screen, and the stages are five',()=>{
   for(const id of ['request','check','make','room','overview','strategy','direction','concepts','storyboard','desk','manage','아무거나'])assert.equal(roomTab(id),'overview',id);
   assert.equal(roomTab('review'),'review');assert.equal(roomTab('history'),'review','video and delivery are one screen');
-  for(const id of ['draft','films','contact','pick'])assert.equal(roomTab(id),id);
+  for(const id of ['draft','films','pick'])assert.equal(roomTab(id),id);
+  assert.equal(roomTab('contact'),'overview','판 3b: asking is the journal, not a screen — an old contact link opens the room');
   assert.deepEqual(ROOM_STAGES.map(stage=>stage.id),['request','check','draft','make','review']);
   assert.equal(ROOM_STAGES.at(-1).name,'영상 · 납품');assert.equal(roomStage('deliver'),'review');assert.equal(roomStage('review'),'review');
 });
@@ -47,8 +48,9 @@ test('one table sends every customer notification to its place in the room (D10)
     [{tab:'review',feedbackRoundId:'r1',feedbackItemId:'i1',messageId:'m1',versionId:'v1'},done,{tab:'review',versionId:'v1'}],
     [{tab:'review',target:'approval',versionId:'v1'},done,{tab:'review',versionId:'v1'}],
     [{tab:'review',versionId:'v1'},done,{tab:'review',versionId:'v1'}],
-    [{tab:'review',messageId:'staff-reply'},roomProject(),{tab:'contact',versionId:''}],
-    [{tab:'review',commentId:'project-reply'},roomProject(),{tab:'contact',versionId:''}],
+    // 판 3b: 대화는 화면을 옮기지 않고 지금 화면 일지의 그 줄로.
+    [{tab:'review',messageId:'staff-reply'},roomProject(),{tab:'',versionId:'',journal:'m:staff-reply'}],
+    [{tab:'review',commentId:'project-reply'},roomProject(),{tab:'',versionId:'',journal:'c:project-reply'}],
     [{tab:'history',versionId:'f1'},done,{tab:'review',versionId:'f1',focus:'delivery'}],
     [{tab:'history'},done,{tab:'review',versionId:'f2',focus:'delivery'}],
     [{tab:'desk'},roomProject(),{tab:'overview',versionId:''}],
@@ -80,10 +82,10 @@ test('one head: the name leads back to the room, the number and five steps sit i
     assert.doesNotMatch(html,/class="sx-steps|sx-room-project|sx-dp-rail|sx-dr-back|sx-dr-left-foot|sx-room-bar/,name+': no second head or step line inside the screen');
     assert.match(head,/^<button type="button" class="sx-head-title" data-room-go="room" title="고객 방으로"><b class="crumb-title">오미톡<\/b><\/button><span class="crumb-no mono">P-2026-ABCD<\/span>/,name);
     assert.equal(head.split('class="sx-step ').length-1,5,name);assert.equal((head.match(/aria-current="page"/g)||[]).length<=1,true,name);
-    assert.equal(actions.split('data-room-do="contact"').length-1,1,name+': one way to ask');assert.match(actions,/data-action="notifications"/,name+': notifications stay apart from asking');
+    assert.equal(actions.split('data-room-do="journal"').length-1,1,name+': one way to ask — the journal');assert.match(actions,/data-action="notifications"/,name+': notifications stay apart from asking');
   }
-  assert.match(headerCrumb(ROOM_TABS.contact),/class="sx-step is-now"\s+data-room-go="check"/,'asking keeps the stage lit without claiming it');
-  assert.match(header({...ROOM_TABS.contact,desktopApp:false}),/class="sx-head-ask is-now" data-room-do="contact" aria-current="page"/);
+  assert.match(headerCrumb(ROOM_TABS.contact),/class="sx-step is-now" aria-current="page"\s+data-room-go="check"/,'판 3b: an old contact tab is the room, so its stage is the page');
+  assert.match(header({...ROOM_TABS.contact,desktopApp:false}),/class="sx-head-ask" data-room-do="journal" aria-controls="room-journal" data-journal-count>나눈 말</);
   assert.match(headerCrumb(ROOM_TABS.deliver),/class="sx-step is-now" aria-current="page"\s+data-room-go="review">영상 · 납품</);
   // 옛 프로젝트 머리는 그대로: 단계 낱말 · 전달일, 묻기 단추 없음.
   const old={mode:'customer',tab:'overview',live:{},project:{id:'old',title:'옛',stage:'review',versions:[],messages:[],studio:{scenes:[],concepts:[],references:[],assets:[],comments:[],sceneReviews:[]}}};
@@ -97,20 +99,21 @@ test('one head: the name leads back to the room, the number and five steps sit i
   assert.match(css,/\.sx-head-steps\{flex:none;flex-wrap:nowrap/,'the wide head stays one line so it never covers the version picker (Fable N3)');
 });
 
-test('one place to ask: a contact screen with its own support form and the whole thread, from any screen (D6)',()=>{
+test('one place to ask: the journal on every screen with its own support form and the whole thread (D6 → 판 3b)',()=>{
   const p=roomProject({status:'confirmed',approvedAt:at,rounds:[round('images')]},{stage:'review',versions:[preview],messages:[{id:'q1',author:'customer',authorName:'나',action:'support',text:'언제 와요?',at},{id:'a1',author:'staff',authorName:'김하늘',text:'내일 보내 드려요',at},{id:'f1',author:'customer',authorName:'나',action:'feedback',versionId:'v1',seconds:2,text:'더 크게',at}]},{comments:[{id:'c1',targetType:'project',targetId:null,text:'프로젝트 답변이에요',author:'staff',authorName:'김하늘',at}]});
-  const contact=projectView(state(p,{tab:'contact'}));
+  const contact=projectView(state(p,{tab:'overview',journalAll:true})),journal=contact.slice(contact.indexOf('data-journal '));
   assert.equal(contact.split('data-form="support"').length-1,1);assert.doesNotMatch(contact,/data-form="feedback"/,'typing a question never pins a video version');
-  assert.match(contact,/언제 와요\?/);assert.match(contact,/내일 보내 드려요/);assert.match(contact,/프로젝트 답변이에요/);assert.doesNotMatch(contact,/더 크게/,'video notes stay on the video');
-  assert.match(contact,/<article class="sx-thread-row" data-author="staff" data-message-id="a1"/,'a reply notification finds its line');
-  assert.match(projectView(state(p,{tab:'contact',error:'그사이 답이 왔어요',conflict:true})),/role="alert"[\s\S]*data-action="refresh"/,'a stale send can be refreshed right there (Fable N5)');
+  assert.match(journal,/언제 와요\?/);assert.match(journal,/내일 보내 드려요/);assert.match(journal,/프로젝트 답변이에요/);assert.doesNotMatch(journal,/더 크게/,'video notes stay on the video');
+  assert.match(journal,/<li class="sx-j-row is-talk" data-who="staff" data-journal-id="m:a1"/,'a reply notification finds its line');
+  assert.match(projectView(state(p,{tab:'overview',error:'그사이 답이 왔어요',conflict:true})),/role="alert"[\s\S]*data-action="refresh"/,'a stale send can be refreshed right there (Fable N5)');
   const review=projectView(state(p,{tab:'review',reviewPanel:'ask'}));
   assert.doesNotMatch(review,/data-panel="ask"|id="review-feedback"/,'the video screen has no second ask box');
   assert.match(review,/<div class="sx-panel" data-panel="note" >/,'a leftover ask panel state never hides the notes (Fable N8)');
-  assert.match(review,/class="sx-small sx-link" data-room-do="contact">담당자에게 묻기</);
+  assert.match(review,/class="sx-quiet sx-j-ask-open " data-room-do="journal">담당자에게 묻기</,'on a phone the ask opens the sheet; on a wide screen the journal is beside the film');
+  assert.equal(review.split('data-form="support"').length-1,1,'the video screen keeps one ask box — in the journal');
   const app=read('app.mjs');
   assert.match(app,/if\(type==='support'\)\{const text=String\(values\.text\|\|''\)\.trim\(\);if\(!text\)\{form\.elements\.text\.focus\(\);return;\}await mutate\(\(\)=>projectAction\('support',\{text\}\)/);
-  assert.match(app,/if\(view==='contact'\)\{[^}]*main\.querySelector\('\[data-form="support"\] textarea'\)/);
+  assert.match(app,/if\(stage==='journal'\|\|stage==='contact'\)\{openJournal\(\);return;\}/,'any old ask path opens the journal where you are');
   assert.doesNotMatch(app,/s\.tab='review';s\.reviewPanel='ask'/,'asking no longer borrows the video screen');
 });
 
@@ -191,15 +194,16 @@ test('photo orders say photo words while we prepare and make (판 2 Fable FA2)',
 
 test('argon 3a: the example draft scenes keep the head, the ask hint only while a preview is open, the wide-tablet films road, the delivery words',()=>{
   const demo=read('demo-film.mjs');
-  assert.match(demo,/root\.innerHTML=draftView\(SCRIPT,\{head:draftHead\}\);mountRoom\(root,/);assert.match(demo,/root\.innerHTML=draftView\(DRAFT,\{head:draftHead\}\);mountRoom\(root,/);
+  assert.match(demo,/root\.innerHTML=draftView\(SCRIPT,\{head:draftHead,journal:sideJournal\('script'\)\}\);bindDraftJournal\(root,'script'\);mountRoom\(root,/);assert.match(demo,/root\.innerHTML=draftView\(DRAFT,\{head:draftHead,journal:sideJournal\('draft'\)\}\);bindDraftJournal\(root,'draft'\);mountRoom\(root,/);
   assert.match(read('film-views.mjs'),/const host=root\.querySelector\('\.sx-room,\.sx-shell,\.sx-draft'\)/);
-  const open=projectView(state(roomProject({status:'confirmed',rounds:[round('images')]},{stage:'review',versions:[preview]}),{tab:'contact'}));
-  assert.match(open,/영상에서 고칠 곳은 「영상 · 납품」에서/);
-  for(const p of [roomProject({status:'confirmed',approvedAt:at,rounds:[round('images')]},{stage:'review',versions:[approved]}),delivered()])assert.doesNotMatch(projectView(state(p,{tab:'contact'})),/영상에서 고칠 곳은/,'no notes can be left after approval');
+  // 판 3b: 영상 의견 안내는 영상 화면 일지의 묻기 칸 아래 한 줄(D4), 승인 뒤 · 최종본에는 없다.
+  const open=projectView(state(roomProject({status:'confirmed',rounds:[round('images')]},{stage:'review',versions:[preview]}),{tab:'review'}));
+  assert.match(open,/<p class="sx-j-hint" data-when="typing">영상에서 고칠 곳은/);
+  for(const p of [roomProject({status:'confirmed',approvedAt:at,rounds:[round('images')]},{stage:'review',versions:[approved]}),delivered()])assert.doesNotMatch(projectView(state(p,{tab:'review'})),/영상에서 고칠 곳은/,'no notes can be left after approval');
   assert.match(read('film.css'),/\(min-width:821px\) and \(max-width:1000px\) and \(min-aspect-ratio:10001\/10000\)\{\.sx-head-steps \.sx-steps-foot\{display:none\}\.sx-room>\.sx-room-films\{display:block\}\}/);
   const done=projectView(state(delivered(),{tab:'history'}));
   // Fable 최종(11-08) P2: 1366×650 기둥에 들게 단추는 문장 뒤 같은 줄, 수령 확인 뒤에는 「언제든 다시」를 확인 줄에 합친다.
-  assert.match(done,/파일은 여기서 언제든 다시 받으실 수 있어요\. 다른 형식이나 길이가 필요하면 담당자에게 알려 주세요\. <span class="sx-deliver-links"><button type="button" class="sx-link" data-room-do="contact">담당자에게 묻기<\/button><\/span><\/p>/);
+  assert.match(done,/파일은 여기서 언제든 다시 받으실 수 있어요\. 다른 형식이나 길이가 필요하면 담당자에게 알려 주세요\. <span class="sx-deliver-links"><button type="button" class="sx-quiet sx-j-ask-open " data-room-do="journal">담당자에게 묻기<\/button><\/span><\/p>/);
   const got=projectView(state(delivered({closeout:{deliveryKey:'k1',approvedPreviewId:'v1',canConfirm:false,receipt:{confirmedAt:at},files:[]}}),{tab:'history'}));
   assert.match(got,/<\/time> · 파일은 여기서 언제든 다시 받으실 수 있어요\.<\/p>/);assert.match(got,/<p class="sx-small sx-deliver-foot">다른 형식이나 길이가/);
   // Fable 최종 P3: 지운 예시 머리 상수를 옛 납품 화면이 부르지 않는다(예시가 옛 길로 가면 화면이 비던 지뢰).

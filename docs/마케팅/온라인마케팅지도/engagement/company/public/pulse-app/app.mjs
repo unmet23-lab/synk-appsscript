@@ -6,14 +6,14 @@ import {kickoffSubmission} from './kickoff-view.mjs';
 import {previewApprovalState} from './production-context.mjs';
 import {strategySaveMessage,strategyUnsavedReviewMessage,strategyReviewState,castingCodeSaveMessage} from './strategy-view.mjs';
 import {sceneConfirmation} from './scene-requests-view.mjs';
-import {header,headerCrumb,welcome,login,picker,projectView,dialogContent,liveView} from './views.mjs';
+import {header,headerCrumb,welcome,login,picker,projectView,dialogContent,liveView,headJournal} from './views.mjs';
 import {createLiveConnection,projectRevision} from './live.mjs';
 import {publicBackend,projectBackend} from './request-backend.mjs';
 import {mountRequestFlow} from './request-flow.mjs';
-import {mountEntry,mountRoom,mountDraft,mountDirection} from './film-views.mjs';
+import {mountEntry,mountRoom,mountDraft,mountDirection,JOURNAL_SHOWN,JOURNAL_SHEET,journalOverlay,journalSetOpen,journalFocus} from './film-views.mjs';
 import {mountFilmList} from './film-home.mjs';
 import {mountReview,mountFinal} from './film-review.mjs';
-import {draftModel,deskModel,roomState,directionModel,usesRoom,roomTab,roomRoute} from './room-view.mjs';
+import {draftModel,deskModel,roomState,directionModel,usesRoom,roomTab,roomRoute,journalModel} from './room-view.mjs';
 import {PACKAGES,MODEL_LINES} from './request-data.mjs';
 import {CASTING_MODELS} from './casting-catalog.mjs';
 import {withDeviceDeadline,deviceAvailability,deviceConnectionNote,deviceKey,canMigrateDevice,foregroundProjectOptions,rejectedDeviceRegistration} from './push.mjs';
@@ -37,7 +37,8 @@ const initialStaffTab=staffMode?new URLSearchParams(location.search).get('tab')|
 let initialStaffScene=staffMode?new URLSearchParams(location.search).get('scene')||'':'';
 let initialStaffHistory=staffMode?readStaffHistoryTarget(location.search):null;
 let pendingInitialScene='';
-history.replaceState({},'',location.pathname+(demoMode?(/\bElectron\//.test(navigator.userAgent||'')?'?demo=coffee':'?demo=gift'):staffMode?'?mode=staff':filmDemo?'?demo=film':''));
+// 예시는 장면 꼬리(#room 같은 영문 낱말 하나)만 남긴다 — 장면 주소로 바로 열리게(demo-film.mjs가 시작할 때 읽는다).
+history.replaceState({},'',location.pathname+(demoMode?(/\bElectron\//.test(navigator.userAgent||'')?'?demo=coffee':'?demo=gift'):staffMode?'?mode=staff':filmDemo?'?demo=film'+(/^#[a-z]{2,12}$/.test(location.hash)?location.hash:''):''));
 const s={demo:demoMode,demoGuide:null,demoPersistent:true,mode:staffMode?'staff':'customer',user:null,workspace:null,project:null,canEdit:false,csrf:'',tab:'strategy',editor:null,versionId:'',compare:false,showVersion:false,inviteUrl:'',newProject:false,installPrompt:null,error:'',conflict:false,workflow:[],castingCode:null,castingCodeOpen:null};
 // PC 앱은 PULSE를 자기 창(Electron)으로 연다. 그 창에서는 설치 안내 단추와 기기 알림 켜기를 두지 않고(views.mjs header·liveView), 기억하기·체험 글은 「이 브라우저」 대신 「이 PC 앱」이라 쓴다.
 // 표시는 install.mjs installationEnvironment와 같다. 맨 위에서는 가져온 함수를 부르지 않는다 — 운영 후보의 vm 시험(git 밖 파일 포함)이 import 없이 이 줄까지 돌린다.
@@ -87,7 +88,7 @@ function clearDraft(key,revision){if(drafts.get(key)?.revision===revision)drafts
 function setBusy(value){busy=value;document.documentElement.classList.toggle('is-busy',value);for(const button of document.querySelectorAll('button[type=submit],[data-mutate]')){if(value){if(button.dataset.wasDisabled===undefined)button.dataset.wasDisabled=String(button.disabled);button.disabled=true;}else if(button.dataset.wasDisabled!==undefined){button.disabled=button.dataset.wasDisabled==='true';delete button.dataset.wasDisabled;}}main.setAttribute('aria-busy',String(value));if(!value){scheduleApply();scheduleInviteNavigation();}}
 // 첫 화면이 길어 입장 칸이 화면 밖일 수 있다 — 어느 길로 왔든 새 알림이 나면 그 자리를 보인다. 같은 알림으로 다시 그릴 때는 읽던 자리를 두고 움직이지 않는다.
 let shownEntryError=null;
-function render({remote=false}={}){if((s.mode==='staff'||s.project)&&!legacyCssReady){void ensureLegacyCss().then(()=>render({remote}));return;}loadDesk();s.feedbackDraftVersion=drafts.get([identity(),'feedback',''].join(':'))?.versionId||'';s.feedbackDraftAction=drafts.get([identity(),'feedback',''].join(':'))?.values.action||'';if(demo){s.demoGuide=demo.guide();s.demoPersistent=demo.snapshot().demo.persistent;}const files=remote?Array.from(main.querySelectorAll('input[type=file]')).filter(node=>node.files?.length).map(node=>({node,key:draftKey(node.form),name:node.name})):[];const headBox=document.querySelector('.app-header'),previousFocus=remote&&(main.contains(document.activeElement)||headBox?.contains(document.activeElement))?document.activeElement:null,focusKey=previousFocus?{action:previousFocus.dataset.action,id:previousFocus.dataset.id,tab:previousFocus.dataset.tab,href:previousFocus.getAttribute('href'),room:previousFocus.dataset.roomGo||previousFocus.dataset.roomDo||previousFocus.dataset.draftDo||''}:null;const media=remote||main.querySelector('#review-video')?Array.from(main.querySelectorAll('video,audio')).map(node=>({node,playing:!node.paused,time:node.currentTime})):[],pillarTop=main.querySelector('.sx-dr-right')?.scrollTop||0,details=remote?Array.from(main.querySelectorAll('details')).map((node,index)=>node.open?index:-1):[],scroll=remote?{x:scrollX,y:scrollY}:null;document.querySelector('#header-actions').innerHTML=header(s);document.documentElement.classList.toggle('has-room-head',roomCustomer());const crumb=document.querySelector('#header-crumb');if(crumb)crumb.innerHTML=headerCrumb(s);const keepEntry=!!entryHandle&&!s.project&&s.mode!=='staff';if(keepEntry)entryHandle.update({resume:!!s.requestResume,entryError:s.entryError||null,busy:booting});else{entryHandle?.unmount();entryHandle=null;main.innerHTML=s.project?projectView(s):booting?LOADING_VIEW:s.mode==='staff'?(s.user?picker(s):login()):welcome(s);}if(s.project||!s.entryError)shownEntryError=null;else if(s.entryError!==shownEntryError){shownEntryError=s.entryError;main.querySelector('.sx-invite-alert')?.scrollIntoView?.({block:'nearest'});}for(const fresh of media.length?main.querySelectorAll('video,audio'):[]){const index=media.findIndex(old=>old.node.dataset.version===fresh.dataset.version&&old.node.getAttribute('src')===fresh.getAttribute('src')&&old.node.id===fresh.id);if(index!==-1){const old=media.splice(index,1)[0];fresh.replaceWith(old.node);if(old.playing&&old.node.paused)old.node.play().catch(()=>{});}}const pillar=main.querySelector('.sx-dr-right');if(pillar&&pillarTop)pillar.scrollTop=pillarTop;restore(main);mountScreens();placeTimeline();wireCompare();const strategyForm=main.querySelector('[data-form=strategy]');if(strategyForm)syncCastingChoices(strategyForm,drafts.get(draftKey(strategyForm))?.values);refreshCasting(strategyForm);if(remote){for(const old of files){const form=Array.from(main.querySelectorAll('form[data-form]')).find(node=>draftKey(node)===old.key);const input=form&&Array.from(form.elements).find(node=>node.type==='file'&&node.name===old.name);if(input)input.replaceWith(old.node);}for(const [index,node] of Array.from(main.querySelectorAll('details')).entries())if(details.includes(index))node.open=true;if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});else if(focusKey){const replacement=[...main.querySelectorAll('button,a'),...(headBox?.querySelectorAll('button,a')||[])].find(node=>node.offsetParent!==null&&(focusKey.room?[node.dataset.roomGo,node.dataset.roomDo,node.dataset.draftDo].includes(focusKey.room):focusKey.action?node.dataset.action===focusKey.action&&node.dataset.id===focusKey.id&&node.dataset.tab===focusKey.tab:focusKey.href&&node.getAttribute('href')===focusKey.href));replacement?.focus({preventScroll:true});}if(scroll)window.scrollTo(scroll.x,scroll.y);}const inviteField=document.querySelector('[name="invite-url"]');if(inviteField)inviteField.readOnly=true;wireMedia();production.render();if(busy)setBusy(true);syncLive();renderLive();focusInitialStaffScene();focusInitialStaffHistory();}
+function render({remote=false}={}){if((s.mode==='staff'||s.project)&&!legacyCssReady){void ensureLegacyCss().then(()=>render({remote}));return;}loadDesk();syncJournalSeen();s.feedbackDraftVersion=drafts.get([identity(),'feedback',''].join(':'))?.versionId||'';s.feedbackDraftAction=drafts.get([identity(),'feedback',''].join(':'))?.values.action||'';if(demo){s.demoGuide=demo.guide();s.demoPersistent=demo.snapshot().demo.persistent;}const files=remote?Array.from(main.querySelectorAll('input[type=file]')).filter(node=>node.files?.length).map(node=>({node,key:draftKey(node.form),name:node.name})):[];const headBox=document.querySelector('.app-header'),previousFocus=remote&&(main.contains(document.activeElement)||headBox?.contains(document.activeElement))?document.activeElement:null,focusKey=previousFocus?{action:previousFocus.dataset.action,id:previousFocus.dataset.id,tab:previousFocus.dataset.tab,href:previousFocus.getAttribute('href'),room:previousFocus.dataset.roomGo||previousFocus.dataset.roomDo||previousFocus.dataset.draftDo||previousFocus.dataset.journalDo||previousFocus.dataset.journalGo||''}:null;const media=remote||main.querySelector('#review-video')?Array.from(main.querySelectorAll('video,audio')).map(node=>({node,playing:!node.paused,time:node.currentTime})):[],pillarTop=main.querySelector('.sx-dr-right')?.scrollTop||0,journalTop=main.querySelector('[data-journal]')?.scrollTop||0,details=remote?Array.from(main.querySelectorAll('details')).map((node,index)=>node.open?index:-1):[],scroll=remote?{x:scrollX,y:scrollY}:null;document.querySelector('#header-actions').innerHTML=header(s);document.documentElement.classList.toggle('has-room-head',roomCustomer());const crumb=document.querySelector('#header-crumb');if(crumb)crumb.innerHTML=headerCrumb(s);const keepEntry=!!entryHandle&&!s.project&&s.mode!=='staff';if(keepEntry)entryHandle.update({resume:!!s.requestResume,entryError:s.entryError||null,busy:booting});else{entryHandle?.unmount();entryHandle=null;main.innerHTML=s.project?projectView(s):booting?LOADING_VIEW:s.mode==='staff'?(s.user?picker(s):login()):welcome(s);}if(s.project||!s.entryError)shownEntryError=null;else if(s.entryError!==shownEntryError){shownEntryError=s.entryError;main.querySelector('.sx-invite-alert')?.scrollIntoView?.({block:'nearest'});}for(const fresh of media.length?main.querySelectorAll('video,audio'):[]){const index=media.findIndex(old=>old.node.dataset.version===fresh.dataset.version&&old.node.getAttribute('src')===fresh.getAttribute('src')&&old.node.id===fresh.id);if(index!==-1){const old=media.splice(index,1)[0];fresh.replaceWith(old.node);if(old.playing&&old.node.paused)old.node.play().catch(()=>{});}}const pillar=main.querySelector('.sx-dr-right');if(pillar&&pillarTop)pillar.scrollTop=pillarTop;const journalNode=main.querySelector('[data-journal]');if(journalNode&&journalTop)journalNode.scrollTop=journalTop;restore(main);mountScreens();placeTimeline();wireCompare();const strategyForm=main.querySelector('[data-form=strategy]');if(strategyForm)syncCastingChoices(strategyForm,drafts.get(draftKey(strategyForm))?.values);refreshCasting(strategyForm);if(remote){for(const old of files){const form=Array.from(main.querySelectorAll('form[data-form]')).find(node=>draftKey(node)===old.key);const input=form&&Array.from(form.elements).find(node=>node.type==='file'&&node.name===old.name);if(input)input.replaceWith(old.node);}for(const [index,node] of Array.from(main.querySelectorAll('details')).entries())if(details.includes(index))node.open=true;if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});else if(focusKey){const replacement=[...main.querySelectorAll('button,a'),...(headBox?.querySelectorAll('button,a')||[])].find(node=>node.offsetParent!==null&&(focusKey.room?[node.dataset.roomGo,node.dataset.roomDo,node.dataset.draftDo,node.dataset.journalDo,node.dataset.journalGo].includes(focusKey.room):focusKey.action?node.dataset.action===focusKey.action&&node.dataset.id===focusKey.id&&node.dataset.tab===focusKey.tab:focusKey.href&&node.getAttribute('href')===focusKey.href));replacement?.focus({preventScroll:true});}if(scroll)window.scrollTo(scroll.x,scroll.y);}const inviteField=document.querySelector('[name="invite-url"]');if(inviteField)inviteField.readOnly=true;wireMedia();production.render();if(busy)setBusy(true);syncLive();renderLive();focusInitialStaffScene();focusInitialStaffHistory();}
 // 슬레이트 판 화면(첫 화면 · 고객 방 · 1차안): 움직임과 듣개는 새로 그린 칸에 붙인다. 같은 화면을 다시 그릴 때는 다시 움직이지 않는다.
 let screenKey='',draftHandle=null,entryHandle=null,reviewHandle=null,finalHandle=null,directionHandle=null,resumeChecked=false;
 function mountScreens(){
@@ -95,6 +96,7 @@ function mountScreens(){
   const entry=main.querySelector('.sx-home'),draft=main.querySelector('.sx-draft'),review=main.querySelector('.sx-review'),room=main.querySelector('.sx-room,.sx-shell');
   const classes=document.documentElement.classList;classes.toggle('view-dr',!!(draft||review));
   const model=draft?draftModel(s.project):null,key=entry?'entry':model?`draft:${model.round}`:room?`room:${s.tab}:${roomState(s.project)}`:'',animate=key!==screenKey;screenKey=key;
+  if(animate&&s.journalOpen){s.journalOpen=false;journalOpener=null;}
   // PC 앱 창은 예시 주소로 옮겨 가지 못한다(desktop/src/pulse-app.cjs 허용 목록) — 그 창에서는 제자리에서 연다.
   // 예시 · 의뢰서가 곧바로 위에 열리는 주소(?demo=film · ?start=request)에서는 쇼릴을 받지 않고 기다린다(덮개를 닫으면 그때 붙는다).
   if(entry){if(!entryHandle)entryHandle=mountEntry(main,{animate,onStart:openPublicRequest,onDemo:s.desktopApp?openFilmDemo:null,held:!!(filmDemo||startRequest)});checkResume();}
@@ -105,22 +107,74 @@ function mountScreens(){
   // 방향 제안: 비교 중인 안 · 모델 · 펼친 칸은 s.directionUi에 두어 실시간 다시 그리기에도 남긴다(제안이 바뀌면 새로).
   if(main.querySelector('[data-dp]')){const info=directionModel(s.project);if(info){const key=info.options.map(o=>o.id).join(',');if(s.directionUi?.key!==key)s.directionUi={key};directionHandle=mountDirection(main,info,{ui:s.directionUi,animate});}}
   const headRun=document.querySelector('.app-header .sx-steps-run'),headNow=headRun?.querySelector('.is-now');if(headNow&&headRun.scrollWidth>headRun.clientWidth)headRun.scrollLeft=headNow.offsetLeft-headRun.offsetLeft-(headRun.clientWidth-headNow.offsetWidth)/2;
-  if(room)mountRoom(main,{animate,onGo:goRoom,onEdit:()=>openProjectRequest('review'),onContact:()=>goRoom('contact'),onModel:answerModel,onFiles:sendMoreFiles,onPaper:showRoomPaper});
+  if(room)mountRoom(main,{animate,onGo:goRoom,onEdit:()=>openProjectRequest('review'),onContact:()=>openJournal(),onModel:answerModel,onFiles:sendMoreFiles,onPaper:showRoomPaper});
+  watchJournal();setJournalOpen(!!s.journalOpen);
 }
 // 쓰던 의뢰서가 있으면 첫 화면 단추가 「이어 쓰기」로 바뀐다. 한 번만 물어본다.
 async function checkResume(){if(resumeChecked||s.mode!=='customer'||demo||filmDemo)return;resumeChecked=true;try{const {draft}=await networkRequest('/pulse/api/request'),resume=!!(draft?.status==='draft'&&(draft.step||draft.answers?.name||draft.files?.length));if(resume!==!!s.requestResume){s.requestResume=resume;if(!s.project&&canApplyRemote())render();}}catch{}}
 // 의뢰 흐름 손님(고객 방). 머리 하나 · 묻기 하나 · 영상과 납품 한 화면은 이 손님에게만 — 옛 프로젝트 · 체험 · 직원은 옛 길 그대로.
 const roomCustomer=()=>s.mode==='customer'&&!demo&&!!s.project&&usesRoom(s.project);
-function goRoom(stage){
+function goRoom(stage,{versionId=''}={}){
   if(stage==='write'){openProjectRequest();return;}
+  if(stage==='journal'||stage==='contact'){openJournal();return;}
   // 단계 id · 옛 탭 이름은 roomTab이 방 화면 하나로 옮긴다. 다른 화면에서 「영상 · 납품」으로 오면 최종본이 있을 때 최종본부터 보인다.
   const view=roomTab(stage);
   if(view==='review'&&!['review','history'].includes(s.tab)&&s.project?.versions?.some(v=>v.kind==='final'))s.versionId='';
-  s.tab=view;s.error='';render();
-  if(view==='contact'){if(typeof window.scrollTo==='function')window.scrollTo(0,0);main.querySelector('[data-form="support"] textarea')?.focus({preventScroll:true});return;}
+  if(versionId)s.versionId=versionId;
+  s.tab=view;s.error='';s.journalOpen=false;journalOpener=null;render();
   if(stage==='request')main.querySelector('[data-room-brief]')?.scrollIntoView({block:'start',behavior:'auto'});else if(typeof window.scrollTo==='function')window.scrollTo(0,0);
 }
 // 방 아래 준비 칸(바뀐 내용 · 준비 자료 · 납품 규격)으로. 영상 화면의 「납품 규격 보기」도 여기로 온다.
+// ── 일지(판 3b) ── 한 화면에 하나. 자리(data-place)는 CSS가 정하고, 여기서는 열고 닫기 · 「봤다」 · 알림 이동만 한다.
+// 방향 · 완성 광고는 늘 서랍(휴대폰은 시트), 1차안 · 영상은 휴대폰에서만 시트, 방은 늘 흐름 안.
+let journalObserver=null,journalOpener=null,journalSeenLater=false;
+const journalBox=()=>main.querySelector('[data-journal]');
+const seenKey=()=>'pulse-journal-seen:'+identity();
+// 본 시각(이 기기): 처음 여는 프로젝트는 지금 일지의 가장 최근 시각에서 시작해 0으로 보인다. 저장이 막히면 늘 0.
+function syncJournalSeen(){
+  if(!roomCustomer()){s.journalSeenFor='';s.journalSeen=NaN;return;}
+  if(s.journalSeenFor===identity())return;
+  s.journalSeenFor=identity();let seen=NaN;
+  try{const raw=localStorage.getItem(seenKey());if(raw!==null)seen=Number(raw);}catch{}
+  if(!Number.isFinite(seen)){seen=journalModel(s.project).latestAt;try{localStorage.setItem(seenKey(),String(seen));}catch{}}
+  s.journalSeen=seen;
+}
+// 일지 줄기가 화면에 들어왔거나 서랍 · 시트를 열면 「봤다」. 머리 숫자는 다시 그리지 않고 그 단추 안만 고친다.
+function markJournalSeen({opened=false}={}){
+  if(!roomCustomer())return;
+  if(!opened&&(document.hidden||document.hasFocus?.()===false)){journalSeenLater=true;return;}
+  journalSeenLater=false;const latest=journalModel(s.project).latestAt;
+  if(Number.isFinite(s.journalSeen)&&s.journalSeen>=latest)return;
+  s.journalSeen=latest;try{localStorage.setItem(seenKey(),String(latest));}catch{}
+  const lines=new Set(journalModel(s.project).items.map(item=>item.id)),pair=(s.live.notifications||[]).filter(row=>row.unread&&row.projectId===s.project.id&&(row.messageId&&lines.has('m:'+row.messageId)||row.commentId&&lines.has('c:'+row.commentId))).flatMap(row=>Array.isArray(row.ids)&&row.ids.length?row.ids:[row.id]);
+  if(pair.length)Promise.resolve(live?.read(pair)).catch(()=>{});
+  const button=document.querySelector('.app-header [data-journal-count]'),box=document.createElement('div');box.innerHTML=headJournal(s);if(button&&box.firstElementChild)button.innerHTML=box.firstElementChild.innerHTML;
+}
+function watchJournal(){
+  journalObserver?.disconnect();journalObserver=null;journalSeenLater=false;
+  const box=journalBox();if(!box)return;
+  if(journalOverlay(box)){if(s.journalOpen)markJournalSeen();return;}
+  if(typeof IntersectionObserver!=='function'){markJournalSeen();return;}
+  const list=box.querySelector('.sx-j-pin,.sx-j-list')||box;
+  journalObserver=new IntersectionObserver(entries=>{if(!entries.some(entry=>entry.isIntersecting))return;markJournalSeen();journalObserver?.disconnect();journalObserver=null;});
+  journalObserver.observe(list);
+}
+const setJournalOpen=on=>journalSetOpen(main,on);
+// 열기: 단이면 일지로 옮겨 묻기 칸에, 서랍 · 시트면 연다. target이 있으면(알림) 그 줄로.
+function openJournal({target='',opener=null}={}){
+  let box=journalBox();if(!box)return;
+  if(target&&!box.querySelector(`[data-journal-id="${CSS.escape(target)}"]`)&&!s.journalAll){s.journalAll=true;render();box=journalBox();if(!box)return;}
+  if(journalOverlay(box)){if(!s.journalOpen){journalOpener=opener||document.activeElement;s.journalOpen=true;}setJournalOpen(true);}
+  markJournalSeen({opened:true});
+  const row=target&&box.querySelector(`[data-journal-id="${CSS.escape(target)}"]`);
+  if(row){row.classList.add('notification-target');row.focus({preventScroll:true});row.scrollIntoView?.({block:'center'});setTimeout(()=>row.classList.remove('notification-target'),5000);return;}
+  if(!journalOverlay(box))box.scrollIntoView?.({block:'start'});
+  journalFocus(box);
+}
+function closeJournal(){
+  if(!s.journalOpen)return;s.journalOpen=false;setJournalOpen(false);
+  const back=journalOpener;journalOpener=null;(back?.isConnected?back:document.querySelector('.app-header [data-room-do="journal"]'))?.focus({preventScroll:true});
+}
 function showRoomPaper(name){s.tab='overview';s.error='';render();const box=main.querySelector(`[data-paper-for="${CSS.escape(name)}"]`);if(box)box.scrollIntoView({block:'start',behavior:'auto'});else if(typeof window.scrollTo==='function')window.scrollTo(0,0);}
 function mountDraftScreen(model,animate){
   const key=[identity(),'draft-review',model.round].join(':'),kept=drafts.get(key);
@@ -159,7 +213,7 @@ let flow=null,flowOpening=false;
 function overlayState(open){if(open)entryHandle?.pause();else entryHandle?.resume();const overlay=document.querySelector('#request-root');overlay.hidden=!open;if(!open)overlay.innerHTML='';for(const node of document.querySelectorAll('.app-header,#main,.skip-link'))node.inert=open;return overlay;}
 function closeFlow(){if(!flow)return;flow.unmount();flow=null;overlayState(false);resumeChecked=false;main.focus?.({preventScroll:true});}
 async function openFlow(load,after){
-  if(flow||flowOpening)return;flowOpening=true;
+  if(flow||flowOpening)return;flowOpening=true;if(s.journalOpen){s.journalOpen=false;setJournalOpen(false);}
   try{
     const backend=await load();
     // 보내고 응답을 받지 못한 채 다시 왔을 때: 같은 의뢰로 바로 잇는다.
@@ -223,7 +277,7 @@ function scheduleInviteNavigation(){
   });
 }
 function withLeave(action){if(busy||loading){notice('처리 중이에요. 끝난 뒤 이동해 주세요.');return;}if(drafts.size){leaveAction=action;openDialog('leave');}else action();}
-function resetContext({preserveInvite=false}={}){loading=false;production.reset();pendingInitialScene='';if(!preserveInvite)cancelInviteNavigation();live?.stop();live=null;liveIdentity='';liveSnapshot=null;deviceState=null;deviceOperation++;deviceRefresh++;deviceBusy=false;s.live.deviceBusy=false;setBusy(false);epoch++;drafts.clear();pendingRemote=null;closeDialog();Object.assign(s,{project:null,canEdit:false,editor:null,versionId:'',compare:false,showVersion:false,inviteUrl:'',error:'',conflict:false,workflow:[],historyTarget:null,notificationCommentId:null,tab:'strategy',castingCode:null,castingCodeOpen:null});castingCodeSave=null;}
+function resetContext({preserveInvite=false}={}){loading=false;s.journalOpen=false;s.journalAll=false;s.journalSeenFor='';journalOpener=null;production.reset();pendingInitialScene='';if(!preserveInvite)cancelInviteNavigation();live?.stop();live=null;liveIdentity='';liveSnapshot=null;deviceState=null;deviceOperation++;deviceRefresh++;deviceBusy=false;s.live.deviceBusy=false;setBusy(false);epoch++;drafts.clear();pendingRemote=null;closeDialog();Object.assign(s,{project:null,canEdit:false,editor:null,versionId:'',compare:false,showVersion:false,inviteUrl:'',error:'',conflict:false,workflow:[],historyTarget:null,notificationCommentId:null,tab:'strategy',castingCode:null,castingCodeOpen:null});castingCodeSave=null;}
 function accept(result){if(!result.project&&result.id&&Number.isFinite(result.revision))result={...result,project:result};if(result.project&&!result.project.studio&&result.project.id===s.project?.id)result.project.studio=s.project.studio;if(result.csrf)s.csrf=result.csrf;if(result.csrfToken)s.csrf=result.csrfToken;if(result.project){if(!s.project&&s.mode==='customer'&&!demo)s.tab='overview';else if(!s.project&&s.mode==='staff'&&result.project.studio?.request&&['received','planning'].includes(result.project.stage))s.tab='desk';else if(!s.project&&!result.project.studio?.strategy?.revision){const versions=result.project.versions||[];if(versions.some(v=>v.kind==='final')&&result.project.stage==='delivered')s.tab='history';else if(versions.some(v=>v.kind==='preview'))s.tab='review';}s.project=result.project;if(!s.project.studio)s.project.studio={preferences:{},assets:[],references:[],concepts:[],scenes:[],sceneReviews:[],comments:[]};if(result.canEdit!==undefined)s.canEdit=!!result.canEdit;}}
 function renderLive(){const box=document.querySelector('#pulse-live');if(!box)return;box.hidden=!!demo||!(s.project||s.user);if(box.hidden)return;const active=box.contains(document.activeElement)?document.activeElement.dataset?.id:null;box.innerHTML=liveView(s);if(active)Array.from(box.querySelectorAll('[data-action=open-notification]')).find(node=>node.dataset.id===active)?.focus({preventScroll:true});const badge=document.querySelector('[data-action=notifications]');if(badge){badge.textContent=`알림${s.live.unreadCount?' '+s.live.unreadCount:''}`;badge.setAttribute('aria-expanded',String(s.live.open));}}
 function syncLive(){if(demo)return;const key=s.mode==='staff'?(s.user?`staff:${s.user.id}`:''):(s.project?`customer:${s.project.id}`:'');if(key===liveIdentity)return;live?.stop();live=null;liveIdentity=key;liveSnapshot=null;pendingRemote=null;deviceState=null;s.live={...s.live,deviceEnabled:false,deviceReady:false,deviceNote:'기기 알림 상태를 확인하고 있어요.',deviceIssue:'',deviceProgress:'',deviceUncertain:false,notifications:[],unreadCount:0,open:openNotificationsOnStart,pending:false,status:'connecting'};if(!key)return;refreshDevice();live=createLiveConnection({mode:s.mode,request,options,onSnapshot:snapshot=>{if(key!==liveIdentity)return;if((s.mode==='staff'&&snapshot.userId&&snapshot.userId!==s.user?.id)||(s.mode==='customer'&&snapshot.projectId&&snapshot.projectId!==s.project?.id)){connectionExpired();return;}liveSnapshot=snapshot;s.live.notifications=snapshot.notifications||[];s.live.unreadCount=snapshot.unreadCount||0;renderLive();fetchRemote();},onFresh:items=>{if(key!==liveIdentity)return;notice(items.length===1?items[0].title:`새 알림 ${items.length}개가 도착했어요.`);},onStatus:status=>{s.live.status=status;renderLive();},onExpired:connectionExpired});}
@@ -420,9 +474,11 @@ document.addEventListener('click',async event=>{
       s.live.open=false;s.notificationCommentId=item.commentId||null;
       // 의뢰 흐름 손님은 대응표 하나(roomRoute)로 간다 — 대화는 묻기 화면, 최종본은 영상 화면의 그 최종본, 옛 탭 소식은 고객 방.
       const routed=roomCustomer()?roomRoute(item,s.project):null;
-      s.tab=routed?routed.tab:['overview','draft','desk','strategy','direction','concepts','storyboard','review','history','manage'].includes(item.tab)?item.tab:'history';
+      if(routed?.journal){const at=journalModel(s.project).items.findIndex(item=>item.id===routed.journal);if(at>=JOURNAL_SHOWN)s.journalAll=true;}
+      s.tab=routed?(routed.tab||roomTab(s.tab)):['overview','draft','desk','strategy','direction','concepts','storyboard','review','history','manage'].includes(item.tab)?item.tab:'history';
       const versionId=routed?routed.versionId:item.versionId;if(versionId)s.versionId=versionId;
       render();
+      if(routed?.journal){openJournal({target:routed.journal});return;}
       const pointer=item.messageId||item.commentId;
       const target=pointer&&Array.from(main.querySelectorAll('[data-message-id]')).find(node=>node.dataset.messageId===pointer&&node.matches('article'))
         ||item.requestId&&Array.from(main.querySelectorAll('[data-scene-request-id]')).find(node=>node.dataset.sceneRequestId===item.requestId)
@@ -504,7 +560,24 @@ document.addEventListener('click',async event=>{
 // 「캐스팅북 코드로 채우기」 접힘: toggle은 한 박자 뒤에 와서, 접자마자 탭을 옮기면 떨어져 나간 칸에서 울려 놓친다 — 누르는 순간에도 적어 둔다.
 document.addEventListener('click',event=>{const details=event.target?.closest?.('details.casting-code>summary')?.parentElement;if(details?.matches?.('details.casting-code'))s.castingCodeOpen=!details.open;},true);
 // 머리 하나(판 3): 앱 머리의 프로젝트 이름 · 단계 줄 · 「담당자에게 묻기」는 main 밖이라 여기서 받는다.
-document.querySelector('.app-header')?.addEventListener('click',event=>{if(!roomCustomer())return;const go=event.target.closest('[data-room-go]');if(go){if(!go.disabled)goRoom(go.dataset.roomGo);return;}if(event.target.closest('[data-room-do="contact"]'))goRoom('contact');});
+document.querySelector('.app-header')?.addEventListener('click',event=>{if(!roomCustomer())return;const go=event.target.closest('[data-room-go]');if(go){if(!go.disabled)goRoom(go.dataset.roomGo);return;}const ask=event.target.closest('[data-room-do="journal"]');if(ask){if(s.journalOpen&&journalOverlay(journalBox()))closeJournal();else openJournal({opener:ask});}});
+// 일지(판 3b): 1차안 화면에는 mountRoom이 붙지 않으므로 일지 안 누르기 · 글 · 파일은 여기 한 곳에서 받는다.
+main.addEventListener('click',event=>{
+  if(!roomCustomer())return;
+  const act=event.target.closest('[data-journal-do]')?.dataset.journalDo;
+  if(act==='close'){closeJournal();return;}
+  if(act==='more'){s.journalAll=!s.journalAll;render();journalBox()?.querySelector('[data-journal-do="more"]')?.focus({preventScroll:true});return;}
+  const go=event.target.closest('[data-journal-go]');if(go){goRoom(go.dataset.journalGo,{versionId:go.dataset.version||''});return;}
+  const ask=event.target.closest('[data-room-do="journal"]');if(ask)openJournal({opener:ask});
+});
+main.addEventListener('input',event=>{const area=event.target;if(area?.matches?.('[data-journal] textarea[data-grow]')){area.style.height='auto';area.style.height=`${area.scrollHeight+2}px`;}});
+main.addEventListener('change',event=>{if(!event.target?.matches?.('[data-journal] [data-ask-file]'))return;const name=event.target.closest('label')?.querySelector('[data-ask-name]');if(name)name.textContent=event.target.files?.[0]?.name||'파일 고르기';});
+// 창으로 돌아오면 그사이 화면에 있던 일지를 「봤다」로. 창 폭 · 방향이 바뀌어 시트가 단이 되면 연 상태를 푼다.
+window.addEventListener('focus',()=>{if(journalSeenLater)markJournalSeen();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&journalSeenLater)markJournalSeen();});
+window.matchMedia?.(JOURNAL_SHEET)?.addEventListener?.('change',()=>{if(s.journalOpen&&!journalOverlay(journalBox())){s.journalOpen=false;journalOpener=null;setJournalOpen(false);}});
+// Esc: 의견 묶음 시트 · 대화상자가 먼저, 그다음 일지 서랍 · 시트.
+document.addEventListener('keydown',event=>{if(event.key!=='Escape'||!s.journalOpen||document.querySelector('.sx-round-sheet[open],dialog[open]'))return;closeJournal();});
 window.addEventListener('hashchange',queueInviteNavigation);
 dialog.addEventListener('close',()=>{if(inviteNavigationPrompt&&!dialog.open)cancelInviteNavigation();scheduleInviteNavigation();});
 document.addEventListener('compositionend',scheduleInviteNavigation);
