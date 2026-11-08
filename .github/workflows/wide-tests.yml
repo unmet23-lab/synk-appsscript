@@ -145,6 +145,7 @@ jobs:
             SYNK-appsscript/package-lock.json
             SYNK-appsscript/.github/workflows/wide-tests.yml
             SYNK-appsscript/${{ matrix.bundle == 'desktop' && 'desktop/package-lock.json' || matrix.bundle == 'experiences' && 'experiences/synk-account/package-lock.json' || matrix.bundle == '루트' && '영상/package-lock.json' || 'package-lock.json' }}
+            SYNK-appsscript/${{ matrix.bundle == 'experiences' && 'experiences/solo-backup/package-lock.json' || 'package-lock.json' }}
             SYNK-talk/package-lock.json
       - name: install dependencies
         timeout-minutes: 8
@@ -155,6 +156,8 @@ jobs:
           npm ci --ignore-scripts --no-audit --no-fund
           if [ "$BUNDLE" = "desktop" ]; then (cd desktop && npm ci --ignore-scripts --no-audit --no-fund); fi
           if [ "$BUNDLE" = "experiences" ]; then (cd experiences/synk-account && npm ci --ignore-scripts --no-audit --no-fund); fi
+          # 업무 백업 시험판의 복구 시험은 자기 폴더의 tar-stream을 require한다 — 없으면 시험 파일째 죽는다(11-09).
+          if [ "$BUNDLE" = "experiences" ]; then (cd experiences/solo-backup && npm ci --ignore-scripts --no-audit --no-fund); fi
           # 영상·납품 묶음 시험이 ffmpeg를 부른다 — 10-21 첫 실행에서 회사 19·루트 5개가 「spawn ffmpeg ENOENT」였다.
           # 경험 앱은 초보 게임 음성 시험이 후처리 도구(ffmpeg·ffprobe)를 확인한다(10-22).
           if [ "$BUNDLE" = "회사" ] || [ "$BUNDLE" = "루트" ] || [ "$BUNDLE" = "experiences" ]; then

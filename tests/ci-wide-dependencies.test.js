@@ -39,7 +39,7 @@ function run(t, { missing = [], updateExit = 0, updateFailures = 0, timeoutFailu
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-wide-deps-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const bin = path.join(root, 'bin'), log = path.join(root, 'calls');
-  fs.mkdirSync(bin); fs.mkdirSync(path.join(root, 'experiences/synk-account'), { recursive: true });
+  fs.mkdirSync(bin); for (const folder of ['synk-account', 'solo-backup']) fs.mkdirSync(path.join(root, 'experiences', folder), { recursive: true });
   const executable = (name, text) => fs.writeFileSync(path.join(bin, name), '#!/bin/sh\n' + text, { mode: 0o755 });
   executable('npm', 'exit 0\n');
   executable('timeout', `printf '%s\\n' "timeout $*" >> "$CALLS"
@@ -151,7 +151,7 @@ test('wide preparation retains deterministic installs, minimal checkout credenti
   for (const checkout of checkouts) assert.match(checkout[1], /persist-credentials: false/);
   const setup = workflow.match(/      - uses: actions\/setup-node@v5\n([\s\S]*?)(?=      - name:)/)?.[1];
   assert.match(setup, /cache: npm/);
-  for (const input of ['SYNK-appsscript/package-lock.json', 'desktop/package-lock.json', 'experiences/synk-account/package-lock.json', '영상/package-lock.json', 'SYNK-talk/package-lock.json', '.github/workflows/wide-tests.yml']) assert.ok(setup.includes(input), input);
+  for (const input of ['SYNK-appsscript/package-lock.json', 'desktop/package-lock.json', 'experiences/synk-account/package-lock.json', 'experiences/solo-backup/package-lock.json', '영상/package-lock.json', 'SYNK-talk/package-lock.json', '.github/workflows/wide-tests.yml']) assert.ok(setup.includes(input), input);
   assert.doesNotMatch(setup, /cache-dependency-path:.*node_modules/);
   assert.match(workflow, /bundle: \[루트, 회사, desktop, experiences, tools\]/);
   assert.match(workflow, /cancel-in-progress: false/);
@@ -161,6 +161,18 @@ test('wide preparation retains deterministic installs, minimal checkout credenti
   assert.match(guard, /success\(\) \|\| failure\(\)/);
   assert.match(guard, /ci읽기대조\.cjs --sparse-only --trace/);
   assert.doesNotMatch(guard, /continue-on-error/);
+});
+
+// 11-08 experiences/solo-backup이 tar-stream을 더했는데 이 단계에 설치가 없어 그 폴더 시험이 파일째 죽어 wide (experiences)가 빨갰다.
+test('every experiences folder with dependencies is installed for the experiences bundle', () => {
+  const root = path.join(__dirname, '..', 'experiences');
+  for (const folder of fs.readdirSync(root)) {
+    const file = path.join(root, folder, 'package.json');
+    if (!fs.existsSync(file)) continue;
+    if (!Object.keys(JSON.parse(fs.readFileSync(file, 'utf8')).dependencies || {}).length) continue;
+    assert.ok(script.includes(`(cd experiences/${folder} && npm ci `), `wide-tests.yml install dependencies에 experiences/${folder}의 npm ci가 없다 — 없으면 그 폴더 시험이 CI에서 파일째 죽는다`);
+    assert.ok(fs.existsSync(path.join(root, folder, 'package-lock.json')), `experiences/${folder}에 package-lock.json이 없으면 npm ci가 멈춘다`);
+  }
 });
 
 test('wide sparse checkout excludes only intended production PNGs and keeps source, tests and common inputs in the Git index', t => {

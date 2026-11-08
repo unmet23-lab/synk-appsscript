@@ -80,11 +80,13 @@ function readDiagnosed(file = path.join(__dirname, 'diagnosed.json'), manifest =
 // Newest first: a range holds from `from` up to, but not including, the commit that stopped the failure.
 // truncated: the read ended at the alert horizon, not at the activation commit. Then a range wholly older than the rows has nothing to explain,
 // and one whose `from` is older runs to the oldest row read. A missing fixedBy with `from` in the rows is still a broken range.
+// A read that ends exactly on fixedBy holds no commit of the range either, since the range stops before fixedBy. Reads end on page boundaries, so
+// this hit one push in fifty per range (11-08 acd9aba92: fixedBy was row 850 of 850, three runs red, the next push green).
 function placeRanges(rows, diagnosed, { truncated = false } = {}) {
   const position = new Map(rows.map((row, index) => [row.commit, index])), spans = [], broken = [];
   for (const range of diagnosed) {
     const newest = position.get(range.fixedBy); let oldest = position.get(range.from);
-    if (truncated && oldest === undefined) { if (newest === undefined) continue; oldest = rows.length - 1; }
+    if (truncated && oldest === undefined) { if (newest === undefined || newest === rows.length - 1) continue; oldest = rows.length - 1; }
     if (newest === undefined || oldest === undefined || newest >= oldest) broken.push(range); else spans.push({ ...range, newest, oldest });
   }
   return { position, spans, broken };

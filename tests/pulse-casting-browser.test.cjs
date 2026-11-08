@@ -345,8 +345,9 @@ test('PULSE: 공유·문의·스와이프 실제 Chrome 회귀', { timeout: 120_
       const inquiry = await page.locator('#inq-text').inputValue();
       assert.match(inquiry, /F02/); assert.match(inquiry, /F04/); assert.doesNotMatch(inquiry, /M01/);
       await page.screenshot({ path: path.join(run.out, 'inquiry-shared.png') });
-      // 그 주소를 새로 열면 받은 조합의 문의 글이고, 다른 화면으로 가면 상단 문의하기는 다시 내 패키지 문의 글을 가리킨다
-      await page.goto(url + sharedInq);
+      // 그 주소를 새로 열면 받은 조합의 문의 글이고, 다른 화면으로 가면 상단 문의하기는 다시 내 패키지 문의 글을 가리킨다.
+      // ?fresh로 새 문서를 연다 — #만 다르면 같은 문서 안 이동이라, 앞 스크롤이 끝나기 전(마지막 45ms쯤)에 들어가면 Chrome이 다음 부드러운 스크롤을 버린다(11-09, 현장 노트).
+      await page.goto(url + '?fresh' + sharedInq);
       await inquiryVisible(page);
       assert.match(await page.locator('#inq-text').inputValue(), /F02/);
       await page.locator('.bar-nav [data-nav="board"]').click();

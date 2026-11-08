@@ -122,6 +122,19 @@ test('when the read ends at the horizon, a range older than the rows is skipped 
   assert.match(noEnd.problems.join(), /not on the master line/, 'a fixedBy that is not read while its from is still is broken');
 });
 
+// 11-08 acd9aba92: reads end on page boundaries and one ended exactly on a fixedBy, so three runs turned red and the next push was green.
+test('a read that ends exactly on fixedBy holds nothing of the range and is not a broken range, but the failure of fixedBy itself still alerts', () => {
+  const rows = [row('a', 'success', 'x'), row('b', 'failure', 'FAIL 78/79: S070')];
+  const endsOnFix = { ...range, from: sha('e'), fixedBy: sha('b') };
+  const result = localStatus.judge(rows, { now: NOW, truncated: true, diagnosed: [endsOnFix], manifestCases });
+  assert.doesNotMatch(result.problems.join(), /not on the master line/);
+  assert.deepEqual(result.explained, []);
+  assert.match(result.problems.join(), /failed at b{40}: S070/);
+  assert.match(localStatus.judge(rows, { now: NOW, diagnosed: [endsOnFix], manifestCases }).problems.join(), /not on the master line/, 'a full read still refuses it');
+  const reversed = localStatus.judge(rows, { now: NOW, truncated: true, diagnosed: [{ ...range, from: sha('b'), fixedBy: sha('a') }, { ...range, from: sha('a'), fixedBy: sha('b') }], manifestCases });
+  assert.equal(reversed.problems.filter(text => /not on the master line/.test(text)).length, 1, 'both ends read and the wrong way round stays broken');
+});
+
 test('the ledger on master is well formed and every entry names a local case', t => {
   const ranges = localStatus.readDiagnosed();
   assert.ok(ranges.length >= 1);
