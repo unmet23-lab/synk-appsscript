@@ -110,7 +110,7 @@ const Think: React.FC<{ t: number }> = ({ t }) => {
       </svg>
       <div style={{ position: 'absolute', left: 820, top: 540, transform: 'translate(-50%, -50%)', background: C.cream, borderRadius: 80, padding: '18px 44px 22px', border: `6px dashed ${C.shade}`, display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 10px 24px rgba(50,20,10,0.3)' }}>
         <span style={{ fontFamily: KO, fontWeight: 900, fontSize: 84, lineHeight: 1.05, color: C.shade, whiteSpace: 'nowrap' }}>{SAY.think.ko}</span>
-        <span style={{ fontFamily: MN, fontWeight: 700, fontSize: 58, lineHeight: 1.15, color: C.brown, whiteSpace: 'nowrap' }}>🔊 {SAY.think.read}</span>
+        <span style={{ fontFamily: MN, fontWeight: 700, fontSize: 58, lineHeight: 1.15, color: C.brown, whiteSpace: 'nowrap' }}>{SAY.think.read}</span>
       </div>
     </div>
   );
@@ -160,6 +160,8 @@ const Bubble: React.FC<{ t: number; from: number; until: number; x: number; y: n
         <path d={`M ${bx - 30} ${by} L ${tail[0]} ${tail[1]} L ${bx + 30} ${by} Z`} fill={C.cream} stroke={C.shade} strokeWidth={6} strokeLinejoin="round" />
         <rect x={left} y={top} width={w} height={h} rx={Math.min(64, h / 2)} fill={C.cream} stroke={C.shade} strokeWidth={6} />
         <rect x={bx - 26} y={by - 8} width={52} height={12} fill={C.cream} />
+        {/* 안쪽 바늘땀 — 위 띠 · 이름표와 같은 천 조각 결(미학 대체 심사 「틀 세 가지가 섞임」) */}
+        <rect x={left + 13} y={top + 13} width={w - 26} height={h - 26} rx={Math.min(52, h / 2 - 13)} fill="none" stroke={C.stitch} strokeWidth={4} strokeDasharray="14 10" strokeLinecap="round" />
       </svg>
       <div style={{ position: 'absolute', left, top, width: w, height: h, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
         {/* 한국어 줄마다 바로 아래 키릴 읽기(시험관 둘이 「읽기 글씨가 작아 끝을 못 읽음」 — 크게, 줄마다 짝지어) */}
@@ -169,7 +171,7 @@ const Bubble: React.FC<{ t: number; from: number; until: number; x: number; y: n
           return (
             <React.Fragment key={ko}>
               <div style={{ fontFamily: KO, fontWeight: 900, fontSize: size, lineHeight: 1.04, color: C.shade, whiteSpace: 'pre' }}>{ko}</div>
-              {read ? <div style={{ fontFamily: MN, fontWeight: 700, fontSize: size * 0.72, lineHeight: 1.12, color: C.brown, marginBottom: i < all.length - 1 ? 6 : 0, whiteSpace: 'nowrap' }}>{i === 0 ? '🔊 ' : ''}{read}</div> : null}
+              {read ? <div style={{ fontFamily: MN, fontWeight: 700, fontSize: size * 0.72, lineHeight: 1.12, color: C.brown, marginBottom: i < all.length - 1 ? 6 : 0, whiteSpace: 'nowrap' }}>{read}</div> : null}
             </React.Fragment>
           );
         })}
@@ -211,9 +213,6 @@ const Menu: React.FC<{ t: number }> = ({ t }) => {
   const glow = t >= T.two ? interpolate(t, [T.two, T.two + 0.12, T.two + 0.6], [0, 1, 0.45], clamp) : 0;
   return (
     <>
-      {t >= T.two ? (
-        <div style={{ position: 'absolute', left: 92, top: 1004, width: 900, height: 252, borderRadius: 30, border: `7px dashed ${C.butter}`, boxShadow: `0 0 ${40 * glow}px rgba(255,231,161,${0.8 * glow})`, opacity: fadeIn(t, T.two, 0.12) }} />
-      ) : null}
       {MENU.map((m, i) => {
         const r = ROWS[i];
         if (t < r.at) return null;
@@ -221,8 +220,8 @@ const Menu: React.FC<{ t: number }> = ({ t }) => {
         const hot = i === 1 && t >= T.two;
         return (
           <div key={m.ko} style={{ position: 'absolute', left: r.x, top: r.y, transform: `translateY(-50%) scale(${a * (hot ? 1 + 0.16 * glow : 1)})`, transformOrigin: 'left center' }}>
-            <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 122, lineHeight: 1.0, color: hot ? C.butter : C.cream, whiteSpace: 'nowrap' }}>{m.ko}</div>
-            <div style={{ fontFamily: MN, fontWeight: 700, fontSize: 64, lineHeight: 1.2, color: '#E9D9C4', marginTop: 8, whiteSpace: 'nowrap' }}>🔊 {m.read}</div>
+            <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 122, lineHeight: 1.0, color: hot ? C.butter : C.cream, whiteSpace: 'nowrap', textShadow: hot ? `0 0 ${28 * glow}px rgba(255,231,161,${0.9 * glow})` : 'none' }}>{m.ko}</div>
+            <div style={{ fontFamily: MN, fontWeight: 700, fontSize: 64, lineHeight: 1.2, color: '#E9D9C4', marginTop: 8, whiteSpace: 'nowrap' }}>{m.read}</div>
           </div>
         );
       })}
@@ -301,7 +300,7 @@ export const Film: React.FC<{ scene?: boolean }> = ({ scene = false }) => {
         <Badge t={t} />
         {scene ? null : (
           <>
-            <Tag t={t} at={T.lift + 0.6} until={T.menu} x={300} y={1010} to={[700, 690]} ko={TAG.thisCup.ko} mn={TAG.thisCup.mn} size={88} />
+            <Tag t={t} at={T.freeze + 0.35} until={T.menu} x={300} y={1010} to={[700, 690]} ko={TAG.thisCup.ko} mn={TAG.thisCup.mn} size={88} />
             <Tag t={t} at={T.r2 + 0.55} until={T.close} x={560} y={1790} to={[520, 1575]} ko={TAG.twoCups.ko} mn={TAG.twoCups.mn} size={88} color={C.green} />
             <Menu t={t} />
           </>
@@ -309,7 +308,7 @@ export const Film: React.FC<{ scene?: boolean }> = ({ scene = false }) => {
       </Plate>
       <Think t={t} />
       <Bubble t={t} from={T.m1 - 0.1} until={T.look + 0.5} x={330} y={810} w={620} h={360} tail={[240, 1150]} say={SAY.m1} size={80} />
-      <Bubble t={t} from={T.lift + 0.08} until={T.freeze} x={290} y={690} w={470} h={220} tail={[640, 1000]} say={SAY.r1} size={88} />
+      <Bubble t={t} from={T.lift + 0.08} until={T.freeze} x={300} y={1000} w={470} h={220} tail={[650, 1090]} say={SAY.r1} size={88} />
       {scene ? null : (
         <>
           <Bubble t={t} from={T.retry + 0.05} until={T.r2} x={330} y={810} w={620} h={360} tail={[230, 1150]} say={SAY.m2} size={80} />
