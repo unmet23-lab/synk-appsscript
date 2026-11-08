@@ -23,13 +23,13 @@ export const Shade: React.FC<{ a?: number }> = ({ a = 0.92 }) => (
 );
 
 // 큰 글자가 곧 말 — 줄마다 28px 아래에서 올라오며 나타난다(줄 사이 3프레임). me = 사람의 말(회색)
-export const T: React.FC<{ lines: React.ReactNode[]; from: number; to: number; me?: boolean; size?: number; meta?: string; top?: number; fadeOut?: number }> = ({ lines, from, to, me, size = 96, meta, top = TOP, fadeOut = 3 }) => {
+export const T: React.FC<{ lines: React.ReactNode[]; from: number; to: number; me?: boolean; size?: number; meta?: string; top?: number; fadeOut?: number; still?: boolean }> = ({ lines, from, to, me, size = 96, meta, top = TOP, fadeOut = 3, still }) => {
   const f = useCurrentFrame();
   const a = sec(from), b = sec(to);
   if (f < a || f >= b) return null;
   const out = interpolate(f, [b - fadeOut, b], [1, 0], clamp);
   const up = (k: number) => {
-    const p = interpolate(f, [a + k * 3, a + k * 3 + 9], [0, 1], { ...clamp, easing: EASE_OUT });
+    const p = still ? 1 : interpolate(f, [a + k * 3, a + k * 3 + 9], [0, 1], { ...clamp, easing: EASE_OUT });
     return { opacity: p * out, transform: `translateY(${(1 - p) * 28}px)` };
   };
   return (
@@ -68,13 +68,13 @@ export const camStyle = (z: number, fx: number, fy: number, sx: number, sy: numb
 };
 
 // 폰 화면 안에 실제 화면 한 장을 넣는다(가림판으로 엄지 · 테두리는 그대로 남는다)
-export const PhonePlate: React.FC<{ screen: string; blurPhone?: number; blurTop?: number }> = ({ screen, blurPhone = 0, blurTop = 0 }) => {
+export const PhonePlate: React.FC<{ screen: string; blurPhone?: number; blurTop?: number; screenLight?: number }> = ({ screen, blurPhone = 0, blurTop = 0, screenLight = 0.86 }) => {
   const sw = PHONE.w * PS, sh = PHONE.h * PS;
   const inner = (
     <>
       <Img src={staticFile('img/cal.png')} style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 1717 * PS }} />
       <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 1717 * PS, WebkitMaskImage: `url(${staticFile('img/cal_mask.png')})`, WebkitMaskSize: '100% 100%', maskImage: `url(${staticFile('img/cal_mask.png')})`, maskSize: '100% 100%' }}>
-        <Img src={screen} style={{ position: 'absolute', left: PHONE.x * PS, top: PHONE.y * PS, width: sw, height: sh, objectFit: 'cover', objectPosition: '50% 0%', filter: 'brightness(0.86) contrast(0.96) blur(0.35px)' }} />
+        <Img src={screen} style={{ position: 'absolute', left: PHONE.x * PS, top: PHONE.y * PS, width: sw, height: sh, objectFit: 'cover', objectPosition: '50% 0%', filter: `brightness(${screenLight}) contrast(0.96) blur(0.35px)` }} />
       </div>
     </>
   );

@@ -9,7 +9,8 @@ export const SCENE_TOTAL = sec(5.6);
 // 판 좌표(원본 화소): 폰에서 질문이 멈추는 자리 · 달력 가운데 · 동그라미 줄
 const A = { z: 2.35, fx: 439, fy: 1134, sx: 540, sy: 1240 };
 const B = { z: 1.25, fx: 475, fy: 530, sx: 540, sy: 1060 };
-const C = { z: 1.42, fx: 360, fy: 560, sx: 470, sy: 1080 };
+// 11-08 셋째 판: 끝은 월요일 동그라미 줄과 오른쪽 아래 쪽지(「10월부터 정기휴무 일 → 월」)가 함께 들어오는 자리
+const C = { z: 1.5, fx: 500, fy: 640, sx: 540, sy: 1120 };
 export const SP = { stop: 2.2, lift0: 2.55, lift1: 4.35, end: 5.6 };
 
 // screen — 폰에 넣을 실제 화면(기본: 질문 2번 근처 roll 20 → 4번이 화면 위 3분의 1에 오는 roll 75에서 멈춘다)
@@ -28,7 +29,7 @@ export const PhoneToCalendar: React.FC<{ t0?: number; text?: boolean; screen?: {
   return (
     <AbsoluteFill style={{ background: '#0b0b0b', overflow: 'hidden' }}>
       <div style={camStyle(cam.z, cam.fx, cam.fy, cam.sx, cam.sy)}>
-        <PhonePlate screen={frameSrc(screen.dir, screen.pre, k)} blurPhone={blurPhone} blurTop={blurTop} />
+        <PhonePlate screen={frameSrc(screen.dir, screen.pre, k)} blurPhone={blurPhone} blurTop={blurTop} screenLight={interpolate(blurPhone, [0, 7], [0.86, 0.42], clamp)} />
       </div>
       {text ? (
         <>

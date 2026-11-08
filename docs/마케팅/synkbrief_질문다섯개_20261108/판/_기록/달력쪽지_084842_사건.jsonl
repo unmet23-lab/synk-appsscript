@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1b86a-16fc-7961-af28-3d534818d274"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 편집 스킬을 사용해, 원본 구도와 빛을 유지하면서 달력 오른쪽 아래에 요청하신 메모지 한 장만 추가하겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"달력 오른쪽 아래에 요청하신 세 줄 문구의 노란 메모지를 추가했습니다."}}
+{"type":"turn.completed","usage":{"input_tokens":98465,"cached_input_tokens":84224,"cache_write_input_tokens":0,"output_tokens":1711,"reasoning_output_tokens":455}}
