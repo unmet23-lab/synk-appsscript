@@ -1,5 +1,5 @@
 # LAB 몽골 M33 소리 — 카페 바탕 · 뽁 · 갸웃 · 번쩍(휙 + 반짝 화음) · 종이컵 툭툭 · 뚜껑 퐁 · 얼어붙음 · 분필 톡 · 도장 · 딩 · 반짝을 모두 직접 만든다(남의 음원 없음).
-# 음악은 보유곡 밝은_052를 README의 시작초 16초부터 영상보다 길게 자른다(지난 두 몽골 편 M31 시티팝_147 · M26 따뜻_118과 다른 곡).
+# 음악은 보유곡 밝은_052를 0초부터 29초까지(곡 안 빈 마디 29~30초 앞 — 11-08 BGM README 「곡 안 빈 마디」, 16초부터면 영상 13~14초가 빈다) 영상보다 길게 자른다(지난 두 몽골 편 M31 시티팝_147 · M26 따뜻_118과 다른 곡).
 # 사용: python -X utf8 docs/마케팅/LAB_이잔주세요_mn_20261108/소리/만들기.py
 import os
 import subprocess
@@ -89,10 +89,10 @@ t = 판(0.9)
 x = sum(np.sin(2 * np.pi * f * t) * np.exp(-t * (6 + i)) * np.minimum(1, np.maximum(0, t - i * 0.07) / 0.002) for i, f in enumerate([1568, 1976, 2349, 3136, 3951]))
 쓰기('sparkle.wav', x, 0.45)
 
-# 음악 — 보유곡 밝은_052, 16초부터 31초(48초부터 사그라지기 전까지)
+# 음악 — 보유곡 밝은_052, 0초부터 29초(11-08: 16초부터 31초는 원곡 29~30초 빈 마디가 영상 13~14초에 들어 음악이 1초 꺼졌다 — 음악층 ⑲)
 뿌리 = os.path.abspath(os.path.join(여기, '..', '..', '..', '..'))
 원곡 = os.path.join(뿌리, 'docs', '홍보물', 'BGM', '밝은_052.wav')
 if not os.path.exists(원곡):
     원곡 = os.path.join('C:/Users/q1212/Documents/SYNK-appsscript', 'docs', '홍보물', 'BGM', '밝은_052.wav')
-subprocess.run(['ffmpeg', '-y', '-hide_banner', '-loglevel', 'error', '-ss', '16', '-t', '31', '-i', 원곡, '-ar', str(SR), '-ac', '2', os.path.join(밖, 'bgm.wav')], check=True)
+subprocess.run(['ffmpeg', '-y', '-hide_banner', '-loglevel', 'error', '-ss', '0', '-t', '29', '-i', 원곡, '-ar', str(SR), '-ac', '2', os.path.join(밖, 'bgm.wav')], check=True)
 print('소리 끝')
