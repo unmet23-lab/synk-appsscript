@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang='ko'>
+<head>
+<meta charset='utf-8'>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>업무 백업</title>
+<link rel='stylesheet' href='style.css'>
+<script src='app.js' defer></script>
+</head>
+<body>
+<header class='top'>
+<div class='brand'>
+<svg class='logo' viewBox='0 0 24 24' aria-hidden='true' focusable='false'><path d='M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z'/><path d='M8.5 12l2.5 2.5 4.5-5'/></svg>
+<h1>업무 백업</h1><span class='badge'>시험판</span>
+</div>
+<p id='modeLabel' class='mode'></p>
+</header>
+<main id='app' aria-busy='false'>
+<div id='apiError' class='alert' role='alert' hidden></div>
+<section id='jobBox' class='job' role='status' aria-live='polite' hidden>
+<p id='jobText'></p>
+<progress id='jobBar' max='100' aria-label='진행 상황'></progress>
+<p id='jobHint' class='hint'>작업이 끝날 때까지 기다려 주세요. 진행 중인 작업은 앱 안에서 취소할 수 없습니다.</p>
+</section>
+
+<section id='setupView' class='view' hidden aria-labelledby='setupTitle'>
+<div class='hero'>
+<h2 id='setupTitle'>작업을 잃어버리지 않도록</h2>
+<p>선택한 폴더를 자동으로 백업하고 필요할 때 새 폴더로 복구합니다.</p>
+</div>
+<div class='grid'>
+<form id='setupForm' class='card' novalidate aria-label='새 백업 설정'>
+<fieldset>
+<legend><span class='step' aria-hidden='true'>1</span> 백업할 업무 폴더</legend>
+<p class='hint'>여러 폴더를 함께 고를 수 있습니다.</p>
+<button type='button' id='btnSources' class='btn'>폴더 고르기</button>
+<ul id='selSources' class='paths' aria-label='선택한 업무 폴더'></ul>
+</fieldset>
+<fieldset>
+<legend><span class='step' aria-hidden='true'>2</span> 백업을 저장할 위치</legend>
+<p class='hint'>고른 위치 안에 백업 폴더가 새로 만들어집니다. 외장 드라이브를 권장합니다.</p>
+<button type='button' id='btnTarget' class='btn'>저장 위치 고르기</button>
+<p id='selTarget' class='path' aria-label='선택한 저장 위치'></p>
+</fieldset>
+<button type='submit' id='btnSetup' class='btn primary'>백업 준비</button>
+</form>
+<aside class='side'>
+<div class='card soft'>
+<h3>알아 두세요</h3>
+<p>첫 시험판은 폴더/외장 드라이브 백업입니다. PC 분실까지 대비하려면 별도 장치에 보관하세요.</p>
+<p class='hint'>선택한 파일·폴더만 보호하며 Windows 전체 복원은 포함하지 않습니다.</p>
+</div>
+<div class='card'>
+<h3>이미 백업이 있나요?</h3>
+<p>다른 PC에서 만든 복구 키 파일과 백업 폴더로 파일을 되살릴 수 있습니다. 이 경우 복구 전용으로 열립니다.</p>
+<button type='button' id='btnImport' class='btn'>기존 백업 복구하기</button>
+</div>
+</aside>
+</div>
+</section>
+
+<section id='keyView' class='view' hidden aria-labelledby='keyTitle'>
+<div class='card must'>
+<p class='kicker'>꼭 필요한 단계</p>
+<h2 id='keyTitle'>복구 키를 먼저 보관하세요</h2>
+<ul class='plain'>
+<li>새 PC에서 파일을 복구하려면 복구 키 파일이 필요합니다.</li>
+<li>복구 키가 있으면 백업 저장소를 열 수 있습니다. 다른 사람에게 주지 마세요.</li>
+<li>백업 드라이브나 이 노트북이 아닌 별도 장소(예: 다른 USB)에 보관하세요.</li>
+</ul>
+<p class='hint'>키 내용은 화면에 표시하지 않습니다. 저장한 뒤 다시 읽어 제대로 저장됐는지 확인합니다.</p>
+<button type='button' id='btnKey' class='btn primary'>복구 키 파일 저장</button>
+</div>
+</section>
+
+<section id='dashView' class='view' hidden aria-label='백업 현황'>
+<div class='grid'>
+<div class='col'>
+<div id='lastError' class='alert' role='alert' hidden></div>
+<p id='warning' class='warn' role='status' hidden></p>
+<div class='card'>
+<h2 id='backupTitle'>백업 상태</h2>
+<p id='backupTime' class='big'></p>
+<p id='backupStats' class='hint'></p>
+<p id='autoState' class='hint'></p>
+<div id='backupActions' class='row'>
+<button type='button' id='btnAuto' class='btn primary'>자동 백업 시작</button>
+<button type='button' id='btnNow' class='btn'>수동으로 백업</button>
+</div>
+</div>
+<div class='card'>
+<h2>전체 데이터 점검</h2>
+<p id='healthText' class='big'></p>
+<p id='healthDetail' class='hint'></p>
+<button type='button' id='btnCheck' class='btn'>지금 전체 점검</button>
+</div>
+<div class='card'>
+<h2>복구</h2>
+<p>가장 최근에 완료된 백업을 새 폴더로 복구합니다. 기존 파일을 덮어쓰지 않으며, 모든 파일의 해시를 확인합니다.</p>
+<button type='button' id='btnRestore' class='btn primary'>새 폴더로 복구</button>
+<div id='restoreResult' hidden>
+<p class='hint'>최근 복구: <span id='restoreTime'></span></p>
+<p id='restorePath' class='path'></p>
+<button type='button' id='btnOpen' class='btn'>복구 폴더 열기</button>
+</div>
+</div>
+</div>
+<aside class='side'>
+<div class='card soft'>
+<h3>보호 대상</h3>
+<ul id='srcList' class='paths' aria-label='보호 중인 폴더'></ul>
+<h3>백업 위치</h3>
+<p id='repoPath' class='path'></p>
+</div>
+<div id='settings' class='card'>
+<h3>설정</h3>
+<label class='check'><input type='checkbox' id='chkLogin' aria-describedby='loginHint'> Windows 로그인 시 시작</label>
+<p id='loginHint' class='hint'>기본은 꺼져 있습니다. 로그인 시 시작은 지금 앱 폴더 위치를 기억하므로, 앱 폴더를 옮기지 말고 그대로 두세요.</p>
+<p class='hint'>자동 백업이 켜져 있으면 창을 닫아도 알림 영역(트레이)에서 계속 실행됩니다.</p>
+</div>
+<p class='hint'>선택한 파일·폴더만 보호하며 Windows 전체 복원은 포함하지 않습니다.</p>
+<details class='card'>
+<summary>백업 방식 자세히</summary>
+<ul class='plain'>
+<li>복구는 가장 최근에 완료된 스냅숏을 사용하며, 최근 24시간의 안전 기록도 함께 보관합니다.</li>
+<li>중간에 끊긴 백업은 완료된 백업으로 올리지 않습니다.</li>
+<li>백업할 때마다 구조 점검을 합니다. 전체 데이터 점검은 첫 백업 후 자동으로, 이후 하루에 한 번 진행하며 데이터가 많으면 오래 걸릴 수 있습니다.</li>
+<li>자동 백업(15분마다)은 앱 또는 트레이가 실행 중이고 PC가 깨어 있을 때만 동작합니다.</li>
+</ul>
+</details>
+</aside>
+</div>
+</section>
+</main>
+<footer class='foot'><span id='version'></span></footer>
+</body>
+</html>
