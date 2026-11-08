@@ -1050,10 +1050,10 @@
       "targetHandle": "@synk.hq",
       "publisher": "blocked-account-not-confirmed",
       "connection": "account-not-confirmed",
-      "operationDecision": "user-will-create-or-prepare-synk-hq-and-notify-2026-09-14; agent-must-not-create-or-convert-existing-account-now",
-      "decisionBasis": "existing approved monthly completed-work showcase; distinct from personal building-process channels",
-      "remainingAction": "wait-for-user-report-of-synk-hq-preparation-then-verify-handle-and-owner; availability-check-passed-2026-09-14-but-not-reserved; preserve-existing-personal-accounts",
-      "dailyOff": "계정 확인 안 됨"
+      "operationDecision": "excluded-from-new-account-plan-by-user-2026-11-09",
+      "decisionBasis": "사용자: 회사 인스타는 없어도 될 것 같다. 회사 Instagram 신규 개설 대상에서 제외.",
+      "remainingAction": "추가 개설하지 않는다. 기존 회사 LinkedIn·홈페이지 및 브랜드별 채널을 유지한다.",
+      "dailyOff": "사용자 요청으로 회사 Instagram 개설 제외"
     },
     "shift-naverblog": {
       "brand": "SHIFT",

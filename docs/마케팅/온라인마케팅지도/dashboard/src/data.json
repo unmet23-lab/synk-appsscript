@@ -2,7 +2,7 @@
   "id": "dashboard:59868cae-d12b-4e1e-9119-33990ad72c6c",
   "surface": "dashboard",
   "title": "SYNK 온라인 마케팅 지도",
-  "generatedAt": "2026-11-08T15:10:05.818Z",
+  "generatedAt": "2026-11-08T17:18:20.478Z",
   "status": "reviewed-local-records",
   "buildStatus": "complete",
   "filters": [
@@ -163,7 +163,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-08T15:10:05.818Z",
+        "executedAt": "2026-11-08T17:18:20.478Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -248,7 +248,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-08T15:10:05.818Z",
+        "executedAt": "2026-11-08T17:18:20.478Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -769,7 +769,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-08T15:10:05.818Z",
+        "executedAt": "2026-11-08T17:18:20.478Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -1652,25 +1652,25 @@
           "handle": null,
           "publicUrl": null,
           "loginAlias": null,
-          "accountStatus": "planned-unconfirmed",
-          "profileStatus": "개설 미확인",
-          "coverStatus": "개설 미확인",
-          "lastEvidenceAt": "2026-09-19",
-          "nextAction": "사용자가 목표 @synk.hq 준비를 알릴 때까지 기다린다. 이후 실제 소유 계정과 핸들을 확인한다. 현재 확보 완료로 세거나 자동 개설하지 않는다.",
+          "accountStatus": "excluded",
+          "profileStatus": "개설 보류",
+          "coverStatus": "개설 보류",
+          "lastEvidenceAt": "2026-11-09",
+          "nextAction": "사용자 요청으로 회사 Instagram 신규 개설 대상에서 제외. 생성하지 않는다.",
           "sourcePaths": [
             "docs/마케팅/sns-계정.json",
             "docs/마케팅/SNS_계정_전체목록_20260919.md",
             "docs/마케팅/채널과_발행.md"
           ],
           "country": "공통·미분리",
-          "channelRole": "SYNK 본체 Instagram 준비 자리. 목표 @synk.hq 소유·개설·확보 미확인",
+          "channelRole": "SYNK 본체 Instagram 개설 제외(2026-11-09 사용자 결정)",
           "operatingScope": "CORPORATE",
           "publishable": false,
           "sharedBrands": [],
           "sourceBrand": "SYNK",
           "channelScope": "보류·개설 미확인",
           "setupStatus": "개설 보류·미확인",
-          "profileStatusCode": "not-applicable-unconfirmed-account",
+          "profileStatusCode": "not-applicable-uncreated-account",
           "priority": "기존 운영 분류",
           "publishStatus": "공개 발행 대상 아님",
           "publicationEvidence": null,
@@ -3404,7 +3404,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-08T15:10:05.818Z",
+        "executedAt": "2026-11-08T17:18:20.478Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -3925,7 +3925,7 @@
           "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md",
           "docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md"
         ],
-        "executedAt": "2026-11-08T15:10:05.818Z",
+        "executedAt": "2026-11-08T17:18:20.478Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -4030,7 +4030,7 @@
           "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json"
         ],
-        "executedAt": "2026-11-08T15:10:05.818Z",
+        "executedAt": "2026-11-08T17:18:20.478Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -4152,7 +4152,7 @@
           "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md",
           "docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md"
         ],
-        "executedAt": "2026-11-08T15:10:05.818Z",
+        "executedAt": "2026-11-08T17:18:20.478Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -4342,7 +4342,7 @@
         "files": [
           "docs/마케팅/SNS_계정_전체목록_20260919.md"
         ],
-        "executedAt": "2026-11-08T15:10:05.818Z",
+        "executedAt": "2026-11-08T17:18:20.478Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
