@@ -104,6 +104,10 @@ SFX = {
 }
 MUSIC = {"15": os.path.join(ROOT, "최종", "음악", "블프_1107", "s3_곡.wav"), "6": os.path.join(ROOT, "최종", "음악", "블프_1107", "s3_곡.wav")}
 MUSIC_IN = {"15": 0.48, "6": 0.38}   # 6초는 「팡」이 1.30초라 한 박 앞(0.38)
+# 곡 견줄 판(11-08 곡 맹검이 갈렸을 때 유호님이 귀로 고르시게): BF_SONG=<곡.wav> BF_TAIL=_곡비교<이름> 으로 부르면 본편 파일은 그대로 두고 꼬리 붙은 판만 만든다
+TAIL = os.environ.get("BF_TAIL", "")
+if os.environ.get("BF_SONG"):
+    MUSIC = {k: os.environ["BF_SONG"] for k in MUSIC}
 
 
 def seg(path, a, b, pad_a=0.06, pad_b=0.12):
@@ -212,19 +216,19 @@ def sound(name):
         m.put(0, x * env[:, None] * (0.55 * pk / (float(np.max(np.abs(x))) or 1.0)), 0, fade=0.004, fade_out=0.8 if name == "15" else 0.7)   # 끝을 0.7~0.8초에 걸쳐(맹검 「칼로 자른 듯」)
     else:
         print(f"⚠ 곡이 없다({song}) — 음악 없이 섞음")
-    m.finish(os.path.join(OUT, f"소리_{name}.wav"), boost_db=2.0)
+    m.finish(os.path.join(OUT, f"소리_{name}{TAIL}.wav"), boost_db=2.0)
 
 
 def render(name, end="scene"):
     import shutil
     pub = PUB
     os.makedirs(pub, exist_ok=True)
-    for src, to in ((os.path.join(OUT, f"화면_{name}.mp4"), f"picture_{name}.mp4"), (os.path.join(OUT, f"소리_{name}.wav"), f"sound_{name}.wav")):
+    for src, to in ((os.path.join(OUT, f"화면_{name}.mp4"), f"picture_{name}.mp4"), (os.path.join(OUT, f"소리_{name}{TAIL}.wav"), f"sound_{name}.wav")):
         if not os.path.exists(os.path.join(pub, to)) or C.md5(src) != C.md5(os.path.join(pub, to)):
             shutil.copyfile(src, os.path.join(pub, to))
     comp = f"s3-{name}" + ("-card" if end == "card" else "")
-    base = f"블프세일_{name}초" + ("_원본짜임" if end == "card" else "")
-    out, raw = os.path.join(OUT, base + "_9x16.mp4"), os.path.join(OUT, f"_렌더_{comp}.mp4")
+    base = f"블프세일_{name}초" + ("_원본짜임" if end == "card" else "") + TAIL
+    out, raw = os.path.join(OUT, base + "_9x16.mp4"), os.path.join(OUT, f"_렌더_{comp}{TAIL}.mp4")
     C.run(shutil.which("npx"), "remotion", "render", "src/index.ts", comp, raw, "--concurrency=4", "--log=error", cwd=os.path.join(CAP, "remotion"))
     C.run("node", os.path.join(C.REPO, "tools", "음량마감.mjs"), raw, out, "--목표", "-14", "--덮어쓰기")
     C.run("ffmpeg", "-y", "-v", "error", "-i", out, "-vf", "scale=720:-2", "-c:v", "libx264", "-crf", "24", "-preset", "medium", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart",
