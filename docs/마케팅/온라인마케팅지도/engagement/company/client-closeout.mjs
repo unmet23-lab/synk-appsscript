@@ -44,5 +44,7 @@ export function buildClientCloseout(row,{now=new Date().toISOString()}={}){
 export function customerClientCloseout(row){
   const {deliveryKey,approvedPreviewId,finals,deliveredAt}=clientDeliveryIdentity(row),receipt=deliveryKey?records(row.deliveryReceipts).findLast(entry=>entry.deliveryKey===deliveryKey):null;
   const canConfirm=!!(deliveryKey&&row.stage==='delivered'&&!receipt),status=!deliveryKey?'no_delivery':receipt?'confirmed':'waiting_receipt';
-  return {deliveryKey,approvedPreviewId,deliveredAt,files:finals.map(({id,label})=>({id,label})),receipt:receipt?{confirmedAt:receipt.confirmedAt}:null,canConfirm,status,statusLabel:status==='confirmed'?'받았다고 함':status==='waiting_receipt'?'파일과 안내 확인':'납품 전'};
+  // 앞선 수령 확인(판 3c): 지금 묶음이 아닌 확인은 시각만 내린다(묶음 열쇠 · 기록 번호는 내리지 않음).
+  const earlier=new Map();for(const entry of records(row.deliveryReceipts))if(entry?.deliveryKey&&entry.deliveryKey!==deliveryKey&&Number.isFinite(Date.parse(entry.confirmedAt)))earlier.set(entry.deliveryKey,entry.confirmedAt);
+  return {deliveryKey,approvedPreviewId,deliveredAt,files:finals.map(({id,label})=>({id,label})),receipt:receipt?{confirmedAt:receipt.confirmedAt}:null,earlierReceipts:[...earlier.values()].sort((a,b)=>Date.parse(a)-Date.parse(b)).slice(-10).map(confirmedAt=>({confirmedAt})),canConfirm,status,statusLabel:status==='confirmed'?'받았다고 함':status==='waiting_receipt'?'파일과 안내 확인':'납품 전'};
 }

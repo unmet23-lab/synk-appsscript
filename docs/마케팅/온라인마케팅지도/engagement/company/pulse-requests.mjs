@@ -438,7 +438,7 @@ export function applyRequestAction({studio,row,input,staff,stamp}){
     if(!Number.isSafeInteger(revisions)||revisions<0||revisions>9)throw fail('수정 횟수를 확인해 주세요.');
     const dueDate=kstDay(input.dueDate,now);
     const declined=prev?.status==='declined';
-    const proposal={round:declined?prev.round+1:prev?.round||1,status:'open',at:now,by:stamp.authorName,lead:text(input.lead,200),options:directionOptions(input.options,studio),...(modelId?{modelId}:{}),price,dueDate,revisions,...(declined?{prior:{round:prev.round,names:prev.options.map(option=>option.name),answer:prev.answer||''}}:prev?.prior?{prior:prev.prior}:{})};
+    const proposal={round:declined?prev.round+1:prev?.round||1,status:'open',at:now,by:stamp.authorName,lead:text(input.lead,200),options:directionOptions(input.options,studio),...(modelId?{modelId}:{}),price,dueDate,revisions,...(declined?{prior:{round:prev.round,names:prev.options.map(option=>option.name),answer:prev.answer||'',...(prev.at?{at:prev.at}:{}),...(prev.by?{by:prev.by}:{}),...(prev.answeredAt?{answeredAt:prev.answeredAt}:{})}}:prev?.prior?{prior:prev.prior}:{})};
     // 둘 다 열려 직원 화면이 「답을 기다려요」를 계속 띄우지 않게 열린 모델 제안은 닫는다.
     const model=request.modelProposal?.status==='open'?{...request.modelProposal,status:'replaced',answeredAt:now}:request.modelProposal;
     studio.request={...request,directionProposal:proposal,...(model?{modelProposal:model}:{})};

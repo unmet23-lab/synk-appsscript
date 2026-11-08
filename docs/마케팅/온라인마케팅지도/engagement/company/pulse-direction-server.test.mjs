@@ -127,7 +127,9 @@ test('「neither」 asks for one line, allows one more round, and after the seco
   assert.equal((await h.staffTry({action:'settle_direction',optionId:d.options[0].id,note:'x'})).status,409,'settling is only after the second no');
   await send(h,base);
   d=h.row.studio.request.directionProposal;
-  assert.equal(d.round,2);assert.deepEqual(d.prior,{round:1,names:['아니, 잠깐','톡'],answer:'더 고급스러웠으면 좋겠어요'});
+  assert.equal(d.round,2);const {at:priorAt,by:priorBy,answeredAt:priorAnswered,...priorRest}=d.prior;assert.deepEqual(priorRest,{round:1,names:['아니, 잠깐','톡'],answer:'더 고급스러웠으면 좋겠어요'});
+  // 판 3c: 앞 판을 보낸 때 · 보낸 사람 · 손님이 답한 때가 함께 남아 일지가 1판 줄을 제자리에 둔다.
+  assert.ok(Number.isFinite(Date.parse(priorAt))&&Number.isFinite(Date.parse(priorAnswered))&&Date.parse(priorAt)<=Date.parse(priorAnswered)&&Date.parse(priorAnswered)<=Date.parse(d.at));assert.equal(typeof priorBy,'string');assert.ok(priorBy);
   await h.cact({action:'answer_direction',neither:true,note:'둘 다 아직이에요'});
   assert.equal((await h.staffTry({action:'propose_direction',...base})).status,409,'only one more proposal');
   d=(await h.refresh()).studio.request.directionProposal;
