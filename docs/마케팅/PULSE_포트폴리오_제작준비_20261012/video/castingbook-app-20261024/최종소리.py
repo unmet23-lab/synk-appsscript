@@ -55,12 +55,22 @@ OPEN_LVL = -20.0         # 한 판 전체 RMS(dBFS) — 끝 내레이션(−19) 
 OPEN_AT = [
     (0.90, 0.0, 0.0, [("거꾸로 봐도 손님이 없네", "없네")], "L"),           # 기 — 1 거꾸로 얼굴(0.5초 한숨 뒤) → 2 빈 가게 와이드. 곡 전(바탕 소리뿐)
     (("끝", 4.50), 0.0, 0.0, [("모델 쓰면 좀 오려나", "오려나")], "L"),     # 기 — 3 캐스팅북 모델 목록. 곡은 4.10에 작게 들어와 4.56에 첫 큰 박(83.4 BPM 격자, 6.00 박의 두 박 앞) — 그 앞에서 끝나 곡을 내리지 않는다
-    (7.60, -7.0, -7.0, [("어디서 봤더라", "봤더라")], "R"),                  # 승 — 5 쇼핑백 얼굴 직후 6 폰 속 같은 얼굴(보는 사람이 먼저 답을 안다), 8.79 일어남 · 삐걱 앞. 폰 속 얼굴이 화면을 채워 자막은 오른쪽 거울 자리
-    (11.50, -8.0, -8.0, [("저 집은 좋겠다", "좋겠다")], "L"),               # 승 — 8 포스터 앞에 멈춰 선 두 행인 → 9 사장 얼굴(그림이 못 하는 「부럽다」)
-    (15.12, -6.0, -5.0, [("우리 냉장고에도?", "냉장고에도")], "L"),         # 승 — 11 내 가게 냉장고 스티커(15.17 — 「냉장고」가 11번에 떨어지고 자막도 11번 첫 장부터, 12번 폰 글은 첫 0.2초만 걸침)
-    (17.65, -8.0, -7.0, [("얘면 손님 오겠다", "오겠다")], "L"),             # 승→전 — 14 빠져든 얼굴. 오려나 → 오겠다 → 23.8 손님 「포스터 보고 왔어요」 → 26.7 「손님을 부르는 모델」
+    (7.60, -3.0, -6.0, [("어디서 봤더라", "봤더라")], "R"),                  # 승 — 5 쇼핑백 얼굴 직후 6 폰 속 같은 얼굴(보는 사람이 먼저 답을 안다), 8.79 일어남 · 삐걱 앞. 폰 속 얼굴이 화면을 채워 자막은 오른쪽 거울 자리
+    (11.50, -3.0, -10.0, [("저 집은 좋겠다", "좋겠다")], "L"),              # 승 — 8 포스터 앞에 멈춰 선 두 행인 → 9 사장 얼굴(그림이 못 하는 「부럽다」). 곡 멜로디가 목소리 띠에 가장 찬 자리라 띠만 더 비운다
+    (15.12, -3.0, -6.0, [("우리 냉장고에도?", "냉장고에도")], "L"),         # 승 — 11 내 가게 냉장고 스티커(15.17 — 「냉장고」가 11번에 떨어지고 자막도 11번 첫 장부터, 12번 폰 글은 첫 0.2초만 걸침)
+    (17.65, -3.0, -8.0, [("얘면 손님 오겠다", "오겠다")], "L"),             # 승→전 — 14 빠져든 얼굴. 오려나 → 오겠다 → 23.8 손님 「포스터 보고 왔어요」 → 26.7 「손님을 부르는 모델」
 ]
 SUB_COL = {"L": ("left", 176), "R": ("right", 1744), None: ("center", 960)}
+# 곡 내림(둘째 · 셋째 칸 = 곡 전체 dB · 목소리 띠 250~4000 Hz를 더 내릴 dB) — 11-08 2차. 10번 세션이 알린 유호님 말씀 「백그라운드뮤직도 갑자기 끊겼다 다시 시작되는 느낌」
+#   (곡 전체를 −8 dB 넘게 0.28초 만에 누르면 말 끝 · 쉼에서 섞음이 꺼졌다가 곡이 다시 솟는다)과 같은 꼴이 8번 첫 판에도 있었다 — 0.25초 창으로 재니
+#   줄이 끝난 뒤 곡이 아직 눌린 자리에서 섞음이 v5보다 4~6 dB 꺼졌다(8.75 · 12.75 · 16.0 · 18.75~19.0초, 끝 줄은 19.45초 한 박 숨으로 이어져 1.5초가 빔).
+#   그래서 곡 전체는 −3 dB까지만, 비우는 몫은 목소리 띠에만 두고, 내림 0.35초 · 풀기 0.8초(말 끝에서 바로)로 천천히 한다. 그래도 목소리 띠에서 목소리가
+#   곡보다 VO_TARGET dB 위에 못 서면 그 줄 목소리를 올린다(LIFT_MAX까지 — 10번 「곡이 큰 자리의 줄은 목소리를 +3~4 dB」).
+DUCK_ATTACK, DUCK_RELEASE = 0.35, 0.8
+DUCK_EARLY = float(os.environ.get("P8_DUCK_EARLY", "0.2"))   # 풀기는 마지막 낱말이 끝나기 이만큼 앞에서(끝 음절 꼬리는 작다) — 말 끝 뒤 0.25초 칸의 꺼짐: 말 끝에서 풀면 −3.2 · 0.1초 앞 −2.8 · 0.2초 앞 −2.3 dB(v5 대비)
+VO_TARGET, LIFT_MAX = 10.3, 4.0
+BREATH = (19.45, 20.35)     # 곡 크기 자국의 한 박 숨(원본도 19.5~20.3초 −25 dB) — 이 앞에서 끝나는 줄은 내림을 숨까지 들고 간다
+GUEST_DUCK = (-3.0, -5.0)   # 손님 말 아래 — v5는 곡을 +2에서 0.15초 만에 −8로(10 dB 뚝) 눌렀다. 초반 말이 있는 판(P8_OPEN)부터 같은 짜임으로
 OPEN_TRIM = 3.0          # 줄마다 크기 차를 판 가운데값 쪽으로 당기는 한도(dB) — 꼬리표 연기로 줄 사이가 9 dB까지 벌어졌다(「저 집은 좋겠다」 −32.5 · 「우리 냉장고에도?」 −23.6, 11-08 첫 굽기)
 OPEN_ENDS = ["없네", "오려나", "봤더라", "좋겠다", "냉장고에도"]   # 토막을 끊는 낱말 머리(그 낱말 뒤 쉼에서 자름)
 #   의자 삐걱은 7.6초 줄이 앞으로 옮겨 다시 겹치지 않지만, 꼬리(9.76초까지)는 9초대 줄을 쓸 때를 위해 다 앉는 장(9.46초)에서 끊어 둔다
@@ -233,12 +243,74 @@ def sub_timing(pieces, T, who, inner):
     return raw
 
 
+def guest_line():
+    """19번 손님 「포스터 보고 왔어요」와 그 판의 웃음 덩이 — (손님 말, 웃음 덩이 목록, 판 소리)"""
+    if GUEST == "시댄스":
+        v19 = C.load(os.path.join(VOX, "p8-19b.wav"))
+        ch = voice_chunks(v19, -40)
+        line = next(c for c in ch if c[0] > 1.2)          # 「포스터 보고 왔어요」(판 1.6~2.8초)
+        g = v19[int((line[0] - 0.03) * RATE):int(line[1] * RATE)]
+        return g, [c for c in ch if c[0] > line[1] + 0.2], v19
+    return C.load(os.path.join(CAND, f"손님_{GUEST}.mp3")), [], None
+
+
+def song_parts(duck_spans=(), guest_dip=True):
+    """곡 — (끝 한 방 조각, 4.10초부터 놓을 본 곡). duck_spans: [(시작, 끝, 곡 전체 dB, 목소리 띠 dB)] — 그 말 아래만 천천히 내린다.
+    guest_dip=True는 v5 크기 자국(손님 말 아래 −8 dB) 그대로 — P8_OPEN을 비운 v5 소리는 이 길로 바이트까지 같다."""
+    full = C.load_stereo(SONG)
+    ref = np.sqrt(np.mean(np.square(full[int(SONG_AT * RATE):int((SONG_AT + 24) * RATE)])))   # 본 조각 크기 — 끝 조각도 같은 배율로
+    # 끝 한 방: SONG_END 안에서 크기가 가장 가파르게 오르는 곳(치기 어택) 20ms 앞부터, 끝 화면 28.43초에
+    m = np.abs(full.mean(axis=1))
+    env = np.convolve(m, np.ones(480) / 480, mode="same")
+    i0, i1 = int(SONG_END[0] * RATE), int(SONG_END[1] * RATE)
+    d = np.diff(env[i0:i1:240])
+    hit = (i0 + 240 * int(np.argmax(d))) / RATE - 0.02
+    tail = full[int(hit * RATE):int((hit + (END - 28.43)) * RATE)]
+    tail = (tail / (ref + 1e-9) * 10 ** (-21 / 20) * 10 ** (-3 / 20)).astype(np.float32)   # 본 곡과 같은 배율 · 내레이션 아래 −3 dB
+    s = full[int(SONG_AT * RATE):]
+    n = int((END - 4.10) * RATE)
+    s = s[:n] if len(s) >= n else np.pad(s, ((0, n - len(s)), (0, 0)))
+    t = 4.10 + np.arange(len(s)) / RATE
+    s = (s / (ref + 1e-9) * 10 ** (-21 / 20)).astype(np.float32)   # 곡 바닥 크기 −21 dBFS(목소리 −19 · −21보다 낮게, 효과음 −27~−33보다 높게) — 아래 자국은 여기서 더하고 뺀다
+    # 크기 자국(편집 초, dB): 들어옴 · 12.9~16.0 「거리마다 그 얼굴」(원본 후렴 자리)에 조금 올림 · 19.5~20.3 숨 · 22.4 고조 · 손님 말 아래 · 내레이션 아래 · 28.0 한 박 멈춤(28.43부터 끝 조각)
+    if guest_dip:
+        gain = np.interp(t, [4.10, 4.40, 12.85, 13.05, 15.9, 16.2, 19.45, 19.65, 20.15, 20.35, 22.30, 22.60, 23.70, 23.85, 25.1, 25.3, 26.62, 26.75, 27.92, 28.0],
+                         [-14, 0, 0, 2, 2, 0, 0, -8, -8, 0, 0, 2, 2, -8, -8, 1, 1, -4, -4, -60])   # 손님 말 아래 −8(v1 −5 — Lite 「대사가 음악에 조금 묻힘」)
+    else:   # 손님 말 아래는 duck_spans(GUEST_DUCK)가 천천히 내린다
+        gain = np.interp(t, [4.10, 4.40, 12.85, 13.05, 15.9, 16.2, 19.45, 19.65, 20.15, 20.35, 22.30, 22.60, 25.3, 26.62, 26.75, 27.92, 28.0],
+                         [-14, 0, 0, 2, 2, 0, 0, -8, -8, 0, 0, 2, 1, 1, -4, -4, -60])
+    s = s * (10 ** (gain / 20))[:, None]
+    if duck_spans:
+        g_all = np.ones(len(s), np.float32)
+        g_mid = np.ones(len(s), np.float32)
+        for a, e, duck, mid in duck_spans:
+            if e < 4.10:
+                continue
+            for g, dd in ((g_all, duck), (g_mid, mid)):
+                if dd:
+                    if e < BREATH[0] < e - DUCK_EARLY + DUCK_RELEASE + 0.6:
+                        # 풀리자마자 19.45초 한 박 숨이 오는 줄(끝 줄 「얘면 손님 오겠다」) — 곡이 다시 솟았다 곧바로 꺼지는 출렁임을
+                        #   Lite 둘이 같이 짚었다(17~19초 5 · 3점) → 내림을 숨까지 들고 가고 숨 안에서 푼다(곡은 숨 끝 20.35초에 한 번만 돌아온다)
+                        pts_t = [0.0, a - DUCK_ATTACK, a, BREATH[0], BREATH[1], END + 1]
+                    else:
+                        pts_t = [0.0, a - DUCK_ATTACK, a, e - DUCK_EARLY, e - DUCK_EARLY + DUCK_RELEASE, END + 1]
+                    g *= (10 ** (np.interp(t, pts_t, [0, 0, dd, dd, 0, 0]) / 20)).astype(np.float32)
+        s = s * g_all[:, None] - bp(s, 250, 4000) * ((1 - g_mid) * g_all)[:, None]
+    return hit, tail, s.astype(np.float32)
+
+
+def band_db(x):
+    return 20 * np.log10(np.sqrt(np.mean(bp(x, 250, 4000) ** 2)) + 1e-9)
+
+
 def build(out_wav, timing_json, T):
     mix = C.Mix(END)
     lines = []
     subs = []
     vo_spans = []   # (시작, 끝, 곡 dB, 띠 dB) — 초반 말 아래 곡을 내린다
     vo_placed = []  # (놓은 초, 토막) — 확인 줄이 목소리만 따로 쌓아 잰다
+    parts_pre = None  # 초반 말 판: 줄마다 목소리를 올릴지 정하려고 곡을 먼저 만든다(song_parts 결과)
+    guest_lift = 0.0
 
     def cut(n):   # n번 컷 시작 초
         return T[n - 1]
@@ -255,18 +327,38 @@ def build(out_wav, timing_json, T):
             return 20 * np.log10(np.sqrt(np.mean(w ** 2)) + 1e-9) if len(w) else -90.0
         lv = [talk_db(vx[int(p[0] * RATE):int(p[1] * RATE)]) for p in pieces]
         mid_lv = float(np.median(lv))
+        items = []
         for (a, b, on, at, duck, mid, first, sl, sx), l in zip(pieces, lv):
             trim = float(np.clip(mid_lv - l, -OPEN_TRIM, OPEN_TRIM))
             piece = fades(vx[int(a * RATE):int(b * RATE)], 0.01, 0.06) * (10 ** (trim / 20))
-            print(f"  초반 말 「{sl[0][0]}」 말 크기 {l:.1f} dB → {trim:+.1f} dB")
             t0 = at - (on - a)
-            mix.put(t0, piece, fade=0.0)
-            vo_placed.append((t0, piece))
             s0, e0 = at - (on - first), at + (sl[-1][2] - on)
             vo_spans.append((s0, e0, duck, mid))
+            items.append((t0, piece, s0, e0, trim, l, sl, at, on))
+        g_pre, _laugh, _v19 = guest_line()
+        g_on = voice_chunks(g_pre, -40)
+        guest_span = (23.80 + (g_on[0][0] if g_on else 0.03), 23.80 + (g_on[-1][1] if g_on else len(g_pre) / RATE))
+        # 곡을 먼저 만들어 줄마다 목소리 띠에서 목소리 − 곡을 재고, VO_TARGET에 못 미치면 그 줄을 올린다(LIFT_MAX까지)
+        parts_pre = song_parts(vo_spans + [(guest_span[0], guest_span[1], *GUEST_DUCK)], guest_dip=False)
+        song_pre = parts_pre[2]
+
+        def song_band(a, e):
+            i, j = int((a - 4.10) * RATE), int((e - 4.10) * RATE)
+            return band_db(song_pre[max(0, i):max(0, j)].mean(axis=1)) if j > 0 else -180.0
+
+        for t0, piece, s0, e0, trim, l, sl, at, on in items:
+            vb = band_db(piece[int(max(0.0, s0 - t0) * RATE):int((e0 - t0) * RATE)])
+            lift = float(np.clip(VO_TARGET - (vb - song_band(s0, e0)), 0.0, LIFT_MAX)) if s0 >= 4.10 else 0.0   # 곡 위에서 시작하는 줄만(둘째 줄은 곡 들어오기 전)
+            piece = piece * (10 ** (lift / 20))
+            mix.put(t0, piece, fade=0.0)
+            vo_placed.append((t0, piece))
+            print(f"  초반 말 「{sl[0][0]}」 말 크기 {l:.1f} dB → {trim:+.1f} dB" + (f" · 곡 위로 {lift:+.1f} dB" if lift else ""))
             for text, s, e in sl:
                 lines.append({"a": round(at + s - on, 2), "b": round(at + e - on, 2), "who": OPEN_WHO, "s": text})
-            print(f"  초반 말 판 {a:.2f}–{b:.2f}초 → 화면 {s0:.2f}–{e0:.2f}초 · " + " / ".join(f"{t} {at + s - on:.2f}" for t, s, e in sl))
+            print(f"  초반 말 → 화면 {s0:.2f}–{e0:.2f}초 · " + " / ".join(f"{t} {at + s - on:.2f}" for t, s, e in sl))
+        gb = band_db(to_rms(g_pre, -21)[int((guest_span[0] - 23.80) * RATE):int((guest_span[1] - 23.80) * RATE)])
+        guest_lift = float(np.clip(VO_TARGET - (gb - song_band(*guest_span)), 0.0, 3.0))
+        print(f"  손님 말 {guest_span[0]:.2f}–{guest_span[1]:.2f}초 목소리 띠: 손님 − 곡 {gb + guest_lift - song_band(*guest_span):+5.1f} dB(올림 {guest_lift:+.1f})")
         subs += sub_timing(pieces, T, OPEN_WHO, OPEN_WHO == "소연")
 
     def vo_over(a, b):   # 초반 말과 겹치나
@@ -346,16 +438,10 @@ def build(out_wav, timing_json, T):
     mix.put(cut(19) + 0.55 - 0.01, fades(to_rms(glass[int((g0 - 0.01) * RATE):int((g0 + 0.35) * RATE)], -31), 0.003, 0.1))
 
     # ---------- 19번 손님 말 · 소연 웃음 ----------
-    if GUEST == "시댄스":
-        v19 = C.load(os.path.join(VOX, "p8-19b.wav"))
-        ch = voice_chunks(v19, -40)
-        line = next(c for c in ch if c[0] > 1.2)          # 「포스터 보고 왔어요」(판 1.6~2.8초)
-        g = v19[int((line[0] - 0.03) * RATE):int(line[1] * RATE)]
-        laugh = [c for c in ch if c[0] > line[1] + 0.2]
-    else:
-        g = C.load(os.path.join(CAND, f"손님_{GUEST}.mp3"))
-        laugh = []
-    mix.put(23.80, to_rms(g, -21), fade=0.01)
+    g, laugh, v19 = guest_line()
+    if guest_lift:
+        print(f"  손님 말 곡 위로 {guest_lift:+.1f} dB")
+    mix.put(23.80, to_rms(g, -21 + guest_lift), fade=0.01)
     lines.append({"a": 23.80, "b": round(23.80 + len(g) / RATE, 2), "who": "손님", "s": "포스터 보고 왔어요"})
     if OPEN:   # 초반 말에 자막을 달면 손님 말도 같은 결로(한 편 안에서 말자막이 있다 없다 하지 않게). 끝 내레이션은 제목 · 로고가 같은 말이라 달지 않는다
         g_on = voice_chunks(g, -40)
@@ -387,47 +473,10 @@ def build(out_wav, timing_json, T):
 
     # ---------- 노래 ----------
     if SONG:
-        full = C.load_stereo(SONG)
-        ref = np.sqrt(np.mean(np.square(full[int(SONG_AT * RATE):int((SONG_AT + 24) * RATE)])))   # 본 조각 크기 — 끝 조각도 같은 배율로
-        # 끝 한 방: SONG_END 안에서 크기가 가장 가파르게 오르는 곳(치기 어택) 20ms 앞부터, 끝 화면 28.43초에
-        m = np.abs(full.mean(axis=1))
-        env = np.convolve(m, np.ones(480) / 480, mode="same")
-        i0, i1 = int(SONG_END[0] * RATE), int(SONG_END[1] * RATE)
-        d = np.diff(env[i0:i1:240])
-        hit = (i0 + 240 * int(np.argmax(d))) / RATE - 0.02
-        tail = full[int(hit * RATE):int((hit + (END - 28.43)) * RATE)]
-        tail = (tail / (ref + 1e-9) * 10 ** (-21 / 20) * 10 ** (-3 / 20)).astype(np.float32)   # 본 곡과 같은 배율 · 내레이션 아래 −3 dB
+        hit, tail, s = parts_pre if parts_pre is not None else song_parts()
         mix.put(28.43, fades(tail, 0.004, 0.08))
         print(f"  곡 끝 한 방: 곡 {hit:.2f}초 → 편집 28.43초")
-        s = full[int(SONG_AT * RATE):]
-        n = int((END - 4.10) * RATE)
-        s = s[:n] if len(s) >= n else np.pad(s, ((0, n - len(s)), (0, 0)))
-        t = 4.10 + np.arange(len(s)) / RATE
-        s = (s / (ref + 1e-9) * 10 ** (-21 / 20)).astype(np.float32)   # 곡 바닥 크기 −21 dBFS(목소리 −19 · −21보다 낮게, 효과음 −27~−33보다 높게) — 아래 자국은 여기서 더하고 뺀다
-        # 크기 자국(편집 초, dB): 들어옴 · 12.9~16.0 「거리마다 그 얼굴」(원본 후렴 자리)에 조금 올림 · 19.5~20.3 숨 · 22.4 고조 · 손님 말 아래 · 내레이션 아래 · 28.0 한 박 멈춤(28.43부터 끝 조각)
-        gain = np.interp(t, [4.10, 4.40, 12.85, 13.05, 15.9, 16.2, 19.45, 19.65, 20.15, 20.35, 22.30, 22.60, 23.70, 23.85, 25.1, 25.3, 26.62, 26.75, 27.92, 28.0],
-                         [-14, 0, 0, 2, 2, 0, 0, -8, -8, 0, 0, 2, 2, -8, -8, 1, 1, -4, -4, -60])   # 손님 말 아래 −8(v1 −5 — Lite 「대사가 음악에 조금 묻힘」)
-        s = s * (10 ** (gain / 20))[:, None]
-        if vo_spans:
-            # 초반 말 아래만 내린다 — 앞 0.3초 · 뒤 0.55초에 걸쳐, 목소리 띠(250~4000 Hz)는 더(10번 21절과 같은 짜임). 1.2초보다 가까운 줄은 한 번에.
-            #   목표: 목소리 띠에서 목소리가 곡보다 +10~12 dB(아래 확인 줄이 찍는다)
-            g_all = np.ones(len(s), np.float32)
-            g_mid = np.ones(len(s), np.float32)
-            spans = []
-            for a, e, duck, mid in sorted(vo_spans):
-                if spans and a - spans[-1][1] < 1.2:
-                    pa, pe, pd, pm = spans[-1]
-                    spans[-1] = (pa, e, min(pd, duck), min(pm, mid))
-                else:
-                    spans.append((a, e, duck, mid))
-            for a, e, duck, mid in spans:
-                if e < 4.10:
-                    continue
-                for g, d in ((g_all, duck), (g_mid, mid)):
-                    pts_t = [0.0, a - 0.30, a - 0.02, e + 0.10, e + 0.65, END + 1]
-                    g *= (10 ** (np.interp(t, pts_t, [0, 0, d, d, 0, 0]) / 20)).astype(np.float32)
-            s = s * g_all[:, None] - bp(s, 250, 4000) * ((1 - g_mid) * g_all)[:, None]
-        mix.put(4.10, s.astype(np.float32), fade=0.0)
+        mix.put(4.10, s, fade=0.0)
         song_here = np.zeros_like(mix.a)
         song_here[int(4.10 * RATE):int(4.10 * RATE) + len(s)] = s[:len(song_here) - int(4.10 * RATE)]
 
