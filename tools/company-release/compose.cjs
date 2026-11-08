@@ -22,13 +22,28 @@ function compose({ parent, sealSha256, carryFile, carrySha256, output }) {
     a.equal(base.source.get(row.path)?.sha256, row.sha256, 'RETIRED_TEST_BYTES_CHANGED ' + row.path);
     a.ok(typeof row.reason === 'string' && row.reason.trim().length >= 10, 'RETIRED_TEST_REASON_REQUIRED ' + row.path);
   }
+  // The other direction: a test that sits in the parent source outside the parent selection (no QA runs it) and that a carried commit
+  // changes together with its subject is adopted explicitly (chain 57: client-closeout.test.mjs, changed by the 3c server commit beside
+  // client-closeout.mjs). An adopted row names the carried path, its parent bytes and a written reason; the changed test then joins the
+  // selection (and the image, as every carried file does), so the candidate QA runs it. Without a row the carry still stops below.
+  const adopted = new Set();
+  a.ok(carry.adoptedTests === undefined || Array.isArray(carry.adoptedTests), 'ADOPTED_TESTS_LIST_REQUIRED');
+  for (const row of carry.adoptedTests || []) {
+    R.name(row.path); a.equal(adopted.has(row.path), false, 'DUPLICATE_ADOPTED_TEST'); adopted.add(row.path);
+    a.ok(/\.test\.[cm]?js$/.test(row.path), 'ADOPTED_TEST_NAME_REQUIRED ' + row.path);
+    a.ok(base.source.has(row.path), 'ADOPTED_TEST_NOT_IN_PARENT_SOURCE ' + row.path);
+    a.equal(base.tests.includes(row.path), false, 'ADOPTED_TEST_ALREADY_SELECTED ' + row.path);
+    a.equal(row.beforeSha256, base.source.get(row.path).sha256, 'ADOPTED_TEST_BYTES_CHANGED ' + row.path);
+    a.ok(carry.files.some(file => file.path === row.path), 'ADOPTED_TEST_NOT_CARRIED ' + row.path);
+    a.ok(typeof row.reason === 'string' && row.reason.trim().length >= 10, 'ADOPTED_TEST_REASON_REQUIRED ' + row.path);
+  }
   for (const row of base.source.values()) files.set('candidate/' + row.path, R.read(path.join(parent, 'candidate', row.path), row));
   for (const row of carry.files) {
     R.name(row.path); a.equal(seen.has(row.path), false, 'DUPLICATE_CARRY_PATH'); seen.add(row.path);
     a.equal(retired.has(row.path), false, 'RETIRED_TEST_ALSO_CARRIED ' + row.path);
     const before = base.source.get(row.path);
     a.equal(row.beforeSha256, before?.sha256 ?? null, 'CARRY_BEFORE_CHANGED ' + row.path);
-    if (before && /\.test\.[cm]?js$/.test(row.path)) a.ok(base.tests.includes(row.path), 'EXPLICIT_RETIRED_TEST_DECISION_REQUIRED');
+    if (before && /\.test\.[cm]?js$/.test(row.path)) a.ok(base.tests.includes(row.path) || adopted.has(row.path), 'EXPLICIT_RETIRED_TEST_DECISION_REQUIRED');
     const raw = R.read(path.join(path.dirname(carryFile), 'files', row.path), row);
     a.notEqual(R.sha(raw), before?.sha256, 'UNCHANGED_CARRY_ROW');
     const after = { path: row.path, sha256: R.sha(raw), bytes: raw.length };
@@ -54,6 +69,7 @@ function compose({ parent, sealSha256, carryFile, carrySha256, output }) {
     parentFilesRemoved: 0, parentImageFilesRemoved: 0, parentTestsRemoved: 0,
     tests, addedSelectedTests: tests.filter(test => !base.tests.includes(test)),
     droppedSelectedTests: [...retired].sort(), retiredTests: (carry.retiredTests || []).map(row => ({ path: row.path, sha256: row.sha256, reason: row.reason })).sort((x, y) => x.path.localeCompare(y.path, 'en')),
+    adoptedTests: (carry.adoptedTests || []).map(row => ({ path: row.path, beforeSha256: row.beforeSha256, reason: row.reason })).sort((x, y) => x.path.localeCompare(y.path, 'en')),
     plannedEnv: { additions: {} },
     actualLocalQa: false, actualLinuxQa: false, productReviewAccepted: false, finalDeploymentApproval: false,
     currentLiveStateVerified: false, remoteCalls: 0, productionMutations: 0

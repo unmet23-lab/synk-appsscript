@@ -8,13 +8,15 @@ const R = require('../tools/company-release/closed-release.cjs');
 const { compose } = require('../tools/company-release/compose.cjs');
 const { runLocalQa } = require('../tools/company-release/local-qa.cjs');
 const { verifyPreparedOutputs } = require('../tools/company-release/prepared-integrity.cjs');
-function fixture(t) {
+// `outside` adds source files that are neither selected nor in the image (the parent release keeps such tests, e.g. client-closeout.test.mjs).
+function fixture(t, outside = []) {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-cr-'));
   t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
   const root = path.join(temp, 'release'); fs.mkdirSync(root);
   const put = (name, raw) => { const file = path.join(root, name); fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, raw); return R.record(name, raw); };
-  const sources = [{ path: 'app.mjs', raw: Buffer.from('export const value = 1;\n') }, { path: 'app.test.mjs', raw: Buffer.from("import test from 'node:test'; import assert from 'node:assert/strict'; import {value} from './app.mjs'; test('fixture value',()=>assert.ok(value>0));\n") }];
-  const rows = sources.map(({ path: name, raw }) => { put('candidate/' + name, raw); return R.record(name, raw); });
+  const sources = [{ path: 'app.mjs', raw: Buffer.from('export const value = 1;\n') }, { path: 'app.test.mjs', raw: Buffer.from("import test from 'node:test'; import assert from 'node:assert/strict'; import {value} from './app.mjs'; test('fixture value',()=>assert.ok(value>0));\n") }, ...outside];
+  const rows = sources.map(({ path: name, raw }) => { put('candidate/' + name, raw); return R.record(name, raw); }).sort((x, y) => x.path.localeCompare(y.path, 'en'));
+  const imageRows = rows.filter(row => !outside.some(o => o.path === row.path));
   const manifest = { version: 1, kind: 'pulse-independent-web-pwa', parentManifestSHA256: 'b'.repeat(64), files: rows };
   const manifestRaw = R.encode(manifest), manifestSha256 = R.sha(manifestRaw);
   const approvalRaw = R.encode({ candidateManifest: { sha256: manifestSha256 } });
@@ -22,12 +24,12 @@ function fixture(t) {
   const check = { status: 'passed', armed: true, releaseSha256: manifestSha256 };
   const post = { ...check, contractSha256: R.sha(contractRaw), requestId: 'request', readOnlySnapshot: { collectionTiming: { localAfter: 42 } } };
   const result = count => ({ exit: 0, counts: { tests: count, pass: count, fail: 0, cancelled: 0, skipped: 0 } });
-  const receipt = { schema: 'synk-ha-reviewed-candidate/v1', manifestSha256, parentManifestSha256: manifest.parentManifestSHA256, imageId: 'sha256:' + 'c'.repeat(64), linuxPassed: true, sourceFiles: 2, runtimeHashFiles: 2, productionDataMounted: false, productionServiceActions: 0, tests: { production: result(1), compat: result(2) } };
+  const receipt = { schema: 'synk-ha-reviewed-candidate/v1', manifestSha256, parentManifestSha256: manifest.parentManifestSHA256, imageId: 'sha256:' + 'c'.repeat(64), linuxPassed: true, sourceFiles: rows.length, runtimeHashFiles: imageRows.length, productionDataMounted: false, productionServiceActions: 0, tests: { production: result(1), compat: result(2) } };
   const boundContract = JSON.parse(contractRaw);
   boundContract.deployment.candidateReceiptSha256 = R.sha(R.encode(receipt));
   const boundContractRaw = R.encode(boundContract); post.contractSha256 = R.sha(boundContractRaw);
   const pins = {
-    manifest: put('candidate/release-manifest.json', manifestRaw), images: put('images.json', R.encode(rows)),
+    manifest: put('candidate/release-manifest.json', manifestRaw), images: put('images.json', R.encode(imageRows)),
     selection: put('selection.json', R.encode({ manifestSha256, productionTests: 1, tests: ['app.test.mjs'] })),
     receipt: put('receipt.json', R.encode(receipt)), approval: put('approval.json', approvalRaw),
     contract: put('contract.json', boundContractRaw), postcheck: put('postcheck.json', R.encode(post)),
@@ -126,6 +128,43 @@ test('a selected test can be retired only explicitly, with its parent bytes kept
   const app3 = Buffer.from('export const value = 3;\n'); fs.writeFileSync(path.join(carry, 'files/app.mjs'), app3);
   a.throws(() => run({ retiredTests: [{ path: 'app.test.mjs', sha256: oldSha, reason }] }, [{ ...R.record('app.mjs', app3), beforeSha256: appSha }]), /SELECTED_TESTS_REQUIRED/);
   for (let i = before; i < n; i++) a.equal(fs.existsSync(path.join(f.temp, 'cand-' + i)), false);
+});
+
+test('a changed test outside the parent selection joins it only when adopted explicitly with its parent bytes', t => {
+  const oldOutside = Buffer.from("import test from 'node:test'; import assert from 'node:assert/strict'; import {value} from './app.mjs'; test('closeout',()=>assert.equal(value,1));\n");
+  const f = fixture(t, [{ path: 'closeout.test.mjs', raw: oldOutside }]), saved = f.preserve(), carry = path.join(f.temp, 'carry'); fs.mkdirSync(path.join(carry, 'files'), { recursive: true });
+  const parent = R.verify(saved.output, saved.sealSha256);
+  a.deepEqual(parent.tests, ['app.test.mjs']); a.ok(parent.source.has('closeout.test.mjs')); a.equal(parent.image.has('closeout.test.mjs'), false);
+  const app2 = Buffer.from('export const value = 2;\n'), test2 = Buffer.from("import test from 'node:test'; import assert from 'node:assert/strict'; import {value} from './app.mjs'; test('closeout',()=>assert.equal(value,2));\n");
+  fs.writeFileSync(path.join(carry, 'files/app.mjs'), app2); fs.writeFileSync(path.join(carry, 'files/closeout.test.mjs'), test2);
+  const appSha = R.sha(R.read(path.join(f.root, 'candidate/app.mjs'))), oldSha = R.sha(oldOutside), selectedSha = R.sha(R.read(path.join(f.root, 'candidate/app.test.mjs')));
+  const reason = 'the server commit changed this test with its module; run it in the candidate QA';
+  const files = [{ ...R.record('app.mjs', app2), beforeSha256: appSha }, { ...R.record('closeout.test.mjs', test2), beforeSha256: oldSha }];
+  let n = 0;
+  const run = (body, rows = files) => {
+    const bytes = R.encode({ parentManifestSha256: saved.manifest, files: rows, ...body }), file = path.join(carry, 'carry-' + n + '.json'); fs.writeFileSync(file, bytes);
+    return compose({ parent: saved.output, sealSha256: saved.sealSha256, carryFile: file, carrySha256: R.sha(bytes), output: path.join(f.temp, 'adopt-' + (n++)) });
+  };
+  // Without an explicit decision the changed outside test still stops the carry.
+  a.throws(() => run({}), /EXPLICIT_RETIRED_TEST_DECISION_REQUIRED/); a.equal(fs.existsSync(path.join(f.temp, 'adopt-0')), false);
+  const result = run({ adoptedTests: [{ path: 'closeout.test.mjs', beforeSha256: oldSha, reason }] }), composition = JSON.parse(R.read(path.join(result.output, 'composition.json')));
+  a.deepEqual(composition.tests, ['app.test.mjs', 'closeout.test.mjs']); a.deepEqual(composition.addedSelectedTests, ['closeout.test.mjs']);
+  a.deepEqual(composition.adoptedTests, [{ path: 'closeout.test.mjs', beforeSha256: oldSha, reason }]); a.deepEqual(composition.droppedSelectedTests, []);
+  a.equal(R.sha(R.read(path.join(result.output, 'candidate/closeout.test.mjs'))), R.sha(test2)); a.equal(result.sourceFiles, 3); a.equal(result.selectedTests, 2);
+  a.ok(JSON.parse(R.read(path.join(result.output, 'image-payload.json'))).some(row => row.path === 'closeout.test.mjs'));
+  a.deepEqual(JSON.parse(R.read(path.join(run({}, [files[0]]).output, 'composition.json'))).adoptedTests, []);
+  const before = n, changedSelected = Buffer.from('changed selected test\n'); fs.writeFileSync(path.join(carry, 'files/app.test.mjs'), changedSelected);
+  const rowFor = (p, b) => ({ path: p, beforeSha256: b, reason });
+  a.throws(() => run({ adoptedTests: [rowFor('app.mjs', appSha)] }), /ADOPTED_TEST_NAME_REQUIRED/);
+  a.throws(() => run({ adoptedTests: [rowFor('missing.test.mjs', oldSha)] }), /ADOPTED_TEST_NOT_IN_PARENT_SOURCE/);
+  a.throws(() => run({ adoptedTests: [rowFor('app.test.mjs', selectedSha)] }, [...files, { ...R.record('app.test.mjs', changedSelected), beforeSha256: selectedSha }]), /ADOPTED_TEST_ALREADY_SELECTED/);
+  a.throws(() => run({ adoptedTests: [rowFor('closeout.test.mjs', 'f'.repeat(64))] }), /ADOPTED_TEST_BYTES_CHANGED/);
+  a.throws(() => run({ adoptedTests: [rowFor('closeout.test.mjs', oldSha)] }, [files[0]]), /ADOPTED_TEST_NOT_CARRIED/);
+  a.throws(() => run({ adoptedTests: [{ path: 'closeout.test.mjs', beforeSha256: oldSha, reason: 'run it' }] }), /ADOPTED_TEST_REASON_REQUIRED/);
+  a.throws(() => run({ adoptedTests: [rowFor('closeout.test.mjs', oldSha), rowFor('closeout.test.mjs', oldSha)] }), /DUPLICATE_ADOPTED_TEST/);
+  a.throws(() => run({ adoptedTests: { path: 'closeout.test.mjs' } }), /ADOPTED_TESTS_LIST_REQUIRED/);
+  a.throws(() => run({ adoptedTests: [rowFor('app.test.mjs', selectedSha)], retiredTests: [{ path: 'app.test.mjs', sha256: selectedSha, reason }] }), /ADOPTED_TEST_ALREADY_SELECTED/);
+  for (let i = before; i < n; i++) a.equal(fs.existsSync(path.join(f.temp, 'adopt-' + i)), false);
 });
 
 test('an atomic preparation is invisible until validation finishes and preserves an existing destination', t => {

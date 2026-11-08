@@ -38,7 +38,7 @@ node tools/company-release/compose.cjs <입력.json>
 
 부모의 모든 소스·이미지·선택 시험을 보존하고 명세의 파일만 교체·추가한다. 이미 선택에서 빠진 시험을 바꾸면 별도 판단이 필요하므로 멈춘다. 새 시험은 선택에 추가한다.
 
-부모 파일은 지우지 않는다. git에서 지운 시험이 새 코드에서 실패하면(사슬 56 메신저 `chat-categories.test.mjs`) 명세의 `retiredTests`(`path` · 부모 `sha256` · 열 자 이상 `reason`)로 선택에서만 뺀다 — 파일은 부모 바이트 그대로 소스와 이미지에 남고, 같은 경로를 `files`에 함께 적거나 선택에 없던 시험 · 바이트가 다른 시험을 적으면 멈춘다. 결과는 `droppedSelectedTests` · `retiredTests`에 남는다. 지운 화면 파일(부르는 곳 없음)도 같은 까닭으로 부모 바이트가 남는다. 결과는 `prepared-local-qa-required`이며 검수·Linux QA·실제 배포를 통과했다는 표시를 만들지 않는다.
+부모 파일은 지우지 않는다. git에서 지운 시험이 새 코드에서 실패하면(사슬 56 메신저 `chat-categories.test.mjs`) 명세의 `retiredTests`(`path` · 부모 `sha256` · 열 자 이상 `reason`)로 선택에서만 뺀다 — 파일은 부모 바이트 그대로 소스와 이미지에 남고, 같은 경로를 `files`에 함께 적거나 선택에 없던 시험 · 바이트가 다른 시험을 적으면 멈춘다. 결과는 `droppedSelectedTests` · `retiredTests`에 남는다. 지운 화면 파일(부르는 곳 없음)도 같은 까닭으로 부모 바이트가 남는다. 반대로 부모 원천에는 있지만 선택 밖이라 어느 QA도 돌리지 않던 시험을 커밋이 그 대상 모듈과 함께 고쳤으면(사슬 57 `client-closeout.test.mjs` — 3c 서버 커밋) 명세의 `adoptedTests`(`path` · 부모 `beforeSha256` · 열 자 이상 `reason`)로 들인다 — 그 시험은 넘김 바이트로 선택과 이미지에 들어가 후보 QA가 돌린다. 줄이 없으면 그대로 `EXPLICIT_RETIRED_TEST_DECISION_REQUIRED`로 멈추고, 넘기지 않은 시험 · 이미 선택된 시험 · 부모 바이트가 다른 시험 · 시험 이름이 아닌 파일을 적어도 멈춘다. 결과는 `adoptedTests`(+ `addedSelectedTests`)에 남는다. 결과는 `prepared-local-qa-required`이며 검수·Linux QA·실제 배포를 통과했다는 표시를 만들지 않는다.
 
 이후 기존 배포 절차의 검수, 현재 운영판·소유권 확인, Linux 격리 시험, 완료된 반영 전 백업, 자료 보존 검사, 공개 대조, 재무장과 최종 사후 확인을 그대로 수행한다. 과거 생성기를 다시 실행하거나 옛 검수 증거를 새로 승인한 것으로 바꾸지 않는다.
 
