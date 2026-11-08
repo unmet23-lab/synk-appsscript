@@ -33,7 +33,7 @@ const SHOTS: Shot[] = [
   { at: T.again, img: 'again', cam: [480, 1120], z0: 1.04, z1: 1.08 },
   { at: T.eager, img: 'eager', cam: [380, 1150], z0: 1.16, z1: 1.06 },
   { at: T.got, img: 'got', cam: [400, 1160], z0: 1.0, z1: 1.08 },
-  { at: T.mirror, img: 'mirror', cam: [560, 1180], z0: 1.38, z1: 1.46 },
+  { at: T.mirror, img: 'mirror', cam: [470, 1140], z0: 1.12, z1: 1.18 },
 ];
 const shotAt = (t: number) => {
   let k = 0;
@@ -205,14 +205,14 @@ const EndCard: React.FC<{ t: number; lang: Lang }> = ({ t, lang }) => {
   const line = (at: number, ko: string, en: string, color: string) => (
     <div style={{ opacity: fadeIn(t, at, 0.2), transform: `translateY(${(1 - fadeIn(t, at, 0.2)) * 10}px)`, whiteSpace: 'nowrap', marginTop: 6 }}>
       <span style={{ fontFamily: KO, fontWeight: 900, fontSize: 78, lineHeight: 1.1, color }}>{ko}</span>
-      <span style={{ fontFamily: FONT[lang], fontWeight: 800, fontSize: lang === 'mm' ? 40 : 52, lineHeight: 1.1, color: C.brown, marginLeft: 14 }}>= {en}</span>
+      <span style={{ fontFamily: FONT[lang], fontWeight: 700, fontSize: lang === 'mm' ? 40 : 50, lineHeight: 1.1, color: C.brown, marginLeft: 18, opacity: 0.88 }}>· {en}</span>
     </div>
   );
   return (
     <Kraft t={t} at={T.mirror + 0.3} until={T.total + 1} lang={lang} top={275} size={L.size * 0.78}>
       {L.endHead}
-      {line(T.mirror + 0.5, '괜찮아요', L.endNo, '#A8321F')}
-      {line(T.mirror + 0.85, '네, 좋아요!', L.endYes, '#3D2A10')}
+      {line(T.mirror + 0.5, '괜찮아요', L.endNo, C.brown)}
+      {line(T.mirror + 0.85, '네, 좋아요!', L.endYes, C.brown)}
     </Kraft>
   );
 };
@@ -280,6 +280,7 @@ export const Film: React.FC<{ lang: Lang; scene?: boolean }> = ({ lang, scene })
     <AbsoluteFill style={{ background: '#2B1A14' }}>
       <Plate t={t} />
       <Glints t={t} />
+      {t >= T.mirror && t < T.mirror + 0.4 ? <AbsoluteFill style={{ background: 'rgba(225,242,255,1)', opacity: interpolate(t, [T.mirror, T.mirror + 0.05, T.mirror + 0.4], [0, 0.85, 0], clamp) }} /> : null}
       {/* 말풍선 — 친구는 오른쪽 위에서 */}
       <Bubble t={t} from={T.offer} until={T.close} x={640} y={600} tail={0.7} size={74} sub={L.bite} subFont={FONT[lang]} w={560}>한 입 먹을래?</Bubble>
       <Bubble t={t} from={T.reply} until={T.bite + 0.1} x={600} y={600} tail={0.85} size={70} sub={L.back} subFont={FONT[lang]} w={lang === 'mm' ? 760 : 640}>아, 괜찮아? 알았어!</Bubble>
