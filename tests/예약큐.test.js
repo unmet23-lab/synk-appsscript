@@ -14,11 +14,14 @@ const root = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-'));
 const 연말 = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-연말-'));
 test.after(() => { for (const dir of [root, 연말]) fs.rmSync(dir, { recursive: true, force: true }); });
 
-function 편(name, prep, result, base = root) {
+// 11-08부터 걸 판이 남은 편은 미학 맹검(⑱)을 통과해야 한다 — 시험 편은 「그대로 냄」 맹검 기록을 기본으로 둔다(⑱ 자체는 맨 아래 시험, 맹검 = null이면 기록 없음).
+const 통과맹검 = { 낱장: [{ 번호: '01', 판정: '그대로 냄', 점수: 8 }], 빠짐: [] };
+function 편(name, prep, result, base = root, 맹검 = 통과맹검) {
   const dir = path.join(base, name, '게시');
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, '준비.json'), JSON.stringify(prep));
   if (result) fs.writeFileSync(path.join(dir, '게시결과.json'), JSON.stringify(result));
+  if (맹검) fs.writeFileSync(path.join(dir, '미학맹검.json'), JSON.stringify(맹검));
 }
 
 function 돌리기(base, ...args) {
@@ -496,4 +499,23 @@ test('작업실 검토 링크를 승인한 판(게시결과 「예약됨」 + �
   const row = r.accounts.find((x) => x.account === 'lab-youtube');
   assert.equal(row.byDay['2026-10-22'][0].state, '예약됨');
   assert.equal(row.byDay['2026-10-23'][0].state, '승인 대기');
+});
+
+test('⑱ 미학 맹검 — 옛 검사 기록이 「확인할 것」이어도 걸 판이 남은 편은 맹검이 없거나 기각이면 고칠 것(까닭 함께), 맹검판단 · 맹검못함이면 그대로, 다 건 편은 묻지 않는다', t => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-맹검-'));
+  t.after(() => fs.rmSync(base, { recursive: true, force: true }));
+  const 검사 = { 결과: '확인할 것', 파일: [] };
+  const 기각 = { 낱장: [{ 번호: '01', 판정: '기각', 점수: 3, 약점: ['[K6] 끝 마침표'] }], 빠짐: [] };
+  편('없음', { ...판('LAB', '2026-11-10'), 검사 }, null, base, null);
+  편('기각', { ...판('LAB', '2026-11-11'), 검사 }, null, base, 기각);
+  편('판단', { ...판('LAB', '2026-11-12'), 검사, 맹검판단: '빈 날 없음 — 같은 편 다른 판이 이미 예약됨' }, null, base, 기각);
+  편('못함', { ...판('LAB', '2026-11-13'), 검사, 맹검못함: '아르곤 웹 줄 꺼짐' }, null, base, null);
+  편('다건', { ...판('LAB', '2026-11-14'), 검사 }, { 판: [{ 계정: 'lab-youtube', 상태: '예약됨' }] }, base, null);
+  const r = 돌리기(base, '--오늘', '2026-11-08', '--일수', '7', '--json');
+  assert.equal(r.status, 0, r.stderr);
+  const fix = Object.fromEntries(JSON.parse(r.stdout).fix.map((x) => [x.folder, `${x.check}:${x.checkWhy}`]));
+  assert.deepEqual(fix, { 없음: '고칠 것:미학 맹검 없음', 기각: '고칠 것:맹검 기각' });
+  const 글 = 돌리기(base, '--오늘', '2026-11-08', '--일수', '7').stdout;
+  assert.match(글, /없음 · 검사 고칠 것\(미학 맹검 없음\)/, '편 줄에 까닭이 보여 14시 회차가 옛 기록만 믿고 걸지 않는다');
+  assert.match(글, /판단 · 검사 확인할 것/);
 });

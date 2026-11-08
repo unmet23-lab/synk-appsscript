@@ -44,6 +44,7 @@ const path = require('node:path');
 const { handleOf, VIDEO } = require('./lib/게시묶음.js');
 const { 공용작업본 } = require('./lib/공용작업본.js');
 const { uploadBitrateProblem, probeUploadProblemSync, hasInspectionHash } = require('./lib/upload-audio-bitrate.cjs');
+const { aestheticBlock } = require('./lib/미학관문.js');
 
 const REPO = path.resolve(__dirname, '..');
 const argValue = (name) => { const i = process.argv.indexOf(name); return i > -1 ? process.argv[i + 1] : null; };
@@ -121,6 +122,16 @@ function checkOf(prep, needsBooking) {
   return { result, stale: false };
 }
 
+// 검사 기록에 적힌 영상 판 — 저장소에 없으면(git 밖 영상) 공용 작업본에서. ⑱이 맹검 뒤 다시 렌더했는지 본다.
+function videosOf(prep) {
+  const repo = path.resolve(ROOT, '..', '..');
+  const shared = 공용작업본(repo);
+  return (prep.검사?.파일 || []).filter((f) => VIDEO.test(f.경로 || '')).map((f) => {
+    const own = path.join(repo, f.경로);
+    return shared !== repo && !fs.existsSync(own) ? path.join(shared, f.경로) : own;
+  });
+}
+
 const 헤르메스 = require('./lib/헤르메스보내기.js');
 
 // 판 계정 키(sns-계정.json) → 서버 채널 id들. 핸들이나 유튜브 채널 ID로 맞춘다.
@@ -154,6 +165,9 @@ function collect(server, accounts, now) {
     const needsBooking = (prep.판 || []).some(p => !DONE.has(done.get(p.계정)?.상태) && done.get(p.계정)?.상태 !== '보류'
       && !(Date.parse(p.시각) < now));
     const check = checkOf(prep, needsBooking);
+    // ⑱ 미학 맹검(11-08 유호님 「그냥 지금부터 걸어」) — 준비.json 「검사」가 ⑱ 전에 남은 기록이어도, 아직 걸 판이 남은 편은
+    // 지금의 게시/미학맹검.json으로 다시 본다(11-08 14시 회차가 옛 검사 기록만 보고 맹검 없는 비축 편을 건 뒤).
+    const aesthetic = needsBooking ? aestheticBlock({ dir: path.join(ROOT, dir.name), prep }, videosOf(prep)) : null;
     const groups = { [prep.브랜드]: [], SHIFT: [] };
     for (const p of prep.판 || []) (String(p.계정 || '').startsWith('shift-') ? groups.SHIFT : groups[prep.브랜드]).push(p);
     for (const [brand, plates] of Object.entries(groups)) {
@@ -195,7 +209,8 @@ function collect(server, accounts, now) {
         kind: prep.성격 || null, role: prep.역할 || null, deadline: prep.시한 || null,
         state: filled === plates.length ? '채움' : filled ? '일부' : held === plates.length ? '보류' : '승인 대기',
         failed: states.filter((s) => s.state === '실패').length,
-        check: check.stale ? '다시 검사' : check.result,
+        check: check.stale ? '다시 검사' : aesthetic ? '고칠 것' : check.result,
+        checkWhy: !check.stale && aesthetic ? aesthetic : null,
         plates: states, warnings,
       });
     }
@@ -430,7 +445,7 @@ function print(report) {
     for (const d of range) for (const x of report.brands[brand].byDay[d]) {
       const plates = x.plates.filter((p) => p.method === '작업실' || p.state === '승인 대기' || p.state === '서버에 없음');
       console.log(`  ${d} ${brand} ${x.state}${x.failed ? ` (실패 ${x.failed})` : ''} · ${x.title} · ${x.kind || '성격 없음'}${x.role ? ` · 역할 ${x.role}` : ''}${x.deadline ? ` · 시한 ${x.deadline}` : ''} · ${x.folder}`
-        + `${{ 통과: '', '검사 전': ' · 검사 전', '다시 검사': ' · 검사 뒤 영상 바뀜(다시 검사)' }[x.check] ?? ` · 검사 ${x.check}`}${plates.length ? ` · ${plates.map((p) => `${p.account} ${p.state || '—'}`).join(', ')}` : ''}`);
+        + `${{ 통과: '', '검사 전': ' · 검사 전', '다시 검사': ' · 검사 뒤 영상 바뀜(다시 검사)' }[x.check] ?? ` · 검사 ${x.check}${x.checkWhy ? `(${x.checkWhy})` : ''}`}${plates.length ? ` · ${plates.map((p) => `${p.account} ${p.state || '—'}`).join(', ')}` : ''}`);
     }
     for (const x of report.brands[brand].late) console.log(`  ! ${brand} 시한 넘김: ${x.title}(시한 ${x.deadline}, 슬롯 ${x.slot})`);
   }
