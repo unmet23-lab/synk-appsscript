@@ -5,11 +5,16 @@
 //   제목 「손님을 / 부르는 / 모델」 — 원본처럼 덩이마다 원근으로 기울어 왼쪽 가장자리에서 휘어 들어오고(0.22초에 셋), 28.2초에 오른쪽으로 비틀려 날아간다.
 //     「모델」만 PULSE 베리. 20번은 창이 밝아 흰 글자 뒤에 옅은 그늘(콘티 4절 Fable 메모).
 //   끝: end='card'(10-26 확정 — 흰 바탕 승인 로고 크게 → 작게 + 주소 한 줄) · end='scene'(견줄 시안 — 판 없이 마지막 장면 안 바닥에 로고, 점검표 1번).
+//   말자막(11-08 초반 말 — 02_콘티 9절): 0~19초 사장 속말 · 23.8초 손님 말을 아래 가운데에 받아 적는다(브랜드 폰트 정본 §10-2 말자막 — 한 화면 한 문장,
+//     마침표 · 쉼표 없음, 얼굴 · 폰 화면을 덮지 않음). 결은 다 비침 30초 판(rs/RS60.tsx — 맹검 두 차례 뒤 판)과 같다: 말은 흰 글자,
+//     속말은 가늘고 옅은 푸른 회색에 아래 띠를 더 짙게. 시각 · 글은 최종소리.py가 받아쓰기 낱말 시각으로 timing.json `subs`에 쓴다.
+//     화면 글 1 · 2(19~22초) · 제목(26.7초~)과 한 화면에 겹치지 않는다(정본 §10-4 — 한 화면에 갈래 하나).
 import React from 'react';
 import { AbsoluteFill, Img, OffthreadVideo, staticFile, useCurrentFrame } from 'remotion';
 import { Audio } from '@remotion/media';
 import { KO } from '../lib/fonts';
 import { EXPO, SNAP, ramp } from '../lib/motion';
+import timing from './timing.json';
 
 const FPS = 24;
 export const P8_FRAMES = 720;
@@ -168,13 +173,51 @@ const EndScene: React.FC<{ t: number }> = ({ t }) => {
   );
 };
 
+// 말자막 — 다 비침 30초 판(RS60) 결에서 출발해 11-08 Fable 자막 검수(「고치고 통과」)로 고친 판:
+//   ① 자리 체계 — 속말은 왼쪽 한 기둥(글 왼쪽 끝 x 176), 6번 컷(폰 속 얼굴이 화면을 채움)만 오른쪽 거울 자리(글 오른쪽 끝 1744), 사람 말은 가운데.
+//      첫 판은 속말을 컷마다 가운데 · x 470 · 330 · 1720(가운데 기준)으로 옮겨 「자막이 떠돈다 · 급히 피한 자리」로 읽혔다.
+//   ② 크기 · 굵기 · 그늘 — 46px 가는 획 + 옅은 띠는 휴대폰(390px 폭)에서 9px로 녹았다 → 속말 54px · 사람 말 58px, 띠와 그늘이 실제로 일하게.
+//   ③ 속말을 옅은 푸른 회색으로 가르니 「바랜 자막」으로 읽혔다 → 거의 흰색에 아주 옅은 찬 기만, 말과 속말의 구분은 자리(왼쪽 기둥 / 가운데)가 맡는다.
+type Sub = { a: number; b: number; s: string; who: string; inner?: boolean; align?: 'left' | 'right' | 'center'; x?: number };
+const SUBS = ((timing as { subs?: Sub[] }).subs ?? []);
+const PAPER = '#F6F3EC';
+const INNER = '#E9EDF0';
+const noDot = (s: string) => s.replace(/[.。…]+$/, '');
+const Caption: React.FC<{ t: number }> = ({ t }) => {
+  const c = SUBS.find((l) => t >= l.a && t < l.b);
+  if (!c) return null;
+  const o = Math.min(ramp(t, c.a, 0.12, lin), 1 - ramp(t, c.b - 0.14, 0.14, lin));
+  const inner = c.inner === true;
+  const size = inner ? 54 : 58;
+  const align = c.align ?? 'center';
+  const x = c.x ?? 960;
+  const est = [...noDot(c.s)].length * size * 0.94;   // 띠를 글 가운데에 깔려고 어림한 글 폭
+  const cx = align === 'left' ? x + est / 2 : align === 'right' ? x - est / 2 : x;
+  const w = 1300;
+  const left = align === 'left' ? x : align === 'right' ? x - w : x - w / 2;
+  // 띠는 글 둘레에만(옆 기둥 자막이 폰 화면을 어둡게 하지 않게). 첫 판(가운데 #000000b0)은 글자 둘레 밝기 차가 10 남짓이라 휴대폰에서 일을 안 했다(Fable)
+  const band = `radial-gradient(${Math.round(est + 560)}px 270px at ${Math.round(cx)}px 1000px, #000000cc, #00000085 42%, #00000000 100%)`;
+  return (
+    <>
+      <AbsoluteFill style={{ zIndex: 17, opacity: o, background: band }} />
+      <div style={{ position: 'absolute', left, width: w, bottom: 82, zIndex: 18, textAlign: align, opacity: o, fontFamily: KO,
+        color: inner ? INNER : PAPER, fontWeight: inner ? 500 : 560, fontSize: size, lineHeight: 1.3, letterSpacing: '-0.005em',
+        wordBreak: 'keep-all', whiteSpace: 'pre-line',
+        textShadow: '0 0 2px #000000e6, 0 0 9px #000000b8, 0 2px 22px #000000a8' }} data-who={c.who}>
+        {noDot(c.s)}
+      </div>
+    </>
+  );
+};
+
 // copy: 'a' 글자 1 · 2를 얹음(최종) · 'b' 글자 없이(견줄 시안 — 슬롭 점검표 24번 「그릴 여력이 없으면 말로」 · 폰 화면의 「패키지에 담김」 알림이 대신 말한다)
 // v4 기본: 장면 안 끝(scene) · 그린 제목(drawn). 견줄 판: end='card'(10-26 흰 끝 화면) · title='type'(친 글자).
-export const P8: React.FC<{ end?: 'card' | 'scene'; copy?: 'a' | 'b'; title?: 'drawn' | 'type' }> = ({ end = 'scene', copy = 'a', title = 'drawn' }) => {
+export const P8: React.FC<{ end?: 'card' | 'scene'; copy?: 'a' | 'b'; title?: 'drawn' | 'type'; subs?: 'on' | 'off' }> = ({ end = 'scene', copy = 'a', title = 'drawn', subs = 'on' }) => {
   const t = useCurrentFrame() / FPS;
   return (
     <AbsoluteFill style={{ background: '#000' }}>
       <OffthreadVideo src={staticFile('p8/picture.mp4')} muted style={{ width: '100%', height: '100%' }} />
+      {subs === 'on' && <Caption t={t} />}
       {copy === 'a' && <Copy1 t={t} />}
       {copy === 'a' && <Copy2 t={t} />}
       <Title t={t} drawn={title === 'drawn'} scene={end === 'scene'} />

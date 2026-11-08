@@ -34,6 +34,37 @@ SONG = os.environ.get("P8_SONG", "C:/Users/q1212/Documents/synk-vendor/pulse-por
 SONG_AT = float(os.environ.get("P8_SONG_AT", "4.21"))   # 곡의 몇 초를 편집 4.10초에 놓나
 SONG_END = (48.3, 49.4)   # 곡의 마지막 치기를 찾을 자리(초) — 28.0초 한 박 멈춤 뒤 끝 화면(28.43초)에 이어 붙인다
 
+# ---------- 초반 말(11-08 — 02_콘티 9절 · 슬롭 점검표 30번) ----------
+#   원본은 4.2초부터 여자 목소리 가사 노래 · 17.35초 주인공 혼잣말이 끌던 0~19초가, 곡이 연주곡이 되며 말 · 가사 · 글 하나 없이 비었다.
+#   내레이션_초반.py가 원고 전체를 한 번에 구운 판(일레븐 v4)을 받아쓰기(Scribe) 낱말 사이 가장 조용한 20ms에서 잘라, 토막 첫 낱말을 화면 초에 놓는다
+#   (10번 21절 · 현장노트 영상 「한 번에 구운 내레이션을 토막으로 놓을 때 … 받아쓰기 낱말 시작에 맞춘다」). P8_OPEN=""이면 v5 소리 그대로.
+OPEN_DIR = os.path.join(ROOT, "내레이션초반")
+#   칸나_E11 — 목소리 넷(수리 · 한 · 수지 · 칸나)을 같은 자리에 놓은 이름 가린 Gemini 3.7 Flash 맹검 두 번(순서 바꿈) 모두 칸나 1위(31 · 31).
+#   「광고」를 넣은 칸나_C는 둘째 줄이 1.78초라 4.88초까지 가 두 검수자가 비우라 한 4번 컷(눈 멎음 · 곡 들어옴)을 덮어 「광고」를 뺐고(Fable 대비책 · Opus 고친 판),
+#   1위 까닭이던 「얘면」 앞 헛웃음은 꼬리표로 살려 씨앗 셋(E11 · E23 · E37)을 구웠다. 무료 키 Flash 몫이 다 차 Lite 둘에 순서를 바꿔 물으니 E11이 35 · 34(두 번 1 · 2위),
+#   E23은 23 · 35로 갈렸다(「얘면이 애면처럼 뭉개짐」). git 밖 최종/p8/_검수/속마음목소리_* · 칸나E세판_*.
+OPEN = os.environ.get("P8_OPEN", "칸나_E11")
+OPEN_WHO = "소연"        # 속말이면 소연(자막 inner) — 내레이터 원고면 「내레이션」
+OPEN_LVL = -20.0         # 한 판 전체 RMS(dBFS) — 끝 내레이션(−19) · 손님(−21) 사이
+# (첫 낱말을 놓을 화면 초, 그 아래 곡 전체를 내릴 dB, 목소리 띠 250~4000 Hz를 더 내릴 dB, [(자막 글, 그 화면 마지막 낱말 머리)], 자막 가운데 x 또는 None)
+#   자리는 원고 맹검(Fable 고친 판)대로 — 4.1~9초(곡이 들어오고 눈이 멈춤 · 쇼핑백 얼굴 → 폰 얼굴 그림 라임)와 12~15초(집중 · 빠른 사진 격자),
+#   19.1~21.8초(화면 글 1 · 2)는 말 없이 둔다. 12번 컷(15.83~16.67 「딸기 라떼 신메뉴」 폰 글)에 말이 걸리지 않게 냉장고 줄은 10번 끝에서 J컷으로 들어간다.
+#   자막 자리(다섯째 칸) — 「L」 속말 왼쪽 기둥(글 왼쪽 끝 x 176) · 「R」 오른쪽 거울 자리(글 오른쪽 끝 1744) · None 가운데.
+#   11-08 Fable 자막 검수: 첫 판은 컷마다 가운데 · x 470 · 330 · 1720(가운데 기준)으로 옮겨 「자막이 떠돈다」 → 속말은 한 기둥, 사람 말만 가운데.
+#   첫 칸이 ("끝", 초)이면 그 줄 마지막 낱말이 그 초에 끝나게 놓는다(둘째 줄 — 4.45초 곡의 첫 큰 박 앞에서 끝나게, 목소리마다 줄 길이가 달라서).
+OPEN_AT = [
+    (0.90, 0.0, 0.0, [("거꾸로 봐도 손님이 없네", "없네")], "L"),           # 기 — 1 거꾸로 얼굴(0.5초 한숨 뒤) → 2 빈 가게 와이드. 곡 전(바탕 소리뿐)
+    (("끝", 4.50), 0.0, 0.0, [("모델 쓰면 좀 오려나", "오려나")], "L"),     # 기 — 3 캐스팅북 모델 목록. 곡은 4.10에 작게 들어와 4.56에 첫 큰 박(83.4 BPM 격자, 6.00 박의 두 박 앞) — 그 앞에서 끝나 곡을 내리지 않는다
+    (7.60, -7.0, -7.0, [("어디서 봤더라", "봤더라")], "R"),                  # 승 — 5 쇼핑백 얼굴 직후 6 폰 속 같은 얼굴(보는 사람이 먼저 답을 안다), 8.79 일어남 · 삐걱 앞. 폰 속 얼굴이 화면을 채워 자막은 오른쪽 거울 자리
+    (11.50, -8.0, -8.0, [("저 집은 좋겠다", "좋겠다")], "L"),               # 승 — 8 포스터 앞에 멈춰 선 두 행인 → 9 사장 얼굴(그림이 못 하는 「부럽다」)
+    (15.12, -6.0, -5.0, [("우리 냉장고에도?", "냉장고에도")], "L"),         # 승 — 11 내 가게 냉장고 스티커(15.17 — 「냉장고」가 11번에 떨어지고 자막도 11번 첫 장부터, 12번 폰 글은 첫 0.2초만 걸침)
+    (17.65, -8.0, -7.0, [("얘면 손님 오겠다", "오겠다")], "L"),             # 승→전 — 14 빠져든 얼굴. 오려나 → 오겠다 → 23.8 손님 「포스터 보고 왔어요」 → 26.7 「손님을 부르는 모델」
+]
+SUB_COL = {"L": ("left", 176), "R": ("right", 1744), None: ("center", 960)}
+OPEN_TRIM = 3.0          # 줄마다 크기 차를 판 가운데값 쪽으로 당기는 한도(dB) — 꼬리표 연기로 줄 사이가 9 dB까지 벌어졌다(「저 집은 좋겠다」 −32.5 · 「우리 냉장고에도?」 −23.6, 11-08 첫 굽기)
+OPEN_ENDS = ["없네", "오려나", "봤더라", "좋겠다", "냉장고에도"]   # 토막을 끊는 낱말 머리(그 낱말 뒤 쉼에서 자름)
+#   의자 삐걱은 7.6초 줄이 앞으로 옮겨 다시 겹치지 않지만, 꼬리(9.76초까지)는 9초대 줄을 쓸 때를 위해 다 앉는 장(9.46초)에서 끊어 둔다
+
 
 def load(path, stereo=False):
     return C.load_stereo(path) if stereo else C.load(path)
@@ -104,12 +135,142 @@ def voice_chunks(x, floor_db=-42, gap=0.12, min_len=0.12):
     return out
 
 
+def bp(x, lo, hi, order=2):
+    return S.sosfiltfilt(S.butter(order, [lo, hi], "band", fs=RATE, output="sos"), x, axis=0).astype(np.float32)
+
+
+def tame(x, over_db=9.0, release=0.06, look=0.002):
+    """봉우리만 누른다(앞보기 리미터 — 10번 최종소리.py와 같음). 말머리 파열음이 한 판 마감의 봉우리를 정하지 않게"""
+    from scipy.ndimage import minimum_filter1d
+    a = np.abs(x) if x.ndim == 1 else np.abs(x).max(axis=1)
+    thr = 10 ** ((rms_db(x) + over_db) / 20)
+    g = np.minimum(1.0, thr / (a + 1e-9))
+    g = minimum_filter1d(g, size=max(1, int(look * RATE)) * 2 + 1)
+    k = np.exp(-1.0 / (release * RATE))
+    out = np.empty_like(g)
+    cur = 1.0
+    for i in range(len(g)):
+        cur = g[i] if g[i] < cur else g[i] + (cur - g[i]) * k
+        out[i] = cur
+    return (x * (out if x.ndim == 1 else out[:, None])).astype(np.float32)
+
+
+def opening(name):
+    """한 번에 구운 초반 말을 토막으로 — [(판 a초, 판 b초, 기준 낱말 판 초, 놓을 화면 초, 곡 dB, 띠 dB, 첫 낱말 판 초, [(자막 글, 판 시작, 판 끝)], 자막 x)]"""
+    x = C.load(os.path.join(OPEN_DIR, name + ".mp3"))
+    words = [w for w in json.load(open(os.path.join(OPEN_DIR, name + "_받아쓰기.json"), encoding="utf-8"))["words"] if w.get("type") == "word"]
+    n20 = int(0.02 * RATE)
+    db = np.array([20 * np.log10(np.sqrt(np.mean(x[i:i + n20] ** 2)) + 1e-9) for i in range(0, len(x) - n20, n20)])
+
+    def quietest(a, b):
+        i, j = int(a / 0.02), max(int(a / 0.02) + 1, int(b / 0.02))
+        return (i + int(np.argmin(db[i:j]))) * 0.02 + 0.01
+
+    def word_idx(stem, after=0):
+        for k in range(after, len(words)):
+            if words[k]["text"].strip(" .,?!…").replace(" ", "").startswith(stem):
+                return k
+        raise SystemExit(f"초반 말 {name}: 받아쓰기에 「{stem}」이 없다 — {[w['text'] for w in words]}")
+
+    cuts, k = [0.0], 0
+    for stem in OPEN_ENDS:
+        k = word_idx(stem, k)
+        cuts.append(quietest(words[k]["end"], words[k + 1]["start"]))
+        print(f"  자름 「{words[k]['text']}」 뒤 쉼 {words[k + 1]['start'] - words[k]['end']:.2f}초 → 판 {cuts[-1]:.2f}초")
+        k += 1
+    cuts.append(len(x) / RATE)
+    cuts[0] = max(0.0, words[0]["start"] - 0.08)   # 첫 토막은 말 앞 들숨을 덜어낸다 — 0.5초 시댄스 한숨(0.50~0.84) 바로 뒤라 숨이 두 번 겹친다
+    out, k0 = [], 0
+    for p, (at, duck, mid, subs, sx) in enumerate(OPEN_AT):
+        a, b = cuts[p], cuts[p + 1]
+        first = words[k0]["start"]
+        sl = []
+        for text, last in subs:
+            kk = word_idx(last, k0)
+            sl.append((text, words[k0]["start"], words[kk]["end"]))
+            k0 = kk + 1
+        if isinstance(at, tuple):   # ("끝", 초) — 마지막 낱말이 그 초에 끝나게. 앞 줄과는 0.3초 넘게 띄운다(앞 줄이 긴 목소리면 그만큼 늦게 끝난다)
+            at = at[1] - (sl[-1][2] - first)
+            if out:
+                pa, pb, pon, pat, *_r, psl, _psx = out[-1]
+                at = max(at, pat + (psl[-1][2] - pon) + 0.3)
+        out.append((a, b, first, at, duck, mid, first, sl, sx))
+    for p in range(1, len(out)):    # 앞 줄 끝 → 다음 줄 첫 낱말 틈
+        gap = out[p][3] - (out[p - 1][3] + out[p - 1][7][-1][2] - out[p - 1][2])
+        if gap < 0.3:
+            print(f"  ⚠ 초반 말 {p}→{p + 1}번 줄 틈 {gap:.2f}초 — 0.3초 아래")
+    return x, out
+
+
+def sub_timing(pieces, T, who, inner):
+    """자막 화면마다 {a, b, s} — 목소리보다 0.06초 먼저, 1.0초 이상, 소리 끝 뒤 0.3초 꼬리, 다음 화면 0.12초 앞에서 내림.
+    뜨는 때가 컷 경계 3장(0.125초) 안이면 경계에, 지는 때가 경계 0.6초 앞이면 경계 2장 앞까지(10번 subtitle_timing과 같은 규칙)"""
+    cuts = list(T[1:-1])
+    raw = []
+    for a, b, on, at, duck, mid, first, lines, sx in pieces:
+        shift = at - on
+        for text, s, e in lines:
+            al, ax = SUB_COL[sx]
+            raw.append({"a": s + shift - 0.06, "e": e + shift, "s": text, "who": who, "inner": inner, "align": al, "x": ax})
+    for r in raw:
+        near = [c for c in cuts if abs(c - r["a"]) <= 0.125]
+        if near:
+            r["a"] = near[0]
+    for i, r in enumerate(raw):
+        want = max(r["e"] + 0.3, r["a"] + 1.0)
+        nxt = raw[i + 1]["a"] - 0.12 if i + 1 < len(raw) else want
+        b = min(want, nxt)
+        after = [c for c in cuts if b < c <= b + 0.6 and c - 2 / 24 <= nxt and c - 2 / 24 - r["e"] <= 0.5]   # 목소리 끝 뒤 0.5초 넘게는 늘이지 않는다(냉장고 줄이 12번 폰 컷 내내 남았다)
+        if after:
+            b = after[0] - 2 / 24
+        just = [c for c in cuts if r["e"] - 0.05 < c < b and b - c < 0.3]   # 목소리가 끝난 뒤 경계를 조금 넘으면 그 컷 끝 장까지만(끝 줄이 19.08 화면 글 1과 겹쳤다 · Fable 「컷까지 들고 가기」)
+        if just:
+            b = just[0]
+        r["a"], r["b"] = round(r["a"], 3), round(b, 3)
+        del r["e"]
+        if r["align"] == "center":
+            del r["align"], r["x"]
+    return raw
+
+
 def build(out_wav, timing_json, T):
     mix = C.Mix(END)
     lines = []
+    subs = []
+    vo_spans = []   # (시작, 끝, 곡 dB, 띠 dB) — 초반 말 아래 곡을 내린다
+    vo_placed = []  # (놓은 초, 토막) — 확인 줄이 목소리만 따로 쌓아 잰다
 
     def cut(n):   # n번 컷 시작 초
         return T[n - 1]
+
+    # ---------- 초반 말 — 한 판 전체를 한 크기로 맞춘 뒤 토막으로(토막마다 크기를 따로 맞추지 않아 말의 높낮이가 그대로) ----------
+    if OPEN:
+        vx, pieces = opening(OPEN)
+        vx = tame(hp(to_rms(vx, OPEN_LVL), 70), 7.0)
+        # 줄 크기 — 말하는 동안(−45 dB 위 20ms 창)의 크기를 판 가운데값 쪽으로 당긴다(OPEN_TRIM dB까지 — 연기의 높낮이는 남기고 묻히거나 튀는 줄만)
+        def talk_db(z):
+            n20 = int(0.02 * RATE)
+            w = np.array([np.sqrt(np.mean(z[i:i + n20] ** 2)) for i in range(0, len(z) - n20, n20)])
+            w = w[20 * np.log10(w + 1e-9) > -45]
+            return 20 * np.log10(np.sqrt(np.mean(w ** 2)) + 1e-9) if len(w) else -90.0
+        lv = [talk_db(vx[int(p[0] * RATE):int(p[1] * RATE)]) for p in pieces]
+        mid_lv = float(np.median(lv))
+        for (a, b, on, at, duck, mid, first, sl, sx), l in zip(pieces, lv):
+            trim = float(np.clip(mid_lv - l, -OPEN_TRIM, OPEN_TRIM))
+            piece = fades(vx[int(a * RATE):int(b * RATE)], 0.01, 0.06) * (10 ** (trim / 20))
+            print(f"  초반 말 「{sl[0][0]}」 말 크기 {l:.1f} dB → {trim:+.1f} dB")
+            t0 = at - (on - a)
+            mix.put(t0, piece, fade=0.0)
+            vo_placed.append((t0, piece))
+            s0, e0 = at - (on - first), at + (sl[-1][2] - on)
+            vo_spans.append((s0, e0, duck, mid))
+            for text, s, e in sl:
+                lines.append({"a": round(at + s - on, 2), "b": round(at + e - on, 2), "who": OPEN_WHO, "s": text})
+            print(f"  초반 말 판 {a:.2f}–{b:.2f}초 → 화면 {s0:.2f}–{e0:.2f}초 · " + " / ".join(f"{t} {at + s - on:.2f}" for t, s, e in sl))
+        subs += sub_timing(pieces, T, OPEN_WHO, OPEN_WHO == "소연")
+
+    def vo_over(a, b):   # 초반 말과 겹치나
+        return any(s < b + 0.15 and a - 0.15 < e for s, e, *_ in vo_spans)
 
     # ---------- 바탕: 손님 없는 오후의 찬 카페(1~17), 밖 컷(5 · 8 · 13)은 거리 ----------
     fridge = seg(os.path.join(SON, "Jake Fielding - Fridge Hums Vol.2", "MACHAppl_Deep Fridge Hum, Buzz, Electric Tone, Deep_Jake Fielding_Fridge Hums Pt2.wav"), 1.0, 40.0, stereo=True)
@@ -131,6 +292,10 @@ def build(out_wav, timing_json, T):
     a01 = 29 / 24   # 최종편집.py CUTS[1]
     for (a, b), at, who in zip(voice_chunks(v01, -45)[:2], (None, 1.45), ("한숨", "음…")):
         x = v01[int(a * RATE):int(b * RATE)]
+        here = at if at is not None else (a - a01)
+        if who == "음…" and vo_over(here, here + (b - a)):   # 초반 속말이 그 자리를 맡으면 시댄스 「음…」은 뺀다(한 사람 목소리 둘이 겹치지 않게). 0.5초 한숨은 둔다 — 한숨 → 속말
+            print(f"  {who} 뺌 — 초반 말과 겹침")
+            continue
         # 한숨은 v1에서 −30 dB였는데 Gemini Lite 소리 맹검이 「시작하자마자 한숨이 크고 거칠다」(11-07) — 3 dB 낮추고 6 kHz 위 숨결을 누른다
         mix.put(at if at is not None else (a - a01), to_rms(lp(x, 6000), -33 if who == "한숨" else -33), fade=0.03)
         lines.append({"a": round((at if at is not None else a - a01), 2), "who": "소연", "s": who})
@@ -142,8 +307,11 @@ def build(out_wav, timing_json, T):
     if ch14:
         a, b = max(ch14, key=lambda c: c[1] - c[0])
         br = v14[int(a * RATE):int(min(b, a + 0.75) * RATE)]
-        mix.put(cut(14) + 0.28, fades(to_rms(br, -32), 0.03, 0.2))
-        lines.append({"a": round(cut(14) + 0.28, 2), "who": "소연", "s": "(감탄 숨)"})
+        if vo_over(cut(14) + 0.28, cut(14) + 0.28 + len(br) / RATE):   # 원본 혼잣말 자리를 속말이 맡으면 숨은 뺀다
+            print("  14번 감탄 숨 뺌 — 초반 말과 겹침")
+        else:
+            mix.put(cut(14) + 0.28, fades(to_rms(br, -32), 0.03, 0.2))
+            lines.append({"a": round(cut(14) + 0.28, 2), "who": "소연", "s": "(감탄 숨)"})
 
     # ---------- 5번 보도: 운동화 걸음 · 종이 쇼핑백 ----------
     steps = seg(os.path.join(FAIR, "BG Footsteps Concrete City.wav"), 1.0, 3.0, stereo=True)
@@ -154,7 +322,9 @@ def build(out_wav, timing_json, T):
     # ---------- 7번 의자 삐걱(p8-07d 판 0.33초에 일어나기 시작 → 컷 0.25초) ----------
     chair = load(os.path.join(FAIR, "Wood Chair Creaks.M.wav"), True)
     k = peak_at(chair)
-    mix.put(cut(7) + 0.27 - k, fades(to_rms(chair[:int((k + 0.7) * RATE)], -29), 0.005, 0.15))
+    # 초반 말이 있으면 삐걱 꼬리를 다 앉는 장(9.46초)에서 끊는다 — 0.7초 꼬리(9.76초까지)가 9.55초 「이 얼굴 어디서 봤더라」 머리를 덮었다(목소리 띠 바탕 · 효과 −33 dB, 11-08)
+    tail = 0.42 if OPEN else 0.7
+    mix.put(cut(7) + 0.27 - k, fades(to_rms(chair[:int((k + 0.7) * RATE)], -29)[:int((k + tail) * RATE)], 0.005, 0.15))
 
     # ---------- 폰 누름 「톡」 — 15번(판 1.50초에 닿음 → 컷 0.46초) · 17번(판 1.62초 → 컷 0.87초) ----------
     taps = load(os.path.join(FAIR, "Cell phone taps.M.wav"), True)
@@ -187,6 +357,11 @@ def build(out_wav, timing_json, T):
         laugh = []
     mix.put(23.80, to_rms(g, -21), fade=0.01)
     lines.append({"a": 23.80, "b": round(23.80 + len(g) / RATE, 2), "who": "손님", "s": "포스터 보고 왔어요"})
+    if OPEN:   # 초반 말에 자막을 달면 손님 말도 같은 결로(한 편 안에서 말자막이 있다 없다 하지 않게). 끝 내레이션은 제목 · 로고가 같은 말이라 달지 않는다
+        g_on = voice_chunks(g, -40)
+        ga = 23.80 + (g_on[0][0] if g_on else 0.03)
+        ge = 23.80 + (g_on[-1][1] if g_on else len(g) / RATE)
+        subs.append({"a": round(ga - 0.06, 3), "b": round(min(ge + 0.3, cut(20) - 0.2), 3), "s": "포스터 보고 왔어요", "who": "손님"})
     if GUEST == "시댄스" and laugh:
         # 판 안 웃음은 3.1~3.7초(컷 끝 3.08초 뒤)라 20번 와이드로 밀린다 — 둘이 마주 웃는 장(컷 1.75초 = 25.38초, 콘티 25.3~26.6초)으로 옮긴다.
         # Gemini Lite(11-07)는 이 웃음을 손님 목소리 결로 들었다 — 손님은 뒷모습이고 소연은 그 장에 입꼬리를 올려 웃고 있어 누구 웃음이어도 입 맞춤이 어긋나지 않는다
@@ -233,13 +408,53 @@ def build(out_wav, timing_json, T):
         gain = np.interp(t, [4.10, 4.40, 12.85, 13.05, 15.9, 16.2, 19.45, 19.65, 20.15, 20.35, 22.30, 22.60, 23.70, 23.85, 25.1, 25.3, 26.62, 26.75, 27.92, 28.0],
                          [-14, 0, 0, 2, 2, 0, 0, -8, -8, 0, 0, 2, 2, -8, -8, 1, 1, -4, -4, -60])   # 손님 말 아래 −8(v1 −5 — Lite 「대사가 음악에 조금 묻힘」)
         s = s * (10 ** (gain / 20))[:, None]
+        if vo_spans:
+            # 초반 말 아래만 내린다 — 앞 0.3초 · 뒤 0.55초에 걸쳐, 목소리 띠(250~4000 Hz)는 더(10번 21절과 같은 짜임). 1.2초보다 가까운 줄은 한 번에.
+            #   목표: 목소리 띠에서 목소리가 곡보다 +10~12 dB(아래 확인 줄이 찍는다)
+            g_all = np.ones(len(s), np.float32)
+            g_mid = np.ones(len(s), np.float32)
+            spans = []
+            for a, e, duck, mid in sorted(vo_spans):
+                if spans and a - spans[-1][1] < 1.2:
+                    pa, pe, pd, pm = spans[-1]
+                    spans[-1] = (pa, e, min(pd, duck), min(pm, mid))
+                else:
+                    spans.append((a, e, duck, mid))
+            for a, e, duck, mid in spans:
+                if e < 4.10:
+                    continue
+                for g, d in ((g_all, duck), (g_mid, mid)):
+                    pts_t = [0.0, a - 0.30, a - 0.02, e + 0.10, e + 0.65, END + 1]
+                    g *= (10 ** (np.interp(t, pts_t, [0, 0, d, d, 0, 0]) / 20)).astype(np.float32)
+            s = s * g_all[:, None] - bp(s, 250, 4000) * ((1 - g_mid) * g_all)[:, None]
         mix.put(4.10, s.astype(np.float32), fade=0.0)
+        song_here = np.zeros_like(mix.a)
+        song_here[int(4.10 * RATE):int(4.10 * RATE) + len(s)] = s[:len(song_here) - int(4.10 * RATE)]
+
+    # 확인 — 초반 말마다 목소리 대 그 아래 곡 · 바탕(목소리 띠 250~4000 Hz). 목소리는 따로 쌓은 판으로 잰다
+    if OPEN and SONG:
+        vo = C.Mix(END)
+        for t0, piece in vo_placed:
+            vo.put(t0, piece, fade=0.0)
+        for a, e, *_r in vo_spans:
+            i, j = int(a * RATE), int(e * RATE)
+            v = vo.a[i:j].mean(axis=1)
+            rest = mix.a[i:j].mean(axis=1) - v
+            sg = song_here[i:j].mean(axis=1)
+            vb, rb, sb, ob = (bp(z, 250, 4000) for z in (v, rest, sg, rest - sg))
+            r = lambda z: 20 * np.log10(np.sqrt(np.mean(z ** 2)) + 1e-9)
+            print(f"  {a:5.2f}–{e:5.2f}초 목소리 띠: 목소리 − 곡 {r(vb) - r(sb):+5.1f} dB · 목소리 − 나머지 전부 {r(vb) - r(rb):+5.1f} dB"
+                  f"  (띠 크기 목소리 {r(vb):.1f} · 곡 {r(sb):.1f} · 바탕 · 효과 {r(ob):.1f})")
 
     # 30.0초 끝 — 원본처럼 끝에서 끊되 곡 잔향이 「뚝」 잘린 소리로 들리지 않게 마지막 0.2초만 줄인다(Lite 두 번 모두 「끝이 뚝 끊김」, 11-07)
     n = int(END * RATE)
     mix.a[n - int(0.2 * RATE):n] *= np.linspace(1, 0, int(0.2 * RATE))[:, None]
     mix.finish(out_wav, boost_db=0.0)
-    json.dump({"lines": lines, "guest": GUEST, "narr": NARR, "song": os.path.basename(SONG), "song_at": SONG_AT}, open(timing_json, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    meta = {"lines": sorted(lines, key=lambda d: d["a"]), "guest": GUEST, "narr": NARR, "song": os.path.basename(SONG), "song_at": SONG_AT}
+    if OPEN:
+        meta["open"] = OPEN
+        meta["subs"] = sorted(subs, key=lambda d: d["a"])
+    json.dump(meta, open(timing_json, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     for l in lines:
         print(f"  {l['a']:6.2f} {l['who']} {l['s']}")
     return lines
