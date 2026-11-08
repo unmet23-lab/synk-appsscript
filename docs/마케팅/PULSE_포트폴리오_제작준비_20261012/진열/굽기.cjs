@@ -112,14 +112,14 @@ function cropFor(src, tw, th, o, box) {
 function doReel() {
   fs.mkdirSync(outDir, { recursive: true });
   const cuts = DATA.reel.cuts;
-  for (const c of cuts) { const { d } = probe(cutSrc(c)); if (c.in + c.dur > d + 0.01) throw new Error(`${c.work} ${c.src}: ${c.in}+${c.dur} > ${d}`); }
+  for (const c of cuts) for (const kind of ['wide', 'tall']) { const { d } = probe(cutSrc(c)); const at = c[kind].in ?? c.in; if (at + c.dur > d + 0.01) throw new Error(`${c.work} ${c.src} ${kind}: ${at}+${c.dur} > ${d}`); }
   for (const [kind, tw, th, crf] of [['wide', 1280, 800, 25], ['tall', 720, 1280, 26]]) {
     const tmp = path.join(outDir, `_tmp_${kind}`); fs.mkdirSync(tmp, { recursive: true });
     const list = [];
     cuts.forEach((c, i) => {
       const f = path.join(tmp, `${String(i).padStart(2, '0')}.mp4`);
       const box = c.src === 'raw' ? DATA.works.find((x) => x.key === c.work).rawBox : null;
-      run('ffmpeg', ['-v', 'error', '-y', '-ss', String(c.in), '-t', String(c.dur), '-i', cutSrc(c), '-an', '-vf', cropFor(cutSrc(c), tw, th, c[kind], box), '-c:v', 'libx264', '-preset', 'medium', '-crf', String(crf - 4), '-r', '24', f]);
+      run('ffmpeg', ['-v', 'error', '-y', '-ss', String(c[kind].in ?? c.in), '-t', String(c.dur), '-i', cutSrc(c), '-an', '-vf', cropFor(cutSrc(c), tw, th, c[kind], box), '-c:v', 'libx264', '-preset', 'medium', '-crf', String(crf - 4), '-r', '24', f]);
       list.push(`file '${f.replaceAll('\\', '/')}'`);
     });
     const lf = path.join(tmp, 'list.txt'); fs.writeFileSync(lf, list.join('\n'));
@@ -130,8 +130,9 @@ function doReel() {
     fs.rmSync(tmp, { recursive: true, force: true });
     console.log(kind, (fs.statSync(out).size / 1e6).toFixed(2) + 'MB', probe(out).d.toFixed(3) + 's');
   }
-  // 시각표는 구운 판에서 잰다(판마다 프레임 반올림이 쌓인다): 컷 길이를 24fps 프레임으로 내림한 누적.
-  let fr = 0; const timeline = cuts.map((c) => { const e = { at: Math.round(fr / 24 * 100) / 100, work: c.work }; fr += Math.round(c.dur * 24); return e; });
+  // 시각표는 구운 판과 맞춘다: ffmpeg -t는 24fps 프레임으로 올림해서 굽는다(11-09 잰 값 — 1.8초 = 44프레임). 컷 끝이 다음 장면으로 넘어가지 않게 원본 장면 경계를 재서 고른다.
+  // 같은 작품이 이어지는 컷은 번호가 바뀌지 않으니 한 줄로 합친다.
+  let fr = 0; const timeline = []; for (const c of cuts) { if (timeline.at(-1)?.work !== c.work) timeline.push({ at: Math.round(fr / 24 * 100) / 100, work: c.work }); fr += Math.ceil(c.dur * 24); }
   const total = Math.round(probe(path.join(outDir, 'reel-wide.mp4')).d * 100) / 100;
   fs.writeFileSync(path.join(outDir, 'reel.json'), JSON.stringify({ total, timeline }, null, 1));
   console.log('total', total, JSON.stringify(timeline));

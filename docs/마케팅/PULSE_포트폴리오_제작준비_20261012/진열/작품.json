@@ -157,16 +157,17 @@
     }
   ],
   "reel": {
-    "_": "첫 화면 쇼릴(소리 없음). 앞 네 편(진열 01~04)만 나오고, 번호는 진열 순서와 같다. src는 자막 전 raw 판. wide/tall은 그 판에서 쓸 자리(y = 세로 시작 px, x = 가로 비율).",
+    "_": "첫 화면 쇼릴(소리 없음). 앞 네 편(진열 01~04)만 나오고, 번호는 진열 순서와 같다. src는 자막 전 raw 판. wide/tall은 그 판에서 쓸 자리(y = 세로 시작 px, x = 가로 비율, in = 그 화면만 다른 시작 초). 첫 화면 글이 얼굴을 덮지 않는 자리만 고른다 — 넓은 화면은 왼쪽 위까지, 휴대폰은 위쪽 40% 밖이 글 자리.",
     "cuts": [
       { "work": "dodam", "src": "raw", "in": 12.5, "dur": 2, "wide": {}, "tall": { "x": 0.3 } },
-      { "work": "omitok15", "src": "raw", "in": 1.8, "dur": 1.8, "wide": { "y": 260 }, "tall": {} },
+      { "work": "omitok15", "src": "raw", "in": 11.6, "dur": 1.1, "wide": { "y": 820 }, "tall": { "in": 8.6 } },
       { "work": "maejin", "src": "cut:10", "in": 0.5, "dur": 1.8, "wide": {}, "tall": { "x": 0.5 } },
-      { "work": "modu", "src": "raw", "in": 3.95, "dur": 1.7, "wide": { "y": 400 }, "tall": {} },
-      { "work": "dodam", "src": "raw", "in": 50.5, "dur": 1.7, "wide": {}, "tall": { "x": 0.62 } },
-      { "work": "omitok15", "src": "raw", "in": 13.4, "dur": 1.5, "wide": { "y": 820 }, "tall": {} },
-      { "work": "maejin", "src": "cut:30", "in": 0.3, "dur": 1.5, "wide": {}, "tall": { "x": 0.5 } },
-      { "work": "modu", "src": "raw", "in": 35.3, "dur": 2, "wide": { "y": 820 }, "tall": {} }
+      { "work": "modu", "src": "raw", "in": 3.95, "dur": 1.8, "wide": { "y": 400 }, "tall": {} },
+      { "work": "dodam", "src": "raw", "in": 50.43, "dur": 1.79, "wide": {}, "tall": { "x": 0.62 } },
+      { "work": "maejin", "src": "cut:03", "in": 0.1, "dur": 1.8, "wide": {}, "tall": { "x": 0.85 } },
+      { "work": "modu", "src": "raw", "in": 3, "dur": 0.6, "wide": {}, "tall": { "in": 28.5 } },
+      { "work": "modu", "src": "raw", "in": 12.1, "dur": 0.6, "wide": { "y": 500 }, "tall": { "in": 24 } },
+      { "work": "modu", "src": "raw", "in": 29.2, "dur": 0.65, "wide": {}, "tall": { "in": 33.2 } }
     ]
   }
 }

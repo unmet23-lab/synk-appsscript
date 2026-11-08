@@ -43,9 +43,9 @@ const MAKER_CREDITS=['넷플릭스 공개 「보라! 데보라」 1화 오프닝
 const FOOT_NOTE='앱을 설치하지 않아도 휴대폰과 컴퓨터에서 열려요. 영상 속 사람과 목소리는 모두 AI로 만들어요. 실존 인물을 닮게 만드는 요청은 받지 않아요.';
 
 // 쇼릴: 작품 여럿의 자막 없는 구간을 이은 소리 없는 반복 영상. 2026-11-09 3판은 synk.im과 같은 영상이고(docs/마케팅/PULSE_포트폴리오_제작준비_20261012/진열/굽기.cjs reel),
-// 시간표는 그 도구가 구운 영상의 24fps 컷 경계(reel.json)다. 도담중공업으로 열고 오미톡 · 매진 임박 · 모두의코스가 두 번씩 엇갈린다.
-const REEL_TOTAL=14.08;
-const REEL=[[0,'dodam-heavy'],[2,'omitok-court'],[3.79,'maejin-imbak'],[5.58,'modu-course'],[7.29,'dodam-heavy'],[9,'omitok-court'],[10.5,'maejin-imbak'],[12,'modu-course']].map(([at,work])=>({at,work}));
+// 시간표는 그 도구가 구운 영상의 24fps 컷 경계(reel.json)다. 도담중공업으로 열고 오미톡 · 매진 임박 · 모두의코스가 이어진 뒤 도담 · 매진 · 모두의코스가 한 번 더 나온다. 화면 글이 얼굴을 덮지 않는 컷만 쓴다.
+const REEL_TOTAL=12.33;
+const REEL=[[0,'dodam-heavy'],[2,'omitok-court'],[3.13,'maejin-imbak'],[4.96,'modu-course'],[6.79,'dodam-heavy'],[8.58,'maejin-imbak'],[10.42,'modu-course']].map(([at,work])=>({at,work}));
 const filmOf=id=>FINISHED_FILMS.find(film=>film.id===id);
 // 11-09: 「완성 광고」 쪽 목록은 쇼릴에 나오는 네 편(featured)이다 — 이름에 손을 올리면 쇼릴이 그 작품 컷만 돈다. 쇼릴에 없는 공모전 출품작 한 줄은 뺐고
 // (손을 올려도 그 작품 컷이 없어 이름과 화면이 어긋난다), 화성 세 편은 「완성 광고」 공간에 그대로 있다.

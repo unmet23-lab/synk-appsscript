@@ -197,7 +197,7 @@ test('a customer is not shown empty scene fields, staff still are',()=>{
 // 11-05 밤 다음 판: 아르곤 H2 · M2, B3, B6, Fable F5, FA1 · FA2(r2), FA1(r3)과 운영에서 잰 쇼릴 이름 늦음.
 // 브라우저처럼: src를 붙이거나 load()하면 시각 0 · readyState 0, loadedmetadata가 오면 readyState 1. once 듣개는 한 번 돌고 빠진다.
 const reelVideo=()=>{const attrs=new Map(),handlers={},frames=[];let src='';
-  return {muted:false,playsInline:false,loop:false,preload:'',poster:'',paused:true,currentTime:0,readyState:0,duration:14.08,loads:0,
+  return {muted:false,playsInline:false,loop:false,preload:'',poster:'',paused:true,currentTime:0,readyState:0,duration:12.33,loads:0,
     buffered:{length:0,start:()=>0,end:()=>0},
     get src(){return src;},set src(value){src=value;attrs.set('src',value);this.currentTime=0;this.readyState=0;},
     setAttribute(key,value){attrs.set(key,value);},removeAttribute(key){attrs.delete(key);if(key==='src')src='';},getAttribute(key){return attrs.get(key)??null;},
@@ -226,7 +226,7 @@ test('the reel names each film on the frame it cuts, waits when held, and lets g
   api.suspend();assert.equal(video.listeners('loadedmetadata'),0,'떼면 기다리던 듣개도 뗀다');
   api.play();assert.equal(video.listeners('loadedmetadata'),1);video.fire('loadedmetadata');assert.equal(video.currentTime,7.4);assert.equal(video.listeners('loadedmetadata'),0);
   // 다 받은 쇼릴은 놓지 않고 멈추기만 한다.
-  const whole=reelVideo();whole.buffered={length:1,start:()=>0,end:()=>14.08};const wholeApi=mountReel(whole,{});
+  const whole=reelVideo();whole.buffered={length:1,start:()=>0,end:()=>12.33};const wholeApi=mountReel(whole,{});
   wholeApi.play();wholeApi.suspend();assert.equal(whole.paused,true);assert.match(whole.getAttribute('src'),/reel-/);
   api.stop();wholeApi.stop();
 });
