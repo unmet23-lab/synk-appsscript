@@ -11,7 +11,7 @@
 //   끝 카드(김 서린 유리 너머 우산 혼자 + 큰 로고)는 「가장 슬롭한 3초 · 템플릿 엔드카드」(그록) · 「밋밋함」(Gemini) → 장면 위 끝으로.
 // 30초 판(11-08 유호님 「처음 10초는 참 괜찮은데 이 이후로 뭔 스토리인지 잘 모르겠어」): 글 · 제목 · 끝은 같고 판만 다르다 — 한 틀(RSShort)에 판마다 timing · 폴더만 넘긴다.
 import React from 'react';
-import { AbsoluteFill, Img, OffthreadVideo, staticFile, useCurrentFrame } from 'remotion';
+import { AbsoluteFill, Img, OffthreadVideo, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { Audio } from '@remotion/media';
 import { KO } from '../lib/fonts';
 import { EXPO, ramp } from '../lib/motion';
@@ -28,7 +28,10 @@ const noDot = (s: string) => s.replace(/[.。]+$/, '');
 const lin = (x: number) => x;
 
 type Line = { a: number; b: number; who: string; s: string; inner?: boolean };
-type Timing = { frames: number; lines: Line[]; title: number[]; end: number };
+// pack — 끝에 팩샷을 얹나(없으면 얹음). 30초 판 끝 장면을 둘이 투명 우산 하나 아래 선 판(rs-C34u, 11-08)으로 바꾼 뒤에는 장면 속 우산이 제품이라 판마다 고른다
+// picture — 그림 장 수(없으면 frames와 같음). frames가 더 길면 그 뒤는 검은 화면에 끝 글 · 소리만 남는다(30초 판 끝우산e)
+// out — 끝 글이 사라지기 시작하는 때(초, 0.4초에 걸쳐). 30초 판 끝우산f부터 소리와 함께 사라진다
+type Timing = { frames: number; picture?: number; lines: Line[]; title: number[]; end: number; pack?: boolean; out?: number | null };
 
 // 읽을 만큼 띄운다 — 짧은 줄도 1.0초, 소리 끝 뒤 0.25초 꼬리, 다음 줄과 겹치지 않게
 const spread = (raw: Line[]) => raw.map((l, i) => {
@@ -76,16 +79,17 @@ const Title: React.FC<{ t: number; a: number; b: number }> = ({ t, a, b }) => {
 };
 
 // 끝 — C34 오른쪽 열(두 사람은 화면 왼쪽 20~62%): 팩샷 → 표어 → 로고 차례로
-const End: React.FC<{ t: number; at: number }> = ({ t, at }) => {
+const End: React.FC<{ t: number; at: number; pack: boolean; out?: number | null }> = ({ t, at, pack, out }) => {
   if (t < at - 0.1) return null;
-  const k = (d: number) => ramp(t, at + d, 0.9, lin);
-  const y = (d: number) => (1 - ramp(t, at + d, 1.1, EXPO)) * 7;
+  const gone = out == null ? 1 : 1 - ramp(t, out, 0.4, lin);
+  const k = (d: number) => ramp(t, at + (pack ? d : Math.max(0, d - 0.35)), 0.9, lin) * gone;
+  const y = (d: number) => (1 - ramp(t, at + (pack ? d : Math.max(0, d - 0.35)), 1.1, EXPO)) * 7;
   return (
     <>
       {/* 오른쪽만 옅게 어둡게 — 빗길 가로등 · 자판기 불빛 위에서 글이 읽히게 */}
       <AbsoluteFill style={{ zIndex: 14, opacity: k(0), background: 'linear-gradient(to left, #000000a6 0px, #00000066 520px, #00000000 860px)' }} />
-      <Img src={staticFile('rs/pack_mul.png')} style={{ ...abs(1290, 96 + y(0), 540), zIndex: 15, opacity: k(0), mixBlendMode: 'multiply' }} />
-      <Img src={staticFile('rs/pack_add.png')} style={{ ...abs(1290, 96 + y(0), 540), zIndex: 16, opacity: k(0), mixBlendMode: 'screen' }} />
+      {pack && <Img src={staticFile('rs/pack_mul.png')} style={{ ...abs(1290, 96 + y(0), 540), zIndex: 15, opacity: k(0), mixBlendMode: 'multiply' }} />}
+      {pack && <Img src={staticFile('rs/pack_add.png')} style={{ ...abs(1290, 96 + y(0), 540), zIndex: 16, opacity: k(0), mixBlendMode: 'screen' }} />}
       <div style={{ ...abs(1290, 430 + y(0.35), 540), zIndex: 17, opacity: k(0.35), textAlign: 'center', fontFamily: KO, fontWeight: 500, fontSize: 38, lineHeight: 1.42,
         color: PAPER, letterSpacing: '-0.01em', textShadow: '0 1px 10px #00000080' }}>
         비 오는 날,<br />서로가 보이게
@@ -100,9 +104,11 @@ const RSShort: React.FC<{ tm: Timing; dir: string }> = ({ tm, dir }) => {
   const lines = React.useMemo(() => spread(tm.lines), [tm]);
   return (
     <AbsoluteFill style={{ background: '#000' }}>
-      <OffthreadVideo src={staticFile(`${dir}/picture.mp4`)} muted style={{ width: '100%', height: '100%' }} />
+      <Sequence durationInFrames={tm.picture ?? tm.frames}>
+        <OffthreadVideo src={staticFile(`${dir}/picture.mp4`)} muted style={{ width: '100%', height: '100%' }} />
+      </Sequence>
       <Title t={t} a={tm.title[0]} b={tm.title[1]} />
-      <End t={t} at={tm.end} />
+      <End t={t} at={tm.end} pack={tm.pack !== false} out={tm.out} />
       <Caption t={t} lines={lines} />
       <Audio src={staticFile(`${dir}/sound.wav`)} />
     </AbsoluteFill>

@@ -1,5 +1,5 @@
 # 로맨스 「다 비침」 30초 판(2026-11-08, Claude) — 유호님 「지금 약간 내용이 잘 이해가 안가거든? 필요없고 이해 못하는 부분 빼서 30초 내외로
-#   만들어볼수있어? 처음 10초는 참 괜찮은데 이 이후로 뭔 스토리인지 잘 모르겠어」. 받아 둔 판만(새로 굽지 않음, 크레딧 0).
+#   만들어볼수있어? 처음 10초는 참 괜찮은데 이 이후로 뭔 스토리인지 잘 모르겠어」. 받아 둔 판만(새로 굽지 않음, 크레딧 0) — 끝우산 판만 끝 장면을 새로 구웠다(아래 V 끝).
 # 왜 안 읽혔나: 38초 판(짧은판.py)은 제목 카드 뒤 회상이 회식(민재 질문 · 시계) → 빗길(「어깨 다 젖으셨네…」, 그는 멀리 흐림) → 가게
 #   (「제가 투명한 거 좋아하는 건 어떻게 알아요?」, 앞 장면 없이) → 속말 → 다시 「저 좋아하죠?」로 15초 안에 세 곳을 2~4초씩 오갔다. 어느 회상도
 #   「그가 숨긴 게 어떻게 보였나」를 끝까지 보여 주지 않아, 처음 10초(묻고 · 말 못 하고 · 다시 묻고 · 시선을 떨굼)의 물음에 답이 이어지지 않았다.
@@ -75,13 +75,38 @@ V = {
 }
 # 최종 = 마(27.79초). 고른 까닭: Gemini 영상+소리 맹검 넷(가 · 나 · 다 · 라) 모두가 9~11초 제목 카드에서 흐름이 끊긴다고 했고 그중 셋(가 · 나 · 라)은
 #   넘길 자리로 꼽았다. 라를 본 Fable(꼭 고칠 것 1번 「광고가 끝난 줄」) · 그록(4번)도 그 자리에서 넘긴다고 했다. 제품은 가게의 투명 우산 · 끝 팩샷 · 표어 · 로고가 맡는다.
-#   마 영상 맹검은 무료 키 429 뒤 아르곤(77yuhbs)에 보냈다(답은 02_콘티 12절).
+#   마 영상 맹검은 무료 키 429 뒤 아르곤(77yuhbs)에 보냈으나 공용 줄 12시간 뒤 보내기에서 실패해 그만뒀다(02_콘티 12절).
 #   마 판 맹검 뒤 고친 것: 흰 셔츠 위 속말 자막이 묻힘(Fable · 그록) → RS60.tsx에서 속말일 때만 아래 띠를 짙게 · 글자 그림자를 세게.
 V["최종"] = dict(V["마"], 이름="최종 — 마 + 속말 자막 대비", 대사="마")   # 대사 · 소리 짜임은 마와 같다(대사 = 어느 판의 줄을 쓰나)
+# 끝우산 — 최종의 끝 장면만 바꾼 판(11-08 유호님 「끝 장면만 새로」 → 시작 그림 「1안으로」). 30초 판 맹검(Fable · 그록)이 「이야기 안에서 투명 우산을 한 번도
+#   펴지 않아 표어 「비 오는 날, 서로가 보이게」와 끝 그림이 안 만난다」고 해서, 둘이 펼친 투명 우산 하나 아래 선 판(rs-C34u — 시작 그림 Gemini EB3 ·
+#   시댄스 2.5 울트라 5초 90크레딧, 끝우산_꾸러미.py)으로 바꿨다. 판은 4.17초(100장)부터 입술이 닿고 마지막 1초는 사람 움직임이 0.08(굳음 문턱 0.12 아래)이라
+#   고른 대로 입맞춤 직전 — 코끝이 닿고 눈을 감은 98장(4.08초)까지만 쓴다. 장면 속 우산이 제품이라 끝 팩샷은 얹지 않는다(팩샷 자리가 우산 오른쪽 테와 겹침).
+TAIL_U = TAIL[:2] + [("C34", "rs-C34u", 2, 97)]   # 판 2–98장
+V["끝우산"] = dict(V["최종"], 이름="끝우산 — 최종 + 끝 장면 투명 우산 하나 아래(입맞춤 직전)", tail=TAIL_U, pack=False)
+# 끝우산b — 같은 판을 끝(120장)까지: 입맞춤이 닿고 머문다. 끝우산 맹검에서 Fable이 「입맞춤 직전 동작 중에 끊기고 로고 뒤 머무는 그림이 없다」고 해 견준다
+V["끝우산b"] = dict(V["끝우산"], 이름="끝우산b — 끝 장면을 입맞춤까지", tail=TAIL[:2] + [("C34", "rs-C34u", 2, 119)])
+# 끝우산c — Gemini 끝 견주기(두 판의 뒤 9초를 A · B로 이어 붙이고 순서를 바꿔 두 번)가 두 번 다 입맞춤까지 가는 끝(b)을 골랐다(「뚝 끊긴 느낌」 ↔ 「서사의 완결」).
+#   다만 b의 마지막 1초에 「입술과 코가 겹치며 녹아드는 듯한 흔적」 — 확대해 보니 입술이 닿는 100~109장은 깨끗하고 112장부터 코 · 입 윤곽이 겹쳐 115~120장이 뭉개진다.
+#   그래서 입술이 닿고 머무는 111장(4.62초)에서 끊는다
+V["끝우산c"] = dict(V["끝우산"], 이름="끝우산c — 끝 장면을 입맞춤이 닿은 데까지(111장)", tail=TAIL[:2] + [("C34", "rs-C34u", 2, 110)])
+# 끝우산d · e — c를 본 Fable: 입술이 닿은 뒤 0.5초(103~111장)가 영상에서 가장 뭉개진 장이고(입술 경계가 사라지고 그녀 코가 그의 볼 속으로), 마지막 장에
+#   그녀 얼굴 아래 절반이 뭉개진 채 남는다. 입술 경계가 남은 마지막 장은 102장(입술이 처음 닿는 100장 언저리) → 102장에서 끊는다.
+#   유호님 끝 기준(메모 ending-payoff-weak — 끝 그림 · 브랜드 · 소리 한 방 · 마지막 동작 뒤 멈춤 · 판으로 덮지 않기) 가운데 「멈춤」은 받은 판에 깨끗한 장이
+#   없어(103장부터 뭉개짐 · 정지 장은 후보정) e만 검은 화면 1초에 표어 · 로고 · 빗소리 · 곡 끝음을 남긴다(black — 초). d · e를 서로 모르게 견줘 고른다
+TAIL_D = TAIL[:2] + [("C34", "rs-C34u", 2, 101)]   # 판 2–102장
+V["끝우산d"] = dict(V["끝우산"], 이름="끝우산d — 입술이 처음 닿는 102장에서 끊음", tail=TAIL_D)
+V["끝우산e"] = dict(V["끝우산"], 이름="끝우산e — 102장에서 검은 화면 1초(표어 · 로고 · 소리 남김)", tail=TAIL_D, black=1.0)
+# 끝우산f — d · e 견주기는 두 번 다 e(「검은 화면이 여운을 정돈하고 표어 · 상표가 또렷이 남는다」). e를 본 Fable 「고치고 통과」 — 밝은 화면에서 순검정으로 바로
+#   끊겨 사고처럼 보이고, 소리가 암전을 모르고 끝에서 -17dBFS로 뚝 멈춘다. 그래서: 입술이 닿는 100장까지 그대로, 101~105장 다섯 장을 어둡게 빼 검정으로
+#   들어가고(dip — 103장부터 시작되는 뭉개짐은 절반 아래 밝기), 암전 순간 곡을 0.3초에 걷어 빗소리만 남긴 뒤 마지막 0.45초에 소리 · 끝 글을 함께 없앤다.
+#   끝 글을 검은 화면 가운데 크게 옮기라는 말(Fable)은 따르지 않았다 — 유호님 끝 기준 「납작한 판 + 가운데 큰 브랜드 글자는 스티커」(메모 ending-payoff-weak ⑤)
+V["끝우산f"] = dict(V["끝우산"], 이름="끝우산f — 어둡게 빠지는 암전 · 빗소리만 남김 · 끝 글과 소리가 함께 사라짐", tail=TAIL[:2] + [("C34", "rs-C34u", 2, 104)],
+                  black=0.9, dip=5)
 
 
 def plan(key):
-    seq = OPEN + (TITLE if V[key].get("title", True) else []) + V[key]["mid"] + TAIL
+    seq = OPEN + (TITLE if V[key].get("title", True) else []) + V[key]["mid"] + V[key].get("tail", TAIL)
     names = [s[0] for s in seq]
     F = [0]
     for s in seq:
@@ -116,6 +141,10 @@ def picture(key):
         f = process(name)
         if f:
             E.apply(out, f)
+        dip = V[key].get("dip", 0)
+        if dip and i == len(seq) - 1:   # 끝 컷의 마지막 dip장을 차례로 어둡게(검정으로 들어감) — 마지막 장이 1/(dip+1) 밝기
+            E.apply(out, lambda img, t, k=k, d=dip: img if round(t * FPS) < k - d else
+                    np.clip(img.astype(np.float32) * ((k - round(t * FPS)) / (d + 1)), 0, 255).astype(np.uint8))
         if C.frames_of(out) != k:
             raise SystemExit(f"{out}: {k}장이어야 하는데 {C.frames_of(out)}장")
         print(f"{name} {pid} {a}장({a / FPS:.2f}초)부터 {k}장 → {F[i] / FPS:.2f}–{F[i + 1] / FPS:.2f}초{' · 화면 처리' if f else ''}")
@@ -126,7 +155,8 @@ def picture(key):
 def sound(key):
     seq, names, F, T, START = plan(key)
     RATE = S.RATE
-    total = F[-1] / FPS
+    black = V[key].get("black", 0.0)   # 그림이 끝난 뒤 검은 화면(초) — 끝 곡 · 빗소리 · 끝 글은 그 끝까지 간다
+    total = F[-1] / FPS + black
     N = int((total + 1.0) * RATE)
     Vx = np.zeros((N, 2), np.float32)
     M = np.zeros((N, 2), np.float32)
@@ -245,8 +275,17 @@ def sound(key):
         a, b = T[store_cuts[0]], T[nxt(store_cuts[-1])]
         bed(a, b, window, -43, lpf=1800)                                                  # 가게 안 — 창의 비 · 냉장고
         bed(a, b, fridge[int(30 * RATE):], -49, lpf=900)
-    bed(T[back], total + 0.3, rain[int(95 * RATE):], -35, fin=0.4, fout=1.6)             # 지금 — 처마 밑(끝 장면 위로 잦아듦)
-    bed(T[back], total, drips, -48, lpf=6000, fout=1.2)
+    soft = bool(V[key].get("dip"))   # 끝우산f부터 — 암전에 곡을 걷고 빗소리만 남겼다가 끝에서 함께 사라짐(e는 그 전 판이라 그대로)
+    if soft:   # 검은 화면에서는 빗소리가 남아 있다가 마지막에 소리 전체와 함께 사라진다(아래 끝 페이드)
+        bed(T[back], total, rain[int(95 * RATE):], -35, fin=0.4, fout=0.5)
+        bed(T[back], total, drips, -48, lpf=6000, fout=0.5)
+        cut = F[-1] / FPS   # 그림이 검정에 닿는 때 — 곡은 여기서 0.3초에 걷는다
+        i0, i1 = int((cut - 0.05) * RATE), int((cut + 0.25) * RATE)
+        M[i0:i1] *= np.linspace(1, 0, i1 - i0, dtype=np.float32)[:, None]
+        M[i1:] = 0
+    else:
+        bed(T[back], total + 0.3, rain[int(95 * RATE):], -35, fin=0.4, fout=1.6)             # 지금 — 처마 밑(끝 장면 위로 잦아듦)
+        bed(T[back], total, drips, -48, lpf=6000, fout=1.2)
 
     # ===== 섞기(38초 판과 같은 대사 아래 곡 낮춤 · 압축) =====
     vm = np.abs(Vx).max(axis=1)
@@ -265,10 +304,16 @@ def sound(key):
     Vc = S.compress(Vx, thr_db=-32.0, ratio=3.0, att=0.003, rel=0.12)
     Vc *= 10 ** ((S.rms_db(Vx) - S.rms_db(Vc)) / 20)
     mix.a[:N] = S.compress(Vc + M * duck + B * bduck)
+    out_at = None
+    if soft:   # 끝 0.45초에 소리 전체를 0으로 — 끝 글도 같은 때 사라진다(RS60.tsx End의 out)
+        out_at = total - 0.45
+        j0, j1 = int(out_at * RATE), int(total * RATE)
+        mix.a[j0:j1] *= np.linspace(1, 0, j1 - j0, dtype=np.float32)[:, None]
+        mix.a[j1:] = 0
     os.makedirs(out_dir(key), exist_ok=True)
     mix.finish(os.path.join(out_dir(key), "소리.wav"), boost_db=0.0)
-    meta = {"판": key, "frames": F[-1], "F": F, "names": names, "lines": L,
-            "title": [T["C06"] + TITLE_IN, T[first]] if has_title else [0, 0], "end": T["C34"] + END_IN}
+    meta = {"판": key, "frames": F[-1] + int(round(black * FPS)), "picture": F[-1], "F": F, "names": names, "lines": L,
+            "title": [T["C06"] + TITLE_IN, T[first]] if has_title else [0, 0], "end": T["C34"] + END_IN, "pack": V[key].get("pack", True), "out": out_at}
     json.dump(meta, open(os.path.join(out_dir(key), "timing30.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     for l in L:
         print(f"  {l['a']:6.2f}–{l['b']:6.2f} {l['who']} {l['s']}")
