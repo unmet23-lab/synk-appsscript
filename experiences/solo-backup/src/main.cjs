@@ -13,6 +13,7 @@ const testState = testMode && process.env.SOLO_BACKUP_TEST_STATE;
 if (testState) app.setPath('userData', path.resolve(testState));
 else app.setPath('userData', path.join(app.getPath('appData'), 'SoloWorkBackup'));
 app.setName('업무 백업');
+if (process.platform === 'win32') app.setAppUserModelId('SoloWorkBackup');
 const page = path.join(__dirname, '..', 'ui', 'index.html');
 const pageUrl = pathToFileURL(page).href;
 let window, tray, profiles, recovery, quitting = false, closing = false, dialogBusy = false;
