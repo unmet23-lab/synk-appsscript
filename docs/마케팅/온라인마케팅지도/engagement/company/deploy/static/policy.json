@@ -21,6 +21,8 @@
     "docs/마케팅/온라인마케팅지도/engagement/company/public/publish-rules.js",
     "docs/마케팅/온라인마케팅지도/engagement/company/public/subtitle-lab.js",
     "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/casting-catalog.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/casting-choice.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/i18n.mjs",
     "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/demo-assets/**",
     "experiences/atlas-lab/interpretation.mjs",
     "experiences/atlas-lab/model-extraction.mjs"

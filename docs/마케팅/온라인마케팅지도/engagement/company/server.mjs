@@ -47,6 +47,7 @@ import {receiveDeliveryMedia,commitDeliveryMedia,discardDeliveryMedia,serveDeliv
 import { createPulseStudioService } from './pulse-studio.mjs';
 import { createPulseRequests, streamDraftFile, REQUEST_LIMITS } from './pulse-requests.mjs';
 import { createPulseAutoReplyService } from './pulse-auto-reply.mjs';
+import { createPulseFeatures } from './pulse-features.mjs';
 import { createPulseMailService } from './pulse-mail.mjs';
 import { CASTING_MODELS } from './public/pulse-app/casting-catalog.mjs';
 import { createClientIntake,discardIntakeFiles,serveIntakeFile } from './client-intake.mjs';
@@ -262,6 +263,9 @@ export function createCompanyApp(options={}) {
   // PULSE 고객 문의 자동 안내(2026-10-19). 관리자가 설정 화면에서 Claude 키를 넣고 켰을 때만 답한다. 업무실 예약 작업과 같은 스위치를 따르고,
   // 문의가 들어오면 1.5초 뒤 바로 한 번, 그 밖에는 15초마다 남은 문의를 본다.
   const pulseAutoReply=createPulseAutoReplyService({store,clientProjects,snapshot:id=>pulseStudio.customerSnapshot(id),clock,fetchImpl:options.pulseAutoReplyFetch||globalThis.fetch});
+  // 다국어 · 전용 인물 스위치(판 1, 기본 끔). 손님 응답에는 그 길에 필요한 값만 싣는다 — 화면은 이 값만 믿는다.
+  const pulseFeatures=createPulseFeatures({store,clock});
+  const customerStateWithFeatures=token=>{const state=pulseStudio.customerState(token);return {...state,features:pulseFeatures.projectView(state.project?.studio?.request?.answers)};};
   const pulseAutoReplySchedule=options.pulseAutoReplySchedule??(workroomScheduleEnabled&&options.schedule!==false);
   let pulseAutoReplyTimer=null,pulseAutoReplySoonTimer=null;
   const scanPulseAutoReplies=()=>pulseAutoReply.tick().catch(()=>{});
@@ -848,7 +852,7 @@ export function createCompanyApp(options={}) {
     if(path==='/pulse/api/request'||path.startsWith('/pulse/api/request/')){
       const requestToken=(req.headers.cookie||'').match(/(?:^|;\s*)synk_pulse_request=([A-Za-z0-9_-]+)/)?.[1];
       const csrf=req.headers['x-pulse-csrf'],draftFile=path.match(/^\/pulse\/api\/request\/media\/([a-f0-9-]{36})$/);
-      if(method==='GET'&&path==='/pulse/api/request')return send(res,200,pulseRequests.read(requestToken));
+      if(method==='GET'&&path==='/pulse/api/request')return send(res,200,{...pulseRequests.read(requestToken),features:pulseFeatures.publicView()});
       if(['GET','HEAD'].includes(method)&&draftFile)return await streamDraftFile(res,pulseRequests.draftFilePath(requestToken,draftFile[1]),req);
       if(req.headers.origin!==origin)throw httpError('PULSE 화면에서 다시 시도해 주세요.',403);
       if(method==='DELETE'&&draftFile)return send(res,200,await pulseRequests.removeFile(requestToken,csrf,draftFile[1]));
@@ -937,7 +941,7 @@ export function createCompanyApp(options={}) {
           if(previous&&previous.row.id===opened.row.id&&previous.row.inviteRevision===opened.row.inviteRevision)clientProjects.devices.bind(opened,previous);
           else if(deviceToken){if(previous){clientProjects.devices.forget(previous.auth.hash);await deviceNotifications.revokeSession(previous.auth.hash);}setPulseCookie(res,'synk_pulse_device','',0);}
           setPulseCookie(res,'synk_pulse_session',result.session,43200);
-          return send(res,200,pulseStudio.customerState(result.session));
+          return send(res,200,customerStateWithFeatures(result.session));
         }
         // 고객이 「이 기기 기억하기」를 눌렀을 때만 이 브라우저를 30일 기억한다(기기 알림 켜기와 같은 기기 기억, 알림 구독은 만들지 않음).
         // 기억한 기기는 초대 기한이 지나도 이어지고, 새 초대·접근 종료·연결 닫기로 끝난다(pulse-devices.mjs).
@@ -961,7 +965,7 @@ export function createCompanyApp(options={}) {
         pulseEventAuth.set(req,{customerToken,hash:auth.hash});return pulseLiveEvents.connect(req,res);
       }
       if(method==='GET'&&['/pulse/api/project','/pulse/api/studio'].includes(path)){
-        const state=pulseStudio.customerState(customerToken);
+        const state=customerStateWithFeatures(customerToken);
         if(req.headers['x-pulse-active']==='1')renewCustomerDevice();
         return send(res,200,state);
       }
@@ -1584,6 +1588,7 @@ export function createCompanyApp(options={}) {
       if(path==='/api/settings/pulse-mail'){const result=pulseMail.configure(user,input);audit(user,'pulse-mail-settings','pulse-mail',{enabled:result.enabled,requested:result.requested,relayChanged:input?.relayUrl!==undefined});return send(res,200,result);}
       if(path==='/api/settings/pulse-mail/ping'){const result=await pulseMail.ping(user);audit(user,'pulse-mail-ping','pulse-mail',{state:result.connection?.state||null,code:result.connection?.code||null});return send(res,200,result);}
       if(path==='/api/settings/pulse-auto-reply'){const result=pulseAutoReply.configure(user,input);audit(user,'pulse-auto-reply-settings','pulse-auto-reply',{enabled:result.enabled,keyChanged:input?.apiKey!==undefined,dailyUsd:result.dailyUsd,monthlyUsd:result.monthlyUsd,perProjectDaily:result.perProjectDaily});return send(res,200,result);}
+      if(path==='/api/settings/pulse-features'){const result=pulseFeatures.configure(user,input);audit(user,'pulse-features-settings','pulse-features',{publicLocales:result.publicLocales,projectLocales:result.projectLocales,personaRequest:result.personaRequest,personaReal:result.personaReal,myModels:result.myModels});return send(res,200,result);}
       if(path==='/api/settings/provider'){admin(user);if(!['youtube','instagram','facebook','tiktok'].includes(input.platform))throw httpError('지원하지 않는 플랫폼이에요.');const cfg=store.secret('provider:'+input.platform)||{};for(const key of ['clientId','clientSecret','apiKey'])if(input[key])cfg[key]=text(input[key],16000);store.setSecret('provider:'+input.platform,cfg);audit(user,'provider-config',input.platform);return send(res,200,{ok:true});}
       if(path==='/api/import-legacy')return send(res,200,await importLegacy(user));
       throw httpError('요청을 찾을 수 없습니다.',404);
@@ -1804,6 +1809,7 @@ export function createCompanyApp(options={}) {
       if(contentExport){const result=content.exportDraft(user,contentExport[1]);res.setHeader('Content-Disposition',`attachment; filename="content-${result.id.replace(/[^a-zA-Z0-9-]/g,'')}.md"`);return send(res,200,result.markdown,'text/markdown; charset=utf-8');}
       if(path==='/api/settings/pulse-mail')return send(res,200,pulseMail.settings(user));
       if(path==='/api/settings/pulse-auto-reply')return send(res,200,pulseAutoReply.settings(user));
+      if(path==='/api/settings/pulse-features')return send(res,200,pulseFeatures.settings(user));
       if(path==='/api/state'){
         const channels=visibleChannels(user),ids=new Set(channels.map(c=>c.id)),members=visibleMembers(store,user),teamIds=new Set([...channels.map(c=>c.teamId),user.teamId]),schedule=store.get('settings','company');
         const teams=store.all('teams').filter(t=>user.role==='admin'||teamIds.has(t.id)).map(t=>({...t,memberCount:members.filter(u=>u.teamId===t.id&&u.active).length,channelCount:channels.filter(c=>c.teamId===t.id&&c.active).length}));
@@ -1848,7 +1854,7 @@ export function createCompanyApp(options={}) {
     files['/client-desk.css']=['public/client-desk.css','text/css; charset=utf-8'];files['/client-desk-pulse.webp']=['public/client-desk-pulse.webp','image/webp'];for(const stage of ['received','planning','producing','review','delivered','archived'])files['/client-desk-stage-'+stage+'.webp']=['public/client-desk-stage-'+stage+'.webp','image/webp'];
     files['/pulse-app/']=['public/pulse-app/index.html','text/html; charset=utf-8'];
     files['/pulse-app/index.html']=files['/pulse-app/'];
-    for(const file of ['production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','app.mjs','views.mjs','casting-view.mjs','casting-catalog.mjs','films-view.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','push-sw.js','sw.js','motion.mjs','request-data.mjs','request-flow.mjs','request-backend.mjs','film-views.mjs','film-home.mjs','film-review.mjs','room-view.mjs','desk-view.mjs','demo-film.mjs'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/javascript; charset=utf-8'];
+    for(const file of ['production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','app.mjs','views.mjs','casting-view.mjs','casting-catalog.mjs','films-view.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','push-sw.js','sw.js','motion.mjs','request-data.mjs','request-flow.mjs','request-backend.mjs','film-views.mjs','film-home.mjs','film-review.mjs','room-view.mjs','desk-view.mjs','demo-film.mjs','i18n.mjs','i18n/en.mjs','casting-choice.mjs'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/javascript; charset=utf-8'];
     // 의뢰 흐름(2026-11-04) 스타일 · 그림. 영상 둘은 mp4라 git 밖 — 운영 원문은 회사 릴리스 후보(완성 광고 영상과 같은 길).
     for(const file of ['slate.css','slate-screens.css','slate-legacy.css','film.css','film-legacy.css'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/css; charset=utf-8'];
     // 시사실 판(2026-11-05) 그림 · 영상. 쇼릴 mp4 둘은 git 밖 — 운영 원문은 회사 릴리스 후보(완성 광고 영상과 같은 길).

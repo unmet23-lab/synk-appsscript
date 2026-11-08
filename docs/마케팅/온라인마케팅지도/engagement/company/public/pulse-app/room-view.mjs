@@ -1,5 +1,7 @@
 import {CASTING_MODELS} from './casting-catalog.mjs';
 import {KINDS,MODEL_LINES,briefRows,slotsFor,emptyAnswers,ratioOf,pkgOf,PACKAGES,price,channelText} from './request-data.mjs';
+import {t} from './i18n.mjs';
+import {castingOf} from './casting-choice.mjs';
 
 // 실제 프로젝트를 슬레이트 판 화면(film-views.mjs)의 자료로 옮긴다. 판단은 여기 한 곳에서 한다.
 // 흐름: 의뢰서 → 확인(되묻기) → 1차안(모델 → 글 콘티 판 → 장면 이미지 판) → 제작 → 영상 확인 → 납품. 공개 약속 「영상 전에 세 번 확인」과 같은 순서다.
@@ -79,7 +81,7 @@ function roomBrief(r,answers){
   // 날짜는 방향을 보내 드릴 때 한 번 정해 보인다(결제 · 자료 시점이 정해지기 전 달력 날짜를 약속하지 않는다 — 설계 검토 3).
   // 방향 제안이 오면 거기 적힌 날 하나만 보인다(같은 화면에 날짜 둘이 서지 않게 — 설계 검토 9).
   const due=r.directionProposal?.dueDate;
-  if(r.submittedAt&&at>=0)rows.splice(at+1,0,['받으실 날',due?`${Number(due.slice(5,7))}월 ${Number(due.slice(8,10))}일 · 방향 제안에 적힌 날`:pkg?.days?(pkg.photo?`자료가 다 모인 날부터 ${pkg.days}일`:`자료가 다 모인 날부터 ${pkg.days}일 · 날짜는 방향을 보내 드릴 때 알려 드려요`):'구성에 맞춰 함께 정해요']);
+  if(r.submittedAt&&at>=0)rows.splice(at+1,0,['받으실 날',due?t('{date} · 방향 제안에 적힌 날',{date:longDay(due)}):pkg?.days?(pkg.photo?t('자료가 다 모인 날부터 {days}일',{days:pkg.days}):t('자료가 다 모인 날부터 {days}일 · 날짜는 방향을 보내 드릴 때 알려 드려요',{days:pkg.days})):t('구성에 맞춰 함께 정해요')]);
   return rows;
 }
 export function roomModel(p){
@@ -103,7 +105,9 @@ export function roomModel(p){
 // 방향 제안(영상 전 확인 1/3)을 화면 자료로. 그림 · 견본은 손님 보기의 자산 주소, 값 · 기간은 제안에 적힌 것(손님이 실제로 내는 값 · 정한 날).
 const assetById=(p,id)=>(p?.studio?.assets||[]).find(asset=>asset.id===id);
 const won=value=>value>=10000&&value%1000===0?price(value/10000):`${Number(value).toLocaleString('ko-KR')}원`;
-const longDay=day=>{const [y,m,d]=String(day||'').split('-').map(Number);return y?`${m}월 ${d}일`:'';};
+// 「11월 17일」 · 영어 「Nov 17」(사전이 {mon}을 쓴다).
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const longDay=day=>{const [y,m,d]=String(day||'').split('-').map(Number);return y?t('{m}월 {d}일',{m,d,mon:MONTHS[m-1]||''}):'';};
 export function directionModel(p){
   const r=requestOf(p),d=r?.directionProposal;if(!d)return null;
   const a=r.answers||{},pkg=PACKAGES.find(item=>item.id===a.package);
@@ -118,7 +122,7 @@ export function draftModel(p){
   if(!round)return null;
   const scenes=round.scenes.map(ref=>(st.scenes||[]).find(scene=>scene.id===ref.id)).filter(Boolean);
   if(!scenes.length)return null;
-  const modelId=st.strategy?.data?.castingSelection?.modelId||(r.modelProposal?.status==='accepted'?r.modelProposal.modelId:'')||r.answers?.models?.[0]||'';
+  const modelId=castingOf(r,st.strategy?.data?.castingSelection).modelId;
   const assetSrc=scene=>scene.assetId?assetUrl((st.assets||[]).find(asset=>asset.id===scene.assetId)):'';
   return {round:round.round,kind:round.kind,oneLine:round.oneLine,note:round.note||'',approved:!!round.approvedAt,feedbackAt:round.feedbackAt||'',model:modelCard(modelId),ratio:ratioOf({channels:r.answers?.channels||[]}),
     cuts:scenes.map(scene=>({id:scene.id,revision:scene.revision,seconds:Number(scene.duration)||3,what:scene.description||scene.title||'',say:scene.narration||'',text:scene.screenText||'',src:round.kind==='images'?scene.media?.url||assetSrc(scene)||scene.imageUrl||'':''}))};
@@ -133,15 +137,17 @@ const roundName=round=>`${round.kind==='script'?'글 콘티':'장면 이미지'}
 export function journalModel(p){
   const r=requestOf(p),st=p?.studio||{},owner=p?.ownerName||'PULSE 담당자',items=[];
   const add=item=>{items.push({text:'',go:null,...item,t:item.t??timeOf(item.at)});};
-  if(r?.submittedAt)add({id:'q:sent',at:r.submittedAt,who:'me',name:'나',kind:'event',what:'의뢰서를 보냈어요'});
-  if(r?.confirmedAt)add({id:'q:ok',at:r.confirmedAt,who:'staff',name:r.confirmedBy||owner,kind:'event',what:'의뢰서를 확인했어요'});
-  for(const ask of r?.asks||[])if(ask.status==='answered')add({id:'a:'+ask.id,at:ask.answeredAt||ask.at,who:'me',name:'나',kind:'talk',what:`「${ask.label}」에 답했어요`,text:ask.answer||(ask.fileName?`파일 ${ask.fileName}`:'')});
+  // 줄 글은 문장 하나씩 번역한다. 조사는 한국어 낱말에서 고르고(영어 사전은 쓰지 않는다), 이름은 그 언어로.
+  const me=t('나',null,'me'),mname=name=>t(name,null,'model');
+  if(r?.submittedAt)add({id:'q:sent',at:r.submittedAt,who:'me',name:me,kind:'event',what:t('의뢰서를 보냈어요')});
+  if(r?.confirmedAt)add({id:'q:ok',at:r.confirmedAt,who:'staff',name:r.confirmedBy||owner,kind:'event',what:t('의뢰서를 확인했어요')});
+  for(const ask of r?.asks||[])if(ask.status==='answered')add({id:'a:'+ask.id,at:ask.answeredAt||ask.at,who:'me',name:me,kind:'talk',what:t('「{label}」에 답했어요',{label:ask.label}),text:ask.answer||(ask.fileName?t('파일 {name}',{name:ask.fileName}):'')});
   const model=r?.modelProposal,modelName=id=>modelCard(id)?.name||'';
   if(model?.at&&modelName(model.modelId)){
     const name=modelName(model.modelId);
-    add(model.note?{id:'o:'+model.at,at:model.at,who:'staff',name:model.by||owner,kind:'quote',what:`모델 제안 · ${name}`,text:model.note,go:model.status==='open'?{tab:'overview'}:null}:{id:'o:'+model.at,at:model.at,who:'staff',name:model.by||owner,kind:'event',what:`모델 ${name}${withEul(name)} 제안했어요`});
-    if(model.answeredAt&&model.status==='accepted'){const chosen=modelName(r.answers?.models?.[0])||name;add({id:'o:'+model.at+':ok',at:model.answeredAt,who:'me',name:'나',kind:model.answer?'talk':'event',what:`모델 ${chosen}${withRoOf(chosen)} 정했어요`,text:model.answer||''});}
-    if(model.answeredAt&&model.status==='declined')add({id:'o:'+model.at+':no',at:model.answeredAt,who:'me',name:'나',kind:'talk',what:'모델을 말로 알려 드렸어요',text:model.answer||''});
+    add(model.note?{id:'o:'+model.at,at:model.at,who:'staff',name:model.by||owner,kind:'quote',what:t('모델 제안 · {name}',{name:mname(name)}),text:model.note,go:model.status==='open'?{tab:'overview'}:null}:{id:'o:'+model.at,at:model.at,who:'staff',name:model.by||owner,kind:'event',what:t('모델 {name}{eul} 제안했어요',{name:mname(name),eul:withEul(name)})});
+    if(model.answeredAt&&model.status==='accepted'){const chosen=modelName(r.answers?.models?.[0])||name;add({id:'o:'+model.at+':ok',at:model.answeredAt,who:'me',name:me,kind:model.answer?'talk':'event',what:t('모델 {name}{ro} 정했어요',{name:mname(chosen),ro:withRoOf(chosen)}),text:model.answer||''});}
+    if(model.answeredAt&&model.status==='declined')add({id:'o:'+model.at+':no',at:model.answeredAt,who:'me',name:me,kind:'talk',what:t('모델을 말로 알려 드렸어요'),text:model.answer||''});
   }
   const d=r?.directionProposal;
   if(d?.at){
@@ -206,7 +212,7 @@ export function deskChecks(p){
   checks.push(a.channels?.length?{ok:true,label:'올릴 곳을 알려 주셨어요'}:{ok:false,label:'올릴 곳이 비어 있어요',note:'저희가 제안해요.'});
   const direction=r.directionProposal;
   if(direction)checks.push(['chosen','settled'].includes(direction.status)?{ok:true,label:`손님이 방향 「${direction.options.find(option=>option.id===direction.chosenId)?.name||''}」${direction.status==='settled'?'으로 정리했어요':'을 골랐어요'}`,note:direction.answer?`손님 말: ${direction.answer}`:''}:direction.status==='declined'?{ok:false,label:direction.round>=2?'두 번째 방향도 아니래요 — 손님과 이야기해 정리해 주세요':'손님이 두 방향 다 아니래요',note:direction.answer?`손님 말: ${direction.answer}`:''}:{ok:false,label:'방향 제안을 보냈어요',note:'손님 답을 기다려요.'});
-  else if(!a.models?.length&&a.modelChoice!=='none'&&r.modelProposal?.status!=='accepted')checks.push({ok:false,label:'모델을 제안해 확인받아야 해요',note:r.modelProposal?.status==='open'?'제안을 보냈어요. 답을 기다려요.':r.modelProposal?.answer?`손님 답: ${r.modelProposal.answer}`:'글 콘티를 보내기 전에 먼저 정해요.'});
+  else if(!castingOf({...r,answers:a},p.studio?.strategy?.data?.castingSelection).agreed)checks.push({ok:false,label:'모델을 제안해 확인받아야 해요',note:r.modelProposal?.status==='open'?'제안을 보냈어요. 답을 기다려요.':r.modelProposal?.answer?`손님 답: ${r.modelProposal.answer}`:'글 콘티를 보내기 전에 먼저 정해요.'});
   const claim=(a.screenText||'').split('\n').find(line=>/\d|출시|할인|무료|한정/.test(line))?.trim();
   if(claim){const answered=(r.asks||[]).find(ask=>ask.status==='answered'&&ask.label.includes(claim));checks.push(answered?{ok:true,label:'화면 글자 사실을 확인받았어요',note:`손님 답: ${answered.answer||answered.fileName||'파일로 답했어요'}`}:{ok:false,label:'화면 글자에 사실 확인이 필요해요',note:`「${claim}」이 확정인지 물어봐요.`});}
   const words=[...(a.avoid||[])].filter(word=>a.screenText?.includes(word)||a.oneThing?.includes(word));

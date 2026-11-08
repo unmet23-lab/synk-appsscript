@@ -1,4 +1,5 @@
 import {esc} from './api.mjs';
+import {t} from './i18n.mjs';
 import {CASTING_MODELS} from './casting-catalog.mjs';
 import {KINDS,CHANNELS,PACKAGES,slotsFor,WATCH_WORDS,ACTIONS,WIN,REFERENCE_POINTS,MODEL_LINES,MODEL_PICKS,STEPS,emptyAnswers,photoAdvice,price,DRAFT_FILES_GONE,pkgOf,kindOf,channelText,modelOf,modelList,filesOf,slotCount,briefRows,ratioOf,termsOf,dueDay,revisionNote} from './request-data.mjs';
 import {rise,riseAll,sink,revealWords,roll,typeIn,play,ease,reduced} from './motion.mjs';
@@ -14,24 +15,27 @@ const ownPhoto=a=>Object.values(a.slots).flatMap(slot=>slot.files||[]).find(file
 const sceneOf=item=>item.photos?.find(photo=>photo.kind==='scene')?.src||item.image;
 const bigScene=item=>`${ASSET}model-scene-${String(item.id).toLowerCase()}.webp`;
 
-const part=(step,index,total)=>`<p class="sx-q-part"><span class="sx-no">${String(index+1).padStart(2,'0')} / ${String(total).padStart(2,'0')}</span><b>${esc(step.part)}</b></p>`;
+const part=(step,index,total)=>`<p class="sx-q-part"><span class="sx-no">${String(index+1).padStart(2,'0')} / ${String(total).padStart(2,'0')}</span><b>${esc(t(step.part))}</b></p>`;
 const ask=(step,index,total,title,lead,body)=>`${part(step,index,total)}<h1 class="sx-q-title sx-serif" tabindex="-1" data-title>${esc(title)}</h1>${lead?`<p class="sx-body sx-q-lead" data-in>${esc(lead)}</p>`:''}${body}`;
 // 보내기 전 확인의 받으실 날 · 수정 한 줄(결정 11-07). 날은 달력 기준이고 자료가 다 모인 날부터 센다.
 const dueLine=a=>{const pkg=pkgOf(a);if(!pkg)return '';return `<p class="sx-small sx-q-due" data-in>${pkg.days?`받으실 날은 사진 · 로고 · 꼭 넣을 말이 다 모인 날부터 ${pkg.days}일이에요(주말 · 공휴일 포함). 오늘 다 모이면 <b>${esc(dueDay(pkg))}</b>이에요. 수정은 ${esc(revisionNote(pkg))}.`:'받으실 날과 수정 횟수는 구성에 맞춰 함께 정해요.'}</p>`;};
 const row=({i,label,note,on,attr,meta=''})=>`<button type="button" class="sx-row ${on?'is-on':''}" role="radio" aria-checked="${on?'true':'false'}" ${attr} data-in><span class="sx-no">${String(i+1).padStart(2,'0')}</span><span class="sx-row-main"><b class="sx-serif">${esc(label)}</b>${note?`<small class="sx-small">${esc(note)}</small>`:''}</span>${meta?`<span class="sx-row-meta">${meta}</span>`:''}<span class="sx-row-mark" aria-hidden="true"></span></button>`;
 const field=({bind,label,value,placeholder='',help='',type='text',rows=0,max=400,auto=''})=>`<label class="sx-field" data-in><span class="sx-small">${esc(label)}</span>${rows?`<textarea data-bind="${bind}" rows="${rows}" maxlength="${max}" placeholder="${esc(placeholder)}">${esc(value)}</textarea>`:`<input data-bind="${bind}" type="${type}" value="${esc(value)}" maxlength="${max}" placeholder="${esc(placeholder)}" ${auto?`autocomplete="${auto}"`:''}>`}${help?`<small class="sx-small">${esc(help)}</small>`:''}</label>`;
-const chip=(label,on,attr)=>`<button type="button" class="sx-chip ${on?'is-on':''}" aria-pressed="${on?'true':'false'}" ${attr}>${esc(label)}</button>`;
+const chip=(label,on,attr)=>`<button type="button" class="sx-chip ${on?'is-on':''}" aria-pressed="${on?'true':'false'}" ${attr}>${esc(t(label))}</button>`;
 // 모델 고르기: 제작사가 이 광고에 고른 넷을 크게 보여 준다. 고른 모델이 넷 밖이면 앞에 세우고, 손을 올리거나 고른 한 명이 크게 선다. 21명은 손님이 열 때만 펼친다.
-const castLine=item=>MODEL_LINES[item.id]?.line||item.description;
-const castTile=(a,item,fit)=>`<button type="button" class="sx-cast ${a.models.includes(item.id)?'is-on':''}" aria-pressed="${a.models.includes(item.id)?'true':'false'}" aria-label="${esc(item.name)} · ${esc(castLine(item))}${fit?' · 이 업종에 잘 맞아요':''}" data-do="model" data-id="${item.id}"><img src="${esc(sceneOf(item))}" alt="" loading="lazy" decoding="async" width="538" height="720"><span class="sx-cast-name sx-small">${esc(item.name)}</span><i class="sx-cast-mark sx-no" aria-hidden="true">${a.models.indexOf(item.id)+1||''}</i></button>`;
+// 이름 · 한 줄은 카탈로그의 한국어를 그리는 자리에서 번역한다(이름은 문맥 model).
+const nameOf=item=>t(item.name,null,'model');
+const castLine=item=>t(MODEL_LINES[item.id]?.line||item.description);
+const castLabel=(item,fit)=>[nameOf(item),castLine(item),fit&&t('이 업종에 잘 맞아요')].filter(Boolean).join(' · ');
+const castTile=(a,item,fit)=>`<button type="button" class="sx-cast ${a.models.includes(item.id)?'is-on':''}" aria-pressed="${a.models.includes(item.id)?'true':'false'}" aria-label="${esc(castLabel(item,fit))}" data-do="model" data-id="${item.id}"><img src="${esc(sceneOf(item))}" alt="" loading="lazy" decoding="async" width="538" height="720"><span class="sx-cast-name sx-small">${esc(nameOf(item))}</span><i class="sx-cast-mark sx-no" aria-hidden="true">${a.models.indexOf(item.id)+1||''}</i></button>`;
 const picksOf=a=>(MODEL_PICKS[a.kind]||MODEL_PICKS.brand).map(modelOf).filter(Boolean);
 const wall=a=>{
   const chosen=a.models.map(modelOf).filter(Boolean),picks=[...new Set([...chosen,...picksOf(a)])].slice(0,4),lead=chosen[0]||picks[0];
-  return `<div class="sx-casting" role="group" aria-label="이 광고에 어울리는 모델"><figure class="sx-casting-lead" aria-hidden="true"><img data-portrait src="${esc(bigScene(lead))}" alt="" decoding="async"><figcaption class="sx-small" data-portrait-name>${esc(lead.name)} · ${esc(castLine(lead))}</figcaption></figure>${picks.map(item=>castTile(a,item,!!MODEL_LINES[item.id]?.fits.includes(a.kind))).join('')}<button type="button" class="sx-small sx-link sx-casting-all" data-do="allmodels">21명 모두 보기</button></div>`;
+  return `<div class="sx-casting" role="group" aria-label="${esc(t('이 광고에 어울리는 모델'))}"><figure class="sx-casting-lead" aria-hidden="true"><img data-portrait src="${esc(bigScene(lead))}" alt="" decoding="async"><figcaption class="sx-small" data-portrait-name>${esc(nameOf(lead))} · ${esc(castLine(lead))}</figcaption></figure>${picks.map(item=>castTile(a,item,!!MODEL_LINES[item.id]?.fits.includes(a.kind))).join('')}<button type="button" class="sx-small sx-link sx-casting-all" data-do="allmodels">${esc(t('{count}명 모두 보기',{count:CASTING_MODELS.length}))}</button></div>`;
 };
 const allWall=a=>{
   const fit=item=>!!MODEL_LINES[item.id]?.fits.includes(a.kind);
-  return `<div class="sx-wall" role="group" aria-label="모델 21명">${[...CASTING_MODELS.filter(fit),...CASTING_MODELS.filter(item=>!fit(item))].map(item=>castTile(a,item,fit(item))).join('')}<button type="button" class="sx-small sx-link sx-wall-close" data-do="allmodels">넷만 보기</button></div>`;
+  return `<div class="sx-wall" role="group" aria-label="${esc(t('모델 {count}명',{count:CASTING_MODELS.length}))}">${[...CASTING_MODELS.filter(fit),...CASTING_MODELS.filter(item=>!fit(item))].map(item=>castTile(a,item,fit(item))).join('')}<button type="button" class="sx-small sx-link sx-wall-close" data-do="allmodels">${esc(t('넷만 보기'))}</button></div>`;
 };
 
 const views={
@@ -78,9 +82,9 @@ const views={
   },
   model(a,step,i,n){
     const first=modelOf(a.models[0])||picksOf(a)[0]||CASTING_MODELS[2];
-    return ask(step,i,n,'누가 나올까요?','이름과 얼굴이 정해진 AI 모델 21명이에요. 다음 편도 같은 모델로 이어 가요. 두 명까지 고르실 수 있어요.',
-      `<div class="sx-chips" data-in role="group" aria-label="모델을 어떻게 정할지">${chip('추천해 주세요',a.modelChoice==='ask','data-do="modelchoice" data-id="ask"')}${chip('사람 없이 제품만',a.modelChoice==='none','data-do="modelchoice" data-id="none"')}</div>`+
-      `<div class="sx-q-who" data-in><b class="sx-serif" data-cast-name>${esc(first.name)}</b><span class="sx-body" data-cast-line>${esc(MODEL_LINES[first.id]?.line||'')}</span><small class="sx-small" data-cast-desc>${esc(first.description)}</small></div>`);
+    return ask(step,i,n,t('누가 나올까요?'),t('이름과 얼굴이 정해진 AI 모델 {count}명이에요. 다음 편도 같은 모델로 이어 가요. 두 명까지 고르실 수 있어요.',{count:CASTING_MODELS.length}),
+      `<div class="sx-chips" data-in role="group" aria-label="${esc(t('모델을 어떻게 정할지'))}">${chip('추천해 주세요',a.modelChoice==='ask','data-do="modelchoice" data-id="ask"')}${chip('사람 없이 제품만',a.modelChoice==='none','data-do="modelchoice" data-id="none"')}</div>`+
+      `<div class="sx-q-who" data-in><b class="sx-serif" data-cast-name>${esc(nameOf(first))}</b><span class="sx-body" data-cast-line>${esc(MODEL_LINES[first.id]?.line?t(MODEL_LINES[first.id].line):'')}</span><small class="sx-small" data-cast-desc>${esc(t(first.description))}</small></div>`);
   },
   contact(a,step,i,n){
     return ask(step,i,n,'언제까지, 누구에게 연락드릴까요?','',
@@ -122,16 +126,17 @@ function slotStatus(a,slot){
 // 스크린 아래 크레딧: 고른 것이 한 줄씩 쌓인다.
 function slateRows(a){
   const pkg=pkgOf(a),rows=[];
+  // 줄 이름은 한국어 키로 두고(그리는 자리에서 번역) 값의 고정 낱말만 여기서 번역한다. 손님이 쓴 글은 그대로.
   if(a.name)rows.push(['광고할 것',a.name]);
-  if(a.kind)rows.push(['종류',kindOf(a)?.label]);
-  if(a.channels.length)rows.push(['올릴 곳',channelText(a)]);
-  if(a.package)rows.push(['길이',pkg?`${pkg.label} · ${price(pkg.price)}부터 · ${termsOf(pkg)}`:'추천해 주세요']);
-  if(slotCount(a))rows.push(['받은 자료',`${slotCount(a)}개`]);
+  if(a.kind)rows.push(['종류',kindOf(a)?t(kindOf(a).label):undefined]);
+  if(a.channels.length)rows.push(['올릴 곳',a.channels.map(id=>CHANNELS.find(item=>item.id===id)?.label).filter(Boolean).map(label=>t(label)).join(', ')]);
+  if(a.package)rows.push(['길이',pkg?t('{label} · {price}부터 · {terms}',{label:t(pkg.label),price:price(pkg.price),terms:termsOf(pkg)}):t('추천해 주세요')]);
+  if(slotCount(a))rows.push(['받은 자료',t('{count}개',{count:slotCount(a)})]);
   if(a.oneThing)rows.push(['남길 것',a.oneThing]);
   if(a.screenText)rows.push(['화면 글자',a.screenText.split('\n')[0]]);
-  if(a.win)rows.push(['무엇으로',WIN.find(item=>item.id===a.win)?.label||'맡길게요']);
-  if(a.models.length||a.modelChoice)rows.push(['모델',a.modelChoice==='none'?'사람 없이 제품만':a.modelChoice==='ask'?'추천해 주세요':modelList(a)]);
-  if(a.date||a.dateFree)rows.push(['받고 싶은 날',a.dateFree?'미정':a.date]);
+  if(a.win)rows.push(['무엇으로',t(WIN.find(item=>item.id===a.win)?.label||'맡길게요')]);
+  if(a.models.length||a.modelChoice)rows.push(['모델',a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='ask'?t('추천해 주세요'):a.models.map(modelOf).filter(Boolean).map(nameOf).join(', ')]);
+  if(a.date||a.dateFree)rows.push(['받고 싶은 날',a.dateFree?t('미정'):a.date]);
   return rows;
 }
 
@@ -140,17 +145,17 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   let index=Math.max(0,STEPS.findIndex(step=>step.id===backend.step));
   let busy=false,saveTimer=0,saving=null,saveAgain=false,sent=null,closed=false;
   root.innerHTML=`<div class="sx-q" data-step="">
-    <header class="sx-q-top"><a class="sx-logo" href="./" data-do="exit" aria-label="SYNK PULSE 처음으로"><img src="./assets/request/logo-paper.webp" alt="SYNK PULSE" width="164" height="44"></a>
-      <ol class="sx-q-parts sx-small" aria-hidden="true">${[...new Set(STEPS.map(step=>step.part))].map(name=>`<li data-part="${name}">${name}</li>`).join('')}</ol>
-      <div class="sx-q-top-right sx-small"><span class="sx-q-saved" data-saved></span><button type="button" class="sx-q-open-credits" data-do="sheet">적은 내용 <b class="sx-no" data-slate-count>0</b></button><button type="button" data-do="later">나중에 이어서</button></div>
+    <header class="sx-q-top"><a class="sx-logo" href="./" data-do="exit" aria-label="${esc(t('SYNK PULSE 처음으로'))}"><img src="./assets/request/logo-paper.webp" alt="SYNK PULSE" width="164" height="44"></a>
+      <ol class="sx-q-parts sx-small" aria-hidden="true">${[...new Set(STEPS.map(step=>step.part))].map(name=>`<li data-part="${name}">${esc(t(name))}</li>`).join('')}</ol>
+      <div class="sx-q-top-right sx-small"><span class="sx-q-saved" data-saved></span><button type="button" class="sx-q-open-credits" data-do="sheet">${esc(t('적은 내용'))} <b class="sx-no" data-slate-count>0</b></button><button type="button" data-do="later">${esc(t('나중에 이어서'))}</button></div>
       <i class="sx-q-progress" aria-hidden="true"><i data-progress></i></i></header>
     <div class="sx-q-stage">
       <section class="sx-q-ask"><form class="sx-q-form" data-ask novalidate></form></section>
-      <aside class="sx-q-screen" aria-label="미리 보기"><div class="sx-q-view" data-mon></div>
-        <div class="sx-q-credits" data-slate><button type="button" class="sx-small sx-q-credits-head" data-do="sheet">의뢰서</button><div class="sx-q-lines" data-lines></div></div>
+      <aside class="sx-q-screen" aria-label="${esc(t('미리 보기'))}"><div class="sx-q-view" data-mon></div>
+        <div class="sx-q-credits" data-slate><button type="button" class="sx-small sx-q-credits-head" data-do="sheet">${esc(t('의뢰서'))}</button><div class="sx-q-lines" data-lines></div></div>
       </aside>
       <!-- 이전 · 다음은 화면 칸 뒤에 둔다: 모델 단계는 고르는 칸이 화면 칸에 있어 Tab · 읽는 차례가 「고르기 → 다음」이어야 한다. 보이는 자리는 CSS가 정한다. -->
-      <footer class="sx-q-foot"><button type="button" class="sx-small sx-q-back" data-do="back">이전</button><p class="sx-small sx-q-error" role="alert" data-error hidden></p><button type="button" class="sx-go is-solid" data-do="next"><span data-next-label>다음</span>${arrow}</button></footer>
+      <footer class="sx-q-foot"><button type="button" class="sx-small sx-q-back" data-do="back">${esc(t('이전'))}</button><p class="sx-small sx-q-error" role="alert" data-error hidden></p><button type="button" class="sx-go is-solid" data-do="next"><span data-next-label>${esc(t('다음',null,'step'))}</span>${arrow}</button></footer>
     </div>
     <p class="sr" role="status" aria-live="polite" data-live></p>
   </div>`;
@@ -177,8 +182,8 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     if(saving){saveAgain=true;return saving;}
     saving=(async()=>{
       const mark=$('[data-saved]');let ok=true;
-      try{await backend.save?.(a,step().id);mark.classList.remove('is-error');mark.textContent='저장됨';mark.getAnimations?.().forEach(item=>item.cancel());play(mark,[{opacity:0},{opacity:1,offset:.2},{opacity:1,offset:.8},{opacity:0}],{duration:1600});}
-      catch{ok=false;mark.getAnimations?.().forEach(item=>item.cancel());mark.classList.add('is-error');mark.textContent='저장하지 못했어요. 다시 시도할게요';if(!closed)saveTimer=setTimeout(writeNow,8000);}
+      try{await backend.save?.(a,step().id);mark.classList.remove('is-error');mark.textContent=t('저장됨');mark.getAnimations?.().forEach(item=>item.cancel());play(mark,[{opacity:0},{opacity:1,offset:.2},{opacity:1,offset:.8},{opacity:0}],{duration:1600});}
+      catch{ok=false;mark.getAnimations?.().forEach(item=>item.cancel());mark.classList.add('is-error');mark.textContent=t('저장하지 못했어요. 다시 시도할게요');if(!closed)saveTimer=setTimeout(writeNow,8000);}
       saving=null;
       if(saveAgain){saveAgain=false;return writeNow();}
       return ok;
@@ -190,7 +195,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   function render(direction=1){
     const s=step();
     host.dataset.step=s.id;
-    $('.sx-q-screen').setAttribute('aria-label',s.id==='model'?'모델 고르기':'미리 보기');
+    $('.sx-q-screen').setAttribute('aria-label',s.id==='model'?t('모델 고르기'):t('미리 보기'));
     showError('');
     form.innerHTML=views[s.id](a,s,index,STEPS.length);
     // 휴대폰은 질문 칸이 아니라 바깥 칸(.sx-q-stage)이 스크롤된다 — 단계를 바꾸면 그것도 처음으로(모델 단계에서 내린 채 「이전」을 누르면 제목이 위 막대 밑에 있었다).
@@ -205,7 +210,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     bar.animate?.([{transform:`scaleX(${bar.dataset.at||0})`},{transform:`scaleX(${to})`}],{duration:620,easing:ease.move,fill:'forwards'});bar.dataset.at=to;
     $('[data-do="back"]').hidden=index===0;
     renderMonitor(s.id);renderSlate();updateDateAdvice();updateNext();
-    say(`${index+1}번째 질문 · ${form.querySelector('[data-title]').getAttribute('aria-label')}`);
+    say(t('{n}번째 질문 · {title}',{n:index+1,title:form.querySelector('[data-title]').getAttribute('aria-label')}));
   }
   function go(to,direction,after){
     if(busy||to<0||to>=STEPS.length)return;busy=true;
@@ -215,7 +220,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   const missing=()=>!a.name?{step:'what',bind:'name',text:'광고할 것의 이름을 알려 주세요'}:!(a.contactName&&(a.email||a.phone))?{step:'contact',bind:a.contactName?'email':'contactName',text:'성함과 연락받을 곳을 알려 주세요'}:!(a.consent&&a.rights)?{step:'review',bind:a.consent?'rights':'consent',text:'동의 칸을 확인해 주세요'}:null;
   function updateNext(){
     const gap=step().id==='review'?missing():null;
-    $('[data-next-label]').textContent=step().id==='review'?gap?.text||'의뢰서 보내기':'다음';
+    $('[data-next-label]').textContent=step().id==='review'?t(gap?.text||'의뢰서 보내기'):t('다음',null,'step');
     $('[data-do="next"]').classList.toggle('is-gap',!!gap);
   }
   function showError(text){const box=$('[data-error]');box.textContent=text;box.hidden=!text;}
@@ -255,7 +260,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     const known=new Map([...lines.querySelectorAll('[data-k]')].map(el=>[el.dataset.k,el]));
     rows.forEach(([key,value],i)=>{
       let el=known.get(key);
-      if(!el){el=document.createElement('div');el.className='sx-q-line sx-small';el.dataset.k=key;el.innerHTML=`<span class="k">${esc(key)}</span><span class="v"></span>`;lines.append(el);el.querySelector('.v').textContent=value;typeIn(el.querySelector('.v'),value);play(el,[{opacity:0,transform:'translateY(6px)'},{opacity:1,transform:'translateY(0)'}],{duration:320});}
+      if(!el){el=document.createElement('div');el.className='sx-q-line sx-small';el.dataset.k=key;el.innerHTML=`<span class="k">${esc(t(key))}</span><span class="v"></span>`;lines.append(el);el.querySelector('.v').textContent=value;typeIn(el.querySelector('.v'),value);play(el,[{opacity:0,transform:'translateY(6px)'},{opacity:1,transform:'translateY(0)'}],{duration:320});}
       else if(el.querySelector('.v').dataset.v!==value){typeIn(el.querySelector('.v'),value);}
       el.querySelector('.v').dataset.v=value;known.delete(key);
     });
@@ -304,7 +309,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
       redrawSlot(slot);renderSlate();saved();if(step().id==='files')renderMonitor('files');
     },
   };
-  function showModel(id){const item=modelOf(id);if(!item)return;crossfade($('[data-portrait]'),bigScene(item));const lead=$('[data-portrait-name]');if(lead)lead.textContent=`${item.name} · ${castLine(item)}`;const name=$('[data-cast-name]');if(name){name.textContent=item.name;$('[data-cast-line]').textContent=MODEL_LINES[id]?.line||'';$('[data-cast-desc]').textContent=item.description;}}
+  function showModel(id){const item=modelOf(id);if(!item)return;crossfade($('[data-portrait]'),bigScene(item));const lead=$('[data-portrait-name]');if(lead)lead.textContent=`${nameOf(item)} · ${castLine(item)}`;const name=$('[data-cast-name]');if(name){name.textContent=nameOf(item);$('[data-cast-line]').textContent=MODEL_LINES[id]?.line?t(MODEL_LINES[id].line):'';$('[data-cast-desc]').textContent=t(item.description);}}
   function updateSlotStatus(id){const box=form.querySelector(`[data-status="${id}"]`),slot=slotsFor(a.kind).find(item=>item.id===id);if(box&&slot)box.innerHTML=slotStatus(a,slot);}
   async function addFiles(id,list){
     const slot=slotsFor(a.kind).find(item=>item.id===id),state=a.slots[id]||(a.slots[id]={files:[]});state.none=false;

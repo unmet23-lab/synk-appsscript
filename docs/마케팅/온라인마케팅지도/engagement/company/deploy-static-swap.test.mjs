@@ -13,8 +13,8 @@ const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 const git=args=>execFileSync('git',args,{cwd:repository,maxBuffer:256*1024*1024}).toString('utf8');
 
 test('policy keeps every server-read file in the image',()=>{
-  for(const path of [C+'/public/app.js',C+'/public/index.html',C+'/public/pulse-app/assets/casting/m01.webp','tools/company-messenger/public/app.js','experiences/teacher-world/app.mjs','experiences/atlas-lab/lab.js','atlas/ask.js'])assert.equal(isStatic(path),true,path);
-  for(const path of [C+'/server.mjs',C+'/public/publish-rules.js',C+'/public/subtitle-lab.js',C+'/public/pulse-app/casting-catalog.mjs',C+'/public/pulse-app/demo-assets/scene-1.png','atlas/engine.js','atlas/domain.js','experiences/atlas-lab/interpretation.mjs','experiences/atlas-lab/model-extraction.mjs','docs/브랜드_폰트/SUIT/SUIT-Variable.woff2','tools/company-messenger/server.mjs'])assert.equal(isStatic(path),false,path);
+  for(const path of [C+'/public/app.js',C+'/public/index.html',C+'/public/pulse-app/assets/casting/m01.webp',C+'/public/pulse-app/i18n/en.mjs','tools/company-messenger/public/app.js','experiences/teacher-world/app.mjs','experiences/atlas-lab/lab.js','atlas/ask.js'])assert.equal(isStatic(path),true,path);
+  for(const path of [C+'/server.mjs',C+'/public/publish-rules.js',C+'/public/subtitle-lab.js',C+'/public/pulse-app/casting-catalog.mjs',C+'/public/pulse-app/casting-choice.mjs',C+'/public/pulse-app/i18n.mjs',C+'/public/pulse-app/demo-assets/scene-1.png','atlas/engine.js','atlas/domain.js','experiences/atlas-lab/interpretation.mjs','experiences/atlas-lab/model-extraction.mjs','docs/브랜드_폰트/SUIT/SUIT-Variable.woff2','tools/company-messenger/server.mjs'])assert.equal(isStatic(path),false,path);
   assert.equal(policy.directories,undefined,'every file is judged on its own origin, never a whole folder');
 });
 

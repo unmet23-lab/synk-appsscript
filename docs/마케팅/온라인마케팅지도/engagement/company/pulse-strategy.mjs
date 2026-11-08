@@ -1,4 +1,5 @@
 import {CASTING_MODELS} from './public/pulse-app/casting-catalog.mjs';
+import {personaRefOf} from './public/pulse-app/casting-choice.mjs';
 
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
@@ -12,6 +13,10 @@ const NUMBERS={durationSeconds:[1,600],budgetProduction:[0,1e12],budgetMedia:[0,
 // 옛 화면·저장본이 보내는 A·B·C는 받되 늘 빈 값으로 두고 보여 주지도 않는다(고객 앱 normalizeDemoCasting과 같은 규칙).
 const CASTING_ENUMS={modelId:['',...CASTING_MODELS.map(model=>model.id)],hair:['','original','look-2','look-3','short','bob','long-straight','wave','updo','custom'],makeup:['','natural','clean','glow','smoky','custom'],jacket:['','none','blazer','casual','leather','custom'],top:['','tshirt','shirt','knit','blouse','custom'],bottom:['','trousers','denim','skirt','custom'],voice:['','A','B','C'],earrings:['','none','stud','hoop','drop','custom'],ring:['','none','simple','layered','custom']};
 const CASTING_FIELDS=[...Object.keys(CASTING_ENUMS),'notes'];
+// 전용 인물 참조(2026-11-09 판 1, 기획 12-2 「선택 값」): castingSelection.personaRef={personaId,revisionId}. 고르는 값(enum)이 아니라
+// 서버가 인물 사용 승인 때 붙이는 값이라, 제작 설계 저장은 이 칸을 받아도 쓰지 않고 지금 값을 그대로 둔다(옛 화면이 보내지 않아도 지워지지 않게).
+// 비어 있으면 키 자체가 없다 — 옛 프로젝트의 모양 · 비교가 그대로다.
+const PERSONA_FIELD='personaRef';
 const FIELDS=[...TEXT_FIELDS,...Object.keys(ENUMS),...Object.keys(NUMBERS),'channels','destinationUrl','proposedDeadline','castingSelection'];
 const HISTORY_LIMIT=20;
 
@@ -23,7 +28,7 @@ export function emptyStrategyData(){return {...Object.fromEntries(TEXT_FIELDS.ma
 export function emptyStrategy(){return {revision:0,data:emptyStrategyData(),request:null,confirmation:null,history:[]};}
 function text(value,key){if(value===undefined)return '';if(typeof value!=='string'||value.length>(key==='notes'?3000:1000)||/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(value))throw fail('제작 설계의 입력 내용과 길이를 확인해 주세요.');return value.trim();}
 export function normalizeCastingSelection(input){
-  if(!object(input)||Object.keys(input).some(key=>!CASTING_FIELDS.includes(key)))throw fail('모델과 스타일 선택 항목을 확인해 주세요.');
+  if(!object(input)||Object.keys(input).some(key=>!CASTING_FIELDS.includes(key)&&key!==PERSONA_FIELD))throw fail('모델과 스타일 선택 항목을 확인해 주세요.');
   const result=emptyCastingSelection();
   for(const [key,values]of Object.entries(CASTING_ENUMS)){const value=Object.hasOwn(input,key)?input[key]:'';if(!values.includes(value))throw fail('모델과 스타일 선택값을 확인해 주세요.');result[key]=value;}
   if(Object.hasOwn(input,'notes')&&typeof input.notes!=='string')throw fail('모델과 스타일 요청 내용을 확인해 주세요.');
@@ -52,6 +57,7 @@ function safeCastingSelection(value){
   for(const [key,values]of Object.entries(CASTING_ENUMS))if(values.includes(value[key]))result[key]=value[key];
   if(typeof value.notes==='string'&&value.notes.length<=1000&&!/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(value.notes))result.notes=value.notes.trim();
   result.voice='';
+  const ref=personaRefOf(value[PERSONA_FIELD]);if(ref)result[PERSONA_FIELD]=ref;
   return result;
 }
 function safeData(value){const defaults=emptyStrategyData();return Object.fromEntries(FIELDS.map(key=>[key,key==='castingSelection'?safeCastingSelection(value?.[key]):structuredClone(value?.[key]??defaults[key])]));}
@@ -69,6 +75,7 @@ export function applyStrategyAction(value,input,stamp){
     if(!object(input.strategy))throw fail('제작 설계 입력 항목을 확인해 주세요.');
     const data={...structuredClone(strategy.data),...normalizeStrategyData({...safeData(strategy.data),...input.strategy})};
     if(!Object.hasOwn(input.strategy,'castingSelection'))data.castingSelection=structuredClone(strategy.data.castingSelection);
+    else{const ref=personaRefOf(strategy.data.castingSelection?.[PERSONA_FIELD]);if(ref)data.castingSelection[PERSONA_FIELD]=ref;}
     // 바뀐 칸이 없으면 새 버전을 만들지 않는다(받은 확인 요청·확인이 그대로 남는다). 호출하는 쪽은 같은 값이 돌아오면 저장을 건너뛴다.
     const before=safeData(strategy.data),after=safeData(data),changed=FIELDS.filter(key=>JSON.stringify(before[key])!==JSON.stringify(after[key]));
     if(strategy.revision>0&&!changed.length)return value;

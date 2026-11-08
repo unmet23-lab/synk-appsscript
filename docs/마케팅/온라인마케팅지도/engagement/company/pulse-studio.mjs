@@ -9,6 +9,7 @@ import {feedbackRoundActions,applyFeedbackRoundAction,feedbackRoundsView} from '
 import {previewActions,applyPreviewAction,previewsView,visiblePreviewAssetIds} from './pulse-previews.mjs';
 import {buildCustomerPreviewApproval} from './client-preview-approval.mjs';
 import {requestActions,applyRequestAction,requestView,usesRequestFlow} from './pulse-requests.mjs';
+import {createPersonaGuard} from './pulse-personas.mjs';
 
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
@@ -27,6 +28,8 @@ function studioOf(row){if(!row.studio)return empty();if(row.studio.schemaVersion
 // Existing project revisions, invite revocation, ACL and backup transactions
 // therefore remain authoritative; this module creates no second customer login.
 export function createPulseStudioService({store,clientProjects,clock=()=>new Date().toISOString(),mailState=null}){
+  // 의뢰서 액션이 전용 인물로 가는 프로젝트의 인물 판을 다시 볼 때 쓴다(방향 제안 · 제작 시작, pulse-requests.mjs).
+  const personas=createPersonaGuard(store);
   function customer(token){return clientProjects.session(token);}
   function customerWrite(token,csrf){const context=customer(token);if(typeof csrf!=='string'||context.auth.body.csrf!==csrf)throw fail('고객 화면을 다시 열어 주세요.',403);return context;}
   function revision(row,value){if(!Number.isSafeInteger(value)||value!==row.revision)throw fail('그사이 프로젝트가 바뀌었어요. 최신 내용을 불러온 뒤 다시 저장해 주세요.',409);}
@@ -76,7 +79,7 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
     const extension=object(input)?extensions.find(value=>value.fields(input.action)):null;
     if(!object(input)||!Object.hasOwn(fields,input.action)&&!extension)throw fail('기획 요청을 확인해 주세요.');keys(input,[...base,...(extension?extension.fields(input.action):fields[input.action])]);
     const action=input.action;
-    if(extension){extension.apply({studio,row,input,staff:!!user,stamp});commit(row,studio,'PULSE 제작 '+action,who);return;}
+    if(extension){extension.apply({studio,row,input,staff:!!user,stamp,personas});commit(row,studio,'PULSE 제작 '+action,who);return;}
     if(['save_concept','save_scene','reorder_scenes'].includes(action)&&!user)throw fail('기획안은 담당자만 고칠 수 있어요.',403);
     if(['select_concept','review_scene'].includes(action)&&user)throw fail('고객의 선택과 확인은 고객 화면에서만 남길 수 있어요.',403);
     if(['save_strategy','request_strategy_review','confirm_strategy'].includes(action)){

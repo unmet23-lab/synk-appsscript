@@ -1,4 +1,5 @@
 import {CASTING_MODELS} from './casting-catalog.mjs';
+import {t,locale} from './i18n.mjs';
 
 // 의뢰서에서 무엇을 왜 묻는지(2026-11-04). 칸마다 근거는 docs/마케팅/PULSE_의뢰흐름_20261104/README.md 「받는 정보 판단」.
 // 값은 결정 10-29 정가의 「부터」만 쓴다. 기간 · 수정 횟수는 결정 11-07(가격표 · 크몽 상품 글과 같게)대로 보인다.
@@ -29,7 +30,7 @@ export const PACKAGES=Object.freeze([
   {id:'photo',label:'사진',title:'모델이 제품을 든 사진 5장',note:'영상 전에 먼저 써 보는 분이 많아요',price:9.9,cuts:5,photo:true,days:3,revisions:2,gets:'모델이 제품을 든 사진 다섯 장(긴 변 2048px)'},
 ]);
 // 「10일 · 수정 2회」. 기업은 협의.
-export const termsOf=pkg=>pkg?.days?`${pkg.days}일 · 수정 ${pkg.revisions}회`:pkg?'기간 · 수정 협의':'';
+export const termsOf=pkg=>pkg?.days?t('{days}일 · 수정 {revisions}회',{days:pkg.days,revisions:pkg.revisions}):pkg?t('기간 · 수정 협의'):'';
 // 받으실 날: 기준일(보내기 전 오늘, 보낸 뒤 접수일)에서 달력으로 days일 뒤. 「11월 17일」.
 export function dueDay(pkg,from=new Date()){if(!pkg?.days)return '';const at=new Date(from);if(Number.isNaN(at.getTime()))return '';at.setDate(at.getDate()+pkg.days);return `${at.getMonth()+1}월 ${at.getDate()}일`;}
 export const revisionNote=pkg=>!pkg?.days?'':pkg.photo?`사진이 나온 뒤 ${pkg.revisions}번. 첫 장으로 방향을 맞춘 뒤 나머지를 만들어요`:`영상이 나온 뒤 ${pkg.revisions}번. 글 콘티 · 장면 이미지 의견은 세지 않아요`;
@@ -138,9 +139,14 @@ export const emptyAnswers=()=>({
   audience:'',oneThing:'',action:'',
   screenText:'',avoid:[],avoidNote:'',facts:'',
   win:'',refs:[{url:'',points:[],why:''}],avoidFeel:'',
-  models:[],modelChoice:'',
+  models:[],modelChoice:'',hair:'',
   date:'',dateFree:false,approver:'',approverName:'',contactName:'',company:'',email:'',phone:'',consent:false,rights:false,
+  contactLocale:'',outputLocales:[],targetMarket:[],quoteCurrency:'',
 });
+// 다국어 · 전용 인물 판 1(11-09)에 더한 칸(서버 pulse-requests.mjs ANSWER_FIELDS와 같은 이름). 비어 있으면 보내지 않는다 —
+// 이 칸을 모르는 옛 서버도 자동 저장을 거절하지 않게. 서버는 빠진 칸을 빈 값으로 채우므로 지운 값도 그대로 전해진다.
+const LATER_FIELDS=['hair','contactLocale','outputLocales','targetMarket','quoteCurrency'];
+const blank=value=>value===''||value==null||Array.isArray(value)&&!value.length;
 // 이미지 원본 점검(브라우저에서 바로). 막지 않고, 어느 컷에 어떤 영향이 있는지만 말한다.
 export function photoAdvice(width,height,kind){
   const long=Math.max(width,height);
@@ -149,38 +155,40 @@ export function photoAdvice(width,height,kind){
   if(long>=1200)return {state:'note',text:`${width} × ${height} · 쓸 수 있어요. 더 큰 원본이 있으면 접사가 더 또렷해요`};
   return {state:'note',text:`${width} × ${height} · 작은 사진이에요. 멀리 보이는 컷에는 괜찮고, 접사는 다시 부탁드릴 수 있어요`};
 }
-export const price=value=>`${value<10?Math.round(value*10)/10:Math.round(value)}만원`;
+// 값은 만 원 단위로 받는다. 한국어는 「39만원」, 영어는 원화 그대로 「KRW 390,000」(통화를 바꾸지 않는다).
+export const price=value=>locale()==='en'?`KRW ${Math.round(value*10000).toLocaleString('en-US')}`:`${value<10?Math.round(value*10)/10:Math.round(value)}만원`;
 export const DRAFT_FILES_GONE='쓰던 의뢰서의 보관 기간이 지나 올리신 자료가 지워졌어요. 쓰신 글은 그대로예요. 자료만 다시 올려 주세요.';
 export const pkgOf=a=>PACKAGES.find(item=>item.id===a.package);
 export const kindOf=a=>KINDS.find(item=>item.id===a.kind);
-export const channelText=a=>a.channels.map(id=>CHANNELS.find(item=>item.id===id)?.label).filter(Boolean).join(', ');
+export const channelText=a=>a.channels.map(id=>CHANNELS.find(item=>item.id===id)?.label).filter(Boolean).map(label=>t(label)).join(', ');
 export const modelOf=id=>CASTING_MODELS.find(item=>item.id===id);
-export const modelList=a=>a.models.map(id=>modelOf(id)?.name).filter(Boolean).join(', ');
+export const modelList=a=>a.models.map(id=>modelOf(id)?.name).filter(Boolean).map(name=>t(name,null,'model')).join(', ');
 export const filesOf=(a,id)=>a.slots[id]?.files||[];
 export const ratioOf=a=>[...new Set((a.channels||[]).map(id=>CHANNELS.find(item=>item.id===id)?.ratio).filter(Boolean))][0]||'9:16';
 export const slotCount=a=>Object.values(a.slots).reduce((sum,slot)=>sum+(slot.files?.length||0),0);
 // 의뢰서 한 장. 비어 있으면 막지 않고, 없으면 어떻게 하는지를 그 자리에 쓴다.
 export function briefRows(a){
-  const pkg=pkgOf(a),slots=slotsFor(a.kind),missing=slots.filter(slot=>slot.need&&!filesOf(a,slot.id).length).map(slot=>slot.label);
+  // 줄 이름(key)과 빈칸 안내(missing)는 한국어 키 그대로 두고 그리는 자리에서 번역한다(내부 확인이 그 글로 견준다). 값의 고정 낱말은 여기서 번역한다.
+  const pkg=pkgOf(a),slots=slotsFor(a.kind),missing=slots.filter(slot=>slot.need&&!filesOf(a,slot.id).length).map(slot=>t(slot.label));
   const win=WIN.find(item=>item.id===a.win)?.label||(a.win==='ask'?'맡길게요':'');
-  const fileCount=slotCount(a),written=[a.pageUrl&&'제품 페이지',a.driveUrl&&'드라이브 링크',a.useNote&&'쓰는 모습 설명'].filter(Boolean);
-  const refs=(a.refs||[]).map(ref=>[ref.url,(ref.points||[]).join(', '),ref.why].filter(Boolean).join(' · ')).filter(Boolean).join(' / ');
+  const fileCount=slotCount(a),written=[a.pageUrl&&'제품 페이지',a.driveUrl&&'드라이브 링크',a.useNote&&'쓰는 모습 설명'].filter(Boolean).map(text=>t(text));
+  const refs=(a.refs||[]).map(ref=>[ref.url,(ref.points||[]).map(point=>t(point)).join(', '),ref.why].filter(Boolean).join(' · ')).filter(Boolean).join(' / ');
   const rows=[
-    {key:'광고할 것',step:'what',value:[a.name,kindOf(a)?.label].filter(Boolean).join(' · '),missing:a.name?'':'이름을 알려 주세요'},
-    {key:'올릴 곳',step:'where',value:[channelText(a),a.paid?'광고비 집행':''].filter(Boolean).join(' · '),missing:a.channels.length?'':'모르면 저희가 제안해요'},
-    {key:'길이 · 구성',step:'where',value:pkg?`${pkg.label} · ${pkg.title} · ${price(pkg.price)}부터 · ${termsOf(pkg)}`:a.package==='ask'?'추천해 주세요':'',missing:a.package?'':'모르면 저희가 제안해요'},
-    {key:'받은 자료',step:'files',value:[fileCount?`파일 ${fileCount}개`:'',...written,missing.length?`아직 없음: ${missing.join(', ')}`:''].filter(Boolean).join(' · '),missing:fileCount||written.length?'':'아직 없어요. 1차안에는 자리만 잡아 둘게요'},
+    {key:'광고할 것',step:'what',value:[a.name,kindOf(a)&&t(kindOf(a).label)].filter(Boolean).join(' · '),missing:a.name?'':'이름을 알려 주세요'},
+    {key:'올릴 곳',step:'where',value:[channelText(a),a.paid?t('광고비 집행'):''].filter(Boolean).join(' · '),missing:a.channels.length?'':'모르면 저희가 제안해요'},
+    {key:'길이 · 구성',step:'where',value:pkg?t('{label} · {title} · {price}부터 · {terms}',{label:t(pkg.label),title:t(pkg.title),price:price(pkg.price),terms:termsOf(pkg)}):a.package==='ask'?t('추천해 주세요'):'',missing:a.package?'':'모르면 저희가 제안해요'},
+    {key:'받은 자료',step:'files',value:[fileCount?t('파일 {count}개',{count:fileCount}):'',...written,missing.length?t('아직 없음: {list}',{list:missing.join(', ')}):''].filter(Boolean).join(' · '),missing:fileCount||written.length?'':'아직 없어요. 1차안에는 자리만 잡아 둘게요'},
     {key:'보는 사람',step:'message',value:a.audience,missing:a.audience?'':'저희가 제안해요'},
     {key:'남길 것',step:'message',value:a.oneThing,missing:a.oneThing?'':'저희가 한 문장으로 제안해요'},
-    {key:'보고 나서',step:'message',value:ACTIONS.find(item=>item.id===a.action)?.label,missing:a.action?'':'저희가 제안해요'},
+    {key:'보고 나서',step:'message',value:a.action&&ACTIONS.find(item=>item.id===a.action)?t(ACTIONS.find(item=>item.id===a.action).label):undefined,missing:a.action?'':'저희가 제안해요'},
     {key:'화면 글자',step:'words',value:a.screenText,missing:a.screenText?'':'제품 이름만 얹어요'},
-    {key:'피할 말',step:'words',value:[...a.avoid,a.avoidNote].filter(Boolean).join(', '),missing:(a.avoid.length||a.avoidNote)?'':'없음'},
+    {key:'피할 말',step:'words',value:[...a.avoid.map(word=>t(word)),a.avoidNote].filter(Boolean).join(', '),missing:(a.avoid.length||a.avoidNote)?'':'없음'},
     {key:'자랑할 사실',step:'words',value:a.facts,missing:a.facts?'':'없음'},
-    {key:'무엇으로',step:'feel',value:win,missing:win?'':'저희가 제안해요'},
+    {key:'무엇으로',step:'feel',value:win&&t(win),missing:win?'':'저희가 제안해요'},
     {key:'참고 광고',step:'feel',value:refs,missing:refs?'':'없음'},
-    {key:'모델',step:'model',value:a.modelChoice==='none'?'사람 없이 제품만':a.modelChoice==='ask'?'추천해 주세요':modelList(a),missing:(a.models.length||a.modelChoice)?'':'저희가 제안해요'},
-    {key:'받고 싶은 날',step:'contact',value:a.dateFree?'정해진 날짜 없음':a.date,missing:(a.date||a.dateFree)?'':'미정'},
-    {key:'최종 확인',step:'contact',value:a.approver==='one'?'의뢰하신 분':a.approver==='many'?['여러 명',a.approverName].filter(Boolean).join(' · 최종 '):'',missing:a.approver?'':'미정'},
+    {key:'모델',step:'model',value:a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='ask'?t('추천해 주세요'):modelList(a),missing:(a.models.length||a.modelChoice)?'':'저희가 제안해요'},
+    {key:'받고 싶은 날',step:'contact',value:a.dateFree?t('정해진 날짜 없음'):a.date,missing:(a.date||a.dateFree)?'':'미정'},
+    {key:'최종 확인',step:'contact',value:a.approver==='one'?t('의뢰하신 분'):a.approver==='many'?(a.approverName?t('여러 명 · 최종 {name}',{name:a.approverName}):t('여러 명')):'',missing:a.approver?'':'미정'},
     {key:'연락처',step:'contact',value:[a.contactName,a.company,a.email,a.phone].filter(Boolean).join(' · '),missing:a.contactName&&(a.email||a.phone)?'':'성함과 이메일이나 휴대폰이 있어야 연락드릴 수 있어요'},
   ];
   return rows;
@@ -193,7 +201,7 @@ export function answersFromServer(stored={},files=[],previewOf=()=>''){
   return {...emptyAnswers(),...stored,slots,refs:refs.length?refs:[{url:'',points:[],why:''}]};
 }
 export function answersForServer(answers){
-  const out={};for(const key of Object.keys(emptyAnswers()))out[key]=answers[key];
+  const out={};for(const key of Object.keys(emptyAnswers()))if(!(LATER_FIELDS.includes(key)&&blank(answers[key])))out[key]=answers[key];
   const slots={};for(const [key,value]of Object.entries(answers.slots||{}))if(value?.none)slots[key]={none:true};
   return {...out,slots,refs:(answers.refs||[]).filter(ref=>ref.url||ref.points?.length||ref.why)};
 }

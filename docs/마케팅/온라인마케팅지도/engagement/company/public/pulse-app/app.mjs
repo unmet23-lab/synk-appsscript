@@ -18,6 +18,7 @@ import {PACKAGES,MODEL_LINES} from './request-data.mjs';
 import {CASTING_MODELS} from './casting-catalog.mjs';
 import {withDeviceDeadline,deviceAvailability,deviceConnectionNote,deviceKey,canMigrateDevice,foregroundProjectOptions,rejectedDeviceRegistration} from './push.mjs';
 import {installationEnvironment,installationGuide,devicePermissionTimeout} from './install.mjs';
+import {setLocale,locale,htmlLang,pickLocale} from './i18n.mjs';
 
 // Live project contents, credentials and drafts stay in memory. Only the
 // explicitly selected demo persists its own fictional project in localStorage.
@@ -38,6 +39,8 @@ let initialStaffScene=staffMode?new URLSearchParams(location.search).get('scene'
 let initialStaffHistory=staffMode?readStaffHistoryTarget(location.search):null;
 let pendingInitialScene='';
 // 예시는 장면 꼬리(#room 같은 영문 낱말 하나)만 남긴다 — 장면 주소로 바로 열리게(demo-film.mjs가 시작할 때 읽는다).
+// 링크의 언어(?lang=)는 주소를 지우기 전에 읽어 둔다. 고르는 것은 시작 흐름이 서버가 허락한 목록 안에서 한다(applyLocale).
+const linkLang=String(new URLSearchParams(location.search).get('lang')||'').toLowerCase().slice(0,8);
 history.replaceState({},'',location.pathname+(demoMode?(/\bElectron\//.test(navigator.userAgent||'')?'?demo=coffee':'?demo=gift'):staffMode?'?mode=staff':filmDemo?'?demo=film'+(/^#[a-z]{2,12}$/.test(location.hash)?location.hash:''):''));
 const s={demo:demoMode,demoGuide:null,demoPersistent:true,mode:staffMode?'staff':'customer',user:null,workspace:null,project:null,canEdit:false,csrf:'',tab:'strategy',editor:null,versionId:'',compare:false,showVersion:false,inviteUrl:'',newProject:false,installPrompt:null,error:'',conflict:false,workflow:[],castingCode:null,castingCodeOpen:null};
 // PC 앱은 PULSE를 자기 창(Electron)으로 연다. 그 창에서는 설치 안내 단추와 기기 알림 켜기를 두지 않고(views.mjs header·liveView), 기억하기·체험 글은 「이 브라우저」 대신 「이 PC 앱」이라 쓴다.
@@ -216,10 +219,20 @@ async function openFlow(load,after){
   if(flow||flowOpening)return;flowOpening=true;if(s.journalOpen){s.journalOpen=false;setJournalOpen(false);}
   try{
     const backend=await load();
+    if(backend.features)await applyLocale(backend.features);
     // 보내고 응답을 받지 못한 채 다시 왔을 때: 같은 의뢰로 바로 잇는다.
     if(backend.alreadySent){await backend.submit({});await after();return;}
     flow=mountRequestFlow(overlayState(true),{backend,onRoom:()=>{closeFlow();after();},onExit:()=>{closeFlow();render();}});
   }catch(error){notice(error.message);}finally{flowOpening=false;}
+}
+// 화면 언어(다국어 판 1 · 11-09, 기획 12-2 「언어 결정」): 손님 화면만, 서버 응답의 features.locales 안에서 고른다. 직원 화면은 늘 한국어다.
+// 맨 위에서 await하지 않는다(app.mjs를 vm으로 읽는 시험) — 시작 흐름이 응답을 받은 뒤 첫 그리기 전에 부른다. 사전을 못 읽으면 한국어로 둔다.
+async function applyLocale(features){
+  if(s.mode!=='customer')return;
+  let chosen='';try{chosen=localStorage.getItem('pulse-locale')||'';}catch{}
+  const next=pickLocale({chosen,project:features?.locale||'',link:linkLang,browser:navigator.languages||[],allowed:features?.locales});
+  if(next!==locale())await setLocale(next);
+  document.documentElement.lang=htmlLang(locale());
 }
 function openPublicRequest(){return openFlow(publicBackend,async()=>{resetContext();s.user=null;s.workspace=null;s.csrf='';booting=true;render();await start('');});}
 function openProjectRequest(step=''){return openFlow(async()=>projectBackend({project:()=>s.project,csrf:()=>s.csrf,accept,step}),async()=>{s.tab='overview';s.error='';render();if(typeof window.scrollTo==='function')window.scrollTo(0,0);});}
@@ -386,7 +399,7 @@ function focusInitialStaffHistory(){
 }
 async function openInitialStaffProject(){const id=initialStaffProject;if(!id||s.mode!=='staff'||!s.user)return;initialStaffProject='';const requestEpoch=epoch,userId=s.user.id,sceneId=initialStaffScene,historyTarget=initialStaffHistory;initialStaffScene='';initialStaffHistory=null;if(!s.workspace?.projects?.some(project=>project.id===id)){notice('이 프로젝트를 찾을 수 없거나 볼 권한이 없어요. 목록에서 골라 주세요.');return;}await loadProject(id);if(requestEpoch!==epoch||s.user?.id!==userId)return;s.tab=initialStaffTab==='scenes'?'storyboard':['desk','strategy','direction','concepts','storyboard','review','history'].includes(initialStaffTab)?initialStaffTab:'strategy';if(historyTarget&&s.tab==='history'){if(staffHistoryRecordId(s.project,historyTarget))s.historyTarget=historyTarget;else notice('연결한 의견을 찾지 못했어요. 이 프로젝트의 기록에서 찾아봐 주세요.');}if(sceneId&&s.tab==='storyboard'){if(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sceneId)&&s.project?.id===id&&s.project.studio?.scenes?.some(scene=>scene.id===sceneId))pendingInitialScene=sceneId;else notice('연결한 장면을 찾지 못했어요. 장면 목록에서 찾아봐 주세요.');}}
 function focusInitialStaffScene(){if(!pendingInitialScene)return;const id=pendingInitialScene;pendingInitialScene='';if(s.mode!=='staff'||s.tab!=='storyboard'||!s.project?.studio?.scenes?.some(scene=>scene.id===id))return;const card=main.querySelector('#scene-'+id);if(card){card.setAttribute('tabindex','-1');card.focus({preventScroll:true});card.scrollIntoView({block:'center',behavior:'auto'});}}
-async function start(invite='',{manual=false}={}){if(filmDemo)return;if(busy||loading)return;if(invite)closeFlow();loading=true;const requestEpoch=epoch;try{if(s.mode==='staff'){const result=await request('/api/me');if(requestEpoch!==epoch)return;booting=false;if(!result.user){s.user=null;s.csrf='';render();return;}if(s.user&&s.user.id!==result.user.id)resetContext();s.user=result.user;s.csrf=result.csrfToken||'';await loadWorkspace();if(requestEpoch!==epoch)return;await openInitialStaffProject();}else{const result=invite?await request('/pulse/api/open',{body:{invite}}):await request('/pulse/api/project');if(requestEpoch!==epoch)return;accept(result);s.entryError=null;}booting=false;s.error='';s.conflict=false;s.reloadFailed=false;const restored=restoreKeptDrafts();render();if(restored)notice('다시 연결했어요. 쓰던 글이 그대로 남아 있어요.');}catch(error){if(requestEpoch!==epoch)return;booting=false;if(error.status===401||error.status===403){s.user=null;s.project=null;s.csrf='';}if(s.mode==='customer'){if(invite)s.entryError=error.status===401||error.status===403?{title:'이 초대 링크로는 열 수 없어요',text:'링크가 끝났거나 새 링크로 바뀌었을 수 있어요. 담당자에게 새 링크를 요청해 주세요.'}:{title:'프로젝트를 열지 못했어요',text:error.message};else if(manual)s.entryError=error.status===401?{title:'이 기기에 연결된 프로젝트가 없어요',text:'담당자에게 받은 초대 링크를 누르거나 아래 칸에 붙여 넣어 주세요. 「이 기기 기억하기」를 켜 둔 기기라면 30일 동안 링크 없이 열려요.'}:{title:'연결을 확인하지 못했어요',text:error.message};}render();if((invite||error.status!==401)&&!s.entryError)notice(error.message);}finally{loading=false;scheduleInviteNavigation();if(booting){booting=false;render();}}}
+async function start(invite='',{manual=false}={}){if(filmDemo)return;if(busy||loading)return;if(invite)closeFlow();loading=true;const requestEpoch=epoch;try{if(s.mode==='staff'){const result=await request('/api/me');if(requestEpoch!==epoch)return;booting=false;if(!result.user){s.user=null;s.csrf='';render();return;}if(s.user&&s.user.id!==result.user.id)resetContext();s.user=result.user;s.csrf=result.csrfToken||'';await loadWorkspace();if(requestEpoch!==epoch)return;await openInitialStaffProject();}else{const result=invite?await request('/pulse/api/open',{body:{invite}}):await request('/pulse/api/project');if(requestEpoch!==epoch)return;await applyLocale(result.features);if(requestEpoch!==epoch)return;accept(result);s.entryError=null;}booting=false;s.error='';s.conflict=false;s.reloadFailed=false;const restored=restoreKeptDrafts();render();if(restored)notice('다시 연결했어요. 쓰던 글이 그대로 남아 있어요.');}catch(error){if(requestEpoch!==epoch)return;booting=false;if(error.status===401||error.status===403){s.user=null;s.project=null;s.csrf='';}if(s.mode==='customer'){if(invite)s.entryError=error.status===401||error.status===403?{title:'이 초대 링크로는 열 수 없어요',text:'링크가 끝났거나 새 링크로 바뀌었을 수 있어요. 담당자에게 새 링크를 요청해 주세요.'}:{title:'프로젝트를 열지 못했어요',text:error.message};else if(manual)s.entryError=error.status===401?{title:'이 기기에 연결된 프로젝트가 없어요',text:'담당자에게 받은 초대 링크를 누르거나 아래 칸에 붙여 넣어 주세요. 「이 기기 기억하기」를 켜 둔 기기라면 30일 동안 링크 없이 열려요.'}:{title:'연결을 확인하지 못했어요',text:error.message};}render();if((invite||error.status!==401)&&!s.entryError)notice(error.message);}finally{loading=false;scheduleInviteNavigation();if(booting){booting=false;render();}}}
 // 같은 프로젝트로 다시 연결되면 보관해 둔 쓰던 글을 되살린다. 다른 프로젝트면 버린다.
 function restoreKeptDrafts(){const kept=keptDrafts;keptDrafts=null;if(!kept||s.mode!=='customer'||kept.projectId!==s.project?.id||!kept.entries.size)return false;for(const [key,entry] of kept.entries)if(!drafts.has(key))drafts.set(key,entry);return true;}
 function connectionExpired(){closeFlow();const keep=s.mode==='customer'&&!demo&&s.project&&drafts.size?{projectId:s.project.id,entries:new Map(drafts)}:null;resetContext();s.user=null;s.workspace=null;s.csrf='';if(s.mode==='customer'){keptDrafts=keep;s.entryError={title:'연결이 끝나 프로젝트를 닫았어요',text:keep?'받은 초대 링크를 아래 칸에 붙여 넣어 다시 열면, 쓰던 글이 그대로 남아 있어요. 이 창을 닫으면 쓰던 글은 사라져요.':'받은 초대 링크를 다시 누르거나 아래 칸에 붙여 넣어 주세요.'};}render();if(s.mode!=='customer')notice('연결이 끝났거나 권한이 바뀌어 프로젝트를 닫았어요. 다시 로그인해 주세요.');}

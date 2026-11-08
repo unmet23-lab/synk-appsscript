@@ -1,4 +1,4 @@
-import {request as send,PulseError} from './api.mjs';
+import {request as send,PulseError,serverError} from './api.mjs';
 import {emptyAnswers,answersFromServer,answersForServer,DRAFT_FILES_GONE} from './request-data.mjs';
 
 // 의뢰서 화면과 서버 사이. 파일 목록은 서버가 쥐고, 화면은 그 목록을 칸마다 묶어 보여 줄 뿐이다.
@@ -11,13 +11,14 @@ function uploadWithProgress(path,file,{csrf,slot,onProgress}){
     xhr.setRequestHeader('Content-Type',file.type||'application/octet-stream');xhr.setRequestHeader('X-File-Name',encodeURIComponent(file.name));xhr.setRequestHeader('X-Pulse-CSRF',csrf);xhr.setRequestHeader('X-Request-Slot',slot);
     xhr.upload.onprogress=event=>{if(event.lengthComputable)onProgress?.(event.loaded/event.total);};
     xhr.onerror=()=>reject(new PulseError('올리지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.'));
-    xhr.onload=()=>{const body=xhr.response||{};if(xhr.status>=200&&xhr.status<300)resolve(body);else reject(new PulseError(typeof body.error==='string'?body.error:body.error?.message||'올리지 못했어요. 다시 시도해 주세요.',xhr.status));};
+    xhr.onload=()=>{const body=xhr.response||{};if(xhr.status>=200&&xhr.status<300)resolve(body);else reject(serverError(body,xhr.status,'올리지 못했어요. 다시 시도해 주세요.'));};
     xhr.send(file);
   });
 }
 // 공개 의뢰서: 처음 저장할 때 초안을 만들어 그냥 둘러보기만 한 사람은 서버에 아무것도 남기지 않는다.
 export async function publicBackend(){
-  let {draft}=await send('/pulse/api/request'),starting=null;
+  // features: 서버가 허락한 공개 메뉴 언어 · 전용 인물 스위치(판 1). 화면은 이 값만 믿는다.
+  let {draft,features=null}=await send('/pulse/api/request'),starting=null;
   // 저장과 파일 올리기가 동시에 시작해도 초안은 하나만 만든다.
   const ensure=()=>draft?Promise.resolve(draft):starting||=send('/pulse/api/request/start',{body:{}}).then(result=>{draft=result.draft;return draft;}).finally(()=>{starting=null;});
   const answers=draft?answersFromServer(draft.answers,draft.files,draftPreview):emptyAnswers();
@@ -26,7 +27,7 @@ export async function publicBackend(){
   const expired=used=>{if(draft?.id!==used?.id)return 0;draft=null;return backend.onExpired?.()||0;};
   const again=async write=>{const used=draft;try{return await write();}catch(error){if(error.status!==401)throw error;expired(used);return write();}};
   const backend={
-    answers,step:draft?.step||'',alreadySent:draft?.status==='submitted',onExpired:null,
+    answers,step:draft?.step||'',alreadySent:draft?.status==='submitted',onExpired:null,features,
     save(values,step){return again(async()=>{const current=await ensure(),result=await send('/pulse/api/request/save',{csrf:current.csrf,body:{answers:answersForServer(values),step}});draft={...result.draft,csrf:current.csrf};});},
     upload(slot,file,onProgress){return again(async()=>{const current=await ensure(),result=await uploadWithProgress('/pulse/api/request/media',file,{csrf:current.csrf,slot,onProgress});return {...result.file,preview:draftPreview(result.file)};});},
     // 지우려던 파일이 초안과 함께 이미 사라졌으면 더 할 일이 없다.

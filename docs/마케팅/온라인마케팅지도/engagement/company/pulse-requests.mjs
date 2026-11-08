@@ -7,7 +7,10 @@ import {validMediaSignature} from './studio-media.mjs';
 import {emptyPulseStudio} from './pulse-studio.mjs';
 import {recordSceneReview} from './client-scene-requests.mjs';
 import {CASTING_MODELS} from './public/pulse-app/casting-catalog.mjs';
+import {castingOf,personaRefOf,MODEL_CHOICE_KINDS,MODEL_OPTIONAL_CHOICES} from './public/pulse-app/casting-choice.mjs';
+import {LOCALES} from './public/pulse-app/i18n.mjs';
 import {validPulseMailAddress} from './pulse-mail.mjs';
+import {openPersonaProjectIds} from './pulse-personas.mjs';
 
 // 초대 없이 시작하는 공개 의뢰서(2026-11-04, 설계 docs/마케팅/PULSE_의뢰흐름_20261104/README.md 5절).
 // 공개 경로라 프로젝트는 「보내기」에서만 생긴다. 그 전의 초안 · 파일은 따로 두어 스팸이 직원 서버의 프로젝트 · 백업으로 번지지 않게 하고,
@@ -20,18 +23,21 @@ export const REQUEST_LIMITS=Object.freeze({
   filesPerDraft:30,bytesPerDraft:400*1024**2,fileBytes:100*1024**2,attachmentBytes:30*1024**2,
   minimumFreeBytes:20*1024**3,
 });
-const fail=(message,status=400)=>Object.assign(new Error(message),{status});
+// 오류 문장은 한국어 그대로 둔다 — 고정 문장은 화면이 그 문장을 키로 번역하고(i18n.mjs), 손님 글이 끼는 동적 문장만
+// code(SYNK_PULSE_…, server.mjs가 SYNK_ 접두만 내린다)를 붙여 화면이 코드로 번역한다(기획 12-2 「서버 오류」).
+const fail=(message,status=400,code='')=>Object.assign(new Error(message),{status,...(code?{code}:{})});
 const busy=()=>fail('지금 의뢰가 많아요. 잠시 뒤에 다시 시도하거나 hello@synk.im으로 알려 주세요.',429);
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const digest=value=>createHash('sha256').update(value).digest('hex');
 const CONTROL=/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/;
 function text(value,max){if(value===undefined||value===null)return '';if(typeof value!=='string'||value.length>max||CONTROL.test(value))throw fail('입력 내용과 길이를 확인해 주세요.');return value.trim();}
 // 주소는 쓰는 동안 막지 않는다(저장은 글자 그대로). 보낼 때만 고쳐 쓰고, 고칠 수 없으면 어느 칸인지 말한다.
-function link(value,strict,label){
+// 칸마다 문장 하나를 통째로 받는다(번역 키가 고정 문장이 되게 — 이름을 끼워 잇지 않는다).
+function link(value,strict,message){
   const raw=text(value,1000);if(!raw||!strict)return raw;
   const candidate=/^[a-z][a-z0-9+-]*:/i.test(raw)?raw:'https://'+raw;let parsed;
-  try{parsed=new URL(candidate);}catch{throw fail(`${label} 주소를 확인해 주세요.`);}
-  if(!['https:','http:'].includes(parsed.protocol)||parsed.username||parsed.password)throw fail(`${label} 주소를 확인해 주세요.`);
+  try{parsed=new URL(candidate);}catch{throw fail(message);}
+  if(!['https:','http:'].includes(parsed.protocol)||parsed.username||parsed.password)throw fail(message);
   return parsed.href;
 }
 const one=(value,list)=>{const found=value===undefined||value===null?'':value;if(found&&!list.includes(found))throw fail('고른 값을 확인해 주세요.');return found;};
@@ -40,29 +46,35 @@ function many(value,list,max=list?.length??8,itemMax=40){if(value===undefined||v
 export const REQUEST_KINDS=['food','beauty','fashion','living','app','place','brand'];
 export const REQUEST_CHANNELS=['shorts','youtube','store','screen'];
 export const REQUEST_PACKAGES=['s15','s30','s60','corp','photo','ask'];
-const ACTIONS=['buy','install','visit','ask','remember'],WINS=['story','impact','ask'],APPROVERS=['one','many'],MODEL_CHOICES=['ask','none'];
+// 모델 정하는 법: 추천 · 사람 없이 · 새 전용 인물(custom) · 이미 있는 전용 인물(persona). 언어와 상관없는 ID다.
+const ACTIONS=['buy','install','visit','ask','remember'],WINS=['story','impact','ask'],APPROVERS=['one','many'],MODEL_CHOICES=MODEL_CHOICE_KINDS;
 const POINTS=['전개 · 구성','색감 · 빛','카메라 · 속도','모델 연기','소리 · 음악'];
 export const REQUEST_SLOTS=['front','side','logo','label','use','detail','screens','space','menu','guide','scene','etc'];
-const ANSWER_FIELDS=['name','kind','channels','paid','package','slots','size','useNote','pageUrl','driveUrl','audience','oneThing','action','screenText','avoid','avoidNote','facts','win','refs','avoidFeel','models','modelChoice','date','dateFree','approver','approverName','contactName','company','email','phone','consent','rights'];
+// 다국어 · 전용 인물 판 1(2026-11-09, 기획 12-2 「답 구조」 — 더하기만): 고른 모델의 헤어(캐스팅북 헤어 1 · 2 · 3), 소통 언어,
+// 납품 언어, 대상 나라(ISO 두 글자), 견적을 보일 통화(표시만 — 값과 결제는 원화 그대로). 옛 화면이 안 보내면 빈 값으로 채운다.
+const ANSWER_FIELDS=['name','kind','channels','paid','package','slots','size','useNote','pageUrl','driveUrl','audience','oneThing','action','screenText','avoid','avoidNote','facts','win','refs','avoidFeel','models','modelChoice','hair','date','dateFree','approver','approverName','contactName','company','email','phone','consent','rights','contactLocale','outputLocales','targetMarket','quoteCurrency'];
 const MODEL_IDS=CASTING_MODELS.map(model=>model.id);
+const HAIRS=['original','look-2','look-3'],CURRENCIES=['KRW','USD','JPY','EUR'];
+const markets=value=>{const out=many(value,null,8,2);if(out.some(code=>!/^[A-Z]{2}$/.test(code)))throw fail('고른 값을 확인해 주세요.');return out;};
 
-export function emptyRequestAnswers(){return {name:'',kind:'',channels:[],paid:false,package:'',slots:{},size:'',useNote:'',pageUrl:'',driveUrl:'',audience:'',oneThing:'',action:'',screenText:'',avoid:[],avoidNote:'',facts:'',win:'',refs:[],avoidFeel:'',models:[],modelChoice:'',date:'',dateFree:false,approver:'',approverName:'',contactName:'',company:'',email:'',phone:'',consent:false,rights:false};}
+export function emptyRequestAnswers(){return {name:'',kind:'',channels:[],paid:false,package:'',slots:{},size:'',useNote:'',pageUrl:'',driveUrl:'',audience:'',oneThing:'',action:'',screenText:'',avoid:[],avoidNote:'',facts:'',win:'',refs:[],avoidFeel:'',models:[],modelChoice:'',hair:'',date:'',dateFree:false,approver:'',approverName:'',contactName:'',company:'',email:'',phone:'',consent:false,rights:false,contactLocale:'',outputLocales:[],targetMarket:[],quoteCurrency:''};}
 // 저장(strict 아님)은 길이 · 제어문자 · 고르는 값만 본다. 칸을 쓰는 중에 형식 때문에 자동 저장이 끊기면 안 된다.
 // 형식(메일 · 번호 · 주소 · 날짜)은 보낼 때 본다. 파일 목록은 서버가 쥐고, 답에서는 「지금 없어요」 표시만 받는다.
 export function normalizeRequestAnswers(input,{strict=false}={}){
   if(!object(input)||Object.keys(input).some(key=>!ANSWER_FIELDS.includes(key)))throw fail('의뢰서 입력 항목을 확인해 주세요.');
   const slots={};if(input.slots!==undefined){if(!object(input.slots))throw fail('준비물 항목을 확인해 주세요.');for(const [key,value]of Object.entries(input.slots)){if(!REQUEST_SLOTS.includes(key)||!object(value))throw fail('준비물 항목을 확인해 주세요.');if(value.none===true)slots[key]={none:true};}}
-  const refs=[];if(input.refs!==undefined){if(!Array.isArray(input.refs)||input.refs.length>3)throw fail('참고 광고는 셋까지 적어 주세요.');for(const ref of input.refs){if(!object(ref)||Object.keys(ref).some(key=>!['url','points','why'].includes(key)))throw fail('참고 광고 항목을 확인해 주세요.');const item={url:link(ref.url,strict,'참고 광고'),points:many(ref.points,POINTS),why:text(ref.why,300)};if(item.url||item.points.length||item.why)refs.push(item);}}
+  const refs=[];if(input.refs!==undefined){if(!Array.isArray(input.refs)||input.refs.length>3)throw fail('참고 광고는 셋까지 적어 주세요.');for(const ref of input.refs){if(!object(ref)||Object.keys(ref).some(key=>!['url','points','why'].includes(key)))throw fail('참고 광고 항목을 확인해 주세요.');const item={url:link(ref.url,strict,'참고 광고 주소를 확인해 주세요.'),points:many(ref.points,POINTS),why:text(ref.why,300)};if(item.url||item.points.length||item.why)refs.push(item);}}
   let date=text(input.date,10);if(date&&(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date+'T00:00:00Z'))||new Date(date+'T00:00:00Z').toISOString().slice(0,10)!==date)){if(strict)throw fail('받고 싶은 날을 확인해 주세요.');date='';}
   const email=text(input.email,254);if(strict&&email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw fail('이메일 주소를 확인해 주세요.');
   const phone=text(input.phone,30);if(strict&&phone&&!/^[0-9+\-() ]{7,30}$/.test(phone))throw fail('휴대폰 번호를 확인해 주세요.');
   return {
     name:text(input.name,120),kind:one(input.kind,REQUEST_KINDS),channels:many(input.channels,REQUEST_CHANNELS),paid:input.paid===true,package:one(input.package,REQUEST_PACKAGES),
-    slots,size:text(input.size,120),useNote:text(input.useNote,200),pageUrl:link(input.pageUrl,strict,'제품 페이지'),driveUrl:link(input.driveUrl,strict,'드라이브'),
+    slots,size:text(input.size,120),useNote:text(input.useNote,200),pageUrl:link(input.pageUrl,strict,'제품 페이지 주소를 확인해 주세요.'),driveUrl:link(input.driveUrl,strict,'드라이브 주소를 확인해 주세요.'),
     audience:text(input.audience,300),oneThing:text(input.oneThing,300),action:one(input.action,ACTIONS),
     screenText:text(input.screenText,300),avoid:many(input.avoid,null,12,40),avoidNote:text(input.avoidNote,300),facts:text(input.facts,300),
-    win:one(input.win,WINS),refs,avoidFeel:text(input.avoidFeel,200),models:many(input.models,MODEL_IDS,2),modelChoice:one(input.modelChoice,MODEL_CHOICES),
+    win:one(input.win,WINS),refs,avoidFeel:text(input.avoidFeel,200),models:many(input.models,MODEL_IDS,2),modelChoice:one(input.modelChoice,MODEL_CHOICES),hair:one(input.hair,HAIRS),
     date,dateFree:input.dateFree===true,approver:one(input.approver,APPROVERS),approverName:text(input.approverName,80),contactName:text(input.contactName,80),company:text(input.company,100),email,phone,consent:input.consent===true,rights:input.rights===true,
+    contactLocale:one(input.contactLocale,LOCALES),outputLocales:many(input.outputLocales,LOCALES,LOCALES.length,8),targetMarket:markets(input.targetMarket),quoteCurrency:one(input.quoteCurrency,CURRENCIES),
   };
 }
 // 업로드 형식. 화면에 바로 띄우는 것은 서명을 재서 확인한 PNG · JPEG · MP4 · WebM뿐이고, 나머지는 내려받기 전용으로만 둔다.
@@ -239,7 +251,7 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
       await mkdir(media(),{recursive:true,mode:0o700});
       for(const file of sending.files){
         const source=inDraft(file.diskName),target=inMedia(file.diskName);
-        try{await rename(source,target);}catch(error){if(error.code!=='ENOENT')throw error;if(!await stat(target).catch(()=>null))throw fail(`「${file.fileName}」 파일을 찾지 못했어요. 지우고 다시 올려 주세요.`,409);}
+        try{await rename(source,target);}catch(error){if(error.code!=='ENOENT')throw error;if(!await stat(target).catch(()=>null))throw fail(`「${file.fileName}」 파일을 찾지 못했어요. 지우고 다시 올려 주세요.`,409,'SYNK_PULSE_FILE_MISSING');}
       }
       return store.transaction(()=>{
         const {row}=draftOf(raw,csrf,{write:true}),held=store.get(KIND,sending.id);
@@ -288,11 +300,13 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
   // 유지보수 예약에서만 돈다(익명 요청이 방아쇠가 되면 안 된다). 움직임 하나라도 있으면 그때부터 다시 잰다.
   async function retireUnconfirmed(){
     const stamp=now(),cutoff=REQUEST_LIMITS.unconfirmedDays*86400000;let retired=0;
+    // 전용 인물 검토가 열린 프로젝트는 건너뛴다(인물 쪽 움직임은 프로젝트 시계를 늘 돌리지 않는다 — 기획 12-2 「90일 정리」).
+    const personaOpen=openPersonaProjectIds(store);
     for(const row of store.all(KIND)){
       if(row.status!=='submitted')continue;
       const project=row.projectId&&store.get('clientProjects',row.projectId);
       if(!project){if(stamp-Date.parse(row.submittedAt)>cutoff)store.remove(KIND,row.id);continue;}
-      if(stamp-Date.parse(project.updatedAt)<=cutoff)continue;
+      if(stamp-Date.parse(project.updatedAt)<=cutoff||personaOpen.has(project.id))continue;
       if(project.studio?.request?.confirmedAt||project.stage!=='received'){store.remove(KIND,row.id);continue;}
       const files=clientProjects.retireRequest(project.id,{...emptyPulseStudio(),request:{schemaVersion:1,number:row.number||'',status:'retired',retiredAt:clock(),answers:{},files:[],asks:[],notes:[],rounds:[]}});
       for(const file of files)await unlink(inMedia(file.diskName)).catch(()=>{});
@@ -350,7 +364,20 @@ const FIELDS={
 };
 export const requestActions=action=>Object.hasOwn(FIELDS,action)?FIELDS[action]:undefined;
 const STAFF_ONLY=['request_note','request_ask','request_confirm','propose_model','send_draft','propose_direction','settle_direction','request_contact'],CUSTOMER_ONLY=['request_answer','answer_model','request_save','request_submit','submit_draft_review','approve_draft','answer_direction'];
-export function applyRequestAction({studio,row,input,staff,stamp}){
+// 카탈로그 모델로 정할 때는 붙어 있던 전용 인물 참조를 뗀다(「카탈로그로 바꿀 때만 교체」 — 기획 12-2 「선택 값」).
+const catalogCasting=(selection,modelId)=>{const {personaRef,...rest}=selection||{};return {...rest,modelId};};
+// 전용 인물로 가는 프로젝트는 방향 제안 · 제작 시작 때 그 인물 판을 다시 본다(personas: pulse-personas.mjs createPersonaGuard).
+// 제작 시작(start)은 더 엄격하다: 새 전용 인물(custom) · 이미 있는 인물(persona)을 고르고 아직 인물이 붙지 않았으면(손님 사용 승인 전) 시작하지 않는다.
+// 방향 · 글 콘티는 인물을 만드는 동안에도 먼저 맞출 수 있다(GPT 검수 GA1, 2026-11-09).
+function assertCasting(casting,personas,row,{start=false}={}){
+  if(casting.kind==='persona'&&casting.personaRef){
+    if(typeof personas!=='function')throw fail('전용 인물 판이 바뀌었어요. 최신 내용을 불러와 주세요.',409);
+    personas(casting.personaRef,row);
+    return;
+  }
+  if(start&&['custom','persona'].includes(casting.kind))throw fail('전용 인물이 아직 준비되지 않았어요. 준비되면 담당자가 알려 드려요.',409);
+}
+export function applyRequestAction({studio,row,input,staff,stamp,personas}){
   const action=input.action,now=stamp.at;
   if(STAFF_ONLY.includes(action)&&!staff)throw fail('담당자 화면에서만 할 수 있어요.',403);
   if(CUSTOMER_ONLY.includes(action)&&staff)throw fail('고객 화면에서만 할 수 있어요.',403);
@@ -419,8 +446,8 @@ export function applyRequestAction({studio,row,input,staff,stamp}){
     if(input.accept!==true&&!picked&&!text(input.note,300))throw fail('진행할 모델을 고르거나 바라는 점을 적어 주세요.');
     const modelId=picked||(input.accept===true?proposal?.modelId:'');
     studio.request={...request,answers:{...request.answers,...(modelId?{models:[modelId],modelChoice:''}:{})},modelProposal:{...(proposal||{}),status:modelId?'accepted':'declined',answer:text(input.note,300),answeredAt:now,...(modelId?{modelId}:{})}};
-    // 확인 끝 뒤에 정해진 모델은 제작 설계에도 옮긴다(확인 때 옮긴 값을 고객이 바꿀 수 있다).
-    if(modelId&&request.confirmedAt)studio.strategy=strategyWith(studio.strategy,{...studio.strategy.data,castingSelection:{...studio.strategy.data?.castingSelection,modelId}},stamp);
+    // 확인 끝 뒤에 정해진 모델은 제작 설계에도 옮긴다(확인 때 옮긴 값을 고객이 바꿀 수 있다). 전용 인물이 붙어 있었으면 그 참조도 뗀다.
+    if(modelId&&(request.confirmedAt||personaRefOf(studio.strategy?.data?.castingSelection?.personaRef)))studio.strategy=strategyWith(studio.strategy,{...studio.strategy.data,castingSelection:catalogCasting(studio.strategy.data?.castingSelection,modelId)},stamp);
     return;
   }
   // 영상 전 세 번 확인의 첫 번째(11-07 판): 방향 두세 안과 모델을 함께 내밀고 손님이 고른다. 설계 docs/마케팅/PULSE_의뢰흐름_20261104/판1_설계.md 1b.
@@ -431,8 +458,10 @@ export function applyRequestAction({studio,row,input,staff,stamp}){
     const prev=request.directionProposal;
     if(prev&&['chosen','settled'].includes(prev.status))throw fail('고객이 이미 방향을 정했어요.',409);
     if(prev?.status==='declined'&&prev.round>=2)throw fail('다시 제안은 한 번이에요. 고객과 직접 이야기해 정한 안으로 정리해 주세요.',409);
-    const modelId=one(input.modelId||'',MODEL_IDS);
-    if(!modelId&&request.answers?.modelChoice!=='none')throw fail('함께 보낼 모델을 골라 주세요.');
+    const modelId=one(input.modelId||'',MODEL_IDS),casting=castingOf(request,studio.strategy?.data?.castingSelection);
+    // 사람 없이 · 전용 인물로 가는 의뢰는 카탈로그 모델 없이 보낸다. 전용 인물이 붙어 있으면 그 판을 다시 본다.
+    if(!modelId&&!MODEL_OPTIONAL_CHOICES.includes(request.answers?.modelChoice)&&casting.kind!=='persona')throw fail('함께 보낼 모델을 골라 주세요.');
+    if(!modelId)assertCasting(casting,personas,row);
     const price=input.price,revisions=input.revisions;
     if(!Number.isSafeInteger(price)||price<10000||price>100000000)throw fail('값은 원 단위로 1만 원에서 1억 원 사이로 적어 주세요.');
     if(!Number.isSafeInteger(revisions)||revisions<0||revisions>9)throw fail('수정 횟수를 확인해 주세요.');
@@ -473,7 +502,8 @@ export function applyRequestAction({studio,row,input,staff,stamp}){
     if(request.status!=='confirmed')throw fail('의뢰서 확인을 먼저 끝내 주세요.',409);
     const answers=request.answers||{},direction=request.directionProposal;
     if(direction&&!['chosen','settled'].includes(direction.status))throw fail('방향을 먼저 정해 주세요.',409);
-    const modelReady=direction||answers.models?.length||answers.modelChoice==='none'||request.modelProposal?.status==='accepted';
+    // 모델이 정해졌는지: 고른 방향, 또는 손님이 고르거나 받아들인 모델 · 사람 없이 · 승인한 전용 인물(castingOf).
+    const modelReady=direction||castingOf(request,studio.strategy?.data?.castingSelection).agreed;
     if(!modelReady)throw fail('모델을 먼저 제안해 확인받아 주세요.',409);
     const scenes=studio.scenes.filter(scene=>scene.visibility==='customer');
     if(!scenes.length)throw fail('고객에게 보이는 장면을 먼저 준비해 주세요.',409);
@@ -505,6 +535,8 @@ export function applyRequestAction({studio,row,input,staff,stamp}){
     if(round.feedbackAt&&round.changes)throw fail('보내 주신 의견을 반영한 판을 곧 보내 드려요. 그 판에서 확인해 주세요.',409);
     const rounds=request.rounds.map(value=>value.round===round.round?{...value,approvedAt:now,approvedBy:stamp.authorName}:value);
     if(round.kind==='script'){studio.request={...request,rounds,scriptApprovedAt:now};return;}
+    // 제작을 시작하기 전에 전용 인물 판을 다시 본다(그사이 사용 중지 · 만료됐으면 409, 아직 붙지 않았으면 409).
+    assertCasting(castingOf(request,studio.strategy?.data?.castingSelection),personas,row,{start:true});
     studio.request={...request,rounds,approvedRound:round.round,approvedAt:now};
     if(['received','planning'].includes(row.stage)){row.stage='producing';row.closeoutWorkRevision=(row.closeoutWorkRevision||0)+1;}
     return;
@@ -540,7 +572,8 @@ function kstDay(value,now){
 // 고르거나(손님) 정리하면(직원) 모델을 의뢰서 답과 제작 설계에 옮긴다. 모델 없는 의뢰(사람 없이 제품만)는 그대로 둔다.
 function chooseDirection(studio,request,proposal,{option,modelId,note,status,now,stamp,extra={}}){
   studio.request={...request,answers:{...request.answers,...(modelId?{models:[modelId],modelChoice:''}:{})},directionProposal:{...proposal,status,chosenId:option.id,...(modelId?{modelId}:{}),answer:note,answeredAt:now,...extra}};
-  if(modelId&&request.confirmedAt)studio.strategy=strategyWith(studio.strategy,{...studio.strategy.data,castingSelection:{...studio.strategy.data?.castingSelection,modelId}},stamp);
+  // 카탈로그 모델을 고르면 전용 인물 참조를 뗀다. 모델 없이 고른 방향(사람 없이 · 전용 인물)은 붙은 인물을 그대로 둔다.
+  if(modelId&&request.confirmedAt)studio.strategy=strategyWith(studio.strategy,{...studio.strategy.data,castingSelection:catalogCasting(studio.strategy.data?.castingSelection,modelId)},stamp);
 }
 // 확인이 끝나면 답을 제작 설계 칸으로 옮겨 담는다(직원 도구가 그대로 쓰게). 이미 저장한 칸은 덮지 않는다.
 // 제작 설계에 칸이 없는 것(무엇으로 이길지 · 참고 광고 · 드라이브 · 쓰는 법 등)은 메모 칸에 줄로 남겨 옮겨 적는 일이 없게 한다.
@@ -559,7 +592,10 @@ export function carryToStrategy(strategy,a,stamp){
   const refs=(a.refs||[]).map(ref=>[ref.url,(ref.points||[]).join(', '),ref.why].filter(Boolean).join(' — ')).filter(Boolean);
   const lines=[a.win&&`무엇으로 이길지: ${WIN_LABEL[a.win]}`,refs.length&&`참고 광고: ${refs.join(' / ')}`,a.avoidFeel&&`피할 느낌: ${a.avoidFeel}`,[...(a.avoid||[]),a.avoidNote].filter(Boolean).length&&`피할 말: ${[...(a.avoid||[]),a.avoidNote].filter(Boolean).join(', ')}`,a.models?.[1]&&`함께 고민 중인 모델: ${a.models[1]}`,a.size&&`크기: ${a.size}`,a.useNote&&`쓰는 법: ${a.useNote}`,a.driveUrl&&`드라이브: ${a.driveUrl}`,a.approver==='many'&&`여러 명이 확인${a.approverName?` · 최종 ${a.approverName}`:''}`].filter(Boolean);
   put('notes',lines.join('\n').slice(0,3000));
-  const casting={...data.castingSelection};if(a.models?.[0]&&!casting.modelId)casting.modelId=a.models[0];data.castingSelection=casting;
+  // 고른 모델의 헤어는 그 모델이 제작 설계의 모델일 때만 옮긴다(헤어 1 · 2 · 3은 모델마다 다르다). 전용 인물이 붙어 있으면 카탈로그 모델을 넣지 않는다.
+  const casting={...data.castingSelection};if(a.models?.[0]&&!casting.modelId&&!personaRefOf(casting.personaRef))casting.modelId=a.models[0];
+  if(a.hair&&!casting.hair&&casting.modelId&&casting.modelId===a.models?.[0])casting.hair=a.hair;
+  data.castingSelection=casting;
   return strategyWith(strategy,data,stamp);
 }
 function strategyWith(strategy,data,stamp){

@@ -34,7 +34,7 @@ test('the server serves every new file and the service worker caches the shell b
   for(const name of ["'film.css'","'film-legacy.css'","'reel-wide','reel-tall'","'reel-wide-poster','reel-tall-poster','shard','end'","'file-gift-set','file-gift-ampoule','file-gift-jar','still-shards','still-lid'","'sheet-gift-'","'model-scene-'","NotoSerifKR-300.woff2"])assert.ok(server.includes(name),name);
   for(const name of ['film.css','film-legacy.css','film-home.mjs','film-review.mjs','assets/NotoSerifKR-300.woff2'])assert.ok(sw.includes(name),name);
   assert.doesNotMatch(sw,/reel-(wide|tall)\.mp4/,'the reel is not stored on the device');
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v30-shimo-20261106';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v31-i18n-20261109';/);
 });
 test('customer screens name no tool and promise nothing the rules forbid',()=>{
   const words=new RegExp(`${TOOL_NAMES}|같은 얼굴|결제 전|무제한|납기|최고|최초|유일|1위|모루|MORU|드립백`);
@@ -178,7 +178,9 @@ test('every kind offers four hand-picked models who fit that kind, and the whole
     for(const id of picks){assert.ok(CASTING_MODELS.some(model=>model.id===id),id);assert.ok(MODEL_LINES[id].fits.includes(kind.id),`${id} fits ${kind.id}`);}
   }
   const flow=read('request-flow.mjs');
-  assert.ok(flow.includes(`data-do="allmodels">21명 모두 보기`));assert.ok(flow.includes(`data-do="allmodels">넷만 보기`));
+  // 다국어 판 1(11-09): 단추 글은 번역 틀을 지나고 인원수는 카탈로그에서 센다. 한국어 화면의 글자는 그대로 「21명 모두 보기」다.
+  assert.ok(flow.includes("data-do=\"allmodels\">${esc(t('{count}명 모두 보기',{count:CASTING_MODELS.length}))}"));assert.ok(flow.includes("data-do=\"allmodels\">${esc(t('넷만 보기'))}"));
+  const {t}=await import('./public/pulse-app/i18n.mjs');assert.equal(t('{count}명 모두 보기',{count:CASTING_MODELS.length}),'21명 모두 보기');
   assert.ok(flow.includes('monSwap(allModels?allWall(a):wall(a))'));
   assert.ok(flow.includes(`CASTING_MODELS.filter(fit),...CASTING_MODELS.filter(item=>!fit(item))`),'the full wall still holds all 21');
 });
@@ -230,7 +232,7 @@ test('the request form reads choose-then-next: back and next come after the scre
   const flow=read('request-flow.mjs');
   const aside=flow.indexOf('<aside class="sx-q-screen"'),asideEnd=flow.indexOf('</aside>'),foot=flow.indexOf('<footer class="sx-q-foot">');
   assert.ok(aside>0&&asideEnd>aside&&foot>asideEnd,'이전 · 다음은 화면 칸 뒤 — 모델 단계에서 Tab이 모델 칸을 먼저 지난다');
-  assert.ok(flow.includes(`$('.sx-q-screen').setAttribute('aria-label',s.id==='model'?'모델 고르기':'미리 보기');`));
+  assert.ok(flow.includes(`$('.sx-q-screen').setAttribute('aria-label',s.id==='model'?t('모델 고르기'):t('미리 보기'));`));
   assert.ok(flow.includes(`form.scrollTop=0;$('.sx-q-ask').scrollTop=0;$('.sx-q-stage').scrollTop=0;`),'휴대폰은 바깥 칸이 스크롤된다 — 단계를 바꾸면 맨 위에서 연다');
   const css=read('film.css');
   assert.match(css,/\.sx-q-foot\{grid-column:1;grid-row:2;/);assert.match(css,/\.sx-q-screen\{grid-column:2;grid-row:1\/3;/);assert.match(css,/  \.sx-q-foot\{order:3;position:sticky;bottom:0;/);
