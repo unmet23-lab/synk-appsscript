@@ -21,7 +21,7 @@ GOOD = {'healthy', 'success'}
 LABELS = {'onedrive': 'OneDrive 문서·소스', 'github': 'GitHub 커밋',
           'server': '20TB 서버·DB', 'media': '20TB 미디어 원본', 'archive': '5TB 기존 원본',
           'workspace': '20TB 업무 문서·첨부·조사 상태', 'space': '공간 지킴이(C: 여유)',
-          'capacity': '드라이브 용량', 'vault': '금고 두 번째 사본(5TB)'}
+          'capacity': '드라이브 용량', 'vault': '금고 두 번째 사본(5TB)', 'wholeimage': '통째 사본 드라이브 올리기'}
 STATUS_LABELS = {'healthy': '정상', 'pending': '동기화 대기', 'running': '실행 중', 'paused': '의도적 중지',
                  'attention': '확인 필요', 'failed': '실패', 'missed': '최신 백업 지연', 'interrupted': '실행 중단',
                  'partial_failure': '일부 실패', 'unknown': '상태 확인 불가', 'blocked': '준비 미완료',
@@ -41,6 +41,9 @@ SPACE_LEDGER_WARN_BYTES = 8 * 1024 * 1024
 CAPACITY = {'id': 'capacity', 'receipt': '상태/용량/latest.json', 'upcoming': '상태/보존규칙/다가오는것.json',
             'attentionRatio': 0.5, 'failedRatio': 0.8, 'maxStaleHours': 72}
 VAULT = {'id': 'vault', 'receipt': '상태/금고/latest.json', 'maxStaleHours': 72}
+# Whole-PC image upload (../SYNK_원본창고/통째사본올리기.py, 11-08): rewrites its receipt at every finished piece and every hourly
+# run, so three awake hours without one means it stalled — on 11-08 it sat silently for hours until the owner asked.
+WHOLE_IMAGE = {'id': 'wholeimage', 'receipt': '통째사본-status.json', 'maxStaleHours': 3}
 # A suspended PC runs no backup, yet a running receipt's heartbeat and run ages are wall-clock times (10-20: five
 # sleeps, 46 minutes the longest). Each resume from sleep or hibernation sets the clock again from the hardware clock and
 # logs Kernel-General 1 with reason 2 at once: OldTime is when the clock stopped, NewTime when it was set again, and
@@ -424,6 +427,32 @@ def vault_copy(root, lib, now, item=VAULT, suspended=None):
             'receiptPath': item['receipt']}
 
 
+def whole_image(root, lib, now, item=WHOLE_IMAGE, suspended=None):
+    receipt, problem = read_receipt(root, lib, item['receipt'])
+    checked = lib.instant((receipt or {}).get('checkedAt'))
+    codes, notes = [], []
+    if problem:
+        state = 'unknown'; codes.append(problem)
+    elif not receipt:
+        state = 'not_ready'; codes.append('WHOLE_IMAGE_FIRST_RUN_PENDING'); notes.append('첫 실행 전')
+    elif receipt.get('status') == 'failed':
+        state = 'attention'; codes.append('WHOLE_IMAGE_FAILED'); notes.append('올리기 실패')
+    elif receipt.get('status') not in ('running', 'success', 'partial', 'paused', 'waiting'):
+        state = 'unknown'; codes.append('STATE_UNKNOWN')
+    else:
+        state = 'healthy'
+        if receipt.get('leftGB'): notes.append(f"남은 {receipt['leftGB']}GB")
+        if receipt.get('code') == 'HOTSPOT': notes.append('핫스팟이라 쉬는 중')
+        if not checked or overdue(checked, now, dt.timedelta(hours=item['maxStaleHours']), suspended):
+            state = 'attention'; codes.append('WHOLE_IMAGE_STALLED'); notes.append(f"{item['maxStaleHours']}시간 넘게 새 조각 없음")
+    good = state == 'healthy' and checked
+    return {'id': item['id'], 'label': LABELS[item['id']], 'status': state,
+            'checkedAt': lib.stamp(checked) if checked else None, 'lastSuccessAt': lib.stamp(checked) if good else None,
+            'repaired': False, 'repairedAt': None, 'codes': sorted(set(codes)), 'detail': ', '.join(notes) or None,
+            'scope': 'Veeam 통째 사본을 조각마다 암호화해 77yuhbs에 올리는 일. 영수증의 시각만 보며 복원 성공과 구분한다.',
+            'receiptPath': item['receipt']}
+
+
 def task_snapshot(config_path, extra=()):
     query, temp = Path(config_path), None
     if extra:
@@ -498,7 +527,7 @@ def gather(root, lib, config, tasks, now, sleep_record=lambda: None):
     except (OSError, ValueError, TypeError, KeyError):
         components.append({'id': SPACE_GUARD['id'], 'label': LABELS[SPACE_GUARD['id']], 'status': 'unknown',
                            'codes': ['RECEIPT_UNREADABLE'], 'lastSuccessAt': None})
-    for item, check in ((CAPACITY, drive_capacity), (VAULT, vault_copy)):
+    for item, check in ((CAPACITY, drive_capacity), (VAULT, vault_copy), (WHOLE_IMAGE, whole_image)):
         try:
             components.append(check(root, lib, now, suspended=sleep_record))
         except (OSError, ValueError, TypeError, KeyError):
