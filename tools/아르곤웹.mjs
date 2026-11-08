@@ -3,7 +3,8 @@
 // `ego-browser nodejs` 표준 입력으로 돌린다(한글 경로는 -e import가 안 된다):
 //   tools/아르곤웹.js(사진 · 지시문 검수 — 공용 차례를 잡고 부른다) · tools/오마주.js 아르곤(원본 영상 첫 분석).
 //   JOB = { mode: "보내기" | "읽기" | "확인", files, prompt, out, shots, u, account, space, profile, head, mark, unsentMark, claimed, twins,
-//           releaseAfterMs, failShot, sentWaitSec, answerMin, upload? }
+//           releaseAfterMs, failShot, sentWaitSec, answerMin, upload?, 표식? }
+// 11-08 작업 표식: 부르는 쪽이 prompt 맨 앞에 번호를 붙여 준다(표식). 표시에 그대로 적어 다음 읽기가 같은 번호로 대화를 알아본다 — 지시문 · 그림 수가 같은 다른 편 대화를 집지 않게.
 // 11-08 올리기 잠금: 파일을 올리는 보내기면 부르는 쪽이 잠금을 쥐고 upload = { lock, key, deadline }을 준다 — 보내기 누르기 직전에 여기서 풀고,
 //   마감까지 거기 못 닿으면 올리기를 그만두고(제 탭을 닫음) 「올리기넘김」으로 끝낸다. 본문은 맨 끝 finally까지 한 덩이다(아래 「본문」).
 // 11-07: ego 기본 프로필이 `Profile 2`(「유호 (Chrome)」)로 바뀌고 구글 로그인이 그 프로필에만 남아 공간을 그 프로필로 만들고, 차례가 준 계정(account)과
@@ -98,7 +99,7 @@ const 표시읽기 = async () => {
 let markAt = null;
 const writeMark = (url, more = {}) => {
   markAt = markAt || now();
-  return fs.writeFile(mark, JSON.stringify({ 시각: markAt, 공간: space, 계정: u, 계정이름: account || null, 대화: url || null, 지시문앞: promptHead, 답: out, ...more }, null, 1) + "\n", "utf8").catch(() => {});
+  return fs.writeFile(mark, JSON.stringify({ 시각: markAt, 공간: space, 계정: u, 계정이름: account || null, 대화: url || null, 지시문앞: promptHead, ...(J.표식 ? { 표식: J.표식 } : {}), 답: out, ...more }, null, 1) + "\n", "utf8").catch(() => {});
 };
 
 // 답 기다리기 — 글이 30초 동안 안 늘고 멈춤 단추가 없으면 끝(200자 아래 짧은 답은 60초). 대화 주소가 늦게 붙으면 붙는 대로 표시에 적는다.

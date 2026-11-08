@@ -27,6 +27,8 @@
  * 다시 보내지 않기: 페이지 스크립트(tools/아르곤웹.mjs)가 보내기를 누르기 직전에 `<답>.보냄.json` 표시를 쓰고, 답을 받으면 지운다.
  *   표시가 남은 작업은 보내기를 불러도 「읽기」로 간다. 표시는 손으로 지우지 않는다 — 읽기가 탭 · 사이드바까지 보고 없으면(보낸 지 20분 뒤)
  *   <답>.안보내짐.json으로 옮겨(기록은 남김) 다음 보내기가 다시 보낸다. 사이드바를 거치지 않고 표시를 푸는 길은 없다(같은 질문을 두 번 보내지 않게).
+ * 작업 표식: 보낼 때마다 지시문 맨 앞에 새 번호 한 줄을 붙이고 보냄 표시에 적는다. 읽기는 그 번호까지 같은 대화만 받는다 — 11-08 미학맹검 대사바뀜이
+ *   지시문 · 그림 수가 같은 목소리되풀이 대화를 사이드바에서 집어 남의 답을 제 답으로 적었다(아래 「작업 표식」).
  * 올리기 잠금: 한 ego 브라우저에서 파일 올리기는 한 번에 하나(10-31 a · b 두 줄 동시 올리기에서 첨부 0장) — 이 도구끼리는 임시 폴더 잠금
  *   (%TEMP%/synk-argonweb-upload.lock)으로 지킨다. 11-08부터 gemini 차례를 잡은 뒤, 파일이 있는 보내기 한 건의 「올리기 ~ 보내기 누르기 직전」에만
  *   쥔다(차례를 기다리며 쥐던 앞 판은 줄이 꺼진 7시간 동안 이 PC의 아르곤을 모두 묶었다). 상한(10분 + 25MB마다 1분, 15분까지)을 넘기면 올리기를
@@ -132,7 +134,7 @@ function 작업문제(job) {
   if (!job.out) 문제.push('「out」(답 파일)이 없다');
   else if (!fs.existsSync(path.dirname(job.out))) 문제.push(`답 폴더가 없다: ${path.dirname(job.out)}`);
   if (!job.prompt && !job.읽기오류) 문제.push('지시문이 비었다');
-  if (job.prompt && job.prompt.length > 지시문한도) 문제.push(`지시문 ${job.prompt.length}자 — ${지시문한도}자를 넘으면 보내기가 튕긴다(긴 자료는 글 파일로 붙인다)`);
+  if (job.prompt && job.prompt.length + 표식길이 > 지시문한도) 문제.push(`지시문 ${job.prompt.length}자(작업 표식 ${표식길이}자를 더해 ${job.prompt.length + 표식길이}자) — ${지시문한도}자를 넘으면 보내기가 튕긴다(긴 자료는 글 파일로 붙인다)`);
   if (job.files.length > 첨부한도) 문제.push(`첨부 ${job.files.length}개 — 한 번에 ${첨부한도}개까지(작업을 나눈다)`);
   for (const f of job.files) if (!fs.existsSync(f)) 문제.push(`파일이 없다: ${f}`);
   const 이름들 = job.files.filter((f) => 종류(f) === '글').map(칩이름);
@@ -166,12 +168,31 @@ function 판단머리() {
   return 판단함수.map((f) => `const ${f.name} = ${f.toString()};`).join('\n');
 }
 
+// ── 작업 표식 ──
+// 미학맹검은 편마다 같은 지시문을 같은 이름의 그림(화면01.jpg …)과 보낸다 — 지시문 · 그림 수로는 어느 편 대화인지 못 가리고, 한 편씩 부르면 묶음 안 쌍둥이
+// 검사(찾기정보)에도 안 걸린다. 11-08 대사바뀜: 보낸 글이 사라진 뒤 읽기가 사이드바에서 목소리되풀이 대화를 「맞음」으로 집어 남의 답을 제 답으로 적었다.
+// 그래서 보낼 때마다 새 번호를 지시문 맨 앞에 붙이고(앞머리 40자 안 — 번호가 다르면 「다름」) 보냄 표시에 적는다. 읽기는 표시의 번호까지 같은 대화만 받는다.
+// 번호가 없는 옛 표시는 지시문만으로 견준다(그때 보낸 대화에는 번호가 없다).
+const 표식꼴 = /^[0-9a-f]{8}$/;
+function 표식붙이기(prompt, 표식) {
+  return `작업 번호 ${표식}번은 대화를 가리는 표시일 뿐이니 답에 쓰지 않는다.\n\n${prompt}`;
+}
+const 표식길이 = 표식붙이기('', '00000000').length;
+function 이번표식(job, mode) {
+  if (mode === '보내기') return crypto.randomBytes(4).toString('hex');
+  if (mode !== '읽기') return '';
+  const 표식 = String((표시읽기(job.out) || {}).표식 || '');
+  return 표식꼴.test(표식) ? 표식 : '';
+}
+
 function 페이지글(job, u, mode, 계정 = '') {
+  const 표식 = 이번표식(job, mode);
   const JOB = {
-    mode, files: job.files.map(슬래시), prompt: job.prompt, out: 슬래시(job.out), shots: 슬래시(job.shots), u: Number(u),
+    mode, files: job.files.map(슬래시), prompt: 표식 ? 표식붙이기(job.prompt, 표식) : job.prompt, out: 슬래시(job.out), shots: 슬래시(job.shots), u: Number(u),
     account: 계정 || job.account || '', space: job.space || 기본공간, profile: job.profile || 기본프로필,
     head: job.head || '아르곤 답', mark: 슬래시(표시경로(job.out)), unsentMark: 슬래시(풀린표시경로(job.out)),
-    claimed: Array.isArray(job.claimed) ? job.claimed : [], twins: Number(job.twins) || 0, releaseAfterMs: 풀기기다림,
+    claimed: Array.isArray(job.claimed) ? job.claimed : [], twins: 표식 ? 0 : Number(job.twins) || 0, releaseAfterMs: 풀기기다림, // 표식이 있으면 쌍둥이도 번호로 갈린다
+    ...(표식 ? { 표식 } : {}),
     ...(job.failShot ? { failShot: 슬래시(job.failShot) } : {}),
     ...(job.answerMin ? { answerMin: job.answerMin } : {}), ...(job.sentWaitSec ? { sentWaitSec: job.sentWaitSec } : {}),
     ...(job.upload ? { upload: job.upload } : {}), // 올리기 잠금 { lock, key, deadline } — 파일을 올리는 보내기만(페이지돌리기가 쥔 뒤)
@@ -1035,6 +1056,6 @@ if (require.main === module) {
 module.exports = {
   parseArgs, 작업만들기, 작업읽기, 작업문제, 작업경고, 할일정하기, 줄이름, 페이지글, 판단머리, 결과가르기, 계정번호, 계정이름, 표시경로, 풀린표시경로, 종류, 칩이름, 그림셈,
   지시문읽기, 점검한편, 점검, 모호한좌우, 충돌표, 첨부한도, 지시문한도, 그림한도, 풀기기다림, 기본공간, 기본프로필, 페이지, 새답, 다시할일,
-  글정규화, 대화아이디, 대화견주기, 보낸때, 표시계정, 표시풀까, 풀린기록, 올리기뒤기다림, 올리기끝상한초, 답대화, 표시읽기, 찾기정보,
+  글정규화, 대화아이디, 대화견주기, 보낸때, 표시계정, 표시풀까, 풀린기록, 올리기뒤기다림, 올리기끝상한초, 답대화, 표시읽기, 찾기정보, 표식붙이기, 표식길이, 이번표식,
   설정, 살아있나, 올리기상한, 올리기상한계산, 잠금주인읽기, 잠금풀기, 줄주인, 멈춘주인, 잠금치우기, 올리기잠금, 폴더표, 페이지돌리기, 한건, 돌리기,
 };

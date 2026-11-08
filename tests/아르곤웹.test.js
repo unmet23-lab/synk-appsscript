@@ -62,7 +62,9 @@ test('작업 문제 — 없는 파일 · 첨부 10개 넘음 · 4,300자 넘음 
   const 문제 = (j) => 웹.작업문제(웹.작업만들기(j, dir, 't')).join(' | ');
   assert.match(문제({ files: ['없는.jpg'], prompt: 'p', out: '답.md' }), /파일이 없다/);
   assert.match(문제({ files: 사진, prompt: 'p', out: '답.md' }), /첨부 11개 — 한 번에 10개까지/);
-  assert.match(문제({ files: [], prompt: 'x'.repeat(4301), out: '답.md' }), /4301자 — 4300자를 넘으면/);
+  assert.match(문제({ files: [], prompt: 'x'.repeat(4301), out: '답.md' }), /지시문 4301자.*4300자를 넘으면/);
+  assert.match(문제({ files: [], prompt: 'x'.repeat(4300), out: '답.md' }), /4300자를 넘으면/, '작업 표식까지 더해 잰다 — 보내는 글이 한도를 넘지 않게');
+  assert.doesNotMatch(문제({ files: [], prompt: 'x'.repeat(4300 - 웹.표식길이), out: '답.md' }), /넘으면/);
   assert.match(문제({ files: [], prompt: 'p', out: '없는폴더/답.md' }), /답 폴더가 없다/);
   fs.mkdirSync(path.join(dir, '둘'));
   쓰기(dir, '측정.txt');
@@ -399,6 +401,51 @@ test('찾기정보 · 답대화 · 표시읽기 — 다른 작업이 쓴 대화�
   assert.equal(JOB.releaseAfterMs, 웹.풀기기다림);
 });
 
+test('작업 표식 — 지시문 · 그림 수가 같아도 다른 편 대화를 내 대화로 집지 않는다(11-08 대사바뀜이 목소리되풀이 답을 받음)', () => {
+  const JOB글 = (s) => JSON.parse(s.split('\n')[0].replace(/^globalThis\.JOB = /, '').replace(/;$/, ''));
+  const 지시 = 틀(['01', '02', '03']);
+  const dirA = 임시(), dirB = 임시();
+  const 작업 = (dir) => 웹.작업만들기({ files: [쓰기(dir, '화면01.jpg'), 쓰기(dir, '화면02.jpg'), 쓰기(dir, '화면03.jpg'), 쓰기(dir, '유호님_기준.md', '기준')], prompt: 지시, out: '답_1.md' }, dir, '작업_1');
+  const A = 작업(dirA), B = 작업(dirB);
+  assert.equal(A.prompt, B.prompt, '편마다 지시문이 똑같은 것이 이 사고의 전제');
+
+  // 보내기 — 맨 앞에 새 번호를 붙이고 JOB에도 준다(페이지 스크립트가 보냄 표시에 적는다). 보낼 때마다 다른 번호
+  const 보낸A = JOB글(웹.페이지글(A, 1, '보내기', '77yuhbs')), 보낸B = JOB글(웹.페이지글(B, 1, '보내기', '77yuhbs'));
+  assert.match(보낸A.표식, /^[0-9a-f]{8}$/);
+  assert.notEqual(보낸A.표식, 보낸B.표식);
+  assert.equal(보낸A.prompt, 웹.표식붙이기(지시, 보낸A.표식));
+  assert.ok(보낸A.prompt.endsWith(지시), '지시문 자체는 그대로');
+  assert.ok(웹.글정규화(보낸A.prompt).slice(0, 40).includes(보낸A.표식), '번호가 앞머리 40자 안에 있어야 다른 번호 대화가 「다름」이 된다');
+  assert.equal(웹.작업만들기({ files: [], prompt: '질문', out: '답.md' }, dirA, 't').prompt, '질문', '작업 파일 · 줄 이름 쪽 지시문은 그대로');
+
+  // 읽기 — 표시의 번호로 견준다. 남의 번호 대화 · 번호 없는 옛 대화는 「다름」, 내 번호 대화만 「맞음」
+  fs.writeFileSync(웹.표시경로(B.out), JSON.stringify({ 시각: '2026-11-08 22:37:40', 대화: null, 표식: 보낸B.표식 }));
+  const 읽기B = JOB글(웹.페이지글({ ...B, twins: 2 }, 1, '읽기', '77yuhbs'));
+  assert.equal(읽기B.표식, 보낸B.표식);
+  assert.equal(읽기B.prompt, 보낸B.prompt);
+  assert.equal(읽기B.twins, 0, '번호로 갈리니 쌍둥이로 멈추지 않는다');
+  const 기대 = { 지시문: 읽기B.prompt, 그림: 3, 글: 1 };
+  assert.equal(웹.대화견주기([{ 글: 그린글(보낸A.prompt), 그림: 3 }], 기대), '다름', '다른 편 대화 — 지시문 · 그림 수가 같아도 내 대화가 아니다');
+  assert.equal(웹.대화견주기([{ 글: 그린글(지시), 그림: 3 }], 기대), '다름', '번호를 붙이기 전에 보낸 대화');
+  assert.equal(웹.대화견주기([{ 글: 그린글(보낸B.prompt), 그림: 3 }], 기대), '맞음');
+
+  // 번호 없는 옛 표시 · 깨진 표시 · 확인은 지시문만으로(그때 보낸 대화에는 번호가 없다), 쌍둥이 검사도 그대로
+  fs.writeFileSync(웹.표시경로(A.out), JSON.stringify({ 시각: '2026-11-08 21:41:00', 대화: null }));
+  const 옛 = JOB글(웹.페이지글({ ...A, twins: 2 }, 1, '읽기', '77yuhbs'));
+  assert.equal(옛.prompt, 지시);
+  assert.equal(옛.twins, 2);
+  assert.ok(!('표식' in 옛));
+  fs.writeFileSync(웹.표시경로(A.out), JSON.stringify({ 시각: '2026-11-08 21:41:00', 표식: '이상한 값' }));
+  assert.equal(JOB글(웹.페이지글(A, 1, '읽기', '77yuhbs')).prompt, 지시, '꼴이 다른 번호는 믿지 않는다');
+  fs.writeFileSync(웹.표시경로(A.out), '{깨짐');
+  assert.equal(JOB글(웹.페이지글(A, 1, '읽기', '77yuhbs')).prompt, 지시);
+  fs.unlinkSync(웹.표시경로(A.out));
+  assert.equal(JOB글(웹.페이지글(A, 1, '확인', '77yuhbs')).prompt, 지시, '확인은 아무것도 안 보낸다');
+
+  // 페이지 스크립트가 번호를 표시에 적는다 — 읽기로 찾은 주소를 적을 때도 지우지 않게 JOB에서 다시 적는다
+  assert.match(fs.readFileSync(path.join(__dirname, '..', 'tools', '아르곤웹.mjs'), 'utf8'), /지시문앞: promptHead, \.\.\.\(J\.표식 \? \{ 표식: J\.표식 \} : \{\}\)/);
+});
+
 test('페이지글 — 판단 함수는 소스째 앞에 붙고 그대로 돈다(아르곤웹.js의 다른 이름을 안 쓴다), 전체 글은 문법이 맞다', () => {
   const AsyncFunction = (async () => {}).constructor;
   const j = 웹.작업만들기({ files: ['C:\\a\\화면01.png', 'C:\\a\\기준.md'], prompt: 틀(['01']), out: 'C:\\a\\답.md' }, 'C:\\a', 't');
@@ -525,6 +572,7 @@ const 가짜에고 = (dir) => {
     "process.stdin.on('data', (d) => { s += d; });",
     "process.stdin.on('end', () => {",
     "  const J = JSON.parse(s.split('\\n')[0].replace(/^globalThis\\.JOB = /, '').replace(/;$/, ''));",
+    "  if (J.표식) J.prompt = J.prompt.slice(J.prompt.indexOf('\\n\\n') + 2);", // 맨 앞 작업 표식을 걷고 지시문대로
     "  if (!J.upload) { console.error(JSON.stringify({ step: 'fail', kind: '없음', why: '가짜 ego — 잠금 없이 불림' })); return; }",
     "  if (J.prompt === '멈춤') { setInterval(() => {}, 1000); return; }",
     "  const 풀기 = () => { try { fs.unlinkSync(J.upload.lock + '/' + J.upload.key + '.key'); } catch { return; } fs.rmSync(J.upload.lock, { recursive: true, force: true }); };",
