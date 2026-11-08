@@ -27,7 +27,8 @@ const abs = (x: number, y: number, w?: number, h?: number): React.CSSProperties 
 const noDot = (s: string) => s.replace(/[.。]+$/, '');
 const lin = (x: number) => x;
 
-type Line = { a: number; b: number; who: string; s: string; inner?: boolean };
+// cap — 말이 컷 전에 끝났을 때 자막이 다음 컷으로 넘어가지 않게 끊는 때(초, 짧은판30.py가 넣음)
+type Line = { a: number; b: number; who: string; s: string; inner?: boolean; cap?: number };
 // pack — 끝에 팩샷을 얹나(없으면 얹음). 30초 판 끝 장면을 둘이 투명 우산 하나 아래 선 판(rs-C34u, 11-08)으로 바꾼 뒤에는 장면 속 우산이 제품이라 판마다 고른다
 // picture — 그림 장 수(없으면 frames와 같음). frames가 더 길면 그 뒤는 검은 화면에 끝 글 · 소리만 남는다(30초 판 끝우산e)
 // out — 끝 글이 사라지기 시작하는 때(초, 0.4초에 걸쳐). 30초 판 끝우산f부터 소리와 함께 사라진다
@@ -37,7 +38,8 @@ type Timing = { frames: number; picture?: number; lines: Line[]; title: number[]
 const spread = (raw: Line[]) => raw.map((l, i) => {
   const next = raw.slice(i + 1).find((m) => m.a > l.a);
   const want = Math.max(l.b + 0.25, l.a + 1.0);
-  const b = next ? Math.min(want, next.a - 0.06) : want;
+  const b0 = next ? Math.min(want, next.a - 0.06) : want;
+  const b = l.cap != null ? Math.min(b0, l.cap) : b0;
   return { ...l, a: l.a - 0.04, b };
 });
 

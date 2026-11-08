@@ -103,6 +103,41 @@ V["끝우산e"] = dict(V["끝우산"], 이름="끝우산e — 102장에서 검�
 #   끝 글을 검은 화면 가운데 크게 옮기라는 말(Fable)은 따르지 않았다 — 유호님 끝 기준 「납작한 판 + 가운데 큰 브랜드 글자는 스티커」(메모 ending-payoff-weak ⑤)
 V["끝우산f"] = dict(V["끝우산"], 이름="끝우산f — 어둡게 빠지는 암전 · 빗소리만 남김 · 끝 글과 소리가 함께 사라짐", tail=TAIL[:2] + [("C34", "rs-C34u", 2, 104)],
                   black=0.9, dip=5)
+# 바 · 사 — 11-08 밤 유호님 「고립 · 은둔청년 세션에 새 지시문 · 기능을 넣었다, 이 기준으로 30초 판 검토 · 검수 … 10초까지는 괜찮은데 이후에 좀 지루하고
+#   이해가 잘 안 간다, 30초 넘어도 된다」. 새 기준(슬롭 점검표 32 · 33, 심사 지시문 4-2 이해성 · 4-3 몰입 · 감정, 제작 규칙 1-1 인물 설정 · 감정 설계)으로 보면
+#   끝우산f의 10초 뒤는 ① 사건이 한 구도로 지나간다 — 시계 하트 3초 → 그녀 2.3초, 하트를 덮는 그의 얼굴(감정 클로즈)이 없다(33) ② 가게 4.5초가 한 구도
+#   속말이고(32) 왜 가게인지 · 지금인지 회상인지가 안 보인다(4-2) ③ 「다 보여요」를 받는 그의 얼굴이 없다(33). 받아 둔 판에서 같은 얼굴(①무리) 컷만 골라 다시 짠다(크레딧 0).
+#   바 — 사무실(민재 「과장님, 연애 안 하세요?」 → 「뭐, 아직은…」 하며 지나가는 그녀를 눈으로 좇음) + 회식 하트(뛰다 손으로 덮음) → 지켜보던 그녀:
+#        「물으면 얼버무리는데 눈 · 시계가 다 드러낸다」를 두 번(반복 장치), 속말 세 줄은 그 증거 위에(하트 · 덮는 손 · 지켜보던 그녀). 「과장님」이 9초에 먼저 나온다
+#   사 — 회식 하나를 세 박으로: 묻고 · 하트를 덮음(행동 클로즈) → 손목을 쥐고 시선을 피하는 얼굴(감정 클로즈, C17) → 지켜보던 그녀(발견), 속말은 C17 · C16 위
+#   둘 다 「다 보여요,」(손) 뒤에 놀라 내려다보는 그의 얼굴(C31)을 넣는다. 가게(C23)는 뺀다
+# C31(놀라 내려다봄)은 판 75장부터인 샷이 처음부터 굳어 있어(사람 0.02) 짧은 반응 한 박 0.83초만 — 4분 판도 0.79초
+TAIL_N = [("C30", "rs-C30h", 24, 59), ("C31", "rs-C30-31", 76, 20), ("C29", "rs-C28-29", 150, 43), ("C34", "rs-C34u", 2, 104)]
+V["바"] = dict(V["끝우산f"], 이름="바 — 사무실 눈길 + 회식 하트 · 속말을 증거 위에", 대사="바", tail=TAIL_N, 새소리=True,
+              mid=[("C07", "rs-C07m", 24, 60),      # 넓게 — 칸막이에 기댄 민재가 묻는다(대사가 든 2.5초만 — 넓은 컷이라 사람이 거의 안 움직임 0.006)
+                   ("C08", "rs-C08", 0, 120),       # 「뭐, 아직은…」(1.46초) → 그녀가 앞을 지남(3.2–4.4초) → 눈으로 좇음
+                   ("C15", "rs-C15h", 0, 72),       # 하트가 뛰다 손이 덮음
+                   ("C16", "rs-C15-16", 74, 36)])   # 그를 바라보는 그녀 — 판 어디든 굳어 있어(0.02~0.08, 끝우산f 맹검 「12~14초 지루」) 1.5초만
+V["사"] = dict(V["끝우산f"], 이름="사 — 회식 하나를 세 박으로", 대사="사", tail=TAIL_N, 새소리=True, 다보여요=0.85,
+              mid=[("C15", "rs-C15h", 0, 72),       # 묻고 · 하트가 뛰다 손이 덮음 · 「에이, 없어요」
+                   ("C17", "rs-C17", 6, 48),        # 손목을 감싸 쥐고 시선을 피함(옆 민재는 모른 채 웃음)
+                   ("C16", "rs-C15-16", 74, 36)])   # 그를 바라보는 그녀(1.5초)
+# 아 — 맹검(11-08 밤): Gemini 새 지시문 이해성 · 몰입 바 6 · 6 / 사 6 · 5(끝우산f 6 · 6), Fable 사 6 · 5 > 바 4 · 4(사무실 7초가 「연애 안 한다」밖에 못 얻고 술집에
+#   그의 얼굴이 없다). 그런데 C08 · C31은 38초 판 때 검수자끼리 태준 얼굴이 갈려 뺀 컷이다(짧은판.py 머리) → 사에서 C31을 빼 얼굴 규칙을 지키고, Fable이 짚은
+#   것 가운데 받아 둔 판으로 되는 것만 고친다: 속말 「몰랐다.」를 회상 들기 전 시선을 떨구는 그(C05) 위로 당겨 「그의 기억」을 먼저 알리고, 손 컷을 1.8초로 줄여
+#   「다 보여요,」 → 「과장님」 사이 빈틈(2.4초)을 없앤다. C17의 민재는 이 판에서 한 번만 나온다(다른 민재 얼굴과 부딪히지 않음)
+V["아"] = dict(V["사"], 이름="아 — 사에서 C31을 빼고 속말 「몰랐다」를 회상 앞으로 · 손 컷 1.8초", 대사="아", 다보여요=0.55,
+              tail=[("C30", "rs-C30h", 24, 44), ("C29", "rs-C28-29", 150, 43), ("C34", "rs-C34u", 2, 104)])
+
+
+def _wav16(path, x, rate):
+    import wave
+    x = np.clip(x, -1, 1)
+    with wave.open(path, "wb") as w:
+        w.setnchannels(x.shape[1] if x.ndim > 1 else 1)
+        w.setsampwidth(2)
+        w.setframerate(rate)
+        w.writeframes((x * 32767).astype(np.int16).tobytes())
 
 
 def plan(key):
@@ -218,11 +253,32 @@ def sound(key):
         say(v("rs-C14m"), 1.00, 2.38, T["C15"] + 0.08, "off", -24, "민재", "이 자리에 좋아하는 사람 있죠?")
         put(B, T["C15"] - 0.05, S.to_rms(heartbeat(3, 112), -31))
         say(v("rs-C14m"), 5.06, 6.42, T["C15"] + 1.50, "pub", -22, "태준", "에이, 없어요")
+    if 줄 == "바":
+        sync("C07", "rs-C07m", 1.20, 3.38, "office", -22, "민재", "과장님, 연애 안 하세요?")
+        sync("C08", "rs-C08", 1.46, 2.40, "office", -22, "태준", "뭐, 아직은…")
+        put(B, T["C15"] - 0.05, S.to_rms(heartbeat(3, 112), -31))
+        inner(0.80, 1.56, T["C15"] + 0.25, "몰랐다")                       # 하트가 뛰는 동안
+        inner(2.96, 4.36, T["C15"] + 1.15, "숨긴다고 숨긴 게,")             # 손이 덮을 때
+        inner(5.46, 7.07, T["C16"] + 0.05, "다 보이고 있었다는 걸")         # 지켜보던 그녀 위(C16 1.5초 — 첫머리부터)
+    if 줄 == "사":
+        say(v("rs-C14m"), 1.00, 2.38, T["C15"] + 0.08, "off", -24, "민재", "이 자리에 좋아하는 사람 있죠?")
+        put(B, T["C15"] - 0.05, S.to_rms(heartbeat(3, 112), -31))
+        say(v("rs-C14m"), 5.06, 6.42, T["C15"] + 1.50, "pub", -22, "태준", "에이, 없어요")
+        inner(0.80, 1.56, T["C17"] + 0.25, "몰랐다")                       # 시선을 피하는 그 위
+        inner(2.96, 4.36, T["C17"] + 1.00, "숨긴다고 숨긴 게,")
+        inner(5.46, 7.07, T["C16"] + 0.45, "다 보이고 있었다는 걸")         # 지켜보던 그녀 위
+    if 줄 == "아":
+        inner(0.80, 1.56, T["C05"] + 1.25, "몰랐다")                       # 시선을 떨구는 그 위 — 회상에 들기 전에 「그의 속」을 연다
+        say(v("rs-C14m"), 1.00, 2.38, T["C15"] + 0.08, "off", -24, "민재", "이 자리에 좋아하는 사람 있죠?")
+        put(B, T["C15"] - 0.05, S.to_rms(heartbeat(3, 112), -31))
+        say(v("rs-C14m"), 5.06, 6.42, T["C15"] + 1.50, "pub", -22, "태준", "에이, 없어요")
+        inner(2.96, 4.36, T["C17"] + 0.40, "숨긴다고 숨긴 게,")             # 손목을 쥐고 시선을 피하는 그 위
+        inner(5.46, 7.07, T["C16"] + 0.05, "다 보이고 있었다는 걸")         # 지켜보던 그녀 위
     if 줄 in ("나", "다", "라", "마"):
         inner(0.80, 1.56, T["C23"] + 0.10, "몰랐다")
         inner(2.96, 4.36, T["C23"] + 0.95, "숨긴다고 숨긴 게,")
         inner(5.46, 7.07, T["C23"] + 2.45, "다 보이고 있었다는 걸")
-    say(v("rs-C28-29"), 2.16, 3.16, T["C30"] + 0.55, "street", -22, "유나", "다 보여요,")   # 손 잡는 컷 위(화면 밖)
+    say(v("rs-C28-29"), 2.16, 3.16, T["C30"] + V[key].get("다보여요", 0.55), "street", -22, "유나", "다 보여요,")   # 손 잡는 컷 위(화면 밖)
     sync("C29", "rs-C28-29", 7.02, 7.70, "street", -22, "유나", "과장님")
 
     # ===== 곡(38초 판과 같은 곡) — 시선을 떨굼(C05)에 피아노 → 회상 내내 → 지금으로 돌아오며 잦아듦 → 손을 잡는 C30에서 첼로가 부풀어 끝의 맺음으로 =====
@@ -237,11 +293,29 @@ def sound(key):
 
     back = V[key]["back"]
     p_at = T["C05"] + 0.9
-    music(piano, 0.0, T[back] + 0.3 - p_at, p_at, 0.25, 1.8, -27)
-    tail = 93.4 - 89.0
-    tail_at = total - tail + 0.05
-    fg = music(cello, 33.0, 33.0 + (tail_at + 0.5 - T["C30"]), T["C30"], 0.8, 0.5, -21)
-    music(cello, 89.0, 93.4, tail_at, 0.5, 0.4, 0, gain_db=fg)
+    새소리 = V[key].get("새소리", False)
+    if 새소리:
+        # 11-08 밤 ⑲ 배경음 층으로 재 보니 ① 끝우산f는 입맞춤(가장 센 순간)에 곡이 잦아드는 끝 구절(89초~)이라 26.5~27.75초가 꺼짐(25dB)
+        #   ② 피아노_a는 한 소절을 친 뒤 3~4초씩 −35~−39dB로 잦아드는 성긴 독주라 회상 내내 「치고 → 비고」가 되풀이됐다(바 16.75~18초 · 사 12.75~18초 꺼짐).
+        #   → 피아노는 그가 시선을 떨굴 때 첫 소절만 치고 회상 첫 컷에서 첼로로 넘긴다. 첼로는 한 곡으로 이어 「곡 33초」가 손을 잡는 C30에 오게 시작점을
+        #   당긴다: 35초 숨(「다 보여요,」 뒤 · 놀란 얼굴) → 36.5초 부풂(「과장님」) → 37.5초부터 크게(입맞춤) → 암전에 걷음
+        f1 = names[names.index("C05") + 1]   # 회상 첫 컷
+        cut_t = F[-1] / FPS
+        music(piano, 0.0, T[f1] + 1.0 - p_at, p_at, 0.25, 1.0, -27)
+        # 곡 32.5~35.8초(숨 −30~−40dB, 3초 넘게)를 건너뛴다 — ⑲ 기준(일부러 낮출 땐 절반까지 1초 안)에 걸렸다. 회상 끝 소절(32.4초)에서 부풂 시작(35.9초)으로
+        #   0.3초 엇갈림에 넘기고, 넘기는 자리는 우산 장면(C34) 첫머리 — 처음엔 손을 잡는 C30에 두었더니 부푸는 곡에 「다 보여요,」 · 「과장님」이 묻혀
+        #   (목소리를 6dB 올려도 반주보다 +3.5~+5.6dB) 두 대사는 잔잔한 첼로 위에 두고 곡은 우산 아래 입맞춤에서 가장 크게 부풀게 했다
+        J = T["C34"] - 0.1
+        a0, e1 = 32.4 - (J - T[f1]), 35.9 + (cut_t + 0.35 - J)
+        g = -23 - S.rms_db(np.concatenate([cello[int(a0 * RATE):int(32.4 * RATE)], cello[int(35.9 * RATE):int(e1 * RATE)]]))   # 두 토막을 합친 크기로(옛 −21보다 2dB 낮게 — 부푸는 곡에 대사가 묻혔다)
+        music(cello, a0, 32.4 + 0.15, T[f1], 1.0, 0.3, 0, gain_db=g)
+        music(cello, 35.9 - 0.15, e1, J - 0.15, 0.3, 0.05, 0, gain_db=g)
+    else:
+        music(piano, 0.0, T[back] + 0.3 - p_at, p_at, 0.25, 1.8, -27)
+        tail = 93.4 - 89.0
+        tail_at = total - tail + 0.05
+        fg = music(cello, 33.0, 33.0 + (tail_at + 0.5 - T["C30"]), T["C30"], 0.8, 0.5, -21)
+        music(cello, 89.0, 93.4, tail_at, 0.5, 0.4, 0, gain_db=fg)
 
     # ===== 바탕 =====
     def bed(a, b, x, level, fin=0.45, fout=0.5, lpf=None, hpf=None):
@@ -265,9 +339,14 @@ def sound(key):
     if has_title:
         bed(T["C06"], T[first] + 0.2, rain[int(40 * RATE):], -42, fin=0.3, fout=0.3, lpf=2500)   # 제목 카드 — 유리 너머 먹먹하게
     flash = [n for n in names if n in E.FLASH]
-    pub_cuts = [n for n in flash if n in ("C15", "C16")]
+    pub_cuts = [n for n in flash if n in ("C15", "C16", "C17")]
     store_cuts = [n for n in flash if n in ("C22", "C23")]
+    office_cuts = [n for n in flash if n in ("C07", "C08")]
     nxt = lambda n: names[names.index(n) + 1]
+    if office_cuts:   # 사무실 — 방 울림 · 먼 타자 소리(4분 판 최종소리와 같은 바탕)
+        a, b = T[office_cuts[0]], T[nxt(office_cuts[-1])]
+        bed(a - 0.1, b + 0.1, S.lp(S.hp(S.pink(40, 5), 60), 1600), -50, fin=0.3, fout=0.2)
+        bed(a - 0.1, b + 0.1, S.load(S.TYPING), -52, fin=0.3, fout=0.2, lpf=6000)
     if pub_cuts:
         a, b = T[pub_cuts[0]], T[nxt(pub_cuts[-1])]
         bed(a - 0.1, b + 0.25, pub[int(60 * RATE):], -39, fin=0.3, lpf=7000)              # 회식 웅성
@@ -291,8 +370,18 @@ def sound(key):
     vm = np.abs(Vx).max(axis=1)
     hop = int(0.01 * RATE)
     act = np.array([vm[i:i + hop].max() for i in range(0, N, hop)]) > 10 ** (-40 / 20)
-    g = np.where(act, 10 ** (-9 / 20), 1.0).astype(np.float32)
-    a_att, a_rel = 1 - np.exp(-1 / (0.15 * 100)), 1 - np.exp(-1 / (0.45 * 100))
+    if 새소리:
+        # 슬롭 점검표 31(곡을 깊게 누르면 쉼에서 꺼졌다 솟는다) — 내림 −4.5 dB · 내리고 풀기 0.35초 · 0.8초, 0.55초 안 쉼은 이어서 누른 채(곡이 들썩이지 않게)
+        gap = int(0.55 / 0.01)
+        on = np.where(act)[0]
+        for a0, a1 in zip(on[:-1], on[1:]):
+            if 1 < a1 - a0 <= gap:
+                act[a0:a1] = True
+        g = np.where(act, 10 ** (-4.5 / 20), 1.0).astype(np.float32)
+        a_att, a_rel = 1 - np.exp(-1 / (0.35 * 100)), 1 - np.exp(-1 / (0.8 * 100))
+    else:
+        g = np.where(act, 10 ** (-9 / 20), 1.0).astype(np.float32)
+        a_att, a_rel = 1 - np.exp(-1 / (0.15 * 100)), 1 - np.exp(-1 / (0.45 * 100))
     out_g = np.ones_like(g)
     cur = 1.0
     for i, tgt in enumerate(g):
@@ -303,7 +392,26 @@ def sound(key):
     mix = C.Mix(total + 1.0)
     Vc = S.compress(Vx, thr_db=-32.0, ratio=3.0, att=0.003, rel=0.12)
     Vc *= 10 ** ((S.rms_db(Vx) - S.rms_db(Vc)) / 20)
-    mix.a[:N] = S.compress(Vc + M * duck + B * bduck)
+    Mx = M * duck
+    if 새소리:
+        # 슬롭 점검표 31 고침 — 곡을 더 깊이 누르지 않고 ① 말할 때 곡의 목소리 띠(300~3400Hz)만 −3.5dB 더 뺀다 ② 곡이 큰 자리의 줄은 목소리를 올려 세운다
+        #   (반주보다 +8dB가 되게, 올림은 6dB까지). 11-08 밤 잰 값: 새 곡으로 「다 보여요,」 −1.9 · 「과장님」 −1.7dB(반주에 묻힘), 끝우산f도 「과장님」 +2.9
+        band = S.hp(S.lp(M, 3400), 300)
+        k = np.clip((1 - duck) / (1 - 10 ** (-4.5 / 20)), 0, 1)
+        Mx = (M - band) * duck + band * duck * (1 - k * (1 - 10 ** (-3.5 / 20)))
+        A = Mx + B * bduck
+        for l in L:
+            a, b = int(l["a"] * RATE), int(l["b"] * RATE)
+            r = S.rms_db(Vc[a:b]) - S.rms_db(A[a:b])
+            up = float(np.clip(8.0 - r, 0, 6))
+            if up > 0.2:
+                n = int(0.03 * RATE)
+                env = np.ones(b - a + 2 * n, np.float32) * 10 ** (up / 20)
+                env[:n] = np.linspace(1, env[n], n); env[-n:] = np.linspace(env[n], 1, n)
+                a0 = max(0, a - n)
+                Vc[a0:a0 + len(env)] *= env[:len(Vc[a0:a0 + len(env)])][:, None]
+                l["올림dB"] = round(up, 1)
+    mix.a[:N] = S.compress(Vc + Mx + B * bduck)
     out_at = None
     if soft:   # 끝 0.45초에 소리 전체를 0으로 — 끝 글도 같은 때 사라진다(RS60.tsx End의 out)
         out_at = total - 0.45
@@ -311,7 +419,18 @@ def sound(key):
         mix.a[j0:j1] *= np.linspace(1, 0, j1 - j0, dtype=np.float32)[:, None]
         mix.a[j1:] = 0
     os.makedirs(out_dir(key), exist_ok=True)
+    # 음악만 — 올리기 전 검사 ⑲(배경음 층)를 이 편에도 잰다: 합과 같은 봉우리로 나눈 「섞인 그대로의 곡」(대사 아래 내림 포함)
+    peak = float(np.max(np.abs(mix.a))) or 1.0
+    _wav16(os.path.join(out_dir(key), "음악만.wav"), Mx[:N] / peak, RATE)
+    _wav16(os.path.join(out_dir(key), "대사만.wav"), Vc[:N] / peak, RATE)                       # 대사가 반주에 묻히는지 재는 짝(합 압축 전)
+    _wav16(os.path.join(out_dir(key), "반주만.wav"), (Mx + B * bduck)[:N] / peak, RATE)
     mix.finish(os.path.join(out_dir(key), "소리.wav"), boost_db=0.0)
+    # 자막이 다음 컷으로 넘어가지 않게 — 말이 컷 전에 끝났는데 읽을 시간(최소 1초)을 채우느라 자막만 컷을 넘으면 그 컷 경계에서 끊는다
+    #   (11-08 밤 Fable 판 Z: 「과장님」 자막이 우산 와이드 첫 장까지 0.2초 남음). 말이 컷을 넘는 속말은 그대로 둔다
+    for l in L:
+        nxt_cut = next((f / FPS for f in F[1:] if l["b"] < f / FPS), None)
+        if nxt_cut is not None and max(l["b"] + 0.25, l["a"] + 1.0) > nxt_cut:
+            l["cap"] = round(nxt_cut - 0.02, 3)
     meta = {"판": key, "frames": F[-1] + int(round(black * FPS)), "picture": F[-1], "F": F, "names": names, "lines": L,
             "title": [T["C06"] + TITLE_IN, T[first]] if has_title else [0, 0], "end": T["C34"] + END_IN, "pack": V[key].get("pack", True), "out": out_at}
     json.dump(meta, open(os.path.join(out_dir(key), "timing30.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
