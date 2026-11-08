@@ -230,7 +230,8 @@ const Sfx: React.FC<{ file: string; at: number; vol: number }> = ({ file, at, vo
 // 음악은 굳는 순간 확 줄었다가(0.5초 정적에 가깝게) 풀이에서 돌아온다
 const bgmVol = (f: number) => {
   const t = f / 30;
-  const k = interpolate(t, [0, T.freeze - 0.05, T.freeze + 0.05, T.empty + 0.6, T.rule, T.mirror, T.mirror + 0.1, T.mirror + 0.9, T.total - 0.5, T.total], [1, 1, 0.12, 0.12, 0.85, 0.85, 0.2, 0.9, 0.9, 0], clamp);
+  // 11-08 음악층 ⑲: 주석은 0.5초인데 0.12를 2.45초(빈 봉지 뒤 0.6초까지) 쥐어 음악이 비었다 — 0.5초만 쥐고 빈 봉지에서 절반, 풀이에서 다 돌아온다(바탕 공원 소리는 그대로)
+  const k = interpolate(t, [0, T.freeze - 0.05, T.freeze + 0.05, T.freeze + 0.55, T.freeze + 0.95, T.rule, T.mirror, T.mirror + 0.1, T.mirror + 0.9, T.total - 0.5, T.total], [1, 1, 0.12, 0.12, 0.5, 0.85, 0.85, 0.2, 0.9, 0.9, 0], clamp);
   return 0.14 * MASTER * k;
 };
 const Sound: React.FC = () => (

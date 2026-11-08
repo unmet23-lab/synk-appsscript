@@ -294,7 +294,8 @@ const Sfx: React.FC<{ file: string; at: number; vol: number }> = ({ file, at, vo
 // 식당 소리와 음악은 숨을 들이켤 때 사그라져 정적 0.5초 — 외침 뒤에도 모두 얼어붙어 비어 있다가 달려올 때 돌아온다
 const bedVol = (f: number) => {
   const t = f / 30;
-  return interpolate(t, [0, T.puff, T.hush - 0.05, T.rush1 - 0.05, T.rush1 + 0.2, T.pile, T.pile + 0.3, T.rush2, T.rush2 + 0.2, T.total - 0.4, T.total], [1, 1, 0, 0, 1, 1, 0.3, 0.3, 1, 1, 0], clamp);
+  // 11-08 음악층 ⑲: 「소리가 다 멎는다(0.5초)」인데 바닥이 0인 채 달려올 때까지 1.8초 비었다(유호님 「중간중간 좀 빠져있는데」) — 정적은 외침 전 0.5초만, 외침 뒤엔 가게 소리 40%로 돌아오고 달려올 때 다 돌아온다
+  return interpolate(t, [0, T.puff, T.hush - 0.05, T.shout + 0.05, T.shout + 0.35, T.rush1 - 0.05, T.rush1 + 0.2, T.pile, T.pile + 0.3, T.rush2, T.rush2 + 0.2, T.total - 0.4, T.total], [1, 1, 0, 0, 0.4, 0.4, 1, 1, 0.3, 0.3, 1, 1, 0], clamp);
 };
 const bgmVol = (f: number) => {
   const t = f / 30;
