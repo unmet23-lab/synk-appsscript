@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-08T17:18:20.478Z",
+  "generatedAt": "2026-11-08T17:28:23.012Z",
   "sourceAsOf": {
     "registry": "2026-11-09",
     "social": "2026-09-21",
@@ -9,11 +9,11 @@
     "operating": 24,
     "mongolia": 5,
     "plannedCountries": 25,
-    "prioritySlots": 50,
-    "newSlots": 48,
+    "prioritySlots": 51,
+    "newSlots": 49,
     "expansionConfirmed": 34,
-    "expansionUnconfirmed": 14,
-    "channelRows": 75,
+    "expansionUnconfirmed": 15,
+    "channelRows": 76,
     "contents": 25,
     "identities": 6
   },
@@ -28,7 +28,7 @@
     },
     {
       "file": "inputs/content-status.json",
-      "sha256": "d10714bac58085296be3d4edd1e406e7b60a3f0a3b1f3f5e412fb4a0ffb53fff"
+      "sha256": "438e376ca831589d32fd74649718952dbe1cad15d0c499562197d65514f5392f"
     },
     {
       "file": "inputs/content-lines.json",
@@ -40,7 +40,7 @@
     },
     {
       "file": "account-setup-proposal.json",
-      "sha256": "c7dc9f690a9ff01e319e20f80e1e7e24a2fc25db37319528d641a6823b636669"
+      "sha256": "3499637586592a467f7398c62fd43d71e28ce3aa2ef38cef1db2db35e0a74deb"
     },
     {
       "file": "../sns-계정.json",

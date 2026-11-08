@@ -3,8 +3,8 @@
   "asOf": "2026-09-20",
   "status": "proposal-not-applied",
   "executionLedger": "youtube-setup-20260920.json",
-  "executionNote": "이 파일은 최초 제안 스냅샷. 일본·베트남 YouTube는 77yuhbs 기존 채널을 재사용해 현지화 프로필까지 공개 확인했으며, 실제 핸들·상태는 executionLedger와 ../sns-계정.json이 우선한다. 브라질·멕시코 4자리는 2026-10-02 결정으로 더한 제안이며 실제 상태는 ../프로필_클로드판_20261002/개설기록_브라질멕시코.json과 ../sns-계정.json이 우선한다.",
-  "scope": "LAB 신규 24개국 48채널(2026-10-02 브라질·멕시코 4채널 추가), 몽골 기존 5개 보존",
+  "executionNote": "이 파일은 최초 제안 스냅샷. 일본·베트남 YouTube는 77yuhbs 기존 채널을 재사용해 현지화 프로필까지 공개 확인했으며, 실제 핸들·상태는 executionLedger와 ../sns-계정.json이 우선한다. 브라질·멕시코 4자리는 2026-10-02 결정으로 더한 제안이며 실제 상태는 ../프로필_클로드판_20261002/개설기록_브라질멕시코.json과 ../sns-계정.json이 우선한다. 2026-11-09 사용자 브라질 TikTok 추가 확정. 계정 미생성·이메일 미배정.",
+  "scope": "LAB 신규 24개국 49채널(2026-11-09 브라질 TikTok 추가), 몽골 기존 5개 보존",
   "confirmedByUser": {
     "dailyOperatorEmail": "synk.yuh@gmail.com",
     "founderGoogleLogin": "founder@synk.im",
@@ -930,6 +930,26 @@
       "phoneVerified": null,
       "permissionsVerified": null,
       "setupStatus": "proposal-not-created"
+    },
+    {
+      "id": "lab-br-tiktok",
+      "country": "브라질",
+      "countryCode": "BR",
+      "platform": "TikTok",
+      "proposedHandle": "synklab.br",
+      "handleAvailability": "not-checked",
+      "proposedContactEmail": null,
+      "contactEmailPurpose": "추가 이메일 별칭 준비·배정 필요",
+      "proposedAuthRoute": "email-signup-user-verification",
+      "proposedCustody": "미배정",
+      "precondition": "가입 이메일 준비 후 사용자 생일·비밀번호·인증·CAPTCHA 처리",
+      "actualHandle": null,
+      "actualUrl": null,
+      "actualLogin": null,
+      "phoneVerified": null,
+      "permissionsVerified": null,
+      "setupStatus": "approved-not-created",
+      "approvedAt": "2026-11-09"
     }
   ]
 }

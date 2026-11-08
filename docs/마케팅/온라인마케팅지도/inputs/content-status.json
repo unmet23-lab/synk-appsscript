@@ -7,7 +7,7 @@
     "unknownMeans": "읽지 않았거나 현재 상태를 직접 확인하지 못한 항목. 0·미개설·승인·완료를 뜻하지 않음.",
     "publicationStatusScope": "해당 새 콘텐츠의 로컬 기록상 상태이며 채널 전체 게시물 유무나 실시간 공개 상태가 아님.",
     "approvalRule": "옛 파일의 완료·검수 표시, 해시 일치, 조판 성공을 사용자 승인으로 승격하지 않음.",
-    "countryRule": "이전 대화의 국가별 2플랫폼 계획. 수요 순위·현재 인기 순위·계정 실제 존재·접근 가능성을 뜻하지 않음.",
+    "countryRule": "기존 국가별 2플랫폼 계획에 2026-11-09 브라질 TikTok 1곳 추가. 실제 계정 존재·운영 가능성과 구분.",
     "localConditionsRule": "특히 국가별 청소년 SNS 제한은 현재 조건을 다시 확인해야 하며 독립 학습 앱 가입 제한으로 자동 적용하지 않음.",
     "metrics": "전망·수요·도달·성과 수치를 추정하거나 생성하지 않음."
   },
@@ -36,6 +36,11 @@
       "id": "lab-brazil-mexico-20261002",
       "source": "user-decision-20261002",
       "decision": "브라질·멕시코를 LAB 해외 SNS 계획에 넣는다(국가별 2플랫폼: 멕시코 YouTube·TikTok, 브라질 Instagram·YouTube). 2026-10-17 사용자 「지도에 맥시코 브라질 넣어」로 지도에 반영."
+    },
+    {
+      "id": "lab-brazil-tiktok-20261109",
+      "source": "user-decision-20261109",
+      "decision": "브라질 TikTok을 추가하고 캄보디아부터 가입 재개. Instagram·Facebook 신규 생성은 나중, 게시 금지 유지."
     }
   ],
   "planCounts": {
@@ -43,10 +48,10 @@
     "facelessContentConcepts": 12,
     "faceVideoConceptsOtherSession": 2,
     "countries": 25,
-    "plannedCountryPlatformSlots": 50,
+    "plannedCountryPlatformSlots": 51,
     "existingMongoliaRecordSlots": 2,
     "newCountryCandidates": 24,
-    "newChannelSlotsPlanned": 48
+    "newChannelSlotsPlanned": 49
   },
   "planCountNote": "산술적인 계획 행·슬롯 수다. 실제 신규 생성 계정 수·운영 완료 수·성과 수치가 아님.",
   "contents": [
@@ -1127,10 +1132,11 @@
       "brand": "LAB",
       "platforms": [
         "Instagram",
-        "YouTube"
+        "YouTube",
+        "TikTok"
       ],
       "audience": "취미로 한국어를 배우는 포르투갈어권 학습자 · 드라마·노래 속 한국어로 시작(TOPIK은 원하면 가는 목표)",
-      "planStatus": "2026-10-02 사용자 확정 · LAB 해외 SNS 계획에 추가",
+      "planStatus": "2026-11-09 사용자 확정 · 기존 Instagram·YouTube에 TikTok 추가",
       "accountStatus": "unknown",
       "localConditionsStatus": "SNS는 지금 운영 가능 · 앱 출시는 미성년 보호법(ECA Digital)에 맞는 보호자 기능 묶음 이후(전략 문서) · 현지 접속·연령·계정 운영 조건은 재확인 필요",
       "demandRank": null,
@@ -1151,6 +1157,13 @@
           "platform": "YouTube",
           "status": "planned-not-created-or-verified",
           "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "TikTok",
+          "status": "approved-not-created",
+          "accountId": "lab-br-tiktok",
           "handle": null,
           "url": null
         }
