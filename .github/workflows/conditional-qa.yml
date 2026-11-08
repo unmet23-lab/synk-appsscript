@@ -67,6 +67,17 @@ jobs:
       - name: install the actual Electron runtime for ASAR virtualization
         if: runner.os == 'Windows'
         run: node desktop/node_modules/electron/install.js
+      # S116 — the zip hash pins the official release, and the engine checks the exe hash again when it opens.
+      - name: install the work backup test dependency and the pinned restic
+        if: runner.os == 'Windows'
+        run: |
+          npm ci --prefix experiences/solo-backup --ignore-scripts --no-audit --no-fund
+          $folder = Join-Path $env:RUNNER_TEMP 'solo-backup-restic'
+          New-Item -ItemType Directory -Force -Path $folder | Out-Null
+          $zip = Join-Path $folder 'restic.zip'
+          Invoke-WebRequest -Uri 'https://github.com/restic/restic/releases/download/v0.19.1/restic_0.19.1_windows_amd64.zip' -OutFile $zip -MaximumRetryCount 3 -RetryIntervalSec 5
+          if ((Get-FileHash -Algorithm SHA256 -Path $zip).Hash -ne 'da948ad707ed690426473aaba2046cd61f8f90f6f0e7dab6be0d5796531de67d') { throw 'restic ZIP SHA-256 mismatch' }
+          Expand-Archive -Path $zip -DestinationPath $folder
       - name: build current Rust source and install media tools
         if: runner.os == 'Linux'
         run: |
@@ -89,6 +100,7 @@ jobs:
       - name: verify exact registered cases, with no skips
         env:
           DRAMA_LIVE_WORLD_BUNDLE: ${{ runner.os == 'Linux' && format('{0}/.tmp/conditional-drama-public/world/world-account.bundle.mjs', github.workspace) || '' }}
+          SOLO_BACKUP_RESTIC: ${{ runner.os == 'Windows' && format('{0}\solo-backup-restic\restic_0.19.1_windows_amd64.exe', runner.temp) || '' }}
         run: node tools/conditional-qa/run.cjs --route ${{ matrix.route }} --output "${{ runner.temp }}/conditional-${{ matrix.route }}"
       - name: save the actual event ledger
         if: always()

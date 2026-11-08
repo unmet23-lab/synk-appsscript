@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 115,
+  "expectedCount": 116,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -924,6 +924,14 @@
       "name": "① 공개본 WORLD 계정 묶음으로도 동기화가 막히지 않는다(내려받은 파일이 있을 때만)",
       "group": "드라마 공개본 WORLD 계정 묶음",
       "route": "linux",
+      "profile": "default"
+    },
+    {
+      "id": "S116",
+      "file": "experiences/solo-backup/tests/engine.test.cjs",
+      "name": "real Windows restic: backup, changed files, new-PC recovery, failure preservation and exact retention",
+      "group": "업무 백업 실제 restic",
+      "route": "windows",
       "profile": "default"
     }
   ]

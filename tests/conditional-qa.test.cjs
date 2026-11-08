@@ -17,8 +17,17 @@ const good = () => ({ version: 1, commit, manifestDigest: manifest.digest, expec
 function scratch(t) { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'conditional-qa-test-')); t.after(() => { if (!c.within(os.tmpdir(), dir) || fs.lstatSync(dir).isSymbolicLink()) throw Error('Unsafe test cleanup'); fs.rmSync(dir, { recursive: true, force: true }); }); return dir; }
 
 test('all 113 original cases have one concrete route and a live source file', () => {
-  assert.equal(check(root), 115);
-  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 28, linux: 8, local: 79 });
+  assert.equal(check(root), 116);
+  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 29, linux: 8, local: 79 });
+});
+test('S116 runs on the Windows host with the pinned restic release, never by skipping', () => {
+  const row = manifest.cases.find(item => item.id === 'S116');
+  assert.equal(row.route, 'windows');
+  const workflow = fs.readFileSync(path.join(root, '.github/workflows/conditional-qa.yml'), 'utf8').replace(/\r\n/g, '\n');
+  assert.match(workflow, /Get-FileHash -Algorithm SHA256 -Path \$zip\)\.Hash -ne '[0-9a-f]{64}'\) \{ throw/);
+  assert.match(workflow, /npm ci --prefix experiences\/solo-backup /);
+  assert.match(workflow, /SOLO_BACKUP_RESTIC: \$\{\{ runner\.os == 'Windows' && format\('\{0\}\\solo-backup-restic\\restic_0\.19\.1_windows_amd64\.exe', runner\.temp\)/);
+  assert.ok(fs.readFileSync(path.join(root, row.file), 'utf8').includes(`test('${row.name}'`), 'the registered name must stay the test name');
 });
 test('the local default profile reserves time for homework, client and the final receipt', () => {
   const minute = 60_000;

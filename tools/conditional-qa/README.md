@@ -4,10 +4,10 @@
 
 | 실행 위치 | 등록 항목 | 실행 조건 |
 |---|---:|---|
-| GitHub Windows | 28 | Hermes Windows 경로·복구, OneDrive, ASAR, 대소문자, 가짜 자격 증명 |
+| GitHub Windows | 29 | Hermes Windows 경로·복구, OneDrive, ASAR, 대소문자, 가짜 자격 증명, 업무 백업의 실제 restic |
 | GitHub Linux | 8 | 현재 Rust 원천을 WASM으로 빌드, ffmpeg 실제 실행, 공개된 WORLD 계정 묶음의 드라마 동기화 |
 | Windows 로컬 | 79 | 암호·Caddy·비공개/보관 자산·브라우저·Talk/WORLD·문서 SHA |
-| 합계 | 115 | `cases.json`의 S001~S113을 삭제할 수 없다. S114는 11-03에 더한 암호화 모듈 시험이다 S115는 11-04에 더한 드라마 공개본 검사다 |
+| 합계 | 116 | `cases.json`의 S001~S113을 삭제할 수 없다. S114는 11-03에 더한 암호화 모듈 시험이다 S115는 11-04에 더한 드라마 공개본 검사다 S116은 11-09에 더한 [업무 백업 실제 restic](#solo-backup-restic) 시험이다 |
 
 `conditional-qa.yml`은 master의 각 push에 세 관문을 건다. 파일과 시험 이름이 일치하는 실제 Node 시험 이벤트가 정확히 한 번 통과해야 한다. skip/todo, 이름 변경, 누락, 중복, 프로세스 실패·시간 초과는 실패다. 기존 syntax/wide CI에 처음 생긴 조건부 제외도 등록되지 않았으면 실패한다. 새 제외를 추가할 때에는 재현 입력과 자동 실행 경로를 함께 등록한다. 등록된 이름을 바꿀 때에는 같은 ID의 이름과 시험을 함께 바꾼다.
 
@@ -103,6 +103,10 @@ S007·S008·S009의 합성 저장소는 Windows에서 같은 Git 설치의 실�
 S009는 실제 암호화 묶음 다섯 개와 합성 Git 원격을 준비한다. 커밋 그래프는 한 번에 만들고, 두 가지 크기의 사슬에서 실제 보존 경로를 실행한다. 복원에 필요한 첫 묶음·순서와 Git 호출 수를 각각 비교한다. 조건부 시험의 180초 제한을 적용한다.
 
 S097은 화면의 마이크 막대에 합성 신호가 들어온 시간만 센다. 다섯 번째 역할극 녹음에서 입력을 4.2초 늦춰도 세 언어와 완료 화면까지 확인한다. 계속 무음이면 감지한 시간을 남기고 시험을 실패시킨다.
+
+<a id="solo-backup-restic"></a>
+
+S116은 GitHub Windows에서 공식 restic 0.19.1 ZIP을 받아 SHA-256을 대조하고 푼 뒤 `SOLO_BACKUP_RESTIC`으로 가리켜 `experiences/solo-backup/tests/engine.test.cjs`의 실제 백업·복구 시험을 돌린다. 엔진은 열 때 EXE 해시를 다시 본다. 파일을 못 받거나 해시가 다르면 빨강이고 건너뛰지 않는다. restic 판을 올리면 이 워크플로의 주소·해시와 엔진의 `RESTIC_SHA256`을 함께 바꾼다.
 
 <a id="drama-release-sync"></a>
 
@@ -202,7 +206,7 @@ WORLD 계정 브라우저 시험은 부모 화면의 애니메이션 프레임�
 
 빨강은 다음 다섯 가지다. 새 실패(올라온 지 24시간 안, 커밋마다 이름이 달라 새 실패만 새로 알린다), 판 불일치, 대기가 있는데 일꾼이 155분 동안 아무 상태도 안 올린 때(`WAIT` 표시는 일꾼 활동이 아니고, [기다린다는 알림](#local-parallel)은 일꾼 활동이다), 커밋된 지 72시간 넘은 대기, 읽기가 활성화 커밋에도 96시간 지난 끝난 줄에도 닿지 못할 때. 24시간이 지난 실패는 빨강에서 빠질 뿐 커밋 상태와 로그의 「kept until a retry passes」 줄에 남고, `retry.cjs`로 다시 재기 전에는 통과가 되지 않는다. 호스트 36건은 커밋마다 돌고, 로컬 79건은 시험이 보는 바이트가 달라진 커밋마다 돈다([기준](#tested-tree)). 이어받은 통과도 같은 줄이라 여기서는 통과로 센다.
 
-회귀는 `node --test tests/conditional-qa.test.cjs tests/conditional-qa-tested-tree.test.cjs tests/conditional-qa-retry.test.cjs tests/conditional-qa-diagnosed.test.cjs tests/conditional-qa-reregister.test.cjs tests/ci넓은시험.test.js`다. 이 자동화는 등록된 115건의 지속 검증이며, 새 보안 감사나 운영 접근 권한 전체의 재점검을 대신하지 않는다. 최초 실제 실행과 원격 CI 결과는 비공개 설치·실행 영수증과 해당 커밋의 GitHub Checks에서 확인한다.
+회귀는 `node --test tests/conditional-qa.test.cjs tests/conditional-qa-tested-tree.test.cjs tests/conditional-qa-retry.test.cjs tests/conditional-qa-diagnosed.test.cjs tests/conditional-qa-reregister.test.cjs tests/ci넓은시험.test.js`다. 이 자동화는 등록된 116건의 지속 검증이며, 새 보안 감사나 운영 접근 권한 전체의 재점검을 대신하지 않는다. 최초 실제 실행과 원격 CI 결과는 비공개 설치·실행 영수증과 해당 커밋의 GitHub Checks에서 확인한다.
 
 <a id="diagnosed-failures"></a>
 
