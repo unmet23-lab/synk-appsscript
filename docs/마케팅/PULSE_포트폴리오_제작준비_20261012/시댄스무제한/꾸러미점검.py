@@ -11,8 +11,13 @@
 # 머리의 샷 수 · 컷 초 수 · SHOT 줄 수를 _순서.json 「샷수」와 견주고, 한강 소리 켬 판은 B(v34 견본)이거나 견본 없는 인사(시댄스 목소리, 11-01 저녁)여야 한다.
 # 판 id 겹침 · 순서 끊김 · 순서표 밖 폴더도 본다. 숫자는 거르기용 — 지시문이 장면에 맞는지는 사람(검수자)이 본다.
 import json, os, re, sys
+from pathlib import Path
 
 from PIL import Image
+
+# 물건 반응 · 큰 물건 자율 움직임 · 실내 눈 낱말은 tools/컷연속성검사.py 한 곳이 정본이다(11-09, 「문 앞」 — 점검표 37 · 38)
+sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "tools"))   # 저장소 뿌리/tools
+from 컷연속성검사 import 지시문검사  # noqa: E402
 
 BASE = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028"
 HEAD = "@이미지 1 is the exact first frame of this video"
@@ -33,6 +38,8 @@ STILL = re.compile(r"\b(?:completely still|perfectly still|almost (?:perfectly )
                    r"holds? (?:the|her|his|their|this|that) (?:pose|position)|motionless|does not move|doesn't move|never moves|frozen|without moving|"
                    r"unmoving|statue-?like|like a statue|expressionless)\b", re.I)
 PERSON = re.compile(r"\b(?:she|he|her|his|they|them|woman|man|girl|boy|person|people|model|actor|actress)\b", re.I)
+# 물건이 정지 동작의 주어일 때만(「the door and every sticky note stay perfectly ▁still」) — 「she stands beside the door, perfectly still」은 사람 정지다(11-09 Astra)
+OBJECT_BEFORE = re.compile(r"\b(?:doors?|notes?|sticky notes?|papers?|frames?|camera|bags?|windows?|curtains?|handles?|locks?|pictures?|posters?)\b(?: and (?:every |the |all the |each |all )?[a-z-]+(?: [a-z-]+)?)? (?:stays?|stayed|remains?|remained|is|are|keeps?|hangs?|sits?|lies?) (?:perfectly |completely |absolutely |totally |very |quite )?$", re.I)
 BEAT = re.compile(r"\b\d+(?:\.\d+)? ?s\b|\bat about \d|\bfrom \d+(?:\.\d+)?")
 LABELS = ("ACTION", "CAMERA", "LOOK", "SOUND", "VOICE", "OUTFIT", "SHOT", "SETTING", "PRODUCT", "TEXT", "LIGHT")
 
@@ -54,7 +61,7 @@ def people_text(t):
 def check(name):
     out = os.path.join(BASE, name)
     items = json.load(open(os.path.join(out, "_순서.json"), encoding="utf-8"))
-    bad, wait = [], set()   # 기다림은 판 수로 센다(두 사람 판은 견본이 둘)
+    bad, wait, soft = [], set(), []   # 기다림은 판 수로 센다(두 사람 판은 견본이 둘) · soft는 막지 않는 알림
     ids = [x["id"] for x in items]
     dup = sorted({i for i in ids if ids.count(i) > 1})
     if dup:
@@ -153,8 +160,15 @@ def check(name):
         #   프리비즈 판(움직임을 참고 영상에서 받음)은 뺀다
         if not pv:
             for who, part in people_text(t):
-                for w in sorted({m.group(0).lower() for m in STILL.finditer(part)}):
+                # 「the door and every sticky note stay perfectly still」처럼 물건을 멈추라는 말은 사람 정지가 아니다(11-09, 점검표 38의 권장 문장)
+                words = {m.group(0).lower() for m in STILL.finditer(part) if not OBJECT_BEFORE.search(part[max(0, m.start() - 70):m.start()])}
+                for w in sorted(words):
                     no(f"사람 정지 낱말 「{w}」({who}) — 숨 · 눈 · 무게 · 손 · 머리칼의 연기 박자로 바꾼다")
+            # 물건이 소리 · 바람에 반응 · 문 · 창이 손 없이 움직임 · 실내 눈(점검표 37 · 38) — 걸림만 막고 주의(실내 한 줄 권장)는 알리기만.
+            # _순서.json 판에 "실내": true를 적으면 그 판의 눈 · 먼지 낱말은 걸림(밝힌 실내), 안 적으면 글의 실내 낱말로 짐작해 알림만(11-09)
+            for 등급, 항목, 말 in 지시문검사(t, x.get("실내")):
+                if 등급 == "걸림": no(f"{항목} — {말}")
+                else: soft.append((pid, f"{항목} — {말}"))
             act = action_text(t)
             if act and PERSON.search(act) and not BEAT.search(act):
                 no("사람 연기에 시간 박자 없음 — ACTION에 「at about 0.6 s she …」처럼 몇 초에 무엇을 하는지")
@@ -168,6 +182,8 @@ def check(name):
           f"가장 긴 판 {max(x['길이'] for x in items)}초 · 가장 긴 지시문 {longest[0]}자({longest[1]}) · 목소리 견본 · 프리비즈 · 앞 토막 기다림 {len(wait)}판")
     for pid, msg in bad:
         print(f"  ⚠ {pid}: {msg}")
+    for pid, msg in soft:
+        print(f"  · {pid}: {msg}")
     if not bad:
         print("  어긋남 0")
     return not bad
