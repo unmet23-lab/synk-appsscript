@@ -157,24 +157,53 @@ export const MODELS = Object.freeze([
 ]);
 
 // 11-06 대표작 이름을 「霜の肌理」로 바꿨다(유호님 「이 판으로 바꿔」, 옛 이름 유리결). id · 그림 파일 이름은 저장된 요청서가 고른 작품을 잃지 않게 그대로 둔다.
+// 11-09 작품 진열 최신화(SYNK-appsscript docs/마케팅/PULSE_포트폴리오_제작준비_20261012/진열): synk.im · 고객 앱과 같은 차례로 쇼릴의 네 편을 앞에 두고 霜の肌理 · 화성 CF가 뒤를 잇는다.
+// 새 그림 셋은 최종본의 장 하나를 4:3로 자른 것이다(굽기.cjs pc — 출처는 sources.json의 publicFilm). 누르면 synk.im 작품 칸의 그 작품으로 간다.
 export const PORTFOLIO = Object.freeze([
   {
-    id: 'yurigyeol', title: '홀리데이 기프트 「霜の肌理」', category: '15초 · 대표작',
+    id: 'dodam', title: '도담중공업 「이 아이를 보냅니다」', category: '1분 1초 · 기업 홍보영상',
+    kind: '가상 브랜드로 만든 자체 작품',
+    description: '발전용 가스터빈 한 대가 공장을 떠나는 날을, 아이를 떠나보내는 마음으로 따라간 기업 홍보영상이에요. 가상 제조사 「도담중공업」의 규모와 신뢰를 한 사람의 시선으로 보여 줘요.',
+    image: '/assets/pulse/portfolio/dodam.webp',
+    gallery: [{ image: '/assets/pulse/portfolio/dodam.webp', caption: '노을빛이 들어오는 넓은 공장 바닥에 크림색 발전용 가스터빈이 놓여 비치는 장면. 도담중공업 기업 홍보영상의 한 장면' }],
+    tags: ['기업 홍보', 'B2B', '이야기'],
+    sourceUrl: 'https://synk.im/pulse/#work-1',
+  },
+  {
+    id: 'omitok-court', title: '오미톡 「치익이 톡이 될 때까지」', category: '15초 · 음료 광고',
+    kind: '가상 브랜드로 만든 자체 작품',
+    description: '농구 코트에 뻗은 청년이 가상 음료 브랜드 「오미톡」의 오미자 탄산 한 캔에 살아나는 15초 세로 광고예요. 한 모금마다 바뀌는 얼굴로 다섯 가지 맛을 보여 줘요.',
+    image: '/assets/pulse/portfolio/omitok-court.webp',
+    gallery: [{ image: '/assets/pulse/portfolio/omitok-court.webp', caption: '노을 지는 농구 코트에서 땀에 젖은 청년이 활짝 웃는 장면. 오미톡 광고의 한 장면' }],
+    tags: ['음료', '세로 광고', '연기'],
+    sourceUrl: 'https://synk.im/pulse/#work-2',
+  },
+  {
+    id: 'maejin', title: '「매진 임박」', category: '1분 15초 · 코미디',
+    kind: '가상 브랜드로 만든 자체 작품',
+    description: '공포 영화 같은 밤에 홈쇼핑 방송이 끼어드는 코미디 광고예요. 이야기로 끝까지 보게 만들었어요.',
+    image: '/assets/pulse/portfolio/maejin.webp',
+    gallery: [{ image: '/assets/pulse/portfolio/maejin.webp', caption: '어두운 거실에서 복면을 쓴 남자가 리본 묶은 선물 상자를 들고 서 있는 장면. 광고 「매진 임박」의 끝 장면' }],
+    tags: ['제품 광고', '홈쇼핑', '코미디', '이야기'],
+    sourceUrl: 'https://synk.im/pulse/#work-3',
+  },
+  {
+    id: 'modu-course', title: '모두의코스 「가는 데마다 또 그 사람」', category: '39초 · 여행 앱 광고',
+    kind: '가상 브랜드로 만든 자체 작품',
+    description: '제주 2박 3일, 가는 데마다 같은 사람이 나타나는 세로 광고예요. 마지막 한 장면에서 그 까닭이 가상 여행 코스 앱 「모두의코스」로 풀려요.',
+    image: '/assets/pulse/portfolio/modu-course.webp',
+    gallery: [{ image: '/assets/pulse/portfolio/modu-course.webp', caption: '제주 바닷가 인피니티 수영장 한가운데 튜브를 낀 남자가 떠 있는 장면. 광고 「모두의코스」의 한 장면' }],
+    tags: ['앱 광고', '여행', '코미디'],
+    sourceUrl: 'https://synk.im/pulse/#work-4',
+  },
+  {
+    id: 'yurigyeol', title: '홀리데이 기프트 「霜の肌理」', category: '15초 · 제품 광고',
     kind: '가상 브랜드로 만든 자체 작품',
     description: '가상 스킨케어 브랜드 「霜の肌理」의 홀리데이 세트를 흩날리는 유리 조각 사이에서 보여 주는 15초 광고예요. 한 장면의 임팩트로 기억에 남게 만들었어요.',
     image: '/assets/pulse/portfolio/yurigyeol.webp',
     gallery: [{ image: '/assets/pulse/portfolio/yurigyeol.webp', caption: '흩날리는 유리 조각 사이에 선 「霜の肌理」 세럼 병과 남색 육각 상자. 홀리데이 기프트 광고 「霜の肌理」의 한 장면' }],
     tags: ['제품 광고', '홀리데이', '임팩트'],
-    sourceUrl: 'https://synk.im/pulse/#works',
-  },
-  {
-    id: 'maejin', title: '「매진 임박」', category: '1분 13초 · 코미디',
-    kind: '가상 브랜드로 만든 자체 작품',
-    description: '공포 영화 같은 밤에 홈쇼핑 방송이 끼어드는 1분 13초 코미디 광고예요. 이야기로 끝까지 보게 만들었어요.',
-    image: '/assets/pulse/portfolio/maejin.webp',
-    gallery: [{ image: '/assets/pulse/portfolio/maejin.webp', caption: '어두운 거실에서 복면을 쓴 남자가 리본 묶은 선물 상자를 들고 서 있는 장면. 광고 「매진 임박」의 끝 장면' }],
-    tags: ['제품 광고', '홈쇼핑', '코미디', '이야기'],
-    sourceUrl: 'https://synk.im/pulse/#works',
+    sourceUrl: 'https://synk.im/pulse/#work-7',
   },
   {
     id: 'hwaseong-cf', title: '화성 CF 「1억 년의 빛」', category: '55초 · CF',

@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "checkedAt": "2026-11-04",
+  "checkedAt": "2026-11-09",
   "purpose": "PULSE public model gallery and works in the local desktop platform",
   "modelFactsSource": "../SYNK-website/site-v10/content/ko.mjs (pulse.models)",
   "publicSelectionSource": "../SYNK-website/site-v10/content/ko.mjs",
-  "selectionNote": "Keep the current public selection: twenty-one models (two idol teams included) and three works. Every file is byte-identical to the public synk.im file on the checkedAt date, except the flagship work (renamed 霜の肌理 on 2026-11-06), which is a recorded frame of the film synk.im now shows. No smile/hover or unapproved media included.",
+  "selectionNote": "Keep the current public selection: twenty-one models (two idol teams included) and six works in the synk.im order (11-09 works refresh — SYNK-appsscript docs/마케팅/PULSE_포트폴리오_제작준비_20261012/진열). Model and contest pictures are byte-identical to the public synk.im file on their checked date; the flagship 霜の肌理 and the three works added on 11-09 are single frames of the approved films (publicFilm), because synk.im shows those works as films.",
   "assets": [
     {
       "id": "M01",
@@ -236,6 +236,33 @@
       "bytes": 24524,
       "sha256": "e97dff1deb2313f919b255a737284c691a445d1bdeda8d40049a025dca72d990",
       "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "modu-course",
+      "file": "portfolio/modu-course.webp",
+      "source": "synk-vendor/pulse-portfolio12-20261024/최종/p12/화면.mp4",
+      "publicFilm": "https://synk.im/assets/v10/pulse-film-modu-20261109.mp4",
+      "bytes": 66610,
+      "sha256": "7e096bd1f268d97afeda4b343a7b64697450d52055b2a467ced7f13dd1acb2b2",
+      "transformation": "frame at 4.4 s of the approved 39 s film (picture before captions, 1080x1920), crop x 0 y 360 1080x810, Lanczos 1360x1020, WebP q80 — the synk.im poster frame (진열/굽기.cjs pc)"
+    },
+    {
+      "id": "omitok-court",
+      "file": "portfolio/omitok-court.webp",
+      "source": "synk-vendor/pulse-portfolio12-20261024/최종/om2/화면_사람판.mp4",
+      "publicFilm": "https://synk.im/assets/v10/pulse-film-omitok15-20261109.mp4",
+      "bytes": 51938,
+      "sha256": "8db3fdc56ac8f47ec6c4e2c8adedac02bdf79adf859ef338cd86764fdb938818",
+      "transformation": "frame at 9.6 s of the approved 15 s film (picture before captions, 1080x1920), crop x 0 y 300 1080x810, Lanczos 1360x1020, WebP q80 — the synk.im poster frame (진열/굽기.cjs pc)"
+    },
+    {
+      "id": "dodam",
+      "file": "portfolio/dodam.webp",
+      "source": "synk-vendor/pulse-portfolio12-20261024/최종/p10/화면.mp4",
+      "publicFilm": "https://synk.im/assets/v10/pulse-film-dodam-20261109.mp4",
+      "bytes": 78238,
+      "sha256": "47aea5dbc8367052df1d2d89a5d65b2fb41238eb4e0594b7a66234673395a2b7",
+      "transformation": "frame at 50.6 s of the approved 61 s film (picture before captions, 1920x1080 with the picture in 1920x960 at y 60), crop x 320 y 60 1280x960, Lanczos 1360x1020, WebP q80 — the same frame as the synk.im poster pulse-film-dodam-20261109.webp (진열/굽기.cjs pc)"
     },
     {
       "id": "yurigyeol",

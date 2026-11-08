@@ -8,7 +8,7 @@
  *   node 굽기.cjs app <고객 앱 public/pulse-app 폴더> [--only key,…]
  *        → assets/films/<appId>-v1.mp4(소리 있는 720p) · <appId>-poster-v1.webp(1280 · 720)
  *   node 굽기.cjs pc <desktop/assets/pulse/portfolio 폴더> [--only key,…]
- *        → <pcId>.webp(4:3 1360 × 1020, 세로 작품은 #111 바탕 가운데)
+ *        → <pcId>.webp(4:3 1360 × 1020로 자름 — 세로 작품은 작품.json pc.y)
  *   node 굽기.cjs reel <쇼릴 결과 폴더> → reel-wide.mp4(1280 × 800) · reel-tall.mp4(720 × 1280) · 포스터 · reel.json(시각표)
  *
  * poster.src: raw(자막 전 그림 판) · final(완성본) · keep(이 자리의 지금 그림을 그대로 — 굽지 않음).
@@ -82,10 +82,13 @@ function doPc() {
   for (const w of DATA.works.filter(pick)) {
     if (!w.final || w.poster.src === 'keep') { console.log('그대로', w.key); continue; }
     const out = path.join(outDir, `${w.pcId}.webp`);
+    // 4:3로 자른다(옛 霜の肌理 그림과 같은 꼴). 세로 작품은 작품.json pc.y(가로 전체 × 3/4 창의 위 자리), 가로 작품은 그림이 있는 자리(rawBox)의 가운데.
+    const src = need(posterSrc(w)), p = probe(src);
+    const [bx, by, bw, bh] = (w.poster.src === 'raw' && w.rawBox) || [0, 0, p.w, p.h];
     const vf = w.tall
-      ? 'scale=-2:1020:flags=lanczos,pad=1360:1020:(ow-iw)/2:0:color=0x111111'
-      : 'scale=1360:-2:flags=lanczos,crop=1360:1020';
-    stillTo(need(posterSrc(w)), w.poster.t, vf, out, 80);
+      ? `crop=${bw}:${Math.round(bw * 3 / 4)}:${bx}:${by + (w.pc?.y ?? Math.round((bh - bw * 3 / 4) / 2))},scale=1360:1020:flags=lanczos`
+      : `crop=${Math.round(bh * 4 / 3)}:${bh}:${bx + Math.round((bw - bh * 4 / 3) / 2)}:${by},scale=1360:1020:flags=lanczos`;
+    stillTo(src, w.poster.t, vf, out, 80);
     console.log(w.pcId, (fs.statSync(out).size / 1e3).toFixed(0) + 'KB');
   }
 }

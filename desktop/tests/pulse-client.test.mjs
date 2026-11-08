@@ -34,11 +34,13 @@ test('the roster matches the website: twenty-one models and two idol teams of fo
   assert.deepEqual(MODELS.find(m=>m.id==='M03').tags.slice(2),['미스터리한','4차원']);
 });
 
-test('the portfolio lists the three finished works and keeps the contest entry apart from the virtual brands',()=>{
-  // 11-06 대표작 이름은 「霜の肌理」다 — 손님이 읽는 글에 옛 이름이 남지 않는다.
-  assert.ok(PORTFOLIO[0].title.includes('「霜の肌理」'));assert.doesNotMatch(JSON.stringify(PORTFOLIO),/유리결|YURIGYEOL|서리꽃 앰플/);
-  assert.deepEqual(PORTFOLIO.map(w=>w.id),['yurigyeol','maejin','hwaseong-cf']);
-  assert.deepEqual(PORTFOLIO.map(w=>w.kind),['가상 브랜드로 만든 자체 작품','가상 브랜드로 만든 자체 작품','공모전 출품작']);
+test('the portfolio lists the six works in the synk.im order and keeps the contest entry apart from the virtual brands',()=>{
+  // 11-09 작품 진열 최신화(SYNK-appsscript docs/마케팅/PULSE_포트폴리오_제작준비_20261012/진열): 쇼릴의 네 편이 앞, 霜の肌理 · 화성 CF가 뒤.
+  // 11-06 대표작 이름은 「霜の肌理」다 — 손님이 읽는 글에 옛 이름이 남지 않는다. 저장된 초안이 고른 옛 id(yurigyeol · maejin · hwaseong-cf)는 그대로다.
+  assert.ok(PORTFOLIO.find(w=>w.id==='yurigyeol').title.includes('「霜の肌理」'));assert.doesNotMatch(JSON.stringify(PORTFOLIO),/유리결|YURIGYEOL|서리꽃 앰플/);
+  assert.deepEqual(PORTFOLIO.map(w=>w.id),['dodam','omitok-court','maejin','modu-course','yurigyeol','hwaseong-cf']);
+  assert.deepEqual(PORTFOLIO.map(w=>w.kind),[...Array(5).fill('가상 브랜드로 만든 자체 작품'),'공모전 출품작']);
+  assert.deepEqual(PORTFOLIO.slice(0,5).map(w=>w.sourceUrl),['https://synk.im/pulse/#work-1','https://synk.im/pulse/#work-2','https://synk.im/pulse/#work-3','https://synk.im/pulse/#work-4','https://synk.im/pulse/#work-7']);
   assert.ok(!PORTFOLIO.some(w=>w.id==='model-casting'));
 });
 
@@ -50,12 +52,12 @@ test('every model and work image is a recorded byte-for-byte copy of its public 
     const bytes=fs.readFileSync(path.join(desktop,'assets/pulse',file));
     assert.equal(bytes.length,row.bytes,file);
     assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),row.sha256,file);
-    // 11-06 대표작 霜の肌理: synk.im이 이 작품을 영상으로 보여 정지 그림이 없다 — 그 영상의 같은 원본에서 뽑은 장 하나만 출처를 적고 받는다.
-    if(row.publicFilm){assert.equal(file,'portfolio/yurigyeol.webp');assert.match(row.publicFilm,/^https:\/\/synk\.im\/assets\/.+\.mp4$/);assert.match(row.transformation,/^frame at [\d.]+ s of the approved 15 s film/);continue;}
+    // 11-06 대표작 霜の肌理 · 11-09 새 작품 셋: synk.im이 이 작품들을 영상으로 보여 정지 그림이 없다 — 그 영상의 같은 원본에서 뽑은 장 하나만 출처를 적고 받는다.
+    if(row.publicFilm){assert.match(file,/^portfolio\/(?:yurigyeol|dodam|omitok-court|modu-course)\.webp$/);assert.match(row.publicFilm,/^https:\/\/synk\.im\/assets\/.+\.mp4$/);assert.match(row.transformation,/^frame at [\d.]+ s of the approved \d+ s film/);continue;}
     assert.match(row.publicUrl,/^https:\/\/synk\.im\/assets\//);
     assert.equal(row.transformation,'none; byte-for-byte copy');
   }
-  assert.equal(sources.assets.length,24);
+  assert.equal(sources.assets.length,27);
   for(const model of MODELS)assert.equal(rows.get(model.image.replace('/assets/pulse/','')).publicUrl,model.sourceUrl,model.id);
 });
 
@@ -84,10 +86,10 @@ test('a saved draft opens on its brief, unchanged, and its retired work can be s
   assert.equal(client.hasUnsavedChanges(),false);
   for(const name of ['이안','하린','유호','서진','태준','유나','PULSE AI 모델 캐스팅'])assert.ok(root.innerHTML.includes('<strong>'+name+'</strong>'),name);
   const portfolio=await show('portfolio');
-  assert.equal(portfolio.match(/class="pulse-work-card/g).length,4);
+  assert.equal(portfolio.match(/class="pulse-work-card/g).length,7);
   assert.match(portfolio,/data-pulse-work="model-casting"/);
   await press({pulsePickWork:'model-casting'});
-  assert.equal(root.innerHTML.match(/class="pulse-work-card/g).length,3);
+  assert.equal(root.innerHTML.match(/class="pulse-work-card/g).length,6);
   assert.doesNotMatch(root.innerHTML,/model-casting/);
   assert.equal(client.hasUnsavedChanges(),true);
 });
