@@ -184,14 +184,16 @@ function 페이지글(job, u, mode, 계정 = '') {
 // 표시 파일이 남았으면 보냈을 수 있다 — 보내기 전 실패만 「실패」(다시 돌려도 된다).
 // 읽기가 사이드바까지 보고 표시를 옮겼으면 「안 보내짐」(다음 보내기가 다시 보낸다), 거의 같은 대화가 여럿이면 「헷갈림」(표시는 그대로 — 손으로).
 function 결과가르기(출력, 표시있음, 받은답 = null) {
-  const steps = String(출력 || '').split(/\r?\n/).map((l) => { try { return JSON.parse(l.trim()); } catch { return null; } }).filter((x) => x && x.step);
+  const 줄들 = String(출력 || '').split(/\r?\n/);
+  // 일반 로그 · 스택 줄마다 JSON 예외를 만들지 않는다. 원문은 실행기기록이 별도로 전부 보존한다.
+  const steps = 줄들.map((l) => { const s = l.trim(); if (!s.startsWith('{')) return null; try { return JSON.parse(s); } catch { return null; } }).filter((x) => x && x.step);
   const done = steps.find((x) => x.step === 'done');
   const url = (steps.filter((x) => ['sent', 'url', 'tab', 'found', 'done'].includes(x.step) && x.url).pop() || {}).url || '';
   const 찾은 = steps.find((x) => x.step === 'found');
   if (done || 받은답) return { 결과: '받음', url, 글자: done ? done.chars : 받은답.글자, ...(찾은 ? { 찾음: 찾은.via || '사이드바' } : {}) };
   const f = steps.find((x) => x.step === 'fail');
-  const 꼬리 = String(출력 || '').trim().split(/\r?\n/).filter((l) => l.trim() && !l.trim().startsWith('{"step"')).slice(-2).join(' / ');
-  const 오류머리 = String(출력 || '').split(/\r?\n/).find((l) => /(?:^|\]\s*)\s*\w*Error(?:\s*\[[^\]]+\])?:/.test(l));
+  const 오류머리 = f ? '' : 줄들.find((l) => /(?:^|\]\s*)\s*\w*Error(?:\s*\[[^\]]+\])?:/.test(l));
+  const 꼬리 = f || 오류머리 ? '' : String(출력 || '').trim().split(/\r?\n/).filter((l) => l.trim() && !l.trim().startsWith('{"step"')).slice(-2).join(' / ');
   const 까닭 = f ? f.why : (오류머리 || 꼬리 || '출력 없이 끝남');
   if (f && f.kind === '멈춤') return { 결과: '멈춤', 까닭, 보냄: 표시있음, url };
   if (f && f.kind === '안보내짐' && !표시있음) return { 결과: '안 보내짐', 까닭, 기록: f.record || '' };
