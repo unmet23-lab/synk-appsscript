@@ -15,6 +15,7 @@ W, H = 1080, 1920
     'menu': '메뉴판_152436.png',
     'success': '성공_152725.png',
     'end': '끝_152951.png',
+    'end2': '끝2_034755.png',
 }
 for 이름, 파일 in 판들.items():
     im = Image.open(os.path.join(판, 파일)).convert('RGB')

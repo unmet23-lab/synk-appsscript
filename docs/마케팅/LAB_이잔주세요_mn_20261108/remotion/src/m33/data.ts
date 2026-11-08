@@ -28,7 +28,11 @@ export const MENU = [
   { ko: '두 잔', read: 'ду жан' },
   { ko: '세 잔', read: 'сэ жан' },
 ];
-export const BADGE = '2 аяга';
+// 끝 띠(11-09 아르곤 맹검 뒤) — 문장부호 없이 한국어 크게 · 몽골 뜻 작게. 낱말은 세 겹 검수를 거친 «хоёр аяга» · «энэ аяга» 그대로.
+export const END = [
+  { ko: '두 잔', mn: 'хоёр аяга' },
+  { ko: '이 잔', mn: 'энэ аяга' },
+];
 export const TAG = {
   thisCup: { ko: '이 잔', mn: 'энэ аяга' },
   twoCups: { ko: '두 잔', mn: '2 аяга' },

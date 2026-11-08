@@ -4,7 +4,7 @@
 // v3(11-08): 첫 렌더 시험에서 둘 넘게 짚은 자리 — 메뉴판이 수업처럼 길다 · 「?」와 「2」의 뜻 · 「= 뜻」 꼬리표와 ✓✕ 대비가 지난 편과 같은 짜임 — 를 고쳤다.
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
-import { BADGE, MENU, SAY, TAG, TEXT } from './data';
+import { END, MENU, SAY, TAG, TEXT } from './data';
 import { fr, T } from './timeline';
 
 const C = { coral: '#C63A2B', shade: '#AE322A', brown: '#2B1A14', cream: '#FFFDF8', stitch: '#E58A73', green: '#2F7D4F', butter: '#FFE7A1' };
@@ -30,8 +30,9 @@ const SHOTS: Shot[] = [
   { at: T.retry, img: 'success', o: [420, 1300], z0: 1.0, z1: 1.05 },
   { at: T.close, img: 'success', o: [420, 1000], z0: 1.2, z1: 1.26 },
   { at: T.endShot, img: 'end', o: [760, 800], z0: 1.22, z1: 1.26 }, // 바리스타 · 머그 가까이 「네, 이 잔도요!」
-  { at: T.endLine, img: 'end', o: [540, 1150], z0: 1.0, z1: 1.03 }, // 넓게 — 끝 3초는 머그 번쩍 한 장면 전체
-  { at: T.end, img: 'end', o: [430, 1180], z0: 1.1, z1: 1.13 },
+  // 11-09 아르곤 맹검 「문제가 풀렸는데 머그를 든 채 굳어 있다」 → 끝은 머그를 몽글 옆에 내려놓은 판(end2)
+  { at: T.endLine, img: 'end2', o: [540, 1350], z0: 1.0, z1: 1.03 },
+  { at: T.end, img: 'end2', o: [420, 1460], z0: 1.1, z1: 1.13 },
 ];
 const shotAt = (t: number) => {
   let k = 0;
@@ -87,15 +88,6 @@ const Tag: React.FC<{ t: number; at: number; until: number; x: number; y: number
   );
 };
 
-// 「2 аяга」 — 띄워 둔 종이컵 둘 위에(몽글은 두 잔을 시키려 했다)
-const Badge: React.FC<{ t: number }> = ({ t }) => {
-  if (t < 0.3 || t >= T.lift) return null;
-  const a = pop(t, 0.3, 0.2);
-  const bob = 6 * Math.sin(t * 4.2);
-  return (
-    <div style={{ position: 'absolute', left: 506, top: 1168 + bob, transform: `translate(-50%, -50%) scale(${a})`, background: C.cream, borderRadius: 40, padding: '8px 26px 12px', outline: `5px dashed ${C.stitch}`, outlineOffset: -10, boxShadow: '0 8px 18px rgba(50,20,10,0.3)', fontFamily: MN, fontWeight: 900, fontSize: 52, color: C.shade, whiteSpace: 'nowrap' }}>{BADGE}</div>
-  );
-};
 
 // 생각 풍선 — 바리스타가 「이 잔…?」 하고 선반의 머그를 떠올린다(화면에 붙어 있다)
 const Think: React.FC<{ t: number }> = ({ t }) => {
@@ -141,6 +133,7 @@ const Plate: React.FC<{ t: number; children?: React.ReactNode }> = ({ t, childre
       {s.img === 'success' && t < T.close ? <Patch img="success" cx={210} cy={1350} rx={235} ry={265} dy={hop(T.r2 + 0.2)} /> : null}
       {s.img === 'end' ? <Patch img="end" cx={765} cy={705} rx={330} ry={250} dy={bob(4.4, 7)} /> : null}
       {s.img === 'end' ? <Patch img="end" cx={242} cy={1330} rx={235} ry={250} dy={hop(T.endShot + 0.3)} /> : null}
+      {s.img === 'end2' ? <Patch img="end2" cx={248} cy={1460} rx={200} ry={210} sy={1 + 0.025 * Math.sin(t * 6.5)} sx={1 - 0.012 * Math.sin(t * 6.5)} /> : null}
       {children}
     </AbsoluteFill>
   );
@@ -153,13 +146,14 @@ const Bubble: React.FC<{ t: number; from: number; until: number; x: number; y: n
   const left = x - w / 2;
   const top = y - h / 2;
   const bx = Math.min(Math.max(tail[0], left + 70), left + w - 70);
-  const by = top + h - 6;
+  // 꼬리 끝이 풍선 위에 있으면 위 가장자리에서 짧게 올린다(11-09 아르곤 「꼬리가 팔을 가로지른다」)
+  const by = tail[1] < top ? top + 6 : top + h - 6;
   return (
     <div style={{ position: 'absolute', inset: 0, transform: `scale(${a})`, transformOrigin: `${bx}px ${by}px` }}>
       <svg width={1080} height={1920} style={{ position: 'absolute', inset: 0 }}>
         <path d={`M ${bx - 30} ${by} L ${tail[0]} ${tail[1]} L ${bx + 30} ${by} Z`} fill={C.cream} stroke={C.shade} strokeWidth={6} strokeLinejoin="round" />
         <rect x={left} y={top} width={w} height={h} rx={Math.min(64, h / 2)} fill={C.cream} stroke={C.shade} strokeWidth={6} />
-        <rect x={bx - 26} y={by - 8} width={52} height={12} fill={C.cream} />
+        <rect x={bx - 26} y={tail[1] < top ? by - 4 : by - 8} width={52} height={12} fill={C.cream} />
         {/* 안쪽 바늘땀 — 위 띠 · 이름표와 같은 천 조각 결(미학 대체 심사 「틀 세 가지가 섞임」) */}
         <rect x={left + 13} y={top + 13} width={w - 26} height={h - 26} rx={Math.min(52, h / 2 - 13)} fill="none" stroke={C.stitch} strokeWidth={4} strokeDasharray="14 10" strokeLinecap="round" />
       </svg>
@@ -191,7 +185,13 @@ const Band: React.FC<{ t: number; at: number; size?: number; children: React.Rea
 };
 const Top: React.FC<{ t: number }> = ({ t }) => {
   if (t < T.lift) return <Band t={t} at={-1}>{TEXT.hook}</Band>;
-  if (t < T.freeze) return <Band t={t} at={T.lift + 0.1}>{TEXT.r1}</Band>;
+  // 점원의 「이 잔이요?」는 말풍선 대신 위 띠에 한국어 · 읽기 · 몽골 뜻을 함께(11-09 아르곤 세 판 내내 말풍선 자리 — 꼬리가 팔 · 얼굴을 찌르고 릴스 단추 자리에 걸림)
+  if (t < T.freeze) return (
+    <Band t={t} at={T.lift + 0.1}>
+      <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 84, lineHeight: 1.05, color: C.shade }}>{SAY.r1.ko}</div>
+      <div style={{ fontFamily: MN, fontWeight: 700, fontSize: 52, lineHeight: 1.15, color: C.brown }}>{SAY.r1.read} · {TEXT.r1}</div>
+    </Band>
+  );
   if (t < T.menu) return <Band t={t} at={T.freeze + 0.15} size={56}>{TEXT.heard}</Band>;
   if (t < T.two) return <Band t={t} at={T.menu} size={54}>{TEXT.menu}</Band>;
   if (t < T.retry) return <Band t={t} at={T.two}>{TEXT.two}</Band>;
@@ -199,14 +199,29 @@ const Top: React.FC<{ t: number }> = ({ t }) => {
   if (t < T.close) return <Band t={t} at={T.r2}>{TEXT.r2}</Band>;
   if (t < T.endShot) return <Band t={t} at={T.close + 0.1}>{TEXT.m3}</Band>;
   if (t < T.endLine) return <Band t={t} at={T.endShot + 0.1}>{TEXT.r3}</Band>;
-  return <Band t={t} at={T.endLine} size={62}>{TEXT.end}</Band>;
+  return <EndBand t={t} />;
+};
+// 끝 띠 — 문장부호 없이 두 줄, 한국어 크게 · 몽골 뜻 작게(11-09 아르곤 「줄표 · 겹화살괄호 · 쉼표가 섞여 산만」)
+const EndBand: React.FC<{ t: number }> = ({ t }) => {
+  const a = fadeIn(t, T.endLine, 0.15);
+  return (
+    <div style={{ position: 'absolute', left: 150, width: 780, top: 246, background: 'rgba(255,253,248,0.98)', borderRadius: 34, outline: `5px dashed ${C.stitch}`, outlineOffset: -13, padding: '26px 40px 30px', boxSizing: 'border-box', boxShadow: '0 10px 28px rgba(60,20,10,0.28)', transform: `translateY(${(1 - a) * 14}px)`, opacity: a, display: 'flex', flexDirection: 'column', gap: 6 }}>
+      {END.map((r) => (
+        <div key={r.ko} style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 26 }}>
+          <span style={{ fontFamily: KO, fontWeight: 900, fontSize: 84, lineHeight: 1.1, color: C.shade }}>{r.ko}</span>
+          <span style={{ fontFamily: MN, fontWeight: 800, fontSize: 58, lineHeight: 1.1, color: C.brown }}>{r.mn}</span>
+        </div>
+      ))}
+    </div>
+  );
 };
 
 // 메뉴판 글 — 줄마다 그 칸의 컵 수 옆에 한국어 · 키릴 읽기, 「두 잔」 줄이 빛난다
 const ROWS = [
-  { x: 300, y: 798, at: T.n1 },
-  { x: 472, y: 1131, at: T.n1 + 0.46 },
-  { x: 610, y: 1481, at: T.n1 + 0.87 },
+  // 11-09 아르곤 「컵 수에 밀려 글이 계단식」 → 세 줄 글 시작을 한 자리로
+  { x: 600, y: 798, at: T.n1 },
+  { x: 600, y: 1131, at: T.n1 + 0.46 },
+  { x: 600, y: 1481, at: T.n1 + 0.87 },
 ];
 const Menu: React.FC<{ t: number }> = ({ t }) => {
   if (t < T.menu || t >= T.retry) return null;
@@ -220,7 +235,7 @@ const Menu: React.FC<{ t: number }> = ({ t }) => {
         const hot = i === 1 && t >= T.two;
         return (
           <div key={m.ko} style={{ position: 'absolute', left: r.x, top: r.y, transform: `translateY(-50%) scale(${a * (hot ? 1 + 0.16 * glow : 1)})`, transformOrigin: 'left center' }}>
-            <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 122, lineHeight: 1.0, color: hot ? C.butter : C.cream, whiteSpace: 'nowrap', textShadow: hot ? `0 0 ${28 * glow}px rgba(255,231,161,${0.9 * glow})` : 'none' }}>{m.ko}</div>
+            <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 122, lineHeight: 1.0, color: hot ? C.butter : C.cream, whiteSpace: 'nowrap', textShadow: hot ? `0 0 ${28 * glow}px rgba(255,231,161,${0.9 * glow}), 0 4px 0 rgba(20,10,5,0.55)` : '0 4px 0 rgba(20,10,5,0.55)' }}>{m.ko}</div>
             <div style={{ fontFamily: MN, fontWeight: 700, fontSize: 64, lineHeight: 1.2, color: '#E9D9C4', marginTop: 8, whiteSpace: 'nowrap' }}>{m.read}</div>
           </div>
         );
@@ -245,9 +260,10 @@ const bgmVol = (f: number) => {
   const t = f / 30;
   let duck = 1;
   for (const [a, b] of SPEAK) duck = Math.min(duck, interpolate(t, [a - 0.15, a, b, b + 0.25], [1, 0.55, 0.55, 1], clamp));
-  const freeze = interpolate(t, [T.freeze - 0.05, T.freeze + 0.05, T.menu - 0.4, T.menu], [1, 0.2, 0.2, 1], clamp);
+  // 11-09 ⑲: 얼어붙는 순간 음악을 0.2까지 내렸더니 「음악 꺼짐」(유호님 11-08 「중간중간 빠져있다」) — 0.6(−4.4dB)까지만, 음악 바닥도 조금 올림
+  const freeze = interpolate(t, [T.freeze - 0.05, T.freeze + 0.05, T.menu - 0.4, T.menu], [1, 0.6, 0.6, 1], clamp);
   const lvl = interpolate(t, [0, 0.25, T.total - 0.6, T.total], [0.6, 1, 1, 0], clamp);
-  return 0.13 * MASTER * lvl * duck * freeze;
+  return 0.16 * MASTER * lvl * duck * freeze;
 };
 const Sound: React.FC<{ scene: boolean }> = ({ scene }) => (
   <>
@@ -297,7 +313,7 @@ export const Film: React.FC<{ scene?: boolean }> = ({ scene = false }) => {
       <Plate t={t}>
         <Cup t={t} from={[440, 1320]} to={[300, 1612]} rot={-96} start={T.fall} land={T.land1} />
         <Cup t={t} from={[571, 1320]} to={[520, 1618]} rot={88} start={T.fall + 0.1} land={T.land2} />
-        <Badge t={t} />
+        {/* 「2 аяга」 알약은 뺐다 — 위 띠가 「두 잔」을 말하고, 아르곤 「글 상자 셋이 겹친다」(11-09) */}
         {scene ? null : (
           <>
             <Tag t={t} at={T.freeze + 0.35} until={T.menu} x={300} y={1010} to={[700, 690]} ko={TAG.thisCup.ko} mn={TAG.thisCup.mn} size={88} />
@@ -307,12 +323,13 @@ export const Film: React.FC<{ scene?: boolean }> = ({ scene = false }) => {
         )}
       </Plate>
       <Think t={t} />
-      <Bubble t={t} from={T.m1 - 0.1} until={T.look + 0.5} x={330} y={810} w={620} h={360} tail={[240, 1150]} say={SAY.m1} size={80} />
-      <Bubble t={t} from={T.lift + 0.08} until={T.freeze} x={300} y={1000} w={470} h={220} tail={[650, 1090]} say={SAY.r1} size={88} />
+      {/* 11-09 아르곤 v13: 꼬리가 몽글 정수리 · 점원 코와 입을 찌름 → 꼬리 끝은 닿기 전에서 멈추고, 점원 말풍선은 얼굴 아래로 */}
+      <Bubble t={t} from={T.m1 - 0.1} until={T.look + 0.5} x={310} y={720} w={590} h={360} tail={[250, 1100]} say={SAY.m1} size={80} />
+      {scene ? <Bubble t={t} from={T.lift + 0.08} until={T.freeze} x={815} y={1440} w={440} h={210} tail={[870, 1285]} say={SAY.r1} size={84} /> : null}
       {scene ? null : (
         <>
-          <Bubble t={t} from={T.retry + 0.05} until={T.r2} x={330} y={810} w={620} h={360} tail={[230, 1150]} say={SAY.m2} size={80} />
-          <Bubble t={t} from={T.r2} until={T.close} x={300} y={690} w={560} h={220} tail={[640, 1010]} say={SAY.r2} size={80} />
+          <Bubble t={t} from={T.retry + 0.05} until={T.r2} x={330} y={720} w={620} h={360} tail={[230, 1150]} say={SAY.m2} size={80} />
+          <Bubble t={t} from={T.r2} until={T.close} x={790} y={1385} w={560} h={220} tail={[765, 1238]} say={SAY.r2} size={80} />
           <Bubble t={t} from={T.close + 0.05} until={T.endShot} x={340} y={990} w={620} h={220} tail={[220, 1230]} say={SAY.m3} size={80} />
           <Tag t={t} at={T.close + 0.7} until={T.endShot} x={790} y={866} ko={TAG.also.ko} mn={TAG.also.mn} size={88} rot={4} />
           <Bubble t={t} from={T.endShot + 0.08} until={T.endLine} x={300} y={1060} w={560} h={220} tail={[660, 1080]} say={SAY.r3} size={80} />
