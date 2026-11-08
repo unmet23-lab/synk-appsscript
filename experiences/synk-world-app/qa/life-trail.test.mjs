@@ -280,7 +280,7 @@ test('시험 계획의 시작점: 생활 거울의 답만 있으면 시험을 �
  assert.deepEqual([lifeRow?.planned,lifeRow?.done],[0,1],'주 3번 계획에는 생활 칸이 없고 오늘 한 날이 하나');
  const view=createPositionView({t:(key,values)=>values?`${key}(${Object.entries(values).map(([k,v])=>`${k}=${v}`).join(',')})`:key,has:()=>true});
  const html=view.renderExamPlan({plan:withDone});
- assert.match(html,/plan\.area\.extraDays\(done=1\)/);assert.doesNotMatch(html,/plan\.area\.count\(done=1,planned=0\)/);
+ assert.match(html,/plan\.area\.extraDays\(done=1,n=1\)/);assert.doesNotMatch(html,/plan\.area\.count\(done=1,planned=0\)/);
 });
 
 test('판과 코치: 계정이 바뀌어 옛 거울을 버리면 늦은 사건은 어디에도 가지 않는다', () => {
