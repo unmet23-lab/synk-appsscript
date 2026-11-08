@@ -112,6 +112,15 @@ SFX = {
 MUSIC = os.path.join(ROOT, "최종", "음악", "블프_1107", "s4_곡.wav")
 MUSIC_IN = 0.412
 CUT_AT = 27.40   # 음악 · 알람 뚝
+# 곡 견줄 판(11-08 곡 맹검이 또 갈렸을 때 유호님이 귀로 고르시게): BF_SONG=<곡.wav> BF_SONG_IN=<첫 박 초> BF_SONG_DB=<dB> BF_TAIL=_곡비교<이름> 으로 부르면
+# 본편 파일은 그대로 두고 꼬리 붙은 소리 · 판만 만든다(렌더 뒤 렌더 폴더의 소리는 본편으로 되돌린다). 곡은 최고점으로 맞춰 놓으므로 곡마다 체감 크기가
+# 다르다 — BF_SONG_DB로 본편 곡과 같은 LUFS가 되게 맞춘다(s4_e는 최고점 맞춤 뒤 −21.3 · 본편 s4_a −22.9 LUFS라 −1.6)
+TAIL = os.environ.get("BF_TAIL", "")
+MUSIC_DB = 0.0
+if os.environ.get("BF_SONG"):
+    MUSIC = os.environ["BF_SONG"]
+    MUSIC_IN = float(os.environ.get("BF_SONG_IN", MUSIC_IN))
+    MUSIC_DB = float(os.environ.get("BF_SONG_DB", "0"))
 
 
 def seg(path, a, b, pad_a=0.05, pad_b=0.10):
@@ -198,30 +207,33 @@ def sound():
                 env[max(0, i):max(0, j)] = 10 ** ((-14 if t < 2 else -18 if abs(t - 10.80) < 0.01 else -7) / 20)   # 첫 「작전명… 블프.」 · 「반값…」은 곡에 묻혀 −14 dB
         env = np.convolve(env, np.ones(2400) / 2400, mode="same").astype(np.float32)
         env *= (10 ** (np.linspace(0, 3, len(x)) / 20)).astype(np.float32)   # 원본 곡선처럼 끝으로 갈수록 조금씩(+3 dB)
-        y = x * env[:, None] * (0.42 * pk / (float(np.max(np.abs(x))) or 1.0))
+        y = x * env[:, None] * (0.42 * pk / (float(np.max(np.abs(x))) or 1.0)) * (10 ** (MUSIC_DB / 20))
         k = int(0.3 * C.RATE)
         y[:k] *= np.linspace(0, 1, k, dtype=np.float32)[:, None]   # 첫 박을 0.3초에 걸쳐 올림(맹검 「블프의 프가 첫 박에」) — put의 fade는 끝에도 걸려 쓰지 않음
         m.put(1.0, y, 0, fade=0.004, fade_out=0.06)   # 뚝은 0.06초 꼬리(맹검 「디지털로 0을 만든 듯」)
     else:
         print(f"⚠ 곡이 없다({song}) — 음악 없이 섞음")
-    m.finish(os.path.join(OUT, "소리.wav"), boost_db=2.0)
+    m.finish(os.path.join(OUT, f"소리{TAIL}.wav"), boost_db=2.0)
 
 
 def render(end="scene"):
     import shutil
     pub = os.path.join(ROOT, "최종", "자막시안_public", "s4")
     os.makedirs(pub, exist_ok=True)
-    for src, to in ((os.path.join(OUT, "화면.mp4"), "picture.mp4"), (os.path.join(OUT, "소리.wav"), "sound.wav")):
+    for src, to in ((os.path.join(OUT, "화면.mp4"), "picture.mp4"), (os.path.join(OUT, f"소리{TAIL}.wav"), "sound.wav")):
         if not os.path.exists(os.path.join(pub, to)) or C.md5(src) != C.md5(os.path.join(pub, to)):
             shutil.copyfile(src, os.path.join(pub, to))
     comp = "s4" + ("-card" if end == "card" else "")
-    base = "블프스나이퍼" + ("_콘티끝카드" if end == "card" else "")
+    base = "블프스나이퍼" + ("_콘티끝카드" if end == "card" else "") + TAIL
     cap = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "자막시안_20261103", "remotion")
-    out, raw = os.path.join(OUT, base + "_16x9.mp4"), os.path.join(OUT, f"_렌더_{comp}.mp4")
+    out, raw = os.path.join(OUT, base + "_16x9.mp4"), os.path.join(OUT, f"_렌더_{comp}{TAIL}.mp4")
     C.run(shutil.which("npx"), "remotion", "render", "src/index.ts", comp, raw, "--concurrency=4", "--log=error", cwd=cap)
     C.run("node", os.path.join(C.REPO, "tools", "음량마감.mjs"), raw, out, "--목표", "-14", "--덮어쓰기")
     C.run("ffmpeg", "-y", "-v", "error", "-i", out, "-vf", "scale=1280:-2", "-c:v", "libx264", "-crf", "24", "-preset", "medium", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart",
           os.path.join(OUT, base + "_폰.mp4"))
+    main_sound = os.path.join(OUT, "소리.wav")
+    if TAIL and os.path.exists(main_sound):   # 견줄 판 소리를 렌더 폴더에 남기지 않는다
+        shutil.copyfile(main_sound, os.path.join(pub, "sound.wav"))
     print(out)
 
 

@@ -233,6 +233,9 @@ def render(name, end="scene"):
     C.run("node", os.path.join(C.REPO, "tools", "음량마감.mjs"), raw, out, "--목표", "-14", "--덮어쓰기")
     C.run("ffmpeg", "-y", "-v", "error", "-i", out, "-vf", "scale=720:-2", "-c:v", "libx264", "-crf", "24", "-preset", "medium", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart",
           os.path.join(OUT, base + "_폰.mp4"))
+    main_sound = os.path.join(OUT, f"소리_{name}.wav")
+    if TAIL and os.path.exists(main_sound):   # 견줄 판 소리를 렌더 폴더에 남기지 않는다(11-08 — 남은 s3_c 소리가 Remotion 직접 렌더에 섞일 뻔함)
+        shutil.copyfile(main_sound, os.path.join(pub, f"sound_{name}.wav"))
     print(out)
 
 
