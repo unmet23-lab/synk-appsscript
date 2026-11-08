@@ -45,11 +45,11 @@ const Face: React.FC<{ src: string; z?: number; ox?: number; oy?: number }> = ({
 type Box = { x: number; y: number; w: number; h: number };
 // lit — 밝게 둘 줄(원본 화소 y 범위), 그 밖은 어둡게 누른다(화면 결 ⑥)
 // win — 화면에 고정된 읽는 자리(칸 높이의 비율 [위, 아래]): 굴러 지나가는 줄이 그 자리에서만 밝다 · zoom — lit 줄 쪽으로 다가가는 배율
-const Screen: React.FC<{ dir: string; pre: string; k0: number; k1?: number; dur: number; box: Box; scale?: number; top: number; note?: string; ease?: 'out' | 'io' | 'lin'; hold?: number; lit?: [number, number]; win?: [number, number]; zoom?: number; ox?: number }> = ({ dir, pre, k0, k1, dur, box, scale = 1, top, note, ease = 'out', hold = 0, lit, win, zoom = 1, ox = 540 }) => {
+const Screen: React.FC<{ dir: string; pre: string; k0: number; k1?: number; dur: number; box: Box; scale?: number; top: number; note?: string; ease?: 'out' | 'io' | 'lin'; hold?: number; lit?: [number, number]; win?: [number, number]; zoom?: number; ox?: number; drift?: number }> = ({ dir, pre, k0, k1, dur, box, scale = 1, top, note, ease = 'out', hold = 0, lit, win, zoom = 1, ox = 540, drift = 0.00025 }) => {
   const f = useCurrentFrame();
   const e = ease === 'out' ? EASE_OUT : ease === 'io' ? EASE_IO : undefined;
   const k = k1 === undefined ? k0 : interpolate(f, [0, Math.max(1, sec(dur - hold))], [k0, k1], { ...clamp, ...(e ? { easing: e } : {}) });
-  const z = (interpolate(f, [0, 8], [1.03, 1], { ...clamp, easing: EASE_OUT }) + f * 0.00025) * zoom;
+  const z = (interpolate(f, [0, 8], [1.03, 1], { ...clamp, easing: EASE_OUT }) + f * drift) * zoom;
   const w = box.w * scale, h = box.h * scale;
   const left = (1080 - w) / 2;
   const oy = lit ? top + ((lit[0] + lit[1]) / 2 - box.y) * scale : top + h * 0.45;
@@ -138,11 +138,11 @@ export const Film: React.FC = () => {
       {/* 18.6 보냄 · 답이 흘러나옴 */}
       {seq(S.sentR, S.ansR, <Screen dir="b3r" pre="f" k0={64} k1={66} dur={S.ansR - S.sentR} box={{ x: 0, y: 150, w: 1080, h: 1000 }} scale={0.95} top={700} />)}
       {/* 19.14 「바로 그 시기에 휴무일을 … 변경했다는 점」 */}
-      {seq(S.ansR, S.first, <Screen dir="b3rroll" pre="s" k0={30} box={{ x: 0, y: 640, w: 1080, h: 980 }} scale={1} top={760} note="ChatGPT 답" dur={S.first - S.ansR} lit={[686, 892]} zoom={1.04} ox={40} />)}
+      {seq(S.ansR, S.first, <Screen dir="b3rroll" pre="s" k0={30} box={{ x: 0, y: 640, w: 1080, h: 960 }} scale={1} top={760} note="ChatGPT 답" dur={S.first - S.ansR} lit={[686, 892]} zoom={1.04} ox={40} />)}
       {/* 21.08 「제일 먼저 의심해 볼 부분은 휴무일 변경입니다」 — 그 줄로 다가감 */}
-      {seq(S.first, S.why, <Screen dir="b3rroll" pre="s" k0={30} box={{ x: 0, y: 640, w: 1080, h: 980 }} scale={1} top={760} note="ChatGPT 답" dur={S.why - S.first} lit={[912, 992]} />)}
+      {seq(S.first, S.why, <Screen dir="b3rroll" pre="s" k0={30} box={{ x: 0, y: 640, w: 1080, h: 960 }} scale={1} top={760} note="ChatGPT 답" dur={S.why - S.first} lit={[912, 992]} />)}
       {/* 21.76 「월요일 점심 단골이 다른 식당으로 이동했을 가능성」 */}
-      {seq(S.why, S.more, <Screen dir="b3rroll" pre="s" k0={30} box={{ x: 0, y: 640, w: 1080, h: 980 }} scale={1} top={760} note="ChatGPT 답" dur={S.more - S.why} lit={[1390, 1596]} />)}
+      {seq(S.why, S.more, <Screen dir="b3rroll" pre="s" k0={30} box={{ x: 0, y: 640, w: 1080, h: 960 }} scale={1} top={760} note="ChatGPT 답" dur={S.more - S.why} lit={[1390, 1596]} drift={0.0006} />)}
       {/* 23.52 사장님 반응 — 달력을 보다 작게 쓴웃음 · 끄덕임 */}
       {seq(S.more, S.end, <Lowered d={180} drift={0.0008} origin="50% 40%"><Face src="smile" z={1.06} ox={540} oy={700} /></Lowered>)}
       {/* 25.69 끝 — 폰에서 달력으로(한 장면을 다시) */}

@@ -29,7 +29,7 @@ export const PhoneToCalendar: React.FC<{ t0?: number; text?: boolean; screen?: {
   return (
     <AbsoluteFill style={{ background: '#0b0b0b', overflow: 'hidden' }}>
       <div style={camStyle(cam.z, cam.fx, cam.fy, cam.sx, cam.sy)}>
-        <PhonePlate screen={frameSrc(screen.dir, screen.pre, k)} blurPhone={blurPhone} blurTop={blurTop} screenLight={interpolate(blurPhone, [0, 7], [0.86, 0.42], clamp)} />
+        <PhonePlate screen={frameSrc(screen.dir, screen.pre, k)} blurPhone={blurPhone} blurTop={blurTop} screenLight={interpolate(blurPhone, [0, 4, 7], [0.86, 0.3, 0.07], clamp)} />
       </div>
       {text ? (
         <>
