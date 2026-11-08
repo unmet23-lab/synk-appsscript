@@ -16,6 +16,7 @@ import numpy as np
 import scipy.signal as S
 
 import 최종편집공통 as C
+import 도담_끝로고 as END
 
 RATE = C.RATE
 SND = "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/최종/p10/소리"
@@ -169,6 +170,23 @@ def room(seconds, seed, lp_hz=1200.0):
     return lp(hp(pink(seconds, seed), 50), lp_hz)
 
 
+END_RING_DB, END_CLICK_DB, END_BOOM_DB = -34.0, -31.0, -24.0   # 끝 소리 크기 — 잔향(60.1~60.5초 기준) · 로고가 켜지는 쇠 딸깍 · 낮은 쿵
+
+
+def hall_ir(seconds, rt60, seed=61):
+    """긴 잔향(왼 · 오른 따로 — 잡음에 지수 감쇠, 150 Hz~5 kHz) — 곡 끝 화음을 곡이 끝난 뒤까지 잇는다. 에너지 1로 맞춘다"""
+    n = int(seconds * RATE)
+    t = np.arange(n) / RATE
+    r = np.random.default_rng(seed)
+    x = (r.standard_normal((n, 2)) * (10 ** (-3 * t / rt60))[:, None]).astype(np.float32)
+    x = lp(hp(x, 150), 5000)
+    return x / np.sqrt(np.sum(x ** 2, axis=0, keepdims=True))
+
+
+def wet(x, ir):
+    return np.stack([S.fftconvolve(x[:, c], ir[:, c]) for c in range(2)], axis=1).astype(np.float32)
+
+
 def turbine_spool(seconds):
     """터빈이 돌기 시작한다 — 낮은 웅(축 회전)이 올라가고, 날개 지나감 소리(축의 24배)와 공기 흐름이 뒤따른다."""
     n = int(seconds * RATE)
@@ -255,8 +273,8 @@ def subtitle_timing(pieces, TF):
             merged.append(r + [None])
             i += 1
     for i, r in enumerate(merged):
-        want = max(r[1] + 0.35, r[0] + 1.2)
-        nxt = merged[i + 1][0] - 0.12 if i + 1 < len(merged) else want
+        want = max(r[1] + 0.35, r[0] + 1.6)   # 짧은 줄도 1.6초는 둔다(「다 컸습니다」 — 11-08 밤 19번 경계가 31.03초로 밀려 경계 맞춤이 안 걸리면 1.2초만에 사라졌다. 원래 값 1.2)
+        nxt = merged[i + 1][0] - 0.12 if i + 1 < len(merged) else min(want, END.LOCK_T + 0.02)   # 끝 줄은 로고가 다 켜지기 전에 진다(한 화면에 글자 갈래 하나 — 폰트 정본 §10-4)
         b = min(want, nxt)
         after = [c for c in cuts if b < c <= b + 0.6 and c - 2 / 24 <= nxt]
         if after:
@@ -294,7 +312,7 @@ def build(out_wav, TF, timing_path=TIMING):
             if parts:
                 d["parts"] = [{"s": ps, "a": round(pa, 3)} for ps, pa in parts]
             lines.append(d)
-        json.dump({"narr": NARR, "lines": lines}, open(timing_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        json.dump({"narr": NARR, "frames": int(round(TF[-1] * 24)), "lines": lines}, open(timing_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         print("자막", " · ".join(f"{a:.2f}–{b:.2f} {s}" + (f" (뒷부분 {parts[1][1]:.2f})" if parts else "") for a, b, s, parts in subs))
 
     # ===== 곡 — 수노 572b8b0b 한 곡을 0초부터(곡 시각 = 화면 시각). 내레이션 아래만 내리고(첫 낱말 DUCK_IN초 앞부터 · 끝 낱말 DUCK_OUT초 뒤까지), 목소리 띠는 조금 더 비운다
@@ -322,8 +340,8 @@ def build(out_wav, TF, timing_path=TIMING):
                 pts = [(0.0, 0.0), (s - DUCK_IN, 0.0)] + body + [(e + 0.10, d), (e + DUCK_OUT, 0.0), (total + 1, 0.0)]
             g *= envelope(t, pts).astype(np.float32)
     # 마지막 화음 +4 dB(로고와 함께) — +2.5 dB에서는 화음 · 로고 구간(57.97~59.0초)이 앞 내레이션 구간보다 2.4 dB 작았다(슬롭 점검표 2번 「끝 소리를 앞 소리와 RMS로 대고」)
-    g_all *= envelope(t, [(0.0, 0.0), (FINAL_CHORD - 0.05, 0.0), (FINAL_CHORD + 0.05, 4.0), (59.10, 4.0), (59.50, 0.0), (total + 1, 0.0)]).astype(np.float32)
-    tail = np.clip((60.0 - t) / 0.75, 0, 1)            # 59.25초부터 잦아듦(파일이 60.0초에 울리는 채로 잘림)
+    g_all *= envelope(t, [(0.0, 0.0), (FINAL_CHORD - 0.05, 0.0), (FINAL_CHORD + 0.05, 4.0), (59.40, 4.0), (59.90, 0.0), (total + 1, 0.0)]).astype(np.float32)
+    tail = np.clip((60.0 - t) / 0.75, 0, 1)            # 59.25초부터 잦아듦(파일이 60.0초에 울리는 채로 잘림) — 그 뒤는 아래 잔향이 잇는다
     g_all *= (0.5 - 0.5 * np.cos(np.pi * tail)).astype(np.float32)
     mid_band = bp(song, 250, 4000)
     song = song * g_all[:, None] - mid_band * ((1 - g_mid) * g_all)[:, None]
@@ -378,7 +396,7 @@ def build(out_wav, TF, timing_path=TIMING):
     bed(TF[32], TF[33], W_(60, 66, 1400), -46, pre=0.3)
     bed(TF[33], TF[36], W_(70, 78, 1800), -44)
     city = lp(seg(os.path.join(FAIR, "Ext City Ambience, Car Drive-Bys, Pedestrian, Air.wav"), 20, 26, True), 1500)
-    bed(TF[36], total - 0.5, (W_(85, 91, 2200)[:len(city)] * 0.8 + city * 0.6).astype(np.float32), -42, pre=0.1, post=0.5)
+    bed(TF[36], total - 0.6, hp((W_(85, 91, 2200)[:len(city)] * 0.8 + city * 0.6).astype(np.float32), 220), -42, pre=0.1, post=0.55)   # 로고가 어두워질 때 함께 빠져 파일 끝 0.05초 앞에 0(11-09 Fable — post가 끝을 넘어 −32 dB에서 잘렸다). 220 Hz 아래를 깎는다 — 저음만 남으면 곡이 끝난 뒤 폰에서 무음이다(11-08 Fable)
 
     # ===== 사건 소리(화면 장에 맞춤) — 곡보다 9 dB 넘게 아래로 묻힌 것(종이 · 첫 렌치 · 라쳇 · 크레인 · 트럭 · 운전석)은 3~4 dB 올렸다(11-07 효과음 대 곡 실측)
     # 2 도면 — 종이 스침
@@ -441,5 +459,24 @@ def build(out_wav, TF, timing_path=TIMING):
     fs = seg(os.path.join(FAIR, "BG Footsteps Concrete.wav"), 10.0, 11.6)
     m.put(TF[33] + 0.05, to_rms(lp(fs, 6000), -42), 0, fade=0.05, fade_out=0.2)
 
+    # ===== 끝 — 곡 파일은 60.0초에 끝나고 로고는 그 뒤 2초 남는다. 마지막 화음을 잔향으로 이어 로고 위에서 잦아들게 하고(로고가 어두워질 때 함께 빠짐),
+    #   로고가 다 켜지는 장(곡의 마지막 화음이 들어오는 58.0초)에 쇠 딸깍(26번 레버와 같은 소리) + 낮은 쿵을 얹는다 — 슬롭 점검표 2번 「마지막 한 방을 브랜드에」. 끝은 디지털 무음이 아니라 바깥 공기
+    tl = END.LOCK_T
+    raw_song = C.load_stereo(SONG) * 10 ** ((-23.0 - lvl) / 20)
+    ring = wet(raw_song[int(FINAL_CHORD * RATE):int(59.7 * RATE)], hall_ir(5.0, 3.4))
+    at = int((60.1 - FINAL_CHORD) * RATE)
+    ring = (ring * 10 ** ((END_RING_DB - rms_db(ring[at:at + int(0.4 * RATE)])) / 20))[:int((total - FINAL_CHORD) * RATE)]
+    m.put(FINAL_CHORD, fades(ring.astype(np.float32), 0.05, 1.2), 0, fade=0.0)
+    m.put(tl, to_rms(tame(click, 10.0), END_CLICK_DB), 0, fade=0.002, fade_out=0.05)
+    nb = int(1.6 * RATE)
+    tb = np.arange(nb) / RATE
+    boom = (np.sin(2 * np.pi * np.cumsum(46 + 44 * np.exp(-tb / 0.05)) / RATE) * np.exp(-tb / 0.32)        # 몸통 — 음높이가 빠르게 떨어져야 그 장에 바로 들린다(46 + 10은 0.1초 넘게 굴러 들어왔다)
+            + 0.30 * np.sin(2 * np.pi * 118 * tb) * np.exp(-tb / 0.16)) * np.minimum(1, tb / 0.004)      # 작은 스피커에서도 들리게 118 Hz
+    m.put(tl, (boom * 10 ** (END_BOOM_DB / 20)).astype(np.float32), 0, fade=0.0)
+
+    nf = int(0.08 * RATE)                    # 마지막 0.08초는 무엇이 남았든 0으로
+    i_end = int(total * RATE)
+    m.a[i_end - nf:i_end] *= np.linspace(1, 0, nf, dtype=np.float32)[:, None]
+    m.a[i_end:] = 0
     m.finish(out_wav, boost_db=FINISH_BOOST)
     print("소리", out_wav)

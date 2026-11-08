@@ -93,7 +93,24 @@ CAM_20O = ("handheld, a quick swing from the very first frame: the camera rises 
            "hands, to an over-the-shoulder view looking forward through the windshield by about 1.5 s, the full round steering wheel face-on in front of him with "
            "both his hands on it; fastest between 0.5 s and 1.3 s, then it slows and is almost still from 2.0 s; the picture shrinks by about a quarter as it pulls "
            "back; natural handheld shake; his head stays above the top edge of the frame.")
-CAMERAS = {"p10-20o": CAM_20O, "p10-20p": CAM_20O}
+# 11-08 밤 유호님(15:08 판 0:32) 「이 장면에서 후진하고있는것처럼 보이는데 왜 이렇게 만든거야? 의도한거야?」 → 「두 판 구워(152)」(02_콘티 23절):
+#   20o는 카메라가 어깨 너머로 물러나는데(CAM_20O 「pulls back … shrinks by about a quarter」) 앞 유리 너머는 「첫 장 그대로의 마당」이라
+#   판 54장부터 실내가 모이고 바깥 마당도 위로 빨려 들며 작아졌다(앞으로 달릴 때와 반대 흐름). 원본은 운전자 옆얼굴로 돌아 나가 「조심스러운 운송」이
+#   읽히는데 얼굴을 빼며 그 단서도 빠졌다 → 카메라는 어깨 너머까지 오른 뒤 트럭과 함께 앞으로 가고, 앞 유리 너머 마당이 다가와 차 밑으로 지나간다.
+ACT_20Q = ("Inside the truck cab: from the very first frame the driver's right hand, in the sleeve of a light-grey work jacket, grips the gear lever and pushes it "
+           "firmly into gear at about 0.2 s; then his right hand leaves the lever and moves up onto the steering wheel by about 1.1 s, where his left hand already "
+           "holds it. From about 1.2 s the truck rolls slowly forward: through the windshield the bright concrete yard ahead - its painted lines and the shadows "
+           "on the ground - comes steadily toward the camera and slides under the front of the truck, everything outside growing larger as the truck moves ahead; "
+           "at about 1.9 s both hands ease the wheel a little to the left. The truck only ever moves forward. The steering wheel is a large truck steering "
+           "wheel: one smooth, perfectly round, rigid black rim around a flat centre hub, joined by straight spokes - in the final over-the-shoulder view it is seen "
+           "face-on as a full round ring in front of him, and it keeps exactly this round shape the whole time, never bending, twisting, looping or melting. Only "
+           "his hands, arms and right shoulder are ever seen - his head always stays above the top edge of the frame, and nobody turns toward the camera. "
+           "No one appears except the driver whose arm is in the first frame.")
+CAM_20Q = ("handheld, a quick swing from the very first frame: the camera rises up over the driver's right shoulder - off the gear hand, up past his hands - "
+           "to an over-the-shoulder view looking forward through the windshield by about 1.5 s, the full round steering wheel face-on in front of him with both "
+           "his hands on it; fastest between 0.5 s and 1.3 s; from about 1.6 s the camera rides just behind his shoulder and moves forward together with the "
+           "truck, never backing away from the windshield; natural handheld shake; his head stays above the top edge of the frame.")
+CAMERAS = {"p10-20o": CAM_20O, "p10-20p": CAM_20O, "p10-20q": CAM_20Q, "p10-20r": CAM_20Q}
 ACT_12 = ("In a dim workshop full of workbenches under warm work lamps, a worker stands at his bench, seen from behind, working: from the very first frame his arms "
           "move back and forth as he files a small metal part on the bench in short, steady strokes, his shoulders and the back of his head moving with each stroke; "
           "at about 1.4 s he puts the file down and reaches across the bench for another tool; his face is never seen. Then a second worker, who has been waiting "
@@ -134,6 +151,8 @@ JOBS = [  # (id, 꾸러미 폴더, 원래 판 폴더(DAY 아래), 새 ACTION, �
     ("p10-20n", "015_p10-20n", "웹올리기_여섯편/098_p10-20", ACT_20, 2.9, ["20"], "1_시작.jpg", "끔"),
     ("p10-20o", "016_p10-20o", "웹올리기_여섯편/098_p10-20", ACT_20O, 2.9, ["20"], "1_시작.jpg", "끔"),
     ("p10-20p", "017_p10-20p", "웹올리기_여섯편/098_p10-20", ACT_20O, 2.9, ["20"], "1_시작.jpg", "끔"),
+    ("p10-20q", "018_p10-20q", "웹올리기_여섯편/098_p10-20", ACT_20Q, 2.9, ["20"], "1_시작.jpg", "끔"),   # 11-08 밤 앞으로 가는 판 둘(같은 지시문)
+    ("p10-20r", "019_p10-20r", "웹올리기_여섯편/098_p10-20", ACT_20Q, 2.9, ["20"], "1_시작.jpg", "끔"),
 ]
 
 
