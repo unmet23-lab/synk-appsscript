@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-08T14:56:28.689Z",
+  "generatedAt": "2026-11-08T15:10:05.818Z",
   "sourceAsOf": {
-    "registry": "2026-11-08",
+    "registry": "2026-11-09",
     "social": "2026-09-21",
     "latestContent": "2026-09-27"
   },
@@ -44,7 +44,7 @@
     },
     {
       "file": "../sns-계정.json",
-      "sha256": "1e8bdda70dffc77e3f211f57c0e70535d9c1e806b91092e1ac01ecc19a432f6a"
+      "sha256": "b6603f6002b94b9d7d226a373d46b95d8d1a2b3fccffddce0fe2f00f55d800c8"
     },
     {
       "file": "../SNS_계정_전체목록_20260919.md",

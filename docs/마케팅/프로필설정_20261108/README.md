@@ -1,5 +1,13 @@
 # 일본·우즈베키스탄 Instagram 기본 설정
 
+## VK 로고·커버·짧은 주소 적용 — 11-09
+
+사용자 요청에 따라 승인 LAB 로고 `avatar-lab-logo.png`와 기존 VK 러시아어 커버 `../온라인마케팅지도/intl-social/vk-profile/cover-ru-v1.png`를 적용했다. 로고 원형 크롭에서 전체 글자가 보임을 확인했고, 마지막 단계의 **Publish as post** 기본 체크를 해제한 뒤 저장했다. 커버는 첫 업로드에서 `ERR_STORAGE_ENGINE_SAVE_FAILED: volume is unknown`가 났으나 새로고침 후 파일 선택 경로로 다시 올려 저장됐다. 웹 커버의 로고·러시아어 제목·하단 설명이 잘리지 않는 것을 확인했다. 별도 모바일 앱용 동적 커버는 설정하지 않았다.
+
+짧은 주소 `synklab.ru`는 VK의 **Invalid format**으로 거절됐다. 같은 국가 구분을 유지한 **[synklab_ru](https://vk.ru/synklab_ru)**를 저장했고 관리 화면의 커뮤니티 ID `club243082040`와 일치함을 확인했다. 이 주소로 다시 접속해 로고·커버·이름·러시아어 소개·소개 내 홈페이지·Manage를 확인했다. Posts는 **No results found**, 게시·예약·초대·메시지 발송 0건이다. 별도 Website 입력 칸과 API 게시 연결은 미설정이다.
+
+근거: 저장소 밖 `~/ego/ru-cn-account-check-20261108/` 라운드 57~60 및 후속 화면 조작, `vk-avatar-crop.png`, `vk-cover-crop.png`, `vk-profile-loaded.png`. Ego 133을 종료하며 VK 결과 탭을 사용자 확인용으로 남겼다.
+
 ## VK LAB 커뮤니티 개설 — 11-08
 
 사용자 「VK 로그인했어. 확인하고 LAB 커뮤니티가 없으면 만들어줘. 게시는 하지 말고」에 따라 로그인된 개인 계정이 기존 Yuho Yang `id1129937278`임을 확인했다. 개인 프로필 소개에는 LAB 문구가 있었지만 커뮤니티 목록에는 LAB이 없었다. 개인 프로필은 변경하지 않고 **SYNK LAB Russia | Корейский с нуля**를 Education 분류로 개설했다. Business tools는 기본 꺼짐을 유지했다.
