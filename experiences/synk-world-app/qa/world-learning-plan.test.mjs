@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {PACKS,LESSONS} from '../life-content.mjs';
 import {buildWorldLearningCandidates,createWorldLearningPlan,worldLearningSettings} from '../world-learning-plan.mjs';
+import {lifeItem,lifeMeasureItem} from '../life-items.mjs';
 import {LISTENING_CHECKS,checkMetadata} from '../../korean-runner/listening-check.mjs';
 import {RHYTHM_CANDIDATES} from '../../korean-rhythm/personalization.mjs';
 import {playState} from '../../brand-opening/play-unlocks.mjs';
@@ -32,7 +33,12 @@ test('each life pack offers its first unfinished canonical lesson; the only game
  assert.equal(candidates.find(c=>c.packId===first.packId).lessonId,PACKS[0].lessons[1].id);
  assert.deepEqual(candidates.filter(c=>c.route==='game').map(c=>c.gameId),['runner','rhythm','hangul','subway']);
  assert.deepEqual(buildWorldLearningCandidates({progress:empty(),now:NOW}).filter(c=>c.route==='game').map(c=>c.gameId),['runner','rhythm','hangul']);
- assert.ok(candidates.filter(c=>c.route==='lesson').every(c=>!c.targets.length));
+ // 11-08(Atlas × WORLD D)부터 레슨 후보는 본문항의 측정을 targets로 갖고(계획이 놓친 칸일 때만 Core에 넘긴다), 카페 방문 장면 레슨은 비운다.
+ for(const c of candidates.filter(c=>c.route==='lesson')){
+  const lesson=LESSONS.find(l=>l.id===c.lessonId),scene=['cafe-apply','cafe-visit-taste','cafe-visit-soldout','cafe-visit-change','cafe-compose'].includes(lesson.id);
+  assert.deepEqual(c.targets.map(t=>t.itemKey),scene?[]:lesson.questions.map(q=>`life.${q.id}`),lesson.id);
+  assert.ok(c.targets.every(t=>!t.familyKeys&&t.modality==='reading'&&/^ko\.reading\./.test(t.skillIds[0])),lesson.id);
+ }
  assert.equal(candidates.find(c=>c.gameId==='hangul').targets.length,0);
 });
 
@@ -172,4 +178,51 @@ test('환승 러시: 손님에게 닫혀 있으면 Core가 빼고, 열려 있으
  assert.equal(line.title,'환승 러시 · 안내방송 듣고 갈아타기');assert.equal(line.command,'learn');
  const name=worldStrings['plan.game.subway'];
  assert.ok(name?.ko&&name.en&&name.mn,'계획 줄 이름이 세 언어 다 있다');
+});
+
+// Atlas × WORLD D(11-08): 생활 레슨의 targets는 놓친 칸을 당길 때만 싣고, 돌아온 복습이 있는 동안은 싣지 않는다(검수 Fable F1 · FA1 · FA3).
+const lessonById=id=>LESSONS.find(lesson=>lesson.id===id);
+function answerLesson(coach,id,{help=false,correct=()=>true}={}){
+ lessonById(id).questions.forEach((question,index)=>{
+  const item=lifeItem({lesson:lessonById(id),question});if(!item||item.confounded)return;
+  const pid=coach.present(lifeMeasureItem(item));if(help)coach.help(pid,'explanation');coach.answer(pid,{correct:correct(index),assessable:true});
+ });
+}
+const lessonTargets=(result,id)=>result.candidates.find(c=>c.route==='lesson'&&c.lessonId===id)?.targets.map(t=>t.skillIds[0]);
+
+test('생활 레슨: 「한 단계씩」 도움으로 칸이 supported여도 돌아온 복습이 생활 레슨보다 앞이고, 복습이 없으면 그 칸 레슨이 당겨진다(FA1)',()=>{
+ const coach=makeCoach();answerLesson(coach,'greetings-expressions',{help:true});
+ const settings={reasons:['travel'],support:'step'};
+ const waiting=empty();review(waiting,lessonById('greetings-expressions'),{due:NOW-1000,correct:true,helped:true,at:NOW-86400000});
+ const first=plan({progress:waiting,summary:coach.summary(),settings});
+ assert.equal(first.selected.route,'review','돌아온 인사 복습이 먼저');
+ assert.deepEqual(lessonTargets(first,'cafe-expressions'),[],'복습이 기다리는 동안 레슨은 당기지 않는다');
+ const later=empty();review(later,lessonById('greetings-expressions'),{due:NOW+86400000,correct:true,helped:true,at:NOW-86400000});
+ const next=plan({progress:later,summary:coach.summary(),settings});
+ assert.deepEqual(lessonTargets(next,'cafe-expressions'),['ko.reading.vocabulary','ko.reading.vocabulary'],'도움으로만 푼 칸(supported)만 당긴다 — 처음인 세부 칸은 싣지 않는다');
+ assert.equal(next.selected.route,'lesson');
+});
+
+test('생활 레슨: 혼자 잘 풀수록 진도가 밀리지 않는다 — 첫 레슨 뒤 · 같은 칸 넷 혼자 맞힌 뒤에도 다음 레슨이 처음 보는 듣기 게임보다 앞(F1)',()=>{
+ const coach=makeCoach();answerLesson(coach,'greetings-expressions');
+ const progress=empty();complete(progress,lessonById('greetings-expressions'));
+ const after=plan({progress,summary:coach.summary(),settings:{reasons:['travel']}});
+ assert.equal(after.selected.route,'lesson','첫 레슨 뒤에도 생활 레슨이 먼저');
+ assert.ok(after.candidates.filter(c=>c.route==='lesson').every(c=>!c.targets.length),'확인 중(틀림 없음) · 처음 칸은 당기지 않는다');
+ // 같은 표현 계열(인사 이야기 · 적용의 「안녕하세요」)은 반복이라 넷이 되려면 다른 표현이 필요하다 — 카페 표현 레슨의 낱말 둘.
+ answerLesson(coach,'cafe-expressions');complete(progress,lessonById('cafe-expressions'));
+ const cell=coach.summary().skills.find(s=>s.id==='ko.reading.vocabulary').levels[1].formats['single-choice'];
+ assert.equal(cell.status,'recent-independent');
+ const more=plan({progress,summary:coach.summary(),settings:{reasons:['travel']}});
+ assert.equal(more.selected.route,'lesson','최근 혼자 수행한 칸을 겨누는 레슨도 진도 순서로 앞');
+});
+
+test('생활 레슨: 틀린 답이 있는 확인 중 칸은 당기고(같은 줄 안에서 점수로 앞섬), 틀림 없는 확인 중 칸은 당기지 않는다(FA3)',()=>{
+ const wrong=makeCoach();answerLesson(wrong,'greetings-expressions',{correct:index=>index!==0});
+ const cell=wrong.summary().skills.find(s=>s.id==='ko.reading.vocabulary').levels[1].formats['single-choice'];
+ assert.equal(cell.status,'checking');assert.ok(cell.incorrect>0);
+ const pulled=plan({progress:empty(),summary:wrong.summary(),settings:{reasons:['travel']}});
+ assert.deepEqual(lessonTargets(pulled,'cafe-expressions'),['ko.reading.vocabulary','ko.reading.vocabulary']);
+ const right=makeCoach();answerLesson(right,'greetings-expressions');
+ assert.deepEqual(lessonTargets(plan({progress:empty(),summary:right.summary(),settings:{reasons:['travel']}}),'cafe-expressions'),[]);
 });

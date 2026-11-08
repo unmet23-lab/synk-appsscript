@@ -1,7 +1,7 @@
 {
   "version": "topik-existing-verdicts-1",
   "rubric": "topik-review-r1",
-  "updatedAt": "2026-11-04T11:04:31.450Z",
+  "updatedAt": "2026-11-08T07:30:40.406Z",
   "note": "기존 게임·진단 문항의 AI 2중 검수 판정(허용 목록). verdict \"pass\"만 연습에 낸다. 첫 판은 비어 있다 — 판정이 나오는 대로 채운다.",
   "items": [
     {
@@ -2943,6 +2943,3213 @@
       "reviewedAt": "2026-10-21T06:32:18.885Z",
       "rubric": "topik-review-r1",
       "packet": "existing-listening",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-apply-here-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 유일하고 오답이 그럴듯한 생활 상황 문항입니다. 해설에 「포장」 오답 설명을 한 줄 더하면 좋지만, 그대로 통과해도 됩니다. | 직원의 매장 이용 여부 질문에 상황에 맞게 답하는(‘네, 여기서 마실게요.’) 문항으로 정답 유일성과 오답 매력도가 우수하다.",
+      "hash": "d45d5c52bb73cec7",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-apply-order-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 유일하고 오답이 세부 정보를 바꾼 꼴이라 알맞다. 1급 생활 주문 문항으로 그대로 써도 된다. | 음료 종류·온도·수량 조건에 맞는 주문 표현을 고르는 문항으로 오답 설계와 난도가 모두 적절하다.",
+      "hash": "ac87dc1a22bfe00d",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-apply-takeout-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 유일하고 수준도 맞아요. 상황 글의 「샀어요」가 포장 부탁과 시제가 어긋나서 「사요」로 고치면 쓸 수 있어요. | 상황과 정답이 명확하고 어휘·난도가 적절한 문항이다. | 정답 「포장해 주세요」는 하나뿐이고 낱말 수준도 1급 앞쪽에 맞다. 다만 상황 글이 「샀어요」(이미 산 뒤)여서, 주문할 때 하는 부탁을 고르라는 발문과 때가 어긋난다. 학습자가 「이미 샀는데 무엇을 부탁하나」 하고 헷갈릴 수 있으니 A의 지적을 받아들인다. 해설도 오답이 왜 틀린지 짚지 않아 보강하면 좋다. 기존 게임 꼴(보기 셋, 한국어 해설만)은 허용 범위다.",
+      "hash": "a424e1908178c2c2",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-compose-count-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "혼자 마실 한 잔이라는 단서로 직원의 '두 잔' 확인을 바로잡는 문항이다. 정답이 유일하고 표현이 자연스러워 통과한다. 해설에 「혼자」를 짚으면 더 좋지만 사소하다. | 정답 유일성, 오답 구성, 난도, 해설 모두 적절함.",
+      "hash": "eee83754ce112284",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-compose-order-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답(차가운 주스 세 잔)이 유일하고, 오답은 온도·음료·수량을 바꿔 적절해요. 발문 표현과 해설의 셈 근거는 다듬을 여지가 있지만 사소해서 통과예요. | 작성 기준 §8에서 금지한 마스코트 이름(몽글·까몽·마린)을 일반 인물 이름으로 수정 필요. | 정답(차가운 주스 세 잔)은 하나뿐이고, 오답 둘도 온도·음료를 하나씩 바꿔 알맞다. 다만 지문에 작성 기준 §8에서 쓰지 말라고 한 마스코트 이름(몽글·까몽·마린)이 나온다. 이 문항은 TOPIK 연습 문항으로 옮겨 쓰는 것(fit: adapted)이라 이 기준을 따라야 하고, 게임을 모르는 학습자는 세 낱말이 사람 이름이라는 것부터 알기 어렵다. 그런데 정답을 가르는 것이 사람 수(세 잔)여서 이 점이 풀이에 바로 걸린다. 발문 「완성할 주문 문장」도 빈칸이 없는데 「완성」이라고 해서 헷갈린다. 고치면 쓸 수 있으므로 fix로 판정한다.",
+      "hash": "9a90a88902d74dfd",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-compose-place-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 유일하고 상황도 쉽지만, 「차를 가지고」가 자동차로 읽힐 수 있어 중의적입니다. 또 마스코트 이름과 어색한 발문, 약한 오답 하나가 있어 손보면 쓸 수 있습니다. | 정답은 유일하나 발문(「새 장면에서 마실 곳을 알려요.」)이 포장 요청인 정답과 호응하지 않고 어색하여 발문 및 상황 문장 다듬기 필요.",
+      "hash": "22a2295c4776f7c7",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-expressions-here",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 2번 하나뿐이고, 낱말·문형이 1급에 맞으며 자연스럽다. 해설에 ‘포장’ 오답 설명을 한 줄 더하면 좋겠지만, 지금 그대로 통과해도 학습자에게 해가 없다. | 카페 매장 이용 표현(‘여기서 마실게요’)의 뜻을 묻는 초급 생활 한국어 문항으로 모든 기준을 충족한다.",
+      "hash": "8c2b42c5e15bde33",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-expressions-here-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 하나뿐이고 보기도 그럴듯해요. 생활 표현 낱말 문항으로 쓸 만해요. 해설에 포장 보기와 대비하는 말을 넣으면 더 좋지만, 고치지 않아도 학습자에게 해가 없어 통과예요. | ‘매장에서 마실게요’의 뜻을 묻는 복습 문항으로 정답이 유일하고 초급 생활 한국어 연습에 적합하다.",
+      "hash": "970b21418c93513b",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-expressions-order",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "주문 문장과 음료 속성을 맞추는 초급 생활 문항이에요. 정답이 하나뿐이고 낱말·난도도 알맞아요. 오답이 두 속성씩 바뀌어 쉬운 편이지만 게임 꼴에서는 해가 없어 통과로 판정해요. | 주문 표현에서 음료의 온도·종류·수량 세부 정보를 확인하는 기존 게임 문항으로 이상 없음.",
+      "hash": "257cda6f2dc9a512",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-expressions-order-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "주문 문장과 정확히 맞는 보기가 하나뿐이고, 오답은 온도·음료·수량을 바꿔 세부 확인을 연습시켜요. 게임 꼴의 기존 문항으로 문제가 없어 통과입니다(해설을 「차가운」「두 잔」을 짚도록 조금 늘리면 더 좋아요). | 바뀐 주문 상황에서 온도·종류·수량 세부 정보를 고르는 복습 문항으로 모든 기준을 충족함.",
+      "hash": "783d0848e1897d43",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-expressions-takeout",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 분명하고 초급 생활 표현 연습으로 알맞아요. 오답 하나가 다소 약하고 해설이 짧지만 학습자에게 해가 없어 통과예요. | 음료 포장 상황에 알맞은 표현(‘포장해 주세요.’)을 고르는 문항으로 이상 없다.",
+      "hash": "be93c5d6e34f47e9",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-expressions-takeout-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 분명하고 오답도 상황만 바꾼 자연스러운 생활 표현이다. 기존 게임 꼴 안에서 문제가 없어 통과한다. 해설에 오답 이유 한 줄을 더하면 더 좋겠지만 필수는 아니다. | 대상을 ‘주스’, 장소를 ‘집’으로 바꾼 포장 요청 복습 문항으로 모든 기준을 충족한다.",
+      "hash": "c575791703d0ad1c",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-story-here",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답 「카페 안」이 유일하고, 「강가 벤치」는 바뀐 뒤 장소로 좋은 오답이에요. 「친구의 집」이 약한 보기지만 해가 없어 통과예요. 해설에 벤치가 변경 뒤 장소라는 말을 덧붙이면 더 좋아요. | ‘여기서 마실게요’라는 표현이 가리키는 처음 장소를 이야기 맥락에서 정확히 찾는 문항으로 적합함.",
+      "hash": "7209c005177524bd",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-story-here-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 유일하고 난도와 능력도 맞다. 다만 발문의 '주문표'가 글(손님의 말)과 맞지 않고, 오답 '강가 벤치'가 너무 쉽게 지워진다. 이 두 곳을 고치면 쓸 수 있다. | 두 문장의 장소 단서(‘카페 안’, ‘창가’)를 결합해 알맞은 장소를 고르는 복습 문항으로 적합함. | I solved it as choice 0, which matches the answer key. The answer is unique, and the skill (detail) and difficulty 1 fit. Two problems need fixing. First, the prompt says 「주문표를 읽고」, but the passage is the customer's spoken words, not an order slip, so the prompt and passage don't match. Second, '강가 벤치' shares no word with the passage and can be ruled out by common sense alone, so it doesn't work as a distractor. '집의 창가' is also more natural ",
+      "hash": "4993c8265beb610d",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-story-order",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "까몽의 주문 대사가 정답을 하나로 정하는 문항이다. 레슨 표현 ‘한 잔’을 쓴 오답이 잘 짜였고, 1급 세부 읽기 연습으로 쓸 만하다. 해설에 오답 설명이 없는 것은 사소하므로 통과로 본다. | 이야기 속에서 까몽이 주문한 음료와 수량을 정확히 묻는 초급 세부 정보 파악 문항으로 적합함.",
+      "hash": "ee5bae2695d4f73e",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-story-order-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 유일하고 오답이 한 요소씩만 바뀌어 적절한 1급 생활 읽기 문항이다. 해설이 짧은 것 말고는 문제가 없어 통과로 본다. | 짧은 주문표에서 음료의 온도·종류·수량을 정확히 변별하는 복습 문항으로 적합함.",
+      "hash": "6479114d5154f69b",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-story-takeout",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답 2가 유일하고 게임 꼴에도 맞습니다. 해설에 근거 인용과 헷갈리기 쉬운 오답(여기서 마실게요)에 대한 설명만 더하면 쓸 수 있습니다. | 카페 이야기에서 장소 변경 시 직원에게 한 부탁(‘포장해 주세요’)을 찾는 문항으로 정답이 명확하고 오답 구성이 적절하다. | I solved it myself and got 2 (포장해 주세요). The story says 「친구들은 차를 가져가기로 바꿔요. 직원에게 ‘포장해 주세요’라고 부탁해요」, so the answer is unique. 「여기서 마실게요」 is only what they first wrote on the order slip, and 「차는 안 마실게요」 goes against the story, where they do drink the tea. Both distractors are clearly wrong. The game format (three choices, mascot story) is acceptable for an existing item, and the vocabulary suits TOPIK I level 1 (front). The only real gap is the exp",
+      "hash": "c1b13da4a88d71b6",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-story-takeout-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 분명하다. 다만 오답 「컵을 비워 주세요」가 어색해 매력이 없고 주문 장면이 흐리다. 보기와 상황 글을 고치면 쓸 수 있다. | 음료를 가지고 공원으로 가는 상황에 맞는 표현(‘포장해 주세요.’)을 고르는 복습 문항으로 모든 기준을 충족한다. | 정답 「포장해 주세요.」는 맞고 다른 답이 될 보기도 없다. 그러나 화면에 그대로 내보내기에는 두 가지가 걸린다. 첫째, 상황 글에 주문하는 장면이 없다. 「음료를 가지고 공원으로 가려고 해요」는 이미 음료를 들고 있다는 뜻으로도 읽혀서, 지금 포장을 부탁하는 말이 왜 맞는지 흐려진다. 둘째, 오답 「컵을 비워 주세요.」는 카페 주문 상황에서 쓸 일이 거의 없는 어색한 말이라 상식만으로 지워진다. 오답이 그럴듯해야 한다는 기준에 맞지 않는다. 해설도 「매장에서 마실게요」가 왜 틀린지 짚지 않는다. 검수자 A의 지적이 맞으므로 받아들인다. 게임 꼴(보기 셋, 한국어만 있는 해설)은 기존 문항이라 문제 삼지 않는다.",
+      "hash": "0af582240a4c8cdb",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-visit-change-count-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 유일하고 수준·능력도 맞아요. 다만 상황 글의 「현재」, 어색한 발문, 근거를 짚지 않는 해설을 고치면 쓸 수 있어요. | 음료 한 잔 추가를 '친구의 컵을 추가해요'라고 한 어색한 발문과 해설의 메타 용어('새 시작 수량') 수정 필요.",
+      "hash": "a8fdab9aa8cda9eb",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-visit-change-drink-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답 유일, 오답이 변경 요소를 하나씩 틀리게 짜여 학습 의도에 맞아요. 정답이 가장 긴 점은 사소하므로 통과해요. | 음료의 종류와 온도를 바꾸어 주문하는 기존 게임 문항으로 모든 기준을 충족함.",
+      "hash": "747651a5639fed8e",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-visit-change-place-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 하나로 분명해요. 다만 발문이 「포장을 매장 이용으로 바꾸어요」라고 답을 그대로 알려 줘서 상황을 읽지 않아도 풀려요. 해설은 짧고 영어·몽골어가 없으며, 낱말·문형은 난도 2에 가까워요. 발문을 고치고 해설을 보강하면 쓸 수 있어요. | 발문이 정답 보기의 표현('매장 이용으로 바꾸-')을 그대로 노출하고 '바꾸어요'가 어색하므로 발문 수정 필요.",
+      "hash": "805ca67d1e6c1b40",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-visit-soldout-count-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "「둘이 한 잔씩」에서 두 잔을 끌어내는 수량 세부 문항이에요. 정답이 하나뿐이고 오답도 그럴듯해요. 발문과 해설의 말투가 조금 딱딱한 것 말고는 문제가 없어 통과예요. | 인원수에 맞게 음료 수량을 정정하는 기존 게임 문항으로 모든 기준을 충족함.",
+      "hash": "6117bc3297f3d71e",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-visit-soldout-menu-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 하나뿐이고 품절 정보로 오답 둘이 분명히 지워진다. 「품절」 낱말 수준과 발문의 「안내판」 표현, 짧은 해설은 사소한 점이라 통과한다. | 우유 품절 상황에서 주문 가능한 음료를 고르는 기존 게임 문항으로 모든 기준을 충족함.",
+      "hash": "a1576dde32fa460f",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-visit-soldout-takeout-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "카페 안에서 마시는 상황에 「매장에서 마실게요」가 유일한 정답이다. 오답과 해설 모두 게임 꼴 안에서 무리가 없다. 발문이 약간 어색하고 정답의 문장 꼴이 다른 점은 사소해 통과로 본다. | 카페 안에서 마시는 상황에 맞는 표현(매장 이용)을 고르는 기존 게임 문항으로 모든 기준을 충족함.",
+      "hash": "ddeba5c755e0399d",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-visit-taste-count-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답(차가운 우유 세 잔)은 하나뿐이고 오답도 알맞습니다. 다만 작성 기준이 금하는 마스코트 이름을 인물로 쓴 것만 흔한 이름으로 바꾸면 쓸 수 있습니다. | 인원수에 따른 수량과 음료 온도 세부 정보를 잘 겨눈 문항이다. | 정답(차가운 우유 세 잔)은 하나뿐이고, 오답 둘도 수량과 온도를 하나씩 바꾼 알맞은 보기입니다. 그러나 작성 기준 §8은 마스코트(까몽·몽글·마린) 이름을 쓰지 말라고 분명히 정하고 있습니다. 문항만 따로 보이는 꼴이라 학습자가 이 이름들을 세 인물로 바로 읽지 못할 수도 있습니다. 또 해설은 이들을 「세 사람」이라고 불러 글과 맞지 않습니다. 발문의 「수량」은 1급 앞쪽 낱말로는 어렵습니다. 고치면 쓸 수 있으므로 A의 지적을 받아들입니다.",
+      "hash": "e453106b8b3e4640",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-visit-taste-drink-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 하나로 분명하다. 오답은 온도·종류만 바꿔 그럴듯하고, 1급 앞쪽 낱말로 되어 있다. 발문과 보기 꼴이 조금 어긋나는 것은 사소해서 통과로 본다. | 음료 종류와 온도 세부 정보를 명확히 묻는 자연스러운 문항이다.",
+      "hash": "785d7292cf15b62d",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.cafe-visit-taste-place-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 유일하고 난도·능력도 맞아요. 다만 상황 글에 마스코트 이름 「몽글」이 있고 발문이 대답과 어긋나므로, 두 곳을 고친 뒤 쓰는 것이 좋아요. | 정답은 유일하나 발문('이번에는 어디에서 마실까요?')과 보기('네/아니요' 응답)의 호응이 어색해 발문 수정이 필요하다.",
+      "hash": "0d4048b806c5b273",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.directions-apply-landmark",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 2번 하나뿐이다. 1급 앞쪽 위치 표현을 확인하는 게임 문항으로 문제가 없다. 해설에 근거 문장 「약국은 병원 옆에 있어요.」를 인용하면 더 좋지만 사소하다. | 약국의 위치를 설명한 문장과 일치하는 보기를 고르는 기존 게임 문항으로, 모든 검수 기준을 충족하여 통과(pass).",
+      "hash": "85bbfa25a75f6d55",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.directions-apply-landmark-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 하나뿐이고 1급 수준에 맞는 위치 세부 읽기 문항이에요. 해설의 「새 기준 장소」라는 말만 학습자 눈높이로 다듬으면 더 좋지만, 그대로 통과해도 학습자에게 해가 없어요. | 기초 장소·위치 표현을 확인하는 기존 게임 복습 문항으로 모든 기준을 충족합니다.",
+      "hash": "b7020b663f05e0dd",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.directions-apply-turn",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "「오른쪽으로 가세요」에서 방향을 고르는 쉬운 생활 읽기 문항으로 정답이 유일하고 기준에 맞는다. '뒤쪽' 보기가 약하고 발문의 '갈림길'이 약간 어렵지만 사소한 점이라 통과로 본다. | 길 안내문에서 이동할 방향을 찾는 기존 게임 문항으로, 정답 유일성과 보기 구성, 난도가 모두 기준에 맞아 통과(pass).",
+      "hash": "147acfa2ff9e6462",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.directions-apply-turn-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답 '왼쪽'이 분명하고 1급 앞쪽 생활 안내로 알맞다. '뒤쪽'을 '앞쪽'으로 바꾸면 오답이 더 매력적이 되겠지만 사소한 점이라 통과로 본다. | 안내문에서 이동할 방향을 찾는 기존 게임 문항으로, 정답이 유일하고 오답·해설·난도가 적절하여 통과(pass).",
+      "hash": "2c54fbf26228f912",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.directions-apply-where",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 유일하고 수준도 맞아요. 다만 발문의 '직원에게'가 상황(처음 온 동네)과 맞지 않으므로, 묻는 대상을 '길에서 만난 사람'으로 고치면 쓸 수 있어요. | 약국을 찾는 상황에 알맞은 위치 질문 표현을 고르는 문항으로 오답 구성과 난도가 모두 적절함. | 정답은 2번 「약국이 어디에 있어요?」 하나로 분명합니다. 상황이 약국을 찾는 것이므로 위치를 묻는 말만 맞고, 닫는 시각을 묻는 말이나 약을 샀는지 묻는 말은 상황과 어긋납니다. 낱말과 문형도 1급 앞쪽에 맞고, 레슨 시작에 본 표현 「공원이 어디에 있어요?」를 그대로 응용하는 꼴이라 게임 문항으로 알맞습니다. 다만 발문의 「직원에게」가 문제입니다. 상황은 처음 온 동네의 길 위인데 어느 직원인지 글에 없습니다. 길을 찾는 상황인데 가게 직원에게 묻는다고 읽히면 초급 학습자가 「몇 시에 닫아요?」(가게 직원에게 묻는 말)와 헷갈릴 수 있습니다. 검수자 A의 지적이 맞습니다. 묻는 대상을 상황과 맞게 고치면 그대로 쓸 수 있습니다.",
+      "hash": "00da0185052e04a1",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.directions-apply-where-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 유일하고 오답이 같은 낱말로 정보만 바꾼 좋은 게임 문항입니다. 해설이 한국어뿐이고 오답 설명이 없지만 기존 문항이라 사소하므로 통과입니다. | 지하철역 위치를 묻는 표현을 고르는 기존 게임 문항으로, 정답이 유일하고 오답 구성과 난도가 적절하여 통과(pass).",
+      "hash": "1f9412977dc0e67b",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.directions-expressions-beside",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 하나뿐이고 1급 앞쪽 생활 위치 문항으로 적절하다. 해설이 근거 문장과 오답 이유를 짚지 않는 점만 아쉽고, 학습자에게 해는 없어 통과로 본다. | 짧은 상황 문장을 읽고 공원의 위치(‘은행 옆’)를 찾는 초급 세부 정보 파악 문항으로 모든 기준을 충족함.",
+      "hash": "8a292f77aea571ab",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.directions-expressions-beside-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 하나뿐이고 1급 위치 표현 세부 읽기로 알맞다. 해설이 짧지만 근거를 바르게 짚으므로 통과한다. | 도서관의 위치('학교 옆')를 파악하는 기초 세부 정보 읽기 문항으로 이상 없음.",
+      "hash": "1ff665806472a62e",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.directions-expressions-right",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "suggestedSkillId": "ko.reading.detail",
+      "reason": "정답은 하나이고 1급 앞쪽 수준에 맞습니다. 그러나 정답 낱말 「오른쪽」이 발문에 그대로 나와서, 뜻을 몰라도 글자 맞추기로 풀립니다. 발문이나 보기 꼴을 바꿔 뜻을 가르게 고친 뒤 쓰기를 권합니다. (culture_bias 칸은 실수로 false로 적혔지만 문제없음이며, 바른 판정은 true입니다.) | 안내문(‘오른쪽으로 가세요’)에 맞는 이동 방향을 고르는 문항이나, 발문에 정답 어휘가 그대로 노출되어 있고 세부 정보 확인 성격이므로 skillId를 ko.reading.detail로 수정할 필요가 있음.",
+      "hash": "74f9aa1ae5e63b67",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.directions-expressions-right-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "suggestedSkillId": "ko.reading.detail",
+      "reason": "정답 왼쪽은 하나뿐이고 수준도 맞다. 다만 해설이 근거 말을 짚지 않은 채 화면에 없는 「이전 문제」를 가리키고, 「뒤쪽」은 상식으로 지워진다. 해설과 보기 하나를 고치면 쓸 수 있다. | passage([상황])와 question(발문)의 내용이 서로 뒤바뀌어 있고, 해설에 이전 문제를 언급하는 메타 문장이 포함되어 있으며, 대표 능력도 ko.reading.detail로 수정해야 함.",
+      "hash": "ae1c4ecbf55c7728",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.directions-expressions-where",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "위치를 묻는 표현을 고르는 1급 앞쪽 게임 문항입니다. 정답이 하나뿐이고 오답 꼴도 고르므로 통과입니다. | 장소의 위치를 묻는 표현을 고르는 생활 한국어 문항으로, 오답 구성과 해설 모두 적절하다.",
+      "hash": "c6897b9b2cbfd412",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.directions-expressions-where-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "「어디에 있어요?」로 화장실 위치를 묻는 표현을 고르는 쉬운 생활 문항이에요. 정답이 하나뿐이고 오답도 그럴듯해요. 해설은 짧지만 근거가 맞아 통과예요. | 화장실의 위치를 묻는 알맞은 표현(‘화장실이 어디에 있어요?’)을 고르는 초급 어휘·표현 문항으로 모든 기준을 충족함.",
+      "hash": "2b1ff64321e5d661",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.directions-story-landmark",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "이야기에서 공원이 은행 옆에 있다는 말이 두 번 나와 정답 「은행」이 분명하다. 오답 학교·도서관은 글에 나오지 않는 건물이라 매력도가 다소 낮지만, 1급 앞쪽 게임 문항으로 학습자에게 해는 없다. 통과. | 레슨 이야기에서 공원 옆 건물(은행)을 찾는 세부 정보 확인 문항으로 구성과 해설이 모두 적절함.",
+      "hash": "85e86fa196ed9dec",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.directions-story-landmark-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답 유일하고 난도·능력도 맞다. 다만 오답 둘이 글에 없는 낱말이라 너무 쉽게 지워진다. 오답 하나를 「약국」으로 바꾸고 발문을 쉽게 다듬으면 쓸 수 있다. | 정답과 보기는 적절하나, 발문과 해설에 1급 학습자에게 어려운 메타 용어('기준 건물')가 쓰여 쉬운 표현으로 수정이 필요함.",
+      "hash": "12d7e4d374d1d57a",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.directions-story-turn",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "안내판과 이야기 서술이 「오른쪽」을 분명히 받쳐 정답이 유일하다. 게임 꼴 안에서 세부 찾기 문항으로 알맞다. 이야기 낱말 일부가 1급보다 높지만 풀이에 영향이 없어 통과한다. | 이야기에서 세 친구가 이동한 방향('오른쪽')을 찾는 세부 정보 파악 문항으로 이상 없음.",
+      "hash": "f04d34f79989bc63",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.directions-story-turn-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답 「왼쪽」이 유일하고 게임 꼴 안에서 문제가 없어요. 해설에 근거 문장을 인용하면 좋겠지만 사소한 점이라 통과예요. | 짧은 길 안내 문장에서 이동 방향(왼쪽)을 찾는 복습 문항으로 정답이 명확하고 초급 수준에 적합함.",
+      "hash": "00c1f5c9813ea64a",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.directions-story-where",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "목적지 공원을 묻는 표현을 고르는 기존 게임 문항이에요. 정답이 유일하고 급과 능력이 맞아서 통과예요. 오답 장소가 이야기에 나오지 않아 쉬운 편이라는 점만 사소한 메모예요. | 이야기 속 목적지(공원)를 파악해 위치를 묻는 표현을 고르는 문항으로 이상 없음.",
+      "hash": "712c093eaf114d30",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.directions-story-where-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 하나뿐이고 난도·능력도 맞습니다. 다만 발문의 「새 목적지」가 이 문항만 보는 학습자에게 뜻이 통하지 않아, 발문을 고친 뒤 쓰면 됩니다. | 도서관을 찾는 상황에서 알맞은 위치 질문 표현을 고르는 문항으로 이상 없음. | 정답(도서관, 1번)은 하나뿐이고 오답인 은행·공원도 상황 글과 분명히 어긋나요. 기존 게임 문항이라 보기 셋, 한국어만 있는 해설도 받아들일 수 있어요. 다만 발문의 「새 목적지」는 게임 안의 「앞에서 배운 표현을 바꾼 새 문항」이라는 뜻이에요. 이야기 없이 이 문항만 보는 학습자에게는 무엇이 「새」 것인지 통하지 않아 헷갈릴 수 있어요. 해설의 「해당 장소」도 학습자에게 딱딱하고, 근거가 된 말을 짚지 않아요. 고치면 바로 쓸 수 있어 A의 지적을 받아들여요.",
+      "hash": "911d4090b609e810",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.greetings-apply-hello",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "The answer (안녕하세요) is unique and the level is appropriate. However, the distractor 「저는 식사했어요.」 is too weak, the passage wording is awkward (「만난 사람」), and the mascot name is used. These should be fixed before use. | 초급 첫 인사 표현을 상황에 맞게 고르는 기존 게임 문항으로 모든 기준을 충족함. | Reviewer A is right. The answer 「안녕하세요.」 is unique and fits the beginner level. However, the expression description in the passage reads 「처음 만나거나 만난 사람에게」, which drops 「다시」, so students would see an unnatural sentence. The distractor 「저는 식사했어요.」 is not a greeting and is somewhat unnatural, so learners can rule it out without reading; i",
+      "hash": "cff6786eb36f8587",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.greetings-apply-hello-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "The answer '안녕하세요' is unique and the distractors are suitable beginner confusions. It meets the standard within the game format, so pass. Adding one line on why '감사합니다' is wrong would improve the explanation, but it is not required. | 가게 방문 상황에서 첫인사 표현을 고르는 복습 문항으로 모든 기준을 충족함.",
+      "hash": "1926232f7121f8a1",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.greetings-apply-introduction",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 하나뿐이고 1급 앞쪽 생활 인사 문항으로 알맞아 통과로 판정합니다. 고칠 점은 사소한 것들입니다: 표현 풀이의 어색한 구절, 오답 해설 보강, 마스코트 이름 사용. | 초급 자기소개 레슨의 기초 적용 문항으로 정답이 명확하고 오답 구성과 난도가 적절하다.",
+      "hash": "c5de8d599c5af0af",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.greetings-apply-introduction-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "「성함」 물음에 자기 이름으로 답하는 게임 꼴 문항으로, 정답이 유일하고 오답도 적절해요. 해설이 오답을 다루지 않는 점은 사소하므로 통과로 봐요. | 앞선 자기소개 표현의 새 상황 복습 문항으로, 동명이 포함된 매력적인 오답(‘지훈은 집에 있어요.’)이 잘 설계되어 있다.",
+      "hash": "57eae862ff0167ed",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.greetings-apply-thanks",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 '감사합니다'(2) 하나로 분명하고 난도와 꼴도 맞아요. 다만 표현 목록에 마스코트 이름 '몽글'이 쓰였고 '안녕하세요' 설명 문구가 어색해서, 이 두 곳을 고친 뒤 쓰면 돼요. | 도움을 받은 상황에서 감사 인사를 고르는 초급 레슨 문항으로, 상황과 오답 구성이 자연스럽고 적합하다. | 정답 '감사합니다'(2)는 상황 '교실 위치를 알려 줬어요. 고마움을 전하려고 해요'에 비추어 하나뿐이고, 오답 둘도 그럴듯해요. 게임 꼴(보기 셋)과 1급 앞쪽 난도에도 맞아요. 다만 두 가지는 학생 화면에 그대로 나가면 안 돼요. 첫째, 표현 설명 '처음 만나거나 만난 사람에게'는 '다시'가 빠진 비문이라 학습자가 그대로 배울 수 있어요. 둘째, 표현 목록에 마스코트 이름 '몽글'이 쓰여 작성 기준 §8에 어긋나요. 기존 게임 문항이라 일부러 쓴 이름일 수도 있지만 확인이 안 되므로 기준대로 고치는 게 안전해요. 이름을 바꿀 때는 받침이 있는 이름을 써야 '이에요' 설명이 맞아요. 검수자 A의 지적이 맞다고 보고 fix로 판정해요.",
+      "hash": "b51db48985832c41",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.greetings-apply-thanks-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 분명하다. 다만 오답 '저는 마린이에요'가 마스코트 이름이고 터무니없어 바로 지워지므로, '죄송합니다' 같은 그럴듯한 보기로 바꾸면 쓸 수 있다. | 감사 인사 표현의 새 상황 복습 문항으로 정답 유일성, 난도, 해설 모두 기준에 부합한다. | 정답 '감사합니다'는 분명하고 하나뿐이다. 다만 오답 '저는 마린이에요.'에 문제가 둘 있다. 첫째, 작성 기준 §8이 쓰지 말라고 한 마스코트 이름이 들어 있다. 둘째, 상황과 동떨어져 상식만으로 바로 지워지므로 오답 매력도가 없다. 기존 게임 꼴이어서 보기 셋과 한국어만 있는 해설은 허용되지만, 이 보기는 고쳐야 한다. 상황 글의 '고마움을 전하려고'도 정답 낱말과 뜻이 바로 겹쳐 단서가 지나치다. 검수자 A의 지적을 받아들인다.",
+      "hash": "063948561cce283e",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.greetings-expressions-hello",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 유일하고 난도와 능력도 맞다. 다만 레슨 표현 설명에 낱말이 빠진 듯한 ‘처음 만나거나 만난 사람에게’를 고쳐야 하고, 마스코트 이름 ‘몽글’ 사용은 확인이 필요하다. | 처음 만난 선생님에게 인사하는 기초 생활 한국어 레슨 문항으로 정답이 유일하고 난도와 해설이 적절함. | 정답 ‘안녕하세요.’는 하나뿐이고, 오답 ‘감사합니다.’와 ‘다녀왔어요.’도 상황에 비추어 분명히 틀린다. 난도 1과 낱말 뜻 읽기 능력도 맞다. 그러나 검수자 A의 지적대로 표현 설명 ‘처음 만나거나 만난 사람에게’는 낱말이 빠져 뜻이 성립하지 않는다. 이 글은 레슨 시작에 학습자에게 그대로 보이므로 고쳐야 한다. 또 ‘저는 몽글이에요.’는 작성 기준 §8에서 쓰지 않기로 한 마스코트 이름이다. 게임 레슨의 등장인물로 일부러 쓴 것인지 확인되지 않았으므로 그대로 통과시키기 어렵다. 받침 규칙 설명이 맞게 유지되도록 받침 있는 흔한 이름으로 바꾸는 편이 안전하다.",
+      "hash": "caf591ead1da79ac",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.greetings-expressions-hello-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "처음 만난 직원에게 하는 인사로 '안녕하세요'가 유일한 정답이다. 오답은 장면과 상황 글로 분명히 지워지고, 급·난도·해설 모두 게임 꼴 안에서 문제가 없어 통과다. | 학교에서 처음 만난 직원에게 인사하는 새 상황 복습 문항으로 정답이 유일하고 초급 연습용으로 적절함.",
+      "hash": "c2e7af691694b5b6",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.greetings-expressions-name",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.grammar",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 유일하고 1급 수준에도 맞아요. 다만 작성 기준이 금지한 마스코트 이름 ‘몽글’을 쓴 점, 정답을 가르는 것이 문법이 아니라 표현 기능이라 skillId가 어긋나 보이는 점을 고쳐야 해요. | 초급 1급 앞쪽 자기소개 표현(‘저는 N이에요’)을 고르는 기존 게임 레슨 문항으로 모든 기준을 충족함. | 정답(1번 ‘저는 몽글이에요.’)은 하나뿐이고, 1급 앞쪽 수준과 자연스러움도 문제없습니다. ‘몽글’은 받침이 있어 ‘이에요’도 맞습니다. 마스코트 이름 금지(§8)는 새로 짓는 TOPIK형 문항을 위한 규칙입니다. 이 문항은 세 친구 이야기 레슨에 원래 있던 게임 문항(existing)이라 이름을 바꾸면 레슨이 깨지므로, 이름은 그대로 두는 것이 맞다고 봅니다. 그래서 A의 이름 교체 요구는 받아들이지 않습니다. 다만 두 가지는 고쳐야 합니다. 첫째, 한국어 해설이 정답을 다시 말할 뿐이고, 오답이 왜 틀렸는지가 없습니다(§6). 둘째, 정답을 가르는 정보가 조사·문형이 아니라 문장의 기능(소개인가, 행동·질문인가)이어서 skillId ‘ko.reading.grammar’와 어긋납니다. 이 두 점은 A의 지적이 맞습니다.",
+      "hash": "0d713e26b4a089df",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.greetings-expressions-name-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.grammar",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 유일하고 1급 수준에 맞아요. 다만 마스코트 이름 「마린」을 인물 이름으로 써서 작성 기준 §8에 어긋나요. 흔한 이름으로 바꾸면 쓸 수 있어요. | ‘저는 N이에요’ 자기소개 문형을 새 대상(‘마린’)에 적용해 복습하는 문항으로 보기 구성과 난도가 적절함. | 정답은 하나뿐이고(‘저는 마린이에요’), 1급 생활 표현이어서 난도도 맞습니다. 다른 두 보기는 각각 있는 곳을 묻는 말과 다른 사람의 행동을 말하는 문장이라 분명히 틀립니다. 다만 작성 기준 §8은 마스코트(까몽·몽글·마린) 이름을 쓰지 않게 정하고 있는데, 이 문항은 「마린」을 인물 이름으로 씁니다. 이 점은 검수자 A의 지적이 맞습니다. 이름만 바꾸면 쓸 수 있으므로 fix로 판정합니다. 해설도 오답이 왜 틀렸는지 짚도록 보강하는 편이 좋습니다.",
+      "hash": "28ef318ae062cfa8",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.greetings-expressions-thanks",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답 「감사합니다」가 유일하고, 게임 꼴에 맞는 1급 앞쪽 생활 표현 문항이에요. 마스코트 이름 사용과 짧은 해설은 사소한 점이라 통과로 판정해요. | 도움을 받았을 때 감사 인사를 고르는 레슨 문항으로 정답 유일성과 오답 구성이 적절함.",
+      "hash": "9b836427b1a223d4",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.greetings-expressions-thanks-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 분명하고 난도도 알맞다. 다만 오답 「저는 마린이에요.」에 마스코트 이름이 들어 있고 매력도 약하다. 이 보기를 인사 표현(「안녕히 계세요.」 등)으로 바꾸면 쓸 수 있다. | 우산을 찾아 준 직원에게 감사 인사를 고르는 복습 문항으로 정답이 명확하고 구성이 적절함. | 정답 「감사합니다.」는 상황(우산을 찾아 준 직원에게 고마움을 전함)에 하나뿐인 답으로 분명하고, 난도와 낱말 단계도 알맞다. 그러나 오답 「저는 마린이에요.」에는 마스코트 이름 「마린」이 들어 있다. 작성 기준 §8은 마스코트 이름을 쓰지 않게 하므로 기존 게임 문항이라도 그대로 내보낼 수 없다. 이 보기는 자기소개라 상황과 너무 멀어 오답 매력도도 낮다. A의 지적이 맞으며, 보기 하나만 바꾸면 쓸 수 있다. 바꿀 보기로 「죄송합니다.」는 폐를 끼친 데 대한 말로도 쓰일 수 있어 정답 다툼이 생길 수 있으니 피한다.",
+      "hash": "7a120bc74999eb11",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.greetings-story-hello",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "처음 만난 사람에게 할 인사를 고르는 기존 게임 문항이에요. 정답이 하나뿐이고 오답도 적절해서 통과예요. 레슨 카드 문구 ‘처음 만나거나 만난 사람에게’는 ‘다시 만난’으로 다듬으면 더 좋아요(선택 사항). | 모임에서 처음 만난 사람에게 할 인사말('안녕하세요.')을 고르는 생활 적용 문항으로, 정답이 유일하고 오답 구성과 해설이 적절함.",
+      "hash": "7b2d75bb478c7c51",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.greetings-story-hello-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "The answer is unique and the level fits. However, the situation line excludes both wrong choices outright and gives the answer away, so delete or replace it and add the wrong-choice reasons to the explanation. | 오답('잘 먹겠습니다', '다녀왔습니다')을 배제하려고 [상황]에 '지금은 식사하거나 외출했다 돌아온 상황이 아니에요.'라는 부자연스러운 부정문을 넣었고 발문이 물음·지시 꼴이 아니므로, 실제 만남 상황을 [상황]으로 옮기고 발문을 다듬어야 함.",
+      "hash": "a12ec6929aea6755",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.greetings-story-name",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 맞지만 발문이 정답 이름을 그대로 담고 있어 이야기를 읽지 않아도 풀립니다. 마린이 이름표를 떼어 준 장면을 묻는 발문으로 바꾸고, 표현 설명 한 곳을 고치면 쓸 수 있습니다. | 발문에 정답 이름(‘몽글’)이 그대로 들어가 있어 이야기 지문을 읽지 않고도 답을 찾을 수 있으므로 발문에서 이름을 빼야 함.",
+      "hash": "0f7fac35a35f0993",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.greetings-story-name-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 분명하고 1급에 맞지만, 쓰지 않기로 한 마스코트 이름을 썼다. 또 발문에 답이 그대로 있어 오답이 힘을 잃는다. 이름을 바꾸고 비교할 정보를 넣으면 쓸 수 있다. | 지문에는 정답 근거가 없고 발문에 ‘저는 까몽이에요.’가 그대로 노출되어 단순 글자 맞추기로 풀리므로, 세 친구 이름이 모두 포함된 한국어 텍스트를 지문에 제시해 독해하도록 수정해야 함.",
+      "hash": "1685b34d0a5a12a3",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.greetings-story-thanks",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.reason",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 유일하고 능력·난도도 맞습니다. 다만 오답 1번이 이야기와 동떨어져 너무 쉽게 지워지므로, 글의 말을 쓴 오답으로 바꾸면 쓸 수 있습니다. | 정답은 분명하나 오답 보기 둘이 '감사합니다'를 말할 이유가 될 수 없어 글을 읽지 않고도 소거되며, 한국어로 노출되는 이야기·보기의 문형이 1급 앞쪽(difficulty 1)보다 높음.",
+      "hash": "ec90eb073bd8fde5",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.greetings-story-thanks-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.reason",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "상황과 감사 인사의 이유가 분명하고 정답이 하나뿐인 기존 게임 문항입니다. 정답 표현 「찾아 줬어요」를 「주워 줬어요」로 바꾸면 더 정확하지만 사소한 점이라 통과입니다. | [상황]은 '떨어진 이름표를 건네줬어요'인데 정답 보기는 u009의 '이름표를 찾아 줬어요'가 그대로 남아 어긋나고, 오답 보기가 감사할 상황이 아니라서 글을 안 읽어도 소거됨. | Both reviewers agree the answer is unique and the meaning is clear. B is right that the correct option no longer matches the scenario. The passage says Marin picked up a dropped name tag and handed it over, but the option still reads 「이름표를 찾아 줬어요」 (found the name tag). A also noted this, so it should be fixed. The distractors (introducing oneself, asking the meeting time) are weak in distractor app",
+      "hash": "7855274d31299b56",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.plans-apply-delay",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 분명하고 1급 앞쪽 생활 연락 고르기로 알맞다. 오답 둘이 서로 비슷해 쉽게 지워지는 점만 아쉽고, 고치지 않아도 학습자에게 해가 없어 통과로 본다. | 배운 표현의 뜻을 상황에 맞게 고르는 생활 적용 문항으로 모든 기준을 충족함.",
+      "hash": "032b111e9fa7bf28",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.plans-apply-delay-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 0번 하나로 분명하고, 오답과 한국어 문장도 자연스러워요. 고칠 것은 해설 하나예요. 근거 문장을 짚지 않고 오답이 왜 틀렸는지도 말하지 않으므로, 근거와 오답 설명을 넣으면 쓸 수 있어요. | 문항과 보기는 초급 생활 상황 복습에 맞으나, 해설이 정답 근거(늦는 상황 vs 일찍 옴·도착함) 대신 엉뚱한 예절 조언을 설명하고 있어 해설 수정이 필요함.",
+      "hash": "6c85098cdfd54172",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.plans-apply-place",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "'역 안이 아니라 역 앞' 부정 구조로 정답 '역 앞'이 유일합니다. 오답·난도·능력 모두 적절하여 통과합니다. | 부정 표현을 통해 약속 장소를 파악하는 문항으로 모든 기준을 충족함.",
+      "hash": "6f239e9abe18874c",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.plans-apply-place-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 유일하고, 부정·변경 능력과 난도 1에 맞는 간단한 생활 문항입니다. 해설 표현만 조금 다듬으면 더 좋지만 그대로 통과입니다. | '학교 안이 아니라 학교 앞'이라는 부정·변경 정보를 파악하는 복습 문항으로 적합함.",
+      "hash": "136a3c04639ba9a6",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.plans-apply-time",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 유일하고 수준과 능력이 맞아요. 「오전 두 시」 보기가 약간 약하지만 학습자에게 해가 없어 통과예요. | 짧은 약속 메시지에서 만날 날짜와 시간을 찾는 기존 게임 문항으로, 오답 매력도와 난도 적합성이 모두 우수하여 통과(pass)한다.",
+      "hash": "6e0347a3f8afab7e",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.plans-apply-time-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 하나뿐이고 오답·난도·능력이 맞는 좋은 생활 읽기 문항이에요. 다만 해설의 「새 약속」이 이 화면만으로는 뜻이 안 통하고, 근거와 오답 설명이 빠져 있어서 해설만 고치면 돼요. | 약속 시간을 확인하는 초급 세부 정보 파악 문항으로 모든 기준을 충족함. | 문항 자체는 좋습니다. 정답 「오늘 오후 다섯 시」 하나만 메시지와 맞고, 오답은 「내일」과 「오전」으로 날과 때를 하나씩 바꾼 그럴듯한 보기입니다. 난도 1과 세부 정보 능력도 맞습니다. 다만 해설의 「새 약속」은 이 화면만 보는 학습자에게 앞서 다른 약속이 있었던 것처럼 읽혀 헷갈릴 수 있습니다. 근거 낱말을 짚지 않고 오답이 왜 틀렸는지도 말하지 않아 해설 기준에 못 미칩니다. 해설만 고치면 쓸 수 있으므로 A의 지적을 받아들입니다.",
+      "hash": "6556d5aaf81ea8da",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.plans-expressions-delay",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "레슨 표현 「조금 늦을 것 같아요」의 뜻을 확인하는 게임 꼴 문항으로, 정답이 유일하고 해설도 바릅니다. 보기 0이 다소 약하고 정답이 풀이를 거의 그대로 옮겼지만, 사소한 점이라 통과입니다. | ‘조금 늦을 것 같아요’의 뜻을 확인하는 기존 레슨 문항으로 정답 유일성과 해설·난도 모두 적절함.",
+      "hash": "8926c6bf5b1f567f",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.plans-expressions-delay-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "늦을 때 미리 연락하는 표현을 고르는 생활 게임 문항이다. 정답이 분명하고 표현이 자연스럽다. 오답 둘이 비슷한 방향이라 매력은 약하지만 게임 꼴에서는 문제가 없어 통과로 본다. | 약속에 늦을 때 쓰는 표현을 고르는 기존 게임 복습 문항으로 모든 기준을 충족함.",
+      "hash": "ed61085698ca8d65",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.plans-expressions-place",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 분명하고 급·능력·난도가 맞는 간단한 표현 확인 문항입니다. 다만 보기 「살 물건의 가격」이 맥락과 동떨어져 매력이 없으므로 「만날 사람」으로 바꾸면 쓸 수 있습니다. | ‘어디에서 만날까요?’의 의미를 확인하는 기존 레슨 문항으로 모든 기준을 충족함. | 정답 「만날 장소」는 레슨 표현의 뜻풀이(만날 장소를 함께 정하려고 물어요)와 의문사 「어디에서」로 분명하고 유일합니다. 기존 게임 꼴(보기 셋, 한국어 해설만)이라는 점도 허용 범위입니다. 다만 보기 「살 물건의 가격」은 약속 정하기 맥락과 동떨어져 상식만으로 지워집니다. 작성 기준 §5-2의 「터무니없는 보기」에 해당하므로 오답 매력도가 ok가 아닙니다. 「만날 날짜」처럼 같은 약속 맥락의 오답으로 바꾸면, 의문사(어디·언제·누구)를 가르는 낱말 문항으로 쓸 수 있습니다. 검수자 A의 지적을 받아들입니다.",
+      "hash": "4718a1a2b71e7501",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.plans-expressions-place-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "장소 의문사 「어디」에 맞는 대답을 고르는 쉬운 생활 문항입니다. 정답이 유일하고 오답(시간 대답)도 적절합니다. 발문이 「장소」를 미리 말해 주는 점과 해설이 짧은 점은 사소해서 통과로 봅니다. | 장소를 묻는 질문에 알맞은 장소 어휘 응답을 고르는 기존 게임 문항으로 기준에 부합함.",
+      "hash": "b020c9db3b02c653",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.plans-expressions-time",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 하나로 분명하고, 오답은 날짜와 오전·오후만 바꿔 고르게 짜였어요. 1급 앞쪽 생활 읽기 연습으로 알맞아서 통과로 봐요. | 약속 날짜(오늘/내일)와 시간대(오전/오후)를 구별해 세부 정보를 찾는 초급 문항으로 모든 기준을 충족한다.",
+      "hash": "6c4fe22e8905cc12",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.plans-expressions-time-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "시간 세부 정보를 묻는 쉬운 생활 읽기 문항으로, 정답이 유일하고 오답도 날·오전/오후만 바꿔 적절하다. 해설에 오답 설명을 한 줄 더하면 좋겠지만 그대로 써도 된다. | 기초 시간 표현에서 약속 시점을 찾는 기존 게임 문항으로 정답 유일성·오답 구성·난도 모두 적절함.",
+      "hash": "7387659ef50b694a",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.plans-story-delay",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 하나뿐이고 이야기 근거가 분명한 기존 게임 문항이에요. 「모두」라는 극단어와 짧은 해설은 사소한 점이라 그대로 통과해요. | 이야기 레슨 대화를 읽고 친구들의 행동을 찾는 기존 게임 문항으로, 정답 근거가 명확하고 오답이 자연스러워 통과(pass)한다.",
+      "hash": "9f00896d495ec534",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.plans-story-delay-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 분명하고 오답도 메시지와 어긋나게 짜였다. 정답 보기가 약간 긴 점 외에는 문제 없어 통과. | 지각 알림 메시지를 읽고 도착 상태를 파악하는 기존 게임 복습 문항으로, 정답 유일성과 해설이 모두 적절하여 통과(pass)한다.",
+      "hash": "81bb0f701ae25ea2",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.plans-story-place",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답 「도서관 앞 벤치」가 글에 여러 번 나와 유일하고, 능력과 난도도 맞습니다. 「카페 창가」 오답이 다소 약하고 해설에 오답 설명이 없는 점은 사소하므로 통과입니다. | 이야기에서 세 친구가 만난 장소를 찾는 기존 게임 문항으로 모든 기준을 충족함.",
+      "hash": "6f9294d7cda9c0da",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.plans-story-place-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.negation",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 유일하고, 부정·정정 표현으로 장소를 가리는 쉬운 생활 읽기 문항이에요. 게임 꼴 안에서 기준을 모두 충족해 통과예요. | 부정 표현(‘~이/가 아니라’)을 통해 정확한 약속 장소를 파악하는 기존 게임 복습 문항으로, 정답이 유일하고 오답 구성이 적절하여 통과(pass)한다.",
+      "hash": "021b3fad9c06002e",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.plans-story-time",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "「내일 오후 세 시」가 이야기에 두 번 분명히 나와 정답이 유일하고, 오답은 날짜와 오전·오후만 바꿔 적절해요. 해설이 짧고 오답 설명이 없는 점은 사소해서 통과예요. | 이야기에서 약속 시간을 찾는 기존 게임 문항으로 정답 유일성과 오답 구성이 적절함.",
+      "hash": "63561d51355079ed",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.plans-story-time-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "카드의 시간과 그대로 맞는 보기가 하나뿐이고, 오답은 오전/오후와 요일을 하나씩 바꿔 고르게 짜였어요. 해설이 짧지만 기존 게임 문항으로는 학습자에게 해가 없어 통과예요. | 약속 카드의 요일과 시각을 확인하는 기존 게임 복습 문항으로 기준에 부합함.",
+      "hash": "f7a3fde754d072c5",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.store-apply-bag",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "봉투가 필요하다는 상황에 맞는 대답이 하나뿐인 1급 생활 문항이에요. 정답과 난도가 맞고 표현도 자연스러워 통과예요. | 봉투가 필요한 상황에서 직원의 질문에 알맞게 답하는 문항으로, 정답 유일성·오답 매력도·해설 모두 적절하다.",
+      "hash": "aac4e1b882c7e8df",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.store-apply-bag-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "봉투를 거절하는 생활 장면 문항이다. 정답이 유일하고 한국어가 자연스러우며 급·난도에 맞다. 해설에 오답 설명을 덧붙이면 더 좋지만 통과시켜도 된다. | 상점에서 봉투 제안을 정중히 거절하는 표현을 고르는 생활 한국어 문항으로, 모든 기준에 적합하다.",
+      "hash": "05dc3a2697c2d9fe",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.store-apply-card",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "레슨 표현을 확인하는 게임 문항으로, 정답이 유일하고 보기 꼴이 고르다. 해설은 얇지만 학습자에게 해가 없어 통과로 본다. | 카드 결제 상황에 맞는 표현을 고르는 초급 레슨 문항으로, 문제없이 사용할 수 있다.",
+      "hash": "55d3a37cab3722c7",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.store-apply-card-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 유일하고 표현이 자연스러운 생활 복습 문항이에요. 다만 발문과 정답이 '현금'을 공유해 낱말 맞추기만으로 풀 수 있고, 3번 보기('가격표를 붙여 주세요')가 약해요. 둘 다 사소한 점이라 통과로 판정해요. | 현금 결제 표현을 확인하는 생활 한국어 복습 문항으로, 모든 기준을 충족한다.",
+      "hash": "a83de1702d3d5cf7",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.store-apply-price",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "레슨 표현 「얼마예요」를 생활 상황에 쓰는 초급 문항이에요. 정답이 하나뿐이고 보기 꼴이 고르며 수준이 맞아 통과예요. | 가격을 묻는 상황에 맞는 의문사 표현('얼마예요?')을 고르는 기존 게임 문항으로, 정답 유일성·오답 구성·난도 모두 적절하다.",
+      "hash": "1e120c9e51815e09",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.store-apply-price-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "값을 묻는 의문사 「얼마」를 고르는 1급 생활 문항이에요. 정답이 하나로 분명하고 오답 꼴도 고르게 맞춰져 있어요. 발문 말투만 조금 다듬을 수 있을 뿐, 그대로 통과예요. | 우산의 값을 묻는 표현('우산은 얼마예요?')을 고르는 복습 문항으로, 기준을 모두 충족한다.",
+      "hash": "c1de3b9732b81e6d",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.store-expressions-bag",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 분명하고 수준과 꼴이 게임 레슨에 맞습니다. 정답에 「봉투」가 그대로 들어가 쉽게 맞힐 수 있고 해설이 짧은 점은 사소한 흠이라 통과로 판정합니다. | ‘봉투 하나 주세요’의 의미를 확인하는 초급 레슨 문항으로 기준을 충족함.",
+      "hash": "52dded390547e179",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.store-expressions-bag-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 유일하고 오답이 그럴듯하며 1급 생활 낱말로 자연스럽게 짜인 게임 꼴 문항입니다. 해설이 짧지만 근거가 바르므로 통과입니다. | 상황에 맞는 기초 구매 표현('봉투 하나 주세요.')을 고르는 문항으로 정답이 명확하고 구성이 적절하다.",
+      "hash": "c5aca5b2cdadd502",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.store-expressions-card",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "레슨에서 본 표현의 뜻을 확인하는 간단한 문항으로, 정답이 분명하고 초급에 맞습니다. 해설에 「현금으로」가 왜 틀린지 한 줄을 더하면 좋지만 통과에 지장은 없습니다. | 발문의 '카드로'가 정답 보기('카드로 내요.')에 그대로 반복되어 어휘 뜻을 몰라도 표면 글자 일치만으로 풀리므로, '계산할게요(값을 내요)'의 의미를 변별하도록 보기를 수정해야 한다. | 정답은 0번으로 분명하고 초급 수준에도 맞습니다. 다만 검수자 B의 지적이 맞습니다. 발문이 이미 「값을 내겠다는」이라고 뜻을 알려 주고, 정답 「카드로 내요」는 발문의 「카드로」를 그대로 되풀이합니다. 그래서 「계산하다」의 뜻을 몰라도 글자만 맞춰 풀 수 있고, 낱말 뜻 읽기(ko.reading.vocabulary)를 가르지 못합니다. 오답 「현금으로 내요」「다음에 내요」는 발문 표면만 봐도 지워져 매력이 없습니다. 해설도 오답이 왜 틀린지 짚지 않습니다. 고치면 쓸 수 있는 문항이므로 fix입니다.",
+      "hash": "38690015c37ced6f",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.store-expressions-card-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 맞지만 정답 보기가 발문의 「현금으로」를 그대로 되풀이한다. 그래서 낱말 뜻을 몰라도 풀리고, 「내일 내요」는 범주가 달라 매력이 없다. 정답 보기를 「지폐나 동전으로 내요」처럼 뜻을 풀어 쓰고 해설을 보강하면 쓸 수 있다. | 발문의 '현금으로'와 정답 보기 '현금으로 내요.'가 글자 그대로 겹쳐 '현금'의 뜻을 몰라도 풀리고 해설('지폐나 동전으로 직접 값을 내는 방법')과도 어긋나므로, 보기나 상황 제시 방식을 뜻풀이 중심으로 수정해야 한다.",
+      "hash": "76e5b89f259beeae",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.store-expressions-price",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "생활 표현 「이거 얼마예요?」를 고르는 초급 문항이에요. 정답이 하나뿐이고, 오답도 같은 꼴에서 의문사만 바꿔 그럴듯해요. 급과 난도에도 맞아 통과예요. 해설에 오답 설명 한 줄을 더하면 더 좋지만 꼭 고칠 것은 아니에요. | 가격을 묻는 기초 표현(「이거 얼마예요?」)을 고르는 문항으로 모든 기준을 충족함.",
+      "hash": "d8bc6a1cc368c2b3",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.store-expressions-price-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "A clear item that matches the price-asking situation to '얼마예요'. The answer is unique, the distractors are well built, and the level fits, so it passes. | 샌드위치의 값을 묻는 표현을 고르는 복습 문항으로 모든 기준에 부합함.",
+      "hash": "aa28f0d928ee756b",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.store-story-bag",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.reason",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 유일하고 능력도 맞습니다. 다만 오답 하나(가격을 바꾸려고요)가 터무니없어 바꿔야 하고, 「-(으)려고」 문형 때문에 난도는 2가 맞습니다. 해설에 근거 인용과 오답 설명을 더하면 좋습니다. | 이야기에서 봉투를 부탁한 이유를 찾는 문항으로 정답 유일성과 오답 구성이 모두 적절하다. | 정답 0(「라면과 물을 담으려고요」)은 이야기의 「라면과 물을 담으려고 … 부탁해요」로 바로 확인되고, 다른 보기와 다툴 여지가 없습니다. 능력 ko.reading.reason도 맞습니다. 마스코트 이름과 보기 셋은 기존 게임 꼴이라 문제 삼지 않습니다. 그래도 검수자 A의 지적 두 가지는 받아들입니다. 첫째, 오답 「가격을 바꾸려고요」는 이야기와 관계없는 터무니없는 보기라 상식만으로 지워집니다. 둘째, 정답을 가르려면 「-(으)려고」를 이해해야 합니다. 이 문형은 작성 기준 §3에서 2단계 문형으로 정해 두었고, 이야기도 여러 줄이라 difficulty 1은 맞지 않고 2가 맞습니다. 난도 칸이 틀리면 Core 칸 배정이 어긋나므로 그대로 통과시키지 않습니다. 해설은 기존 문항이라 한국어만 있어도 되지만, 근거 인용과 오답 설명을 더하면 학습자에게 도움이 됩니다.",
+      "hash": "e3763a7fdff0b9f9",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.store-story-bag-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.reason",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "봉투 요청에 맞는 장면(산 물건 담기)을 고르는 생활 게임 문항이에요. 정답이 유일하고 낱말 수준과 해설도 맞아 그대로 써도 돼요. | '봉투 하나 주세요'를 요청하는 목적·상황을 고르는 복습 문항으로 이상 없다.",
+      "hash": "7480c4670de3cbe3",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.store-story-card",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답(카드)은 유일하고 능력·난도도 맞습니다. 다만 오답 「다음 날 계산했어요」가 방법을 묻는 발문과 꼴이 맞지 않아 쉽게 지워지므로, 방법 보기로 바꾸고 해설에 오답 설명을 더하면 쓸 수 있습니다. | 이야기에서 까몽이 계산한 방법을 찾는 세부 정보 파악 문항으로 모든 기준을 충족한다. | 정답 「카드로 계산했어요」는 이야기의 「카드로 계산할게요」·「카드로 계산하고」로 하나뿐이고, 능력(세부)·난도도 맞습니다. 다만 보기 0 「다음 날 계산했어요」는 방법이 아니라 때를 말하는 보기라 「어떤 방법으로」라는 발문과 꼴이 맞지 않습니다. 그래서 읽지 않고도 지울 수 있고, 오답 매력도 기준(꼴을 고르게)에 어긋납니다. 해설에도 오답이 왜 틀린지가 없습니다. 기존 게임 꼴(보기 셋, 마스코트 이야기)은 그대로 두고 보기 하나와 해설만 고치면 쓸 수 있으므로 검수자 A의 지적을 받아들입니다.",
+      "hash": "554343ce0f3a7454",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.store-story-card-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 유일하고 1급 생활 상황 읽기로 알맞아 통과예요. 해설이 짧으니 나중에 고칠 때 근거 말 「현금으로 계산할게요」를 인용하면 더 좋아요. 예: 「몽글이 '현금으로 계산할게요'라고 말하고 지폐를 건넸으니 현금으로 계산했어요.」 | 지문에 정답 표현(「현금으로 계산」)이 그대로 노출된 상태에서 해설은 초급 외 어휘인 '지폐·결제'로만 설명하고 있고, 발문('방법을 골라요')과 보기 2번('아직 계산하지 않았어요.')의 범주가 맞지 않으며 마스코트 이름('몽글')이 쓰여 수정이 필요하다. | 정답(0번)은 하나뿐이고 게임 꼴 안에서 생활 상황 읽기로 쓸 수 있다. 다만 손볼 곳이 둘 있다. 첫째, 해설이 근거가 된 말 「현금으로 계산할게요」를 짚지 않는다. 그 대신 초급 수준을 넘는 「결제」로만 풀어 학습자에게 근거가 잘 보이지 않는다. 둘째, 발문이 「방법을 골라요」인데 3번 보기 「아직 계산하지 않았어요」는 방법이 아니어서 발문과 범주가 어긋난다. 고치기는 쉬우니 고쳐서 내보내는 편이 낫다. 마스코트 이름 「몽글」은 기존 게임(WORLD)의 등장인물로 쓰인 것이어서 게임 꼴 안에서는 받아들인다. 정답 표현이 지문에 그대로 나오는 점도 「새 상황 복습」 꼴",
+      "hash": "f2578834d5221963",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.store-story-price",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "가격표와 대사에서 1,000원이 분명히 드러나 정답이 유일합니다. 게임 꼴 안에서 1급 앞쪽 세부 정보 문항으로 무난하므로 통과입니다. 오답 매력도가 낮고 해설이 짧은 것은 사소합니다. | 이야기 속에서 물 한 병의 가격(1,000원)을 찾는 세부 정보 파악 문항으로 정답 근거가 명확하고 오류가 없다.",
+      "hash": "e1cb1322a06c4905",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.store-story-price-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "우유 가격 1,500원을 찾는 단순한 세부 정보 문항이다. 오답(빵 가격·합계)이 적절하고 정답이 유일해 통과한다. | 가격표에서 우유 한 개의 가격을 찾는 세부 정보 파악 문항으로 모든 기준을 충족한다.",
+      "hash": "353e6997b7cef204",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.transit-apply-alight",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "suggestedSkillId": "ko.reading.detail",
+      "reason": "정답이 분명하고 1급 앞쪽 수준에 맞는 생활 적용 문항이에요. 「버스를 다시 타요」가 다소 약한 오답이지만 게임 꼴에서는 사소한 문제라서 그대로 써도 돼요. | 문항 자체의 완성도는 좋으나, 선후 순서가 아니라 정류장 세부 정보 일치를 묻는 문항이므로 대표 능력(skillId)을 ko.reading.detail로 수정해야 함. | 정답은 분명하다. 목적지가 병원이고 안내문이 「이번 정류장은 병원입니다」이므로 정답은 2번 「이번 정류장에서 내려요」 하나뿐이다. 1급 앞쪽 생활 문항으로서 꼴과 낱말 수준도 맞다. 「버스를 다시 타요」는 약한 오답이지만, 게임 꼴의 보기 셋 안에서는 학습자에게 해가 될 정도는 아니다. 다만 정답을 가르는 정보는 먼저·나중의 순서가 아니다. 안내된 정류장이 목적지와 같은지 맞춰 보는 장소 세부 정보다. 작성 기준 §1의 「시간·장소·수량 = 세부」에 따라 대표 능력은 ko.reading.detail이 맞다. 이 점에서 검수자 B의 지적을 받아들인다. 대표 능력이 잘못 붙으면 Core의 능력 집계가 틀어지므로 고친 뒤 내보낸다.",
+      "hash": "e8bc0b699f4b2091",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.transit-apply-alight-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 유일하고 1급 생활 낱말로 쓰인 짧은 순서 읽기 문항이에요. 세 번째 보기가 조금 약하지만 학습자에게 해가 없어 통과예요. | 이번 정류장과 다음 정류장의 순서를 구별해 하차 시점을 고르는 문항으로 모든 검수 기준을 충족한다.",
+      "hash": "82250808eb67100e",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.transit-apply-card",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "'교통카드를 찍다'의 상황 속 뜻을 묻는 생활 문항이에요. 정답이 하나뿐이고, '사진을 찍다'라는 다의어 오답도 알맞아요. 해설에 사진 오답이 틀린 까닭을 덧붙이면 좋지만, 지금 그대로 통과해도 돼요. | ‘교통카드를 찍다’의 뜻을 묻는 문항이나, 오답이 상식만으로 지워질 만큼 터무니없고 발문·보기에 1급을 넘는 어휘(‘승차’, ‘좌석’)가 쓰여 수정이 필요하다. | 정답(1번 '카드를 단말기에 대고 들어가요.')은 하나뿐이고, '사진을 찍고'는 다의어 '찍다'를 노린 좋은 오답이에요. 다만 1급 앞쪽 학습자에게 발문의 '승차'와 보기의 '좌석'은 어려운 한자어예요. 또 '좌석에 놓고'는 카드를 대는 행동과 거리가 멀어 오답으로서 약해요. 해설도 가장 걸리기 쉬운 '사진' 오답이 왜 틀렸는지 짚지 않아요. 고치기 쉬운 문제라 바로 통과시키기보다 손보는 편이 맞다고 봐요. 다만 '버스에서 내린 뒤에 카드를 대요'로 바꾸자는 B의 제안은 받지 않았어요. 이 문항은 '찍다'의 뜻을 묻는 문항인데, 그 보기는 순서를 묻게 되어 겨누는 능력을 흐려요.",
+      "hash": "602c6ee8ea941707",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.transit-apply-card-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "suggestedSkillId": "ko.reading.detail",
+      "reason": "정답은 맞지만 오답 둘이 터무니없고 정답이 안내문을 글자 그대로 옮겨 변별력이 없다. 때·행동만 바꾼 그럴듯한 오답으로 고치고, 발문의 「하차」를 쉬운 말로 바꾸면 쓸 수 있다. | 지문의 ‘교통카드를 단말기에 대세요’를 정답 보기가 그대로 반복해 ‘낱말 뜻 읽기(ko.reading.vocabulary)’가 작동하지 않고, 오답이 터무니없으며 ‘하차·단말기’ 등 1급을 넘는 어휘가 노출되어 수정이 필요하다.",
+      "hash": "488ac6fb48a9f832",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.transit-apply-route",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "The answer is clear and the wrong options are plausible. Only the Korean explanation is inaccurate: it says the question is about whether the destination is the hospital, when it actually asks whether the bus goes to the hospital. Rewriting it so it quotes the evidence and covers the wrong options makes the item usable. | 레슨에서 배운 목적지 확인 표현을 새 장소(병원)에 적용하는 문항으로 구성과 난도가 적절함. | I solved it myself and got choice 0, which matches the answer key. The wrong options reuse the word 병원 but ask about closing time and location. They are plausible yet clearly wrong, so the answer is unique. The structure a",
+      "hash": "8ffddccb5d9e780b",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.transit-apply-route-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 분명하다. 다만 '버스'가 정답에만 있어 오답이 약하고, 해설이 제작 쪽 설명이라 학습자에게 근거를 주지 못한다. 오답과 해설을 고치면 쓸 수 있다. | 배운 목적지 확인 표현을 '학교' 상황에 적용하는 복습 문항으로 문제없이 사용 가능함. | 정답(1)은 분명하고 문화·기출 문제도 없다. 다만 검수자 A의 지적이 맞다. 「버스」가 정답 보기에만 있어서, 발문의 「버스 목적지」만 보고도 낱말 맞추기로 풀린다. 오답 둘은 버스 상황과 상관없는 말이라 매력이 약하다. 해설 「가려는 장소를 학교로 바꿔…」는 문항을 만든 쪽의 설명이라, 학습자에게 왜 정답인지 근거를 주지 못한다. 오답과 해설을 고치면 쓸 수 있으므로 pass가 아니라 fix로 본다.",
+      "hash": "3b8731d24da67a76",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.transit-expressions-alight",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답 유일, 표현이 자연스럽고 1급 수준에 맞아요. 레슨 시작의 뜻풀이에 답이 드러나 쉽지만, 게임 레슨 의도에 맞으므로 통과예요. | '지금'과 '다음' 정류장의 순서 관계를 상황에 적용하는 좋은 초급 문항입니다.",
+      "hash": "c53e137581cc5ead",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.transit-expressions-alight-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "suggestedSkillId": "ko.reading.vocabulary",
+      "reason": "「이번 정류장에서 내려요」를 「지금 내려요」와 짝짓는 쉬운 생활 문항입니다. 정답이 하나뿐이고 오답도 이번과 다음의 혼동을 겨눠 쓸 만해 통과로 판정합니다. 대표 능력이 낱말 뜻 읽기에 가깝다는 점만 사소하게 적어 둡니다. | 문항과 해설은 적절하나, 사건의 순서가 아니라 '이번 정류장에서 내려요'라는 표현·낱말의 뜻을 묻고 있으므로 대표 능력을 ko.reading.vocabulary로 수정해야 함. | 직접 풀면 정답은 1번 「지금 내려요」이고 정답 칸과 같습니다. 「이번 정류장」은 지금 멈춘 곳이므로 정답이 하나뿐입니다. 「한 정류장 더 가요」는 이번과 다음을 헷갈리는 학습자를 겨눈 그럴듯한 오답입니다. 「버스를 다시 타요」는 조금 약하지만 보기 셋인 게임 꼴에서는 쓸 만합니다. 해설도 「이번」과 「다음」의 차이를 바르게 짚고, 기존 게임 문항이라 한국어 해설만 있어도 됩니다. 다만 정답을 가르는 정보는 사건의 순서가 아니라 「이번」이라는 낱말의 뜻입니다. 그래서 대표 능력 ko.reading.sequence는 맞지 않습니다. 두 검수자 모두 이 점을 짚었고(A는 사소하다고 봄), 능력 표시가 틀리면 학습 기록이 잘못 쌓이므로 고쳐서 내보냅니다.",
+      "hash": "bf2f1b1763658006",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.transit-expressions-card",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 분명하고 '찍다' 다의어 함정도 좋아요. 다만 해설 문장이 어색하고, 오답 하나가 너무 쉽게 지워져요. 이 두 곳을 고치면 쓸 수 있어요. | 정답 유일성, 다의어를 활용한 오답 매력도, 해설 및 능력 분류 모두 적절하여 통과(pass). | 정답(0번)은 레슨 시작에 보여 준 뜻풀이와 맞고, 다른 답이 될 수 있는 보기도 없습니다. ‘찍다’를 사진 찍기로 잘못 읽게 하는 오답도 다의어를 잘 활용했습니다. 다만 한국어 해설 「단말기에 카드를 대는 뜻이에요」는 문법이 어색합니다. ‘-는 뜻’이 아니라 ‘-다는/-라는 뜻’으로 써야 하고, 학생 화면에 그대로 나가는 문장이므로 고쳐야 합니다. 또 「교통카드를 의자에 놔요」는 버스 탑승 상황과 이어지지 않아 상식만으로 지울 수 있습니다. 작성 기준 §5-2(터무니없는 보기 금지)에 비추어 약한 보기입니다. 상황 안에서 그럴듯한 행동으로 바꾸는 편이 낫습니다. 따라서 검수자 A의 두 지적을 받아들여 fix로 판정합니다.",
+      "hash": "1c864f2e0a9a0533",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.transit-expressions-card-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "The answer is unique and the polysemy distractor based on '찍다' works well. The explanation should add a sentence stating that '찍다' here is not '사진을 찍다'. | 기존 생활 한국어 복습 문항으로 정답 유일성, 난도, 해설, 능력 분류가 모두 기준에 부합하여 통과(pass). | 정답 2번(단말기에 카드를 대요)은 유일하고 분명하다. 「찍다」의 두 뜻을 이용한 오답(카드 사진을 찍어요)도 낱말 뜻 읽기를 잘 겨눈다. 기존 게임 문항이라 보기 셋과 한국어 해설만 있는 꼴은 허용된다. 다만 해설이 「찍다」가 사진을 찍는다는 뜻이 아니라는 핵심을 짚지 않는다. 그래서 가장 걸리기 쉬운 2번 오답을 고른 학습자가 왜 틀렸는지 알 수 없다. 「이 문제의 안내는」이라는 말투도 어색하다. 검수자 A의 지적을 받아들여 해설을 보완한다.",
+      "hash": "2d60eb7c714bd0dd",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.transit-expressions-route",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 하나뿐이고 초급에 맞는 자연스러운 생활 표현 문항이라 통과입니다. 해설에 오답이 왜 틀린지 한 줄을 더하면 더 좋습니다(선택). | 버스 행선지 확인 표현을 고르는 초급 레슨 문항으로 이상 없습니다.",
+      "hash": "b6962e018fe733b2",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.transit-expressions-route-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 하나뿐이고 1급 생활 표현에 맞는 무난한 게임 문항이다. 해설이 짧은 것만 아쉬우므로, 원하면 '「이 버스는 도서관에 가요?」가 버스의 목적지를 묻는 말이에요. 다른 보기는 도서관의 책이나 여는 시간을 물어요.'처럼 보강할 수 있다. 판정은 통과다. | 목적지를 도서관으로 바꾸어 버스 행선지 확인 표현을 복습하는 문항으로 적합합니다.",
+      "hash": "8a99e5e39031a6a4",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.transit-story-alight",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 0번 하나로 분명하고 능력·난도도 맞다. 다만 오답 하나(처음 정류장으로 돌아감)는 상식만으로 지워지고, 해설이 근거 인용과 오답 설명 없이 너무 짧다. 보기 하나를 바꾸고 해설을 보강하면 쓸 수 있다. | 이야기에서 정류장 순서에 따라 한 정류장 더 이동한 행동을 파악하는 문항으로 모든 기준을 충족함. | 정답 0번(한 정류장 더 갔어요)은 「다음 정류장: 꽃길 공원」과 「같이 한 정류장 더 가자!」, 「다음 정류장에 도착하자 친구들이 내려요」로 하나뿐이다. 순서 능력과 난도 1도 맞고, 마스코트 이름과 보기 셋 꼴은 기존 게임 문항이라 문제 삼지 않는다. 다만 A의 지적 두 가지가 맞다. 첫째, 「처음 정류장으로 돌아갔어요」는 글에 돌아가는 장면의 실마리가 전혀 없어 상식만으로 지워지는 보기다. 둘째, 해설이 근거를 「…」로 짚지 않고, 가장 걸리기 쉬운 오답(까몽이 일어선 것 때문에 고르는 「바로 내렸어요」)도 설명하지 않는다. 고치기 쉬운 결함이라 drop이 아니라 fix로 본다.",
+      "hash": "61201abdf2cc76af",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.transit-story-alight-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.sequence",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 유일하고 급·난도·능력도 맞다. 다만 오답 「버스를 타지 않아요」는 터무니없어 상식만으로 지워지므로, 글과 어긋나는 그럴듯한 보기로 바꾸면 쓸 수 있다. | 현재 정류장과 다음 정류장 정보를 보고 하차 시점을 고르는 복습 문항으로 이상 없음. | 정답 「다음 정류장에서 내려요」는 글의 「다음 정류장: 마루 도서관」과 「목적지는 마루 도서관」으로 하나뿐이고, 1급 생활 낱말과 순서 능력에도 맞다. 다만 보기가 셋뿐인데 「버스를 타지 않아요」는 상식만으로 지워지는 터무니없는 오답이라 실제로는 둘 중 하나를 고르는 문항이 된다. 작성 기준 §5-2에 어긋나므로 A의 지적이 맞다. 발문의 「새 노선에서」도 이 문항만 보는 학습자에게는 뜻이 분명하지 않다. 해설은 근거 낱말을 짚지 않고, 걸리기 쉬운 오답인 「학교」가 왜 틀렸는지도 말하지 않는다.",
+      "hash": "4de8dc5fe2cfa18a",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.transit-story-card",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답이 하나뿐이고(단말기), 근거가 글에 분명하며 기존 게임 꼴 안에서 기준에 맞아요. 해설에 오답 설명 한 줄(예: 「창문은 꽃을 보자고 한 곳이고 카드를 댄 곳이 아니에요.」)을 더하면 더 좋지만, 고치지 않아도 통과할 수 있어요. | 이야기에서 교통카드를 댄 곳(‘카드 단말기’)을 찾는 세부 정보 문항으로 이상 없음.",
+      "hash": "8bf827baf54d7ec6",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "pass"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.transit-story-card-transfer",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 유일하고 능력·난도 칸도 맞다. 다만 오답 둘이 상식만으로 지워지고 정답만 글을 그대로 옮겨 티가 난다. 해설도 근거 인용과 오답 설명이 없다. 보기와 해설을 고치면 쓸 수 있다. | 생활 안내문을 읽고 행동을 고르는 기존 게임 문항으로 정답이 유일하고 초급 연습용으로 적합함. | 정답(2번 「카드를 단말기에 대요」)은 유일하고 맞습니다. 세부 정보 능력과 난도 1 칸도 받아들일 만합니다. 기존 게임 꼴(보기 셋, 해설 한국어만)도 허용 범위입니다. 다만 오답 「카드 사진을 찍어요」「카드를 좌석에 놔요」는 글의 사실을 바꾼 보기가 아니어서 상식만으로 지워집니다. 정답은 안내문을 그대로 옮겨 티가 나므로 distractors 항목이 ok가 아니라는 A의 지적이 맞습니다. 해설도 근거 인용과 오답 설명이 없습니다. 학생에게 해롭지는 않지만, 연습 효과를 위해 보기와 해설을 고친 뒤 내보내는 것이 맞습니다.",
+      "hash": "3f8cb50023e05bc4",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "pass"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.transit-story-route",
+      "source": "life",
+      "verdict": "fix",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "정답은 분명하다. 다만 오답 ‘학교’·‘편의점’이 이야기에 없어 너무 쉽게 지워지고, 발문의 ‘목적지’가 1급 앞쪽에 어렵다. 오답을 ‘도서관’으로 바꾸고 발문을 쉽게 고치면 쓸 수 있다. | 정답은 명확하나 오답('학교', '편의점')이 모두 지문에 없는 장소여서 매력도가 떨어지므로, 지문에 중간 정류장으로 등장하는 '도서관'을 오답 보기에 반영하도록 수정(fix) 제안.",
+      "hash": "0b47e9bd8a9216f3",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
+      "by": [
+        {
+          "stage": "claude",
+          "model": "claude-opus-5-5",
+          "verdict": "fix"
+        },
+        {
+          "stage": "argon",
+          "model": "gemini-4-argon-high",
+          "verdict": "fix"
+        }
+      ]
+    },
+    {
+      "itemKey": "life.transit-story-route-transfer",
+      "source": "life",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
+      "difficulty": 1,
+      "responseFormat": "single-choice",
+      "officialType": null,
+      "reason": "「마루 도서관행」 안내표에서 목적지를 고르는 단순한 생활 읽기 문항이다. 정답이 하나뿐이고 오답 「마루 카페」도 그럴듯해서 통과로 본다. 해설에 「마루 카페」가 왜 틀린지 한 줄을 더하면 더 좋다. | 버스 안내표(‘마루 도서관행’)를 읽고 목적지를 찾는 문항으로 정답이 명확하고 난도와 유형에 잘 맞음.",
+      "hash": "099915373a3c581d",
+      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "rubric": "topik-review-r1",
+      "packet": "life-d-20261108",
       "by": [
         {
           "stage": "claude",

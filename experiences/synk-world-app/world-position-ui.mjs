@@ -24,6 +24,7 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
   if(experienceId==='world-home')return t('position.source.diagnostic');
   if(experienceId==='world-practice')return t('position.source.practice');
   if(experienceId==='world-mock')return t('position.source.mock');
+  if(experienceId==='world-life')return t('position.source.life');
   const prefix=String(itemKey||'').split(/[.:]/)[0];
   return prefix&&has(`position.source.${prefix}`)?t(`position.source.${prefix}`):t('position.source.other');
  }

@@ -514,6 +514,8 @@ export default {
  'position.source.korean-racing':{ko:'한국어 레이싱',en:'Korean Racing',mn:'Солонгос хэлний уралдаан'},
  'position.source.other':{ko:'다른 연습',en:'Other practice',mn:'Бусад дасгал'},
  'position.source.practice':{ko:'짧은 연습',en:'Short practice',mn:'Богино дасгал'},
+ // 생활 레슨 · 복습의 답(Atlas × WORLD D, 11-08) — 글은 'life.everydayKorean' 그대로(새 현지어 글 없음).
+ 'position.source.life':{ko:'생활 한국어',en:'Everyday Korean',mn:'Өдөр тутмын солонгос хэл'},
  'position.diagnostic.title':{ko:'짧은 진단',en:'Quick check',mn:'Богино шалгалт'},
  'position.diagnostic.intro':{ko:'처음 보는 문항 {n}개로 시작점을 정해요. 문항마다 건너뛸 수 있고, 다음에 다른 문항으로 다시 할 수 있어요.',en:{one:'1 question you haven’t seen before sets your starting point. You can skip it, and try again later with a different one.',other:'{n} questions you haven’t seen before set your starting point. You can skip any of them, and try again later with different ones.'},mn:'Өмнө нь үзээгүй {n} асуултаар эхлэх цэгээ тогтооно. Асуулт бүрийг алгасаж болох бөгөөд дараа нь өөр асуултаар дахин хийж болно.'},
  'position.diagnostic.start':{ko:'짧은 진단 시작하기',en:'Start the quick check',mn:'Богино шалгалт эхлүүлэх'},

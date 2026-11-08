@@ -78,7 +78,9 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
     assert.equal(learning.enabled,true,'disabled learning consent must never send learning or memory');
     if(target.searchParams.get('view')==='memory'||body?.memory)data={ok:true,revision:learning.revision,entries:body?.memory||[]};
     else if(body?.events){learningEvents.push(...body.events);data={ok:true,revision:learning.revision,accepted:body.events.map(event=>event.id)};}
-    else data={ok:true,revision:learning.revision,events:learningEvents,cursor:learningEvents.length,hasMore:false};
+    // 실제 synk-learning처럼 커서(after) 뒤 사건만 준다 — 전부를 다시 주면 새 사건 없이 두 번째로 받을 때 동기화가 「멈춘 커서」로 막는다
+    // (생활 한국어 거울 · Atlas × WORLD D 11-08부터 레슨 중에도 동기화가 돈다).
+    else data={ok:true,revision:learning.revision,events:learningEvents.slice(Number(target.searchParams.get('after'))||0),cursor:learningEvents.length,hasMore:false};
    }
    else if(target.pathname.endsWith('/synk-world-v1/bootstrap'))data=snapshot;
    else if(target.pathname.endsWith('/synk-town/entry'))data={ok:true,accountId:A,allowed:true,entryVerified:true,access:'trial'};

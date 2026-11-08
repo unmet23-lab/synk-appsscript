@@ -6631,6 +6631,950 @@ var require_world_map = __commonJS({
   }
 });
 
+// strata/maps/world-life.json
+var require_world_life = __commonJS({
+  "strata/maps/world-life.json"(exports, module) {
+    module.exports = {
+      layer_ver: "world-life-1-81514d0dfb6b",
+      sources: {
+        "world-life": {
+          path: "strata/world-life.json",
+          sha256: "81514d0dfb6b2473f2c354f4063bd441c0067b42392403c246fcf8c75056f182"
+        }
+      },
+      nodes: [
+        {
+          id: "life.task.greet-response",
+          kind: "task",
+          label_ko: "\uC0C1\uD669\uC5D0 \uB9DE\uAC8C \uC778\uC0AC\uD558\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "greet-response"
+            }
+          ],
+          material: {
+            skill: "greet-response",
+            pack: "greetings",
+            ability: "ko.reading.vocabulary",
+            situations: [
+              "sit-people-greeting"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {}
+          }
+        },
+        {
+          id: "life.task.greet-gratitude",
+          kind: "task",
+          label_ko: "\uACE0\uB9C8\uC6C0 \uC804\uD558\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "greet-gratitude"
+            }
+          ],
+          material: {
+            skill: "greet-gratitude",
+            pack: "greetings",
+            ability: "ko.reading.vocabulary",
+            situations: [
+              "sit-people-greeting"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {
+              "greetings-story-thanks": {
+                skill: "ko.reading.reason"
+              },
+              "greetings-story-thanks-transfer": {
+                skill: "ko.reading.reason"
+              }
+            }
+          }
+        },
+        {
+          id: "life.task.greet-introduction",
+          kind: "task",
+          label_ko: "\uC774\uB984 \uC18C\uAC1C \uC774\uD574\uD558\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "greet-introduction"
+            }
+          ],
+          material: {
+            skill: "greet-introduction",
+            pack: "greetings",
+            ability: "ko.reading.detail",
+            situations: [
+              "sit-people-greeting"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {
+              "greetings-expressions-name": {
+                skill: "ko.reading.grammar"
+              },
+              "greetings-expressions-name-transfer": {
+                skill: "ko.reading.grammar"
+              }
+            }
+          }
+        },
+        {
+          id: "life.task.cafe-order-detail",
+          kind: "task",
+          label_ko: "\uC74C\uB8CC\uC640 \uC218\uB7C9 \uC774\uD574\uD558\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "cafe-order-detail"
+            }
+          ],
+          material: {
+            skill: "cafe-order-detail",
+            pack: "cafe",
+            ability: "ko.reading.detail",
+            situations: [
+              "sit-travel-order"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {}
+          }
+        },
+        {
+          id: "life.task.cafe-place",
+          kind: "task",
+          label_ko: "\uB9C8\uC2E4 \uC7A5\uC18C \uAD6C\uBD84\uD558\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "cafe-place"
+            }
+          ],
+          material: {
+            skill: "cafe-place",
+            pack: "cafe",
+            ability: "ko.reading.vocabulary",
+            situations: [
+              "sit-travel-order"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {
+              "cafe-story-here": {
+                skill: "ko.reading.detail"
+              },
+              "cafe-story-here-transfer": {
+                skill: "ko.reading.detail"
+              }
+            }
+          }
+        },
+        {
+          id: "life.task.cafe-takeout-request",
+          kind: "task",
+          label_ko: "\uD3EC\uC7A5 \uC694\uCCAD\uD558\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "cafe-takeout-request"
+            }
+          ],
+          material: {
+            skill: "cafe-takeout-request",
+            pack: "cafe",
+            ability: "ko.reading.vocabulary",
+            situations: [
+              "sit-travel-order"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {
+              "cafe-story-takeout": {
+                skill: "ko.reading.detail"
+              },
+              "cafe-visit-change-place": {
+                skill: "ko.reading.negation"
+              },
+              "cafe-visit-change-place-transfer": {
+                skill: "ko.reading.negation"
+              }
+            }
+          }
+        },
+        {
+          id: "life.task.cafe-preference-reading",
+          kind: "task",
+          label_ko: "\uCE5C\uAD6C\uC758 \uCDE8\uD5A5 \uC774\uD574\uD558\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "cafe-preference-reading"
+            }
+          ],
+          material: {
+            skill: "cafe-preference-reading",
+            pack: "cafe",
+            ability: "ko.reading.detail",
+            situations: [
+              "sit-travel-order"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {}
+          }
+        },
+        {
+          id: "life.task.cafe-availability",
+          kind: "task",
+          label_ko: "\uD488\uC808\uACFC \uC8FC\uBB38 \uAC00\uB2A5 \uC548\uB0B4 \uC77D\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "cafe-availability"
+            }
+          ],
+          material: {
+            skill: "cafe-availability",
+            pack: "cafe",
+            ability: "ko.reading.negation",
+            situations: [
+              "sit-travel-order"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {}
+          }
+        },
+        {
+          id: "life.task.cafe-order-change",
+          kind: "task",
+          label_ko: "\uC8FC\uBB38 \uBCC0\uACBD \uC774\uD574\uD558\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "cafe-order-change"
+            }
+          ],
+          material: {
+            skill: "cafe-order-change",
+            pack: "cafe",
+            ability: "ko.reading.negation",
+            situations: [
+              "sit-travel-order"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {}
+          }
+        },
+        {
+          id: "life.task.cafe-compose-order",
+          kind: "task",
+          label_ko: "\uC8FC\uBB38 \uBB38\uC7A5 \uAD6C\uC131\uD558\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "cafe-compose-order"
+            }
+          ],
+          material: {
+            skill: "cafe-compose-order",
+            pack: "cafe",
+            ability: "ko.reading.detail",
+            situations: [
+              "sit-travel-order"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {
+              "cafe-compose-order": {
+                format: "cup-compose"
+              }
+            }
+          }
+        },
+        {
+          id: "life.task.store-price-reading",
+          kind: "task",
+          label_ko: "\uAC00\uACA9 \uC9C8\uBB38\uACFC \uD45C\uC2DC \uC77D\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "store-price-reading"
+            }
+          ],
+          material: {
+            skill: "store-price-reading",
+            pack: "store",
+            ability: "ko.reading.vocabulary",
+            situations: [
+              "sit-travel-shopping"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {
+              "store-story-price": {
+                skill: "ko.reading.detail"
+              },
+              "store-story-price-transfer": {
+                skill: "ko.reading.detail"
+              }
+            }
+          }
+        },
+        {
+          id: "life.task.store-bag-request",
+          kind: "task",
+          label_ko: "\uBD09\uD22C \uC694\uCCAD\uD558\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "store-bag-request"
+            }
+          ],
+          material: {
+            skill: "store-bag-request",
+            pack: "store",
+            ability: "ko.reading.vocabulary",
+            situations: [
+              "sit-travel-shopping"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {
+              "store-story-bag": {
+                skill: "ko.reading.reason"
+              },
+              "store-story-bag-transfer": {
+                skill: "ko.reading.reason"
+              }
+            }
+          }
+        },
+        {
+          id: "life.task.store-payment",
+          kind: "task",
+          label_ko: "\uACB0\uC81C \uBC29\uBC95 \uC774\uD574\uD558\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "store-payment"
+            }
+          ],
+          material: {
+            skill: "store-payment",
+            pack: "store",
+            ability: "ko.reading.vocabulary",
+            situations: [
+              "sit-travel-shopping"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {
+              "store-story-card": {
+                skill: "ko.reading.detail"
+              },
+              "store-story-card-transfer": {
+                skill: "ko.reading.detail"
+              }
+            }
+          }
+        },
+        {
+          id: "life.task.directions-location-question",
+          kind: "task",
+          label_ko: "\uC7A5\uC18C\uC758 \uC704\uCE58 \uBB3B\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "directions-location-question"
+            }
+          ],
+          material: {
+            skill: "directions-location-question",
+            pack: "directions",
+            ability: "ko.reading.vocabulary",
+            situations: [
+              "sit-travel-directions"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {
+              "directions-story-where": {
+                skill: "ko.reading.detail"
+              },
+              "directions-story-where-transfer": {
+                skill: "ko.reading.detail"
+              }
+            }
+          }
+        },
+        {
+          id: "life.task.directions-turn",
+          kind: "task",
+          label_ko: "\uC774\uB3D9 \uBC29\uD5A5 \uC774\uD574\uD558\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "directions-turn"
+            }
+          ],
+          material: {
+            skill: "directions-turn",
+            pack: "directions",
+            ability: "ko.reading.detail",
+            situations: [
+              "sit-travel-directions"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {
+              "directions-expressions-right": {
+                skill: "ko.reading.vocabulary"
+              },
+              "directions-expressions-right-transfer": {
+                skill: "ko.reading.vocabulary"
+              }
+            }
+          }
+        },
+        {
+          id: "life.task.directions-landmark",
+          kind: "task",
+          label_ko: "\uC8FC\uBCC0 \uC7A5\uC18C\uB85C \uC704\uCE58 \uCC3E\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "directions-landmark"
+            }
+          ],
+          material: {
+            skill: "directions-landmark",
+            pack: "directions",
+            ability: "ko.reading.detail",
+            situations: [
+              "sit-travel-directions"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {}
+          }
+        },
+        {
+          id: "life.task.transit-route",
+          kind: "task",
+          label_ko: "\uBAA9\uC801\uC9C0 \uD655\uC778\uD558\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "transit-route"
+            }
+          ],
+          material: {
+            skill: "transit-route",
+            pack: "transit",
+            ability: "ko.reading.vocabulary",
+            situations: [
+              "sit-travel-transport"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {
+              "transit-story-route": {
+                skill: "ko.reading.detail"
+              },
+              "transit-story-route-transfer": {
+                skill: "ko.reading.detail"
+              }
+            }
+          }
+        },
+        {
+          id: "life.task.transit-alighting",
+          kind: "task",
+          label_ko: "\uB0B4\uB9B4 \uC21C\uC11C \uC774\uD574\uD558\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "transit-alighting"
+            }
+          ],
+          material: {
+            skill: "transit-alighting",
+            pack: "transit",
+            ability: "ko.reading.sequence",
+            situations: [
+              "sit-travel-transport"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {}
+          }
+        },
+        {
+          id: "life.task.transit-instruction",
+          kind: "task",
+          label_ko: "\uC2B9\uCC28 \uC548\uB0B4 \uC774\uD574\uD558\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "transit-instruction"
+            }
+          ],
+          material: {
+            skill: "transit-instruction",
+            pack: "transit",
+            ability: "ko.reading.vocabulary",
+            situations: [
+              "sit-travel-transport"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {
+              "transit-story-card": {
+                skill: "ko.reading.detail"
+              },
+              "transit-story-card-transfer": {
+                skill: "ko.reading.detail"
+              }
+            }
+          }
+        },
+        {
+          id: "life.task.plans-time-reading",
+          kind: "task",
+          label_ko: "\uC57D\uC18D \uB0A0\uC9DC\uC640 \uC2DC\uAC04 \uC77D\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "plans-time-reading"
+            }
+          ],
+          material: {
+            skill: "plans-time-reading",
+            pack: "plans",
+            ability: "ko.reading.detail",
+            situations: [
+              "sit-people-messenger",
+              "sit-career-schedule"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {}
+          }
+        },
+        {
+          id: "life.task.plans-location",
+          kind: "task",
+          label_ko: "\uB9CC\uB0A0 \uC7A5\uC18C \uD655\uC778\uD558\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "plans-location"
+            }
+          ],
+          material: {
+            skill: "plans-location",
+            pack: "plans",
+            ability: "ko.reading.negation",
+            situations: [
+              "sit-people-messenger",
+              "sit-career-schedule"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {
+              "plans-expressions-place": {
+                skill: "ko.reading.vocabulary"
+              },
+              "plans-expressions-place-transfer": {
+                skill: "ko.reading.vocabulary"
+              },
+              "plans-story-place": {
+                skill: "ko.reading.detail"
+              }
+            }
+          }
+        },
+        {
+          id: "life.task.plans-delay-message",
+          kind: "task",
+          label_ko: "\uB2A6\uB294\uB2E4\uB294 \uC5F0\uB77D \uC774\uD574\uD558\uAE30",
+          level: null,
+          confidence: "ai_draft",
+          reviewed: true,
+          review: {
+            status: "passed",
+            rubric: "topik-review-r1",
+            packet: "life-d-20261108",
+            evidence: "experiences/topik-items/review/existing-verdicts.json",
+            reviewedAt: "2026-11-08",
+            summary: "\uCE21\uC815 \uBB38\uD56D 117\uAC1C AI 2\uC911 \uAC80\uC218(1\uCC28 \xB7 2\uCC28, \uC5C7\uAC08\uB9B0 32\uAC1C\uB294 \uD310\uC815 \uB2E8\uACC4): \uB2A5\uB825 \xB7 \uB09C\uB3C4\uB97C \uBC14\uAFB8\uB77C\uB294 \uD310\uC815 0 \u2014 22\uC904 \uB300\uC751\uD45C \uD655\uC778. \uD1B5\uACFC 70 \xB7 \uC6D0\uACE0 \uACE0\uCE68 47(\uBC1C\uBB38 \xB7 \uC624\uB2F5 \xB7 \uD574\uC124 \xB7 \uB0B1\uB9D0 \xB7 \uB9C8\uC2A4\uCF54\uD2B8 \uC774\uB984 \u2014 \uACE0\uCE5C \uB4A4 \uB2E4\uC2DC \uAC80\uC218, \uADF8\uB54C\uAE4C\uC9C0 \uADFC\uAC70 \uC5C6\uC74C)"
+          },
+          source_refs: [
+            {
+              source: "world-life",
+              selector: "plans-delay-message"
+            }
+          ],
+          material: {
+            skill: "plans-delay-message",
+            pack: "plans",
+            ability: "ko.reading.vocabulary",
+            situations: [
+              "sit-people-messenger"
+            ],
+            difficulty: 1,
+            format: "single-choice",
+            items: {
+              "plans-story-delay": {
+                skill: "ko.reading.detail"
+              },
+              "plans-story-delay-transfer": {
+                skill: "ko.reading.detail"
+              }
+            }
+          }
+        }
+      ],
+      scene_lessons: [
+        "cafe-apply",
+        "cafe-visit-taste",
+        "cafe-visit-soldout",
+        "cafe-visit-change",
+        "cafe-compose"
+      ]
+    };
+  }
+});
+
+// strata/world-life.js
+var require_world_life2 = __commonJS({
+  "strata/world-life.js"(exports, module) {
+    "use strict";
+    var SOURCE = "world-life";
+    var TASK = "life.task.";
+    var FORMATS = Object.freeze(["binary-choice", "single-choice", "cup-compose", "action", "spoken", "unknown"]);
+    var ID = /^[a-z][a-z0-9-]{0,79}$/;
+    var text2 = (value) => typeof value === "string" && value.trim().length > 0;
+    var fail2 = (message) => {
+      throw new TypeError(`Strata life: ${message}`);
+    };
+    var clone3 = (value) => JSON.parse(JSON.stringify(value));
+    var modalityOf = (ability) => /^ko\.(reading|listening)\.[a-z]+$/.exec(ability)?.[1] || null;
+    function exception(value, abilities, where) {
+      const entry = typeof value === "string" ? { skill: value } : value;
+      if (!entry || typeof entry !== "object" || Array.isArray(entry) || !Object.keys(entry).length || Object.keys(entry).some((key) => !["skill", "difficulty", "format"].includes(key))) fail2(`invalid exception ${where}`);
+      if (entry.skill !== void 0 && !abilities.has(entry.skill)) fail2(`unknown ability in ${where}`);
+      if (entry.difficulty !== void 0 && ![1, 2, 3].includes(entry.difficulty)) fail2(`invalid difficulty in ${where}`);
+      if (entry.format !== void 0 && !FORMATS.includes(entry.format)) fail2(`invalid format in ${where}`);
+      return { ...entry };
+    }
+    function buildLifeLayer({ base, life, source }) {
+      if (!base || !Array.isArray(base.nodes)) fail2("a base map is required");
+      if (!text2(life?.version) || !Array.isArray(life.skills) || !life.skills.length || !life.defaults || ![1, 2, 3].includes(life.defaults.difficulty) || !FORMATS.includes(life.defaults.format)) fail2("invalid source");
+      if (!source || !text2(source.path) || !/^[a-f0-9]{64}$/.test(source.sha256)) fail2("invalid source hash");
+      if (!Array.isArray(life.scene_lessons) || new Set(life.scene_lessons).size !== life.scene_lessons.length || life.scene_lessons.some((id) => !ID.test(id))) fail2("invalid scene lessons");
+      const nodes = new Map(base.nodes.map((node) => [node.id, node]));
+      const abilities = new Set(base.nodes.filter((node) => node.kind === "skill" && modalityOf(node.id) === node.domain).map((node) => node.id));
+      const seen = /* @__PURE__ */ new Set(), keys = /* @__PURE__ */ new Set(), out = [];
+      for (const row of life.skills) {
+        if (!Array.isArray(row) || row.length !== 6) fail2("a row is [pack, skill, label, ability, situations, exceptions]");
+        const [pack, skill2, label, ability, situations, exceptions] = row;
+        if (!ID.test(pack) || !ID.test(skill2) || seen.has(skill2) || !text2(label)) fail2(`invalid row ${skill2}`);
+        if (!abilities.has(ability)) fail2(`unknown ability for ${skill2}`);
+        if (!Array.isArray(situations) || !situations.length || new Set(situations).size !== situations.length || situations.some((id) => nodes.get(id)?.kind !== "situation")) fail2(`invalid situations for ${skill2}`);
+        if (!exceptions || typeof exceptions !== "object" || Array.isArray(exceptions)) fail2(`invalid exceptions for ${skill2}`);
+        const items = {};
+        for (const [key, value] of Object.entries(exceptions)) {
+          if (!ID.test(key) || keys.has(key)) fail2(`invalid or duplicate item ${key}`);
+          keys.add(key);
+          items[key] = exception(value, abilities, `${skill2}/${key}`);
+        }
+        seen.add(skill2);
+        out.push({
+          id: `${TASK}${skill2}`,
+          kind: "task",
+          label_ko: label,
+          level: null,
+          confidence: "ai_draft",
+          reviewed: life.review?.status === "passed",
+          ...life.review?.status === "passed" ? { review: clone3(life.review) } : {},
+          source_refs: [{ source: SOURCE, selector: skill2 }],
+          material: { skill: skill2, pack, ability, situations: [...situations], difficulty: life.defaults.difficulty, format: life.defaults.format, items }
+        });
+      }
+      return { layer_ver: life.version, sources: { [SOURCE]: { path: source.path, sha256: source.sha256 } }, nodes: out, scene_lessons: [...life.scene_lessons] };
+    }
+    var LAYER = null;
+    var layer = () => LAYER ??= require_world_life();
+    var taskOf = (skillId) => layer().nodes.find((node) => node.material.skill === skillId) || null;
+    function lifeMeasure({ skillId, questionId, lessonId, review = false } = {}) {
+      const task = typeof skillId === "string" ? taskOf(skillId) : null;
+      if (!task || typeof questionId !== "string" || !ID.test(questionId) || typeof lessonId !== "string" || !lessonId.startsWith(`${task.material.pack}-`) || !questionId.startsWith(`${lessonId}-`)) return null;
+      const own2 = task.material.items[review ? `${questionId}-transfer` : questionId] || {};
+      const ability = own2.skill ?? task.material.ability, modality = modalityOf(ability);
+      if (!modality) return null;
+      return {
+        skillId: ability,
+        modality,
+        difficulty: own2.difficulty ?? task.material.difficulty,
+        responseFormat: own2.format ?? task.material.format,
+        audioRequired: false,
+        confounded: !review && layer().scene_lessons.includes(lessonId)
+      };
+    }
+    function lifeSituations(skillIds = []) {
+      const out = [];
+      for (const id of skillIds) for (const situation of taskOf(id)?.material.situations || []) if (!out.includes(situation)) out.push(situation);
+      return out;
+    }
+    var lifeTaskId = (skillId) => `${TASK}${skillId}`;
+    function withLifeLayer(data, life = layer()) {
+      if (!data || !Array.isArray(data.nodes) || !data.sources || !life || !Array.isArray(life.nodes)) fail2("a map and a life layer are required");
+      if (Object.keys(life.sources).some((key) => Object.hasOwn(data.sources, key))) fail2("colliding life source");
+      return { ...data, map_ver: `${data.map_ver}:${life.layer_ver}`, sources: { ...data.sources, ...life.sources }, nodes: [...data.nodes, ...life.nodes] };
+    }
+    module.exports = { buildLifeLayer, withLifeLayer, lifeMeasure, lifeSituations, lifeTaskId, layer, FORMATS, SOURCE };
+  }
+});
+
 // atlas/trail.js
 var require_trail2 = __commonJS({
   "atlas/trail.js"(exports, module) {
@@ -15848,6 +16792,12 @@ if (!document.querySelector("[data-life-style]")) {
   style.dataset.lifeStyle = "true";
   document.head.append(style);
 }
+var NO_TRAIL = Object.freeze({ shown: () => null, help() {
+}, delivery() {
+}, answer: () => null, guided() {
+}, release() {
+}, metrics: () => ({ slots: 0, presented: 0, answered: 0 }), dispose() {
+} });
 var escape2 = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 var friends = { mongle: { name: "\uBABD\uAE00", file: "friend-mongle.webp", cut: "mongle" }, kkamong: { name: "\uAE4C\uBABD", file: "friend-kkamong.webp", cut: "kkamong" }, marine: { name: "\uB9C8\uB9B0", file: "friend-marine.webp", cut: "marin" } };
 var phaseName = (type) => t(`life.phase.${type}`);
@@ -15874,7 +16824,7 @@ var progressLine = (done, total) => `<span class="life-progress" aria-hidden="tr
 var meter = (done, total, label = `${done} / ${total}`) => `<span class="life-meter" aria-hidden="true"><span><i style="width:${percent(done, total)}%"></i></span><b>${label}</b></span>`;
 var expressionOf = (lesson2, q2) => lesson2?.expressions.find((e) => e.id === q2?.expressionId) || { korean: q2?.choices?.find((c) => c.id === q2.answerId)?.text || "", meaning: "" };
 function createLifeExperience({ home, getProgress, show = (title, html, options) => home.showPanel(title, html, options), asset, onSummary = () => {
-}, onNext = null, presentation = null, leadRows = null, moreRows = null, positionTotal = null }) {
+}, onNext = null, presentation = null, leadRows = null, moreRows = null, positionTotal = null, learning: learning2 = null }) {
   const panel = document.querySelector("#world-panel"), content = document.querySelector("#panel-content");
   let lastPoint = null, justChose = false, barMemo = { key: "", value: -1 };
   content?.addEventListener("pointerdown", (event) => {
@@ -15886,6 +16836,44 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   let context = null, shown = false, rendering = false, ended = false, reviewRun = null, lastFeedback = null, helped = false, helpBy = null, generation = 0, timer, cafeRun = null, cafeView = "", companion = null, place = "life", signClip = null;
   const practised = /* @__PURE__ */ new Set();
   const exposedTransfers = /* @__PURE__ */ new Set();
+  const life = learning2?.life && typeof learning2.life.createLifeTrail === "function" ? learning2.life : null;
+  const trail = life ? life.createLifeTrail({ coach: () => {
+    try {
+      return learning2?.coach?.() || null;
+    } catch {
+      return null;
+    }
+  }, snapshot: () => getProgress().exportSnapshot() }) : NO_TRAIL;
+  const lessonSlot2 = (attempt, id) => life ? life.lessonSlot(attempt, id) : null, reviewSlot2 = (run, id) => life ? life.reviewSlot(run, id) : null;
+  const prepareLearning = () => {
+    try {
+      void learning2?.prepare?.();
+    } catch {
+    }
+  };
+  const engineItem = (lesson2, question2, review2 = false) => life ? life.lifeItem({ lesson: lesson2, question: question2, review: review2 }) : null;
+  const lessonOfQuestion = (id) => LESSONS.find((lesson2) => lesson2.questions.some((q2) => q2.id === id)) || null;
+  function currentSlot() {
+    if (!context) return null;
+    if (context.phase === "review") return reviewRun && context.reviewId ? reviewSlot2(reviewRun.id, context.reviewId) : null;
+    let attempt = null;
+    try {
+      attempt = getProgress().lessonState(context.lessonId).attemptId;
+    } catch {
+      attempt = null;
+    }
+    const q2 = context.phase === "cafe" ? cafeQuestion(cafeRun?.step, context.lessonId) : lessonById(context.lessonId)?.questions[context.questionIndex];
+    return attempt && q2 ? lessonSlot2(attempt, q2.id) : null;
+  }
+  function guideTransfer(questionId) {
+    prepareLearning();
+    const lesson2 = lessonOfQuestion(questionId), q2 = lesson2?.questions.find((x) => x.id === questionId);
+    if (q2) trail.guided(engineItem(lesson2, q2, true));
+  }
+  function mirrorAnswer(slot, saved, stored, correctId) {
+    if (!saved || saved.duplicate !== false || !stored || typeof stored.correct !== "boolean") return;
+    trail.answer(slot, { correct: stored.correct, choiceId: stored.choiceId ?? null, correctId, helped: stored.helped === true });
+  }
   let sittingSince = Date.now(), hiddenSince = 0, restKey = null;
   const sitting = () => {
     if (document.hidden) {
@@ -15968,6 +16956,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       const snapshot = p.exportSnapshot(), record2 = Object.values(snapshot.reviews).find((r) => r.questionId === id);
       if (!record2 || record2.lapses <= 0 || record2.streak !== 0) return false;
       exposedTransfers.add(record2.id);
+      guideTransfer(record2.questionId);
       const run = record2.dueAt <= Date.now() ? p.startReview(6, record2.id) : snapshot.activeReview;
       if (run?.ids.includes(record2.id) && !run.answers[record2.id]) p.markReviewHelp(record2.id);
       return true;
@@ -16003,10 +16992,12 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     speech.pause();
     if (!context) return;
     if (context.phase === "cafe") {
-      if (tutorState().requiresHearing) cafeRun = { ...cafeRun, listen: { ...cafeRun.listen, textShown: true } };
+      const hearing = tutorState().requiresHearing;
+      if (hearing) cafeRun = { ...cafeRun, listen: { ...cafeRun.listen, textShown: true } };
       helped = true;
       helpBy = "user";
       persistCafe();
+      trail.help(currentSlot(), hearing ? "text" : "hint");
       renderCafe();
       return;
     }
@@ -16016,6 +17007,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       helpBy = "user";
       if (context.phase === "questions") persistStage();
       else getProgress().markReviewHelp(context.reviewId);
+      trail.help(currentSlot(), "explanation");
     }
     const hint = content.querySelector(".life-hint");
     if (hint) hint.hidden = false;
@@ -16030,6 +17022,8 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     if (context.phase === "cafe") persistCafe();
     else if (context.phase === "questions") persistStage();
     else if (context.phase === "review") getProgress().markReviewHelp(context.reviewId);
+    trail.help(currentSlot(), "explanation");
+    if (context.phase !== "review") guideTransfer(id);
   }
   const retryButton = (q2) => home.mountLifeTutor && home.tutor?.().tutor ? `<button class="life-tutor-retry" data-life-tutor-retry="${escape2(q2.id)}">${t("life.tutorRetry")}</button>` : "";
   function paint(title, html, { type = "life-library", focus = ".life-heading", eyebrow = "LIFE IN KOREA", keepScroll = false, tutorSlot = null } = {}) {
@@ -16252,6 +17246,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     if (!lesson2) return;
     place = lesson2.packId === "cafe" ? "cafe" : "life";
     speech.stop();
+    prepareLearning();
     const p = getProgress();
     p.summary(PACKS, LESSONS);
     const previous = p.lessonState(id), state = p.startLesson(lesson2, { replay: previous.status === "completed" && previous.cursor === previous.total });
@@ -16291,6 +17286,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       if (cafeRun.listen?.mode === "listen") cafeRun = { ...cafeRun, listen: { ...cafeRun.listen, textShown: true } };
       persistCafe();
     }
+    if (q2 && !first && ["choose", "repair", "response"].includes(cafeRun.phase)) trail.shown(currentSlot(), engineItem(lessonById(context.lessonId), q2), { helped });
     const view = `${context.lessonId}:${cafeRun.step}:${["welcome", "break"].includes(cafeRun.phase) ? cafeRun.phase : "talk"}`, keepScroll = view === cafeView;
     cafeView = view;
     paint("\uAD6C\uB984 \uD55C \uC794, \uCE74\uD398", cafeMarkup(cafeRun, { photo, print, helped, firstAnswer: first, retryButton, lessonId: context.lessonId, speechAvailable: speech.available(), speechPhase: speech.metrics().phase }), { type: "life-cafe", focus: ".cafe-focus", eyebrow: "LIFE IN KOREA \xB7 CAFE", keepScroll });
@@ -16301,19 +17297,23 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   function cafeChoose(choiceId) {
     ensureHeard();
     speech.stop();
-    const id = context.lessonId, next2 = chooseCafe(cafeRun, choiceId, id), p = getProgress(), q2 = cafeQuestion(cafeRun.step, id), correct = choiceId === q2.answerId;
-    if (!p.lessonState(id).answers[q2.id]) p.recordAnswer({ lessonId: id, questionId: q2.id, choiceId, correct, helped, helpSource: helpBy || void 0, stage: cafeStage(next2), input: cafeRun.listen });
-    else p.setStage(id, cafeStage(next2));
+    const id = context.lessonId, next2 = chooseCafe(cafeRun, choiceId, id), p = getProgress(), q2 = cafeQuestion(cafeRun.step, id), correct = choiceId === q2.answerId, slot = currentSlot();
+    if (!p.lessonState(id).answers[q2.id]) {
+      const saved = p.recordAnswer({ lessonId: id, questionId: q2.id, choiceId, correct, helped, helpSource: helpBy || void 0, stage: cafeStage(next2), input: cafeRun.listen });
+      mirrorAnswer(slot, saved, saved?.answers?.[q2.id], q2.answerId);
+    } else p.setStage(id, cafeStage(next2));
     cafeRun = next2;
     renderCafe();
     judge(correct);
   }
   function cafeSubmit() {
     ensureHeard();
-    const id = context.lessonId, next2 = submitCafeOrder(cafeRun), p = getProgress(), q2 = cafeQuestion(0, id);
+    const id = context.lessonId, next2 = submitCafeOrder(cafeRun), p = getProgress(), q2 = cafeQuestion(0, id), slot = currentSlot();
     speech.stop();
-    if (!p.lessonState(id).answers[q2.id]) p.recordAnswer({ lessonId: id, questionId: q2.id, choiceId: next2.choiceId, correct: next2.choiceId === q2.answerId, helped, helpSource: helpBy || void 0, order: cafeRun.order, input: cafeRun.listen, stage: cafeStage(next2) });
-    else p.setStage(id, cafeStage(next2));
+    if (!p.lessonState(id).answers[q2.id]) {
+      const saved = p.recordAnswer({ lessonId: id, questionId: q2.id, choiceId: next2.choiceId, correct: next2.choiceId === q2.answerId, helped, helpSource: helpBy || void 0, order: cafeRun.order, input: cafeRun.listen, stage: cafeStage(next2) });
+      mirrorAnswer(slot, saved, saved?.answers?.[q2.id], q2.answerId);
+    } else p.setStage(id, cafeStage(next2));
     cafeRun = next2;
     renderCafe();
     judge(next2.choiceId === q2.answerId);
@@ -16325,17 +17325,25 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       speech.pause();
       return;
     }
-    const id = context.lessonId, step = cafeRun.step, lineId = `${id}-${step + 1}`;
-    await speech.play(lineId, () => {
-      if (ended || !shown || context?.phase !== "cafe" || context.lessonId !== id || cafeRun.step !== step) return;
-      try {
-        cafeRun = { ...cafeRun, listen: { ...cafeRun.listen, heard: true } };
-        persistCafe();
-        renderCafe();
-      } catch {
-        speech.stop();
-      }
-    }, slow ? { rate: 0.75, restart: true } : {});
+    const id = context.lessonId, step = cafeRun.step, lineId = `${id}-${step + 1}`, slot = currentSlot();
+    if (slow) trail.help(slot, "replay");
+    trail.delivery(slot, "pending");
+    try {
+      await speech.play(lineId, () => {
+        if (ended || !shown || context?.phase !== "cafe" || context.lessonId !== id || cafeRun.step !== step) return;
+        trail.delivery(slot, "completed");
+        try {
+          cafeRun = { ...cafeRun, listen: { ...cafeRun.listen, heard: true } };
+          persistCafe();
+          renderCafe();
+        } catch {
+          speech.stop();
+        }
+      }, slow ? { rate: 0.75, restart: true } : {});
+    } catch (error2) {
+      trail.delivery(slot, "failed");
+      throw error2;
+    }
   }
   function cafeNext() {
     speech.stop();
@@ -16417,6 +17425,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       helpBy = "setting";
       persistStage();
     }
+    if (!previous) trail.shown(currentSlot(), engineItem(l, q2), { helped });
     paint(l.title, `${lessonHeader(l)}${questionMarkup(q2, lastFeedback, { lesson: l, packId: l.packId, rest: restLine(`question:${l.id}`) })}`, { type: "life-question", focus: ".life-question-title" });
     if (lastFeedback) revealFeedback();
   }
@@ -16432,9 +17441,9 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }
   function choose(choiceId) {
     if (lastFeedback) return;
-    const p = getProgress(), l = lessonById(context.lessonId), q2 = l.questions[context.questionIndex];
-    const correct = choiceId === q2.answerId;
-    p.recordAnswer({ lessonId: l.id, questionId: q2.id, choiceId, correct, helped, helpSource: helpBy || void 0 });
+    const p = getProgress(), l = lessonById(context.lessonId), q2 = l.questions[context.questionIndex], slot = currentSlot();
+    const correct = choiceId === q2.answerId, saved = p.recordAnswer({ lessonId: l.id, questionId: q2.id, choiceId, correct, helped, helpSource: helpBy || void 0 });
+    mirrorAnswer(slot, saved, saved?.answers?.[q2.id], q2.answerId);
     lastFeedback = { question: q2, choiceId, correct, helped, helpBy };
     justChose = true;
     renderQuestion();
@@ -16490,6 +17499,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     paint(t("life.reviewTitle"), `<div class="life-review-summary life-heading" tabindex="-1"><section class="life-poster life-review-poster">${print("review")}<small class="life-poster-label">REVIEW${s.dueCount ? ` \xB7 ${pad(s.dueCount)}` : ""}</small><h3 class="life-poster-word">${s.dueCount ? t("life.reviewWordCount", { n: s.dueCount }) : t(future ? "life.reviewWordNext" : "life.reviewWordNone")}</h3><p class="life-poster-sub">${s.dueCount ? t("life.reviewSubDue") : future ? t("life.reviewSubOpens", { date: escape2(future) }) : t("life.reviewSubNone")}</p></section>${items.length ? `<section class="life-review-list" aria-label="${t("life.backWord")}"><p class="life-section-label">BACK AGAIN</p><ul>${items.map((i) => `<li><strong lang="ko">${escape2(i.korean)}</strong><small>${escape2(i.origin)}</small></li>`).join("")}</ul></section>` : ""}${restLine("review")}</div><div class="life-actions">${s.dueCount ? `<button class="felt-button" data-life-review-start>${t("life.reviewStart")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-next>${t("life.doNextLesson")}</button>` : `<button class="felt-button" data-life-next>${t("life.doNextLesson")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-home>${t("life.toTown")}</button>`}</div>`, { type: "life-review" });
   }
   function reviewStart(lessonId = null, requestedIds = null, { soon = false } = {}) {
+    prepareLearning();
     const p = getProgress(), ids = Array.isArray(requestedIds) && requestedIds.length ? requestedIds : null;
     reviewRun = p.startReview(ids ? Math.min(6, ids.length) : 6, ids?.[0] || null, ids, { soon: soon && !!ids });
     if (!reviewRun) return review();
@@ -16520,16 +17530,18 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       helpBy = helped ? "user" : null;
     }
     context = { lessonId: l.id, phase: "review", questionIndex: index, reviewId: id, reviewQuestion: q2 };
+    if (!lastFeedback) trail.shown(reviewSlot2(run.id, id), engineItem(l, original, true), { helped });
     paint(t("life.reviewTitle"), `<div class="life-session-meta" data-life-review-id="${escape2(id)}" data-life-phase="review" data-life-step="${index}">${progressLine(index + (lastFeedback ? 1 : 0), run.ids.length)}<span>${t("life.reviewHeader", { pack: escape2(packTitle(packById(record2.packId))) })}</span><span><b class="life-count">${index + 1} / ${run.ids.length}</b></span></div>${questionMarkup(q2, lastFeedback, { packId: record2.packId, origin: t("life.reviewOrigin", { origin: reviewOrigin(record2) }), rest: restLine(`review:${id}`) })}`, { type: "life-question", focus: ".life-question-title" });
     if (lastFeedback) revealFeedback();
   }
   function chooseReview(id) {
     if (lastFeedback) return;
-    const q2 = context.reviewQuestion, p = getProgress(), correct = id === q2.answerId;
-    p.answerReview({ id: context.reviewId, runId: reviewRun.id, correct, helped });
-    helped = p.exportSnapshot().activeReview.answers[context.reviewId].helped;
+    const q2 = context.reviewQuestion, p = getProgress(), correct = id === q2.answerId, slot = reviewSlot2(reviewRun.id, context.reviewId);
+    const saved = p.answerReview({ id: context.reviewId, runId: reviewRun.id, correct, helped }), stored = p.exportSnapshot().activeReview.answers[context.reviewId];
+    helped = stored.helped;
     helpBy = helped ? "user" : null;
     lastFeedback = { question: q2, choiceId: id, correct, helped, helpBy };
+    mirrorAnswer(slot, saved, { ...stored, choiceId: id }, q2.answerId);
     const record2 = p.exportSnapshot().reviews[context.reviewId], html = questionMarkup(q2, lastFeedback, { packId: record2?.packId, origin: record2 ? t("life.reviewOrigin", { origin: reviewOrigin(record2) }) : "", rest: restLine(`review:${context.reviewId}`) });
     paint(t("life.reviewTitle"), `<div class="life-session-meta" data-life-review-id="${context.reviewId}" data-life-phase="review" data-life-step="${context.questionIndex}">${progressLine(context.questionIndex + 1, reviewRun.ids.length)}<span>${t("life.reviewHeader", { pack: escape2(record2 ? packTitle(packById(record2.packId)) : t("life.everydayKorean")) })}</span><span><b class="life-count">${context.questionIndex + 1} / ${reviewRun.ids.length}</b></span></div>${html}`, { type: "life-question", focus: ".life-question-title" });
     revealFeedback();
@@ -16624,6 +17636,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       helped = true;
       helpBy = "user";
       persistCafe();
+      trail.help(currentSlot(), "text");
       renderCafe();
       content.querySelector(".cafe-staff>p")?.focus({ preventScroll: true });
     },
@@ -16638,6 +17651,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       helped = true;
       helpBy = "user";
       persistCafe();
+      trail.help(currentSlot(), "hint");
       renderCafe();
       content.querySelector("[data-life-cafe-help]")?.focus({ preventScroll: true });
     },
@@ -16687,8 +17701,9 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     await p.flush();
     return result;
   }
-  return { packs, stories, review, reviewStart, next, pack, start, cafe: () => pack("cafe"), summary, refresh: updateHome, hangulReading, setHangulReading, metrics: () => ({ shown, lessonId: context?.lessonId || null, phase: context?.phase || null, step: context?.questionIndex ?? null, cafe: isCafeLesson(context?.lessonId) ? cafeRun : null, speech: speech.metrics(), tutor: companion?.metrics() || null, owner: getProgress().owner, progress: getProgress().exportSnapshot() }), dispose() {
+  return { packs, stories, review, reviewStart, next, pack, start, cafe: () => pack("cafe"), summary, refresh: updateHome, hangulReading, setHangulReading, metrics: () => ({ shown, lessonId: context?.lessonId || null, phase: context?.phase || null, step: context?.questionIndex ?? null, cafe: isCafeLesson(context?.lessonId) ? cafeRun : null, speech: speech.metrics(), tutor: companion?.metrics() || null, owner: getProgress().owner, progress: getProgress().exportSnapshot(), trail: trail.metrics() }), dispose() {
     ended = true;
+    trail.dispose();
     speech.dispose();
     story.dispose();
     clearInterval(timer);
@@ -16701,15 +17716,309 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
 // experiences/synk-world-app/world-learning-map.mjs
 var import_strata = __toESM(require_strata(), 1);
 var import_world_map = __toESM(require_world_map(), 1);
+var import_world_life2 = __toESM(require_world_life2(), 1);
 var import_game_browser = __toESM(require_game_browser(), 1);
 var import_game_learning = __toESM(require_game_learning(), 1);
+
+// experiences/synk-world-app/life-items.mjs
+var import_world_life = __toESM(require_world_life2(), 1);
+
+// experiences/topik-items/review/existing-verdicts.json
+var existing_verdicts_default = { version: "topik-existing-verdicts-1", items: [{ itemKey: "blank-slice.a01.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.a01.v1" }, { itemKey: "blank-slice.a02.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.a02.v1" }, { itemKey: "blank-slice.e01.v3", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e01.v1" }, { itemKey: "blank-slice.e02.v2", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e02.v1" }, { itemKey: "blank-slice.e03.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 2, responseFormat: "single-choice", familyKey: "blank-slice.e03.v1" }, { itemKey: "blank-slice.e04.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e04.v1" }, { itemKey: "blank-slice.e05.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 2, responseFormat: "single-choice", familyKey: "blank-slice.e05.v1" }, { itemKey: "blank-slice.e06.v2", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e06.v1" }, { itemKey: "blank-slice.e07.v2", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e07.v1" }, { itemKey: "blank-slice.e08.v3", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e08.v1" }, { itemKey: "blank-slice.e09.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 2, responseFormat: "single-choice", familyKey: "blank-slice.e09.v1" }, { itemKey: "blank-slice.e10.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 2, responseFormat: "single-choice", familyKey: "blank-slice.e10.v1" }, { itemKey: "blank-slice.g01.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.g01.v1" }, { itemKey: "blank-slice.g02.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.g02.v1" }, { itemKey: "blank-slice.g03.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.g03.v1" }, { itemKey: "blank-slice.p01.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p01.v1" }, { itemKey: "blank-slice.p02.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p02.v1" }, { itemKey: "blank-slice.p03.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p03.v1" }, { itemKey: "blank-slice.p04.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p04.v1" }, { itemKey: "blank-slice.p05.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p05.v1" }, { itemKey: "blank-slice.p06.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p06.v1" }, { itemKey: "blank-slice.t01.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.t01.v1" }, { itemKey: "blank-slice.v01.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v01.v1" }, { itemKey: "blank-slice.v02.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v02.v1" }, { itemKey: "blank-slice.v03.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v03.v1" }, { itemKey: "blank-slice.v04.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v04.v1" }, { itemKey: "blank-slice.v05.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v05.v1" }, { itemKey: "blank-slice.v06.v3", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v06.v1" }, { itemKey: "blank-slice.v07.v3", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v07.v1" }, { itemKey: "blank-slice.v08.v2", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v08.v1" }, { itemKey: "blank-slice.v09.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v09.v1" }, { itemKey: "blank-slice.v10.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v10.v1" }, { itemKey: "blank-slice.v11.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v11.v1" }, { itemKey: "blank-slice.v12.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v12.v1" }, { itemKey: "blank-slice.v13.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v13.v1" }, { itemKey: "blank-slice.v14.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v14.v1" }, { itemKey: "board-decode.festival.f1.\uC0AC\uC804 \uC811\uC218", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.festival.f1" }, { itemKey: "board-decode.festival.f1.\uC120\uCC29\uC21C", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.festival.f1" }, { itemKey: "board-decode.festival.f2.\uC5F0\uAE30", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.festival.f2" }, { itemKey: "board-decode.festival.f2.\uCDE8\uC18C", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.festival.f2" }, { itemKey: "board-decode.festival.patch.\uC5F0\uAE30", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.festival.patch" }, { itemKey: "board-decode.festival.patch.\uCDE8\uC18C", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.festival.patch" }, { itemKey: "board-decode.laundry.f1.\uC81C\uC678", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.laundry.f1" }, { itemKey: "board-decode.laundry.f1.\uD55C\uD568", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.laundry.f1" }, { itemKey: "board-decode.laundry.f2.\uBCF4\uAD00", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.laundry.f2" }, { itemKey: "board-decode.laundry.f2.\uD3D0\uAE30", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.laundry.f2" }, { itemKey: "board-decode.laundry.patch.\uBCF4\uAD00", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.laundry.patch" }, { itemKey: "board-decode.laundry.patch.\uD3D0\uAE30", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.laundry.patch" }, { itemKey: "board-decode.season.f1.\uAD8C\uC7A5", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.season.f1" }, { itemKey: "board-decode.season.f1.\uD544\uC218", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.season.f1" }, { itemKey: "board-decode.season.f2.\uAC00\uB2A5", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.season.f2" }, { itemKey: "board-decode.season.f2.\uBD88\uAC00", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.season.f2" }, { itemKey: "board-decode.season.patch.\uAC00\uB2A5", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.season.patch" }, { itemKey: "board-decode.season.patch.\uBD88\uAC00", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.season.patch" }, { itemKey: "entry-check.concert-10.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.concert-10.v1" }, { itemKey: "entry-check.concert-11.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.concert-11.v1" }, { itemKey: "entry-check.concert-12.v3", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.concert-12.v1" }, { itemKey: "entry-check.concert-13.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.concert-13.v1" }, { itemKey: "entry-check.concert-14.v1", verdict: "pass", skillId: "ko.reading.condition", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.concert-14.v1" }, { itemKey: "entry-check.library-10.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.library-10.v1" }, { itemKey: "entry-check.library-11.v1", verdict: "pass", skillId: "ko.reading.condition", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.library-11.v1" }, { itemKey: "entry-check.museum-09.v1", verdict: "pass", skillId: "ko.reading.condition", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.museum-09.v1" }, { itemKey: "entry-check.museum-10.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.museum-10.v1" }, { itemKey: "entry-check.museum-11.v1", verdict: "pass", skillId: "ko.reading.condition", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.museum-11.v1" }, { itemKey: "entry-check.pool-09.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.pool-09.v1" }, { itemKey: "entry-check.pool-10.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "entry-check.pool-10.v1" }, { itemKey: "entry-check.pool-11.v1", verdict: "pass", skillId: "ko.reading.condition", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.pool-11.v1" }, { itemKey: "entry-check.pool-12.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.pool-12.v1" }, { itemKey: "entry-check.pool-13.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.pool-13.v1" }, { itemKey: "entry-check.pool-14.v2", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.pool-14.v1" }, { itemKey: "korean-racing:w0001:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0001:v1" }, { itemKey: "korean-racing:w0008:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0008:v1" }, { itemKey: "korean-racing:w0012:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0012:v1" }, { itemKey: "korean-racing:w0018:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0018:v1" }, { itemKey: "korean-racing:w0025:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0025:v1" }, { itemKey: "korean-racing:w0028:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0028:v1" }, { itemKey: "korean-racing:w0035:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0035:v1" }, { itemKey: "korean-racing:w0036:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0036:v1" }, { itemKey: "korean-racing:w0042:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0042:v1" }, { itemKey: "korean-racing:w0050:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0050:v1" }, { itemKey: "korean-racing:w0051:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0051:v1" }, { itemKey: "korean-racing:w0056:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0056:v1" }, { itemKey: "korean-racing:w0061:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0061:v1" }, { itemKey: "korean-rhythm:t0q0:v1:claim0", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t0q0:v1" }, { itemKey: "korean-rhythm:t0q1:v1:claim0", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t0q1:v1" }, { itemKey: "korean-rhythm:t0q2:v1:claim0", verdict: "pass", skillId: "ko.listening.negation", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t0q2:v1" }, { itemKey: "korean-rhythm:t0q3:v1:claim0", verdict: "pass", skillId: "ko.listening.negation", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t0q3:v1" }, { itemKey: "korean-rhythm:t0q4:v1:claim0", verdict: "pass", skillId: "ko.listening.negation", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t0q4:v1" }, { itemKey: "korean-rhythm:t1q0:v1:claim1:v2", verdict: "pass", skillId: "ko.listening.reason", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t1q0:v1" }, { itemKey: "korean-rhythm:t1q1:v1:claim1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t1q1:v1" }, { itemKey: "korean-rhythm:t1q2:v1:claim0", verdict: "pass", skillId: "ko.listening.reason", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t1q2:v1" }, { itemKey: "korean-rhythm:t1q3:v1:claim1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t1q3:v1" }, { itemKey: "korean-rhythm:t1q4:v1:claim0", verdict: "pass", skillId: "ko.listening.reason", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t1q4:v1" }, { itemKey: "korean-rhythm:t2q0:v1:claim1", verdict: "pass", skillId: "ko.listening.condition", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t2q0:v1" }, { itemKey: "korean-rhythm:t2q1:v1:claim0", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t2q1:v1" }, { itemKey: "korean-rhythm:t2q2:v1:claim0:v3", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t2q2:v1" }, { itemKey: "korean-rhythm:t2q3:v1:claim0:v2", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t2q3:v1" }, { itemKey: "korean-rhythm:t2q4:v1:claim0", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t2q4:v1" }, { itemKey: "korean-runner.listening-check.check-duck-jump.v1", verdict: "pass", skillId: "ko.listening.sequence", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-duck-jump.v1" }, { itemKey: "korean-runner.listening-check.check-fence-jump.v2", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-fence-jump.v1" }, { itemKey: "korean-runner.listening-check.check-high-sign.v2", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-high-sign.v1" }, { itemKey: "korean-runner.listening-check.check-left-run.v1", verdict: "pass", skillId: "ko.listening.sequence", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-left-run.v1" }, { itemKey: "korean-runner.listening-check.check-middle-left.v1", verdict: "pass", skillId: "ko.listening.sequence", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-middle-left.v1" }, { itemKey: "korean-runner.listening-check.check-no-fence.v2", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-no-fence.v1" }, { itemKey: "korean-runner.listening-check.check-not-left.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-not-left.v1" }, { itemKey: "korean-runner.listening-check.check-not-middle.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-not-middle.v1" }, { itemKey: "korean-runner.listening-check.check-right-before-jump.v1", verdict: "pass", skillId: "ko.listening.sequence", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-right-before-jump.v1" }, { itemKey: "korean-runner.listening-check.check-sign-duck.v2", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-sign-duck.v1" }, { itemKey: "korean-runner.listening-check.check-star-middle.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-star-middle.v1" }, { itemKey: "korean-runner.listening-check.check-wide-left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-wide-left.v1" }, { itemKey: "life.cafe-apply-here-transfer", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-apply-order-transfer", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-apply-takeout-transfer", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-compose-count-transfer", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-compose-order-transfer", verdict: "fix", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-compose-place-transfer", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-expressions-here", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-expressions-here-transfer", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-expressions-order", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-expressions-order-transfer", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-expressions-takeout", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-expressions-takeout-transfer", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-story-here", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-story-here-transfer", verdict: "fix", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-story-order", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-story-order-transfer", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-story-takeout", verdict: "fix", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-story-takeout-transfer", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-visit-change-count-transfer", verdict: "fix", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-visit-change-drink-transfer", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-visit-change-place-transfer", verdict: "fix", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-visit-soldout-count-transfer", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-visit-soldout-menu-transfer", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-visit-soldout-takeout-transfer", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-visit-taste-count-transfer", verdict: "fix", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-visit-taste-drink-transfer", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.cafe-visit-taste-place-transfer", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.directions-apply-landmark", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.directions-apply-landmark-transfer", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.directions-apply-turn", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.directions-apply-turn-transfer", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.directions-apply-where", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.directions-apply-where-transfer", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.directions-expressions-beside", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.directions-expressions-beside-transfer", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.directions-expressions-right", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.directions-expressions-right-transfer", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.directions-expressions-where", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.directions-expressions-where-transfer", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.directions-story-landmark", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.directions-story-landmark-transfer", verdict: "fix", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.directions-story-turn", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.directions-story-turn-transfer", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.directions-story-where", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.directions-story-where-transfer", verdict: "fix", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.greetings-apply-hello", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.greetings-apply-hello-transfer", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.greetings-apply-introduction", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.greetings-apply-introduction-transfer", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.greetings-apply-thanks", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.greetings-apply-thanks-transfer", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.greetings-expressions-hello", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.greetings-expressions-hello-transfer", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.greetings-expressions-name", verdict: "fix", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.greetings-expressions-name-transfer", verdict: "fix", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.greetings-expressions-thanks", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.greetings-expressions-thanks-transfer", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.greetings-story-hello", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.greetings-story-hello-transfer", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.greetings-story-name", verdict: "fix", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.greetings-story-name-transfer", verdict: "fix", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.greetings-story-thanks", verdict: "fix", skillId: "ko.reading.reason", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.greetings-story-thanks-transfer", verdict: "fix", skillId: "ko.reading.reason", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.plans-apply-delay", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.plans-apply-delay-transfer", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.plans-apply-place", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.plans-apply-place-transfer", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.plans-apply-time", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.plans-apply-time-transfer", verdict: "fix", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.plans-expressions-delay", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.plans-expressions-delay-transfer", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.plans-expressions-place", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.plans-expressions-place-transfer", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.plans-expressions-time", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.plans-expressions-time-transfer", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.plans-story-delay", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.plans-story-delay-transfer", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.plans-story-place", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.plans-story-place-transfer", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.plans-story-time", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.plans-story-time-transfer", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.store-apply-bag", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.store-apply-bag-transfer", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.store-apply-card", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.store-apply-card-transfer", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.store-apply-price", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.store-apply-price-transfer", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.store-expressions-bag", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.store-expressions-bag-transfer", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.store-expressions-card", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.store-expressions-card-transfer", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.store-expressions-price", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.store-expressions-price-transfer", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.store-story-bag", verdict: "fix", skillId: "ko.reading.reason", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.store-story-bag-transfer", verdict: "pass", skillId: "ko.reading.reason", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.store-story-card", verdict: "fix", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.store-story-card-transfer", verdict: "fix", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.store-story-price", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.store-story-price-transfer", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.transit-apply-alight", verdict: "fix", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.transit-apply-alight-transfer", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.transit-apply-card", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.transit-apply-card-transfer", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.transit-apply-route", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.transit-apply-route-transfer", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.transit-expressions-alight", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.transit-expressions-alight-transfer", verdict: "fix", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.transit-expressions-card", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.transit-expressions-card-transfer", verdict: "fix", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.transit-expressions-route", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.transit-expressions-route-transfer", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.transit-story-alight", verdict: "fix", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.transit-story-alight-transfer", verdict: "fix", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.transit-story-card", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.transit-story-card-transfer", verdict: "fix", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.transit-story-route", verdict: "fix", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "life.transit-story-route-transfer", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice" }, { itemKey: "snap-words.meaning.bank.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.bank.v1" }, { itemKey: "snap-words.meaning.bookstore.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.bookstore.v1" }, { itemKey: "snap-words.meaning.cafeteria.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.cafeteria.v1" }, { itemKey: "snap-words.meaning.dorm.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.dorm.v1" }, { itemKey: "snap-words.meaning.entrance.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.entrance.v1" }, { itemKey: "snap-words.meaning.exit.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.exit.v1" }, { itemKey: "snap-words.meaning.library.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.library.v1" }, { itemKey: "snap-words.meaning.lift.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.lift.v1" }, { itemKey: "snap-words.meaning.office.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.office.v1" }, { itemKey: "snap-words.meaning.pharmacy.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.pharmacy.v1" }, { itemKey: "snap-words.meaning.post.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.post.v1" }, { itemKey: "snap-words.meaning.stairs.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.stairs.v1" }, { itemKey: "snap-words.meaning.toilet.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.toilet.v1" }, { itemKey: "snap-words.notice.n-bike.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.notice.n-bike.v1" }, { itemKey: "snap-words.notice.n-construction.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.notice.n-construction.v1" }, { itemKey: "snap-words.notice.n-fresh.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.notice.n-fresh.v1" }, { itemKey: "snap-words.notice.n-smoke.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.notice.n-smoke.v1" }, { itemKey: "snap-words.recall-meaning.menu.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.menu.v1" }, { itemKey: "snap-words.recall-meaning.n-fix.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.n-fix.v1" }, { itemKey: "snap-words.recall-meaning.n-welcome.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.n-welcome.v1" }, { itemKey: "snap-words.recall-meaning.pull.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.pull.v1" }, { itemKey: "snap-words.recall-meaning.push.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.push.v1" }, { itemKey: "snap-words.recall-meaning.slide.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.slide.v1" }, { itemKey: "snap-words.recall-meaning.stop.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.stop.v1" }, { itemKey: "snap-words.recall-meaning.store.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.store.v1" }, { itemKey: "snap-words.recall-meaning.university.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.university.v1" }, { itemKey: "snap-words.word.bench.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.bench.v1" }, { itemKey: "snap-words.word.bike.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.bike.v1" }, { itemKey: "snap-words.word.building.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.building.v1" }, { itemKey: "snap-words.word.cat.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.cat.v1" }, { itemKey: "snap-words.word.copier.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.word.copier.v1" }, { itemKey: "snap-words.word.sofa.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.sofa.v1" }, { itemKey: "snap-words.word.tray.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.word.tray.v1" }, { itemKey: "snap-words.word.tree.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.tree.v1" }, { itemKey: "snap-words.word.umbrella.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.umbrella.v1" }, { itemKey: "snap-words.word.vending.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.word.vending.v1" }, { itemKey: "snap-words.word.water.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.word.water.v1" }, { itemKey: "subway-rush.busy.delay.1to2.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.delay.v1" }, { itemKey: "subway-rush.busy.exit.1.2.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.1.v1" }, { itemKey: "subway-rush.busy.exit.2.1.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.2.v1" }, { itemKey: "subway-rush.busy.exit.3.4.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.3.v1" }, { itemKey: "subway-rush.busy.exit.4.3.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.4.v1" }, { itemKey: "subway-rush.busy.exit.5.3.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.5.v1" }, { itemKey: "subway-rush.busy.exit.6.7.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.6.v1" }, { itemKey: "subway-rush.busy.exit.7.6.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.7.v1" }, { itemKey: "subway-rush.busy.express.jonggak.jonggak.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.express.jonggak.v1" }, { itemKey: "subway-rush.busy.express.jonggak.jongno3.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.express.jongno3.v1" }, { itemKey: "subway-rush.busy.express.jonggak.jongno5.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.express.jongno5.v1" }, { itemKey: "subway-rush.busy.short.left.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.short.v1" }, { itemKey: "subway-rush.busy.short.right.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.short.v1" }, { itemKey: "subway-rush.exit.1.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.1.v1" }, { itemKey: "subway-rush.exit.2.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.2.v1" }, { itemKey: "subway-rush.exit.3.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.3.v1" }, { itemKey: "subway-rush.exit.4.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.4.v1" }, { itemKey: "subway-rush.exit.5.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.5.v1" }, { itemKey: "subway-rush.exit.6.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.6.v1" }, { itemKey: "subway-rush.exit.7.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.7.v1" }, { itemKey: "subway-rush.exit.8.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.8.v1" }, { itemKey: "subway-rush.fork.cheongnyangni.dongdaemun.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.fork.cheongnyangni.v1" }, { itemKey: "subway-rush.fork.cheongnyangni.jonggak.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.fork.cheongnyangni.v1" }, { itemKey: "subway-rush.fork.cheongnyangni.jongno3.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.fork.cheongnyangni.v1" }, { itemKey: "subway-rush.fork.cheongnyangni.jongno5.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.fork.cheongnyangni.v1" }, { itemKey: "subway-rush.meet.traveler.cheongnyangni.airport.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.airport.v1" }, { itemKey: "subway-rush.meet.traveler.cheongnyangni.cheongnyangni.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.cheongnyangni.v1" }, { itemKey: "subway-rush.meet.traveler.cheongnyangni.myeongdong.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.myeongdong.v1" }, { itemKey: "subway-rush.meet.traveler.cityhall.airport.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.airport.v1" }, { itemKey: "subway-rush.meet.traveler.cityhall.cityhall.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.cityhall.v1" }, { itemKey: "subway-rush.meet.traveler.cityhall.myeongdong.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.myeongdong.v1" }, { itemKey: "subway-rush.meet.traveler.euljiro3.airport.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.airport.v1" }, { itemKey: "subway-rush.meet.traveler.euljiro3.euljiro3.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.euljiro3.v1" }, { itemKey: "subway-rush.meet.traveler.euljiro3.myeongdong.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.myeongdong.v1" }, { itemKey: "subway-rush.meet.worker.ahyeon.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.ahyeon.v1" }, { itemKey: "subway-rush.meet.worker.chungjeongno.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.chungjeongno.v1" }, { itemKey: "subway-rush.meet.worker.cityhall.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.cityhall.v1" }, { itemKey: "subway-rush.meet.worker.dongdaemun.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.dongdaemun.v1" }, { itemKey: "subway-rush.meet.worker.euljiro1.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.euljiro1.v1" }, { itemKey: "subway-rush.meet.worker.euljiro3.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.euljiro3.v1" }, { itemKey: "subway-rush.meet.worker.jongno3.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.jongno3.v1" }, { itemKey: "subway-rush.meet.worker.jongno5.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.jongno5.v1" }, { itemKey: "subway-rush.stop.chungjeongno.pass.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.chungjeongno.pass.v1" }, { itemKey: "subway-rush.stop.chungjeongno.pass.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.chungjeongno.pass.v1" }, { itemKey: "subway-rush.stop.cityhall.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.cityhall.off.v1" }, { itemKey: "subway-rush.stop.cityhall.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.cityhall.off.v1" }, { itemKey: "subway-rush.stop.dongdaemun.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.dongdaemun.off.v1" }, { itemKey: "subway-rush.stop.dongdaemun.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.dongdaemun.off.v1" }, { itemKey: "subway-rush.stop.euljiro3.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.euljiro3.off.v1" }, { itemKey: "subway-rush.stop.euljiro3.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.euljiro3.off.v1" }, { itemKey: "subway-rush.stop.euljiro3.pass.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.euljiro3.pass.v1" }, { itemKey: "subway-rush.stop.euljiro3.pass.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.euljiro3.pass.v1" }, { itemKey: "subway-rush.stop.jonggak.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.stop.jonggak.off.v1" }, { itemKey: "subway-rush.stop.jonggak.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.stop.jonggak.off.v1" }, { itemKey: "subway-rush.stop.jongno3.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno3.off.v1" }, { itemKey: "subway-rush.stop.jongno3.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno3.off.v1" }, { itemKey: "subway-rush.stop.jongno3.pass.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno3.pass.v1" }, { itemKey: "subway-rush.stop.jongno3.pass.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno3.pass.v1" }, { itemKey: "subway-rush.stop.jongno5.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno5.off.v1" }, { itemKey: "subway-rush.stop.jongno5.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno5.off.v1" }, { itemKey: "synk-town.reading-check.town-detail-festival.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-detail-festival.v1" }, { itemKey: "synk-town.reading-check.town-detail-library.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-detail-library.v1" }, { itemKey: "synk-town.reading-check.town-detail-lost.v2", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-detail-lost.v1" }, { itemKey: "synk-town.reading-check.town-detail-market.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-detail-market.v1" }, { itemKey: "synk-town.reading-check.town-detail-workshop.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-detail-workshop.v1" }, { itemKey: "synk-town.reading-check.town-main-cat.v1", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-cat.v1" }, { itemKey: "synk-town.reading-check.town-main-cup.v2", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-cup.v1" }, { itemKey: "synk-town.reading-check.town-main-post.v1", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-post.v1" }, { itemKey: "synk-town.reading-check.town-main-swap.v2", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-swap.v1" }, { itemKey: "synk-town.reading-check.town-main-swim.v1", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-swim.v1" }, { itemKey: "synk-town.reading-check.town-main-thanks.v2", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-thanks.v1" }, { itemKey: "synk-town.reading-check.town-negation-bike.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-negation-bike.v1" }, { itemKey: "synk-town.reading-check.town-negation-books.v2", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-negation-books.v1" }, { itemKey: "synk-town.reading-check.town-negation-bus.v2", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-negation-bus.v1" }, { itemKey: "synk-town.reading-check.town-negation-desk.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-negation-desk.v1" }, { itemKey: "synk-town.reading-check.town-negation-flowers.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-negation-flowers.v1" }, { itemKey: "synk-town.reading-check.town-reading-negation.v2", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reading-negation.v1" }, { itemKey: "synk-town.reading-check.town-reading-place.v2", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reading-place.v1" }, { itemKey: "synk-town.reading-check.town-reading-sequence.v1", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reading-sequence.v1" }, { itemKey: "synk-town.reading-check.town-reason-bakery.v1", verdict: "pass", skillId: "ko.reading.reason", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-bakery.v1" }, { itemKey: "synk-town.reading-check.town-reason-bus.v2", verdict: "pass", skillId: "ko.reading.reason", difficulty: 2, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-bus.v1" }, { itemKey: "synk-town.reading-check.town-reason-florist.v1", verdict: "pass", skillId: "ko.reading.reason", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-florist.v1" }, { itemKey: "synk-town.reading-check.town-reason-library.v2", verdict: "pass", skillId: "ko.reading.reason", difficulty: 2, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-library.v1" }, { itemKey: "synk-town.reading-check.town-reason-quiet.v1", verdict: "pass", skillId: "ko.reading.reason", difficulty: 2, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-quiet.v1" }, { itemKey: "synk-town.reading-check.town-reason-walk.v2", verdict: "pass", skillId: "ko.reading.reason", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-walk.v1" }, { itemKey: "synk-town.reading-check.town-sequence-borrow.v2", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-sequence-borrow.v1" }, { itemKey: "synk-town.reading-check.town-sequence-class.v2", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-sequence-class.v1" }, { itemKey: "synk-town.reading-check.town-sequence-garden.v2", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-sequence-garden.v1" }, { itemKey: "synk-town.reading-check.town-sequence-parcel.v1", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-sequence-parcel.v1" }, { itemKey: "synk-town.reading-check.town-sequence-ticket.v2", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-sequence-ticket.v1" }, { itemKey: "talk-rally.f01.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f01.v1" }, { itemKey: "talk-rally.f02.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f02.v1" }, { itemKey: "talk-rally.f03.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f03.v1" }, { itemKey: "talk-rally.f04.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f04.v1" }, { itemKey: "talk-rally.f05.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f05.v1" }, { itemKey: "talk-rally.f06.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f06.v1" }, { itemKey: "talk-rally.f07.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f07.v1" }, { itemKey: "talk-rally.f08.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f08.v1" }, { itemKey: "talk-rally.f09.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f09.v1" }, { itemKey: "talk-rally.f10.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f10.v1" }, { itemKey: "talk-rally.f11.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f11.v1" }, { itemKey: "talk-rally.f12.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f12.v1" }, { itemKey: "talk-rally.f13.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f13.v1" }, { itemKey: "talk-rally.f14.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f14.v1" }, { itemKey: "talk-rally.f15.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f15.v1" }, { itemKey: "talk-rally.f16.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f16.v1" }, { itemKey: "talk-rally.f17.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f17.v1" }, { itemKey: "talk-rally.f18.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f18.v1" }, { itemKey: "talk-rally.f19.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f19.v1" }, { itemKey: "talk-rally.f20.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f20.v1" }, { itemKey: "talk-rally.f21.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f21.v1" }, { itemKey: "talk-rally.f22.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f22.v1" }, { itemKey: "talk-rally.f23.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f23.v1" }, { itemKey: "talk-rally.r01.v2", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r01.v1" }, { itemKey: "talk-rally.r02.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r02.v1" }, { itemKey: "talk-rally.r03.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r03.v1" }, { itemKey: "talk-rally.r04.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r04.v1" }, { itemKey: "talk-rally.r05.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r05.v1" }, { itemKey: "talk-rally.r06.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r06.v1" }, { itemKey: "talk-rally.r07.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r07.v1" }, { itemKey: "talk-rally.r08.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 2, responseFormat: "single-choice", familyKey: "talk-rally.r08.v1" }, { itemKey: "talk-rally.r09.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r09.v1" }, { itemKey: "talk-rally.r10.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r10.v1" }, { itemKey: "talk-rally.w01.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w01.v1" }, { itemKey: "talk-rally.w02.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w02.v1" }, { itemKey: "talk-rally.w03.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w03.v1" }, { itemKey: "talk-rally.w04.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w04.v1" }, { itemKey: "talk-rally.w05.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w05.v1" }, { itemKey: "talk-rally.w06.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w06.v1" }, { itemKey: "talk-rally.w07.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w07.v1" }, { itemKey: "talk-rally.w08.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w08.v1" }, { itemKey: "talk-rally.w09.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w09.v1" }, { itemKey: "talk-rally.w10.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w10.v1" }, { itemKey: "talk-rally.w11.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w11.v1" }, { itemKey: "talk-rally.w12.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w12.v1" }, { itemKey: "talk-rally.w13.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w13.v1" }] };
+
+// experiences/synk-world-app/life-items.mjs
+var KNOWLEDGE = /* @__PURE__ */ new Set(["ko.reading.vocabulary", "ko.reading.grammar"]);
+var normalize = (text2) => String(text2 ?? "").normalize("NFC").replace(/[\s.,?!·…~'"‘’“”]+/g, "");
+function fingerprint(text2) {
+  let h = 2166136261;
+  for (const c of normalize(text2)) h = Math.imul(h ^ c.codePointAt(0), 16777619) >>> 0;
+  return h.toString(16).padStart(8, "0");
+}
+var answerText = (item) => item?.choices?.find((choice) => choice.id === item.answerId)?.text ?? "";
+var choiceSet = (item) => JSON.stringify((item?.choices || []).map((choice) => normalize(choice.text)).sort());
+var sameChoices = (question2) => !!question2?.review && choiceSet(question2) === choiceSet(question2.review);
+var FAMILY = null;
+function familyTable() {
+  if (FAMILY) return FAMILY;
+  const rows2 = [];
+  for (const pack of PACKS) for (const lesson2 of pack.lessons) for (const question2 of lesson2.questions) for (const review of [false, true]) {
+    const item = review ? question2.review : question2, measure = item && import_world_life.default.lifeMeasure({ skillId: question2.skillId, questionId: question2.id, lessonId: lesson2.id, review });
+    if (!measure || typeof item.id !== "string") continue;
+    rows2.push({
+      key: `life.${item.id}`,
+      answer: normalize(answerText(item)),
+      expression: question2.expressionId,
+      knowledge: KNOWLEDGE.has(measure.skillId),
+      main: !review || sameChoices(question2) ? question2.id : null
+    });
+  }
+  const parent = rows2.map((_, index) => index), first = /* @__PURE__ */ new Map();
+  const find = (index) => {
+    while (parent[index] !== index) {
+      parent[index] = parent[parent[index]];
+      index = parent[index];
+    }
+    return index;
+  };
+  const link = (name, index) => {
+    if (!first.has(name)) {
+      first.set(name, index);
+      return;
+    }
+    const a = find(first.get(name)), b = find(index);
+    if (a !== b) parent[Math.max(a, b)] = Math.min(a, b);
+  };
+  rows2.forEach((row, index) => {
+    if (row.answer) link(`answer:${row.answer}`, index);
+    if (row.knowledge) link(`expression:${row.expression}`, index);
+    if (row.main) link(`main:${row.main}`, index);
+  });
+  const naming = /* @__PURE__ */ new Map();
+  rows2.forEach((row, index) => {
+    const root = find(index);
+    if (!naming.has(root)) naming.set(root, null);
+    if (row.knowledge && naming.get(root) === null) naming.set(root, `life.expr.${row.expression}`);
+  });
+  FAMILY = new Map(rows2.map((row, index) => {
+    const root = find(index);
+    return [row.key, naming.get(root) || `life.ans.${fingerprint(rows2[root].answer)}`];
+  }));
+  return FAMILY;
+}
+function lifeItem({ lesson: lesson2, question: question2, review = false } = {}) {
+  const item = review ? question2?.review : question2;
+  if (!lesson2 || !question2 || !item || typeof item.id !== "string") return null;
+  const measure = import_world_life.default.lifeMeasure({ skillId: question2.skillId, questionId: question2.id, lessonId: lesson2.id, review });
+  if (!measure) return null;
+  const key = `life.${item.id}`;
+  const familyKey = familyTable().get(key) || (KNOWLEDGE.has(measure.skillId) ? `life.expr.${question2.expressionId}` : `life.ans.${fingerprint(answerText(item))}`);
+  return Object.freeze({ id: key, itemKey: key, familyKey, ...measure, lessonId: lesson2.id, questionId: question2.id, review, packId: lesson2.packId ?? null });
+}
+var ALL = null;
+function lifeItems() {
+  if (ALL) return ALL;
+  const out = [];
+  for (const pack of PACKS) for (const lesson2 of pack.lessons) for (const question2 of lesson2.questions) for (const review of [false, true]) {
+    const row = lifeItem({ lesson: { ...lesson2, packId: pack.id }, question: question2, review });
+    if (row) out.push(row);
+  }
+  return ALL = Object.freeze(out);
+}
+var FAMILIES = null;
+function lifeFamilyMembers(familyKey) {
+  if (!FAMILIES) {
+    FAMILIES = /* @__PURE__ */ new Map();
+    for (const row of lifeItems()) {
+      if (!FAMILIES.has(row.familyKey)) FAMILIES.set(row.familyKey, []);
+      FAMILIES.get(row.familyKey).push(row);
+    }
+  }
+  return FAMILIES.get(familyKey) || [];
+}
+var VERDICT_VERSION = "topik-existing-verdicts-1";
+var PASSED = null;
+function passedRows() {
+  if (PASSED) return PASSED;
+  const rows2 = /* @__PURE__ */ new Map(), conflicted = /* @__PURE__ */ new Set();
+  if (existing_verdicts_default?.version === VERDICT_VERSION && Array.isArray(existing_verdicts_default.items)) for (const row of existing_verdicts_default.items) {
+    if (typeof row?.itemKey !== "string" || !row.itemKey.startsWith("life.")) continue;
+    if (rows2.has(row.itemKey)) conflicted.add(row.itemKey);
+    rows2.set(row.itemKey, row);
+  }
+  for (const key of conflicted) rows2.delete(key);
+  return PASSED = rows2;
+}
+function lifeAssessable(item) {
+  if (!item || item.confounded || item.audioRequired || item.modality !== "reading" || item.skillId.split(".")[1] !== "reading") return false;
+  const row = passedRows().get(item.itemKey);
+  return !!row && row.verdict === "pass" && row.skillId === item.skillId && row.difficulty === item.difficulty && (row.responseFormat ?? "unknown") === item.responseFormat;
+}
+function lifeMeasureItem(item) {
+  return {
+    id: item.id,
+    itemKey: item.itemKey,
+    familyKey: item.familyKey,
+    skillId: item.skillId,
+    modality: item.modality,
+    difficulty: item.difficulty,
+    responseFormat: item.responseFormat,
+    audioRequired: item.audioRequired,
+    confounded: item.confounded
+  };
+}
+function lifeTarget(item) {
+  return {
+    id: item.id,
+    skillIds: [item.skillId],
+    difficulty: item.difficulty,
+    modality: item.modality,
+    responseFormat: item.responseFormat,
+    itemKey: item.itemKey,
+    familyKey: item.familyKey,
+    conceptIds: []
+  };
+}
+
+// experiences/synk-world-app/life-trail.mjs
+function productMet(item, snapshot) {
+  if (!item || !snapshot || typeof snapshot !== "object") return true;
+  const lessons = snapshot.lessons || {}, reviews = snapshot.reviews || {}, days = Object.values(snapshot.daily?.days || {});
+  const guided = (questionId) => days.some((day) => day?.items?.[questionId]?.guidedAt !== void 0);
+  for (const member of lifeFamilyMembers(item.familyKey)) {
+    const run = lessons[member.lessonId], main = run?.answers?.[member.questionId];
+    const replay = !!run && run.completedAt != null && Number.isFinite(run.startedAt) && run.startedAt > run.completedAt;
+    if (!member.review) {
+      if (main || run && run.completedAt != null) return true;
+      continue;
+    }
+    const record2 = reviews[`${member.questionId}-transfer`];
+    if (snapshot.activeReview?.answers?.[`${member.questionId}-transfer`]) return true;
+    if (guided(member.questionId)) return true;
+    if (!record2) continue;
+    if (record2.streak > 0 || !main || replay || Number.isFinite(record2.lastAt) && record2.lastAt > main.at) return true;
+  }
+  return false;
+}
+function createLifeTrail({ coach = () => null, snapshot = () => null, onError = null, assessable = lifeAssessable } = {}) {
+  const slots = /* @__PURE__ */ new Map();
+  let disposed = false;
+  const quiet = (fn) => {
+    try {
+      return fn();
+    } catch (error2) {
+      try {
+        onError?.(error2);
+      } catch {
+      }
+      return null;
+    }
+  };
+  function ensure(slot) {
+    if (disposed || !slot) return null;
+    if (slot.pid) return slot.pid;
+    const c = quiet(() => coach());
+    if (!c || typeof c.present !== "function") return null;
+    if (!slot.guided) {
+      for (const other of slots.values()) if (other.guided && !other.pid) present(other, c);
+    }
+    return present(slot, c);
+  }
+  function present(slot, c) {
+    const trailSeen = quiet(() => c.exposure?.({ itemKey: slot.item.itemKey, familyKey: slot.item.familyKey })?.seen);
+    slot.assessable = quiet(() => assessable(slot.item)) === true && (slot.met === false || trailSeen === true);
+    const pid = quiet(() => c.present(lifeMeasureItem(slot.item)));
+    if (!pid) return null;
+    slot.coach = c;
+    slot.pid = pid;
+    if (slot.pendingHelp) {
+      const kind = slot.pendingHelp;
+      slot.pendingHelp = null;
+      give(slot, kind);
+    }
+    return pid;
+  }
+  function give(slot, kind) {
+    if (!slot.pid) {
+      slot.pendingHelp ||= kind;
+      return;
+    }
+    if (quiet(() => slot.coach.help(slot.pid, kind)) !== null) slot.helped = true;
+  }
+  const slotOf = (key) => typeof key === "string" ? slots.get(key) || null : null;
+  return Object.freeze({
+    // 문항이 보였다 — 판을 열고 그 자리에서 코치에 보인다(그 순간의 제품 이력 대조와 도움 상태를 잰다). item: lifeItem(...) 결과.
+    // 보인 순간에 적는다(설계 §4-2 ② 4판 — 끝 판 검수 GPT GB1 · Fable F1): 엔진 노출 계약을 따른다. 코치 노출(atlas/game-learning.js exposure)은
+    // 답하지 않고 보인 문항도 처음 보는 문항이 아니라고 보고, Temper 짝(temper.js fresh)은 그 문항 · 계열의 첫 보임 판의 답만 고른다 — 그래서 흘끗 본 문항은
+    // 재확인 공급(life-followups.mjs)에서 빠지고, 흘끗 보고 새로고침한 뒤의 첫 답은 Temper 짝이 못 된다(2판이 늦은 보임으로 지키려던 것을 버린다).
+    // Trail 근거의 「처음」(trail.js firstExposure)은 답 · 정답 보임으로만 깨지므로 그 답도 근거 · 앵커로는 남는다. 같은 판을 다시 그려도 보임은 하나다.
+    // 코치가 아직 없으면(계정 통로 준비 전) 다음 도움 · 소리 · 답 때 다시 보인다.
+    // helped: 제품이 이 문항의 도움을 이미 펼쳤다(설정 · 새로고침 뒤 이어 하기) — 보이자마자 도움으로 적는다.
+    shown(key, item, { helped = false } = {}) {
+      if (disposed || typeof key !== "string" || !item) return null;
+      let slot = slots.get(key);
+      if (!slot) {
+        slot = { key, item, pid: null, coach: null, helped: false, answered: false, assessable: false, met: quiet(() => productMet(item, snapshot())), pendingHelp: null };
+        slots.set(key, slot);
+      }
+      ensure(slot);
+      if (helped && !slot.helped) give(slot, "explanation");
+      return slot.pid;
+    },
+    // 답하기 전에 연 도움(해설 펼침 'explanation' · 카페 힌트 'hint' · 글자로 보기 'text' · 느리게 'replay').
+    help(key, kind = "explanation") {
+      const slot = slotOf(key);
+      if (!slot || slot.answered || !["explanation", "hint", "text", "replay"].includes(kind)) return;
+      ensure(slot);
+      give(slot, kind);
+    },
+    // 실제 재생기의 결과(카페 직원 말). 장면 문항이라 판정에 쓰이지 않지만 들린 사실은 그대로 남긴다.
+    delivery(key, audio) {
+      const slot = slotOf(key);
+      if (!slot || slot.answered || !["pending", "completed", "failed"].includes(audio)) return;
+      if (ensure(slot)) quiet(() => slot.coach.delivery(slot.pid, { audio }));
+    },
+    // 첫 답. helped: 제품이 그 답을 도움 받은 답으로 적었는가(진도 단계에 남아 새로고침을 지난다) — 이 판에 도움이 없으면 먼저 적는다.
+    answer(key, { correct, choiceId = null, correctId = null, helped = false } = {}) {
+      const slot = slotOf(key);
+      if (!slot || slot.answered || typeof correct !== "boolean") return null;
+      if (!ensure(slot)) return null;
+      if (helped && !slot.helped) give(slot, "explanation");
+      const choice = typeof choiceId === "string" && typeof correctId === "string" ? { choice: { selectedId: choiceId, correctId } } : {};
+      const result = quiet(() => slot.coach.answer(slot.pid, { correct, assessable: slot.assessable, ...choice }));
+      slot.answered = true;
+      quiet(() => slot.coach.help(slot.pid, "answer"));
+      return result;
+    },
+    // 튜터 「이 표현 같이 연습」: 복습 원고를 미리 보인다. 보임 + 도움만 남기고 답은 남기지 않는다(실패 · 취소가 제품에 오지 않는다).
+    guided(item) {
+      if (disposed || !item) return;
+      const key = `guided:${item.itemKey}`;
+      let slot = slots.get(key);
+      if (!slot) {
+        slot = { key, item, pid: null, coach: null, helped: false, answered: false, assessable: false, met: true, pendingHelp: "explanation", guided: true };
+        slots.set(key, slot);
+      }
+      if (!slot.pid) ensure(slot);
+    },
+    // 지금 화면의 판을 놓는다(같은 문항을 새 판으로 다시 보일 때). 보이고 답하지 않은 판은 그대로 「보임」으로 남는다.
+    release(key) {
+      slots.delete(key);
+    },
+    metrics: () => ({ slots: slots.size, presented: [...slots.values()].filter((slot) => slot.pid).length, answered: [...slots.values()].filter((slot) => slot.answered).length }),
+    dispose() {
+      disposed = true;
+      slots.clear();
+    }
+  });
+}
+var lessonSlot = (attemptId, questionId) => `lesson:${attemptId}:${questionId}`;
+var reviewSlot = (runId, reviewId) => `review:${runId}:${reviewId}`;
+var lifeEngine = Object.freeze({ createLifeTrail, lifeItem, lifeItems, lifeAssessable, productMet, lessonSlot, reviewSlot });
+
+// experiences/synk-world-app/world-learning-map.mjs
 var worldMapData = import_world_map.default.worldMapData;
-var worldMap = import_strata.default.createMap(worldMapData());
+var worldMap = import_strata.default.createMap(import_world_life2.default.withLifeLayer(worldMapData()));
 var worldLearning = Object.freeze({
   ...import_game_browser.default,
   SKILLS: worldMap.allNodes(),
-  engine: Object.freeze({ ...import_game_browser.default.engine, createGame: (config) => import_game_learning.default.createGame({ ...config, map: worldMap }) })
+  engine: Object.freeze({ ...import_game_browser.default.engine, createGame: (config) => import_game_learning.default.createGame({ ...config, map: worldMap }) }),
+  life: lifeEngine
 });
+
+// experiences/synk-world-app/life-plan.mjs
+var lifeTargets = (lesson2, questions, review = false) => questions.map((question2) => lifeItem({ lesson: lesson2, question: question2, review })).filter((item) => item && !item.confounded).map(lifeTarget);
+function planTargets({ candidate, known, profile, reviewWaiting = false } = {}) {
+  if (candidate?.route !== "lesson" || candidate.resume) return known;
+  if (reviewWaiting || profile?.evidenceComplete !== true) return [];
+  const rows2 = new Map((Array.isArray(profile.skills) ? profile.skills : []).map((skill2) => [skill2.id, skill2]));
+  return known.filter((target) => {
+    const cell = rows2.get(target.skillIds[0])?.levels?.[target.difficulty]?.formats?.[target.responseFormat];
+    return !!cell && (["practice", "supported", "review"].includes(cell.status) || cell.status === "checking" && cell.incorrect > 0);
+  });
+}
+
+// experiences/synk-world-app/world-learning-plan.mjs
+var import_world_life3 = __toESM(require_world_life2(), 1);
 
 // experiences/korean-runner/learning.mjs
 function instructionMetadata(item) {
@@ -20367,6 +21676,7 @@ function weekActivity({ events = [], progress: progress2 = null, week, extra = [
     const at = Date.parse(event.at), presentation = shown.get(event.presentationId);
     if (!Number.isFinite(at) || at < week.start || at >= week.end || !presentation) continue;
     const experience = decisions.get(presentation.decisionId) || "unknown", modality = presentation.measure?.modality;
+    if (experience === "world-life") continue;
     const area = experience === "world-home" ? "recheck" : ["reading", "listening", "writing"].includes(modality) ? modality : null;
     if (!area) continue;
     const key = `${area}|${experience}`;
@@ -20767,14 +22077,7 @@ function clock(value) {
   if (!time3(at)) throw TypeError("WORLD learning plan needs a valid time");
   return at;
 }
-var PACK_SITUATIONS = {
-  greetings: ["sit-people-greeting"],
-  cafe: ["sit-travel-order"],
-  store: ["sit-travel-shopping"],
-  directions: ["sit-travel-directions"],
-  transit: ["sit-travel-transport"],
-  plans: ["sit-career-schedule", "sit-people-messenger"]
-};
+var PACK_SITUATIONS = Object.fromEntries(PACKS.map((pack) => [pack.id, import_world_life3.default.lifeSituations(pack.skills.map((skill2) => skill2.id))]));
 var conceptId = (value) => typeof value === "string" && /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,79}$/.test(value);
 function answersOf(value) {
   const pick = (list) => Array.isArray(list) ? [...new Set(list.filter(conceptId))].slice(0, 50) : [];
@@ -20826,7 +22129,7 @@ function lessonCandidate(lesson2, index, settings) {
     packId: lesson2.packId,
     minutes: lessonMinutes(lesson2),
     minutesEstimated: true,
-    targets: [],
+    targets: lifeTargets(lesson2, lesson2.questions),
     goals: [...PACK_GOALS[lesson2.packId]],
     supports: [...supports],
     audioRequired: false,
@@ -20880,7 +22183,7 @@ function buildWorldLearningCandidates({ progress: progress2 = {}, settings = {},
       packId: rows2[0].packId,
       minutes: Math.max(1, Math.ceil(rows2.length / 3)),
       minutesEstimated: true,
-      targets: [],
+      targets: rows2.flatMap((review) => lifeTargets(review.lesson, [review.question], true)),
       goals: [...PACK_GOALS[rows2[0].packId]],
       supports: [...supports],
       audioRequired: false,
@@ -21006,7 +22309,7 @@ function resumeCandidates(progress2, settings, now) {
     reviewIds: pending.filter((id) => reviews.some((review) => review.id === id)),
     minutes: Math.max(1, Math.ceil(pending.length / 3)),
     minutesEstimated: true,
-    targets: [],
+    targets: reviews.filter((review) => pending.includes(review.id)).flatMap((review) => lifeTargets(review.lesson, [review.question], true)),
     goals: [...PACK_GOALS[first.packId]],
     supports: [...supports],
     audioRequired: false,
@@ -21042,7 +22345,7 @@ function hostReason(chosen, { history, plan, labels }) {
   if (selected.route === "mock") return { reason: "\uC2DC\uD5D8\uCC98\uB7FC \uCC98\uC74C \uBCF4\uB294 \uBB38\uD56D\uC744 \uC815\uD574\uC9C4 \uC2DC\uAC04 \uC548\uC5D0 \uD480\uC5B4 \uBD10\uC694. \uC810\uC218\uB098 \uAE09\uC218\uB85C \uBC14\uAFB8\uC9C0 \uC54A\uC544\uC694.", reasons: ["exam.form"] };
   if (selected.route === "position") return { reason: plan?.notes?.includes("start") ? "\uC2DC\uD5D8 \uBAA9\uD45C\uC5D0 \uB9DE\uCDB0 \uC9E7\uC740 \uC9C4\uB2E8\uC73C\uB85C \uC2DC\uC791\uC810\uC744 \uBA3C\uC800 \uD655\uC778\uD574\uC694." : "\uC774\uBC88 \uC8FC \uACC4\uD68D\uC758 \uB2E4\uC2DC \uD655\uC778\uC774\uC5D0\uC694. \uCC98\uC74C \uBCF4\uB294 \uBB38\uD56D\uC73C\uB85C \uC9C0\uAE08 \uC704\uCE58\uB97C \uD655\uC778\uD574\uC694.", reasons: ["plan.recheck"] };
   const unseen = (chosen.reasons || []).includes("practice.unseen") && !(chosen.reasons || []).includes("goal.declared");
-  if (!unseen || !history || (selected.targets || []).length) return null;
+  if (!unseen || !history) return null;
   if (selected.route === "lesson") return { reason: "\uC0DD\uD65C \uD329\uC758 \uB2E4\uC74C \uB808\uC2A8\uC774\uC5D0\uC694. \uC9C4\uB3C4 \uC21C\uC11C\uB300\uB85C \uC774\uC5B4\uC11C \uBC30\uC6CC\uC694.", reasons: ["progress.next"] };
   return null;
 }
@@ -21055,8 +22358,10 @@ function createWorldLearningPlan({ summary = null, progress: progress2 = {}, set
   const resumes = resumeCandidates(source, settings, at), resumingReview = resumes.some((candidate) => candidate.route === "review");
   const added = (Array.isArray(extra) ? extra : []).map((candidate) => extraCandidate(candidate, settings)).filter(Boolean);
   const candidates = [...resumes, ...buildWorldLearningCandidates({ progress: source, settings, now: at, openGames }).filter((candidate) => !(resumingReview && candidate.route === "review") && !resumes.some((resume) => candidate.route === "lesson" && resume.route === "lesson" && resume.lessonId === candidate.lessonId)), ...added];
+  const reviewWaiting = candidates.some((candidate) => candidate.route === "review");
   const ready = candidates.map((candidate) => {
-    const targets = candidate.targets.filter((target) => target.skillIds.every((id) => skills.has(id)));
+    const known = candidate.targets.filter((target) => target.skillIds.every((id) => skills.has(id)));
+    const targets = planTargets({ candidate, known, profile, reviewWaiting });
     const goals = planned ? [.../* @__PURE__ */ new Set([...candidate.goals || [], ...planTokens({ ...candidate, targets })])] : candidate.goals;
     return withAnswers({ ...candidate, targets, goals }, told);
   });
@@ -21149,6 +22454,36 @@ function advisoryRows({ targets = [], summary, lookup, supply = {} } = {}) {
   return out.slice(0, 3);
 }
 
+// experiences/synk-world-app/life-followups.mjs
+function lifeFollowupRows({ projection, seen, snapshot = null, now = Date.now(), life = null, assessable = life?.lifeAssessable, taskVersion } = {}) {
+  const items = typeof life?.lifeItems === "function" ? life.lifeItems() : null, productMet2 = life?.productMet;
+  if (!projection || !Array.isArray(projection.items) || typeof seen !== "function" || !Array.isArray(items) || typeof productMet2 !== "function" || typeof assessable !== "function") return { available: false, limited: true, rows: [] };
+  const limited = projection.evidenceComplete !== true || projection.coverage?.limited === true || projection.coverage?.retentionLimited === true;
+  const progress2 = snapshot && typeof snapshot === "object" ? snapshot : {};
+  const lessons = progress2.lessons || {}, reviews = progress2.reviews || {};
+  const fresh = (item) => {
+    try {
+      return seen({ itemKey: item.itemKey, familyKey: item.familyKey }) === false && productMet2(item, progress2) === false;
+    } catch {
+      return false;
+    }
+  };
+  const due = new Set(Object.values(reviews).filter((review) => Number.isFinite(review?.dueAt) && review.dueAt <= now).map((review) => review.id));
+  const active = progress2.activeReview && Array.isArray(progress2.activeReview.ids) ? progress2.activeReview : null;
+  const pending = active ? active.ids.filter((id) => !active.answers?.[id]) : [];
+  const reviewOpens = (id) => pending.length ? pending.includes(id) : due.has(id);
+  const next = /* @__PURE__ */ new Map();
+  for (const item of items) if (!item.review && !next.has(item.packId) && lessons[item.lessonId]?.completedAt == null) next.set(item.packId, item.lessonId);
+  const routeOf = (item) => item.review ? reviewOpens(`${item.questionId}-transfer`) ? { route: "review", lessonId: item.lessonId, reviewIds: [`${item.questionId}-transfer`] } : null : next.get(item.packId) === item.lessonId && !lessons[item.lessonId]?.answers?.[item.questionId] ? { route: "lesson", lessonId: item.lessonId } : null;
+  const rows2 = projection.items.filter((row) => row.gameId === "world-life").map((row) => {
+    const m = row.measure || {};
+    const supply = !limited && row.status === "due" && (row.current ?? m.taskVersion === taskVersion) ? items.filter((item) => !item.confounded && item.skillId === m.skillId && item.difficulty === m.difficulty && item.responseFormat === m.responseFormat && item.modality === m.modality && item.audioRequired === (m.audioRequired === true) && assessable(item) && fresh(item)).map((item) => ({ item, route: routeOf(item) })).filter((row2) => row2.route) : [];
+    supply.sort((a, b) => Number(b.route.route === "review") - Number(a.route.route === "review"));
+    return { ...row, item: supply[0]?.item || null, route: supply[0]?.route || null, available: supply.length > 0 };
+  });
+  return { available: true, limited, rows: rows2.sort((a, b) => Number(b.status === "due") - Number(a.status === "due") || Date.parse(a.dueAt) - Date.parse(b.dueAt)).slice(0, 12) };
+}
+
 // experiences/synk-world-app/world-learning-ui.mjs
 var escape3 = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 var REASON_IDS = ["travel", "life", "people", "exam", "study", "work", "career", "culture", "hobby", "other"];
@@ -21190,7 +22525,7 @@ function createWorldEducation({
   responses = false,
   target = globalThis
 }) {
-  let stopped = false, coach = null, coachHost = null, practiceCoach = null, practiceHost = null, mockCoach = null, mockHost = null, current = null, refreshing = false, classwork = { at: 0, rows: [], pending: null };
+  let stopped = false, coach = null, coachHost = null, practiceCoach = null, practiceHost = null, mockCoach = null, mockHost = null, lifeCoachNow = null, lifeHost = null, current = null, refreshing = false, classwork = { at: 0, rows: [], pending: null };
   const owner = getProgress().owner;
   const empty2 = engine.engine.createGame({ gameId: "world-home-empty", storage: null, historyComplete: false }).summary();
   const view = position ? position.createView({ t: t2, has: hasString2, formatDate: formatDate2, lang: currentLang2 }) : null;
@@ -21231,6 +22566,10 @@ function createWorldEducation({
   const readMockCoach = () => coachFor(position?.mock?.MOCK_POLICY?.gameId || "world-mock", () => [mockCoach, mockHost], (a, b) => {
     mockCoach = a;
     mockHost = b;
+  });
+  const readLifeCoach = () => coachFor("world-life", () => [lifeCoachNow, lifeHost], (a, b) => {
+    lifeCoachNow = a;
+    lifeHost = b;
   });
   const answering = () => responses === true && owner !== "guest";
   function finishSet(coachNow, kind) {
@@ -21349,6 +22688,27 @@ function createWorldEducation({
       taskVersion: c?.mapVersion,
       audioAvailable: getProgress().learningProfileValues().audio !== "off"
     });
+  }
+  function lifeDelayedRows() {
+    const c = readPracticeCoach(), seen = seenBy(c);
+    let projection = null, snapshot = null;
+    try {
+      projection = c?.followups?.();
+    } catch {
+    }
+    try {
+      snapshot = getProgress().exportSnapshot();
+    } catch {
+    }
+    return lifeFollowupRows({ projection, seen, snapshot, life: engine.life, taskVersion: c?.mapVersion });
+  }
+  function openLifeFollowup(id) {
+    const row = lifeDelayedRows().rows.find((value) => value.id === id && value.status === "due" && value.available);
+    if (!row) {
+      home.toast(t2("followup.noSupply"));
+      return;
+    }
+    return row.route.route === "review" ? startReview(row.route.lessonId, row.route.reviewIds) : startLesson(row.route.lessonId);
   }
   let boardExam = null;
   const studentExam = (values) => values?.examType === "topik2" ? "topik2" : "topik1";
@@ -21945,11 +23305,20 @@ function createWorldEducation({
     const root = panelNode("[data-position-board]");
     if (root && position.followups) {
       void loadFollowupBank();
-      const delayed = delayedRows();
-      const rows2 = delayed.rows.map((row) => `<li><strong>${escape3(t2(`position.skill.${row.measure.skillId}`))}</strong> \xB7 ${escape3(t2(`followup.window.${row.window}`))}<p>${escape3(t2(`followup.status.${row.status}`))}${row.status === "not_due" ? ` \xB7 ${escape3(formatDate2(Date.parse(row.dueAt), { month: "short", day: "numeric" }))}` : ""}${row.outcome ? ` \xB7 ${escape3(t2(`followup.outcome.${row.outcome}`))}` : ""}</p>${row.status === "due" ? row.available ? `<button class="quiet-button" data-followup="${escape3(row.id)}">${escape3(t2("followup.open"))}</button>` : `<p>${escape3(t2("followup.noSupply"))}</p>` : ""}</li>`).join("");
-      root.insertAdjacentHTML("beforeend", `<section class="wpos-followups"><h3>${escape3(t2("followup.title"))}</h3><p>${escape3(t2("followup.note"))}</p>${delayed.limited ? `<p role="status">${escape3(t2("followup.incomplete"))}</p>` : ""}${rows2 ? `<ul>${rows2}</ul>` : `<p>${escape3(t2("followup.empty"))}</p>`}</section>`);
+      const delayed = delayedRows(), life = lifeDelayedRows();
+      const line = (row, { source = "", attr }) => `<li><strong>${escape3(t2(`position.skill.${row.measure.skillId}`))}</strong>${source ? ` \xB7 ${escape3(source)}` : ""} \xB7 ${escape3(t2(`followup.window.${row.window}`))}<p>${escape3(t2(`followup.status.${row.status}`))}${row.status === "not_due" ? ` \xB7 ${escape3(formatDate2(Date.parse(row.dueAt), { month: "short", day: "numeric" }))}` : ""}${row.outcome ? ` \xB7 ${escape3(t2(`followup.outcome.${row.outcome}`))}` : ""}</p>${row.status === "due" ? row.available ? `<button class="quiet-button" ${attr}="${escape3(row.id)}">${escape3(t2("followup.open"))}</button>` : `<p>${escape3(t2("followup.noSupply"))}</p>` : ""}</li>`;
+      const rows2 = [...delayed.rows.map((row) => line(row, { attr: "data-followup" })), ...life.rows.map((row) => line(row, { source: t2("position.source.life"), attr: "data-followup-life" }))].join("");
+      root.insertAdjacentHTML("beforeend", `<section class="wpos-followups"><h3>${escape3(t2("followup.title"))}</h3><p>${escape3(t2("followup.note"))}</p>${delayed.limited || life.available && life.limited ? `<p role="status">${escape3(t2("followup.incomplete"))}</p>` : ""}${rows2 ? `<ul>${rows2}</ul>` : `<p>${escape3(t2("followup.empty"))}</p>`}</section>`);
       root.querySelectorAll("[data-followup]").forEach((button) => button.addEventListener("click", () => {
         void startPractice(null, { followupId: button.dataset.followup }).catch(failed);
+      }));
+      root.querySelectorAll("[data-followup-life]").forEach((button) => button.addEventListener("click", () => {
+        try {
+          check3();
+          void Promise.resolve(openLifeFollowup(button.dataset.followupLife)).catch(failed);
+        } catch (error2) {
+          failed(error2);
+        }
       }));
       const supply = position.practice.practiceSupply({ pool: position.practice.pool, seen: seenBy(coachNow) });
       const targets = map.skills.filter((row) => ["practice", "supported", "review"].includes(row.status) || row.incorrect > 0).map((row) => row.id);
@@ -22929,7 +24298,22 @@ function createWorldEducation({
     return `<button class="life-row" data-view="plan">${print("goals", "life-row-print")}<span class="life-row-copy"><strong>${t2("plan.week.title")}</strong><small>${escape3(t2("plan.week.row", { done, total }))}</small></span></button>`;
   }
   const examType = () => current?.examPlan?.exam?.type || null;
-  return { next, open, examLink, refresh, repaint, applyPreferences, planRow, examType, positionTotal: topikTotal, responses: responseList, removeResponse, ...position ? { position: openPosition, practice: startPractice, plan: openPlan, mock: openMock, townCheck, townEvidence } : {}, presentation() {
+  const lifeLearning = Object.freeze({ coach: () => {
+    try {
+      return readLifeCoach();
+    } catch {
+      return null;
+    }
+  }, prepare: () => {
+    try {
+      check3();
+      return Promise.resolve(prepare()).catch(() => {
+      });
+    } catch {
+      return Promise.resolve();
+    }
+  }, life: engine.life || null });
+  return { next, open, examLink, refresh, repaint, applyPreferences, planRow, examType, positionTotal: topikTotal, responses: responseList, removeResponse, lifeLearning, ...position ? { position: openPosition, practice: startPractice, plan: openPlan, mock: openMock, townCheck, townEvidence } : {}, presentation() {
     check3();
     const values = settingsFor(getProgress().learningProfileValues());
     return Object.fromEntries(["support", "explanation"].filter((k) => values[k]).map((k) => [k, values[k]]));
@@ -22938,6 +24322,7 @@ function createWorldEducation({
     coach?.disconnect?.();
     practiceCoach?.disconnect?.();
     mockCoach?.disconnect?.();
+    lifeCoachNow?.disconnect?.();
     target.removeEventListener?.("focus", onFocus);
   } };
 }
@@ -25476,6 +26861,7 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     if (experienceId === "world-home") return t3("position.source.diagnostic");
     if (experienceId === "world-practice") return t3("position.source.practice");
     if (experienceId === "world-mock") return t3("position.source.mock");
+    if (experienceId === "world-life") return t3("position.source.life");
     const prefix = String(itemKey || "").split(/[.:]/)[0];
     return prefix && has(`position.source.${prefix}`) ? t3(`position.source.${prefix}`) : t3("position.source.other");
   }
@@ -25954,9 +27340,6 @@ var hangul_default = {
   ]
 };
 
-// experiences/topik-items/review/existing-verdicts.json
-var existing_verdicts_default = { version: "topik-existing-verdicts-1", items: [{ itemKey: "blank-slice.a01.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.a01.v1" }, { itemKey: "blank-slice.a02.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.a02.v1" }, { itemKey: "blank-slice.e01.v3", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e01.v1" }, { itemKey: "blank-slice.e02.v2", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e02.v1" }, { itemKey: "blank-slice.e03.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 2, responseFormat: "single-choice", familyKey: "blank-slice.e03.v1" }, { itemKey: "blank-slice.e04.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e04.v1" }, { itemKey: "blank-slice.e05.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 2, responseFormat: "single-choice", familyKey: "blank-slice.e05.v1" }, { itemKey: "blank-slice.e06.v2", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e06.v1" }, { itemKey: "blank-slice.e07.v2", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e07.v1" }, { itemKey: "blank-slice.e08.v3", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.e08.v1" }, { itemKey: "blank-slice.e09.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 2, responseFormat: "single-choice", familyKey: "blank-slice.e09.v1" }, { itemKey: "blank-slice.e10.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 2, responseFormat: "single-choice", familyKey: "blank-slice.e10.v1" }, { itemKey: "blank-slice.g01.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.g01.v1" }, { itemKey: "blank-slice.g02.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.g02.v1" }, { itemKey: "blank-slice.g03.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.g03.v1" }, { itemKey: "blank-slice.p01.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p01.v1" }, { itemKey: "blank-slice.p02.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p02.v1" }, { itemKey: "blank-slice.p03.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p03.v1" }, { itemKey: "blank-slice.p04.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p04.v1" }, { itemKey: "blank-slice.p05.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p05.v1" }, { itemKey: "blank-slice.p06.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.p06.v1" }, { itemKey: "blank-slice.t01.v1", verdict: "pass", skillId: "ko.reading.grammar", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.t01.v1" }, { itemKey: "blank-slice.v01.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v01.v1" }, { itemKey: "blank-slice.v02.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v02.v1" }, { itemKey: "blank-slice.v03.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v03.v1" }, { itemKey: "blank-slice.v04.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v04.v1" }, { itemKey: "blank-slice.v05.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v05.v1" }, { itemKey: "blank-slice.v06.v3", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v06.v1" }, { itemKey: "blank-slice.v07.v3", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v07.v1" }, { itemKey: "blank-slice.v08.v2", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v08.v1" }, { itemKey: "blank-slice.v09.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v09.v1" }, { itemKey: "blank-slice.v10.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v10.v1" }, { itemKey: "blank-slice.v11.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v11.v1" }, { itemKey: "blank-slice.v12.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v12.v1" }, { itemKey: "blank-slice.v13.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v13.v1" }, { itemKey: "blank-slice.v14.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "blank-slice.v14.v1" }, { itemKey: "board-decode.festival.f1.\uC0AC\uC804 \uC811\uC218", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.festival.f1" }, { itemKey: "board-decode.festival.f1.\uC120\uCC29\uC21C", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.festival.f1" }, { itemKey: "board-decode.festival.f2.\uC5F0\uAE30", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.festival.f2" }, { itemKey: "board-decode.festival.f2.\uCDE8\uC18C", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.festival.f2" }, { itemKey: "board-decode.festival.patch.\uC5F0\uAE30", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.festival.patch" }, { itemKey: "board-decode.festival.patch.\uCDE8\uC18C", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.festival.patch" }, { itemKey: "board-decode.laundry.f1.\uC81C\uC678", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.laundry.f1" }, { itemKey: "board-decode.laundry.f1.\uD55C\uD568", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.laundry.f1" }, { itemKey: "board-decode.laundry.f2.\uBCF4\uAD00", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.laundry.f2" }, { itemKey: "board-decode.laundry.f2.\uD3D0\uAE30", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.laundry.f2" }, { itemKey: "board-decode.laundry.patch.\uBCF4\uAD00", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.laundry.patch" }, { itemKey: "board-decode.laundry.patch.\uD3D0\uAE30", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.laundry.patch" }, { itemKey: "board-decode.season.f1.\uAD8C\uC7A5", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.season.f1" }, { itemKey: "board-decode.season.f1.\uD544\uC218", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.season.f1" }, { itemKey: "board-decode.season.f2.\uAC00\uB2A5", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.season.f2" }, { itemKey: "board-decode.season.f2.\uBD88\uAC00", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.season.f2" }, { itemKey: "board-decode.season.patch.\uAC00\uB2A5", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.season.patch" }, { itemKey: "board-decode.season.patch.\uBD88\uAC00", verdict: "pass", skillId: "ko2.reading.detail", difficulty: 1, familyKey: "board-decode.season.patch" }, { itemKey: "entry-check.concert-10.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.concert-10.v1" }, { itemKey: "entry-check.concert-11.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.concert-11.v1" }, { itemKey: "entry-check.concert-12.v3", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.concert-12.v1" }, { itemKey: "entry-check.concert-13.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.concert-13.v1" }, { itemKey: "entry-check.concert-14.v1", verdict: "pass", skillId: "ko.reading.condition", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.concert-14.v1" }, { itemKey: "entry-check.library-10.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.library-10.v1" }, { itemKey: "entry-check.library-11.v1", verdict: "pass", skillId: "ko.reading.condition", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.library-11.v1" }, { itemKey: "entry-check.museum-09.v1", verdict: "pass", skillId: "ko.reading.condition", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.museum-09.v1" }, { itemKey: "entry-check.museum-10.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.museum-10.v1" }, { itemKey: "entry-check.museum-11.v1", verdict: "pass", skillId: "ko.reading.condition", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.museum-11.v1" }, { itemKey: "entry-check.pool-09.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.pool-09.v1" }, { itemKey: "entry-check.pool-10.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "entry-check.pool-10.v1" }, { itemKey: "entry-check.pool-11.v1", verdict: "pass", skillId: "ko.reading.condition", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.pool-11.v1" }, { itemKey: "entry-check.pool-12.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.pool-12.v1" }, { itemKey: "entry-check.pool-13.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.pool-13.v1" }, { itemKey: "entry-check.pool-14.v2", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "entry-check.pool-14.v1" }, { itemKey: "korean-racing:w0001:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0001:v1" }, { itemKey: "korean-racing:w0008:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0008:v1" }, { itemKey: "korean-racing:w0012:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0012:v1" }, { itemKey: "korean-racing:w0018:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0018:v1" }, { itemKey: "korean-racing:w0025:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0025:v1" }, { itemKey: "korean-racing:w0028:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0028:v1" }, { itemKey: "korean-racing:w0035:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0035:v1" }, { itemKey: "korean-racing:w0036:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0036:v1" }, { itemKey: "korean-racing:w0042:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0042:v1" }, { itemKey: "korean-racing:w0050:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0050:v1" }, { itemKey: "korean-racing:w0051:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0051:v1" }, { itemKey: "korean-racing:w0056:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0056:v1" }, { itemKey: "korean-racing:w0061:v1", verdict: "pass", skillId: "ko.listening.word", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-racing:w0061:v1" }, { itemKey: "korean-rhythm:t0q0:v1:claim0", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t0q0:v1" }, { itemKey: "korean-rhythm:t0q1:v1:claim0", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t0q1:v1" }, { itemKey: "korean-rhythm:t0q2:v1:claim0", verdict: "pass", skillId: "ko.listening.negation", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t0q2:v1" }, { itemKey: "korean-rhythm:t0q3:v1:claim0", verdict: "pass", skillId: "ko.listening.negation", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t0q3:v1" }, { itemKey: "korean-rhythm:t0q4:v1:claim0", verdict: "pass", skillId: "ko.listening.negation", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t0q4:v1" }, { itemKey: "korean-rhythm:t1q0:v1:claim1:v2", verdict: "pass", skillId: "ko.listening.reason", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t1q0:v1" }, { itemKey: "korean-rhythm:t1q1:v1:claim1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t1q1:v1" }, { itemKey: "korean-rhythm:t1q2:v1:claim0", verdict: "pass", skillId: "ko.listening.reason", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t1q2:v1" }, { itemKey: "korean-rhythm:t1q3:v1:claim1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "binary-choice", familyKey: "korean-rhythm:t1q3:v1" }, { itemKey: "korean-rhythm:t1q4:v1:claim0", verdict: "pass", skillId: "ko.listening.reason", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t1q4:v1" }, { itemKey: "korean-rhythm:t2q0:v1:claim1", verdict: "pass", skillId: "ko.listening.condition", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t2q0:v1" }, { itemKey: "korean-rhythm:t2q1:v1:claim0", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t2q1:v1" }, { itemKey: "korean-rhythm:t2q2:v1:claim0:v3", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t2q2:v1" }, { itemKey: "korean-rhythm:t2q3:v1:claim0:v2", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t2q3:v1" }, { itemKey: "korean-rhythm:t2q4:v1:claim0", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "binary-choice", familyKey: "korean-rhythm:t2q4:v1" }, { itemKey: "korean-runner.listening-check.check-duck-jump.v1", verdict: "pass", skillId: "ko.listening.sequence", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-duck-jump.v1" }, { itemKey: "korean-runner.listening-check.check-fence-jump.v2", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-fence-jump.v1" }, { itemKey: "korean-runner.listening-check.check-high-sign.v2", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-high-sign.v1" }, { itemKey: "korean-runner.listening-check.check-left-run.v1", verdict: "pass", skillId: "ko.listening.sequence", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-left-run.v1" }, { itemKey: "korean-runner.listening-check.check-middle-left.v1", verdict: "pass", skillId: "ko.listening.sequence", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-middle-left.v1" }, { itemKey: "korean-runner.listening-check.check-no-fence.v2", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-no-fence.v1" }, { itemKey: "korean-runner.listening-check.check-not-left.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-not-left.v1" }, { itemKey: "korean-runner.listening-check.check-not-middle.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-not-middle.v1" }, { itemKey: "korean-runner.listening-check.check-right-before-jump.v1", verdict: "pass", skillId: "ko.listening.sequence", difficulty: 2, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-right-before-jump.v1" }, { itemKey: "korean-runner.listening-check.check-sign-duck.v2", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-sign-duck.v1" }, { itemKey: "korean-runner.listening-check.check-star-middle.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-star-middle.v1" }, { itemKey: "korean-runner.listening-check.check-wide-left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "korean-runner.listening-check.check-wide-left.v1" }, { itemKey: "snap-words.meaning.bank.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.bank.v1" }, { itemKey: "snap-words.meaning.bookstore.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.bookstore.v1" }, { itemKey: "snap-words.meaning.cafeteria.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.cafeteria.v1" }, { itemKey: "snap-words.meaning.dorm.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.dorm.v1" }, { itemKey: "snap-words.meaning.entrance.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.entrance.v1" }, { itemKey: "snap-words.meaning.exit.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.exit.v1" }, { itemKey: "snap-words.meaning.library.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.library.v1" }, { itemKey: "snap-words.meaning.lift.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.lift.v1" }, { itemKey: "snap-words.meaning.office.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.office.v1" }, { itemKey: "snap-words.meaning.pharmacy.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.pharmacy.v1" }, { itemKey: "snap-words.meaning.post.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.post.v1" }, { itemKey: "snap-words.meaning.stairs.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.stairs.v1" }, { itemKey: "snap-words.meaning.toilet.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.meaning.toilet.v1" }, { itemKey: "snap-words.notice.n-bike.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.notice.n-bike.v1" }, { itemKey: "snap-words.notice.n-construction.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.notice.n-construction.v1" }, { itemKey: "snap-words.notice.n-fresh.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.notice.n-fresh.v1" }, { itemKey: "snap-words.notice.n-smoke.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.notice.n-smoke.v1" }, { itemKey: "snap-words.recall-meaning.menu.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.menu.v1" }, { itemKey: "snap-words.recall-meaning.n-fix.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.n-fix.v1" }, { itemKey: "snap-words.recall-meaning.n-welcome.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.n-welcome.v1" }, { itemKey: "snap-words.recall-meaning.pull.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.pull.v1" }, { itemKey: "snap-words.recall-meaning.push.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.push.v1" }, { itemKey: "snap-words.recall-meaning.slide.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.slide.v1" }, { itemKey: "snap-words.recall-meaning.stop.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.stop.v1" }, { itemKey: "snap-words.recall-meaning.store.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.store.v1" }, { itemKey: "snap-words.recall-meaning.university.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.recall-meaning.university.v1" }, { itemKey: "snap-words.word.bench.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.bench.v1" }, { itemKey: "snap-words.word.bike.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.bike.v1" }, { itemKey: "snap-words.word.building.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.building.v1" }, { itemKey: "snap-words.word.cat.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.cat.v1" }, { itemKey: "snap-words.word.copier.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.word.copier.v1" }, { itemKey: "snap-words.word.sofa.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.sofa.v1" }, { itemKey: "snap-words.word.tray.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.word.tray.v1" }, { itemKey: "snap-words.word.tree.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.tree.v1" }, { itemKey: "snap-words.word.umbrella.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 1, responseFormat: "single-choice", familyKey: "snap-words.word.umbrella.v1" }, { itemKey: "snap-words.word.vending.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.word.vending.v1" }, { itemKey: "snap-words.word.water.v1", verdict: "pass", skillId: "ko.reading.vocabulary", difficulty: 2, responseFormat: "single-choice", familyKey: "snap-words.word.water.v1" }, { itemKey: "subway-rush.busy.delay.1to2.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.delay.v1" }, { itemKey: "subway-rush.busy.exit.1.2.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.1.v1" }, { itemKey: "subway-rush.busy.exit.2.1.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.2.v1" }, { itemKey: "subway-rush.busy.exit.3.4.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.3.v1" }, { itemKey: "subway-rush.busy.exit.4.3.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.4.v1" }, { itemKey: "subway-rush.busy.exit.5.3.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.5.v1" }, { itemKey: "subway-rush.busy.exit.6.7.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.6.v1" }, { itemKey: "subway-rush.busy.exit.7.6.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.exit.7.v1" }, { itemKey: "subway-rush.busy.express.jonggak.jonggak.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.express.jonggak.v1" }, { itemKey: "subway-rush.busy.express.jonggak.jongno3.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.express.jongno3.v1" }, { itemKey: "subway-rush.busy.express.jonggak.jongno5.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.express.jongno5.v1" }, { itemKey: "subway-rush.busy.short.left.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.short.v1" }, { itemKey: "subway-rush.busy.short.right.v1", verdict: "pass", skillId: "ko2.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.busy.short.v1" }, { itemKey: "subway-rush.exit.1.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.1.v1" }, { itemKey: "subway-rush.exit.2.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.2.v1" }, { itemKey: "subway-rush.exit.3.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.3.v1" }, { itemKey: "subway-rush.exit.4.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.4.v1" }, { itemKey: "subway-rush.exit.5.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.5.v1" }, { itemKey: "subway-rush.exit.6.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.6.v1" }, { itemKey: "subway-rush.exit.7.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.7.v1" }, { itemKey: "subway-rush.exit.8.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.exit.8.v1" }, { itemKey: "subway-rush.fork.cheongnyangni.dongdaemun.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.fork.cheongnyangni.v1" }, { itemKey: "subway-rush.fork.cheongnyangni.jonggak.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.fork.cheongnyangni.v1" }, { itemKey: "subway-rush.fork.cheongnyangni.jongno3.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.fork.cheongnyangni.v1" }, { itemKey: "subway-rush.fork.cheongnyangni.jongno5.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.fork.cheongnyangni.v1" }, { itemKey: "subway-rush.meet.traveler.cheongnyangni.airport.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.airport.v1" }, { itemKey: "subway-rush.meet.traveler.cheongnyangni.cheongnyangni.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.cheongnyangni.v1" }, { itemKey: "subway-rush.meet.traveler.cheongnyangni.myeongdong.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.myeongdong.v1" }, { itemKey: "subway-rush.meet.traveler.cityhall.airport.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.airport.v1" }, { itemKey: "subway-rush.meet.traveler.cityhall.cityhall.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.cityhall.v1" }, { itemKey: "subway-rush.meet.traveler.cityhall.myeongdong.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.myeongdong.v1" }, { itemKey: "subway-rush.meet.traveler.euljiro3.airport.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.airport.v1" }, { itemKey: "subway-rush.meet.traveler.euljiro3.euljiro3.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.euljiro3.v1" }, { itemKey: "subway-rush.meet.traveler.euljiro3.myeongdong.v1", verdict: "pass", skillId: "ko.listening.negation", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.meet.traveler.myeongdong.v1" }, { itemKey: "subway-rush.meet.worker.ahyeon.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.ahyeon.v1" }, { itemKey: "subway-rush.meet.worker.chungjeongno.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.chungjeongno.v1" }, { itemKey: "subway-rush.meet.worker.cityhall.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.cityhall.v1" }, { itemKey: "subway-rush.meet.worker.dongdaemun.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.dongdaemun.v1" }, { itemKey: "subway-rush.meet.worker.euljiro1.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.euljiro1.v1" }, { itemKey: "subway-rush.meet.worker.euljiro3.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.euljiro3.v1" }, { itemKey: "subway-rush.meet.worker.jongno3.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.jongno3.v1" }, { itemKey: "subway-rush.meet.worker.jongno5.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.meet.worker.jongno5.v1" }, { itemKey: "subway-rush.stop.chungjeongno.pass.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.chungjeongno.pass.v1" }, { itemKey: "subway-rush.stop.chungjeongno.pass.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.chungjeongno.pass.v1" }, { itemKey: "subway-rush.stop.cityhall.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.cityhall.off.v1" }, { itemKey: "subway-rush.stop.cityhall.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.cityhall.off.v1" }, { itemKey: "subway-rush.stop.dongdaemun.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.dongdaemun.off.v1" }, { itemKey: "subway-rush.stop.dongdaemun.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.dongdaemun.off.v1" }, { itemKey: "subway-rush.stop.euljiro3.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.euljiro3.off.v1" }, { itemKey: "subway-rush.stop.euljiro3.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.euljiro3.off.v1" }, { itemKey: "subway-rush.stop.euljiro3.pass.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.euljiro3.pass.v1" }, { itemKey: "subway-rush.stop.euljiro3.pass.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.euljiro3.pass.v1" }, { itemKey: "subway-rush.stop.jonggak.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.stop.jonggak.off.v1" }, { itemKey: "subway-rush.stop.jonggak.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.stop.jonggak.off.v1" }, { itemKey: "subway-rush.stop.jongno3.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno3.off.v1" }, { itemKey: "subway-rush.stop.jongno3.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno3.off.v1" }, { itemKey: "subway-rush.stop.jongno3.pass.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno3.pass.v1" }, { itemKey: "subway-rush.stop.jongno3.pass.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 2, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno3.pass.v1" }, { itemKey: "subway-rush.stop.jongno5.off.left.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno5.off.v1" }, { itemKey: "subway-rush.stop.jongno5.off.right.v1", verdict: "pass", skillId: "ko.listening.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "subway-rush.stop.jongno5.off.v1" }, { itemKey: "synk-town.reading-check.town-detail-festival.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-detail-festival.v1" }, { itemKey: "synk-town.reading-check.town-detail-library.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-detail-library.v1" }, { itemKey: "synk-town.reading-check.town-detail-lost.v2", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-detail-lost.v1" }, { itemKey: "synk-town.reading-check.town-detail-market.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-detail-market.v1" }, { itemKey: "synk-town.reading-check.town-detail-workshop.v1", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-detail-workshop.v1" }, { itemKey: "synk-town.reading-check.town-main-cat.v1", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-cat.v1" }, { itemKey: "synk-town.reading-check.town-main-cup.v2", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-cup.v1" }, { itemKey: "synk-town.reading-check.town-main-post.v1", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-post.v1" }, { itemKey: "synk-town.reading-check.town-main-swap.v2", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-swap.v1" }, { itemKey: "synk-town.reading-check.town-main-swim.v1", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-swim.v1" }, { itemKey: "synk-town.reading-check.town-main-thanks.v2", verdict: "pass", skillId: "ko.reading.main", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-main-thanks.v1" }, { itemKey: "synk-town.reading-check.town-negation-bike.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-negation-bike.v1" }, { itemKey: "synk-town.reading-check.town-negation-books.v2", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-negation-books.v1" }, { itemKey: "synk-town.reading-check.town-negation-bus.v2", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-negation-bus.v1" }, { itemKey: "synk-town.reading-check.town-negation-desk.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-negation-desk.v1" }, { itemKey: "synk-town.reading-check.town-negation-flowers.v1", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-negation-flowers.v1" }, { itemKey: "synk-town.reading-check.town-reading-negation.v2", verdict: "pass", skillId: "ko.reading.negation", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reading-negation.v1" }, { itemKey: "synk-town.reading-check.town-reading-place.v2", verdict: "pass", skillId: "ko.reading.detail", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reading-place.v1" }, { itemKey: "synk-town.reading-check.town-reading-sequence.v1", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reading-sequence.v1" }, { itemKey: "synk-town.reading-check.town-reason-bakery.v1", verdict: "pass", skillId: "ko.reading.reason", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-bakery.v1" }, { itemKey: "synk-town.reading-check.town-reason-bus.v2", verdict: "pass", skillId: "ko.reading.reason", difficulty: 2, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-bus.v1" }, { itemKey: "synk-town.reading-check.town-reason-florist.v1", verdict: "pass", skillId: "ko.reading.reason", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-florist.v1" }, { itemKey: "synk-town.reading-check.town-reason-library.v2", verdict: "pass", skillId: "ko.reading.reason", difficulty: 2, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-library.v1" }, { itemKey: "synk-town.reading-check.town-reason-quiet.v1", verdict: "pass", skillId: "ko.reading.reason", difficulty: 2, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-quiet.v1" }, { itemKey: "synk-town.reading-check.town-reason-walk.v2", verdict: "pass", skillId: "ko.reading.reason", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-reason-walk.v1" }, { itemKey: "synk-town.reading-check.town-sequence-borrow.v2", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-sequence-borrow.v1" }, { itemKey: "synk-town.reading-check.town-sequence-class.v2", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-sequence-class.v1" }, { itemKey: "synk-town.reading-check.town-sequence-garden.v2", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-sequence-garden.v1" }, { itemKey: "synk-town.reading-check.town-sequence-parcel.v1", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-sequence-parcel.v1" }, { itemKey: "synk-town.reading-check.town-sequence-ticket.v2", verdict: "pass", skillId: "ko.reading.sequence", difficulty: 1, responseFormat: "single-choice", familyKey: "synk-town.reading-check.town-sequence-ticket.v1" }, { itemKey: "talk-rally.f01.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f01.v1" }, { itemKey: "talk-rally.f02.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f02.v1" }, { itemKey: "talk-rally.f03.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f03.v1" }, { itemKey: "talk-rally.f04.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f04.v1" }, { itemKey: "talk-rally.f05.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f05.v1" }, { itemKey: "talk-rally.f06.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f06.v1" }, { itemKey: "talk-rally.f07.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f07.v1" }, { itemKey: "talk-rally.f08.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f08.v1" }, { itemKey: "talk-rally.f09.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f09.v1" }, { itemKey: "talk-rally.f10.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f10.v1" }, { itemKey: "talk-rally.f11.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f11.v1" }, { itemKey: "talk-rally.f12.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f12.v1" }, { itemKey: "talk-rally.f13.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f13.v1" }, { itemKey: "talk-rally.f14.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f14.v1" }, { itemKey: "talk-rally.f15.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f15.v1" }, { itemKey: "talk-rally.f16.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f16.v1" }, { itemKey: "talk-rally.f17.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f17.v1" }, { itemKey: "talk-rally.f18.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f18.v1" }, { itemKey: "talk-rally.f19.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f19.v1" }, { itemKey: "talk-rally.f20.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f20.v1" }, { itemKey: "talk-rally.f21.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f21.v1" }, { itemKey: "talk-rally.f22.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f22.v1" }, { itemKey: "talk-rally.f23.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.f23.v1" }, { itemKey: "talk-rally.r01.v2", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r01.v1" }, { itemKey: "talk-rally.r02.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r02.v1" }, { itemKey: "talk-rally.r03.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r03.v1" }, { itemKey: "talk-rally.r04.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r04.v1" }, { itemKey: "talk-rally.r05.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r05.v1" }, { itemKey: "talk-rally.r06.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r06.v1" }, { itemKey: "talk-rally.r07.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r07.v1" }, { itemKey: "talk-rally.r08.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 2, responseFormat: "single-choice", familyKey: "talk-rally.r08.v1" }, { itemKey: "talk-rally.r09.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r09.v1" }, { itemKey: "talk-rally.r10.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.r10.v1" }, { itemKey: "talk-rally.w01.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w01.v1" }, { itemKey: "talk-rally.w02.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w02.v1" }, { itemKey: "talk-rally.w03.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w03.v1" }, { itemKey: "talk-rally.w04.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w04.v1" }, { itemKey: "talk-rally.w05.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w05.v1" }, { itemKey: "talk-rally.w06.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w06.v1" }, { itemKey: "talk-rally.w07.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w07.v1" }, { itemKey: "talk-rally.w08.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w08.v1" }, { itemKey: "talk-rally.w09.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w09.v1" }, { itemKey: "talk-rally.w10.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w10.v1" }, { itemKey: "talk-rally.w11.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w11.v1" }, { itemKey: "talk-rally.w12.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w12.v1" }, { itemKey: "talk-rally.w13.v1", verdict: "pass", skillId: "ko.listening.response", difficulty: 1, responseFormat: "single-choice", familyKey: "talk-rally.w13.v1" }] };
-
 // experiences/synk-world-app/world-reading-practice.mjs
 var world_reading_practice_exports = {};
 __export(world_reading_practice_exports, {
@@ -25976,14 +27359,14 @@ var PRACTICE_POLICY = Object.freeze({
   // 보기 고르기에 가까운 형식부터(진단과 같은 순서).
   formats: Object.freeze(["single-choice", "binary-choice", "action", "cup-compose", "unknown"])
 });
-var VERDICT_VERSION = "topik-existing-verdicts-1";
+var VERDICT_VERSION2 = "topik-existing-verdicts-1";
 var prRecord = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 var prToken = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
 var PRACTICE_SKILL = /^ko2?\.(listening|reading)\.[a-z]+$/;
 var prListening = (item) => item.audioRequired ?? item.modality === "listening";
 var prChoices = (item) => Array.isArray(item.choices) && item.choices.length >= 2 && item.choices.some((choice) => choice?.id === item.correctId);
 function passedItems({ items = [], verdicts = null, modalities = ["reading"] } = {}) {
-  if (!Array.isArray(items) || !prRecord(verdicts) || verdicts.version !== VERDICT_VERSION || !Array.isArray(verdicts.items)) return Object.freeze([]);
+  if (!Array.isArray(items) || !prRecord(verdicts) || verdicts.version !== VERDICT_VERSION2 || !Array.isArray(verdicts.items)) return Object.freeze([]);
   const judged = /* @__PURE__ */ new Map(), conflicted = /* @__PURE__ */ new Set();
   for (const row of verdicts.items) {
     if (!prRecord(row) || !prToken(row.itemKey)) continue;
@@ -26394,7 +27777,16 @@ var worldPosition = Object.freeze({
 function setupLife(home, asset) {
   let ui, education;
   const progress2 = createLifeProgress({ owner: "guest", now: () => Date.now(), onChange: () => ui?.refresh() });
-  ui = createLifeExperience({ home, getProgress: () => progress2, asset, onSummary: () => education?.refresh(), onNext: () => education?.next(), presentation: () => education?.presentation(), positionTotal: () => education?.positionTotal?.() });
+  ui = createLifeExperience({
+    home,
+    getProgress: () => progress2,
+    asset,
+    onSummary: () => education?.refresh(),
+    onNext: () => education?.next(),
+    presentation: () => education?.presentation(),
+    positionTotal: () => education?.positionTotal?.(),
+    learning: { coach: () => education?.lifeLearning?.coach() ?? null, prepare: () => education?.lifeLearning?.prepare(), life: worldLearning.life }
+  });
   education = createWorldEducation({
     home,
     getProgress: () => progress2,

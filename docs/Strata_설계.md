@@ -36,6 +36,8 @@ const coach = require('./atlas/game-learning').createGame({ gameId: 'unit-practi
 
 후속 P3는 어휘 ID를 평상 빌드에서도 공식 어휘 원자료와 재대조하는 보강이다. 기존 `build-topik-ii-grammar.py --check`는 해시가 고정된 원자료의 낱말·급·등급별 번호를 대조하지만, 이번 빌드는 이미 정리된 v0.3 JSON을 입력으로 삼는다. 원자료 엑셀은 이번에 다시 열지 않았으며, 이번 작업에서 어휘를 교정하거나 기존 ID를 바꾸지는 않았다. 이후 원천 교정 때는 원자료 재대조와 과거 사건의 ID 대응을 함께 확인해야 한다.
 
+**생활 한국어 과제 층(2026-11-08, Atlas × WORLD D — [설계](_ops/qa/atlas-world-engine-20261108/D_생활한국어.md)):** WORLD 생활 레슨 22능력을 TOPIK I 읽기 능력 × 상황 마디에 잇는 대응표 `strata/world-life.json`(줄마다 팩 · 능력 · 이름 · TOPIK I 능력 · 상황 · 문항 예외)과 빌더 · 조회 `strata/world-life.js`를 두고, `tools/build-game-learning.js`가 생성 층 `strata/maps/world-life.json`(과제 마디 22, `layer_ver`에 원천 해시)을 만든다(`--check`로 대조). 층은 `withLifeLayer`로 **WORLD 코치 지도에만** 싣는다(`experiences/synk-world-app/world-learning-map.mjs` — 지도판은 `기본판:층판`). `strata/world-map.js` · `index.js`와 게임 묶음 12개는 그대로다(환승 러시 묶음 지도판 = 기본판, `qa/world-learning-map.test.mjs`). 과제 마디는 조회용이고 학습 증거의 `conceptIds`는 비운다 — 문항 측정은 `lifeMeasure`가 능력 · 난도 · 꼴 · 장면(카페 방문 본문항은 `confounded`)으로 정한다. 시험 `tests/world-life-map.test.mjs`(22줄 = 원고 · 132문항 한 칸 · 예외 · 팩 상황 = 옛 `PACK_SITUATIONS` · 기본 지도 불변 · 계열 불변식).
+
 ### 앞선 지도 구현 기록
 
 **2026-10-28 권장 준비 관계:** [topik-i.recommendations.json](../strata/topik-i.recommendations.json)에 듣기·읽기 각각 `detail → negation/sequence/reason/condition` 8개를 추가했다. `recommended_before`는 항상 `blocking:false`이며 필수 선행 관계가 아니다. 공식 근거는 [한국어 표준 교육과정 고시](https://www.korean.go.kr/front/etcData/etcDataView.do?etc_seq=657&mn_id=46&pageIndex=2)의 성취 목표 범위이고, 구체 정보 확인을 먼저 연습하자는 순서는 SYNK의 설계 해석이다. `basis.official_scope`와 `basis.interpretation`을 나눠 저장하며 효과가 검증된 학습 순서라고 주장하지 않는다.

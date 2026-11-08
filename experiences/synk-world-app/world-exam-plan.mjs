@@ -93,6 +93,8 @@ export function weekActivity({events=[],progress=null,week,extra=[]}={}){
   const at=Date.parse(event.at),presentation=shown.get(event.presentationId);
   if(!Number.isFinite(at)||at<week.start||at>=week.end||!presentation)continue;
   const experience=decisions.get(presentation.decisionId)||'unknown',modality=presentation.measure?.modality;
+  // 생활 레슨 · 복습의 거울 기록(경험 world-life, Atlas × WORLD D 11-08)은 아래 「생활」 칸이 생활 진도로 센다 — 읽기로 한 번 더 세지 않는다.
+  if(experience==='world-life')continue;
   const area=experience==='world-home'?'recheck':['reading','listening','writing'].includes(modality)?modality:null;
   if(!area)continue;
   const key=`${area}|${experience}`;if(!runs.has(key))runs.set(key,[]);runs.get(key).push(at);

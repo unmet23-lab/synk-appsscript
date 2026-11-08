@@ -82,7 +82,9 @@ export function newItemView(item, types, labels) {
 // 기존 게임 문항: 출처마다 시험 자리(맞춘 꼴)와 화면에 보이는 글. 입장 검사는 안내문·서류·짐·말을 글로 옮긴다.
 // 레이싱 그림 낱말(낱말 하나를 듣고 그림 고르기)은 맞는 공식 자리가 없어(그림 자리 TI-L-15는 대화·세부) 자리 없이 본다.
 const EXISTING_TYPE = { 'board-decode': () => 'TII-R-09', 'subway-rush': item => item.skillId.startsWith('ko2.') ? 'TII-L-13' : item.skillId === 'ko.listening.response' ? 'TI-L-01' : 'TI-L-26', 'blank-slice': () => 'TI-R-34', 'synk-town': item => item.skillId === 'ko.reading.main' ? 'TI-R-46' : 'TI-R-43', 'entry-check': () => 'TI-R-40',
-  'korean-racing': () => null, 'korean-runner': () => null, 'korean-rhythm': () => null, 'snap-words': () => null, 'talk-rally': item => item.kind === 'follow' ? 'TI-L-05' : 'TI-L-01' };
+  'korean-racing': () => null, 'korean-runner': () => null, 'korean-rhythm': () => null, 'snap-words': () => null, 'talk-rally': item => item.kind === 'follow' ? 'TI-L-05' : 'TI-L-01',
+  // WORLD 생활 한국어(11-08 Atlas × WORLD D): 생활 상황 읽기 연습이라 맞는 공식 자리가 없다 — 능력은 strata/world-life.json 대응표가 정한다.
+  life: () => null };
 // 듣기 게임은 진단 문항에 들리는 글이 줄여져 있어(label) 게임 원고에서 들리는 글 전체를 찾아 대본으로 보인다.
 const LISTENING_FORMAT = {
   'korean-runner': '게임 꼴: 안내 한마디를 듣고 갈 길(행동)을 보기 셋 가운데 고른다. 공식 시험 자리는 없다(세부 듣기 연습)',
@@ -193,6 +195,40 @@ async function snapWordsItems() {
     for (const word of fixed) add('recall-meaning', word, `[사진 속 판의 글] ${line(WORDS[word].ko)}`, '무슨 뜻이에요?', (place.fixed.find(f => f.word === word).recallFrom === 'things' ? things : plates).slice(0, 4), k => WORDS[k].mean.ko);
   }
   return out;
+}
+// WORLD 생활 한국어(11-08 Atlas × WORLD D): 레슨 본문항(카페 방문 장면 15문항은 측정 조건이 아니라 뺀다)과 새 상황 복습 66문항.
+// 측정 칸(능력 · 난도 · 꼴)은 Strata 대응표(strata/world-life.js lifeMeasure) 그대로 — 이 검수가 그 대응표를 문항마다 확인한다.
+// 지문에는 학습자가 그 문항 전에 실제로 본 것만 담는다: 레슨 시작에 본 표현 셋과 뜻, 이야기 레슨은 이야기 전체, 그 문항의 상황 글.
+// 새 상황 복습은 이야기 · 표현 없이 그 문항만 보인다(life-ui.mjs renderReview). 해설은 한국어 원문(인사 팩의 화면 언어 글은 따로 검문했다).
+const LIFE_FORMAT = {
+  lesson: '게임 꼴: WORLD 생활 한국어 레슨(표현 만나기 → 세 친구 이야기 → 생활 적용). 레슨 시작에 그 레슨의 표현 셋과 뜻을 보여 주고, 이야기 레슨은 이야기를 끝까지 넘긴 뒤 문제를 푼다. 보기 셋 가운데 하나를 고른다(시험은 넷). 공식 시험 자리는 없다(생활 상황 읽기 연습). 학습자는 외국인 초급(TOPIK I 1급 앞쪽). 인사 팩은 화면 언어가 영어 · 몽골어이면 지시 · 상황 글이 그 언어로 보이고 보기 · 이야기는 한국어 그대로다.',
+  review: '게임 꼴: WORLD 생활 한국어 「새 상황 복습」 — 앞에서 배운 표현의 대상 · 장소 · 수량 · 시간을 바꾼 새 문항이다. 이야기 · 표현 목록 없이 이 문항만 보인다(언제 · 어느 팩에서 배웠는지만 작게). 보기 셋. 공식 시험 자리는 없다(생활 상황 읽기 연습). 인사 팩은 화면 언어가 영어 · 몽골어이면 지시 · 상황 글이 그 언어로 보이고 보기는 한국어 그대로다.',
+};
+async function lifeItems() {
+  const { PACKS } = await import(pathToFileURL(path.join(root, 'experiences/synk-world-app/life-content.mjs')).href);
+  // 문항 정체(id · 측정 칸)는 거울과 같은 함수(experiences/synk-world-app/life-items.mjs) — 판정 목록의 메타가 거울의 판정 자격과 맞물린다.
+  // 계열은 검수가 보는 칸이 아니라(지문 해시에 없다) 판정 줄에 싣지 않는다 — 거울의 계열 규칙을 고쳐도 판정은 그대로다(끝 판 검수 Fable F3).
+  const { lifeItem } = await import(pathToFileURL(path.join(root, 'experiences/synk-world-app/life-items.mjs')).href);
+  const speaker = { mongle: '몽글', kkamong: '까몽', marine: '마린', narrator: '이야기' };
+  const out = [];
+  for (const pack of PACKS) for (const lesson of pack.lessons) for (const q of lesson.questions) for (const review of [false, true]) {
+    const item = review ? q.review : q, own = lifeItem({ lesson: { ...lesson, packId: pack.id }, question: q, review });
+    if (!own) throw new Error(`생활 문항의 측정 칸이 없다: life.${item.id}`);
+    if (own.confounded) continue;
+    const key = own.itemKey;
+    const seen = review ? [] : [`[레슨 시작에 본 표현] ${lesson.expressions.map(e => `${e.korean}(${e.meaning})`).join(' / ')}`,
+      ...(lesson.type === 'story' ? [`[이야기] ${lesson.scenes.map(s => `${speaker[s.speaker] || s.speaker}: ${s.text}`).join(' / ')}`] : [])];
+    out.push({ source: 'life', id: key, itemKey: key, skillId: own.skillId, difficulty: own.difficulty, responseFormat: own.responseFormat,
+      format: LIFE_FORMAT[review ? 'review' : 'lesson'], prompt: [...seen, item.context ? `[상황] ${item.context}` : ''].filter(Boolean).join('\n') || null,
+      question: item.prompt, choices: item.choices.map(choice => ({ id: `${key}.${choice.id}`, label: choice.text })), correctId: `${key}.${item.answerId}`, explanation: item.explanation });
+  }
+  return out;
+}
+// 생활 문항의 지금 원고 지문 — tests/world-life-review.test.mjs가 통과 기록과 견준다.
+export async function lifeUnits() {
+  const types = readJson(path.join(root, 'strata/topik-types.json')).types, labels = skillLabels();
+  return (await lifeItems()).map(item => ({ key: item.itemKey, hash: sha(JSON.stringify(existingItemView(item, types, labels, { script: null }))).slice(0, 16),
+    meta: { skillId: item.skillId, difficulty: item.difficulty, responseFormat: item.responseFormat } }));
 }
 // 찰칵 낱말의 지금 원고 지문 — experiences/snap-words/review.test.mjs가 통과 기록과 견준다.
 export async function snapWordsUnits() {
@@ -451,7 +487,7 @@ export async function prepare(name, { newFiles = null, existingSources = null, s
       const [content, narration, world] = await Promise.all([imp('experiences/entry-check/content.mjs'), imp('experiences/entry-check/narration.mjs'), imp('experiences/entry-check/world-content.mjs')]);
       world.applyWorld({ VENUES: content.VENUES, CAST: content.CAST, TUTORIAL: narration.TUTORIAL });
     }
-    const all = campus ? await campusEntryItems() : [...await diagnosticItems(), ...(existingSources.includes('talk-rally') ? await talkRallyItems() : []), ...(existingSources.includes('snap-words') ? await snapWordsItems() : []), ...(existingSources.includes('board-decode') ? await boardDecodeItems() : []), ...(existingSources.includes('subway-rush') ? await subwayRushItems() : [])];
+    const all = campus ? await campusEntryItems() : [...await diagnosticItems(), ...(existingSources.includes('talk-rally') ? await talkRallyItems() : []), ...(existingSources.includes('snap-words') ? await snapWordsItems() : []), ...(existingSources.includes('board-decode') ? await boardDecodeItems() : []), ...(existingSources.includes('subway-rush') ? await subwayRushItems() : []), ...(existingSources.includes('life') ? await lifeItems() : [])];
     const scriptOf = await listeningScripts();
     const pool = all.filter(item => item.source in EXISTING_TYPE && (!existingSources.length || existingSources.includes(item.source)));
     const picked = perSource ? Object.values(Object.groupBy(pool.map(item => ({ key: item.itemKey, item })), row => row.item.source)).flatMap(rows => seededPick(rows, perSource, name)).map(row => row.item) : pool;

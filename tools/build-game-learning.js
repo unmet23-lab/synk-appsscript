@@ -51,6 +51,13 @@ function output(destination, content) {
   console.log(`${check ? 'verified' : same ? 'unchanged' : 'built'} ${path.relative(root, destination)}`);
 }
 output(path.join(root, 'strata/maps/topik-i.json'), JSON.stringify(map, null, 2) + '\n');
+// WORLD life Korean (2026-11-08, Atlas × WORLD D): its 22 abilities as task nodes, each naming the TOPIK I ability it
+// practises and the situations it happens in. A layer only WORLD's coach map loads (strata/world-map.js worldMapData({life}));
+// the default WORLD map the games bundle stays byte for byte. Checked against this TOPIK I map.
+const life = read('strata/world-life.json');
+const lifeLayer = require('../strata/world-life').buildLifeLayer({ base: map, life: life.json, source: { path: life.rel, sha256: life.sha } });
+lifeLayer.layer_ver += `-${life.sha.slice(0, 12)}`;
+output(path.join(root, 'strata/maps/world-life.json'), JSON.stringify(lifeLayer, null, 2) + '\n');
 // TOPIK II (grades 3-6) is its own map: abilities only for now. Its ids (ko2.<domain>.<name>) never mix
 // with TOPIK I evidence, and games do not bundle it — WORLD's exam plan and the item bank read it directly.
 const taxonomy2 = read('strata/topik-ii.skills.json');

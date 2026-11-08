@@ -1,4 +1,6 @@
 import {PACKS,LESSONS} from './life-content.mjs';
+import {lifeTargets,planTargets} from './life-plan.mjs';
+import worldLife from '../../strata/world-life.js';
 import {LISTENING_CHECKS,checkMetadata} from '../korean-runner/listening-check.mjs';
 import {RHYTHM_CANDIDATES} from '../korean-rhythm/personalization.mjs';
 import {planTokens} from './world-exam-plan.mjs';
@@ -23,10 +25,11 @@ const copy=value=>JSON.parse(JSON.stringify(value));
 const knownLessons=new Map(LESSONS.map(lesson=>[lesson.id,lesson]));
 const iso=value=>new Date(value).toISOString();
 function clock(value){const at=value instanceof Date?value.getTime():typeof value==='string'?Date.parse(value):value;if(!time(at))throw TypeError('WORLD learning plan needs a valid time');return at;}
-// The Strata situations each pack is about (strata/maps/topik-i.json). Game items carry their own
-// concept ids; a practised topic the person answered about on 「내 성향」 matches either.
-const PACK_SITUATIONS={greetings:['sit-people-greeting'],cafe:['sit-travel-order'],store:['sit-travel-shopping'],
- directions:['sit-travel-directions'],transit:['sit-travel-transport'],plans:['sit-career-schedule','sit-people-messenger']};
+// The Strata situations each pack is about: the situations of its abilities' task nodes (strata/world-life.json, Atlas × WORLD D
+// 2026-11-08 — the same sets this table held before). Game items carry their own concept ids; a practised topic the person
+// answered about on 「내 성향」 matches either.
+const PACK_SITUATIONS=Object.fromEntries(PACKS.map(pack=>[pack.id,worldLife.lifeSituations(pack.skills.map(skill=>skill.id))]));
+// The abilities a life lesson or review practises, for Core (D §4-3): lifeTargets in life-plan.mjs (scene items name no target).
 const conceptId=value=>typeof value==='string'&&/^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,79}$/.test(value);
 const ANSWER_DAYS=30;
 
@@ -94,7 +97,7 @@ const lessonMinutes=lesson=>lesson.id==='cafe-compose'?4:lesson.type==='story'?3
 function lessonCandidate(lesson,index,settings){
  const cafe=lesson.id==='cafe-apply'||lesson.id.startsWith('cafe-visit-')||lesson.id==='cafe-compose';
  return {id:`world.life.${String(index+1).padStart(2,'0')}.${lesson.packId}`,label:lesson.title,route:'lesson',lessonId:lesson.id,packId:lesson.packId,
-  minutes:lessonMinutes(lesson),minutesEstimated:true,targets:[],goals:[...PACK_GOALS[lesson.packId]],supports:[...supports],audioRequired:false,
+  minutes:lessonMinutes(lesson),minutesEstimated:true,targets:lifeTargets(lesson,lesson.questions),goals:[...PACK_GOALS[lesson.packId]],supports:[...supports],audioRequired:false,
   modality:'reading',presentation:presentationFor(settings),...(cafe?{inputMode:settings?.audio==='off'?'read':'choice',canReadWithoutAudio:true}:{})};
 }
 function verifiedReviews(progress){
@@ -136,7 +139,7 @@ export function buildWorldLearningCandidates({progress={},settings={},now=Date.n
   rows.sort((a,b)=>a.dueAt-b.dueAt||a.id.localeCompare(b.id));
   const need=rows.map(review=>practiceNeed(review,source,at)).filter(Boolean).sort((a,b)=>Date.parse(b.at)-Date.parse(a.at))[0];
   candidates.push({id:`world.review.${lessonId}`,label:`${rows[0].lesson.title} · 새 상황 복습`,route:'review',lessonId,packId:rows[0].packId,
-   minutes:Math.max(1,Math.ceil(rows.length/3)),minutesEstimated:true,targets:[],goals:[...PACK_GOALS[rows[0].packId]],supports:[...supports],audioRequired:false,modality:'reading',
+   minutes:Math.max(1,Math.ceil(rows.length/3)),minutesEstimated:true,targets:rows.flatMap(review=>lifeTargets(review.lesson,[review.question],true)),goals:[...PACK_GOALS[rows[0].packId]],supports:[...supports],audioRequired:false,modality:'reading',
    reviewIds:rows.map(review=>review.id),reviewAt:iso(rows[0].dueAt),presentation:presentationFor(settings),...(need?{practiceNeed:need}:{})});
  }
  const runnerTargets=LISTENING_CHECKS.map(item=>{const target=checkMetadata(item);return {id:target.id,skillIds:[target.skillId],difficulty:target.difficulty,
@@ -182,7 +185,8 @@ function resumeCandidates(progress,settings,now){
  // Preserve the existing batch, even when it crosses lesson boundaries.
  result.push({id:'world.resume.review',label:'하던 새 상황 복습 · 이어 하기',route:'review',lessonId:first.lessonId,packId:first.packId,resume:true,
   reviewIds:pending.filter(id=>reviews.some(review=>review.id===id)),minutes:Math.max(1,Math.ceil(pending.length/3)),minutesEstimated:true,
-  targets:[],goals:[...PACK_GOALS[first.packId]],supports:[...supports],audioRequired:false,modality:'reading',reviewAt:iso(session.startedAt),presentation:presentationFor(settings)});
+  targets:reviews.filter(review=>pending.includes(review.id)).flatMap(review=>lifeTargets(review.lesson,[review.question],true)),
+  goals:[...PACK_GOALS[first.packId]],supports:[...supports],audioRequired:false,modality:'reading',reviewAt:iso(session.startedAt),presentation:presentationFor(settings)});
  return result;
 }
 
@@ -220,7 +224,8 @@ function hostReason(chosen,{history,plan,labels}){
  if(selected.route==='mock')return {reason:'시험처럼 처음 보는 문항을 정해진 시간 안에 풀어 봐요. 점수나 급수로 바꾸지 않아요.',reasons:['exam.form']};
  if(selected.route==='position')return {reason:plan?.notes?.includes('start')?'시험 목표에 맞춰 짧은 진단으로 시작점을 먼저 확인해요.':'이번 주 계획의 다시 확인이에요. 처음 보는 문항으로 지금 위치를 확인해요.',reasons:['plan.recheck']};
  const unseen=(chosen.reasons||[]).includes('practice.unseen')&&!(chosen.reasons||[]).includes('goal.declared');
- if(!unseen||!history||(selected.targets||[]).length)return null;
+ if(!unseen||!history)return null;
+ // 생활 레슨은 11-08(Atlas × WORLD D)부터 targets가 있다 — 아직 기록 없는 칸만 겨누는 레슨(practice.unseen)이면 진도 순서의 까닭을 그대로 말한다.
  if(selected.route==='lesson')return {reason:'생활 팩의 다음 레슨이에요. 진도 순서대로 이어서 배워요.',reasons:['progress.next']};
  return null;
 }
@@ -239,8 +244,11 @@ export function createWorldLearningPlan({summary=null,progress={},settings={},no
   !(resumingReview&&candidate.route==='review')&&!resumes.some(resume=>candidate.route==='lesson'&&resume.route==='lesson'&&resume.lessonId===candidate.lessonId)),...added];
  // A partial/empty host summary cannot manufacture missing ability cells. The
  // activities remain available through declared goals, without a skill claim.
+ // 생활 레슨의 targets는 놓친 칸을 당길 때만 · 돌아온 복습이 없을 때만 싣는다(Atlas × WORLD D §4-3 — life-plan.mjs planTargets).
+ const reviewWaiting=candidates.some(candidate=>candidate.route==='review');
  const ready=candidates.map(candidate=>{
-  const targets=candidate.targets.filter(target=>target.skillIds.every(id=>skills.has(id)));
+  const known=candidate.targets.filter(target=>target.skillIds.every(id=>skills.has(id)));
+  const targets=planTargets({candidate,known,profile,reviewWaiting});
   const goals=planned?[...new Set([...(candidate.goals||[]),...planTokens({...candidate,targets})])]:candidate.goals;
   return withAnswers({...candidate,targets,goals},told);
  });

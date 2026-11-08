@@ -1,0 +1,847 @@
+{
+  "layer_ver": "world-life-1-81514d0dfb6b",
+  "sources": {
+    "world-life": {
+      "path": "strata/world-life.json",
+      "sha256": "81514d0dfb6b2473f2c354f4063bd441c0067b42392403c246fcf8c75056f182"
+    }
+  },
+  "nodes": [
+    {
+      "id": "life.task.greet-response",
+      "kind": "task",
+      "label_ko": "상황에 맞게 인사하기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "greet-response"
+        }
+      ],
+      "material": {
+        "skill": "greet-response",
+        "pack": "greetings",
+        "ability": "ko.reading.vocabulary",
+        "situations": [
+          "sit-people-greeting"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {}
+      }
+    },
+    {
+      "id": "life.task.greet-gratitude",
+      "kind": "task",
+      "label_ko": "고마움 전하기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "greet-gratitude"
+        }
+      ],
+      "material": {
+        "skill": "greet-gratitude",
+        "pack": "greetings",
+        "ability": "ko.reading.vocabulary",
+        "situations": [
+          "sit-people-greeting"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {
+          "greetings-story-thanks": {
+            "skill": "ko.reading.reason"
+          },
+          "greetings-story-thanks-transfer": {
+            "skill": "ko.reading.reason"
+          }
+        }
+      }
+    },
+    {
+      "id": "life.task.greet-introduction",
+      "kind": "task",
+      "label_ko": "이름 소개 이해하기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "greet-introduction"
+        }
+      ],
+      "material": {
+        "skill": "greet-introduction",
+        "pack": "greetings",
+        "ability": "ko.reading.detail",
+        "situations": [
+          "sit-people-greeting"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {
+          "greetings-expressions-name": {
+            "skill": "ko.reading.grammar"
+          },
+          "greetings-expressions-name-transfer": {
+            "skill": "ko.reading.grammar"
+          }
+        }
+      }
+    },
+    {
+      "id": "life.task.cafe-order-detail",
+      "kind": "task",
+      "label_ko": "음료와 수량 이해하기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "cafe-order-detail"
+        }
+      ],
+      "material": {
+        "skill": "cafe-order-detail",
+        "pack": "cafe",
+        "ability": "ko.reading.detail",
+        "situations": [
+          "sit-travel-order"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {}
+      }
+    },
+    {
+      "id": "life.task.cafe-place",
+      "kind": "task",
+      "label_ko": "마실 장소 구분하기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "cafe-place"
+        }
+      ],
+      "material": {
+        "skill": "cafe-place",
+        "pack": "cafe",
+        "ability": "ko.reading.vocabulary",
+        "situations": [
+          "sit-travel-order"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {
+          "cafe-story-here": {
+            "skill": "ko.reading.detail"
+          },
+          "cafe-story-here-transfer": {
+            "skill": "ko.reading.detail"
+          }
+        }
+      }
+    },
+    {
+      "id": "life.task.cafe-takeout-request",
+      "kind": "task",
+      "label_ko": "포장 요청하기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "cafe-takeout-request"
+        }
+      ],
+      "material": {
+        "skill": "cafe-takeout-request",
+        "pack": "cafe",
+        "ability": "ko.reading.vocabulary",
+        "situations": [
+          "sit-travel-order"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {
+          "cafe-story-takeout": {
+            "skill": "ko.reading.detail"
+          },
+          "cafe-visit-change-place": {
+            "skill": "ko.reading.negation"
+          },
+          "cafe-visit-change-place-transfer": {
+            "skill": "ko.reading.negation"
+          }
+        }
+      }
+    },
+    {
+      "id": "life.task.cafe-preference-reading",
+      "kind": "task",
+      "label_ko": "친구의 취향 이해하기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "cafe-preference-reading"
+        }
+      ],
+      "material": {
+        "skill": "cafe-preference-reading",
+        "pack": "cafe",
+        "ability": "ko.reading.detail",
+        "situations": [
+          "sit-travel-order"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {}
+      }
+    },
+    {
+      "id": "life.task.cafe-availability",
+      "kind": "task",
+      "label_ko": "품절과 주문 가능 안내 읽기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "cafe-availability"
+        }
+      ],
+      "material": {
+        "skill": "cafe-availability",
+        "pack": "cafe",
+        "ability": "ko.reading.negation",
+        "situations": [
+          "sit-travel-order"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {}
+      }
+    },
+    {
+      "id": "life.task.cafe-order-change",
+      "kind": "task",
+      "label_ko": "주문 변경 이해하기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "cafe-order-change"
+        }
+      ],
+      "material": {
+        "skill": "cafe-order-change",
+        "pack": "cafe",
+        "ability": "ko.reading.negation",
+        "situations": [
+          "sit-travel-order"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {}
+      }
+    },
+    {
+      "id": "life.task.cafe-compose-order",
+      "kind": "task",
+      "label_ko": "주문 문장 구성하기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "cafe-compose-order"
+        }
+      ],
+      "material": {
+        "skill": "cafe-compose-order",
+        "pack": "cafe",
+        "ability": "ko.reading.detail",
+        "situations": [
+          "sit-travel-order"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {
+          "cafe-compose-order": {
+            "format": "cup-compose"
+          }
+        }
+      }
+    },
+    {
+      "id": "life.task.store-price-reading",
+      "kind": "task",
+      "label_ko": "가격 질문과 표시 읽기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "store-price-reading"
+        }
+      ],
+      "material": {
+        "skill": "store-price-reading",
+        "pack": "store",
+        "ability": "ko.reading.vocabulary",
+        "situations": [
+          "sit-travel-shopping"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {
+          "store-story-price": {
+            "skill": "ko.reading.detail"
+          },
+          "store-story-price-transfer": {
+            "skill": "ko.reading.detail"
+          }
+        }
+      }
+    },
+    {
+      "id": "life.task.store-bag-request",
+      "kind": "task",
+      "label_ko": "봉투 요청하기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "store-bag-request"
+        }
+      ],
+      "material": {
+        "skill": "store-bag-request",
+        "pack": "store",
+        "ability": "ko.reading.vocabulary",
+        "situations": [
+          "sit-travel-shopping"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {
+          "store-story-bag": {
+            "skill": "ko.reading.reason"
+          },
+          "store-story-bag-transfer": {
+            "skill": "ko.reading.reason"
+          }
+        }
+      }
+    },
+    {
+      "id": "life.task.store-payment",
+      "kind": "task",
+      "label_ko": "결제 방법 이해하기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "store-payment"
+        }
+      ],
+      "material": {
+        "skill": "store-payment",
+        "pack": "store",
+        "ability": "ko.reading.vocabulary",
+        "situations": [
+          "sit-travel-shopping"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {
+          "store-story-card": {
+            "skill": "ko.reading.detail"
+          },
+          "store-story-card-transfer": {
+            "skill": "ko.reading.detail"
+          }
+        }
+      }
+    },
+    {
+      "id": "life.task.directions-location-question",
+      "kind": "task",
+      "label_ko": "장소의 위치 묻기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "directions-location-question"
+        }
+      ],
+      "material": {
+        "skill": "directions-location-question",
+        "pack": "directions",
+        "ability": "ko.reading.vocabulary",
+        "situations": [
+          "sit-travel-directions"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {
+          "directions-story-where": {
+            "skill": "ko.reading.detail"
+          },
+          "directions-story-where-transfer": {
+            "skill": "ko.reading.detail"
+          }
+        }
+      }
+    },
+    {
+      "id": "life.task.directions-turn",
+      "kind": "task",
+      "label_ko": "이동 방향 이해하기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "directions-turn"
+        }
+      ],
+      "material": {
+        "skill": "directions-turn",
+        "pack": "directions",
+        "ability": "ko.reading.detail",
+        "situations": [
+          "sit-travel-directions"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {
+          "directions-expressions-right": {
+            "skill": "ko.reading.vocabulary"
+          },
+          "directions-expressions-right-transfer": {
+            "skill": "ko.reading.vocabulary"
+          }
+        }
+      }
+    },
+    {
+      "id": "life.task.directions-landmark",
+      "kind": "task",
+      "label_ko": "주변 장소로 위치 찾기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "directions-landmark"
+        }
+      ],
+      "material": {
+        "skill": "directions-landmark",
+        "pack": "directions",
+        "ability": "ko.reading.detail",
+        "situations": [
+          "sit-travel-directions"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {}
+      }
+    },
+    {
+      "id": "life.task.transit-route",
+      "kind": "task",
+      "label_ko": "목적지 확인하기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "transit-route"
+        }
+      ],
+      "material": {
+        "skill": "transit-route",
+        "pack": "transit",
+        "ability": "ko.reading.vocabulary",
+        "situations": [
+          "sit-travel-transport"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {
+          "transit-story-route": {
+            "skill": "ko.reading.detail"
+          },
+          "transit-story-route-transfer": {
+            "skill": "ko.reading.detail"
+          }
+        }
+      }
+    },
+    {
+      "id": "life.task.transit-alighting",
+      "kind": "task",
+      "label_ko": "내릴 순서 이해하기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "transit-alighting"
+        }
+      ],
+      "material": {
+        "skill": "transit-alighting",
+        "pack": "transit",
+        "ability": "ko.reading.sequence",
+        "situations": [
+          "sit-travel-transport"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {}
+      }
+    },
+    {
+      "id": "life.task.transit-instruction",
+      "kind": "task",
+      "label_ko": "승차 안내 이해하기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "transit-instruction"
+        }
+      ],
+      "material": {
+        "skill": "transit-instruction",
+        "pack": "transit",
+        "ability": "ko.reading.vocabulary",
+        "situations": [
+          "sit-travel-transport"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {
+          "transit-story-card": {
+            "skill": "ko.reading.detail"
+          },
+          "transit-story-card-transfer": {
+            "skill": "ko.reading.detail"
+          }
+        }
+      }
+    },
+    {
+      "id": "life.task.plans-time-reading",
+      "kind": "task",
+      "label_ko": "약속 날짜와 시간 읽기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "plans-time-reading"
+        }
+      ],
+      "material": {
+        "skill": "plans-time-reading",
+        "pack": "plans",
+        "ability": "ko.reading.detail",
+        "situations": [
+          "sit-people-messenger",
+          "sit-career-schedule"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {}
+      }
+    },
+    {
+      "id": "life.task.plans-location",
+      "kind": "task",
+      "label_ko": "만날 장소 확인하기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "plans-location"
+        }
+      ],
+      "material": {
+        "skill": "plans-location",
+        "pack": "plans",
+        "ability": "ko.reading.negation",
+        "situations": [
+          "sit-people-messenger",
+          "sit-career-schedule"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {
+          "plans-expressions-place": {
+            "skill": "ko.reading.vocabulary"
+          },
+          "plans-expressions-place-transfer": {
+            "skill": "ko.reading.vocabulary"
+          },
+          "plans-story-place": {
+            "skill": "ko.reading.detail"
+          }
+        }
+      }
+    },
+    {
+      "id": "life.task.plans-delay-message",
+      "kind": "task",
+      "label_ko": "늦는다는 연락 이해하기",
+      "level": null,
+      "confidence": "ai_draft",
+      "reviewed": true,
+      "review": {
+        "status": "passed",
+        "rubric": "topik-review-r1",
+        "packet": "life-d-20261108",
+        "evidence": "experiences/topik-items/review/existing-verdicts.json",
+        "reviewedAt": "2026-11-08",
+        "summary": "측정 문항 117개 AI 2중 검수(1차 · 2차, 엇갈린 32개는 판정 단계): 능력 · 난도를 바꾸라는 판정 0 — 22줄 대응표 확인. 통과 70 · 원고 고침 47(발문 · 오답 · 해설 · 낱말 · 마스코트 이름 — 고친 뒤 다시 검수, 그때까지 근거 없음)"
+      },
+      "source_refs": [
+        {
+          "source": "world-life",
+          "selector": "plans-delay-message"
+        }
+      ],
+      "material": {
+        "skill": "plans-delay-message",
+        "pack": "plans",
+        "ability": "ko.reading.vocabulary",
+        "situations": [
+          "sit-people-messenger"
+        ],
+        "difficulty": 1,
+        "format": "single-choice",
+        "items": {
+          "plans-story-delay": {
+            "skill": "ko.reading.detail"
+          },
+          "plans-story-delay-transfer": {
+            "skill": "ko.reading.detail"
+          }
+        }
+      }
+    }
+  ],
+  "scene_lessons": [
+    "cafe-apply",
+    "cafe-visit-taste",
+    "cafe-visit-soldout",
+    "cafe-visit-change",
+    "cafe-compose"
+  ]
+}

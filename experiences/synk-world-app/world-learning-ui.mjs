@@ -1,5 +1,6 @@
 import {t,tMessage,hasString,formatDate,currentLang} from '../brand-opening/world-lang.mjs';
 import {followupRows,advisoryRows} from './world-learning-followups.mjs';
+import {lifeFollowupRows} from './life-followups.mjs';
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // 화면 언어(10-19 1판): 이름·값과 순서는 그대로 두고 보이는 글만 표(goal.*)에서 읽는다.
 const REASON_IDS=['travel','life','people','exam','study','work','career','culture','hobby','other'];
@@ -39,7 +40,7 @@ function examMonths(now){
 //  짧은 연습의 길이(3·5·7)를 그 응답으로 정하고, 「내 계정」이 응답 목록(responses()·removeResponse())을 읽는다. 꺼지면 판 기록(finishSet)도 남기지 않는다.
 export function createWorldEducation({home,getProgress,engine,createPlan,launchGame,startLesson,startReview,prepare=async()=>{},position=null,audioUrl=path=>path,readHangulProgress=null,
  readClasswork=null,writingPractice=null,speakingPractice=null,topikBankUrl=null,town=null,responses=false,target=globalThis}){
- let stopped=false,coach=null,coachHost=null,practiceCoach=null,practiceHost=null,mockCoach=null,mockHost=null,current=null,refreshing=false,classwork={at:0,rows:[],pending:null};
+ let stopped=false,coach=null,coachHost=null,practiceCoach=null,practiceHost=null,mockCoach=null,mockHost=null,lifeCoachNow=null,lifeHost=null,current=null,refreshing=false,classwork={at:0,rows:[],pending:null};
  const owner=getProgress().owner;
  const empty=engine.engine.createGame({gameId:'world-home-empty',storage:null,historyComplete:false}).summary();
  const view=position?position.createView({t,has:hasString,formatDate,lang:currentLang}):null;
@@ -59,6 +60,9 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  const readPracticeCoach=()=>coachFor(position?.practice?.PRACTICE_POLICY?.gameId||'world-practice',()=>[practiceCoach,practiceHost],(a,b)=>{practiceCoach=a;practiceHost=b;});
  // 시험 형식 연습(미니 모의)은 'world-mock' — 근거 집계(world-exam-form.mjs mockEvidence)가 이 경험의 결정 기록만 읽는다.
  const readMockCoach=()=>coachFor(position?.mock?.MOCK_POLICY?.gameId||'world-mock',()=>[mockCoach,mockHost],(a,b)=>{mockCoach=a;mockHost=b;});
+ // 생활 한국어의 거울 코치는 'world-life'(Atlas × WORLD D, 11-08 — life-trail.mjs). 같은 기기 · 계정 기록 열쇠를 나눠 노출 · 상태를 함께 본다.
+ // 계정 통로가 아직 없으면 null(거울은 다음 도움 · 답 때 다시 묻는다). 주인이 바뀌었으면 check가 던지고 거울은 그 사건을 건너뛴다.
+ const readLifeCoach=()=>coachFor('world-life',()=>[lifeCoachNow,lifeHost],(a,b)=>{lifeCoachNow=a;lifeHost=b;});
  // ── 연습 한 판의 응답(WORLD 학습자 응답 설계 §2·§3·§5) ──
  // 기능이 꺼졌거나 손님이면 응답 줄도 판 기록(finishSet)도 없다 — 손님은 「내 계정」을 열 수 없어 본인이 보고 뺄 자리가 없다.
  const answering=()=>responses===true&&owner!=='guest';
@@ -131,6 +135,16 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const c=readPracticeCoach(),seen=seenBy(c);let projection=null;try{projection=c?.followups?.();}catch{}
   return followupRows({projection,pool:[...(position?.practice?.pool||[]),...(position?.followups?.pool(seen)||[])],seen,
    taskVersion:c?.mapVersion,audioAvailable:getProgress().learningProfileValues().audio!=='off'});
+ }
+ // 생활 한국어 재확인(Atlas × WORLD D, 11-08): 같은 기록의 Temper 줄 가운데 생활 칸 — 확인은 제품 길(돌아온 복습 · 다음 레슨)로 연다.
+ function lifeDelayedRows(){
+  const c=readPracticeCoach(),seen=seenBy(c);let projection=null,snapshot=null;try{projection=c?.followups?.();}catch{}try{snapshot=getProgress().exportSnapshot();}catch{}
+  return lifeFollowupRows({projection,seen,snapshot,life:engine.life,taskVersion:c?.mapVersion});
+ }
+ function openLifeFollowup(id){
+  const row=lifeDelayedRows().rows.find(value=>value.id===id&&value.status==='due'&&value.available);
+  if(!row){home.toast(t('followup.noSupply'));return;}
+  return row.route.route==='review'?startReview(row.route.lessonId,row.route.reviewIds):startLesson(row.route.lessonId);
  }
  // 판이 읽는 시험: 학생이 고른 시험(TOPIK II면 TOPIK II 지도), 판에서 바꾸면 그 판.
  let boardExam=null;
@@ -471,10 +485,13 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   home.showPanel(t('position.title'),view.renderPositionBoard({map,plan,gate,mock,exams,writing,bridged,catalog:position.label,diagnosed,scope,practice:id=>routes.get(id)||null}),PANEL);
   const root=panelNode('[data-position-board]');
   if(root&&position.followups){
-   void loadFollowupBank();const delayed=delayedRows();
-   const rows=delayed.rows.map(row=>`<li><strong>${escape(t(`position.skill.${row.measure.skillId}`))}</strong> · ${escape(t(`followup.window.${row.window}`))}<p>${escape(t(`followup.status.${row.status}`))}${row.status==='not_due'?` · ${escape(formatDate(Date.parse(row.dueAt),{month:'short',day:'numeric'}))}`:''}${row.outcome?` · ${escape(t(`followup.outcome.${row.outcome}`))}`:''}</p>${row.status==='due'?(row.available?`<button class="quiet-button" data-followup="${escape(row.id)}">${escape(t('followup.open'))}</button>`:`<p>${escape(t('followup.noSupply'))}</p>`):''}</li>`).join('');
-   root.insertAdjacentHTML('beforeend',`<section class="wpos-followups"><h3>${escape(t('followup.title'))}</h3><p>${escape(t('followup.note'))}</p>${delayed.limited?`<p role="status">${escape(t('followup.incomplete'))}</p>`:''}${rows?`<ul>${rows}</ul>`:`<p>${escape(t('followup.empty'))}</p>`}</section>`);
+   void loadFollowupBank();const delayed=delayedRows(),life=lifeDelayedRows();
+   // 한 줄: 항목 이름(생활이면 · 생활 한국어) · 창 · 상태 · 결과, 지금 확인할 수 있으면 단추(생활은 제품 길로 연다).
+   const line=(row,{source='',attr})=>`<li><strong>${escape(t(`position.skill.${row.measure.skillId}`))}</strong>${source?` · ${escape(source)}`:''} · ${escape(t(`followup.window.${row.window}`))}<p>${escape(t(`followup.status.${row.status}`))}${row.status==='not_due'?` · ${escape(formatDate(Date.parse(row.dueAt),{month:'short',day:'numeric'}))}`:''}${row.outcome?` · ${escape(t(`followup.outcome.${row.outcome}`))}`:''}</p>${row.status==='due'?(row.available?`<button class="quiet-button" ${attr}="${escape(row.id)}">${escape(t('followup.open'))}</button>`:`<p>${escape(t('followup.noSupply'))}</p>`):''}</li>`;
+   const rows=[...delayed.rows.map(row=>line(row,{attr:'data-followup'})),...life.rows.map(row=>line(row,{source:t('position.source.life'),attr:'data-followup-life'}))].join('');
+   root.insertAdjacentHTML('beforeend',`<section class="wpos-followups"><h3>${escape(t('followup.title'))}</h3><p>${escape(t('followup.note'))}</p>${delayed.limited||life.available&&life.limited?`<p role="status">${escape(t('followup.incomplete'))}</p>`:''}${rows?`<ul>${rows}</ul>`:`<p>${escape(t('followup.empty'))}</p>`}</section>`);
    root.querySelectorAll('[data-followup]').forEach(button=>button.addEventListener('click',()=>{void startPractice(null,{followupId:button.dataset.followup}).catch(failed);}));
+   root.querySelectorAll('[data-followup-life]').forEach(button=>button.addEventListener('click',()=>{try{check();void Promise.resolve(openLifeFollowup(button.dataset.followupLife)).catch(failed);}catch(error){failed(error);}}));
    const supply=position.practice.practiceSupply({pool:position.practice.pool,seen:seenBy(coachNow)});
    const targets=map.skills.filter(row=>['practice','supported','review'].includes(row.status)||row.incorrect>0).map(row=>row.id);
    const advisory=advisoryRows({targets,summary,lookup:position.recommendedBefore,supply});
@@ -880,5 +897,8 @@ async function townSend(coachNow,{wait=true}={}){
  }
  // 이번 주 계획의 시험(배우기 판이 TOPIK II 학생의 쓰기 연습 줄을 위로 올릴 때 읽는다). 시험 계획이 없으면 null.
  const examType=()=>current?.examPlan?.exam?.type||null;
- return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,...(position?{position:openPosition,practice:startPractice,plan:openPlan,mock:openMock,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),dispose(){stopped=true;coach?.disconnect?.();practiceCoach?.disconnect?.();mockCoach?.disconnect?.();target.removeEventListener?.('focus',onFocus);}};
+ // 생활 화면의 거울(life-ui.mjs learning): 코치를 읽고, 레슨 · 복습을 열 때 계정 통로를 준비한다(「다음 할 일」과 같은 prepare).
+ // 생활 화면(life-ui.mjs)의 learning 인자 한 벌 — 코치 · 준비 · 거울 부품(engine.life). 셸은 생활 화면을 먼저 세워 늦게 읽는다(app-shell · life-standalone-entry).
+ const lifeLearning=Object.freeze({coach:()=>{try{return readLifeCoach();}catch{return null;}},prepare:()=>{try{check();return Promise.resolve(prepare()).catch(()=>{});}catch{return Promise.resolve();}},life:engine.life||null});
+ return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,lifeLearning,...(position?{position:openPosition,practice:startPractice,plan:openPlan,mock:openMock,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),dispose(){stopped=true;coach?.disconnect?.();practiceCoach?.disconnect?.();mockCoach?.disconnect?.();lifeCoachNow?.disconnect?.();target.removeEventListener?.('focus',onFocus);}};
 }

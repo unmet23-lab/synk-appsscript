@@ -358,7 +358,9 @@ function mountLifeLearning({owner,keep}){
  const ui=keep('ui',createLifeExperience({home,getProgress:()=>life.progress,asset:path=>worldUrl('brand-opening/assets/'+path),show:(title,html,options)=>show(title,html,options.type,{eyebrow:options.eyebrow,nav:options.nav}),onSummary:()=>{education?.refresh();queueMicrotask(repaintWritingRow);},onNext:()=>education?.next(),presentation:()=>education?.presentation(),
   // TOPIK II를 목표로 저장한 학생(이번 주 계획이 TOPIK II)은 쓰기 연습 줄이 생활 팩 위에 온다(10-22 — 첫 연락 메일·신청 페이지가 약속하는 무료 연습). 그 밖에는 아래 줄 그대로.
   leadRows:print=>education?.examType?.()==='topik2'?writingRow(print):'',
-  moreRows:print=>[education?.planRow?.(print),education?.examType?.()==='topik2'?'':writingRow(print),speakingModule?.speakingRow?.(print),reminders?.askMarkup()].filter(Boolean).join(''),positionTotal:()=>education?.positionTotal?.()}));
+  moreRows:print=>[education?.planRow?.(print),education?.examType?.()==='topik2'?'':writingRow(print),speakingModule?.speakingRow?.(print),reminders?.askMarkup()].filter(Boolean).join(''),positionTotal:()=>education?.positionTotal?.(),
+  // 배움의 거울(Atlas × WORLD D, 11-08 — life-trail.mjs): 생활 화면이 먼저 서므로 학습 호스트는 늦게 읽는다.
+  learning:{coach:()=>education?.lifeLearning?.coach()??null,prepare:()=>education?.lifeLearning?.prepare(),life:worldLearning.life}}));
  // 공개판(계정 모드)의 손님은 GUEST_GAMES와 체험이 남은 게임만 바로 열고 나머지는 로그인부터 연다(launchGame). 추천도 같은 목록을 써야 로그인 창을 맴돌지 않는다.
  // 「내 성향」 답(life.answers)은 이 주인의 것이 늦게 와도 그때부터 쓴다.
  const createPlan=options=>createWorldLearningPlan({...options,answers:life.answers,openGames:operating&&!client.snapshot?guestGames():null});
