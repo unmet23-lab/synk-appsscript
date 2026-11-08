@@ -739,6 +739,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 고치지 않는다(유호님 「안 깔게」, [결정](../_ops/결정.md)). Claude Code 훅 `PostToolUse`(EnterWorktree) · `SubagentStart`로 뺄 수는 있다 — 둘 다 사본 경로를 받고 끝날 때까지 세션이 기다린다. 막는 것은 품질이다. 같은 편(LAB M29)을 `올리기전검사`로 돌리면 전체 사본은 목소리 6줄을 재지만 가벼운 사본은 `remotion/public/vo` 소리가 빠져 0줄로 「확인할 것」에 그친다. 음높이 · 잘림 문제가 있어도 「고칠 것」으로 안 뜬다. 제작 회차는 옛 편의 효과음 · remotion 재료도 사본에서 복사한다. 다른 길도 막혔다: `WorktreeCreate` 훅은 코드상 에이전트 사본 자동 삭제가 빠지고, `worktree.sparsePaths`는 cone 방식이라 docs/마케팅 안 소리 · 그림을 못 뺀다.
 - 다시 확인: 임시 저장소에 로그 찍는 훅을 깔고 진짜 `claude.exe`를 로컬 가짜 API(`ANTHROPIC_BASE_URL`, 설정은 `CLAUDE_CONFIG_DIR` 임시 폴더)에 붙여 `GIT_TRACE2_EVENT`로 본다. `worktree add` 인자에 위 `-c`가 보이고 git 훅 로그는 비어 있다(11-04, 계정 · 비용 없음). 부하가 크면 `--worktree` · `EnterWorktree`가 「protected checkout … could not be resolved」로 거절되기도 하는데, 같은 명령을 다시 돌리면 지나간다.
 
+- 11-09 덧붙임(Claude): 11-07 재설치 뒤로는 앱이 만든 사본(가지 `claude/<이름>`)도 공용 `.git/synk-새워크트리가볍게.log`에 줄이 없고 한 벌 6.7GiB다(11-08 22:36 · 11-09 05:06 사본 확인, 같은 날 GPT 사본은 「가볍게 함」). 앱도 이제 훅을 끈 채 사본을 만드는 것으로 보인다. 11-04 결정(품질 쪽)대로 그대로 두고, 공간 셈에는 앱 사본도 6.7GiB로 잡는다([기록](../_ops/qa/공간정리_20261109/README.md)).
 ### 미디어 가볍게 시험이 Windows에서 통과하고 Linux에서 대문자 확장자로 깨진다 (2026-11-02 GPT)
 - 증상: `890f58862` 이후 syntax-check가 `표지.PNG`가 남았다며 실패했다(실행 `41452985614`, `tests/바로올리기.test.js`).
 - 원인: 파일 수·변경 보호 판정은 대소문자 무관 정규식인데 Git sparse 무늬는 소문자 확장자만 썼다. Windows의 `core.ignorecase=true`가 차이를 가렸다.
