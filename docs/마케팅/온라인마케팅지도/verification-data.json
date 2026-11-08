@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-08T11:23:42.312Z",
+  "generatedAt": "2026-11-08T11:40:55.509Z",
   "sourceAsOf": {
     "registry": "2026-11-08",
     "social": "2026-09-21",
@@ -11,8 +11,8 @@
     "plannedCountries": 25,
     "prioritySlots": 50,
     "newSlots": 48,
-    "expansionConfirmed": 31,
-    "expansionUnconfirmed": 17,
+    "expansionConfirmed": 32,
+    "expansionUnconfirmed": 16,
     "channelRows": 74,
     "contents": 25,
     "identities": 6
@@ -44,7 +44,7 @@
     },
     {
       "file": "../sns-계정.json",
-      "sha256": "3d67da19e40a21a2cf96564f4e93946b87174358ade0d5aba0d59f2d0ef3e76d"
+      "sha256": "a82482ff1da8d1a945ef77e5fe18ca650f3c1c07bca23a179474aec3b5f927c8"
     },
     {
       "file": "../SNS_계정_전체목록_20260919.md",
