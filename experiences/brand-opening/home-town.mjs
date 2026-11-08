@@ -112,7 +112,7 @@ export function createHomeTown({container,asset,onPlace=()=>{},obstacle=null,hea
  }
  img.addEventListener('load',readEdges);
  // 넓은 화면의 제목과 카드는 왼쪽 한 줄에 함께 산다. 카드는 말이 길면(영어 · 몽골어) 위로 커지니, 닿는 줄만 물러난다 — 아랫줄(진도) 먼저(title),
- // 그래도 닿으면 머리말까지 빼고 제목만 머리말 자리로 올린다(compact), 그 자리도 닿을 때만 다 뺀다(none). 진도는 카드 안에도 있고 글은 화면 읽기에 그대로 남는다(opacity · transform만).
+ // 그래도 닿으면 머리말까지 빼고 제목만 머리말 자리로 올린다(compact), 그 자리도 닿을 때만 다 뺀다(none). 진도는 카드 안에도 있고 글은 화면 읽기에 그대로 남는다(clip-path · transform만).
  // 단계는 레이아웃 값(offsetTop · offsetHeight)으로 재 — 올린 제목이 다음 잼을 바꾸지 않는다. 처음 넓은 화면 카드가 제목 아랫줄을 가렸고, 다 빼던 첫 판은 몽골어 1440에서 제목까지 지웠다(11-09 검수).
  function fitHeading(){
   if(!heading)return;

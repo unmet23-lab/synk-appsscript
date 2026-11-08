@@ -79,8 +79,8 @@
 /* 위 막대는 줄 전체에 펼쳐져 있어 그 줄의 안내를 덮는다 — 빈 자리는 누름을 그대로 통과시킨다. */
 [data-layout=landscape] .world-topbar{pointer-events:none}
 [data-layout=landscape] .world-topbar>*{pointer-events:auto}
-/* 넓은 화면의 제목 줄: 카드가 닿으면 물러난다(home-town.mjs fitHeading). 자리는 두고 보이지만 않게 — 잰 값이 흔들리지 않고 화면 읽기에는 남는다. */
-[data-layout=landscape] .place-heading[data-fit=title]>p:last-child,[data-layout=landscape] .place-heading[data-fit=compact]>:not(h1),[data-layout=landscape] .place-heading[data-fit=none]{opacity:0}
+/* 넓은 화면의 제목 줄: 카드가 닿으면 물러난다(home-town.mjs fitHeading). 자리는 두고 그려지지만 않게 — 잰 값이 흔들리지 않고 화면 읽기에는 남는다. opacity로 숨기면 문 전환의 잉크(world-motion.mjs ink)가 덮어 다시 떠오른다. */
+[data-layout=landscape] .place-heading[data-fit=title]>p:last-child,[data-layout=landscape] .place-heading[data-fit=compact]>:not(h1),[data-layout=landscape] .place-heading[data-fit=none]{clip-path:inset(50%)}
 [data-layout=landscape] .place-heading[data-fit=compact] h1{transform:translateY(calc(var(--title-lift,0px) * -1))}
 /* 낮은 가로 화면은 하늘이 좁아 숨긴다(장소 이름표만으로 충분하다). */
 @media(max-height:500px){[data-layout=landscape] .town-hint{display:none}}

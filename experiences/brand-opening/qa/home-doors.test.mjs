@@ -31,8 +31,8 @@ before(async()=>{
  browser=await chromium.launch({channel,headless:true});
 });
 after(async()=>{await browser?.close();if(server)await new Promise(resolve=>server.close(resolve));});
-async function homePage(t,{reducedMotion='no-preference',worldReduced=false,firstFrame=0}={}){
- const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true,reducedMotion});t.after(()=>context.close());
+async function homePage(t,{reducedMotion='no-preference',worldReduced=false,firstFrame=0,viewport={width:390,height:844},touch=true}={}){
+ const context=await browser.newContext({viewport,deviceScaleFactor:1,isMobile:touch,hasTouch:touch,reducedMotion});t.after(()=>context.close());
  await context.addInitScript(({worldReduced,firstFrame})=>{
   try{localStorage.setItem('synk.world.tutor.v1:guest',JSON.stringify({version:1,completed:true,tutor:'mongle'}));localStorage.setItem('synk.world.town.hint.v1','1');if(worldReduced)localStorage.setItem('synk.world.maru.reduced','true');}catch{}
   globalThis.__stubFirstFrame=firstFrame;window.__doors=[];window.__lifted=[];
@@ -91,4 +91,36 @@ test('움직임이 켜져 있으면 문이 3D 첫 그림을 최대 1.2초만 기
  const back=await state(page);
  assert.deepEqual({place:back.place,heading:back.heading,doors:back.doors},{place:'town',heading:'우리 동네',doors:['open','close']});
  assert.match(back.focus,/^(home|cafe|store|clock|bus|street|friends)$/,'focus returns to a town place');
+});
+
+// 넓은 화면의 제목 줄은 카드가 닿으면 물러난다(home-town.mjs fitHeading). 문 전환의 잉크(world-motion.mjs ink)는 opacity를 덮으므로, 숨긴 줄이 opacity로만 숨어 있으면 전환마다 1.2초쯤 떠올랐다가 툭 사라진다(11-09 실측).
+test('넓은 화면에서 제목 단계로 숨긴 줄은 문 전환 동안에도 떠오르지 않고, 보이는 제목은 그대로 번진다',async t=>{
+ const page=await homePage(t,{viewport:{width:1280,height:720},touch:false});
+ // 실제 학습자 카드는 단추가 여러 단이라 이만큼 커진다.
+ const reach=want=>page.evaluate(async want=>{
+  const heading=document.querySelector('.place-heading'),card=document.querySelector('.lobby-action'),start=card.getBoundingClientRect().height;
+  const settled=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  for(let extra=0;extra<700&&heading.dataset.fit!==want;extra+=6){card.style.minHeight=`${start+extra}px`;await settled();}
+  return heading.dataset.fit;
+ },want);
+ const watch=(dir,hidden)=>page.evaluate(async({dir,hidden})=>{
+  const heading=document.querySelector('.place-heading'),lines=hidden.map(selector=>heading.querySelector(selector)),title=heading.querySelector('h1'),painted=[];let live=true,inked=false;
+  const tick=()=>{if(!live)return;
+   lines.forEach((line,i)=>{const s=getComputedStyle(line);if(+s.opacity>.05&&s.clipPath==='none')painted.push(hidden[i]);});
+   if(+getComputedStyle(title).opacity<.95)inked=true;requestAnimationFrame(tick);};
+  requestAnimationFrame(tick);
+  await(dir==='room'?__synkHome.enterRoom():__synkHome.leaveRoom());
+  await new Promise(resolve=>setTimeout(resolve,1300));live=false;
+  return {painted:[...new Set(painted)],inked,place:__synkHome.place(),titleClip:getComputedStyle(title).clipPath};
+ },{dir,hidden});
+ for(const[want,hidden]of[['title',['p:last-child']],['compact',['.place-kicker','p:last-child']]]){
+  assert.equal(await reach(want),want);
+  for(const dir of['room','town']){
+   const seen=await watch(dir,hidden);
+   assert.equal(seen.place,dir,`${want} ${dir}`);
+   assert.deepEqual(seen.painted,[],`${want} ${dir}: 숨긴 줄이 전환 중에 그려졌다`);
+   assert.equal(seen.inked,true,`${want} ${dir}: 보이는 제목의 잉크는 그대로`);
+   assert.equal(seen.titleClip,'none',`${want} ${dir}: 제목은 잘리지 않는다`);
+  }
+ }
 });

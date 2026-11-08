@@ -98,10 +98,10 @@ async function 재기(page){
   const 겹침=[];
   if(!document.querySelector('dialog:modal')){
    const 판=document.querySelector('.lobby-action')?.getBoundingClientRect();
-   const 맞닿음=(e,이름)=>{if(!e||!판)return;const s=getComputedStyle(e);if(s.visibility==='hidden'||s.display==='none'||+s.opacity===0)return;const r=e.getBoundingClientRect();if(r.width&&r.height&&r.bottom>판.top&&r.top<판.bottom&&r.right>판.left&&r.left<판.right)겹침.push(`${이름} ${Math.round(r.bottom-판.top)}px`);};
+   const 맞닿음=(e,이름)=>{if(!e||!판)return;const s=getComputedStyle(e);if(s.visibility==='hidden'||s.display==='none'||+s.opacity===0||s.clipPath.startsWith('inset(50%'))return;const r=e.getBoundingClientRect();if(r.width&&r.height&&r.bottom>판.top&&r.top<판.bottom&&r.right>판.left&&r.left<판.right)겹침.push(`${이름} ${Math.round(r.bottom-판.top)}px`);};
    맞닿음(document.querySelector('.town-hint:not([hidden])'),'안내 띠');
    const 제목=document.querySelector('.place-heading');
-   if(document.documentElement.dataset.layout==='landscape'&&제목&&+getComputedStyle(제목).opacity!==0)for(const e of 제목.children)맞닿음(e,e.tagName);
+   if(document.documentElement.dataset.layout==='landscape'&&제목&&getComputedStyle(제목).clipPath==='none')for(const e of 제목.children)맞닿음(e,e.tagName);
   }
   return {가로넘침:d.scrollWidth>d.clientWidth+1?`${d.scrollWidth}/${d.clientWidth}`:null,겹침,작은글:[...new Set(작은글)].slice(0,20),작은단추:[...new Set(작은단추)].slice(0,20)};
  });

@@ -159,7 +159,10 @@ test('on a wide screen the heading gives way line by line when the card reaches 
  assert.equal(await heading(),'full','여유가 있으면 제목 줄이 다 보인다');
  // 화면 720 · 카드 바닥 632: 진도 줄 바닥 약 185 · 제목 바닥 약 150.
  await card(450);await until('title');
+ const clipped=()=>page.evaluate(()=>[...document.querySelector('.place-heading').children].map(e=>getComputedStyle(e).clipPath));
+ assert.deepEqual(await clipped(),['none','none','inset(50%)'],'진도 줄만 그려지지 않게 한다 — opacity로 숨기면 문 전환의 잉크가 덮어 다시 떠오른다');
  await card(480);await until('compact');
+ assert.deepEqual(await clipped(),['inset(50%)','none','inset(50%)'],'머리말과 진도 줄을 빼고 제목만 남긴다');
  const lifted=await page.locator('.place-heading h1').evaluate(e=>{const r=e.getBoundingClientRect(),c=document.querySelector('.lobby-action').getBoundingClientRect();return {clear:r.bottom<=c.top,visible:getComputedStyle(e).opacity!=='0'};});
  assert.ok(lifted.clear&&lifted.visible,'카드가 제목에 닿으면 머리말 자리로 올린 제목은 남는다');
  await card(520);await until('none');
