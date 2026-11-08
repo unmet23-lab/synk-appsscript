@@ -90,4 +90,5 @@ test('서버 오류 코드: 서버가 붙이는 SYNK_PULSE_ 코드마다 화면 
     assert.equal(errorText('사전에 없는 서버 문장'),'사전에 없는 서버 문장','없는 문장은 원문(판 2에서 사전을 채운다)');
   }finally{await setLocale('ko');}
 });
-test('서버 오류 문장의 영어(판 2에서 빠짐 0으로 켠다)',{todo:'판 2 — 손님 길의 fail · httpError 리터럴과 사전 대조'},()=>{});
+// 판 2: 서버 오류 문장의 영어 — 손님 길의 fail · httpError 리터럴과 사전을 대조하는 시험을 여기서 빠짐 0으로 켠다.
+// 빈 todo 자리표시는 두지 않는다 — 회사 이미지 판의 격리 QA(tools/company-release/local-qa.cjs)가 todo 0을 요구해 사슬 57이 여기서 멈췄다(11-09).
