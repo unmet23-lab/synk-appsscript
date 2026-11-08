@@ -17,6 +17,10 @@
 <p id='modeLabel' class='mode'></p>
 </header>
 <main id='app' aria-busy='false'>
+<nav class='tabs' aria-label='백업 종류 선택'>
+<button type='button' id='tabLocal' class='tab' aria-pressed='false' aria-describedby='sumLocal'><span class='tabName'>외장·로컬 백업</span><span id='sumLocal' class='tabSum'></span></button>
+<button type='button' id='tabB2' class='tab' aria-pressed='false' aria-describedby='sumB2'><span class='tabName'>클라우드 백업</span><span id='sumB2' class='tabSum'></span></button>
+</nav>
 <div id='apiError' class='alert' role='alert' hidden></div>
 <section id='jobBox' class='job' role='status' aria-live='polite' hidden>
 <p id='jobText'></p>
@@ -48,8 +52,8 @@
 <aside class='side'>
 <div class='card soft'>
 <h3>알아 두세요</h3>
-<p>첫 시험판은 폴더/외장 드라이브 백업입니다. PC 분실까지 대비하려면 별도 장치에 보관하세요.</p>
-<p class='hint'>선택한 파일·폴더만 보호하며 Windows 전체 복원은 포함하지 않습니다.</p>
+<p>외장 드라이브는 PC와 따로 보관하면 PC가 고장 나도 남습니다. PC를 잃어버리는 경우까지 대비하려면 클라우드 백업도 함께 쓰세요.</p>
+<p class='hint'>선택한 파일·폴더만 보호하며 Windows 전체(시스템 이미지) 복원은 포함하지 않습니다. 랜섬웨어로부터 변경 불가능하게 보호하는 기능도 아닙니다.</p>
 </div>
 <div class='card'>
 <h3>이미 백업이 있나요?</h3>
@@ -57,6 +61,79 @@
 <button type='button' id='btnImport' class='btn'>기존 백업 복구하기</button>
 </div>
 </aside>
+</div>
+</section>
+
+<section id='cloudView' class='view' hidden aria-labelledby='cloudTitle'>
+<div class='hero'>
+<h2 id='cloudTitle'>클라우드에도 한 벌 더</h2>
+<p>PC를 잃어버리거나 고장 나도 Backblaze B2에 있는 백업으로 새 PC에서 복구할 수 있습니다.</p>
+</div>
+<p class='owner'>소유자 시험용 빌드입니다. B2 연결 정보를 직접 입력합니다. 이후 일반 고객용은 서비스 로그인 방식으로 바뀝니다.</p>
+<div class='grid'>
+<form id='cloudForm' class='card' novalidate aria-label='클라우드 백업 설정'>
+<div id='cloudError' class='alert' role='alert' hidden></div>
+<p id='initNote' class='warn' role='status' hidden>이전 연결 준비가 끝나지 않았습니다. 저장소와 폴더는 그대로 유지됩니다. 키를 다시 입력하고 연결을 다시 시도하세요.</p>
+<fieldset>
+<legend><span class='step' aria-hidden='true'>1</span> 백업할 업무 폴더</legend>
+<p class='hint'>로컬 백업과 따로 관리됩니다. 로컬 폴더 선택을 그대로 복사해 쓸 수도 있습니다(업로드는 하지 않습니다).</p>
+<div class='row tight'>
+<button type='button' id='btnCSources' class='btn'>폴더 고르기</button>
+<button type='button' id='btnReuse' class='btn' hidden>로컬 백업 폴더 그대로 쓰기</button>
+</div>
+<ul id='cSources' class='paths' aria-label='클라우드로 백업할 폴더'></ul>
+</fieldset>
+<fieldset>
+<legend><span class='step' aria-hidden='true'>2</span> B2 연결 정보</legend>
+<p class='hint'>전용 비공개 버킷과, 그 버킷에만 허용된 Read and Write 애플리케이션 키를 쓰세요. 키에 파일 이름 접두사(prefix) 제한은 두지 마세요.</p>
+<label class='field' for='cEndpoint'>Endpoint<input id='cEndpoint' type='text' inputmode='url' autocomplete='off' spellcheck='false' placeholder='https://s3.us-west-004.backblazeb2.com'></label>
+<label class='field' for='cBucket'>버킷 이름<input id='cBucket' type='text' autocomplete='off' spellcheck='false'></label>
+<label class='field' for='cKeyId'>키 ID (keyID)<input id='cKeyId' type='password' autocomplete='off' spellcheck='false'></label>
+<label class='field' for='cAppKey'>애플리케이션 키 (applicationKey)<input id='cAppKey' type='password' autocomplete='off' spellcheck='false'></label>
+<p id='savedNote' class='hint' hidden>저장된 연결을 쓰려면 키 ID와 애플리케이션 키 두 칸을 모두 비워 두세요. 새 키를 쓰거나 Endpoint·버킷을 바꾸면 두 칸을 모두 입력해야 합니다.</p>
+<p id='readyNote' class='hint' role='status' hidden>클라우드 연결 정보가 준비되어 있습니다. 작업 폴더를 선택해 주세요.</p>
+</fieldset>
+<button type='submit' id='btnCloudSetup' class='btn primary'>클라우드 연결 준비</button>
+<p class='hint'>연결만 준비합니다. 이때 B2에는 암호화된 저장소 설정·키 파일(작은 크기)만 만들어지며, 복구 키를 저장하고 '자동 백업 시작'을 누르기 전에는 업무 파일을 업로드하지 않습니다. 키는 제출 즉시 입력란에서 지워집니다.</p>
+</form>
+<aside class='side'>
+<div class='card soft'>
+<h3>알아 두세요</h3>
+<p>클라우드 백업은 PC 분실·고장에 대비합니다. 외장 드라이브는 PC와 따로 두면 PC 문제에서 살아남습니다.</p>
+<p class='hint'>Windows 시스템 이미지 복원이 아니며, 랜섬웨어로부터 변경 불가능하게 보호하는 기능도 아닙니다.</p>
+</div>
+<div class='card'>
+<h3>B2 콘솔에서 할 일</h3>
+<ul class='plain'>
+<li>버킷 보관 규칙(Lifecycle)을 'Keep only the last version of the file'로 설정하세요.</li>
+<li>업로드된 지 오래된 파일을 지우는 규칙은 절대 쓰지 마세요.</li>
+<li>시험판에서는 Object Lock을 끄세요.</li>
+<li>저장·다운로드 사용량에 따라 B2 요금이 발생할 수 있습니다. 무료 한도가 무제한으로 보장되지 않습니다.</li>
+</ul>
+</div>
+<div class='card'>
+<h3>클라우드 백업이 이미 있나요?</h3>
+<p>다른 PC에서 만든 복구 키 파일과 B2 키로 복구 전용 연결을 엽니다. 저장소 주소는 복구 키 파일에서 읽으므로 폴더나 버킷을 입력하지 않아도 됩니다.</p>
+<label class='field' for='iKeyId'>키 ID<input id='iKeyId' type='password' autocomplete='off' spellcheck='false'></label>
+<label class='field' for='iAppKey'>애플리케이션 키<input id='iAppKey' type='password' autocomplete='off' spellcheck='false'></label>
+<button type='button' id='btnCImport' class='btn'>클라우드 백업 복구 연결</button>
+<p class='hint'>누르면 복구 키 파일을 고르는 창이 열립니다.</p>
+</div>
+</aside>
+</div>
+</section>
+
+<section id='credView' class='view' hidden aria-labelledby='credTitle'>
+<div class='card must'>
+<p class='kicker'>인증 복구 필요</p>
+<h2 id='credTitle'>저장된 인증 정보를 다시 연결해야 합니다</h2>
+<p>이 PC에서 보관된 인증 정보를 읽을 수 없습니다. 복구 키 파일을 골라 다시 연결하세요. 해결될 때까지 이 백업의 백업·복구·점검·자동 실행은 멈춥니다.</p>
+<div id='credFields'>
+<p class='hint'>클라우드는 B2 키도 함께 입력해야 합니다. 키는 B2 콘솔에서 새로 발급받아도 됩니다.</p>
+<label class='field' for='xKeyId'>키 ID<input id='xKeyId' type='password' autocomplete='off' spellcheck='false'></label>
+<label class='field' for='xAppKey'>애플리케이션 키<input id='xAppKey' type='password' autocomplete='off' spellcheck='false'></label>
+</div>
+<button type='button' id='btnRecover' class='btn primary'>복구 키 파일로 인증 복구</button>
 </div>
 </section>
 
@@ -68,8 +145,9 @@
 <li>새 PC에서 파일을 복구하려면 복구 키 파일이 필요합니다.</li>
 <li>복구 키가 있으면 백업 저장소를 열 수 있습니다. 다른 사람에게 주지 마세요.</li>
 <li>백업 드라이브나 이 노트북이 아닌 별도 장소(예: 다른 USB)에 보관하세요.</li>
+<li id='keyCloudNote' hidden>클라우드 백업을 새 PC에서 복구하려면 복구 키 파일과 B2 접근 키가 모두 필요합니다. B2 키는 콘솔에서 다시 발급할 수 있지만, 복구 키 파일은 다시 만들 수 없습니다.</li>
 </ul>
-<p class='hint'>키 내용은 화면에 표시하지 않습니다. 저장한 뒤 다시 읽어 제대로 저장됐는지 확인합니다.</p>
+<p class='hint'>키 내용은 화면에 표시하지 않습니다. 저장한 뒤 다시 읽어 제대로 저장됐는지 확인합니다. 저장 전에는 백업을 시작하지 않습니다.</p>
 <button type='button' id='btnKey' class='btn primary'>복구 키 파일 저장</button>
 </div>
 </section>
@@ -79,6 +157,7 @@
 <div class='col'>
 <div id='lastError' class='alert' role='alert' hidden></div>
 <p id='warning' class='warn' role='status' hidden></p>
+<p id='retryNote' class='warn' role='status' hidden></p>
 <div class='card'>
 <h2 id='backupTitle'>백업 상태</h2>
 <p id='backupTime' class='big'></p>
@@ -90,14 +169,16 @@
 </div>
 </div>
 <div class='card'>
-<h2>전체 데이터 점검</h2>
+<h2>마지막 전체 점검</h2>
 <p id='healthText' class='big'></p>
 <p id='healthDetail' class='hint'></p>
+<p id='checkNote' class='hint' hidden>클라우드 전체 점검은 데이터를 내려받으므로 시간이 걸리고 다운로드 요금이 생길 수 있습니다. 시작 전에 확인 창이 뜹니다.</p>
 <button type='button' id='btnCheck' class='btn'>지금 전체 점검</button>
 </div>
 <div class='card'>
 <h2>복구</h2>
 <p>가장 최근에 완료된 백업을 새 폴더로 복구합니다. 기존 파일을 덮어쓰지 않으며, 모든 파일의 해시를 확인합니다.</p>
+<p id='restoreNote' class='hint' hidden>클라우드에서 복구하면 데이터를 내려받으므로 다운로드 요금이 생길 수 있습니다.</p>
 <button type='button' id='btnRestore' class='btn primary'>새 폴더로 복구</button>
 <div id='restoreResult' hidden>
 <p class='hint'>최근 복구: <span id='restoreTime'></span></p>
@@ -110,23 +191,38 @@
 <div class='card soft'>
 <h3>보호 대상</h3>
 <ul id='srcList' class='paths' aria-label='보호 중인 폴더'></ul>
-<h3>백업 위치</h3>
+<h3 id='repoLabel'>백업 위치</h3>
 <p id='repoPath' class='path'></p>
+<p id='lifeNote' class='hint' hidden>B2 보관 규칙은 콘솔에서 확인해야 합니다.</p>
 </div>
 <div id='settings' class='card'>
 <h3>설정</h3>
 <label class='check'><input type='checkbox' id='chkLogin' aria-describedby='loginHint'> Windows 로그인 시 시작</label>
-<p id='loginHint' class='hint'>기본은 꺼져 있습니다. 로그인 시 시작은 지금 앱 폴더 위치를 기억하므로, 앱 폴더를 옮기지 말고 그대로 두세요.</p>
+<p id='loginHint' class='hint'>기본은 꺼져 있습니다. 로컬·클라우드 백업이 함께 쓰는 설정입니다. 로그인 시 시작은 지금 앱 폴더 위치를 기억하므로, 앱 폴더를 옮기지 말고 그대로 두세요.</p>
 <p class='hint'>자동 백업이 켜져 있으면 창을 닫아도 알림 영역(트레이)에서 계속 실행됩니다.</p>
 </div>
-<p class='hint'>선택한 파일·폴더만 보호하며 Windows 전체 복원은 포함하지 않습니다.</p>
+<details id='rotCard' class='card' hidden>
+<summary>B2 키 바꾸기 · 인증 복구</summary>
+<p class='hint'>아래 두 칸은 다음 두 작업에 함께 쓰입니다. 키는 누르는 즉시 입력란에서 지워집니다.</p>
+<label class='field' for='rKeyId'>새 키 ID<input id='rKeyId' type='password' autocomplete='off' spellcheck='false'></label>
+<label class='field' for='rAppKey'>새 애플리케이션 키<input id='rAppKey' type='password' autocomplete='off' spellcheck='false'></label>
+<button type='button' id='btnRotate' class='btn'>새 키로 교체</button>
+<p class='hint'>새 키로 연결을 시험한 뒤에만 교체합니다. 실패하면 기존 키를 그대로 둡니다.</p>
+<button type='button' id='btnRepair' class='btn'>복구 키 파일로 인증 복구</button>
+<p class='hint'>이 PC에서 저장된 인증 정보를 읽을 수 없을 때 씁니다. 복구 키 파일을 고르는 창이 열립니다.</p>
+</details>
+<p class='hint'>선택한 파일·폴더만 보호하며 Windows 전체 복원은 포함하지 않습니다. 변경 불가능한 랜섬웨어 보호 기능도 아닙니다.</p>
 <details class='card'>
 <summary>백업 방식 자세히</summary>
 <ul class='plain'>
-<li>복구는 가장 최근에 완료된 스냅숏을 사용하며, 최근 24시간의 안전 기록도 함께 보관합니다.</li>
+<li>복구는 가장 최근에 완료된 스냅숏을 사용하며, 최근 24시간의 안전 기록도 함께 보관합니다. 그 이후에는 최신 백업만 남깁니다.</li>
 <li>중간에 끊긴 백업은 완료된 백업으로 올리지 않습니다.</li>
-<li>백업할 때마다 구조 점검을 합니다. 전체 데이터 점검은 첫 백업 후 자동으로, 이후 하루에 한 번 진행하며 데이터가 많으면 오래 걸릴 수 있습니다.</li>
-<li>자동 백업(15분마다)은 앱 또는 트레이가 실행 중이고 PC가 깨어 있을 때만 동작합니다.</li>
+<li id='detTiming'></li>
+</ul>
+<ul id='detCloud' class='plain' hidden>
+<li>B2 보관 규칙을 설정했다면 숨겨진 옛 파일은 약 하루 뒤 지워집니다.</li>
+<li>다운로드를 줄이려고 자동 정리 때 일부만 쓰이는 묶음(pack)은 다시 묶지 않습니다. 그래서 저장 용량이 최신 파일 크기보다 클 수 있습니다.</li>
+<li>B2 보관 규칙은 콘솔에서 확인해야 합니다. 이 앱은 읽을 수 없습니다.</li>
 </ul>
 </details>
 </aside>

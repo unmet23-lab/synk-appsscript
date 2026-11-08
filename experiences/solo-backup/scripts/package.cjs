@@ -23,7 +23,7 @@ const { RESTIC_SHA256 } = require('../src/engine.cjs');
   await fs.copyFile(restic, path.join(output, 'resources', 'restic.exe'));
   await fs.copyFile(path.join(source, 'README.md'), path.join(output, '시작안내.md'));
   await fs.rename(path.join(output, 'electron.exe'), path.join(output, 'WorkBackup.exe'));
-  const manifest = { app: 'solo-work-backup', version: '0.1.0', resticVersion: '0.19.1', resticSha256: RESTIC_SHA256, signed: false, files: {} };
+  const manifest = { app: 'solo-work-backup', version: require('../package.json').version, resticVersion: '0.19.1', resticSha256: RESTIC_SHA256, signed: false, files: {} };
   async function walk(dir) { for (const item of await fs.readdir(dir, { withFileTypes: true })) { const p = path.join(dir, item.name); if (item.isDirectory()) await walk(p); else manifest.files[path.relative(output, p).split(path.sep).join('/')] = crypto.createHash('sha256').update(await fs.readFile(p)).digest('hex'); } }
   await walk(output);
   await fs.writeFile(path.join(output, 'build-manifest.json'), JSON.stringify(manifest, null, 2));

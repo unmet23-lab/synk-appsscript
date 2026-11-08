@@ -2,6 +2,8 @@
 const { contextBridge, ipcRenderer } = require('electron');
 const call = name => (...args) => ipcRenderer.invoke(`backup:${name}`, ...args);
 contextBridge.exposeInMainWorld('backup', Object.freeze({
+  selectProfile: call('selectProfile'), reuseLocalSources: call('reuseLocalSources'), setupCloud: call('setupCloud'),
+  updateCloudCredentials: call('updateCloudCredentials'), recoverCredential: call('recoverCredential'),
   getState: call('getState'), chooseSources: call('chooseSources'), chooseTarget: call('chooseTarget'), setup: call('setup'),
   saveRecoveryKit: call('saveRecoveryKit'), startAutomatic: call('startAutomatic'), setAutomatic: call('setAutomatic'),
   backupNow: call('backupNow'), restoreLatest: call('restoreLatest'), checkRepository: call('checkRepository'),
