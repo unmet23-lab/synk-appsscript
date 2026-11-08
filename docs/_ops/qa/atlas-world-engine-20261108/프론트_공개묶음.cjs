@@ -18,7 +18,7 @@ if (path.dirname(path.resolve(OUT)) !== path.resolve(TMP)) throw Error(`지울 �
 const LIVE = path.join(process.env.USERPROFILE || process.env.HOME, 'Documents', 'synk-vendor', 'synk-policy-publish.git');
 const show = (rev, file) => { try { return execFileSync('git', ['-C', ROOT, '-c', 'core.autocrlf=false', 'show', `${rev}:${file}`], { maxBuffer: 1 << 28, stdio: ['ignore', 'pipe', 'ignore'] }); } catch { return null; } };
 const read = (rev, file) => rev === '작업본' ? (fs.existsSync(path.join(ROOT, file)) ? fs.readFileSync(path.join(ROOT, file)) : null) : show(rev, file);
-// 공개본은 이 사본의 origin/main으로 읽는다 — 받아 오지 않으면 그사이 남이 올린 공개(11-08 3cdfb18e)를 모른 채 낡은 바탕으로 재료를 만든다. 먼저 받는다.
+// 공개본은 이 사본의 origin/main으로 읽는다 — 받아 오지 않으면 그사이 남이 올린 공개를 모른 채 낡은 바탕으로 재료를 만든다. 먼저 받는다.
 { const r = spawnSync('git', ['-C', LIVE, 'fetch', '-q', 'origin', 'main'], { stdio: ['ignore', 'ignore', 'pipe'], timeout: 120000 });
   if (r.status !== 0) throw Error(`공개 저장소 사본을 받지 못했다(낡은 공개본으로 재료를 만들지 않는다): ${String(r.stderr || r.error || '').trim().slice(0, 200)}`); }
 const live = pub => { try { return execFileSync('git', ['-C', LIVE, 'cat-file', '-p', `origin/main:${pub}`], { maxBuffer: 1 << 28, stdio: ['ignore', 'pipe', 'ignore'] }); } catch { return null; } };
