@@ -234,7 +234,7 @@ test('페이지 스크립트 — 읽기는 열린 탭을 옮기거나 누르지 
   // 보내기 — 빈 탭에서 첫 화면(계정 대조) → 누르기 직전 표시 → 보내기
   assert.match(보내기, /^\n\} else \{\r?\n\s*page = await 빈탭\(\);/, '보내기 · 확인은 빈 탭 — 답이 생기는 중인 탭을 옮기지 않는다');
   assert.ok(보내기.indexOf('await 첫화면()') < 보내기.indexOf('await writeMark(null)'), '계정 대조(첫화면)는 올리기 · 보내기 전에');
-  assert.ok(보내기.indexOf('await writeMark(null)') < 보내기.indexOf('aria-label="메시지 보내기"'), '보내기를 누르기 전에 표시를 쓴다');
+  assert.ok(보내기.indexOf('await writeMark(null)') < 보내기.indexOf('page.click(\'loc=css:[aria-label="메시지 보내기"]\''), '보내기를 누르기 전에 표시를 쓴다');
   assert.match(s, /const chipN = files\.filter\(\(f\) => kind\(f\) !== "글"\)\.length/, '「첨부파일 닫기」로는 사진 · 영상만 센다(10-31 글 칩)');
   assert.match(s, /insertText\("\."\)/, '빈 입력창 모드 단추(10-31) — 「.」을 먼저 넣는다');
   assert.doesNotMatch(s, /\/u\/4\//, '계정 번호는 JOB.u로만');
@@ -931,6 +931,65 @@ test('페이지 스크립트(올리기 마감) — 공간 열기 · 탭 목록�
   assert.equal(탭늦음.표시, false);
 });
 
+test('올리기 기다림(11-08 사라짐 넷) — 고정 기다림은 큰 묶음만큼 더, 누르기 직전 끝 기다림 상한은 크기에 비례(150초까지)', () => {
+  const MB = 1024 * 1024;
+  assert.equal(웹.올리기뒤기다림(0, 1, false), 13_500, '작은 한 장은 그대로(12초 + 1.5초)');
+  assert.equal(웹.올리기뒤기다림(2 * MB, 2, false), 15_000, '2MB까지는 더하지 않는다');
+  assert.equal(웹.올리기뒤기다림(10.6 * MB, 5, false), 12_000 + 7_500 + 17_200, '구로 그림 넷 + 글 하나(10.6MB) — 17초 더');
+  assert.equal(웹.올리기뒤기다림(10.1 * MB, 1, true), 12_000 + 1_500 + 15_000 + 16_200, '10번 영상 하나(10.1MB)');
+  assert.equal(웹.올리기뒤기다림(500 * MB, 1, true) - (12_000 + 1_500 + 15_000), 60_000, '더하는 것은 1분까지');
+  assert.equal(웹.올리기끝상한초(0), 30);
+  assert.equal(웹.올리기끝상한초(10 * MB), 60);
+  assert.equal(웹.올리기끝상한초(100 * MB), 150, '150초까지 — 그 뒤엔 그대로 보낸다');
+  const 판단 = new Function(`${웹.판단머리()}\nreturn { 올리기뒤기다림, 올리기끝상한초 };`)();
+  assert.equal(판단.올리기끝상한초(10 * MB), 60, '페이지 스크립트 앞에 붙는 판단 함수로 그대로 돈다');
+  assert.equal(판단.올리기뒤기다림(10.1 * MB, 1, true), 웹.올리기뒤기다림(10.1 * MB, 1, true));
+});
+
+test('페이지 스크립트(올리기 끝 기다림) — 누르기 직전, 빙글 표시 · 꺼진 보내기 단추가 없어질 때까지 보고, 상한을 넘겨도 막지 않고 보낸다 · 기다린 초를 남긴다', async () => {
+  const s = 페이지();
+  const { 보내기 } = 갈래(s);
+  const 자리 = (t) => { const i = 보내기.indexOf(t); assert.ok(i > 0, `보내기 갈래에서 「${t}」를 찾음`); return i; };
+  const 지시문넣기 = 자리('await page.keyboard.insertText(prompt);');
+  const 기다림 = 자리('const 상한초 = 올리기끝상한초(올릴바이트);');
+  const 마감검사 = 자리('"올리기넘김");');
+  assert.ok(지시문넣기 < 기다림 && 기다림 < 마감검사, '지시문을 넣은 뒤 · 마감 검사(누름 · 보냄 표시) 앞에서 기다린다');
+  assert.match(보내기, /await page\.waitForTimeout\(올리기뒤기다림\(올릴바이트, files\.length, /, '썸네일 뒤 고정 기다림도 크기에 맞춘다');
+  assert.match(s, /올릴바이트 \+= \(await fs\.stat\(f\)\)\.size/, '올릴 크기는 첨부 파일 크기 합');
+  // 그 덩이를 그대로 떼어 가짜 화면으로 돌린다 — 빙글 표시 · 단추 상태를 차례로 돌려준다
+  const 처음 = s.search(/if \(files\.length\) \{\r?\n\s*const 상한초 = 올리기끝상한초\(올릴바이트\);/);
+  const 끝 = s.indexOf('\n', s.indexOf('step: "upload-wait"', 처음));
+  assert.ok(처음 > 0 && 끝 > 처음);
+  const 덩어리 = `${s.slice(처음, 끝)}\n}`;
+  assert.doesNotMatch(덩어리, /fail\(/, '기다림은 실패로 끝내지 않는다(선택자가 다른 것을 잡아도 늦어질 뿐)');
+  const AsyncFunction = (async () => {}).constructor;
+  const { 올리기끝상한초 } = new Function(`${웹.판단머리()}\nreturn { 올리기끝상한초 };`)();
+  const 돌려 = async (보임들, { MB = 1, 넘김 = false } = {}) => {
+    const 기록 = [];
+    let 물음 = 0, 쉼 = 0;
+    const page = {
+      evaluate: async () => 보임들[Math.min(물음++, 보임들.length - 1)],
+      waitForTimeout: async () => { 쉼 += 1; },
+    };
+    await new AsyncFunction('page', 'files', '올릴바이트', '넘김', 'log', '올리기끝상한초', 덩어리)(page, ['a.jpg'], MB * 1024 * 1024, 넘김, (o) => 기록.push(o), 올리기끝상한초);
+    return { 줄: 기록.find((x) => x.step === 'upload-wait'), 물음, 쉼 };
+  };
+  const 빙글 = (n, 꺼짐 = false) => ({ 빙글: n, 꺼짐 });
+  const 사라짐 = await 돌려([빙글(2), 빙글(1), 빙글(0)]);
+  assert.deepEqual([사라짐.줄.초, 사라짐.줄.빙글, 사라짐.쉼], [2, 0, 2], '빙글 표시가 없어지면 바로 누르러 간다');
+  const 단추 = await 돌려([빙글(0, true), 빙글(0, true), 빙글(0, false)]);
+  assert.deepEqual([단추.줄.초, 단추.줄.꺼짐], [2, false], '보내기 단추가 꺼져 있으면 켜질 때까지');
+  const 바로 = await 돌려([빙글(0)]);
+  assert.deepEqual([바로.줄.초, 바로.쉼], [0, 0], '올리기가 끝나 있으면 기다리지 않는다(초 0도 남긴다)');
+  const 안사라짐 = await 돌려([빙글(1)], { MB: 10 });
+  assert.equal(안사라짐.줄.상한초, 60);
+  assert.equal(안사라짐.줄.초, 61, '상한(60초)을 다 본 뒤');
+  assert.equal(안사라짐.줄.빙글, 1, '남은 빙글 표시를 기록에 남기고 그대로 보내러 간다(실패하지 않음)');
+  assert.equal(안사라짐.줄.MB, 10);
+  const 마감 = await 돌려([빙글(3)], { 넘김: true });
+  assert.equal(마감.물음, 0, '마감 감시가 울렸으면 기다리지 않고 바로 마감 검사로 간다');
+});
+
 test('페이지 스크립트(올리기 잠금) — 마감 검사 → 누름 → 보냄 표시 → clicking → 잠금 풀기 → 보내기 누르기, 맨 끝 finally가 감시를 끄고 푼다', () => {
   const s = 페이지();
   const { 보내기 } = 갈래(s);
@@ -940,7 +999,7 @@ test('페이지 스크립트(올리기 잠금) — 마감 검사 → 누름 → 
   const 표시 = 자리('await writeMark(null)');
   const 찍음 = 자리('log({ step: "clicking"');
   const 풀기 = 자리('await 올리기풀기();');
-  const 보냄 = 자리('aria-label="메시지 보내기"');
+  const 보냄 = 자리('page.click(\'loc=css:[aria-label="메시지 보내기"]\'');
   assert.ok(검사 < 누름 && 누름 < 표시 && 표시 < 찍음 && 찍음 < 풀기 && 풀기 < 보냄, '마감을 넘겼으면 표시를 쓰지 않고, 누르기 직전에 잠금을 넘긴다');
   assert.doesNotMatch(보내기.slice(검사, 누름), /await /, '마감 검사와 「누름」 사이에 await가 없다 — 감시가 끼어들지 못한다');
   const 푸는곳 = 덩이(s, 'const 올리기풀기 = async () => {');

@@ -454,6 +454,8 @@ if (mode === "읽기") {
     log({ step: "mode", mode: s.mode });
 
     // 파일 올리기 — 숨은 파일 칸이 없어 「파일 업로드」를 파일 선택 대기와 함께 실제로 누른다(10-22)
+    let 올릴바이트 = 0; // 올리기 기다림을 크기에 맞춘다(11-08)
+    for (const f of files) { try { 올릴바이트 += (await fs.stat(f)).size; } catch { /* 없는 파일은 부르는 쪽 작업문제가 먼저 막는다 */ } }
     if (files.length) {
       await 마감확인(); // 올리기 앞 — 마감 뒤에는 파일 고르기 창을 열지 않는다
       const menuText = () => page.evaluate(() => { const m = document.querySelector("[role=menu]"); return m ? m.innerText : ""; });
@@ -489,8 +491,8 @@ if (mode === "읽기") {
       for (let i = 0; i < 20 && got.length < docNames.length; i++) { got = await seen().catch(() => got); if (got.length < docNames.length) await page.waitForTimeout(1500); }
       if (got.length < docNames.length) await fail("글 파일 칩이 안 보임: " + docNames.filter((n) => !got.includes(n)).join(", "));
       log({ step: "uploaded", 사진영상: s.closes, 글: got.length });
-      // 썸네일이 뜬 뒤에도 올리는 중이다 — 수가 맞은 뒤 더 기다린다(10-25). 영상은 칩이 먼저 뜬다(10-28).
-      await page.waitForTimeout(12000 + 1500 * files.length + (files.some((f) => kind(f) === "영상") ? 15000 : 0));
+      // 썸네일이 뜬 뒤에도 올리는 중이다 — 수가 맞은 뒤 더 기다린다(10-25). 영상은 칩이 먼저 뜬다(10-28). 큰 묶음은 크기만큼 더(11-08 — 올리기뒤기다림)
+      await page.waitForTimeout(올리기뒤기다림(올릴바이트, files.length, files.some((f) => kind(f) === "영상")));
       await page.keyboard.press("Escape").catch(() => {});
       await page.waitForTimeout(600);
     }
@@ -506,6 +508,24 @@ if (mode === "읽기") {
     s = await state();
     if (Math.abs(s.len - promptLen) > 3) await fail(`지시문 길이가 다름 ${s.len}/${promptLen}`);
     if (s.mode && !OK(s.mode)) { await chooseArgon(); s = await state(); if (!OK(s.mode)) await fail("보내기 직전 모드가 바뀜: " + s.mode); }
+    // 누르기 직전 올리기 끝 기다림(11-08 — 큰 그림 묶음 셋 · 영상 하나가 덜 올라간 채 보내져 새 채팅으로 사라졌다): 미리보기 안 돌고 있는 표시와 꺼진 보내기
+    // 단추가 없어질 때까지 크기에 비례한 상한(올리기끝상한초)까지 본다. 표시 선택자는 10-27 p7 실행기 것 — 그 실행기 round-22에서 덜 끝난 올리기(썸네일 6 → 5)를
+    // 잡았고 다시 할 때는 바로 지나갔다. 상한을 넘겨도 지금처럼 보낸다(선택자가 다른 것을 잡아도 늦어질 뿐 막히지 않게) — 기다린 초를 단계 기록에 남겨 다음에 가린다
+    if (files.length) {
+      const 상한초 = 올리기끝상한초(올릴바이트);
+      let 초 = 0, 본 = { 빙글: 0, 꺼짐: false };
+      for (; 초 <= 상한초 && !넘김; 초 += 1) {
+        본 = await page.evaluate(() => {
+          const 미리보기 = [...document.querySelectorAll("uploader-file-preview, .file-preview-container, [class*='file-preview']")];
+          const 빙글 = 미리보기.filter((c) => c.querySelector("svg circle, [role=progressbar], mat-progress-spinner, mat-spinner, [class*='spinner'], [class*='progress'], [class*='loading'], [aria-busy=true]")).length;
+          const b = document.querySelector('[aria-label="메시지 보내기"]');
+          return { 빙글, 꺼짐: !!b && (b.disabled || b.getAttribute("aria-disabled") === "true") };
+        }).catch(() => ({ 빙글: 0, 꺼짐: false }));
+        if (!본.빙글 && !본.꺼짐) break;
+        await page.waitForTimeout(1000);
+      }
+      log({ step: "upload-wait", 초, 상한초, 빙글: 본.빙글, 꺼짐: 본.꺼짐, MB: Math.round(올릴바이트 / 104857.6) / 10 });
+    }
     // 올리기 마감을 넘겼으면 표시를 쓰지 않고 그만둔다(감시가 이미 탭을 닫았을 수 있다). 이 검사와 「누름」 사이에는 await가 없어 감시가 끼어들지 못한다
     if (넘김 || (upDeadline && Date.now() > upDeadline)) await fail("올리기 마감을 넘겨 보내지 않는다(표시 안 씀) — 다시 돌려도 된다", "올리기넘김");
     누름 = true;
