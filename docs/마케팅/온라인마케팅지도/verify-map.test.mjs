@@ -77,13 +77,13 @@ test('25 distinct countries and their 50 priority slots belong only to LAB', () 
   }
 });
 
-test('48 expansion slots reconcile to 30 confirmed accounts and 18 unconfirmed places', () => {
+test('48 expansion slots reconcile to 31 confirmed accounts and 17 unconfirmed places', () => {
   const slots = production.countries.flatMap(country => country.channelSlots.map(slot => ({country, slot})));
   const newSlots = slots.filter(({slot}) => slot.accountId === null);
   assert.equal(newSlots.length, 48);
   assert.equal(proposal.channels.length, 48);
-  assert.equal(planned.length, 18);
-  assert.equal(channels.filter(row => row.accountStatus === 'confirmed-expansion').length, 30);
+  assert.equal(planned.length, 17);
+  assert.equal(channels.filter(row => row.accountStatus === 'confirmed-expansion').length, 31);
   assert.equal(production.planCounts.newChannelSlotsPlanned, 48);
   assert.equal(production.planCounts.newCountryCandidates, 24);
   assert.equal(new Set(planned.map(row => row.countryCode)).size, 17);
@@ -127,8 +127,8 @@ test('74 channel rows mean 26 prior entries plus 48 expansion slots', () => {
   assert.equal(channels.length, 74);
   assert.equal(channels.length, sourceChannels.length + proposal.channels.length);
   assert.equal(channels.filter(row => row.brand === 'LAB').length, 53);
-  assert.equal(channels.filter(row => row.channelScope === '확장 확보').length, 30);
-  assert.equal(channels.filter(row => row.channelScope === '확장 미확인').length, 18);
+  assert.equal(channels.filter(row => row.channelScope === '확장 확보').length, 31);
+  assert.equal(channels.filter(row => row.channelScope === '확장 미확인').length, 17);
   assert.equal(channels.filter(row => row.accountStatus === 'excluded-existing').length, 1);
   assert.equal(channels.filter(row => ['planned-unconfirmed', 'creation-deferred'].includes(row.accountStatus)).length, 2);
   assert.equal(channels.filter(row => row.accountStatus === 'web-destination').length, 0);
@@ -210,7 +210,7 @@ test('every input collection and dashboard query has unique nonempty identifiers
 });
 
 test('summary cards reconcile to separate units, and web/product destinations are not SNS rows', () => {
-  const expected = {existing: [23, '채널'], 'lab-secured': [30, '곳'], 'lab-pending': [18, '곳'], 'lab-world': [25, '개국']};
+  const expected = {existing: [23, '채널'], 'lab-secured': [31, '곳'], 'lab-pending': [17, '곳'], 'lab-world': [25, '개국']};
   assert.deepEqual(sorted(rows('summary').map(row => row.id)), sorted(Object.keys(expected)));
   for (const row of rows('summary')) assert.deepEqual([row.value, row.unit], expected[row.id], row.id);
   const websites = inventory.accounts.filter(row => row.accountStatus === 'web-destination');
@@ -225,7 +225,7 @@ test('confirmed account details follow the latest ledgers without promoting an i
   assert.equal(social.counts.notCreated,20);
   const expansion=channels.filter(row=>row.accountStatus==='confirmed-expansion');
   assert.equal(expansion.filter(row=>row.platform==='YouTube').length,18);
-  assert.equal(expansion.filter(row=>row.platform!=='YouTube').length,12);
+  assert.equal(expansion.filter(row=>row.platform!=='YouTube').length,13);
   // 09-20 원장에서 생성 미확인이던 인도네시아 TikTok은 10-19 레지스트리 개설 확인으로 확보가 되고, 사진 미반영이 그대로 보인다.
   const idTiktok=channels.find(row=>row.id==='lab-id-tiktok');
   assert.equal(social.channels.find(row=>row.id==='lab-id-tiktok').created,false);
@@ -291,8 +291,8 @@ test('the snapshot does not claim that live account verification occurred', () =
 
 test('the built snapshot records hashes of the current source ledgers', () => {
   assert.equal(verification.generatedAt,dashboard.generatedAt);
-  assert.equal(verification.counts.expansionConfirmed,30);
-  assert.equal(verification.counts.expansionUnconfirmed,18);
+  assert.equal(verification.counts.expansionConfirmed,31);
+  assert.equal(verification.counts.expansionUnconfirmed,17);
   for(const item of verification.files) {
     const actual=sourceHash(fs.readFileSync(path.join(dir,item.file)));
     assert.equal(item.sha256,actual,`${item.file} changed after the map was built`);

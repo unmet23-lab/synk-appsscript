@@ -1133,6 +1133,26 @@
       "remainingAction": "new-bio-saved-and-publicly-rechecked-2026-09-14; new-first-post-preparation-only-no-publication; 2026-09-14-account-connect-UI-has-no-synkshift-blog-target-only-unrelated-MY-place-reviews; no-connection-made; official-linking-imports-content-and-cannot-be-unlinked-not-a-simple-external-URL; reconsider-only-if-correct-blog-and-intended-import-are-confirmed",
       "dailyOff": "네이버 클립 만들기는 네이버 모바일 앱 전용 — 10-26 ego에서 웹 「만들기」가 「네이버 앱에서 제공하는 기능이에요. 모바일앱에서 이용해 주세요」(파일 칸 없음), 자동 게시 길 없음"
     },
+    "lab-kz-tiktok": {
+      "brand": "LAB",
+      "platform": "tiktok",
+      "countryCode": "KZ",
+      "locale": "kk",
+      "handle": "@synklab.kz",
+      "publicUrl": "https://www.tiktok.com/@synklab.kz",
+      "loginVerifiedAt": "2026-11-08",
+      "publisher": "manual-only",
+      "connection": "web-owner-verified; publishing-not-connected",
+      "creationVerified": true,
+      "registrationCompleted": true,
+      "profileStatus": "handle-and-owner-verified; name-bio-avatar-pending",
+      "publicProfileComplete": false,
+      "publicDisplayName": "synklab.kz",
+      "targetDisplayName": "SYNK LAB Kazakhstan",
+      "profileEvidence": "프로필설정_20261108/README.md",
+      "publicBio": "",
+      "dailyOff": "11-08 가입 확인만. 사용자 지시로 SNS 콘텐츠 게시·예약 금지; 프로필 기본 설정과 게시 연결 미완료"
+    },
     "lab-th-tiktok": {
       "brand": "LAB",
       "platform": "tiktok",
