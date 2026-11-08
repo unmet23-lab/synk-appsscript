@@ -113,6 +113,16 @@
       "후속": [
         "쇼츠 공개 뒤 첫 h3(무슨 일이 있었나) 앞 첫 문단 뒤에 영상 칸 넣기"
       ]
+    },
+    {
+      "계정": "yuhobuilds-threads",
+      "상태": "게시됨",
+      "시각": "2026-11-08T21:00+09:00",
+      "주소": "https://www.threads.com/@yuhobuilds/post/DfesxW4EcLX",
+      "방법": "ego 스레드 웹 바로 게시(AI 레이블) — ~/ego/threads-daily/th-post.mjs, 예약 작업 synk-daily-threads",
+      "승인": "유호님 11-02 「묻지 말고 걸어」(상시)",
+      "편ID": "yuhobuilds_조회1위광고_20261102",
+      "확인": "11-08 20:56 게시 전 읽기 {textOk:true, len:256, video:1, ai:true} → 「게시되었습니다」 → 프로필 첫 글 주소 · 글 머리 일치(기록 C:/Users/q1212/ego/threads-daily/th-post.txt)"
     }
   ]
 }
