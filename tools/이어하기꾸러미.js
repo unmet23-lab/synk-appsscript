@@ -55,7 +55,9 @@ const descriptiveMarkdown = p => /\.md$/i.test(p) && !/비밀번호|password|백
 const 금지인가 = p => forbidden.some(re => re.test(p)) || (!sourceCode.test(p) && !descriptiveMarkdown(p) && credentialName.test(p));
 const MAX_TEXT_BYTES = 10 * 1024 * 1024;
 // 평문 사본 한도는 그대로다. 이미 사본이 있는 창고 업로드 영수증만 암호문으로 이어 보존한다.
-const MAX_ENCRYPTED_RECEIPT_BYTES = 64 * 1024 * 1024;
+// 11-08 상태/Documents/upload-done.jsonl이 64.3MiB로 64MiB를 넘어 18시부터 OneDrive 실행이 매회 실패했다(protected-source-size-limit).
+// 창고 영수증은 계속 자란다 — 한 번에 읽어 암호화해도 되는 256MiB까지 둔다.
+const MAX_ENCRYPTED_RECEIPT_BYTES = 256 * 1024 * 1024;
 // 영수증과 함께 OneDrive에 드는 같은 묶음의 장부(목록·같은파일·올린 폴더)도 커진다 — 상태/Documents/목록.json이 10-26에 10MiB를
 // 넘자 이 길에 없어 OneDrive 실행이 11-03까지 매회 실패했다. 다른 묶음·다른 이름은 그대로 막는다.
 function largeBackupReceipt(scope, source, bytes) {
