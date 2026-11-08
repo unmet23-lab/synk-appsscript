@@ -3,9 +3,12 @@
 // 한 손님 학습자의 30일을 실제 WORLD 화면 그대로 찍는다. 리허설 모드(합성 손님, 운영 접근 없음)이고, 날짜는 이 브라우저의 시계만 옮긴다.
 // 첫 문제를 맞힌 다른 손님의 짧은 길(그 말이 내일 돌아오고, 다음 날 홈이 복습을 고른다)도 찍는다.
 // 쓰는 법:
-//   node experiences/synk-world-app/qa/site-learner-scene.mjs <출력 폴더> [--언어 ko|en] [--게임안함] [--포트 4297]
-// 출력: <출력 폴더>/<언어>/<이름>.png(390×844 @2x 한 화면), <이름>.crop.png(부품만), <이름>.txt(보이는 글), 기록.json(무엇을 찍었고 무엇이 안 됐는지).
-// 그림을 사이트로 옮기는 일은 SYNK-website site-v10/README.md 「개인화 엔진이 붙으면」 절을 본다. 화면이 바뀌면(WORLD 새 홈 등) 이 장면으로 다시 찍는다.
+//   node experiences/synk-world-app/qa/site-learner-scene.mjs <출력 폴더> [--언어 ko|en] [--폭 390] [--게임안함] [--포트 4297]
+//   --폭: 화면 폭(기본 390). 영어는 430으로 찍는다 — 390에서는 다시 확인 카드의 칸 꼬리표(「After 30 days」 · 「Check now」)가 두 줄로 꺾이고,
+//   470은 꺾이지 않지만 사이트 휴대폰에서 조각 속 앱 13px 글이 9.7px로 준다(11-09).
+// 출력: <출력 폴더>/<언어>/<이름>.png(<폭>×844 @2x 한 화면), <이름>.crop.png(부품만), <이름>.txt(보이는 글), 기록.json(무엇을 찍었고 무엇이 안 됐는지).
+// 그림을 사이트로 옮기는 일은 docs/디자인/synk.im_개인화면_20261108/그림.py(.band.png · .crop.png를 자른다)와 SYNK-website site-v10/README.md 「쓸수록 달라지는 것 — 창가 30일」 절을 본다.
+// 화면이 바뀌면(WORLD 새 홈 등) 이 장면으로 언어마다 다시 찍는다.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -23,6 +26,7 @@ const 값=(이름,기본)=>{const i=인자.indexOf(이름);return i>=0?인자[i+
 const 폴더바탕=인자.find(a=>!a.startsWith('--'))||path.join(os.tmpdir(),'site-learner-scene');
 const 언어=값('--언어','ko');
 const 포트=값('--포트','4297');
+const 폭=Number(값('--폭','390'));
 const 게임=!인자.includes('--게임안함');
 const 맞힌길만=인자.includes('--맞힌길만');
 const 폴더=path.join(폴더바탕,언어);fs.mkdirSync(폴더,{recursive:true});
@@ -76,6 +80,16 @@ async function 장면(page,길='틀린길'){
   const 글=await page.evaluate(sel=>{const n=sel?document.querySelector(sel):null;return (n||document.body).innerText;},부품).catch(()=>'');
   fs.writeFileSync(path.join(폴더,`${이름}.txt`),글);
   기록.찍음.push(이름);기록.글[이름]=글.replace(/\s*\n\s*/g,' / ').slice(0,420);말('찍음',이름);
+ }
+ // 화면 폭 전부, 세로로 두 자리 사이만 찍는다(실제 화면의 여백까지 — 사이트의 「실제 화면 부품」). 위 · 아래는 {sel,edge,hasText} 또는 화소 값.
+ async function 띠찍기(이름,위,아래,{위여백=0,아래여백=0}={}){
+  await 다듬기();
+  const 자리=async v=>{if(typeof v==='number')return v;const l=v.hasText?page.locator(v.sel,{hasText:v.hasText}).first():page.locator(v.sel).first();if(!await l.count())return null;const b=await l.boundingBox();if(!b)return null;return v.edge==='bottom'?b.y+b.height:b.y;};
+  const 위값=await 자리(위),아래값=await 자리(아래);
+  if(위값===null||아래값===null){기록.안됨.push({무엇:`${이름} 띠`,글:`자리 못 찾음 ${JSON.stringify([위,아래])}`});return;}
+  const y=Math.max(0,위값-위여백),e=Math.min(844,아래값+아래여백);
+  await page.screenshot({path:path.join(폴더,`${이름}.band.png`),clip:{x:0,y,width:폭,height:e-y},animations:'disabled',caret:'hide'});
+  기록.찍음.push(`${이름}.band`);말('띠',이름,Math.round(y),Math.round(e));
  }
  async function 입구넘기(){
   const 끝남=()=>document.querySelector('.world-shell')?.dataset.entry==='ready';
@@ -131,7 +145,7 @@ async function 장면(page,길='틀린길'){
   await 찍기('61-lesson-result',{부품:'.life-complete'});
   await 집으로();
   await 배우기();
-  if(await page.locator(`${P}[data-life-review]`).count()){await page.locator(`${P}[data-life-review]`).first().click();await page.locator(`${P}.life-review-summary`).waitFor();await 찍기('62-review-summary',{부품:`${P}.life-review-list[data-upcoming]`});await 패널닫기();}
+  if(await page.locator(`${P}[data-life-review]`).count()){await page.locator(`${P}[data-life-review]`).first().click();await page.locator(`${P}.life-review-summary`).waitFor();await 찍기('62-review-summary',{부품:`${P}.life-review-list[data-upcoming]`});await 띠찍기('62-review-summary',{sel:`${P}.life-review-list[data-upcoming]`},{sel:`${P}.life-review-list[data-upcoming]`,edge:'bottom'},{위여백:18});await 패널닫기();}
   await 시계로(날+하루+13.5*3600000);
   await 찍기('63-day2-home-review',{부품:'.life-home-board'});
   return;
@@ -146,7 +160,7 @@ async function 장면(page,길='틀린길'){
  await 배우기();
  if(await page.locator(`${P}[data-life-review]`).count()){
   await page.locator(`${P}[data-life-review]`).first().click();await page.locator(`${P}.life-review-summary`).waitFor();
-  await 찍기('04-review-summary',{부품:`${P}.life-review-list[data-upcoming]`});
+  await 찍기('04-review-summary',{부품:`${P}.life-review-list[data-upcoming]`});await 띠찍기('04-review-summary',{sel:`${P}.life-review-list[data-upcoming]`},{sel:`${P}.life-review-list[data-upcoming]`,edge:'bottom'},{위여백:18});
   await 패널닫기();
  }else 안됨('복습 줄','배우기에 복습 줄이 없다');
  // ③ 1분 뒤 — 같은 표현이 새 장면으로
@@ -157,7 +171,7 @@ async function 장면(page,길='틀린길'){
  await page.waitForTimeout(300);
  if(await page.locator(`${P}[data-life-review-start]`).count())await page.locator(`${P}[data-life-review-start]`).first().click();
  if(await page.locator('.life-session-meta[data-life-phase="review"]').count()){
-  await 찍기('05-review-new-scene');
+  await 찍기('05-review-new-scene');await 띠찍기('05-review-new-scene',{sel:'.life-session-meta',edge:'bottom'},{sel:'.life-question-title',edge:'bottom'},{위여백:-2,아래여백:16});
   const id=await page.locator('.life-session-meta').first().getAttribute('data-life-review-id');
   await page.locator(`[data-life-choice="${복습문항(id).answerId}"]`).click();
   await page.locator('.life-feedback').waitFor();await page.locator('.life-feedback').scrollIntoViewIfNeeded();
@@ -238,7 +252,7 @@ async function 장면(page,길='틀린길'){
     if(st.err){안됨('환승 러시',st.err);break;}
     if(st.done)break;
     if(st.replies){await f.locator('#replies button').first().click();await page.waitForTimeout(400);continue;}
-    if(st.zones){await page.waitForTimeout(500);if(고름===0)await 찍기('13-game-pick');await f.locator('#zones button').nth(고름%3).click();고름++;await page.waitForTimeout(600);}
+    if(st.zones){await page.waitForTimeout(500);if(고름===0){await 찍기('13-game-pick');await 띠찍기('13-game-pick',440,820);}await f.locator('#zones button').nth(고름%3).click();고름++;await page.waitForTimeout(600);}
    }
    기록.환승={고름,초:Math.round((Date.now()-시작)/1000)};말('환승 러시',기록.환승);
    await page.waitForTimeout(2500);await 찍기('14-game-result');
@@ -284,7 +298,7 @@ async function 장면(page,길='틀린길'){
   await 내위치();
   // 같은 항목의 카드 한 장이 1 · 7 · 30일로 채워지는 것을 찍는다(낱말 뜻 읽기 — 첫 레슨의 항목).
   const 생활카드=async 꼬리=>{const c=page.locator('.wfol-card',{hasText:언어==='ko'?'낱말 뜻 읽기':'Reading word meanings'}).first();if(await c.count())await c.screenshot({path:path.join(폴더,`${이름}-card-${꼬리}.crop.png`),animations:'disabled',caret:'hide'});else 기록.안됨.push({무엇:`${이름} 카드 ${꼬리}`,글:'낱말 뜻 읽기 카드가 없다'});};
-  if(await page.locator('.wpos-followups').count()){await 칸보이기('.wpos-followups');await 찍기(`${이름}-followups-open`,{부품:'.wpos-followups'});await 생활카드('open');}
+  if(await page.locator('.wpos-followups').count()){await 칸보이기('.wpos-followups');await 찍기(`${이름}-followups-open`,{부품:'.wpos-followups'});await 생활카드('open');await 띠찍기(`${이름}-followups-open`,{sel:'.wpos-followups'},{sel:'.wfol-card',edge:'bottom',hasText:언어==='ko'?'낱말 뜻 읽기':'Reading word meanings'},{위여백:-2,아래여백:2});}
   const 단추=page.locator(`${P}[data-followup-life]`).first();
   if(await 단추.count()){
    await 단추.click();await 답하기();await 집으로();
@@ -305,12 +319,12 @@ async function 장면(page,길='틀린길'){
 const 서버=await 서버준비();
 const b=await chromium.launch({channel:'chrome',headless:true,args:['--autoplay-policy=no-user-gesture-required']});
 try{
- const c=await b.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true,locale:언어==='ko'?'ko-KR':'en-US',timezoneId:'Asia/Seoul',reducedMotion:'reduce',serviceWorkers:'block'});
+ const c=await b.newContext({viewport:{width:폭,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true,locale:언어==='ko'?'ko-KR':'en-US',timezoneId:'Asia/Seoul',reducedMotion:'reduce',serviceWorkers:'block'});
  const page=await c.newPage();page.setDefaultTimeout(30000);
  const 오류=[];page.on('pageerror',e=>오류.push(String(e).slice(0,200)));page.on('console',m=>{if(m.type()==='error')오류.push(m.text().slice(0,200));});page.on('response',r=>{if(r.status()>=400)오류.push(`HTTP ${r.status()} ${new URL(r.url()).pathname}`);});
  if(!맞힌길만)try{await 장면(page);}catch(e){안됨('장면',e);await page.screenshot({path:path.join(폴더,'멈춘자리.png')}).catch(()=>{});}
  // 맞힌 길은 새 손님(브라우저 맥락을 새로 연다)
- const c2=await b.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true,locale:언어==='ko'?'ko-KR':'en-US',timezoneId:'Asia/Seoul',reducedMotion:'reduce',serviceWorkers:'block'});
+ const c2=await b.newContext({viewport:{width:폭,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true,locale:언어==='ko'?'ko-KR':'en-US',timezoneId:'Asia/Seoul',reducedMotion:'reduce',serviceWorkers:'block'});
  const p2=await c2.newPage();p2.setDefaultTimeout(30000);
  p2.on('pageerror',e=>오류.push(String(e).slice(0,200)));
  try{await 장면(p2,'맞힌길');}catch(e){안됨('맞힌 길',e);await p2.screenshot({path:path.join(폴더,'멈춘자리2.png')}).catch(()=>{});}
