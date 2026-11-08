@@ -390,9 +390,10 @@ function mountLifeLearning({owner,keep}){
  home.connectPlayLevel?.(()=>{const evidence=education.townEvidence?.();return worldTownCheck.topik2Near({events:evidence?.events||[],evidenceComplete:evidence?.evidenceComplete===true});});
  // 학습 알림(10-19 결정 · 1단 기기 예약, world-reminder-device.mjs): 주인마다 이 기기에 따로 두고, 무엇을 알릴지는 복습 일정·이번 주 시험 계획·Core 추천에서 읽는다.
  // 「공부한 시각」은 읽기 전용 학습 기록(trail)에서 읽는다. 주인이 바뀔 때 보내지 않은 예약을 지우는 일(forgetPending)은 생활 세션이 한다.
+ // 손님 기기 코치는 다른 WORLD 코치처럼 재확인을 지키며 접는다(followups) — 읽기만 하지만 놓을 때(dispose)의 마지막 저장이 장부를 접을 수 있다.
  keep('trail',createTrailTimes({host:()=>window.SYNKLearningHost||null,
   make:source=>source?source.createGame({gameId:'world-reminders'},worldLearning.engine.createGame,worldLearning.createLearningSync)
-   :owner==='guest'?worldLearning.engine.createGame({gameId:'world-reminders',storage:localStorage}):null}));
+   :owner==='guest'?worldLearning.engine.createGame({gameId:'world-reminders',storage:localStorage,followups:true}):null}));
  reminders=keep('reminders',createWorldReminders({owner,storage:localStorage,target:window,read:reminderInputs,open:openReminder,canMock:()=>typeof education?.mock==='function',
   show:(title,html)=>show(title,html,'world-reminder'),toast:message=>home.toast(message),repaint:repaintReminderCard,push:owner==='guest'?null:worldPush,pushFeature:pushOn,close}),value=>{value.dispose();home.connectReminders?.(null);});
  home.connectReminders?.(reminders);window.__synkReminders=reminders;reminders.schedule();
@@ -470,14 +471,29 @@ window.addEventListener('synk-writing-ready',repaintWritingRow);
 const writingBankReady=()=>{life.education?.refresh();life.education?.repaint?.();};
 void loadWritingBank().then(()=>{if(writingReady())writingBankReady();}).catch(()=>{});
 window.addEventListener('synk-writing-ready',writingBankReady);
+// 연습 화면(쓰기 · 말하기)의 코치 함수 — 계정이면 학습 통로(SYNKLearningHost)의 코치, 손님이면 기기 코치. 계정 통로는 게임을 열 때마다 새로 열리고 옛 통로의
+// 코치는 던진다(prepareGame) — 통로가 바뀌었거나 같은 통로에서 코치가 끝났으면(판 닫힘 · 메모리 동기화 차단 — 불러 보면 던진다) 새로 받는다. 붙들면 그 페이지에서
+// 게임을 한 번 연 뒤의 기록이 조용히 계정에 안 남는다(배우기 화면 coachFor와 같은 길 — Atlas × WORLD E §4-3, 쓰기는 11-09 Edge로 재현). 끝난 코치는 놓는다(계정 통로의
+// 코치는 disconnect, 기기 코치는 dispose만 있다). 손님 코치는 재확인을 지키며 접는다(followups — 옵션 없이 접으면 그 기기의 재확인이 사라진다, 계정 길은 통로가 준다).
+// 다른 계정이 되면 null이다(옛 계정의 늦은 기록이 새 계정 코치로 가지 않는다). release()는 연습 화면을 새로 만들 때 옛 코치를 놓는다.
+const releaseCoach=coach=>{try{(coach?.disconnect||coach?.dispose)?.();}catch{}};
+function practiceCoach(gameId,owner){
+ let coach=null,coachHost=null;
+ const get=()=>{if(writingOwnerId()!==owner)return null;const source=window.SYNKLearningHost||null;if(coach&&coachHost===source){try{coach.events();return coach;}catch{}}
+  releaseCoach(coach);coach=null;coachHost=source;if(!source&&owner!=='guest')return null;
+  coach=source?source.createGame({gameId},worldLearning.engine.createGame,worldLearning.createLearningSync):worldLearning.engine.createGame({gameId,storage:localStorage,followups:true});return coach;};
+ get.release=()=>{releaseCoach(coach);coach=null;coachHost=null;};
+ return get;
+}
+let writingCoach=null,speakingCoach=null;
+// 쓰기를 열 때 계정 학습 통로가 없으면 연다(말하기와 같은 준비 — 세션 시작의 준비가 실패했거나 아직이어도 점검 기록이 계정을 따라간다).
 function openWriting(button){
  const owner=writingOwnerId();
+ void prepareLearningHost().catch(()=>{});
  if(!writing||writingOwner!==owner){
-  writing?.dispose();writingOwner=owner;let coach=null;
+  writing?.dispose();writingCoach?.release();writingOwner=owner;writingCoach=practiceCoach('world-writing',owner);
   const feedback=operating&&client.snapshot&&account?.supportsWriting?{status:()=>account.writingRequest({action:'status'}),request:payload=>account.writingRequest(payload)}:null;
-  writing=createWritingPractice({show:(title,html)=>show(title,html,'world-writing'),home,getOwner:writingOwnerId,feedback,
-   coach:()=>{if(coach)return coach;if(writingOwnerId()!==owner)return null;const source=window.SYNKLearningHost||null;if(!source&&owner!=='guest')return null;
-    coach=source?source.createGame({gameId:'world-writing'},worldLearning.engine.createGame,worldLearning.createLearningSync):worldLearning.engine.createGame({gameId:'world-writing',storage:localStorage});return coach;}});
+  writing=createWritingPractice({show:(title,html)=>show(title,html,'world-writing'),home,getOwner:writingOwnerId,feedback,coach:writingCoach});
  }
  return writing.open(button?.dataset?.writingRoute||'writing');
 }
@@ -528,16 +544,12 @@ function openSpeaking(button){
  const owner=writingOwnerId();
  void prepareLearningHost().catch(()=>{});
  if(!speaking||speakingOwner!==owner){
-  speaking?.dispose();speakingOwner=owner;let coach=null,coachHost=null;
+  speaking?.dispose();speakingCoach?.release();speakingOwner=owner;speakingCoach=practiceCoach('world-speaking',owner);
   const feedback=operating?(client.snapshot&&account?.supportsSpeaking?{status:()=>account.speakingRequest({action:'status'}),request:payload=>account.speakingRequest(payload)}:null)
    :client?.snapshot?{status:()=>client.request('speaking',{method:'POST',body:{action:'status'}}),request:payload=>client.request('speaking',{method:'POST',body:payload})}:null;
-  // measure: Strata 말하기 층의 측정 조회(계정 묶음의 worldLearning.speaking). 옛 묶음이면 없어 기기 기록만 남는다(E §4-3).
+  // measure: Strata 말하기 층의 측정 조회(계정 묶음의 worldLearning.speaking). 옛 묶음이면 없어 기기 기록만 남는다(E §4-3). 코치는 쓰기와 같은 practiceCoach다.
   speaking=speakingModule.createSpeakingPractice({show:(title,html)=>show(title,html,'world-speaking',{eyebrow:'SPEAKING'}),home,getOwner:writingOwnerId,tutor:()=>home.tutor?.()?.tutor||null,feedback,measure:worldLearning.speaking?.measure,
-   // 계정 통로는 게임을 열 때마다 새로 열리고 옛 통로의 코치는 던진다(prepareGame) — 통로가 바뀌었거나 같은 통로에서 코치가 끝났으면 새로 받는다(붙들면 그 뒤 시도가 계정에 조용히
-   // 안 남는다, 배우기 화면 coachFor와 같은 길). 손님 코치는 재확인을 지키며 접는다(followups — 옵션 없이 접으면 그 기기의 재확인이 사라진다, 계정 길은 통로가 준다).
-   coach:()=>{if(writingOwnerId()!==owner)return null;const source=window.SYNKLearningHost||null;if(coach&&coachHost===source){try{coach.events();return coach;}catch{}}
-    try{coach?.disconnect?.();}catch{}coach=null;coachHost=source;if(!source&&owner!=='guest')return null;
-    coach=source?source.createGame({gameId:'world-speaking'},worldLearning.engine.createGame,worldLearning.createLearningSync):worldLearning.engine.createGame({gameId:'world-speaking',storage:localStorage,followups:true});return coach;}});
+   coach:speakingCoach});
  }
  return speaking.open(button?.dataset?.speakingRoute||'speaking');
 }

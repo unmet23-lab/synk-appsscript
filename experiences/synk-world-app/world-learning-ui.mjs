@@ -69,12 +69,15 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  const check=()=>{if(stopped||getProgress()?.owner!==owner)throw Error('학습 계정이 바뀌었어요. 설정을 다시 열어 주세요.');};
  // 학습 기록 코치: 홈·짧은 진단은 'world-home', 읽기 짧은 연습은 'world-practice'(근거 줄이 어디서 낸 답인지 가른다).
  // 둘 다 같은 기기·계정 기록(같은 열쇠)을 쓰므로 노출과 상태는 서로의 답을 그대로 본다.
+ // 끝난 코치는 놓는다 — 계정 통로의 코치는 disconnect, 기기 코치(엔진 api)는 dispose만 있다(기기 코치를 놓지 않으면 그 탭이 기기 기록 임대를 쥔 채 남는다).
+ // 여기서 놓는 기기 코치는 모두 재확인을 지키며 접는다(followups) — 놓을 때의 마지막 저장이 장부를 접어도 재확인이 남는다.
+ const release=instance=>{try{(instance?.disconnect||instance?.dispose)?.();}catch{}};
  function coachFor(gameId,held,setHeld){
   check();const source=target.SYNKLearningHost||null;
   if(!source&&owner!=='guest')return null;
   let [instance,host]=held();
-  if(instance&&host===source){try{instance.summary();return instance;}catch{instance.disconnect?.();instance=null;}}
-  if(host!==source){instance?.disconnect?.();instance=null;host=source;}
+  if(instance&&host===source){try{instance.summary();return instance;}catch{release(instance);instance=null;}}
+  if(host!==source){release(instance);instance=null;host=source;}
   if(!instance)instance=source?source.createGame({gameId,followups:true},engine.engine.createGame,engine.createLearningSync):engine.engine.createGame({gameId,storage:target.localStorage,followups:true});
   setHeld(instance,host);return instance;
  }
@@ -962,5 +965,5 @@ async function townSend(coachNow,{wait=true}={}){
  // 생활 화면의 거울(life-ui.mjs learning): 코치를 읽고, 레슨 · 복습을 열 때 계정 통로를 준비한다(「다음 할 일」과 같은 prepare).
  // 생활 화면(life-ui.mjs)의 learning 인자 한 벌 — 코치 · 준비 · 거울 부품(engine.life). 셸은 생활 화면을 먼저 세워 늦게 읽는다(app-shell · life-standalone-entry).
  const lifeLearning=Object.freeze({coach:()=>{try{return readLifeCoach();}catch{return null;}},prepare:()=>{try{check();return Promise.resolve(prepare()).catch(()=>{});}catch{return Promise.resolve();}},life:engine.life||null});
- return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,lifeLearning,...(position?{position:openPosition,practice:startPractice,plan:openPlan,mock:openMock,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),dispose(){stopped=true;coach?.disconnect?.();practiceCoach?.disconnect?.();mockCoach?.disconnect?.();lifeCoachNow?.disconnect?.();target.removeEventListener?.('focus',onFocus);}};
+ return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,lifeLearning,...(position?{position:openPosition,practice:startPractice,plan:openPlan,mock:openMock,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),dispose(){stopped=true;release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
 }

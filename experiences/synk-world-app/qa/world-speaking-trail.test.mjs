@@ -197,10 +197,12 @@ test('이번 주 셈: 기기 기록 ∪ Trail을 사건 id로 잇는다 — 다�
 });
 
 test('앱 셸의 말하기 코치 함수: 통로가 바뀌었거나 코치가 끝났으면 새로 받고, 손님 코치는 재확인을 지키며 접는다(게임을 연 뒤의 실제 동작은 E_브라우저확인.mjs ②-1이 Edge에서 잰다)',()=>{
+ // 11-09부터 쓰기 · 말하기가 같은 practiceCoach를 쓴다(쓰기를 같은 길로 — 쓰기 쪽 시험은 qa/world-writing-trail.test.mjs).
  const shell=fs.readFileSync(new URL('../app-shell.mjs',import.meta.url),'utf8');
  const open=shell.slice(shell.indexOf('function openSpeaking('),shell.indexOf('// 생활 진도 통로가 저장 충돌'));
- const from=open.indexOf('coach:()=>{')+'coach:'.length,to=open.indexOf('return coach;}})',from)+'return coach;}'.length;
- const make=new Function('window','worldLearning','writingOwnerId','owner','localStorage',`let coach=null,coachHost=null;return ${open.slice(from,to)};`);
+ assert.match(open,/speakingCoach=practiceCoach\('world-speaking',owner\)/,'말하기 화면이 practiceCoach를 쓴다');
+ const helper=shell.slice(shell.indexOf('const releaseCoach='),shell.indexOf('let writingCoach=null,speakingCoach=null;'));
+ const make=(win,learning,ownerNow,owner,storage)=>new Function('window','worldLearning','writingOwnerId','localStorage',`${helper}\nreturn practiceCoach;`)(win,learning,ownerNow,storage)('world-speaking',owner);
  const fake=(label,options)=>{const c={label,options,dead:false,gone:false,events(){if(c.dead)throw Error('RUN_ENDED');return [];},disconnect(){c.gone=true;}};return c;};
  const learning={engine:{createGame:options=>fake('device',options)},createLearningSync(){}},host=label=>({createGame:options=>fake(label,options)}),win={};
  const coachOf=make(win,learning,()=>'acc','acc',{});

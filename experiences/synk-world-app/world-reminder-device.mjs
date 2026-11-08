@@ -48,10 +48,11 @@ export function reminderDateLabel(at,lang=currentLang(),offset=deviceOffset){
 
 // 학습 기록(Trail)에서 답한 시각을 읽는 읽기 전용 코치. make(host)가 코치를 만든다(계정이면 학습 호스트의 코치, 손님이면 기기 코치, 못 만들면 null).
 // 계정 학습 호스트의 코치는 게임 판을 닫으면(closeRun) 세대가 바뀌어 그 뒤로 늘 던진다 — 던지면 끊고 다시 만든다(world-learning-ui.mjs coachFor와 같은 꼴).
+// 끊을 때 계정 통로의 코치는 disconnect, 기기 코치(엔진 api)는 dispose만 있다 — 기기 코치도 놓아야 그 탭이 기기 기록 임대를 쥔 채 남지 않는다.
 // 게임 판 도중에는 다른 gameId 코치를 만들 수 없어 그때만 빈 목록이다(생활·쓰기 시각은 호스트가 따로 더한다).
 export function createTrailTimes({host=()=>null,make=()=>null}={}){
  let coach=null,owner=null;
- const drop=()=>{try{coach?.disconnect?.();}catch{}coach=null;};
+ const drop=()=>{try{(coach?.disconnect||coach?.dispose)?.();}catch{}coach=null;};
  return {read(){
   for(let attempt=0;attempt<2;attempt++){
    try{

@@ -142,14 +142,18 @@ export function createWritingPractice({show,home,getOwner=()=>'guest',storage=gl
  function markHelped(id,kind){const h=state.helped[id]||(state.helped[id]={});h[kind]??=new Date(now()).toISOString();save();paintBanner();}
  function log(entry){state.log.push({...entry,at:new Date(now()).toISOString()});save();}
  function track(){if(view.kind!=='task'||!shownAt)return;const draft=draftOf(view.id),t0=shownAt;shownAt=now();draft.spentMs=(Number(draft.spentMs)||0)+Math.max(0,Math.min(shownAt-t0,120000));}
- function record(it){
+ // 판(제시)은 그 코치 안에서만 산다. 코치가 바뀌었거나(게임을 연 뒤 새 계정 통로 — 앱 셸 practiceCoach) 판이 끝났으면(기기 장부 접힘 · 다른 탭이 기록을 새로
+ // 시작) 판 호출이 던진다 — 그 판을 버리고 새 판으로 그 시도를 한 번 더 남긴다(말하기 attempted와 같은 길, 쓰기는 11-09 Edge로 재현). 시도 번호는 남긴 뒤에만
+ // 올린다(던진 시도로 번호가 비면 그 판의 뒤 시도가 모두 「번호가 이어지지 않음」으로 막힌다).
+ function record(it,retry=true){
   const c=typeof coach==='function'?(()=>{try{return coach();}catch{return null;}})():null;if(!c)return;
+  const fresh=!pids[it.id];
   try{
    pids[it.id]??=c.present({id:`writing-${it.id}`,itemKey:`writing.${it.id}`,familyKey:`writing.${it.id}`,skillId:WRITING_SKILLS[it.type],modality:'writing',difficulty:2,responseFormat:'unknown',audioRequired:false});
    // 예시답을 본 뒤는 answer, 자동 피드백을 받은 뒤는 hint 도움(기기에 남은 기록 — 새로 고침 뒤에도 「혼자」로 세지 않는다).
    const helped=state.helped[it.id]||{};if(helped.answer)c.help(pids[it.id],'answer');if(helped.hint)c.help(pids[it.id],'hint');
-   tries[it.id]=(tries[it.id]||0)+1;c.answer(pids[it.id],{correct:null,assessable:false,attemptNo:tries[it.id]});
-  }catch{/* 코치 지도에 TOPIK II 쓰기 항목이 없으면 기기 기록만 남는다 */}
+   const attemptNo=(tries[it.id]||0)+1;c.answer(pids[it.id],{correct:null,assessable:false,attemptNo});tries[it.id]=attemptNo;
+  }catch{delete pids[it.id];delete tries[it.id];if(retry&&!fresh)record(it,false);/* 코치 지도에 TOPIK II 쓰기 항목이 없으면 기기 기록만 남는다 */}
  }
  // ── 그리기 ──
  function listHtml(){

@@ -22954,6 +22954,12 @@ function createWorldEducation({
   const check3 = () => {
     if (stopped || getProgress()?.owner !== owner) throw Error("\uD559\uC2B5 \uACC4\uC815\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694. \uC124\uC815\uC744 \uB2E4\uC2DC \uC5F4\uC5B4 \uC8FC\uC138\uC694.");
   };
+  const release = (instance) => {
+    try {
+      (instance?.disconnect || instance?.dispose)?.();
+    } catch {
+    }
+  };
   function coachFor(gameId, held, setHeld) {
     check3();
     const source = target.SYNKLearningHost || null;
@@ -22964,12 +22970,12 @@ function createWorldEducation({
         instance.summary();
         return instance;
       } catch {
-        instance.disconnect?.();
+        release(instance);
         instance = null;
       }
     }
     if (host !== source) {
-      instance?.disconnect?.();
+      release(instance);
       instance = null;
       host = source;
     }
@@ -24792,10 +24798,10 @@ function createWorldEducation({
     return Object.fromEntries(["support", "explanation"].filter((k) => values[k]).map((k) => [k, values[k]]));
   }, metrics: () => ({ owner, plan: current }), dispose() {
     stopped = true;
-    coach?.disconnect?.();
-    practiceCoach?.disconnect?.();
-    mockCoach?.disconnect?.();
-    lifeCoachNow?.disconnect?.();
+    release(coach);
+    release(practiceCoach);
+    release(mockCoach);
+    release(lifeCoachNow);
     target.removeEventListener?.("focus", onFocus);
   } };
 }
