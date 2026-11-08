@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1b822-ed6d-77b3-bbb9-68aef358f64b"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 적용해 원본 구도를 유지하고, 붕어빵을 품은 몽글의 눈웃음과 빈손으로 미소 짓는 친구를 담겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle treasures the steaming bungeoppang with happy smiling eyes while its friend rests beside it, hands empty."}}
+{"type":"turn.completed","usage":{"input_tokens":149025,"cached_input_tokens":118656,"cache_write_input_tokens":0,"output_tokens":1367,"reasoning_output_tokens":186}}

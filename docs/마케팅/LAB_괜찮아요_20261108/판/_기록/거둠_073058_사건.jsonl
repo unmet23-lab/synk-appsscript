@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1b822-ed4c-7423-be8e-110c07895afb"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 적용해, 같은 장면에서 친구가 붕어빵을 자기 입 앞으로 가져온 순간으로 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The friend brings the bungeoppang to his mouth while Mongle leans happily toward its former spot."}}
+{"type":"turn.completed","usage":{"input_tokens":148920,"cached_input_tokens":127744,"cache_write_input_tokens":0,"output_tokens":1352,"reasoning_output_tokens":163}}

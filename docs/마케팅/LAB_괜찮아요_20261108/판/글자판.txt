@@ -1,0 +1,8 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE WIDE image, landscape.
+Image 1 is a typeset guide showing exactly which Korean characters to make and their correct shapes (copy every stroke, including the final consonant blocks).
+Plain pure white seamless background, no floor, no shadow. Handmade needle-felted three-dimensional Korean letters, thick wool with visible fibers, laid out with very clear wide gaps between every character so each can be cut out alone. Two rows, exactly these characters, correctly formed and easily readable:
+Row 1 (cream-colored wool with a tiny coral running-stitch outline): 괜 찮 아 요 !
+Row 2 (warm mustard-yellow wool with a tiny brown running-stitch outline): 네 , 좋 아 요 !
+No other text, no objects, nothing else.
