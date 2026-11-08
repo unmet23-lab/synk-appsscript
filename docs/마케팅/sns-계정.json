@@ -21,6 +21,31 @@
     "results": "next-to-plan"
   },
   "accounts": {
+    "lab-ru-vk": {
+      "brand": "LAB",
+      "platform": "vk",
+      "countryCode": "RU",
+      "displayName": "SYNK LAB Russia | Корейский с нуля",
+      "handle": "club243082040",
+      "communityId": "243082040",
+      "publicUrl": "https://vk.ru/club243082040",
+      "registrationCompleted": true,
+      "creationVerified": true,
+      "createdAt": "2026-11-08",
+      "loginVerifiedAt": "2026-11-08",
+      "publisher": "manual-only",
+      "connection": "web-community-management-verified-api-not-verified",
+      "bio": "Говори по-корейски то, что хочешь сказать. Короткие сценки и живые фразы с русскими субтитрами.\n\nhttps://synk.im/lab/",
+      "profileWebsite": "https://synk.im/lab/",
+      "externalWebsiteLinkStatus": "url-visible-in-description-dedicated-website-field-not-set",
+      "profileStatus": "community-created-name-description-and-management-verified",
+      "publicProfileComplete": false,
+      "avatarStatus": "not-set",
+      "coverStatus": "not-set",
+      "customHandleStatus": "synklab.ru-attempt-not-verified-use-numeric-community-url",
+      "profileEvidence": "프로필설정_20261108/README.md",
+      "dailyOff": "사용자 게시 금지 범위: 커뮤니티 개설만 승인, 콘텐츠 게시·예약 미승인"
+    },
     "lab-cn-douyin": {
       "brand": "LAB",
       "platform": "douyin",
