@@ -1,0 +1,172 @@
+{
+  "_": "PULSE 작품 진열 정본(2026-11-09). 손님이 작품을 보는 세 자리(synk.im PULSE · 고객 앱 · PC 앱)가 같은 순서 · 같은 이름을 쓰도록 여기 한 곳에 적는다. 판정 근거와 자리별 순서는 같은 폴더 README.md. 경로는 %USERPROFILE%/Documents/synk-vendor/ 아래(git 밖 최종본). poster.t = 포스터로 쓸 초(raw 판에서), raw = 자막 · 글자 전 그림 판(쇼릴 · 포스터용).",
+  "vendor": "Documents/synk-vendor",
+  "works": [
+    {
+      "key": "dodam", "appId": "dodam-heavy", "pcId": "dodam",
+      "title": "도담중공업 「이 아이를 보냅니다」", "en": "Dodam Heavy Industries, \"We Send This One Off\"",
+      "kicker": "BRAND FILM", "length": "1분 1초", "enLength": "1 min 1 s", "seconds": 61.27, "tall": false,
+      "final": "pulse-portfolio12-20261024/최종/p10/도담중공업_16x9.mp4",
+      "raw": "pulse-portfolio12-20261024/최종/p10/화면.mp4", "rawBox": [0, 60, 1920, 960],
+      "poster": { "src": "raw", "t": 50.6 },
+      "text": "발전용 가스터빈 한 대가 공장을 떠나는 날을, 아이를 떠나보내는 마음으로 따라가는 기업 홍보영상입니다. 가상 제조사 「도담중공업」의 규모와 신뢰를 한 사람의 시선으로 보여 줍니다.",
+      "enText": "A corporate film that follows a gas turbine leaving the factory the way a parent sees a child off. The scale and trust of a fictional maker, Dodam Heavy Industries, seen through one engineer.",
+      "alt": "노을빛이 들어오는 넓은 공장 바닥에 크림색 발전용 가스터빈이 놓여 반사되는 장면. 도담중공업 기업 홍보영상의 한 장면",
+      "enAlt": "A cream gas turbine resting on a reflective factory floor with sunset light coming through the open bay. A scene from the Dodam Heavy Industries film",
+      "tags": ["기업 홍보", "B2B", "이야기"]
+    },
+    {
+      "key": "omitok15", "appId": "omitok-court", "pcId": "omitok-court",
+      "title": "오미톡 「치익이 톡이 될 때까지」", "en": "Omitok, \"From Fizz to Pop\"",
+      "kicker": "DRINK", "length": "15초", "enLength": "15 s", "seconds": 15.0, "tall": true,
+      "final": "pulse-portfolio12-20261024/최종/om2/오미톡15_9x16.mp4",
+      "raw": "pulse-portfolio12-20261024/최종/om2/화면_사람판.mp4",
+      "poster": { "src": "raw", "t": 9.6 },
+      "text": "농구 코트에 뻗은 청년이 오미자 탄산 한 캔에 살아나는 15초 세로 광고입니다. 한 모금마다 바뀌는 얼굴로 다섯 가지 맛을 보여 줍니다.",
+      "enText": "A 15-second vertical ad in which a young man sprawled on a basketball court comes back to life with one can of omija soda. His face shows the five flavours, one sip at a time.",
+      "alt": "노을 지는 농구 코트에서 땀에 젖은 청년이 오미톡 캔을 들고 활짝 웃는 장면",
+      "enAlt": "A sweaty young man on a basketball court at sunset, grinning with a can of Omitok",
+      "tags": ["음료", "세로 광고", "연기"]
+    },
+    {
+      "key": "maejin", "appId": "maejin-imbak", "pcId": "maejin",
+      "title": "「매진 임박」", "en": "\"Almost Sold Out\"",
+      "kicker": "COMEDY", "length": "1분 15초", "enLength": "1 min 15 s", "seconds": 74.84, "tall": false,
+      "final": "homeshopping-horror-20261021/최종/매진임박_16x9.mp4",
+      "raw": null,
+      "poster": { "src": "final", "t": 71.0 },
+      "text": "공포 영화 같은 밤에 홈쇼핑 방송이 끼어드는 코미디 광고입니다. 이야기로 끝까지 보게 만들었습니다.",
+      "enText": "A comedy ad in which a home-shopping broadcast breaks into a night out of a horror film. The story keeps you watching to the end.",
+      "alt": "공포 영화 같은 밤 거실에 홈쇼핑 방송이 끼어드는 코미디 광고 「매진 임박」. 끝 장면은 복면을 쓴 남자가 리본 묶은 선물 상자를 든 모습",
+      "enAlt": "\"Almost Sold Out\", a comedy ad where a home-shopping broadcast interrupts a horror-film night. The last scene shows a masked man holding a ribboned gift box",
+      "tags": ["제품 광고", "홈쇼핑", "코미디", "이야기"]
+    },
+    {
+      "key": "modu", "appId": "modu-course", "pcId": "modu-course",
+      "title": "모두의코스 「가는 데마다 또 그 사람」", "en": "Modu Course, \"That Guy Again\"",
+      "kicker": "COMEDY", "length": "39초", "enLength": "39 s", "seconds": 38.72, "tall": true,
+      "final": "pulse-portfolio12-20261024/최종/p12/모두의코스_9x16.mp4",
+      "raw": "pulse-portfolio12-20261024/최종/p12/화면.mp4",
+      "poster": { "src": "raw", "t": 4.4 },
+      "text": "제주 2박 3일, 가는 데마다 같은 사람이 나타나는 세로 광고입니다. 마지막 한 장면에서 그 까닭이 가상 여행 코스 앱 「모두의코스」로 풀립니다.",
+      "enText": "Three days in Jeju, and the same man turns up everywhere. In the last shot the reason turns out to be a fictional travel-route app, Modu Course.",
+      "alt": "제주 바닷가 인피니티 수영장 한가운데 튜브를 낀 남자가 떠 있는 장면. 광고 「모두의코스」의 한 장면",
+      "enAlt": "A man floating in a ring in the middle of an infinity pool by the Jeju sea. A scene from the Modu Course ad",
+      "tags": ["앱 광고", "여행", "코미디"]
+    },
+    {
+      "key": "somchae", "appId": "somchae-room", "pcId": "somchae-room",
+      "title": "솜채 「연말 빈방」", "en": "Somchae, \"The Empty Room\"",
+      "kicker": "STORY", "length": "1분", "enLength": "1 min", "seconds": 60.01, "tall": false,
+      "final": "pulse-portfolio12-20261024/최종/p6/연말빈방_16x9.mp4",
+      "raw": "pulse-portfolio12-20261024/최종/p6/화면.mp4",
+      "poster": { "src": "raw", "t": 26.0 },
+      "text": "딸의 방문 앞에서 보낸 엄마의 한 해를 같은 자리에서 지켜보는 연말 광고입니다. 가상 침구 브랜드 「솜채」의 이야기로 울림을 남깁니다.",
+      "enText": "A year-end ad that watches, from one fixed spot, a mother's year outside her daughter's door. A story for a fictional bedding brand, Somchae.",
+      "alt": "불 꺼진 거실, 문틈 아래 불빛이 새는 방문 앞에서 빨간 카디건을 입은 엄마가 앉아 기다리는 장면. 솜채 연말 광고의 한 장면",
+      "enAlt": "A mother in a red cardigan sitting in the dark living room by a door with light under it. A scene from the Somchae year-end ad",
+      "tags": ["연말", "감동", "이야기"]
+    },
+    {
+      "key": "pet", "appId": "cheombeong-dang", "pcId": "cheombeong-dang",
+      "title": "첨벙댕", "en": "Cheombeong-dang",
+      "kicker": "PET", "length": "26초", "enLength": "26 s", "seconds": 26.18, "tall": true,
+      "final": "pulse-portfolio12-20261024/최종/p11/첨벙댕_9x16.mp4",
+      "raw": null,
+      "poster": { "src": "final", "t": 21.9 },
+      "text": "외계인을 닮은 개가 반려견 구명조끼 「첨벙댕」을 입고 우주까지 가는, 말이 안 되게 밀어붙인 B급 세로 광고입니다.",
+      "enText": "A deliberately absurd vertical ad: a dog who looks like an alien puts on the Cheombeong-dang dog life jacket and floats all the way to space.",
+      "alt": "물이 찬 방에서 주황 고글과 노란 구명조끼를 쓴 개가 물을 뿜으며 서 있고, 위에 「첨벙댕 반려견 구명조끼」 로고가 있는 장면",
+      "enAlt": "A dog in orange goggles and a yellow life jacket standing in a flooded room under the Cheombeong-dang logo",
+      "tags": ["반려동물", "B급", "세로 광고"]
+    },
+    {
+      "key": "sniper", "appId": "neujimak-sniper", "pcId": "neujimak-sniper",
+      "title": "느지막 「블프 스나이퍼」", "en": "Neujimak, \"Black Friday Sniper\"",
+      "kicker": "SEASON", "length": "33초", "enLength": "33 s", "seconds": 33.47, "tall": false,
+      "final": "pulse-portfolio12-20261024/최종/s4/블프스나이퍼_16x9.mp4",
+      "raw": "pulse-portfolio12-20261024/최종/s4/화면.mp4",
+      "poster": { "src": "final", "t": 2.9 },
+      "text": "자정 세일을 특수작전처럼 준비한 아빠가 정작 그 시각에 잠드는 블랙프라이데이 광고입니다. 가상 쇼핑 앱 「느지막」은 선착순이 없다는 한 줄로 닫습니다.",
+      "enText": "A Black Friday ad: a dad trains for the midnight sale like a special operation, then sleeps through it. The fictional shopping app Neujimak closes on one line — no first-come limit.",
+      "alt": "벽에 파란 테이프로 TV 자리를 그려 둔 거실에서 회색 니트의 남자가 팔짱을 끼고 비장하게 앉아 있는 장면. 블프 스나이퍼의 첫 훈련",
+      "enAlt": "A man in a grey jumper sitting with arms crossed in a living room where a TV spot is taped out on the wall. The first training scene of Black Friday Sniper",
+      "tags": ["시즌", "블랙프라이데이", "코미디"]
+    },
+    {
+      "key": "shimo", "appId": "yurigyeol-holiday", "pcId": "yurigyeol",
+      "title": "홀리데이 기프트 「霜の肌理」", "say": "홀리데이 기프트 시모노키메", "en": "Holiday gift \"霜の肌理\"", "enSay": "Holiday gift Shimo no Kime",
+      "kicker": "PRODUCT", "length": "15초", "enLength": "15 s", "seconds": 15.0, "tall": true,
+      "final": "pulse-season4-20261025/콘티/holiday-giftset/새컨셉/움직임/15초/기프트세트_안12_15초.mp4",
+      "raw": null,
+      "poster": { "src": "keep" },
+      "text": "가상 스킨케어 브랜드 「霜の肌理」의 홀리데이 세트를 서리 결정이 자라는 장면으로 보여 주는 15초 세로 광고입니다. 한 장면의 임팩트로 기억에 남게 만들었습니다.",
+      "enText": null,
+      "alt": "검은 바탕에 「霜の肌理 SHIMO NO KIME」 로고와 세럼 병, 서리 결정 무늬를 얹은 남색 육각 크림 단지. 홀리데이 기프트 광고 「霜の肌理」의 끝 장면",
+      "enAlt": null,
+      "tags": ["제품 광고", "홀리데이", "임팩트"]
+    },
+    {
+      "key": "omitok1", "appId": "omitok-pour", "pcId": "omitok-pour",
+      "title": "오미톡 제품 광고", "en": "Omitok product ad",
+      "kicker": "PRODUCT", "length": "13초", "enLength": "13 s", "seconds": 12.58, "tall": true,
+      "final": "pulse-portfolio12-20261024/최종/p1/오미톡_9x16.mp4",
+      "raw": null,
+      "poster": { "src": "final", "t": 6.9 },
+      "text": "얼음 상자에서 꺼낸 캔이 잔으로 쏟아지고 얼음이 튀어 오르기까지, 사람 없이 제품과 물성만으로 끌고 가는 13초 세로 제품 광고입니다.",
+      "enText": "A 13-second vertical product ad with no people: a can out of the ice box, a red pour, an ice splash — the product and its texture carry it.",
+      "alt": "분홍 빛 막대 앞에서 붉은 오미자 탄산에 얼음이 떨어져 물보라가 왕관처럼 튀는 장면. 오미톡 제품 광고의 한 장면",
+      "enAlt": "Ice dropping into red omija soda and splashing up like a crown in front of pink light bars. A scene from the Omitok product ad",
+      "tags": ["음료", "제품 광고", "세로 광고"]
+    },
+    {
+      "key": "himkkeot", "appId": "himkkeot-sale", "pcId": "himkkeot-sale",
+      "title": "힘껏 블랙프라이데이 세일", "en": "Himkkeot Black Friday sale",
+      "kicker": "PERFORMANCE", "length": "15초", "enLength": "15 s", "seconds": 15.02, "tall": true,
+      "final": "pulse-portfolio12-20261024/최종/s3/블프세일_15초_9x16.mp4",
+      "raw": null,
+      "poster": { "src": "final", "t": 5.2 },
+      "text": "첫 1초에 「오늘 자정까지 전 품목 70%」를 약속하고, 빛 터널을 달리며 가격이 떨어지는 15초 세로 세일 광고입니다. 가상 운동복 브랜드 「힘껏」. 6초 판도 함께 만들었습니다.",
+      "enText": "A 15-second vertical sale ad that promises \"70% off everything until midnight\" in the first second, then drops the prices as the rider races through a tunnel of light. A fictional sportswear brand, Himkkeot, with a 6-second cut as well.",
+      "alt": "붉고 분홍빛 네온 사각 터널 속에서 빨간 운동복의 강사가 실내 자전거를 타는 장면. 힘껏 세일 광고의 한 장면",
+      "enAlt": "An instructor in red riding an indoor bike through a tunnel of red and pink neon frames. A scene from the Himkkeot sale ad",
+      "tags": ["세일", "성과형 광고", "세로 광고"]
+    },
+    {
+      "key": "casting", "appId": "castingbook-intro", "pcId": "castingbook-intro",
+      "title": "SYNK PULSE 캐스팅북 「손님을 부르는 모델」", "en": "SYNK PULSE Casting Book, \"The Model Who Brings Customers\"",
+      "kicker": "APP", "length": "30초", "enLength": "30 s", "seconds": 30.02, "tall": false,
+      "final": "pulse-portfolio12-20261024/최종/p8/캐스팅북_16x9.mp4",
+      "raw": "pulse-portfolio12-20261024/최종/p8/화면.mp4",
+      "poster": { "src": "raw", "t": 24.0 },
+      "text": "손님 없는 카페 사장이 캐스팅북에서 모델을 골라 포스터를 붙이고, 그 포스터를 보고 손님이 찾아오기까지를 30초에 담은 캐스팅북 소개 영상입니다.",
+      "enText": "A 30-second film for our Casting Book: a café owner with no customers picks a model, puts up a poster, and a customer walks in because of it.",
+      "alt": "따뜻한 카페에서 앞치마를 두른 사장이 웃으며 딸기 음료를 손님에게 건네는 장면. 벽에는 모델 포스터가 걸려 있다",
+      "enAlt": "In a warm café, the owner in an apron smiles as she hands a strawberry drink to a customer, a model poster on the wall",
+      "tags": ["앱 광고", "카페", "이야기"]
+    },
+    {
+      "key": "cf", "appId": "hwaseong-light", "pcId": "hwaseong-cf",
+      "title": "화성 CF 「1억 년의 빛」", "en": "Hwaseong CF \"Light of 100 Million Years\"",
+      "kicker": "CF", "length": "55초", "enLength": "55 s", "seconds": 55.0, "tall": false, "contest": true,
+      "final": null, "raw": null,
+      "poster": { "src": "keep" },
+      "text": "1억 년 전 공룡알의 빛이 바다의 노을과 솔숲의 햇무리를 지나 오늘의 도시 불빛으로 이어지는 55초 CF입니다. 2026 별별화성 Awards AI CF 부문에 출품했습니다.",
+      "enText": null, "alt": null, "enAlt": null,
+      "tags": ["CF", "공모전", "이야기"]
+    }
+  ],
+  "reel": {
+    "_": "첫 화면 쇼릴(소리 없음). 앞 네 편(진열 01~04)만 나오고, 번호는 진열 순서와 같다. src는 자막 전 raw 판. wide/tall은 그 판에서 쓸 자리(y = 세로 시작 px, x = 가로 비율).",
+    "cuts": [
+      { "work": "dodam", "src": "raw", "in": 12.5, "dur": 2, "wide": {}, "tall": { "x": 0.3 } },
+      { "work": "omitok15", "src": "raw", "in": 1.8, "dur": 1.8, "wide": { "y": 260 }, "tall": {} },
+      { "work": "maejin", "src": "cut:10", "in": 0.5, "dur": 1.8, "wide": {}, "tall": { "x": 0.5 } },
+      { "work": "modu", "src": "raw", "in": 3.95, "dur": 1.7, "wide": { "y": 400 }, "tall": {} },
+      { "work": "dodam", "src": "raw", "in": 50.5, "dur": 1.7, "wide": {}, "tall": { "x": 0.62 } },
+      { "work": "omitok15", "src": "raw", "in": 13.4, "dur": 1.5, "wide": { "y": 820 }, "tall": {} },
+      { "work": "maejin", "src": "cut:30", "in": 0.3, "dur": 1.5, "wide": {}, "tall": { "x": 0.5 } },
+      { "work": "modu", "src": "raw", "in": 35.3, "dur": 2, "wide": { "y": 820 }, "tall": {} }
+    ]
+  }
+}

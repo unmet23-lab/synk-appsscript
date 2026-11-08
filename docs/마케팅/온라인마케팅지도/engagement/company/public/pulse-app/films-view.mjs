@@ -11,20 +11,87 @@ import {esc} from './api.mjs';
 // 공공누리·통계 출처는 카드 글(credits)로 옮겼다 — 사이트에는 제작 도구 이름을 쓰지 않는다(2026-10-02).
 // 갱스터 뮤직비디오는 10-17 모델 칸에 먼저 붙였던 주소(assets/casting/video/) 그대로 둔다 — 2026-10-13 승인 2K 원본(198.333초)에서
 // 포스터 1995장째, 발췌 4602~5205장째를 잘랐다.
+// 2026-11-09 최신화(docs/마케팅/PULSE_포트폴리오_제작준비_20261012/진열 — 완성본 판정 표 · 작품.json · 굽기.cjs app):
+// 확정 · 맹검 통과 판만 싣고(기각 · 다시 만드는 편 · 판정 전인 편은 뺌) 잘 나온 차례로 둔다.
+// featured 넷은 첫 화면 쇼릴(film-home.mjs REEL)에 나오는 편과 같다. 새 영상 · 포스터는 굽기.cjs가 최종본에서 720p로 만들고 메타데이터를 비운다.
+// 매진 임박은 11-05에 다시 구운 1분 15초 판으로 바이트를 바꿨다(이름 그대로). 霜の肌理의 「대표작」 꼬리표는 차례를 바꾸며 뗐다.
 const HWASEONG_ENTRY='2026 별별화성 Awards(화성특례시 공모전)',HWASEONG_MARK='로고·슬로건 화성특례시 「화성의 상징」(공공누리 제4유형)',SELF_MADE='가상 브랜드로 만든 자체 작품';
 export const FINISHED_FILMS=Object.freeze([
   {
-    id:'yurigyeol-holiday',kind:'ad',title:'霜の肌理',orientation:'portrait',featured:true,line:'홀리데이 기프트 · 15초',tag:'대표작',
-    poster:'./assets/films/yurigyeol-holiday-poster-v1.webp',
-    full:{src:'./assets/films/yurigyeol-holiday-v1.mp4',duration:'15초'},
-    description:'가상 스킨케어 브랜드 「霜の肌理」의 홀리데이 세트를 흩날리는 유리 조각 사이에서 보여 주는 15초 광고예요. 한 장면의 임팩트로 기억에 남게 만들었어요.',
-    origin:SELF_MADE,finished:'2026년 11월',
+    id:'dodam-heavy',kind:'film',title:'이 아이를 보냅니다',featured:true,line:'도담중공업 · 1분 1초',
+    poster:'./assets/films/dodam-heavy-poster-v1.webp',
+    full:{src:'./assets/films/dodam-heavy-v1.mp4',duration:'1분 1초'},
+    description:'발전용 가스터빈 한 대가 공장을 떠나는 날을, 아이를 떠나보내는 마음으로 따라간 기업 홍보영상이에요. 가상 제조사 「도담중공업」의 규모와 신뢰를 한 사람의 시선으로 보여 줘요.',
+    cast:'준호',origin:SELF_MADE,finished:'2026년 11월',
+  },
+  {
+    id:'omitok-court',kind:'ad',title:'치익이 톡이 될 때까지',orientation:'portrait',featured:true,line:'오미톡 · 15초',
+    poster:'./assets/films/omitok-court-poster-v1.webp',
+    full:{src:'./assets/films/omitok-court-v1.mp4',duration:'15초'},
+    description:'농구 코트에 뻗은 청년이 오미자 탄산 한 캔에 살아나는 15초 세로 광고예요. 한 모금마다 바뀌는 얼굴로 다섯 가지 맛을 보여 줘요.',
+    cast:'한결',origin:SELF_MADE,finished:'2026년 11월',
   },
   {
     id:'maejin-imbak',kind:'ad',title:'매진 임박',featured:true,line:'홈쇼핑 × 공포 코미디',
     poster:'./assets/films/maejin-imbak-poster-v1.webp',
-    full:{src:'./assets/films/maejin-imbak-v1.mp4',duration:'1분 13초'},
-    description:'공포 영화 같은 밤에 홈쇼핑 방송이 끼어드는 1분 13초 코미디 광고예요. 이야기로 끝까지 보게 만들었어요.',
+    full:{src:'./assets/films/maejin-imbak-v1.mp4',duration:'1분 15초'},
+    description:'공포 영화 같은 밤에 홈쇼핑 방송이 끼어드는 코미디 광고예요. 이야기로 끝까지 보게 만들었어요.',
+    origin:SELF_MADE,finished:'2026년 11월',
+  },
+  {
+    id:'modu-course',kind:'ad',title:'가는 데마다 또 그 사람',orientation:'portrait',featured:true,line:'모두의코스 · 39초',
+    poster:'./assets/films/modu-course-poster-v1.webp',
+    full:{src:'./assets/films/modu-course-v1.mp4',duration:'39초'},
+    description:'제주 2박 3일, 가는 데마다 같은 사람이 나타나는 세로 광고예요. 마지막 한 장면에서 그 까닭이 가상 여행 코스 앱 「모두의코스」로 풀려요.',
+    cast:'유호',origin:SELF_MADE,finished:'2026년 11월',
+  },
+  {
+    id:'somchae-room',kind:'ad',title:'연말 빈방',line:'솜채 · 1분',
+    poster:'./assets/films/somchae-room-poster-v1.webp',
+    full:{src:'./assets/films/somchae-room-v1.mp4',duration:'1분'},
+    description:'딸의 방문 앞에서 보낸 엄마의 한 해를 같은 자리에서 지켜본 연말 광고예요. 가상 침구 브랜드 「솜채」의 이야기예요.',
+    cast:'은정 · 지유',origin:SELF_MADE,finished:'2026년 11월',
+  },
+  {
+    id:'cheombeong-dang',kind:'ad',title:'첨벙댕',orientation:'portrait',line:'반려견 구명조끼 · 26초',
+    poster:'./assets/films/cheombeong-dang-poster-v1.webp',
+    full:{src:'./assets/films/cheombeong-dang-v1.mp4',duration:'26초'},
+    description:'외계인을 닮은 개가 반려견 구명조끼 「첨벙댕」을 입고 우주까지 가는, 말이 안 되게 밀어붙인 B급 광고예요.',
+    origin:SELF_MADE,finished:'2026년 11월',
+  },
+  {
+    id:'yurigyeol-holiday',kind:'ad',title:'霜の肌理',orientation:'portrait',line:'홀리데이 기프트 · 15초',
+    poster:'./assets/films/yurigyeol-holiday-poster-v1.webp',
+    full:{src:'./assets/films/yurigyeol-holiday-v1.mp4',duration:'15초'},
+    description:'가상 스킨케어 브랜드 「霜の肌理」의 홀리데이 세트를 서리 결정이 자라는 장면으로 보여 주는 15초 광고예요. 한 장면의 임팩트로 기억에 남게 만들었어요.',
+    origin:SELF_MADE,finished:'2026년 11월',
+  },
+  {
+    id:'neujimak-sniper',kind:'ad',title:'블프 스나이퍼',line:'느지막 · 33초',
+    poster:'./assets/films/neujimak-sniper-poster-v1.webp',
+    full:{src:'./assets/films/neujimak-sniper-v1.mp4',duration:'33초'},
+    description:'자정 세일을 특수작전처럼 준비한 아빠가 정작 그 시각에 잠드는 블랙프라이데이 광고예요. 가상 쇼핑 앱 「느지막」은 선착순이 없다는 한 줄로 닫아요.',
+    cast:'준호',origin:SELF_MADE,finished:'2026년 11월',
+  },
+  {
+    id:'himkkeot-sale',kind:'ad',title:'오늘 자정까지 70%',orientation:'portrait',line:'힘껏 · 15초',
+    poster:'./assets/films/himkkeot-sale-poster-v1.webp',
+    full:{src:'./assets/films/himkkeot-sale-v1.mp4',duration:'15초'},
+    description:'첫 1초에 「오늘 자정까지 전 품목 70%」를 약속하고, 빛 터널을 달리며 가격이 떨어지는 블랙프라이데이 세일 광고예요. 가상 운동복 브랜드 「힘껏」이에요.',
+    cast:'채원',origin:SELF_MADE,finished:'2026년 11월',
+  },
+  {
+    id:'castingbook-intro',kind:'ad',title:'손님을 부르는 모델',line:'캐스팅북 · 30초',
+    poster:'./assets/films/castingbook-intro-poster-v1.webp',
+    full:{src:'./assets/films/castingbook-intro-v1.mp4',duration:'30초'},
+    description:'손님 없는 카페 사장이 캐스팅북에서 모델을 골라 포스터를 붙이고, 그 포스터를 보고 손님이 찾아오기까지를 담은 영상이에요.',
+    origin:'SYNK PULSE 캐스팅북 소개 영상',finished:'2026년 11월',
+  },
+  {
+    id:'omitok-pour',kind:'ad',title:'오미톡',orientation:'portrait',line:'제품 광고 · 13초',
+    poster:'./assets/films/omitok-pour-poster-v1.webp',
+    full:{src:'./assets/films/omitok-pour-v1.mp4',duration:'13초'},
+    description:'얼음 상자에서 꺼낸 캔이 잔으로 쏟아지고 얼음이 튀어 오르기까지, 사람 없이 제품과 물성만으로 끌고 가는 광고예요.',
     origin:SELF_MADE,finished:'2026년 11월',
   },
   {

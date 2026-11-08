@@ -9,7 +9,8 @@
 // v28(11-05 밤): 다음 판 — 첫 화면 값 줄을 의뢰서로만, 의뢰서 이전 · 다음 차례, 받은 링크 폼 닫기, 쇼릴 이름을 프레임에 맞춤. 목록은 그대로이고 바뀐 화면 모듈을 새로 받게 판만 올린다.
 // v30(11-06): 대표작 이름을 「霜の肌理」로 바꿨다 — 그림 · 영상은 같은 이름에 바이트만 바뀌고 목록은 그대로다. 바뀐 화면 모듈 · film.css를 새로 받게 판만 올린다.
 // v31(11-09): 다국어 · 전용 인물 판 1 — 번역 틀 i18n.mjs · 영어 사전 i18n/en.mjs(영어를 처음 쓸 때 읽는다) · 모델 판단 casting-choice.mjs를 더했다. 한국어 화면은 그대로다.
-const CACHE = 'synk-pulse-shell-v31-i18n-20261109';
+// v32(11-09): 작품 최신화 — 완성 광고 목록 · 첫 화면 쇼릴 3판(포스터 둘은 같은 이름에 바이트만 바뀜) · 의뢰서 업종 그림. 목록은 그대로이고 바뀐 모듈 · 쇼릴 포스터를 새로 받게 판만 올린다.
+const CACHE = 'synk-pulse-shell-v32-works-20261109';
 const BASE = '/pulse-app/';
 const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/SUIT.woff2','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);
 FILES.push(BASE+'assets/casting/f04.webp');

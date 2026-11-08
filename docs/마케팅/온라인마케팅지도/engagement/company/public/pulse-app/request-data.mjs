@@ -5,13 +5,14 @@ import {t,locale} from './i18n.mjs';
 // 값은 결정 10-29 정가의 「부터」만 쓴다. 기간 · 수정 횟수는 결정 11-07(가격표 · 크몽 상품 글과 같게)대로 보인다.
 const shot=code=>`./assets/request/model-scene-${code}.webp`;
 export const KINDS=Object.freeze([
-  {id:'food',label:'음료 · 식품',note:'먹고 마시는 제품',shot:shot('f02'),who:'예시 장면 · 하린 · 상큼한 막내',group:'product'},
+  // 11-09: 업종마다 완성 광고가 있으면 그 작품 그림을 둔다(음료 오미톡 · 앱 모두의코스 · 기업 도담중공업 — 진열 정본 docs/마케팅/PULSE_포트폴리오_제작준비_20261012/진열). 없는 업종은 예시 장면 그대로.
+  {id:'food',label:'음료 · 식품',note:'먹고 마시는 제품',shot:'./assets/films/omitok-court-poster-v1.webp',who:'「치익이 톡이 될 때까지」 오미톡 · 가상 브랜드로 만든 자체 작품',group:'product'},
   {id:'beauty',label:'화장품 · 뷰티',note:'스킨케어, 색조, 뷰티 기기',shot:'./assets/request/w-gift-sphere.webp',who:'「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품',group:'product'},
   {id:'fashion',label:'패션 · 잡화',note:'옷, 가방, 신발, 액세서리',shot:shot('m09'),who:'예시 장면 · 서율 · 블루 그레이빛 차가운 비주얼',group:'wear'},
   {id:'living',label:'생활용품 · 가전',note:'집과 일상에서 쓰는 물건',shot:'./assets/films/maejin-imbak-poster-v1.webp',who:'「매진 임박」 홈쇼핑 × 공포 코미디 · 가상 브랜드로 만든 자체 작품',group:'product'},
-  {id:'app',label:'앱 · 웹 서비스',note:'화면으로 쓰는 서비스',shot:shot('m04'),who:'예시 장면 · 민재 · 옆집 자취생',group:'app'},
+  {id:'app',label:'앱 · 웹 서비스',note:'화면으로 쓰는 서비스',shot:'./assets/films/modu-course-poster-v1.webp',who:'「가는 데마다 또 그 사람」 모두의코스 · 가상 브랜드로 만든 자체 작품',group:'app'},
   {id:'place',label:'매장 · 공간 · 서비스',note:'찾아오거나 예약하는 곳',shot:'./assets/films/hwaseong-cf-light-poster-v1.webp',who:'「1억 년의 빛」 화성 CF · 공모전 출품작',group:'place'},
-  {id:'brand',label:'브랜드 · 기업 전체',note:'제품 하나가 아니라 회사 이야기',shot:shot('m05'),who:'예시 장면 · 준호 · 믿음직한 생활형',group:'brand'},
+  {id:'brand',label:'브랜드 · 기업 전체',note:'제품 하나가 아니라 회사 이야기',shot:'./assets/films/dodam-heavy-poster-v1.webp',who:'「이 아이를 보냅니다」 도담중공업 · 가상 브랜드로 만든 자체 작품',group:'brand'},
 ]);
 export const CHANNELS=Object.freeze([
   {id:'shorts',label:'릴스 · 쇼츠 · 틱톡',ratio:'9:16'},
@@ -88,7 +89,8 @@ export const ACTIONS=Object.freeze([
   {id:'buy',label:'사러 가요'},{id:'install',label:'설치해요'},{id:'visit',label:'찾아와요'},{id:'ask',label:'문의해요'},{id:'remember',label:'기억만 해도 돼요'},
 ]);
 export const WIN=Object.freeze([
-  {id:'story',label:'이야기로 여운을',note:'끝까지 보게 하고, 끝에서 마음이 움직여요.',work:'매진 임박',poster:'./assets/request/w-maejin.webp',film:'./assets/request/film-maejin.mp4',kind:'1m 13s · 16:9',ratio:'16:9'},
+  // 11-09: 「이야기로 여운을」 예시는 도담중공업(끝의 노을 · 「이 아이를 보냅니다」 12초, 소리 없음)으로 — 매진 임박은 웃음으로 이기는 편이라 여운의 예로는 어긋났다.
+  {id:'story',label:'이야기로 여운을',note:'끝까지 보게 하고, 끝에서 마음이 움직여요.',work:'도담중공업',poster:'./assets/request/w-dodam.webp',film:'./assets/request/film-dodam.mp4',kind:'1분 1초 · 16:9',ratio:'16:9'},
   {id:'impact',label:'한 장면의 임팩트로',note:'한 번 보면 잊히지 않는 그림 하나로 이겨요.',work:'霜の肌理',poster:'./assets/request/w-gift-sphere.webp',film:'./assets/request/film-gift.mp4',kind:'15초 · 9:16',ratio:'9:16'},
 ]);
 export const REFERENCE_POINTS=Object.freeze(['전개 · 구성','색감 · 빛','카메라 · 속도','모델 연기','소리 · 음악']);

@@ -34,7 +34,7 @@ test('the server serves every new file and the service worker caches the shell b
   for(const name of ["'film.css'","'film-legacy.css'","'reel-wide','reel-tall'","'reel-wide-poster','reel-tall-poster','shard','end'","'file-gift-set','file-gift-ampoule','file-gift-jar','still-shards','still-lid'","'sheet-gift-'","'model-scene-'","NotoSerifKR-300.woff2"])assert.ok(server.includes(name),name);
   for(const name of ['film.css','film-legacy.css','film-home.mjs','film-review.mjs','assets/NotoSerifKR-300.woff2'])assert.ok(sw.includes(name),name);
   assert.doesNotMatch(sw,/reel-(wide|tall)\.mp4/,'the reel is not stored on the device');
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v31-i18n-20261109';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v32-works-20261109';/);
 });
 test('customer screens name no tool and promise nothing the rules forbid',()=>{
   const words=new RegExp(`${TOOL_NAMES}|같은 얼굴|결제 전|무제한|납기|최고|최초|유일|1위|모루|MORU|드립백`);
@@ -50,12 +50,14 @@ test('customer screens name no tool and promise nothing the rules forbid',()=>{
   assert.match(text,/장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요\./);
 });
 test('the reel credits every film it shows: own films as virtual brands, the contest film as a contest entry',()=>{
-  for(const id of ['yurigyeol-holiday','maejin-imbak','hwaseong-light']){
+  // 11-09 작품 최신화: 쇼릴 네 편(도담중공업 · 오미톡 · 매진 임박 · 모두의코스)이 첫 화면 목록이고, 공모전 출품작 한 줄은 첫 화면에서 뺐다(완성 광고 공간에 그대로).
+  for(const id of ['dodam-heavy','omitok-court','maejin-imbak','modu-course','yurigyeol-holiday','hwaseong-light']){
     const film=FINISHED_FILMS.find(item=>item.id===id);assert.ok(filmLine(film),id);assert.ok(filmNote(film),id);
   }
   assert.equal(filmNote(FINISHED_FILMS.find(item=>item.id==='yurigyeol-holiday')),'가상 브랜드로 만든 자체 작품');
   assert.equal(filmNote(FINISHED_FILMS.find(item=>item.id==='hwaseong-light')),'공모전 출품작');
-  assert.equal(entryView({}).split('data-work="').length-1,3);
+  assert.equal(entryView({}).split('data-work="').length-1,4);
+  assert.doesNotMatch(entryView({}),/is-contest/,'the entry list is the four reel films');
 });
 test('changed places are marked only when one stretch clearly stands out; otherwise nothing is claimed',()=>{
   const quiet=Array(15).fill(3);
@@ -195,7 +197,7 @@ test('a customer is not shown empty scene fields, staff still are',()=>{
 // 11-05 밤 다음 판: 아르곤 H2 · M2, B3, B6, Fable F5, FA1 · FA2(r2), FA1(r3)과 운영에서 잰 쇼릴 이름 늦음.
 // 브라우저처럼: src를 붙이거나 load()하면 시각 0 · readyState 0, loadedmetadata가 오면 readyState 1. once 듣개는 한 번 돌고 빠진다.
 const reelVideo=()=>{const attrs=new Map(),handlers={},frames=[];let src='';
-  return {muted:false,playsInline:false,loop:false,preload:'',poster:'',paused:true,currentTime:0,readyState:0,duration:17.7,loads:0,
+  return {muted:false,playsInline:false,loop:false,preload:'',poster:'',paused:true,currentTime:0,readyState:0,duration:14.08,loads:0,
     buffered:{length:0,start:()=>0,end:()=>0},
     get src(){return src;},set src(value){src=value;attrs.set('src',value);this.currentTime=0;this.readyState=0;},
     setAttribute(key,value){attrs.set(key,value);},removeAttribute(key){attrs.delete(key);if(key==='src')src='';},getAttribute(key){return attrs.get(key)??null;},
@@ -213,9 +215,9 @@ test('the reel names each film on the frame it cuts, waits when held, and lets g
   assert.equal(video.getAttribute('src'),null,'붙잡은 쇼릴은 파일을 받지 않는다');
   api.focus(null);assert.equal(video.getAttribute('src'),null,'첫 쪽을 켜도 붙잡은 동안은 받지 않는다');
   api.play();assert.match(video.getAttribute('src'),/reel-(wide|tall)\.mp4$/);video.fire('loadedmetadata');
-  // 작품 이름은 화면에 나간 프레임의 시간으로 바뀐다(2.6초 컷). timeupdate만 보면 최대 0.25초 늦는다.
-  seen.length=0;video.frame(2.55);assert.deepEqual(seen,[]);video.frame(2.62);assert.deepEqual(seen,['hwaseong-light']);
-  video.currentTime=4.9;video.fire('timeupdate');assert.deepEqual(seen,['hwaseong-light'],'프레임을 보는 브라우저에서는 timeupdate로 바꾸지 않는다');
+  // 작품 이름은 화면에 나간 프레임의 시간으로 바뀐다(11-09 3판은 2초 컷). timeupdate만 보면 최대 0.25초 늦는다.
+  seen.length=0;video.frame(1.95);assert.deepEqual(seen,[]);video.frame(2.02);assert.deepEqual(seen,['omitok-court']);
+  video.currentTime=4.9;video.fire('timeupdate');assert.deepEqual(seen,['omitok-court'],'프레임을 보는 브라우저에서는 timeupdate로 바꾸지 않는다');
   // 덮개가 열리면 멈추고, 다 받지 못한 파일은 놓는다. 다시 재생하면 그 자리에서 잇는다.
   video.currentTime=5.2;api.suspend();assert.equal(video.paused,true);assert.equal(video.getAttribute('src'),null);
   api.play();assert.match(video.getAttribute('src'),/reel-/);assert.equal(video.currentTime,0);video.fire('loadedmetadata');assert.equal(video.currentTime,5.2);
@@ -224,7 +226,7 @@ test('the reel names each film on the frame it cuts, waits when held, and lets g
   api.suspend();assert.equal(video.listeners('loadedmetadata'),0,'떼면 기다리던 듣개도 뗀다');
   api.play();assert.equal(video.listeners('loadedmetadata'),1);video.fire('loadedmetadata');assert.equal(video.currentTime,7.4);assert.equal(video.listeners('loadedmetadata'),0);
   // 다 받은 쇼릴은 놓지 않고 멈추기만 한다.
-  const whole=reelVideo();whole.buffered={length:1,start:()=>0,end:()=>17.7};const wholeApi=mountReel(whole,{});
+  const whole=reelVideo();whole.buffered={length:1,start:()=>0,end:()=>14.08};const wholeApi=mountReel(whole,{});
   wholeApi.play();wholeApi.suspend();assert.equal(whole.paused,true);assert.match(whole.getAttribute('src'),/reel-/);
   api.stop();wholeApi.stop();
 });
