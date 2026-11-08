@@ -34,6 +34,18 @@
       "방법": "11-08 14:1x 14시 게시 회차 Claude가 ego 프로필 「TikTok synkbrief」(username synkbrief 확인) — 실행기 C:/Users/q1212/ego/plates-20261108-1400/run-sb-12.js(11-06 run-mn-10.js 그대로, 설정 sb-12.json · 기록 sb-12.txt)",
       "확인": "Studio 콘텐츠 목록 「…#SYNK브리핑 Nov 12, 9:00 PM (GMT+9) Seoul Everyone」 · AI 표시 켬",
       "승인": "유호님 11-02 「묻지 말고 걸어」(상시) · 자체검수 통과"
+    },
+    {
+      "계정": "shift-naverblog",
+      "편ID": "synkbrief_질문다섯개_20261108",
+      "상태": "예약됨",
+      "시각": "2026-11-12T21:10:00+09:00",
+      "방법": "11-08 14시 게시 회차 하위 에이전트(Claude) — Aside 기본 프로필(u0) · aside mcp 상주 세션(C:/Users/q1212/aside/plates-20261108-1400/mcpd.cjs · send.cjs) · nv-gen.cjs … dry --heads=rev → nv-질문다섯개_20261108-dry/00~14 → empty-fix-del2.js(인용 뒤 빈 글 칸 Delete) → 14-publish.js 다시 → confirm.js · 기록 d/send.log",
+      "확인": "예약 발행 5건 — 가게 매출이 줄었을 때 AI한테 묻는 법 — 「답부터 말고, 먼저 나한테 질문 다섯 개만 해 줘」 2026.11.12 21:10 (발행 전 짜임 sectionTitle,sectionTitle,image,sectionTitle,image,quotation,image,image,sectionTitle,quotation = 원고 · 소제목 4/4 · 그림 4 · 그림 설명 4(원고 「(그림 0N — 설명)」을 사진 설명 칸에) · 인용 2 · 목록 12줄 · 〔〕 0 · 빈 문단 0 · 글자 수 1366/1366 · 작업 기록 · 전체공개 · 댓글 허용, 저장 0)",
+      "승인": "유호님 11-02 「묻지 말고 걸어」(상시) · 자체검수 통과",
+      "후속": [
+        "쇼츠 공개 뒤 첫 문단 뒤에 영상 칸 넣기(PostUpdateForm, 발행 시각 뒤 글 번호가 생김)"
+      ]
     }
   ]
 }

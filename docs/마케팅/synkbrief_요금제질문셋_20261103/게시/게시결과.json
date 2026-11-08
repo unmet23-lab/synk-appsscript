@@ -95,9 +95,10 @@
       },
       "상태": "게시됨",
       "방법": "11-03 22:1x Aside u1 synkshift 프로필에서 blog/원고.md — 제목 · 본문 · 그림 3 · 소제목 3, 〔유튜브 쇼츠〕 줄은 뺌, 카테고리 「작업 기록」 · 공개 · 예약 2026. 11. 06 21:10 → 「발행」(첫 시도는 그림 1에서 CDP 연결 끊김으로 발행 전 멈춤, 둘째 시도). 스크립트 C:/Users/q1212/aside/b24v2-20261103-2200/run-synkbrief_요금제질문셋_20261103-go.js(기록 log-go2.txt)",
-      "후속": "쇼츠 공개 뒤 영상 칸 넣기(예약 글은 발행 시각 전 글 번호 주소가 없음)",
+      "후속": "쇼츠 칸: 11-08 14시 게시 회차 하위 에이전트(Claude)가 「수정」으로 열어 같은 편 쇼츠 ZUmeE1OMIww 영상 칸만 넣고 수정 발행 — 로그인 없이 공개 글(확인.sh) — sectionTitle 3 · image 3 · oembed 1 · quote 0 · 〔 0 · youtu 글자 0, PostView에 ZUmeE1OMIww 있음, 빈 문단 0. 편집기에서 짜임 documentTitle,text,oembed,text,… = 기대값 · 앞 문단 「…그때 결제해도 늦지 않아요.」 · 뒤 문단 「결론부터 말하면 질문은 이 셋이에요.」 · 작업 기록 · 전체공개 · 댓글 · 공지 아님 · 태그 0(Aside 기본 프로필(u0) · C:/Users/q1212/aside/plates-20261108-1400/nv-slot-make.cjs(11-07 nv-tpl.js) → run.cjs nvslot-224463988432-dry.js → -go.js · 로그 log-nvslot-224463988432-*.txt)",
       "주소": "https://blog.naver.com/synkshift/224463988432",
-      "공개확인": "11-07 14시 회차 로그인 없이 공개 화면에서 확인 — rss.blog.naver.com/synkshift 첫 글 「AI 유료 결제 버튼 누르기 전에, 질문 셋만 해 보세요…」 Fri, 06 Nov 2026 21:10 +0900"
+      "공개확인": "11-07 14시 회차 로그인 없이 공개 화면에서 확인 — rss.blog.naver.com/synkshift 첫 글 「AI 유료 결제 버튼 누르기 전에, 질문 셋만 해 보세요…」 Fri, 06 Nov 2026 21:10 +0900",
+      "쇼츠칸": "ZUmeE1OMIww"
     }
   ]
 }

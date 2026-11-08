@@ -37,10 +37,15 @@
     },
     {
       "계정": "shift-naverblog",
-      "상태": "대기",
+      "상태": "예약됨",
       "시각": "2026-11-11T21:10:00+09:00",
-      "비고": "자체검수 통과(11-07 14시 회차) · Aside u1 synkshift 네이버 로그인 풀림(글쓰기 → nid 로그인 화면). 로그인 뒤 C:/Users/q1212/aside/blog-20261106/aside-chain.cjs로 dry → go. 쇼츠 ID가 없으면 〔유튜브 쇼츠〕 칸을 빼고 걸고 「후속」에.",
-      "편ID": "synkbrief_요금제1위바뀜_20261107"
+      "편ID": "synkbrief_요금제1위바뀜_20261107",
+      "방법": "11-08 14시 게시 회차 하위 에이전트(Claude) — Aside 기본 프로필(u0) · aside mcp 상주 세션(C:/Users/q1212/aside/plates-20261108-1400/mcpd.cjs · send.cjs) · nv-gen.cjs … dry --heads=rev → nv-요금제1위바뀜_20261107-dry/00~15 → confirm.js · 기록 d/send.log",
+      "확인": "예약 발행 4건 — AI한테 구독 요금 비교를 시킬 때 — 결제 화면 값을 붙여 넣고 「한 달 · 1년 나눠서」 2026.11.11 21:10 (발행 전 짜임 sectionTitle,quotation,image,sectionTitle,image,table,sectionTitle,sectionTitle,quotation,image,sectionTitle = 원고 · 소제목 5/5 · 그림 3 · 표 1 · 인용 2 · 〔〕 0 · 글자 수 1369/1369 · 작업 기록 · 전체공개 · 댓글 허용, 저장 0)",
+      "승인": "유호님 11-02 「묻지 말고 걸어」(상시) · 자체검수 통과",
+      "후속": [
+        "쇼츠 공개 뒤 첫 문단 뒤에 영상 칸 넣기(PostUpdateForm, 발행 시각 뒤 글 번호가 생김)"
+      ]
     }
   ]
 }

@@ -38,10 +38,15 @@
     },
     {
       "계정": "shift-naverblog",
-      "상태": "대기",
+      "상태": "예약됨",
       "시각": "2026-11-10T21:10:00+09:00",
-      "비고": "못 걸음 — 11-06 Aside 판 두 번 모두 짜임 점검에서 멈춤(발행 창 안 엶, 아무것도 안 나감): 첫 소제목 「시험한 리뷰 100개」 뒤에 목록이 낀 짜임이라 둘째 소제목을 바꾸는 순간 첫째가 본문으로 돌아감(시험판 기록 log-dry-b27.txt). 소제목을 두 번 훑는 판(patch-heads.cjs)을 만들었으나, 11-07 04시 재시작 뒤 Aside 네이버 로그인이 풀려(글쓰기 → nid 로그인 화면) 시험 · 발행 못 함. 새 Aside CLI(1.26.1107)는 줄마다 넣는 aside-steps.cjs가 안 돌아 aside-chain.cjs로 돌린다 · 11-07 14:1x 다시 봐도 로그인 화면(04시 재시작 뒤 ego Profile 1 · 2, 틱톡 프로필 셋, Aside 네이버 · 티스토리 모두)",
-      "편ID": "synkbrief_리뷰불만세기_20261106"
+      "편ID": "synkbrief_리뷰불만세기_20261106",
+      "방법": "11-08 14시 게시 회차 하위 에이전트(Claude) — Aside 기본 프로필(u0) · aside mcp 상주 세션(C:/Users/q1212/aside/plates-20261108-1400/mcpd.cjs · send.cjs) · nv-gen.cjs … dry --heads=rev → nv-리뷰불만세기_20261106-dry/00~15 → confirm.js(열린 발행 창 값 다시 읽고 발행) · 기록 d/send.log",
+      "확인": "예약 발행 3건 — 가게 리뷰를 AI로 정리할 때 — 「요약해 줘」 말고 「불만을 종류별로 세어서 많은 순서로」 2026.11.10 21:10 (발행 전 짜임 sectionTitle,sectionTitle,image,sectionTitle,quotation,image,sectionTitle,image,sectionTitle = 원고 · 소제목 5/5 · 그림 3 · 〔〕 0 · 글자 수 1070/1070 · 작업 기록 · 전체공개 · 댓글 허용, 저장 0)",
+      "승인": "유호님 11-02 「묻지 말고 걸어」(상시) · 자체검수 통과",
+      "후속": [
+        "쇼츠 공개 뒤 첫 문단 뒤에 영상 칸 넣기(PostUpdateForm, 발행 시각 뒤 글 번호가 생김)"
+      ]
     }
   ]
 }
