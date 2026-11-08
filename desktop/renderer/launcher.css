@@ -120,7 +120,7 @@ kbd{font-family:var(--num);font-size:var(--t13);padding:2px 8px;border-radius:6p
 
 /* ── 전체 틀: 위 막대 72 + 흐르는 본문 ─────────────── */
 .launcher{height:100dvh;min-height:480px;display:flex;flex-direction:column;overflow:hidden;position:relative;background:var(--paper)}
-.titlebar{position:relative;z-index:10;flex:none;height:72px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:0 12px 0 var(--gutter);background:var(--bar);-webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid transparent;-webkit-app-region:drag;app-region:drag;transition:border-color .2s var(--ease)}
+.titlebar{position:relative;z-index:10;flex:none;height:72px;display:grid;grid-template-columns:minmax(max-content,1fr) auto minmax(max-content,1fr);align-items:center;gap:16px;padding:0 12px 0 var(--gutter);background:var(--bar);-webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid transparent;-webkit-app-region:drag;app-region:drag;transition:border-color .2s var(--ease)}
 .titlebar:has(#window-actions[hidden]){padding-right:calc(var(--gutter) - 8px)}
 .titlebar.scrolled{border-bottom-color:var(--line)}
 .titlebar button,.titlebar label,.titlebar input,.titlebar a{-webkit-app-region:no-drag;app-region:no-drag}
@@ -488,6 +488,11 @@ dialog .fine-print,.fine-print{margin-top:18px;font-size:var(--t13);color:var(--
 @media (max-width:1100px){
   .shelf-grid:not(.benefits-grid){--cols:3}
   .app-text h1{font-size:var(--t34)}
+}
+/* 좁은 PC 창(901~1,100): 위 막대 칸 사이 · 손님 계정 단추 여백을 줄여, 손님이 로그인을 되살리는 동안(「로그인 확인 중」 + 회원가입)에도 창 단추까지 960 안에 든다 */
+@media (min-width:901px) and (max-width:1100px){
+  .titlebar{gap:8px}
+  .account-button[data-signed-in=false]{padding:0 10px}
 }
 
 /* ── 좁은 창(900 이하): 위 막대 60 + 아래 탭 막대 다섯 칸 ─ */

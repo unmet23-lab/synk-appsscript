@@ -26,7 +26,7 @@
 .mi2-top{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:64px;align-items:start;margin-top:24px}
 .mi2-stack{display:flex;flex-direction:column;gap:48px}
 .mi2-poster{display:grid;grid-template-areas:"stage" "top" "title";grid-template-rows:auto auto auto;color:var(--mi2-ink)}
-.mi2-poster::before{content:"";grid-area:stage;align-self:stretch;min-height:320px;aspect-ratio:7/5;background:var(--mi2-surface)}
+.mi2-poster::before{content:"";grid-area:stage;align-self:stretch;width:100%;min-width:0;min-height:320px;aspect-ratio:7/5;background:var(--mi2-surface)}
 .mi2-poster::after{content:"";grid-area:stage;align-self:end;justify-self:center;width:46%;height:20px;margin-bottom:44px;border-radius:50%;background:radial-gradient(closest-side,var(--floor,rgba(0,0,0,.18)),transparent)}
 .mi2-object{grid-area:stage;position:relative;z-index:1;align-self:end;justify-self:center;width:auto;height:auto;max-width:62%;max-height:240px;margin-bottom:54px;object-fit:contain;filter:var(--object,drop-shadow(0 18px 18px rgba(0,0,0,.14)) drop-shadow(0 3px 4px rgba(0,0,0,.12)));pointer-events:none}
 .mi2-poster-top{grid-area:top;display:flex;align-items:center;flex-wrap:wrap;gap:4px 14px;margin-top:24px;font-size:var(--mi2-t15);color:var(--mi2-ink-3)}

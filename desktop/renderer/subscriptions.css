@@ -35,7 +35,7 @@
 .member-subs .ms-stack:empty{display:none}
 /* 머리: 회색 무대 위 계기판(그림자 타원) → 「회원 혜택 · ● 상태」 → 이름 → 한 줄 설명 → 상태 한 줄과 단추. 넓은 창에서는 따라온다. */
 .member-subs .ms-hero{position:sticky;top:24px;display:grid;grid-template-areas:"stage" "top" "title" "note";grid-template-rows:auto auto auto auto;color:var(--ink,#0B0B0C)}
-.member-subs .ms-hero::before{content:"";grid-area:stage;align-self:stretch;min-height:320px;aspect-ratio:7/5;background:var(--surface,#F3F3F4)}
+.member-subs .ms-hero::before{content:"";grid-area:stage;align-self:stretch;width:100%;min-width:0;min-height:320px;aspect-ratio:7/5;background:var(--surface,#F3F3F4)}
 .member-subs .ms-hero::after{content:"";grid-area:stage;align-self:end;justify-self:center;width:46%;height:20px;margin-bottom:44px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.18),transparent)}
 .member-subs .ms-hero:not(.has-art)::before,.member-subs .ms-hero:not(.has-art)::after{display:none}
 .member-subs .ms-object{grid-area:stage;position:relative;z-index:1;align-self:end;justify-self:center;width:auto;height:auto;max-width:62%;max-height:220px;margin-bottom:54px;object-fit:contain;filter:drop-shadow(0 18px 18px rgba(0,0,0,.14)) drop-shadow(0 3px 4px rgba(0,0,0,.12));pointer-events:none}
