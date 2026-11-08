@@ -41,16 +41,18 @@
     },
     {
       "계정": "lab-mm-tiktok",
-      "상태": "대기",
+      "상태": "예약됨",
       "시각": "2026-11-10T22:30:00+09:00",
-      "비고": "자체검수 통과(11-07 14시 회차 — 04-tiktok-mm/video.mp4 sha cee7e4df · −14.8 LUFS · 무음 없음 · 띠 8장) · ego Profile 1 틱톡 로그인 풀림(@synklab.mm). 로그인 뒤 username synklab.mm 확인하고 건다.",
-      "편ID": "LAB_형오빠_mn_20261030"
+      "편ID": "LAB_형오빠_mn_20261030",
+      "방법": "11-08 14:1x 14시 게시 회차 Claude가 ego 프로필 「Profile 1」(username synklab.mm 확인) — 실행기 C:/Users/q1212/ego/plates-20261108-1400/run-mm-10.js(11-06 run-mn-10.js 그대로, 설정 mm-10.json · 기록 mm-10.txt)",
+      "확인": "Studio 콘텐츠 목록 「…#EPSTOPIK 11월 10일 오후 10:30 (GMT+9) Seoul 모두」 · AI 표시 끔",
+      "승인": "유호님 11-02 「묻지 말고 걸어」(상시) · 자체검수 통과"
     },
     {
       "계정": "lab-cn-xiaohongshu",
       "상태": "대기",
       "시각": "2026-11-11T22:00:00+09:00",
-      "비고": "자체검수 통과(11-07 14시 회차 — 03-xiaohongshu-cn/video.mp4 sha 8d0bdd19 · −14.8 LUFS · 무음 없음 · 띠 8장) · 샤오훙수 크리에이터 센터 로그인 풀림(creator.xiaohongshu.com/login 문자 인증). 로그인 뒤 upload_10MB.mp4로 定时发布 21:00(GMT+8).",
+      "비고": "11-08 14:2x 14시 게시 회차: 자체검수 통과(영상 sha 검사와 같음 · 띠 8장 · −14.7/−14.8 LUFS · 무음 없음) · ego 「유호 (Chrome)」(Profile 2)에서 샤오훙수 크리에이터 센터를 열자 위치 권한 창이 떠 ego가 공간 「xhs 1108」을 사용자에게 넘김 — 「차단」은 유호님 손이라 못 걸음. 창을 막은 뒤 다음 14시 회차가 xhs-a · t · t2 · b(C:/Users/q1212/ego/plates-20261108-1400, 설정 xhs-cfg.mjs)로 건다",
       "편ID": "LAB_형오빠_mn_20261030"
     }
   ]

@@ -54,9 +54,9 @@
     },
     {
       "계정": "synkbrief-tiktok",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-07T21:00:00+09:00",
-      "주소": "https://www.tiktok.com/tiktokstudio/content (예약 글은 게시 전이라 영상 주소 없음)",
+      "주소": "https://www.tiktok.com/@synkbrief/video/7704029553345236231",
       "방법": "11-04 04:2x ego 프로필 「TikTok synkbrief」 — b23_master.mp4(v2) 업로드 · 캡션 일치 · AI 표시 켬 · Nov 7, 2026 21:00 → Schedule. 스크립트 C:/Users/q1212/ego/b24v2-20261103-2200/run-b23-tk.js(기록 b23-tk.txt)",
       "확인": "Studio 콘텐츠 목록 「Nov 7, 9:00 PM (GMT+9) Seoul · Everyone」",
       "승인": "유호님 11-03 「예약 취소해 다시만들어야할것같아」 · 11-04 「이어서 해」 · 자체검수(맹검 미학 · 이해 시험 · 올리기 전 검사 고칠 것 0) 통과",
@@ -77,7 +77,8 @@
           "확인": "TikTok Studio에서 해당 예약을 삭제하고 콘텐츠 목록을 새로 열어 예약 ID가 사라진 것을 확인했다.",
           "확인시각": "2026-11-03T10:21:21.251Z"
         }
-      }
+      },
+      "게시확인": "11-08 14:2x 14시 게시 회차 Claude가 로그인 없이 영상 주소를 열어 statusCode 0 · privateItem false · createTime 1794052800(11-07 21:00 KST) 확인 · 공개 프로필 글 첫 줄 「AI가 요약한 구청 공문」"
     },
     {
       "계정": "shift-naverblog",

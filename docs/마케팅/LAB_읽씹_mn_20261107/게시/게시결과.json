@@ -11,24 +11,30 @@
     },
     {
       "계정": "lab-instagram",
-      "상태": "대기",
+      "상태": "예약됨",
       "시각": "2026-11-11T21:00:00+09:00",
-      "비고": "자체검수 통과(11-07 14시 회차) · ego 로그인 풀림 — 11-07 04시 재시작 뒤 Profile 1 · Profile 2 모두 instagram.com 로그인 화면(비밀번호 칸). 로그인 뒤 인스타 웹(@synk.mn) 또는 Business Suite 교차로 건다(페북 줄과 겹치지 않게).",
-      "편ID": "LAB_읽씹_mn_20261107"
+      "편ID": "LAB_읽씹_mn_20261107",
+      "방법": "11-08 14:1x~14:2x 14시 게시 회차 Claude가 ego 「유호 (Chrome)」(Profile 2) Business Suite 릴스 작성기 — 게시할 위치 「SYNK, synk.mn」 교차 · 원본 01-ig-fb-mn/video.mp4 · 캡션 캡션_mn.txt + 첫댓글_mn.txt 한 문단(일치) · 표지 cover.png · 예약 2026-11-11 오후 9:00(Asia/Jayapura = UTC+9) → 「릴스 예약됨」. 스크립트 C:/Users/q1212/ego/plates-20261108-1400/bs-a · b · c.js(판 cur.json, 기록 bs.steps.txt) · 표지 칸이 화면 아래(y 1043)라 화면 안으로 옮겨 누름(bs-b3.js)",
+      "확인": "「릴스가 처리 완료 후 Facebook에서 2026. 11. 11.에, Instagram에서 2026. 11. 11.에 게시되도록 예약되었습니다」 · 예약됨 목록 「2026년 11월 11일 수요일 9:00」 SYNK · synk.mn 두 줄",
+      "승인": "유호님 11-02 「묻지 말고 걸어」(상시) · 자체검수 통과"
     },
     {
       "계정": "lab-facebook",
-      "상태": "대기",
+      "상태": "예약됨",
       "시각": "2026-11-11T21:00:00+09:00",
-      "비고": "자체검수 통과(11-07 14시 회차) · Business Suite 로그인 풀림(Profile 1 · 2 모두 business/loginpage). 로그인 뒤 Business Suite에서 페북 SYNK만 건다(인스타를 따로 걸었으면 교차로 걸지 않는다).",
-      "편ID": "LAB_읽씹_mn_20261107"
+      "편ID": "LAB_읽씹_mn_20261107",
+      "방법": "11-08 14:1x~14:2x 14시 게시 회차 Claude가 ego 「유호 (Chrome)」(Profile 2) Business Suite 릴스 작성기 — 게시할 위치 「SYNK, synk.mn」 교차 · 원본 01-ig-fb-mn/video.mp4 · 캡션 캡션_mn.txt + 첫댓글_mn.txt 한 문단(일치) · 표지 cover.png · 예약 2026-11-11 오후 9:00(Asia/Jayapura = UTC+9) → 「릴스 예약됨」. 스크립트 C:/Users/q1212/ego/plates-20261108-1400/bs-a · b · c.js(판 cur.json, 기록 bs.steps.txt) · 표지 칸이 화면 아래(y 1043)라 화면 안으로 옮겨 누름(bs-b3.js)",
+      "확인": "「릴스가 처리 완료 후 Facebook에서 2026. 11. 11.에, Instagram에서 2026. 11. 11.에 게시되도록 예약되었습니다」 · 예약됨 목록 「2026년 11월 11일 수요일 9:00」 SYNK · synk.mn 두 줄",
+      "승인": "유호님 11-02 「묻지 말고 걸어」(상시) · 자체검수 통과"
     },
     {
       "계정": "lab-tiktok",
-      "상태": "대기",
+      "상태": "예약됨",
       "시각": "2026-11-11T21:00:00+09:00",
-      "비고": "자체검수 통과(11-07 14시 회차) · ego 프로필 「TikTok synk.mn」 틱톡 로그인 풀림(tiktok.com/login). 로그인 뒤 그 프로필에서 username synk.mn 확인하고 건다.",
-      "편ID": "LAB_읽씹_mn_20261107"
+      "편ID": "LAB_읽씹_mn_20261107",
+      "방법": "11-08 14:1x 14시 게시 회차 Claude가 ego 프로필 「TikTok synk.mn」(username synk.mn 확인) — 실행기 C:/Users/q1212/ego/plates-20261108-1400/run-mn-11.js(11-06 run-mn-10.js 그대로, 설정 mn-11.json · 기록 mn-11.txt)",
+      "확인": "Studio 콘텐츠 목록 「…#mongolia Nov 11, 9:00 PM (GMT+9) Seoul Everyone」 · AI 표시 끔",
+      "승인": "유호님 11-02 「묻지 말고 걸어」(상시) · 자체검수 통과"
     }
   ]
 }

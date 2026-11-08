@@ -28,10 +28,12 @@
     },
     {
       "계정": "synkbrief-tiktok",
-      "상태": "대기",
+      "상태": "예약됨",
       "시각": "2026-11-11T21:00:00+09:00",
-      "비고": "자체검수 통과(11-07 14시 회차 — 영상 sha 6ae5cef2 · −14.6 LUFS · 무음 없음 · 글 숫자 계산 맞음) · ego 프로필 「TikTok synkbrief」 틱톡 로그인 풀림(tiktok.com/login). 로그인 뒤 username synkbrief 확인하고 03-synkbrief-tiktok/원고.json 캡션 · AI 표시 끔으로 건다.",
-      "편ID": "synkbrief_요금제1위바뀜_20261107"
+      "편ID": "synkbrief_요금제1위바뀜_20261107",
+      "방법": "11-08 14:1x 14시 게시 회차 Claude가 ego 프로필 「TikTok synkbrief」(username synkbrief 확인) — 실행기 C:/Users/q1212/ego/plates-20261108-1400/run-sb-11.js(11-06 run-mn-10.js 그대로, 설정 sb-11.json · 기록 sb-11.txt)",
+      "확인": "Studio 콘텐츠 목록 「…#SYNK브리핑 Nov 11, 9:00 PM (GMT+9) Seoul Everyone」 · AI 표시 끔(준비.json 「AI표시」 false — 실제 화면만)",
+      "승인": "유호님 11-02 「묻지 말고 걸어」(상시) · 자체검수 통과"
     },
     {
       "계정": "shift-naverblog",

@@ -34,21 +34,25 @@
     },
     {
       "계정": "yuhobuilds-x",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-07T21:00:00+09:00",
       "방법": "11-02 03:33~03:41 KST Claude가 ego x.com/home(@yuhobuilds 확인) — remotion/out 최종 영상 · 게시/04-yuhobuilds-x/원고.json caption(paste, 공백 빼고 일치) · Content disclosure 「Made with AI」 켬(manifest AI 표시 켬) · 예약 창 select 순서 11 · 일 · 2026 · 9 · 0 · pm → Confirm → 「Schedule」 한 번. 스크립트 C:/Users/q1212/ego/plates-20261102-xhs-x-li/x-a · x-b.mjs(판 x-cur.txt, 기록 x.txt)",
       "확인": "x.com/compose/post/unsent/scheduled 「Will send on Sat, Nov 7, 2026 at 9:00 PM」 + 그 편 글 머리(예약 6줄). AI 표시는 예약 목록에 안 보여 게시 뒤 글 화면에서 확인 필요",
       "승인": "유호님 11-02 앱 세션 「나머지 판도 걸어」 · 「매일 한편씩 모든 계정에 업로드해야하는데 지금 매번 이걸 깜빡하는것같아서 아쉬워」(그 앞 「자체검수 → 검토 다 승인, 전부 업로드」) — Claude 자체검수(영상 모아보기 · 음량 · 글) 뒤",
-      "편ID": "yuhobuilds_천천히옆으로_20261030"
+      "편ID": "yuhobuilds_천천히옆으로_20261030",
+      "주소": "https://x.com/yuhobuilds/status/2119037153724228045",
+      "게시확인": "11-08 14:3x 14시 게시 회차 Claude가 ego 「유호 (Chrome)」 x.com/yuhobuilds 첫 글 time 2026-11-07T12:00:01Z · 첫 줄 「AI 영상한테 「카메라 조금만(3%) 옆으로」」 확인(AI 표시 칸은 글 화면에 안 보임 — 예약 때 Made with AI 켬)"
     },
     {
       "계정": "yuho-linkedin-primary",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-07T21:00:00+09:00",
       "방법": "11-02 03:41~03:52 KST Claude가 ego 링크드인 피드(양유호 확인) — 「동영상」 → remotion/out 최종 영상 → 편집 창 「다음」 → 게시/05-yuho-linkedin/원고.json caption(paste, 공백 빼고 일치) → 시계(예약이 생긴 뒤엔 숫자 배지 a) → 날짜 「2026. 11. 7」 · 「오후 9:00」 → 확인 → 「일정 예약」 한 번 → 피드 「업로드중…」이 사라질 때까지 기다림. 스크립트 C:/Users/q1212/ego/plates-20261102-xhs-x-li/li-a · li-t · li-b.mjs(판 li-cur.txt, 기록 li.txt). AI 표시 칸은 링크드인 글쓰기 창에 없음",
       "확인": "linkedin.com/share/management 「게시: 토, 2026년 11월 7일 오후 9:00」 + 그 편 글 머리(예약 목록 6줄)",
       "승인": "유호님 11-02 앱 세션 「나머지 판도 걸어」 · 「매일 한편씩 모든 계정에 업로드해야하는데 지금 매번 이걸 깜빡하는것같아서 아쉬워」(그 앞 「자체검수 → 검토 다 승인, 전부 업로드」) — Claude 자체검수(영상 모아보기 · 음량 · 글) 뒤",
-      "편ID": "yuhobuilds_천천히옆으로_20261030"
+      "편ID": "yuhobuilds_천천히옆으로_20261030",
+      "주소": "https://www.linkedin.com/feed/update/urn:li:activity:7524803170255060992/",
+      "게시확인": "11-08 14:3x 14시 게시 회차 Claude가 ego 「유호 (Chrome)」 내 활동 첫 글(17시간 전 · 「사진 한 장으로 AI 영상을 만들 때 「카메라를 천천히, 조금만 옆으로」」) · 활동 ID 시각 2026-11-07T12:01:19Z 확인"
     },
     {
       "계정": "shift-tistory",
