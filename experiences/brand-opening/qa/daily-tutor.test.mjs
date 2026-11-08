@@ -45,6 +45,39 @@ function signature(id,text){
  assert.doesNotMatch(text,/숙달|완벽|모두 해결|영원히 기억/);
 }
 
+// 11-08 프론트 검수(A3 · B4): 레슨을 막 마치고 홈에 돌아온 사람에게 「어? 왔구나!」 같은 첫 인사를 하지 않는다 — 30분 안이면 이어 가는 말.
+test('a learner back from a lesson within 30 minutes hears a continuing line, not a first-visit greeting',()=>{
+ const recent={latestAt:Date.now()-5*MINUTE,count:3,items:[]},earlier={latestAt:Date.now()-3*60*MINUTE,count:3,items:[]};
+ for(const kind of ['start','difficult','review'])for(const id of tutors){
+  const r={kind,title:'첫 인사 세 마디',lessonTitle:'첫 인사 세 마디'};
+  const now=homeTutorLine(id,r,{day:recent}),later=homeTutorLine(id,r,{day:earlier});
+  signature(id,now);signature(id,later);
+  assert.doesNotMatch(now,/^(어\? 왔구나|우와, 왔구나|왔군!|복귀 확인|이 몸이 기다리고 있었지)/,`${id} ${kind}: 방금 돌아온 사람에게 첫 인사를 하지 않는다`);
+  assert.notEqual(now,later,`${id} ${kind}: 세 시간 뒤에는 원래 인사`);
+  if(kind!=='review')assert.ok(now.includes('「첫 인사 세 마디」'),`${id} ${kind}: 고른 활동 이름을 말한다`);
+ }
+ assert.equal(homeTutorLine('mongle',{kind:'start',title:'첫 인사 세 마디'},{day:null}),homeTutorLine('mongle',{kind:'start',title:'첫 인사 세 마디'}),'오늘 기록이 없으면 원래 인사');
+});
+
+// 끝 판 F2: 방금 돌아온 사람의 복습 인사가 「방금 만난 말」이라고 하려면 돌아온 복습에 오늘 답한 말이 있어야 한다 — 지난 복습이 밀린 것이면 「전에 만난 말」.
+test('the just-now review line says the words were just met only when a returned review was answered today',()=>{
+ const f=fixture(),q=answer(f,greeting,0,{correct:false});f.advance(2*MINUTE);
+ const lastAt=Object.values(f.progress.exportSnapshot().reviews).find(r=>r.questionId===q.id).lastAt;
+ const fresh=f.recommend({practised:new Map([[q.id,lastAt]])});
+ assert.equal(fresh.kind,'review');assert.equal(fresh.fresh,true,'오늘 틀린 말이 1분 뒤 돌아왔다');
+ const g=fixture();answer(g,greeting,0,{correct:true});g.advance(2*DAY);
+ const older=g.recommend();
+ assert.equal(older.kind,'review');assert.equal(older.fresh,undefined,'이틀 전에 만난 말이 돌아왔다');
+ const day={latestAt:Date.now()-5*MINUTE,count:1,items:[]};
+ for(const id of tutors){
+  const now=homeTutorLine(id,{kind:'review',fresh:true},{day}),earlier=homeTutorLine(id,{kind:'review'},{day});
+  signature(id,now);signature(id,earlier);
+  assert.match(now,/방금/,`${id}: 오늘 만난 말이면 「방금」`);
+  assert.doesNotMatch(earlier,/방금/,`${id}: 지난 복습이면 「방금」이라 하지 않는다`);
+  assert.doesNotMatch(earlier,/^(어\? 왔구나|우와, 왔구나|왔군!|복귀 확인|이 몸이 기다리고 있었지)/,`${id}: 지난 복습이어도 방금 돌아온 사람에게 첫 인사를 하지 않는다`);
+ }
+});
+
 test('the Korean learning day agrees at midnight across persistence and home helpers',()=>{
  for(const [at,key]of [[Date.parse('2026-10-10T14:59:59.999Z'),'2026-10-10'],[Date.parse('2026-10-10T15:00:00Z'),'2026-10-11']]){
   assert.equal(lifeDayKey(at),key);assert.equal(homeDayKey(at),key);

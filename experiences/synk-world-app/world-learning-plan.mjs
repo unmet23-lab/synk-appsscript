@@ -226,7 +226,8 @@ function hostReason(chosen,{history,plan,labels}){
  const unseen=(chosen.reasons||[]).includes('practice.unseen')&&!(chosen.reasons||[]).includes('goal.declared');
  if(!unseen||!history)return null;
  // 생활 레슨은 11-08(Atlas × WORLD D)부터 targets가 있다 — 아직 기록 없는 칸만 겨누는 레슨(practice.unseen)이면 진도 순서의 까닭을 그대로 말한다.
- if(selected.route==='lesson')return {reason:'생활 팩의 다음 레슨이에요. 진도 순서대로 이어서 배워요.',reasons:['progress.next']};
+ // 「맞춤 연습 시작」 아래에서 「진도 순서대로」는 맞춤과 어긋나 읽혀(11-08 프론트 검수 A3 · B4), 기록에 비춘 까닭(아직 기록 없는 표현)을 말한다.
+ if(selected.route==='lesson')return {reason:'생활 팩의 다음 레슨이에요. 아직 기록이 없는 표현을 새로 만나요.',reasons:['progress.next']};
  return null;
 }
 // `answers` ({interested, notNow}: worldTopicAnswers) are the person's own answers on 「내 성향」.

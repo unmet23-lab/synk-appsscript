@@ -1,6 +1,26 @@
 import {t,tMessage,hasString,formatDate,currentLang} from '../brand-opening/world-lang.mjs';
 import {followupRows,advisoryRows} from './world-learning-followups.mjs';
 import {lifeFollowupRows} from './life-followups.mjs';
+
+// 「시간을 두고 다시 확인」 카드(11-08 프론트 검수 A2 · B6): Temper 재확인 줄(TOPIK 연습 · 생활 한국어)을 기준 답(sourceAttemptId)마다 카드 하나로
+// 묶고 창은 1 · 7 · 30일 차례로 둔다. 지금 확인할 칸이 있는 카드가 먼저, 그다음 아직 안 온 가장 가까운 날짜 차례(다 지난 카드는 뒤).
+// 같은 항목 카드가 둘 이상이면(난도가 다른 기준 답) twin을 켜 화면이 난도를 붙여 가른다. 줄은 바꾸지 않는다.
+const FOLLOWUP_WINDOWS=['d1','d7','d30'];
+export function followupCards(delayed=[],life=[]){
+ const cards=new Map();
+ for(const [row,isLife] of [...(Array.isArray(delayed)?delayed:[]).map(row=>[row,false]),...(Array.isArray(life)?life:[]).map(row=>[row,true])]){
+  if(!row||typeof row.measure?.skillId!=='string')continue;
+  const key=`${isLife?'life':'topik'}|${row.sourceAttemptId||row.id}`;
+  if(!cards.has(key))cards.set(key,{life:isLife,skillId:row.measure.skillId,difficulty:row.measure.difficulty??null,rows:[],twin:false});
+  cards.get(key).rows.push(row);
+ }
+ const list=[...cards.values()],count=new Map();
+ for(const card of list){const name=`${card.life}|${card.skillId}`;count.set(name,(count.get(name)||0)+1);}
+ for(const card of list){card.twin=count.get(`${card.life}|${card.skillId}`)>1;card.rows.sort((a,b)=>FOLLOWUP_WINDOWS.indexOf(a.window)-FOLLOWUP_WINDOWS.indexOf(b.window)||Date.parse(a.dueAt)-Date.parse(b.dueAt));}
+ const due=card=>card.rows.some(row=>row.status==='due');
+ const next=card=>Math.min(Infinity,...card.rows.filter(row=>row.status==='not_due').map(row=>Date.parse(row.dueAt)).filter(Number.isFinite));
+ return list.sort((a,b)=>Number(due(b))-Number(due(a))||next(a)-next(b));
+}
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // 화면 언어(10-19 1판): 이름·값과 순서는 그대로 두고 보이는 글만 표(goal.*)에서 읽는다.
 const REASON_IDS=['travel','life','people','exam','study','work','career','culture','hobby','other'];
@@ -265,7 +285,9 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   // 쓰기 연습은 Trail에 「채점 안 함」으로만 남고 게스트·지도 밖 기록도 있어, 기기 기록의 규칙 점검 시각으로 센다(③ readWritingSummary times).
   let writingTimes=[];if(exam.type==='topik2'&&typeof writingPractice?.attempts==='function'){try{const times=writingPractice.attempts();writingTimes=Array.isArray(times)?times:[];}catch{writingTimes=[];}}
   // 말하기를 고른 학생만 시험 정보에 speaking:true · 말하기 후보 · 필요 · 이번 주 시각이 더해진다(고르지 않은 학생의 계획 입력은 그대로다).
-  const examPlan=position.exam.buildExamPlan({exam:speaking?{...exam,speaking:true}:exam,summary,now,audioAvailable,classwork:classworkRows(),lastCheckAt,...(speaking?{speakingNeeds:speaking.untried}:{}),
+  // 시작점(짧은 진단부터)은 생활 거울이 아닌 연습의 답으로만 가린다(world-exam-plan examEvidenceSkills · 11-08 프론트 검수). 옛 묶음에 없으면 예전 그대로.
+  let examSkills=null;try{examSkills=position.exam.examEvidenceSkills?.(events)??null;}catch{examSkills=null;}
+  const examPlan=position.exam.buildExamPlan({exam:speaking?{...exam,speaking:true}:exam,summary,now,audioAvailable,classwork:classworkRows(),lastCheckAt,examSkills,...(speaking?{speakingNeeds:speaking.untried}:{}),
    done:position.exam.weekActivity({events,progress:progress.exportSnapshot(),week,extra:[...(writingTimes.length?[{area:'writing',times:writingTimes}]:[]),...(speaking?.times.length?[{area:'speaking',times:speaking.times}]:[])]}),
    available:{practice:practice?practice.practiceSupply({pool,seen,audioAvailable}):{},listening,recheck:diagnostic?.items?.length||0,life:true,
     writing:writingAvailable,topik2:topik2Domains(),...(speaking?{speaking:speaking.list}:{})}});
@@ -486,10 +508,28 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const root=panelNode('[data-position-board]');
   if(root&&position.followups){
    void loadFollowupBank();const delayed=delayedRows(),life=lifeDelayedRows();
-   // 한 줄: 항목 이름(생활이면 · 생활 한국어) · 창 · 상태 · 결과, 지금 확인할 수 있으면 단추(생활은 제품 길로 연다).
-   const line=(row,{source='',attr})=>`<li><strong>${escape(t(`position.skill.${row.measure.skillId}`))}</strong>${source?` · ${escape(source)}`:''} · ${escape(t(`followup.window.${row.window}`))}<p>${escape(t(`followup.status.${row.status}`))}${row.status==='not_due'?` · ${escape(formatDate(Date.parse(row.dueAt),{month:'short',day:'numeric'}))}`:''}${row.outcome?` · ${escape(t(`followup.outcome.${row.outcome}`))}`:''}</p>${row.status==='due'?(row.available?`<button class="quiet-button" ${attr}="${escape(row.id)}">${escape(t('followup.open'))}</button>`:`<p>${escape(t('followup.noSupply'))}</p>`):''}</li>`;
-   const rows=[...delayed.rows.map(row=>line(row,{attr:'data-followup'})),...life.rows.map(row=>line(row,{source:t('position.source.life'),attr:'data-followup-life'}))].join('');
-   root.insertAdjacentHTML('beforeend',`<section class="wpos-followups"><h3>${escape(t('followup.title'))}</h3><p>${escape(t('followup.note'))}</p>${delayed.limited||life.available&&life.limited?`<p role="status">${escape(t('followup.incomplete'))}</p>`:''}${rows?`<ul>${rows}</ul>`:`<p>${escape(t('followup.empty'))}</p>`}</section>`);
+   // 기준 답(Temper 앵커)마다 카드 한 장: 항목 이름(생활이면 · 생활 한국어) 아래 1 · 7 · 30일 세 칸 — 아직이면 날짜만, 지금 확인할 수 있으면
+   // 그 칸에 불이 켜지고 카드 아래 단추(생활은 제품 길로 연다). 같은 꼴의 줄을 창마다 되풀이하지 않고, 지금 확인할 카드가 먼저 · 그다음 가까운 날짜 차례다.
+   // 카드가 있으면 짧은 진단 · 항목 판 앞에 둔다(판 끝에서 찾기 어렵다). 없으면 예전처럼 판 끝에 한 줄(11-08 프론트 검수 A2 · B6).
+   // 칸 글은 좁은 폭(390 · 세 칸 각 95px쯤)에서도 두 줄 안으로: 지금이면 「지금 확인」, 창이 지났으면 「기간 지남」, 확인했으면 결과의 짧은 꼴
+   // (「혼자 맞힘」 · 「다시 연습」), 제외 · 판단 보류도 짧게 — 긴 문장(결과 · 상태)은 칸의 title로만(끝 판 F1).
+   // 생활 카드의 단추는 실제로 열리는 곳을 말한다(다음 레슨 · 새 장면 복습 — life-followups route). TOPIK 카드는 그대로 「새 문항으로 확인하기」.
+   const LED={due:'check',observed:'ok'},SHORT={due:'followup.step.due',missed:'followup.step.missed',invalidated:'followup.step.invalidated',unavailable:'followup.step.unavailable'};
+   const OUTCOMES=new Set(['independent-correct','independent-incorrect','assisted-correct','assisted-incorrect']),list=followupCards(delayed.rows,life.rows);
+   const stepText=row=>row.status==='not_due'?formatDate(Date.parse(row.dueAt),{month:'short',day:'numeric'}):row.outcome?t(OUTCOMES.has(row.outcome)?`followup.step.${row.outcome}`:`followup.outcome.${row.outcome}`):t(SHORT[row.status]||`followup.status.${row.status}`);
+   const stepTitle=row=>row.status==='not_due'?'':row.outcome?t(`followup.outcome.${row.outcome}`):SHORT[row.status]?t(`followup.status.${row.status}`):'';
+   const step=row=>{const title=stepTitle(row);return `<li data-status="${escape(row.status)}"${title?` title="${escape(title)}"`:''}><span class="wfol-window">${escape(t(`followup.window.${row.window}`))}</span><span class="wfol-state">${LED[row.status]?`<i class="w-led ${LED[row.status]}" aria-hidden="true"></i>`:''}<span>${escape(stepText(row))}</span></span></li>`;};
+   const openLabel=(value,row)=>!value.life?t('followup.open'):row.route?.route==='lesson'?t('followup.openLesson'):row.route?.route==='review'?t('followup.openReview'):t('followup.open');
+   const card=value=>{
+    const sub=[value.life?t('position.source.life'):'',value.twin&&value.difficulty?t('position.evidence.level',{n:value.difficulty}):''].filter(Boolean).join(' · ');
+    const open=value.rows.find(row=>row.status==='due'),attr=value.life?'data-followup-life':'data-followup';
+    const steps=value.rows.map(step).join('');
+    return `<li class="wfol-card"${open?' data-due':''}><p class="wfol-head"><strong>${escape(t(`position.skill.${value.skillId}`))}</strong>${sub?`<small>${escape(sub)}</small>`:''}</p><ol class="wfol-steps">${steps}</ol>${open?(open.available?`<button class="quiet-button wfol-open" type="button" ${attr}="${escape(open.id)}">${escape(openLabel(value,open))} <span aria-hidden="true">→</span></button>`:`<p class="wfol-note">${escape(t('followup.noSupply'))}</p>`):''}</li>`;
+   };
+   const incomplete=delayed.limited||life.available&&life.limited?`<p class="wfol-note" role="status">${escape(t('followup.incomplete'))}</p>`:'';
+   const section=`<section class="wpos-followups"${list.length?' data-cards':''}><p class="life-section-label">CHECK AGAIN</p><h3>${escape(t('followup.title'))}</h3><p>${escape(t('followup.note'))}</p>${incomplete}${list.length?`<ul class="wfol-list">${list.map(card).join('')}</ul>`:`<p>${escape(t('followup.empty'))}</p>`}</section>`;
+   const before=list.length?root.querySelector('.wpos-diagnostic')||root.querySelector('.wpos-group'):null;
+   if(before)before.insertAdjacentHTML('beforebegin',section);else root.insertAdjacentHTML('beforeend',section);
    root.querySelectorAll('[data-followup]').forEach(button=>button.addEventListener('click',()=>{void startPractice(null,{followupId:button.dataset.followup}).catch(failed);}));
    root.querySelectorAll('[data-followup-life]').forEach(button=>button.addEventListener('click',()=>{try{check();void Promise.resolve(openLifeFollowup(button.dataset.followupLife)).catch(failed);}catch(error){failed(error);}}));
    const supply=position.practice.practiceSupply({pool:position.practice.pool,seen:seenBy(coachNow)});

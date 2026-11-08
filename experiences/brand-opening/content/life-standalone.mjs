@@ -16802,7 +16802,15 @@ var escape2 = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": 
 var friends = { mongle: { name: "\uBABD\uAE00", file: "friend-mongle.webp", cut: "mongle" }, kkamong: { name: "\uAE4C\uBABD", file: "friend-kkamong.webp", cut: "kkamong" }, marine: { name: "\uB9C8\uB9B0", file: "friend-marine.webp", cut: "marin" } };
 var phaseName = (type) => t(`life.phase.${type}`);
 var phaseLabels = { expressions: "EXPRESSIONS", story: "STORY", apply: "PRACTICE", visit: "CAFE VISIT", compose: "MY ORDER" };
-var dayLabel = (at) => formatDate(at, { month: "numeric", day: "numeric", hour: "numeric", minute: "2-digit" });
+var dayLabel = (at) => {
+  if (!Number.isFinite(at)) return "";
+  const now = Date.now(), minutes2 = Math.ceil((at - now) / 6e4);
+  if (minutes2 < 60) return t("life.when.minutes", { n: Math.max(1, minutes2) });
+  const time4 = formatDate(at, { hour: "numeric", minute: "2-digit" }), day = (value) => new Date(value).toDateString();
+  if (day(at) === day(now)) return t("life.when.today", { time: time4 });
+  if (day(at) === day(now + 864e5)) return t("life.when.tomorrow", { time: time4 });
+  return formatDate(at, { month: "short", day: "numeric" });
+};
 var ago = (at) => {
   if (!Number.isFinite(at)) return "";
   const minutes2 = Math.floor(Math.max(0, Date.now() - at) / 6e4);
@@ -17496,7 +17504,18 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       const l = lessonById(r.lessonId), q2 = l?.questions.find((x) => x.id === r.questionId);
       return { korean: expressionOf(l, q2).korean, origin: reviewOrigin(r, snapshot) };
     }).filter((i) => i.korean);
-    paint(t("life.reviewTitle"), `<div class="life-review-summary life-heading" tabindex="-1"><section class="life-poster life-review-poster">${print("review")}<small class="life-poster-label">REVIEW${s.dueCount ? ` \xB7 ${pad(s.dueCount)}` : ""}</small><h3 class="life-poster-word">${s.dueCount ? t("life.reviewWordCount", { n: s.dueCount }) : t(future ? "life.reviewWordNext" : "life.reviewWordNone")}</h3><p class="life-poster-sub">${s.dueCount ? t("life.reviewSubDue") : future ? t("life.reviewSubOpens", { date: escape2(future) }) : t("life.reviewSubNone")}</p></section>${items.length ? `<section class="life-review-list" aria-label="${t("life.backWord")}"><p class="life-section-label">BACK AGAIN</p><ul>${items.map((i) => `<li><strong lang="ko">${escape2(i.korean)}</strong><small>${escape2(i.origin)}</small></li>`).join("")}</ul></section>` : ""}${restLine("review")}</div><div class="life-actions">${s.dueCount ? `<button class="felt-button" data-life-review-start>${t("life.reviewStart")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-next>${t("life.doNextLesson")}</button>` : `<button class="felt-button" data-life-next>${t("life.doNextLesson")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-home>${t("life.toTown")}</button>`}</div>`, { type: "life-review" });
+    const upcoming = [];
+    if (!s.dueCount) {
+      const metKorean = /* @__PURE__ */ new Set();
+      for (const r of Object.values(snapshot.reviews || {}).filter((r2) => Number.isFinite(r2?.dueAt) && r2.dueAt > Date.now()).sort((a, b) => a.dueAt - b.dueAt || String(a.id).localeCompare(String(b.id)))) {
+        const l = lessonById(r.lessonId), q2 = l?.questions.find((x) => x.id === r.questionId), korean = q2 ? expressionOf(l, q2).korean : "";
+        if (!korean || metKorean.has(korean)) continue;
+        metKorean.add(korean);
+        upcoming.push({ korean, when: dayLabel(r.dueAt) });
+        if (upcoming.length >= 6) break;
+      }
+    }
+    paint(t("life.reviewTitle"), `<div class="life-review-summary life-heading" tabindex="-1"><section class="life-poster life-review-poster">${print("review")}<small class="life-poster-label">REVIEW${s.dueCount ? ` \xB7 ${pad(s.dueCount)}` : ""}</small><h3 class="life-poster-word">${s.dueCount ? t("life.reviewWordCount", { n: s.dueCount }) : t(future ? "life.reviewWordNext" : "life.reviewWordNone")}</h3><p class="life-poster-sub">${s.dueCount ? t("life.reviewSubDue") : future ? t("life.reviewSubOpens", { date: escape2(future) }) : t("life.reviewSubNone")}</p></section>${items.length ? `<section class="life-review-list" aria-label="${t("life.backWord")}"><p class="life-section-label">BACK AGAIN</p><ul>${items.map((i) => `<li><strong lang="ko">${escape2(i.korean)}</strong><small>${escape2(i.origin)}</small></li>`).join("")}</ul></section>` : ""}${upcoming.length ? `<section class="life-review-list" data-upcoming aria-label="${t("life.comingBack")}"><p class="life-section-label">COMING BACK</p><ul>${upcoming.map((i) => `<li><strong lang="ko">${escape2(i.korean)}</strong><small>${escape2(i.when)}</small></li>`).join("")}</ul></section>` : ""}${restLine("review")}</div><div class="life-actions">${s.dueCount ? `<button class="felt-button" data-life-review-start>${t("life.reviewStart")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-next>${t("life.doNextLesson")}</button>` : `<button class="felt-button" data-life-next>${t("life.doNextLesson")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-home>${t("life.toTown")}</button>`}</div>`, { type: "life-review" });
   }
   function reviewStart(lessonId = null, requestedIds = null, { soon = false } = {}) {
     prepareLearning();
@@ -21593,6 +21612,7 @@ __export(world_exam_plan_exports, {
   EXAM_GRADES: () => EXAM_GRADES,
   EXAM_PLAN_POLICY: () => EXAM_PLAN_POLICY,
   buildExamPlan: () => buildExamPlan,
+  examEvidenceSkills: () => examEvidenceSkills,
   examInfo: () => examInfo,
   examPhase: () => examPhase,
   examWeek: () => examWeek,
@@ -21756,7 +21776,21 @@ function split(total, needs, boost = {}, first = []) {
   }
   return out;
 }
-function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, available = {}, classwork = [], audioAvailable = true, lastCheckAt = null, speakingNeeds = null } = {}) {
+function examEvidenceSkills(events = []) {
+  const decisions = /* @__PURE__ */ new Map(), shown = /* @__PURE__ */ new Map(), skills = /* @__PURE__ */ new Set();
+  for (const event of Array.isArray(events) ? events : []) {
+    if (event?.type === "decision.made") decisions.set(event.id, event.experienceId);
+    else if (event?.type === "practice.presented") shown.set(event.id, event);
+  }
+  for (const event of Array.isArray(events) ? events : []) {
+    if (event?.type !== "practice.attempted") continue;
+    const presentation = shown.get(event.presentationId), skill2 = presentation?.measure?.skillId;
+    if (typeof skill2 !== "string" || decisions.get(presentation.decisionId) === "world-life") continue;
+    skills.add(skill2);
+  }
+  return skills;
+}
+function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, available = {}, classwork = [], audioAvailable = true, lastCheckAt = null, speakingNeeds = null, examSkills = null } = {}) {
   if (!planRecord(exam)) return null;
   const week = examWeek(now), { phase, weeks } = examPhase(exam.date, now), policy = EXAM_PLAN_POLICY;
   const pace = exam.weeklyMinutes && policy.weekly[exam.weeklyMinutes] || policy.fallback;
@@ -21783,7 +21817,8 @@ function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, av
   const classCount = (kind) => tasks.filter((row) => row.kind === kind).length, classDone = (kind) => tasks.filter((row) => row.kind === kind && row.done).length;
   const did = { listening: 0, reading: 0, writing: 0, recheck: 0, life: 0, ...planRecord(done) ? done : {} };
   for (const kind of ["reading", "writing"]) did[kind] = (did[kind] || 0) + classDone(kind);
-  const start = complete && !observed.length;
+  const startSkills = examSkills instanceof Set ? examSkills : Array.isArray(examSkills) ? new Set(examSkills) : null;
+  const start = complete && !(startSkills ? observed.filter((skill2) => startSkills.has(skill2.id)) : observed).length;
   const cycle = (at) => policy.recheckEvery[examPhase(exam.date, at).phase] || 4, lastWeek = planTime(lastCheckAt) ? examWeek(lastCheckAt).start : null;
   const spaced = (at, prev) => prev === null || at - prev >= cycle(at) * 7 * DAY2;
   const recheck = did.recheck > 0 || recheckFresh > 0 && (start || recheckWeek(exam.date, week.start) && spaced(week.start, lastWeek)) ? 1 : 0;
@@ -22346,7 +22381,7 @@ function hostReason(chosen, { history, plan, labels }) {
   if (selected.route === "position") return { reason: plan?.notes?.includes("start") ? "\uC2DC\uD5D8 \uBAA9\uD45C\uC5D0 \uB9DE\uCDB0 \uC9E7\uC740 \uC9C4\uB2E8\uC73C\uB85C \uC2DC\uC791\uC810\uC744 \uBA3C\uC800 \uD655\uC778\uD574\uC694." : "\uC774\uBC88 \uC8FC \uACC4\uD68D\uC758 \uB2E4\uC2DC \uD655\uC778\uC774\uC5D0\uC694. \uCC98\uC74C \uBCF4\uB294 \uBB38\uD56D\uC73C\uB85C \uC9C0\uAE08 \uC704\uCE58\uB97C \uD655\uC778\uD574\uC694.", reasons: ["plan.recheck"] };
   const unseen = (chosen.reasons || []).includes("practice.unseen") && !(chosen.reasons || []).includes("goal.declared");
   if (!unseen || !history) return null;
-  if (selected.route === "lesson") return { reason: "\uC0DD\uD65C \uD329\uC758 \uB2E4\uC74C \uB808\uC2A8\uC774\uC5D0\uC694. \uC9C4\uB3C4 \uC21C\uC11C\uB300\uB85C \uC774\uC5B4\uC11C \uBC30\uC6CC\uC694.", reasons: ["progress.next"] };
+  if (selected.route === "lesson") return { reason: "\uC0DD\uD65C \uD329\uC758 \uB2E4\uC74C \uB808\uC2A8\uC774\uC5D0\uC694. \uC544\uC9C1 \uAE30\uB85D\uC774 \uC5C6\uB294 \uD45C\uD604\uC744 \uC0C8\uB85C \uB9CC\uB098\uC694.", reasons: ["progress.next"] };
   return null;
 }
 function createWorldLearningPlan({ summary = null, progress: progress2 = {}, settings = {}, now = Date.now(), recommendActivities, answers = null, openGames = null, extra = [], examPlan = null } = {}) {
@@ -22485,6 +22520,28 @@ function lifeFollowupRows({ projection, seen, snapshot = null, now = Date.now(),
 }
 
 // experiences/synk-world-app/world-learning-ui.mjs
+var FOLLOWUP_WINDOWS = ["d1", "d7", "d30"];
+function followupCards(delayed = [], life = []) {
+  const cards = /* @__PURE__ */ new Map();
+  for (const [row, isLife] of [...(Array.isArray(delayed) ? delayed : []).map((row2) => [row2, false]), ...(Array.isArray(life) ? life : []).map((row2) => [row2, true])]) {
+    if (!row || typeof row.measure?.skillId !== "string") continue;
+    const key = `${isLife ? "life" : "topik"}|${row.sourceAttemptId || row.id}`;
+    if (!cards.has(key)) cards.set(key, { life: isLife, skillId: row.measure.skillId, difficulty: row.measure.difficulty ?? null, rows: [], twin: false });
+    cards.get(key).rows.push(row);
+  }
+  const list = [...cards.values()], count = /* @__PURE__ */ new Map();
+  for (const card of list) {
+    const name = `${card.life}|${card.skillId}`;
+    count.set(name, (count.get(name) || 0) + 1);
+  }
+  for (const card of list) {
+    card.twin = count.get(`${card.life}|${card.skillId}`) > 1;
+    card.rows.sort((a, b) => FOLLOWUP_WINDOWS.indexOf(a.window) - FOLLOWUP_WINDOWS.indexOf(b.window) || Date.parse(a.dueAt) - Date.parse(b.dueAt));
+  }
+  const due = (card) => card.rows.some((row) => row.status === "due");
+  const next = (card) => Math.min(Infinity, ...card.rows.filter((row) => row.status === "not_due").map((row) => Date.parse(row.dueAt)).filter(Number.isFinite));
+  return list.sort((a, b) => Number(due(b)) - Number(due(a)) || next(a) - next(b));
+}
 var escape3 = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 var REASON_IDS = ["travel", "life", "people", "exam", "study", "work", "career", "culture", "hobby", "other"];
 var reasons = () => Object.fromEntries(REASON_IDS.map((id) => [id, t2(`goal.reason.${id}`)]));
@@ -22898,6 +22955,12 @@ function createWorldEducation({
         writingTimes = [];
       }
     }
+    let examSkills = null;
+    try {
+      examSkills = position.exam.examEvidenceSkills?.(events) ?? null;
+    } catch {
+      examSkills = null;
+    }
     const examPlan = position.exam.buildExamPlan({
       exam: speaking ? { ...exam, speaking: true } : exam,
       summary,
@@ -22905,6 +22968,7 @@ function createWorldEducation({
       audioAvailable,
       classwork: classworkRows(),
       lastCheckAt,
+      examSkills,
       ...speaking ? { speakingNeeds: speaking.untried } : {},
       done: position.exam.weekActivity({ events, progress: progress2.exportSnapshot(), week, extra: [...writingTimes.length ? [{ area: "writing", times: writingTimes }] : [], ...speaking?.times.length ? [{ area: "speaking", times: speaking.times }] : []] }),
       available: {
@@ -23306,9 +23370,26 @@ function createWorldEducation({
     if (root && position.followups) {
       void loadFollowupBank();
       const delayed = delayedRows(), life = lifeDelayedRows();
-      const line = (row, { source = "", attr }) => `<li><strong>${escape3(t2(`position.skill.${row.measure.skillId}`))}</strong>${source ? ` \xB7 ${escape3(source)}` : ""} \xB7 ${escape3(t2(`followup.window.${row.window}`))}<p>${escape3(t2(`followup.status.${row.status}`))}${row.status === "not_due" ? ` \xB7 ${escape3(formatDate2(Date.parse(row.dueAt), { month: "short", day: "numeric" }))}` : ""}${row.outcome ? ` \xB7 ${escape3(t2(`followup.outcome.${row.outcome}`))}` : ""}</p>${row.status === "due" ? row.available ? `<button class="quiet-button" ${attr}="${escape3(row.id)}">${escape3(t2("followup.open"))}</button>` : `<p>${escape3(t2("followup.noSupply"))}</p>` : ""}</li>`;
-      const rows2 = [...delayed.rows.map((row) => line(row, { attr: "data-followup" })), ...life.rows.map((row) => line(row, { source: t2("position.source.life"), attr: "data-followup-life" }))].join("");
-      root.insertAdjacentHTML("beforeend", `<section class="wpos-followups"><h3>${escape3(t2("followup.title"))}</h3><p>${escape3(t2("followup.note"))}</p>${delayed.limited || life.available && life.limited ? `<p role="status">${escape3(t2("followup.incomplete"))}</p>` : ""}${rows2 ? `<ul>${rows2}</ul>` : `<p>${escape3(t2("followup.empty"))}</p>`}</section>`);
+      const LED = { due: "check", observed: "ok" }, SHORT = { due: "followup.step.due", missed: "followup.step.missed", invalidated: "followup.step.invalidated", unavailable: "followup.step.unavailable" };
+      const OUTCOMES2 = /* @__PURE__ */ new Set(["independent-correct", "independent-incorrect", "assisted-correct", "assisted-incorrect"]), list = followupCards(delayed.rows, life.rows);
+      const stepText = (row) => row.status === "not_due" ? formatDate2(Date.parse(row.dueAt), { month: "short", day: "numeric" }) : row.outcome ? t2(OUTCOMES2.has(row.outcome) ? `followup.step.${row.outcome}` : `followup.outcome.${row.outcome}`) : t2(SHORT[row.status] || `followup.status.${row.status}`);
+      const stepTitle = (row) => row.status === "not_due" ? "" : row.outcome ? t2(`followup.outcome.${row.outcome}`) : SHORT[row.status] ? t2(`followup.status.${row.status}`) : "";
+      const step = (row) => {
+        const title = stepTitle(row);
+        return `<li data-status="${escape3(row.status)}"${title ? ` title="${escape3(title)}"` : ""}><span class="wfol-window">${escape3(t2(`followup.window.${row.window}`))}</span><span class="wfol-state">${LED[row.status] ? `<i class="w-led ${LED[row.status]}" aria-hidden="true"></i>` : ""}<span>${escape3(stepText(row))}</span></span></li>`;
+      };
+      const openLabel = (value, row) => !value.life ? t2("followup.open") : row.route?.route === "lesson" ? t2("followup.openLesson") : row.route?.route === "review" ? t2("followup.openReview") : t2("followup.open");
+      const card = (value) => {
+        const sub = [value.life ? t2("position.source.life") : "", value.twin && value.difficulty ? t2("position.evidence.level", { n: value.difficulty }) : ""].filter(Boolean).join(" \xB7 ");
+        const open2 = value.rows.find((row) => row.status === "due"), attr = value.life ? "data-followup-life" : "data-followup";
+        const steps = value.rows.map(step).join("");
+        return `<li class="wfol-card"${open2 ? " data-due" : ""}><p class="wfol-head"><strong>${escape3(t2(`position.skill.${value.skillId}`))}</strong>${sub ? `<small>${escape3(sub)}</small>` : ""}</p><ol class="wfol-steps">${steps}</ol>${open2 ? open2.available ? `<button class="quiet-button wfol-open" type="button" ${attr}="${escape3(open2.id)}">${escape3(openLabel(value, open2))} <span aria-hidden="true">\u2192</span></button>` : `<p class="wfol-note">${escape3(t2("followup.noSupply"))}</p>` : ""}</li>`;
+      };
+      const incomplete = delayed.limited || life.available && life.limited ? `<p class="wfol-note" role="status">${escape3(t2("followup.incomplete"))}</p>` : "";
+      const section = `<section class="wpos-followups"${list.length ? " data-cards" : ""}><p class="life-section-label">CHECK AGAIN</p><h3>${escape3(t2("followup.title"))}</h3><p>${escape3(t2("followup.note"))}</p>${incomplete}${list.length ? `<ul class="wfol-list">${list.map(card).join("")}</ul>` : `<p>${escape3(t2("followup.empty"))}</p>`}</section>`;
+      const before = list.length ? root.querySelector(".wpos-diagnostic") || root.querySelector(".wpos-group") : null;
+      if (before) before.insertAdjacentHTML("beforebegin", section);
+      else root.insertAdjacentHTML("beforeend", section);
       root.querySelectorAll("[data-followup]").forEach((button) => button.addEventListener("click", () => {
         void startPractice(null, { followupId: button.dataset.followup }).catch(failed);
       }));
@@ -27138,7 +27219,7 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     const head = parts.length ? parts.join(" \xB7 ") : t3("plan.week.noExam");
     const notes = new Set(plan.notes || []);
     const writingOpen = exam.type === "topik2" && !notes.has("writing-unavailable");
-    const area = (row) => `<li data-area="${posEscape(row.area)}"><span class="wplan-area-name">${posEscape(t3(`plan.area.${row.area}`))}</span>${dots(row.planned, row.done)}<span class="wplan-area-count">${posEscape(t3("plan.area.count", { done: row.done, planned: row.planned }))}</span>${row.classwork?.length ? `<small class="wplan-classwork">${row.classwork.map((task) => posEscape(t3(task.done ? "plan.classwork.done" : "plan.classwork.todo", { kind: t3(`plan.area.${task.kind}`) }))).join(" \xB7 ")}</small>` : ""}${row.area === "writing" && writingOpen ? `<button class="quiet-button wplan-area-open" type="button" data-plan-writing="writing">${posEscape(t3("writing.row.title"))} <span aria-hidden="true">\u2192</span></button>` : ""}</li>`;
+    const area = (row) => `<li data-area="${posEscape(row.area)}"><span class="wplan-area-name">${posEscape(t3(`plan.area.${row.area}`))}</span>${dots(row.planned, row.done)}<span class="wplan-area-count">${posEscape(row.planned > 0 ? t3("plan.area.count", { done: row.done, planned: row.planned }) : t3(row.area === "life" ? "plan.area.extraDays" : "plan.area.extra", { done: row.done }))}</span>${row.classwork?.length ? `<small class="wplan-classwork">${row.classwork.map((task) => posEscape(t3(task.done ? "plan.classwork.done" : "plan.classwork.todo", { kind: t3(`plan.area.${task.kind}`) }))).join(" \xB7 ")}</small>` : ""}${row.area === "writing" && writingOpen ? `<button class="quiet-button wplan-area-open" type="button" data-plan-writing="writing">${posEscape(t3("writing.row.title"))} <span aria-hidden="true">\u2192</span></button>` : ""}</li>`;
     const nextTitle = next ? planTitle(next) : "";
     const gameOf = (id) => String(id || "").split(".").pop();
     const bridgeName = (id) => exam.type === "topik2" && /^ko\.(listening|reading)\./.test(String(id || "")) ? `${t3("goal.exam.type.topik1")} \xB7 ` : "";

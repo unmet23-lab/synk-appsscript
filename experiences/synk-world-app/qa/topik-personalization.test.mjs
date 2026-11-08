@@ -113,7 +113,8 @@ test('완료 ③: 도움·다시 듣기·소리 실패는 「혼자 해냄」으
  assert.equal(row.note.kind,'helped');assert.match(view.noteText(row.note),/^도움과 함께 시도 · /);
  assert.ok(row.unassessed>=1,'소리가 나지 않은 답은 세지 않은 답으로 남는다');
  const board=view.renderPositionBoard({map});
- assert.match(board,/도움과 함께 한 시도[\s\S]*틀림 · 도움 받음/);assert.match(board,/소리가 안 났거나 건너뛴 답 \d+개는 세지 않았어요/);
+ assert.match(board,/도움과 함께 한 시도[\s\S]*틀림 · 도움 받음/);assert.match(board,/답 \d+개는 칸을 정하는 데 쓰지 않았어요/,'세지 않은 답은 학습자가 안 한 일(소리 · 건너뜀)을 늘어놓지 않고 짧게(11-08 프론트 검수 — 생활 답에도 뜬다)');
+ assert.doesNotMatch(board,/소리가 안 났거나 건너뛴|연습용 문제/);
  assert.equal(row.helped[0].experienceId,'world-home');assert.match(board,/data-helped>[\s\S]*짧은 진단/,'도움과 함께 낸 진단 답의 출처는 짧은 진단(10-21 검수)');
  // 읽기 짧은 연습: 답한 뒤 정답·해설을 보는 것은 첫 답 뒤라 그 답은 혼자 낸 첫 시도 그대로다.
  const item=POOL.find(row=>row.skillId==='ko.reading.detail'),run=practice.createPracticeSession({coach:s.drill,items:[item]});run.next();s.tick();
@@ -172,8 +173,8 @@ test('기록이 쌓인 사람에게 「아직 연습 기록이 적어요」라�
  assert.notEqual(plan.reason,'아직 연습 기록이 적어요. 짧게 해 보며 맞춰 갈게요.');
  const {default:STRINGS}=await import('../../brand-opening/world-strings.mjs');
  const table=new Set(Object.entries(STRINGS).filter(([key])=>key.startsWith('msg.')).map(([,entry])=>entry.ko));
- for(const reason of ['시험 목표에 맞춰 짧은 진단으로 시작점을 먼저 확인해요.','이번 주 계획의 다시 확인이에요. 처음 보는 문항으로 지금 위치를 확인해요.','생활 팩의 다음 레슨이에요. 진도 순서대로 이어서 배워요.'])assert.ok(table.has(reason),reason);
- if(plan.selected.route==='lesson'&&!(plan.selected.targets||[]).length)assert.equal(plan.reason,'생활 팩의 다음 레슨이에요. 진도 순서대로 이어서 배워요.');
+ for(const reason of ['시험 목표에 맞춰 짧은 진단으로 시작점을 먼저 확인해요.','이번 주 계획의 다시 확인이에요. 처음 보는 문항으로 지금 위치를 확인해요.','생활 팩의 다음 레슨이에요. 아직 기록이 없는 표현을 새로 만나요.'])assert.ok(table.has(reason),reason);
+ if(plan.selected.route==='lesson'&&!(plan.selected.targets||[]).length)assert.equal(plan.reason,'생활 팩의 다음 레슨이에요. 아직 기록이 없는 표현을 새로 만나요.');
 });
 test('검수 목록: 통과(pass)이고 검수가 확인한 메타가 같은 문항만 연습에 낸다 — 목록이 비면 읽기 짧은 연습은 닫힌다',()=>{
  assert.equal(verdicts.version,'topik-existing-verdicts-1');

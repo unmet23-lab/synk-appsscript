@@ -633,11 +633,33 @@ h3.life-poster-sub{margin-bottom:0}
 .wpos>.felt-button{width:100%}
 /* 진단 한 문항 */
 .wpos-stage{min-width:0}
-.wpos-followups,.wpos-advisory{margin-block:24px;padding-top:20px;border-top:1px solid var(--w-line);min-width:0}
-.wpos-followups ul{list-style:none;margin:12px 0;padding:0}
-.wpos-followups li{padding:14px 0;border-bottom:1px solid var(--w-line);overflow-wrap:anywhere}
-.wpos-followups p,.wpos-advisory p{font-size:14px;line-height:1.6;color:var(--w-ink-2);margin:6px 0}
-.wpos-followups h3,.wpos-advisory h3{font-size:20px;margin:0 0 8px}
+.wpos-advisory{margin-block:24px;padding-top:20px;border-top:1px solid var(--w-line);min-width:0}
+.wpos-advisory p{font-size:14px;line-height:1.6;color:var(--w-ink-2);margin:6px 0}
+.wpos-advisory h3{font-size:20px;margin:0 0 8px}
+/* 시간을 두고 다시 확인(11-08 프론트 검수): 카드가 있으면 진단 칸과 같은 카드 꼴로 진단 앞에, 없으면 판 끝의 한 줄.
+   기준 답마다 항목 이름 아래 1 · 7 · 30일 세 칸 — 지금 확인할 칸은 노란 불, 확인한 칸은 초록 불. */
+.wpos-followups{display:grid;gap:8px;min-width:0}
+.wpos-followups:not([data-cards]){margin-top:6px;padding-top:20px;border-top:1px solid var(--w-line)}
+.wpos-followups[data-cards]{padding:16px 16px 18px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.wpos-followups>.life-section-label{margin:0}
+.wpos-followups>h3{margin:0;font-size:18px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.wpos-followups>p:not(.life-section-label){margin:0;font-size:14px;line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
+.wpos-followups .wfol-note{margin:0;font-size:13.5px;line-height:1.55;color:var(--w-ink-3)}
+.wfol-list{display:grid;margin:4px 0 0;padding:0;list-style:none}
+.wfol-card{display:grid;gap:10px;padding:14px 0 4px;border-top:1px solid var(--w-line);min-width:0}
+.wfol-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;margin:0}
+.wfol-head strong{font-size:15.5px;line-height:1.4;font-weight:var(--wt-strong);color:var(--w-ink)}
+.wfol-head small{font-size:13px;line-height:1.4;color:var(--w-ink-3)}
+.wfol-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}
+.wfol-steps>li{display:grid;align-content:start;gap:5px;min-width:0;padding:10px 10px 11px;border-radius:12px;background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line)}
+.wfol-window{font-family:var(--w-mono);font-size:12px;line-height:1.3;letter-spacing:.02em;color:var(--w-ink-3);overflow-wrap:anywhere}
+.wfol-state{display:block;min-width:0;font-size:14px;line-height:1.35;font-weight:var(--wt-strong);color:var(--w-ink);overflow-wrap:anywhere;text-wrap:balance}
+.wfol-state>.w-led{margin-right:6px;vertical-align:.1em}
+.wfol-steps>li[data-status=due]{box-shadow:inset 0 0 0 1.5px var(--w-led-check)}
+.wfol-steps>li[data-status=due] .wfol-state{color:var(--w-check-text)}
+.wfol-steps>li[data-status=observed] .wfol-state{color:var(--w-ok-text)}
+.wfol-steps>li:is([data-status=missed],[data-status=invalidated],[data-status=unavailable]) .wfol-state{font-size:13px;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.wfol-open{justify-self:start}
 .wpos-run{gap:16px}
 .wpos-run-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px}
 .wpos-run-count{margin:0;font-family:var(--w-mono);font-size:12px;letter-spacing:.06em;color:var(--w-ink-3)}

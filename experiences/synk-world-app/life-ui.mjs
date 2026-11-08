@@ -18,7 +18,17 @@ const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&
 const friends={mongle:{name:'몽글',file:'friend-mongle.webp',cut:'mongle'},kkamong:{name:'까몽',file:'friend-kkamong.webp',cut:'kkamong'},marine:{name:'마린',file:'friend-marine.webp',cut:'marin'}};
 const phaseName=type=>t(`life.phase.${type}`);
 const phaseLabels={expressions:'EXPRESSIONS',story:'STORY',apply:'PRACTICE',visit:'CAFE VISIT',compose:'MY ORDER'};
-const dayLabel=at=>formatDate(at,{month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit'});
+// 다음 복습 때(「다음 복습 {date}」 · 「{date}에 열려요」): 한 시간 안이면 「N분 뒤」, 오늘 · 내일이면 그 말과 시각, 그 뒤는 날짜만
+// (11-08 프론트 검수 A4 — 「11. 8. 오후 7:26」 같은 기계식 시각은 복습 간격의 뜻을 가렸다).
+const dayLabel=at=>{
+ if(!Number.isFinite(at))return '';
+ const now=Date.now(),minutes=Math.ceil((at-now)/60000);
+ if(minutes<60)return t('life.when.minutes',{n:Math.max(1,minutes)});
+ const time=formatDate(at,{hour:'numeric',minute:'2-digit'}),day=value=>new Date(value).toDateString();
+ if(day(at)===day(now))return t('life.when.today',{time});
+ if(day(at)===day(now+86400000))return t('life.when.tomorrow',{time});
+ return formatDate(at,{month:'short',day:'numeric'});
+};
 // 복습에서 「언제 · 어디서」 배운 표현인지 붙인다. 시각은 그때그때 계산한다.
 const ago=at=>{if(!Number.isFinite(at))return '';const minutes=Math.floor(Math.max(0,Date.now()-at)/60000);if(minutes<1)return t('life.ago.now');if(minutes<60)return t('life.ago.minutes',{n:minutes});const hours=Math.floor(minutes/60);return hours<24?t('life.ago.hours',{n:hours}):t('life.ago.days',{n:Math.floor(hours/24)});};
 const placeAt=packId=>hasString(`life.place.${packId}`)?t(`life.place.${packId}`):'';
@@ -432,7 +442,19 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  }
  function review(){if(!ensureReadable())return;place='life';context=null;lastFeedback=null;helped=false;helpBy=null;reviewRun=null;const s=summary(),future=Number.isFinite(s.nextReviewAt)?dayLabel(s.nextReviewAt):'',snapshot=getProgress().exportSnapshot();
   const items=s.dueReviews.map(r=>{const l=lessonById(r.lessonId),q=l?.questions.find(x=>x.id===r.questionId);return {korean:expressionOf(l,q).korean,origin:reviewOrigin(r,snapshot)};}).filter(i=>i.korean);
-  paint(t('life.reviewTitle'),`<div class="life-review-summary life-heading" tabindex="-1"><section class="life-poster life-review-poster">${print('review')}<small class="life-poster-label">REVIEW${s.dueCount?` · ${pad(s.dueCount)}`:''}</small><h3 class="life-poster-word">${s.dueCount?t('life.reviewWordCount',{n:s.dueCount}):t(future?'life.reviewWordNext':'life.reviewWordNone')}</h3><p class="life-poster-sub">${s.dueCount?t('life.reviewSubDue'):future?t('life.reviewSubOpens',{date:escape(future)}):t('life.reviewSubNone')}</p></section>${items.length?`<section class="life-review-list" aria-label="${t('life.backWord')}"><p class="life-section-label">BACK AGAIN</p><ul>${items.map(i=>`<li><strong lang="ko">${escape(i.korean)}</strong><small>${escape(i.origin)}</small></li>`).join('')}</ul></section>`:''}${restLine('review')}</div><div class="life-actions">${s.dueCount?`<button class="felt-button" data-life-review-start>${t('life.reviewStart')} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-next>${t('life.doNextLesson')}</button>`:`<button class="felt-button" data-life-next>${t('life.doNextLesson')} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-home>${t('life.toTown')}</button>`}</div>`,{type:'life-review'});
+  // 아직 열린 복습이 없으면 곧 돌아올 표현과 그때를 보인다 — 포스터 한 장만 남은 빈 화면이 「잊을 때쯤 다시」를 가렸다(11-08 프론트 검수).
+  // 같은 표현이 레슨 · 이야기에서 따로 잡혀도 한 번만(가장 이른 때), 여섯 개까지.
+  const upcoming=[];
+  if(!s.dueCount){
+   const metKorean=new Set();
+   for(const r of Object.values(snapshot.reviews||{}).filter(r=>Number.isFinite(r?.dueAt)&&r.dueAt>Date.now()).sort((a,b)=>a.dueAt-b.dueAt||String(a.id).localeCompare(String(b.id)))){
+    const l=lessonById(r.lessonId),q=l?.questions.find(x=>x.id===r.questionId),korean=q?expressionOf(l,q).korean:'';
+    if(!korean||metKorean.has(korean))continue;
+    metKorean.add(korean);upcoming.push({korean,when:dayLabel(r.dueAt)});
+    if(upcoming.length>=6)break;
+   }
+  }
+  paint(t('life.reviewTitle'),`<div class="life-review-summary life-heading" tabindex="-1"><section class="life-poster life-review-poster">${print('review')}<small class="life-poster-label">REVIEW${s.dueCount?` · ${pad(s.dueCount)}`:''}</small><h3 class="life-poster-word">${s.dueCount?t('life.reviewWordCount',{n:s.dueCount}):t(future?'life.reviewWordNext':'life.reviewWordNone')}</h3><p class="life-poster-sub">${s.dueCount?t('life.reviewSubDue'):future?t('life.reviewSubOpens',{date:escape(future)}):t('life.reviewSubNone')}</p></section>${items.length?`<section class="life-review-list" aria-label="${t('life.backWord')}"><p class="life-section-label">BACK AGAIN</p><ul>${items.map(i=>`<li><strong lang="ko">${escape(i.korean)}</strong><small>${escape(i.origin)}</small></li>`).join('')}</ul></section>`:''}${upcoming.length?`<section class="life-review-list" data-upcoming aria-label="${t('life.comingBack')}"><p class="life-section-label">COMING BACK</p><ul>${upcoming.map(i=>`<li><strong lang="ko">${escape(i.korean)}</strong><small>${escape(i.when)}</small></li>`).join('')}</ul></section>`:''}${restLine('review')}</div><div class="life-actions">${s.dueCount?`<button class="felt-button" data-life-review-start>${t('life.reviewStart')} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-next>${t('life.doNextLesson')}</button>`:`<button class="felt-button" data-life-next>${t('life.doNextLesson')} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-home>${t('life.toTown')}</button>`}</div>`,{type:'life-review'});
  }
  // soon: 레슨 결과의 「새 장면으로 다시 보기」 — 방금 놓친 표현은 1분 안에 돌아오므로 그 1분을 기다리지 않는다.
  function reviewStart(lessonId=null,requestedIds=null,{soon=false}={}){prepareLearning();const p=getProgress(),ids=Array.isArray(requestedIds)&&requestedIds.length?requestedIds:null;reviewRun=p.startReview(ids?Math.min(6,ids.length):6,ids?.[0]||null,ids,{soon:soon&&!!ids});if(!reviewRun)return review();for(const id of reviewRun.ids)if(exposedTransfers.has(id)&&!reviewRun.answers[id])p.markReviewHelp(id);lastFeedback=null;helped=false;helpBy=null;renderReview();}

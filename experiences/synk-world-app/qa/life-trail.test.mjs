@@ -9,7 +9,9 @@ import {worldLearning} from '../world-learning-map.mjs';
 import {createLifeTrail,lessonSlot,reviewSlot,productMet} from '../life-trail.mjs';
 import {lifeItem,lifeItems,sameChoices,lifeAssessable} from '../life-items.mjs';
 import {lifeFollowupRows} from '../life-followups.mjs';
-import {weekActivity} from '../world-exam-plan.mjs';
+import {weekActivity,buildExamPlan,examInfo,examEvidenceSkills} from '../world-exam-plan.mjs';
+import {followupCards} from '../world-learning-ui.mjs';
+import {createPositionView} from '../world-position-ui.mjs';
 const require=createRequire(import.meta.url);
 const Trail=require('../../../atlas/trail.js');
 const MINUTE=60000,DAY=86400000,START=Date.UTC(2026,10,9,1);
@@ -236,6 +238,49 @@ test('이번 주 활동: 생활 거울의 답은 읽기로 다시 세지 않고,
  assert.ok(f.coach.events().some(e=>e.type==='decision.made'&&e.experienceId==='world-life'),'거울 답은 경험 world-life의 결정 아래 있다');
  const done=weekActivity({events:f.coach.events(),progress:f.progress.exportSnapshot(),week:{start:START-DAY,end:START+6*DAY}});
  assert.equal(done.reading,0,'생활 답이 읽기 연습으로 한 번 더 세지 않는다');assert.equal(done.life,1);
+});
+
+// 11-08 프론트 검수(아르곤 A2 · B6): 「시간을 두고 다시 확인」이 창마다 같은 줄을 늘어놓고 생활 줄을 TOPIK 줄 뒤에 그대로 이었다.
+test('다시 확인 카드: 기준 답마다 하나 · 창은 1 · 7 · 30일 차례 · 지금 확인할 카드 먼저, 그다음 가까운 날짜 · 같은 항목 카드가 둘이면 twin', () => {
+ const at=d=>new Date(START+d*DAY).toISOString(),order=['d1','d7','d30'];
+ const rows=(src,skillId,difficulty,{shift=0,status={}}={})=>['d30','d1','d7'].map(window=>({id:`${src}:${window}`,sourceAttemptId:src,measure:{skillId,difficulty},window,
+  status:status[window]||'not_due',dueAt:at(shift+{d1:1,d7:7,d30:30}[window])}));
+ const later=rows('topik-late','ko.reading.vocabulary',2,{shift:5}),now=rows('topik-due','ko.reading.detail',1,{shift:-1,status:{d1:'due'}});
+ const soon=rows('life-soon','ko.reading.vocabulary',1),twinA=rows('life-twin-a','ko.reading.grammar',1,{shift:2}),twinB=rows('life-twin-b','ko.reading.grammar',2,{shift:3});
+ const cards=followupCards([...later,...now],[...soon,...twinA,...twinB]);
+ assert.deepEqual(cards.map(card=>card.rows[0].sourceAttemptId),['topik-due','life-soon','life-twin-a','life-twin-b','topik-late'],'지금 확인할 카드 → 가까운 날짜 차례');
+ assert.ok(cards.every(card=>card.rows.length===3&&card.rows.map(row=>row.window).join()===order.join()),'카드마다 세 창, 1 · 7 · 30일 차례');
+ assert.deepEqual(cards.map(card=>[card.life,card.twin]),[[false,false],[true,false],[true,true],[true,true],[false,false]],'같은 출처 · 같은 항목 카드가 둘일 때만 twin(TOPIK 낱말과 생활 낱말은 따로)');
+ assert.deepEqual(followupCards([{id:'x',window:'d1'}],null),[],'항목이 없는 줄 · 배열이 아닌 입력은 버린다');
+});
+
+// 11-08 프론트 검수: 생활 레슨 두 개 뒤 「시험 · TOPIK I」을 고른 학생에게 짧은 진단(시작점) 대신 게임이 먼저 나왔고 그 주의 다시 확인이 사라졌다.
+test('시험 계획의 시작점: 생활 거울의 답만 있으면 시험을 고른 학생도 짧은 진단부터 — 생활 답은 내 위치 칸의 근거로 그대로 센다', () => {
+ const f=fixture(),run=f.lesson('cafe-expressions');for(const x of lessonOf('cafe-expressions').questions){f.show(run,x);f.answer(run,x);}
+ const summary=f.coach.summary(),events=f.coach.events();
+ assert.ok(summary.skills.some(skill=>(skill.n||0)>0),'생활 답은 내 위치 칸의 근거다');
+ const info=examInfo({reasons:['exam'],primaryReason:'exam',examType:'topik1',examDate:'2027-04'});
+ const available={reading:{'ko.reading.detail':3},listening:{},recheck:15,life:true};
+ const only=examEvidenceSkills(events);
+ assert.equal(only.size,0,'생활 거울(world-life)만 있으면 시험 형식 근거 항목이 없다');
+ const plan=buildExamPlan({exam:info,summary,now:f.now(),available,examSkills:only});
+ assert.ok(plan.notes.includes('start'),'짧은 진단부터');assert.equal(plan.areas.find(row=>row.area==='recheck').planned,1,'그 주에 다시 확인(짧은 진단) 한 번');
+ assert.equal(plan.reach.observed,summary.skills.filter(skill=>(skill.n||0)>0||skill.status!=='unseen').filter(skill=>/^ko\.(listening|reading)\./.test(skill.id)).length,'도달 파악은 생활 근거도 그대로 센다');
+ assert.ok(!buildExamPlan({exam:info,summary,now:f.now(),available}).notes.includes('start'),'examSkills 없이 부르면(옛 호출) 예전 판단 그대로');
+ // 생활 밖 연습(읽기 짧은 연습 world-practice)에서 낸 답이 있는 항목은 시작점 근거다.
+ const other=[{type:'decision.made',id:'d-practice',experienceId:'world-practice'},{type:'practice.presented',id:'p-practice',decisionId:'d-practice',measure:{skillId:'ko.reading.detail'}},
+  {type:'practice.attempted',id:'a-practice',presentationId:'p-practice',attemptNo:1,verdict:'correct'}];
+ const both=examEvidenceSkills([...events,...other]);
+ assert.deepEqual([...both],['ko.reading.detail']);
+ assert.ok(!buildExamPlan({exam:info,summary,now:f.now(),available,examSkills:both}).notes.includes('start'),'시험 형식 근거가 있는 항목이 요약에도 근거로 있으면 시작점이 있다');
+ assert.ok(buildExamPlan({exam:info,summary,now:f.now(),available,examSkills:[]}).notes.includes('start'),'배열로 줘도 같다');
+ // 이번 주 계획 칸(11-08 프론트 검수 아르곤 B3 · Fable F5): 계획에 없던 생활 칸은 「1 / 0」이 아니라 한 날 수로 — 레슨 수로 읽히지 않게.
+ const done=weekActivity({events,progress:f.progress.exportSnapshot(),week:{start:START-DAY,end:START+6*DAY}});
+ const withDone=buildExamPlan({exam:info,summary,now:f.now(),done,available,examSkills:only}),lifeRow=withDone.areas.find(row=>row.area==='life');
+ assert.deepEqual([lifeRow?.planned,lifeRow?.done],[0,1],'주 3번 계획에는 생활 칸이 없고 오늘 한 날이 하나');
+ const view=createPositionView({t:(key,values)=>values?`${key}(${Object.entries(values).map(([k,v])=>`${k}=${v}`).join(',')})`:key,has:()=>true});
+ const html=view.renderExamPlan({plan:withDone});
+ assert.match(html,/plan\.area\.extraDays\(done=1\)/);assert.doesNotMatch(html,/plan\.area\.count\(done=1,planned=0\)/);
 });
 
 test('판과 코치: 계정이 바뀌어 옛 거울을 버리면 늦은 사건은 어디에도 가지 않는다', () => {

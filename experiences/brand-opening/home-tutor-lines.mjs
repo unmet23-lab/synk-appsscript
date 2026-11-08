@@ -28,7 +28,9 @@ export function homeTutorRecommendation({owner,summary,snapshot,lessons=[],pract
  const difficult=known.filter(r=>r.lapses>0&&r.streak===0&&practised.get(r.questionId)!==r.lastAt&&!practisedToday(r))
   .sort((a,b)=>Number(b.dueAt<=now)-Number(a.dueAt<=now)||b.lastAt-a.lastAt||a.id.localeCompare(b.id))[0];
  if(difficult)return {kind:'difficult',id:difficult.questionId,title:difficult.title,lessonTitle:difficult.lessonTitle,lastAt:difficult.lastAt,command:'practice',label:'이 표현 같이 연습',...(memory&&!days.today.count&&memory.id===difficult.questionId?{memory}:{})};
- if(summary.dueCount&&known.some(r=>r.dueAt<=now&&!practisedToday(r)))return {kind:'review',command:'review',label:'오늘의 복습 열기',...(memory&&!days.today.count?{memory}:{})};
+ // fresh: 돌아온 복습 가운데 오늘 답한 문제가 있다(레슨에서 틀린 말이 1분 뒤 돌아온 때) — 튜터가 「방금 만난 말」이라고 해도 되는 때만(끝 판 F2).
+ const back=known.filter(r=>r.dueAt<=now&&!practisedToday(r));
+ if(summary.dueCount&&back.length)return {kind:'review',command:'review',label:'오늘의 복습 열기',...(back.some(r=>todayItems[r.questionId]?.lessonId===r.lessonId)?{fresh:true}:{}),...(memory&&!days.today.count?{memory}:{})};
  if(summary.nextLesson)return {kind:summary.resume?'resume':'start',title:summary.nextLesson.title,command:'learn',label:summary.resume?'하던 학습 이어 하기':'오늘의 학습 시작',...(memory&&!days.today.count?{memory}:{})};
  return {kind:'complete',command:'packs',label:'생활 팩 둘러보기',...(memory&&!days.today.count?{memory}:{})};
 }
@@ -68,5 +70,16 @@ export function homeTutorLine(id,recommendation,{completed='',day=null}={}){
  if(completed)return id==='marin'?'연습 확인. 새 상황에 맞는 말을 찾았다. …오늘 한 걸음 더 갔다.':id==='kkamong'?'역시 이 몸의… 아니, 네가 해낸 거지! 다음에도 내가 같이 봐 줄게.':'우와! 새 상황에서도 찾았어! 다음 표현도 같이 만나 보자!';
  if(day?.closed)return id==='marin'?'오늘의 마무리 확인. 돌아본 표현이 기록에 남아 있다. …쉬어도 된다.':id==='kkamong'?'오늘은 마무리까지 했군. …푹 쉬어. 더 하고 싶으면 이 몸도 같이 가 줄게.':'우와! 오늘의 기록도 다 정리했구나! 쉬었다가 또 만나자!';
  if(r.memory)return homeTutorMemoryLine(id,r.memory);
+ // 방금(30분 안) 레슨 · 복습을 하고 홈에 돌아온 사람에게 「왔구나」는 처음 온 사람 인사로 읽힌다(11-08 프론트 검수 A3 · B4) — 이어 가는 말로.
+ // 돌아온 복습이 오늘 답한 말일 때만(r.fresh) 「방금 만난 말」, 지난 복습이 밀려 있으면 「전에 만난 말」로 잇는다(끝 판 F2).
+ const justNow=Number.isFinite(day?.latestAt)&&day.latestAt>0&&Date.now()-day.latestAt<30*60000;
+ if(justNow){
+  const next={
+   marin:{difficult:`방금 기록 확인. ${expression}, 다시 살필 표현이다. …이어서 함께한다.`,review:'복습 확인. 방금 만난 표현이 다른 장면으로 돌아왔다. …하나씩 확인한다.',reviewEarlier:'복습 확인. 전에 만난 표현도 돌아와 있다. …하나씩 확인한다.',start:`계속 확인. 다음은 ${expression}부터다. …옆에 있겠다.`},
+   kkamong:{difficult:`방금 헷갈린 ${expression}, 이 몸이 다시 꺼내 왔지. …나도 같이 볼게.`,review:'벌써 돌아왔군. 이 몸과 방금 만난 말을 새 장면에서 다시 보자.',reviewEarlier:'아직 힘이 남았군. 이 몸과 전에 만난 말들부터 다시 보자.',start:`오늘 제법이군. 이 몸이 다음 것도 골라 뒀지. ${expression}부터 가 보자!`},
+   mongle:{difficult:`방금 헷갈린 ${expression}, 다시 만나 볼까? 나도… 헷갈릴 때 있어!`,review:'우와, 방금 만난 말이 벌써 돌아왔어! 새 장면에서 같이 다시 만나 볼까?',reviewEarlier:'우와, 전에 만난 말들도 돌아와 있어! 이어서 같이 만나 볼까?',start:`좋았어! 이번엔 ${expression}부터 같이 이어 가 볼까?`}
+  }[id]?.[r.kind==='review'&&!r.fresh?'reviewEarlier':r.kind];
+  if(next)return next;
+ }
  return lines[id]?.[r.kind]||'';
 }

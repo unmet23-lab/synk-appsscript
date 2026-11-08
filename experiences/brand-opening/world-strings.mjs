@@ -8,6 +8,19 @@ export default {
  'followup.title':{ko:'시간을 두고 다시 확인',en:'Check again after a break',mn:'Хэсэг хугацааны дараа дахин шалгах'},
  'followup.note':{ko:'같은 방식의 새 문항으로 다시 확인해요. 한 번의 결과로 실력 향상을 판단하지 않아요.',en:'Try a new item in the same format. One result does not establish learning gains.',mn:'Ижил хэлбэрийн шинэ даалгавраар дахин шалгана. Нэг удаагийн үр дүнгээр ахиц дүгнэхгүй.'},
  'followup.open':{ko:'새 문항으로 확인하기',en:'Try a new item',mn:'Шинэ даалгавар хийх'},
+ // 생활 재확인은 제품 길로 연다 — 단추 글이 실제로 열리는 곳(다음 레슨 · 새 장면 복습)을 말한다. 칸 글은 좁은 폭(390)에서 한 줄로(11-08 프론트 검수).
+ 'followup.openLesson':{ko:'다음 레슨에서 확인하기',en:'Check in the next lesson',mn:'Дараагийн хичээл дээр шалгах'},
+ 'followup.openReview':{ko:'새 장면 복습에서 확인하기',en:'Check in a new-scene review',mn:'Шинэ жишээгээр давтаж шалгах'},
+ 'followup.step.due':{ko:'지금 확인',en:'Check now',mn:'Одоо шалгах'},
+ 'followup.step.missed':{ko:'기간 지남',en:'Window passed',mn:'Хугацаа дууссан'},
+ // 확인을 마친 칸 · 제외 · 판단 보류도 칸에는 짧은 꼴만(390에서 두 줄 안), 긴 결과 문장(followup.outcome · followup.status)은 칸의 title로(11-08 프론트 검수 끝 판 F1).
+ // 몽골어 「도움받아 맞힘」은 「Тусламжтай」(한 낱말이 칸보다 넓다)를 피한 자연스러운 꼴이라 세 줄이다 — 더 짧은 두 판은 검문에서 어색 · 파손.
+ 'followup.step.independent-correct':{ko:'혼자 맞힘',en:'Correct',mn:'Зөв'},
+ 'followup.step.independent-incorrect':{ko:'다시 연습',en:'Practise again',mn:'Дахин давтах'},
+ 'followup.step.assisted-correct':{ko:'도움받아 맞힘',en:'Correct with help',mn:'Тусламж авч зөв хариулсан'},
+ 'followup.step.assisted-incorrect':{ko:'다시 연습',en:'Practise again',mn:'Дахин давтах'},
+ 'followup.step.invalidated':{ko:'기록 제외',en:'Excluded',mn:'Хасагдсан'},
+ 'followup.step.unavailable':{ko:'판단 보류',en:'Not assessed',mn:'Дүгнээгүй'},
  'followup.noSupply':{ko:'이 조건에 맞는 새 문항이 아직 없어요.',en:'No new item matches these conditions yet.',mn:'Эдгээр нөхцөлд тохирох шинэ даалгавар хараахан алга.'},
  'followup.incomplete':{ko:'일부 기록을 확인할 수 없어 지연 결과를 판단하지 않아요.',en:'Some history is unavailable, so delayed results cannot be assessed.',mn:'Зарим бүртгэл дутуу тул хугацааны дараах үр дүнг дүгнэх боломжгүй.'},
  'followup.empty':{ko:'다시 확인할 기록이 아직 없어요.',en:'No follow-up checks yet.',mn:'Дахин шалгах бүртгэл хараахан алга.'},
@@ -476,7 +489,7 @@ export default {
  'position.evidence.assisted':{ko:'도움 받음',en:'With help',mn:'Тусламжтай'},
  'position.evidence.level':{ko:'난도 {n}',en:'Difficulty {n}',mn:'Хүндийн зэрэг {n}'},
  'position.evidence.folded':{ko:'예전 기록 {n}개는 요약으로만 남아 있어요.',en:{one:'1 older record is kept only as a summary.',other:'{n} older records are kept only as a summary.'},mn:'Өмнөх {n} мэдээлэл зөвхөн хураангуй хэлбэрээр хадгалагдсан.'},
- 'position.evidence.unassessed':{ko:'소리가 안 났거나 건너뛴 답 {n}개는 세지 않았어요.',en:{one:'1 answer was skipped or had no sound, so it wasn’t counted.',other:'{n} answers were skipped or had no sound, so they weren’t counted.'},mn:'Алгассан эсвэл дуу гараагүй {n} хариултыг тооцоогүй.'},
+ 'position.evidence.unassessed':{ko:'답 {n}개는 칸을 정하는 데 쓰지 않았어요.',en:{one:'1 answer wasn’t used to place this skill.',other:'{n} answers weren’t used to place this skill.'},mn:'{n} хариултыг ангилал тогтооход ашиглаагүй.'},
  'position.evidence.none':{ko:'아직 근거가 된 답이 없어요.',en:'No answers to go on yet.',mn:'Үндэслэл болох хариулт хараахан алга.'},
  // 칸 아래 한 줄(world-position.mjs posNote, 10-20 검수 #2·N1·N2·C): 같은 칸에 접힌 사실을 갈라 보인다. 판정 말이 아니라 사실·날짜다.
  'position.note.practice':{ko:'새 문항 {n}개 중 {wrong}개 틀림 · 다시 연습할 부분',en:'Missed {wrong} of {n} new questions · worth practicing again',mn:'Шинэ асуулт: {n}, алдсан: {wrong} · дахин давтах хэсэг'},
@@ -488,7 +501,7 @@ export default {
  'position.note.review':{ko:'다시 확인할 때 · 마지막 기록 {date}',en:'Time to check again · last record {date}',mn:'Дахин шалгах цаг · сүүлийн бүртгэл: {date}'},
  'position.note.independent':{ko:'혼자 해냄 · {date}',en:'On my own · {date}',mn:'Өөрөө чадсан · {date}'},
  'position.note.helped':{ko:'도움과 함께 시도 · {date}',en:'Tried with help · {date}',mn:'Тусламжтайгаар оролдсон · {date}'},
- 'position.note.unassessed':{ko:'소리가 안 났거나 건너뛴 답만 있어요',en:'Only skipped answers or ones with no sound so far',mn:'Одоогоор зөвхөн алгассан эсвэл дуу гараагүй хариулт байна'},
+ 'position.note.unassessed':{ko:'아직 세지 않은 답만 있어요',en:'Only uncounted answers so far',mn:'Одоогоор зөвхөн тооцоонд ороогүй хариулт байна'},
  'position.note.level':{ko:'난도 {n} {state}',en:'Difficulty {n}: {state}',mn:'Хүндийн зэрэг {n}: {state}'},
  'position.level.recent-independent':{ko:'혼자 해냄',en:'on my own',mn:'өөрөө чадсан'},
  'position.level.practice':{ko:'다시 연습',en:'practice again',mn:'дахин давтах'},
@@ -728,6 +741,10 @@ export default {
  'plan.speaking.noteAll':{ko:'이번 주에 모든 유형을 한 번씩 말해 봤어요. 같은 유형을 다시 해 봐도 좋아요.',en:'You’ve tried every task type this week. Feel free to do one again.',mn:'Энэ долоо хоногт бүх төрлөөр нэг удаа ярьж үзсэн байна. Аль нэгийг нь дахин хийж болно.'},
  'plan.speaking.open':{ko:'말하기 연습 열기',en:'Open speaking practice',mn:'Ярианы дасгалыг нээх'},
  'plan.area.count':{ko:'{done} / {planned}',en:'{done} / {planned}',mn:'{done} / {planned}'},
+ // 이번 주 계획에 없던 영역을 한 경우(예: 주 3번 계획에서 빠진 생활 레슨): 「1 / 0」 대신 한 횟수만(11-08 프론트 검수 B3).
+ 'plan.area.extra':{ko:'{done}번 함',en:'{done} done',mn:'{done} удаа хийсэн'},
+ // 생활 칸의 「한 것」은 레슨 · 복습에 답한 날 수다 — 레슨 수로 읽히지 않게 날로 센다(11-08 프론트 검수).
+ 'plan.area.extraDays':{ko:'{done}일 함',en:{one:'1 day',other:'{done} days'},mn:'{done} өдөр хийсэн'},
  'plan.classwork.todo':{ko:'반 과제 · {kind}',en:'Class task · {kind}',mn:'Ангийн даалгавар · {kind}'},
  'plan.classwork.done':{ko:'반 과제 · {kind} 냄',en:'Class task · {kind} handed in',mn:'Ангийн даалгавар · {kind} илгээсэн'},
  'plan.homework.title':{ko:'다시 볼 항목 숙제',en:'Homework: skills to look at again',mn:'Гэрийн даалгавар: дахин харах чадварууд'},
@@ -781,6 +798,11 @@ export default {
  'life.ago.now':{ko:'방금 전',en:'just now',mn:'дөнгөж сая'},
  'life.ago.minutes':{ko:'{n}분 전',en:{one:'1 min ago',other:'{n} min ago'},mn:'{n} минутын өмнө'},
  'life.ago.hours':{ko:'{n}시간 전',en:{one:'1 hour ago',other:'{n} hours ago'},mn:'{n} цагийн өмнө'},
+ // 다음 복습 때(life-ui dayLabel, 11-08 프론트 검수): 「다음 복습 {date}」 · 「{date}에 열려요」의 {date} 자리에 들어간다.
+ 'life.when.minutes':{ko:'{n}분 뒤',en:{one:'in 1 min',other:'in {n} min'},mn:'{n} минутын дараа'},
+ 'life.when.today':{ko:'오늘 {time}',en:'today at {time}',mn:'өнөөдөр {time}'},
+ 'life.when.tomorrow':{ko:'내일 {time}',en:'tomorrow at {time}',mn:'маргааш {time}'},
+ 'life.comingBack':{ko:'곧 돌아올 표현',en:'Coming back soon',mn:'Удахгүй дахин гарах хэллэгүүд'},
  'life.ago.days':{ko:'{n}일 전',en:{one:'1 day ago',other:'{n} days ago'},mn:'{n} өдрийн өмнө'},
  'life.rest':{ko:'한 시간 넘게 했어요. 잠깐 쉬어도 돼요. 하던 자리는 그대로 남아요.',en:'You’ve been at it for over an hour. It’s fine to take a break. Your place is saved.',mn:'Та нэг цаг гаруй хичээллэлээ. Түр амарч болно. Зогссон хэсэг тань хэвээр үлдэнэ.'},
  'life.tutorRetry':{ko:'튜터와 다시 연습하기',en:'Practice again with your tutor',mn:'Багштайгаа дахин дасгал хийх'},
@@ -1088,7 +1110,7 @@ export default {
  // WORLD가 직접 쓰는 추천 이유(world-learning-plan.mjs hostReason, 10-20): 짧은 진단·다시 확인, 기록이 쌓인 사람의 다음 생활 레슨.
  'msg.planStart':{ko:'시험 목표에 맞춰 짧은 진단으로 시작점을 먼저 확인해요.',en:'For your test goal, let’s first find your starting point with a quick check.',mn:'Шалгалтын зорилгодоо тааруулж эхлээд богино шалгалтаар эхлэх цэгээ тогтооё.'},
  'msg.planRecheck':{ko:'이번 주 계획의 다시 확인이에요. 처음 보는 문항으로 지금 위치를 확인해요.',en:'This is this week’s check. We’ll see where you stand with questions you haven’t seen.',mn:'Энэ долоо хоногийн төлөвлөгөөний «Дахин шалгах». Өмнө нь үзээгүй асуултаар одоогийн ахицаа шалгана.'},
- 'msg.reasonNextLesson':{ko:'생활 팩의 다음 레슨이에요. 진도 순서대로 이어서 배워요.',en:'This is the next lesson in your daily-life packs. We’ll keep going in order.',mn:'Энэ бол өдөр тутмын багцын дараагийн хичээл. Дарааллаараа үргэлжлүүлэн сурна.'},
+ 'msg.reasonNextLesson':{ko:'생활 팩의 다음 레슨이에요. 아직 기록이 없는 표현을 새로 만나요.',en:'The next lesson in your daily-life packs, with expressions that are new to you.',mn:'Өдөр тутмын багцын дараагийн хичээл. Шинэ хэллэгүүдтэй танилцана.'},
  'msg.planHomework':{ko:'이번 주 숙제예요. {skill}에서 놓친 답이 있어 새 문항으로 다시 확인해요.',en:'This is this week’s homework. You missed an answer in ‘{skill}’, so we’ll check it again with new questions.',mn:'Энэ долоо хоногийн гэрийн даалгавар. «{skill}» чадварт буруу хариулт байгаа тул шинэ асуултаар дахин шалгана.'},
  'msg.planHomeworkReview':{ko:'이번 주 숙제예요. {skill} 기록이 오래돼 새 문항으로 다시 확인해요.',en:'This is this week’s homework. It’s been a while since ‘{skill}’, so we’ll check it again with new questions.',mn:'Энэ долоо хоногийн гэрийн даалгавар. «{skill}» чадварын бүртгэл хуучирсан тул шинэ асуултаар дахин шалгана.'},
  // 항목 이름이 든 추천 이유(atlas/vellum.js learningReason, 10-20) — tMessage가 틀로 맞춘다. ko는 Vellum 문장의 꼴이고

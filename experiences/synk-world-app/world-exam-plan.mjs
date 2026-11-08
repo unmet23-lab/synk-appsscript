@@ -176,7 +176,26 @@ function split(total,needs,boost={},first=[]){
 // (나누기 밖 — 다른 영역의 배분은 고르지 않은 학생과 같다). 이번 주에 한 번 이상 했으면 남은 횟수는 0이다.
 // available.speaking: 지금 열 수 있는 말하기 연습 후보(시험 유형) · speakingNeeds: 이번 주에 아직 안 해 본 유형 수 — 「다음 연습」을 고를 때
 // 남은 횟수가 같은 영역끼리의 순서에만 쓴다. 채점하지 않으므로 숙제 묶음·진행·도달 파악에 넣지 않는다. 고르지 않은 학생의 계획은 이 칸들이 없던 때와 같다.
-export function buildExamPlan({exam,summary=null,now=Date.now(),done=null,available={},classwork=[],audioAvailable=true,lastCheckAt=null,speakingNeeds=null}={}){
+// 시험 계획의 시작점(아래 buildExamPlan의 start)을 가리는 근거 항목: 생활 한국어 거울(경험 world-life, Atlas × WORLD D 11-08)이 아닌
+// 연습에서 낸 답이 하나라도 있는 항목. 생활 답은 「내 위치」 칸의 근거로는 그대로 세지만 시험 형식의 시작점은 아니다 — 생활 레슨을 먼저 하고
+// 시험을 고른 학생도 짧은 진단부터 한다(11-08 프론트 검수: 생활 답 하나로 시작점 진단과 그 주의 다시 확인이 사라졌다).
+export function examEvidenceSkills(events=[]){
+ const decisions=new Map(),shown=new Map(),skills=new Set();
+ for(const event of Array.isArray(events)?events:[]){
+  if(event?.type==='decision.made')decisions.set(event.id,event.experienceId);
+  else if(event?.type==='practice.presented')shown.set(event.id,event);
+ }
+ for(const event of Array.isArray(events)?events:[]){
+  if(event?.type!=='practice.attempted')continue;
+  const presentation=shown.get(event.presentationId),skill=presentation?.measure?.skillId;
+  if(typeof skill!=='string'||decisions.get(presentation.decisionId)==='world-life')continue;
+  skills.add(skill);
+ }
+ return skills;
+}
+// examSkills: examEvidenceSkills 결과(Set · 배열). 주면 그 안의 항목 근거만 시작점으로 센다(생활 거울만 있는 항목은 빼고).
+// 안 주면(사건 기록을 못 읽은 호출) 예전처럼 요약의 모든 근거로 본다.
+export function buildExamPlan({exam,summary=null,now=Date.now(),done=null,available={},classwork=[],audioAvailable=true,lastCheckAt=null,speakingNeeds=null,examSkills=null}={}){
  if(!planRecord(exam))return null;
  const week=examWeek(now),{phase,weeks}=examPhase(exam.date,now),policy=EXAM_PLAN_POLICY;
  const pace=exam.weeklyMinutes&&policy.weekly[exam.weeklyMinutes]||policy.fallback;
@@ -207,7 +226,8 @@ export function buildExamPlan({exam,summary=null,now=Date.now(),done=null,availa
  // 다시 확인: 기록이 하나도 없으면 짧은 진단부터(시작점), 아니면 단계마다 정한 주기. 이번 주에 이미 했으면 그 한 번을 이번 주
  // 계획에 그대로 둔다(시작점 진단을 마치면 「기록 없음」이 풀려 계획이 「1/0」으로 바뀌고 한 것이 세어지지 않던 것을 막는다).
  // 시작점 진단 뒤 바로 다음 주에 또 확인하지 않게, 지난 확인과의 간격이 그 주 단계의 주기 이상일 때만 주기 주로 친다.
- const start=complete&&!observed.length;
+ const startSkills=examSkills instanceof Set?examSkills:Array.isArray(examSkills)?new Set(examSkills):null;
+ const start=complete&&!(startSkills?observed.filter(skill=>startSkills.has(skill.id)):observed).length;
  const cycle=at=>policy.recheckEvery[examPhase(exam.date,at).phase]||4,lastWeek=planTime(lastCheckAt)?examWeek(lastCheckAt).start:null;
  const spaced=(at,prev)=>prev===null||at-prev>=cycle(at)*7*DAY;
  const recheck=did.recheck>0||recheckFresh>0&&(start||recheckWeek(exam.date,week.start)&&spaced(week.start,lastWeek))?1:0;
