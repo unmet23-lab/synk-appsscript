@@ -2,7 +2,7 @@
   "판": [
     {
       "계정": "synkbrief-instagram",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-07T12:00:00.000Z",
       "방법": "작업실",
       "편ID": "synkbrief_셋째줄그대로_20261102",
@@ -18,7 +18,11 @@
         "유효승인링크": 0
       },
       "작업": "f55b1f070770ec911d6f08f562844b907a7c5ac29ccb0ee3086e43433f60fdb2",
-      "옛판": null
+      "옛판": null,
+      "게시관측시각": "2026-11-07T12:01:38.000Z",
+      "주소": "https://www.instagram.com/reel/DfcIiSkkT_q/",
+      "플랫폼": "instagram",
+      "게시물ID": "DfcIiSkkT_q"
     },
     {
       "계정": "synkbrief-youtube",
