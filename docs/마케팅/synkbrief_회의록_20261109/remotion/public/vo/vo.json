@@ -1,0 +1,87 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1109,
+  "lufs": -17
+ },
+ "made": "2026-11-09T12:02:27.931Z",
+ "lines": [
+  {
+   "id": "n1",
+   "text": "회의 끝나고 3분 뒤, 전원의 폰이 울렸어요.",
+   "show": "회의 끝나고 3분 뒤, 전원의 폰이 울렸어요.",
+   "scene": "훅",
+   "dur": 2.438,
+   "syllablesPerSec": 6.56,
+   "src": "n1.wav",
+   "key": "35ef2c982e26f67a02187503e1ff779a",
+   "words": 7
+  },
+  {
+   "id": "n2",
+   "text": "저 둘만 아직 몰라요.",
+   "show": "저 둘만 아직 몰라요.",
+   "scene": "유리 안",
+   "dur": 1.128,
+   "syllablesPerSec": 7.09,
+   "src": "n2.wav",
+   "key": "f12b41f797a89e057789dcd2171817d9",
+   "words": 4
+  },
+  {
+   "id": "n3",
+   "text": "AI는 아직 안 나갔어요.",
+   "show": "AI는 아직 안 나갔어요.",
+   "scene": "빨간 점",
+   "dur": 1.424,
+   "syllablesPerSec": 5.62,
+   "src": "n3.wav",
+   "key": "d33335cf047d4d1193863ce877911415",
+   "words": 4
+  },
+  {
+   "id": "n4",
+   "text": "AI 회의록은 켜 두면, 사람이 나가도 받아 적고요.",
+   "show": "AI 회의록은 켜 두면, 사람이 나가도 받아 적고요.",
+   "scene": "까닭",
+   "dur": 2.959,
+   "syllablesPerSec": 6.08,
+   "src": "n4.wav",
+   "key": "4e05f4216a0670fec4a0696023b45ffe",
+   "words": 8
+  },
+  {
+   "id": "n5",
+   "text": "설정에 따라, 끝나면 모두에게 가요.",
+   "show": "설정에 따라, 끝나면 모두에게 가요.",
+   "scene": "까닭",
+   "dur": 1.926,
+   "syllablesPerSec": 7.27,
+   "src": "n5.wav",
+   "key": "a2f58237a12b07339069c780d0f25b47",
+   "words": 5
+  },
+  {
+   "id": "n6",
+   "text": "미국에선 실제로, 남아서 한 말이 이렇게 가서 거래가 깨졌어요.",
+   "show": "미국에선 실제로, 남아서 한 말이 이렇게 가서 거래가 깨졌어요.",
+   "scene": "실제 있었던 일",
+   "dur": 3.214,
+   "syllablesPerSec": 7.78,
+   "src": "n6.wav",
+   "key": "cc089a76896b376cab3fd33af82c34e6",
+   "words": 9
+  }
+ ]
+}

@@ -1,0 +1,81 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n6",
+ "text": "미국에선 실제로, 남아서 한 말이 이렇게 가서 거래가 깨졌어요.",
+ "show": "미국에선 실제로, 남아서 한 말이 이렇게 가서 거래가 깨졌어요.",
+ "dur": 3.214,
+ "words": [
+  {
+   "text": "미국에선",
+   "start": 0.02,
+   "end": 0.387
+  },
+  {
+   "text": "실제로,",
+   "start": 0.429,
+   "end": 0.783
+  },
+  {
+   "text": "남아서",
+   "start": 1.108,
+   "end": 1.433
+  },
+  {
+   "text": "한",
+   "start": 1.475,
+   "end": 1.56
+  },
+  {
+   "text": "말이",
+   "start": 1.602,
+   "end": 1.757
+  },
+  {
+   "text": "이렇게",
+   "start": 1.8,
+   "end": 2.012
+  },
+  {
+   "text": "가서",
+   "start": 2.054,
+   "end": 2.238
+  },
+  {
+   "text": "거래가",
+   "start": 2.308,
+   "end": 2.549
+  },
+  {
+   "text": "깨졌어요.",
+   "start": 2.605,
+   "end": 3.214
+  }
+ ],
+ "source": {
+  "key": "cc089a76896b376cab3fd33af82c34e6",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 155
+ }
+}

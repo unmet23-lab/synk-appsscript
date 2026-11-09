@@ -1,0 +1,6 @@
+{"type":"thread.started","thread_id":"01a1c016-21b4-73a1-9975-c64f19fe9854"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the imagegen skill to create the film still with your framing and lighting details.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The session’s access policy blocked the local skill file, so I’m proceeding with the built-in image generator.\n"}}
+{"type":"item.completed","item":{"id":"item_2","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":116320,"cached_input_tokens":94976,"cache_write_input_tokens":0,"output_tokens":1376,"reasoning_output_tokens":256}}

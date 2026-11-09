@@ -1,0 +1,71 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n1",
+ "text": "회의 끝나고 3분 뒤, 전원의 폰이 울렸어요.",
+ "show": "회의 끝나고 3분 뒤, 전원의 폰이 울렸어요.",
+ "dur": 2.438,
+ "words": [
+  {
+   "text": "회의",
+   "start": 0.04,
+   "end": 0.208
+  },
+  {
+   "text": "끝나고",
+   "start": 0.263,
+   "end": 0.557
+  },
+  {
+   "text": "3분",
+   "start": 0.613,
+   "end": 0.878
+  },
+  {
+   "text": "뒤,",
+   "start": 0.92,
+   "end": 1.004
+  },
+  {
+   "text": "전원의",
+   "start": 1.297,
+   "end": 1.59
+  },
+  {
+   "text": "폰이",
+   "start": 1.66,
+   "end": 1.856
+  },
+  {
+   "text": "울렸어요.",
+   "start": 1.911,
+   "end": 2.438
+  }
+ ],
+ "source": {
+  "key": "35ef2c982e26f67a02187503e1ff779a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 156
+ }
+}

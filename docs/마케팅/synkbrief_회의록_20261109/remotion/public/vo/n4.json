@@ -1,0 +1,76 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n4",
+ "text": "AI 회의록은 켜 두면, 사람이 나가도 받아 적고요.",
+ "show": "AI 회의록은 켜 두면, 사람이 나가도 받아 적고요.",
+ "dur": 2.959,
+ "words": [
+  {
+   "text": "AI",
+   "start": 0.02,
+   "end": 0.282
+  },
+  {
+   "text": "회의록은",
+   "start": 0.348,
+   "end": 0.708
+  },
+  {
+   "text": "켜",
+   "start": 0.757,
+   "end": 0.856
+  },
+  {
+   "text": "두면,",
+   "start": 0.905,
+   "end": 1.183
+  },
+  {
+   "text": "사람이",
+   "start": 1.626,
+   "end": 1.904
+  },
+  {
+   "text": "나가도",
+   "start": 1.953,
+   "end": 2.216
+  },
+  {
+   "text": "받아",
+   "start": 2.265,
+   "end": 2.429
+  },
+  {
+   "text": "적고요.",
+   "start": 2.478,
+   "end": 2.959
+  }
+ ],
+ "source": {
+  "key": "4e05f4216a0670fec4a0696023b45ffe",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 169
+ }
+}

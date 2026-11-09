@@ -1,0 +1,15 @@
+{
+ "_설명": "synkbrief B37 「회의록」 해설 — 범수(ssfm-v30 · 1.12배, 지난 편들과 같은 설정). 대리 · 과장 · 부장의 말은 동영상에 든 소리 그대로. 사실은 기획.md 근거(Fortune · Entrepreneur · Zoom · Google Meet 도움말, 읽음 11-09).",
+ "voice": { "id": "tc_5c3c52cb5827e00008dd7f3b", "name": "범수" },
+ "defaults": { "model": "ssfm-v30", "lang": "ko", "emotion": "normal", "intensity": 1, "tempo": 1.12, "seed": 1109, "lufs": -17 },
+ "out": "../remotion/public/vo",
+ "trim": "both",
+ "lines": [
+  { "id": "n1", "scene": "훅", "text": "회의 끝나고 3분 뒤, 전원의 폰이 울렸어요.", "show": "회의 끝나고 3분 뒤, 전원의 폰이 울렸어요.", "role": "해설" },
+  { "id": "n2", "scene": "유리 안", "text": "저 둘만 아직 몰라요.", "show": "저 둘만 아직 몰라요.", "role": "해설" },
+  { "id": "n3", "scene": "빨간 점", "text": "AI는 아직 안 나갔어요.", "show": "AI는 아직 안 나갔어요.", "role": "해설" },
+  { "id": "n4", "scene": "까닭", "text": "AI 회의록은 켜 두면, 사람이 나가도 받아 적고요.", "show": "AI 회의록은 켜 두면, 사람이 나가도 받아 적고요.", "role": "해설" },
+  { "id": "n5", "scene": "까닭", "text": "설정에 따라, 끝나면 모두에게 가요.", "show": "설정에 따라, 끝나면 모두에게 가요.", "role": "해설" },
+  { "id": "n6", "scene": "실제 있었던 일", "text": "미국에선 실제로, 남아서 한 말이 이렇게 가서 거래가 깨졌어요.", "show": "미국에선 실제로, 남아서 한 말이 이렇게 가서 거래가 깨졌어요.", "role": "해설" }
+ ]
+}

@@ -1,0 +1,56 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n2",
+ "text": "저 둘만 아직 몰라요.",
+ "show": "저 둘만 아직 몰라요.",
+ "dur": 1.128,
+ "words": [
+  {
+   "text": "저",
+   "start": 0.02,
+   "end": 0.121
+  },
+  {
+   "text": "둘만",
+   "start": 0.182,
+   "end": 0.424
+  },
+  {
+   "text": "아직",
+   "start": 0.484,
+   "end": 0.625
+  },
+  {
+   "text": "몰라요.",
+   "start": 0.686,
+   "end": 1.128
+  }
+ ],
+ "source": {
+  "key": "f12b41f797a89e057789dcd2171817d9",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 120
+ }
+}
