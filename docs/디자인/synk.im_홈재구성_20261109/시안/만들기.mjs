@@ -31,12 +31,10 @@ const 사업 = [
 const 줄들 = 사업.map((s, i) => `<li id="${s.키}" data-row="${s.키}"${i ? '' : ' class="is-on"'}><a href="/${s.키}/">${s.키 === 'lab' ? '<span id="world" class="sr-only" aria-hidden="true"></span>' : ''}<span class="v13-name"><i class="dot dot-${s.키}" aria-hidden="true"></i>${s.이름}</span><span class="v13-line">${s.줄}</span><span class="arr" aria-hidden="true">→</span></a></li>`).join('');
 const 틀들 = 사업.map((s, i) => 틀(s.키).replace('class="hs-frame', `class="${i ? '' : 'is-on '}hs-frame`)).join('');
 
-const 본문 = `<section class="v13-why" id="top" aria-labelledby="why-title"><span id="hero-introduction" class="sr-only" aria-hidden="true"></span><span id="founder" class="sr-only" aria-hidden="true"></span><div class="wrap v13-why-grid">
-<div><p class="v13-label reveal">왜 시작했나</p>
+const 본문 = `<section class="v13-why" id="top" aria-labelledby="why-title"><span id="hero-introduction" class="sr-only" aria-hidden="true"></span><span id="founder" class="sr-only" aria-hidden="true"></span><div class="wrap">
+<p class="v13-label reveal">왜 시작했나</p>
 <h2 class="v13-why-title reveal" id="why-title"><span>한 명씩 맞춰 줄</span> <span>시간이 없었습니다</span></h2>
-<p class="v13-why-story reveal">몽골 울란바토르의 학원에서 부원장으로 학생들을 만났습니다. 학생마다 필요한 도움이 다르다는 걸 알면서도, 모두를 그렇게 챙기기에는 시간이 모자랐습니다. 그 일을 기술로 해 보려고 SYNK를 시작했습니다.</p>
-<p class="v13-sign reveal"><strong>양유호</strong><span>SYNK 창업자</span><a class="link" href="/founder/">창업자 이야기 읽기<span class="arr" aria-hidden="true">→</span></a></p></div>
-<figure class="v13-why-photo reveal"><img src="/assets/v10/r/yuho-founder-20260919-w800.webp" alt="검정 배경 앞의 SYNK 창업자 양유호" width="800" height="800" loading="lazy" decoding="async"></figure>
+<p class="v13-why-story reveal">SYNK의 기술은 몽골 울란바토르의 한 학원에서 출발했습니다. 학생마다 필요한 도움이 다르다는 걸 알면서도, 모두를 그렇게 챙기기에는 시간이 모자랐습니다. 그 일을 기술로 하려고 만든 회사입니다.</p>
 </div></section>
 <section class="v13-what" id="atlas" aria-labelledby="what-title"><div class="wrap">
 <p class="v13-label reveal">무엇을 만드나</p>
@@ -80,6 +78,8 @@ h = h.replace(' data-visit', '').replace(/ data-pick="[a-z]+"/g, '');
 // 메뉴: 회사 소개 · 문의만 남기고 아틀라스 · 창업자 · 소식 · 플랫폼은 본문과 바닥에서 잇는다
 h = h.replace(/<nav class="bar-nav" aria-label="주요 메뉴">.*?<\/nav>/s, '<nav class="bar-nav" aria-label="주요 메뉴"><a href="#top">회사 소개</a><a href="#contact">문의</a></nav>');
 // 쪽 안 주소 · 옮긴 구역
+// 창업자는 찾아온 사람에게만: 위 메뉴 · 휴대폰 메뉴에서 빼고 바닥 링크만 둔다(11-09 유호님)
+h = h.replace(/<a href="\/founder\/">창업자<span aria-hidden="true">→<\/span><\/a>/, '');
 h = h.replaceAll('href="/#', 'href="#').replace('<a href="#business">사업 소개<span aria-hidden="true">→</span></a>', '<a href="#top">회사 소개<span aria-hidden="true">→</span></a>').replace('href="#drama"', 'href="/lab/#drama"').replace('href="#learner"', 'href="/lab/"');
 // 스타일 · 스크립트
 h = h.replace(/<link rel="stylesheet" href="\/assets\/v10\/(drama|learner)\.css[^>]*>\s*/g, '');

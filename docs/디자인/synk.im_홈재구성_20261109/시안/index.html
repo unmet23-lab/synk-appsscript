@@ -75,7 +75,7 @@ const LINES = [
   ["학생 한 명 한 명을 챙기려다, 쓸수록 나를 아는 AI를 만들게 됐습니다"],
   ["세상을 아는 AI는 많습니다","우리는 쓸수록 나를 아는 AI를 만듭니다"]
 ];
-const NUMS = [["컴퓨터 쪽 길이(화면 수)","10.2","7.7"],["휴대폰 쪽 길이(화면 수)","12.8","9.0"],["글자 수(컴퓨터)","4,661","2,191"],["창업 이유가 나오는 자리(컴퓨터)","6.5화면째","1화면째"],["위 메뉴 항목(스크롤 뒤)","14","10"]];
+const NUMS = [["컴퓨터 쪽 길이(화면 수)","10.2","7.7"],["휴대폰 쪽 길이(화면 수)","12.8","9.0"],["글자 수(컴퓨터)","4,661","2,191"],["창업 이유가 나오는 자리(컴퓨터)","6.5화면째","1화면째"],["위 메뉴 항목(스크롤 뒤)","14","10"],["홈의 창업자 사진","있음","없음"]];
 const fit = () => document.querySelectorAll('.frame iframe').forEach(f => { f.style.transform = `scale(${f.parentElement.clientWidth / +f.dataset.w})`; });
 addEventListener('resize', fit); fit();
 const box = document.getElementById('line-buttons');
