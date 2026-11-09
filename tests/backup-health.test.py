@@ -761,7 +761,7 @@ class SpaceGuardTests(unittest.TestCase):
         lib.atomic_json(self.root / 'onedrive.json', {'status': 'healthy', 'lastSuccessAt': lib.stamp(self.now)})
         config = {'components': [{'id': 'onedrive', 'receipt': 'onedrive.json', 'maxAgeHours': 2}]}
         summary = health.gather(self.root, lib, config, {'onedrive': {'exists': True, 'enabled': True, 'result': 0}}, self.now)
-        self.assertEqual([x['id'] for x in summary['components']], ['onedrive', 'space', 'capacity', 'vault', 'wholeimage'])
+        self.assertEqual([x['id'] for x in summary['components']], ['onedrive', 'space', 'capacity', 'vault'])
         self.assertEqual((summary['status'], summary['issues']), ('healthy', []))
         (self.root / health.SPACE_GUARD['receipt']).write_text('{broken', encoding='utf-8')
         self.assertEqual(health.space_guard(self.root, lib, None, self.now)['status'], 'not_ready')
@@ -840,20 +840,6 @@ class RetentionStepTests(unittest.TestCase):
             'status': 'healthy', 'files': 10, 'verified': 10, 'pending': 0, 'missing': 0, 'bytes': 2e9, **value})
         return health.vault_copy(self.root, lib, self.now)
 
-    def whole(self, age=dt.timedelta(minutes=20), **value):
-        lib.atomic_json(self.root / health.WHOLE_IMAGE['receipt'], {'schemaVersion': 1, 'checkedAt': lib.stamp(self.now - age),
-            'status': 'running', **value})
-        return health.whole_image(self.root, lib, self.now)
-
-    def test_whole_image_upload_states(self):
-        self.assertEqual(health.whole_image(self.root, lib, self.now)['status'], 'not_ready')
-        self.assertEqual(self.whole()['status'], 'healthy')
-        self.assertEqual(self.whole(status='paused', code='HOTSPOT')['status'], 'healthy')
-        stalled = self.whole(age=dt.timedelta(hours=4))
-        self.assertEqual((stalled['status'], stalled['codes']), ('attention', ['WHOLE_IMAGE_STALLED']))
-        self.assertEqual(self.whole(status='failed')['codes'], ['WHOLE_IMAGE_FAILED'])
-        self.assertEqual(self.whole(status='이상한값')['status'], 'unknown')
-
     def test_capacity_states(self):
         self.assertEqual(health.drive_capacity(self.root, lib, self.now)['status'], 'not_ready')
         row = self.capacity(yearsToHalf=7.3)
@@ -895,7 +881,7 @@ class RetentionStepTests(unittest.TestCase):
 
     def test_new_checks_do_not_block_recovery_before_their_first_run(self):
         summary = health.gather(self.root, lib, {'components': []}, {'space': {'exists': False}}, self.now)
-        self.assertEqual([x['status'] for x in summary['components']], ['not_ready', 'not_ready', 'not_ready', 'not_ready'])
+        self.assertEqual([x['status'] for x in summary['components']], ['not_ready', 'not_ready', 'not_ready'])
         self.assertEqual(summary['status'], 'healthy')
         self.capacity(used5=2.6)
         summary = health.gather(self.root, lib, {'components': []}, {'space': {'exists': False}}, self.now)
