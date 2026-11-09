@@ -76,14 +76,14 @@ const Board: React.FC = () => {
   const hitAt = sec(15.1 - S.board);
   const hit = f < hitAt ? 0 : interpolate(f, [hitAt, hitAt + 9], [1, 0], { ...clamp, easing: EASE_OUT });
   const Z = (1 + f * 0.00012) * (1 + 0.18 * k) * (1 + 0.54 * k2) * (1 + 0.05 * hit);
-  const camX = -(RX - LX) * Z * k2, camY = -340 * k; // ③에서 「돼요」 칸이 왼쪽 글 줄(x 74)로 온다
+  const camX = -(RX - LX) * Z * k2, camY = -340 * k - 70 * k2; // ③에서 「돼요」 칸이 왼쪽 글 줄(x 74)로 오고, 머리글 · 선은 걷어 위 큰 글자 「돼요」로 넘긴다
   return (
     <AbsoluteFill style={{ overflow: 'hidden' }}>
       <div style={{ position: 'absolute', inset: 0, transform: `translate(${camX}px, ${camY}px) scale(${Z})`, transformOrigin: '74px 650px' }}>
       <div style={{ position: 'absolute', left: LX, top: 650, opacity: line, fontFamily: KO, fontWeight: 800, fontSize: 52, letterSpacing: -1, color: '#fff' }}>안 돼요</div>
-      <div style={{ position: 'absolute', left: RX, top: 650 + 16 * k2, opacity: line, fontFamily: KO, fontWeight: 800, fontSize: 52 - 22 * k2, letterSpacing: -1, color: '#fff' }}>돼요</div>
-      {/* 선 굵기 · 양 끝은 판이 커져도 화면에서 같게(x 74~1006) */}
-      <div style={{ position: 'absolute', left: LX + (RX - LX) * k2, top: 726, width: (932 / Z) * line, height: 3 / Z, background: 'rgba(255,255,255,0.75)' }} />
+      <div style={{ position: 'absolute', left: RX, top: 650, opacity: line * (1 - k2), fontFamily: KO, fontWeight: 800, fontSize: 52, letterSpacing: -1, color: '#fff' }}>돼요</div>
+      {/* 선 굵기 · 끝은 판이 커져도 화면에서 같게(x 74~1006) */}
+      <div style={{ position: 'absolute', left: LX, top: 726, width: (932 / Z) * line, height: 3 / Z, opacity: 1 - k2, background: 'rgba(255,255,255,0.75)' }} />
       <div style={{ position: 'absolute', left: DIV, top: 650, width: 3 / Z, height: 670 * line, opacity: 1 - k2, background: 'rgba(255,255,255,0.75)' }} />
       {ITEMS.map((it, i) => {
         const at = sec(it.at - S.board);
@@ -125,7 +125,8 @@ const NOTE = '예시 가게로 실제 Gemini에 물어본 화면 · 11월 9일';
 const Cond: React.FC<{ rise?: boolean }> = ({ rise }) => {
   const f = useCurrentFrame();
   const top = rise ? interpolate(riseAt(f), [0, 1], [592, 256]) : 592; // 판 바로 위 — 판에 딸린 줄로 읽히게
-  return <div style={{ position: 'absolute', left: X, top, fontFamily: KO, fontWeight: 600, fontSize: 31, color: GREY, letterSpacing: -0.6, whiteSpace: 'nowrap' }}>백반집 · 창업 3년 · 작년 매출 9,800만 원 · 올해 20% 감소 · 신용 780</div>;
+  const opacity = rise ? 1 - stepAt(f, ONLY) : 1; // 「돼요」만 남는 구성에서는 위 글을 줄인다
+  return <div style={{ position: 'absolute', left: X, top, opacity, fontFamily: KO, fontWeight: 600, fontSize: 31, color: GREY, letterSpacing: -0.6, whiteSpace: 'nowrap' }}>백반집 · 창업 3년 · 작년 매출 9,800만 원 · 올해 20% 감소 · 신용 780</div>;
 };
 
 // 「잠깐만요」 — 판을 걷고 사장님 얼굴만
@@ -145,8 +146,8 @@ const Keep: React.FC<{ from: number }> = ({ from }) => {
   if (f < sec(from)) return null;
   return (
     <>
-    <div style={{ position: 'absolute', left: 0, right: 0, top: 1170, bottom: 0, opacity: p, background: 'linear-gradient(to bottom, rgba(11,11,11,0) 0px, rgba(11,11,11,0.98) 40px)' }} />
-    <div style={{ position: 'absolute', left: X, top: 1240, width: 930, opacity: p, transform: `translateY(${(1 - p) * 18}px)`, fontFamily: KO }}>
+    <div style={{ position: 'absolute', left: 0, right: 0, top: 1136, bottom: 0, opacity: p, background: 'linear-gradient(to bottom, rgba(11,11,11,0) 0px, rgba(11,11,11,0.98) 30px)' }} />
+    <div style={{ position: 'absolute', left: X, top: 1178, width: 930, opacity: p, transform: `translateY(${(1 - p) * 18}px)`, fontFamily: KO }}>
       <div style={{ fontWeight: 600, fontSize: 32, color: GREY, letterSpacing: -0.5, marginBottom: 14 }}>붙여 쓸 말</div>
       <div style={{ fontWeight: 700, fontSize: 52, lineHeight: 1.24, color: '#fff', letterSpacing: -1.4 }}>우리 가게가 신청할 수 있는<br />자금만 표로 뽑아 줘<br />공고문 <span style={{ color: BUTTER }}>몇 쪽</span>인지도 적어 줘</div>
     </div>
@@ -167,9 +168,11 @@ const TableRows: React.FC = () => {
   if (f0 < sec(SCROLL)) return <FullPan y0={1290} y1={2700} dur={SCROLL} h={720} top={ROWS_TOP} ease={false} />;
   const f = f0 - sec(SCROLL);
   let y = ROWS_TOP;
-  const cell = (c: { x: number; w: number }, left: number, a: number, h: number, s: number) => (
-    <div style={{ position: 'absolute', left, top: 0, width: c.w * s, height: h, overflow: 'hidden' }}>
+  const cell = (c: { x: number; w: number }, left: number, a: number, h: number, s: number, tint?: boolean) => (
+    <div style={{ position: 'absolute', left, top: 0, width: c.w * s, height: h, overflow: 'hidden', isolation: 'isolate' }}>
       <Img src={staticFile('img/full.jpg')} style={{ position: 'absolute', left: -c.x * s, top: -a * s, width: 1080 * s, height: FULL_H * s, maxWidth: 'none', filter: 'brightness(1.15)' }} />
+      {/* 쪽수만 제목과 같은 노랑으로 — 글자 모양 · 값은 원본 그대로, 검정 바탕은 곱해도 검정 */}
+      {tint ? <div style={{ position: 'absolute', inset: 0, background: BUTTER, mixBlendMode: 'multiply' }} /> : null}
     </div>
   );
   return (
@@ -183,7 +186,7 @@ const TableRows: React.FC = () => {
         return (
           <div key={a} style={{ position: 'absolute', left: 0, top, width: 1080, height: h, opacity: p * (sub ? 0.6 : 1), transform: `translateY(${(1 - p) * 18}px)` }}>
             {cell(COL1, X - (62 - COL1.x) * s, a, h, s)}
-            {sub ? null : cell(COL2, COL2_L, a, h, s)}
+            {sub ? null : cell(COL2, COL2_L, a, h, s, i > 0)}
           </div>
         );
       })}
@@ -219,12 +222,12 @@ export const Film: React.FC = () => {
       {seq(S.board, S.table, <Board />)}
       {seq(S.table, S.end, <TableNote />)}
       {/* 위 작은 표시 */}
-      <Small text="예시 가게 · 사장님 장면은 AI로 만든 재연" from={S.hook} to={S.flip} />
+      <Small text="AI로 만든 재연" from={S.hook} to={S.flip} />
       <Small text="실제 공고문 · 중소벤처기업부 공고 제2026-576호" from={S.flip} to={S.type1} />
       <Small text="실제 공고문 그대로 · 중소벤처기업부 공고 제2026-576호" from={S.end + S.lineDur} to={S.total} />
       <Small text="예시 가게 조건으로 Gemini가 신청 대상을 가른 결과" from={S.board} to={S.pause} />
       <Small text="예시 가게 조건으로 Gemini가 신청 대상을 가른 결과" from={S.back} to={S.table} />
-      <Small text="사장님 장면은 AI로 만든 재연" from={S.pause} to={S.back} />
+      <Small text="AI로 만든 재연" from={S.pause} to={S.back} />
       {seq(S.board, S.pause, <Cond rise />)}
       {seq(S.back, S.table, <Cond />)}
 
@@ -234,6 +237,7 @@ export const Film: React.FC = () => {
       <T lines={['공고문을 올리고', '가게 사정을 적어요']} from={vo('n03')} to={vo('n04')} />
       <T lines={['되는 자금만', <React.Fragment key="y">공고문 <Y>몇 쪽</Y>인지도</React.Fragment>]} from={vo('n04')} to={vo('n05')} />
       <T lines={['이 가게 조건으로', '자금 13개가 갈립니다']} size={88} from={vo('n05')} to={RISE[0] + 0.2} fadeOut={8} />
+      <T lines={['돼요']} size={112} from={ONLY[0] + 0.05} to={S.pause} />
       <T lines={['대환대출은', '잠깐만요']} from={S.pause} to={S.back} />
       <T lines={['고금리 대출이 있으면', '돼요']} size={88} from={S.back} to={vo('n06')} />
       <T lines={['13개 중 4개']} size={112} from={vo('n06')} to={S.table} />
@@ -241,7 +245,7 @@ export const Film: React.FC = () => {
       <T lines={['AI가 제일 먼저', <React.Fragment key="y">보라는 건 <Y>9쪽</Y></React.Fragment>]} from={vo('n08')} to={vo('n09')} />
       <T lines={[<React.Fragment key="y"><Y>9쪽</Y>을 펴 봤습니다</React.Fragment>]} from={vo('n09')} to={vo('n10')} />
       <T lines={['AI가 말한 조건', '진짜 그대로 있습니다']} size={92} from={vo('n10')} to={vo('n11')} />
-      <T lines={['쪽수를 받으면', '확인은 바로입니다']} from={vo('n11')} to={S.total + 1} />
+      <T lines={['쪽수를 받으면', '바로 확인됩니다']} from={vo('n11')} to={S.total + 1} />
       <Keep from={vo('n11') + 0.35} />
       <Small text="SYNK 브리핑" from={vo('n11')} to={S.total} right brand />
 

@@ -1,33 +1,33 @@
 {
  "tool": "tools/나레이션굽기.mjs",
  "id": "n11",
- "text": "쪽수를 받으면, 확인은 바로입니다.",
- "show": "쪽수를 받으면 확인은 바로입니다",
- "dur": 1.938,
+ "text": "쪽수를 받으면, 바로 확인됩니다.",
+ "show": "쪽수를 받으면 바로 확인됩니다",
+ "dur": 1.748,
  "words": [
   {
    "text": "쪽수를",
    "start": 0.02,
-   "end": 0.34
+   "end": 0.343
   },
   {
    "text": "받으면,",
-   "start": 0.386,
-   "end": 0.751
+   "start": 0.387,
+   "end": 0.723
   },
   {
-   "text": "확인은",
-   "start": 1.04,
-   "end": 1.329
+   "text": "바로",
+   "start": 0.885,
+   "end": 1.075
   },
   {
-   "text": "바로입니다.",
-   "start": 1.375,
-   "end": 1.938
+   "text": "확인됩니다.",
+   "start": 1.119,
+   "end": 1.748
   }
  ],
  "source": {
-  "key": "6b152df55bae5d404283e08d7bbfe557",
+  "key": "64f0928e5c8d2f6dd880e594d7458c27",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -51,6 +51,6 @@
   "limit": 0.89,
   "clippedSource": 0,
   "clippedOut": 0,
-  "topPitchHz": 145
+  "topPitchHz": 148
  }
 }

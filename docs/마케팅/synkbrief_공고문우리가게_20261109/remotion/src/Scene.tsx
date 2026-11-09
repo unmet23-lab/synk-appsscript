@@ -14,18 +14,23 @@ export const Page9: React.FC<{ hold: number; backAt?: number }> = ({ hold, backA
   const a = sec(hold), b = a + 18, c = sec(hold + 1.15), d = c + 16;
   const e = backAt === undefined ? Infinity : sec(backAt), g = e + 14;
   const whole = 900 / 1400;
-  const WHOLE = { s: 0.875, px: 747, py: 1334, sx: 540, sy: 1090 }; // 온전한 두 줄 — 양쪽에 글 여백(x 65 안쪽)
+  const WHOLE = { s: 0.86, px: 747, py: 1334, sx: 540, sy: 1090 }; // 온전한 두 줄 — 양쪽에 글 여백(x 65 안쪽)
   const KEYV = { s: 1.56, px: KEY.px, py: KEY.py, sx: 74, sy: 1090 }; // 앞 조건 크게
   const ease = { ...clamp, easing: EASE_IO };
   const lerp = (k: number, A: typeof WHOLE, B: typeof WHOLE) => ({ s: A.s + (B.s - A.s) * k, px: A.px + (B.px - A.px) * k, py: A.py + (B.py - A.py) * k, sx: A.sx + (B.sx - A.sx) * k, sy: A.sy + (B.sy - A.sy) * k });
   const first = { s: whole, px: 700, py: 0, sx: 540, sy: 650 };
   const v = f < c ? lerp(interpolate(f, [a, b], [0, 1], ease), first, WHOLE) : f < e ? lerp(interpolate(f, [c, d], [0, 1], ease), WHOLE, KEYV) : lerp(interpolate(f, [e, g], [0, 1], ease), KEYV, WHOLE);
-  // 끝(붙여 쓸 말)에서는 제목 뒤로 공고문 글이 얼룩처럼 비치지 않게 더 누른다
-  const litA = e === Infinity ? interpolate(f, [a, a + 9], [0, 0.965], clamp) : interpolate(f, [a, a + 9, e, g], [0, 0.965, 0.965, 0.992], clamp);
+  // 그늘 속 실제 문서로 — 글자가 얼룩처럼 비치게 깎지 않고 쪽이 쪽으로 보이게 둔다(위 글 · 아래 글 자리는 각자의 그늘이 받친다)
+  const litA = interpolate(f, [a, a + 9], [0, 0.8], clamp);
   const drift = f > g ? (f - g) * 0.0005 : f > d ? (f - d) * 0.0006 : 0;
+  // 앞 조건을 크게 볼 때 그 앞 낱말의 끝 글자가 왼쪽에 잘려 보이지 않게 흰 띠 왼쪽만 눌린 쪽 색으로 덮는다(온전한 두 줄로 돌아오면 걷힌다)
+  const crop = f < c ? 0 : f < e ? interpolate(f, [c, d], [0, 1], clamp) : interpolate(f, [e, g], [1, 0], clamp);
+  const S = v.s + drift;
+  const bandTop = v.sy + (LINE[0] - v.py) * S, bandH = (LINE[1] - LINE[0]) * S;
   return (
     <AbsoluteFill style={{ background: '#0b0b0b', overflow: 'hidden' }}>
-      <PageCam n={9} s={v.s + drift} px={v.px} py={v.py} sx={v.sx} sy={v.sy} lit={LINE} litA={litA} />
+      <PageCam n={9} s={S} px={v.px} py={v.py} sx={v.sx} sy={v.sy} lit={LINE} litA={litA} />
+      {crop > 0 ? <div style={{ position: 'absolute', left: 0, top: bandTop - 1, height: bandH + 2, width: 62 * crop, background: '#3c3c3c' }} /> : null}
     </AbsoluteFill>
   );
 };
