@@ -47,7 +47,9 @@
       "dailyOff": "사용자 게시 금지 범위: 커뮤니티 개설·프로필 설정 승인, 콘텐츠 게시·예약 미승인",
       "profileVerifiedAt": "2026-11-09",
       "avatarSource": "프로필설정_20261108/avatar-lab-logo.png",
-      "coverSource": "온라인마케팅지도/intl-social/vk-profile/cover-ru-v1.png"
+      "coverSource": "온라인마케팅지도/intl-social/vk-profile/cover-ru-v1.png",
+      "loginIdentityRef": "vk-owner",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-cn-douyin": {
       "brand": "LAB",
@@ -75,7 +77,9 @@
       "externalWebsiteLinkStatus": "not-set-no-field-in-web-profile-editor",
       "profileWebsite": "https://synk.im/lab/",
       "profileEvidence": "프로필설정_20261108/README.md",
-      "dailyOff": "사용자 게시 금지 범위: 계정 기본 설정만 승인, 콘텐츠 게시·예약 미승인"
+      "dailyOff": "사용자 게시 금지 범위: 계정 기본 설정만 승인, 콘텐츠 게시·예약 미승인",
+      "loginIdentityRef": "douyin-app",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-jp-instagram": {
       "brand": "LAB",
@@ -99,7 +103,9 @@
       "externalWebsiteLinkStatus": "not-set-mobile-app-required",
       "profileWebsite": "https://synk.im/lab/",
       "profileEvidence": "프로필설정_20261108/README.md",
-      "dailyOff": "사용자 게시 금지 범위: 계정 기본 설정만 승인, 콘텐츠 게시·예약 미승인"
+      "dailyOff": "사용자 게시 금지 범위: 계정 기본 설정만 승인, 콘텐츠 게시·예약 미승인",
+      "loginIdentityRef": "meta-main",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-uz-instagram": {
       "brand": "LAB",
@@ -123,7 +129,9 @@
       "externalWebsiteLinkStatus": "not-set-mobile-app-required",
       "profileWebsite": "https://synk.im/lab/",
       "profileEvidence": "프로필설정_20261108/README.md",
-      "dailyOff": "사용자 게시 금지 범위: 계정 기본 설정만 승인, 콘텐츠 게시·예약 미승인"
+      "dailyOff": "사용자 게시 금지 범위: 계정 기본 설정만 승인, 콘텐츠 게시·예약 미승인",
+      "loginIdentityRef": "meta-main",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-mx-youtube": {
       "brand": "LAB",
@@ -167,7 +175,9 @@
       "profilePublishingAuthorization": "2026-10-02 사용자 '직접 게시해': 직접 화면 확인 후 게시 승인",
       "browserExecutionStatus": "unresponsive-connection-blocking-progress",
       "currentPublicProfileStatus": "not-reverified",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-br-youtube": {
       "brand": "LAB",
@@ -235,7 +245,9 @@
       "publicDescriptionCharacterCount": 480,
       "publicProfileVerifiedAt": "2026-10-02T20:52:47.000+09:00",
       "verificationTimeScope": "주 실행자의 검증 결과를 원장에 기록한 시각",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-cn-xiaohongshu": {
       "brand": "LAB",
@@ -250,10 +262,10 @@
       "publicUrl": "https://www.rednote.com/user/profile/6ab10807000000000301d12f",
       "publicUrlVerifiedAt": "2026-09-21",
       "publicUrlEvidence": "일반 웹 QR 로그인 후 나 메뉴에서 동일한 계정명·고유 프로필 ID·표시 ID를 확인했다. 로그인 세션의 내 프로필 확인이며 독립 비로그인 공개 검증은 아니다. 계정 생성 시점은 미확인이다.",
-      "loginAlias": "unmet23",
-      "loginAliasEvidence": "사용자가 rednote 앱에서 unmet23 Google 로그인 완료를 보고했다. 에이전트는 이후 앱 QR로 연결된 웹의 본인 프로필을 확인했다.",
-      "loginVerifiedAt": "2026-09-21",
-      "loginMethod": "user-app-login-and-official-qr-web-login",
+      "loginAlias": "rednote-phone",
+      "loginAliasEvidence": "11-08 QR 기기 불일치 뒤 해외 창작자 사이트에서 +82 문자 인증으로 사용자 로그인 완료 및 소유자 화면 확인. 정확한 전화번호는 공개 원장에 기록하지 않음.",
+      "loginVerifiedAt": "2026-11-08",
+      "loginMethod": "overseas-creator-phone-sms",
       "publisher": "manual-only",
       "connection": "web-owner-verified-api-not-verified",
       "bio": "",
@@ -271,7 +283,12 @@
       "profilePreparation": "온라인마케팅지도/intl-social/rednote-profile/profile.json",
       "profileEvidence": "온라인마케팅지도/intl-social/execution-20260920.json",
       "setupEvidence": "온라인마케팅지도/intl-social/execution-20260920.json",
-      "dailyLine": "LAB 두 채널"
+      "dailyLine": "LAB 두 채널",
+      "loginIdentityRef": "rednote-phone",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "previousLoginAlias": "unmet23",
+      "previousLoginEvidence": "2026-09-21 사용자가 앱의 unmet23 Google 로그인 완료 보고 후 공식 앱 QR로 웹 본인 프로필 확인",
+      "previousLoginMethod": "user-app-login-and-official-qr-web-login"
     },
     "lab-mm-tiktok": {
       "brand": "LAB",
@@ -312,7 +329,9 @@
       "avatarVerificationScope": "authenticated-tiktok-profile-after-reload",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
       "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
-      "dailyLine": "LAB 두 채널"
+      "dailyLine": "LAB 두 채널",
+      "loginIdentityRef": "synk-yuh",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-vn-tiktok": {
       "brand": "LAB",
@@ -349,7 +368,9 @@
       "avatarVerificationScope": "authenticated-tiktok-profile-after-reload",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
       "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "unmet27",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-ru-rutube": {
       "brand": "LAB",
@@ -363,7 +384,6 @@
       "publicUrlVerifiedAt": "2026-09-21",
       "publicUrlEvidence": "2026-09-20 최초 265자 소개 공개 확인 이후 2026-09-21 공식 GID 재로그인·Studio 소개 저장 제출. 공개 채널 새로고침에서 이름·297자 소개 전문·공개 DOM의 클릭 가능한 LAB 링크와 대상 URL 확인. 링크 방문·리디렉션 성공은 검증하지 않았으며 이번 저장 성공 토스트도 관찰하지 않음.",
       "loginAlias": "synk.yuh",
-      "loginEmail": "synk.yuh@gmail.com",
       "loginMethod": "official-gid-email-verification",
       "loginVerifiedAt": "2026-09-21",
       "loginRestoredAt": "2026-11-08",
@@ -395,7 +415,9 @@
       "avatarVerificationScope": "authenticated-public-channel-after-followup-reload",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
       "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "synk-yuh",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-np-facebook": {
       "brand": "LAB",
@@ -427,7 +449,9 @@
       "avatarVerificationScope": "authenticated-facebook-profile-after-save-toast",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
       "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "meta-main",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-kh-facebook": {
       "brand": "LAB",
@@ -460,7 +484,9 @@
       "avatarVerificationScope": "authenticated-facebook-profile-after-save-toast",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
       "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "meta-main",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-lk-facebook": {
       "brand": "LAB",
@@ -491,7 +517,9 @@
       "avatarVerificationScope": "authenticated-facebook-profile-after-save-toast",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
       "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "meta-main",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-uz-telegram": {
       "brand": "LAB",
@@ -521,7 +549,9 @@
       "avatarVerificationScope": "new-public-t-me-tab-after-crop-and-separate-save",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
       "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "telegram-owner",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-ca-youtube": {
       "brand": "LAB",
@@ -538,7 +568,9 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-my-youtube": {
       "brand": "LAB",
@@ -555,7 +587,9 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-nz-youtube": {
       "brand": "LAB",
@@ -572,7 +606,9 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-py-youtube": {
       "brand": "LAB",
@@ -589,7 +625,9 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-au-youtube": {
       "brand": "LAB",
@@ -606,7 +644,9 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-lk-youtube": {
       "brand": "LAB",
@@ -623,7 +663,9 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-ph-youtube": {
       "brand": "LAB",
@@ -640,7 +682,9 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-us-youtube": {
       "brand": "LAB",
@@ -657,7 +701,9 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-kg-youtube": {
       "brand": "LAB",
@@ -674,7 +720,9 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-in-youtube": {
       "brand": "LAB",
@@ -691,7 +739,9 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-id-youtube": {
       "brand": "LAB",
@@ -708,7 +758,9 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-th-youtube": {
       "brand": "LAB",
@@ -725,7 +777,9 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-mm-youtube": {
       "brand": "LAB",
@@ -742,7 +796,9 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-tw-youtube": {
       "brand": "LAB",
@@ -759,7 +815,9 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-jp-youtube": {
       "brand": "LAB",
@@ -776,7 +834,9 @@
       "profileCopy": "온라인마케팅지도/jp-vn-profile/copy.json",
       "profileEvidence": "온라인마케팅지도/jp-vn-profile/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "77yuhbs",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-vn-youtube": {
       "brand": "LAB",
@@ -793,7 +853,9 @@
       "profileCopy": "온라인마케팅지도/jp-vn-profile/copy.json",
       "profileEvidence": "온라인마케팅지도/jp-vn-profile/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "77yuhbs",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-youtube": {
       "brand": "LAB",
@@ -811,7 +873,9 @@
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "loginAlias": "unmet23",
       "loginVerifiedAt": "2026-09-20",
-      "dailyLine": "LAB 영어"
+      "dailyLine": "LAB 영어",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-instagram": {
       "brand": "LAB",
@@ -827,7 +891,9 @@
         "13:00",
         "21:00"
       ],
-      "dailyTimesFrom": "2026-11-13"
+      "dailyTimesFrom": "2026-11-13",
+      "loginIdentityRef": "meta-main",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-tiktok": {
       "brand": "LAB",
@@ -844,7 +910,9 @@
         "13:00",
         "21:00"
       ],
-      "dailyTimesFrom": "2026-11-13"
+      "dailyTimesFrom": "2026-11-13",
+      "loginIdentityRef": "77yuhbs",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "yuhobuilds-youtube": {
       "brand": "SHIFT",
@@ -857,7 +925,10 @@
       "connection": "needs-oauth",
       "profileStatus": "v6-full-bio-v4-banner-portrait-and-three-links-publicly-rechecked-2026-09-20; no-profile-change-in-final-audit",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
-      "dailyLine": "yuhobuilds"
+      "dailyLine": "yuhobuilds",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "loginAlias": "unmet23"
     },
     "yuhobuilds-instagram": {
       "brand": "SHIFT",
@@ -870,7 +941,9 @@
       "websiteUrl": "https://synk.im/",
       "websiteStatus": "user-added-mobile-external-link-2026-09-14; public-link-synk-im-verified; stored-http-target-redirected-to-https-synk-im-on-actual-click; website-content-refresh-is-separate; from-tag-still-needs-mobile-app-2026-10-31",
       "businessPortfolio": "synk.mn-1057004986835568-added-2026-10-31-after-user-approval; instagram-only-asset-has-no-business-suite-profile-edit-entry; no-ad-account-moved; temporary-link-to-SYNK-LAB-Sri-Lanka-page-tested-and-removed-2026-10-31-no-edit-entry-page-returned-to-other-assets",
-      "dailyLine": "yuhobuilds"
+      "dailyLine": "yuhobuilds",
+      "loginIdentityRef": "meta-main",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "yuhobuilds-tiktok": {
       "brand": "SHIFT",
@@ -886,7 +959,9 @@
       "remainingAction": "new-bio-publicly-rechecked-2026-09-14; prior-display-name-target-유호 · AI와 회사 만들기-pending-after-platform-date-limit; no-name-change-performed; new-first-post-preparation-only-no-publication",
       "targetProfileImage": "approved private studio portrait SHA256 b8f7ecefae17",
       "dailyLine": "yuhobuilds",
-      "dailyBlocked": "11-01 쉼 — 계정 전체 조회 0(스튜디오 7일 0 · 올린 셋 모두 0, 같은 시각 @synkbrief 편은 15시간에 100). 휴대폰 틱톡 앱 「계정 상태」 · 「콘텐츠 검사」로 까닭을 볼 때까지 판을 달지 않는다(유호님 11-01 「쉬게 해」)"
+      "dailyBlocked": "11-01 쉼 — 계정 전체 조회 0(스튜디오 7일 0 · 올린 셋 모두 0, 같은 시각 @synkbrief 편은 15시간에 100). 휴대폰 틱톡 앱 「계정 상태」 · 「콘텐츠 검사」로 까닭을 볼 때까지 판을 달지 않는다(유호님 11-01 「쉬게 해」)",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "synkbrief-youtube": {
       "brand": "SHIFT",
@@ -899,7 +974,10 @@
       "connection": "needs-oauth",
       "profileStatus": "v6-full-bio-v4-banner-embroidered-avatar-and-three-links-publicly-rechecked-2026-09-20; no-profile-change-in-final-audit",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
-      "dailyLine": "synkbrief"
+      "dailyLine": "synkbrief",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "loginAlias": "unmet23"
     },
     "synkbrief-instagram": {
       "brand": "SHIFT",
@@ -910,7 +988,9 @@
       "profileStatus": "bio-90-saved-and-full-public-profile-rechecked-2026-09-14; clickable-website-user-saved-and-agent-click-through-verified-2026-09-14; photo-name-unchanged; posts-remain-0",
       "websiteUrl": "https://synk.im/",
       "websiteStatus": "user-added-mobile-external-link-2026-09-14; public-link-synk-im-verified; stored-http-target-redirected-to-https-synk-im-on-actual-click; website-content-refresh-is-separate",
-      "dailyLine": "synkbrief"
+      "dailyLine": "synkbrief",
+      "loginIdentityRef": "meta-main",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "synkbrief-tiktok": {
       "brand": "SHIFT",
@@ -923,7 +1003,9 @@
       "connection": "needs-reviewed-app",
       "profileStatus": "owner-login-confirmed-and-bio-57-saved-profile-updated-toast-then-full-public-heading-reloaded-exact-match-confirmed-2026-09-14; name-photo-handle-unchanged; no-new-posts",
       "contentStatus": "no-content-confirmed",
-      "dailyLine": "synkbrief"
+      "dailyLine": "synkbrief",
+      "loginIdentityRef": "unmet25",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-facebook": {
       "brand": "LAB",
@@ -937,7 +1019,9 @@
         "13:00",
         "21:00"
       ],
-      "dailyTimesFrom": "2026-11-13"
+      "dailyTimesFrom": "2026-11-13",
+      "loginIdentityRef": "meta-main",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "yuhobuilds-threads": {
       "brand": "SHIFT",
@@ -949,7 +1033,9 @@
       "dailyLine": "yuhobuilds",
       "egoProfile": "Profile 1",
       "loginVerifiedAt": "2026-10-30",
-      "firstPostUrl": "https://www.threads.com/@yuhobuilds/post/DfFRqNakUGl"
+      "firstPostUrl": "https://www.threads.com/@yuhobuilds/post/DfFRqNakUGl",
+      "loginIdentityRef": "instagram-yuhobuilds",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "synkbrief-threads": {
       "brand": "SHIFT",
@@ -961,7 +1047,9 @@
       "operationDecision": "defer-creation-2026-09-13; user-confirmed-overlap-based-deferral-2026-09-14",
       "decisionBasis": "no distinct recurring conversation or method series yet; overlaps existing yuhobuilds Threads; user agreed with this operating judgment; not a verified signup or login error",
       "remainingAction": "reconsider when independent method-application questions and a recurring series exist; preserve existing personal accounts",
-      "dailyOff": "스레드 @synkbrief는 아직 없는 계정 — 09-19 「@yuhobuilds와 역할이 겹쳐」 개설 보류(만들려면 유호님 가입)"
+      "dailyOff": "스레드 @synkbrief는 아직 없는 계정 — 09-19 「@yuhobuilds와 역할이 겹쳐」 개설 보류(만들려면 유호님 가입)",
+      "loginIdentityRef": null,
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "yuhobuilds-linkedin": {
       "brand": "SHIFT",
@@ -978,7 +1066,9 @@
       "targetStatus": "exclude-from-operations-no-further-closure-or-migration-per-user-final-decision-2026-09-14",
       "archiveStatus": "downloaded-2026-09-14; Basic_LinkedInDataExport_09-13-2026.zip.zip; 6339-bytes; 18-entries; profile-positions-connections-messages-present; rich-media-URLs-only; SHA256-cd06a568fe5972f5f057f1ada6f9e7010a2fb4f1ceed95889c8535470115f0e0",
       "remainingAction": "none-per-user-decision; do-not-resume-closure-password-creation-or-migration-without-new-request; use-unmet25-only-for-LinkedIn; other-platforms-unchanged",
-      "dailyOff": "중복 계정 — 쓰지 않음"
+      "dailyOff": "중복 계정 — 쓰지 않음",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "yuho-linkedin-primary": {
       "brand": "SHIFT",
@@ -999,7 +1089,9 @@
       "websiteStatus": "contact-info-company-website-added-and-saved-2026-09-14; reloaded-contact-card-shows-clickable-synk-im; actual-click-opened-https-synk-im-homepage; other-contact-fields-unchanged; contact-card-read-2026-10-31-shows-synk-im-shift-so-no-from-tag",
       "remainingAction": "profile-preparation-complete; use-unmet25-only-for-LinkedIn-personal-profile-and-SYNK-company-page; duplicate-closure-and-migration-cancelled-by-user; new-content-publication-remains-separate",
       "dailyLine": "yuhobuilds",
-      "loginVerifiedAt": "2026-10-26"
+      "loginVerifiedAt": "2026-10-26",
+      "loginIdentityRef": "unmet25",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "synk-linkedin-company": {
       "brand": "SYNK",
@@ -1019,7 +1111,9 @@
       "publicAbout": "한 사람을 깊이 이해한 개인화 시스템을 만듭니다.\n각각의 필요와 가능성을 이해하고, 그 이해에 기술의 진보를 더해 한 사람에게 필요한 도움을 정확하게 제공하는 시스템으로 끊임없이 발전시킵니다.\n\n저마다의 삶을 온전히 누리는 미래를 만듭니다.\nAI가 넓힌 가능성을 배움과 일, 문화로 연결합니다.\n\nSYNK LAB\n삶의 방향을 구체화하며, 배움과 경험의 최적화된 경로를 설계합니다.\n가고 싶은 방향에 집중할 수 있는 환경을 만듭니다.\n\nSYNK SHIFT\n올바른 가치관과 탄탄한 역량이 기회를 만나도록, 개인과 조직을 연결합니다.\n기관 강의와 기업 컨설팅으로 현장의 역량과 일하는 방식을 발전시킵니다. 브랜딩과 광고로 기업의 가치를 알리고, 고객과 연결합니다. 유학부터 취업까지 교육기관과 기업을 연결해, 개인이 배운 것을 펼치고 역량을 발휘할 기회를 넓힙니다.\n개인과 조직의 성장이 서로의 기회가 되는 미래를 만듭니다.\n\nSYNK PULSE\n감정의 폭과 깊이를 넓히는 작품을 만듭니다.\n함께한 시간이, 각자의 이야기로 이어지는 문화를 만듭니다.",
       "targetStatus": "official-external-channel",
       "remainingAction": "company-profile-preparation-complete-including-canonical-website; operate-through-unmet25; new-content-publication-is-separate",
-      "dailyOff": "회사 페이지 — 개인 프로필 글을 공유하는 쪽(개인 로그인 뒤 함께)"
+      "dailyOff": "회사 페이지 — 개인 프로필 글을 공유하는 쪽(개인 로그인 뒤 함께)",
+      "loginIdentityRef": "unmet25",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-telegram": {
       "brand": "LAB",
@@ -1029,7 +1123,9 @@
       "publisher": "direct-after-connection",
       "connection": "needs-bot-admin",
       "profileStatus": "bio-218-of-255-saved-and-full-four-line-new-public-page-rechecked-2026-09-14; channel-photo-name-personal-info-visibility-bot-permissions-links-unchanged; existing-copy-reused; native-language-review-incomplete; no-posts-sent",
-      "dailyLine": "LAB 몽골"
+      "dailyLine": "LAB 몽골",
+      "loginIdentityRef": "telegram-owner",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "yuhobuilds-telegram": {
       "brand": "SHIFT",
@@ -1042,7 +1138,9 @@
       "publisher": "manual-contact",
       "connection": "public-profile-confirmed-no-message-sent",
       "profileStatus": "contact-bio-47-saved-and-full-public-profile-rechecked-2026-09-14; name-handle-phone-links-unchanged; no-messages-sent",
-      "dailyOff": "개인 연락처 프로필 — 채널이 아님"
+      "dailyOff": "개인 연락처 프로필 — 채널이 아님",
+      "loginIdentityRef": "telegram-owner",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "synklab-substack": {
       "brand": "SHIFT",
@@ -1056,7 +1154,9 @@
       "profileStatus": "publisher-admin-login-confirmed-2026-09-14; publication-hero-text-73-and-author-bio-saved-and-rechecked; counted-as-one-account; default-English-about-body-replaced-with-LAB-MN-KR-and-SHIFT-purpose-reading-and-contact-copy-saved-and-public-reloaded-2026-09-14; 390px-Chrome-emulation-no-horizontal-overflow-and-readable-sections-verified; publication-name-colors-sections-subscription-and-payment-settings-unchanged; no-posts-or-mails-sent",
       "aboutUrl": "https://synklab.substack.com/about",
       "aboutSource": "docs/마케팅/전사새출발_20260914/Substack_About.md",
-      "dailyOff": "뉴스레터 — 올리면 구독자에게 메일이 나가 매일 판과 맞지 않음"
+      "dailyOff": "뉴스레터 — 올리면 구독자에게 메일이 나가 매일 판과 맞지 않음",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "synk-instagram": {
       "brand": "SYNK",
@@ -1068,7 +1168,9 @@
       "operationDecision": "excluded-from-new-account-plan-by-user-2026-11-09",
       "decisionBasis": "사용자: 회사 인스타는 없어도 될 것 같다. 회사 Instagram 신규 개설 대상에서 제외.",
       "remainingAction": "추가 개설하지 않는다. 기존 회사 LinkedIn·홈페이지 및 브랜드별 채널을 유지한다.",
-      "dailyOff": "사용자 요청으로 회사 Instagram 개설 제외"
+      "dailyOff": "사용자 요청으로 회사 Instagram 개설 제외",
+      "loginIdentityRef": null,
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "shift-naverblog": {
       "brand": "SHIFT",
@@ -1115,7 +1217,9 @@
         "https://www.behance.net/gallery/255583141/-AI-SYNK-"
       ],
       "remainingAction": "mobile-public-view-390px-Chrome-emulation-verified-2026-09-14-title-portrait-bio-and-existing-post-readable-no-horizontal-overflow; mobile-background-remains-existing-grey-cover-distinct-from-PC-new-cover; current-browser-session-not-blog-owner-so-mobile-cover-not-edited; no separate profile-link fields were exposed in the basic-info screen",
-      "dailyLine": "synkbrief"
+      "dailyLine": "synkbrief",
+      "loginIdentityRef": "naver-main",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "shift-kakao": {
       "brand": "SHIFT",
@@ -1128,7 +1232,9 @@
       "editorUrl": "https://center-pf.kakao.com/",
       "connection": "official-admin-center",
       "profileStatus": "bio-41-of-55-saved-confirmation-and-full-public-channel-home-rechecked-2026-09-14; photo-contact-service-links-posts-unchanged; existing-basic-info-card-title-unchanged; no-independent-cover-control-shown",
-      "dailyOff": "카카오 채널 — 메시지 발송은 돈이 들어 매일 판과 맞지 않음"
+      "dailyOff": "카카오 채널 — 메시지 발송은 돈이 들어 매일 판과 맞지 않음",
+      "loginIdentityRef": "kakao-shift",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "shift-tistory": {
       "brand": "SHIFT",
@@ -1139,7 +1245,9 @@
       "connection": "official-editor",
       "profileStatus": "bio-114-saved-and-publicly-rechecked-2026-09-14; title-nickname-photo-unchanged; posts-remain-0; skin-slogan-two-fields-and-main-PC-cover-applied-earlier; existing-CSS-fit-rules-and-navigation-footer-SYNK-links-preserved; PC1440x540-and-mobile390x300-cover-full-logo-vision-business-copy-verified-2026-09-14-in-actual-390px-and-1440px-Chrome-emulated-viewports; no-horizontal-overflow; initial-blank-observation-resolved-on-followup-render-cause-unverified; followup-added-no-skin-change-or-upload; physical-phone-not-tested; cover-counted-once",
       "mobileVerification": "docs/홍보물/새첫게시물_20260914/커버/qa/Tistory_모바일_검증.json",
-      "dailyLine": "yuhobuilds"
+      "dailyLine": "yuhobuilds",
+      "loginIdentityRef": "kakao-tistory",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "shift-pinterest": {
       "brand": "SHIFT",
@@ -1151,7 +1259,9 @@
       "publisher": "direct-after-approval",
       "connection": "needs-standard-api-access",
       "profileStatus": "bio-128-and-cover-1600x900-saved-and-publicly-rechecked-2026-09-14; actual-crop-logo-vision-support-copy-not-clipped-and-public-reload-screenshot-full-copy-confirmed; cover-sha256-89658dfc4d5fed95e375702432cbe70b603c8ade95bbdcf8401a7d4cd2b27e95; file-access-block-resolved; no-pins-published",
-      "dailyOff": "핀터레스트 — API 승인 전, 나중"
+      "dailyOff": "핀터레스트 — API 승인 전, 나중",
+      "loginIdentityRef": "pinterest-owner",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "yuhobuilds-x": {
       "brand": "SHIFT",
@@ -1168,7 +1278,9 @@
       "firstPostUrl": "https://x.com/yuhobuilds/status/2098402542854275312",
       "dailyLine": "yuhobuilds",
       "loginAlias": "unmet23",
-      "loginVerifiedAt": "2026-10-26"
+      "loginVerifiedAt": "2026-10-26",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "yuhobuilds-behance": {
       "brand": "SHIFT",
@@ -1181,7 +1293,9 @@
       "profileStatus": "bio-128-and-revised-cover-3200x410-saved-and-publicly-rechecked-2026-09-14; original-cover-upload-cancelled-after-crop-defect; existing-one-project-preserved",
       "contentStatus": "first-project-published",
       "firstProjectUrl": "https://www.behance.net/gallery/255583141/-AI-SYNK-",
-      "dailyOff": "포트폴리오 — 매일 판이 아님"
+      "dailyOff": "포트폴리오 — 매일 판이 아님",
+      "loginIdentityRef": "adobe-owner",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "yuhobuilds-naver-clip": {
       "brand": "SHIFT",
@@ -1204,7 +1318,9 @@
       "retiredUploadRecord": "docs/마케팅/전사새출발_20260914/구후보_폐기기록.md",
       "currentPreparation": "docs/마케팅/전사새출발_20260914/진행과검증.md",
       "remainingAction": "new-bio-saved-and-publicly-rechecked-2026-09-14; new-first-post-preparation-only-no-publication; 2026-09-14-account-connect-UI-has-no-synkshift-blog-target-only-unrelated-MY-place-reviews; no-connection-made; official-linking-imports-content-and-cannot-be-unlinked-not-a-simple-external-URL; reconsider-only-if-correct-blog-and-intended-import-are-confirmed",
-      "dailyOff": "네이버 클립 만들기는 네이버 모바일 앱 전용 — 10-26 ego에서 웹 「만들기」가 「네이버 앱에서 제공하는 기능이에요. 모바일앱에서 이용해 주세요」(파일 칸 없음), 자동 게시 길 없음"
+      "dailyOff": "네이버 클립 만들기는 네이버 모바일 앱 전용 — 10-26 ego에서 웹 「만들기」가 「네이버 앱에서 제공하는 기능이에요. 모바일앱에서 이용해 주세요」(파일 칸 없음), 자동 게시 길 없음",
+      "loginIdentityRef": "naver-clip-owner",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-mx-tiktok": {
       "brand": "LAB",
@@ -1224,7 +1340,9 @@
       "targetDisplayName": "SYNK LAB Mexico",
       "profileEvidence": "프로필설정_20261108/README.md",
       "publicBio": "",
-      "dailyOff": "11-08 가입 확인만. 사용자 지시로 SNS 콘텐츠 게시·예약 금지; 프로필 기본 설정과 게시 연결 미완료"
+      "dailyOff": "11-08 가입 확인만. 사용자 지시로 SNS 콘텐츠 게시·예약 금지; 프로필 기본 설정과 게시 연결 미완료",
+      "loginIdentityRef": "naver-pulse",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-kz-tiktok": {
       "brand": "LAB",
@@ -1244,7 +1362,9 @@
       "targetDisplayName": "SYNK LAB Kazakhstan",
       "profileEvidence": "프로필설정_20261108/README.md",
       "publicBio": "",
-      "dailyOff": "11-08 가입 확인만. 사용자 지시로 SNS 콘텐츠 게시·예약 금지; 프로필 기본 설정과 게시 연결 미완료"
+      "dailyOff": "11-08 가입 확인만. 사용자 지시로 SNS 콘텐츠 게시·예약 금지; 프로필 기본 설정과 게시 연결 미완료",
+      "loginIdentityRef": "naver-class",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-th-tiktok": {
       "brand": "LAB",
@@ -1264,7 +1384,9 @@
       "targetDisplayName": "SYNK LAB Thailand",
       "profileEvidence": "프로필설정_20261108/README.md",
       "publicBio": "",
-      "dailyOff": "11-08 가입 확인만. 사용자 지시로 SNS 콘텐츠 게시·예약 금지; 프로필 기본 설정과 게시 연결 미완료"
+      "dailyOff": "11-08 가입 확인만. 사용자 지시로 SNS 콘텐츠 게시·예약 금지; 프로필 기본 설정과 게시 연결 미완료",
+      "loginIdentityRef": "tiktok-th-email",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "lab-id-tiktok": {
       "brand": "LAB",
@@ -1309,7 +1431,9 @@
       },
       "publicBio": "Belajar bahasa Korea, langsung coba pakai! 🎮 synk.im/lab/",
       "publicBioVerifiedAt": "2026-10-19T00:13:22.668Z",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)"
+      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
+      "loginIdentityRef": "unmet29",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "pulse-youtube": {
       "brand": "PULSE",
@@ -1324,7 +1448,10 @@
       "loginVerifiedAt": "2026-11-09",
       "dailyOff": "PULSE 프로필만 설정. 사용자 요청으로 콘텐츠 게시·예약 금지, 게시 연결 미검증",
       "profileStatus": "owner-verified; approved-logo-current-bio-homepage-saved; banner-and-phone-verification-deferred",
-      "profileEvidence": "프로필설정_20261108/README.md"
+      "profileEvidence": "프로필설정_20261108/README.md",
+      "loginIdentityRef": "unmet23",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "loginAlias": "unmet23"
     },
     "pulse-instagram": {
       "brand": "PULSE",
@@ -1337,7 +1464,9 @@
       "loginVerifiedAt": "2026-11-09",
       "dailyOff": "PULSE 계정 확보·프로필 설정만. 사용자 요청으로 콘텐츠 게시·예약 금지",
       "profileStatus": "owner-switch-edit-controls-verified; name-approved-logo-bio-saved; clickable-website-link-requires-mobile",
-      "profileEvidence": "프로필설정_20261108/README.md"
+      "profileEvidence": "프로필설정_20261108/README.md",
+      "loginIdentityRef": "meta-main",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     },
     "pulse-facebook": {
       "brand": "PULSE",
@@ -1352,7 +1481,10 @@
       "dailyOff": "PULSE 프로필 설정만. 11-09 프로필 사진 변경 자동 게시물은 허용, 영상·다른 게시물·예약 금지",
       "profileStatus": "page-created-owner-verified; bio-homepage-and-synkpulse-username-saved; linkedin-inspired-felt-logo-v1-saved",
       "profileEvidence": "프로필설정_20261108/README.md",
-      "expectedHandle": "@synkpulse"
+      "expectedHandle": "@synkpulse",
+      "loginIdentityRef": "meta-main",
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     }
-  }
+  },
+  "loginRoutingAuditedAt": "2026-11-09"
 }

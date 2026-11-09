@@ -1162,8 +1162,8 @@
         },
         {
           "platform": "TikTok",
-          "status": "approved-not-created",
-          "accountId": "lab-br-tiktok",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
           "handle": null,
           "url": null
         }

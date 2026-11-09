@@ -1,0 +1,1815 @@
+{
+  "schemaVersion": 1,
+  "auditedAt": "2026-11-09",
+  "scope": "SNS·채널 전체 88행 = 기존 등록 39 + LAB 확장 49. 별도 장기 계획 17, 서비스 가입은 따로 관리",
+  "definition": "한 행은 공개 채널/프로필 또는 미개설 자리. 로그인 연결 수는 고유 사람·메일 계정 수가 아님.",
+  "freshVerification": "11-09 YouTube 전환 메뉴 24채널의 Google 연결을 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 계정별 근거 날짜를 보존하며 모든 채널에 새 로그인을 한 결과가 아님.",
+  "privateDetails": "전체 이메일·실제 Naver ID·Aside 프로필 식별자는 저장소 밖 비공개 로그인 표에서 관리. 비밀번호·인증코드는 포함하지 않음.",
+  "counts": {
+    "channelRows": 88,
+    "activeExisting": 70,
+    "excludedExisting": 1,
+    "uncreatedOrExcluded": 2,
+    "labExpansionPending": 15,
+    "otherPlanned": 17,
+    "byStatus": {
+      "confirmed": 51,
+      "switch-only": 6,
+      "partial": 10,
+      "missing": 3,
+      "not-created": 0,
+      "excluded": 0
+    }
+  },
+  "supplementalIds": [
+    "yuhokorean-youtube",
+    "yuhokorean-instagram",
+    "yuhokorean-tiktok",
+    "yuhokorean-facebook",
+    "yuhokorean-threads",
+    "shift-class-naverblog",
+    "pulse-naverblog",
+    "politics-youtube",
+    "politics-facebook",
+    "shift-brunch"
+  ],
+  "identities": [
+    {
+      "id": "unmet23",
+      "label": "Google · unmet23",
+      "loginType": "Google 로그인",
+      "currentUse": "lab-mx-youtube · lab-br-youtube · lab-ca-youtube · lab-my-youtube · lab-nz-youtube · lab-py-youtube · lab-au-youtube · lab-lk-youtube · lab-ph-youtube · lab-us-youtube · lab-kg-youtube · lab-in-youtube · lab-id-youtube · lab-th-youtube · lab-mm-youtube · lab-tw-youtube · lab-youtube · yuhobuilds-youtube · synkbrief-youtube · pulse-youtube · yuhobuilds-tiktok · yuhobuilds-x · synklab-substack · yuhobuilds-linkedin",
+      "assignment": "로그인 경로 확인 / 일부 확인 · 보완 필요 / 운영 제외",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "사용 전 대상 핸들과 현재 세션 확인"
+    },
+    {
+      "id": "77yuhbs",
+      "label": "Google · 77yuhbs",
+      "loginType": "Google 로그인",
+      "currentUse": "lab-jp-youtube · lab-vn-youtube · lab-tiktok",
+      "assignment": "로그인 경로 확인",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "사용 전 대상 핸들과 현재 세션 확인"
+    },
+    {
+      "id": "google-yuhokorean",
+      "label": "Google · yuhokorean·몽글몽글",
+      "loginType": "Google 로그인",
+      "currentUse": "yuhokorean-youtube · politics-youtube",
+      "assignment": "로그인 경로 확인",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "TikTok Google 로그인으로는 다른 계정이 열린 이력이 있어 YouTube와 혼동 금지"
+    },
+    {
+      "id": "synk-yuh",
+      "label": "Google·메일 · synk.yuh",
+      "loginType": "Google 로그인 또는 서비스 이메일 인증",
+      "currentUse": "lab-mm-tiktok · lab-ru-rutube",
+      "assignment": "로그인 경로 확인",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "사용 전 대상 핸들과 현재 세션 확인"
+    },
+    {
+      "id": "unmet25",
+      "label": "Google·메일 · unmet25",
+      "loginType": "Google 로그인 / LinkedIn ID",
+      "currentUse": "synkbrief-tiktok · yuho-linkedin-primary · synk-linkedin-company",
+      "assignment": "로그인 경로 확인",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "사용 전 대상 핸들과 현재 세션 확인"
+    },
+    {
+      "id": "unmet27",
+      "label": "Google · unmet27",
+      "loginType": "Google 로그인",
+      "currentUse": "lab-vn-tiktok",
+      "assignment": "일부 확인 · 보완 필요",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "베트남 TikTok 연결은 09-20 기록; 현재 세션 미재검증"
+    },
+    {
+      "id": "unmet29",
+      "label": "계정 별칭 · unmet29",
+      "loginType": "TikTok 연결 별칭 · 인증 방식 미확인",
+      "currentUse": "lab-id-tiktok",
+      "assignment": "일부 확인 · 보완 필요",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "공개 프로필만으로 이메일 도메인·Google 로그인 방식을 추정하지 않음"
+    },
+    {
+      "id": "tiktok-th-email",
+      "label": "TikTok 태국 이메일",
+      "loginType": "이메일 가입·로그인",
+      "currentUse": "lab-th-tiktok",
+      "assignment": "로그인 경로 확인",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "사용 전 대상 핸들과 현재 세션 확인"
+    },
+    {
+      "id": "naver-class",
+      "label": "Naver · SHIFT 수업 블로그",
+      "loginType": "Naver ID / TikTok 이메일 가입",
+      "currentUse": "lab-kz-tiktok · shift-class-naverblog",
+      "assignment": "로그인 경로 확인",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "블로그 주소 shiftclass와 실제 Naver ID가 다름"
+    },
+    {
+      "id": "naver-pulse",
+      "label": "Naver · PULSE 블로그",
+      "loginType": "Naver ID / TikTok 이메일 가입",
+      "currentUse": "lab-mx-tiktok · pulse-naverblog",
+      "assignment": "로그인 경로 확인",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "블로그 주소 daily_with_247와 실제 Naver ID가 다름"
+    },
+    {
+      "id": "naver-main",
+      "label": "Naver · synkshift 블로그",
+      "loginType": "Naver ID 로그인",
+      "currentUse": "shift-naverblog",
+      "assignment": "로그인 경로 확인",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "synkshift는 블로그 주소. 이 이메일의 기존 TikTok 핸들은 미확인"
+    },
+    {
+      "id": "meta-main",
+      "label": "Meta · 기본 운영자",
+      "loginType": "기존 Instagram / Facebook 관리자 로그인",
+      "currentUse": "lab-instagram · yuhobuilds-instagram · synkbrief-instagram · lab-jp-instagram · lab-uz-instagram · pulse-instagram · lab-facebook · lab-np-facebook · lab-kh-facebook · lab-lk-facebook · pulse-facebook",
+      "assignment": "계정 전환 확인 · 독립 로그인 미확인 / 로그인 경로 확인",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "연락 이메일은 확인했으나 모든 Instagram 계정의 독립 로그인 ID라는 증거는 아님"
+    },
+    {
+      "id": "instagram-yuhokorean",
+      "label": "Instagram · @yuhokorean",
+      "loginType": "Instagram 사용자 이름 로그인",
+      "currentUse": "yuhokorean-instagram · yuhokorean-threads",
+      "assignment": "로그인 경로 확인",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "독립 복구 이메일은 별도 미확인"
+    },
+    {
+      "id": "meta-yuhokorean",
+      "label": "Meta · yuhokorean 운영자",
+      "loginType": "Facebook 개인 관리자 → 페이지 전환",
+      "currentUse": "yuhokorean-facebook · politics-facebook",
+      "assignment": "로그인 경로 확인",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "기본 운영자와 표시 이름은 같지만 브라우저·연락 이메일이 다름"
+    },
+    {
+      "id": "tiktok-yuhokorean",
+      "label": "TikTok · @yuhokorean",
+      "loginType": "사용자 이름 로그인",
+      "currentUse": "yuhokorean-tiktok",
+      "assignment": "로그인 경로 확인",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "관련 Google 로그인은 다른 핸들이 열린 이력. 이메일 연결을 확정하지 않음"
+    },
+    {
+      "id": "instagram-yuhobuilds",
+      "label": "Instagram · @yuhobuilds",
+      "loginType": "Instagram 사용자 이름 로그인",
+      "currentUse": "yuhobuilds-threads",
+      "assignment": "로그인 경로 확인",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "Threads는 해당 Instagram 계정으로 로그인"
+    },
+    {
+      "id": "rednote-phone",
+      "label": "rednote · 기존 앱 계정",
+      "loginType": "해외 창작자 사이트 휴대폰 문자 인증",
+      "currentUse": "lab-cn-xiaohongshu",
+      "assignment": "로그인 경로 확인",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "QR 기기 불일치 뒤 11-08 문자 인증 성공. 과거 Google 연결은 현재 경로로 확정하지 않음"
+    },
+    {
+      "id": "douyin-app",
+      "label": "Douyin · 기존 앱 계정",
+      "loginType": "앱 QR 승인",
+      "currentUse": "lab-cn-douyin",
+      "assignment": "로그인 경로 확인",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "PC 비밀번호·문자 시도 성공으로 기록하지 않음. QR 성공 경로 사용"
+    },
+    {
+      "id": "vk-owner",
+      "label": "VK · LAB 운영자",
+      "loginType": "VK 개인 관리자 → 커뮤니티 전환",
+      "currentUse": "lab-ru-vk",
+      "assignment": "일부 확인 · 보완 필요",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "관리자 연결 확인과 새 세션 로그인 자격 확인은 별개"
+    },
+    {
+      "id": "telegram-owner",
+      "label": "Telegram · 기존 운영자",
+      "loginType": "기존 Telegram 앱 계정",
+      "currentUse": "lab-telegram · lab-uz-telegram · yuhobuilds-telegram",
+      "assignment": "일부 확인 · 보완 필요",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "채널·개인 공개 사용자 이름을 전화 로그인 ID로 취급하지 않음"
+    },
+    {
+      "id": "kakao-tistory",
+      "label": "Kakao · Tistory 운영자",
+      "loginType": "Kakao 로그인",
+      "currentUse": "shift-tistory",
+      "assignment": "일부 확인 · 보완 필요",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "Aside 기본 프로필의 기존 로그인 세션으로 관리 화면 확인"
+    },
+    {
+      "id": "kakao-shift",
+      "label": "Kakao · SHIFT 채널 운영자",
+      "loginType": "Kakao 관리자 로그인",
+      "currentUse": "shift-kakao",
+      "assignment": "일부 확인 · 보완 필요",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "사용 전 대상 핸들과 현재 세션 확인"
+    },
+    {
+      "id": "kakao-brunch",
+      "label": "Kakao · 브런치 운영자",
+      "loginType": "Kakao 로그인",
+      "currentUse": "shift-brunch",
+      "assignment": "일부 확인 · 보완 필요",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "사용 전 대상 핸들과 현재 세션 확인"
+    },
+    {
+      "id": "adobe-owner",
+      "label": "Adobe · Behance 운영자",
+      "loginType": "Adobe 로그인 · 방식 미확인",
+      "currentUse": "yuhobuilds-behance",
+      "assignment": "로그인 정보 미확인",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "사용 전 대상 핸들과 현재 세션 확인"
+    },
+    {
+      "id": "pinterest-owner",
+      "label": "Pinterest · SHIFT 운영자",
+      "loginType": "로그인 방식 미확인",
+      "currentUse": "shift-pinterest",
+      "assignment": "로그인 정보 미확인",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "사용 전 대상 핸들과 현재 세션 확인"
+    },
+    {
+      "id": "naver-clip-owner",
+      "label": "Naver · 유호 Clip 운영자",
+      "loginType": "Naver 로그인",
+      "currentUse": "yuhobuilds-naver-clip",
+      "assignment": "로그인 정보 미확인",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "@yuhobuilds는 Clip ID. Naver 로그인 ID를 추정하지 않음"
+    },
+    {
+      "id": "workspace-founder",
+      "label": "Workspace · 국가별 수신함",
+      "loginType": "기존 Google Workspace 사용자",
+      "currentUse": "국가별 TikTok 예정 메일 별칭 수신 (계정 생성 아님)",
+      "assignment": "수신 별칭 6개 준비 · 가입 보류",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "국가별 별칭은 독립 Google 계정이 아니며 founder 받은편지함으로 수신"
+    }
+  ],
+  "accounts": {
+    "lab-mx-youtube": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "계정 전환 메뉴에서 Google 소유 계정·채널 연결을 확인. 각 채널 Studio 권한을 전부 새로 확인한 것은 아님",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "11-09 전환 메뉴 연결 확인; PULSE Studio 관리 화면 확인"
+    },
+    "lab-br-youtube": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "계정 전환 메뉴에서 Google 소유 계정·채널 연결을 확인. 각 채널 Studio 권한을 전부 새로 확인한 것은 아님",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "11-09 전환 메뉴 연결 확인; PULSE Studio 관리 화면 확인"
+    },
+    "lab-ca-youtube": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "계정 전환 메뉴에서 Google 소유 계정·채널 연결을 확인. 각 채널 Studio 권한을 전부 새로 확인한 것은 아님",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "11-09 전환 메뉴 연결 확인; PULSE Studio 관리 화면 확인"
+    },
+    "lab-my-youtube": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "계정 전환 메뉴에서 Google 소유 계정·채널 연결을 확인. 각 채널 Studio 권한을 전부 새로 확인한 것은 아님",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "11-09 전환 메뉴 연결 확인; PULSE Studio 관리 화면 확인"
+    },
+    "lab-nz-youtube": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "계정 전환 메뉴에서 Google 소유 계정·채널 연결을 확인. 각 채널 Studio 권한을 전부 새로 확인한 것은 아님",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "11-09 전환 메뉴 연결 확인; PULSE Studio 관리 화면 확인"
+    },
+    "lab-py-youtube": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "계정 전환 메뉴에서 Google 소유 계정·채널 연결을 확인. 각 채널 Studio 권한을 전부 새로 확인한 것은 아님",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "11-09 전환 메뉴 연결 확인; PULSE Studio 관리 화면 확인"
+    },
+    "lab-au-youtube": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "계정 전환 메뉴에서 Google 소유 계정·채널 연결을 확인. 각 채널 Studio 권한을 전부 새로 확인한 것은 아님",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "11-09 전환 메뉴 연결 확인; PULSE Studio 관리 화면 확인"
+    },
+    "lab-lk-youtube": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "계정 전환 메뉴에서 Google 소유 계정·채널 연결을 확인. 각 채널 Studio 권한을 전부 새로 확인한 것은 아님",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "11-09 전환 메뉴 연결 확인; PULSE Studio 관리 화면 확인"
+    },
+    "lab-ph-youtube": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "계정 전환 메뉴에서 Google 소유 계정·채널 연결을 확인. 각 채널 Studio 권한을 전부 새로 확인한 것은 아님",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "11-09 전환 메뉴 연결 확인; PULSE Studio 관리 화면 확인"
+    },
+    "lab-us-youtube": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "계정 전환 메뉴에서 Google 소유 계정·채널 연결을 확인. 각 채널 Studio 권한을 전부 새로 확인한 것은 아님",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "11-09 전환 메뉴 연결 확인; PULSE Studio 관리 화면 확인"
+    },
+    "lab-kg-youtube": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "계정 전환 메뉴에서 Google 소유 계정·채널 연결을 확인. 각 채널 Studio 권한을 전부 새로 확인한 것은 아님",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "11-09 전환 메뉴 연결 확인; PULSE Studio 관리 화면 확인"
+    },
+    "lab-in-youtube": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "계정 전환 메뉴에서 Google 소유 계정·채널 연결을 확인. 각 채널 Studio 권한을 전부 새로 확인한 것은 아님",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "11-09 전환 메뉴 연결 확인; PULSE Studio 관리 화면 확인"
+    },
+    "lab-id-youtube": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "계정 전환 메뉴에서 Google 소유 계정·채널 연결을 확인. 각 채널 Studio 권한을 전부 새로 확인한 것은 아님",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "11-09 전환 메뉴 연결 확인; PULSE Studio 관리 화면 확인"
+    },
+    "lab-th-youtube": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "계정 전환 메뉴에서 Google 소유 계정·채널 연결을 확인. 각 채널 Studio 권한을 전부 새로 확인한 것은 아님",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "11-09 전환 메뉴 연결 확인; PULSE Studio 관리 화면 확인"
+    },
+    "lab-mm-youtube": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "계정 전환 메뉴에서 Google 소유 계정·채널 연결을 확인. 각 채널 Studio 권한을 전부 새로 확인한 것은 아님",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "11-09 전환 메뉴 연결 확인; PULSE Studio 관리 화면 확인"
+    },
+    "lab-tw-youtube": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "계정 전환 메뉴에서 Google 소유 계정·채널 연결을 확인. 각 채널 Studio 권한을 전부 새로 확인한 것은 아님",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "11-09 전환 메뉴 연결 확인; PULSE Studio 관리 화면 확인"
+    },
+    "lab-youtube": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "계정 전환 메뉴에서 Google 소유 계정·채널 연결을 확인. 각 채널 Studio 권한을 전부 새로 확인한 것은 아님",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "11-09 전환 메뉴 연결 확인; PULSE Studio 관리 화면 확인"
+    },
+    "yuhobuilds-youtube": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "계정 전환 메뉴에서 Google 소유 계정·채널 연결을 확인. 각 채널 Studio 권한을 전부 새로 확인한 것은 아님",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "11-09 전환 메뉴 연결 확인; PULSE Studio 관리 화면 확인"
+    },
+    "synkbrief-youtube": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "계정 전환 메뉴에서 Google 소유 계정·채널 연결을 확인. 각 채널 Studio 권한을 전부 새로 확인한 것은 아님",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "11-09 전환 메뉴 연결 확인; PULSE Studio 관리 화면 확인"
+    },
+    "pulse-youtube": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "계정 전환 메뉴에서 Google 소유 계정·채널 연결을 확인. 각 채널 Studio 권한을 전부 새로 확인한 것은 아님",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "11-09 전환 메뉴 연결 확인; PULSE Studio 관리 화면 확인"
+    },
+    "lab-jp-youtube": {
+      "loginIdentityRef": "77yuhbs",
+      "loginAlias": "Google · 77yuhbs",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "11-09 계정 전환 메뉴에서 연결 확인",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "전환 메뉴 확인 · 대상 채널 선택 안 함"
+    },
+    "lab-vn-youtube": {
+      "loginIdentityRef": "77yuhbs",
+      "loginAlias": "Google · 77yuhbs",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "11-09 계정 전환 메뉴에서 연결 확인",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "전환 메뉴 확인 · 대상 채널 선택 안 함"
+    },
+    "yuhokorean-youtube": {
+      "loginIdentityRef": "google-yuhokorean",
+      "loginAlias": "Google · yuhokorean·몽글몽글",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Aside · 4번째 yuhokorean 프로필(Profile 3)",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "Ego의 Google 전환 목록에서 연결만 대조. 실제 운영은 지정 Aside 프로필",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "전환 메뉴 확인 · Aside 현재 세션 미재검증"
+    },
+    "politics-youtube": {
+      "loginIdentityRef": "google-yuhokorean",
+      "loginAlias": "Google · yuhokorean·몽글몽글",
+      "loginMethod": "Google 로그인 → 대상 YouTube 채널 선택",
+      "loginBrowser": "Aside · 4번째 yuhokorean 프로필(Profile 3)",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "Ego의 Google 전환 목록에서 연결만 대조. 실제 운영은 지정 Aside 프로필",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "전환 메뉴 확인 · Aside 현재 세션 미재검증"
+    },
+    "lab-tiktok": {
+      "loginIdentityRef": "77yuhbs",
+      "loginAlias": "Google · 77yuhbs",
+      "loginMethod": "Google로 계속하기",
+      "loginBrowser": "Ego · TikTok synk.mn",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-mm-tiktok": {
+      "loginIdentityRef": "synk-yuh",
+      "loginAlias": "Google·메일 · synk.yuh",
+      "loginMethod": "Google로 계속하기",
+      "loginBrowser": "Ego · Profile 1",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "yuhobuilds-tiktok": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google로 계속하기",
+      "loginBrowser": "Ego · TikTok yuhobuilds",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "synkbrief-tiktok": {
+      "loginIdentityRef": "unmet25",
+      "loginAlias": "Google·메일 · unmet25",
+      "loginMethod": "Google로 계속하기",
+      "loginBrowser": "Ego · TikTok synkbrief",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-vn-tiktok": {
+      "loginIdentityRef": "unmet27",
+      "loginAlias": "Google · unmet27",
+      "loginMethod": "Google로 계속하기",
+      "loginBrowser": "운영 프로필 재확인 필요",
+      "loginMappingStatus": "partial",
+      "loginStatusLabel": "일부 확인 · 보완 필요",
+      "loginEvidenceAt": "2026-09-20",
+      "loginCaveat": "연결 기록은 있으나 11-08 로그인 복구 점검 대상에 포함되지 않음",
+      "loginSourcePaths": [
+        "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-id-tiktok": {
+      "loginIdentityRef": "unmet29",
+      "loginAlias": "계정 별칭 · unmet29",
+      "loginMethod": "별칭만 확인 · Google/이메일 방식 미확인",
+      "loginBrowser": "운영 프로필 미확인",
+      "loginMappingStatus": "partial",
+      "loginStatusLabel": "일부 확인 · 보완 필요",
+      "loginEvidenceAt": "2026-10-19",
+      "loginCaveat": "전체 로그인 주소와 인증 방식을 추가 확인해야 함",
+      "loginSourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-th-tiktok": {
+      "loginIdentityRef": "tiktok-th-email",
+      "loginAlias": "TikTok 태국 이메일",
+      "loginMethod": "이메일 가입·로그인",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "가입 후 다음 국가 진행을 위해 로그아웃. 메일 서비스의 Google/Naver 버튼 로그인으로 바꾸지 않음",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "가입·소유자 확인 뒤 로그아웃 기록"
+    },
+    "lab-kz-tiktok": {
+      "loginIdentityRef": "naver-class",
+      "loginAlias": "Naver · SHIFT 수업 블로그",
+      "loginMethod": "이메일 가입·로그인",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "가입 후 다음 국가 진행을 위해 로그아웃. 메일 서비스의 Google/Naver 버튼 로그인으로 바꾸지 않음",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "가입·소유자 확인 뒤 로그아웃 기록"
+    },
+    "lab-mx-tiktok": {
+      "loginIdentityRef": "naver-pulse",
+      "loginAlias": "Naver · PULSE 블로그",
+      "loginMethod": "이메일 가입·로그인",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "가입 후 다음 국가 진행을 위해 로그아웃. 메일 서비스의 Google/Naver 버튼 로그인으로 바꾸지 않음",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "가입·소유자 확인 뒤 로그아웃 기록"
+    },
+    "yuhokorean-tiktok": {
+      "loginIdentityRef": "tiktok-yuhokorean",
+      "loginAlias": "TikTok · @yuhokorean",
+      "loginMethod": "사용자 이름·비밀번호 로그인",
+      "loginBrowser": "Aside · 4번째 yuhokorean 프로필(Profile 3)",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "Google 로그인 계정과 동일하다고 확인되지 않음. 사용자 이름 경로 사용",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-instagram": {
+      "loginIdentityRef": "meta-main",
+      "loginAlias": "Meta · 기본 운영자",
+      "loginMethod": "기존 Instagram 세션 → 대상 핸들로 계정 전환",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "switch-only",
+      "loginStatusLabel": "계정 전환 확인 · 독립 로그인 미확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "계정별 독립 비밀번호·복구 이메일 로그인은 미검증",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "yuhobuilds-instagram": {
+      "loginIdentityRef": "meta-main",
+      "loginAlias": "Meta · 기본 운영자",
+      "loginMethod": "기존 Instagram 세션 → 대상 핸들로 계정 전환",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "switch-only",
+      "loginStatusLabel": "계정 전환 확인 · 독립 로그인 미확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "계정별 독립 비밀번호·복구 이메일 로그인은 미검증",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "synkbrief-instagram": {
+      "loginIdentityRef": "meta-main",
+      "loginAlias": "Meta · 기본 운영자",
+      "loginMethod": "기존 Instagram 세션 → 대상 핸들로 계정 전환",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "switch-only",
+      "loginStatusLabel": "계정 전환 확인 · 독립 로그인 미확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "계정별 독립 비밀번호·복구 이메일 로그인은 미검증",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-jp-instagram": {
+      "loginIdentityRef": "meta-main",
+      "loginAlias": "Meta · 기본 운영자",
+      "loginMethod": "기존 Instagram 세션 → 대상 핸들로 계정 전환",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "switch-only",
+      "loginStatusLabel": "계정 전환 확인 · 독립 로그인 미확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "계정별 독립 비밀번호·복구 이메일 로그인은 미검증",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-uz-instagram": {
+      "loginIdentityRef": "meta-main",
+      "loginAlias": "Meta · 기본 운영자",
+      "loginMethod": "기존 Instagram 세션 → 대상 핸들로 계정 전환",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "switch-only",
+      "loginStatusLabel": "계정 전환 확인 · 독립 로그인 미확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "계정별 독립 비밀번호·복구 이메일 로그인은 미검증",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "pulse-instagram": {
+      "loginIdentityRef": "meta-main",
+      "loginAlias": "Meta · 기본 운영자",
+      "loginMethod": "기존 Instagram 세션 → @synkpulse 전환",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "switch-only",
+      "loginStatusLabel": "계정 전환 확인 · 독립 로그인 미확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "사용자가 앱 계정 추가로 개설. 독립 로그인·복구 경로는 미검증",
+      "loginSourcePaths": [
+        "docs/마케팅/프로필설정_20261108/README.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "yuhokorean-instagram": {
+      "loginIdentityRef": "instagram-yuhokorean",
+      "loginAlias": "Instagram · @yuhokorean",
+      "loginMethod": "Instagram @yuhokorean 로그인 / Threads 연동",
+      "loginBrowser": "Aside · 4번째 yuhokorean 프로필(Profile 3)",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "복구 이메일까지 확인한 결과는 아님",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "yuhokorean-threads": {
+      "loginIdentityRef": "instagram-yuhokorean",
+      "loginAlias": "Instagram · @yuhokorean",
+      "loginMethod": "Instagram @yuhokorean 로그인 / Threads 연동",
+      "loginBrowser": "Aside · 4번째 yuhokorean 프로필(Profile 3)",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "복구 이메일까지 확인한 결과는 아님",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "yuhobuilds-threads": {
+      "loginIdentityRef": "instagram-yuhobuilds",
+      "loginAlias": "Instagram · @yuhobuilds",
+      "loginMethod": "Instagram @yuhobuilds로 로그인",
+      "loginBrowser": "Ego · Profile 1",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-facebook": {
+      "loginIdentityRef": "meta-main",
+      "loginAlias": "Meta · 기본 운영자",
+      "loginMethod": "Facebook 개인 관리자 로그인 → 해당 페이지 전환",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "페이지별 독립 로그인 ID가 있는 구조로 기록하지 않음",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-np-facebook": {
+      "loginIdentityRef": "meta-main",
+      "loginAlias": "Meta · 기본 운영자",
+      "loginMethod": "Facebook 개인 관리자 로그인 → 해당 페이지 전환",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "페이지별 독립 로그인 ID가 있는 구조로 기록하지 않음",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-kh-facebook": {
+      "loginIdentityRef": "meta-main",
+      "loginAlias": "Meta · 기본 운영자",
+      "loginMethod": "Facebook 개인 관리자 로그인 → 해당 페이지 전환",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "페이지별 독립 로그인 ID가 있는 구조로 기록하지 않음",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-lk-facebook": {
+      "loginIdentityRef": "meta-main",
+      "loginAlias": "Meta · 기본 운영자",
+      "loginMethod": "Facebook 개인 관리자 로그인 → 해당 페이지 전환",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "페이지별 독립 로그인 ID가 있는 구조로 기록하지 않음",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "pulse-facebook": {
+      "loginIdentityRef": "meta-main",
+      "loginAlias": "Meta · 기본 운영자",
+      "loginMethod": "Facebook 개인 관리자 로그인 → SYNK PULSE 페이지 전환",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "페이지 관리자 경로 확인. 관리자 연락 이메일을 Instagram의 보편 로그인 ID로 확장하지 않음",
+      "loginSourcePaths": [
+        "docs/마케팅/프로필설정_20261108/README.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "yuhokorean-facebook": {
+      "loginIdentityRef": "meta-yuhokorean",
+      "loginAlias": "Meta · yuhokorean 운영자",
+      "loginMethod": "Facebook 개인 관리자 로그인 → Yuhokorean 페이지 전환",
+      "loginBrowser": "Aside · 4번째 yuhokorean 프로필(Profile 3)",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "politics-facebook": {
+      "loginIdentityRef": "meta-yuhokorean",
+      "loginAlias": "Meta · yuhokorean 운영자",
+      "loginMethod": "Facebook 개인 관리자 로그인 → 몽글몽글 페이지 전환",
+      "loginBrowser": "Aside · 4번째 yuhokorean 프로필(Profile 3)",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-04",
+      "loginCaveat": "11-04 관리 페이지 목록 기록; 현재 세션 미재검증",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "yuho-linkedin-primary": {
+      "loginIdentityRef": "unmet25",
+      "loginAlias": "Google·메일 · unmet25",
+      "loginMethod": "LinkedIn 개인 계정 로그인 → 본인/회사 관리자 페이지",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-07",
+      "loginCaveat": "회사 페이지에는 별도 로그인 계정을 만들지 않음",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "synk-linkedin-company": {
+      "loginIdentityRef": "unmet25",
+      "loginAlias": "Google·메일 · unmet25",
+      "loginMethod": "LinkedIn 개인 계정 로그인 → 본인/회사 관리자 페이지",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-07",
+      "loginCaveat": "회사 페이지에는 별도 로그인 계정을 만들지 않음",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "yuhobuilds-x": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "Google로 계속하기",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-07",
+      "loginCaveat": "",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "synklab-substack": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "이메일 식별자 확인 · 로그인 버튼 방식 미확인",
+      "loginBrowser": "운영 프로필 미확인",
+      "loginMappingStatus": "partial",
+      "loginStatusLabel": "일부 확인 · 보완 필요",
+      "loginEvidenceAt": "2026-09-14",
+      "loginCaveat": "메일 링크·비밀번호·Google 중 실제 방식은 재확인 필요",
+      "loginSourcePaths": [
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "shift-naverblog": {
+      "loginIdentityRef": "naver-main",
+      "loginAlias": "Naver · synkshift 블로그",
+      "loginMethod": "Naver ID 로그인",
+      "loginBrowser": "Aside · 기본 u0",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "synkshift는 블로그 주소이며 로그인 ID가 아님",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "pulse-naverblog": {
+      "loginIdentityRef": "naver-pulse",
+      "loginAlias": "Naver · PULSE 블로그",
+      "loginMethod": "Naver ID 로그인",
+      "loginBrowser": "Aside · Profile 1",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "daily_with_247는 블로그 주소이며 로그인 ID가 아님",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "shift-class-naverblog": {
+      "loginIdentityRef": "naver-class",
+      "loginAlias": "Naver · SHIFT 수업 블로그",
+      "loginMethod": "Naver ID 로그인",
+      "loginBrowser": "Aside · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "shiftclass는 블로그 주소이며 로그인 ID가 아님",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "shift-tistory": {
+      "loginIdentityRef": "kakao-tistory",
+      "loginAlias": "Kakao · Tistory 운영자",
+      "loginMethod": "Kakao 로그인 → Tistory 관리",
+      "loginBrowser": "Aside · 기본 u0",
+      "loginMappingStatus": "partial",
+      "loginStatusLabel": "일부 확인 · 보완 필요",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "관리 화면 확인, 정확한 Kakao 로그인 이메일 미기록",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "shift-kakao": {
+      "loginIdentityRef": "kakao-shift",
+      "loginAlias": "Kakao · SHIFT 채널 운영자",
+      "loginMethod": "Kakao 채널 관리자 로그인",
+      "loginBrowser": "운영 프로필 미확인",
+      "loginMappingStatus": "partial",
+      "loginStatusLabel": "일부 확인 · 보완 필요",
+      "loginEvidenceAt": "2026-09-19",
+      "loginCaveat": "채널 주소와 개인 Kakao 로그인 ID는 다름",
+      "loginSourcePaths": [
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "shift-brunch": {
+      "loginIdentityRef": "kakao-brunch",
+      "loginAlias": "Kakao · 브런치 운영자",
+      "loginMethod": "Kakao 로그인 → 브런치 프로필",
+      "loginBrowser": "운영 프로필 미확인",
+      "loginMappingStatus": "partial",
+      "loginStatusLabel": "일부 확인 · 보완 필요",
+      "loginEvidenceAt": "2026-11-04",
+      "loginCaveat": "가입 확인. 작가 심사 승인·정확한 Kakao 이메일은 미확인",
+      "loginSourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "yuhobuilds-behance": {
+      "loginIdentityRef": "adobe-owner",
+      "loginAlias": "Adobe · Behance 운영자",
+      "loginMethod": "Adobe 로그인 · 인증 방식 미확인",
+      "loginBrowser": "운영 프로필 미확인",
+      "loginMappingStatus": "missing",
+      "loginStatusLabel": "로그인 정보 미확인",
+      "loginEvidenceAt": null,
+      "loginCaveat": "현재 기록에 실제 로그인 ID 없음",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "shift-pinterest": {
+      "loginIdentityRef": "pinterest-owner",
+      "loginAlias": "Pinterest · SHIFT 운영자",
+      "loginMethod": "로그인 방식 미확인",
+      "loginBrowser": "운영 프로필 미확인",
+      "loginMappingStatus": "missing",
+      "loginStatusLabel": "로그인 정보 미확인",
+      "loginEvidenceAt": null,
+      "loginCaveat": "현재 기록에 실제 로그인 ID 없음",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "yuhobuilds-naver-clip": {
+      "loginIdentityRef": "naver-clip-owner",
+      "loginAlias": "Naver · 유호 Clip 운영자",
+      "loginMethod": "Naver 로그인 · ID 미확인",
+      "loginBrowser": "운영 프로필 미확인",
+      "loginMappingStatus": "missing",
+      "loginStatusLabel": "로그인 정보 미확인",
+      "loginEvidenceAt": null,
+      "loginCaveat": "Clip @yuhobuilds를 Naver 로그인 ID로 추정하지 않음",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-cn-xiaohongshu": {
+      "loginIdentityRef": "rednote-phone",
+      "loginAlias": "rednote · 기존 앱 계정",
+      "loginMethod": "creator.rednote.com 해외 사이트 → +82 문자 인증",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "기기 불일치가 난 QR 대신 문자 인증으로 성공. 이전 unmet23 Google 연결 기록과 구분",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-cn-douyin": {
+      "loginIdentityRef": "douyin-app",
+      "loginAlias": "Douyin · 기존 앱 계정",
+      "loginMethod": "Douyin 휴대폰 앱 → PC QR 스캔·승인",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "문자 가입 계정. PC 비밀번호/문자 성공을 확인한 기록은 아님",
+      "loginSourcePaths": [
+        "docs/마케팅/프로필설정_20261108/README.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-ru-rutube": {
+      "loginIdentityRef": "synk-yuh",
+      "loginAlias": "Google·메일 · synk.yuh",
+      "loginMethod": "공식 GID 이메일 인증",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "Google 버튼이 아닌 GID 이메일 인증 경로",
+      "loginSourcePaths": [
+        "docs/마케팅/프로필설정_20261108/README.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-ru-vk": {
+      "loginIdentityRef": "vk-owner",
+      "loginAlias": "VK · LAB 운영자",
+      "loginMethod": "VK 개인 관리자 로그인 → synklab_ru 커뮤니티",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "partial",
+      "loginStatusLabel": "일부 확인 · 보완 필요",
+      "loginEvidenceAt": "2026-11-08",
+      "loginCaveat": "개인 관리자와 커뮤니티 연결 확인. 실제 로그인 전화번호·이메일 미기록",
+      "loginSourcePaths": [
+        "docs/마케팅/프로필설정_20261108/README.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-telegram": {
+      "loginIdentityRef": "telegram-owner",
+      "loginAlias": "Telegram · 기존 운영자",
+      "loginMethod": "기존 Telegram 앱 계정 → 채널 또는 개인 프로필",
+      "loginBrowser": "Telegram 앱 · 웹은 재확인 필요",
+      "loginMappingStatus": "partial",
+      "loginStatusLabel": "일부 확인 · 보완 필요",
+      "loginEvidenceAt": "2026-09-20",
+      "loginCaveat": "연결된 휴대폰 미확인. 웹 ServiceWorker 오류로 11-08 로그인 점검 제외",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-uz-telegram": {
+      "loginIdentityRef": "telegram-owner",
+      "loginAlias": "Telegram · 기존 운영자",
+      "loginMethod": "기존 Telegram 앱 계정 → 채널 또는 개인 프로필",
+      "loginBrowser": "Telegram 앱 · 웹은 재확인 필요",
+      "loginMappingStatus": "partial",
+      "loginStatusLabel": "일부 확인 · 보완 필요",
+      "loginEvidenceAt": "2026-09-20",
+      "loginCaveat": "연결된 휴대폰 미확인. 웹 ServiceWorker 오류로 11-08 로그인 점검 제외",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "yuhobuilds-telegram": {
+      "loginIdentityRef": "telegram-owner",
+      "loginAlias": "Telegram · 기존 운영자",
+      "loginMethod": "기존 Telegram 앱 계정 → 채널 또는 개인 프로필",
+      "loginBrowser": "Telegram 앱 · 웹은 재확인 필요",
+      "loginMappingStatus": "partial",
+      "loginStatusLabel": "일부 확인 · 보완 필요",
+      "loginEvidenceAt": "2026-09-20",
+      "loginCaveat": "연결된 휴대폰 미확인. 웹 ServiceWorker 오류로 11-08 로그인 점검 제외",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "yuhobuilds-linkedin": {
+      "loginIdentityRef": "unmet23",
+      "loginAlias": "Google · unmet23",
+      "loginMethod": "운영 제외한 중복 LinkedIn 계정",
+      "loginBrowser": "사용하지 않음",
+      "loginMappingStatus": "excluded",
+      "loginStatusLabel": "운영 제외",
+      "loginEvidenceAt": "2026-11-07",
+      "loginCaveat": "unmet25 본 계정을 사용. 삭제 수행 아님",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "synk-instagram": {
+      "loginIdentityRef": null,
+      "loginAlias": null,
+      "loginMethod": "개설 대상에서 제외",
+      "loginBrowser": "해당 없음",
+      "loginMappingStatus": "excluded",
+      "loginStatusLabel": "운영 제외",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "사용자가 회사 Instagram 불필요 결정",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "synkbrief-threads": {
+      "loginIdentityRef": null,
+      "loginAlias": null,
+      "loginMethod": "개설 보류",
+      "loginBrowser": "해당 없음",
+      "loginMappingStatus": "not-created",
+      "loginStatusLabel": "미개설 · 로그인 없음",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "LAB 잔여 15곳과 별도인 기존 보류 항목",
+      "loginSourcePaths": [
+        "docs/_ops/로그인복구_GPT인계_20261107.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-tw-instagram": {
+      "loginIdentityRef": null,
+      "loginAlias": null,
+      "loginMethod": "미개설 · 계정 추가/가입 계획",
+      "loginBrowser": "미배정",
+      "loginMappingStatus": "not-created",
+      "loginStatusLabel": "미개설 · 로그인 없음",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "사용자 요청으로 신규 가입 보류",
+      "loginSourcePaths": [
+        "docs/마케팅/계정_가입현황.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-in-instagram": {
+      "loginIdentityRef": null,
+      "loginAlias": null,
+      "loginMethod": "미개설 · 계정 추가/가입 계획",
+      "loginBrowser": "미배정",
+      "loginMappingStatus": "not-created",
+      "loginStatusLabel": "미개설 · 로그인 없음",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "사용자 요청으로 신규 가입 보류",
+      "loginSourcePaths": [
+        "docs/마케팅/계정_가입현황.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-kz-instagram": {
+      "loginIdentityRef": null,
+      "loginAlias": null,
+      "loginMethod": "미개설 · 계정 추가/가입 계획",
+      "loginBrowser": "미배정",
+      "loginMappingStatus": "not-created",
+      "loginStatusLabel": "미개설 · 로그인 없음",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "사용자 요청으로 신규 가입 보류",
+      "loginSourcePaths": [
+        "docs/마케팅/계정_가입현황.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-np-tiktok": {
+      "loginIdentityRef": null,
+      "loginAlias": null,
+      "loginMethod": "미개설 · 이메일 가입 계획",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "not-created",
+      "loginStatusLabel": "미개설 · 로그인 없음",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "사용자 요청으로 신규 가입 보류",
+      "loginSourcePaths": [
+        "docs/마케팅/계정_가입현황.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함",
+      "plannedLoginIdentityRef": "workspace-founder"
+    },
+    "lab-kg-instagram": {
+      "loginIdentityRef": null,
+      "loginAlias": null,
+      "loginMethod": "미개설 · 계정 추가/가입 계획",
+      "loginBrowser": "미배정",
+      "loginMappingStatus": "not-created",
+      "loginStatusLabel": "미개설 · 로그인 없음",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "사용자 요청으로 신규 가입 보류",
+      "loginSourcePaths": [
+        "docs/마케팅/계정_가입현황.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-kh-tiktok": {
+      "loginIdentityRef": null,
+      "loginAlias": null,
+      "loginMethod": "미개설 · 이메일 가입 계획",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "not-created",
+      "loginStatusLabel": "미개설 · 로그인 없음",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "이메일 인증 후 앱·전화 보안에서 중단. 계정 생성 완료 미확인",
+      "loginSourcePaths": [
+        "docs/마케팅/계정_가입현황.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함",
+      "plannedLoginIdentityRef": "workspace-founder"
+    },
+    "lab-us-tiktok": {
+      "loginIdentityRef": null,
+      "loginAlias": null,
+      "loginMethod": "미개설 · 이메일 가입 계획",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "not-created",
+      "loginStatusLabel": "미개설 · 로그인 없음",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "사용자 요청으로 신규 가입 보류",
+      "loginSourcePaths": [
+        "docs/마케팅/계정_가입현황.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함",
+      "plannedLoginIdentityRef": "workspace-founder"
+    },
+    "lab-ph-tiktok": {
+      "loginIdentityRef": null,
+      "loginAlias": null,
+      "loginMethod": "미개설 · 이메일 가입 계획",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "not-created",
+      "loginStatusLabel": "미개설 · 로그인 없음",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "사용자 요청으로 신규 가입 보류",
+      "loginSourcePaths": [
+        "docs/마케팅/계정_가입현황.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함",
+      "plannedLoginIdentityRef": "workspace-founder"
+    },
+    "lab-au-tiktok": {
+      "loginIdentityRef": null,
+      "loginAlias": null,
+      "loginMethod": "미개설 · 이메일 가입 계획",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "not-created",
+      "loginStatusLabel": "미개설 · 로그인 없음",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "사용자 요청으로 신규 가입 보류",
+      "loginSourcePaths": [
+        "docs/마케팅/계정_가입현황.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함",
+      "plannedLoginIdentityRef": "workspace-founder"
+    },
+    "lab-py-instagram": {
+      "loginIdentityRef": null,
+      "loginAlias": null,
+      "loginMethod": "미개설 · 계정 추가/가입 계획",
+      "loginBrowser": "미배정",
+      "loginMappingStatus": "not-created",
+      "loginStatusLabel": "미개설 · 로그인 없음",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "사용자 요청으로 신규 가입 보류",
+      "loginSourcePaths": [
+        "docs/마케팅/계정_가입현황.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-nz-instagram": {
+      "loginIdentityRef": null,
+      "loginAlias": null,
+      "loginMethod": "미개설 · 계정 추가/가입 계획",
+      "loginBrowser": "미배정",
+      "loginMappingStatus": "not-created",
+      "loginStatusLabel": "미개설 · 로그인 없음",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "사용자 요청으로 신규 가입 보류",
+      "loginSourcePaths": [
+        "docs/마케팅/계정_가입현황.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-my-tiktok": {
+      "loginIdentityRef": null,
+      "loginAlias": null,
+      "loginMethod": "미개설 · 이메일 가입 계획",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "not-created",
+      "loginStatusLabel": "미개설 · 로그인 없음",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "사용자 요청으로 신규 가입 보류",
+      "loginSourcePaths": [
+        "docs/마케팅/계정_가입현황.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함",
+      "plannedLoginIdentityRef": "workspace-founder"
+    },
+    "lab-ca-instagram": {
+      "loginIdentityRef": null,
+      "loginAlias": null,
+      "loginMethod": "미개설 · 계정 추가/가입 계획",
+      "loginBrowser": "미배정",
+      "loginMappingStatus": "not-created",
+      "loginStatusLabel": "미개설 · 로그인 없음",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "사용자 요청으로 신규 가입 보류",
+      "loginSourcePaths": [
+        "docs/마케팅/계정_가입현황.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-br-instagram": {
+      "loginIdentityRef": null,
+      "loginAlias": null,
+      "loginMethod": "미개설 · 계정 추가/가입 계획",
+      "loginBrowser": "미배정",
+      "loginMappingStatus": "not-created",
+      "loginStatusLabel": "미개설 · 로그인 없음",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "사용자 요청으로 신규 가입 보류",
+      "loginSourcePaths": [
+        "docs/마케팅/계정_가입현황.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "lab-br-tiktok": {
+      "loginIdentityRef": null,
+      "loginAlias": null,
+      "loginMethod": "미개설 · 이메일 가입 계획",
+      "loginBrowser": "Ego · Profile 2",
+      "loginMappingStatus": "not-created",
+      "loginStatusLabel": "미개설 · 로그인 없음",
+      "loginEvidenceAt": "2026-11-09",
+      "loginCaveat": "사용자 요청으로 신규 가입 보류",
+      "loginSourcePaths": [
+        "docs/마케팅/계정_가입현황.md",
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    }
+  },
+  "otherPlanned": [
+    {
+      "id": "other-plan-1",
+      "brand": "PULSE",
+      "platform": "TikTok",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님"
+    },
+    {
+      "id": "other-plan-2",
+      "brand": "PULSE",
+      "platform": "Naver Clip",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님"
+    },
+    {
+      "id": "other-plan-3",
+      "brand": "PULSE",
+      "platform": "Pinterest",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님"
+    },
+    {
+      "id": "other-plan-4",
+      "brand": "PULSE",
+      "platform": "note",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님"
+    },
+    {
+      "id": "other-plan-5",
+      "brand": "PULSE",
+      "platform": "Tumblr",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님"
+    },
+    {
+      "id": "other-plan-6",
+      "brand": "PULSE",
+      "platform": "Bilibili",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님"
+    },
+    {
+      "id": "other-plan-7",
+      "brand": "몽글몽글",
+      "platform": "Instagram",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님"
+    },
+    {
+      "id": "other-plan-8",
+      "brand": "몽글몽글",
+      "platform": "TikTok",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님"
+    },
+    {
+      "id": "other-plan-9",
+      "brand": "마린마린",
+      "platform": "YouTube",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님"
+    },
+    {
+      "id": "other-plan-10",
+      "brand": "마린마린",
+      "platform": "Facebook",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님"
+    },
+    {
+      "id": "other-plan-11",
+      "brand": "마린마린",
+      "platform": "Instagram",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님"
+    },
+    {
+      "id": "other-plan-12",
+      "brand": "마린마린",
+      "platform": "TikTok",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님"
+    },
+    {
+      "id": "other-plan-13",
+      "brand": "까몽까몽",
+      "platform": "YouTube",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님"
+    },
+    {
+      "id": "other-plan-14",
+      "brand": "까몽까몽",
+      "platform": "Facebook",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님"
+    },
+    {
+      "id": "other-plan-15",
+      "brand": "까몽까몽",
+      "platform": "Instagram",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님"
+    },
+    {
+      "id": "other-plan-16",
+      "brand": "까몽까몽",
+      "platform": "TikTok",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님"
+    },
+    {
+      "id": "other-plan-17",
+      "brand": "LAB 일본",
+      "platform": "LINE",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님"
+    }
+  ]
+}

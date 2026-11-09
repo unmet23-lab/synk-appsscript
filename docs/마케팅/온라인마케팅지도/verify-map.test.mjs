@@ -13,6 +13,7 @@ const repo = path.resolve(dir, '../../..');
 const read = file => JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8').replace(/^\uFEFF/, ''));
 const plan = read('inputs/plan.json');
 const inventory = read('inputs/existing-accounts.json');
+const loginAudit = read('inputs/login-audit.json');
 const production = read('inputs/content-status.json');
 const proposal = read('account-setup-proposal.json');
 const registry = JSON.parse(fs.readFileSync(path.join(repo,'docs/마케팅/sns-계정.json'),'utf8').replace(/^\uFEFF/,''));
@@ -31,19 +32,19 @@ const mongoliaIds = ['lab-youtube', 'lab-instagram', 'lab-tiktok', 'lab-facebook
 // 2026-10-02 브라질·멕시코 추가(유호님 10-17 「지도에 맥시코 브라질 넣어」).
 const countryCodes = ['VN', 'CN', 'JP', 'UZ', 'MN', 'TW', 'MM', 'TH', 'ID', 'RU', 'IN', 'KZ', 'NP', 'KG', 'KH', 'US', 'PH', 'LK', 'AU', 'PY', 'NZ', 'MY', 'CA', 'MX', 'BR'];
 const contentIds = ['L1', 'L2', 'L3', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'C1', 'C2'];
-const identityIds = ['founder', 'synk-yuh', 'unmet27', 'unmet23', '77yuhbs', 'unmet25'];
+const identityIds = loginAudit.identities.map(row => row.id);
 
 function uniqueIds(items, label, key = 'id') {
   assert.ok(items.every(row => typeof row[key] === 'string' && row[key].length > 0), `${label}: missing ${key}`);
   assert.equal(new Set(items.map(row => row[key])).size, items.length, `${label}: duplicate ${key}`);
 }
 
-test('existing operating accounts include PULSE, with 23 public destinations and one personal contact', () => {
-  assert.equal(operating.length, 24);
+test('36 existing operating channels include the ten previously omitted records without enabling publishing', () => {
+  assert.equal(operating.length, 36);
   assert.equal(operating.filter(row => row.publishable === true).length, 23);
   assert.equal(operating.filter(row => row.accountStatus === 'operating-contact').length, 1);
-  assert.equal(inventory.accounts.length, 33);
-  assert.equal(sourceChannels.length, 27);
+  assert.equal(inventory.accounts.length, 45);
+  assert.equal(sourceChannels.length, 39);
   assert.equal(inventory.metadata.counts.operatingAccountsAndChannels, operating.length);
   assert.equal(inventory.metadata.counts.publicPublishingTargets, 23);
   assert.equal(inventory.metadata.counts.totalRows, inventory.accounts.length);
@@ -60,15 +61,15 @@ test('all five Mongolia LAB accounts survive, with two priorities and three reta
   assert.equal(rows('countries').find(row => row.code === 'MN').existingCount, 5);
 });
 
-test('25 distinct countries and their 50 priority slots belong only to LAB', () => {
+test('25 countries and 51 LAB priority slots include Brazil TikTok', () => {
   assert.deepEqual(sorted(production.countries.map(row => row.code)), sorted(countryCodes));
   assert.deepEqual(sorted(rows('countries').map(row => row.code)), sorted(countryCodes));
   assert.equal(production.planCounts.countries, 25);
-  assert.equal(production.planCounts.plannedCountryPlatformSlots, 50);
+  assert.equal(production.planCounts.plannedCountryPlatformSlots, 51);
   for (const country of production.countries) {
     assert.equal(country.brand, 'LAB', country.code);
-    assert.equal(country.channelSlots.length, 2, country.code);
-    assert.equal(new Set(country.platforms).size, 2, country.code);
+    assert.equal(country.channelSlots.length, country.code === 'BR' ? 3 : 2, country.code);
+    assert.equal(new Set(country.platforms).size, country.channelSlots.length, country.code);
     assert.deepEqual(sorted(country.channelSlots.map(slot => slot.platform)), sorted(country.platforms), country.code);
     const output = rows('countries').find(row => row.code === country.code);
     assert.equal(output.brand, 'LAB');
@@ -77,16 +78,16 @@ test('25 distinct countries and their 50 priority slots belong only to LAB', () 
   }
 });
 
-test('48 expansion slots reconcile to 32 confirmed accounts and 16 unconfirmed places', () => {
+test('49 expansion slots reconcile to 34 confirmed accounts and 15 unconfirmed places', () => {
   const slots = production.countries.flatMap(country => country.channelSlots.map(slot => ({country, slot})));
   const newSlots = slots.filter(({slot}) => slot.accountId === null);
-  assert.equal(newSlots.length, 48);
-  assert.equal(proposal.channels.length, 48);
-  assert.equal(planned.length, 16);
-  assert.equal(channels.filter(row => row.accountStatus === 'confirmed-expansion').length, 32);
-  assert.equal(production.planCounts.newChannelSlotsPlanned, 48);
+  assert.equal(newSlots.length, 49);
+  assert.equal(proposal.channels.length, 49);
+  assert.equal(planned.length, 15);
+  assert.equal(channels.filter(row => row.accountStatus === 'confirmed-expansion').length, 34);
+  assert.equal(production.planCounts.newChannelSlotsPlanned, 49);
   assert.equal(production.planCounts.newCountryCandidates, 24);
-  assert.equal(new Set(planned.map(row => row.countryCode)).size, 16);
+  assert.equal(new Set(planned.map(row => row.countryCode)).size, 14);
   for (const {country, slot} of newSlots) {
     assert.notEqual(country.code, 'MN');
     assert.equal(slot.status, 'planned-not-created-or-verified');
@@ -123,14 +124,14 @@ test('the two reused Mongolia priority slots point to existing accounts, not new
   }
 });
 
-test('75 channel rows mean 27 prior entries plus 48 expansion slots', () => {
-  assert.equal(channels.length, 75);
+test('88 channel rows mean 39 existing/deferred entries plus 49 expansion slots', () => {
+  assert.equal(channels.length, 88);
   assert.equal(channels.length, sourceChannels.length + proposal.channels.length);
-  assert.equal(channels.filter(row => row.brand === 'LAB').length, 53);
-  assert.equal(channels.filter(row => row.channelScope === '확장 확보').length, 32);
-  assert.equal(channels.filter(row => row.channelScope === '확장 미확인').length, 16);
+  assert.equal(channels.filter(row => row.brand === 'LAB').length, 54);
+  assert.equal(channels.filter(row => row.channelScope === '확장 확보').length, 34);
+  assert.equal(channels.filter(row => row.channelScope === '확장 미확인').length, 15);
   assert.equal(channels.filter(row => row.accountStatus === 'excluded-existing').length, 1);
-  assert.equal(channels.filter(row => ['planned-unconfirmed', 'creation-deferred'].includes(row.accountStatus)).length, 2);
+  assert.equal(channels.filter(row => ['excluded', 'creation-deferred'].includes(row.accountStatus)).length, 2);
   assert.equal(channels.filter(row => row.accountStatus === 'web-destination').length, 0);
 });
 
@@ -153,13 +154,13 @@ test('shared YouTube and Substack stay single accounts and do not inflate owned 
   for (const id of ['lab-youtube', 'synklab-substack']) assert.equal(channels.filter(row => row.id === id).length, 1);
   assert.deepEqual(channels.find(row => row.id === 'lab-youtube').sharedBrands, ['PULSE']);
   assert.deepEqual(channels.find(row => row.id === 'synklab-substack').sharedBrands, ['LAB', 'SHIFT']);
-  assert.equal(rows('brands').reduce((sum, row) => sum + row.ownedCount, 0), 24);
-  const expectedShared = {SYNK: 0, LAB: 1, SHIFT: 1, YUHO: 0, PULSE: 1, PATH: 0};
+  assert.equal(rows('brands').reduce((sum, row) => sum + row.ownedCount, 0), 36);
+  const expectedShared = {SYNK: 0, LAB: 1, SHIFT: 1, YUHO: 0, PULSE: 1, PATH: 0, YUHOKOREAN: 0, POLITICS: 0};
   for (const brand of rows('brands')) {
     assert.equal(brand.ownedCount, channels.filter(row => row.brand === brand.id && row.channelScope === '기존 운영').length, brand.id);
     assert.equal(brand.sharedCount, expectedShared[brand.id], brand.id);
   }
-  assert.equal(rows('brands').find(row => row.id === 'PULSE').ownedCount, 1);
+  assert.equal(rows('brands').find(row => row.id === 'PULSE').ownedCount, 4);
   assert.equal(channels.find(row => row.id === 'pulse-youtube').handle, '@synkpulse');
   assert.equal(registry.accounts['pulse-youtube'].expectedChannelId, 'UCvCOJtdC-JgotRgAsbdNFBg');
 });
@@ -189,17 +190,13 @@ test('14 older concepts remain intact and two newer video review copies are trac
   }
 });
 
-test('six login identities retain unresolved security and proposal boundaries', () => {
-  assert.deepEqual(sorted(plan.identities.map(row => row.id)), sorted(identityIds));
-  assert.deepEqual(rows('identities').map(({currentUse,loginType,...rest})=>rest),plan.identities.map(({currentUse,loginType,...rest})=>rest));
-  assert.match(rows('identities').find(row=>row.id==='unmet23').currentUse,/YouTube 16곳/);
-  assert.match(rows('identities').find(row=>row.id==='synk-yuh').loginType,/주소 확인 기록/);
-  for (const identity of plan.identities) assert.equal(identity.security, '미확인', identity.id);
-  for (const id of ['founder', 'synk-yuh', 'unmet27']) assert.match(plan.identities.find(row => row.id === id).assignment, /제안.*미적용/, id);
-  assert.match(plan.identities.find(row => row.id === 'founder').loginType, /독립 Google 로그인.*사용자 확인/);
-  const synkYuh = plan.identities.find(row => row.id === 'synk-yuh');
-  assert.equal(synkYuh.label, 'synk.yuh');
-  assert.match(synkYuh.loginType, /전체 주소 미확인/);
+test('all login connections come from the audited source, not six historic role proposals', () => {
+  assert.equal(identityIds.length,27);
+  assert.deepEqual(rows('identities'),loginAudit.identities);
+  for (const row of rows('identities')) assert.equal(row.security,'이번 점검 범위 밖',row.id);
+  assert.equal(channels.find(row=>row.id==='lab-cn-xiaohongshu').loginIdentityRef,'rednote-phone');
+  assert.equal(channels.find(row=>row.id==='lab-cn-xiaohongshu').loginMappingStatus,'confirmed');
+  assert.equal(channels.find(row=>row.id==='yuhokorean-tiktok').loginIdentityRef,'tiktok-yuhokorean');
 });
 
 test('every input collection and dashboard query has unique nonempty identifiers', () => {
@@ -212,7 +209,7 @@ test('every input collection and dashboard query has unique nonempty identifiers
 });
 
 test('summary cards reconcile to separate units, and web/product destinations are not SNS rows', () => {
-  const expected = {existing: [24, '채널'], 'lab-secured': [32, '곳'], 'lab-pending': [16, '곳'], 'lab-world': [25, '개국']};
+  const expected = {existing: [36, '채널'], 'lab-secured': [34, '곳'], 'lab-pending': [15, '곳'], 'lab-world': [25, '개국']};
   assert.deepEqual(sorted(rows('summary').map(row => row.id)), sorted(Object.keys(expected)));
   for (const row of rows('summary')) assert.deepEqual([row.value, row.unit], expected[row.id], row.id);
   const websites = inventory.accounts.filter(row => row.accountStatus === 'web-destination');
@@ -227,7 +224,7 @@ test('confirmed account details follow the latest ledgers without promoting an i
   assert.equal(social.counts.notCreated,20);
   const expansion=channels.filter(row=>row.accountStatus==='confirmed-expansion');
   assert.equal(expansion.filter(row=>row.platform==='YouTube').length,18);
-  assert.equal(expansion.filter(row=>row.platform!=='YouTube').length,14);
+  assert.equal(expansion.filter(row=>row.platform!=='YouTube').length,16);
   // 09-20 원장에서 생성 미확인이던 인도네시아 TikTok은 10-19 레지스트리 개설 확인으로 확보가 되고, 사진 미반영이 그대로 보인다.
   const idTiktok=channels.find(row=>row.id==='lab-id-tiktok');
   assert.equal(social.channels.find(row=>row.id==='lab-id-tiktok').created,false);
@@ -262,8 +259,9 @@ test('confirmed account details follow the latest ledgers without promoting an i
   assert.equal(channels.find(row=>row.id==='lab-mx-youtube').youtubeProfileVerified,false);
   assert.match(channels.find(row=>row.id==='lab-mx-youtube').profileStatus,/미확인/);
   const vk=channels.find(row=>row.id==='lab-ru-vk');
-  assert.equal(vk.accountStatus,'planned');
-  assert.match(vk.setupStatus,/LAB 채널 미확인/);
+  assert.equal(vk.accountStatus,'confirmed-expansion');
+  assert.equal(vk.publicUrl,'https://vk.ru/synklab_ru');
+  assert.equal(vk.loginMappingStatus,'partial');
 });
 
 test('all declared sourcePaths and dashboard source files exist within the repository', () => {
@@ -272,13 +270,13 @@ test('all declared sourcePaths and dashboard source files exist within the repos
     if (Array.isArray(value)) return value.forEach(collect);
     if (!value || typeof value !== 'object') return;
     for (const [key, child] of Object.entries(value)) {
-      if (key === 'sourcePaths') {
+      if (key === 'sourcePaths' || key === 'loginSourcePaths') {
         assert.ok(Array.isArray(child));
         child.forEach(file => declared.add(file));
       } else collect(child);
     }
   }
-  [plan, inventory, production, dashboard].forEach(collect);
+  [plan, inventory, production, dashboard, loginAudit].forEach(collect);
   for (const query of Object.values(dashboard.queries)) query.source.files.forEach(file => declared.add(file));
   assert.ok(declared.size > 0);
   for (const file of declared) {
@@ -299,10 +297,83 @@ test('the snapshot does not claim that live account verification occurred', () =
 
 test('the built snapshot records hashes of the current source ledgers', () => {
   assert.equal(verification.generatedAt,dashboard.generatedAt);
-  assert.equal(verification.counts.expansionConfirmed,32);
-  assert.equal(verification.counts.expansionUnconfirmed,16);
+  assert.equal(verification.counts.expansionConfirmed,34);
+  assert.equal(verification.counts.expansionUnconfirmed,15);
   for(const item of verification.files) {
     const actual=sourceHash(fs.readFileSync(path.join(dir,item.file)));
     assert.equal(item.sha256,actual,`${item.file} changed after the map was built`);
   }
+});
+
+test('every registry account and supplemental channel has one explicit login audit row', () => {
+  assert.equal(Object.keys(registry.accounts).length,63);
+  assert.equal(loginAudit.supplementalIds.length,10);
+  for (const id of [...Object.keys(registry.accounts),...loginAudit.supplementalIds]) {
+    assert.equal(channels.filter(row=>row.id===id).length,1,id);
+    assert.ok(loginAudit.accounts[id],id);
+  }
+  assert.deepEqual(sorted(Object.keys(loginAudit.accounts)),sorted(channels.map(row=>row.id)));
+  for (const row of channels) {
+    for (const key of ['loginMethod','loginBrowser','loginMappingStatus','loginStatusLabel','loginSessionStatus']) assert.ok(row[key],`${row.id}.${key}`);
+    assert.ok(row.loginSourcePaths.length>=2,row.id);
+    if (row.loginMappingStatus==='missing') assert.equal(row.loginEvidenceAt,null,row.id);
+  }
+  for (const id of loginAudit.supplementalIds) {
+    assert.equal(inventory.accounts.find(row=>row.id===id).publishable,false,id);
+    assert.equal(registry.accounts[id],undefined,`${id} must not be silently added to publishing registry`);
+  }
+});
+
+test('login route confidence reconciles without claiming that every session is live', () => {
+  const active=channels.filter(row=>['operating','operating-contact','confirmed-expansion'].includes(row.accountStatus));
+  assert.equal(active.length,70);
+  const expected={confirmed:51,'switch-only':6,partial:10,missing:3};
+  for (const [state,count] of Object.entries(expected)) assert.equal(active.filter(row=>row.loginMappingStatus===state).length,count,state);
+  assert.deepEqual(sorted(active.filter(row=>row.loginMappingStatus==='missing').map(row=>row.id)),['shift-pinterest','yuhobuilds-behance','yuhobuilds-naver-clip']);
+  assert.equal(active.filter(row=>row.platform==='YouTube' && row.loginEvidenceAt==='2026-11-09').length,24);
+  for (const id of ['lab-th-tiktok','lab-kz-tiktok','lab-mx-tiktok']) assert.match(channels.find(row=>row.id===id).loginSessionStatus,/로그아웃/);
+});
+
+test('parent administrators, account switching, and unknown identifiers remain distinct', () => {
+  const get=id=>channels.find(row=>row.id===id);
+  assert.equal(get('pulse-facebook').loginIdentityRef,'meta-main');
+  assert.equal(get('yuhokorean-facebook').loginIdentityRef,'meta-yuhokorean');
+  assert.notEqual(get('yuhokorean-tiktok').loginIdentityRef,get('yuhokorean-youtube').loginIdentityRef);
+  assert.match(get('yuhokorean-tiktok').loginBrowser,/Aside.*4번째/);
+  assert.equal(get('pulse-instagram').loginMappingStatus,'switch-only');
+  assert.equal(get('lab-jp-instagram').loginMappingStatus,'switch-only');
+  assert.equal(get('lab-uz-instagram').loginMappingStatus,'switch-only');
+  assert.equal(get('shift-naverblog').loginIdentityRef,'naver-main');
+  assert.equal(get('pulse-naverblog').loginIdentityRef,'naver-pulse');
+  assert.equal(get('shift-class-naverblog').loginIdentityRef,'naver-class');
+  assert.equal(get('lab-kz-tiktok').loginIdentityRef,'naver-class');
+  assert.equal(get('lab-mx-tiktok').loginIdentityRef,'naver-pulse');
+  assert.match(get('lab-ru-rutube').loginMethod,/GID 이메일/);
+  assert.equal(registry.accounts['lab-ru-rutube'].loginEmail,undefined);
+});
+
+test('mail aliases and older long-term plans are not counted as created accounts', () => {
+  const assigned=planned.filter(row=>row.plannedLoginIdentityRef);
+  assert.equal(assigned.length,6);
+  for (const row of assigned) {
+    assert.equal(row.plannedLoginIdentityRef,'workspace-founder');
+    assert.equal(row.loginIdentityRef,null);
+    assert.equal(row.loginAlias,null);
+    assert.equal(row.loginMappingStatus,'not-created');
+  }
+  assert.equal(channels.find(row=>row.id==='lab-br-tiktok').plannedLoginIdentityRef,undefined);
+  assert.equal(loginAudit.otherPlanned.length,17);
+  assert.equal(planned.length+loginAudit.otherPlanned.length,32);
+  for (const row of loginAudit.otherPlanned) {
+    assert.equal(row.accountStatus,'planned-unconfirmed');
+    assert.ok(!channels.some(channel=>channel.id===row.id));
+  }
+  assert.equal(channels.find(row=>row.id==='synk-instagram').loginMappingStatus,'excluded');
+});
+
+test('the public login audit contains aliases and no full email addresses or credentials', () => {
+  const text=JSON.stringify(loginAudit);
+  assert.doesNotMatch(text,/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+  assert.doesNotMatch(text,/"(?:password|accessToken|refreshToken|verificationCode|cookie)"\s*:/i);
+  assert.ok(loginAudit.privateDetails.includes('비공개'));
 });

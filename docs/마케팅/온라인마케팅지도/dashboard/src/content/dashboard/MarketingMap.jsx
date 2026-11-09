@@ -27,7 +27,7 @@ function scopeCounts(summary, lab, countryCount) {
   const secured = value('lab-secured');
   const pending = value('lab-pending');
   const prioritySlots = Number(lab?.plannedSlots) || countryCount * 2;
-  const mongoliaExtra = Math.max(0, (Number(lab?.ownedCount) || 0) - (countryCount ? prioritySlots / countryCount : 0));
+  const mongoliaExtra = Math.max(0, (Number(lab?.ownedCount) || 0) - 2);
   return { existing: value('existing'), secured, pending, expansionSlots: secured + pending, countries: value('lab-world') || countryCount,
     prioritySlots, mongoliaOwned: Number(lab?.ownedCount) || 0, mongoliaExtra, totalSlots: prioritySlots + mongoliaExtra };
 }
@@ -91,7 +91,7 @@ export function DashboardContent() {
       <div className="mm-note" data-editable-id="lab-country-scope" data-editable-narrative="true">{scope.countries}개국 우선 플랫폼 {scope.prioritySlots}자리 + 몽골 추가 {scope.mongoliaExtra}개 = LAB 전체 {scope.totalSlots}자리입니다. 몽골 외 {scope.expansionSlots}자리 중 {scope.secured}곳을 확보했고 {scope.pending}곳은 미확인입니다. 국가 순서는 수요 순위가 아닙니다.</div>
       <Section id="country-roster-heading" title="LAB 국가별 준비 상황" spacing="content">
         <EvidenceTable id="lab-country-roster" queryId="countries" title={`${scope.countries}개국 운영 계획`} rows={countries} selectedRowKey={selectedCountry?.id} onRowSelect={row => setDashboardFocus({countryCode:row.code})} rowActionLabel={row => `${row.country}의 계정과 진행 상황 보기`} columns={[
-          {field:'country',label:'국가'}, {field:'platformsLabel',label:'우선 플랫폼 2개'}, status('setupStatus','계정 세팅'), {field:'contentStatus',label:'콘텐츠'}, {field:'appStatus',label:'앱 출시'}
+          {field:'country',label:'국가'}, {field:'platformsLabel',label:'계획 플랫폼'}, status('setupStatus','계정 세팅'), {field:'contentStatus',label:'콘텐츠'}, {field:'appStatus',label:'앱 출시'}
         ]}/>
       </Section>
       {selectedCountry && <Section id="country-detail-heading" title={`${selectedCountry.country} · 채널 상세`}>
@@ -109,12 +109,12 @@ export function DashboardContent() {
       <div className="mm-note" data-editable-id="channel-scope-note" data-editable-narrative="true">기존 운영 {scope.existing}곳, 확장 확보 {scope.secured}곳, 확장 미확인 {scope.pending}곳과 보류·제외를 구분합니다. LAB·PULSE 공유 YouTube와 공통 Substack은 중복 계산하지 않습니다.</div>
       <Section id="channel-roster-heading" title="채널별 진행 상황" spacing="content">
         <EvidenceTable id="channel-roster" queryId="channels" title="계정·프로필·게시 현황" rows={channelRows} selectedRowKey={selectedChannel?.id} onRowSelect={row => setDashboardFocus({channelId:row.id})} rowActionLabel={row => `${row.handle || row.id} 상세 보기`} columns={[
-          {field:'brand',label:'브랜드·트랙'},{field:'country',label:'국가·범위'},{field:'platform',label:'플랫폼'},{field:'handle',label:'계정',renderCell:LinkCell},status('channelScope','운영 분류'),status('profileStatus','소개'),status('publishStatus','콘텐츠 게시'),{field:'nextAction',label:'다음 행동'}
+          {field:'brand',label:'브랜드·트랙'},{field:'country',label:'국가·범위'},{field:'platform',label:'플랫폼'},{field:'handle',label:'계정',renderCell:LinkCell},status('channelScope','운영 분류'),status('loginStatusLabel','로그인 경로'),status('profileStatus','소개'),status('publishStatus','콘텐츠 게시'),{field:'nextAction',label:'다음 행동'}
         ]}/>
       </Section>
       {selectedChannel && <Section id="channel-detail-heading" title="선택한 채널의 확인 근거">
         <DataComponent id="channel-detail" queryId="channels" title={selectedChannel.handle || selectedChannel.id} kind="custom" variant="card" displayRows={[selectedChannel]} sourceRows={[selectedChannel]}>
-          <dl className="mm-details" data-reviewed-rows>{[['소속',selectedChannel.brand],['용도',selectedChannel.channelRole],['로그인',selectedChannel.loginAlias || '미확인'],['프로필',selectedChannel.profileStatus],['디자인',selectedChannel.coverStatus],['확인 범위',selectedChannel.verificationScope || '계정별 원장 기록'],['마지막 근거',selectedChannel.lastEvidenceAt || '미확인'],['공유 브랜드',selectedChannel.sharedLabel || '없음'],['다음 행동',selectedChannel.nextAction],['기록 위치',selectedChannel.sourceLabel]].map(([key,value]) => <React.Fragment key={key}><dt>{key}</dt><dd>{value || '미확인'}</dd></React.Fragment>)}</dl>
+          <dl className="mm-details" data-reviewed-rows>{[['소속',selectedChannel.brand],['용도',selectedChannel.channelRole],['로그인 연결',selectedChannel.loginAlias || '미확인'],['로그인 방식',selectedChannel.loginMethod],['브라우저·프로필',selectedChannel.loginBrowser],['로그인 경로 확인',selectedChannel.loginStatusLabel],['로그인 근거 날짜',selectedChannel.loginEvidenceAt],['연결 주의사항',selectedChannel.loginCaveat || '없음'],['세션 확인 범위',selectedChannel.loginSessionStatus],['프로필',selectedChannel.profileStatus],['디자인',selectedChannel.coverStatus],['확인 범위',selectedChannel.verificationScope || '계정별 원장 기록'],['마지막 근거',selectedChannel.lastEvidenceAt || '미확인'],['공유 브랜드',selectedChannel.sharedLabel || '없음'],['다음 행동',selectedChannel.nextAction],['기록 위치',selectedChannel.sourceLabel]].map(([key,value]) => <React.Fragment key={key}><dt>{key}</dt><dd>{value || '미확인'}</dd></React.Fragment>)}</dl>
         </DataComponent>
       </Section>}
     </>}
@@ -128,10 +128,10 @@ export function DashboardContent() {
       </Section>
     </>}
     {tab.id === 'accounts' && <>
-      <div className="mm-note" data-editable-id="identity-scope-note" data-editable-narrative="true">로그인 계정과 공개 SNS 채널은 다릅니다. 아래 새 역할은 제안 상태이며, 소유권 이전·권한 초대·보안 설정을 완료했다는 뜻이 아닙니다.</div>
-      <Section id="identity-heading" title="로그인 계정 6개 · 현재 연결과 추천 역할" spacing="content">
+      <div className="mm-note" data-editable-id="identity-scope-note" data-editable-narrative="true">로그인 연결과 공개 채널은 다릅니다. 전체 채널의 로그인 방식·브라우저·근거를 대조했으며, 미확인 연결은 그대로 표시합니다. 보안 설정과 모든 계정의 현재 세션을 재검증한 결과는 아닙니다. 정확한 이메일·ID는 비공개 로그인 표에서 관리합니다.</div>
+      <Section id="identity-heading" title={`로그인 연결 ${rows('identities').length}개 · 방식과 확인 범위`} spacing="content">
         <EvidenceTable id="identity-roster" queryId="identities" title="로그인·소유권 관리" rows={rows('identities')} searchable={false} columns={[
-          {field:'label',label:'계정 구분명'},{field:'currentUse',label:'현재 연결·기록'},{field:'proposedRole',label:'추천 역할'},status('assignment','적용 상태'),status('security','보안 확인'),{field:'nextAction',label:'다음 확인'}
+          {field:'label',label:'연결 구분'},{field:'loginType',label:'로그인 방식'},{field:'currentUse',label:'연결된 채널'},status('assignment','확인 범위'),status('security','보안 확인'),{field:'nextAction',label:'다음 확인'}
         ]}/>
       </Section>
       <Section id="destinations-heading" title="홈페이지·제품 연결">

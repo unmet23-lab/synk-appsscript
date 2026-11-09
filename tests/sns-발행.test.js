@@ -99,6 +99,8 @@ test('현재 첫 게시물 19계정을 계정 지도와 한 번에 묶는다', (
     publisher: 'manual-assisted',
     editorUrl: 'https://yuhobuilds.tistory.com/manage/newpost',
     connection: 'official-editor',
+    loginIdentityRef: 'kakao-tistory',
+    loginAuditSource: 'docs/마케팅/온라인마케팅지도/inputs/login-audit.json',
   });
   assert.deepEqual(items.map((item) => item.id).slice(0, 3), [
     '01-lab-youtube', '02-lab-instagram', '03-lab-tiktok',
