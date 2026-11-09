@@ -200,6 +200,7 @@ async function buildPage(name) {
   const links = {};
   for (const it of data.항목) {
     links[it.id] = [];
+    if (it.영상없음) continue; // 보류 편 — 거둔 예약 주소를 열어 보지 않는다(그려도 쓰지 않는다)
     for (const l of linksOf(REPO, it.편)) if (!l.check || await opens(l.href)) links[it.id].push({ href: l.href, label: l.label });
   }
   fs.writeFileSync(path.join(out, 'index.html'), renderPage(data, { links }));

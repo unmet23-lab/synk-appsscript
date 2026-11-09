@@ -189,6 +189,48 @@ test('게시결과.json — 게시됨은 그대로, 예약됨이면서 시각이
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });
 
+test('11-10 보류 편 — 슬롯 대신 만든 날, 영상 제목 · 곧 나올 영상 · 영상 주소 없이 「영상 없이 공개」로 그린다', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), '프롬프트모음-보류-'));
+  try {
+    const dir = path.join(root, 'docs', '마케팅', '편', '게시');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, '준비.json'), JSON.stringify({ 날짜: '2026-11-09', 슬롯: '2026-11-13', 상태: '보류 — 새 기준으로 다시', 제목: '벗은 모자 — 한 줄' }));
+    assert.deepEqual(page.episodeOf(root, '편'), { 날짜: '2026-11-09', 제목: '벗은 모자', 영상없음: true });
+    const raw = { 항목: [{ ...item() }] };
+    delete raw.항목[0].날짜; delete raw.항목[0].영상제목;
+    assert.deepEqual(page.checkPrompts(raw, { repo: root }), [], '보류 편도 검사를 통과한다');
+    const held = page.withEpisodes(raw, root).항목[0];
+    assert.equal(held.날짜, '2026-11-09');
+    const html = page.renderPage({ 항목: [held, item({ id: 'next-one', 날짜: '2026-11-15' })] },
+      { links: { 'still-time': [{ href: 'https://youtube.com/shorts/x', label: '유튜브 쇼츠' }] }, now: Date.parse('2026-11-10T09:00+09:00') });
+    const art = html.slice(html.indexOf('<article class="item" id="still-time"'), html.indexOf('</article>', html.indexOf('id="still-time"')));
+    assert.doesNotMatch(art, /class="video"/, '영상 제목 줄이 없다');
+    assert.match(art, /<span class="tag soon" hidden>/, '곧 나올 영상이 아니다');
+    assert.match(art, /<p class="src">영상 없이 공개한 프롬프트예요 · 다른 영상은 <a href="https:\/\/www\.youtube\.com\/@yuhobuilds"/);
+    assert.doesNotMatch(art, /youtube\.com\/shorts\/x/, '보류 편은 영상 주소를 붙이지 않는다');
+    assert.match(html, /<span class="v">영상 없이 공개<\/span>/);
+    assert.ok(html.indexOf('id="still-time"') < html.indexOf('id="later-h"'), '지금 칸에 있다');
+    assert.ok(html.indexOf('id="next-one"') > html.indexOf('id="later-h"'), '보류가 아닌 뒤 날짜 항목은 그대로 곧 나올 영상');
+    fs.writeFileSync(path.join(dir, '준비.json'), JSON.stringify({ 슬롯: '2026-11-13', 상태: '보류', 제목: '벗은 모자' }));
+    assert.equal(page.episodeOf(root, '편').날짜, '2026-11-13', '만든 날이 없으면 슬롯');
+    fs.writeFileSync(path.join(dir, '준비.json'), JSON.stringify({ 날짜: '2026-11-09', 슬롯: '2026-11-13', 상태: '완성', 제목: '벗은 모자' }));
+    assert.deepEqual(page.episodeOf(root, '편'), { 날짜: '2026-11-13', 제목: '벗은 모자' }, '보류가 아니고 게시결과가 없으면 슬롯');
+    // Fable P1 — 편 상태는 「올릴 준비」인데 영상 줄이 모두 보류 · 취소됨이면 올린 적이 없는 편이다
+    const rowsFile = path.join(dir, '게시결과.json');
+    fs.writeFileSync(path.join(dir, '준비.json'), JSON.stringify({ 날짜: '2026-10-22', 슬롯: '2026-10-25', 상태: '올릴 준비', 제목: '무료 2,000분' }));
+    fs.writeFileSync(rowsFile, JSON.stringify({ 판: [{ 계정: 'yuhobuilds-youtube', 상태: '취소됨' }, { 계정: 'yuhobuilds-instagram', 상태: '보류' }, { 계정: 'shift-tistory', 상태: '예약됨' }] }));
+    assert.deepEqual(page.episodeOf(root, '편'), { 날짜: '2026-10-22', 제목: '무료 2,000분', 영상없음: true }, '영상 줄이 모두 보류 · 취소됨이면 영상없음');
+    // Fable P2 — 게시된 영상이 있으면 편 상태가 보류로 바뀌어도 영상을 떼지 않는다
+    fs.writeFileSync(path.join(dir, '준비.json'), JSON.stringify({ 날짜: '2026-10-22', 슬롯: '2026-10-25', 상태: '보류 — 다시 손봄', 제목: '무료 2,000분' }));
+    fs.writeFileSync(rowsFile, JSON.stringify({ 판: [{ 계정: 'yuhobuilds-youtube', 상태: '게시됨', 주소: 'https://youtube.com/shorts/a' }, { 계정: 'yuhobuilds-instagram', 상태: '보류' }] }));
+    assert.deepEqual(page.episodeOf(root, '편'), { 날짜: '2026-10-25', 제목: '무료 2,000분' }, '게시됨 영상이 있으면 보류여도 영상 그대로');
+    // 거둔 줄 뒤에 다시 건 예약이 있으면 아직 나올 영상이다
+    fs.writeFileSync(path.join(dir, '준비.json'), JSON.stringify({ 날짜: '2026-10-22', 슬롯: '2026-10-25', 상태: '올릴 준비', 제목: '무료 2,000분' }));
+    fs.writeFileSync(rowsFile, JSON.stringify({ 판: [{ 계정: 'yuhobuilds-youtube', 상태: '취소됨' }, { 계정: 'yuhobuilds-youtube', 상태: '예약됨' }] }));
+    assert.equal(page.episodeOf(root, '편').영상없음, undefined, '다시 건 예약이 있으면 영상없음이 아니다');
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
+});
+
 test('Fable 10-22 — 블로그 글만 공개됐으면 영상 공개일·채널을 두고 블로그는 뒤에, 같은 계정 여러 줄은 게시됨 줄이 이긴다', () => {
   const html = page.renderPage({ 항목: [item()] }, { links: { 'still-time': [{ href: 'https://yuhobuilds.tistory.com/6', label: '블로그 글' }] }, now: Date.parse('2026-10-23T09:00+09:00') });
   assert.match(html, /<p class="src">영상 10월 24일 공개 · <a href="https:\/\/www\.youtube\.com\/@yuhobuilds"[^]*?인스타 @yuhobuilds<\/a> · <a href="https:\/\/yuhobuilds\.tistory\.com\/6"[^>]*>블로그 글<\/a><\/p>/);

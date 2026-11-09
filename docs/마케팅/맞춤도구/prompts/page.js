@@ -51,16 +51,30 @@ function textProblems(text, where, { body = false } = {}) {
 }
 
 // 편 폴더의 준비.json에서 영상 공개일(슬롯)과 영상 제목(「 — 」 앞)을 읽는다. 슬롯은 자주 밀려서 항목에 따로 적지 않는다.
+// 영상이 나오지 않는 편이면 슬롯 대신 편을 만든 날(「날짜」)을 쓰고 영상없음을 붙인다(11-10 — 11-09 재편으로 거둔 두 편과
+// 10-22에 멈춘 편의 항목이 「곧 나올 영상」 · 「영상 10월 25일 공개」로 없는 영상을 약속했다). 영상없음은
+// 게시결과.json 영상 줄(유튜브 · 인스타)에 「게시됨」이 하나도 없을 때만이고, 편 상태가 「보류」이거나 영상 줄이 모두 「보류」 · 「취소됨」일 때다.
+// 이미 게시된 영상이 있으면 편 상태가 뒤에 보류로 바뀌어도 영상을 떼지 않는다(11-10 Fable P2).
+const dayOf = (v) => (/^\d{4}-\d{2}-\d{2}$/.test(v || '') ? v : null);
+const VIDEO_ACCOUNTS = ['yuhobuilds-youtube', 'yuhobuilds-instagram'];
+function videoRows(repo, episode) {
+  try { return (JSON.parse(fs.readFileSync(path.join(repo, 'docs', '마케팅', episode, '게시', '게시결과.json'), 'utf8')).판 || []).filter((r) => VIDEO_ACCOUNTS.includes(r.계정)); } catch { return []; }
+}
 function episodeOf(repo, episode) {
   try {
     const prep = JSON.parse(fs.readFileSync(path.join(repo, 'docs', '마케팅', episode, '게시', '준비.json'), 'utf8'));
-    return { 날짜: /^\d{4}-\d{2}-\d{2}$/.test(prep.슬롯 || '') ? prep.슬롯 : null, 제목: String(prep.제목 || '').split(' — ')[0].trim() || null };
+    const 제목 = String(prep.제목 || '').split(' — ')[0].trim() || null;
+    const rows = videoRows(repo, episode);
+    const posted = rows.some((r) => r.상태 === '게시됨');
+    const withdrawn = rows.length > 0 && rows.every((r) => /^(보류|취소)/.test(String(r.상태 || '')));
+    if (!posted && (/^보류/.test(String(prep.상태 || '')) || withdrawn)) return { 날짜: dayOf(prep.날짜) || dayOf(prep.슬롯), 제목, 영상없음: true };
+    return { 날짜: dayOf(prep.슬롯), 제목 };
   } catch { return { 날짜: null, 제목: null }; }
 }
 
-// 빌드가 쓰는 항목: 프롬프트.json 항목에 편의 날짜·영상 제목을 붙인다.
+// 빌드가 쓰는 항목: 프롬프트.json 항목에 편의 날짜·영상 제목(보류 편이면 영상없음)을 붙인다.
 function withEpisodes(data, repo) {
-  return { ...data, 항목: data.항목.map((it) => { const ep = episodeOf(repo, it.편); return { ...it, 날짜: ep.날짜, 영상제목: it.영상제목 || ep.제목 }; }) };
+  return { ...data, 항목: data.항목.map((it) => { const ep = episodeOf(repo, it.편); return { ...it, 날짜: ep.날짜, 영상제목: it.영상제목 || ep.제목, ...(ep.영상없음 ? { 영상없음: true } : {}) }; }) };
 }
 
 function checkPrompts(data, { repo } = {}) {
@@ -190,13 +204,14 @@ function renderItem(it, links, soon) {
   const a = (l) => `<a href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.label)}</a>`;
   const videos = links.filter((l) => l.label !== '블로그 글');
   const blog = links.filter((l) => l.label === '블로그 글');
-  const src = (videos.length
-    ? `영상 · ${videos.map(a).join(' · ')}`
-    : `영상 ${koDate(it.날짜)} 공개 · ${CHANNELS.map(([href, label]) => `<a href="${href}" target="_blank" rel="noopener">${label}</a>`).join(' · ')}`)
-    + blog.map((l) => ` · ${a(l)}`).join('');
+  const channels = CHANNELS.map(([href, label]) => `<a href="${href}" target="_blank" rel="noopener">${label}</a>`).join(' · ');
+  // 보류 편(영상없음)은 영상 · 블로그 주소를 붙이지 않고, 영상을 약속하지 않는다.
+  const src = it.영상없음
+    ? `영상 없이 공개한 프롬프트예요 · 다른 영상은 ${channels}`
+    : (videos.length ? `영상 · ${videos.map(a).join(' · ')}` : `영상 ${koDate(it.날짜)} 공개 · ${channels}`) + blog.map((l) => ` · ${a(l)}`).join('');
   return `<article class="item" id="${it.id}" data-date="${it.날짜}" aria-labelledby="${it.id}-t">`
     + `<header class="item-head"><p class="meta"><span>${dotDate(it.날짜)}</span><span class="tag">${esc(kindLabel(it))}</span><span class="tag soon"${soon ? '' : ' hidden'}>곧 나올 영상</span></p>`
-    + `<h2 id="${it.id}-t"><a href="#${it.id}">${esc(it.제목)}</a></h2><p class="video">영상 「${esc(it.영상제목)}」</p>`
+    + `<h2 id="${it.id}-t"><a href="#${it.id}">${esc(it.제목)}</a></h2>${it.영상없음 ? '' : `<p class="video">영상 「${esc(it.영상제목)}」</p>`}`
     + `<p class="desc">${esc(it.설명)}</p>${it.왜 ? `<p class="why"><b>왜 되나</b> ${withLinks(it.왜)}</p>` : ''}`
     + (it.도구 ? `<a class="tool" href="${esc(it.도구.주소)}"><b>코딩 없이 쓰려면</b><span>${esc(it.도구.글)}</span><i aria-hidden="true">→</i></a>` : '') + '</header>'
     + fill + it.블록.map((b, j) => renderBlock(it, b, j)).join('')
@@ -204,7 +219,7 @@ function renderItem(it, links, soon) {
 }
 
 function tocItem(it, soon) {
-  return `<li data-date="${it.날짜}"><a href="#${it.id}"><span class="t">${esc(it.제목)}</span><span class="v">영상 「${esc(it.영상제목)}」</span>`
+  return `<li data-date="${it.날짜}"><a href="#${it.id}"><span class="t">${esc(it.제목)}</span><span class="v">${it.영상없음 ? '영상 없이 공개' : `영상 「${esc(it.영상제목)}」`}</span>`
     + `<span class="d">${dotDate(it.날짜)} · ${esc(whereShort(it))}<span class="soon-d"${soon ? '' : ' hidden'}> · 곧 나올 영상</span></span></a></li>`;
 }
 
@@ -369,8 +384,9 @@ const SCRIPT = `
 function renderPage(data, { links = {}, now = Date.now() } = {}) {
   const today = kstDay(now);
   const byDate = (a, b) => (a.날짜 < b.날짜 ? 1 : a.날짜 > b.날짜 ? -1 : 0);
-  const current = data.항목.filter((it) => it.날짜 <= today).sort(byDate);
-  const upcoming = data.항목.filter((it) => it.날짜 > today).sort((a, b) => -byDate(a, b));
+  // 영상없음 항목은 기다릴 영상이 없으니 늘 지금 칸이다.
+  const current = data.항목.filter((it) => it.영상없음 || it.날짜 <= today).sort(byDate);
+  const upcoming = data.항목.filter((it) => !it.영상없음 && it.날짜 > today).sort((a, b) => -byDate(a, b));
   const all = [...current, ...upcoming];
   const description = 'yuhobuilds 쇼츠에서 실제로 막혔다가 푼 문제를 프롬프트로 모았어요. 빈칸만 바꿔 적힌 AI에 붙여 넣으면 돼요. 모두 직접 돌려 본 것이고, 가입 없이 바로 복사해요.';
   const lead = all[0];
