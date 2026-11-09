@@ -1,0 +1,366 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>synk.im 프론트 판단</title>
+<style>
+/* 한 단 판정서 — 본문은 680px 한 단, 그림과 표만 1080px까지 넓힌다. 글자 여섯 단계 · 굵기 셋. */
+:root{
+  --paper:#ffffff; --ink:#0b0b0d; --mute:#5f636b; --line:#e3e4e8; --panel:#f4f5f7;
+  --lab:#f96859; --shift:#3d6bc9; --pulse:#99295d; --path:#526956;
+  --keep:#2f8f4e; --move:#8a6a12; --drop:#8b8d94;
+  --f:{{서체}};
+  --s1:13px; --s2:15px; --s3:17px; --s4:22px; --s5:30px; --s6:clamp(34px,5.4vw,52px);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#08090c; --ink:#fafaf9; --mute:#a0a3ab; --line:#26272c; --panel:#121317;
+  --lab:#ff8a7c; --shift:#86a8ee; --pulse:#f0a3c6; --path:#a9c79b;
+  --keep:#6fcf8e; --move:#e2bd5a; --drop:#8b8d94; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --paper:#08090c; --ink:#fafaf9; --mute:#a0a3ab; --line:#26272c; --panel:#121317;
+  --lab:#ff8a7c; --shift:#86a8ee; --pulse:#f0a3c6; --path:#a9c79b;
+  --keep:#6fcf8e; --move:#e2bd5a; --drop:#8b8d94; color-scheme:dark }
+body{background:var(--paper);color:var(--ink);font-family:var(--f);font-size:var(--s3);line-height:1.72;font-weight:400;word-break:keep-all;overflow-wrap:anywhere;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));padding-block:56px 96px;display:flex;flex-direction:column;gap:88px}
+.col{max-width:680px;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3,p,ul,ol,figure,dl,dd{margin:0}
+h1{font-size:var(--s6);line-height:1.16;font-weight:700;letter-spacing:-0.01em;text-wrap:balance}
+h2{font-size:var(--s5);line-height:1.25;font-weight:700;text-wrap:balance}
+h3{font-size:var(--s4);line-height:1.35;font-weight:700;text-wrap:balance}
+.lead{font-size:var(--s4);line-height:1.55;color:var(--ink)}
+.small{font-size:var(--s1);color:var(--mute);line-height:1.6}
+.mid{font-size:var(--s2);line-height:1.65}
+b,strong{font-weight:600}
+a{color:inherit;text-underline-offset:3px}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+section{display:flex;flex-direction:column;gap:28px}
+.jump{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:var(--s2)}
+.jump a{color:var(--mute)}
+.q{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:0 28px;border-top:1px solid var(--line)}
+.q>div{padding:16px 0;border-bottom:1px solid var(--line);min-width:0}
+.q .k{font-weight:600}
+.q .a b{font-weight:700}
+@media (max-width:640px){.q{grid-template-columns:1fr}.q .k{border-bottom:0;padding-bottom:0}.q .a{padding-top:6px}}
+figure{display:flex;flex-direction:column;gap:8px}
+figure img{width:100%;height:auto;display:block;border:1px solid var(--line)}
+figcaption{font-size:var(--s1);color:var(--mute);line-height:1.55}
+.tablebox{overflow-x:auto;border-top:1px solid var(--ink)}
+table{border-collapse:collapse;width:100%;font-size:var(--s2);line-height:1.5;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:10px 14px 10px 0;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;white-space:nowrap}
+td.n,th.n{text-align:right;padding-right:18px;white-space:nowrap}
+td.ref{color:var(--mute)}
+.list{display:flex;flex-direction:column;gap:14px;padding:0;list-style:none}
+.list li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:0 8px}
+.list .no{font-weight:700;font-variant-numeric:tabular-nums}
+.biz{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:28px 36px;align-items:start;padding-top:28px;border-top:1px solid var(--line)}
+.biz .txt{display:flex;flex-direction:column;gap:14px;min-width:0}
+.biz h3{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none;transform:translateY(-1px);background:var(--ink)}
+.dot.lab{background:var(--lab)}.dot.shift{background:var(--shift)}.dot.pulse{background:var(--pulse)}.dot.path{background:var(--path)}
+.verdict{font-size:var(--s2);font-weight:600;color:var(--mute)}
+.biz ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px;font-size:var(--s2);line-height:1.65}
+@media (max-width:760px){.biz{grid-template-columns:1fr}}
+.gates{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0 28px;border-top:1px solid var(--ink)}
+.gates div{padding:14px 0;border-bottom:1px solid var(--line);font-size:var(--s2);line-height:1.55}
+.gates b{display:block;font-size:var(--s4);font-weight:700;line-height:1.3}
+.steps{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--ink);counter-reset:s}
+.steps div{padding:16px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:minmax(0,200px) minmax(0,1fr);gap:4px 28px}
+.steps b{font-weight:700}
+@media (max-width:640px){.steps div{grid-template-columns:1fr}}
+.rules{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px}
+/* 리라이팅 */
+details.pg{border-top:1px solid var(--ink)}
+details.pg>summary{cursor:pointer;list-style:none;padding:18px 0;display:flex;align-items:baseline;gap:12px;font-size:var(--s4);font-weight:700}
+details.pg>summary::-webkit-details-marker{display:none}
+details.pg>summary .cnt{font-size:var(--s1);font-weight:400;color:var(--mute)}
+details.pg>summary::after{content:"펼치기";margin-left:auto;font-size:var(--s1);font-weight:400;color:var(--mute)}
+details.pg[open]>summary::after{content:"접기"}
+.rw{display:grid;grid-template-columns:minmax(0,150px) minmax(0,1fr) minmax(0,1fr);gap:0 24px;padding:16px 0;border-top:1px solid var(--line);font-size:var(--s2);line-height:1.62}
+.rw>div{min-width:0}
+.rw .where{font-weight:600;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.rw .now{color:var(--mute)}
+.rw .new{font-weight:600;white-space:pre-line}
+.rw .why{grid-column:2 / -1;font-size:var(--s1);color:var(--mute);padding-top:6px;line-height:1.55}
+.rw.keep .new{font-weight:400;color:var(--mute)}
+.rw.head{border-top:0;padding:0 0 8px;font-size:var(--s1);color:var(--mute)}
+.rw.head div{font-weight:400}
+.tag{font-size:var(--s1);font-weight:600;line-height:1;padding:4px 7px;border:1px solid currentColor;border-radius:2px;white-space:nowrap}
+.tag.바꿈{color:var(--ink)}.tag.그대로{color:var(--keep)}.tag.옮김,.tag.고르기{color:var(--move)}.tag.뺌{color:var(--drop)}
+@media (max-width:760px){.rw{grid-template-columns:1fr;gap:6px}.rw .why{grid-column:1}.rw.head{display:none}.rw .now::before{content:"지금  ";font-weight:600;color:var(--ink)}.rw .new::before{content:"제안  ";font-weight:600;color:var(--mute)}}
+.note{background:var(--panel);padding:18px 20px;font-size:var(--s2);line-height:1.65;display:flex;flex-direction:column;gap:8px}
+blockquote{margin:0;padding:2px 0 2px 18px;border-left:2px solid var(--ink);font-size:var(--s2);line-height:1.65}
+footer{font-size:var(--s1);color:var(--mute);line-height:1.6;border-top:1px solid var(--line);padding-top:20px}
+</style>
+
+<div class="wrap">
+
+<header class="col">
+  <p class="small">synk.im 공개본 · 2026년 11월 10일 새벽에 잰 값 · 일곱 쪽을 컴퓨터(1440×900)와 휴대폰(390×844)으로</p>
+  <h1>실물은 앞서가는 회사인데, 편집이 안내 책자입니다</h1>
+  <p class="lead">좋은 것은 이미 있습니다. 처마 입구, PULSE 쇼릴, 30일 빨리 감기 체험, 실제 예약표. 그런데 그 위에 큰 주장 여섯, 글자 굵기 열네 가지, 「준비 중」 서른한 번이 덮여 있습니다. 그림은 그대로 두고, 뼈대와 말을 새로 만들면 됩니다.</p>
+  <nav class="jump" aria-label="이 쪽의 차례">
+    <a href="#answer">물음에 대한 답</a><a href="#keep">지킬 것</a><a href="#problem">문제 다섯</a><a href="#each">사업별 판단</a><a href="#redesign">리디자인</a><a href="#voice">말투와 리라이팅</a><a href="#blind">남의 눈</a><a href="#limits">잰 법과 한계</a>
+  </nav>
+</header>
+
+<section id="answer">
+  <div class="col"><h2>물으신 것에 대한 답</h2></div>
+  <div class="q">
+    <div class="k">회사마다 어필이 되나</div>
+    <div class="a"><b>PULSE는 됩니다.</b> SHIFT는 첫 화면까지, LAB은 둘째 화면부터 됩니다. PATH와 아틀라스는 안 됩니다. PATH는 파는 것(유학 · 취업)과 첫 화면에 보이는 것(서울 나들이)이 다르고, 아틀라스는 증거 자리에 엔진 이름 여덟이 서 있습니다.</div>
+    <div class="k">조잡한가</div>
+    <div class="a">한 화면씩 보면 단정합니다. <b>이어서 보면 조잡합니다.</b> 홈 한 쪽에 글자 굵기가 14가지, 크기가 23단계, 영문 대문자로 쓴 글 덩어리가 35개입니다. 같은 날 같은 도구로 잰 선도 회사 16곳의 중앙값은 굵기 4가지, 크기 9단계, 영문 대문자 덩어리 6개였습니다.</div>
+    <div class="k">임팩트가 있나</div>
+    <div class="a">멈춰서 보게 되는 화면은 <b>둘</b>입니다. 처마 입구와 PULSE 첫 화면. 나머지 첫 화면은 대체로 왼쪽 제목, 오른쪽 그림, 아래 단추 둘의 같은 틀입니다.</div>
+    <div class="k">프론티어의 길인가</div>
+    <div class="a"><b>아직 아닙니다.</b> 출처를 가리고 보인 다른 눈(아르곤)은 홈을 2/10, 네 사업 첫 화면을 4/10으로 봤습니다. 제 눈에도 지금 사이트는 정직하고 성실한 회사로 읽힙니다. 앞서가는 회사의 첫 쪽은 주장 하나, 그 자리에서 만져지는 증거 하나, 그리고 많이 덜어낸 흔적으로 읽힙니다. synk.im에는 증거가 있는데 주장이 여럿이고 덜어낸 흔적이 없습니다.</div>
+    <div class="k">싹 다 리디자인할까</div>
+    <div class="a"><b>뼈대는 전부 새로, 실물은 그대로.</b> 글자 체계, 구역 틀, 꼬리표, 상태 표시, 말투, 쪽 길이는 일곱 쪽을 한 번에 바꿉니다. 처마 입구, 쇼릴, 상황극 무대, 30일 체험, 예약표, 캐스팅북은 손대지 않습니다.</div>
+  </div>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>쪽</th><th>첫 화면에 있는 것</th><th>어필</th><th>가장 큰 문제</th><th class="n">길이 · 컴퓨터</th><th class="n">휴대폰</th></tr></thead>
+      <tbody>
+        <tr><td><b>홈</b></td><td>처마 입구와 문 넷</td><td>입구는 그림으로 강함, 무슨 회사인지는 흐림</td><td>큰 제목급 주장이 여섯</td><td class="n">10.2화면</td><td class="n">12.8</td></tr>
+        <tr><td><b>LAB</b></td><td>제목과 사진 한 장(화면의 15%)</td><td>둘째 화면부터</td><td>가장 센 문장이 둘째 화면에, 여섯 가운데 넷이 준비 중</td><td class="n">12.6</td><td class="n">18.9</td></tr>
+        <tr><td><b>SHIFT</b></td><td>제목과 실제 예약표</td><td>첫 화면까지</td><td>그 아래 여덟 화면이 글뿐(5,870자, 큰 그림 · 영상 0)</td><td class="n">10.6</td><td class="n">16.3</td></tr>
+        <tr><td><b>PULSE</b></td><td>화면을 덮는 쇼릴</td><td>됨</td><td>「가상」이 열한 번, 값 이야기가 열두 화면 아래</td><td class="n">14.5</td><td class="n">17.4</td></tr>
+        <tr><td><b>PATH</b></td><td>서울 하루 고르기와 지도</td><td>안 됨</td><td>파는 것과 보여 주는 것이 다름</td><td class="n">5.4</td><td class="n">7.9</td></tr>
+        <tr><td><b>아틀라스</b></td><td>제목과 엔진 이름 원(화면의 9%)</td><td>안 됨</td><td>이름 여덟이 증거 자리에</td><td class="n">9.6</td><td class="n">14.0</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="keep">
+  <div class="col">
+    <h2>지킬 것 여섯</h2>
+    <p>리디자인에서 가장 쉬운 실수는 잘된 것까지 갈아엎는 일입니다. 10월 30일 웹툰 판과 11월 9일 홈 시안 A가 그렇게 공개본보다 못해졌습니다. 아래 여섯은 그대로 둡니다.</p>
+  </div>
+  <figure>
+    <img src="{{img:home-d-00.jpg}}" alt="synk.im 첫 화면. 밤하늘과 처마 사진 위에 큰 한글 싱ㅋ, 아래에 문 넷.">
+    <figcaption>처마 입구. 다른 회사가 흉내 낼 수 없는, 이 사이트에서 하나뿐인 화면입니다.</figcaption>
+  </figure>
+  <ol class="list col">
+    <li><span class="no">1</span><span><b>처마 입구.</b> 밤하늘, 처마, 견본선, 큰 한글. 「어떤 일로 오셨어요?」와 손님 말로 적은 문 넷까지. 다만 그림으로 지키는 것이고, 5초 안에 무슨 회사인지 말해 주지는 못합니다(아래 「남의 눈」).</span></li>
+    <li><span class="no">2</span><span><b>PULSE 첫 화면.</b> 화면을 덮는 쇼릴 위에 「카메라 앞에서 10년, 배우가 AI 모델을 연출합니다」. 왜 이 회사여야 하는지가 한 문장입니다.</span></li>
+    <li><span class="no">3</span><span><b>「틀린 말은 1분 뒤에, 맞힌 말은 잊을 때쯤 돌아옵니다」와 30일 빨리 감기 체험.</b> 사이트에서 가장 좋은 문장이고, 아틀라스가 실제로 돈다는 하나뿐인 증거입니다.</span></li>
+    <li><span class="no">4</span><span><b>SHIFT의 실제 예약표.</b> 「이 회사는 AI로 돌아간다」를 말이 아니라 실물로 보여 줍니다. 크게, 설명과 함께 놓을 때만 그렇게 읽힙니다.</span></li>
+    <li><span class="no">5</span><span><b>LAB 상황극 무대.</b> 눌러서 말해 보는 장면. 구성은 지금 그대로 좋고, 자리만 첫 화면으로 올리면 됩니다.</span></li>
+    <li><span class="no">6</span><span><b>속도와 출시 기록.</b> 첫 그림이 뜨는 데 0.4~0.8초입니다. 「최근에 새로 연 것」에는 11월 3일, 5일, 9일이 찍혀 있습니다. 계속 내는 회사라는 증거라 더 크게 써도 됩니다.</span></li>
+  </ol>
+</section>
+
+<section id="problem">
+  <div class="col">
+    <h2>문제 다섯, 큰 순서로</h2>
+  </div>
+
+  <div class="col">
+    <h3>1. 홈이 회사를 한 문장으로 말하지 못합니다</h3>
+    <p>홈 한 쪽에 큰 제목급 주장이 여섯입니다. 「개인화 기술 회사」, 「쓸수록 나를 아는 AI」, 「K드라마 속 유학생이 되어」, 「같은 엔진으로 네 가지 일」, 「여덟 엔진이 한 사람을 읽습니다」, 「SYNK ID 하나로」. 처음 온 사람은 AI 엔진 회사인지, 한국어 학원인지, 광고 제작사인지 정하지 못하고 내려갑니다.</p>
+    <p>그 가운데 가장 위험한 문장이 「같은 엔진으로 네 가지 일을 합니다」입니다. 아틀라스가 실제로 도는 모습은 SYNK WORLD 한 곳에서만 보입니다. 강의와 광고 제작이 같은 엔진으로 돈다는 증거는 쪽 어디에도 없습니다. 꼼꼼한 사람(심사역, 기술자, 큰 고객)은 여기서 멈춥니다. 비전을 바꾸자는 말이 아닙니다. 증거가 있는 만큼만 제목으로 말하자는 것입니다.</p>
+  </div>
+  <figure>
+    <img src="{{img:sheet-home-d.jpg}}" alt="홈을 화면 단위로 열한 장 찍어 늘어놓은 그림.">
+    <figcaption>홈 전체(컴퓨터, 화면 단위 열한 장). 1 입구 → 2 회사 제목 → 2~3 상황극 → 4 네 사업 → 5 SYNK WORLD → 6~7 여덟 엔진과 원칙 → 7 창업자 → 8 소식과 플랫폼 → 9 묻기 → 10~11 바닥. 상황극은 LAB에, SYNK WORLD 체험은 LAB과 아틀라스에, 예약표는 SHIFT에, 지도는 PATH에 같은 것이 또 있습니다.</figcaption>
+  </figure>
+
+  <div class="col">
+    <h3>2. 입구만 SYNK이고, 한 번 내리면 어디서 본 틀입니다</h3>
+    <p>입구 아래 모든 구역이 같은 순서로 짜여 있습니다. 점과 영문 대문자 꼬리표, 두 줄 큰 제목, 오른쪽 회색 본문, 01 · 02 · 03 열, 알약 단추. 움직임은 내릴 때 살짝 떠오르는 것 하나입니다. 요즘 자동으로 만든 소개 쪽이 가장 흔히 쓰는 틀이라, 디자인을 보는 눈이 있는 사람일수록 여기서 「직접 지은 회사」라는 인상이 꺼집니다.</p>
+    <p>영문 꼬리표는 바로 옆 한글 꼬리표와 같은 말을 합니다. BUSINESS 네 가지 사업, PRICING 비용, MODELS AI 모델, SERVICES 하는 일. 입구가 가진 말(밤하늘, 견본선, 큰 한글)은 아래로 하나도 이어지지 않습니다.</p>
+  </div>
+
+  <div class="col">
+    <h3>3. 글자 체계가 없습니다</h3>
+    <p>「조잡하다」는 느낌의 정체가 이것입니다. 구역을 하나씩 고쳐 올 때마다 그 구역만의 크기와 굵기가 하나씩 늘었습니다. 단추도 같습니다. 알약, 각진 것, 14 · 16픽셀로 둥근 것이 쪽마다 섞여 있습니다.</p>
+  </div>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th></th><th class="n">홈</th><th class="n">LAB</th><th class="n">SHIFT</th><th class="n">PULSE</th><th class="n">PATH</th><th class="n">아틀라스</th><th class="n">선도 16곳 중앙값</th><th>범위</th></tr></thead>
+      <tbody>
+        <tr><td>글자 굵기 가짓수</td><td class="n"><b>14</b></td><td class="n">11</td><td class="n">13</td><td class="n">10</td><td class="n">10</td><td class="n">11</td><td class="n ref">4</td><td class="ref">2~5</td></tr>
+        <tr><td>글자 크기 단계</td><td class="n"><b>23</b></td><td class="n">19</td><td class="n">18</td><td class="n">13</td><td class="n">13</td><td class="n">16</td><td class="n ref">9</td><td class="ref">5~13</td></tr>
+        <tr><td>모노 글꼴로 쓴 글 덩어리</td><td class="n">56</td><td class="n">44</td><td class="n">54</td><td class="n">52</td><td class="n">36</td><td class="n">23</td><td class="n ref">0</td><td class="ref">0~174</td></tr>
+        <tr><td>영문 대문자 글 덩어리</td><td class="n">35</td><td class="n">24</td><td class="n">19</td><td class="n">18</td><td class="n">18</td><td class="n">28</td><td class="n ref">6</td><td class="ref">0~43</td></tr>
+        <tr><td>쪽 길이(화면)</td><td class="n">10.2</td><td class="n">12.6</td><td class="n">10.6</td><td class="n">14.5</td><td class="n">5.4</td><td class="n">9.6</td><td class="n ref">7.0</td><td class="ref">1~12</td></tr>
+        <tr><td>글자 수</td><td class="n">4,655</td><td class="n">5,748</td><td class="n">5,870</td><td class="n">4,797</td><td class="n">2,224</td><td class="n">4,326</td><td class="n ref">3,913</td><td class="ref">256~10,339</td></tr>
+        <tr><td>첫 화면에서 누를 수 있는 것</td><td class="n">19</td><td class="n">23</td><td class="n">16</td><td class="n">18</td><td class="n">26</td><td class="n">16</td><td class="n ref">15</td><td class="ref">7~32</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small col">선도 16곳: Anthropic · Mistral · ElevenLabs · Runway · Sakana · Cursor · Luma · Figure · Physical Intelligence · Thinking Machines · Google DeepMind · World Labs · Speak · Upstage · TwelveLabs · HYBE의 첫 쪽. 제가 고른 표본이고 OpenAI와 xAI는 자동 접속을 막아 빠졌습니다. 글자 수와 길이는 synk.im이 크게 벗어나지 않습니다. 벗어나는 것은 가짓수입니다. 「복잡하다」는 말은 양보다 가짓수에서 나옵니다.</p>
+
+  <div class="col">
+    <h3>4. 방어하는 말이 파는 말보다 많습니다</h3>
+    <p>「준비 중」과 「준비하고 있습니다」가 일곱 쪽에 서른한 번 나옵니다. LAB 열네 번, PATH 일곱 번, 홈 여섯 번. LAB은 첫 화면 바로 아래 줄에서 상품 여섯 가운데 넷이 준비 중이라고 알리고, PATH는 첫 문단의 두 문장이 모두 「준비하고 있습니다」로 끝납니다. PULSE는 작품 설명마다 「가상」을 붙여 열한 번, 손님 눈에는 「실제 고객 없음」이 열한 번입니다.</p>
+    <p>사실을 숨기자는 말이 아닙니다. 지금 되는 것을 본문으로, 아직 안 되는 것과 면책은 쪽 맨 아래 한 묶음으로 자리를 나누자는 것입니다. 앞서가는 회사는 되는 것 하나를 끝까지 보여 주고, 안 된 것은 화면에 올리지 않습니다.</p>
+  </div>
+
+  <div class="col">
+    <h3>5. 쪽이 목록처럼 깁니다</h3>
+    <p>휴대폰에서 LAB은 18.9화면, PULSE는 17.4화면, SHIFT는 16.3화면입니다. LAB 한 쪽에 앱 소개, 온라인 반 모집, 급수 설명, 1년 과정, 교재 목록이 표들과 함께 들어 있습니다. SHIFT는 5,870자인데 300픽셀이 넘는 그림과 영상이 하나도 없습니다.</p>
+  </div>
+  <figure>
+    <img src="{{img:sheet-shift-d.jpg}}" alt="SHIFT 쪽을 화면 단위로 열한 장 찍어 늘어놓은 그림. 첫 화면 뒤로는 글만 이어진다.">
+    <figcaption>SHIFT 전체(컴퓨터). 첫 화면의 예약표 뒤로는 강의 장면도, 수업에서 만든 결과물도 없이 글이 여덟 화면 이어집니다.</figcaption>
+  </figure>
+</section>
+
+<section id="each">
+  <div class="col"><h2>사업별 판단</h2></div>
+
+  <div class="biz">
+    <div class="txt">
+      <h3><span class="dot pulse"></span>PULSE <span class="verdict">가장 잘됨 · 덜어내기만</span></h3>
+      <p class="mid">첫 화면이 곧 포트폴리오입니다. 제작사로 보이고, 왜 이 사람이어야 하는지가 제목에 있습니다.</p>
+      <ul>
+        <li>작품 설명의 「가상」 열한 번을 구역 머리 한 번으로 줄입니다.</li>
+        <li>「의뢰서에서 길이와 구성을 고르면 그 자리에서 값이 보입니다」가 열두 화면 아래에 있습니다. 맡기려는 사람이 가장 먼저 궁금한 것이니 첫 화면 단추 옆으로.</li>
+        <li>가운데 두 화면 남짓이 글 목록입니다(영상 네 종류 × 두 칸, 만드는 법 다섯). 반으로 줄입니다.</li>
+        <li>첫 화면에서 쇼릴 속 작품을 소리와 함께 끝까지 보는 단추가 없습니다.</li>
+        <li>휴대폰에서 제목이 얼굴 아래쪽을 덮는 것은 결정 표에 이미 다음 일로 적혀 있습니다.</li>
+      </ul>
+    </div>
+    <figure><img src="{{img:pulse-d-00.jpg}}" alt="PULSE 첫 화면. 쇼릴 장면 위에 큰 명조 제목."><figcaption>PULSE 첫 화면</figcaption></figure>
+  </div>
+
+  <div class="biz">
+    <div class="txt">
+      <h3><span class="dot shift"></span>SHIFT <span class="verdict">첫 화면까지만</span></h3>
+      <p class="mid">예약표는 좋은 한 수입니다. 그 뒤가 제안서 본문입니다.</p>
+      <ul>
+        <li>제목 「AI를 강의하고, 반복 업무는 자동화합니다」는 업종 소개입니다. 진짜 다른 점인 「도구 목록보다, 가져가는 결과물」은 여섯째 화면에 있습니다.</li>
+        <li>제목과 그림은 자동화를 말하는데 큰 단추는 「강의·강사 보기」입니다. 자동화를 맡기려는 회사가 누를 곳이 없습니다.</li>
+        <li>서비스 넷마다 같은 다섯 칸(이런 곳에 맞습니다 · 받는 것 · 먼저 정하는 것 · 진행 순서 · 예를 들면)이 되풀이됩니다. 강의 회사인데 수업 장면과 수업에서 나온 결과물이 한 장도 없습니다.</li>
+        <li>11월 10일 결정(강사 에이전시에서 AI 실전교육 회사로, 자동화는 그 뒤)과 쪽의 무게가 다릅니다. 쪽은 자동화 증거가 앞에 있습니다. 수업 재설계가 확정되면 주인공을 수업 결과물로 바꿉니다.</li>
+      </ul>
+    </div>
+    <figure><img src="{{img:shift-d-00.jpg}}" alt="SHIFT 첫 화면. 왼쪽 제목, 오른쪽 검은 예약표."><figcaption>SHIFT 첫 화면</figcaption></figure>
+  </div>
+
+  <div class="biz">
+    <div class="txt">
+      <h3><span class="dot lab"></span>LAB <span class="verdict">둘째 화면부터</span></h3>
+      <p class="mid">11월 6일에 만족하신 것은 바로 아래의 검은 무대입니다. 그 무대는 지금도 좋습니다. 문제는 첫 화면입니다.</p>
+      <ul>
+        <li>다른 세 사업이 실물로 첫 화면을 채운 뒤로, LAB 첫 화면이 넷 가운데 가장 약해졌습니다. 흰 바탕, 제목, 사진 한 장, 그리고 「준비하고 있습니다」가 든 본문.</li>
+        <li>LAB에서 가장 센 문장 「말해야 장면이 넘어갑니다」가 둘째 화면 제목입니다. 이것이 쪽 제목이어야 합니다.</li>
+        <li>말하기 앱 리뷰 1만 6천여 건을 분석했다는 가장 좋은 근거가 작은 글씨에 묻혀 있습니다.</li>
+        <li>온라인 반, 급수 설명, 1년 과정, 교재는 「과정」 쪽 하나로 내보내고, LAB 본 쪽은 지금 되는 둘(상황극 1화, SYNK WORLD)만 남깁니다.</li>
+      </ul>
+    </div>
+    <figure><img src="{{img:lab-d-00.jpg}}" alt="LAB 첫 화면. 흰 바탕에 제목과 사진 한 장."><figcaption>LAB 첫 화면</figcaption></figure>
+  </div>
+
+  <div class="biz">
+    <div class="txt">
+      <h3><span class="dot path"></span>PATH <span class="verdict">안 됨</span></h3>
+      <p class="mid">제목은 유학 · 취업 · 정착인데 첫 화면에서 할 수 있는 일은 서울 세 시간 나들이 짜기입니다. 5초 안에 「여행 앱인가」로 읽힙니다.</p>
+      <ul>
+        <li>PATH다운 실물은 둘째 화면의 면접 연습입니다. 「면접관 세 명이 기다리고 있습니다」. 이것이 첫 화면이어야 합니다.</li>
+        <li>여섯 가운데 넷이 준비 중입니다. 실물이 둘뿐이니 쪽은 지금처럼 짧은 것이 맞고, 더 줄여도 됩니다.</li>
+        <li>11월 9일 PATH 앱 초기 프론트의 첫 물음(해외에서 준비 · 한국에서 유학 중 · 취업 준비)을 사이트 첫 화면에도 쓰면 무엇을 하는 곳인지 바로 읽힙니다.</li>
+      </ul>
+    </div>
+    <figure><img src="{{img:path-d-00.jpg}}" alt="PATH 첫 화면. 제목 아래 서울 하루 고르기, 오른쪽 지도."><figcaption>PATH 첫 화면</figcaption></figure>
+  </div>
+
+  <div class="biz">
+    <div class="txt">
+      <h3><span class="dot"></span>아틀라스 <span class="verdict">주장이 증거보다 큼</span></h3>
+      <p class="mid">기술로 앞서간다는 주장의 본진인데 가장 덜 설득됩니다.</p>
+      <ul>
+        <li>첫 화면은 제목과, 이름 여덟이 적힌 작은 원입니다. Core · Strata · Trail · Loom · Vellum · Reed · Prism · Temper. 처음 보는 사람에게 이 이름들은 조직도로 읽힙니다.</li>
+        <li>실제로 도는 화면(30일 빨리 감기)은 바로 아래 구역에 있습니다. 순서만 바꾸면 됩니다.</li>
+        <li>「펠트 재질에 빛과 움직임」(Loom), 「음악과 소리」(Reed)를 개인화 엔진의 엔진으로 세면, 꼼꼼한 사람은 나머지 여섯도 의심합니다. 여덟을 줄이자는 말이 아닙니다. 밖으로는 세 동사(이해 · 맞춤 · 확인)로 말하고, 여덟 이름은 그 아래 표로 내립니다.</li>
+      </ul>
+    </div>
+    <figure><img src="{{img:atlas-d-00.jpg}}" alt="아틀라스 첫 화면. 제목과 엔진 이름 여덟이 적힌 원 그림."><figcaption>아틀라스 첫 화면</figcaption></figure>
+  </div>
+</section>
+
+<section id="redesign">
+  <div class="col">
+    <h2>리디자인: 뼈대는 전부 새로, 실물은 그대로</h2>
+    <p>지금까지 두 길을 다 가 보셨습니다. 구역을 하나씩 고치는 길은 굵기 열네 가지를 만들었습니다. 통째로 갈아 끼우는 길은 두 번(10월 30일, 11월 9일) 공개본보다 못했습니다. 두 번 모두 실물까지 바꾸거나 뺐기 때문입니다.</p>
+    <p>그래서 권하는 것은 그 사이입니다. 실물은 한 장도 다시 굽지 않습니다. 대신 그 실물을 담는 틀을 일곱 쪽 전부 한 번에 바꾸고, 옛 틀이 한 쪽도 남지 않게 같은 날 공개합니다. 11월 9일 홈 시안으로 치면 방향은 B(빼기)가 맞고, 거기에 아래 뼈대와 회사 한 줄이 더해져야 합니다.</p>
+  </div>
+
+  <div class="col"><h3>새 뼈대가 지킬 것</h3><p class="mid">이번에 쓴 재는 도구를 그대로 관문으로 씁니다. 시안을 같은 도구로 재서 통과시킵니다.</p></div>
+  <div class="gates">
+    <div><b>크기 8단계 · 굵기 4가지 안</b>지금 13~23단계 · 10~14가지</div>
+    <div><b>영문 꼬리표 0</b>모노 글꼴은 시각과 숫자에만</div>
+    <div><b>한 쪽에 주장 하나</b>큰 제목은 쪽마다 하나, 나머지는 한 단계 아래</div>
+    <div><b>첫 화면 = 그 사업의 실물</b>실물이 화면의 절반 이상</div>
+    <div><b>컴퓨터 7화면 · 휴대폰 10화면 안</b>지금 휴대폰 최대 18.9</div>
+    <div><b>「준비 중」은 쪽마다 한 묶음</b>맨 아래 「다음에 여는 것」에만</div>
+    <div><b>같은 체험은 한 쪽에만</b>지금 상황극 · WORLD · 예약표 · 지도가 두세 쪽에</div>
+    <div><b>입구의 말을 아래로</b>밤하늘 · 견본선 · 큰 한글을 구역 표식으로 이어 쓰기</div>
+  </div>
+
+  <div class="col"><h3>쪽의 짜임</h3></div>
+  <div class="steps">
+    <div><b>홈 · 다섯 화면</b><span>처마 입구 → 회사 한 문장과 살아 있는 증거 하나(30일 체험이나 오늘의 예약표) → 문 넷(문마다 그 사업의 실물이 움직이는 큰 줄) → 최근에 새로 연 것 → 묻기와 바닥. 상황극 띠, 여덟 엔진, 창업자 띠, 플랫폼 내려받기는 각자의 쪽으로.</span></div>
+    <div><b>사업 쪽 · 여섯 화면</b><span>실물이 덮는 첫 화면 → 무엇이 남나(세 줄) → 어떻게 하나(세 단계) → 값이나 다음 한 걸음 → 다음에 여는 것과 알아 두실 것.</span></div>
+    <div><b>LAB</b><span>상황극 무대를 첫 화면으로. 본 쪽은 상황극 1화와 SYNK WORLD만. 과정 · 교재 · 급수 설명은 「과정」 쪽으로.</span></div>
+    <div><b>PATH · 아틀라스</b><span>순서만 바꿉니다. PATH는 면접 연습이 첫 화면, 아틀라스는 30일 체험이 첫 화면.</span></div>
+  </div>
+
+  <div class="col">
+    <h3>앞서가는 회사로 읽히게 하는 증거 셋</h3>
+    <p>디자인만으로는 프론티어가 되지 않습니다. 선도 회사 첫 쪽에 있고 synk.im이 사실대로 낼 수 있는 것이 셋 있습니다.</p>
+    <ol class="rules">
+      <li><b>출시 기록.</b> 이미 있습니다. 「최근에 새로 연 것」을 날짜 줄로 키워 홈의 한 구역으로.</li>
+      <li><b>연구 노트.</b> 말하기 앱 리뷰 1만 6천여 건 분석, 간격을 두고 다시 꺼내는 복습의 근거. 이미 한 일을 글 한 편씩으로.</li>
+      <li><b>살아 있는 예약표.</b> SHIFT에만 두지 말고 홈의 회사 증거로. 「서른 개 넘는 일이 사람 없이 돈다」는 이 회사만 보여 줄 수 있습니다.</li>
+    </ol>
+  </div>
+
+  <div class="col"><h3>순서</h3></div>
+  <div class="steps">
+    <div><b>0 · 홈의 주인공 정하기</b><span>네 사업을 같은 크기로 놓을지, 하나를 앞에 세울지. 제 추천은 아틀라스가 도는 모습(30일 체험)을 앞에 세우는 것입니다. 까닭은 아래 「남의 눈」에 적었습니다. 유호님이 정하실 일입니다.</span></div>
+    <div><b>1 · 뼈대 한 장과 두 쪽 시안</b><span>글자 체계와 구역 틀을 한 장으로 정하고, 홈과 SHIFT 두 쪽만 먼저 짓습니다. 홈은 가장 흔들리는 쪽, SHIFT는 글이 가장 많은 쪽이라 뼈대가 통하는지 여기서 드러납니다. 입구는 두 판으로 짓습니다(지금 짜임에 새 한 줄 / 처마와 싱ㅋ는 그대로 두고 문 넷을 한 화면 아래로). 공개본과 나란히 놓고, 같은 도구로 재고, 같은 물음으로 맹검을 받습니다.</span></div>
+    <div><b>2 · 나머지 다섯 쪽</b><span>두 쪽이 공개본보다 확실히 나을 때만 LAB · PATH · 아틀라스 · 창업자 · PULSE 순서로 옮깁니다. PULSE는 이미 가장 가까워 마지막입니다.</span></div>
+    <div><b>3 · 한 번에 공개</b><span>일곱 쪽을 같은 날 바꿉니다. 한국어가 정해진 뒤 영어 · 몽골어를 옮깁니다.</span></div>
+  </div>
+</section>
+
+<section id="voice">
+  <div class="col">
+    <h2>말투와 리라이팅</h2>
+    <p>지금 글은 정직하고, 구체적인 자리에서는 아주 좋습니다. 「틀린 말은 1분 뒤에, 맞힌 말은 잊을 때쯤 돌아옵니다」, 「말해야 장면이 넘어갑니다」, 「요금표 대신, 범위를 먼저 정합니다」, 「한 문제만 풀어 보세요. 30일을 빨리 감아 드립니다」. 이 문장들은 손대지 않았습니다.</p>
+    <p>약한 곳은 제목입니다. 큰 제목 대부분이 「~하고, ~합니다」로 하는 일을 늘어놓습니다. 「AI를 강의하고, 반복 업무는 자동화합니다」, 「강의로 시작해, 업무 자동화로 잇습니다」, 「한국 유학부터 취업, 정착까지 함께 준비합니다」. 사업자등록증의 종목처럼 읽힙니다. 본문은 「SYNK는 ~을 만듭니다」로 시작해 「~도 합니다」, 「~도 함께 맡습니다」로 이어지고, 그 사이에 「준비하고 있습니다」가 낍니다.</p>
+    <p>말투는 합니다체 그대로 두었습니다. 일을 맡기려는 회사와 심사하는 사람이 한국어 판의 주된 독자이기 때문입니다. 바꾼 것은 문장의 방향과 길이입니다.</p>
+    <h3>고쳐 쓴 원칙 일곱</h3>
+    <ol class="rules">{{원칙}}</ol>
+    <p class="small">아래 표는 일곱 쪽의 제목, 첫 문단, 구역 머리, 단추, 안내 글을 지금 → 제안으로 나란히 놓은 것입니다. 사실은 공개본에 적힌 것만 썼습니다. 「그대로」는 손대지 않은 문장, 「고르기」는 화면에 얹어 보고 정하실 자리입니다. 뼈대가 바뀌면 사라질 구역(서비스마다 다섯 칸의 본문 같은 곳)은 머리와 이름만 고쳤습니다.</p>
+  </div>
+  <div>
+{{리라이팅}}
+  </div>
+</section>
+
+<section id="blind">
+  <div class="col">
+    <h2>남의 눈</h2>
+{{맹검}}
+  </div>
+</section>
+
+<section id="limits">
+  <div class="col">
+    <h2>잰 법과 한계</h2>
+    <ul class="rules">
+      <li>공개본 일곱 쪽(홈 · LAB · SHIFT · PULSE · PATH · 아틀라스 · 창업자)을 화면 단위로 찍어 전부 보고, 글을 전부 읽었습니다. 글꼴 가짓수와 길이는 쪽 안에서 직접 셌습니다.</li>
+      <li>영어 · 몽골어 판은 보지 않았습니다. 리라이팅도 한국어만입니다.</li>
+      <li>움직임은 수(쪽마다 떠오르는 요소 4~44개, 쪽 사이 전환 없음)로만 쟀습니다. 눈으로 느끼는 결은 정지 화면으로 판단하지 못합니다.</li>
+      <li>선도 16곳은 제가 고른 표본입니다. 영문 사이트가 대부분이라 한글 굵기 관행과는 차이가 있습니다(한글 서비스는 제목을 700으로 쓰는 곳이 많습니다). 가짓수 비교에는 지장이 없습니다.</li>
+      <li>회사 한 줄과 새 제목들은 아직 맹검하지 않았습니다. 제목은 낱말이 아니라 실제 화면에 얹어 보고 고르셔야 합니다.</li>
+      <li>공개본에는 아무것도 손대지 않았습니다.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>재는 도구와 리라이팅 원본은 저장소 docs/디자인/synk.im_전체판단_20261110 에 있습니다.</footer>
+
+</div>
