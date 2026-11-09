@@ -987,7 +987,8 @@ export function createCompanyApp(options={}) {
     if(demoRequest&&!['GET','HEAD'].includes(method)&&path!=='/api/logout')throw httpError('데모 화면에서는 보기만 할 수 있어요. 바꾸려면 실제 화면으로 돌아가 주세요.',403);
     if(path.startsWith('/social-publish-media/')&&await socialPublishMedia.handle(req,res,{url,signal:socialAbort.signal}))return;
     if(await socialPublicRoutes(req,res,{url}))return;
-    if(await trialFeedbackRoutes.publicRoutes(req,res,{url}))return;
+    // Keep unrelated requests on their existing shutdown admission order.
+    if(path.startsWith('/trial-feedback/')&&await trialFeedbackRoutes.publicRoutes(req,res,{url}))return;
     if(await customerRoutes(req,res,url))return;
     const identityControl=['/api/logout','/api/synk-id/renew','/api/synk-id/status'].includes(path);
     if(!identityControl&&(path.startsWith('/api/')||path.startsWith('/messenger/api/'))){const current=rawSession(req);if(current)await synkIdentity.validateSession(current);}
@@ -1006,7 +1007,7 @@ export function createCompanyApp(options={}) {
     if(method==='GET'&&path==='/api/synk-id/status')return send(res,200,synkIdentity.status(auth));
     if(method==='GET'&&path==='/api/me')return send(res,200,{user:publicUser(user),csrfToken:auth?.body.csrfToken,synkUserId:auth?.body.synkIdentity||null,passwordSet:Boolean(user?.passwordHash),needsSetup:store.count('users')===0,platformUrl});
     if(path.startsWith('/api/social/')){await socialRoutes(req,res,{url,demoRequest});return;}
-    if(await trialFeedbackRoutes.staffRoutes(req,res,{url,demoRequest}))return;
+    if(path.startsWith('/api/trial-feedback/')&&await trialFeedbackRoutes.staffRoutes(req,res,{url,demoRequest}))return;
     if(path==='/trial-feedback'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/trial-feedback/','Cache-Control':'no-store'});res.end();return;}
     if(path==='/api/client-search'){
       if(!auth)throw httpError('먼저 로그인해 주세요.',401);
