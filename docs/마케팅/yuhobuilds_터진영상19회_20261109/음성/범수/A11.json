@@ -1,57 +1,62 @@
 {
  "tool": "tools/나레이션굽기.mjs",
  "id": "A11",
- "text": "저장해 두고, 따라 만들기 전에 이 세 개만 보세요.",
- "dur": 2.771,
+ "text": "다시 재 달라고 할 땐, 이 한 줄을 꼭 붙이세요.",
+ "dur": 2.567,
  "words": [
   {
-   "text": "저장해",
-   "start": 0.02,
-   "end": 0.333
+   "text": "다시",
+   "start": 0.05,
+   "end": 0.242
   },
   {
-   "text": "두고,",
-   "start": 0.391,
-   "end": 0.567
+   "text": "재",
+   "start": 0.316,
+   "end": 0.39
   },
   {
-   "text": "따라",
-   "start": 1.016,
-   "end": 1.231
+   "text": "달라고",
+   "start": 0.434,
+   "end": 0.701
   },
   {
-   "text": "만들기",
-   "start": 1.289,
-   "end": 1.582
+   "text": "할",
+   "start": 0.745,
+   "end": 0.819
   },
   {
-   "text": "전에",
-   "start": 1.64,
-   "end": 1.797
+   "text": "땐,",
+   "start": 0.878,
+   "end": 1.085
   },
   {
    "text": "이",
-   "start": 1.933,
-   "end": 1.953
+   "start": 1.426,
+   "end": 1.441
   },
   {
-   "text": "세",
-   "start": 2.05,
-   "end": 2.128
+   "text": "한",
+   "start": 1.515,
+   "end": 1.618
   },
   {
-   "text": "개만",
-   "start": 2.187,
-   "end": 2.363
+   "text": "줄을",
+   "start": 1.663,
+   "end": 1.81
   },
   {
-   "text": "보세요.",
-   "start": 2.421,
-   "end": 2.771
+   "text": "꼭",
+   "start": 1.855,
+   "end": 1.929
+  },
+  {
+   "text": "붙이세요.",
+   "start": 1.973,
+   "end": 2.567
   }
  ],
  "source": {
-  "key": "cd7c6ba8b64bf3b339249338641c3120",
+  "key": "901a429d0d305b392be3904cc3c867db",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -66,7 +71,7 @@
    "lufs": -17,
    "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
   },
-  "speed": 1.03,
+  "speed": 1,
   "cut": null
  },
  "level": {
@@ -75,6 +80,6 @@
   "limit": 0.89,
   "clippedSource": 0,
   "clippedOut": 0,
-  "topPitchHz": 180
+  "topPitchHz": 144
  }
 }
