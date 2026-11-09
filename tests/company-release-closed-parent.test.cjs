@@ -242,6 +242,15 @@ test('missing guard pins and the wrong expected test count cannot produce a pass
   a.equal(result.ok, false); a.equal(result.status, 'failed-local'); a.equal(result.counts.pass, 1);
 });
 
+test('the QA copy runs outside the repository: a bare import that only the repository node_modules could answer fails here, as it does in the Linux QA', t => {
+  const f = qaFixture(t, "import test from 'node:test';import {parse} from 'acorn';test('needs a package',()=>{parse('1',{ecmaVersion:2022});});\n");
+  a.ok(fs.existsSync(path.join(__dirname, '../node_modules/acorn/package.json')), 'THE_REPOSITORY_HAS_THE_PACKAGE');
+  const result = runLocalQa(f.config);
+  a.equal(result.ok, false); a.equal(result.status, 'failed-local'); a.equal(result.counts.pass, 0);
+  a.equal(path.resolve(result.scratch).toLowerCase().startsWith(path.resolve(__dirname, '..').toLowerCase()), false, 'QA_SCRATCH_OUTSIDE_REPOSITORY');
+  a.equal(fs.existsSync(result.scratch), false, 'QA_SCRATCH_REMOVED');
+});
+
 test('a passing test that changes its copied source is rejected by the recorded vectors', t => {
   const f = qaFixture(t, "import test from 'node:test';import fs from 'node:fs';test('mutating copy',()=>fs.writeFileSync(new URL('./app.mjs',import.meta.url),'changed'));\n");
   const result = runLocalQa(f.config);

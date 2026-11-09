@@ -50,7 +50,7 @@ node tools/company-release/local-qa.cjs <입력.json>
 
 입력은 절대 경로 `candidate`(compose의 출력), 고정 `compositionSha256`, 새 절대 경로 `output`, `guard: {path, sha256}`, 양의 정수 `expectedTests`를 갖는다. `guard`는 검토한 외부 통신 차단기 원문과 핀이다. 필요한 경우 절대 경로 `dependencyRoots` 배열로 기존 시험 의존성만 명시한다.
 
-선택 시험이 manifest 안에 있는지 확인하고 별도 사본에서 실제 `node --test`를 실행한다. 사용자 자격증명·NODE_OPTIONS·운영 기능 환경 변수는 이어받지 않고 HOME·APPDATA·임시 경로도 새 격리 폴더로 준다. 원본과 시험 사본의 전후 벡터 네 개, TAP·종료 코드·정확한 기대 건수, 실행기·검증기·차단기의 해시를 남긴다. 통과한 시험이 소스를 바꿔도 QA는 실패한다. 실패 보고도 `failed-local`로 보존하며 CLI는 실패 종료한다. 여기서 Linux 검증·운영 승인 표시를 만들지 않는다.
+선택 시험이 manifest 안에 있는지 확인하고 저장소 밖 OS 임시 폴더의 별도 사본에서 실제 `node --test`를 실행한다(끝나면 사본을 지운다). 저장소 안에서 돌면 Node가 위 폴더를 거슬러 저장소 `node_modules`를 찾아 Linux QA 컨테이너에서는 뜨지도 않는 시험이 통과한다(사슬 58 acorn). 사용자 자격증명·NODE_OPTIONS·운영 기능 환경 변수는 이어받지 않고 HOME·APPDATA·임시 경로도 새 격리 폴더로 준다. 원본과 시험 사본의 전후 벡터 네 개, TAP·종료 코드·정확한 기대 건수, 실행기·검증기·차단기의 해시를 남긴다. 통과한 시험이 소스를 바꿔도 QA는 실패한다. 실패 보고도 `failed-local`로 보존하며 CLI는 실패 종료한다. 여기서 Linux 검증·운영 승인 표시를 만들지 않는다.
 
 ## 복구한 준비 기록의 원본 핀 대조
 

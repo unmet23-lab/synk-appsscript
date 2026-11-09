@@ -22,7 +22,7 @@ import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
 import en from './public/pulse-app/i18n/en.mjs';
 
-// acorn(저장소 devDependency)은 require로 불러온다 — 회사 릴리스 격리 QA는 의존성을 NODE_PATH(dependencyRoots)로만 넘기는데, ESM import는 NODE_PATH를 보지 않는다.
+// acorn(저장소 devDependency)을 쓴다. 회사 판 시험은 예비 노드 Linux 격리 컨테이너(node_modules 없음)에서도 돌아야 하므로 이 시험은 회사 판에 싣지 않고 저장소에서만 돈다(11-09 회사 사슬 58 — pulse-i18n-dictionary.test.mjs와 같은 까닭).
 const {parse}=createRequire(import.meta.url)('acorn');
 
 const MODULES=[

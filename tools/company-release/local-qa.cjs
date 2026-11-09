@@ -1,6 +1,7 @@
 'use strict';
 // Isolated local tests. This proof never authorizes Linux admission or deployment.
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const cp = require('node:child_process');
 const a = require('node:assert/strict');
@@ -32,7 +33,9 @@ function runLocalQa({ candidate, compositionSha256, output, guard, expectedTests
   for (const row of rows.values()) R.read(path.join(source, row.path), row);
   R.exactDirectory(source, [...rows.keys(), 'release-manifest.json']);
 
-  const scratch = fs.mkdtempSync(path.join(path.dirname(output), '.company-local-qa-'));
+  // The copy runs outside the repository: Node looks for bare imports in every folder above the file, so a copy under .tmp finds the repository's node_modules
+  // and passes tests that the Linux QA container (no node_modules) cannot even load (chain 58: acorn). dependencyRoots stay the only way to give a test a package.
+  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-company-local-qa-'));
   const copy = path.join(scratch, 'candidate'), temp = path.join(scratch, 'temp');
   fs.mkdirSync(temp);
   const copyFiles = new Map([...rows.values()].map(row => [row.path, R.read(path.join(source, row.path), row)]));
@@ -86,6 +89,8 @@ function runLocalQa({ candidate, compositionSha256, output, guard, expectedTests
     scratch, externalNetworkGuardApplied: true, productionMutations: 0, actualLinuxQa: false, finalDeploymentApproval: false };
   files.set('result.json', R.encode(proof));
   R.writeNew(output, files);
+  // Everything the proof needs is in the output now; the copy is about as large as the candidate and does not stay in the system temp folder.
+  try { fs.rmSync(scratch, { recursive: true, force: true }); } catch { /* a leftover temp copy is not a QA result */ }
   return proof;
 }
 
