@@ -31,13 +31,20 @@ const rand = (s: number) => {
   return x - Math.floor(x);
 };
 const BLOBS: { x: number; y: number; d: number; r: number }[] = [];
+// 큰 얼룩 + 잘게 흩어진 작은 얼룩 — 경계가 둥근 구름이 아니라 얼음이 퍼지는 불규칙한 선으로(Fable 「구름 모양으로 잘린 레이어」)
 for (let row = 0; row < 11; row++) {
   for (let col = 0; col < 6; col++) {
     const x = col * 216 + rand(row * 7 + col) * 120 - 30;
     const y = row * 200 + rand(row + col * 13) * 110 - 40;
     const dist = Math.hypot(x - DESK.x, y - DESK.y);
-    BLOBS.push({ x, y, d: dist / 1500, r: 190 + rand(row * 3 + col * 5) * 130 });
+    BLOBS.push({ x, y, d: dist / 1500, r: 150 + rand(row * 3 + col * 5) * 110 });
   }
+}
+for (let k = 0; k < 150; k++) {
+  const x = rand(k * 3.1 + 7) * 1180 - 50;
+  const y = rand(k * 5.7 + 2) * 2020 - 50;
+  const dist = Math.hypot(x - DESK.x, y - DESK.y);
+  BLOBS.push({ x, y, d: dist / 1500 + (rand(k + 91) - 0.5) * 0.09, r: 44 + rand(k + 57) * 74 });
 }
 const frostMask = (p: number) => {
   const parts: string[] = [];
@@ -56,14 +63,15 @@ const Glints: React.FC<{ p: number; t: number }> = ({ p, t }) => {
       {BLOBS.map((b, k) => {
         const g = interpolate(p, [b.d * 0.82, b.d * 0.82 + 0.2], [0, 1], clamp);
         if (g <= 0.08 || g >= 0.92) return null;
-        return [0, 1, 2].map((j) => {
+        if (k % 5) return null;
+        return [0, 1].map((j) => {
           const a = rand(k * 3 + j) * Math.PI * 2 + j * 2.1;
           const x = b.x + Math.cos(a) * b.r * interpolate(g, [0, 1], [0, 0.97]);
           const y = b.y + Math.sin(a) * b.r * interpolate(g, [0, 1], [0, 0.97]);
           const s = 26 + rand(k + j * 7) * 34;
           const on = 0.55 + 0.45 * Math.sin(t * 34 + k + j);
           return (
-            <div key={`${k}-${j}`} style={{ position: 'absolute', left: x - s / 2, top: y - s / 2, width: s, height: s, opacity: on, mixBlendMode: 'screen', background: 'linear-gradient(90deg, transparent 44%, #fff 50%, transparent 56%), linear-gradient(0deg, transparent 44%, #fff 50%, transparent 56%), radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(210,235,255,0) 42%)', transform: `rotate(${a * 40}deg)` }} />
+            <div key={`${k}-${j}`} style={{ position: 'absolute', left: x - s / 2, top: y - s / 2, width: s, height: s, opacity: on, mixBlendMode: 'screen', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(215,238,255,0.55) 30%, rgba(210,235,255,0) 66%)' }} />
           );
         });
       })}
@@ -314,7 +322,7 @@ const Bubble: React.FC<{ t: number; from: number; until: number; left: number; t
       </svg>
       <div style={{ position: 'absolute', left, top, width: w, height: h, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 4, boxSizing: 'border-box', textAlign: 'center' }}>
         <div style={{ fontFamily: KO, fontWeight: 900, fontSize: size, lineHeight: 1.1, color, whiteSpace: 'nowrap' }}>{ko}</div>
-        {read ? <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 42, lineHeight: 1.18, color: '#5F4E42', whiteSpace: 'nowrap' }}>🔊 {read}</div> : null}
+        {read ? <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 42, lineHeight: 1.18, color: '#5F4E42', whiteSpace: 'nowrap' }}>{read}</div> : null}
         {mn ? <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 44, lineHeight: 1.16, color: MEAN, whiteSpace: 'nowrap' }}>{mn}</div> : null}
       </div>
     </div>
