@@ -880,7 +880,18 @@ def done(f):
 
 def render_to(f):
     p = os.path.join(DIR, f"{SHOT}_{f:03d}.png")
-    bpy.context.scene.render.filepath = p
+    sc = bpy.context.scene
+    sc.render.filepath = p
+    # --자름 왼,위,오른,아래(0~1, 화면 위가 0): 큰 크기로 장의 한 부분만 굽는다 — 앱 첫 화면 그림처럼 일부만 크게 쓸 때(11-09).
+    box = S.arg("--자름", "")
+    if box:
+        x0, y0, x1, y1 = (float(v) for v in box.split(","))
+        sc.render.use_border, sc.render.use_crop_to_border = True, True
+        sc.render.border_min_x, sc.render.border_max_x = x0, x1
+        sc.render.border_min_y, sc.render.border_max_y = 1.0 - y1, 1.0 - y0
+    # --정지: 카메라 이동 흔들림 없이 한 장으로 — 전 숏은 시간이 멈춘 장면이라 정지 그림에는 흔들림이 들 까닭이 없다(11-09).
+    if "--정지" in S.argv:
+        sc.render.use_motion_blur = False
     t = time.time()
     bpy.ops.render.render(write_still=True)
     print(f"장 {f} {time.time() - t:.1f}초 → {p}", flush=True)

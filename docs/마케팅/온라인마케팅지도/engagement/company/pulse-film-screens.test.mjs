@@ -34,7 +34,18 @@ test('the server serves every new file and the service worker caches the shell b
   for(const name of ["'film.css'","'film-legacy.css'","'reel-wide','reel-tall'","'reel-wide-poster','reel-tall-poster','shard','end'","'file-gift-set','file-gift-ampoule','file-gift-jar','still-shards','still-lid'","'sheet-gift-'","'model-scene-'","NotoSerifKR-300.woff2"])assert.ok(server.includes(name),name);
   for(const name of ['film.css','film-legacy.css','film-home.mjs','film-review.mjs','assets/NotoSerifKR-300.woff2'])assert.ok(sw.includes(name),name);
   assert.doesNotMatch(sw,/reel-(wide|tall)\.mp4/,'the reel is not stored on the device');
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v34-reel-20261109';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v35-shard-20261110';/);
+});
+test('the step-five still is the sharp re-render and its layer keeps the logo readable on wide monitors',()=>{
+  // 11-10: 1080×864 영상 장면은 유호님 화면(1440 · 1.5배)에서 2배로 늘어나 흐렸다 → 같은 구도를 2520×2016으로 다시 구웠다.
+  const still=readFileSync(new URL('./public/pulse-app/assets/request/shard.webp',import.meta.url));
+  assert.equal(still.toString('ascii',0,4),'RIFF');assert.equal(still.toString('ascii',8,12),'WEBP');
+  const kind=still.toString('ascii',12,16);
+  const [width,height]=kind==='VP8X'?[1+still.readUIntLE(24,3),1+still.readUIntLE(27,3)]:kind==='VP8 '?[still.readUInt16LE(26)&0x3fff,still.readUInt16LE(28)&0x3fff]:kind==='VP8L'?[1+(still.readUInt32LE(21)&0x3fff),1+((still.readUInt32LE(21)>>>14)&0x3fff)]:[0,0];
+  assert.ok(width>=2160&&height>=1700,`shard.webp ${width}×${height} — 폭 1440 · 1.5배 화면의 2160 화소보다 작으면 늘어나 흐려진다`);
+  const css=read('film.css');
+  assert.match(css,/@media \(min-width:861px\) and \(min-aspect-ratio:1001\/1000\)\{\.sx-layer-shard\{height:max\(52vh,calc\(100vh - 432px\)\)\}\}/);
+  assert.match(css,/\.sx-layer-shard::after\{content:'';position:absolute;inset:0;background:radial-gradient\(48% 72% at 0% 0%/);
 });
 test('customer screens name no tool and promise nothing the rules forbid',()=>{
   const words=new RegExp(`${TOOL_NAMES}|같은 얼굴|결제 전|무제한|납기|최고|최초|유일|1위|모루|MORU|드립백`);
