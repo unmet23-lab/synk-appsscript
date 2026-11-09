@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v4",
+ "text": "일시적 경영애로, 돼요. 팔, 구 쪽.",
+ "dur": 1.725,
+ "words": [
+  {
+   "text": "일시적",
+   "start": 0.02,
+   "end": 0.272
+  },
+  {
+   "text": "경영애로,",
+   "start": 0.314,
+   "end": 0.636
+  },
+  {
+   "text": "돼요.",
+   "start": 0.678,
+   "end": 0.846
+  },
+  {
+   "text": "팔,",
+   "start": 1.139,
+   "end": 1.307
+  },
+  {
+   "text": "구",
+   "start": 1.405,
+   "end": 1.461
+  },
+  {
+   "text": "쪽.",
+   "start": 1.503,
+   "end": 1.725
+  }
+ ],
+ "source": {
+  "key": "6bdd98fd5a91c1ceec9f886e1139c64c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.28,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 152
+ }
+}

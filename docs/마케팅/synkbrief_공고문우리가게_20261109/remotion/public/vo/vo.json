@@ -1,0 +1,202 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1109,
+  "lufs": -17
+ },
+ "made": "2026-11-08T23:47:24.499Z",
+ "lines": [
+  {
+   "id": "n01",
+   "text": "정책자금 공고문 서른 쪽, AI한테 시켜 봤습니다.",
+   "show": "정책자금 공고문 30쪽 AI한테 시켜 봤습니다",
+   "scene": "훅 — 사장님 앞 공고문 쪽들",
+   "dur": 2.898,
+   "syllablesPerSec": 6.21,
+   "src": "n01.wav",
+   "key": "9faa4c7dd8a92dc556d40734d19d51f1",
+   "words": 7
+  },
+  {
+   "id": "n02",
+   "text": "우리 가게는 뭐가 될까요.",
+   "show": "우리 가게는 뭐가 되나",
+   "scene": "훅 — 쪽이 더 쌓임",
+   "dur": 1.316,
+   "syllablesPerSec": 7.6,
+   "src": "n02.wav",
+   "key": "e6ad0da45318146e9d43b97de3ac0c36",
+   "words": 4
+  },
+  {
+   "id": "n03",
+   "text": "공고문을 올리고, 가게 사정을 적어요.",
+   "show": "공고문을 올리고 가게 사정을 적어요",
+   "scene": "실제 화면 — 공고문을 올리고 가게 사정을 침",
+   "dur": 2.202,
+   "syllablesPerSec": 6.81,
+   "src": "n03.wav",
+   "key": "626baf510255a6ae5d876dfcc074a8d4",
+   "words": 5
+  },
+  {
+   "id": "n04",
+   "text": "그리고, 되는 자금만, 공고문 몇 쪽인지도 적어 달라고 합니다.",
+   "show": "되는 자금만 공고문 몇 쪽인지도",
+   "scene": "실제 화면 — 요청 끝줄",
+   "dur": 3.685,
+   "syllablesPerSec": 6.51,
+   "src": "n04.wav",
+   "key": "a14cd50c51d4a1dbe7103fa183b34a93",
+   "words": 9
+  },
+  {
+   "id": "n05",
+   "text": "이 가게 조건으로, 자금 열세 개가 갈립니다.",
+   "show": "이 가게 조건으로 자금 13개가 갈립니다",
+   "scene": "분류판 시작 — 예시 가게 조건이 판 위에",
+   "dur": 2.437,
+   "syllablesPerSec": 6.98,
+   "src": "n05.wav",
+   "key": "33a71ea1851a05a0c7d1a99832ef6d5c",
+   "words": 7
+  },
+  {
+   "id": "v1",
+   "text": "재해 자금, 안 돼요.",
+   "scene": "판정",
+   "dur": 1.295,
+   "syllablesPerSec": 5.41,
+   "src": "v1.wav",
+   "key": "bb3475e1136448f348e41d048c97982f",
+   "words": 4
+  },
+  {
+   "id": "v2",
+   "text": "일반경영안정, 돼요. 육 쪽.",
+   "scene": "판정",
+   "dur": 1.758,
+   "syllablesPerSec": 5.69,
+   "src": "v2.wav",
+   "key": "9decfa4dd86c1ae8db7f4e9366a40156",
+   "words": 4
+  },
+  {
+   "id": "v3",
+   "text": "재도전, 안 돼요.",
+   "scene": "판정",
+   "dur": 1.105,
+   "syllablesPerSec": 5.43,
+   "src": "v3.wav",
+   "key": "8351c32bc7698aa9ad1e83bd3955d5df",
+   "words": 3
+  },
+  {
+   "id": "v4",
+   "text": "일시적 경영애로, 돼요. 팔, 구 쪽.",
+   "scene": "판정",
+   "dur": 1.725,
+   "syllablesPerSec": 6.96,
+   "src": "v4.wav",
+   "key": "6bdd98fd5a91c1ceec9f886e1139c64c",
+   "words": 6
+  },
+  {
+   "id": "v6",
+   "text": "신용취약, 돼요. 십 쪽.",
+   "scene": "판정",
+   "dur": 1.261,
+   "syllablesPerSec": 6.34,
+   "src": "v6.wav",
+   "key": "f420fc05b8360b6b5111a8273df8db22",
+   "words": 4
+  },
+  {
+   "id": "v7",
+   "text": "대환대출은, 잠깐만요. 고금리 대출이 있으면, 돼요.",
+   "scene": "판정 변주 — 망설임",
+   "dur": 2.59,
+   "syllablesPerSec": 7.72,
+   "src": "v7.wav",
+   "key": "ddb40a72408d9244a8ed6c779ba455b5",
+   "words": 6
+  },
+  {
+   "id": "n06",
+   "text": "열세 개 중 넷.",
+   "show": "13개 중 4개",
+   "scene": "판 끝",
+   "dur": 0.86,
+   "syllablesPerSec": 5.81,
+   "src": "n06.wav",
+   "key": "11bd0f4a9c17e742dfaf6071adedc558",
+   "words": 4
+  },
+  {
+   "id": "n07",
+   "text": "실제 표에도 쪽수가 그대로 있어요.",
+   "show": "실제 표에도 쪽수가 그대로",
+   "scene": "실제 표 — 빈 칸만 줄임",
+   "dur": 1.938,
+   "syllablesPerSec": 7.22,
+   "src": "n07.wav",
+   "key": "55812e97f0c609109c68a61744f2acec",
+   "words": 5
+  },
+  {
+   "id": "n08",
+   "text": "AI가 제일 먼저 보라는 건, 구 쪽.",
+   "show": "AI가 제일 먼저 보라는 건 9쪽",
+   "scene": "답 끝줄 — 직접대출, 9쪽을 1순위로",
+   "dur": 2.054,
+   "syllablesPerSec": 5.36,
+   "src": "n08.wav",
+   "key": "f1319dafe4d255e133bcbf675914b450",
+   "words": 7
+  },
+  {
+   "id": "n09",
+   "text": "구 쪽을 펴 봤습니다.",
+   "show": "9쪽을 펴 봤습니다",
+   "scene": "공고문을 넘김",
+   "dur": 1.009,
+   "syllablesPerSec": 7.93,
+   "src": "n09.wav",
+   "key": "7ff302ed695ed94861d23059189c37fc",
+   "words": 4
+  },
+  {
+   "id": "n10",
+   "text": "AI가 말한 조건, 진짜 그대로 있습니다.",
+   "show": "AI가 말한 조건 진짜 그대로 있습니다",
+   "scene": "9쪽 그 줄",
+   "dur": 2.363,
+   "syllablesPerSec": 5.92,
+   "src": "n10.wav",
+   "key": "d31dfee9c49505fa3d30eb9626b2dac8",
+   "words": 6
+  },
+  {
+   "id": "n11",
+   "text": "쪽수를 받으면, 확인은 바로입니다.",
+   "show": "쪽수를 받으면 확인은 바로입니다",
+   "scene": "끝",
+   "dur": 1.938,
+   "syllablesPerSec": 7.22,
+   "src": "n11.wav",
+   "key": "6b152df55bae5d404283e08d7bbfe557",
+   "words": 4
+  }
+ ]
+}

@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v3",
+ "text": "재도전, 안 돼요.",
+ "dur": 1.105,
+ "words": [
+  {
+   "text": "재도전,",
+   "start": 0.02,
+   "end": 0.384
+  },
+  {
+   "text": "안",
+   "start": 0.707,
+   "end": 0.768
+  },
+  {
+   "text": "돼요.",
+   "start": 0.829,
+   "end": 1.105
+  }
+ ],
+ "source": {
+  "key": "8351c32bc7698aa9ad1e83bd3955d5df",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.28,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 125
+ }
+}

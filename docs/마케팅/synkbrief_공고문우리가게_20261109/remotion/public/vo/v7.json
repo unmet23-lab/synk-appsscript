@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v7",
+ "text": "대환대출은, 잠깐만요. 고금리 대출이 있으면, 돼요.",
+ "dur": 2.59,
+ "words": [
+  {
+   "text": "대환대출은,",
+   "start": 0.02,
+   "end": 0.532
+  },
+  {
+   "text": "잠깐만요.",
+   "start": 0.573,
+   "end": 1.057
+  },
+  {
+   "text": "고금리",
+   "start": 1.389,
+   "end": 1.693
+  },
+  {
+   "text": "대출이",
+   "start": 1.734,
+   "end": 1.969
+  },
+  {
+   "text": "있으면,",
+   "start": 2.01,
+   "end": 2.232
+  },
+  {
+   "text": "돼요.",
+   "start": 2.273,
+   "end": 2.59
+  }
+ ],
+ "source": {
+  "key": "ddb40a72408d9244a8ed6c779ba455b5",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.2,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 167
+ }
+}

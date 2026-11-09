@@ -1,0 +1,71 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n01",
+ "text": "정책자금 공고문 서른 쪽, AI한테 시켜 봤습니다.",
+ "show": "정책자금 공고문 30쪽 AI한테 시켜 봤습니다",
+ "dur": 2.898,
+ "words": [
+  {
+   "text": "정책자금",
+   "start": 0.02,
+   "end": 0.524
+  },
+  {
+   "text": "공고문",
+   "start": 0.566,
+   "end": 0.915
+  },
+  {
+   "text": "서른",
+   "start": 0.957,
+   "end": 1.167
+  },
+  {
+   "text": "쪽,",
+   "start": 1.209,
+   "end": 1.377
+  },
+  {
+   "text": "AI한테",
+   "start": 1.657,
+   "end": 2.188
+  },
+  {
+   "text": "시켜",
+   "start": 2.244,
+   "end": 2.412
+  },
+  {
+   "text": "봤습니다.",
+   "start": 2.454,
+   "end": 2.898
+  }
+ ],
+ "source": {
+  "key": "9faa4c7dd8a92dc556d40734d19d51f1",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 142
+ }
+}

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1bd6e-ef93-7e73-98df-feecbfb36c64"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬을 사용해, 밝은 오후의 백반집과 사장님의 자연스러운 표정이 담긴 세로 사진을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"완성했습니다."}}
+{"type":"turn.completed","usage":{"input_tokens":115956,"cached_input_tokens":99584,"cache_write_input_tokens":0,"output_tokens":1659,"reasoning_output_tokens":272}}

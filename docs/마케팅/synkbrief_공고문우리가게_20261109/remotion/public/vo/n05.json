@@ -1,0 +1,71 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n05",
+ "text": "이 가게 조건으로, 자금 열세 개가 갈립니다.",
+ "show": "이 가게 조건으로 자금 13개가 갈립니다",
+ "dur": 2.437,
+ "words": [
+  {
+   "text": "이",
+   "start": 0.03,
+   "end": 0.051
+  },
+  {
+   "text": "가게",
+   "start": 0.131,
+   "end": 0.312
+  },
+  {
+   "text": "조건으로,",
+   "start": 0.372,
+   "end": 0.774
+  },
+  {
+   "text": "자금",
+   "start": 1.116,
+   "end": 1.357
+  },
+  {
+   "text": "열세",
+   "start": 1.418,
+   "end": 1.659
+  },
+  {
+   "text": "개가",
+   "start": 1.719,
+   "end": 1.86
+  },
+  {
+   "text": "갈립니다.",
+   "start": 1.92,
+   "end": 2.437
+  }
+ ],
+ "source": {
+  "key": "33a71ea1851a05a0c7d1a99832ef6d5c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 144
+ }
+}

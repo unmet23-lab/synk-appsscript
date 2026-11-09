@@ -1,0 +1,71 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n08",
+ "text": "AI가 제일 먼저 보라는 건, 구 쪽.",
+ "show": "AI가 제일 먼저 보라는 건 9쪽",
+ "dur": 2.054,
+ "words": [
+  {
+   "text": "AI가",
+   "start": 0.02,
+   "end": 0.408
+  },
+  {
+   "text": "제일",
+   "start": 0.457,
+   "end": 0.635
+  },
+  {
+   "text": "먼저",
+   "start": 0.683,
+   "end": 0.877
+  },
+  {
+   "text": "보라는",
+   "start": 0.926,
+   "end": 1.201
+  },
+  {
+   "text": "건,",
+   "start": 1.249,
+   "end": 1.379
+  },
+  {
+   "text": "구",
+   "start": 1.67,
+   "end": 1.734
+  },
+  {
+   "text": "쪽.",
+   "start": 1.799,
+   "end": 2.054
+  }
+ ],
+ "source": {
+  "key": "f1319dafe4d255e133bcbf675914b450",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 157
+ }
+}

@@ -1,0 +1,104 @@
+[
+ {
+  "id": "n01",
+  "at": 2,
+  "speechEnd": 89,
+  "end": 89
+ },
+ {
+  "id": "n02",
+  "at": 90,
+  "speechEnd": 130,
+  "end": 130
+ },
+ {
+  "id": "n03",
+  "at": 133,
+  "speechEnd": 200,
+  "end": 200
+ },
+ {
+  "id": "n04",
+  "at": 202,
+  "speechEnd": 313,
+  "end": 313
+ },
+ {
+  "id": "n05",
+  "at": 338,
+  "speechEnd": 412,
+  "end": 412
+ },
+ {
+  "id": "v1",
+  "at": 413,
+  "speechEnd": 452,
+  "end": 452
+ },
+ {
+  "id": "v2",
+  "at": 453,
+  "speechEnd": 506,
+  "end": 506
+ },
+ {
+  "id": "v3",
+  "at": 509,
+  "speechEnd": 543,
+  "end": 543
+ },
+ {
+  "id": "v4",
+  "at": 543,
+  "speechEnd": 595,
+  "end": 595
+ },
+ {
+  "id": "v6",
+  "at": 597,
+  "speechEnd": 635,
+  "end": 635
+ },
+ {
+  "id": "v7",
+  "at": 654,
+  "speechEnd": 732,
+  "end": 732
+ },
+ {
+  "id": "n06",
+  "at": 735,
+  "speechEnd": 761,
+  "end": 761
+ },
+ {
+  "id": "n07",
+  "at": 765,
+  "speechEnd": 824,
+  "end": 824
+ },
+ {
+  "id": "n08",
+  "at": 830,
+  "speechEnd": 892,
+  "end": 892
+ },
+ {
+  "id": "n09",
+  "at": 902,
+  "speechEnd": 933,
+  "end": 933
+ },
+ {
+  "id": "n10",
+  "at": 959,
+  "speechEnd": 1030,
+  "end": 1030
+ },
+ {
+  "id": "n11",
+  "at": 1032,
+  "speechEnd": 1091,
+  "end": 1091
+ }
+]

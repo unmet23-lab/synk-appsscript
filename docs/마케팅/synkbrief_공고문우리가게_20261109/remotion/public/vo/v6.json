@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "v6",
+ "text": "신용취약, 돼요. 십 쪽.",
+ "dur": 1.261,
+ "words": [
+  {
+   "text": "신용취약,",
+   "start": 0.02,
+   "end": 0.4
+  },
+  {
+   "text": "돼요.",
+   "start": 0.445,
+   "end": 0.597
+  },
+  {
+   "text": "십",
+   "start": 0.931,
+   "end": 1.053
+  },
+  {
+   "text": "쪽.",
+   "start": 1.114,
+   "end": 1.261
+  }
+ ],
+ "source": {
+  "key": "f420fc05b8360b6b5111a8273df8db22",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.28,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 161
+ }
+}

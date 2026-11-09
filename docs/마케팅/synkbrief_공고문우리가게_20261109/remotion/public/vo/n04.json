@@ -1,0 +1,81 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n04",
+ "text": "그리고, 되는 자금만, 공고문 몇 쪽인지도 적어 달라고 합니다.",
+ "show": "되는 자금만 공고문 몇 쪽인지도",
+ "dur": 3.685,
+ "words": [
+  {
+   "text": "그리고,",
+   "start": 0.02,
+   "end": 0.252
+  },
+  {
+   "text": "되는",
+   "start": 0.816,
+   "end": 1.064
+  },
+  {
+   "text": "자금만,",
+   "start": 1.114,
+   "end": 1.528
+  },
+  {
+   "text": "공고문",
+   "start": 1.893,
+   "end": 2.192
+  },
+  {
+   "text": "몇",
+   "start": 2.291,
+   "end": 2.39
+  },
+  {
+   "text": "쪽인지도",
+   "start": 2.44,
+   "end": 2.805
+  },
+  {
+   "text": "적어",
+   "start": 2.855,
+   "end": 3.053
+  },
+  {
+   "text": "달라고",
+   "start": 3.103,
+   "end": 3.335
+  },
+  {
+   "text": "합니다.",
+   "start": 3.385,
+   "end": 3.685
+  }
+ ],
+ "source": {
+  "key": "a14cd50c51d4a1dbe7103fa183b34a93",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 158
+ }
+}

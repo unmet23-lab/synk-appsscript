@@ -1,0 +1,61 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n03",
+ "text": "공고문을 올리고, 가게 사정을 적어요.",
+ "show": "공고문을 올리고 가게 사정을 적어요",
+ "dur": 2.202,
+ "words": [
+  {
+   "text": "공고문을",
+   "start": 0.06,
+   "end": 0.552
+  },
+  {
+   "text": "올리고,",
+   "start": 0.601,
+   "end": 0.863
+  },
+  {
+   "text": "가게",
+   "start": 1.207,
+   "end": 1.403
+  },
+  {
+   "text": "사정을",
+   "start": 1.452,
+   "end": 1.731
+  },
+  {
+   "text": "적어요.",
+   "start": 1.78,
+   "end": 2.202
+  }
+ ],
+ "source": {
+  "key": "626baf510255a6ae5d876dfcc074a8d4",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 126
+ }
+}

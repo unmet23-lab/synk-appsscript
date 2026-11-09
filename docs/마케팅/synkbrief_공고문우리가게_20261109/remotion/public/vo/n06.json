@@ -1,0 +1,56 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n06",
+ "text": "열세 개 중 넷.",
+ "show": "13개 중 4개",
+ "dur": 0.86,
+ "words": [
+  {
+   "text": "열세",
+   "start": 0.03,
+   "end": 0.317
+  },
+  {
+   "text": "개",
+   "start": 0.378,
+   "end": 0.44
+  },
+  {
+   "text": "중",
+   "start": 0.501,
+   "end": 0.624
+  },
+  {
+   "text": "넷.",
+   "start": 0.726,
+   "end": 0.86
+  }
+ ],
+ "source": {
+  "key": "11bd0f4a9c17e742dfaf6071adedc558",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 145
+ }
+}

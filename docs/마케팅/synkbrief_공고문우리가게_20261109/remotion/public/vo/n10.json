@@ -1,0 +1,66 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n10",
+ "text": "AI가 말한 조건, 진짜 그대로 있습니다.",
+ "show": "AI가 말한 조건 진짜 그대로 있습니다",
+ "dur": 2.363,
+ "words": [
+  {
+   "text": "AI가",
+   "start": 0.02,
+   "end": 0.37
+  },
+  {
+   "text": "말한",
+   "start": 0.418,
+   "end": 0.625
+  },
+  {
+   "text": "조건,",
+   "start": 0.673,
+   "end": 0.975
+  },
+  {
+   "text": "진짜",
+   "start": 1.277,
+   "end": 1.531
+  },
+  {
+   "text": "그대로",
+   "start": 1.595,
+   "end": 1.834
+  },
+  {
+   "text": "있습니다.",
+   "start": 1.881,
+   "end": 2.363
+  }
+ ],
+ "source": {
+  "key": "d31dfee9c49505fa3d30eb9626b2dac8",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 139
+ }
+}
