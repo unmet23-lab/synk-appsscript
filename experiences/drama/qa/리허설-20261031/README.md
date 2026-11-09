@@ -1,5 +1,7 @@
 # 드라마 말하기 테이크 — 리허설 왕복 (2026-10-31)
 
+> 이 기록은 판정 `drama-judge-5`까지의 값이다. 판정 `drama-judge-7` · 지금 대사 은행으로 다시 잰 기록은 [리허설-20261110](../리허설-20261110/README.md)(11-10, 합성 테이크 25/25 — 같은 코드 로컬 왕복).
+
 talk `world-speaking`의 드라마 동작 `take`(받아 적기 → 칸 명세 규칙 판정 → 노트 종류 하나와 다음 걸음)를 합성 소리로 잰 기록이다. 설계는 [기획 §4](../../../../docs/드라마말하기_기획.md), 판정 정본은 [`tools/lib/드라마판정.mjs`](../../../../tools/lib/드라마판정.mjs), talk 사본은 [`tools/build-world-speaking-talk.mjs`](../../../../tools/build-world-speaking-talk.mjs)가 만든다.
 
 ## 도구
