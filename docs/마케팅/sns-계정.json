@@ -1349,8 +1349,8 @@
       "publisher": "direct-after-connection",
       "connection": "needs-oauth-verification",
       "loginVerifiedAt": "2026-11-09",
-      "dailyOff": "PULSE 페이지 개설·소개·홈페이지 설정만. 사용자 요청으로 콘텐츠 게시·예약 금지",
-      "profileStatus": "page-created-owner-verified; bio-homepage-and-synkpulse-username-saved; logo-save-cancelled-no-share-toggle",
+      "dailyOff": "PULSE 프로필 설정만. 11-09 프로필 사진 변경 자동 게시물은 허용, 영상·다른 게시물·예약 금지",
+      "profileStatus": "page-created-owner-verified; bio-homepage-and-synkpulse-username-saved; linkedin-inspired-felt-logo-v1-saved",
       "profileEvidence": "프로필설정_20261108/README.md",
       "expectedHandle": "@synkpulse"
     }

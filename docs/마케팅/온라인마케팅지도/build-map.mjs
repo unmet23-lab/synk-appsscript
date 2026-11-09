@@ -26,7 +26,7 @@ const platformNames = {youtube:'YouTube',instagram:'Instagram',tiktok:'TikTok',f
 const profileLabels = {
   'owner-verified; approved-logo-current-bio-homepage-saved; banner-and-phone-verification-deferred':'로고·소개·홈페이지 확인 · 배너·전화 인증 보류',
   'owner-switch-edit-controls-verified; name-approved-logo-bio-saved; clickable-website-link-requires-mobile':'이름·로고·소개 확인 · 모바일 링크 미확인',
-  'page-created-owner-verified; bio-homepage-and-synkpulse-username-saved; logo-save-cancelled-no-share-toggle':'페이지·소개·홈페이지·짧은 주소 확인 · 로고 보류',
+  'page-created-owner-verified; bio-homepage-and-synkpulse-username-saved; linkedin-inspired-felt-logo-v1-saved':'페이지·소개·홈페이지·짧은 주소·새 로고 확인',
   'v6-saved-public-verified':'저장·공개 확인 기록',
   'v6-saved-editor-verified':'저장·편집화면 확인 기록',
   'v6-saved-settings-verified':'저장·설정화면 확인 기록',

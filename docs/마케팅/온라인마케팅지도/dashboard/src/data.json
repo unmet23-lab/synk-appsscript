@@ -2,7 +2,7 @@
   "id": "dashboard:59868cae-d12b-4e1e-9119-33990ad72c6c",
   "surface": "dashboard",
   "title": "SYNK 온라인 마케팅 지도",
-  "generatedAt": "2026-11-09T10:01:39.506Z",
+  "generatedAt": "2026-11-09T10:39:47.923Z",
   "status": "reviewed-local-records",
   "buildStatus": "complete",
   "filters": [
@@ -163,7 +163,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-09T10:01:39.506Z",
+        "executedAt": "2026-11-09T10:39:47.923Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -248,7 +248,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-09T10:01:39.506Z",
+        "executedAt": "2026-11-09T10:39:47.923Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -769,7 +769,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-09T10:01:39.506Z",
+        "executedAt": "2026-11-09T10:39:47.923Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -1811,10 +1811,10 @@
           "publicUrl": "https://www.facebook.com/synkpulse",
           "loginAlias": null,
           "accountStatus": "operating",
-          "profileStatus": "페이지·소개·홈페이지·짧은 주소 확인 · 로고 보류",
+          "profileStatus": "페이지·소개·홈페이지·짧은 주소·새 로고 확인",
           "coverStatus": "이번 커버 작업 범위 밖",
           "lastEvidenceAt": "2026-11-09",
-          "nextAction": "로고는 자동 게시 여부 확인 전 보류. 게시·예약 금지.",
+          "nextAction": "LinkedIn 참고 펠트 로고 v1 적용 확인. 프로필 사진 변경 자동 게시물만 허용, 영상·다른 게시물·예약 금지.",
           "sourcePaths": [
             "docs/마케팅/sns-계정.json",
             "docs/마케팅/프로필설정_20261108/README.md"
@@ -1827,7 +1827,7 @@
           "sourceBrand": "PULSE",
           "channelScope": "기존 운영",
           "setupStatus": "기존 계정 기록",
-          "profileStatusCode": "page-created-owner-verified; bio-homepage-and-synkpulse-username-saved; logo-save-cancelled-no-share-toggle",
+          "profileStatusCode": "page-created-owner-verified; bio-homepage-and-synkpulse-username-saved; linkedin-inspired-felt-logo-v1-saved",
           "priority": "기존 운영 분류",
           "publishStatus": "공개 발행 대상 아님",
           "publicationEvidence": null,
@@ -3498,7 +3498,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-09T10:01:39.506Z",
+        "executedAt": "2026-11-09T10:39:47.923Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -4019,7 +4019,7 @@
           "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md",
           "docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md"
         ],
-        "executedAt": "2026-11-09T10:01:39.506Z",
+        "executedAt": "2026-11-09T10:39:47.923Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -4124,7 +4124,7 @@
           "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json"
         ],
-        "executedAt": "2026-11-09T10:01:39.506Z",
+        "executedAt": "2026-11-09T10:39:47.923Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -4246,7 +4246,7 @@
           "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md",
           "docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md"
         ],
-        "executedAt": "2026-11-09T10:01:39.506Z",
+        "executedAt": "2026-11-09T10:39:47.923Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -4436,7 +4436,7 @@
         "files": [
           "docs/마케팅/SNS_계정_전체목록_20260919.md"
         ],
-        "executedAt": "2026-11-09T10:01:39.506Z",
+        "executedAt": "2026-11-09T10:39:47.923Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"

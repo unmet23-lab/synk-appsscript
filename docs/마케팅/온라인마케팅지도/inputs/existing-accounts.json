@@ -1011,10 +1011,10 @@
       "publicUrl": "https://www.facebook.com/synkpulse",
       "loginAlias": null,
       "accountStatus": "operating",
-      "profileStatus": "page-created-owner-verified; bio-homepage-and-synkpulse-username-saved; logo-save-cancelled-no-share-toggle",
+      "profileStatus": "page-created-owner-verified; bio-homepage-and-synkpulse-username-saved; linkedin-inspired-felt-logo-v1-saved",
       "coverStatus": "not-in-cover-refresh-scope",
       "lastEvidenceAt": "2026-11-09",
-      "nextAction": "로고는 자동 게시 여부 확인 전 보류. 게시·예약 금지.",
+      "nextAction": "LinkedIn 참고 펠트 로고 v1 적용 확인. 프로필 사진 변경 자동 게시물만 허용, 영상·다른 게시물·예약 금지.",
       "sourcePaths": [
         "docs/마케팅/sns-계정.json",
         "docs/마케팅/프로필설정_20261108/README.md"
