@@ -349,3 +349,14 @@ body .section#contact{padding-block:clamp(56px,8.4vh,88px)}
 .k-sv-figs a{color:inherit;text-decoration:none}
 .k-sv-figs a:hover{text-decoration:underline;text-underline-offset:4px}
 .k-door .hs-map~.hs-shade{height:25%;background:linear-gradient(0deg,#f1efe9 52%,rgba(241,239,233,0))}
+
+/* ── 15. 판 나 + 조각(시험): 입구 오른쪽 아래에 실제 화면 조각 한 장 ── */
+.k-gate-say.has-piece{align-items:end}
+.k-gate-say.has-piece .k-gate-sub{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 22px}
+.k-gate-say.has-piece .k-link{--k-ink:#fafaf9}
+.k-gate-piece{display:grid;gap:10px;width:clamp(280px,25vw,360px);font-size:var(--k1);font-weight:500;line-height:1;letter-spacing:.02em;color:#fafaf9;text-decoration:none;text-shadow:0 1px 2px rgba(8,9,12,.9),0 0 10px rgba(8,9,12,.7)}
+.k-gate-piece img{display:block;width:100%;height:auto;border-radius:18px;box-shadow:0 0 0 1px rgba(255,255,255,.1),0 30px 60px -24px rgba(0,0,0,.8);transition:transform .25s var(--ease)}
+.k-gate-piece:hover img{transform:translateY(-3px)}
+@media (max-width:1100px),(max-aspect-ratio:4/5){.k-gate-piece{display:none}}
+@media (max-width:700px),(max-aspect-ratio:4/5){body[data-k="home-na"] .k-proof-head{padding-top:36px}}
+.k-proof-head .lw-go{margin:0;order:0;flex-wrap:wrap;gap:14px 28px}

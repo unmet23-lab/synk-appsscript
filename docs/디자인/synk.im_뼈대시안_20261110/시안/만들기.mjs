@@ -12,6 +12,7 @@ const 인자 = process.argv.slice(2);
 const 값 = (이름, 기본) => { const i = 인자.indexOf(이름); return i >= 0 ? 인자[i + 1] : 기본; };
 const 한줄 = 값('--한줄', '사람마다 막히는 곳이 다릅니다|그 한 곳부터 풀어 주는 AI를 만듭니다').split('|');
 const 꼬리 = 값('--꼬리', '') ? '-' + 값('--꼬리', '') : '';
+const 조각 = 인자.includes('--조각'); // 판 나의 입구 오른쪽 아래에 실제 화면 조각(SYNK WORLD 튜터 카드) 한 장을 놓은 판 — 맹검 「첫 화면에 기술의 실체가 없다」에 대한 시험
 const 받기 = async 경로 => (await fetch('https://synk.im' + 경로)).text();
 const 사이 = (글, 앞, 뒤) => { const a = 글.indexOf(앞), b = 글.indexOf(뒤, a + 1); if (a < 0 || b < 0) throw new Error(`못 찾음: ${앞} … ${뒤}`); return 글.slice(a, b); };
 const 바꿈 = (글, 옛, 새) => { if (!(옛 instanceof RegExp ? 옛.test(글) : 글.includes(옛))) throw new Error(`바꿀 곳 없음: ${옛}`); return 글.replace(옛, 새); };
@@ -61,7 +62,11 @@ async function 홈(판) {
     입구 = 바꿈(입구, '<span>SYNK는 한국어 교육에서 시작한 개인화 기술 회사입니다.</span>', '<span>한 사람에게 맞추는 AI를 만듭니다. 한국어 교육에서 시작했습니다.</span>');
   } else {
     // 판 나: 문 넷 자리에 회사 문장 하나. 문은 아래 「네 가지 사업」 구역으로 내려간다.
-    입구 = 바꿈(입구, /<nav class="gate-doors visit"[\s\S]*?<\/nav>/, `<div class="gate-doors k-gate-say">
+    입구 = 바꿈(입구, /<nav class="gate-doors visit"[\s\S]*?<\/nav>/, 조각 ? `<div class="gate-doors k-gate-say has-piece">
+<div><h1 class="k-gate-claim">${제목줄(한줄)}</h1>
+<p class="k-gate-sub">한국어 교육에서 시작했습니다. <a class="k-link" href="#learner">지금 돌아가는 모습 보기 ${화살('↓')}</a></p></div>
+<a class="k-gate-piece" href="#learner"><span>지금 돌아가는 아틀라스 — SYNK WORLD</span><img src="/assets/v10/learner/ko/piece-tutor.webp" alt="SYNK WORLD 튜터 카드. 최근 놓친 「듣고 세부 정보 찾기」를 더 연습하자고 권하며 그 이유를 적었고, 아래에 맞춤 연습 시작 단추가 있다" width="732" height="431"></a>
+</div>` : `<div class="gate-doors k-gate-say">
 <div><h1 class="k-gate-claim">${제목줄(한줄)}</h1>
 <p class="k-gate-sub">한국어 교육에서 시작했습니다.</p></div>
 <p class="k-gate-go"><a class="k-btn is-paper" href="#learner">지금 돌아가는 모습 보기 ${화살('↓')}</a></p>
@@ -143,11 +148,11 @@ ${맥안내}</div></details></div>
   h = h.replace(/<link rel="stylesheet" href="\/assets\/v10\/drama\.css[^>]*>\s*/g, '').replace(/<script type="module" src="\/assets\/v10\/(drama|home-v12)\.js[^>]*><\/script>\s*/g, '');
   // 홈에는 「다음에 여는 것」 · 「알아 두실 것」 묶음이 없다(밝힐 상태 · 면책이 없다). 판 나는 입구에서 빠진 방문 집계 안내만 바닥 줄로 옮긴다.
   if (판 === '나') h = 바꿈(h, '<div class="foot-bottom">', '<div class="foot-bottom"><span>방문 목적과 경로를 익명으로 집계합니다. <a href="/privacy/#visitor-stats" style="color:inherit">자세히</a></span>');
-  const 이름 = `home-${판 === '가' ? 'ga' : 'na'}${꼬리}.html`;
+  const 이름 = `home-${판 === '가' ? 'ga' : 'na'}${조각 ? '-p' : ''}${꼬리}.html`;
   writeFileSync(join(여기, 이름), h.replace('<body ', `<body data-k="home-${판 === '가' ? 'ga' : 'na'}" `));
   console.log(이름, Buffer.byteLength(h), '바이트');
 }
 
-await 홈('가');
+if (!조각) await 홈('가');
 await 홈('나');
-if (!꼬리) { const { SHIFT } = await import('./만들기_shift.mjs').catch(() => ({})); if (SHIFT) await SHIFT({ 받기, 사이, 바꿈, 화살, 예약표글, 공통, 여기 }); }
+if (!꼬리 && !조각) { const { SHIFT } = await import('./만들기_shift.mjs').catch(() => ({})); if (SHIFT) await SHIFT({ 받기, 사이, 바꿈, 화살, 예약표글, 공통, 여기 }); }
