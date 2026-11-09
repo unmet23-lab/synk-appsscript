@@ -21,7 +21,8 @@ GOOD = {'healthy', 'success'}
 LABELS = {'onedrive': 'OneDrive 문서·소스', 'github': 'GitHub 커밋',
           'server': '20TB 서버·DB', 'media': '20TB 미디어 원본', 'archive': '5TB 기존 원본',
           'workspace': '20TB 업무 문서·첨부·조사 상태', 'space': '공간 지킴이(C: 여유)',
-          'capacity': '드라이브 용량', 'vault': '금고 두 번째 사본(5TB)'}
+          'capacity': '드라이브 용량', 'vault': '금고 두 번째 사본(5TB)',
+          'workmethod': '작업 방식 꾸러미(GitHub 비공개 · 두 드라이브)', 'restorebundle': '복원 묶음(비공개 문서 · 장부 · 기록 · 대화)'}
 STATUS_LABELS = {'healthy': '정상', 'pending': '동기화 대기', 'running': '실행 중', 'paused': '의도적 중지',
                  'attention': '확인 필요', 'failed': '실패', 'missed': '최신 백업 지연', 'interrupted': '실행 중단',
                  'partial_failure': '일부 실패', 'unknown': '상태 확인 불가', 'blocked': '준비 미완료',

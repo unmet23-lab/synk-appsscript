@@ -1,6 +1,8 @@
 param(
     [string]$BackupRoot = '',
-    [string]$EvidenceRoot = ''
+    [string]$EvidenceRoot = '',
+    # 이 id만 예약을 등록한다(설정 파일은 전부 쓴다). 11-09 복원 체계를 더할 때 다른 예약의 시작 시각을 건드리지 않으려고 넣었다.
+    [string[]]$Only = @()
 )
 $ErrorActionPreference = 'Stop'
 # 백업 대상(작업 폴더)·볼트·증거는 공용 작업본 기준이다. 운영 사본(tools/운영사본.js)에서 돌려도 도구 경로만 그 사본이고
@@ -26,7 +28,11 @@ $components = @(
     @{ id='github'; taskName='SYNK GitHub 커밋 백업'; receipt='github-backup-status.json'; maxAgeHours=6; maxRunHours=0.4; intervalMinutes=120; taskPriority=5; startOffsetMinutes=45; scope='비공개 커밋의 전용 ref, 공개 미게시 이력의 암호화 보존'; command=@($node,(Join-Path $PSScriptRoot 'GitHub백업.cjs'),'--apply'); workingDirectory=$repo },
     @{ id='server'; taskName=$dailyName; receipt='backup-status.json'; maxAgeHours=36; maxRunHours=6; dailyTime='05:30'; scope='서버·DB 암호화 사본'; command=@($python,'-X','utf8','-B',(Join-Path $root '매일백업.py')); workingDirectory=$root },
     @{ id='media'; taskName='SYNK 미디어 원본 백업'; receipt='media-backup-status.json'; maxAgeHours=36; maxRunHours=12; dailyTime='12:30'; scope='77yuhbs 20TB, 변경된 원본 새 버전 보존'; command=@($python,'-X','utf8','-B',(Join-Path $root '원본백업.py')); workingDirectory=$root },
-    @{ id='archive'; taskName='SYNK 기존 Drive 보관 점검'; receipt='archive-audit-status.json'; maxAgeHours=192; maxRunHours=1; weeklyTime='14:00'; scope='unmet23 5TB 기존 보관 원본 무결성 확인'; command=@($python,'-X','utf8','-B',(Join-Path $root '기존보관점검.py')); workingDirectory=$root }
+    @{ id='archive'; taskName='SYNK 기존 Drive 보관 점검'; receipt='archive-audit-status.json'; maxAgeHours=192; maxRunHours=1; weeklyTime='14:00'; scope='unmet23 5TB 기존 보관 원본 무결성 확인'; command=@($python,'-X','utf8','-B',(Join-Path $root '기존보관점검.py')); workingDirectory=$root },
+    # 11-09 유호님 「이대로 만들어」 — 노트북을 잃어도 이어 하기(docs/컴퓨터를 잃어버렸을 때.md). 작업 방식은 30분마다 비공개 GitHub로, 3시간마다 두 드라이브로, 열쇠는 바뀔 때.
+    @{ id='workmethod'; taskName='SYNK 작업 방식 백업'; receipt='상태/복원꾸러미/작업방식.json'; maxAgeHours=2; maxRunHours=0.75; intervalMinutes=30; startOffsetMinutes=10; taskPriority=5; scope='메모·설정·스킬·문서를 비공개 GitHub와 두 드라이브로, 열쇠 암호문'; command=@($node,(Join-Path $PSScriptRoot '복원\작업방식.cjs')); workingDirectory=$repo },
+    # 비공개 문서·창고 장부·작업 기록·대화 기록을 암호문 증분으로. 첫 회는 약 57GB라 몇 시간 걸린다(조각마다 끝나 끊겨도 이어진다).
+    @{ id='restorebundle'; taskName='SYNK 복원 묶음 백업'; receipt='상태/복원꾸러미/묶음.json'; maxAgeHours=36; maxRunHours=12; dailyTime='04:00'; scope='비공개 문서·창고 장부·작업 기록·대화 기록 암호문 증분'; command=@($python,'-X','utf8','-B',(Join-Path $PSScriptRoot '복원\암호묶음.py'),'전부'); workingDirectory=$repo }
 )
 $auxiliaryTasks = @(
     @{ id='gitarchive'; component='github'; taskName='SYNK Git 암호문 백업'; maxRunHours=3; scope='Git 변경 직후 암호화 이력·보호 소스의 Drive 전송과 재검증'; command=@($python,'-X','utf8','-B',(Join-Path $root 'Git보관백업.py')); workingDirectory=$root }
@@ -52,6 +58,7 @@ $config | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath "$configFile.$captu
 Move-Item -LiteralPath "$configFile.$capture.tmp" -Destination $configFile -Force
 $principal = New-ScheduledTaskPrincipal -UserId $taskUser -LogonType Interactive -RunLevel Limited
 foreach ($item in $components + $auxiliaryTasks) {
+    if ($Only.Count -and $item.id -notin $Only) { continue }
     $existing = Get-ScheduledTask -TaskName $item.taskName -ErrorAction SilentlyContinue
     if ($existing) { Export-ScheduledTask -TaskName $item.taskName | Set-Content -LiteralPath (Join-Path $EvidenceRoot "$($item.id)-before-$capture.xml") -Encoding utf8 }
     if ($item.id -eq 'server' -and $daily) { continue }
@@ -72,6 +79,11 @@ foreach ($item in $components + $auxiliaryTasks) {
     $registration = @{ TaskName=$item.taskName; Action=$action; Settings=$settings; Principal=$principal; Description=$item.scope; Force=$true }
     if ($triggers.Count) { $registration.Trigger=$triggers }
     Register-ScheduledTask @registration | Out-Null
+}
+if ($Only.Count) {
+    # 새 예약만 더할 때는 감시 예약을 다시 만들지 않는다(설정 파일은 위에서 이미 썼다).
+    @{ registeredAt=[DateTimeOffset]::UtcNow.ToString('o'); only=$Only } | ConvertTo-Json
+    return
 }
 $monitorName = 'SYNK 백업 상태 확인'
 $existing = Get-ScheduledTask -TaskName $monitorName -ErrorAction SilentlyContinue
