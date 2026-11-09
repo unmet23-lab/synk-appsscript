@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Use Image 1 as the base picture: keep exactly the same classroom, same desk, same open felt book, same microphone, same confetti and ribbon, same camera, same framing, same light, and the same Mongle size and flopped position on the book. Image 2 is only a reference for Mongle's material and its eyes and cheeks. Only change what is written below.
+
+Change: Mongle now lies with its head turned a little toward the camera, cheek pressed flat on the open book, so that its tired face is clearly visible: two glossy black bead eyes, half-closed under heavy sleepy lids (felt lids covering the top half of each bead), looking blankly at the camera, and one pink felt cheek squashed against the page. Mongle still has NO mouth, NO arms, NO legs. It reads instantly as: exhausted the morning after singing all night. Absolutely no text, letters, numbers, logos or symbols anywhere. No speech bubbles.
