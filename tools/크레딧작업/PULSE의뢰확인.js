@@ -2,11 +2,32 @@
 /**
  * 새 PULSE 의뢰서 1차 확인 — Windows 작업 스케줄러 「SYNK PULSE 의뢰 확인」이 10분마다 부른다(2026-11-04).
  * 새 의뢰가 없으면 AI를 부르지 않는다(비용 0). 있으면 의뢰서 · 파일을 git 밖으로 내려받고, Claude는 그것을 읽어 직원만 보는 메모 하나를 쓴다.
- * 손님에게 보내는 일(묻기 · 1차안)은 하지 않는다 — 그건 유호님이 보고 정한다. 다 되면 유호님 텔레그램에 한 줄(링크 · 손님 연락처 없음).
+ * 손님에게 보내는 일(묻기 · 1차안)은 하지 않는다 — 그건 유호님이 보고 정한다.
+ * 텔레그램(링크 · 손님 연락처 없음)은 두 번: 새 의뢰를 찾은 순간 한 줄(Claude를 부르기 전, 의뢰 번호마다 한 번), 메모가 남으면 한 줄.
+ * 11-10 구매 점검(M5)에서 구독 로그인이 끊기자 메모 단계가 실패해 새 의뢰 알림까지 같이 사라졌다 — 알림이 메모에 묶이지 않게 나눴다.
  *
  *   node tools/크레딧실행.js 작업 PULSE의뢰확인
  */
+const fs = require('fs');
+const path = require('path');
 const 의뢰 = require('../PULSE의뢰.js');
+
+// 메모가 남기 전까지 10분마다 같은 의뢰를 다시 찾으므로, 알린 번호를 작업 방에 적어 두고 번호마다 한 번만 보낸다.
+// 보내지 못했으면(헤르메스 실패 · 예외) 적지 않는다 — 다음 회차가 다시 보낸다.
+async function 새의뢰알림(ctx, 새것) {
+  const 파일 = path.join(ctx.방, '알린의뢰.json');
+  let 알린 = {};
+  try { const 읽은 = JSON.parse(fs.readFileSync(파일, 'utf8')); if (읽은 && typeof 읽은 === 'object' && !Array.isArray(읽은)) 알린 = 읽은; } catch { /* 처음이거나 깨졌으면 빈 장부 */ }
+  if (알린[새것.번호]) return false;
+  const 제목 = String(새것.제목 ?? '').replace(/\s+/g, ' ').trim().slice(0, 80);
+  let 결과;
+  try { 결과 = await ctx.알림(`PULSE 새 의뢰 ${새것.번호}${제목 ? ` · ${제목}` : ''}\n작업실 PULSE에 들어왔어요. 1차 확인 메모는 이어서 남길게요.`); } catch { return false; }
+  if (결과 && typeof 결과.code === 'number' && 결과.code !== 0) return false;
+  알린[새것.번호] = (ctx.지금 ? new Date(ctx.지금) : new Date()).toISOString();
+  const 남길 = Object.fromEntries(Object.entries(알린).sort((가, 나) => String(가[1]).localeCompare(String(나[1]))).slice(-200));
+  try { fs.mkdirSync(ctx.방, { recursive: true }); fs.writeFileSync(파일, JSON.stringify(남길, null, 2) + '\n'); } catch { /* 알림은 이미 갔다 — 장부를 못 써도 작업은 잇는다 */ }
+  return true;
+}
 
 // 읽기만 한다. 쓰기는 실행기가 답을 받아 한다.
 const 설정 = { permissions: { allow: ['Read', 'Glob', 'Grep'], deny: ['Bash', 'Edit', 'Write', 'WebFetch', 'WebSearch'] } };
@@ -30,12 +51,15 @@ module.exports = {
   시간제한: 30 * 60 * 1000,
   구독대체: true,
   메모만,
+  새의뢰알림,
 
-  async 사전확인() {
+  async 사전확인(ctx) {
     const { connect } = require('../작업실예약.js');
     const ws = await connect();
     const 새것 = (await 의뢰.목록(ws)).find((row) => row.상태 === 'submitted' && row.메모 === 0);
     if (!새것) return { 할일: false, 이유: '새 의뢰 없음' };
+    // 내려받기 · 메모가 실패해도 새 의뢰는 먼저 알린다.
+    await 새의뢰알림(ctx, 새것);
     const { 방 } = await 의뢰.받기(ws, 새것.번호);
     return { 할일: true, 번호: 새것.번호, 제목: 새것.제목, 방 };
   },
@@ -62,7 +86,7 @@ module.exports = {
     const { connect } = require('../작업실예약.js');
     const ws = await connect();
     await 의뢰.메모(ws, 자료.번호, 메모만(JSON뽑기(결과.글)));
-    ctx.알림(`PULSE 새 의뢰 ${자료.번호} · ${자료.제목}\n1차 확인을 작업실에 남겼어요. 보시고 정해 주세요.`);
+    ctx.알림(`PULSE 의뢰 ${자료.번호} · ${String(자료.제목 ?? '').replace(/\s+/g, ' ').trim().slice(0, 80)}\n1차 확인 메모를 작업실에 남겼어요. 보시고 정해 주세요.`);
     return { 메모: true };
   },
 };
