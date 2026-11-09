@@ -2,6 +2,7 @@ import { dateRange, shiftDate } from '../analytics.mjs';
 import { growthWeekWindow } from './growth-summary.mjs';
 import { CREW_PROFILE_CATALOG } from './crew-profile-service.mjs';
 import { answerProductivity } from './assistant-productivity.mjs';
+import { buildNextAction, validateNextActionInput } from './assistant-next-action.mjs';
 
 const fail = message => Object.assign(new Error(message), { status: 400 });
 const number = value => typeof value === 'number' && Number.isFinite(value);
@@ -59,8 +60,19 @@ export function declaredWorkDraft(message, otherNames=[]) {
 }
 
 // Deterministic intent routing over current authorized records. No prompts, logs, model calls or inferred facts are persisted.
-export function createAssistantService({ today, performance, directory, productivity, clientWorkday, publicationWorkday, weeklySummary, automationHealth }) {
+export function createAssistantService({ today, performance, directory, productivity, clientWorkday, publicationWorkday, weeklySummary, automationHealth, clock = () => new Date().toISOString() }) {
   function answer(user, input, request) {
+    if (input?.intent === 'next-action') {
+      const options = validateNextActionInput(input), now = clock();
+      const read = callback => { try { return { ok: true, value: callback() }; } catch { return { ok: false }; } };
+      const data = buildNextAction({ now, ...options, sources: {
+        messenger: read(() => productivity(request, 'workday')),
+        client: read(() => clientWorkday(user)),
+        publication: read(() => publicationWorkday(user)),
+      } });
+      const notice = data.status === 'unknown' ? '업무를 확인하지 못했어요. 잠시 뒤 다시 눌러 주세요.' : data.status === 'partial' ? '일부 업무를 확인하지 못했어요. 확인된 범위에서 안내할게요.' : data.next ? '지금 할 일을 하나 골랐어요. 이유를 보고 이어서 해 보세요.' : data.excludedCount ? '지금 보여 드릴 추천을 모두 봤어요. 넘긴 항목을 다시 볼 수 있어요.' : data.unavailableCount ? '지금 바로 처리할 추천은 없어요. 담당이나 검토 권한을 확인할 업무가 남아 있어요.' : '현재 확인한 범위에는 바로 처리할 추천이 없어요.';
+      return result('next-action', notice, [], data);
+    }
     if (!input || typeof input !== 'object' || Array.isArray(input) || typeof input.message !== 'string' || input.message.length > 1000 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/u.test(input.message) || !input.message.trim()) throw fail('마린에게 물어볼 내용을 1~1000자로 입력해 주세요.');
     const message = input.message.trim(), compact = clean(message);
     if(/성격|심리|mbti|건강|우울|불안|내향|외향|종교|정치|인종/i.test(message))return result('profile','성격이나 민감한 정보를 추론하지 않을게요. 본인이 확인한 업무 역량·선호와 가능한 시간만 업무 카드에 담을 수 있어요.',[profileAction()]);

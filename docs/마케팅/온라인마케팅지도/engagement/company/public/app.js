@@ -290,9 +290,11 @@ function shell(content) {
     if(typeof hideChartLeaders==='function')hideChartLeaders();
     const input=document.getElementById('marin-input'),editing=input&&document.activeElement===input,selection=editing?[input.selectionStart,input.selectionEnd,input.selectionDirection]:null,logTop=document.getElementById('marin-conversation')?.scrollTop;
     if(editing&&marinHome.composing){syncWorkspaceLocation();mountWorkspaceModule();return;}
+    const nextView=typeof captureMarinNextView==='function'?captureMarinNextView():null;
     app.innerHTML=marinHomeShell(content);renderedTab='home';state.workspaceSidebarOpen=false;syncWorkspaceSidebar();syncWorkspaceLocation();mountWorkspaceModule();syncMarinHome();
     if(typeof ensureTeachingWorkspace==='function')ensureTeachingWorkspace();
     if(logTop!=null){const log=document.getElementById('marin-conversation');if(log)log.scrollTop=logTop;}
+    if(typeof restoreMarinNextView==='function')restoreMarinNextView(nextView);
     if(editing){const restored=document.getElementById('marin-input');restored?.focus({preventScroll:true});restored?.setSelectionRange(...selection);}
     return;
   }

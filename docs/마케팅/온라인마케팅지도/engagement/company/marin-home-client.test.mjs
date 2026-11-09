@@ -145,3 +145,126 @@ test('a home refresh preserves the focused prompt and caret with teaching in the
   assert.equal((rail.match(/<button[^>]*data-action="tab"/g)||[]).length,5);assert.match(rail,/data-tab="home"[\s\S]*data-tab="messenger"[\s\S]*data-tab="workroom"[\s\S]*data-tab="social"[\s\S]*data-tab="teaching"/);assert.match(rail,/data-action="command"[\s\S]*data-action="marin-account"/);assert.doesNotMatch(rail,/data-tab="handbook"/);assert.doesNotMatch(markup,/id="workspace-sidebar(?:-toggle)?"|class="home-workspaces"|class="home-resume"|class="rail-account"|class="workspace-appbar"/);assert.equal((markup.match(/data-action="marin-account"/g)||[]).length,1);assert.doesNotMatch(markup,/data-tab="settings"/);assert.equal(f.requests.length,0);
   const composing=f.nodes.get('marin-input');f.dispatch('compositionstart',composing);f.run('shell(marinHomePage())');assert.equal(f.nodes.get('marin-input'),composing,'an ongoing IME composition cannot be replaced by a background refresh');assert.equal(f.document.activeElement,composing);
 });
+
+const plain=value=>JSON.parse(JSON.stringify(value));
+const nextDateConstructor=instant=>class extends Date{constructor(...args){super(...(args.length?args:[instant]));}static now(){return Date.parse(instant);}};
+const nextCandidate=(overrides={})=>({key:'messenger:task-1:revision-1',source:'messenger',title:'합성 원본 제목',context:'합성 프로젝트',reasons:[{text:'내가 답할 차례예요.'}],checks:['요청한 결과물을 확인하세요.'],action:{type:'messenger',label:'업무 원본 열기',panel:'tasks',channelId:'room-a',messageId:'27'},...overrides});
+const nextResponse=(overrides={})=>({intent:'next-action',data:{status:'ready',generatedAt:'2026-11-09T03:00:00.000Z',coverage:{messenger:{status:'ok'},client:{status:'ok'},publication:{status:'ok'}},totalCount:1,excludedCount:0,unavailableCount:0,next:nextCandidate(),alternatives:[],...overrides}});
+function nextFixture(options={}){
+  const f=fixture(options),root=f.element('section'),opened=[],navigated=[];root.id='next-action';f.nodes.set(root.id,root);
+  f.context.Date=nextDateConstructor(options.now||'2026-11-09T03:00:00.000Z');
+  f.context.openWorkspaceDestination=action=>{opened.push(plain(action));f.state.tab='messenger';return true;};
+  f.location.assign=href=>{navigated.push(href);f.location.href=new URL(href,f.location).href;};
+  f.run('ensureMarinSession();ensureMarinNextSession()');
+  const click=(action,key)=>{const button=f.element('button');button.dataset={action,...(key?{key}:{})};button.closest=selector=>selector==='[data-action]'||selector==='[data-action^="next-"]'&&action.startsWith('next-')?button:null;f.dispatch('click',button);return button;};
+  return {...f,root,opened,navigated,click,next:f.run('marinNext')};
+}
+
+test('next-action lookup sends exclusions without a chat prompt, coalesces clicks, and persists no task content',async()=>{
+  const f=nextFixture();assert.match(f.run('marinNextHtml()'),/다음 할 일 추천/);assert.equal(f.requests.length,0);
+  f.next.excluded=['client:old:version-1'];const pending=f.run('requestMarinNext()');await f.run('requestMarinNext()');
+  assert.equal(f.requests.length,1);assert.equal(f.requests[0].path,'/api/assistant');assert.deepEqual(plain(f.requests[0].body),{intent:'next-action',exclusions:['client:old:version-1']});
+  assert.equal(f.root.getAttribute('aria-busy'),'true');assert.match(f.root.innerHTML,/role="status"/);
+  f.requests[0].resolve(nextResponse({next:nextCandidate({title:'<img src=x onerror=alert(1)>',reasons:[{text:'<script>원문</script>'}],checks:['<b>확인</b>']})}));await pending;
+  assert.equal(f.root.getAttribute('aria-busy'),'false');assert.match(f.root.innerHTML,/&lt;img/);assert.match(f.root.innerHTML,/&lt;script&gt;/);assert.match(f.root.innerHTML,/&lt;b&gt;/);assert.doesNotMatch(f.root.innerHTML,/<img|<script|<b>/);
+  const saved=JSON.parse(f.storage.get('synk-next-action:session:crew-a'));assert.deepEqual(saved,{date:'2026-11-09',started:true,excluded:['client:old:version-1']});
+  assert.doesNotMatch(JSON.stringify(saved),/title|action|href|channelId|messageId|원문|onerror/);assert.equal(f.home.entries.length,0);assert.deepEqual(f.opened,[]);assert.deepEqual(f.navigated,[]);
+});
+
+test('skipping and restoring recommendations only change this session exclusion payload, not source work',async()=>{
+  const f=nextFixture();const initial=f.run('requestMarinNext()');f.requests[0].resolve(nextResponse());await initial;
+  f.click('next-skip');assert.equal(f.requests.length,2);assert.deepEqual(plain(f.requests[1].body.exclusions),['messenger:task-1:revision-1']);
+  f.requests[1].resolve(nextResponse({status:'empty',next:null,totalCount:1,excludedCount:1}));await tick();
+  assert.match(f.root.innerHTML,/추천을 모두 봤어요/);assert.match(f.root.innerHTML,/넘긴 업무는 그대로/);assert.doesNotMatch(f.root.innerHTML,/지금 내 차례인 일이 없어요/);
+  const restored=nextFixture({storage:f.storage});assert.deepEqual(plain(restored.next.excluded),['messenger:task-1:revision-1']);assert.equal(restored.next.started,true);assert.equal(restored.next.data,null,'a restored session must re-read task contents');
+  f.click('next-restore');assert.equal(f.requests.length,3);assert.deepEqual(plain(f.requests[2].body),{intent:'next-action',exclusions:[]});
+  f.requests[2].resolve(nextResponse());await tick();assert.deepEqual(plain(f.next.excluded),[]);assert.deepEqual(JSON.parse(f.storage.get('synk-next-action:session:crew-a')).excluded,[]);
+  assert.ok(f.requests.every(row=>row.path==='/api/assistant'));assert.deepEqual(f.opened,[]);assert.deepEqual(f.navigated,[]);
+});
+
+test('KST day rollover clears excluded recommendations and stale content while keeping opt-in',()=>{
+  const f=nextFixture({now:'2026-11-09T14:59:59.000Z'});f.next.started=true;f.next.excluded=['messenger:task-1:revision-1'];f.next.data=nextResponse().data;f.run('saveMarinNext()');
+  f.context.Date=nextDateConstructor('2026-11-09T15:00:00.000Z');f.run('ensureMarinNextSession()');
+  assert.equal(f.next.date,'2026-11-10');assert.equal(f.next.started,true);assert.deepEqual(plain(f.next.excluded),[]);assert.equal(f.next.data,null);assert.equal(f.next.needsRefresh,true);
+  assert.deepEqual(JSON.parse(f.storage.get('synk-next-action:session:crew-a')),{date:'2026-11-10',started:true,excluded:[]});assert.equal(f.requests.length,0);
+});
+
+test('changed, missing and unverified candidates never navigate after a fresh source check',async()=>{
+  for(const status of ['changed','missing','unverified']){
+    const f=nextFixture(),key=nextCandidate().key;f.context.key=key;const pending=f.run('openMarinNext(key)');
+    assert.deepEqual(plain(f.requests[0].body),{intent:'next-action',exclusions:[],candidateKey:key});
+    f.requests[0].resolve(nextResponse({candidateCheck:{status,candidate:nextCandidate()}}));await pending;
+    assert.deepEqual(f.opened,[],status);assert.deepEqual(f.navigated,[],status);assert.match(f.next.note,status==='unverified'?/최신 상태를 확인하지 못했어요/:/담당이나 단계가 바뀌었어요/);
+  }
+});
+
+test('only the matching freshly confirmed candidate can open its current original destination',async()=>{
+  for(const source of ['messenger','workspace']){
+    const f=nextFixture(),key=nextCandidate().key,action=source==='messenger'?nextCandidate().action:{type:'workspace',label:'고객 요청 열기',href:'/?tab=workroom&section=clients&project=project-1&message=request-1'};
+    f.context.key=key;const pending=f.run('openMarinNext(key)');assert.deepEqual(f.opened,[]);assert.deepEqual(f.navigated,[]);
+    f.requests[0].resolve(nextResponse({candidateCheck:{status:'confirmed',candidate:nextCandidate({action})}}));await pending;
+    assert.equal(f.requests.length,1);assert.equal(f.next.needsRefresh,true);
+    if(source==='messenger'){assert.deepEqual(f.opened,[action]);assert.deepEqual(f.navigated,[]);}else{assert.deepEqual(f.navigated,[action.href]);assert.deepEqual(f.opened,[]);}
+  }
+  const mismatch=nextFixture();mismatch.context.key=nextCandidate().key;const pending=mismatch.run('openMarinNext(key)');mismatch.requests[0].resolve(nextResponse({candidateCheck:{status:'confirmed',candidate:nextCandidate({key:'messenger:another:revision-2'})}}));await pending;assert.deepEqual(mismatch.opened,[]);assert.deepEqual(mismatch.navigated,[]);
+});
+
+test('a source check cannot navigate after home exit, account replacement, or logout and login to the same account',async()=>{
+  for(const change of ['leave-home','other-account','logout-same-account']){
+    const f=nextFixture();f.context.key=nextCandidate().key;const pending=f.run('openMarinNext(key)');
+    if(change==='leave-home')f.state.tab='workroom';
+    if(change==='other-account'){f.state.user={id:'crew-b',role:'member'};f.run('ensureMarinSession();ensureMarinNextSession()');}
+    if(change==='logout-same-account'){f.run('resetMarinHome()');f.state.user=null;assert.equal(f.storage.has('synk-next-action:session:crew-a'),false);f.state.user={id:'crew-a',role:'member'};f.run('ensureMarinSession();ensureMarinNextSession()');}
+    f.requests[0].resolve(nextResponse({candidateCheck:{status:'confirmed',candidate:nextCandidate()}}));await pending;
+    assert.deepEqual(f.opened,[],change);assert.deepEqual(f.navigated,[],change);
+    if(change!=='leave-home'){assert.equal(f.next.data,null,change);assert.equal(f.next.started,false,change);assert.deepEqual(plain(f.next.excluded),[],change);}
+  }
+});
+
+test('an old account response cannot overwrite or unlock a newer recommendation request',async()=>{
+  const f=nextFixture(),old=f.run('requestMarinNext()');f.state.user={id:'crew-b',role:'member'};f.run('ensureMarinSession();ensureMarinNextSession()');const fresh=f.run('requestMarinNext()');
+  f.requests[0].resolve(nextResponse({next:nextCandidate({title:'이전 계정 비공개 업무'})}));await old;assert.equal(f.next.pending,true);assert.equal(f.next.data,null);assert.doesNotMatch(f.root.innerHTML,/이전 계정 비공개 업무/);
+  f.requests[1].resolve(nextResponse({status:'empty',next:null,totalCount:0}));await fresh;assert.equal(f.next.pending,false);assert.equal(f.next.userId,'crew-b');assert.equal(f.next.data.next,null);
+});
+
+test('partial, unknown, unavailable, empty and skipped results keep their distinct meaning',async()=>{
+  const cases=[
+    {data:nextResponse({status:'partial',coverage:{messenger:{status:'ok'},client:{status:'error'},publication:{status:'ok'}}}).data,matches:[/일부 업무를 확인하지 못했어요/,/확인된 범위에서 추천해요/,/미확인: 고객 업무/,/합성 원본 제목/],absent:/지금 내 차례인 일이 없어요/},
+    {data:nextResponse({status:'unknown',next:null,totalCount:0,coverage:{messenger:{status:'error'},client:{status:'error'},publication:{status:'error'}}}).data,matches:[/업무를 불러오지 못했어요/,/새로 확인/],absent:/지금 내 차례인 일이 없어요|추천을 모두 봤어요/},
+    {data:nextResponse({status:'empty',next:null,totalCount:0}).data,matches:[/확인한 업무에 지금 내 차례인 일이 없어요/],absent:/업무를 불러오지 못했어요|추천을 모두 봤어요/},
+    {data:nextResponse({status:'empty',next:null,totalCount:0,unavailableCount:2}).data,matches:[/담당·검토 크루를 확인해야 하는 업무 2개/,/전체 업무에서 확인/],absent:/추천을 모두 봤어요/},
+    {data:nextResponse({status:'empty',next:null,totalCount:2,excludedCount:2}).data,matches:[/추천을 모두 봤어요/,/넘긴 업무는 그대로/],absent:/지금 내 차례인 일이 없어요/},
+  ];
+  for(const {data,matches,absent}of cases){const f=nextFixture(),pending=f.run('requestMarinNext()');f.requests[0].resolve({data});await pending;for(const pattern of matches)assert.match(f.root.innerHTML,pattern);assert.doesNotMatch(f.root.innerHTML,absent);}
+});
+
+test('unsafe workspace destinations are rejected even when source revalidation says confirmed',async()=>{
+  const unsafe=['https://evil.example/?tab=workroom&section=clients&project=p','//evil.example/?tab=workroom&section=clients&project=p','javascript:alert(1)','/?tab=settings','/?tab=workroom&section=clients','/?tab=workroom&section=tools&tool=automation','/?tab=social&section=accounts','/?tab=social&section=today#outside','/?tab=social&section=today\\outside','/?tab=social&section= today'];
+  for(const href of unsafe){const f=nextFixture(),action={type:'workspace',label:'원본 열기',href};f.context.candidate=action;assert.equal(f.run('safeNextAction(candidate)'),null,href);f.context.key=nextCandidate().key;const pending=f.run('openMarinNext(key)');f.requests[0].resolve(nextResponse({candidateCheck:{status:'confirmed',candidate:nextCandidate({action})}}));await pending;assert.deepEqual(f.opened,[],href);assert.deepEqual(f.navigated,[],href);}
+  for(const href of ['/?tab=workroom&section=clients&project=p&message=m','/?tab=workroom&section=tools&tool=publication&publicationAction=review&packageId=p','/?tab=social&section=today','/?tab=social&section=fix']){const f=nextFixture();f.context.candidate={type:'workspace',label:'원본',href};assert.equal(f.run('safeNextAction(candidate).href'),href);}
+});
+
+test('a failed or malformed recommendation response keeps exclusions and offers retry without declaring no work',async()=>{
+  for(const malformed of [false,true]){const f=nextFixture();f.next.excluded=['client:one:version-1'];const pending=f.run('requestMarinNext()');if(malformed)f.requests[0].resolve({data:{status:'ready'}});else f.requests[0].reject(new Error('일시 연결 오류'));await pending;
+    assert.equal(f.next.pending,false);assert.equal(f.next.data,null);assert.deepEqual(plain(f.next.excluded),['client:one:version-1']);assert.match(f.root.innerHTML,/role="alert"/);assert.match(f.root.innerHTML,/새로 확인/);assert.doesNotMatch(f.root.innerHTML,/지금 내 차례인 일이 없어요/);
+    const retry=f.run('requestMarinNext()');assert.deepEqual(plain(f.requests[1].body.exclusions),['client:one:version-1']);f.requests[1].resolve(nextResponse());await retry;assert.equal(f.next.error,'');assert.equal(f.next.data.status,'ready');assert.equal(f.requests.length,2);
+  }
+});
+
+test('a background home repaint preserves the focused recommendation and expanded alternatives',()=>{
+  const f=nextFixture();f.next.started=true;f.next.data=nextResponse({alternatives:[nextCandidate({key:'messenger:task-2:revision-1',title:'두 번째 후보'})]}).data;f.next.checkedAt=f.context.Date.now();
+  const alternatives=f.element('details'),focused=f.element('button');alternatives.className='next-alternatives';alternatives.open=true;focused.dataset={action:'next-open',key:'messenger:task-2:revision-1'};focused.closest=selector=>selector==='[data-action]'?focused:null;f.root.append(focused);f.root.querySelector=selector=>selector==='.next-alternatives'?alternatives:null;focused.focus();
+  let newRoot,newAlternative,newButton,markup='';
+  const app={get innerHTML(){return markup;},set innerHTML(value){markup=value;newRoot=f.element('section');newRoot.id='next-action';newAlternative=f.element('details');newAlternative.className='next-alternatives';newAlternative.open=false;newButton=f.element('button');newButton.dataset={...focused.dataset};newButton.closest=selector=>selector==='[data-action]'?newButton:null;newRoot.append(newButton);newRoot.querySelector=selector=>selector==='.next-alternatives'?newAlternative:selector.includes('next-open')?newButton:null;newRoot.querySelectorAll=selector=>selector==='[data-action]'?[newButton]:[];f.nodes.set('next-action',newRoot);f.document.activeElement=f.document.body;},querySelectorAll:()=>[],contains:()=>true,querySelector:()=>newButton};
+  Object.assign(f.context,{app,renderedTab:'home'});f.run(appSource.slice(appSource.indexOf('function shell('),appSource.indexOf('function render()')));f.run('workspaceRepaint.background=true;shell(marinHomePage())');
+  assert.equal(f.document.activeElement,newButton,'polling must not drop keyboard focus from a recommendation to the page body');assert.equal(newAlternative.open,true,'polling must not collapse the candidate list the employee is reading');assert.equal(f.requests.length,0);
+});
+
+test('a background home repaint preserves focus on the direct Marin conversation summary',()=>{
+  const f=nextFixture(),summary=f.element('summary');summary.matches=selector=>selector==='.next-assistant>summary';summary.focus();
+  let replacement,markup='';
+  f.document.querySelector=selector=>selector==='.next-assistant>summary'?replacement:null;
+  const app={get innerHTML(){return markup;},set innerHTML(value){markup=value;replacement=f.element('summary');replacement.matches=summary.matches;f.document.activeElement=f.document.body;},querySelectorAll:()=>[],contains:()=>true,querySelector:()=>replacement};
+  Object.assign(f.context,{app,renderedTab:'home'});f.run(appSource.slice(appSource.indexOf('function shell('),appSource.indexOf('function render()')));f.run('workspaceRepaint.background=true;shell(marinHomePage())');
+  assert.equal(f.document.activeElement,replacement,'polling must keep the keyboard user at the direct conversation entry');assert.equal(f.requests.length,0);
+});

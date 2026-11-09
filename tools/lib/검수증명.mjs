@@ -119,6 +119,9 @@ export const PATH비공개원문 = Object.freeze({
 });
 export const Atlas작업원문 = Object.freeze({ implementationReview: '이번 작업은 GPT 구현·독립 GPT 검수로 진행' });
 export const Atlas작업ID = 'atlas-world-learning-20261028';
+// 11-09 이번 Workspace 다음 할 일 연결만 GPT 구현·독립 GPT 검수로 진행한다.
+export const Workspace다음할일작업ID = 'workspace-next-action-20261109';
+export const Workspace다음할일원문 = Object.freeze({ implementationReview: '구현과 검토는 이번 세션에서는 니가 다 해. 허용할게' });
 export function 사용자지정판(file) {
   const record = JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
   return record.version === 2 ? 4 : 3;
@@ -233,6 +236,18 @@ function PATH비공개범위맞나(scope, p, role, kind) {
   if (scope !== PATH비공개작업ID) return false;
   return (role === '배포 후보' ? PATH비공개빌드 : PATH비공개원천).has(p);
 }
+const Workspace다음할일회사 = 'docs/마케팅/온라인마케팅지도/engagement/company/';
+const Workspace다음할일원천 = {
+  화면: new Set(['public/marin-home.js', 'public/marin-home.css', 'public/app.js', 'marin-home-client.test.mjs'].map(p => Workspace다음할일회사 + p)),
+  백엔드: new Set([
+    ...['assistant-next-action.mjs', 'assistant-service.mjs', 'server.mjs', 'assistant-next-action.test.mjs', 'server-assistant-next-action.test.mjs'].map(p => Workspace다음할일회사 + p),
+    'tools/lib/검수증명.mjs', 'tests/검수Workspace다음할일.test.mjs',
+  ]),
+};
+function Workspace다음할일범위맞나(scope, p, role, 종류, author) {
+  return scope === Workspace다음할일작업ID && role === '소스' && author === 'GPT'
+    && Workspace다음할일원천[종류]?.has(p);
+}
 function 사용자지정정책(o, files, candidate, 판 = 3) {
   const 단독 = 판 === 4, 검수자 = 단독 ? ['GPT'] : 지정검수자, 최종 = 단독 ? 'GPT' : 'Claude';
   if (o.종류 !== '화면' && !단독) throw new Error('사용자지정은 승인된 화면만 지원한다 — 백엔드의 기존 GPT·Claude 정책을 바꾸지 않는다');
@@ -243,10 +258,13 @@ function 사용자지정정책(o, files, candidate, 판 = 3) {
   const atlas = 단독 && 지정.taskId === Atlas작업ID;
   const 최적화 = 단독 && 지정.taskId === 'optimization-security-20261028';
   const PATH비공개 = 단독 && 지정.taskId === PATH비공개작업ID;
-  if (지정.version !== (단독 ? 2 : 1) || 지정.taskId !== (atlas ? Atlas작업ID : 최적화 ? 'optimization-security-20261028' : PATH비공개 ? PATH비공개작업ID : 단독 ? 'spaghetti-finish-20261026' : 지정작업)
-    || 정규해시(지정.userStatements) !== 정규해시(atlas ? Atlas작업원문 : 최적화 ? 최적화검수원문 : PATH비공개 ? PATH비공개원문 : 단독 ? 단독검수원문 : 사용자지정원문)) throw new Error('사용자지정 작업 ID·직접 사용자 원문이 승인 범위와 다르다');
+  const Workspace다음할일 = 단독 && 지정.taskId === Workspace다음할일작업ID;
+  if (지정.version !== (단독 ? 2 : 1) || 지정.taskId !== (atlas ? Atlas작업ID : 최적화 ? 'optimization-security-20261028' : PATH비공개 ? PATH비공개작업ID : Workspace다음할일 ? Workspace다음할일작업ID : 단독 ? 'spaghetti-finish-20261026' : 지정작업)
+    || 정규해시(지정.userStatements) !== 정규해시(atlas ? Atlas작업원문 : 최적화 ? 최적화검수원문 : PATH비공개 ? PATH비공개원문 : Workspace다음할일 ? Workspace다음할일원문 : 단독 ? 단독검수원문 : 사용자지정원문)) throw new Error('사용자지정 작업 ID·직접 사용자 원문이 승인 범위와 다르다');
   if (atlas && files.some(f => f.옛경로 || /^[DR]/.test(f.상태 || ''))) throw new Error('Atlas 사용자지정은 원천 삭제·이름 변경을 허용하지 않는다');
   if (PATH비공개 && files.some(f => f.옛경로 || /^[DR]/.test(f.상태 || ''))) throw new Error('PATH 비공개 사용자지정은 원천 삭제·이름 변경을 허용하지 않는다');
+  // 회사 배포는 이 원천 증명을 기존 릴리스 결속으로 잇는다. 다른 공개 후보 권한은 열지 않는다.
+  if (Workspace다음할일 && (candidate || 지정.candidate !== null || files.some(f => f.옛경로 || !['A', 'M'].includes(f.상태)))) throw new Error('Workspace 다음 할 일 사용자지정은 추가·수정 원천만 지원한다 — 배포 후보·삭제·이름 변경 불가');
   if (정규해시(지정.requiredReviewers) !== 정규해시(검수자) || 지정.finalReviewer !== 최종 || 지정.allowFallback !== false) throw new Error(`사용자지정은 묶음별 ${검수자.join('·')}와 최종 전체 ${최종} 판정이 필요하며 대체를 허용하지 않는다`);
   const checkRows = (rows, expected, role) => {
     if (!Array.isArray(rows) || rows.length !== expected.length) throw new Error(`사용자지정 ${role} 경로 전체가 맞지 않는다`);
@@ -255,7 +273,7 @@ function 사용자지정정책(o, files, candidate, 판 = 3) {
       안전경로(o.저장소, row.path);
       const match = expected.find(f => f.path === row.path);
       if (seen.has(row.path) || !['GPT', 'Claude', 'GPT+Claude', '기계생성'].includes(row.author)
-        || !(atlas ? Atlas범위맞나(row.scope, row.path, role) : 최적화 ? 최적화범위맞나(row.scope, row.path, role, match?.kind) : PATH비공개 ? PATH비공개범위맞나(row.scope, row.path, role, match?.kind) : 단독 ? 단독범위맞나(row.scope, row.path, role) : 지정범위맞나(row.scope, row.path))) throw new Error(`사용자지정 범위·작성자 오류: ${row.path}`);
+        || !(atlas ? Atlas범위맞나(row.scope, row.path, role) : 최적화 ? 최적화범위맞나(row.scope, row.path, role, match?.kind) : PATH비공개 ? PATH비공개범위맞나(row.scope, row.path, role, match?.kind) : Workspace다음할일 ? Workspace다음할일범위맞나(row.scope, row.path, role, o.종류, row.author) : 단독 ? 단독범위맞나(row.scope, row.path, role) : 지정범위맞나(row.scope, row.path))) throw new Error(`사용자지정 범위·작성자 오류: ${row.path}`);
       seen.add(row.path);
       if (!단독 && row.author.includes('GPT') && !GPT화면경로[row.scope]?.test(row.path)) throw new Error(`GPT 화면 사용자 승인 밖 경로: ${row.path}`);
       if (!match || !/^[a-f0-9]{64}$/.test(row.sha256 || '') || row.sha256 !== match.sha256) throw new Error(`사용자지정 ${role} SHA 불일치: ${row.path}`);
