@@ -36,10 +36,10 @@ function particle(label, withFinal, without) {
   }
   return without;
 }
-// These reasons describe observed practice scope, never a person's fixed ability.
+// These reasons describe observed practice scope, never a person's fixed ability. The name stands in 「」: bare, a several-word name melts into the sentence.
 function learningReason({ status, label }) {
   if (typeof label !== 'string') throw new TypeError('Vellum: invalid learning reason');
-  const topic = `${label}${particle(label, '은', '는')}`, object = `${label}${particle(label, '을', '를')}`;
+  const named = `「${label}」`, topic = `${named}${particle(label, '은', '는')}`, object = `${named}${particle(label, '을', '를')}`;
   const reasons = {
     unseen: `${topic} 아직 기록이 적어요. 짧게 확인해 봐요.`,
     checking: `${object} 조금 더 확인해 봐요.`,

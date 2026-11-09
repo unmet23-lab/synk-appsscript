@@ -11,7 +11,7 @@
     "atlas/member-understanding-contract.js": "88a8c244eb7a7aece0b4e963f3cfb0a1193a0e3030e36b9f34bc66593cdbbb2d",
     "atlas/member-understanding.js": "fb1d0be2b573741167f6317da4ae213615610956302b4ab5ec5e44a8696e34fb",
     "atlas/trail-periods.js": "4ec4419d3abe982bcc300993d4bba5dd2dd27b1174aca5c6d9bf3621171df637",
-    "atlas/vellum.js": "4bb31f9ed6549f886164ba2203c87b464430f284c10088c9b5a54bef470965e6",
+    "atlas/vellum.js": "c29b0fa8d002a13313792f829e7467fee459429738e2aef475549dae0f531039",
     "experiences/synk-account/src/member-activity-data.mjs": "03aba1b188c5860fdb14488bf21ff658705aedb6a26290c37338233ecf3b39dd",
     "experiences/synk-account/src/member-statement-contract.cjs": "e62ce44eb90d6089c4589256739ad8e5f66c85961ddd504b5f8992afcd545700",
     "experiences/synk-account/src/member-statement-v1.cjs": "80af2773ef8f5870c8342dc8c6658d81dd0519fadbff5b80f3ad95295b9ea823",
@@ -38,7 +38,7 @@
       ]
     },
     "member-activity.mjs": {
-      "sha256": "1e34593cbc793150f58cb8584a83d9884b7d67c9e790d5cbe3c8c48cdd6d169d",
+      "sha256": "8d75b453b2b32f5d55942718b21f9642d59d5e4f2da520b6cd42744a81526a08",
       "imports": [
         "member-shared/chunk-2PM2464V.mjs",
         "member-shared/chunk-LTC7WTSF.mjs"

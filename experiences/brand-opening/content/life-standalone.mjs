@@ -9094,7 +9094,7 @@ var require_vellum = __commonJS({
     }
     function learningReason({ status, label }) {
       if (typeof label !== "string") throw new TypeError("Vellum: invalid learning reason");
-      const topic = `${label}${particle(label, "\uC740", "\uB294")}`, object4 = `${label}${particle(label, "\uC744", "\uB97C")}`;
+      const named = `\u300C${label}\u300D`, topic = `${named}${particle(label, "\uC740", "\uB294")}`, object4 = `${named}${particle(label, "\uC744", "\uB97C")}`;
       const reasons2 = {
         unseen: `${topic} \uC544\uC9C1 \uAE30\uB85D\uC774 \uC801\uC5B4\uC694. \uC9E7\uAC8C \uD655\uC778\uD574 \uBD10\uC694.`,
         checking: `${object4} \uC870\uAE08 \uB354 \uD655\uC778\uD574 \uBD10\uC694.`,
@@ -22840,7 +22840,7 @@ function hostReason(chosen, { history, plan, labels }) {
     const skillId = selected.route === "practice" ? selected.skillId : chosen.focusSkillId;
     const homework = (plan.homework || []).find((row) => !row.shortage && row.skillId === skillId);
     const label = homework && labels?.[homework.skillId];
-    if (label) return { reason: homework.status === "review" ? `\uC774\uBC88 \uC8FC \uC219\uC81C\uC608\uC694. ${label} \uAE30\uB85D\uC774 \uC624\uB798\uB3FC \uC0C8 \uBB38\uD56D\uC73C\uB85C \uB2E4\uC2DC \uD655\uC778\uD574\uC694.` : `\uC774\uBC88 \uC8FC \uC219\uC81C\uC608\uC694. ${label}\uC5D0\uC11C \uB193\uCE5C \uB2F5\uC774 \uC788\uC5B4 \uC0C8 \uBB38\uD56D\uC73C\uB85C \uB2E4\uC2DC \uD655\uC778\uD574\uC694.`, reasons: ["plan.homework"], focusSkillId: homework.skillId };
+    if (label) return { reason: homework.status === "review" ? `\uC774\uBC88 \uC8FC \uC219\uC81C\uC608\uC694. \u300C${label}\u300D \uAE30\uB85D\uC774 \uC624\uB798\uB3FC \uC0C8 \uBB38\uD56D\uC73C\uB85C \uB2E4\uC2DC \uD655\uC778\uD574\uC694.` : `\uC774\uBC88 \uC8FC \uC219\uC81C\uC608\uC694. \u300C${label}\u300D\uC5D0\uC11C \uB193\uCE5C \uB2F5\uC774 \uC788\uC5B4 \uC0C8 \uBB38\uD56D\uC73C\uB85C \uB2E4\uC2DC \uD655\uC778\uD574\uC694.`, reasons: ["plan.homework"], focusSkillId: homework.skillId };
   }
   if (selected.route === "mock") return { reason: "\uC2DC\uD5D8\uCC98\uB7FC \uCC98\uC74C \uBCF4\uB294 \uBB38\uD56D\uC744 \uC815\uD574\uC9C4 \uC2DC\uAC04 \uC548\uC5D0 \uD480\uC5B4 \uBD10\uC694. \uC810\uC218\uB098 \uAE09\uC218\uB85C \uBC14\uAFB8\uC9C0 \uC54A\uC544\uC694.", reasons: ["exam.form"] };
   if (selected.route === "position") return { reason: plan?.notes?.includes("start") ? "\uC2DC\uD5D8 \uBAA9\uD45C\uC5D0 \uB9DE\uCDB0 \uC9E7\uC740 \uC9C4\uB2E8\uC73C\uB85C \uC2DC\uC791\uC810\uC744 \uBA3C\uC800 \uD655\uC778\uD574\uC694." : "\uC774\uBC88 \uC8FC \uACC4\uD68D\uC758 \uB2E4\uC2DC \uD655\uC778\uC774\uC5D0\uC694. \uCC98\uC74C \uBCF4\uB294 \uBB38\uD56D\uC73C\uB85C \uC9C0\uAE08 \uC704\uCE58\uB97C \uD655\uC778\uD574\uC694.", reasons: ["plan.recheck"] };

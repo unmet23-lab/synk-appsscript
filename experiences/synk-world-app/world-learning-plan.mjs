@@ -213,13 +213,14 @@ function hostReason(chosen,{history,plan,labels}){
  if(!selected)return null;
  // 이번 주 계획의 숙제(다시 볼 항목)를 Core가 같은 급한 정도 안에서 앞세웠는데, 고른 새 문항의 칸이 아직 기록 없는 칸이라
  // Vellum 문장이 목표 한 줄뿐일 때: 그 숙제 항목과 까닭(놓친 답·다시 볼 때)을 말한다. 기록에 있는 사실만 말한다.
+ // 항목 이름은 Vellum 이유 문장처럼 낫표로 묶는다(11-10 — 문장에 녹지 않게).
  const generic=!(chosen.reasons||[]).some(reason=>reason.startsWith('practice.')&&reason!=='practice.unseen'||['review.due','activity.retry','activity.assisted'].includes(reason));
  if(plan&&generic&&['practice','game'].includes(selected.route)){
   // 읽기 짧은 연습은 그 항목, 게임은 Core가 그 게임에서 먼저 낼 문항의 항목(focusSkillId)일 때만 — 이유가 실제 첫 문항과 같은 항목을 말하게.
   const skillId=selected.route==='practice'?selected.skillId:chosen.focusSkillId;
   const homework=(plan.homework||[]).find(row=>!row.shortage&&row.skillId===skillId);
   const label=homework&&labels?.[homework.skillId];
-  if(label)return {reason:homework.status==='review'?`이번 주 숙제예요. ${label} 기록이 오래돼 새 문항으로 다시 확인해요.`:`이번 주 숙제예요. ${label}에서 놓친 답이 있어 새 문항으로 다시 확인해요.`,reasons:['plan.homework'],focusSkillId:homework.skillId};
+  if(label)return {reason:homework.status==='review'?`이번 주 숙제예요. 「${label}」 기록이 오래돼 새 문항으로 다시 확인해요.`:`이번 주 숙제예요. 「${label}」에서 놓친 답이 있어 새 문항으로 다시 확인해요.`,reasons:['plan.homework'],focusSkillId:homework.skillId};
  }
  // 시험 형식 연습: 실제 구성을 줄인 판을 시간 안에 처음 보는 문항으로(급수는 매기지 않는다).
  if(selected.route==='mock')return {reason:'시험처럼 처음 보는 문항을 정해진 시간 안에 풀어 봐요. 점수나 급수로 바꾸지 않아요.',reasons:['exam.form']};

@@ -29,7 +29,7 @@ test('서로 다른 세부 정보 문제 넷을 처음 듣고 혼자 맞히면 �
   for (const id of DETAILS) play(coach, id, true);
   const next = plan(coach);
   assert.equal(next.state, 'unseen'); assert.equal(next.responseFormat, 'action');
-  assert.match(next.reason, /세부 정보 찾기는 아직 기록이 적어요/, '고치기 전 문구의 출처: 달리기 칸은 비어 있다');
+  assert.match(next.reason, /세부 정보 찾기」는 아직 기록이 적어요/, '고치기 전 문구의 출처: 달리기 칸은 비어 있다');
   assert.equal(doneChecks(coach).count, 4);
   assert.equal(runReason(coach, next), DETAIL_LINE);
   assert.doesNotMatch(runReason(coach, next), /기록이 적어요|잘하|좋아하|실력|틀렸|틀린|모르|못하|약해|부족/);

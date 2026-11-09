@@ -8,12 +8,15 @@ const Life = require('../atlas/trail-life');
 const Work = require('../atlas/work');
 const { learningReason } = require('../atlas/vellum');
 
+// The name stands in corner brackets (2026-11-10) and the particle after them still follows the
+// name's own last syllable, not the bracket or a closing parenthesis.
 test('learner-facing reasons pick 은/을 after a final consonant and 는/를 after a vowel', () => {
-  assert.equal(learningReason({ status: 'checking', label: '어휘 — 반대말' }), '어휘 — 반대말을 조금 더 확인해 봐요.');
-  assert.equal(learningReason({ status: 'unseen', label: '어휘 — 반대말' }), '어휘 — 반대말은 아직 기록이 적어요. 짧게 확인해 봐요.');
-  assert.equal(learningReason({ status: 'unseen', label: '낱말 듣기' }), '낱말 듣기는 아직 기록이 적어요. 짧게 확인해 봐요.');
-  assert.equal(learningReason({ status: 'review', label: '어휘 — 동사 짝(입다·신다)' }), '어휘 — 동사 짝(입다·신다)를 다시 살펴볼 때예요.');
-  assert.equal(learningReason({ status: 'practice', label: '조사 — 은/는·이/가' }), '최근 놓친 조사 — 은/는·이/가를 조금 더 연습해 봐요.');
+  assert.equal(learningReason({ status: 'checking', label: '어휘 — 반대말' }), '「어휘 — 반대말」을 조금 더 확인해 봐요.');
+  assert.equal(learningReason({ status: 'unseen', label: '어휘 — 반대말' }), '「어휘 — 반대말」은 아직 기록이 적어요. 짧게 확인해 봐요.');
+  assert.equal(learningReason({ status: 'unseen', label: '낱말 듣기' }), '「낱말 듣기」는 아직 기록이 적어요. 짧게 확인해 봐요.');
+  assert.equal(learningReason({ status: 'review', label: '어휘 — 동사 짝(입다·신다)' }), '「어휘 — 동사 짝(입다·신다)」를 다시 살펴볼 때예요.');
+  assert.equal(learningReason({ status: 'practice', label: '조사 — 은/는·이/가' }), '최근 놓친 「조사 — 은/는·이/가」를 조금 더 연습해 봐요.');
+  assert.equal(learningReason({ status: 'practice', label: '듣고 세부 정보 찾기' }), '최근 놓친 「듣고 세부 정보 찾기」를 조금 더 연습해 봐요.');
 });
 
 test('"not for me" keeps every refused way out while an unrefused one remains', () => {

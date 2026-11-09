@@ -1125,17 +1125,17 @@ export default {
  'msg.planStart':{ko:'시험 목표에 맞춰 짧은 진단으로 시작점을 먼저 확인해요.',en:'For your test goal, let’s first find your starting point with a quick check.',mn:'Шалгалтын зорилгодоо тааруулж эхлээд богино шалгалтаар эхлэх цэгээ тогтооё.'},
  'msg.planRecheck':{ko:'이번 주 계획의 다시 확인이에요. 처음 보는 문항으로 지금 위치를 확인해요.',en:'This is this week’s check. We’ll see where you stand with questions you haven’t seen.',mn:'Энэ долоо хоногийн төлөвлөгөөний «Дахин шалгах». Өмнө нь үзээгүй асуултаар одоогийн ахицаа шалгана.'},
  'msg.reasonNextLesson':{ko:'생활 팩의 다음 레슨이에요. 아직 기록이 없는 표현을 새로 만나요.',en:'The next lesson in your daily-life packs, with expressions that are new to you.',mn:'Өдөр тутмын багцын дараагийн хичээл. Шинэ хэллэгүүдтэй танилцана.'},
- 'msg.planHomework':{ko:'이번 주 숙제예요. {skill}에서 놓친 답이 있어 새 문항으로 다시 확인해요.',en:'This is this week’s homework. You missed an answer in ‘{skill}’, so we’ll check it again with new questions.',mn:'Энэ долоо хоногийн гэрийн даалгавар. «{skill}» чадварт буруу хариулт байгаа тул шинэ асуултаар дахин шалгана.'},
- 'msg.planHomeworkReview':{ko:'이번 주 숙제예요. {skill} 기록이 오래돼 새 문항으로 다시 확인해요.',en:'This is this week’s homework. It’s been a while since ‘{skill}’, so we’ll check it again with new questions.',mn:'Энэ долоо хоногийн гэрийн даалгавар. «{skill}» чадварын бүртгэл хуучирсан тул шинэ асуултаар дахин шалгана.'},
- // 항목 이름이 든 추천 이유(atlas/vellum.js learningReason, 10-20) — tMessage가 틀로 맞춘다. ko는 Vellum 문장의 꼴이고
- // {skill}은 position.skill.* 이름, 은(는)·을(를)은 이름 끝 받침에 따라 한쪽만 나온다. 영어·몽골어는 이름을 따옴표 안에 두어
+ 'msg.planHomework':{ko:'이번 주 숙제예요. 「{skill}」에서 놓친 답이 있어 새 문항으로 다시 확인해요.',en:'This is this week’s homework. You missed an answer in ‘{skill}’, so we’ll check it again with new questions.',mn:'Энэ долоо хоногийн гэрийн даалгавар. «{skill}» чадварт буруу хариулт байгаа тул шинэ асуултаар дахин шалгана.'},
+ 'msg.planHomeworkReview':{ko:'이번 주 숙제예요. 「{skill}」 기록이 오래돼 새 문항으로 다시 확인해요.',en:'This is this week’s homework. It’s been a while since ‘{skill}’, so we’ll check it again with new questions.',mn:'Энэ долоо хоногийн гэрийн даалгавар. «{skill}» чадварын бүртгэл хуучирсан тул шинэ асуултаар дахин шалгана.'},
+ // 항목 이름이 든 추천 이유(atlas/vellum.js learningReason, 10-20) — tMessage가 틀로 맞춘다. ko는 Vellum 문장의 꼴 그대로다(이름은
+ // 엔진이 낫표로 묶어 낸다, 11-10). {skill}은 position.skill.* 이름, 은(는)·을(를)은 이름 끝 받침에 따라 한쪽만 나온다. 영어·몽골어는 이름을 따옴표 안에 두어
  // 몽골어 격 어미가 이름에 붙지 않게 한다(뒤의 чадвар가 격을 받는다). 끝에 붙는 「고른 목표」 한 줄은 위 …Goal 줄과 같은 말이다.
- 'msg.vellum.unseen':{ko:'{skill}은(는) 아직 기록이 적어요. 짧게 확인해 봐요.',en:'You don’t have many records for ‘{skill}’ yet. Let’s check it quickly.',mn:'«{skill}» чадварын мэдээлэл одоохондоо цөөн байна. Товчхон шалгацгаая.'},
- 'msg.vellum.checking':{ko:'{skill}을(를) 조금 더 확인해 봐요.',en:'Let’s check ‘{skill}’ a little more.',mn:'«{skill}» чадварыг бага зэрэг нэмж шалгацгаая.'},
- 'msg.vellum.practice':{ko:'최근 놓친 {skill}을(를) 조금 더 연습해 봐요.',en:'Let’s practice ‘{skill}’ a little more, since you missed some recently.',mn:'«{skill}» чадварт саяхан алдсан хэсгээ бага зэрэг нэмж давтъя.'},
- 'msg.vellum.supported':{ko:'{skill}을(를) 도움과 함께 해냈어요. 이어서 살펴봐요.',en:'You did ‘{skill}’ with help. Let’s keep working on it.',mn:'«{skill}» чадварын асуултад тусламжтайгаар зөв хариулсан. Үргэлжлүүлэн харцгаая.'},
- 'msg.vellum.recent-independent':{ko:'{skill}을(를) 최근 혼자 해냈어요. 가볍게 이어가요.',en:'You recently did ‘{skill}’ on your own. Let’s keep going at an easy pace.',mn:'«{skill}» чадварын асуултад саяхан өөрөө зөв хариулсан. Хөнгөн хэмнэлээр үргэлжлүүлье.'},
- 'msg.vellum.review':{ko:'{skill}을(를) 다시 살펴볼 때예요.',en:'It’s time to look at ‘{skill}’ again.',mn:'«{skill}» чадварыг дахин харах цаг боллоо.'},
+ 'msg.vellum.unseen':{ko:'「{skill}」은(는) 아직 기록이 적어요. 짧게 확인해 봐요.',en:'You don’t have many records for ‘{skill}’ yet. Let’s check it quickly.',mn:'«{skill}» чадварын мэдээлэл одоохондоо цөөн байна. Товчхон шалгацгаая.'},
+ 'msg.vellum.checking':{ko:'「{skill}」을(를) 조금 더 확인해 봐요.',en:'Let’s check ‘{skill}’ a little more.',mn:'«{skill}» чадварыг бага зэрэг нэмж шалгацгаая.'},
+ 'msg.vellum.practice':{ko:'최근 놓친 「{skill}」을(를) 조금 더 연습해 봐요.',en:'Let’s practice ‘{skill}’ a little more, since you missed some recently.',mn:'«{skill}» чадварт саяхан алдсан хэсгээ бага зэрэг нэмж давтъя.'},
+ 'msg.vellum.supported':{ko:'「{skill}」을(를) 도움과 함께 해냈어요. 이어서 살펴봐요.',en:'You did ‘{skill}’ with help. Let’s keep working on it.',mn:'«{skill}» чадварын асуултад тусламжтайгаар зөв хариулсан. Үргэлжлүүлэн харцгаая.'},
+ 'msg.vellum.recent-independent':{ko:'「{skill}」을(를) 최근 혼자 해냈어요. 가볍게 이어가요.',en:'You recently did ‘{skill}’ on your own. Let’s keep going at an easy pace.',mn:'«{skill}» чадварын асуултад саяхан өөрөө зөв хариулсан. Хөнгөн хэмнэлээр үргэлжлүүлье.'},
+ 'msg.vellum.review':{ko:'「{skill}」을(를) 다시 살펴볼 때예요.',en:'It’s time to look at ‘{skill}’ again.',mn:'«{skill}» чадварыг дахин харах цаг боллоо.'},
  'msg.vellum.goal':{ko:'고른 목표와 이어지는 활동이에요.',en:'It connects to the goal you chose.',mn:'Энэ нь таны сонгосон зорилготой холбогдоно.'},
  // 「내 성향」에서 더 배우고 싶다고 답한 주제가 연습을 앞으로 올렸을 때(world-learning-plan.mjs). {label}은 학습 내용(낱말·문형)이라 한국어 그대로다.
  'msg.reasonInterest':{ko:'더 배우고 싶다고 알려 준 내용이 들어 있는 연습이에요.',en:'This practice includes something you said you want to learn more about.',mn:'Энэ дасгалд таны илүү гүнзгий сурахыг хүссэн сэдэв орсон.'},
