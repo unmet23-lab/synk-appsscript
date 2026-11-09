@@ -136,6 +136,22 @@ test('윈도우 기록은 상태 폴더에 두고, 없어진 예약 작업의 �
   } finally { t.끝(); }
 });
 
+test('윈도우가 이름 바꾸기를 잠깐 거절해도 영수증 · 캐시 쓰기가 다시 해서 회차가 끝까지 간다', () => {
+  const t = 판();
+  const 진짜 = fs.renameSync;
+  let 거절 = 0;
+  fs.renameSync = (a, b) => {
+    if (String(b).endsWith('작업방식.json') && 거절 < 2) { 거절 += 1; const e = new Error('EPERM: 다른 프로세스가 열어 둠'); e.code = 'EPERM'; throw e; }
+    return 진짜(a, b);
+  };
+  try {
+    const 값 = 도구.돌리기({}, t.의존());
+    assert.equal(값.status, 'success', JSON.stringify(값.issues));
+    assert.equal(거절, 2);
+    assert.equal(fs.readdirSync(t.자리.상태).filter((n) => n.endsWith('.tmp')).length, 0);
+  } finally { fs.renameSync = 진짜; t.끝(); }
+});
+
 test('검사와 복사 사이에 파일에 비밀이 들어가도 검사한 뒤의 바이트만 나간다', () => {
   const t = 판();
   try {

@@ -86,12 +86,21 @@ def stamp(moment=None):
     return (moment or utcnow()).isoformat(timespec='seconds').replace('+00:00', 'Z')
 
 
-def write_json(path, value):
+def write_json(path, value, tries=20, wait=0.25):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(f'{path.name}.{uuid.uuid4().hex}.tmp')
     tmp.write_text(json.dumps(value, ensure_ascii=False, indent=1), encoding='utf-8', newline='\n')
-    os.replace(tmp, path)
+    for attempt in range(tries):
+        try:
+            os.replace(tmp, path)
+            return
+        except PermissionError:
+            # 윈도우는 다른 프로세스(통합 감시 · 동기화 · 백신)가 대상을 연 순간 이름 바꾸기를 거절한다 — 잠깐 뒤 다시 한다(11-09 21:02 남은 임시 파일).
+            if attempt == tries - 1:
+                tmp.unlink(missing_ok=True)
+                raise
+            time.sleep(wait)
 
 
 def read_json(path, default=None):
@@ -1357,10 +1366,15 @@ class Receipt:
         self.thread = threading.Thread(target=self._beat, daemon=True)
         self.thread.start()
 
-    def save(self):
+    def save(self, quiet=True):
+        """숨소리 쓰기는 한 번 못 써도 넘어간다 — 다음 숨소리가 다시 쓴다. 숨소리 스레드가 죽거나 묶음이 중간에 멈추면 멀쩡한 회차가 「중단」으로 보인다."""
         with self.lock:
             self.body['heartbeatAt'] = stamp()
-            write_json(self.path, self.body)
+            try:
+                write_json(self.path, self.body)
+            except OSError:
+                if not quiet:
+                    raise
 
     def _beat(self):
         while not self.stop.wait(30):
@@ -1381,7 +1395,7 @@ class Receipt:
         self.body['finishedAt'] = self.body['checkedAt'] = stamp()
         if self.body['status'] == 'success':
             self.body['lastSuccessAt'] = self.body['finishedAt']
-        self.save()
+        self.save(quiet=False)  # 끝 영수증은 못 쓰면 알려야 한다(감시가 낡은 「도는 중」을 보게 된다)
 
 
 def keep_breathing(path, every=60):
@@ -1392,7 +1406,10 @@ def keep_breathing(path, every=60):
             body = read_json(path)
             if isinstance(body, dict) and body.get('status') == 'running':
                 body['heartbeatAt'] = stamp()
-                write_json(path, body)
+                try:
+                    write_json(path, body)
+                except OSError:
+                    pass  # 다음 숨소리가 다시 쓴다
     threading.Thread(target=loop, daemon=True).start()
 
 

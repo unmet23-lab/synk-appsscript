@@ -942,6 +942,54 @@ class Workmethod(Base):
 
 
 class Receipt(Base):
+    def test_write_retries_when_windows_refuses_the_rename_for_a_moment(self):
+        file = self.base / 'r.json'
+        real, calls = M.os.replace, []
+
+        def flaky(src, dst):
+            calls.append(1)
+            if len(calls) <= 2:
+                raise PermissionError(5, '다른 프로세스가 열어 둠')
+            return real(src, dst)
+        M.os.replace = flaky
+        try:
+            M.write_json(file, {'a': 1}, wait=0)
+        finally:
+            M.os.replace = real
+        self.assertEqual(json.loads(file.read_text(encoding='utf-8')), {'a': 1})
+        self.assertEqual(len(calls), 3)
+        self.assertEqual(list(self.base.glob('r.json.*.tmp')), [])
+
+    def test_write_gives_up_without_leaving_temp_files(self):
+        file = self.base / 'r.json'
+        real = M.os.replace
+
+        def refuse(src, dst):
+            raise PermissionError(5, '다른 프로세스가 열어 둠')
+        M.os.replace = refuse
+        try:
+            with self.assertRaises(PermissionError):
+                M.write_json(file, {'a': 1}, tries=3, wait=0)
+        finally:
+            M.os.replace = real
+        self.assertEqual(list(self.base.glob('r.json.*.tmp')), [])
+
+    def test_heartbeat_survives_a_failed_write_but_the_final_receipt_does_not_hide_it(self):
+        file = self.base / 'r.json'
+        r = M.Receipt(file)
+        real = M.write_json
+
+        def broken(*_a, **_k):
+            raise PermissionError(5, '다른 프로세스가 열어 둠')
+        M.write_json = broken
+        try:
+            r.save()  # 숨소리는 넘어간다
+            with self.assertRaises(PermissionError):
+                r.finish([], {})
+        finally:
+            M.write_json = real
+            r.stop.set()
+
     def test_success_and_failure_shape_for_health_monitor(self):
         file = self.base / 'r.json'
         r = M.Receipt(file)

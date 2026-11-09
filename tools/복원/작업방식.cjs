@@ -217,7 +217,13 @@ function 쓰기(파일, 값) {
   fs.mkdirSync(path.dirname(파일), { recursive: true });
   const 임시 = `${파일}.${process.pid}.tmp`;
   fs.writeFileSync(임시, JSON.stringify(값, null, 1));
-  fs.renameSync(임시, 파일);
+  // 윈도우는 다른 프로세스(통합 감시 · 동기화 · 백신)가 대상을 연 순간 이름 바꾸기를 거절한다 — 잠깐 뒤 다시 한다(암호묶음.py write_json과 같은 까닭).
+  for (let 번 = 1; ; 번++) {
+    try { fs.renameSync(임시, 파일); return; } catch (e) {
+      if (!['EPERM', 'EBUSY', 'EACCES'].includes(e.code) || 번 >= 20) { fs.rmSync(임시, { force: true }); throw e; }
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 250);
+    }
+  }
 }
 
 /** 범위를 걸어 내보낼 목록과 뺀 목록을 만든다. 크기 · 수정 시각이 같고 정책이 같으면 다시 읽지 않는다. */
