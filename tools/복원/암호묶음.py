@@ -790,6 +790,9 @@ def record_part(bundle, ledger, part, sidecar):
         return
     ledger.append({'name': part.name, 'at': sidecar['at'], 'files': len(sidecar['rows']), 'raw': sidecar['raw'], 'enc': sidecar['enc'],
                    'md5': sidecar['md5'], 'sha256': sidecar['sha256'], 'keyId': sidecar.get('keyId'), 'dests': sidecar['dests']})
+    if bundle.mode == 'whole':
+        # 통째 묶음은 판 하나가 전부다 — 옛 판에만 있던 파일을 남기면 복원 시험이 「장부에는 있는데 안 풀림」으로 센다(11-10 첫 암호 시험의 2건).
+        ledger.files = {}
     ledger.commit([tuple(r) for r in sidecar['rows']], time.time(), part.name)
     if sidecar.get('fingerprint'):
         ledger.meta['fingerprint'] = sidecar['fingerprint']

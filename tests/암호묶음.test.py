@@ -122,6 +122,16 @@ class WholeBundle(Base):
     def enc_names(self, dest):
         return [n for n in dest.listing('열쇠') if n.endswith('.enc')]
 
+    def test_ledger_lists_only_the_latest_version(self):
+        self.write('SYNK_보안/가.txt', '가')
+        self.write('SYNK_보안/나.txt', '나')
+        bundle = self.bundle()
+        M.run_bundle(self.ctx, bundle)
+        (self.home / 'SYNK_보안' / '나.txt').unlink()
+        self.ctx.allow_shrink = True
+        M.run_bundle(self.ctx, bundle)
+        self.assertEqual(sorted(M.Ledger(self.home, '열쇠').files), ['SYNK_보안/가.txt'])
+
     def test_lost_whole_part_makes_a_new_version_for_both(self):
         self.write('SYNK_보안/키.txt', 'x')
         bundle = self.bundle()
