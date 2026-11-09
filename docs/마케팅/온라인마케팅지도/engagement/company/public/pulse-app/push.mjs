@@ -59,10 +59,21 @@ export function foregroundProjectOptions(path,settings={},visible=false){
 // subscription so the next state read can reconcile an already committed opt-in.
 export function rejectedDeviceRegistration(error){return Number(error?.status)>=400&&Number(error.status)<500&&Number(error.status)!==408;}
 
+// 브라우저의 알림 오류는 영어 원문(「Registration failed - permission denied」 등)으로 온다. 손님에게는 그 말 대신 할 일을 한 줄로 보인다.
+// 서버 답(PulseError) · 기다림 끝(DeviceTimeout) · 이 파일이 만든 오류(ours)는 이미 화면 언어라 그대로 둔다.
+export function deviceFailureText(error,environment={}){
+  if(error instanceof DeviceTimeout||error?.name==='PulseError'||error?.ours===true)return String(error.message||'');
+  if(error?.name==='NotAllowedError'){
+    if(environment.ios)return t('알림이 막혀 있어요. 홈 화면에 추가한 PULSE 앱을 열고 기기 설정 → 알림 → PULSE에서 허용해 주세요. 앱 안 알림은 그대로 받으실 수 있어요.');
+    return t('이 브라우저가 알림을 막았어요. 사이트 설정에서 알림을 허용한 뒤 다시 켜 주세요. 앱 안 알림은 그대로 받으실 수 있어요.');
+  }
+  return t('이 브라우저에서는 기기 알림을 켜지 못했어요. Chrome · 삼성 인터넷 · Edge에서 다시 해 보시거나 앱 안 알림으로 받아 주세요.');
+}
+
 export function deviceKey(raw){
   raw=String(raw||'');
-  if(!/^[A-Za-z0-9_-]+$/.test(raw))throw new Error(t('기기 알림 설정을 확인해 주세요.'));
+  if(!/^[A-Za-z0-9_-]+$/.test(raw))throw Object.assign(new Error(t('기기 알림 설정을 확인해 주세요.')),{ours:true});
   const bytes=Uint8Array.from(atob(raw.replace(/-/g,'+').replace(/_/g,'/')+'='.repeat((4-raw.length%4)%4)),char=>char.charCodeAt(0));
-  if(bytes.length!==65||bytes[0]!==4)throw new Error(t('기기 알림 설정을 확인해 주세요.'));
+  if(bytes.length!==65||bytes[0]!==4)throw Object.assign(new Error(t('기기 알림 설정을 확인해 주세요.')),{ours:true});
   return bytes;
 }

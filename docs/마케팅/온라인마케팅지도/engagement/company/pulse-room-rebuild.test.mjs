@@ -37,7 +37,7 @@ test('the request form shows days and revisions next to the price and before sen
   assert.match(flow,/data-cuts-line \$\{pkg\?'':'hidden'\}/,'no 「컷 0」 before a length is picked');
   assert.ok(flow.includes("[k('수정'),pkg&&!pkg.days?t('구성에 맞춰 함께 정해요'):revisionNote(pkg)]"),'a company campaign receipt still says how revisions are agreed (argon A4)');
   const a={...emptyAnswers(),name:'오미톡',kind:'food',package:'s15'};
-  assert.equal(briefRows(a).find(row=>row.key==='길이 · 구성').value,'15초 · 한 편 · 39만원부터 · 10일 · 수정 2회');
+  assert.equal(briefRows(a).find(row=>row.key==='길이 · 구성').value,'15초 · 한 편 · 29만원부터 · 10일 · 수정 2회');
 });
 test('example model shots under a kind are labelled as examples, not as a chosen model',()=>{
   for(const kind of KINDS.filter(item=>/model-scene/.test(item.shot)))assert.match(kind.who,/^예시 장면 · /,kind.id);

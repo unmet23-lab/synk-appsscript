@@ -531,3 +531,14 @@ test('a staff project with files or messages already in it keeps the old tabs',a
   assert.equal(response.status,201);
   assert.equal((await f.staff('/api/client-projects/'+id+'/studio')).data.project.requestFlow,false);
 });
+test('the request number carries the Korean date, not the server UTC date (03:34 KST on the 10th is P-1110, not P-1109)',async t=>{
+  const at=new Date();at.setUTCHours(18,34,0,0);const iso=at.toISOString(),kst=new Date(at.getTime()+9*3600000);
+  const day=String(kst.getUTCMonth()+1).padStart(2,'0')+String(kst.getUTCDate()).padStart(2,'0');
+  assert.notEqual(day,iso.slice(5,7)+iso.slice(8,10),'this clock crosses the Korean date line');
+  const f=await fixture(t,{clock:()=>iso}),draft=await f.start();
+  assert.equal((await f.call('/pulse/api/request/save',{body:{answers:answers(),step:'where'},csrf:draft.csrf})).status,200);
+  assert.equal((await f.upload(draft.csrf)).status,201);
+  const sent=await f.call('/pulse/api/request/submit',{body:{answers:answers()},csrf:draft.csrf});
+  assert.equal(sent.status,201,JSON.stringify(sent.data));
+  assert.match(sent.data.number,new RegExp('^P-'+day+'-[0-9A-F]{4}$'));
+});

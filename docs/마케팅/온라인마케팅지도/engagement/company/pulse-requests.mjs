@@ -104,7 +104,9 @@ export function usesRequestFlow(row,studio){
   if(studio?.request)return true;
   return ['received','planning'].includes(row.stage)&&!studio?.strategy?.revision&&!studio?.scenes?.length&&!studio?.concepts?.length&&!studio?.references?.length&&!studio?.assets?.length&&!row.intake?.files?.length&&!row.messages?.length&&!row.versions?.length;
 }
-const requestNumber=at=>{const date=new Date(at);return `P-${String(date.getUTCMonth()+1).padStart(2,'0')}${String(date.getUTCDate()).padStart(2,'0')}-${randomBytes(2).toString('hex').toUpperCase()}`;};
+// 접수 번호의 날짜는 한국 날짜다(서버 시계는 UTC — 11-10 03:34 KST 접수가 P-1109로 찍혔다).
+const kstMonthDay=at=>{const date=new Date(new Date(at).getTime()+9*3600000);return `${String(date.getUTCMonth()+1).padStart(2,'0')}${String(date.getUTCDate()).padStart(2,'0')}`;};
+const requestNumber=at=>`P-${kstMonthDay(at)}-${randomBytes(2).toString('hex').toUpperCase()}`;
 export function requestSummaryRows(a,files=[]){
   return [a.oneThing&&`남길 것: ${a.oneThing}`,a.audience&&`보는 사람: ${a.audience}`,a.channels?.length&&`올릴 곳: ${a.channels.join(', ')}`,a.package&&`구성: ${a.package}`,`받은 자료: ${files.length}개`].filter(Boolean).join('\n');
 }
@@ -221,7 +223,7 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
   // 본인이 고르며 올린 사진을 다시 보여 줄 때. 화면에 바로 띄우는 형식만 내준다.
   function draftFilePath(raw,fileId){const {row}=draftOf(raw),file=(row.files||[]).find(item=>item.id===fileId);if(!file||!file.inline)throw fail('파일을 찾지 못했어요.',404);return {paths:[inDraft(file.diskName),inMedia(file.diskName)],file};}
   function newNumber(at){
-    const date=new Date(at),day=`${String(date.getUTCMonth()+1).padStart(2,'0')}${String(date.getUTCDate()).padStart(2,'0')}`,used=new Set([...store.all(KIND).map(row=>row.number),...store.all('clientProjects').map(row=>row.studio?.request?.number)].filter(Boolean));
+    const day=kstMonthDay(at),used=new Set([...store.all(KIND).map(row=>row.number),...store.all('clientProjects').map(row=>row.studio?.request?.number)].filter(Boolean));
     for(let i=0;i<20;i++){const candidate=`P-${day}-${randomBytes(2).toString('hex').toUpperCase()}`;if(!used.has(candidate))return candidate;}
     throw busy();
   }

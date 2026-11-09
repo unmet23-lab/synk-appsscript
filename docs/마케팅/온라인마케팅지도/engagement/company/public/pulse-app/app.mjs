@@ -16,7 +16,7 @@ import {mountReview,mountFinal} from './film-review.mjs';
 import {draftModel,deskModel,roomState,directionModel,usesRoom,roomTab,roomRoute,journalModel} from './room-view.mjs';
 import {PACKAGES,MODEL_LINES} from './request-data.mjs';
 import {CASTING_MODELS} from './casting-catalog.mjs';
-import {withDeviceDeadline,deviceAvailability,deviceConnectionNote,deviceKey,canMigrateDevice,foregroundProjectOptions,rejectedDeviceRegistration} from './push.mjs';
+import {withDeviceDeadline,deviceAvailability,deviceConnectionNote,deviceKey,canMigrateDevice,foregroundProjectOptions,rejectedDeviceRegistration,deviceFailureText} from './push.mjs';
 import {installationEnvironment,installationGuide,devicePermissionTimeout} from './install.mjs';
 import {setLocale,locale,htmlLang,pickLocale,intlLocale,DICTIONARY_LOCALES,t,k} from './i18n.mjs';
 import {LOCALE_EVENT,chooseLocale,storedLocale,setOfferedLocales} from './locale-menu.mjs';
@@ -446,7 +446,7 @@ async function enableDeviceNotices(){
   let created=null;
   // Invoke permission synchronously within the user's click, before any await.
   let permission;
-  try{permission=disabling?null:Notification.permission==='granted'?Promise.resolve('granted'):Notification.requestPermission();}catch(error){s.live.deviceIssue=error.message;renderLive();return;}
+  try{permission=disabling?null:Notification.permission==='granted'?Promise.resolve('granted'):Notification.requestPermission();}catch(error){s.live.deviceIssue=deviceFailureText(error,installEnvironment());renderLive();return;}
   deviceBusy=true;s.live.deviceBusy=true;s.live.deviceIssue='';s.live.deviceUncertain=false;s.live.deviceProgress=disabling?t('이 기기의 알림을 끄고 있어요.'):t('브라우저의 알림 허용 창을 확인해 주세요.');renderLive();
   try{
     if(disabling){
@@ -473,7 +473,7 @@ async function enableDeviceNotices(){
     }
   }catch(error){
     if(created&&valid()&&rejectedDeviceRegistration(error))try{await withDeviceDeadline(created.unsubscribe());}catch{}
-    if(valid()){s.live.deviceUncertain=!!created&&!rejectedDeviceRegistration(error);s.live.deviceIssue=error.message;notice(error.message);}
+    if(valid()){s.live.deviceUncertain=!!created&&!rejectedDeviceRegistration(error);s.live.deviceIssue=deviceFailureText(error,installEnvironment());notice(s.live.deviceIssue);}
   }finally{
     if(operation===deviceOperation){deviceBusy=false;s.live.deviceBusy=false;s.live.deviceProgress='';renderLive();if(liveIdentity)await refreshDevice();}
   }

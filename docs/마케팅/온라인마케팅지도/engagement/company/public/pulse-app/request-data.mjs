@@ -24,10 +24,11 @@ export const CHANNELS=Object.freeze([
 // 컷 수는 상품 글 FAQ와 같은 어림(15초 5~8컷 · 30초 10~16컷)이다.
 // 기간은 달력 기준(주말 · 공휴일 포함)이고 사진 · 로고 · 꼭 넣을 말이 다 모인 날부터 센다. 수정은 영상(사진)이 나온 뒤에 쓰는 횟수다.
 // 기업은 기간 · 수정을 협의로 둔다(days · revisions 없음). gets는 방향 제안의 「받으시는 것」 한 줄.
+// 영상 세 패키지의 값은 크몽 패키지 값과 같다(결정 11-10 D1 — 결제는 크몽에서 같은 값으로 받는다). 바꿀 때는 크몽 · synk.im과 같은 날 함께 바꾼다.
 export const PACKAGES=Object.freeze([
-  {id:'s15',label:k('15초'),title:k('한 편'),note:k('릴스 · 쇼츠에 맞는 길이'),price:39,cuts:6,days:10,revisions:2,gets:k('영상 파일 한 편(자막 있는 판 · 없는 판), 확정한 글 콘티와 장면 이미지')},
-  {id:'s30',label:k('30초'),title:k('30초 + 15초 · 6초 편집본'),note:k('한 번 만들어 채널마다 나눠 써요'),price:89,cuts:12,days:14,revisions:3,gets:k('30초 · 15초 · 6초 영상 파일(자막 있는 판 · 없는 판), 확정한 글 콘티와 장면 이미지')},
-  {id:'s60',label:k('60초'),title:k('브랜드 필름, 또는 같은 모델 시리즈 3편'),note:'',price:199,cuts:20,days:21,revisions:3,gets:k('60초 한 편이나 시리즈 세 편의 영상 파일(자막 있는 판 · 없는 판), 확정한 글 콘티와 장면 이미지')},
+  {id:'s15',label:k('15초'),title:k('한 편'),note:k('릴스 · 쇼츠에 맞는 길이'),price:29,cuts:6,days:10,revisions:2,gets:k('영상 파일 한 편(자막 있는 판 · 없는 판), 확정한 글 콘티와 장면 이미지')},
+  {id:'s30',label:k('30초'),title:k('30초 + 15초 · 6초 편집본'),note:k('한 번 만들어 채널마다 나눠 써요'),price:59,cuts:12,days:14,revisions:3,gets:k('30초 · 15초 · 6초 영상 파일(자막 있는 판 · 없는 판), 확정한 글 콘티와 장면 이미지')},
+  {id:'s60',label:k('60초'),title:k('브랜드 필름, 또는 같은 모델 시리즈 3편'),note:'',price:149,cuts:20,days:21,revisions:3,gets:k('60초 한 편이나 시리즈 세 편의 영상 파일(자막 있는 판 · 없는 판), 확정한 글 콘티와 장면 이미지')},
   {id:'corp',label:k('기업'),title:k('기업 캠페인'),note:k('30~60초 + 편집본, 기획서 포함'),price:250,cuts:16,gets:k('협의한 구성의 영상 파일과 기획서, 확정한 글 콘티와 장면 이미지')},
   {id:'photo',label:k('사진'),title:k('모델이 제품을 든 사진 5장'),note:k('영상 전에 먼저 써 보는 분이 많아요'),price:9.9,cuts:5,photo:true,days:3,revisions:2,gets:k('모델이 제품을 든 사진 다섯 장(긴 변 2048px)')},
 ]);

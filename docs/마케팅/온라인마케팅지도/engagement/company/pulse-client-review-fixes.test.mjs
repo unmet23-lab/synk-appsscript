@@ -63,8 +63,8 @@ test('the entry page introduces PULSE in the approved words and keeps the invite
   assert.doesNotMatch(text,/모든 컷을 먼저 보여 드리는|배우로 활동한|실사|자연스러운 [가-힣]+ 제작/);
   // 11-05 유호님 「의뢰서로만 옮기기」(결정 표 「PULSE 첫 화면 값 줄」): 첫 화면에는 값을 두지 않는다. 값은 의뢰서의 길이 · 구성 칸에 정가의 「부터」로 그대로 있다.
   assert.doesNotMatch(text,/만원/);assert.doesNotMatch(html,/sx-prices/);
-  assert.deepEqual(['s15','s30','corp'].map(id=>price(PACKAGES.find(item=>item.id===id).price)),['39만원','89만원','250만원']);
-  // 다국어 판 2: 「부터」는 번역 틀을 지난다(한국어 화면은 그대로 「39만원부터」).
+  assert.deepEqual(['s15','s30','corp'].map(id=>price(PACKAGES.find(item=>item.id===id).price)),['29만원','59만원','250만원']);
+  // 다국어 판 2: 「부터」는 번역 틀을 지난다(한국어 화면은 그대로 「29만원부터」).
   assert.ok(readFileSync(new URL('request-flow.mjs',appDir),'utf8').includes("${esc(t('{price}부터',{price:price(item.price)}))}"));
   // 초대 문과 체험은 그대로다.
   assert.match(html,/<form class="sx-invite" data-form="invite"[\s\S]*name="invite"[\s\S]*<\/form>/);
@@ -91,7 +91,7 @@ test('a customer working in a project sees the board, not the introduction',asyn
   const demo=setup();
   for(const tab of ['overview','direction','films']){
     const html=view(demo,tab);
-    assert.doesNotMatch(html,/sx-promises|sx-maker|sx-prices|카메라 앞에 서 본|39만원부터/,tab);
+    assert.doesNotMatch(html,/sx-promises|sx-maker|sx-prices|카메라 앞에 서 본|[23]9만원부터/,tab);
   }
 });
 
