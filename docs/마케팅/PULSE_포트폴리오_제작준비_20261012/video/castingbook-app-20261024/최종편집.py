@@ -99,19 +99,29 @@ def picture():
                 raise SystemExit(f"#{n} 입힌 판이 {C.frames_of(src)}장 — {k}장이어야 한다(폰입히기.py CUTS와 경계가 어긋남)")
             shutil.copyfile(src, out)
         else:
-            pid, a = CUTS[n]
-            src = C.clip(pid)
-            have = C.frames_of(src)
-            if a + k > have:
-                raise SystemExit(f"#{n} {pid}: {a}장부터 {k}장이 필요한데 {have}장뿐")
-            C.cut_video(src, a, k, W, H, FPS, out)
+            # 한 컷을 두 판으로 이을 수 있다(11-09 7번 — 앉는 동작은 앞 판, 앉은 뒤는 그 마지막 장을 첫 장으로 다시 낸 판): [(판, 시작 장, 장 수), …]
+            segs = CUTS[n] if isinstance(CUTS[n], list) else [(CUTS[n][0], CUTS[n][1], k)]
+            if sum(s[2] for s in segs) != k:
+                raise SystemExit(f"#{n}: 토막 장 수 합 {sum(s[2] for s in segs)} — {k}장이어야 한다")
+            parts = []
+            for j, (pid, a, kk) in enumerate(segs):
+                src = C.clip(pid)
+                have = C.frames_of(src)
+                if a + kk > have:
+                    raise SystemExit(f"#{n} {pid}: {a}장부터 {kk}장이 필요한데 {have}장뿐")
+                part = out if len(segs) == 1 else out.replace(".mp4", f"_{j}.mp4")
+                C.cut_video(src, a, kk, W, H, FPS, part)
+                parts.append(part)
+            if len(parts) > 1:
+                C.join_videos(parts, out)
         if n in ZOOM_AXES:
             fr = read_frames(out)
             write_frames([push(f, cv[n], ZOOM_AXES[n], i / FPS) for i, f in enumerate(fr)], out)
         if C.frames_of(out) != k:
             raise SystemExit(f"{out}: {k}장이어야 하는데 {C.frames_of(out)}장")
         paths.append(out)
-        print(f"#{n} {'폰 입힘' if n in PHONE else CUTS[n][0] + f' {CUTS[n][1]}장부터'} {k}장 → {F[n - 1] / FPS:.2f}–{F[n] / FPS:.2f}초" + (" · 줌" if n in ZOOM_AXES else ""))
+        what = "폰 입힘" if n in PHONE else (" + ".join(f"{p_} {a_}장부터 {k_}장" for p_, a_, k_ in CUTS[n]) if isinstance(CUTS[n], list) else CUTS[n][0] + f" {CUTS[n][1]}장부터")
+        print(f"#{n} {what} {k}장 → {F[n - 1] / FPS:.2f}–{F[n] / FPS:.2f}초" + (" · 줌" if n in ZOOM_AXES else ""))
     C.join_videos(paths, os.path.join(OUT, "화면.mp4"))
     print("화면", C.frames_of(os.path.join(OUT, "화면.mp4")), "장")
 
