@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "A3",
+ "text": "보고서는 금방 왔어요. 주소도 전부 진짜고, 왜 터졌는지도 줄줄이 적혀 있었어요.",
+ "dur": 4.271,
+ "words": [
+  {
+   "text": "보고서는",
+   "start": 0.02,
+   "end": 0.378
+  },
+  {
+   "text": "금방",
+   "start": 0.418,
+   "end": 0.631
+  },
+  {
+   "text": "왔어요.",
+   "start": 0.67,
+   "end": 0.962
+  },
+  {
+   "text": "주소도",
+   "start": 1.413,
+   "end": 1.678
+  },
+  {
+   "text": "전부",
+   "start": 1.732,
+   "end": 1.944
+  },
+  {
+   "text": "진짜고,",
+   "start": 1.984,
+   "end": 2.355
+  },
+  {
+   "text": "왜",
+   "start": 2.647,
+   "end": 2.727
+  },
+  {
+   "text": "터졌는지도",
+   "start": 2.779,
+   "end": 3.204
+  },
+  {
+   "text": "줄줄이",
+   "start": 3.244,
+   "end": 3.522
+  },
+  {
+   "text": "적혀",
+   "start": 3.562,
+   "end": 3.761
+  },
+  {
+   "text": "있었어요.",
+   "start": 3.801,
+   "end": 4.271
+  }
+ ],
+ "source": {
+  "key": "3cee1c7f39fac10d0febb7be970c58be",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1110,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.03,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 146
+ }
+}

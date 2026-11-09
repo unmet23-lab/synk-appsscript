@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "A11",
+ "text": "저장해 두고, 따라 만들기 전에 이 세 개만 보세요.",
+ "dur": 2.771,
+ "words": [
+  {
+   "text": "저장해",
+   "start": 0.02,
+   "end": 0.333
+  },
+  {
+   "text": "두고,",
+   "start": 0.391,
+   "end": 0.567
+  },
+  {
+   "text": "따라",
+   "start": 1.016,
+   "end": 1.231
+  },
+  {
+   "text": "만들기",
+   "start": 1.289,
+   "end": 1.582
+  },
+  {
+   "text": "전에",
+   "start": 1.64,
+   "end": 1.797
+  },
+  {
+   "text": "이",
+   "start": 1.933,
+   "end": 1.953
+  },
+  {
+   "text": "세",
+   "start": 2.05,
+   "end": 2.128
+  },
+  {
+   "text": "개만",
+   "start": 2.187,
+   "end": 2.363
+  },
+  {
+   "text": "보세요.",
+   "start": 2.421,
+   "end": 2.771
+  }
+ ],
+ "source": {
+  "key": "cd7c6ba8b64bf3b339249338641c3120",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1110,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.03,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 180
+ }
+}

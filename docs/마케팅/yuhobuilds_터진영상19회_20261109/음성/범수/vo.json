@@ -1,0 +1,147 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1110,
+  "lufs": -17
+ },
+ "made": "2026-11-09T11:47:08.826Z",
+ "lines": [
+  {
+   "id": "A1",
+   "text": "에이아이한테 요즘 터진 영상을 찾아 달랬더니, 스물두 편을 줬어요.",
+   "dur": 3.41,
+   "syllablesPerSec": 7.92,
+   "src": "A1.wav",
+   "key": "1a428bb3d3c7cb6bae0e1ab396dbcd3d",
+   "words": 9
+  },
+  {
+   "id": "A2",
+   "text": "진짜 터진 건, 두 편이었어요.",
+   "dur": 1.835,
+   "syllablesPerSec": 5.99,
+   "src": "A2.wav",
+   "key": "e56c785c7fe1ddc117d5a63f324e7443",
+   "words": 5
+  },
+  {
+   "id": "A3",
+   "text": "보고서는 금방 왔어요. 주소도 전부 진짜고, 왜 터졌는지도 줄줄이 적혀 있었어요.",
+   "dur": 4.271,
+   "syllablesPerSec": 7.49,
+   "src": "A3.wav",
+   "key": "3cee1c7f39fac10d0febb7be970c58be",
+   "words": 11
+  },
+  {
+   "id": "A4",
+   "text": "근데 조회수 칸을 보니까,",
+   "dur": 1.381,
+   "syllablesPerSec": 7.24,
+   "src": "A4.wav",
+   "key": "52dad1420fc38092819e273000bebbe0",
+   "words": 4
+  },
+  {
+   "id": "F1",
+   "text": "이상한 게 나왔어요.",
+   "dur": 1.114,
+   "syllablesPerSec": 7.18,
+   "src": "F1.wav",
+   "key": "279413e6a46e117403a9b7432bd0548e",
+   "words": 3
+  },
+  {
+   "id": "A5",
+   "text": "스물두 칸 전부, 확인 못 함.",
+   "dur": 1.772,
+   "syllablesPerSec": 5.64,
+   "src": "A5.wav",
+   "key": "9e56cb5996bc377462aa0e0c3e2be76c",
+   "words": 6
+  },
+  {
+   "id": "A6",
+   "text": "조회수도 모르면서, 터진 까닭을 쓴 거예요.",
+   "dur": 2.234,
+   "syllablesPerSec": 7.61,
+   "src": "A6.wav",
+   "key": "438f32007a391c51b176479f224f532d",
+   "words": 6
+  },
+  {
+   "id": "F2",
+   "text": "따라 만들기 전에, 재 봤어요.",
+   "dur": 1.431,
+   "syllablesPerSec": 7.69,
+   "src": "F2.wav",
+   "key": "f8e25d0a3668e75dbf7e6bd77d197175",
+   "words": 5
+  },
+  {
+   "id": "A7",
+   "text": "그 채널 평소보다 세 배 넘게 튀고, 오천 회도 넘긴 영상. 딱 두 편.",
+   "dur": 3.657,
+   "syllablesPerSec": 6.56,
+   "src": "A7.wav",
+   "key": "7e1687618a763ebbb26d7b1a67ad5ee6",
+   "words": 14
+  },
+  {
+   "id": "A8",
+   "text": "까닭까지 적어 준 이 영상, 조회가 열아홉 회예요.",
+   "dur": 2.654,
+   "syllablesPerSec": 7.16,
+   "src": "A8.wav",
+   "key": "7be7687730a94cf16b8f9bcc555b940b",
+   "words": 8
+  },
+  {
+   "id": "A9",
+   "text": "안 재 봤으면, 이걸 그대로 믿었을 거예요.",
+   "dur": 2.413,
+   "syllablesPerSec": 6.63,
+   "src": "A9.wav",
+   "key": "98a39d92d0e8f1f45c2c0d592be1246d",
+   "words": 7
+  },
+  {
+   "id": "A10",
+   "text": "에이아이가 거짓말한 건 아니에요. 조회수는 못 봤다고 적어 놨어요.",
+   "dur": 3.241,
+   "syllablesPerSec": 8.33,
+   "src": "A10.wav",
+   "key": "c2d58faccce210328408f78db023d2db",
+   "words": 9
+  },
+  {
+   "id": "F3",
+   "text": "확신에 찬 말투가, 증거는 아니더라고요.",
+   "dur": 2.65,
+   "syllablesPerSec": 6.04,
+   "src": "F3.wav",
+   "key": "1668b54fea3fdd0d173886fd331bdeab",
+   "words": 5
+  },
+  {
+   "id": "A11",
+   "text": "저장해 두고, 따라 만들기 전에 이 세 개만 보세요.",
+   "dur": 2.771,
+   "syllablesPerSec": 6.86,
+   "src": "A11.wav",
+   "key": "cd7c6ba8b64bf3b339249338641c3120",
+   "words": 9
+  }
+ ]
+}

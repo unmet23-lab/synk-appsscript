@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "F1",
+ "text": "이상한 게 나왔어요.",
+ "dur": 1.114,
+ "words": [
+  {
+   "text": "이상한",
+   "start": 0.03,
+   "end": 0.291
+  },
+  {
+   "text": "게",
+   "start": 0.352,
+   "end": 0.392
+  },
+  {
+   "text": "나왔어요.",
+   "start": 0.452,
+   "end": 1.114
+  }
+ ],
+ "source": {
+  "key": "279413e6a46e117403a9b7432bd0548e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1110,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 162
+ }
+}

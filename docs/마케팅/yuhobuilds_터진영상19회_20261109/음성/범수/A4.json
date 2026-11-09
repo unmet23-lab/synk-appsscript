@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "A4",
+ "text": "근데 조회수 칸을 보니까,",
+ "dur": 1.381,
+ "words": [
+  {
+   "text": "근데",
+   "start": 0.06,
+   "end": 0.252
+  },
+  {
+   "text": "조회수",
+   "start": 0.3,
+   "end": 0.603
+  },
+  {
+   "text": "칸을",
+   "start": 0.651,
+   "end": 0.859
+  },
+  {
+   "text": "보니까,",
+   "start": 0.907,
+   "end": 1.381
+  }
+ ],
+ "source": {
+  "key": "52dad1420fc38092819e273000bebbe0",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1110,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 144
+ }
+}

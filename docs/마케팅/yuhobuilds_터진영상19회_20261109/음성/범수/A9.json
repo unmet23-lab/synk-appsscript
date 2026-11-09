@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "A9",
+ "text": "안 재 봤으면, 이걸 그대로 믿었을 거예요.",
+ "dur": 2.413,
+ "words": [
+  {
+   "text": "안",
+   "start": 0.03,
+   "end": 0.119
+  },
+  {
+   "text": "재",
+   "start": 0.163,
+   "end": 0.208
+  },
+  {
+   "text": "봤으면,",
+   "start": 0.253,
+   "end": 0.714
+  },
+  {
+   "text": "이걸",
+   "start": 1.071,
+   "end": 1.22
+  },
+  {
+   "text": "그대로",
+   "start": 1.265,
+   "end": 1.503
+  },
+  {
+   "text": "믿었을",
+   "start": 1.547,
+   "end": 1.86
+  },
+  {
+   "text": "거예요.",
+   "start": 1.905,
+   "end": 2.413
+  }
+ ],
+ "source": {
+  "key": "98a39d92d0e8f1f45c2c0d592be1246d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1110,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 142
+ }
+}

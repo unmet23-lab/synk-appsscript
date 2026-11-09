@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "A1",
+ "text": "에이아이한테 요즘 터진 영상을 찾아 달랬더니, 스물두 편을 줬어요.",
+ "dur": 3.41,
+ "words": [
+  {
+   "text": "에이아이한테",
+   "start": 0.02,
+   "end": 0.537
+  },
+  {
+   "text": "요즘",
+   "start": 0.588,
+   "end": 0.769
+  },
+  {
+   "text": "터진",
+   "start": 0.821,
+   "end": 1.067
+  },
+  {
+   "text": "영상을",
+   "start": 1.104,
+   "end": 1.389
+  },
+  {
+   "text": "찾아",
+   "start": 1.428,
+   "end": 1.583
+  },
+  {
+   "text": "달랬더니,",
+   "start": 1.622,
+   "end": 2.022
+  },
+  {
+   "text": "스물두",
+   "start": 2.358,
+   "end": 2.656
+  },
+  {
+   "text": "편을",
+   "start": 2.72,
+   "end": 2.901
+  },
+  {
+   "text": "줬어요.",
+   "start": 2.939,
+   "end": 3.379
+  }
+ ],
+ "source": {
+  "key": "1a428bb3d3c7cb6bae0e1ab396dbcd3d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1110,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.03,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 181
+ }
+}

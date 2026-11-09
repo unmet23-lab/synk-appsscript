@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "A5",
+ "text": "스물두 칸 전부, 확인 못 함.",
+ "dur": 1.772,
+ "words": [
+  {
+   "text": "스물두",
+   "start": 0.02,
+   "end": 0.302
+  },
+  {
+   "text": "칸",
+   "start": 0.383,
+   "end": 0.463
+  },
+  {
+   "text": "전부,",
+   "start": 0.524,
+   "end": 0.766
+  },
+  {
+   "text": "확인",
+   "start": 1.068,
+   "end": 1.29
+  },
+  {
+   "text": "못",
+   "start": 1.35,
+   "end": 1.451
+  },
+  {
+   "text": "함.",
+   "start": 1.512,
+   "end": 1.772
+  }
+ ],
+ "source": {
+  "key": "9e56cb5996bc377462aa0e0c3e2be76c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1110,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 144
+ }
+}

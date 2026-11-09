@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "A8",
+ "text": "까닭까지 적어 준 이 영상, 조회가 열아홉 회예요.",
+ "dur": 2.654,
+ "words": [
+  {
+   "text": "까닭까지",
+   "start": 0.02,
+   "end": 0.447
+  },
+  {
+   "text": "적어",
+   "start": 0.492,
+   "end": 0.668
+  },
+  {
+   "text": "준",
+   "start": 0.713,
+   "end": 0.816
+  },
+  {
+   "text": "이",
+   "start": 0.86,
+   "end": 0.875
+  },
+  {
+   "text": "영상,",
+   "start": 0.919,
+   "end": 1.228
+  },
+  {
+   "text": "조회가",
+   "start": 1.582,
+   "end": 1.861
+  },
+  {
+   "text": "열아홉",
+   "start": 1.92,
+   "end": 2.23
+  },
+  {
+   "text": "회예요.",
+   "start": 2.347,
+   "end": 2.654
+  }
+ ],
+ "source": {
+  "key": "7be7687730a94cf16b8f9bcc555b940b",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1110,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 157
+ }
+}

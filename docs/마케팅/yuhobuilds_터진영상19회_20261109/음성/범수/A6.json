@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "A6",
+ "text": "조회수도 모르면서, 터진 까닭을 쓴 거예요.",
+ "dur": 2.234,
+ "words": [
+  {
+   "text": "조회수도",
+   "start": 0.02,
+   "end": 0.352
+  },
+  {
+   "text": "모르면서,",
+   "start": 0.404,
+   "end": 0.816
+  },
+  {
+   "text": "터진",
+   "start": 1.042,
+   "end": 1.281
+  },
+  {
+   "text": "까닭을",
+   "start": 1.321,
+   "end": 1.653
+  },
+  {
+   "text": "쓴",
+   "start": 1.693,
+   "end": 1.799
+  },
+  {
+   "text": "거예요.",
+   "start": 1.852,
+   "end": 2.234
+  }
+ ],
+ "source": {
+  "key": "438f32007a391c51b176479f224f532d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1110,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.03,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 145
+ }
+}
