@@ -133,7 +133,8 @@ test('video and delivery are one screen: one player, the final first, files and 
   const waiting=projectView(state(roomProject({status:'confirmed',approvedAt:at,rounds:[round('images')]},{stage:'review',versions:[approved]}),{tab:'review'}));
   assert.match(waiting,/시안 승인을 마쳤어요[\s\S]*최종 파일을 준비하고 있어요/);assert.doesNotMatch(waiting,/>파일 받기</,'D7a');
   const open=projectView(state(roomProject({status:'confirmed',rounds:[round('images')]},{stage:'review',versions:[preview]}),{tab:'review'}));
-  assert.match(open,/>파일 받기</,'before approval a preview can still be taken');assert.match(open,/data-action="approve" data-id="v1"/);
+  // 판 4: 고객 방에서는 승인 전 시안을 내려받지 않는다(파일은 최종본 납품에서만 — 결제 · 승인 전에 원본이 나가지 않게).
+  assert.doesNotMatch(open,/>파일 받기</,'before approval a preview is not handed out');assert.match(open,/data-action="approve" data-id="v1"/);
   const got=projectView(state(delivered({closeout:{deliveryKey:'k1',approvedPreviewId:'v1',canConfirm:false,receipt:{confirmedAt:at},files:[]}}),{tab:'history'}));
   assert.match(got,/<b>수령 확인 완료<\/b>/);assert.doesNotMatch(got,/data-action="confirm-delivery"/);
   const early=projectView(state(delivered({stage:'review',closeout:{deliveryKey:'k1',approvedPreviewId:'v1',canConfirm:false,files:[]}}),{tab:'history'}));
@@ -218,9 +219,9 @@ test('argon 3a: the example draft scenes keep the head, the ask hint only while 
   assert.match(read('film.css'),/\(min-width:821px\) and \(max-width:1000px\) and \(min-aspect-ratio:10001\/10000\)\{\.sx-head-steps \.sx-steps-foot\{display:none\}\.sx-room>\.sx-room-films\{display:block\}\}/);
   const done=projectView(state(delivered(),{tab:'history'}));
   // Fable 최종(11-08) P2: 1366×650 기둥에 들게 단추는 문장 뒤 같은 줄, 수령 확인 뒤에는 「언제든 다시」를 확인 줄에 합친다.
-  assert.match(done,/파일은 여기서 언제든 다시 받으실 수 있어요\. 다른 형식이나 길이가 필요하면 담당자에게 알려 주세요\. <span class="sx-deliver-links"><button type="button" class="sx-quiet sx-j-ask-open " data-room-do="journal">담당자에게 묻기<\/button><\/span><\/p>/);
+  assert.match(done,/파일은 이 방이 열려 있는 동안 다시 받으실 수 있어요\. 다른 형식이나 길이가 필요하면 담당자에게 알려 주세요\. <span class="sx-deliver-links"><button type="button" class="sx-quiet sx-j-ask-open " data-room-do="journal">담당자에게 묻기<\/button><\/span><\/p>/);
   const got=projectView(state(delivered({closeout:{deliveryKey:'k1',approvedPreviewId:'v1',canConfirm:false,receipt:{confirmedAt:at},files:[]}}),{tab:'history'}));
-  assert.match(got,/<\/time> · 파일은 여기서 언제든 다시 받으실 수 있어요\.<\/p>/);assert.match(got,/<p class="sx-small sx-deliver-foot">다른 형식이나 길이가/);
+  assert.match(got,/<\/time> · 프로젝트를 마치면 이 방이 닫혀요\. 받은 파일은 따로 보관해 주세요\.<\/p>/);assert.match(got,/<p class="sx-small sx-deliver-foot">다른 형식이나 길이가/);
   // Fable 최종 P3: 지운 예시 머리 상수를 옛 납품 화면이 부르지 않는다(예시가 옛 길로 가면 화면이 비던 지뢰).
   assert.doesNotMatch(read('views.mjs'),/EXAMPLE_LOGO/);
   assert.match(read('film.css'),/\.sx-room-bar\.is-head::before\{content:'';position:absolute;z-index:-1;left:calc\(-1\*var\(--sx-m\)\)/,'the example head shade starts at the screen edge, not as a box (Fable -c FA2)');

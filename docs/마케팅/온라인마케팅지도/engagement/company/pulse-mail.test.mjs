@@ -356,3 +356,11 @@ test('판 4 · 함 밖 한 통(sendDirect · 다시 열기 코드): 꺼져 있�
   assert.match(f.service.secretHash('x'),/^[0-9a-f]{64}$/);assert.notEqual(f.service.secretHash('x'),f.service.secretHash('y'));
   assert.equal(f.service.addressKey('Client@Example.com'),f.service.addressKey('client@example.com'));
 });
+test('판 4 GPT GA3: 접수 확인은 넣을 때의 주소로만 — 그사이 주소를 바꾸면 보내지 않는다',async t=>{
+  const f=await fixture(t);await f.connect();f.advance(1);
+  const row=f.project({studio:{request:{number:'P-1110-AAAA',answers:{email:'first@example.com'},rounds:[]}}});
+  assert.ok(f.service.receipt(row.id));
+  const live=f.store.get('clientProjects',row.id);f.store.put('clientProjects',row.id,{...live,studio:{...live.studio,request:{...live.studio.request,answers:{email:'other@example.com'}}}});
+  f.advance(1);await f.service.tick();
+  assert.equal(f.relay.sent.length,0);assert.equal(f.outbox()[0].state,'skipped');assert.equal(f.outbox()[0].reason,'changed');
+});

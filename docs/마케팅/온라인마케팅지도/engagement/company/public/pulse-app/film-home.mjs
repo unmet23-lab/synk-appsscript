@@ -43,7 +43,7 @@ const INTRO_PROMISES=[
 ];
 const STAGES=[
   [k('의뢰서를 써요'),k('제품 이름, 올릴 곳, 사진 몇 장이면 돼요. 쓰는 동안 화면에서 어떻게 보일지 바로 보여 드려요.')],
-  [k('저희가 먼저 확인해요'),k('빠진 게 있으면 그 칸만 다시 여쭤요. 같은 말을 두 번 묻지 않아요. 진행과 값도 이때 안내해 드려요.')],
+  [k('저희가 먼저 확인해요'),k('빠진 게 있으면 그 칸만 다시 여쭤요. 같은 말을 두 번 묻지 않아요. 방향 두 안과 값 · 받으실 날을 함께 보내 드리고, 결제는 글 콘티를 보신 뒤 크몽에서 해요.')],
   [k('1차안을 받아요'),k('모델, 광고가 남길 한 문장과 글 콘티, 모든 컷의 장면 이미지를 영상 전에 차례로 보여 드려요. 컷마다 의견을 남기세요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요.')],
   [k('확인하신 컷으로 만들어요'),k('목소리와 음악을 먼저 만들고 그 박자에 컷을 맞춰요. 제품 · 로고 · 글자는 실제 파일을 그대로 얹어요.')],
   [k('파일을 받아요'),k('올릴 곳에 맞는 파일로 받아요. 다음 편도 같은 모델과 같은 자막 규격으로 이어요.')],
@@ -146,11 +146,13 @@ export function openScreening(film,{onClose}={}){
 }
 
 const workRow=film=>`<li data-in><button type="button" class="sx-work" data-work="${esc(film.id)}"><span class="sx-work-name sx-serif">${esc(filmTitle(film))}</span><span class="sx-work-line sx-small"><span>${esc(filmLine(film))}${film.tag?` · ${esc(t(film.tag))}`:''}</span></span></button></li>`;
-const inviteForm=entryError=>`<form class="sx-invite" data-form="invite" data-entry-invite ${entryError?'':'hidden'}>${entryError?`<div class="sx-invite-alert" role="alert"><strong>${esc(entryError.title)}</strong><p>${esc(entryError.text)}</p></div>`:''}<label><span class="sx-small">${esc(t('담당자에게 받은 링크'))}</span><input name="invite" type="text" maxlength="3000" required placeholder="https://workspace.synk.im/pulse-app/#invite=…" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="url"></label><button type="submit" class="sx-go" data-mutate><span>${esc(t('열기',null,'open'))}</span>${arrow}</button><p class="sx-small">${esc(t('가입이나 비밀번호 없이 열려요. 연결하면 이 프로젝트의 자료와 대화만 볼 수 있어요.'))}</p><button type="button" class="sx-small sx-link" data-action="retry">${esc(t('이 기기에서 다시 확인'))}</button><button type="button" class="sx-small sx-invite-close" data-entry="close">${esc(t('닫기'))}</button></form>`;
+// 내 프로젝트 다시 열기(판 4): 위는 메일로 코드 받기(의뢰서에 적은 메일 → 여섯 자리 → 열림, 둘 이상이면 고르기 — 앱이 서버를 보고 켤 때만 보인다),
+// 아래는 접수증 · 담당자에게 받은 링크 붙여 넣기. 메일에는 방 열쇠를 넣지 않는다 — 코드는 10분 동안 한 번만 쓴다.
+const inviteForm=entryError=>`<div class="sx-invite" data-entry-invite ${entryError?'':'hidden'}>${entryError?`<div class="sx-invite-alert" role="alert"><strong>${esc(entryError.title)}</strong><p>${esc(entryError.text)}</p></div>`:''}<form class="sx-invite-form sx-invite-mail" data-form="mail-open" data-entry-mail data-step="email" novalidate hidden><p class="sx-body sx-invite-head">${esc(t('메일로 다시 열기'))}</p><label data-mail-step="email"><span class="sx-small">${esc(t('의뢰서에 적은 메일'))}</span><input name="email" type="email" maxlength="254" autocomplete="email" autocapitalize="off" spellcheck="false"></label><label data-mail-step="code" hidden><span class="sx-small">${esc(t('진행 중인 의뢰가 있으면 이 주소로 코드를 보냈어요. 메일의 여섯 자리를 넣어 주세요.'))}</span><input name="code" type="text" maxlength="7" autocomplete="one-time-code" inputmode="numeric"></label><div class="sx-mail-pick" data-mail-step="pick" hidden></div><input class="sx-hp" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true"><button type="submit" class="sx-go" data-mutate><span data-mail-go>${esc(t('코드 받기'))}</span>${arrow}</button><p class="sx-small" data-mail-help hidden>${esc(t('몇 분 안에 오지 않으면 스팸함을 보시고, 그래도 없으면 hello@synk.im으로 접수 번호를 보내 주세요.'))} <button type="button" class="sx-link" data-action="mail-again">${esc(t('다른 주소로 다시 받기'))}</button></p></form><form class="sx-invite-form" data-form="invite"><label><span class="sx-small">${esc(t('접수증이나 담당자에게 받은 링크'))}</span><input name="invite" type="text" maxlength="3000" required placeholder="https://workspace.synk.im/pulse-app/#invite=…" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="url"></label><button type="submit" class="sx-go" data-mutate><span>${esc(t('열기',null,'open'))}</span>${arrow}</button></form><p class="sx-small">${esc(t('가입이나 비밀번호 없이 열려요. 연결하면 이 프로젝트의 자료와 대화만 볼 수 있어요.'))}</p><button type="button" class="sx-small sx-link" data-action="retry">${esc(t('이 기기에서 다시 확인'))}</button><button type="button" class="sx-small sx-invite-close" data-entry="close">${esc(t('닫기'))}</button></div>`;
 
 const pages=({start,demoHref})=>[
   {layer:'reel',html:`<div class="sx-hero-copy"><p class="sx-kicker" data-in>${esc(t('SYNK PULSE · AI 광고 제작'))}</p><h1 class="sx-display">${lines(HERO_TITLE)}</h1><p class="sx-body sx-hero-lead" data-in>${esc(t(HERO_LEAD))}</p></div>
-    <div class="sx-hero-act"><button type="button" class="sx-credit" data-watch-now data-in><b data-cr-name></b> <span data-cr-line></span><em data-cr-note></em></button><button type="button" class="sx-go is-solid" data-entry="start" data-in><span data-start-label>${esc(start)}</span>${arrow}</button><button type="button" class="sx-open-m sx-small" data-entry="open" data-in>${esc(t('받은 링크로 내 프로젝트 열기'))}</button></div>`},
+    <div class="sx-hero-act"><button type="button" class="sx-credit" data-watch-now data-in><b data-cr-name></b> <span data-cr-line></span><em data-cr-note></em></button><button type="button" class="sx-go is-solid" data-entry="start" data-in><span data-start-label>${esc(start)}</span>${arrow}</button><button type="button" class="sx-open-m sx-small" data-entry="open" data-in>${esc(t('내 프로젝트 다시 열기'))}</button></div>`},
   {layer:'reel',cls:'is-works',veil:true,html:`<header class="sx-works-head"><p class="sx-kicker" data-in>${esc(t('완성 광고'))}</p><h2 class="sx-body" data-in>${esc(t('SYNK가 끝까지 만든 광고예요. 가상 브랜드로 만든 자체 작품이에요. 새 작품은 완성되는 대로 더해요.'))}</h2></header>
     <div class="sx-works-wrap"><ol class="sx-works">${OWN.map(workRow).join('')}</ol>${CONTEST?`<button type="button" class="sx-work is-contest" data-work="${esc(CONTEST.id)}" data-in><span class="sx-small">${esc(t('공모전 출품작'))}</span><span class="sx-work-name sx-serif">${esc(filmTitle(CONTEST))}</span><span class="sx-work-line sx-small">${esc(filmLine(CONTEST))}</span></button>`:''}</div>`},
   {layer:'none',cls:'is-check',html:`<div class="sx-check"><p class="sx-kicker" data-in>${esc(t('이렇게 만들어요'))}</p><h2 class="sx-display">${lines([k('영상 전에 세 번 확인해요')])}</h2><p class="sx-body sx-check-lead" data-in>${esc(t(CHECK_LEAD))}</p>
@@ -163,7 +165,7 @@ const pages=({start,demoHref})=>[
     </div>`},
   {layer:'none',cls:'is-paper',html:`<ol class="sx-promises">${INTRO_PROMISES.map(([title,text,link],i)=>`<li data-in><span class="sx-no">${pad(i+1)}</span><h3 class="sx-serif">${esc(t(title))}</h3><p class="sx-body">${esc(t(text))}${link?` ${link()}`:''}</p></li>`).join('')}</ol>`},
   {layer:'shard',cls:'is-stages',html:`<h2 class="sx-display">${lines([k('맡기면 이렇게 진행돼요')])}</h2><ol class="sx-stages">${STAGES.map(([title,text],i)=>`<li data-in><span class="sx-no">${pad(i+1)}</span><h3 class="sx-serif">${esc(t(title))}</h3><p class="sx-body">${esc(t(text))}</p></li>`).join('')}</ol>
-    <p class="sx-after" data-in><span class="sx-body">${esc(t('맡기신 뒤에는 초대 링크 하나로 시안을 보고 의견을 남기고, 최종 파일까지 한곳에서 받아요.'))}</span>${demoOn()?` <a class="sx-link" href="${esc(demoHref)}" data-entry-demo>${DEMO_LABEL.after}</a>`:''}</p>`},
+    <p class="sx-after" data-in><span class="sx-body">${esc(t('맡기신 뒤에는 한 방에서 시안을 보고 의견을 남기고, 최종 파일까지 받아요.'))}</span>${demoOn()?` <a class="sx-link" href="${esc(demoHref)}" data-entry-demo>${DEMO_LABEL.after}</a>`:''}</p>`},
   {layer:'reel',cls:'is-maker',focus:'maejin-imbak',html:`<div class="sx-maker"><p class="sx-kicker" data-in>${esc(t('만드는 사람'))}</p><h2 class="sx-display">${lines([k('카메라 앞에 서 본 사람이 AI 모델의 연기를 연출해요')])}</h2><p class="sx-body" data-in>${esc(t('AI 광고가 어색해지는 곳은 대개 표정과 호흡, 말이 끝나는 타이밍이에요. SYNK PULSE는 엔터테인먼트·광고 업계에서 10년 일한 대표 유호가 연출해요.'))}</p><ul class="sx-maker-credits">${MAKER_CREDITS.map(line=>`<li class="sx-small" data-in>${esc(t(line))}</li>`).join('')}</ul></div>`},
   {layer:'end',cls:'is-end',html:`<div class="sx-end"><p class="sx-display">${lines(HERO_TITLE)}</p><button type="button" class="sx-go is-solid is-large" data-entry="start" data-in><span data-start-label>${esc(start)}</span>${arrow}</button><p class="sx-small" data-in>${esc(t(HERO_NOTE))}</p>
     <footer class="sx-foot" data-in><p class="sx-small">${esc(t(FOOT_NOTE))}</p><a class="sx-small sx-link" href="?mode=staff">${esc(t('제작자 공간'))}</a></footer></div>`},
@@ -175,7 +177,7 @@ export function entryView({demoHref='?demo=film',entryError=null,resume=false}={
   const list=pages({start:startLabel(resume),demoHref});
   return `<div class="sx-home${entryError?' has-entry-error':''}">
     <div class="sx-stage" aria-hidden="true">${LAYERS.map(layer=>`<div class="sx-layer sx-layer-${layer.id}" data-layer="${layer.id}">${layer.image?`<img src="${layer.image}" alt="" decoding="async">`:''}${layer.id==='reel'?'<video data-reel></video>':''}</div>`).join('')}<div class="sx-shade"></div><div class="sx-veil" data-veil></div></div>
-    <header class="sx-top"><a class="sx-logo" href="./" aria-label="${esc(t('SYNK PULSE 처음으로'))}"><img src="./assets/request/logo-paper.webp" alt="SYNK PULSE" width="164" height="44"></a><nav class="sx-top-nav" aria-label="${esc(t('바로 가기'))}"><button type="button" data-entry="open">${esc(t('받은 링크로 내 프로젝트 열기'))}</button>${demoOn()?`<a href="${esc(demoHref)}" data-entry-demo>${DEMO_LABEL.top}</a>`:''}${localeMenu()}</nav></header>
+    <header class="sx-top"><a class="sx-logo" href="./" aria-label="${esc(t('SYNK PULSE 처음으로'))}"><img src="./assets/request/logo-paper.webp" alt="SYNK PULSE" width="164" height="44"></a><nav class="sx-top-nav" aria-label="${esc(t('바로 가기'))}"><button type="button" data-entry="open">${esc(t('내 프로젝트 다시 열기'))}</button>${demoOn()?`<a href="${esc(demoHref)}" data-entry-demo>${DEMO_LABEL.top}</a>`:''}${localeMenu()}</nav></header>
     <div class="sx-reel" tabindex="-1">${list.map((page,i)=>`<section class="sx-p ${page.cls||''}" data-i="${i}" data-layer="${page.layer}">${page.html}</section>`).join('')}</div>
     <nav class="sx-nums" aria-label="${esc(t('쪽'))}">${list.map((_,i)=>`<button type="button" data-go="${i}" aria-label="${esc(t('{n}쪽',{n:i+1}))}"><span>${i+1}</span></button>`).join('')}<i class="sx-nums-bar" aria-hidden="true"></i></nav>
     ${inviteForm(entryError)}
@@ -259,7 +261,7 @@ export function mountEntry(root,{onStart,onInvite,onDemo,animate=true,demoHref='
   // 휴대폰은 폼을 연 채 다른 쪽으로 넘길 수 있다 — 연 단추가 화면 밖이면 첫 화면을 그 쪽으로 되감지 않는다(검수 F1).
   const invite=$('[data-entry-invite]');let inviteFrom=null;
   const markInvite=open=>{invite.hidden=!open;$$('[data-entry="open"]').forEach(button=>button.setAttribute('aria-expanded',open?'true':'false'));};
-  const setInvite=(open,from)=>{markInvite(open);if(open){if(from)inviteFrom=from;invite.querySelector('input').focus();return;}const back=[inviteFrom,...$$('[data-entry="open"]')].find(button=>button?.isConnected&&button.offsetParent!==null);if(!back)return;const box=back.getBoundingClientRect();back.focus({preventScroll:box.bottom<=0||box.top>=innerHeight});};
+  const setInvite=(open,from)=>{markInvite(open);if(open){if(from)inviteFrom=from;invite.querySelector('form:not([hidden]) input:not(.sx-hp)')?.focus();return;}const back=[inviteFrom,...$$('[data-entry="open"]')].find(button=>button?.isConnected&&button.offsetParent!==null);if(!back)return;const box=back.getBoundingClientRect();back.focus({preventScroll:box.bottom<=0||box.top>=innerHeight});};
   markInvite(!invite.hidden);
   host.addEventListener('click',event=>{
     if(onDemo&&event.target.closest('[data-entry-demo]')){event.preventDefault();onDemo();return;}
@@ -273,7 +275,7 @@ export function mountEntry(root,{onStart,onInvite,onDemo,animate=true,demoHref='
     if(current===0&&cursor&&!event.target.closest('button,a,input,form,.sx-hero-copy'))watch(reelApi.current());
   });
   invite.addEventListener('keydown',event=>{if(event.key==='Escape')setInvite(false);});
-  if(onInvite)$('[data-entry-invite]').addEventListener('submit',event=>{event.preventDefault();onInvite(event.target.invite.value);});
+  if(onInvite)$('[data-entry-invite]').addEventListener('submit',event=>{if(event.target.dataset.form!=='invite')return;event.preventDefault();onInvite(event.target.invite.value);});
   // 쇼릴 위에서는 커서가 곧 재생 안내다(마우스일 때만).
   let cursorRaf=0,onPointer=null;
   if(typeof matchMedia==='function'&&matchMedia('(hover:hover) and (pointer:fine)').matches&&!reduced()){
@@ -286,12 +288,14 @@ export function mountEntry(root,{onStart,onInvite,onDemo,animate=true,demoHref='
   }
   activate(0);sections[0].classList.add('is-in');
   return {
+    // 메일의 「?open=mail」로 왔을 때 앱이 다시 열기 판을 열어 둔다(판 4).
+    openInvite(){if(invite.hidden)setInvite(true);},
     // 받은 링크 오류 · 이어 쓰기는 쇼릴을 끊지 않고 글만 바꾼다.
     // 예시 · 의뢰서 덮개가 열리고 닫힐 때(app.mjs overlayState).
     pause(){hold=true;reelApi.suspend();},
     resume(){hold=false;if(list[current]?.layer==='reel'&&!screening)reelApi.play();},
     update({resume,entryError,busy}={}){
-      if(busy!==undefined){const send=$('[data-entry-invite] button[type=submit]');if(send){send.disabled=!!busy;send.querySelector('span').textContent=busy?t('확인하고 있어요'):t('열기',null,'open');}}
+      if(busy!==undefined){const send=$('[data-form="invite"] button[type=submit]');if(send){send.disabled=!!busy;send.querySelector('span').textContent=busy?t('확인하고 있어요'):t('열기',null,'open');}}
       if(resume!==undefined)$$('[data-start-label]').forEach(node=>{node.textContent=startLabel(resume);});
       if(entryError!==undefined){
         host.classList.toggle('has-entry-error',!!entryError);

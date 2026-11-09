@@ -672,7 +672,8 @@ export function requestView(studio,{staff=false}={}){
   const request=studio.request;if(!request)return null;
   const {notes,contact,...safe}=request;
   // 담당자가 고친 메일 주소 · 끈 사실은 손님 보기에 내리지 않는다(고객 방은 초대 링크를 가진 누구나 연다).
-  if(staff)return {...safe,notes:notes||[],contact:contact||null};
+  // paymentFlow는 직원 보기에도 둔다 — 직원 화면의 결제 줄 · 글 콘티 판 고르기 · 의견 다시 묶기는 이 서버에서만 켠다(화면 묶음이 서버보다 먼저 나가도 옛 서버에 모르는 칸을 보내지 않게).
+  if(staff)return {...safe,notes:notes||[],contact:contact||null,paymentFlow:true};
   // 결제는 상태 · 때 · 값 · 받으실 날만 내린다(크몽 주문 번호 · 취소 사유 · 담당자 이름은 직원만).
   if(safe.payment){const {status,requestedAt,confirmedAt,cancelledAt,amount,dueDate}=safe.payment;safe.payment={status,...(requestedAt?{requestedAt}:{}),...(confirmedAt?{confirmedAt}:{}),...(cancelledAt?{cancelledAt}:{}),...(amount?{amount}:{}),...(dueDate?{dueDate}:{})};}
   // paymentFlow: 이 서버가 결제 상태와 제작 시작 동의(terms)를 안다 — 화면은 이것이 있을 때만 terms를 보낸다(서버보다 화면 묶음이 먼저 나가도 승인이 막히지 않게).

@@ -72,7 +72,7 @@ async function fixture(t){
       await customerAct({action:'answer_direction',optionId:state.project.studio.request.directionProposal.options[0].id});
       row=(await staff('/api/client-projects/'+id+'/studio')).data.project;
     }
-    return {id,number:sent.data.number,get row(){return row;},set row(value){row=value;},act,room,customerCall,customerAct,upload,refresh:async()=>{row=(await staff('/api/client-projects/'+id+'/studio')).data.project;return row;}};
+    return {id,number:sent.data.number,open:()=>call('/pulse/api/open',{body:{invite:sent.data.invite}}),get row(){return row;},set row(value){row=value;},act,room,customerCall,customerAct,upload,refresh:async()=>{row=(await staff('/api/client-projects/'+id+'/studio')).data.project;return row;}};
   }
   return {app,call,staff,fake,jar,connect,order,advance:minutes=>{offset+=minutes*60000;}};
 }
@@ -93,6 +93,7 @@ test('판 4 결제: 글 콘티 승인 뒤 결제 요청 · 확인 전에는 장�
   await o.act({action:'payment_request',amount:290000});
   let room=await o.room();
   assert.equal(room.project.studio.request.paymentFlow,true);
+  assert.equal(o.row.studio.request.paymentFlow,true,'the staff view carries the payment-flow flag too (desk payment row · draft kind · relink list)');
   assert.deepEqual(Object.keys(room.project.studio.request.payment).sort(),['amount','requestedAt','status']);
   assert.equal(room.project.studio.request.payment.status,'requested');
   const customerEvents=()=>f.app.store.get('clientProjects',o.id).notificationEvents.filter(event=>event.audiences?.includes('customer')).map(event=>event.type);
@@ -240,4 +241,27 @@ test('판 4 B13 · B10: 이름은 .png인데 속이 JPEG인 그림은 실제 형
   // 영상 서명은 고치지 않는다
   assert.equal((await o.upload('clip.mp4',png,'video/mp4')).status,415);
   assert.equal((await o.upload('fake.png',Buffer.from('not an image at all'),'image/png')).status,415);
+});
+test('판 4 GPT GA1 · GA2: 고르기 표는 고를 때 초대 판 · 받는 주소를 다시 보고, 검토자가 있는 프로젝트는 새 시안에 의견을 묶지 않는다',async t=>{
+  const f=await fixture(t);await f.connect();
+  const a=await f.order(),b=await f.order({name:'두 번째 편'});f.jar.clear();
+  await f.call('/pulse/api/mail-open',{body:{email:'buyer@pulse-synthetic.test'}});await f.app.pulseMailOpen.idle();
+  const code=f.fake.sent.filter(mail=>mail.subject.startsWith('〔SYNK PULSE〕 프로젝트 열기 코드')).at(-1).subject.match(/(\d{6})$/)[1];
+  const choose=await f.call('/pulse/api/mail-open/verify',{body:{email:'buyer@pulse-synthetic.test',code}});
+  assert.equal(choose.status,200);assert.ok(choose.data.choices);
+  // 고르기 전에 담당자가 b의 초대를 새로 냈다 → 그 표로는 b가 열리지 않는다
+  const row=f.app.store.get('clientProjects',b.id);f.app.store.put('clientProjects',b.id,{...row,inviteRevision:row.inviteRevision+1});
+  assert.equal((await f.call('/pulse/api/mail-open/pick',{body:{ticket:choose.data.choices.ticket,projectId:b.id}})).status,401);
+  // 검토자가 있는 프로젝트: 새 시안에 의견을 자동으로 묶지 않는다(지금처럼 담당자가 검토 요청)
+  assert.equal((await a.open()).status,200);
+  const reviewer=f.app.store.createUser({name:'검토',email:'reviewer@pulse-synthetic.test',role:'admin'});
+  await a.act(scene({imageUrl:'https://example.com/cut-1.png'}));await a.act({action:'payment_confirm'});await a.act({action:'send_draft',oneLine:'한 문장',note:''});
+  await a.customerAct({action:'approve_draft',round:1,terms:true});
+  const live=f.app.store.get('clientProjects',a.id);f.app.store.put('clientProjects',a.id,{...live,reviewerId:reviewer.id});
+  const version=async label=>{const current=await a.refresh();const result=await f.staff(`/api/client-projects/${a.id}/versions`,{body:{revision:current.revision,kind:'preview',label,url:`https://example.com/${label}.mp4`}});assert.equal(result.status,200,JSON.stringify(result.data));return a.refresh();};
+  let current=await version('v1');
+  const state=await a.room();
+  assert.equal((await f.call('/pulse/api/action',{body:{revision:state.project.revision,action:'feedback',versionId:current.versions.at(-1).id,text:'더 밝게'},csrf:state.csrf})).status,200);
+  current=await version('v2');
+  assert.equal(current.messages.find(message=>message.author==='customer'&&message.action==='feedback').workflow?.status||'open','open');
 });

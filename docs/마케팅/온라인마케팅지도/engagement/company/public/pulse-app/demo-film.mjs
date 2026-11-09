@@ -1,7 +1,7 @@
 import {mountRequestFlow} from './request-flow.mjs';
 import {emptyAnswers} from './request-data.mjs';
-import {roomView,mountRoom,draftView,mountDraft,exampleHead,journalView,journalOverlay,journalSetOpen,journalFocus,journalRelease,JOURNAL_SHEET} from './film-views.mjs';
-import {modelCard,journalModel} from './room-view.mjs';
+import {roomView,mountRoom,draftView,mountDraft,directionView,mountDirection,exampleHead,journalView,journalOverlay,journalSetOpen,journalFocus,journalRelease,JOURNAL_SHEET} from './film-views.mjs';
+import {journalModel,directionModel} from './room-view.mjs';
 import {projectView} from './views.mjs';
 import {mountReview} from './film-review.mjs';
 import {esc} from './api.mjs';
@@ -12,7 +12,7 @@ const S='./assets/request/';
 const still=name=>`${S}${name}.webp`;
 export const DEMO_FILES=[{src:still('file-gift-set'),label:'세트 정면',size:'3024 × 4032'},{src:still('file-gift-ampoule'),label:'앰플',size:'3024 × 4032'},{src:still('file-gift-jar'),label:'크림',size:'3024 × 4032'}];
 export const DEMO_BRIEF=[['광고할 것','霜の肌理 홀리데이 세트 · 화장품 · 뷰티'],['올릴 곳','릴스 · 쇼츠 · 틱톡'],['길이 · 구성','15초 · 한 편 · 29만원부터'],['보는 사람','연말 선물로 화장품 세트를 고르는 사람'],['남길 것','서리꽃이 피는 순간'],['화면 글자','霜の肌理\n美容液とクリームのホリデーコフレ'],['피할 말','재생, 치료, 주름 제거'],['무엇으로','한 장면의 임팩트로'],['모델','사람 없이 제품만'],['받고 싶은 날','11월 21일 (토)'],['최종 확인','의뢰하신 분']];
-const ROOM={title:'霜の肌理 홀리데이 세트 15초 광고',number:'P-1104-7F3A',manager:'김하늘',brief:DEMO_BRIEF.slice(0,6),files:DEMO_FILES,others:[],answered:[],canEdit:true,asks:[{id:'demo-logo',label:'로고 파일',why:'끝 화면에 그대로 얹어요. AI · SVG가 가장 좋고, 배경이 없는 PNG도 괜찮아요.'},{id:'demo-top',label:'크림 뚜껑을 위에서 찍은 사진',why:'결정이 내려앉는 컷의 기준이에요. 원본이 있으면 보내 주세요.'}],proposal:{...modelCard('F01'),note:'세트를 손에 든 컷을 더한다면 이 모델이 어울려요.'}};
+const ROOM={title:'霜の肌理 홀리데이 세트 15초 광고',number:'P-1104-7F3A',manager:'김하늘',brief:DEMO_BRIEF.slice(0,6),files:DEMO_FILES,others:[],answered:[],canEdit:true,asks:[{id:'demo-logo',label:'로고 파일',why:'끝 화면에 그대로 얹어요. AI · SVG가 가장 좋고, 배경이 없는 PNG도 괜찮아요.'},{id:'demo-top',label:'크림 뚜껑을 위에서 찍은 사진',why:'결정이 내려앉는 컷의 기준이에요. 원본이 있으면 보내 주세요.'}]};
 const CUTS=[
   {seconds:1.5,what:'깜깜한 유리 위에서 눈 결정 하나가 자라요. 얼음에 금이 가는 작은 소리로 시작해요.',say:'',text:'',shot:'sheet-gift-01'},
   {seconds:1.5,what:'결정이 화면을 채울 만큼 자라요. 뒤에는 빛망울만 남아요.',say:'',text:'',shot:'sheet-gift-03'},
@@ -26,25 +26,33 @@ const CUTS=[
 const ONE_LINE='서리꽃이 피는 순간을 담은 홀리데이 세트';
 const DRAFT={round:2,oneLine:ONE_LINE,cuts:CUTS,model:null,ratio:'9:16'};
 const SCRIPT={round:1,oneLine:ONE_LINE,cuts:CUTS.map(({src,...cut})=>cut),model:null,ratio:'9:16'};
+// 판 4 B5: 영상 전 확인 1/3은 「방향과 모델」이다(11-07부터 실제 앱). 霜の肌理는 사람 없이 제품만이라 모델 칸 없이 두 갈래 — 그림은 이 작품의 장면 이미지다.
+const DIRECTION_SHOTS={'demo-snow':still('w-gift-snow'),'demo-sphere':still('w-gift-sphere')};
+const DIRECTION={round:1,lead:'「서리꽃이 피는 순간」을 두 갈래로 나눴어요. 둘 다 사람 없이 제품만으로 가요.',modelId:'',price:290000,dueDate:'2026-11-21',revisions:2,options:[
+  {id:'demo-snow',name:'서리꽃',sentence:'눈 결정 하나가 자라 크림 뚜껑 위에 피어나요.',flow:[{at:'0:00',text:'깜깜한 유리 위에서 결정 하나가 자라요'},{at:'0:06',text:'유리구슬이 깨지는 순간 소리가 사라지고 모두 멈춰요'},{at:'0:11',text:'결정이 뚜껑에 앉아 피고, 두 제품이 나란히 서요'}],why:'남기실 말 「서리꽃이 피는 순간」을 그림 그대로 옮겨요. 한 장면의 임팩트로 가요.',recommended:true},
+  {id:'demo-sphere',name:'얼음 구슬',sentence:'서리 낀 유리구슬 속에서 세트가 천천히 모습을 드러내요.',flow:[{at:'0:00',text:'서리 낀 구슬 안에 두 제품이 희미하게 보여요'},{at:'0:05',text:'서리가 걷히며 앰플과 크림이 또렷해져요'},{at:'0:11',text:'구슬 앞에 이름이 떠요'}],why:'선물 상자를 여는 기대를 구슬 하나에 담아요. 움직임이 적어 차분하게 보여요.',recommended:false}]};
+// 결제 차례(판 4 B5): 글 콘티를 승인한 뒤 크몽에서 결제하는 카드 — 실제 방과 같은 payCard. 오른쪽에는 승인한 글 콘티가 선다.
+const PAY={status:'',requestedDay:'',price:'29만원',days:10,revisions:2,number:ROOM.number,photo:false};
 const demoBackend=()=>({answers:emptyAnswers(),step:'',save:async()=>{},later:()=>{},
   upload:(slot,file,onProgress)=>new Promise(resolve=>{let p=0;const timer=setInterval(()=>{p+=.2;onProgress(Math.min(1,p));if(p>=1){clearInterval(timer);resolve({id:String(Date.now())});}},140);}),
   submit:async()=>({number:'P-1104-7F3A',at:new Date().toISOString(),link:location.href})});
-const SCENES=[['request','의뢰서 쓰기'],['room','저희 차례일 때'],['ask','더 여쭐 때'],['model','모델 확인'],['script','글 콘티'],['draft','장면 이미지'],['review','영상 확인'],['history','납품']];
+const SCENES=[['request','의뢰서 쓰기'],['room','저희 차례일 때'],['ask','더 여쭐 때'],['direction','방향 고르기'],['script','글 콘티'],['pay','결제'],['draft','장면 이미지'],['review','영상 확인'],['history','납품']];
 const NOT_REAL='예시라 보내지 않아요. 실제 의뢰에서는 담당자에게 바로 전해져요.';
 // 예시 일지(판 3b): 장면마다 그 시점까지 담당자와 나눈 말 · 한 일. 실제 앱과 같은 journalModel로 만든다.
 const KST=(day,hm)=>`2026-11-0${day}T${hm}:00+09:00`;
-const EXAMPLE_ORDER=['room','ask','model','script','draft','review','history'];
+const EXAMPLE_ORDER=['room','ask','direction','script','pay','draft','review','history'];
 function exampleRequest(scene){
   const upto=EXAMPLE_ORDER.indexOf(scene),has=id=>upto>=EXAMPLE_ORDER.indexOf(id);
   const request={status:'submitted',number:ROOM.number,submittedAt:KST(1,'10:12'),answers:{name:'霜の肌理 홀리데이 세트',kind:'beauty',channels:['shorts'],package:'s15'},files:[],asks:[],rounds:[]};
   if(scene==='ask')request.asks=ROOM.asks.map(ask=>({...ask,status:'open',at:KST(1,'15:20')}));
-  if(has('model')){
+  if(has('direction')){
     request.asks=ROOM.asks.map((ask,i)=>({...ask,status:'answered',at:KST(1,'15:20'),answer:i?'원본이 있어 함께 보내요.':'배경 없는 PNG로 보냈어요.',answeredAt:KST(1,'16:05')}));
     Object.assign(request,{status:'confirmed',confirmedAt:KST(1,'17:40'),confirmedBy:'김하늘'});
-    request.modelProposal={modelId:ROOM.proposal.id,note:ROOM.proposal.note,at:KST(2,'10:10'),by:'김하늘',status:scene==='model'?'open':'accepted',...(scene==='model'?{}:{answeredAt:KST(2,'11:02')})};
-    if(scene!=='model')request.answers.models=[ROOM.proposal.id];
+    request.directionProposal={...DIRECTION,status:scene==='direction'?'open':'chosen',at:KST(2,'10:10'),by:'김하늘',...(scene==='direction'?{}:{chosenId:'demo-snow',answeredAt:KST(2,'11:02')})};
   }
-  if(has('script'))request.rounds.push({round:1,kind:'script',oneLine:ONE_LINE,note:'첫 1.5초는 음악 없이, 결정이 자라는 소리만 남겨요.',sentAt:KST(2,'16:30'),by:'김하늘',scenes:[],...(has('draft')?{approvedAt:KST(2,'18:05')}:{})});
+  if(has('script'))request.rounds.push({round:1,kind:'script',oneLine:ONE_LINE,note:'첫 1.5초는 음악 없이, 결정이 자라는 소리만 남겨요.',sentAt:KST(2,'16:30'),by:'김하늘',scenes:[],...(has('pay')?{approvedAt:KST(2,'18:05')}:{})});
+  if(has('pay'))request.scriptApprovedAt=KST(2,'18:05');
+  if(has('draft'))request.payment={status:'confirmed',amount:290000,requestedAt:KST(2,'18:40'),confirmedAt:KST(2,'19:20'),dueDate:'2026-11-21'};
   if(has('draft'))request.rounds.push({round:2,kind:'images',oneLine:ONE_LINE,note:'',sentAt:KST(3,'11:20'),by:'김하늘',scenes:[],...(has('review')?{approvedAt:KST(3,'14:10')}:{})});
   if(has('review'))request.approvedAt=KST(3,'14:10');
   return request;
@@ -157,17 +165,24 @@ export function mountFilmDemo(host,{internal=false,start='',onLeave,extra=[]}={}
     nav.querySelectorAll('[data-scene]').forEach(button=>{const on=button.dataset.scene===id;button.classList.toggle('is-on',on);if(on){button.setAttribute('aria-current','true');if(nav.scrollWidth>nav.clientWidth)nav.scrollLeft=button.offsetLeft-(nav.clientWidth-button.offsetWidth)/2;}else button.removeAttribute('aria-current');});
     const custom=extra.find(item=>item.id===id);if(custom){custom.render(root,go);return;}
     if(id==='request'){handle=mountRequestFlow(root,{backend:demoBackend(),onRoom:()=>go('room'),onExit:()=>go('room')});return;}
-    if(['room','ask','model'].includes(id)){
-      const stateName={room:'check',ask:'ask',model:'model'}[id],stage=id==='model'?'draft':'check';
-      let all=false;const draw=()=>{root.innerHTML=roomView({...ROOM,state:stateName,stage},{journal:exampleJournal(id,{place:'column',here:{tab:'overview'},all})});root.querySelector('.sx-room').classList.add('is-example');};draw();
+    if(id==='direction'){
+      const info=directionModel({title:ROOM.title,studio:{request:exampleRequest('direction')}});info.options=info.options.map(o=>({...o,src:DIRECTION_SHOTS[o.id]||''}));
+      root.innerHTML=directionView({...ROOM,state:'direction',stage:'draft',direction:info});root.querySelector('.sx-room')?.classList.add('is-example');
+      root.addEventListener('submit',event=>{const kind=event.target.dataset?.form;if(kind!=='direction-pick'&&kind!=='direction-neither')return;event.preventDefault();event.stopPropagation();if(kind==='direction-pick')go('script');else say(NOT_REAL);});
+      handle=mountDirection(root,info,{ui:{}});
+      mountRoom(root,{animate:false,onGo:to=>{if(to==='request')go('request');else if(to==='check'||to==='room')go('room');},onContact:()=>say(NOT_REAL),onPaper:()=>say('예시 자료예요.')});return;
+    }
+    if(['room','ask','pay'].includes(id)){
+      const stateName={room:'check',ask:'ask',pay:'pay'}[id],stage=id==='pay'?'draft':'check',more=id==='pay'?{pay:PAY,draft:SCRIPT,hasRound:true}:{};
+      let all=false;const draw=()=>{root.innerHTML=roomView({...ROOM,...more,state:stateName,stage},{journal:exampleJournal(id,{place:'column',here:{tab:'overview'},all})});root.querySelector('.sx-room').classList.add('is-example');};draw();
       bindExampleJournal(root,say,()=>{all=!all;const old=root.querySelector('[data-journal]'),box=document.createElement('div');box.innerHTML=exampleJournal(id,{place:'column',here:{tab:'overview'},all});old?.replaceWith(...box.children);});
       root.addEventListener('submit',event=>event.stopPropagation());
-      mountRoom(root,{onGo:to=>{if(to==='request')go('request');else if(to==='check'||to==='room')go('room');else if(to==='draft')go('script');},onModel:()=>go('script'),onEdit:()=>go('request'),onForm:()=>go('room'),onContact:()=>say(NOT_REAL),onFiles:()=>say('예시라 올리지 않아요. 실제 의뢰에서는 여기서 자료를 더 보내실 수 있어요.')});return;
+      mountRoom(root,{onGo:to=>{if(to==='request')go('request');else if(to==='check'||to==='room')go('room');else if(to==='draft')go('script');},onEdit:()=>go('request'),onForm:()=>go('room'),onContact:()=>say(NOT_REAL),onFiles:()=>say('예시라 올리지 않아요. 실제 의뢰에서는 여기서 자료를 더 보내실 수 있어요.')});return;
     }
     // 글 콘티 · 장면 이미지도 다른 장면과 같은 머리(이름 · 단계 · 묻기)를 단다 — 손님 앱의 「← 현황」은 머리가 대신한다.
     const draftHead=exampleHead({...ROOM,stage:'draft',hasRound:true},{tab:'draft'}),headGo=to=>{if(to==='request')go('request');else if(to==='check'||to==='room')go('room');};
     const sideJournal=(scene,all=false)=>exampleJournal(scene,{place:'side',here:{tab:'draft'},all}),bindDraftJournal=(root,scene)=>{let all=false;bindExampleJournal(root,say,()=>{all=!all;const old=root.querySelector('[data-journal]'),box=document.createElement('div');box.innerHTML=sideJournal(scene,all);old?.replaceWith(...[...box.children].filter(node=>node.matches('[data-journal]')));});};
-    if(id==='script'){root.innerHTML=draftView(SCRIPT,{head:draftHead,journal:sideJournal('script')});bindDraftJournal(root,'script');mountRoom(root,{animate:false,onGo:headGo,onContact:()=>say(NOT_REAL)});document.documentElement.classList.add('view-dr');handle=mountDraft(root,SCRIPT,{onBack:()=>go('room'),onApprove:()=>go('draft'),onSend:()=>go('room'),onRecast:()=>go('model')});return;}
+    if(id==='script'){root.innerHTML=draftView(SCRIPT,{head:draftHead,journal:sideJournal('script')});bindDraftJournal(root,'script');mountRoom(root,{animate:false,onGo:headGo,onContact:()=>say(NOT_REAL)});document.documentElement.classList.add('view-dr');handle=mountDraft(root,SCRIPT,{onBack:()=>go('room'),onApprove:()=>go('pay'),onSend:()=>go('room'),onRecast:()=>go('direction')});return;}
     if(id==='draft'){root.innerHTML=draftView(DRAFT,{head:draftHead,journal:sideJournal('draft')});bindDraftJournal(root,'draft');mountRoom(root,{animate:false,onGo:headGo,onContact:()=>say(NOT_REAL)});document.documentElement.classList.add('view-dr');handle=mountDraft(root,DRAFT,{onBack:()=>go('room'),onApprove:()=>go('review'),onSend:()=>go('room')});return;}
     if(id==='review'){state=exampleState();if(nextPanel){state.reviewPanel=nextPanel;nextPanel='';}bindProject(root);bindExampleJournal(root,say,()=>{state.journalAll=!state.journalAll;drawProject(root,'review');});drawProject(root,'review');return;}
     if(id==='history'){state=asFinal(exampleState());bindProject(root);bindExampleJournal(root,say,()=>{state.journalAll=!state.journalAll;drawProject(root,'history');});drawProject(root,'history');}

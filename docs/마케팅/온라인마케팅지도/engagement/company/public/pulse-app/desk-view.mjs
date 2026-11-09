@@ -6,7 +6,7 @@ const arrow='<span class="arw" aria-hidden="true">→</span>';
 const line=(label,action,extra='')=>`<button type="button" class="btn-line" data-action="${action}" ${extra}>${esc(label)}</button>`;
 const main=(label,action)=>`<button type="button" class="btn-main" data-action="${action}"><span>${esc(label)}</span>${arrow}</button>`;
 // 메일 알림 한 줄(판 2): 연결 · 받는 곳 · 순간마다 마지막 상태. 「Gmail에 넘김」까지만 안다 — 도착 · 반송은 founder@ 받은편지함에서 본다.
-const MAIL_MOMENT={direction_proposed:'방향 제안',draft_ready:'글 콘티',preview_ready:'영상 확인',final_ready:'납품'};
+const MAIL_MOMENT={request_received:'접수 확인',request_asked:'되묻기',direction_proposed:'방향 제안',draft_ready:'글 콘티',payment_requested:'결제 안내',images_ready:'장면 이미지',preview_ready:'영상 확인',final_ready:'납품'};
 const mailAt=at=>{const ms=Date.parse(at);if(!Number.isFinite(ms))return '';const k=new Date(ms+9*3600000).toISOString();return `${Number(k.slice(5,7))}/${Number(k.slice(8,10))} ${k.slice(11,16)}`;};
 function mailMoment(item){
   if(item.state==='sent')return `Gmail에 넘김 ${mailAt(item.at)}`;
@@ -44,6 +44,16 @@ function translationBlock(tr,canEdit){
   return `<section class="desk-tr"><h2 class="desk-h">손님에게 보일 ${esc(lang)} <span class="mono">${rows.length-gaps}/${rows.length}</span></h2><p class="desk-tr-note">이 의뢰는 ${esc(lang)}로 소통해요. 보내는 창마다 ${esc(lang)} 칸이 있고, 여기서는 이미 보인 글의 ${esc(lang)}를 넣거나 고쳐요. 확인한 ${esc(lang)}만 손님에게 보이고, 빠졌거나 원문이 바뀐 칸은 한국어 원문이 나가요.</p>${rows.length?`<details class="desk-tr-list" ${gaps?'open':''}><summary>${gaps?`손볼 칸 ${gaps}개`:'모두 확인했어요'} · 칸 ${rows.length}개</summary>${list}</details>`:`<p class="desk-tr-note">아직 손님에게 보인 직원 글이 없어요.</p>`}</section>`;
 }
 const ROUND_STATE=round=>round.approvedAt?'확인 끝':round.feedbackAt?`의견 ${round.changes||0}개`:'고객이 보는 중';
+// 결제 · 크몽(판 4): 손님이 크몽에서 접수 번호로 문의 → 담당자가 안전결제요청 → 결제 확인. 장면 이미지 판 · 시안은 결제 확인 뒤에만 보낸다(서버 문턱).
+const won=value=>Number.isSafeInteger(value)?(value%10000===0?`${value/10000}만원`:`${value.toLocaleString('ko-KR')}원`):'';
+function paymentBlock(r){
+  // 결제 상태를 아는 서버(paymentFlow)에서만 — 옛 서버에는 결제 동작이 없다.
+  if(!r.paymentFlow||!r.confirmed&&r.status!=='confirmed')return '';
+  const p=r.payment;
+  const state=!p?(r.payWaiting?'손님 화면에 결제 안내가 떠 있어요 · 크몽 문의(접수 번호)가 오면 결제 요청을 보내요':'결제 안내 전 · 손님이 글 콘티(사진은 첫 장)를 승인하면 결제 안내가 떠요'):p.status==='requested'?`크몽 결제 요청 보냄 · ${won(p.amount)} · ${mailAt(p.requestedAt)}`:p.status==='confirmed'?`결제 확인 · ${mailAt(p.confirmedAt)}${p.ref?` · ${p.ref}`:''}${p.dueDate?` · 받으실 날 ${p.dueDate}`:''}`:`결제 취소 · ${mailAt(p.cancelledAt)}${p.note?` · ${p.note}`:''}`;
+  const buttons=p?.status==='confirmed'?line('결제 취소 적기','desk-pay-cancel'):line(p?.status==='requested'?'결제 요청 다시 적기':'크몽에 결제 요청 보냄','desk-pay-request')+line('결제 확인','desk-pay-confirm')+(p?.status==='requested'?line('결제 취소 적기','desk-pay-cancel'):'');
+  return `<section class="desk-pay"><h2>결제 · 크몽</h2><p class="desk-sum"><i class="led ${p?.status==='confirmed'?'is-ok':'is-wait'}"></i> ${esc(state)}</p><p class="desk-at">장면 이미지 판과 시안은 결제를 확인한 뒤에 보내요. 크몽에서는 손님 문의(접수 번호)에 안전결제요청을 보내고, 결제가 들어오면 「결제 확인」을 눌러요.</p><div class="desk-pay-act">${buttons}</div></section>`;
+}
 function actions(r){
   if(r.canEdit===false)return '<p class="desk-sum">이 프로젝트는 보기만 할 수 있어요.</p>';
   if(r.status==='retired')return '<p class="desk-sum">보존 기한이 끝나 자료를 지운 의뢰예요.</p>';
@@ -65,6 +75,7 @@ export function deskView(r,{bar=true,top=''}={}){
         ${r.links===false?'':'<p class="desk-links"><button type="button" class="btn-text" data-action="tab" data-tab="strategy">제작 설계</button><button type="button" class="btn-text" data-action="tab" data-tab="storyboard">장면 구성</button><button type="button" class="btn-text" data-action="tab" data-tab="review">영상 확인</button><button type="button" class="btn-text" data-action="tab" data-tab="manage">프로젝트 관리</button></p>'}
         <dl class="kv">${r.brief.map(([key,value])=>`<div><dt>${esc(key)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>
         <h2 class="desk-h">받은 자료</h2><div class="contact is-wide">${r.files.map(file=>`<figure><img src="${esc(file.src)}" alt=""><figcaption>${esc(file.label)}${file.size?`<small>${esc(file.size)}</small>`:''}</figcaption></figure>`).join('')}</div>
+        ${r.staffFiles?.length?`<h2 class="desk-h">저희가 올린 그림</h2><div class="contact is-wide">${r.staffFiles.map(file=>`<figure><img src="${esc(file.src)}" alt=""><figcaption>${esc(file.label)}</figcaption></figure>`).join('')}</div>`:''}
         ${r.attachments?.length?`<h2 class="desk-h">내려받는 자료</h2><ul class="desk-files">${r.attachments.map(file=>`<li><a href="${esc(file.url)}" download>${esc(file.label)}</a></li>`).join('')}</ul>`:''}${translationBlock(r.translation,r.canEdit!==false)}
       </div>
       <aside class="desk-side">
@@ -74,6 +85,7 @@ export function deskView(r,{bar=true,top=''}={}){
         ${r.direction?`<section><h2>방향 제안 · ${r.direction.round}회차</h2><p class="desk-sum">${esc(r.direction.names.join(' · '))} · ${esc({open:'고객 답을 기다려요',chosen:`고객이 「${r.direction.chosen}」 골랐어요`,settled:`「${r.direction.chosen}」로 정리했어요`,declined:'모두 아니래요'}[r.direction.status]||'')}</p>${r.direction.answer?`<p>${esc(r.direction.answer)}</p>`:''}</section>`:''}
         ${proposal?`<section><h2>모델 제안</h2><p class="desk-sum">${esc(proposal.modelName||proposal.modelId||'')} · ${esc(proposalText)}</p>${proposal.answer?`<p>${esc(proposal.answer)}</p>`:''}</section>`:''}
         ${r.rounds?.length?`<section><h2>보낸 판</h2><ul class="checks">${r.rounds.map(round=>`<li><i class="led ${round.approvedAt?'is-ok':'is-wait'}"></i><div><b>${round.round}판 · ${round.kind==='images'?'장면 이미지':'글 콘티'}</b><small>${esc(ROUND_STATE(round))}</small></div></li>`).join('')}</ul></section>`:''}
+        ${paymentBlock(r)}
         <section class="desk-actions">${actions(r)}</section>
       </aside>
     </div>

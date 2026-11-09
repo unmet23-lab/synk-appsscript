@@ -43,7 +43,7 @@ test('the direction screen follows the mock: two pictures, the recommendation fi
   assert.match(html,/data-dp-pick="a"><span class="sx-no">01<\/span> 아니, 잠깐<span class="sx-dp-rec"> · 추천<\/span><\/button>/);
   assert.match(html,/영상 전 확인 <b class="sx-no">1\/3<\/b>/);
   assert.match(html,/<dd class="sx-serif">39만원<\/dd>[\s\S]*<dd class="sx-serif">11월 17일<\/dd>[\s\S]*<dd class="sx-serif">2회<\/dd>/);
-  assert.match(html,/결제는 글 콘티를 보신 뒤에 해요/);assert.match(html,/결제 방법은 그때 담당자가 안내해 드려요/);
+  assert.match(html,/결제는 글 콘티를 보신 뒤 크몽에서 해요/);assert.match(html,/크몽 상품에서 「문의하기」로 접수 번호를 보내 주시면 같은 값 · 기간 · 수정 횟수의 결제 요청을 보내 드려요/);assert.match(html,/<dt>취소 · 환불<\/dt>/);assert.match(html,/<dt>작품 소개<\/dt>/);
   assert.doesNotMatch(html,/메일/,'no mail promise before mail is on');
   assert.match(html,/<span data-dp-go>「아니, 잠깐」으로 정하고 글 콘티 받기<\/span>/);
   assert.match(html,/data-form="direction-pick"><input type="hidden" name="optionId" value="a"><input type="hidden" name="modelId" value=""><label class="sx-dp-note" data-dp-note hidden><span class="sr">덧붙일 말<\/span><input type="text" name="note"/,'the one-line note lives in a named form field so live redraws keep it');

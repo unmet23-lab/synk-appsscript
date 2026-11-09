@@ -34,7 +34,7 @@ test('the server serves every new file and the service worker caches the shell b
   for(const name of ["'film.css'","'film-legacy.css'","'reel-wide','reel-tall'","'reel-wide-poster','reel-tall-poster','shard','end'","'file-gift-set','file-gift-ampoule','file-gift-jar','still-shards','still-lid'","'sheet-gift-'","'model-scene-'","NotoSerifKR-300.woff2"])assert.ok(server.includes(name),name);
   for(const name of ['film.css','film-legacy.css','film-home.mjs','film-review.mjs','assets/NotoSerifKR-300.woff2'])assert.ok(sw.includes(name),name);
   assert.doesNotMatch(sw,/reel-(wide|tall)\.mp4/,'the reel is not stored on the device');
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v36-maker-20261110';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v37-presale-20261110';/);
 });
 test('the step-five still is the sharp re-render and its layer keeps the logo readable on wide monitors',()=>{
   // 11-10: 1080×864 영상 장면은 유호님 화면(1440 · 1.5배)에서 2배로 늘어나 흐렸다 → 같은 구도를 2520×2016으로 다시 구웠다.
@@ -263,7 +263,7 @@ test('the request form reads choose-then-next: back and next come after the scre
 });
 test('the invite door closes from inside, both openers follow it, and the first screen keeps to the rules it set itself',()=>{
   const html=entryView({});
-  assert.match(html,/<form class="sx-invite"[^>]*>[\s\S]*<button type="button" class="sx-small sx-invite-close" data-entry="close">닫기<\/button><\/form>/);
+  assert.match(html,/<div class="sx-invite"[^>]*>[\s\S]*<button type="button" class="sx-small sx-invite-close" data-entry="close">닫기<\/button><\/div>/);
   const home=read('film-home.mjs');
   assert.ok(home.includes(`if(what==='close'){setInvite(false);return;}`));
   assert.ok(home.includes(`$$('[data-entry="open"]').forEach(button=>button.setAttribute('aria-expanded',open?'true':'false'))`),'여는 단추 둘이 같은 상태');

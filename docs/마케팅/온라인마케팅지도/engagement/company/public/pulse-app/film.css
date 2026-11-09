@@ -1107,3 +1107,36 @@ html[lang="en"] .sx-dp-kv dd{font-size:clamp(16px,1.35vw,21px)}
 html[lang="en"] .sx-kv>div{grid-template-columns:112px minmax(0,1fr)}
 html[lang="en"] .sx-kv.is-tight>div{grid-template-columns:96px minmax(0,1fr)}
 html[lang="en"] .sx-q-line{grid-template-columns:100px minmax(0,1fr)}
+/* 판 4(11-10): 결제 안내 카드 · 끝맺음 · 다시 열기 판(메일 코드) · 의뢰서 동의 작은 글 · 제작 시작 동의 체크 */
+.sx-pay,.sx-done{display:grid;gap:12px;padding-top:14px;border-top:1px solid var(--sx-rule);max-width:34em}
+.sx-pay-terms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:0}
+.sx-pay-terms div{min-width:0}
+.sx-pay-terms dt{color:var(--sx-faint)}
+.sx-pay-terms dd{margin:1px 0 0;font-size:clamp(18px,1.55vw,24px);line-height:1.25;white-space:nowrap}
+.sx-pay-fee{color:var(--sx-dim);margin:-4px 0 0}
+.sx-pay-steps{display:grid;gap:8px;margin:0;padding:0;list-style:none;counter-reset:sx-pay}
+.sx-pay-steps li{counter-increment:sx-pay;position:relative;padding-left:30px}
+.sx-pay-steps li::before{content:counter(sx-pay,decimal-leading-zero);position:absolute;left:0;top:.28em;font-family:var(--sx-mono);font-size:12px;color:var(--sx-faint)}
+.sx-pay-steps li.is-done{color:var(--sx-dim)}
+.sx-pay-steps li.is-done::before{content:'✓';color:var(--sx-ink)}
+.sx-pay-steps .sx-no{margin:0 4px;color:var(--sx-ink)}
+.sx-pay-steps .sx-quiet{font-size:13px}
+.sx-pay-act{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.sx-pay-more summary{cursor:pointer;width:max-content}
+.sx-pay-more dl{display:grid;gap:10px;margin:10px 0 0}
+.sx-pay-more dt{color:var(--sx-ink)}
+.sx-pay-more dd{margin:2px 0 0;color:var(--sx-dim)}
+.sx-done>.sx-small{color:var(--sx-dim)}
+.sx-turn i.is-done{background:none;box-shadow:inset 0 0 0 1px var(--sx-ink)}
+@media (prefers-reduced-motion:no-preference){.sx-turn i.is-done{animation:none}}
+@media (max-width:519.98px){.sx-pay-terms dd{font-size:17px}}
+.sx-invite-form{display:grid;gap:10px}
+.sx-invite-mail{padding-bottom:14px;border-bottom:1px solid var(--sx-rule)}
+.sx-invite-mail[hidden],.sx-invite-form [hidden]{display:none}
+.sx-invite-head{font-weight:600;padding-right:52px}
+.sx-hp{position:absolute!important;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
+.sx-mail-pick{display:grid;gap:8px;justify-items:start}
+.sx-mail-pick .sx-quiet{text-align:left}
+.sx-q-terms{color:var(--sx-dim);max-width:40em;margin-top:4px}
+html.sx #app-dialog .dialog-note{color:var(--sx-dim);font-size:13px}
+html.sx #app-dialog .dialog-check{margin:14px 0 4px}

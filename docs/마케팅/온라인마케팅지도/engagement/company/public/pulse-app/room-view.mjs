@@ -11,13 +11,23 @@ const previews=p=>(p?.versions||[]).filter(v=>v.kind==='preview');
 const finals=p=>(p?.versions||[]).filter(v=>v.kind==='final');
 const lastRound=r=>(r?.rounds||[]).at(-1)||null;
 
+// 결제 차례(판 4, 결정 11-10 D2): 결제가 확인되지 않았고 ① 담당자가 크몽 결제를 요청했거나(취소 뒤 포함) ② 영상은 글 콘티를 승인했고 장면 이미지 판이 아직 없을 때 · 사진은 첫 장을 승인했을 때.
+// 서버가 결제 상태를 아직 모르는 판(payment 없음)도 ②로 같은 카드를 띄운다 — 담당자는 결제를 확인한 뒤 장면 이미지 판을 보낸다.
+export function payState(r){
+  if(!r||r.payment?.status==='confirmed')return false;
+  if(r.payment?.status==='requested'||r.payment?.status==='cancelled')return true;
+  if(r.answers?.package==='photo')return (r.rounds||[]).some(round=>round.kind==='images'&&round.approvedAt);
+  return !!r.scriptApprovedAt&&!(r.rounds||[]).some(round=>round.kind==='images');
+}
 export function roomState(p){
   const r=requestOf(p),round=lastRound(r);
-  if(p?.stage==='delivered'||finals(p).length)return 'deliver';
+  // 수령 확인을 남긴 뒤에는 누구의 차례도 아니다(끝맺음 — 판 4 B4).
+  if(p?.stage==='delivered'||finals(p).length)return p?.closeout?.receipt?'done':'deliver';
   if(previews(p).length)return 'review';
   if(r?.approvedAt||p?.stage==='producing')return 'make';
   if(!r||r.status==='writing')return 'write';
   if(r.asks?.some(ask=>ask.status==='open'))return 'ask';
+  if(payState(r))return 'pay';
   // 영상 전 확인 1/3은 방향과 모델(11-07). 옛 프로젝트의 열린 모델 제안은 그대로 돈다.
   if(!round&&r.directionProposal?.status==='open')return 'direction';
   if(!round&&r.directionProposal?.status==='declined')return 'redirect';
@@ -34,7 +44,7 @@ export const ROOM_STAGES=Object.freeze([
   {id:'request',no:'01',name:'의뢰서'},{id:'check',no:'02',name:'확인'},{id:'draft',no:'03',name:'1차안'}, // i18n-skip
   {id:'make',no:'04',name:'제작'},{id:'review',no:'05',name:'영상 · 납품'}, // i18n-skip
 ]);
-const STAGE_OF={write:'request',check:'check',ask:'check',direction:'draft',redirect:'draft',model:'draft',prepare:'draft','prepare-images':'draft',script:'draft',images:'draft',revise:'draft',make:'make',review:'review',deliver:'review'};
+const STAGE_OF={write:'request',check:'check',ask:'check',direction:'draft',redirect:'draft',model:'draft',prepare:'draft','prepare-images':'draft',script:'draft',images:'draft',revise:'draft',pay:'draft',make:'make',review:'review',deliver:'review',done:'review'};
 export const roomStage=state=>STAGE_OF[state]||'check';
 // 단계 id · 옛 탭 이름을 고객 방의 화면 하나로. 머리의 단계 줄 · 방 안 이동 · 알림 이동이 이것만 쓴다.
 // 묻기(contact)는 판 3b부터 화면이 아니라 일지다 — 옛 이름으로 오면 고객 방(app.mjs가 일지를 연다).
@@ -70,6 +80,8 @@ export const ROOM_COPY={
   make:{turn:'us',title:k('확인하신 컷으로 만들고 있어요'),text:k('목소리와 음악을 먼저 만들고 그 박자에 컷을 맞춰요. 다음에 받으실 것은 소리까지 들어간 영상이에요.')},
   review:{turn:'you',title:k('영상이 도착했어요'),text:k('영상을 보면서 고칠 시점에 의견을 남겨 주세요.'),action:{label:k('영상 보기'),go:'review'}},
   deliver:{turn:'you',title:k('완성본을 받으세요'),text:k('올릴 곳에 맞는 파일을 내려받으실 수 있어요.'),action:{label:k('파일 받기'),go:'review'}},
+  pay:{turn:'you',title:k('글 콘티를 확인해 주셨어요'),text:k('이제 크몽에서 결제해 주세요. 결제가 확인되면 장면 이미지를 만들기 시작해요.')},
+  done:{turn:'done',title:k('완성본을 받으셨어요'),text:k('함께 만들어 주셔서 고마워요. 크몽에서 작업물을 확인하시고 구매확정을 눌러 주시면 이 의뢰가 끝나요.'),action:{label:k('완성본 다시 보기'),go:'review'}},
 };
 export const modelCard=id=>{const item=CASTING_MODELS.find(model=>model.id===id);return item?{id,name:item.name,line:MODEL_LINES[id]?.line||item.description,image:item.image}:null;};
 const assetUrl=asset=>asset?.media?.url||asset?.url||'';
@@ -103,7 +115,18 @@ export function roomModel(p){
     draft:['script','images','revise','prepare-images'].includes(state)?draftModel(p):null,film:screenFilm(p,state),
     // 메일 알림이 실제로 나갈 때만 가린 주소(서버가 정함). 꺼져 있으면 화면에 메일 말이 없다.
     mail:p?.mail?.mailOn&&typeof p.mail.mailTo==='string'?p.mail.mailTo:'',
+    // 메일이 나가는 순간(서버가 알림 — 판 4의 여덟 순간). 옛 서버는 목록이 없어 11-07의 네 순간으로 본다.
+    moments:Array.isArray(p?.mail?.moments)?p.mail.moments:['direction_proposed','draft_ready','preview_ready','final_ready'],
+    pay:['pay','prepare-images'].includes(state)?payModel(p):null,
   };
+}
+// 결제 안내 카드(판 4): 값 · 받으실 날 · 수정 · 접수 번호 · 결제 상태. 값은 결제 요청에 적힌 값, 없으면 고른 방향의 값, 없으면 패키지 값.
+export function payModel(p){
+  const r=requestOf(p);if(!r)return null;
+  const a=r.answers||{},pkg=pkgOf(a),pay=r.payment||null,d=r.directionProposal;
+  const amount=Number.isSafeInteger(pay?.amount)?pay.amount:Number.isSafeInteger(d?.price)?d.price:pkg?Math.round(pkg.price*10000):null;
+  const requested=Date.parse(pay?.requestedAt||'');
+  return {status:pay?.status||'',requestedDay:Number.isFinite(requested)?longDay(new Date(requested+9*3600000).toISOString().slice(0,10)):'',price:amount?won(amount):'',days:pkg?.days||null,revisions:d?.revisions??pkg?.revisions??null,number:r.number||'',photo:a.package==='photo'};
 }
 // 방향 제안(영상 전 확인 1/3)을 화면 자료로. 그림 · 견본은 손님 보기의 자산 주소, 값 · 기간은 제안에 적힌 것(손님이 실제로 내는 값 · 정한 날).
 const assetById=(p,id)=>(p?.studio?.assets||[]).find(asset=>asset.id===id);
@@ -240,7 +263,7 @@ export function deskModel(p){
   const r=requestOf(p);if(!r)return null;
   const note=(r.notes||[]).at(-1)||null,assets=p?.studio?.assets||[],a=r.answers||{},proposal=r.modelProposal,direction=r.directionProposal;
   const canDirect=r.status==='confirmed'&&!(r.rounds||[]).length&&a.package!=='photo'&&(!direction||direction.status==='open'||direction.status==='declined'&&direction.round<2);
-  return {id:p.id,number:r.number,status:r.status,at:r.submittedAt||'',title:p.title,contact:p.contact||'',mail:p.mail||null,brief:briefRows(filled(r)).map(row=>[row.key,row.missing==='없음'?'없음':row.missing?`비어 있음 — ${row.missing}`:row.value]),files:assets.filter(asset=>asset.mimeType?.startsWith('image/')).map(asset=>({src:assetUrl(asset),label:asset.fileName,size:''})),attachments:[...assets.filter(asset=>!asset.mimeType?.startsWith('image/')&&assetUrl(asset)).map(asset=>({id:asset.id,label:asset.fileName,url:assetUrl(asset)})),...(p.intake?.files||[]).map(file=>({id:file.id,label:file.fileName,url:`/api/client-projects/${p.id}/intake-files/${file.id}`}))],checks:deskChecks(p),note,asks:r.asks||[],rounds:r.rounds||[],modelProposal:proposal?{...proposal,modelName:modelCard(proposal.modelId)?.name||''}:null,needsModel:!direction&&!canDirect&&!a.models?.length&&a.modelChoice!=='none'&&proposal?.status!=='accepted'&&proposal?.status!=='open',confirmed:r.status==='confirmed',
+  return {id:p.id,number:r.number,status:r.status,at:r.submittedAt||'',title:p.title,contact:p.contact||'',mail:p.mail||null,brief:briefRows(filled(r)).map(row=>[row.key,row.missing==='없음'?'없음':row.missing?`비어 있음 — ${row.missing}`:row.value]),files:assets.filter(asset=>asset.mimeType?.startsWith('image/')&&asset.author==='customer').map(asset=>({src:assetUrl(asset),label:asset.fileName,size:''})),staffFiles:assets.filter(asset=>asset.mimeType?.startsWith('image/')&&asset.author!=='customer').map(asset=>({src:assetUrl(asset),label:asset.fileName,size:''})),payment:r.payment||null,paymentFlow:!!r.paymentFlow,payWaiting:payState(r),payAmount:Number.isSafeInteger(r.payment?.amount)?r.payment.amount:Number.isSafeInteger(direction?.price)?direction.price:pkgOf(a)?Math.round(pkgOf(a).price*10000):null,payDays:pkgOf(a)?.days||null,attachments:[...assets.filter(asset=>!asset.mimeType?.startsWith('image/')&&assetUrl(asset)).map(asset=>({id:asset.id,label:asset.fileName,url:assetUrl(asset)})),...(p.intake?.files||[]).map(file=>({id:file.id,label:file.fileName,url:`/api/client-projects/${p.id}/intake-files/${file.id}`}))],checks:deskChecks(p),note,asks:r.asks||[],rounds:r.rounds||[],modelProposal:proposal?{...proposal,modelName:modelCard(proposal.modelId)?.name||''}:null,needsModel:!direction&&!canDirect&&!a.models?.length&&a.modelChoice!=='none'&&proposal?.status!=='accepted'&&proposal?.status!=='open',confirmed:r.status==='confirmed',
     direction:direction?{round:direction.round,status:direction.status,names:direction.options.map(option=>option.name),chosen:direction.options.find(option=>option.id===direction.chosenId)?.name||'',answer:direction.answer||'',options:direction.options.map(option=>({id:option.id,name:option.name}))}:null,
     canDirect,
     canSettle:direction?.status==='declined'&&direction.round>=2&&!(r.rounds||[]).length};

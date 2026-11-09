@@ -84,16 +84,24 @@ export function createPulseMailOpen({store,clientProjects,pulseMail,clock=()=>ne
     log({event:'pulse-mail-open',state:'verified',projects:open.length});
     if(open.length===1)return {opened:clientProjects.openVerified(open[0].id)};
     const ticket=randomBytes(24).toString('base64url');
-    picks.set(ticket,{projectIds:open.map(row=>row.id),expiresAt:ms+PICK_MS});
+    // 고르기 표는 확인한 주소와 그때의 초대 판에 묶는다 — 고를 때 받는 주소가 바뀌었거나 초대를 새로 냈거나 보관했으면 그 프로젝트는 열지 않는다(GPT 검수 GA1).
+    picks.set(ticket,{email,projects:new Map(open.map(row=>[row.id,row.inviteRevision])),expiresAt:ms+PICK_MS});
     return {choices:{ticket,projects:open.map(row=>({id:row.id,title:row.title,number:row.studio?.request?.number||''}))}};
   }
   function pick(input){
     if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).some(key=>!['ticket','projectId'].includes(key)))throw fail('입력 내용을 다시 봐 주세요.');
     const entry=typeof input.ticket==='string'?picks.get(input.ticket):null,ms=nowMs();
-    if(!entry||entry.expiresAt<=ms||!entry.projectIds.includes(input.projectId))throw fail('고르는 시간이 지났어요. 코드를 다시 받아 주세요.',401);
+    if(!entry||entry.expiresAt<=ms||!entry.projects.has(input.projectId))throw fail('고르는 시간이 지났어요. 코드를 다시 받아 주세요.',401);
     picks.delete(input.ticket);
+    const row=matching(entry.email).find(item=>item.id===input.projectId);
+    if(!row||row.inviteRevision!==entry.projects.get(input.projectId))throw fail('고르는 시간이 지났어요. 코드를 다시 받아 주세요.',401);
     return {opened:clientProjects.openVerified(input.projectId)};
   }
+  // 서버를 끌 때: 새 요청을 받지 않고 보내던 코드를 마저 보낸다(기다림 상한 — 넘으면 그 코드는 queued로 남고, 다음에 켤 때 실패로 접는다 · GPT 검수 GA4).
+  let stopped=false;
+  function stop(ms=35000){stopped=true;queue.length=0;return Promise.race([working||Promise.resolve(),new Promise(resolve=>setTimeout(resolve,ms).unref?.())]);}
   function idle(){return working||Promise.resolve();}
-  return {request,verify,pick,idle,available:()=>pulseMail.active()};
+  // 켤 때: 앞 실행이 보내지 못하고 남긴 queued 문서를 실패로 접는다(하루 셈을 계속 먹지 않게).
+  try{for(const doc of store.all(PULSE_MAIL_CODES))if(doc.state==='queued')store.put(PULSE_MAIL_CODES,doc.id,{...doc,state:'failed',reason:'restart'});}catch{/* 저장소가 아직 준비 전이면 다음 요청 때 접는다 */}
+  return {request:input=>{if(stopped)throw fail('잠시 뒤 다시 시도해 주세요.',503);return request(input);},verify,pick,idle,stop,available:()=>!stopped&&pulseMail.active()};
 }

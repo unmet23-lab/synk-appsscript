@@ -97,7 +97,7 @@ function roomScreen(p){
   if(pictured.length)return `<div class="sx-room-cuts" data-count="${Math.min(pictured.length,12)}">${pictured.slice(0,12).map(cut=>`<img src="${esc(cut.src)}" alt="" loading="lazy" decoding="async">`).join('')}</div><p class="sx-small sx-room-cap">${esc(t('{round}판 · {count}컷. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.',{round:String(p.draft.round),count:cuts.length}))}</p>`;
   if(cuts.length)return `<div class="sx-room-word"><p class="sx-serif">${esc(p.draft.oneLine)}</p><ol>${cuts.slice(0,4).map((cut,i)=>`<li><span class="sx-no">${pad(i+1)}</span><span class="sx-small">${esc(cut.what)}</span></li>`).join('')}</ol></div>`;
   if(p.files.length)return `<div class="sx-room-files" data-count="${Math.min(p.files.length,6)}">${p.files.slice(0,6).map(file=>`<img src="${esc(file.src)}" alt="" decoding="async">`).join('')}</div>`;
-  const next=p.state==='make'?['w-gift',k('완성 영상의 예시예요. 「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품')]:['w-gift-snow',k('다음에 받으실 장면 이미지의 예시예요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.')];
+  const next=['make','review','deliver','done'].includes(p.state)?['w-gift',k('완성 영상의 예시예요. 「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품')]:['w-gift-snow',k('다음에 받으실 장면 이미지의 예시예요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.')];
   return `<img class="sx-q-fill" src="${ASSET}${next[0]}.webp" alt=""><p class="sx-small sx-room-cap">${esc(t(next[1]))}</p>`;
 }
 // ── 방향과 모델(영상 전 확인 1/3, 2026-11-07) ──
@@ -136,8 +136,8 @@ export function directionView(p,{top='',ui={},journal=''}={}){
           ${d.options.map(o=>dpDetail(o,o.id===focus)).join('')}
           ${dpModel(d,ui)}
           <div class="sx-dp-terms">${terms}
-            <p class="sx-small sx-dp-incl">${esc(t('어느 방향이든 값은 같고, 모델 · 목소리 · 음악 · 자막이 모두 들어 있어요. 결제는 글 콘티를 보신 뒤에 해요.'))} <button type="button" class="sx-link" data-dp-do="more" aria-expanded="${ui.more?'true':'false'}">${esc(ui.more?t('접기'):t('자세히'))}</button></p>
-            <dl class="sx-dp-more sx-small" data-dp-more ${ui.more?'':'hidden'}><div><dt>${esc(t('만드는 법'))}</dt><dd>${esc(t('사람과 목소리는 모두 AI로 만들어요. 제품 · 로고 · 글자는 보내 주신 파일을 그대로 얹어요. 지금 그림은 방향을 보여 드리는 첫 그림이에요'))}</dd></div>${d.gets?`<div><dt>${esc(t('받으시는 것'))}</dt><dd>${esc(t(d.gets))}</dd></div>`:''}<div><dt>${esc(t('쓸 수 있는 곳'))}</dt><dd>${esc(t('온라인 광고 · SNS · 자사몰 · 상세페이지(음악 · 목소리 포함). TV · 옥외 · 극장 · 인쇄는 따로 여쭤 주세요'))}</dd></div><div><dt>${esc(t('받으실 날'))}</dt><dd>${esc(t('사진 · 로고 · 꼭 넣을 말이 다 모였을 때 기준이에요. 주말과 공휴일을 포함한 날이고, 확인이 늦어지면 그만큼 함께 미뤄요'))}</dd></div><div><dt>${esc(t('수정'))}</dt><dd>${esc(d.photo?t('사진이 나온 뒤 {count}번. 글 콘티와 장면 이미지의 의견은 횟수에 세지 않아요',{count:d.revisions}):t('영상이 나온 뒤 {count}번. 글 콘티와 장면 이미지의 의견은 횟수에 세지 않아요',{count:d.revisions}))}</dd></div><div><dt>${esc(t('결제'))}</dt><dd>${esc(t('글 콘티를 보신 뒤, 장면 이미지 전에 해요. 글 콘티까지는 값을 받지 않아요. 결제 방법은 그때 담당자가 안내해 드려요'))}</dd></div>${p.mail?`<div><dt>${esc(t('알림'))}</dt><dd>${esc(t('글 콘티가 오면 메일({mail})로도 알려 드려요',{mail:p.mail}))}</dd></div>`:''}</dl>
+            <p class="sx-small sx-dp-incl">${esc(t('어느 방향이든 값은 같고, 모델 · 목소리 · 음악 · 자막이 모두 들어 있어요. 결제는 글 콘티를 보신 뒤 크몽에서 해요.'))} <button type="button" class="sx-link" data-dp-do="more" aria-expanded="${ui.more?'true':'false'}">${esc(ui.more?t('접기'):t('자세히'))}</button></p>
+            <dl class="sx-dp-more sx-small" data-dp-more ${ui.more?'':'hidden'}><div><dt>${esc(t('만드는 법'))}</dt><dd>${esc(t('사람과 목소리는 모두 AI로 만들어요. 제품 · 로고 · 글자는 보내 주신 파일을 그대로 얹어요. 지금 그림은 방향을 보여 드리는 첫 그림이에요'))}</dd></div>${d.gets?`<div><dt>${esc(t('받으시는 것'))}</dt><dd>${esc(t(d.gets))}</dd></div>`:''}<div><dt>${esc(t('쓸 수 있는 곳'))}</dt><dd>${esc(t('온라인 광고 · SNS · 자사몰 · 상세페이지(음악 · 목소리 포함). TV · 옥외 · 극장 · 인쇄는 따로 여쭤 주세요'))}</dd></div><div><dt>${esc(t('받으실 날'))}</dt><dd>${esc(t('사진 · 로고 · 꼭 넣을 말이 다 모였을 때 기준이에요. 주말과 공휴일을 포함한 날이고, 확인이 늦어지면 그만큼 함께 미뤄요'))}</dd></div><div><dt>${esc(t('수정'))}</dt><dd>${esc(d.photo?t('사진이 나온 뒤 {count}번. 글 콘티와 장면 이미지의 의견은 횟수에 세지 않아요',{count:d.revisions}):t('영상이 나온 뒤 {count}번. 글 콘티와 장면 이미지의 의견은 횟수에 세지 않아요',{count:d.revisions}))}</dd></div><div><dt>${esc(t('결제'))}</dt><dd>${esc(t('글 콘티를 보신 뒤 장면 이미지 전에 크몽에서 해요. 크몽 상품에서 「문의하기」로 접수 번호를 보내 주시면 같은 값 · 기간 · 수정 횟수의 결제 요청을 보내 드려요. 글 콘티까지는 값을 받지 않아요'))}</dd></div><div><dt>${esc(t('취소 · 환불'))}</dt><dd>${esc(t('결제 뒤 장면 이미지를 확정하시기 전에 그만두시면 전액 돌려드려요. 제작을 시작한 뒤에는 맞춤 제작이라 수정 횟수 안에서 고쳐 드려요'))}</dd></div><div><dt>${esc(t('작품 소개'))}</dt><dd>${esc(t('완성한 광고는 공개하신 뒤에 SYNK PULSE 작품으로 소개할 수 있어요. 원하지 않으시면 담당자에게 알려 주세요'))}</dd></div>${p.mail?`<div><dt>${esc(t('알림'))}</dt><dd>${esc(t('글 콘티가 오면 메일({mail})로도 알려 드려요',{mail:p.mail}))}</dd></div>`:''}</dl>
             <form class="sx-dp-answer" data-form="direction-pick"><input type="hidden" name="optionId" value="${esc(focus)}"><input type="hidden" name="modelId" value="${esc(ui.modelId||'')}"><label class="sx-dp-note" data-dp-note ${noteOpen?'':'hidden'}><span class="sr">${esc(t('덧붙일 말'))}</span><input type="text" name="note" maxlength="200" placeholder="${esc(t('예) 「쌉쌀」은 빼 주세요'))}" value="${esc(keep)}"></label><button type="submit" class="sx-go is-solid sx-dp-go" data-mutate><span data-dp-go>${esc(goLabel(item.name))}</span>${arrow}</button></form>
             ${keep?`<p class="sx-small sx-dp-kept" ${noteOpen?'hidden':''}>${esc(t('덧붙이신 말 · {note}',{note:keep}))}</p>`:''}<p class="sx-dp-foot"><button type="button" class="sx-quiet" data-dp-do="note" aria-expanded="${noteOpen?'true':'false'}">${esc(keep?t('덧붙인 말 고치기'):t('한마디 덧붙이기'))}</button><button type="button" class="sx-quiet" data-dp-do="neither">${esc(d.options.length>2?t('모두 아니에요'):t('둘 다 아니에요'))}</button></p>
           </div>
@@ -217,10 +217,12 @@ export function roomView(p,{bar=true,top='',after='',foot='',prep='',journal='',
     <section class="sx-room-hero">
       <div class="sx-room-left">
         ${top}
-        <p class="sx-kicker sx-turn"><i class="${copy.turn==='you'?'is-you':''}" aria-hidden="true"></i>${esc(copy.turn==='you'?t('내 차례'):t('저희 차례'))}${confirm?`<span>${esc(t('영상 전 확인'))} <b class="sx-no">${confirm}</b></span>`:''}</p>
+        <p class="sx-kicker sx-turn"><i class="${copy.turn==='you'?'is-you':copy.turn==='done'?'is-done':''}" aria-hidden="true"></i>${esc(copy.turn==='you'?t('내 차례'):copy.turn==='done'?t('마쳤어요'):t('저희 차례'))}${confirm?`<span>${esc(t('영상 전 확인'))} <b class="sx-no">${confirm}</b></span>`:''}</p>
         <h1 class="sx-display" data-room-title>${esc(t(copy.title))}</h1>
         <p class="sx-body sx-room-lead" data-room-in>${esc(copy.text)}</p>
         ${copy.action?`<div data-room-in><button type="button" class="sx-go is-solid" data-room-go="${esc(copy.action.go)}"><span>${esc(t(copy.action.label))}</span>${arrow}</button></div>`:''}
+        ${p.state==='pay'?payCard(p):''}
+        ${p.state==='done'?doneCard(p):''}
         ${p.state==='model'&&p.proposal?proposeCard(p.proposal):''}
         ${p.state==='prepare'&&p.direction?.chosen?chosenCard(p.direction):''}
         ${p.state==='ask'&&!journal?askList(p):''}
@@ -250,10 +252,13 @@ function roomPaper(p){
 const josa=word=>{const c=word.charCodeAt(word.length-1)-0xac00;return c>=0&&c<=11171&&c%28?'이':'가';}; // i18n-skip
 // 다음에 메일로 알릴 것의 이름(메일 문맥 — 「사진」 · 「영상」이 다른 화면의 같은 낱말과 영어가 갈린다). 조사는 이 한국어 낱말에서 고른다.
 function mailNext(p){
+  // 장면 이미지 판 메일은 판 4부터(서버가 알린 순간 목록 moments에 images_ready가 있을 때만 약속한다).
+  const images=(p.moments||[]).includes('images_ready');
   if(p.state==='check')return p.photo?t('첫 장',null,'mail'):t('방향 제안',null,'mail');
   if(p.state==='redirect')return p.direction?.last?t('글 콘티',null,'mail'):t('새 방향',null,'mail');
   if(p.state==='prepare')return p.photo?t('첫 장',null,'mail'):t('글 콘티',null,'mail');
-  if(p.state==='revise')return p.lastKind==='script'?t('고친 글 콘티',null,'mail'):'';
+  if(p.state==='prepare-images')return images&&!p.photo?t('장면 이미지',null,'mail'):'';
+  if(p.state==='revise')return p.lastKind==='script'?t('고친 글 콘티',null,'mail'):images?(p.photo?t('고친 첫 장',null,'mail'):t('고친 장면 이미지',null,'mail')):'';
   if(p.state==='make')return p.photo?t('사진',null,'mail'):t('영상',null,'mail');
   return '';
 }
@@ -261,13 +266,44 @@ function mailNext(p){
 function copyOf(p){const base=copyBase(p),next=p.mail&&base.turn==='us'?mailNext(p):'',text=t(base.text);return next?{...base,text:`${text} ${t('{next}{josa} 오면 메일({mail})로도 알려 드려요.',{next,josa:josa(next),mail:p.mail})}`}:{...base,text};}
 // 상태마다 다른 글(변수로 들어가는 문장도 원문을 k로 표시한다 — 번역은 copyOf · roomView).
 function copyBase(p){
-  if(p.state==='prepare'&&p.direction?.chosen)return {turn:'us',title:k('이 방향으로 정했어요'),text:k('광고가 남길 한 문장과 글 콘티를 만들어 보내 드려요. 보시고 마음에 드시면 그때 결제를 안내해 드려요.')};
+  // 결제 차례(판 4): 서버가 결제 상태를 알면 그 상태를, 모르면(앞 판 서버) 「글 콘티를 확인해 주셨어요」를 보인다.
+  if(p.state==='pay'){
+    const pay=p.pay||{};
+    if(pay.status==='cancelled')return {turn:'you',title:k('결제가 취소됐어요'),text:k('다시 진행하시려면 담당자에게 알려 주세요. 보내 주신 자료와 글 콘티는 그대로 있어요.')};
+    if(pay.status==='requested')return {turn:'you',title:k('크몽에서 결제해 주세요'),text:p.photo?k('크몽 메시지로 결제 요청을 보내 드렸어요. 결제가 확인되면 나머지 장을 만들어요.'):k('크몽 메시지로 결제 요청을 보내 드렸어요. 결제가 확인되면 장면 이미지를 만들기 시작해요.')};
+    if(p.photo)return {turn:'you',title:k('첫 장을 확인해 주셨어요'),text:k('이제 크몽에서 결제해 주세요. 결제가 확인되면 나머지 장을 만들어요.')};
+  }
+  if(p.state==='prepare-images'&&p.pay?.status==='confirmed')return {turn:'us',title:k('결제를 확인했어요'),text:k('확인하신 글 콘티대로 컷마다 장면 이미지를 만들어요. 다 되면 알려 드려요.')};
+  if(p.state==='prepare'&&p.direction?.chosen)return {turn:'us',title:k('이 방향으로 정했어요'),text:k('광고가 남길 한 문장과 글 콘티를 만들어 보내 드려요. 보시고 마음에 드시면 그때 크몽 결제를 안내해 드려요.')};
   if(p.state==='redirect'&&p.direction?.last)return {turn:'us',title:k('담당자가 직접 연락드려요'),text:k('주신 말씀을 들고 담당자가 연락드려 함께 정해요. 정해지면 글 콘티를 보내 드려요.')};
   if(p.state==='prepare'&&p.photo)return {turn:'us',title:k('첫 장을 만들고 있어요'),text:k('보내 주신 사진과 의뢰서대로 첫 장을 먼저 보내 드려요. 방향이 맞으면 나머지 장을 만들어요.')};
   if(p.state==='make'&&p.photo)return {turn:'us',title:k('확인하신 첫 장대로 만들고 있어요'),text:k('나머지 장을 같은 결로 만들고 있어요. 다음에 받으실 것은 완성 사진이에요.')};
   if(p.state==='check'&&p.photo)return {...ROOM_COPY.check,text:k('보내 주신 의뢰서를 확인하고 있어요. 평일 10~19시에 보고, 빠진 게 있으면 그 칸만 다시 여쭤요. 확인이 끝나면 첫 장을 먼저 보내 드려요.')};
   if(p.state==='direction'&&p.options>2)return {...ROOM_COPY.direction,title:k('세 방향 중 하나를 골라 주세요')};
   return ROOM_COPY[p.state]||ROOM_COPY.check;
+}
+// 결제 안내 카드(판 4): 값 · 받으실 날 · 수정, 세 걸음(크몽 문의 → 결제 요청 → 결제), 크몽 상품 단추, 결제 · 취소 · 증빙.
+// 문장은 원문 다섯 줄(docs/마케팅/PULSE_의뢰흐름_20261104/결제_환불_다섯줄.md) ① ② ③과 같다. 크몽 상품은 영상 상품(심사 뒤 공개) — 사진 손님도 같은 상품에서 문의한다.
+const KMONG_GIG='https://kmong.com/gig/854445';
+function payCard(p){
+  const pay=p.pay||{};if(pay.status==='cancelled')return '';
+  const requested=pay.status==='requested',when=requested?pay.requestedDay:'';
+  const terms=[pay.price&&[t('값'),pay.price],pay.days&&[t('기간'),t('{count}일',{count:pay.days})],Number.isFinite(pay.revisions)&&[t('수정'),t('{count}회',{count:pay.revisions})]].filter(Boolean);
+  return `<section class="sx-pay" data-room-in aria-label="${esc(t('결제 안내'))}">
+    ${terms.length?`<dl class="sx-pay-terms">${terms.map(([key,value])=>`<div><dt class="sx-small">${esc(key)}</dt><dd class="sx-serif">${esc(value)}</dd></div>`).join('')}</dl>`:''}
+    <p class="sx-small sx-pay-fee">${esc(pay.days?t('기간은 결제한 날부터 세요. 크몽 결제 때 크몽 구매 수수료가 더해지고, 부가세는 따로 받지 않아요.'):t('크몽 결제 때 크몽 구매 수수료가 더해지고, 부가세는 따로 받지 않아요.'))}</p>
+    <ol class="sx-pay-steps sx-body">
+      <li class="${requested?'is-done':''}"><span>${esc(t('크몽 상품에서 「문의하기」로 접수 번호를 보내 주세요'))}</span>${pay.number?` <b class="sx-no">${esc(pay.number)}</b> <button type="button" class="sx-quiet" data-room-do="copy-number" data-number="${esc(pay.number)}">${esc(t('번호 복사'))}</button>`:''}</li>
+      <li class="${requested?'is-done':''}"><span>${esc(requested&&when?t('담당자가 결제 요청을 보냈어요 · {day}',{day:when}):t('담당자가 같은 값 · 기간 · 수정 횟수로 결제 요청을 보내 드려요'))}</span></li>
+      <li><span>${esc(p.photo?t('결제하시면 확인한 뒤 나머지 장을 만들어요'):t('결제하시면 확인한 뒤 장면 이미지를 만들기 시작해요'))}</span></li>
+    </ol>
+    <div class="sx-pay-act"><a class="sx-go is-solid" href="${KMONG_GIG}" target="_blank" rel="noopener noreferrer"><span>${esc(t('크몽 상품 열기'))}</span>${arrow}</a></div>
+    <details class="sx-pay-more"><summary class="sx-small sx-link">${esc(t('결제 · 취소 · 증빙'))}</summary><dl class="sx-small"><div><dt>${esc(t('결제'))}</dt><dd>${esc(t('결제는 크몽에서 해요. 글 콘티를 보시고 승인하신 뒤 크몽 상품에서 「문의하기」로 접수 번호를 보내 주시면, 담당자가 같은 값 · 기간 · 수정 횟수의 결제 요청을 보내 드려요. 결제가 확인되면 장면 이미지를 만들기 시작해요. 글 콘티까지는 값을 받지 않아요.'))}</dd></div><div><dt>${esc(t('취소 · 환불'))}</dt><dd>${esc(t('글 콘티까지는 값을 받지 않아 그만두셔도 비용이 없어요. 결제하신 뒤 장면 이미지를 확정하시기 전에 그만두시면 전액 돌려드려요. 장면 이미지를 확정해 제작을 시작한 뒤에는 맞춤 제작이라 환불 대신 패키지 수정 횟수 안에서 고쳐 드리고, 합의와 다르게 만든 부분은 횟수와 상관없이 바로잡아요.'))}</dd></div><div><dt>${esc(t('증빙'))}</dt><dd>${esc(t('개인 전문가라 서비스 금액의 세금계산서는 발행하지 못해요. 크몽에서 카드 전표 · 현금영수증을 결제 증빙으로 받으실 수 있고(부가세 매입 공제용 증빙은 아니에요), 구매 수수료의 세금계산서는 크몽에 신청하실 수 있어요.'))}</dd></div></dl></details>
+  </section>`;
+}
+// 끝맺음(판 4 B4): 수령 확인 뒤. 크몽 구매확정 · 후기 · 같은 모델로 다음 편, 방이 닫히기 전에 파일을 따로 두라는 말.
+function doneCard(){
+  return `<section class="sx-done" data-room-in><ol class="sx-pay-steps sx-body"><li><span>${esc(t('크몽에서 작업물을 확인하시고 「구매확정」을 눌러 주세요'))}</span></li><li><span>${esc(t('마음에 드셨다면 크몽 후기 한 줄이 다음 손님께 큰 도움이 돼요'))}</span></li><li><span>${esc(t('같은 모델 · 같은 자막 규격으로 다음 편을 이어 만들 수 있어요. 담당자에게 알려 주세요'))}</span></li></ol><p class="sx-small">${esc(t('프로젝트를 마치면 이 방이 닫혀요. 받은 파일은 따로 보관해 주세요.'))}</p></section>`;
 }
 // 고른 방향: 이름 · 한 문장 · 값 · 받으실 날 · 수정 · 다음 길. 판이 오기 전까지 다시 고를 수 있다.
 function chosenCard(d){
@@ -299,6 +335,8 @@ export function mountRoom(root,{animate=true,onGo,onEdit,onContact,onModel,onFil
     const model=event.target.closest('[data-room-model]')?.dataset.roomModel;if(model){onModel?.({modelId:model});return;}
     const button=event.target.closest('[data-room-do]'),what=button?.dataset.roomDo;if(!what)return;
     if(what==='edit')onEdit?.();
+    // 결제 안내 카드의 접수 번호 복사(판 4) — 크몽 「문의하기」에 붙여 넣는다.
+    if(what==='copy-number'){const number=button.dataset.number||'';const done=()=>{button.textContent=t('복사했어요');};navigator.clipboard?.writeText(number).then(done,()=>{});return;}
     if(what==='contact')onContact?.();
     // 준비 칸(바뀐 내용 · 준비 자료 · 납품 규격): 같은 화면에 있으면 그리로, 아니면(영상 화면) 부른 쪽이 방으로 옮겨 보인다.
     if(what==='paper'){const box=host.querySelector(`[data-paper-for="${CSS.escape(button.dataset.paper||'')}"]`);if(box){box.scrollIntoView({block:'start',behavior:reduced()?'auto':'smooth'});}else onPaper?.(button.dataset.paper||'');}

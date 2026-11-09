@@ -244,6 +244,11 @@ test('the desk shows staff what to do at each stage and never reaches the custom
   assert.match(confirmed,/data-action="desk-send"/);assert.match(confirmed,/data-action="desk-propose"/);assert.match(confirmed,/data-tab="storyboard"/);
   assert.doesNotMatch(deskView(model({confirmed:true,rounds:[{round:1,kind:'images',approvedAt:'t'}]}),{bar:false}),/data-action="desk-send"/,'nothing to send after the pictures are approved');
   assert.match(deskView(model({canEdit:false,confirmed:false}),{bar:false}),/보기만 할 수 있어요/);
+  // 판 4: 결제 · 크몽 줄은 결제 상태를 아는 서버(paymentFlow)에서만 — 화면 묶음이 서버보다 먼저 나가도 옛 서버에 없는 동작 단추를 띄우지 않는다.
+  assert.doesNotMatch(deskView(model({confirmed:true}),{bar:false}),/desk-pay|결제 · 크몽/,'no payment row on a server without the payment flow');
+  const paying=deskView(model({confirmed:true,paymentFlow:true,payWaiting:true}),{bar:false});
+  assert.match(paying,/<h2>결제 · 크몽<\/h2>/);assert.match(paying,/data-action="desk-pay-request"/);assert.match(paying,/손님 화면에 결제 안내가 떠 있어요/);
+  assert.match(deskView(model({confirmed:true,paymentFlow:true}),{bar:false}),/결제 안내 전 · 손님이 글 콘티\(사진은 첫 장\)를 승인하면 결제 안내가 떠요/);
   const staff={mode:'staff',tab:'desk',live:{},canEdit:true,workspace:{projects:[]},project:project(request())};
   assert.match(projectView(staff),/의뢰서를 불러오고 있어요/,'the module loads only when opened');
   assert.match(projectView({...staff,deskView}),/^<div class="desk">/);
@@ -257,6 +262,13 @@ test('staff and customer dialogs for the request flow are complete',()=>{
   assert.match(dialogContent('desk-ask',{suggested:'로고 파일'}),/로고 파일/);
   const propose=dialogContent('desk-propose',{kind:'food',modelId:'M06'});assert.match(propose,/value="M06" selected/);assert.match(propose,/이 업종에 맞음/);
   assert.match(dialogContent('desk-send',{count:2,kind:'images',oneLine:'한 문장'}),/data-form="desk-send"/);
+  // 판 4: 「그림은 두고 글 콘티 판으로」는 결제 흐름 서버에서만(옛 서버는 kind 칸을 거절한다). 결제 전에는 글 콘티 판으로만, 결제 뒤에는 고를 수 있다.
+  const oldServer=dialogContent('desk-send',{count:2,kind:'images',oneLine:'한 문장',paid:true});
+  assert.doesNotMatch(oldServer,/name="asScript"/);assert.match(oldServer,/고객이 확인하면 제작 단계로 넘어가요/);
+  const unpaid=dialogContent('desk-send',{count:2,kind:'images',oneLine:'한 문장',flow:true,paid:false});
+  assert.match(unpaid,/<label class="desk-check"><input type="checkbox" name="asScript" value="1" checked disabled><span>그림은 두고 글 콘티 판으로 보내기 · 결제 확인 전<\/span><\/label><input type="hidden" name="asScript" value="1">/);
+  const paid=dialogContent('desk-send',{count:2,kind:'images',oneLine:'한 문장',flow:true,paid:true});
+  assert.match(paid,/<input type="checkbox" name="asScript" value="1" ><span>그림은 두고 글 콘티 판으로 보내기<\/span>/);assert.doesNotMatch(paid,/type="hidden" name="asScript"/);
   const empty=dialogContent('desk-send',{count:0,kind:'script'});
   assert.doesNotMatch(empty,/data-form="desk-send"/,'no form until scenes are visible to the customer');
   assert.doesNotMatch(empty,/보낼까요|0컷/,'no question about sending nothing');assert.match(empty,/아직 보낼 장면이 없어요/);

@@ -191,6 +191,8 @@ export function createPulseMailService({store,notificationsFor,clock=()=>new Dat
     const row=store.get('clientProjects',item.projectId),why=pulseMailEligibility(row);
     if(why)return put({state:'skipped',reason:why});
     const {email,reason}=pulseMailRecipient(row);if(!email)return put({state:'skipped',reason});
+    // 접수 확인은 넣을 때의 주소로만 보낸다 — 그사이 의뢰서 주소를 바꿔 주소마다 하루 한 통 한도를 우회하지 못하게(GPT 검수 GA3).
+    if(item.moment==='request_received'&&recipientHash(email,key.salt)!==item.recipientHash)return put({state:'skipped',reason:'changed'});
     if(item.lastEventAt<=c.enabledAt)return put({state:'skipped',reason:'before_on'});
     if(Date.parse(at)-Date.parse(item.lastEventAt)>EXPIRE_MS)return put({state:'skipped',reason:'expired'});
     let latest=null;

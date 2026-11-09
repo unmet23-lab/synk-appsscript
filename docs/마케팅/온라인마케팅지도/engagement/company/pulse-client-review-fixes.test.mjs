@@ -42,7 +42,7 @@ test('the entry page introduces PULSE in the approved words and keeps the invite
     // 「영상 전에 세 번 확인해요」의 세 가지: 원고의 한 문장을 시사실 판에서는 그 말 그대로 세 줄로 놓는다(유호님이 A를 고르실 때 보신 짜임).
     '영상 전에 세 번 확인해요','1/3 방향과 모델 고르기','2/3 광고가 남길 한 문장과 글 콘티','3/3 컷마다 장면 이미지',
     '다음 편도 같은 모델과 같은 자막 규격으로 이어요.',
-    '맡기신 뒤에는 초대 링크 하나로 시안을 보고 의견을 남기고, 최종 파일까지 한곳에서 받아요.',
+    '맡기신 뒤에는 한 방에서 시안을 보고 의견을 남기고, 최종 파일까지 받아요.',
     // 만드는 사람
     '카메라 앞에 서 본 사람이 AI 모델의 연기를 연출해요',
     'AI 광고가 어색해지는 곳은 대개 표정과 호흡, 말이 끝나는 타이밍이에요. SYNK PULSE는 엔터테인먼트·광고 업계에서 10년 일한 대표 유호가 연출해요.',
@@ -67,10 +67,11 @@ test('the entry page introduces PULSE in the approved words and keeps the invite
   // 다국어 판 2: 「부터」는 번역 틀을 지난다(한국어 화면은 그대로 「29만원부터」).
   assert.ok(readFileSync(new URL('request-flow.mjs',appDir),'utf8').includes("${esc(t('{price}부터',{price:price(item.price)}))}"));
   // 초대 문과 체험은 그대로다.
-  assert.match(html,/<form class="sx-invite" data-form="invite"[\s\S]*name="invite"[\s\S]*<\/form>/);
+  // 판 4: 다시 열기 판은 메일 코드 칸(서버가 켤 때만 보임)과 링크 칸 둘이다.
+  assert.match(html,/<div class="sx-invite" data-entry-invite[\s\S]*<form class="sx-invite-form sx-invite-mail" data-form="mail-open" data-entry-mail data-step="email" novalidate hidden>[\s\S]*<form class="sx-invite-form" data-form="invite">[\s\S]*name="invite"[\s\S]*<\/form>/);
   assert.equal(html.split('href="?demo=film"').length,3,'머리의 예시 링크와 맡긴 뒤 줄');
   // 「이 기기에서 다시 확인」은 입장 칸 안에 둔다 — 첫 화면이 길어 맨 아래에 두면 누른 뒤 알림이 화면 밖에 난다.
-  assert.match(html,/<form class="sx-invite"[^>]*>[\s\S]*?data-action="retry"[\s\S]*?<\/form>/);
+  assert.match(html,/<div class="sx-invite"[^>]*>[\s\S]*?data-action="retry"[\s\S]*?<\/div>/);
   assert.equal(html.split('data-action="retry"').length,2);
   // 알림은 어느 길로 왔든(연결 다시 확인 · 초대 링크 실패 · 프로젝트 접근이 끊김) 다시 그리는 한 곳에서 보인다.
   const app=readFileSync(new URL('app.mjs',appDir),'utf8');
@@ -101,7 +102,7 @@ test('someone with no project yet can start a request right here, try the exampl
   assert.equal(html.split('data-entry="start"').length,3,'the request button is at the top and on the last page');
   assert.match(html,/광고 의뢰하기/);
   assert.match(html,/href="\?demo=film"/);
-  assert.match(html,/<form class="sx-invite" data-form="invite"/);
+  assert.match(html,/<form class="sx-invite-form" data-form="invite"/);
   assert.equal(html.includes(PULSE_INQUIRY_URL),false,'the request starts in the app, not on another site');
   assert.match(welcome({requestResume:true}),/쓰던 의뢰서 이어 쓰기/);
 });

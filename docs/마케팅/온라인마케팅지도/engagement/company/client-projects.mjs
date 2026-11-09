@@ -207,7 +207,9 @@ export function createClientProjectsService({store,clock=()=>new Date().toISOStr
   function relinkedFeedback(row,version,relink,user){
     if(relink!==undefined&&(!Array.isArray(relink)||relink.length>200||relink.some(id=>typeof id!=='string')))throw fail('이 시안에 묶을 의견을 확인해 주세요.');
     const chosen=relink===undefined?null:new Set(relink),at=clock(),reviewer=store.get('users',row.reviewerId);
-    const next=reviewer?.active&&reviewer.role!=='viewer'&&(reviewer.role==='admin'||reviewer.teamId&&reviewer.teamId===row.teamId)?'review':'waiting_customer';
+    // 검토자가 있는 프로젝트는 묶지 않는다 — 검토자가 본 시안과 손님이 승인할 시안이 갈리지 않게, 지금처럼 담당자가 「고친 시안 검토 요청」을 보낸다(GPT 검수 GA2).
+    if(reviewer?.active&&reviewer.role!=='viewer'&&(reviewer.role==='admin'||reviewer.teamId&&reviewer.teamId===row.teamId))return null;
+    const next='waiting_customer';
     let changed=false;
     const messages=row.messages.map(message=>{
       if(message.author!=='customer'||message.action!=='feedback'||message.resolved||chosen&&!chosen.has(message.id))return message;
