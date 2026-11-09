@@ -368,7 +368,7 @@ for (let k = 0; 0.294 + 0.4995 * k < T.total; k++) {
 
 const Sound: React.FC = () => (
   <>
-    <Audio src={staticFile('sfx/bgm.wav')} volume={(f) => 0.13 * MASTER * interpolate(f / 30, [0, T.total - 0.5, T.total], [1, 1, 0], clamp)} />
+    <Audio src={staticFile('sfx/bgm.wav')} volume={(f) => 0.2 * MASTER * interpolate(f / 30, [0, T.total - 0.5, T.total], [1, 1, 0], clamp)} />
     <Audio src={staticFile('sfx/room.wav')} volume={(f) => 0.18 * MASTER * interpolate(f / 30, [0, T.total - 0.4, T.total], [1, 1, 0], clamp)} />
     {TICKS.map((at, i) => <Sfx key={i} file={i % 2 ? 'tock.wav' : 'tick.wav'} at={at} vol={0.3} />)}
     <Vo id="m1" at={T.read} vol={1.1} />

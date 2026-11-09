@@ -19,7 +19,6 @@ type Pack = {
   hook: string; // 0초 머리 글
   seGloss: string; // 세 시 = 3 o'clock
   samsipGloss: string; // 삼십 분 = 30 minutes
-  who: string; // 누가 맞아?
   bothTrue: string; // 둘 다 맞다 — 한국어엔 숫자가 두 벌
   hours: string; // 시는 이렇게 센다
   minutes: string; // 분은 이렇게 센다
@@ -35,7 +34,6 @@ export const TEXT: Record<Lang, Pack> = {
     hook: `This clock yells at you${NL}if you read it wrong`,
     seGloss: 'se(3) si = 3 o’clock',
     samsipGloss: 'sam-sip(30) bun = 30 min',
-    who: 'Wait… who’s right?',
     bothTrue: `3 = 세 and 삼!${NL}Korean has 2 sets of numbers`,
     hours: 'Hours count',
     minutes: 'Minutes count',
@@ -50,7 +48,6 @@ export const TEXT: Record<Lang, Pack> = {
     hook: `读错时间的话${NL}这个钟会冲你吼`,
     seGloss: 'se(3) si = 3点',
     samsipGloss: 'sam-sip(30) bun = 30分',
-    who: '等等…谁说得对？',
     bothTrue: `3 既是 세，也是 삼！${NL}韩语有两套数字`,
     hours: '“点”这样数',
     minutes: '“分”这样数',
@@ -65,7 +62,6 @@ export const TEXT: Record<Lang, Pack> = {
     hook: `အချိန် မှားဖတ်ရင်${NL}ဒီနာရီက အော်ဟောက်တယ်`,
     seGloss: 'se(3) si = ၃ နာရီ',
     samsipGloss: 'sam-sip(30) bun = မိနစ် ၃၀',
-    who: 'နေဦး… ဘယ်ဟာ မှန်တာလဲ?',
     bothTrue: `၃ ကို 세 လို့လည်း ခေါ်တယ်၊ 삼 လို့လည်း ခေါ်တယ်!${NL}ကိုရီးယားစကားမှာ ဂဏန်း ၂ မျိုး ရှိတယ်`,
     hours: 'နာရီကို ဒီလို ရေတွက်တယ်',
     minutes: 'မိနစ်ကို ဒီလို ရေတွက်တယ်',
