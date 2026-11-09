@@ -209,4 +209,77 @@ function 요약절(rows, { 날 = 30 } = {}) {
   return lines;
 }
 
-module.exports = { 편줄, 장부번호, 판정읽기, 장부상태, 표, 셈, 자리셈, 요약절, 튐, 위 };
+// 두 브랜드 새 방향(제작 절차 #new-direction-20261109) — 조회 말고 저장 · 공유 · 좋아요로 본다. 슬롯이 이 날부터인 편이 새 방향이다
+const 새방향시작 = { synkbrief: '2026-11-14', yuhobuilds: '2026-11-15' };
+const 앞날수 = 14;
+const KST날 = iso => new Date(Date.parse(iso) + 9 * 3_600_000).toISOString().slice(0, 10);
+const 판이름 = account => (/instagram/.test(account) ? '인스타' : /youtube/.test(account) ? '유튜브' : /tiktok/.test(account) ? '틱톡' : null);
+const 수 = v => (Number.isFinite(v) ? v : 0);
+const 반응합 = (m = {}) => 수(m.likes) + 수(m.comments) + 수(m.shares) + 수(m.saves);
+const 가운데 = list => {
+  if (!list.length) return null;
+  const s = [...list].sort((a, b) => a - b);
+  return s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2;
+};
+
+/** 판마다 72시간(없으면 24시간) 판정 → 새 방향 편 줄과, 시작 앞 14일 같은 브랜드 판의 반응 중앙값 */
+function 새방향표({ judgments = [], 시작 = 새방향시작 } = {}) {
+  const byPost = new Map();
+  for (const l of judgments) {
+    if (!l || !l.folder || (l.point !== '72h' && l.point !== '24h') || !Date.parse(l.publishedAt)) continue;
+    if (!시작[편줄(l.folder)] || !판이름(l.account)) continue;
+    const had = byPost.get(l.post);
+    if (!had || (had.point === '24h' && l.point === '72h')) byPost.set(l.post, l);
+  }
+  const rows = [];
+  const 앞 = new Map();
+  for (const l of byPost.values()) {
+    const 줄 = 편줄(l.folder);
+    const 날 = KST날(l.publishedAt);
+    const 판 = 판이름(l.account);
+    const m = l.metrics || {};
+    if (날 >= 시작[줄]) {
+      rows.push({ 날, 줄, folder: l.folder, 판, 시점: l.point, 조회: m.views ?? null, 좋아요: m.likes ?? null, 댓글: m.comments ?? null, 공유: m.shares ?? null, 저장: m.saves ?? null, 반응: 반응합(m) });
+    } else if (Date.parse(`${시작[줄]}T00:00:00+09:00`) - Date.parse(l.publishedAt) <= 앞날수 * 86_400_000) {
+      const key = `${줄}|${판}`;
+      if (!앞.has(key)) 앞.set(key, []);
+      앞.get(key).push(반응합(m));
+    }
+  }
+  rows.sort((a, b) => a.날.localeCompare(b.날) || a.folder.localeCompare(b.folder) || a.판.localeCompare(b.판));
+  const 기준 = {};
+  for (const [key, list] of 앞) {
+    const [줄, 판] = key.split('|');
+    (기준[줄] ||= {})[판] = { 중앙값: 가운데(list), 판수: list.length };
+  }
+  return { rows, 기준, 시작 };
+}
+
+/** 게시성과.md에 붙이는 절(줄 배열). 앞 판도 새 편도 없으면 빈 배열 */
+function 새방향절(표값) {
+  const { rows, 기준, 시작 } = 표값;
+  if (!rows.length && !Object.keys(기준).length) return [];
+  const 칸값 = v => (v === null || v === undefined ? '—' : Number(v).toLocaleString('en-US'));
+  const 기준글 = 줄 => {
+    const b = 기준[줄];
+    if (!b) return `${줄}: 앞 판 없음`;
+    return `${줄}: ${['인스타', '유튜브', '틱톡'].filter(p => b[p]).map(p => `${p} ${b[p].중앙값}(${b[p].판수}판)`).join(' · ')}`;
+  };
+  const lines = [
+    `## 새 방향 편 — 저장 · 공유 · 좋아요(synkbrief 슬롯 ${시작.synkbrief.slice(5)}~ · yuhobuilds 슬롯 ${시작.yuhobuilds.slice(5)}~)`,
+    '',
+    '두 브랜드는 조회가 아니라 이 칸으로 본다([제작 절차](기획장부/제작절차.md#new-direction-20261109)). 「반응」은 좋아요 + 댓글 + 공유 + 저장이고 72시간(없으면 24시간) 값이다. 편마다 다음 회차가 약한 자리를 고친다.',
+    '',
+    `시작 앞 14일 판마다 반응 중앙값 — ${Object.keys(시작).map(기준글).join(' / ')}`,
+    '',
+  ];
+  if (!rows.length) lines.push('아직 나온 편 없음.', '');
+  else {
+    lines.push('| 게시 | 편 | 판 | 시점 | 조회 | 좋아요 | 댓글 | 공유 | 저장 | 반응 |', '|---|---|---|---|---|---|---|---|---|---|');
+    for (const r of rows) lines.push(`| ${r.날.slice(5)} | ${r.folder} | ${r.판} | ${r.시점 === '72h' ? '72시간' : '24시간'} | ${칸값(r.조회)} | ${칸값(r.좋아요)} | ${칸값(r.댓글)} | ${칸값(r.공유)} | ${칸값(r.저장)} | ${칸값(r.반응)} |`);
+    lines.push('');
+  }
+  return lines;
+}
+
+module.exports = { 편줄, 장부번호, 판정읽기, 장부상태, 표, 셈, 자리셈, 요약절, 새방향표, 새방향절, 새방향시작, 튐, 위 };

@@ -110,14 +110,14 @@ test('하루 몫 — 같은 태평양 날짜에 이미 쓴 단위가 있으면 �
   assert.equal(다음.검색들.length, 6);
 });
 
-test('실제 설정 — 회차 12번 안, 갈래마다 지역 · 언어, LAB은 지역 제한 없이, 하루 몫이 LAB 한도 안', () => {
+test('실제 설정 — 회차 14번 안, 갈래마다 지역 · 언어, LAB은 지역 제한 없이, 하루 몫이 LAB 한도 안', () => {
   const 실제 = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'tools', '수요스캔', '설정', '뜨는원본.json'), 'utf8'));
   const 차례 = 뜨는.검색차례(실제.갈래, 실제.회차당, 실제);
-  assert.ok(차례.length <= 12);
+  assert.ok(차례.length <= 14);
   assert.ok(실제.회차당 * 100 + 실제.검색뒤여유 <= 실제.하루몫, '기본 한 회차는 하루 몫 안');
   assert.ok(실제.하루몫 <= 5000, 'LAB 프로젝트 10,000단위 가운데 업로드 · 자막 몫을 남긴다');
   const 갈래들 = new Set(차례.map(c => c.갈래));
-  for (const g of ['AI 활용', '1인 창업', '업무 자동화', 'LAB 영어', 'LAB 몽골']) assert.ok(갈래들.has(g), `${g} 갈래가 회차에 든다`);
+  for (const g of ['AI 활용', '1인 창업', '업무 자동화', 'AI 사고', 'LAB 영어', 'LAB 몽골']) assert.ok(갈래들.has(g), `${g} 갈래가 회차에 든다`);
   for (const c of 차례.filter(c => c.갈래.startsWith('LAB'))) assert.equal(뜨는.검색값(c, 'x').regionCode, undefined);
   assert.equal(뜨는.검색값(차례.find(c => c.갈래 === 'LAB 영어'), 'x').relevanceLanguage, 'en');
   assert.equal(뜨는.검색값(차례.find(c => c.갈래 === 'AI 활용'), 'x').regionCode, 'KR');

@@ -130,3 +130,39 @@ test('게시성과 요약 — 관문 절은 편 색인이 없거나 읽다 막�
   const broken = { folders: new Map([['LAB_가_mn_20261101', { folder: 'LAB_가_mn_20261101' }]]), resolve: () => null };
   assert.match(도구.summarize({ ledger: [], now: NOW, index: broken }), /## 훅 이름표별/);
 });
+
+test('새 방향 표 — 슬롯 시작일부터 편 · 판마다 저장 · 공유 · 좋아요, 앞 14일은 판마다 반응 중앙값으로만', () => {
+  const at = day => `2026-${day}T21:00:00+09:00`;
+  const j = (post, folder, account, day, point, metrics) => ({ post, folder, account, publishedAt: at(day), point, metrics });
+  const judgments = [
+    j('a', 'synkbrief_옛편_20261105', 'synkbrief-instagram', '11-10', '72h', { views: 120, likes: 1, comments: 0, shares: 0, saves: 0 }),
+    j('b', 'synkbrief_옛편둘_20261106', 'synkbrief-instagram', '11-11', '72h', { views: 110, likes: 3, comments: 0, shares: 0, saves: 0 }),
+    j('old', 'synkbrief_아주옛편_20261001', 'synkbrief-instagram', '10-20', '72h', { views: 90, likes: 50 }),
+    j('c', 'synkbrief_회의록_20261110', 'synkbrief-instagram', '11-14', '24h', { views: 300, likes: 4, comments: 1, shares: 2, saves: 3 }),
+    j('c', 'synkbrief_회의록_20261110', 'synkbrief-instagram', '11-14', '72h', { views: 900, likes: 9, comments: 2, shares: 5, saves: 7 }),
+    j('d', 'synkbrief_회의록_20261110', 'synkbrief-youtube', '11-14', '24h', { views: 1000, likes: 20, comments: 3 }),
+    j('e', 'yuhobuilds_형식시험_20261108', 'yuhobuilds-instagram', '11-14', '72h', { views: 200, likes: 2 }),
+    j('f', 'LAB_화날때_mn_20261031', 'lab-instagram', '11-14', '72h', { views: 19000, likes: 900 }),
+    j('g', 'synkbrief_회의록_20261110', 'shift-naver', '11-14', '72h', { views: 5 }),
+  ];
+  const t = 관문.새방향표({ judgments });
+  assert.deepEqual(t.rows.map(r => [r.folder, r.판, r.시점, r.조회, r.반응]), [
+    ['synkbrief_회의록_20261110', '유튜브', '24h', 1000, 23],
+    ['synkbrief_회의록_20261110', '인스타', '72h', 900, 23],
+  ]);
+  assert.deepEqual(t.기준.synkbrief.인스타, { 중앙값: 2, 판수: 2 }, '앞 14일 판만 — 10-20 편은 빠진다');
+  assert.deepEqual(t.기준.yuhobuilds.인스타, { 중앙값: 2, 판수: 1 }, '슬롯 11-15 앞의 형식 시험 칸은 앞 판이다');
+  const 절 = 관문.새방향절(t).join('\n');
+  assert.match(절, /## 새 방향 편 — 저장 · 공유 · 좋아요\(synkbrief 슬롯 11-14~ · yuhobuilds 슬롯 11-15~\)/);
+  assert.match(절, /synkbrief: 인스타 2\(2판\)/);
+  assert.match(절, /\| 11-14 \| synkbrief_회의록_20261110 \| 인스타 \| 72시간 \| 900 \| 9 \| 2 \| 5 \| 7 \| 23 \|/);
+  assert.match(절, /\| 유튜브 \| 24시간 \| 1,000 \| 20 \| 3 \| — \| — \| 23 \|/);
+});
+
+test('새 방향 절 — 새 편이 없으면 기준과 「아직 나온 편 없음」, 앞 판도 없으면 절을 내지 않는다', () => {
+  assert.deepEqual(관문.새방향절(관문.새방향표({ judgments: [] })), []);
+  const 절 = 관문.새방향절(관문.새방향표({ judgments: [{ post: 'a', folder: 'yuhobuilds_옛편_20261105', account: 'yuhobuilds-youtube', publishedAt: '2026-11-10T21:00:00+09:00', point: '72h', metrics: { views: 700, likes: 5, comments: 1 } }] })).join('\n');
+  assert.match(절, /yuhobuilds: 유튜브 6\(1판\)/);
+  assert.match(절, /synkbrief: 앞 판 없음/);
+  assert.match(절, /아직 나온 편 없음/);
+});

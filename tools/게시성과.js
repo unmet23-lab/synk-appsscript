@@ -410,6 +410,8 @@ function summarize({ ledger, now, unregistered = [], unmapped = [], index = null
   // 관문과 실제 반응(11-08) — 재기만 하는 표라 읽다 막혀도 요약 전체를 멈추지 않는다
   let 관문절 = [];
   try { 관문절 = 관문.요약절(관문.표({ judgments: latest, index, now })); } catch { 관문절 = []; }
+  let 새방향 = [];
+  try { 새방향 = 관문.새방향절(관문.새방향표({ judgments: latest })); } catch { 새방향 = []; }
 
   const lines = [
     '# 게시 성과 판정',
@@ -428,6 +430,7 @@ function summarize({ ledger, now, unregistered = [], unmapped = [], index = null
     '',
     ...시험절(test),
     ...관문절,
+    ...새방향,
     '## 훅 이름표별',
     '',
     '| 이름표 | 판 | 72시간 배수 중앙값 | 7일 배수 중앙값 | 상위·보통·하위·그 밖 | 브랜드 |',
