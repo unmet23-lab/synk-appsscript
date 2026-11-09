@@ -117,8 +117,8 @@ test('the view says the new introduction and none of what it must not say',async
   const all=models+portfolio+brief+pulseRequestText(oldDraft())+JSON.stringify([MODELS,PORTFOLIO,RETIRED_WORKS,TEAMS]);
   // 11-05 first line (Yuho: 「좋아 훌륭해」): the heading says what synk.im/pulse says, in 해요체.
   for(const screen of [models,portfolio,brief]){
-    assert.match(screen,/AI 모델에게\s+연기를 가르칩니다/);
-    assert.match(screen,/배우·광고 모델로 10년 일한 대표가 시선, 제품을 쥔 손, 웃음이 나오는 타이밍까지 직접 연출해요\. 상담은 제품 사진 한 장과 올릴 곳만으로 시작해요\./);
+    assert.match(screen,/카메라 앞에서 10년,\s+배우가 AI 모델을 연출합니다/);assert.doesNotMatch(screen,/연기를 가르칩니다/);
+    assert.match(screen,/넷플릭스 · tvN에 출연하고 웹드라마 주연\(페이스북 1,000만 회\)을 맡은 대표가 시선, 제품을 쥔 손, 웃음이 나오는 타이밍까지 직접 연출해요\. 상담은 제품 사진 한 장과 올릴 곳만으로 시작해요\./);
   }
   assert.match(models,/AI 광고 제작/);
   assert.match(models,/AI 모델 21명 가운데/);

@@ -216,6 +216,12 @@ html.sx.view-entry .app-header{display:none!important}
   .sx-p{flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:14px;padding-bottom:calc(var(--sx-m) + 36px)}
   .sx-hero-copy{max-width:100%}
   .sx-hero-lead{margin-top:8px;font-size:13px;line-height:1.55}
+  /* 휴대폰 세로: 11-07 제목이 세 줄이라 이력 소개 줄(세 줄)까지 두면 글 묶음이 옛 판보다 61px 올라와 쇼릴 세로 컷의 턱에 닿는다(오미톡 2.1~2.6초).
+     이 폭에서는 소개 줄을 빼 글 묶음을 옛 높이로 둔다 — 같은 이력은 「만드는 사람」 쪽에 있다. */
+  @media (max-width:519.98px) and (max-aspect-ratio:1/1){.sx-hero-lead{display:none}}
+  /* 폭 360 미만 세로(아이폰 SE 1세대 · 폴드 커버 화면): 36px이면 제목 첫 줄 「카메라 앞에서 10년,」(288px)이 콘텐츠 폭 280px을 넘어 네 줄로 접혀
+     글 묶음이 다시 턱 자리로 올라가고 끝 쪽 그림 칸(세 줄 기준)에도 닿는다. 첫 화면 큰 제목만 한 단계 줄인다(32px — 첫 줄 약 256px). */
+  @media (max-width:359.98px) and (max-aspect-ratio:1/1){.sx-home .sx-display{font-size:32px}}
   .sx-hero-act{align-items:stretch;text-align:left;max-width:100%;width:100%}
   .sx-credit{text-align:left;margin:0 0 4px;min-height:0}
   .sx-credit em{display:inline;margin-left:6px}
@@ -224,19 +230,19 @@ html.sx.view-entry .app-header{display:none!important}
   .sx-shade{background:linear-gradient(0deg,rgba(0,0,0,.9) 0,rgba(0,0,0,.66) 40%,rgba(0,0,0,0) 64%),linear-gradient(180deg,rgba(0,0,0,.4) 0,rgba(0,0,0,0) 12%)}
   .sx-layer-end img{position:absolute;left:0;top:44px;right:0;width:100%;height:calc(44% - 44px);object-fit:cover;object-position:50% 62%;max-width:100%;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 16%,#000 82%,transparent 100%);mask-image:linear-gradient(180deg,transparent 0,#000 16%,#000 82%,transparent 100%)}
   /* 태블릿 세로 · 정사각 창: 너비를 꽉 채우면 병 뚜껑이 칸 위로 잘린다. 그림의 로고 글자부터 상자 바닥까지(원본 262~1532) 한 장을 가운데 세로 칸에 담고,
-     칸 높이는 제목 위 남는 자리에 맞춘다 — 아래 글 묶음이 제목 두 줄(2.28 × 제목 크기)과 422px이다. 그림 위쪽 빛이 칸 가장자리에서 네모로 비치지 않게
+     칸 높이는 제목 위 남는 자리에 맞춘다 — 아래 글 묶음이 제목 세 줄(3.42 × 제목 크기)과 422px이다. 그림 위쪽 빛이 칸 가장자리에서 네모로 비치지 않게
      좌우도 얇게 흐린다(제품은 가로 15~83%). 휴대폰은 아래 규칙, 가로로 긴 좁은 창은 위 그대로다. */
   @media (min-width:520px) and (max-aspect-ratio:1/1){
-    .sx-layer-end img{width:auto;margin:0 auto;height:calc(100% - 422px - 2.28*var(--sx-t1));aspect-ratio:1080/1270;object-position:50% 40.3%;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 10%,#000 86%,transparent 100%),linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(180deg,transparent 0,#000 10%,#000 86%,transparent 100%),linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%);mask-composite:intersect}
+    .sx-layer-end img{width:auto;margin:0 auto;height:calc(100% - 422px - 3.42*var(--sx-t1));aspect-ratio:1080/1270;object-position:50% 40.3%;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 10%,#000 86%,transparent 100%),linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(180deg,transparent 0,#000 10%,#000 86%,transparent 100%),linear-gradient(90deg,transparent 0,#000 8%,#000 92%,transparent 100%);mask-composite:intersect}
   }
   @media (min-width:520px) and (max-aspect-ratio:1/1) and (max-height:769.98px){.sx-layer-end img{height:calc(100% - 359px)}}
   /* 휴대폰 세로(폭 520 미만): 그림의 작은 줄(원본 626~658) 바로 아래 어두운 틈(662)부터 제품만 담는다 — 뚜껑 빛(678~)부터
      상자 바닥(1335)까지 늘 온전하고 글자 그림자가 없다. 높이가 넉넉하면 너비를 꽉 채운 채 반사로 제목 앞까지 채우고, 모자라면 제품 띠(662~1490, 1080/828)가
      들어가게 가운데로 줄인다. 꽉 찬 너비에서는 그림을 662/1080 = 61.30vw 올리고 아래 흐림을 칸 위에서 (1345 − 662)/1080 = 63.24vw부터,
      줄인 칸에서는 칸 높이 × 0.7995만큼 올리고 82.5%부터 흐린다 — 두 값이 같은 줄을 가리키고 max() · min()이 맞는 쪽을 고른다.
-     칸 위는 머리 줄과 띄우려 56px, 아래 글 묶음은 제목이 보일 때 516px(제목 두 줄 + 422px + 내린 12px) · 숨을 때 386px을 비운다. */
+     칸 위는 머리 줄과 띄우려 56px, 아래 글 묶음은 제목이 보일 때 557px(제목 세 줄 + 422px + 내린 12px) · 숨을 때 386px을 비운다. */
   @media (max-width:519.98px) and (max-aspect-ratio:1/1){
-    .sx-layer-end img{top:56px;margin:0 auto;height:calc(100vh - 516px);height:calc(100dvh - 516px);width:min(100%,calc((100vh - 516px)*1.3043));width:min(100%,calc((100dvh - 516px)*1.3043));object-position:50% max(-61.30vw,calc((516px - 100vh)*0.7995));object-position:50% max(-61.30vw,calc((516px - 100dvh)*0.7995));-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 6px,#000 min(63.24vw,82.5%),transparent 100%);mask-image:linear-gradient(180deg,transparent 0,#000 6px,#000 min(63.24vw,82.5%),transparent 100%)}
+    .sx-layer-end img{top:56px;margin:0 auto;height:calc(100vh - 557px);height:calc(100dvh - 557px);width:min(100%,calc((100vh - 557px)*1.3043));width:min(100%,calc((100dvh - 557px)*1.3043));object-position:50% max(-61.30vw,calc((557px - 100vh)*0.7995));object-position:50% max(-61.30vw,calc((557px - 100dvh)*0.7995));-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 6px,#000 min(63.24vw,82.5%),transparent 100%);mask-image:linear-gradient(180deg,transparent 0,#000 6px,#000 min(63.24vw,82.5%),transparent 100%)}
   }
   @media (max-width:519.98px) and (max-aspect-ratio:1/1) and (max-height:769.98px){.sx-layer-end img{height:calc(100vh - 386px);height:calc(100dvh - 386px);width:min(100%,calc((100vh - 386px)*1.3043));width:min(100%,calc((100dvh - 386px)*1.3043));object-position:50% max(-61.30vw,calc((386px - 100vh)*0.7995));object-position:50% max(-61.30vw,calc((386px - 100dvh)*0.7995))}}
   .sx-p.is-end{justify-content:flex-end}

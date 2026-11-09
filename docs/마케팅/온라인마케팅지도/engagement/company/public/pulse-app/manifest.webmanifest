@@ -2,7 +2,7 @@
   "id": "/pulse-app/",
   "name": "SYNK PULSE",
   "short_name": "PULSE",
-  "description": "AI 모델에게 연기를 가르칩니다",
+  "description": "카메라 앞에서 10년, 배우가 AI 모델을 연출합니다",
   "lang": "ko",
   "start_url": "/pulse-app/",
   "scope": "/pulse-app/",

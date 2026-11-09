@@ -71,8 +71,8 @@ test('PULSE guide keeps the approved intro and still says what the app does',asy
   const {APPS}=await mod,pulse=APPS.pulse,copy=[pulse.brand,pulse.category,pulse.description,pulse.caption,pulse.summary,pulse.boundary,pulse.maker.title,pulse.maker.body,pulse.maker.credits,...pulse.features.flat()].join(' ');
   // 11-05 첫 줄 판(유호님 「좋아 훌륭해」): 한 줄은 사이트 제목 그대로, 요약은 소개 줄과 맡긴 뒤의 일이다(사이트 첫 화면처럼 「확인하신 컷 · 합성」 문장은 뺐다).
   // 「모든 컷 먼저」와 합성 단서는 기능 첫 칸이 맡는다.
-  assert.equal(pulse.description,'AI 모델에게 연기를 가르칩니다.');assert.equal(pulse.features.length,3);
-  assert.equal(pulse.summary,'배우·광고 모델로 10년 일한 대표가 시선, 제품을 쥔 손, 웃음이 나오는 타이밍까지 직접 연출해요. 맡기신 뒤에는 초대 링크 하나로 진행 단계와 시안을 보고 의견을 남기고, 승인한 뒤 최종 파일까지 한곳에서 받아요.');
+  assert.equal(pulse.description,'카메라 앞에서 10년, 배우가 AI 모델을 연출합니다.');assert.equal(pulse.features.length,3);
+  assert.equal(pulse.summary,'넷플릭스 · tvN에 출연하고 웹드라마 주연(페이스북 1,000만 회)을 맡은 대표가 시선, 제품을 쥔 손, 웃음이 나오는 타이밍까지 직접 연출해요. 맡기신 뒤에는 초대 링크 하나로 진행 단계와 시안을 보고 의견을 남기고, 승인한 뒤 최종 파일까지 한곳에서 받아요.');
   assert.match(pulse.features[0][1],/들어갈 모든 컷을 완성 화질로 먼저 보여 드려요/);
   // 이력 자리의 경력은 「엔터테인먼트·광고 업계 10년」이다(배우만 앞세우지 않는다, 유호님 11-05).
   assert.match(pulse.maker.body,/SYNK PULSE는 엔터테인먼트·광고 업계에서 10년 일한 대표 유호가 연출해요\./);

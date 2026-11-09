@@ -315,11 +315,11 @@ test('on a portrait tablet the end page shows the whole cap and box: one centred
   assert.ok(start+band<=nh&&start>=0,'the band stays inside the photo');
   assert.ok(horizontal[0]*nw<=END_PHOTO.left-60&&horizontal[1]*nw>=END_PHOTO.right+60,'the side fade stays clear of the bottle and the box');
   assert.match(rule,/-webkit-mask-composite:source-in;mask-image:[^;]*;mask-composite:intersect$/,'the two fades multiply in every engine instead of adding up');
-  // 칸 높이는 제목 위 남는 자리: 아래 글 묶음(제목 두 줄 + 단추 · 고지 · 바닥 줄)을 뺀다.
-  assert.match(rule,/height:calc\(100% - 422px - 2\.28\*var\(--sx-t1\)\)/);
-  assert.match(css,/\.sx-display\{font-size:var\(--sx-t1\);line-height:1\.14;/,'two title lines are 2 × 1.14 = 2.28 title sizes');
+  // 칸 높이는 제목 위 남는 자리: 아래 글 묶음(제목 세 줄 + 단추 · 고지 · 바닥 줄)을 뺀다. 11-10 제목이 synk.im과 같은 세 줄이 됐다.
+  assert.match(rule,/height:calc\(100% - 422px - 3\.42\*var\(--sx-t1\)\)/);
+  assert.match(css,/\.sx-display\{font-size:var\(--sx-t1\);line-height:1\.14;/,'three title lines are 3 × 1.14 = 3.42 title sizes');
   const end=entryView({}).match(/<div class="sx-end"><p class="sx-display">([\s\S]*?)<\/p>/);
-  assert.equal((end[1].match(/class="sx-ln"/g)||[]).length,2,'the end title is two lines; the frame height counts on it');
+  assert.equal((end[1].match(/class="sx-ln"/g)||[]).length,3,'the end title is three lines; the frame height counts on it');
   const hide=css.match(/@media \(max-height:([\d.]+)px\)\{\.sx-end \.sx-display\{display:none\}\}/)[1];
   assert.ok(narrow.includes(`@media (min-width:${from}px) and (max-aspect-ratio:1/1) and (max-height:${hide}px){.sx-layer-end img{height:calc(100% - 359px)}}`),'where the title hides, the frame takes the room down to the button');
 });
@@ -347,15 +347,25 @@ test('on a portrait phone the end page shows the product from just under the sma
   assert.ok(start+fadePct/100*band>=END_PHOTO.boxBottom+8,'shrunk: the bottom fade starts under the box');
   assert.ok(Math.abs(fadeVw/100*nw-fadePct/100*band)<2,'both fade starts point at the same row');
   assert.ok(start+band<=nh,'the shrunk band stays inside the photo');
-  // 아래 글 묶음: 휴대폰 제목은 늘 36px(3.9vw가 36px을 넘지 않는다)라 두 줄 2.28 × 36 + 422px, 칸 위를 44px에서 내린 만큼 더 비운다.
+  // 아래 글 묶음: 휴대폰 제목은 늘 36px(3.9vw가 36px을 넘지 않는다)라 세 줄 3.42 × 36 + 422px, 칸 위를 44px에서 내린 만큼 더 비운다.
   assert.match(css,/--sx-t1:clamp\(36px,3\.9vw,58px\)/);assert.ok(3.9*519.98/100<36);
-  assert.equal(K,422+Math.round(2.28*36)+(top-44),'with the title showing, the frame stops above it');
+  assert.equal(K,422+Math.round(3.42*36)+(top-44),'with the title showing, the frame stops above it');
   const hide=css.match(/@media \(max-height:([\d.]+)px\)\{\.sx-end \.sx-display\{display:none\}\}/)[1];
   const low=narrow.match(/@media \(max-width:519\.98px\) and \(max-aspect-ratio:1\/1\) and \(max-height:([\d.]+)px\)\{\.sx-layer-end img\{([^}]*)\}\}/);
   assert.ok(low&&low[1]===hide,'where the title hides (same height as the title rule), the phone frame takes the room down to the button');
   const K2=Number(low[2].match(/height:calc\(100dvh - (\d+)px\)/)[1]);
   assert.ok(K2<K&&K2>=330+(top-44),'the lower copy without the title still keeps the button clear');
   for(const text of [`height:calc(100vh - ${K2}px);height:calc(100dvh - ${K2}px)`,`width:min(100%,calc((100dvh - ${K2}px)*${ratioText}))`,`object-position:50% max(-${vwText}vw,calc((${K2}px - 100dvh)*${heightText}))`])assert.ok(low[2].includes(text),text);
+});
+// 11-10 제목(synk.im과 같은 세 줄) · 이력 소개 줄: 휴대폰 세로에서 둘 다 두면 글 묶음이 옛 판보다 61px 올라와 쇼릴 세로 컷(오미톡)의 턱에 닿았다(390×844 실측).
+test('on a portrait phone the first page keeps its copy off the faces in the reel: the three-line title stays, the long lead line steps aside',()=>{
+  const narrow=narrowBlock(read('film.css'));
+  assert.ok(narrow.includes('@media (max-width:519.98px) and (max-aspect-ratio:1/1){.sx-hero-lead{display:none}}'),'phones drop the lead, nothing wider does');
+  // 폭 360 미만(320 · 폴드 커버): 36px 첫 줄 288px이 콘텐츠 폭 280px을 넘어 네 줄로 접혔다(Fable 11-10 P2) — 첫 화면 큰 제목만 32px.
+  assert.ok(narrow.includes('@media (max-width:359.98px) and (max-aspect-ratio:1/1){.sx-home .sx-display{font-size:32px}}'),'the narrowest phones keep the title at three lines');
+  const html=entryView({});
+  assert.match(html,/<h1 class="sx-display">(<span class="sx-ln"><span>[^<]+<\/span><\/span>){3}<\/h1>/,'the title is three lines, as on synk.im');
+  assert.ok(html.includes('<p class="sx-body sx-hero-lead" data-in>넷플릭스 · tvN에 출연하고 웹드라마 주연(페이스북 1,000만 회)을 맡은 대표가'),'wider screens keep the lead');
 });
 test('no public file of the customer app quotes internal decisions by name — comments included, a customer can read them with view-source',async()=>{
   const {readdirSync}=await import('node:fs');

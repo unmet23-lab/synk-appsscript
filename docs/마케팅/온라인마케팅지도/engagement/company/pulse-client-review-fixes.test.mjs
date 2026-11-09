@@ -33,8 +33,9 @@ const words=html=>html.replace(/<[^>]+>/g,' ').replace(/[\s\u00A0]+/g,' ');
 test('the entry page introduces PULSE in the approved words and keeps the invite door and the demo',()=>{
   const html=welcome({}),text=words(html);
   for(const line of [
-    'AI 모델에게 연기를 가르칩니다',
-    '배우·광고 모델로 10년 일한 대표가 시선, 제품을 쥔 손, 웃음이 나오는 타이밍까지 직접 연출해요.',
+    // 11-07 제목 · 공개 이력 소개 줄(결정 표 「… PULSE 제목 …」, synk.im/pulse와 같은 말 — 11-10 앱에도).
+    '카메라 앞에서 10년, 배우가 AI 모델을 연출합니다',
+    '넷플릭스 · tvN에 출연하고 웹드라마 주연(페이스북 1,000만 회)을 맡은 대표가 시선, 제품을 쥔 손, 웃음이 나오는 타이밍까지 직접 연출해요.',
     '영상에 들어갈 모든 컷을 장면 이미지로 먼저 보여 드려요. AI 모델 21명 캐스팅, 제품·로고는 실제 파일로 합성해요.',
     // 장면 이미지 단서 — 장면 이미지를 말할 때는 함께 둔다.
     '장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요.',
@@ -73,8 +74,10 @@ test('the entry page introduces PULSE in the approved words and keeps the invite
   assert.equal(app.split('.sx-invite-alert').length,2,'one place');
   assert.ok(html.includes('href="https://synk.im/pulse/casting/" target="_blank" rel="noopener noreferrer"'));
   const index=readFileSync(new URL('./public/pulse-app/index.html',import.meta.url),'utf8');
-  assert.ok(index.includes('<title>SYNK PULSE — AI 모델에게 연기를 가르칩니다</title>'));
-  assert.equal(JSON.parse(readFileSync(new URL('./public/pulse-app/manifest.webmanifest',import.meta.url),'utf8')).description,'AI 모델에게 연기를 가르칩니다');
+  assert.ok(index.includes('<title>SYNK PULSE — 카메라 앞에서 10년, 배우가 AI 모델을 연출합니다</title>'));
+  assert.equal(JSON.parse(readFileSync(new URL('./public/pulse-app/manifest.webmanifest',import.meta.url),'utf8')).description,'카메라 앞에서 10년, 배우가 AI 모델을 연출합니다');
+  // 옛 제목(11-05 판)은 손님이 보는 어느 자리에도 남지 않는다.
+  assert.doesNotMatch(text+index+app,/연기를 가르칩니다/);
   assert.ok(index.includes('content="영상에 들어갈 모든 컷을 장면 이미지로 먼저 보여 드려요. AI 모델 21명 캐스팅, 제품·로고는 실제 파일로 합성해요."'));
   assert.ok(index.includes('<span class="header-caption">AI 광고 제작</span>'));
   assert.doesNotMatch(index,/CLIENT ROOM|함께 만드는 광고/);

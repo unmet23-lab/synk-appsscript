@@ -303,7 +303,7 @@ function paintShell(){
   if(skip)skip.textContent=t('본문으로 건너뛰기');
   if(banner)banner.textContent=t('인터넷 연결이 끊겼어요. 쓰던 내용은 이 화면에 그대로 있어요.');
   document.querySelector('.app-header .brand')?.setAttribute('aria-label',t('PULSE 처음으로'));
-  document.title=t('SYNK PULSE — AI 모델에게 연기를 가르칩니다');
+  document.title=t('SYNK PULSE — 카메라 앞에서 10년, 배우가 AI 모델을 연출합니다');
 }
 // 공개 첫 화면(초대 · 프로젝트 없음)의 허락 언어: GET /pulse/api/features를 한 번 읽어 둔다. 못 읽으면 한국어로 두고 다음에 다시 읽는다.
 let publicFeaturesRead=null,projectFeatures=null,localeScreen=null;
