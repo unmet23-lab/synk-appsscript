@@ -1,4 +1,5 @@
 import {randomUUID} from 'node:crypto';
+import {sourceHash} from './pulse-translations.mjs';
 import {buildDeliveryCheck,deliveryCheckFingerprint,deliveryCheckMedia,deliveryItemConfirmationKey,deliveryItemConfirmed} from './client-delivery-check.mjs';
 
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
@@ -19,7 +20,8 @@ const activeItems=draft=>draft.items.filter(item=>!item.removed);
 const typeMatches=(item,requirement)=>!item.media||MIME_KINDS[item.media.mimeType]===requirement.kind;
 const validRevision=value=>Number.isSafeInteger(value)&&value>=0;
 
-export function createClientDeliveryService({store,clientProjects,clock=()=>new Date().toISOString(),fileInspector=null}){
+const LANGUAGE_NAMES={en:'영어',ja:'일본어'};
+export function createClientDeliveryService({store,clientProjects,clock=()=>new Date().toISOString(),fileInspector=null,localeOf=()=>'ko'}){
   const CHECK_KIND='clientDeliveryChecks';let scanning=null;
   function current(user){const live=store.get('users',user?.id);if(!live?.active)throw fail('먼저 로그인해 주세요.',401);return live;}
   function readState(user,projectId){
@@ -47,10 +49,13 @@ export function createClientDeliveryService({store,clientProjects,clock=()=>new 
     for(const item of items){const requirement=draft.requirements.find(entry=>entry.id===item.requirementId),matches=!!requirement&&typeMatches(item,requirement),confirmed=deliveryItemConfirmed(row,draft,item,inspection);checks.push({id:'item:'+item.id,label:item.label,status:!matches?'missing':confirmed?'ready':'manual',text:!matches?'파일 형식과 항목을 맞춰 주세요.':confirmed?'담당자가 열어 보고 확인했어요.':item.media?'파일을 열어 승인한 시안과 맞는지 봐 주세요.':'링크가 열리는지, 내용이 맞는지 직접 봐 주세요.'});}
     checks.push({id:'capacity',label:'파일 자리',status:row.versions.length+items.length<=100?'ready':'missing',text:row.versions.length+items.length<=100?'담을 자리가 있어요.':'한 프로젝트에 파일은 100개까지예요. 줄 파일 수를 줄여 주세요.'});
     checks.push({id:'guide',label:'사용 안내',status:guide?.trim()?'ready':'missing',text:guide?.trim()?'사용 안내를 적었어요.':'사용 안내를 적어 주세요.'});
+    // 영어 프로젝트(다국어 판 2): 손님에게는 사용 안내의 번역이 보인다. 지금 안내와 같은 원문으로 저장한 번역이 있어야 보일 수 있다(최종본도 이 번역을 받아야 올라간다).
+    const locale=localeOf(row)||'ko',translated=locale!=='ko'&&!!draft.guideTranslation?.text&&draft.guideTranslation.sourceHash===sourceHash(guide||''),language=LANGUAGE_NAMES[locale]||locale;
+    if(locale!=='ko')checks.push({id:'guideTranslation',label:`사용 안내 ${language}`,status:translated?'ready':'missing',text:translated?`손님에게 보일 ${language} 안내를 적었어요.`:draft.guideTranslation?`한국어 안내가 바뀌었어요. ${language} 안내도 다시 저장해 주세요.`:`${language} 프로젝트예요. 손님에게 보일 ${language} 안내를 적어 주세요.`});
     const ready=checks.every(check=>check.status==='ready')&&deliveryCheck.canPublish,viewStatus=status==='preparing'&&ready?'ready':status;
     const candidate=approved&&(approved.media||approved.url)?[{versionId:approved.id,label:approved.label,kind:approved.media?MIME_KINDS[approved.media.mimeType]||'unknown':'link',...(approved.media?{media:publicMedia(row.id,approved.media)}:{}),...(approved.url?{url:approved.url}:{})}]:[];
     const safeItems=items.map(item=>({id:item.id,requirementId:item.requirementId,deliverableItemId:item.deliverableItemId||'',label:item.label,kind:item.media?MIME_KINDS[item.media.mimeType]||'unknown':draft.requirements.find(requirement=>requirement.id===item.requirementId)?.kind||'unknown',confirmed:deliveryItemConfirmed(row,draft,item,inspection),confirmationToken:deliveryItemConfirmationKey(row,draft,item,inspection),source:item.source,...(item.media?{media:publicMedia(row.id,item.media)}:{}),...(item.url?{url:item.url}:{})}));
-    return {projectId:row.id,projectRevision:row.revision,draftRevision:draft.draftRevision,approvedPreview:approved?{id:approved.id,label:approved.label,approvedAt:approved.approvedAt}:null,status:viewStatus,statusLabel:STATUS[viewStatus],canEdit,requirements:draft.requirements,items:safeItems,candidates:candidate,guide,transferText:approved?`${row.title} 최종본을 보내 드려요.\n${items.length?'보내는 파일\n'+items.map(item=>'- '+item.label).join('\n')+'\n\n':''}${guide}`:'',checks,deliveryCheck,canPublish:canEdit&&ready,deliveredVersionIds:[...new Set([...delivered,...draft.deliveredVersionIds])]};
+    return {projectId:row.id,projectRevision:row.revision,draftRevision:draft.draftRevision,approvedPreview:approved?{id:approved.id,label:approved.label,approvedAt:approved.approvedAt}:null,status:viewStatus,statusLabel:STATUS[viewStatus],canEdit,requirements:draft.requirements,items:safeItems,candidates:candidate,guide,...(localeOf(row)&&localeOf(row)!=='ko'?{customerLocale:localeOf(row)}:{}),...(draft.guideTranslation?{guideTranslation:{text:draft.guideTranslation.text,fresh:draft.guideTranslation.sourceHash===sourceHash(guide||'')}}:{}),transferText:approved?`${row.title} 최종본을 보내 드려요.\n${items.length?'보내는 파일\n'+items.map(item=>'- '+item.label).join('\n')+'\n\n':''}${guide}`:'',checks,deliveryCheck,canPublish:canEdit&&ready,deliveredVersionIds:[...new Set([...delivered,...draft.deliveredVersionIds])]};
   }
   function get(user,projectId){return inspect(readState(user,projectId));}
   function changing(user,projectId,input,fields){
@@ -66,7 +71,7 @@ export function createClientDeliveryService({store,clientProjects,clock=()=>new 
   function persist(state,draft){const at=clock(),updated={...draft,draftRevision:state.draft.draftRevision+1,createdAt:draft.createdAt||at,updatedAt:at,updatedBy:state.user.id};store.put(DOCUMENT_KIND,key(state.row.id,state.approved.id),updated);return get(state.user,state.row.id);}
   function requirements(value){if(!Array.isArray(value)||!value.length||value.length>12)throw fail('줄 파일 종류는 1~12개로 적어 주세요.');const ids=new Set();return value.map(entry=>{exact(entry,['id','kind','label','required','note']);if(typeof entry.id!=='string'||!/^[a-z][a-z0-9_-]{0,39}$/.test(entry.id)||ids.has(entry.id))throw fail('파일 종류 정보가 이상해요.');ids.add(entry.id);if(!['video','subtitle','image'].includes(entry.kind)||typeof entry.required!=='boolean')throw fail('파일 종류와 꼭 주는지 여부를 다시 봐 주세요.');return {id:entry.id,kind:entry.kind,label:text(entry.label,80,'파일 종류',true),required:entry.required,note:text(entry.note??'',500,'규격 메모')};});}
   function mutate(user,projectId,input){
-    object(input);const fields={save_requirements:['requirements'],use_approved:['requirementId','label','deliverableItemId'],add_link:['requirementId','label','url','deliverableItemId'],update_item:['itemId','label','confirmed','deliverableItemId','confirmationToken'],remove_item:['itemId'],save_guide:['guide'],publish:['confirmed']}[input.action];
+    object(input);const fields={save_requirements:['requirements'],use_approved:['requirementId','label','deliverableItemId'],add_link:['requirementId','label','url','deliverableItemId'],update_item:['itemId','label','confirmed','deliverableItemId','confirmationToken'],remove_item:['itemId'],save_guide:['guide','translation'],publish:['confirmed']}[input.action];
     if(!fields)throw fail('요청 내용이 비어 있어요.');
     return store.transaction(()=>{
       const state=changing(user,projectId,input,fields),draft=structuredClone(state.draft);
@@ -87,11 +92,13 @@ export function createClientDeliveryService({store,clientProjects,clock=()=>new 
         const item=activeItems(draft).find(entry=>entry.id===input.itemId);if(!item)throw fail('그 파일을 찾지 못했어요.',404);
         if(input.action==='remove_item'){item.removed=true;item.removedAt=clock();item.confirmed=false;}
         else{if(input.label===undefined&&input.confirmed===undefined&&input.deliverableItemId===undefined)throw fail('바꿀 내용(이름·규격 연결·확인)이 비어 있어요.');if(input.label!==undefined){item.label=text(input.label,120,'파일 이름',true);item.confirmed=false;}if(input.deliverableItemId!==undefined){const next=deliverable(state.row,input.deliverableItemId);if(next!==(item.deliverableItemId||'')){item.deliverableItemId=next;item.confirmed=false;}}if(input.confirmed!==undefined){if(typeof input.confirmed!=='boolean')throw fail('확인 여부가 이상해요.');if(input.confirmed&&!typeMatches(item,requirement(draft,item.requirementId)))throw fail('파일 형식과 종류를 먼저 맞춰 주세요.',409);const inspection=store.get(CHECK_KIND,key(state.row.id,state.approved.id)),report=buildDeliveryCheck(state.row,draft,{inspection}),token=deliveryItemConfirmationKey(state.row,draft,item,inspection);if(input.confirmed&&report.confirmed&&input.confirmationToken!==token)throw fail('납품 규격이나 검사 결과가 바뀌었어요. 다시 본 뒤에 표시해 주세요.',409);item.confirmed=input.confirmed;if(input.confirmed)item.confirmationToken=token;else delete item.confirmationToken;}}
-      }else if(input.action==='save_guide'){draft.guide=text(input.guide,3000,'사용 안내');draft.guideEdited=true;}
+      }else if(input.action==='save_guide'){draft.guide=text(input.guide,3000,'사용 안내');draft.guideEdited=true;
+        // 영어 프로젝트의 사용 안내 번역(다국어 판 2): 원문과 함께 둔다. 원문이 바뀌면 낡은 번역이라 납품 때 다시 받는다.
+        if(input.translation!==undefined){const said=text(input.translation,6000,'사용 안내 번역');draft.guideTranslation=said?{text:said,sourceHash:sourceHash(draft.guide)}:null;}}
       else if(input.action==='publish'){
         if(input.confirmed!==true)throw fail('고객에게 보일지 확인 표시가 비어 있어요.');
         const view=inspect(state);if(!view.canPublish)throw fail('꼭 주는 파일을 담고 열어 본 뒤, 사용 안내를 적어 주세요.',409);
-        const ids=[];for(const item of activeItems(draft)){const currentRow=clientProjects.project(state.user,projectId,true);if(latestPreview(currentRow)?.id!==state.approved.id||!latestPreview(currentRow)?.approvedAt)throw fail('승인한 시안이 바뀌었어요. 다시 봐 주세요.',409);const result=clientProjects.addVersion(state.user,projectId,{revision:currentRow.revision,kind:'final',label:item.label,url:item.url||'',guide:view.guide},item.media||null);ids.push(result.project.versions.at(-1).id);}
+        const ids=[];for(const item of activeItems(draft)){const currentRow=clientProjects.project(state.user,projectId,true);if(latestPreview(currentRow)?.id!==state.approved.id||!latestPreview(currentRow)?.approvedAt)throw fail('승인한 시안이 바뀌었어요. 다시 봐 주세요.',409);const said=draft.guideTranslation&&draft.guideTranslation.sourceHash===sourceHash(view.guide)?{translation:{guide:draft.guideTranslation.text}}:{};const result=clientProjects.addVersion(state.user,projectId,{revision:currentRow.revision,kind:'final',label:item.label,url:item.url||'',guide:view.guide,...said},item.media||null);ids.push(result.project.versions.at(-1).id);}
         draft.deliveredVersionIds=ids;draft.publishedAt=clock();draft.publishedBy=state.user.id;
       }
       return persist(state,draft);

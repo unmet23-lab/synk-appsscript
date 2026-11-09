@@ -21,8 +21,13 @@
 // 2026-11-03: the two idol teams (OPALINE F08 · F09 · F10 · F11, OUTBLUE M07 · M08 · M09 · M10) were added in the book's
 // order with the same rule — portrait = hero-s.webp, photos = <shot>-s.webp from the style-v4 casting book build.
 
-const photos = (file, [look1, look2], scene) => [
-  { kind: 'fullbody', label: '전신', src: `./assets/casting/photos/${file}-fullbody.webp` },
+// 2026-11-09 (i18n pass 2): customer-facing words (description · hairLabels · photo labels) are marked with k() —
+// the values stay Korean (the server and the casting code compare them), and screens translate them with t() when drawn.
+// Names and codes stay as they are: a name is drawn as t(name, null, 'model'), and gender is read by code (i18n-skip lines).
+import { k } from './i18n.mjs';
+
+const photos =(file, [look1, look2], scene) => [
+  { kind: 'fullbody', label: k('전신'), src: `./assets/casting/photos/${file}-fullbody.webp` },
   { kind: 'look', label: look1, src: `./assets/casting/photos/${file}-look-1.webp` },
   { kind: 'look', label: look2, src: `./assets/casting/photos/${file}-look-2.webp` },
   { kind: 'scene', label: scene, src: `./assets/casting/photos/${file}-context.webp` },
@@ -30,129 +35,129 @@ const photos = (file, [look1, look2], scene) => [
 
 export const CASTING_MODELS = Object.freeze([
   {
-    id: 'M01', name: '이안', gender: '남', description: '부드러운 · 지적인 · 배우 같은',
+    id: 'M01', name: '이안', gender: '남', description: k('부드러운 · 지적인 · 배우 같은'), // i18n-skip
     image: './assets/casting/m01.webp',
-    hairLabels: ['기본 · 가운데 가르마 웨이브', '넘긴 올백', '내린 댄디컷'],
-    photos: photos('m01', ['셔츠 오피스', '레더 스트리트'], '창가 카페 · 커피잔'),
+    hairLabels: [k('기본 · 가운데 가르마 웨이브'), k('넘긴 올백'), k('내린 댄디컷')],
+    photos: photos('m01', [k('셔츠 오피스'), k('레더 스트리트')], k('창가 카페 · 커피잔')),
   },
   {
-    id: 'F01', name: '유나', gender: '여', description: '세련된 · 섹시한 · 도회적인',
+    id: 'F01', name: '유나', gender: '여', description: k('세련된 · 섹시한 · 도회적인'), // i18n-skip
     image: './assets/casting/f01.webp',
-    hairLabels: ['기본 · 긴 웨이브', '슬릭 하이 포니테일', '턱선 단발'],
-    photos: photos('f01', ['슬립 드레스', '트렌치 캐주얼'], '화장대 · 립스틱 바르기'),
+    hairLabels: [k('기본 · 긴 웨이브'), k('슬릭 하이 포니테일'), k('턱선 단발')],
+    photos: photos('f01', [k('슬립 드레스'), k('트렌치 캐주얼')], k('화장대 · 립스틱 바르기')),
   },
   {
-    id: 'F02', name: '하린', gender: '여', description: '상큼한 · 발랄한 · 친근한',
+    id: 'F02', name: '하린', gender: '여', description: k('상큼한 · 발랄한 · 친근한'), // i18n-skip
     image: './assets/casting/f02.webp',
-    hairLabels: ['기본 · 어깨 길이 레이어드', '하이 포니테일', '긴 웨이브'],
-    photos: photos('f02', ['파스텔 캐주얼', '스트라이프 원피스'], '카페 카운터 · 딸기 라떼'),
+    hairLabels: [k('기본 · 어깨 길이 레이어드'), k('하이 포니테일'), k('긴 웨이브')],
+    photos: photos('f02', [k('파스텔 캐주얼'), k('스트라이프 원피스')], k('카페 카운터 · 딸기 라떼')),
   },
   {
-    id: 'F03', name: '서진', gender: '여', description: '지적인 · 단정한 · 차분한',
+    id: 'F03', name: '서진', gender: '여', description: k('지적인 · 단정한 · 차분한'), // i18n-skip
     image: './assets/casting/f03.webp',
-    hairLabels: ['기본 · 낮게 묶은 포니테일', '긴 생머리', '옆가르마 단발'],
-    photos: photos('f03', ['네이비 수트', '코트 포멀'], '회의실 · 발표'),
+    hairLabels: [k('기본 · 낮게 묶은 포니테일'), k('긴 생머리'), k('옆가르마 단발')],
+    photos: photos('f03', [k('네이비 수트'), k('코트 포멀')], k('회의실 · 발표')),
   },
   {
-    id: 'M02', name: '태준', gender: '남', description: '강렬한 · 성숙한 · 남성적인',
+    id: 'M02', name: '태준', gender: '남', description: k('강렬한 · 성숙한 · 남성적인'), // i18n-skip
     image: './assets/casting/m02.webp',
-    hairLabels: ['기본 · 흘러내리게 넘긴 머리', '깔끔한 슬릭백', '짧은 크롭컷'],
-    photos: photos('m02', ['차콜 수트', '스웨이드 캐주얼'], '바 라운지 · 위스키'),
+    hairLabels: [k('기본 · 흘러내리게 넘긴 머리'), k('깔끔한 슬릭백'), k('짧은 크롭컷')],
+    photos: photos('m02', [k('차콜 수트'), k('스웨이드 캐주얼')], k('바 라운지 · 위스키')),
   },
   {
-    id: 'F04', name: '지유', gender: '여', description: '청순한 · 상큼한 · 싱그러운',
+    id: 'F04', name: '지유', gender: '여', description: k('청순한 · 상큼한 · 싱그러운'), // i18n-skip
     image: './assets/casting/f04.webp',
-    hairLabels: ['기본 · 긴 흑발 생머리', '앞머리 단발', '로우 번'],
-    photos: photos('f04', ['린넨 내추럴', '니트 스커트'], '바닷가 산책로 · 탄산수'),
+    hairLabels: [k('기본 · 긴 흑발 생머리'), k('앞머리 단발'), k('로우 번')],
+    photos: photos('f04', [k('린넨 내추럴'), k('니트 스커트')], k('바닷가 산책로 · 탄산수')),
   },
   {
-    id: 'M03', name: '유호', gender: '남', description: '힙한 · 4차원 · SYNK 창업자 본인 기반',
+    id: 'M03', name: '유호', gender: '남', description: k('힙한 · 4차원 · SYNK 창업자 본인 기반'), // i18n-skip
     image: './assets/casting/m03.webp',
-    hairLabels: ['기본 · 콘로우', '짧은 투블럭', '어깨 길이 생머리'],
-    photos: photos('m03', ['스트리트', '세미 포멀'], '음악 작업실 · 믹싱 데스크'),
+    hairLabels: [k('기본 · 콘로우'), k('짧은 투블럭'), k('어깨 길이 생머리')],
+    photos: photos('m03', [k('스트리트'), k('세미 포멀')], k('음악 작업실 · 믹싱 데스크')),
   },
   {
-    id: 'F05', name: '소연', gender: '여', description: '따뜻한 · 단정한 · 친근한',
+    id: 'F05', name: '소연', gender: '여', description: k('따뜻한 · 단정한 · 친근한'), // i18n-skip
     image: './assets/casting/f05.webp',
-    hairLabels: ['기본 · 쇄골 C컬', '낮게 묶은 머리', '턱선 단발'],
-    photos: photos('f05', ['카디건 · 줄무늬 티', '샴브레이 셔츠 · 앞치마'], '아침 주방 · 요리'),
+    hairLabels: [k('기본 · 쇄골 C컬'), k('낮게 묶은 머리'), k('턱선 단발')],
+    photos: photos('f05', [k('카디건 · 줄무늬 티'), k('샴브레이 셔츠 · 앞치마')], k('아침 주방 · 요리')),
   },
   {
-    id: 'M04', name: '민재', gender: '남', description: '친근한 · 솔직한 · 호감 가는',
+    id: 'M04', name: '민재', gender: '남', description: k('친근한 · 솔직한 · 호감 가는'), // i18n-skip
     image: './assets/casting/m04.webp',
-    hairLabels: ['기본 · 일자 앞머리', '올린 투블럭', '자연스러운 펌'],
-    photos: photos('m04', ['후드 집업 · 조거 팬츠', '옥스퍼드 셔츠 · 치노(첫 출근)'], '원룸 · 택배 상자 열기'),
+    hairLabels: [k('기본 · 일자 앞머리'), k('올린 투블럭'), k('자연스러운 펌')],
+    photos: photos('m04', [k('후드 집업 · 조거 팬츠'), k('옥스퍼드 셔츠 · 치노(첫 출근)')], k('원룸 · 택배 상자 열기')),
   },
   {
-    id: 'F06', name: '은정', gender: '여', description: '우아한 · 세련된 · 다정한',
+    id: 'F06', name: '은정', gender: '여', description: k('우아한 · 세련된 · 다정한'), // i18n-skip
     image: './assets/casting/f06.webp',
-    hairLabels: ['기본 · 중단발 웨이브', '낮은 시뇽', '턱선 단발'],
-    photos: photos('f06', ['캐멀 코트 · 터틀넥', '실크 블라우스 · 진주 목걸이'], '창가 카페 · 책과 차'),
+    hairLabels: [k('기본 · 중단발 웨이브'), k('낮은 시뇽'), k('턱선 단발')],
+    photos: photos('f06', [k('캐멀 코트 · 터틀넥'), k('실크 블라우스 · 진주 목걸이')], k('창가 카페 · 책과 차')),
   },
   {
-    id: 'F07', name: '채원', gender: '여', description: '건강한 · 발랄한 · 친근한',
+    id: 'F07', name: '채원', gender: '여', description: k('건강한 · 발랄한 · 친근한'), // i18n-skip
     image: './assets/casting/f07.webp',
-    hairLabels: ['기본 · 픽시컷', '넘긴 픽시컷', '운동 헤어밴드'],
-    photos: photos('f07', ['크롭 스웻셔츠 · 레깅스', '윈드브레이커 · 러닝 쇼츠'], '강변 러닝 뒤 · 스트레칭'),
+    hairLabels: [k('기본 · 픽시컷'), k('넘긴 픽시컷'), k('운동 헤어밴드')],
+    photos: photos('f07', [k('크롭 스웻셔츠 · 레깅스'), k('윈드브레이커 · 러닝 쇼츠')], k('강변 러닝 뒤 · 스트레칭')),
   },
   {
-    id: 'M05', name: '준호', gender: '남', description: '믿음직한 · 다정한 · 단정한',
+    id: 'M05', name: '준호', gender: '남', description: k('믿음직한 · 다정한 · 단정한'), // i18n-skip
     image: './assets/casting/m05.webp',
-    hairLabels: ['기본 · 옆 가르마', '짧은 크루컷', '넘긴 머리'],
-    photos: photos('m05', ['옥스퍼드 셔츠 · 치노(평일)', '퀼팅 조끼 · 헨리넥(캠핑)'], '캠핑장 아침 · 커피 물 붓기'),
+    hairLabels: [k('기본 · 옆 가르마'), k('짧은 크루컷'), k('넘긴 머리')],
+    photos: photos('m05', [k('옥스퍼드 셔츠 · 치노(평일)'), k('퀼팅 조끼 · 헨리넥(캠핑)')], k('캠핑장 아침 · 커피 물 붓기')),
   },
   {
-    id: 'M06', name: '한결', gender: '남', description: '청량한 · 상큼한 · 친근한',
+    id: 'M06', name: '한결', gender: '남', description: k('청량한 · 상큼한 · 친근한'), // i18n-skip
     image: './assets/casting/m06.webp',
-    hairLabels: ['기본 · 짧은 크롭', '투블럭 · 시스루 앞머리', '쉼표 머리 · 소프트 펌'],
-    photos: photos('m06', ['러닝 윈드브레이커 · 쇼츠(운동)', '오버핏 후드 · 카고 팬츠(캠퍼스)'], '농구장 벤치 · 경기 뒤 물 한 병'),
+    hairLabels: [k('기본 · 짧은 크롭'), k('투블럭 · 시스루 앞머리'), k('쉼표 머리 · 소프트 펌')],
+    photos: photos('m06', [k('러닝 윈드브레이커 · 쇼츠(운동)'), k('오버핏 후드 · 카고 팬츠(캠퍼스)')], k('농구장 벤치 · 경기 뒤 물 한 병')),
   },
   {
-    id: 'F08', name: '윤슬', gender: '여', description: '상큼한 · 친근한 · 믿음직한',
+    id: 'F08', name: '윤슬', gender: '여', description: k('상큼한 · 친근한 · 믿음직한'), // i18n-skip
     image: './assets/casting/f08.webp',
-    hairLabels: ['기본 · 턱선 단발', '양쪽 귀 뒤로 넘긴 단발', '윗머리 작은 묶음'],
-    photos: photos('f08', ['검정 라이더 · 새틴 스커트(시티)', '포플린 셔츠 · 체리 카디건 · 생지 데님(일상)'], '카페 창가 · 커피 한 잔'),
+    hairLabels: [k('기본 · 턱선 단발'), k('양쪽 귀 뒤로 넘긴 단발'), k('윗머리 작은 묶음')],
+    photos: photos('f08', [k('검정 라이더 · 새틴 스커트(시티)'), k('포플린 셔츠 · 체리 카디건 · 생지 데님(일상)')], k('카페 창가 · 커피 한 잔')),
   },
   {
-    id: 'F09', name: '로하', gender: '여', description: '청순한 · 세련된 · 우아한',
+    id: 'F09', name: '로하', gender: '여', description: k('청순한 · 세련된 · 우아한'), // i18n-skip
     image: './assets/casting/f09.webp',
-    hairLabels: ['기본 · 체리 웨이브', '낮은 트위스트 · 잔머리', '한쪽 어깨로 넘긴 웨이브'],
-    photos: photos('f09', ['프릴 블라우스 · 쉬폰 스커트 · 슬라우치 부츠(로맨틱)', '자수 바시티 · 크림 쉬폰 원피스(스트리트)'], '꽃집 · 작은 꽃다발'),
+    hairLabels: [k('기본 · 체리 웨이브'), k('낮은 트위스트 · 잔머리'), k('한쪽 어깨로 넘긴 웨이브')],
+    photos: photos('f09', [k('프릴 블라우스 · 쉬폰 스커트 · 슬라우치 부츠(로맨틱)'), k('자수 바시티 · 크림 쉬폰 원피스(스트리트)')], k('꽃집 · 작은 꽃다발')),
   },
   {
-    id: 'F10', name: '새봄', gender: '여', description: '발랄한 · 상큼한 · 귀여운',
+    id: 'F10', name: '새봄', gender: '여', description: k('발랄한 · 상큼한 · 귀여운'), // i18n-skip
     image: './assets/casting/f10.webp',
-    hairLabels: ['기본 · 코퍼 샤기', '집게핀 반묶음', '크게 부풀린 샤기'],
-    photos: photos('f10', ['남색 니트 · 크림 셔츠 · 베이지 와이드(프레피)', '애플 그린 바람막이 · 연청 와이드(스트리트)'], '연습실 · 쉬는 시간 물 한 병'),
+    hairLabels: [k('기본 · 코퍼 샤기'), k('집게핀 반묶음'), k('크게 부풀린 샤기')],
+    photos: photos('f10', [k('남색 니트 · 크림 셔츠 · 베이지 와이드(프레피)'), k('애플 그린 바람막이 · 연청 와이드(스트리트)')], k('연습실 · 쉬는 시간 물 한 병')),
   },
   {
-    id: 'F11', name: '해인', gender: '여', description: '상큼한 · 청순한 · 밝은',
+    id: 'F11', name: '해인', gender: '여', description: k('상큼한 · 청순한 · 밝은'), // i18n-skip
     image: './assets/casting/f11.webp',
-    hairLabels: ['기본 · 버터 레이어', '낮은 번', '귀 뒤로 넘긴 레이어'],
-    photos: photos('f11', ['카키 필드 재킷 · 레이스 미디 · 레이스업 부츠', '오간자 트렌치 · 포플린 셔츠 · 크링클 와이드'], '공원 피크닉 · 레모네이드'),
+    hairLabels: [k('기본 · 버터 레이어'), k('낮은 번'), k('귀 뒤로 넘긴 레이어')],
+    photos: photos('f11', [k('카키 필드 재킷 · 레이스 미디 · 레이스업 부츠'), k('오간자 트렌치 · 포플린 셔츠 · 크링클 와이드')], k('공원 피크닉 · 레모네이드')),
   },
   {
-    id: 'M07', name: '도현', gender: '남', description: '친근한 · 믿음직한 · 따뜻한',
+    id: 'M07', name: '도현', gender: '남', description: k('친근한 · 믿음직한 · 따뜻한'), // i18n-skip
     image: './assets/casting/m07.webp',
-    hairLabels: ['기본 · 가른 앞머리', '앞으로 내린 앞머리', '손으로 넘긴 앞머리'],
-    photos: photos('m07', ['스웨이드 초어 재킷 · 스트라이프 셔츠 · 에크루 치노', '스웨이드 모토 재킷 · 빈티지 티 · 생지 데님'], '강변 벤치 · 아이스커피'),
+    hairLabels: [k('기본 · 가른 앞머리'), k('앞으로 내린 앞머리'), k('손으로 넘긴 앞머리')],
+    photos: photos('m07', [k('스웨이드 초어 재킷 · 스트라이프 셔츠 · 에크루 치노'), k('스웨이드 모토 재킷 · 빈티지 티 · 생지 데님')], k('강변 벤치 · 아이스커피')),
   },
   {
-    id: 'M08', name: '하람', gender: '남', description: '상큼한 · 발랄한 · 친근한',
+    id: 'M08', name: '하람', gender: '남', description: k('상큼한 · 발랄한 · 친근한'), // i18n-skip
     image: './assets/casting/m08.webp',
-    hairLabels: ['기본 · 베이비 펌', '헤어밴드로 넘긴 컬', '앞으로 부풀린 컬'],
-    photos: photos('m08', ['보틀 그린 항공 재킷 · 블루 니트 · 빈티지 데님', '시어링 코트 · 하이넥 · 벨트 두 줄 데님'], '스튜디오 앞 계단 · 물 한 병'),
+    hairLabels: [k('기본 · 베이비 펌'), k('헤어밴드로 넘긴 컬'), k('앞으로 부풀린 컬')],
+    photos: photos('m08', [k('보틀 그린 항공 재킷 · 블루 니트 · 빈티지 데님'), k('시어링 코트 · 하이넥 · 벨트 두 줄 데님')], k('스튜디오 앞 계단 · 물 한 병')),
   },
   {
-    id: 'M09', name: '서율', gender: '남', description: '세련된 · 청순한 · 차분한',
+    id: 'M09', name: '서율', gender: '남', description: k('세련된 · 청순한 · 차분한'), // i18n-skip
     image: './assets/casting/m09.webp',
-    hairLabels: ['기본 · 소프트 울프', '귀 뒤로 넘긴 울프', '뒤로 넘긴 앞머리'],
-    photos: photos('m09', ['멀티 스트라이프 니트 · 버건디 글로시 팬츠', '케이프 차콜 블레이저 · 스카프 · 크림 팬츠'], '책방 창가 · 책 읽기'),
+    hairLabels: [k('기본 · 소프트 울프'), k('귀 뒤로 넘긴 울프'), k('뒤로 넘긴 앞머리')],
+    photos: photos('m09', [k('멀티 스트라이프 니트 · 버건디 글로시 팬츠'), k('케이프 차콜 블레이저 · 스카프 · 크림 팬츠')], k('책방 창가 · 책 읽기')),
   },
   {
-    id: 'M10', name: '지온', gender: '남', description: '힙한 · 개성 있는 · 발랄한',
+    id: 'M10', name: '지온', gender: '남', description: k('힙한 · 개성 있는 · 발랄한'), // i18n-skip
     image: './assets/casting/m10.webp',
-    hairLabels: ['기본 · 텍스처 컷', '검정 비니', '뒤로 넘긴 앞머리'],
-    photos: photos('m10', ['코듀로이 블루종 · 레트로 저지 · 배기 데님 · 캡', '크링클 수트 재킷 · 딥 틸 후드 · 골반에 걸친 팬츠'], '농구장 벤치 · 농구공'),
+    hairLabels: [k('기본 · 텍스처 컷'), k('검정 비니'), k('뒤로 넘긴 앞머리')],
+    photos: photos('m10', [k('코듀로이 블루종 · 레트로 저지 · 배기 데님 · 캡'), k('크링클 수트 재킷 · 딥 틸 후드 · 골반에 걸친 팬츠')], k('농구장 벤치 · 농구공')),
   },
 ]);

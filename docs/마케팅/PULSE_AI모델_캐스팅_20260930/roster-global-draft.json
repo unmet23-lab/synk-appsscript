@@ -1,0 +1,118 @@
+{
+  "note": "빌더가 읽지 않는 준비 목록, 공개 전환은 check 스크립트 통과 + 유호님 승인 뒤. 사진 경로 · 이름 · 프롬프트는 이 파일에 넣지 않는다. 근거: docs/마케팅/PULSE_의뢰흐름_20261104/다국어와_고객전용인물_기획_20261108.md 3절.",
+  "status": "preparing",
+  "candidates": [
+    {
+      "code": "F12",
+      "label": "백인 여성 A",
+      "ageBand": "20대 후반~30대 초반",
+      "direction": "자연스러운 표정과 패션 연출을 모두 소화. 생활 · 뷰티 · 브랜드 장면으로 확인",
+      "steps": [
+        {
+          "name": "기준 얼굴 선택",
+          "done": false
+        },
+        {
+          "name": "각도 · 표정 · 전신 기준 확정",
+          "done": false
+        },
+        {
+          "name": "장면 일관성 검증",
+          "done": false
+        },
+        {
+          "name": "실제 동작에서 얼굴 유지 확인",
+          "done": false
+        },
+        {
+          "name": "공개 승인",
+          "done": false
+        }
+      ]
+    },
+    {
+      "code": "M11",
+      "label": "백인 남성 B",
+      "ageBand": "30대 후반~40대 초반",
+      "direction": "일상적인 친근함과 단정한 인상. 생활 · 서비스 소개 · 패션 장면으로 확인",
+      "steps": [
+        {
+          "name": "기준 얼굴 선택",
+          "done": false
+        },
+        {
+          "name": "각도 · 표정 · 전신 기준 확정",
+          "done": false
+        },
+        {
+          "name": "장면 일관성 검증",
+          "done": false
+        },
+        {
+          "name": "실제 동작에서 얼굴 유지 확인",
+          "done": false
+        },
+        {
+          "name": "공개 승인",
+          "done": false
+        }
+      ]
+    },
+    {
+      "code": "F13",
+      "label": "흑인 여성 C",
+      "ageBand": "30대 후반~40대 초반",
+      "direction": "다양한 표정과 차분한 연출. 생활 · 서비스 소개 · 패션 장면으로 확인",
+      "steps": [
+        {
+          "name": "기준 얼굴 선택",
+          "done": false
+        },
+        {
+          "name": "각도 · 표정 · 전신 기준 확정",
+          "done": false
+        },
+        {
+          "name": "장면 일관성 검증",
+          "done": false
+        },
+        {
+          "name": "실제 동작에서 얼굴 유지 확인",
+          "done": false
+        },
+        {
+          "name": "공개 승인",
+          "done": false
+        }
+      ]
+    },
+    {
+      "code": "M12",
+      "label": "흑인 남성 D",
+      "ageBand": "20대 후반~30대 초반",
+      "direction": "자연스러운 표정과 패션 연출을 모두 소화. 생활 · 뷰티 · 브랜드 장면으로 확인",
+      "steps": [
+        {
+          "name": "기준 얼굴 선택",
+          "done": false
+        },
+        {
+          "name": "각도 · 표정 · 전신 기준 확정",
+          "done": false
+        },
+        {
+          "name": "장면 일관성 검증",
+          "done": false
+        },
+        {
+          "name": "실제 동작에서 얼굴 유지 확인",
+          "done": false
+        },
+        {
+          "name": "공개 승인",
+          "done": false
+        }
+      ]
+    }
+  ]
+}

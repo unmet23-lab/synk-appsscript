@@ -4,6 +4,8 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {productionUI,feedbackDraftChanged,addProductionDraftReset} from './public/pulse-app/production-ui.mjs';
 import {projectView} from './public/pulse-app/views.mjs';
+// 대화상자 · 저장 · 클릭 원문만 vm에 넣으므로 번역 틀의 진짜 함수를 맥락에 넣는다(다국어 판 2).
+import {t,k,locale} from './public/pulse-app/i18n.mjs';
 
 const project=()=>({id:'p',versions:[{id:'v1',kind:'preview'}],studio:{feedbackRounds:{drafts:[{id:'d',versionId:'v1',items:[{id:'i',text:'저장된 의견',seconds:3.5}]}]}}});
 const entry=(values={},bound={})=>({boundData:{form:'round-draft',id:'i',itemId:'i',draftId:'d',versionId:'v1',...bound},values,revision:1});
@@ -15,7 +17,7 @@ function mutationHarness(){
   const s={mode:'customer',tab:'review',versionId:'v2',error:'',conflict:false,workflow:[],project:{id:'p',revision:2,title:'승인 안내 시험',versions:[{id:'v2',kind:'preview',label:'수정본 2'}],messages:[],studio:{preferences:{},references:[],concepts:[],scenes:[],comments:[],feedbackRounds:{drafts:[],rounds:[]}}}};
   let focused=null;const dialog={open:true,dataset:{},children:[],querySelector(){return this.children.find(node=>node.dataset.mutationError)||null;},prepend(node){this.children.unshift(node);},close(){this.open=false;},showModal(){this.open=true;},set innerHTML(value){this.children=[];this.content=value;}};
   const document={createElement:()=>({dataset:{},attributes:{},setAttribute(name,value){this.attributes[name]=value;},focus(){focused=this;},scrollIntoView(){this.scrolled=true;},remove(){dialog.children=dialog.children.filter(node=>node!==this);}})};
-  const sandbox={s,drafts,dialog,document,busy:false,loading:false,epoch:1,demo:null,editable:()=>true,projectStamp:()=>({epoch:1}),current:()=>true,draftKey:()=> 'feedback',setBusy:value=>{sandbox.busy=value;},accept(){},clearDraft:(key,revision)=>{if(drafts.get(key)?.revision===revision)drafts.delete(key);},notice:message=>notices.push(message),scheduleApply(){},restore(){},dialogContent:()=>'<h2>새 승인 확인</h2>',render:()=>{const previous=globalThis.location;globalThis.location={origin:'https://pulse.example.test'};try{rendered.push(projectView(s));}finally{if(previous===undefined)delete globalThis.location;else globalThis.location=previous;}}};
+  const sandbox={t,k,locale,s,drafts,dialog,document,busy:false,loading:false,epoch:1,demo:null,editable:()=>true,projectStamp:()=>({epoch:1}),current:()=>true,draftKey:()=> 'feedback',setBusy:value=>{sandbox.busy=value;},accept(){},clearDraft:(key,revision)=>{if(drafts.get(key)?.revision===revision)drafts.delete(key);},notice:message=>notices.push(message),scheduleApply(){},restore(){},dialogContent:()=>'<h2>새 승인 확인</h2>',render:()=>{const previous=globalThis.location;globalThis.location={origin:'https://pulse.example.test'};try{rendered.push(projectView(s));}finally{if(previous===undefined)delete globalThis.location;else globalThis.location=previous;}}};
   vm.createContext(sandbox);
   const dialogCode=appSource.slice(appSource.indexOf('function openDialog('),appSource.indexOf('function installEnvironment('));
   const mutateCode=appSource.slice(appSource.indexOf('async function mutate('),appSource.indexOf('function studioAction('));
@@ -107,7 +109,7 @@ test('explicit stale-preview reset clears only that local draft and restores new
     const check={name:type==='preview-confirm'?'confirmed':'liked',type:'checkbox',value:type==='preview-confirm'?'yes':'color',checked:false,closest:()=>null},note={name:'note',type:'textarea',value:'',closest:()=>null};
     const form={dataset:{...data},elements:[check,note],closest:()=>null},key=type+':'+data.id,drafts=new Map([[key,{boundData:oldBound,values:{[check.name]:[check.value],note:'이전 내용의 메모'},revision:1}],['other-form',{values:{text:'다른 작성 내용'}}]]);
     let click,refreshes=0,resets=0;const notices=[];
-    const sandbox={drafts,draftKey:form=>form.dataset.form+':'+form.dataset.id,addProductionDraftReset:()=>resets++,document:{addEventListener:(name,handler)=>{if(name==='click')click=handler;}},busy:false,loading:false,s:{error:''},projectStamp:()=>({id:'p'}),current:()=>true,notice:text=>notices.push(text),refresh:async()=>{refreshes++;form.dataset={...data};check.checked=false;note.value='';vm.runInContext('restore(scope)',sandbox);},scope:{querySelectorAll:()=>[form]}};
+    const sandbox={t,k,locale,drafts,draftKey:form=>form.dataset.form+':'+form.dataset.id,addProductionDraftReset:()=>resets++,document:{addEventListener:(name,handler)=>{if(name==='click')click=handler;}},busy:false,loading:false,s:{error:''},projectStamp:()=>({id:'p'}),current:()=>true,notice:text=>notices.push(text),refresh:async()=>{refreshes++;form.dataset={...data};check.checked=false;note.value='';vm.runInContext('restore(scope)',sandbox);},scope:{querySelectorAll:()=>[form]}};
     vm.createContext(sandbox);vm.runInContext(restoreSource+'\n'+clickSource,sandbox);vm.runInContext('restore(scope)',sandbox);
     assert.deepEqual(form.dataset,oldBound);assert.equal(check.checked,true);assert.equal(note.value,'이전 내용의 메모');assert.equal(resets,1);
     const button={dataset:{action:'reset-production-draft'},closest:()=>form};await click({target:{closest:()=>button}});
@@ -117,7 +119,7 @@ test('explicit stale-preview reset clears only that local draft and restores new
 
 test('busy state prevents draft disposal while a save is in flight',async()=>{
   const clickStart=appSource.indexOf("document.addEventListener('click',async event=>{"),clickSource=appSource.slice(clickStart,appSource.indexOf('\n});',clickStart)+4);let click,cleared=false,refreshed=false;
-  const sandbox={document:{addEventListener:(_,handler)=>{click=handler;}},busy:true,loading:false,drafts:{delete:()=>{cleared=true;}},refresh:()=>{refreshed=true;}};vm.createContext(sandbox);vm.runInContext(clickSource,sandbox);
+  const sandbox={t,k,locale,document:{addEventListener:(_,handler)=>{click=handler;}},busy:true,loading:false,drafts:{delete:()=>{cleared=true;}},refresh:()=>{refreshed=true;}};vm.createContext(sandbox);vm.runInContext(clickSource,sandbox);
   await click({target:{closest:()=>({dataset:{action:'reset-production-draft'}})}});assert.equal(cleared,false);assert.equal(refreshed,false);
 });
 
@@ -127,7 +129,7 @@ test('stale deliverable reset releases the old revision and edited rows while pr
   const freshRows=[{label:'서버의 최신 규격',durationSeconds:30}],oldRows=[{label:'이전 버전에서 편집한 규격',durationSeconds:15}],revision={name:'deliverableRevision',type:'hidden',value:'2',closest:()=>null};
   const form={dataset:{form:'deliverables'},elements:[revision],rows:structuredClone(freshRows),closest:()=>null},drafts=new Map([['deliverables',{values:{deliverableRevision:'1'},deliverableRows:oldRows,revision:1}],['round-draft:other',{values:{text:'다른 작성 내용'}}]]);
   let click,refreshes=0,resets=0;const notices=[];
-  const sandbox={drafts,draftKey:form=>form.dataset.form,addProductionDraftReset:()=>resets++,restoreDeliverableRows:(form,rows)=>{form.rows=structuredClone(rows);},document:{addEventListener:(name,handler)=>{if(name==='click')click=handler;}},busy:false,loading:false,s:{error:''},projectStamp:()=>({id:'p'}),current:()=>true,notice:text=>notices.push(text),refresh:async()=>{refreshes++;form.rows=structuredClone(freshRows);revision.value='2';vm.runInContext('restore(scope)',sandbox);},scope:{querySelectorAll:()=>[form]}};
+  const sandbox={t,k,locale,drafts,draftKey:form=>form.dataset.form,addProductionDraftReset:()=>resets++,restoreDeliverableRows:(form,rows)=>{form.rows=structuredClone(rows);},document:{addEventListener:(name,handler)=>{if(name==='click')click=handler;}},busy:false,loading:false,s:{error:''},projectStamp:()=>({id:'p'}),current:()=>true,notice:text=>notices.push(text),refresh:async()=>{refreshes++;form.rows=structuredClone(freshRows);revision.value='2';vm.runInContext('restore(scope)',sandbox);},scope:{querySelectorAll:()=>[form]}};
   vm.createContext(sandbox);vm.runInContext(restoreSource+'\n'+clickSource,sandbox);vm.runInContext('restore(scope)',sandbox);
   assert.equal(revision.value,'1');assert.deepEqual(form.rows,oldRows);assert.equal(resets,1);
   const button={dataset:{action:'reset-production-draft'},closest:()=>form};await click({target:{closest:()=>button}});

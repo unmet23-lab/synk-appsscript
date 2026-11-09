@@ -1,6 +1,6 @@
 import {CASTING_MODELS} from './casting-catalog.mjs';
 import {KINDS,MODEL_LINES,briefRows,slotsFor,emptyAnswers,ratioOf,pkgOf,PACKAGES,price,channelText} from './request-data.mjs';
-import {t} from './i18n.mjs';
+import {t,k,locale,intlLocale} from './i18n.mjs';
 import {castingOf} from './casting-choice.mjs';
 
 // 실제 프로젝트를 슬레이트 판 화면(film-views.mjs)의 자료로 옮긴다. 판단은 여기 한 곳에서 한다.
@@ -29,9 +29,10 @@ export function roomState(p){
   return 'check';
 }
 // 단계는 다섯(판 3, 11-08): 영상 확인과 납품은 같은 화면이라 한 단계다.
+// 이름은 한국어 원문이다 — 화면은 film-views.mjs stageName이 단계 문맥(stage)의 문장으로 옮겨 그린다(「확인」이 의뢰서 칸 이름과 영어가 갈려 k로 감싸지 않는다).
 export const ROOM_STAGES=Object.freeze([
-  {id:'request',no:'01',name:'의뢰서'},{id:'check',no:'02',name:'확인'},{id:'draft',no:'03',name:'1차안'},
-  {id:'make',no:'04',name:'제작'},{id:'review',no:'05',name:'영상 · 납품'},
+  {id:'request',no:'01',name:'의뢰서'},{id:'check',no:'02',name:'확인'},{id:'draft',no:'03',name:'1차안'}, // i18n-skip
+  {id:'make',no:'04',name:'제작'},{id:'review',no:'05',name:'영상 · 납품'}, // i18n-skip
 ]);
 const STAGE_OF={write:'request',check:'check',ask:'check',direction:'draft',redirect:'draft',model:'draft',prepare:'draft','prepare-images':'draft',script:'draft',images:'draft',revise:'draft',make:'make',review:'review',deliver:'review'};
 export const roomStage=state=>STAGE_OF[state]||'check';
@@ -53,21 +54,22 @@ export function roomRoute(item,p){
 }
 // 영상 전 세 번 확인 중 몇 번째인지. 손님이 지금 어디쯤인지 한눈에 보이게 한다.
 export const CONFIRM_OF=Object.freeze({direction:'1/3',model:'1/3',script:'2/3',images:'3/3'});
+// 글은 한국어 원문으로 두고(k — 번역 표시만) 그리는 자리(film-views.mjs roomView · copyOf)에서 그 언어로 옮긴다.
 export const ROOM_COPY={
-  write:{turn:'you',title:'의뢰서를 써 주세요',text:'제품 이름, 올릴 곳, 사진 몇 장이면 시작할 수 있어요. 모르는 칸은 저희가 제안해요.',action:{label:'의뢰서 쓰기',go:'write'}},
-  check:{turn:'us',title:'지금은 저희 차례예요',text:'보내 주신 의뢰서를 확인하고 있어요. 평일 10~19시에 보고, 빠진 게 있으면 그 칸만 다시 여쭤요. 확인이 끝나면 방향 두 안을 보내 드려요.'},
-  ask:{turn:'you',title:'이것만 더 알려 주세요',text:'아래 칸만 채워 주시면 바로 1차안을 만들어요.'},
-  direction:{turn:'you',title:'두 방향 중 하나를 골라 주세요',text:'요청하신 내용은 그대로 두고, 무엇으로 기억에 남길지만 나눠 봤어요. 고르시면 글 콘티를 보내 드려요.'},
-  redirect:{turn:'us',title:'새 방향을 준비하고 있어요',text:'주신 말씀으로 같은 값에 한 번 더 제안해 드려요.'},
-  model:{turn:'you',title:'이 모델로 갈까요?',text:'장면을 만들기 전에 모델부터 정해요. 마음에 들면 그대로, 아니면 다른 모델을 골라 주세요.'},
-  prepare:{turn:'us',title:'1차안을 만들고 있어요',text:'광고가 남길 한 문장과 글 콘티를 먼저 보내 드려요.'},
-  'prepare-images':{turn:'us',title:'장면 이미지를 만들고 있어요',text:'확인하신 글 콘티대로 컷마다 장면 이미지를 만들어요. 다 되면 알려 드려요.'},
-  script:{turn:'you',title:'글 콘티가 도착했어요',text:'한 문장과 컷마다 들어갈 내용을 봐 주세요. 맞으면 장면 이미지를 만들어요.',action:{label:'글 콘티 보기',go:'draft'}},
-  images:{turn:'you',title:'장면 이미지가 도착했어요',text:'컷마다 보고 의견을 남겨 주세요. 괜찮으면 그대로 제작을 시작해요.',action:{label:'장면 이미지 보기',go:'draft'}},
-  revise:{turn:'us',title:'의견을 반영하고 있어요',text:'보내 주신 의견대로 고쳐서 새 판을 보내 드려요.'},
-  make:{turn:'us',title:'확인하신 컷으로 만들고 있어요',text:'목소리와 음악을 먼저 만들고 그 박자에 컷을 맞춰요. 다음에 받으실 것은 소리까지 들어간 영상이에요.'},
-  review:{turn:'you',title:'영상이 도착했어요',text:'영상을 보면서 고칠 시점에 의견을 남겨 주세요.',action:{label:'영상 보기',go:'review'}},
-  deliver:{turn:'you',title:'완성본을 받으세요',text:'올릴 곳에 맞는 파일을 내려받으실 수 있어요.',action:{label:'파일 받기',go:'review'}},
+  write:{turn:'you',title:k('의뢰서를 써 주세요'),text:k('제품 이름, 올릴 곳, 사진 몇 장이면 시작할 수 있어요. 모르는 칸은 저희가 제안해요.'),action:{label:k('의뢰서 쓰기'),go:'write'}},
+  check:{turn:'us',title:k('지금은 저희 차례예요'),text:k('보내 주신 의뢰서를 확인하고 있어요. 평일 10~19시에 보고, 빠진 게 있으면 그 칸만 다시 여쭤요. 확인이 끝나면 방향 두 안을 보내 드려요.')},
+  ask:{turn:'you',title:k('이것만 더 알려 주세요'),text:k('아래 칸만 채워 주시면 바로 1차안을 만들어요.')},
+  direction:{turn:'you',title:k('두 방향 중 하나를 골라 주세요'),text:k('요청하신 내용은 그대로 두고, 무엇으로 기억에 남길지만 나눠 봤어요. 고르시면 글 콘티를 보내 드려요.')},
+  redirect:{turn:'us',title:k('새 방향을 준비하고 있어요'),text:k('주신 말씀으로 같은 값에 한 번 더 제안해 드려요.')},
+  model:{turn:'you',title:k('이 모델로 갈까요?'),text:k('장면을 만들기 전에 모델부터 정해요. 마음에 들면 그대로, 아니면 다른 모델을 골라 주세요.')},
+  prepare:{turn:'us',title:k('1차안을 만들고 있어요'),text:k('광고가 남길 한 문장과 글 콘티를 먼저 보내 드려요.')},
+  'prepare-images':{turn:'us',title:k('장면 이미지를 만들고 있어요'),text:k('확인하신 글 콘티대로 컷마다 장면 이미지를 만들어요. 다 되면 알려 드려요.')},
+  script:{turn:'you',title:k('글 콘티가 도착했어요'),text:k('한 문장과 컷마다 들어갈 내용을 봐 주세요. 맞으면 장면 이미지를 만들어요.'),action:{label:k('글 콘티 보기'),go:'draft'}},
+  images:{turn:'you',title:k('장면 이미지가 도착했어요'),text:k('컷마다 보고 의견을 남겨 주세요. 괜찮으면 그대로 제작을 시작해요.'),action:{label:k('장면 이미지 보기'),go:'draft'}},
+  revise:{turn:'us',title:k('의견을 반영하고 있어요'),text:k('보내 주신 의견대로 고쳐서 새 판을 보내 드려요.')},
+  make:{turn:'us',title:k('확인하신 컷으로 만들고 있어요'),text:k('목소리와 음악을 먼저 만들고 그 박자에 컷을 맞춰요. 다음에 받으실 것은 소리까지 들어간 영상이에요.')},
+  review:{turn:'you',title:k('영상이 도착했어요'),text:k('영상을 보면서 고칠 시점에 의견을 남겨 주세요.'),action:{label:k('영상 보기'),go:'review'}},
+  deliver:{turn:'you',title:k('완성본을 받으세요'),text:k('올릴 곳에 맞는 파일을 내려받으실 수 있어요.'),action:{label:k('파일 받기'),go:'review'}},
 };
 export const modelCard=id=>{const item=CASTING_MODELS.find(model=>model.id===id);return item?{id,name:item.name,line:MODEL_LINES[id]?.line||item.description,image:item.image}:null;};
 const assetUrl=asset=>asset?.media?.url||asset?.url||'';
@@ -76,12 +78,13 @@ const filled=r=>({...emptyAnswers(),...(r?.answers||{}),slots:slotsWithFiles(r?.
 // 영상이 도착한 상태면 고객 방 스크린에 그 영상을 소리 없이 튼다.
 const screenFilm=(p,state)=>{const version=state==='deliver'?finals(p).at(-1):state==='review'?previews(p).at(-1):null,src=version?.media?.mimeType?.startsWith('video/')?version.media.url:'';return src?{src,label:version.label,go:'review'}:null;};
 // 보내 주신 의뢰서: 길이 · 구성 다음에 받으실 날(접수일 + 기간, 달력 기준 — 결정 11-07)을 둔다.
+// 「길이 · 구성」은 briefRows의 줄 이름과 견주는 값이라 번역하지 않는다(보일 때는 roomPaper가 옮긴다).
 function roomBrief(r,answers){
-  const rows=briefRows(answers).filter(row=>!row.missing).slice(0,8).map(row=>[row.key,row.value]),pkg=pkgOf(answers),at=rows.findIndex(([key])=>key==='길이 · 구성');
+  const rows=briefRows(answers).filter(row=>!row.missing).slice(0,8).map(row=>[row.key,row.value]),pkg=pkgOf(answers),at=rows.findIndex(([key])=>key==='길이 · 구성'); // i18n-skip
   // 날짜는 방향을 보내 드릴 때 한 번 정해 보인다(결제 · 자료 시점이 정해지기 전 달력 날짜를 약속하지 않는다 — 설계 검토 3).
   // 방향 제안이 오면 거기 적힌 날 하나만 보인다(같은 화면에 날짜 둘이 서지 않게 — 설계 검토 9).
   const due=r.directionProposal?.dueDate;
-  if(r.submittedAt&&at>=0)rows.splice(at+1,0,['받으실 날',due?t('{date} · 방향 제안에 적힌 날',{date:longDay(due)}):pkg?.days?(pkg.photo?t('자료가 다 모인 날부터 {days}일',{days:pkg.days}):t('자료가 다 모인 날부터 {days}일 · 날짜는 방향을 보내 드릴 때 알려 드려요',{days:pkg.days})):t('구성에 맞춰 함께 정해요')]);
+  if(r.submittedAt&&at>=0)rows.splice(at+1,0,[k('받으실 날'),due?t('{date} · 방향 제안에 적힌 날',{date:longDay(due)}):pkg?.days?(pkg.photo?t('자료가 다 모인 날부터 {days}일',{days:pkg.days}):t('자료가 다 모인 날부터 {days}일 · 날짜는 방향을 보내 드릴 때 알려 드려요',{days:pkg.days})):t('구성에 맞춰 함께 정해요')]);
   return rows;
 }
 export function roomModel(p){
@@ -94,7 +97,7 @@ export function roomModel(p){
   const shown=new Set(files.map(file=>file.src)),drawn=new Set(images.map(asset=>asset.id)),others=[...images.filter(asset=>!shown.has(assetUrl(asset))).map(asset=>asset.fileName),...(r?.files||[]).filter(file=>!drawn.has(file.id)).map(file=>file.fileName)];
   const proposed=r?.modelProposal?.status==='open'?modelCard(r.modelProposal.modelId):null,proposal=proposed?{...proposed,note:r.modelProposal.note||''}:null,direction=directionModel(p);
   return {
-    state,stage:roomStage(state),photo:answers.package==='photo',options:r?.directionProposal?.options?.length||0,title:p?.title||'',number:r?.number||'',manager:p?.ownerName||'PULSE 담당자',hasRound:!!lastRound(r),lastKind:lastRound(r)?.kind||'',
+    state,stage:roomStage(state),photo:answers.package==='photo',options:r?.directionProposal?.options?.length||0,title:p?.title||'',number:r?.number||'',manager:p?.ownerName||t('PULSE 담당자'),hasRound:!!lastRound(r),lastKind:lastRound(r)?.kind||'',
     brief:r?roomBrief(r,answers):[],
     files,others,proposal,direction,asks:(r?.asks||[]).filter(ask=>ask.status==='open'),answered:(r?.asks||[]).filter(ask=>ask.status==='answered'),canEdit:!!r&&r.status!=='confirmed',
     draft:['script','images','revise','prepare-images'].includes(state)?draftModel(p):null,film:screenFilm(p,state),
@@ -104,7 +107,9 @@ export function roomModel(p){
 }
 // 방향 제안(영상 전 확인 1/3)을 화면 자료로. 그림 · 견본은 손님 보기의 자산 주소, 값 · 기간은 제안에 적힌 것(손님이 실제로 내는 값 · 정한 날).
 const assetById=(p,id)=>(p?.studio?.assets||[]).find(asset=>asset.id===id);
-const won=value=>value>=10000&&value%1000===0?price(value/10000):`${Number(value).toLocaleString('ko-KR')}원`;
+// 값: 한국어는 만 원으로 떨어지면 「39만원」, 아니면 「395,500원」. 다른 언어는 늘 원화 그대로(request-data price — 「KRW 395,500」).
+// 「원」이 붙는 갈래는 한국어 화면에서만 돈다(번역하지 않는다).
+const won=value=>locale()!=='ko'||value>=10000&&value%1000===0?price(value/10000):`${Number(value).toLocaleString('ko-KR')}원`; // i18n-skip
 // 「11월 17일」 · 영어 「Nov 17」(사전이 {mon}을 쓴다).
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const longDay=day=>{const [y,m,d]=String(day||'').split('-').map(Number);return y?t('{m}월 {d}일',{m,d,mon:MONTHS[m-1]||''}):'';};
@@ -114,7 +119,7 @@ export function directionModel(p){
   const options=d.options.map((option,i)=>({id:option.id,no:String(i+1).padStart(2,'0'),name:option.name,sentence:option.sentence,flow:option.flow,why:option.why||'',recommended:!!option.recommended,src:assetUrl(assetById(p,option.assetId)),film:option.filmAssetId?assetUrl(assetById(p,option.filmAssetId)):'',filmNote:option.filmNote||'',workId:option.workId||''}));
   const chosen=options.find(option=>option.id===d.chosenId)||null;
   return {round:d.round,status:d.status,lead:d.lead||'',options,chosen,note:d.answer||'',model:d.modelId?modelCard(d.modelId):null,noModel:!d.modelId,kind:a.kind||'',
-    price:won(d.price),due:longDay(d.dueDate),dueDate:d.dueDate||'',revisions:d.revisions,title:p?.title||'',line:[pkg?`${pkg.label}`:'',channelText({channels:a.channels||[]})].filter(Boolean).join(' · '),gets:pkg?.gets||'',photo:!!pkg?.photo,
+    price:won(d.price),due:longDay(d.dueDate),dueDate:d.dueDate||'',revisions:d.revisions,title:p?.title||'',line:[pkg?t(pkg.label):'',channelText({channels:a.channels||[]})].filter(Boolean).join(' · '),gets:pkg?.gets||'',photo:!!pkg?.photo,
     canPick:['open','chosen'].includes(d.status)&&!lastRound(r),last:d.round>=2};
 }
 export function draftModel(p){
@@ -131,11 +136,12 @@ export function draftModel(p){
 // 담당자가 한 말과 손님이 한 일을 한 줄기로. 손님 보기에 이미 오는 필드만 쓴다(서버 읽음 기록 없음). 그리기는 film-views.mjs journalView.
 // 줄 종류: talk(말 — 전문), quote(일감의 말 — 첫 줄만, 정본은 그 일감), event(한 일 — 한 줄). 새 것이 위.
 const timeOf=value=>{const t=Date.parse(value||'');return Number.isFinite(t)?t:null;};
-const both=n=>n>2?'모두':'둘 다';
-const withEul=word=>{const last=String(word).trim().replace(/[^0-9A-Za-z가-힣]+$/,'').slice(-1),code=last.charCodeAt(0);return code>=0xAC00&&code<=0xD7A3&&(code-0xAC00)%28?'을':'를';};
-const roundName=round=>`${round.kind==='script'?'글 콘티':'장면 이미지'} ${round.round}판`;
+// 조사 도우미는 한국어 문장에만 쓴다(다른 언어 사전은 그 자리표를 쓰지 않는다).
+const withEul=word=>{const last=String(word).trim().replace(/[^0-9A-Za-z가-힣]+$/,'').slice(-1),code=last.charCodeAt(0);return code>=0xAC00&&code<=0xD7A3&&(code-0xAC00)%28?'을':'를';}; // i18n-skip
+// 「이름」 여럿(방향 이름): 한국어는 띄어 잇고, 다른 언어는 그 언어의 목록 꼴로(“A” and “B”).
+const quoteList=names=>{const list=names.map(name=>t('「{name}」',{name:String(name)}));return locale()==='ko'||typeof Intl.ListFormat!=='function'?list.join(' '):new Intl.ListFormat(intlLocale(locale()),{type:'conjunction'}).format(list);};
 export function journalModel(p){
-  const r=requestOf(p),st=p?.studio||{},owner=p?.ownerName||'PULSE 담당자',items=[];
+  const r=requestOf(p),st=p?.studio||{},owner=p?.ownerName||t('PULSE 담당자'),items=[],photo=r?.answers?.package==='photo';
   const add=item=>{items.push({text:'',go:null,...item,t:item.t??timeOf(item.at)});};
   // 줄 글은 문장 하나씩 번역한다. 조사는 한국어 낱말에서 고르고(영어 사전은 쓰지 않는다), 이름은 그 언어로.
   const me=t('나',null,'me'),mname=name=>t(name,null,'model');
@@ -151,51 +157,59 @@ export function journalModel(p){
   }
   const d=r?.directionProposal;
   if(d?.at){
-    const t=timeOf(d.at),count=d.options?.length||2;
+    const atMs=timeOf(d.at),count=d.options?.length||2;
     // 다시 받은 제안이면 앞 판의 답을 둔다. 서버가 그 판의 시각을 내려 주면(판 3c) 1판을 보낸 줄과 답한 줄을 제자리에, 옛 기록(시각 없음)은 이 줄 바로 앞에.
     if(d.prior){
-      const sentAt=timeOf(d.prior.at),noAt=timeOf(d.prior.answeredAt);
-      if(sentAt!==null)add({id:'d:'+d.prior.round,at:d.prior.at,who:'staff',name:d.prior.by||owner,kind:'event',what:`방향 제안 ${d.prior.round}판을 보냈어요`});
-      add({id:'d:'+d.prior.round+':no',at:noAt===null?'':d.prior.answeredAt,t:noAt??(t===null?null:t-1),who:'me',name:'나',kind:d.prior.answer?'talk':'event',what:`방향 제안 ${d.prior.round}판 · ${(d.prior.names||[]).map(name=>`「${name}」`).join(' ')} ${both((d.prior.names||[]).length)} 아니에요`,text:d.prior.answer||''});
+      const sentAt=timeOf(d.prior.at),noAt=timeOf(d.prior.answeredAt),round=String(d.prior.round),list=d.prior.names||[],names=quoteList(list);
+      if(sentAt!==null)add({id:'d:'+d.prior.round,at:d.prior.at,who:'staff',name:d.prior.by||owner,kind:'event',what:t('방향 제안 {round}판을 보냈어요',{round})});
+      add({id:'d:'+d.prior.round+':no',at:noAt===null?'':d.prior.answeredAt,t:noAt??(atMs===null?null:atMs-1),who:'me',name:me,kind:d.prior.answer?'talk':'event',what:list.length>2?t('방향 제안 {round}판 · {names} 모두 아니에요',{round,names}):t('방향 제안 {round}판 · {names} 둘 다 아니에요',{round,names}),text:d.prior.answer||''});
     }
     const pickable=['open','chosen'].includes(d.status)&&!lastRound(r);
-    add({id:'d:'+d.round,at:d.at,who:'staff',name:d.by||owner,kind:'quote',what:`방향 제안${d.round>1?` ${d.round}판`:''}`,text:d.lead||`${count}가지 방향을 보내 드렸어요`,go:pickable?{tab:'pick'}:null});
+    // 인용 줄의 이름(「방향 제안」)은 다른 언어에서 「보냈다」는 말이 된다 — 일지 문맥으로 따로 옮긴다.
+    add({id:'d:'+d.round,at:d.at,who:'staff',name:d.by||owner,kind:'quote',what:d.round>1?t('방향 제안 {round}판',{round:String(d.round)},'journal'):t('방향 제안',null,'journal'),text:d.lead||t('{count}가지 방향을 보내 드렸어요',{count}),go:pickable?{tab:'pick'}:null});
     const chosen=d.options?.find(option=>option.id===d.chosenId);
-    if(d.answeredAt&&d.status==='declined')add({id:'d:'+d.round+':no',at:d.answeredAt,who:'me',name:'나',kind:d.answer?'talk':'event',what:`방향 ${both(count)} 아니에요`,text:d.answer||''});
-    if(d.answeredAt&&chosen&&d.status==='chosen')add({id:'d:'+d.round+':ok',at:d.answeredAt,who:'me',name:'나',kind:d.answer?'talk':'event',what:`「${chosen.name}」${withRoOf(chosen.name)} 정했어요`,text:d.answer?`덧붙인 말 · ${d.answer}`:''});
-    if(d.answeredAt&&chosen&&d.status==='settled')add({id:'d:'+d.round+':ok',at:d.answeredAt,who:'staff',name:d.settledBy||owner,kind:d.answer?'talk':'event',what:`「${chosen.name}」${withRoOf(chosen.name)} 함께 정했어요`,text:d.answer||''});
+    if(d.answeredAt&&d.status==='declined')add({id:'d:'+d.round+':no',at:d.answeredAt,who:'me',name:me,kind:d.answer?'talk':'event',what:count>2?t('방향 모두 아니에요'):t('방향 둘 다 아니에요'),text:d.answer||''});
+    if(d.answeredAt&&chosen&&d.status==='chosen')add({id:'d:'+d.round+':ok',at:d.answeredAt,who:'me',name:me,kind:d.answer?'talk':'event',what:t('「{name}」{ro} 정했어요',{name:chosen.name,ro:withRoOf(chosen.name)}),text:d.answer?t('덧붙인 말 · {note}',{note:d.answer}):''});
+    if(d.answeredAt&&chosen&&d.status==='settled')add({id:'d:'+d.round+':ok',at:d.answeredAt,who:'staff',name:d.settledBy||owner,kind:d.answer?'talk':'event',what:t('「{name}」{ro} 함께 정했어요',{name:chosen.name,ro:withRoOf(chosen.name)}),text:d.answer||''});
   }
   const rounds=r?.rounds||[],last=rounds.at(-1);
+  // 판 이름(「글 콘티 1판」)이 든 줄은 종류마다 문장 하나 — 판 이름은 늘 「판」으로 끝나 조사가 정해져 있다.
   for(const round of rounds){
-    const name=roundName(round);
-    add(round.note?{id:'r:'+round.round,at:round.sentAt,who:'staff',name:round.by||owner,kind:'quote',what:name,text:round.note,go:round===last?{tab:'draft'}:null}:{id:'r:'+round.round,at:round.sentAt,who:'staff',name:round.by||owner,kind:'event',what:`${name}${withEul(name)} 보냈어요`,go:round===last?{tab:'draft'}:null});
-    if(round.feedbackAt)add({id:'r:'+round.round+':fix',at:round.feedbackAt,who:'me',name:'나',kind:'event',what:round.changes?`${name}에 고칠 곳 ${round.changes}개를 보냈어요`:`${name} 컷 확인을 보냈어요`});
-    if(round.approvedAt)add({id:'r:'+round.round+':ok',at:round.approvedAt,who:'me',name:'나',kind:'event',what:`${name}${withEul(name)} 확인했어요`});
+    const script=round.kind==='script',no=String(round.round);
+    add(round.note?{id:'r:'+round.round,at:round.sentAt,who:'staff',name:round.by||owner,kind:'quote',what:script?t('글 콘티 {round}판',{round:no},'journal'):t('장면 이미지 {round}판',{round:no},'journal'),text:round.note,go:round===last?{tab:'draft'}:null}:{id:'r:'+round.round,at:round.sentAt,who:'staff',name:round.by||owner,kind:'event',what:script?t('글 콘티 {round}판을 보냈어요',{round:no}):t('장면 이미지 {round}판을 보냈어요',{round:no}),go:round===last?{tab:'draft'}:null});
+    if(round.feedbackAt)add({id:'r:'+round.round+':fix',at:round.feedbackAt,who:'me',name:me,kind:'event',what:round.changes?(script?t('글 콘티 {round}판에 고칠 곳 {count}개를 보냈어요',{round:no,count:round.changes}):t('장면 이미지 {round}판에 고칠 곳 {count}개를 보냈어요',{round:no,count:round.changes})):(script?t('글 콘티 {round}판 컷 확인을 보냈어요',{round:no}):t('장면 이미지 {round}판 컷 확인을 보냈어요',{round:no}))});
+    if(round.approvedAt)add({id:'r:'+round.round+':ok',at:round.approvedAt,who:'me',name:me,kind:'event',what:script?t('글 콘티 {round}판을 확인했어요',{round:no}):t('장면 이미지 {round}판을 확인했어요',{round:no})});
   }
+  // 시안 · 최종본 이름은 서버가 준 판 이름(label). 최종본은 사진 상품이면 다른 말이라 문맥을 나눈다.
   for(const v of p?.versions||[]){
     if(!['preview','final'].includes(v.kind))continue;
-    const name=v.kind==='final'?`최종본 ${v.label}`:v.label,go={tab:'review',versionId:v.id,...(v.kind==='final'?{final:true}:{})};
-    add(v.guide?{id:'v:'+v.id,at:v.createdAt,who:'staff',name:owner,kind:'quote',what:name,text:v.guide,go}:{id:'v:'+v.id,at:v.createdAt,who:'staff',name:owner,kind:'event',what:`${name}${josaOf(name)} 도착했어요`,go});
-    if(v.kind==='preview'&&v.approvedAt)add({id:'v:'+v.id+':ok',at:v.approvedAt,who:'me',name:'나',kind:'event',what:`${v.label}${withEul(v.label)} 승인했어요`});
+    const final=v.kind==='final',label=String(v.label),josa=josaOf(label),go={tab:'review',versionId:v.id,...(final?{final:true}:{})};
+    const quote=final?(photo?t('최종본 {label}',{label},'journal-photo'):t('최종본 {label}',{label},'journal')):t('{label}',{label:v.label},'journal');
+    const arrived=final?(photo?t('최종본 {label}{josa} 도착했어요',{label,josa},'photo'):t('최종본 {label}{josa} 도착했어요',{label,josa})):t('{label}{josa} 도착했어요',{label,josa});
+    add({id:'v:'+v.id,at:v.createdAt,who:'staff',name:owner,kind:v.guide?'quote':'event',what:v.guide?quote:arrived,...(v.guide?{text:v.guide}:{}),go});
+    if(v.kind==='preview'&&v.approvedAt)add({id:'v:'+v.id+':ok',at:v.approvedAt,who:'me',name:me,kind:'event',what:t('{label}{eul} 승인했어요',{label,eul:withEul(label)})});
   }
-  for(const fb of st.feedbackRounds?.rounds||[])if(fb.submittedAt)add({id:'f:'+fb.id,at:fb.submittedAt,who:'me',name:'나',kind:'event',what:`${fb.versionLabel||'영상'}에 의견 ${(fb.items||[]).length}개를 보냈어요`});
+  for(const fb of st.feedbackRounds?.rounds||[])if(fb.submittedAt){const count=(fb.items||[]).length;add({id:'f:'+fb.id,at:fb.submittedAt,who:'me',name:me,kind:'event',what:fb.versionLabel?t('{label}에 의견 {count}개를 보냈어요',{label:fb.versionLabel,count}):t('영상에 의견 {count}개를 보냈어요',{count})});}
   // 문의와 답: 3a 묻기 화면과 같은 거름(영상 의견 하나하나는 영상 화면에만).
-  for(const m of p?.messages||[])if(m.action==='support'&&m.author!=='staff'||m.author==='staff')add({id:'m:'+m.id,ref:m.id,at:m.at,who:m.author==='staff'?(m.automated?'auto':'staff'):'me',name:m.author==='staff'?(m.automated?'자동 안내':m.authorName||owner):'나',kind:'talk',what:m.author==='staff'?'':'문의',text:m.text||''});
-  for(const c of st.comments||[])if(c.targetType==='project')add({id:'c:'+c.id,ref:c.id,at:c.at,who:c.author==='customer'?'me':'staff',name:c.author==='customer'?'나':c.authorName||owner,kind:'talk',what:'',text:c.text||''});
+  for(const m of p?.messages||[])if(m.action==='support'&&m.author!=='staff'||m.author==='staff')add({id:'m:'+m.id,ref:m.id,at:m.at,who:m.author==='staff'?(m.automated?'auto':'staff'):'me',name:m.author==='staff'?(m.automated?t('자동 안내'):m.authorName||owner):me,kind:'talk',what:m.author==='staff'?'':t('문의',null,'journal'),text:m.text||''});
+  for(const c of st.comments||[])if(c.targetType==='project')add({id:'c:'+c.id,ref:c.id,at:c.at,who:c.author==='customer'?'me':'staff',name:c.author==='customer'?me:c.authorName||owner,kind:'talk',what:'',text:c.text||''});
   const receipt=p?.closeout?.receipt;
   // 앞선 수령 확인(판 3c — 최종본을 더 올려 묶음이 바뀌어도 남는다). 옛 서버는 이 목록을 안 내려 지금 묶음 확인만 보인다.
-  for(const earlier of p?.closeout?.earlierReceipts||[])if(timeOf(earlier?.confirmedAt)!==null)add({id:'k:at:'+earlier.confirmedAt,at:earlier.confirmedAt,who:'me',name:'나',kind:'event',what:'파일과 안내를 확인했어요'});
-  if(receipt?.confirmedAt)add({id:'k:'+(p.closeout.deliveryKey||'now'),at:receipt.confirmedAt,who:'me',name:'나',kind:'event',what:'파일과 안내를 확인했어요'});
+  for(const earlier of p?.closeout?.earlierReceipts||[])if(timeOf(earlier?.confirmedAt)!==null)add({id:'k:at:'+earlier.confirmedAt,at:earlier.confirmedAt,who:'me',name:me,kind:'event',what:t('파일과 안내를 확인했어요')});
+  if(receipt?.confirmedAt)add({id:'k:'+(p.closeout.deliveryKey||'now'),at:receipt.confirmedAt,who:'me',name:me,kind:'event',what:t('파일과 안내를 확인했어요')});
   // 새 것이 위. 시각이 같으면 받은 것 → 내 것 차례, 시각을 못 읽는 줄은 맨 아래.
   items.sort((a,b)=>(b.t??-Infinity)-(a.t??-Infinity)||(a.who==='me')-(b.who==='me'));
   const asks=(r?.asks||[]).filter(ask=>ask.status==='open').map(ask=>({id:ask.id,label:ask.label,why:ask.why||'',at:ask.at,t:timeOf(ask.at)}));
   const latestAt=Math.max(0,...items.map(item=>item.t||0),...asks.map(ask=>ask.t||0));
   return {pinned:{asks,next:String(p?.nextStep||'').trim()},items,latestAt};
 }
-const josaOf=word=>{const last=String(word).trim().replace(/[^0-9A-Za-z가-힣]+$/,'').slice(-1),code=last.charCodeAt(0);if(code>=0xAC00&&code<=0xD7A3)return (code-0xAC00)%28?'이':'가';return /[0-9]/.test(last)?('013678'.includes(last)?'이':'가'):'이';};
-function withRoOf(word){const last=String(word).trim().replace(/[^0-9A-Za-z가-힣]+$/,'').slice(-1),code=last.charCodeAt(0);const batchim=code>=0xAC00&&code<=0xD7A3?(code-0xAC00)%28:/[0-9]/.test(last)?('013678'.includes(last)?1:0):1;return batchim&&batchim!==8?'으로':'로';}
+// 조사 도우미(한국어 문장에만 — 번역하지 않는다).
+const josaOf=word=>{const last=String(word).trim().replace(/[^0-9A-Za-z가-힣]+$/,'').slice(-1),code=last.charCodeAt(0);if(code>=0xAC00&&code<=0xD7A3)return (code-0xAC00)%28?'이':'가';return /[0-9]/.test(last)?('013678'.includes(last)?'이':'가'):'이';}; // i18n-skip
+function withRoOf(word){const last=String(word).trim().replace(/[^0-9A-Za-z가-힣]+$/,'').slice(-1),code=last.charCodeAt(0);const batchim=code>=0xAC00&&code<=0xD7A3?(code-0xAC00)%28:/[0-9]/.test(last)?('013678'.includes(last)?1:0):1;return batchim&&batchim!==8?'으로':'로';} // i18n-skip
 // 「본 시각」보다 뒤에 온 담당자 · 자동 안내 줄과 열린 되묻기 수. 머리 「나눈 말」 숫자.
 export const journalNew=(j,seen)=>Number.isFinite(seen)?j.items.filter(item=>item.who!=='me'&&item.t>seen).length+j.pinned.asks.filter(ask=>ask.t>seen).length:0;
+// ── 여기부터 직원 화면(내부 확인 · 새 의뢰 목록)만 쓴다 — 직원 화면은 한국어로 둔다(번역하지 않는다). ──
+// i18n-skip-start
 // 직원 쪽 말로 옮긴 지금 상태(내부 확인의 새 의뢰 목록).
 const DESK_STATE={write:'의뢰서 쓰는 중',check:'새 의뢰',ask:'답을 기다려요',direction:'방향 답을 기다려요',redirect:'방향을 다시 제안해요',model:'모델 답을 기다려요',prepare:'1차안 준비 중','prepare-images':'장면 이미지 준비 중',script:'글 콘티를 보는 중',images:'장면 이미지를 보는 중',revise:'의견 반영 중',make:'제작 중',review:'영상 확인 중',deliver:'납품'};
 export function deskQueue(projects=[],when=value=>value){
@@ -231,3 +245,4 @@ export function deskModel(p){
     canDirect,
     canSettle:direction?.status==='declined'&&direction.round>=2&&!(r.rounds||[]).length};
 }
+// i18n-skip-end

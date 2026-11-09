@@ -2,6 +2,7 @@ import {createHash} from 'node:crypto';
 import {clientNotificationTitle,customerKickoffNotificationKey} from './client-notifications.mjs';
 import {customerSceneRequests} from './client-scene-requests.mjs';
 import {buildCustomerPreviewApproval} from './client-preview-approval.mjs';
+import {serverText} from './pulse-locale.mjs';
 
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const stamp=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -11,18 +12,20 @@ const customerBodies={request_asked:'아래 칸만 답해 주시면 바로 1차�
 // 앱 안 알림함에서는 이어서 온 같은 종류의 카드 알림(콘셉트·장면·참고 자료)을 한 줄로 묶는다. 기기 알림 목록(customerPushNotifications)은 묶지 않는다.
 const GROUPED=new Set(['concept_ready','scene_ready','reference_ready']);
 // 같은 카드가 올라온 뒤 고쳐졌으면 한 장으로 센다. 아직 읽지 않은 첫 등록(cardRevision 1)이 있으면 고객에게는 새 카드다.
-function groupedTitle(type,members){
-  if(type==='reference_ready')return `참고 자료가 바뀌었어요 · ${members.length}건`;
-  const noun=type==='concept_ready'?'콘셉트':'장면',cards=new Map();
+// loc: 프로젝트 소통 언어(다국어 판 2). 문장은 통째로 사전 키다(값을 조각으로 잇지 않는다).
+function groupedTitle(type,members,loc='ko'){
+  const tx=(text,vars)=>serverText(loc,text,vars);
+  if(type==='reference_ready')return tx('참고 자료가 바뀌었어요 · {count}건',{count:members.length});
+  const concept=type==='concept_ready',cards=new Map();
   for(const member of members){const key=member.card||member.id,seen=cards.get(key)||{fresh:false,known:true};cards.set(key,{fresh:seen.fresh||member.cardRevision===1,known:seen.known&&Number.isSafeInteger(member.cardRevision)});}
   const list=[...cards.values()],n=list.length,fresh=list.filter(card=>card.fresh).length;
-  if(!list.every(card=>card.known))return clientNotificationTitle(type);
-  if(n===1)return clientNotificationTitle(type,{cardRevision:fresh?1:2});
-  if(fresh===n)return `새 ${noun} ${n}개가 도착했어요`;
-  if(!fresh)return `${noun} ${n}개가 바뀌었어요`;
-  return `새 ${noun} ${fresh}개 · 바뀐 ${noun} ${n-fresh}개`;
+  if(!list.every(card=>card.known))return clientNotificationTitle(type,null,loc);
+  if(n===1)return clientNotificationTitle(type,{cardRevision:fresh?1:2},loc);
+  if(fresh===n)return tx(concept?'새 콘셉트 {count}개가 도착했어요':'새 장면 {count}개가 도착했어요',{count:n});
+  if(!fresh)return tx(concept?'콘셉트 {count}개가 바뀌었어요':'장면 {count}개가 바뀌었어요',{count:n});
+  return tx(concept?'새 콘셉트 {fresh}개 · 바뀐 콘셉트 {changed}개':'새 장면 {fresh}개 · 바뀐 장면 {changed}개',{fresh,changed:n-fresh});
 }
-export function groupCustomerNotifications(items){
+export function groupCustomerNotifications(items,loc='ko'){
   const out=[];
   for(const item of items){
     const last=out.at(-1);
@@ -30,12 +33,13 @@ export function groupCustomerNotifications(items){
     if(last&&GROUPED.has(item.type)&&last.type===item.type&&last.unread===item.unread){(last.members||(last.members=[member(last)])).push(member(item));continue;}
     out.push({...item});
   }
-  return out.map(({members,cardRevision,...item})=>members?{...item,ids:members.map(member=>member.id),count:members.length,title:groupedTitle(item.type,members)}:item);
+  return out.map(({members,cardRevision,...item})=>members?{...item,ids:members.map(member=>member.id),count:members.length,title:groupedTitle(item.type,members,loc)}:item);
 }
 
 // The SSE stream carries only this projection's opaque revision. Notification
 // receipts are durable, and every read rechecks the authoritative project ACL.
-export function createPulseLiveService({store,clientProjects,clientNotifications,clock=()=>new Date().toISOString(),onChange=()=>{}}){
+// localeOf(row): 손님 알림의 언어(프로젝트 소통 언어, pulse-locale.mjs). 앱 안 알림함과 기기 알림이 같은 값을 쓴다.
+export function createPulseLiveService({store,clientProjects,clientNotifications,clock=()=>new Date().toISOString(),onChange=()=>{},localeOf=()=>'ko'}){
   function staffState(user){
     const projects=clientProjects.workspace(user).projects.map(({id,revision})=>({id,revision})).sort((a,b)=>a.id.localeCompare(b.id));
     const {notifications,unreadCount}=clientNotifications.list(user);
@@ -44,7 +48,7 @@ export function createPulseLiveService({store,clientProjects,clientNotifications
   }
   const customerReceipt=(row,eventId)=>`${row.id}|${row.inviteRevision}|${eventId}`;
   function customerProjection(row,{all=false}={}){
-    const notifications=[];
+    const notifications=[],loc=localeOf(row);
     let sceneRequests,kickoffKey,previewApproval;
     for(const event of row.notificationEvents||[]){
       if(!event.audiences?.includes('customer')||event.actorId==='customer')continue;
@@ -85,12 +89,12 @@ export function createPulseLiveService({store,clientProjects,clientNotifications
       // customer tabs changed; their stored receipts and identities stay intact.
       const tab=event.type==='staff_reply'&&(!event.tab||event.tab==='history')?'review':event.tab||'history';
       const target=Object.fromEntries(['target','commentId','conceptId','sceneId','requestId','feedbackRoundId','feedbackItemId'].filter(key=>event[key]).map(key=>[key,event[key]]));
-      notifications.push({id:event.id,type:event.type,title:clientNotificationTitle(event.type,event),body:customerBodies[event.type]||genericBody,createdAt:event.createdAt,readAt,unread:!readAt,projectId:row.id,versionId:event.versionId||null,messageId:event.messageId||null,tab,...(Number.isSafeInteger(event.cardRevision)?{cardRevision:event.cardRevision}:{}),...target});
+      notifications.push({id:event.id,type:event.type,title:clientNotificationTitle(event.type,event,loc),body:serverText(loc,customerBodies[event.type]||genericBody),createdAt:event.createdAt,readAt,unread:!readAt,projectId:row.id,versionId:event.versionId||null,messageId:event.messageId||null,tab,...(Number.isSafeInteger(event.cardRevision)?{cardRevision:event.cardRevision}:{}),...target});
     }
     notifications.sort((a,b)=>b.createdAt.localeCompare(a.createdAt)||b.id.localeCompare(a.id));
     return {revision:stamp([row.id,row.inviteRevision,row.revision,notifications.map(item=>[item.id,item.readAt])]),projectId:row.id,projectRevision:row.revision,notifications:all?notifications:notifications.slice(0,1000),unreadCount:notifications.filter(item=>item.unread).length};
   }
-  function customerState(token){const state=customerProjection(clientProjects.session(token).row),notifications=groupCustomerNotifications(state.notifications);return {...state,notifications,unreadCount:notifications.filter(item=>item.unread).length};}
+  function customerState(token){const row=clientProjects.session(token).row,state=customerProjection(row),notifications=groupCustomerNotifications(state.notifications,localeOf(row));return {...state,notifications,unreadCount:notifications.filter(item=>item.unread).length};}
   function customerPushNotifications(principal){
     const parsed=/^pulse:([a-f0-9-]{36}):(\d+)$/.exec(principal||'');if(!parsed)return [];
     const row=store.get('clientProjects',parsed[1]);

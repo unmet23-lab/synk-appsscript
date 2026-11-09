@@ -30,11 +30,12 @@ test('the receiving day counts calendar days and rolls over months and years',()
 });
 test('the request form shows days and revisions next to the price and before sending, without promising a date it cannot keep',()=>{
   const flow=read('request-flow.mjs');
-  assert.match(flow,/meta:`<span class="sx-small">\$\{price\(item\.price\)\}부터<\/span><span class="sx-small sx-row-terms">\$\{esc\(termsOf\(item\)\)\}<\/span>`/);
-  assert.match(flow,/오늘 다 모이면 <b>\$\{esc\(dueDay\(pkg\)\)\}<\/b>이에요/,'only the check before sending names a day, and only on a condition');
-  assert.match(flow,/\['받으실 날',pkg\?\.days\?`자료가 다 모인 날부터 \$\{pkg\.days\}일`/,'the receipt carries the rule, not a date');
+  // 다국어 판 2: 글은 번역 틀을 지나고(한국어 화면은 글자 그대로) 자리 · 조건은 그대로다.
+  assert.ok(flow.includes("meta:`<span class=\"sx-small\">${esc(t('{price}부터',{price:price(item.price)}))}</span><span class=\"sx-small sx-row-terms\">${esc(termsOf(item))}</span>`"));
+  assert.ok(flow.includes("boldAt(t('오늘 다 모이면 {day}이에요.',{day:MARK}),dueDay(pkg))"),'only the check before sending names a day, and only on a condition');
+  assert.ok(flow.includes("[k('받으실 날'),pkg?.days?t('자료가 다 모인 날부터 {days}일',{days:pkg.days})"),'the receipt carries the rule, not a date');
   assert.match(flow,/data-cuts-line \$\{pkg\?'':'hidden'\}/,'no 「컷 0」 before a length is picked');
-  assert.ok(flow.includes("['수정',pkg&&!pkg.days?'구성에 맞춰 함께 정해요':revisionNote(pkg)]"),'a company campaign receipt still says how revisions are agreed (argon A4)');
+  assert.ok(flow.includes("[k('수정'),pkg&&!pkg.days?t('구성에 맞춰 함께 정해요'):revisionNote(pkg)]"),'a company campaign receipt still says how revisions are agreed (argon A4)');
   const a={...emptyAnswers(),name:'오미톡',kind:'food',package:'s15'};
   assert.equal(briefRows(a).find(row=>row.key==='길이 · 구성').value,'15초 · 한 편 · 39만원부터 · 10일 · 수정 2회');
 });
@@ -62,7 +63,8 @@ test('asking is the journal: the head opens it where you are and the stage stays
   assert.match(rail,/class="sx-step is-now" aria-current="page" [^>]*data-room-go="check"/);
   assert.doesNotMatch(rail,/data-room-do="(contact|journal)"/,'the way to ask is once, in the head actions');
   const views=read('views.mjs');
-  assert.match(views,/<button type="button" class="sx-head-ask" data-room-do="journal" aria-controls="room-journal" data-journal-count>나눈 말/);
+  // 다국어 판 2: 「나눈 말」은 번역 틀을 지난다(한국어 화면은 글자 그대로).
+  assert.ok(views.includes(`<button type="button" class="sx-head-ask" data-room-do="journal" aria-controls="room-journal" data-journal-count>\${esc(t('나눈 말'))}`));
   assert.doesNotMatch(views,/function contactRoom\(/,'the old ask screen is gone');
   const journal=read('film-views.mjs');assert.ok(journal.includes('<form class="sx-j-say" data-form="support">'));
   assert.doesNotMatch(journal.slice(journal.indexOf('export function journalView('),journal.indexOf('export const journalAsk')),/data-action="refresh"/,'the journal has no standing refresh link (live updates bring answers)');

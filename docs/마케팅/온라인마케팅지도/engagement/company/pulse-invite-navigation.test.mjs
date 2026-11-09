@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {parseInvite} from './public/pulse-app/api.mjs';
+// 초대 이동 원문만 vm에 넣으므로 번역 틀의 진짜 함수를 맥락에 넣는다(다국어 판 2).
+import {t,k,locale} from './public/pulse-app/i18n.mjs';
 
 const source=await readFile(new URL('./public/pulse-app/app.mjs',import.meta.url),'utf8');
 const navigation=source.slice(source.indexOf('// Reused PWA windows'),source.indexOf('function resetContext('));
@@ -15,7 +17,7 @@ const first='test_first_invite_12345',second='test_second_invite_67890';
 function setup(){
   const microtasks=[],opened=[],notices=[],closeHandlers=[];
   const location={hash:'',pathname:'/pulse-app/',search:'',assign:url=>opened.push(url)};
-  const context=vm.createContext({URLSearchParams,parseInvite,location,queueMicrotask:fn=>microtasks.push(fn),
+  const context=vm.createContext({t,k,locale,URLSearchParams,parseInvite,location,queueMicrotask:fn=>microtasks.push(fn),
     history:{replaceState:(_state,_title,url)=>{location.hash='';assert.equal(url,'/pulse-app/');}},
     notice:message=>notices.push(message),dialog:{open:false,addEventListener:(_name,fn)=>closeHandlers.push(fn)},
     openDialog:()=>{context.dialog.open=true;},closeDialog:()=>{context.dialog.open=false;},production:{reset:()=>{}},render:()=>{},start:invite=>opened.push(invite)});

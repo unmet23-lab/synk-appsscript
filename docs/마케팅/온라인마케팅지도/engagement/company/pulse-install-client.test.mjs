@@ -9,6 +9,11 @@ import {mkdtemp,rm,readFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,dirname,resolve} from 'node:path';
 import {createCompanyApp} from './server.mjs';
+// app.mjs를 import 없이 읽는 시험(demoApp)은 번역 틀 · 언어 메뉴의 진짜 함수를 맥락에 넣는다(다국어 판 2).
+import {esc} from './public/pulse-app/api.mjs';
+import {t,k,locale,setLocale,htmlLang,pickLocale,intlLocale,DICTIONARY_LOCALES} from './public/pulse-app/i18n.mjs';
+import {LOCALE_EVENT,chooseLocale,storedLocale,setOfferedLocales} from './public/pulse-app/locale-menu.mjs';
+const i18nContext={t,k,locale,setLocale,htmlLang,pickLocale,intlLocale,DICTIONARY_LOCALES,LOCALE_EVENT,chooseLocale,storedLocale,setOfferedLocales,esc};
 
 const chrome='Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 Chrome/130.0.0.0 Mobile Safari/537.36';
 const samsung=chrome.replace('Chrome/130.0.0.0','SamsungBrowser/27.0 Chrome/125.0.0.0');
@@ -164,7 +169,7 @@ async function demoApp(userAgent){
   const listeners={},dialogs=[],replaced=[];
   const element=()=>({innerHTML:'',hidden:false,open:false,className:'',dataset:{},classList:{toggle(){}},querySelector:()=>null,querySelectorAll:()=>[],contains:()=>false,setAttribute(){},addEventListener(){},close(){this.open=false;},showModal(){this.open=true;}});
   const nodes=new Map(['#main','#app-dialog','#notice','#header-actions','#pulse-live','#connection-banner'].map(key=>[key,element()]));
-  const context=vm.createContext({createDemoSession,storage:memoryStorage(),productionUI:()=>({submit:()=>false,click:()=>false,render(){},reset(){}}),dialogContent:(type,item)=>{dialogs.push({type,item});return '';},URL,URLSearchParams,Map,Set,WeakSet,Date,Intl,Number,JSON,Object,Array,String,Promise,console,setTimeout:()=>1,clearTimeout(){},location:new URL('https://workspace.synk.im/pulse-app/?demo=coffee'),history:{replaceState(_state,_title,url){replaced.push(url);}},navigator:{onLine:true,userAgent},window:{addEventListener(){},isSecureContext:true},document:{visibilityState:'visible',documentElement:{classList:{toggle(){}}},querySelector:key=>nodes.get(key)||null,querySelectorAll:()=>[],addEventListener(name,fn){(listeners[name]||=[]).push(fn);}}});
+  const context=vm.createContext({...i18nContext,createDemoSession,storage:memoryStorage(),productionUI:()=>({submit:()=>false,click:()=>false,render(){},reset(){}}),dialogContent:(type,item)=>{dialogs.push({type,item});return '';},URL,URLSearchParams,Map,Set,WeakSet,Date,Intl,Number,JSON,Object,Array,String,Promise,console,setTimeout:()=>1,clearTimeout(){},location:new URL('https://workspace.synk.im/pulse-app/?demo=coffee'),history:{replaceState(_state,_title,url){replaced.push(url);}},navigator:{onLine:true,userAgent},window:{addEventListener(){},isSecureContext:true},document:{visibilityState:'visible',documentElement:{classList:{toggle(){}}},querySelector:key=>nodes.get(key)||null,querySelectorAll:()=>[],addEventListener(name,fn){(listeners[name]||=[]).push(fn);}}});
   const app=await readFile(new URL('./public/pulse-app/app.mjs',import.meta.url),'utf8');
   const demoLine="const demo=demoMode?(await import('./demo.mjs')).createDemoSession():null;",boot=app.indexOf("if(demo){accept(demo.snapshot());");
   assert.ok(app.includes(demoLine)&&boot>0,'the demo import and the boot line are where this test expects them');

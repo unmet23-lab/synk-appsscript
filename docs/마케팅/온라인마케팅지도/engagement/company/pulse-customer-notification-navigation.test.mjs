@@ -4,6 +4,8 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {projectView} from './public/pulse-app/views.mjs';
 import {usesRoom,roomRoute,roomTab,journalModel} from './public/pulse-app/room-view.mjs';
+// 클릭 · 불러오기 원문만 vm에 넣으므로 번역 틀의 진짜 함수를 맥락에 넣는다(다국어 판 2).
+import {t,k,locale} from './public/pulse-app/i18n.mjs';
 
 const source=readFileSync(new URL('./public/pulse-app/app.mjs',import.meta.url),'utf8');
 const clickStart=source.indexOf("document.addEventListener('click',async event=>{"),clickSource=source.slice(clickStart,source.indexOf('\n});',clickStart)+4);
@@ -43,7 +45,7 @@ function harness(item,{mode='customer',read,request,nodes={},draft=false}={}){
   const s={mode,user:mode==='staff'?{id:'staff'}:null,project:project(),tab:'direction',versionId:'v1',live:{open:true,notifications:[item]}},drafts=new Map(draft?[['customer:customer:p:strategy:',{values:{primaryPromise:'작성 중인 고객 초안'},revision:2}]]:[]),notices=[],loads=[],reads=[],renders=[],dialogs=[],timers=[];
   let handler,pulls=0,resets=0;
   const stage=node('stage','stage'),main={querySelectorAll:selector=>nodes[selector]||[],querySelector:selector=>selector==='[data-stage-content]'?stage:nodes[selector]||null};
-  const sandbox={s,drafts,epoch:1,busy:false,loading:false,composing:false,demo:null,leaveAction:null,main,
+  const sandbox={t,k,locale,s,drafts,epoch:1,busy:false,loading:false,composing:false,demo:null,leaveAction:null,main,
     pendingInitialScene:'',liveIdentity:'customer:p',liveSnapshot:null,deviceState:null,deviceOperation:0,deviceRefresh:0,deviceBusy:false,pendingRemote:null,
     notice:value=>notices.push(value),setTimeout:fn=>timers.push(fn),scheduleInviteNavigation(){},
     document:{addEventListener:(_,fn)=>{handler=fn;}},

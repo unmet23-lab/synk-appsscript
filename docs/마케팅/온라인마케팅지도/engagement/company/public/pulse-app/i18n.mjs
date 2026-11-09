@@ -12,8 +12,10 @@ export const isLocale=value=>LOCALES.includes(value);
 export const locale=()=>current;
 const keyOf=(text,ctx)=>ctx?`${ctx}\u0004${text}`:text;
 const fill=(text,vars)=>vars?String(text).replace(/\{([A-Za-z_][A-Za-z0-9_]*)\}/g,(match,name)=>Object.prototype.hasOwnProperty.call(vars,name)?String(vars[name]??''):match):String(text);
-// 지금 언어로. 사전에 없는 문장은 한국어 원문 그대로(시험이 빠진 문장을 잡는다).
+// 지금 언어로. 사전에 없는 문장은 한국어 원문 그대로(시험이 빠진 문장을 잡는다). 빈 값(null · undefined)은 빈 글자다(판 1 화면 검수 F3).
 export const t=(text,vars,ctx)=>tl(current,text,vars,ctx);
+// 표 · 변수에 담아 두었다가 그리는 자리에서 t(값)으로 옮길 문장 표시(판 2). 값은 그대로 돌려준다 — 사전 대조 시험이 k('…')도 키로 센다.
+export const k=text=>text;
 // 복수형(판 0 「1 files」): 사전 값이 {one,other,…}이면 vars.count로 그 언어의 꼴을 고른다. 한국어 문장은 수와 상관없이 하나다.
 const rules=new Map();
 function plural(loc,forms,count,fallback){
@@ -21,9 +23,12 @@ function plural(loc,forms,count,fallback){
   if(Number.isFinite(n)){if(!rules.has(loc))rules.set(loc,new Intl.PluralRules(intlLocale(loc)));rule=rules.get(loc).select(n);}
   return typeof forms[rule]==='string'?forms[rule]:typeof forms.other==='string'?forms.other:fallback;
 }
-// 언어를 정해서(서버 · 메일). 한국어 문장 키가 사전에 없으면 원문.
-export function tl(loc,text,vars,ctx){
-  const dict=dicts.get(loc),key=keyOf(text,ctx);
+// 언어를 정해서. 한국어 문장 키가 사전에 없으면 원문.
+export const tl=(loc,text,vars,ctx)=>translateWith(dicts.get(loc),loc,text,vars,ctx);
+// 사전을 직접 넘겨서(서버가 만드는 손님 문구 — 서버 사전 pulse-locale.mjs는 화면 사전과 따로 둔다).
+export function translateWith(dict,loc,text,vars,ctx){
+  if(text===null||text===undefined)return '';
+  const key=keyOf(text,ctx);
   let found=dict&&Object.prototype.hasOwnProperty.call(dict,key)?dict[key]:text;
   if(found&&typeof found==='object')found=plural(loc,found,vars?.count,text);
   return fill(found,vars);

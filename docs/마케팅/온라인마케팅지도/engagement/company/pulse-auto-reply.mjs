@@ -59,7 +59,9 @@ export function pulseAutoReplyFacts(snapshot,messageId){
   return raw.slice(0,MAX_FACTS*2);
 }
 
-export function createPulseAutoReplyService({store,clientProjects,snapshot,clock=()=>new Date().toISOString(),fetchImpl=globalThis.fetch,model=PULSE_AUTO_REPLY_MODEL}={}){
+// localeOf(row): 프로젝트 소통 언어(다국어 판 2). 한국어가 아닌 프로젝트에는 자동 안내를 보내지 않는다 — 답 · 고정 안내 모두 한국어라서(기획 12-2 「담당자 글」 끝).
+export function createPulseAutoReplyService({store,clientProjects,snapshot,clock=()=>new Date().toISOString(),fetchImpl=globalThis.fetch,model=PULSE_AUTO_REPLY_MODEL,localeOf=()=>'ko'}={}){
+  const korean=row=>{try{return localeOf(row)==='ko';}catch{return false;}};
   if(!store||!clientProjects||typeof snapshot!=='function')throw new TypeError('자동 안내 설정이 이상해요.');
   let running=null,stopped=false;
   const now=()=>{const at=clock(),ms=Date.parse(at);if(!Number.isFinite(ms))throw fail('서버 시계를 읽지 못했어요.',500);return {iso:new Date(ms).toISOString(),ms};};
@@ -108,6 +110,8 @@ export function createPulseAutoReplyService({store,clientProjects,snapshot,clock
   function update(record,patch){return store.transaction(()=>{const live=store.get(PULSE_AUTO_REPLY_KIND,record.id);if(!live||live.claimToken!==record.claimToken)return null;const next={...live,...patch};store.put(PULSE_AUTO_REPLY_KIND,record.id,next);return next;});}
   function post(record,text,kind,extra={}){
     const at=now().iso;let result;
+    // 그사이 프로젝트 언어가 한국어가 아니게 됐으면(오래 남은 호출 · 고정 안내 포함) 한국어 글을 붙이지 않고 끝낸다.
+    if(!korean(store.get('clientProjects',record.projectId)))return update(record,{status:'skipped',kind,postedMessageId:null,skipReason:'locale',finishedAt:at,...extra});
     try{result=clientProjects.postAutoReply(record.projectId,{messageId:record.messageId,text,kind,recordId:record.id});}catch(error){result={posted:false,reason:'post-error'};}
     return update(record,{status:result.posted?(kind==='ai'?'answered':'fallback'):'skipped',kind,postedMessageId:result.messageId||null,skipReason:result.posted?null:result.reason,finishedAt:at,...extra});
   }
@@ -142,6 +146,7 @@ export function createPulseAutoReplyService({store,clientProjects,snapshot,clock
   }
   const cost=u=>Math.round(((u?.input_tokens||0)*PRICE.input+(u?.cache_read_input_tokens||0)*PRICE.cacheRead+(u?.cache_creation_input_tokens||0)*PRICE.cacheWrite+(u?.output_tokens||0)*PRICE.output)/1e6*10000)/10000;
   async function answer(row,message){
+    if(!korean(row))return null;
     const {iso:at}=now(),record=claim(row,message,at);if(!record)return null;
     const c=config(),secret=key();
     // 그사이 꺼졌으면 아무 글도 남기지 않는다(다시 켜면 켠 뒤의 문의만 답한다).
@@ -172,7 +177,7 @@ export function createPulseAutoReplyService({store,clientProjects,snapshot,clock
     const c=config();if(!c.enabled||!c.enabledAt)return [];
     const seen=new Set(records().map(row=>row.id)),out=[];
     for(const row of store.all('clientProjects')){
-      if(row.stage==='archived')continue;
+      if(row.stage==='archived'||!korean(row))continue;
       const messages=row.messages||[];
       messages.forEach((message,index)=>{
         if(message.author!=='customer'||message.action!=='support'||message.resolved||message.at<=c.enabledAt||message.at>at||seen.has(`${row.id}:${message.id}`))return;

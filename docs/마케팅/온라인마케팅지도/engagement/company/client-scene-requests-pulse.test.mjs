@@ -4,7 +4,11 @@ import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 import {sceneRequestsSummary,sceneRequestView,sceneConfirmation} from './public/pulse-app/scene-requests-view.mjs';
 import {projectView} from './public/pulse-app/views.mjs';
-import {PulseError,parseInvite} from './public/pulse-app/api.mjs';
+import {PulseError,parseInvite,esc} from './public/pulse-app/api.mjs';
+// app.mjs를 import 없이 읽으므로 번역 틀 · 언어 메뉴의 진짜 함수를 맥락에 넣는다(다국어 판 2).
+import {t,k,locale,setLocale,htmlLang,pickLocale,intlLocale,DICTIONARY_LOCALES} from './public/pulse-app/i18n.mjs';
+import {LOCALE_EVENT,chooseLocale,storedLocale,setOfferedLocales} from './public/pulse-app/locale-menu.mjs';
+const i18nContext={t,k,locale,setLocale,htmlLang,pickLocale,intlLocale,DICTIONARY_LOCALES,LOCALE_EVENT,chooseLocale,storedLocale,setOfferedLocales,esc};
 
 globalThis.location=new URL('http://127.0.0.1:64046/pulse-app/');
 const id='01234567-89ab-cdef-0123-456789abcdef',sceneId='11234567-89ab-cdef-0123-456789abcdef';
@@ -50,7 +54,7 @@ function fixture(){
   const nodes=new Map(['#main','#app-dialog','#notice','#header-actions','#pulse-live','#connection-banner'].map(key=>[key,element()]));
   // Production-specific actions are outside this fixture; preserve the app router's await boundary.
   const productionUI=()=>({submit:()=>false,click:()=>false,render(){},reset(){}});
-  const context=vm.createContext({productionUI,URL,URLSearchParams,Map,Set,WeakSet,Date,Intl,Number,JSON,Object,Array,String,Promise,PulseError,parseInvite,sceneConfirmation,console,FormData:class{},setTimeout:()=>1,clearTimeout(){},location:new URL('http://127.0.0.1:64046/pulse-app/'),history:{replaceState(){}},navigator:{onLine:true},window:{addEventListener(){},isSecureContext:false},document:{visibilityState:'visible',documentElement:{classList:{toggle(){}}},querySelector:key=>nodes.get(key)||null,querySelectorAll:()=>[],addEventListener(name,fn){(listeners[name]||=[]).push(fn);}},header:()=>'',welcome:()=>'',login:()=>'',picker:()=>'',projectView:()=>'',liveView:()=>'',dialogContent:()=>'',networkRequest(path,settings){return new Promise((resolve,reject)=>requests.push({path,settings,resolve,reject}));},foregroundProjectOptions:(_path,settings)=>settings,createLiveConnection:()=>({stop(){}})});
+  const context=vm.createContext({...i18nContext,productionUI,URL,URLSearchParams,Map,Set,WeakSet,Date,Intl,Number,JSON,Object,Array,String,Promise,PulseError,parseInvite,sceneConfirmation,console,FormData:class{},setTimeout:()=>1,clearTimeout(){},location:new URL('http://127.0.0.1:64046/pulse-app/'),history:{replaceState(){}},navigator:{onLine:true},window:{addEventListener(){},isSecureContext:false},document:{visibilityState:'visible',documentElement:{classList:{toggle(){}}},querySelector:key=>nodes.get(key)||null,querySelectorAll:()=>[],addEventListener(name,fn){(listeners[name]||=[]).push(fn);}},header:()=>'',welcome:()=>'',login:()=>'',picker:()=>'',projectView:()=>'',liveView:()=>'',dialogContent:()=>'',networkRequest(path,settings){return new Promise((resolve,reject)=>requests.push({path,settings,resolve,reject}));},foregroundProjectOptions:(_path,settings)=>settings,createLiveConnection:()=>({stop(){}})});
   let source=readFileSync(new URL('./public/pulse-app/app.mjs',import.meta.url),'utf8').replace(/^import .*\r?\n/gm,'').replace("const demo=demoMode?(await import('./demo.mjs')).createDemoSession():null;",'const demo=null;');source=source.slice(0,source.indexOf("if(demo){accept(demo.snapshot());s.tab=demo.guide().tab;render();}else{render();await start"));vm.runInContext(source,context);context.seed=structuredClone(project);context.notes=notices;const run=code=>vm.runInContext(code,context);
   run("Object.assign(s,{mode:'customer',project:seed,csrf:'synthetic-csrf',user:null});render=()=>{};renderLive=()=>{};syncLive=()=>{};notice=value=>notes.push(value)");
   const click=async(data=dataset(),action='confirm-scene-request')=>{const button={disabled:false,dataset:{...data,action}};await listeners.click[0]({target:{closest:()=>button}});};

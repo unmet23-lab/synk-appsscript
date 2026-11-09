@@ -1,4 +1,5 @@
 import {reduced} from './motion.mjs';
+import {t} from './i18n.mjs';
 
 // 영상 확인의 움직임(2026-11-05 시사실 판): 어두운 방에 영상 한 편, 아래 프레임 띠와 의견 표시, 손을 놓으면 영상만 남는다. 그리기는 views.mjs, 여기는 듣개만.
 // render()가 칸을 다시 쓸 때 같은 영상 노드를 다시 끼우므로(app.mjs), 듣개는 AbortController로 묶어 unmount에서 뗀다.
@@ -104,8 +105,8 @@ export function mountFinal(root){
   const paint=()=>{const t=video.dataset.holding?0:video.currentTime||0,all=total();time.textContent=`${short(t)} / ${short(all)}`;fill.style.setProperty('--p',String(all?t/all:0));line.setAttribute('aria-valuemax',String(Math.round(all)));line.setAttribute('aria-valuenow',String(Math.round(t)));line.setAttribute('aria-valuetext',short(t));};
   let raf=0;
   const tick=()=>{paint();if(!video.paused)raf=requestAnimationFrame(tick);};
-  const sync=()=>{const on=!video.paused;box.classList.toggle('is-playing',on);playButton.classList.toggle('is-playing',on);playButton.querySelector('span').textContent=on?'멈춤':'재생';};
-  const syncSound=()=>{sound.textContent=video.muted?'소리 켜기':'소리 끄기';};
+  const sync=()=>{const on=!video.paused;box.classList.toggle('is-playing',on);playButton.classList.toggle('is-playing',on);playButton.querySelector('span').textContent=on?t('멈춤'):t('재생');};
+  const syncSound=()=>{sound.textContent=video.muted?t('소리 켜기'):t('소리 끄기');};
   const shownAt=()=>video.dataset.holding?0:video.currentTime;
   const toggle=()=>{if(video.paused){if(video.ended)video.currentTime=0;video.play().catch(()=>{});}else video.pause();};
   const seek=value=>{letGo(video);video.currentTime=Math.max(0,Math.min(value,total()?total()-.03:value));paint();};

@@ -48,6 +48,7 @@ import { createPulseStudioService } from './pulse-studio.mjs';
 import { createPulseRequests, streamDraftFile, REQUEST_LIMITS } from './pulse-requests.mjs';
 import { createPulseAutoReplyService } from './pulse-auto-reply.mjs';
 import { createPulseFeatures } from './pulse-features.mjs';
+import { createProjectLocale } from './pulse-locale.mjs';
 import { createPulseMailService } from './pulse-mail.mjs';
 import { CASTING_MODELS } from './public/pulse-app/casting-catalog.mjs';
 import { createClientIntake,discardIntakeFiles,serveIntakeFile } from './client-intake.mjs';
@@ -236,9 +237,12 @@ export function createCompanyApp(options={}) {
   const creatorReviews=createCreatorReviewsService({store,clock});
   const creatorSources=createCreatorSourcesService({store});
   const automationReadScope=createSynchronousReadScope();
-  const clientProjects=automationReadScope.service(createClientProjectsService({store,clock}),['workspace']);
+  // 다국어 · 전용 인물 스위치(판 1, 기본 끔). 손님 응답에는 그 길에 필요한 값만 싣는다 — 화면은 이 값만 믿는다.
+  // 프로젝트 소통 언어(판 2): 알림 · 메일 · 손님 보기 · 자동 안내 · 영어 프로젝트의 번역 요구가 같은 값을 쓴다(스위치가 허락한 contactLocale, 아니면 한국어).
+  const pulseFeatures=createPulseFeatures({store,clock}),projectLocale=createProjectLocale(pulseFeatures);
+  const clientProjects=automationReadScope.service(createClientProjectsService({store,clock,localeOf:projectLocale}),['workspace']);
   const deliveryFileInspector=options.deliveryFileInspector??createDeliveryFileInspector({directory:store.directory,ffprobe:options.deliveryFfprobe});
-  const clientDelivery=automationReadScope.service(createClientDeliveryService({store,clientProjects,clock,fileInspector:deliveryFileInspector}),['get']);
+  const clientDelivery=automationReadScope.service(createClientDeliveryService({store,clientProjects,clock,fileInspector:deliveryFileInspector,localeOf:projectLocale}),['get']);
   let deliveryCheckTick=null;
   function scanDeliveryChecks(){
     if(stopRequested||deliveryCheckTick)return deliveryCheckTick;
@@ -258,13 +262,11 @@ export function createCompanyApp(options={}) {
   }
   // 판 2 메일 알림: 서비스는 고객 알림 투영(pulseLive)이 생긴 뒤 만든다 — 그 전에는 손님 · 직원 보기에 메일 칸이 없다.
   let pulseMail=null;
-  const pulseStudio=createPulseStudioService({store,clientProjects,clock,mailState:{customer:row=>pulseMail?.customerState(row),staff:row=>pulseMail?.staffState(row)}});
+  const pulseStudio=createPulseStudioService({store,clientProjects,clock,localeOf:projectLocale,mailState:{customer:row=>pulseMail?.customerState(row),staff:row=>pulseMail?.staffState(row)}});
   const pulseRequests=createPulseRequests({store,clientProjects,clock,freeBytes:options.pulseRequestFreeBytes});
   // PULSE 고객 문의 자동 안내(2026-10-19). 관리자가 설정 화면에서 Claude 키를 넣고 켰을 때만 답한다. 업무실 예약 작업과 같은 스위치를 따르고,
   // 문의가 들어오면 1.5초 뒤 바로 한 번, 그 밖에는 15초마다 남은 문의를 본다.
-  const pulseAutoReply=createPulseAutoReplyService({store,clientProjects,snapshot:id=>pulseStudio.customerSnapshot(id),clock,fetchImpl:options.pulseAutoReplyFetch||globalThis.fetch});
-  // 다국어 · 전용 인물 스위치(판 1, 기본 끔). 손님 응답에는 그 길에 필요한 값만 싣는다 — 화면은 이 값만 믿는다.
-  const pulseFeatures=createPulseFeatures({store,clock});
+  const pulseAutoReply=createPulseAutoReplyService({store,clientProjects,snapshot:id=>pulseStudio.customerSnapshot(id),clock,localeOf:projectLocale,fetchImpl:options.pulseAutoReplyFetch||globalThis.fetch});
   const customerStateWithFeatures=token=>{const state=pulseStudio.customerState(token);return {...state,features:pulseFeatures.projectView(state.project?.studio?.request?.answers)};};
   const pulseAutoReplySchedule=options.pulseAutoReplySchedule??(workroomScheduleEnabled&&options.schedule!==false);
   let pulseAutoReplyTimer=null,pulseAutoReplySoonTimer=null;
@@ -290,8 +292,8 @@ export function createCompanyApp(options={}) {
   let pulseLiveEvents,notifyPulseDevices=()=>{};
   const pulseEventAuth=new WeakMap();
   clientNotifications=createClientNotificationsService({store,clientProjects,clientWorkflow,clock,onChange:ids=>{messenger.notifyCompanyUsers(ids);pulseLiveEvents?.changed();notifyPulseDevices();}});
-  const pulseLive=createPulseLiveService({store,clientProjects,clientNotifications,clock,onChange:()=>{pulseLiveEvents?.changed();notifyPulseDevices();}});
-  pulseMail=createPulseMailService({store,clock,fetchImpl:options.pulseMailFetch||globalThis.fetch,notificationsFor:row=>pulseLive.customerPushNotifications(`pulse:${row.id}:${row.inviteRevision}`)});
+  const pulseLive=createPulseLiveService({store,clientProjects,clientNotifications,clock,localeOf:projectLocale,onChange:()=>{pulseLiveEvents?.changed();notifyPulseDevices();}});
+  pulseMail=createPulseMailService({store,clock,localeOf:projectLocale,fetchImpl:options.pulseMailFetch||globalThis.fetch,notificationsFor:row=>pulseLive.customerPushNotifications(`pulse:${row.id}:${row.inviteRevision}`)});
   const pulseMailSchedule=options.pulseMailSchedule??(workroomScheduleEnabled&&options.schedule!==false);
   let pulseMailTimer=null;
   pulseLiveEvents=createCreativeResearchEvents({resolveAccess(req){
@@ -849,6 +851,8 @@ export function createCompanyApp(options={}) {
     }
     // Customer capabilities never create a staff session or grant workspace access.
     // 공개 의뢰서(2026-11-04): 초대 없는 손님의 초안 경로. 고객 세션과 따로 돌고, 쓰기는 같은 출처 · 초안 csrf · 문턱을 지나야 한다(pulse-requests.mjs).
+    // 공개 첫 화면의 언어(다국어 판 2): 초대 · 의뢰 초안 없이 읽는다. 공개 메뉴 언어만 싣는다(스위치가 꺼져 있으면 한국어 하나).
+    if(method==='GET'&&path==='/pulse/api/features'){if(url.search)throw httpError('주소를 확인해 주세요.');return send(res,200,{features:pulseFeatures.publicView()});}
     if(path==='/pulse/api/request'||path.startsWith('/pulse/api/request/')){
       const requestToken=(req.headers.cookie||'').match(/(?:^|;\s*)synk_pulse_request=([A-Za-z0-9_-]+)/)?.[1];
       const csrf=req.headers['x-pulse-csrf'],draftFile=path.match(/^\/pulse\/api\/request\/media\/([a-f0-9-]{36})$/);
@@ -1238,7 +1242,7 @@ export function createCompanyApp(options={}) {
       }
       if(clientUpload){
         const originalHash=auth.hash;let upload;
-        try{clientProjects.project(user,clientUpload[1],true);upload=await receiveStudioMedia(req,store.directory,{maxLabelLength:120});let latest=session(req);if(!latest||latest.hash!==originalHash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);clientProjects.project(latest.user,clientUpload[1],true);await commitStudioMedia(upload,store.directory);latest=session(req);if(!latest||latest.hash!==originalHash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);let guide;try{guide=decodeURIComponent(req.headers['x-version-guide']||'');}catch{throw httpError('사용 안내를 확인해 주세요.');}const result=clientProjects.addVersion(latest.user,clientUpload[1],{revision:Number(req.headers['x-project-revision']),label:upload.label,kind:req.headers['x-version-kind'],guide},upload.metadata);upload=null;return send(res,201,result);}catch(error){await discardStudioMedia(upload,store.directory);throw error;}
+        try{clientProjects.project(user,clientUpload[1],true);upload=await receiveStudioMedia(req,store.directory,{maxLabelLength:120});let latest=session(req);if(!latest||latest.hash!==originalHash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);clientProjects.project(latest.user,clientUpload[1],true);await commitStudioMedia(upload,store.directory);latest=session(req);if(!latest||latest.hash!==originalHash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);let guide,translation;try{guide=decodeURIComponent(req.headers['x-version-guide']||'');}catch{throw httpError('사용 안내를 확인해 주세요.');}if(req.headers['x-version-translation']!==undefined){try{translation=JSON.parse(decodeURIComponent(req.headers['x-version-translation']));}catch{throw httpError('번역 칸을 확인해 주세요.');}}const result=clientProjects.addVersion(latest.user,clientUpload[1],{revision:Number(req.headers['x-project-revision']),label:upload.label,kind:req.headers['x-version-kind'],guide,...(translation!==undefined?{translation}:{})},upload.metadata);upload=null;return send(res,201,result);}catch(error){await discardStudioMedia(upload,store.directory);throw error;}
       }
       if(studioUpload){
         const originalHash=auth.hash;let upload;
@@ -1854,7 +1858,7 @@ export function createCompanyApp(options={}) {
     files['/client-desk.css']=['public/client-desk.css','text/css; charset=utf-8'];files['/client-desk-pulse.webp']=['public/client-desk-pulse.webp','image/webp'];for(const stage of ['received','planning','producing','review','delivered','archived'])files['/client-desk-stage-'+stage+'.webp']=['public/client-desk-stage-'+stage+'.webp','image/webp'];
     files['/pulse-app/']=['public/pulse-app/index.html','text/html; charset=utf-8'];
     files['/pulse-app/index.html']=files['/pulse-app/'];
-    for(const file of ['production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','app.mjs','views.mjs','casting-view.mjs','casting-catalog.mjs','films-view.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','push-sw.js','sw.js','motion.mjs','request-data.mjs','request-flow.mjs','request-backend.mjs','film-views.mjs','film-home.mjs','film-review.mjs','room-view.mjs','desk-view.mjs','demo-film.mjs','i18n.mjs','i18n/en.mjs','casting-choice.mjs'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/javascript; charset=utf-8'];
+    for(const file of ['production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','app.mjs','views.mjs','casting-view.mjs','casting-catalog.mjs','films-view.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','push-sw.js','sw.js','motion.mjs','request-data.mjs','request-flow.mjs','request-backend.mjs','film-views.mjs','film-home.mjs','film-review.mjs','room-view.mjs','desk-view.mjs','demo-film.mjs','i18n.mjs','i18n/en.mjs','casting-choice.mjs','locale-menu.mjs'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/javascript; charset=utf-8'];
     // 의뢰 흐름(2026-11-04) 스타일 · 그림. 영상 둘은 mp4라 git 밖 — 운영 원문은 회사 릴리스 후보(완성 광고 영상과 같은 길).
     for(const file of ['slate.css','slate-screens.css','slate-legacy.css','film.css','film-legacy.css'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/css; charset=utf-8'];
     // 시사실 판(2026-11-05) 그림 · 영상. 쇼릴 mp4 둘은 git 밖 — 운영 원문은 회사 릴리스 후보(완성 광고 영상과 같은 길).

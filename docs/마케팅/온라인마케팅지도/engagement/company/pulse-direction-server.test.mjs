@@ -127,7 +127,9 @@ test('「neither」 asks for one line, allows one more round, and after the seco
   assert.equal((await h.staffTry({action:'settle_direction',optionId:d.options[0].id,note:'x'})).status,409,'settling is only after the second no');
   await send(h,base);
   d=h.row.studio.request.directionProposal;
-  assert.equal(d.round,2);const {at:priorAt,by:priorBy,answeredAt:priorAnswered,...priorRest}=d.prior;assert.deepEqual(priorRest,{round:1,names:['아니, 잠깐','톡'],answer:'더 고급스러웠으면 좋겠어요'});
+  assert.equal(d.round,2);const {at:priorAt,by:priorBy,answeredAt:priorAnswered,ids:priorIds,...priorRest}=d.prior;assert.deepEqual(priorRest,{round:1,names:['아니, 잠깐','톡'],answer:'더 고급스러웠으면 좋겠어요'});
+  // 다국어 판 2: 옛 안 id를 남겨 옛 이름의 번역을 찾는다(손님 보기 pulse-translations.mjs).
+  assert.equal(priorIds.length,2);assert.ok(priorIds.every(id=>/^[a-f0-9-]{36}$/.test(id)));
   // 판 3c: 앞 판을 보낸 때 · 보낸 사람 · 손님이 답한 때가 함께 남아 일지가 1판 줄을 제자리에 둔다.
   assert.ok(Number.isFinite(Date.parse(priorAt))&&Number.isFinite(Date.parse(priorAnswered))&&Date.parse(priorAt)<=Date.parse(priorAnswered)&&Date.parse(priorAnswered)<=Date.parse(d.at));assert.equal(typeof priorBy,'string');assert.ok(priorBy);
   await h.cact({action:'answer_direction',neither:true,note:'둘 다 아직이에요'});

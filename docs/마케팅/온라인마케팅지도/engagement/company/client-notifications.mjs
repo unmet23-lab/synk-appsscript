@@ -1,6 +1,7 @@
 import {createHash} from 'node:crypto';
 import {customerClientKickoff} from './client-kickoff.mjs';
 import {buildCustomerPreviewApproval} from './client-preview-approval.mjs';
+import {serverText} from './pulse-locale.mjs';
 
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const titles={customer_feedback:'고객이 시안을 고쳐 달래요',customer_support:'고객이 물어봤어요',customer_approval:'고객이 시안을 승인했어요',review_requested:'고친 시안 검토를 부탁했어요',changes_requested:'고친 시안에 더 고칠 게 있대요',review_accepted:'고친 시안 검토가 끝났어요',work_started:'고객 요청을 처리하기 시작했어요',work_completed:'고객 요청 처리를 끝냈어요',work_reopened:'고객 요청을 다시 열었어요',assigned:'고객 프로젝트 담당자가 됐어요',reviewer_assigned:'고객 프로젝트 검토자가 됐어요'};
@@ -194,10 +195,11 @@ export function createClientNotificationsService({store,clientProjects,clientWor
 }
 
 // 콘셉트·장면 알림은 처음 올린 카드(cardRevision 1)와 고친 카드를 나눠 부른다. 옛 이벤트(cardRevision 없음)는 원래 제목.
-export function clientNotificationTitle(type,event=null){
+// loc: 손님 알림의 언어(다국어 판 2 — 프로젝트 소통 언어, pulse-locale.mjs). 직원 알림은 늘 한국어.
+export function clientNotificationTitle(type,event=null,loc='ko'){
   if(event&&Number.isSafeInteger(event.cardRevision)){
-    if(type==='concept_ready')return event.cardRevision===1?'새 콘셉트가 도착했어요':'콘셉트가 바뀌었어요';
-    if(type==='scene_ready')return event.cardRevision===1?'새 장면이 도착했어요':'장면이 바뀌었어요';
+    if(type==='concept_ready')return serverText(loc,event.cardRevision===1?'새 콘셉트가 도착했어요':'콘셉트가 바뀌었어요');
+    if(type==='scene_ready')return serverText(loc,event.cardRevision===1?'새 장면이 도착했어요':'장면이 바뀌었어요');
   }
-  return titles[type]||'프로젝트가 바뀌었어요';
+  return serverText(loc,titles[type]||'프로젝트가 바뀌었어요');
 }

@@ -7,13 +7,14 @@ const read=name=>readFileSync(new URL('./public/pulse-app/'+name,import.meta.url
 test('다시 고르기: 앞서 덧붙인 말이 접혀 있어도 한 줄로 보이고 단추가 「덧붙인 말 고치기」가 된다',()=>{
   const src=read('film-views.mjs');
   // 판 3(판 2 Fable FA1): 「덧붙인 말 고치기」를 열면 같은 말을 입력 칸이 보이므로 이 줄은 숨는다.
-  assert.match(src,/keep\?`<p class="sx-small sx-dp-kept" \$\{noteOpen\?'hidden':''\}>덧붙이신 말 · \$\{esc\(keep\)\}<\/p>`:''/);
+  assert.match(src,/keep\?`<p class="sx-small sx-dp-kept" \$\{noteOpen\?'hidden':''\}>\$\{esc\(t\('덧붙이신 말 · \{note\}',\{note:keep\}\)\)\}<\/p>`:''/);
   assert.match(src,/if\(act==='note'\)\{toggle\('note',\$\('\[data-dp-note\]'\),what,\[\]\);const kept=\$\('\.sx-dp-kept'\);if\(kept\)kept\.hidden=!!ui\.note;/);
-  assert.match(src,/\$\{keep\?'덧붙인 말 고치기':'한마디 덧붙이기'\}/);
+  assert.match(src,/\$\{esc\(keep\?t\('덧붙인 말 고치기'\):t\('한마디 덧붙이기'\)\)\}/);
 });
 test('휴대폰 방향 화면: 오류 상자가 앞서면 제목 위 여백을 한 번만 둔다',()=>{
   assert.match(read('film.css'),/\.sx-dp-sheet>\.sx-alert\+\.sx-dp-top\{padding-top:14px\}/);
 });
 test('사진 상품 접수증: 「사람 없이 제품만」이면 첫 장도 제품만',()=>{
-  assert.match(read('request-flow.mjs'),/\(a\.modelChoice==='none'\?'제품만 담은 첫 장':'모델이 제품을 든 첫 장'\)\+'으로 방향을 맞춰요\./);
+  // 다국어 판 2: 조각을 잇지 않고 문장 하나씩(번역 틀의 키).
+  assert.ok(read('request-flow.mjs').includes("a.modelChoice==='none'?k('제품만 담은 첫 장으로 방향을 맞춰요. 의견을 주시면 그 결로 나머지를 만들어요.'):k('모델이 제품을 든 첫 장으로 방향을 맞춰요. 의견을 주시면 그 결로 나머지를 만들어요.')"));
 });

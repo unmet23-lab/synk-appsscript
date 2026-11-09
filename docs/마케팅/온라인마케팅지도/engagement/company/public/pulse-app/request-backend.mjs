@@ -1,4 +1,5 @@
 import {request as send,PulseError,serverError} from './api.mjs';
+import {t,k} from './i18n.mjs';
 import {emptyAnswers,answersFromServer,answersForServer,DRAFT_FILES_GONE} from './request-data.mjs';
 
 // 의뢰서 화면과 서버 사이. 파일 목록은 서버가 쥐고, 화면은 그 목록을 칸마다 묶어 보여 줄 뿐이다.
@@ -10,8 +11,9 @@ function uploadWithProgress(path,file,{csrf,slot,onProgress}){
     const xhr=new XMLHttpRequest();xhr.open('POST',path);xhr.withCredentials=true;xhr.responseType='json';
     xhr.setRequestHeader('Content-Type',file.type||'application/octet-stream');xhr.setRequestHeader('X-File-Name',encodeURIComponent(file.name));xhr.setRequestHeader('X-Pulse-CSRF',csrf);xhr.setRequestHeader('X-Request-Slot',slot);
     xhr.upload.onprogress=event=>{if(event.lengthComputable)onProgress?.(event.loaded/event.total);};
-    xhr.onerror=()=>reject(new PulseError('올리지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.'));
-    xhr.onload=()=>{const body=xhr.response||{};if(xhr.status>=200&&xhr.status<300)resolve(body);else reject(serverError(body,xhr.status,'올리지 못했어요. 다시 시도해 주세요.'));};
+    xhr.onerror=()=>reject(new PulseError(t('올리지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.')));
+    // 서버 문장이 없을 때의 한국어 문장 — serverError가 화면 언어로 옮긴다(api.mjs errorText).
+    xhr.onload=()=>{const body=xhr.response||{};if(xhr.status>=200&&xhr.status<300)resolve(body);else reject(serverError(body,xhr.status,k('올리지 못했어요. 다시 시도해 주세요.')));};
     xhr.send(file);
   });
 }
@@ -41,7 +43,7 @@ export async function publicBackend(){
         if(error.status!==401)throw error;
         if(!expired(used))return write();
         await backend.save(values,'review');
-        throw new PulseError(DRAFT_FILES_GONE,401);
+        throw new PulseError(t(DRAFT_FILES_GONE),401);
       }
     },
   };

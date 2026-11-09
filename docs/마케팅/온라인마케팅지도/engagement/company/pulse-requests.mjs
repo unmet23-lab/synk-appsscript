@@ -11,6 +11,7 @@ import {castingOf,personaRefOf,MODEL_CHOICE_KINDS,MODEL_OPTIONAL_CHOICES} from '
 import {LOCALES} from './public/pulse-app/i18n.mjs';
 import {validPulseMailAddress} from './pulse-mail.mjs';
 import {openPersonaProjectIds} from './pulse-personas.mjs';
+import {applyInlineTranslations,missingTranslations,inlineObject} from './pulse-translations.mjs';
 
 // 초대 없이 시작하는 공개 의뢰서(2026-11-04, 설계 docs/마케팅/PULSE_의뢰흐름_20261104/README.md 5절).
 // 공개 경로라 프로젝트는 「보내기」에서만 생긴다. 그 전의 초안 · 파일은 따로 두어 스팸이 직원 서버의 프로젝트 · 백업으로 번지지 않게 하고,
@@ -358,9 +359,9 @@ export async function streamDraftFile(res,{paths,file},req){
 
 // ── 프로젝트 안의 의뢰서 액션(pulse-studio의 mutate 확장 — 다른 액션과 같은 트랜잭션 · 판 검사를 탄다) ──
 const FIELDS={
-  request_note:['note'],request_ask:['items'],request_confirm:[],propose_model:['modelId','note'],send_draft:['oneLine','note'],
+  request_note:['note'],request_ask:['items'],request_confirm:[],propose_model:['modelId','note','translation'],send_draft:['oneLine','note','translation'],
   request_answer:['askId','text','fileId'],answer_model:['accept','modelId','note'],request_save:['answers'],request_submit:['answers'],submit_draft_review:['round','items'],approve_draft:['round'],
-  propose_direction:['lead','options','modelId','price','dueDate','revisions'],request_contact:['email','mailOff'],settle_direction:['optionId','note'],answer_direction:['optionId','modelId','note','neither'],
+  propose_direction:['lead','options','modelId','price','dueDate','revisions','translation'],request_contact:['email','mailOff'],settle_direction:['optionId','note'],answer_direction:['optionId','modelId','note','neither'],
 };
 export const requestActions=action=>Object.hasOwn(FIELDS,action)?FIELDS[action]:undefined;
 const STAFF_ONLY=['request_note','request_ask','request_confirm','propose_model','send_draft','propose_direction','settle_direction','request_contact'],CUSTOMER_ONLY=['request_answer','answer_model','request_save','request_submit','submit_draft_review','approve_draft','answer_direction'];
@@ -377,7 +378,8 @@ function assertCasting(casting,personas,row,{start=false}={}){
   }
   if(start&&['custom','persona'].includes(casting.kind))throw fail('전용 인물이 아직 준비되지 않았어요. 준비되면 담당자가 알려 드려요.',409);
 }
-export function applyRequestAction({studio,row,input,staff,stamp,personas}){
+// locale: 이 프로젝트의 소통 언어(pulse-locale.mjs). 한국어가 아니면 손님에게 보일 직원 글은 번역을 함께 받아야 보낸다(pulse-translations.mjs).
+export function applyRequestAction({studio,row,input,staff,stamp,personas,locale='ko'}){
   const action=input.action,now=stamp.at;
   if(STAFF_ONLY.includes(action)&&!staff)throw fail('담당자 화면에서만 할 수 있어요.',403);
   if(CUSTOMER_ONLY.includes(action)&&staff)throw fail('고객 화면에서만 할 수 있어요.',403);
@@ -414,7 +416,8 @@ export function applyRequestAction({studio,row,input,staff,stamp,personas}){
   }
   if(action==='request_ask'){
     if(!Array.isArray(input.items)||!input.items.length||input.items.length>8)throw fail('물어볼 것을 확인해 주세요.');
-    const items=input.items.map(item=>{if(!object(item))throw fail('물어볼 것을 확인해 주세요.');const label=text(item.label,120);if(!label)throw fail('물어볼 것을 적어 주세요.');return {id:randomUUID(),label,why:text(item.why,300),status:'open',at:now};});
+    const pairs=[],items=input.items.map(item=>{if(!object(item))throw fail('물어볼 것을 확인해 주세요.');const label=text(item.label,120);if(!label)throw fail('물어볼 것을 적어 주세요.');const made={id:randomUUID(),label,why:text(item.why,300),status:'open',at:now},said=inlineObject(item.translation,['label','why']);pairs.push({key:`ask:${made.id}:label`,source:made.label,max:120,text:said.label},{key:`ask:${made.id}:why`,source:made.why,max:300,text:said.why});return made;});
+    applyInlineTranslations(studio,pairs,{locale,stamp});
     // 확인을 마친 뒤에 더 물어도 「확인 끝」은 지우지 않는다(고객 방은 열린 물음을 먼저 보인다).
     studio.request={...request,status:request.confirmedAt?request.status:'asking',asks:[...request.asks,...items].slice(-40)};
     return;
@@ -437,7 +440,9 @@ export function applyRequestAction({studio,row,input,staff,stamp,personas}){
   // 영상 전 세 번 확인의 첫 번째: 모델을 손님이 고르지 않았으면 먼저 제안해 확인받는다(장면을 굽고 나서 모델이 바뀌지 않게).
   if(action==='propose_model'){
     const modelId=one(input.modelId,MODEL_IDS);if(!modelId)throw fail('제안할 모델을 골라 주세요.');
-    studio.request={...request,modelProposal:{modelId,note:text(input.note,300),at:now,by:stamp.authorName,status:'open'}};
+    const note=text(input.note,300);
+    applyInlineTranslations(studio,[{key:'model:note',source:note,max:300,text:inlineObject(input.translation,['note']).note}],{locale,stamp});
+    studio.request={...request,modelProposal:{modelId,note,at:now,by:stamp.authorName,status:'open'}};
     return;
   }
   if(action==='answer_model'){
@@ -467,7 +472,11 @@ export function applyRequestAction({studio,row,input,staff,stamp,personas}){
     if(!Number.isSafeInteger(revisions)||revisions<0||revisions>9)throw fail('수정 횟수를 확인해 주세요.');
     const dueDate=kstDay(input.dueDate,now);
     const declined=prev?.status==='declined';
-    const proposal={round:declined?prev.round+1:prev?.round||1,status:'open',at:now,by:stamp.authorName,lead:text(input.lead,200),options:directionOptions(input.options,studio),...(modelId?{modelId}:{}),price,dueDate,revisions,...(declined?{prior:{round:prev.round,names:prev.options.map(option=>option.name),answer:prev.answer||'',...(prev.at?{at:prev.at}:{}),...(prev.by?{by:prev.by}:{}),...(prev.answeredAt?{answeredAt:prev.answeredAt}:{})}}:prev?.prior?{prior:prev.prior}:{})};
+    const proposal={round:declined?prev.round+1:prev?.round||1,status:'open',at:now,by:stamp.authorName,lead:text(input.lead,200),options:directionOptions(input.options,studio),...(modelId?{modelId}:{}),price,dueDate,revisions,...(declined?{prior:{round:prev.round,names:prev.options.map(option=>option.name),ids:prev.options.map(option=>option.id),answer:prev.answer||'',...(prev.at?{at:prev.at}:{}),...(prev.by?{by:prev.by}:{}),...(prev.answeredAt?{answeredAt:prev.answeredAt}:{})}}:prev?.prior?{prior:prev.prior}:{})};
+    // 영어 프로젝트: 리드 · 안마다 이름 · 한 문장 · 흐름 · 이유 · 움직임 견본 메모의 영어를 같은 순서로 함께 받는다(input.translation.options[i]).
+    const said=inlineObject(input.translation,['lead','options']),saidOptions=Array.isArray(said.options)?said.options:[];
+    if(said.options!==undefined&&(!Array.isArray(said.options)||said.options.length>proposal.options.length))throw fail('번역 칸을 확인해 주세요.');
+    applyInlineTranslations(studio,[{key:`direction:${proposal.round}:lead`,source:proposal.lead,max:200,text:said.lead},...proposal.options.flatMap((option,index)=>{const o=inlineObject(saidOptions[index],['name','sentence','why','filmNote','flow']),flow=o.flow===undefined?[]:Array.isArray(o.flow)&&o.flow.length<=option.flow.length?o.flow:(()=>{throw fail('번역 칸을 확인해 주세요.');})();return [{key:`option:${option.id}:name`,source:option.name,max:40,text:o.name},{key:`option:${option.id}:sentence`,source:option.sentence,max:160,text:o.sentence},{key:`option:${option.id}:why`,source:option.why,max:300,text:o.why},{key:`option:${option.id}:filmNote`,source:option.filmNote,max:80,text:o.filmNote},...option.flow.map((line,i)=>({key:`option:${option.id}:flow:${i}`,source:line.text,max:200,text:flow[i]}))];})],{locale,stamp});
     // 둘 다 열려 직원 화면이 「답을 기다려요」를 계속 띄우지 않게 열린 모델 제안은 닫는다.
     const model=request.modelProposal?.status==='open'?{...request.modelProposal,status:'replaced',answeredAt:now}:request.modelProposal;
     studio.request={...request,directionProposal:proposal,...(model?{modelProposal:model}:{})};
@@ -511,6 +520,10 @@ export function applyRequestAction({studio,row,input,staff,stamp,personas}){
     // 그림이 빠진 컷이 있으면 글 콘티 판이고, 모든 컷에 장면 이미지가 있어야 제작을 시작할 수 있는 판이다.
     const kind=scenes.every(scene=>scene.assetId||scene.imageUrl)?'images':'script';
     const round={round:request.rounds.length+1,kind,oneLine,note:text(input.note,600),sentAt:now,by:stamp.authorName,scenes:scenes.map(scene=>({id:scene.id,revision:scene.revision}))};
+    // 영어 프로젝트: 한 문장 · 메모의 영어를 함께 받고, 보낼 장면의 제목 · 설명에도 reviewed 번역이 있어야 한다(광고 문구인 내레이션 · 화면 글은 출력 언어 그대로).
+    const said=inlineObject(input.translation,['oneLine','note']);
+    applyInlineTranslations(studio,[{key:`round:${round.round}:oneLine`,source:round.oneLine,max:300,text:said.oneLine},{key:`round:${round.round}:note`,source:round.note,max:600,text:said.note}],{locale,stamp});
+    if(missingTranslations(studio,row,locale,scenes.flatMap(scene=>[`scene:${scene.id}:title`,`scene:${scene.id}:description`])).length)throw fail('보낼 장면의 제목 · 설명에 손님 언어 번역이 빠졌어요. 장면마다 번역을 넣은 뒤 보내 주세요.',409);
     studio.request={...request,rounds:[...request.rounds,round]};
     return;
   }

@@ -53,6 +53,7 @@ export function createPulseFeatures({store,clock=()=>new Date().toISOString()}){
   }
   // 손님 응답에 싣는 값. 공개 의뢰서는 공개 메뉴만, 프로젝트는 그 프로젝트의 언어까지.
   const publicView=()=>{const f=read();return {locales:f.publicLocales,personaRequest:f.personaRequest,personaReal:f.personaReal};};
-  const projectView=answers=>{const f=read();return {locales:f.projectLocales,locale:projectLocaleOf(f,answers),personaRequest:f.personaRequest,personaReal:f.personaReal,myModels:f.myModels};};
+  // locale: 손님이 고른 소통 언어가 허락돼 있으면 그것, 비었으면 ''(화면이 링크 · 브라우저 언어로 정한다 — 판 1 Fable F1). 허락 밖이면 한국어.
+  const projectView=answers=>{const f=read(),wanted=typeof answers?.contactLocale==='string'?answers.contactLocale:'';return {locales:f.projectLocales,locale:wanted?projectLocaleOf(f,answers):'',personaRequest:f.personaRequest,personaReal:f.personaReal,myModels:f.myModels};};
   return {read,settings,configure,publicView,projectView};
 }

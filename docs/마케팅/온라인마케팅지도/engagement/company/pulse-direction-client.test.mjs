@@ -89,7 +89,7 @@ test('the desk leads with the direction, settles after a second no, and opens th
 });
 test('the home page and the request words name the first check as direction and model',()=>{
   assert.match(read('film-home.mjs'),/const CHECK_THREE=\['방향과 모델 고르기','광고가 남길 한 문장과 글 콘티','컷마다 장면 이미지'\];/);
-  const flow=read('request-flow.mjs');assert.match(flow,/방향 두 안과 값 · 받으실 날을 보내 드려요/);assert.match(flow,/<li><b>방향 두 안을 보내 드려요<\/b>/);
+  const flow=read('request-flow.mjs');assert.match(flow,/방향 두 안과 값 · 받으실 날을 보내 드려요/);assert.ok(flow.includes("[k('방향 두 안을 보내 드려요'),"));assert.ok(flow.includes('<li><b>${esc(t(title))}</b>'),'다국어 판 2: 접수증의 다음 일은 번역 틀을 지난 한 줄씩');
   const css=read('film.css');assert.match(css,/\.sx-dp\{--frame:min\(37vw,calc\(100dvh\*9\/16\),calc\(\(100vw - 400px\)\/2\)\)/);assert.match(css,/\.sx-dp-kv dd\{[^}]*white-space:nowrap/);
 });
 test('a product-only proposal keeps the similar-work slot; a changed proposal drops the old screen state; the phone scroll follows the CSS layout',()=>{
@@ -106,7 +106,7 @@ test('Fable final 1b: a photo order is not promised directions; three options sa
   assert.equal(photo.state,'check');assert.equal(photo.photo,true);
   const photoHtml=roomView(photo);assert.match(photoHtml,/확인이 끝나면 첫 장을 먼저 보내 드려요/);assert.doesNotMatch(photoHtml,/방향 두 안|날짜는 방향을 보내 드릴 때/);
   assert.match(roomView(roomModel(project({status:'submitted'}))),/확인이 끝나면 방향 두 안을 보내 드려요/);
-  const flow=read('request-flow.mjs');assert.ok(flow.includes("pkgOf(a)?.photo?'보내 주시면 저희가 내용을 확인하고 첫 장을 먼저 보내 드려요"));assert.ok(flow.includes("${pkg?.photo?'<li><b>첫 장을 먼저 보내 드려요</b>"));
+  const flow=read('request-flow.mjs');assert.ok(flow.includes("pkgOf(a)?.photo?t('보내 주시면 저희가 내용을 확인하고 첫 장을 먼저 보내 드려요"));assert.ok(flow.includes("...(pkg?.photo?[[k('첫 장을 먼저 보내 드려요'),"));
   const three=roomModel(project({status:'submitted',direction:open({options:[option('a','가',{recommended:true}),option('b','나'),option('c','다')]})}));
   assert.equal(three.options,3);
   const chosen=roomModel(project({direction:open({status:'chosen',chosenId:'b',answer:'쌉쌀은 빼 주세요'})}));

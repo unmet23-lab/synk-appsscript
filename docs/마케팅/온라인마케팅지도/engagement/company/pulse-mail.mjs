@@ -1,4 +1,5 @@
 import {createHash,createHmac,generateKeyPairSync,randomBytes,sign} from 'node:crypto';
+import {serverText} from './pulse-locale.mjs';
 
 // PULSE 고객 메일 알림(판 2 · 설계 docs/마케팅/PULSE_의뢰흐름_20261104/판2_메일_설계.md).
 // 네 순간(방향 제안 · 글 콘티 · 영상 확인 · 납품)에만, 고객 알림 투영을 끌어와 함을 채우고
@@ -63,20 +64,22 @@ export function pulseMailActed(row,moment,latest){
 export const pulseMailRelayKey=id=>createHash('sha256').update(String(id)).digest('hex').slice(0,24);
 const mask=email=>{const [local,domain]=email.split('@');return `${local.slice(0,1)}***@${domain}`;};
 
-export function pulseMailCompose(row,moment){
+// loc: 프로젝트 소통 언어(다국어 판 2, pulse-locale.mjs). 문장은 통째로 서버 사전 키이고 한국어는 지금 글자 그대로다.
+export function pulseMailCompose(row,moment,loc='ko'){
   const a=row?.studio?.request?.answers||{},product=clean(a.name,40),who=clean(a.contactName,40),photo=a.package==='photo';
-  const title=product?`${product} 광고`:'요청하신 광고',medium=photo?'사진':'영상';
+  const tx=(text,vars)=>serverText(loc,text,vars);
+  const title=product?tx('{product} 광고',{product}):tx('요청하신 광고');
   const copy={
-    direction_proposed:[`${title}, 방향을 골라 주세요`,'요청하신 내용은 그대로 두고, 무엇으로 기억에 남길지만 방향을 나눠 보내 드렸어요. 하나를 고르시면 글 콘티를 만들어 드려요.'],
-    draft_ready:[`${title} 글 콘티가 왔어요`,'장면마다 무엇을 보여 주고 어떤 말을 할지 글로 먼저 정리했어요. 컷마다 의견을 남기시거나, 괜찮으면 다음 단계로 넘겨 주세요.'],
-    preview_ready:[`${title} ${medium}을 확인해 주세요`,photo?'사진을 보시고, 바꾸고 싶은 곳에 의견을 남기시거나 승인해 주세요.':'영상을 재생해 보시고, 바꾸고 싶은 장면에 의견을 남기시거나 승인해 주세요.'],
-    final_ready:[`${title} 최종 파일이 준비됐어요`,'최종 파일을 받아 보시고 사용 안내를 확인한 뒤 수령 확인을 남겨 주세요.'],
+    direction_proposed:[tx('{title}, 방향을 골라 주세요',{title}),tx('요청하신 내용은 그대로 두고, 무엇으로 기억에 남길지만 방향을 나눠 보내 드렸어요. 하나를 고르시면 글 콘티를 만들어 드려요.')],
+    draft_ready:[tx('{title} 글 콘티가 왔어요',{title}),tx('장면마다 무엇을 보여 주고 어떤 말을 할지 글로 먼저 정리했어요. 컷마다 의견을 남기시거나, 괜찮으면 다음 단계로 넘겨 주세요.')],
+    preview_ready:[tx(photo?'{title} 사진을 확인해 주세요':'{title} 영상을 확인해 주세요',{title}),tx(photo?'사진을 보시고, 바꾸고 싶은 곳에 의견을 남기시거나 승인해 주세요.':'영상을 재생해 보시고, 바꾸고 싶은 장면에 의견을 남기시거나 승인해 주세요.')],
+    final_ready:[tx('{title} 최종 파일이 준비됐어요',{title}),tx('최종 파일을 받아 보시고 사용 안내를 확인한 뒤 수령 확인을 남겨 주세요.')],
   }[moment];
   if(!copy)throw fail('메일 순간을 확인해 주세요.',500);
-  return {subject:`〔SYNK PULSE〕 ${copy[0]}`,body:[`${who?`${who}님,`:'안녕하세요,'} SYNK PULSE입니다.`,'',copy[1],'',`PULSE 앱에서 확인해 주세요: ${PULSE_MAIL_APP_URL}`,'이 기기를 기억해 두셨다면 바로 열려요. 처음 받으신 프로젝트 링크로도 열 수 있어요.','','이 메일은 보내 주신 의뢰의 진행 알림이에요. 궁금한 점은 이 메일에 답장해 주세요.'].join('\n')};
+  return {subject:tx('〔SYNK PULSE〕 {subject}',{subject:copy[0]}),body:[who?tx('{who}님, SYNK PULSE입니다.',{who}):tx('안녕하세요, SYNK PULSE입니다.'),'',copy[1],'',tx('PULSE 앱에서 확인해 주세요: {url}',{url:PULSE_MAIL_APP_URL}),tx('이 기기를 기억해 두셨다면 바로 열려요. 처음 받으신 프로젝트 링크로도 열 수 있어요.'),'',tx('이 메일은 보내 주신 의뢰의 진행 알림이에요. 궁금한 점은 이 메일에 답장해 주세요.')].join('\n')};
 }
 
-export function createPulseMailService({store,notificationsFor,clock=()=>new Date().toISOString(),fetchImpl=globalThis.fetch,emergencyStop=()=>process.env.SYNK_PULSE_MAIL_STOP==='1',log=()=>{}}={}){
+export function createPulseMailService({store,notificationsFor,clock=()=>new Date().toISOString(),fetchImpl=globalThis.fetch,emergencyStop=()=>process.env.SYNK_PULSE_MAIL_STOP==='1',log=()=>{},localeOf=()=>'ko'}={}){
   if(!store||typeof notificationsFor!=='function')throw new TypeError('메일 알림 설정이 이상해요.');
   let running=null,stopped=false,checkSeq=0;
   const now=()=>{const at=clock(),ms=Date.parse(at);if(!Number.isFinite(ms))throw fail('서버 시계를 읽지 못했어요.',500);return {iso:iso(ms),ms};};
@@ -165,7 +168,7 @@ export function createPulseMailService({store,notificationsFor,clock=()=>new Dat
     if(!latest)return put({state:'skipped',reason:'stale'});
     if(latest.readAt)return put({state:'skipped',reason:'read'});
     if(pulseMailActed(row,item.moment,latest))return put({state:'skipped',reason:'acted'});
-    const {subject,body}=pulseMailCompose(row,item.moment),ts=now().ms;
+    const {subject,body}=pulseMailCompose(row,item.moment,localeOf(row)),ts=now().ms;
     item=put({state:'sending',sendingAt:at,attempts:item.attempts+1,recipientHash:recipientHash(email,key.salt),reason:null});
     let result=null;
     try{result=await relayCall(c.relayUrl,signedRequest({op:'send',key:pulseMailRelayKey(item.id),ts,to:email,subject,body},key));}catch{result=null;}

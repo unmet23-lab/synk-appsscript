@@ -4,6 +4,8 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {buildCustomerPreviewApproval} from './client-preview-approval.mjs';
 import {previewApprovalState} from './public/pulse-app/production-context.mjs';
+// 클릭 원문만 vm에 넣으므로 번역 틀의 진짜 함수를 맥락에 넣는다(다국어 판 2).
+import {t,k,locale} from './public/pulse-app/i18n.mjs';
 import {projectView} from './public/pulse-app/views.mjs';
 
 const rawProject=()=>({id:'approval-project',revision:8,title:'승인 상태 시험',stage:'review',versions:[{id:'v1',kind:'preview',label:'이전 시안'},{id:'v2',kind:'preview',label:'수정본'}],messages:[{id:'request',author:'customer',authorName:'합성 고객',action:'feedback',visibility:'customer',versionId:'v1',resolved:false,text:'수정할 내용'}],studio:{preferences:{},concepts:[],scenes:[],comments:[],feedbackRounds:{drafts:[],rounds:[]}}});
@@ -55,7 +57,7 @@ test('an unsent current draft disables approval while keeping the next action wi
 function clickHarness(project){
   const appSource=readFileSync(new URL('./public/pulse-app/app.mjs',import.meta.url),'utf8'),start=appSource.indexOf("document.addEventListener('click',async event=>{"),code=appSource.slice(start,appSource.indexOf('\n});',start)+4);
   let handler,closed=0;const notices=[],dialogs=[],requests=[];
-  const sandbox={s:{mode:'customer',project,versionId:'v2'},busy:false,loading:false,demo:null,previewApprovalState,production:{click:async()=>false},latestPreview:()=>project.versions.filter(v=>v.kind==='preview').at(-1),notice:value=>notices.push(value),closeDialog:()=>closed++,openDialog:(...value)=>dialogs.push(value),hasDraft:()=>false,options:()=>({}),request:async(path,input)=>{requests.push({path,input});return {};},mutate:async operation=>operation(),document:{addEventListener:(_,fn)=>{handler=fn;},querySelector:()=>null}};
+  const sandbox={t,k,locale,s:{mode:'customer',project,versionId:'v2'},busy:false,loading:false,demo:null,previewApprovalState,production:{click:async()=>false},latestPreview:()=>project.versions.filter(v=>v.kind==='preview').at(-1),notice:value=>notices.push(value),closeDialog:()=>closed++,openDialog:(...value)=>dialogs.push(value),hasDraft:()=>false,options:()=>({}),request:async(path,input)=>{requests.push({path,input});return {};},mutate:async operation=>operation(),document:{addEventListener:(_,fn)=>{handler=fn;},querySelector:()=>null}};
   vm.createContext(sandbox);vm.runInContext(code,sandbox);
   return {notices,dialogs,requests,get closed(){return closed;},click:action=>handler({target:{closest:()=>({dataset:{action,id:'v2',revision:String(project.revision)}})}})};
 }

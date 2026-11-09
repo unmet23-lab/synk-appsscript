@@ -1,10 +1,13 @@
+import {t} from './i18n.mjs';
+// Device notice text follows the screen language when it is built (i18n.mjs t() — Korean stays byte for byte).
+// Creator-only sentences stay Korean: the staff screen is always Korean.
 export class DeviceTimeout extends Error {
   constructor(message){super(message);this.name='DeviceTimeout';}
 }
 
 // Browser permission prompts can remain pending in embedded browsers. A pending
 // browser promise must not lock the rest of the customer's project indefinitely.
-export function withDeviceDeadline(promise,{milliseconds=15000,message='기기 알림 설정이 지연되고 있어요. 잠시 뒤 다시 시도해 주세요.',onTimeout}={}){
+export function withDeviceDeadline(promise,{milliseconds=15000,message=t('기기 알림 설정이 지연되고 있어요. 잠시 뒤 다시 시도해 주세요.'),onTimeout}={}){
   return new Promise((resolve,reject)=>{
     const timer=setTimeout(()=>{onTimeout?.();reject(new DeviceTimeout(message));},milliseconds);
     Promise.resolve(promise).then(value=>{clearTimeout(timer);resolve(value);},error=>{clearTimeout(timer);reject(error);});
@@ -14,30 +17,30 @@ export function withDeviceDeadline(promise,{milliseconds=15000,message='기기 �
 export function deviceAvailability({secure,serviceWorker,pushManager,notification,permission,ios,android,embedded,standalone,desktopApp}){
   // The PC app window refuses every permission and cannot receive web push, so
   // browser settings never help there. Its inbox updates while the window is open.
-  if(desktopApp)return 'PC 앱에서는 이 창이 열려 있는 동안 새 소식을 앱 안 알림으로 알려 드려요. 창을 닫아도 받으시려면 받은 초대 링크를 휴대폰이나 Chrome·Edge에서 열고 기기 알림을 켜 주세요.';
-  if(ios&&!standalone)return 'iPhone·iPad는 iOS 16.4 이상에서 홈 화면에 추가한 PULSE를 열어 기기 알림을 켤 수 있어요. ‘앱 설치’에서 순서를 확인해 주세요.';
-  if(embedded)return '메신저 안 브라우저에서는 기기 알림을 켜기 어려울 수 있어요. 받은 초대 링크를 Chrome 또는 삼성 인터넷에서 열어 주세요. ‘앱 설치’에서 방법을 확인할 수 있어요.';
+  if(desktopApp)return t('PC 앱에서는 이 창이 열려 있는 동안 새 소식을 앱 안 알림으로 알려 드려요. 창을 닫아도 받으시려면 받은 초대 링크를 휴대폰이나 Chrome·Edge에서 열고 기기 알림을 켜 주세요.');
+  if(ios&&!standalone)return t('iPhone·iPad는 iOS 16.4 이상에서 홈 화면에 추가한 PULSE를 열어 기기 알림을 켤 수 있어요. ‘앱 설치’에서 순서를 확인해 주세요.');
+  if(embedded)return t('메신저 안 브라우저에서는 기기 알림을 켜기 어려울 수 있어요. 받은 초대 링크를 Chrome 또는 삼성 인터넷에서 열어 주세요. ‘앱 설치’에서 방법을 확인할 수 있어요.');
   if(!secure||!serviceWorker||!pushManager||!notification){
-    if(ios)return '기기 알림을 지원하지 않는 환경이에요. iOS·iPadOS를 16.4 이상으로 업데이트하고 홈 화면의 PULSE 앱에서 다시 확인해 주세요. 앱 안 알림은 계속 받을 수 있어요.';
-    if(android)return '이 브라우저는 기기 알림을 지원하지 않아요. 최신 Chrome 또는 삼성 인터넷에서 받은 초대 링크를 열어 주세요. 앱 안 알림은 계속 받을 수 있어요.';
-    return '이 브라우저는 기기 알림을 지원하지 않아요. PC에서는 Chrome 또는 Edge에서 PULSE를 열어 주세요. 앱 안 알림은 계속 받을 수 있어요.';
+    if(ios)return t('기기 알림을 지원하지 않는 환경이에요. iOS·iPadOS를 16.4 이상으로 업데이트하고 홈 화면의 PULSE 앱에서 다시 확인해 주세요. 앱 안 알림은 계속 받을 수 있어요.');
+    if(android)return t('이 브라우저는 기기 알림을 지원하지 않아요. 최신 Chrome 또는 삼성 인터넷에서 받은 초대 링크를 열어 주세요. 앱 안 알림은 계속 받을 수 있어요.');
+    return t('이 브라우저는 기기 알림을 지원하지 않아요. PC에서는 Chrome 또는 Edge에서 PULSE를 열어 주세요. 앱 안 알림은 계속 받을 수 있어요.');
   }
   if(permission==='denied'){
-    if(ios)return '기기 설정 → 알림 → PULSE에서 알림을 허용한 뒤 앱으로 돌아와 주세요. 앱 안 알림은 계속 받을 수 있어요.';
-    if(android)return '브라우저 사이트 설정에서 알림을 허용해 주세요. 휴대폰 설정 → 앱 → PULSE 또는 사용 중인 브라우저 → 알림도 확인한 뒤 알림함을 다시 열어 주세요.';
-    return '브라우저 사이트 설정에서 알림을 허용한 뒤 알림함을 다시 열어 주세요. 앱 안 알림은 계속 받을 수 있어요.';
+    if(ios)return t('기기 설정 → 알림 → PULSE에서 알림을 허용한 뒤 앱으로 돌아와 주세요. 앱 안 알림은 계속 받을 수 있어요.');
+    if(android)return t('브라우저 사이트 설정에서 알림을 허용해 주세요. 휴대폰 설정 → 앱 → PULSE 또는 사용 중인 브라우저 → 알림도 확인한 뒤 알림함을 다시 열어 주세요.');
+    return t('브라우저 사이트 설정에서 알림을 허용한 뒤 알림함을 다시 열어 주세요. 앱 안 알림은 계속 받을 수 있어요.');
   }
   return '';
 }
 
 export function deviceConnectionNote({mode,enabled,configured,connection}){
-  if(!configured)return '기기 알림은 아직 준비 중이에요. 앱 안 알림은 계속 받을 수 있어요.';
-  if(mode==='staff')return enabled?'앱을 닫아도 새 알림을 받을 수 있어요. 로그아웃하거나 로그인이 만료되면 멈춰요.':'원할 때 이 기기에서 켜 주세요. 잠금 화면에 고객 이름이나 의견 내용은 보이지 않아요.';
+  if(!configured)return t('기기 알림은 아직 준비 중이에요. 앱 안 알림은 계속 받을 수 있어요.');
+  if(mode==='staff')return enabled?'앱을 닫아도 새 알림을 받을 수 있어요. 로그아웃하거나 로그인이 만료되면 멈춰요.':'원할 때 이 기기에서 켜 주세요. 잠금 화면에 고객 이름이나 의견 내용은 보이지 않아요.'; // i18n-skip
   const days=Math.max(1,Math.min(365,Number(connection?.renewalDays)||30));
-  if(!enabled&&connection?.remembered)return '이 기기는 기억돼 있어요. 기기 알림을 켜면 앱을 닫아도 새 소식을 받을 수 있어요.';
-  if(!enabled)return `알림을 켜면 이 기기에 고객 연결을 기억해요. 마지막 이용 후 ${days}일 동안 다시 연결하거나 알림을 켤 필요가 없어요. 공용 기기에서는 켜지 마세요.`;
-  if(!connection?.remembered)return '기존 기기 알림 연결을 새 방식으로 전환하고 있어요. 잠시 뒤 알림함을 다시 열어 주세요.';
-  return `앱을 닫아도 알림을 받아요. 이 기기 연결은 마지막 이용 후 ${days}일 동안 이어지고, 다시 이용하면 자동으로 늘어나요. ‘연결 닫기’나 ‘기기 알림 끄기’를 누르면 기억한 연결도 풀려요.`;
+  if(!enabled&&connection?.remembered)return t('이 기기는 기억돼 있어요. 기기 알림을 켜면 앱을 닫아도 새 소식을 받을 수 있어요.');
+  if(!enabled)return t('알림을 켜면 이 기기에 고객 연결을 기억해요. 마지막 이용 후 {count}일 동안 다시 연결하거나 알림을 켤 필요가 없어요. 공용 기기에서는 켜지 마세요.',{count:days});
+  if(!connection?.remembered)return t('기존 기기 알림 연결을 새 방식으로 전환하고 있어요. 잠시 뒤 알림함을 다시 열어 주세요.');
+  return t('앱을 닫아도 알림을 받아요. 이 기기 연결은 마지막 이용 후 {count}일 동안 이어지고, 다시 이용하면 자동으로 늘어나요. ‘연결 닫기’나 ‘기기 알림 끄기’를 누르면 기억한 연결도 풀려요.',{count:days});
 }
 
 export function canMigrateDevice({mode,server,local,permission}){
@@ -58,8 +61,8 @@ export function rejectedDeviceRegistration(error){return Number(error?.status)>=
 
 export function deviceKey(raw){
   raw=String(raw||'');
-  if(!/^[A-Za-z0-9_-]+$/.test(raw))throw new Error('기기 알림 설정을 확인해 주세요.');
+  if(!/^[A-Za-z0-9_-]+$/.test(raw))throw new Error(t('기기 알림 설정을 확인해 주세요.'));
   const bytes=Uint8Array.from(atob(raw.replace(/-/g,'+').replace(/_/g,'/')+'='.repeat((4-raw.length%4)%4)),char=>char.charCodeAt(0));
-  if(bytes.length!==65||bytes[0]!==4)throw new Error('기기 알림 설정을 확인해 주세요.');
+  if(bytes.length!==65||bytes[0]!==4)throw new Error(t('기기 알림 설정을 확인해 주세요.'));
   return bytes;
 }

@@ -22,6 +22,27 @@ function mailBlock(m){
   return `<div class="desk-mail"><p class="desk-mail-head">메일 알림 · ${esc(head)}${m.customerChanged&&m.connection==='on'&&m.recipient==='set'?' · 손님이 의뢰서 주소를 고쳐서 그 주소로 보내요':''}</p>${moments?`<ul class="desk-mail-list">${moments}</ul>`:''}
     <details class="desk-mail-edit"><summary>주소 고치기 · 메일 끄기</summary><form data-form="desk-contact"><label><span>알림 메일 주소</span><input type="email" name="email" value="${esc(m.email||'')}" maxlength="254" autocomplete="off"></label><label class="desk-mail-off"><input type="checkbox" name="mailOff" ${m.mailOff?'checked':''}> 이 의뢰는 메일 끄기</label><button type="submit" class="btn-line">저장</button></form></details></div>`;
 }
+// 영어 프로젝트(다국어 판 2): 손님에게 보이는 직원 글의 영어. 보내는 창마다 영어 칸이 있고, 여기서는 이미 보인 글(장면 · 일지 답 · 프로젝트 머리 · 보낸 파일 이름 등)의 영어를 넣거나 고친다.
+// 확인한 영어만 손님에게 보이고, 빠졌거나 원문이 바뀐 칸은 손님에게 한국어 원문이 나간다. 저장하면 확인(reviewed)으로 남는다.
+const TR_PART={ask:'되물은 것',model:'모델 제안',direction:'방향 안내',option:'방향 안',round:'보낸 판',scene:'장면',project:'프로젝트',message:'일지 답',version:'보낸 파일'};
+const TR_FIELD={label:'물을 것',why:'이유',note:'메모',lead:'한 줄 안내',name:'이름',sentence:'한 문장',filmNote:'견본 설명',flow:'흐름',oneLine:'한 문장',title:'제목',description:'설명',summary:'만들 내용',nextStep:'다음 할 일',terms:'제작 범위',text:'글',guide:'사용 안내'};
+const TR_STATE={missing:['빠짐','is-wait','저장'],stale:['원문이 바뀜','is-wait','확인하고 저장'],draft:['초안','is-wait','확인하고 저장'],same:['원문이 이미 영어','is-ok','저장'],ok:['확인','is-ok','고쳐 저장']};
+// 납품 파일 이름처럼 직원이 처음부터 영어로 적은 칸은 빠진 것으로 세지 않는다(손님에게 그 글이 그대로 보인다).
+const trState=entry=>!entry.text?(/[가-힣]/.test(entry.source)?'missing':'same'):!entry.fresh?'stale':entry.status!=='reviewed'?'draft':'ok';
+function trLabel(key){
+  const parts=key.split(':'),part=parts[0],field=['model','project'].includes(part)?parts[1]:parts[2];
+  const name=(part==='version'&&field==='label')||(part==='scene'&&field==='title')?'이름':part==='round'&&field==='note'?'함께 보낸 말':TR_FIELD[field]||field;
+  return `${TR_PART[part]||part} · ${name}${field==='flow'&&parts[3]!==undefined?' '+(Number(parts[3])+1):''}`;
+}
+const excerpt=text=>text.length>160?text.slice(0,160)+'…':text;
+function translationBlock(tr,canEdit){
+  if(!tr)return '';
+  const lang={en:'영어',ja:'일본어'}[tr.locale]||tr.locale,order={missing:0,stale:1,draft:2,same:3,ok:4};
+  const rows=Object.entries(tr.entries||{}).map(([key,entry])=>({key,entry,state:trState(entry)})).sort((a,b)=>order[a.state]-order[b.state]);
+  const gaps=rows.filter(row=>row.state!=='ok'&&row.state!=='same').length;
+  const list=rows.map(({key,entry,state})=>`<form class="desk-tr-row" data-form="desk-translation" data-id="${esc(key)}"><p class="desk-tr-src"><i class="led ${TR_STATE[state][1]}"></i><b>${esc(trLabel(key))}</b><span class="desk-tr-state">${esc(TR_STATE[state][0])}</span></p><p class="desk-tr-ko" lang="ko">${esc(excerpt(entry.source))}</p><textarea name="text" rows="2" maxlength="${entry.max}" lang="${esc(tr.locale)}" aria-label="${esc(trLabel(key))} · ${esc(lang)}" ${canEdit?'':'disabled'}>${esc(entry.text)}</textarea>${canEdit?`<button type="submit" class="btn-line">${esc(TR_STATE[state][2])}</button>`:''}</form>`).join('');
+  return `<section class="desk-tr"><h2 class="desk-h">손님에게 보일 ${esc(lang)} <span class="mono">${rows.length-gaps}/${rows.length}</span></h2><p class="desk-tr-note">이 의뢰는 ${esc(lang)}로 소통해요. 보내는 창마다 ${esc(lang)} 칸이 있고, 여기서는 이미 보인 글의 ${esc(lang)}를 넣거나 고쳐요. 확인한 ${esc(lang)}만 손님에게 보이고, 빠졌거나 원문이 바뀐 칸은 한국어 원문이 나가요.</p>${rows.length?`<details class="desk-tr-list" ${gaps?'open':''}><summary>${gaps?`손볼 칸 ${gaps}개`:'모두 확인했어요'} · 칸 ${rows.length}개</summary>${list}</details>`:`<p class="desk-tr-note">아직 손님에게 보인 직원 글이 없어요.</p>`}</section>`;
+}
 const ROUND_STATE=round=>round.approvedAt?'확인 끝':round.feedbackAt?`의견 ${round.changes||0}개`:'고객이 보는 중';
 function actions(r){
   if(r.canEdit===false)return '<p class="desk-sum">이 프로젝트는 보기만 할 수 있어요.</p>';
@@ -44,7 +65,7 @@ export function deskView(r,{bar=true,top=''}={}){
         ${r.links===false?'':'<p class="desk-links"><button type="button" class="btn-text" data-action="tab" data-tab="strategy">제작 설계</button><button type="button" class="btn-text" data-action="tab" data-tab="storyboard">장면 구성</button><button type="button" class="btn-text" data-action="tab" data-tab="review">영상 확인</button><button type="button" class="btn-text" data-action="tab" data-tab="manage">프로젝트 관리</button></p>'}
         <dl class="kv">${r.brief.map(([key,value])=>`<div><dt>${esc(key)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>
         <h2 class="desk-h">받은 자료</h2><div class="contact is-wide">${r.files.map(file=>`<figure><img src="${esc(file.src)}" alt=""><figcaption>${esc(file.label)}${file.size?`<small>${esc(file.size)}</small>`:''}</figcaption></figure>`).join('')}</div>
-        ${r.attachments?.length?`<h2 class="desk-h">내려받는 자료</h2><ul class="desk-files">${r.attachments.map(file=>`<li><a href="${esc(file.url)}" download>${esc(file.label)}</a></li>`).join('')}</ul>`:''}
+        ${r.attachments?.length?`<h2 class="desk-h">내려받는 자료</h2><ul class="desk-files">${r.attachments.map(file=>`<li><a href="${esc(file.url)}" download>${esc(file.label)}</a></li>`).join('')}</ul>`:''}${translationBlock(r.translation,r.canEdit!==false)}
       </div>
       <aside class="desk-side">
         <section><h2>자동 점검</h2><ul class="checks">${r.checks.map(item=>`<li><i class="led ${item.ok?'is-ok':'is-wait'}"></i><div><b>${esc(item.label)}</b>${item.note?`<small>${esc(item.note)}</small>`:''}</div></li>`).join('')}</ul></section>

@@ -1,21 +1,25 @@
 import {esc,keepDots} from './api.mjs';
+import {k} from './i18n.mjs';
 
+// 승인 사유는 한국어 값으로 둔다(서버 client-preview-approval.mjs와 같은 문장). 그리는 자리(views.mjs 영상 확인 · app.mjs 알림)에서 t()로 옮긴다.
 export function previewApprovalState(project,{demo=false}={}){
   const latest=(project?.versions||[]).filter(version=>version.kind==='preview').at(-1);
   const decision=(status,reason,waitingFor=null)=>({versionId:latest?.id||null,canApprove:status==='ready',status,reason,waitingFor});
-  if(!latest)return decision('unavailable','확인할 시안을 준비하고 있어요.','team');
-  if(latest.approvedAt)return decision('approved','이 시안의 승인을 마쳤어요.');
+  if(!latest)return decision('unavailable',k('확인할 시안을 준비하고 있어요.'),'team');
+  if(latest.approvedAt)return decision('approved',k('이 시안의 승인을 마쳤어요.'));
   // Live customer responses already contain the authoritative server decision.
   if(!demo&&project.previewApproval?.versionId===latest.id)return project.previewApproval;
   // Demo and staff views retain their local records. Missing live projection
   // cannot turn an unresolved earlier request into an enabled approval button.
-  if((project.studio?.feedbackRounds?.drafts||[]).some(draft=>draft.versionId===latest.id&&draft.items?.length))return decision('draft_pending','모은 수정 의견을 먼저 보내거나 초안에서 지운 뒤 승인해 주세요.','customer');
+  if((project.studio?.feedbackRounds?.drafts||[]).some(draft=>draft.versionId===latest.id&&draft.items?.length))return decision('draft_pending',k('모은 수정 의견을 먼저 보내거나 초안에서 지운 뒤 승인해 주세요.'),'customer');
   const pending=(project.messages||[]).filter(message=>message.author==='customer'&&message.action==='feedback'&&!message.resolved);
-  if(pending.some(message=>message.versionId===latest.id))return decision('feedback_pending','이 시안에 보낸 수정 의견이 있어요. 수정본이 오면 그때 승인해 주세요.','team');
-  if(!demo&&pending.some(message=>message.workflow?.status!=='waiting_customer'||message.workflow.resultVersionId!==latest.id))return decision('team_review','보낸 의견이 이번 수정본에 잘 들어갔는지 제작팀이 보고 있어요. 끝나면 승인할 수 있어요.','team');
-  return decision('ready','시안이 마음에 들면 승인해 주세요. 이 시안으로 최종본을 만들어요.','customer');
+  if(pending.some(message=>message.versionId===latest.id))return decision('feedback_pending',k('이 시안에 보낸 수정 의견이 있어요. 수정본이 오면 그때 승인해 주세요.'),'team');
+  if(!demo&&pending.some(message=>message.workflow?.status!=='waiting_customer'||message.workflow.resultVersionId!==latest.id))return decision('team_review',k('보낸 의견이 이번 수정본에 잘 들어갔는지 제작팀이 보고 있어요. 끝나면 승인할 수 있어요.'),'team');
+  return decision('ready',k('시안이 마음에 들면 승인해 주세요. 이 시안으로 최종본을 만들어요.'),'customer');
 }
 
+// 이번 확인의 범위 — 옛 탭과 직원 화면만 그린다(의뢰 흐름 손님 화면에는 없다). 한국어 그대로.
+// i18n-skip-start
 export function confirmationScope(s){
   if(s.demo||!s.project)return '';
   const st=s.project.studio||{},strategy=st.strategy||{},confirmed=strategy.confirmation?.strategyRevision===strategy.revision&&strategy.revision>0;
@@ -30,3 +34,4 @@ export function confirmationScope(s){
   const scope=scopes[s.tab];if(!scope)return '';
   return `<section class="production-scope" aria-label="이번 확인의 범위"><div class="scope-now"><span class="scope-label">지금 확인할 것</span><strong>${keepDots(esc(scope[0]))}</strong></div><div class="scope-range"><span class="scope-label">확인 범위</span><p>${keepDots(esc(scope[1]))}</p>${confirmed?'<small>제작 설계 확인함</small>':'<small class="is-pending">제작 설계 확인 전</small>'}</div><div class="scope-next"><span class="scope-label">다음 확인</span><strong>${keepDots(esc(scope[2]))}</strong></div></section>`;
 }
+// i18n-skip-end

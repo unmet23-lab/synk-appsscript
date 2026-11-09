@@ -10,6 +10,8 @@ import {previewActions,applyPreviewAction,previewsView,visiblePreviewAssetIds} f
 import {buildCustomerPreviewApproval} from './client-preview-approval.mjs';
 import {requestActions,applyRequestAction,requestView,usesRequestFlow} from './pulse-requests.mjs';
 import {createPersonaGuard} from './pulse-personas.mjs';
+import {withTranslation,staffSources,translationStaffView,localizeCustomerProject,inlineObject} from './pulse-translations.mjs';
+import {serverText,staffDisplayName,createStaffNames} from './pulse-locale.mjs';
 
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
@@ -27,7 +29,8 @@ function studioOf(row){if(!row.studio)return empty();if(row.studio.schemaVersion
 // All creative state belongs to the authoritative clientProjects document.
 // Existing project revisions, invite revocation, ACL and backup transactions
 // therefore remain authoritative; this module creates no second customer login.
-export function createPulseStudioService({store,clientProjects,clock=()=>new Date().toISOString(),mailState=null}){
+// localeOf(row): 프로젝트의 소통 언어(pulse-locale.mjs createProjectLocale). 손님 보기에 언어를 입히고, 영어 프로젝트의 직원 글은 번역을 함께 받는다.
+export function createPulseStudioService({store,clientProjects,clock=()=>new Date().toISOString(),mailState=null,localeOf=()=>'ko'}){
   // 의뢰서 액션이 전용 인물로 가는 프로젝트의 인물 판을 다시 볼 때 쓴다(방향 제안 · 제작 시작, pulse-requests.mjs).
   const personas=createPersonaGuard(store);
   function customer(token){return clientProjects.session(token);}
@@ -55,15 +58,18 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
   // 메일 알림(판 2): 손님 보기에는 켜졌는지와 가린 주소만, 직원 보기에는 연결 · 순간별 상태.
   const customerMail=row=>{try{return mailState?.customer?.(row)||null;}catch{return null;}};
   const staffMail=row=>{try{return mailState?.staff?.(row)||null;}catch{return null;}};
-  function customerState(token){const {row}=customer(token),result=clientProjects.read(token),mail=customerMail(row);return {...result,project:{...result.project,studio:view(row),requestFlow:usesRequestFlow(row,studioOf(row)),...(mail?{mail}:{})}};}
+  // 손님 보기의 언어(판 2): 단계 이름 · 직원 글 번역 · 담당자 영문 표시 이름을 보기 때 입힌다(저장값은 그대로).
+  // 담당자 이름(머리)은 지금 담당자의 표시 이름, 직원 글의 작성자는 글마다 그 직원의 표시 이름(createStaffNames — GPT GA1).
+  function localized(row,project){const locale=localeOf(row);if(locale==='ko')return project;const owner=store.get('users',row.ownerId);return localizeCustomerProject(project,{map:row.studio?.translations,locale,text:value=>serverText(locale,value),producer:staffDisplayName(locale,owner,project.ownerName),staffName:createStaffNames(locale,{owner,users:store.all?.('users')||[]})});}
+  function customerState(token){const {row}=customer(token),result=clientProjects.read(token),mail=customerMail(row);return {...result,project:localized(row,{...result.project,studio:view(row),requestFlow:usesRequestFlow(row,studioOf(row)),...(mail?{mail}:{})})};}
   function staffState(user,projectId){
     const row=clientProjects.project(user,projectId),{inviteHash,inviteRevision,notificationEvents,studio,...safe}=row;
     let canEdit=true;try{clientProjects.project(user,projectId,true);}catch{canEdit=false;}
     // Staff media must use staff routes. A staff session cannot impersonate
     // a customer's capability merely to render an image or video.
     const versions=row.versions.map(version=>({...version,...(version.media?{media:{...media(row,version.media,true),url:'/api/client-media/'+version.media.id}}:{})}));
-    const mail=staffMail(row);
-    return {project:{...safe,requestFlow:usesRequestFlow(row,studioOf(row)),...(mail?{mail}:{}),versions,kickoff:buildClientKickoff(row,{now:clock(),canEdit}),changes:buildClientChanges(row,{now:clock(),canEdit}),sceneRequests:buildSceneRequests(row,clientProjects.sceneRequestContext(row,user)),schedule:buildClientSchedule(row,{now:clock(),canEdit,reviewerId:clientProjects.sceneRequestContext(row,user).reviewerId}),ownerName:store.get('users',row.ownerId)?.name||'담당자',reviewerName:store.get('users',row.reviewerId)?.name||'',inviteActive:!!inviteHash&&Date.parse(row.inviteExpiresAt)>Date.parse(clock()),studio:view(row,true)},canEdit};
+    const mail=staffMail(row),translation=translationStaffView(studioOf(row),row,localeOf(row));
+    return {project:{...safe,requestFlow:usesRequestFlow(row,studioOf(row)),...(mail?{mail}:{}),...(translation?{translation}:{}),versions,kickoff:buildClientKickoff(row,{now:clock(),canEdit}),changes:buildClientChanges(row,{now:clock(),canEdit}),sceneRequests:buildSceneRequests(row,clientProjects.sceneRequestContext(row,user)),schedule:buildClientSchedule(row,{now:clock(),canEdit,reviewerId:clientProjects.sceneRequestContext(row,user).reviewerId}),ownerName:store.get('users',row.ownerId)?.name||'담당자',reviewerName:store.get('users',row.reviewerId)?.name||'',inviteActive:!!inviteHash&&Date.parse(row.inviteExpiresAt)>Date.parse(clock()),studio:view(row,true)},canEdit};
   }
   function asset(studio,assetId,{image=false}={}){if(!assetId)return null;const found=studio.assets.find(value=>value.id===id(assetId));if(!found||image&&!found.mimeType.startsWith('image/'))throw fail(image?'프로젝트의 이미지 자료를 선택해 주세요.':'이 프로젝트의 자료를 선택해 주세요.',404);return found;}
   function pointer(studio,input,{image=false}={}){const found=asset(studio,input.assetId,{image});return {assetId:found?.id||null,imageUrl:image?url(input.imageUrl):undefined};}
@@ -74,12 +80,21 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
   }
   function mutate(row,input,user=null){
     const base=['action','revision'],studio=studioOf(row),who=actor(row,user),at=clock(),stamp={...who,at};revision(row,input?.revision);
-    const fields={save_strategy:['strategy'],request_strategy_review:[],confirm_strategy:['strategyRevision'],save_preferences:['preferences'],save_reference:['id','label','url','assetId','preference','reason'],remove_reference:['id'],select_concept:['conceptId','conceptRevision','text'],review_scene:['sceneId','sceneRevision','status','text'],comment:['targetType','targetId','targetRevision','text'],save_concept:['id','title','description','tagline','imageUrl','assetId','visibility'],save_scene:['id','title','description','narration','screenText','duration','imageUrl','assetId','visibility','purpose','valueNumbers'],reorder_scenes:['ids']};
+    const fields={save_translation:['key','text','status'],save_strategy:['strategy'],request_strategy_review:[],confirm_strategy:['strategyRevision'],save_preferences:['preferences'],save_reference:['id','label','url','assetId','preference','reason'],remove_reference:['id'],select_concept:['conceptId','conceptRevision','text'],review_scene:['sceneId','sceneRevision','status','text'],comment:['targetType','targetId','targetRevision','text'],save_concept:['id','title','description','tagline','imageUrl','assetId','visibility'],save_scene:['id','title','description','narration','screenText','duration','imageUrl','assetId','visibility','purpose','valueNumbers','translation'],reorder_scenes:['ids']};
     const extensions=[{fields:deliverableActions,apply:applyDeliverableAction},{fields:feedbackRoundActions,apply:applyFeedbackRoundAction},{fields:previewActions,apply:applyPreviewAction},{fields:requestActions,apply:applyRequestAction}];
     const extension=object(input)?extensions.find(value=>value.fields(input.action)):null;
     if(!object(input)||!Object.hasOwn(fields,input.action)&&!extension)throw fail('기획 요청을 확인해 주세요.');keys(input,[...base,...(extension?extension.fields(input.action):fields[input.action])]);
     const action=input.action;
-    if(extension){extension.apply({studio,row,input,staff:!!user,stamp,personas});commit(row,studio,'PULSE 제작 '+action,who);return;}
+    if(extension){extension.apply({studio,row,input,staff:!!user,stamp,personas,locale:localeOf(row)});commit(row,studio,'PULSE 제작 '+action,who);return;}
+    // 담당자 글 번역 하나 넣기 · 고치기(다국어 판 2). 키는 지금 손님에게 보이는 직원 글 칸이어야 하고, 빈 글자면 그 번역을 지운다.
+    if(action==='save_translation'){
+      if(!user)throw fail('담당자 화면에서만 할 수 있어요.',403);
+      const locale=localeOf(row),source=typeof input.key==='string'?staffSources(studio,row).get(input.key):null;
+      if(locale==='ko')throw fail('한국어 프로젝트는 번역을 따로 두지 않아요.',409);
+      if(!source)throw fail('번역할 글을 찾지 못했어요. 최신 내용을 불러와 주세요.',404);
+      studio.translations=withTranslation(studio.translations,{key:input.key,source:source.text,max:source.max,text:input.text,status:input.status===undefined?'reviewed':input.status,locale,by:who.authorId,at});
+      commit(row,studio,'PULSE 번역 저장',who);return;
+    }
     if(['save_concept','save_scene','reorder_scenes'].includes(action)&&!user)throw fail('기획안은 담당자만 고칠 수 있어요.',403);
     if(['select_concept','review_scene'].includes(action)&&user)throw fail('고객의 선택과 확인은 고객 화면에서만 남길 수 있어요.',403);
     if(['save_strategy','request_strategy_review','confirm_strategy'].includes(action)){
@@ -108,6 +123,8 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
       if(isConcept)value.tagline=text(input.tagline,500);
       else{if(typeof input.duration!=='number'||!Number.isFinite(input.duration)||input.duration<0.1||input.duration>600)throw fail('장면 길이는 0.1초에서 600초 사이로 입력해 주세요.');Object.assign(value,{narration:text(input.narration,1500),screenText:text(input.screenText,1500),duration:input.duration},sceneStrategy(input,found,studio.strategy));}
       if(found)list[list.indexOf(found)]=value;else list.push(value);
+      // 장면 제목 · 설명의 손님 언어 번역을 함께 받을 수 있다(영어 프로젝트에서 글 콘티를 보내려면 손님에게 보이는 장면마다 있어야 한다 — pulse-requests send_draft).
+      if(!isConcept&&input.translation!==undefined){const said=inlineObject(input.translation,['title','description']),locale=localeOf(row);if(locale!=='ko'){let map=studio.translations;for(const [field,max]of [['title',160],['description',3000]])if(said[field]!==undefined)map=withTranslation(map,{key:`scene:${value.id}:${field}`,source:value[field],max,text:said[field],status:'reviewed',locale,by:who.authorId,at});studio.translations=map;}}
     }else if(action==='reorder_scenes'){
       if(!Array.isArray(input.ids)||input.ids.length!==studio.scenes.length||new Set(input.ids).size!==input.ids.length||input.ids.some(value=>!studio.scenes.some(scene=>scene.id===value)))throw fail('모든 장면을 한 번씩 포함해 주세요.');
       studio.scenes=input.ids.map(value=>studio.scenes.find(scene=>scene.id===value));
