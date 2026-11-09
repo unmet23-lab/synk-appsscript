@@ -36,6 +36,11 @@ function runLocalQa({ candidate, compositionSha256, output, guard, expectedTests
   // The copy runs outside the repository: Node looks for bare imports in every folder above the file, so a copy under .tmp finds the repository's node_modules
   // and passes tests that the Linux QA container (no node_modules) cannot even load (chain 58: acorn). dependencyRoots stay the only way to give a test a package.
   const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-company-local-qa-'));
+  // TEMP can point anywhere (GPT GC1): stop before any test runs if a node_modules is visible from the copy.
+  for (let dir = scratch, up = path.dirname(dir); ; dir = up, up = path.dirname(dir)) {
+    if (fs.existsSync(path.join(dir, 'node_modules'))) { fs.rmSync(scratch, { recursive: true, force: true }); throw new Error('QA_COPY_SEES_NODE_MODULES ' + dir); }
+    if (up === dir) break;
+  }
   const copy = path.join(scratch, 'candidate'), temp = path.join(scratch, 'temp');
   fs.mkdirSync(temp);
   const copyFiles = new Map([...rows.values()].map(row => [row.path, R.read(path.join(source, row.path), row)]));

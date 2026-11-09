@@ -251,6 +251,18 @@ test('the QA copy runs outside the repository: a bare import that only the repos
   a.equal(fs.existsSync(result.scratch), false, 'QA_SCRATCH_REMOVED');
 });
 
+test('the QA stops before running when a node_modules is visible from the temp folder it was given', t => {
+  const f = qaFixture(t, "import test from 'node:test';test('never runs',()=>{});\n");
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-cr-temp-')), inner = path.join(home, 'temp');
+  t.after(() => fs.rmSync(home, { recursive: true, force: true }));
+  fs.mkdirSync(path.join(home, 'node_modules')); fs.mkdirSync(inner);
+  const saved = Object.fromEntries(['TEMP', 'TMP', 'TMPDIR'].map(k => [k, process.env[k]]));
+  for (const k of Object.keys(saved)) process.env[k] = inner;
+  t.after(() => { for (const [k, v] of Object.entries(saved)) if (v === undefined) delete process.env[k]; else process.env[k] = v; });
+  a.throws(() => runLocalQa(f.config), /QA_COPY_SEES_NODE_MODULES/);
+  a.equal(fs.existsSync(f.config.output), false); a.deepEqual(fs.readdirSync(inner), []);
+});
+
 test('a passing test that changes its copied source is rejected by the recorded vectors', t => {
   const f = qaFixture(t, "import test from 'node:test';import fs from 'node:fs';test('mutating copy',()=>fs.writeFileSync(new URL('./app.mjs',import.meta.url),'changed'));\n");
   const result = runLocalQa(f.config);
