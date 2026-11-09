@@ -1314,6 +1314,7 @@
 - 원인: 앱은 회차를 띄우기 전에 실행 중인 예약 세션 수를 세어, 상한 이상이면 띄우지 않고 1분 뒤 다시 본다(앱 `shouldSkipDispatchForActiveSession`, 상한 값은 서버 플래그라 코드에 없다). 이날은 `/이어서`와 「지금 실행」으로 제작 회차 셋이 돌고 있었다.
 - 고침: 작업 쪽 잘못이 아니니 지시문을 건드리지 않는다. 시각이 중요한 회차가 있는 저녁에는 제작 회차를 한꺼번에 깨우거나 「지금 실행」으로 여럿 띄우지 않는다.
 - 다시 확인: 장부 `%LOCALAPPDATA%\Claude-Data\<프로필>\claude-code-sessions\<계정>\<조직>\scheduled-tasks.json`의 `recordedSkips.<작업>`에 `{"at":…,"reason":"global_limit"}`가 1분마다 쌓이고, `lastRunAt`이 그대로다.
+- 11-10 덧붙임(Claude, 상한은 3): 02:42에 건 한 번짜리 시험 회차가 턴을 도는 예약 세션 셋(LAB · synkbrief · yuhobuilds 제작) 뒤에서 1분마다 `global_limit`으로 밀리다가, yuhobuilds 회차가 턴을 끝내고 쉬던 06:01~06:11 사이(06:05)에 떴다 — 3시간 23분 늦음. 앱이 세는 것은 `scheduledTaskId`가 있고 지금 턴을 도는(`isRunning`) 세션과 띄우는 중인 회차뿐이다(앱 `setActiveSessionCounter`). 대화 세션은 안 세고, 턴을 끝내고 쉬는 예약 세션도 안 센다 — `list_task_runs`의 status 「running」과 다르니 상한을 셀 때는 `get_session`의 `isRunning`을 본다. 한 번짜리(`fireAt`) 작업은 `lastRunAt`이 빈 동안 시간 제한 없이 매분 다시 본다. 시험 회차를 당기려고 「지금 실행」(`run_scheduled_task`)을 쓰지 않는다 — `fireAt`으로 뜬 회차만 실제 예약 회차와 같은 길이다.
 
 ### 한도로 멈춘 예약 회차는 시험관 답을 세션 안에만 남겨 다음 회차가 못 읽는다 — 답을 받은 자리에서 기획.md에 적는다 (2026-11-09 Claude)
 - 증상: 11-09 07시 LAB 회차가 10:26에 5시간 한도로 멈췄다. E32 · M37 편 폴더는 미커밋으로 남았고 시험 폴더에는 질문 · 그림 · GPT · 그록 답만 있었다. sonnet · haiku · 볼 이유 답은 이어 받은 15시 회차가 `list_events`로 일부만 찾았고, M37은 기획.md 자체가 없었다.
