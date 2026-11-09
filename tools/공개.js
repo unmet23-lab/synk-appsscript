@@ -11,6 +11,7 @@
  *                                                                              배포 점검 한 회차의 캡처를 기준 이미지로 올린다(의도한 변경일 때만)
  *
  *   항목: <공개경로>=<로컬 파일·폴더> · 또는 --원본 <폴더> 아래의 <경로>(그 경로가 공개 경로다. --공개폴더 <앞>으로 앞을 붙인다)
+ *   상대 경로는 부른 자리 기준이다 — 공용 작업본에서 상대 경로로 git에 없는 파일을 주면 옛 빌드일 수 있어 멈춘다(2026-11-09). D: 세션 사본은 공용 작업본으로 cd해서 부르고 사본의 절대 경로를 준다.
  *   --지움 <공개경로>(폴더는 끝에 /) · --기준 <공개 커밋> · --기준폴더 <폴더> · --전부 · --줄끝도 · --토큰 <값> · --토큰안함
  *   --허용 <공개경로>(AI 이름·제작 자료 검사와 그 경로가 부르는 import ③만 사람이 보고 넘긴다) · --후보폴더 <폴더> · --위에 <커밋>(미리 보기 전용, 지난 공개 재현)
  *   --만 <공개경로>(항목 가운데 그 경로만 올리고 지운다 — import 엇갈림을 두 번에 나눠 올릴 때 1단계)
@@ -333,9 +334,43 @@ function 폴더걷기(뿌리, 앞 = '') {
   return { 파일, 연결 };
 }
 
+/**
+ * 이 도구가 속한 저장소의 공용 작업본 — git 공용 폴더(…/.git)의 부모. 저장소 밖이면 null, 저장소인데 못 읽으면 멈춘다.
+ * 모듈을 새로 부르지 않으려고 여기서 git에 묻는다(관문모듈 목록 · 판정기 허용 줄의 설명이 늘지 않게). 뿌리에서 물어 GIT_CEILING_DIRECTORIES에 걸리지 않는다.
+ */
+function 공용자리(도구자리 = path.resolve(__dirname, '..')) {
+  if (!fs.existsSync(path.join(도구자리, '.git'))) return null;
+  const r = spawnSync('git', ['rev-parse', '--git-common-dir'], { cwd: 도구자리, encoding: 'utf8', windowsHide: true });
+  if (r.status !== 0) throw new 사용법오류(`이 도구의 공용 작업본을 못 찾았다 — 상대 경로가 옛 빌드인지 모르니 절대 경로로 다시 부른다: ${String(r.stderr || r.error?.message || '').trim()}`);
+  return path.dirname(path.resolve(도구자리, r.stdout.trim()));
+}
+
+/**
+ * 공용 작업본에서 상대 경로로 git에 없는 파일을 올리려 하면 멈춘다(2026-11-09).
+ * D: 세션 사본은 판정기 허용 줄이 덮는 공용 작업본으로 cd해서 공개한다(AGENTS). 그때 문서의 `--원본 docs/…/dist`를 그대로 쓰면 사본의 새 빌드가 아니라
+ * 공용 작업본에 남은 옛 빌드를 올린다 — 실측: 11-01에 멈춘 prompts(13항목)가 공개본(17항목)을 덮는 계획이 검사를 모두 통과했다.
+ * 지나감: 추적 파일(공용 작업본은 origin을 따라간다) · 공용 작업본 밖 · 절대 경로(부른 쪽이 자리를 이름 댔다) · 세션 사본에서 부른 것.
+ */
+function 공용옛빌드막기(상대파일, 자리 = {}) {
+  if (!상대파일.length) return;
+  const cwd = 자리.cwd ?? process.cwd(), 공용 = 자리.공용 ?? 공용자리(자리.도구자리);
+  const 글접기 = (s) => (process.platform === 'win32' ? s.toLowerCase() : s);   // 윈도우 파일 자리는 대소문자를 가리지 않는다
+  const 접기 = (p) => 글접기(path.resolve(p));
+  if (!공용 || 접기(cwd) !== 접기(공용)) return;
+  const 뿌리 = path.resolve(공용);
+  const 안쪽 = 상대파일.map((f) => path.relative(뿌리, path.resolve(cwd, f)).split(path.sep).join('/'))
+    .filter((r) => r && r !== '..' && !r.startsWith('../') && !path.isAbsolute(r));
+  if (!안쪽.length) return;
+  const r = spawnSync('git', ['ls-files', '-z'], { cwd: 뿌리, encoding: 'utf8', maxBuffer: 2 ** 28, windowsHide: true });
+  if (r.status !== 0) throw new 사용법오류(`공용 작업본의 추적 파일을 못 읽었다 — 절대 경로로 다시 부른다: ${String(r.stderr || r.error?.message || '').trim()}`);
+  const 추적 = new Set(r.stdout.split('\0').map(글접기));
+  const 없음 = 안쪽.filter((f) => !추적.has(글접기(f)));
+  if (없음.length) throw new 사용법오류(`공용 작업본에서 상대 경로로 git에 없는 파일 ${없음.length}개를 올리려 한다(예: ${없음[0]}) — 여기 남은 빌드는 옛 판일 수 있다. 빌드한 자리의 절대 경로로 다시 부른다(세션 사본이면 --원본 <사본 절대 경로>/…, 공용 작업본에서 방금 빌드했어도 절대 경로)`);
+}
+
 /** 항목 → {올릴: Map(공개경로 → 로컬 파일), 폴더: [{공개, 로컬}], 지울: [공개경로…], 연결: [건너뛴 연결 폴더]} */
-function 항목모으기(옵션) {
-  const 올릴 = new Map(), 폴더 = [], 연결 = [];
+function 항목모으기(옵션, 자리 = {}) {
+  const 올릴 = new Map(), 폴더 = [], 연결 = [], 상대파일 = [];
   const 앞 = 옵션.공개폴더 ? 공개경로(옵션.공개폴더).replace(/\/$/, '') : '';
   const 붙이기 = (p) => (앞 ? `${앞}/${p}` : p);
   const 더하기 = (공개, 로컬) => {
@@ -354,15 +389,16 @@ function 항목모으기(옵션) {
       공개 = 상대 ? 붙이기(상대) : 앞; // 「.」은 --원본 전체(공개 뿌리 또는 --공개폴더)
     }
     if (!fs.existsSync(로컬)) throw new 사용법오류(`없는 파일·폴더: ${로컬}`);
-    const 상태 = fs.statSync(로컬);
+    const 상태 = fs.statSync(로컬), 상대로 = !path.isAbsolute(로컬);
     if (상태.isDirectory()) {
       const p = 공개 ? 공개경로(공개, { 폴더: true }) : '';
       const r = 폴더걷기(로컬);
-      for (const f of r.파일) 더하기(공개경로(`${p}${f}`), path.join(로컬, f));
+      for (const f of r.파일) { 더하기(공개경로(`${p}${f}`), path.join(로컬, f)); if (상대로) 상대파일.push(path.join(로컬, f)); }
       연결.push(...r.연결.map((x) => `${p}${x}`));
       폴더.push({ 공개: p, 로컬: path.resolve(로컬) });
-    } else 더하기(공개경로(공개), 로컬);
+    } else { 더하기(공개경로(공개), 로컬); if (상대로) 상대파일.push(로컬); }
   }
+  공용옛빌드막기(상대파일, 자리);
   const 지울 = (옵션.지움 || []).map((x) => 공개경로(x));
   for (const p of 지울) if (올릴.has(p)) throw new 사용법오류(`올리면서 지울 수는 없다: ${p}`);
   return { 올릴, 폴더, 지울, 연결 };
@@ -2190,5 +2226,5 @@ if (require.main === module) main().then((code) => { process.exitCode = code; })
 
 module.exports = {
   올리기, 확인, 채우기, 기준, 인자읽기, main,
-  _시험: { 토큰맞춤, 토큰고치기, 토큰값, 참조풀기, 점검규칙읽기, 검사하기, 더한줄, 계획해시, 바이트대조, 점검기다리기, 줄끝만다름, 공개경로, 올리기글, 확인결과글, 기준글, 점검결과받기, 쪽되살리기, glob식, git도구, 차례읽개, 관문모듈, 관문모듈다름 },
+  _시험: { 토큰맞춤, 토큰고치기, 토큰값, 참조풀기, 점검규칙읽기, 검사하기, 더한줄, 계획해시, 바이트대조, 점검기다리기, 줄끝만다름, 공개경로, 올리기글, 확인결과글, 기준글, 점검결과받기, 쪽되살리기, glob식, git도구, 차례읽개, 관문모듈, 관문모듈다름, 항목모으기 },
 };

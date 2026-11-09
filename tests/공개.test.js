@@ -1746,3 +1746,65 @@ test('관문 모듈: 진짜 공개는 검수 · 점검 모듈이 origin/master�
     fs.rmSync(방, { recursive: true, force: true });
   }
 });
+
+test('공용 작업본에서 상대 경로로 git에 없는 파일을 올리려 하면 멈추고, 추적 파일 · 공용 밖 · 절대 경로 · 세션 사본은 지나간다', (t) => {
+  const 속 = 원도구._시험;
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-publish-common-'));
+  const 앞자리 = process.cwd();
+  t.after(() => { process.chdir(앞자리); fs.rmSync(방, { recursive: true, force: true, maxRetries: 5 }); });
+  const 공용 = path.join(방, 'main'), 사본 = path.join(방, 'copy'), 밖 = path.join(방, 'other');
+  const 쓰기 = (뿌리, 경로) => { const f = path.join(뿌리, 경로); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, 'x\n'); };
+  쓰기(공용, '문서/추적.html');
+  쓰기(공용, '섞임/추적.html');
+  쓰기(공용, 'Docs/Tracked.html');
+  const g = (...a) => execFileSync('git', ['-C', 공용, '-c', 'user.name=시험', '-c', 'user.email=t@example.invalid', ...a], { stdio: ['pipe', 'pipe', 'pipe'] });
+  g('init', '-q');
+  g('add', '-A');
+  g('commit', '-qm', '바탕');
+  쓰기(공용, 'dist/prompts/index.html');     // 공용 작업본에 남은 옛 빌드
+  쓰기(공용, '섞임/새것.html');
+  쓰기(사본, 'dist/prompts/index.html');     // 세션 사본의 새 빌드
+  쓰기(밖, 'x.html');
+  const 자리 = { 공용, cwd: 공용 };
+
+  process.chdir(공용);
+  assert.throws(() => 속.항목모으기({ 원본: 'dist', 항목: ['prompts'] }, 자리), /git에 없는 파일 1개.*dist\/prompts\/index\.html.*절대 경로/);
+  assert.throws(() => 속.항목모으기({ 원본: 'dist', 항목: ['.'] }, 자리), /git에 없는 파일 1개/);
+  assert.throws(() => 속.항목모으기({ 항목: ['a.html=dist/prompts/index.html'] }, 자리), /git에 없는 파일 1개/);
+  assert.throws(() => 속.항목모으기({ 원본: '.', 항목: ['섞임'] }, 자리), /git에 없는 파일 1개.*섞임\/새것\.html/);
+  assert.equal(속.항목모으기({ 항목: ['a.html=문서/추적.html'] }, 자리).올릴.size, 1);
+  assert.equal(속.항목모으기({ 원본: '문서', 항목: ['.'] }, 자리).올릴.size, 1);
+  assert.equal(속.항목모으기({ 항목: [`a.html=${path.join('..', 'other', 'x.html')}`] }, 자리).올릴.size, 1);
+  assert.equal(속.항목모으기({ 원본: path.join(공용, 'dist'), 항목: ['prompts'] }, 자리).올릴.size, 1);
+  assert.equal(속.항목모으기({ 원본: path.join(사본, 'dist'), 항목: ['prompts'] }, 자리).올릴.get('prompts/index.html'), path.join(사본, 'dist', 'prompts', 'index.html'));
+
+  process.chdir(사본);
+  assert.equal(속.항목모으기({ 원본: 'dist', 항목: ['prompts'] }, { 공용, cwd: 사본 }).올릴.size, 1);
+
+  // 윈도우에서 대소문자만 다른 경로는 같은 추적 파일이다(GPT 검수 GA2)
+  process.chdir(공용);
+  if (process.platform === 'win32') assert.equal(속.항목모으기({ 항목: ['a.html=docs/TRACKED.html'] }, 자리).올릴.size, 1);
+
+  // 기본 길: 도구 자리에서 git에 물어 공용 작업본을 찾는다 — GIT_CEILING_DIRECTORIES가 있어도, 워크트리의 도구로 불러도(GPT 검수 GA1)
+  const 천장앞 = process.env.GIT_CEILING_DIRECTORIES;
+  t.after(() => { if (천장앞 === undefined) delete process.env.GIT_CEILING_DIRECTORIES; else process.env.GIT_CEILING_DIRECTORIES = 천장앞; });
+  const 옛빌드 = { 원본: 'dist', 항목: ['prompts'] };
+  delete process.env.GIT_CEILING_DIRECTORIES;
+  assert.throws(() => 속.항목모으기(옛빌드, { 도구자리: 공용, cwd: 공용 }), /git에 없는 파일 1개/);
+  process.env.GIT_CEILING_DIRECTORIES = 공용;
+  assert.throws(() => 속.항목모으기(옛빌드, { 도구자리: 공용, cwd: 공용 }), /git에 없는 파일 1개/);
+  delete process.env.GIT_CEILING_DIRECTORIES;
+  const 일감 = path.join(방, 'wt');
+  g('worktree', 'add', '-q', 일감);
+  assert.throws(() => 속.항목모으기(옛빌드, { 도구자리: 일감, cwd: 공용 }), /git에 없는 파일 1개/, '워크트리의 도구로 공용 작업본에서 불러도 막는다');
+  process.chdir(사본);
+  assert.equal(속.항목모으기(옛빌드, { 도구자리: 일감, cwd: 사본 }).올릴.size, 1, '공용 작업본이 아닌 자리에서 부른 것');
+  assert.equal(속.항목모으기(옛빌드, { 도구자리: 사본, cwd: 사본 }).올릴.size, 1, '저장소 밖의 도구');
+
+  // git을 못 읽으면 지나가지 않는다 — 추적 파일인지 모르는 채 올리지 않는다
+  process.chdir(공용);
+  fs.rmSync(path.join(공용, '.git'), { recursive: true, force: true, maxRetries: 5 });
+  fs.writeFileSync(path.join(공용, '.git'), 'gitdir: 없는/자리\n');
+  assert.throws(() => 속.항목모으기({ 항목: ['a.html=문서/추적.html'] }, 자리), /추적 파일을 못 읽었다/);
+  assert.throws(() => 속.항목모으기({ 항목: ['a.html=문서/추적.html'] }, { 도구자리: 공용, cwd: 공용 }), /공용 작업본을 못 찾았다/);
+});

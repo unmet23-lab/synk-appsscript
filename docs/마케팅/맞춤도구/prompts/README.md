@@ -60,5 +60,5 @@ yuhobuilds 쇼츠에서 실제로 막혔다가 푼 방법을 보는 사람이 �
 1. `프롬프트.json` `항목` 맨 앞에 하나 더한다.
 2. `node --test tests/프롬프트모음.test.js` → `node docs/마케팅/맞춤도구/build.mjs prompts`.
 3. 미리 보기 `node docs/마케팅/맞춤도구/serve.mjs` → `http://127.0.0.1:4391/prompts/`.
-4. 공개: `node tools/공개.js 올리기 --원본 docs/마케팅/맞춤도구/dist prompts --전부` 미리 보기 → `-m "…" --실행 --계획 <해시>`. 항목만 더한 날은 위 시험·검사와 배포 점검으로 공개하고, `page.js`의 화면(CSS·스크립트·틀)을 바꾼 날은 아르곤 → Fable 화면 검수 뒤 공개한다.
+4. 공개: `node tools/공개.js 올리기 --원본 docs/마케팅/맞춤도구/dist prompts --전부` 미리 보기 → `-m "…" --실행 --계획 <해시>`. 항목만 더한 날은 위 시험·검사와 배포 점검으로 공개하고, `page.js`의 화면(CSS·스크립트·틀)을 바꾼 날은 아르곤 → Fable 화면 검수 뒤 공개한다. **D: 세션 사본(`D:\SYNK-worktrees\SYNK-appsscript\<사본>`)에서는** 빌드 · 시험 · `tools/검수묶음.mjs`는 사본에서 그대로 하고, `공개.js`만 명령마다 공용 작업본으로 `cd`해서 부르며 사본의 절대 경로를 준다: `cd C:/Users/q1212/Documents/SYNK-appsscript && node tools/공개.js 올리기 --원본 D:/SYNK-worktrees/SYNK-appsscript/<사본>/docs/마케팅/맞춤도구/dist prompts --전부 --후보폴더 D:/SYNK-worktrees/SYNK-appsscript/<사본>/.tmp/prompts후보`(판정기 허용 줄이 D: 자리를 덮지 않는다. 상대 경로면 공용 작업본에 남은 옛 빌드를 보므로 도구가 멈춘다, 11-09).
 5. 공개가 된 뒤 편 글에 링크를 넣고, 편 `게시/준비.json`에 `"프롬프트": {"id": "<id>", "주소": "https://synk.im/prompts/#<id>", "본문": "docs/마케팅/맞춤도구/prompts/프롬프트.json"}`. `tools/올리기전검사.js` ⑧이 이 칸(슬롯 10-23부터 없으면 「확인할 것」), 프롬프트.json의 항목, 공개 페이지 응답 200과 그 항목이 공개본에 있는지 본다.
