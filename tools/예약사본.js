@@ -6,23 +6,26 @@
  * 앱 예약 작업(07·15시 제작 셋 · 14시 게시 · 20:52 스레드 · 19:30 수요 스캔 · 화 · 금 판정)은 cwd가 공용 작업본이라 거기서 파일을 고쳤다.
  * 고친 것을 바로올리기로 올려도 공용 작업본이 따라가기에 막혀 있으면 그 파일은 미커밋으로 남고, 그 미커밋이 다시 따라가기를 막았다
  * (10-22 122커밋 · 11-03 145커밋 뒤). 그래서 회차마다 EnterWorktree로 origin 판 워크트리에 들어가 거기서만 고치고 올린 뒤 지운다.
- * 11-09 유호님 「옮기기」부터 새 회차 사본은 C:(.claude/worktrees)가 아니라 D:\SYNK-worktrees\SYNK-appsscript\<이름>에 둔다 — `만들기`로 만들고 EnterWorktree(path)로 들어간다.
- * 그렇게 들어간 사본은 ExitWorktree가 지우지 않으므로 끝에 `치우기`가 지운다. CLI는 앱의 사본 자리 설정을 안 읽고, WorktreeCreate 훅은 에이전트 격리 사본까지 영영 안 지워 쓰지 않는다(현장 노트 윈도우_셸).
+ * 회차 사본은 두 갈래다(11-09 유호님 「옮기기」, 현장 노트 윈도우_셸):
+ *   - 앱 작업의 Worktree 체크가 켜진 작업 — 앱이 회차마다 「워크트리 위치」(D:\SYNK-worktrees\SYNK-appsscript\<이름>)에 사본을 만들어 그 안에서 시작하고, 세션이 보관될 때 지운다.
+ *     이름이 마구잡이라(가지 claude/…) `들기`가 그 사본의 git 폴더에 회차 표시를 남겨 `남은사본`이 찾는다. 표시는 사본이 사는 동안 지우지 않는다(같은 세션이 다시 일을 이을 수 있다).
+ *     `끝`이 「지워도 됨」이면 넘기기 전에 찍은 git 밖 결과물 모습(경로 · 크기 · mtime · ctime)을 표시에 적고, `남은사본`은 git이 깨끗하고 origin에 없는 커밋이 없고
+ *     그 모습이 똑같은 사본만 건너뛴다 — 끝난 사본 20개쯤을 회차마다 다시 해시하지 않으려고. 시각을 되돌리거나 옮겨 와도 ctime · 경로가 달라져 다시 본다.
+ *   - 꺼진 작업 — 공용 작업본에서 시작해 EnterWorktree(name sched-…)로 .claude/worktrees에 들어가고 끝에 ExitWorktree(remove)로 지운다.
+ *   손으로 만든 D: 사본에 EnterWorktree(path)로 들어가는 길은 사람 승인이 드는 안전 검사라 사람 없는 회차에서 늘 거절돼 거뒀다(11-09 만들기 · 치우기 삭제).
  * 이 도구는 그 워크트리를 지워도 잃는 것이 없게 한다:
  *   - git 밖 결과물(편 폴더의 remotion/out · 게시/*.mp4 · 장면 · public/img 같은 .gitignore 대상)은 공용 작업본의 같은 경로로 복사한다.
  *     예약큐(운영 사본)와 게시 도구는 git 밖 영상을 공용 작업본에서 찾는다(tools/lib/게시묶음.js mediaRoot). 자리는 공용 작업본에서 렌더하던 옛 흐름과 같다.
  *   - 워크트리 안 junction(remotion/node_modules → 공용 작업본 node_modules)은 공용 쪽에 같은 링크가 없으면 만들어 두고, 지우기 전에 링크만
  *     끊는다(통째로 지우면 공용 node_modules까지 지울 수 있다 — 현장노트 git 「junction이 든 워크트리」).
  *
- *   node tools/예약사본.js 만들기 <이름> [--실행]  회차 맨 처음(공용 작업본에서) — origin 판 사본을 사본 자리에 만들고 그 경로를 찍는다. 그 경로로 EnterWorktree(path)
- *   node tools/예약사본.js 치우기 <이름> [--실행]  회차 맨 끝(ExitWorktree keep으로 나온 뒤) — `끝`을 다시 재서 「지워도 됨」일 때만 사본 자리의 그 사본과 가지를 지운다
- *   node tools/예약사본.js 들기 [--실행]        회차 시작 — 뿌리 node_modules를 공용 작업본에 잇고, 남은사본을 함께 돈다
+ *   node tools/예약사본.js 들기 [--실행]        회차 시작 — 뿌리 node_modules를 공용 작업본에 잇고, 앱 사본이면 회차 표시를 남기고 사본 자리의 옆 링크를 맞추고, 남은사본을 함께 돈다
  *   node tools/예약사본.js 넘기기 [--실행]      이 워크트리 docs/마케팅의 git 밖 파일을 공용 작업본 같은 경로로 복사
- *   node tools/예약사본.js 끝 [--실행]          넘기기 → 미커밋 · origin에 없는 커밋 확인 → 없으면 링크 끊기. 「지워도 됨」(종료 0)일 때만 ExitWorktree remove
- *   node tools/예약사본.js 남은사본 [--실행]    끝내지 못하고 남은 예약 워크트리(.claude/worktrees · 사본 자리의 sched-<작업>-<MMDD>-<HHmm>)와 그 미커밋 파일을 보이고, --실행이면
+ *   node tools/예약사본.js 끝 [--실행]          넘기기 → 미커밋 · origin에 없는 커밋 확인 → 없으면 링크 끊기. 「지워도 됨」(종료 0)이면 출력의 → 줄대로 한다
+ *   node tools/예약사본.js 남은사본 [--실행]    끝내지 못하고 남은 예약 워크트리(.claude/worktrees · 사본 자리의 sched-<작업>-<MMDD>-<HHmm> · 회차 표시가 있는 앱 사본)와 그 미커밋 파일을 보이고, --실행이면
  *                                               그 git 밖 파일을 공용 작업본으로 넘긴다(지우지 않는다 — 깨어나 이어 갈 회차일 수 있다)
  *   공통: --json · --저장소 <폴더>(기본 지금 폴더)
- *   사본 자리는 D:/SYNK-worktrees/SYNK-appsscript 하나이고 명령줄로 못 바꾼다 — 안내한 명령이 다른 자리의 같은 이름 사본을 지우는 길을 두지 않는다(GPT 검수 11-09). 함수의 `자리` 인자는 시험용이다.
+ *   사본 자리는 D:/SYNK-worktrees/SYNK-appsscript 하나이고 명령줄로 못 바꾼다. 함수의 `자리` 인자는 시험용이다.
  *
  * 넘기기 규칙: 공용 쪽에 없으면 복사, 같은 내용이면 그대로(검사 기록이 이 원본을 검사한 것이면 공용 쪽 수정 시각만 맞춘다), 내용이 다른데 공용 쪽 수정 시각이 같거나 더 늦으면 두고 「공용이 더 새것」, 아니면
  * 공용 쪽을 이 판으로 바꾼다. 복사는 옆 이름(<파일>.예약사본)에 끝낸 뒤 바꿔 끼우고 수정 시각을 지킨다(검사 기록의 시각 대조가 그대로 산다). node_modules 안은 걷지 않는다.
@@ -33,7 +36,6 @@
  */
 const crypto = require('crypto');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { 공용작업본 } = require('./lib/공용작업본.js');
@@ -44,13 +46,13 @@ const 예약이름 = /^sched-.+-\d{4}-\d{4}$/;
 const 버리는폴더 = new Set(['.git', '.tmp', 'tmp', '.claude', '.expo', 'node_modules', 'dist', 'build', '__pycache__', '.cache']);
 const 결과물꼴 = /\.(mp4|mov|m4v|webm|mkv|avi|gif|wav|mp3|m4a|aac|flac|ogg|opus|png|jpe?g|webp|avif|heic|tiff?|bmp|svg|psd|pdf|pptx|docx|xlsx|hwpx?|zip)$/i;
 const 쓰는중ms = 30 * 60_000;
-/** 새 회차 사본 자리 — 앱 Worktree location(D:\SYNK-worktrees)의 저장소 폴더와 같은 곳. 뿌리에 한글을 넣지 않는다: cv2가 영문 하위 경로도 조용히 못 연다 */
+/** 앱이 만드는 회차 사본 자리 — 앱 「워크트리 위치」(D:\SYNK-worktrees)의 저장소 폴더. 뿌리에 한글을 넣지 않는다: cv2가 영문 하위 경로도 조용히 못 연다 */
 const 기본자리 = 'D:/SYNK-worktrees/SYNK-appsscript';
-const 자리최소여유 = 20 * 2 ** 30;
-const 이름받는명령 = new Set(['만들기', '치우기']);
+/** 앱 사본의 회차 표시 — 그 사본의 git 폴더 안이라 작업본에 안 보이고 올라가지 않으며, 사본을 지우면 같이 사라진다 */
+const 회차표시이름 = 'synk-sched-run';
 
-function git(폴더, args, 더할환경 = null) {
-  const env = { ...process.env, ...(더할환경 || {}) };
+function git(폴더, args) {
+  const env = { ...process.env };
   for (const k of ['GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE']) delete env[k];
   // --no-optional-locks: 남의 사본을 볼 때 그 인덱스를 다시 쓰지 않는다
   const r = spawnSync('git', ['--no-optional-locks', '-c', 'core.quotepath=false', ...args], { cwd: 폴더, encoding: 'utf8', env, windowsHide: true, maxBuffer: 64 * 1024 * 1024 });
@@ -70,12 +72,57 @@ function 짝(폴더) {
 
 function 사본자리(옵션 = {}) { return path.resolve(옵션.자리 || 기본자리); }
 function 같은길(가, 나) { return path.resolve(가).toLowerCase() === path.resolve(나).toLowerCase(); }
-/** 드라이브가 다르면 path.relative가 절대 경로를 내므로 그것도 밖으로 본다 */
-function 안에있나(바깥, 안) {
-  const r = path.relative(바깥, 안);
-  return r === '' || (r !== '..' && !r.startsWith(`..${path.sep}`) && !path.isAbsolute(r));
+/** EnterWorktree(name)로 들어간 회차 사본인가 — 이 사본만 ExitWorktree가 지운다. 그 밖은 앱이 만들어 앱이 지운다 */
+function 이름으로든사본(폴더) { return /[\\/]\.claude[\\/]worktrees[\\/][^\\/]+$/i.test(폴더) && 예약이름.test(path.basename(폴더)); }
+function 회차표시자리(폴더) { return path.resolve(폴더, git(폴더, ['rev-parse', '--git-dir']).trim(), 회차표시이름); }
+/** 표시 읽기 — 표시가 없으면 null. 있는데 못 읽거나 꼴이 다르면 {}(회차 사본으로는 보되 끝난 사본으로는 안 본다) */
+function 회차표시읽기(폴더) {
+  let 자리;
+  try { 자리 = 회차표시자리(폴더); } catch { return null; }
+  let 글;
+  try { 글 = fs.readFileSync(자리, 'utf8'); } catch (e) { return e.code === 'ENOENT' ? null : {}; }
+  try { const 값 = JSON.parse(글); return 값 && typeof 값 === 'object' && !Array.isArray(값) ? 값 : {}; } catch { return {}; }
 }
-function 사본이름꼴(이름) { return 예약이름.test(이름) && /^[A-Za-z0-9-]+$/.test(이름); }
+/** 옆 이름에 다 쓴 뒤 바꿔 끼운다 — 다른 회차의 `남은사본`이 반쯤 쓴 표시를 읽지 않게(같은 폴더라 한 번에 바뀐다) */
+function 회차표시쓰기(폴더, 값) {
+  const 자리 = 회차표시자리(폴더), 임시 = `${자리}.${process.pid}.tmp`;
+  try { fs.writeFileSync(임시, `${JSON.stringify(값)}\n`); fs.renameSync(임시, 자리); }
+  finally { fs.rmSync(임시, { force: true }); }
+}
+/** `끝`과 같은 미커밋 판정 — 추적 파일 바뀜 · 새 파일(무시되지 않은 것) */
+function 미커밋들(나) {
+  return git(나, ['status', '--porcelain=v1', '-z', '--untracked-files=all']).split('\0').filter(Boolean)
+    .filter((l) => /^[ MTADRCU?!]{2} /.test(l)).map((l) => l.slice(3));
+}
+/**
+ * git 밖 docs/마케팅 결과물의 지금 모습 — 정렬한 [경로, 크기, mtime ns, ctime ns](글자). 그새 사라진 파일이 있으면 null. 링크는 뺀다(`끝`이 지운다).
+ * ctime은 덮어쓰기 · 시각 되돌리기(utimes) · 이름 바꾸기 · 덮어 복사에 바뀌고 읽기에는 안 바뀐다(11-10 NTFS 실측, Linux도 같다). 폴더째 옮겨 온 파일은 경로가 새로 생긴다.
+ */
+function 결과물모습(폴더) {
+  const 줄 = [];
+  for (const p of git밖(폴더).파일) {
+    let st;
+    try { st = fs.lstatSync(path.join(폴더, p), { bigint: true }); } catch { return null; }
+    줄.push([p, String(st.size), String(st.mtimeNs), String(st.ctimeNs)]);
+  }
+  return 줄;
+}
+/**
+ * 끝난 앱 사본이 그 뒤로 그대로인가 — `끝`이 다시 봐도 「지워도 됨」일 만큼 그대로면 다음 회차가 건질 것이 없다(끝난 사본 20개쯤을 회차마다 다시 해시하지 않는다).
+ * `끝`이 넘기기 전에 찍은 결과물 모습과 지금이 똑같고 · 미커밋이 없고 · origin에 없는 커밋이 없고 · docs/마케팅 밖 결과물이 없을 때만 그렇다(싼 것부터 — 모습이 다르면 git을 부르지 않는다).
+ * 같은 세션이 다시 일을 이으면(사용자 답 · 깨우기) 그 가운데 하나가 달라진다. 못 재거나 표시가 망가졌으면 그대로가 아니라고 본다(11-10 Fable 설계 검토 「맞음」, 현장 노트 윈도우_셸).
+ */
+function 끝난뒤그대로인가(폴더, 표시) {
+  const 끝 = 표시 && 표시.끝;
+  if (!끝 || !Array.isArray(끝.파일)) return false;
+  try {
+    const 지금 = 결과물모습(폴더);
+    if (지금 === null || JSON.stringify(지금) !== JSON.stringify(끝.파일)) return false;
+    if (미커밋들(폴더).length) return false;
+    if (git(폴더, ['rev-list', '-n', '1', 'HEAD', '--not', '--remotes=origin']).trim()) return false;
+    return 안넘긴결과물(폴더).length === 0;
+  } catch { return false; }
+}
 
 /** git에 등록된 작업본 — [{ 폴더, 머리, 가지 }]. 떨어진 머리면 가지가 null */
 function 등록사본(메인) {
@@ -93,6 +140,7 @@ function 등록사본(메인) {
 /**
  * 사본 자리에 있어야 하는 링크 — 저장소 안 사본과 같은 길로 찾게 한다. 사본의 `..`가 이 자리다.
  * node_modules: Node가 위로 걸어 찾는다 · SYNK-talk: ../SYNK-talk · SYNK-worktrees: ../SYNK-worktrees/… (없으면 숙제 첨삭 시험 3건이 빨강 없이 건너뛴다)
+ * 다른 곳을 가리키면 손대지 않고 알린다 — 회차를 막을 일은 아니다.
  */
 function 옆링크맞추기(자리, 메인, 실행) {
   const 줄 = [];
@@ -102,94 +150,18 @@ function 옆링크맞추기(자리, 메인, 실행) {
     try { st = fs.lstatSync(링크); } catch {}
     if (st) {
       const 읽음 = st.isSymbolicLink() ? 링크대상(링크) : null;
-      if (!읽음 || !같은길(path.resolve(자리, 읽음), 대상)) throw new Error(`${링크}가 ${대상}을 가리키지 않는다 — 손대지 않고 멈춘다`);
-      줄.push({ 이름, 상태: '있음' });
+      줄.push({ 이름, 상태: 읽음 && 같은길(path.resolve(자리, 읽음), 대상) ? '있음' : '다른 곳을 가리킴 — 손대지 않음' });
     } else if (!fs.existsSync(대상)) {
       줄.push({ 이름, 상태: '대상 없음' });
+    } else if (!실행) {
+      줄.push({ 이름, 상태: '만들 것' });
     } else {
-      if (실행) fs.symlinkSync(대상, 링크, 'junction');
-      줄.push({ 이름, 상태: 실행 ? '만듦' : '만들 것' });
+      // 같이 뜬 회차가 먼저 만들었으면 그것을 쓴다
+      try { fs.symlinkSync(대상, 링크, 'junction'); 줄.push({ 이름, 상태: '만듦' }); }
+      catch (e) { if (e.code !== 'EEXIST') throw e; 줄.push({ 이름, 상태: '있음' }); }
     }
   }
   return 줄;
-}
-
-/** 여러 회차가 같은 분에 뜨면 같은 원격 참조를 고치다 잠금에 걸린다 — 잠깐 뒤 다시 한다 */
-function 원격판받기(메인) {
-  for (let 번 = 1; ; 번++) {
-    try {
-      git(메인, ['fetch', '-q', 'origin', '+refs/heads/master:refs/remotes/origin/master']);
-      return git(메인, ['rev-parse', 'refs/remotes/origin/master']).trim();
-    } catch (e) {
-      if (번 >= 3) throw e;
-      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 3000);
-    }
-  }
-}
-
-/** 회차 맨 처음 — origin 판 사본을 사본 자리에 만든다. 미디어까지 전체다(결정 11-04, post-checkout 훅은 이 자리를 대상으로 안 본다). 들어가는 것은 EnterWorktree(path) */
-function 만들기(옵션 = {}) {
-  const 이름 = 옵션.이름 || '';
-  if (!사본이름꼴(이름)) throw new Error(`이름은 sched-<작업 id>-<MMDD>-<HHmm>, 영문 · 숫자 · 대시만: ${이름}`);
-  const 메인 = 공용작업본(뿌리(옵션.저장소 || process.cwd()));
-  const 자리 = 사본자리(옵션);
-  if (/[^\x00-\x7f]/.test(자리)) throw new Error(`사본 자리에 한글을 넣지 않는다(cv2가 하위 경로도 못 연다): ${자리}`);
-  if (안에있나(메인, 자리)) throw new Error(`사본 자리가 저장소 안이다: ${자리}`);
-  const 폴더 = path.join(자리, 이름), 가지 = `worktree-${이름}`;
-  if (등록사본(메인).some((w) => 같은길(w.폴더, 폴더))) {
-    let 정상 = false;
-    try { 정상 = 같은길(뿌리(폴더), 폴더); } catch {}
-    if (!정상) throw new Error(`${폴더}는 git에 등록만 남았고 쓸 수 있는 사본이 아니다 — 치우기 ${이름} --실행으로 등록을 지우고 다른 시각의 이름으로 만든다`);
-    return { 결과: '이미 있음', 폴더, 가지, 링크: 옆링크맞추기(자리, 메인, 옵션.실행) };
-  }
-  if (fs.existsSync(폴더)) throw new Error(`${폴더}가 있는데 git에 등록된 사본이 아니다 — 손대지 않고 멈춘다`);
-  let 가지있음 = true;
-  try { git(메인, ['rev-parse', '--verify', '-q', `refs/heads/${가지}`]); } catch { 가지있음 = false; }
-  if (가지있음) throw new Error(`가지 ${가지}가 이미 있다 — 다른 시각의 이름으로 만든다`);
-  if (!옵션.실행) return { 결과: '미리 보기', 폴더, 가지, 링크: 옆링크맞추기(자리, 메인, false) };
-  fs.mkdirSync(자리, { recursive: true });
-  // 시험(`자리` 인자)은 CI 러너의 작은 디스크에서도 돈다 — 실제 자리에만 건다
-  const 칸 = fs.statfsSync(자리), 최소여유 = 옵션.최소여유 ?? (옵션.자리 ? 0 : 자리최소여유);
-  if (칸.bavail * 칸.bsize < 최소여유) throw new Error(`사본 자리 여유가 ${최소여유 / 2 ** 30}GiB 아래다: ${자리}`);
-  const 링크 = 옆링크맞추기(자리, 메인, true);
-  const 판 = 원격판받기(메인);
-  // CLI가 새 사본을 뜰 때와 같이 병렬로 꺼낸다(k$r). SYNK_LIGHT_OFF: 이 사본은 미디어를 빼지 않는다
-  git(메인, ['-c', 'core.longpaths=true', '-c', `checkout.workers=${Math.min(16, Math.max(1, os.cpus().length))}`, 'worktree', 'add', '-q', '-b', 가지, 폴더, 판], { SYNK_LIGHT_OFF: '1' });
-  const 머리 = git(폴더, ['rev-parse', 'HEAD']).trim();
-  if (머리 !== 판) throw new Error(`새 사본 판이 다르다: ${머리} · origin ${판}`);
-  return { 결과: '만듦', 폴더, 가지, 판, 링크 };
-}
-
-/** 회차 맨 끝 — EnterWorktree(path)로 들어간 사본은 ExitWorktree가 안 지운다. `끝`을 다시 재서 「지워도 됨」일 때만 사본 자리의 그 사본과 그 회차 가지를 지운다 */
-function 치우기(옵션 = {}) {
-  const 이름 = 옵션.이름 || '';
-  if (!사본이름꼴(이름)) throw new Error(`이름은 sched-<작업 id>-<MMDD>-<HHmm>, 영문 · 숫자 · 대시만: ${이름}`);
-  const 시작 = path.resolve(옵션.저장소 || process.cwd());
-  const 폴더 = path.join(사본자리(옵션), 이름);
-  if (안에있나(폴더, 시작)) throw new Error('그 사본 안에서는 치울 수 없다 — ExitWorktree keep으로 나온 뒤 부른다');
-  const 메인 = 공용작업본(뿌리(시작));
-  const 등록 = 등록사본(메인).find((w) => 같은길(w.폴더, 폴더));
-  if (!등록) return { 결과: '없음', 폴더, 남은것: [] };
-  const 가지 = 등록.가지;
-  const 폴더있음 = fs.existsSync(폴더);
-  const 확인 = 폴더있음 ? 끝({ ...옵션, 저장소: 폴더 }) : { 결과: '지워도 됨', 남은것: [] };
-  // 폴더가 사라진 등록이어도 그 머리의 커밋은 잃지 않는다(떨어진 머리 포함 — 등록을 지우면 reflog까지 사라진다). 폴더가 있으면 `끝`이 이미 봤다
-  const 남은것 = [...확인.남은것];
-  if (!폴더있음) {
-    if (!등록.머리) 남은것.push('머리를 읽지 못함');
-    else for (const c of git(메인, ['rev-list', '--oneline', 등록.머리, '--not', '--remotes=origin']).split('\n').filter(Boolean)) 남은것.push(`origin에 없는 커밋 ${c}`);
-  }
-  if (!옵션.실행) return { 결과: '미리 보기', 폴더, 가지, 남은것 };
-  if (확인.결과 !== '지워도 됨' || 남은것.length) return { 결과: '남김', 폴더, 가지, 남은것 };
-  let 이유 = null;
-  try { git(메인, ['-c', 'core.longpaths=true', 'worktree', 'remove', '--force', 폴더]); } catch (e) { 이유 = e.message; }
-  if (!이유 && fs.existsSync(폴더)) 이유 = 'git은 끝났는데 폴더가 남았다';
-  if (이유) return { 결과: '못 지움', 폴더, 가지, 남은것: [], 이유 };
-  let 가지지움 = false;
-  if (가지 === `worktree-${이름}`) {
-    try { git(메인, ['branch', '-D', 가지]); 가지지움 = true; } catch {}
-  }
-  return { 결과: '치움', 폴더, 가지, 가지지움, 남은것: [] };
 }
 
 /** git 밖 항목 목록(같은 항목을 두 번 내기도 한다 — Windows Git 2.55, 무시된 파일) */
@@ -357,10 +329,12 @@ function 안넘긴결과물(나) {
 
 function 끝(옵션 = {}) {
   const { 나 } = 짝(옵션.저장소 || process.cwd());
+  const 앱사본 = !이름으로든사본(나);
+  // 넘기기 전에 찍는다 — 넘기는 동안이나 그 뒤에 바뀐 것은 이 모습과 달라져 다음 회차가 다시 본다
+  const 앞모습 = 옵션.실행 && 앱사본 ? 결과물모습(나) : null;
   const 넘김 = 넘기기({ ...옵션, 저장소: 나 });
   const 안넘김 = 안넘긴결과물(나);
-  const 미커밋 = git(나, ['status', '--porcelain=v1', '-z', '--untracked-files=all']).split('\0').filter(Boolean)
-    .filter((l) => /^[ MTADRCU?!]{2} /.test(l)).map((l) => l.slice(3));
+  const 미커밋 = 미커밋들(나);
   let 안올린커밋 = [];
   try { 안올린커밋 = git(나, ['rev-list', '--oneline', 'HEAD', '--not', '--remotes=origin']).split('\n').filter(Boolean); }
   catch (e) { 안올린커밋 = [`확인 못 함 — ${e.message}`]; }
@@ -374,10 +348,15 @@ function 끝(옵션 = {}) {
   const 지워도됨 = 옵션.실행 && !남은것.length;
   // 링크는 지울 수 있을 때만 끊는다 — 남은 것을 고쳐 올리려면 node_modules가 있어야 한다
   const 끊은링크 = 지워도됨 ? 링크끊기(나) : [];
-  // 사본 자리의 사본은 EnterWorktree(path)로 들어갔다 — ExitWorktree가 안 지우므로 `치우기`로 지운다. 그 밖의 자리에는 `치우기`를 안내하지 않는다(그 명령은 사본 자리의 같은 이름을 지운다)
-  const 다음 = !지워도됨 ? null : 같은길(path.dirname(나), 사본자리(옵션))
-    ? `→ ExitWorktree keep으로 나온 뒤 node tools/예약사본.js 치우기 ${path.basename(나)} --실행으로 지운다 — 커밋은 모두 origin에 있다`
-    : '→ ExitWorktree remove(discard_changes: true)로 지운다 — 커밋은 모두 origin에 있다';
+  // 앱 사본은 보관될 때까지 살아 있고 같은 세션이 다시 일을 이을 수 있어 표시를 지우지 않는다 — 넘기기 전 모습을 적어 두고, 그 뒤로 그대로일 때만 `남은사본`이 건너뛴다.
+  // 표시가 없는 사본(들기를 안 부른 사람 세션)에는 새로 만들지 않는다
+  if (지워도됨 && 앱사본 && 앞모습) {
+    const 표시 = 회차표시읽기(나);
+    if (표시 !== null) { try { 회차표시쓰기(나, { ...표시, 끝: { 때: new Date().toISOString(), 파일: 앞모습 } }); } catch {} }
+  }
+  const 다음 = !지워도됨 ? null : !앱사본
+    ? '→ ExitWorktree remove(discard_changes: true)로 지운다 — 커밋은 모두 origin에 있다'
+    : '→ 더 할 일 없다 — 앱이 만든 사본은 세션이 보관될 때 앱이 지운다. 커밋은 모두 origin에 있다';
   return { 결과: 지워도됨 ? '지워도 됨' : 옵션.실행 ? '남은 것 있음' : '미리 보기', 워크트리: 나, 다음, 넘김, 끊은링크, 남은것 };
 }
 
@@ -393,7 +372,12 @@ function 들기(옵션 = {}) {
     else if (옵션.실행) { fs.symlinkSync(공용모듈, 모듈, 'junction'); 연결 = '이음'; }
     else 연결 = '이을 것';
   }
-  return { 결과: 옵션.실행 ? '들어옴' : '미리 보기', 워크트리: 나, node_modules: 연결, 남은사본: 남은사본({ ...옵션, 저장소: 나 }) };
+  const 앱사본 = !이름으로든사본(나);
+  // 다시 부르면 끝난 모습을 지운다 — 이 세션이 일을 다시 이으니 다음 회차가 이 사본을 다시 본다
+  if (앱사본 && 옵션.실행) 회차표시쓰기(나, { 종류: '예약 회차', 시작: new Date().toISOString() });
+  const 자리 = 사본자리(옵션);
+  const 옆링크 = 같은길(path.dirname(나), 자리) ? 옆링크맞추기(자리, 메인, 옵션.실행) : [];
+  return { 결과: 옵션.실행 ? '들어옴' : '미리 보기', 워크트리: 나, node_modules: 연결, 앱사본, 옆링크, 남은사본: 남은사본({ ...옵션, 저장소: 나 }) };
 }
 
 function 남은사본(옵션 = {}) {
@@ -402,10 +386,15 @@ function 남은사본(옵션 = {}) {
   const 지금 = 뿌리(시작).toLowerCase();
   const 자리 = 사본자리(옵션);
   const 결과 = [];
+  let 끝난그대로 = 0;
   for (const { 폴더 } of 등록사본(메인)) {
     const 이름 = path.basename(폴더);
     const 회차자리 = /[\\/]\.claude[\\/]worktrees[\\/]/i.test(폴더) || 같은길(path.dirname(폴더), 자리);
-    if (!회차자리 || !예약이름.test(이름) || 폴더.toLowerCase() === 지금 || !fs.existsSync(폴더)) continue;
+    if (!회차자리 || 폴더.toLowerCase() === 지금 || !fs.existsSync(폴더)) continue;
+    // 표시 없는 앱 사본은 사람이 여는 세션일 수 있다 — 그 영상을 넘기거나 이어 받으라고 보이지 않는다
+    const 표시 = 회차표시읽기(폴더);
+    if (!예약이름.test(이름) && 표시 === null) continue;
+    if (표시 !== null && 끝난뒤그대로인가(폴더, 표시)) { 끝난그대로 += 1; continue; }
     let 미커밋목록 = null;
     try { 미커밋목록 = git(폴더, ['status', '--porcelain=v1', '--untracked-files=normal']).split('\n').filter(Boolean).map((l) => l.slice(3)); } catch {}
     let 넘김;
@@ -414,7 +403,7 @@ function 남은사본(옵션 = {}) {
     const 미커밋편 = [...new Set((미커밋목록 || []).map((p) => (/^docs\/마케팅\/[^/]+/.exec(p.replace(/^"|"$/g, '')) || [])[0]).filter(Boolean))];
     결과.push({ 이름, 폴더, 미커밋: 미커밋목록 && 미커밋목록.length, 미커밋편, 미커밋목록: 미커밋목록 && 미커밋목록.slice(0, 20), 넘김: { 결과: 넘김.결과, 파일: 넘김.파일, 셈: 넘김.셈, 공용이더새것: 넘김.공용이더새것 } });
   }
-  return { 결과: 옵션.실행 ? '넘김' : '미리 보기', 공용작업본: 메인, 사본: 결과 };
+  return { 결과: 옵션.실행 ? '넘김' : '미리 보기', 공용작업본: 메인, 사본: 결과, 끝난그대로 };
 }
 
 function 인자읽기(argv) {
@@ -424,12 +413,10 @@ function 인자읽기(argv) {
     if (a === '--실행') 옵션.실행 = true;
     else if (a === '--json') 옵션.json = true;
     else if (a === '--저장소') 옵션.저장소 = argv[++i];
-    else if (!옵션.명령 && ['만들기', '들기', '넘기기', '끝', '남은사본', '치우기'].includes(a)) 옵션.명령 = a;
-    else if (이름받는명령.has(옵션.명령) && !옵션.이름 && !a.startsWith('-')) 옵션.이름 = a;
+    else if (!옵션.명령 && ['들기', '넘기기', '끝', '남은사본'].includes(a)) 옵션.명령 = a;
     else throw new Error(`모르는 인자: ${a}`);
   }
-  if (!옵션.명령) throw new Error('명령: 만들기 · 들기 · 넘기기 · 끝 · 남은사본 · 치우기');
-  if (이름받는명령.has(옵션.명령) && !옵션.이름) throw new Error(`${옵션.명령}에는 사본 이름이 든다: sched-<작업 id>-<MMDD>-<HHmm>`);
+  if (!옵션.명령) throw new Error('명령: 들기 · 넘기기 · 끝 · 남은사본');
   return 옵션;
 }
 
@@ -449,33 +436,21 @@ function 넘김글(r) {
 function main(argv = process.argv.slice(2)) {
   let 옵션;
   try { 옵션 = 인자읽기(argv); } catch (e) {
-    console.error(`${e.message}\n  node tools/예약사본.js 만들기|치우기 <이름> [--실행]  ·  들기|넘기기|끝|남은사본 [--실행]  ·  공통 [--json] [--저장소 <폴더>]`);
+    console.error(`${e.message}\n  node tools/예약사본.js 들기|넘기기|끝|남은사본 [--실행]  ·  공통 [--json] [--저장소 <폴더>]`);
     return 2;
   }
-  if (이름받는명령.has(옵션.명령)) {
-    let r;
-    try { r = 옵션.명령 === '만들기' ? 만들기(옵션) : 치우기(옵션); }
-    catch (e) { console.error(`[멈춤] ${e.message}`); return 1; }
-    if (옵션.json) console.log(JSON.stringify(r, null, 2));
-    else if (옵션.명령 === '만들기') {
-      console.log([`[${r.결과}] ${r.폴더} · 가지 ${r.가지}${r.판 ? ` · 판 ${r.판.slice(0, 10)}` : ''}`,
-        `옆 링크: ${r.링크.map((l) => `${l.이름} ${l.상태}`).join(' · ')}`,
-        r.결과 === '미리 보기' ? '' : `→ EnterWorktree(path: "${r.폴더.replace(/\\/g, '/')}")로 들어간다`].filter(Boolean).join('\n'));
-    } else {
-      console.log([`[${r.결과}] ${r.폴더}${r.가지 ? ` · 가지 ${r.가지}${r.가지지움 ? ' 지움' : ''}` : ''}`,
-        ...(r.이유 ? [`  까닭: ${r.이유}`] : []), ...r.남은것.map((x) => `  남음: ${x}`)].join('\n'));
-    }
-    return 옵션.명령 === '치우기' && !['치움', '미리 보기'].includes(r.결과) ? 1 : 0;
-  }
   const r = 옵션.명령 === '들기' ? 들기(옵션) : 옵션.명령 === '넘기기' ? 넘기기(옵션) : 옵션.명령 === '끝' ? 끝(옵션) : 남은사본(옵션);
-  const 사본글 = (x) => [`[${x.결과}] 남은 예약 사본 ${x.사본.length}개`,
+  const 사본글 = (x) => [`[${x.결과}] 남은 예약 사본 ${x.사본.length}개${x.끝난그대로 ? ` · 끝난 뒤 그대로인 앱 사본 ${x.끝난그대로}개는 건너뜀` : ''}`,
     ...x.사본.flatMap((s) => [
       `  ${s.이름} — ${s.폴더} · 미커밋 ${s.미커밋 ?? '?'}줄 · git 밖 ${s.넘김.파일 ?? '?'}개(${셈글(s.넘김.셈)})${s.넘김.결과.startsWith('못') ? ` · ${s.넘김.결과}` : ''}`,
       ...(s.미커밋편 || []).map((p) => `    이어 받을 편 ${path.join(s.폴더, p)}`),
       ...(s.미커밋목록 || []).map((p) => `    미커밋 ${p}`),
     ])];
   if (옵션.json) { console.log(JSON.stringify(r, null, 2)); }
-  else if (옵션.명령 === '들기') console.log([`[${r.결과}] ${r.워크트리} · node_modules ${r.node_modules}`, ...사본글(r.남은사본)].join('\n'));
+  else if (옵션.명령 === '들기') {
+    const 링크글 = r.옆링크.filter((l) => l.상태 !== '있음').map((l) => `  옆 링크 ${l.이름}: ${l.상태}`);
+    console.log([`[${r.결과}] ${r.워크트리} · node_modules ${r.node_modules}${r.앱사본 ? ' · 앱 사본(회차 표시)' : ''}`, ...링크글, ...사본글(r.남은사본)].join('\n'));
+  }
   else if (옵션.명령 === '넘기기') console.log([`[${r.결과}]`, ...넘김글(r)].join('\n'));
   else if (옵션.명령 === '끝') {
     console.log([`[${r.결과}] ${r.워크트리}`, ...넘김글(r.넘김),
@@ -490,4 +465,4 @@ function main(argv = process.argv.slice(2)) {
 
 if (require.main === module) process.exitCode = main();
 
-module.exports = { 만들기, 치우기, 들기, 넘기기, 끝, 남은사본, git밖, 링크끊기, 안넘긴결과물, 하나넘기기, 인자읽기, main, 예약이름 };
+module.exports = { 들기, 넘기기, 끝, 남은사본, git밖, 링크끊기, 안넘긴결과물, 하나넘기기, 인자읽기, main, 예약이름 };
