@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1bdb2-28f3-77e3-914c-0331fab3102a"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 도구로 몽글의 형태와 여백 조건을 지킨 새벽 기숙사 장면 한 장을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"새벽 3시, 책과 빈 커피잔 사이에서 차가운 노트북 빛을 받으며 지친 몽글."}}
+{"type":"turn.completed","usage":{"input_tokens":90140,"cached_input_tokens":68352,"cache_write_input_tokens":0,"output_tokens":1199,"reasoning_output_tokens":178}}

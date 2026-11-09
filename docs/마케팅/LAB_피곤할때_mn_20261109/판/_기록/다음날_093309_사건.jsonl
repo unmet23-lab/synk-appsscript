@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1bdb9-2409-7d41-9b93-ee4e36dc329e"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the imagegen skill to keep the original scene and pose, add the karaoke details, and remove the pencil.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle rests face-down after karaoke, with a silver felt microphone, colorful confetti, and a teal streamer."}}
+{"type":"turn.completed","usage":{"input_tokens":155033,"cached_input_tokens":133632,"cache_write_input_tokens":0,"output_tokens":1483,"reasoning_output_tokens":446}}

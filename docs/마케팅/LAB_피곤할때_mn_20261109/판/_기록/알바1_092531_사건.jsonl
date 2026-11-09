@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1bdb2-28ec-7dd2-bd47-e70a95b4ccbc"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬을 적용해, 참고 사진의 몽글 형태와 질감을 살린 세로 장면 한 장을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Tired Mongle gazes up at a towering stack of felt delivery boxes in a late-night convenience store."}}
+{"type":"turn.completed","usage":{"input_tokens":168133,"cached_input_tokens":152064,"cache_write_input_tokens":0,"output_tokens":1456,"reasoning_output_tokens":320}}

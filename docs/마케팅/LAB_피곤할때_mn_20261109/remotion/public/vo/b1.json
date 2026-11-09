@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b1",
+ "text": "노래방 갈래?",
+ "dur": 0.859,
+ "words": [
+  {
+   "text": "노래방",
+   "start": 0.02,
+   "end": 0.347
+  },
+  {
+   "text": "갈래?",
+   "start": 0.428,
+   "end": 0.859
+  }
+ ],
+ "source": {
+  "key": "0216689d76637b3680d917ee727be7dc",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 162
+ }
+}

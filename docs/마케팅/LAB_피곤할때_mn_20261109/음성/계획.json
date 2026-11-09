@@ -1,0 +1,16 @@
+{
+  "note": "LAB 몽골 M37 「피곤할 때 네 마디」 — 몽글 = 소진(세기 1.0, M1 · M31과 같은 틀), 친구 = 범수. 한국어 줄만(몽골어는 화면 글). 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_피곤할때_mn_20261109/음성/계획.json --굽기",
+  "voice": { "id": "tc_666a9871abcf27a5169850d0", "name": "소진" },
+  "defaults": { "model": "ssfm-v30", "lang": "ko", "emotion": "normal", "intensity": 1, "tempo": 1, "seed": 1109, "lufs": -17 },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    { "id": "a1", "text": "졸려…", "emotion": "sad" },
+    { "id": "a2", "text": "힘들어…", "emotion": "sad" },
+    { "id": "a3", "text": "피곤해…", "emotion": "sad" },
+    { "id": "a4", "text": "지쳤어…", "emotion": "sad" },
+    { "id": "a5", "text": "가자!", "emotion": "happy" },
+    { "id": "a6", "text": "한 곡 더!", "emotion": "happy" },
+    { "id": "b1", "text": "노래방 갈래?", "voice": { "id": "tc_5c3c52cb5827e00008dd7f3b", "name": "범수" }, "emotion": "happy" }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "sad",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1109,
+  "lufs": -17
+ },
+ "made": "2026-11-09T00:25:19.812Z",
+ "lines": [
+  {
+   "id": "a1",
+   "text": "졸려…",
+   "dur": 0.904,
+   "syllablesPerSec": 2.21,
+   "src": "a1.wav",
+   "key": "c3e8891ca34a4c50cd9659a928fdfd56",
+   "words": 1
+  },
+  {
+   "id": "a2",
+   "text": "힘들어…",
+   "dur": 0.674,
+   "syllablesPerSec": 4.45,
+   "src": "a2.wav",
+   "key": "4607d16c69fd759ddab034ac680200f4",
+   "words": 1
+  },
+  {
+   "id": "a3",
+   "text": "피곤해…",
+   "dur": 0.822,
+   "syllablesPerSec": 3.65,
+   "src": "a3.wav",
+   "key": "209b54f3a32cf5dc6f49d41098f2acb1",
+   "words": 1
+  },
+  {
+   "id": "a4",
+   "text": "지쳤어…",
+   "dur": 1.228,
+   "syllablesPerSec": 2.44,
+   "src": "a4.wav",
+   "key": "557fa659c6559bf12df2f8d5d3c694f2",
+   "words": 1
+  },
+  {
+   "id": "a5",
+   "text": "가자!",
+   "dur": 0.481,
+   "syllablesPerSec": 4.16,
+   "src": "a5.wav",
+   "key": "5db1150bbc70637629819622dd8d2d9d",
+   "words": 1
+  },
+  {
+   "id": "a6",
+   "text": "한 곡 더!",
+   "dur": 0.785,
+   "syllablesPerSec": 3.82,
+   "src": "a6.wav",
+   "key": "5ecf2593529b6a3f5516ca91fab9aec7",
+   "words": 3
+  },
+  {
+   "id": "b1",
+   "text": "노래방 갈래?",
+   "dur": 0.859,
+   "syllablesPerSec": 5.82,
+   "src": "b1.wav",
+   "key": "0216689d76637b3680d917ee727be7dc",
+   "words": 2
+  }
+ ]
+}
