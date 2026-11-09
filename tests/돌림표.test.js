@@ -100,7 +100,7 @@ test('유튜브 — 언어가 다른 판은 같은 날 여러 채널(다섯까�
   assert.equal(capped.cells.filter((c) => c.original && c.format === '퀴즈').length, 2);
 });
 
-test('씨앗 먼저 — 새 원본은 씨앗이 올리고, 다른 계정은 17시간 뒤 첫 한국 14시 점검 뒤 칸에만', () => {
+test('씨앗 먼저 — 새 원본은 씨앗이 올리고, 다른 계정은 24시간 뒤 첫 한국 14시 점검 뒤 칸에만', () => {
   const accounts = {
     'seed-tt': acct('tiktok', 'MN', 'Asia/Ulaanbaatar', { seed: true, dailyTimes: ['12:00', '20:00'] }),
     jp: acct('youtube', 'JP', 'Asia/Tokyo', { language: 'ja' }), us: acct('youtube', 'US', 'America/New_York', { language: 'en' }),
@@ -257,4 +257,23 @@ test('돌림표 비상 정지 — 멈춤은 안 건 돌림 판을 빼고, 예약
   assert.deepEqual(after.판.filter((p) => p.돌림).map((p) => p.계정), [booked.계정], '예약된 판만 남는다');
   const plan = JSON.parse(m.run('--부터', '2026-11-22', '--일수', '2', '--json').stdout);
   assert.equal(plan.cells.some((c) => c.original === 'LAB_가_mn_20261101'), false);
+});
+
+test('돌림표 비상 정지 점검 — 사흘 안 씨앗 판의 24시간 배수가 모두 0.3배 밑이면 급락(종료 1), 숫자가 없으면 판정 전', (t) => {
+  const m = 마당();
+  t.after(m.cleanup);
+  const dir = path.join(m.root, 'LAB_가_mn_20261101');
+  const prep = JSON.parse(fs.readFileSync(path.join(dir, '게시', '준비.json'), 'utf8'));
+  prep.판[0].시각 = '2026-11-18T13:00:00+09:00'; // 씨앗(인스타 @synk.mn)이 하루 전에 올림
+  fs.writeFileSync(path.join(dir, '게시', '준비.json'), JSON.stringify(prep));
+  const perf = (배수) => fs.writeFileSync(path.join(dir, '게시', '성과.json'), JSON.stringify({ 자동판정: { 판: [{ 계정: 'lab-instagram', 시점: { '24시간': { 평소대비: { 배수 } } } }] } }));
+  const before = m.run('--점검', '--json');
+  assert.equal(before.status, 0, before.stderr);
+  assert.equal(JSON.parse(before.stdout).find((x) => x.piece === 'LAB_가_mn_20261101').verdict, '판정 전');
+  perf(0.12);
+  const low = m.run('--점검');
+  assert.equal(low.status, 1);
+  assert.match(low.stdout, /급락 · LAB_가_mn_20261101/);
+  perf(2.4);
+  assert.equal(m.run('--점검').status, 0);
 });

@@ -7,7 +7,7 @@
  *      시간대가 25개라 「같은 날」을 한국 날짜로 보면 멕시코 저녁 판과 몽골 다음 날 아침 판(10시간 차이)이 다른 날로 빠져나가고,
  *      24시간으로 보면 이웃 시간대의 이틀 잇단 13:00 판(21~23시간)까지 막혀 틱톡 다섯 곳도 못 채운다 — 그래서 20시간(11-10 Claude).
  *      유튜브만 언어가 다른 판은 같은 날 여러 채널에 갈 수 있고(한 원본이 하루 다섯 채널까지), 같은 언어 판은 20시간 안에 둘이 안 된다.
- *   ② 씨앗 먼저: 원본은 씨앗 계정(sns-계정.json rotationSeed)이 먼저 올리고, 다른 계정은 씨앗 첫 판에서 17시간 넘게 지난 뒤
+ *   ② 씨앗 먼저: 원본은 씨앗 계정(sns-계정.json rotationSeed)이 먼저 올리고, 다른 계정은 씨앗 첫 판에서 24시간 넘게 지난 뒤(14시 점검 때 씨앗의 24시간 숫자가 있게)
  *      첫 한국 시각 14시(14시 게시 회차의 비상 정지 점검 — 설계 3) 뒤 칸에만 잇는다.
  *   ③ 한 계정은 같은 원본을 두 번 올리지 않는다. 칸 형식(dailyFormats — 13:00 이야기 · 21:00 퀴즈)이 원본 형식과 같아야 한다.
  *   ④ 순서 섞기: 계정마다 가장 오래 기다린 원본 다섯(창) 가운데서 계정 이름으로 정한 순서(같은 입력이면 늘 같은 표)로 고르고,
@@ -18,7 +18,7 @@
 const crypto = require('node:crypto');
 const T = require('./계정시간.js');
 
-const DEFAULTS = Object.freeze({ followHours: 17, checkTime: '14:00', checkZone: 'Asia/Seoul', apartHours: 20, youtubeCap: 5, window: 5 });
+const DEFAULTS = Object.freeze({ followHours: 24, checkTime: '14:00', checkZone: 'Asia/Seoul', apartHours: 20, youtubeCap: 5, window: 5 });
 const HOUR = 3600000;
 
 function addDays(day, n) {
@@ -29,7 +29,7 @@ function addDays(day, n) {
 
 const hashOf = (text) => crypto.createHash('sha256').update(text).digest('hex');
 
-// 씨앗 첫 판 뒤 다른 계정이 이을 수 있는 가장 이른 때 — 17시간 뒤의 첫 한국 시각 14시.
+// 씨앗 첫 판 뒤 다른 계정이 이을 수 있는 가장 이른 때 — 24시간 뒤의 첫 한국 시각 14시(점검 때 씨앗의 24시간 숫자가 있어야 한다).
 function checkpointOf(seedMs, cfg = DEFAULTS) {
   const after = seedMs + cfg.followHours * HOUR;
   const day = T.localDate(after, cfg.checkZone);

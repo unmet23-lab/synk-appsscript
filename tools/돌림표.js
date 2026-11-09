@@ -8,6 +8,7 @@
  *       지우고 다시 셈한다. 셈 규칙은 tools/lib/돌림.js 머리말.
  *   node tools/돌림표.js --장부 [--부터 …] [--일수 …] [--json]
  *       게시 장부 — LAB 판 전부를 계정 · 현지 날짜 · 칸 · 원본 · 판본 지문 · 상태 · 게시물 ID로 한 표에(같은 칸이 두 번 걸렸는지도).
+ *   node tools/돌림표.js --점검 [--json]   비상 정지 점검(14시 회차가 걸기 전) — 씨앗이 사흘 안에 올린 원본의 씨앗 24시간 평소 대비 배수, 모두 0.3배 밑이면 「급락」(종료 1)
  *   node tools/돌림표.js --멈춤 <편 폴더 이름> --까닭 "<까닭>"
  *       비상 정지(설계 3) — 그 원본의 준비.json 「돌림」.멈춤을 적고 아직 안 건 돌림 판을 뺀다. 이미 예약된 판은 목록으로 보인다
  *       (공개 전 예약을 다른 매일 판 편으로 바꿔 거는 것은 상시 승인 안, 공개된 글을 지우거나 비공개로 돌리는 것은 여쭌다).
@@ -263,6 +264,29 @@ function stopPiece(name, why, now) {
   return { removed: before - prep.판.length, booked };
 }
 
+// 비상 정지 점검(설계 3) — 14시 게시 회차가 걸기 전에 돌린다. 씨앗이 지난 사흘 안에 올린 원본마다 씨앗 판의 24시간 「평소 대비 배수」
+// (게시/성과.json 자동판정 — tools/게시성과.js가 3시간마다 쓴다)를 보고, 숫자가 있는 씨앗 판이 모두 0.3배 밑이면 「급락」(→ --멈춤),
+// 숫자가 아직 없으면 「판정 전」. 「고칠 실수」(댓글 · 시험관이 짚은 오류)와 「대상국 큰 사건」(재난 · 애도일)은 회차가 따로 본다.
+function checkStops(run, now, { days = 3, low = 0.3 } = {}) {
+  const out = [];
+  for (const piece of run.pieces.filter((p) => p.original && !p.original.멈춤 && !p.dead)) {
+    const seedPlates = (piece.prep.판 || []).filter((pl) => run.accounts[pl.계정]?.rotationSeed && Number.isFinite(Date.parse(pl.시각 || '')));
+    if (!seedPlates.length) continue;
+    const first = Math.min(...seedPlates.map((pl) => Date.parse(pl.시각)));
+    if (first > now || now - first > days * 86400000) continue;
+    const pending = (piece.prep.판 || []).filter((pl) => pl.돌림 && Date.parse(pl.시각 || '') > now).length;
+    const perf = readJson(path.join(piece.dir, '게시', '성과.json'))?.자동판정?.판 || [];
+    const rows = seedPlates.map((pl) => {
+      const m = perf.find((x) => x.계정 === pl.계정)?.시점?.['24시간']?.평소대비?.배수;
+      return { account: pl.계정, multiple: Number.isFinite(m) ? m : null };
+    });
+    const known = rows.filter((r) => r.multiple !== null);
+    const verdict = !known.length ? '판정 전' : known.every((r) => r.multiple < low) ? '급락' : '괜찮음';
+    out.push({ piece: piece.name, format: piece.original.형식, seededAt: T.isoAt(first, 'Asia/Seoul'), pending, verdict, rows });
+  }
+  return out;
+}
+
 function printPlan(run, opts) {
   const { result, notReady, rotation } = run;
   const filled = result.cells.filter((c) => c.original && !c.taken);
@@ -305,6 +329,18 @@ function main() {
     return;
   }
   const run = runPlan(opts);
+  if (has('--점검')) {
+    const list = checkStops(run, now);
+    if (has('--json')) { console.log(JSON.stringify(list, null, 2)); } else {
+      console.log(`비상 정지 점검(설계 3) · ${T.isoAt(now, 'Asia/Seoul').slice(0, 16)} · 씨앗이 사흘 안에 올린 원본 ${list.length}`);
+      for (const x of list) console.log(`  ${x.verdict === '급락' ? '!' : '·'} ${x.verdict} · ${x.piece}(${x.format}) · 씨앗 ${x.seededAt.slice(5, 16)} · 남은 돌림 판 ${x.pending} · `
+        + x.rows.map((r) => `${r.account} ${r.multiple === null ? '24시간 숫자 전' : `${r.multiple}배`}`).join(', '));
+      if (list.some((x) => x.verdict === '급락')) console.log('  급락 원본은 node tools/돌림표.js --멈춤 <편> --까닭 "씨앗 24시간 평소의 0.3배 밑" 뒤 --예비씀 --쓰기');
+      console.log('  사람 눈으로 더 볼 것: 고칠 실수(댓글 · 시험관 지적) · 대상국 큰 사건(재난 · 애도일 — 그날 칸의 나라)');
+    }
+    if (list.some((x) => x.verdict === '급락')) process.exitCode = 1;
+    return;
+  }
   if (has('--장부')) {
     const { rows, doubles } = ledgerRows(run, opts);
     if (has('--json')) { console.log(JSON.stringify({ from, days, rows, doubles }, null, 2)); return; }
@@ -325,5 +361,5 @@ function main() {
   }
 }
 
-module.exports = { rotationAccounts, versionState, loadPieces, existingPlates, ledgerRows, plateFor };
+module.exports = { rotationAccounts, versionState, loadPieces, existingPlates, ledgerRows, plateFor, checkStops };
 if (require.main === module) main();

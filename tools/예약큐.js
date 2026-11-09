@@ -207,6 +207,10 @@ function collect(server, accounts, now) {
           const seen = ids.length ? server.posts.find((post) => ids.includes(post.channelId) && Math.abs(Date.parse(post.publishedAt) - at) <= WINDOW_MS) : null;
           if (seen) { state = '게시됨'; url = url || seen.url; } else if (ids.length) { unseen = true; warnings.push(`슬롯이 지났는데 나가지 않음: ${p.계정} · ${kstDate(at)} · ${dir.name}`); }
         }
+        // 게시 장부 잠금(11-10, tools/게시장부.js) — 2시간 넘은 「거는 중」은 끊긴 회차다: 그 플랫폼 예약 목록부터 읽고 닫는다
+        if (local.상태 === '거는 중' && now - Date.parse(local.거는중 || 0) > GRACE_MS) {
+          warnings.push(`거는 중이 2시간 넘음: ${p.계정} · ${dir.name} — 그 플랫폼 예약 목록부터 읽고 node tools/게시장부.js 끝 · 풀기`);
+        }
         if (Number.isFinite(at) && at + GRACE_MS < now && at > now - LOOKBACK_DAYS * 86400000 && !DONE.has(state) && state !== '보류') {
           warnings.push(`슬롯이 지났는데 예약도 게시도 안 됨: ${p.계정} · ${kstDate(at)} · ${dir.name}`);
         }
