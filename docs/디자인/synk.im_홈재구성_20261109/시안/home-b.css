@@ -1,0 +1,32 @@
+/* synk.im 홈 시안 B 「빼기 판」 · 2026-11-09 — 공개본 위에 덮는 것만. 입구는 그대로, 네 무대는 칸에서 글을 덜어 그림이 앞에 서게 한다. */
+@font-face{font-family:'V13 Serif';src:url('/pa/NotoSerifKR-300.woff2') format('woff2');font-weight:300;font-display:swap}
+
+/* 회사 머리 바로 아래 무대로 잇는다 */
+.cover{padding-bottom:clamp(40px,5vw,72px)}
+#business.section{padding-top:clamp(40px,5vw,72px)}
+.cover .lead{max-width:32em}
+
+/* 네 무대: 칸 글은 이름 · 제목 · 들어가는 길만 */
+.hs-txt{padding-bottom:0}
+.hs-go,.hs-link{margin-top:14px}
+
+/* 지키는 것 · 어디로 가나: 검정 판 */
+.b-band{--ink:#f4f4f5;--ink-2:#c9cbd1;--ink-3:#a2a5ad;--line:rgba(255,255,255,.18);background:#000;color:var(--ink);padding-block:clamp(72px,8vw,120px)}
+.b-label{margin:0 0 clamp(16px,1.6vw,22px);font-size:15px;font-weight:600;line-height:1.4;color:var(--ink-3)}
+.b-beliefs{list-style:none;margin:0;padding:0;border-bottom:1px solid var(--line)}
+.b-beliefs li{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:clamp(12px,4vw,64px);align-items:baseline;padding-block:clamp(20px,2.2vw,30px);border-top:1px solid var(--line)}
+.b-beliefs h2{margin:0;font-family:'V13 Serif','Serif KR',serif;font-size:clamp(28px,3.5vw,50px);line-height:1.26;font-weight:300;letter-spacing:-.01em}
+.b-beliefs p{margin:0;font-size:clamp(16px,1.2vw,17px);line-height:1.65;color:var(--ink-2);text-wrap:pretty}
+.b-way{margin-top:clamp(56px,6vw,88px)}
+.b-way-line{margin:0;max-width:34em;font-size:clamp(22px,2.3vw,33px);line-height:1.42;font-weight:560;letter-spacing:-.012em;text-wrap:pretty}
+.b-way-line span:first-child{color:var(--ink-3)}
+
+/* 아래 쓸모 구역은 한 단계 작게 */
+.duo-band{padding-block:clamp(64px,6.5vw,96px) clamp(40px,4vw,56px)}
+.duo-band .h2,.ask .h2{font-size:clamp(26px,2.7vw,38px);letter-spacing:-.018em;font-weight:620}
+.duo-pf .lead{font-size:16px}
+.foot{margin-top:0}
+
+@media (max-width:900px){
+  .b-beliefs li{grid-template-columns:minmax(0,1fr);gap:8px}
+}
