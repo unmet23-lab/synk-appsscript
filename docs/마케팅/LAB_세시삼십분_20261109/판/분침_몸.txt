@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed, on a PURE flat white background (#FFFFFF) with nothing else in the picture and no shadow on the background.
+
+Use Image 1 as the base picture: keep EXACTLY the same long sky-blue needle-felted clock minute hand — same shape, same length, same position in the frame, same ring at the bottom, same wool color and texture, same white background, same light.
+
+Change: remove the face completely — no eyes, no eyebrows, no cheeks, no mouth. The whole hand is plain sky-blue felted wool. Absolutely no text, letters, numbers, logos or symbols anywhere.

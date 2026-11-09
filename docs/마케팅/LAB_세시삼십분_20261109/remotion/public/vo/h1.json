@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h1",
+ "text": "세 시!",
+ "dur": 0.664,
+ "words": [
+  {
+   "text": "세",
+   "start": 0.02,
+   "end": 0.182
+  },
+  {
+   "text": "시!",
+   "start": 0.303,
+   "end": 0.664
+  }
+ ],
+ "source": {
+  "key": "72d9cbb4fc458b715acf5e8c9b36c16e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "toneup",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 192
+ }
+}

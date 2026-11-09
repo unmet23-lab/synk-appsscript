@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m4",
+ "text": "세 시 삼십 분!",
+ "dur": 1.134,
+ "words": [
+  {
+   "text": "세",
+   "start": 0.03,
+   "end": 0.151
+  },
+  {
+   "text": "시",
+   "start": 0.252,
+   "end": 0.332
+  },
+  {
+   "text": "삼십",
+   "start": 0.393,
+   "end": 0.675
+  },
+  {
+   "text": "분!",
+   "start": 0.755,
+   "end": 1.134
+  }
+ ],
+ "source": {
+  "key": "5107e78eab9e95e9ccfd6b24e1b7c92d",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 207
+ }
+}

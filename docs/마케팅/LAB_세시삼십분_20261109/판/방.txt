@@ -1,0 +1,13 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Mongle: the coral needle-felted wool ghost-shaped mascot in the attached reference photos (use them ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy black bead eyes with no whites, pink felt cheeks). Mongle has NO mouth, NO arms, NO legs, ever — any object floats right next to its body or rests against it.
+
+Place: a cozy needle-felted study corner in mid-afternoon — a warm wooden desk across the bottom of the frame with an open felt notebook, a small felt pencil cup and a tiny potted felt succulent; a window on the far left edge with soft afternoon sunlight and a pale November sky; a muted sage-green felt wall. Hanging high on the wall, centered, a BIG round felt wall clock: thick warm-wood rim, cream felt face, twelve small dark-brown felt tick marks (the four at 12, 3, 6 and 9 a little longer), a small round dark-wood button exactly at the center. The clock face has NO hands at all and NO numbers — just the tick marks and the center button. The clock is about 78% of the image width, its center at about 45% of the image height.
+
+Layout: keep the TOP 22% of the image calm and uncluttered (plain sage wall) — text will be added there later.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, warm natural light from the left, gentle depth of field, cute but not babyish (for university students and young workers). Absolutely no text, letters, numbers, logos or symbols anywhere (no speech bubbles, no question marks drawn as symbols — they will be added later). Keep Mongle's eyes plain glossy black beads with no whites.
+
+Medium shot: the big clock fills the upper-middle of the frame. Below it, in the lower-left third, Mongle floats just above the desk (Mongle about 30% of the image width), its body tilted back a little and its eyes looking UP at the clock, cheeks pink, one small felt notebook floating beside it — a curious, slightly puzzled look. Keep the space directly under the clock center (from the clock down to the desk) clear of objects so a long clock hand pointing straight down can be added later.

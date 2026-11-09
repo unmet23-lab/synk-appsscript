@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1bd5e-80a9-78a0-883e-edaaabe96121"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll keep the wool head and framing the same, changing only the face to a joyful cheer.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The blue wool head cheers with a wide-open smile, happy arched eyebrows, and rosy pink cheeks."}}
+{"type":"turn.completed","usage":{"input_tokens":75452,"cached_input_tokens":60160,"cache_write_input_tokens":0,"output_tokens":595,"reasoning_output_tokens":78}}

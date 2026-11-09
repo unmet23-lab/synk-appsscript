@@ -1,0 +1,48 @@
+{
+ "hourBody": {
+  "w": 547,
+  "h": 1534,
+  "px": 272.5,
+  "py": 1357.9,
+  "len": 1341.9
+ },
+ "minuteBody": {
+  "w": 164,
+  "h": 1641,
+  "px": 81.6,
+  "py": 1557.2,
+  "len": 1538.2
+ },
+ "hourHeadCalm": {
+  "w": 884,
+  "h": 883
+ },
+ "hourHeadShout": {
+  "w": 883,
+  "h": 884
+ },
+ "hourHeadCheer": {
+  "w": 883,
+  "h": 884
+ },
+ "minuteHeadCalm": {
+  "w": 875,
+  "h": 887
+ },
+ "minuteHeadShout": {
+  "w": 875,
+  "h": 886
+ },
+ "minuteHeadCheer": {
+  "w": 875,
+  "h": 887
+ },
+ "hourHeadGasp": {
+  "w": 883,
+  "h": 884
+ },
+ "minuteHeadGasp": {
+  "w": 874,
+  "h": 886
+ }
+}

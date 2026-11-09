@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed, on a PURE flat white background (#FFFFFF) with nothing else in the picture and no shadow on the background.
+
+Subject: ONE clock MINUTE hand made of needle-felted wool — a LONG, slim, elegant pointed arrow shape in clear sky-blue wool, standing straight up (tip at the top), centered, filling about 88% of the image height and about 16% of the width. At the bottom end it has a small round hole ring (where it attaches to the clock center). In its lower third it has a tiny cute felt face: two small glossy black bead eyes, small dark-brown felt eyebrows, rosy felt cheeks and a small closed smiling mouth stitched in dark thread. It looks like a quick, sharp, know-it-all character.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, soft even studio light, crisp edges against the white. Absolutely no text, letters, numbers, logos or symbols anywhere.

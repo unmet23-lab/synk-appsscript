@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n4",
+ "text": "십 분, 이십 분, 삼십 분!",
+ "dur": 1.658,
+ "words": [
+  {
+   "text": "십",
+   "start": 0.02,
+   "end": 0.202
+  },
+  {
+   "text": "분,",
+   "start": 0.283,
+   "end": 0.444
+  },
+  {
+   "text": "이십",
+   "start": 0.505,
+   "end": 0.747
+  },
+  {
+   "text": "분,",
+   "start": 0.808,
+   "end": 0.949
+  },
+  {
+   "text": "삼십",
+   "start": 1.01,
+   "end": 1.293
+  },
+  {
+   "text": "분!",
+   "start": 1.353,
+   "end": 1.658
+  }
+ ],
+ "source": {
+  "key": "75a61dcdc3de04fac4630c6fb69d4ef1",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 473
+ }
+}

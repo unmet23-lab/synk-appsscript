@@ -1,0 +1,120 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_6a3350f8e5a50a4abe948fa8",
+  "name": "도윤"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "tonedown",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1109,
+  "lufs": -17
+ },
+ "made": "2026-11-09T06:31:18.693Z",
+ "lines": [
+  {
+   "id": "m1",
+   "text": "삼 시 삼십 분…?",
+   "dur": 2.364,
+   "syllablesPerSec": 2.12,
+   "src": "m1.wav",
+   "key": "6ba3964e60755648804bc03b705e4093",
+   "words": 4
+  },
+  {
+   "id": "h1",
+   "text": "세 시!",
+   "dur": 0.664,
+   "syllablesPerSec": 3.01,
+   "src": "h1.wav",
+   "key": "72d9cbb4fc458b715acf5e8c9b36c16e",
+   "words": 2
+  },
+  {
+   "id": "m2",
+   "text": "세…? 삼…?",
+   "dur": 1.393,
+   "syllablesPerSec": 1.44,
+   "src": "m2.wav",
+   "key": "dc8a4074a02aabe779e862f35a5df7b7",
+   "words": 2
+  },
+  {
+   "id": "n1",
+   "text": "삼십 분!",
+   "dur": 0.745,
+   "syllablesPerSec": 4.03,
+   "src": "n1.wav",
+   "key": "7d035e569de04480900c14e522f6df22",
+   "words": 2
+  },
+  {
+   "id": "h2",
+   "text": "세!",
+   "dur": 0.46,
+   "syllablesPerSec": 2.17,
+   "src": "h2.wav",
+   "key": "c5b3d0b90cc40be660754b569bf0a959",
+   "words": 1
+  },
+  {
+   "id": "n2",
+   "text": "삼십!",
+   "dur": 0.527,
+   "syllablesPerSec": 3.8,
+   "src": "n2.wav",
+   "key": "6fe7d6a7c2075bbf005522e730c630ab",
+   "words": 1
+  },
+  {
+   "id": "h4",
+   "text": "한 시, 두 시, 세 시!",
+   "dur": 1.365,
+   "syllablesPerSec": 4.4,
+   "src": "h4.wav",
+   "key": "989f7e2fd71bf83e39049b35585d702c",
+   "words": 6
+  },
+  {
+   "id": "n4",
+   "text": "십 분, 이십 분, 삼십 분!",
+   "dur": 1.658,
+   "syllablesPerSec": 4.83,
+   "src": "n4.wav",
+   "key": "75a61dcdc3de04fac4630c6fb69d4ef1",
+   "words": 6
+  },
+  {
+   "id": "m4",
+   "text": "세 시 삼십 분!",
+   "dur": 1.134,
+   "syllablesPerSec": 4.41,
+   "src": "m4.wav",
+   "key": "5107e78eab9e95e9ccfd6b24e1b7c92d",
+   "words": 4
+  },
+  {
+   "id": "m5",
+   "text": "열 시… 십오 분…?",
+   "dur": 2.012,
+   "syllablesPerSec": 2.49,
+   "src": "m5.wav",
+   "key": "b1a05f1f8d7bc2837fbd267698f6f3e0",
+   "words": 4
+  },
+  {
+   "id": "m6",
+   "text": "열 시 십오 분!",
+   "dur": 1.12,
+   "syllablesPerSec": 4.46,
+   "src": "m6.wav",
+   "key": "2753240f1f5ce3d9c4c26bcd2e861bd9",
+   "words": 4
+  }
+ ]
+}

@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed, on a PURE flat white background (#FFFFFF) with nothing else in the picture and no shadow on the background.
+
+Use Image 1 as the base picture: keep EXACTLY the same needle-felted wool ball head — same shape, same size, same position in the frame, same wool color and texture, same white background, same light, same bead eyes. Only change the expression.
+
+Change: the face is now startled and meek, like it just got yelled at — a tiny round "o" mouth (dark felt), the brown felt eyebrows raised high and tilted up in the middle in a worried look, the cheeks gone pale pink. Absolutely no text, letters, numbers, logos, sweat drops or symbols anywhere.

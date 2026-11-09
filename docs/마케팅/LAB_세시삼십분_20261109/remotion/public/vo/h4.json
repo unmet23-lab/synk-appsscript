@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h4",
+ "text": "한 시, 두 시, 세 시!",
+ "dur": 1.365,
+ "words": [
+  {
+   "text": "한",
+   "start": 0.02,
+   "end": 0.162
+  },
+  {
+   "text": "시,",
+   "start": 0.243,
+   "end": 0.364
+  },
+  {
+   "text": "두",
+   "start": 0.527,
+   "end": 0.608
+  },
+  {
+   "text": "시,",
+   "start": 0.689,
+   "end": 0.79
+  },
+  {
+   "text": "세",
+   "start": 0.891,
+   "end": 1.013
+  },
+  {
+   "text": "시!",
+   "start": 1.114,
+   "end": 1.365
+  }
+ ],
+ "source": {
+  "key": "989f7e2fd71bf83e39049b35585d702c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 168
+ }
+}

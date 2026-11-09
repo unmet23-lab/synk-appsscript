@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m5_sad",
+ "text": "열 시… 십오 분…?",
+ "dur": 1.841,
+ "words": [
+  {
+   "text": "열",
+   "start": 0.02,
+   "end": 0.18
+  },
+  {
+   "text": "시…",
+   "start": 0.301,
+   "end": 0.441
+  },
+  {
+   "text": "십오",
+   "start": 1.164,
+   "end": 1.365
+  },
+  {
+   "text": "분…?",
+   "start": 1.446,
+   "end": 1.841
+  }
+ ],
+ "source": {
+  "key": "414c1f8bbef625746685ba079573e976",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "sad",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 148
+ }
+}

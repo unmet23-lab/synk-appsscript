@@ -1,0 +1,111 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../음성/후보.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1109,
+  "lufs": -17
+ },
+ "made": "2026-11-09T00:10:39.536Z",
+ "lines": [
+  {
+   "id": "h1_normal",
+   "text": "세 시!",
+   "dur": 0.517,
+   "syllablesPerSec": 3.87,
+   "src": "h1_normal.wav",
+   "key": "2e52871a213a9ab816ac10acad52131b",
+   "words": 2
+  },
+  {
+   "id": "h1_toneup",
+   "text": "세 시!",
+   "dur": 0.664,
+   "syllablesPerSec": 3.01,
+   "src": "h1_toneup.wav",
+   "key": "72d9cbb4fc458b715acf5e8c9b36c16e",
+   "words": 2
+  },
+  {
+   "id": "h1_happy",
+   "text": "세 시!",
+   "dur": 0.734,
+   "syllablesPerSec": 2.72,
+   "src": "h1_happy.wav",
+   "key": "00d30612a65701821d276b56dc40855c",
+   "words": 2
+  },
+  {
+   "id": "h2_normal",
+   "text": "세!",
+   "dur": 0.46,
+   "syllablesPerSec": 2.17,
+   "src": "h2_normal.wav",
+   "key": "1796b2a27f64d1b2716028776668c435",
+   "words": 1
+  },
+  {
+   "id": "h2_toneup",
+   "text": "세!",
+   "dur": 0.46,
+   "syllablesPerSec": 2.17,
+   "src": "h2_toneup.wav",
+   "key": "c5b3d0b90cc40be660754b569bf0a959",
+   "words": 1
+  },
+  {
+   "id": "h2_seed",
+   "text": "세!",
+   "dur": 0.533,
+   "syllablesPerSec": 1.88,
+   "src": "h2_seed.wav",
+   "key": "798ebcbdcd9375dcc61d85304638b75f",
+   "words": 1
+  },
+  {
+   "id": "m5_sad",
+   "text": "열 시… 십오 분…?",
+   "dur": 1.841,
+   "syllablesPerSec": 2.72,
+   "src": "m5_sad.wav",
+   "key": "414c1f8bbef625746685ba079573e976",
+   "words": 4
+  },
+  {
+   "id": "m5_down",
+   "text": "열 시… 십오 분…?",
+   "dur": 2.539,
+   "syllablesPerSec": 1.97,
+   "src": "m5_down.wav",
+   "key": "b1a05f1f8d7bc2837fbd267698f6f3e0",
+   "words": 4
+  },
+  {
+   "id": "m6_toneup",
+   "text": "열 시 십오 분!",
+   "dur": 1.12,
+   "syllablesPerSec": 4.46,
+   "src": "m6_toneup.wav",
+   "key": "2753240f1f5ce3d9c4c26bcd2e861bd9",
+   "words": 4
+  },
+  {
+   "id": "m6_normal",
+   "text": "열 시 십오 분!",
+   "dur": 1.119,
+   "syllablesPerSec": 4.47,
+   "src": "m6_normal.wav",
+   "key": "05fcba4e7b61324f0d6e3b5b25a2e0d2",
+   "words": 4
+  }
+ ]
+}

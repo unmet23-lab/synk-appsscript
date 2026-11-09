@@ -1,0 +1,19 @@
+{
+  "note": "E32 엉킴 후보 — 올리기 전 검사 「목소리 엉킴」(범수 angry 짧은 줄 · 도윤 whisper)에 걸려 감정을 바꿔 견준다. 받아쓰기 · 엉킴으로 고른 뒤 계획.json에 옮긴다.",
+  "voice": { "id": "tc_5c3c52cb5827e00008dd7f3b", "name": "범수" },
+  "defaults": { "model": "ssfm-v30", "lang": "ko", "emotion": "normal", "intensity": 1, "tempo": 1, "seed": 1109, "lufs": -17 },
+  "out": "../.후보",
+  "trim": "both",
+  "lines": [
+    { "id": "h1_normal", "text": "세 시!" },
+    { "id": "h1_toneup", "text": "세 시!", "emotion": "toneup" },
+    { "id": "h1_happy", "text": "세 시!", "emotion": "happy" },
+    { "id": "h2_normal", "text": "세!" },
+    { "id": "h2_toneup", "text": "세!", "emotion": "toneup" },
+    { "id": "h2_seed", "text": "세!", "emotion": "angry", "seed": 2201 },
+    { "id": "m5_sad", "text": "열 시… 십오 분…?", "voice": { "id": "tc_6a3350f8e5a50a4abe948fa8", "name": "도윤" }, "emotion": "sad" },
+    { "id": "m5_down", "text": "열 시… 십오 분…?", "voice": { "id": "tc_6a3350f8e5a50a4abe948fa8", "name": "도윤" }, "emotion": "tonedown" },
+    { "id": "m6_toneup", "text": "열 시 십오 분!", "voice": { "id": "tc_6a3350f8e5a50a4abe948fa8", "name": "도윤" }, "emotion": "toneup" },
+    { "id": "m6_normal", "text": "열 시 십오 분!", "voice": { "id": "tc_6a3350f8e5a50a4abe948fa8", "name": "도윤" } }
+  ]
+}

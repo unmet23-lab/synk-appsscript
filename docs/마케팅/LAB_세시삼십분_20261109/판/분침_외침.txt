@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed, on a PURE flat white background (#FFFFFF) with nothing else in the picture and no shadow on the background.
+
+Use Image 1 as the base picture: keep EXACTLY the same long sky-blue needle-felted clock minute hand — same shape, same length, same position in the frame, same ring at the bottom, same wool color and texture, same white background, same light. Only change the face, and keep the face at the same place and the same size.
+
+Change: the little face is now loudly shouting and insisting — a WIDE OPEN round shouting mouth (dark felt inside with a tiny pink felt tongue), the brown felt eyebrows slanted sharply down in an angry frown, the bead eyes the same, the cheeks flushed a deeper red. Absolutely no text, letters, numbers, logos or symbols anywhere.

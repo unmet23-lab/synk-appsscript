@@ -1,0 +1,20 @@
+{
+  "note": "LAB 영어 E32 「세 시 삼십 분」 — 영어 목소리 없음(영어는 화면 글, 두 채널 판까지 같은 소리). 몽글 = 도윤, 짧은 바늘 = 범수, 긴 바늘 = 소진(세기 1.0 · 해설 없는 편이라 이 편에서는 긴 바늘 몫). 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_세시삼십분_20261109/음성/계획.json --굽기",
+  "voice": { "id": "tc_666a9871abcf27a5169850d0", "name": "소진" },
+  "defaults": { "model": "ssfm-v30", "lang": "ko", "emotion": "normal", "intensity": 1, "tempo": 1, "seed": 1109, "lufs": -17 },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    { "id": "m1", "text": "삼 시 삼십 분…?", "voice": { "id": "tc_6a3350f8e5a50a4abe948fa8", "name": "도윤" }, "emotion": "tonedown" },
+    { "id": "h1", "text": "세 시!", "voice": { "id": "tc_5c3c52cb5827e00008dd7f3b", "name": "범수" }, "emotion": "toneup" },
+    { "id": "m2", "text": "세…? 삼…?", "voice": { "id": "tc_6a3350f8e5a50a4abe948fa8", "name": "도윤" } },
+    { "id": "n1", "text": "삼십 분!", "emotion": "angry" },
+    { "id": "h2", "text": "세!", "voice": { "id": "tc_5c3c52cb5827e00008dd7f3b", "name": "범수" }, "emotion": "toneup" },
+    { "id": "n2", "text": "삼십!", "emotion": "angry" },
+    { "id": "h4", "text": "한 시, 두 시, 세 시!", "voice": { "id": "tc_5c3c52cb5827e00008dd7f3b", "name": "범수" } },
+    { "id": "n4", "text": "십 분, 이십 분, 삼십 분!" },
+    { "id": "m4", "text": "세 시 삼십 분!", "voice": { "id": "tc_6a3350f8e5a50a4abe948fa8", "name": "도윤" } },
+    { "id": "m5", "text": "열 시… 십오 분…?", "voice": { "id": "tc_6a3350f8e5a50a4abe948fa8", "name": "도윤" }, "emotion": "tonedown", "speed": 1.27 },
+    { "id": "m6", "text": "열 시 십오 분!", "voice": { "id": "tc_6a3350f8e5a50a4abe948fa8", "name": "도윤" }, "emotion": "toneup" }
+  ]
+}

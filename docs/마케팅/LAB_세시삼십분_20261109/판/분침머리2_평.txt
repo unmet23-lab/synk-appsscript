@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed, on a PURE flat white background (#FFFFFF) with nothing else in the picture and no shadow on the background.
+
+Subject: ONE round needle-felted wool ball, seen straight from the front, in clear sky-blue wool (exactly the wool and face style of the attached oval head), centered, filling about 80% of the image width. It has the same big expressive cute face taking up most of the ball: two glossy black bead eyes, thin arched dark-brown felt eyebrows, soft pink felt cheeks, and a small closed smirking mouth stitched in dark thread. A quick, sharp, know-it-all character.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, soft even studio light, crisp edges against the white. Absolutely no text, letters, numbers, logos or symbols anywhere.
