@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "F3",
+ "text": "원인은, 따로 있었어요.",
+ "dur": 1.167,
+ "words": [
+  {
+   "text": "원인은,",
+   "start": 0.03,
+   "end": 0.357
+  },
+  {
+   "text": "따로",
+   "start": 0.402,
+   "end": 0.565
+  },
+  {
+   "text": "있었어요.",
+   "start": 0.61,
+   "end": 1.167
+  }
+ ],
+ "source": {
+  "key": "8b1b083fe45e8b4ccfa2a9760c6d303c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 168
+ }
+}

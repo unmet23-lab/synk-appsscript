@@ -1,0 +1,9 @@
+Use the image generation tool to draw one image. Do not write any code.
+
+Character reference sheet for a short animated film. Warm hand-painted 2D animation style: soft gouache texture, clean shapes, muted winter palette.
+
+One character only: "Minho", a Korean man in his late 20s. Short black hair, kind tired eyes. He wears a chunky MUSTARD-YELLOW knit beanie with a folded cuff, a navy padded jacket, a grey wool scarf, dark jeans and brown boots.
+
+Layout on a plain warm-grey paper background: four full-body views in a row (front, three-quarter, side, back). He wears the mustard beanie in all four views. Two head close-ups at the top right (neutral, smiling), also wearing the beanie.
+
+No text, no labels, no logos. Landscape 16:9.

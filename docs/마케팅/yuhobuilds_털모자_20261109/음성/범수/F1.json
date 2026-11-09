@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "F1",
+ "text": "에이아이로 단편 영화 컷을 차례로 그렸더니, 이상한 게 나왔어요.",
+ "dur": 3.382,
+ "words": [
+  {
+   "text": "에이아이로",
+   "start": 0.02,
+   "end": 0.39
+  },
+  {
+   "text": "단편",
+   "start": 0.446,
+   "end": 0.716
+  },
+  {
+   "text": "영화",
+   "start": 0.759,
+   "end": 0.915
+  },
+  {
+   "text": "컷을",
+   "start": 0.958,
+   "end": 1.157
+  },
+  {
+   "text": "차례로",
+   "start": 1.2,
+   "end": 1.441
+  },
+  {
+   "text": "그렸더니,",
+   "start": 1.484,
+   "end": 1.826
+  },
+  {
+   "text": "이상한",
+   "start": 2.38,
+   "end": 2.664
+  },
+  {
+   "text": "게",
+   "start": 2.706,
+   "end": 2.736
+  },
+  {
+   "text": "나왔어요.",
+   "start": 2.778,
+   "end": 3.382
+  }
+ ],
+ "source": {
+  "key": "e630032af2c52b8a1214ded3c9f28ed7",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.03,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 146
+ }
+}

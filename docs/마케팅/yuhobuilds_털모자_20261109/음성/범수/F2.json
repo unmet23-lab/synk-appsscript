@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "F2",
+ "text": "네 컷 다 맞았어요. 모자는 이제, 나갈 때만 씁니다.",
+ "dur": 3.045,
+ "words": [
+  {
+   "text": "네",
+   "start": 0.02,
+   "end": 0.099
+  },
+  {
+   "text": "컷",
+   "start": 0.196,
+   "end": 0.313
+  },
+  {
+   "text": "다",
+   "start": 0.371,
+   "end": 0.449
+  },
+  {
+   "text": "맞았어요.",
+   "start": 0.508,
+   "end": 0.937
+  },
+  {
+   "text": "모자는",
+   "start": 1.288,
+   "end": 1.601
+  },
+  {
+   "text": "이제,",
+   "start": 1.659,
+   "end": 1.795
+  },
+  {
+   "text": "나갈",
+   "start": 2.146,
+   "end": 2.322
+  },
+  {
+   "text": "때만",
+   "start": 2.38,
+   "end": 2.595
+  },
+  {
+   "text": "씁니다.",
+   "start": 2.653,
+   "end": 3.045
+  }
+ ],
+ "source": {
+  "key": "cff93d60349d006f578f885be3e86a48",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.03,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 161
+ }
+}

@@ -1,0 +1,13 @@
+{
+ "id": "04-yuhobuilds-x",
+ "brand": "yuhobuilds",
+ "language": "ko",
+ "audioLanguage": "ko",
+ "alteredContent": true,
+ "madeForKids": false,
+ "_비고": "올라가는 글의 정본. 사람이 읽는 판은 ../게시글.md. 키워드 DM · 첫 댓글 약속 없음. 영상은 판 모두 최종.mp4 하나.",
+ "platform": "x",
+ "account": "@yuhobuilds",
+ "format": "video-post",
+ "caption": "AI 그림으로 컷을 차례로 그렸더니, 문 앞에서 벗은 털모자가 네 컷 내리 머리 위로 돌아왔어요. 국수 먹을 때도요.\n참고로 넣은 인물 설정 그림이 전부 모자를 쓰고 있었어요. 바뀐 상태를 컷마다 프롬프트에 적고 앞 컷 그림을 참고로 넣자 네 컷 다 맞았어요.\nhttps://synk.im/prompts/#state-change-line"
+}

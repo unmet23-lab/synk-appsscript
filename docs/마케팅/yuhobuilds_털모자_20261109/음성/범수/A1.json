@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "A1",
+ "text": "문 앞에서 벗은 모자, 국수 먹을 땐 또 쓰고 있어요.",
+ "dur": 2.939,
+ "words": [
+  {
+   "text": "문",
+   "start": 0.03,
+   "end": 0.133
+  },
+  {
+   "text": "앞에서",
+   "start": 0.177,
+   "end": 0.411
+  },
+  {
+   "text": "벗은",
+   "start": 0.47,
+   "end": 0.705
+  },
+  {
+   "text": "모자,",
+   "start": 0.749,
+   "end": 0.969
+  },
+  {
+   "text": "국수",
+   "start": 1.541,
+   "end": 1.746
+  },
+  {
+   "text": "먹을",
+   "start": 1.79,
+   "end": 1.966
+  },
+  {
+   "text": "땐",
+   "start": 2.01,
+   "end": 2.098
+  },
+  {
+   "text": "또",
+   "start": 2.142,
+   "end": 2.215
+  },
+  {
+   "text": "쓰고",
+   "start": 2.259,
+   "end": 2.464
+  },
+  {
+   "text": "있어요.",
+   "start": 2.508,
+   "end": 2.939
+  }
+ ],
+ "source": {
+  "key": "c6dd2367493ccddcd5f69873c4f36e38",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 152
+ }
+}

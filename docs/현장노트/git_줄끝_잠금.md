@@ -909,6 +909,13 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 줄 번호는 `awk '/머리/{p=1} p'`처럼 값이 안 드는 꼴로 쓰고, 긴 일은 scratchpad에 스크립트로 써서 글자 그대로의 경로로 `bash "C:/…/x.sh"` 한 명령만 부른다. 공용 작업본의 `.tmp`는 `cd` 없이 절대 경로로 읽는다.
 - 다시 확인: 같은 스크립트를 글자 그대로의 경로로 부르면 통과한다.
 
+### 멈춘 예약 회차의 미커밋 기록을 이을 때 `git diff | git apply`는 줄끝에 막히고 다른 작업본 `git -C`는 격리에 막힌다 — 그 작업본은 파일로만 읽어 더한 줄을 넣는다 (2026-11-09 Claude)
+
+- 증상: PowerShell 파이프로 받은 패치가 `patch does not apply`, Bash `git -C <다른 워크트리>`는 「isolated in the worktree」 거절, `git merge-file`은 가짜 충돌 10개, 손으로 짠 줄 대조는 JSON에서 69묶음으로 깨졌다.
+- 원인: PowerShell 파이프가 줄끝을 CRLF로 다시 쓴다. 세션은 자기 워크트리만 git으로 건드릴 수 있다. 줄끝이 섞인 파일은 merge-file이 온통 다른 줄로 본다.
+- 고침: 편 폴더는 `robocopy /E`로 통째, 기록 파일은 `git show <그 회차 바탕>:<파일>`과 그 작업본 파일을 줄 단위로 견줘 더한 줄 · 그 앞 줄만 찾아 내 파일에 넣는다. JSON은 항목 블록을 글자 그대로 잘라 맨 앞에 넣고 `JSON.parse`로 확인한다. 절 머리 가까이 빈 줄을 앞 줄로 잡으면 맨 위에 들어가니 넣은 줄 번호를 본다.
+- 다시 확인: `git diff --stat`의 더한 줄 수가 그 회차와 같다(11-09 프롬프트.json +21, 현장 노트 +1씩).
+
 ## 이력 훑기
 
 ### 큰 blob을 거른 클론에서 `git log -S`·`--find-object`가 「could not fetch」로 끝난다

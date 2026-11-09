@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1109,
+  "lufs": -17
+ },
+ "made": "2026-11-09T00:23:08.393Z",
+ "lines": [
+  {
+   "id": "A1",
+   "text": "문 앞에서 벗은 모자, 국수 먹을 땐 또 쓰고 있어요.",
+   "dur": 2.939,
+   "syllablesPerSec": 6.46,
+   "src": "A1.wav",
+   "key": "c6dd2367493ccddcd5f69873c4f36e38",
+   "words": 10
+  },
+  {
+   "id": "F1",
+   "text": "에이아이로 단편 영화 컷을 차례로 그렸더니, 이상한 게 나왔어요.",
+   "dur": 3.382,
+   "syllablesPerSec": 7.69,
+   "src": "F1.wav",
+   "key": "e630032af2c52b8a1214ded3c9f28ed7",
+   "words": 9
+  },
+  {
+   "id": "A3",
+   "text": "벗은 다음 컷도, 그다음 컷도. 네 컷 내리 다 썼어요.",
+   "dur": 3.462,
+   "syllablesPerSec": 5.49,
+   "src": "A3.wav",
+   "key": "83fc2e58886f9623e09a8c614d9302f3",
+   "words": 10
+  },
+  {
+   "id": "F3",
+   "text": "원인은, 따로 있었어요.",
+   "dur": 1.167,
+   "syllablesPerSec": 7.71,
+   "src": "F3.wav",
+   "key": "8b1b083fe45e8b4ccfa2a9760c6d303c",
+   "words": 3
+  },
+  {
+   "id": "A4",
+   "text": "참고로 넣은 인물 설정 그림이, 전부 모자를 쓰고 있었거든요. 글에 없는 건, 그 그림대로 그린 거죠.",
+   "dur": 5.294,
+   "syllablesPerSec": 7.18,
+   "src": "A4.wav",
+   "key": "b7573fa92f0b8d73e7902ed0f44c00f4",
+   "words": 16
+  },
+  {
+   "id": "A5",
+   "text": "그래서 컷마다 프롬프트에 적었어요. 머리에 모자 없음, 의자 위. 앞 컷 그림도 참고로 하나 더 넣고요.",
+   "dur": 5.667,
+   "syllablesPerSec": 6.88,
+   "src": "A5.wav",
+   "key": "7d2fe455c95665711460265de59b9f73",
+   "words": 16
+  },
+  {
+   "id": "F2",
+   "text": "네 컷 다 맞았어요. 모자는 이제, 나갈 때만 씁니다.",
+   "dur": 3.045,
+   "syllablesPerSec": 6.24,
+   "src": "F2.wav",
+   "key": "cff93d60349d006f578f885be3e86a48",
+   "words": 9
+  }
+ ]
+}

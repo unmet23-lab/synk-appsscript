@@ -1,0 +1,115 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "A5",
+ "text": "그래서 컷마다 프롬프트에 적었어요. 머리에 모자 없음, 의자 위. 앞 컷 그림도 참고로 하나 더 넣고요.",
+ "dur": 5.667,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.252
+  },
+  {
+   "text": "컷마다",
+   "start": 0.33,
+   "end": 0.67
+  },
+  {
+   "text": "프롬프트에",
+   "start": 0.748,
+   "end": 1.166
+  },
+  {
+   "text": "적었어요.",
+   "start": 1.212,
+   "end": 1.615
+  },
+  {
+   "text": "머리에",
+   "start": 2.203,
+   "end": 2.467
+  },
+  {
+   "text": "모자",
+   "start": 2.529,
+   "end": 2.715
+  },
+  {
+   "text": "없음,",
+   "start": 2.776,
+   "end": 3.071
+  },
+  {
+   "text": "의자",
+   "start": 3.335,
+   "end": 3.52
+  },
+  {
+   "text": "위.",
+   "start": 3.613,
+   "end": 3.675
+  },
+  {
+   "text": "앞",
+   "start": 4.032,
+   "end": 4.108
+  },
+  {
+   "text": "컷",
+   "start": 4.155,
+   "end": 4.279
+  },
+  {
+   "text": "그림도",
+   "start": 4.326,
+   "end": 4.558
+  },
+  {
+   "text": "참고로",
+   "start": 4.604,
+   "end": 4.899
+  },
+  {
+   "text": "하나",
+   "start": 4.945,
+   "end": 5.069
+  },
+  {
+   "text": "더",
+   "start": 5.131,
+   "end": 5.208
+  },
+  {
+   "text": "넣고요.",
+   "start": 5.255,
+   "end": 5.667
+  }
+ ],
+ "source": {
+  "key": "7d2fe455c95665711460265de59b9f73",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.03,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 169
+ }
+}

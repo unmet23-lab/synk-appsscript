@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1bd54-a04d-7563-866b-258124ef9041"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the imagegen skill and your reference sheet to keep Minho’s appearance consistent in the warm noodle-shop scene.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":69524,"cached_input_tokens":63872,"cache_write_input_tokens":0,"output_tokens":1086,"reasoning_output_tokens":303}}

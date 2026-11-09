@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1bdb4-a624-7390-a35a-84a94c4d2d36"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 사용해 앞 컷과 이어지는 옆모습 장면을 그릴게요. 민호는 맨머리로 앉아 손을 비비며 웃고, 겨자색 털모자는 오른쪽 빈 의자 위에 또렷하게 놓겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":163324,"cached_input_tokens":138112,"cache_write_input_tokens":0,"output_tokens":1713,"reasoning_output_tokens":265}}

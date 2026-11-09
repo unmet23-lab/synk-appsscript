@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1bd9f-4cfc-71a0-8653-04e31149e6ab"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬로 앞 컷과 이어지는 가까운 장면을 그릴게요. 민호는 모자 없이 국수를 먹고, 겨자색 털모자는 오른쪽 아래 빈 의자에 둥근 형태로 또렷하게 담겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":147955,"cached_input_tokens":112512,"cache_write_input_tokens":0,"output_tokens":1329,"reasoning_output_tokens":182}}
