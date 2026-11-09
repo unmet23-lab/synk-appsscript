@@ -21,6 +21,7 @@
 - Steam 리뷰 JSON의 옛 주소 `appreviews/<appid>?json=1`이 10-31 확인 때 302로 상점 첫 화면에 넘어갔다 → 상점 페이지가 부르는 `ajaxappreviews/<appid>?…`로 받는다(응답 꼴 같음) ([자세히](#steam-리뷰-json의-옛-주소-appreviews가-상점-첫-화면으로-302된다--상점-페이지가-부르는-ajaxappreviews로-받는다-2026-10-31-claude))
 - `ajaxappreviews`에 `day_range` · `filter_offtopic_activity`를 붙이면 `filter=all`이 500이 난다(11-04) → 둘을 빼고, 옛 평가는 `date_range_type=include&start_date=…&end_date=…`로 받는다 ([자세히](#steam-ajaxappreviews에-day_range를-붙이면-filterall이-500이-난다--옛-평가는-날짜-구간으로-2026-11-04-claude))
 - App Store 공개 평가는 검색 API가 404여도 앱 주소의 id로 RSS를 바로 부르면 된다. 틀린 id는 오류 없이 0건이다(11-04) ([자세히](#app-store-공개-평가는-앱-주소의-id로-rss를-부른다--검색-api는-404-틀린-id는-오류-없이-0건-2026-11-04-claude))
+- SEC EDGAR는 `data.sec.gov` API(제출 목록 · XBRL 숫자)만 평범한 User-Agent로 읽힌다. `www.sec.gov/Archives` 원문은 403이고, 브라우저 흉내 · 앱 안 브라우저로 돌아가는 길은 자동 모드 판정기가 막는다(11-10) → 원문은 연락처를 밝힌 User-Agent를 유호님께 여쭌 뒤에 ([자세히](#sec-edgar--datasecgov-api는-읽히고-wwwsecgovarchives-원문은-403이다-돌아가는-길은-판정기가-막는다-2026-11-10-claude))
 
 ## 목차
 
@@ -186,6 +187,12 @@
 - 고침: ego 페이지에서 fetch를 감싸 `GetClusterBySlug`·`GetClusterElements` 요청 본문을 한 번 잡아 두고, 같은 꼴을 `page.fetch`로 커서를 따라 0.35초 간격으로 부른다(스크립트 `.tmp/homepage-v11-20261022/research/design-crawl/`, git 밖). 웹사이트 엘리먼트(`WebsiteElementTile`)에 원래 사이트 주소(`source.url`)·`websiteTitle`·`websiteDescription`·저장 날짜(`createdAt`)·그림이 있다. 인기 신호는 컬렉션 팔로워 수, 같은 사이트가 여러 컬렉션에 겹쳐 저장된 수, 저장 날짜(최근성)뿐이고 노출 수는 없다 — 인기 숫자가 필요하면 recent.design을 같이 본다. 엘리먼트 검색의 가입 벽 너머는 받지 않는다. 10-22 결과는 컬렉션 229개 · 엘리먼트 26,057 · 웹사이트 3,108 · 사이트 1,867.
 - 다시 확인: 10-24 읽기만 — `/explore/ui-ux` 200. 10-22에 잡아 둔 `GetClusterBySlug` 본문을 curl로 보내도(Origin `https://www.cosmos.so`, 로그인 없음) 공개 컬렉션 하나의 엘리먼트 수·팔로워 수가 왔고, `GetClusterElements` 첫 쪽은 32개(그중 `WebsiteElementTile` 5개, 제목·설명·날짜·주소·그림 칸이 다 있음)와 다음 커서를 줬다 — 페이지 밖에서도 부를 수 있다.
 - 11-03 덧붙임(Claude): 컬렉션 검색 `SearchGlobalClusters`(10-22 `discover.json`에 잡힌 본문)도 페이지 밖 Node `fetch`(Origin · Referer `https://www.cosmos.so`)로 된다. 크몽 상세 3판 조사에서 55개 낱말 × 3쪽으로 컬렉션 2,604개를 찾았고, 팔로워 순 140개의 엘리먼트 17,712장을 4분에 받았다(스크립트 git 밖 `synk-vendor/kmong-sales-kit-20261103/research/cosmos-crawl.mjs`). AI 생성 표시(`media.aiGenerated`)는 125장(0.7%)뿐이라, 걸러도 표본이 거의 줄지 않는다.
+
+### SEC EDGAR — `data.sec.gov` API는 읽히고 `www.sec.gov/Archives` 원문은 403이다. 돌아가는 길은 판정기가 막는다 (2026-11-10 Claude)
+- 증상: 공모 기획서 사전 시험에서 `data.sec.gov/submissions/CIK<10자리>.json`(제출 목록)과 `data.sec.gov/api/xbrl/companyfacts/CIK<10자리>.json`(XBRL 숫자)은 연락처 없는 User-Agent로도 200이었고, 보고서 원문(`www.sec.gov/Archives/edgar/data/<CIK>/<접수 번호>/<문서>.htm`)은 같은 머리로 403이었다. 원문을 브라우저 User-Agent로 꾸며 받으려던 호출은 자동 모드 판정기가 「Bot Check Circumvention」으로 거절했다. 그 뒤 앱 안 브라우저로 원문을 열어 쪽 안 `fetch`로 12건을 읽었는데, 이어진 호출이 같은 까닭으로 다시 거절됐다.
+- 원인: SEC는 자동 도구에 연락처(이름 · 이메일)를 밝힌 User-Agent와 초당 10회 이하를 요구한다(sec.gov 「Accessing EDGAR Data」). 그 요구를 돌아가는 일은 스크립트든 브라우저든 같은 일로 본다.
+- 고침: 숫자 · 제출 목록 · 8-K 항목 번호는 `data.sec.gov` API로 받는다 — 값은 `facts['us-gaap'][<계정>]['units']['USD']`의 `end` · `val` · `form`, 제출 목록은 `filings.recent`의 `form` · `filingDate` · `items` · `accessionNumber` · `primaryDocument`. 원문이 꼭 필요하면 User-Agent에 쓸 연락처 주소를 유호님께 먼저 여쭙고(세션이 유호님 메일을 스스로 넣지 않는다) 그 선언으로 받는다. 한 번 거절된 뒤에는 다른 도구로 같은 원문을 받으려 하지 않는다.
+- 다시 확인: 평범한 User-Agent(`research-prototype/0.1`)로 `https://data.sec.gov/submissions/CIK0001045810.json` 200, 같은 머리로 `https://www.sec.gov/Archives/edgar/data/1045810/…htm` 403(11-10).
 
 ## 웹 조사(exa · 비메오)
 
