@@ -1,0 +1,107 @@
+/* synk.im 홈 시안 v13 · 2026-11-09 — 홈은 회사를 설명하고, 어필은 각 사업 쪽에서 한다(유호님 11-09).
+   기준: 처음 온 사람이 5초 뒤에 무슨 회사이고 왜 하는지 말할 수 있는가. 구역마다 한 가지만 말한다.
+   바닥: 참고 사이트 장부 11-06 평균 — 큰 글 · 여백 · 제목 자간 거의 0 · 둘째 줄 회색 · 카드와 둥글림 없음 · 1px 선. */
+@font-face{font-family:'V13 Serif';src:url('/pa/NotoSerifKR-300.woff2') format('woff2');font-weight:300;font-display:swap}
+
+/* ---------- 입구: 회사 한 줄이 주인공, 질문은 작은 안내 ---------- */
+.gate-doors.visit .gate-say{grid-area:kick;display:block;margin:0 0 clamp(16px,2.6svh,26px);font-size:clamp(24px,2.45vw,38px);line-height:1.28;font-weight:650;letter-spacing:-.012em;color:#fafaf9;text-wrap:balance}
+.gate-say{text-shadow:0 1px 3px rgba(0,0,0,.3),0 0 32px rgba(0,0,0,.55)}
+.gate-say .a{color:#fafaf9;margin-right:.5em}
+.gate-say .b{color:rgba(250,250,249,.74)}
+.visit-nav{display:contents}
+.gate-doors.visit{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"kick kick" "q note" "doors doors"}
+.visit-q{margin:0 0 10px;font-size:15px;font-weight:600;letter-spacing:0;color:var(--g-ink-2)}
+.visit-note{align-self:start;margin:0 0 10px;text-align:right}
+.visit-door strong{font-weight:680;letter-spacing:-.02em}
+
+/* ---------- 구역 공통 ---------- */
+.v13-label{margin:0 0 clamp(18px,2vw,28px);font-size:15px;font-weight:600;line-height:1.4;color:var(--ink-3)}
+.v13-title{margin:0;font-size:clamp(38px,5.4vw,78px);line-height:1.14;font-weight:640;letter-spacing:-.018em;text-wrap:balance}
+.v13-title span{display:block}
+.v13-title .dim{color:var(--ink-3)}
+.v13-lead{margin:clamp(22px,2.4vw,34px) 0 0;max-width:33em;font-size:clamp(18px,1.5vw,21px);line-height:1.65;font-weight:450;color:var(--ink-2);text-wrap:pretty}
+.v13-go{margin:clamp(20px,2vw,28px) 0 0}
+
+/* ---------- 왜 시작했나: 사람의 말이라 명조, 검정 ---------- */
+.v13-why{--ink:#f4f4f5;--ink-2:#c9cbd1;--ink-3:#a2a5ad;--line:rgba(255,255,255,.16);background:#000;color:var(--ink);padding-block:clamp(88px,10vw,148px)}
+.v13-why-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:clamp(32px,6vw,96px);align-items:center}
+.v13-why-title{margin:0;font-family:'V13 Serif','Serif KR',serif;font-size:clamp(36px,5.2vw,76px);line-height:1.24;font-weight:300;letter-spacing:-.01em}
+.v13-why-title span{display:block}
+.v13-why-story{margin:clamp(28px,3vw,44px) 0 0;max-width:30em;font-size:clamp(18px,1.45vw,21px);line-height:1.7;font-weight:400;color:var(--ink-2);text-wrap:pretty}
+.v13-sign{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;margin:clamp(20px,2vw,28px) 0 0;font-size:15px;color:var(--ink-3)}
+.v13-sign strong{font-size:16px;font-weight:650;color:var(--ink)}
+.v13-sign .link{margin-left:6px;color:var(--ink);font-size:15px}
+.v13-why-photo{margin:0;aspect-ratio:1;overflow:hidden;background:#000}
+.v13-why-photo img{display:block;width:100%;height:100%;object-fit:cover}
+
+/* ---------- 무엇을 만드나 + 지키는 것: 흰 바탕 ---------- */
+.v13-what{padding-block:clamp(88px,10vw,152px) clamp(64px,7vw,104px)}
+.v13-what-lead{margin:clamp(24px,2.6vw,38px) 0 0;max-width:31em;font-size:clamp(22px,2.05vw,30px);line-height:1.5;font-weight:450;letter-spacing:-.008em;color:var(--ink-3);text-wrap:pretty}
+.v13-what-lead b{font-weight:650;color:var(--ink)}
+.v13-belief-head{margin:clamp(64px,8vw,120px) 0 0;font-size:15px;font-weight:600;color:var(--ink-3)}
+.v13-beliefs{list-style:none;margin:clamp(14px,1.4vw,20px) 0 0;padding:0;border-bottom:1px solid var(--line)}
+.v13-beliefs li{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:clamp(16px,4vw,64px);align-items:baseline;padding-block:clamp(22px,2.4vw,34px);border-top:1px solid var(--line)}
+.v13-beliefs h3{margin:0;font-size:clamp(25px,2.7vw,38px);line-height:1.25;font-weight:620;letter-spacing:-.012em}
+.v13-beliefs p{margin:0;font-size:clamp(16px,1.2vw,17px);line-height:1.65;color:var(--ink-2);text-wrap:pretty}
+
+/* ---------- 네 가지 일: 줄 넷 + 무대 하나 ---------- */
+.v13-biz{padding-block:clamp(40px,5vw,72px) clamp(88px,10vw,152px)}
+.v13-biz-grid{display:grid;grid-template-columns:minmax(0,1fr) clamp(320px,29vw,420px);gap:clamp(40px,6vw,96px);align-items:start}
+.v13-biz .v13-title{font-size:clamp(34px,4.4vw,62px)}
+.v13-rows{list-style:none;margin:clamp(32px,3.6vw,52px) 0 0;padding:0;border-bottom:1px solid var(--line)}
+.v13-rows li{border-top:1px solid var(--line)}
+.v13-rows a{display:grid;grid-template-columns:clamp(96px,9vw,132px) minmax(0,1fr) auto;gap:clamp(12px,1.6vw,24px);align-items:center;min-height:clamp(84px,7.4vw,108px);padding-block:14px;color:var(--ink);text-decoration:none}
+.v13-name{display:inline-flex;align-items:center;gap:10px;font-size:clamp(18px,1.5vw,21px);font-weight:650;letter-spacing:.01em}
+.v13-line{font-size:clamp(18px,1.55vw,22px);line-height:1.36;font-weight:560;letter-spacing:-.008em;color:var(--ink-2);transition:color .25s var(--ease);text-wrap:balance}
+.v13-rows .arr{font:400 20px/1 var(--mono);color:var(--ink-3);transition:transform .25s var(--ease),color .25s var(--ease)}
+.v13-rows li.is-on .v13-line,.v13-rows a:hover .v13-line{color:var(--ink)}
+.v13-rows li.is-on .arr{color:var(--ink);transform:translateX(4px)}
+.v13-rows a:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+#lab,#shift,#pulse,#path{scroll-margin-top:340px}
+.v13-stage{position:sticky;top:96px;aspect-ratio:3/4;background:#0c0c0d;overflow:hidden}
+.v13-stage .hs-frame{position:absolute;inset:0;aspect-ratio:auto;opacity:0;visibility:hidden;transition:opacity .7s var(--ease),visibility 0s linear .7s}
+.v13-stage .hs-frame.is-on{opacity:1;visibility:visible;transition:opacity .7s var(--ease)}
+.v13-stage .hs-bar{display:none}
+/* 큰 무대의 예약표: 하루 전체를 늘 보이고 지금 줄만 켠다(지난 줄을 접으면 저녁에 칸이 빈다) */
+.v13-stage .hs-board{padding:22px 22px 0}
+.v13-stage .hs-board-head strong{font-size:14px}
+.v13-stage .hs-rows-win{-webkit-mask-image:none;mask-image:none}
+.v13-stage .hs-rows li{font-size:15px;padding:11px 0}
+.v13-stage .hs-rows li.is-next{margin:0 -22px;padding:11px 22px}
+
+/* ---------- 어디로 가나: 검정 ---------- */
+.v13-way{--ink:#f4f4f5;--ink-2:#c9cbd1;--ink-3:#a2a5ad;background:#000;color:var(--ink);padding-block:clamp(88px,10vw,148px)}
+.v13-way .v13-title{font-size:clamp(27px,3.3vw,48px);line-height:1.34;font-weight:620;letter-spacing:-.014em;text-wrap:initial}
+
+/* ---------- 아래 쓸모 구역은 한 단계 작게: 회사 이야기가 주인공, 소식 · 플랫폼 · 문의는 찾아 쓰는 자리 ---------- */
+.duo-band{padding-block:clamp(64px,6.5vw,96px) clamp(40px,4vw,56px)}
+.duo-band .h2,.ask .h2{font-size:clamp(26px,2.7vw,38px);letter-spacing:-.018em;font-weight:620}
+.duo-pf .lead{font-size:16px}
+.foot{margin-top:0}
+
+/* ---------- 휴대폰 ---------- */
+@media (max-width:900px){
+  .v13-why-grid{grid-template-columns:minmax(0,1fr);gap:36px}
+  .v13-biz-grid{display:block}
+  .v13-rows a{grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;padding-block:16px;grid-template-areas:"name arr" "line arr"}
+  .v13-name{grid-area:name}
+  .v13-line{grid-area:line;color:var(--ink);font-size:17px;font-weight:520}
+  .v13-rows .arr{grid-area:arr}
+  /* 무대는 줄 아래에 옆으로 넘기는 한 줄(저절로 돌지 않는다) */
+  .v13-stage{position:static;display:flex;gap:12px;aspect-ratio:auto;background:none;overflow-x:auto;scroll-snap-type:x mandatory;margin:24px calc(var(--gut) * -1) 0;padding:0 var(--gut) 6px;scroll-padding:0 var(--gut);scrollbar-width:none}
+  .v13-stage::-webkit-scrollbar{display:none}
+  .v13-stage .hs-frame{position:relative;inset:auto;flex:0 0 min(64vw,300px);aspect-ratio:3/4;opacity:1;visibility:visible;scroll-snap-align:start}
+  .v13-beliefs li{grid-template-columns:minmax(0,1fr);gap:8px}
+  .gate-doors.visit{grid-template-columns:minmax(0,1fr);grid-template-areas:"kick" "q" "doors" "note"}
+  .visit-note{text-align:left;margin:12px 0 0}
+  #lab,#shift,#pulse,#path{scroll-margin-top:120px}
+}
+@media (max-width:700px),(max-aspect-ratio:4/5){
+  .gate-doors.visit .gate-say{font-size:24px;line-height:1.3;margin-bottom:14px}
+  .gate-say .a,.gate-say .b{display:block;margin:0}
+  .visit-q{font-size:14px;margin-bottom:8px}
+}
+/* 낮은 화면에서도 회사 한 줄은 숨기지 않는다(공개본은 이 높이에서 작은 줄을 숨긴다) */
+@media (max-height:720px){
+  .gate-doors.visit .gate-say{display:block;font-size:clamp(22px,2.2vw,30px);margin-bottom:10px}
+}

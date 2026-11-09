@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>synk.im 홈 시안 비교</title>
+<style>
+@font-face{font-family:SUIT;src:url(/pa/SUIT.woff2) format('woff2');font-weight:100 900}
+:root{--bg:#e9e7e2;--ink:#111;--ink-2:#55565a;--line:rgba(0,0,0,.16)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:SUIT,system-ui,sans-serif;font-size:15px;line-height:1.6;word-break:keep-all}
+.wrap{max-width:1560px;margin:0 auto;padding:40px 40px 96px}
+h1{margin:0;font-size:34px;line-height:1.2;font-weight:680}
+.sub{margin:10px 0 0;color:var(--ink-2);max-width:56em}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:28px}
+.pane h2{margin:0 0 10px;font-size:15px;font-weight:650;display:flex;justify-content:space-between;gap:12px}
+.pane h2 a{font-weight:500;color:var(--ink-2);font-size:14px}
+.frame{position:relative;width:100%;aspect-ratio:1440/900;overflow:hidden;background:#000;box-shadow:0 0 0 1px var(--line)}
+.frame iframe{position:absolute;top:0;left:0;width:1440px;height:900px;border:0;transform-origin:0 0}
+.phones{display:flex;flex-wrap:wrap;gap:40px;margin-top:40px;align-items:flex-start}
+.phone{width:270px}
+.phone .frame{aspect-ratio:390/844}
+.phone .frame iframe{width:390px;height:844px}
+.nums{flex:1;min-width:320px}
+.nums table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.nums th,.nums td{padding:12px 0;border-top:1px solid var(--line);text-align:right;font-weight:500}
+.nums th:first-child,.nums td:first-child{text-align:left;color:var(--ink-2)}
+.nums thead th{border-top:0;font-size:14px;color:var(--ink-2)}
+.nums td:last-child{font-weight:700}
+.nums p{margin:16px 0 0;color:var(--ink-2);font-size:14px}
+.lines{margin-top:28px}
+.lines h3{margin:0 0 10px;font-size:15px;font-weight:650}
+.lines div{display:flex;flex-wrap:wrap;gap:8px}
+.lines button{all:unset;cursor:pointer;padding:9px 14px;border:1px solid var(--line);font-size:14px;font-weight:550;line-height:1.35}
+.lines button:hover{border-color:var(--ink)}
+.lines button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.lines button[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+@media (max-width:900px){.pair{grid-template-columns:1fr}.wrap{padding:24px 16px 64px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>synk.im 홈 — 지금 공개본과 시안</h1>
+  <p class="sub">왼쪽은 지금 공개본, 오른쪽은 시안입니다. 둘 다 실제로 스크롤하고 눌러 볼 수 있습니다. 시안은 공개되지 않았고, 방문 통계에도 세지 않습니다.</p>
+
+  <section class="lines" aria-labelledby="lines-title">
+    <h3 id="lines-title">입구의 회사 한 줄 — 눌러서 시안에 얹어 보기</h3>
+    <div id="line-buttons"></div>
+  </section>
+
+  <div class="pair">
+    <section class="pane"><h2>지금 공개본 <a href="https://synk.im/?nocount=1" target="_blank" rel="noopener">크게 열기 ↗</a></h2><div class="frame"><iframe title="지금 공개본" src="https://synk.im/?nocount=1" data-w="1440"></iframe></div></section>
+    <section class="pane"><h2>시안 <a id="open-wide" href="home.html" target="_blank" rel="noopener">크게 열기 ↗</a></h2><div class="frame"><iframe id="draft-wide" title="시안" src="home.html" data-w="1440"></iframe></div></section>
+  </div>
+
+  <div class="phones">
+    <section class="pane phone"><h2>공개본 · 휴대폰</h2><div class="frame"><iframe title="공개본 휴대폰" src="https://synk.im/?nocount=1" data-w="390"></iframe></div></section>
+    <section class="pane phone"><h2>시안 · 휴대폰</h2><div class="frame"><iframe id="draft-phone" title="시안 휴대폰" src="home.html" data-w="390"></iframe></div></section>
+    <section class="nums" aria-label="실측">
+      <table>
+        <thead><tr><th>같은 도구로 잰 값</th><th>공개본</th><th>시안</th></tr></thead>
+        <tbody id="num-rows"></tbody>
+      </table>
+      <p id="num-note"></p>
+    </section>
+  </div>
+</div>
+<script>
+const LINES = [
+  ["사람마다 막히는 곳이 다릅니다","해 본 결과를 읽고, 다음 도움을 맞춰 주는 AI를 만듭니다"],
+  ["사람마다 막히는 곳이 다릅니다","그래서 쓸수록 나를 아는 AI를 만듭니다"],
+  ["한 명씩 맞춰 줄 시간이 없어서 시작했습니다","해 본 결과를 읽고, 다음 도움을 맞춰 주는 AI를 만듭니다"],
+  ["몽골의 한 학원에서 시작한, 쓸수록 나를 아는 AI"],
+  ["학생 한 명 한 명을 챙기려다, 쓸수록 나를 아는 AI를 만들게 됐습니다"],
+  ["세상을 아는 AI는 많습니다","우리는 쓸수록 나를 아는 AI를 만듭니다"]
+];
+const NUMS = [["컴퓨터 쪽 길이(화면 수)","10.2","7.7"],["휴대폰 쪽 길이(화면 수)","12.8","9.0"],["글자 수(컴퓨터)","4,661","2,191"],["창업 이유가 나오는 자리(컴퓨터)","6.5화면째","1화면째"],["위 메뉴 항목(스크롤 뒤)","14","10"]];
+const fit = () => document.querySelectorAll('.frame iframe').forEach(f => { f.style.transform = `scale(${f.parentElement.clientWidth / +f.dataset.w})`; });
+addEventListener('resize', fit); fit();
+const box = document.getElementById('line-buttons');
+const pick = i => {
+  const q = i ? `?line=${encodeURIComponent(LINES[i].join('|'))}` : '';
+  document.getElementById('draft-wide').src = 'home.html' + q;
+  document.getElementById('draft-phone').src = 'home.html' + q;
+  document.getElementById('open-wide').href = 'home.html' + q;
+  [...box.children].forEach((b, k) => b.setAttribute('aria-pressed', k === i));
+};
+LINES.forEach((l, i) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = l.filter(Boolean).join(' / '); b.setAttribute('aria-pressed', !i); b.onclick = () => pick(i); box.append(b); });
+document.getElementById('num-rows').innerHTML = NUMS.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('');
+</script>
+</body>
+</html>
