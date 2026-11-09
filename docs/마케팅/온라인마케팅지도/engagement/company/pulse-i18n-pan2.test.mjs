@@ -59,7 +59,10 @@ test('메일: 한국어는 판 1 글자 그대로, 영어 프로젝트는 영어
   assert.equal(ko.subject,'〔SYNK PULSE〕 봄 세럼 광고, 방향을 골라 주세요');
   assert.equal(ko.body.split('\n')[0],'김하나님, SYNK PULSE입니다.');
   assert.equal(pulseMailCompose({studio:{request:{answers:{package:'photo'}}}},'preview_ready').subject,'〔SYNK PULSE〕 요청하신 광고 사진을 확인해 주세요');
-  for(const moment of PULSE_MAIL_MOMENTS){
+  // 판 4 접수 확인은 손님이 적은 글을 넣지 않아 제품 이름이 없다(중계가 받는 〔SYNK PULSE〕 머리 그대로).
+  const receipt=pulseMailCompose(row,'request_received','en');
+  assert.equal(receipt.subject,'〔SYNK PULSE〕 We received your brief');assert.doesNotMatch(receipt.body,/[가-힣]/);
+  for(const moment of PULSE_MAIL_MOMENTS.filter(moment=>moment!=='request_received')){
     const en=pulseMailCompose(row,moment,'en');
     assert.match(en.subject,/^\[SYNK PULSE\] Your 봄 세럼 ad: /,moment);
     assert.doesNotMatch(en.body.replace('봄 세럼','').replace('김하나',''),/[가-힣]/,moment+' 영어 본문에 한글이 남지 않는다');

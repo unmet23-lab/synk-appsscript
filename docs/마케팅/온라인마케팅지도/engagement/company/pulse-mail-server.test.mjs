@@ -60,6 +60,10 @@ test('메일 알림 · 회사 서버 길: 관리자만 켜고, 방향 제안 한
   // 의뢰 → 확인 → 방향 제안
   const draft=(await f.call('/pulse/api/request/start',{body:{}})).data.draft;
   const sent=await f.call('/pulse/api/request/submit',{body:{answers},csrf:draft.csrf});assert.equal(sent.status,201,JSON.stringify(sent.data));
+  // 판 4 접수 확인: 접수 뒤 30초에 한 통, 번호만 — 손님이 적은 제품 이름 · 성함은 넣지 않는다.
+  f.advance(1);await f.app.pulseMail.tick();
+  assert.equal(f.fake.sent.length,1);assert.equal(f.fake.sent[0].subject,`〔SYNK PULSE〕 의뢰를 받았어요 · ${sent.data.number}`);assert.doesNotMatch(f.fake.sent[0].body,/오미톡|김합성/);
+  assert.match(f.fake.sent[0].body,/https:\/\/workspace\.synk\.im\/pulse-app\/\?open=mail/);
   const id=sent.data.projectId;let row=(await f.staff('/api/client-projects/'+id+'/studio')).data.project;
   const act=async body=>{const result=await f.staff('/api/client-projects/'+id+'/studio',{body:{revision:row.revision,...body}});assert.equal(result.status,200,JSON.stringify(result.data));row=result.data.project;return result;};
   const upload=async name=>{const result=await f.staff(`/api/client-projects/${id}/studio/media`,{raw:png,headers:{'Content-Type':'image/png','X-File-Name':name,'X-Project-Revision':String(row.revision)}});assert.equal(result.status,201,JSON.stringify(result.data));row=result.data.project;return result.data.asset?.id||row.studio.assets.at(-1).id;};
@@ -68,16 +72,16 @@ test('메일 알림 · 회사 서버 길: 관리자만 켜고, 방향 제안 한
   const kst=new Date(Date.now()+9*3600000);kst.setUTCDate(kst.getUTCDate()+10);
   const option=(assetId,extra={})=>({name:'아니, 잠깐',sentence:'맛을 설명하려다 말을 다섯 번 바꿔요.',flow:[{at:'0:00',text:'경기가 끝나고 친구 폰 앞'},{at:'0:03',text:'한 모금마다 말이 바뀌어요'},{at:'0:11',text:'친구가 뺏어 마셔요'}],why:'「다섯 가지 맛」이 대사로 풀려요.',assetId,recommended:true,...extra});
   await act({action:'propose_direction',lead:'요청하신 대로 두고 두 방향으로 나눴어요.',options:[option(a),option(b,{name:'톡',sentence:'캔 따는 소리 한 번에 코트 전체가 멈춰요.',recommended:false})],modelId:'M06',price:390000,dueDate:kst.toISOString().slice(0,10),revisions:2});
-  f.advance(1);assert.equal((await f.app.pulseMail.tick()).added,1);assert.equal(f.fake.sent.length,0,'3분 묶기 전');
+  f.advance(1);assert.equal((await f.app.pulseMail.tick()).added,1);assert.equal(f.fake.sent.length,1,'3분 묶기 전');
   f.advance(3);await f.app.pulseMail.tick();
-  assert.equal(f.fake.sent.length,1);assert.equal(f.fake.sent[0].to,'buyer@pulse-synthetic.test');
-  assert.equal(f.fake.sent[0].subject,'〔SYNK PULSE〕 오미톡 오미자 스파클링 광고, 방향을 골라 주세요');assert.match(f.fake.sent[0].body,/^김합성님, SYNK PULSE입니다\./);
+  assert.equal(f.fake.sent.length,2);assert.equal(f.fake.sent[1].to,'buyer@pulse-synthetic.test');
+  assert.equal(f.fake.sent[1].subject,'〔SYNK PULSE〕 오미톡 오미자 스파클링 광고, 방향을 골라 주세요');assert.match(f.fake.sent[1].body,/^김합성님, SYNK PULSE입니다\./);
   row=(await f.staff('/api/client-projects/'+id+'/studio')).data.project;
   assert.equal(row.mail.moments.direction_proposed.state,'sent');assert.equal(row.mail.connection,'on');
 
   // 손님 보기: 켜짐 · 가린 주소, 담당자 연락 칸 없음
   let room=(await f.call('/pulse/api/project')).data;
-  assert.deepEqual(room.project.mail,{mailOn:true,mailTo:'b***@pulse-synthetic.test'});
+  assert.deepEqual(room.project.mail,{mailOn:true,mailTo:'b***@pulse-synthetic.test',moments:['request_received','request_asked','direction_proposed','draft_ready','payment_requested','images_ready','preview_ready','final_ready']});
   // 담당자 주소 고치기: 직원만 · 주소 꼴 · 연락처 줄 함께, 손님 보기에는 contact 없음
   assert.equal((await f.staff('/api/client-projects/'+id+'/studio',{body:{revision:row.revision,action:'request_contact',email:'not-mail'}})).status,400);
   assert.equal((await f.call('/pulse/api/studio',{body:{revision:room.project.revision,action:'request_contact',email:'x@pulse-synthetic.test'},csrf:room.csrf})).status,403);

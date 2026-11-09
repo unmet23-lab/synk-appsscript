@@ -189,7 +189,7 @@ test('staff confirm, ask, draft round and customer approval move the project on'
   const sent=await f.call('/pulse/api/request/submit',{body:{answers:answers()},csrf:draft.csrf});assert.equal(sent.status,201);
   const id=sent.data.projectId;
   let row=(await f.staff('/api/client-projects/'+id+'/studio')).data.project;
-  const act=async body=>{const result=await f.staff('/api/client-projects/'+id+'/studio',{body:{revision:row.revision,...body}});assert.equal(result.status,200,JSON.stringify(result.data));row=result.data.project;return row;};
+  const act=async (body,expected=200)=>{const result=await f.staff('/api/client-projects/'+id+'/studio',{body:{revision:row.revision,...body}});assert.equal(result.status,expected,JSON.stringify(result.data));if(expected===200)row=result.data.project;return row;};
   await act({action:'request_note',note:{by:'Claude',summary:'로고만 받으면 돼요',lines:['운동 끝 첫 모금, 다섯 가지 맛이 톡.'],model:'한결',ref:'',risks:['라벨 글자는 멈춘 컷에만']}});
   assert.equal(row.studio.request.notes.length,1);
   await act({action:'request_ask',items:[{label:'로고 파일',why:'끝 화면에 얹어요'}]});
@@ -224,11 +224,16 @@ test('staff confirm, ask, draft round and customer approval move the project on'
   assert.equal(room.project.stage,'received','words approved: production waits for the pictures');
   row=(await f.staff('/api/client-projects/'+id+'/studio')).data.project;
   await act({action:'save_scene',id:scene.id,title:'컷 1',description:'벤치 위 캔',narration:'',screenText:'다섯 가지 맛, 톡.',duration:3,visibility:'customer',imageUrl:'https://example.com/cut-1.png'});
+  // 판 4: 장면 이미지 판은 크몽 결제를 확인한 뒤에만 보낸다(결정 11-10 D2).
+  await act({action:'send_draft',oneLine:'운동 끝 첫 모금, 다섯 가지 맛이 톡.',note:''},409);
+  await act({action:'payment_confirm',ref:'KMONG-TEST-1'});
   await act({action:'send_draft',oneLine:'운동 끝 첫 모금, 다섯 가지 맛이 톡.',note:''});
   assert.equal(row.studio.request.rounds.at(-1).kind,'images');
   room=(await f.call('/pulse/api/project')).data;
   const stale=await f.call('/pulse/api/studio',{body:{revision:room.project.revision,action:'approve_draft',round:2},csrf:room.csrf});assert.equal(stale.status,409,'an older round cannot approve the newest one');
-  await customerAct({action:'approve_draft',round:3});
+  const unsigned=await f.call('/pulse/api/studio',{body:{revision:room.project.revision,action:'approve_draft',round:3},csrf:room.csrf});assert.equal(unsigned.status,400,'production waits for the customer to accept the cancellation note');
+  await customerAct({action:'approve_draft',round:3,terms:true});
+  assert.ok(room.project.studio.request.rounds.at(-1).termsAcceptedAt);
   assert.equal(room.project.stage,'producing');
   assert.ok(room.project.studio.request.approvedAt);
   const again=await f.call('/pulse/api/studio',{body:{revision:room.project.revision,action:'approve_draft',round:3},csrf:room.csrf});assert.equal(again.status,409);

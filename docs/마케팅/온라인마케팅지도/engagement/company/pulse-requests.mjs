@@ -361,12 +361,13 @@ export async function streamDraftFile(res,{paths,file},req){
 
 // ── 프로젝트 안의 의뢰서 액션(pulse-studio의 mutate 확장 — 다른 액션과 같은 트랜잭션 · 판 검사를 탄다) ──
 const FIELDS={
-  request_note:['note'],request_ask:['items'],request_confirm:[],propose_model:['modelId','note','translation'],send_draft:['oneLine','note','translation'],
-  request_answer:['askId','text','fileId'],answer_model:['accept','modelId','note'],request_save:['answers'],request_submit:['answers'],submit_draft_review:['round','items'],approve_draft:['round'],
+  request_note:['note'],request_ask:['items'],request_confirm:[],propose_model:['modelId','note','translation'],send_draft:['oneLine','note','translation','kind'],
+  request_answer:['askId','text','fileId'],answer_model:['accept','modelId','note'],request_save:['answers'],request_submit:['answers'],submit_draft_review:['round','items'],approve_draft:['round','terms'],
   propose_direction:['lead','options','modelId','price','dueDate','revisions','translation'],request_contact:['email','mailOff'],settle_direction:['optionId','note'],answer_direction:['optionId','modelId','note','neither'],
+  payment_request:['amount'],payment_confirm:['ref','dueDate'],payment_cancel:['note'],
 };
 export const requestActions=action=>Object.hasOwn(FIELDS,action)?FIELDS[action]:undefined;
-const STAFF_ONLY=['request_note','request_ask','request_confirm','propose_model','send_draft','propose_direction','settle_direction','request_contact'],CUSTOMER_ONLY=['request_answer','answer_model','request_save','request_submit','submit_draft_review','approve_draft','answer_direction'];
+const STAFF_ONLY=['request_note','request_ask','request_confirm','propose_model','send_draft','propose_direction','settle_direction','request_contact','payment_request','payment_confirm','payment_cancel'],CUSTOMER_ONLY=['request_answer','answer_model','request_save','request_submit','submit_draft_review','approve_draft','answer_direction'];
 // 카탈로그 모델로 정할 때는 붙어 있던 전용 인물 참조를 뗀다(「카탈로그로 바꿀 때만 교체」 — 기획 12-2 「선택 값」).
 const catalogCasting=(selection,modelId)=>{const {personaRef,...rest}=selection||{};return {...rest,modelId};};
 // 전용 인물로 가는 프로젝트는 방향 제안 · 제작 시작 때 그 인물 판을 다시 본다(personas: pulse-personas.mjs createPersonaGuard).
@@ -380,6 +381,12 @@ function assertCasting(casting,personas,row,{start=false}={}){
   }
   if(start&&['custom','persona'].includes(casting.kind))throw fail('전용 인물이 아직 준비되지 않았어요. 준비되면 담당자가 알려 드려요.',409);
 }
+// 결제(판 4, 결정 11-10 D2): 결제는 크몽에서 받고 담당자가 앱에 적는다 — 요청함(requested) → 확인함(confirmed) · 취소(cancelled).
+// 장면 이미지 판 보내기 · 제작 시작 승인 · 의뢰 흐름 시안 올리기는 확인함만 통과한다. 사진 상품은 첫 장을 승인하기 전의 판은 결제 없이 오간다(첫 장이 방향 확인 몫).
+const PACKAGE_DAYS={s15:10,s30:14,s60:21,photo:3};
+export const requestPaid=request=>request?.payment?.status==='confirmed';
+const photoPackage=request=>request?.answers?.package==='photo';
+const photoSheetApproved=request=>photoPackage(request)&&(request.rounds||[]).some(round=>round.kind==='images'&&round.approvedAt);
 // locale: 이 프로젝트의 소통 언어(pulse-locale.mjs). 한국어가 아니면 손님에게 보일 직원 글은 번역을 함께 받아야 보낸다(pulse-translations.mjs).
 export function applyRequestAction({studio,row,input,staff,stamp,personas,locale='ko'}){
   const action=input.action,now=stamp.at;
@@ -509,6 +516,41 @@ export function applyRequestAction({studio,row,input,staff,stamp,personas,locale
     chooseDirection(studio,request,proposal,{option,modelId:proposal.modelId||'',note,status:'settled',now,stamp,extra:{settledBy:stamp.authorName}});
     return;
   }
+  if(action==='payment_request'){
+    if(request.status!=='confirmed')throw fail('의뢰서 확인을 먼저 끝내 주세요.',409);
+    if(requestPaid(request))throw fail('결제를 이미 확인했어요.',409);
+    const amount=input.amount;
+    if(!Number.isSafeInteger(amount)||amount<10000||amount>100000000)throw fail('값은 원 단위로 1만 원에서 1억 원 사이로 적어 주세요.');
+    studio.request={...request,payment:{status:'requested',requestedAt:now,requestedBy:stamp.authorName,amount}};
+    return;
+  }
+  if(action==='payment_confirm'){
+    if(request.status!=='confirmed')throw fail('의뢰서 확인을 먼저 끝내 주세요.',409);
+    if(requestPaid(request))throw fail('결제를 이미 확인했어요.',409);
+    if(input.ref!==undefined&&typeof input.ref!=='string')throw fail('크몽 주문 번호를 확인해 주세요.');
+    const ref=text(input.ref||'',40);
+    // 받으실 날: 크몽 작업일이 결제부터 세므로 오늘(KST) + 패키지 일수가 기본이고 담당자가 고칠 수 있다. 일수가 없는 패키지(기업 · 상담)는 방향 제안의 날을 쓴다.
+    const days=PACKAGE_DAYS[request.answers?.package],today=new Date(Date.parse(now)+9*3600000);
+    const fallback=days?new Date(Date.UTC(today.getUTCFullYear(),today.getUTCMonth(),today.getUTCDate()+days)).toISOString().slice(0,10):request.directionProposal?.dueDate||'';
+    const dueDate=input.dueDate===undefined||input.dueDate===''?fallback:kstDay(input.dueDate,now);
+    const amount=request.payment?.status==='requested'?request.payment.amount:undefined;
+    studio.request={...request,payment:{status:'confirmed',...(request.payment?.status==='requested'?{requestedAt:request.payment.requestedAt,requestedBy:request.payment.requestedBy}:{}),...(amount?{amount}:{}),confirmedAt:now,confirmedBy:stamp.authorName,...(ref?{ref}:{}),...(dueDate?{dueDate}:{})}};
+    // 사진 상품이 첫 장을 이미 승인했으면 결제를 확인하는 이때 제작을 시작한다.
+    const sheet=photoPackage(request)&&!request.approvedRound?[...(request.rounds||[])].reverse().find(round=>round.kind==='images'&&round.approvedAt):null;
+    if(sheet){
+      assertCasting(castingOf(request,studio.strategy?.data?.castingSelection),personas,row,{start:true});
+      studio.request={...studio.request,approvedRound:sheet.round,approvedAt:now};
+      if(['received','planning'].includes(row.stage)){row.stage='producing';row.closeoutWorkRevision=(row.closeoutWorkRevision||0)+1;}
+    }
+    return;
+  }
+  // 결제 뒤 전액 환불(D3) · 크몽 자동 취소(24시간 무응답)를 적는다. 취소 뒤에는 결제를 다시 요청할 수 있다.
+  if(action==='payment_cancel'){
+    if(!request.payment||request.payment.status==='cancelled')throw fail('취소할 결제가 없어요.',409);
+    const note=text(input.note,300);if(!note)throw fail('취소한 까닭을 한 줄 적어 주세요.');
+    studio.request={...request,payment:{...request.payment,status:'cancelled',cancelledAt:now,cancelledBy:stamp.authorName,note}};
+    return;
+  }
   if(action==='send_draft'){
     if(request.status!=='confirmed')throw fail('의뢰서 확인을 먼저 끝내 주세요.',409);
     const answers=request.answers||{},direction=request.directionProposal;
@@ -520,7 +562,10 @@ export function applyRequestAction({studio,row,input,staff,stamp,personas,locale
     if(!scenes.length)throw fail('고객에게 보이는 장면을 먼저 준비해 주세요.',409);
     const oneLine=text(input.oneLine,300)||studio.strategy?.data?.primaryPromise||'';if(!oneLine)throw fail('이 광고가 남길 한 문장을 적어 주세요.');
     // 그림이 빠진 컷이 있으면 글 콘티 판이고, 모든 컷에 장면 이미지가 있어야 제작을 시작할 수 있는 판이다.
-    const kind=scenes.every(scene=>scene.assetId||scene.imageUrl)?'images':'script';
+    // 담당자는 그림이 다 붙어 있어도 글 콘티 판으로 보낼 수 있다(kind:'script'). 장면 이미지 판은 결제를 확인한 뒤에만 보낸다(사진은 첫 장 승인 전 판은 예외).
+    if(input.kind!==undefined&&input.kind!=='script')throw fail('보낼 판을 확인해 주세요.');
+    const kind=input.kind==='script'?'script':scenes.every(scene=>scene.assetId||scene.imageUrl)?'images':'script';
+    if(kind==='images'&&!requestPaid(request)&&!(photoPackage(request)&&!photoSheetApproved(request)))throw fail('결제가 확인된 뒤에 장면 이미지를 보낼 수 있어요.',409);
     const round={round:request.rounds.length+1,kind,oneLine,note:text(input.note,600),sentAt:now,by:stamp.authorName,scenes:scenes.map(scene=>({id:scene.id,revision:scene.revision}))};
     // 영어 프로젝트: 한 문장 · 메모의 영어를 함께 받고, 보낼 장면의 제목 · 설명에도 reviewed 번역이 있어야 한다(광고 문구인 내레이션 · 화면 글은 출력 언어 그대로).
     const said=inlineObject(input.translation,['oneLine','note']);
@@ -548,8 +593,13 @@ export function applyRequestAction({studio,row,input,staff,stamp,personas,locale
   if(action==='approve_draft'){
     if(round.approvedAt)throw fail('이미 확인한 판이에요.',409);
     if(round.feedbackAt&&round.changes)throw fail('보내 주신 의견을 반영한 판을 곧 보내 드려요. 그 판에서 확인해 주세요.',409);
-    const rounds=request.rounds.map(value=>value.round===round.round?{...value,approvedAt:now,approvedBy:stamp.authorName}:value);
-    if(round.kind==='script'){studio.request={...request,rounds,scriptApprovedAt:now};return;}
+    if(round.kind==='script'){studio.request={...request,rounds:request.rounds.map(value=>value.round===round.round?{...value,approvedAt:now,approvedBy:stamp.authorName}:value),scriptApprovedAt:now};return;}
+    // 제작이 시작되는 승인: 맞춤 제작이라 시작 뒤에는 환불 대신 수정 횟수로 고친다는 안내에 손님이 동의해야 한다(크몽 판매 이용약관 12조 — 사전 고지와 서면 동의).
+    if(input.terms!==true)throw fail('제작을 시작하기 전에 취소 · 환불 안내를 확인해 주세요.');
+    const rounds=request.rounds.map(value=>value.round===round.round?{...value,approvedAt:now,approvedBy:stamp.authorName,termsAcceptedAt:now}:value);
+    // 사진 상품의 첫 장은 결제 전에도 승인을 받아 두고, 제작은 결제를 확인할 때 시작한다.
+    if(photoPackage(request)&&!requestPaid(request)){studio.request={...request,rounds};return;}
+    if(!requestPaid(request))throw fail('결제가 확인된 뒤에 제작을 시작할 수 있어요. 담당자가 결제를 확인하면 알려 드려요.',409);
     // 제작을 시작하기 전에 전용 인물 판을 다시 본다(그사이 사용 중지 · 만료됐으면 409, 아직 붙지 않았으면 409).
     assertCasting(castingOf(request,studio.strategy?.data?.castingSelection),personas,row,{start:true});
     studio.request={...request,rounds,approvedRound:round.round,approvedAt:now};
@@ -622,5 +672,9 @@ export function requestView(studio,{staff=false}={}){
   const request=studio.request;if(!request)return null;
   const {notes,contact,...safe}=request;
   // 담당자가 고친 메일 주소 · 끈 사실은 손님 보기에 내리지 않는다(고객 방은 초대 링크를 가진 누구나 연다).
-  return staff?{...safe,notes:notes||[],contact:contact||null}:safe;
+  if(staff)return {...safe,notes:notes||[],contact:contact||null};
+  // 결제는 상태 · 때 · 값 · 받으실 날만 내린다(크몽 주문 번호 · 취소 사유 · 담당자 이름은 직원만).
+  if(safe.payment){const {status,requestedAt,confirmedAt,cancelledAt,amount,dueDate}=safe.payment;safe.payment={status,...(requestedAt?{requestedAt}:{}),...(confirmedAt?{confirmedAt}:{}),...(cancelledAt?{cancelledAt}:{}),...(amount?{amount}:{}),...(dueDate?{dueDate}:{})};}
+  // paymentFlow: 이 서버가 결제 상태와 제작 시작 동의(terms)를 안다 — 화면은 이것이 있을 때만 terms를 보낸다(서버보다 화면 묶음이 먼저 나가도 승인이 막히지 않게).
+  return {...safe,paymentFlow:true};
 }

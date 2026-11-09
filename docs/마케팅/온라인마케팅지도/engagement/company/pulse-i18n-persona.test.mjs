@@ -38,11 +38,13 @@ test('전용 인물이 붙은 프로젝트는 방향 제안 · 제작 시작 때
   assert.deepEqual(seen,[[REF,'p1']],'검사 함수는 참조와 프로젝트를 받는다');
   // 글 콘티 보내기: 인물 참조가 붙어 있으면 모델이 정해진 것으로 본다(방향을 거치지 않아도).
   const draft=room({casting:{personaRef:REF}});draft.studio.scenes=[{id:'s1',revision:1,visibility:'customer',title:'컷 1',assetId:IMAGE}];
+  // 판 4: 장면 이미지 판은 크몽 결제를 확인한 뒤에 보낸다.
+  act(draft,{action:'payment_confirm'});
   act(draft,{action:'send_draft',oneLine:'한 문장',note:''});assert.equal(draft.studio.request.rounds.length,1);
   // 제작 시작(이미지 판 확인): 인물 판을 다시 본다. 통과하면 제작으로 넘어간다.
-  assert.throws(()=>act(draft,{action:'approve_draft',round:1},{staff:false}),/전용 인물 판/);
+  assert.throws(()=>act(draft,{action:'approve_draft',round:1,terms:true},{staff:false}),/전용 인물 판/);
   assert.equal(draft.row.stage,'received');
-  act(draft,{action:'approve_draft',round:1},{staff:false,personas:()=>{}});assert.equal(draft.row.stage,'producing');
+  act(draft,{action:'approve_draft',round:1,terms:true},{staff:false,personas:()=>{}});assert.equal(draft.row.stage,'producing');
 });
 
 test('새 전용 인물 · 이미 있는 인물을 고른 의뢰는 인물이 붙기 전에는 제작을 시작하지 않는다 — 방향 · 글 콘티는 먼저 맞춘다(GPT GA1)',()=>{
@@ -51,20 +53,22 @@ test('새 전용 인물 · 이미 있는 인물을 고른 의뢰는 인물이 �
     let calls=0;const personas=()=>{calls++;};
     act(r,direction(),{personas});
     act(r,{action:'answer_direction',optionId:r.studio.request.directionProposal.options[0].id},{staff:false,personas});
+    act(r,{action:'payment_confirm'},{personas});
     act(r,{action:'send_draft',oneLine:'한 문장',note:''},{personas});
-    assert.throws(()=>act(r,{action:'approve_draft',round:1},{staff:false,personas}),error=>error.status===409&&/전용 인물이 아직 준비되지 않았어요/.test(error.message),modelChoice);
+    assert.throws(()=>act(r,{action:'approve_draft',round:1,terms:true},{staff:false,personas}),error=>error.status===409&&/전용 인물이 아직 준비되지 않았어요/.test(error.message),modelChoice);
     assert.equal(r.row.stage,'received',modelChoice);assert.equal(r.studio.request.approvedAt,undefined);assert.equal(calls,0);
     // 인물이 붙어 손님이 승인하면(판 3) 그 판을 다시 보고 시작한다.
     r.studio.strategy.data.castingSelection.personaRef=REF;
-    act(r,{action:'approve_draft',round:1},{staff:false,personas});
+    act(r,{action:'approve_draft',round:1,terms:true},{staff:false,personas});
     assert.equal(r.row.stage,'producing',modelChoice);assert.equal(calls,1);
   }
   // 손님이 방향에서 카탈로그 모델을 고르면 그 모델로 시작한다.
   const switched=room({answers:{modelChoice:'custom'}});switched.studio.scenes=[{id:'s1',revision:1,visibility:'customer',title:'컷 1',assetId:IMAGE}];
   act(switched,direction({modelId:'F02'}));
   act(switched,{action:'answer_direction',optionId:switched.studio.request.directionProposal.options[0].id},{staff:false});
+  act(switched,{action:'payment_confirm'});
   act(switched,{action:'send_draft',oneLine:'한 문장',note:''});
-  act(switched,{action:'approve_draft',round:1},{staff:false});
+  act(switched,{action:'approve_draft',round:1,terms:true},{staff:false});
   assert.equal(switched.row.stage,'producing');assert.equal(switched.studio.request.answers.modelChoice,'');
 });
 

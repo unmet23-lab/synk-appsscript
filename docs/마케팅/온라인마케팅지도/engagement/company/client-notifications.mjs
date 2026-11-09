@@ -10,6 +10,8 @@ titles.customer_delivery_receipt='고객이 최종본을 받았대요';
 // 고객 문의에 자동 안내가 먼저 답한 알림(2026-10-19). 사람 답인 「제작팀이 답했어요」와 구별한다.
 titles.auto_reply='문의에 자동 안내가 왔어요';
 titles.customer_feedback_round='고객이 수정 의견을 모아 보냈어요';
+// 결제(판 4): 담당자가 크몽 결제를 요청 · 확인 · 취소했을 때 손님에게. 손님 쪽 본문은 pulse-live.mjs customerBodies.
+Object.assign(titles,{payment_requested:'크몽에서 결제해 주세요',payment_confirmed:'결제를 확인했어요',payment_cancelled:'결제가 취소됐어요'});
 // 의뢰서 흐름(2026-11-04): 새 의뢰 → 내부 확인 → 되묻기 · 모델 → 1차안. 고객 쪽 본문은 pulse-live.mjs customerBodies.
 Object.assign(titles,{request_received:'새 의뢰가 들어왔어요',customer_request_answer:'고객이 되물은 내용에 답했어요',customer_request_file:'고객이 자료를 더 보냈어요',customer_request_edit:'고객이 의뢰서를 고쳤어요',customer_model_answer:'고객이 모델 제안에 답했어요',customer_direction_answer:'고객이 방향 제안에 답했어요',customer_draft_review:'고객이 1차안에 의견을 보냈어요',customer_draft_approved:'고객이 1차안을 확인했어요',request_asked:'몇 가지만 더 여쭤봐요',model_proposed:'모델을 확인해 주세요',direction_proposed:'방향 제안이 도착했어요',draft_ready:'1차안이 도착했어요'});
 Object.assign(titles,{customer_preferences:'고객이 취향을 알려 줬어요',customer_reference:'고객이 참고 자료에 의견을 남겼어요',customer_strategy:'고객이 제작 설계를 썼어요',customer_strategy_confirmed:'고객이 제작 설계를 확인했어요',customer_concept:'고객이 콘셉트를 골랐어요',customer_scene:'고객이 장면을 보고 의견을 남겼어요',customer_comment:'고객이 기획에 의견을 남겼어요',preview_ready:'새 시안이 왔어요',final_ready:'최종본이 왔어요',staff_reply:'제작팀이 답했어요',strategy_ready:'제작 설계를 확인해 주세요',concept_ready:'콘셉트가 바뀌었어요',scene_ready:'장면 구성이 바뀌었어요',reference_ready:'참고 자료가 바뀌었어요'});
@@ -96,6 +98,9 @@ export function appendClientNotificationEvents(previous,row){
       // 방향 제안(11-07 판 1b): 보낼 때마다(고친 제안 · 회차 2 포함) 손님에게 알린다. 정리(settle_direction)는 손님과 이야기한 뒤라 알리지 않는다.
       if(action==='propose_direction')add('direction_proposed',String(row.revision),['customer'],{tab:'overview'});
       if(action==='send_draft')add('draft_ready',String(studio.request?.rounds?.at(-1)?.round),['customer'],{tab:'draft'});
+      if(action==='payment_request')add('payment_requested',String(row.revision),['customer'],{tab:'overview'});
+      if(action==='payment_confirm')add('payment_confirmed',String(row.revision),['customer'],{tab:'overview'});
+      if(action==='payment_cancel')add('payment_cancelled',String(row.revision),['customer'],{tab:'overview'});
       if(action==='request_strategy_review')add('strategy_ready',String(studio.strategy?.revision),['customer'],{tab:'strategy',strategyRevision:studio.strategy?.revision});
       if(action==='request_deliverable_review')add('deliverables_ready',String(studio.deliverables?.revision),['customer'],{tab:'strategy',target:'deliverables',deliverableRevision:studio.deliverables?.revision});
       if(action==='classify_feedback_round'){

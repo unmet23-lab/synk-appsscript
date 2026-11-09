@@ -29,7 +29,7 @@ const MODULES=[
   {file:'server.mjs',scope:['body'],blocks:["'/pulse/api/"]},
   {file:'pulse-requests.mjs',
     scope:['busy','text','link','one','many','markets','normalizeRequestAnswers','requestFileKind','inDraft','inMedia','count','assertDisk','draftOf','start','read','save','receive','removeFile','newNumber','submit','receiveProjectFile','assertCasting','applyRequestAction'],
-    actions:{customer:['request_save','request_submit','request_answer','answer_model','answer_direction','submit_draft_review','approve_draft'],staff:['request_note','request_ask','request_confirm','propose_model','send_draft','propose_direction','request_contact','settle_direction']},
+    actions:{customer:['request_save','request_submit','request_answer','answer_model','answer_direction','submit_draft_review','approve_draft'],staff:['request_note','request_ask','request_confirm','propose_model','send_draft','propose_direction','request_contact','settle_direction','payment_request','payment_confirm','payment_cancel']},
     staffFlags:['staff'],messageArgs:{link:2}},
   {file:'pulse-studio.mjs',
     scope:['customer','customerWrite','revision','studioOf','keys','capacity','commit','mutate','customerMutate','customerState','addRequestFile','removeRequestFile','customerAction'],
@@ -51,6 +51,8 @@ const MODULES=[
     exclude:{'시안이 마음에 들면 승인해 주세요. 이 시안으로 최종본을 만들어요.':'승인할 수 있을 때의 안내 — 오류로 나가지 않는다'}},
   {file:'pulse-personas.mjs',scope:['createPersonaGuard']},
   {file:'pulse-devices.mjs',scope:'*'},
+  // 메일 코드로 다시 열기(판 4): 세션 없는 손님 길이라 모든 문장이 손님에게 간다.
+  {file:'pulse-mail-open.mjs',scope:'*'},
   {file:'client-scene-requests.mjs',scope:['recordSceneReview','append']},
   {file:'request-security.mjs',scope:['rateError'],extra:['처리하지 못했습니다. 관리자에게 문의해 주세요.']},
   {file:'../../../../../tools/company-messenger/web-push-service.mjs',scope:['state','register','remove','requireLive','validatePushEndpoint'],

@@ -8,6 +8,8 @@ export const STUDIO_MEDIA_LIMIT=100*1024*1024;
 const types={'video/mp4':'mp4','video/webm':'webm','image/png':'png','image/jpeg':'jpg'};
 const audioTypes={'audio/mpeg':'mp3','audio/wav':'wav'};
 const allTypes={...types,...audioTypes};
+// 이름과 속이 달라도 고쳐 받는 그림 짝(판 4 B13). 영상 · 소리는 고치지 않고 막는다.
+const IMAGE_PAIR=['image/png','image/jpeg'];
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const directory=storeDirectory=>resolve(storeDirectory,'studio-media');
 function located(storeDirectory,name){const root=directory(storeDirectory);if(!/^[a-f0-9-]{36}\.(?:mp4|webm|png|jpg|mp3|wav|upload)$/.test(name))throw fail('저장된 미디어 경로를 확인해 주세요.',404);const path=resolve(root,name);if(dirname(path)!==root)throw fail('파일을 찾지 못했어요. 새로고침해 주세요.',404);return path;}
@@ -34,8 +36,11 @@ export async function receiveStudioMedia(req,storeDirectory,{maxLabelLength=100,
       if(head.length<4096)head=Buffer.concat([head,chunk.subarray(0,4096-head.length)]);
       let offset=0;while(offset<chunk.length){const {bytesWritten}=await handle.write(chunk,offset,chunk.length-offset);offset+=bytesWritten;}
     }
-    if(!size||!validMediaSignature(mimeType,head))throw fail('파일 내용이 고른 영상·이미지 형식과 달라요. 다른 파일을 골라 주세요.',415);
-    await handle.close();return {temporary,metadata:{id,diskName:id+'.'+extension,mimeType,fileName,byteSize:size},label};
+    // 이름은 .png인데 속이 JPEG(또는 그 반대)인 그림은 실제 형식으로 고쳐 받는다 — 응답이 nosniff로 mimeType을 내므로 형식 · 저장 이름 · 파일 이름을 함께 고친다.
+    const actual=size&&!validMediaSignature(mimeType,head)&&IMAGE_PAIR.includes(mimeType)?IMAGE_PAIR.find(type=>type!==mimeType&&validMediaSignature(type,head))||mimeType:mimeType;
+    if(!size||!validMediaSignature(actual,head))throw fail('파일 내용이 고른 영상·이미지 형식과 달라요. 다른 파일을 골라 주세요.',415);
+    const kept=actual===mimeType?{diskName:id+'.'+extension,fileName}:{diskName:id+'.'+types[actual],fileName:fileName.replace(/\.[^.]*$/,'')+'.'+types[actual]};
+    await handle.close();return {temporary,metadata:{id,...kept,mimeType:actual,byteSize:size},label};
   }catch(error){await handle.close().catch(()=>{});await unlink(temporary).catch(()=>{});throw error;}
 }
 export async function commitStudioMedia(upload,storeDirectory){const final=located(storeDirectory,upload.metadata.diskName);await rename(upload.temporary,final);upload.committed=true;return upload.metadata;}
@@ -49,7 +54,7 @@ export async function serveStudioMedia(req,res,storeDirectory,media,authorize=()
   const path=located(storeDirectory,media.diskName);let info;try{info=await stat(path);}catch{throw fail('저장된 파일을 찾지 못했어요. 파일을 다시 올려 주세요.',404);}if(!info.isFile()||!allTypes[media.mimeType])throw fail('파일을 찾지 못했어요. 새로고침해 주세요.',404);
   authorize();
   let range;try{range=mediaRange(req.headers.range,info.size);}catch(error){if(error.status===416){res.writeHead(416,{'Content-Range':`bytes */${info.size}`,'Cache-Control':'private, no-store'});res.end();return;}throw error;}
-  const headers={'Content-Type':media.mimeType,'Content-Length':range?range.end-range.start+1:info.size,'Accept-Ranges':'bytes','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Cross-Origin-Resource-Policy':'same-origin','Content-Disposition':`inline; filename="studio-media.${allTypes[media.mimeType]}"; filename*=UTF-8''${encodeURIComponent(media.fileName).replace(/'/g,'%27')}`,'Content-Security-Policy':"default-src 'none'; sandbox"};
+  const headers={'Content-Type':media.mimeType,'Content-Length':range?range.end-range.start+1:info.size,'Accept-Ranges':'bytes','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Cross-Origin-Resource-Policy':'same-origin','Content-Disposition':'inline' /* 판 4 B10: 직원 원본 파일 이름을 내리지 않는다 — 화면의 download 이름(작품 · 판 이름)이 쓰이게 */,'Content-Security-Policy':"default-src 'none'; sandbox"};
   if(range)headers['Content-Range']=`bytes ${range.start}-${range.end}/${info.size}`;
   res.writeHead(range?206:200,headers);if(req.method==='HEAD'){res.end();return;}
   try{await pipeline(createReadStream(path,range||{}),res);}catch{res.destroy();}

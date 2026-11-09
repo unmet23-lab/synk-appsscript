@@ -6,7 +6,7 @@ import {join,dirname,resolve} from 'node:path';
 import {createHash,randomUUID} from 'node:crypto';
 import vm from 'node:vm';
 import {Store} from './store.mjs';
-import {createPulseMailService,pulseMailActed,pulseMailCompose,pulseMailMoment,pulseMailRecipient,pulseMailRelayKey,PULSE_MAIL_OUTBOX,PULSE_MAIL_SECRET} from './pulse-mail.mjs';
+import {createPulseMailService,pulseMailActed,pulseMailCompose,pulseMailMoment,pulseMailRecipient,pulseMailRelayKey,PULSE_MAIL_MOMENTS,PULSE_MAIL_OUTBOX,PULSE_MAIL_SECRET} from './pulse-mail.mjs';
 
 const RELAY='https://script.google.com/macros/s/AKfycbTESTrelay0123456789abcdef/exec';
 const relaySource=await readFile(new URL('./pulse-mail-relay/relay.gs',import.meta.url),'utf8');
@@ -56,17 +56,39 @@ test('메일 글: 제목 · 본문에 프로젝트 이름과 순간 줄, 줄바�
   assert.equal(subject,'〔SYNK PULSE〕 오미톡 Bcc: x@evil.test 광고, 방향을 골라 주세요');
   assert.doesNotMatch(subject+body,/[\r\u0007]|secret-hash|client:|Claude|GPT|Gemini|AI/);
   assert.match(body,/^김 손님님, SYNK PULSE입니다\.\n\n요청하신 내용은 그대로 두고/);
-  assert.match(body,/https:\/\/workspace\.synk\.im\/pulse-app\/\n/);
+  // 판 4: 메일의 앱 주소는 다시 열기 판을 연다(주소창에 메일 주소는 없다).
+  assert.match(body,/https:\/\/workspace\.synk\.im\/pulse-app\/\?open=mail\n/);assert.match(body,/「메일로 다시 열기」/);
+  assert.match(body,/\n다음 할 일: 마음에 드는 방향 하나를 골라 주세요/);
   assert.match(pulseMailCompose({studio:{request:{answers:{package:'photo'}}}},'preview_ready').subject,/요청하신 광고 사진을 확인해 주세요$/);
   assert.match(pulseMailCompose({studio:{request:{answers:{}}}},'final_ready').body,/^안녕하세요, SYNK PULSE입니다/);
-  for(const moment of ['draft_ready','preview_ready','final_ready'])assert.ok(pulseMailCompose(row,moment).subject.startsWith('〔SYNK PULSE〕 '));
+  for(const moment of PULSE_MAIL_MOMENTS)assert.ok(pulseMailCompose(row,moment).subject.startsWith('〔SYNK PULSE〕 '),moment);
+  // 접수 확인은 손님이 적은 글을 넣지 않는다(공개 의뢰서로 남의 주소에 임의 문장을 보내는 길이 되지 않게 — 판 4 Fable 설계 검토 2).
+  const receipt=pulseMailCompose({...row,studio:{request:{...row.studio.request,number:'P-1110-AD6B'}}},'request_received');
+  assert.equal(receipt.subject,'〔SYNK PULSE〕 의뢰를 받았어요 · P-1110-AD6B');assert.doesNotMatch(receipt.subject+receipt.body,/오미톡|Bcc|손님님|evil/);
+  assert.match(receipt.body,/접수 번호는 P-1110-AD6B예요\./);assert.match(receipt.body,/의뢰하신 적이 없으면 이 메일은 지우셔도 돼요/);
+  assert.equal(pulseMailCompose({studio:{request:{number:'P-1110-AD6B\nBcc',answers:{}}}},'request_received').subject,'〔SYNK PULSE〕 의뢰를 받았어요','꼴이 아닌 번호는 싣지 않는다');
+  // 판 순간: 같은 종류의 앞 판이 있으면 「고친」, 결제 안내는 값 · 받으실 날 줄, 사진 첫 장은 사진 말.
+  const rounds={studio:{request:{answers:{name:'오미톡'},rounds:[{round:1,kind:'script'},{round:2,kind:'script'},{round:3,kind:'images'}],directionProposal:{dueDate:'2026-11-20'}}}};
+  assert.equal(pulseMailCompose(rounds,'draft_ready','ko',{id:'client:p:1:draft_ready:1'}).subject,'〔SYNK PULSE〕 오미톡 광고 글 콘티가 왔어요');
+  assert.equal(pulseMailCompose(rounds,'draft_ready','ko',{id:'client:p:2:draft_ready:2'}).subject,'〔SYNK PULSE〕 오미톡 광고 고친 글 콘티가 왔어요');
+  const images=pulseMailCompose(rounds,'images_ready','ko',{id:'client:p:3:draft_ready:3'});
+  assert.equal(images.subject,'〔SYNK PULSE〕 오미톡 광고 장면 이미지가 왔어요');assert.match(images.body,/받으실 날\(11월 20일\)은 확인을 기다리는 날만큼 늦어져요\./);
+  const paid={studio:{request:{answers:{name:'오미톡'},payment:{status:'requested',amount:290000},directionProposal:{dueDate:'2026-11-20'}}}};
+  assert.match(pulseMailCompose(paid,'payment_requested').body,/결제 요청\(29만 원\)을 보내 드렸어요/);
+  const confirmed={studio:{request:{answers:{name:'오미톡'},payment:{status:'confirmed',dueDate:'2026-11-24'},directionProposal:{dueDate:'2026-11-20'}}}};
+  assert.match(pulseMailCompose(confirmed,'images_ready').body,/받으실 날\(11월 24일\)/,'결제 확인 때 정한 날이 방향 제안의 날을 대신한다');
+  assert.equal(pulseMailCompose({studio:{request:{answers:{package:'photo'},rounds:[{round:1,kind:'images'}]}}},'images_ready','ko',{id:'client:p:1:draft_ready:1'}).subject,'〔SYNK PULSE〕 요청하신 광고 첫 장이 왔어요');
+  assert.doesNotMatch(pulseMailCompose({studio:{request:{answers:{}}}},'final_ready').body,/받으실 날/,'납품 메일에는 기다림 줄이 없다');
 });
 
-test('메일 순간 · 받는 사람: 글 콘티는 script 판과 첫 판만, 담당자 주소가 앞서고 끄면 없음',()=>{
+test('메일 순간 · 받는 사람: 판은 글 콘티 · 장면 이미지 순간으로 나뉘고(판 4), 담당자 주소가 앞서고 끄면 없음',()=>{
   const row={studio:{request:{answers:{email:'a@example.com'},rounds:[{round:1,kind:'images'},{round:2,kind:'images'},{round:3,kind:'script'}]}}};
   const draft=round=>pulseMailMoment(row,{type:'draft_ready',id:`client:p:9:draft_ready:${round}`});
-  assert.deepEqual([draft(1),draft(2),draft(3),draft(4)],['draft_ready',null,'draft_ready',null]);
+  assert.deepEqual([draft(1),draft(2),draft(3),draft(4)],['images_ready','images_ready','draft_ready',null]);
   assert.equal(pulseMailMoment(row,{type:'staff_reply',id:'x'}),null);
+  assert.equal(pulseMailMoment(row,{type:'request_asked',id:'x'}),'request_asked');assert.equal(pulseMailMoment(row,{type:'payment_requested',id:'x'}),'payment_requested');
+  assert.equal(pulseMailMoment(row,{type:'request_received',id:'x'}),null,'접수 확인은 알림 사건으로 넣지 않는다(접수 때 함에 바로)');
+  assert.equal(pulseMailMoment(row,{type:'payment_confirmed',id:'x'}),null,'결제 확인은 앱 안 알림만');
   assert.equal(pulseMailMoment(row,{type:'final_ready',id:'x'}),'final_ready');
   assert.deepEqual(pulseMailRecipient(row),{email:'a@example.com',reason:null});
   row.studio.request.contact={email:'b@example.com'};assert.equal(pulseMailRecipient(row).email,'b@example.com');
@@ -107,7 +129,7 @@ test('보내기: 중계까지 서명 · 302 · 한 번만, 함에는 주소 · �
   assert.equal(JSON.stringify(f.outbox()).includes('client@example.com'),false);assert.equal(JSON.stringify(f.outbox()).includes('방향을 골라'),false);
   assert.equal(JSON.stringify(f.logs).includes('client@example.com'),false);
   f.advance(5);await f.service.tick();assert.equal(f.relay.sent.length,1);
-  assert.deepEqual(f.service.customerState(row),{mailOn:true,mailTo:'c***@example.com'});
+  assert.deepEqual(f.service.customerState(row),{mailOn:true,mailTo:'c***@example.com',moments:[...PULSE_MAIL_MOMENTS]});
   assert.equal(f.service.staffState(row).moments.direction_proposed.state,'sent');
 });
 
@@ -294,4 +316,43 @@ test('GPT GA2 · GA3 · GA4: 옛 주소 ping 답은 새 주소를 통과시키�
   f.advance(49*60);f.event(late,'preview_ready');f.advance(3);await f.service.tick();
   const rows=f.outbox().filter(item=>item.projectId===late.id);
   assert.equal(rows.length,2);assert.deepEqual(rows.map(item=>[item.state,item.reason]),[['skipped','expired'],['sent',null]]);
+});
+test('판 4 · 접수 확인: 함에 바로 들어가 30초 뒤 한 통, 손님이 적은 글 없음, 주소마다 하루 한 통 · 전체 하루 스무 통',async t=>{
+  const f=await fixture(t);await f.connect();f.advance(1);
+  const make=(number,email,extra={})=>f.project({studio:{request:{number,answers:{name:'오미톡',contactName:'김손님',email,package:'s15'},rounds:[],...extra}}});
+  const row=make('P-1110-AAAA','client@example.com');
+  const item=f.service.receipt(row.id);assert.equal(item.moment,'request_received');assert.equal(item.state,'pending');
+  assert.equal(f.service.receipt(row.id),null,'같은 프로젝트는 한 줄');
+  assert.equal(f.service.receipt(make('P-1110-BBBB','CLIENT@example.com').id),null,'같은 주소(대소문자 무시)는 하루 한 통');
+  await f.service.tick();assert.equal(f.relay.sent.length,0,'30초 전');
+  f.advance(1);await f.service.tick();
+  assert.equal(f.relay.sent.length,1);assert.equal(f.relay.sent[0].subject,'〔SYNK PULSE〕 의뢰를 받았어요 · P-1110-AAAA');
+  assert.doesNotMatch(f.relay.sent[0].body,/오미톡|김손님/);assert.equal(f.outbox()[0].state,'sent');
+  for(let i=0;i<19;i++)assert.ok(f.service.receipt(make('P-1110-C'+String(i).padStart(3,'0'),`c${i}@example.com`).id),String(i));
+  const late=make('P-1110-DDDD','late@example.com');
+  assert.equal(f.service.receipt(late.id),null,'하루 스무 통을 넘으면 넣지 않는다(접수증이 같은 안내를 한다)');
+  f.advance(24*60+1);assert.ok(f.service.receipt(late.id),'하루가 지나면 다시');
+  // 보관 · 방 닫힘 · 주소 없음은 넣지 않는다
+  assert.equal(f.service.receipt(f.project({stage:'archived'}).id),null);
+  assert.equal(f.service.receipt(make('P-1110-EEEE','').id),null);
+});
+test('판 4 · 이미 함: 되묻기를 다 답함 · 결제 요청 뒤 확인 · 장면 이미지 판에 의견',()=>{
+  const row={studio:{request:{asks:[{status:'answered'}],payment:{status:'requested'},rounds:[{round:1,kind:'images',feedbackAt:'2026-11-10T00:00:00.000Z'}]}}};
+  assert.equal(pulseMailActed(row,'request_asked'),true);
+  row.studio.request.asks.push({status:'open'});assert.equal(pulseMailActed(row,'request_asked'),false);
+  assert.equal(pulseMailActed(row,'payment_requested'),false);
+  row.studio.request.payment.status='confirmed';assert.equal(pulseMailActed(row,'payment_requested'),true);
+  assert.equal(pulseMailActed(row,'images_ready',{id:'client:p:1:draft_ready:1'}),true);
+  assert.equal(pulseMailActed({studio:{request:{rounds:[{round:1,kind:'images'}]}}},'images_ready',{id:'client:p:1:draft_ready:1'}),false);
+});
+test('판 4 · 함 밖 한 통(sendDirect · 다시 열기 코드): 꺼져 있으면 안 보내고, 켜지면 중계로, 같은 열쇠는 한 통, 함에 안 남음',async t=>{
+  const f=await fixture(t),mail={key:'open:1',to:'client@example.com',subject:'〔SYNK PULSE〕 프로젝트 열기 코드 123456',body:'코드는 123456예요.'};
+  assert.equal((await f.service.sendDirect(mail)).kind,'off');assert.equal(f.relay.sent.length,0);
+  await f.connect();
+  assert.equal((await f.service.sendDirect(mail)).kind,'sent');
+  assert.equal((await f.service.sendDirect(mail)).kind,'sent','중계가 같은 열쇠를 duplicate로 답한다');
+  assert.equal(f.relay.sent.length,1);assert.equal(f.outbox().length,0);
+  assert.equal((await f.service.sendDirect({...mail,key:'open:2',to:'a, b@example.com'})).kind,'failed');
+  assert.match(f.service.secretHash('x'),/^[0-9a-f]{64}$/);assert.notEqual(f.service.secretHash('x'),f.service.secretHash('y'));
+  assert.equal(f.service.addressKey('Client@Example.com'),f.service.addressKey('client@example.com'));
 });
