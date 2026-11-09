@@ -99,9 +99,9 @@ app.whenReady().then(async()=>{
     if(!flag('captures-only')){
       check('old-draft-opens-on-its-brief',/제작 요청 정리/.test(openedOn),{openedOn});
       await click('#pulse-client [data-pulse-tab="portfolio"]');
-      check('retired-work-stays-listed-while-picked',await run(`document.querySelectorAll('#pulse-client .pulse-work-card').length===4&&!!document.querySelector('#pulse-client [data-pulse-work="model-casting"]')`));
+      check('retired-work-stays-listed-while-picked',await run(`document.querySelectorAll('#pulse-client .pulse-work-card').length===7&&!!document.querySelector('#pulse-client [data-pulse-work="model-casting"]')`));
       await click('#pulse-client button.pulse-pick[data-pulse-pick-work="model-casting"]');
-      check('removed-retired-work-leaves-the-three-works',await run(`document.querySelectorAll('#pulse-client .pulse-work-card').length===3&&!document.querySelector('#pulse-client [data-pulse-work="model-casting"]')`));
+      check('removed-retired-work-leaves-the-six-works',await run(`document.querySelectorAll('#pulse-client .pulse-work-card').length===6&&!document.querySelector('#pulse-client [data-pulse-work="model-casting"]')`));
       await click('#pulse-client [data-pulse-tab="models"]');await click('#pulse-client button.pulse-pick[data-pulse-pick-model="F08"]');await click('#pulse-client [data-pulse-tab="brief"]');await click('#pulse-client [data-pulse-save]');
       const stored=await run(`JSON.parse(localStorage.getItem('synk.pulse.brief.v1:'+encodeURIComponent('probe-c')))`);
       check('saving-keeps-the-new-pick-and-the-removal',stored.models.includes('F08')&&stored.models.length===7&&!stored.works.length,{stored:{models:stored.models,works:stored.works}});
@@ -115,7 +115,13 @@ app.whenReady().then(async()=>{
       await search('오팔린');check('korean-team-name-finds-that-team',SAME(await names(),['윤슬','로하','새봄','해인'])&&SAME(await teams(),['OPALIN']));
       await search('없는낱말');check('nothing-found-says-so',await run(`!!document.querySelector('#pulse-results .pulse-empty')`));await click('#pulse-client [data-pulse-reset]');
       await click('#pulse-client [data-pulse-gender="남"]');check('gender-filter-keeps-the-matching-team',SAME(await teams(),['OUTBLUE'])&&(await names()).length===10);await click('#pulse-client [data-pulse-gender="all"]');
-      await click('#pulse-client [data-pulse-tab="portfolio"]');check('three-works-with-no-draft',await run(`document.querySelectorAll('#pulse-client .pulse-work-card').length`)===3);
+      await click('#pulse-client [data-pulse-tab="portfolio"]');check('six-works-with-no-draft',await run(`document.querySelectorAll('#pulse-client .pulse-work-card').length`)===6);
+      // 11-09 작품 진열 최신화: synk.im · 고객 앱과 같은 차례, 그림은 모두 다 받은 4:3 장.
+      {const works=await run(`[...document.querySelectorAll('#pulse-client .pulse-work-card .pulse-work-art')].map(card=>card.dataset.pulseWork)`);
+        // 화면 밖 그림은 지연 로드라 숨은 창에서 안 받는다 — 바로 받게 바꾸고 3초까지 기다린다.
+        await run(`new Promise(done=>{const all=[...document.querySelectorAll('#pulse-client .pulse-work-card img')];all.forEach(img=>{img.loading='eager';});const t=Date.now();(function wait(){if(all.every(img=>img.complete&&img.naturalWidth>0)||Date.now()-t>3000)return done();setTimeout(wait,50);})();})`);
+        const art=await run(`[...document.querySelectorAll('#pulse-client .pulse-work-card img')].map(img=>[img.getAttribute('src'),img.naturalWidth,img.naturalHeight])`);
+        check('works-in-the-site-order-with-loaded-pictures',JSON.stringify(works)===JSON.stringify(['dodam','omitok-court','maejin','modu-course','yurigyeol','hwaseong-cf'])&&art.length>=6&&art.every(([,w,h])=>w>0&&Math.abs(w/h-4/3)<0.01),{works,art});}
       // A glyph missing from the body font falls through to the next family: measure with two different last families.
       let screenText=await run(`document.getElementById('pulse-client').innerText`);
       for(const tab of ['models','brief']){await click('#pulse-client [data-pulse-tab="'+tab+'"]');screenText+=await run(`document.getElementById('pulse-client').innerText`);}
