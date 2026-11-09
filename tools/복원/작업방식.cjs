@@ -155,7 +155,8 @@ const 토큰꼴 = /[A-Za-z0-9_\-.~+/=]{24,}/g;
 function 토큰해시(t) { return crypto.createHash('sha256').update(t).digest('hex').slice(0, 32); }
 /** 경로 · 시각 · 긴 낱말 조각은 열쇠가 아니다. 숫자와 영문이 섞인 값만 본다(오탐으로 멀쩡한 글이 평문에서 빠지지 않게). */
 function 열쇠토큰인가(t) {
-  if (/^\/|\/Users\/|\.(?:json|md|txt|js|py|png|html?)$/i.test(t)) return false;
+  if (/^\/|\/Users\/|\.(?:json|md|txt|js|py|png|html?|com|net|org|io|kr|im)$/i.test(t)) return false; // 파일 이름 · 서버 주소는 열쇠가 아니다
+  if (/^[a-f0-9]{64}$/.test(t)) return false; // sha256 지문(11-09 재기에서 공개 문서의 지문이 열쇠 폴더 목록과 겹쳤다)
   if ((t.match(/\//g) || []).length > 3) return false;
   if (!/[0-9]/.test(t) || !/[A-Za-z]/.test(t)) return false;
   // 구글 클라이언트 ID처럼 공개 값은 빼지 않는다
@@ -333,7 +334,9 @@ function 윈도우기록(거울, 자리, 지금, 상태파일, 돌림 = spawnSyn
   const 옛것 = (rel) => { try { 덧.set(rel, fs.readFileSync(path.join(거울, ...rel.split('/')))); } catch {} };
   if (상태.at && 지금 - 상태.at < 설치목록주기ms) {
     for (const rel of 상태.files || []) 옛것(rel);
-    return 덧;
+    // 거울을 새로 받았으면(옛 기록이 거울에 없으면) 하루를 기다리지 않고 다시 만든다
+    if (덧.size === (상태.files || []).length && 덧.size) return 덧;
+    덧.clear();
   }
   const 실행 = (cmd, args, timeout = 180000) => {
     const r = 돌림(cmd, args, { encoding: 'utf8', timeout, windowsHide: true, maxBuffer: 32 << 20 });
