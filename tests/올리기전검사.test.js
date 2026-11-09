@@ -446,7 +446,7 @@ test('⑰ 소리 빈자리 — 합계 · 최장이 다 넘으면 고칠 것, 하
   assert.equal(검사.gapFinding(판정([], 20)), null);
 });
 
-test('⑱ 미학 맹검(11-08): 만든 날 상관없이 모든 편은 결과가 있어야 하고, 기각 · 빠짐 · 맹검 뒤 바뀐 영상은 고칠 것, 판단 · 못함은 확인할 것', (t) => {
+test('⑱ 미학 맹검(11-08 · 11-10 설계 18): 모든 편은 결과가 있어야 하고, 기각 · 빠짐 · 맹검 뒤 바뀐 영상은 고칠 것, 기각의 「맹검판단」은 확인할 것, 답 빠짐은 막힌 증거 + 대체 눈 결과가 있어야 확인할 것', (t) => {
   const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'aesthetic-'));
   t.after(() => fs.rmSync(뿌리, { recursive: true, force: true }));
   const 편 = (name, prep = {}) => { const dir = path.join(뿌리, name); fs.mkdirSync(path.join(dir, '게시'), { recursive: true }); return { name, dir, prep }; };
@@ -456,13 +456,13 @@ test('⑱ 미학 맹검(11-08): 만든 날 상관없이 모든 편은 결과가 
   assert.deepEqual(레벨(검사.aestheticFindings(편('synkbrief_옛편_20261104'), [])), ['고칠 것:aesthetic-missing'], '이미 만들어 둔 비축 편도 묻는다(11-08 「그냥 지금부터 걸어」)');
   assert.deepEqual(레벨(검사.aestheticFindings(편('synkbrief_날짜없는편'), [])), ['고칠 것:aesthetic-missing']);
   assert.deepEqual(레벨(검사.aestheticFindings(편('synkbrief_새편_20261109'), [])), ['고칠 것:aesthetic-missing']);
-  assert.deepEqual(레벨(검사.aestheticFindings(편('synkbrief_막힘_20261109', { 맹검못함: '아르곤 한도' }), [])), ['확인할 것:aesthetic-skipped']);
+  assert.deepEqual(레벨(검사.aestheticFindings(편('synkbrief_막힘_20261109', { 맹검못함: '아르곤 한도' }), [])), ['고칠 것:aesthetic-unverified'], '11-10 설계 18 — 「맹검못함」 글만으로는 못 넘는다(11-09 LAB 세 편)');
 
   const 기각편 = 편('synkbrief_기각_20261110');
   결과쓰기(기각편, { 만든때: new Date(Date.now() + 60_000).toISOString(), 낱장: [{ 번호: '01', 판정: '기각', 점수: 3, 약점: ['[K7] 글자'] }, { 번호: '02', 판정: '고쳐서 냄', 점수: 6, 약점: ['끝'] }], 빠짐: ['03'] });
   assert.deepEqual(레벨(검사.aestheticFindings(기각편, [])), ['고칠 것:aesthetic-incomplete', '고칠 것:aesthetic-reject', '확인할 것:aesthetic-fix']);
   기각편.prep.맹검판단 = '빈 날 없음 — 가장 나은 판';
-  assert.deepEqual(레벨(검사.aestheticFindings(기각편, [])), ['확인할 것:aesthetic-incomplete', '확인할 것:aesthetic-reject', '확인할 것:aesthetic-fix']);
+  assert.deepEqual(레벨(검사.aestheticFindings(기각편, [])), ['고칠 것:aesthetic-incomplete', '확인할 것:aesthetic-reject', '확인할 것:aesthetic-fix'], '「맹검판단」은 아르곤이 본 기각만 내린다 — 답 빠짐은 막힌 증거가 없으면 그대로 고칠 것');
 
   const 늦은편 = 편('synkbrief_늦음_20261110');
   결과쓰기(늦은편, { 만든때: new Date(Date.now() - 3_600_000).toISOString(), 낱장: [{ 번호: '01', 판정: '그대로 냄', 점수: 8 }], 빠짐: [] });
@@ -470,8 +470,8 @@ test('⑱ 미학 맹검(11-08): 만든 날 상관없이 모든 편은 결과가 
   assert.deepEqual(레벨(검사.aestheticFindings(늦은편, [영상])), ['고칠 것:aesthetic-stale'], '맹검 뒤 다시 렌더한 영상');
   assert.deepEqual(레벨(검사.aestheticFindings(늦은편, [])), [], '그대로 냄뿐이면 조용하다');
 
-  // 11-10: 아르곤이 막혀 모든 화면 답이 빠진 결과가 남은 편 — 「맹검못함」은 결과가 있어도 받고(다시 렌더해도 막히지 않게),
-  // 「맹검판단」은 그 결과를 낸 판에만 통한다(다시 렌더한 판은 다시 맹검)
+  // 11-10: 아르곤이 막혀 모든 화면 답이 빠진 결과가 남은 편 — 설계 18부터 「맹검판단」 · 「맹검못함」 글만으로는 안 넘는다. 다시 렌더한 판은
+  // 다시 맹검하고(막히면 tools/미학맹검.js가 막힌 증거를 남긴다), 막힌 증거 + 대체 눈(GPT → Opus) 결과가 있어야 확인할 것
   const 빈편 = 편('LAB_빈결과_20261113');
   결과쓰기(빈편, { 만든때: new Date(Date.now() - 3_600_000).toISOString(), 낱장: [], 빠짐: ['01', '02', '03'] });
   const 새판 = path.join(빈편.dir, '최종.mp4'); fs.writeFileSync(새판, 'x');
@@ -479,12 +479,19 @@ test('⑱ 미학 맹검(11-08): 만든 날 상관없이 모든 편은 결과가 
   const 같이 = (prep, 영상) => 레벨(검사.aestheticFindings({ ...빈편, prep }, 영상));
   assert.deepEqual(같이({}, [새판]), ['고칠 것:aesthetic-stale']);
   assert.deepEqual(같이({ 맹검판단: '아르곤 줄 막힘' }, [새판]), ['고칠 것:aesthetic-stale'], '옛 판의 「맹검판단」은 다시 렌더한 판에 안 통한다');
-  assert.deepEqual(같이({ 맹검못함: '아르곤 줄 막힘' }, [새판]), ['확인할 것:aesthetic-skipped'], '결과 파일이 있어도 「맹검못함」이면 막히지 않는다');
+  assert.deepEqual(같이({ 맹검못함: '아르곤 줄 막힘' }, [새판]), ['고칠 것:aesthetic-stale'], '다시 렌더한 판은 다시 맹검 — 막혀도 증거가 남아 대체 눈으로 넘어간다');
   assert.deepEqual(같이({}, [옛판]), ['고칠 것:aesthetic-incomplete']);
-  assert.deepEqual(같이({ 맹검판단: '아르곤 줄 막힘' }, [옛판]), ['확인할 것:aesthetic-incomplete'], '그 판 그대로면 예전처럼 「맹검판단」이 통한다');
-  assert.deepEqual(같이({ 맹검못함: '아르곤 줄 막힘' }, [옛판]), ['확인할 것:aesthetic-skipped']);
+  assert.deepEqual(같이({ 맹검판단: '아르곤 줄 막힘' }, [옛판]), ['고칠 것:aesthetic-incomplete'], '막힌 증거가 없는 옛 결과 — 글만으로는 못 넘는다');
+  assert.deepEqual(같이({ 맹검못함: '아르곤 줄 막힘' }, [옛판]), ['고칠 것:aesthetic-incomplete']);
+  // 막힌 증거(미학맹검.js 「막힘」) + 대체 눈 결과(게시/미학맹검_대체.json)가 있으면 확인할 것
+  const 막힌편 = 편('LAB_막힘대체_20261113', { 맹검못함: '11-09 아르곤 거절' });
+  결과쓰기(막힌편, { 만든때: new Date(Date.now() - 60_000).toISOString(), 화면: [{ 번호: '01', 컷: '순간@1.20' }], 낱장: [], 빠짐: ['01'], 막힘: [{ 묶음: 1, 화면: ['01'], 꼴: '거절', 보낸때: '2026-11-09 17:36:24', 첫줄: '저는 그런 것을 하도록 프로그램되지 않았습니다.' }] });
+  assert.deepEqual(레벨(검사.aestheticFindings(막힌편, [])), ['고칠 것:aesthetic-unverified']);
+  fs.writeFileSync(path.join(막힌편.dir, '게시', '미학맹검_대체.json'), JSON.stringify({ 만든때: new Date().toISOString(), 눈: 'gpt', 적중: { 기각: '5/8' }, 화면: [{ 번호: '01', 컷: '순간@1.20' }], 낱장: [{ 번호: '01', 판정: '그대로 냄', 점수: 7 }], 빠짐: [] }));
+  assert.deepEqual(레벨(검사.aestheticFindings(막힌편, [])), ['확인할 것:aesthetic-substitute']);
   assert.deepEqual(레벨(검사.aestheticFindings(편('LAB_판단만_20261113', { 맹검판단: '빈 날 없음' }), [])), ['고칠 것:aesthetic-missing'], '결과가 아예 없으면 「맹검판단」만으로는 못 넘는다(그대로)');
   const { aestheticBlock } = require('../tools/lib/미학관문.js');
-  assert.equal(aestheticBlock({ ...빈편, prep: { 맹검못함: '막힘' } }, [새판]), null, '예약 큐 · 14시 게시도 같은 판정');
+  assert.equal(aestheticBlock({ ...빈편, prep: { 맹검못함: '막힘' } }, [새판]), '맹검 뒤 영상 바뀜', '예약 큐 · 14시 게시도 같은 판정');
+  assert.equal(aestheticBlock(막힌편, []), null);
   assert.equal(aestheticBlock({ ...빈편, prep: { 맹검판단: '막힘' } }, [새판]), '맹검 뒤 영상 바뀜');
 });
