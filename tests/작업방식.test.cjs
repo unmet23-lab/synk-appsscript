@@ -300,7 +300,7 @@ test('거절된 push는 실패로 남고 강제로 덮지 않는다(되살아난
   } finally { t.끝(); }
 });
 
-test('junction · .tmp · node_modules는 따라가지 않는다', { skip: process.platform !== 'win32' }, () => {
+test('junction · 심볼릭 링크 · .tmp · node_modules는 따라가지 않는다', () => {
   const t = 판();
   try {
     t.쓰기('Documents/repo/정상.md', '정상\n');
@@ -309,7 +309,9 @@ test('junction · .tmp · node_modules는 따라가지 않는다', { skip: proce
     const 바깥 = path.join(t.뿌리, '바깥');
     fs.mkdirSync(바깥);
     fs.writeFileSync(path.join(바깥, '바깥글.md'), '바깥\n');
-    spawnSync('cmd', ['/c', 'mklink', '/J', path.join(t.문서, 'repo', '연결'), 바깥]);
+    // CI(Linux)에서도 돌도록 — 조건부로 건너뛰면 「등록되지 않은 조건부 제외」로 wide 시험이 빨개진다(11-09)
+    if (process.platform === 'win32') spawnSync('cmd', ['/c', 'mklink', '/J', path.join(t.문서, 'repo', '연결'), 바깥]);
+    else fs.symlinkSync(바깥, path.join(t.문서, 'repo', '연결'));
     assert.equal(도구.돌리기({}, t.의존()).status, 'success');
     const 목록 = t.맨목록().join('\n');
     assert.ok(목록.includes('정상.md'));
