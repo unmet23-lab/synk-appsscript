@@ -114,13 +114,23 @@ test('윈도우 기록은 상태 폴더에 두고, 없어진 예약 작업의 �
     let 부름 = 0;
     assert.ok(도구.윈도우기록(거울, t.자리, 하루 + 1000, 상태파일, () => { 부름 += 1; return { status: 1 }; }).has('윈도우/예약작업/SYNK 옛작업.xml'));
     assert.equal(부름, 0);
-    // 목록을 못 받은 날은 옛 XML을 그대로 둔다
+    // 같은 내용이면 다시 쓰지 않는다(수정 시각이 바뀌면 열쇠 묶음이 괜히 새 판이 된다)
+    const 과거 = new Date('2026-01-01T00:00:00Z');
+    fs.utimesSync(옛, 과거, 과거);
+    도구.윈도우기록(거울, t.자리, 하루 * 2, 상태파일, 돌림);
+    assert.equal(fs.statSync(옛).mtimeMs, 과거.getTime());
+    // 목록을 못 받은 날은 옛 XML을 그대로 두고 거울로 보낼 기록에도 남긴다
     예약 = null;
-    도구.윈도우기록(거울, t.자리, 하루 * 3, 상태파일, 돌림);
+    assert.ok(도구.윈도우기록(거울, t.자리, 하루 * 3, 상태파일, 돌림).has('윈도우/예약작업/SYNK 옛작업.xml'));
+    assert.ok(fs.existsSync(옛));
+    // 깨진 목록도 못 받은 것과 같다
+    예약 = '{깨진 글';
+    assert.ok(도구.윈도우기록(거울, t.자리, 하루 * 4, 상태파일, 돌림).has('윈도우/예약작업/목록.json'));
     assert.ok(fs.existsSync(옛));
     // 제대로 받으면 없어진 작업의 XML을 치운다
     예약 = JSON.stringify([{ 이름: 'SYNK 새작업', 상태: 'Ready', xml: '<Task>새</Task>' }]);
-    도구.윈도우기록(거울, t.자리, 하루 * 5, 상태파일, 돌림);
+    const 새판 = 도구.윈도우기록(거울, t.자리, 하루 * 5, 상태파일, 돌림);
+    assert.ok(!새판.has('윈도우/예약작업/SYNK 옛작업.xml'));
     assert.ok(!fs.existsSync(옛));
     assert.ok(fs.existsSync(path.join(path.dirname(옛), 'SYNK 새작업.xml')));
   } finally { t.끝(); }

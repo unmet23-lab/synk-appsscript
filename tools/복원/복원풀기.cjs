@@ -8,6 +8,7 @@
  *
  * 순서: 암호를 묻는다 → 열쇠 묶음을 푼다(Drive 자격이 여기 들어 있다) → --받기 묶음을 77yuhbs에서 받는다 → 받은 것 · --폴더의 묶음을 푼다.
  * 조각은 최신→과거 순으로 풀고 이미 있는 파일은 건너뛴다 — 같은 경로는 최신 판이 이기고, 끊겨도 다시 돌리면 이어진다. 기존 파일을 덮지 않는다.
+ * 같은 묶음 이름의 폴더가 여럿이면(77yuhbs에서 받은 곳 · G:의 unmet23 자리) 조각을 합쳐 한 줄로 푼다 — 두 드라이브는 서로 독립이라 한쪽에만 간 조각이 있을 수 있다.
  * GCM 태그가 맞은 뒤에만 푼다(암호.js decryptFile). 풀린 tar는 임시 폴더에서 바로 지운다.
  * --암호파일은 시험용이다. 평소에는 터미널에서 묻는다(암호는 화면 · 기록 어디에도 남지 않는다).
  */
@@ -110,6 +111,18 @@ function 조각들(곳) {
   return 이름들.filter((n) => 조각꼴.test(n)).sort().reverse().map((n) => path.join(곳, n));
 }
 
+/** 묶음마다 모든 폴더의 조각을 합쳐 최신→과거로 줄 세운다. 같은 이름은 앞 폴더 것을 쓴다(이미 받은 것을 드라이브 자리표시자보다 먼저). */
+function 묶음별조각(폴더들) {
+  const 묶음별 = new Map();
+  for (const 곳 of 폴더들) {
+    const 묶음 = path.basename(곳);
+    if (!묶음별.has(묶음)) 묶음별.set(묶음, new Map());
+    const 줄 = 묶음별.get(묶음);
+    for (const 파일 of 조각들(곳)) if (!줄.has(path.basename(파일))) 줄.set(path.basename(파일), 파일);
+  }
+  return [...묶음별].map(([묶음, 줄]) => [묶음, [...줄.keys()].sort().reverse().map((n) => 줄.get(n))]);
+}
+
 async function 돌리기(값, 알림 = (m) => console.log(m)) {
   const 잠금파일 = 비밀키찾기(값);
   const 잠금 = JSON.parse(fs.readFileSync(잠금파일, 'utf8'));
@@ -130,17 +143,19 @@ async function 돌리기(값, 알림 = (m) => console.log(m)) {
     알림(`열쇠를 푸는 중: ${path.basename(값.열쇠파일)}`);
     더하기('열쇠', await 조각풀기(비밀키, 값.열쇠파일, 임시, 값.집));
   }
-  const 폴더들 = [...값.폴더];
+  const 받은폴더 = [];
   if (값.받기.length) {
     const 받는곳 = 값.받는곳 || path.join(임시, '받기');
     알림(`77yuhbs에서 받는 중: ${값.받기.join(' · ')}`);
     const r = 파이썬(['받기', ...값.받기, '--폴더', 받는곳], 값.집, ['ignore', 'pipe', 'inherit']);
-    if (r.status !== 0) throw new Error('드라이브 받기 실패');
-    for (const n of 값.받기) 폴더들.push(path.join(받는곳, n));
+    if (r.status === 0) for (const n of 값.받기) 받은폴더.push(path.join(받는곳, n));
+    else {
+      // 받다 끊긴 곳은 풀지 않는다 — 옛 조각만 풀면 옛 판이 자리를 차지해 다시 돌려도 안 바뀐다. G:로 보이는 unmet23 쪽은 그대로 풀고 끝에 알린다.
+      합.받기실패 = true;
+      알림('77yuhbs에서 받지 못했습니다. 구글 드라이브 앱으로 보이는 것만 먼저 풉니다.');
+    }
   }
-  for (const 곳 of 폴더들) {
-    const 묶음 = path.basename(곳);
-    const 줄 = 조각들(곳);
+  for (const [묶음, 줄] of 묶음별조각([...받은폴더, ...값.폴더])) {
     알림(`${묶음}: 조각 ${줄.length}개를 푸는 중`);
     for (const 파일 of 줄) {
       // 망가진 조각 하나 때문에 나머지를 포기하지 않는다. 더 옛 조각이 그 파일의 옛 판을 채운다.
@@ -161,8 +176,9 @@ if (require.main === module) {
     const 값 = 인자(process.argv.slice(2));
     const 합 = await 돌리기(값, 값.json ? () => {} : undefined);
     console.log(JSON.stringify(합, null, 값.json ? 0 : 1));
-    if (합.실패 || 합.손상 || 합.조각실패) process.exitCode = 2; // 대부분은 풀렸지만 살펴볼 것이 있다
+    if (합.받기실패) process.exitCode = 3; // 인터넷 · 로그인을 고치고 다시 돌리면 이어진다
+    else if (합.실패 || 합.손상 || 합.조각실패) process.exitCode = 2; // 대부분은 풀렸지만 살펴볼 것이 있다
   })().catch((e) => { console.error(`실패: ${e.message}`); process.exitCode = 1; });
 }
 
-module.exports = { 돌리기, 인자, 조각들 };
+module.exports = { 돌리기, 인자, 조각들, 묶음별조각 };

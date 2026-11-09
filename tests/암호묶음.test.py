@@ -1125,6 +1125,58 @@ class Damage(Base):
         self.assertEqual(result['손상목록'], ['a.jsonl'])
 
 
+class TwoDrives(Base):
+    """두 드라이브는 서로 독립이라 한쪽에만 간 조각이 있을 수 있다 — 복원은 둘을 합쳐 본다(11-09)."""
+
+    def part(self, drive, name, arc, text):
+        source = self.base / 'src' / name
+        source.parent.mkdir(exist_ok=True)
+        source.write_text(text, encoding='utf-8')
+        out = self.base / drive / '비공개문서' / name
+        out.parent.mkdir(parents=True, exist_ok=True)
+        M.seal([(source, arc, source.stat().st_size, 1_000_000_000_000)], None, out, self.public)
+        return out
+
+    def unpack(self, *folders, extra=()):
+        home2 = self.base / 'home2'
+        home2.mkdir(exist_ok=True)
+        args = ['node', str(TOOL / '복원풀기.cjs'), '--집', str(home2), '--비밀키', str(self.keydir / '비밀키_잠금.json'),
+                '--암호파일', str(self.passfile), '--임시', str(self.base / 'unpack'), '--json', *extra]
+        for folder in folders:
+            args += ['--폴더', str(self.base / folder / '비공개문서')]
+        done = subprocess.run(args, capture_output=True, text=True, encoding='utf-8')
+        return done, home2, json.loads(done.stdout.strip().splitlines()[-1])
+
+    def test_newest_part_wins_across_drives_whichever_folder_comes_first(self):
+        self.part('g', '비공개문서-20261101T000000Z-001-aaaaaa.tar.zst.enc', 'x.txt', '옛 판')
+        self.part('받음', '비공개문서-20261102T000000Z-001-bbbbbb.tar.zst.enc', 'x.txt', '새 판')
+        self.part('g', '비공개문서-20261103T000000Z-001-cccccc.tar.zst.enc', 'y.txt', 'unmet23에만 간 조각')
+        done, home2, result = self.unpack('g', '받음')
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual((home2 / 'x.txt').read_text(encoding='utf-8'), '새 판')
+        self.assertEqual((home2 / 'y.txt').read_text(encoding='utf-8'), 'unmet23에만 간 조각')
+        self.assertEqual(result['묶음']['비공개문서']['조각'], 3)
+
+    def test_same_part_in_both_drives_is_read_once(self):
+        name = '비공개문서-20261101T000000Z-001-aaaaaa.tar.zst.enc'
+        self.part('받음', name, 'x.txt', '내용')
+        (self.base / 'g' / '비공개문서').mkdir(parents=True)
+        shutil.copyfile(self.base / '받음' / '비공개문서' / name, self.base / 'g' / '비공개문서' / name)
+        done, _, result = self.unpack('받음', 'g')
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual((result['조각'], result['풀림'], result['건너뜀']), (1, 1, 0))
+
+    def test_failed_download_skips_partial_folder_unpacks_other_drive_and_says_so(self):
+        self.part('g', '비공개문서-20261101T000000Z-001-aaaaaa.tar.zst.enc', 'x.txt', 'unmet23 판')
+        self.part('받는곳', '비공개문서-20261102T000000Z-001-bbbbbb.tar.zst.enc', 'y.txt', '받다 끊긴 곳의 조각')
+        # 가짜 집에는 77yuhbs 자격이 없어 받기가 실패한다
+        done, home2, result = self.unpack('g', extra=('--받기', '비공개문서', '--받는곳', str(self.base / '받는곳')))
+        self.assertEqual(done.returncode, 3, done.stderr)
+        self.assertTrue(result['받기실패'])
+        self.assertEqual((home2 / 'x.txt').read_text(encoding='utf-8'), 'unmet23 판')
+        self.assertFalse((home2 / 'y.txt').exists())
+
+
 class Order(Base):
     def test_ledger_bundle_goes_last_after_others_settled(self):
         self.assertEqual(M.DAILY[-1], '창고장부')

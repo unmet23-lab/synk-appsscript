@@ -206,6 +206,13 @@ function 판정(줄, 파일, 도구, 모음, 받은데이터) {
 }
 
 function 캐시읽기(파일) { try { return JSON.parse(fs.readFileSync(파일, 'utf8')); } catch { return {}; } }
+/** 내용이 같으면 쓰지 않는다 — 수정 시각이 바뀌면 이 폴더를 담는 열쇠 묶음이 괜히 새 판이 된다. */
+function 바뀌면쓰기(파일, 내용) {
+  const 새것 = Buffer.from(내용);
+  try { if (fs.readFileSync(파일).equals(새것)) return; } catch {}
+  fs.mkdirSync(path.dirname(파일), { recursive: true });
+  fs.writeFileSync(파일, 새것);
+}
 function 쓰기(파일, 값) {
   fs.mkdirSync(path.dirname(파일), { recursive: true });
   const 임시 = `${파일}.${process.pid}.tmp`;
@@ -374,16 +381,18 @@ function 윈도우기록(거울, 자리, 지금, 상태파일, 돌림 = spawnSyn
   };
   const 예약 = 실행('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
     '[Console]::OutputEncoding=[Text.UTF8Encoding]::new(); Get-ScheduledTask | Where-Object { $_.TaskName -match "SYNK|Hermes|hermes|헤르메스" } | ForEach-Object { $x = Export-ScheduledTask -TaskName $_.TaskName -TaskPath $_.TaskPath; [pscustomobject]@{ 이름=$_.TaskName; 상태=[string]$_.State; xml=$x } } | ConvertTo-Json -Depth 3 -Compress']);
+  let 예약받음 = false;
   if (예약) {
-    let 줄 = [];
-    try { 줄 = JSON.parse(예약.replace(/^\uFEFF/, '')); } catch { 줄 = null; }
-    // 목록을 제대로 받았을 때만 옛 XML을 치운다 — 없어진 예약 작업의 옛 값이 열쇠 묶음에 남지 않게. 못 받은 날은 그대로 둔다.
-    if (줄) fs.rmSync(path.join(기록폴더, '윈도우', '예약작업'), { recursive: true, force: true });
-    for (const t of Array.isArray(줄) ? 줄 : [줄]) {
-      if (!t || !t.이름 || !t.xml) continue;
-      덧.set(`윈도우/예약작업/${t.이름.replace(/[\\/:*?"<>|]/g, '_')}.xml`, t.xml);
+    let 줄 = null;
+    try { 줄 = JSON.parse(예약.replace(/^\uFEFF/, '')); } catch {}
+    if (줄) {
+      예약받음 = true;
+      for (const t of Array.isArray(줄) ? 줄 : [줄]) {
+        if (!t || !t.이름 || !t.xml) continue;
+        덧.set(`윈도우/예약작업/${t.이름.replace(/[\\/:*?"<>|]/g, '_')}.xml`, t.xml);
+      }
+      덧.set('윈도우/예약작업/목록.json', JSON.stringify((Array.isArray(줄) ? 줄 : [줄]).filter(Boolean).map((t) => ({ 이름: t.이름, 상태: t.상태 })), null, 1));
     }
-    덧.set('윈도우/예약작업/목록.json', JSON.stringify((Array.isArray(줄) ? 줄 : [줄]).filter(Boolean).map((t) => ({ 이름: t.이름, 상태: t.상태 })), null, 1));
   }
   const 임시 = path.join(os.tmpdir(), `synk-winget-${process.pid}.json`);
   if (실행('winget', ['export', '-o', 임시, '--accept-source-agreements', '--disable-interactivity'], 240000) !== null || fs.existsSync(임시)) {
@@ -397,11 +406,14 @@ function 윈도우기록(거울, 자리, 지금, 상태파일, 돌림 = spawnSyn
   const 연결 = 실행('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
     `[Console]::OutputEncoding=[Text.UTF8Encoding]::new(); $roots=@($env:USERPROFILE, (Join-Path $env:USERPROFILE 'Documents'), (Join-Path $env:USERPROFILE '.cache'), (Join-Path $env:USERPROFILE '.claude\\skills'), 'C:\\'); $rows=foreach($r in $roots){ Get-ChildItem -LiteralPath $r -Force -ErrorAction SilentlyContinue | Where-Object { $_.LinkType -in 'Junction','SymbolicLink' -and $_.Name -notin 'Documents and Settings','My Music','My Pictures','My Videos' } | ForEach-Object { [pscustomobject]@{ 자리=$_.FullName; 대상=($_.Target -join ';'); 종류=[string]$_.LinkType } } }; ConvertTo-Json -InputObject @($rows) -Compress`]);
   if (연결) 덧.set('윈도우/연결목록.json', 연결.replace(/^\uFEFF/, ''));
-  for (const [rel, 내용] of 덧) {
-    const 곳 = path.join(기록폴더, ...rel.split('/'));
-    fs.mkdirSync(path.dirname(곳), { recursive: true });
-    fs.writeFileSync(곳, 내용);
+  // 못 만든 기록은 어제 판을 쓴다 — 명령 하나가 시간 초과로 실패했다고 거울에서 사라지지 않게. 예약 목록을 제대로 받았으면 없어진 작업의 옛 XML은 버린다.
+  for (const rel of 상태.files || []) {
+    if (덧.has(rel) || (예약받음 && rel.startsWith('윈도우/예약작업/'))) continue;
+    try { 덧.set(rel, fs.readFileSync(path.join(기록폴더, ...rel.split('/')))); } catch {}
   }
+  // 없어진 것의 옛 사본은 지운다 — 옛 값이 열쇠 묶음에 남지 않게.
+  for (const f of 걷기(기록폴더, new Set(), [])) if (!덧.has(f.rel)) fs.rmSync(f.절대, { force: true });
+  for (const [rel, 내용] of 덧) 바뀌면쓰기(path.join(기록폴더, ...rel.split('/')), 내용);
   쓰기(상태파일, { at: 지금, files: [...덧.keys()] });
   return 덧;
 }
@@ -465,8 +477,7 @@ function 돌리기(옵션 = {}, 의존 = {}) {
     if (입구.has(경로)) { 문제.push({ code: 'WORKMETHOD_RESTORE_TOOL_BLOCKED' }); continue; }
     if (결과.갈곳) {
       const 곳 = path.join(보호폴더, ...경로.split('/'));
-      fs.mkdirSync(path.dirname(곳), { recursive: true });
-      fs.writeFileSync(곳, 데이터);
+      바뀌면쓰기(곳, 데이터);
       이번보호.add(곳);
       뺌.push({ 경로, source: 곳, 까닭: 결과.까닭, 갈곳: '열쇠' });
     }
