@@ -8,7 +8,9 @@
 // 그 결과를 편 폴더 게시/미학맹검.json에 둔다(--편 <편 폴더>). 11-08부터 모든 편에 묻는다 — 만든 날 상관없이, 이미 만들어 둔 비축 편도
 // (유호님 「오늘 회차부터 걸지 왜 내일부터 … 그냥 지금부터 걸어」). 맹검 뒤 영상이 바뀌었거나 답이 빠졌거나 「기각」이면 고칠 것 —
 // 고쳐 다시 맹검하거나, 그래도 낼 까닭(빈 날 없음 · 지적이 이 자리와 무관 등)을 준비.json 「맹검판단」에 적으면 확인할 것으로 내린다.
-// 아르곤이 막혀 맹검을 못 했으면 준비.json 「맹검못함」에 까닭을 적는다(확인할 것).
+// 아르곤이 막혀 맹검을 못 했으면 준비.json 「맹검못함」에 까닭을 적는다(확인할 것). 판정이 한 장도 없는 결과(모든 화면 답 빠짐)는
+// 결과가 없는 것과 같다 — 낡을 판정이 없으니 그 뒤 영상이 바뀌어도 「맹검 뒤 영상 바뀜」으로 막지 않고, 「맹검못함」이나 「맹검판단」에
+// 적은 막힌 까닭을 받는다(11-10: 11-09 15:34 아르곤 줄이 막힌 뒤 다시 렌더한 LAB 두 편이 다시 맹검할 길 없이 막혔다).
 const fs = require('node:fs');
 const path = require('node:path');
 const { FIX, LOOK } = require('./게시글규칙.js');
@@ -24,15 +26,18 @@ function aestheticFindings(bundle, videoFiles) {
   const file = path.join(bundle.dir, '게시', '미학맹검.json');
   let 결과 = null;
   try { 결과 = JSON.parse(fs.readFileSync(file, 'utf8')); } catch { /* 없다 */ }
-  if (!결과) {
-    if (못함) add(LOOK, 'aesthetic-skipped', `미학 맹검을 못 했다 — 「맹검못함」: ${못함}`);
+  const 낱장 = 결과 && Array.isArray(결과.낱장) ? 결과.낱장 : [];
+  if (!결과 || !낱장.length) {
+    // 결과가 있는데 판정이 없으면(모든 화면 답 빠짐) 「맹검판단」에 적은 막힌 까닭도 받는다 — 결과가 생긴 뒤에는 그 칸에 적어 왔다
+    const 까닭 = 못함 ? ['맹검못함', 못함] : 결과 && 판단 ? ['맹검판단', 판단] : null;
+    if (까닭) add(LOOK, 'aesthetic-skipped', `미학 맹검 판정이 없다${결과 ? '(모든 화면 답 빠짐)' : ''} — 「${까닭[0]}」: ${까닭[1]}`);
+    else if (결과) add(FIX, 'aesthetic-incomplete', '미학 맹검 답을 한 장도 못 받았다 — 다시 맹검하거나, 아르곤이 막혔으면 준비.json 「맹검못함」에 까닭');
     else add(FIX, 'aesthetic-missing', '보여 드리기 · 게시 전 미학 맹검이 없다(11-08부터 모든 편, 제작 절차 3 관문) — node tools/미학맹검.js <대표 프레임 · 카드…> --편 <편 폴더>. 아르곤이 막혔으면 준비.json 「맹검못함」에 까닭');
     return findings;
   }
   const 만든때 = Date.parse(결과.만든때 || '') || (() => { try { return fs.statSync(file).mtimeMs; } catch { return 0; } })();
   const 새영상 = videoFiles.filter(v => { try { return fs.statSync(v).mtimeMs > 만든때 + 1000; } catch { return false; } });
   if (새영상.length) add(FIX, 'aesthetic-stale', `맹검 뒤 영상이 바뀌었다(${새영상.map(v => path.basename(v)).join(', ')}) — 바뀐 판의 대표 프레임으로 다시 맹검한다`);
-  const 낱장 = Array.isArray(결과.낱장) ? 결과.낱장 : [];
   const 빠짐 = Array.isArray(결과.빠짐) ? 결과.빠짐 : [];
   if (빠짐.length) add(판단 ? LOOK : FIX, 'aesthetic-incomplete', `맹검 답을 못 받은 화면 ${빠짐.join(', ')} — 통과로 치지 않는다${판단 ? ` · 「맹검판단」: ${판단}` : ''}`);
   const 짧게 = x => `${x.번호}(${x.점수 ?? '—'}점) ${String((x.약점 || [])[0] || '').slice(0, 70)}`;

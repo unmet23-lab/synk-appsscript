@@ -424,4 +424,17 @@ test('⑱ 미학 맹검(11-08): 만든 날 상관없이 모든 편은 결과가 
   const 영상 = path.join(늦은편.dir, '최종.mp4'); fs.writeFileSync(영상, 'x');
   assert.deepEqual(레벨(검사.aestheticFindings(늦은편, [영상])), ['고칠 것:aesthetic-stale'], '맹검 뒤 다시 렌더한 영상');
   assert.deepEqual(레벨(검사.aestheticFindings(늦은편, [])), [], '그대로 냄뿐이면 조용하다');
+
+  // 11-10: 아르곤이 막혀 모든 화면 답이 빠진 결과는 결과가 없는 것과 같다 — 그 뒤 다시 렌더해도 낡을 판정이 없다
+  const 빈편 = 편('LAB_빈결과_20261113');
+  결과쓰기(빈편, { 만든때: new Date(Date.now() - 3_600_000).toISOString(), 낱장: [], 빠짐: ['01', '02', '03'] });
+  const 새판 = path.join(빈편.dir, '최종.mp4'); fs.writeFileSync(새판, 'x');
+  assert.deepEqual(레벨(검사.aestheticFindings(빈편, [새판])), ['고칠 것:aesthetic-incomplete'], '까닭이 없으면 다시 맹검하라고 막는다(「영상 바뀜」이 아니라)');
+  빈편.prep.맹검판단 = '아르곤 줄 막힘 — 모든 세션 답 없음';
+  assert.deepEqual(레벨(검사.aestheticFindings(빈편, [새판])), ['확인할 것:aesthetic-skipped'], '결과가 생긴 뒤 「맹검판단」에 적은 막힌 까닭을 받는다');
+  assert.deepEqual(레벨(검사.aestheticFindings({ ...빈편, prep: { 맹검못함: '아르곤 줄 막힘' } }, [새판])), ['확인할 것:aesthetic-skipped']);
+  assert.deepEqual(레벨(검사.aestheticFindings(편('LAB_판단만_20261113', { 맹검판단: '빈 날 없음' }), [])), ['고칠 것:aesthetic-missing'], '결과가 아예 없으면 「맹검판단」만으로는 못 넘는다(그대로)');
+  const { aestheticBlock } = require('../tools/lib/미학관문.js');
+  assert.equal(aestheticBlock(빈편, [새판]), null, '예약 큐 · 14시 게시도 같은 판정으로 막지 않는다');
+  assert.equal(aestheticBlock({ ...빈편, prep: {} }, [새판]), '맹검 답 빠짐');
 });
