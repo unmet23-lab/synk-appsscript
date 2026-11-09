@@ -37,7 +37,7 @@ type Face = 'Calm' | 'Shout' | 'Cheer' | 'Gasp';
 // 넓은 구도는 판 위쪽을 기준으로 키운다 — 시계 위 테두리가 머리 팻말 아래로 내려와 팻말이 시계를 덮지 않는다(아르곤 맹검 v14 [K1])
 const WIDE = { x: 540, y: 0, z: 1.11 };
 const MID = { x: 540, y: 0, z: 1.15 };
-const NEAR = { x: 440, y: 1180, z: 1.32 }; // 몽글이 왼쪽 아래에 보이게
+const NEAR = { x: 440, y: 1197, z: 1.26 }; // 몽글이 왼쪽 아래에 온전히 — 넓은 그림을 잘라 쓴 듯 몽글 · 연필꽂이가 잘린다(아르곤 맹검 v18 [C082])
 const RULE = { x: 542, y: 0, z: 1.2 }; // 풀이 — 시계 가운데 (546, 980), 위 테두리 476이 두 줄 팻말 아래에 온다
 const RULE2 = { x: 542, y: 76, z: 1.22 }; // 긴 바늘 차례 — 시계를 조금 더 크게(가운데는 그대로 980)
 const MONGLE = { x: 300, y: 1450, z: 1.6 }; // 떨면서 맞히는 몽글 — 바늘은 위에서 내려다본다
@@ -49,8 +49,8 @@ const camAt = (t: number): Cam => {
   const ease = { ...clamp, easing: Easing.inOut(Easing.cubic) };
   if (t < T.seoreun) return lerpCam(WIDE, MID, interpolate(t, [0, T.seoreun], [0, 1], clamp));
   if (t < T.fight) return lerpCam(MID, NEAR, interpolate(t, [T.seoreun, T.seoreun + 0.45], [0, 1], ease));
-  if (t < T.ruleH) return { ...NEAR, z: interpolate(t, [T.fight, T.clash, T.clash + 0.3, T.ruleH], [1.32, 1.46, 1.38, 1.34], clamp) };
-  if (t < T.ruleM) return lerpCam({ ...NEAR, z: 1.34 }, RULE, interpolate(t, [T.ruleH, T.ruleH + 0.35], [0, 1], ease));
+  if (t < T.ruleH) return { ...NEAR, z: interpolate(t, [T.fight, T.clash, T.clash + 0.3, T.ruleH], [1.24, 1.32, 1.28, 1.26], clamp) };
+  if (t < T.ruleM) return lerpCam({ ...NEAR, z: 1.26 }, RULE, interpolate(t, [T.ruleH, T.ruleH + 0.35], [0, 1], ease));
   if (t < T.both) return RULE2;
   if (t < T.spinEnd) return lerpCam(RULE2, WIDE, interpolate(t, [T.both, T.both + 0.4], [0, 1], ease));
   if (t < T.cut) return lerpCam(WIDE, MONGLE, interpolate(t, [T.spinEnd, T.spinEnd + 0.48], [0, 1], ease));
@@ -95,7 +95,8 @@ const hourAngle = (t: number) => {
   if (t < T.spin) return interpolate(t, [T.ruleM, T.ruleM + 0.5], [90, A], { ...clamp, easing: Easing.inOut(Easing.cubic) }) + 3 * kick(t, T.ding, 4, 16) + 16 * Math.max(kick(t, T.bump, 5, 16), 0);
   if (t < T.spinEnd) return interpolate(t, [T.spin, T.spinEnd], [A, 307.5], { ...clamp, easing: Easing.inOut(Easing.cubic) });
   const bl = blow(t);
-  return 307.5 + 6 * kick(t, T.ding2, 4, 16) + 11 * bl + 2.2 * bl * Math.sin(t * 58);
+  // 끝은 정확히 10:15(307.5°) — 움찔할 때 각도를 밀면 시침이 11시 쪽을 가리켜 「말과 그림이 틀린다」(아르곤 맹검 v18 [K13]). 떨림과 머리 움찔만 남긴다
+  return 307.5 + 6 * kick(t, T.ding2, 4, 16) + 2.2 * bl * Math.sin(t * 58);
 };
 
 // 긴 바늘 각도
@@ -122,7 +123,7 @@ const minuteAngle = (t: number) => {
   if (t < T.spin) return step(T.m3, 480, 540) + 3 * kick(t, T.ding, 4, 16);
   if (t < T.spinEnd) return interpolate(t, [T.spin, T.spinEnd], [540, 540 + 360 * 6.75], { ...clamp, easing: Easing.inOut(Easing.cubic) });
   const bl = blow(t);
-  return 450 + 6 * kick(t, T.ding2 + 0.05, 4, 16) - 11 * bl + 2.2 * bl * Math.sin(t * 61);
+  return 450 + 6 * kick(t, T.ding2 + 0.05, 4, 16) + 2.2 * bl * Math.sin(t * 61);
 };
 
 // 지금 머리 얼굴 — 우길 땐 외침, 풀이 · 맞을 땐 환호, 몽글이 외치면 움찔
@@ -180,8 +181,8 @@ const Hand: React.FC<{ who: 'hour' | 'minute'; angle: number; sw: number }> = ({
         width: W,
         height: H,
         transformOrigin: `${ox}px ${oy}px`,
-        // 긴 바늘은 몸통을 조금 굵게 — 화살촉이 납작한 선처럼 보인다(아르곤 맹검 v15)
-        transform: `rotate(${angle}deg) scale(${(who === 'minute' ? 1.38 : 1) * (1 + 0.12 * sw)}, ${1 + 0.06 * sw})`,
+        // 긴 바늘은 몸통을 조금 굵게 — 화살촉이 납작한 선처럼 보인다(아르곤 맹검 v15). 짧은 바늘은 좁게 — 몸통 날개가 머리 옆으로 삐져나와 「삼각형 조각」으로 보인다(v18 [C132])
+        transform: `rotate(${angle}deg) scale(${(who === 'minute' ? 1.38 : 0.62) * (1 + 0.12 * sw)}, ${1 + 0.06 * sw})`,
         filter: 'drop-shadow(5px 9px 6px rgba(60,30,8,0.42))',
       }}
     />
@@ -429,7 +430,7 @@ export const Film: React.FC<{ lang: Lang; scene?: boolean }> = ({ lang, scene })
       <Bubble t={t} from={T.hour1} until={T.try2} x={700} y={578} tipX={700} tipY={850} color={C.hour} sub={L.seGloss} subFont={FONT[lang]} w={560} size={84}>세 시!</Bubble>
       <Bubble t={t} from={T.min1} until={T.fight} x={350} y={1180} tipX={530} tipY={1025} color={C.minute} sub={L.samsipGloss} subFont={FONT[lang]} w={640} size={76}>삼십 분!</Bubble>
       {/* 다툼 — 박마다 커진다, 마지막은 둘이 한꺼번에. 꼬리는 머리 위에서 멈춘다(v14 정수리를 찌름) */}
-      {beat && t < T.who && beat.who !== 'm' ? <Bubble t={t} from={beat.at} until={beat.at + 0.5} x={800} y={380} tipX={790} tipY={612} color={C.hour} sub="3!" w={beatSize * 2.5} size={beatSize} shout={5}>세!</Bubble> : null}
+      {beat && t < T.who && beat.who !== 'm' ? <Bubble t={t} from={beat.at} until={beat.at + 0.5} x={800} y={380} tipX={790} tipY={650} color={C.hour} sub="3!" w={beatSize * 2.5} size={beatSize} shout={5}>세!</Bubble> : null}
       {beat && t < T.who && beat.who !== 'h' ? <Bubble t={t} from={beat.at} until={beat.at + 0.5} x={290} y={1180} tipX={530} tipY={1025} color={C.minute} sub="30!" w={beatSize * 3.3} size={beatSize} shout={-5}>삼십!</Bubble> : null}
       {!scene ? (
         <>

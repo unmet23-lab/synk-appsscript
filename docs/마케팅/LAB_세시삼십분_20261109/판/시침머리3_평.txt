@@ -1,0 +1,15 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed, on a PURE flat white background (#FFFFFF) with nothing else in the picture and no shadow on the background.
+
+Use Image 1 only for the character: the same chubby round needle-felted wool ball in the same warm tangerine-orange wool, same size and position in the frame, centered, seen straight from the front, filling about 80% of the image width. Rebuild the whole face from real pieces of wool — nothing on this face may be printed, painted, drawn or airbrushed.
+
+The face is a big expressive cute face taking up most of the ball, a sturdy, slightly grumpy but lovable old character, made like this:
+- Eyes: two small black glass beads pushed deep into the wool, each sitting in a dent in the felt. The beads are the only shiny thing in the picture.
+- Eyebrows: two thick, chunky strips of brown felt with fuzzy, uneven edges and visible wool fibres, standing proud of the ball with a tiny contact shadow.
+- Mouth: a small closed smile made of a short dark-brown felt strip with rough torn edges, sunk into the wool so the wool bulges around it. Not a thin thread line.
+- Cheeks: two small round discs of rosy felt with visible fibres and a fuzzy edge, stuck on the ball, each with its own slight thickness. No soft colour gradient on the skin.
+
+Forbidden: airbrushed blush, smooth gradients, flat vector shapes, sticker-like faces, smooth plastic surfaces, gloss on the wool, thin ink lines.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers everywhere, soft even studio light, crisp edges against the white. Absolutely no text, letters, numbers, logos or symbols anywhere.

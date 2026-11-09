@@ -10,7 +10,7 @@ from PIL import Image
 판 = os.path.join(여기, '..', '판')
 밖 = os.path.join(여기, '..', 'remotion', 'public', 'img')
 os.makedirs(밖, exist_ok=True)
-이름 = {'방': 'room', '얼음': 'ice', '햇살': 'sun', '교수얼음': 'profIce', '빈방': 'roomEmpty', '빈햇살': 'sunEmpty', '빈얼음': 'iceEmpty'}
+이름 = {'방': 'room', '얼음2': 'ice', '햇살': 'sun', '교수얼음2': 'profIce', '빈방': 'roomEmpty', '빈햇살': 'sunEmpty', '빈얼음2': 'iceEmpty'}
 for ko, en in 이름.items():
     후보 = sorted(glob.glob(os.path.join(판, f'{ko}_[0-9]*.png')))
     if not 후보:

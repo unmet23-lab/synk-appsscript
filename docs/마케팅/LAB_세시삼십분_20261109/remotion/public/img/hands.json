@@ -14,35 +14,35 @@
   "len": 1538.2
  },
  "hourHeadCalm": {
-  "w": 884,
-  "h": 883
+  "w": 890,
+  "h": 900
  },
  "hourHeadShout": {
-  "w": 883,
-  "h": 884
+  "w": 887,
+  "h": 901
  },
  "hourHeadCheer": {
-  "w": 883,
-  "h": 884
+  "w": 887,
+  "h": 897
  },
  "minuteHeadCalm": {
-  "w": 875,
-  "h": 887
+  "w": 883,
+  "h": 889
  },
  "minuteHeadShout": {
-  "w": 875,
-  "h": 886
- },
- "minuteHeadCheer": {
-  "w": 875,
+  "w": 883,
   "h": 887
  },
- "hourHeadGasp": {
+ "minuteHeadCheer": {
   "w": 883,
-  "h": 884
+  "h": 888
+ },
+ "hourHeadGasp": {
+  "w": 888,
+  "h": 897
  },
  "minuteHeadGasp": {
-  "w": 874,
-  "h": 886
+  "w": 882,
+  "h": 887
  }
 }

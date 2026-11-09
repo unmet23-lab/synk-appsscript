@@ -1,0 +1,12 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed, on a PURE flat white background (#FFFFFF) with nothing else in the picture and no shadow on the background.
+
+Use Image 1 as the base picture: keep EXACTLY the same needle-felted wool ball head — same shape, same size, same position in the frame, same wool color and texture, same white background, same light, same bead eyes. Only change the expression. Everything on the face stays a real piece of wool: no print, no paint, no airbrush.
+
+Change: the face is now cheering with pure joy.
+- Mouth: a big wide-open happy smile (corners turned up high) built from one thick dark-brown felt piece with a rough, fuzzy, uneven edge, sunk into the ball so the wool bulges around its rim. Inside it, a tongue that is a separate lump of pink felt with visible fibres, casting a small shadow.
+- Eyebrows: the same chunky fuzzy brown felt strips, now raised high in happy arcs, not angry at all.
+- Cheeks: the same small rosy felt discs with visible fibres and fuzzy edges. No pink gradient on the skin.
+
+Forbidden: airbrushed blush, smooth gradients, flat vector shapes, sticker-like faces, smooth plastic surfaces, gloss on the wool, thin ink lines. Absolutely no text, letters, numbers, logos or symbols anywhere.

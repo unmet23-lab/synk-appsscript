@@ -1,10 +1,11 @@
 // LAB 몽골 M32 「수고하세요 ↔ 안녕히 계세요」(11-09) — 연구실을 나서는 몽글의 「교수님, 수고하세요!」에 교수 책상부터 서리가 번져 온 방이 언다(한 장면).
 // 되감아 「안녕히 계세요!」 하면 같은 방 · 같은 교수님이 햇살 속에서 손을 흔든다. 끝은 교수님의 「수고해요.」에 버릇처럼 「네! 수고하…」 → 서리가 다시 번지다 「안녕히 계세요!!」에 걷힌다.
-// 그림은 같은 구도로 구운 판 넷(판/*.txt — 누끼 없음). 서리는 얼음 판을 얼룩 가면으로 겹쳐 실제로 번지게 하고, 몽글 · 교수 손은 같은 판의 타원 조각으로 움직인다. 전부 useCurrentFrame()으로만.
+// 그림은 같은 구도로 구운 판 넷(판/*.txt — 누끼 없음). 서리는 얼음 판을 프랙탈 가면(소리/서리가면.py)으로 겹쳐 실제로 번지게 하고, 몽글 · 교수 손은 같은 판의 타원 조각으로 움직인다. 전부 useCurrentFrame()으로만.
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { EN, KO } from '../lib/fonts';
 import { fr, T, TEXT, TOTAL_FRAMES, FPS, SCENE } from './data';
+import { GLINTS } from './glints';
 
 export { TOTAL_FRAMES, FPS, SCENE };
 const FONT = "'Inter Tight', 'SUIT', sans-serif";
@@ -23,65 +24,53 @@ const kick = (t: number, at: number, decay = 5, freq = 20) => (t < at ? 0 : Math
 
 // 몽글 · 교수 손 자리(1080×1920)
 const MONGLE = { cx: 287, cy: 1390, rx: 300, ry: 345, oy: 1650 };
-const DESK = { x: 730, y: 1270 }; // 서리가 시작하는 곳
 
-// 서리 가면 — 얼룩 62개가 책상에서 먼 순서로 자란다. p=0 없음 · p=1 온 방
 const rand = (s: number) => {
   const x = Math.sin(s * 12.9898) * 43758.5453;
   return x - Math.floor(x);
 };
-const BLOBS: { x: number; y: number; d: number; r: number }[] = [];
-// 큰 얼룩 + 잘게 흩어진 작은 얼룩 — 경계가 둥근 구름이 아니라 얼음이 퍼지는 불규칙한 선으로(Fable 「구름 모양으로 잘린 레이어」)
-for (let row = 0; row < 11; row++) {
-  for (let col = 0; col < 6; col++) {
-    const x = col * 216 + rand(row * 7 + col) * 120 - 30;
-    const y = row * 200 + rand(row + col * 13) * 110 - 40;
-    const dist = Math.hypot(x - DESK.x, y - DESK.y);
-    BLOBS.push({ x, y, d: dist / 1500, r: 150 + rand(row * 3 + col * 5) * 110 });
-  }
-}
-for (let k = 0; k < 150; k++) {
-  const x = rand(k * 3.1 + 7) * 1180 - 50;
-  const y = rand(k * 5.7 + 2) * 2020 - 50;
-  const dist = Math.hypot(x - DESK.x, y - DESK.y);
-  BLOBS.push({ x, y, d: dist / 1500 + (rand(k + 91) - 0.5) * 0.09, r: 44 + rand(k + 57) * 74 });
-}
-const frostMask = (p: number) => {
-  const parts: string[] = [];
-  for (const b of BLOBS) {
-    const g = interpolate(p, [b.d * 0.82, b.d * 0.82 + 0.2], [0, 1], { ...clamp, easing: EASE_OUT });
-    if (g <= 0) continue;
-    parts.push(`radial-gradient(circle ${Math.round(b.r * g)}px at ${Math.round(b.x)}px ${Math.round(b.y)}px, black 90%, transparent 100%)`);
-  }
-  return parts.length ? parts.join(',') : 'linear-gradient(transparent, transparent)';
+// 서리 가면 — 소리/서리가면.py가 구운 41단 프랙탈 PNG. p=0 없음 · p=1 온 방, 책상(730, 1270)에서 먼 순서로 언다(둥근 얼룩은 「만화 구름」 — 아르곤 맹검 v8b [K25])
+const maskFile = (p: number) => staticFile(`mask/${String(Math.round(Math.min(1, Math.max(0, p)) * 40)).padStart(2, '0')}.png`);
+const frostMask = (p: number): React.CSSProperties => {
+  const url = `url("${maskFile(p)}")`;
+  return { WebkitMaskImage: url, maskImage: url, WebkitMaskSize: '1080px 1920px', maskSize: '1080px 1920px', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat' };
 };
-// 서리 끝 — 자라는 얼룩 가장자리마다 반짝(심사 답 4 「흐린 경계의 화면 전환처럼 보인다」)
+// Remotion은 CSS 가면을 기다려 주지 않는다 — 같은 주소의 그림을 1px · 투명으로 함께 그려 로드를 기다리게 한다.
+// crossOrigin을 꼭 준다: CSS 가면은 CORS로 받아서, 그냥 <img>로는 같은 주소라도 따로 받아 먼저 끝나고 가면이 빠진 프레임이 나온다(첫 렌더 18.78~18.95초 여섯 장 — 소리/서리가면.py 뒤 확인)
+const MaskLoad: React.FC<{ p: number }> = ({ p }) => <Img src={maskFile(p)} crossOrigin="anonymous" style={{ position: 'absolute', left: 0, top: 0, width: 1, height: 1, opacity: 0 }} />;
+// 서리 끝 — 경계가 지나는 점만 부드럽게 반짝(심사 답 4 「흐린 경계의 화면 전환처럼 보인다」)
 const Glints: React.FC<{ p: number; t: number }> = ({ p, t }) => {
   if (p <= 0 || p >= 1) return null;
   return (
     <>
-      {BLOBS.map((b, k) => {
-        const g = interpolate(p, [b.d * 0.82, b.d * 0.82 + 0.2], [0, 1], clamp);
-        if (g <= 0.08 || g >= 0.92) return null;
-        if (k % 5) return null;
-        return [0, 1].map((j) => {
-          const a = rand(k * 3 + j) * Math.PI * 2 + j * 2.1;
-          const x = b.x + Math.cos(a) * b.r * interpolate(g, [0, 1], [0, 0.97]);
-          const y = b.y + Math.sin(a) * b.r * interpolate(g, [0, 1], [0, 0.97]);
-          const s = 26 + rand(k + j * 7) * 34;
-          const on = 0.55 + 0.45 * Math.sin(t * 34 + k + j);
-          return (
-            <div key={`${k}-${j}`} style={{ position: 'absolute', left: x - s / 2, top: y - s / 2, width: s, height: s, opacity: on, mixBlendMode: 'screen', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(215,238,255,0.55) 30%, rgba(210,235,255,0) 66%)' }} />
-          );
-        });
+      {GLINTS.map(([x, y, a], k) => {
+        const d = Math.abs(p - a);
+        if (d >= 0.035) return null;
+        const s = 26 + rand(k + 3) * 34;
+        const on = (1 - d / 0.035) * (0.65 + 0.35 * Math.sin(t * 34 + k));
+        return <div key={k} style={{ position: 'absolute', left: x - s / 2, top: y - s / 2, width: s, height: s, opacity: on, mixBlendMode: 'screen', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(215,238,255,0.55) 30%, rgba(210,235,255,0) 66%)' }} />;
       })}
     </>
   );
 };
 
-const Patch: React.FC<{ img: string; cx: number; cy: number; rx: number; ry: number; sx?: number; sy?: number; dx?: number; dy?: number; rot?: number; oy?: number; ox?: number }> = ({ img, cx, cy, rx, ry, sx = 1, sy = 1, dx = 0, dy = 0, rot = 0, oy, ox }) => {
-  const mask = `radial-gradient(ellipse ${rx}px ${ry}px at ${cx}px ${cy}px, black 80%, transparent 100%)`;
-  return <Img src={staticFile(`img/${img}.jpg`)} style={{ ...FULL, WebkitMaskImage: mask, maskImage: mask, transform: `translate(${dx}px, ${dy}px) rotate(${rot}deg) scale(${sx}, ${sy})`, transformOrigin: `${ox ?? cx}px ${oy ?? cy + ry * 0.8}px` }} />;
+// 몽글 윤곽 가면(소리/몽글가면.py — 판과 빈 판의 차이) — 타원으로 오리면 꾸벅할 때 타원 안의 문짝까지 함께 돌아 문 옆에 「유령 문짝」이 비쳤다(v9 끝 21.5초)
+const pngMask = (file: string): React.CSSProperties => {
+  const url = `url("${staticFile(`mask/${file}.png`)}")`;
+  return { WebkitMaskImage: url, maskImage: url, WebkitMaskSize: '1080px 1920px', maskSize: '1080px 1920px', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat' };
+};
+// CSS 가면은 Remotion이 기다려 주지 않는다 — MaskLoad와 같은 까닭으로 같은 주소를 crossOrigin으로 함께 그린다
+const PngLoad: React.FC<{ file: string }> = ({ file }) => <Img src={staticFile(`mask/${file}.png`)} crossOrigin="anonymous" style={{ position: 'absolute', left: 0, top: 0, width: 1, height: 1, opacity: 0 }} />;
+
+const Patch: React.FC<{ img: string; cx: number; cy: number; rx: number; ry: number; sx?: number; sy?: number; dx?: number; dy?: number; rot?: number; oy?: number; ox?: number; png?: string }> = ({ img, cx, cy, rx, ry, sx = 1, sy = 1, dx = 0, dy = 0, rot = 0, oy, ox, png }) => {
+  const ell = `radial-gradient(ellipse ${rx}px ${ry}px at ${cx}px ${cy}px, black 80%, transparent 100%)`;
+  const mask: React.CSSProperties = png ? pngMask(png) : { WebkitMaskImage: ell, maskImage: ell };
+  return (
+    <>
+      {png ? <PngLoad file={png} /> : null}
+      <Img src={staticFile(`img/${img}.jpg`)} style={{ ...FULL, ...mask, transform: `translate(${dx}px, ${dy}px) rotate(${rot}deg) scale(${sx}, ${sy})`, transformOrigin: `${ox ?? cx}px ${oy ?? cy + ry * 0.8}px` }} />
+    </>
+  );
 };
 
 // 얼음이 얼마나 덮였나(0~1)
@@ -106,6 +95,8 @@ const mongleMove = (t: number) => {
   // 인사 — 첫 프레임부터 움직인다: 신나서 통 튀고 말하면서 들썩(심사 답 1)
   dy += -34 * Math.max(kick(t, 0.02, 5.5, 13), 0);
   sy += 0.035 * bump(t, T.a1, 0.06, 0.3) + 0.025 * bump(t, T.a1 + 0.72, 0.06, 0.3);
+  // 「안녕히 계세요!!」 — 외칠 때 몸이 부푼다(아르곤 맹검 v8b 「외치는 에너지가 안 읽힌다」)
+  sy += 0.09 * bump(t, T.a4, 0.06, 0.4);
   // 얼음 — 부들부들
   const ice = iceAt(t);
   if (ice > 0.5) {
@@ -137,10 +128,13 @@ const mongleMove = (t: number) => {
   return { sx, sy, dx, dy, rot };
 };
 
-const Under: React.FC<{ img: string }> = ({ img }) => {
-  const mask = `radial-gradient(ellipse ${MONGLE.rx + 40}px ${MONGLE.ry + 40}px at ${MONGLE.cx}px ${MONGLE.cy}px, black 86%, transparent 100%)`;
-  return <Img src={staticFile(`img/${img}.jpg`)} style={{ ...FULL, WebkitMaskImage: mask, maskImage: mask }} />;
-};
+// 몽글 자리만 빈 판으로 메운다 — 몽글 윤곽을 조금 넓힌 가면(타원이면 빈 판의 다른 문짝 · 벽이 비친다)
+const Under: React.FC<{ img: string; plate: string }> = ({ img, plate }) => (
+  <>
+    <PngLoad file={`under_${plate}`} />
+    <Img src={staticFile(`img/${img}.jpg`)} style={{ ...FULL, ...pngMask(`under_${plate}`) }} />
+  </>
+);
 
 const Scene: React.FC<{ t: number; base: string; ice?: number }> = ({ t, base, ice = 0 }) => {
   const m = mongleMove(t);
@@ -150,17 +144,20 @@ const Scene: React.FC<{ t: number; base: string; ice?: number }> = ({ t, base, i
     <>
       <Img src={staticFile(`img/${base}.jpg`)} style={FULL} />
       {/* 몽글 자리 밑에 몽글 없는 같은 판 — 꾸벅해도 뒤에 원래 몽글이 비치지 않는다 */}
-      <Under img={base === 'sun' ? 'sunEmpty' : 'roomEmpty'} />
+      <Under img={base === 'sun' ? 'sunEmpty' : 'roomEmpty'} plate={base} />
       {waving ? <Patch img={base} cx={HAND.cx} cy={HAND.cy} rx={HAND.rx} ry={HAND.ry} rot={wave} ox={HAND.ox} oy={HAND.oy} /> : null}
       {/* 교수님 — 얼기 전까지 고개를 끄덕이며 웃는다. 얼면 그대로 멈춘다 */}
       {ice === 0 ? <Patch img={base} cx={PROF.cx} cy={PROF.cy} rx={PROF.rx} ry={PROF.ry} rot={1.8 * Math.sin(t * 3.4)} oy={PROF.oy} /> : null}
-      <Patch img={base} cx={MONGLE.cx} cy={MONGLE.cy} rx={MONGLE.rx} ry={MONGLE.ry} sx={m.sx} sy={m.sy} dx={m.dx} dy={m.dy} rot={m.rot} oy={MONGLE.oy} />
+      <Patch img={base} cx={MONGLE.cx} cy={MONGLE.cy} rx={MONGLE.rx} ry={MONGLE.ry} sx={m.sx} sy={m.sy} dx={m.dx} dy={m.dy} rot={m.rot} oy={MONGLE.oy} png={`mongle_${base}`} />
       {ice > 0 ? (
-        <AbsoluteFill style={{ WebkitMaskImage: frostMask(ice), maskImage: frostMask(ice) }}>
-          <Img src={staticFile('img/ice.jpg')} style={FULL} />
-          <Under img="iceEmpty" />
-          <Patch img="ice" cx={MONGLE.cx} cy={MONGLE.cy} rx={MONGLE.rx} ry={MONGLE.ry} sx={m.sx} sy={m.sy} dx={m.dx} dy={m.dy} rot={m.rot} oy={MONGLE.oy} />
-        </AbsoluteFill>
+        <>
+          <MaskLoad p={ice} />
+          <AbsoluteFill style={frostMask(ice)}>
+            <Img src={staticFile('img/ice.jpg')} style={FULL} />
+            <Under img="iceEmpty" plate="ice" />
+            <Patch img="ice" cx={MONGLE.cx} cy={MONGLE.cy} rx={MONGLE.rx} ry={MONGLE.ry} sx={m.sx} sy={m.sy} dx={m.dx} dy={m.dy} rot={m.rot} oy={MONGLE.oy} png="mongle_ice" />
+          </AbsoluteFill>
+        </>
       ) : null}
       <Glints p={ice} t={t} />
     </>
@@ -255,15 +252,20 @@ const Split: React.FC<{ t: number }> = ({ t }) => {
       <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 954, overflow: 'hidden' }}>
         <div style={{ position: 'absolute', left: (1 - p) * -60, top: -520, width: 1080, height: 1920, transform: `scale(${z})`, transformOrigin: '540px 1000px' }}>
           <Img src={staticFile('img/ice.jpg')} style={FULL} />
-          <Under img="iceEmpty" />
-          <Patch img="ice" cx={MONGLE.cx} cy={MONGLE.cy} rx={MONGLE.rx} ry={MONGLE.ry} dx={shiver} oy={MONGLE.oy} />
+          <Under img="iceEmpty" plate="ice" />
+          <Patch img="ice" cx={MONGLE.cx} cy={MONGLE.cy} rx={MONGLE.rx} ry={MONGLE.ry} dx={shiver} oy={MONGLE.oy} png="mongle_ice" />
         </div>
       </div>
       <div style={{ position: 'absolute', left: 0, top: 966, width: 1080, height: 954, overflow: 'hidden' }}>
         <div style={{ position: 'absolute', left: (1 - p) * 60, top: -546, width: 1080, height: 1920, transform: `scale(${z})`, transformOrigin: '540px 1000px' }}>
           <Img src={staticFile('img/sun.jpg')} style={FULL} />
           <Patch img="sun" cx={HAND.cx} cy={HAND.cy} rx={HAND.rx} ry={HAND.ry} rot={melt * wave} ox={HAND.ox} oy={HAND.oy} />
-          {melt < 1 ? <Img src={staticFile('img/ice.jpg')} style={{ ...FULL, WebkitMaskImage: frostMask(1 - melt), maskImage: frostMask(1 - melt) }} /> : null}
+          {melt < 1 ? (
+            <>
+              <MaskLoad p={1 - melt} />
+              <Img src={staticFile('img/ice.jpg')} style={{ ...FULL, ...frostMask(1 - melt) }} />
+            </>
+          ) : null}
           <Glints p={1 - melt} t={t} />
         </div>
       </div>
@@ -378,10 +380,14 @@ const Sound: React.FC = () => (
     <Sfx file="birds.wav" at={T.gag} vol={0.2} />
     <Vo id="b2" at={T.gag + 0.12} />
     <Vo id="a3" at={T.a3} />
-    <Sfx file="freeze.wav" at={T.creep} vol={0.45} />
+    {/* 외치면 서리 소리도 멎는다 — 꼬리의 찌직 소리가 외침과 겹쳐 참 봉우리가 -1.0(19.44초, 음량 마감 미통과) */}
+    <Sequence from={fr(T.creep)} layout="none">
+      <Audio src={staticFile('sfx/freeze.wav')} volume={(f) => 0.4 * MASTER * interpolate(f / FPS + T.creep, [T.a4, T.back + 0.1], [1, 0], clamp)} />
+    </Sequence>
     <Vo id="a4" at={T.a4} vol={1.4} />
-    <Sfx file="rewind.wav" at={T.back} vol={0.5} />
-    <Sfx file="sunup.wav" at={T.back + 0.12} vol={0.5} />
+    {/* 외침과 겹쳐 울린다 — 서리 걷히는 소리를 낮춘다 */}
+    <Sfx file="rewind.wav" at={T.back} vol={0.3} />
+    <Sfx file="sunup.wav" at={T.back + 0.12} vol={0.32} />
   </>
 );
 
@@ -427,7 +433,7 @@ export const Film: React.FC<{ scene?: boolean }> = ({ scene }) => {
           <Sign t={t} at={T.gag + 0.1} until={T.a3} size={54}>{TEXT.gagMn}</Sign>
           <Bubble t={t} from={T.gag + 0.12} until={T.a3 + 0.1} left={430} top={560} w={560} h={210} tip={[810, 860]} color={WARM} size={84} ko={TEXT.b2Ko} read={TEXT.b2Read} />
           <Bubble t={t} from={T.a3} until={T.a4} left={70} top={760} w={560} h={210} tip={[320, 1112]} color={CORAL} size={84} ko={TEXT.a3Ko} read={TEXT.a3Read} />
-          <Bubble t={t} from={T.a4} until={T.end} left={50} top={700} w={700} h={250} tip={[330, 1112]} color={INK} size={96} ko={TEXT.a4Ko} read={TEXT.a4Read} shout={-3} />
+          <Bubble t={t} from={T.a4} until={T.end} left={50} top={700} w={700} h={272} tip={[330, 1112]} color={INK} size={84} ko={TEXT.a4Ko} read={TEXT.a4Read} mn={TEXT.a2Mn} shout={-3} />
           <Sign t={t} at={T.end} until={T.total + 1} size={62}>
             {TEXT.end}{' '}
             <span style={{ fontFamily: KO, fontWeight: 900 }}>{TEXT.endKo}</span>
