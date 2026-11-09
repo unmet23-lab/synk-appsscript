@@ -127,9 +127,17 @@ function 묶음별조각(폴더들) {
 async function 돌리기(값, 알림 = (m) => console.log(m)) {
   const 잠금파일 = 비밀키찾기(값);
   const 잠금 = JSON.parse(fs.readFileSync(잠금파일, 'utf8'));
-  const 말 = 값.암호파일 ? fs.readFileSync(값.암호파일, 'utf8').replace(/\r?\n$/, '') : await 숨겨묻기('복호화 암호: ');
+  // 복호화 암호는 창고 열쇠를 만들 때(2026-10-17, 원본창고 `암호.js 열쇠만들기`) 정한 12자 이상의 암호다.
+  // 틀리면 그 자리에서 다시 묻는다 — 받은 조각을 버리고 처음부터 다시 받지 않게. 열쇠 쪽에는 시도 제한이 없다.
   let 비밀키;
-  try { 비밀키 = 암호.unlockPrivate(잠금, 말); } catch { throw new Error('암호가 맞지 않습니다'); }
+  for (let 번 = 1; !비밀키; 번++) {
+    const 말 = 값.암호파일 ? fs.readFileSync(값.암호파일, 'utf8').replace(/\r?\n$/, '') : await (값.묻기 || 숨겨묻기)('복호화 암호(창고 열쇠 암호, 12자 이상): ');
+    try { 비밀키 = 암호.unlockPrivate(잠금, 말); } catch {
+      if (값.암호파일 || 번 >= 5) throw new Error('암호가 맞지 않습니다');
+      const 길이 = [...말].length;
+      process.stderr.write(`암호가 맞지 않습니다${길이 < 12 ? ` — 방금 친 것은 ${길이}자이고 창고 열쇠 암호는 12자 이상입니다` : ''}. 다시 쳐 주세요(${번}/5).\n`);
+    }
+  }
   const 임시 = 임시자리(값);
   const 합 = { 풀림: 0, 건너뜀: 0, 거절: 0, 실패: 0, 손상: 0, 바이트: 0, 조각: 0, 조각실패: 0, 묶음: {} };
   const 손상이름 = new Set();
