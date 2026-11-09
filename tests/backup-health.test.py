@@ -18,7 +18,20 @@ from unittest.mock import patch
 REPO = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('health', REPO / 'tools' / 'backup-health.py')
 health = importlib.util.module_from_spec(spec); spec.loader.exec_module(health)
-lib = health.load_legacy(REPO.parent / 'SYNK_원본창고')
+
+
+def warehouse():
+    # The backup tools live beside the common work copy. A worktree under D:\SYNK-worktrees (11-09) has none beside it, so the
+    # common git folder names the work copy, the same way install-four-backups.ps1 finds it.
+    common = subprocess.run(['git', '-C', str(REPO), 'rev-parse', '--path-format=absolute', '--git-common-dir'],
+                            capture_output=True, text=True).stdout.strip()
+    for root in (REPO.parent / 'SYNK_원본창고', Path(common).parent.parent / 'SYNK_원본창고' if common else None):
+        if root and (root / '백업상태.py').is_file():
+            return root
+    return REPO.parent / 'SYNK_원본창고'
+
+
+lib = health.load_legacy(warehouse())
 spec = importlib.util.spec_from_file_location('command', REPO / 'tools' / 'backup-command.py')
 command = importlib.util.module_from_spec(spec); spec.loader.exec_module(command)
 
@@ -761,7 +774,7 @@ class SpaceGuardTests(unittest.TestCase):
         lib.atomic_json(self.root / 'onedrive.json', {'status': 'healthy', 'lastSuccessAt': lib.stamp(self.now)})
         config = {'components': [{'id': 'onedrive', 'receipt': 'onedrive.json', 'maxAgeHours': 2}]}
         summary = health.gather(self.root, lib, config, {'onedrive': {'exists': True, 'enabled': True, 'result': 0}}, self.now)
-        self.assertEqual([x['id'] for x in summary['components']], ['onedrive', 'space', 'capacity', 'vault'])
+        self.assertEqual([x['id'] for x in summary['components']], ['onedrive', 'space', 'capacity', 'vault', 'frozen'])
         self.assertEqual((summary['status'], summary['issues']), ('healthy', []))
         (self.root / health.SPACE_GUARD['receipt']).write_text('{broken', encoding='utf-8')
         self.assertEqual(health.space_guard(self.root, lib, None, self.now)['status'], 'not_ready')
@@ -881,11 +894,92 @@ class RetentionStepTests(unittest.TestCase):
 
     def test_new_checks_do_not_block_recovery_before_their_first_run(self):
         summary = health.gather(self.root, lib, {'components': []}, {'space': {'exists': False}}, self.now)
-        self.assertEqual([x['status'] for x in summary['components']], ['not_ready', 'not_ready', 'not_ready'])
+        self.assertEqual([(x['id'], x['status']) for x in summary['components']],
+                         [('space', 'not_ready'), ('capacity', 'not_ready'), ('vault', 'not_ready'), ('frozen', 'not_ready')])
         self.assertEqual(summary['status'], 'healthy')
         self.capacity(used5=2.6)
         summary = health.gather(self.root, lib, {'components': []}, {'space': {'exists': False}}, self.now)
         self.assertEqual((summary['status'], summary['issues']), ('attention', [{'component': 'capacity', 'code': 'DRIVE_CAPACITY_HALF'}]))
+
+
+class FrozenArchiveTests(unittest.TestCase):
+    """11-10 얼린 보관 묶음 다시 대조(../SYNK_원본창고/창고증분.verify_frozen)가 남기는 영수증."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(); self.root = Path(self.temp.name)
+        self.now = dt.datetime(2026, 11, 10, 4, tzinfo=dt.timezone.utc)
+
+    def tearDown(self): self.temp.cleanup()
+
+    def group(self, name, planned=10, **value):
+        return {'group': name, 'status': 'failed' if any(value.values()) else 'success', 'planned': planned,
+                'missing_or_bad': 0, 'historicalBad': 0, 'retiredElsewhere': 0, **value}
+
+    def frozen(self, status='success', age=dt.timedelta(hours=20), groups=None, **value):
+        at = lib.stamp(self.now - age)
+        groups = groups if groups is not None else [self.group('다운로드-20261102', 3994), self.group('옛릴리스-20261103', 230442)]
+        issues = [{'code': 'FROZEN_ARCHIVE_MISSING', 'label': 'x'}] if any(g.get('missing_or_bad') for g in groups) else []
+        lib.atomic_json(self.root / health.FROZEN['receipt'], {'schemaVersion': 1, 'kind': 'frozen-archive', 'status': status,
+            'startedAt': at, 'heartbeatAt': at, 'checkedAt': at, 'finishedAt': at,
+            'lastSuccessAt': at if status == 'success' else None, 'groups': groups, 'issues': issues, **value})
+        return health.frozen_archive(self.root, lib, self.now)
+
+    def test_frozen_states(self):
+        row = health.frozen_archive(self.root, lib, self.now)
+        self.assertEqual((row['status'], row['codes'], row['detail']), ('not_ready', ['FROZEN_FIRST_CHECK_PENDING'], '첫 대조 전'))
+        row = self.frozen()
+        self.assertEqual((row['status'], row['codes'], row['detail']), ('healthy', [], '2묶음 234,436개 맞음'))
+        self.assertEqual(row['label'], '20TB 얼린 보관 묶음')
+        # 지금 목록이 없어진 사본은 실패로, 어느 묶음에 몇 개인지가 알림 본문(detail)에 간다.
+        row = self.frozen('failed', groups=[self.group('서울행-원본-20261105', 1185, missing_or_bad=1185),
+                                            self.group('다운로드-20261102', 3994, historicalBad=3, retiredElsewhere=2),
+                                            self.group('옛릴리스-20261103', 230442)])
+        self.assertEqual((row['status'], row['codes']), ('failed', ['FROZEN_ARCHIVE_MISSING']))
+        self.assertEqual(row['detail'], '서울행-원본-20261105 1,185개 없음, 다운로드-20261102 지난 판 3개 · 남이 치운 사본 2개')
+        self.assertIn(row['status'], health.BAD)
+        # 일주일에 한 번 도는 대조가 8일(깨어 있던 시간) 넘게 없으면 그것도 문제다 — 휴지통은 30일 뒤 비워진다.
+        row = self.frozen(age=dt.timedelta(days=9))
+        self.assertEqual((row['status'], row['codes']), ('missed', ['BACKUP_STALE']))
+        hours = lambda value: self.now - dt.timedelta(hours=value)
+        self.frozen(age=dt.timedelta(days=9))
+        self.assertEqual(health.frozen_archive(self.root, lib, self.now, suspended=[(hours(9 * 24 - 1), hours(2 * 24))])['status'],
+                         'healthy')
+        # 도는 중인데 프로세스가 없으면 중단, 살아 있으면 실행 중.
+        row = self.frozen('running', age=dt.timedelta(minutes=5), pid=2 ** 30)
+        self.assertEqual((row['status'], row['codes']), ('interrupted', ['PROCESS_OR_HEARTBEAT_MISSING']))
+        row = self.frozen('running', age=dt.timedelta(minutes=5), pid=os.getpid())
+        self.assertEqual(row['status'], 'running')
+        (self.root / health.FROZEN['receipt']).write_text('{broken', encoding='utf-8')
+        self.assertEqual(health.frozen_archive(self.root, lib, self.now)['codes'], ['RECEIPT_UNREADABLE'])
+
+    def test_many_failing_groups_keep_the_detail_short(self):
+        groups = [self.group(f'town-{n}', missing_or_bad=n) for n in range(1, 7)]
+        self.assertEqual(self.frozen('failed', groups=groups)['detail'].split(', ')[-1], '외 2묶음')
+
+    def test_signature_and_trash_reach_the_notice(self):
+        # 같은 실패 동안에도 실패한 묶음 · 수(지문)가 바뀌면 Windows 알림 지문도 바뀐다. 지문 없는 칸의 지문은 예전 그대로다.
+        groups = [self.group('다운로드-20261102', 3994, historicalBad=149, recheck={'trashed': 149})]
+        row = self.frozen('failed', groups=groups, signature='a1b2c3d4e5f60718')
+        self.assertEqual((row['signature'], row['detail']), ('a1b2c3d4e5f60718', '다운로드-20261102 지난 판 149개, 그중 휴지통 149개(30일 안에 되살림)'))
+        self.assertNotIn('signature', self.frozen('success', signature='a1b2c3d4e5f60718'))
+        self.assertNotIn('signature', self.frozen('failed', groups=groups, signature='NOT-HEX'))
+        other = {'id': 'onedrive', 'label': 'OneDrive', 'status': 'failed', 'codes': ['X']}
+        summary = lambda *rows: {'status': 'attention', 'components': list(rows), 'issues': []}
+        old = health.hashlib.sha256(json.dumps([('onedrive', 'failed', ['X'])], sort_keys=True).encode()).hexdigest()
+        self.assertEqual(health.choose_event(summary(other), {}, self.now, lib)[1], old)
+        frozen = dict(self.frozen('failed', groups=groups, signature='a1b2c3d4e5f60718'))
+        first = health.choose_event(summary(other, frozen), {}, self.now, lib)[1]
+        again = health.choose_event(summary(other, frozen), {'fingerprint': first, 'lastNotifiedAt': lib.stamp(self.now)}, self.now, lib)
+        self.assertEqual((again[0], again[1]), (None, first))
+        moved = health.choose_event(summary(other, {**frozen, 'signature': 'ffffffff00000000'}),
+                                    {'fingerprint': first, 'lastNotifiedAt': lib.stamp(self.now)}, self.now, lib)
+        self.assertIsNotNone(moved[0])
+        self.assertIn('다운로드-20261102 지난 판 149개', moved[0]['body'])
+
+    def test_failed_check_is_an_issue_in_the_summary(self):
+        self.frozen('failed', groups=[self.group('다운로드-20261102', missing_or_bad=149)])
+        summary = health.gather(self.root, lib, {'components': []}, {'space': {'exists': False}}, self.now)
+        self.assertEqual((summary['status'], summary['issues']), ('attention', [{'component': 'frozen', 'code': 'FROZEN_ARCHIVE_MISSING'}]))
 
 
 if __name__ == '__main__': unittest.main()

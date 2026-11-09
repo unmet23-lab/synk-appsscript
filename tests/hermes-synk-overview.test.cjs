@@ -807,6 +807,36 @@ test('PC 백업 실패는 다음 성공까지 같은 판단으로 이어지고 �
   assert.equal(healthy.events.find(row => row.id === 'backup-onedrive').needs_attention, false);
 });
 
+test('얼린 보관 묶음은 실패한 묶음 · 수가 바뀌면 같은 실패 동안에도 다시 알리고, 칸 세부를 글에 싣는다 — 지문 없는 칸의 판단은 그대로', async t => {
+  // 11-10: 한 묶음이 계속 실패하는 동안 다른 묶음의 유일한 사본이 휴지통에 가도 {id, 마지막 성공}이 같아 다시 알리지 않았을 것이다(휴지통은 30일).
+  const f = fixture(t);
+  const frozen = (signature, detail) => ({ id: 'frozen', label: '20TB 얼린 보관 묶음', status: 'failed', lastSuccessAt: '2026-10-18T03:00:00Z',
+    codes: ['FROZEN_ARCHIVE_MISSING'], detail, signature });
+  const options = { ...f.options, persistState: true };
+  const read = async (rows, minutes) => (await readOverview({ ...options, backupHealthFile: backupFile(f, rows),
+    now: new Date(NOW.getTime() + minutes * 60_000) })).events;
+  const first = (await read([frozen('a1b2c3d4e5f60718', '서울행-원본-20261105 1,185개 없음')], 0)).find(row => row.id === 'backup-frozen');
+  assert.equal(first.needs_attention, true);
+  assert.match(first.detail, /FROZEN_ARCHIVE_MISSING · 서울행-원본-20261105 1,185개 없음$/);
+  const same = (await read([frozen('a1b2c3d4e5f60718', '서울행-원본-20261105 1,185개 없음')], 5)).find(row => row.id === 'backup-frozen');
+  assert.equal(same.attention_fingerprint, first.attention_fingerprint, '같은 실패는 한 번만');
+  const more = (await read([frozen('ffffffff00000000', '서울행-원본-20261105 1,185개 없음, 다운로드-20261102 149개 없음')], 10))
+    .find(row => row.id === 'backup-frozen');
+  assert.notEqual(more.attention_fingerprint, first.attention_fingerprint, '새 손실은 다시');
+  let state = plan(null, { events: [] }, NOW).state;
+  const alerted = plan(state, { events: [first] }, NOW);
+  assert.equal(alerted.notifications.length, 1);
+  assert.equal(plan(alerted.state, { events: [same] }, NOW).notifications.length, 0);
+  assert.equal(plan(alerted.state, { events: [more] }, NOW).notifications.length, 1);
+  // 지문이 없거나 꼴이 틀린 칸은 예전 판단 지문 그대로라, 이 판을 올려도 열린 실패를 다시 알리지 않는다.
+  const { createHash } = require('node:crypto');
+  const old = createHash('sha256').update(JSON.stringify({ id: 'onedrive', lastSuccessAt: new Date('2026-10-18T03:00:00Z').toISOString() })).digest('hex');
+  const rows = await read([{ ...onedrive('failed', '2026-10-18T03:00:00Z', ['X']), detail: '<b>세부</b>', signature: 'not-hex' }], 15);
+  const plain = rows.find(row => row.id === 'backup-onedrive');
+  assert.equal(plain.attention_fingerprint, old);
+  assert.doesNotMatch(plain.detail, /<b>/);
+});
+
 test('PC 백업은 짧은 유예 안의 실패·켠 직후의 오래된 기록·일회성 조회에서는 알리지 않는다', async t => {
   const f = fixture(t);
   const fresh = await readOverview({ ...f.options, backupHealthFile: backupFile(f, [onedrive('failed', '2026-10-18T07:10:00Z')]) });

@@ -420,6 +420,9 @@ function readBackupHealth(file) {
     status: Object.hasOwn(BACKUP_STATUS, row?.status) ? row.status : 'unknown',
     lastSuccessAt: iso(row?.lastSuccessAt),
     codes: Array.isArray(row?.codes) ? row.codes.filter(code => /^[A-Z][A-Z0-9_]{0,79}$/.test(code)).slice(0, 8).sort() : [],
+    // 칸이 직접 적은 세부(「다운로드-20261102 149개 없음」)와 실패 지문(얼린 보관 묶음 — 실패한 묶음 · 수가 바뀌면 바뀜, 11-10).
+    detail: typeof row?.detail === 'string' && row.detail ? status.plain(row.detail, 200) : null,
+    signature: /^[0-9a-f]{8,32}$/.test(row?.signature || '') ? row.signature : null,
   })).filter(row => row.id);
   return { checkedAt: iso(raw.checkedAt), components };
 }
@@ -714,10 +717,12 @@ function backupEvents(backup) {
   if (backup.monitorStale) rows.push(attention(event('backup-monitor', 'backup', 'warning', 'PC 백업 상태 확인이 멈춤',
     `마지막 확인 ${formatTime(backup.checkedAt)} · Windows 예약 「SYNK 백업 상태 확인」이 돌고 있는지 봐 주세요.`, { stale: true }), true, { id: 'backup-monitor', stale: true }));
   for (const row of backup.components) {
-    const detail = `${BACKUP_STATUS[row.status]} · 마지막 성공 ${formatTime(row.lastSuccessAt)}${row.codes.length ? ' · ' + row.codes.join(', ') : ''}`;
+    const detail = `${BACKUP_STATUS[row.status]} · 마지막 성공 ${formatTime(row.lastSuccessAt)}${row.codes.length ? ' · ' + row.codes.join(', ') : ''}${row.detail ? ' · ' + row.detail : ''}`;
+    // 같은 실패는 다음 성공까지 한 번만 알린다. 칸이 실패 지문을 주면(얼린 보관 묶음) 그 지문이 바뀔 때 — 한 묶음이 계속 실패하는 동안
+    // 다른 묶음에서 새로 없어지면 — 다시 알린다. 지문이 없는 칸의 판단 지문은 예전 그대로다(11-10).
     rows.push(attention(event('backup-' + row.id, 'backup', row.attention ? 'error' : row.failing ? 'warning' : 'info', 'PC 백업 · ' + row.label, detail,
       { failing: row.failing, attention: row.attention, lastSuccessAt: row.lastSuccessAt, codes: row.codes }),
-    row.attention, { id: row.id, lastSuccessAt: row.lastSuccessAt }));
+    row.attention, { id: row.id, lastSuccessAt: row.lastSuccessAt, ...(row.signature ? { signature: row.signature } : {}) }));
   }
   return rows;
 }

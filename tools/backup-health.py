@@ -22,7 +22,8 @@ LABELS = {'onedrive': 'OneDrive 문서·소스', 'github': 'GitHub 커밋',
           'server': '20TB 서버·DB', 'media': '20TB 미디어 원본', 'archive': '5TB 기존 원본',
           'workspace': '20TB 업무 문서·첨부·조사 상태', 'space': '공간 지킴이(C: 여유)',
           'capacity': '드라이브 용량', 'vault': '금고 두 번째 사본(5TB)',
-          'workmethod': '작업 방식 꾸러미(GitHub 비공개 · 두 드라이브)', 'restorebundle': '복원 묶음(비공개 문서 · 장부 · 기록 · 대화)'}
+          'workmethod': '작업 방식 꾸러미(GitHub 비공개 · 두 드라이브)', 'restorebundle': '복원 묶음(비공개 문서 · 장부 · 기록 · 대화)',
+          'frozen': '20TB 얼린 보관 묶음'}
 STATUS_LABELS = {'healthy': '정상', 'pending': '동기화 대기', 'running': '실행 중', 'paused': '의도적 중지',
                  'attention': '확인 필요', 'failed': '실패', 'missed': '최신 백업 지연', 'interrupted': '실행 중단',
                  'partial_failure': '일부 실패', 'unknown': '상태 확인 불가', 'blocked': '준비 미완료',
@@ -42,6 +43,13 @@ SPACE_LEDGER_WARN_BYTES = 8 * 1024 * 1024
 CAPACITY = {'id': 'capacity', 'receipt': '상태/용량/latest.json', 'upcoming': '상태/보존규칙/다가오는것.json',
             'attentionRatio': 0.5, 'failedRatio': 0.8, 'maxStaleHours': 72}
 VAULT = {'id': 'vault', 'receipt': '상태/금고/latest.json', 'maxStaleHours': 72}
+# The frozen archive groups (창고.frozen_groups: 옛 릴리스 · 다운로드 · 공모전 · town …) were uploaded once and most local copies
+# deleted, so their Drive file is often the only copy; the daily media run does not look at them. On 11-07 a hand deletion trashed
+# 160 of them and it showed only by chance (11-10). 원본백업.py re-verifies them weekly, and daily while the last result is not a
+# success, with `창고.py verify-frozen`. Drive empties its trash after 30 days, so a check older than 8 awake days is a problem too.
+# No task of its own: checked here like capacity and vault, so the installer cannot drop it.
+FROZEN = {'id': 'frozen', 'receipt': '상태/얼린대조/latest.json', 'maxAgeHours': 192, 'maxRunHours': 3,
+          'scope': '로컬을 지운 얼린 보관 묶음(옛 릴리스 · 다운로드 · 공모전 · town 등)의 Drive 사본을 주 1회 다시 대조(휴지통 30일 안에 잡는다).'}
 # A suspended PC runs no backup, yet a running receipt's heartbeat and run ages are wall-clock times (10-20: five
 # sleeps, 46 minutes the longest). Each resume from sleep or hibernation sets the clock again from the hardware clock and
 # logs Kernel-General 1 with reason 2 at once: OldTime is when the clock stopped, NewTime when it was set again, and
@@ -425,6 +433,37 @@ def vault_copy(root, lib, now, item=VAULT, suspended=None):
             'receiptPath': item['receipt']}
 
 
+def frozen_archive(root, lib, now, item=FROZEN, suspended=None):
+    receipt, problem = read_receipt(root, lib, item['receipt'])
+    if problem or not receipt:
+        return {'id': item['id'], 'label': LABELS[item['id']], 'status': 'unknown' if problem else 'not_ready',
+                'checkedAt': None, 'lastSuccessAt': None, 'repaired': False, 'repairedAt': None,
+                'codes': [problem or 'FROZEN_FIRST_CHECK_PENDING'], 'detail': None if problem else '첫 대조 전',
+                'scope': item['scope'], 'receiptPath': item['receipt']}
+    # Same rules as a scheduled store: success → healthy, failed stays failed, a running check needs its process and a fresh
+    # heartbeat, and a success older than 8 awake days is stale.
+    row = evaluate(item, receipt, now, lib, suspended=suspended, stopped=(root / 'upload.stop').exists())
+    groups = [g for g in receipt.get('groups') or [] if isinstance(g, dict)]
+    notes = []
+    for g in groups:
+        parts = [text.format(g[key]) for key, text in (('missing_or_bad', '{:,}개 없음'), ('historicalBad', '지난 판 {:,}개'),
+                                                       ('retiredElsewhere', '남이 치운 사본 {:,}개')) if g.get(key)]
+        if parts:
+            notes.append(f"{g.get('group')} " + ' · '.join(parts))
+    if len(notes) > 4:
+        notes = notes[:4] + [f'외 {len(notes) - 4}묶음']
+    if not notes and groups and receipt.get('status') == 'success':
+        notes.append(f"{len(groups)}묶음 {sum(g.get('planned') or 0 for g in groups):,}개 맞음")
+    trashed = sum((g.get('recheck') or {}).get('trashed', 0) for g in groups)
+    if trashed:
+        notes.append(f'그중 휴지통 {trashed:,}개(30일 안에 되살림)')
+    row['detail'] = ', '.join(notes) or None
+    # The failing groups and counts: a new loss while another group still fails changes it, so it is told again (11-10).
+    if re.fullmatch(r'[0-9a-f]{8,32}', str(receipt.get('signature') or '')) and row['status'] in BAD:
+        row['signature'] = receipt['signature']
+    return row
+
+
 def task_snapshot(config_path, extra=()):
     query, temp = Path(config_path), None
     if extra:
@@ -499,7 +538,7 @@ def gather(root, lib, config, tasks, now, sleep_record=lambda: None):
     except (OSError, ValueError, TypeError, KeyError):
         components.append({'id': SPACE_GUARD['id'], 'label': LABELS[SPACE_GUARD['id']], 'status': 'unknown',
                            'codes': ['RECEIPT_UNREADABLE'], 'lastSuccessAt': None})
-    for item, check in ((CAPACITY, drive_capacity), (VAULT, vault_copy)):
+    for item, check in ((CAPACITY, drive_capacity), (VAULT, vault_copy), (FROZEN, frozen_archive)):
         try:
             components.append(check(root, lib, now, suspended=sleep_record))
         except (OSError, ValueError, TypeError, KeyError):
@@ -531,7 +570,9 @@ def hermes_watching(now, path=HERMES_HEALTH):
 
 def choose_event(summary, previous, now, lib):
     bad = [x for x in summary['components'] if x['status'] in BAD]
-    signature = [(x['id'], x['status'], x['codes']) for x in bad]
+    # A component's own signature (the frozen archive's failing groups and counts) joins it only when present, so the
+    # digests of the other components stay what they were.
+    signature = [(x['id'], x['status'], x['codes']) + ((x['signature'],) if x.get('signature') else ()) for x in bad]
     digest = hashlib.sha256(json.dumps(signature, sort_keys=True).encode()).hexdigest()
     last_reminder = lib.instant(previous.get('lastNotifiedAt'))
     repeat_due = bad and last_reminder and now - last_reminder >= dt.timedelta(hours=24)
