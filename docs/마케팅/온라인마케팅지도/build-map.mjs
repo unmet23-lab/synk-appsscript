@@ -24,6 +24,9 @@ const brMxYoutube = brMx.channels.filter(row => row.platform === 'youtube' && ro
 const original = read('dashboard/src/data.json');
 const platformNames = {youtube:'YouTube',instagram:'Instagram',tiktok:'TikTok',facebook:'Facebook',telegram:'Telegram',threads:'Threads',linkedin:'LinkedIn',x:'X',behance:'Behance','naver-clip':'Naver Clip',naverclip:'Naver Clip',naverblog:'Naver Blog','naver-blog':'Naver Blog',tistory:'Tistory',pinterest:'Pinterest',kakao:'KakaoTalk','kakao-channel':'KakaoTalk',substack:'Substack',rutube:'RUTUBE',xiaohongshu:'rednote',douyin:'Douyin',vk:'VK'};
 const profileLabels = {
+  'owner-verified; approved-logo-current-bio-homepage-saved; banner-and-phone-verification-deferred':'로고·소개·홈페이지 확인 · 배너·전화 인증 보류',
+  'owner-switch-edit-controls-verified; name-approved-logo-bio-saved; clickable-website-link-requires-mobile':'이름·로고·소개 확인 · 모바일 링크 미확인',
+  'page-created-owner-verified; bio-homepage-and-synkpulse-username-saved; logo-save-cancelled-no-share-toggle':'페이지·소개·홈페이지·짧은 주소 확인 · 로고 보류',
   'v6-saved-public-verified':'저장·공개 확인 기록',
   'v6-saved-editor-verified':'저장·편집화면 확인 기록',
   'v6-saved-settings-verified':'저장·설정화면 확인 기록',
@@ -155,7 +158,7 @@ const tasks = [
   {id:'task-app',brand:'LAB',country:`${countries.length}개국`,title:'학습 앱 국가별 출시',state:'계획 · 출시 미확인',nextAction:'SNS 운영과 별도로 스토어·언어·접속·정책 조건 확인'}
 ];
 const summary = [
-  {id:'existing',label:'기존 운영 대상',value:operating.length,unit:'채널',note:'공개 발행 대상 23곳 + 개인 연락 1곳'},
+  {id:'existing',label:'기존 운영·확보 대상',value:operating.length,unit:'채널',note:'기존 24곳 + PULSE 신규 2곳(게시 연결 미검증·게시 금지)'},
   {id:'lab-secured',label:'LAB 확장 확보',value:expansion.length,unit:'곳',note:`YouTube ${confirmedYouTubeCount} + 기타 SNS ${confirmedSocialCount} · 게시 수 아님`},
   {id:'lab-pending',label:'LAB 확장 미확인',value:unconfirmedExpansionCount,unit:'곳',note:'개설 또는 브랜드 채널 확인 필요'},
   {id:'lab-world',label:'LAB 대상 국가',value:countries.length,unit:'개국',note:`전체 관리 계획 ${plannedPlatformSlots+3}자리 · 몽골 기존 5 포함`}
@@ -202,7 +205,7 @@ const snapshot={id:original.id,surface:'dashboard',title:'SYNK 온라인 마케�
     destinations:query('SNS와 분리하는 공식 웹·제품 도착지',destinations,['docs/마케팅/SNS_계정_전체목록_20260919.md'])
   }};
 const assert=(condition,message)=>{if(!condition)throw new Error(message);};
-assert(operating.length===24,'운영 대상 24개 대조 실패');
+assert(operating.length===26,'기존 24곳 + PULSE 신규 2곳 대조 실패');
 assert(countries.length===production.planCounts.countries && newSlots.length===production.planCounts.newChannelSlotsPlanned && newSlots.length===plannedPlatformSlots-2,'국가/확장 자리 수 오류');
 assert(proposalIds.size===newSlots.length && expansion.every(([id])=>proposalIds.has(id)),'확장 확보 원장과 제안 자리 불일치');
 assert(social.counts.created+social.counts.notCreated===28 && social.channels.length===28 && ledgerCreated.size===social.counts.created && confirmedSocialCount===social.counts.created+laterSocialIds.size && [...laterSocialIds].every(id=>registry.accounts[id].creationVerified===true),'국제 SNS 원장 집계 불일치');

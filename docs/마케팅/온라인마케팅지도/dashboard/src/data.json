@@ -2,7 +2,7 @@
   "id": "dashboard:59868cae-d12b-4e1e-9119-33990ad72c6c",
   "surface": "dashboard",
   "title": "SYNK 온라인 마케팅 지도",
-  "generatedAt": "2026-11-08T17:28:23.012Z",
+  "generatedAt": "2026-11-09T10:01:39.506Z",
   "status": "reviewed-local-records",
   "buildStatus": "complete",
   "filters": [
@@ -129,7 +129,7 @@
           "nextAction": "음악·영상 제작 상태와 발행 근거 연결",
           "legalEntity": "브랜드",
           "brand": "PULSE",
-          "ownedCount": 1,
+          "ownedCount": 3,
           "securedExpansionCount": 0,
           "sharedCount": 1,
           "plannedSlots": null
@@ -163,7 +163,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-08T17:28:23.012Z",
+        "executedAt": "2026-11-09T10:01:39.506Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -193,7 +193,7 @@
           },
           {
             "title": "대조 방법",
-            "detail": "기존 27행과 확장 49자리를 ID로 대조하고 확인된 34곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
+            "detail": "기존 29행과 확장 49자리를 ID로 대조하고 확인된 34곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
           }
         ]
       },
@@ -208,10 +208,10 @@
       "rows": [
         {
           "id": "existing",
-          "label": "기존 운영 대상",
-          "value": 24,
+          "label": "기존 운영·확보 대상",
+          "value": 26,
           "unit": "채널",
-          "note": "공개 발행 대상 23곳 + 개인 연락 1곳"
+          "note": "기존 24곳 + PULSE 신규 2곳(게시 연결 미검증·게시 금지)"
         },
         {
           "id": "lab-secured",
@@ -248,7 +248,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-08T17:28:23.012Z",
+        "executedAt": "2026-11-09T10:01:39.506Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -270,7 +270,7 @@
           },
           {
             "title": "대조 방법",
-            "detail": "기존 27행과 확장 49자리를 ID로 대조하고 확인된 34곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
+            "detail": "기존 29행과 확장 49자리를 ID로 대조하고 확인된 34곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
           }
         ]
       },
@@ -769,7 +769,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-08T17:28:23.012Z",
+        "executedAt": "2026-11-09T10:01:39.506Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -786,7 +786,7 @@
           },
           {
             "title": "대조 방법",
-            "detail": "기존 27행과 확장 49자리를 ID로 대조하고 확인된 34곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
+            "detail": "기존 29행과 확장 49자리를 ID로 대조하고 확인된 34곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
           }
         ]
       },
@@ -1749,10 +1749,10 @@
           "publicUrl": "https://www.youtube.com/@synkpulse",
           "loginAlias": null,
           "accountStatus": "operating",
-          "profileStatus": "미확인",
+          "profileStatus": "로고·소개·홈페이지 확인 · 배너·전화 인증 보류",
           "coverStatus": "이번 커버 작업 범위 밖",
-          "lastEvidenceAt": "2026-11-08",
-          "nextAction": "기존 채널을 재사용하고 소개·사진·커버·게시 연결을 별도로 확인한다. 게시 승인은 포함하지 않는다.",
+          "lastEvidenceAt": "2026-11-09",
+          "nextAction": "기존 채널 유지. 전화 인증·배너 적용은 보류, 콘텐츠 게시·예약 금지.",
           "sourcePaths": [
             "docs/마케팅/sns-계정.json",
             "docs/마케팅/프로필설정_20261108/README.md"
@@ -1765,9 +1765,71 @@
           "sourceBrand": "PULSE",
           "channelScope": "기존 운영",
           "setupStatus": "기존 계정 기록",
-          "profileStatusCode": "owner-verified-basic-profile-pending",
+          "profileStatusCode": "owner-verified; approved-logo-current-bio-homepage-saved; banner-and-phone-verification-deferred",
           "priority": "기존 운영 분류",
           "publishStatus": "새 콘텐츠 게시 미확인",
+          "publicationEvidence": null,
+          "sharedLabel": "",
+          "sourceLabel": "docs/마케팅/sns-계정.json\ndocs/마케팅/프로필설정_20261108/README.md"
+        },
+        {
+          "id": "pulse-instagram",
+          "brand": "PULSE",
+          "platform": "Instagram",
+          "handle": "@synkpulse",
+          "publicUrl": "https://www.instagram.com/synkpulse/",
+          "loginAlias": null,
+          "accountStatus": "operating",
+          "profileStatus": "이름·로고·소개 확인 · 모바일 링크 미확인",
+          "coverStatus": "이번 커버 작업 범위 밖",
+          "lastEvidenceAt": "2026-11-09",
+          "nextAction": "모바일에서 클릭 가능한 홈페이지 링크 추가. 게시·예약 금지.",
+          "sourcePaths": [
+            "docs/마케팅/sns-계정.json",
+            "docs/마케팅/프로필설정_20261108/README.md"
+          ],
+          "country": "공통·미분리",
+          "channelRole": "PULSE 브랜드 계정. 소유자 관리 화면 확인, 게시 연결 미검증",
+          "operatingScope": "PULSE",
+          "publishable": false,
+          "sharedBrands": [],
+          "sourceBrand": "PULSE",
+          "channelScope": "기존 운영",
+          "setupStatus": "기존 계정 기록",
+          "profileStatusCode": "owner-switch-edit-controls-verified; name-approved-logo-bio-saved; clickable-website-link-requires-mobile",
+          "priority": "기존 운영 분류",
+          "publishStatus": "공개 발행 대상 아님",
+          "publicationEvidence": null,
+          "sharedLabel": "",
+          "sourceLabel": "docs/마케팅/sns-계정.json\ndocs/마케팅/프로필설정_20261108/README.md"
+        },
+        {
+          "id": "pulse-facebook",
+          "brand": "PULSE",
+          "platform": "Facebook",
+          "handle": "@synkpulse",
+          "publicUrl": "https://www.facebook.com/synkpulse",
+          "loginAlias": null,
+          "accountStatus": "operating",
+          "profileStatus": "페이지·소개·홈페이지·짧은 주소 확인 · 로고 보류",
+          "coverStatus": "이번 커버 작업 범위 밖",
+          "lastEvidenceAt": "2026-11-09",
+          "nextAction": "로고는 자동 게시 여부 확인 전 보류. 게시·예약 금지.",
+          "sourcePaths": [
+            "docs/마케팅/sns-계정.json",
+            "docs/마케팅/프로필설정_20261108/README.md"
+          ],
+          "country": "공통·미분리",
+          "channelRole": "PULSE 브랜드 계정. 소유자 관리 화면 확인, 게시 연결 미검증",
+          "operatingScope": "PULSE",
+          "publishable": false,
+          "sharedBrands": [],
+          "sourceBrand": "PULSE",
+          "channelScope": "기존 운영",
+          "setupStatus": "기존 계정 기록",
+          "profileStatusCode": "page-created-owner-verified; bio-homepage-and-synkpulse-username-saved; logo-save-cancelled-no-share-toggle",
+          "priority": "기존 운영 분류",
+          "publishStatus": "공개 발행 대상 아님",
           "publicationEvidence": null,
           "sharedLabel": "",
           "sourceLabel": "docs/마케팅/sns-계정.json\ndocs/마케팅/프로필설정_20261108/README.md"
@@ -3424,7 +3486,7 @@
         }
       ],
       "source": {
-        "label": "기존 27개 등록 항목과 LAB 49개 확장 자리",
+        "label": "기존 29개 등록 항목과 LAB 49개 확장 자리",
         "files": [
           "docs/마케팅/sns-계정.json",
           "docs/마케팅/SNS_계정_전체목록_20260919.md",
@@ -3436,7 +3498,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-08T17:28:23.012Z",
+        "executedAt": "2026-11-09T10:01:39.506Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -3453,7 +3515,7 @@
           },
           {
             "title": "대조 방법",
-            "detail": "기존 27행과 확장 49자리를 ID로 대조하고 확인된 34곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
+            "detail": "기존 29행과 확장 49자리를 ID로 대조하고 확인된 34곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
           }
         ]
       },
@@ -3957,7 +4019,7 @@
           "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md",
           "docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md"
         ],
-        "executedAt": "2026-11-08T17:28:23.012Z",
+        "executedAt": "2026-11-09T10:01:39.506Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -3974,7 +4036,7 @@
           },
           {
             "title": "대조 방법",
-            "detail": "기존 27행과 확장 49자리를 ID로 대조하고 확인된 34곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
+            "detail": "기존 29행과 확장 49자리를 ID로 대조하고 확인된 34곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
           }
         ]
       },
@@ -4062,7 +4124,7 @@
           "docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json",
           "docs/마케팅/온라인마케팅지도/intl-youtube/publication.json"
         ],
-        "executedAt": "2026-11-08T17:28:23.012Z",
+        "executedAt": "2026-11-09T10:01:39.506Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -4079,7 +4141,7 @@
           },
           {
             "title": "대조 방법",
-            "detail": "기존 27행과 확장 49자리를 ID로 대조하고 확인된 34곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
+            "detail": "기존 29행과 확장 49자리를 ID로 대조하고 확인된 34곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
           }
         ]
       },
@@ -4184,7 +4246,7 @@
           "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md",
           "docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md"
         ],
-        "executedAt": "2026-11-08T17:28:23.012Z",
+        "executedAt": "2026-11-09T10:01:39.506Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -4201,7 +4263,7 @@
           },
           {
             "title": "대조 방법",
-            "detail": "기존 27행과 확장 49자리를 ID로 대조하고 확인된 34곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
+            "detail": "기존 29행과 확장 49자리를 ID로 대조하고 확인된 34곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
           }
         ]
       },
@@ -4374,7 +4436,7 @@
         "files": [
           "docs/마케팅/SNS_계정_전체목록_20260919.md"
         ],
-        "executedAt": "2026-11-08T17:28:23.012Z",
+        "executedAt": "2026-11-09T10:01:39.506Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "2026-09-19~10-02 로컬 근거 · 이번 갱신에서 실시간 SNS 조회 아님"
@@ -4391,7 +4453,7 @@
           },
           {
             "title": "대조 방법",
-            "detail": "기존 27행과 확장 49자리를 ID로 대조하고 확인된 34곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
+            "detail": "기존 29행과 확장 49자리를 ID로 대조하고 확인된 34곳만 확보로 표시. 25개국 계획은 LAB에만 연결."
           }
         ]
       },

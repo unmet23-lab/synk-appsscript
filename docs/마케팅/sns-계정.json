@@ -1321,10 +1321,38 @@
       "expectedChannelTitle": "SYNK PULSE",
       "publisher": "direct-after-connection",
       "connection": "needs-oauth-verification",
-      "loginVerifiedAt": "2026-11-08",
-      "dailyOff": "PULSE 기존 채널 소유자 확인만 완료. 프로필·게시 연결 미검증, 이번 로그인·가입 작업은 게시 금지",
-      "profileStatus": "existing-channel-owner-switch-and-customization-controls-verified-2026-11-08; basic-profile-and-publishing-connection-pending",
+      "loginVerifiedAt": "2026-11-09",
+      "dailyOff": "PULSE 프로필만 설정. 사용자 요청으로 콘텐츠 게시·예약 금지, 게시 연결 미검증",
+      "profileStatus": "owner-verified; approved-logo-current-bio-homepage-saved; banner-and-phone-verification-deferred",
       "profileEvidence": "프로필설정_20261108/README.md"
+    },
+    "pulse-instagram": {
+      "brand": "PULSE",
+      "platform": "instagram",
+      "handle": "@synkpulse",
+      "publicUrl": "https://www.instagram.com/synkpulse/",
+      "expectedHandle": "@synkpulse",
+      "publisher": "direct-after-connection",
+      "connection": "needs-oauth-verification",
+      "loginVerifiedAt": "2026-11-09",
+      "dailyOff": "PULSE 계정 확보·프로필 설정만. 사용자 요청으로 콘텐츠 게시·예약 금지",
+      "profileStatus": "owner-switch-edit-controls-verified; name-approved-logo-bio-saved; clickable-website-link-requires-mobile",
+      "profileEvidence": "프로필설정_20261108/README.md"
+    },
+    "pulse-facebook": {
+      "brand": "PULSE",
+      "platform": "facebook",
+      "handle": "@synkpulse",
+      "publicUrl": "https://www.facebook.com/synkpulse",
+      "expectedPageId": "61596231157441",
+      "expectedPageTitle": "SYNK PULSE",
+      "publisher": "direct-after-connection",
+      "connection": "needs-oauth-verification",
+      "loginVerifiedAt": "2026-11-09",
+      "dailyOff": "PULSE 페이지 개설·소개·홈페이지 설정만. 사용자 요청으로 콘텐츠 게시·예약 금지",
+      "profileStatus": "page-created-owner-verified; bio-homepage-and-synkpulse-username-saved; logo-save-cancelled-no-share-toggle",
+      "profileEvidence": "프로필설정_20261108/README.md",
+      "expectedHandle": "@synkpulse"
     }
   }
 }

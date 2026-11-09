@@ -967,10 +967,10 @@
       "publicUrl": "https://www.youtube.com/@synkpulse",
       "loginAlias": null,
       "accountStatus": "operating",
-      "profileStatus": "owner-verified-basic-profile-pending",
+      "profileStatus": "owner-verified; approved-logo-current-bio-homepage-saved; banner-and-phone-verification-deferred",
       "coverStatus": "not-in-cover-refresh-scope",
-      "lastEvidenceAt": "2026-11-08",
-      "nextAction": "기존 채널을 재사용하고 소개·사진·커버·게시 연결을 별도로 확인한다. 게시 승인은 포함하지 않는다.",
+      "lastEvidenceAt": "2026-11-09",
+      "nextAction": "기존 채널 유지. 전화 인증·배너 적용은 보류, 콘텐츠 게시·예약 금지.",
       "sourcePaths": [
         "docs/마케팅/sns-계정.json",
         "docs/마케팅/프로필설정_20261108/README.md"
@@ -979,6 +979,50 @@
       "channelRole": "PULSE 작품·영상 채널. 소유자 관리 화면 확인, 게시·자동화 미검증",
       "operatingScope": "PULSE",
       "publishable": true,
+      "sharedBrands": []
+    },
+    {
+      "id": "pulse-instagram",
+      "brand": "PULSE",
+      "platform": "instagram",
+      "handle": "@synkpulse",
+      "publicUrl": "https://www.instagram.com/synkpulse/",
+      "loginAlias": null,
+      "accountStatus": "operating",
+      "profileStatus": "owner-switch-edit-controls-verified; name-approved-logo-bio-saved; clickable-website-link-requires-mobile",
+      "coverStatus": "not-in-cover-refresh-scope",
+      "lastEvidenceAt": "2026-11-09",
+      "nextAction": "모바일에서 클릭 가능한 홈페이지 링크 추가. 게시·예약 금지.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/프로필설정_20261108/README.md"
+      ],
+      "country": null,
+      "channelRole": "PULSE 브랜드 계정. 소유자 관리 화면 확인, 게시 연결 미검증",
+      "operatingScope": "PULSE",
+      "publishable": false,
+      "sharedBrands": []
+    },
+    {
+      "id": "pulse-facebook",
+      "brand": "PULSE",
+      "platform": "facebook",
+      "handle": "@synkpulse",
+      "publicUrl": "https://www.facebook.com/synkpulse",
+      "loginAlias": null,
+      "accountStatus": "operating",
+      "profileStatus": "page-created-owner-verified; bio-homepage-and-synkpulse-username-saved; logo-save-cancelled-no-share-toggle",
+      "coverStatus": "not-in-cover-refresh-scope",
+      "lastEvidenceAt": "2026-11-09",
+      "nextAction": "로고는 자동 게시 여부 확인 전 보류. 게시·예약 금지.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/프로필설정_20261108/README.md"
+      ],
+      "country": null,
+      "channelRole": "PULSE 브랜드 계정. 소유자 관리 화면 확인, 게시 연결 미검증",
+      "operatingScope": "PULSE",
+      "publishable": false,
       "sharedBrands": []
     }
   ]
