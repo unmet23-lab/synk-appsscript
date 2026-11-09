@@ -30,9 +30,9 @@ $components = @(
     @{ id='media'; taskName='SYNK 미디어 원본 백업'; receipt='media-backup-status.json'; maxAgeHours=36; maxRunHours=12; dailyTime='12:30'; scope='77yuhbs 20TB, 변경된 원본 새 버전 보존'; command=@($python,'-X','utf8','-B',(Join-Path $root '원본백업.py')); workingDirectory=$root },
     @{ id='archive'; taskName='SYNK 기존 Drive 보관 점검'; receipt='archive-audit-status.json'; maxAgeHours=192; maxRunHours=1; weeklyTime='14:00'; scope='unmet23 5TB 기존 보관 원본 무결성 확인'; command=@($python,'-X','utf8','-B',(Join-Path $root '기존보관점검.py')); workingDirectory=$root },
     # 11-09 유호님 「이대로 만들어」 — 노트북을 잃어도 이어 하기(docs/컴퓨터를 잃어버렸을 때.md). 작업 방식은 30분마다 비공개 GitHub로, 3시간마다 두 드라이브로, 열쇠는 바뀔 때.
-    @{ id='workmethod'; taskName='SYNK 작업 방식 백업'; receipt='상태/복원꾸러미/작업방식.json'; maxAgeHours=2; maxRunHours=0.75; intervalMinutes=30; startOffsetMinutes=10; taskPriority=5; scope='메모·설정·스킬·문서를 비공개 GitHub와 두 드라이브로, 열쇠 암호문'; command=@($node,(Join-Path $PSScriptRoot '복원\작업방식.cjs')); workingDirectory=$repo },
-    # 비공개 문서·창고 장부·작업 기록·대화 기록을 암호문 증분으로. 첫 회는 약 57GB라 몇 시간 걸린다(조각마다 끝나 끊겨도 이어진다).
-    @{ id='restorebundle'; taskName='SYNK 복원 묶음 백업'; receipt='상태/복원꾸러미/묶음.json'; maxAgeHours=36; maxRunHours=12; dailyTime='04:00'; scope='비공개 문서·창고 장부·작업 기록·대화 기록 암호문 증분'; command=@($python,'-X','utf8','-B',(Join-Path $PSScriptRoot '복원\암호묶음.py'),'전부'); workingDirectory=$repo }
+    @{ id='workmethod'; installedAt='2026-11-09T10:36:52+00:00'; taskName='SYNK 작업 방식 백업'; receipt='상태/복원꾸러미/작업방식.json'; maxAgeHours=2; maxRunHours=0.75; intervalMinutes=30; startOffsetMinutes=10; taskPriority=5; scope='메모·설정·스킬·문서를 비공개 GitHub와 두 드라이브로, 열쇠 암호문'; command=@($node,(Join-Path $PSScriptRoot '복원\작업방식.cjs')); workingDirectory=$repo },
+    # 비공개 문서·창고 장부·작업 기록·릴리스 계보·대화 기록을 암호문 증분으로. 첫 회는 약 65GB라 몇 시간 걸린다(조각마다 끝나 끊겨도 이어진다). 휴대폰 핫스팟에서는 쉰다.
+    @{ id='restorebundle'; installedAt='2026-11-09T10:36:52+00:00'; taskName='SYNK 복원 묶음 백업'; receipt='상태/복원꾸러미/묶음.json'; maxAgeHours=36; maxRunHours=12; dailyTime='04:00'; scope='비공개 문서·창고 장부·작업 기록·릴리스 계보·대화 기록 암호문 증분'; command=@($python,'-X','utf8','-B',(Join-Path $PSScriptRoot '복원\암호묶음.py'),'전부'); workingDirectory=$repo }
 )
 $auxiliaryTasks = @(
     @{ id='gitarchive'; component='github'; taskName='SYNK Git 암호문 백업'; maxRunHours=3; scope='Git 변경 직후 암호화 이력·보호 소스의 Drive 전송과 재검증'; command=@($python,'-X','utf8','-B',(Join-Path $root 'Git보관백업.py')); workingDirectory=$root }

@@ -117,9 +117,9 @@ async function 돌리기(값, 알림 = (m) => console.log(m)) {
   let 비밀키;
   try { 비밀키 = 암호.unlockPrivate(잠금, 말); } catch { throw new Error('암호가 맞지 않습니다'); }
   const 임시 = 임시자리(값);
-  const 합 = { 풀림: 0, 건너뜀: 0, 거절: 0, 바이트: 0, 조각: 0, 묶음: {} };
+  const 합 = { 풀림: 0, 건너뜀: 0, 거절: 0, 실패: 0, 손상: 0, 바이트: 0, 조각: 0, 조각실패: 0, 묶음: {} };
   const 더하기 = (묶음, c) => {
-    for (const k of ['풀림', '건너뜀', '거절', '바이트']) 합[k] += c[k] || 0;
+    for (const k of ['풀림', '건너뜀', '거절', '실패', '손상', '바이트']) 합[k] += c[k] || 0;
     합.조각++;
     합.묶음[묶음] = 합.묶음[묶음] || { 풀림: 0, 건너뜀: 0, 조각: 0 };
     합.묶음[묶음].풀림 += c.풀림 || 0; 합.묶음[묶음].건너뜀 += c.건너뜀 || 0; 합.묶음[묶음].조각++;
@@ -140,7 +140,13 @@ async function 돌리기(값, 알림 = (m) => console.log(m)) {
     const 묶음 = path.basename(곳);
     const 줄 = 조각들(곳);
     알림(`${묶음}: 조각 ${줄.length}개를 푸는 중`);
-    for (const 파일 of 줄) 더하기(묶음, await 조각풀기(비밀키, 파일, 임시, 값.집));
+    for (const 파일 of 줄) {
+      // 망가진 조각 하나 때문에 나머지를 포기하지 않는다. 더 옛 조각이 그 파일의 옛 판을 채운다.
+      try { 더하기(묶음, await 조각풀기(비밀키, 파일, 임시, 값.집)); } catch (e) {
+        합.조각실패++;
+        알림(`  이 조각은 못 풀어 건너뜁니다: ${path.basename(파일)} (${e.message})`);
+      }
+    }
   }
   return 합;
 }
@@ -150,6 +156,7 @@ if (require.main === module) {
     const 값 = 인자(process.argv.slice(2));
     const 합 = await 돌리기(값, 값.json ? () => {} : undefined);
     console.log(JSON.stringify(합, null, 값.json ? 0 : 1));
+    if (합.실패 || 합.손상 || 합.조각실패) process.exitCode = 2; // 대부분은 풀렸지만 살펴볼 것이 있다
   })().catch((e) => { console.error(`실패: ${e.message}`); process.exitCode = 1; });
 }
 

@@ -171,16 +171,90 @@ class WholeBundle(Base):
         self.write('SYNK_보안/a.txt', '1')
         self.assertIn('KEY_FILE_MISSING', M.run_bundle(self.ctx, self.bundle())['issues'])
 
-    def test_prune_keeps_only_recent_and_never_touches_other_names(self):
+    def test_prune_keeps_recent_and_first_of_each_day_and_never_touches_other_names(self):
         (self.base / 'a' / '열쇠').mkdir(parents=True)
         for i in range(4):
-            (self.base / 'a' / '열쇠' / f'열쇠-2026110{i}T000000Z-001.tar.zst.enc').write_bytes(b'x')
+            (self.base / 'a' / '열쇠' / f'열쇠-20261101T00000{i}Z-001.tar.zst.enc').write_bytes(b'x')
         self.write('SYNK_보안/a.txt', '1')
         M.run_bundle(self.ctx, self.bundle())
         names = self.a.listing('열쇠')
         self.assertIn('비밀키_잠금.json', names)
-        self.assertEqual(len(self.enc_names(self.a)), 2)
-        self.assertNotIn('열쇠-20261100T000000Z-001.tar.zst.enc', names)
+        self.assertIn('열쇠-20261101T000000Z-001.tar.zst.enc', names)  # 그날 첫 판
+        self.assertIn('열쇠-20261101T000003Z-001.tar.zst.enc', names)  # 최근 2판 안
+        self.assertNotIn('열쇠-20261101T000001Z-001.tar.zst.enc', names)
+        self.assertNotIn('열쇠-20261101T000002Z-001.tar.zst.enc', names)
+
+    def test_whole_keep_limits_daily_firsts_to_days(self):
+        names = [f'열쇠-202611{d:02}T000000Z-001.tar.zst.enc' for d in range(1, 11)]
+        self.assertEqual(M.whole_keep(names, 2, days=3), set(names[-3:]))
+
+    def test_part_names_are_unique_and_old_names_still_match(self):
+        self.write('SYNK_보안/a.txt', '1')
+        M.run_bundle(self.ctx, self.bundle())
+        new = self.enc_names(self.a)[0]
+        self.assertRegex(new, r'-001-[0-9a-f]{6}\.tar\.zst\.enc$')
+        self.assertEqual(M.PART_NAME.match(new)['bundle'], '열쇠')
+        self.assertEqual(M.PART_NAME.match('열쇠-20261109T102348Z-001.tar.zst.enc')['seq'], '001')
+
+    def test_volatile_files_alone_make_no_new_version_but_are_in_the_bundle(self):
+        self.write('SYNK_보안/클로드_사용기록.jsonl', '1')
+        self.write('SYNK_보안/진짜키.txt', 'k')
+        bundle = self.bundle()
+        M.run_bundle(self.ctx, bundle)
+        before = len(self.enc_names(self.a))
+        time.sleep(1.1)
+        self.write('SYNK_보안/클로드_사용기록.jsonl', '12')
+        self.assertTrue(M.run_bundle(self.ctx, bundle)['unchanged'])
+        self.assertEqual(len(self.enc_names(self.a)), before)
+        time.sleep(1.1)
+        self.write('SYNK_보안/진짜키.txt', 'k2')
+        self.assertEqual(M.run_bundle(self.ctx, bundle)['made'], 1)
+        self.assertEqual(M.Ledger(self.home, '열쇠').files['SYNK_보안/클로드_사용기록.jsonl'][0], 2)
+
+    def test_list_error_makes_no_new_version_and_keeps_old(self):
+        self.write('SYNK_보안/폴더/a.txt', '1')
+        M.run_bundle(self.ctx, self.bundle())
+        first = self.enc_names(self.a)
+        self.write('SYNK_보안/폴더/b.txt', '2')
+        real = os.scandir
+
+        def denied(path):
+            if str(path).endswith('폴더'):
+                raise PermissionError('막힘')
+            return real(path)
+        M.os.scandir = denied
+        try:
+            report = M.run_bundle(self.ctx, self.bundle())
+        finally:
+            M.os.scandir = real
+        self.assertIn('WHOLE_BUNDLE_LIST_ERROR', report['issues'])
+        self.assertEqual(self.enc_names(self.a), first)
+
+    def test_vanished_folder_is_not_a_list_error(self):
+        self.write('SYNK_보안/a.txt', '1')
+        problems = []
+        root = M.Root(self.home / '없는폴더')
+        self.assertEqual(list(M.walk_root(root, self.home, problems)), [])
+        self.assertEqual(problems, [])
+
+    def test_required_root_empty_stops_new_version(self):
+        self.write('SYNK_보안/a.txt', '1')
+        bundle = M.Bundle('열쇠', 'whole', ('unmet23', '77yuhbs'), keep=2, roots=[M.Root(self.home / 'SYNK_보안'), M.Root(self.home / '.ssh', required=True)])
+        report = M.run_bundle(self.ctx, bundle)
+        self.assertIn('WHOLE_BUNDLE_LIST_ERROR', report['issues'])
+        self.assertEqual(self.enc_names(self.a), [])
+
+    def test_shrink_guard_and_allow_flag(self):
+        files = [self.write(f'SYNK_보안/{i}.txt', '1') for i in range(10)]
+        M.run_bundle(self.ctx, self.bundle())
+        first = self.enc_names(self.a)
+        for f in files[:5]:
+            f.unlink()
+        report = M.run_bundle(self.ctx, self.bundle())
+        self.assertIn('WHOLE_BUNDLE_SHRANK', report['issues'])
+        self.assertEqual(self.enc_names(self.a), first)
+        self.ctx.allow_shrink = True
+        self.assertEqual(M.run_bundle(self.ctx, self.bundle())['made'], 1)
 
     def test_too_big_whole_bundle_stops(self):
         big = self.write('SYNK_보안/큰.bin', 'x')
@@ -188,7 +262,7 @@ class WholeBundle(Base):
             f.truncate(M.KEYS_RAW_LIMIT + 1)
         report = M.run_bundle(self.ctx, self.bundle())
         self.assertIn('BUNDLE_WHOLE_TOO_BIG', report['issues'])
-        self.assertEqual(self.a.puts, [])
+        self.assertEqual(self.enc_names(self.a), [])
 
     def test_incomplete_whole_keeps_old_versions_and_retries(self):
         self.write('SYNK_보안/a.txt', '1')
@@ -209,10 +283,63 @@ class WholeBundle(Base):
         finally:
             M.open_retry = real_open
         self.assertIn('WHOLE_BUNDLE_INCOMPLETE', report['issues'])
-        self.assertTrue(set(first) <= set(self.enc_names(self.a)))  # 온전하지 않은 판 때문에 옛 판을 지우지 않는다
+        self.assertEqual(self.enc_names(self.a), first)  # 온전하지 않은 판은 올리지 않고 옛 판도 그대로다
+        self.assertEqual(self.enc_names(self.b), [n for n in self.enc_names(self.b) if n in first])
+        self.assertEqual(list((self.base / 'temp' / '열쇠').glob('*.enc')), [])
         again = M.run_bundle(self.ctx, self.bundle())
         self.assertFalse(again['unchanged'])  # 지문을 안 남겨 다시 만든다
         self.assertEqual(again['issues'], [])
+
+    def test_unreadable_volatile_file_does_not_block_a_version(self):
+        self.write('SYNK_보안/클로드_사용기록.jsonl', '1')
+        self.write('SYNK_보안/진짜키.txt', 'k')
+        real_open = M.open_retry
+
+        def fail_one(path, *a, **k):
+            if '사용기록' in Path(path).name:
+                raise OSError('잠김')
+            return real_open(path, *a, **k)
+        M.open_retry = fail_one
+        try:
+            report = M.run_bundle(self.ctx, self.bundle())
+        finally:
+            M.open_retry = real_open
+        self.assertEqual(report['issues'], [])
+        self.assertEqual(report['made'], 1)
+
+    def test_key_files_on_slow_destination_count_only_after_confirm(self):
+        self.ctx.unmet23 = slow = Slow(self.base / 'a')
+        slow.answer = True  # 조각은 바로 대조되게
+        self.write('SYNK_보안/a.txt', '1')
+        M.run_bundle(self.ctx, self.bundle())
+        ledger = M.Ledger(self.home, '열쇠')
+        self.assertNotIn('unmet23:비밀키_잠금.json', ledger.meta['keyFiles'])  # 복사만 했다
+        self.assertIn('unmet23:비밀키_잠금.json', ledger.meta['keyCopies'])
+        self.assertIn('77yuhbs:비밀키_잠금.json', ledger.meta['keyFiles'])
+        puts = len(slow.puts)
+        slow.answer = False
+        self.assertEqual(M.run_bundle(self.ctx, self.bundle())['issues'], [])  # 아직 올라가는 중
+        self.assertEqual(len(slow.puts), puts)
+        slow.answer = True
+        M.run_bundle(self.ctx, self.bundle())
+        ledger = M.Ledger(self.home, '열쇠')
+        self.assertIn('unmet23:비밀키_잠금.json', ledger.meta['keyFiles'])
+        self.assertEqual(len(slow.puts), puts)
+
+    def test_key_files_never_verified_are_copied_again_and_reported(self):
+        self.ctx.unmet23 = slow = Slow(self.base / 'a')
+        slow.answer = True
+        self.write('SYNK_보안/a.txt', '1')
+        M.run_bundle(self.ctx, self.bundle())
+        ledger = M.Ledger(self.home, '열쇠')
+        for row in ledger.meta['keyCopies'].values():
+            row['at'] = '2026-01-01T00:00:00Z'
+        ledger.save_meta()
+        slow.answer = False
+        puts = len(slow.puts)
+        report = M.run_bundle(self.ctx, self.bundle())
+        self.assertIn('unmet23:UNMET23_NOT_VERIFIED', report['issues'])
+        self.assertGreater(len(slow.puts), puts)
 
 
 class Waiting(Base):
@@ -377,7 +504,7 @@ class Incremental(Base):
         rows = [(p, 'projects/바뀜.jsonl', 100000, 1)]
         out = self.base / 'part.tar.zst.enc'
         info, captured, skipped = M.seal(rows, None, out, self.public)
-        self.assertEqual(skipped, 0)  # 작은 파일은 먼저 다 읽어 실제 크기를 적는다
+        self.assertEqual(skipped, [])  # 작은 파일은 먼저 다 읽어 실제 크기를 적는다
         self.assertEqual(len(captured), 1)
 
     def test_big_shrinking_file_keeps_archive_valid_and_is_not_recorded(self):
@@ -391,7 +518,7 @@ class Incremental(Base):
             info, captured, skipped = M.seal(rows, None, out, self.public)
         finally:
             M.READ_WHOLE_LIMIT = original
-        self.assertEqual(skipped, 1)
+        self.assertEqual(skipped, ['projects/줄어듦.jsonl'])
         self.assertEqual([r[0] for r in captured], ['projects/정상.jsonl'])
         home2 = self.base / 'home2'
         home2.mkdir()
@@ -436,6 +563,13 @@ class Extract(Base):
         self.assertFalse((self.base / '바깥.txt').exists())
         self.assertEqual((self.home / '정상/파일.txt').read_bytes(), b'ok')
 
+    def test_onedrive_copy_is_not_restored_into_onedrive_folder(self):
+        counts = M.extract(self.archive([('OneDrive/SYNK/시스템/글.md', b'x'), (M.MANIFEST_DIR + 'y.json', json.dumps([['OneDrive/SYNK/시스템/글.md', 1, 'f' * 64]]).encode('utf-8'))]), self.home)
+        self.assertFalse((self.home / 'OneDrive').exists())
+        self.assertEqual(counts['손상'], 1)  # 조각 목록과의 대조는 원래 이름으로 한다
+        counts = M.extract(self.archive([('OneDrive/SYNK/시스템/글2.md', b'y')]), self.home)
+        self.assertEqual((self.home / 'SYNK복원_작업기록' / 'SYNK' / '시스템' / '글2.md').read_bytes(), b'y')
+
     def test_never_overwrites_existing_file(self):
         self.write('있는파일.txt', '내 것')
         counts = M.extract(self.archive([('있는파일.txt', b'old')]), self.home)
@@ -447,6 +581,15 @@ class Extract(Base):
         counts = M.extract(self.archive([('자리/안.txt', b'x'), ('다른.txt', b'y')]), self.home)
         self.assertEqual(counts['실패'], 1)
         self.assertEqual(counts['풀림'], 1)
+
+    def test_file_created_while_extracting_is_not_overwritten(self):
+        target = self.write('경쟁.txt', '먼저 온 판')
+        partial = self.base / '임시'
+        partial.write_text('늦은 판', encoding='utf-8')
+        with self.assertRaises(FileExistsError):
+            M.place_no_clobber(partial, target)
+        self.assertEqual(target.read_text(encoding='utf-8'), '먼저 온 판')
+        self.assertTrue(partial.exists())
 
     def test_manifest_mismatch_removes_file_so_older_part_can_fill(self):
         import hashlib
@@ -481,10 +624,23 @@ class Workmethod(Base):
         names = self.a.listing('작업방식')
         self.assertIn('작업방식-최신.zip', names)
         self.assertTrue(any(M.DATED_ZIP.match(n) for n in names))
-        self.assertIn('작업방식-최신.tar.enc', self.b.listing('작업방식'))
-        enc = (self.base / 'b' / '작업방식' / '작업방식-최신.tar.enc').read_bytes()
-        self.assertNotIn('처음'.encode(), enc)
+        self.assertIn('작업방식-최신.zip.enc', self.b.listing('작업방식'))
+        self.assertTrue(any(M.DATED_ENC.match(n) for n in self.b.listing('작업방식')))
+        enc = (self.base / 'b' / '작업방식' / '작업방식-최신.zip.enc').read_bytes()
+        self.assertTrue(enc.startswith(b'SYNK-ENC-1'))
+        self.assertNotIn(b'README.md', enc[600:])
         self.assertTrue(M.publish_workmethod(self.ctx, mirror)['unchanged'])
+
+    def test_dated_copy_is_made_once_a_day(self):
+        mirror = self.mirror()
+        M.publish_workmethod(self.ctx, mirror)
+        dated = [n for n in self.a.puts if M.DATED_ZIP.match(n)]
+        self.assertEqual(len(dated), 1)
+        self.commit(mirror, '둘째')
+        M.publish_workmethod(self.ctx, mirror, interval=0)
+        self.assertEqual(len([n for n in self.a.puts if M.DATED_ZIP.match(n)]), 1)
+        self.assertEqual(self.a.puts.count('작업방식-최신.zip'), 2)
+        self.assertEqual(self.b.puts.count('작업방식-최신.zip.enc'), 2)
 
     def test_failed_destination_retries_only_that_one(self):
         mirror = self.mirror()
@@ -496,7 +652,7 @@ class Workmethod(Base):
         report = M.publish_workmethod(self.ctx, mirror)
         self.assertEqual(report['issues'], [])
         self.assertEqual(len(self.a.puts), puts)
-        self.assertIn('작업방식-최신.tar.enc', self.b.listing('작업방식'))
+        self.assertIn('작업방식-최신.zip.enc', self.b.listing('작업방식'))
 
     def test_new_head_waits_for_interval_then_publishes(self):
         mirror = self.mirror()
@@ -521,6 +677,32 @@ class Workmethod(Base):
         slow.answer = True
         third = M.publish_workmethod(self.ctx, mirror)
         self.assertTrue(third['unchanged'])
+
+    def rewrite_state(self, **changes):
+        file = M.state_root(self.home) / '작업방식_드라이브.json'
+        state = json.loads(file.read_text(encoding='utf-8'))
+        for key, value in changes.items():
+            state[key].update(value) if isinstance(value, dict) else state.__setitem__(key, value)
+        file.write_text(json.dumps(state, ensure_ascii=False), encoding='utf-8')
+
+    def test_zip_never_verified_on_same_head_is_copied_again_and_reported(self):
+        mirror = self.mirror()
+        self.ctx.unmet23 = slow = Slow(self.base / 'a')
+        M.publish_workmethod(self.ctx, mirror)
+        puts = slow.puts.count('작업방식-최신.zip')
+        self.rewrite_state(unmet23Pending={'at': '2026-01-01T00:00:00Z'}, unmet23PendingSince='2026-01-01T00:00:00Z')
+        report = M.publish_workmethod(self.ctx, mirror)
+        self.assertIn('unmet23:UNMET23_NOT_VERIFIED', report['issues'])
+        self.assertEqual(slow.puts.count('작업방식-최신.zip'), puts + 1)
+
+    def test_zip_never_verified_across_new_heads_is_still_reported(self):
+        mirror = self.mirror()
+        self.ctx.unmet23 = slow = Slow(self.base / 'a')
+        M.publish_workmethod(self.ctx, mirror)
+        self.rewrite_state(unmet23PendingSince='2026-01-01T00:00:00Z')
+        self.commit(mirror, '둘째')
+        report = M.publish_workmethod(self.ctx, mirror, interval=0)  # pending의 시각은 새 판으로 계속 새로워진다
+        self.assertIn('unmet23:UNMET23_NOT_VERIFIED', report['issues'])
 
     def test_prune_dated_keeps_recent_and_month_firsts(self):
         folder = self.base / 'a' / '작업방식'
@@ -547,6 +729,23 @@ class Receipt(Base):
         self.assertEqual(body['issues'], [{'code': 'DRIVE_HTTP_500'}])
         self.assertTrue(body['lastSuccessAt'])
 
+    def test_waiting_or_busy_is_pending_and_keeps_last_success(self):
+        file = self.base / 'r.json'
+        r = M.Receipt(file)
+        r.finish([], {'a': {'waiting': 1}})
+        body = json.loads(file.read_text(encoding='utf-8'))
+        self.assertEqual(body['status'], 'pending')
+        self.assertIsNone(body['lastSuccessAt'])
+        r2 = M.Receipt(file)
+        r2.finish([], {'a': {'busy': True}})
+        self.assertEqual(json.loads(file.read_text(encoding='utf-8'))['status'], 'pending')
+
+    def test_only_stop_issues_are_paused(self):
+        file = self.base / 'r.json'
+        r = M.Receipt(file)
+        r.finish(['BUNDLE_STOPPED', 'BUNDLE_STOPPED'], {})
+        self.assertEqual(json.loads(file.read_text(encoding='utf-8'))['status'], 'paused')
+
     def test_other_pc_marker_stops_uploads(self):
         os.environ['SYNK_복원_집'] = str(self.home)
         try:
@@ -561,6 +760,138 @@ class Receipt(Base):
             self.assertEqual(self.a.puts, [])
         finally:
             os.environ.pop('SYNK_복원_집', None)
+
+
+class Settle(Base):
+    def test_waits_for_remote_then_finishes_in_same_run(self):
+        self.ctx.unmet23 = slow = Slow(self.base / 'a')
+        self.write('projects/a.jsonl', '내용')
+        bundle = M.Bundle('비공개문서', 'incremental', ('unmet23', '77yuhbs'), roots=[M.Root(self.home / 'projects')])
+        reports = {'비공개문서': M.run_bundle(self.ctx, bundle)}
+        self.assertEqual(reports['비공개문서']['waiting'], 1)
+        calls = []
+
+        def sleep(_):
+            calls.append(1)
+            if len(calls) >= 2:
+                slow.answer = True
+        self.ctx.sleep = sleep
+        M.settle(self.ctx, {'비공개문서': bundle}, reports, tries=5, wait=0)
+        self.assertEqual(reports['비공개문서']['waiting'], 0)
+        self.assertIn('projects/a.jsonl', M.Ledger(self.home, '비공개문서').files)
+
+    def test_gives_up_after_tries_and_stays_waiting(self):
+        self.ctx.unmet23 = Slow(self.base / 'a')
+        self.write('projects/a.jsonl', '내용')
+        bundle = M.Bundle('비공개문서', 'incremental', ('unmet23', '77yuhbs'), roots=[M.Root(self.home / 'projects')])
+        reports = {'비공개문서': M.run_bundle(self.ctx, bundle)}
+        M.settle(self.ctx, {'비공개문서': bundle}, reports, tries=2, wait=0)
+        self.assertEqual(reports['비공개문서']['waiting'], 1)
+
+
+class Hotspot(Base):
+    def setUp(self):
+        super().setUp()
+        os.environ['SYNK_복원_집'] = str(self.home)
+        self.original = M.make_context
+        M.make_context = lambda *a, **k: self.ctx
+
+    def tearDown(self):
+        M.make_context = self.original
+        os.environ.pop('SYNK_복원_집', None)
+        super().tearDown()
+
+    def test_wifi_names_read_both_encodings(self):
+        drive = sys.modules['드라이브']
+
+        class Out:
+            def __init__(self, raw):
+                self.stdout = raw
+        if os.name == 'nt':
+            sample = '    SSID                   : 유호의 S26 Ultra\r\n    BSSID                  : aa:bb\r\n'
+            self.assertEqual(drive.wifi_names(lambda *a, **k: Out(sample.encode('utf-8'))), ['유호의 S26 Ultra'])
+            self.assertEqual(drive.wifi_names(lambda *a, **k: Out(sample.encode('cp949'))), ['유호의 S26 Ultra'])
+            self.assertTrue(drive.on_hotspot(lambda *a, **k: Out(sample.encode('utf-8'))))
+            self.assertFalse(drive.on_hotspot(lambda *a, **k: Out(b'    SSID : Hollys_2Floor 5G\r\n')))
+
+    def test_rate_waits_while_holding(self):
+        import threading
+        drive = sys.modules['드라이브']
+        rate = drive.Rate(hold=lambda: True)
+        rate.hold_poll = 0.01
+        rate.holding = True
+        done = threading.Event()
+        worker = threading.Thread(target=lambda: (rate.take(1), done.set()), daemon=True)
+        worker.start()
+        self.assertFalse(done.wait(0.2))
+        rate.holding = False
+        self.assertTrue(done.wait(2))
+
+    def test_big_run_pauses_on_hotspot(self):
+        self.ctx.hold = lambda: True
+        self.write('Documents/SYNK-보관함/a.md', '내용')
+        self.assertEqual(M.main(['전부']), 0)
+        body = json.loads((M.state_root(self.home) / '묶음.json').read_text(encoding='utf-8'))
+        self.assertEqual(body['status'], 'paused')
+        self.assertEqual(self.a.puts + self.b.puts, [])
+
+    def test_workmethod_drive_skips_on_hotspot_without_failing(self):
+        self.ctx.hold = lambda: True
+        self.assertEqual(M.main(['작업방식', '--거울', str(self.base / '없는거울')]), 0)
+        self.assertEqual(self.a.puts + self.b.puts, [])
+
+    def test_keys_still_go_on_hotspot(self):
+        self.ctx.hold = lambda: True
+        for rel in ('SYNK_보안/a.txt', '.ssh/id', '.synk-drive-77yuhbs/.clasprc.json', '.synk-backup-key/비밀키_잠금.json'):
+            self.write(rel, '값')
+        shutil.copyfile(self.public, self.home / '.synk-backup-key' / '공개키.pem')
+        self.assertEqual(M.main(['열쇠']), 0)
+        self.assertTrue(any(n.startswith('열쇠-') for n in self.a.puts))
+
+
+class Drill(Base):
+    """복원 시험 도구 — 받은 폴더로 실제로 풀어 원본과 대조한다."""
+
+    def run_drill(self, folder, parts, home=None):
+        return subprocess.run(['node', str(TOOL / '복원시험.cjs'), '--폴더', str(folder), '--묶음', '열쇠', '--받은곳', str(parts), '--집', str(home or self.home),
+                               '--암호파일', str(self.passfile), '--비밀키', str(self.keydir / '비밀키_잠금.json')], capture_output=True, text=True, encoding='utf-8')
+
+    def prepare(self):
+        self.write('SYNK_보안/a.txt', '값')
+        bundle = M.Bundle('열쇠', 'whole', ('unmet23', '77yuhbs'), keep=2, roots=[M.Root(self.home / 'SYNK_보안')])
+        M.run_bundle(self.ctx, bundle)
+
+    def test_pass_and_plaintext_removed(self):
+        self.prepare()
+        folder = self.base / '시험'
+        done = self.run_drill(folder, self.base / 'a')
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        self.assertFalse(folder.exists())
+        body = json.loads((M.state_root(self.home) / '복원시험.json').read_text(encoding='utf-8'))
+        self.assertTrue(body['성공'])
+        self.assertEqual(body['대조']['같음'], 1)
+        self.assertTrue(body['평문지움'])
+
+    def test_refuses_folder_it_did_not_make(self):
+        self.prepare()
+        folder = self.base / '내문서'
+        folder.mkdir()
+        (folder / '소중한파일.txt').write_text('x', encoding='utf-8')
+        done = self.run_drill(folder, self.base / 'a')
+        self.assertNotEqual(done.returncode, 0)
+        self.assertTrue((folder / '소중한파일.txt').exists())
+
+    def test_corrupted_part_fails_but_keeps_going(self):
+        self.prepare()
+        part = next(p for p in (self.base / 'a' / '열쇠').iterdir() if p.name.endswith('.enc'))
+        raw = bytearray(part.read_bytes())
+        raw[-100] ^= 1
+        part.write_bytes(bytes(raw))
+        folder = self.base / '시험'
+        done = self.run_drill(folder, self.base / 'a')
+        self.assertNotEqual(done.returncode, 0)
+        self.assertFalse(folder.exists())
+        self.assertFalse(json.loads((M.state_root(self.home) / '복원시험.json').read_text(encoding='utf-8'))['성공'])
 
 
 if __name__ == '__main__':

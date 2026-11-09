@@ -6,13 +6,14 @@
  *
  *   node tools/복원/작업방식.cjs                  고르기 → 검사 → 거울에 맞추기 → 커밋 → push → 드라이브(3시간마다, 암호묶음.py가 판단) → 열쇠 확인 → 영수증
  *   node tools/복원/작업방식.cjs --재기            고른 양과 빠진 까닭만 보인다(거울 · 원격을 건드리지 않는다)
- *   공통: --거울 <폴더> · --드라이브안함 · --push안함 · --json
+ *   공통: --거울 <폴더> · --드라이브안함 · --push안함 · --줄어듦허용(일부러 크게 줄였을 때만) · --json
  *
  * 평문으로 나가기 전에 두 번 거른다. 걸린 파일은 평문에서 빼고 작업방식_제외.json에 적어 암호 묶음이 대신 맡는다(값은 적지 않고 경로만).
  *   1. tools/이어하기꾸러미.js 금지인가 · textPolicy — 비밀 꼴 이름 · 비밀 서명 · 비밀 대입 · 내장 미디어 · 10MiB
  *   2. 실제 열쇠 값 대조 — 열쇠 폴더의 토큰을 뽑아 해시만 메모리에 두고, 글에 같은 토큰이 있으면 뺀다(서명 규칙이 모르는 키도 잡는다)
  * 검사한 바이트를 그대로 거울에 쓴다(검사와 복사 사이에 다른 세션이 파일을 고쳐도 검사 안 한 내용이 나가지 않는다). 예약 작업 XML · 설치 목록도 같은 검사를 받는다.
- * 줄어듦 멈춤: 관리 파일이 직전보다 20% 넘게 줄거나 필수 뿌리가 비면 커밋하지 않는다.
+ * 줄어듦 멈춤: 필수 뿌리가 비거나, 이번 커밋이 HEAD의 파일을 20% 넘게 지우거나, 한 묶음(메모 프로젝트 · 저장소 하나 · claude 등)의 절반 넘게 지우면 커밋하지 않는다.
+ *   HEAD와 대조하므로 처음 받은 거울 · 캐시가 없는 때도 막는다. 못 읽은 파일은 지우지 않고 그대로 두고, 폴더를 못 걸은 회차는 아무것도 지우지 않는다.
  * 강제 push는 없다. push가 거절되면(다른 노트북이 앞섬) 드라이브 · 열쇠도 올리지 않고 「다른PC가앞섬」 표식을 남긴다 — 되살아난 옛 노트북이 새 쪽을 덮지 못한다.
  * 시험: node --test tests/작업방식.test.cjs
  */
@@ -24,22 +25,23 @@ const { execFileSync, spawnSync } = require('child_process');
 
 const 코드 = __dirname;
 const 원격 = 'git@github.com:unmet23-lab/synk-memory.git';
-const 줄어듦한도 = 0.2;
+const 줄어듦한도 = 0.2, 묶음줄어듦한도 = 0.5;
 const 설치목록주기ms = 20 * 3600 * 1000;
 const 큰파일 = 10 << 20;
 // 평문 GitHub에 그대로 두면 안 되는 서명을 textPolicy에 더한다(구글 토큰 · 허깅페이스 · 슈파베이스 · 클로드 키 등).
-const 더한서명 = /\bya29\.[\w-]{20,}|\b1\/\/0[\w-]{30,}|\bGOCSPX-[\w-]{20,}|\bhf_[A-Za-z]{30,}|\bsbp_[a-f0-9]{30,}|\bsk-ant-[\w-]{20,}|\bsk_[a-z0-9]{30,}|\bAKID[A-Za-z0-9]{13,}|-----BEGIN [A-Z ]*PRIVATE KEY-----/;
-const 그림글꼴 = /\.(?:png|jpe?g|webp|gif|svg|ico|woff2?|ttf|otf|pdf|wasm|mp3|wav|ogg|m4a)$/i;
+const 더한서명 = /\bAKIA[0-9A-Z]{16}\b|\bAIza[\w-]{30,}|\b(?:gh[pousr]_|github_pat_|xox[baprs]-|sk-(?:proj-)?)\w[\w-]{18,}|\beyJ[\w-]{12,}\.[\w-]{12,}\.[\w-]{12,}|\bya29\.[\w-]{20,}|\b1\/\/0[\w-]{30,}|\bGOCSPX-[\w-]{20,}|\bhf_[A-Za-z]{30,}|\bsbp_[a-f0-9]{30,}|\bsk-ant-[\w-]{20,}|\bsk_[a-z0-9]{30,}|\bAKID[A-Za-z0-9]{13,}|-----BEGIN [A-Z ]*PRIVATE KEY-----/;
+const 그림글꼴 = /\.(?:png|jpe?g|webp|gif|ico|woff2?|ttf|otf|pdf|wasm|mp3|wav|ogg|m4a)$/i; // svg는 글이라 일반 검사를 받는다
 const 안올림이름 = /(?:^|[\\/])(?:\.credentials\.json|auth\.json|.*\.(?:log|lock|pid|sqlite|sqlite-wal|sqlite-shm|db|bin|tmp|bak|zip))$|\.bak-[^\\/]+$/i;
 
 function 인자(argv) {
-  const 값 = { 거울: null, 재기: false, 드라이브안함: false, push안함: false, json: false };
+  const 값 = { 거울: null, 재기: false, 드라이브안함: false, push안함: false, 줄어듦허용: false, json: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--거울') 값.거울 = argv[++i];
     else if (a === '--재기') 값.재기 = true;
     else if (a === '--드라이브안함') 값.드라이브안함 = true;
     else if (a === '--push안함') 값.push안함 = true;
+    else if (a === '--줄어듦허용') 값.줄어듦허용 = true;
     else if (a === '--json') 값.json = true;
     else throw new Error(`모르는 인자: ${a}`);
   }
@@ -81,28 +83,30 @@ function 범위표(자리) {
   ];
   // 메모는 프로젝트마다 따로다. 폴더 이름이 저장소 경로에서 나오므로 이름 그대로 거울에 둔다(옆의 memory_보관_*.zip은 평문에 안 올린다 — 대화 기록 묶음이 맡는다).
   const 프로젝트 = path.join(집, '.claude', 'projects');
+  const 메모줄 = (이름, 필수) => ({ 곳: `메모/${이름}`, 뿌리: path.join(프로젝트, 이름, 'memory'), 고름: () => true, 안봄: new Set(['node_modules', '.git']), 검사: '설정', 필수 });
+  // 본 저장소의 메모는 폴더가 없어져도 줄에 남아 「필수 뿌리 빔」으로 멈춘다(있을 때만 등록하면 사라진 줄 모르고 지운다).
+  const 본메모 = path.join(문서, 'SYNK-appsscript').replace(/[^A-Za-z0-9]/g, '-');
+  표.push(메모줄(본메모, true));
   let 줄 = [];
   try { 줄 = fs.readdirSync(프로젝트, { withFileTypes: true }); } catch {}
   for (const e of 줄) {
-    if (!e.isDirectory()) continue;
-    const 메모 = path.join(프로젝트, e.name, 'memory');
+    if (!e.isDirectory() || e.name === 본메모) continue;
     let st;
-    try { st = fs.lstatSync(메모); } catch { continue; }
-    if (!st.isDirectory()) continue;
-    표.push({ 곳: `메모/${e.name}`, 뿌리: 메모, 고름: () => true, 안봄: new Set(['node_modules', '.git']), 검사: '설정', 필수: e.name === 'C--Users-q1212-Documents-SYNK-appsscript' });
+    try { st = fs.lstatSync(path.join(프로젝트, e.name, 'memory')); } catch { continue; }
+    if (st.isDirectory()) 표.push(메모줄(e.name, false));
   }
   return 표;
 }
 
 function 링크인가(st) { return st.isSymbolicLink(); }
 
-/** 폴더를 걸어 (상대 경로, 절대 경로, 통계)를 준다. junction · 심볼릭 링크는 따라가지 않는다. */
-function* 걷기(뿌리, 안봄) {
+/** 폴더를 걸어 (상대 경로, 절대 경로, 통계)를 준다. junction · 심볼릭 링크는 따라가지 않는다. 사라진 곳 말고 못 읽은 곳은 오류에 센다. */
+function* 걷기(뿌리, 안봄, 오류 = []) {
   const 더미 = [[뿌리, '']];
   while (더미.length) {
     const [여기, 상대] = 더미.pop();
     let 줄;
-    try { 줄 = fs.readdirSync(여기, { withFileTypes: true }); } catch { continue; }
+    try { 줄 = fs.readdirSync(여기, { withFileTypes: true }); } catch (e) { if (e.code !== 'ENOENT') 오류.push(e.code || 'ERR'); continue; }
     for (const e of 줄) {
       const 절대 = path.join(여기, e.name), rel = 상대 ? `${상대}/${e.name}` : e.name;
       if (e.isSymbolicLink()) continue;
@@ -111,7 +115,7 @@ function* 걷기(뿌리, 안봄) {
         더미.push([절대, rel]);
       } else if (e.isFile()) {
         let st;
-        try { st = fs.lstatSync(절대); } catch { continue; }
+        try { st = fs.lstatSync(절대); } catch (e2) { if (e2.code !== 'ENOENT') 오류.push(e2.code || 'ERR'); continue; }
         if (링크인가(st)) continue;
         yield { rel, 절대, 크기: st.size, 수정: st.mtimeMs };
       }
@@ -181,8 +185,12 @@ function 판정(줄, 파일, 도구, 모음, 받은데이터) {
   if ((받은데이터 ? 받은데이터.length : 크기) > 큰파일) return { 까닭: 'over-10MiB', 갈곳: '작업기록' };
   let 데이터 = 받은데이터;
   if (!데이터) { try { 데이터 = fs.readFileSync(절대); } catch { return { 까닭: 'unreadable', 갈곳: '' }; } }
-  if (줄.검사 === '설정' && 그림글꼴.test(rel)) return null;
-  if (줄.검사 === '설정' && !도구.문서인가(rel) && !/\.(?:json|toml)$/i.test(rel)) return { 까닭: 'not-text', 갈곳: '' };
+  if (줄.검사 === '설정' && 그림글꼴.test(rel)) {
+    // 바이너리도 실제 바이트에서 서명 · 열쇠 값을 찾는다(그림 메타데이터에 토큰이 들어갈 수 있다).
+    const 바이트글 = 데이터.toString('latin1');
+    return 더한서명.test(바이트글) || 열쇠값이들었나(바이트글, 모음) ? { 까닭: 'secret-in-binary', 갈곳: '열쇠' } : null;
+  }
+  if (줄.검사 === '설정' && !도구.문서인가(rel) && !/\.(?:json|toml|svg)$/i.test(rel)) return { 까닭: 'not-text', 갈곳: '' };
   const 원본검사경로 = 줄.곳.startsWith('문서/SYNK-appsscript') ? rel : 경로;
   const 정책 = 도구.textPolicy(원본검사경로.replace(/(^|\/)(worktrees)(\/|$)/, '$1wt$3'), 데이터);
   if (정책 === 'secret-signature' || 정책 === 'secret-literal' || 정책 === 'credential-path') return { 까닭: 정책, 갈곳: '열쇠' };
@@ -207,7 +215,7 @@ function 쓰기(파일, 값) {
 
 /** 범위를 걸어 내보낼 목록과 뺀 목록을 만든다. 크기 · 수정 시각이 같고 정책이 같으면 다시 읽지 않는다. */
 function 고르기(자리, 도구, 표, 옛캐시, 모음지문, 모음) {
-  const 내보냄 = new Map(), 뺌 = [], 빈필수 = [], 새캐시 = {};
+  const 내보냄 = new Map(), 뺌 = [], 빈필수 = [], 새캐시 = {}, 오류 = [];
   const 판 = `${도구.POLICY_FINGERPRINT || ''}|${모음지문}`;
   const 같은판 = 옛캐시.판 === 판;
   for (const 줄 of 표) {
@@ -215,7 +223,7 @@ function 고르기(자리, 도구, 표, 옛캐시, 모음지문, 모음) {
     let 뿌리 = 줄.뿌리;
     if (줄.링크풀기) { try { 뿌리 = fs.realpathSync.native(뿌리); } catch { continue; } }
     let 수 = 0;
-    for (const f of 걷기(뿌리, 줄.안봄)) {
+    for (const f of 걷기(뿌리, 줄.안봄, 오류)) {
       if (!줄.고름(f.rel)) continue;
       const 거울경로 = `${줄.곳}/${f.rel}`;
       const 옛 = 같은판 && 옛캐시.파일 && 옛캐시.파일[거울경로];
@@ -229,7 +237,7 @@ function 고르기(자리, 도구, 표, 옛캐시, 모음지문, 모음) {
     }
     if (줄.필수 && !수) 빈필수.push(줄.곳);
   }
-  return { 내보냄, 뺌, 빈필수, 새캐시: { 판, 파일: 새캐시 } };
+  return { 내보냄, 뺌, 빈필수, 걷기오류: 오류.length, 새캐시: { 판, 파일: 새캐시 } };
 }
 
 function git(거울, args, 옵션 = {}) {
@@ -237,7 +245,7 @@ function git(거울, args, 옵션 = {}) {
 }
 
 function 거울준비(거울, 원격주소, 받기 = true) {
-  if (fs.existsSync(path.join(거울, '.git'))) return false;
+  if (fs.existsSync(path.join(거울, '.git'))) return;
   fs.mkdirSync(path.dirname(거울), { recursive: true });
   if (받기) execFileSync('git', ['clone', '--quiet', 원격주소, 거울], { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
   else {
@@ -248,7 +256,22 @@ function 거울준비(거울, 원격주소, 받기 = true) {
   for (const [k, v] of [['core.autocrlf', 'false'], ['core.safecrlf', 'false'], ['core.longpaths', 'true'], ['core.quotepath', 'false'], ['user.name', 'SYNK 복원'], ['user.email', 'noreply@synk.im'], ['commit.gpgsign', 'false'], ['gc.auto', '200']]) {
     git(거울, ['config', k, v]);
   }
-  return true;
+}
+
+/** add -A 뒤에 HEAD와 대조해 지우는 양을 잰다. 너무 많으면 걸린 묶음 이름들을 준다. 첫 커밋 전이면 잴 것이 없다. */
+function 줄어듦검사(거울) {
+  let 머리목록;
+  try { 머리목록 = git(거울, ['-c', 'core.quotepath=false', 'ls-tree', '-r', '--name-only', 'HEAD']).split('\n').filter(Boolean); } catch { return null; }
+  const 지움 = git(거울, ['-c', 'core.quotepath=false', 'diff', '--cached', '--name-only', '--diff-filter=D', '--no-renames', 'HEAD']).split('\n').filter(Boolean);
+  const 묶음 = (p) => { const s = p.split('/'); return s[0] === '메모' || s[0] === '문서' ? s.slice(0, 2).join('/') : s[0]; };
+  const 셈 = (목록) => { const m = new Map(); for (const p of 목록) m.set(묶음(p), (m.get(묶음(p)) || 0) + 1); return m; };
+  const 전체 = 셈(머리목록), 걸림 = [];
+  if (머리목록.length >= 10 && 지움.length > 머리목록.length * 줄어듦한도) 걸림.push(`전체 ${지움.length}/${머리목록.length}`);
+  for (const [이름, 수] of 셈(지움)) {
+    const 전 = 전체.get(이름) || 0;
+    if (전 >= 10 && 수 > 전 * 묶음줄어듦한도) 걸림.push(`${이름} ${수}/${전}`);
+  }
+  return 걸림.length ? 걸림 : null;
 }
 
 /** 거울의 관리 파일 목록(.git과 맨 위 안내 · 복원 파일 빼고 전부 관리 대상). */
@@ -270,9 +293,10 @@ function 거울파일들(거울) {
 /**
  * 거울을 내보낼 목록에 맞춘다. 복사 · 지우기 수와 쓰기 직전 검사에 걸린 줄을 돌려준다.
  * 읽은 바이트를 그 자리에서 다시 검사하고 그 바이트만 쓴다 — 고르기와 복사 사이에 다른 세션이 파일에 비밀을 넣어도 나가지 않는다.
+ * 못 읽은 파일은 거울의 옛 판을 그대로 둔다(읽기 실패가 지우기가 되면 안 된다). 폴더를 못 걸은 회차는 지우기허용을 꺼서 아무것도 지우지 않는다.
  */
-function 맞추기(거울, 내보냄, 덧붙임, 검사 = () => null) {
-  let 복사 = 0, 지움 = 0;
+function 맞추기(거울, 내보냄, 덧붙임, 검사 = () => null, 지우기허용 = true) {
+  let 복사 = 0, 지움 = 0, 읽기실패 = 0;
   const 걸림 = [];
   const 있던것 = 거울파일들(거울);
   for (const [경로, f] of [...내보냄]) {
@@ -284,7 +308,7 @@ function 맞추기(거울, 내보냄, 덧붙임, 검사 = () => null) {
     } catch {}
     if (같음) continue;
     let 데이터;
-    try { 데이터 = fs.readFileSync(f.절대); } catch { 내보냄.delete(경로); continue; }
+    try { 데이터 = fs.readFileSync(f.절대); } catch { 읽기실패++; continue; }
     const 결과 = 검사(f, 데이터);
     if (결과) {
       내보냄.delete(경로);
@@ -308,7 +332,7 @@ function 맞추기(거울, 내보냄, 덧붙임, 검사 = () => null) {
     }
   }
   const 남길 = new Set([...내보냄.keys(), ...덧붙임.keys()]);
-  for (const 경로 of 있던것) {
+  for (const 경로 of 지우기허용 ? 있던것 : []) {
     if (남길.has(경로)) continue;
     fs.rmSync(path.join(거울, ...경로.split('/')), { force: true });
     지움++;
@@ -324,7 +348,7 @@ function 맞추기(거울, 내보냄, 덧붙임, 검사 = () => null) {
     }
   };
   비우기(거울);
-  return { 복사, 지움, 걸림 };
+  return { 복사, 지움, 걸림, 읽기실패 };
 }
 
 /** 예약 작업 XML · 설치 목록 · 연결 목록. 하루에 한 번 만든다(거울의 기록을 그대로 두면 변경 없음으로 본다). */
@@ -372,7 +396,7 @@ function 윈도우기록(거울, 자리, 지금, 상태파일, 돌림 = spawnSyn
 /** 복원 입구 파일을 거울 맨 위에 둔다(GitHub Download ZIP · 드라이브 zip을 풀자마자 더블클릭하도록). */
 function 복원입구(코드뿌리) {
   const 덧 = new Map();
-  for (const 이름 of ['restore.ps1', '복원풀기.cjs', '복원점검.cjs', '암호묶음.py', '드라이브.py', '암호흐름.cjs', '암호.js', '작업방식.cjs']) {
+  for (const 이름 of ['restore.ps1', '복원풀기.cjs', '복원점검.cjs', '복원시험.cjs', '암호묶음.py', '드라이브.py', '암호흐름.cjs', '암호.js', '작업방식.cjs']) {
     try { 덧.set(`복원/${이름}`, fs.readFileSync(path.join(코드뿌리, 이름))); } catch {}
   }
   for (const [원본, 자리] of [['복원 시작.cmd', '복원 시작.cmd'], ['먼저 읽기.md', 'README.md']]) {
@@ -403,23 +427,28 @@ function 돌리기(옵션 = {}, 의존 = {}) {
   const { 모음, 지문 } = 열쇠토큰모음(자리);
   const 캐시파일 = path.join(상태, '작업방식_캐시.json');
   const 옛캐시 = 캐시읽기(캐시파일);
-  const { 내보냄, 뺌, 빈필수, 새캐시 } = 고르기(자리, 도구, 표, 옛캐시, 지문, 모음);
+  const { 내보냄, 뺌, 빈필수, 걷기오류, 새캐시 } = 고르기(자리, 도구, 표, 옛캐시, 지문, 모음);
   const 뺀까닭 = {};
   for (const r of 뺌) 뺀까닭[r.까닭] = (뺀까닭[r.까닭] || 0) + 1;
   const 크기합 = [...내보냄.values()].reduce((a, f) => a + f.크기, 0);
-  const 요약 = { 파일: 내보냄.size, 원문바이트: 크기합, 뺌: 뺌.length, 뺀까닭 };
+  const 요약 = { 파일: 내보냄.size, 원문바이트: 크기합, 뺌: 뺌.length, 뺀까닭, 걷기오류 };
   if (옵션.재기) return { status: 'dry-run', ...요약, 빈필수, 큰것: [...내보냄.entries()].sort((a, b) => b[1].크기 - a[1].크기).slice(0, 5).map(([k, f]) => `${k} ${f.크기}`), 뺀것: 뺌.map((r) => `${r.까닭} ${r.경로}`) };
   if (빈필수.length) return 끝('failed', { ...요약, issues: [{ code: 'WORKMETHOD_REQUIRED_ROOT_EMPTY' }], 빈필수 });
-  const 처음 = 거울준비(거울, 원격주소, 의존.받기 !== false);
+  거울준비(거울, 원격주소, 의존.받기 !== false);
   const 기록상태 = path.join(상태, '작업방식_기록.json');
   const 기록들 = 의존.윈도우기록 ? 의존.윈도우기록(거울) : 윈도우기록(거울, 자리, 지금, 기록상태);
-  // 예약 작업 XML · 설치 목록도 파일과 같은 검사를 받는다. 걸리면 평문에 안 두고 보호 폴더(열쇠 묶음이 잠가 보낸다)에 둔다.
-  const 덧붙임 = new Map(복원입구(의존.코드뿌리 || 코드));
+  // 복원 입구 · 예약 작업 XML · 설치 목록도 파일과 같은 검사를 받는다. 걸린 기록은 평문에 안 두고 보호 폴더(열쇠 묶음이 잠가 보낸다)에 둔다.
+  const 입구 = 복원입구(의존.코드뿌리 || 코드);
+  const 덧붙임 = new Map();
   const 보호폴더 = path.join(상태, '보호');
-  for (const [경로, 내용] of 기록들) {
+  const 문제 = [];
+  // 복원 도구가 빠진 꾸러미는 쓸모가 없다 — 있어야 할 파일이 없으면 알린다.
+  if (!의존.코드뿌리 && !입구.has('복원/restore.ps1')) 문제.push({ code: 'WORKMETHOD_RESTORE_TOOL_MISSING' });
+  for (const [경로, 내용] of [...입구, ...기록들]) {
     const 데이터 = Buffer.from(내용);
     const 결과 = 판정({ 곳: '', 검사: 'md' }, { rel: 경로, 절대: 경로, 크기: 데이터.length }, 도구, 모음, 데이터);
     if (!결과) { 덧붙임.set(경로, 데이터); continue; }
+    if (입구.has(경로)) { 문제.push({ code: 'WORKMETHOD_RESTORE_TOOL_BLOCKED' }); continue; }
     if (결과.갈곳) {
       const 곳 = path.join(보호폴더, ...경로.split('/'));
       fs.mkdirSync(path.dirname(곳), { recursive: true });
@@ -429,18 +458,20 @@ function 돌리기(옵션 = {}, 의존 = {}) {
   }
   // 드라이브의 파일 위치(비밀 아님) — 새 노트북에서 찾는 데 쓴다
   try { 덧붙임.set('위치.json', JSON.stringify({ 원격: 원격주소, 드라이브폴더: 'SYNK_복원', 묶음: 캐시읽기(path.join(상태, '위치.json')) }, null, 1)); } catch {}
-  const 직전수 = Number(옛캐시.수 || 0);
-  if (!처음 && 직전수 && 내보냄.size < 직전수 * (1 - 줄어듦한도)) {
-    return 끝('failed', { ...요약, issues: [{ code: 'WORKMETHOD_SHRINK_GUARD' }], 직전수 });
-  }
-  const 맞춤 = 맞추기(거울, 내보냄, 덧붙임, (f, 데이터) => 판정(f.줄, f, 도구, 모음, 데이터));
+  if (걷기오류) 문제.push({ code: 'WORKMETHOD_LIST_ERROR' });
+  const 맞춤 = 맞추기(거울, 내보냄, 덧붙임, (f, 데이터) => 판정(f.줄, f, 도구, 모음, 데이터), 걷기오류 === 0);
   for (const r of 맞춤.걸림) {
     뺌.push(r);
     if (새캐시.파일[r.경로]) 새캐시.파일[r.경로].결과 = { 까닭: r.까닭, 갈곳: r.갈곳 };
   }
-  쓰기(캐시파일, { ...새캐시, 수: 내보냄.size });
+  쓰기(캐시파일, 새캐시);
   쓰기(path.join(상태, '작업방식_제외.json'), { at: new Date().toISOString(), 파일: 뺌 });
   git(거울, ['add', '-A']);
+  const 걸린묶음 = 옵션.줄어듦허용 ? null : 줄어듦검사(거울);
+  if (걸린묶음) {
+    git(거울, ['reset', '--quiet']); // 커밋 · push 하지 않는다. 원본이 돌아오면 다음 회차의 맞추기가 거울을 되돌린다.
+    return 끝('failed', { ...요약, issues: [{ code: 'WORKMETHOD_SHRINK_GUARD' }], 걸린묶음 });
+  }
   const 바뀜 = !!git(거울, ['status', '--porcelain']).trim();
   let 커밋 = false;
   if (바뀜) {
@@ -448,7 +479,6 @@ function 돌리기(옵션 = {}, 의존 = {}) {
     git(거울, ['commit', '--quiet', '-m', `auto: 작업 방식 ${때} KST`]);
     커밋 = true;
   }
-  const 문제 = [];
   const 머리 = git(거울, ['rev-parse', 'HEAD']).trim();
   const 표식 = path.join(상태, '다른PC가앞섬');
   let 거절됨 = false;
@@ -461,7 +491,7 @@ function 돌리기(옵션 = {}, 의존 = {}) {
     else if (r.status === 0) fs.rmSync(표식, { force: true });
   }
   // 드라이브는 암호묶음.py가 판단한다(판이 바뀌었고 3시간이 지났을 때, 같은 판의 재시도는 바로). 실패해도 다음 회차가 다시 한다.
-  const 파이썬 = (명령) => (의존.돌림 || spawnSync)(process.env.SYNK_복원_파이썬 || 'python', ['-X', 'utf8', '-B', path.join(코드, '암호묶음.py'), 명령, ...(명령 === '작업방식' ? ['--거울', 거울] : [])], { encoding: 'utf8', windowsHide: true, timeout: 1800000 });
+  const 파이썬 = (명령) => (의존.돌림 || spawnSync)(process.env.SYNK_복원_파이썬 || 'python', ['-X', 'utf8', '-B', path.join(코드, '암호묶음.py'), 명령, '--숨소리', 영수증, ...(명령 === '작업방식' ? ['--거울', 거울] : [])], { encoding: 'utf8', windowsHide: true, timeout: 1800000 });
   let 드라이브결과 = null;
   // 통합 감시는 숨소리가 15분 끊기면 「중단」으로 본다 — 오래 걸리는 단계 앞에서 남긴다.
   const 숨소리 = () => { try { 쓰기(영수증, { ...옛영수증, schemaVersion: 1, status: 'running', pid: process.pid, startedAt: new Date(지금).toISOString(), heartbeatAt: new Date().toISOString(), issues: [] }); } catch {} };
@@ -473,7 +503,7 @@ function 돌리기(옵션 = {}, 의존 = {}) {
     const k = 파이썬('열쇠');
     if (k.status !== 0) 문제.push({ code: 'KEYS_BUNDLE_FAILED' });
   }
-  return 끝(문제.length ? 'partial_failure' : 'success', { ...요약, 복사: 맞춤.복사, 지움: 맞춤.지움, 커밋, 머리, 드라이브: 드라이브결과, issues: 문제 });
+  return 끝(문제.length ? 'partial_failure' : 'success', { ...요약, 복사: 맞춤.복사, 지움: 맞춤.지움, 읽기실패: 맞춤.읽기실패, 커밋, 머리, 드라이브: 드라이브결과, issues: 문제 });
 }
 
 if (require.main === module) {

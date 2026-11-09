@@ -5,6 +5,7 @@
 #
 #   복원 시작.cmd                                   처음부터(또는 이어서)
 #   ... restore.ps1 -대화기록                        대화 기록(약 32GB)도 받아 푼다
+#   ... restore.ps1 -릴리스계보                      회사 릴리스 사슬이 따라가는 .tmp 계보 폴더(약 8GB)도 받아 푼다(회사 서버를 배포할 때 필요)
 #   ... restore.ps1 -예약켜기                        꺼 둔 예약 작업을 켠다(옛 노트북이 안 도는 것을 확인한 뒤 — 둘 다 돌면 SNS가 두 번 나간다)
 #   ... restore.ps1 -전부설치                        기록된 프로그램 · 파이썬 패키지 전부
 #   ... restore.ps1 -집 D:\복원시험\q1212 -시험 [-가볍게]   가짜 집에 푼다: 설치 · 로그인 기다림 · 예약 · 환경 변수를 건드리지 않는다
@@ -15,6 +16,7 @@ param(
   [switch]$가볍게,
   [switch]$예약켜기,
   [switch]$대화기록,
+  [switch]$릴리스계보,
   [switch]$전부설치,
   [string]$암호파일 = '',
   [string]$비밀키 = '',
@@ -37,11 +39,11 @@ function Step($m) { Say ''; Say "== $m" }
 function RefreshPath { $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User') }
 function Fail($m) { Say ''; Say "멈춤: $m"; Say '이 창을 사진으로 찍어 Claude에게 보여 주셔도 돼요.'; Read-Host '이 창은 Enter를 누르면 닫혀요' | Out-Null; exit 10 }
 
-# 없는 파일만 복사한다(있는 것은 그대로). 긴 경로도 된다. 복사한 수를 돌려준다.
-function CopyMissing($from, $to) {
+# 없는 파일만 복사한다(있는 것은 그대로). 긴 경로도 된다. $빼기는 복사하지 않을 폴더 이름. 복사한 수를 돌려준다.
+function CopyMissing($from, $to, [string[]]$빼기 = @()) {
   if (-not (Test-Path -LiteralPath $from)) { return 0 }
   New-Item -ItemType Directory -Force $to | Out-Null
-  $out = & robocopy $from $to /E /XC /XN /XO /R:1 /W:1 /NP /NDL /NJH /BYTES /XD .git 2>$null
+  $out = & robocopy $from $to /E /XC /XN /XO /R:1 /W:1 /NP /NDL /NJH /BYTES /XD .git @빼기 2>$null
   $code = $LASTEXITCODE
   if ($code -ge 8) { $남은일.Add("복사 실패 $from (코드 $code)") }
   $line = $out | Where-Object { $_ -match '^\s*(Files|파일)\s*:' } | Select-Object -First 1
@@ -158,12 +160,9 @@ foreach ($r in $저장소들) {
 Step '5. 메모 · 설정 · 스킬 제자리에(없는 것만)'
 $짝 = @(
   @('claude', '.claude'), @('codex', '.codex'), @('agents', '.agents'), @('ai-accounts', '.ai-accounts'),
-  @('창고도구\PC_백업_20261003', 'Documents\PC_백업_20261003'), @('창고도구', 'Documents\SYNK_원본창고'), @('문서\Videos', 'Videos')
+  @('창고도구\PC_백업_20261003', 'Documents\PC_백업_20261003'), @('창고도구', 'Documents\SYNK_원본창고', 'PC_백업_20261003'), @('문서\Videos', 'Videos')
 )
-foreach ($p in $짝) { $n = CopyMissing (Join-Path $Root $p[0]) (Join-Path $집 $p[1]); Say "  $($p[0]) → $($p[1]): 새 파일 $n" }
-# 창고도구 복사에 딸려 간 PC_백업 폴더는 원래 자리가 따로 있어 치운다
-$딸림 = Join-Path $문서 'SYNK_원본창고\PC_백업_20261003'
-if (Test-Path -LiteralPath $딸림) { Remove-Item -LiteralPath $딸림 -Recurse -Force }
+foreach ($p in $짝) { $n = CopyMissing (Join-Path $Root $p[0]) (Join-Path $집 $p[1]) @($p | Select-Object -Skip 2); Say "  $($p[0]) → $($p[1]): 새 파일 $n" }
 # 메모는 프로젝트 폴더 이름이 저장소 경로에서 나온다. 집이 같으면 이름도 같다.
 $새집 = ($집 -replace '[^A-Za-z0-9]', '-')
 $메모뿌리 = Join-Path $Root '메모'
@@ -211,6 +210,7 @@ if (-not $열쇠 -and $진짜) {
 $풀기 = Join-Path $PSScriptRoot '복원풀기.cjs'
 $받을것 = @('비공개문서', '창고장부', '작업기록')
 if ($대화기록) { $받을것 += '대화기록' }
+if ($릴리스계보) { $받을것 += '릴리스계보' }
 if ($열쇠) {
   $인자 = @($풀기, '--집', $집, '--열쇠파일', $열쇠, '--받기', ($받을것 -join ','))
   if ($암호파일) { $인자 += @('--암호파일', $암호파일) }
@@ -219,7 +219,8 @@ if ($열쇠) {
   & node @인자
   $code = $LASTEXITCODE
   Remove-Item Env:\SYNK_복원_집 -ErrorAction SilentlyContinue
-  if ($code -ne 0) { $남은일.Add('열쇠 · 묶음 풀기 실패 — 암호를 확인하고 다시 돌려 주세요') }
+  if ($code -eq 2) { $남은일.Add('일부 파일을 못 풀었습니다 — 위 결과와 기록을 Claude에게 보여 주세요') }
+  elseif ($code -ne 0) { $남은일.Add('열쇠 · 묶음 풀기 실패 — 암호를 확인하고 다시 돌려 주세요') }
 } else { $남은일.Add('열쇠를 못 찾아 풀지 못했습니다') }
 if ($진짜) {
   # 열쇠의 .gitconfig를 먼저 풀고 나서 더한다

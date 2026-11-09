@@ -2,8 +2,10 @@
 # 이어 올리기 · md5 대조 · 지연을 재며 속도 맞추기는 media-upload.py(10-03~)에서 겪은 대로다. 토큰 값은 어디에도 찍지 않는다.
 import hashlib
 import json
+import os
 import random
 import socket
+import subprocess
 import threading
 import time
 from pathlib import Path
@@ -15,13 +17,39 @@ UP = 'https://www.googleapis.com/upload/drive/v3/files'
 FOLDER = 'application/vnd.google-apps.folder'
 CHUNK = 32 << 20
 RETRYABLE = (429, 500, 502, 503, 504)
+# 휴대폰 핫스팟에서는 올리지 않는다(10-21 유호님 「핫스팟 쓰는 동안 자동 백업 멈춰 줘」). Windows는 이 핫스팟을 종량제로 보지 않아 이름으로 가른다.
+HOTSPOTS = ('유호의 S26 Ultra',)
+
+
+def wifi_names(run=subprocess.run):
+    """연결된 와이파이 이름들. 못 읽으면 빈 목록이다(유선 · 네트워크 없음과 같게 본다)."""
+    if os.name != 'nt':
+        return []
+    try:
+        out = run(['netsh', 'wlan', 'show', 'interfaces'], capture_output=True, timeout=20, stdin=subprocess.DEVNULL, creationflags=0x08000000).stdout
+    except (OSError, subprocess.SubprocessError):
+        return []
+    for encoding in ('utf-8', 'cp949'):  # 콘솔에서는 UTF-8, 예약 실행에서는 ANSI 코드 페이지로 나온다
+        try:
+            text = out.decode(encoding)
+            break
+        except UnicodeDecodeError:
+            continue
+    else:
+        return []
+    return [v.strip() for k, _, v in (line.partition(':') for line in text.splitlines()) if k.strip() == 'SSID' and v.strip()]
+
+
+def on_hotspot(run=subprocess.run):
+    return any(name in HOTSPOTS for name in wifi_names(run))
 
 
 class Rate:
     """올림 속도. 30초마다 google 연결 시간을 재서 350ms를 넘으면 절반, 150ms 아래면 올린다(백업_업로드 현장 노트 「회선을 채워 gh·git push가 끊긴다」)."""
 
-    def __init__(self, max_file=None, default_max=25.0, start=4.0):
+    def __init__(self, max_file=None, default_max=25.0, start=4.0, hold=None):
         self.max_file, self.default_max = max_file, default_max
+        self.hold, self.holding, self.hold_poll = hold, False, 5  # hold()가 참이면 올리기를 멈추고 기다린다(올리는 도중 핫스팟으로 옮겨 가도 데이터를 안 쓴다)
         self.lock = threading.Lock()
         self.next = time.monotonic()
         self.rate = start * 125000
@@ -61,11 +89,15 @@ class Rate:
 
         def loop():
             while not self.stop.wait(30):
-                self.adapt()
+                self.holding = bool(self.hold and self.hold())
+                if not self.holding:
+                    self.adapt()
         self.thread = threading.Thread(target=loop, daemon=True)
         self.thread.start()
 
     def take(self, n):
+        while self.holding and not self.stop.is_set():
+            time.sleep(self.hold_poll)
         with self.lock:
             now = time.monotonic()
             begin = max(now, self.next)

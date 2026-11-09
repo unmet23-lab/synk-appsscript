@@ -126,6 +126,114 @@ test('push가 거절되면 드라이브 · 열쇠를 부르지 않고 표식을 
   } finally { t.끝(); }
 });
 
+test('그림 · svg 안의 토큰도 평문에 안 나간다', () => {
+  const t = 판();
+  try {
+    const 토큰 = 'ghp_abcdefghijklmnopqrstuvwxyz0123';
+    t.쓰기('memory/아이콘.svg', `<svg><metadata>${토큰}</metadata></svg>`);
+    t.쓰기('memory/멀쩡.svg', '<svg><circle r="1"/></svg>');
+    fs.writeFileSync(path.join(t.집, 'memory', '그림.png'), Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47]), Buffer.from(` tEXt ${토큰} `)]));
+    fs.writeFileSync(path.join(t.집, 'memory', '멀쩡.png'), Buffer.from([0x89, 0x50, 0x4e, 0x47, 0, 1, 2, 3]));
+    assert.equal(도구.돌리기({}, t.의존()).status, 'success');
+    const 목록 = t.맨목록().join('\n');
+    assert.ok(!목록.includes('아이콘.svg'));
+    assert.ok(!목록.includes('그림.png'));
+    assert.ok(목록.includes('멀쩡.svg'));
+    assert.ok(목록.includes('멀쩡.png'));
+    const 전부 = execFileSync('git', ['--git-dir', t.원격, 'log', '--all', '-p', '--binary', '--format=%H'], { encoding: 'latin1', maxBuffer: 16 << 20 });
+    assert.ok(!전부.includes(토큰));
+  } finally { t.끝(); }
+});
+
+test('복원 입구 파일도 검사를 받아, 걸리면 평문에 안 나가고 알린다', () => {
+  const t = 판();
+  try {
+    const 코드뿌리 = path.join(t.뿌리, '입구');
+    fs.mkdirSync(코드뿌리);
+    fs.writeFileSync(path.join(코드뿌리, 'restore.ps1'), '# 복원\n');
+    fs.writeFileSync(path.join(코드뿌리, '복원풀기.cjs'), '// 시험 토큰 ghp_abcdefghijklmnopqrstuvwxyz0123\n');
+    const 값 = 도구.돌리기({}, t.의존({ 코드뿌리 }));
+    assert.equal(값.status, 'partial_failure');
+    assert.ok(값.issues.some((i) => i.code === 'WORKMETHOD_RESTORE_TOOL_BLOCKED'));
+    const 목록 = t.맨목록().join('\n');
+    assert.ok(목록.includes('복원/restore.ps1'));
+    assert.ok(!목록.includes('복원풀기.cjs'));
+  } finally { t.끝(); }
+});
+
+test('못 읽은 파일은 거울의 옛 판을 지우지 않고, 폴더를 못 걸은 회차는 아무것도 지우지 않는다', () => {
+  const t = 판();
+  try {
+    const 거울 = path.join(t.뿌리, 'm3');
+    fs.mkdirSync(path.join(거울, '문서'), { recursive: true });
+    fs.writeFileSync(path.join(거울, '문서', '옛판.md'), '옛 판');
+    fs.writeFileSync(path.join(거울, '문서', '고른것아님.md'), '남아야 함');
+    const 내보냄 = new Map([['문서/옛판.md', { rel: '옛판.md', 절대: path.join(t.뿌리, '사라진파일.md'), 크기: 99, 수정: 1, 줄: {} }]]);
+    const r = 도구.맞추기(거울, 내보냄, new Map(), () => null, false);
+    assert.equal(r.읽기실패, 1);
+    assert.equal(r.지움, 0);
+    assert.equal(fs.readFileSync(path.join(거울, '문서', '옛판.md'), 'utf8'), '옛 판');
+    assert.ok(fs.existsSync(path.join(거울, '문서', '고른것아님.md')));
+    const r2 = 도구.맞추기(거울, 내보냄, new Map(), () => null, true);
+    assert.equal(r2.읽기실패, 1);
+    assert.equal(r2.지움, 1);
+    assert.ok(fs.existsSync(path.join(거울, '문서', '옛판.md')));
+    assert.ok(!fs.existsSync(path.join(거울, '문서', '고른것아님.md')));
+  } finally { t.끝(); }
+});
+
+test('처음 받은 거울 · 캐시가 없어도 크게 줄어드는 커밋은 막는다', () => {
+  const t = 판();
+  try {
+    const 파일들 = [];
+    for (let i = 0; i < 20; i++) 파일들.push(t.쓰기(`Documents/repo/글${i}.md`, `글 ${i}\n`));
+    assert.equal(도구.돌리기({}, t.의존()).status, 'success');
+    const 앞 = execFileSync('git', ['--git-dir', t.원격, 'rev-parse', 'master'], { encoding: 'utf8' }).trim();
+    // 새 노트북: 원격에서 거울을 새로 받고 캐시도 없고, 원본은 일부만 돌아와 있다
+    for (const f of 파일들.slice(0, 15)) fs.rmSync(f);
+    fs.rmSync(path.join(t.자리.상태, '작업방식_캐시.json'), { force: true });
+    const 새거울 = path.join(t.뿌리, 'new-mirror');
+    const 값 = 도구.돌리기({}, t.의존({ 거울: 새거울, 받기: true }));
+    assert.equal(값.status, 'failed');
+    assert.equal(값.issues[0].code, 'WORKMETHOD_SHRINK_GUARD');
+    assert.equal(execFileSync('git', ['--git-dir', t.원격, 'rev-parse', 'master'], { encoding: 'utf8' }).trim(), 앞);
+  } finally { t.끝(); }
+});
+
+test('메모 묶음만 크게 줄어도 전체가 커서 넘어가지 않고 막힌다, --줄어듦허용이면 지나간다', () => {
+  const t = 판();
+  try {
+    const 메모들 = [];
+    for (let i = 0; i < 12; i++) 메모들.push(t.쓰기(`memory/메모${i}.md`, `메모 ${i}\n`));
+    for (let i = 0; i < 100; i++) t.쓰기(`Documents/repo/글${i}.md`, `글 ${i}\n`);
+    assert.equal(도구.돌리기({}, t.의존()).status, 'success');
+    for (const f of 메모들.slice(0, 10)) fs.rmSync(f);
+    const 값 = 도구.돌리기({}, t.의존());
+    assert.equal(값.status, 'failed');
+    assert.ok(값.걸린묶음.some((s) => s.startsWith('메모/p')));
+    assert.ok(t.맨목록().join('\n').includes('메모0.md'));
+    const 허용 = 도구.돌리기({ 줄어듦허용: true }, t.의존());
+    assert.equal(허용.status, 'success');
+    assert.ok(!t.맨목록().join('\n').includes('메모0.md'));
+  } finally { t.끝(); }
+});
+
+test('줄어듦으로 막힌 뒤 원본이 돌아오면 다음 회차가 정상으로 돌아간다', () => {
+  const t = 판();
+  try {
+    const 파일들 = [];
+    for (let i = 0; i < 10; i++) 파일들.push(t.쓰기(`Documents/repo/글${i}.md`, `글 ${i}\n`));
+    assert.equal(도구.돌리기({}, t.의존()).status, 'success');
+    const 내용 = 파일들.map((f) => fs.readFileSync(f));
+    파일들.slice(0, 6).forEach((f) => fs.rmSync(f));
+    assert.equal(도구.돌리기({}, t.의존()).status, 'failed');
+    파일들.slice(0, 6).forEach((f, i) => fs.writeFileSync(f, 내용[i]));
+    const 다음 = 도구.돌리기({}, t.의존());
+    assert.equal(다음.status, 'success');
+    assert.equal(다음.커밋, false);
+  } finally { t.끝(); }
+});
+
 test('지운 파일은 다음 판에서 지워지고 이력에는 남는다, 바뀐 것이 없으면 커밋하지 않는다', () => {
   const t = 판();
   try {
@@ -224,6 +332,15 @@ test('더한 서명이 구글 · 허깅페이스 · 슈파베이스 · 클로드
     assert.match(값, 도구.더한서명, 값);
   }
   assert.doesNotMatch('평범한 글 sk-ant 라는 낱말과 ya29 이야기', 도구.더한서명);
+});
+
+test('본 저장소 메모는 폴더가 없어도 필수 줄에 남는다', () => {
+  const 집 = path.join(os.tmpdir(), '없는집');
+  const 자리 = 도구.집자리({ SYNK_복원_집: 집 });
+  const 이름 = path.join(자리.문서, 'SYNK-appsscript').replace(/[^A-Za-z0-9]/g, '-');
+  const 줄 = 도구.범위표(자리).find((r) => r.곳 === `메모/${이름}`);
+  assert.ok(줄);
+  assert.equal(줄.필수, true);
 });
 
 test('실제 범위표: 공개 저장소에서 온 파일 경로가 .tmp · worktrees를 지나지 않는다', () => {
