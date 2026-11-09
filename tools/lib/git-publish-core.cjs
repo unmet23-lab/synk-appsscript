@@ -1706,6 +1706,11 @@ async function 따라가기(옵션 = {}) {
 }
 
 /** 옵션: 저장소 · 실행 · 되살림 → 워크트리에서 큰 미디어 폴더를 sparse-checkout으로 뺀다. */
+/** 앱 · 예약 회차가 쓰는 D: 세션 사본 자리인가(…/SYNK-worktrees/SYNK-appsscript/<이름>). 바깥 사본 `Documents/SYNK-worktrees/<이름>`은 아니다. */
+function D세션사본인가(폴더) {
+  return /[\\/]SYNK-worktrees[\\/]SYNK-appsscript[\\/][^\\/]+[\\/]?$/i.test(String(폴더));
+}
+
 async function 가볍게(옵션 = {}) {
   try {
     const c = 맥락(옵션);
@@ -1727,6 +1732,8 @@ async function 가볍게(옵션 = {}) {
       if (r.status !== 0) throw new 멈춤(`되살리지 못했다 — ${String(r.stderr).trim()}`);
       return { 결과: '되살림', 할일 };
     }
+    // 11-09: 옛 안내(「다른 자리의 워크트리는 시작할 때 가볍게」)를 읽은 세션도 D: 사본을 비우지 않게 도구가 막는다 — 자리가 넉넉하고 제작 품질 때문에 전체로 둔다(결정 11-04).
+    if (D세션사본인가(c.저장소)) return { 결과: '멈춤', 이유: 'D: 세션 사본은 빼지 않는다 — 자리가 넉넉하고 제작 품질 때문에 전체로 둔다(AGENTS · 결정 11-04)' };
     const 뺄곳 = [...가볍게뺄, 가볍게미디어.폴더];
     const 고침 = git(['--no-optional-locks', 'status', '--porcelain=v1', '-z', '--no-renames', '--untracked-files=all', '--', ...뺄곳]).toString('utf8')
       .split('\0').filter(Boolean).filter((줄) => 가볍게가린자리(줄.slice(3)));
@@ -1753,4 +1760,4 @@ async function 가볍게(옵션 = {}) {
 // ── 명령줄 ──────────────────────────────────────────────────────────────────
 
 
-module.exports = { 따라가기잠금, 올리기, 따라가기, 가볍게, 가볍게뺄, 가볍게미디어, 가볍게가린자리, 좋은결과, 따라가기계획, 따라가기실행, 공용따라가기, 상태읽기, 맥락, origin판들, 가까운바탕, 받은것만바탕 };
+module.exports = { 따라가기잠금, 올리기, 따라가기, 가볍게, D세션사본인가, 가볍게뺄, 가볍게미디어, 가볍게가린자리, 좋은결과, 따라가기계획, 따라가기실행, 공용따라가기, 상태읽기, 맥락, origin판들, 가까운바탕, 받은것만바탕 };

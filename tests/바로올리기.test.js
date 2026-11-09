@@ -1983,6 +1983,21 @@ test('가볍게: 워크트리에서만 큰 미디어 폴더를 작업본에서 �
   assert.ok(워.있나('docs/캐릭터/정본_4K/까몽.png'));
 });
 
+test('가볍게: D: 세션 사본 자리에서는 빼지 않는다(되살림은 그대로) — 옛 안내를 읽은 세션이 비우지 않게', async (t) => {
+  const 핵심 = require(path.join(REPO, 'tools', 'lib', 'git-publish-core.cjs'));
+  for (const p of ['D:\\SYNK-worktrees\\SYNK-appsscript\\sched-a-1109-0700', 'D:/SYNK-worktrees/SYNK-appsscript/kind-lamport-3b49d6/']) assert.equal(핵심.D세션사본인가(p), true, p);
+  for (const p of ['C:\\Users\\me\\Documents\\SYNK-worktrees\\talk-x', 'C:\\Users\\me\\Documents\\SYNK-appsscript\\.claude\\worktrees\\a', 'D:\\SYNK-worktrees\\SYNK-appsscript']) assert.equal(핵심.D세션사본인가(p), false, p);
+  const 판 = 새판(t, { 파일: { 'a.txt': '1\n', 'docs/캐릭터/정본_4K/까몽.png': Buffer.alloc(10, 2) } });
+  const 폴더 = path.join(판.뿌리, 'SYNK-worktrees', 'SYNK-appsscript', 'sched-a');
+  판.공용.g('worktree', 'add', '-q', '-b', 'worktree-sched-a', 폴더, 'HEAD');
+  const r = await 도구.가볍게({ 저장소: 폴더, 실행: true });
+  assert.equal(r.결과, '멈춤', JSON.stringify(r));
+  assert.match(r.이유, /D: 세션 사본은 빼지 않는다/);
+  const 켜짐 = spawnSync('git', ['-C', 폴더, 'config', '--get', 'core.sparseCheckout'], { encoding: 'utf8' });
+  assert.notEqual(켜짐.stdout.trim(), 'true');
+  assert.equal((await 도구.가볍게({ 저장소: 폴더, 되살림: true, 실행: true })).결과, '되살림');
+});
+
 test('가볍게: docs/마케팅은 소리·그림만 빼고, 되살림은 폴더 안 파일까지, 다시 구운 파일은 올리기가 꺼내 올린다', async (t) => {
   const 판 = 새판(t, { 파일: {
     'docs/마케팅/LAB_가/remotion/public/vo/s1.wav': Buffer.alloc(10, 1), 'docs/마케팅/LAB_가/remotion/public/vo/s1.json': '{"t":1}\n',
