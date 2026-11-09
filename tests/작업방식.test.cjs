@@ -182,6 +182,46 @@ test('못 읽은 파일은 거울의 옛 판을 지우지 않고, 폴더를 못 
   } finally { t.끝(); }
 });
 
+test('고르기에서 못 읽은 파일도 지우기가 되지 않고 알린다', (c) => {
+  const t = 판();
+  try {
+    const 잠김 = t.쓰기('Documents/repo/잠김.md', '처음\n');
+    t.쓰기('Documents/repo/다른글.md', '다른 글\n');
+    const 지울글 = t.쓰기('Documents/repo/지울글.md', '지울 글\n');
+    assert.equal(도구.돌리기({}, t.의존()).status, 'success');
+    fs.writeFileSync(잠김, '바뀐 뒤 읽을 수 없음\n');
+    fs.rmSync(지울글);
+    const 원래 = fs.readFileSync;
+    c.mock.method(fs, 'readFileSync', function (p, ...r) {
+      if (String(p).endsWith('잠김.md') && !String(p).includes('mirror')) { const e = new Error('잠김'); e.code = 'EBUSY'; throw e; }
+      return 원래.call(this, p, ...r);
+    });
+    const 값 = 도구.돌리기({}, t.의존());
+    assert.equal(값.status, 'partial_failure');
+    assert.ok(값.issues.some((i) => i.code === 'WORKMETHOD_LIST_ERROR'));
+    assert.equal(값.걷기오류, 1);
+    const 목록 = t.맨목록().join('\n');
+    assert.ok(목록.includes('잠김.md'));
+    assert.ok(목록.includes('지울글.md')); // 이 회차는 아무것도 지우지 않는다
+  } finally { t.끝(); }
+});
+
+test('svg 속 비밀 대입도 잡고, 평문에 못 두는 설정 글은 버리지 않고 암호 묶음으로 보낸다', () => {
+  const t = 판();
+  try {
+    t.쓰기('memory/대입.svg', '<svg><metadata>{"password": "real-looking-value-123"}</metadata></svg>');
+    t.쓰기('memory/내장.md', `![그림](data:image/png;base64,${'A'.repeat(64)})\n`);
+    t.쓰기('memory/바이너리.xyz', 'x');
+    assert.equal(도구.돌리기({}, t.의존()).status, 'success');
+    const 목록 = t.맨목록().join('\n');
+    for (const 이름 of ['대입.svg', '내장.md', '바이너리.xyz']) assert.ok(!목록.includes(이름), 이름);
+    const 제외 = JSON.parse(fs.readFileSync(path.join(t.자리.상태, '작업방식_제외.json'), 'utf8')).파일;
+    assert.equal(제외.find((r) => r.경로.endsWith('대입.svg')).갈곳, '열쇠');
+    assert.equal(제외.find((r) => r.경로.endsWith('내장.md')).갈곳, '작업기록');
+    assert.equal(제외.find((r) => r.경로.endsWith('바이너리.xyz')).갈곳, '작업기록');
+  } finally { t.끝(); }
+});
+
 test('처음 받은 거울 · 캐시가 없어도 크게 줄어드는 커밋은 막는다', () => {
   const t = 판();
   try {

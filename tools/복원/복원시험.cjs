@@ -40,7 +40,9 @@ function 대조(풀린곳, 집) {
       const rel = path.join(상대, e.name);
       if (e.isDirectory()) { if (rel !== '.synk-복원') 더미.push(rel); continue; }
       결과.파일++;
-      const 원 = path.join(집, rel), 풀림 = path.join(풀린곳, rel);
+      // 복원할 때 자리를 옮긴 OneDrive 사본(암호묶음.py RESTORE_REMAP)은 원래 자리와 견준다
+      const 재배치 = `SYNK복원_작업기록${path.sep}`;
+      const 원 = path.join(집, rel.startsWith(재배치) ? path.join('OneDrive', rel.slice(재배치.length)) : rel), 풀림 = path.join(풀린곳, rel);
       let st;
       try { st = fs.statSync(원); } catch { 결과.없음++; continue; }
       const 풀린st = fs.statSync(풀림);

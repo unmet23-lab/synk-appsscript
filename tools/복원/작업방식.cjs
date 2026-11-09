@@ -190,14 +190,14 @@ function 판정(줄, 파일, 도구, 모음, 받은데이터) {
     const 바이트글 = 데이터.toString('latin1');
     return 더한서명.test(바이트글) || 열쇠값이들었나(바이트글, 모음) ? { 까닭: 'secret-in-binary', 갈곳: '열쇠' } : null;
   }
-  if (줄.검사 === '설정' && !도구.문서인가(rel) && !/\.(?:json|toml|svg)$/i.test(rel)) return { 까닭: 'not-text', 갈곳: '' };
+  if (줄.검사 === '설정' && !도구.문서인가(rel) && !/\.(?:json|toml|svg)$/i.test(rel)) return { 까닭: 'not-text', 갈곳: '작업기록' };
   const 원본검사경로 = 줄.곳.startsWith('문서/SYNK-appsscript') ? rel : 경로;
-  const 정책 = 도구.textPolicy(원본검사경로.replace(/(^|\/)(worktrees)(\/|$)/, '$1wt$3'), 데이터);
+  const 검사경로 = 원본검사경로.replace(/(^|\/)(worktrees)(\/|$)/, '$1wt$3');
+  let 정책 = 도구.textPolicy(검사경로, 데이터);
+  if (정책 === 'non-text-extension') 정책 = 도구.textPolicy(`${검사경로}.txt`, 데이터); // svg 등 정책 표에 없는 글도 비밀 대입 검사를 받는다
   if (정책 === 'secret-signature' || 정책 === 'secret-literal' || 정책 === 'credential-path') return { 까닭: 정책, 갈곳: '열쇠' };
-  if (정책 === 'embedded-media-or-base64' || 정책 === 'over-10MiB' || 정책 === 'binary-control-bytes' || 정책 === 'not-utf8-text') {
-    if (줄.검사 === '설정') return { 까닭: 정책, 갈곳: '' };
-    return { 까닭: 정책, 갈곳: '작업기록' };
-  }
+  // 평문에 못 두는 글은 버리지 않고 암호 묶음으로 보낸다
+  if (정책 === 'embedded-media-or-base64' || 정책 === 'over-10MiB' || 정책 === 'binary-control-bytes' || 정책 === 'not-utf8-text') return { 까닭: 정책, 갈곳: '작업기록' };
   // generated-or-excluded-path · non-text-extension은 설정 폴더의 정상 파일에서도 나온다 — 아래 서명 검사로 갈음한다.
   const 글 = 데이터.toString('utf8');
   if (더한서명.test(글)) return { 까닭: 'secret-signature', 갈곳: '열쇠' };
@@ -216,7 +216,9 @@ function 쓰기(파일, 값) {
 /** 범위를 걸어 내보낼 목록과 뺀 목록을 만든다. 크기 · 수정 시각이 같고 정책이 같으면 다시 읽지 않는다. */
 function 고르기(자리, 도구, 표, 옛캐시, 모음지문, 모음) {
   const 내보냄 = new Map(), 뺌 = [], 빈필수 = [], 새캐시 = {}, 오류 = [];
-  const 판 = `${도구.POLICY_FINGERPRINT || ''}|${모음지문}`;
+  // 검사 규칙이 바뀌면 캐시를 버려 전부 다시 본다(새 규칙에 걸린 파일이 옛 허용으로 남지 않게) — 이 파일의 규칙까지 지문에 넣는다.
+  const 내규칙 = crypto.createHash('sha256').update([더한서명, 그림글꼴, 안올림이름, 판정, 열쇠토큰인가].map(String).join('\n')).digest('hex');
+  const 판 = `${도구.POLICY_FINGERPRINT || ''}|${내규칙}|${모음지문}`;
   const 같은판 = 옛캐시.판 === 판;
   for (const 줄 of 표) {
     if (!줄.뿌리 || !fs.existsSync(줄.뿌리)) { if (줄.필수) 빈필수.push(줄.곳); continue; }
@@ -230,6 +232,8 @@ function 고르기(자리, 도구, 표, 옛캐시, 모음지문, 모음) {
       let 결과;
       if (옛 && 옛.크기 === f.크기 && 옛.수정 === f.수정) 결과 = 옛.결과;
       else 결과 = 판정(줄, f, 도구, 모음);
+      // 못 읽은 파일은 없어진 것이 아니다 — 이 회차는 아무것도 지우지 않게 오류로 센다(캐시에도 안 남긴다).
+      if (결과 && 결과.까닭 === 'unreadable') { 오류.push('UNREADABLE'); continue; }
       새캐시[거울경로] = { 크기: f.크기, 수정: f.수정, 결과 };
       if (결과) { if (결과.갈곳) 뺌.push({ 경로: 거울경로, source: f.절대, 까닭: 결과.까닭, 갈곳: 결과.갈곳 }); continue; }
       내보냄.set(거울경로, { ...f, 줄 });
